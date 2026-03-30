@@ -87,6 +87,27 @@ Sitemap: https://${domain}/sitemap.xml
 `
   fs.writeFileSync(path.join(out, 'robots.txt'), robotsTxt, 'utf-8')
   console.log(`   → robots.txt (${domain})`)
+
+  // Patch canonicals + og:image pour Guadeloupe (pages légales + sous-pages)
+  if (dir === 'guadeloupe-ftp') {
+    const filesToFixCanonical = [
+      'confidentialite.html',
+      'mentions-legales.html',
+      'carte-sargasses/index.html',
+      'previsions/index.html',
+      'en/index.html',
+    ]
+    for (const relPath of filesToFixCanonical) {
+      const filePath = path.join(out, relPath)
+      if (fs.existsSync(filePath)) {
+        let content = fs.readFileSync(filePath, 'utf-8')
+        content = content.replace(/sargasses-martinique\.com/g, 'sargasses-guadeloupe.com')
+        fs.writeFileSync(filePath, content, 'utf-8')
+        console.log(`   → Canonical patché pour Guadeloupe dans ${relPath}`)
+      }
+    }
+  }
+
   // Index SEO spécifique Guadeloupe (title/meta/JSON-LD GP)
   if (dir === 'guadeloupe-ftp') {
     const distIndex = path.join(dist, 'index.html')
@@ -116,15 +137,24 @@ Sitemap: https://${domain}/sitemap.xml
     <meta property="og:locale" content="fr_FR" />
     <meta property="og:locale:alternate" content="en_US" />
     <meta property="og:site_name" content="Sargasses Guadeloupe" />
+    <meta property="og:image" content="https://sargasses-guadeloupe.com/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Carte des sargasses en Guadeloupe - plages propres et à éviter" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Sargasses Guadeloupe – Carte en temps réel 2026" />
     <meta name="twitter:description" content="Consultez l'état des plages de Guadeloupe face aux sargasses aujourd'hui. Carte interactive, prévisions 7 jours." />
+    <meta name="twitter:image" content="https://sargasses-guadeloupe.com/og-image.png" />
+    <meta name="twitter:image:alt" content="Carte des sargasses en Guadeloupe - plages propres et à éviter" />
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"WebApplication","name":"Sargasses Guadeloupe en temps réel","description":"Carte et état des plages Guadeloupe aujourd'hui. Sargasses, plages propres, prévisions 7 jours.","url":"https://sargasses-guadeloupe.com/","applicationCategory":"EnvironmentApplication","operatingSystem":"Web","inLanguage":["fr","en"],"dateModified":"2026-03-08","datePublished":"2026-02-21","publisher":{"@type":"Organization","name":"Sargasses Guadeloupe"}}
     </script>
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Quand arrivent les sargasses en Guadeloupe ?","acceptedAnswer":{"@type":"Answer","text":"Les sargasses varient avec les courants et le vent. La saison la plus concernée s’étend généralement d’avril à septembre, avec des pics possibles jusqu’en octobre. Consultez la carte et les prévisions 7 jours pour l’état du jour."}},{"@type":"Question","name":"C'est quoi l'AFAI ?","acceptedAnswer":{"@type":"Answer","text":"L'AFAI (Algal Floating Algae Index) est un indice de détection des algues par satellite. Plus il est bas, mieux c’est : en dessous de 0,3 la plage est considérée comme propre, au-dessus de 0,65 il vaut mieux éviter. La courbe est affichée sur chaque fiche plage."}},{"@type":"Question","name":"Quel risque pour la santé (H2S) ?","acceptedAnswer":{"@type":"Answer","text":"Le H2S (sulfure d’hydrogène) est un gaz libéré quand les sargasses pourrissent. En forte concentration il peut irriter les yeux et la gorge. Les plages en rouge « À éviter » signalent ce risque — à éviter surtout avec des enfants ou personnes fragiles."}},{"@type":"Question","name":"Quelle plage est propre aujourd'hui en Guadeloupe ?","acceptedAnswer":{"@type":"Answer","text":"Ouvrez la carte ou l’onglet Plages : les statuts (propre / modéré / à éviter) sont mis à jour régulièrement à partir des données satellite et du modèle de dérive Copernicus Marine. L’assistant IA peut aussi vous recommander une plage selon vos critères."}},{"@type":"Question","name":"D'où viennent les données ?","acceptedAnswer":{"@type":"Answer","text":"Les statuts viennent de Copernicus Marine : produit satellite (détection des algues) et modèle de dérive océanique. Les données sont rafraîchies régulièrement pour les Antilles. L’indicateur « Copernicus » en haut de l’app confirme la source active."}}]}
     </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://cdn.onesignal.com" />
     <script type="module" crossorigin src="${scriptSrc}"></script>
   </head>
   <body>

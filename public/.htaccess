@@ -66,5 +66,20 @@ ExpiresByType application/json "access plus 1 hour"
 AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
 </IfModule>
 
-# Trailing slash cohérent (optionnel) : pas de redirection pour éviter boucles avec SPA
-# Les URLs /carte-sargasses et /carte-sargasses/ servent la même page.
+# Trailing slash cohérent : redirige les URLs sans slash vers avec slash (évite contenu dupliqué)
+<IfModule mod_rewrite.c>
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_URI} !/$
+RewriteCond %{REQUEST_URI} !\.
+RewriteRule ^(carte-sargasses|previsions|en)$ /$1/ [R=301,L]
+</IfModule>
+
+# Security headers (trust signals SEO + sécurité)
+<IfModule mod_headers.c>
+Header set X-Frame-Options "SAMEORIGIN"
+Header set X-Content-Type-Options "nosniff"
+Header set Referrer-Policy "strict-origin-when-cross-origin"
+Header append Vary Accept-Encoding
+</IfModule>
+
+AddDefaultCharset UTF-8
