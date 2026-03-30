@@ -1190,64 +1190,89 @@ function PremiumScreen({premium,onActivate}){
   )
 
   return(
-    <div style={{overflowY:"auto",height:"100%"}}>
-      {/* Hero */}
-      <div className="grain" style={{background:`linear-gradient(158deg,${C.night} 0%,${C.night2} 100%)`,padding:"32px 22px 28px",textAlign:"center",position:"relative",overflow:"hidden"}}>
-        <div style={{position:"absolute",top:-40,left:-40,width:200,height:200,borderRadius:"50%",background:"rgba(255,208,96,.04)",animation:"driftB 12s ease-in-out infinite",pointerEvents:"none"}}/>
-        <div style={{position:"absolute",bottom:-60,right:-30,width:240,height:240,borderRadius:"50%",background:"rgba(0,150,136,.04)",animation:"driftB 18s ease-in-out 3s infinite",pointerEvents:"none"}}/>
+    <div style={{overflowY:"auto",height:"100%",WebkitOverflowScrolling:"touch"}}>
+      {/* Hero — fond clair lisible */}
+      <div className="grain" style={{background:"var(--sg-bg)",padding:"32px 22px 28px",textAlign:"center",position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",top:-40,left:-40,width:200,height:200,borderRadius:"50%",background:`${C.goldL}08`,animation:"driftB 12s ease-in-out infinite",pointerEvents:"none"}}/>
+        <div style={{position:"absolute",bottom:-60,right:-30,width:240,height:240,borderRadius:"50%",background:`${C.tealL}06`,animation:"driftB 18s ease-in-out 3s infinite",pointerEvents:"none"}}/>
         <div style={{position:"relative",zIndex:1}}>
-          <div style={{fontSize:9,fontWeight:700,letterSpacing:".16em",textTransform:"uppercase",color:C.goldL,marginBottom:10,opacity:.9}}>PREMIUM</div>
-          <div style={{fontFamily:"'Anton',sans-serif",fontSize:36,textTransform:"uppercase",color:"white",lineHeight:1.02,marginBottom:12,animation:"up .5s ease both"}}>
-            Cette fois,<br/>tu seras<br/>prévenu.
+          <div style={{display:"inline-block",padding:"4px 14px",borderRadius:100,background:C.goldBg,border:`1px solid ${C.goldL}30`,marginBottom:14}}>
+            <span style={{fontSize:10,fontWeight:800,letterSpacing:".12em",textTransform:"uppercase",color:C.gold}}>⭐ PREMIUM</span>
           </div>
-          <div style={{fontSize:13,color:"rgba(255,255,255,.45)",marginBottom:24,lineHeight:1.7,animation:"up .5s ease .08s both"}}>
+          <div style={{fontFamily:"'Anton',sans-serif",fontSize:34,textTransform:"uppercase",color:"var(--sg-ink)",lineHeight:1.05,marginBottom:14,animation:"up .5s ease both"}}>
+            Cette fois,<br/>tu seras prévenu.
+          </div>
+          <div style={{fontSize:13,color:"var(--sg-mid)",marginBottom:24,lineHeight:1.7,animation:"up .5s ease .08s both"}}>
             Prévisions 7 jours · Alertes push<br/>2 îles · Satellite toutes les 6h
           </div>
-          <div style={{display:"flex",alignItems:"baseline",justifyContent:"center",gap:4,marginBottom:8,animation:"up .5s ease .12s both"}}>
-            <span style={{fontFamily:"'Anton',sans-serif",fontSize:54,color:C.goldL,lineHeight:1}}>4,99€</span>
-            <span style={{fontSize:14,color:"rgba(255,255,255,.3)"}}> paiement unique</span>
+          <div style={{display:"flex",alignItems:"baseline",justifyContent:"center",gap:6,marginBottom:6,animation:"up .5s ease .12s both"}}>
+            <span style={{fontFamily:"'Anton',sans-serif",fontSize:52,color:C.gold,lineHeight:1}}>4,99€</span>
+            <span style={{fontSize:13,color:"var(--sg-mute)",fontWeight:600}}> paiement unique</span>
           </div>
-          <div style={{fontSize:11,color:"rgba(255,255,255,.22)",marginBottom:22}}>= 1 aller-retour évité = l'app payée</div>
+          <div style={{fontSize:11,color:"var(--sg-mute)",marginBottom:22,opacity:.7}}>= 1 aller-retour évité = l'app payée</div>
           <div style={{animation:"up .5s ease .16s both"}}>
             <GBtn full onClick={()=>window.open(STRIPE_PAYMENT_URL,"_blank", "noopener,noreferrer")} style={{maxWidth:320,margin:"0 auto",animation:"glow 3s ease-in-out infinite"}}>Payer avec Stripe →</GBtn>
           </div>
-          <div style={{fontSize:9,color:"rgba(255,255,255,.18)",marginTop:10}}>✅ Paiement unique · Stripe sécurisé · Satisfait ou remboursé 7j</div>
+          <div style={{display:"flex",justifyContent:"center",gap:12,marginTop:14,fontSize:10,color:"var(--sg-mute)"}}>
+            <span>✅ Paiement unique</span><span>🔒 Stripe sécurisé</span><span>🛡️ Remboursé 7j</span>
+          </div>
           <CodePromoBlock onActivate={onActivate} />
         </div>
       </div>
 
+      {/* Avantages Premium — cartes visuelles */}
+      <div style={{padding:"20px 16px 8px"}}>
+        <div style={{fontSize:9,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",color:"var(--sg-mute)",marginBottom:12}}>Ce que tu débloques</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+          {[
+            {e:"📡",t:"Satellite 6h",s:"Données fraîches toutes les 6 heures"},
+            {e:"📅",t:"Prévisions 7j",s:"Planifie ta semaine en avance"},
+            {e:"🔔",t:"Alertes push",s:"Notifié quand une plage change"},
+            {e:"🗺️",t:"2 îles",s:"Martinique + Guadeloupe couvertes"},
+            {e:"📊",t:"Historique 30j",s:"Évolution complète des plages"},
+            {e:"☣️",t:"Alerte H2S",s:"Risque santé par plage en temps réel"},
+          ].map((item,i)=>(
+            <Card key={i} style={{padding:"14px",animation:`up .4s ease ${i*.05}s both`}}>
+              <div style={{fontSize:26,marginBottom:8}}>{item.e}</div>
+              <div style={{fontSize:13,fontWeight:800,color:"var(--sg-ink)",marginBottom:3,lineHeight:1.2}}>{item.t}</div>
+              <div style={{fontSize:10,color:"var(--sg-mid)",lineHeight:1.5}}>{item.s}</div>
+            </Card>
+          ))}
+        </div>
+      </div>
+
       {/* Testimonials */}
-      <div style={{padding:"20px 16px 4px"}}>
-        <div style={{fontSize:9,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",color:C.mute,marginBottom:12}}>Ce que disent les utilisateurs</div>
+      <div style={{padding:"12px 16px 4px"}}>
+        <div style={{fontSize:9,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",color:"var(--sg-mute)",marginBottom:12}}>Ce que disent les utilisateurs</div>
         {TESTIMONIALS.map((t,i)=>(
-          <Card key={i} style={{padding:"14px 15px",marginBottom:10,animation:`up .4s ease ${i*.08}s both`}}>
+          <Card key={i} style={{padding:"14px 15px",marginBottom:10,animation:`up .4s ease ${.3+i*.08}s both`}}>
             <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:9}}>
               <div style={{fontSize:28,flexShrink:0}}>{t.avatar}</div>
               <div>
                 <div style={{fontSize:13,fontWeight:700,color:"var(--sg-ink)"}}>{t.name}</div>
-                <div style={{fontSize:10,color:C.mid}}>{t.role}</div>
+                <div style={{fontSize:10,color:"var(--sg-mid)"}}>{ t.role}</div>
               </div>
               <div style={{marginLeft:"auto",display:"flex",gap:1}}>{[1,2,3,4,5].map(s=><span key={s} style={{fontSize:11,color:C.goldL}}>★</span>)}</div>
             </div>
-            <div style={{fontSize:12,color:C.mid,lineHeight:1.65,fontStyle:"italic"}}>"{t.text}"</div>
+            <div style={{fontSize:12,color:"var(--sg-mid)",lineHeight:1.65,fontStyle:"italic"}}>"{t.text}"</div>
           </Card>
         ))}
       </div>
 
       {/* Comparison table */}
       <div style={{padding:"4px 16px 16px"}}>
-        <div style={{fontSize:9,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",color:C.mute,marginBottom:12}}>Gratuit vs Premium</div>
+        <div style={{fontSize:9,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",color:"var(--sg-mute)",marginBottom:12}}>Gratuit vs Premium</div>
         <Card style={{overflow:"hidden",padding:0}}>
-          <div style={{display:"grid",gridTemplateColumns:"1fr auto auto",borderBottom:`1px solid ${C.border}`}}>
-            <div style={{padding:"10px 14px",fontSize:10,fontWeight:800,color:C.mute,textTransform:"uppercase",letterSpacing:".06em"}}>Fonctionnalité</div>
-            <div style={{padding:"10px 16px",fontSize:10,fontWeight:800,color:C.mid,textTransform:"uppercase",letterSpacing:".06em",textAlign:"center"}}>Gratuit</div>
-            <div style={{padding:"10px 16px",fontSize:10,fontWeight:800,color:C.gold,textTransform:"uppercase",letterSpacing:".06em",textAlign:"center",background:C.goldBgL}}>Premium</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr auto auto",borderBottom:"1px solid var(--sg-border)"}}>
+            <div style={{padding:"10px 14px",fontSize:10,fontWeight:800,color:"var(--sg-mute)",textTransform:"uppercase",letterSpacing:".06em"}}>Fonctionnalité</div>
+            <div style={{padding:"10px 16px",fontSize:10,fontWeight:800,color:"var(--sg-mid)",textTransform:"uppercase",letterSpacing:".06em",textAlign:"center"}}>Gratuit</div>
+            <div style={{padding:"10px 16px",fontSize:10,fontWeight:800,color:C.gold,textTransform:"uppercase",letterSpacing:".06em",textAlign:"center",background:C.goldBg}}>Premium</div>
           </div>
           {COMPARE.map((row,i)=>(
-            <div key={i} style={{display:"grid",gridTemplateColumns:"1fr auto auto",borderBottom:i<COMPARE.length-1?`1px solid ${C.border}`:"none"}}>
-              <div style={{padding:"9px 14px",fontSize:12,fontWeight:row.premium&&!row.free?700:500,color:row.premium&&!row.free?C.ink:C.mid}}>{row.f}</div>
+            <div key={i} style={{display:"grid",gridTemplateColumns:"1fr auto auto",borderBottom:i<COMPARE.length-1?"1px solid var(--sg-border)":"none"}}>
+              <div style={{padding:"9px 14px",fontSize:12,fontWeight:row.premium&&!row.free?700:500,color:row.premium&&!row.free?"var(--sg-ink)":"var(--sg-mid)"}}>{row.f}</div>
               <div style={{padding:"9px 16px",textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>{row.free?"✅":"—"}</div>
-              <div style={{padding:"9px 16px",textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,background:C.goldBgL}}>{row.premium?"✅":"—"}</div>
+              <div style={{padding:"9px 16px",textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,background:C.goldBg}}>{row.premium?"✅":"—"}</div>
             </div>
           ))}
         </Card>
@@ -1255,11 +1280,11 @@ function PremiumScreen({premium,onActivate}){
 
       {/* Guarantee */}
       <div style={{padding:"0 16px 20px"}}>
-        <div style={{background:`linear-gradient(135deg,${C.greenBg},rgba(56,146,78,.05))`,border:`1.5px solid rgba(39,112,58,.2)`,borderRadius:16,padding:"16px",display:"flex",gap:14,alignItems:"center"}}>
+        <div style={{background:`linear-gradient(135deg,${C.greenBg},rgba(56,146,78,.05))`,border:"1.5px solid rgba(39,112,58,.2)",borderRadius:16,padding:"16px",display:"flex",gap:14,alignItems:"center"}}>
           <div style={{fontSize:34,flexShrink:0}}>🛡️</div>
           <div>
             <div style={{fontFamily:"'Anton',sans-serif",fontSize:14,textTransform:"uppercase",color:C.green,marginBottom:4,letterSpacing:".04em"}}>Garanti 7 jours</div>
-            <div style={{fontSize:12,color:C.mid,lineHeight:1.6}}>Pas satisfait dans les 7 jours ? On te rembourse, sans question posée. Aucun risque.</div>
+            <div style={{fontSize:12,color:"var(--sg-mid)",lineHeight:1.6}}>Pas satisfait dans les 7 jours ? On te rembourse, sans question posée. Aucun risque.</div>
           </div>
         </div>
       </div>
@@ -1270,7 +1295,7 @@ function PremiumScreen({premium,onActivate}){
         <div style={{marginTop:14}}>
           <GBtn full onClick={()=>window.open(STRIPE_PAYMENT_URL,"_blank","noopener,noreferrer")} style={{animation:"glow 3s ease-in-out infinite"}}>4,99€ paiement unique — Payer avec Stripe →</GBtn>
         </div>
-        <div style={{fontSize:9,color:C.mute,textAlign:"center",marginTop:8}}>Paiement unique, pas d'abonnement</div>
+        <div style={{fontSize:9,color:"var(--sg-mute)",textAlign:"center",marginTop:8}}>Paiement unique, pas d'abonnement</div>
       </div>
     </div>
   )
