@@ -7,6 +7,29 @@
 const fs = require('fs')
 const path = require('path')
 
+const BEACH_NAMES = {
+  'grande-anse': 'Grande Anse d\'Arlet',
+  'anse-mitan': 'Anse Mitan',
+  'anse-noire': 'Anse Noire',
+  'tartane': 'Tartane',
+  'anse-madame': 'Anse Madame',
+  'diamant': 'Le Diamant',
+  'pt-marin': 'Pointe du Marin',
+  'sainte-anne': 'Sainte-Anne (MQ)',
+  'les-salines': 'Les Salines',
+  'vauclin': 'Le Vauclin',
+  'gp-grande-anse': 'Grande Anse (GP)',
+  'gp-malendure': 'Malendure',
+  'gp-sainte-anne': 'Sainte-Anne (GP)',
+  'gp-pt-chateaux': 'Pointe des Châteaux',
+  'gp-gosier': 'Le Gosier',
+  'gp-caravelle': 'La Caravelle (GP)',
+  'gp-bas-du-fort': 'Bas du Fort',
+  'gp-deshaies': 'Deshaies',
+  'gp-moule': 'Le Moule',
+  'gp-vieux-fort': 'Vieux-Fort',
+}
+
 const SARGASSUM_REF = [
   { id: "grande-anse",     afai: 0.11, status: "clean" }, { id: "anse-mitan",      afai: 0.17, status: "clean" },
   { id: "anse-noire",      afai: 0.08, status: "clean" }, { id: "tartane",         afai: 0.19, status: "clean" },
@@ -118,6 +141,142 @@ async function fetchCopernicusSubset(username, password) {
   return { source: 'reference', levels: null }
 }
 
+function getBeachUrl(beachId) {
+  if (beachId.startsWith('gp-')) return 'https://sargasses-guadeloupe.com'
+  return 'https://sargasses-martinique.com'
+}
+
+function buildNotificationMessage(change) {
+  const name = BEACH_NAMES[change.beach] || change.beach
+  if (change.to === 'clean') return `🟢 ${name} est maintenant propre !`
+  if (change.to === 'avoid') return `🔴 Alerte sargasses : ${name} est à éviter aujourd'hui`
+  if (change.to === 'moderate') return `🟡 ${name} : présence modérée de sargasses`
+  return null
+}
+
+// OneSignal App IDs et clés séparés MQ / GP
+const ONESIGNAL_APPS = {
+  MQ: {
+    appId: 'd628363e-efc7-4d27-8d1b-fa25fe3bacc9',
+    envKey: 'ONESIGNAL_API_KEY_MQ',
+  },
+  GP: {
+    appId: 'f9adee80-8909-48d3-8517-95f9f311d164',
+    envKey: 'ONESIGNAL_API_KEY_GP',
+  },
+}
+
+function getIsland(beachId) {
+  return beachId.startsWith('gp-') ? 'GP' : 'MQ'
+}
+
+async function sendOneSignalNotification(change) {
+  const island = getIsland(change.beach)
+  const config = ONESIGNAL_APPS[island]
+  const apiKey = process.env[config.envKey]
+  if (!apiKey) {
+    console.log(`OneSignal [${change.beach}]: pas de clé ${config.envKey}, notification ignorée`)
+    return
+  }
+  const message = buildNotificationMessage(change)
+  if (!message) return
+  const url = getBeachUrl(change.beach)
+  const body = {
+    app_id: config.appId,
+    included_segments: ['All'],
+    contents: { en: message, fr: message },
+    url,
+  }
+  try {
+    const res = await fetch('https://onesignal.com/api/v1/notifications', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        Authorization: `Basic ${apiKey}`,
+      },
+      body: JSON.stringify(body),
+    })
+    const data = await res.json().catch(() => ({}))
+    console.log(`OneSignal [${island}/${change.beach}]:`, res.status, data.id || JSON.stringify(data).slice(0, 120))
+  } catch (e) {
+    console.warn(`OneSignal [${island}/${change.beach}] erreur:`, e.message || e)
+  }
+}
+
+function updateHistory(dir, levels) {
+  const today = new Date().toISOString().slice(0, 10)
+  const historyPath = path.join(dir, 'history.json')
+
+  // Read existing history
+  let historyData = { history: [], changes: [] }
+  try {
+    const raw = fs.readFileSync(historyPath, 'utf-8')
+    const parsed = JSON.parse(raw)
+    if (parsed && Array.isArray(parsed.history)) historyData = parsed
+    if (!Array.isArray(historyData.changes)) historyData.changes = []
+  } catch (_) {}
+
+  // Build today's entry
+  const todayEntry = {
+    date: today,
+    levels: levels.map(l => ({ id: l.id, afai: l.afai, status: l.status })),
+  }
+
+  // Replace today's entry if it already exists, otherwise append
+  const existingIdx = historyData.history.findIndex(h => h.date === today)
+  if (existingIdx >= 0) {
+    historyData.history[existingIdx] = todayEntry
+  } else {
+    historyData.history.push(todayEntry)
+  }
+
+  // Detect status changes vs yesterday
+  const newChanges = []
+  const yesterday = historyData.history
+    .filter(h => h.date < today)
+    .sort((a, b) => b.date.localeCompare(a.date))[0]
+  if (yesterday) {
+    const yesterdayMap = {}
+    for (const l of yesterday.levels) yesterdayMap[l.id] = l.status
+    for (const l of todayEntry.levels) {
+      const prev = yesterdayMap[l.id]
+      if (prev && prev !== l.status) {
+        newChanges.push({
+          date: today,
+          beach: l.id,
+          from: prev,
+          to: l.status,
+          afai: l.afai,
+        })
+      }
+    }
+  }
+
+  // Append new changes (avoid duplicates for same date+beach)
+  for (const c of newChanges) {
+    const dupIdx = historyData.changes.findIndex(
+      x => x.date === c.date && x.beach === c.beach
+    )
+    if (dupIdx >= 0) {
+      historyData.changes[dupIdx] = c
+    } else {
+      historyData.changes.push(c)
+    }
+  }
+
+  // Keep only last 30 days
+  const cutoff = new Date()
+  cutoff.setDate(cutoff.getDate() - 30)
+  const cutoffStr = cutoff.toISOString().slice(0, 10)
+  historyData.history = historyData.history.filter(h => h.date >= cutoffStr)
+  historyData.changes = historyData.changes.filter(c => c.date >= cutoffStr)
+
+  fs.writeFileSync(historyPath, JSON.stringify(historyData, null, 2), 'utf-8')
+  console.log('History:', historyPath, '|', historyData.history.length, 'jours |', newChanges.length, 'changement(s) détecté(s)')
+
+  return newChanges
+}
+
 async function main() {
   const creds = getCopernicusCreds()
   let source = 'reference'
@@ -151,6 +310,12 @@ async function main() {
   fs.writeFileSync(outPath, JSON.stringify(payload), 'utf-8')
   console.log('OK:', outPath)
   console.log('   source:', source, '| updatedAt:', updatedAt.slice(0, 19))
+
+  // History tracking + notifications
+  const changes = updateHistory(dir, levels)
+  for (const change of changes) {
+    await sendOneSignalNotification(change)
+  }
 }
 
 main().catch(err => {

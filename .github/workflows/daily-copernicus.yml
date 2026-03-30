@@ -33,6 +33,9 @@ jobs:
           echo "${{ secrets.COPERNICUS_PASSWORD }}" >> copernicustxt.txt
 
       - name: Scrape Copernicus Marine data
+        env:
+          ONESIGNAL_API_KEY_MQ: ${{ secrets.ONESIGNAL_API_KEY_MQ }}
+          ONESIGNAL_API_KEY_GP: ${{ secrets.ONESIGNAL_API_KEY_GP }}
         run: node scripts/scrape-copernicus.cjs
 
       # ── 2. Build ──────────────────────────────────────────
@@ -47,7 +50,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public/api/copernicus/sargassum.json
+          git add public/api/copernicus/sargassum.json public/api/copernicus/history.json
           git diff --cached --quiet || git commit -m "chore: update Copernicus data $(date -u +'%Y-%m-%d %H:%M UTC')"
           git push || true
 

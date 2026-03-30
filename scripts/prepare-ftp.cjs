@@ -25,23 +25,50 @@ function copyRecursive(src, dest) {
   }
 }
 
+// OneSignal App IDs par site
+const ONESIGNAL_APP_IDS = {
+  martinique: 'd628363e-efc7-4d27-8d1b-fa25fe3bacc9',
+  guadeloupe: 'f9adee80-8909-48d3-8517-95f9f311d164',
+}
+const OLD_ONESIGNAL_APP_ID = '4280dcab-fc43-415d-a9cd-a3da8cf601f1'
+
 const readmes = [
   {
     dir: 'martinique-ftp',
     title: 'Martinique',
     domain: 'sargasses-martinique.com',
+    onesignalAppId: ONESIGNAL_APP_IDS.martinique,
   },
   {
     dir: 'guadeloupe-ftp',
     title: 'Guadeloupe',
     domain: 'sargasses-guadeloupe.com',
+    onesignalAppId: ONESIGNAL_APP_IDS.guadeloupe,
   },
 ]
 
-for (const { dir, title, domain } of readmes) {
+for (const { dir, title, domain, onesignalAppId } of readmes) {
   const out = path.join(root, dir)
   if (fs.existsSync(out)) fs.rmSync(out, { recursive: true })
   copyRecursive(dist, out)
+
+  // Remplacer l'ancien OneSignal App ID par le bon pour ce site
+  const filesToPatch = [
+    'sarg_carte_satellite_app.html',
+    'sarg_carte_satellite_standalone.html',
+    'config/push.js',
+  ]
+  for (const relPath of filesToPatch) {
+    const filePath = path.join(out, relPath)
+    if (fs.existsSync(filePath)) {
+      let content = fs.readFileSync(filePath, 'utf-8')
+      if (content.includes(OLD_ONESIGNAL_APP_ID)) {
+        content = content.replace(new RegExp(OLD_ONESIGNAL_APP_ID, 'g'), onesignalAppId)
+        fs.writeFileSync(filePath, content, 'utf-8')
+        console.log(`   → OneSignal appId patché dans ${relPath} (${title})`)
+      }
+    }
+  }
 
   // Sitemap + robots par domaine
   const sitemapName = dir === 'martinique-ftp' ? 'sitemap-martinique.xml' : 'sitemap-guadeloupe.xml'

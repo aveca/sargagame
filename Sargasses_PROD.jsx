@@ -894,9 +894,77 @@ function CarteScreen({beaches,favs,onOpenBeach,gps,onGPS,onXP,island}){
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// ░░ EVOLUTION — changements récents de statut des plages
+// ═══════════════════════════════════════════════════════════════════════════════
+const STATUS_LABELS={clean:"Propre",moderate:"Modéré",avoid:"À éviter"}
+const STATUS_EMOJI={clean:"🟢",moderate:"🟡",avoid:"🔴"}
+const BEACH_NAMES_MAP={
+  'grande-anse':'Grande Anse d\'Arlet','anse-mitan':'Anse Mitan','anse-noire':'Anse Noire',
+  'tartane':'Tartane','anse-madame':'Anse Madame','diamant':'Le Diamant',
+  'pt-marin':'Pointe du Marin','sainte-anne':'Sainte-Anne','les-salines':'Les Salines',
+  'vauclin':'Le Vauclin','gp-grande-anse':'Grande Anse','gp-malendure':'Malendure',
+  'gp-sainte-anne':'Sainte-Anne','gp-pt-chateaux':'Pointe des Châteaux','gp-gosier':'Le Gosier',
+  'gp-caravelle':'La Caravelle','gp-bas-du-fort':'Bas du Fort','gp-deshaies':'Deshaies',
+  'gp-moule':'Le Moule','gp-vieux-fort':'Vieux-Fort',
+}
+
+function EvolutionSection({historyData,island,onOpenBeach,beaches}){
+  if(!historyData) return null
+  const changes=(historyData.changes||[]).filter(c=>{
+    if(island==="gp") return c.beach.startsWith("gp-")
+    return !c.beach.startsWith("gp-")
+  }).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,10)
+
+  // Tendance : comparer les 2 derniers jours d'historique
+  const hist=historyData.history||[]
+  const islandHist=hist.map(h=>({...h,levels:(h.levels||[]).filter(l=>island==="gp"?l.id.startsWith("gp-"):!l.id.startsWith("gp-"))}))
+  const last=islandHist[islandHist.length-1]
+  const prev=islandHist.length>=2?islandHist[islandHist.length-2]:null
+
+  let trendText=""
+  if(last&&prev){
+    const lastAvg=last.levels.reduce((s,l)=>s+l.afai,0)/last.levels.length
+    const prevAvg=prev.levels.reduce((s,l)=>s+l.afai,0)/prev.levels.length
+    const diff=lastAvg-prevAvg
+    if(diff>0.05) trendText="📈 Tendance en hausse — plus de sargasses qu'hier"
+    else if(diff<-0.05) trendText="📉 Tendance à la baisse — amélioration en cours"
+    else trendText="➡️ Situation stable depuis hier"
+  }
+
+  return(
+    <div style={{padding:"4px 16px 16px"}}>
+      <div style={{fontSize:9,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",color:"var(--sg-mute)",marginBottom:10}}>Évolution récente</div>
+      {trendText&&<div style={{fontSize:12,fontWeight:600,color:"var(--sg-mid)",marginBottom:10,padding:"8px 12px",background:"var(--sg-card)",borderRadius:10,border:"1px solid var(--sg-border)"}}>{trendText}</div>}
+      {changes.length===0&&<div style={{fontSize:11,color:"var(--sg-mute)",padding:"8px 0"}}>Aucun changement de statut récent.</div>}
+      {changes.length>0&&<div style={{display:"flex",flexDirection:"column",gap:6}}>
+        {changes.map((c,i)=>{
+          const name=BEACH_NAMES_MAP[c.beach]||c.beach
+          const beachObj=beaches.find(b=>b.id===c.beach)
+          const isGood=c.to==="clean"||(c.to==="moderate"&&c.from==="avoid")
+          return(
+            <div key={i} onClick={()=>beachObj&&onOpenBeach(beachObj)} className="tap" style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:"var(--sg-card)",border:`1px solid ${isGood?"rgba(39,112,58,.2)":"rgba(176,27,27,.15)"}`,borderRadius:12,cursor:beachObj?"pointer":"default",animation:`up .3s ease ${i*.04}s both`}}>
+              <div style={{fontSize:18,flexShrink:0}}>{isGood?"✅":"⚠️"}</div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)",lineHeight:1.2}}>{name}</div>
+                <div style={{fontSize:10,color:"var(--sg-mid)",marginTop:2,display:"flex",alignItems:"center",gap:4}}>
+                  <span>{STATUS_EMOJI[c.from]} {STATUS_LABELS[c.from]}</span>
+                  <span>→</span>
+                  <span style={{fontWeight:700}}>{STATUS_EMOJI[c.to]} {STATUS_LABELS[c.to]}</span>
+                </div>
+              </div>
+              <div style={{fontSize:9,color:"var(--sg-mute)",flexShrink:0}}>{new Date(c.date).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})}</div>
+            </div>
+          )
+        })}
+      </div>}
+    </div>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // ░░ ACCUEIL — briefing quotidien
 // ═══════════════════════════════════════════════════════════════════════════════
-function AccueilScreen({beaches,favs,onFavToggle,onOpenBeach,onAskChat,gps,onGPS,premium,onGoToPremium,onXP,island,sargassumData}){
+function AccueilScreen({beaches,favs,onFavToggle,onOpenBeach,onAskChat,gps,onGPS,premium,onGoToPremium,onXP,island,sargassumData,historyData}){
   const lang=useLang()
   const L=T[lang]||T.fr
   const clean=beaches.filter(b=>b.status==="clean")
@@ -1032,6 +1100,9 @@ function AccueilScreen({beaches,favs,onFavToggle,onOpenBeach,onAskChat,gps,onGPS
           📍 Activer ma position pour les plages proches
         </button>
       </div>}
+
+      {/* Évolution des plages */}
+      <EvolutionSection historyData={historyData} island={island} onOpenBeach={onOpenBeach} beaches={beaches}/>
 
       {/* Social proof + CTA conversion */}
       {!premium&&<div style={{padding:"0 16px 20px"}}>
@@ -1654,6 +1725,7 @@ export default function App(){
   const [xpVisible,setXpVis] = useState(false)
   const [copernicusCheck, setCopernicusCheck] = useState(null) // { ok, message } après GET /api/copernicus/check
   const [sargassumData, setSargassumData] = useState(null)     // { source, updatedAt, levels } après GET /api/copernicus/sargassum
+  const [historyData, setHistoryData] = useState(null)         // { history, changes } depuis history.json
   const [allBeaches, setAllBeaches] = useState(BEACHES)         // liste complète (étendue via /data/beaches-list.json si dispo)
   const [localBeachImages, setLocalBeachImages] = useState({}) // id → filename (depuis /data/beaches-images.json) pour vignettes liste
   const [isDark, setIsDark] = useState(()=>{
@@ -1692,6 +1764,17 @@ export default function App(){
       .then((d) => {
         if (!cancelled && d && Array.isArray(d.levels)) setSargassumData({ source: d.source || 'reference', updatedAt: d.updatedAt, levels: d.levels, weekly: d.weekly || null })
       })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [screen, online])
+
+  // Historique sargasses (30 jours)
+  useEffect(() => {
+    if (screen !== 'app' || !online) return
+    let cancelled = false
+    fetch(import.meta.env.DEV ? '/api/copernicus/history' : '/api/copernicus/history.json')
+      .then((r) => r.json())
+      .then((d) => { if (!cancelled && d) setHistoryData(d) })
       .catch(() => {})
     return () => { cancelled = true }
   }, [screen, online])
@@ -1835,7 +1918,7 @@ export default function App(){
 
         {/* Screens */}
         <div style={{flex:1,position:"relative",overflowY:"auto",overflowX:"hidden",minHeight:0,paddingBottom:"calc(72px + env(safe-area-inset-bottom, 0px))"}}>
-          {tab==="accueil"&&<AccueilScreen beaches={beachesFilteredWithSargassum} island={island} favs={favs} onFavToggle={toggleFav} onOpenBeach={openBeach} onAskChat={askChat} gps={gps} onGPS={getGPS} premium={premium} onGoToPremium={()=>goTab("premium")} onXP={addXP} sargassumData={sargassumData}/>}
+          {tab==="accueil"&&<AccueilScreen beaches={beachesFilteredWithSargassum} island={island} favs={favs} onFavToggle={toggleFav} onOpenBeach={openBeach} onAskChat={askChat} gps={gps} onGPS={getGPS} premium={premium} onGoToPremium={()=>goTab("premium")} onXP={addXP} sargassumData={sargassumData} historyData={historyData}/>}
           {tab==="jeu"&&<div style={{position:"absolute",inset:0,overflow:"hidden"}}><SargassesGame island={island}/></div>}
           {tab==="arena"&&(
             <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",minHeight:0}}>
