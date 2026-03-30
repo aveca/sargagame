@@ -59,7 +59,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME_MQ }}
           password: ${{ secrets.FTP_PASSWORD_MQ }}
           local-dir: ./martinique-ftp/
-          server-dir: /public_html/
+          server-dir: ./
           dangerous-clean-slate: false
 
       # ── 5. Deploy Guadeloupe via FTP ──────────────────────
@@ -70,5 +70,5 @@ jobs:
           username: ${{ secrets.FTP_USERNAME_GP }}
           password: ${{ secrets.FTP_PASSWORD_GP }}
           local-dir: ./guadeloupe-ftp/
-          server-dir: /public_html/
+          server-dir: ./
           dangerous-clean-slate: false
