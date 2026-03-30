@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /neptunes_fury.html
+
+# Sitemap (remplacé par prepare-ftp selon domaine : martinique ou guadeloupe)
+Sitemap: https://sargasses-martinique.com/sitemap.xml

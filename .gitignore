@@ -1,0 +1,24 @@
+# Clé API Grok (ne pas committer)
+clef
+
+# Identifiants Copernicus Marine (ne pas committer)
+copernicustxt.txt
+
+# Dependencies
+node_modules
+
+# Build
+dist
+martinique-ftp
+guadeloupe-ftp
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Secrets guide (ne pas committer)
+SECRETS-GITHUB.txt
+
+# Claude Code
+.claude

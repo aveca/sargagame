@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Sargassum Monitoring Martinique · Real-time map &amp; beaches</title>
+  <meta name="description" content="Real-time sargassum monitoring in Martinique. Beach status, clean or avoid, 7-day outlook. For travelers and residents." />
+  <link rel="canonical" href="https://sargasses-martinique.com/en/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Sargassum Monitoring Martinique · Real-time map &amp; beaches" />
+  <meta property="og:description" content="Real-time sargassum monitoring in Martinique. Beach status, clean or avoid, 7-day outlook." />
+  <meta property="og:url" content="https://sargasses-martinique.com/en/" />
+  <meta property="og:locale" content="en_US" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Sargassum Monitoring Martinique" />
+  <meta name="twitter:description" content="Real-time sargassum monitoring in Martinique. Beach status, 7-day outlook." />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Syne:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root,.theme-light{--sg-bg:#F7F4EC;--sg-card:#FFFFFF;--sg-ink:#0B0A08;--sg-mid:#68655C;--sg-mute:#A8A59E;--sg-border:rgba(0,0,0,.065);--sg-link:#00766A;--sg-link-hover:#009688;--sg-gold:#C4830A;--sg-goldL:#EDA000;}
+    .theme-dark{--sg-bg:#0d1117;--sg-card:#161b22;--sg-ink:#e6edf3;--sg-mid:#adbac7;--sg-mute:#8b949e;--sg-border:rgba(255,255,255,.08);--sg-link:#009688;--sg-link-hover:#00adb3;--sg-gold:#EDA000;--sg-goldL:#FFD060;}
+    *{margin:0;padding:0;box-sizing:border-box}
+    html{font-size:clamp(14px,2.2vw + 12px,16px);-webkit-text-size-adjust:100%}
+    html,body{font-family:'Syne',sans-serif;background:var(--sg-bg);color:var(--sg-ink);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px;line-height:1.6;-webkit-font-smoothing:antialiased}
+    .brand{display:flex;align-items:center;gap:10px;margin-bottom:24px}
+    .logo{width:32px;height:32px;border-radius:50%;background:conic-gradient(from -10deg,#FFE898 0deg 30deg,#C4830A 30deg 70deg,#FFD040 70deg 115deg,#9A6500 115deg 160deg,#FFE07A 160deg 200deg,#C07800 200deg 245deg,#EDA000 245deg 290deg,#8A5800 290deg 330deg,#FFE898 330deg);flex-shrink:0}
+    .brand-name{font-family:'Anton',sans-serif;font-size:1.25rem;letter-spacing:.07em;color:var(--sg-ink)}
+    .card{max-width:420px;width:100%;background:var(--sg-card);border:1px solid var(--sg-border);border-radius:18px;padding:28px 24px;box-shadow:0 4px 18px rgba(0,0,0,.06)}
+    .theme-dark .card{box-shadow:0 4px 18px rgba(0,0,0,.25)}
+    h1{font-family:'Anton',sans-serif;font-size:1.5rem;letter-spacing:.04em;text-transform:uppercase;margin-bottom:12px;color:var(--sg-ink)}
+    .card p{color:var(--sg-mid);margin-bottom:20px}
+    .cta{display:inline-block;padding:12px 24px;background:linear-gradient(158deg,var(--sg-goldL),var(--sg-gold) 42%,#AF7200);color:#0B0A08;text-decoration:none;border-radius:12px;font-weight:700;font-size:14px;border:none;box-shadow:0 4px 16px rgba(196,131,10,.28)}
+    .cta:hover{filter:brightness(1.05);text-decoration:none;color:#0B0A08}
+    .sub{margin-top:16px;font-size:13px;color:var(--sg-mute)}
+    .sub a{color:var(--sg-link);font-weight:600;text-decoration:none}
+    .sub a:hover{color:var(--sg-link-hover);text-decoration:underline}
+  </style>
+  <script>
+    (function(){ try { var v = localStorage.getItem("sg_theme"); if (v === "dark") document.documentElement.classList.add("theme-dark"); else if (v !== "light" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement.classList.add("theme-dark"); } catch (e) {} })();
+  </script>
+</head>
+<body>
+  <div class="brand">
+    <div class="logo" aria-hidden="true"></div>
+    <span class="brand-name">SARGASSES</span>
+  </div>
+  <div class="card">
+    <h1>Sargassum monitoring Martinique</h1>
+    <p>Real-time beach status and sargassum map for Martinique. See which beaches are clean or to avoid, and a 7-day outlook. Data updated regularly.</p>
+    <a href="/en/" class="cta">Open the app (English) →</a>
+    <p class="sub"><a href="/">Version française</a></p>
+  </div>
+</body>
+</html>

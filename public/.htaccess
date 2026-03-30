@@ -1,0 +1,19 @@
+# Redirections SEO — à la racine du site (public_html / www)
+# Redirection www vers non-www (évite contenu dupliqué)
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteCond %{HTTP_HOST} ^www\.(sargasses-martinique\.com|sargasses-guadeloupe\.com)$ [NC]
+RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# Forcer HTTPS (si le serveur le gère en amont, ces règles ne s'appliquent pas)
+<IfModule mod_rewrite.c>
+RewriteCond %{HTTPS} off
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# Page 404 personnalisée
+ErrorDocument 404 /404.html
+
+# Trailing slash cohérent (optionnel) : pas de redirection pour éviter boucles avec SPA
+# Les URLs /carte-sargasses et /carte-sargasses/ servent la même page.

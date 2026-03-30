@@ -1,0 +1,74 @@
+name: Daily Copernicus + Deploy
+
+on:
+  schedule:
+    # 6h heure Martinique (UTC-4) = 10h UTC
+    - cron: '0 10 * * *'
+  workflow_dispatch: # Déclenchement manuel possible
+
+permissions:
+  contents: write
+
+jobs:
+  update-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # ── 1. Scrape Copernicus ──────────────────────────────
+      - name: Create Copernicus credentials
+        run: |
+          echo "${{ secrets.COPERNICUS_USERNAME }}" > copernicustxt.txt
+          echo "${{ secrets.COPERNICUS_PASSWORD }}" >> copernicustxt.txt
+
+      - name: Scrape Copernicus Marine data
+        run: node scripts/scrape-copernicus.cjs
+
+      # ── 2. Build ──────────────────────────────────────────
+      - name: Build site (Vite)
+        run: npm run build
+
+      - name: Prepare FTP folders
+        run: node scripts/prepare-ftp.cjs
+
+      # ── 3. Commit updated data to repo ────────────────────
+      - name: Commit updated sargassum.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/api/copernicus/sargassum.json
+          git diff --cached --quiet || git commit -m "chore: update Copernicus data $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push || true
+
+      # ── 4. Deploy Martinique via FTP ──────────────────────
+      - name: Deploy Martinique (FTP)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER_MQ }}
+          username: ${{ secrets.FTP_USERNAME_MQ }}
+          password: ${{ secrets.FTP_PASSWORD_MQ }}
+          local-dir: ./martinique-ftp/
+          server-dir: /public_html/
+          dangerous-clean-slate: false
+
+      # ── 5. Deploy Guadeloupe via FTP ──────────────────────
+      - name: Deploy Guadeloupe (FTP)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER_GP }}
+          username: ${{ secrets.FTP_USERNAME_GP }}
+          password: ${{ secrets.FTP_PASSWORD_GP }}
+          local-dir: ./guadeloupe-ftp/
+          server-dir: /public_html/
+          dangerous-clean-slate: false

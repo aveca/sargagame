@@ -1,0 +1,23 @@
+{
+  "name": "sargagame",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "node scripts/build-sargassum-json.cjs && vite build",
+    "daily": "node scripts/scrape-copernicus.cjs && vite build && node scripts/prepare-ftp.cjs && node scripts/verify-ftp-ready.cjs",
+    "preview": "vite preview",
+    "martinique": "npm run build && node scripts/prepare-ftp.cjs",
+    "verify-ftp": "node scripts/verify-ftp-ready.cjs"
+  },
+  "dependencies": {
+    "leaflet": "^1.9.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "vite": "^5.0.0"
+  }
+}

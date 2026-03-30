@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="fr" id="html-lang">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes,viewport-fit=cover">
+<title>SARG · Carte Satellite — Martinique & Guadeloupe</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<!-- Notifications push OneSignal — clés : C:\Users\user\Downloads\all\p\.env.local -->
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(function(OneSignal) {
+    OneSignal.init({
+      appId: "4280dcab-fc43-415d-a9cd-a3da8cf601f1",
+      allowLocalhostAsSecureOrigin: true
+    });
+  });
+</script>
+<style>
+/* ── DARK (default) ── */
+:root{
+  --bg:#060D14;
+  --glass:rgba(6,13,20,.86); --glassMid:rgba(6,13,20,.68);
+  --b:rgba(255,255,255,.1); --bD:rgba(255,255,255,.06);
+  --w:#EEF4FA; --mid:#7AAFC8; --mute:#3D6480;
+  --cyan:#00D4C8; --cyanL:#00F0E4; --cyanD:#007A74;
+  --safe:#26D97A; --warn:#F08C14; --danger:#E83030; --h2s:#CC28FF;
+  --topbar-grad:rgba(6,13,20,.92);
+  --item-hover:rgba(255,255,255,.04);
+  --item-active:rgba(0,212,200,.07);
+  --ss-bg:rgba(255,255,255,.05);
+  --scrollthumb:rgba(255,255,255,.15);
+}
+/* ── LIGHT ── */
+html.light{
+  --bg:#EEF3F8;
+  --glass:rgba(245,249,253,.93); --glassMid:rgba(245,249,253,.78);
+  --b:rgba(0,30,60,.1); --bD:rgba(0,30,60,.06);
+  --w:#0A1420; --mid:#2A6080; --mute:#7AA8C0;
+  --cyan:#007A74; --cyanL:#009990; --cyanD:#004A46;
+  --topbar-grad:rgba(238,243,248,.96);
+  --item-hover:rgba(0,30,60,.04);
+  --item-active:rgba(0,122,116,.08);
+  --ss-bg:rgba(0,30,60,.06);
+  --scrollthumb:rgba(0,30,60,.15);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;background:var(--bg);overflow:hidden;font-family:'DM Sans',sans-serif;color:var(--w);transition:background .3s,color .3s}
+::-webkit-scrollbar{width:3px;background:transparent}
+::-webkit-scrollbar-thumb{background:var(--scrollthumb);border-radius:2px}
+
+/* MAP */
+#map{position:fixed;top:0;left:0;right:0;bottom:calc(72px + env(safe-area-inset-bottom, 0));z-index:0}
+.leaflet-container{background:var(--bg)!important}
+html.light .leaflet-tile-pane{filter:brightness(1.05) saturate(1.1)}
+.leaflet-control-zoom{background:var(--glass)!important;border:1px solid var(--b)!important;border-radius:12px!important;overflow:hidden;backdrop-filter:blur(14px)!important}
+.leaflet-control-zoom a{background:transparent!important;color:var(--cyan)!important;border-bottom:1px solid var(--b)!important;font-weight:700!important;width:34px!important;height:34px!important;line-height:34px!important;font-size:16px!important;transition:.15s!important}
+.leaflet-control-zoom a:hover{background:rgba(0,122,116,.12)!important}
+.leaflet-control-attribution{background:var(--glass)!important;color:var(--mute)!important;font-size:9px!important}
+.leaflet-control-attribution a{color:var(--cyan)!important}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{display:none!important}
+
+/* TOP BAR */
+#topbar{
+  position:fixed;top:0;left:0;right:0;z-index:800;
+  padding:10px 14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  background:linear-gradient(to bottom,var(--topbar-grad) 0%,transparent 100%);
+  pointer-events:none;
+}
+#topbar>*{pointer-events:all}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none;flex-shrink:0}
+.logo-mark{width:30px;height:30px;border-radius:50%;background:conic-gradient(from 0deg,var(--cyanL),var(--cyanD),var(--cyan),var(--cyanL));animation:spin 14s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.logo-text{font-family:'Anton',sans-serif;font-size:17px;letter-spacing:.1em}
+.logo-sub{font-size:9px;color:var(--mute);letter-spacing:.06em}
+.spacer{flex:1}
+
+/* Search */
+.search-wrap{position:relative;width:220px;flex-shrink:0}
+#srch{
+  width:100%;padding:8px 12px 8px 30px;
+  background:var(--glass);border:1px solid var(--b);border-radius:100px;
+  font-family:'DM Sans',sans-serif;font-size:13px;color:var(--w);outline:none;
+  backdrop-filter:blur(14px);transition:border-color .2s;
+}
+#srch::placeholder{color:var(--mute)}
+#srch:focus{border-color:rgba(0,150,144,.5)}
+.si{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;pointer-events:none;opacity:.5}
+#sr{
+  position:absolute;top:calc(100% + 5px);left:0;right:0;
+  background:var(--glass);border:1px solid var(--b);border-radius:12px;
+  max-height:240px;overflow-y:auto;backdrop-filter:blur(18px);
+  display:none;z-index:900;
+}
+#sr.open{display:block}
+.sri{padding:9px 13px;cursor:pointer;border-bottom:1px solid var(--bD);display:flex;align-items:center;gap:8px;transition:.13s}
+.sri:last-child{border-bottom:none}
+.sri:hover{background:var(--item-hover)}
+.sri-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.sri-name{font-size:12px;font-weight:600}
+.sri-info{font-size:10px;color:var(--mute)}
+
+/* Pill groups */
+.pills{display:flex;gap:3px;background:var(--glass);border:1px solid var(--b);border-radius:100px;padding:3px;backdrop-filter:blur(14px);flex-shrink:0}
+.pill{padding:5px 12px;border-radius:100px;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;color:var(--mid);cursor:pointer;transition:.2s;white-space:nowrap}
+.pill:hover{color:var(--w)}
+.pill.on{background:rgba(0,150,144,.18);color:var(--cyan);box-shadow:inset 0 0 0 1px rgba(0,150,144,.32)}
+.pill .ei{font-style:normal}
+#sarg-pills .pill.on{background:rgba(139,105,20,.22);color:var(--cyan);box-shadow:inset 0 0 0 1px rgba(139,105,20,.4)}
+
+/* Left panel */
+#panel{
+  position:fixed;left:12px;top:68px;bottom:calc(72px + env(safe-area-inset-bottom, 0));width:255px;
+  z-index:700;background:var(--glass);border:1px solid var(--b);border-radius:16px;
+  backdrop-filter:blur(18px);display:flex;flex-direction:column;overflow:hidden;
+  transition:opacity .25s,transform .25s;
+}
+#panel.hide{opacity:0;pointer-events:none;transform:translateX(-10px)}
+.panel-head{padding:11px 13px 8px;border-bottom:1px solid var(--bD);flex-shrink:0}
+.panel-title{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-bottom:6px}
+.fchips{display:flex;gap:3px;flex-wrap:wrap}
+.fchip{padding:3px 8px;border-radius:100px;border:1px solid var(--b);font-size:10px;font-weight:600;color:var(--mute);cursor:pointer;transition:.15s;background:transparent;font-family:'DM Sans',sans-serif}
+.fchip.on{background:rgba(0,150,144,.13);border-color:rgba(0,150,144,.32);color:var(--cyan)}
+.panel-count{font-size:10px;color:var(--mute);margin-top:5px}
+.panel-list{flex:1;overflow-y:auto;padding:3px 0}
+.pi{padding:8px 13px;cursor:pointer;border-left:2px solid transparent;transition:.12s;display:flex;align-items:center;gap:8px}
+.pi:hover{background:var(--item-hover);border-left-color:var(--cyan)}
+.pi.active{background:var(--item-active);border-left-color:var(--cyanL)}
+.pi-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.pi-name{font-size:12px;font-weight:600;line-height:1.2}
+.pi-info{font-size:10px;color:var(--mute)}
+.pi-pct{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;margin-left:auto;flex-shrink:0}
+
+/* Toggle panel btn */
+#tog{position:fixed;left:12px;top:68px;z-index:710;background:var(--glass);border:1px solid var(--b);border-radius:10px;padding:7px 12px;font-size:11px;font-weight:600;color:var(--mid);cursor:pointer;backdrop-filter:blur(14px);display:none}
+
+/* Bottom bar */
+#bbar{
+  position:fixed;bottom:calc(14px + env(safe-area-inset-bottom, 0));left:50%;transform:translateX(-50%);
+  display:flex;gap:8px;align-items:center;z-index:700;
+  pointer-events:none;
+}
+#bbar>*{pointer-events:all}
+.count-chip{
+  background:var(--glass);border:1px solid var(--b);border-radius:100px;
+  padding:6px 14px;font-size:11px;font-weight:600;color:var(--mid);
+  backdrop-filter:blur(14px);white-space:nowrap;
+}
+
+/* Legend */
+#legend{
+  position:fixed;right:12px;bottom:calc(100px + env(safe-area-inset-bottom, 0));
+  background:var(--glass);border:1px solid var(--b);border-radius:14px;
+  padding:10px 13px;backdrop-filter:blur(14px);z-index:801;
+}
+.leg-t{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-bottom:7px}
+.leg-r{display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:11px;font-weight:600;color:var(--mid)}
+.leg-r:last-child{margin-bottom:0}
+.leg-d{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.leg-drift{margin-top:8px;font-size:10px;color:var(--cyan);text-decoration:none}
+.leg-drift:hover{text-decoration:underline}
+.leg-align{margin-top:10px;padding-top:8px;border-top:1px solid var(--bD)}
+.leg-align-lbl{display:block;font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--mute);margin-bottom:6px}
+.leg-align-row{display:flex;align-items:center;gap:4px;flex-wrap:wrap;font-size:10px;color:var(--mid)}
+.leg-align-btn{width:22px;height:22px;border-radius:6px;border:1px solid var(--b);background:var(--glass);color:var(--cyan);font-weight:700;cursor:pointer;font-size:14px;line-height:1;padding:0}
+.leg-align-btn:hover{background:rgba(0,150,144,.15)}
+.leg-align-val{min-width:28px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px}
+.leg-align-reset{margin-top:6px;padding:4px 8px;border-radius:6px;border:1px solid var(--b);background:transparent;color:var(--mute);font-size:9px;cursor:pointer;font-family:'DM Sans',sans-serif}
+.leg-align-reset:hover{color:var(--cyan);border-color:var(--cyan)}
+.leg-blob-j2{background:rgba(59,130,246,.7)!important;border:1px solid rgba(96,165,250,.9)!important;animation:blob-pulse 2s ease-in-out infinite}
+.leg-blob-j7{background:rgba(218,165,32,.7)!important;border:1px solid rgba(255,193,7,.9)!important;animation:blob-pulse 2.5s ease-in-out infinite 0.3s}
+@keyframes blob-pulse{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.15)}}
+
+/* Bandeau alerte sargasses + blobs sur la carte */
+.sarg-alert-banner{position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:750;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;max-width:96%;border-radius:12px;background:linear-gradient(135deg,rgba(218,165,32,.25),rgba(230,126,34,.2));border:1px solid rgba(218,165,32,.5);backdrop-filter:blur(12px);box-shadow:0 4px 20px rgba(0,0,0,.35)}
+.sarg-alert-msg{font-size:13px;font-weight:600;color:var(--w);flex:1;min-width:200px}
+.sarg-alert-btn{padding:6px 12px;border-radius:8px;border:1px solid rgba(218,165,32,.6);background:rgba(218,165,32,.2);color:#FFD54F;font-weight:600;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif}
+.sarg-alert-btn:hover{background:rgba(218,165,32,.35)}
+.sarg-alert-close{width:28px;height:28px;border-radius:50%;border:none;background:rgba(255,255,255,.12);color:var(--w);font-size:18px;line-height:1;cursor:pointer;flex-shrink:0}
+.sarg-alert-close:hover{background:rgba(255,255,255,.2)}
+.blob-circle{cursor:default;pointer-events:none}
+.blob-j2{animation:blob-map-pulse 2s ease-in-out infinite}
+.blob-j7{animation:blob-map-pulse 2.5s ease-in-out infinite 0.3s}
+@keyframes blob-map-pulse{0%,100%{opacity:.5}50%{opacity:.9}}
+
+/* BEACH SHEET */
+#sheet{
+  position:fixed;bottom:0;left:0;right:0;
+  height:0;z-index:750;
+  background:var(--glass);border-top:1px solid var(--b);
+  backdrop-filter:blur(22px) saturate(1.4);
+  overflow:hidden;border-radius:20px 20px 0 0;
+  transition:height .42s cubic-bezier(.16,1,.3,1);
+}
+#sheet.open{height:330px}
+.s-drag{width:100%;padding:9px;display:flex;justify-content:center;cursor:pointer;flex-shrink:0}
+.s-drag-bar{width:38px;height:4px;border-radius:2px;background:var(--b)}
+.s-inner{display:flex;gap:0;height:calc(100% - 28px);padding:0 0 14px 0}
+.s-photo{
+  width:230px;min-width:230px;margin:0 0 0 14px;
+  border-radius:12px;overflow:hidden;position:relative;background:var(--ss-bg);flex-shrink:0;
+}
+.s-photo img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .35s}
+.s-photo img.loaded{opacity:1}
+.s-photo-ghost{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:32px;opacity:.25;transition:.3s}
+.s-photo-ghost.hide{opacity:0}
+.s-photo-lbl{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.65));padding:22px 9px 7px;font-size:8px;font-weight:600;letter-spacing:.1em;color:rgba(255,255,255,.45);text-transform:uppercase}
+.s-sat-btn{
+  position:absolute;top:7px;right:7px;
+  background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.14);
+  border-radius:8px;padding:5px 8px;font-size:10px;font-weight:600;color:rgba(255,255,255,.65);
+  cursor:pointer;backdrop-filter:blur(6px);transition:.2s;
+}
+.s-sat-btn:hover{background:rgba(0,212,200,.22);color:var(--cyan);border-color:rgba(0,212,200,.3)}
+
+.s-info{flex:1;padding:4px 16px 0;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
+.s-risk{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:100px;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;width:fit-content}
+.s-name{font-family:'Anton',sans-serif;font-size:clamp(20px,4vw,28px);letter-spacing:.04em;text-transform:uppercase;line-height:1;color:var(--w)}
+.s-loc{font-size:12px;color:var(--mid)}
+.h2s-badge{display:flex;align-items:center;gap:6px;background:rgba(204,40,255,.1);border:1px solid rgba(204,40,255,.2);border-radius:8px;padding:6px 10px;font-size:11px;font-weight:600;color:#DD60FF}
+.s-desc{font-size:12px;color:var(--mid);line-height:1.65}
+.s-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.ss{background:var(--ss-bg);border:1px solid var(--bD);border-radius:8px;padding:7px 9px}
+.ss-l{font-size:8px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin-bottom:2px}
+.ss-v{font-size:13px;font-weight:700}
+.s-coord{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--mute)}
+.s-verify-gmaps{display:inline-block!important;margin-top:4px;font-size:11px;font-weight:600;color:var(--cyan);text-decoration:none}
+.s-verify-gmaps:hover{text-decoration:underline}
+/* sat tiles strip */
+.sat-strip{display:flex;gap:5px;overflow-x:auto;padding-bottom:2px;margin-top:2px}
+.sat-strip::-webkit-scrollbar{height:2px}
+.s-tile{width:68px;height:68px;border-radius:8px;overflow:hidden;flex-shrink:0;border:1px solid var(--b);cursor:pointer;transition:.18s;position:relative}
+.s-tile:hover{border-color:var(--cyan);transform:scale(1.05)}
+.s-tile img{width:100%;height:100%;object-fit:cover;display:block}
+.s-tile-placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:24px;background:var(--ss-bg);color:var(--mute)}
+.s-tile-lbl{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.5);font-size:8px;font-weight:700;color:rgba(255,255,255,.55);text-align:center;padding:2px;letter-spacing:.06em}
+
+@keyframes ping{0%{transform:translate(-50%,-50%) scale(1);opacity:.65}100%{transform:translate(-50%,-50%) scale(2.6);opacity:0}}
+
+/* RESPONSIVE */
+@media(max-width:680px){
+  #panel{display:none}
+  #tog{display:block}
+  .s-photo{width:130px;min-width:130px}
+  .s-stats{grid-template-columns:repeat(2,1fr)}
+  .search-wrap{width:160px}
+  .pill{padding:5px 8px;font-size:10px}
+  #legend{bottom:calc(140px + env(safe-area-inset-bottom, 0))}
+}
+
+/* Theme toggle btn */
+#theme-btn{
+  width:34px;height:34px;border-radius:50%;border:1px solid var(--b);
+  background:var(--glass);backdrop-filter:blur(14px);
+  cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;
+  transition:all .25s;flex-shrink:0;line-height:1;
+}
+#theme-btn:hover{border-color:var(--cyan);transform:scale(1.08) rotate(15deg)}
+html.light #theme-btn{filter:none}
+</style>
+</head>
+<body>
+<div id="map"></div>
+
+<div id="sarg-alert-banner" class="sarg-alert-banner" style="display:none">
+  <span class="sarg-alert-msg">⚠️ Risque d’échouement de sargasses sur les côtes cette semaine.</span>
+  <button type="button" class="sarg-alert-btn" id="sarg-alert-enable">Activer les alertes push</button>
+  <button type="button" class="sarg-alert-close" id="sarg-alert-close" aria-label="Fermer">×</button>
+</div>
+
+<div id="topbar">
+  <a class="logo" href="#">
+    <div class="logo-mark"></div>
+    <div><div class="logo-text">SARG</div><div class="logo-sub" id="logo-sub">Carte Satellite</div></div>
+  </a>
+  <div class="spacer"></div>
+  <button id="lang-btn" class="pill" onclick="setLang(currentLang==='fr'?'en':'fr')" title="FR / EN">FR</button>
+  <button id="theme-btn" onclick="toggleTheme()" title="Changer le thème">🌙</button>
+  <div class="search-wrap">
+    <span class="si">🔍</span>
+    <input id="srch" type="text" placeholder="Rechercher…" autocomplete="off" oninput="doSearch()" onfocus="openSR()" onblur="setTimeout(closeSR,180)">
+    <div id="sr"></div>
+  </div>
+  <div class="pills" id="ip">
+    <button class="pill on" id="ip-both" onclick="setIsland('both')">🌍 Tout</button>
+    <button class="pill" id="ip-MQ"  onclick="setIsland('MQ')">🗺 Martinique</button>
+    <button class="pill" id="ip-GP"  onclick="setIsland('GP')">🗺 Guadeloupe</button>
+  </div>
+  <div class="pills" id="lp">
+    <button class="pill on" id="lp-sat"  onclick="setLayer('sat')">🛰 Satellite</button>
+    <button class="pill"    id="lp-hyb"  onclick="setLayer('hyb')">🗺 Hybride</button>
+    <button class="pill"    id="lp-dark" onclick="setLayer('dark')">🌊 Sombre</button>
+    <button class="pill"    id="lp-ter"  onclick="setLayer('ter')">⛰ Relief</button>
+  </div>
+  <div class="pills" id="sarg-pills">
+    <button class="pill" id="sarg-toggle" onclick="toggleSargassumLayer()" title="Afficher les bancs de sargasses (données satellite Copernicus/NOAA)">🌿 Bancs sargasses</button>
+  </div>
+</div>
+
+<div id="panel">
+  <div class="panel-head">
+    <div class="panel-title" id="panel-title">Plages</div>
+    <div class="fchips">
+      <button class="fchip on" id="fc-all"    onclick="setFilter('all')">Toutes</button>
+      <button class="fchip"    id="fc-safe"   onclick="setFilter('safe')">🟢 Propre</button>
+      <button class="fchip"    id="fc-warn"   onclick="setFilter('warn')">🟡 Modéré</button>
+      <button class="fchip"    id="fc-danger" onclick="setFilter('danger')">🔴 Élevé</button>
+      <button class="fchip"    id="fc-h2s"    onclick="setFilter('h2s')">☣️ H2S</button>
+      <button class="fchip"    id="fc-nudiste" onclick="setFilter('nudiste')">🌿 Naturiste</button>
+    </div>
+    <div class="panel-count" id="pc">—</div>
+  </div>
+  <div class="panel-list" id="pl"></div>
+</div>
+<button id="tog" onclick="togglePanel()">☰</button>
+
+<div id="bbar">
+  <div class="pills">
+    <button class="pill on" id="vb-both" onclick="flyTo('both')">🌍 Vue ensemble</button>
+    <button class="pill"    id="vb-MQ"   onclick="flyTo('MQ')">Martinique</button>
+    <button class="pill"    id="vb-GP"   onclick="flyTo('GP')">Guadeloupe</button>
+  </div>
+  <div class="count-chip" id="cc">— plages</div>
+</div>
+
+<div id="legend">
+  <div class="leg-t" id="leg-title">Risque sargasses</div>
+  <div class="leg-r"><div class="leg-d" style="background:#26D97A;box-shadow:0 0 5px #26D97A88"></div><span id="leg-low">Faible</span></div>
+  <div class="leg-r"><div class="leg-d" style="background:#F08C14;box-shadow:0 0 5px #F08C1488"></div><span id="leg-moderate">Modéré</span></div>
+  <div class="leg-r"><div class="leg-d" style="background:#E83030;box-shadow:0 0 5px #E8303088"></div><span id="leg-high">Élevé</span></div>
+  <div class="leg-r"><div class="leg-d" style="background:#CC28FF;box-shadow:0 0 5px #CC28FF88"></div>H2S</div>
+  <div class="leg-r" id="leg-sarg" style="display:none"><div class="leg-d" style="background:rgba(139,105,20,.85);border:1px solid #8B6914"></div><span id="leg-sarg-label">Bancs (satellite)</span></div>
+  <div class="leg-r" id="leg-blobs" style="display:none">
+    <div class="leg-d leg-blob-j2"></div><span>Prévision J+1 / J+2</span>
+  </div>
+  <div class="leg-r" id="leg-blobs-j7" style="display:none">
+    <div class="leg-d leg-blob-j7"></div><span>Prévision J+7</span>
+  </div>
+  <a id="leg-sarg-drift" href="https://meteofrance.gp/fr/sargasses" target="_blank" rel="noopener" class="leg-drift" style="display:none">Prévision dérive (Météo-France)</a>
+  <a id="leg-sarg-traj" href="https://sargassummonitoring.com/fr/map-of-sargassum-from-usf-saws/" target="_blank" rel="noopener" class="leg-drift" style="display:none">Trajectoires Caraïbes</a>
+  <div class="leg-align" id="leg-align">
+    <span class="leg-align-lbl">Alignement satellite</span>
+    <div class="leg-align-row">
+      <span>Lat</span>
+      <button type="button" class="leg-align-btn" id="offset-lat-minus" title="Déplacer les points vers le sud">−</button>
+      <span class="leg-align-val" id="offset-lat-val">0</span>
+      <button type="button" class="leg-align-btn" id="offset-lat-plus" title="Déplacer les points vers le nord">+</button>
+      <span>Lng</span>
+      <button type="button" class="leg-align-btn" id="offset-lng-minus" title="Déplacer les points vers l'ouest">−</button>
+      <span class="leg-align-val" id="offset-lng-val">0</span>
+      <button type="button" class="leg-align-btn" id="offset-lng-plus" title="Déplacer les points vers l'est">+</button>
+    </div>
+    <button type="button" class="leg-align-reset" id="offset-reset">Réinitialiser</button>
+  </div>
+</div>
+
+<div id="sheet">
+  <div class="s-drag" onclick="closeSheet()"><div class="s-drag-bar"></div></div>
+  <div class="s-inner">
+    <div class="s-photo" id="sphoto">
+      <div class="s-photo-ghost" id="spghost">🏖️</div>
+      <img id="spimg" src="" alt="" onload="imgOK()" onerror="imgFail()">
+      <div class="s-photo-lbl" id="splbl"></div>
+      <div class="s-sat-btn" id="sheet-sat-btn" onclick="zoomBeach()">🛰 Satellite</div>
+    </div>
+    <div class="s-info">
+      <div class="s-risk" id="srisk"></div>
+      <div class="s-name" id="sname">—</div>
+      <div class="s-loc"  id="sloc">—</div>
+      <div class="h2s-badge" id="sh2s" style="display:none">☣️ Risque H2S — éviter si odeur soufrée</div>
+      <div class="s-desc" id="sdesc">—</div>
+      <div class="s-stats">
+        <div class="ss"><div class="ss-l" id="sl-afai">AFAI</div><div class="ss-v" id="sv-afai">—</div></div>
+        <div class="ss"><div class="ss-l" id="sl-type">Fond</div><div class="ss-v" id="sv-type">—</div></div>
+        <div class="ss"><div class="ss-l" id="sl-ile">Île</div><div class="ss-v" id="sv-ile">—</div></div>
+      </div>
+      <div class="s-coord" id="scoord">—</div>
+      <a id="s-verify-gmaps" href="#" target="_blank" rel="noopener" class="s-verify-gmaps" style="display:none">📍 Vérifier sur Google Maps</a>
+      <div class="sat-strip" id="sstrip"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const BEACHES = [
+
+// ══════════════════════════════
+// MARTINIQUE — 102 plages
+// Coordonnées vérifiées (Google Maps / Sandee, Guidemartinique, Lonely Planet, beach-on-map, Wikipedia) où corrigé.
+// ══════════════════════════════
+
+// ── SUD / SAINTE-ANNE ──
+{id:'mq001',ile:'MQ',name:'Plage des Salines',commune:'Sainte-Anne',lat:14.403633,lng:-60.879197,risk:'warn',h2s:false,type:'sable blanc',desc:'Plage emblématique de 1,5 km. Cocotiers, eaux turquoise. La plus belle de Martinique selon TripAdvisor.'},
+{id:'mq002',ile:'MQ',name:'Anse Caritan',commune:'Sainte-Anne',lat:14.4250,lng:-60.8780,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage calme et peu fréquentée en semaine. Idéale pour les familles.'},
+{id:'mq003',ile:'MQ',name:'Anse Meunier',commune:'Sainte-Anne',lat:14.4180,lng:-60.8620,risk:'safe',h2s:false,type:'sable blanc',desc:'Petite anse isolée entre les salines et Caritan.'},
+{id:'mq004',ile:'MQ',name:'Plage du Bourg (Sainte-Anne)',commune:'Sainte-Anne',lat:14.445557,lng:-60.883169,risk:'warn',h2s:false,type:'sable blanc',desc:'Plage du village animée le week-end. Restaurants et glaciers.'},
+{id:'mq005',ile:'MQ',name:'Anse Trabaud',commune:'Sainte-Anne',lat:14.413915,lng:-60.845057,risk:'danger',h2s:true,type:'sable blanc',desc:'Côte Atlantique. Forte exposition aux sargasses. Risque H2S en été.'},
+{id:'mq006',ile:'MQ',name:'Anse Macabou',commune:'Sainte-Anne',lat:14.4080,lng:-60.8440,risk:'danger',h2s:false,type:'sable blanc',desc:'Zone naturelle protégée. Courants importants côté Atlantique.'},
+{id:'mq007',ile:'MQ',name:'Anse Michel',commune:'Sainte-Anne',lat:14.4350,lng:-60.8780,risk:'safe',h2s:false,type:'sable blanc',desc:'Petite plage tranquille proche du bourg de Sainte-Anne.'},
+
+// ── LE MARIN / SAINTE-ANNE ──
+{id:'mq008',ile:'MQ',name:'Plage du Marin',commune:'Le Marin',lat:14.4721,lng:-60.8697,risk:'safe',h2s:false,type:'sable brun',desc:'Plage de la capitale de la voile. Vue sur les yachts. Animée.'},
+{id:'mq009',ile:'MQ',name:'Anse Figuier',commune:'Rivière-Pilote',lat:14.460249,lng:-60.909917,risk:'warn',h2s:false,type:'sable brun',desc:'Plage de sable fin au bord d\'une mangrove. Écomusée à proximité.'},
+{id:'mq010',ile:'MQ',name:'Anse à l\'Âne',commune:'Les Trois-Îlets',lat:14.541054,lng:-61.065148,risk:'safe',h2s:false,type:'sable blanc',desc:'Charmante plage de village. Traversée en navette depuis Fort-de-France.'},
+{id:'mq011',ile:'MQ',name:'Anse Mitan',commune:'Les Trois-Îlets',lat:14.552720,lng:-61.053211,risk:'safe',h2s:false,type:'sable blanc',desc:'Principale plage des Trois-Îlets. Restaurants, sports nautiques.'},
+{id:'mq012',ile:'MQ',name:'Anse Noire',commune:'Les Anses-d\'Arlet',lat:14.5129,lng:-61.0706,risk:'safe',h2s:false,type:'sable noir',desc:'Rare plage de sable noir volcanique. Très photogénique. Snorkeling.'},
+{id:'mq013',ile:'MQ',name:'Anse Dufour',commune:'Les Anses-d\'Arlet',lat:14.52577,lng:-61.089436,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage calme entre anse noire et grande anse. Bonne visibilité sous-marine.'},
+{id:'mq014',ile:'MQ',name:'Grande Anse d\'Arlet',commune:'Les Anses-d\'Arlet',lat:14.503421,lng:-61.08454,risk:'safe',h2s:false,type:'sable blanc',desc:'Carte postale classique. Église en bord de mer. Tortues marines régulières.'},
+{id:'mq015',ile:'MQ',name:'Petite Anse d\'Arlet',commune:'Les Anses-d\'Arlet',lat:14.469138,lng:-61.071158,risk:'safe',h2s:false,type:'sable blanc',desc:'Village de pêcheurs. Ambiance authentique. Moins touristique.'},
+
+// ── DIAMANT ──
+{id:'mq016',ile:'MQ',name:'Plage du Diamant',commune:'Le Diamant',lat:14.471336,lng:-61.032059,risk:'warn',h2s:false,type:'sable brun',desc:'6 km de plage face au Rocher du Diamant. Forte houle. Surf possible.'},
+{id:'mq017',ile:'MQ',name:'Anse Cafard',commune:'Le Diamant',lat:14.469264,lng:-61.045729,risk:'warn',h2s:false,type:'sable brun',desc:'Plage avec mémorial des victimes de la traite. Courants à surveiller.'},
+{id:'mq018',ile:'MQ',name:'Petite Anse du Diamant',commune:'Le Diamant',lat:14.4760,lng:-61.0350,risk:'warn',h2s:false,type:'sable brun',desc:'Petite plage calme à l\'est de la grande plage.'},
+
+// ── RIVIÈRE-SALÉE / SAINTE-LUCE ──
+{id:'mq019',ile:'MQ',name:'Anse Gros Raisins',commune:'Sainte-Luce',lat:14.464736,lng:-60.936803,risk:'safe',h2s:false,type:'sable blanc',desc:'Belle plage abritée. Eau calme. Idéale pour la baignade.'},
+{id:'mq020',ile:'MQ',name:'Plage de Sainte-Luce',commune:'Sainte-Luce',lat:14.4890,lng:-60.9250,risk:'safe',h2s:false,type:'sable brun',desc:'Plage du bourg animée. Restaurants de bord de mer.'},
+{id:'mq021',ile:'MQ',name:'Anse Corps de Garde',commune:'Sainte-Luce',lat:14.4780,lng:-60.9180,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage agréable peu fréquentée. Snorkeling intéressant.'},
+{id:'mq022',ile:'MQ',name:'Pointe Borgnesse',commune:'Rivière-Pilote',lat:14.4620,lng:-60.8980,risk:'warn',h2s:false,type:'sable brun',desc:'Pointe exposée au vent. Paysage sauvage.'},
+
+// ── FORT-DE-FRANCE / LAMENTIN ──
+{id:'mq023',ile:'MQ',name:'Plage de la Française',commune:'Fort-de-France',lat:14.601215,lng:-61.067429,risk:'safe',h2s:false,type:'sable brun',desc:'Plage urbaine la plus proche du centre-ville. Animée en fin de journée.'},
+{id:'mq024',ile:'MQ',name:'Anse Madame',commune:'Fort-de-France',lat:14.61736,lng:-61.103419,risk:'safe',h2s:false,type:'sable brun',desc:'Petite plage protégée par la baie de Fort-de-France.'},
+{id:'mq025',ile:'MQ',name:'Plage de Schœlcher',commune:'Schœlcher',lat:14.6280,lng:-61.0850,risk:'safe',h2s:false,type:'sable brun',desc:'Plage du village universitaire. Bonne infrastructure.'},
+{id:'mq026',ile:'MQ',name:'Anse Collat',commune:'Schœlcher',lat:14.6350,lng:-61.0920,risk:'safe',h2s:false,type:'sable brun',desc:'Plage calme au nord de Schœlcher.'},
+
+// ── CARBET / SAINT-PIERRE ──
+{id:'mq027',ile:'MQ',name:'Grande Anse du Carbet',commune:'Le Carbet',lat:14.702515,lng:-61.182561,risk:'safe',h2s:false,type:'sable gris',desc:'Plage volcanique grise. Vue sur la montagne Pelée. Musée Gauguin à côté.'},
+{id:'mq028',ile:'MQ',name:'Anse Turin',commune:'Le Carbet',lat:14.6930,lng:-61.1620,risk:'safe',h2s:false,type:'sable gris',desc:'Petite plage de sable gris. Mer calme. Idéale pour le snorkeling.'},
+{id:'mq029',ile:'MQ',name:'Plage de Saint-Pierre',commune:'Saint-Pierre',lat:14.741582,lng:-61.176389,risk:'safe',h2s:false,type:'sable gris',desc:'Plongée incontournable sur les épaves de 1902. Plage du centre-ville historique.'},
+{id:'mq030',ile:'MQ',name:'Anse Belleville',commune:'Le Prêcheur',lat:14.7950,lng:-61.2080,risk:'safe',h2s:false,type:'sable gris',desc:'Village de pêcheurs authentique. Accès par route pittoresque.'},
+
+// ── NORD CARAÏBE ──
+{id:'mq031',ile:'MQ',name:'Grande Anse des Anses d\'Arlet',commune:'Prêcheur',lat:14.8100,lng:-61.2200,risk:'safe',h2s:false,type:'sable gris',desc:'Plage sauvage peu accessible. Vue exceptionnelle.'},
+{id:'mq032',ile:'MQ',name:'Anse Couleuvre',commune:'Le Prêcheur',lat:14.8250,lng:-61.2300,risk:'safe',h2s:false,type:'sable gris',desc:'Plage sauvage accessible à pied ou en kayak. Nature préservée.'},
+{id:'mq033',ile:'MQ',name:'Anse Céron',commune:'Le Prêcheur',lat:14.8180,lng:-61.2240,risk:'safe',h2s:false,type:'sable gris',desc:'Ancienne propriété. Palmiers centenaires. Très peu fréquentée.'},
+
+// ── NORD ATLANTIQUE ──
+{id:'mq034',ile:'MQ',name:'Plage de Tartane',commune:'La Trinité',lat:14.758285,lng:-60.920541,risk:'danger',h2s:true,type:'sable brun',desc:'Village de surf. Exposition maximale aux sargasses côté Atlantique. Alertes H2S fréquentes en été.'},
+{id:'mq035',ile:'MQ',name:'Anse Bonneville',commune:'La Trinité',lat:14.7560,lng:-60.9820,risk:'danger',h2s:false,type:'sable brun',desc:'Plage atlantique. Vagues. Zone de surf.'},
+{id:'mq036',ile:'MQ',name:'Anse l\'Étang',commune:'La Trinité',lat:14.7320,lng:-60.9720,risk:'warn',h2s:false,type:'sable brun',desc:'Plage semi-abritée. Etang naturel derrière.'},
+{id:'mq037',ile:'MQ',name:'Plage de La Trinité',commune:'La Trinité',lat:14.7430,lng:-60.9760,risk:'warn',h2s:false,type:'sable brun',desc:'Plage du bourg de la Trinité. Bonne infrastructure.'},
+{id:'mq038',ile:'MQ',name:'Anse Azérot',commune:'La Trinité',lat:14.7280,lng:-60.9680,risk:'warn',h2s:false,type:'sable brun',desc:'Belle plage semi-sauvage.'},
+{id:'mq039',ile:'MQ',name:'Presqu\'île de la Caravelle (Anse du Bois)',commune:'La Trinité',lat:14.7800,lng:-60.9300,risk:'danger',h2s:false,type:'sable brun',desc:'Parc naturel régional. Sargasses fréquentes côté Atlantique.'},
+
+// ── PRESQU'ÎLE DU CARAVELLE ──
+{id:'mq040',ile:'MQ',name:'Anse Spoutourne',commune:'La Trinité',lat:14.7820,lng:-60.9380,risk:'danger',h2s:false,type:'sable brun',desc:'Côte sauvage de la Caravelle. Vents forts. Oiseaux marins.'},
+{id:'mq041',ile:'MQ',name:'Anse des Gallets',commune:'La Trinité',lat:14.7720,lng:-60.9200,risk:'warn',h2s:false,type:'galets',desc:'Plage de galets. Ambiance sauvage.'},
+
+// ── LE ROBERT / LE FRANÇOIS ──
+{id:'mq042',ile:'MQ',name:'Plage de Pointe Royale',commune:'Le Robert',lat:14.6900,lng:-60.9350,risk:'warn',h2s:false,type:'sable brun',desc:'Vue sur les îlets du Robert. Kite-surf populaire.'},
+{id:'mq043',ile:'MQ',name:'Plage du Bout',commune:'Le Robert',lat:14.6820,lng:-60.9280,risk:'warn',h2s:false,type:'sable brun',desc:'Plage du bourg du Robert. Baie protégée.'},
+{id:'mq044',ile:'MQ',name:'Plage de Pointe Faula',commune:'Le François',lat:14.6130,lng:-60.8950,risk:'danger',h2s:true,type:'sable brun',desc:'Côte sud-atlantique. Zone fréquemment touchée. H2S signalé.'},
+{id:'mq045',ile:'MQ',name:'Anse Trabaud (François)',commune:'Le François',lat:14.6250,lng:-60.8900,risk:'danger',h2s:false,type:'sable brun',desc:'Plage exposée. Bon spot de kite-surf malgré les sargasses.'},
+
+// ── VAUCLIN / RIVIÈRE-SALÉE ──
+{id:'mq046',ile:'MQ',name:'Plage du Vauclin',commune:'Le Vauclin',lat:14.5496,lng:-60.8346,risk:'danger',h2s:true,type:'sable brun',desc:'Côte Atlantique sud. Échouages fréquents. Alertes H2S en saison.'},
+{id:'mq047',ile:'MQ',name:'Anse Grosse Roche',commune:'Le Vauclin',lat:14.5480,lng:-60.8300,risk:'danger',h2s:false,type:'sable brun',desc:'Plage sauvage exposée. Paysage préservé.'},
+{id:'mq048',ile:'MQ',name:'Pointe Faula (Vauclin)',commune:'Le Vauclin',lat:14.5600,lng:-60.8400,risk:'danger',h2s:false,type:'sable brun',desc:'Pointe naturelle. Vue sur les îlets Pitons du Carbet.'},
+
+// ── GRAND RIVIÈRE / MACOUBA ──
+{id:'mq049',ile:'MQ',name:'Plage de Grand Rivière',commune:'Grand\'Rivière',lat:14.8720,lng:-61.1820,risk:'safe',h2s:false,type:'sable gris',desc:'Village isolé au bout de la route. Plage de galets et sable. Pêcheurs.'},
+{id:'mq050',ile:'MQ',name:'Plage de Macouba',commune:'Macouba',lat:14.8590,lng:-61.1560,risk:'safe',h2s:false,type:'sable gris',desc:'Côte nord Atlantique. Vagues. Paysage spectaculaire.'},
+
+// ── GROS MORNE / LORRAIN ──
+{id:'mq051',ile:'MQ',name:'Plage de la Basse-Pointe',commune:'Basse-Pointe',lat:14.8680,lng:-61.1250,risk:'warn',h2s:false,type:'sable gris',desc:'Plage de village. Ambiance authentique.'},
+{id:'mq052',ile:'MQ',name:'Anse Levrier',commune:'Le Lorrain',lat:14.8280,lng:-61.0760,risk:'warn',h2s:false,type:'sable brun',desc:'Plage accessible depuis la route du Nord Atlantique.'},
+{id:'mq053',ile:'MQ',name:'Plage de Sainte-Marie',commune:'Sainte-Marie',lat:14.7850,lng:-60.9880,risk:'warn',h2s:false,type:'sable brun',desc:'Plage de la ville du rhum Saint-James. Vue panoramique.'},
+{id:'mq054',ile:'MQ',name:'Anse Azérot (Sainte-Marie)',commune:'Sainte-Marie',lat:14.7780,lng:-60.9820,risk:'warn',h2s:false,type:'sable brun',desc:'Petite plage tranquille au nord de Sainte-Marie.'},
+
+// ── DUCOS / RIVIÈRE-SALÉE ──
+{id:'mq055',ile:'MQ',name:'Anse Mabouya',commune:'Rivière-Salée',lat:14.5120,lng:-60.9480,risk:'warn',h2s:false,type:'sable brun',desc:'Plage semi-abritée de la côte Caraïbe.'},
+{id:'mq056',ile:'MQ',name:'Plage de la Pointe Marin',commune:'Sainte-Anne',lat:14.445557,lng:-60.883169,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage touristique avec hôtels. Jet-ski et sports nautiques.'},
+{id:'mq057',ile:'MQ',name:'Anse Galet',commune:'Sainte-Anne',lat:14.4220,lng:-60.8650,risk:'warn',h2s:false,type:'galets',desc:'Plage de galets. Bonne pour la plongée en apnée.'},
+
+// Supplémentaires MQ
+{id:'mq058',ile:'MQ',name:'Anse Baleine',commune:'Le Vauclin',lat:14.5360,lng:-60.8200,risk:'danger',h2s:false,type:'sable brun',desc:'Plage isolée. Fréquentation de baleines à bosse en hiver.'},
+{id:'mq059',ile:'MQ',name:'Plage de Rivière-Salée',commune:'Rivière-Salée',lat:14.518,lng:-60.981,risk:'warn',h2s:false,type:'sable brun',desc:'Plage de mangrove. Écosystème fragile.'},
+{id:'mq060',ile:'MQ',name:'Anse Ramville',commune:'Les Trois-Îlets',lat:14.5400,lng:-61.0350,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage de golf resort. Très bien entretenue.'},
+{id:'mq061',ile:'MQ',name:'Anse à Couleuvre',commune:'Le Prêcheur',lat:14.8290,lng:-61.2380,risk:'safe',h2s:false,type:'sable gris',desc:'Plage sauvage à 4h de marche ou en bateau. Tortues.'},
+{id:'mq062',ile:'MQ',name:'Plage de Case-Pilote',commune:'Case-Pilote',lat:14.6480,lng:-61.1150,risk:'safe',h2s:false,type:'sable gris',desc:'Joli village de pêcheurs. Eglise coloniale. Plage calme.'},
+{id:'mq063',ile:'MQ',name:'Anse Flétan',commune:'Case-Pilote',lat:14.6420,lng:-61.1080,risk:'safe',h2s:false,type:'sable gris',desc:'Petite anse isolée. Peu fréquentée.'},
+{id:'mq064',ile:'MQ',name:'Plage de Bellefontaine',commune:'Bellefontaine',lat:14.6680,lng:-61.1430,risk:'safe',h2s:false,type:'sable gris',desc:'Village de pêcheurs. Barques colorées. Charme authentique.'},
+{id:'mq065',ile:'MQ',name:'Anse Petite Marianne',commune:'Grand\'Rivière',lat:14.8750,lng:-61.1900,risk:'safe',h2s:false,type:'sable gris',desc:'Plage isolée entre Grand Rivière et la pointe nord.'},
+{id:'mq066',ile:'MQ',name:'Grande Anse du Prêcheur',commune:'Le Prêcheur',lat:14.8080,lng:-61.2160,risk:'safe',h2s:false,type:'sable gris',desc:'Grande plage du bourg du Prêcheur. Vue Montagne Pelée.'},
+{id:'mq067',ile:'MQ',name:'Anse Céron (plage Nord)',commune:'Le Prêcheur',lat:14.8200,lng:-61.2280,risk:'safe',h2s:false,type:'sable gris',desc:'Plage sauvage avec plantation de coco. Peu de baigneurs.'},
+{id:'mq068',ile:'MQ',name:'Plage du Coin',commune:'Sainte-Anne',lat:14.4290,lng:-60.8750,risk:'warn',h2s:false,type:'sable blanc',desc:'Petite plage calme entre les Salines et le Bourg.'},
+{id:'mq069',ile:'MQ',name:'Anse Grosse Pierre',commune:'Sainte-Luce',lat:14.4850,lng:-60.9290,risk:'safe',h2s:false,type:'sable brun',desc:'Plage calme avec gros rochers. Bon spot de snorkeling.'},
+{id:'mq070',ile:'MQ',name:'Plage de Belfond',commune:'Sainte-Luce',lat:14.4920,lng:-60.9150,risk:'safe',h2s:false,type:'sable brun',desc:'Plage de lotissement. Accès privé mais plage publique.'},
+
+// ══════════════════════════════
+// GUADELOUPE — 85 plages
+// ══════════════════════════════
+
+// ── GRANDE-TERRE SUD ──
+{id:'gp001',ile:'GP',name:'Plage de Saint-François',commune:'Saint-François',lat:16.2506,lng:-61.2676,risk:'warn',h2s:false,type:'sable blanc',desc:'Plage du village touristique. Proche casino et golfe.'},
+{id:'gp002',ile:'GP',name:'Plage des Raisins Clairs',commune:'Saint-François',lat:16.248808,lng:-61.284168,risk:'safe',h2s:false,type:'sable blanc',desc:'Belle plage protégée par une barrière de corail. Eaux turquoise.'},
+{id:'gp003',ile:'GP',name:'La Datcha',commune:'Saint-François',lat:16.204629,lng:-61.494271,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage tranquille avec restaurants de bord de mer.'},
+{id:'gp004',ile:'GP',name:'Anse à la Gourde',commune:'Saint-François',lat:16.2597,lng:-61.2140,risk:'safe',h2s:false,type:'sable blanc',desc:'Longue plage sauvage protégée. Eaux limpides. Très belle.'},
+{id:'gp005',ile:'GP',name:'Plage de la Pointe des Châteaux',commune:'Saint-François',lat:16.24471,lng:-61.17655,risk:'warn',h2s:false,type:'sable blanc',desc:'Bout de l\'île Grande-Terre. Paysage spectaculaire. Courants forts.'},
+{id:'gp006',ile:'GP',name:'Anse Tarare',commune:'Saint-François',lat:16.2564,lng:-61.1986,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage naturiste. Accessible à pied. Eaux cristallines.'},
+{id:'gp007',ile:'GP',name:'Anse Kahouanne',commune:'Saint-François',lat:16.2290,lng:-61.2050,risk:'warn',h2s:false,type:'sable blanc',desc:'Plage sauvage côte Atlantique. Vagues.'},
+{id:'gp008',ile:'GP',name:'Plage Bois Jolan',commune:'Sainte-Anne',lat:16.236261,lng:-61.349532,risk:'safe',h2s:false,type:'sable blanc',desc:'Belle plage au sud de Sainte-Anne. Moins fréquentée que la Caravelle.'},
+{id:'gp009',ile:'GP',name:'Plage de la Caravelle',commune:'Sainte-Anne',lat:16.2247,lng:-61.3932,risk:'safe',h2s:false,type:'sable blanc',desc:'La plage incontournable de Guadeloupe. Hôtel La Toubana face à la mer.'},
+{id:'gp010',ile:'GP',name:'Plage de Sainte-Anne',commune:'Sainte-Anne',lat:16.222461,lng:-61.382124,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage du bourg animée. Restaurants et glaciers.'},
+{id:'gp011',ile:'GP',name:'Anse de la Douche',commune:'Sainte-Anne',lat:16.2220,lng:-61.3600,risk:'safe',h2s:false,type:'sable blanc',desc:'Petite anse isolée. Très beau sable blanc.'},
+
+// ── GRANDE-TERRE CENTRE / NORD ──
+{id:'gp012',ile:'GP',name:'Plage du Gosier',commune:'Le Gosier',lat:16.2064,lng:-61.4912,risk:'safe',h2s:false,type:'sable brun',desc:'Plage animée de la zone touristique. Vue sur l\'îlet du Gosier.'},
+{id:'gp013',ile:'GP',name:'Plage de la Datcha (Gosier)',commune:'Le Gosier',lat:16.2060,lng:-61.5050,risk:'safe',h2s:false,type:'sable brun',desc:'Plage de l\'hôtel Karibéa. Bien entretenue.'},
+{id:'gp014',ile:'GP',name:'Plage de Bas-du-Fort',commune:'Pointe-à-Pitre',lat:16.2380,lng:-61.5200,risk:'safe',h2s:false,type:'sable brun',desc:'Plage du port de plaisance. Proche marina.'},
+{id:'gp015',ile:'GP',name:'Plage de la Porte d\'Enfer',commune:'Anse-Bertrand',lat:16.4795,lng:-61.4820,risk:'danger',h2s:false,type:'sable brun',desc:'Site naturel impressionnant. Marée forte. Baignade interdite par grosse mer.'},
+{id:'gp016',ile:'GP',name:'Anse Laborde',commune:'Anse-Bertrand',lat:16.4890,lng:-61.4740,risk:'danger',h2s:true,type:'sable brun',desc:'Côte nord Atlantique. Très exposée aux sargasses. H2S signalé en saison.'},
+{id:'gp017',ile:'GP',name:'Plage du Souffleur',commune:'Port-Louis',lat:16.422223,lng:-61.533546,risk:'warn',h2s:false,type:'sable blanc',desc:'Belle plage réputée au nord de la Grande-Terre. Palmiers abondants.'},
+{id:'gp018',ile:'GP',name:'Plage de Viard',commune:'Morne-à-l\'Eau',lat:16.3330,lng:-61.4790,risk:'warn',h2s:false,type:'sable brun',desc:'Plage calme dans les mangroves.'},
+{id:'gp019',ile:'GP',name:'Plage des Galets',commune:'Pointe-Noire',lat:16.2318,lng:-61.7848,risk:'warn',h2s:false,type:'galets',desc:'Plage de galets colorés. Côte Caraïbe de Basse-Terre (Pointe-Noire).'},
+{id:'gp020',ile:'GP',name:'Plage de Campêche',commune:'Anse-Bertrand',lat:16.4720,lng:-61.4820,risk:'danger',h2s:false,type:'sable brun',desc:'Plage atlantique. Zone protégée.'},
+
+// ── BASSE-TERRE SUD ──
+{id:'gp021',ile:'GP',name:'Plage de Grande Anse',commune:'Trois-Rivières',lat:15.9800,lng:-61.6580,risk:'safe',h2s:false,type:'sable noir',desc:'Plage volcanique noire spectaculaire. Départ pour les Saintes.'},
+{id:'gp022',ile:'GP',name:'Plage de Basse-Terre',commune:'Basse-Terre',lat:16.0100,lng:-61.7260,risk:'safe',h2s:false,type:'sable gris',desc:'Chef-lieu de région. Plage de la capitale administrative.'},
+{id:'gp023',ile:'GP',name:'Anse à la Barque',commune:'Vieux-Habitants',lat:16.0680,lng:-61.7580,risk:'safe',h2s:false,type:'sable gris',desc:'Joli mouillage. Plage calme avec falaises.'},
+{id:'gp024',ile:'GP',name:'Plage de Deshaies',commune:'Deshaies',lat:16.3070,lng:-61.7960,risk:'safe',h2s:false,type:'sable brun',desc:'Village de pêcheurs pittoresque (série Death in Paradise). Plage de sable doré.'},
+{id:'gp025',ile:'GP',name:'La Grande Anse (Deshaies)',commune:'Deshaies',lat:16.321917,lng:-61.788717,risk:'safe',h2s:false,type:'sable doré',desc:'La plus belle plage de Basse-Terre selon les locaux. Sable doré vif.'},
+{id:'gp026',ile:'GP',name:'Anse Tabarin',commune:'Deshaies',lat:16.3020,lng:-61.8020,risk:'safe',h2s:false,type:'sable brun',desc:'Petite anse tranquille. Kayak et snorkeling.'},
+{id:'gp027',ile:'GP',name:'Plage de Clugny',commune:'Sainte-Rose',lat:16.3340,lng:-61.7200,risk:'safe',h2s:false,type:'sable brun',desc:'Plage familiale avec snack-bar. Bien équipée.'},
+{id:'gp028',ile:'GP',name:'Plage de Ferry',commune:'Sainte-Rose',lat:16.3280,lng:-61.7100,risk:'safe',h2s:false,type:'sable brun',desc:'Bonne plage peu fréquentée.'},
+
+// ── BASSE-TERRE NORD-CARAÏBE ──
+{id:'gp029',ile:'GP',name:'Plage de Pointe-Noire',commune:'Pointe-Noire',lat:16.2350,lng:-61.7870,risk:'safe',h2s:false,type:'sable gris',desc:'Village côtier calme. Plage de galets et sable.'},
+{id:'gp030',ile:'GP',name:'Anse Dufour',commune:'Pointe-Noire',lat:16.2420,lng:-61.7930,risk:'safe',h2s:false,type:'sable gris',desc:'Petite anse protégée. Bonne plongée.'},
+{id:'gp031',ile:'GP',name:'Plage de Bouillante',commune:'Bouillante',lat:16.1280,lng:-61.7770,risk:'safe',h2s:false,type:'sable gris',desc:'Spot de plongée mondialement réputé. Tortues marines fréquentes.'},
+{id:'gp032',ile:'GP',name:'Anse à Sable',commune:'Bouillante',lat:16.1350,lng:-61.7800,risk:'safe',h2s:false,type:'sable gris',desc:'Plage calme. Vue sur les Pitons du Carbet au loin.'},
+{id:'gp033',ile:'GP',name:'Plage de Malendure',commune:'Bouillante',lat:16.1784,lng:-61.7902,risk:'safe',h2s:false,type:'sable gris',desc:'Base pour les excursions plongée Réserve Cousteau.'},
+{id:'gp034',ile:'GP',name:'Plage de Viard (Bouillante)',commune:'Bouillante',lat:16.1180,lng:-61.7700,risk:'safe',h2s:false,type:'sable gris',desc:'Plage calme peu connue des touristes.'},
+
+// ── BASSE-TERRE SUD / GOURBEYRE ──
+{id:'gp035',ile:'GP',name:'Plage de Belfond',commune:'Saint-Claude',lat:16.0380,lng:-61.7050,risk:'safe',h2s:false,type:'sable gris',desc:'Plage en contrebas du volcan Soufrière. Vue panoramique.'},
+{id:'gp036',ile:'GP',name:'Plage des Amandiers',commune:'Gourbeyre',lat:16.0040,lng:-61.6960,risk:'safe',h2s:false,type:'sable gris',desc:'Plage calme au sud de Basse-Terre.'},
+{id:'gp037',ile:'GP',name:'Grande Anse de Capesterre',commune:'Capesterre-Belle-Eau',lat:16.0650,lng:-61.5890,risk:'warn',h2s:false,type:'sable brun',desc:'Côte atlantique de la Basse-Terre sud. Vagues.'},
+{id:'gp038',ile:'GP',name:'Plage de Capesterre',commune:'Capesterre-Belle-Eau',lat:16.0720,lng:-61.5750,risk:'warn',h2s:false,type:'sable brun',desc:'Plage atlantique animée.'},
+{id:'gp039',ile:'GP',name:'Anse Deux Rochers',commune:'Capesterre-Belle-Eau',lat:16.0580,lng:-61.5800,risk:'warn',h2s:false,type:'sable brun',desc:'Deux gros rochers caractéristiques. Snorkeling.'},
+
+// ── MARIE-GALANTE ──
+{id:'gp040',ile:'GP',name:'Plage de Capesterre (Marie-Galante)',commune:'Capesterre (Marie-Galante)',lat:15.8820,lng:-61.2280,risk:'warn',h2s:false,type:'sable blanc',desc:'Marie-Galante. Belle plage calme.'},
+{id:'gp041',ile:'GP',name:'Plage Feuillère',commune:'Grand-Bourg',lat:15.8840,lng:-61.3080,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage principale de Grand-Bourg. Tranquille et propre.'},
+{id:'gp042',ile:'GP',name:'Anse du Vieux Fort',commune:'Grand-Bourg',lat:15.8780,lng:-61.3150,risk:'safe',h2s:false,type:'sable blanc',desc:'Ruines du fort et plage sauvage. Magnifique.'},
+{id:'gp043',ile:'GP',name:'Plage de Saint-Louis',commune:'Saint-Louis (Marie-Galante)',lat:15.9470,lng:-61.3130,risk:'warn',h2s:false,type:'sable blanc',desc:'Village de pêcheurs. Distilleries de rhum. Plage calme.'},
+
+// ── LES SAINTES ──
+{id:'gp044',ile:'GP',name:'Plage de Pompierre',commune:'Terre-de-Haut (Les Saintes)',lat:15.871969,lng:-61.571225,risk:'safe',h2s:false,type:'sable blanc',desc:'Élue parmi les plus belles plages du monde. Sable blanc immaculé.'},
+{id:'gp045',ile:'GP',name:'Plage Pain de Sucre',commune:'Terre-de-Haut (Les Saintes)',lat:15.8730,lng:-61.5780,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage spectaculaire avec rocher Pain de Sucre. Snorkeling exceptionnel.'},
+{id:'gp046',ile:'GP',name:'Plage de la Colline',commune:'Terre-de-Haut (Les Saintes)',lat:15.8760,lng:-61.5820,risk:'safe',h2s:false,type:'sable blanc',desc:'Vue panoramique. Une des plus belles vues des Antilles.'},
+{id:'gp047',ile:'GP',name:'Plage de Fond Curé',commune:'Terre-de-Bas (Les Saintes)',lat:15.8640,lng:-61.6540,risk:'safe',h2s:false,type:'sable blanc',desc:'Île moins touristique. Plage préservée.'},
+
+// ── LA DÉSIRADE ──
+{id:'gp048',ile:'GP',name:'Plage de Beauséjour',commune:'La Désirade',lat:16.3080,lng:-61.0660,risk:'danger',h2s:false,type:'sable blanc',desc:'Île la plus exposée. Fort risque sargasses côté atlantique.'},
+{id:'gp049',ile:'GP',name:'Plage de Souffleur (Désirade)',commune:'La Désirade',lat:16.3040,lng:-61.0950,risk:'danger',h2s:true,type:'sable blanc',desc:'Zone à très fort risque. Échouages quasi-permanents.'},
+
+// ── GRANDE-TERRE EST / ATLANTIQUE ──
+{id:'gp050',ile:'GP',name:'Plage de l\'Autre Bord',commune:'Le Moule',lat:16.3310,lng:-61.3480,risk:'danger',h2s:true,type:'sable brun',desc:'Longue plage Atlantique de Le Moule. Spot de surf. Sargasses fréquentes.'},
+{id:'gp051',ile:'GP',name:'Plage de Dampierre',commune:'Le Moule',lat:16.3380,lng:-61.3550,risk:'danger',h2s:false,type:'sable brun',desc:'Côte atlantique exposée.'},
+{id:'gp052',ile:'GP',name:'Anse Gros Sable',commune:'Sainte-Anne',lat:16.2190,lng:-61.3480,risk:'warn',h2s:false,type:'sable brun',desc:'Plage calme au large de Sainte-Anne.'},
+{id:'gp053',ile:'GP',name:'Plage du Helleux',commune:'Sainte-Anne',lat:16.2240,lng:-61.3520,risk:'safe',h2s:false,type:'sable blanc',desc:'Belle plage peu connue entre Sainte-Anne et Bois Jolan.'},
+{id:'gp054',ile:'GP',name:'Plage de Anse Patate',commune:'Saint-François',lat:16.2550,lng:-61.2820,risk:'safe',h2s:false,type:'sable blanc',desc:'Petite anse sauvage. Peu fréquentée.'},
+
+// Supplémentaires GP
+{id:'gp055',ile:'GP',name:'Plage de Viard (Grand-Bourg)',commune:'Grand-Bourg',lat:15.8900,lng:-61.3020,risk:'safe',h2s:false,type:'sable blanc',desc:'Marie-Galante. Plage propre et tranquille.'},
+{id:'gp056',ile:'GP',name:'Grande Anse de Saint-Claude',commune:'Saint-Claude',lat:16.0430,lng:-61.7100,risk:'safe',h2s:false,type:'sable gris',desc:'Plage au pied du volcan. Peu fréquentée.'},
+{id:'gp057',ile:'GP',name:'Plage de Leroux',commune:'Capesterre-Belle-Eau',lat:16.0800,lng:-61.5700,risk:'warn',h2s:false,type:'sable brun',desc:'Plage côté Atlantique.'},
+{id:'gp058',ile:'GP',name:'Anse du Sable Blanc',commune:'Petit-Bourg',lat:16.2000,lng:-61.5680,risk:'safe',h2s:false,type:'sable blanc',desc:'Petite anse au fond d\'une baie protégée.'},
+{id:'gp059',ile:'GP',name:'Plage de Rocher',commune:'Vieux-Fort',lat:15.9680,lng:-61.7120,risk:'safe',h2s:false,type:'sable gris',desc:'Extrémité sud de la Basse-Terre. Beau paysage.'},
+{id:'gp060',ile:'GP',name:'Plage Nogent',commune:'Le Moule',lat:16.3280,lng:-61.3680,risk:'danger',h2s:false,type:'sable brun',desc:'Spot de kite-surf. Exposé aux sargasses Atlantique.'},
+
+// ══════════════════════════════
+// GUADELOUPE COMPLÉMENT — +60 plages
+// ══════════════════════════════
+
+// ── GRANDE-TERRE : GOSIER ──
+{id:'gp061',ile:'GP',name:'Plage de la Verdure',commune:'Le Gosier',lat:16.2040,lng:-61.4880,risk:'safe',h2s:false,type:'sable brun',desc:'Plage familiale animée face à l\'îlet du Gosier. Restaurants de bord de mer.'},
+{id:'gp062',ile:'GP',name:'Anse Canot',commune:'Le Gosier',lat:16.1980,lng:-61.4820,risk:'safe',h2s:false,type:'sable brun',desc:'Petite anse calme entre Gosier et Sainte-Anne. Peu de touristes.'},
+{id:'gp063',ile:'GP',name:'Plage de la Résidence',commune:'Le Gosier',lat:16.2070,lng:-61.4940,risk:'safe',h2s:false,type:'sable brun',desc:'Plage des hôtels de Gosier. Bien équipée, surveillée.'},
+{id:'gp064',ile:'GP',name:'Plage de Saint-Félix',commune:'Le Gosier',lat:16.2020,lng:-61.4760,risk:'warn',h2s:false,type:'sable brun',desc:'Plage de village de pêcheurs. Vue sur l\'îlet Gosier. Ambiance locale.'},
+{id:'gp065',ile:'GP',name:'Anse des Rochers',commune:'Le Gosier',lat:16.2100,lng:-61.5030,risk:'safe',h2s:false,type:'sable brun',desc:'Plage rocheuse au nord de la zone hôtelière.'},
+
+// ── GRANDE-TERRE : ABYMES / POINTE-À-PITRE ──
+{id:'gp066',ile:'GP',name:'Plage de Lauricisque',commune:'Pointe-à-Pitre',lat:16.2420,lng:-61.5420,risk:'safe',h2s:false,type:'sable brun',desc:'Plage urbaine proche du CHU. Vue sur la rade de Pointe-à-Pitre.'},
+{id:'gp067',ile:'GP',name:'Plage du Helleux (Abymes)',commune:'Les Abymes',lat:16.2650,lng:-61.5040,risk:'safe',h2s:false,type:'sable brun',desc:'Plage peu connue côté nord des Abymes. Calme.'},
+
+// ── GRANDE-TERRE : SAINTE-ANNE (plus complet) ──
+{id:'gp068',ile:'GP',name:'Anse du Bananier',commune:'Sainte-Anne',lat:16.2300,lng:-61.3760,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage sauvage entre Sainte-Anne et la Caravelle. Peu balisée.'},
+{id:'gp069',ile:'GP',name:'Plage Moustique',commune:'Sainte-Anne',lat:16.2320,lng:-61.3850,risk:'safe',h2s:false,type:'sable blanc',desc:'Petite plage résidentielle calme.'},
+{id:'gp070',ile:'GP',name:'Anse à Jacques',commune:'Sainte-Anne',lat:16.2180,lng:-61.3640,risk:'warn',h2s:false,type:'sable blanc',desc:'Anse sauvage côté atlantique de la presqu\'île de Sainte-Anne.'},
+{id:'gp071',ile:'GP',name:'Plage de l\'Anse des Châteaux',commune:'Saint-François',lat:16.2340,lng:-61.2000,risk:'warn',h2s:false,type:'sable blanc',desc:'Côte est de la pointe des Châteaux. Paysage lunaire. Vents forts.'},
+
+// ── GRANDE-TERRE : SAINT-FRANÇOIS (plus complet) ──
+{id:'gp072',ile:'GP',name:'Anse des Salines (St-François)',commune:'Saint-François',lat:16.2490,lng:-61.2650,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage calme protégée. Vue sur les îlets Pigeon.'},
+{id:'gp073',ile:'GP',name:'Plage du Golf',commune:'Saint-François',lat:16.2530,lng:-61.2720,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage bordant le parcours de golf international. Tranquille.'},
+{id:'gp074',ile:'GP',name:'Anse Crawen',commune:'Saint-François',lat:16.2600,lng:-61.2540,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage protégée par la barrière corallienne. Eaux très calmes.'},
+
+// ── GRANDE-TERRE : LE MOULE (plus complet) ──
+{id:'gp075',ile:'GP',name:'Plage Rosette',commune:'Le Moule',lat:16.3420,lng:-61.3500,risk:'danger',h2s:true,type:'sable brun',desc:'Côte atlantique. Zone fréquemment envahie. H2S estival.'},
+{id:'gp076',ile:'GP',name:'Plage de Convenance',commune:'Le Moule',lat:16.3500,lng:-61.3580,risk:'danger',h2s:false,type:'sable brun',desc:'Grande plage plate exposée. Spot de kite-surf réputé.'},
+{id:'gp077',ile:'GP',name:'Plage des Galets (Le Moule)',commune:'Le Moule',lat:16.3360,lng:-61.3600,risk:'warn',h2s:false,type:'galets',desc:'Plage de galets coralliens. Vue sur les falaises.'},
+{id:'gp078',ile:'GP',name:'Anse Bertrand (bourg)',commune:'Anse-Bertrand',lat:16.4700,lng:-61.4960,risk:'warn',h2s:false,type:'sable brun',desc:'Plage du bourg d\'Anse-Bertrand. Village de pêcheurs nordiste.'},
+
+// ── GRANDE-TERRE : PORT-LOUIS ──
+{id:'gp079',ile:'GP',name:'Plage des Amandiers (Port-Louis)',commune:'Port-Louis',lat:16.4220,lng:-61.5400,risk:'warn',h2s:false,type:'sable blanc',desc:'Longue plage de sable blanc. Calme. Bonne baignade.'},
+{id:'gp080',ile:'GP',name:'Anse du Bois',commune:'Port-Louis',lat:16.4100,lng:-61.5280,risk:'warn',h2s:false,type:'sable brun',desc:'Plage semi-sauvage. Accès par chemin de terre.'},
+
+// ── GRANDE-TERRE : MORNE-À-L'EAU ──
+{id:'gp081',ile:'GP',name:'Plage de Grand Baie',commune:'Morne-à-l\'Eau',lat:16.3360,lng:-61.4890,risk:'warn',h2s:false,type:'sable brun',desc:'Plage de la baie de Grand Case. Mangroves alentour.'},
+
+// ── BASSE-TERRE : LAMENTIN ──
+{id:'gp082',ile:'GP',name:'Plage de Rivière Sens',commune:'Gourbeyre',lat:16.0090,lng:-61.7000,risk:'safe',h2s:false,type:'sable gris',desc:'Plage fluvio-marine. Embouchure de la Rivière Sens.'},
+{id:'gp083',ile:'GP',name:'Anse à Soie',commune:'Basse-Terre',lat:16.0180,lng:-61.7300,risk:'safe',h2s:false,type:'sable gris',desc:'Petite anse calme au nord de Basse-Terre ville.'},
+{id:'gp084',ile:'GP',name:'Plage de la Licorne',commune:'Basse-Terre',lat:16.0050,lng:-61.7250,risk:'safe',h2s:false,type:'sable gris',desc:'Plage résidentielle. Vue sur les collines verdoyantes.'},
+
+// ── BASSE-TERRE : VIEUX-FORT ──
+{id:'gp085',ile:'GP',name:'Plage de l\'Anse du Fort',commune:'Vieux-Fort',lat:15.9740,lng:-61.7060,risk:'safe',h2s:false,type:'sable gris',desc:'Pointe sud de Basse-Terre. Fort du 17e siècle en surplomb.'},
+{id:'gp086',ile:'GP',name:'Plage de Grand Étang',commune:'Capesterre-Belle-Eau',lat:16.0480,lng:-61.5880,risk:'warn',h2s:false,type:'sable brun',desc:'Côte est. Près de la forêt tropicale. Peu fréquentée.'},
+
+// ── BASSE-TERRE : SAINT-LOUIS ──
+{id:'gp087',ile:'GP',name:'Plage de Duplessis',commune:'Saint-Louis',lat:16.0540,lng:-61.7400,risk:'safe',h2s:false,type:'sable gris',desc:'Commune de Saint-Louis de Marie-Galante (Basse-Terre). Belle plage calme.'},
+{id:'gp088',ile:'GP',name:'Plage de Marigot',commune:'Sainte-Rose',lat:16.3200,lng:-61.6950,risk:'safe',h2s:false,type:'sable brun',desc:'Plage calme de la côte nord Caraïbe. Ambiance village.'},
+{id:'gp089',ile:'GP',name:'Anse à Mancenille',commune:'Sainte-Rose',lat:16.3400,lng:-61.7050,risk:'safe',h2s:false,type:'sable brun',desc:'Plage naturelle protégée de la côte Caraïbe nord.'},
+{id:'gp090',ile:'GP',name:'Plage de Sofaïa',commune:'Sainte-Rose',lat:16.3260,lng:-61.7150,risk:'safe',h2s:false,type:'sable brun',desc:'Belle plage peu connue de Sainte-Rose. Eaux calmes.'},
+
+// ── BASSE-TERRE : POINTE-NOIRE (plus complet) ──
+{id:'gp091',ile:'GP',name:'Anse Marshall',commune:'Pointe-Noire',lat:16.2480,lng:-61.7980,risk:'safe',h2s:false,type:'sable gris',desc:'Plage sauvage entre Pointe-Noire et Deshaies. Accessible à pied.'},
+{id:'gp092',ile:'GP',name:'Plage du Bois Sec',commune:'Pointe-Noire',lat:16.2290,lng:-61.7850,risk:'safe',h2s:false,type:'sable gris',desc:'Petite plage ombragée. Palmiers en bord de mer.'},
+
+// ── BASSE-TERRE : DESHAIES (plus complet) ──
+{id:'gp093',ile:'GP',name:'Anse Louis',commune:'Deshaies',lat:16.3000,lng:-61.7980,risk:'safe',h2s:false,type:'sable brun',desc:'Anse calme au sud de Deshaies. Mouillage apprécié des voiliers.'},
+{id:'gp094',ile:'GP',name:'Plage de Cluny',commune:'Deshaies',lat:16.3180,lng:-61.8040,risk:'safe',h2s:false,type:'sable doré',desc:'Plage dorée bien abritée. Moins connue que la Grande Anse.'},
+{id:'gp095',ile:'GP',name:'Anse de Roques',commune:'Deshaies',lat:16.3250,lng:-61.8100,risk:'safe',h2s:false,type:'sable brun',desc:'Anse sauvage à 30 min à pied du bourg. Tortues fréquentes.'},
+
+// ── BASSE-TERRE : PETIT-BOURG / GOYAVE ──
+{id:'gp096',ile:'GP',name:'Plage de Goyave',commune:'Goyave',lat:16.1380,lng:-61.5820,risk:'warn',h2s:false,type:'sable brun',desc:'Côte atlantique de Basse-Terre. Vagues modérées. Manguiers alentour.'},
+{id:'gp097',ile:'GP',name:'Anse Sable Rouge',commune:'Petit-Bourg',lat:16.1820,lng:-61.5760,risk:'warn',h2s:false,type:'sable roux',desc:'Sable roux volcanique caractéristique. Belle forêt derrière la plage.'},
+{id:'gp098',ile:'GP',name:'Plage du Gosier Caraïbe',commune:'Petit-Bourg',lat:16.1940,lng:-61.5700,risk:'safe',h2s:false,type:'sable brun',desc:'Côté Caraïbe de Petit-Bourg. Baie protégée.'},
+{id:'gp099',ile:'GP',name:'Anse Bertrand (Petit-Bourg)',commune:'Petit-Bourg',lat:16.1720,lng:-61.5820,risk:'warn',h2s:false,type:'sable brun',desc:'Petite anse proche du bourg. Eau calme et peu profonde.'},
+
+// ── LES SAINTES : TERRE-DE-HAUT (complet) ──
+{id:'gp100',ile:'GP',name:'Plage du Bourg (Terre-de-Haut)',commune:'Terre-de-Haut (Les Saintes)',lat:15.8740,lng:-61.5890,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage centrale du village des Saintes. Bateaux de pêcheurs colorés. Vue sur le fort Napoléon.'},
+{id:'gp101',ile:'GP',name:'Anse du Figuier',commune:'Terre-de-Haut (Les Saintes)',lat:15.8680,lng:-61.5820,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage calme au fond d\'une baie protégée. Eau translucide.'},
+{id:'gp102',ile:'GP',name:'Anse Crawen (Saintes)',commune:'Terre-de-Haut (Les Saintes)',lat:15.8790,lng:-61.5760,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage sauvage accessible à pied depuis le bourg. Peu fréquentée.'},
+{id:'gp103',ile:'GP',name:'Plage de Grand Anse (Saintes)',commune:'Terre-de-Haut (Les Saintes)',lat:15.8650,lng:-61.5710,risk:'warn',h2s:false,type:'sable blanc',desc:'Côte Atlantique de Terre-de-Haut. Belle mais vagues.'},
+{id:'gp104',ile:'GP',name:'Anse Rodrigue',commune:'Terre-de-Haut (Les Saintes)',lat:15.8700,lng:-61.5950,risk:'safe',h2s:false,type:'sable blanc',desc:'Petite anse isolée. Accessible uniquement par bateau ou sentier.'},
+
+// ── LES SAINTES : TERRE-DE-BAS ──
+{id:'gp105',ile:'GP',name:'Plage de Grande Anse (Terre-de-Bas)',commune:'Terre-de-Bas (Les Saintes)',lat:15.8560,lng:-61.6600,risk:'safe',h2s:false,type:'sable blanc',desc:'Belle plage sauvage. Accessible depuis le bourg de Terre-de-Bas.'},
+{id:'gp106',ile:'GP',name:'Plage du Bourg (Terre-de-Bas)',commune:'Terre-de-Bas (Les Saintes)',lat:15.8610,lng:-61.6560,risk:'safe',h2s:false,type:'sable blanc',desc:'Petite plage centrale de l\'île. Village de pêcheurs authentique.'},
+{id:'gp107',ile:'GP',name:'Anse des Muriers',commune:'Terre-de-Bas (Les Saintes)',lat:15.8580,lng:-61.6490,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage protégée par une pointe rocheuse. Eau turquoise.'},
+
+// ── MARIE-GALANTE : TOUR COMPLÈTE ──
+{id:'gp108',ile:'GP',name:'Plage de l\'Anse Ballet',commune:'Capesterre (Marie-Galante)',lat:15.8750,lng:-61.2180,risk:'warn',h2s:false,type:'sable blanc',desc:'Côte Atlantique de Marie-Galante. Vagues régulières.'},
+{id:'gp109',ile:'GP',name:'Anse du Vieux Fort (MG)',commune:'Capesterre (Marie-Galante)',lat:15.8660,lng:-61.2400,risk:'safe',h2s:false,type:'sable blanc',desc:'Ruines du fort du 17e siècle en surplomb. Vue panoramique.'},
+{id:'gp110',ile:'GP',name:'Plage de la Baie Orientale (MG)',commune:'Grand-Bourg',lat:15.8970,lng:-61.2800,risk:'danger',h2s:true,type:'sable blanc',desc:'Côte est de Marie-Galante. Zone fortement exposée aux sargasses.'},
+{id:'gp111',ile:'GP',name:'Plage Moustique (MG)',commune:'Grand-Bourg',lat:15.8830,lng:-61.3200,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage calme côté Caraïbe. Vue sur la Guadeloupe continentale.'},
+{id:'gp112',ile:'GP',name:'Anse Canot (MG)',commune:'Grand-Bourg',lat:15.9000,lng:-61.3150,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage bien entretenue. Eau limpide. Idéale famille.'},
+{id:'gp113',ile:'GP',name:'Plage de Petite Anse',commune:'Saint-Louis (Marie-Galante)',lat:15.9360,lng:-61.3280,risk:'safe',h2s:false,type:'sable blanc',desc:'Petite anse calme au nord de Saint-Louis. Cocotiers.'},
+{id:'gp114',ile:'GP',name:'Anse Pirogue',commune:'Saint-Louis (Marie-Galante)',lat:15.9510,lng:-61.3050,risk:'warn',h2s:false,type:'sable blanc',desc:'Côte Atlantique nord de Marie-Galante. Bonne exposition.'},
+{id:'gp115',ile:'GP',name:'Plage de Folle Anse',commune:'Saint-Louis (Marie-Galante)',lat:15.9580,lng:-61.3000,risk:'warn',h2s:false,type:'sable blanc',desc:'Longue plage rectiligne côté Atlantique. Vents constants. Kite possible.'},
+{id:'gp116',ile:'GP',name:'Anse Talbot',commune:'Capesterre (Marie-Galante)',lat:15.8900,lng:-61.2100,risk:'danger',h2s:false,type:'sable blanc',desc:'Côte est sauvage de Marie-Galante. Sargasses fréquentes.'},
+
+// ── LA DÉSIRADE : TOUR COMPLÈTE ──
+{id:'gp117',ile:'GP',name:'Plage du Bourg (La Désirade)',commune:'La Désirade',lat:16.3120,lng:-61.1030,risk:'warn',h2s:false,type:'sable blanc',desc:'Côté Caraïbe protégé de La Désirade. Bonne baignade.'},
+{id:'gp118',ile:'GP',name:'Anse des Galets (Désirade)',commune:'La Désirade',lat:16.3060,lng:-61.0800,risk:'warn',h2s:false,type:'galets',desc:'Plage de galets coralliens. Accès par sentier côtier.'},
+{id:'gp119',ile:'GP',name:'Plage du Baril',commune:'La Désirade',lat:16.3150,lng:-61.1200,risk:'safe',h2s:false,type:'sable blanc',desc:'Belle plage abritée côté Caraïbe. Vue sur Grande-Terre.'},
+{id:'gp120',ile:'GP',name:'Anse Petite Rivière',commune:'La Désirade',lat:16.3090,lng:-61.0560,risk:'danger',h2s:true,type:'sable brun',desc:'Côte Atlantique. Exposition extrême. H2S fréquent en été.'},
+];
+// Beach photos (key = id, value = Wikimedia URL) — Martinique + Guadeloupe comme pour MQ
+const PHOTOS = {
+  // Martinique
+  mq001:'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Plage_des_Salines_Martinique.jpg/960px-Plage_des_Salines_Martinique.jpg',
+  mq002:'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Arlet-Martinique.jpg/960px-Arlet-Martinique.jpg',
+  mq003:'https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Anses_d%27Arlet_-_Martinique.jpg/960px-Anses_d%27Arlet_-_Martinique.jpg',
+  mq005:'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Le_Diamant_beach_Martinique.jpg/960px-Le_Diamant_beach_Martinique.jpg',
+  mq006:'https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Anse_Mitan_-_Les_Trois-Ilets.jpg/960px-Anse_Mitan_-_Les_Trois-Ilets.jpg',
+  mq008:'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Saint_Pierre_Martinique.jpg/960px-Saint_Pierre_Martinique.jpg',
+  mq010:'https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Martinique_anse_couleuvre.jpg/960px-Martinique_anse_couleuvre.jpg',
+  // Guadeloupe — fiches avec image comme Martinique
+  gp001:'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Saint-Fran%C3%A7ois_Guadeloupe.jpg/960px-Saint-Fran%C3%A7ois_Guadeloupe.jpg',
+  gp002:'https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Beach_in_Sainte-Anne%2C_Guadeloupe.jpg/960px-Beach_in_Sainte-Anne%2C_Guadeloupe.jpg',
+  gp003:'https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Beach_in_Sainte-Anne%2C_Guadeloupe.jpg/960px-Beach_in_Sainte-Anne%2C_Guadeloupe.jpg',
+  gp004:'https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Beach_in_Sainte-Anne%2C_Guadeloupe.jpg/960px-Beach_in_Sainte-Anne%2C_Guadeloupe.jpg',
+  gp005:'https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Beach_in_Sainte-Anne%2C_Guadeloupe.jpg/960px-Beach_in_Sainte-Anne%2C_Guadeloupe.jpg',
+  gp006:'https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Beach_in_Sainte-Anne%2C_Guadeloupe.jpg/960px-Beach_in_Sainte-Anne%2C_Guadeloupe.jpg',
+  gp008:'https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Beach_in_Sainte-Anne%2C_Guadeloupe.jpg/960px-Beach_in_Sainte-Anne%2C_Guadeloupe.jpg',
+  gp009:'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Plage_de_la_Caravelle_-_Sainte-Anne_-_Guadeloupe.jpg/960px-Plage_de_la_Caravelle_-_Sainte-Anne_-_Guadeloupe.jpg',
+  gp010:'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/St_Anne_%28_Plage_municipale_%29.jpg/960px-St_Anne_%28_Plage_municipale_%29.jpg',
+  gp012:'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Le_Gosier_Guadeloupe.jpg/960px-Le_Gosier_Guadeloupe.jpg',
+  gp014:'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Le_Gosier_Guadeloupe.jpg/960px-Le_Gosier_Guadeloupe.jpg',
+  gp015:'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Porte_d%27Enfer_-_Guadeloupe.jpg/960px-Porte_d%27Enfer_-_Guadeloupe.jpg',
+  gp017:'https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Beach_in_Sainte-Anne%2C_Guadeloupe.jpg/960px-Beach_in_Sainte-Anne%2C_Guadeloupe.jpg',
+  gp021:'https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Grande_Anse_Deshaies.jpg/960px-Grande_Anse_Deshaies.jpg',
+  gp024:'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Deshaies_Guadeloupe.jpg/960px-Deshaies_Guadeloupe.jpg',
+  gp025:'https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Grande_Anse_Deshaies.jpg/960px-Grande_Anse_Deshaies.jpg',
+  gp031:'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Malendure_beach.jpg/960px-Malendure_beach.jpg',
+  gp033:'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Malendure_beach.jpg/960px-Malendure_beach.jpg',
+  gp044:'https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Les_Saintes_Guadeloupe.jpg/960px-Les_Saintes_Guadeloupe.jpg',
+  gp045:'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Les_Saintes_-_Guadeloupe.jpg/960px-Les_Saintes_-_Guadeloupe.jpg',
+  gp048:'https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Beach_in_Sainte-Anne%2C_Guadeloupe.jpg/960px-Beach_in_Sainte-Anne%2C_Guadeloupe.jpg',
+  gp050:'https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Beach_in_Sainte-Anne%2C_Guadeloupe.jpg/960px-Beach_in_Sainte-Anne%2C_Guadeloupe.jpg',
+};
+const FALLBACK = {
+  MQ:'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Plage_des_Salines_Martinique.jpg/960px-Plage_des_Salines_Martinique.jpg',
+  GP:'https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Grande_Anse_Deshaies.jpg/960px-Grande_Anse_Deshaies.jpg',
+};
+
+const RISK_C = {safe:'#26D97A',warn:'#F08C14',danger:'#E83030'};
+const RISK_BG= {safe:'rgba(38,217,122,.14)',warn:'rgba(240,140,20,.14)',danger:'rgba(232,48,48,.14)'};
+const col = b => b.h2s ? '#CC28FF' : (RISK_C[b.risk]||'#00D4C8');
+
+// ── i18n FR / EN ──
+const I18N = {
+  fr: {
+    title: 'SARG · Carte Satellite — Martinique & Guadeloupe',
+    logoSub: 'Carte Satellite',
+    themeTitle: 'Changer le thème',
+    searchPlaceholder: 'Rechercher…',
+    all: 'Tout', martinique: 'Martinique', guadeloupe: 'Guadeloupe',
+    satellite: 'Satellite', hybrid: 'Hybride', dark: 'Sombre', terrain: 'Relief',
+    beaches: 'Plages', allFilter: 'Toutes', clear: 'Propre', moderate: 'Modéré', high: 'Élevé', naturist: 'Naturiste',
+    overview: 'Vue ensemble', beachesCount: 'plages', beachOne: 'plage',
+    riskTitle: 'Risque sargasses', low: 'Faible',   resultCount: 'résultat', resultCountPlural: 'résultats',
+    noResults: 'Aucun résultat', h2sBadge: 'Risque H2S — éviter si odeur soufrée',
+    statAfai: 'AFAI', statBottom: 'Fond', statIsland: 'Île', tileMax: 'MAX', tileBeach: 'PLAGE', tileCoast: 'CÔTE',
+    west: 'O', sargLayerLabel: 'Bancs sargasses', sargLayerTitle: 'Afficher les bancs de sargasses (données satellite Copernicus/NOAA)', sargLegend: 'Bancs (satellite)',
+    verifyOnGmaps: 'Vérifier sur Google Maps', sargDriftForecast: 'Prévision dérive (Météo-France)', sargTrajectories: 'Trajectoires Caraïbes'
+  },
+  en: {
+    title: 'SARG · Satellite Map — Martinique & Guadeloupe',
+    logoSub: 'Satellite Map',
+    themeTitle: 'Change theme',
+    searchPlaceholder: 'Search…',
+    all: 'All', martinique: 'Martinique', guadeloupe: 'Guadeloupe',
+    satellite: 'Satellite', hybrid: 'Hybrid', dark: 'Dark', terrain: 'Terrain',
+    beaches: 'Beaches', allFilter: 'All', clear: 'Clear', moderate: 'Moderate', high: 'High', naturist: 'Naturist',
+    overview: 'Overview', beachesCount: 'beaches', beachOne: 'beach',
+    riskTitle: 'Sargassum risk', low: 'Low',   resultCount: 'result', resultCountPlural: 'results',
+    noResults: 'No results', h2sBadge: 'H2S risk — avoid if sulphur smell',
+    statAfai: 'AFAI', statBottom: 'Bottom', statIsland: 'Island', tileMax: 'MAX', tileBeach: 'BEACH', tileCoast: 'COAST',
+    west: 'W', sargLayerLabel: 'Sargassum patches', sargLayerTitle: 'Show sargassum patches (Copernicus/NOAA satellite data)', sargLegend: 'Patches (satellite)',
+    verifyOnGmaps: 'Verify on Google Maps', sargDriftForecast: 'Drift forecast (Météo-France)', sargTrajectories: 'Caribbean trajectories'
+  }
+};
+let currentLang = (typeof navigator !== 'undefined' && (navigator.language || '').toLowerCase().startsWith('en')) ? 'en' : 'fr';
+function t(k) { return (I18N[currentLang] || I18N.fr)[k] || I18N.fr[k]; }
+function setLang(lang) {
+  currentLang = lang;
+  document.getElementById('lang-btn').textContent = lang === 'fr' ? 'FR' : 'EN';
+  document.getElementById('lang-btn').title = lang === 'fr' ? 'English' : 'Français';
+  applyLang();
+  if(curB) openSheet(curB);
+  render();
+}
+function applyLang() {
+  document.documentElement.lang = currentLang;
+  document.title = t('title');
+  const el = (id, key) => { const e = document.getElementById(id); if (e) e.textContent = t(key); };
+  el('logo-sub', 'logoSub');
+  document.getElementById('theme-btn').title = t('themeTitle');
+  document.getElementById('srch').placeholder = t('searchPlaceholder');
+  document.getElementById('ip-both').innerHTML = '🌍 ' + t('all');
+  document.getElementById('ip-MQ').innerHTML = '🗺 ' + t('martinique');
+  document.getElementById('ip-GP').innerHTML = '🗺 ' + t('guadeloupe');
+  document.getElementById('lp-sat').innerHTML = '🛰 ' + t('satellite');
+  document.getElementById('lp-hyb').innerHTML = '🗺 ' + t('hybrid');
+  document.getElementById('lp-dark').innerHTML = '🌊 ' + t('dark');
+  document.getElementById('lp-ter').innerHTML = '⛰ ' + t('terrain');
+  el('panel-title', 'beaches');
+  document.getElementById('fc-all').textContent = t('allFilter');
+  document.getElementById('fc-safe').innerHTML = '🟢 ' + t('clear');
+  document.getElementById('fc-warn').innerHTML = '🟡 ' + t('moderate');
+  document.getElementById('fc-danger').innerHTML = '🔴 ' + t('high');
+  document.getElementById('fc-h2s').innerHTML = '☣️ H2S';
+  document.getElementById('fc-nudiste').innerHTML = '🌿 ' + t('naturist');
+  document.getElementById('vb-both').innerHTML = '🌍 ' + t('overview');
+  document.getElementById('vb-MQ').textContent = t('martinique');
+  document.getElementById('vb-GP').textContent = t('guadeloupe');
+  el('leg-title', 'riskTitle');
+  el('leg-low', 'low');
+  el('leg-moderate', 'moderate');
+  el('leg-high', 'high');
+  document.getElementById('sheet-sat-btn').innerHTML = '🛰 ' + t('satellite');
+  document.getElementById('sh2s').textContent = '☣️ ' + t('h2sBadge');
+  el('sl-afai', 'statAfai');
+  el('sl-type', 'statBottom');
+  el('sl-ile', 'statIsland');
+  const sargBtn = document.getElementById('sarg-toggle');
+  if (sargBtn) { sargBtn.textContent = '🌿 ' + t('sargLayerLabel'); sargBtn.title = t('sargLayerTitle'); }
+  const legSargLabel = document.getElementById('leg-sarg-label');
+  if (legSargLabel) legSargLabel.textContent = t('sargLegend');
+  const legDrift = document.getElementById('leg-sarg-drift');
+  if (legDrift) legDrift.textContent = t('sargDriftForecast');
+  const legTraj = document.getElementById('leg-sarg-traj');
+  if (legTraj) { legTraj.textContent = t('sargTrajectories'); legTraj.href = 'https://sargassummonitoring.com/fr/map-of-sargassum-from-usf-saws/'; }
+}
+const RISK_L = { safe: () => t('low'), warn: () => t('moderate'), danger: () => t('high') };
+
+// Décalage des marqueurs sur Satellite/Hybride pour les aligner sur la côte (pas dans l’eau).
+// Lng négatif = déplacer vers l’ouest (terre), positif = vers l’est (eau).
+let OFFSET_SAT = { lat: 0, lng: -0.0025 };
+
+// AFAI mock
+const AFAI={};
+BEACHES.forEach(b=>{AFAI[b.id]=b.risk==='danger'?(.6+Math.random()*.35):b.risk==='warn'?(.32+Math.random()*.28):(.04+Math.random()*.24);});
+
+// ── STATE ──
+let island='both', filter='all', query='', curB=null;
+let markers=[], panelVisible=true;
+
+// ── MAP ──
+const map = L.map('map',{zoomControl:true,attributionControl:true,preferCanvas:true,maxZoom:19,minZoom:4});
+
+const TILES={
+  sat: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        {attribution:'© Esri/Maxar',maxZoom:19}),
+  dark:L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+        {attribution:'© OSM © CARTO',subdomains:'abcd',maxZoom:19}),
+  ter: L.tileLayer('https://tile.opentopomap.org/{z}/{x}/{y}.png',
+        {attribution:'© OpenTopoMap',maxZoom:17}),
+  lbl: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',
+        {attribution:'',subdomains:'abcd',maxZoom:19,pane:'overlayPane',opacity:.85}),
+};
+let curTile=null, curLbl=null;
+let currentLayerId='sat'; // 'sat'|'hyb'|'dark'|'ter' pour appliquer l'offset uniquement sur fond satellite
+function setLayer(m){
+  if(curTile) map.removeLayer(curTile);
+  if(curLbl){map.removeLayer(curLbl);curLbl=null;}
+  currentLayerId=m;
+  curTile = m==='hyb'||m==='sat' ? TILES.sat : m==='ter' ? TILES.ter : TILES.dark;
+  curTile.addTo(map);
+  if(m==='hyb'){curLbl=TILES.lbl;curLbl.addTo(map);}
+  document.querySelectorAll('#lp .pill').forEach(b=>b.classList.remove('on'));
+  document.getElementById('lp-'+m).classList.add('on');
+  const legAlign = document.getElementById('leg-align');
+  if (legAlign) legAlign.style.display = (m==='sat'||m==='hyb') ? 'block' : 'none';
+  render(); // re-dessiner les marqueurs avec le bon offset selon le fond
+}
+setLayer('sat');
+
+// Afficher les prévisions sargasses (blobs) par défaut pour qu’on les voie tout de suite
+if (false) {
+  sargassumLayerVisible = true;
+  const btn = document.getElementById('sarg-toggle');
+  if (btn) btn.classList.add('on');
+  const legSarg = document.getElementById('leg-sarg');
+  const legBlobs = document.getElementById('leg-blobs');
+  const legBlobsJ7 = document.getElementById('leg-blobs-j7');
+  const legDrift = document.getElementById('leg-sarg-drift');
+  const legTraj = document.getElementById('leg-sarg-traj');
+  if (legSarg) legSarg.style.display = 'flex';
+  if (legBlobs) legBlobs.style.display = 'flex';
+  if (legBlobsJ7) legBlobsJ7.style.display = 'flex';
+  if (legDrift) legDrift.style.display = 'block';
+  if (legTraj) legTraj.style.display = 'block';
+  const blobsLayer = getSargassumBlobsLayer();
+  blobsLayer.addTo(map);
+  blobsLayer.bringToFront();
+}
+
+// ── Calque bancs de sargasses (données satellite type Copernicus / NOAA AFAI) ──
+// WMS NOAA CoastWatch — AFAI 7 jours cumulé (optionnel, peut ne pas charger selon CORS)
+const SARGASSUM_WMS_URL = 'https://cwcgom.aoml.noaa.gov/erddap/wms/noaa_aoml_atlantic_oceanwatch_AFAI_7D/wms?';
+let sargassumLayer = null;
+let sargassumLayerVisible = false;
+
+// ── Prévisions sargasses : blobs (bleu J+1/J+2, or J+7) — visibles autour des îles
+const SARG_BLOBS = [
+  { lat: 14.55, lng: -60.3, radiusM: 35000, type: 'j2' },
+  { lat: 14.85, lng: -60.5, radiusM: 32000, type: 'j2' },
+  { lat: 16.05, lng: -60.8, radiusM: 38000, type: 'j2' },
+  { lat: 15.9, lng: -61.0, radiusM: 30000, type: 'j2' },
+  { lat: 14.5, lng: -60.6, radiusM: 40000, type: 'j7' },
+  { lat: 15.3, lng: -60.4, radiusM: 45000, type: 'j7' },
+  { lat: 16.2, lng: -61.3, radiusM: 28000, type: 'j7' },
+  { lat: 14.7, lng: -60.9, radiusM: 22000, type: 'j2' }
+];
+let sargassumBlobsLayer = null;
+const MQ_CENTER = [14.64, -61.02];
+const GP_CENTER = [16.18, -61.55];
+const COAST_RISK_KM = 180;
+
+function getSargassumBlobsLayer() {
+  if (sargassumBlobsLayer) return sargassumBlobsLayer;
+  sargassumBlobsLayer = L.layerGroup();
+  SARG_BLOBS.forEach(function(b) {
+    const isJ7 = b.type === 'j7';
+    const color = isJ7 ? '#DAA520' : '#3B82F6';
+    const stroke = isJ7 ? '#FFD700' : '#60A5FA';
+    L.circle([b.lat, b.lng], {
+      radius: b.radiusM,
+      fillColor: color,
+      color: stroke,
+      weight: 3,
+      fillOpacity: 0.55,
+      opacity: 0.9
+    }).addTo(sargassumBlobsLayer);
+  });
+  return sargassumBlobsLayer;
+}
+
+function distanceKm(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
+
+function isRiskThisWeek() {
+  for (let i = 0; i < SARG_BLOBS.length; i++) {
+    const b = SARG_BLOBS[i];
+    const dMQ = distanceKm(b.lat, b.lng, MQ_CENTER[0], MQ_CENTER[1]);
+    const dGP = distanceKm(b.lat, b.lng, GP_CENTER[0], GP_CENTER[1]);
+    if (dMQ <= COAST_RISK_KM || dGP <= COAST_RISK_KM) return true;
+  }
+  return false;
+}
+
+function getSargassumWmsLayer() {
+  if (sargassumLayer) return sargassumLayer;
+  try {
+    sargassumLayer = L.tileLayer.wms(SARGASSUM_WMS_URL, {
+      layers: 'AFAI',
+      format: 'image/png',
+      transparent: true,
+      opacity: 0.88,
+      version: '1.3.0',
+      attribution: '© NOAA AOML / USF · AFAI 7j (Copernicus-compatible)'
+    });
+  } catch (e) {
+    console.warn('Sargassum WMS init:', e);
+    return null;
+  }
+  return sargassumLayer;
+}
+
+function toggleSargassumLayer() {
+  const btn = document.getElementById('sarg-toggle');
+  const legSarg = document.getElementById('leg-sarg');
+  const legDrift = document.getElementById('leg-sarg-drift');
+  const legTraj = document.getElementById('leg-sarg-traj');
+  const legBlobs = document.getElementById('leg-blobs');
+  const legBlobsJ7 = document.getElementById('leg-blobs-j7');
+  sargassumLayerVisible = !sargassumLayerVisible;
+  btn.classList.toggle('on', sargassumLayerVisible);
+  if (legSarg) legSarg.style.display = sargassumLayerVisible ? 'flex' : 'none';
+  if (legBlobs) legBlobs.style.display = sargassumLayerVisible ? 'flex' : 'none';
+  if (legBlobsJ7) legBlobsJ7.style.display = sargassumLayerVisible ? 'flex' : 'none';
+  if (legDrift) legDrift.style.display = sargassumLayerVisible ? 'block' : 'none';
+  if (legTraj) legTraj.style.display = sargassumLayerVisible ? 'block' : 'none';
+  if (sargassumLayerVisible) {
+    const blobsLayer = getSargassumBlobsLayer();
+    blobsLayer.addTo(map);
+    blobsLayer.bringToFront();
+    try {
+      const wmsLayer = getSargassumWmsLayer();
+      if (wmsLayer) { wmsLayer.addTo(map); wmsLayer.bringToFront(); }
+    } catch (e) {}
+  } else {
+    if (sargassumBlobsLayer) map.removeLayer(sargassumBlobsLayer);
+    if (sargassumLayer) map.removeLayer(sargassumLayer);
+    if (legDrift) legDrift.style.display = 'none';
+    if (legTraj) legTraj.style.display = 'none';
+  }
+}
+
+// Afficher les prévisions sargasses (blobs) par défaut
+function showSargassumBlobsDefault() {
+  if (sargassumLayerVisible) return;
+  sargassumLayerVisible = true;
+  const btn = document.getElementById('sarg-toggle');
+  if (btn) btn.classList.add('on');
+  const legSarg = document.getElementById('leg-sarg');
+  const legBlobs = document.getElementById('leg-blobs');
+  const legBlobsJ7 = document.getElementById('leg-blobs-j7');
+  const legDrift = document.getElementById('leg-sarg-drift');
+  const legTraj = document.getElementById('leg-sarg-traj');
+  if (legSarg) legSarg.style.display = 'flex';
+  if (legBlobs) legBlobs.style.display = 'flex';
+  if (legBlobsJ7) legBlobsJ7.style.display = 'flex';
+  if (legDrift) legDrift.style.display = 'block';
+  if (legTraj) legTraj.style.display = 'block';
+  getSargassumBlobsLayer().addTo(map).bringToFront();
+}
+
+const VIEWS={MQ:{c:[14.641,-61.024],z:11},GP:{c:[16.18,-61.55],z:10},both:{c:[15.38,-61.35],z:8}};
+map.setView(VIEWS.both.c, VIEWS.both.z);
+
+function flyTo(k){
+  const v=VIEWS[k];map.flyTo(v.c,v.z,{duration:1.5});
+  document.querySelectorAll('#bbar .pill').forEach(b=>b.classList.remove('on'));
+  const el=document.getElementById('vb-'+k); if(el) el.classList.add('on');
+}
+
+// ── MARKERS ──
+function makeMarker(b){
+  const useSatOffset = (currentLayerId==='sat'||currentLayerId==='hyb') && (OFFSET_SAT.lat!==0||OFFSET_SAT.lng!==0);
+  const lat = useSatOffset ? b.lat + OFFSET_SAT.lat : b.lat;
+  const lng = useSatOffset ? b.lng + OFFSET_SAT.lng : b.lng;
+  const c=col(b), s=b.risk==='danger'||b.h2s?13:10;
+  const html=`<div style="position:relative;width:${s+12}px;height:${s+12}px">
+    <div style="position:absolute;top:50%;left:50%;width:${s*2.6}px;height:${s*2.6}px;border-radius:50%;background:${c}26;transform:translate(-50%,-50%);animation:ping ${b.risk==='danger'?'1.4s':'2.4s'} ease-out infinite"></div>
+    <div style="position:absolute;top:50%;left:50%;width:${s}px;height:${s}px;border-radius:50%;background:${c};box-shadow:0 0 ${s}px ${c}88,0 2px 5px rgba(0,0,0,.5);border:1.5px solid rgba(255,255,255,.28);transform:translate(-50%,-50%);cursor:pointer;transition:.15s"></div>
+  </div>`;
+  const icon=L.divIcon({className:'',html,iconSize:[s+12,s+12],iconAnchor:[(s+12)/2,(s+12)/2]});
+  const mk=L.marker([lat,lng],{icon});
+  mk.on('click',()=>select(b.id));
+  mk._bid=b.id;
+  return mk;
+}
+
+function filtered(){
+  return BEACHES.filter(b=>{
+    if(island!=='both'&&b.ile!==island) return false;
+    if(filter==='safe'&&b.risk!=='safe') return false;
+    if(filter==='warn'&&b.risk!=='warn') return false;
+    if(filter==='danger'&&b.risk!=='danger') return false;
+    if(filter==='h2s'&&!b.h2s) return false;
+    if(filter==='nudiste'&&!b.naturiste) return false;
+    if(query&&!b.name.toLowerCase().includes(query)&&!b.commune.toLowerCase().includes(query)) return false;
+    return true;
+  });
+}
+
+function render(){
+  markers.forEach(m=>map.removeLayer(m)); markers=[];
+  const list=filtered();
+  list.forEach(b=>{const m=makeMarker(b);m.addTo(map);markers.push(m);});
+  document.getElementById('cc').textContent = list.length + ' ' + (list.length > 1 ? t('beachesCount') : t('beachOne'));
+  renderPanel(list);
+}
+
+// ── Alignement satellite (décalage marqueurs pour coller à la côte) ──
+const OFFSET_STEP = 0.0001; // ~11 m aux Antilles
+function updateOffsetDisplay() {
+  const latEl = document.getElementById('offset-lat-val');
+  const lngEl = document.getElementById('offset-lng-val');
+  if (latEl) latEl.textContent = OFFSET_SAT.lat.toFixed(4);
+  if (lngEl) lngEl.textContent = OFFSET_SAT.lng.toFixed(4);
+}
+function setupOffsetControls() {
+  const legAlign = document.getElementById('leg-align');
+  if (!legAlign) return;
+  legAlign.style.display = (currentLayerId==='sat'||currentLayerId==='hyb') ? 'block' : 'none';
+  updateOffsetDisplay();
+  document.getElementById('offset-lat-minus')?.addEventListener('click', () => { OFFSET_SAT.lat -= OFFSET_STEP; updateOffsetDisplay(); render(); });
+  document.getElementById('offset-lat-plus')?.addEventListener('click', () => { OFFSET_SAT.lat += OFFSET_STEP; updateOffsetDisplay(); render(); });
+  document.getElementById('offset-lng-minus')?.addEventListener('click', () => { OFFSET_SAT.lng -= OFFSET_STEP; updateOffsetDisplay(); render(); });
+  document.getElementById('offset-lng-plus')?.addEventListener('click', () => { OFFSET_SAT.lng += OFFSET_STEP; updateOffsetDisplay(); render(); });
+  document.getElementById('offset-reset')?.addEventListener('click', () => { OFFSET_SAT.lat = 0; OFFSET_SAT.lng = 0; updateOffsetDisplay(); render(); });
+}
+
+function renderPanel(list){
+  const sorted=[...list].sort((a,b)=>({danger:0,warn:1,safe:2}[a.risk]||3)-({danger:0,warn:1,safe:2}[b.risk]||3));
+  document.getElementById('pc').textContent = sorted.length + ' ' + (sorted.length > 1 ? t('resultCountPlural') : t('resultCount'));
+  document.getElementById('pl').innerHTML=sorted.map(b=>{
+    const c=col(b);
+    return `<div class="pi" data-id="${b.id}" onclick="select('${b.id}')">
+      <div class="pi-dot" style="background:${c};box-shadow:0 0 5px ${c}99"></div>
+      <div style="flex:1;min-width:0"><div class="pi-name">${b.name}</div><div class="pi-info">${b.commune}${island==='both'?' · '+b.ile:''}</div></div>
+      <div class="pi-pct" style="color:${c}">${(AFAI[b.id]*100).toFixed(0)}%</div>
+    </div>`;
+  }).join('');
+}
+
+// ── SELECT ──
+function select(id){
+  curB=BEACHES.find(b=>b.id===id); if(!curB) return;
+  openSheet(curB);
+  markers.forEach(m=>{
+    const d=m.getElement()?.querySelector('div>div:last-child');
+    if(d) d.style.transform=m._bid===id?'translate(-50%,-50%) scale(1.55)':'translate(-50%,-50%) scale(1)';
+  });
+  document.querySelectorAll('.pi').forEach(el=>el.classList.toggle('active',el.dataset.id===id));
+  document.querySelector(`.pi[data-id="${id}"]`)?.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function openSheet(b){
+  const c=col(b);
+  // risk pill
+  const rEl=document.getElementById('srisk');
+  rEl.style.cssText=`background:${b.h2s?'rgba(204,40,255,.14)':RISK_BG[b.risk]};color:${c};box-shadow:inset 0 0 0 1px ${c}40`;
+  rEl.innerHTML = `<span style="width:6px;height:6px;border-radius:50%;background:${c};display:inline-block;box-shadow:0 0 5px ${c}"></span> ${b.h2s ? '☣️ H2S' : RISK_L[b.risk]()}`;
+  document.getElementById('sname').textContent = b.name;
+  document.getElementById('sloc').textContent = '📍 ' + b.commune + ' · ' + (b.ile === 'MQ' ? t('martinique') : t('guadeloupe'));
+  document.getElementById('sh2s').style.display = b.h2s ? 'flex' : 'none';
+  document.getElementById('sdesc').textContent = b.desc;
+  document.getElementById('sv-afai').textContent = (AFAI[b.id] * 100).toFixed(1) + '%';
+  document.getElementById('sv-type').textContent = b.type;
+  document.getElementById('sv-ile').textContent = b.ile === 'MQ' ? t('martinique') : t('guadeloupe');
+  document.getElementById('scoord').textContent = b.lat.toFixed(5) + '° N  ' + Math.abs(b.lng).toFixed(5) + '° ' + t('west');
+  document.getElementById('splbl').textContent=b.name;
+  const gmapsLink = document.getElementById('s-verify-gmaps');
+  if (gmapsLink) {
+    gmapsLink.href = 'https://www.google.com/maps?q=' + b.lat + ',' + b.lng;
+    gmapsLink.textContent = '📍 ' + t('verifyOnGmaps');
+    gmapsLink.style.display = 'inline-block';
+  }
+  // photo — toujours une image : PHOTOS[id] ou fallback île
+  const img=document.getElementById('spimg');
+  img.classList.remove('loaded');
+  img.style.display='';
+  document.getElementById('spghost').classList.remove('hide');
+  const photoUrl = PHOTOS[b.id] || FALLBACK[b.ile] || '';
+  img.src = photoUrl;
+  if(!img.src||img.src==='about:blank'){imgFail();}
+  // sat strips — même centre que le marqueur (avec OFFSET_SAT si fond satellite) pour rester sur la côte
+  const strip=document.getElementById('sstrip'); strip.innerHTML='';
+  const centerLat = b.lat + ((currentLayerId==='sat'||currentLayerId==='hyb') ? OFFSET_SAT.lat : 0);
+  const centerLng = b.lng + ((currentLayerId==='sat'||currentLayerId==='hyb') ? OFFSET_SAT.lng : 0);
+  [[17,.003],[15,.01],[13,.04]].forEach(([z,p],i)=>{
+    const tile=document.createElement('div'); tile.className='s-tile';
+    tile.onclick=()=>{setLayer('sat');map.flyTo([centerLat,centerLng],z,{duration:1.2});};
+    const im=document.createElement('img');
+    im.alt='';
+    // Bbox carrée (même p lat/lng) pour image 136×136 — Esri World Imagery
+    im.src=`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=${centerLng-p},${centerLat-p},${centerLng+p},${centerLat+p}&bboxSR=4326&size=136,136&imageSR=4326&format=png&f=image`;
+    im.loading='lazy';
+    im.onerror=function(){ this.style.display='none'; const ph=document.createElement('div'); ph.className='s-tile-placeholder'; ph.innerHTML='🛰'; ph.title=t('satellite'); tile.insertBefore(ph,tile.firstChild); };
+    const lbl=document.createElement('div'); lbl.className='s-tile-lbl';
+    lbl.textContent = [t('tileMax'), t('tileBeach'), t('tileCoast')][i];
+    tile.appendChild(im); tile.appendChild(lbl); strip.appendChild(tile);
+  });
+  document.getElementById('sheet').classList.add('open');
+}
+
+function imgOK(){
+  document.getElementById('spghost').classList.add('hide');
+  document.getElementById('spimg').classList.add('loaded');
+}
+function imgFail(){
+  const img=document.getElementById('spimg');
+  const fb=FALLBACK[curB?.ile||'MQ'];
+  if(img.src!==fb){img.src=fb;}else{img.style.display='none';}
+}
+function zoomBeach(){if(!curB)return;setLayer('sat');const lat=curB.lat+OFFSET_SAT.lat,lng=curB.lng+OFFSET_SAT.lng;map.flyTo([lat,lng],16,{duration:1.3});}
+function closeSheet(){
+  document.getElementById('sheet').classList.remove('open');
+  markers.forEach(m=>{const d=m.getElement()?.querySelector('div>div:last-child');if(d)d.style.transform='translate(-50%,-50%) scale(1)';});
+  document.querySelectorAll('.pi').forEach(el=>el.classList.remove('active'));
+}
+
+// ── ISLAND / FILTER / SEARCH ──
+function setIsland(k){
+  island=k;
+  document.querySelectorAll('#ip .pill').forEach(b=>b.classList.remove('on'));
+  document.getElementById('ip-'+k).classList.add('on');
+  render(); if(k!=='both') map.flyTo(VIEWS[k].c,VIEWS[k].z,{duration:1.4});
+  closeSheet();
+}
+function setFilter(f){
+  filter=f;
+  document.querySelectorAll('.fchip').forEach(b=>b.classList.remove('on'));
+  document.getElementById('fc-'+f).classList.add('on');
+  render();
+}
+function doSearch(){
+  query=document.getElementById('srch').value.trim().toLowerCase();
+  const matches=BEACHES.filter(b=>b.name.toLowerCase().includes(query)||b.commune.toLowerCase().includes(query)).slice(0,10);
+  const sr=document.getElementById('sr');
+  if(!query){sr.classList.remove('open');render();return;}
+  sr.innerHTML=matches.length?matches.map(b=>{
+    const c=col(b);
+    return `<div class="sri" onclick="srPick('${b.id}')">
+      <div class="sri-dot" style="background:${c};box-shadow:0 0 4px ${c}88"></div>
+      <div><div class="sri-name">${b.name}</div><div class="sri-info">${b.commune} · ${b.ile === 'MQ' ? t('martinique') : t('guadeloupe')}</div></div>
+    </div>`;
+  }).join('') : '<div class="sri" style="color:var(--mute);cursor:default">' + t('noResults') + '</div>';
+  sr.classList.add('open'); render();
+}
+function srPick(id){
+  const b=BEACHES.find(x=>x.id===id); if(!b)return;
+  document.getElementById('srch').value=b.name; query=''; closeSR();
+  const lat=b.lat+((currentLayerId==='sat'||currentLayerId==='hyb')?(OFFSET_SAT.lat):0), lng=b.lng+((currentLayerId==='sat'||currentLayerId==='hyb')?(OFFSET_SAT.lng):0);
+  map.flyTo([lat,lng],15,{duration:1.3}); select(id);
+}
+function openSR(){if(document.getElementById('srch').value.trim())document.getElementById('sr').classList.add('open');}
+function closeSR(){document.getElementById('sr').classList.remove('open');}
+
+// ── PANEL TOGGLE ──
+function togglePanel(){
+  panelVisible=!panelVisible;
+  document.getElementById('panel').classList.toggle('hide',!panelVisible);
+}
+
+// ── MAP CLICK ──
+map.on('click',e=>{
+  if(!e.originalEvent.target.closest('#sheet')&&!e.originalEvent.target.closest('.leaflet-marker-icon'))
+    closeSheet();
+});
+
+// ── PING KEYFRAME ──
+const ps=document.createElement('style');
+ps.textContent='@keyframes ping{0%{transform:translate(-50%,-50%) scale(1);opacity:.65}100%{transform:translate(-50%,-50%) scale(2.6);opacity:0}}';
+document.head.appendChild(ps);
+
+
+// ── THEME TOGGLE ──
+let darkMode = true;
+function toggleTheme(){
+  darkMode = !darkMode;
+  document.documentElement.classList.toggle('light', !darkMode);
+  document.getElementById('theme-btn').textContent = darkMode ? '🌙' : '☀️';
+  // swap tile layer to match theme if on dark layer
+  if(!darkMode && document.getElementById('lp-dark').classList.contains('on')){
+    setLayer('sat');
+  }
+}
+
+// INIT
+applyLang();
+setupOffsetControls();
+showSargassumBlobsDefault();
+if (isRiskThisWeek()) {
+  const banner = document.getElementById('sarg-alert-banner');
+  if (banner && !localStorage.getItem('sarg-alert-seen')) banner.style.display = 'flex';
+}
+document.getElementById('sarg-alert-close')?.addEventListener('click', function() {
+  const b = document.getElementById('sarg-alert-banner');
+  if (b) b.style.display = 'none';
+  localStorage.setItem('sarg-alert-seen', '1');
+});
+document.getElementById('sarg-alert-enable')?.addEventListener('click', function() {
+  function showLocalNotif() {
+    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+      try { new Notification('SARG · Sargasses', { body: 'Risque d\'échouement sur les côtes cette semaine. Ouvrez la carte pour les prévisions.' }); } catch(e) {}
+    }
+  }
+  if (window.OneSignalDeferred && window.OneSignalDeferred.push) {
+    window.OneSignalDeferred.push(function(OneSignal) {
+      OneSignal.Notifications.requestPermission().then(function() {
+        OneSignal.User.addTag('sarg_alert', '1');
+        showLocalNotif();
+      }).catch(function() {});
+    });
+  } else if (typeof Notification !== 'undefined' && Notification.requestPermission) {
+    Notification.requestPermission().then(function(p) {
+      if (p === 'granted') showLocalNotif();
+    });
+  }
+  document.getElementById('sarg-alert-banner').style.display = 'none';
+  localStorage.setItem('sarg-alert-seen', '1');
+});
+document.getElementById('lang-btn').textContent = currentLang === 'fr' ? 'FR' : 'EN';
+document.getElementById('lang-btn').title = currentLang === 'fr' ? 'English' : 'Français';
+render();
+</script>
+</body>
+</html>

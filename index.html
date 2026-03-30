@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Sargasses Martinique en temps réel · Carte et plages aujourd'hui</title>
+    <meta name="description" content="Carte des sargasses en Martinique en temps réel. Où se baigner aujourd'hui : plages propres, à éviter, prévisions. Données mises à jour régulièrement." />
+    <link rel="canonical" href="https://sargasses-martinique.com/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Sargasses Martinique en temps réel · Carte et plages aujourd'hui" />
+    <meta property="og:description" content="Carte des sargasses en Martinique en temps réel. Où se baigner aujourd'hui : plages propres, à éviter, prévisions. Données mises à jour régulièrement." />
+    <meta property="og:url" content="https://sargasses-martinique.com/" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Sargasses Martinique en temps réel · Carte et plages aujourd'hui" />
+    <meta name="twitter:description" content="Carte des sargasses en Martinique en temps réel. Où se baigner aujourd'hui : plages propres, à éviter, prévisions." />
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"Article","name":"Sargasses Martinique en temps réel","description":"Carte et état des plages Martinique aujourd'hui. Sargasses, plages propres, prévisions.","url":"https://sargasses-martinique.com/","dateModified":"2026-03-08","datePublished":"2026-02-18","publisher":{"@type":"Organization","name":"Sargasses Martinique"}}
+    </script>
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Quand arrivent les sargasses en Martinique ?","acceptedAnswer":{"@type":"Answer","text":"Les sargasses varient avec les courants et le vent. La saison la plus concernée s’étend généralement d’avril à septembre, avec des pics possibles jusqu’en octobre. Consultez la carte et les prévisions 7 jours pour l’état du jour."}},{"@type":"Question","name":"C'est quoi l'AFAI ?","acceptedAnswer":{"@type":"Answer","text":"L'AFAI (Algal Floating Algae Index) est un indice de détection des algues par satellite. Plus il est bas, mieux c’est : en dessous de 0,3 la plage est considérée comme propre, au-dessus de 0,65 il vaut mieux éviter. La courbe est affichée sur chaque fiche plage."}},{"@type":"Question","name":"Quel risque pour la santé (H2S) ?","acceptedAnswer":{"@type":"Answer","text":"Le H2S (sulfure d’hydrogène) est un gaz libéré quand les sargasses pourrissent. En forte concentration il peut irriter les yeux et la gorge. Les plages en rouge « À éviter » signalent ce risque — à éviter surtout avec des enfants ou personnes fragiles."}},{"@type":"Question","name":"Quelle plage est propre aujourd'hui ?","acceptedAnswer":{"@type":"Answer","text":"Ouvrez la carte ou l’onglet Plages : les statuts (propre / modéré / à éviter) sont mis à jour régulièrement à partir des données satellite et du modèle de dérive Copernicus Marine. L’assistant IA peut aussi vous recommander une plage selon vos critères."}},{"@type":"Question","name":"D'où viennent les données ?","acceptedAnswer":{"@type":"Answer","text":"Les statuts viennent de Copernicus Marine : produit satellite (détection des algues) et modèle de dérive océanique. Les données sont rafraîchies régulièrement pour les Antilles. L’indicateur « Copernicus » en haut de l’app confirme la source active."}}]}
+    </script>
+  <style>
+    :root,.theme-light{--sg-bg:#F7F4EC;--sg-bgD:#F0EDE3;--sg-card:#FFFFFF;--sg-cardS:#FAFAF6;--sg-ink:#0B0A08;--sg-mid:#68655C;--sg-mute:#A8A59E;--sg-border:rgba(0,0,0,.065);--sg-borderM:rgba(0,0,0,.11);--sg-glass:rgba(255,255,255,.72);--sg-glassBorder:rgba(255,255,255,.7);--sg-rowHover:rgba(0,0,0,.022);--sg-handle:rgba(0,0,0,.1);}
+    .theme-dark{--sg-bg:#0d1117;--sg-bgD:#161b22;--sg-card:#161b22;--sg-cardS:#21262d;--sg-ink:#e6edf3;--sg-mid:#adbac7;--sg-mute:#8b949e;--sg-border:rgba(255,255,255,.08);--sg-borderM:rgba(255,255,255,.14);--sg-glass:rgba(22,27,34,.85);--sg-glassBorder:rgba(255,255,255,.08);--sg-rowHover:rgba(255,255,255,.06);--sg-handle:rgba(255,255,255,.2);}
+    html{font-size:clamp(14px,2.2vw + 12px,16px);-webkit-text-size-adjust:100%}
+    html,body{font-family:'Syne',sans-serif;background:var(--sg-bg);color:var(--sg-ink);height:100%;margin:0;-webkit-font-smoothing:antialiased}
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+  <body>
+    <script>
+      (function(){
+        try {
+          var v = localStorage.getItem("sg_theme");
+          if (v === "dark") document.documentElement.classList.add("theme-dark");
+          else if (v !== "light" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement.classList.add("theme-dark");
+        } catch (e) {}
+      })();
+    </script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
