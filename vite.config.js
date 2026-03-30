@@ -223,6 +223,70 @@ export default defineConfig({
           const prevHtml = readFileSync(resolve(outDir, 'previsions', 'index.html'), 'utf-8')
           writeFileSync(resolve(outDir, 'previsions', 'index.html'), prevHtml.replace('</head>', breadcrumbPrev + '\n</head>'))
           console.log('   → BreadcrumbList ajouté à /carte-sargasses/ et /previsions/')
+
+          // Pages statiques par plage (SEO longue traîne)
+          const beaches = [
+            // Martinique
+            {id:"grande-anse",island:"mq",name:"Grande Anse d'Arlet",commune:"Les Anses-d'Arlet",slug:"grande-anse-darlet"},
+            {id:"anse-mitan",island:"mq",name:"Anse Mitan",commune:"Les Trois-Îlets",slug:"anse-mitan"},
+            {id:"anse-noire",island:"mq",name:"Anse Noire",commune:"Les Anses-d'Arlet",slug:"anse-noire"},
+            {id:"tartane",island:"mq",name:"Tartane",commune:"La Trinité",slug:"tartane"},
+            {id:"anse-madame",island:"mq",name:"Anse Madame",commune:"Schoelcher",slug:"anse-madame"},
+            {id:"diamant",island:"mq",name:"Le Diamant",commune:"Le Diamant",slug:"le-diamant"},
+            {id:"pt-marin",island:"mq",name:"Pointe Marin",commune:"Sainte-Anne",slug:"pointe-marin"},
+            {id:"sainte-anne",island:"mq",name:"Sainte-Anne",commune:"Sainte-Anne",slug:"sainte-anne"},
+            {id:"les-salines",island:"mq",name:"Les Salines",commune:"Sainte-Anne",slug:"les-salines"},
+            {id:"vauclin",island:"mq",name:"Le Vauclin",commune:"Le Vauclin",slug:"le-vauclin"},
+            // Guadeloupe
+            {id:"gp-grande-anse",island:"gp",name:"Grande Anse",commune:"Bouillante",slug:"grande-anse-bouillante"},
+            {id:"gp-malendure",island:"gp",name:"Malendure",commune:"Bouillante",slug:"malendure"},
+            {id:"gp-sainte-anne",island:"gp",name:"Sainte-Anne",commune:"Sainte-Anne",slug:"sainte-anne-guadeloupe"},
+            {id:"gp-pt-chateaux",island:"gp",name:"Pointe des Châteaux",commune:"Saint-François",slug:"pointe-des-chateaux"},
+            {id:"gp-gosier",island:"gp",name:"Le Gosier",commune:"Le Gosier",slug:"le-gosier"},
+            {id:"gp-caravelle",island:"gp",name:"Plage de la Caravelle",commune:"Saint-François",slug:"plage-caravelle"},
+            {id:"gp-bas-du-fort",island:"gp",name:"Bas-du-Fort",commune:"Pointe-à-Pitre",slug:"bas-du-fort"},
+            {id:"gp-deshaies",island:"gp",name:"Grande Anse des Haies",commune:"Deshaies",slug:"grande-anse-deshaies"},
+            {id:"gp-moule",island:"gp",name:"Plage de la Souffleur",commune:"Le Moule",slug:"plage-souffleur"},
+            {id:"gp-vieux-fort",island:"gp",name:"Anse de la Gourde",commune:"Saint-François",slug:"anse-de-la-gourde"},
+          ]
+          const domainMQ = 'sargasses-martinique.com'
+          const domainGP = 'sargasses-guadeloupe.com'
+          let sitemapMQBeaches = ''
+          let sitemapGPBeaches = ''
+          for (const b of beaches) {
+            const isMQ = b.island === 'mq'
+            const domain = isMQ ? domainMQ : domainGP
+            const island = isMQ ? 'Martinique' : 'Guadeloupe'
+            const beachPath = `plages/${b.slug}`
+            const beachDir = resolve(outDir, beachPath)
+            mkdirSync(beachDir, { recursive: true })
+            const beachTitle = `${b.name} — Sargasses ${island} aujourd'hui`
+            const beachDesc = `État des sargasses à ${b.name} (${b.commune}, ${island}) aujourd'hui. Plage propre ou à éviter ? Consultez la fiche, les prévisions 7 jours et la carte en temps réel.`
+            const beachUrl = `https://${domain}/plages/${b.slug}/`
+            const beachSchema = JSON.stringify({"@context":"https://schema.org","@type":"Beach","name":b.name,"description":`Fiche sargasses ${b.name}, ${b.commune} (${island}). État en temps réel et prévisions.`,"url":beachUrl,"address":{"@type":"PostalAddress","addressLocality":b.commune,"addressRegion":island,"addressCountry":isMQ?"MQ":"GP"},"isPartOf":{"@type":"WebApplication","name":`Sargasses ${island}`,"url":`https://${domain}/`}})
+            const breadcrumbBeach = JSON.stringify({"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Accueil","item":`https://${domain}/`},{"@type":"ListItem","position":2,"name":"Plages","item":`https://${domain}/`},{"@type":"ListItem","position":3,"name":b.name,"item":beachUrl}]})
+            const beachHtml = html
+              .replace(/<title>[^<]*<\/title>/, `<title>${beachTitle}</title>`)
+              .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${beachDesc}" />`)
+              .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${beachUrl}" />`)
+              .replace(/<meta property="og:title"[^>]*>/, `<meta property="og:title" content="${beachTitle}" />`)
+              .replace(/<meta property="og:description"[^>]*>/, `<meta property="og:description" content="${beachDesc}" />`)
+              .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="${beachUrl}" />`)
+              .replace(/<meta name="twitter:title"[^>]*>/, `<meta name="twitter:title" content="${beachTitle}" />`)
+              .replace(/<meta name="twitter:description"[^>]*>/, `<meta name="twitter:description" content="${beachDesc}" />`)
+              .replace('</head>', `\n    <script type="application/ld+json">\n    ${beachSchema}\n    </script>\n    <script type="application/ld+json">\n    ${breadcrumbBeach}\n    </script>\n</head>`)
+            writeFileSync(resolve(beachDir, 'index.html'), beachHtml)
+            const sitemapEntry = `  <url><loc>${beachUrl}</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>\n`
+            if (isMQ) sitemapMQBeaches += sitemapEntry
+            else sitemapGPBeaches += sitemapEntry
+          }
+          // Réécrire les sitemaps avec les plages
+          const sitemapMQFull = sitemapMQ.replace('</urlset>', sitemapMQBeaches + '</urlset>')
+          const sitemapGPFull = sitemapGP.replace('</urlset>', sitemapGPBeaches + '</urlset>')
+          writeFileSync(resolve(outDir, 'sitemap-martinique.xml'), sitemapMQFull)
+          writeFileSync(resolve(outDir, 'sitemap-guadeloupe.xml'), sitemapGPFull)
+          console.log(`   → ${beaches.length} pages plages générées (${beaches.filter(b=>b.island==='mq').length} MQ + ${beaches.filter(b=>b.island==='gp').length} GP)`)
+          console.log('   → Sitemaps enrichis avec URLs plages')
         } catch (e) {
           console.warn('SEO pages:', e.message)
         }

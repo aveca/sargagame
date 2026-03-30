@@ -14,11 +14,11 @@ RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
 # Redirections 301 — anciennes URLs vers la nouvelle structure (SEO : récupère le jus)
 <IfModule mod_rewrite.c>
-# Anciennes pages plages/plage → accueil (SPA gère l'affichage)
-RewriteRule ^plages/(.+)/?$ / [R=301,L]
-RewriteRule ^plages/?$ / [R=301,L]
+# Anciennes pages /plage/ (singulier) et /plages/ sans slug → accueil
+# Note : /plages/{slug}/ sert maintenant les pages statiques par plage (SEO)
 RewriteRule ^plage/(.+)/?$ / [R=301,L]
 RewriteRule ^plage/?$ / [R=301,L]
+RewriteRule ^plages/?$ / [R=301,L]
 # Anciennes pages plages-guadeloupe / plages-martinique → accueil
 RewriteRule ^plages-guadeloupe/(.+)/?$ / [R=301,L]
 RewriteRule ^plages-guadeloupe/?$ / [R=301,L]
