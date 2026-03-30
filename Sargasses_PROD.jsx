@@ -1184,7 +1184,7 @@ function PremiumScreen({premium,onActivate}){
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100%",padding:"30px",textAlign:"center"}}>
       <div style={{fontSize:64,marginBottom:16,animation:"levelUp .6s cubic-bezier(.16,1,.3,1) both"}}>⭐</div>
       <div style={{fontFamily:"'Anton',sans-serif",fontSize:26,textTransform:"uppercase",color:"var(--sg-ink)",marginBottom:8}}>Premium Actif</div>
-      <div style={{fontSize:13,color:C.mid,lineHeight:1.7,marginBottom:20}}>Prévisions 7 jours · Alertes push<br/>2 îles · Données satellite toutes les 6h</div>
+      <div style={{fontSize:13,color:C.mid,lineHeight:1.7,marginBottom:20}}>30 jours de prévisions · Alertes push<br/>MQ + GP · Données satellite toutes les 6h</div>
       <div style={{background:C.greenBg,borderRadius:13,padding:"12px 20px",fontSize:12,fontWeight:700,color:C.green}}>✅ Tous les accès débloqués</div>
     </div>
   )
@@ -1202,19 +1202,22 @@ function PremiumScreen({premium,onActivate}){
           <div style={{fontFamily:"'Anton',sans-serif",fontSize:34,textTransform:"uppercase",color:"var(--sg-ink)",lineHeight:1.05,marginBottom:14,animation:"up .5s ease both"}}>
             Cette fois,<br/>tu seras prévenu.
           </div>
-          <div style={{fontSize:13,color:"var(--sg-mid)",marginBottom:24,lineHeight:1.7,animation:"up .5s ease .08s both"}}>
-            Prévisions 7 jours · Alertes push<br/>2 îles · Satellite toutes les 6h
+          <div style={{fontSize:13,color:"var(--sg-mid)",marginBottom:12,lineHeight:1.7,animation:"up .5s ease .08s both"}}>
+            Accès 30 jours à toutes les prévisions,<br/>alertes push et données satellite.
+          </div>
+          <div style={{display:"inline-block",padding:"6px 16px",borderRadius:10,background:C.tealBg,border:`1px solid ${C.tealL}25`,marginBottom:18,animation:"up .5s ease .1s both"}}>
+            <span style={{fontSize:12,fontWeight:700,color:C.teal}}>📅 30 jours de prévisions complètes</span>
           </div>
           <div style={{display:"flex",alignItems:"baseline",justifyContent:"center",gap:6,marginBottom:6,animation:"up .5s ease .12s both"}}>
             <span style={{fontFamily:"'Anton',sans-serif",fontSize:52,color:C.gold,lineHeight:1}}>4,99€</span>
-            <span style={{fontSize:13,color:"var(--sg-mute)",fontWeight:600}}> paiement unique</span>
+            <span style={{fontSize:13,color:"var(--sg-mute)",fontWeight:600}}> / 30 jours</span>
           </div>
-          <div style={{fontSize:11,color:"var(--sg-mute)",marginBottom:22,opacity:.7}}>= 1 aller-retour évité = l'app payée</div>
+          <div style={{fontSize:11,color:"var(--sg-mute)",marginBottom:22,opacity:.7}}>Soit 0,17€/jour · = 1 aller-retour évité</div>
           <div style={{animation:"up .5s ease .16s both"}}>
             <GBtn full onClick={()=>window.open(STRIPE_PAYMENT_URL,"_blank", "noopener,noreferrer")} style={{maxWidth:320,margin:"0 auto",animation:"glow 3s ease-in-out infinite"}}>Payer avec Stripe →</GBtn>
           </div>
           <div style={{display:"flex",justifyContent:"center",gap:12,marginTop:14,fontSize:10,color:"var(--sg-mute)"}}>
-            <span>✅ Paiement unique</span><span>🔒 Stripe sécurisé</span><span>🛡️ Remboursé 7j</span>
+            <span>📅 30 jours d'accès</span><span>🔒 Stripe sécurisé</span><span>🛡️ Remboursé 7j</span>
           </div>
           <CodePromoBlock onActivate={onActivate} />
         </div>
@@ -1225,11 +1228,11 @@ function PremiumScreen({premium,onActivate}){
         <div style={{fontSize:9,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",color:"var(--sg-mute)",marginBottom:12}}>Ce que tu débloques</div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
           {[
+            {e:"📅",t:"Prévisions 7j",s:"Prévisions complètes pendant 30 jours"},
             {e:"📡",t:"Satellite 6h",s:"Données fraîches toutes les 6 heures"},
-            {e:"📅",t:"Prévisions 7j",s:"Planifie ta semaine en avance"},
-            {e:"🔔",t:"Alertes push",s:"Notifié quand une plage change"},
-            {e:"🗺️",t:"2 îles",s:"Martinique + Guadeloupe couvertes"},
-            {e:"📊",t:"Historique 30j",s:"Évolution complète des plages"},
+            {e:"🔔",t:"Alertes push",s:"Notifié dès qu'une plage change"},
+            {e:"🗺️",t:"MQ + GP",s:"Martinique et Guadeloupe couvertes"},
+            {e:"📊",t:"Historique 30j",s:"Évolution complète de chaque plage"},
             {e:"☣️",t:"Alerte H2S",s:"Risque santé par plage en temps réel"},
           ].map((item,i)=>(
             <Card key={i} style={{padding:"14px",animation:`up .4s ease ${i*.05}s both`}}>
@@ -1293,9 +1296,9 @@ function PremiumScreen({premium,onActivate}){
       <div style={{padding:"0 16px 28px"}}>
         <CodePromoBlock onActivate={onActivate} />
         <div style={{marginTop:14}}>
-          <GBtn full onClick={()=>window.open(STRIPE_PAYMENT_URL,"_blank","noopener,noreferrer")} style={{animation:"glow 3s ease-in-out infinite"}}>4,99€ paiement unique — Payer avec Stripe →</GBtn>
+          <GBtn full onClick={()=>window.open(STRIPE_PAYMENT_URL,"_blank","noopener,noreferrer")} style={{animation:"glow 3s ease-in-out infinite"}}>4,99€ pour 30 jours — Payer avec Stripe →</GBtn>
         </div>
-        <div style={{fontSize:9,color:"var(--sg-mute)",textAlign:"center",marginTop:8}}>Paiement unique, pas d'abonnement</div>
+        <div style={{fontSize:9,color:"var(--sg-mute)",textAlign:"center",marginTop:8}}>Accès 30 jours · Pas de renouvellement automatique</div>
       </div>
     </div>
   )
