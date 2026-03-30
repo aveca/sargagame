@@ -27,6 +27,18 @@
     html,body{font-family:'Syne',sans-serif;background:var(--sg-bg);color:var(--sg-ink);height:100%;margin:0;-webkit-font-smoothing:antialiased}
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- OneSignal Push Notifications — appId patché par prepare-ftp.cjs selon le site -->
+  <script src="/config/push.js"></script>
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(function(OneSignal) {
+      OneSignal.init({
+        appId: window.ONESIGNAL_APP_ID || "4280dcab-fc43-415d-a9cd-a3da8cf601f1",
+        allowLocalhostAsSecureOrigin: true
+      });
+    });
+  </script>
 </head>
   <body>
     <script>

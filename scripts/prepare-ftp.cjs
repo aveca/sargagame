@@ -54,6 +54,7 @@ for (const { dir, title, domain, onesignalAppId } of readmes) {
 
   // Remplacer l'ancien OneSignal App ID par le bon pour ce site
   const filesToPatch = [
+    'index.html',
     'sarg_carte_satellite_app.html',
     'sarg_carte_satellite_standalone.html',
     'config/push.js',
