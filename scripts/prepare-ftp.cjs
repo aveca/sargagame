@@ -92,7 +92,7 @@ Sitemap: https://${domain}/sitemap.xml
     const distIndex = path.join(dist, 'index.html')
     let scriptSrc = '/assets/index.js'
     if (fs.existsSync(distIndex)) {
-      const match = fs.readFileSync(distIndex, 'utf-8').match(/src="([^"]+\.js)"/)
+      const match = fs.readFileSync(distIndex, 'utf-8').match(/type="module"[^>]+src="([^"]+\.js)"/)
       if (match) scriptSrc = match[1]
     }
     const gpIndex = `<!DOCTYPE html>

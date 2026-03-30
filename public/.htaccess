@@ -18,9 +18,20 @@ RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 RewriteRule ^plages/(.+)/?$ / [R=301,L]
 RewriteRule ^plages/?$ / [R=301,L]
 RewriteRule ^plage/(.+)/?$ / [R=301,L]
+RewriteRule ^plage/?$ / [R=301,L]
+# Anciennes pages plages-guadeloupe / plages-martinique → accueil
+RewriteRule ^plages-guadeloupe/(.+)/?$ / [R=301,L]
+RewriteRule ^plages-guadeloupe/?$ / [R=301,L]
+RewriteRule ^plages-martinique/(.+)/?$ / [R=301,L]
+RewriteRule ^plages-martinique/?$ / [R=301,L]
+# Anciennes pages communes → accueil
+RewriteRule ^communes/(.+)/?$ / [R=301,L]
+RewriteRule ^communes/?$ / [R=301,L]
 # Anciennes pages éditoriales → accueil
 RewriteRule ^sante-et-science/?$ / [R=301,L]
+RewriteRule ^sargasses-outre-mer/?$ / [R=301,L]
 RewriteRule ^plages-sans-sargasses-martinique/?$ / [R=301,L]
+RewriteRule ^plages-sans-sargasses-guadeloupe/?$ / [R=301,L]
 RewriteRule ^previsions-bulletin-direct/?$ /previsions/ [R=301,L]
 # Ancien landing
 RewriteRule ^landing-v2\.html$ / [R=301,L]
