@@ -14,25 +14,184 @@ RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
 # Redirections 301 — anciennes URLs vers la nouvelle structure (SEO : récupère le jus)
 <IfModule mod_rewrite.c>
-# Anciennes pages /plage/ (singulier) et /plages/ sans slug → accueil
-# Note : /plages/{slug}/ sert maintenant les pages statiques par plage (SEO)
-RewriteRule ^plage/(.+)/?$ / [R=301,L]
-RewriteRule ^plage/?$ / [R=301,L]
-RewriteRule ^plages/?$ / [R=301,L]
-# Anciennes pages plages-guadeloupe / plages-martinique → accueil
-RewriteRule ^plages-guadeloupe/(.+)/?$ / [R=301,L]
-RewriteRule ^plages-guadeloupe/?$ / [R=301,L]
-RewriteRule ^plages-martinique/(.+)/?$ / [R=301,L]
-RewriteRule ^plages-martinique/?$ / [R=301,L]
-# Anciennes pages communes → accueil
+
+# =====================================================================
+# GUADELOUPE — Smart redirects : /plages-guadeloupe/{old} → /plages/{new}
+# Specific rules FIRST, catch-all LAST
+# =====================================================================
+
+# --- Malendure ---
+RewriteRule ^plages-guadeloupe/plage-de-malendure/?$ /plages/malendure/ [R=301,L]
+RewriteRule ^plages-guadeloupe/malendure/?$ /plages/malendure/ [R=301,L]
+RewriteRule ^plages/malendure-bouillante/?$ /plages/malendure/ [R=301,L]
+
+# --- Grande Anse (Bouillante) ---
+RewriteRule ^plages-guadeloupe/plage-de-grande-anse/?$ /plages/grande-anse-bouillante/ [R=301,L]
+RewriteRule ^plages-guadeloupe/grande-anse/?$ /plages/grande-anse-bouillante/ [R=301,L]
+RewriteRule ^plages-guadeloupe/grande-anse-bouillante/?$ /plages/grande-anse-bouillante/ [R=301,L]
+RewriteRule ^plages/grande-anse/?$ /plages/grande-anse-bouillante/ [R=301,L]
+
+# --- Sainte-Anne ---
+RewriteRule ^plages-guadeloupe/plage-de-sainte-anne/?$ /plages/sainte-anne-guadeloupe/ [R=301,L]
+RewriteRule ^plages-guadeloupe/sainte-anne/?$ /plages/sainte-anne-guadeloupe/ [R=301,L]
+RewriteRule ^plages-guadeloupe/plage-du-bourg-de-sainte-anne/?$ /plages/sainte-anne-guadeloupe/ [R=301,L]
+RewriteRule ^plages/sainte-anne/?$ /plages/sainte-anne-guadeloupe/ [R=301,L]
+
+# --- Pointe des Châteaux ---
+RewriteRule ^plages-guadeloupe/pointe-des-chateaux/?$ /plages/pointe-des-chateaux/ [R=301,L]
+RewriteRule ^plages-guadeloupe/plage-des-grandes-salines/?$ /plages/pointe-des-chateaux/ [R=301,L]
+RewriteRule ^plages-guadeloupe/anse-a-la-gourde/?$ /plages/pointe-des-chateaux/ [R=301,L]
+RewriteRule ^plages/pointe-des-chateaux-saint-francois/?$ /plages/pointe-des-chateaux/ [R=301,L]
+
+# --- Le Gosier ---
+RewriteRule ^plages-guadeloupe/plage-du-gosier/?$ /plages/le-gosier/ [R=301,L]
+RewriteRule ^plages-guadeloupe/le-gosier/?$ /plages/le-gosier/ [R=301,L]
+RewriteRule ^plages-guadeloupe/plage-de-petit-havre/?$ /plages/le-gosier/ [R=301,L]
+RewriteRule ^plages-guadeloupe/petit-havre/?$ /plages/le-gosier/ [R=301,L]
+RewriteRule ^plages/gosier-plage/?$ /plages/le-gosier/ [R=301,L]
+RewriteRule ^plages/le-gosier-plage/?$ /plages/le-gosier/ [R=301,L]
+
+# --- Plage Caravelle ---
+RewriteRule ^plages-guadeloupe/la-caravelle/?$ /plages/plage-caravelle/ [R=301,L]
+RewriteRule ^plages-guadeloupe/plage-de-la-caravelle/?$ /plages/plage-caravelle/ [R=301,L]
+RewriteRule ^plages-guadeloupe/caravelle/?$ /plages/plage-caravelle/ [R=301,L]
+RewriteRule ^plages/la-caravelle/?$ /plages/plage-caravelle/ [R=301,L]
+RewriteRule ^plages/caravelle/?$ /plages/plage-caravelle/ [R=301,L]
+RewriteRule ^plages/caravelle-sainte-anne/?$ /plages/plage-caravelle/ [R=301,L]
+
+# --- Bas du Fort ---
+RewriteRule ^plages-guadeloupe/plage-de-bas-du-fort/?$ /plages/bas-du-fort/ [R=301,L]
+RewriteRule ^plages-guadeloupe/bas-du-fort/?$ /plages/bas-du-fort/ [R=301,L]
+RewriteRule ^plages/bas-du-fort-gosier/?$ /plages/bas-du-fort/ [R=301,L]
+
+# --- Grande Anse (Deshaies) ---
+RewriteRule ^plages-guadeloupe/plage-de-grande-anse-deshaies/?$ /plages/grande-anse-deshaies/ [R=301,L]
+RewriteRule ^plages-guadeloupe/grande-anse-deshaies/?$ /plages/grande-anse-deshaies/ [R=301,L]
+RewriteRule ^plages-guadeloupe/deshaies/?$ /plages/grande-anse-deshaies/ [R=301,L]
+RewriteRule ^plages/grande-anse-deshaies-plage/?$ /plages/grande-anse-deshaies/ [R=301,L]
+
+# --- Plage Souffleur ---
+RewriteRule ^plages-guadeloupe/plage-du-souffleur/?$ /plages/plage-souffleur/ [R=301,L]
+RewriteRule ^plages-guadeloupe/souffleur/?$ /plages/plage-souffleur/ [R=301,L]
+RewriteRule ^plages-guadeloupe/plage-du-souffleur-port-louis/?$ /plages/plage-souffleur/ [R=301,L]
+RewriteRule ^plages/souffleur/?$ /plages/plage-souffleur/ [R=301,L]
+RewriteRule ^plages/souffleur-port-louis/?$ /plages/plage-souffleur/ [R=301,L]
+
+# --- Anse de la Gourde ---
+RewriteRule ^plages-guadeloupe/vieux-fort/?$ /plages/anse-de-la-gourde/ [R=301,L]
+RewriteRule ^plages-guadeloupe/anse-de-la-gourde/?$ /plages/anse-de-la-gourde/ [R=301,L]
+RewriteRule ^plages/anse-de-la-gourde-saint-francois/?$ /plages/anse-de-la-gourde/ [R=301,L]
+
+# =====================================================================
+# GUADELOUPE — Communes → nearest new beach page
+# =====================================================================
+RewriteRule ^communes/deshaies/?$ /plages/grande-anse-deshaies/ [R=301,L]
+RewriteRule ^communes/bouillante/?$ /plages/grande-anse-bouillante/ [R=301,L]
+RewriteRule ^communes/sainte-anne/?$ /plages/sainte-anne-guadeloupe/ [R=301,L]
+RewriteRule ^communes/saint-francois/?$ /plages/pointe-des-chateaux/ [R=301,L]
+RewriteRule ^communes/le-gosier/?$ /plages/le-gosier/ [R=301,L]
+RewriteRule ^communes/gosier/?$ /plages/le-gosier/ [R=301,L]
+RewriteRule ^communes/port-louis/?$ /plages/plage-souffleur/ [R=301,L]
+RewriteRule ^communes/petit-bourg/?$ / [R=301,L]
+RewriteRule ^communes/sainte-rose/?$ / [R=301,L]
+RewriteRule ^communes/baie-mahault/?$ / [R=301,L]
+# Catch-all communes
 RewriteRule ^communes/(.+)/?$ / [R=301,L]
 RewriteRule ^communes/?$ / [R=301,L]
-# Anciennes pages éditoriales → accueil
+
+# =====================================================================
+# GUADELOUPE — Editorial pages redirects
+# =====================================================================
+RewriteRule ^carte-temps-reel/?$ /carte-sargasses/ [R=301,L]
+RewriteRule ^methode-carte/?$ /carte-sargasses/ [R=301,L]
+RewriteRule ^previsions-sargasses-guadeloupe/?$ /previsions/ [R=301,L]
+RewriteRule ^faq/?$ / [R=301,L]
+RewriteRule ^cgu/?$ /mentions-legales.html [R=301,L]
+RewriteRule ^mentions-legales/?$ /mentions-legales.html [R=301,L]
+RewriteRule ^politique-de-confidentialite/?$ /confidentialite.html [R=301,L]
+RewriteRule ^contact/?$ / [R=301,L]
+RewriteRule ^a-propos/?$ / [R=301,L]
+RewriteRule ^premium/?$ / [R=301,L]
+RewriteRule ^quand-sargasses-guadeloupe/?$ / [R=301,L]
+RewriteRule ^plages-deshaies-guadeloupe/?$ /plages/grande-anse-deshaies/ [R=301,L]
+RewriteRule ^plages-saint-francois-guadeloupe/?$ /plages/plage-caravelle/ [R=301,L]
+RewriteRule ^plages-sans-sargasses-guadeloupe/?$ / [R=301,L]
+
+# =====================================================================
+# MARTINIQUE — Smart redirects : old /plage(s)/{old} → /plages/{new}
+# =====================================================================
+
+# --- Grande Anse d'Arlet ---
+RewriteRule ^plage/grande-anse-darlet/?$ /plages/grande-anse-darlet/ [R=301,L]
+RewriteRule ^plage/grande-anse/?$ /plages/grande-anse-darlet/ [R=301,L]
+RewriteRule ^plage/grande-anse-d-arlet/?$ /plages/grande-anse-darlet/ [R=301,L]
+RewriteRule ^plages-martinique/grande-anse/?$ /plages/grande-anse-darlet/ [R=301,L]
+RewriteRule ^plages-martinique/grande-anse-darlet/?$ /plages/grande-anse-darlet/ [R=301,L]
+
+# --- Anse Mitan ---
+RewriteRule ^plage/anse-mitan/?$ /plages/anse-mitan/ [R=301,L]
+RewriteRule ^plages-martinique/anse-mitan/?$ /plages/anse-mitan/ [R=301,L]
+
+# --- Les Salines ---
+RewriteRule ^plage/les-salines/?$ /plages/les-salines/ [R=301,L]
+RewriteRule ^plage/salines/?$ /plages/les-salines/ [R=301,L]
+RewriteRule ^plages-martinique/les-salines/?$ /plages/les-salines/ [R=301,L]
+RewriteRule ^plages-martinique/salines/?$ /plages/les-salines/ [R=301,L]
+
+# --- Anse Couleuvre ---
+RewriteRule ^plage/anse-couleuvre/?$ /plages/anse-couleuvre/ [R=301,L]
+RewriteRule ^plages-martinique/anse-couleuvre/?$ /plages/anse-couleuvre/ [R=301,L]
+
+# --- Diamant ---
+RewriteRule ^plage/diamant/?$ /plages/diamant/ [R=301,L]
+RewriteRule ^plage/plage-du-diamant/?$ /plages/diamant/ [R=301,L]
+RewriteRule ^plages-martinique/diamant/?$ /plages/diamant/ [R=301,L]
+
+# --- Anse Noire ---
+RewriteRule ^plage/anse-noire/?$ /plages/anse-noire/ [R=301,L]
+RewriteRule ^plages-martinique/anse-noire/?$ /plages/anse-noire/ [R=301,L]
+
+# --- Anse Dufour ---
+RewriteRule ^plage/anse-dufour/?$ /plages/anse-dufour/ [R=301,L]
+RewriteRule ^plages-martinique/anse-dufour/?$ /plages/anse-dufour/ [R=301,L]
+
+# --- Cap Chevalier ---
+RewriteRule ^plage/cap-chevalier/?$ /plages/cap-chevalier/ [R=301,L]
+RewriteRule ^plages-martinique/cap-chevalier/?$ /plages/cap-chevalier/ [R=301,L]
+
+# --- Anse Tartane ---
+RewriteRule ^plage/anse-tartane/?$ /plages/anse-tartane/ [R=301,L]
+RewriteRule ^plages-martinique/anse-tartane/?$ /plages/anse-tartane/ [R=301,L]
+RewriteRule ^plages-martinique/tartane/?$ /plages/anse-tartane/ [R=301,L]
+
+# =====================================================================
+# MARTINIQUE — Editorial pages redirects
+# =====================================================================
 RewriteRule ^sante-et-science/?$ / [R=301,L]
 RewriteRule ^sargasses-outre-mer/?$ / [R=301,L]
 RewriteRule ^plages-sans-sargasses-martinique/?$ / [R=301,L]
-RewriteRule ^plages-sans-sargasses-guadeloupe/?$ / [R=301,L]
 RewriteRule ^previsions-bulletin-direct/?$ /previsions/ [R=301,L]
+
+# =====================================================================
+# CATCH-ALL — remaining old URLs that don't match specific rules → homepage
+# These MUST come AFTER all specific redirects above
+# =====================================================================
+
+# Anciennes pages /plage/ (singulier) sans correspondance → accueil
+RewriteRule ^plage/(.+)/?$ / [R=301,L]
+RewriteRule ^plage/?$ / [R=301,L]
+
+# /plages/ sans slug → accueil (les /plages/{slug}/ sont gérées par les fichiers statiques)
+RewriteRule ^plages/?$ / [R=301,L]
+
+# Anciennes pages plages-guadeloupe sans correspondance → accueil
+RewriteRule ^plages-guadeloupe/(.+)/?$ / [R=301,L]
+RewriteRule ^plages-guadeloupe/?$ / [R=301,L]
+
+# Anciennes pages plages-martinique sans correspondance → accueil
+RewriteRule ^plages-martinique/(.+)/?$ / [R=301,L]
+RewriteRule ^plages-martinique/?$ / [R=301,L]
+
 # Ancien landing
 RewriteRule ^landing-v2\.html$ / [R=301,L]
 </IfModule>
