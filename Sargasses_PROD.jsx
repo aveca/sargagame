@@ -441,6 +441,8 @@ const THEME_VARS=`
 `
 const CSS=`
 ${GFONTS}
+/* Global overflow prevention for mobile */
+html,body{overflow-x:hidden;max-width:100vw}
 ${THEME_VARS}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{font-size:clamp(14px,2.2vw + 12px,16px);-webkit-text-size-adjust:100%}
@@ -490,7 +492,7 @@ input::placeholder,textarea::placeholder{color:var(--sg-mid);opacity:.9}
 .row:hover{background:var(--sg-rowHover)!important}
 
 /* ─ Shell: mobile first, then tablet, then desktop ─ */
-.shell{width:100%;min-height:100vh;min-height:100dvh;max-width:100%;margin:0 auto;display:flex;flex-direction:column;position:relative;overflow:hidden;font-family:'Syne',sans-serif;background:var(--sg-bg)}
+.shell{width:100%;min-height:100vh;min-height:100dvh;max-width:100vw;margin:0 auto;display:flex;flex-direction:column;position:relative;overflow-x:hidden;overflow-y:auto;font-family:'Syne',sans-serif;background:var(--sg-bg);box-sizing:border-box}
 .bsi{border-radius:22px 22px 0 0;padding-bottom:env(safe-area-inset-bottom)}
 @media(max-width:767px){
   .sidebar{display:none!important}
@@ -532,11 +534,11 @@ const Chip=({status,sm,style:sx})=>{
   const L=T[lang]||T.fr
   const label=status==="clean"?L.statusClean:status==="moderate"?L.statusModerate:L.statusAvoid
   const key=status==="clean"?"clean":status==="moderate"?"moderate":"avoid"
-  return <span style={{display:"inline-flex",alignItems:"center",gap:5,padding:sm?"4px 10px":"6px 14px",borderRadius:100,fontSize:sm?12:14,fontWeight:700,color:`var(--sg-status-${key}, ${st.c})`,background:`var(--sg-status-${key}-bg, ${st.bg})`,border:`1px solid var(--sg-status-${key}-border, ${st.c}22)`,...sx}}>{st.e} {label}</span>
+  return <span style={{display:"inline-flex",alignItems:"center",gap:5,padding:sm?"4px 10px":"6px 14px",borderRadius:100,fontSize:14,fontWeight:700,color:`var(--sg-status-${key}, ${st.c})`,background:`var(--sg-status-${key}-bg, ${st.bg})`,border:`1px solid var(--sg-status-${key}-border, ${st.c}22)`,...sx}}>{st.e} {label}</span>
 }
 
 const GBtn=({children,onClick,full,sm,outline,dark,disabled,style:sx})=>{
-  const base={width:full?"100%":"auto",padding:sm?"10px 18px":"14px 24px",borderRadius:14,fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:sm?12:15,letterSpacing:".07em",textTransform:"uppercase",cursor:disabled?"not-allowed":"pointer",transition:"all .18s",opacity:disabled?.5:1,...sx}
+  const base={width:full?"100%":"auto",padding:sm?"10px 18px":"14px 24px",borderRadius:14,fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:sm?14:15,letterSpacing:".07em",textTransform:"uppercase",cursor:disabled?"not-allowed":"pointer",transition:"all .18s",opacity:disabled?.5:1,minHeight:44,...sx}
   if(dark) return <button onClick={!disabled&&onClick} style={{...base,background:`linear-gradient(145deg,${C.night},${C.night2})`,color:"white",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.22)"}}>{children}</button>
   if(outline) return <button onClick={!disabled&&onClick} style={{...base,background:"transparent",color:C.gold,border:`2px solid ${C.gold}`}}>{children}</button>
   return <button onClick={!disabled&&onClick} style={{...base,background:`linear-gradient(158deg,${C.goldLL},${C.goldL} 42%,#AF7200)`,color:"var(--sg-ink)",border:"none",boxShadow:`0 4px 20px rgba(196,131,10,.32)`}}
@@ -565,7 +567,7 @@ const Confetti=({on})=>{
 function XPToast({xp,visible}){
   if(!visible||!xp) return null
   return(
-    <div style={{position:"fixed",top:70,right:14,zIndex:800,background:`linear-gradient(135deg,${C.goldLL},${C.goldL})`,color:"var(--sg-ink)",borderRadius:100,padding:"6px 14px",fontSize:12,fontWeight:800,boxShadow:`0 3px 14px rgba(196,131,10,.35)`,animation:"xpFloat 1.6s ease both",display:"flex",alignItems:"center",gap:5,pointerEvents:"none"}}>
+    <div style={{position:"fixed",top:70,right:14,zIndex:800,background:`linear-gradient(135deg,${C.goldLL},${C.goldL})`,color:"var(--sg-ink)",borderRadius:100,padding:"6px 14px",fontSize:14,fontWeight:800,boxShadow:`0 3px 14px rgba(196,131,10,.35)`,animation:"xpFloat 1.6s ease both",display:"flex",alignItems:"center",gap:5,pointerEvents:"none"}}>
       ⭐ +{xp} XP
     </div>
   )
@@ -788,9 +790,9 @@ function ChatScreen({beaches,favs,onFavToggle,onOpenBeach,initQ,onXP,sargassumDa
                     </div>
                     <Chip status={rec.status} sm/>
                   </div>
-                  <div style={{padding:"6px 14px 9px",display:"flex",alignItems:"center",gap:7,fontSize:10,color:"var(--sg-mid)"}}>
+                  <div style={{padding:"6px 14px 9px",display:"flex",alignItems:"center",gap:7,fontSize:14,color:"var(--sg-mid)"}}>
                     {rec.kids&&<span>🧒</span>}{rec.snorkel&&<span>🤿</span>}{rec.parking&&<span>🅿️</span>}
-                    <span style={{marginLeft:"auto",color:favs.includes(rec.id)?C.red:C.mute,fontWeight:700,cursor:"pointer"}} onClick={e=>{e.stopPropagation();onFavToggle(rec.id);onXP("fav")}}>{favs.includes(rec.id)?"❤️ "+L.fav:"🤍 "+L.addFav}</span>
+                    <span style={{marginLeft:"auto",color:favs.includes(rec.id)?C.red:C.mute,fontWeight:700,cursor:"pointer",padding:"8px",minHeight:44,display:"inline-flex",alignItems:"center"}} onClick={e=>{e.stopPropagation();onFavToggle(rec.id);onXP("fav")}}>{favs.includes(rec.id)?"❤️ "+L.fav:"🤍 "+L.addFav}</span>
                   </div>
                 </div>
               )}
@@ -861,7 +863,7 @@ function ListeScreen({beaches,favs,onFavToggle,onOpenBeach,gps,onXP,localBeachIm
                 </div>
               </div>
               <Chip status={b.status} sm/>
-              <button onClick={e=>{e.stopPropagation();onFavToggle(b.id);onXP("fav")}} style={{background:"none",border:"none",cursor:"pointer",fontSize:18,flexShrink:0,padding:"2px"}}>{favs.includes(b.id)?"❤️":"🤍"}</button>
+              <button onClick={e=>{e.stopPropagation();onFavToggle(b.id);onXP("fav")}} style={{background:"none",border:"none",cursor:"pointer",fontSize:22,flexShrink:0,padding:"8px",minWidth:44,minHeight:44,display:"flex",alignItems:"center",justifyContent:"center"}}>{favs.includes(b.id)?"❤️":"🤍"}</button>
             </div>
           )
         })}
@@ -934,8 +936,8 @@ function EvolutionSection({historyData,island,onOpenBeach,beaches}){
   return(
     <div style={{padding:"4px 16px 16px"}}>
       <div style={{fontSize:18,fontWeight:800,color:"var(--sg-ink)",marginBottom:10}}>Évolution récente</div>
-      {trendText&&<div style={{fontSize:12,fontWeight:600,color:"var(--sg-mid)",marginBottom:10,padding:"8px 12px",background:"var(--sg-card)",borderRadius:10,border:"1px solid var(--sg-border)"}}>{trendText}</div>}
-      {changes.length===0&&<div style={{fontSize:11,color:"var(--sg-mute)",padding:"8px 0"}}>Aucun changement de statut récent.</div>}
+      {trendText&&<div style={{fontSize:14,fontWeight:600,color:"var(--sg-mid)",marginBottom:10,padding:"8px 12px",background:"var(--sg-card)",borderRadius:10,border:"1px solid var(--sg-border)"}}>{trendText}</div>}
+      {changes.length===0&&<div style={{fontSize:14,color:"var(--sg-mute)",padding:"8px 0"}}>Aucun changement de statut récent.</div>}
       {changes.length>0&&<div style={{display:"flex",flexDirection:"column",gap:6}}>
         {changes.map((c,i)=>{
           const name=BEACH_NAMES_MAP[c.beach]||c.beach
@@ -945,14 +947,14 @@ function EvolutionSection({historyData,island,onOpenBeach,beaches}){
             <div key={i} onClick={()=>beachObj&&onOpenBeach(beachObj)} className="tap" style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:"var(--sg-card)",border:`1px solid ${isGood?"rgba(39,112,58,.2)":"rgba(176,27,27,.15)"}`,borderRadius:12,cursor:beachObj?"pointer":"default",animation:`up .3s ease ${i*.04}s both`}}>
               <div style={{fontSize:18,flexShrink:0}}>{isGood?"✅":"⚠️"}</div>
               <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)",lineHeight:1.2}}>{name}</div>
-                <div style={{fontSize:10,color:"var(--sg-mid)",marginTop:2,display:"flex",alignItems:"center",gap:4}}>
+                <div style={{fontSize:14,fontWeight:700,color:"var(--sg-ink)",lineHeight:1.2}}>{name}</div>
+                <div style={{fontSize:14,color:"var(--sg-mid)",marginTop:2,display:"flex",alignItems:"center",gap:4}}>
                   <span>{STATUS_EMOJI[c.from]} {STATUS_LABELS[c.from]}</span>
                   <span>→</span>
                   <span style={{fontWeight:700}}>{STATUS_EMOJI[c.to]} {STATUS_LABELS[c.to]}</span>
                 </div>
               </div>
-              <div style={{fontSize:10,color:"var(--sg-mute)",flexShrink:0}}>{new Date(c.date).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})}</div>
+              <div style={{fontSize:14,color:"var(--sg-mute)",flexShrink:0}}>{new Date(c.date).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})}</div>
             </div>
           )
         })}
@@ -1017,22 +1019,22 @@ function AccueilScreen({beaches,favs,onFavToggle,onOpenBeach,onAskChat,gps,onGPS
           <div onClick={()=>{onOpenBeach(best);onXP("open")}} className="tap hover" style={{background:"var(--sg-card)",border:"1px solid var(--sg-border)",borderRadius:20,padding:"18px 20px",cursor:"pointer",boxShadow:"var(--sg-card-shadow-lg, var(--sg-card-shadow))",animation:"up .4s ease .08s both",position:"relative",zIndex:1}}>
             <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:14}}>
               <div>
-                <div style={{fontSize:12,fontWeight:600,color:"var(--sg-mute)",marginBottom:6}}>{gps?"Meilleure plage près de toi":favClean.length>0?"Ta plage favorite":"Meilleure plage du jour"}</div>
+                <div style={{fontSize:14,fontWeight:600,color:"var(--sg-mute)",marginBottom:6}}>{gps?"Meilleure plage près de toi":favClean.length>0?"Ta plage favorite":"Meilleure plage du jour"}</div>
                 <div style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:24,textTransform:"uppercase",color:"var(--sg-ink)",lineHeight:1}}>{best.name}</div>
                 <div style={{fontSize:13,color:"var(--sg-mute)",marginTop:4}}>{best.commune}</div>
               </div>
               <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6}}>
                 <Chip status={best.status}/>
-                <button onClick={e=>{e.stopPropagation();onFavToggle(best.id);onXP("fav")}} style={{background:"none",border:"none",cursor:"pointer",fontSize:20}}>{favs.includes(best.id)?"❤️":"🤍"}</button>
+                <button onClick={e=>{e.stopPropagation();onFavToggle(best.id);onXP("fav")}} style={{background:"none",border:"none",cursor:"pointer",fontSize:22,padding:"8px",minWidth:44,minHeight:44,display:"flex",alignItems:"center",justifyContent:"center"}}>{favs.includes(best.id)?"❤️":"🤍"}</button>
               </div>
             </div>
             <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14}}>
               {w&&<><div style={{background:"var(--sg-bgD)",borderRadius:10,padding:"6px 12px",fontSize:13,fontWeight:600,color:"var(--sg-ink)",display:"flex",alignItems:"center",gap:5}}><span>💨</span>{w.wind}km/h</div><div style={{background:"var(--sg-bgD)",borderRadius:10,padding:"6px 12px",fontSize:13,fontWeight:600,color:"var(--sg-ink)",display:"flex",alignItems:"center",gap:5}}><span>☀️</span>UV {w.uv}</div><div style={{background:"var(--sg-bgD)",borderRadius:10,padding:"6px 12px",fontSize:13,fontWeight:600,color:"var(--sg-ink)",display:"flex",alignItems:"center",gap:5}}><span>🌡️</span>{w.temp}°C</div></>}
-              {gps&&<div style={{marginLeft:"auto",fontSize:11,color:C.ocean,fontWeight:700}}>📍 {hav(gps.lat,gps.lng,best.lat,best.lng)} km</div>}
+              {gps&&<div style={{marginLeft:"auto",fontSize:14,color:C.ocean,fontWeight:700}}>📍 {hav(gps.lat,gps.lng,best.lat,best.lng)} km</div>}
             </div>
             <div style={{display:"flex",gap:8}}>
               <GBtn sm style={{flex:1}}>Y aller →</GBtn>
-              {gps&&<a href={`https://maps.google.com/?q=${best.lat},${best.lng}&travelmode=driving`} target="_blank" rel="noreferrer" style={{flex:1,padding:"10px",background:"var(--sg-rowHover)",borderRadius:14,fontSize:12,fontWeight:700,color:"var(--sg-mid)",textDecoration:"none",textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center",gap:4}}>🗺️ Maps</a>}
+              {gps&&<a href={`https://maps.google.com/?q=${best.lat},${best.lng}&travelmode=driving`} target="_blank" rel="noreferrer" style={{flex:1,padding:"10px",background:"var(--sg-rowHover)",borderRadius:14,fontSize:14,fontWeight:700,color:"var(--sg-mid)",textDecoration:"none",textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center",gap:4,minHeight:44}}>🗺️ Maps</a>}
             </div>
           </div>
         )}
@@ -1040,8 +1042,8 @@ function AccueilScreen({beaches,favs,onFavToggle,onOpenBeach,onAskChat,gps,onGPS
         {favAlerts.length>0&&(
           <div style={{marginTop:12,padding:"12px 14px",background:"rgba(176,27,27,.07)",border:"1.5px solid rgba(176,27,27,.2)",borderRadius:14,animation:"up .4s ease .12s both",position:"relative",zIndex:1}}>
             <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}><span style={{fontSize:16}}>☣️</span><div style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:13,color:C.red,letterSpacing:".04em",textTransform:"uppercase"}}>Alerte H2S — {favAlerts.length} favori{favAlerts.length>1?"s":""}</div></div>
-            <div style={{fontSize:11,color:C.red,lineHeight:1.6,opacity:.8,marginBottom:8}}>{favAlerts.map(b=>b.name).join(", ")} — évitez si asthmatique, enfant ou femme enceinte.</div>
-            {favAlerts.map(b=><div key={b.id} onClick={()=>onOpenBeach(b)} className="tap" style={{display:"flex",alignItems:"center",gap:8,padding:"7px 10px",background:"rgba(176,27,27,.06)",borderRadius:9,cursor:"pointer",marginBottom:3}}><SDot s="avoid" sz={7}/><span style={{fontSize:11,fontWeight:700,color:"var(--sg-ink)",flex:1}}>{b.name}</span><span style={{fontSize:10,color:"var(--sg-mute)"}}>Voir →</span></div>)}
+            <div style={{fontSize:14,color:C.red,lineHeight:1.6,opacity:.8,marginBottom:8}}>{favAlerts.map(b=>b.name).join(", ")} — évitez si asthmatique, enfant ou femme enceinte.</div>
+            {favAlerts.map(b=><div key={b.id} onClick={()=>onOpenBeach(b)} className="tap" style={{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",background:"rgba(176,27,27,.06)",borderRadius:9,cursor:"pointer",marginBottom:3,minHeight:44}}><SDot s="avoid" sz={7}/><span style={{fontSize:14,fontWeight:700,color:"var(--sg-ink)",flex:1}}>{b.name}</span><span style={{fontSize:14,color:"var(--sg-mute)"}}>Voir →</span></div>)}
           </div>
         )}
       </div>
@@ -1061,15 +1063,15 @@ function AccueilScreen({beaches,favs,onFavToggle,onOpenBeach,onAskChat,gps,onGPS
       </div>
 
       {/* Scroll propres */}
-      <div style={{padding:"8px 0 8px"}}>
+      <div style={{padding:"8px 0 8px",overflow:"hidden"}}>
         <div style={{padding:"0 18px",fontSize:18,fontWeight:800,color:"var(--sg-ink)",marginBottom:12}}>Propres aujourd'hui</div>
-        <div className="clean-scroll" style={{display:"flex",gap:10,overflowX:"auto",paddingLeft:16,paddingRight:16,paddingBottom:4}}>
+        <div className="clean-scroll" style={{display:"flex",gap:10,overflowX:"auto",paddingLeft:16,paddingRight:16,paddingBottom:4,WebkitOverflowScrolling:"touch"}}>
           {clean.map((b,i)=>(
             <div key={b.id} onClick={()=>{onOpenBeach(b);onXP("open")}} className="tap" style={{flexShrink:0,width:148,background:"var(--sg-card)",border:"1px solid var(--sg-status-clean-border, rgba(39,112,58,.25))",borderRadius:16,padding:"12px 13px",cursor:"pointer",animation:`up .3s ease ${i*.06}s both`}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}><SDot s="clean" sz={8} pulse={false}/><button onClick={e=>{e.stopPropagation();onFavToggle(b.id);onXP("fav")}} style={{background:"none",border:"none",cursor:"pointer",fontSize:14,padding:0}}>{favs.includes(b.id)?"❤️":"🤍"}</button></div>
-              <div style={{fontWeight:700,fontSize:14,color:"var(--sg-ink)",lineHeight:1.2,marginBottom:4}}>{b.name}</div>
-              <div style={{fontSize:12,color:"var(--sg-mute)",marginBottom:8}}>{b.commune}</div>
-              <div style={{display:"flex",gap:6}}><span style={{fontSize:11,fontWeight:600,color:C.ocean}}>🚗 {b.drive}min</span>{b.island==="gp"&&<span style={{fontSize:11,color:"var(--sg-mute)"}}>PaP</span>}{b.snorkel&&<span style={{fontSize:11,color:C.teal}}>🤿</span>}{b.kids&&<span style={{fontSize:11}}>🧒</span>}</div>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}><SDot s="clean" sz={8} pulse={false}/><button onClick={e=>{e.stopPropagation();onFavToggle(b.id);onXP("fav")}} style={{background:"none",border:"none",cursor:"pointer",fontSize:20,padding:"6px",minWidth:44,minHeight:44,display:"flex",alignItems:"center",justifyContent:"center"}}>{favs.includes(b.id)?"❤️":"🤍"}</button></div>
+              <div style={{fontWeight:700,fontSize:15,color:"var(--sg-ink)",lineHeight:1.2,marginBottom:4}}>{b.name}</div>
+              <div style={{fontSize:14,color:"var(--sg-mute)",marginBottom:8}}>{b.commune}</div>
+              <div style={{display:"flex",gap:6,flexWrap:"wrap"}}><span style={{fontSize:14,fontWeight:600,color:C.ocean}}>🚗 {b.drive}min</span>{b.island==="gp"&&<span style={{fontSize:14,color:"var(--sg-mute)"}}>PaP</span>}{b.snorkel&&<span style={{fontSize:14,color:C.teal}}>🤿</span>}{b.kids&&<span style={{fontSize:14}}>🧒</span>}</div>
             </div>
           ))}
         </div>
@@ -1081,22 +1083,22 @@ function AccueilScreen({beaches,favs,onFavToggle,onOpenBeach,onAskChat,gps,onGPS
         <div style={{display:"flex",gap:6}}>
           {getForecast(best,sargassumData,lang).slice(0,premium?7:3).map((d,i)=>{const st=ST[d.status];return(
             <div key={i} style={{flex:1,background:"var(--sg-card)",borderRadius:14,padding:"12px 6px",textAlign:"center",border:"1px solid var(--sg-border)",boxShadow:"var(--sg-card-shadow)"}}>
-              <div style={{fontSize:12,fontWeight:700,color:"var(--sg-mute)",marginBottom:6}}>{d.day}</div>
+              <div style={{fontSize:14,fontWeight:700,color:"var(--sg-mute)",marginBottom:6}}>{d.day}</div>
               <div style={{fontSize:18,marginBottom:4}}>{st.e}</div>
               <div style={{width:"60%",height:3,borderRadius:3,background:st.c,margin:"0 auto"}}/>
-              <div style={{fontSize:12,color:"var(--sg-mute)",marginTop:4,fontWeight:600}}>{Math.round(d.afai*100)}%</div>
+              <div style={{fontSize:14,color:"var(--sg-mute)",marginTop:4,fontWeight:600}}>{Math.round(d.afai*100)}%</div>
             </div>
           )})}
           {!premium&&<div onClick={onGoToPremium} className="tap" style={{flex:1,background:"var(--sg-rowHover)",borderRadius:12,padding:"10px 4px",textAlign:"center",border:"1.5px dashed var(--sg-border)",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:3}}>
             <div style={{fontSize:15}}>🔒</div>
-            <div style={{fontSize:10,fontWeight:700,color:"var(--sg-mute)"}}>+4j</div>
-            <div style={{fontSize:9,fontWeight:700,color:C.gold}}>PREMIUM</div>
+            <div style={{fontSize:14,fontWeight:700,color:"var(--sg-mute)"}}>+4j</div>
+            <div style={{fontSize:14,fontWeight:700,color:C.gold}}>PREMIUM</div>
           </div>}
         </div>
       </div>}
 
       {!gps&&<div style={{padding:"0 16px 20px"}}>
-        <button onClick={onGPS} className="tap" style={{width:"100%",padding:"12px",background:C.tealBg,border:`1.5px dashed rgba(0,150,136,.3)`,borderRadius:13,fontSize:12,fontWeight:700,color:C.teal,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontFamily:"'Syne',sans-serif"}}>
+        <button onClick={onGPS} className="tap" style={{width:"100%",padding:"14px",background:C.tealBg,border:`1.5px dashed rgba(0,150,136,.3)`,borderRadius:13,fontSize:14,fontWeight:700,color:C.teal,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontFamily:"'Syne',sans-serif",minHeight:44}}>
           📍 Activer ma position pour les plages proches
         </button>
       </div>}
@@ -1112,16 +1114,16 @@ function AccueilScreen({beaches,favs,onFavToggle,onOpenBeach,onAskChat,gps,onGPS
             <div style={{fontSize:28}}>🛰️</div>
             <div style={{flex:1}}>
               <div style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:15,color:"white",textTransform:"uppercase",letterSpacing:".04em",lineHeight:1.1}}>Prévisions 7 jours</div>
-              <div style={{fontSize:11,color:"rgba(255,255,255,.55)",marginTop:2}}>Prévisions 30 jours · Alertes push</div>
+              <div style={{fontSize:14,color:"rgba(255,255,255,.55)",marginTop:2}}>Prévisions 30 jours · Alertes push</div>
             </div>
             <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end"}}>
               <span style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:22,color:C.goldL,lineHeight:1}}>4,99€</span>
-              <span style={{fontSize:10,color:"rgba(255,255,255,.4)"}}>30 jours</span>
+              <span style={{fontSize:14,color:"rgba(255,255,255,.4)"}}>30 jours</span>
             </div>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:8,position:"relative",zIndex:1}}>
             <div style={{flex:1,height:1,background:"rgba(255,255,255,.08)"}}/>
-            <span style={{fontSize:9,color:"rgba(255,255,255,.3)",fontWeight:700}}>= 1 aller-retour évité</span>
+            <span style={{fontSize:14,color:"rgba(255,255,255,.3)",fontWeight:700}}>= 1 aller-retour évité</span>
             <div style={{flex:1,height:1,background:"rgba(255,255,255,.08)"}}/>
           </div>
         </div>
@@ -1149,13 +1151,13 @@ function CodePromoBlock({ onActivate }) {
   }
   return (
     <div style={{marginTop:20,padding:"14px 16px",background:"rgba(0,0,0,.2)",borderRadius:14,border:"1px solid rgba(255,255,255,.08)"}}>
-      <div style={{fontSize:11,fontWeight:700,letterSpacing:".08em",color:"rgba(255,255,255,.6)",marginBottom:8}}>Tu as un code promo ?</div>
+      <div style={{fontSize:14,fontWeight:700,letterSpacing:".08em",color:"rgba(255,255,255,.6)",marginBottom:8}}>Tu as un code promo ?</div>
       <div style={{display:"flex",gap:8,alignItems:"center"}}>
         <input value={code} onChange={e=>{setCode(e.target.value);setStatus(null)}} onKeyDown={e=>e.key==="Enter"&&submit()} placeholder="Code promo" style={{flex:1,padding:"10px 12px",fontSize:13,borderRadius:10,border:"1px solid rgba(255,255,255,.15)",background:"rgba(0,0,0,.2)",color:"white",outline:"none"}}/>
-        <button onClick={submit} style={{padding:"10px 16px",borderRadius:10,border:"none",background:C.goldL,color:C.night,fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"'Syne',sans-serif"}}>Valider</button>
+        <button onClick={submit} style={{padding:"10px 16px",borderRadius:10,border:"none",background:C.goldL,color:C.night,fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"'Syne',sans-serif",minHeight:44}}>Valider</button>
       </div>
-      {status==="ok"&&<div style={{fontSize:11,color:C.green,marginTop:8,display:"flex",alignItems:"center",gap:6}}>✅ Prévisions 7 jours activées !</div>}
-      {status==="err"&&<div style={{fontSize:11,color:C.amber,marginTop:8}}>Code invalide. Réessaie ou paie avec Stripe.</div>}
+      {status==="ok"&&<div style={{fontSize:14,color:C.green,marginTop:8,display:"flex",alignItems:"center",gap:6}}>✅ Prévisions 7 jours activées !</div>}
+      {status==="err"&&<div style={{fontSize:14,color:C.amber,marginTop:8}}>Code invalide. Réessaie ou paie avec Stripe.</div>}
     </div>
   )
 }
@@ -1185,19 +1187,19 @@ function PremiumScreen({premium,onActivate}){
       <div style={{fontSize:64,marginBottom:16,animation:"levelUp .6s cubic-bezier(.16,1,.3,1) both"}}>⭐</div>
       <div style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:26,textTransform:"uppercase",color:"var(--sg-ink)",marginBottom:8}}>Premium Actif</div>
       <div style={{fontSize:13,color:"var(--sg-mid)",lineHeight:1.7,marginBottom:20}}>30 jours de prévisions · Alertes push<br/>MQ + GP · Données satellite toutes les 6h</div>
-      <div style={{background:C.greenBg,borderRadius:13,padding:"12px 20px",fontSize:12,fontWeight:700,color:C.green}}>✅ Tous les accès débloqués</div>
+      <div style={{background:C.greenBg,borderRadius:13,padding:"12px 20px",fontSize:14,fontWeight:700,color:C.green}}>✅ Tous les accès débloqués</div>
     </div>
   )
 
   return(
     <div style={{overflowY:"auto",height:"100%",WebkitOverflowScrolling:"touch"}}>
       {/* Hero — fond clair lisible */}
-      <div className="grain" style={{background:"var(--sg-bg)",padding:"32px 22px 28px",textAlign:"center",position:"relative",overflow:"hidden"}}>
+      <div className="grain" style={{background:"var(--sg-bg)",padding:"32px 16px 28px",textAlign:"center",position:"relative",overflow:"hidden",maxWidth:"100%",boxSizing:"border-box"}}>
         <div style={{position:"absolute",top:-40,left:-40,width:200,height:200,borderRadius:"50%",background:`${C.goldL}08`,animation:"driftB 12s ease-in-out infinite",pointerEvents:"none"}}/>
         <div style={{position:"absolute",bottom:-60,right:-30,width:240,height:240,borderRadius:"50%",background:`${C.tealL}06`,animation:"driftB 18s ease-in-out 3s infinite",pointerEvents:"none"}}/>
         <div style={{position:"relative",zIndex:1}}>
           <div style={{display:"inline-block",padding:"4px 14px",borderRadius:100,background:C.goldBg,border:`1px solid ${C.goldL}30`,marginBottom:14}}>
-            <span style={{fontSize:10,fontWeight:800,letterSpacing:".12em",textTransform:"uppercase",color:C.gold}}>⭐ PREMIUM</span>
+            <span style={{fontSize:14,fontWeight:800,letterSpacing:".12em",textTransform:"uppercase",color:C.gold}}>⭐ PREMIUM</span>
           </div>
           <div style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:36,textTransform:"uppercase",color:"var(--sg-ink)",lineHeight:1.05,marginBottom:16,animation:"up .5s ease both"}}>
             Cette fois,<br/>tu seras prévenu.
@@ -1206,7 +1208,7 @@ function PremiumScreen({premium,onActivate}){
             Accès 30 jours à toutes les prévisions,<br/>alertes push et données satellite.
           </div>
           <div style={{display:"inline-block",padding:"6px 16px",borderRadius:10,background:C.tealBg,border:`1px solid ${C.tealL}25`,marginBottom:18,animation:"up .5s ease .1s both"}}>
-            <span style={{fontSize:12,fontWeight:700,color:C.teal}}>📅 30 jours de prévisions complètes</span>
+            <span style={{fontSize:14,fontWeight:700,color:C.teal}}>📅 30 jours de prévisions complètes</span>
           </div>
           <div style={{display:"flex",alignItems:"baseline",justifyContent:"center",gap:6,marginBottom:6,animation:"up .5s ease .12s both"}}>
             <span style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:56,color:C.gold,lineHeight:1}}>4,99€</span>
@@ -1263,9 +1265,9 @@ function PremiumScreen({premium,onActivate}){
       </div>
 
       {/* Comparison table */}
-      <div style={{padding:"4px 16px 16px"}}>
+      <div style={{padding:"4px 16px 16px",maxWidth:"100%",boxSizing:"border-box"}}>
         <div style={{fontSize:18,fontWeight:800,color:"var(--sg-ink)",marginBottom:12}}>Gratuit vs Premium</div>
-        <Card style={{overflow:"hidden",padding:0}}>
+        <Card style={{overflow:"hidden",padding:0,maxWidth:"100%"}}>
           <div style={{display:"grid",gridTemplateColumns:"1fr auto auto",borderBottom:"1px solid var(--sg-border)"}}>
             <div style={{padding:"12px 16px",fontSize:13,fontWeight:700,color:"var(--sg-ink)"}}>Fonctionnalité</div>
             <div style={{padding:"12px 18px",fontSize:13,fontWeight:700,color:"var(--sg-mute)",textAlign:"center"}}>Gratuit</div>
@@ -1367,20 +1369,20 @@ function ProfilScreen({beaches,favs,onFavToggle,onOpenBeach,premium,onActivatePr
           </div>
           <div style={{textAlign:"right"}}>
             <div style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:20,color:C.goldL,lineHeight:1}}>{xp}</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.45)",fontWeight:700}}>XP TOTAL</div>
+            <div style={{fontSize:14,color:"rgba(255,255,255,.45)",fontWeight:700}}>XP TOTAL</div>
           </div>
         </div>
         {/* XP progress bar */}
         <div style={{marginBottom:6}}>
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
-            <span style={{fontSize:11,color:"rgba(255,255,255,.45)",fontWeight:700}}>{level.label}</span>
-            {nextLevel&&<span style={{fontSize:11,color:"rgba(255,255,255,.45)",fontWeight:700}}>{nextLevel.label} ({nextLevel.min-xp} XP)</span>}
+            <span style={{fontSize:14,color:"rgba(255,255,255,.45)",fontWeight:700}}>{level.label}</span>
+            {nextLevel&&<span style={{fontSize:14,color:"rgba(255,255,255,.45)",fontWeight:700}}>{nextLevel.label} ({nextLevel.min-xp} XP)</span>}
           </div>
           <div style={{height:5,background:"rgba(255,255,255,.1)",borderRadius:3,overflow:"hidden"}}>
             <div style={{height:"100%",width:`${xpPct}%`,background:`linear-gradient(90deg,${C.goldLL},${C.goldL})`,borderRadius:3,transition:"width 1s cubic-bezier(.16,1,.3,1)",boxShadow:`0 0 10px ${C.goldL}60`}}/>
           </div>
         </div>
-        <div style={{fontSize:12,color:"rgba(255,255,255,.4)",lineHeight:1.7}}>
+        <div style={{fontSize:14,color:"rgba(255,255,255,.4)",lineHeight:1.7}}>
           {streak>=7?"Tu es un expert sargasses 🏆":streak>=3?"Belle habitude, continue !":"Reviens chaque matin pour ton briefing"}
         </div>
       </Card>
@@ -1403,9 +1405,9 @@ function ProfilScreen({beaches,favs,onFavToggle,onOpenBeach,premium,onActivatePr
           {BADGES.map(b=>(
             <div key={b.l} style={{flexShrink:0,minWidth:88,textAlign:"center",padding:"12px 10px",background:b.done?"var(--sg-cardS)":"var(--sg-rowHover)",border:`1px solid ${b.done?C.gold+"44":"var(--sg-border)"}`,borderRadius:14,opacity:b.done?1:.4,animation:b.done?"badgeIn .5s cubic-bezier(.34,1.56,.64,1) both":"none"}}>
               <div style={{fontSize:24,marginBottom:4}}>{b.e}</div>
-              <div style={{fontSize:12,fontWeight:700,color:b.done?"var(--sg-ink)":"var(--sg-mute)",lineHeight:1.3}}>{b.l}</div>
-              <div style={{fontSize:11,color:"var(--sg-mute)",marginTop:3}}>{b.desc}</div>
-              {b.done&&<div style={{marginTop:5,fontSize:11,fontWeight:700,color:C.gold,background:C.goldBg,borderRadius:100,padding:"2px 8px"}}>✅ Obtenu</div>}
+              <div style={{fontSize:14,fontWeight:700,color:b.done?"var(--sg-ink)":"var(--sg-mute)",lineHeight:1.3}}>{b.l}</div>
+              <div style={{fontSize:14,color:"var(--sg-mute)",marginTop:3}}>{b.desc}</div>
+              {b.done&&<div style={{marginTop:5,fontSize:14,fontWeight:700,color:C.gold,background:C.goldBg,borderRadius:100,padding:"2px 8px"}}>✅ Obtenu</div>}
             </div>
           ))}
         </div>
@@ -1415,7 +1417,7 @@ function ProfilScreen({beaches,favs,onFavToggle,onOpenBeach,premium,onActivatePr
       {topBeach&&<div style={{marginBottom:12,animation:"up .4s ease .14s both"}}>
         <div style={{fontSize:16,fontWeight:700,color:"var(--sg-ink)",marginBottom:8}}>Ta plage la plus consultée</div>
         <Card onClick={()=>onOpenBeach(topBeach)} hover style={{padding:"12px 14px",display:"flex",alignItems:"center",gap:12,cursor:"pointer"}}>
-          <SDot s={topBeach.status} sz={10}/><div style={{flex:1}}><div style={{fontSize:13,fontWeight:700,color:"var(--sg-ink)"}}>{topBeach.name}</div><div style={{fontSize:10,color:"var(--sg-mid)"}}>{views[topId]} consultations</div></div><Chip status={topBeach.status} sm/>
+          <SDot s={topBeach.status} sz={10}/><div style={{flex:1}}><div style={{fontSize:14,fontWeight:700,color:"var(--sg-ink)"}}>{topBeach.name}</div><div style={{fontSize:14,color:"var(--sg-mid)"}}>{views[topId]} consultations</div></div><Chip status={topBeach.status} sm/>
         </Card>
       </div>}
 
@@ -1423,7 +1425,7 @@ function ProfilScreen({beaches,favs,onFavToggle,onOpenBeach,premium,onActivatePr
       {favBs.length>0&&<div style={{marginBottom:12,animation:"up .4s ease .18s both"}}>
         <div style={{fontSize:16,fontWeight:700,color:"var(--sg-ink)",marginBottom:8}}>Mes favoris ({favBs.length})</div>
         {favBs.map(b=><div key={b.id} onClick={()=>onOpenBeach(b)} className="row" style={{display:"flex",alignItems:"center",gap:11,padding:"11px 12px",borderRadius:13,cursor:"pointer",background:"var(--sg-card)",marginBottom:5,border:"1px solid var(--sg-border)",transition:"background .15s"}}>
-          <SDot s={b.status} sz={9}/><div style={{flex:1}}><div style={{fontSize:13,fontWeight:700,color:"var(--sg-ink)"}}>{b.name}</div><div style={{fontSize:10,color:"var(--sg-mid)"}}>{b.commune}</div></div><Chip status={b.status} sm/>
+          <SDot s={b.status} sz={9}/><div style={{flex:1}}><div style={{fontSize:14,fontWeight:700,color:"var(--sg-ink)"}}>{b.name}</div><div style={{fontSize:14,color:"var(--sg-mid)"}}>{b.commune}</div></div><Chip status={b.status} sm/>
         </div>)}
       </div>}
 
@@ -1438,13 +1440,13 @@ function ProfilScreen({beaches,favs,onFavToggle,onOpenBeach,premium,onActivatePr
 
       {/* Premium CTA si pas abonné */}
       {!premium&&<Card style={{padding:"18px",background:`linear-gradient(145deg,${C.night},${C.night2})`,border:"none",animation:"up .4s ease .26s both"}}>
-        <div style={{fontSize:9,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",color:C.goldL,marginBottom:6}}>PREMIUM</div>
+        <div style={{fontSize:14,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",color:C.goldL,marginBottom:6}}>PREMIUM</div>
         <div style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:20,textTransform:"uppercase",color:"white",marginBottom:4,lineHeight:1.1}}>Prévisions 7 jours<br/>+ Alertes push</div>
-        <div style={{display:"flex",alignItems:"baseline",gap:4,marginBottom:10}}><span style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:32,color:C.goldL}}>4,99€</span><span style={{fontSize:11,color:"rgba(255,255,255,.35)"}}> 30 jours</span></div>
+        <div style={{display:"flex",alignItems:"baseline",gap:4,marginBottom:10}}><span style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:32,color:C.goldL}}>4,99€</span><span style={{fontSize:14,color:"rgba(255,255,255,.35)"}}> 30 jours</span></div>
         <CodePromoBlock onActivate={onActivatePremium} />
         <div style={{marginTop:12}}><GBtn full sm onClick={()=>window.open(STRIPE_PAYMENT_URL,"_blank","noopener,noreferrer")}>Payer avec Stripe →</GBtn></div>
       </Card>}
-      {premium&&<Card style={{padding:"16px",textAlign:"center"}}><div style={{fontSize:28,marginBottom:8}}>⭐</div><div style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:16,textTransform:"uppercase",color:"var(--sg-ink)"}}>Premium Actif</div><div style={{fontSize:11,color:"var(--sg-mid)",marginTop:3}}>30 jours · 2 îles · Alertes push</div></Card>}
+      {premium&&<Card style={{padding:"16px",textAlign:"center"}}><div style={{fontSize:28,marginBottom:8}}>⭐</div><div style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:16,textTransform:"uppercase",color:"var(--sg-ink)"}}>Premium Actif</div><div style={{fontSize:14,color:"var(--sg-mid)",marginTop:3}}>30 jours · 2 îles · Alertes push</div></Card>}
     </div>
   )
 }
@@ -1495,19 +1497,19 @@ function BeachDetail({beach,isFav,onFavToggle,premium,onXP,sargassumData,localBe
         <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:10}}>
           <div>
             <div style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:23,textTransform:"uppercase",color:"var(--sg-ink)",lineHeight:1}}>{beach.name}</div>
-            <div style={{fontSize:12,color:"var(--sg-mid)",marginTop:3,fontWeight:500}}>{beach.commune}</div>
+            <div style={{fontSize:14,color:"var(--sg-mid)",marginTop:3,fontWeight:500}}>{beach.commune}</div>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
             <Chip status={beach.status}/>
-            <button onClick={()=>{onFavToggle();onXP("fav")}} style={{width:34,height:34,borderRadius:"50%",border:"none",background:isFav?"rgba(176,27,27,.1)":"rgba(0,0,0,.05)",cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center",transition:"all .18s cubic-bezier(.34,1.56,.64,1)"}}>{isFav?"❤️":"🤍"}</button>
+            <button onClick={()=>{onFavToggle();onXP("fav")}} style={{width:44,height:44,borderRadius:"50%",border:"none",background:isFav?"rgba(176,27,27,.1)":"rgba(0,0,0,.05)",cursor:"pointer",fontSize:22,display:"flex",alignItems:"center",justifyContent:"center",transition:"all .18s cubic-bezier(.34,1.56,.64,1)"}}>{isFav?"❤️":"🤍"}</button>
           </div>
         </div>
         <div style={{display:"flex",gap:7,flexWrap:"wrap",alignItems:"center"}}>
           <div style={{display:"flex",alignItems:"center",gap:5,background:"rgba(0,0,0,.05)",borderRadius:9,padding:"4px 11px"}}>
             <span style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:17,color:sc>=7?C.green:sc>=5?C.amber:C.red}}>{sc}</span>
-            <span style={{fontSize:11,color:"var(--sg-mid)",fontWeight:700}}>/10</span>
+            <span style={{fontSize:14,color:"var(--sg-mid)",fontWeight:700}}>/10</span>
           </div>
-          {w&&<><div style={{background:"rgba(0,0,0,.05)",borderRadius:8,padding:"4px 9px",fontSize:11,fontWeight:700,color:"var(--sg-ink)",display:"flex",alignItems:"center",gap:4}}><span>💨</span>{w.wind}km/h</div><div style={{background:"rgba(0,0,0,.05)",borderRadius:8,padding:"4px 9px",fontSize:11,fontWeight:700,color:"var(--sg-ink)",display:"flex",alignItems:"center",gap:4}}><span>☀️</span>UV {w.uv}</div></>}
+          {w&&<><div style={{background:"rgba(0,0,0,.05)",borderRadius:8,padding:"6px 11px",fontSize:14,fontWeight:700,color:"var(--sg-ink)",display:"flex",alignItems:"center",gap:4}}><span>💨</span>{w.wind}km/h</div><div style={{background:"rgba(0,0,0,.05)",borderRadius:8,padding:"6px 11px",fontSize:14,fontWeight:700,color:"var(--sg-ink)",display:"flex",alignItems:"center",gap:4}}><span>☀️</span>UV {w.uv}</div></>}
           {beach.status==="avoid"&&<div style={{display:"flex",alignItems:"center",gap:5,background:C.redBg,borderRadius:10,padding:"6px 12px",fontSize:13,fontWeight:700,color:C.red,border:`1px solid ${C.red}22`}}><span>☣️</span>Risque H2S</div>}
           {beach.kids&&<div style={{background:C.tealBg,borderRadius:10,padding:"6px 12px",fontSize:13,fontWeight:700,color:C.teal}}>🧒 Enfants</div>}
           {beach.snorkel&&<div style={{background:C.tealBg,borderRadius:10,padding:"6px 12px",fontSize:13,fontWeight:700,color:C.teal}}>🤿 Snorkeling</div>}
@@ -1517,7 +1519,7 @@ function BeachDetail({beach,isFav,onFavToggle,premium,onXP,sargassumData,localBe
       {/* Tabs */}
       <div style={{display:"flex",borderBottom:`1px solid var(--sg-border)`}}>
         {[{id:"prev",l:"Prévisions"},{id:"meteo",l:"Météo"},{id:"signal",l:"Signaler"},{id:"aller",l:"Y aller"}].map(t=>(
-          <button key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,padding:"11px 4px",border:"none",background:"none",fontSize:11,fontWeight:tab===t.id?700:500,cursor:"pointer",color:tab===t.id?C.gold:C.mid,borderBottom:`2px solid ${tab===t.id?C.gold:"transparent"}`,transition:"all .2s",fontFamily:"'Syne',sans-serif"}}>{t.l}</button>
+          <button key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,padding:"14px 4px",border:"none",background:"none",fontSize:14,fontWeight:tab===t.id?700:500,cursor:"pointer",color:tab===t.id?C.gold:C.mid,borderBottom:`2px solid ${tab===t.id?C.gold:"transparent"}`,transition:"all .2s",fontFamily:"'Syne',sans-serif",minHeight:44}}>{t.l}</button>
         ))}
       </div>
 
@@ -1525,33 +1527,33 @@ function BeachDetail({beach,isFav,onFavToggle,premium,onXP,sargassumData,localBe
         {/* Prévisions */}
         {tab==="prev"&&<div style={{animation:"up .3s ease both"}}>
           <div style={{background:`linear-gradient(145deg,${C.night},${C.night2})`,borderRadius:16,overflow:"hidden"}}>
-            <div style={{padding:"12px 15px 8px",borderBottom:"1px solid rgba(255,255,255,.05)"}}><div style={{fontSize:10,fontWeight:700,letterSpacing:".08em",textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:2}}>7 prochains jours</div><div style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:14,color:"white",textTransform:"uppercase"}}>{beach.name}</div></div>
+            <div style={{padding:"12px 15px 8px",borderBottom:"1px solid rgba(255,255,255,.05)"}}><div style={{fontSize:14,fontWeight:700,letterSpacing:".08em",textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:2}}>7 prochains jours</div><div style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:14,color:"white",textTransform:"uppercase"}}>{beach.name}</div></div>
             <div style={{display:"flex",padding:"8px 4px"}}>
               {forecast.map((d,i)=>{const locked=!premium&&i>=2;const ds=ST[d.status];return(
                 <div key={i} style={{flex:1,padding:"7px 2px",textAlign:"center",filter:locked?"blur(2.5px)":"none",opacity:locked?.18:1}}>
-                  <div style={{fontSize:"7.5px",fontWeight:700,color:"rgba(255,255,255,.3)",marginBottom:3}}>{d.day}</div>
+                  <div style={{fontSize:14,fontWeight:700,color:"rgba(255,255,255,.3)",marginBottom:3}}>{d.day}</div>
                   <div style={{fontSize:15,marginBottom:2}}>{ds.e}</div>
                   <div style={{width:"60%",height:2,borderRadius:2,background:ds.c,margin:"0 auto"}}/>
-                  <div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginTop:2}}>{Math.round(d.afai*100)}%</div>
+                  <div style={{fontSize:14,color:"rgba(255,255,255,.4)",marginTop:2}}>{Math.round(d.afai*100)}%</div>
                 </div>
               )})}
             </div>
-            {!premium&&<div style={{padding:"6px 14px 11px",fontSize:10,color:"rgba(255,255,255,.3)",textAlign:"center"}}>🔒 J+3 → J+7 avec Premium · 4,99€ 30 jours</div>}
-            {drift&&(drift.driftLabel!=="Stable")&&<div style={{padding:"8px 14px 11px",borderTop:"1px solid rgba(255,255,255,.06)",fontSize:10,color:"rgba(255,255,255,.5)",display:"flex",alignItems:"center",gap:6}}><span>{drift.drift==="up"?"📈":"📉"}</span><span>{drift.driftLabel}</span><span style={{opacity:.7}}>(Δ {drift.driftValue>0?"+":""}{Math.round(drift.driftValue*100)}% sur 7j)</span></div>}
+            {!premium&&<div style={{padding:"6px 14px 11px",fontSize:14,color:"rgba(255,255,255,.3)",textAlign:"center"}}>🔒 J+3 → J+7 avec Premium · 4,99€ 30 jours</div>}
+            {drift&&(drift.driftLabel!=="Stable")&&<div style={{padding:"8px 14px 11px",borderTop:"1px solid rgba(255,255,255,.06)",fontSize:14,color:"rgba(255,255,255,.5)",display:"flex",alignItems:"center",gap:6}}><span>{drift.drift==="up"?"📈":"📉"}</span><span>{drift.driftLabel}</span><span style={{opacity:.7}}>(Δ {drift.driftValue>0?"+":""}{Math.round(drift.driftValue*100)}% sur 7j)</span></div>}
           </div>
         </div>}
 
         {/* Météo */}
         {tab==="meteo"&&<div style={{animation:"up .3s ease both",display:"flex",flexDirection:"column",gap:8}}>
           {wLoad&&[1,2,3,4].map(i=><div key={i} className="sk" style={{height:40}}/>)}
-          {!wLoad&&wErr&&!w&&<div style={{padding:"14px",background:"var(--sg-cardS)",borderRadius:11,border:"1px solid var(--sg-border)",fontSize:12,color:"var(--sg-mid)"}}>📡 Météo indisponible (vérifiez la connexion).</div>}
+          {!wLoad&&wErr&&!w&&<div style={{padding:"14px",background:"var(--sg-cardS)",borderRadius:11,border:"1px solid var(--sg-border)",fontSize:14,color:"var(--sg-mid)"}}>📡 Météo indisponible (vérifiez la connexion).</div>}
           {w&&[{l:L.vent,v:`${w.wind} km/h`,i:"💨"},{l:L.direction,v:`${w.dir}°`,i:"🧭"},{l:L.uv,v:w.uv,i:"☀️"},{l:L.temp,v:`${w.temp}°C`,i:"🌡️"}].map(r=>(
-            <div key={r.l} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"11px 13px",background:"var(--sg-cardS)",borderRadius:11,border:"1px solid var(--sg-borderM)",fontSize:12}}>
+            <div key={r.l} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"11px 13px",background:"var(--sg-cardS)",borderRadius:11,border:"1px solid var(--sg-borderM)",fontSize:14}}>
               <span style={{display:"flex",alignItems:"center",gap:7,color:"var(--sg-ink)",opacity:0.9,fontWeight:500}}><span>{r.i}</span>{r.l}</span>
               <span style={{fontWeight:700,color:"var(--sg-ink)"}}>{r.v}</span>
             </div>
           ))}
-          {w&&<div style={{padding:"11px 13px",background:"var(--sg-cardS)",borderRadius:11,border:"1px solid var(--sg-borderM)",borderLeft:"3px solid "+C.teal,fontSize:11,color:"var(--sg-ink)",lineHeight:1.65,fontWeight:500}}>💡 {w.wind>25?L.ventFort:w.uv>8?L.uvEleve:L.conditionsFav}</div>}
+          {w&&<div style={{padding:"11px 13px",background:"var(--sg-cardS)",borderRadius:11,border:"1px solid var(--sg-borderM)",borderLeft:"3px solid "+C.teal,fontSize:14,color:"var(--sg-ink)",lineHeight:1.65,fontWeight:500}}>💡 {w.wind>25?L.ventFort:w.uv>8?L.uvEleve:L.conditionsFav}</div>}
         </div>}
 
         {/* Signaler */}
@@ -1561,27 +1563,27 @@ function BeachDetail({beach,isFav,onFavToggle,premium,onXP,sargassumData,localBe
             {CHOICES.map(c=>{const cs=ST[c.k==="none"?"clean":c.k==="few"?"moderate":"avoid"];return(
               <button key={c.k} onClick={()=>pick(c.k)} style={{padding:"13px 8px",borderRadius:13,border:choice===c.k?`2px solid ${cs.c}60`:`1px solid var(--sg-border)`,cursor:"pointer",textAlign:"center",background:choice===c.k?cs.bg:"rgba(0,0,0,.025)",transition:"all .15s",color:"var(--sg-ink)"}}>
                 <div style={{fontSize:24,marginBottom:3}}>{c.e}</div>
-                <div style={{fontSize:11,fontWeight:700,color:choice===c.k?cs.c:C.mid}}>{c.l}</div>
-                <div style={{fontSize:9,color:C.gold,fontWeight:700,marginTop:2}}>⭐ +{c.xp} XP</div>
+                <div style={{fontSize:14,fontWeight:700,color:choice===c.k?cs.c:C.mid}}>{c.l}</div>
+                <div style={{fontSize:14,color:C.gold,fontWeight:700,marginTop:2}}>⭐ +{c.xp} XP</div>
               </button>
             )})}
           </div>
           {(genning||comment)&&<div style={{marginBottom:14}}>
-            <div style={{fontSize:9,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--sg-mid)",marginBottom:6,display:"flex",alignItems:"center",gap:6}}>Commentaire <span style={{background:C.greenBg,color:C.green,padding:"2px 7px",borderRadius:100,fontSize:8,fontWeight:700}}>IA ✨</span></div>
-            {genning?<div style={{padding:"11px 13px",borderRadius:11,background:C.goldBg,display:"flex",gap:5,alignItems:"center",border:`1px solid ${C.gold}22`}}>{[0,1,2].map(i=><div key={i} style={{width:6,height:6,borderRadius:"50%",background:C.goldL,animation:`dotT 1.2s ease ${i*.15}s infinite`}}/>)}<span style={{fontSize:11,color:C.gold}}>Génération…</span></div>
-            :<textarea value={comment} onChange={e=>setComment(e.target.value)} rows={2} style={{width:"100%",padding:"11px 13px",fontSize:12,lineHeight:1.5,border:`1.5px solid ${C.gold}33`,borderRadius:11,background:"var(--sg-bg)",color:"var(--sg-ink)",resize:"none",outline:"none",boxSizing:"border-box"}}/>}
+            <div style={{fontSize:14,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--sg-mid)",marginBottom:6,display:"flex",alignItems:"center",gap:6}}>Commentaire <span style={{background:C.greenBg,color:C.green,padding:"2px 7px",borderRadius:100,fontSize:14,fontWeight:700}}>IA ✨</span></div>
+            {genning?<div style={{padding:"11px 13px",borderRadius:11,background:C.goldBg,display:"flex",gap:5,alignItems:"center",border:`1px solid ${C.gold}22`}}>{[0,1,2].map(i=><div key={i} style={{width:6,height:6,borderRadius:"50%",background:C.goldL,animation:`dotT 1.2s ease ${i*.15}s infinite`}}/>)}<span style={{fontSize:14,color:C.gold}}>Génération…</span></div>
+            :<textarea value={comment} onChange={e=>setComment(e.target.value)} rows={2} style={{width:"100%",padding:"11px 13px",fontSize:14,lineHeight:1.5,border:`1.5px solid ${C.gold}33`,borderRadius:11,background:"var(--sg-bg)",color:"var(--sg-ink)",resize:"none",outline:"none",boxSizing:"border-box"}}/>}
           </div>}
           <GBtn full sm onClick={doReport}>Signaler{choice?` +${CHOICES.find(c=>c.k===choice)?.xp} XP`:""} →</GBtn>
         </div>}
-        {tab==="signal"&&reported&&<div style={{textAlign:"center",padding:"32px 0",animation:"up .3s ease both"}}><div style={{fontSize:52,marginBottom:10}}>🎉</div><div style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:24,textTransform:"uppercase",color:"var(--sg-ink)",marginBottom:5}}>Merci !</div><div style={{fontSize:12,color:"var(--sg-mid)",lineHeight:1.6}}>Ton signalement est en ligne sur {beach.name}.</div></div>}
+        {tab==="signal"&&reported&&<div style={{textAlign:"center",padding:"32px 0",animation:"up .3s ease both"}}><div style={{fontSize:52,marginBottom:10}}>🎉</div><div style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:24,textTransform:"uppercase",color:"var(--sg-ink)",marginBottom:5}}>Merci !</div><div style={{fontSize:14,color:"var(--sg-mid)",lineHeight:1.6}}>Ton signalement est en ligne sur {beach.name}.</div></div>}
 
         {/* Y aller */}
         {tab==="aller"&&<div style={{animation:"up .3s ease both",display:"flex",flexDirection:"column",gap:9}}>
           {[{h:`https://maps.google.com/?q=${beach.lat},${beach.lng}&travelmode=driving`,i:"🗺️",t:"Itinéraire voiture",s:"Google Maps"},{h:`https://www.waze.com/ul?ll=${beach.lat}%2C${beach.lng}&navigate=yes`,i:"📡",t:"Ouvrir Waze",s:"Navigation temps réel"},{h:`https://www.windy.com/${beach.lat}/${beach.lng}?wind`,i:"🌬️",t:"Voir sur Windy",s:"Vents et courants"}].map(l=>(
             <a key={l.t} href={l.h} target="_blank" rel="noreferrer" style={{display:"flex",alignItems:"center",gap:13,padding:"14px 15px",background:"var(--sg-card)",borderRadius:14,border:"1px solid var(--sg-border)",textDecoration:"none",transition:"all .18s",boxShadow:"0 2px 8px var(--sg-card-shadow, rgba(0,0,0,.042))"}} onMouseEnter={e=>e.currentTarget.style.transform="translateY(-1px)"} onMouseLeave={e=>e.currentTarget.style.transform="translateY(0)"}>
               <div style={{width:40,height:40,borderRadius:11,background:"var(--sg-rowHover)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{l.i}</div>
-              <div style={{flex:1}}><div style={{fontSize:13,fontWeight:700,color:"var(--sg-ink)"}}>{l.t}</div><div style={{fontSize:10,color:"var(--sg-mid)",marginTop:1}}>{l.s}</div></div>
-              <span style={{fontSize:12,color:"var(--sg-mid)"}}>→</span>
+              <div style={{flex:1}}><div style={{fontSize:14,fontWeight:700,color:"var(--sg-ink)"}}>{l.t}</div><div style={{fontSize:14,color:"var(--sg-mid)",marginTop:1}}>{l.s}</div></div>
+              <span style={{fontSize:14,color:"var(--sg-mid)"}}>→</span>
             </a>
           ))}
         </div>}
@@ -1596,7 +1598,7 @@ function BeachDetail({beach,isFav,onFavToggle,premium,onXP,sargassumData,localBe
 const NAV_ALL_FR=[{id:"accueil",icon:"🏠",label:"Accueil"},{id:"jeu",icon:"🎮",label:"Jeu"},{id:"arena",icon:"🌊",label:"Arena"},{id:"chat",icon:"🤖",label:"IA"},{id:"liste",icon:"🌊",label:"Plages"},{id:"carte",icon:"🗺️",label:"Carte"},{id:"premium",icon:"⭐",label:"Premium"},{id:"profil",icon:"👤",label:"Profil"}]
 const NAV_ALL_EN=[{id:"accueil",icon:"🏠",label:"Home"},{id:"jeu",icon:"🎮",label:"Game"},{id:"arena",icon:"🌊",label:"Arena"},{id:"chat",icon:"🤖",label:"AI"},{id:"liste",icon:"🌊",label:"Beaches"},{id:"carte",icon:"🗺️",label:"Map"},{id:"premium",icon:"⭐",label:"Premium"},{id:"profil",icon:"👤",label:"Profile"}]
 // Bottom nav : 5 items max pour mobile, sidebar : tous
-const NAV_BOTTOM_IDS=["accueil","liste","carte","jeu","profil"]
+const NAV_BOTTOM_IDS=["accueil","liste","carte","chat","profil"]
 function getNAV(lang){ return lang==="en"?NAV_ALL_EN:NAV_ALL_FR }
 function getBottomNAV(lang){ const all=getNAV(lang); return all.filter(t=>NAV_BOTTOM_IDS.includes(t.id)) }
 
@@ -1606,37 +1608,37 @@ function AppHeader({live,clean,xp,onGPS,island,onIslandChange,copernicusCheck,is
   const xpPct=Math.min(100,Math.round(((xp-level.min)/((nextLevel?.min||level.min+1)-level.min))*100))
 
   return(
-    <div style={{padding:"10px 16px 8px",background:"var(--sg-glass)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",borderBottom:"1px solid var(--sg-border)",flexShrink:0,zIndex:50}}>
-      <div style={{display:"flex",alignItems:"center",gap:10}}>
+    <div style={{padding:"10px 12px 8px",background:"var(--sg-glass)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",borderBottom:"1px solid var(--sg-border)",flexShrink:0,zIndex:50,maxWidth:"100%",boxSizing:"border-box",overflow:"hidden"}}>
+      <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
         <div style={{width:26,height:26,borderRadius:"50%",flexShrink:0,background:"conic-gradient(from -10deg,#FFE898 0deg 30deg,#C4830A 30deg 70deg,#FFD040 70deg 115deg,#9A6500 115deg 160deg,#FFE07A 160deg 200deg,#C07800 200deg 245deg,#EDA000 245deg 290deg,#8A5800 290deg 330deg,#FFE898 330deg)",animation:"spinR 18s linear infinite",boxShadow:"0 2px 9px rgba(196,131,10,.32)"}}/>
         <div style={{flex:1}}>
           <div style={{display:"flex",alignItems:"center",gap:7,flexWrap:"wrap"}}>
             <span style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:16,letterSpacing:".07em",color:"var(--sg-ink)"}}>SARGASSES</span>
             <div style={{display:"flex",borderRadius:100,overflow:"hidden",border:"1px solid var(--sg-border)",background:"var(--sg-bg)"}}>
-              <button onClick={()=>onIslandChange("mq")} style={{padding:"3px 9px",fontSize:9,fontWeight:700,fontFamily:"'Syne',sans-serif",border:"none",cursor:"pointer",background:island==="mq"?(isDark?C.goldL:"var(--sg-ink)"):"transparent",color:island==="mq"?(isDark?"#0B0A08":"white"):"var(--sg-mid)",borderRadius:100}}>MQ</button>
-              <button onClick={()=>onIslandChange("gp")} style={{padding:"3px 9px",fontSize:9,fontWeight:700,fontFamily:"'Syne',sans-serif",border:"none",cursor:"pointer",background:island==="gp"?(isDark?C.goldL:"var(--sg-ink)"):"transparent",color:island==="gp"?(isDark?"#0B0A08":"white"):"var(--sg-mid)",borderRadius:100}}>GP</button>
+              <button onClick={()=>onIslandChange("mq")} style={{padding:"8px 14px",fontSize:14,fontWeight:700,fontFamily:"'Syne',sans-serif",border:"none",cursor:"pointer",background:island==="mq"?(isDark?C.goldL:"var(--sg-ink)"):"transparent",color:island==="mq"?(isDark?"#0B0A08":"white"):"var(--sg-mid)",borderRadius:100,minHeight:36}}>MQ</button>
+              <button onClick={()=>onIslandChange("gp")} style={{padding:"8px 14px",fontSize:14,fontWeight:700,fontFamily:"'Syne',sans-serif",border:"none",cursor:"pointer",background:island==="gp"?(isDark?C.goldL:"var(--sg-ink)"):"transparent",color:island==="gp"?(isDark?"#0B0A08":"white"):"var(--sg-mid)",borderRadius:100,minHeight:36}}>GP</button>
             </div>
-            <span style={{fontSize:9,color:level.color,fontWeight:800,background:`${level.color}18`,borderRadius:100,padding:"2px 8px"}}>{level.e} {level.label}</span>
+            <span style={{fontSize:14,color:level.color,fontWeight:800,background:`${level.color}18`,borderRadius:100,padding:"4px 10px"}}>{level.e} {level.label}</span>
           </div>
           {/* XP mini bar */}
-          <div style={{display:"flex",alignItems:"center",gap:6,marginTop:3}}>
-            <div style={{flex:1,height:3,background:"var(--sg-border)",borderRadius:2,overflow:"hidden"}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginTop:3,flexWrap:"wrap"}}>
+            <div style={{flex:1,height:3,background:"var(--sg-border)",borderRadius:2,overflow:"hidden",minWidth:40}}>
               <div style={{height:"100%",width:`${xpPct}%`,background:`linear-gradient(90deg,${C.goldLL},${C.goldL})`,borderRadius:2,transition:"width .8s cubic-bezier(.16,1,.3,1)"}}/>
             </div>
-            <span style={{fontSize:9,color:C.gold,fontWeight:700,whiteSpace:"nowrap"}}>{xp} XP</span>
-            <span style={{fontSize:10,color:"var(--sg-mute)"}}>·</span>
-            <span style={{color:C.green,fontWeight:700,fontSize:9}}>{clean} propres</span>
-            <span style={{fontSize:10,color:"var(--sg-mute)"}}>·</span>
-            <span style={{color:C.teal,fontWeight:700,fontSize:9}}>{live} 🟢</span>
-            {copernicusCheck!=null&&<><span style={{fontSize:10,color:"var(--sg-mute)"}}>·</span><span style={{fontSize:9,fontWeight:700,color:copernicusCheck.ok?C.green:C.amber}} title={copernicusCheck.message}>Copernicus {copernicusCheck.ok?"✓":"—"}</span></>}
+            <span style={{fontSize:14,color:C.gold,fontWeight:700,whiteSpace:"nowrap"}}>{xp} XP</span>
+            <span style={{fontSize:14,color:"var(--sg-mute)"}}>·</span>
+            <span style={{color:C.green,fontWeight:700,fontSize:14}}>{clean} propres</span>
+            <span style={{fontSize:14,color:"var(--sg-mute)"}}>·</span>
+            <span style={{color:C.teal,fontWeight:700,fontSize:14}}>{live} 🟢</span>
+            {copernicusCheck!=null&&<><span style={{fontSize:14,color:"var(--sg-mute)"}}>·</span><span style={{fontSize:14,fontWeight:700,color:copernicusCheck.ok?C.green:C.amber}} title={copernicusCheck.message}>Copernicus {copernicusCheck.ok?"✓":"—"}</span></>}
           </div>
         </div>
         <div style={{display:"flex",gap:7,alignItems:"center"}}>
-          <button onClick={onThemeToggle} style={{width:30,height:30,borderRadius:"50%",border:"1px solid var(--sg-border)",background:"var(--sg-card)",cursor:"pointer",fontSize:14,display:"flex",alignItems:"center",justifyContent:"center"}} aria-label={isDark?"Mode clair":"Mode sombre"}>{isDark?"☀️":"🌙"}</button>
-          <button onClick={onGPS} style={{width:30,height:30,borderRadius:"50%",border:"1px solid var(--sg-border)",background:"var(--sg-card)",cursor:"pointer",fontSize:13,display:"flex",alignItems:"center",justifyContent:"center"}}>📍</button>
+          <button onClick={onThemeToggle} style={{width:44,height:44,borderRadius:"50%",border:"1px solid var(--sg-border)",background:"var(--sg-card)",cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}} aria-label={isDark?"Mode clair":"Mode sombre"}>{isDark?"☀️":"🌙"}</button>
+          <button onClick={onGPS} style={{width:44,height:44,borderRadius:"50%",border:"1px solid var(--sg-border)",background:"var(--sg-card)",cursor:"pointer",fontSize:17,display:"flex",alignItems:"center",justifyContent:"center"}}>📍</button>
           <div style={{display:"flex",alignItems:"center",gap:5,background:C.tealBg,border:`1px solid rgba(0,150,136,.18)`,borderRadius:100,padding:"4px 10px"}}>
             <div style={{width:6,height:6,borderRadius:"50%",background:C.tealL,animation:"pulse 2s ease-in-out infinite"}}/>
-            <span style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:8,letterSpacing:".1em",color:C.teal}}>LIVE</span>
+            <span style={{fontFamily:"'Syne',sans-serif",fontWeight:800,fontSize:14,letterSpacing:".1em",color:C.teal}}>LIVE</span>
           </div>
         </div>
       </div>
@@ -1652,10 +1654,10 @@ function BottomNav({active,onChange,alerts,isDark}){
       {nav.map(t=>{
         const on=t.id===active
         return(
-          <button key={t.id} onClick={()=>onChange(t.id)} style={{flex:1,padding:"9px 2px 7px",display:"flex",flexDirection:"column",alignItems:"center",gap:2,border:"none",background:"none",cursor:"pointer",position:"relative",fontFamily:"'Syne',sans-serif",transition:"transform .15s cubic-bezier(.34,1.56,.64,1)",transform:on?"scale(1.07)":"scale(1)"}}>
-            {t.id==="accueil"&&alerts>0&&<div style={{position:"absolute",top:4,left:"calc(50% + 5px)",width:14,height:14,borderRadius:"50%",background:C.red,color:"white",fontSize:8,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",border:"2px solid var(--sg-bg)"}}>{alerts}</div>}
-            <span style={{fontSize:on?20:17,transition:"font-size .2s"}}>{t.icon}</span>
-            <span style={{fontSize:11,fontWeight:on?700:600,textTransform:"uppercase",color:on?(isDark?"var(--sg-ink)":C.gold):"var(--sg-mute)",transition:"color .2s"}}>{t.label}</span>
+          <button key={t.id} onClick={()=>onChange(t.id)} style={{flex:1,padding:"10px 2px 8px",display:"flex",flexDirection:"column",alignItems:"center",gap:2,border:"none",background:"none",cursor:"pointer",position:"relative",fontFamily:"'Syne',sans-serif",transition:"transform .15s cubic-bezier(.34,1.56,.64,1)",transform:on?"scale(1.07)":"scale(1)",minHeight:52}}>
+            {t.id==="accueil"&&alerts>0&&<div style={{position:"absolute",top:4,left:"calc(50% + 5px)",width:16,height:16,borderRadius:"50%",background:C.red,color:"white",fontSize:10,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",border:"2px solid var(--sg-bg)"}}>{alerts}</div>}
+            <span style={{fontSize:on?22:19,transition:"font-size .2s"}}>{t.icon}</span>
+            <span style={{fontSize:14,fontWeight:on?700:600,textTransform:"uppercase",color:on?(isDark?"var(--sg-ink)":C.gold):"var(--sg-mute)",transition:"color .2s"}}>{t.label}</span>
             {on&&<div style={{position:"absolute",top:0,left:"50%",transform:"translateX(-50%)",width:18,height:2,borderRadius:1,background:isDark?"var(--sg-mid)":`linear-gradient(90deg,${C.goldLL},${C.goldL})`}}/>}
           </button>
         )
@@ -1678,17 +1680,17 @@ function Sidebar({active,onChange,alerts,xp,clean,live,island,onIslandChange,isD
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
           <div style={{display:"flex",borderRadius:100,overflow:"hidden",border:"1px solid var(--sg-border)",background:"var(--sg-bg)"}}>
-            <button onClick={()=>onIslandChange("mq")} style={{padding:"5px 12px",fontSize:11,fontWeight:700,fontFamily:"'Syne',sans-serif",border:"none",cursor:"pointer",background:island==="mq"?(isDark?C.goldL:"var(--sg-ink)"):"transparent",color:island==="mq"?(isDark?"#0B0A08":"white"):"var(--sg-mid)",borderRadius:100}}>Martinique</button>
-            <button onClick={()=>onIslandChange("gp")} style={{padding:"5px 12px",fontSize:11,fontWeight:700,fontFamily:"'Syne',sans-serif",border:"none",cursor:"pointer",background:island==="gp"?(isDark?C.goldL:"var(--sg-ink)"):"transparent",color:island==="gp"?(isDark?"#0B0A08":"white"):"var(--sg-mid)",borderRadius:100}}>Guadeloupe</button>
+            <button onClick={()=>onIslandChange("mq")} style={{padding:"8px 14px",fontSize:14,fontWeight:700,fontFamily:"'Syne',sans-serif",border:"none",cursor:"pointer",background:island==="mq"?(isDark?C.goldL:"var(--sg-ink)"):"transparent",color:island==="mq"?(isDark?"#0B0A08":"white"):"var(--sg-mid)",borderRadius:100}}>Martinique</button>
+            <button onClick={()=>onIslandChange("gp")} style={{padding:"8px 14px",fontSize:14,fontWeight:700,fontFamily:"'Syne',sans-serif",border:"none",cursor:"pointer",background:island==="gp"?(isDark?C.goldL:"var(--sg-ink)"):"transparent",color:island==="gp"?(isDark?"#0B0A08":"white"):"var(--sg-mid)",borderRadius:100}}>Guadeloupe</button>
           </div>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:5,marginBottom:5}}>
-          <span style={{fontSize:9,color:level.color,fontWeight:800,background:`${level.color}18`,borderRadius:100,padding:"2px 8px"}}>{level.e} {level.label}</span>
+          <span style={{fontSize:14,color:level.color,fontWeight:800,background:`${level.color}18`,borderRadius:100,padding:"2px 8px"}}>{level.e} {level.label}</span>
         </div>
         <div style={{height:3,background:"var(--sg-border)",borderRadius:2,overflow:"hidden",marginBottom:4}}>
           <div style={{height:"100%",width:`${Math.min(100,Math.round(((xp-level.min)/((LEVELS[LEVELS.indexOf(level)+1]?.min||level.min+1)-level.min))*100))}%`,background:`linear-gradient(90deg,${C.goldLL},${C.goldL})`,borderRadius:2,transition:"width 1s"}}/>
         </div>
-        <div style={{fontSize:10,color:"var(--sg-mid)"}}><span style={{color:C.green,fontWeight:700}}>{clean} {L.propres}</span> · <span style={{color:C.teal,fontWeight:700}}>{live} {L.enLigne}</span></div>
+        <div style={{fontSize:14,color:"var(--sg-mid)"}}><span style={{color:C.green,fontWeight:700}}>{clean} {L.propres}</span> · <span style={{color:C.teal,fontWeight:700}}>{live} {L.enLigne}</span></div>
       </div>
       {nav.map(t=>{
         const on=t.id===active
@@ -1703,8 +1705,8 @@ function Sidebar({active,onChange,alerts,xp,clean,live,island,onIslandChange,isD
         )
       })}
       <div style={{position:"absolute",bottom:20,left:0,right:0,padding:"0 20px",display:"flex",flexDirection:"column",gap:10}}>
-        <button onClick={onThemeToggle} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",borderRadius:10,border:"1px solid var(--sg-border)",background:"var(--sg-card)",cursor:"pointer",fontFamily:"'Syne',sans-serif",fontSize:11,color:"var(--sg-ink)"}} aria-label={isDark?L.modeClair:L.modeSombre}>{isDark?"☀️ "+L.modeClair:"🌙 "+L.modeSombre}</button>
-        <div style={{fontSize:10,color:"var(--sg-mute)",lineHeight:1.6}}>
+        <button onClick={onThemeToggle} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",borderRadius:10,border:"1px solid var(--sg-border)",background:"var(--sg-card)",cursor:"pointer",fontFamily:"'Syne',sans-serif",fontSize:14,color:"var(--sg-ink)"}} aria-label={isDark?L.modeClair:L.modeSombre}>{isDark?"☀️ "+L.modeClair:"🌙 "+L.modeSombre}</button>
+        <div style={{fontSize:14,color:"var(--sg-mute)",lineHeight:1.6}}>
           <div style={{marginBottom:4,fontWeight:700,color:"var(--sg-mid)"}}>Liens utiles</div>
           <a href="/carte-sargasses/" style={{color:"var(--sg-mute)",textDecoration:"none"}}>Carte sargasses</a><span style={{margin:"0 4px"}}>·</span>
           <a href="/previsions/" style={{color:"var(--sg-mute)",textDecoration:"none"}}>Prévisions 7j</a><span style={{margin:"0 4px"}}>·</span>
@@ -1712,7 +1714,7 @@ function Sidebar({active,onChange,alerts,xp,clean,live,island,onIslandChange,isD
           <a href="/mentions-legales.html" style={{color:"var(--sg-mute)",textDecoration:"none"}}>Mentions légales</a><span style={{margin:"0 4px"}}>·</span>
           <a href="/confidentialite.html" style={{color:"var(--sg-mute)",textDecoration:"none"}}>Confidentialité</a>
         </div>
-        <div style={{fontSize:10,color:"var(--sg-mute)",lineHeight:1.8}}>
+        <div style={{fontSize:14,color:"var(--sg-mute)",lineHeight:1.8}}>
           <a href="https://sargasses-martinique.com/" style={{color:"var(--sg-mute)",textDecoration:"none"}}>sargasses-martinique.com</a><br/>
           <a href="https://sargasses-guadeloupe.com/" style={{color:"var(--sg-mute)",textDecoration:"none"}}>sargasses-guadeloupe.com</a>
         </div>
@@ -1923,7 +1925,7 @@ export default function App(){
     <div className={"shell theme-" + (isDark ? "dark" : "light")} style={{width:"100%",minHeight:"100vh",maxWidth:"100%",margin:"0 auto",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden",fontFamily:"'Syne',sans-serif",background:"var(--sg-bg)"}}>
       <style>{CSS}</style>
       {!online&&(
-        <div style={{position:"sticky",top:0,zIndex:500,background:C.amber,color:"var(--sg-ink)",padding:"8px 14px",fontSize:11,fontWeight:700,textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+        <div style={{position:"sticky",top:0,zIndex:500,background:C.amber,color:"var(--sg-ink)",padding:"8px 14px",fontSize:14,fontWeight:700,textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
           <span>📡</span> Vous êtes hors ligne — météo et assistant temporairement indisponibles.
         </div>
       )}
@@ -1934,14 +1936,14 @@ export default function App(){
       <Sidebar active={tab} onChange={goTab} alerts={alerts} xp={xp} clean={clean} live={live} island={island} onIslandChange={setIslandAndSave} isDark={isDark} onThemeToggle={()=>setIsDark(d=>!d)}/>
 
       {/* Main column */}
-      <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+      <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",maxWidth:"100%"}}>
         {tab!=="jeu"&&tab!=="arena"&&<AppHeader live={live} clean={clean} xp={xp} onGPS={getGPS} island={island} onIslandChange={setIslandAndSave} copernicusCheck={copernicusCheck} isDark={isDark} onThemeToggle={()=>setIsDark(d=>!d)}/>}
 
         {/* H2S banner */}
         {alerts>0&&tab!=="jeu"&&tab!=="arena"&&<div style={{padding:"8px 16px",background:"rgba(176,27,27,.07)",borderBottom:`1px solid rgba(176,27,27,.12)`,display:"flex",alignItems:"center",gap:9}}>
           <span style={{fontSize:13,flexShrink:0}}>☣️</span>
-          <span style={{fontSize:11,fontWeight:700,color:C.red,flex:1}}>Risque H2S sur {alerts} plage{alerts>1?"s":""} favorite{alerts>1?"s":""}</span>
-          <button onClick={()=>goTab("accueil")} style={{background:"none",border:"none",fontSize:9,color:C.red,cursor:"pointer",fontWeight:700,fontFamily:"'Syne',sans-serif"}}>Voir →</button>
+          <span style={{fontSize:14,fontWeight:700,color:C.red,flex:1}}>Risque H2S sur {alerts} plage{alerts>1?"s":""} favorite{alerts>1?"s":""}</span>
+          <button onClick={()=>goTab("accueil")} style={{background:"none",border:"none",fontSize:14,color:C.red,cursor:"pointer",fontWeight:700,fontFamily:"'Syne',sans-serif",padding:"8px 12px",minHeight:44}}>Voir →</button>
         </div>}
 
         {/* Screens */}
@@ -1950,7 +1952,7 @@ export default function App(){
           {tab==="jeu"&&<div style={{position:"absolute",inset:0,overflow:"hidden"}}><SargassesGame island={island}/></div>}
           {tab==="arena"&&(
             <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",minHeight:0}}>
-              <a href="/neptunes_fury.html" target="_blank" rel="noopener noreferrer" style={{flexShrink:0,padding:"6px 12px",fontSize:11,fontWeight:700,color:C.gold,background:"rgba(0,0,0,.5)",textAlign:"center",textDecoration:"none",fontFamily:"'Syne',sans-serif"}}>Ouvrir Neptune's Fury en plein écran →</a>
+              <a href="/neptunes_fury.html" target="_blank" rel="noopener noreferrer" style={{flexShrink:0,padding:"10px 12px",fontSize:14,fontWeight:700,color:C.gold,background:"rgba(0,0,0,.5)",textAlign:"center",textDecoration:"none",fontFamily:"'Syne',sans-serif",minHeight:44,display:"flex",alignItems:"center",justifyContent:"center"}}>Ouvrir Neptune's Fury en plein écran →</a>
               <iframe title="Neptune's Fury" src="/neptunes_fury.html" style={{flex:1,width:"100%",minHeight:0,border:"none",display:"block",background:"#000"}}/>
             </div>
           )}
@@ -1960,7 +1962,7 @@ export default function App(){
           {tab==="premium"&&<PremiumScreen premium={premium} onActivate={activatePremium}/>}
           {tab==="profil"&&<ProfilScreen beaches={allBeaches} favs={favs} onFavToggle={toggleFav} onOpenBeach={openBeach} premium={premium} onActivatePremium={activatePremium} xp={xp} onXP={addXP}/>}
           {/* Footer liens internes + cross-site (SEO, crawlable) */}
-          <footer style={{padding:"12px 16px 16px",borderTop:"1px solid var(--sg-border)",background:"var(--sg-card)",display:"flex",flexWrap:"wrap",alignItems:"center",justifyContent:"center",gap:6,fontSize:10,color:"var(--sg-mute)"}} aria-label="Liens utiles">
+          <footer style={{padding:"12px 16px 16px",borderTop:"1px solid var(--sg-border)",background:"var(--sg-card)",display:"flex",flexWrap:"wrap",alignItems:"center",justifyContent:"center",gap:8,fontSize:14,color:"var(--sg-mute)"}} aria-label="Liens utiles">
             <a href="/carte-sargasses/" style={{color:"var(--sg-mid)",textDecoration:"none",fontWeight:600}}>Carte sargasses</a>
             <span>·</span>
             <a href="/previsions/" style={{color:"var(--sg-mid)",textDecoration:"none",fontWeight:600}}>Prévisions 7 jours</a>
@@ -1988,7 +1990,7 @@ export default function App(){
       {/* Premium toast */}
       {confetti&&<div style={{position:"fixed",top:76,left:"50%",transform:"translateX(-50%)",background:C.night,border:`1px solid rgba(237,160,0,.22)`,borderRadius:14,padding:"10px 18px",display:"flex",alignItems:"center",gap:10,zIndex:500,boxShadow:"0 8px 32px rgba(0,0,0,.25)",whiteSpace:"nowrap",fontFamily:"'Syne',sans-serif",animation:"up .3s ease both"}}>
         <span style={{fontSize:20}}>⭐</span>
-        <div><div style={{fontSize:11,fontWeight:800,color:C.goldL}}>Premium activé !</div>        <div style={{fontSize:9,color:"rgba(255,255,255,.4)"}}>30 jours · 2 îles · Alertes push</div></div>
+        <div><div style={{fontSize:14,fontWeight:800,color:C.goldL}}>Premium activé !</div>        <div style={{fontSize:14,color:"rgba(255,255,255,.4)"}}>30 jours · 2 îles · Alertes push</div></div>
       </div>}
     </div>
     </LangContext.Provider>
