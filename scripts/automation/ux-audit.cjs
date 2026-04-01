@@ -72,6 +72,45 @@ function main() {
       })
     }
 
+    // Rage clicks (from Clarity → GA4 bridge)
+    for (const rc of (findings.rageClicks || [])) {
+      if (rc.count >= 3) {
+        issues.push({
+          type: 'rage-click',
+          severity: rc.count >= 10 ? 'critical' : 'warning',
+          page: rc.page,
+          target: rc.target,
+          metric: `${rc.count} rage clicks on ${rc.target}`,
+          recommendation: 'Element receives frustrated repeated clicks. Check if it looks interactive but is not, or if it responds too slowly.',
+        })
+      }
+    }
+
+    // Dead clicks
+    for (const dc of (findings.deadClicks || [])) {
+      if (dc.count >= 5) {
+        issues.push({
+          type: 'dead-click',
+          severity: dc.count >= 15 ? 'critical' : 'warning',
+          page: dc.page,
+          target: dc.target,
+          metric: `${dc.count} dead clicks on ${dc.target}`,
+          recommendation: 'Non-interactive element receives clicks. Either make it clickable or change its visual style to not look interactive.',
+        })
+      }
+    }
+
+    // Quick bounces
+    const quickBounceTotal = (findings.quickBounces || []).reduce((s, q) => s + q.count, 0)
+    if (quickBounceTotal >= 10) {
+      issues.push({
+        type: 'quick-bounce',
+        severity: quickBounceTotal >= 30 ? 'critical' : 'warning',
+        metric: `${quickBounceTotal} visitors left within 10 seconds`,
+        recommendation: 'Users leave very quickly. Check first impression: loading speed, above-the-fold content, and mobile layout.',
+      })
+    }
+
     // Mobile vs Desktop gap analysis
     const mobilePages = (findings.highBouncePages || []).filter(p => p.device === 'mobile')
     const desktopPages = (findings.highBouncePages || []).filter(p => p.device === 'desktop')

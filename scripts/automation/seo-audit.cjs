@@ -116,6 +116,42 @@ async function fetchGA4Report(analyticsdata, propertyId) {
   }
 }
 
+async function fetchClarityEvents(analyticsdata, propertyId) {
+  if (!propertyId) return []
+  try {
+    const res = await analyticsdata.properties.runReport({
+      property: `properties/${propertyId}`,
+      requestBody: {
+        dateRanges: [{ startDate: '28daysAgo', endDate: 'today' }],
+        dimensions: [
+          { name: 'eventName' },
+          { name: 'customEvent:page' },
+          { name: 'customEvent:target' },
+        ],
+        metrics: [
+          { name: 'eventCount' },
+        ],
+        dimensionFilter: {
+          filter: {
+            fieldName: 'eventName',
+            stringFilter: { matchType: 'BEGINS_WITH', value: 'clarity_' },
+          },
+        },
+        limit: 200,
+      },
+    })
+    return (res.data.rows || []).map(row => ({
+      event: row.dimensionValues[0].value,
+      page: row.dimensionValues[1].value,
+      target: row.dimensionValues[2].value,
+      count: parseInt(row.metricValues[0].value) || 0,
+    }))
+  } catch (e) {
+    console.warn(`[GA4 Clarity events] Property ${propertyId}:`, e.message)
+    return []
+  }
+}
+
 async function fetchCrUX(domain) {
   const CRUX_API_KEY = process.env.CRUX_API_KEY || ''
   const url = CRUX_API_KEY
@@ -187,6 +223,11 @@ async function main() {
     const ga4 = await fetchGA4Report(analyticsdata, site.ga4PropertyId)
     console.log(`  → ${ga4.length} rows`)
 
+    // Clarity events (rage clicks, dead clicks, quick bounces)
+    console.log('  Fetching Clarity events from GA4...')
+    const clarityEvents = await fetchClarityEvents(analyticsdata, site.ga4PropertyId)
+    console.log(`  → ${clarityEvents.length} Clarity events`)
+
     // CrUX
     console.log('  Fetching CrUX data...')
     const crux = await fetchCrUX(site.domain)
@@ -200,6 +241,9 @@ async function main() {
       lowCtrPages: [],
       highBouncePages: [],
       cwvIssues: [],
+      rageClicks: clarityEvents.filter(e => e.event === 'clarity_rage_click'),
+      deadClicks: clarityEvents.filter(e => e.event === 'clarity_dead_click'),
+      quickBounces: clarityEvents.filter(e => e.event === 'clarity_quick_bounce'),
     }
 
     // Identify low CTR pages (position < 10 but CTR below expected)
