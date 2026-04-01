@@ -34,8 +34,28 @@ function loadBeachCoords() {
     const list = JSON.parse(readFileSync(beachListPath, 'utf-8'))
     const coords = {}
     for (const b of list) {
+      // Index by original ID (mq001, gp001)
       coords[b.id] = { lat: b.lat, lng: b.lng }
+      // Also index by name for matching with config.cjs IDs
+      const slug = b.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+      coords[slug] = { lat: b.lat, lng: b.lng }
     }
+    // Manual mappings for config.cjs IDs that don't match slugified names
+    const manual = {
+      'grande-anse': 'mq014', 'diamant': 'mq016',
+      'sainte-anne': 'mq004', 'les-salines': 'mq001',
+      'gp-grande-anse': 'gp021', 'gp-malendure': 'gp031', 'gp-sainte-anne': 'gp010',
+      'gp-pt-chateaux': 'gp005', 'gp-gosier': 'gp012', 'gp-caravelle': 'gp009',
+      'gp-bas-du-fort': 'gp014', 'gp-deshaies': 'gp025', 'gp-moule': 'gp017',
+      'gp-vieux-fort': 'gp004',
+    }
+    for (const [configId, listId] of Object.entries(manual)) {
+      if (coords[listId]) coords[configId] = coords[listId]
+    }
+    // Beaches not in beaches-list.json — coords from Sargasses_PROD.jsx
+    coords['tartane'] = { lat: 14.7487, lng: -60.908 }
+    coords['pt-marin'] = { lat: 14.4523, lng: -60.8695 }
+    coords['vauclin'] = { lat: 14.5448, lng: -60.8388 }
     return coords
   } catch { return {} }
 }

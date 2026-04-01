@@ -135,6 +135,34 @@
         "https://sargasses-guadeloupe.com/plages/plage-souffleur/",
         "https://sargasses-guadeloupe.com/plages/anse-de-la-gourde/"
       ]
+    },
+    {
+      "timestamp": "2026-04-01T20:08:31.537Z",
+      "dryRun": false,
+      "script": "seo-enrich-content",
+      "action": "enriched",
+      "beachCount": 20
+    },
+    {
+      "timestamp": "2026-04-01T20:10:06.804Z",
+      "dryRun": false,
+      "script": "seo-enrich-content",
+      "action": "enriched",
+      "beachCount": 20
+    },
+    {
+      "timestamp": "2026-04-01T20:10:44.148Z",
+      "dryRun": false,
+      "script": "seo-enrich-content",
+      "action": "enriched",
+      "beachCount": 20
+    },
+    {
+      "timestamp": "2026-04-01T20:11:33.895Z",
+      "dryRun": false,
+      "script": "seo-enrich-content",
+      "action": "enriched",
+      "beachCount": 20
     }
   ]
 }

@@ -165,7 +165,10 @@ export default defineConfig({
         const outDir = resolve(__dirname, 'dist')
         const indexPath = resolve(outDir, 'index.html')
         try {
-          const html = readFileSync(indexPath, 'utf-8')
+          // Patch dateModified to today's date in index.html
+          let html = readFileSync(indexPath, 'utf-8')
+          html = html.replace(/"dateModified":"[^"]*"/, `"dateModified":"${new Date().toISOString().slice(0,10)}"`)
+          writeFileSync(indexPath, html)
           const scriptMatch = html.match(/src="([^"]+\.js)"/)
           const scriptSrc = scriptMatch ? (scriptMatch[1].startsWith('/') ? scriptMatch[1] : '/' + scriptMatch[1]) : '/assets/index.js'
           const pages = [
