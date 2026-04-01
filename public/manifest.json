@@ -1,0 +1,32 @@
+{
+  "name": "Sargasses Martinique & Guadeloupe",
+  "short_name": "Sargasses",
+  "description": "Carte des sargasses en temps réel. Où se baigner aujourd'hui en Martinique et Guadeloupe.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d1117",
+  "theme_color": "#C4830A",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "/og-image.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["weather", "travel"],
+  "shortcuts": [
+    {
+      "name": "Carte sargasses",
+      "url": "/carte-sargasses/",
+      "description": "Carte interactive en temps réel"
+    },
+    {
+      "name": "Prévisions 7 jours",
+      "url": "/previsions/",
+      "description": "Prévisions sargasses sur 7 jours"
+    }
+  ]
+}

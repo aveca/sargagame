@@ -177,12 +177,26 @@ export default defineConfig({
             { path: 'plages-sans-sargasses', title: 'Plages sans sargasses en Martinique et Guadeloupe', desc: 'Liste des plages propres aujourd\'hui en Martinique et Guadeloupe. Données satellite en temps réel. Trouvez où vous baigner sans sargasses.' },
             { path: 'danger-sargasses-h2s', title: 'Sargasses et H2S : dangers pour la santé, précautions', desc: 'Le H2S dégagé par les sargasses en décomposition peut irriter les yeux et les voies respiratoires. Risques, seuils, précautions pour enfants et personnes fragiles.' },
           ]
+          // Noscript editorial content for Google crawling
+          const editorialContent = {
+            'saison-sargasses-martinique': `<article><h1>Saison des sargasses en Martinique</h1><p>Les sargasses touchent la Martinique principalement d'avril à octobre, avec des pics entre juin et août. Ces algues brunes, portées par les courants atlantiques depuis la mer des Sargasses, s'échouent sur les côtes est et sud de l'île.</p><h2>Quelles plages sont les plus touchées ?</h2><p>Les plages de la côte atlantique (Le Vauclin, Tartane, Sainte-Anne côté est) sont les plus exposées. Les plages de la côte caraïbe (Anse Mitan, Anse Noire, Grande Anse d'Arlet) sont généralement épargnées grâce à leur orientation.</p><h2>Prévisions en temps réel</h2><p>Consultez notre <a href="/">carte interactive</a> mise à jour quotidiennement avec les données satellite Copernicus pour connaître l'état de chaque plage. Les <a href="/previsions/">prévisions 7 jours</a> vous permettent de planifier vos sorties.</p><p><a href="/">Voir la carte en temps réel</a> · <a href="/plages/les-salines/">Les Salines</a> · <a href="/plages/anse-mitan/">Anse Mitan</a> · <a href="/plages/grande-anse-darlet/">Grande Anse d'Arlet</a></p></article>`,
+            'saison-sargasses-guadeloupe': `<article><h1>Saison des sargasses en Guadeloupe</h1><p>En Guadeloupe, la saison des sargasses s'étend généralement d'avril à octobre. Les côtes de Grande-Terre (Le Gosier, Sainte-Anne, Saint-François) sont les plus exposées aux échouages.</p><h2>Quelles plages sont les plus touchées ?</h2><p>Les plages de la côte sud de Grande-Terre reçoivent le plus de sargasses. Les plages de Basse-Terre (Malendure, Deshaies, Bouillante) sont naturellement protégées par leur position sous le vent.</p><h2>Prévisions en temps réel</h2><p>Notre <a href="/">carte interactive</a> affiche l'état de chaque plage en temps réel grâce aux données satellite Copernicus. Consultez les <a href="/previsions/">prévisions 7 jours</a> avant de planifier votre sortie plage.</p><p><a href="/">Voir la carte en temps réel</a> · <a href="/plages/malendure/">Malendure</a> · <a href="/plages/grande-anse-deshaies/">Grande Anse Deshaies</a> · <a href="/plages/sainte-anne-guadeloupe/">Sainte-Anne</a></p></article>`,
+            'plages-sans-sargasses': `<article><h1>Plages sans sargasses en Martinique et Guadeloupe</h1><p>Vous cherchez une plage propre aujourd'hui ? Notre application surveille en temps réel l'état de plus de 60 plages en Martinique et Guadeloupe grâce aux données satellite Copernicus.</p><h2>Martinique — Plages généralement propres</h2><ul><li><a href="/plages/anse-mitan/">Anse Mitan</a> (Les Trois-Îlets) — côte caraïbe, rarement touchée</li><li><a href="/plages/anse-noire/">Anse Noire</a> (Les Anses-d'Arlet) — petite crique protégée</li><li><a href="/plages/grande-anse-darlet/">Grande Anse d'Arlet</a> — plage familiale, peu exposée</li></ul><h2>Guadeloupe — Plages généralement propres</h2><ul><li><a href="/plages/malendure/">Malendure</a> (Bouillante) — côte sous le vent</li><li><a href="/plages/grande-anse-deshaies/">Grande Anse Deshaies</a> — nord Basse-Terre</li><li><a href="/plages/plage-caravelle/">Plage de la Caravelle</a> (Sainte-Anne) — souvent épargnée</li></ul><p><a href="/">Consulter la carte en temps réel</a> pour l'état exact de chaque plage aujourd'hui.</p></article>`,
+            'danger-sargasses-h2s': `<article><h1>Sargasses et H2S : dangers pour la santé</h1><p>Lorsque les sargasses s'échouent et se décomposent sur les plages, elles libèrent du sulfure d'hydrogène (H2S), un gaz toxique reconnaissable à son odeur d'œuf pourri.</p><h2>Quels sont les risques ?</h2><p>À faible concentration, le H2S provoque des irritations des yeux, du nez et de la gorge. À forte concentration (au-dessus de 5 ppm), il peut causer des maux de tête, nausées et difficultés respiratoires. Les enfants, personnes âgées et asthmatiques sont particulièrement vulnérables.</p><h2>Précautions à prendre</h2><ul><li>Évitez les plages marquées "À éviter" sur notre <a href="/">carte en temps réel</a></li><li>Ne laissez pas les enfants jouer dans ou près des amas de sargasses en décomposition</li><li>Si vous sentez une forte odeur d'œuf pourri, éloignez-vous immédiatement</li><li>Consultez les <a href="/previsions/">prévisions 7 jours</a> avant de planifier une sortie plage</li></ul><h2>L'indice AFAI</h2><p>L'AFAI (Algal Floating Algae Index) est l'indice satellite que nous utilisons pour détecter les sargasses. En dessous de 0,3 la plage est propre. Au-dessus de 0,65, il vaut mieux éviter.</p></article>`,
+          }
           for (const { path: p, title, desc } of pages) {
             const dir = resolve(outDir, p)
             mkdirSync(dir, { recursive: true })
-            const pageHtml = html
+            let pageHtml = html
               .replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`)
               .replace(/<meta name="description"[^>]*>/, () => `<meta name="description" content="${desc}" />`)
+            // Inject noscript editorial content if available
+            if (editorialContent[p]) {
+              const articleSchema = JSON.stringify({"@context":"https://schema.org","@type":"Article","headline":title,"description":desc,"url":`https://sargasses-martinique.com/${p}/`,"dateModified":new Date().toISOString().slice(0,10),"publisher":{"@type":"Organization","name":"Sargasses Martinique"}})
+              pageHtml = pageHtml
+                .replace('</head>', `\n    <script type="application/ld+json">\n    ${articleSchema}\n    </script>\n</head>`)
+                .replace('</body>', `\n    <noscript>${editorialContent[p]}</noscript>\n</body>`)
+            }
             writeFileSync(resolve(dir, 'index.html'), pageHtml)
           }
           // Page EN : app en anglais (pathname /en/ → getLang() = 'en'), SEO EN, script depuis racine
@@ -291,6 +305,9 @@ export default defineConfig({
           } catch {}
           const beaches = [...featuredBeaches, ...extraBeaches]
           
+          // Beach images for og:image
+          let _beachImages = {}
+          try { _beachImages = JSON.parse(readFileSync(resolve(__dirname, 'public/data/beaches-images.json'), 'utf-8')) } catch {}
           // SEO enrichments (generated by seo-enrich-content.cjs)
           let _enrichments = {}
           try { _enrichments = JSON.parse(readFileSync(resolve(__dirname, 'scripts/automation/data/enrichments.json'), 'utf-8')) } catch {}
@@ -319,6 +336,8 @@ export default defineConfig({
               .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="${beachUrl}" />`)
               .replace(/<meta name="twitter:title"[^>]*>/, `<meta name="twitter:title" content="${beachTitle}" />`)
               .replace(/<meta name="twitter:description"[^>]*>/, `<meta name="twitter:description" content="${beachDesc}" />`)
+              .replace(/<meta property="og:image" [^>]*>/, _beachImages[b.id] ? `<meta property="og:image" content="https://${domain}/beaches/${_beachImages[b.id]}" />` : `<meta property="og:image" content="https://${domain}/og-image.png" />`)
+              .replace(/<meta name="twitter:image" [^>]*>/, _beachImages[b.id] ? `<meta name="twitter:image" content="https://${domain}/beaches/${_beachImages[b.id]}" />` : `<meta name="twitter:image" content="https://${domain}/og-image.png" />`)
               .replace('</head>', `\n    <script type="application/ld+json">\n    ${beachSchema}\n    </script>\n    <script type="application/ld+json">\n    ${breadcrumbBeach}\n    </script>${_enrichments[b.slug] ? '\n    <script type="application/ld+json">\n    ' + _enrichments[b.slug].faq + '\n    </script>' : ''}\n</head>`)
             const finalHtml = _enrichments[b.slug] ? beachHtml.replace('</body>', _enrichments[b.slug].noscript + '\n</body>') : beachHtml
             writeFileSync(resolve(beachDir, 'index.html'), finalHtml)

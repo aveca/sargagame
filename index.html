@@ -4,6 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#C4830A" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>Sargasses Martinique en temps réel · Carte et plages aujourd'hui</title>
     <meta name="description" content="Carte des sargasses en Martinique en temps réel. Où se baigner aujourd'hui : plages propres, à éviter, prévisions. Données mises à jour régulièrement." />
     <link rel="canonical" href="https://sargasses-martinique.com/" />
@@ -121,5 +124,6 @@
     </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>
   </body>
 </html>
