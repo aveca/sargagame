@@ -1595,12 +1595,12 @@ function BeachDetail({beach,isFav,onFavToggle,premium,onXP,sargassumData,localBe
 // ═══════════════════════════════════════════════════════════════════════════════
 // ░░ HEADER + NAV
 // ═══════════════════════════════════════════════════════════════════════════════
-const NAV_ALL_FR=[{id:"accueil",icon:"🏠",label:"Accueil"},{id:"jeu",icon:"🎮",label:"Jeu"},{id:"arena",icon:"🌊",label:"Arena"},{id:"chat",icon:"🤖",label:"IA"},{id:"liste",icon:"🌊",label:"Plages"},{id:"carte",icon:"🗺️",label:"Carte"},{id:"premium",icon:"⭐",label:"Premium"},{id:"profil",icon:"👤",label:"Profil"}]
-const NAV_ALL_EN=[{id:"accueil",icon:"🏠",label:"Home"},{id:"jeu",icon:"🎮",label:"Game"},{id:"arena",icon:"🌊",label:"Arena"},{id:"chat",icon:"🤖",label:"AI"},{id:"liste",icon:"🌊",label:"Beaches"},{id:"carte",icon:"🗺️",label:"Map"},{id:"premium",icon:"⭐",label:"Premium"},{id:"profil",icon:"👤",label:"Profile"}]
+const NAV_ALL_FR=[{id:"accueil",icon:"🏠",label:"Accueil"},{id:"liste",icon:"🌊",label:"Plages"},{id:"carte",icon:"🗺️",label:"Carte"},{id:"jeu",icon:"🎮",label:"Jeu"},{id:"arena",icon:"🌊",label:"Arena"},{id:"chat",icon:"🤖",label:"IA"},{id:"premium",icon:"⭐",label:"Premium"},{id:"profil",icon:"👤",label:"Profil"}]
+const NAV_ALL_EN=[{id:"accueil",icon:"🏠",label:"Home"},{id:"liste",icon:"🌊",label:"Beaches"},{id:"carte",icon:"🗺️",label:"Map"},{id:"jeu",icon:"🎮",label:"Game"},{id:"arena",icon:"🌊",label:"Arena"},{id:"chat",icon:"🤖",label:"AI"},{id:"premium",icon:"⭐",label:"Premium"},{id:"profil",icon:"👤",label:"Profile"}]
 // Bottom nav : 5 items max pour mobile, sidebar : tous
 const NAV_BOTTOM_IDS=["accueil","liste","carte","chat","profil"]
 function getNAV(lang){ return lang==="en"?NAV_ALL_EN:NAV_ALL_FR }
-function getBottomNAV(lang){ const all=getNAV(lang); return all.filter(t=>NAV_BOTTOM_IDS.includes(t.id)) }
+function getBottomNAV(lang){ const all=getNAV(lang); return NAV_BOTTOM_IDS.map(id=>all.find(t=>t.id===id)).filter(Boolean) }
 
 function AppHeader({live,clean,xp,onGPS,island,onIslandChange,copernicusCheck,isDark,onThemeToggle}){
   const level=getLevel(xp)
@@ -1735,7 +1735,7 @@ export default function App(){
       if(p.includes("carte-sargasses")) return "carte"
       if(p.includes("previsions")) return "accueil"
     }
-    return "accueil"
+    return "carte"
   })
   const [favs,    setFavs]    = useState(()=>g("sg_favs",["grande-anse","tartane"]))
   const [sheet,   setSheet]   = useState(null)

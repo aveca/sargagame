@@ -1,0 +1,35 @@
+{
+  "generatedAt": "2026-04-01T12:30:42.101Z",
+  "pages": [
+    {
+      "type": "commune",
+      "path": "communes/trois-ilets",
+      "slug": "trois-ilets",
+      "title": "Sargasses Les Trois-Îlets (Martinique) — État des plages",
+      "description": "État des sargasses à Les Trois-Îlets, Martinique. Quelles plages sont propres aujourd'hui ? Carte en temps réel et prévisions 7 jours.",
+      "island": "mq",
+      "domain": "sargasses-martinique.com",
+      "redirectTo": "/plages/anse-mitan/"
+    },
+    {
+      "type": "commune",
+      "path": "communes/sainte-luce",
+      "slug": "sainte-luce",
+      "title": "Sargasses Sainte-Luce (Martinique) — État des plages",
+      "description": "État des sargasses à Sainte-Luce, Martinique. Quelles plages sont propres aujourd'hui ? Carte en temps réel et prévisions 7 jours.",
+      "island": "mq",
+      "domain": "sargasses-martinique.com",
+      "redirectTo": "/plages/pointe-marin/"
+    },
+    {
+      "type": "commune",
+      "path": "communes/trinite",
+      "slug": "trinite",
+      "title": "Sargasses La Trinité (Martinique) — État des plages",
+      "description": "État des sargasses à La Trinité, Martinique. Quelles plages sont propres aujourd'hui ? Carte en temps réel et prévisions 7 jours.",
+      "island": "mq",
+      "domain": "sargasses-martinique.com",
+      "redirectTo": "/plages/tartane/"
+    }
+  ]
+}

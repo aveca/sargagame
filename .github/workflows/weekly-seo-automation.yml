@@ -38,7 +38,19 @@ jobs:
       - name: Fix 404 errors (auto-redirect)
         run: node scripts/automation/seo-fix-404.cjs
 
-      # ── 3. Rebuild with SEO changes ──────────────────────
+      # ── 3. Optimize meta titles/descriptions ─────────────
+      - name: Optimize meta (CTR-based)
+        run: node scripts/automation/seo-optimize-meta.cjs
+
+      # ── 4. Enrich beach page content ─────────────────────
+      - name: Enrich content (FAQ + noscript + links)
+        run: node scripts/automation/seo-enrich-content.cjs
+
+      # ── 5. Generate new SEO pages ────────────────────────
+      - name: Generate new pages (keyword gaps)
+        run: node scripts/automation/generate-seo-pages.cjs
+
+      # ── 6. Rebuild with all SEO changes ──────────────────
       - name: Build site (Vite)
         run: npm run build
 
@@ -49,11 +61,11 @@ jobs:
         run: node scripts/automation/seo-submit-urls.cjs
         continue-on-error: true
 
-      # ── 5. Commit all SEO changes ────────────────────────
+      # ── 8. Commit all SEO changes ────────────────────────
       - name: Commit SEO automation changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public/.htaccess scripts/automation/data/automation-log.json
+          git add public/.htaccess vite.config.js scripts/automation/data/automation-log.json scripts/automation/data/meta-overrides.json scripts/automation/data/enrichments.json scripts/automation/data/new-pages.json
           git diff --cached --quiet || git commit -m "seo: weekly automation $(date -u +'%Y-%m-%d')"
           git push || true

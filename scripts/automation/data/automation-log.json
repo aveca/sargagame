@@ -1,1 +1,32 @@
-{"runs":[]}
+{
+  "runs": [
+    {
+      "timestamp": "2026-04-01T12:30:40.763Z",
+      "dryRun": false,
+      "script": "seo-enrich-content",
+      "action": "enriched",
+      "beachCount": 20
+    },
+    {
+      "timestamp": "2026-04-01T12:30:42.142Z",
+      "dryRun": false,
+      "script": "generate-seo-pages",
+      "action": "pages-created",
+      "pagesCount": 3,
+      "pages": [
+        {
+          "type": "commune",
+          "path": "communes/trois-ilets"
+        },
+        {
+          "type": "commune",
+          "path": "communes/sainte-luce"
+        },
+        {
+          "type": "commune",
+          "path": "communes/trinite"
+        }
+      ]
+    }
+  ]
+}
