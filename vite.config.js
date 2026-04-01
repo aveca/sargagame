@@ -171,6 +171,11 @@ export default defineConfig({
           const pages = [
             { path: 'carte-sargasses', title: 'Carte des sargasses Martinique en temps réel', desc: 'Carte interactive des sargasses en Martinique. Où se baigner, plages propres, état en direct.' },
             { path: 'previsions', title: 'Prévisions sargasses Martinique 7 jours', desc: 'Prévisions sargasses Martinique J+1 à J+7. Où aller à la plage cette semaine.' },
+            // SEO editorial pages
+            { path: 'saison-sargasses-martinique', title: 'Saison des sargasses en Martinique — Quand et où ?', desc: 'Quand arrivent les sargasses en Martinique ? Pic de saison, mois à éviter, plages les plus touchées. Prévisions en temps réel et conseils pratiques.' },
+            { path: 'saison-sargasses-guadeloupe', title: 'Saison des sargasses en Guadeloupe — Quand et où ?', desc: 'Quand arrivent les sargasses en Guadeloupe ? Pic de saison, mois à éviter, plages les plus touchées. Prévisions en temps réel et conseils pratiques.' },
+            { path: 'plages-sans-sargasses', title: 'Plages sans sargasses en Martinique et Guadeloupe', desc: 'Liste des plages propres aujourd\'hui en Martinique et Guadeloupe. Données satellite en temps réel. Trouvez où vous baigner sans sargasses.' },
+            { path: 'danger-sargasses-h2s', title: 'Sargasses et H2S : dangers pour la santé, précautions', desc: 'Le H2S dégagé par les sargasses en décomposition peut irriter les yeux et les voies respiratoires. Risques, seuils, précautions pour enfants et personnes fragiles.' },
           ]
           for (const { path: p, title, desc } of pages) {
             const dir = resolve(outDir, p)
@@ -198,6 +203,25 @@ export default defineConfig({
           const enJsonLd = '<script type="application/ld+json">\n    {"@context":"https://schema.org","@type":"WebApplication","name":"Sargassum Martinique real-time","description":"Real-time sargassum map and beach status in Martinique. Clean or avoid, 7-day outlook.","url":"https://sargasses-martinique.com/en/","applicationCategory":"EnvironmentApplication","operatingSystem":"Web","inLanguage":"en","dateModified":"' + new Date().toISOString().slice(0, 10) + '","publisher":{"@type":"Organization","name":"Sargasses Martinique"}}\n    </script>'
           writeFileSync(resolve(enDir, 'index.html'), enIndex.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/, enJsonLd))
 
+          // EN subpages for international SEO
+          const enPages = [
+            { path: 'en/sargassum-map', title: 'Sargassum Map Martinique &amp; Guadeloupe — Real-time satellite', desc: 'Interactive sargassum map for Martinique and Guadeloupe. Real-time satellite data, 7-day forecast. Find clean beaches today.' },
+            { path: 'en/best-beaches-no-sargassum', title: 'Best beaches without sargassum in Martinique &amp; Guadeloupe', desc: 'Which beaches are clean today? Real-time sargassum monitoring for Martinique and Guadeloupe. Updated daily with satellite data.' },
+            { path: 'en/sargassum-season', title: 'Sargassum season in the Caribbean — When to avoid', desc: 'When does sargassum season start? Peak months, which beaches are affected, real-time forecasts for Martinique and Guadeloupe.' },
+          ]
+          for (const ep of enPages) {
+            const epDir = resolve(outDir, ep.path)
+            mkdirSync(epDir, { recursive: true })
+            const epHtml = enIndex
+              .replace(/<title>[^<]*<\/title>/, `<title>${ep.title}</title>`)
+              .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${ep.desc}" />`)
+              .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="https://sargasses-martinique.com/${ep.path}/" />`)
+              .replace(/<meta property="og:title"[^>]*>/, `<meta property="og:title" content="${ep.title}" />`)
+              .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="https://sargasses-martinique.com/${ep.path}/" />`)
+            writeFileSync(resolve(epDir, 'index.html'), epHtml.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/, enJsonLd))
+          }
+          console.log(`   → ${enPages.length} pages EN supplémentaires générées`)
+
           // Sitemaps dynamiques avec lastmod = date du build
           const today = new Date().toISOString().slice(0, 10)
           const sitemapMQ = `<?xml version="1.0" encoding="UTF-8"?>
@@ -206,6 +230,13 @@ export default defineConfig({
   <url><loc>https://sargasses-martinique.com/carte-sargasses/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://sargasses-martinique.com/previsions/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://sargasses-martinique.com/en/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://sargasses-martinique.com/en/sargassum-map/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://sargasses-martinique.com/en/best-beaches-no-sargassum/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://sargasses-martinique.com/en/sargassum-season/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://sargasses-martinique.com/saison-sargasses-martinique/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://sargasses-martinique.com/saison-sargasses-guadeloupe/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://sargasses-martinique.com/plages-sans-sargasses/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://sargasses-martinique.com/danger-sargasses-h2s/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://sargasses-martinique.com/mentions-legales.html</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.4</priority></url>
   <url><loc>https://sargasses-martinique.com/confidentialite.html</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.4</priority></url>
 </urlset>
@@ -225,8 +256,8 @@ export default defineConfig({
           console.log('   → BreadcrumbList ajouté à /carte-sargasses/ et /previsions/')
 
           // Pages statiques par plage (SEO longue traîne)
-          const beaches = [
-            // Martinique
+          // Featured beaches (canonical slugs used in the app)
+          const featuredBeaches = [
             {id:"grande-anse",island:"mq",name:"Grande Anse d'Arlet",commune:"Les Anses-d'Arlet",slug:"grande-anse-darlet"},
             {id:"anse-mitan",island:"mq",name:"Anse Mitan",commune:"Les Trois-Îlets",slug:"anse-mitan"},
             {id:"anse-noire",island:"mq",name:"Anse Noire",commune:"Les Anses-d'Arlet",slug:"anse-noire"},
@@ -237,7 +268,6 @@ export default defineConfig({
             {id:"sainte-anne",island:"mq",name:"Sainte-Anne",commune:"Sainte-Anne",slug:"sainte-anne"},
             {id:"les-salines",island:"mq",name:"Les Salines",commune:"Sainte-Anne",slug:"les-salines"},
             {id:"vauclin",island:"mq",name:"Le Vauclin",commune:"Le Vauclin",slug:"le-vauclin"},
-            // Guadeloupe
             {id:"gp-grande-anse",island:"gp",name:"Grande Anse",commune:"Bouillante",slug:"grande-anse-bouillante"},
             {id:"gp-malendure",island:"gp",name:"Malendure",commune:"Bouillante",slug:"malendure"},
             {id:"gp-sainte-anne",island:"gp",name:"Sainte-Anne",commune:"Sainte-Anne",slug:"sainte-anne-guadeloupe"},
@@ -249,6 +279,17 @@ export default defineConfig({
             {id:"gp-moule",island:"gp",name:"Plage de la Souffleur",commune:"Le Moule",slug:"plage-souffleur"},
             {id:"gp-vieux-fort",island:"gp",name:"Anse de la Gourde",commune:"Saint-François",slug:"anse-de-la-gourde"},
           ]
+          // Auto-generate pages for ALL beaches in beaches-list.json
+          const slugify = (n) => n.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')
+          const featuredSlugs = new Set(featuredBeaches.map(b => b.slug))
+          let extraBeaches = []
+          try {
+            const allBeaches = JSON.parse(readFileSync(resolve(__dirname, 'public/data/beaches-list.json'), 'utf-8'))
+            extraBeaches = allBeaches
+              .map(b => ({ id: b.id, island: b.island, name: b.name, commune: b.commune, slug: slugify(b.name) }))
+              .filter(b => !featuredSlugs.has(b.slug))
+          } catch {}
+          const beaches = [...featuredBeaches, ...extraBeaches]
           
           // SEO enrichments (generated by seo-enrich-content.cjs)
           let _enrichments = {}

@@ -137,8 +137,8 @@ Sitemap: https://${domain}/sitemap.xml
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#C4830A" />
-    <title>Sargasses Guadeloupe – Carte en temps réel 2026</title>
-    <meta name="description" content="Consultez l'état des plages de Guadeloupe face aux sargasses aujourd'hui. Carte interactive mise à jour quotidiennement. Prévisions 7 jours incluses." />
+    <title>Sargasses Guadeloupe en temps réel · Carte et plages aujourd'hui</title>
+    <meta name="description" content="Sargasses Guadeloupe : où se baigner aujourd'hui ? Carte en temps réel des 10 plages surveillées, prévisions sargasses 7 jours, alertes H2S. Données satellite Copernicus." />
     <link rel="canonical" href="https://sargasses-guadeloupe.com/" />
     <link rel="alternate" hreflang="fr" href="https://sargasses-guadeloupe.com/" />
     <link rel="alternate" hreflang="en" href="https://sargasses-guadeloupe.com/en/" />
@@ -146,8 +146,8 @@ Sitemap: https://${domain}/sitemap.xml
     <meta name="geo.region" content="GP" />
     <meta name="geo.placename" content="Guadeloupe" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Sargasses Guadeloupe – Carte en temps réel 2026" />
-    <meta property="og:description" content="Consultez l'état des plages de Guadeloupe face aux sargasses aujourd'hui. Carte interactive mise à jour quotidiennement. Prévisions 7 jours incluses." />
+    <meta property="og:title" content="Sargasses Guadeloupe en temps réel · Carte et plages aujourd'hui" />
+    <meta property="og:description" content="Sargasses Guadeloupe : où se baigner aujourd'hui ? Carte en temps réel, prévisions 7 jours, alertes H2S." />
     <meta property="og:url" content="https://sargasses-guadeloupe.com/" />
     <meta property="og:locale" content="fr_FR" />
     <meta property="og:locale:alternate" content="en_US" />
@@ -157,12 +157,12 @@ Sitemap: https://${domain}/sitemap.xml
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Carte des sargasses en Guadeloupe - plages propres et à éviter" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Sargasses Guadeloupe – Carte en temps réel 2026" />
-    <meta name="twitter:description" content="Consultez l'état des plages de Guadeloupe face aux sargasses aujourd'hui. Carte interactive, prévisions 7 jours." />
+    <meta name="twitter:title" content="Sargasses Guadeloupe en temps réel · Carte et plages aujourd'hui" />
+    <meta name="twitter:description" content="Sargasses Guadeloupe : où se baigner aujourd'hui ? Carte en temps réel, prévisions 7 jours, alertes H2S." />
     <meta name="twitter:image" content="https://sargasses-guadeloupe.com/og-image.png" />
     <meta name="twitter:image:alt" content="Carte des sargasses en Guadeloupe - plages propres et à éviter" />
     <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"WebApplication","name":"Sargasses Guadeloupe en temps réel","description":"Carte et état des plages Guadeloupe aujourd'hui. Sargasses, plages propres, prévisions 7 jours.","url":"https://sargasses-guadeloupe.com/","applicationCategory":"EnvironmentApplication","operatingSystem":"Web","inLanguage":["fr","en"],"dateModified":"2026-03-08","datePublished":"2026-02-21","publisher":{"@type":"Organization","name":"Sargasses Guadeloupe"}}
+    {"@context":"https://schema.org","@type":"WebApplication","name":"Sargasses Guadeloupe en temps réel","description":"Carte et état des plages Guadeloupe aujourd'hui. Sargasses, plages propres, prévisions 7 jours.","url":"https://sargasses-guadeloupe.com/","applicationCategory":"EnvironmentApplication","operatingSystem":"Web","inLanguage":["fr","en"],"dateModified":"${new Date().toISOString().slice(0,10)}","datePublished":"2026-02-21","publisher":{"@type":"Organization","name":"Sargasses Guadeloupe"}}
     </script>
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Quand arrivent les sargasses en Guadeloupe ?","acceptedAnswer":{"@type":"Answer","text":"Les sargasses varient avec les courants et le vent. La saison la plus concernée s’étend généralement d’avril à septembre, avec des pics possibles jusqu’en octobre. Consultez la carte et les prévisions 7 jours pour l’état du jour."}},{"@type":"Question","name":"C'est quoi l'AFAI ?","acceptedAnswer":{"@type":"Answer","text":"L'AFAI (Algal Floating Algae Index) est un indice de détection des algues par satellite. Plus il est bas, mieux c’est : en dessous de 0,3 la plage est considérée comme propre, au-dessus de 0,65 il vaut mieux éviter. La courbe est affichée sur chaque fiche plage."}},{"@type":"Question","name":"Quel risque pour la santé (H2S) ?","acceptedAnswer":{"@type":"Answer","text":"Le H2S (sulfure d’hydrogène) est un gaz libéré quand les sargasses pourrissent. En forte concentration il peut irriter les yeux et la gorge. Les plages en rouge « À éviter » signalent ce risque — à éviter surtout avec des enfants ou personnes fragiles."}},{"@type":"Question","name":"Quelle plage est propre aujourd'hui en Guadeloupe ?","acceptedAnswer":{"@type":"Answer","text":"Ouvrez la carte ou l’onglet Plages : les statuts (propre / modéré / à éviter) sont mis à jour régulièrement à partir des données satellite et du modèle de dérive Copernicus Marine. L’assistant IA peut aussi vous recommander une plage selon vos critères."}},{"@type":"Question","name":"D'où viennent les données ?","acceptedAnswer":{"@type":"Answer","text":"Les statuts viennent de Copernicus Marine : produit satellite (détection des algues) et modèle de dérive océanique. Les données sont rafraîchies régulièrement pour les Antilles. L’indicateur « Copernicus » en haut de l’app confirme la source active."}}]}
@@ -173,6 +173,10 @@ Sitemap: https://${domain}/sitemap.xml
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q31VV3LLM9"></script>
     <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-Q31VV3LLM9');</script>
     <script>(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script","w4oect7ph3");</script>
+    <!-- Clarity → GA4 bridge -->
+    <script>
+    (function(){if(!window.clarity||!window.gtag)return;var sent={};function send(n,d){var k=n+d.target;if(sent[k])return;sent[k]=1;gtag('event',n,d)}var clicks=[],RT=3,RW=1500;document.addEventListener('click',function(e){var now=Date.now(),t=e.target,tag=t.tagName+'.'+(t.className||'').split(' ')[0]+'#'+(t.id||'');clicks.push({time:now,tag:tag});clicks=clicks.filter(function(c){return now-c.time<RW});var same=clicks.filter(function(c){return c.tag===tag});if(same.length>=RT){send('clarity_rage_click',{target:tag,page:location.pathname,count:same.length});clicks=[]}},true);document.addEventListener('click',function(e){var t=e.target,ii=['A','BUTTON','INPUT','SELECT','TEXTAREA','LABEL'];if(ii.indexOf(t.tagName)>=0||t.closest('a,button'))return;var tag=t.tagName+'.'+(t.className||'').split(' ')[0]+'#'+(t.id||''),url=location.href;setTimeout(function(){if(location.href===url)send('clarity_dead_click',{target:tag,page:location.pathname})},2000)},true);var loaded=Date.now();window.addEventListener('beforeunload',function(){if(Date.now()-loaded<10000){navigator.sendBeacon&&navigator.sendBeacon('https://www.google-analytics.com/g/collect?v=2&tid=G-Q31VV3LLM9&en=clarity_quick_bounce&ep.page='+encodeURIComponent(location.pathname))}})})();
+    </script>
     <script type="module" crossorigin src="${scriptSrc}"></script>
   </head>
   <body>
