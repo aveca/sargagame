@@ -779,7 +779,7 @@ const I18N = {
     themeTitle: 'Changer le thème',
     searchPlaceholder: 'Rechercher…',
     all: 'Tout', martinique: 'Martinique', guadeloupe: 'Guadeloupe',
-    satellite: 'Satellite', hybrid: 'Hybride', dark: 'Sombre', terrain: 'Relief',
+    satellite: 'Satellite', hybrid: 'Hybride', dark: 'Sombre', terrain: 'Voyager',
     beaches: 'Plages', allFilter: 'Toutes', clear: 'Propre', moderate: 'Modéré', high: 'Élevé', naturist: 'Naturiste',
     overview: 'Vue ensemble', beachesCount: 'plages', beachOne: 'plage',
     riskTitle: 'Risque sargasses', low: 'Faible', resultCount: 'résultat', resultCountPlural: 'résultats',
@@ -915,8 +915,8 @@ const COORD_FIX = (typeof BEACHES_BACKUP !== 'undefined' && BEACHES_BACKUP.COORD
   return fallback;
 })();
 // Coordonnées de référence (backup ou fallback) : appliquées à toutes les plages pour un placement correct sur la carte.
-// Coordonnées uniquement depuis BEACHES (coords OSM / manuelles) — COORD_FIX désactivé.
-  // BEACHES.forEach(b=>{ const fix=COORD_FIX[b.id]; if(fix){ b.lat=fix.lat; b.lng=fix.lng; } });
+// Coordonnées corrigées Copernicus/OSM — appliquées pour un placement précis sur la carte.
+  BEACHES.forEach(b=>{ const fix=COORD_FIX[b.id]; if(fix){ b.lat=fix.lat; b.lng=fix.lng; } });
 
 // AFAI mock
 const AFAI={};
@@ -934,8 +934,8 @@ const TILES={
         {attribution:'© Esri/Maxar',maxZoom:19}),
   dark:L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
         {attribution:'© OSM © CARTO',subdomains:'abcd',maxZoom:19}),
-  ter: L.tileLayer('https://tile.opentopomap.org/{z}/{x}/{y}.png',
-        {attribution:'© OpenTopoMap',maxZoom:17}),
+  ter: L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+        {attribution:'© OSM © CARTO',subdomains:'abcd',maxZoom:20}),
   lbl: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',
         {attribution:'',subdomains:'abcd',maxZoom:19,pane:'overlayPane',opacity:.85}),
 };
@@ -966,12 +966,20 @@ function flyTo(k){
 
 // ── MARKERS ──
 function makeMarker(b){
-  const c=col(b), s=b.risk==='danger'||b.h2s?13:10;
-  const html=`<div style="position:relative;width:${s+12}px;height:${s+12}px">
-    <div style="position:absolute;top:50%;left:50%;width:${s*2.6}px;height:${s*2.6}px;border-radius:50%;background:${c}26;transform:translate(-50%,-50%);animation:ping ${b.risk==='danger'?'1.4s':'2.4s'} ease-out infinite"></div>
-    <div style="position:absolute;top:50%;left:50%;width:${s}px;height:${s}px;border-radius:50%;background:${c};box-shadow:0 0 ${s}px ${c}88,0 2px 5px rgba(0,0,0,.5);border:1.5px solid rgba(255,255,255,.28);transform:translate(-50%,-50%);cursor:pointer;transition:.15s"></div>
+  const c=col(b);
+  const isDark=!document.documentElement.classList.contains('light');
+  const bg=isDark?'rgba(10,14,22,.82)':'rgba(255,255,255,.9)';
+  const txt=isDark?'#EEF4FA':'#0A1420';
+  const shadow=isDark?'0 2px 12px rgba(0,0,0,.6)':'0 2px 8px rgba(0,0,0,.15)';
+  const html=`<div class="uber-mk" data-bid="${b.id}" style="transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;pointer-events:auto;cursor:pointer;transition:transform .2s">
+    <div class="uber-label" style="background:${bg};backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1.5px solid ${c}55;border-radius:11px;padding:4px 10px;font:600 11px 'DM Sans',system-ui;color:${txt};white-space:nowrap;box-shadow:${shadow};display:flex;align-items:center;gap:5px;transition:all .2s">
+      <div style="width:7px;height:7px;border-radius:50%;background:${c};box-shadow:0 0 5px ${c}88;flex-shrink:0"></div>
+      ${b.name}
+    </div>
+    <div style="width:1.5px;height:7px;background:${c}66"></div>
+    <div style="width:10px;height:10px;border-radius:50%;background:${c};box-shadow:0 0 8px ${c}55;border:2px solid ${isDark?'rgba(255,255,255,.22)':'rgba(255,255,255,.8)'}"></div>
   </div>`;
-  const icon=L.divIcon({className:'',html,iconSize:[s+12,s+12],iconAnchor:[(s+12)/2,(s+12)/2]});
+  const icon=L.divIcon({className:'',html,iconSize:[0,0]});
   const mk=L.marker([b.lat,b.lng],{icon});
   mk.on('click',()=>select(b.id));
   mk._bid=b.id;
@@ -1017,8 +1025,14 @@ function select(id){
   curB=BEACHES.find(b=>b.id===id); if(!curB) return;
   openSheet(curB);
   markers.forEach(m=>{
-    const d=m.getElement()?.querySelector('div>div:last-child');
-    if(d) d.style.transform=m._bid===id?'translate(-50%,-50%) scale(1.55)':'translate(-50%,-50%) scale(1)';
+    const el=m.getElement()?.querySelector('.uber-mk');
+    if(el){
+      const isSelected=m._bid===id;
+      el.style.transform=isSelected?'translate(-50%,-100%) scale(1.12)':'translate(-50%,-100%) scale(1)';
+      el.style.zIndex=isSelected?'999':'1';
+      const label=el.querySelector('.uber-label');
+      if(label) label.style.borderColor=isSelected?'#C4830A':label.dataset.origBorder||'';
+    }
   });
   document.querySelectorAll('.pi').forEach(el=>el.classList.toggle('active',el.dataset.id===id));
   document.querySelector(`.pi[data-id="${id}"]`)?.scrollIntoView({behavior:'smooth',block:'nearest'});
