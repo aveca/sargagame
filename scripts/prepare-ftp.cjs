@@ -71,6 +71,21 @@ for (const { dir, title, domain, onesignalAppId } of readmes) {
     }
   }
 
+  // Patch GA4 + Clarity IDs pour Guadeloupe
+  if (dir === 'guadeloupe-ftp') {
+    const analyticsFiles = ['index.html', 'carte-sargasses/index.html', 'previsions/index.html', 'en/index.html']
+    for (const relPath of analyticsFiles) {
+      const filePath = path.join(out, relPath)
+      if (fs.existsSync(filePath)) {
+        let content = fs.readFileSync(filePath, 'utf-8')
+        content = content.replace(/G-V83JGMDZ2Y/g, 'G-Q31VV3LLM9')
+        content = content.replace(/w4o6w9aenv/g, 'w4oect7ph3')
+        fs.writeFileSync(filePath, content, 'utf-8')
+      }
+    }
+    console.log('   → GA4 + Clarity IDs patchés pour Guadeloupe')
+  }
+
   // Sitemap + robots par domaine
   const sitemapName = dir === 'martinique-ftp' ? 'sitemap-martinique.xml' : 'sitemap-guadeloupe.xml'
   const sitemapSrc = path.join(out, sitemapName)
@@ -155,6 +170,9 @@ Sitemap: https://${domain}/sitemap.xml
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="dns-prefetch" href="https://cdn.onesignal.com" />
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q31VV3LLM9"></script>
+    <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-Q31VV3LLM9');</script>
+    <script>(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script","w4oect7ph3");</script>
     <script type="module" crossorigin src="${scriptSrc}"></script>
   </head>
   <body>
