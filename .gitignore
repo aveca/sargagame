@@ -4,6 +4,10 @@ clef
 # Identifiants Copernicus Marine (ne pas committer)
 copernicustxt.txt
 
+# Google Service Account keys (NEVER commit)
+sargassum-automation-*.json
+*-serviceaccount*.json
+
 # Dependencies
 node_modules
 
