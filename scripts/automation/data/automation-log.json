@@ -27,6 +27,114 @@
           "path": "communes/trinite"
         }
       ]
+    },
+    {
+      "timestamp": "2026-04-01T18:59:19.054Z",
+      "dryRun": false,
+      "script": "seo-audit",
+      "action": "data-collection",
+      "results": {
+        "mq": {
+          "indexed": 3,
+          "total": 26,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 0,
+          "cwvIssues": 0
+        },
+        "gp": {
+          "indexed": 4,
+          "total": 26,
+          "notIndexed": 0,
+          "lowCtr": 3,
+          "highBounce": 1,
+          "cwvIssues": 0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-04-01T18:59:19.102Z",
+      "dryRun": false,
+      "script": "seo-fix-404",
+      "action": "no-changes",
+      "redirectsAdded": 0
+    },
+    {
+      "timestamp": "2026-04-01T18:59:19.142Z",
+      "dryRun": false,
+      "script": "seo-optimize-meta",
+      "action": "no-changes",
+      "changesCount": 0
+    },
+    {
+      "timestamp": "2026-04-01T18:59:19.182Z",
+      "dryRun": false,
+      "script": "seo-enrich-content",
+      "action": "enriched",
+      "beachCount": 20
+    },
+    {
+      "timestamp": "2026-04-01T18:59:19.223Z",
+      "dryRun": false,
+      "script": "generate-seo-pages",
+      "action": "pages-created",
+      "pagesCount": 3,
+      "pages": [
+        {
+          "type": "commune",
+          "path": "communes/trois-ilets"
+        },
+        {
+          "type": "commune",
+          "path": "communes/sainte-luce"
+        },
+        {
+          "type": "commune",
+          "path": "communes/trinite"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-04-01T18:59:29.876Z",
+      "dryRun": false,
+      "script": "seo-submit-urls",
+      "action": "urls-submitted",
+      "urlsSubmitted": 0,
+      "errors": 32,
+      "urls": [
+        "https://sargasses-martinique.com/",
+        "https://sargasses-martinique.com/carte-sargasses/",
+        "https://sargasses-martinique.com/previsions/",
+        "https://sargasses-martinique.com/en/",
+        "https://sargasses-martinique.com/mentions-legales.html",
+        "https://sargasses-martinique.com/confidentialite.html",
+        "https://sargasses-martinique.com/plages/grande-anse-darlet/",
+        "https://sargasses-martinique.com/plages/anse-mitan/",
+        "https://sargasses-martinique.com/plages/anse-noire/",
+        "https://sargasses-martinique.com/plages/tartane/",
+        "https://sargasses-martinique.com/plages/anse-madame/",
+        "https://sargasses-martinique.com/plages/le-diamant/",
+        "https://sargasses-martinique.com/plages/pointe-marin/",
+        "https://sargasses-martinique.com/plages/sainte-anne/",
+        "https://sargasses-martinique.com/plages/les-salines/",
+        "https://sargasses-martinique.com/plages/le-vauclin/",
+        "https://sargasses-guadeloupe.com/",
+        "https://sargasses-guadeloupe.com/carte-sargasses/",
+        "https://sargasses-guadeloupe.com/previsions/",
+        "https://sargasses-guadeloupe.com/en/",
+        "https://sargasses-guadeloupe.com/mentions-legales.html",
+        "https://sargasses-guadeloupe.com/confidentialite.html",
+        "https://sargasses-guadeloupe.com/plages/grande-anse-bouillante/",
+        "https://sargasses-guadeloupe.com/plages/malendure/",
+        "https://sargasses-guadeloupe.com/plages/sainte-anne-guadeloupe/",
+        "https://sargasses-guadeloupe.com/plages/pointe-des-chateaux/",
+        "https://sargasses-guadeloupe.com/plages/le-gosier/",
+        "https://sargasses-guadeloupe.com/plages/plage-caravelle/",
+        "https://sargasses-guadeloupe.com/plages/bas-du-fort/",
+        "https://sargasses-guadeloupe.com/plages/grande-anse-deshaies/",
+        "https://sargasses-guadeloupe.com/plages/plage-souffleur/",
+        "https://sargasses-guadeloupe.com/plages/anse-de-la-gourde/"
+      ]
     }
   ]
 }
