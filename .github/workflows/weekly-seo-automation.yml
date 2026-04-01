@@ -1,0 +1,59 @@
+name: Weekly SEO Automation
+
+on:
+  schedule:
+    # Lundi 7h Martinique (UTC-4) = 11h UTC
+    - cron: '0 11 * * 1'
+  workflow_dispatch: # Déclenchement manuel possible
+
+permissions:
+  contents: write
+
+jobs:
+  seo-automation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # ── 1. Collect SEO data from GSC + GA4 + CrUX ────────
+      - name: SEO Audit (data collection)
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GA4_PROPERTY_ID_MQ: ${{ secrets.GA4_PROPERTY_ID_MQ }}
+          GA4_PROPERTY_ID_GP: ${{ secrets.GA4_PROPERTY_ID_GP }}
+        run: node scripts/automation/seo-audit.cjs
+
+      # ── 2. Auto-fix 404 errors ───────────────────────────
+      - name: Fix 404 errors (auto-redirect)
+        run: node scripts/automation/seo-fix-404.cjs
+
+      # ── 3. Rebuild with SEO changes ──────────────────────
+      - name: Build site (Vite)
+        run: npm run build
+
+      # ── 4. Submit URLs to Google Indexing API ─────────────
+      - name: Submit URLs to Google Indexing
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: node scripts/automation/seo-submit-urls.cjs
+        continue-on-error: true
+
+      # ── 5. Commit all SEO changes ────────────────────────
+      - name: Commit SEO automation changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/.htaccess scripts/automation/data/automation-log.json
+          git diff --cached --quiet || git commit -m "seo: weekly automation $(date -u +'%Y-%m-%d')"
+          git push || true

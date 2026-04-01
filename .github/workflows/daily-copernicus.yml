@@ -45,6 +45,13 @@ jobs:
       - name: Prepare FTP folders
         run: node scripts/prepare-ftp.cjs
 
+      # ── 2b. Submit URLs to Google Indexing API ─────────────
+      - name: Submit URLs to Google Indexing
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: node scripts/automation/seo-submit-urls.cjs
+        continue-on-error: true
+
       # ── 3. Commit updated data to repo ────────────────────
       - name: Commit updated sargassum.json
         run: |

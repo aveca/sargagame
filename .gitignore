@@ -20,5 +20,10 @@ guadeloupe-ftp
 # Secrets guide (ne pas committer)
 SECRETS-GITHUB.txt
 
+# SEO Automation (cache files — only automation-log.json is committed)
+scripts/automation/data/audit-full.json
+scripts/automation/data/audit-summary.json
+scripts/automation/data/ux-report.json
+
 # Claude Code
 .claude
