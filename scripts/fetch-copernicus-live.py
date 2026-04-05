@@ -47,10 +47,15 @@ def status_from_afai(afai):
     return "avoid"
 
 def main():
-    username = os.environ.get("COPERNICUS_USERNAME")
-    password = os.environ.get("COPERNICUS_PASSWORD")
-    if not username or not password:
-        print("ERROR: COPERNICUS_USERNAME and COPERNICUS_PASSWORD env vars required")
+    # The copernicusmarine library reads COPERNICUSMARINE_SERVICE_USERNAME/PASSWORD automatically
+    # But we also accept COPERNICUS_USERNAME/PASSWORD and map them
+    username = os.environ.get("COPERNICUSMARINE_SERVICE_USERNAME") or os.environ.get("COPERNICUS_USERNAME")
+    password = os.environ.get("COPERNICUSMARINE_SERVICE_PASSWORD") or os.environ.get("COPERNICUS_PASSWORD")
+    if username and password:
+        os.environ["COPERNICUSMARINE_SERVICE_USERNAME"] = username
+        os.environ["COPERNICUSMARINE_SERVICE_PASSWORD"] = password
+    else:
+        print("ERROR: COPERNICUS_USERNAME/PASSWORD or COPERNICUSMARINE_SERVICE_USERNAME/PASSWORD required")
         sys.exit(1)
 
     try:
@@ -69,7 +74,7 @@ def main():
     start_date = end_date - timedelta(days=7)
 
     try:
-        # Open the dataset remotely
+        # Open the dataset remotely (credentials from env vars COPERNICUSMARINE_SERVICE_*)
         ds = cm.open_dataset(
             dataset_id=DATASET_ID,
             variables=[VARIABLE],
@@ -79,8 +84,6 @@ def main():
             maximum_latitude=17.0,
             start_datetime=start_date.strftime("%Y-%m-%dT00:00:00"),
             end_datetime=end_date.strftime("%Y-%m-%dT23:59:59"),
-            username=username,
-            password=password,
         )
         print(f"Dataset loaded: {ds}")
     except Exception as e:
