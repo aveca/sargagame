@@ -223,32 +223,20 @@ body{background:var(--sg-bg,#FDFCF7);color:var(--sg-ink,#0D0D0D)}
 .backdrop{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:899;animation:fadeIn .2s}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 
-/* ── ONBOARDING CAROUSEL ── */
+/* ── ONBOARDING (conditional render) ── */
 .onb-overlay{
   position:fixed;inset:0;z-index:2000;
-  background:rgba(253,252,247,.92);
-  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  background:#FDFCF7;
   display:flex;align-items:center;justify-content:center;
-  overflow:hidden;width:100%;height:100%;
+  overflow:hidden;
 }
-.onb-phone{
-  width:390px;height:844px;background:#FDFCF7;border-radius:52px;
-  overflow:hidden;position:relative;display:flex;flex-direction:column;
-  box-shadow:0 0 0 1px rgba(0,0,0,.05),0 1px 0 2px rgba(255,255,255,.6),0 40px 100px rgba(0,0,0,.2),0 80px 180px rgba(0,0,0,.1);
-}
-@media(max-width:420px){.onb-phone{border-radius:0;height:100%;width:100%;box-shadow:none;}}
-@media(max-height:860px){.onb-phone{height:calc(100vh - 32px);border-radius:36px;}}
 .onb-overlay::before{
   content:'';position:fixed;inset:0;z-index:1;pointer-events:none;
   background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   opacity:.026;mix-blend-mode:multiply;
 }
-.onb-carousel{flex:1;overflow:hidden;position:relative;z-index:2;}
-.onb-slides{display:flex;width:300%;height:100%;transition:transform .45s cubic-bezier(.16,1,.3,1);}
-.onb-slide{width:33.333%;flex-shrink:0;display:flex;flex-direction:column;height:100%;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}
-.onb-dots{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:7px;z-index:30;}
-.onb-dot{width:7px;height:7px;border-radius:50%;background:rgba(0,0,0,.15);border:none;cursor:pointer;transition:all .3s;padding:0;}
-.onb-dot.active{width:22px;border-radius:4px;background:#E8A800;}
+.onb-inner{position:relative;z-index:2;width:100%;max-width:390px;height:100%;display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}
+@media(max-width:420px){.onb-inner{max-width:100%;}}
 
 @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 @keyframes float-a{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
@@ -762,8 +750,8 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   ONBOARDING — EXACT port of onboarding-final.html as HORIZONTAL CAROUSEL
-   translateX animation, touch swipe, each slide has its own CTA INSIDE
+   ONBOARDING — Conditional render (step===0/1/2), no carousel/translateX
+   Fixes: OneSignal phantom clicks, phone container cropping, slide order
    ═══════════════════════════════════════════════════════════════════════════ */
 function Onboarding({onDone,island="mq",lang="fr"}){
   // Adapt content per island (Clarity: 91% new users see this — must be relevant)
@@ -781,20 +769,6 @@ function Onboarding({onDone,island="mq",lang="fr"}){
     ?{borderRadius:"38% 52% 44% 58%/50% 40% 54% 44%",width:120,height:90}
     :{borderRadius:"30% 70% 50% 50%/40% 40% 60% 60%",width:160,height:70}
   const[step,setStep]=useState(0)
-  const slidesRef=useRef(null)
-  const touchStartX=useRef(0)
-
-  const goTo=useCallback((n)=>{
-    const clamped=Math.max(0,Math.min(2,n))
-    setStep(clamped)
-  },[])
-
-  // Apply translateX to slides container
-  useEffect(()=>{
-    if(slidesRef.current){
-      slidesRef.current.style.transform=`translateX(-${step*33.333}%)`
-    }
-  },[step])
 
   const closeOnboarding=useCallback(()=>{
     s("sg_onb",1)
@@ -807,29 +781,15 @@ function Onboarding({onDone,island="mq",lang="fr"}){
     window.open(STRIPE_URL,"_blank")
   },[])
 
-  // Touch swipe handlers
-  const onTouchStart=useCallback(e=>{
-    touchStartX.current=e.touches[0].clientX
-  },[])
-
-  const onTouchEnd=useCallback(e=>{
-    const dx=e.changedTouches[0].clientX-touchStartX.current
-    if(Math.abs(dx)>50){
-      if(dx<0&&step<2)goTo(step+1)
-      if(dx>0&&step>0)goTo(step-1)
-    }
-  },[step,goTo])
-
   return(
     <div className="onb-overlay">
-      <div className="onb-phone">
-      <div className="onb-carousel" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-        <div className="onb-slides" ref={slidesRef} style={{transform:"translateX(0%)"}}>
+      <div className="onb-inner">
 
-          {/* ═══════════════════════════════════════════
+      {step===0 && (
+          <>{/* ═══════════════════════════════════════════
               SLIDE 1 — "Sache avant de partir"
               ═══════════════════════════════════════════ */}
-          <div className="onb-slide">
+          <div style={{display:"flex",flexDirection:"column",flex:1}}>
             {/* Live strip */}
             <div style={{margin:"28px 20px 0",
               background:"rgba(255,255,255,.75)",border:"1px solid rgba(232,168,0,.26)",
@@ -939,7 +899,7 @@ function Onboarding({onDone,island="mq",lang="fr"}){
 
               {/* CTA — INSIDE slide 1 */}
               <div style={{marginTop:20,paddingBottom:50,display:"flex",flexDirection:"column",gap:8}}>
-                <button onClick={()=>goTo(1)} style={{
+                <button onClick={()=>setStep(1)} style={{
                   background:"linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%)",
                   color:C.ink,border:"none",borderRadius:22,padding:"19px 20px 19px 28px",
                   fontFamily:"'Anton',sans-serif",fontSize:21,letterSpacing:".06em",textTransform:"uppercase",
@@ -961,11 +921,14 @@ function Onboarding({onDone,island="mq",lang="fr"}){
               </div>
             </div>
           </div>
+          </>
+      )}
 
-          {/* ═══════════════════════════════════════════
+      {step===1 && (
+          <>{/* ═══════════════════════════════════════════
               SLIDE 2 — "Vert = tu pars. Rouge = tu évites."
               ═══════════════════════════════════════════ */}
-          <div className="onb-slide" style={{background:"#FDFCF7"}}>
+          <div style={{display:"flex",flexDirection:"column",flex:1}}>
             {/* Header */}
             <div style={{padding:"28px 22px 0",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
               <div style={{fontFamily:"'Anton',sans-serif",fontSize:16,letterSpacing:".05em",display:"flex",alignItems:"center",gap:8}}>
@@ -1057,7 +1020,7 @@ function Onboarding({onDone,island="mq",lang="fr"}){
 
             {/* CTA — INSIDE slide 2 */}
             <div style={{marginTop:16,padding:"10px 22px 48px"}}>
-              <button onClick={()=>goTo(2)} style={{
+              <button onClick={()=>setStep(2)} style={{
                 width:"100%",background:"linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%)",
                 color:C.ink,border:"none",borderRadius:20,padding:"17px 20px",
                 fontFamily:"'Anton',sans-serif",fontSize:19,letterSpacing:".06em",textTransform:"uppercase",
@@ -1071,11 +1034,14 @@ function Onboarding({onDone,island="mq",lang="fr"}){
               </button>
             </div>
           </div>
+          </>
+      )}
 
-          {/* ═══════════════════════════════════════════
+      {step===2 && (
+          <>{/* ═══════════════════════════════════════════
               SLIDE 3 — Premium / Forecast
               ═══════════════════════════════════════════ */}
-          <div className="onb-slide" style={{background:"#FDFCF7"}}>
+          <div style={{display:"flex",flexDirection:"column",flex:1}}>
             {/* Header */}
             <div style={{padding:"28px 22px 0",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
               <div style={{fontFamily:"'Anton',sans-serif",fontSize:16,letterSpacing:".05em",display:"flex",alignItems:"center",gap:8}}>
@@ -1238,18 +1204,21 @@ function Onboarding({onDone,island="mq",lang="fr"}){
               Paiement sécurisé<span style={{width:3,height:3,borderRadius:"50%",background:"rgba(104,104,104,.25)"}}/>Annulation à tout moment
             </div>
           </div>
+          </>
+      )}
 
-        </div>{/* /onb-slides */}
+      </div>{/* /onb-inner */}
 
-        {/* Dots */}
-        <div className="onb-dots">
-          {[0,1,2].map(i=>(
-            <button key={i} onClick={()=>goTo(i)}
-              className={"onb-dot"+(i===step?" active":"")}/>
-          ))}
-        </div>
-      </div>{/* /onb-carousel */}
-      </div>{/* /onb-phone */}
+      {/* Dots — fixed at bottom, outside scroll */}
+      <div style={{position:"absolute",bottom:20,left:"50%",transform:"translateX(-50%)",
+        display:"flex",gap:7,zIndex:30}}>
+        {[0,1,2].map(i=>(
+          <button key={i} onClick={()=>setStep(i)}
+            style={{width:i===step?22:7,height:7,borderRadius:i===step?4:7,
+              background:i===step?"#E8A800":"rgba(0,0,0,.15)",
+              border:"none",cursor:"pointer",transition:"all .3s",padding:0}}/>
+        ))}
+      </div>
     </div>
   )
 }
