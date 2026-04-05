@@ -41,9 +41,9 @@ const C={
 }
 
 const ST={
-  clean:{c:C.green,bg:C.greenBg,l:"Propre",le:"Clean",e:"\✅",h2s:false},
-  moderate:{c:C.amber,bg:C.amberBg,l:"Mod\ér\é",le:"Moderate",e:"\⚠\️",h2s:false},
-  avoid:{c:C.red,bg:C.redBg,l:"\À \éviter",le:"Avoid",e:"\�\�",h2s:true},
+  clean:{c:C.green,bg:C.greenBg,l:"Propre",le:"Clean",e:"✅",h2s:false},
+  moderate:{c:C.amber,bg:C.amberBg,l:"Modéré",le:"Moderate",e:"⚠️",h2s:false},
+  avoid:{c:C.red,bg:C.redBg,l:"À éviter",le:"Avoid",e:"��",h2s:true},
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -52,40 +52,40 @@ const ST={
 const T={
   fr:{
     days:["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"],today:"Auj.",tomorrow:"Dem.",
-    clean:"Propre",moderate:"Mod\ér\é",avoid:"\À \éviter",
-    search:"Rechercher une plage\…",
-    filters:["Toutes","Propres","Favoris","Enfants","Snorkeling","\À \éviter"],
-    filtersIcon:["\�\�","\✅","\❤\️","\�\�","\�\�","\�\�"],
+    clean:"Propre",moderate:"Modéré",avoid:"À éviter",
+    search:"Rechercher une plage…",
+    filters:["Toutes","Propres","Favoris","Enfants","Snorkeling","À éviter"],
+    filtersIcon:["��","✅","❤️","��","��","��"],
     navMap:"Carte",navList:"Plages",navPremium:"Premium",
-    forecast:"Pr\évisions 7j",weather:"M\ét\éo",directions:"Y aller",
+    forecast:"Prévisions 7j",weather:"Météo",directions:"Y aller",
     fav:"Favori",addFav:"Ajouter aux favoris",removeFav:"Retirer des favoris",
-    wind:"Vent",uv:"UV",temp:"Temp\érature",drive:"min",
+    wind:"Vent",uv:"UV",temp:"Température",drive:"min",
     kids:"Enfants",snorkel:"Snorkeling",parking:"Parking",
-    premium:"Premium",premiumDesc:"Pr\évisions 7 jours, alertes push, z\éro pub.",
-    premiumPrice:"4,99 \€/mois",premiumCta:"S'abonner",
-    premiumFeatures:["Pr\évisions 7 jours d\ébloqu\ées","Alertes push quand le statut change","Z\éro publicit\é","Annulation en 1 clic"],
-    h2sWarn:"Risque H\₂S \— \évitez cette plage avec des enfants.",
+    premium:"Premium",premiumDesc:"Prévisions 7 jours, alertes push, zéro pub.",
+    premiumPrice:"4,99 €/mois",premiumCta:"S'abonner",
+    premiumFeatures:["Prévisions 7 jours débloquées","Alertes push quand le statut change","Zéro publicité","Annulation en 1 clic"],
+    h2sWarn:"Risque H₂S — évitez cette plage avec des enfants.",
     copernicus:"Copernicus Marine",live:"LIVE",
     nClean:"{n} propres",island_mq:"Martinique",island_gp:"Guadeloupe",
     reportThanks:"Merci pour ton signalement !",report:"Signaler",
-    openWaze:"Ouvrir Waze",driftDown:"Dispersion attendue",driftUp:"Arriv\ée possible",driftStable:"Stable",
-    close:"Fermer",nearby:"Plages \à proximit\é",locked:"Premium",
+    openWaze:"Ouvrir Waze",driftDown:"Dispersion attendue",driftUp:"Arrivée possible",driftStable:"Stable",
+    close:"Fermer",nearby:"Plages à proximité",locked:"Premium",
   },
   en:{
     days:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],today:"Today",tomorrow:"Tmrw",
     clean:"Clean",moderate:"Moderate",avoid:"Avoid",
-    search:"Search a beach\…",
+    search:"Search a beach…",
     filters:["All","Clean","Favourites","Kids","Snorkeling","Avoid"],
-    filtersIcon:["\�\�","\✅","\❤\️","\�\�","\�\�","\�\�"],
+    filtersIcon:["��","✅","❤️","��","��","��"],
     navMap:"Map",navList:"Beaches",navPremium:"Premium",
     forecast:"7-day forecast",weather:"Weather",directions:"Directions",
     fav:"Favourite",addFav:"Add to favourites",removeFav:"Remove from favourites",
     wind:"Wind",uv:"UV",temp:"Temperature",drive:"min",
     kids:"Kids",snorkel:"Snorkeling",parking:"Parking",
     premium:"Premium",premiumDesc:"7-day forecast, push alerts, no ads.",
-    premiumPrice:"\€4.99/mo",premiumCta:"Subscribe",
+    premiumPrice:"€4.99/mo",premiumCta:"Subscribe",
     premiumFeatures:["7-day forecast unlocked","Push alerts when status changes","Zero ads","Cancel in 1 click"],
-    h2sWarn:"H\₂S risk \— avoid this beach with children.",
+    h2sWarn:"H₂S risk — avoid this beach with children.",
     copernicus:"Copernicus Marine",live:"LIVE",
     nClean:"{n} clean",island_mq:"Martinique",island_gp:"Guadeloupe",
     reportThanks:"Thanks for your report!",report:"Report",
@@ -99,7 +99,7 @@ const T={
    ═══════════════════════════════════════════════════════════════════════════ */
 const BEACHES_FALLBACK=[
   {id:"mq001",island:"mq",name:"Plage des Salines",commune:"Sainte-Anne",lat:14.3958521,lng:-60.8689802,status:"moderate",afai:.42,kids:true,snorkel:false,parking:true,drive:52},
-  {id:"mq011",island:"mq",name:"Anse Mitan",commune:"Les Trois-\Îles",lat:14.5522593,lng:-61.0552056,status:"clean",afai:.17,kids:true,snorkel:false,parking:true,drive:18},
+  {id:"mq011",island:"mq",name:"Anse Mitan",commune:"Les Trois-Îles",lat:14.5522593,lng:-61.0552056,status:"clean",afai:.17,kids:true,snorkel:false,parking:true,drive:18},
   {id:"mq014",island:"mq",name:"Grande Anse d'Arlet",commune:"Les Anses-d'Arlet",lat:14.5027854,lng:-61.0856311,status:"clean",afai:.12,kids:true,snorkel:true,parking:true,drive:25},
   {id:"mq016",island:"mq",name:"Plage du Diamant",commune:"Le Diamant",lat:14.4758027,lng:-61.0314046,status:"moderate",afai:.42,kids:false,snorkel:false,parking:true,drive:32},
   {id:"mq005",island:"mq",name:"Anse Trabaud",commune:"Sainte-Anne",lat:14.4101296,lng:-60.8482068,status:"avoid",afai:.78,kids:false,snorkel:false,parking:true,drive:52},
@@ -107,17 +107,17 @@ const BEACHES_FALLBACK=[
   {id:"mq029",island:"mq",name:"Plage de Saint-Pierre",commune:"Saint-Pierre",lat:14.7404792,lng:-61.1768484,status:"clean",afai:.15,kids:true,snorkel:true,parking:true,drive:32},
   {id:"mq012",island:"mq",name:"Anse Noire",commune:"Les Anses-d'Arlet",lat:14.5277232,lng:-61.0873771,status:"clean",afai:.08,kids:true,snorkel:true,parking:false,drive:28},
   {id:"mq019",island:"mq",name:"Anse Gros Raisins",commune:"Sainte-Luce",lat:14.4658147,lng:-60.9260982,status:"clean",afai:.16,kids:true,snorkel:true,parking:false,drive:38},
-  {id:"mq023",island:"mq",name:"Plage de la Fran\çaise",commune:"Fort-de-France",lat:14.6011133,lng:-61.0674743,status:"clean",afai:.2,kids:true,snorkel:false,parking:true,drive:8},
+  {id:"mq023",island:"mq",name:"Plage de la Française",commune:"Fort-de-France",lat:14.6011133,lng:-61.0674743,status:"clean",afai:.2,kids:true,snorkel:false,parking:true,drive:8},
   {id:"gp009",island:"gp",name:"Plage de la Caravelle",commune:"Sainte-Anne",lat:16.2181,lng:-61.3965,status:"clean",afai:.14,kids:true,snorkel:true,parking:true,drive:38},
   {id:"gp012",island:"gp",name:"Plage du Gosier",commune:"Le Gosier",lat:16.2048,lng:-61.4948,status:"clean",afai:.18,kids:true,snorkel:true,parking:true,drive:12},
   {id:"gp031",island:"gp",name:"Plage de Malendure",commune:"Bouillante",lat:16.1721,lng:-61.7767,status:"clean",afai:.12,kids:true,snorkel:true,parking:true,drive:42},
   {id:"gp024",island:"gp",name:"Plage de Deshaies",commune:"Deshaies",lat:16.3053509,lng:-61.7950711,status:"clean",afai:.11,kids:true,snorkel:true,parking:true,drive:55},
-  {id:"gp005",island:"gp",name:"Pointe des Ch\âteaux",commune:"Saint-Fran\çois",lat:16.2531027,lng:-61.2306694,status:"moderate",afai:.38,kids:false,snorkel:false,parking:true,drive:52},
+  {id:"gp005",island:"gp",name:"Pointe des Châteaux",commune:"Saint-François",lat:16.2531027,lng:-61.2306694,status:"moderate",afai:.38,kids:false,snorkel:false,parking:true,drive:52},
   {id:"gp015",island:"gp",name:"Porte d'Enfer",commune:"Anse-Bertrand",lat:16.4861861,lng:-61.4416828,status:"avoid",afai:.7,kids:false,snorkel:false,parking:true,drive:55},
   {id:"gp045",island:"gp",name:"Plage Pain de Sucre",commune:"Terre-de-Haut (Les Saintes)",lat:15.8635,lng:-61.5988,status:"clean",afai:.07,kids:true,snorkel:true,parking:false,drive:60},
-  {id:"gp001",island:"gp",name:"Plage de Saint-Fran\çois",commune:"Saint-Fran\çois",lat:16.2521,lng:-61.2644,status:"moderate",afai:.35,kids:true,snorkel:true,parking:true,drive:48},
+  {id:"gp001",island:"gp",name:"Plage de Saint-François",commune:"Saint-François",lat:16.2521,lng:-61.2644,status:"moderate",afai:.35,kids:true,snorkel:true,parking:true,drive:48},
   {id:"gp010",island:"gp",name:"Plage de Sainte-Anne",commune:"Sainte-Anne",lat:16.2226,lng:-61.3828,status:"clean",afai:.22,kids:true,snorkel:false,parking:true,drive:38},
-  {id:"gp021",island:"gp",name:"Plage de Grande Anse",commune:"Trois-Rivi\ères",lat:15.9589717,lng:-61.6719389,status:"clean",afai:.15,kids:true,snorkel:true,parking:true,drive:45},
+  {id:"gp021",island:"gp",name:"Plage de Grande Anse",commune:"Trois-Rivières",lat:15.9589717,lng:-61.6719389,status:"clean",afai:.15,kids:true,snorkel:true,parking:true,drive:45},
 ]
 
 const ISLAND_CENTER={mq:[14.64,-61.02],gp:[16.22,-61.55]}
@@ -299,9 +299,9 @@ function FilterChip({label,icon,active,onClick}){
 function BottomNav({view,onChangeView,lang}){
   const LL=T[lang]||T.fr
   const tabs=[
-    {id:"map",label:LL.navMap,icon:"\�\�\️"},
-    {id:"list",label:LL.navList,icon:"\�\�"},
-    {id:"premium",label:LL.navPremium,icon:"\⭐"},
+    {id:"map",label:LL.navMap,icon:"��️"},
+    {id:"list",label:LL.navList,icon:"��"},
+    {id:"premium",label:LL.navPremium,icon:"⭐"},
   ]
   return(
     <nav style={{
@@ -463,7 +463,7 @@ function ForecastChart({forecast,lang,onPremiumClick}){
           color:C.ink,fontSize:11,fontWeight:700,cursor:"pointer",
           boxShadow:"0 2px 12px rgba(232,168,0,.3)",fontFamily:"inherit",
         }}>
-          \�\� {LL.locked}
+          �� {LL.locked}
         </button>
       </div>
     </div>
@@ -546,7 +546,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
           <button onClick={onClose} style={{position:"absolute",top:12,right:12,
             width:32,height:32,borderRadius:16,background:"rgba(0,0,0,.4)",
             border:"none",color:"#fff",fontSize:16,cursor:"pointer",
-            display:"flex",alignItems:"center",justifyContent:"center"}}>\✕</button>
+            display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
         </div>
 
         <div style={{padding:"0 20px 100px"}}>
@@ -556,7 +556,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             <StatusBadge status={beach.status} lang={lang}/>
           </div>
           <p style={{fontSize:13,color:"var(--sg-mid,#686868)",margin:"0 0 12px"}}>
-            {beach.commune} \· <AfaiBadge afai={beach.afai}/> \· {beach.drive} {LL.drive}
+            {beach.commune} · <AfaiBadge afai={beach.afai}/> · {beach.drive} {LL.drive}
           </p>
 
           {/* H2S warning */}
@@ -564,15 +564,15 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             <div style={{padding:"10px 14px",borderRadius:12,background:C.redBg,
               color:C.red,fontSize:13,fontWeight:600,marginBottom:12,
               display:"flex",alignItems:"center",gap:8}}>
-              \⚠\️ {LL.h2sWarn}
+              ⚠️ {LL.h2sWarn}
             </div>
           )}
 
           {/* Tags */}
           <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:16}}>
-            {beach.kids&&<Tag icon="\�\�" label={LL.kids}/>}
-            {beach.snorkel&&<Tag icon="\�\�" label={LL.snorkel}/>}
-            {beach.parking&&<Tag icon="\�\�\️" label={LL.parking}/>}
+            {beach.kids&&<Tag icon="��" label={LL.kids}/>}
+            {beach.snorkel&&<Tag icon="��" label={LL.snorkel}/>}
+            {beach.parking&&<Tag icon="��️" label={LL.parking}/>}
           </div>
 
           {/* Actions */}
@@ -583,7 +583,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               flex:0,padding:"14px 20px",borderRadius:22,border:"1.5px solid var(--sg-border)",
               background:"var(--sg-card)",cursor:"pointer",fontSize:18,
               fontFamily:"inherit",
-            }}>{isFav?"\❤\️":"\�\�"}</button>
+            }}>{isFav?"❤️":"��"}</button>
           </div>
 
           {/* Forecast (days 4-7 locked) */}
@@ -595,9 +595,9 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             <>
               <h3 style={{fontSize:15,fontWeight:700,margin:"20px 0 10px"}}>{LL.weather}</h3>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
-                <WeatherCard icon="\�\�\️" label={LL.temp} value={`${weather.temp}\°C`}/>
-                <WeatherCard icon="\�\�" label={LL.wind} value={`${weather.wind} km/h`}/>
-                <WeatherCard icon="\☀\️" label={LL.uv} value={weather.uv}/>
+                <WeatherCard icon="��️" label={LL.temp} value={`${weather.temp}°C`}/>
+                <WeatherCard icon="��" label={LL.wind} value={`${weather.wind} km/h`}/>
+                <WeatherCard icon="☀️" label={LL.uv} value={weather.uv}/>
               </div>
             </>
           )}
@@ -670,7 +670,7 @@ function SearchBar({value,onChange,lang}){
   return(
     <div style={{position:"relative"}}>
       <span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",
-        fontSize:16,opacity:.5}}>\�\�</span>
+        fontSize:16,opacity:.5}}>��</span>
       <input type="text" value={value} onChange={e=>onChange(e.target.value)}
         placeholder={LL.search}
         style={{
@@ -718,10 +718,10 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontSize:14,fontWeight:700,whiteSpace:"nowrap",
                   overflow:"hidden",textOverflow:"ellipsis",color:"var(--sg-ink)"}}>
-                  {favorites.includes(b.id)?"\❤\️ ":""}{b.name}
+                  {favorites.includes(b.id)?"❤️ ":""}{b.name}
                 </div>
                 <div style={{fontSize:12,color:"var(--sg-mid,#686868)",marginTop:2}}>
-                  {b.commune} \· {b.drive} {LL.drive}
+                  {b.commune} · {b.drive} {LL.drive}
                 </div>
               </div>
               <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}}>
@@ -798,7 +798,7 @@ function Onboarding({onDone}){
               <div style={{display:"flex",alignItems:"center",gap:8}}>
                 <div style={{width:7,height:7,borderRadius:"50%",background:"#22C55E",flexShrink:0,animation:"dot-pulse 2s ease-in-out infinite"}}/>
                 <span style={{fontSize:11.5,fontWeight:600,color:C.ink}}>
-                  <em style={{fontStyle:"normal",color:C.amber,fontWeight:700}}>47 plages</em> surveill\ées en temps r\éel
+                  <em style={{fontStyle:"normal",color:C.amber,fontWeight:700}}>47 plages</em> surveillées en temps réel
                 </span>
               </div>
               <div style={{background:"linear-gradient(135deg,"+C.tealL+","+C.teal+")",color:"white",
@@ -837,9 +837,9 @@ function Onboarding({onDone}){
                 display:"flex",alignItems:"center",gap:9,
                 animation:"float-b 4s ease-in-out .8s infinite",zIndex:12}}>
                 <div style={{width:32,height:32,borderRadius:10,background:"linear-gradient(135deg,#FFE4DC,#FFCAB8)",
-                  display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0}}>\�\�</div>
+                  display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0}}>��</div>
                 <div style={{display:"flex",flexDirection:"column",gap:2}}>
-                  <div style={{fontSize:9.5,fontWeight:700,color:C.red,letterSpacing:".08em",textTransform:"uppercase"}}>\Éviter</div>
+                  <div style={{fontSize:9.5,fontWeight:700,color:C.red,letterSpacing:".08em",textTransform:"uppercase"}}>Éviter</div>
                   <div style={{fontSize:12,fontWeight:800,color:C.ink,lineHeight:1.2}}>Sainte-Anne</div>
                   <div style={{fontSize:10,fontWeight:500,color:C.mid}}>Sargasses ce matin</div>
                 </div>
@@ -853,13 +853,13 @@ function Onboarding({onDone}){
                 display:"flex",alignItems:"center",gap:10,
                 animation:"float-a 3.6s ease-in-out infinite",zIndex:12,minWidth:172}}>
                 <div style={{width:34,height:34,borderRadius:11,background:"linear-gradient(135deg,#D6F5EF,#A8EDE4)",
-                  display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,flexShrink:0}}>\�\�\️</div>
+                  display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,flexShrink:0}}>��️</div>
                 <div style={{display:"flex",flexDirection:"column",gap:3}}>
                   <div style={{fontSize:11.5,fontWeight:700,color:C.ink,whiteSpace:"nowrap"}}>Grande Anse d'Arlet</div>
                   <div style={{display:"flex",alignItems:"center",gap:4,fontSize:10,fontWeight:700,color:C.teal}}>
                     <span style={{width:12,height:12,borderRadius:"50%",background:C.teal,
                       display:"inline-flex",alignItems:"center",justifyContent:"center",
-                      fontSize:7,color:"white",flexShrink:0}}>\✓</span>
+                      fontSize:7,color:"white",flexShrink:0}}>✓</span>
                     Propre aujourd'hui
                   </div>
                 </div>
@@ -876,13 +876,13 @@ function Onboarding({onDone}){
                 <span>de partir.</span>
               </h1>
               <p style={{fontSize:14,color:C.mid,fontWeight:400,lineHeight:1.6,marginBottom:14,maxWidth:270}}>
-                Sargasses ou pas \— <strong style={{color:C.ink,fontWeight:700}}>v\érifie ta plage en 5 secondes</strong> avant de charger la voiture.
+                Sargasses ou pas — <strong style={{color:C.ink,fontWeight:700}}>vérifie ta plage en 5 secondes</strong> avant de charger la voiture.
               </p>
 
               {/* Social proof */}
               <div style={{display:"flex",alignItems:"center",marginBottom:14,padding:"9px 13px",
                 background:"rgba(255,199,44,.07)",border:"1px solid rgba(232,168,0,.13)",borderRadius:14}}>
-                <div style={{fontSize:11,letterSpacing:-1,flexShrink:0,marginRight:9}}>\⭐\⭐\⭐\⭐\⭐</div>
+                <div style={{fontSize:11,letterSpacing:-1,flexShrink:0,marginRight:9}}>⭐⭐⭐⭐⭐</div>
                 <div style={{display:"flex",flexShrink:0}}>
                   {[["#FF6B6B","#FF8E53","M"],["#4ECDC4","#44A08D","J"],["#A18CD1","#FBC2EB","S"],["#FDDB92","#D1913C","R"]].map(([a,b,l],i)=>(
                     <div key={i} style={{width:25,height:25,borderRadius:"50%",border:"2px solid #FDFCF7",marginRight:-7,
@@ -891,7 +891,7 @@ function Onboarding({onDone}){
                   ))}
                 </div>
                 <div style={{marginLeft:15,fontSize:11.5,fontWeight:500,color:C.mid,lineHeight:1.4}}>
-                  <strong style={{color:C.ink,fontWeight:700}}>+2 400 Martiniquais</strong> ont d\éj\à v\érifi\é avant toi ce matin
+                  <strong style={{color:C.ink,fontWeight:700}}>+2 400 Martiniquais</strong> ont déjà vérifié avant toi ce matin
                 </div>
               </div>
 
@@ -907,21 +907,21 @@ function Onboarding({onDone}){
                   <span style={{position:"relative",zIndex:1}}>Voir les plages propres</span>
                   <span style={{width:44,height:44,background:"rgba(0,0,0,.11)",borderRadius:"50%",
                     display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,
-                    flexShrink:0,position:"relative",zIndex:1}}>\→</span>
+                    flexShrink:0,position:"relative",zIndex:1}}>→</span>
                 </button>
                 <div style={{textAlign:"center",fontSize:11,color:C.mid,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-                  Gratuit<span style={{width:3,height:3,borderRadius:"50%",background:"rgba(104,104,104,.35)"}}/>Sans inscription<span style={{width:3,height:3,borderRadius:"50%",background:"rgba(104,104,104,.35)"}}/>Mis \à jour chaque jour
+                  Gratuit<span style={{width:3,height:3,borderRadius:"50%",background:"rgba(104,104,104,.35)"}}/>Sans inscription<span style={{width:3,height:3,borderRadius:"50%",background:"rgba(104,104,104,.35)"}}/>Mis à jour chaque jour
                 </div>
                 <button onClick={closeOnboarding} style={{textAlign:"center",fontSize:12.5,fontWeight:500,color:C.mid,
                   background:"none",border:"none",cursor:"pointer",padding:4,fontFamily:"inherit"}}>
-                  D\éj\à un compte ? <span style={{color:C.teal,fontWeight:700,textDecoration:"underline",textUnderlineOffset:3}}>Se connecter</span>
+                  Déjà un compte ? <span style={{color:C.teal,fontWeight:700,textDecoration:"underline",textUnderlineOffset:3}}>Se connecter</span>
                 </button>
               </div>
             </div>
           </div>
 
           {/* ═══════════════════════════════════════════
-              SLIDE 2 — "Vert = tu pars. Rouge = tu \évites."
+              SLIDE 2 — "Vert = tu pars. Rouge = tu évites."
               ═══════════════════════════════════════════ */}
           <div className="onb-slide" style={{background:"#FDFCF7"}}>
             {/* Header */}
@@ -942,28 +942,28 @@ function Onboarding({onDone}){
 
             <div style={{padding:"6px 22px 0",fontFamily:"'Anton',sans-serif",fontSize:42,lineHeight:.9,
               letterSpacing:"-.02em",textTransform:"uppercase",color:C.ink}}>
-              <span style={{color:C.teal}}>Vert</span> = tu pars.<br/>Rouge = tu \évites.
+              <span style={{color:C.teal}}>Vert</span> = tu pars.<br/>Rouge = tu évites.
             </div>
 
             {/* Satellite badge */}
             <div style={{margin:"10px 22px 0",display:"inline-flex",alignItems:"center",gap:6,
               background:"rgba(0,158,142,.07)",border:"1px solid rgba(0,158,142,.12)",
               borderRadius:100,padding:"5px 12px",position:"relative",overflow:"hidden"}}>
-              <span style={{fontSize:11}}>\�\�\️</span>
-              <span style={{fontSize:9.5,fontWeight:700,color:C.teal}}>Sentinel-2 \· ESA Copernicus</span>
+              <span style={{fontSize:11}}>��️</span>
+              <span style={{fontSize:9.5,fontWeight:700,color:C.teal}}>Sentinel-2 · ESA Copernicus</span>
             </div>
 
             {/* Proof */}
             <div style={{margin:"6px 22px 0",fontSize:11,color:C.mid,display:"flex",alignItems:"center",gap:5}}>
-              <span style={{color:"#16A34A",fontWeight:700}}>\✓</span>
-              Confirm\é par <strong style={{color:C.ink}}>+2 400 locaux</strong> ce matin
+              <span style={{color:"#16A34A",fontWeight:700}}>✓</span>
+              Confirmé par <strong style={{color:C.ink}}>+2 400 locaux</strong> ce matin
             </div>
 
             {/* Map zone */}
             <div style={{margin:"12px 22px 0",background:"linear-gradient(145deg,#D8EFF8 0%,#C8E4F4 50%,#D0EEE8 100%)",
               border:"1px solid rgba(0,158,142,.1)",borderRadius:22,position:"relative",height:185,overflow:"hidden"}}>
-              <div style={{position:"absolute",top:10,left:14,fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(0,80,40,.4)"}}>\�\� Martinique</div>
-              <div style={{position:"absolute",bottom:10,left:14,fontSize:8.5,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(0,80,120,.4)"}}>\�\� Atlantique</div>
+              <div style={{position:"absolute",top:10,left:14,fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(0,80,40,.4)"}}>�� Martinique</div>
+              <div style={{position:"absolute",bottom:10,left:14,fontSize:8.5,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(0,80,120,.4)"}}>�� Atlantique</div>
               {/* Island shape */}
               <div style={{position:"absolute",top:"50%",left:"52%",transform:"translate(-50%,-52%)",
                 width:120,height:90,background:"linear-gradient(145deg,#C8E8C0,#B8D8B0)",
@@ -980,7 +980,7 @@ function Onboarding({onDone}){
               })}
               {/* Legend */}
               <div style={{position:"absolute",bottom:8,right:10,display:"flex",gap:8}}>
-                {[["Propre","#22C55E"],["Mod\ér\é",C.goldL],["\Éviter",C.red]].map(([lab,col],i)=>(
+                {[["Propre","#22C55E"],["Modéré",C.goldL],["Éviter",C.red]].map(([lab,col],i)=>(
                   <div key={i} style={{display:"flex",alignItems:"center",gap:4,fontSize:8,fontWeight:700,color:C.mid}}>
                     <div style={{width:7,height:7,borderRadius:"50%",background:col,border:"1.5px solid white"}}/>
                     {lab}
@@ -992,9 +992,9 @@ function Onboarding({onDone}){
             {/* Beach list rows */}
             <div style={{margin:"10px 22px 0",display:"flex",flexDirection:"column",gap:6}}>
               {[
-                ["\�\�\️","Grande Anse d'Arlet","Sud \· 12 km","\✓ Propre","g"],
-                ["\⛱\️","Le Diamant","Sud \· 25 km","\⚡ Mod\ér\é","o"],
-                ["\�\�","Sainte-Anne","Extr\ême Sud \· 38 km","\�\� \Éviter","r"],
+                ["��️","Grande Anse d'Arlet","Sud · 12 km","✓ Propre","g"],
+                ["⛱️","Le Diamant","Sud · 25 km","⚡ Modéré","o"],
+                ["��","Sainte-Anne","Extrême Sud · 38 km","�� Éviter","r"],
               ].map(([emoji,name,dist,statusTxt,cls],i)=>(
                 <div key={i} style={{background:"white",borderRadius:14,padding:"10px 14px",
                   display:"flex",alignItems:"center",justifyContent:"space-between",
@@ -1025,7 +1025,7 @@ function Onboarding({onDone}){
                 <span style={{position:"relative",zIndex:1}}>Choisir ma plage</span>
                 <div style={{width:36,height:36,background:"rgba(0,0,0,.11)",borderRadius:"50%",
                   display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,
-                  position:"relative",zIndex:1}}>\→</div>
+                  position:"relative",zIndex:1}}>→</div>
               </button>
             </div>
           </div>
@@ -1051,12 +1051,12 @@ function Onboarding({onDone}){
             <div style={{padding:"6px 22px 0",fontFamily:"'Anton',sans-serif",fontSize:40,lineHeight:.9,
               letterSpacing:"-.02em",textTransform:"uppercase",color:C.ink,marginBottom:6}}>
               Sois <span style={{background:"linear-gradient(138deg,#FFD860,#E8A800 50%,#B07000)",
-                WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>pr\évenu</span><br/>
-              7 jours<br/>\à l'avance.
+                WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>prévenu</span><br/>
+              7 jours<br/>à l'avance.
             </div>
 
             <p style={{padding:"0 22px",fontSize:13,color:C.mid,lineHeight:1.55,marginBottom:14}}>
-              Les donn\ées du jour c'est bien. <strong style={{color:C.ink,fontWeight:700}}>Savoir ce qui arrive ce weekend</strong>, c'est mieux.
+              Les données du jour c'est bien. <strong style={{color:C.ink,fontWeight:700}}>Savoir ce qui arrive ce weekend</strong>, c'est mieux.
             </p>
 
             {/* Premium card */}
@@ -1081,7 +1081,7 @@ function Onboarding({onDone}){
               {/* Price */}
               <div style={{marginBottom:6}}>
                 <div style={{display:"flex",alignItems:"baseline",gap:3}}>
-                  <span style={{fontSize:20,fontWeight:700,color:"rgba(255,255,255,.6)",marginTop:6}}>\€</span>
+                  <span style={{fontSize:20,fontWeight:700,color:"rgba(255,255,255,.6)",marginTop:6}}>€</span>
                   <span style={{fontFamily:"'Anton',sans-serif",fontSize:52,color:"white",lineHeight:1,letterSpacing:"-.02em"}}>4,99</span>
                   <span style={{fontSize:13,color:"rgba(255,255,255,.35)",fontWeight:500,alignSelf:"flex-end",marginBottom:4}}>/ mois</span>
                 </div>
@@ -1091,23 +1091,23 @@ function Onboarding({onDone}){
               <div style={{fontSize:11,color:"rgba(255,255,255,.35)",marginBottom:14,lineHeight:1.5,
                 padding:"8px 10px",background:"rgba(255,255,255,.04)",borderRadius:10,
                 borderLeft:"2px solid rgba(232,168,0,.3)"}}>
-                Une journ\ée plage pour 4 personnes = <strong style={{color:"rgba(255,255,255,.6)"}}>80\€ minimum.</strong><br/>
-                Savoir \à l'avance = <strong style={{color:"rgba(255,255,255,.6)"}}>4,99\€.</strong>
+                Une journée plage pour 4 personnes = <strong style={{color:"rgba(255,255,255,.6)"}}>80€ minimum.</strong><br/>
+                Savoir à l'avance = <strong style={{color:"rgba(255,255,255,.6)"}}>4,99€.</strong>
               </div>
 
               {/* Forecast preview */}
               <div style={{marginBottom:14}}>
                 <div style={{fontSize:9.5,fontWeight:700,color:"rgba(255,255,255,.4)",
-                  letterSpacing:".1em",textTransform:"uppercase",marginBottom:8}}>Pr\évisions de ta semaine</div>
+                  letterSpacing:".1em",textTransform:"uppercase",marginBottom:8}}>Prévisions de ta semaine</div>
                 <div style={{display:"flex",gap:5}}>
                   {[
-                    ["Lun","\�\�\️","Propre","g",false],
-                    ["Mar","\�\�\️","Propre","g",false],
-                    ["Mer","\⚡","Mod\ér\é","o","semi"],
-                    ["Jeu","\�\�","\Éviter","r",true],
-                    ["Ven","\�\�","\Éviter","r",true],
-                    ["Sam","\⚡","Mod\ér\é","o",true],
-                    ["Dim","\�\�\️","Propre","g",true],
+                    ["Lun","��️","Propre","g",false],
+                    ["Mar","��️","Propre","g",false],
+                    ["Mer","⚡","Modéré","o","semi"],
+                    ["Jeu","��","Éviter","r",true],
+                    ["Ven","��","Éviter","r",true],
+                    ["Sam","⚡","Modéré","o",true],
+                    ["Dim","��️","Propre","g",true],
                   ].map(([day,ic,st,cl,locked],i)=>(
                     <div key={i} style={{flex:1,background:"rgba(255,255,255,.05)",borderRadius:10,
                       padding:"8px 6px",textAlign:"center",display:"flex",flexDirection:"column",
@@ -1130,21 +1130,21 @@ function Onboarding({onDone}){
                 background:"linear-gradient(0deg,rgba(13,30,28,.95) 60%,transparent)",
                 padding:"20px 8px 8px",textAlign:"center",fontSize:10.5,fontWeight:600,
                 color:"rgba(255,255,255,.5)"}}>
-                \�\� D\ébloque les 5 prochains jours
+                �� Débloque les 5 prochains jours
               </div>
 
               {/* Features */}
               <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
                 {[
-                  ["Pr\évisions 7 jours","\· d\érive satellite"],
-                  ["Alertes","avant que \ça arrive"],
-                  ["Annulation","\à tout moment"],
+                  ["Prévisions 7 jours","· dérive satellite"],
+                  ["Alertes","avant que ça arrive"],
+                  ["Annulation","à tout moment"],
                 ].map(([bold,rest],i)=>(
                   <div key={i} style={{display:"flex",alignItems:"center",gap:9}}>
                     <div style={{width:18,height:18,borderRadius:"50%",
                       background:"rgba(0,158,142,.18)",border:"1px solid rgba(0,158,142,.28)",
                       display:"flex",alignItems:"center",justifyContent:"center",
-                      fontSize:9,color:C.tealL,flexShrink:0}}>\✓</div>
+                      fontSize:9,color:C.tealL,flexShrink:0}}>✓</div>
                     <span style={{fontSize:12,color:"rgba(255,255,255,.7)"}}>
                       <strong style={{color:"#fff"}}>{bold}</strong> {rest}
                     </span>
@@ -1160,10 +1160,10 @@ function Onboarding({onDone}){
                 cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between",
                 boxShadow:"0 8px 24px rgba(232,168,0,.38),inset 0 1px 0 rgba(255,255,255,.4)",
                 position:"relative",overflow:"hidden",transition:"transform .12s"}}>
-                <span style={{position:"relative",zIndex:1}}>D\ébloquer mes pr\évisions</span>
+                <span style={{position:"relative",zIndex:1}}>Débloquer mes prévisions</span>
                 <span style={{width:36,height:36,background:"rgba(0,0,0,.15)",borderRadius:"50%",
                   display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,
-                  position:"relative",zIndex:1}}>\→</span>
+                  position:"relative",zIndex:1}}>→</span>
               </button>
             </div>
 
@@ -1175,16 +1175,16 @@ function Onboarding({onDone}){
                 display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,
                 color:"#fff",flexShrink:0}}>M</div>
               <div>
-                <div style={{fontSize:10,fontWeight:700,color:C.ink,marginBottom:3}}>Marie \· Schoelcher</div>
+                <div style={{fontSize:10,fontWeight:700,color:C.ink,marginBottom:3}}>Marie · Schoelcher</div>
                 <div style={{fontSize:11.5,color:C.mid,lineHeight:1.5,fontStyle:"italic"}}>
-                  "Gr\âce aux alertes, j'ai \évit\é une journ\ée perdue avec mes enfants."
+                  "Grâce aux alertes, j'ai évité une journée perdue avec mes enfants."
                 </div>
               </div>
             </div>
 
             {/* Free entry */}
             <div style={{padding:"10px 22px 0",textAlign:"center",fontSize:12,color:C.mid}}>
-              Pas maintenant \—{" "}
+              Pas maintenant —{" "}
               <button onClick={closeOnboarding} style={{background:"none",border:"none",cursor:"pointer",
                 color:C.teal,fontWeight:700,fontSize:12,textDecoration:"underline",textUnderlineOffset:3,
                 fontFamily:"'Bricolage Grotesque',sans-serif"}}>commencer gratuitement</button>
@@ -1193,7 +1193,7 @@ function Onboarding({onDone}){
             {/* Micro */}
             <div style={{padding:"6px 22px 48px",textAlign:"center",fontSize:10.5,color:"rgba(104,104,104,.6)",
               display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-              Paiement s\écuris\é<span style={{width:3,height:3,borderRadius:"50%",background:"rgba(104,104,104,.25)"}}/>Annulation \à tout moment
+              Paiement sécurisé<span style={{width:3,height:3,borderRadius:"50%",background:"rgba(104,104,104,.25)"}}/>Annulation à tout moment
             </div>
           </div>
 
@@ -1229,13 +1229,13 @@ function PremiumModal({onClose,lang}){
         <div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
           margin:"-8px -24px 20px",padding:0}}/>
 
-        <h2 className="anton" style={{fontSize:28,color:"#fff",marginBottom:8}}>\⭐ {LL.premium}</h2>
+        <h2 className="anton" style={{fontSize:28,color:"#fff",marginBottom:8}}>⭐ {LL.premium}</h2>
         <p style={{fontSize:14,color:"#adbac7",marginBottom:20}}>{LL.premiumDesc}</p>
 
         <ul style={{listStyle:"none",padding:0,margin:"0 0 24px",display:"flex",flexDirection:"column",gap:12}}>
           {LL.premiumFeatures.map((f,i)=>(
             <li key={i} style={{display:"flex",alignItems:"center",gap:10,fontSize:14}}>
-              <span style={{color:C.gold,fontSize:18}}>\✓</span>{f}
+              <span style={{color:C.gold,fontSize:18}}>✓</span>{f}
             </li>
           ))}
         </ul>
@@ -1243,7 +1243,7 @@ function PremiumModal({onClose,lang}){
         <a href={STRIPE_URL} target="_blank" rel="noopener" className="gbtn"
           style={{width:"100%",textDecoration:"none",textAlign:"center",
             fontSize:17,padding:"16px 24px",display:"block"}}>
-          {LL.premiumCta} \— {LL.premiumPrice}
+          {LL.premiumCta} — {LL.premiumPrice}
         </a>
 
         <button onClick={onClose} style={{
@@ -1287,10 +1287,10 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle}){
           border:"1px solid var(--sg-border)",
           fontSize:11,fontWeight:600,color:C.teal}}>
           <span className="pulse" style={{width:8,height:8,borderRadius:4,background:C.green}}/>
-          {LL.live} \· {LL.copernicus}
+          {LL.live} · {LL.copernicus}
         </div>
         <span style={{fontSize:9,fontWeight:600,color:"var(--sg-mid,#686868)",letterSpacing:".02em",
-          whiteSpace:"nowrap"}}>{lang==="en"?"Sargassum map in real time":"Carte des sargasses en temps r\éel"}</span>
+          whiteSpace:"nowrap"}}>{lang==="en"?"Sargassum map in real time":"Carte des sargasses en temps réel"}</span>
       </div>
 
       {/* Theme + Lang */}
@@ -1300,7 +1300,7 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle}){
           background:"var(--sg-card,#fff)",cursor:"pointer",fontSize:16,
           display:"flex",alignItems:"center",justifyContent:"center",
           boxShadow:"0 2px 8px rgba(0,0,0,.06)",
-        }}>{theme==="dark"?"\☀\️":"\�\�"}</button>
+        }}>{theme==="dark"?"☀️":"��"}</button>
         <button onClick={onLangToggle} style={{
           width:36,height:36,borderRadius:12,border:"1px solid var(--sg-border)",
           background:"var(--sg-card,#fff)",cursor:"pointer",fontSize:12,fontWeight:700,
