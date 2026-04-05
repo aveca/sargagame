@@ -327,11 +327,12 @@ function BottomNav({view,onChangeView,lang}){
 /* ═══════════════════════════════════════════════════════════════════════════
    MAP VIEW (Leaflet — satellite tiles, CircleMarkers + heatmap)
    ═══════════════════════════════════════════════════════════════════════════ */
-function MapView({beaches,island,onBeachClick,selectedBeach}){
+function MapView({beaches,island,onBeachClick,selectedBeach,sargData}){
   const containerRef=useRef(null)
   const mapRef=useRef(null)
   const markersRef=useRef([])
   const heatRef=useRef([])
+  const driftRef=useRef(null) // animation interval
   const[mapError,setMapError]=useState(null)
 
   // Init map once
@@ -377,25 +378,78 @@ function MapView({beaches,island,onBeachClick,selectedBeach}){
     heatRef.current.forEach(m=>m.remove())
     heatRef.current=[]
 
+    // Get drift data from sargassum.json weekly forecasts
+    const driftMap={}
+    if(sargData?.weekly){
+      for(const[id,w]of Object.entries(sargData.weekly)){
+        driftMap[id]={drift:w.drift,dv:w.driftValue||0}
+      }
+    }
+
     beaches.forEach(b=>{
       const st=ST[b.status]||ST.clean
       const isSelected=selectedBeach?.id===b.id
 
-      // Sargassum heatmap: large semi-transparent ocean circle
-      if(b.afai>.2){
-        const heatRadius=Math.max(800,b.afai*4000)
-        const heatColor=b.afai<.3?C.green:b.afai<.65?C.amber:C.red
-        // Offset slightly toward ocean (east for MQ Atlantic coast, varies for GP)
-        const lngOffset=b.island==="mq"?.015:.012
-        const heat=L.circle([b.lat,b.lng+lngOffset],{
-          radius:heatRadius,
+      // Sargassum drift visualization — animated ellipses on ocean
+      if(b.afai>.15){
+        const heatColor=b.afai<.3?"rgba(34,197,94,.2)":b.afai<.65?"rgba(184,122,0,.25)":"rgba(232,82,42,.3)"
+        const strokeColor=b.afai<.3?"rgba(34,197,94,.1)":b.afai<.65?"rgba(184,122,0,.12)":"rgba(232,82,42,.15)"
+        // Direction: east coast MQ = drift from east, west coast = from west
+        const isEastCoast=b.island==="mq"?b.lng>-61.0:b.lng>-61.5
+        const lngDir=isEastCoast?.02:-.02
+
+        // Main sargassum mass — elongated ellipse toward ocean
+        const mainRadius=Math.max(600,b.afai*3500)
+        const main=L.circle([b.lat,b.lng+lngDir],{
+          radius:mainRadius,
           fillColor:heatColor,
-          color:"transparent",
-          fillOpacity:Math.min(.35,b.afai*.45),
+          color:strokeColor,
+          weight:1,
+          fillOpacity:Math.min(.3,b.afai*.4),
           interactive:false,
         })
-        heat.addTo(mapRef.current)
-        heatRef.current.push(heat)
+        main.addTo(mapRef.current)
+        heatRef.current.push(main)
+
+        // Drift trail — smaller circles showing direction of movement
+        if(b.afai>.3){
+          const driftInfo=driftMap[b.id]
+          const isDrifting=driftInfo?.drift==="up" // approaching coast
+          const trailCount=isDrifting?3:1
+          for(let i=1;i<=trailCount;i++){
+            const trailLng=b.lng+lngDir*(1+i*.8)
+            const trailRadius=mainRadius*(0.7-i*0.15)
+            const trailOpacity=Math.max(.08,(.25-i*.06)*b.afai)
+            const trail=L.circle([b.lat+(Math.random()-.5)*.005,trailLng],{
+              radius:Math.max(300,trailRadius),
+              fillColor:heatColor,
+              color:"transparent",
+              fillOpacity:trailOpacity,
+              interactive:false,
+            })
+            trail.addTo(mapRef.current)
+            heatRef.current.push(trail)
+          }
+
+          // Arrow indicator showing drift direction
+          if(driftInfo&&b.afai>.4){
+            const arrowLat=b.lat
+            const arrowLng=b.lng+lngDir*.5
+            const arrowDir=isDrifting?"→ côte":"← large"
+            const arrowColor=isDrifting?"#E8522A":"#009E8E"
+            const arrow=L.marker([arrowLat,arrowLng],{
+              icon:L.divIcon({
+                className:"",
+                html:`<div style="font-size:11px;font-weight:800;color:${arrowColor};text-shadow:0 1px 3px rgba(0,0,0,.5);white-space:nowrap;pointer-events:none">${isDrifting?"⬅":"➡"} ${isDrifting?"Dérive côte":"Dispersion"}</div>`,
+                iconSize:[100,20],
+                iconAnchor:[50,10],
+              }),
+              interactive:false,
+            })
+            arrow.addTo(mapRef.current)
+            heatRef.current.push(arrow)
+          }
+        }
       }
 
       // Beach marker
@@ -414,7 +468,23 @@ function MapView({beaches,island,onBeachClick,selectedBeach}){
       marker.addTo(mapRef.current)
       markersRef.current.push(marker)
     })
-  },[beaches,onBeachClick,selectedBeach])
+
+    // Animate drift: slowly pulse the sargassum masses
+    if(driftRef.current)clearInterval(driftRef.current)
+    let tick=0
+    driftRef.current=setInterval(()=>{
+      tick++
+      heatRef.current.forEach((h,i)=>{
+        if(h.setRadius&&h.options?.interactive===false){
+          const baseR=h._mRadius||h.getRadius()
+          if(!h._baseR)h._baseR=baseR
+          const pulse=Math.sin(tick*.15+i*.3)*.08
+          try{h.setRadius(h._baseR*(1+pulse))}catch(e){}
+        }
+      })
+    },800)
+    return()=>{if(driftRef.current)clearInterval(driftRef.current)}
+  },[beaches,onBeachClick,selectedBeach,sargData])
 
   if(mapError)return <div style={{padding:40,color:"red"}}>{mapError}</div>
   return <div ref={containerRef} style={{width:"100%",height:"100%"}}/>
@@ -1491,7 +1561,7 @@ export default function App(){
         {/* MAP or LIST */}
         {view==="map"?(
           <ErrBound><MapView beaches={showOnboarding?[]:filtered} island={island}
-            onBeachClick={onBeachClick} selectedBeach={selectedBeach}/></ErrBound>
+            onBeachClick={onBeachClick} selectedBeach={selectedBeach} sargData={sargData}/></ErrBound>
         ):(
           <BeachListView beaches={filtered} onBeachClick={onBeachClick}
             favorites={favorites} lang={lang} imageMap={imageMap}/>
