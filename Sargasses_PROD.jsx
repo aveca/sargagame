@@ -43,7 +43,7 @@ const C={
 const ST={
   clean:{c:C.green,bg:C.greenBg,l:"Propre",le:"Clean",e:"✅",h2s:false},
   moderate:{c:C.amber,bg:C.amberBg,l:"Modéré",le:"Moderate",e:"⚠️",h2s:false},
-  avoid:{c:C.red,bg:C.redBg,l:"À éviter",le:"Avoid",e:"��",h2s:true},
+  avoid:{c:C.red,bg:C.redBg,l:"À éviter",le:"Avoid",e:"🚫",h2s:true},
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -55,7 +55,7 @@ const T={
     clean:"Propre",moderate:"Modéré",avoid:"À éviter",
     search:"Rechercher une plage…",
     filters:["Toutes","Propres","Favoris","Enfants","Snorkeling","À éviter"],
-    filtersIcon:["��","✅","❤️","��","��","��"],
+    filtersIcon:["🌊","✅","❤️","🧒","🤿","🚫"],
     navMap:"Carte",navList:"Plages",navPremium:"Premium",
     forecast:"Prévisions 7j",weather:"Météo",directions:"Y aller",
     fav:"Favori",addFav:"Ajouter aux favoris",removeFav:"Retirer des favoris",
@@ -76,7 +76,7 @@ const T={
     clean:"Clean",moderate:"Moderate",avoid:"Avoid",
     search:"Search a beach…",
     filters:["All","Clean","Favourites","Kids","Snorkeling","Avoid"],
-    filtersIcon:["��","✅","❤️","��","��","��"],
+    filtersIcon:["🌊","✅","❤️","🧒","🤿","🚫"],
     navMap:"Map",navList:"Beaches",navPremium:"Premium",
     forecast:"7-day forecast",weather:"Weather",directions:"Directions",
     fav:"Favourite",addFav:"Add to favourites",removeFav:"Remove from favourites",
@@ -299,8 +299,8 @@ function FilterChip({label,icon,active,onClick}){
 function BottomNav({view,onChangeView,lang}){
   const LL=T[lang]||T.fr
   const tabs=[
-    {id:"map",label:LL.navMap,icon:"��️"},
-    {id:"list",label:LL.navList,icon:"��"},
+    {id:"map",label:LL.navMap,icon:"🗺️"},
+    {id:"list",label:LL.navList,icon:"📋"},
     {id:"premium",label:LL.navPremium,icon:"⭐"},
   ]
   return(
@@ -463,7 +463,7 @@ function ForecastChart({forecast,lang,onPremiumClick}){
           color:C.ink,fontSize:11,fontWeight:700,cursor:"pointer",
           boxShadow:"0 2px 12px rgba(232,168,0,.3)",fontFamily:"inherit",
         }}>
-          �� {LL.locked}
+           {LL.locked}
         </button>
       </div>
     </div>
@@ -570,9 +570,9 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
 
           {/* Tags */}
           <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:16}}>
-            {beach.kids&&<Tag icon="��" label={LL.kids}/>}
-            {beach.snorkel&&<Tag icon="��" label={LL.snorkel}/>}
-            {beach.parking&&<Tag icon="��️" label={LL.parking}/>}
+            {beach.kids&&<Tag icon="🏖️" label={LL.kids}/>}
+            {beach.snorkel&&<Tag icon="🏖️" label={LL.snorkel}/>}
+            {beach.parking&&<Tag icon="🏖️️" label={LL.parking}/>}
           </div>
 
           {/* Actions */}
@@ -583,7 +583,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               flex:0,padding:"14px 20px",borderRadius:22,border:"1.5px solid var(--sg-border)",
               background:"var(--sg-card)",cursor:"pointer",fontSize:18,
               fontFamily:"inherit",
-            }}>{isFav?"❤️":"��"}</button>
+            }}>{isFav?"❤️":""}</button>
           </div>
 
           {/* Forecast (days 4-7 locked) */}
@@ -595,8 +595,8 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             <>
               <h3 style={{fontSize:15,fontWeight:700,margin:"20px 0 10px"}}>{LL.weather}</h3>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
-                <WeatherCard icon="��️" label={LL.temp} value={`${weather.temp}°C`}/>
-                <WeatherCard icon="��" label={LL.wind} value={`${weather.wind} km/h`}/>
+                <WeatherCard icon="️" label={LL.temp} value={`${weather.temp}°C`}/>
+                <WeatherCard icon="" label={LL.wind} value={`${weather.wind} km/h`}/>
                 <WeatherCard icon="☀️" label={LL.uv} value={weather.uv}/>
               </div>
             </>
@@ -670,7 +670,7 @@ function SearchBar({value,onChange,lang}){
   return(
     <div style={{position:"relative"}}>
       <span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",
-        fontSize:16,opacity:.5}}>��</span>
+        fontSize:16,opacity:.5}}>🔍</span>
       <input type="text" value={value} onChange={e=>onChange(e.target.value)}
         placeholder={LL.search}
         style={{
@@ -837,7 +837,7 @@ function Onboarding({onDone}){
                 display:"flex",alignItems:"center",gap:9,
                 animation:"float-b 4s ease-in-out .8s infinite",zIndex:12}}>
                 <div style={{width:32,height:32,borderRadius:10,background:"linear-gradient(135deg,#FFE4DC,#FFCAB8)",
-                  display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0}}>��</div>
+                  display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0}}></div>
                 <div style={{display:"flex",flexDirection:"column",gap:2}}>
                   <div style={{fontSize:9.5,fontWeight:700,color:C.red,letterSpacing:".08em",textTransform:"uppercase"}}>Éviter</div>
                   <div style={{fontSize:12,fontWeight:800,color:C.ink,lineHeight:1.2}}>Sainte-Anne</div>
@@ -853,7 +853,7 @@ function Onboarding({onDone}){
                 display:"flex",alignItems:"center",gap:10,
                 animation:"float-a 3.6s ease-in-out infinite",zIndex:12,minWidth:172}}>
                 <div style={{width:34,height:34,borderRadius:11,background:"linear-gradient(135deg,#D6F5EF,#A8EDE4)",
-                  display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,flexShrink:0}}>��️</div>
+                  display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,flexShrink:0}}>🛰️</div>
                 <div style={{display:"flex",flexDirection:"column",gap:3}}>
                   <div style={{fontSize:11.5,fontWeight:700,color:C.ink,whiteSpace:"nowrap"}}>Grande Anse d'Arlet</div>
                   <div style={{display:"flex",alignItems:"center",gap:4,fontSize:10,fontWeight:700,color:C.teal}}>
@@ -949,7 +949,7 @@ function Onboarding({onDone}){
             <div style={{margin:"10px 22px 0",display:"inline-flex",alignItems:"center",gap:6,
               background:"rgba(0,158,142,.07)",border:"1px solid rgba(0,158,142,.12)",
               borderRadius:100,padding:"5px 12px",position:"relative",overflow:"hidden"}}>
-              <span style={{fontSize:11}}>��️</span>
+              <span style={{fontSize:11}}>🛰️</span>
               <span style={{fontSize:9.5,fontWeight:700,color:C.teal}}>Sentinel-2 · ESA Copernicus</span>
             </div>
 
@@ -962,8 +962,8 @@ function Onboarding({onDone}){
             {/* Map zone */}
             <div style={{margin:"12px 22px 0",background:"linear-gradient(145deg,#D8EFF8 0%,#C8E4F4 50%,#D0EEE8 100%)",
               border:"1px solid rgba(0,158,142,.1)",borderRadius:22,position:"relative",height:185,overflow:"hidden"}}>
-              <div style={{position:"absolute",top:10,left:14,fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(0,80,40,.4)"}}>�� Martinique</div>
-              <div style={{position:"absolute",bottom:10,left:14,fontSize:8.5,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(0,80,120,.4)"}}>�� Atlantique</div>
+              <div style={{position:"absolute",top:10,left:14,fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(0,80,40,.4)"}}> Martinique</div>
+              <div style={{position:"absolute",bottom:10,left:14,fontSize:8.5,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(0,80,120,.4)"}}> Atlantique</div>
               {/* Island shape */}
               <div style={{position:"absolute",top:"50%",left:"52%",transform:"translate(-50%,-52%)",
                 width:120,height:90,background:"linear-gradient(145deg,#C8E8C0,#B8D8B0)",
@@ -992,9 +992,9 @@ function Onboarding({onDone}){
             {/* Beach list rows */}
             <div style={{margin:"10px 22px 0",display:"flex",flexDirection:"column",gap:6}}>
               {[
-                ["��️","Grande Anse d'Arlet","Sud · 12 km","✓ Propre","g"],
+                ["️","Grande Anse d'Arlet","Sud · 12 km","✓ Propre","g"],
                 ["⛱️","Le Diamant","Sud · 25 km","⚡ Modéré","o"],
-                ["��","Sainte-Anne","Extrême Sud · 38 km","�� Éviter","r"],
+                ["","Sainte-Anne","Extrême Sud · 38 km","🚫 Éviter","r"],
               ].map(([emoji,name,dist,statusTxt,cls],i)=>(
                 <div key={i} style={{background:"white",borderRadius:14,padding:"10px 14px",
                   display:"flex",alignItems:"center",justifyContent:"space-between",
@@ -1101,13 +1101,13 @@ function Onboarding({onDone}){
                   letterSpacing:".1em",textTransform:"uppercase",marginBottom:8}}>Prévisions de ta semaine</div>
                 <div style={{display:"flex",gap:5}}>
                   {[
-                    ["Lun","��️","Propre","g",false],
-                    ["Mar","��️","Propre","g",false],
+                    ["Lun","️","Propre","g",false],
+                    ["Mar","️","Propre","g",false],
                     ["Mer","⚡","Modéré","o","semi"],
-                    ["Jeu","��","Éviter","r",true],
-                    ["Ven","��","Éviter","r",true],
+                    ["Jeu","🚫","Éviter","r",true],
+                    ["Ven","🚫","Éviter","r",true],
                     ["Sam","⚡","Modéré","o",true],
-                    ["Dim","��️","Propre","g",true],
+                    ["Dim","️","Propre","g",true],
                   ].map(([day,ic,st,cl,locked],i)=>(
                     <div key={i} style={{flex:1,background:"rgba(255,255,255,.05)",borderRadius:10,
                       padding:"8px 6px",textAlign:"center",display:"flex",flexDirection:"column",
@@ -1130,7 +1130,7 @@ function Onboarding({onDone}){
                 background:"linear-gradient(0deg,rgba(13,30,28,.95) 60%,transparent)",
                 padding:"20px 8px 8px",textAlign:"center",fontSize:10.5,fontWeight:600,
                 color:"rgba(255,255,255,.5)"}}>
-                �� Débloque les 5 prochains jours
+                 Débloque les 5 prochains jours
               </div>
 
               {/* Features */}
@@ -1300,7 +1300,7 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle}){
           background:"var(--sg-card,#fff)",cursor:"pointer",fontSize:16,
           display:"flex",alignItems:"center",justifyContent:"center",
           boxShadow:"0 2px 8px rgba(0,0,0,.06)",
-        }}>{theme==="dark"?"☀️":"��"}</button>
+        }}>{theme==="dark"?"☀️":"🌙"}</button>
         <button onClick={onLangToggle} style={{
           width:36,height:36,borderRadius:12,border:"1px solid var(--sg-border)",
           background:"var(--sg-card,#fff)",cursor:"pointer",fontSize:12,fontWeight:700,
