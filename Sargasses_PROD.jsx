@@ -154,26 +154,10 @@ function haversine(lat1,lon1,lat2,lon2){
   return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))
 }
 
-// Wikimedia photos for MQ beaches (no local files exist)
-const WIKI_PHOTOS={
-  mq001:"https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Plage_des_Salines_Martinique.jpg/640px-Plage_des_Salines_Martinique.jpg",
-  mq010:"https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Anse_Mitan_-_Les_Trois-Ilets.jpg/640px-Anse_Mitan_-_Les_Trois-Ilets.jpg",
-  mq011:"https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Anse_Mitan_-_Les_Trois-Ilets.jpg/640px-Anse_Mitan_-_Les_Trois-Ilets.jpg",
-  mq012:"https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Anses_d%27Arlet_-_Martinique.jpg/640px-Anses_d%27Arlet_-_Martinique.jpg",
-  mq013:"https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Anses_d%27Arlet_-_Martinique.jpg/640px-Anses_d%27Arlet_-_Martinique.jpg",
-  mq014:"https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Anses_d%27Arlet_-_Martinique.jpg/640px-Anses_d%27Arlet_-_Martinique.jpg",
-  mq015:"https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Anses_d%27Arlet_-_Martinique.jpg/640px-Anses_d%27Arlet_-_Martinique.jpg",
-  mq016:"https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Le_Diamant_beach_Martinique.jpg/640px-Le_Diamant_beach_Martinique.jpg",
-  mq027:"https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Saint_Pierre_Martinique.jpg/640px-Saint_Pierre_Martinique.jpg",
-  mq028:"https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Saint_Pierre_Martinique.jpg/640px-Saint_Pierre_Martinique.jpg",
-  mq029:"https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Saint_Pierre_Martinique.jpg/640px-Saint_Pierre_Martinique.jpg",
-}
 function getBeachPhoto(beach,imageMap){
   if(!beach)return null
-  // 1. Real photo from beaches-images.json (GP local files)
+  // 1. Real photo from beaches-images.json (17 GP photos)
   if(imageMap){const file=imageMap[beach.id];if(file)return`/beaches/${file}`}
-  // 2. Wikimedia photo (MQ)
-  if(WIKI_PHOTOS[beach.id])return WIKI_PHOTOS[beach.id]
   // 3. Pre-generated satellite thumbnail (static, fast)
   return`/beaches/sat-${beach.id}.jpg`
 }
@@ -774,7 +758,8 @@ function Onboarding({onDone,island="mq",lang="fr"}){
     s("sg_onb",1)
     onDone()
     // Show push notification prompt AFTER onboarding (not during — blocks CTA clicks)
-    try{window.OneSignalDeferred?.push(o=>o.Slidedown?.promptPush())}catch(e){}
+    // Push notification — utilise le prompt natif du navigateur (FR si système FR)
+    try{window.OneSignalDeferred?.push(o=>o.Notifications?.requestPermission())}catch(e){}
   },[onDone])
 
   const openStripe=useCallback(()=>{
