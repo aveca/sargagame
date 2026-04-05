@@ -154,11 +154,27 @@ function haversine(lat1,lon1,lat2,lon2){
   return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))
 }
 
+// Wikimedia photos for MQ beaches (no local files exist)
+const WIKI_PHOTOS={
+  mq001:"https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Plage_des_Salines_Martinique.jpg/640px-Plage_des_Salines_Martinique.jpg",
+  mq010:"https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Anse_Mitan_-_Les_Trois-Ilets.jpg/640px-Anse_Mitan_-_Les_Trois-Ilets.jpg",
+  mq011:"https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Anse_Mitan_-_Les_Trois-Ilets.jpg/640px-Anse_Mitan_-_Les_Trois-Ilets.jpg",
+  mq012:"https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Anses_d%27Arlet_-_Martinique.jpg/640px-Anses_d%27Arlet_-_Martinique.jpg",
+  mq013:"https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Anses_d%27Arlet_-_Martinique.jpg/640px-Anses_d%27Arlet_-_Martinique.jpg",
+  mq014:"https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Anses_d%27Arlet_-_Martinique.jpg/640px-Anses_d%27Arlet_-_Martinique.jpg",
+  mq015:"https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Anses_d%27Arlet_-_Martinique.jpg/640px-Anses_d%27Arlet_-_Martinique.jpg",
+  mq016:"https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Le_Diamant_beach_Martinique.jpg/640px-Le_Diamant_beach_Martinique.jpg",
+  mq027:"https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Saint_Pierre_Martinique.jpg/640px-Saint_Pierre_Martinique.jpg",
+  mq028:"https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Saint_Pierre_Martinique.jpg/640px-Saint_Pierre_Martinique.jpg",
+  mq029:"https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Saint_Pierre_Martinique.jpg/640px-Saint_Pierre_Martinique.jpg",
+}
 function getBeachPhoto(beach,imageMap){
-  if(!beach)return`/beaches/sat-${beach?.id||"mq001"}.jpg`
-  // 1. Real photo from beaches-images.json
+  if(!beach)return null
+  // 1. Real photo from beaches-images.json (GP local files)
   if(imageMap){const file=imageMap[beach.id];if(file)return`/beaches/${file}`}
-  // 2. Pre-generated satellite thumbnail (static, fast)
+  // 2. Wikimedia photo (MQ)
+  if(WIKI_PHOTOS[beach.id])return WIKI_PHOTOS[beach.id]
+  // 3. Pre-generated satellite thumbnail (static, fast)
   return`/beaches/sat-${beach.id}.jpg`
 }
 
@@ -212,9 +228,15 @@ body{background:var(--sg-bg,#FDFCF7);color:var(--sg-ink,#0D0D0D)}
   position:fixed;inset:0;z-index:2000;
   background:rgba(253,252,247,.92);
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-  display:flex;flex-direction:column;
+  display:flex;align-items:center;justify-content:center;
   overflow:hidden;width:100%;height:100%;
 }
+.onb-phone{
+  width:390px;max-height:844px;height:100%;background:#FDFCF7;border-radius:52px;
+  overflow:hidden;position:relative;display:flex;flex-direction:column;
+  box-shadow:0 0 0 1px rgba(0,0,0,.05),0 40px 100px rgba(0,0,0,.2);
+}
+@media(max-width:420px){.onb-phone{border-radius:0;max-height:none;width:100%;box-shadow:none;}}
 .onb-overlay::before{
   content:'';position:fixed;inset:0;z-index:1;pointer-events:none;
   background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
@@ -697,7 +719,7 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
   const LL=T[lang]||T.fr
   const nClean=beaches.filter(b=>b.status==="clean").length
   return(
-    <div style={{height:"100%",overflowY:"auto",paddingBottom:80,
+    <div style={{height:"100%",overflowY:"auto",paddingTop:130,paddingBottom:80,
       background:"var(--sg-bg,#FDFCF7)"}}>
       <div style={{padding:"8px 16px 0",fontSize:13,color:"var(--sg-mid,#686868)",fontWeight:500}}>
         {LL.nClean.replace("{n}",nClean)} / {beaches.length}
@@ -797,6 +819,7 @@ function Onboarding({onDone,island="mq",lang="fr"}){
 
   return(
     <div className="onb-overlay">
+      <div className="onb-phone">
       <div className="onb-carousel" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <div className="onb-slides" ref={slidesRef}>
 
@@ -1223,6 +1246,7 @@ function Onboarding({onDone,island="mq",lang="fr"}){
           ))}
         </div>
       </div>{/* /onb-carousel */}
+      </div>{/* /onb-phone */}
     </div>
   )
 }
