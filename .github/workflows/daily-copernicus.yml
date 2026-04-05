@@ -26,17 +26,27 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # ── 1. Scrape Copernicus ──────────────────────────────
-      - name: Create Copernicus credentials
+      # ── 1. Fetch LIVE Copernicus data (Python) ────────────
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Copernicus Marine toolbox
+        run: pip install copernicusmarine xarray numpy
+
+      - name: Fetch LIVE sargassum data from Copernicus
+        continue-on-error: true
+        env:
+          COPERNICUS_USERNAME: ${{ secrets.COPERNICUS_USERNAME }}
+          COPERNICUS_PASSWORD: ${{ secrets.COPERNICUS_PASSWORD }}
+        run: python3 scripts/fetch-copernicus-live.py
+
+      - name: Fallback to Node.js scraper if Python failed
         run: |
           echo "${{ secrets.COPERNICUS_USERNAME }}" > copernicustxt.txt
           echo "${{ secrets.COPERNICUS_PASSWORD }}" >> copernicustxt.txt
-
-      - name: Scrape Copernicus Marine data
-        env:
-          ONESIGNAL_API_KEY_MQ: ${{ secrets.ONESIGNAL_API_KEY_MQ }}
-          ONESIGNAL_API_KEY_GP: ${{ secrets.ONESIGNAL_API_KEY_GP }}
-        run: node scripts/scrape-copernicus.cjs
+          node scripts/scrape-copernicus.cjs
 
       - name: Send notifications (push + email)
         continue-on-error: true
