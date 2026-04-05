@@ -1,2309 +1,1470 @@
 /**
- * ╔══════════════════════════════════════════════════════════════╗
- * ║  SARGASSES · Version Production                              ║
- * ║  "Cette fois, tu seras prévenu."                             ║
- * ║                                                              ║
- * ║  Stack  : React 18 · Bricolage Grotesque + Anton · Open-Meteo · Assistant statique   ║
- * ║  Local  : localStorage · GPS · Canvas · Notification API    ║
- * ║  Deploy : Namecheap shared hosting, FTP                      ║
- * ╚══════════════════════════════════════════════════════════════╝
+ * SARGASSES — Reboot from scratch (4 avril 2026)
+ * "Cette fois, tu seras prévenu."
+ *
+ * Architecture : Map-first, data-driven (Clarity — 25% clics = carte)
+ * Stack : React 18 · Leaflet · Bricolage Grotesque + Anton · Open-Meteo
  */
-import { useState, useEffect, useRef, useMemo, useCallback, createContext, useContext } from "react"
-import SargassesGame from "./SargassesGame.jsx"
+import React,{useState,useEffect,useRef,useMemo,useCallback,createContext,useContext,Component}from"react"
+import L from"leaflet"
+import"leaflet/dist/leaflet.css"
 
-const LangContext = createContext("fr")
-export function useLang(){ return useContext(LangContext)||"fr" }
+class ErrBound extends Component{
+  constructor(p){super(p);this.state={err:null}}
+  static getDerivedStateFromError(e){return{err:e}}
+  componentDidCatch(e){console.error("CAUGHT:",e.message,e.stack)}
+  render(){if(this.state.err)return React.createElement("pre",{style:{color:"red",padding:20,whiteSpace:"pre-wrap"}},this.state.err.message+"\n\n"+this.state.err.stack);return this.props.children}
+}
 
-// ═══ FONTS ═══════════════════════════════════════════════════════════════════
-const GFONTS=`@import url('https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&display=swap');`
+/* ═══════════════════════════════════════════════════════════════════════════
+   CONTEXT
+   ═══════════════════════════════════════════════════════════════════════════ */
+const LangCtx=createContext("fr")
+export function useLang(){return useContext(LangCtx)||"fr"}
+function getLang(){try{return typeof window!=="undefined"&&window.location.pathname.startsWith("/en")?"en":"fr"}catch{return"fr"}}
 
-// ═══ TOKENS ══════════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════════════════
+   DESIGN TOKENS
+   ═══════════════════════════════════════════════════════════════════════════ */
 const C={
-  bg:"#FDFCF7",        // warm off-white (onboarding)
-  bgD:"#F7F5EF",      // warm light surface
-  card:"#FFFFFF",
-  cardS:"#FAFAFA",
-  ink:"#0D0D0D",
-  mid:"#686868",
-  mute:"#686868",
-  border:"rgba(0,0,0,.04)",
-  borderM:"rgba(0,0,0,.08)",
-
-  // Brand Gold (onboarding)
-  gold:"#E8A800",
-  goldL:"#FFC72C",
-  goldLL:"#FFE47A",
-  goldBg:"rgba(232,168,0,.07)",
-  goldBgL:"rgba(255,199,44,.15)",
-
-  // Teal ocean (onboarding)
-  teal:"#009E8E",
-  tealL:"#1EC8B0",
-  tealBg:"rgba(0,158,142,.08)",
-
-  // Status (onboarding)
+  bg:"#FDFCF7",bgD:"#F7F5EF",card:"#FFFFFF",cardS:"#FAFAFA",
+  ink:"#0D0D0D",mid:"#686868",mute:"#686868",
+  border:"rgba(0,0,0,.04)",borderM:"rgba(0,0,0,.08)",
+  gold:"#E8A800",goldL:"#FFC72C",goldLL:"#FFE47A",
+  goldBg:"rgba(232,168,0,.07)",goldBgL:"rgba(255,199,44,.15)",
+  teal:"#009E8E",tealL:"#1EC8B0",tealBg:"rgba(0,158,142,.08)",
   green:"#22C55E",greenL:"#16A34A",greenBg:"rgba(34,197,94,.1)",
   amber:"#B87A00",amberBg:"rgba(184,122,0,.1)",
-  red:"#E8522A",  redBg:"rgba(232,82,42,.1)",
-
-  // Sargasses — couleur propre aux algues
+  red:"#E8522A",redBg:"rgba(232,82,42,.1)",
   sarg:"#8B6914",sargL:"#A67C1A",sargBg:"rgba(139,105,20,.12)",
-
-  // Night
-  night:"#0D1E1C",night2:"#0A1714",
-  ocean:"#014F86",
+  night:"#0D1E1C",night2:"#0A1714",ocean:"#014F86",
 }
 
-// Dark theme tokens (surfaces + text)
-const C_DARK={
-  bg:"#0d1117",
-  bgD:"#161b22",
-  card:"#161b22",
-  cardS:"#21262d",
-  ink:"#e6edf3",
-  mid:"#adbac7",
-  mute:"#8b949e",
-  border:"rgba(255,255,255,.08)",
-  borderM:"rgba(255,255,255,.14)",
-  // Accents légèrement éclaircis en dark
-  gold:C.gold,
-  goldL:C.goldL,
-  goldLL:C.goldLL,
-  goldBg:"rgba(237,160,0,.15)",
-  goldBgL:"rgba(255,208,96,.2)",
-  teal:C.teal,
-  tealL:C.tealL,
-  tealBg:"rgba(0,150,136,.18)",
-  green:C.green,
-  greenL:C.greenL,
-  greenBg:C.greenBg,
-  amber:C.amber,
-  amberBg:C.amberBg,
-  red:C.red,
-  redBg:C.redBg,
-  sarg:C.sarg,
-  sargL:C.sargL,
-  sargBg:C.sargBg,
-  night:C.night,
-  night2:C.night2,
-  ocean:C.ocean,
-}
-
-// ═══ STATUS ══════════════════════════════════════════════════════════════════
 const ST={
-  clean:   {c:C.green, bg:C.greenBg, l:"Propre",   e:"✅",h2s:false},
-  moderate:{c:C.amber, bg:C.amberBg, l:"Modéré",   e:"⚠️",h2s:false},
-  avoid:   {c:C.red,   bg:C.redBg,   l:"À éviter", e:"🚫",h2s:true },
+  clean:{c:C.green,bg:C.greenBg,l:"Propre",le:"Clean",e:"\✅",h2s:false},
+  moderate:{c:C.amber,bg:C.amberBg,l:"Mod\ér\é",le:"Moderate",e:"\⚠\️",h2s:false},
+  avoid:{c:C.red,bg:C.redBg,l:"\À \éviter",le:"Avoid",e:"\�\�",h2s:true},
 }
 
-// ═══ I18N — FR / EN (lang from pathname /en) ═══════════════════════════════
-function getLang(){ try { return (typeof window!=="undefined"&&window.location.pathname.startsWith("/en"))?"en":"fr" } catch { return "fr" } }
+/* ═══════════════════════════════════════════════════════════════════════════
+   I18N
+   ═══════════════════════════════════════════════════════════════════════════ */
 const T={
   fr:{
-    statusClean:"Propre",statusModerate:"Modéré",statusAvoid:"À éviter",
-    days:["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"], dayToday:"Auj.", dayTomorrow:"Dem.",
-    navAccueil:"Accueil",navJeu:"Jeu",navArena:"Arena",navIA:"IA",navPlages:"Plages",navCarte:"Carte",navPremium:"Premium",navProfil:"Profil",
-    propres:"propres",enLigne:"en ligne",horsLigne:"hors ligne",refData:"Données de référence",copernicus:"Copernicus Marine",
-    assistantTitle:"Assistant Sargasses —",suggestions:"Suggestions",placeholderQuestion:"Ta question ou ta zone…",
-    fav:"Favori",addFav:"Ajouter",voir:"Voir →",min:"min",drive:"min en voiture",
-    filtres:["Toutes 🌊","✅ Propres","❤️ Favoris","🧒 Enfants","🤿 Snorkeling","🚫 À éviter"],
-    prev:"Prévisions",meteo:"Météo",signaler:"Signaler",yAller:"Y aller",vent:"Vent",direction:"Direction",uv:"Indice UV",temp:"Température",
-    conditionsFav:"Conditions favorables pour la baignade.",ventFort:"Vent fort — snorkeling déconseillé.",uvEleve:"UV élevé — crème solaire indispensable, évitez 12h-16h.",
-    merci:"Merci !",signalementEnLigne:"Ton signalement est en ligne sur",itineraire:"Itinéraire voiture",ouvrirWaze:"Ouvrir Waze",voirWindy:"Voir sur Windy",
-    prochainsJours:"Prochains jours",previsions7j:"Prévisions 7 jours activées !",jePars:"Je pars maintenant",aucunePropre:"Aucune propre",planifierWeekEnd:"Planifier le week-end",previsionsJ7:"Prévisions J+1 → J+7",
-    carteTitle:"Carte satellite Sargasses — Martinique & Guadeloupe",consultations:"consultations",
-    h1:"Sargasses {island} en temps réel",previsions:"Prévisions",meteoLabel:"Météo",
-    onboardingNoAccount:"Aucun compte · Données locales · Zéro pub",modeClair:"Mode clair",modeSombre:"Mode sombre",live:"LIVE",
-    onbKicker1:"La vraie vie",onbHead1:"Tu as déjà\nfait 50 km\npour rien.",onbBody1:"La plage envahie de sargasses. La puanteur. Le gaz. Tes enfants déçus.\n\nPlus jamais.",onbCta1:"Je connais ce moment →",
-    onbKicker2:"Comment ça marche",onbHead2:"Données\nsatellite\ntoutes les 6h.",onbBody2:"Sentinel-3 détecte les sargasses depuis l'espace.\nModèle de dérive Copernicus Marine.\n\nPrécision : 92% sur 48h.",onbCta2:"Et alors ? →",
-    onbKicker3:"La promesse",onbHead3:"Cette fois,\ntu seras\nprévenu.",onbBody3:"Notification push avant que tu partes.\nPrévision 7 jours pour planifier.\nAlerte H2S si danger pour tes enfants.",onbCta3:"Entrer dans l'app →",
-    altPlage:"Plage — carte sargasses",altPlageEtat:"Plage — état sargasses",
+    days:["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"],today:"Auj.",tomorrow:"Dem.",
+    clean:"Propre",moderate:"Mod\ér\é",avoid:"\À \éviter",
+    search:"Rechercher une plage\…",
+    filters:["Toutes","Propres","Favoris","Enfants","Snorkeling","\À \éviter"],
+    filtersIcon:["\�\�","\✅","\❤\️","\�\�","\�\�","\�\�"],
+    navMap:"Carte",navList:"Plages",navPremium:"Premium",
+    forecast:"Pr\évisions 7j",weather:"M\ét\éo",directions:"Y aller",
+    fav:"Favori",addFav:"Ajouter aux favoris",removeFav:"Retirer des favoris",
+    wind:"Vent",uv:"UV",temp:"Temp\érature",drive:"min",
+    kids:"Enfants",snorkel:"Snorkeling",parking:"Parking",
+    premium:"Premium",premiumDesc:"Pr\évisions 7 jours, alertes push, z\éro pub.",
+    premiumPrice:"4,99 \€/mois",premiumCta:"S'abonner",
+    premiumFeatures:["Pr\évisions 7 jours d\ébloqu\ées","Alertes push quand le statut change","Z\éro publicit\é","Annulation en 1 clic"],
+    h2sWarn:"Risque H\₂S \— \évitez cette plage avec des enfants.",
+    copernicus:"Copernicus Marine",live:"LIVE",
+    nClean:"{n} propres",island_mq:"Martinique",island_gp:"Guadeloupe",
+    reportThanks:"Merci pour ton signalement !",report:"Signaler",
+    openWaze:"Ouvrir Waze",driftDown:"Dispersion attendue",driftUp:"Arriv\ée possible",driftStable:"Stable",
+    close:"Fermer",nearby:"Plages \à proximit\é",locked:"Premium",
   },
   en:{
-    statusClean:"Clean",statusModerate:"Moderate",statusAvoid:"Avoid",
-    days:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"], dayToday:"Today", dayTomorrow:"Tomorrow",
-    navAccueil:"Home",navJeu:"Game",navArena:"Arena",navIA:"AI",navPlages:"Beaches",navCarte:"Map",navPremium:"Premium",navProfil:"Profile",
-    propres:"clean",enLigne:"online",horsLigne:"offline",refData:"Reference data",copernicus:"Copernicus Marine",
-    assistantTitle:"Sargassum Assistant —",suggestions:"Suggestions",placeholderQuestion:"Your question or area…",
-    fav:"Favourite",addFav:"Add",voir:"View →",min:"min",drive:"min drive",
-    filtres:["All 🌊","✅ Clean","❤️ Favourites","🧒 Kids","🤿 Snorkeling","🚫 Avoid"],
-    prev:"Forecast",meteo:"Weather",signaler:"Report",yAller:"Directions",vent:"Wind",direction:"Direction",uv:"UV index",temp:"Temp.",
-    conditionsFav:"Good conditions for swimming.",ventFort:"Strong wind — snorkeling not recommended.",uvEleve:"High UV — use sunscreen, avoid 12pm–4pm.",
-    merci:"Thanks!",signalementEnLigne:"Your report is live for",itineraire:"Driving directions",ouvrirWaze:"Open Waze",voirWindy:"View on Windy",
-    prochainsJours:"Next days",previsions7j:"7-day forecast enabled!",jePars:"I'm going now",aucunePropre:"None clean",planifierWeekEnd:"Plan the weekend",previsionsJ7:"Forecast D+1 → D+7",
-    carteTitle:"Sargassum satellite map — Martinique & Guadeloupe",consultations:"views",
-    h1:"Sargassum {island} real-time",previsions:"Forecast",meteoLabel:"Weather",
-    onboardingNoAccount:"No account · Local data · No ads",modeClair:"Light mode",modeSombre:"Dark mode",live:"LIVE",
-    onbKicker1:"Real life",onbHead1:"You've already\ndriven 50 km\nfor nothing.",onbBody1:"The beach covered in sargassum. The smell. The gas. Your kids disappointed.\n\nNever again.",onbCta1:"I know that moment →",
-    onbKicker2:"How it works",onbHead2:"Satellite\ndata every 6h.",onbBody2:"Sentinel-3 detects sargassum from space.\nCopernicus Marine drift model.\n\n92% accuracy at 48h.",onbCta2:"So what? →",
-    onbKicker3:"The promise",onbHead3:"This time,\nyou'll know\nbefore you go.",onbBody3:"Push notification before you leave.\n7-day forecast to plan.\nH2S alert when risky for kids.",onbCta3:"Open the app →",
-    altPlage:"Beach — sargassum map",altPlageEtat:"Beach — sargassum status",
+    days:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],today:"Today",tomorrow:"Tmrw",
+    clean:"Clean",moderate:"Moderate",avoid:"Avoid",
+    search:"Search a beach\…",
+    filters:["All","Clean","Favourites","Kids","Snorkeling","Avoid"],
+    filtersIcon:["\�\�","\✅","\❤\️","\�\�","\�\�","\�\�"],
+    navMap:"Map",navList:"Beaches",navPremium:"Premium",
+    forecast:"7-day forecast",weather:"Weather",directions:"Directions",
+    fav:"Favourite",addFav:"Add to favourites",removeFav:"Remove from favourites",
+    wind:"Wind",uv:"UV",temp:"Temperature",drive:"min",
+    kids:"Kids",snorkel:"Snorkeling",parking:"Parking",
+    premium:"Premium",premiumDesc:"7-day forecast, push alerts, no ads.",
+    premiumPrice:"\€4.99/mo",premiumCta:"Subscribe",
+    premiumFeatures:["7-day forecast unlocked","Push alerts when status changes","Zero ads","Cancel in 1 click"],
+    h2sWarn:"H\₂S risk \— avoid this beach with children.",
+    copernicus:"Copernicus Marine",live:"LIVE",
+    nClean:"{n} clean",island_mq:"Martinique",island_gp:"Guadeloupe",
+    reportThanks:"Thanks for your report!",report:"Report",
+    openWaze:"Open Waze",driftDown:"Dispersing",driftUp:"Incoming",driftStable:"Stable",
+    close:"Close",nearby:"Nearby beaches",locked:"Premium",
   },
 }
 
-// ═══ GAMIFICATION ════════════════════════════════════════════════════════════
-const LEVELS=[
-  {min:0,   max:99,   id:"tourist", label:"Touriste",  e:"🧳", color:"#999"},
-  {min:100, max:499,  id:"local",   label:"Local",     e:"🌴", color:C.tealL},
-  {min:500, max:1999, id:"expert",  label:"Expert",    e:"🔬", color:C.goldL},
-  {min:2000,max:Infinity,id:"vigil",label:"Vigile",   e:"🏆", color:"#E040FB"},
-]
-function getLevel(xp){return LEVELS.find(l=>xp>=l.min&&xp<=l.max)||LEVELS[0]}
-function xpForAction(action){
-  return {open:5,fav:15,report:25,chat:8,streak:30,premium:100}[action]||5
-}
-
-// ═══ BEACHES DATA — Martinique (mq) + Guadeloupe (gp) ═════════════════════════════
-const BEACHES=[
-  // Martinique
-  {id:"grande-anse",island:"mq",name:"Grande Anse d'Arlet",  commune:"Les Anses-d'Arlet",status:"clean",   afai:.11,lat:14.4942,lng:-61.0834,px:28,py:62,kids:true, snorkel:true, parking:true, drive:25},
-  {id:"anse-mitan", island:"mq",name:"Anse Mitan",            commune:"Les Trois-Îlets",  status:"clean",   afai:.17,lat:14.5510,lng:-61.0582,px:36,py:50,kids:true, snorkel:false,parking:true, drive:18},
-  {id:"anse-noire", island:"mq",name:"Anse Noire",            commune:"Les Anses-d'Arlet",status:"clean",   afai:.08,lat:14.4968,lng:-61.0668,px:30,py:69,kids:true, snorkel:true, parking:false,drive:28},
-  {id:"tartane",    island:"mq",name:"Tartane",               commune:"La Trinité",       status:"clean",   afai:.19,lat:14.7487,lng:-60.908, px:70,py:26,kids:true, snorkel:true, parking:false,drive:40},
-  {id:"anse-madame",island:"mq",name:"Anse Madame",           commune:"Schoelcher",       status:"clean",   afai:.14,lat:14.6276,lng:-61.1207,px:32,py:38,kids:true, snorkel:false,parking:true, drive:12},
-  {id:"diamant",    island:"mq",name:"Le Diamant",            commune:"Le Diamant",       status:"moderate",afai:.42,lat:14.4625,lng:-61.0389,px:24,py:73,kids:false,snorkel:false,parking:true, drive:32},
-  {id:"pt-marin",   island:"mq",name:"Pointe Marin",          commune:"Sainte-Anne",      status:"moderate",afai:.47,lat:14.4523,lng:-60.8695,px:53,py:78,kids:false,snorkel:false,parking:true, drive:45},
-  {id:"sainte-anne",island:"mq",name:"Sainte-Anne",           commune:"Sainte-Anne",      status:"avoid",   afai:.78,lat:14.4293,lng:-60.8868,px:57,py:80,kids:false,snorkel:true, parking:true, drive:48},
-  {id:"les-salines",island:"mq",name:"Les Salines",           commune:"Sainte-Anne",      status:"avoid",   afai:.82,lat:14.4135,lng:-60.8589,px:62,py:85,kids:false,snorkel:false,parking:true, drive:52},
-  {id:"vauclin",    island:"mq",name:"Le Vauclin",            commune:"Le Vauclin",       status:"avoid",   afai:.71,lat:14.5448,lng:-60.8388,px:74,py:66,kids:false,snorkel:false,parking:true, drive:55},
-  // Guadeloupe
-  {id:"gp-grande-anse",  island:"gp",name:"Grande Anse",        commune:"Bouillante",   status:"clean",   afai:.15,lat:16.1312,lng:-61.7682,px:22,py:48,kids:true, snorkel:true, parking:true, drive:45},
-  {id:"gp-malendure",    island:"gp",name:"Malendure",          commune:"Bouillante",   status:"clean",   afai:.12,lat:16.1784,lng:-61.7902,px:18,py:42,kids:true, snorkel:true, parking:true, drive:42},
-  {id:"gp-sainte-anne",  island:"gp",name:"Sainte-Anne",        commune:"Sainte-Anne",  status:"clean",   afai:.22,lat:16.2264,lng:-61.3856,px:58,py:55,kids:true, snorkel:false,parking:true, drive:38},
-  {id:"gp-pt-chateaux",  island:"gp",name:"Pointe des Châteaux",commune:"Saint-François",status:"moderate",afai:.38,lat:16.2412,lng:-61.1084,px:82,py:38,kids:false,snorkel:false,parking:true, drive:52},
-  {id:"gp-gosier",       island:"gp",name:"Le Gosier",          commune:"Le Gosier",    status:"clean",   afai:.18,lat:16.2064,lng:-61.4912,px:52,py:48,kids:true, snorkel:true, parking:true, drive:12},
-  {id:"gp-caravelle",    island:"gp",name:"Plage de la Caravelle",commune:"Saint-François",status:"clean",afai:.14,lat:16.2260,lng:-61.3680,px:78,py:32,kids:true, snorkel:true, parking:true, drive:48},
-  {id:"gp-bas-du-fort",  island:"gp",name:"Bas-du-Fort",        commune:"Pointe-à-Pitre",status:"moderate",afai:.35,lat:16.2184,lng:-61.5356,px:48,py:52,kids:true, snorkel:false,parking:true, drive:8},
-  {id:"gp-deshaies",     island:"gp",name:"Grande Anse des Haies",commune:"Deshaies",   status:"clean",   afai:.11,lat:16.3044,lng:-61.7984,px:14,py:28,kids:true, snorkel:true, parking:true, drive:55},
-  {id:"gp-moule",        island:"gp",name:"Plage de la Souffleur",commune:"Le Moule",  status:"moderate",afai:.44,lat:16.3324,lng:-61.3424,px:68,py:22,kids:false,snorkel:false,parking:true, drive:42},
-  {id:"gp-vieux-fort",   island:"gp",name:"Anse de la Gourde", commune:"Saint-François",status:"avoid",   afai:.72,lat:16.2488,lng:-61.1428,px:80,py:35,kids:false,snorkel:false,parking:false,drive:50},
+/* ═══════════════════════════════════════════════════════════════════════════
+   BEACH DATA — 20 inline fallback + runtime fetch for 190
+   ═══════════════════════════════════════════════════════════════════════════ */
+const BEACHES_FALLBACK=[
+  {id:"mq001",island:"mq",name:"Plage des Salines",commune:"Sainte-Anne",lat:14.3958521,lng:-60.8689802,status:"moderate",afai:.42,kids:true,snorkel:false,parking:true,drive:52},
+  {id:"mq011",island:"mq",name:"Anse Mitan",commune:"Les Trois-\Îles",lat:14.5522593,lng:-61.0552056,status:"clean",afai:.17,kids:true,snorkel:false,parking:true,drive:18},
+  {id:"mq014",island:"mq",name:"Grande Anse d'Arlet",commune:"Les Anses-d'Arlet",lat:14.5027854,lng:-61.0856311,status:"clean",afai:.12,kids:true,snorkel:true,parking:true,drive:25},
+  {id:"mq016",island:"mq",name:"Plage du Diamant",commune:"Le Diamant",lat:14.4758027,lng:-61.0314046,status:"moderate",afai:.42,kids:false,snorkel:false,parking:true,drive:32},
+  {id:"mq005",island:"mq",name:"Anse Trabaud",commune:"Sainte-Anne",lat:14.4101296,lng:-60.8482068,status:"avoid",afai:.78,kids:false,snorkel:false,parking:true,drive:52},
+  {id:"mq024",island:"mq",name:"Anse Madame",commune:"Schoelcher",lat:14.6177983,lng:-61.1036302,status:"clean",afai:.14,kids:true,snorkel:false,parking:true,drive:12},
+  {id:"mq029",island:"mq",name:"Plage de Saint-Pierre",commune:"Saint-Pierre",lat:14.7404792,lng:-61.1768484,status:"clean",afai:.15,kids:true,snorkel:true,parking:true,drive:32},
+  {id:"mq012",island:"mq",name:"Anse Noire",commune:"Les Anses-d'Arlet",lat:14.5277232,lng:-61.0873771,status:"clean",afai:.08,kids:true,snorkel:true,parking:false,drive:28},
+  {id:"mq019",island:"mq",name:"Anse Gros Raisins",commune:"Sainte-Luce",lat:14.4658147,lng:-60.9260982,status:"clean",afai:.16,kids:true,snorkel:true,parking:false,drive:38},
+  {id:"mq023",island:"mq",name:"Plage de la Fran\çaise",commune:"Fort-de-France",lat:14.6011133,lng:-61.0674743,status:"clean",afai:.2,kids:true,snorkel:false,parking:true,drive:8},
+  {id:"gp009",island:"gp",name:"Plage de la Caravelle",commune:"Sainte-Anne",lat:16.2181,lng:-61.3965,status:"clean",afai:.14,kids:true,snorkel:true,parking:true,drive:38},
+  {id:"gp012",island:"gp",name:"Plage du Gosier",commune:"Le Gosier",lat:16.2048,lng:-61.4948,status:"clean",afai:.18,kids:true,snorkel:true,parking:true,drive:12},
+  {id:"gp031",island:"gp",name:"Plage de Malendure",commune:"Bouillante",lat:16.1721,lng:-61.7767,status:"clean",afai:.12,kids:true,snorkel:true,parking:true,drive:42},
+  {id:"gp024",island:"gp",name:"Plage de Deshaies",commune:"Deshaies",lat:16.3053509,lng:-61.7950711,status:"clean",afai:.11,kids:true,snorkel:true,parking:true,drive:55},
+  {id:"gp005",island:"gp",name:"Pointe des Ch\âteaux",commune:"Saint-Fran\çois",lat:16.2531027,lng:-61.2306694,status:"moderate",afai:.38,kids:false,snorkel:false,parking:true,drive:52},
+  {id:"gp015",island:"gp",name:"Porte d'Enfer",commune:"Anse-Bertrand",lat:16.4861861,lng:-61.4416828,status:"avoid",afai:.7,kids:false,snorkel:false,parking:true,drive:55},
+  {id:"gp045",island:"gp",name:"Plage Pain de Sucre",commune:"Terre-de-Haut (Les Saintes)",lat:15.8635,lng:-61.5988,status:"clean",afai:.07,kids:true,snorkel:true,parking:false,drive:60},
+  {id:"gp001",island:"gp",name:"Plage de Saint-Fran\çois",commune:"Saint-Fran\çois",lat:16.2521,lng:-61.2644,status:"moderate",afai:.35,kids:true,snorkel:true,parking:true,drive:48},
+  {id:"gp010",island:"gp",name:"Plage de Sainte-Anne",commune:"Sainte-Anne",lat:16.2226,lng:-61.3828,status:"clean",afai:.22,kids:true,snorkel:false,parking:true,drive:38},
+  {id:"gp021",island:"gp",name:"Plage de Grande Anse",commune:"Trois-Rivi\ères",lat:15.9589717,lng:-61.6719389,status:"clean",afai:.15,kids:true,snorkel:true,parking:true,drive:45},
 ]
 
-// URLs des photos (Wikimedia + /beaches/ pour GP) — utilisé liste + fiche détail
-const BEACH_PHOTOS = {
-  "grande-anse": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Anses_d%27Arlet_-_Martinique.jpg/960px-Anses_d%27Arlet_-_Martinique.jpg",
-  "anse-mitan": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Anse_Mitan_-_Les_Trois-Ilets.jpg/960px-Anse_Mitan_-_Les_Trois-Ilets.jpg",
-  "anse-noire": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Anses_d%27Arlet_-_Martinique.jpg/960px-Anses_d%27Arlet_-_Martinique.jpg",
-  "tartane": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Saint_Pierre_Martinique.jpg/960px-Saint_Pierre_Martinique.jpg",
-  "anse-madame": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Saint_Pierre_Martinique.jpg/960px-Saint_Pierre_Martinique.jpg",
-  "diamant": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Le_Diamant_beach_Martinique.jpg/960px-Le_Diamant_beach_Martinique.jpg",
-  "pt-marin": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Plage_des_Salines_Martinique.jpg/960px-Plage_des_Salines_Martinique.jpg",
-  "sainte-anne": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Plage_des_Salines_Martinique.jpg/960px-Plage_des_Salines_Martinique.jpg",
-  "les-salines": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Plage_des_Salines_Martinique.jpg/960px-Plage_des_Salines_Martinique.jpg",
-  "vauclin": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Plage_des_Salines_Martinique.jpg/960px-Plage_des_Salines_Martinique.jpg",
-  "gp-grande-anse": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Grande_Anse_Deshaies.jpg/960px-Grande_Anse_Deshaies.jpg",
-  "gp-malendure": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Malendure_beach.jpg/960px-Malendure_beach.jpg",
-  "gp-sainte-anne": "/beaches/Plage_De_Sainte-Anne.jpg",
-  "gp-pt-chateaux": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Porte_d%27Enfer_-_Guadeloupe.jpg/960px-Porte_d%27Enfer_-_Guadeloupe.jpg",
-  "gp-gosier": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Les_Saintes_-_Guadeloupe.jpg/960px-Les_Saintes_-_Guadeloupe.jpg",
-  "gp-caravelle": "/beaches/Plage_la_caravelle.jpg",
-  "gp-bas-du-fort": "/beaches/Plage_de_Bas_du_Fort.jpg",
-  "gp-deshaies": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Grande_Anse_Deshaies.jpg/960px-Grande_Anse_Deshaies.jpg",
-  "gp-moule": "/beaches/Plage_Du_Souffleur.jpg",
-  "gp-vieux-fort": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Grande_Anse_Deshaies.jpg/960px-Grande_Anse_Deshaies.jpg",
-}
-const BEACH_PHOTO_FALLBACK = { mq: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Plage_des_Salines_Martinique.jpg/960px-Plage_des_Salines_Martinique.jpg", gp: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Grande_Anse_Deshaies.jpg/960px-Grande_Anse_Deshaies.jpg" }
-// Placeholder data URI (vignette grise si toutes les sources échouent)
-const BEACH_IMG_PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='112' height='112' viewBox='0 0 112 112'%3E%3Crect fill='%23e8e6e1' width='112' height='112'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23999' font-size='28' font-family='sans-serif'%3E🌊%3C/text%3E%3C/svg%3E"
-function getBaseUrl() {
-  try {
-    const b = typeof import.meta !== "undefined" && import.meta.env && import.meta.env.BASE_URL
-    return b ? (b.endsWith("/") ? b : b + "/") : "/"
-  } catch { return "/" }
-}
-function getBeachPhoto(beach) {
-  if (!beach) return BEACH_PHOTO_FALLBACK.mq
-  const url = BEACH_PHOTOS[beach.id] || BEACH_PHOTO_FALLBACK[beach.island] || BEACH_PHOTO_FALLBACK.mq
-  if (url.startsWith("/")) return getBaseUrl().replace(/\/$/, "") + url
-  return url
-}
+const ISLAND_CENTER={mq:[14.64,-61.02],gp:[16.22,-61.55]}
+const STRIPE_URL="https://buy.stripe.com/28E7sN2pd5F07Ktesr0co0p"
 
-// Image satellite Esri (liste + fiche détail) — bbox en degrés, size en pixels
-function getBeachSatelliteImage(beach, opts = {}) {
-  if (beach?.lat == null || beach?.lng == null) return null
-  const { width = 272, height = 272 } = typeof opts === "number" ? { width: opts, height: opts } : opts
-  const p = (width / 136) * 0.003
-  const latP = p * (height / width)
-  const lngMin = beach.lng - p
-  const lngMax = beach.lng + p
-  const latMin = beach.lat - latP
-  const latMax = beach.lat + latP
-  return `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=${lngMin},${latMin},${lngMax},${latMax}&bboxSR=4326&size=${width},${height}&imageSR=4326&format=png&f=image`
-}
-
-const DAYS=["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"]
-
-// Prévisions 7j : batch API (weekly) si dispo, sinon génération locale
-function getForecast(beach, sargassumData, lang = "fr") {
-  const batch = sargassumData?.weekly?.[beach?.id]
-  if (batch?.forecast?.length === 7) {
-    const L = T[lang] || T.fr
-    return batch.forecast.map(d => ({ ...d, day: d.day === "Auj." ? L.dayToday : d.day === "Dem." ? L.dayTomorrow : (T.fr.days.indexOf(d.day) >= 0 ? L.days[T.fr.days.indexOf(d.day)] : d.day) }))
-  }
-  return fc(beach?.afai ?? 0, lang)
-}
-
-// Stripe — 30 jours (lien Checkout)
-const STRIPE_PAYMENT_URL="https://buy.stripe.com/28E7sN2pd5F07Ktesr0co0p"
-
-// ═══ UTILS ════════════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════════════════
+   UTILITIES
+   ═══════════════════════════════════════════════════════════════════════════ */
 const g=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}}
 const s=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
-function hav(a,b,c,d){const R=6371,dL=(c-a)*Math.PI/180,dG=(d-b)*Math.PI/180,x=Math.sin(dL/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dG/2)**2;return+(R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))).toFixed(1)}
-function fc(afai, lang = "fr"){const L=T[lang]||T.fr;const t=new Date();return Array.from({length:7},(_,i)=>{const v=Math.max(0,Math.min(1,afai+Math.sin(i*1.4+afai*9)*.19));const d=new Date(t);d.setDate(d.getDate()+i);return{day:i===0?L.dayToday:i===1?L.dayTomorrow:L.days[d.getDay()],afai:v,status:v<.3?"clean":v<.65?"moderate":"avoid"}})}
-function scoreB(afai,w){const s=1-afai,wind=w?Math.max(0,1-w.wind/40):.72,uv=w?Math.max(0,1-w.uv/12):.72;return Math.round((s*.65+wind*.18+uv*.17)*10*10)/10}
 
-// ═══ ASSISTANT STATIQUE — réponses préenregistrées + données Copernicus (sans API LLM) ─
-function getStaticReply(userMessage, beaches, options = {}){
-  const lang = options.lang || "fr"
-  if (lang === "en") return getStaticReplyEn(userMessage, beaches, options)
-  return getStaticReplyFr(userMessage, beaches, options)
+function statusFromAfai(afai){return afai<.3?"clean":afai<.65?"moderate":"avoid"}
+
+function generateForecast(afai,lang="fr"){
+  const LL=T[lang]||T.fr,now=new Date()
+  return Array.from({length:7},(_,i)=>{
+    const d=new Date(now);d.setDate(d.getDate()+i)
+    const dayName=i===0?LL.today:i===1?LL.tomorrow:LL.days[d.getDay()]
+    const v=Math.sin(i*.8+afai*10)*.15
+    const a=Math.max(0,Math.min(1,afai+v))
+    return{day:dayName,date:d.toISOString().slice(0,10),afai:Math.round(a*100)/100,status:statusFromAfai(a)}
+  })
 }
 
-function getStaticReplyFr(userMessage, beaches, options = {}){
-  const q=(userMessage||"").toLowerCase().trim()
-  const clean=beaches.filter(b=>b.status==="clean")
-  const withKids=clean.filter(b=>b.kids)
-  const withSnorkel=clean.filter(b=>b.snorkel)
-  const firstClean=clean[0]
-  const rnd=(arr)=>arr[arr.length?Math.floor(Math.random()*arr.length):0]
-  const fromCopernicus=options.sargassumData?.source==="copernicus"
-  const dataNote=fromCopernicus?" Les statuts des plages viennent de Copernicus Marine (satellite + modèle de dérive), mis à jour régulièrement.":" Les statuts sont issus de données de référence ; connecte-toi pour profiter des mises à jour Copernicus Marine."
-
-  function out(text, suggestions){
-    if(suggestions&&suggestions.length) return { text, suggestions }
-    return text
-  }
-
-  if(/plage propre|quelle plage|maintenant|propre maintenant/.test(q)){
-    if(!firstClean) return out("Aucune plage en vert pour le moment. Consulte la carte pour suivre les mises à jour."+dataNote,["Quand les sargasses arrivent ?","C'est quoi l'AFAI ?"])
-    const variants=[
-      `Aujourd'hui ${clean.length} plage${clean.length>1?"s":""} propre${clean.length>1?"s":""}. Je te recommande <beach>${firstClean.id}</beach> — ${firstClean.drive} min en voiture.${dataNote}`,
-      `Pour une sortie propre tout de suite : <beach>${firstClean.id}</beach> (${firstClean.name}, ${firstClean.commune}). ${clean.length} plage${clean.length>1?"s":""} en vert en ce moment.`
-    ]
-    return out(rnd(variants),["Avec des enfants 🧒","Snorkeling 🤿","Road trip aujourd'hui"])
-  }
-  if(/enfant|enfants|kids|🧒/.test(q)){
-    if(!withKids.length) return "Pas de plage propre adaptée aux enfants pour l'instant. Regarde la liste et la carte, ça peut changer vite."
-    const b=rnd(withKids)
-    return `Pour les mômes, vise une plage calme et propre : <beach>${b.id}</beach>. ${b.commune}, ${b.drive} min. 🧒`
-  }
-  if(/snorkel|🤿|pmt/.test(q)){
-    if(!withSnorkel.length) return "Aucun spot snorkeling propre en ce moment. Réessaie demain ou consulte la carte."
-    const b=rnd(withSnorkel)
-    return `Spot propre pour le masque et tuba : <beach>${b.id}</beach>. ${b.commune}, ${b.drive} min. 🤿`
-  }
-  if(/road trip|roadtrip|trois plages|3 plages/.test(q)){
-    const three=clean.slice(0,3)
-    if(three.length===0) return "Pas assez de plages propres pour un road trip aujourd'hui. Consulte la carte pour les prévisions."
-    const names=three.map(b=>b.name).join(", ")
-    const firstId=three[0].id
-    return `Road trip du jour : ${names}. Commence par <beach>${firstId}</beach> puis enchaîne selon ton trajet. 🚗`
-  }
-  if(/données|donnée|copernicus|satellite|sentinel|source|fiabilité|mise à jour/.test(q)||/d'où viennent/.test(q)){
-    const variants=fromCopernicus?["Les statuts viennent de Copernicus Marine : produit satellite (détection des algues) + modèle de dérive océanique. Les données sont rafraîchies régulièrement pour les Antilles. Tu vois la source « Copernicus » dans l'app quand c'est actif.","On utilise le service Copernicus Marine (satellite Sentinel-3 et modèle de dérive). Les plages sont mises à jour en fonction de ces données. C'est la même source que celle utilisée pour la recherche et la surveillance."]:["En ce moment les statuts viennent de données de référence. Dès que la connexion à Copernicus Marine est disponible, tu auras les mises à jour satellite + modèle de dérive pour Martinique et Guadeloupe.","Les données affichées sont de référence. Une fois Copernicus Marine connecté, tu auras les mises à jour issues du satellite et du modèle de dérive. Indicateur « Copernicus ✓ » en haut quand c'est actif."]
-    return out(rnd(variants),["C'est quoi l'AFAI ?","Quand les sargasses arrivent ?","Quelle plage propre maintenant ?"])
-  }
-  if(/afai|indice|score|vert rouge orange/.test(q)&&!/plage|quelle/.test(q)){
-    const variants=["L'AFAI (Algal Floating Algae Index) est un indice qui mesure la présence d'algues flottantes. Vert = propre (AFAI bas), orange = modéré, rouge = à éviter. On l'affiche sur chaque fiche plage avec une prévision sur 7 jours.","AFAI = indice de détection des algues par satellite. Plus c'est bas, mieux c'est. En dessous de ~0,3 on met « Propre », au-dessus de ~0,65 « À éviter ». Tu vois la courbe sur la fiche de chaque plage."]
-    return out(rnd(variants),["C'est quoi le H2S ?","D'où viennent les données ?","Quelle plage propre maintenant ?"])
-  }
-  if(/week-end|weekend|semaine prochaine|j\+|demain/.test(q)&&!/touriste|3 jours/.test(q)){
-    return out("Les prévisions à 7 jours sont sur la fiche de chaque plage (courbe AFAI). En général, plus l'AFAI est bas, plus la plage a des chances de rester propre. Consulte la carte pour comparer les spots."+dataNote,["C'est quoi l'AFAI ?","Quelle plage propre maintenant ?"])
-  }
-  if(/météo|meteo|vent|uv|soleil|chaud|température/.test(q)){
-    return out("La météo (vent, UV, température) est sur la fiche de chaque plage, via Open-Meteo. Ça te permet de choisir l'heure et le spot selon le vent et l'ensoleillement.",["Meilleure heure pour y aller ?","Quelle plage propre maintenant ?"])
-  }
-  if(/écolog|ecolog|algue|sargasse|mer|océan|pollution|nature/.test(q)&&!/plage|quelle|où/.test(q)){
-    const variants=["Les sargasses sont des algues brunes qui dérivent en mer. En trop grande quantité elles s'échouent, pourrissent et peuvent dégager du H2S. Les données satellite aident à anticiper les échouages pour protéger les plages et la santé.","Ce sont des algues pélagiques qui voyagent avec les courants. Quand elles s'accumulent sur le littoral, ça pose des problèmes d'odeur et de gaz. L'app utilise satellite + modèle de dérive pour te dire où c'est propre ou à éviter."]
-    return out(rnd(variants),["C'est quoi le H2S ?","C'est quoi l'AFAI ?","D'où viennent les données ?"])
-  }
-  if(/martinique|guadeloupe|quelle île|quelle ile|choisir|différence/.test(q)||/^mq$|^gp$/.test(q)){
-    const islandLabel=options.island==="gp"?"Guadeloupe":"Martinique"
-    const nClean=clean.length
-    return out(`Tu es sur la ${islandLabel}. ${nClean} plage${nClean>1?"s":""} en vert en ce moment. Change d'île en haut (MQ / GP) pour voir les statuts de l'autre.`+dataNote,["Quelle plage propre maintenant ?","Road trip aujourd'hui"])
-  }
-  if(/parking|voiture|calme|tranquille|peu fréquenté|famille/.test(q)){
-    const withParking=clean.filter(b=>b.parking)
-    if(!withParking.length) return out("Aucune plage propre avec parking indiqué pour l'instant. Consulte la liste des plages pour les infos détaillées (🅿️).",["Quelle plage propre maintenant ?"])
-    const b=rnd(withParking)
-    return out(`Avec parking et propre : <beach>${b.id}</beach> — ${b.commune}, ${b.drive} min. 🅿️`,["Avec des enfants 🧒","Snorkeling 🤿"])
-  }
-  if(/^salut|^bonjour|^coucou|^hey|^help|^aide|tu fais quoi|quoi de neuf/.test(q)&&q.length<30){
-    const variants=[`Salut ! Je peux te dire quelles plages sont propres, avec enfants ou snorkeling, et t'expliquer H2S, AFAI ou les données Copernicus.${clean.length?` Là tu as ${clean.length} plage${clean.length>1?"s":""} en vert.`:""} Dis-moi ce que tu cherches !`,"Coucou ! Je suis là pour les plages et les sargasses : recommandations, prévisions, H2S, données satellite. Pose une question ou tape une des suggestions ci-dessous."]
-    return out(rnd(variants),["Quelle plage propre maintenant ?","C'est quoi le H2S ?","D'où viennent les données ?"])
-  }
-  if(/h2s|gaz|santé|danger|odeur|irrit/.test(q)){
-    return "Le H2S (sulfure d’hydrogène) est un gaz libéré quand les sargasses pourrissent. En forte concentration ça peut irriter les yeux et la gorge. Les plages en rouge « À éviter » sont celles où on signale ce risque — évite surtout avec des enfants ou des personnes fragiles."
-  }
-  if(/quand|arrivent|arrivée|saison|prévision/.test(q)){
-    return "Les sargasses varient avec les courants et le vent. Les données sont mises à jour régulièrement : consulte la carte et la liste des plages pour voir les statuts du jour. En général la saison haute va d’avril à septembre, mais ça change d’une semaine à l’autre."
-  }
-  if(/heure|meilleure|moment|aller/.test(q)){
-    return "Le matin tôt ou en fin d’après-midi, il fait moins chaud et souvent moins de vent. Consulte la météo sur la fiche de chaque plage pour le vent et l’UV."
-  }
-  if(/touriste|tourisme|🧳|visiter|conseil/.test(q)){
-    const ici=options.island==="gp"?"Guadeloupe":"Martinique"
-    if(!clean.length) return `Bienvenue en ${ici} ! Les plages propres changent souvent. Ouvre la carte pour voir en vert celles à privilégier aujourd'hui.`
-    const b=firstClean
-    return `Bienvenue en ${ici} ! Pour aujourd’hui je te conseille <beach>${b.id}</beach> — ${b.name}, ${b.commune}. C’est une des plages propres du moment. Consulte la liste pour en voir d’autres. 🧳`
-  }
-  // Réponse par défaut
-  if(clean.length){
-    const b=rnd(clean)
-    return `Tu as ${clean.length} plage${clean.length>1?"s":""} propre${clean.length>1?"s":""} en ce moment. Essaie par exemple <beach>${b.id}</beach> — ${b.name}, ${b.drive} min. Dis-moi si tu cherches une plage avec enfants, du snorkeling ou un road trip !`
-  }
-  return "Aucune plage en vert pour l’instant. Consulte la carte et la liste des plages pour les statuts à jour. Tu peux aussi demander « plage propre maintenant » ou « avec des enfants » pour des idées."
+function satImg(lat,lng,size=280){
+  const p=.006
+  return`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export?bbox=${lng-p},${lat-p},${lng+p},${lat+p}&bboxSR=4326&size=${size},${size}&imageSR=4326&format=png&f=image`
 }
 
-function getStaticReplyEn(userMessage, beaches, options = {}){
-  const q=(userMessage||"").toLowerCase().trim()
-  const clean=beaches.filter(b=>b.status==="clean")
-  const withKids=clean.filter(b=>b.kids)
-  const withSnorkel=clean.filter(b=>b.snorkel)
-  const firstClean=clean[0]
-  const rnd=(arr)=>arr[arr.length?Math.floor(Math.random()*arr.length):0]
-  const fromCopernicus=options.sargassumData?.source==="copernicus"
-  const dataNote=fromCopernicus?" Beach status comes from Copernicus Marine (satellite + drift model), updated regularly.":" Status is from reference data; sign in for Copernicus Marine updates."
-  function out(text,suggestions){ if(suggestions?.length) return {text,suggestions}; return text }
-  if(/clean beach|which beach|now|clean now|swim/.test(q)){
-    if(!firstClean) return out("No clean beaches right now. Check the map for updates."+dataNote,["When do sargassum arrive?","What is AFAI?"])
-    const variants=[`Today ${clean.length} clean beach${clean.length>1?"es":""}. I recommend <beach>${firstClean.id}</beach> — ${firstClean.drive} min drive.${dataNote}`,`For a clean spot now: <beach>${firstClean.id}</beach> (${firstClean.name}, ${firstClean.commune}). ${clean.length} clean at the moment.`]
-    return out(rnd(variants),["With kids 🧒","Snorkeling 🤿","Road trip today"])
-  }
-  if(/kid|children|family/.test(q)){
-    if(!withKids.length) return "No clean kid-friendly beach right now. Check the list and map; it changes quickly."
-    const b=rnd(withKids)
-    return `For kids, try a calm clean beach: <beach>${b.id}</beach>. ${b.commune}, ${b.drive} min. 🧒`
-  }
-  if(/snorkel|🤿|mask/.test(q)){
-    if(!withSnorkel.length) return "No clean snorkeling spot right now. Try again tomorrow or check the map."
-    const b=rnd(withSnorkel)
-    return `Clean spot for snorkeling: <beach>${b.id}</beach>. ${b.commune}, ${b.drive} min. 🤿`
-  }
-  if(/road trip|roadtrip|three beaches|3 beaches/.test(q)){
-    const three=clean.slice(0,3)
-    if(!three.length) return "Not enough clean beaches for a road trip today. Check the map for forecasts."
-    return `Today's road trip: ${three.map(b=>b.name).join(", ")}. Start with <beach>${three[0].id}</beach> then continue by route. 🚗`
-  }
-  if(/data|source|copernicus|satellite|where.*from|accuracy/.test(q)){
-    const variants=fromCopernicus?["Status comes from Copernicus Marine: satellite product (algae detection) + ocean drift model. Data is refreshed regularly for the Caribbean.","We use Copernicus Marine (Sentinel-3 satellite and drift model). Beaches are updated from this data."]:["Right now status is from reference data. When Copernicus Marine is connected you'll get satellite + drift updates.","Displayed data is reference. Once Copernicus Marine is connected you'll get satellite and drift updates. « Copernicus ✓ » at top when active."]
-    return out(rnd(variants),["What is AFAI?","When do sargassum arrive?","Clean beach now?"])
-  }
-  if(/afai|index|score|green orange red/.test(q)&&!/beach|which/.test(q)){
-    return out("AFAI (Algal Floating Algae Index) measures floating algae. Green = clean (low AFAI), orange = moderate, red = avoid. Shown on each beach card with 7-day forecast.",["What is H2S?","Where does data come from?","Clean beach now?"])
-  }
-  if(/weekend|next week|tomorrow|forecast/.test(q)&&!/tourist|3 day/.test(q)){
-    return out("7-day forecasts are on each beach card (AFAI curve). Lower AFAI = better chance the beach stays clean. Check the map to compare spots."+dataNote,["What is AFAI?","Clean beach now?"])
-  }
-  if(/weather|wind|uv|sun|hot|temp/.test(q)){
-    return out("Weather (wind, UV, temperature) is on each beach card via Open-Meteo. Use it to pick time and spot by wind and sun.",["Best time to go?","Clean beach now?"])
-  }
-  if(/sargassum|algae|sea|ocean|pollution/.test(q)&&!/beach|where/.test(q)){
-    return out("Sargassum are brown algae that drift at sea. In large amounts they wash up, rot and can release H2S. Satellite data helps anticipate strandings. The app uses satellite + drift model to tell you where it's clean or to avoid.",["What is H2S?","What is AFAI?","Where does data come from?"])
-  }
-  if(/martinique|guadeloupe|which island|choose|^mq$|^gp$/.test(q)){
-    const islandLabel=options.island==="gp"?"Guadeloupe":"Martinique"
-    const nClean=clean.length
-    return out(`You're on ${islandLabel}. ${nClean} clean beach${nClean>1?"es":""} right now. Switch island at the top (MQ / GP) to see the other.`+dataNote,["Clean beach now?","Road trip today"])
-  }
-  if(/parking|car|calm|quiet/.test(q)){
-    const withParking=clean.filter(b=>b.parking)
-    if(!withParking.length) return out("No clean beach with parking indicated right now. Check the beach list for details (🅿️).",["Clean beach now?"])
-    const b=rnd(withParking)
-    return out(`With parking and clean: <beach>${b.id}</beach> — ${b.commune}, ${b.drive} min. 🅿️`,["With kids 🧒","Snorkeling 🤿"])
-  }
-  if(/^hi|^hello|^hey|^help|^what can you/.test(q)&&q.length<30){
-    return out(`Hi! I can tell you which beaches are clean, with kids or snorkeling, and explain H2S, AFAI or Copernicus.${clean.length?` You have ${clean.length} clean right now.`:""} Tell me what you need!`,["Clean beach now?","What is H2S?","Where does data come from?"])
-  }
-  if(/h2s|gas|health|danger|smell|irritat/.test(q)){
-    return "H2S (hydrogen sulfide) is a gas released when sargassum rots. In high concentration it can irritate eyes and throat. Red « Avoid » beaches are those where we flag this risk — especially avoid with kids or sensitive people."
-  }
-  if(/when|arrive|season/.test(q)){
-    return "Sargassum vary with currents and wind. Data is updated regularly: check the map and beach list for today's status. Generally peak season is April to September."
-  }
-  if(/time|best|moment|go/.test(q)){
-    return "Early morning or late afternoon it's cooler and often less wind. Check weather on each beach card for wind and UV."
-  }
-  if(/tourist|tourism|🧳|visit|advice/.test(q)){
-    const ici=options.island==="gp"?"Guadeloupe":"Martinique"
-    if(!clean.length) return `Welcome to ${ici}! Clean beaches change often. Open the map to see which are clean today.`
-    return `Welcome to ${ici}! For today I recommend <beach>${firstClean.id}</beach> — ${firstClean.name}, ${firstClean.commune}. One of the clean beaches right now. Check the list for more. 🧳`
-  }
-  if(clean.length){ const b=rnd(clean); return `You have ${clean.length} clean beach${clean.length>1?"es":""} right now. Try e.g. <beach>${b.id}</beach> — ${b.name}, ${b.drive} min. Ask for kids, snorkeling or a road trip!` }
-  return "No clean beaches right now. Check the map and beach list for up-to-date status. You can also ask « clean beach now » or « with kids » for ideas."
+function haversine(lat1,lon1,lat2,lon2){
+  const R=6371,toR=Math.PI/180
+  const dLat=(lat2-lat1)*toR,dLon=(lon2-lon1)*toR
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*toR)*Math.cos(lat2*toR)*Math.sin(dLon/2)**2
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))
 }
 
-// ═══ CSS ═════════════════════════════════════════════════════════════════════
-const THEME_VARS=`
-:root,.theme-light{--sg-bg:#FDFCF7;--sg-bgD:#F7F5EF;--sg-card:#FFFFFF;--sg-cardS:#FAFAFA;--sg-ink:#0D0D0D;--sg-mid:#686868;--sg-mute:#686868;--sg-border:rgba(0,0,0,.04);--sg-borderM:rgba(0,0,0,.08);--sg-glass:rgba(253,252,247,.92);--sg-glassBorder:rgba(0,0,0,.04);--sg-rowHover:rgba(0,0,0,.03);--sg-sk:linear-gradient(90deg,#f5f3ee 25%,#ede9e0 50%,#f5f3ee 75%);--sg-handle:rgba(0,0,0,.25);--sg-card-shadow:0 2px 10px rgba(0,0,0,.04);--sg-card-shadow-lg:0 4px 12px rgba(0,0,0,.06),0 16px 40px rgba(0,0,0,.06);}
-.theme-dark{--sg-bg:#0d1117;--sg-bgD:#161b22;--sg-card:#161b22;--sg-cardS:#21262d;--sg-ink:#e6edf3;--sg-mid:#adbac7;--sg-mute:#8b949e;--sg-border:rgba(255,255,255,.08);--sg-borderM:rgba(255,255,255,.14);--sg-glass:rgba(22,27,34,.85);--sg-glassBorder:rgba(255,255,255,.08);--sg-rowHover:rgba(255,255,255,.06);--sg-sk:linear-gradient(90deg,#21262d 25%,#30363d 50%,#21262d 75%);--sg-handle:rgba(255,255,255,.2);--sg-accent:rgba(232,168,0,.28);--sg-accent-text:#e6edf3;--sg-card-shadow:0 2px 10px rgba(0,0,0,.35);--sg-status-clean:#22C55E;--sg-status-clean-bg:rgba(34,197,94,.14);--sg-status-clean-border:rgba(34,197,94,.25);--sg-status-moderate:#E8A800;--sg-status-moderate-bg:rgba(232,168,0,.14);--sg-status-moderate-border:rgba(232,168,0,.25);--sg-status-avoid:#E8522A;--sg-status-avoid-bg:rgba(232,82,42,.14);--sg-status-avoid-border:rgba(232,82,42,.25);}
-`
+function getBeachPhoto(beach,imageMap){
+  if(!imageMap||!beach)return null
+  const file=imageMap[beach.id]
+  if(!file)return null
+  return`/beaches/${file}`
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   GLOBAL STYLES (injected once)
+   ═══════════════════════════════════════════════════════════════════════════ */
 const CSS=`
-${GFONTS}
-/* Global overflow prevention for mobile */
-html,body{overflow-x:hidden;max-width:100vw}
-${THEME_VARS}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{font-size:clamp(14px,2.2vw + 12px,16px);-webkit-text-size-adjust:100%}
-html,body{font-family:'Bricolage Grotesque',sans-serif;background:var(--sg-bg);height:100%;-webkit-font-smoothing:antialiased}
-::-webkit-scrollbar{display:none}
-*{-webkit-tap-highlight-color:transparent}
-input,textarea{font-family:'Bricolage Grotesque',sans-serif}
-input::placeholder,textarea::placeholder{color:var(--sg-mid);opacity:.9}
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+html,body,#root{height:100%;overflow:hidden;font-family:'Bricolage Grotesque',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{background:var(--sg-bg,#FDFCF7);color:var(--sg-ink,#0D0D0D)}
+.anton{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:-.02em}
+.leaflet-container{background:#0a1a2e!important}
+.leaflet-control-attribution{display:none!important}
+.leaflet-control-zoom{display:none!important}
 
-/* ─ Keyframes ─ */
-@keyframes spinR{to{transform:rotate(360deg)}}
-@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-@keyframes in{from{opacity:0}to{opacity:1}}
-@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-@keyframes slideL{from{transform:translateX(32px);opacity:0}to{transform:translateX(0);opacity:1}}
-@keyframes slideR{from{transform:translateX(-32px);opacity:0}to{transform:translateX(0);opacity:1}}
-@keyframes pinPop{0%{transform:translate(-50%,-50%) scale(0)}65%{transform:translate(-50%,-50%) scale(1.25)}100%{transform:translate(-50%,-50%) scale(1)}}
-@keyframes beacon{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.5}60%{transform:translate(-50%,-50%) scale(3.2);opacity:0}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-@keyframes dotT{0%,80%,100%{transform:scale(.5);opacity:.2}40%{transform:scale(1);opacity:1}}
-@keyframes confetti{to{transform:translateY(130vh) rotate(960deg);opacity:0}}
-@keyframes xpFill{from{width:0}to{width:var(--xp-w)}}
-@keyframes xpPop{0%{transform:scale(1)}40%{transform:scale(1.2)}100%{transform:scale(1)}}
-@keyframes xpFloat{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-30px) scale(.8)}}
-@keyframes levelUp{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.18)}100%{transform:scale(1);opacity:1}}
-@keyframes wave{0%,100%{transform:translateX(0) scaleY(1)}50%{transform:translateX(-4px) scaleY(1.04)}}
-@keyframes driftB{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(6px,-4px) scale(1.04)}66%{transform:translate(-4px,5px) scale(.97)}}
-@keyframes grain{0%,100%{transform:translate(0,0)}25%{transform:translate(-1px,1px)}50%{transform:translate(1px,-1px)}75%{transform:translate(-1px,-1px)}}
-@keyframes shimmer{from{background-position:-200% 0}to{background-position:200% 0}}
-@keyframes onbIn{from{opacity:0;transform:translateY(20px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
-@keyframes countUp{from{transform:scale(.75);opacity:0}to{transform:scale(1);opacity:1}}
-@keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(237,160,0,0)}50%{box-shadow:0 0 30px 6px rgba(237,160,0,.18)}}
-@keyframes badgeIn{0%{transform:scale(0) rotate(-15deg);opacity:0}70%{transform:scale(1.1) rotate(3deg)}100%{transform:scale(1) rotate(0deg);opacity:1}}
-@keyframes shine{0%,100%{left:-75%}35%,65%{left:120%}}
-@keyframes dotPulse{0%,100%{box-shadow:0 0 0 2px rgba(34,197,94,.2)}50%{box-shadow:0 0 0 5px rgba(34,197,94,.07)}}
-
-/* ─ Gold button shine ─ */
-.gbtn{position:relative;overflow:hidden}
-.gbtn::after{content:'';position:absolute;top:0;left:-75%;width:44%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-18deg);animation:shine 4.5s cubic-bezier(.4,0,.6,1) 1.8s infinite;pointer-events:none}
-
-/* ─ Grain texture overlay ─ */
-.grain::after{content:'';position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.026'/%3E%3C/svg%3E");pointer-events:none;z-index:1;animation:grain .4s steps(1) infinite;border-radius:inherit}
-
-/* ─ Glass card ─ */
-.glass{background:var(--sg-glass);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);border:1px solid var(--sg-glassBorder)}
-
-/* ─ Shimmer skeleton ─ */
-.sk{background:var(--sg-sk);background-size:200% 100%;animation:shimmer 1.5s ease-in-out infinite;border-radius:8px}
-
-/* ─ Interactions ─ */
-.tap:active{transform:scale(.955);opacity:.82}
-.hover:hover{transform:translateY(-1px)!important;filter:brightness(1.02)}
-.row:hover{background:var(--sg-rowHover)!important}
-
-/* ─ Shell: mobile first, then tablet, then desktop ─ */
-.shell{width:100%;min-height:100vh;min-height:100dvh;max-width:100vw;margin:0 auto;display:flex;flex-direction:column;position:relative;overflow-x:hidden;overflow-y:auto;font-family:'Bricolage Grotesque',sans-serif;background:var(--sg-bg);box-sizing:border-box}
-.bsi{border-radius:22px 22px 0 0;padding-bottom:env(safe-area-inset-bottom)}
-@media(max-width:767px){
-  .sidebar{display:none!important}
+/* Gold button */
+.gbtn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  background:linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%);
+  border:none;border-radius:22px;color:#0D0D0D;font-weight:700;font-size:15px;
+  padding:14px 28px;cursor:pointer;position:relative;overflow:hidden;
+  font-family:'Bricolage Grotesque',system-ui,sans-serif;
+  box-shadow:0 2px 12px rgba(232,168,0,.3);transition:transform .15s,box-shadow .15s;
 }
-@media(min-width:768px){
-  .shell{max-width:100%!important;flex-direction:row!important;height:100vh}
-  .sidebar{display:flex!important;width:268px;min-width:268px;height:100vh;flex-direction:column;border-right:1px solid var(--sg-border);background:var(--sg-card);overflow:hidden;flex-shrink:0;position:relative}
-  .bn{display:none!important}
-  .bsi{max-width:600px!important;left:50%!important;right:auto!important;transform:translateX(-50%)!important}
+.gbtn:active{transform:scale(.97)}
+.gbtn::after{
+  content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);
+  animation:shine 4.5s infinite;
 }
-/* Tablet: 2-col grid pour les use-cases */
-@media(min-width:600px) and (max-width:767px){
-  .shell{max-width:100%!important}
-  .uc-grid{grid-template-columns:repeat(3,1fr)!important}
-  .clean-scroll{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(160px,1fr))!important;overflow-x:visible!important}
-  .beach-row{gap:16px!important}
+@keyframes shine{0%,70%{left:-100%}100%{left:100%}}
+
+/* Bottom sheet */
+.sheet{
+  position:fixed;bottom:0;left:0;right:0;z-index:900;
+  background:var(--sg-card,#fff);border-radius:20px 20px 0 0;
+  box-shadow:0 -4px 30px rgba(0,0,0,.12);
+  transition:transform .35s cubic-bezier(.32,.72,0,1);
+  max-height:85vh;overflow-y:auto;overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
 }
-/* Large desktop */
-@media(min-width:1200px){
-  .sidebar{width:300px!important;min-width:300px!important}
-  .bsi{max-width:680px!important}
+.sheet-handle{width:40px;height:4px;border-radius:2px;background:var(--sg-handle,rgba(0,0,0,.25));margin:12px auto 8px}
+
+/* Backdrop */
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:899;animation:fadeIn .2s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* ── ONBOARDING CAROUSEL ── */
+.onb-overlay{
+  position:fixed;inset:0;z-index:2000;
+  background:#FDFCF7;
+  display:flex;flex-direction:column;
+  overflow:hidden;width:100%;height:100%;
 }
+.onb-overlay::before{
+  content:'';position:fixed;inset:0;z-index:1;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity:.026;mix-blend-mode:multiply;
+}
+.onb-carousel{flex:1;overflow:hidden;position:relative;z-index:2;}
+.onb-slides{display:flex;width:300%;height:100%;transition:transform .45s cubic-bezier(.16,1,.3,1);}
+.onb-slide{width:33.333%;flex-shrink:0;display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;overflow-y:auto;overflow-x:hidden;}
+.onb-dots{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:7px;z-index:30;}
+.onb-dot{width:7px;height:7px;border-radius:50%;background:rgba(0,0,0,.15);border:none;cursor:pointer;transition:all .3s;padding:0;}
+.onb-dot.active{width:22px;border-radius:4px;background:#E8A800;}
+
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes float-a{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes float-b{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes dot-pulse{0%,100%{box-shadow:0 0 0 2px rgba(34,197,94,.2)}50%{box-shadow:0 0 0 5px rgba(34,197,94,.07)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pin-pulse{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.8);opacity:0}}
+@keyframes beacon{0%,100%{box-shadow:0 0 0 0 rgba(232,82,42,.5)}60%{box-shadow:0 0 0 10px rgba(232,82,42,0)}}
+@keyframes satellite-scan{0%{transform:translateX(-100%)}100%{transform:translateX(400%)}}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:2px}
+
+/* Forecast bars */
+.fc-bar{border-radius:3px 3px 0 0;transition:height .4s ease}
+
+/* Status pulse */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.pulse{animation:pulse 2s infinite}
+
+/* Shine for onboarding buttons */
+@keyframes onb-shine{0%,100%{left:-75%}35%,65%{left:120%}}
 `
 
-// ═══ ATOMS ════════════════════════════════════════════════════════════════════
-const SDot=({s,sz=10,pulse:p=true})=>{
-  const st=ST[s]||ST.clean
-  return(
-    <div style={{position:"relative",width:sz,height:sz,flexShrink:0}}>
-      {s==="avoid"&&p&&<div style={{position:"absolute",inset:0,borderRadius:"50%",background:st.c,animation:"beacon 2.3s ease-out infinite"}}/>}
-      <div style={{position:"absolute",inset:0,borderRadius:"50%",background:st.c,border:"2px solid white",boxShadow:`0 1px 7px ${st.c}55`}}/>
-    </div>
-  )
-}
-
-const Chip=({status,sm,style:sx})=>{
-  const lang=useLang()
-  const st=ST[status]||ST.clean
-  const L=T[lang]||T.fr
-  const label=status==="clean"?L.statusClean:status==="moderate"?L.statusModerate:L.statusAvoid
-  const key=status==="clean"?"clean":status==="moderate"?"moderate":"avoid"
-  return <span style={{display:"inline-flex",alignItems:"center",gap:5,padding:sm?"4px 10px":"6px 14px",borderRadius:100,fontSize:14,fontWeight:700,color:`var(--sg-status-${key}, ${st.c})`,background:`var(--sg-status-${key}-bg, ${st.bg})`,border:`1px solid var(--sg-status-${key}-border, ${st.c}22)`,...sx}}>{st.e} {label}</span>
-}
-
-const GBtn=({children,onClick,full,sm,outline,dark,disabled,style:sx})=>{
-  const base={width:full?"100%":"auto",padding:sm?"10px 18px":"16px 24px",borderRadius:22,fontFamily:"'Bricolage Grotesque',sans-serif",fontWeight:700,fontSize:sm?14:15,letterSpacing:".06em",textTransform:"uppercase",cursor:disabled?"not-allowed":"pointer",transition:"transform .12s, box-shadow .14s",opacity:disabled?.5:1,minHeight:44,...sx}
-  if(dark) return <button onClick={!disabled&&onClick} className="gbtn" style={{...base,background:`linear-gradient(145deg,${C.night},${C.night2})`,color:"white",border:"none",boxShadow:"0 8px 28px rgba(0,0,0,.28)"}}>{children}</button>
-  if(outline) return <button onClick={!disabled&&onClick} style={{...base,background:"transparent",color:C.gold,border:`2px solid ${C.gold}`,borderRadius:22}}>{children}</button>
-  return <button onClick={!disabled&&onClick} className="gbtn" style={{...base,background:"linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%)",color:"#0D0D0D",border:"none",boxShadow:"inset 0 1px 0 rgba(255,255,255,.55), 0 8px 28px rgba(232,168,0,.45)"}}
-    onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-1px)";e.currentTarget.style.boxShadow="inset 0 1px 0 rgba(255,255,255,.55), 0 16px 40px rgba(232,168,0,.5)"}}
-    onMouseLeave={e=>{e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.boxShadow="inset 0 1px 0 rgba(255,255,255,.55), 0 8px 28px rgba(232,168,0,.45)"}}>{children}</button>
-}
-
-const Card=({children,style:sx,onClick,hover,glass})=>(
-  <div onClick={onClick} className={(hover?"hover ":"")+(glass?"glass ":"")} style={{background:"var(--sg-card)",borderRadius:18,border:"1px solid var(--sg-border)",boxShadow:"var(--sg-card-shadow)",cursor:onClick?"pointer":"default",transition:"all .2s",...sx}}>
-    {children}
-  </div>
-)
-
-// ═══ CONFETTI ═════════════════════════════════════════════════════════════════
-const Confetti=({on})=>{
-  if(!on) return null
-  const cols=[C.goldL,C.goldLL,C.tealL,"#fff",C.greenL,"#F48FB1","#90CAF9","#A5D6A7","#FFE082"]
-  return(
-    <div style={{position:"fixed",inset:0,zIndex:9999,pointerEvents:"none",overflow:"hidden"}}>
-      {Array.from({length:80},(_,i)=><div key={i} style={{position:"absolute",left:`${2+Math.random()*96}%`,top:-16,width:Math.random()>.5?9:13,height:7,borderRadius:Math.random()>.6?"50%":"2px",background:cols[i%cols.length],animation:`confetti ${1.6+Math.random()*1.6}s ease-in ${Math.random()*.9}s both`,transform:`rotate(${Math.random()*360}deg)`}}/>)}
-    </div>
-  )
-}
-
-// ═══ XP NOTIFICATION ══════════════════════════════════════════════════════════
-function XPToast({xp,visible}){
-  if(!visible||!xp) return null
-  return(
-    <div style={{position:"fixed",top:70,right:14,zIndex:800,background:`linear-gradient(135deg,${C.goldLL},${C.goldL})`,color:"var(--sg-ink)",borderRadius:100,padding:"6px 14px",fontSize:14,fontWeight:800,boxShadow:`0 3px 14px rgba(232,168,0,.35)`,animation:"xpFloat 1.6s ease both",display:"flex",alignItems:"center",gap:5,pointerEvents:"none"}}>
-      ⭐ +{xp} XP
-    </div>
-  )
-}
-
-// ═══ BOTTOM SHEET ══════════════════════════════════════════════════════════════
-function Sheet({open,onClose,children}){
-  if(!open) return null
-  return(
-    <div onClick={onClose} style={{position:"fixed",inset:0,zIndex:400,background:"rgba(0,0,0,.42)",display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
-      <div className="bsi" onClick={e=>e.stopPropagation()} style={{position:"relative",width:"100%",maxHeight:"92vh",background:"var(--sg-bg)",borderRadius:"22px 22px 0 0",boxShadow:"0 -14px 56px rgba(0,0,0,.13)",display:"flex",flexDirection:"column",animation:"slideUp .3s cubic-bezier(.16,1,.3,1) both",paddingBottom:"env(safe-area-inset-bottom)"}}>
-        <div onClick={onClose} style={{height:22,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",flexShrink:0}}>
-          <div style={{width:36,height:4,borderRadius:2,background:"var(--sg-handle)"}}/>
-        </div>
-        <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch"}}>{children}</div>
-      </div>
-    </div>
-  )
-}
-
-// ═══ WEATHER HOOK ══════════════════════════════════════════════════════════════
-function useWeather(lat,lng,timezone="America/Martinique"){
-  const [w,setW]=useState(null),[loading,setL]=useState(false),[error,setErr]=useState(false)
+function StyleInjector(){
+  const ref=useRef(false)
   useEffect(()=>{
-    if(!lat||!lng) return
-    if(typeof navigator!=="undefined"&&!navigator.onLine){setL(false);setErr(true);return}
-    setErr(false);setL(true)
-    const tz=timezone==="America/Guadeloupe"?"America/Guadeloupe":"America/Martinique"
-    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,wind_speed_10m,wind_direction_10m,uv_index&timezone=${tz}`)
-      .then(r=>{if(!r.ok)throw new Error("Météo");return r.json()})
-      .then(d=>{setW({wind:Math.round(d.current?.wind_speed_10m||0),dir:Math.round(d.current?.wind_direction_10m||90),uv:Math.round(d.current?.uv_index||0),temp:Math.round(d.current?.temperature_2m||28)});setL(false);setErr(false)})
-      .catch(()=>{setL(false);setErr(true)})
-  },[lat,lng,timezone])
-  return{w,loading,error}
-}
-// ═══ ONLINE STATUS ══════════════════════════════════════════════════════════════
-function useOnline(){
-  const [online,setOnline]=useState(typeof navigator!=="undefined"?navigator.onLine:true)
-  useEffect(()=>{
-    const on=()=>setOnline(true)
-    const off=()=>setOnline(false)
-    window.addEventListener("online",on);window.addEventListener("offline",off)
-    return()=>{window.removeEventListener("online",on);window.removeEventListener("offline",off)}
+    if(ref.current)return;ref.current=true
+    const el=document.createElement("style");el.textContent=CSS;document.head.appendChild(el)
   },[])
-  return online
+  return null
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// ░░ ONBOARDING V11 — "Cette fois, tu seras prévenu."
-// ═══════════════════════════════════════════════════════════════════════════════
-function Onboarding({onDone}){
-  const [idx,setIdx]=useState(0)
-  const touchX=useRef(null)
-  function go(n){if(n>=0&&n<=2)setIdx(n)}
-  function onTS(e){touchX.current=e.touches[0].clientX}
-  function onTE(e){const dx=e.changedTouches[0].clientX-touchX.current;if(Math.abs(dx)<38)return;dx<0?go(idx+1):go(idx-1)}
-
-  // Shared styles
-  const discBg="conic-gradient(from -10deg,#FFE898 0deg 25deg,#E8A800 25deg 65deg,#FFD040 65deg 110deg,#B87A00 110deg 155deg,#FFE07A 155deg 195deg,#E09000 195deg 240deg,#FFC72C 240deg 285deg,#B07000 285deg 325deg,#FFE898 325deg 360deg)"
-  const miniDisc={width:20,height:20,borderRadius:"50%",background:discBg,animation:"spinR 20s linear infinite",boxShadow:"0 2px 8px rgba(232,168,0,.28)",flexShrink:0}
-  const goldBtn={width:"100%",background:"linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%)",color:"#0D0D0D",border:"none",borderRadius:22,padding:"19px 20px 19px 28px",fontFamily:"'Anton',sans-serif",fontSize:20,letterSpacing:".06em",textTransform:"uppercase",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between",boxShadow:"inset 0 1px 0 rgba(255,255,255,.58),inset 0 -2px 0 rgba(0,0,0,.11),0 8px 28px rgba(232,168,0,.48)",position:"relative",overflow:"hidden"}
-  const arrow={width:44,height:44,background:"rgba(0,0,0,.11)",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0,position:"relative",zIndex:1}
-
-  // ── SLIDE 1 ──
-  const Slide1=(
-    <div style={{display:"flex",flexDirection:"column",minHeight:"100%"}}>
-      {/* Live strip */}
-      <div style={{margin:"28px 20px 0",background:"rgba(255,255,255,.75)",border:"1px solid rgba(232,168,0,.26)",borderRadius:100,padding:"8px 10px 8px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",backdropFilter:"blur(16px)",boxShadow:"0 2px 18px rgba(232,168,0,.09),inset 0 1px 0 rgba(255,255,255,.95)"}}>
-        <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <div style={{width:7,height:7,borderRadius:"50%",background:"#22C55E",animation:"dotPulse 2s ease-in-out infinite"}}/>
-          <span style={{fontSize:11.5,fontWeight:600,color:"#0D0D0D"}}><em style={{fontStyle:"normal",color:C.gold,fontWeight:700}}>47 plages</em> surveillées en temps réel</span>
-        </div>
-        <div style={{background:`linear-gradient(135deg,${C.tealL},${C.teal})`,color:"white",fontSize:9,fontWeight:800,letterSpacing:".14em",padding:"5px 13px",borderRadius:100,boxShadow:"0 3px 12px rgba(0,158,142,.32)"}}>LIVE</div>
-      </div>
-      {/* Satellite badge */}
-      <div style={{margin:"10px 20px 0",background:"rgba(13,13,13,.06)",border:"1px solid rgba(13,13,13,.08)",borderRadius:100,padding:"6px 14px",display:"flex",alignItems:"center",gap:7,position:"relative",overflow:"hidden"}}>
-        <span style={{fontSize:12}}>🛰️</span>
-        <span style={{fontSize:10,fontWeight:600,color:C.mid}}>Sentinel-2 · <em style={{fontStyle:"normal",color:C.teal,fontWeight:700}}>Copernicus Marine</em></span>
-        <span style={{marginLeft:"auto",fontSize:9,fontWeight:700,background:"rgba(0,158,142,.1)",color:C.teal,padding:"2px 7px",borderRadius:100,letterSpacing:".06em"}}>Frais</span>
-      </div>
-      {/* Live counter */}
-      <div style={{margin:"8px 20px 0",display:"flex",alignItems:"center",gap:7,padding:"7px 13px",background:"rgba(34,197,94,.06)",border:"1px solid rgba(34,197,94,.14)",borderRadius:100}}>
-        <div style={{width:5,height:5,borderRadius:"50%",background:"#22C55E",animation:"dotPulse 1.4s ease-in-out infinite"}}/>
-        <span style={{fontSize:12,fontWeight:800,color:"#0D0D0D"}}>34</span>
-        <span style={{fontSize:11,fontWeight:500,color:C.mid}}>Martiniquais vérifient <em style={{fontStyle:"normal",color:"#16A34A",fontWeight:700}}>en ce moment</em></span>
-      </div>
-      {/* Hero disc */}
-      <div style={{position:"relative",height:288,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",zIndex:1}}>
-        <div style={{width:210,height:210,borderRadius:"50%",background:discBg,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 0 0 3px rgba(255,255,255,.85),0 0 0 5px rgba(232,168,0,.18),0 8px 48px rgba(232,168,0,.28),0 20px 50px rgba(0,0,0,.08)",animation:"spinR 22s linear infinite",zIndex:6}}>
-          <div style={{width:84,height:84,borderRadius:"50%",background:"linear-gradient(150deg,#FFFDF5 40%,#F0EDD5 100%)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,animation:"spinR 22s linear infinite reverse",boxShadow:"inset 0 2px 6px rgba(255,255,255,.95),inset 0 -3px 8px rgba(184,122,0,.14),0 3px 18px rgba(0,0,0,.13)",zIndex:2}}>
-            <div style={{fontFamily:"'Anton',sans-serif",fontSize:10,color:C.gold,letterSpacing:".07em",textAlign:"center",lineHeight:1.05}}>SAR<br/>GASSES</div>
-            <div style={{fontSize:7,fontWeight:800,color:C.teal,letterSpacing:".15em",textTransform:"uppercase"}}>.MQ</div>
-          </div>
-        </div>
-        {/* Floating card BAD */}
-        <div style={{position:"absolute",top:38,left:14,background:"rgba(255,255,255,.96)",border:"1px solid rgba(232,82,42,.2)",boxShadow:"0 6px 24px rgba(232,82,42,.1),inset 0 1px 0 white",borderRadius:16,padding:"10px 14px",display:"flex",alignItems:"center",gap:9,animation:"driftB 4s ease-in-out .8s infinite",zIndex:12}}>
-          <div style={{width:32,height:32,borderRadius:10,background:"linear-gradient(135deg,#FFE4DC,#FFCAB8)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0}}>🚫</div>
-          <div><div style={{fontSize:9.5,fontWeight:700,color:C.red,letterSpacing:".08em",textTransform:"uppercase"}}>Éviter</div><div style={{fontSize:12,fontWeight:800,color:"#0D0D0D",lineHeight:1.2}}>Sainte-Anne</div><div style={{fontSize:9.5,color:C.mid}}>Sargasses ce matin</div></div>
-        </div>
-        {/* Floating card GOOD */}
-        <div style={{position:"absolute",bottom:32,right:14,background:"rgba(255,255,255,.97)",border:"1px solid rgba(0,158,142,.13)",boxShadow:"0 8px 32px rgba(0,0,0,.08),inset 0 1px 0 white",borderRadius:18,padding:"11px 15px",display:"flex",alignItems:"center",gap:10,animation:"driftB 3.6s ease-in-out infinite",zIndex:12,minWidth:172}}>
-          <div style={{width:34,height:34,borderRadius:11,background:"linear-gradient(135deg,#D6F5EF,#A8EDE4)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,flexShrink:0}}>🏖️</div>
-          <div><div style={{fontSize:11.5,fontWeight:700,color:"#0D0D0D",whiteSpace:"nowrap"}}>Grande Anse d'Arlet</div><div style={{display:"flex",alignItems:"center",gap:4,fontSize:10,fontWeight:700,color:C.teal}}><span style={{width:12,height:12,borderRadius:"50%",background:C.teal,display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:7,color:"white",flexShrink:0}}>✓</span>Propre aujourd'hui</div></div>
-        </div>
-      </div>
-      {/* Copy */}
-      <div style={{padding:"4px 28px 0",flex:1,display:"flex",flexDirection:"column"}}>
-        <div style={{fontSize:13.5,fontWeight:500,color:C.mid,marginBottom:8,fontStyle:"italic"}}>Encore une plage envahie un dimanche matin ?</div>
-        <div style={{fontFamily:"'Anton',sans-serif",fontSize:66,lineHeight:.88,letterSpacing:"-.025em",textTransform:"uppercase",color:"#0D0D0D",marginBottom:10}}>
-          <span style={{color:C.teal}}>Cette</span><br/>
-          <span style={{background:"linear-gradient(138deg,#FFD860 0%,#E8A800 48%,#B07000 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>fois,</span><br/>
-          tu seras<br/>prévenu.
-        </div>
-        <p style={{fontSize:13.5,color:C.mid,fontWeight:400,lineHeight:1.6,marginBottom:13,maxWidth:270}}><strong style={{color:"#0D0D0D",fontWeight:700}}>47 plages de Martinique.</strong> Vert ou rouge. Avant de charger la voiture.</p>
-        {/* Social proof */}
-        <div style={{display:"flex",alignItems:"flex-start",gap:0,marginBottom:13,padding:"10px 13px",background:"rgba(255,199,44,.07)",border:"1px solid rgba(232,168,0,.13)",borderRadius:14}}>
-          <div style={{display:"flex",flexDirection:"column",gap:6,flex:1}}>
-            <div style={{display:"flex",alignItems:"center",gap:8}}>
-              <div style={{width:22,height:22,borderRadius:"50%",border:"1.5px solid #FDFCF7",background:"linear-gradient(135deg,#FF6B6B,#FF8E53)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,color:"white",flexShrink:0}}>S</div>
-              <div style={{fontSize:10.5,color:C.mid,lineHeight:1.4}}><strong style={{color:"#0D0D0D",fontWeight:700}}>Sophie · Le Diamant</strong> — a sauvé sa semaine de vacances</div>
-            </div>
-            <div style={{width:"100%",height:1,background:"rgba(232,168,0,.1)"}}/>
-            <div style={{display:"flex",alignItems:"center",gap:8}}>
-              <div style={{width:22,height:22,borderRadius:"50%",border:"1.5px solid #FDFCF7",background:"linear-gradient(135deg,#4ECDC4,#44A08D)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,color:"white",flexShrink:0}}>M</div>
-              <div style={{fontSize:10.5,color:C.mid,lineHeight:1.4}}><strong style={{color:"#0D0D0D",fontWeight:700}}>Marie-Jo · Rivière-Salée</strong> — vérifie chaque dimanche matin</div>
-            </div>
-          </div>
-        </div>
-        {/* CTA */}
-        <div style={{marginTop:"auto",paddingBottom:48,display:"flex",flexDirection:"column",gap:8}}>
-          <button className="gbtn" onClick={()=>go(1)} style={goldBtn}><span style={{position:"relative",zIndex:1}}>Voir les plages maintenant</span><span style={arrow}>→</span></button>
-          <div style={{textAlign:"center",fontSize:11,color:C.mid,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Gratuit<span style={{width:3,height:3,borderRadius:"50%",background:"rgba(104,104,104,.35)"}}/>Sans inscription</div>
-        </div>
-      </div>
-    </div>
+/* ═══════════════════════════════════════════════════════════════════════════
+   SMALL COMPONENTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+function StatusBadge({status,lang="fr"}){
+  const st=ST[status]||ST.clean
+  const label=lang==="en"?st.le:st.l
+  return(
+    <span style={{display:"inline-flex",alignItems:"center",gap:6,padding:"4px 12px",
+      borderRadius:100,background:st.bg,color:st.c,fontSize:13,fontWeight:700}}>
+      <span>{st.e}</span>{label}
+    </span>
   )
+}
 
-  // ── SLIDE 2 ──
-  const beachRows=[
-    {emoji:"🏖️",name:"Grande Anse d'Arlet",dist:"Sud · 12 km",status:"Propre",cls:"g"},
-    {emoji:"⛱️",name:"Le Diamant",dist:"Sud · 25 km",status:"Modéré",cls:"o"},
-    {emoji:"🌊",name:"Sainte-Anne",dist:"Extrême Sud · 38 km",status:"Éviter",cls:"r"},
-  ]
-  const statusColors={g:{bg:"rgba(34,197,94,.1)",color:"#16A34A",icon:"✓"},o:{bg:"rgba(232,168,0,.1)",color:C.gold,icon:"⚡"},r:{bg:"rgba(232,82,42,.1)",color:C.red,icon:"🚫"}}
-  // Vraies plages avec coords reelles → positions CSS sur la mini-carte
-  // Martinique bounds: lat 14.38-14.88, lng -61.24 to -60.81
-  const MQ_BOUNDS={latMin:14.38,latMax:14.88,lngMin:-61.24,lngMax:-60.81}
-  function toMapPos(lat,lng){
-    return{
-      t:((MQ_BOUNDS.latMax-lat)/(MQ_BOUNDS.latMax-MQ_BOUNDS.latMin)*100).toFixed(1)+"%",
-      l:((lng-MQ_BOUNDS.lngMin)/(MQ_BOUNDS.lngMax-MQ_BOUNDS.lngMin)*100).toFixed(1)+"%"
-    }
-  }
-  const pinPositions=[
-    {...toMapPos(14.740,-61.177),c:"g",name:"Saint-Pierre"},
-    {...toMapPos(14.708,-61.184),c:"g",name:"Grande Anse Carbet"},
-    {...toMapPos(14.541,-61.066),c:"g",name:"Anse à l'Âne"},
-    {...toMapPos(14.503,-61.085),c:"g",name:"Grande Anse d'Arlet"},
-    {...toMapPos(14.476,-61.031),c:"o",name:"Diamant"},
-    {...toMapPos(14.465,-60.942),c:"o",name:"Corps de Garde"},
-    {...toMapPos(14.402,-60.877),c:"r",name:"Salines"},
-    {...toMapPos(14.759,-60.918),c:"o",name:"Tartane"},
-  ]
-  const pinColors={g:"#22C55E",o:C.goldL,r:C.red}
-
-  const Slide2=(
-    <div style={{display:"flex",flexDirection:"column",minHeight:"100%",background:"#FDFCF7"}}>
-      <div style={{padding:"28px 22px 0",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-        <div style={{fontFamily:"'Anton',sans-serif",fontSize:16,letterSpacing:".05em",display:"flex",alignItems:"center",gap:8}}><div style={miniDisc}/>SARGASSES.MQ</div>
-        <div style={{display:"flex",alignItems:"center",gap:5,fontSize:10.5,fontWeight:600,color:C.mid}}><div style={{width:6,height:6,borderRadius:"50%",background:"#22C55E",animation:"dotPulse 2s ease-in-out infinite"}}/>En direct</div>
-      </div>
-      <div style={{padding:"16px 22px 0",fontSize:12.5,fontStyle:"italic",color:C.mid}}>La carte que tu aurais voulu avoir.</div>
-      <div style={{padding:"6px 22px 0",fontFamily:"'Anton',sans-serif",fontSize:42,lineHeight:.9,letterSpacing:"-.02em",textTransform:"uppercase",color:"#0D0D0D"}}>
-        <span style={{color:C.teal}}>Vert</span> = tu pars.<br/>Rouge = tu évites.
-      </div>
-      {/* Satellite badge */}
-      <div style={{margin:"10px 22px 0",display:"inline-flex",alignItems:"center",gap:6,background:"rgba(0,158,142,.07)",border:"1px solid rgba(0,158,142,.12)",borderRadius:100,padding:"5px 12px",position:"relative",overflow:"hidden"}}>
-        <span style={{fontSize:11}}>🛰️</span>
-        <span style={{fontSize:9.5,fontWeight:700,color:C.teal}}>Sentinel-2 · ESA Copernicus</span>
-      </div>
-      <div style={{margin:"6px 22px 0",fontSize:11,color:C.mid,display:"flex",alignItems:"center",gap:5}}>
-        <span style={{color:"#16A34A",fontWeight:700}}>✓</span> Confirmé par <strong style={{color:"#0D0D0D"}}>+2 400 locaux</strong> ce matin
-      </div>
-      {/* Map zone */}
-      <div style={{margin:"12px 22px 0",background:"linear-gradient(145deg,#D8EFF8 0%,#C8E4F4 50%,#D0EEE8 100%)",border:"1px solid rgba(0,158,142,.1)",borderRadius:22,position:"relative",height:240,overflow:"hidden"}}>
-        <div style={{position:"absolute",bottom:10,left:14,fontSize:8.5,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(0,80,120,.4)"}}>🌊 Atlantique</div>
-        <div style={{position:"absolute",top:10,left:14,fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(0,80,40,.4)"}}>🌿 Martinique</div>
-        <img src="/island-mq.svg" alt="" style={{position:"absolute",top:"50%",left:"52%",transform:"translate(-50%,-50%)",width:140,height:"auto",filter:"drop-shadow(0 4px 10px rgba(0,80,40,.15))",pointerEvents:"none"}}/>
-        {pinPositions.map((p,i)=><div key={i} style={{position:"absolute",top:p.t,left:p.l,transform:"translate(-50%,-50%)"}}>
-          <div style={{width:12,height:12,borderRadius:"50%",background:pinColors[p.c],border:"2px solid white",boxShadow:"0 1px 6px rgba(0,0,0,.2)",position:"relative",zIndex:2}}/>
-        </div>)}
-        <div style={{position:"absolute",bottom:8,right:10,display:"flex",gap:8}}>
-          {[{c:"#22C55E",l:"Propre"},{c:C.goldL,l:"Modéré"},{c:C.red,l:"Éviter"}].map(m=><div key={m.l} style={{display:"flex",alignItems:"center",gap:4,fontSize:8,fontWeight:700,color:C.mid}}><div style={{width:7,height:7,borderRadius:"50%",background:m.c,border:"1.5px solid white"}}/>{m.l}</div>)}
-        </div>
-      </div>
-      {/* Beach list */}
-      <div style={{margin:"10px 22px 0",display:"flex",flexDirection:"column",gap:6}}>
-        {beachRows.map(b=>{const s=statusColors[b.cls];return(
-          <div key={b.name} style={{background:"white",borderRadius:14,padding:"10px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",boxShadow:"0 2px 10px rgba(0,0,0,.04)",border:"1px solid rgba(0,0,0,.04)"}}>
-            <div style={{display:"flex",alignItems:"center",gap:9}}><span style={{fontSize:17}}>{b.emoji}</span><div><div style={{fontSize:12,fontWeight:700,color:"#0D0D0D"}}>{b.name}</div><div style={{fontSize:10,color:C.mid}}>{b.dist}</div></div></div>
-            <div style={{fontSize:10,fontWeight:700,padding:"4px 10px",borderRadius:100,background:s.bg,color:s.color}}>{s.icon} {b.status}</div>
-          </div>
-        )})}
-      </div>
-      <div style={{marginTop:"auto",padding:"10px 22px 48px"}}>
-        <button className="gbtn" onClick={()=>go(2)} style={{...goldBtn,borderRadius:20,padding:"17px 20px",fontSize:19}}><span style={{position:"relative",zIndex:1}}>Choisir ma plage</span><span style={arrow}>→</span></button>
-      </div>
-    </div>
+function AfaiBadge({afai}){
+  const pct=Math.round(afai*100)
+  const color=afai<.3?C.green:afai<.65?C.amber:C.red
+  return(
+    <span style={{fontSize:12,fontWeight:600,color,opacity:.9}}>AFAI {pct}%</span>
   )
+}
 
-  // ── SLIDE 3 — PREMIUM ──
-  const forecastDays=[
-    {day:"Lun",icon:"🏖️",status:"Propre",cls:"g"},{day:"Mar",icon:"🏖️",status:"Propre",cls:"g"},
-    {day:"Mer",icon:"⚡",status:"Modéré",cls:"o",semi:true},{day:"Jeu",icon:"🚫",status:"Éviter",cls:"r",locked:true},
-    {day:"Ven",icon:"🚫",status:"Éviter",cls:"r",locked:true},{day:"Sam",icon:"⚡",status:"Modéré",cls:"o",locked:true},
-    {day:"Dim",icon:"🏖️",status:"Propre",cls:"g",locked:true},
+function FilterChip({label,icon,active,onClick}){
+  return(
+    <button onClick={onClick} style={{
+      display:"inline-flex",alignItems:"center",gap:5,padding:"8px 16px",
+      borderRadius:100,border:active?"1.5px solid "+C.gold:"1.5px solid var(--sg-border,rgba(0,0,0,.08))",
+      background:active?"linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%)":"var(--sg-card,#fff)",
+      color:active?C.ink:"var(--sg-ink,#0D0D0D)",fontSize:13,fontWeight:active?700:500,
+      cursor:"pointer",whiteSpace:"nowrap",fontFamily:"inherit",
+      boxShadow:active?"0 2px 8px rgba(232,168,0,.2)":"none",
+      transition:"all .2s",
+    }}>
+      <span>{icon}</span>{label}
+    </button>
+  )
+}
+
+function BottomNav({view,onChangeView,lang}){
+  const LL=T[lang]||T.fr
+  const tabs=[
+    {id:"map",label:LL.navMap,icon:"\�\�\️"},
+    {id:"list",label:LL.navList,icon:"\�\�"},
+    {id:"premium",label:LL.navPremium,icon:"\⭐"},
   ]
-  const fcColors={g:{bg:"rgba(34,197,94,.15)",color:"#4ADE80"},o:{bg:"rgba(232,168,0,.15)",color:C.goldL},r:{bg:"rgba(232,82,42,.2)",color:"#FF8066"}}
+  return(
+    <nav style={{
+      position:"fixed",bottom:0,left:0,right:0,zIndex:800,
+      display:"flex",justifyContent:"space-around",alignItems:"center",
+      background:"var(--sg-glass,rgba(255,255,255,.92))",
+      backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
+      borderTop:"1px solid var(--sg-glassBorder,rgba(0,0,0,.06))",
+      padding:"8px 0 max(8px,env(safe-area-inset-bottom))",
+      height:60,
+    }}>
+      {tabs.map(t=>(
+        <button key={t.id} onClick={()=>onChangeView(t.id)} style={{
+          display:"flex",flexDirection:"column",alignItems:"center",gap:2,
+          background:"none",border:"none",cursor:"pointer",
+          color:view===t.id?C.gold:"var(--sg-mid,#686868)",
+          fontSize:10,fontWeight:view===t.id?700:500,fontFamily:"inherit",
+          transition:"color .2s",padding:"4px 16px",
+        }}>
+          <span style={{fontSize:20}}>{t.icon}</span>
+          <span>{t.label}</span>
+        </button>
+      ))}
+    </nav>
+  )
+}
 
-  const Slide3=(
-    <div style={{display:"flex",flexDirection:"column",minHeight:"100%",background:"#FDFCF7"}}>
-      <div style={{padding:"28px 22px 0",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-        <div style={{fontFamily:"'Anton',sans-serif",fontSize:16,letterSpacing:".05em",display:"flex",alignItems:"center",gap:8}}><div style={miniDisc}/>SARGASSES.MQ</div>
-        <button onClick={onDone} style={{fontSize:12,fontWeight:600,color:C.mid,background:"none",border:"none",cursor:"pointer",textDecoration:"underline",textUnderlineOffset:3}}>Passer</button>
-      </div>
-      <div style={{padding:"18px 22px 0",fontSize:12.5,fontStyle:"italic",color:C.mid}}>Pour les weekends qui comptent vraiment.</div>
-      <div style={{padding:"6px 22px 0",fontFamily:"'Anton',sans-serif",fontSize:40,lineHeight:.9,letterSpacing:"-.02em",textTransform:"uppercase",color:"#0D0D0D",marginBottom:6}}>
-        Sois <span style={{background:"linear-gradient(138deg,#FFD860,#E8A800 50%,#B07000)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>prévenu</span><br/>7 jours<br/>à l'avance.
-      </div>
-      <p style={{padding:"0 22px",fontSize:13,color:C.mid,lineHeight:1.55,marginBottom:14}}>Les données du jour c'est bien. <strong style={{color:"#0D0D0D",fontWeight:700}}>Savoir ce qui arrive ce weekend</strong>, c'est mieux.</p>
-      {/* Premium card */}
-      <div style={{margin:"0 22px",background:"linear-gradient(145deg,#0D1E1C,#0A1714)",borderRadius:26,padding:20,position:"relative",overflow:"hidden",boxShadow:"0 16px 48px rgba(0,0,0,.18)"}}>
-        <div style={{position:"absolute",top:0,left:0,right:0,height:1,background:"linear-gradient(90deg,transparent,#FFC72C,transparent)"}}/>
-        <div style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(255,199,44,.12)",border:"1px solid rgba(255,199,44,.18)",borderRadius:100,padding:"4px 11px",fontSize:9.5,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:C.goldL,marginBottom:12}}><div style={{width:4,height:4,borderRadius:"50%",background:C.goldL}}/>Premium</div>
-        <div style={{display:"flex",alignItems:"baseline",gap:3,marginBottom:6}}>
-          <span style={{fontSize:20,fontWeight:700,color:"rgba(255,255,255,.6)",marginTop:6}}>€</span>
-          <span style={{fontFamily:"'Anton',sans-serif",fontSize:52,color:"white",lineHeight:1,letterSpacing:"-.02em"}}>4,99</span>
-          <span style={{fontSize:13,color:"rgba(255,255,255,.35)",fontWeight:500,alignSelf:"flex-end",marginBottom:4}}>/ mois</span>
-        </div>
-        <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginBottom:14,lineHeight:1.5,padding:"8px 10px",background:"rgba(255,255,255,.04)",borderRadius:10,borderLeft:"2px solid rgba(232,168,0,.3)"}}>
-          Une journée plage pour 4 = <strong style={{color:"rgba(255,255,255,.6)"}}>80€.</strong><br/>Savoir à l'avance = <strong style={{color:"rgba(255,255,255,.6)"}}>4,99€.</strong>
-        </div>
-        {/* Forecast */}
-        <div style={{marginBottom:14}}>
-          <div style={{fontSize:9.5,fontWeight:700,color:"rgba(255,255,255,.4)",letterSpacing:".1em",textTransform:"uppercase",marginBottom:8}}>Prévisions de ta semaine</div>
-          <div style={{display:"flex",gap:5}}>
-            {forecastDays.map(d=>{const fc=fcColors[d.cls];return(
-              <div key={d.day} style={{flex:1,background:"rgba(255,255,255,.05)",borderRadius:10,padding:"8px 6px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:3,filter:d.locked?"blur(3px)":d.semi?"blur(1.5px)":"none",opacity:d.locked?.35:d.semi?.5:1}}>
-                <div style={{fontSize:8.5,fontWeight:700,color:"rgba(255,255,255,.4)"}}>{d.day}</div>
-                <div style={{fontSize:15}}>{d.icon}</div>
-                <div style={{fontSize:8,fontWeight:700,padding:"2px 5px",borderRadius:100,background:fc.bg,color:fc.color}}>{d.status}</div>
-              </div>
-            )})}
-          </div>
-        </div>
-        <div style={{position:"relative",marginTop:-28,marginBottom:14,background:"linear-gradient(0deg,rgba(13,30,28,.95) 60%,transparent)",padding:"20px 8px 8px",textAlign:"center",fontSize:10.5,fontWeight:600,color:"rgba(255,255,255,.5)"}}>🔒 Débloque les 5 prochains jours</div>
-        {/* Features */}
-        <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
-          {[{t:"Prévisions 7 jours",s:"dérive satellite"},{t:"Alertes",s:"avant que ça arrive"},{t:"Annulation",s:"à tout moment"}].map(f=>(
-            <div key={f.t} style={{display:"flex",alignItems:"center",gap:9}}>
-              <div style={{width:18,height:18,borderRadius:"50%",background:"rgba(0,158,142,.18)",border:"1px solid rgba(0,158,142,.28)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,color:C.tealL,flexShrink:0}}>✓</div>
-              <div style={{fontSize:12,color:"rgba(255,255,255,.7)"}}><strong style={{color:"white"}}>{f.t}</strong> · {f.s}</div>
+/* ═══════════════════════════════════════════════════════════════════════════
+   MAP VIEW (Leaflet — satellite tiles, CircleMarkers + heatmap)
+   ═══════════════════════════════════════════════════════════════════════════ */
+function MapView({beaches,island,onBeachClick,selectedBeach}){
+  const containerRef=useRef(null)
+  const mapRef=useRef(null)
+  const markersRef=useRef([])
+  const heatRef=useRef([])
+  const[mapError,setMapError]=useState(null)
+
+  // Init map once
+  useEffect(()=>{
+    if(!containerRef.current||mapRef.current)return
+    try{
+    const center=ISLAND_CENTER[island]||ISLAND_CENTER.mq
+    const map=L.map(containerRef.current,{
+      zoomControl:false,
+      attributionControl:false,
+      maxBoundsViscosity:1,
+    })
+    map.setView(center,11)
+    // Satellite tiles (users prefer satellite — 21 clics Clarity)
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{
+      maxZoom:18,
+    }).addTo(map)
+    // Labels overlay (on top of satellite)
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png",{
+      maxZoom:18,subdomains:"abcd",
+    }).addTo(map)
+    mapRef.current=map
+    }catch(err){console.error("MAP INIT ERROR:",err.message,err.stack);setMapError(err.message)}
+    return()=>{try{mapRef.current?.remove()}catch(e){};mapRef.current=null}
+  },[])
+
+  // Fly to island (setView if container has 0 size, flyTo otherwise)
+  useEffect(()=>{
+    if(!mapRef.current)return
+    const center=ISLAND_CENTER[island]||ISLAND_CENTER.mq
+    try{
+      const size=mapRef.current.getSize()
+      if(size.x===0||size.y===0){mapRef.current.setView(center,11)}
+      else{mapRef.current.flyTo(center,11,{duration:1})}
+    }catch(e){mapRef.current.setView(center,11)}
+  },[island])
+
+  // Update markers + heatmap
+  useEffect(()=>{
+    if(!mapRef.current)return
+    markersRef.current.forEach(m=>m.remove())
+    markersRef.current=[]
+    heatRef.current.forEach(m=>m.remove())
+    heatRef.current=[]
+
+    beaches.forEach(b=>{
+      const st=ST[b.status]||ST.clean
+      const isSelected=selectedBeach?.id===b.id
+
+      // Sargassum heatmap: large semi-transparent ocean circle
+      if(b.afai>.2){
+        const heatRadius=Math.max(800,b.afai*4000)
+        const heatColor=b.afai<.3?C.green:b.afai<.65?C.amber:C.red
+        // Offset slightly toward ocean (east for MQ Atlantic coast, varies for GP)
+        const lngOffset=b.island==="mq"?.015:.012
+        const heat=L.circle([b.lat,b.lng+lngOffset],{
+          radius:heatRadius,
+          fillColor:heatColor,
+          color:"transparent",
+          fillOpacity:Math.min(.35,b.afai*.45),
+          interactive:false,
+        })
+        heat.addTo(mapRef.current)
+        heatRef.current.push(heat)
+      }
+
+      // Beach marker
+      const marker=L.circleMarker([b.lat,b.lng],{
+        radius:isSelected?12:8,
+        fillColor:st.c,
+        color:"#fff",
+        weight:isSelected?3:2,
+        fillOpacity:.9,
+      })
+      marker.bindTooltip(b.name,{direction:"top",offset:[0,-12],
+        className:"",
+        permanent:false,
+      })
+      marker.on("click",()=>onBeachClick(b))
+      marker.addTo(mapRef.current)
+      markersRef.current.push(marker)
+    })
+  },[beaches,onBeachClick,selectedBeach])
+
+  if(mapError)return <div style={{padding:40,color:"red"}}>{mapError}</div>
+  return <div ref={containerRef} style={{width:"100%",height:"100%"}}/>
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FORECAST CHART — Day 1 (today) free, days 2-7 LOCKED (blurred) for premium
+   Data: 1.57% conversion — show only today free to increase premium value
+   ═══════════════════════════════════════════════════════════════════════════ */
+function ForecastChart({forecast,lang,onPremiumClick}){
+  if(!forecast||!forecast.length)return null
+  const LL=T[lang]||T.fr
+  const max=Math.max(...forecast.map(d=>d.afai),.1)
+  return(
+    <div style={{position:"relative"}}>
+      <div style={{display:"flex",gap:6,alignItems:"flex-end",height:100,padding:"8px 0"}}>
+        {forecast.map((d,i)=>{
+          const h=Math.max(8,(d.afai/max)*80)
+          const st=ST[d.status]||ST.clean
+          const isLocked=i>=1
+          return(
+            <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4,
+              filter:isLocked?"blur(3px)":"none",opacity:isLocked?.4:1,
+              pointerEvents:isLocked?"none":"auto"}}>
+              <span style={{fontSize:10,fontWeight:600,color:st.c}}>{Math.round(d.afai*100)}%</span>
+              <div className="fc-bar" style={{width:"100%",height:h,background:st.c,opacity:.8}}/>
+              <span style={{fontSize:10,color:"var(--sg-mid,#686868)",fontWeight:500}}>{d.day}</span>
             </div>
-          ))}
-        </div>
-        <button className="gbtn" onClick={()=>window.open&&window.open(typeof STRIPE_PAYMENT_URL!=="undefined"?STRIPE_PAYMENT_URL:"#","_blank")} style={{width:"100%",background:`linear-gradient(135deg,${C.goldL},${C.gold})`,color:"#0D0D0D",border:"none",borderRadius:16,padding:"16px 20px",fontFamily:"'Anton',sans-serif",fontSize:18,letterSpacing:".05em",textTransform:"uppercase",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between",boxShadow:"0 8px 24px rgba(232,168,0,.38),inset 0 1px 0 rgba(255,255,255,.4)",position:"relative",overflow:"hidden"}}>
-          <span style={{position:"relative",zIndex:1}}>Débloquer mes prévisions</span>
-          <span style={{width:36,height:36,background:"rgba(0,0,0,.15)",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,position:"relative",zIndex:1}}>→</span>
+          )
+        })}
+      </div>
+      {/* Lock overlay for days 2-7 (today is free, rest is premium) */}
+      <div style={{position:"absolute",top:0,right:0,bottom:0,width:`${(6/7*100).toFixed(1)}%`,
+        display:"flex",alignItems:"center",justifyContent:"center",
+        background:"linear-gradient(90deg,transparent,rgba(253,252,247,.7) 20%)",
+        borderRadius:8}}>
+        <button onClick={onPremiumClick} style={{
+          display:"flex",alignItems:"center",gap:6,
+          padding:"8px 16px",borderRadius:100,border:"none",
+          background:"linear-gradient(135deg,"+C.goldL+","+C.gold+")",
+          color:C.ink,fontSize:11,fontWeight:700,cursor:"pointer",
+          boxShadow:"0 2px 12px rgba(232,168,0,.3)",fontFamily:"inherit",
+        }}>
+          \�\� {LL.locked}
         </button>
       </div>
-      {/* Testimonial */}
-      <div style={{margin:"10px 22px 0",background:"rgba(255,255,255,.6)",border:"1px solid rgba(232,168,0,.12)",borderRadius:14,padding:"12px 14px",display:"flex",gap:10,alignItems:"flex-start"}}>
-        <div style={{width:30,height:30,borderRadius:"50%",background:"linear-gradient(135deg,#4ECDC4,#44A08D)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"white",flexShrink:0}}>M</div>
-        <div><div style={{fontSize:10,fontWeight:700,color:"#0D0D0D",marginBottom:3}}>Marie · Schoelcher</div><div style={{fontSize:11.5,color:C.mid,lineHeight:1.5,fontStyle:"italic"}}>"Grâce aux alertes, j'ai évité une journée perdue avec mes enfants."</div></div>
-      </div>
-      <div style={{padding:"10px 22px 0",textAlign:"center",fontSize:12,color:C.mid}}>Pas maintenant — <button onClick={onDone} style={{background:"none",border:"none",cursor:"pointer",color:C.teal,fontWeight:700,fontSize:12,textDecoration:"underline",textUnderlineOffset:3,fontFamily:"'Bricolage Grotesque',sans-serif"}}>commencer gratuitement</button></div>
-      <div style={{padding:"6px 22px 48px",textAlign:"center",fontSize:10.5,color:"rgba(104,104,104,.6)",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>Paiement sécurisé<span style={{width:3,height:3,borderRadius:"50%",background:"rgba(104,104,104,.25)"}}/>Annulation à tout moment</div>
-    </div>
-  )
-
-  const slides=[Slide1,Slide2,Slide3]
-
-  return(
-    <div onTouchStart={onTS} onTouchEnd={onTE} style={{width:"100%",height:"100%",display:"flex",flexDirection:"column",overflow:"hidden",background:"#FDFCF7",userSelect:"none",position:"relative"}}>
-      <div className="grain" style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:40}}/>
-      <div style={{flex:1,display:"flex",width:"300%",transition:"transform .45s cubic-bezier(.16,1,.3,1)",transform:`translateX(-${idx*33.333}%)`}}>
-        {slides.map((s,i)=><div key={i} style={{width:"33.333%",flexShrink:0,display:"flex",flexDirection:"column",minHeight:"100%",overflowY:"auto"}}>{s}</div>)}
-      </div>
-      {/* Dots */}
-      <div style={{position:"absolute",bottom:20,left:"50%",transform:"translateX(-50%)",display:"flex",gap:7,zIndex:30}}>
-        {[0,1,2].map(i=><button key={i} onClick={()=>go(i)} style={{width:i===idx?22:7,height:7,borderRadius:4,background:i===idx?C.gold:"rgba(0,0,0,.15)",border:"none",cursor:"pointer",padding:0,transition:"all .3s"}}/>)}
-      </div>
     </div>
   )
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// ░░ CHAT IA
-// ═══════════════════════════════════════════════════════════════════════════════
-function ChatScreen({beaches,favs,onFavToggle,onOpenBeach,initQ,onXP,sargassumData,island}){
-  const lang=useLang()
-  const L=T[lang]||T.fr
-  const islandName = island === "gp" ? "Guadeloupe" : "Martinique"
-  const welcomeEn = `Hi! 🌴 I'm your sargassum assistant for ${islandName}.\n\nTell me where you want to go or what you're looking for (clean beach, kids, snorkeling, road trip…).`
-  const welcomeFr = `Salut ! 🌴 Je suis ton assistant sargasses pour la ${islandName}.\n\nDis-moi où tu veux aller ou ce que tu cherches (plage propre, enfants, snorkeling, road trip…).`
-  const [msgs,setMsgs]=useState([{r:"a",t: lang==="en"?welcomeEn:welcomeFr}])
-  const [inp,setInp]=useState("")
-  const [busy,setBusy]=useState(false)
-  const didInit=useRef(false)
-  const bottomRef=useRef()
+/* ═══════════════════════════════════════════════════════════════════════════
+   WEATHER (Open-Meteo)
+   ═══════════════════════════════════════════════════════════════════════════ */
+function useWeather(beach){
+  const[data,setData]=useState(null)
+  useEffect(()=>{
+    if(!beach)return setData(null)
+    let cancel=false
+    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${beach.lat}&longitude=${beach.lng}&current=temperature_2m,wind_speed_10m,wind_direction_10m,uv_index&timezone=America/Martinique`)
+      .then(r=>r.json()).then(j=>{
+        if(!cancel&&j.current)setData({
+          temp:Math.round(j.current.temperature_2m),
+          wind:Math.round(j.current.wind_speed_10m),
+          windDir:j.current.wind_direction_10m,
+          uv:j.current.uv_index,
+        })
+      }).catch(()=>{})
+    return()=>{cancel=true}
+  },[beach?.id])
+  return data
+}
 
-  useEffect(()=>{bottomRef.current?.scrollIntoView({behavior:"smooth"})},[msgs,busy])
-  useEffect(()=>{if(initQ&&!didInit.current){didInit.current=true;setTimeout(()=>send(initQ),300)}},[initQ])
+/* ═══════════════════════════════════════════════════════════════════════════
+   BOTTOM SHEET — beach detail with photo, forecast, weather, nearby
+   ═══════════════════════════════════════════════════════════════════════════ */
+function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMap,onBeachClick,onPremiumClick}){
+  const LL=T[lang]||T.fr
+  const weather=useWeather(beach)
+  const forecast=useMemo(()=>beach?generateForecast(beach.afai,lang):null,[beach?.id,lang])
+  const isFav=favorites.includes(beach?.id)
+  const startY=useRef(0)
+  const sheetRef=useRef(null)
 
-  async function send(text){
-    if(!text?.trim()||busy) return
-    const um={r:"u",t:text.trim()}
-    const next=[...msgs,um]
-    setMsgs(next);setInp("");setBusy(true);onXP("chat")
-    if(typeof navigator!=="undefined"&&!navigator.onLine){
-      setMsgs(p=>[...p,{r:"a",t: lang==="en"?"📡 Offline — check the beach list and map: status is shown. Try again when reconnected.":"📡 Hors ligne — consulte la liste des plages et la carte : les statuts sont affichés. Réessaie quand tu es reconnecté."}])
-      setBusy(false)
-      return
-    }
-    const reply=getStaticReply(text.trim(),beaches,{sargassumData,island,lang})
-    const textOrObj=typeof reply==="object"?reply.text:reply
-    const suggestions=typeof reply==="object"?reply.suggestions:null
-    const recId=textOrObj.match(/<beach>(.*?)<\/beach>/)?.[1]
-    if(recId&&!favs.includes(recId)){onFavToggle(recId);onXP("fav")}
-    setTimeout(()=>{
-      setMsgs(p=>[...p,{r:"a",t:textOrObj,suggestions:suggestions||undefined}])
-      setBusy(false)
-    },400)
+  // Nearby beaches: same COMMUNE first (SEO internal linking), then by distance
+  const nearby=useMemo(()=>{
+    if(!beach||!allBeaches)return[]
+    const others=allBeaches
+      .filter(b=>b.id!==beach.id&&b.island===beach.island)
+      .map(b=>({...b,dist:haversine(beach.lat,beach.lng,b.lat,b.lng)}))
+    const sameCommune=others.filter(b=>b.commune===beach.commune).sort((a,b)=>a.dist-b.dist)
+    const diffCommune=others.filter(b=>b.commune!==beach.commune).sort((a,b)=>a.dist-b.dist)
+    return[...sameCommune,...diffCommune].slice(0,3)
+  },[beach?.id,allBeaches])
+
+  if(!beach)return null
+
+  const photo=getBeachPhoto(beach,imageMap)
+  const bgImage=photo||satImg(beach.lat,beach.lng,560)
+
+  const onTouchStart=e=>{startY.current=e.touches[0].clientY}
+  const onTouchMove=e=>{
+    const dy=e.touches[0].clientY-startY.current
+    if(dy>0&&sheetRef.current)sheetRef.current.style.transform=`translateY(${dy}px)`
+  }
+  const onTouchEnd=e=>{
+    const dy=(e.changedTouches[0]?.clientY||0)-startY.current
+    if(dy>100)onClose()
+    else if(sheetRef.current)sheetRef.current.style.transform=""
   }
 
-  const QUICK_FR=["Quelle plage propre maintenant ?","Avec des enfants 🧒","Snorkeling 🤿","Road trip aujourd'hui","C'est quoi le H2S ?","Quand les sargasses arrivent ?","Meilleure heure pour y aller ?","Je suis touriste 🧳","D'où viennent les données ?","C'est quoi l'AFAI ?"]
-  const QUICK_EN=["Clean beach now?","With kids 🧒","Snorkeling 🤿","Road trip today","What is H2S?","When do sargassum arrive?","Best time to go?","I'm a tourist 🧳","Where does data come from?","What is AFAI?"]
-  const QUICK=lang==="en"?QUICK_EN:QUICK_FR
+  const wazeUrl=`https://waze.com/ul?ll=${beach.lat},${beach.lng}&navigate=yes`
 
   return(
-    <div style={{display:"flex",flexDirection:"column",height:"100%"}}>
-      {/* Header */}
-      <div style={{padding:"12px 16px 11px",borderBottom:"1px solid var(--sg-border)",display:"flex",alignItems:"center",gap:12,flexShrink:0,background:"var(--sg-card)"}}>
-        <div style={{position:"relative",flexShrink:0}}>
-          <div style={{width:40,height:40,borderRadius:"50%",background:`conic-gradient(from 0deg,${C.tealL},${C.teal},#0077B6,${C.teal},${C.tealL})`,animation:"spinR 7s linear infinite"}}/>
-          <div style={{position:"absolute",bottom:0,right:0,width:11,height:11,borderRadius:"50%",background:C.greenL,border:"2px solid white"}}/>
-        </div>
-        <div>
-          <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:17,textTransform:"uppercase",letterSpacing:"-.01em",color:"var(--sg-ink)"}}>{L.assistantTitle} {islandName}</div>
-          <div style={{fontSize:13,color:"var(--sg-mute)"}}>{beaches.filter(b=>b.status==="clean").length} {L.propres} · <span style={{color:navigator.onLine?C.green:C.amber,fontWeight:700}}>{navigator.onLine?L.enLigne:L.horsLigne}</span></div>
-        </div>
-      </div>
+    <>
+      <div className="backdrop" onClick={onClose}/>
+      <div className="sheet" ref={sheetRef}
+        onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+        <div className="sheet-handle"/>
 
-      {/* Messages */}
-      <div style={{flex:1,overflowY:"auto",padding:"14px 14px 8px",WebkitOverflowScrolling:"touch"}}>
-        {msgs.map((m,i)=>{
-          const isU=m.r==="u"
-          const clean=(m.t||"").replace(/<beach>.*?<\/beach>/g,"").trim()
-          const recId=(m.t||"").match(/<beach>(.*?)<\/beach>/)?.[1]
-          const rec=recId&&beaches.find(b=>b.id===recId)
-          const suggestions=m.suggestions
-          return(
-            <div key={i} style={{display:"flex",flexDirection:"column",alignItems:isU?"flex-end":"flex-start",marginBottom:14,animation:"up .3s ease both"}}>
-              <div style={{maxWidth:"85%",padding:"14px 17px",fontSize:15,lineHeight:1.7,borderRadius:isU?"20px 20px 4px 20px":"20px 20px 20px 4px",background:isU?`linear-gradient(155deg,${C.goldLL},${C.goldL} 40%,#B07200)`:"var(--sg-card)",color:"var(--sg-ink)",border:isU?"none":"1px solid var(--sg-border)",boxShadow:isU?`0 3px 16px rgba(232,168,0,.26)`:"var(--sg-card-shadow)",whiteSpace:"pre-wrap"}}>{clean}</div>
-              {suggestions&&suggestions.length>0&&!isU&&(
-                <div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:8,maxWidth:"85%"}}>
-                  {suggestions.map(sug=><button key={sug} onClick={()=>send(sug)} style={{padding:"8px 14px",border:"1px solid var(--sg-border)",borderRadius:100,background:"var(--sg-card)",fontSize:13,fontWeight:600,color:"var(--sg-ink)",cursor:"pointer",fontFamily:"'Bricolage Grotesque',sans-serif",transition:"border-color .18s",whiteSpace:"nowrap"}} onMouseEnter={e=>e.currentTarget.style.borderColor=C.goldL} onMouseLeave={e=>e.currentTarget.style.borderColor="var(--sg-border)"}>{sug}</button>)}
-                </div>
-              )}
-              {rec&&!isU&&(
-                <div onClick={()=>onOpenBeach(rec)} className="tap hover" style={{maxWidth:"85%",marginTop:6,background:"var(--sg-card)",borderRadius:14,overflow:"hidden",border:"1px solid var(--sg-border)",boxShadow:"0 2px 10px rgba(0,0,0,.055)",cursor:"pointer"}}>
-                  <div style={{padding:"11px 14px 9px",background:`linear-gradient(135deg,${ST[rec.status]?.bg},transparent)`,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                    <div>
-                      <div style={{fontWeight:700,fontSize:16,color:"var(--sg-ink)",lineHeight:1.1}}>{rec.name}</div>
-                      <div style={{fontSize:13,color:"var(--sg-mute)",marginTop:3}}>{rec.commune} · {rec.drive}min</div>
-                    </div>
-                    <Chip status={rec.status} sm/>
-                  </div>
-                  <div style={{padding:"6px 14px 9px",display:"flex",alignItems:"center",gap:7,fontSize:14,color:"var(--sg-mid)"}}>
-                    {rec.kids&&<span>🧒</span>}{rec.snorkel&&<span>🤿</span>}{rec.parking&&<span>🅿️</span>}
-                    <span style={{marginLeft:"auto",color:favs.includes(rec.id)?C.red:C.mute,fontWeight:700,cursor:"pointer",padding:"8px",minHeight:44,display:"inline-flex",alignItems:"center"}} onClick={e=>{e.stopPropagation();onFavToggle(rec.id);onXP("fav")}}>{favs.includes(rec.id)?"❤️ "+L.fav:"🤍 "+L.addFav}</span>
-                  </div>
-                </div>
-              )}
+        {/* Photo (real or satellite) */}
+        <div style={{height:180,background:`url(${bgImage}) center/cover`,
+          borderRadius:"0",position:"relative"}}>
+          <div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 40%,var(--sg-card,#fff) 100%)"}}/>
+          <button onClick={onClose} style={{position:"absolute",top:12,right:12,
+            width:32,height:32,borderRadius:16,background:"rgba(0,0,0,.4)",
+            border:"none",color:"#fff",fontSize:16,cursor:"pointer",
+            display:"flex",alignItems:"center",justifyContent:"center"}}>\✕</button>
+        </div>
+
+        <div style={{padding:"0 20px 100px"}}>
+          {/* Name + Status */}
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
+            <h2 className="anton" style={{fontSize:22,margin:0,lineHeight:1.2}}>{beach.name}</h2>
+            <StatusBadge status={beach.status} lang={lang}/>
+          </div>
+          <p style={{fontSize:13,color:"var(--sg-mid,#686868)",margin:"0 0 12px"}}>
+            {beach.commune} \· <AfaiBadge afai={beach.afai}/> \· {beach.drive} {LL.drive}
+          </p>
+
+          {/* H2S warning */}
+          {ST[beach.status]?.h2s&&(
+            <div style={{padding:"10px 14px",borderRadius:12,background:C.redBg,
+              color:C.red,fontSize:13,fontWeight:600,marginBottom:12,
+              display:"flex",alignItems:"center",gap:8}}>
+              \⚠\️ {LL.h2sWarn}
             </div>
-          )
-        })}
-        {busy&&<div style={{display:"flex",marginBottom:14}}><div style={{background:"var(--sg-card)",border:`1px solid var(--sg-border)`,borderRadius:"18px 18px 18px 4px",padding:"13px 16px",display:"flex",gap:5,alignItems:"center",boxShadow:"0 2px 8px rgba(0,0,0,.04)"}}>{[0,1,2].map(i=><div key={i} style={{width:7,height:7,borderRadius:"50%",background:C.goldL,animation:`dotT 1.2s ease ${i*.14}s infinite`}}/>)}</div></div>}
-        {msgs.length===1&&!busy&&<div style={{marginBottom:10}}><div style={{fontSize:16,fontWeight:700,color:"var(--sg-ink)",marginBottom:10}}>Suggestions</div><div style={{display:"flex",flexWrap:"wrap",gap:8}}>{QUICK.map(q=><button key={q} onClick={()=>send(q)} style={{padding:"9px 15px",border:`1px solid var(--sg-border)`,borderRadius:100,background:"var(--sg-card)",fontSize:13,fontWeight:600,color:"var(--sg-ink)",cursor:"pointer",fontFamily:"'Bricolage Grotesque',sans-serif",transition:"border-color .18s",whiteSpace:"nowrap",boxShadow:"var(--sg-card-shadow)"}} onMouseEnter={e=>e.currentTarget.style.borderColor=C.goldL} onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>{q}</button>)}</div></div>}
-        <div ref={bottomRef}/>
-      </div>
+          )}
 
-      {/* Input */}
-      <div style={{flexShrink:0,padding:"9px 12px 12px",borderTop:"1px solid var(--sg-border)",display:"flex",gap:8,alignItems:"flex-end",background:"var(--sg-card)"}}>
-        <input value={inp} onChange={e=>setInp(e.target.value)} onKeyDown={e=>e.key==="Enter"&&(e.preventDefault(),send(inp))} placeholder={L.placeholderQuestion} style={{flex:1,padding:"12px 14px",fontSize:13,border:`1.5px solid ${inp?C.goldL+"44":"var(--sg-border)"}`,borderRadius:14,background:"var(--sg-bg)",color:"var(--sg-ink)",outline:"none",transition:"border-color .2s"}}/>
-        <button onClick={()=>send(inp)} disabled={busy||!inp.trim()} style={{width:44,height:44,borderRadius:"50%",border:"none",flexShrink:0,background:(!inp.trim()||busy)?"rgba(0,0,0,.07)":`linear-gradient(135deg,${C.goldL},${C.gold})`,cursor:(!inp.trim()||busy)?"not-allowed":"pointer",fontSize:18,boxShadow:(!inp.trim()||busy)?"none":`0 3px 14px rgba(232,168,0,.38)`,transition:"all .2s"}}>→</button>
+          {/* Tags */}
+          <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:16}}>
+            {beach.kids&&<Tag icon="\�\�" label={LL.kids}/>}
+            {beach.snorkel&&<Tag icon="\�\�" label={LL.snorkel}/>}
+            {beach.parking&&<Tag icon="\�\�\️" label={LL.parking}/>}
+          </div>
+
+          {/* Actions */}
+          <div style={{display:"flex",gap:10,marginBottom:20}}>
+            <a href={wazeUrl} target="_blank" rel="noopener" className="gbtn"
+              style={{flex:1,textDecoration:"none",textAlign:"center"}}>{LL.directions}</a>
+            <button onClick={()=>onToggleFav(beach.id)} style={{
+              flex:0,padding:"14px 20px",borderRadius:22,border:"1.5px solid var(--sg-border)",
+              background:"var(--sg-card)",cursor:"pointer",fontSize:18,
+              fontFamily:"inherit",
+            }}>{isFav?"\❤\️":"\�\�"}</button>
+          </div>
+
+          {/* Forecast (days 4-7 locked) */}
+          <h3 style={{fontSize:15,fontWeight:700,marginBottom:8}}>{LL.forecast}</h3>
+          <ForecastChart forecast={forecast} lang={lang} onPremiumClick={onPremiumClick}/>
+
+          {/* Weather */}
+          {weather&&(
+            <>
+              <h3 style={{fontSize:15,fontWeight:700,margin:"20px 0 10px"}}>{LL.weather}</h3>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
+                <WeatherCard icon="\�\�\️" label={LL.temp} value={`${weather.temp}\°C`}/>
+                <WeatherCard icon="\�\�" label={LL.wind} value={`${weather.wind} km/h`}/>
+                <WeatherCard icon="\☀\️" label={LL.uv} value={weather.uv}/>
+              </div>
+            </>
+          )}
+
+          {/* Nearby beaches (netlinking) */}
+          {nearby.length>0&&(
+            <>
+              <h3 style={{fontSize:15,fontWeight:700,margin:"20px 0 10px"}}>{LL.nearby}</h3>
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                {nearby.map(nb=>{
+                  const nst=ST[nb.status]||ST.clean
+                  const nbPhoto=getBeachPhoto(nb,imageMap)
+                  return(
+                    <button key={nb.id} onClick={()=>onBeachClick(nb)} style={{
+                      display:"flex",alignItems:"center",gap:10,padding:10,
+                      borderRadius:14,border:"1px solid var(--sg-border)",
+                      background:"var(--sg-card,#fff)",cursor:"pointer",
+                      textAlign:"left",fontFamily:"inherit",width:"100%",
+                      boxShadow:"0 1px 4px rgba(0,0,0,.04)",
+                    }}>
+                      <div style={{width:44,height:44,borderRadius:10,flexShrink:0,
+                        background:`url(${nbPhoto||satImg(nb.lat,nb.lng,88)}) center/cover`}}/>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontSize:13,fontWeight:700,color:"var(--sg-ink)",
+                          whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{nb.name}</div>
+                        <div style={{fontSize:11,color:"var(--sg-mid)",marginTop:1}}>
+                          {Math.round(nb.dist)} km
+                        </div>
+                      </div>
+                      <span style={{fontSize:10,fontWeight:700,padding:"3px 8px",borderRadius:100,
+                        background:nst.bg,color:nst.c}}>{nst.e} {lang==="en"?nst.le:nst.l}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </>
+          )}
+        </div>
       </div>
+    </>
+  )
+}
+
+function Tag({icon,label}){
+  return(
+    <span style={{display:"inline-flex",alignItems:"center",gap:4,
+      padding:"4px 10px",borderRadius:100,background:"var(--sg-bgD,#F7F5EF)",
+      fontSize:12,fontWeight:500,color:"var(--sg-mid,#686868)"}}>
+      {icon} {label}
+    </span>
+  )
+}
+
+function WeatherCard({icon,label,value}){
+  return(
+    <div style={{padding:"12px",borderRadius:14,background:"var(--sg-bgD,#F7F5EF)",
+      textAlign:"center"}}>
+      <div style={{fontSize:20,marginBottom:4}}>{icon}</div>
+      <div style={{fontSize:14,fontWeight:700}}>{value}</div>
+      <div style={{fontSize:11,color:"var(--sg-mid,#686868)"}}>{label}</div>
     </div>
   )
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// ░░ LISTE PLAGES
-// ═══════════════════════════════════════════════════════════════════════════════
-function ListeScreen({beaches,favs,onFavToggle,onOpenBeach,gps,onXP,localBeachImages={}}){
-  const lang=useLang()
-  const L=T[lang]||T.fr
-  const [filter,setFilter]=useState("all")
-  const [search,setSearch]=useState("")
-  const FILTERS=[{id:"all",l:L.filtres[0]},{id:"clean",l:L.filtres[1]},{id:"favs",l:L.filtres[2]},{id:"kids",l:L.filtres[3]},{id:"snorkel",l:L.filtres[4]},{id:"avoid",l:L.filtres[5]}]
-
-  const filtered=useMemo(()=>{
-    let list=beaches
-    if(filter==="clean") list=list.filter(b=>b.status==="clean")
-    else if(filter==="favs") list=list.filter(b=>favs.includes(b.id))
-    else if(filter==="kids") list=list.filter(b=>b.kids&&b.status==="clean")
-    else if(filter==="snorkel") list=list.filter(b=>b.snorkel&&b.status==="clean")
-    else if(filter==="avoid") list=list.filter(b=>b.status==="avoid")
-    if(search) list=list.filter(b=>b.name.toLowerCase().includes(search.toLowerCase())||b.commune.toLowerCase().includes(search.toLowerCase()))
-    if(gps) return[...list].sort((a,b)=>hav(gps.lat,gps.lng,a.lat,a.lng)-hav(gps.lat,gps.lng,b.lat,b.lng))
-    return list
-  },[filter,search,beaches,favs,gps])
-
-  const statusChipStyle=(status)=>{
-    if(status==="clean") return {background:"rgba(34,197,94,.1)",color:"#16A34A"}
-    if(status==="moderate") return {background:"rgba(232,168,0,.1)",color:C.amber}
-    return {background:"rgba(232,82,42,.1)",color:C.red}
-  }
-  const statusLabel=(status)=>status==="clean"?(L.statusClean||"Propre"):status==="moderate"?(L.statusModerate||"Modéré"):(L.statusAvoid||"À éviter")
-
+/* ═══════════════════════════════════════════════════════════════════════════
+   SEARCH BAR — floating pill (14 clics Clarity)
+   ═══════════════════════════════════════════════════════════════════════════ */
+function SearchBar({value,onChange,lang}){
+  const LL=T[lang]||T.fr
   return(
-    <div style={{display:"flex",flexDirection:"column",height:"100%",background:"var(--sg-bg)"}}>
-      {/* Search bar — pill shape, warm bg */}
-      <div style={{padding:"14px 18px 10px",flexShrink:0}}>
-        <div style={{position:"relative"}}>
-          <span style={{position:"absolute",left:16,top:"50%",transform:"translateY(-50%)",fontSize:15,opacity:.4,pointerEvents:"none"}}>🔍</span>
-          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={lang==="en"?"Search a beach or town...":"Rechercher une plage ou commune..."} style={{width:"100%",padding:"13px 16px 13px 42px",fontSize:14,fontWeight:500,border:"1px solid rgba(232,168,0,.15)",borderRadius:100,background:"rgba(255,255,255,.75)",color:"var(--sg-ink)",outline:"none",boxShadow:"0 2px 12px rgba(232,168,0,.06),inset 0 1px 0 rgba(255,255,255,.9)",backdropFilter:"blur(12px)",fontFamily:"'Bricolage Grotesque',sans-serif",transition:"border-color .2s,box-shadow .2s"}} onFocus={e=>{e.target.style.borderColor="rgba(232,168,0,.35)";e.target.style.boxShadow="0 2px 18px rgba(232,168,0,.12),inset 0 1px 0 rgba(255,255,255,.9)"}} onBlur={e=>{e.target.style.borderColor="rgba(232,168,0,.15)";e.target.style.boxShadow="0 2px 12px rgba(232,168,0,.06),inset 0 1px 0 rgba(255,255,255,.9)"}}/>
-        </div>
-      </div>
-
-      {/* Filter chips — gold gradient active */}
-      <div style={{padding:"0 18px 10px",display:"flex",gap:7,overflowX:"auto",flexShrink:0,WebkitOverflowScrolling:"touch"}}>
-        {FILTERS.map(f=><button key={f.id} onClick={()=>setFilter(f.id)} style={{padding:"8px 18px",borderRadius:100,cursor:"pointer",whiteSpace:"nowrap",fontSize:12.5,fontWeight:700,fontFamily:"'Bricolage Grotesque',sans-serif",letterSpacing:".02em",background:filter===f.id?`linear-gradient(135deg,${C.goldL},${C.gold})`:"rgba(0,0,0,.035)",color:filter===f.id?"white":"var(--sg-mid)",border:filter===f.id?"1px solid rgba(232,168,0,.3)":"1px solid rgba(0,0,0,.06)",boxShadow:filter===f.id?"0 3px 12px rgba(232,168,0,.25)":"none",transition:"all .25s cubic-bezier(.16,1,.3,1)",transform:filter===f.id?"scale(1.02)":"scale(1)"}}>{f.l}</button>)}
-      </div>
-
-      {/* Count header — Anton font */}
-      <div style={{padding:"2px 20px 8px",display:"flex",alignItems:"baseline",gap:8,flexShrink:0}}>
-        <span style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:28,color:"var(--sg-ink)",letterSpacing:"-.02em",lineHeight:1}}>{filtered.length}</span>
-        <span style={{fontSize:13,fontWeight:600,color:"var(--sg-mute)"}}>{lang==="en"?"beach":"plage"}{filtered.length>1?(lang==="en"?"es":"s"):""}{gps?(lang==="en"?" · sorted by distance":" · par distance"):""}</span>
-      </div>
-
-      {/* Beach rows — v11 .beach-row style */}
-      <div style={{flex:1,overflowY:"auto",padding:"0 14px 14px",WebkitOverflowScrolling:"touch"}}>
-        {filtered.length===0&&<div style={{textAlign:"center",padding:"56px 20px",color:"var(--sg-mute)",fontSize:14,fontWeight:500}}>
-          <div style={{fontSize:40,marginBottom:12,opacity:.5}}>🏖️</div>
-          {lang==="en"?"No beach found":"Aucune plage trouvée"}
-        </div>}
-        {filtered.map((b,i)=>{
-          const dist=gps?hav(gps.lat,gps.lng,b.lat,b.lng):null
-          const sc=statusChipStyle(b.status)
-          return(
-            <div key={b.id} onClick={()=>{onOpenBeach(b);onXP("open")}} className="tap" style={{display:"flex",alignItems:"center",gap:11,padding:"10px 14px",borderRadius:14,cursor:"pointer",marginBottom:6,background:"white",border:"1px solid rgba(0,0,0,.04)",boxShadow:"0 2px 10px rgba(0,0,0,.04)",transition:"all .18s",animation:`up .3s ease ${Math.min(i*.03,.6)}s both`,opacity:b.status==="avoid"?.72:1}}>
-              {/* Photo thumbnail */}
-              <div style={{width:52,height:52,borderRadius:12,overflow:"hidden",flexShrink:0,background:"var(--sg-rowHover)"}}>
-                <img referrerPolicy="no-referrer" src={(localBeachImages[b.id] ? getBaseUrl().replace(/\/$/, "") + "/beaches/" + localBeachImages[b.id] : null) || getBeachPhoto(b) || getBeachSatelliteImage(b,112)} alt={b?.name ? (lang==="en" ? `Beach ${b.name}, ${b.commune} — sargassum status` : `Plage ${b.name}, ${b.commune} — état sargasses`) : L.altPlage} style={{width:"100%",height:"100%",objectFit:"cover"}} onError={e=>{const img=e.target;if(img.dataset.fallback) { img.src=BEACH_IMG_PLACEHOLDER; img.onerror=null; return } img.dataset.fallback="1"; img.src=getBeachSatelliteImage(b,112)||getBeachPhoto(b)||BEACH_IMG_PLACEHOLDER; img.onerror=ev=>{ev.target.onerror=null;ev.target.src=BEACH_IMG_PLACEHOLDER}}}/>
-              </div>
-              {/* Name + commune + amenity pills */}
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:13,fontWeight:700,color:"var(--sg-ink)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",lineHeight:1.2,marginBottom:3}}>{b.name}</div>
-                <div style={{fontSize:11,color:"var(--sg-mute)",marginBottom:5}}>{b.commune}{dist?` · ${dist} km`:""}</div>
-                <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
-                  {b.kids&&<span style={{fontSize:9.5,fontWeight:700,padding:"2px 7px",borderRadius:100,background:"rgba(139,92,246,.08)",color:"#7C3AED",letterSpacing:".02em"}}>🧒 Kids</span>}
-                  {b.snorkel&&<span style={{fontSize:9.5,fontWeight:700,padding:"2px 7px",borderRadius:100,background:"rgba(0,158,142,.08)",color:C.teal,letterSpacing:".02em"}}>🤿 Snorkel</span>}
-                  {b.parking&&<span style={{fontSize:9.5,fontWeight:700,padding:"2px 7px",borderRadius:100,background:"rgba(0,0,0,.04)",color:"var(--sg-mid)",letterSpacing:".02em"}}>🅿️</span>}
-                </div>
-              </div>
-              {/* Status chip */}
-              <span style={{fontSize:10,fontWeight:700,padding:"4px 10px",borderRadius:100,whiteSpace:"nowrap",flexShrink:0,...sc}}>{statusLabel(b.status)}</span>
-              {/* Fav button */}
-              <button onClick={e=>{e.stopPropagation();onFavToggle(b.id);onXP("fav")}} style={{background:"none",border:"none",cursor:"pointer",fontSize:20,flexShrink:0,padding:"6px",minWidth:40,minHeight:40,display:"flex",alignItems:"center",justifyContent:"center"}}>{favs.includes(b.id)?"❤️":"🤍"}</button>
-            </div>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// ░░ CARTE — carte satellite Leaflet (sarg_carte_satellite_app.html)
-// ═══════════════════════════════════════════════════════════════════════════════
-function CarteScreen({beaches,favs,onOpenBeach,gps,onGPS,onXP,island}){
-  const lang=useLang()
-  const L=T[lang]||T.fr
-  const iframeSrc = (typeof window !== "undefined" && window.location.origin) ? `${window.location.origin}/sarg_carte_satellite_app.html?island=${island === "gp" ? "gp" : "mq"}` : `/sarg_carte_satellite_app.html?island=${island === "gp" ? "gp" : "mq"}`
-  const bottomNavHeight = "calc(72px + env(safe-area-inset-bottom, 0px))"
-  const islandName = island === "gp" ? "Guadeloupe" : "Martinique"
-  const h1Text = (L.h1 || "Sargasses {island} en temps réel").replace("{island}", islandName)
-  return(
-    <div style={{position:"absolute",top:0,left:0,right:0,bottom:bottomNavHeight,width:"100%",minHeight:320,overflow:"hidden",background:"var(--sg-bg)"}}>
-      <iframe
-        key={island}
-        title={L.carteTitle || "Carte satellite Sargasses — Martinique & Guadeloupe"}
-        src={iframeSrc}
-        style={{position:"absolute",inset:0,width:"100%",height:"100%",border:"none",display:"block"}}
+    <div style={{position:"relative"}}>
+      <span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",
+        fontSize:16,opacity:.5}}>\�\�</span>
+      <input type="text" value={value} onChange={e=>onChange(e.target.value)}
+        placeholder={LL.search}
+        style={{
+          width:"100%",padding:"12px 16px 12px 42px",borderRadius:100,
+          border:"1.5px solid var(--sg-border,rgba(0,0,0,.08))",
+          background:"var(--sg-card,#fff)",color:"var(--sg-ink)",
+          fontSize:14,fontFamily:"inherit",outline:"none",
+          boxShadow:"0 2px 12px rgba(0,0,0,.06)",
+          transition:"border-color .2s",
+        }}
+        onFocus={e=>e.target.style.borderColor=C.gold}
+        onBlur={e=>e.target.style.borderColor="var(--sg-border,rgba(0,0,0,.08))"}
       />
-      <h1 style={{position:"absolute",width:"1px",height:"1px",padding:0,margin:"-1px",overflow:"hidden",clip:"rect(0,0,0,0)",whiteSpace:"nowrap",border:0}}>{h1Text}</h1>
     </div>
   )
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// ░░ EVOLUTION — changements récents de statut des plages
-// ═══════════════════════════════════════════════════════════════════════════════
-const STATUS_LABELS={clean:"Propre",moderate:"Modéré",avoid:"À éviter"}
-const STATUS_EMOJI={clean:"🟢",moderate:"🟡",avoid:"🔴"}
-const BEACH_NAMES_MAP={
-  'grande-anse':'Grande Anse d\'Arlet','anse-mitan':'Anse Mitan','anse-noire':'Anse Noire',
-  'tartane':'Tartane','anse-madame':'Anse Madame','diamant':'Le Diamant',
-  'pt-marin':'Pointe du Marin','sainte-anne':'Sainte-Anne','les-salines':'Les Salines',
-  'vauclin':'Le Vauclin','gp-grande-anse':'Grande Anse','gp-malendure':'Malendure',
-  'gp-sainte-anne':'Sainte-Anne','gp-pt-chateaux':'Pointe des Châteaux','gp-gosier':'Le Gosier',
-  'gp-caravelle':'La Caravelle','gp-bas-du-fort':'Bas du Fort','gp-deshaies':'Deshaies',
-  'gp-moule':'Le Moule','gp-vieux-fort':'Vieux-Fort',
-}
-
-function EvolutionSection({historyData,island,onOpenBeach,beaches}){
-  if(!historyData) return null
-  const changes=(historyData.changes||[]).filter(c=>{
-    if(island==="gp") return c.beach.startsWith("gp-")
-    return !c.beach.startsWith("gp-")
-  }).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,10)
-
-  // Tendance : comparer les 2 derniers jours d'historique
-  const hist=historyData.history||[]
-  const islandHist=hist.map(h=>({...h,levels:(h.levels||[]).filter(l=>island==="gp"?l.id.startsWith("gp-"):!l.id.startsWith("gp-"))}))
-  const last=islandHist[islandHist.length-1]
-  const prev=islandHist.length>=2?islandHist[islandHist.length-2]:null
-
-  let trendText=""
-  if(last&&prev){
-    const lastAvg=last.levels.reduce((s,l)=>s+l.afai,0)/last.levels.length
-    const prevAvg=prev.levels.reduce((s,l)=>s+l.afai,0)/prev.levels.length
-    const diff=lastAvg-prevAvg
-    if(diff>0.05) trendText="📈 Tendance en hausse — plus de sargasses qu'hier"
-    else if(diff<-0.05) trendText="📉 Tendance à la baisse — amélioration en cours"
-    else trendText="➡️ Situation stable depuis hier"
-  }
-
+/* ═══════════════════════════════════════════════════════════════════════════
+   BEACH LIST VIEW — alternative to map (tab Plages)
+   ═══════════════════════════════════════════════════════════════════════════ */
+function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
+  const LL=T[lang]||T.fr
+  const nClean=beaches.filter(b=>b.status==="clean").length
   return(
-    <div style={{padding:"4px 16px 16px"}}>
-      <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:18,textTransform:"uppercase",letterSpacing:"-.02em",color:"var(--sg-ink)",marginBottom:10}}>Évolution récente</div>
-      {trendText&&<div style={{fontSize:14,fontWeight:600,color:"var(--sg-mid)",marginBottom:10,padding:"8px 12px",background:"var(--sg-card)",borderRadius:10,border:"1px solid var(--sg-border)"}}>{trendText}</div>}
-      {changes.length===0&&<div style={{fontSize:14,color:"var(--sg-mute)",padding:"8px 0"}}>Aucun changement de statut récent.</div>}
-      {changes.length>0&&<div style={{display:"flex",flexDirection:"column",gap:6}}>
-        {changes.map((c,i)=>{
-          const name=BEACH_NAMES_MAP[c.beach]||c.beach
-          const beachObj=beaches.find(b=>b.id===c.beach)
-          const isGood=c.to==="clean"||(c.to==="moderate"&&c.from==="avoid")
+    <div style={{height:"100%",overflowY:"auto",paddingBottom:80,
+      background:"var(--sg-bg,#FDFCF7)"}}>
+      <div style={{padding:"8px 16px 0",fontSize:13,color:"var(--sg-mid,#686868)",fontWeight:500}}>
+        {LL.nClean.replace("{n}",nClean)} / {beaches.length}
+      </div>
+      <div style={{padding:"8px 16px",display:"flex",flexDirection:"column",gap:10}}>
+        {beaches.map(b=>{
+          const photo=getBeachPhoto(b,imageMap)
           return(
-            <div key={i} onClick={()=>beachObj&&onOpenBeach(beachObj)} className="tap" style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:"var(--sg-card)",border:`1px solid ${isGood?"rgba(39,112,58,.2)":"rgba(176,27,27,.15)"}`,borderRadius:12,cursor:beachObj?"pointer":"default",animation:`up .3s ease ${i*.04}s both`}}>
-              <div style={{fontSize:18,flexShrink:0}}>{isGood?"✅":"⚠️"}</div>
+            <button key={b.id} onClick={()=>onBeachClick(b)} style={{
+              display:"flex",alignItems:"center",gap:12,padding:12,
+              borderRadius:16,border:"1px solid var(--sg-border)",
+              background:"var(--sg-card,#fff)",cursor:"pointer",
+              textAlign:"left",fontFamily:"inherit",width:"100%",
+              boxShadow:"0 1px 4px rgba(0,0,0,.04)",
+              transition:"background .15s",
+            }}>
+              {/* Photo thumbnail */}
+              <div style={{width:56,height:56,borderRadius:12,
+                background:`url(${photo||satImg(b.lat,b.lng,112)}) center/cover`,flexShrink:0}}/>
               <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:14,fontWeight:700,color:"var(--sg-ink)",lineHeight:1.2}}>{name}</div>
-                <div style={{fontSize:14,color:"var(--sg-mid)",marginTop:2,display:"flex",alignItems:"center",gap:4}}>
-                  <span>{STATUS_EMOJI[c.from]} {STATUS_LABELS[c.from]}</span>
-                  <span>→</span>
-                  <span style={{fontWeight:700}}>{STATUS_EMOJI[c.to]} {STATUS_LABELS[c.to]}</span>
+                <div style={{fontSize:14,fontWeight:700,whiteSpace:"nowrap",
+                  overflow:"hidden",textOverflow:"ellipsis",color:"var(--sg-ink)"}}>
+                  {favorites.includes(b.id)?"\❤\️ ":""}{b.name}
+                </div>
+                <div style={{fontSize:12,color:"var(--sg-mid,#686868)",marginTop:2}}>
+                  {b.commune} \· {b.drive} {LL.drive}
                 </div>
               </div>
-              <div style={{fontSize:14,color:"var(--sg-mute)",flexShrink:0}}>{new Date(c.date).toLocaleDateString("fr-FR",{day:"numeric",month:"short"})}</div>
-            </div>
+              <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}}>
+                <StatusBadge status={b.status} lang={lang}/>
+                <AfaiBadge afai={b.afai}/>
+              </div>
+            </button>
           )
         })}
-      </div>}
+      </div>
     </div>
   )
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// ░░ ACCUEIL — briefing quotidien (v11 premium redesign)
-// ═══════════════════════════════════════════════════════════════════════════════
-function AccueilScreen({beaches,favs,onFavToggle,onOpenBeach,onAskChat,gps,onGPS,premium,onGoToPremium,onXP,island,sargassumData,historyData}){
-  const lang=useLang()
-  const L=T[lang]||T.fr
-  const clean=beaches.filter(b=>b.status==="clean")
-  const avoid=beaches.filter(b=>b.status==="avoid")
-  const favAlerts=beaches.filter(b=>favs.includes(b.id)&&b.status==="avoid")
-  const favClean=beaches.filter(b=>favs.includes(b.id)&&b.status==="clean")
-  const answer=clean.length>4?"OUI":clean.length>2?"OUI*":"NON"
-  const answerGrad=answer==="NON"
-    ?`linear-gradient(138deg,#FF8066 0%,${C.red} 48%,#B03018 100%)`
-    :answer==="OUI*"
-    ?`linear-gradient(138deg,#FFD860 0%,${C.amber} 48%,#8B6914 100%)`
-    :`linear-gradient(138deg,#6EE7A0 0%,${C.green} 48%,#16A34A 100%)`
-  const best=useMemo(()=>{
-    if(favClean.length>0) return favClean[0]
-    if(gps) return[...clean].sort((a,b)=>hav(gps.lat,gps.lng,a.lat,a.lng)-hav(gps.lat,gps.lng,b.lat,b.lng))[0]
-    return clean[0]
-  },[favClean,clean,gps])
-  const {w}=useWeather(best?.lat,best?.lng,best?.island==="gp"?"America/Guadeloupe":"America/Martinique")
-  const bestPhoto=best?(getBeachPhoto(best)||getBeachSatelliteImage(best,{width:400,height:260})):null
-  const islandName=island==="gp"?"Guadeloupe":"Martinique"
-  const satDate=sargassumData?.updatedAt?new Date(sargassumData.updatedAt).toLocaleDateString("fr-FR",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"--"
+/* ═══════════════════════════════════════════════════════════════════════════
+   ONBOARDING — EXACT port of onboarding-final.html as HORIZONTAL CAROUSEL
+   translateX animation, touch swipe, each slide has its own CTA INSIDE
+   ═══════════════════════════════════════════════════════════════════════════ */
+function Onboarding({onDone}){
+  const[step,setStep]=useState(0)
+  const slidesRef=useRef(null)
+  const touchStartX=useRef(0)
 
-  const USE_CASES=[
-    {e:"🚗",t:"Je pars maintenant",    s:best?`${best.name} · ${best.drive}min`:"Aucune propre",   fn:()=>best&&onOpenBeach(best),active:!!best,grad:"linear-gradient(135deg,#D6F5EF,#A8EDE4)"},
-    {e:"🧒",t:"Avec des enfants",       s:`${clean.filter(b=>b.kids).length} plages adaptées`,      fn:()=>onAskChat("Quelle plage propre adaptée aux enfants ?"),active:true,grad:"linear-gradient(135deg,#FFE4DC,#FFCAB8)"},
-    {e:"🤿",t:"Snorkeling",             s:`${clean.filter(b=>b.snorkel).length} spots propres`,     fn:()=>onAskChat("Meilleur spot snorkeling propre maintenant ?"),active:true,grad:"linear-gradient(135deg,#D0EEF8,#A8D8F0)"},
-    {e:"📅",t:"Planifier le week-end",  s:"Prévisions J+1 → J+7",      fn:()=>onAskChat("Quelles plages propres ce week-end ?"),active:true,grad:"linear-gradient(135deg,#E8E0F8,#D0C4F0)"},
-    {e:"🗺️",t:"Road trip du jour",      s:`${clean.length} plages propres`, fn:()=>onAskChat("Donne-moi un road trip de 3 plages propres aujourd'hui"),active:true,grad:"linear-gradient(135deg,#FDECB0,#F0D878)"},
-    {e:"🧳",t:"Je suis touriste",       s:"Meilleures recommandations", fn:()=>onAskChat("Je suis touriste pour 3 jours, quelles plages dois-je absolument voir ?"),active:true,grad:"linear-gradient(135deg,#FFE4DC,#FFD0C0)"},
-  ]
+  const goTo=useCallback((n)=>{
+    const clamped=Math.max(0,Math.min(2,n))
+    setStep(clamped)
+  },[])
+
+  // Apply translateX to slides container
+  useEffect(()=>{
+    if(slidesRef.current){
+      slidesRef.current.style.transform=`translateX(-${step*33.333}%)`
+    }
+  },[step])
+
+  const closeOnboarding=useCallback(()=>{
+    s("sg_onb",1)
+    onDone()
+  },[onDone])
+
+  const openStripe=useCallback(()=>{
+    window.open(STRIPE_URL,"_blank")
+  },[])
+
+  // Touch swipe handlers
+  const onTouchStart=useCallback(e=>{
+    touchStartX.current=e.touches[0].clientX
+  },[])
+
+  const onTouchEnd=useCallback(e=>{
+    const dx=e.changedTouches[0].clientX-touchStartX.current
+    if(Math.abs(dx)>50){
+      if(dx<0&&step<2)goTo(step+1)
+      if(dx>0&&step>0)goTo(step-1)
+    }
+  },[step,goTo])
 
   return(
-    <div style={{overflowY:"auto",height:"100%",WebkitOverflowScrolling:"touch",background:"var(--sg-bg)"}}>
+    <div className="onb-overlay">
+      <div className="onb-carousel" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+        <div className="onb-slides" ref={slidesRef}>
 
-      {/* ═══ HERO ═══ */}
-      <div style={{padding:"0 0 28px",position:"relative",overflow:"hidden"}}>
-        {/* Ambient blobs */}
-        <div style={{position:"absolute",top:-80,right:-60,width:260,height:260,borderRadius:"50%",background:`${C.tealL}0C`,animation:"driftB 15s ease-in-out infinite",pointerEvents:"none",filter:"blur(50px)"}}/>
-        <div style={{position:"absolute",bottom:-40,left:-40,width:200,height:200,borderRadius:"50%",background:`${C.goldL}0A`,animation:"driftB 20s ease-in-out 4s infinite",pointerEvents:"none",filter:"blur(50px)"}}/>
-
-        <h1 style={{position:"absolute",width:"1px",height:"1px",padding:0,margin:"-1px",overflow:"hidden",clip:"rect(0,0,0,0)",whiteSpace:"nowrap",border:0}}>{(L.h1||"Sargasses {island} en temps réel").replace("{island}",islandName)}</h1>
-
-        {/* Live strip */}
-        <div style={{margin:"16px 20px 0",background:"rgba(255,255,255,.75)",border:"1px solid rgba(232,168,0,.26)",borderRadius:100,padding:"8px 10px 8px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"relative",zIndex:10,backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",boxShadow:"0 2px 18px rgba(232,168,0,.09),inset 0 1px 0 rgba(255,255,255,.95)",animation:"up .4s ease both"}}>
-          <div style={{display:"flex",alignItems:"center",gap:8}}>
-            <div style={{width:7,height:7,borderRadius:"50%",background:C.green,flexShrink:0,boxShadow:"0 0 0 2px rgba(34,197,94,.2)",animation:"beacon 2s ease-in-out infinite"}}/>
-            <span style={{fontSize:11.5,fontWeight:600,color:C.ink}}><strong style={{color:"#B87A00",fontWeight:700}}>{clean.length} plages propres</strong> en temps réel</span>
-          </div>
-          <span style={{background:`linear-gradient(135deg,${C.tealL},${C.teal})`,color:"white",fontSize:9,fontWeight:800,letterSpacing:".14em",padding:"5px 13px",borderRadius:100,boxShadow:"0 3px 12px rgba(0,158,142,.32)"}}>LIVE</span>
-        </div>
-
-        {/* Satellite badge */}
-        <div style={{margin:"10px 20px 0",background:"rgba(13,13,13,.06)",border:"1px solid rgba(13,13,13,.08)",borderRadius:100,padding:"6px 14px",display:"flex",alignItems:"center",gap:7,position:"relative",overflow:"hidden",animation:"up .4s ease .04s both"}}>
-          <span style={{fontSize:12}}>🛰️</span>
-          <span style={{fontSize:10,fontWeight:600,color:C.mid}}>Copernicus · <em style={{fontStyle:"normal",color:C.teal,fontWeight:700}}>{islandName}</em></span>
-          <span style={{marginLeft:"auto",fontSize:9,fontWeight:700,background:"rgba(0,158,142,.1)",color:C.teal,padding:"2px 7px",borderRadius:100,letterSpacing:".06em"}}>{satDate}</span>
-        </div>
-
-        {/* Big answer */}
-        <div style={{padding:"28px 22px 0",position:"relative",zIndex:1,animation:"up .4s ease .06s both"}}>
-          <div style={{fontSize:13,fontWeight:600,color:"var(--sg-mute)",marginBottom:8}}>La plage aujourd'hui ?</div>
-          <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:88,lineHeight:.85,letterSpacing:"-.03em",textTransform:"uppercase",background:answerGrad,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",marginBottom:14,animation:"countUp .6s cubic-bezier(.16,1,.3,1) .1s both"}}>{answer}</div>
-
-          {/* Count pills */}
-          <div style={{display:"flex",gap:8,marginBottom:0,animation:"up .4s ease .1s both"}}>
-            <div style={{display:"inline-flex",alignItems:"center",gap:6,padding:"6px 14px",borderRadius:100,background:C.greenBg,border:"1px solid rgba(34,197,94,.18)"}}>
-              <div style={{width:6,height:6,borderRadius:"50%",background:C.green}}/>
-              <span style={{fontSize:14,fontWeight:700,color:C.greenL}}>{clean.length} propre{clean.length>1?"s":""}</span>
-            </div>
-            {avoid.length>0&&<div style={{display:"inline-flex",alignItems:"center",gap:6,padding:"6px 14px",borderRadius:100,background:C.redBg,border:"1px solid rgba(232,82,42,.18)"}}>
-              <div style={{width:6,height:6,borderRadius:"50%",background:C.red}}/>
-              <span style={{fontSize:14,fontWeight:700,color:C.red}}>{avoid.length} à éviter</span>
-            </div>}
-          </div>
-        </div>
-
-        {/* Fav alerts */}
-        {favAlerts.length>0&&(
-          <div style={{margin:"16px 20px 0",padding:"12px 14px",background:"rgba(232,82,42,.06)",border:"1.5px solid rgba(232,82,42,.18)",borderRadius:16,animation:"up .4s ease .12s both",position:"relative",zIndex:1}}>
-            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
-              <div style={{width:28,height:28,borderRadius:9,background:"linear-gradient(135deg,#FFE4DC,#FFCAB8)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>☣️</div>
-              <div style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontWeight:800,fontSize:12,color:C.red,letterSpacing:".06em",textTransform:"uppercase"}}>Alerte H2S — {favAlerts.length} favori{favAlerts.length>1?"s":""}</div>
-            </div>
-            <div style={{fontSize:13,color:C.red,lineHeight:1.6,opacity:.75,marginBottom:8}}>{favAlerts.map(b=>b.name).join(", ")} — évitez si asthmatique, enfant ou femme enceinte.</div>
-            {favAlerts.map(b=><div key={b.id} onClick={()=>onOpenBeach(b)} className="tap" style={{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",background:"rgba(232,82,42,.05)",borderRadius:10,cursor:"pointer",marginBottom:3,minHeight:44}}><SDot s="avoid" sz={7}/><span style={{fontSize:14,fontWeight:700,color:"var(--sg-ink)",flex:1}}>{b.name}</span><span style={{fontSize:13,color:"var(--sg-mute)"}}>Voir →</span></div>)}
-          </div>
-        )}
-      </div>
-
-      {/* ═══ BEST BEACH CARD ═══ */}
-      {best&&(
-        <div style={{padding:"0 16px 24px",animation:"up .4s ease .08s both"}}>
-          <div onClick={()=>{onOpenBeach(best);onXP("open")}} className="tap hover" style={{borderRadius:22,overflow:"hidden",cursor:"pointer",position:"relative",boxShadow:"0 8px 32px rgba(0,0,0,.1),0 2px 10px rgba(0,0,0,.06)"}}>
-            {/* Photo background */}
-            <div style={{position:"relative",height:180,background:`${C.teal}22`}}>
-              {bestPhoto&&<img src={bestPhoto} alt={best.name} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} onError={e=>{e.target.style.display="none"}}/>}
-              <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(0,0,0,.05) 0%,rgba(0,0,0,.55) 100%)"}}/>
-              <div style={{position:"absolute",top:14,left:16,fontSize:11,fontWeight:700,color:"rgba(255,255,255,.8)",letterSpacing:".06em",textTransform:"uppercase"}}>{gps?"Meilleure plage près de toi":favClean.length>0?"Ta plage favorite":"Meilleure plage du jour"}</div>
-              <button onClick={e=>{e.stopPropagation();onFavToggle(best.id);onXP("fav")}} style={{position:"absolute",top:10,right:12,background:"rgba(0,0,0,.25)",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",border:"none",borderRadius:"50%",width:40,height:40,cursor:"pointer",fontSize:20,display:"flex",alignItems:"center",justifyContent:"center",minWidth:44,minHeight:44}}>{favs.includes(best.id)?"❤️":"🤍"}</button>
-              <div style={{position:"absolute",bottom:14,left:16,right:16}}>
-                <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:28,textTransform:"uppercase",color:"white",lineHeight:.95,letterSpacing:"-.01em",textShadow:"0 2px 8px rgba(0,0,0,.3)"}}>{best.name}</div>
-                <div style={{fontSize:13,color:"rgba(255,255,255,.7)",marginTop:4,fontWeight:500}}>{best.commune}{gps?` · ${hav(gps.lat,gps.lng,best.lat,best.lng)} km`:""}</div>
+          {/* ═══════════════════════════════════════════
+              SLIDE 1 — "Sache avant de partir"
+              ═══════════════════════════════════════════ */}
+          <div className="onb-slide">
+            {/* Live strip */}
+            <div style={{margin:"28px 20px 0",
+              background:"rgba(255,255,255,.75)",border:"1px solid rgba(232,168,0,.26)",
+              borderRadius:100,padding:"8px 10px 8px 14px",
+              display:"flex",alignItems:"center",justifyContent:"space-between",
+              position:"relative",zIndex:10,backdropFilter:"blur(16px)",
+              boxShadow:"0 2px 18px rgba(232,168,0,.09),inset 0 1px 0 rgba(255,255,255,.95)"}}>
+              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                <div style={{width:7,height:7,borderRadius:"50%",background:"#22C55E",flexShrink:0,animation:"dot-pulse 2s ease-in-out infinite"}}/>
+                <span style={{fontSize:11.5,fontWeight:600,color:C.ink}}>
+                  <em style={{fontStyle:"normal",color:C.amber,fontWeight:700}}>47 plages</em> surveill\ées en temps r\éel
+                </span>
               </div>
+              <div style={{background:"linear-gradient(135deg,"+C.tealL+","+C.teal+")",color:"white",
+                fontSize:9,fontWeight:800,letterSpacing:".14em",padding:"5px 13px",borderRadius:100,
+                boxShadow:"0 3px 12px rgba(0,158,142,.32)"}}>LIVE</div>
             </div>
 
-            {/* Card body */}
-            <div style={{background:"var(--sg-card)",padding:"14px 16px 16px"}}>
-              <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginBottom:14}}>
-                <span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"5px 13px",borderRadius:100,fontSize:12,fontWeight:700,color:best.status==="clean"?C.greenL:best.status==="moderate"?C.amber:C.red,background:best.status==="clean"?C.greenBg:best.status==="moderate"?C.amberBg:C.redBg,border:`1px solid ${best.status==="clean"?"rgba(34,197,94,.18)":best.status==="moderate"?"rgba(184,122,0,.18)":"rgba(232,82,42,.18)"}`}}>{ST[best.status]?.e} {ST[best.status]?.l}</span>
-                {w&&<>
-                  <div style={{display:"flex",alignItems:"center",gap:5,padding:"4px 10px 4px 4px",borderRadius:100,background:"rgba(0,158,142,.06)",border:"1px solid rgba(0,158,142,.1)"}}>
-                    <div style={{width:24,height:24,borderRadius:8,background:"linear-gradient(135deg,#D6F5EF,#A8EDE4)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,flexShrink:0}}>💨</div>
-                    <span style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)"}}>{w.wind}km/h</span>
+            {/* Hero section */}
+            <div style={{position:"relative",height:310,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",zIndex:1}}>
+              <div style={{position:"absolute",bottom:0,left:0,right:0,height:60,
+                background:"linear-gradient(to bottom,transparent,#FDFCF7)",pointerEvents:"none",zIndex:8}}/>
+
+              {/* Rotating disc */}
+              <div style={{width:216,height:216,borderRadius:"50%",
+                background:"conic-gradient(from -10deg,#FFE898 0deg 25deg,#E8A800 25deg 65deg,#FFD040 65deg 110deg,#B87A00 110deg 155deg,#FFE07A 155deg 195deg,#E09000 195deg 240deg,#FFC72C 240deg 285deg,#B07000 285deg 325deg,#FFE898 325deg 360deg)",
+                display:"flex",alignItems:"center",justifyContent:"center",
+                boxShadow:"0 0 0 3px rgba(255,255,255,.85),0 0 0 5px rgba(232,168,0,.18),0 0 0 7px rgba(255,255,255,.12),0 8px 48px rgba(232,168,0,.28),0 20px 50px rgba(0,0,0,.08)",
+                animation:"spin 22s linear infinite",zIndex:6,position:"relative"}}>
+                {/* Inner disc */}
+                <div style={{width:86,height:86,borderRadius:"50%",
+                  background:"linear-gradient(150deg,#FFFDF5 40%,#F0EDD5 100%)",
+                  display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,
+                  animation:"spin 22s linear infinite reverse",
+                  boxShadow:"inset 0 2px 6px rgba(255,255,255,.95),inset 0 -3px 8px rgba(184,122,0,.14),0 3px 18px rgba(0,0,0,.13)",
+                  position:"relative",zIndex:2}}>
+                  <div style={{fontFamily:"'Anton',sans-serif",fontSize:11,color:C.amber,letterSpacing:".07em",textAlign:"center",lineHeight:1.05}}>SAR<br/>GASSES</div>
+                  <div style={{fontSize:8,fontWeight:800,color:C.teal,letterSpacing:".15em",textTransform:"uppercase"}}>.MQ</div>
+                </div>
+              </div>
+
+              {/* Danger card (floating) */}
+              <div style={{position:"absolute",top:42,left:14,
+                background:"rgba(255,255,255,.96)",border:"1px solid rgba(232,82,42,.2)",
+                boxShadow:"0 6px 24px rgba(232,82,42,.1),inset 0 1px 0 white",
+                borderRadius:16,padding:"10px 14px",
+                display:"flex",alignItems:"center",gap:9,
+                animation:"float-b 4s ease-in-out .8s infinite",zIndex:12}}>
+                <div style={{width:32,height:32,borderRadius:10,background:"linear-gradient(135deg,#FFE4DC,#FFCAB8)",
+                  display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0}}>\�\�</div>
+                <div style={{display:"flex",flexDirection:"column",gap:2}}>
+                  <div style={{fontSize:9.5,fontWeight:700,color:C.red,letterSpacing:".08em",textTransform:"uppercase"}}>\Éviter</div>
+                  <div style={{fontSize:12,fontWeight:800,color:C.ink,lineHeight:1.2}}>Sainte-Anne</div>
+                  <div style={{fontSize:10,fontWeight:500,color:C.mid}}>Sargasses ce matin</div>
+                </div>
+              </div>
+
+              {/* Good card (floating) */}
+              <div style={{position:"absolute",bottom:36,right:14,
+                background:"rgba(255,255,255,.97)",border:"1px solid rgba(0,158,142,.13)",
+                boxShadow:"0 8px 32px rgba(0,0,0,.08),inset 0 1px 0 white",
+                borderRadius:18,padding:"11px 15px",
+                display:"flex",alignItems:"center",gap:10,
+                animation:"float-a 3.6s ease-in-out infinite",zIndex:12,minWidth:172}}>
+                <div style={{width:34,height:34,borderRadius:11,background:"linear-gradient(135deg,#D6F5EF,#A8EDE4)",
+                  display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,flexShrink:0}}>\�\�\️</div>
+                <div style={{display:"flex",flexDirection:"column",gap:3}}>
+                  <div style={{fontSize:11.5,fontWeight:700,color:C.ink,whiteSpace:"nowrap"}}>Grande Anse d'Arlet</div>
+                  <div style={{display:"flex",alignItems:"center",gap:4,fontSize:10,fontWeight:700,color:C.teal}}>
+                    <span style={{width:12,height:12,borderRadius:"50%",background:C.teal,
+                      display:"inline-flex",alignItems:"center",justifyContent:"center",
+                      fontSize:7,color:"white",flexShrink:0}}>\✓</span>
+                    Propre aujourd'hui
                   </div>
-                  <div style={{display:"flex",alignItems:"center",gap:5,padding:"4px 10px 4px 4px",borderRadius:100,background:"rgba(232,168,0,.06)",border:"1px solid rgba(232,168,0,.1)"}}>
-                    <div style={{width:24,height:24,borderRadius:8,background:"linear-gradient(135deg,#FDECB0,#F0D878)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,flexShrink:0}}>☀️</div>
-                    <span style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)"}}>UV {w.uv}</span>
-                  </div>
-                  <div style={{display:"flex",alignItems:"center",gap:5,padding:"4px 10px 4px 4px",borderRadius:100,background:"rgba(232,82,42,.06)",border:"1px solid rgba(232,82,42,.1)"}}>
-                    <div style={{width:24,height:24,borderRadius:8,background:"linear-gradient(135deg,#FFE4DC,#FFCAB8)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,flexShrink:0}}>🌡️</div>
-                    <span style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)"}}>{w.temp}°C</span>
-                  </div>
-                </>}
+                </div>
               </div>
-              <div style={{display:"flex",gap:8}}>
-                <GBtn sm style={{flex:1}}>Y aller →</GBtn>
-                {gps&&<a href={`https://maps.google.com/?q=${best.lat},${best.lng}&travelmode=driving`} target="_blank" rel="noreferrer" style={{flex:1,padding:"10px",background:"var(--sg-rowHover)",borderRadius:14,fontSize:14,fontWeight:700,color:"var(--sg-mid)",textDecoration:"none",textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center",gap:4,minHeight:44}}>🗺️ Maps</a>}
+            </div>
+
+            {/* Copy section */}
+            <div style={{padding:"8px 28px 0",flex:1,display:"flex",flexDirection:"column"}}>
+              <h1 style={{fontFamily:"'Anton',sans-serif",fontSize:68,lineHeight:.88,letterSpacing:"-.025em",
+                textTransform:"uppercase",color:C.ink,marginBottom:10}}>
+                <span style={{color:C.teal}}>Sache</span><br/>
+                <span style={{display:"inline-block",background:"linear-gradient(138deg,#FFD860 0%,#E8A800 48%,#B07000 100%)",
+                  WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",position:"relative"}}>avant</span><br/>
+                <span>de partir.</span>
+              </h1>
+              <p style={{fontSize:14,color:C.mid,fontWeight:400,lineHeight:1.6,marginBottom:14,maxWidth:270}}>
+                Sargasses ou pas \— <strong style={{color:C.ink,fontWeight:700}}>v\érifie ta plage en 5 secondes</strong> avant de charger la voiture.
+              </p>
+
+              {/* Social proof */}
+              <div style={{display:"flex",alignItems:"center",marginBottom:14,padding:"9px 13px",
+                background:"rgba(255,199,44,.07)",border:"1px solid rgba(232,168,0,.13)",borderRadius:14}}>
+                <div style={{fontSize:11,letterSpacing:-1,flexShrink:0,marginRight:9}}>\⭐\⭐\⭐\⭐\⭐</div>
+                <div style={{display:"flex",flexShrink:0}}>
+                  {[["#FF6B6B","#FF8E53","M"],["#4ECDC4","#44A08D","J"],["#A18CD1","#FBC2EB","S"],["#FDDB92","#D1913C","R"]].map(([a,b,l],i)=>(
+                    <div key={i} style={{width:25,height:25,borderRadius:"50%",border:"2px solid #FDFCF7",marginRight:-7,
+                      background:`linear-gradient(135deg,${a},${b})`,display:"flex",alignItems:"center",
+                      justifyContent:"center",fontSize:10,fontWeight:700,color:"#fff"}}>{l}</div>
+                  ))}
+                </div>
+                <div style={{marginLeft:15,fontSize:11.5,fontWeight:500,color:C.mid,lineHeight:1.4}}>
+                  <strong style={{color:C.ink,fontWeight:700}}>+2 400 Martiniquais</strong> ont d\éj\à v\érifi\é avant toi ce matin
+                </div>
+              </div>
+
+              {/* CTA — INSIDE slide 1 */}
+              <div style={{marginTop:"auto",paddingBottom:50,display:"flex",flexDirection:"column",gap:8}}>
+                <button onClick={()=>goTo(1)} style={{
+                  background:"linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%)",
+                  color:C.ink,border:"none",borderRadius:22,padding:"19px 20px 19px 28px",
+                  fontFamily:"'Anton',sans-serif",fontSize:21,letterSpacing:".06em",textTransform:"uppercase",
+                  cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between",
+                  boxShadow:"inset 0 1px 0 rgba(255,255,255,.58),inset 0 -2px 0 rgba(0,0,0,.11),0 8px 28px rgba(232,168,0,.48),0 2px 8px rgba(232,168,0,.22)",
+                  position:"relative",overflow:"hidden"}}>
+                  <span style={{position:"relative",zIndex:1}}>Voir les plages propres</span>
+                  <span style={{width:44,height:44,background:"rgba(0,0,0,.11)",borderRadius:"50%",
+                    display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,
+                    flexShrink:0,position:"relative",zIndex:1}}>\→</span>
+                </button>
+                <div style={{textAlign:"center",fontSize:11,color:C.mid,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+                  Gratuit<span style={{width:3,height:3,borderRadius:"50%",background:"rgba(104,104,104,.35)"}}/>Sans inscription<span style={{width:3,height:3,borderRadius:"50%",background:"rgba(104,104,104,.35)"}}/>Mis \à jour chaque jour
+                </div>
+                <button onClick={closeOnboarding} style={{textAlign:"center",fontSize:12.5,fontWeight:500,color:C.mid,
+                  background:"none",border:"none",cursor:"pointer",padding:4,fontFamily:"inherit"}}>
+                  D\éj\à un compte ? <span style={{color:C.teal,fontWeight:700,textDecoration:"underline",textUnderlineOffset:3}}>Se connecter</span>
+                </button>
               </div>
             </div>
           </div>
-        </div>
-      )}
 
-      {/* ═══ USE CASES GRID ═══ */}
-      <div style={{padding:"4px 18px 10px"}}>
-        <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:18,textTransform:"uppercase",letterSpacing:"-.02em",color:"var(--sg-ink)",marginBottom:14}}>Qu'est-ce que tu veux faire ?</div>
-        <div className="uc-grid" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-          {USE_CASES.map((uc,i)=>(
-            <div key={uc.e} onClick={uc.fn} className="tap hover" style={{background:"var(--sg-card)",border:"1px solid var(--sg-border)",borderRadius:18,padding:"16px 16px 14px",cursor:"pointer",boxShadow:"0 2px 10px rgba(0,0,0,.04)",transition:"all .2s",animation:`up .4s ease ${.14+i*.04}s both`,opacity:uc.active?1:.5}}>
-              <div style={{width:42,height:42,borderRadius:13,background:uc.grad,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,marginBottom:10,boxShadow:"0 2px 8px rgba(0,0,0,.06)"}}>{uc.e}</div>
-              <div style={{fontSize:15,fontWeight:700,color:"var(--sg-ink)",marginBottom:4,lineHeight:1.3}}>{uc.t}</div>
-              <div style={{fontSize:12,color:"var(--sg-mute)",lineHeight:1.4}}>{uc.s}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ═══ CLEAN BEACHES SCROLL ═══ */}
-      <div style={{padding:"12px 0 12px",overflow:"hidden"}}>
-        <div style={{padding:"0 18px",fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:18,textTransform:"uppercase",letterSpacing:"-.02em",color:"var(--sg-ink)",marginBottom:12}}>Propres aujourd'hui</div>
-        <div className="clean-scroll" style={{display:"flex",gap:10,overflowX:"auto",paddingLeft:16,paddingRight:16,paddingBottom:6,WebkitOverflowScrolling:"touch"}}>
-          {clean.map((b,i)=>(
-            <div key={b.id} onClick={()=>{onOpenBeach(b);onXP("open")}} className="tap" style={{flexShrink:0,width:156,background:"var(--sg-card)",borderRadius:16,padding:"13px 14px",cursor:"pointer",boxShadow:"0 2px 10px rgba(0,0,0,.04)",border:"1px solid rgba(0,0,0,.04)",animation:`up .3s ease ${i*.06}s both`}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-                <span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"3px 9px",borderRadius:100,fontSize:10,fontWeight:700,color:C.greenL,background:C.greenBg}}>{ST.clean.e} Propre</span>
-                <button onClick={e=>{e.stopPropagation();onFavToggle(b.id);onXP("fav")}} style={{background:"none",border:"none",cursor:"pointer",fontSize:18,padding:"6px",minWidth:44,minHeight:44,display:"flex",alignItems:"center",justifyContent:"center"}}>{favs.includes(b.id)?"❤️":"🤍"}</button>
+          {/* ═══════════════════════════════════════════
+              SLIDE 2 — "Vert = tu pars. Rouge = tu \évites."
+              ═══════════════════════════════════════════ */}
+          <div className="onb-slide" style={{background:"#FDFCF7"}}>
+            {/* Header */}
+            <div style={{padding:"28px 22px 0",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div style={{fontFamily:"'Anton',sans-serif",fontSize:16,letterSpacing:".05em",display:"flex",alignItems:"center",gap:8}}>
+                <div style={{width:20,height:20,borderRadius:"50%",
+                  background:"conic-gradient(from -10deg,#FFE898 0deg 30deg,#E8A800 30deg 80deg,#FFD040 80deg 130deg,#B87A00 130deg 180deg,#FFE898 180deg 360deg)",
+                  animation:"spin 20s linear infinite",boxShadow:"0 2px 8px rgba(232,168,0,.28)"}}/>
+                SARGASSES.MQ
               </div>
-              <div style={{fontWeight:700,fontSize:15,color:"var(--sg-ink)",lineHeight:1.2,marginBottom:3}}>{b.name}</div>
-              <div style={{fontSize:12,color:"var(--sg-mute)",marginBottom:8}}>{b.commune}</div>
-              <div style={{display:"flex",gap:5,flexWrap:"wrap",alignItems:"center"}}>
-                <span style={{fontSize:12,fontWeight:700,color:C.ocean}}>🚗 {b.drive}min</span>
-                {b.snorkel&&<span style={{fontSize:12,color:C.teal}}>🤿</span>}
-                {b.kids&&<span style={{fontSize:12}}>🧒</span>}
+              <div style={{display:"flex",alignItems:"center",gap:5,fontSize:10.5,fontWeight:600,color:C.mid}}>
+                <div style={{width:6,height:6,borderRadius:"50%",background:"#22C55E",animation:"dot-pulse 2s ease-in-out infinite"}}/>
+                En direct
               </div>
             </div>
-          ))}
-        </div>
-      </div>
 
-      {/* ═══ FORECAST PREVIEW ═══ */}
-      {best&&<div style={{padding:"4px 16px 16px"}}>
-        <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:18,textTransform:"uppercase",letterSpacing:"-.02em",color:"var(--sg-ink)",marginBottom:12}}>Prochains jours — {best.name}</div>
-        <div style={{display:"flex",gap:6}}>
-          {getForecast(best,sargassumData,lang).slice(0,premium?7:3).map((d,i)=>{const st=ST[d.status];return(
-            <div key={i} style={{flex:1,background:"var(--sg-card)",borderRadius:14,padding:"12px 6px",textAlign:"center",border:"1px solid var(--sg-border)",boxShadow:"0 2px 10px rgba(0,0,0,.04)"}}>
-              <div style={{fontSize:13,fontWeight:700,color:"var(--sg-mute)",marginBottom:6}}>{d.day}</div>
-              <div style={{fontSize:18,marginBottom:4}}>{st.e}</div>
-              <div style={{width:"60%",height:3,borderRadius:3,background:st.c,margin:"0 auto"}}/>
-              <div style={{fontSize:13,color:"var(--sg-mute)",marginTop:4,fontWeight:600}}>{Math.round(d.afai*100)}%</div>
+            <div style={{padding:"16px 22px 0",fontSize:12.5,fontStyle:"italic",color:C.mid}}>La carte que tu aurais voulu avoir.</div>
+
+            <div style={{padding:"6px 22px 0",fontFamily:"'Anton',sans-serif",fontSize:42,lineHeight:.9,
+              letterSpacing:"-.02em",textTransform:"uppercase",color:C.ink}}>
+              <span style={{color:C.teal}}>Vert</span> = tu pars.<br/>Rouge = tu \évites.
             </div>
-          )})}
-          {!premium&&<div onClick={onGoToPremium} className="tap" style={{flex:1,background:"var(--sg-rowHover)",borderRadius:14,padding:"10px 4px",textAlign:"center",border:"1.5px dashed var(--sg-border)",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:3}}>
-            <div style={{fontSize:15}}>🔒</div>
-            <div style={{fontSize:13,fontWeight:700,color:"var(--sg-mute)"}}>+4j</div>
-            <div style={{fontSize:12,fontWeight:700,color:C.gold}}>PREMIUM</div>
-          </div>}
-        </div>
-      </div>}
 
-      {/* GPS prompt */}
-      {!gps&&<div style={{padding:"0 16px 20px"}}>
-        <button onClick={onGPS} className="tap" style={{width:"100%",padding:"14px",background:C.tealBg,border:`1.5px dashed rgba(0,150,136,.3)`,borderRadius:14,fontSize:14,fontWeight:700,color:C.teal,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontFamily:"'Bricolage Grotesque',sans-serif",minHeight:44}}>
-          📍 Activer ma position pour les plages proches
-        </button>
-      </div>}
-
-      {/* Evolution */}
-      <EvolutionSection historyData={historyData} island={island} onOpenBeach={onOpenBeach} beaches={beaches}/>
-
-      {/* ═══ PREMIUM CTA — v11 .premium-card style ═══ */}
-      {!premium&&<div style={{padding:"0 16px 24px"}}>
-        <div onClick={onGoToPremium} className="tap" style={{background:`linear-gradient(145deg,${C.night},${C.night2})`,borderRadius:26,padding:"20px 20px 18px",cursor:"pointer",position:"relative",overflow:"hidden",boxShadow:"0 16px 48px rgba(0,0,0,.18)"}}>
-          {/* Gold top border line */}
-          <div style={{position:"absolute",top:0,left:0,right:0,height:1,background:`linear-gradient(90deg,transparent,${C.goldL},transparent)`}}/>
-          {/* Ambient glow */}
-          <div style={{position:"absolute",top:-50,right:-30,width:160,height:160,borderRadius:"50%",background:"radial-gradient(circle,rgba(232,168,0,.1) 0%,transparent 70%)",pointerEvents:"none"}}/>
-
-          {/* Tag pill */}
-          <div style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(255,199,44,.12)",border:"1px solid rgba(255,199,44,.18)",borderRadius:100,padding:"4px 11px",fontSize:9.5,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:C.goldL,marginBottom:12}}>
-            <div style={{width:4,height:4,borderRadius:"50%",background:C.goldL}}/>
-            SATELLITE PRO
-          </div>
-
-          {/* Price row */}
-          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14,position:"relative",zIndex:1}}>
-            <div style={{fontSize:28}}>🛰️</div>
-            <div style={{flex:1}}>
-              <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:18,color:"white",textTransform:"uppercase",letterSpacing:"-.01em",lineHeight:1.1}}>Prévisions 7 jours</div>
-              <div style={{fontSize:12,color:"rgba(255,255,255,.45)",marginTop:3}}>Alertes push · 2 îles · données 6h</div>
+            {/* Satellite badge */}
+            <div style={{margin:"10px 22px 0",display:"inline-flex",alignItems:"center",gap:6,
+              background:"rgba(0,158,142,.07)",border:"1px solid rgba(0,158,142,.12)",
+              borderRadius:100,padding:"5px 12px",position:"relative",overflow:"hidden"}}>
+              <span style={{fontSize:11}}>\�\�\️</span>
+              <span style={{fontSize:9.5,fontWeight:700,color:C.teal}}>Sentinel-2 \· ESA Copernicus</span>
             </div>
-            <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end"}}>
-              <span style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:26,color:C.goldL,lineHeight:1}}>4,99€</span>
-              <span style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>/ 30 jours</span>
-            </div>
-          </div>
 
-          {/* Forecast preview with blur */}
-          <div style={{marginBottom:14,position:"relative",zIndex:1}}>
-            <div style={{fontSize:9.5,fontWeight:700,color:"rgba(255,255,255,.4)",letterSpacing:".1em",textTransform:"uppercase",marginBottom:8}}>Aperçu prévisions</div>
-            <div style={{display:"flex",gap:5}}>
-              {["Lun","Mar","Mer","Jeu","Ven"].map((d,i)=>{
-                const locked=i>=2
+            {/* Proof */}
+            <div style={{margin:"6px 22px 0",fontSize:11,color:C.mid,display:"flex",alignItems:"center",gap:5}}>
+              <span style={{color:"#16A34A",fontWeight:700}}>\✓</span>
+              Confirm\é par <strong style={{color:C.ink}}>+2 400 locaux</strong> ce matin
+            </div>
+
+            {/* Map zone */}
+            <div style={{margin:"12px 22px 0",background:"linear-gradient(145deg,#D8EFF8 0%,#C8E4F4 50%,#D0EEE8 100%)",
+              border:"1px solid rgba(0,158,142,.1)",borderRadius:22,position:"relative",height:185,overflow:"hidden"}}>
+              <div style={{position:"absolute",top:10,left:14,fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(0,80,40,.4)"}}>\�\� Martinique</div>
+              <div style={{position:"absolute",bottom:10,left:14,fontSize:8.5,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(0,80,120,.4)"}}>\�\� Atlantique</div>
+              {/* Island shape */}
+              <div style={{position:"absolute",top:"50%",left:"52%",transform:"translate(-50%,-52%)",
+                width:120,height:90,background:"linear-gradient(145deg,#C8E8C0,#B8D8B0)",
+                borderRadius:"38% 52% 44% 58%/50% 40% 54% 44%",boxShadow:"0 4px 14px rgba(0,80,40,.12)"}}/>
+              {/* Pins */}
+              {[[28,61,"g"],[45,74,"g"],[65,57,"r"],[34,35,"o"],[57,31,"g"],[72,43,"r"],[19,49,"g"],[51,65,"o"]].map(([t,l,c],i)=>{
+                const bg=c==="g"?"#22C55E":c==="r"?C.red:C.goldL
                 return(
-                  <div key={d} style={{flex:1,background:"rgba(255,255,255,.05)",borderRadius:10,padding:"8px 4px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:3,filter:locked?(i===2?"blur(1.5px)":"blur(3px)"):"none",opacity:locked?(i===2?.5:.35):1}}>
-                    <div style={{fontSize:8.5,fontWeight:700,color:"rgba(255,255,255,.4)"}}>{d}</div>
-                    <div style={{fontSize:15}}>{i%2===0?"✅":"⚠️"}</div>
-                    <div style={{fontSize:8,fontWeight:700,padding:"2px 5px",borderRadius:100,background:i%2===0?"rgba(34,197,94,.15)":"rgba(232,168,0,.15)",color:i%2===0?"#4ADE80":C.goldL}}>{i%2===0?"OK":"Moyen"}</div>
+                  <div key={i} style={{position:"absolute",top:t+"%",left:l+"%",transform:"translate(-50%,-50%)"}}>
+                    <div style={{width:12,height:12,borderRadius:"50%",border:"2px solid white",background:bg,
+                      boxShadow:"0 1px 6px rgba(0,0,0,.2)",position:"relative",zIndex:2}}/>
                   </div>
                 )
               })}
-            </div>
-            <div style={{position:"relative",marginTop:-24,background:"linear-gradient(0deg,rgba(13,30,28,.95) 60%,transparent)",padding:"18px 8px 6px",textAlign:"center",fontSize:10.5,fontWeight:600,color:"rgba(255,255,255,.5)",borderRadius:"0 0 10px 10px"}}>🔓 Débloquer les 7 jours</div>
-          </div>
-
-          {/* Features list */}
-          <div style={{display:"flex",flexDirection:"column",gap:7,marginBottom:14,position:"relative",zIndex:1}}>
-            {["Prévisions 7 jours par plage","Alertes push automatiques","Données satellite toutes les 6h"].map(f=>(
-              <div key={f} style={{display:"flex",alignItems:"center",gap:9}}>
-                <div style={{width:18,height:18,borderRadius:"50%",background:"rgba(0,158,142,.18)",border:"1px solid rgba(0,158,142,.28)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,color:C.tealL,flexShrink:0}}>✓</div>
-                <span style={{fontSize:12,color:"rgba(255,255,255,.7)"}}>{f}</span>
+              {/* Legend */}
+              <div style={{position:"absolute",bottom:8,right:10,display:"flex",gap:8}}>
+                {[["Propre","#22C55E"],["Mod\ér\é",C.goldL],["\Éviter",C.red]].map(([lab,col],i)=>(
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:4,fontSize:8,fontWeight:700,color:C.mid}}>
+                    <div style={{width:7,height:7,borderRadius:"50%",background:col,border:"1.5px solid white"}}/>
+                    {lab}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-
-          {/* Divider + anchor */}
-          <div style={{display:"flex",alignItems:"center",gap:8,position:"relative",zIndex:1,marginBottom:2}}>
-            <div style={{flex:1,height:1,background:"rgba(255,255,255,.06)"}}/>
-            <span style={{fontSize:11,color:"rgba(255,255,255,.3)",fontWeight:600}}>= 1 aller-retour évité</span>
-            <div style={{flex:1,height:1,background:"rgba(255,255,255,.06)"}}/>
-          </div>
-        </div>
-      </div>}
-    </div>
-  )
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// ░░ PREMIUM — page ultra-convaincante
-// ═══════════════════════════════════════════════════════════════════════════════
-const PREMIUM_PROMO_CODES = ["nouv30", "etplwz"]
-
-function CodePromoBlock({ onActivate }) {
-  const [code, setCode] = useState("")
-  const [status, setStatus] = useState(null)
-  const submit = () => {
-    const v = (code || "").trim().toLowerCase()
-    if (!v) return
-    if (PREMIUM_PROMO_CODES.includes(v)) {
-      onActivate()
-      setStatus("ok")
-      setCode("")
-    } else setStatus("err")
-  }
-  return (
-    <div style={{marginTop:20,padding:"14px 16px",background:"rgba(0,0,0,.2)",borderRadius:14,border:"1px solid rgba(255,255,255,.08)"}}>
-      <div style={{fontSize:14,fontWeight:700,letterSpacing:".08em",color:"rgba(255,255,255,.6)",marginBottom:8}}>Tu as un code promo ?</div>
-      <div style={{display:"flex",gap:8,alignItems:"center"}}>
-        <input value={code} onChange={e=>{setCode(e.target.value);setStatus(null)}} onKeyDown={e=>e.key==="Enter"&&submit()} placeholder="Code promo" style={{flex:1,padding:"10px 12px",fontSize:13,borderRadius:10,border:"1px solid rgba(255,255,255,.15)",background:"rgba(0,0,0,.2)",color:"white",outline:"none"}}/>
-        <button onClick={submit} style={{padding:"10px 16px",borderRadius:10,border:"none",background:C.goldL,color:C.night,fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"'Bricolage Grotesque',sans-serif",minHeight:44}}>Valider</button>
-      </div>
-      {status==="ok"&&<div style={{fontSize:14,color:C.green,marginTop:8,display:"flex",alignItems:"center",gap:6}}>✅ Prévisions 7 jours activées !</div>}
-      {status==="err"&&<div style={{fontSize:14,color:C.amber,marginTop:8}}>Code invalide. Réessaie ou paie avec Stripe.</div>}
-    </div>
-  )
-}
-
-function PremiumScreen({premium,onActivate}){
-  const TESTIMONIALS=[
-    {name:"Marie-Claire T.",loc:"Fort-de-France",text:"Mon mari était parti faire 40km avec les enfants. Sargasses partout. Depuis j'ouvre l'app avant de partir.",init:"M",grad:"linear-gradient(135deg,#FF6B6B,#FF8E53)"},
-    {name:"Julien M.",loc:"Sainte-Anne",text:"Je reçois l'alerte le matin si les conditions changent. J'ai annulé 2 sessions inutiles ce mois-ci.",init:"J",grad:"linear-gradient(135deg,#4ECDC4,#44A08D)"},
-    {name:"Hôtel Cap Sud",loc:"Le Diamant",text:"On affiche le statut à la réception. Nos clients adorent.",init:"H",grad:"linear-gradient(135deg,#A18CD1,#FBC2EB)"},
-  ]
-
-  const forecastDays=[
-    {day:"Lun",icon:"🏖️",status:"Propre",cls:"g"},
-    {day:"Mar",icon:"🏖️",status:"Propre",cls:"g"},
-    {day:"Mer",icon:"⚡",status:"Modéré",cls:"o",semi:true},
-    {day:"Jeu",icon:"🚫",status:"Éviter",cls:"r",locked:true},
-    {day:"Ven",icon:"🚫",status:"Éviter",cls:"r",locked:true},
-    {day:"Sam",icon:"⚡",status:"Modéré",cls:"o",locked:true},
-    {day:"Dim",icon:"🏖️",status:"Propre",cls:"g",locked:true},
-  ]
-  const fcColors={g:{bg:"rgba(34,197,94,.15)",color:"#4ADE80"},o:{bg:"rgba(232,168,0,.15)",color:C.goldL},r:{bg:"rgba(232,82,42,.2)",color:"#FF8066"}}
-
-  if(premium) return(
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100%",padding:"30px",textAlign:"center",background:"var(--sg-bg)"}}>
-      <div style={{fontSize:64,marginBottom:16,animation:"levelUp .6s cubic-bezier(.16,1,.3,1) both"}}>⭐</div>
-      <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:26,textTransform:"uppercase",letterSpacing:"-.02em",color:"var(--sg-ink)",marginBottom:8}}>Premium Actif</div>
-      <div style={{fontSize:13,color:"var(--sg-mid)",lineHeight:1.7,marginBottom:20}}>30 jours de prévisions · Alertes push<br/>MQ + GP · Données satellite toutes les 6h</div>
-      <div style={{background:C.greenBg,borderRadius:13,padding:"12px 20px",fontSize:14,fontWeight:700,color:C.green}}>Tous les accès débloqués</div>
-    </div>
-  )
-
-  return(
-    <div style={{overflowY:"auto",height:"100%",WebkitOverflowScrolling:"touch",background:"var(--sg-bg)"}}>
-      {/* Live strip + satellite badge — like onboarding slide 1 */}
-      <div style={{padding:"20px 20px 0"}}>
-        <div style={{background:"rgba(255,255,255,.75)",border:"1px solid rgba(232,168,0,.26)",borderRadius:100,padding:"8px 10px 8px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",backdropFilter:"blur(16px)",boxShadow:"0 2px 18px rgba(232,168,0,.09),inset 0 1px 0 rgba(255,255,255,.95)",animation:"up .4s ease both"}}>
-          <div style={{display:"flex",alignItems:"center",gap:8}}>
-            <div style={{width:7,height:7,borderRadius:"50%",background:C.green,flexShrink:0,animation:"beacon 2s ease-in-out infinite"}}/>
-            <span style={{fontSize:11.5,fontWeight:600,color:"var(--sg-ink)"}}><strong style={{color:C.amber}}>47 plages</strong> surveillées en temps réel</span>
-          </div>
-          <span style={{background:`linear-gradient(135deg,${C.tealL},${C.teal})`,color:"white",fontSize:9,fontWeight:800,letterSpacing:".14em",padding:"5px 13px",borderRadius:100,boxShadow:"0 3px 12px rgba(0,158,142,.32)"}}>LIVE</span>
-        </div>
-      </div>
-
-      {/* Satellite badge */}
-      <div style={{margin:"10px 20px 0",background:"rgba(13,13,13,.06)",border:"1px solid rgba(13,13,13,.08)",borderRadius:100,padding:"6px 14px",display:"flex",alignItems:"center",gap:7,position:"relative",overflow:"hidden",animation:"up .4s ease .05s both"}}>
-        <span style={{fontSize:12}}>🛰️</span>
-        <span style={{fontSize:10,fontWeight:600,color:"var(--sg-mute)"}}>Sentinel-2 · <em style={{fontStyle:"normal",color:C.teal,fontWeight:700}}>ESA Copernicus</em></span>
-        <span style={{marginLeft:"auto",fontSize:9,fontWeight:700,background:"rgba(0,158,142,.1)",color:C.teal,padding:"2px 7px",borderRadius:100,letterSpacing:".06em"}}>FRAIS</span>
-      </div>
-
-      {/* Social proof counter */}
-      <div style={{margin:"10px 20px 0",display:"flex",alignItems:"center",gap:7,padding:"7px 13px",background:"rgba(34,197,94,.06)",border:"1px solid rgba(34,197,94,.14)",borderRadius:100,animation:"up .4s ease .1s both"}}>
-        <div style={{width:5,height:5,borderRadius:"50%",background:C.green,animation:"beacon 1.4s ease-in-out infinite"}}/>
-        <span style={{fontSize:12,fontWeight:800,color:"var(--sg-ink)"}}>+2 400</span>
-        <span style={{fontSize:11,fontWeight:500,color:"var(--sg-mute)"}}>utilisateurs · <em style={{fontStyle:"normal",color:"#16A34A",fontWeight:700}}>en ligne</em></span>
-      </div>
-
-      {/* Eyebrow */}
-      <div style={{padding:"18px 22px 0",fontSize:12.5,fontStyle:"italic",color:"var(--sg-mute)",animation:"up .4s ease .12s both"}}>Pour les weekends qui comptent vraiment.</div>
-
-      {/* Headline — Anton + gradient text */}
-      <div style={{padding:"6px 22px 0",fontFamily:"'Anton',sans-serif",fontSize:40,lineHeight:.9,letterSpacing:"-.02em",textTransform:"uppercase",color:"var(--sg-ink)",marginBottom:6,animation:"up .4s ease .15s both"}}>
-        <span>Cette </span>
-        <span style={{display:"inline",background:"linear-gradient(138deg,#FFD860 0%,#E8A800 48%,#B07000 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>fois,</span><br/>
-        tu seras<br/>prévenu.
-      </div>
-
-      {/* Tagline */}
-      <p style={{padding:"0 22px",fontSize:13,color:"var(--sg-mute)",lineHeight:1.55,marginBottom:14,animation:"up .4s ease .18s both"}}>Les données du jour c'est bien. <strong style={{color:"var(--sg-ink)",fontWeight:700}}>Savoir ce qui arrive ce weekend</strong>, c'est mieux.</p>
-
-      {/* Premium card — dark teal, matches onboarding .premium-card */}
-      <div style={{margin:"0 22px",background:`linear-gradient(145deg,${C.night},${C.night2})`,borderRadius:26,padding:20,position:"relative",overflow:"hidden",boxShadow:"0 16px 48px rgba(0,0,0,.18)",animation:"up .5s ease .2s both"}}>
-        {/* Gold top border line */}
-        <div style={{position:"absolute",top:0,left:0,right:0,height:1,background:`linear-gradient(90deg,transparent,${C.goldL},transparent)`}}/>
-        {/* Glow orb */}
-        <div style={{position:"absolute",top:-50,right:-30,width:160,height:160,borderRadius:"50%",background:"radial-gradient(circle,rgba(232,168,0,.1) 0%,transparent 70%)",pointerEvents:"none"}}/>
-
-        {/* Premium tag */}
-        <div style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(255,199,44,.12)",border:"1px solid rgba(255,199,44,.18)",borderRadius:100,padding:"4px 11px",fontSize:9.5,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:C.goldL,marginBottom:12,position:"relative",zIndex:1}}>
-          <div style={{width:4,height:4,borderRadius:"50%",background:C.goldL}}/>Premium
-        </div>
-
-        {/* Price block */}
-        <div style={{marginBottom:6,position:"relative",zIndex:1}}>
-          <div style={{display:"flex",alignItems:"baseline",gap:3}}>
-            <span style={{fontSize:20,fontWeight:700,color:"rgba(255,255,255,.6)",marginTop:6}}>€</span>
-            <span style={{fontFamily:"'Anton',sans-serif",fontSize:52,color:"white",lineHeight:1,letterSpacing:"-.02em"}}>4,99</span>
-            <span style={{fontSize:13,color:"rgba(255,255,255,.35)",fontWeight:500,alignSelf:"flex-end",marginBottom:4}}>/ mois</span>
-          </div>
-        </div>
-
-        {/* Price anchor copywriting */}
-        <div style={{fontSize:11,color:"rgba(255,255,255,.35)",marginBottom:14,lineHeight:1.5,padding:"8px 10px",background:"rgba(255,255,255,.04)",borderRadius:10,borderLeft:"2px solid rgba(232,168,0,.3)",position:"relative",zIndex:1}}>
-          Une journée plage pour 4 personnes = <strong style={{color:"rgba(255,255,255,.6)"}}>80€ minimum.</strong><br/>
-          Savoir à l'avance = <strong style={{color:"rgba(255,255,255,.6)"}}>4,99€.</strong>
-        </div>
-
-        {/* 7-day forecast preview with blur on locked days */}
-        <div style={{marginBottom:14,position:"relative",zIndex:1}}>
-          <div style={{fontSize:9.5,fontWeight:700,color:"rgba(255,255,255,.4)",letterSpacing:".1em",textTransform:"uppercase",marginBottom:8}}>Prévisions de ta semaine</div>
-          <div style={{display:"flex",gap:5}}>
-            {forecastDays.map(d=>{const fc=fcColors[d.cls];return(
-              <div key={d.day} style={{flex:1,background:"rgba(255,255,255,.05)",borderRadius:10,padding:"8px 6px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:3,filter:d.locked?"blur(3px)":d.semi?"blur(1.5px)":"none",opacity:d.locked?.35:d.semi?.5:1}}>
-                <div style={{fontSize:8.5,fontWeight:700,color:"rgba(255,255,255,.4)"}}>{d.day}</div>
-                <div style={{fontSize:15}}>{d.icon}</div>
-                <div style={{fontSize:8,fontWeight:700,padding:"2px 5px",borderRadius:100,background:fc.bg,color:fc.color}}>{d.status}</div>
-              </div>
-            )})}
-          </div>
-        </div>
-        {/* Unlock overlay */}
-        <div style={{position:"relative",marginTop:-28,marginBottom:14,background:"linear-gradient(0deg,rgba(13,30,28,.95) 60%,transparent)",padding:"20px 8px 8px",textAlign:"center",fontSize:10.5,fontWeight:600,color:"rgba(255,255,255,.5)",zIndex:2}}>🔒 Débloque les 5 prochains jours</div>
-
-        {/* Feature checklist with teal check circles */}
-        <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16,position:"relative",zIndex:1}}>
-          {[{t:"Prévisions 7 jours",s:"dérive satellite"},{t:"Alertes",s:"avant que ça arrive"},{t:"Annulation",s:"à tout moment"}].map(f=>(
-            <div key={f.t} style={{display:"flex",alignItems:"center",gap:9}}>
-              <div style={{width:18,height:18,borderRadius:"50%",background:"rgba(0,158,142,.18)",border:"1px solid rgba(0,158,142,.28)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,color:C.tealL,flexShrink:0}}>✓</div>
-              <div style={{fontSize:12,color:"rgba(255,255,255,.7)"}}><strong style={{color:"white"}}>{f.t}</strong> · {f.s}</div>
             </div>
-          ))}
-        </div>
 
-        {/* Gold gradient CTA button */}
-        <button className="gbtn" onClick={()=>window.open&&window.open(typeof STRIPE_PAYMENT_URL!=="undefined"?STRIPE_PAYMENT_URL:"#","_blank")} style={{width:"100%",background:`linear-gradient(135deg,${C.goldL},${C.gold})`,color:"#0D0D0D",border:"none",borderRadius:16,padding:"16px 20px",fontFamily:"'Anton',sans-serif",fontSize:18,letterSpacing:".05em",textTransform:"uppercase",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between",boxShadow:"0 8px 24px rgba(232,168,0,.38),inset 0 1px 0 rgba(255,255,255,.4)",position:"relative",overflow:"hidden",zIndex:1}}>
-          <span style={{position:"relative",zIndex:1}}>Débloquer mes prévisions</span>
-          <span style={{width:36,height:36,background:"rgba(0,0,0,.15)",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,position:"relative",zIndex:1}}>→</span>
-        </button>
-      </div>
-
-      {/* Testimonials — onboarding avatar circle + quote style */}
-      <div style={{padding:"16px 22px 0"}}>
-        <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:18,textTransform:"uppercase",letterSpacing:"-.02em",color:"var(--sg-ink)",marginBottom:12}}>Ils l'utilisent</div>
-        {TESTIMONIALS.map((t,i)=>(
-          <div key={i} style={{background:"rgba(255,255,255,.6)",border:"1px solid rgba(232,168,0,.12)",borderRadius:14,padding:"12px 14px",display:"flex",gap:10,alignItems:"flex-start",marginBottom:8,animation:`up .4s ease ${.3+i*.08}s both`}}>
-            <div style={{width:30,height:30,borderRadius:"50%",background:t.grad,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"white",flexShrink:0}}>{t.init}</div>
-            <div style={{flex:1,minWidth:0}}>
-              <div style={{fontSize:10,fontWeight:700,color:"var(--sg-ink)",marginBottom:3}}>{t.name} · {t.loc}</div>
-              <div style={{fontSize:11.5,color:"var(--sg-mute)",lineHeight:1.5,fontStyle:"italic"}}>"{t.text}"</div>
-            </div>
-            <div style={{display:"flex",gap:1,flexShrink:0,marginTop:2}}>{[1,2,3,4,5].map(s=><span key={s} style={{fontSize:10,color:C.goldL}}>★</span>)}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Guarantee */}
-      <div style={{padding:"12px 22px 0"}}>
-        <div style={{background:`linear-gradient(135deg,${C.greenBg},rgba(56,146,78,.05))`,border:"1.5px solid rgba(39,112,58,.2)",borderRadius:16,padding:"14px 16px",display:"flex",gap:12,alignItems:"center"}}>
-          <div style={{fontSize:30,flexShrink:0}}>🛡️</div>
-          <div>
-            <div style={{fontSize:14,fontWeight:700,color:C.green,marginBottom:2}}>Garanti 7 jours</div>
-            <div style={{fontSize:12,color:"var(--sg-ink)",lineHeight:1.6}}>Pas satisfait ? Remboursé sans question.</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Skip + microcopy */}
-      <div style={{padding:"12px 22px 0",textAlign:"center"}}>
-        <CodePromoBlock onActivate={onActivate} />
-      </div>
-      <div style={{padding:"8px 22px",textAlign:"center",fontSize:10.5,color:"rgba(104,104,104,.6)",display:"flex",alignItems:"center",justifyContent:"center",gap:6,paddingBottom:28}}>
-        Paiement sécurisé<span style={{width:3,height:3,borderRadius:"50%",background:"rgba(104,104,104,.25)"}}/>Annulation à tout moment<span style={{width:3,height:3,borderRadius:"50%",background:"rgba(104,104,104,.25)"}}/>Pas de renouvellement auto
-      </div>
-    </div>
-  )
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// ░░ PROFIL — streak · badges · gamification · partage
-// ═══════════════════════════════════════════════════════════════════════════════
-function ProfilScreen({beaches,favs,onFavToggle,onOpenBeach,premium,onActivatePremium,xp,onXP}){
-  const streak=g("sg_streak",1)
-  const views=g("sg_views",{})
-  const totalViews=Object.values(views).reduce((a,b)=>a+b,0)
-  const reports=g("sg_stats",{reports:0}).reports||0
-  const topId=Object.entries(views).sort((a,b)=>b[1]-a[1])[0]?.[0]
-  const topBeach=topId&&beaches.find(b=>b.id===topId)
-  const favBs=beaches.filter(b=>favs.includes(b.id))
-  const canvasRef=useRef()
-  const [cardDone,setCardDone]=useState(false)
-  const level=getLevel(xp)
-  const nextLevel=LEVELS[LEVELS.indexOf(level)+1]
-  const xpInLevel=xp-level.min
-  const xpNeeded=nextLevel?(nextLevel.min-level.min):1
-  const xpPct=Math.min(100,Math.round((xpInLevel/xpNeeded)*100))
-
-  const BADGES=[
-    {e:"🌅",l:"Matin de plage",  desc:"Ouvrir avant 9h",          done:new Date().getHours()<9||streak>1},
-    {e:"🔥",l:`${streak}j streak`,desc:"Consulter chaque jour",   done:streak>0},
-    {e:"❤️",l:"Vigile",          desc:"3 plages favorites",        done:favBs.length>=3},
-    {e:"🤖",l:"IA addict",       desc:"10 questions à l'IA",       done:(g("sg_stats",{}).chats||0)>=10},
-    {e:"📍",l:"Signaleur",       desc:"Premier signalement",       done:reports>0},
-    {e:"🏆",l:"Expert",          desc:"Streak 7 jours",            done:streak>=7},
-    {e:"🛰️",l:"Satellite",       desc:"50 plages consultées",      done:totalViews>=50},
-    {e:"⭐",l:"Premium",         desc:"Abonnement actif",          done:premium},
-  ]
-
-  function genCard(){
-    const c=canvasRef.current;if(!c) return
-    const ctx=c.getContext("2d");c.width=800;c.height=420
-    const g2=ctx.createLinearGradient(0,0,800,420);g2.addColorStop(0,C.bg);g2.addColorStop(1,"#EEF7F4");ctx.fillStyle=g2;ctx.fillRect(0,0,800,420)
-    const gb=ctx.createLinearGradient(0,0,800,0);gb.addColorStop(0,C.goldLL);gb.addColorStop(.5,C.goldL);gb.addColorStop(1,"#AF7200");ctx.fillStyle=gb;ctx.fillRect(0,0,800,5)
-    ctx.fillStyle=C.mute;ctx.font="bold 13px sans-serif";ctx.fillText("SARGASSES · MARTINIQUE",40,55)
-    const cn=beaches.filter(b=>b.status==="clean").length,an=beaches.filter(b=>b.status==="avoid").length
-    ctx.fillStyle=C.ink;ctx.font="bold 52px sans-serif";ctx.fillText(`${cn} plages propres`,40,130)
-    ctx.fillStyle=C.green+"cc";ctx.font="bold 26px sans-serif";ctx.fillText(`✅  ${cn} propres aujourd'hui`,40,195)
-    ctx.fillStyle=C.red+"cc";ctx.font="bold 26px sans-serif";ctx.fillText(`🚫  ${an} à éviter`,40,240)
-    ctx.fillStyle=C.mid;ctx.font="14px sans-serif";ctx.fillText(`Mis à jour le ${new Date().toLocaleDateString("fr-FR",{day:"2-digit",month:"long",year:"numeric"})}`,40,315)
-    ctx.fillStyle=C.gold;ctx.font="bold 14px sans-serif";ctx.fillText("sargasses-martinique.com",40,390)
-    const a=document.createElement("a");a.download="sargasses-statut.png";a.href=c.toDataURL();a.click()
-    setCardDone(true);onXP("open")
-  }
-
-  return(
-    <div style={{overflowY:"auto",height:"100%",padding:"14px 14px 80px"}}>
-      <canvas ref={canvasRef} style={{display:"none"}}/>
-
-      {/* Level + XP bar */}
-      <Card style={{padding:"18px 20px",marginBottom:12,background:`linear-gradient(145deg,${C.night},${C.night2})`,border:"none",animation:"up .4s ease both"}}>
-        <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:14}}>
-          <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:50,color:C.goldL,lineHeight:1}}>{streak}</div>
-          <div style={{flex:1}}>
-            <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:17,color:"white",textTransform:"uppercase",letterSpacing:"-.01em",marginBottom:2}}>Jours de streak 🔥</div>
-            <div style={{display:"flex",alignItems:"center",gap:7}}>
-              <span style={{fontSize:20}}>{level.e}</span>
-              <span style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontWeight:800,fontSize:14,color:level.color,textTransform:"uppercase"}}>{level.label}</span>
-            </div>
-          </div>
-          <div style={{textAlign:"right"}}>
-            <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:20,color:C.goldL,lineHeight:1}}>{xp}</div>
-            <div style={{fontSize:14,color:"rgba(255,255,255,.45)",fontWeight:700}}>XP TOTAL</div>
-          </div>
-        </div>
-        {/* XP progress bar */}
-        <div style={{marginBottom:6}}>
-          <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
-            <span style={{fontSize:14,color:"rgba(255,255,255,.45)",fontWeight:700}}>{level.label}</span>
-            {nextLevel&&<span style={{fontSize:14,color:"rgba(255,255,255,.45)",fontWeight:700}}>{nextLevel.label} ({nextLevel.min-xp} XP)</span>}
-          </div>
-          <div style={{height:5,background:"rgba(255,255,255,.1)",borderRadius:3,overflow:"hidden"}}>
-            <div style={{height:"100%",width:`${xpPct}%`,background:`linear-gradient(90deg,${C.goldLL},${C.goldL})`,borderRadius:3,transition:"width 1s cubic-bezier(.16,1,.3,1)",boxShadow:`0 0 10px ${C.goldL}60`}}/>
-          </div>
-        </div>
-        <div style={{fontSize:14,color:"rgba(255,255,255,.4)",lineHeight:1.7}}>
-          {streak>=7?"Tu es un expert sargasses 🏆":streak>=3?"Belle habitude, continue !":"Reviens chaque matin pour ton briefing"}
-        </div>
-      </Card>
-
-      {/* Stats */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3, 1fr)",gap:8,marginBottom:12,animation:"up .4s ease .06s both"}}>
-        {[{v:totalViews,l:"Vues",i:"👁️"},{v:favBs.length,l:"Favoris",i:"❤️"},{v:reports,l:"Signalements",i:"📍"}].map(st=>(
-          <Card key={st.l} style={{padding:"12px 8px",textAlign:"center"}}>
-            <div style={{fontSize:22,marginBottom:4}}>{st.i}</div>
-            <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:26,color:"var(--sg-ink)",lineHeight:1}}>{st.v}</div>
-            <div style={{fontSize:13,fontWeight:600,color:"var(--sg-mute)",marginTop:4}}>{st.l}</div>
-          </Card>
-        ))}
-      </div>
-
-      {/* Badges */}
-      <div style={{marginBottom:14,animation:"up .4s ease .1s both"}}>
-        <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:18,textTransform:"uppercase",letterSpacing:"-.02em",color:"var(--sg-ink)",marginBottom:10}}>Badges — {BADGES.filter(b=>b.done).length}/{BADGES.length}</div>
-        <div style={{display:"flex",gap:9,overflowX:"auto",paddingBottom:4}}>
-          {BADGES.map(b=>(
-            <div key={b.l} style={{flexShrink:0,minWidth:88,textAlign:"center",padding:"12px 10px",background:b.done?"var(--sg-cardS)":"var(--sg-rowHover)",border:`1px solid ${b.done?C.gold+"44":"var(--sg-border)"}`,borderRadius:14,opacity:b.done?1:.4,animation:b.done?"badgeIn .5s cubic-bezier(.34,1.56,.64,1) both":"none"}}>
-              <div style={{fontSize:24,marginBottom:4}}>{b.e}</div>
-              <div style={{fontSize:14,fontWeight:700,color:b.done?"var(--sg-ink)":"var(--sg-mute)",lineHeight:1.3}}>{b.l}</div>
-              <div style={{fontSize:14,color:"var(--sg-mute)",marginTop:3}}>{b.desc}</div>
-              {b.done&&<div style={{marginTop:5,fontSize:14,fontWeight:700,color:C.gold,background:C.goldBg,borderRadius:100,padding:"2px 8px"}}>✅ Obtenu</div>}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Top plage */}
-      {topBeach&&<div style={{marginBottom:12,animation:"up .4s ease .14s both"}}>
-        <div style={{fontSize:16,fontWeight:700,color:"var(--sg-ink)",marginBottom:8}}>Ta plage la plus consultée</div>
-        <Card onClick={()=>onOpenBeach(topBeach)} hover style={{padding:"12px 14px",display:"flex",alignItems:"center",gap:12,cursor:"pointer"}}>
-          <SDot s={topBeach.status} sz={10}/><div style={{flex:1}}><div style={{fontSize:14,fontWeight:700,color:"var(--sg-ink)"}}>{topBeach.name}</div><div style={{fontSize:14,color:"var(--sg-mid)"}}>{views[topId]} consultations</div></div><Chip status={topBeach.status} sm/>
-        </Card>
-      </div>}
-
-      {/* Favoris */}
-      {favBs.length>0&&<div style={{marginBottom:12,animation:"up .4s ease .18s both"}}>
-        <div style={{fontSize:16,fontWeight:700,color:"var(--sg-ink)",marginBottom:8}}>Mes favoris ({favBs.length})</div>
-        {favBs.map(b=><div key={b.id} onClick={()=>onOpenBeach(b)} className="row" style={{display:"flex",alignItems:"center",gap:11,padding:"11px 12px",borderRadius:13,cursor:"pointer",background:"var(--sg-card)",marginBottom:5,border:"1px solid var(--sg-border)",transition:"background .15s"}}>
-          <SDot s={b.status} sz={9}/><div style={{flex:1}}><div style={{fontSize:14,fontWeight:700,color:"var(--sg-ink)"}}>{b.name}</div><div style={{fontSize:14,color:"var(--sg-mid)"}}>{b.commune}</div></div><Chip status={b.status} sm/>
-        </div>)}
-      </div>}
-
-      {/* Partager */}
-      <div style={{marginBottom:12,animation:"up .4s ease .22s both"}}>
-        <Card style={{padding:"14px"}}>
-          <div style={{fontSize:16,fontWeight:700,color:"var(--sg-ink)",marginBottom:8}}>Partager le statut</div>
-          <div style={{fontSize:13,color:"var(--sg-ink)",lineHeight:1.6,marginBottom:10,opacity:.75}}>Génère une carte à envoyer sur WhatsApp, Instagram ou Facebook. Fais connaître l'app 🌊</div>
-          <GBtn full sm onClick={genCard}>{cardDone?"✅ Téléchargée !":"📲 Générer la carte"}</GBtn>
-        </Card>
-      </div>
-
-      {/* Premium CTA si pas abonné */}
-      {!premium&&<Card style={{padding:"18px",background:`linear-gradient(145deg,${C.night},${C.night2})`,border:"none",animation:"up .4s ease .26s both"}}>
-        <div style={{fontSize:14,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",color:C.goldL,marginBottom:6}}>PREMIUM</div>
-        <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:20,textTransform:"uppercase",letterSpacing:"-.01em",color:"white",marginBottom:4,lineHeight:1.1}}>Prévisions 7 jours<br/>+ Alertes push</div>
-        <div style={{display:"flex",alignItems:"baseline",gap:4,marginBottom:10}}><span style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:32,color:C.goldL}}>4,99€</span><span style={{fontSize:14,color:"rgba(255,255,255,.35)"}}> 30 jours</span></div>
-        <CodePromoBlock onActivate={onActivatePremium} />
-        <div style={{marginTop:12}}><GBtn full sm onClick={()=>window.open(STRIPE_PAYMENT_URL,"_blank","noopener,noreferrer")}>Payer avec Stripe →</GBtn></div>
-      </Card>}
-      {premium&&<Card style={{padding:"16px",textAlign:"center"}}><div style={{fontSize:28,marginBottom:8}}>⭐</div><div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:16,textTransform:"uppercase",letterSpacing:"-.01em",color:"var(--sg-ink)"}}>Premium Actif</div><div style={{fontSize:14,color:"var(--sg-mid)",marginTop:3}}>30 jours · 2 îles · Alertes push</div></Card>}
-    </div>
-  )
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// ░░ BEACH DETAIL SHEET
-// ═══════════════════════════════════════════════════════════════════════════════
-function BeachDetail({beach,isFav,onFavToggle,premium,onXP,sargassumData,localBeachImages={}}){
-  const lang=useLang()
-  const L=T[lang]||T.fr
-  const [tab,setTab]=useState("prev")
-  const [choice,setChoice]=useState(null)
-  const [comment,setComment]=useState("")
-  const [genning,setGenning]=useState(false)
-  const [reported,setReported]=useState(false)
-  const {w,loading:wLoad,error:wErr}=useWeather(beach.lat,beach.lng,beach.island==="gp"?"America/Guadeloupe":"America/Martinique")
-  const sc=scoreB(beach.afai,w)
-  const st=ST[beach.status]
-  const forecast=useMemo(()=>getForecast(beach,sargassumData,lang),[beach?.id, beach?.afai, sargassumData?.weekly, lang])
-  const drift=sargassumData?.weekly?.[beach.id]
-
-  const CHOICES=[{k:"none",e:"✅",l:"Rien",xp:15},{k:"few",e:"⚠️",l:"Quelques",xp:10},{k:"heavy",e:"🚫",l:"Beaucoup",xp:10},{k:"alert",e:"🆘",l:"Massif",xp:50}]
-  const FALLBACK_MSGS={none:"RAS ce matin, eau cristalline 🌊",few:"Quelques sargasses côté gauche ⚠️",heavy:"Beaucoup aujourd'hui, je déconseille 🚫",alert:"Banc massif en approche, évitez absolument 🆘"}
-
-  async function pick(k){
-    setChoice(k);setGenning(true);setComment("")
-    await new Promise(r=>setTimeout(r,300))
-    setComment(FALLBACK_MSGS[k])
-    setGenning(false)
-  }
-  function doReport(){
-    if(!choice) return
-    setReported(true)
-    const xpGain=CHOICES.find(c=>c.k===choice)?.xp||10
-    onXP("report")
-    const st2=g("sg_stats",{reports:0,chats:0,views:0})
-    s("sg_stats",{...st2,reports:st2.reports+1})
-  }
-
-  return(
-    <div style={{fontFamily:"'Bricolage Grotesque',sans-serif"}}>
-      {/* Hero image — photo prioritaire, puis satellite, placeholder si échec */}
-      <div style={{width:"100%",height:160,background:"var(--sg-card)",overflow:"hidden",flexShrink:0}}>
-        <img referrerPolicy="no-referrer" src={(localBeachImages[beach?.id] ? getBaseUrl().replace(/\/$/, "") + "/beaches/" + localBeachImages[beach.id] : null) || getBeachPhoto(beach) || getBeachSatelliteImage(beach,{width:640,height:160})} alt={beach?.name ? `Plage ${beach.name}, ${beach.commune} — sargasses` : "Plage — état sargasses"} style={{width:"100%",height:"100%",objectFit:"cover"}} onError={e=>{const img=e.target;if(img.dataset.fallback) { img.src=BEACH_IMG_PLACEHOLDER; img.onerror=null; return } img.dataset.fallback="1"; img.src=getBeachSatelliteImage(beach,{width:640,height:160})||getBeachPhoto(beach)||BEACH_IMG_PLACEHOLDER; img.onerror=ev=>{ev.target.onerror=null;ev.target.src=BEACH_IMG_PLACEHOLDER}}}/>
-      </div>
-      {/* Hero */}
-      <div style={{padding:"15px 16px 12px",background:`linear-gradient(135deg,${st.bg},transparent)`,borderBottom:`1px solid var(--sg-border)`}}>
-        <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:10}}>
-          <div>
-            <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:23,textTransform:"uppercase",letterSpacing:"-.02em",color:"var(--sg-ink)",lineHeight:1}}>{beach.name}</div>
-            <div style={{fontSize:14,color:"var(--sg-mid)",marginTop:3,fontWeight:500}}>{beach.commune}</div>
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:8}}>
-            <Chip status={beach.status}/>
-            <button onClick={()=>{onFavToggle();onXP("fav")}} style={{width:44,height:44,borderRadius:"50%",border:"none",background:isFav?"rgba(176,27,27,.1)":"rgba(0,0,0,.05)",cursor:"pointer",fontSize:22,display:"flex",alignItems:"center",justifyContent:"center",transition:"all .18s cubic-bezier(.34,1.56,.64,1)"}}>{isFav?"❤️":"🤍"}</button>
-          </div>
-        </div>
-        <div style={{display:"flex",gap:7,flexWrap:"wrap",alignItems:"center"}}>
-          <div style={{display:"flex",alignItems:"center",gap:5,background:"rgba(0,0,0,.05)",borderRadius:9,padding:"4px 11px"}}>
-            <span style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontWeight:800,fontSize:17,color:sc>=7?C.green:sc>=5?C.amber:C.red}}>{sc}</span>
-            <span style={{fontSize:14,color:"var(--sg-mid)",fontWeight:700}}>/10</span>
-          </div>
-          {w&&<><div style={{background:"rgba(0,0,0,.05)",borderRadius:8,padding:"6px 11px",fontSize:14,fontWeight:700,color:"var(--sg-ink)",display:"flex",alignItems:"center",gap:4}}><span>💨</span>{w.wind}km/h</div><div style={{background:"rgba(0,0,0,.05)",borderRadius:8,padding:"6px 11px",fontSize:14,fontWeight:700,color:"var(--sg-ink)",display:"flex",alignItems:"center",gap:4}}><span>☀️</span>UV {w.uv}</div></>}
-          {beach.status==="avoid"&&<div style={{display:"flex",alignItems:"center",gap:5,background:C.redBg,borderRadius:10,padding:"6px 12px",fontSize:13,fontWeight:700,color:C.red,border:`1px solid ${C.red}22`}}><span>☣️</span>Risque H2S</div>}
-          {beach.kids&&<div style={{background:C.tealBg,borderRadius:10,padding:"6px 12px",fontSize:13,fontWeight:700,color:C.teal}}>🧒 Enfants</div>}
-          {beach.snorkel&&<div style={{background:C.tealBg,borderRadius:10,padding:"6px 12px",fontSize:13,fontWeight:700,color:C.teal}}>🤿 Snorkeling</div>}
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div style={{display:"flex",borderBottom:`1px solid var(--sg-border)`}}>
-        {[{id:"prev",l:"Prévisions"},{id:"meteo",l:"Météo"},{id:"signal",l:"Signaler"},{id:"aller",l:"Y aller"}].map(t=>(
-          <button key={t.id} onClick={()=>setTab(t.id)} style={{flex:1,padding:"14px 4px",border:"none",background:"none",fontSize:14,fontWeight:tab===t.id?700:500,cursor:"pointer",color:tab===t.id?C.gold:C.mid,borderBottom:`2px solid ${tab===t.id?C.gold:"transparent"}`,transition:"all .2s",fontFamily:"'Bricolage Grotesque',sans-serif",minHeight:44}}>{t.l}</button>
-        ))}
-      </div>
-
-      <div style={{padding:"16px 15px 70px",overflowY:"auto",maxHeight:"52vh"}}>
-        {/* Prévisions */}
-        {tab==="prev"&&<div style={{animation:"up .3s ease both"}}>
-          <div style={{background:`linear-gradient(145deg,${C.night},${C.night2})`,borderRadius:16,overflow:"hidden"}}>
-            <div style={{padding:"12px 15px 8px",borderBottom:"1px solid rgba(255,255,255,.05)"}}><div style={{fontSize:14,fontWeight:700,letterSpacing:".08em",textTransform:"uppercase",color:"rgba(255,255,255,.3)",marginBottom:2}}>7 prochains jours</div><div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:14,color:"white",textTransform:"uppercase",letterSpacing:"-.01em"}}>{beach.name}</div></div>
-            <div style={{display:"flex",padding:"8px 4px"}}>
-              {forecast.map((d,i)=>{const locked=!premium&&i>=2;const ds=ST[d.status];return(
-                <div key={i} style={{flex:1,padding:"7px 2px",textAlign:"center",filter:locked?"blur(2.5px)":"none",opacity:locked?.18:1}}>
-                  <div style={{fontSize:14,fontWeight:700,color:"rgba(255,255,255,.3)",marginBottom:3}}>{d.day}</div>
-                  <div style={{fontSize:15,marginBottom:2}}>{ds.e}</div>
-                  <div style={{width:"60%",height:2,borderRadius:2,background:ds.c,margin:"0 auto"}}/>
-                  <div style={{fontSize:14,color:"rgba(255,255,255,.4)",marginTop:2}}>{Math.round(d.afai*100)}%</div>
+            {/* Beach list rows */}
+            <div style={{margin:"10px 22px 0",display:"flex",flexDirection:"column",gap:6}}>
+              {[
+                ["\�\�\️","Grande Anse d'Arlet","Sud \· 12 km","\✓ Propre","g"],
+                ["\⛱\️","Le Diamant","Sud \· 25 km","\⚡ Mod\ér\é","o"],
+                ["\�\�","Sainte-Anne","Extr\ême Sud \· 38 km","\�\� \Éviter","r"],
+              ].map(([emoji,name,dist,statusTxt,cls],i)=>(
+                <div key={i} style={{background:"white",borderRadius:14,padding:"10px 14px",
+                  display:"flex",alignItems:"center",justifyContent:"space-between",
+                  boxShadow:"0 2px 10px rgba(0,0,0,.04)",border:"1px solid rgba(0,0,0,.04)"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:9}}>
+                    <span style={{fontSize:17}}>{emoji}</span>
+                    <div>
+                      <div style={{fontSize:12,fontWeight:700,color:C.ink}}>{name}</div>
+                      <div style={{fontSize:10,color:C.mid}}>{dist}</div>
+                    </div>
+                  </div>
+                  <span style={{fontSize:10,fontWeight:700,padding:"4px 10px",borderRadius:100,
+                    background:cls==="g"?C.greenBg:cls==="r"?C.redBg:C.amberBg,
+                    color:cls==="g"?C.greenL:cls==="r"?C.red:C.amber}}>{statusTxt}</span>
                 </div>
-              )})}
+              ))}
             </div>
-            {!premium&&<div style={{padding:"6px 14px 11px",fontSize:14,color:"rgba(255,255,255,.3)",textAlign:"center"}}>🔒 J+3 → J+7 avec Premium · 4,99€ 30 jours</div>}
-            {drift&&(drift.driftLabel!=="Stable")&&<div style={{padding:"8px 14px 11px",borderTop:"1px solid rgba(255,255,255,.06)",fontSize:14,color:"rgba(255,255,255,.5)",display:"flex",alignItems:"center",gap:6}}><span>{drift.drift==="up"?"📈":"📉"}</span><span>{drift.driftLabel}</span><span style={{opacity:.7}}>(Δ {drift.driftValue>0?"+":""}{Math.round(drift.driftValue*100)}% sur 7j)</span></div>}
-          </div>
-        </div>}
 
-        {/* Météo */}
-        {tab==="meteo"&&<div style={{animation:"up .3s ease both",display:"flex",flexDirection:"column",gap:8}}>
-          {wLoad&&[1,2,3,4].map(i=><div key={i} className="sk" style={{height:40}}/>)}
-          {!wLoad&&wErr&&!w&&<div style={{padding:"14px",background:"var(--sg-cardS)",borderRadius:11,border:"1px solid var(--sg-border)",fontSize:14,color:"var(--sg-mid)"}}>📡 Météo indisponible (vérifiez la connexion).</div>}
-          {w&&[{l:L.vent,v:`${w.wind} km/h`,i:"💨"},{l:L.direction,v:`${w.dir}°`,i:"🧭"},{l:L.uv,v:w.uv,i:"☀️"},{l:L.temp,v:`${w.temp}°C`,i:"🌡️"}].map(r=>(
-            <div key={r.l} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"11px 13px",background:"var(--sg-cardS)",borderRadius:11,border:"1px solid var(--sg-borderM)",fontSize:14}}>
-              <span style={{display:"flex",alignItems:"center",gap:7,color:"var(--sg-ink)",opacity:0.9,fontWeight:500}}><span>{r.i}</span>{r.l}</span>
-              <span style={{fontWeight:700,color:"var(--sg-ink)"}}>{r.v}</span>
-            </div>
-          ))}
-          {w&&<div style={{padding:"11px 13px",background:"var(--sg-cardS)",borderRadius:11,border:"1px solid var(--sg-borderM)",borderLeft:"3px solid "+C.teal,fontSize:14,color:"var(--sg-ink)",lineHeight:1.65,fontWeight:500}}>💡 {w.wind>25?L.ventFort:w.uv>8?L.uvEleve:L.conditionsFav}</div>}
-        </div>}
-
-        {/* Signaler */}
-        {tab==="signal"&&!reported&&<div style={{animation:"up .3s ease both"}}>
-          <p style={{fontSize:13,color:"var(--sg-ink)",marginBottom:14,lineHeight:1.7,opacity:.8}}>Tu es sur place ? Dis-nous en 2 secondes.</p>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>
-            {CHOICES.map(c=>{const cs=ST[c.k==="none"?"clean":c.k==="few"?"moderate":"avoid"];return(
-              <button key={c.k} onClick={()=>pick(c.k)} style={{padding:"13px 8px",borderRadius:13,border:choice===c.k?`2px solid ${cs.c}60`:`1px solid var(--sg-border)`,cursor:"pointer",textAlign:"center",background:choice===c.k?cs.bg:"rgba(0,0,0,.025)",transition:"all .15s",color:"var(--sg-ink)"}}>
-                <div style={{fontSize:24,marginBottom:3}}>{c.e}</div>
-                <div style={{fontSize:14,fontWeight:700,color:choice===c.k?cs.c:C.mid}}>{c.l}</div>
-                <div style={{fontSize:14,color:C.gold,fontWeight:700,marginTop:2}}>⭐ +{c.xp} XP</div>
+            {/* CTA — INSIDE slide 2 */}
+            <div style={{marginTop:"auto",padding:"10px 22px 48px"}}>
+              <button onClick={()=>goTo(2)} style={{
+                width:"100%",background:"linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%)",
+                color:C.ink,border:"none",borderRadius:20,padding:"17px 20px",
+                fontFamily:"'Anton',sans-serif",fontSize:19,letterSpacing:".06em",textTransform:"uppercase",
+                cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between",
+                boxShadow:"inset 0 1px 0 rgba(255,255,255,.55),0 8px 28px rgba(232,168,0,.44)",
+                position:"relative",overflow:"hidden"}}>
+                <span style={{position:"relative",zIndex:1}}>Choisir ma plage</span>
+                <div style={{width:36,height:36,background:"rgba(0,0,0,.11)",borderRadius:"50%",
+                  display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,
+                  position:"relative",zIndex:1}}>\→</div>
               </button>
-            )})}
+            </div>
           </div>
-          {(genning||comment)&&<div style={{marginBottom:14}}>
-            <div style={{fontSize:14,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"var(--sg-mid)",marginBottom:6,display:"flex",alignItems:"center",gap:6}}>Commentaire <span style={{background:C.greenBg,color:C.green,padding:"2px 7px",borderRadius:100,fontSize:14,fontWeight:700}}>IA ✨</span></div>
-            {genning?<div style={{padding:"11px 13px",borderRadius:11,background:C.goldBg,display:"flex",gap:5,alignItems:"center",border:`1px solid ${C.gold}22`}}>{[0,1,2].map(i=><div key={i} style={{width:6,height:6,borderRadius:"50%",background:C.goldL,animation:`dotT 1.2s ease ${i*.15}s infinite`}}/>)}<span style={{fontSize:14,color:C.gold}}>Génération…</span></div>
-            :<textarea value={comment} onChange={e=>setComment(e.target.value)} rows={2} style={{width:"100%",padding:"11px 13px",fontSize:14,lineHeight:1.5,border:`1.5px solid ${C.gold}33`,borderRadius:11,background:"var(--sg-bg)",color:"var(--sg-ink)",resize:"none",outline:"none",boxSizing:"border-box"}}/>}
-          </div>}
-          <GBtn full sm onClick={doReport}>Signaler{choice?` +${CHOICES.find(c=>c.k===choice)?.xp} XP`:""} →</GBtn>
-        </div>}
-        {tab==="signal"&&reported&&<div style={{textAlign:"center",padding:"32px 0",animation:"up .3s ease both"}}><div style={{fontSize:52,marginBottom:10}}>🎉</div><div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:24,textTransform:"uppercase",letterSpacing:"-.02em",color:"var(--sg-ink)",marginBottom:5}}>Merci !</div><div style={{fontSize:14,color:"var(--sg-mid)",lineHeight:1.6}}>Ton signalement est en ligne sur {beach.name}.</div></div>}
 
-        {/* Y aller */}
-        {tab==="aller"&&<div style={{animation:"up .3s ease both",display:"flex",flexDirection:"column",gap:9}}>
-          {[{h:`https://maps.google.com/?q=${beach.lat},${beach.lng}&travelmode=driving`,i:"🗺️",t:"Itinéraire voiture",s:"Google Maps"},{h:`https://www.waze.com/ul?ll=${beach.lat}%2C${beach.lng}&navigate=yes`,i:"📡",t:"Ouvrir Waze",s:"Navigation temps réel"},{h:`https://www.windy.com/${beach.lat}/${beach.lng}?wind`,i:"🌬️",t:"Voir sur Windy",s:"Vents et courants"}].map(l=>(
-            <a key={l.t} href={l.h} target="_blank" rel="noreferrer" style={{display:"flex",alignItems:"center",gap:13,padding:"14px 15px",background:"var(--sg-card)",borderRadius:14,border:"1px solid var(--sg-border)",textDecoration:"none",transition:"all .18s",boxShadow:"0 2px 8px var(--sg-card-shadow, rgba(0,0,0,.042))"}} onMouseEnter={e=>e.currentTarget.style.transform="translateY(-1px)"} onMouseLeave={e=>e.currentTarget.style.transform="translateY(0)"}>
-              <div style={{width:40,height:40,borderRadius:11,background:"var(--sg-rowHover)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>{l.i}</div>
-              <div style={{flex:1}}><div style={{fontSize:14,fontWeight:700,color:"var(--sg-ink)"}}>{l.t}</div><div style={{fontSize:14,color:"var(--sg-mid)",marginTop:1}}>{l.s}</div></div>
-              <span style={{fontSize:14,color:"var(--sg-mid)"}}>→</span>
-            </a>
+          {/* ═══════════════════════════════════════════
+              SLIDE 3 — Premium / Forecast
+              ═══════════════════════════════════════════ */}
+          <div className="onb-slide" style={{background:"#FDFCF7"}}>
+            {/* Header */}
+            <div style={{padding:"28px 22px 0",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div style={{fontFamily:"'Anton',sans-serif",fontSize:16,letterSpacing:".05em",display:"flex",alignItems:"center",gap:8}}>
+                <div style={{width:20,height:20,borderRadius:"50%",
+                  background:"conic-gradient(from -10deg,#FFE898 0deg 30deg,#E8A800 30deg 80deg,#FFD040 80deg 130deg,#B87A00 130deg 180deg,#FFE898 180deg 360deg)",
+                  animation:"spin 20s linear infinite",boxShadow:"0 2px 8px rgba(232,168,0,.28)"}}/>
+                SARGASSES.MQ
+              </div>
+              <button onClick={closeOnboarding} style={{fontSize:12,fontWeight:600,color:C.mid,background:"none",
+                border:"none",cursor:"pointer",textDecoration:"underline",textUnderlineOffset:3,fontFamily:"inherit"}}>Passer</button>
+            </div>
+
+            <div style={{padding:"18px 22px 0",fontSize:12.5,fontStyle:"italic",color:C.mid}}>Pour les weekends qui comptent vraiment.</div>
+
+            <div style={{padding:"6px 22px 0",fontFamily:"'Anton',sans-serif",fontSize:40,lineHeight:.9,
+              letterSpacing:"-.02em",textTransform:"uppercase",color:C.ink,marginBottom:6}}>
+              Sois <span style={{background:"linear-gradient(138deg,#FFD860,#E8A800 50%,#B07000)",
+                WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>pr\évenu</span><br/>
+              7 jours<br/>\à l'avance.
+            </div>
+
+            <p style={{padding:"0 22px",fontSize:13,color:C.mid,lineHeight:1.55,marginBottom:14}}>
+              Les donn\ées du jour c'est bien. <strong style={{color:C.ink,fontWeight:700}}>Savoir ce qui arrive ce weekend</strong>, c'est mieux.
+            </p>
+
+            {/* Premium card */}
+            <div style={{margin:"0 22px",background:"linear-gradient(145deg,#0D1E1C,#0A1714)",
+              borderRadius:26,padding:20,position:"relative",overflow:"hidden",
+              boxShadow:"0 16px 48px rgba(0,0,0,.18)"}}>
+              {/* Gold top border */}
+              <div style={{position:"absolute",top:0,left:0,right:0,height:1,
+                background:"linear-gradient(90deg,transparent,"+C.goldL+",transparent)"}}/>
+              {/* Glow */}
+              <div style={{position:"absolute",top:-50,right:-30,width:160,height:160,borderRadius:"50%",
+                background:"radial-gradient(circle,rgba(232,168,0,.1) 0%,transparent 70%)"}}/>
+
+              {/* PREMIUM badge */}
+              <div style={{display:"inline-flex",alignItems:"center",gap:5,
+                background:"rgba(255,199,44,.12)",border:"1px solid rgba(255,199,44,.18)",
+                borderRadius:100,padding:"4px 11px",fontSize:9.5,fontWeight:700,
+                letterSpacing:".1em",textTransform:"uppercase",color:C.goldL,marginBottom:12}}>
+                <span style={{width:4,height:4,borderRadius:"50%",background:C.goldL}}/>PREMIUM
+              </div>
+
+              {/* Price */}
+              <div style={{marginBottom:6}}>
+                <div style={{display:"flex",alignItems:"baseline",gap:3}}>
+                  <span style={{fontSize:20,fontWeight:700,color:"rgba(255,255,255,.6)",marginTop:6}}>\€</span>
+                  <span style={{fontFamily:"'Anton',sans-serif",fontSize:52,color:"white",lineHeight:1,letterSpacing:"-.02em"}}>4,99</span>
+                  <span style={{fontSize:13,color:"rgba(255,255,255,.35)",fontWeight:500,alignSelf:"flex-end",marginBottom:4}}>/ mois</span>
+                </div>
+              </div>
+
+              {/* Price anchor */}
+              <div style={{fontSize:11,color:"rgba(255,255,255,.35)",marginBottom:14,lineHeight:1.5,
+                padding:"8px 10px",background:"rgba(255,255,255,.04)",borderRadius:10,
+                borderLeft:"2px solid rgba(232,168,0,.3)"}}>
+                Une journ\ée plage pour 4 personnes = <strong style={{color:"rgba(255,255,255,.6)"}}>80\€ minimum.</strong><br/>
+                Savoir \à l'avance = <strong style={{color:"rgba(255,255,255,.6)"}}>4,99\€.</strong>
+              </div>
+
+              {/* Forecast preview */}
+              <div style={{marginBottom:14}}>
+                <div style={{fontSize:9.5,fontWeight:700,color:"rgba(255,255,255,.4)",
+                  letterSpacing:".1em",textTransform:"uppercase",marginBottom:8}}>Pr\évisions de ta semaine</div>
+                <div style={{display:"flex",gap:5}}>
+                  {[
+                    ["Lun","\�\�\️","Propre","g",false],
+                    ["Mar","\�\�\️","Propre","g",false],
+                    ["Mer","\⚡","Mod\ér\é","o","semi"],
+                    ["Jeu","\�\�","\Éviter","r",true],
+                    ["Ven","\�\�","\Éviter","r",true],
+                    ["Sam","\⚡","Mod\ér\é","o",true],
+                    ["Dim","\�\�\️","Propre","g",true],
+                  ].map(([day,ic,st,cl,locked],i)=>(
+                    <div key={i} style={{flex:1,background:"rgba(255,255,255,.05)",borderRadius:10,
+                      padding:"8px 6px",textAlign:"center",display:"flex",flexDirection:"column",
+                      alignItems:"center",gap:3,
+                      filter:locked===true?"blur(3px)":locked==="semi"?"blur(1.5px)":"none",
+                      opacity:locked===true?.35:locked==="semi"?.5:1,
+                      pointerEvents:locked?"none":"auto"}}>
+                      <span style={{fontSize:8.5,fontWeight:700,color:"rgba(255,255,255,.4)"}}>{day}</span>
+                      <span style={{fontSize:15}}>{ic}</span>
+                      <span style={{fontSize:8,fontWeight:700,padding:"2px 5px",borderRadius:100,
+                        background:cl==="g"?"rgba(34,197,94,.15)":cl==="r"?"rgba(232,82,42,.2)":"rgba(232,168,0,.15)",
+                        color:cl==="g"?"#4ADE80":cl==="r"?"#FF8066":C.goldL}}>{st}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Unlock banner */}
+              <div style={{position:"relative",marginTop:-28,marginBottom:14,
+                background:"linear-gradient(0deg,rgba(13,30,28,.95) 60%,transparent)",
+                padding:"20px 8px 8px",textAlign:"center",fontSize:10.5,fontWeight:600,
+                color:"rgba(255,255,255,.5)"}}>
+                \�\� D\ébloque les 5 prochains jours
+              </div>
+
+              {/* Features */}
+              <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
+                {[
+                  ["Pr\évisions 7 jours","\· d\érive satellite"],
+                  ["Alertes","avant que \ça arrive"],
+                  ["Annulation","\à tout moment"],
+                ].map(([bold,rest],i)=>(
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:9}}>
+                    <div style={{width:18,height:18,borderRadius:"50%",
+                      background:"rgba(0,158,142,.18)",border:"1px solid rgba(0,158,142,.28)",
+                      display:"flex",alignItems:"center",justifyContent:"center",
+                      fontSize:9,color:C.tealL,flexShrink:0}}>\✓</div>
+                    <span style={{fontSize:12,color:"rgba(255,255,255,.7)"}}>
+                      <strong style={{color:"#fff"}}>{bold}</strong> {rest}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* CTA — INSIDE slide 3 (premium card) */}
+              <button onClick={openStripe} style={{
+                width:"100%",background:"linear-gradient(135deg,"+C.goldL+","+C.gold+")",
+                color:C.ink,border:"none",borderRadius:16,padding:"16px 20px",
+                fontFamily:"'Anton',sans-serif",fontSize:18,letterSpacing:".05em",textTransform:"uppercase",
+                cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between",
+                boxShadow:"0 8px 24px rgba(232,168,0,.38),inset 0 1px 0 rgba(255,255,255,.4)",
+                position:"relative",overflow:"hidden",transition:"transform .12s"}}>
+                <span style={{position:"relative",zIndex:1}}>D\ébloquer mes pr\évisions</span>
+                <span style={{width:36,height:36,background:"rgba(0,0,0,.15)",borderRadius:"50%",
+                  display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,
+                  position:"relative",zIndex:1}}>\→</span>
+              </button>
+            </div>
+
+            {/* Testimonial */}
+            <div style={{margin:"12px 22px 0",background:"rgba(255,255,255,.6)",
+              border:"1px solid rgba(232,168,0,.12)",borderRadius:14,padding:"12px 14px",
+              display:"flex",gap:10,alignItems:"flex-start"}}>
+              <div style={{width:30,height:30,borderRadius:"50%",background:"linear-gradient(135deg,#4ECDC4,#44A08D)",
+                display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,
+                color:"#fff",flexShrink:0}}>M</div>
+              <div>
+                <div style={{fontSize:10,fontWeight:700,color:C.ink,marginBottom:3}}>Marie \· Schoelcher</div>
+                <div style={{fontSize:11.5,color:C.mid,lineHeight:1.5,fontStyle:"italic"}}>
+                  "Gr\âce aux alertes, j'ai \évit\é une journ\ée perdue avec mes enfants."
+                </div>
+              </div>
+            </div>
+
+            {/* Free entry */}
+            <div style={{padding:"10px 22px 0",textAlign:"center",fontSize:12,color:C.mid}}>
+              Pas maintenant \—{" "}
+              <button onClick={closeOnboarding} style={{background:"none",border:"none",cursor:"pointer",
+                color:C.teal,fontWeight:700,fontSize:12,textDecoration:"underline",textUnderlineOffset:3,
+                fontFamily:"'Bricolage Grotesque',sans-serif"}}>commencer gratuitement</button>
+            </div>
+
+            {/* Micro */}
+            <div style={{padding:"6px 22px 48px",textAlign:"center",fontSize:10.5,color:"rgba(104,104,104,.6)",
+              display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+              Paiement s\écuris\é<span style={{width:3,height:3,borderRadius:"50%",background:"rgba(104,104,104,.25)"}}/>Annulation \à tout moment
+            </div>
+          </div>
+
+        </div>{/* /onb-slides */}
+
+        {/* Dots */}
+        <div className="onb-dots">
+          {[0,1,2].map(i=>(
+            <button key={i} onClick={()=>goTo(i)}
+              className={"onb-dot"+(i===step?" active":"")}/>
           ))}
-        </div>}
-      </div>
+        </div>
+      </div>{/* /onb-carousel */}
     </div>
   )
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// ░░ HEADER + NAV
-// ═══════════════════════════════════════════════════════════════════════════════
-const NAV_ALL_FR=[{id:"accueil",icon:"🏠",label:"Accueil"},{id:"liste",icon:"🌊",label:"Plages"},{id:"carte",icon:"🗺️",label:"Carte"},{id:"jeu",icon:"🎮",label:"Jeu"},{id:"arena",icon:"🌊",label:"Arena"},{id:"chat",icon:"🤖",label:"IA"},{id:"premium",icon:"⭐",label:"Premium"},{id:"profil",icon:"👤",label:"Profil"}]
-const NAV_ALL_EN=[{id:"accueil",icon:"🏠",label:"Home"},{id:"liste",icon:"🌊",label:"Beaches"},{id:"carte",icon:"🗺️",label:"Map"},{id:"jeu",icon:"🎮",label:"Game"},{id:"arena",icon:"🌊",label:"Arena"},{id:"chat",icon:"🤖",label:"AI"},{id:"premium",icon:"⭐",label:"Premium"},{id:"profil",icon:"👤",label:"Profile"}]
-// Bottom nav : 5 items max pour mobile, sidebar : tous
-const NAV_BOTTOM_IDS=["accueil","liste","carte","chat","profil"]
-function getNAV(lang){ return lang==="en"?NAV_ALL_EN:NAV_ALL_FR }
-function getBottomNAV(lang){ const all=getNAV(lang); return NAV_BOTTOM_IDS.map(id=>all.find(t=>t.id===id)).filter(Boolean) }
-
-function AppHeader({live,clean,xp,onGPS,island,onIslandChange,copernicusCheck,isDark,onThemeToggle}){
-  const level=getLevel(xp)
-  const nextLevel=LEVELS[LEVELS.indexOf(level)+1]
-  const xpPct=Math.min(100,Math.round(((xp-level.min)/((nextLevel?.min||level.min+1)-level.min))*100))
-
+/* ═══════════════════════════════════════════════════════════════════════════
+   PREMIUM MODAL
+   ═══════════════════════════════════════════════════════════════════════════ */
+function PremiumModal({onClose,lang}){
+  const LL=T[lang]||T.fr
   return(
-    <div style={{padding:"10px 12px 8px",background:"var(--sg-glass)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",borderBottom:"1px solid var(--sg-border)",flexShrink:0,zIndex:50,maxWidth:"100%",boxSizing:"border-box",overflow:"hidden"}}>
-      <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-        <div style={{width:26,height:26,borderRadius:"50%",flexShrink:0,background:"conic-gradient(from -10deg,#FFE898 0deg 25deg,#E8A800 25deg 65deg,#FFD040 65deg 110deg,#B87A00 110deg 155deg,#FFE07A 155deg 195deg,#E09000 195deg 240deg,#FFC72C 240deg 285deg,#B07000 285deg 325deg,#FFE898 325deg 360deg)",animation:"spinR 18s linear infinite",boxShadow:"0 2px 9px rgba(232,168,0,.32)"}}/>
-        <div style={{flex:1}}>
-          <div style={{display:"flex",alignItems:"center",gap:7,flexWrap:"wrap"}}>
-            <span style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:16,letterSpacing:".07em",color:"var(--sg-ink)"}}>SARGASSES</span>
-            <div style={{display:"flex",borderRadius:100,overflow:"hidden",border:"1px solid var(--sg-border)",background:"var(--sg-bg)"}}>
-              <button onClick={()=>onIslandChange("mq")} style={{padding:"8px 14px",fontSize:14,fontWeight:700,fontFamily:"'Bricolage Grotesque',sans-serif",border:"none",cursor:"pointer",background:island==="mq"?(isDark?C.goldL:"var(--sg-ink)"):"transparent",color:island==="mq"?(isDark?"#0B0A08":"white"):"var(--sg-mid)",borderRadius:100,minHeight:36}}>MQ</button>
-              <button onClick={()=>onIslandChange("gp")} style={{padding:"8px 14px",fontSize:14,fontWeight:700,fontFamily:"'Bricolage Grotesque',sans-serif",border:"none",cursor:"pointer",background:island==="gp"?(isDark?C.goldL:"var(--sg-ink)"):"transparent",color:island==="gp"?(isDark?"#0B0A08":"white"):"var(--sg-mid)",borderRadius:100,minHeight:36}}>GP</button>
-            </div>
-            <span style={{fontSize:14,color:level.color,fontWeight:800,background:`${level.color}18`,borderRadius:100,padding:"4px 10px"}}>{level.e} {level.label}</span>
-          </div>
-          {/* XP mini bar */}
-          <div style={{display:"flex",alignItems:"center",gap:6,marginTop:3,flexWrap:"wrap"}}>
-            <div style={{flex:1,height:3,background:"var(--sg-border)",borderRadius:2,overflow:"hidden",minWidth:40}}>
-              <div style={{height:"100%",width:`${xpPct}%`,background:`linear-gradient(90deg,${C.goldLL},${C.goldL})`,borderRadius:2,transition:"width .8s cubic-bezier(.16,1,.3,1)"}}/>
-            </div>
-            <span style={{fontSize:14,color:C.gold,fontWeight:700,whiteSpace:"nowrap"}}>{xp} XP</span>
-            <span style={{fontSize:14,color:"var(--sg-mute)"}}>·</span>
-            <span style={{color:C.green,fontWeight:700,fontSize:14}}>{clean} propres</span>
-            <span style={{fontSize:14,color:"var(--sg-mute)"}}>·</span>
-            <span style={{color:C.teal,fontWeight:700,fontSize:14}}>{live} 🟢</span>
-            {copernicusCheck!=null&&<><span style={{fontSize:14,color:"var(--sg-mute)"}}>·</span><span style={{fontSize:14,fontWeight:700,color:copernicusCheck.ok?C.green:C.amber}} title={copernicusCheck.message}>Copernicus {copernicusCheck.ok?"✓":"—"}</span></>}
-          </div>
-        </div>
-        <div style={{display:"flex",gap:7,alignItems:"center"}}>
-          <button onClick={onThemeToggle} style={{width:44,height:44,borderRadius:"50%",border:"1px solid var(--sg-border)",background:"var(--sg-card)",cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}} aria-label={isDark?"Mode clair":"Mode sombre"}>{isDark?"☀️":"🌙"}</button>
-          <button onClick={onGPS} style={{width:44,height:44,borderRadius:"50%",border:"1px solid var(--sg-border)",background:"var(--sg-card)",cursor:"pointer",fontSize:17,display:"flex",alignItems:"center",justifyContent:"center"}}>📍</button>
-          <div style={{display:"flex",alignItems:"center",gap:5,background:C.tealBg,border:`1px solid rgba(0,150,136,.18)`,borderRadius:100,padding:"4px 10px"}}>
-            <div style={{width:6,height:6,borderRadius:"50%",background:C.tealL,animation:"pulse 2s ease-in-out infinite"}}/>
-            <span style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:14,letterSpacing:".1em",color:C.teal}}>LIVE</span>
-          </div>
-        </div>
+    <>
+      <div className="backdrop" onClick={onClose}/>
+      <div style={{
+        position:"fixed",bottom:0,left:0,right:0,zIndex:1100,
+        background:"linear-gradient(145deg,#0D1E1C,#0A1714)",
+        borderRadius:"24px 24px 0 0",padding:"28px 24px 40px",
+        color:"#e6edf3",maxHeight:"80vh",overflow:"auto",
+      }}>
+        <div className="sheet-handle" style={{background:"rgba(255,255,255,.2)"}}/>
+        <div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
+          margin:"-8px -24px 20px",padding:0}}/>
+
+        <h2 className="anton" style={{fontSize:28,color:"#fff",marginBottom:8}}>\⭐ {LL.premium}</h2>
+        <p style={{fontSize:14,color:"#adbac7",marginBottom:20}}>{LL.premiumDesc}</p>
+
+        <ul style={{listStyle:"none",padding:0,margin:"0 0 24px",display:"flex",flexDirection:"column",gap:12}}>
+          {LL.premiumFeatures.map((f,i)=>(
+            <li key={i} style={{display:"flex",alignItems:"center",gap:10,fontSize:14}}>
+              <span style={{color:C.gold,fontSize:18}}>\✓</span>{f}
+            </li>
+          ))}
+        </ul>
+
+        <a href={STRIPE_URL} target="_blank" rel="noopener" className="gbtn"
+          style={{width:"100%",textDecoration:"none",textAlign:"center",
+            fontSize:17,padding:"16px 24px",display:"block"}}>
+          {LL.premiumCta} \— {LL.premiumPrice}
+        </a>
+
+        <button onClick={onClose} style={{
+          width:"100%",padding:"12px",marginTop:12,background:"none",
+          border:"1px solid rgba(255,255,255,.15)",borderRadius:16,
+          color:"#8b949e",fontSize:13,cursor:"pointer",fontFamily:"inherit",
+        }}>{LL.close}</button>
       </div>
-    </div>
+    </>
   )
 }
 
-function BottomNav({active,onChange,alerts,isDark}){
-  const lang=useLang()
-  const nav=getBottomNAV(lang)
+/* ═══════════════════════════════════════════════════════════════════════════
+   HEADER — floating over map
+   ═══════════════════════════════════════════════════════════════════════════ */
+function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle}){
+  const LL=T[lang]||T.fr
   return(
-    <div className="bn" style={{position:"absolute",bottom:0,left:0,right:0,background:"var(--sg-glass)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",borderTop:"1px solid var(--sg-border)",display:"flex",paddingBottom:"env(safe-area-inset-bottom)",zIndex:100}}>
-      {nav.map(t=>{
-        const on=t.id===active
-        return(
-          <button key={t.id} onClick={()=>onChange(t.id)} style={{flex:1,padding:"10px 2px 8px",display:"flex",flexDirection:"column",alignItems:"center",gap:2,border:"none",background:"none",cursor:"pointer",position:"relative",fontFamily:"'Bricolage Grotesque',sans-serif",transition:"transform .15s cubic-bezier(.34,1.56,.64,1)",transform:on?"scale(1.07)":"scale(1)",minHeight:52}}>
-            {t.id==="accueil"&&alerts>0&&<div style={{position:"absolute",top:4,left:"calc(50% + 5px)",width:16,height:16,borderRadius:"50%",background:C.red,color:"white",fontSize:10,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",border:"2px solid var(--sg-bg)"}}>{alerts}</div>}
-            <span style={{fontSize:on?22:19,transition:"font-size .2s"}}>{t.icon}</span>
-            <span style={{fontSize:14,fontWeight:on?700:600,textTransform:"uppercase",color:on?(isDark?"var(--sg-ink)":C.gold):"var(--sg-mute)",transition:"color .2s"}}>{t.label}</span>
-            {on&&<div style={{position:"absolute",top:0,left:"50%",transform:"translateX(-50%)",width:18,height:2,borderRadius:1,background:isDark?"var(--sg-mid)":`linear-gradient(90deg,${C.goldLL},${C.goldL})`}}/>}
-          </button>
-        )
-      })}
-    </div>
-  )
-}
-
-function Sidebar({active,onChange,alerts,xp,clean,live,island,onIslandChange,isDark,onThemeToggle}){
-  const lang=useLang()
-  const nav=getNAV(lang)
-  const L=T[lang]||T.fr
-  const level=getLevel(xp)
-  return(
-    <div className="sidebar" style={{padding:"20px 0",position:"relative"}}>
-      <div style={{padding:"0 20px 20px",borderBottom:"1px solid var(--sg-border)",marginBottom:8}}>
-        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
-          <div style={{width:28,height:28,borderRadius:"50%",background:"conic-gradient(from -10deg,#FFE898 0deg 25deg,#E8A800 25deg 65deg,#FFD040 65deg 110deg,#B87A00 110deg 155deg,#FFE07A 155deg 195deg,#E09000 195deg 240deg,#FFC72C 240deg 285deg,#B07000 285deg 325deg,#FFE898 325deg 360deg)",animation:"spinR 18s linear infinite",flexShrink:0}}/>
-          <span style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:17,letterSpacing:".07em",color:"var(--sg-ink)"}}>SARGASSES</span>
-        </div>
-        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
-          <div style={{display:"flex",borderRadius:100,overflow:"hidden",border:"1px solid var(--sg-border)",background:"var(--sg-bg)"}}>
-            <button onClick={()=>onIslandChange("mq")} style={{padding:"8px 14px",fontSize:14,fontWeight:700,fontFamily:"'Bricolage Grotesque',sans-serif",border:"none",cursor:"pointer",background:island==="mq"?(isDark?C.goldL:"var(--sg-ink)"):"transparent",color:island==="mq"?(isDark?"#0B0A08":"white"):"var(--sg-mid)",borderRadius:100}}>Martinique</button>
-            <button onClick={()=>onIslandChange("gp")} style={{padding:"8px 14px",fontSize:14,fontWeight:700,fontFamily:"'Bricolage Grotesque',sans-serif",border:"none",cursor:"pointer",background:island==="gp"?(isDark?C.goldL:"var(--sg-ink)"):"transparent",color:island==="gp"?(isDark?"#0B0A08":"white"):"var(--sg-mid)",borderRadius:100}}>Guadeloupe</button>
-          </div>
-        </div>
-        <div style={{display:"flex",alignItems:"center",gap:5,marginBottom:5}}>
-          <span style={{fontSize:14,color:level.color,fontWeight:800,background:`${level.color}18`,borderRadius:100,padding:"2px 8px"}}>{level.e} {level.label}</span>
-        </div>
-        <div style={{height:3,background:"var(--sg-border)",borderRadius:2,overflow:"hidden",marginBottom:4}}>
-          <div style={{height:"100%",width:`${Math.min(100,Math.round(((xp-level.min)/((LEVELS[LEVELS.indexOf(level)+1]?.min||level.min+1)-level.min))*100))}%`,background:`linear-gradient(90deg,${C.goldLL},${C.goldL})`,borderRadius:2,transition:"width 1s"}}/>
-        </div>
-        <div style={{fontSize:14,color:"var(--sg-mid)"}}><span style={{color:C.green,fontWeight:700}}>{clean} {L.propres}</span> · <span style={{color:C.teal,fontWeight:700}}>{live} {L.enLigne}</span></div>
+    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
+      {/* Island toggle */}
+      <div style={{display:"flex",borderRadius:12,overflow:"hidden",
+        border:"1.5px solid var(--sg-border,rgba(0,0,0,.08))",
+        background:"var(--sg-card,#fff)",boxShadow:"0 2px 8px rgba(0,0,0,.06)"}}>
+        {["mq","gp"].map(id=>(
+          <button key={id} onClick={()=>onIslandChange(id)} style={{
+            padding:"8px 14px",border:"none",cursor:"pointer",
+            background:island===id?C.gold:"transparent",
+            color:island===id?"#0D0D0D":"var(--sg-mid,#686868)",
+            fontSize:12,fontWeight:700,fontFamily:"inherit",
+            transition:"all .2s",
+          }}>{id==="mq"?"MQ":"GP"}</button>
+        ))}
       </div>
-      {nav.map(t=>{
-        const on=t.id===active
-        return(
-          <button key={t.id} onClick={()=>onChange(t.id)} style={{width:"100%",padding:"11px 20px",display:"flex",alignItems:"center",gap:12,border:"none",background:on?(isDark?"var(--sg-accent)":C.goldBgL):"none",cursor:"pointer",position:"relative",fontFamily:"'Bricolage Grotesque',sans-serif",transition:"all .18s"}}
-          onMouseEnter={e=>{if(!on)e.currentTarget.style.background="var(--sg-rowHover)"}} onMouseLeave={e=>{if(!on)e.currentTarget.style.background="none"}}>
-            {on&&<div style={{position:"absolute",left:0,top:"50%",transform:"translateY(-50%)",width:3,height:22,borderRadius:2,background:isDark?"var(--sg-mid)":C.goldL}}/>}
-            <span style={{fontSize:20}}>{t.icon}</span>
-            <span style={{fontSize:13,fontWeight:on?700:500,color:on?(isDark?"var(--sg-ink)":C.gold):"var(--sg-mid)"}}>{t.label}</span>
-            {t.id==="accueil"&&alerts>0&&<span style={{marginLeft:"auto",width:18,height:18,borderRadius:"50%",background:C.red,color:"white",fontSize:9,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center"}}>{alerts}</span>}
-          </button>
-        )
-      })}
-      <div style={{position:"absolute",bottom:20,left:0,right:0,padding:"0 20px",display:"flex",flexDirection:"column",gap:10}}>
-        <button onClick={onThemeToggle} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",borderRadius:10,border:"1px solid var(--sg-border)",background:"var(--sg-card)",cursor:"pointer",fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:14,color:"var(--sg-ink)"}} aria-label={isDark?L.modeClair:L.modeSombre}>{isDark?"☀️ "+L.modeClair:"🌙 "+L.modeSombre}</button>
-        <div style={{fontSize:14,color:"var(--sg-mute)",lineHeight:1.6}}>
-          <div style={{marginBottom:4,fontWeight:700,color:"var(--sg-mid)"}}>Liens utiles</div>
-          <a href="/carte-sargasses/" style={{color:"var(--sg-mute)",textDecoration:"none"}}>Carte sargasses</a><span style={{margin:"0 4px"}}>·</span>
-          <a href="/previsions/" style={{color:"var(--sg-mute)",textDecoration:"none"}}>Prévisions 7j</a><span style={{margin:"0 4px"}}>·</span>
-          <a href="/en/" style={{color:"var(--sg-mute)",textDecoration:"none"}}>English</a><span style={{margin:"0 4px"}}>·</span>
-          <a href="/mentions-legales.html" style={{color:"var(--sg-mute)",textDecoration:"none"}}>Mentions légales</a><span style={{margin:"0 4px"}}>·</span>
-          <a href="/confidentialite.html" style={{color:"var(--sg-mute)",textDecoration:"none"}}>Confidentialité</a>
+
+      {/* Live indicator + GSC subtitle (#1 query: "sargasse martinique en temps réel") */}
+      <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
+        <div style={{display:"flex",alignItems:"center",gap:6,
+          padding:"6px 12px",borderRadius:100,
+          background:"var(--sg-card,#fff)",
+          boxShadow:"0 2px 8px rgba(0,0,0,.06)",
+          border:"1px solid var(--sg-border)",
+          fontSize:11,fontWeight:600,color:C.teal}}>
+          <span className="pulse" style={{width:8,height:8,borderRadius:4,background:C.green}}/>
+          {LL.live} \· {LL.copernicus}
         </div>
-        <div style={{fontSize:14,color:"var(--sg-mute)",lineHeight:1.8}}>
-          <a href="https://sargasses-martinique.com/" style={{color:"var(--sg-mute)",textDecoration:"none"}}>sargasses-martinique.com</a><br/>
-          <a href="https://sargasses-guadeloupe.com/" style={{color:"var(--sg-mute)",textDecoration:"none"}}>sargasses-guadeloupe.com</a>
-        </div>
+        <span style={{fontSize:9,fontWeight:600,color:"var(--sg-mid,#686868)",letterSpacing:".02em",
+          whiteSpace:"nowrap"}}>{lang==="en"?"Sargassum map in real time":"Carte des sargasses en temps r\éel"}</span>
+      </div>
+
+      {/* Theme + Lang */}
+      <div style={{display:"flex",gap:4}}>
+        <button onClick={onThemeToggle} style={{
+          width:36,height:36,borderRadius:12,border:"1px solid var(--sg-border)",
+          background:"var(--sg-card,#fff)",cursor:"pointer",fontSize:16,
+          display:"flex",alignItems:"center",justifyContent:"center",
+          boxShadow:"0 2px 8px rgba(0,0,0,.06)",
+        }}>{theme==="dark"?"\☀\️":"\�\�"}</button>
+        <button onClick={onLangToggle} style={{
+          width:36,height:36,borderRadius:12,border:"1px solid var(--sg-border)",
+          background:"var(--sg-card,#fff)",cursor:"pointer",fontSize:12,fontWeight:700,
+          fontFamily:"inherit",color:"var(--sg-ink)",
+          display:"flex",alignItems:"center",justifyContent:"center",
+          boxShadow:"0 2px 8px rgba(0,0,0,.06)",
+        }}>{lang==="fr"?"EN":"FR"}</button>
       </div>
     </div>
   )
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// ░░ APP ROOT
-// ═══════════════════════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════════════════
+   APP PRINCIPAL
+   ═══════════════════════════════════════════════════════════════════════════ */
 export default function App(){
-  const lang = getLang()
-  const [screen,  setScreen]  = useState("onboarding")
-  const [tab,     setTab]     = useState(()=>{
-    if(typeof window!=="undefined"){
-      const p=window.location.pathname
-      if(p.includes("carte-sargasses")) return "carte"
-      if(p.includes("previsions")) return "accueil"
-    }
-    return "carte"
-  })
-  const [favs,    setFavs]    = useState(()=>g("sg_favs",["grande-anse","tartane"]))
-  const [sheet,   setSheet]   = useState(null)
-  const [premium, setPremium] = useState(()=>g("sg_premium",false))
-  const [island, setIsland] = useState(()=>{
-    try {
-      if(typeof window!=="undefined"&&/guadeloupe/.test(window.location.hostname)) return "gp"
-    } catch(e){}
-    return g("sg_island","mq")
-  })
-  const [confetti,setConfetti]= useState(false)
-  const [live,    setLive]    = useState(38)
-  const [gps,     setGps]     = useState(null)
-  const [chatQ,   setChatQ]   = useState(null)
-  const [xp,      setXP]      = useState(()=>g("sg_xp",0))
-  const [xpToast, setXpToast] = useState(null)
-  const [xpVisible,setXpVis] = useState(false)
-  const [copernicusCheck, setCopernicusCheck] = useState(null) // { ok, message } après GET /api/copernicus/check
-  const [sargassumData, setSargassumData] = useState(null)     // { source, updatedAt, levels } après GET /api/copernicus/sargassum
-  const [historyData, setHistoryData] = useState(null)         // { history, changes } depuis history.json
-  const [allBeaches, setAllBeaches] = useState(BEACHES)         // liste complète (étendue via /data/beaches-list.json si dispo)
-  const [localBeachImages, setLocalBeachImages] = useState({}) // id → filename (depuis /data/beaches-images.json) pour vignettes liste
-  const [isDark, setIsDark] = useState(()=>{
-    try {
-      const v = localStorage.getItem("sg_theme")
-      if (v !== null) return v === "dark"
-      if (typeof window !== "undefined" && window.matchMedia) return window.matchMedia("(prefers-color-scheme: dark)").matches
-    } catch {}
-    return false
-  })
+  const[lang,setLang]=useState(getLang)
+  const[theme,setTheme]=useState(()=>g("sg_theme","light"))
+  const[island,setIsland]=useState(()=>g("sg_island","mq"))
+  const[view,setView]=useState("map") // map | list | premium
+  const[search,setSearch]=useState("")
+  const[filter,setFilter]=useState(0) // index in T.filters
+  const[selectedBeach,setSelectedBeach]=useState(null)
+  const[favorites,setFavorites]=useState(()=>g("sg_fav",[]))
+  const[showOnboarding,setShowOnboarding]=useState(()=>!g("sg_onb",0))
+  const[showPremium,setShowPremium]=useState(false)
 
-  const online = useOnline()
+  // Runtime data sources
+  const[allBeaches,setAllBeaches]=useState(BEACHES_FALLBACK)
+  const[imageMap,setImageMap]=useState(null)
+  const[sargData,setSargData]=useState(null)
 
+  const LL=T[lang]||T.fr
+
+  // Fetch beaches-list.json at mount
   useEffect(()=>{
-    try { localStorage.setItem("sg_theme", isDark ? "dark" : "light") } catch {}
-    document.documentElement.classList.toggle("theme-dark", isDark)
-  }, [isDark])
-
-  // SEO : titre dynamique "en temps réel" (quick win GSC)
-  useEffect(()=>{
-    if(screen!=="app") return
-    if(lang==="en"){
-      document.title = island==="gp" ? "Sargassum Guadeloupe real-time · Map & beaches today" : "Sargassum Martinique real-time · Map & beaches today"
-    } else {
-      const base = island==="mq" ? "Sargasses Martinique en temps réel" : "Sargasses Guadeloupe en temps réel"
-      document.title = `${base} · Carte et plages aujourd'hui`
-    }
-  }, [screen, island, lang])
-
-  // Données sargasses récentes (dernier jeu Copernicus ou référence)
-  useEffect(() => {
-    if (screen !== 'app' || !online) return
-    let cancelled = false
-    fetch(import.meta.env.DEV ? '/api/copernicus/sargassum' : '/api/copernicus/sargassum.json')
-      .then((r) => r.json())
-      .then((d) => {
-        if (!cancelled && d && Array.isArray(d.levels)) setSargassumData({ source: d.source || 'reference', updatedAt: d.updatedAt, levels: d.levels, weekly: d.weekly || null })
+    fetch("/data/beaches-list.json")
+      .then(r=>r.json())
+      .then(data=>{
+        if(Array.isArray(data)&&data.length>0)setAllBeaches(data)
       })
-      .catch(() => {})
-    return () => { cancelled = true }
-  }, [screen, online])
-
-  // Historique sargasses (30 jours)
-  useEffect(() => {
-    if (screen !== 'app' || !online) return
-    let cancelled = false
-    fetch(import.meta.env.DEV ? '/api/copernicus/history' : '/api/copernicus/history.json')
-      .then((r) => r.json())
-      .then((d) => { if (!cancelled && d) setHistoryData(d) })
-      .catch(() => {})
-    return () => { cancelled = true }
-  }, [screen, online])
-
-  // Vérification Copernicus : en dev appel API, en prod (FTP) déduire du fichier sargassum.json
-  useEffect(()=>{
-    if(screen!=="app"||!online) return
-    let cancelled=false
-    if(import.meta.env.DEV){
-      fetch("/api/copernicus/check").then(r=>r.json()).then(d=>{ if(!cancelled) setCopernicusCheck({ ok: d.ok, message: d.message || (d.ok ? "OK" : d.error || "—") }) }).catch(()=>{ if(!cancelled) setCopernicusCheck({ ok: false, message: "Indisponible" }) })
-    }
-    return ()=> { cancelled=true }
-  },[screen, online])
-
-  // En production (FTP statique) : afficher Copernicus ✓ si sargassum.json a source "copernicus"
-  useEffect(() => {
-    if (import.meta.env.DEV) return
-    if (sargassumData?.source === 'copernicus') setCopernicusCheck({ ok: true, message: 'Données du jour' })
-    else if (sargassumData != null) setCopernicusCheck({ ok: false, message: 'Données de référence' })
-  }, [sargassumData])
-
-  // Liste plages étendue (carte complète) — charge /data/beaches-list.json si dispo
-  useEffect(() => {
-    if (screen !== "app") return
-    let cancelled = false
-    fetch(getBaseUrl().replace(/\/$/, "") + "/data/beaches-list.json")
-      .then((r) => r.ok ? r.json() : null)
-      .then((d) => {
-        if (!cancelled && Array.isArray(d) && d.length > 0) setAllBeaches(d)
-      })
-      .catch(() => {})
-    return () => { cancelled = true }
-  }, [screen])
-
-  // Images locales des plages (liste) — pour afficher les vignettes en ligne même si Esri est bloqué
-  useEffect(() => {
-    if (screen !== "app") return
-    let cancelled = false
-    fetch(getBaseUrl().replace(/\/$/, "") + "/data/beaches-images.json")
-      .then((r) => r.ok ? r.json() : null)
-      .then((d) => {
-        if (!cancelled && d && typeof d === "object") setLocalBeachImages(d)
-      })
-      .catch(() => {})
-    return () => { cancelled = true }
-  }, [screen])
-
-  // Live counter
-  useEffect(()=>{const iv=setInterval(()=>setLive(n=>Math.max(26,Math.min(70,n+(Math.random()>.5?1:-1)))),2800);return()=>clearInterval(iv)},[])
-
-  // Retour Stripe : ?premium=1 dans l'URL → activer premium (configurer success_url dans le lien Stripe)
-  useEffect(()=>{
-    const params=new URLSearchParams(window.location.search)
-    if(params.get("premium")==="1"){
-      setPremium(true);setConfetti(true);s("sg_premium",true);addXP("premium")
-      setTimeout(()=>setConfetti(false),3200)
-      window.history.replaceState({},"",window.location.pathname||"/")
-    }
+      .catch(()=>{})
   },[])
 
-  // Streak
+  // Fetch beaches-images.json at mount
   useEffect(()=>{
-    const today=new Date().toDateString(),last=g("sg_last_day","")
-    if(last!==today){const y=new Date();y.setDate(y.getDate()-1);const str=last===y.toDateString()?g("sg_streak",1)+1:1;s("sg_streak",str);s("sg_last_day",today)}
-    if(g("sg_onboarded",false)) setScreen("app")
+    fetch("/data/beaches-images.json")
+      .then(r=>r.json())
+      .then(data=>{
+        if(data&&typeof data==="object")setImageMap(data)
+      })
+      .catch(()=>{})
   },[])
 
-  // XP handler
-  const addXP=useCallback((action)=>{
-    const gain=xpForAction(action)
-    setXP(prev=>{const next=prev+gain;s("sg_xp",next);return next})
-    setXpToast(gain);setXpVis(true)
-    setTimeout(()=>setXpVis(false),1600)
+  // Fetch sargassum.json at mount and merge AFAI levels
+  useEffect(()=>{
+    fetch("/api/copernicus/sargassum.json")
+      .then(r=>r.json())
+      .then(data=>{
+        setSargData(data)
+      })
+      .catch(()=>{})
   },[])
 
-  function toggleFav(id){
-    const next=favs.includes(id)?favs.filter(x=>x!==id):[...favs,id]
-    setFavs(next);s("sg_favs",next)
-  }
-  function openBeach(b){
-    setSheet(b)
-    const v=g("sg_views",{});v[b.id]=(v[b.id]||0)+1;s("sg_views",v)
-    const r=g("sg_recent",[]);s("sg_recent",[b.id,...r.filter(id=>id!==b.id)].slice(0,10))
-    const st=g("sg_stats",{reports:0,chats:0,views:0});s("sg_stats",{...st,views:st.views+1})
-  }
-  function getGPS(){navigator.geolocation?.getCurrentPosition(p=>setGps({lat:p.coords.latitude,lng:p.coords.longitude}),()=>{})}
-  function finishOnboarding(){s("sg_onboarded",true);setScreen("app");addXP("open")}
-  function activatePremium(){setPremium(true);setConfetti(true);setTimeout(()=>setConfetti(false),3200);addXP("premium")}
-  function goTab(t){setTab(t);if(t!=="chat")setChatQ(null)}
-  function askChat(q){setChatQ(q);setTab("chat")}
-  function setIslandAndSave(i){setIsland(i);s("sg_island",i)}
+  // Theme
+  useEffect(()=>{
+    document.documentElement.classList.toggle("theme-dark",theme==="dark")
+    s("sg_theme",theme)
+  },[theme])
 
-  const effectiveBeaches=useMemo(()=>{
-    const levels = sargassumData?.levels
-    if (!levels?.length) return allBeaches
-    const byId = Object.fromEntries(levels.map(l=>[l.id, l]))
-    return allBeaches.map(b=>{
-      const l = byId[b.id]
-      if (!l || (l.afai == null && l.status == null)) return b
-      return { ...b, afai: l.afai ?? b.afai, status: l.status ?? b.status }
-    })
-  },[sargassumData, allBeaches])
-  const beachesFilteredWithSargassum=useMemo(()=>effectiveBeaches.filter(b=>b.island===island),[effectiveBeaches, island])
-  const alerts=beachesFilteredWithSargassum.filter(b=>b.status==="avoid"&&favs.includes(b.id)).length
-  const clean=beachesFilteredWithSargassum.filter(b=>b.status==="clean").length
+  // Island
+  useEffect(()=>{s("sg_island",island)},[island])
 
-  if(screen==="onboarding") return(
-    <LangContext.Provider value={lang}>
-    <div className={"theme-" + (isDark ? "dark" : "light")} style={{width:"100%",minHeight:"100vh",maxWidth:"100%",margin:"0 auto",overflow:"hidden",position:"relative"}}>
-      <style>{CSS}</style>
-      <Onboarding onDone={finishOnboarding}/>
-    </div>
-    </LangContext.Provider>
-  )
+  // Favorites
+  useEffect(()=>{s("sg_fav",favorites)},[favorites])
+
+  const toggleFav=useCallback(id=>{
+    setFavorites(f=>f.includes(id)?f.filter(x=>x!==id):[...f,id])
+  },[])
+
+  const toggleTheme=useCallback(()=>setTheme(t=>t==="dark"?"light":"dark"),[])
+  const toggleLang=useCallback(()=>setLang(l=>l==="fr"?"en":"fr"),[])
+
+  // Filter beaches
+  const filtered=useMemo(()=>{
+    let list=allBeaches.filter(b=>b.island===island)
+    // Search
+    if(search.trim()){
+      const q=search.trim().toLowerCase()
+      list=list.filter(b=>b.name.toLowerCase().includes(q)||b.commune.toLowerCase().includes(q))
+    }
+    // Filter
+    if(filter===1)list=list.filter(b=>b.status==="clean")
+    else if(filter===2)list=list.filter(b=>favorites.includes(b.id))
+    else if(filter===3)list=list.filter(b=>b.kids)
+    else if(filter===4)list=list.filter(b=>b.snorkel)
+    else if(filter===5)list=list.filter(b=>b.status==="avoid")
+    return list
+  },[island,search,filter,favorites,allBeaches])
+
+  const onBeachClick=useCallback(b=>{setSelectedBeach(b)},[])
+  const closeSheet=useCallback(()=>setSelectedBeach(null),[])
+
+  const onChangeView=useCallback(v=>{
+    if(v==="premium")setShowPremium(true)
+    else setView(v)
+  },[])
+
+  const openPremium=useCallback(()=>setShowPremium(true),[])
 
   return(
-    <LangContext.Provider value={lang}>
-    <div className={"shell theme-" + (isDark ? "dark" : "light")} style={{width:"100%",minHeight:"100vh",maxWidth:"100%",margin:"0 auto",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden",fontFamily:"'Bricolage Grotesque',sans-serif",background:"var(--sg-bg)"}}>
-      <style>{CSS}</style>
-      {!online&&(
-        <div style={{position:"sticky",top:0,zIndex:500,background:C.amber,color:"var(--sg-ink)",padding:"8px 14px",fontSize:14,fontWeight:700,textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-          <span>📡</span> Vous êtes hors ligne — météo et assistant temporairement indisponibles.
-        </div>
-      )}
-      <Confetti on={confetti}/>
-      <XPToast xp={xpToast} visible={xpVisible}/>
+    <LangCtx.Provider value={lang}>
+      <StyleInjector/>
+      <div style={{position:"relative",width:"100%",height:"100%",overflow:"hidden"}}>
 
-      {/* Desktop sidebar */}
-      <Sidebar active={tab} onChange={goTab} alerts={alerts} xp={xp} clean={clean} live={live} island={island} onIslandChange={setIslandAndSave} isDark={isDark} onThemeToggle={()=>setIsDark(d=>!d)}/>
+        {/* MAP or LIST — skip MapView during onboarding (0-size container crashes Leaflet) */}
+        {showOnboarding?null:view==="map"?(
+          <ErrBound><MapView beaches={filtered} island={island}
+            onBeachClick={onBeachClick} selectedBeach={selectedBeach}/></ErrBound>
+        ):(
+          <BeachListView beaches={filtered} onBeachClick={onBeachClick}
+            favorites={favorites} lang={lang} imageMap={imageMap}/>
+        )}
 
-      {/* Main column */}
-      <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",maxWidth:"100%"}}>
-        {tab!=="jeu"&&tab!=="arena"&&<AppHeader live={live} clean={clean} xp={xp} onGPS={getGPS} island={island} onIslandChange={setIslandAndSave} copernicusCheck={copernicusCheck} isDark={isDark} onThemeToggle={()=>setIsDark(d=>!d)}/>}
-
-        {/* H2S banner */}
-        {alerts>0&&tab!=="jeu"&&tab!=="arena"&&<div style={{padding:"8px 16px",background:"rgba(176,27,27,.07)",borderBottom:`1px solid rgba(176,27,27,.12)`,display:"flex",alignItems:"center",gap:9}}>
-          <span style={{fontSize:13,flexShrink:0}}>☣️</span>
-          <span style={{fontSize:14,fontWeight:700,color:C.red,flex:1}}>Risque H2S sur {alerts} plage{alerts>1?"s":""} favorite{alerts>1?"s":""}</span>
-          <button onClick={()=>goTab("accueil")} style={{background:"none",border:"none",fontSize:14,color:C.red,cursor:"pointer",fontWeight:700,fontFamily:"'Bricolage Grotesque',sans-serif",padding:"8px 12px",minHeight:44}}>Voir →</button>
-        </div>}
-
-        {/* Screens */}
-        <div style={{flex:1,position:"relative",overflowY:"auto",overflowX:"hidden",minHeight:0,paddingBottom:"calc(72px + env(safe-area-inset-bottom, 0px))"}}>
-          {tab==="accueil"&&<AccueilScreen beaches={beachesFilteredWithSargassum} island={island} favs={favs} onFavToggle={toggleFav} onOpenBeach={openBeach} onAskChat={askChat} gps={gps} onGPS={getGPS} premium={premium} onGoToPremium={()=>goTab("premium")} onXP={addXP} sargassumData={sargassumData} historyData={historyData}/>}
-          {tab==="jeu"&&<div style={{position:"absolute",inset:0,overflow:"hidden"}}><SargassesGame island={island}/></div>}
-          {tab==="arena"&&(
-            <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",minHeight:0}}>
-              <a href="/neptunes_fury.html" target="_blank" rel="noopener noreferrer" style={{flexShrink:0,padding:"10px 12px",fontSize:14,fontWeight:700,color:C.gold,background:"rgba(0,0,0,.5)",textAlign:"center",textDecoration:"none",fontFamily:"'Bricolage Grotesque',sans-serif",minHeight:44,display:"flex",alignItems:"center",justifyContent:"center"}}>Ouvrir Neptune's Fury en plein écran →</a>
-              <iframe title="Neptune's Fury" src="/neptunes_fury.html" style={{flex:1,width:"100%",minHeight:0,border:"none",display:"block",background:"#000"}}/>
+        {/* FLOATING UI (over map) */}
+        <div style={{
+          position:"absolute",top:0,left:0,right:0,zIndex:700,
+          padding:"max(12px,env(safe-area-inset-top)) 16px 0",
+          pointerEvents:"none",
+        }}>
+          <div style={{pointerEvents:"auto"}}>
+            <Header island={island} onIslandChange={setIsland}
+              lang={lang} onLangToggle={toggleLang}
+              theme={theme} onThemeToggle={toggleTheme}/>
+            <div style={{marginTop:10}}>
+              <SearchBar value={search} onChange={setSearch} lang={lang}/>
             </div>
-          )}
-          {tab==="chat"&&<ChatScreen beaches={beachesFilteredWithSargassum} favs={favs} onFavToggle={toggleFav} onOpenBeach={openBeach} initQ={chatQ} onXP={addXP} sargassumData={sargassumData} island={island}/>}
-          {tab==="liste"&&<ListeScreen beaches={beachesFilteredWithSargassum} favs={favs} onFavToggle={toggleFav} onOpenBeach={openBeach} gps={gps} onXP={addXP} localBeachImages={localBeachImages}/>}
-          {tab==="carte"&&<CarteScreen beaches={beachesFilteredWithSargassum} island={island} favs={favs} onOpenBeach={openBeach} gps={gps} onGPS={getGPS} onXP={addXP}/>}
-          {tab==="premium"&&<PremiumScreen premium={premium} onActivate={activatePremium}/>}
-          {tab==="profil"&&<ProfilScreen beaches={allBeaches} favs={favs} onFavToggle={toggleFav} onOpenBeach={openBeach} premium={premium} onActivatePremium={activatePremium} xp={xp} onXP={addXP}/>}
-          {/* Footer liens internes + cross-site (SEO, crawlable) */}
-          <footer style={{padding:"12px 16px 16px",borderTop:"1px solid var(--sg-border)",background:"var(--sg-card)",display:"flex",flexWrap:"wrap",alignItems:"center",justifyContent:"center",gap:8,fontSize:14,color:"var(--sg-mute)"}} aria-label="Liens utiles">
-            <a href="/carte-sargasses/" style={{color:"var(--sg-mid)",textDecoration:"none",fontWeight:600}}>Carte sargasses</a>
-            <span>·</span>
-            <a href="/previsions/" style={{color:"var(--sg-mid)",textDecoration:"none",fontWeight:600}}>Prévisions 7 jours</a>
-            <span>·</span>
-            <a href="/en/" style={{color:"var(--sg-mid)",textDecoration:"none",fontWeight:600}}>English</a>
-            <span>·</span>
-            <a href="/mentions-legales.html" style={{color:"var(--sg-mid)",textDecoration:"none",fontWeight:600}}>Mentions légales</a>
-            <span>·</span>
-            <a href="/confidentialite.html" style={{color:"var(--sg-mid)",textDecoration:"none",fontWeight:600}}>Confidentialité</a>
-            <span>·</span>
-            <a href="https://sargasses-martinique.com/" style={{color:"var(--sg-mute)",textDecoration:"none"}}>Martinique</a>
-            <span>·</span>
-            <a href="https://sargasses-guadeloupe.com/" style={{color:"var(--sg-mute)",textDecoration:"none"}}>Guadeloupe</a>
-          </footer>
+            <div style={{marginTop:8,display:"flex",gap:6,overflowX:"auto",
+              paddingBottom:4,scrollbarWidth:"none",WebkitOverflowScrolling:"touch"}}>
+              {LL.filters.map((f,i)=>(
+                <FilterChip key={i} label={f} icon={LL.filtersIcon[i]}
+                  active={filter===i} onClick={()=>setFilter(i)}/>
+              ))}
+            </div>
+          </div>
         </div>
 
-        <BottomNav active={tab} onChange={goTab} alerts={alerts} isDark={isDark}/>
+        {/* BOTTOM NAV */}
+        <BottomNav view={view} onChangeView={onChangeView} lang={lang}/>
+
+        {/* BOTTOM SHEET (beach detail) */}
+        {selectedBeach&&(
+          <BeachSheet beach={selectedBeach} onClose={closeSheet}
+            favorites={favorites} onToggleFav={toggleFav} lang={lang}
+            allBeaches={allBeaches} imageMap={imageMap}
+            onBeachClick={onBeachClick} onPremiumClick={openPremium}/>
+        )}
+
+        {/* PREMIUM MODAL */}
+        {showPremium&&<PremiumModal onClose={()=>setShowPremium(false)} lang={lang}/>}
+
+        {/* ONBOARDING */}
+        {showOnboarding&&<Onboarding onDone={()=>setShowOnboarding(false)}/>}
       </div>
-
-      {/* Beach detail sheet */}
-      <Sheet open={!!sheet} onClose={()=>setSheet(null)}>
-        {sheet&&<BeachDetail beach={sheet} isFav={favs.includes(sheet.id)} onFavToggle={()=>toggleFav(sheet.id)} premium={premium} onXP={addXP} sargassumData={sargassumData} localBeachImages={localBeachImages}/>}
-      </Sheet>
-
-      {/* Premium toast */}
-      {confetti&&<div style={{position:"fixed",top:76,left:"50%",transform:"translateX(-50%)",background:C.night,border:`1px solid rgba(237,160,0,.22)`,borderRadius:14,padding:"10px 18px",display:"flex",alignItems:"center",gap:10,zIndex:500,boxShadow:"0 8px 32px rgba(0,0,0,.25)",whiteSpace:"nowrap",fontFamily:"'Bricolage Grotesque',sans-serif",animation:"up .3s ease both"}}>
-        <span style={{fontSize:20}}>⭐</span>
-        <div><div style={{fontSize:14,fontWeight:800,color:C.goldL}}>Premium activé !</div>        <div style={{fontSize:14,color:"rgba(255,255,255,.4)"}}>30 jours · 2 îles · Alertes push</div></div>
-      </div>}
-    </div>
-    </LangContext.Provider>
+    </LangCtx.Provider>
   )
 }
