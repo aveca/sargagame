@@ -66,7 +66,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in public/.htaccess vite.config.js scripts/automation/data/automation-log.json scripts/automation/data/meta-overrides.json scripts/automation/data/enrichments.json scripts/automation/data/new-pages.json; do
+          for f in public/.htaccess vite.config.js scripts/automation/data/automation-log.json scripts/automation/data/meta-overrides.json scripts/automation/data/enrichments.json scripts/automation/data/new-pages.json scripts/automation/data/audit-summary.json scripts/automation/data/audit-full.json; do
             [ -f "$f" ] && git add "$f"
           done
           git diff --cached --quiet || git commit -m "seo: weekly automation $(date -u +'%Y-%m-%d')"

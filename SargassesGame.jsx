@@ -13,7 +13,7 @@
 import{useState,useEffect,useRef,useMemo,useCallback}from"react"
 
 // ── Fonts ──────────────────────────────────────────────────────────────
-const GFONTS=`@import url('https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap');`
+const GFONTS=`@import url('https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;700&display=swap');`
 
 // ── Tokens ─────────────────────────────────────────────────────────────
 const T={
@@ -22,12 +22,12 @@ const T={
   w:"#E8F4F8",m:"#7AADC4",mute:"#3D6880",
   border:"rgba(0,180,160,.1)",borderL:"rgba(0,180,160,.2)",
   cyan:"#00C8BE",cyanL:"#00EEE4",cyanD:"#007A76",cyanBg:"rgba(0,200,190,.09)",
-  sarg:"#C88A0A",sargL:"#F0A800",sargLL:"#FFD166",sargBg:"rgba(200,138,10,.11)",
-  safe:"#22C77A",safeBg:"rgba(34,199,122,.12)",
-  warn:"#F07A0A",warnBg:"rgba(240,122,10,.12)",
-  danger:"#E83030",dangerBg:"rgba(232,48,48,.12)",
-  h2s:"#B026FF",h2sBg:"rgba(176,38,255,.15)",
-  belt_low:"#22C77A",belt_mid:"#F07A0A",belt_high:"#E83030",
+  sarg:"#E8A800",sargL:"#FFC72C",sargLL:"#FFE47A",sargBg:"rgba(232,168,0,.11)",
+  safe:"#22C55E",safeBg:"rgba(34,197,94,.12)",
+  warn:"#B87A00",warnBg:"rgba(184,122,0,.12)",
+  danger:"#E8522A",dangerBg:"rgba(232,82,42,.12)",
+  h2s:"#CC28FF",h2sBg:"rgba(204,40,255,.15)",
+  belt_low:"#22C55E",belt_mid:"#B87A00",belt_high:"#E8522A",
 }
 
 // ════════════════════════════════════════════════════════════════════════
@@ -549,7 +549,7 @@ const lw=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
 const CSS=`
 ${GFONTS}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{background:${T.void};font-family:'Barlow Condensed',sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden;height:100%;color:${T.w}}
+html,body{background:${T.void};font-family:'Bricolage Grotesque',sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden;height:100%;color:${T.w}}
 ::-webkit-scrollbar{display:none}
 *{-webkit-tap-highlight-color:transparent}
 
@@ -579,7 +579,7 @@ html,body{background:${T.void};font-family:'Barlow Condensed',sans-serif;-webkit
 .btn-choice {
   width:100%;padding:12px 16px;background:rgba(255,255,255,.06);
   border:1px solid rgba(255,255,255,.1);border-radius:14px;
-  font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;
+  font-family:'Bricolage Grotesque',sans-serif;font-size:16px;font-weight:600;
   color:${T.w};cursor:pointer;text-align:left;transition:all .2s;
   display:flex;align-items:center;gap:10;letter-spacing:.02em;
 }

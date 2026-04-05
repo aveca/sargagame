@@ -10,7 +10,7 @@
 <meta property="og:description" content="Carte interactive des sargasses en Martinique et Guadeloupe. État des plages en temps réel, vue satellite.">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Carte sargasses Martinique & Guadeloupe">
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="/data/beaches-backup.js"></script>
@@ -34,7 +34,7 @@
   --b:rgba(255,255,255,.1); --bD:rgba(255,255,255,.06);
   --w:#EEF4FA; --mid:#7AAFC8; --mute:#3D6480;
   --cyan:#00D4C8; --cyanL:#00F0E4; --cyanD:#007A74;
-  --safe:#26D97A; --warn:#F08C14; --danger:#E83030; --h2s:#CC28FF;
+  --safe:#22C55E; --warn:#E8A800; --danger:#E8522A; --h2s:#CC28FF;
   --topbar-grad:rgba(6,13,20,.92);
   --item-hover:rgba(255,255,255,.04);
   --item-active:rgba(0,212,200,.07);
@@ -43,7 +43,7 @@
 }
 /* ── LIGHT ── */
 html.light{
-  --bg:#EEF3F8;
+  --bg:#FDFCF7;
   --glass:rgba(245,249,253,.93); --glassMid:rgba(245,249,253,.78);
   --b:rgba(0,30,60,.1); --bD:rgba(0,30,60,.06);
   --w:#0A1420; --mid:#2A6080; --mute:#7AA8C0;
@@ -55,7 +55,7 @@ html.light{
   --scrollthumb:rgba(0,30,60,.15);
 }
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;background:var(--bg);overflow:hidden;font-family:'DM Sans',sans-serif;color:var(--w);transition:background .3s,color .3s}
+html,body{height:100%;background:var(--bg);overflow:hidden;font-family:'Bricolage Grotesque',sans-serif;color:var(--w);transition:background .3s,color .3s}
 ::-webkit-scrollbar{width:3px;background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--scrollthumb);border-radius:2px}
 
@@ -80,7 +80,7 @@ html.light .leaflet-tile-pane{filter:brightness(1.02) saturate(1.15)}
 }
 #topbar>*{pointer-events:all}
 .logo{display:flex;align-items:center;gap:8px;text-decoration:none;flex-shrink:0}
-.logo-mark{width:30px;height:30px;border-radius:50%;background:conic-gradient(from 0deg,var(--cyanL),var(--cyanD),var(--cyan),var(--cyanL));animation:spin 14s linear infinite}
+.logo-mark{width:30px;height:30px;border-radius:50%;background:conic-gradient(from -10deg,#FFE898 0deg 25deg,#E8A800 25deg 65deg,#FFD040 65deg 110deg,#B87A00 110deg 155deg,#FFE07A 155deg 195deg,#E09000 195deg 240deg,#FFC72C 240deg 285deg,#B07000 285deg 325deg,#FFE898 325deg 360deg);animation:spin 18s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .logo-text{font-family:'Anton',sans-serif;font-size:17px;letter-spacing:.1em}
 .logo-sub{font-size:9px;color:var(--mute);letter-spacing:.06em}
@@ -91,11 +91,11 @@ html.light .leaflet-tile-pane{filter:brightness(1.02) saturate(1.15)}
 #srch{
   width:100%;padding:8px 12px 8px 30px;
   background:var(--glass);border:1px solid var(--b);border-radius:100px;
-  font-family:'DM Sans',sans-serif;font-size:13px;color:var(--w);outline:none;
+  font-family:'Bricolage Grotesque',sans-serif;font-size:13px;color:var(--w);outline:none;
   backdrop-filter:blur(14px);transition:border-color .2s;
 }
 #srch::placeholder{color:var(--mute)}
-#srch:focus{border-color:rgba(0,150,144,.5)}
+#srch:focus{border-color:rgba(232,168,0,.5)}
 .si{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;pointer-events:none;opacity:.5}
 #sr{
   position:absolute;top:calc(100% + 5px);left:0;right:0;
@@ -113,9 +113,9 @@ html.light .leaflet-tile-pane{filter:brightness(1.02) saturate(1.15)}
 
 /* Pill groups */
 .pills{display:flex;gap:3px;background:var(--glass);border:1px solid var(--b);border-radius:100px;padding:3px;backdrop-filter:blur(14px);flex-shrink:0}
-.pill{padding:5px 12px;border-radius:100px;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;color:var(--mid);cursor:pointer;transition:.2s;white-space:nowrap}
+.pill{padding:5px 12px;border-radius:100px;border:none;background:transparent;font-family:'Bricolage Grotesque',sans-serif;font-size:11px;font-weight:600;color:var(--mid);cursor:pointer;transition:.2s;white-space:nowrap}
 .pill:hover{color:var(--w)}
-.pill.on{background:rgba(0,150,144,.18);color:var(--cyan);box-shadow:inset 0 0 0 1px rgba(0,150,144,.32)}
+.pill.on{background:rgba(232,168,0,.15);color:#E8A800;box-shadow:inset 0 0 0 1px rgba(232,168,0,.3)}
 .pill .ei{font-style:normal}
 
 /* Left panel */
@@ -129,8 +129,8 @@ html.light .leaflet-tile-pane{filter:brightness(1.02) saturate(1.15)}
 .panel-head{padding:11px 13px 8px;border-bottom:1px solid var(--bD);flex-shrink:0}
 .panel-title{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-bottom:6px}
 .fchips{display:flex;gap:3px;flex-wrap:wrap}
-.fchip{padding:3px 8px;border-radius:100px;border:1px solid var(--b);font-size:10px;font-weight:600;color:var(--mute);cursor:pointer;transition:.15s;background:transparent;font-family:'DM Sans',sans-serif}
-.fchip.on{background:rgba(0,150,144,.13);border-color:rgba(0,150,144,.32);color:var(--cyan)}
+.fchip{padding:3px 8px;border-radius:100px;border:1px solid var(--b);font-size:10px;font-weight:600;color:var(--mute);cursor:pointer;transition:.15s;background:transparent;font-family:'Bricolage Grotesque',sans-serif}
+.fchip.on{background:rgba(232,168,0,.13);border-color:rgba(232,168,0,.32);color:#E8A800}
 .panel-count{font-size:10px;color:var(--mute);margin-top:5px}
 .panel-list{flex:1;overflow-y:auto;padding:3px 0}
 .pi{padding:8px 13px;cursor:pointer;border-left:2px solid transparent;transition:.12s;display:flex;align-items:center;gap:8px}
@@ -223,8 +223,8 @@ html.light .leaflet-tile-pane{filter:brightness(1.02) saturate(1.15)}
 /* Uber markers: show label on hover/select */
 .uber-mk:hover .uber-label,.uber-mk.selected .uber-label{opacity:1!important;transform:translateX(-50%) scale(1)!important}
 .uber-mk:hover .uber-dot,.uber-mk.selected .uber-dot{transform:scale(1.3)}
-.uber-mk.selected .uber-label{border-color:#C4830A!important}
-.uber-mk.selected .uber-dot{border-color:#C4830A!important;box-shadow:0 0 14px #C4830A66}
+.uber-mk.selected .uber-label{border-color:#E8A800!important}
+.uber-mk.selected .uber-dot{border-color:#E8A800!important;box-shadow:0 0 14px #E8A80066}
 
 /* RESPONSIVE */
 @media(max-width:680px){
@@ -274,7 +274,7 @@ html.light #theme-btn{filter:none}
     <button class="pill" id="ip-MQ"  onclick="setIsland('MQ')">🗺 Martinique</button>
     <button class="pill" id="ip-GP"  onclick="setIsland('GP')">🗺 Guadeloupe</button>
   </div>
-  <div class="pills" id="lp">
+  <div class="pills" id="lp" style="display:none">
     <button class="pill on" id="lp-sat"  onclick="setLayer('sat')">🛰 Satellite</button>
     <button class="pill"    id="lp-hyb"  onclick="setLayer('hyb')">🗺 Hybride</button>
     <button class="pill"    id="lp-dark" onclick="setLayer('dark')">🌊 Sombre</button>
@@ -310,9 +310,9 @@ html.light #theme-btn{filter:none}
 
 <div id="legend">
   <div class="leg-t" id="leg-title">Risque sargasses</div>
-  <div class="leg-r"><div class="leg-d" style="background:#26D97A;box-shadow:0 0 5px #26D97A88"></div><span id="leg-low">Faible</span></div>
-  <div class="leg-r"><div class="leg-d" style="background:#F08C14;box-shadow:0 0 5px #F08C1488"></div><span id="leg-moderate">Modéré</span></div>
-  <div class="leg-r"><div class="leg-d" style="background:#E83030;box-shadow:0 0 5px #E8303088"></div><span id="leg-high">Élevé</span></div>
+  <div class="leg-r"><div class="leg-d" style="background:#22C55E;box-shadow:0 0 5px #22C55E88"></div><span id="leg-low">Faible</span></div>
+  <div class="leg-r"><div class="leg-d" style="background:#E8A800;box-shadow:0 0 5px #E8A80088"></div><span id="leg-moderate">Modéré</span></div>
+  <div class="leg-r"><div class="leg-d" style="background:#E8522A;box-shadow:0 0 5px #E8522A88"></div><span id="leg-high">Élevé</span></div>
   <div class="leg-r"><div class="leg-d" style="background:#CC28FF;box-shadow:0 0 5px #CC28FF88"></div>H2S</div>
 </div>
 
@@ -350,286 +350,269 @@ const BEACHES = [
 // ══════════════════════════════
 
 // ── SUD / SAINTE-ANNE ──
-{id:'mq001',ile:'MQ',name:'Plage des Salines',commune:'Sainte-Anne',lat:14.395852099999999,lng:-60.868980199999996,risk:'warn',h2s:false,type:'sable blanc',desc:'Plage emblématique de 1,5 km. Cocotiers, eaux turquoise. La plus belle de Martinique selon TripAdvisor.'},
-{id:'mq002',ile:'MQ',name:'Anse Caritan',commune:'Sainte-Anne',lat:14.42609225,lng:-60.8876691,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage calme et peu fréquentée en semaine. Idéale pour les familles.'},
-{id:'mq003',ile:'MQ',name:'Anse Meunier',commune:'Sainte-Anne',lat:14.4180,lng:-60.8620,risk:'safe',h2s:false,type:'sable blanc',desc:'Petite anse isolée entre les salines et Caritan.'},
-{id:'mq004',ile:'MQ',name:'Plage du Bourg (Sainte-Anne)',commune:'Sainte-Anne',lat:14.4320,lng:-60.8850,risk:'warn',h2s:false,type:'sable blanc',desc:'Plage du village animée le week-end. Restaurants et glaciers.'},
-{id:'mq005',ile:'MQ',name:'Anse Trabaud',commune:'Sainte-Anne',lat:14.41012955,lng:-60.8482068,risk:'danger',h2s:true,type:'sable blanc',desc:'Côte Atlantique. Forte exposition aux sargasses. Risque H2S en été.'},
+{id:'mq001',ile:'MQ',name:'Plage des Salines',commune:'Sainte-Anne',lat:14.3958521,lng:-60.8689802,risk:'warn',h2s:false,type:'sable blanc',desc:'Plage emblématique de 1,5 km. Cocotiers, eaux turquoise. La plus belle de Martinique selon TripAdvisor.'},
+{id:'mq002',ile:'MQ',name:'Anse Caritan',commune:'Sainte-Anne',lat:14.4260922,lng:-60.8876691,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage calme et peu fréquentée en semaine. Idéale pour les familles.'},
+{id:'mq003',ile:'MQ',name:'Anse Meunier',commune:'Sainte-Anne',lat:14.4144971,lng:-60.8872148,risk:'safe',h2s:false,type:'sable blanc',desc:'Petite anse isolée entre les salines et Caritan.'},
+{id:'mq004',ile:'MQ',name:'Plage du Bourg (Sainte-Anne)',commune:'Sainte-Anne',lat:14.4304809,lng:-60.8849519,risk:'warn',h2s:false,type:'sable blanc',desc:'Plage du village animée le week-end. Restaurants et glaciers.'},
+{id:'mq005',ile:'MQ',name:'Anse Trabaud',commune:'Sainte-Anne',lat:14.4101296,lng:-60.8482068,risk:'danger',h2s:true,type:'sable blanc',desc:'Côte Atlantique. Forte exposition aux sargasses. Risque H2S en été.'},
 {id:'mq006',ile:'MQ',name:'Anse Macabou',commune:'Sainte-Anne',lat:14.505925,lng:-60.8235499,risk:'danger',h2s:false,type:'sable blanc',desc:'Zone naturelle protégée. Courants importants côté Atlantique.'},
-{id:'mq007',ile:'MQ',name:'Anse Michel',commune:'Sainte-Anne',lat:14.437773,lng:-60.825801150000004,risk:'safe',h2s:false,type:'sable blanc',desc:'Petite plage tranquille proche du bourg de Sainte-Anne.'},
+{id:'mq007',ile:'MQ',name:'Anse Michel',commune:'Sainte-Anne',lat:14.437773,lng:-60.8258012,risk:'safe',h2s:false,type:'sable blanc',desc:'Petite plage tranquille proche du bourg de Sainte-Anne.'},
 
 // ── LE MARIN / SAINTE-ANNE ──
-{id:'mq008',ile:'MQ',name:'Plage du Marin',commune:'Le Marin',lat:14.45111815,lng:-60.883571700000005,risk:'safe',h2s:false,type:'sable brun',desc:'Plage de la capitale de la voile. Vue sur les yachts. Animée.'},
-{id:'mq009',ile:'MQ',name:'Anse Figuier',commune:'Rivière-Pilote',lat:14.4605782,lng:-60.910467600000004,risk:'warn',h2s:false,type:'sable brun',desc:'Plage de sable fin au bord d\'une mangrove. Écomusée à proximité.'},
-{id:'mq010',ile:'MQ',name:'Anse à l\'Âne',commune:'Les Trois-Îlets',lat:14.5330,lng:-61.0250,risk:'safe',h2s:false,type:'sable blanc',desc:'Charmante plage de village. Traversée en navette depuis Fort-de-France.'},
-{id:'mq011',ile:'MQ',name:'Anse Mitan',commune:'Les Trois-Îlets',lat:14.55225935,lng:-61.0552056,risk:'safe',h2s:false,type:'sable blanc',desc:'Principale plage des Trois-Îlets. Restaurants, sports nautiques.'},
+{id:'mq008',ile:'MQ',name:'Plage du Marin',commune:'Le Marin',lat:14.4511181,lng:-60.8835717,risk:'safe',h2s:false,type:'sable brun',desc:'Plage de la capitale de la voile. Vue sur les yachts. Animée.'},
+{id:'mq009',ile:'MQ',name:'Anse Figuier',commune:'Rivière-Pilote',lat:14.4605782,lng:-60.9104676,risk:'warn',h2s:false,type:'sable brun',desc:'Plage de sable fin au bord d\'une mangrove. Écomusée à proximité.'},
+{id:'mq010',ile:'MQ',name:'Anse à l\'Âne',commune:'Les Trois-Îlets',lat:14.5410671,lng:-61.0657633,risk:'safe',h2s:false,type:'sable blanc',desc:'Charmante plage de village. Traversée en navette depuis Fort-de-France.'},
+{id:'mq011',ile:'MQ',name:'Anse Mitan',commune:'Les Trois-Îlets',lat:14.5522593,lng:-61.0552056,risk:'safe',h2s:false,type:'sable blanc',desc:'Principale plage des Trois-Îlets. Restaurants, sports nautiques.'},
 {id:'mq012',ile:'MQ',name:'Anse Noire',commune:'Les Anses-d\'Arlet',lat:14.5277232,lng:-61.0873771,risk:'safe',h2s:false,type:'sable noir',desc:'Rare plage de sable noir volcanique. Très photogénique. Snorkeling.'},
-{id:'mq013',ile:'MQ',name:'Anse Dufour',commune:'Les Anses-d\'Arlet',lat:14.52583075,lng:-61.089521649999995,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage calme entre anse noire et grande anse. Bonne visibilité sous-marine.'},
-{id:'mq014',ile:'MQ',name:'Grande Anse d\'Arlet',commune:'Les Anses-d\'Arlet',lat:14.5050,lng:-61.0720,risk:'safe',h2s:false,type:'sable blanc',desc:'Carte postale classique. Église en bord de mer. Tortues marines régulières.'},
-{id:'mq015',ile:'MQ',name:'Petite Anse d\'Arlet',commune:'Les Anses-d\'Arlet',lat:14.5120,lng:-61.0700,risk:'safe',h2s:false,type:'sable blanc',desc:'Village de pêcheurs. Ambiance authentique. Moins touristique.'},
+{id:'mq013',ile:'MQ',name:'Anse Dufour',commune:'Les Anses-d\'Arlet',lat:14.5256583,lng:-61.08949844,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage calme entre anse noire et grande anse. Bonne visibilité sous-marine.'},
+{id:'mq014',ile:'MQ',name:'Grande Anse d\'Arlet',commune:'Les Anses-d\'Arlet',lat:14.5027854,lng:-61.0856311,risk:'safe',h2s:false,type:'sable blanc',desc:'Carte postale classique. Église en bord de mer. Tortues marines régulières.'},
+{id:'mq015',ile:'MQ',name:'Petite Anse d\'Arlet',commune:'Les Anses-d\'Arlet',lat:14.5027854,lng:-61.0856311,risk:'safe',h2s:false,type:'sable blanc',desc:'Village de pêcheurs. Ambiance authentique. Moins touristique.'},
 
 // ── DIAMANT ──
-{id:'mq016',ile:'MQ',name:'Plage du Diamant',commune:'Le Diamant',lat:14.4758027,lng:-61.031404550000005,risk:'warn',h2s:false,type:'sable brun',desc:'6 km de plage face au Rocher du Diamant. Forte houle. Surf possible.'},
-{id:'mq017',ile:'MQ',name:'Anse Cafard',commune:'Le Diamant',lat:14.469162149999999,lng:-61.0457872,risk:'warn',h2s:false,type:'sable brun',desc:'Plage avec mémorial des victimes de la traite. Courants à surveiller.'},
-{id:'mq018',ile:'MQ',name:'Petite Anse du Diamant',commune:'Le Diamant',lat:14.4735,lng:-61.0265,risk:'warn',h2s:false,type:'sable brun',desc:'Petite plage calme à l\'est de la grande plage.'},
+{id:'mq016',ile:'MQ',name:'Plage du Diamant',commune:'Le Diamant',lat:14.4758027,lng:-61.0314046,risk:'warn',h2s:false,type:'sable brun',desc:'6 km de plage face au Rocher du Diamant. Forte houle. Surf possible.'},
+{id:'mq017',ile:'MQ',name:'Anse Cafard',commune:'Le Diamant',lat:14.46926902,lng:-61.04569643,risk:'warn',h2s:false,type:'sable brun',desc:'Plage avec mémorial des victimes de la traite. Courants à surveiller.'},
+{id:'mq018',ile:'MQ',name:'Petite Anse du Diamant',commune:'Le Diamant',lat:14.4758027,lng:-61.0314046,risk:'warn',h2s:false,type:'sable brun',desc:'Petite plage calme à l\'est de la grande plage.'},
 
 // ── RIVIÈRE-SALÉE / SAINTE-LUCE ──
-{id:'mq019',ile:'MQ',name:'Anse Gros Raisins',commune:'Sainte-Luce',lat:14.4820,lng:-60.9210,risk:'safe',h2s:false,type:'sable blanc',desc:'Belle plage abritée. Eau calme. Idéale pour la baignade.'},
-{id:'mq020',ile:'MQ',name:'Plage de Sainte-Luce',commune:'Sainte-Luce',lat:14.4890,lng:-60.9250,risk:'safe',h2s:false,type:'sable brun',desc:'Plage du bourg animée. Restaurants de bord de mer.'},
-{id:'mq021',ile:'MQ',name:'Anse Corps de Garde',commune:'Sainte-Luce',lat:14.465603699999999,lng:-60.942369600000006,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage agréable peu fréquentée. Snorkeling intéressant.'},
-{id:'mq022',ile:'MQ',name:'Pointe Borgnesse',commune:'Rivière-Pilote',lat:14.4620,lng:-60.8980,risk:'warn',h2s:false,type:'sable brun',desc:'Pointe exposée au vent. Paysage sauvage.'},
+{id:'mq019',ile:'MQ',name:'Anse Gros Raisins',commune:'Sainte-Luce',lat:14.4658147,lng:-60.9260982,risk:'safe',h2s:false,type:'sable blanc',desc:'Belle plage abritée. Eau calme. Idéale pour la baignade.'},
+{id:'mq020',ile:'MQ',name:'Plage de Sainte-Luce',commune:'Sainte-Luce',lat:14.46469668,lng:-60.93956904,risk:'safe',h2s:false,type:'sable brun',desc:'Plage du bourg animée. Restaurants de bord de mer.'},
+{id:'mq021',ile:'MQ',name:'Anse Corps de Garde',commune:'Sainte-Luce',lat:14.4656037,lng:-60.9423696,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage agréable peu fréquentée. Snorkeling intéressant.'},
+{id:'mq022',ile:'MQ',name:'Pointe Borgnesse',commune:'Rivière-Pilote',lat:14.4533661,lng:-60.90242566,risk:'warn',h2s:false,type:'sable brun',desc:'Pointe exposée au vent. Paysage sauvage.'},
 
 // ── FORT-DE-FRANCE / LAMENTIN ──
-{id:'mq023',ile:'MQ',name:'Plage de la Française',commune:'Fort-de-France',lat:14.6011133,lng:-61.067474250000004,risk:'safe',h2s:false,type:'sable brun',desc:'Plage urbaine la plus proche du centre-ville. Animée en fin de journée.'},
-{id:'mq024',ile:'MQ',name:'Anse Madame',commune:'Fort-de-France',lat:14.6177983,lng:-61.103630249999995,risk:'safe',h2s:false,type:'sable brun',desc:'Petite plage protégée par la baie de Fort-de-France.'},
-{id:'mq025',ile:'MQ',name:'Plage de Schœlcher',commune:'Schœlcher',lat:14.6280,lng:-61.0850,risk:'safe',h2s:false,type:'sable brun',desc:'Plage du village universitaire. Bonne infrastructure.'},
-{id:'mq026',ile:'MQ',name:'Anse Collat',commune:'Schœlcher',lat:14.6350,lng:-61.0920,risk:'safe',h2s:false,type:'sable brun',desc:'Plage calme au nord de Schœlcher.'},
+{id:'mq023',ile:'MQ',name:'Plage de la Française',commune:'Fort-de-France',lat:14.6011133,lng:-61.0674743,risk:'safe',h2s:false,type:'sable brun',desc:'Plage urbaine la plus proche du centre-ville. Animée en fin de journée.'},
+{id:'mq024',ile:'MQ',name:'Anse Madame',commune:'Fort-de-France',lat:14.6177983,lng:-61.1036302,risk:'safe',h2s:false,type:'sable brun',desc:'Petite plage protégée par la baie de Fort-de-France.'},
+{id:'mq025',ile:'MQ',name:'Plage de Schœlcher',commune:'Schœlcher',lat:14.6147915,lng:-61.1010321,risk:'safe',h2s:false,type:'sable brun',desc:'Plage du village universitaire. Bonne infrastructure.'},
+{id:'mq026',ile:'MQ',name:'Anse Collat',commune:'Schœlcher',lat:14.62183945,lng:-61.10756925,risk:'safe',h2s:false,type:'sable brun',desc:'Plage calme au nord de Schœlcher.'},
 
 // ── CARBET / SAINT-PIERRE ──
-{id:'mq027',ile:'MQ',name:'Grande Anse du Carbet',commune:'Le Carbet',lat:14.6960,lng:-61.1670,risk:'safe',h2s:false,type:'sable gris',desc:'Plage volcanique grise. Vue sur la montagne Pelée. Musée Gauguin à côté.'},
-{id:'mq028',ile:'MQ',name:'Anse Turin',commune:'Le Carbet',lat:14.72786465,lng:-61.1803843,risk:'safe',h2s:false,type:'sable gris',desc:'Petite plage de sable gris. Mer calme. Idéale pour le snorkeling.'},
-{id:'mq029',ile:'MQ',name:'Plage de Saint-Pierre',commune:'Saint-Pierre',lat:14.74047925,lng:-61.1768484,risk:'safe',h2s:false,type:'sable gris',desc:'Plongée incontournable sur les épaves de 1902. Plage du centre-ville historique.'},
-{id:'mq030',ile:'MQ',name:'Anse Belleville',commune:'Le Prêcheur',lat:14.7950,lng:-61.2080,risk:'safe',h2s:false,type:'sable gris',desc:'Village de pêcheurs authentique. Accès par route pittoresque.'},
+{id:'mq027',ile:'MQ',name:'Grande Anse du Carbet',commune:'Le Carbet',lat:14.7126886,lng:-61.1840442,risk:'safe',h2s:false,type:'sable gris',desc:'Plage volcanique grise. Vue sur la montagne Pelée. Musée Gauguin à côté.'},
+{id:'mq028',ile:'MQ',name:'Anse Turin',commune:'Le Carbet',lat:14.7278647,lng:-61.1803843,risk:'safe',h2s:false,type:'sable gris',desc:'Petite plage de sable gris. Mer calme. Idéale pour le snorkeling.'},
+{id:'mq029',ile:'MQ',name:'Plage de Saint-Pierre',commune:'Saint-Pierre',lat:14.7404792,lng:-61.1768484,risk:'safe',h2s:false,type:'sable gris',desc:'Plongée incontournable sur les épaves de 1902. Plage du centre-ville historique.'},
+{id:'mq030',ile:'MQ',name:'Anse Belleville',commune:'Le Prêcheur',lat:14.8333961,lng:-61.224677,risk:'safe',h2s:false,type:'sable gris',desc:'Village de pêcheurs authentique. Accès par route pittoresque.'},
 
 // ── NORD CARAÏBE ──
-{id:'mq031',ile:'MQ',name:'Grande Anse des Anses d\'Arlet',commune:'Prêcheur',lat:14.8100,lng:-61.2200,risk:'safe',h2s:false,type:'sable gris',desc:'Plage sauvage peu accessible. Vue exceptionnelle.'},
-{id:'mq032',ile:'MQ',name:'Anse Couleuvre',commune:'Le Prêcheur',lat:14.8418367,lng:-61.219855100000004,risk:'safe',h2s:false,type:'sable gris',desc:'Plage sauvage accessible à pied ou en kayak. Nature préservée.'},
-{id:'mq033',ile:'MQ',name:'Anse Céron',commune:'Le Prêcheur',lat:14.8333961,lng:-61.22467695,risk:'safe',h2s:false,type:'sable gris',desc:'Ancienne propriété. Palmiers centenaires. Très peu fréquentée.'},
+{id:'mq031',ile:'MQ',name:'Grande Anse des Anses d\'Arlet',commune:'Prêcheur',lat:14.8333961,lng:-61.224677,risk:'safe',h2s:false,type:'sable gris',desc:'Plage sauvage peu accessible. Vue exceptionnelle.'},
+{id:'mq032',ile:'MQ',name:'Anse Couleuvre',commune:'Le Prêcheur',lat:14.8418367,lng:-61.2198551,risk:'safe',h2s:false,type:'sable gris',desc:'Plage sauvage accessible à pied ou en kayak. Nature préservée.'},
+{id:'mq033',ile:'MQ',name:'Anse Céron',commune:'Le Prêcheur',lat:14.83325984,lng:-61.22447763,risk:'safe',h2s:false,type:'sable gris',desc:'Ancienne propriété. Palmiers centenaires. Très peu fréquentée.'},
 
 // ── NORD ATLANTIQUE ──
-{id:'mq034',ile:'MQ',name:'Plage de Tartane',commune:'La Trinité',lat:14.7500,lng:-60.9870,risk:'danger',h2s:true,type:'sable brun',desc:'Village de surf. Exposition maximale aux sargasses côté Atlantique. Alertes H2S fréquentes en été.'},
-{id:'mq035',ile:'MQ',name:'Anse Bonneville',commune:'La Trinité',lat:14.754279350000001,lng:-60.9462446,risk:'danger',h2s:false,type:'sable brun',desc:'Plage atlantique. Vagues. Zone de surf.'},
-{id:'mq036',ile:'MQ',name:'Anse l\'Étang',commune:'La Trinité',lat:14.7320,lng:-60.9720,risk:'warn',h2s:false,type:'sable brun',desc:'Plage semi-abritée. Etang naturel derrière.'},
-{id:'mq037',ile:'MQ',name:'Plage de La Trinité',commune:'La Trinité',lat:14.7430,lng:-60.9760,risk:'warn',h2s:false,type:'sable brun',desc:'Plage du bourg de la Trinité. Bonne infrastructure.'},
+{id:'mq034',ile:'MQ',name:'Plage de Tartane',commune:'La Trinité',lat:14.7507215,lng:-60.9256857,risk:'danger',h2s:true,type:'sable brun',desc:'Village de surf. Exposition maximale aux sargasses côté Atlantique. Alertes H2S fréquentes en été.'},
+{id:'mq035',ile:'MQ',name:'Anse Bonneville',commune:'La Trinité',lat:14.7542793,lng:-60.9462446,risk:'danger',h2s:false,type:'sable brun',desc:'Plage atlantique. Vagues. Zone de surf.'},
+{id:'mq036',ile:'MQ',name:'Anse l\'Étang',commune:'La Trinité',lat:14.765875,lng:-60.9058586,risk:'warn',h2s:false,type:'sable brun',desc:'Plage semi-abritée. Etang naturel derrière.'},
+{id:'mq037',ile:'MQ',name:'Plage de La Trinité',commune:'La Trinité',lat:14.7424251,lng:-60.9429967,risk:'warn',h2s:false,type:'sable brun',desc:'Plage du bourg de la Trinité. Bonne infrastructure.'},
 {id:'mq038',ile:'MQ',name:'Anse Azérot',commune:'La Trinité',lat:14.7704908,lng:-60.9796444,risk:'warn',h2s:false,type:'sable brun',desc:'Belle plage semi-sauvage.'},
-{id:'mq039',ile:'MQ',name:'Presqu\'île de la Caravelle (Anse du Bois)',commune:'La Trinité',lat:14.7800,lng:-60.9300,risk:'danger',h2s:false,type:'sable brun',desc:'Parc naturel régional. Sargasses fréquentes côté Atlantique.'},
+{id:'mq039',ile:'MQ',name:'Presqu\'île de la Caravelle (Anse du Bois)',commune:'La Trinité',lat:14.7609594,lng:-60.9336012,risk:'danger',h2s:false,type:'sable brun',desc:'Parc naturel régional. Sargasses fréquentes côté Atlantique.'},
 
 // ── PRESQU'ÎLE DU CARAVELLE ──
-{id:'mq040',ile:'MQ',name:'Anse Spoutourne',commune:'La Trinité',lat:14.7820,lng:-60.9380,risk:'danger',h2s:false,type:'sable brun',desc:'Côte sauvage de la Caravelle. Vents forts. Oiseaux marins.'},
-{id:'mq041',ile:'MQ',name:'Anse des Gallets',commune:'La Trinité',lat:14.7720,lng:-60.9200,risk:'warn',h2s:false,type:'galets',desc:'Plage de galets. Ambiance sauvage.'},
+{id:'mq040',ile:'MQ',name:'Anse Spoutourne',commune:'La Trinité',lat:14.7609594,lng:-60.9336012,risk:'danger',h2s:false,type:'sable brun',desc:'Côte sauvage de la Caravelle. Vents forts. Oiseaux marins.'},
+{id:'mq041',ile:'MQ',name:'Anse des Gallets',commune:'La Trinité',lat:14.7638007,lng:-60.9116108,risk:'warn',h2s:false,type:'galets',desc:'Plage de galets. Ambiance sauvage.'},
 
 // ── LE ROBERT / LE FRANÇOIS ──
-{id:'mq042',ile:'MQ',name:'Plage de Pointe Royale',commune:'Le Robert',lat:14.6900,lng:-60.9350,risk:'warn',h2s:false,type:'sable brun',desc:'Vue sur les îlets du Robert. Kite-surf populaire.'},
-{id:'mq043',ile:'MQ',name:'Plage du Bout',commune:'Le Robert',lat:14.6820,lng:-60.9280,risk:'warn',h2s:false,type:'sable brun',desc:'Plage du bourg du Robert. Baie protégée.'},
-{id:'mq044',ile:'MQ',name:'Plage de Pointe Faula',commune:'Le François',lat:14.5413754,lng:-60.829157800000004,risk:'danger',h2s:true,type:'sable brun',desc:'Côte sud-atlantique. Zone fréquemment touchée. H2S signalé.'},
-{id:'mq045',ile:'MQ',name:'Anse Trabaud (François)',commune:'Le François',lat:14.6250,lng:-60.8900,risk:'danger',h2s:false,type:'sable brun',desc:'Plage exposée. Bon spot de kite-surf malgré les sargasses.'},
+{id:'mq042',ile:'MQ',name:'Plage de Pointe Royale',commune:'Le Robert',lat:14.6619988,lng:-60.8834495,risk:'warn',h2s:false,type:'sable brun',desc:'Vue sur les îlets du Robert. Kite-surf populaire.'},
+{id:'mq044',ile:'MQ',name:'Plage de Pointe Faula',commune:'Le François',lat:14.5413754,lng:-60.8291578,risk:'danger',h2s:true,type:'sable brun',desc:'Côte sud-atlantique. Zone fréquemment touchée. H2S signalé.'},
+{id:'mq045',ile:'MQ',name:'Anse Trabaud (François)',commune:'Le François',lat:14.4101296,lng:-60.8482068,risk:'danger',h2s:false,type:'sable brun',desc:'Plage exposée. Bon spot de kite-surf malgré les sargasses.'},
 
 // ── VAUCLIN / RIVIÈRE-SALÉE ──
-{id:'mq046',ile:'MQ',name:'Plage du Vauclin',commune:'Le Vauclin',lat:14.5520,lng:-60.8360,risk:'danger',h2s:true,type:'sable brun',desc:'Côte Atlantique sud. Échouages fréquents. Alertes H2S en saison.'},
-{id:'mq047',ile:'MQ',name:'Anse Grosse Roche',commune:'Le Vauclin',lat:14.4840623,lng:-60.81292965,risk:'danger',h2s:false,type:'sable brun',desc:'Plage sauvage exposée. Paysage préservé.'},
-{id:'mq048',ile:'MQ',name:'Pointe Faula (Vauclin)',commune:'Le Vauclin',lat:14.5600,lng:-60.8400,risk:'danger',h2s:false,type:'sable brun',desc:'Pointe naturelle. Vue sur les îlets Pitons du Carbet.'},
+{id:'mq046',ile:'MQ',name:'Plage du Vauclin',commune:'Le Vauclin',lat:14.5480552,lng:-60.837672,risk:'danger',h2s:true,type:'sable brun',desc:'Côte Atlantique sud. Échouages fréquents. Alertes H2S en saison.'},
+{id:'mq047',ile:'MQ',name:'Anse Grosse Roche',commune:'Le Vauclin',lat:14.4840623,lng:-60.8129297,risk:'danger',h2s:false,type:'sable brun',desc:'Plage sauvage exposée. Paysage préservé.'},
+{id:'mq048',ile:'MQ',name:'Pointe Faula (Vauclin)',commune:'Le Vauclin',lat:14.5413754,lng:-60.8291578,risk:'danger',h2s:false,type:'sable brun',desc:'Pointe naturelle. Vue sur les îlets Pitons du Carbet.'},
 
 // ── GRAND RIVIÈRE / MACOUBA ──
-{id:'mq049',ile:'MQ',name:'Plage de Grand Rivière',commune:'Grand\'Rivière',lat:14.8720,lng:-61.1820,risk:'safe',h2s:false,type:'sable gris',desc:'Village isolé au bout de la route. Plage de galets et sable. Pêcheurs.'},
-{id:'mq050',ile:'MQ',name:'Plage de Macouba',commune:'Macouba',lat:14.8590,lng:-61.1560,risk:'safe',h2s:false,type:'sable gris',desc:'Côte nord Atlantique. Vagues. Paysage spectaculaire.'},
+{id:'mq049',ile:'MQ',name:'Plage de Grand Rivière',commune:'Grand\'Rivière',lat:14.8711392,lng:-61.1833745,risk:'safe',h2s:false,type:'sable gris',desc:'Village isolé au bout de la route. Plage de galets et sable. Pêcheurs.'},
+{id:'mq050',ile:'MQ',name:'Plage de Macouba',commune:'Macouba',lat:14.8741957,lng:-61.1773891,risk:'safe',h2s:false,type:'sable gris',desc:'Côte nord Atlantique. Vagues. Paysage spectaculaire.'},
 
 // ── GROS MORNE / LORRAIN ──
-{id:'mq051',ile:'MQ',name:'Plage de la Basse-Pointe',commune:'Basse-Pointe',lat:14.8680,lng:-61.1250,risk:'warn',h2s:false,type:'sable gris',desc:'Plage de village. Ambiance authentique.'},
-{id:'mq052',ile:'MQ',name:'Anse Levrier',commune:'Le Lorrain',lat:14.8280,lng:-61.0760,risk:'warn',h2s:false,type:'sable brun',desc:'Plage accessible depuis la route du Nord Atlantique.'},
-{id:'mq053',ile:'MQ',name:'Plage de Sainte-Marie',commune:'Sainte-Marie',lat:14.7850,lng:-60.9880,risk:'warn',h2s:false,type:'sable brun',desc:'Plage de la ville du rhum Saint-James. Vue panoramique.'},
-{id:'mq054',ile:'MQ',name:'Anse Azérot (Sainte-Marie)',commune:'Sainte-Marie',lat:14.7780,lng:-60.9820,risk:'warn',h2s:false,type:'sable brun',desc:'Petite plage tranquille au nord de Sainte-Marie.'},
+{id:'mq051',ile:'MQ',name:'Plage de la Basse-Pointe',commune:'Basse-Pointe',lat:14.8086385,lng:-61.0172223,risk:'warn',h2s:false,type:'sable gris',desc:'Plage de village. Ambiance authentique.'},
+{id:'mq053',ile:'MQ',name:'Plage de Sainte-Marie',commune:'Sainte-Marie',lat:14.7856693,lng:-60.9931755,risk:'warn',h2s:false,type:'sable brun',desc:'Plage de la ville du rhum Saint-James. Vue panoramique.'},
+{id:'mq054',ile:'MQ',name:'Anse Azérot (Sainte-Marie)',commune:'Sainte-Marie',lat:14.7704908,lng:-60.9796444,risk:'warn',h2s:false,type:'sable brun',desc:'Petite plage tranquille au nord de Sainte-Marie.'},
 
 // ── DUCOS / RIVIÈRE-SALÉE ──
-{id:'mq055',ile:'MQ',name:'Anse Mabouya',commune:'Rivière-Salée',lat:14.467906,lng:-60.95774315,risk:'warn',h2s:false,type:'sable brun',desc:'Plage semi-abritée de la côte Caraïbe.'},
-{id:'mq056',ile:'MQ',name:'Plage de la Pointe Marin',commune:'Sainte-Anne',lat:14.45111815,lng:-60.883571700000005,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage touristique avec hôtels. Jet-ski et sports nautiques.'},
-{id:'mq057',ile:'MQ',name:'Anse Galet',commune:'Sainte-Anne',lat:14.4220,lng:-60.8650,risk:'warn',h2s:false,type:'galets',desc:'Plage de galets. Bonne pour la plongée en apnée.'},
+{id:'mq055',ile:'MQ',name:'Anse Mabouya',commune:'Rivière-Salée',lat:14.46801066,lng:-60.95755056,risk:'warn',h2s:false,type:'sable brun',desc:'Plage semi-abritée de la côte Caraïbe.'},
+{id:'mq056',ile:'MQ',name:'Plage de la Pointe Marin',commune:'Sainte-Anne',lat:14.4511181,lng:-60.8835717,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage touristique avec hôtels. Jet-ski et sports nautiques.'},
+{id:'mq057',ile:'MQ',name:'Anse Galet',commune:'Sainte-Anne',lat:14.4341256,lng:-60.8821104,risk:'warn',h2s:false,type:'galets',desc:'Plage de galets. Bonne pour la plongée en apnée.'},
 
 // Supplémentaires MQ
-{id:'mq058',ile:'MQ',name:'Anse Baleine',commune:'Le Vauclin',lat:14.5360,lng:-60.8200,risk:'danger',h2s:false,type:'sable brun',desc:'Plage isolée. Fréquentation de baleines à bosse en hiver.'},
-{id:'mq059',ile:'MQ',name:'Plage de Rivière-Salée',commune:'Rivière-Salée',lat:14.5180,lng:-60.9520,risk:'warn',h2s:false,type:'sable brun',desc:'Plage de mangrove. Écosystème fragile.'},
-{id:'mq060',ile:'MQ',name:'Anse Ramville',commune:'Les Trois-Îlets',lat:14.5400,lng:-61.0350,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage de golf resort. Très bien entretenue.'},
+{id:'mq058',ile:'MQ',name:'Anse Baleine',commune:'Le Vauclin',lat:14.4840623,lng:-60.8129297,risk:'danger',h2s:false,type:'sable brun',desc:'Plage isolée. Fréquentation de baleines à bosse en hiver.'},
+{id:'mq060',ile:'MQ',name:'Anse Ramville',commune:'Les Trois-Îlets',lat:14.55983072,lng:-61.05279031,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage de golf resort. Très bien entretenue.'},
 /* mq061 supprimé : doublon de mq032 (Anse Couleuvre) */
-{id:'mq062',ile:'MQ',name:'Plage de Case-Pilote',commune:'Case-Pilote',lat:14.6420401,lng:-61.138977,risk:'safe',h2s:false,type:'sable gris',desc:'Joli village de pêcheurs. Eglise coloniale. Plage calme.'},
-{id:'mq063',ile:'MQ',name:'Anse Flétan',commune:'Case-Pilote',lat:14.6420,lng:-61.1080,risk:'safe',h2s:false,type:'sable gris',desc:'Petite anse isolée. Peu fréquentée.'},
-{id:'mq064',ile:'MQ',name:'Plage de Bellefontaine',commune:'Bellefontaine',lat:14.6680,lng:-61.1430,risk:'safe',h2s:false,type:'sable gris',desc:'Village de pêcheurs. Barques colorées. Charme authentique.'},
-{id:'mq065',ile:'MQ',name:'Anse Petite Marianne',commune:'Grand\'Rivière',lat:14.8750,lng:-61.1900,risk:'safe',h2s:false,type:'sable gris',desc:'Plage isolée entre Grand Rivière et la pointe nord.'},
-{id:'mq066',ile:'MQ',name:'Grande Anse du Prêcheur',commune:'Le Prêcheur',lat:14.801196350000001,lng:-61.2260898,risk:'safe',h2s:false,type:'sable gris',desc:'Grande plage du bourg du Prêcheur. Vue Montagne Pelée.'},
+{id:'mq062',ile:'MQ',name:'Plage de Case-Pilote',commune:'Case-Pilote',lat:14.64192241,lng:-61.13879442,risk:'safe',h2s:false,type:'sable gris',desc:'Joli village de pêcheurs. Eglise coloniale. Plage calme.'},
+{id:'mq063',ile:'MQ',name:'Anse Flétan',commune:'Case-Pilote',lat:14.6334662,lng:-61.1309528,risk:'safe',h2s:false,type:'sable gris',desc:'Petite anse isolée. Peu fréquentée.'},
+{id:'mq065',ile:'MQ',name:'Anse Petite Marianne',commune:'Grand\'Rivière',lat:14.8711392,lng:-61.1833745,risk:'safe',h2s:false,type:'sable gris',desc:'Plage isolée entre Grand Rivière et la pointe nord.'},
+{id:'mq066',ile:'MQ',name:'Grande Anse du Prêcheur',commune:'Le Prêcheur',lat:14.8011963,lng:-61.2260898,risk:'safe',h2s:false,type:'sable gris',desc:'Grande plage du bourg du Prêcheur. Vue Montagne Pelée.'},
 /* mq067 supprimé : doublon de mq033 (Anse Céron) */
-{id:'mq068',ile:'MQ',name:'Plage du Coin',commune:'Sainte-Anne',lat:14.4290,lng:-60.8750,risk:'warn',h2s:false,type:'sable blanc',desc:'Petite plage calme entre les Salines et le Bourg.'},
-{id:'mq069',ile:'MQ',name:'Anse Grosse Pierre',commune:'Sainte-Luce',lat:14.4850,lng:-60.9290,risk:'safe',h2s:false,type:'sable brun',desc:'Plage calme avec gros rochers. Bon spot de snorkeling.'},
-{id:'mq070',ile:'MQ',name:'Plage de Belfond',commune:'Sainte-Luce',lat:14.4920,lng:-60.9150,risk:'safe',h2s:false,type:'sable brun',desc:'Plage de lotissement. Accès privé mais plage publique.'},
-
+{id:'mq068',ile:'MQ',name:'Plage du Coin',commune:'Sainte-Anne',lat:14.4341256,lng:-60.8821104,risk:'warn',h2s:false,type:'sable blanc',desc:'Petite plage calme entre les Salines et le Bourg.'},
+{id:'mq069',ile:'MQ',name:'Anse Grosse Pierre',commune:'Sainte-Luce',lat:14.4658147,lng:-60.9260982,risk:'safe',h2s:false,type:'sable brun',desc:'Plage calme avec gros rochers. Bon spot de snorkeling.'},
 // ══════════════════════════════
 // GUADELOUPE — 85 plages
 // ══════════════════════════════
 
 // ── GRANDE-TERRE SUD ──
-{id:'gp001',ile:'GP',name:'Plage de Saint-François',commune:'Saint-François',lat:16.2506,lng:-61.2676,risk:'warn',h2s:false,type:'sable blanc',desc:'Plage du village touristique. Proche casino et golfe.'},
-{id:'gp002',ile:'GP',name:'Plage des Raisins Clairs',commune:'Saint-François',lat:16.24691715,lng:-61.286430499999994,risk:'safe',h2s:false,type:'sable blanc',desc:'Belle plage protégée par une barrière de corail. Eaux turquoise.'},
-{id:'gp003',ile:'GP',name:'La Datcha',commune:'Saint-François',lat:16.204733949999998,lng:-61.4947073,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage tranquille avec restaurants de bord de mer.'},
-{id:'gp004',ile:'GP',name:'Anse à la Gourde',commune:'Saint-François',lat:16.25969405,lng:-61.214013949999995,risk:'safe',h2s:false,type:'sable blanc',desc:'Longue plage sauvage protégée. Eaux limpides. Très belle.'},
-{id:'gp005',ile:'GP',name:'Plage de la Pointe des Châteaux',commune:'Saint-François',lat:16.2447,lng:-61.1766,risk:'warn',h2s:false,type:'sable blanc',desc:'Bout de l\'île Grande-Terre. Paysage spectaculaire. Courants forts.'},
-{id:'gp006',ile:'GP',name:'Anse Tarare',commune:'Saint-François',lat:16.25641325,lng:-61.198585449999996,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage naturiste. Accessible à pied. Eaux cristallines.'},
-{id:'gp007',ile:'GP',name:'Anse Kahouanne',commune:'Saint-François',lat:16.2290,lng:-61.2050,risk:'warn',h2s:false,type:'sable blanc',desc:'Plage sauvage côte Atlantique. Vagues.'},
-{id:'gp008',ile:'GP',name:'Plage Bois Jolan',commune:'Sainte-Anne',lat:16.2373,lng:-61.3491,risk:'safe',h2s:false,type:'sable blanc',desc:'Belle plage au sud de Sainte-Anne. Moins fréquentée que la Caravelle.'},
-{id:'gp009',ile:'GP',name:'Plage de la Caravelle',commune:'Sainte-Anne',lat:16.21809325,lng:-61.3965096,risk:'safe',h2s:false,type:'sable blanc',desc:'La plage incontournable de Guadeloupe. Hôtel La Toubana face à la mer.'},
+{id:'gp001',ile:'GP',name:'Plage de Saint-François',commune:'Saint-François',lat:16.2521,lng:-61.2644,risk:'warn',h2s:false,type:'sable blanc',desc:'Plage du village touristique. Proche casino et golfe.'},
+{id:'gp002',ile:'GP',name:'Plage des Raisins Clairs',commune:'Saint-François',lat:16.2469172,lng:-61.2864305,risk:'safe',h2s:false,type:'sable blanc',desc:'Belle plage protégée par une barrière de corail. Eaux turquoise.'},
+{id:'gp003',ile:'GP',name:'La Datcha',commune:'Saint-François',lat:16.2048,lng:-61.4947,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage tranquille avec restaurants de bord de mer.'},
+{id:'gp004',ile:'GP',name:'Anse à la Gourde',commune:'Saint-François',lat:16.2597,lng:-61.214,risk:'safe',h2s:false,type:'sable blanc',desc:'Longue plage sauvage protégée. Eaux limpides. Très belle.'},
+{id:'gp005',ile:'GP',name:'Plage de la Pointe des Châteaux',commune:'Saint-François',lat:16.2531027,lng:-61.2306694,risk:'warn',h2s:false,type:'sable blanc',desc:'Bout de l\'île Grande-Terre. Paysage spectaculaire. Courants forts.'},
+{id:'gp006',ile:'GP',name:'Anse Tarare',commune:'Saint-François',lat:16.2564,lng:-61.1986,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage naturiste. Accessible à pied. Eaux cristallines.'},
+{id:'gp008',ile:'GP',name:'Plage Bois Jolan',commune:'Sainte-Anne',lat:16.2373343,lng:-61.3491006,risk:'safe',h2s:false,type:'sable blanc',desc:'Belle plage au sud de Sainte-Anne. Moins fréquentée que la Caravelle.'},
+{id:'gp009',ile:'GP',name:'Plage de la Caravelle',commune:'Sainte-Anne',lat:16.2181,lng:-61.3965,risk:'safe',h2s:false,type:'sable blanc',desc:'La plage incontournable de Guadeloupe. Hôtel La Toubana face à la mer.'},
 {id:'gp010',ile:'GP',name:'Plage de Sainte-Anne',commune:'Sainte-Anne',lat:16.2226,lng:-61.3828,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage du bourg animée. Restaurants et glaciers.'},
-{id:'gp011',ile:'GP',name:'Anse de la Douche',commune:'Sainte-Anne',lat:16.25286285,lng:-61.229882450000005,risk:'safe',h2s:false,type:'sable blanc',desc:'Petite anse isolée. Très beau sable blanc.'},
+{id:'gp011',ile:'GP',name:'Anse de la Douche',commune:'Sainte-Anne',lat:16.2528628,lng:-61.2298825,risk:'safe',h2s:false,type:'sable blanc',desc:'Petite anse isolée. Très beau sable blanc.'},
 
 // ── GRANDE-TERRE CENTRE / NORD ──
-{id:'gp012',ile:'GP',name:'Plage du Gosier',commune:'Le Gosier',lat:16.2100,lng:-61.4950,risk:'safe',h2s:false,type:'sable brun',desc:'Plage animée de la zone touristique. Vue sur l\'îlet du Gosier.'},
-{id:'gp013',ile:'GP',name:'Plage de la Datcha (Gosier)',commune:'Le Gosier',lat:16.204733949999998,lng:-61.4947073,risk:'safe',h2s:false,type:'sable brun',desc:'Plage de l\'hôtel Karibéa. Bien entretenue.'},
-{id:'gp014',ile:'GP',name:'Plage de Bas-du-Fort',commune:'Pointe-à-Pitre',lat:16.2140114,lng:-61.52370645,risk:'safe',h2s:false,type:'sable brun',desc:'Plage du port de plaisance. Proche marina.'},
-{id:'gp015',ile:'GP',name:'Plage de la Porte d\'Enfer',commune:'Anse-Bertrand',lat:16.4795,lng:-61.4820,risk:'danger',h2s:false,type:'sable brun',desc:'Site naturel impressionnant. Marée forte. Baignade interdite par grosse mer.'},
+{id:'gp012',ile:'GP',name:'Plage du Gosier',commune:'Le Gosier',lat:16.2048,lng:-61.4948,risk:'safe',h2s:false,type:'sable brun',desc:'Plage animée de la zone touristique. Vue sur l\'îlet du Gosier.'},
+{id:'gp013',ile:'GP',name:'Plage de la Datcha (Gosier)',commune:'Le Gosier',lat:16.2047339,lng:-61.4947073,risk:'safe',h2s:false,type:'sable brun',desc:'Plage de l\'hôtel Karibéa. Bien entretenue.'},
+{id:'gp014',ile:'GP',name:'Plage de Bas-du-Fort',commune:'Pointe-à-Pitre',lat:16.2140114,lng:-61.5237064,risk:'safe',h2s:false,type:'sable brun',desc:'Plage du port de plaisance. Proche marina.'},
+{id:'gp015',ile:'GP',name:'Plage de la Porte d\'Enfer',commune:'Anse-Bertrand',lat:16.4861861,lng:-61.4416828,risk:'danger',h2s:false,type:'sable brun',desc:'Site naturel impressionnant. Marée forte. Baignade interdite par grosse mer.'},
 {id:'gp016',ile:'GP',name:'Anse Laborde',commune:'Anse-Bertrand',lat:16.4840401,lng:-61.5014268,risk:'danger',h2s:true,type:'sable brun',desc:'Côte nord Atlantique. Très exposée aux sargasses. H2S signalé en saison.'},
-{id:'gp017',ile:'GP',name:'Plage du Souffleur',commune:'Port-Louis',lat:16.4222308,lng:-61.533739999999995,risk:'warn',h2s:false,type:'sable blanc',desc:'Belle plage réputée au nord de la Grande-Terre. Palmiers abondants.'},
-{id:'gp018',ile:'GP',name:'Plage de Viard',commune:'Morne-à-l\'Eau',lat:16.333,lng:-61.479,risk:'warn',h2s:false,type:'sable brun',desc:'Plage calme dans les mangroves.'},
-{id:'gp019',ile:'GP',name:'Plage des Galets',commune:'Pointe-Noire',lat:16.2318,lng:-61.7848,risk:'warn',h2s:false,type:'galets',desc:'Plage de galets colorés. Côte Caraïbe de Basse-Terre (Pointe-Noire).'},
-{id:'gp020',ile:'GP',name:'Plage de Campêche',commune:'Anse-Bertrand',lat:16.4720,lng:-61.4820,risk:'danger',h2s:false,type:'sable brun',desc:'Plage atlantique. Zone protégée.'},
+{id:'gp017',ile:'GP',name:'Plage du Souffleur',commune:'Port-Louis',lat:16.4222,lng:-61.5337,risk:'warn',h2s:false,type:'sable blanc',desc:'Belle plage réputée au nord de la Grande-Terre. Palmiers abondants.'},
+{id:'gp018',ile:'GP',name:'Plage de Viard',commune:'Morne-à-l\'Eau',lat:16.1649476,lng:-61.5842398,risk:'warn',h2s:false,type:'sable brun',desc:'Plage calme dans les mangroves.'},
+{id:'gp019',ile:'GP',name:'Plage des Galets',commune:'Pointe-Noire',lat:16.2938849,lng:-61.0937489,risk:'warn',h2s:false,type:'galets',desc:'Plage de galets colorés. Côte Caraïbe de Basse-Terre (Pointe-Noire).'},
+{id:'gp020',ile:'GP',name:'Plage de Campêche',commune:'Anse-Bertrand',lat:16.4856804,lng:-61.4973785,risk:'danger',h2s:false,type:'sable brun',desc:'Plage atlantique. Zone protégée.'},
 
 // ── BASSE-TERRE SUD ──
 {id:'gp021',ile:'GP',name:'Plage de Grande Anse',commune:'Trois-Rivières',lat:15.9589717,lng:-61.6719389,risk:'safe',h2s:false,type:'sable noir',desc:'Plage volcanique noire spectaculaire. Départ pour les Saintes.'},
-{id:'gp022',ile:'GP',name:'Plage de Basse-Terre',commune:'Basse-Terre',lat:16.0100,lng:-61.7260,risk:'safe',h2s:false,type:'sable gris',desc:'Chef-lieu de région. Plage de la capitale administrative.'},
-{id:'gp023',ile:'GP',name:'Anse à la Barque',commune:'Vieux-Habitants',lat:16.068,lng:-61.758,risk:'safe',h2s:false,type:'sable gris',desc:'Joli mouillage. Plage calme avec falaises.'},
+{id:'gp023',ile:'GP',name:'Anse à la Barque',commune:'Vieux-Habitants',lat:16.2438293,lng:-61.3243047,risk:'safe',h2s:false,type:'sable gris',desc:'Joli mouillage. Plage calme avec falaises.'},
 {id:'gp024',ile:'GP',name:'Plage de Deshaies',commune:'Deshaies',lat:16.3053509,lng:-61.7950711,risk:'safe',h2s:false,type:'sable brun',desc:'Village de pêcheurs pittoresque (série Death in Paradise). Plage de sable doré.'},
-{id:'gp025',ile:'GP',name:'La Grande Anse (Deshaies)',commune:'Deshaies',lat:16.3212,lng:-61.7919,risk:'safe',h2s:false,type:'sable doré',desc:'La plus belle plage de Basse-Terre selon les locaux. Sable doré vif.'},
-{id:'gp026',ile:'GP',name:'Anse Tabarin',commune:'Deshaies',lat:16.302,lng:-61.802,risk:'safe',h2s:false,type:'sable brun',desc:'Petite anse tranquille. Kayak et snorkeling.'},
-{id:'gp027',ile:'GP',name:'Plage de Clugny',commune:'Sainte-Rose',lat:16.35440925,lng:-61.75290865,risk:'safe',h2s:false,type:'sable brun',desc:'Plage familiale avec snack-bar. Bien équipée.'},
-{id:'gp028',ile:'GP',name:'Plage de Ferry',commune:'Sainte-Rose',lat:16.3280,lng:-61.7100,risk:'safe',h2s:false,type:'sable brun',desc:'Bonne plage peu fréquentée.'},
+{id:'gp025',ile:'GP',name:'La Grande Anse (Deshaies)',commune:'Deshaies',lat:15.863176,lng:-61.5777867,risk:'safe',h2s:false,type:'sable doré',desc:'La plus belle plage de Basse-Terre selon les locaux. Sable doré vif.'},
+{id:'gp026',ile:'GP',name:'Anse Tabarin',commune:'Deshaies',lat:16.2054591,lng:-61.5000744,risk:'safe',h2s:false,type:'sable brun',desc:'Petite anse tranquille. Kayak et snorkeling.'},
+{id:'gp027',ile:'GP',name:'Plage de Clugny',commune:'Sainte-Rose',lat:16.3544093,lng:-61.7529087,risk:'safe',h2s:false,type:'sable brun',desc:'Plage familiale avec snack-bar. Bien équipée.'},
+{id:'gp028',ile:'GP',name:'Plage de Ferry',commune:'Sainte-Rose',lat:16.3450735,lng:-61.7173643,risk:'safe',h2s:false,type:'sable brun',desc:'Bonne plage peu fréquentée.'},
 
 // ── BASSE-TERRE NORD-CARAÏBE ──
-{id:'gp029',ile:'GP',name:'Plage de Pointe-Noire',commune:'Pointe-Noire',lat:16.2350,lng:-61.7870,risk:'safe',h2s:false,type:'sable gris',desc:'Village côtier calme. Plage de galets et sable.'},
-{id:'gp030',ile:'GP',name:'Anse Dufour',commune:'Pointe-Noire',lat:16.2420,lng:-61.7930,risk:'safe',h2s:false,type:'sable gris',desc:'Petite anse protégée. Bonne plongée.'},
-{id:'gp031',ile:'GP',name:'Plage de Bouillante',commune:'Bouillante',lat:16.1280,lng:-61.7770,risk:'safe',h2s:false,type:'sable gris',desc:'Spot de plongée mondialement réputé. Tortues marines fréquentes.'},
-{id:'gp032',ile:'GP',name:'Anse à Sable',commune:'Bouillante',lat:16.1483668,lng:-61.77514935,risk:'safe',h2s:false,type:'sable gris',desc:'Plage calme. Vue sur les Pitons du Carbet au loin.'},
-{id:'gp033',ile:'GP',name:'Plage de Malendure',commune:'Bouillante',lat:16.17205155,lng:-61.77674005,risk:'safe',h2s:false,type:'sable gris',desc:'Base pour les excursions plongée Réserve Cousteau.'},
-{id:'gp034',ile:'GP',name:'Plage de Viard (Bouillante)',commune:'Bouillante',lat:16.118,lng:-61.77,risk:'safe',h2s:false,type:'sable gris',desc:'Plage calme peu connue des touristes.'},
+{id:'gp029',ile:'GP',name:'Plage de Pointe-Noire',commune:'Pointe-Noire',lat:16.2354834,lng:-61.7923244,risk:'safe',h2s:false,type:'sable gris',desc:'Village côtier calme. Plage de galets et sable.'},
+{id:'gp030',ile:'GP',name:'Anse Dufour',commune:'Pointe-Noire',lat:16.2354834,lng:-61.7923244,risk:'safe',h2s:false,type:'sable gris',desc:'Petite anse protégée. Bonne plongée.'},
+{id:'gp031',ile:'GP',name:'Plage de Bouillante',commune:'Bouillante',lat:16.1721,lng:-61.7767,risk:'safe',h2s:false,type:'sable gris',desc:'Spot de plongée mondialement réputé. Tortues marines fréquentes.'},
+{id:'gp032',ile:'GP',name:'Anse à Sable',commune:'Bouillante',lat:16.1483668,lng:-61.7751493,risk:'safe',h2s:false,type:'sable gris',desc:'Plage calme. Vue sur les Pitons du Carbet au loin.'},
+{id:'gp033',ile:'GP',name:'Plage de Malendure',commune:'Bouillante',lat:16.1720515,lng:-61.7767401,risk:'safe',h2s:false,type:'sable gris',desc:'Base pour les excursions plongée Réserve Cousteau.'},
+{id:'gp034',ile:'GP',name:'Plage de Viard (Bouillante)',commune:'Bouillante',lat:16.1649476,lng:-61.5842398,risk:'safe',h2s:false,type:'sable gris',desc:'Plage calme peu connue des touristes.'},
 
 // ── BASSE-TERRE SUD / GOURBEYRE ──
-{id:'gp035',ile:'GP',name:'Plage de Belfond',commune:'Saint-Claude',lat:16.0380,lng:-61.7050,risk:'safe',h2s:false,type:'sable gris',desc:'Plage en contrebas du volcan Soufrière. Vue panoramique.'},
-{id:'gp036',ile:'GP',name:'Plage des Amandiers',commune:'Gourbeyre',lat:16.35159355,lng:-61.723192,risk:'safe',h2s:false,type:'sable gris',desc:'Plage calme au sud de Basse-Terre.'},
-{id:'gp037',ile:'GP',name:'Grande Anse de Capesterre',commune:'Capesterre-Belle-Eau',lat:15.86317605,lng:-61.5777867,risk:'warn',h2s:false,type:'sable brun',desc:'Côte atlantique de la Basse-Terre sud. Vagues.'},
-{id:'gp038',ile:'GP',name:'Plage de Capesterre',commune:'Capesterre-Belle-Eau',lat:16.0720,lng:-61.5750,risk:'warn',h2s:false,type:'sable brun',desc:'Plage atlantique animée.'},
-{id:'gp039',ile:'GP',name:'Anse Deux Rochers',commune:'Capesterre-Belle-Eau',lat:16.0580,lng:-61.5800,risk:'warn',h2s:false,type:'sable brun',desc:'Deux gros rochers caractéristiques. Snorkeling.'},
-
+{id:'gp036',ile:'GP',name:'Plage des Amandiers',commune:'Gourbeyre',lat:16.3515936,lng:-61.723192,risk:'safe',h2s:false,type:'sable gris',desc:'Plage calme au sud de Basse-Terre.'},
+{id:'gp037',ile:'GP',name:'Grande Anse de Capesterre',commune:'Capesterre-Belle-Eau',lat:15.863176,lng:-61.5777867,risk:'warn',h2s:false,type:'sable brun',desc:'Côte atlantique de la Basse-Terre sud. Vagues.'},
+{id:'gp038',ile:'GP',name:'Plage de Capesterre',commune:'Capesterre-Belle-Eau',lat:16.0931635,lng:-61.559275,risk:'warn',h2s:false,type:'sable brun',desc:'Plage atlantique animée.'},
 // ── MARIE-GALANTE ──
-{id:'gp040',ile:'GP',name:'Plage de Capesterre (Marie-Galante)',commune:'Capesterre (Marie-Galante)',lat:15.8820,lng:-61.2280,risk:'warn',h2s:false,type:'sable blanc',desc:'Marie-Galante. Belle plage calme.'},
-{id:'gp041',ile:'GP',name:'Plage Feuillère',commune:'Grand-Bourg',lat:15.8840,lng:-61.3080,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage principale de Grand-Bourg. Tranquille et propre.'},
-{id:'gp042',ile:'GP',name:'Anse du Vieux Fort',commune:'Grand-Bourg',lat:16.355228750000002,lng:-61.75916775,risk:'safe',h2s:false,type:'sable blanc',desc:'Ruines du fort et plage sauvage. Magnifique.'},
-{id:'gp043',ile:'GP',name:'Plage de Saint-Louis',commune:'Saint-Louis (Marie-Galante)',lat:15.9470,lng:-61.3130,risk:'warn',h2s:false,type:'sable blanc',desc:'Village de pêcheurs. Distilleries de rhum. Plage calme.'},
+{id:'gp040',ile:'GP',name:'Plage de Capesterre (Marie-Galante)',commune:'Capesterre (Marie-Galante)',lat:15.8858408,lng:-61.2261838,risk:'warn',h2s:false,type:'sable blanc',desc:'Marie-Galante. Belle plage calme.'},
+{id:'gp041',ile:'GP',name:'Plage Feuillère',commune:'Grand-Bourg',lat:15.8789306,lng:-61.3089004,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage principale de Grand-Bourg. Tranquille et propre.'},
+{id:'gp042',ile:'GP',name:'Anse du Vieux Fort',commune:'Grand-Bourg',lat:16.3552287,lng:-61.7591678,risk:'safe',h2s:false,type:'sable blanc',desc:'Ruines du fort et plage sauvage. Magnifique.'},
+{id:'gp043',ile:'GP',name:'Plage de Saint-Louis',commune:'Saint-Louis (Marie-Galante)',lat:15.9526203,lng:-61.320184,risk:'warn',h2s:false,type:'sable blanc',desc:'Village de pêcheurs. Distilleries de rhum. Plage calme.'},
 
 // ── LES SAINTES ──
-{id:'gp044',ile:'GP',name:'Plage de Pompierre',commune:'Terre-de-Haut (Les Saintes)',lat:15.872172299999999,lng:-61.5708634,risk:'safe',h2s:false,type:'sable blanc',desc:'Élue parmi les plus belles plages du monde. Sable blanc immaculé.'},
-{id:'gp045',ile:'GP',name:'Plage Pain de Sucre',commune:'Terre-de-Haut (Les Saintes)',lat:15.8730,lng:-61.5780,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage spectaculaire avec rocher Pain de Sucre. Snorkeling exceptionnel.'},
-{id:'gp046',ile:'GP',name:'Plage de la Colline',commune:'Terre-de-Haut (Les Saintes)',lat:15.8760,lng:-61.5820,risk:'safe',h2s:false,type:'sable blanc',desc:'Vue panoramique. Une des plus belles vues des Antilles.'},
-{id:'gp047',ile:'GP',name:'Plage de Fond Curé',commune:'Terre-de-Bas (Les Saintes)',lat:15.86461995,lng:-61.58487975,risk:'safe',h2s:false,type:'sable blanc',desc:'Île moins touristique. Plage préservée.'},
+{id:'gp044',ile:'GP',name:'Plage de Pompierre',commune:'Terre-de-Haut (Les Saintes)',lat:15.8721723,lng:-61.5708634,risk:'safe',h2s:false,type:'sable blanc',desc:'Élue parmi les plus belles plages du monde. Sable blanc immaculé.'},
+{id:'gp045',ile:'GP',name:'Plage Pain de Sucre',commune:'Terre-de-Haut (Les Saintes)',lat:15.8635,lng:-61.5988,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage spectaculaire avec rocher Pain de Sucre. Snorkeling exceptionnel.'},
+{id:'gp046',ile:'GP',name:'Plage de la Colline',commune:'Terre-de-Haut (Les Saintes)',lat:15.8761973,lng:-61.5796963,risk:'safe',h2s:false,type:'sable blanc',desc:'Vue panoramique. Une des plus belles vues des Antilles.'},
+{id:'gp047',ile:'GP',name:'Plage de Fond Curé',commune:'Terre-de-Bas (Les Saintes)',lat:15.86462,lng:-61.5848797,risk:'safe',h2s:false,type:'sable blanc',desc:'Île moins touristique. Plage préservée.'},
 
 // ── LA DÉSIRADE ──
-{id:'gp048',ile:'GP',name:'Plage de Beauséjour',commune:'La Désirade',lat:16.3080,lng:-61.0660,risk:'danger',h2s:false,type:'sable blanc',desc:'Île la plus exposée. Fort risque sargasses côté atlantique.'},
-{id:'gp049',ile:'GP',name:'Plage de Souffleur (Désirade)',commune:'La Désirade',lat:16.3040,lng:-61.0950,risk:'danger',h2s:true,type:'sable blanc',desc:'Zone à très fort risque. Échouages quasi-permanents.'},
+{id:'gp048',ile:'GP',name:'Plage de Beauséjour',commune:'La Désirade',lat:16.3029048,lng:-61.0697215,risk:'danger',h2s:false,type:'sable blanc',desc:'Île la plus exposée. Fort risque sargasses côté atlantique.'},
+{id:'gp049',ile:'GP',name:'Plage de Souffleur (Désirade)',commune:'La Désirade',lat:16.3103402,lng:-61.0450143,risk:'danger',h2s:true,type:'sable blanc',desc:'Zone à très fort risque. Échouages quasi-permanents.'},
 
 // ── GRANDE-TERRE EST / ATLANTIQUE ──
-{id:'gp050',ile:'GP',name:'Plage de l\'Autre Bord',commune:'Le Moule',lat:16.3310,lng:-61.3480,risk:'danger',h2s:true,type:'sable brun',desc:'Longue plage Atlantique de Le Moule. Spot de surf. Sargasses fréquentes.'},
-{id:'gp051',ile:'GP',name:'Plage de Dampierre',commune:'Le Moule',lat:16.3380,lng:-61.3550,risk:'danger',h2s:false,type:'sable brun',desc:'Côte atlantique exposée.'},
-{id:'gp052',ile:'GP',name:'Anse Gros Sable',commune:'Sainte-Anne',lat:16.24144265,lng:-61.33873065,risk:'warn',h2s:false,type:'sable brun',desc:'Plage calme au large de Sainte-Anne.'},
-{id:'gp053',ile:'GP',name:'Plage du Helleux',commune:'Sainte-Anne',lat:16.2240,lng:-61.3520,risk:'safe',h2s:false,type:'sable blanc',desc:'Belle plage peu connue entre Sainte-Anne et Bois Jolan.'},
-{id:'gp054',ile:'GP',name:'Plage de Anse Patate',commune:'Saint-François',lat:16.2550,lng:-61.2820,risk:'safe',h2s:false,type:'sable blanc',desc:'Petite anse sauvage. Peu fréquentée.'},
+{id:'gp050',ile:'GP',name:'Plage de l\'Autre Bord',commune:'Le Moule',lat:16.329701,lng:-61.3409379,risk:'danger',h2s:true,type:'sable brun',desc:'Longue plage Atlantique de Le Moule. Spot de surf. Sargasses fréquentes.'},
+{id:'gp051',ile:'GP',name:'Plage de Dampierre',commune:'Le Moule',lat:16.3356823,lng:-61.3586839,risk:'danger',h2s:false,type:'sable brun',desc:'Côte atlantique exposée.'},
+{id:'gp052',ile:'GP',name:'Anse Gros Sable',commune:'Sainte-Anne',lat:16.2414427,lng:-61.3387307,risk:'warn',h2s:false,type:'sable brun',desc:'Plage calme au large de Sainte-Anne.'},
+{id:'gp053',ile:'GP',name:'Plage du Helleux',commune:'Sainte-Anne',lat:16.2373343,lng:-61.3491006,risk:'safe',h2s:false,type:'sable blanc',desc:'Belle plage peu connue entre Sainte-Anne et Bois Jolan.'},
+{id:'gp054',ile:'GP',name:'Plage de Anse Patate',commune:'Saint-François',lat:16.2501895,lng:-61.2802841,risk:'safe',h2s:false,type:'sable blanc',desc:'Petite anse sauvage. Peu fréquentée.'},
 
 // Supplémentaires GP
-{id:'gp055',ile:'GP',name:'Plage de Viard (Grand-Bourg)',commune:'Grand-Bourg',lat:16.16494755,lng:-61.58423975,risk:'safe',h2s:false,type:'sable blanc',desc:'Marie-Galante. Plage propre et tranquille.'},
-{id:'gp056',ile:'GP',name:'Grande Anse de Saint-Claude',commune:'Saint-Claude',lat:15.86317605,lng:-61.5777867,risk:'safe',h2s:false,type:'sable gris',desc:'Plage au pied du volcan. Peu fréquentée.'},
-{id:'gp057',ile:'GP',name:'Plage de Leroux',commune:'Capesterre-Belle-Eau',lat:16.275477000000002,lng:-61.80453165,risk:'warn',h2s:false,type:'sable brun',desc:'Plage côté Atlantique.'},
-{id:'gp058',ile:'GP',name:'Anse du Sable Blanc',commune:'Petit-Bourg',lat:16.2000,lng:-61.5680,risk:'safe',h2s:false,type:'sable blanc',desc:'Petite anse au fond d\'une baie protégée.'},
-{id:'gp059',ile:'GP',name:'Plage de Rocher',commune:'Vieux-Fort',lat:16.2420878,lng:-61.30593855,risk:'safe',h2s:false,type:'sable gris',desc:'Extrémité sud de la Basse-Terre. Beau paysage.'},
-{id:'gp060',ile:'GP',name:'Plage Nogent',commune:'Le Moule',lat:16.3280,lng:-61.3680,risk:'danger',h2s:false,type:'sable brun',desc:'Spot de kite-surf. Exposé aux sargasses Atlantique.'},
+{id:'gp055',ile:'GP',name:'Plage de Viard (Grand-Bourg)',commune:'Grand-Bourg',lat:16.1649476,lng:-61.5842398,risk:'safe',h2s:false,type:'sable blanc',desc:'Marie-Galante. Plage propre et tranquille.'},
+{id:'gp056',ile:'GP',name:'Grande Anse de Saint-Claude',commune:'Saint-Claude',lat:15.863176,lng:-61.5777867,risk:'safe',h2s:false,type:'sable gris',desc:'Plage au pied du volcan. Peu fréquentée.'},
+{id:'gp057',ile:'GP',name:'Plage de Leroux',commune:'Capesterre-Belle-Eau',lat:16.275477,lng:-61.8045317,risk:'warn',h2s:false,type:'sable brun',desc:'Plage côté Atlantique.'},
+{id:'gp059',ile:'GP',name:'Plage de Rocher',commune:'Vieux-Fort',lat:16.2420878,lng:-61.3059386,risk:'safe',h2s:false,type:'sable gris',desc:'Extrémité sud de la Basse-Terre. Beau paysage.'},
+{id:'gp060',ile:'GP',name:'Plage Nogent',commune:'Le Moule',lat:16.3578828,lng:-61.7358953,risk:'danger',h2s:false,type:'sable brun',desc:'Spot de kite-surf. Exposé aux sargasses Atlantique.'},
 
 // ══════════════════════════════
 // GUADELOUPE COMPLÉMENT — +60 plages
 // ══════════════════════════════
 
 // ── GRANDE-TERRE : GOSIER ──
-{id:'gp061',ile:'GP',name:'Plage de la Verdure',commune:'Le Gosier',lat:16.2040,lng:-61.4880,risk:'safe',h2s:false,type:'sable brun',desc:'Plage familiale animée face à l\'îlet du Gosier. Restaurants de bord de mer.'},
+{id:'gp061',ile:'GP',name:'Plage de la Verdure',commune:'Le Gosier',lat:16.1997493,lng:-61.4915724,risk:'safe',h2s:false,type:'sable brun',desc:'Plage familiale animée face à l\'îlet du Gosier. Restaurants de bord de mer.'},
 {id:'gp062',ile:'GP',name:'Anse Canot',commune:'Le Gosier',lat:15.9819535,lng:-61.3057874,risk:'safe',h2s:false,type:'sable brun',desc:'Petite anse calme entre Gosier et Sainte-Anne. Peu de touristes.'},
-{id:'gp063',ile:'GP',name:'Plage de la Résidence',commune:'Le Gosier',lat:16.2070,lng:-61.4940,risk:'safe',h2s:false,type:'sable brun',desc:'Plage des hôtels de Gosier. Bien équipée, surveillée.'},
-{id:'gp064',ile:'GP',name:'Plage de Saint-Félix',commune:'Le Gosier',lat:16.2020,lng:-61.4760,risk:'warn',h2s:false,type:'sable brun',desc:'Plage de village de pêcheurs. Vue sur l\'îlet Gosier. Ambiance locale.'},
-{id:'gp065',ile:'GP',name:'Anse des Rochers',commune:'Le Gosier',lat:16.2420878,lng:-61.30593855,risk:'safe',h2s:false,type:'sable brun',desc:'Plage rocheuse au nord de la zone hôtelière.'},
+{id:'gp063',ile:'GP',name:'Plage de la Résidence',commune:'Le Gosier',lat:16.2047339,lng:-61.4947073,risk:'safe',h2s:false,type:'sable brun',desc:'Plage des hôtels de Gosier. Bien équipée, surveillée.'},
+{id:'gp064',ile:'GP',name:'Plage de Saint-Félix',commune:'Le Gosier',lat:16.1993365,lng:-61.4698434,risk:'warn',h2s:false,type:'sable brun',desc:'Plage de village de pêcheurs. Vue sur l\'îlet Gosier. Ambiance locale.'},
+{id:'gp065',ile:'GP',name:'Anse des Rochers',commune:'Le Gosier',lat:16.2420878,lng:-61.3059386,risk:'safe',h2s:false,type:'sable brun',desc:'Plage rocheuse au nord de la zone hôtelière.'},
 
 // ── GRANDE-TERRE : ABYMES / POINTE-À-PITRE ──
-{id:'gp066',ile:'GP',name:'Plage de Lauricisque',commune:'Pointe-à-Pitre',lat:16.2420,lng:-61.5420,risk:'safe',h2s:false,type:'sable brun',desc:'Plage urbaine proche du CHU. Vue sur la rade de Pointe-à-Pitre.'},
-{id:'gp067',ile:'GP',name:'Plage du Helleux (Abymes)',commune:'Les Abymes',lat:16.2650,lng:-61.5040,risk:'safe',h2s:false,type:'sable brun',desc:'Plage peu connue côté nord des Abymes. Calme.'},
-
+{id:'gp066',ile:'GP',name:'Plage de Lauricisque',commune:'Pointe-à-Pitre',lat:16.2186526,lng:-61.5430846,risk:'safe',h2s:false,type:'sable brun',desc:'Plage urbaine proche du CHU. Vue sur la rade de Pointe-à-Pitre.'},
 // ── GRANDE-TERRE : SAINTE-ANNE (plus complet) ──
-{id:'gp068',ile:'GP',name:'Anse du Bananier',commune:'Sainte-Anne',lat:16.2300,lng:-61.3760,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage sauvage entre Sainte-Anne et la Caravelle. Peu balisée.'},
-{id:'gp069',ile:'GP',name:'Plage Moustique',commune:'Sainte-Anne',lat:16.2320,lng:-61.3850,risk:'safe',h2s:false,type:'sable blanc',desc:'Petite plage résidentielle calme.'},
-{id:'gp070',ile:'GP',name:'Anse à Jacques',commune:'Sainte-Anne',lat:16.2180,lng:-61.3640,risk:'warn',h2s:false,type:'sable blanc',desc:'Anse sauvage côté atlantique de la presqu\'île de Sainte-Anne.'},
-{id:'gp071',ile:'GP',name:'Plage de l\'Anse des Châteaux',commune:'Saint-François',lat:16.2340,lng:-61.2000,risk:'warn',h2s:false,type:'sable blanc',desc:'Côte est de la pointe des Châteaux. Paysage lunaire. Vents forts.'},
+{id:'gp068',ile:'GP',name:'Anse du Bananier',commune:'Sainte-Anne',lat:16.2290921,lng:-61.3721018,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage sauvage entre Sainte-Anne et la Caravelle. Peu balisée.'},
+{id:'gp069',ile:'GP',name:'Plage Moustique',commune:'Sainte-Anne',lat:15.9780289,lng:-61.3113527,risk:'safe',h2s:false,type:'sable blanc',desc:'Petite plage résidentielle calme.'},
+{id:'gp070',ile:'GP',name:'Anse à Jacques',commune:'Sainte-Anne',lat:16.2290921,lng:-61.3721018,risk:'warn',h2s:false,type:'sable blanc',desc:'Anse sauvage côté atlantique de la presqu\'île de Sainte-Anne.'},
+{id:'gp071',ile:'GP',name:'Plage de l\'Anse des Châteaux',commune:'Saint-François',lat:16.2512974,lng:-61.1862385,risk:'warn',h2s:false,type:'sable blanc',desc:'Côte est de la pointe des Châteaux. Paysage lunaire. Vents forts.'},
 
 // ── GRANDE-TERRE : SAINT-FRANÇOIS (plus complet) ──
-{id:'gp072',ile:'GP',name:'Anse des Salines (St-François)',commune:'Saint-François',lat:16.2490,lng:-61.2650,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage calme protégée. Vue sur les îlets Pigeon.'},
-{id:'gp073',ile:'GP',name:'Plage du Golf',commune:'Saint-François',lat:16.2530,lng:-61.2720,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage bordant le parcours de golf international. Tranquille.'},
-{id:'gp074',ile:'GP',name:'Anse Crawen',commune:'Saint-François',lat:15.857773550000001,lng:-61.6030399,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage protégée par la barrière corallienne. Eaux très calmes.'},
+{id:'gp072',ile:'GP',name:'Anse des Salines (St-François)',commune:'Saint-François',lat:16.205254,lng:-61.4430474,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage calme protégée. Vue sur les îlets Pigeon.'},
+{id:'gp073',ile:'GP',name:'Plage du Golf',commune:'Saint-François',lat:16.2506377,lng:-61.2675518,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage bordant le parcours de golf international. Tranquille.'},
+{id:'gp074',ile:'GP',name:'Anse Crawen',commune:'Saint-François',lat:15.8577736,lng:-61.6030399,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage protégée par la barrière corallienne. Eaux très calmes.'},
 
 // ── GRANDE-TERRE : LE MOULE (plus complet) ──
-{id:'gp075',ile:'GP',name:'Plage Rosette',commune:'Le Moule',lat:16.3420,lng:-61.3500,risk:'danger',h2s:true,type:'sable brun',desc:'Côte atlantique. Zone fréquemment envahie. H2S estival.'},
-{id:'gp076',ile:'GP',name:'Plage de Convenance',commune:'Le Moule',lat:16.3500,lng:-61.3580,risk:'danger',h2s:false,type:'sable brun',desc:'Grande plage plate exposée. Spot de kite-surf réputé.'},
-{id:'gp077',ile:'GP',name:'Plage des Galets (Le Moule)',commune:'Le Moule',lat:16.29388495,lng:-61.0937489,risk:'warn',h2s:false,type:'galets',desc:'Plage de galets coralliens. Vue sur les falaises.'},
-{id:'gp078',ile:'GP',name:'Anse Bertrand (bourg)',commune:'Anse-Bertrand',lat:16.4700,lng:-61.4960,risk:'warn',h2s:false,type:'sable brun',desc:'Plage du bourg d\'Anse-Bertrand. Village de pêcheurs nordiste.'},
+{id:'gp075',ile:'GP',name:'Plage Rosette',commune:'Le Moule',lat:16.3356823,lng:-61.3586839,risk:'danger',h2s:true,type:'sable brun',desc:'Côte atlantique. Zone fréquemment envahie. H2S estival.'},
+{id:'gp076',ile:'GP',name:'Plage de Convenance',commune:'Le Moule',lat:16.3356823,lng:-61.3586839,risk:'danger',h2s:false,type:'sable brun',desc:'Grande plage plate exposée. Spot de kite-surf réputé.'},
+{id:'gp077',ile:'GP',name:'Plage des Galets (Le Moule)',commune:'Le Moule',lat:16.2938849,lng:-61.0937489,risk:'warn',h2s:false,type:'galets',desc:'Plage de galets coralliens. Vue sur les falaises.'},
+{id:'gp078',ile:'GP',name:'Anse Bertrand (bourg)',commune:'Anse-Bertrand',lat:16.4721758,lng:-61.5109255,risk:'warn',h2s:false,type:'sable brun',desc:'Plage du bourg d\'Anse-Bertrand. Village de pêcheurs nordiste.'},
 
 // ── GRANDE-TERRE : PORT-LOUIS ──
-{id:'gp079',ile:'GP',name:'Plage des Amandiers (Port-Louis)',commune:'Port-Louis',lat:16.35159355,lng:-61.723192,risk:'warn',h2s:false,type:'sable blanc',desc:'Longue plage de sable blanc. Calme. Bonne baignade.'},
-{id:'gp080',ile:'GP',name:'Anse du Bois',commune:'Port-Louis',lat:16.4100,lng:-61.5280,risk:'warn',h2s:false,type:'sable brun',desc:'Plage semi-sauvage. Accès par chemin de terre.'},
+{id:'gp079',ile:'GP',name:'Plage des Amandiers (Port-Louis)',commune:'Port-Louis',lat:16.3515936,lng:-61.723192,risk:'warn',h2s:false,type:'sable blanc',desc:'Longue plage de sable blanc. Calme. Bonne baignade.'},
+{id:'gp080',ile:'GP',name:'Anse du Bois',commune:'Port-Louis',lat:16.4125789,lng:-61.5329735,risk:'warn',h2s:false,type:'sable brun',desc:'Plage semi-sauvage. Accès par chemin de terre.'},
 
 // ── GRANDE-TERRE : MORNE-À-L'EAU ──
-{id:'gp081',ile:'GP',name:'Plage de Grand Baie',commune:'Morne-à-l\'Eau',lat:15.855502699999999,lng:-61.62048335,risk:'warn',h2s:false,type:'sable brun',desc:'Plage de la baie de Grand Case. Mangroves alentour.'},
+{id:'gp081',ile:'GP',name:'Plage de Grand Baie',commune:'Morne-à-l\'Eau',lat:15.8555027,lng:-61.6204834,risk:'warn',h2s:false,type:'sable brun',desc:'Plage de la baie de Grand Case. Mangroves alentour.'},
 
 // ── BASSE-TERRE : LAMENTIN ──
-{id:'gp082',ile:'GP',name:'Plage de Rivière Sens',commune:'Gourbeyre',lat:16.0090,lng:-61.7000,risk:'safe',h2s:false,type:'sable gris',desc:'Plage fluvio-marine. Embouchure de la Rivière Sens.'},
-{id:'gp083',ile:'GP',name:'Anse à Soie',commune:'Basse-Terre',lat:16.0180,lng:-61.7300,risk:'safe',h2s:false,type:'sable gris',desc:'Petite anse calme au nord de Basse-Terre ville.'},
-{id:'gp084',ile:'GP',name:'Plage de la Licorne',commune:'Basse-Terre',lat:16.0050,lng:-61.7250,risk:'safe',h2s:false,type:'sable gris',desc:'Plage résidentielle. Vue sur les collines verdoyantes.'},
+{id:'gp083',ile:'GP',name:'Anse à Soie',commune:'Basse-Terre',lat:16.0272932,lng:-61.7483834,risk:'safe',h2s:false,type:'sable gris',desc:'Petite anse calme au nord de Basse-Terre ville.'},
+{id:'gp084',ile:'GP',name:'Plage de la Licorne',commune:'Basse-Terre',lat:15.9809237,lng:-61.7158019,risk:'safe',h2s:false,type:'sable gris',desc:'Plage résidentielle. Vue sur les collines verdoyantes.'},
 
 // ── BASSE-TERRE : VIEUX-FORT ──
-{id:'gp085',ile:'GP',name:'Plage de l\'Anse du Fort',commune:'Vieux-Fort',lat:15.9740,lng:-61.7060,risk:'safe',h2s:false,type:'sable gris',desc:'Pointe sud de Basse-Terre. Fort du 17e siècle en surplomb.'},
-{id:'gp086',ile:'GP',name:'Plage de Grand Étang',commune:'Capesterre-Belle-Eau',lat:16.0480,lng:-61.5880,risk:'warn',h2s:false,type:'sable brun',desc:'Côte est. Près de la forêt tropicale. Peu fréquentée.'},
-
+{id:'gp085',ile:'GP',name:'Plage de l\'Anse du Fort',commune:'Vieux-Fort',lat:15.9809237,lng:-61.7158019,risk:'safe',h2s:false,type:'sable gris',desc:'Pointe sud de Basse-Terre. Fort du 17e siècle en surplomb.'},
 // ── BASSE-TERRE : SAINT-LOUIS ──
-{id:'gp087',ile:'GP',name:'Plage de Duplessis',commune:'Saint-Louis',lat:16.0540,lng:-61.7400,risk:'safe',h2s:false,type:'sable gris',desc:'Commune de Saint-Louis de Marie-Galante (Basse-Terre). Belle plage calme.'},
-{id:'gp088',ile:'GP',name:'Plage de Marigot',commune:'Sainte-Rose',lat:15.87329465,lng:-61.57868615,risk:'safe',h2s:false,type:'sable brun',desc:'Plage calme de la côte nord Caraïbe. Ambiance village.'},
-{id:'gp089',ile:'GP',name:'Anse à Mancenille',commune:'Sainte-Rose',lat:16.3400,lng:-61.7050,risk:'safe',h2s:false,type:'sable brun',desc:'Plage naturelle protégée de la côte Caraïbe nord.'},
-{id:'gp090',ile:'GP',name:'Plage de Sofaïa',commune:'Sainte-Rose',lat:16.3260,lng:-61.7150,risk:'safe',h2s:false,type:'sable brun',desc:'Belle plage peu connue de Sainte-Rose. Eaux calmes.'},
+{id:'gp087',ile:'GP',name:'Plage de Duplessis',commune:'Saint-Louis',lat:16.0402721,lng:-61.7549166,risk:'safe',h2s:false,type:'sable gris',desc:'Commune de Saint-Louis de Marie-Galante (Basse-Terre). Belle plage calme.'},
+{id:'gp088',ile:'GP',name:'Plage de Marigot',commune:'Sainte-Rose',lat:15.8732946,lng:-61.5786862,risk:'safe',h2s:false,type:'sable brun',desc:'Plage calme de la côte nord Caraïbe. Ambiance village.'},
+{id:'gp089',ile:'GP',name:'Anse à Mancenille',commune:'Sainte-Rose',lat:16.3450735,lng:-61.7173643,risk:'safe',h2s:false,type:'sable brun',desc:'Plage naturelle protégée de la côte Caraïbe nord.'},
+{id:'gp090',ile:'GP',name:'Plage de Sofaïa',commune:'Sainte-Rose',lat:16.3450735,lng:-61.7173643,risk:'safe',h2s:false,type:'sable brun',desc:'Belle plage peu connue de Sainte-Rose. Eaux calmes.'},
 
 // ── BASSE-TERRE : POINTE-NOIRE (plus complet) ──
-{id:'gp091',ile:'GP',name:'Anse Marshall',commune:'Pointe-Noire',lat:16.2480,lng:-61.7980,risk:'safe',h2s:false,type:'sable gris',desc:'Plage sauvage entre Pointe-Noire et Deshaies. Accessible à pied.'},
-{id:'gp092',ile:'GP',name:'Plage du Bois Sec',commune:'Pointe-Noire',lat:16.2290,lng:-61.7850,risk:'safe',h2s:false,type:'sable gris',desc:'Petite plage ombragée. Palmiers en bord de mer.'},
+{id:'gp091',ile:'GP',name:'Anse Marshall',commune:'Pointe-Noire',lat:16.2354834,lng:-61.7923244,risk:'safe',h2s:false,type:'sable gris',desc:'Plage sauvage entre Pointe-Noire et Deshaies. Accessible à pied.'},
+{id:'gp092',ile:'GP',name:'Plage du Bois Sec',commune:'Pointe-Noire',lat:16.2354834,lng:-61.7923244,risk:'safe',h2s:false,type:'sable gris',desc:'Petite plage ombragée. Palmiers en bord de mer.'},
 
 // ── BASSE-TERRE : DESHAIES (plus complet) ──
-{id:'gp093',ile:'GP',name:'Anse Louis',commune:'Deshaies',lat:16.3000,lng:-61.7980,risk:'safe',h2s:false,type:'sable brun',desc:'Anse calme au sud de Deshaies. Mouillage apprécié des voiliers.'},
-{id:'gp094',ile:'GP',name:'Plage de Cluny',commune:'Deshaies',lat:16.3180,lng:-61.8040,risk:'safe',h2s:false,type:'sable doré',desc:'Plage dorée bien abritée. Moins connue que la Grande Anse.'},
-{id:'gp095',ile:'GP',name:'Anse de Roques',commune:'Deshaies',lat:16.3250,lng:-61.8100,risk:'safe',h2s:false,type:'sable brun',desc:'Anse sauvage à 30 min à pied du bourg. Tortues fréquentes.'},
+{id:'gp093',ile:'GP',name:'Anse Louis',commune:'Deshaies',lat:16.2956554,lng:-61.8023301,risk:'safe',h2s:false,type:'sable brun',desc:'Anse calme au sud de Deshaies. Mouillage apprécié des voiliers.'},
+{id:'gp094',ile:'GP',name:'Plage de Cluny',commune:'Deshaies',lat:16.3212415,lng:-61.7918821,risk:'safe',h2s:false,type:'sable doré',desc:'Plage dorée bien abritée. Moins connue que la Grande Anse.'},
+{id:'gp095',ile:'GP',name:'Anse de Roques',commune:'Deshaies',lat:16.3212415,lng:-61.7918821,risk:'safe',h2s:false,type:'sable brun',desc:'Anse sauvage à 30 min à pied du bourg. Tortues fréquentes.'},
 
 // ── BASSE-TERRE : PETIT-BOURG / GOYAVE ──
-{id:'gp096',ile:'GP',name:'Plage de Goyave',commune:'Goyave',lat:16.1380,lng:-61.5820,risk:'warn',h2s:false,type:'sable brun',desc:'Côte atlantique de Basse-Terre. Vagues modérées. Manguiers alentour.'},
-{id:'gp097',ile:'GP',name:'Anse Sable Rouge',commune:'Petit-Bourg',lat:16.1820,lng:-61.5760,risk:'warn',h2s:false,type:'sable roux',desc:'Sable roux volcanique caractéristique. Belle forêt derrière la plage.'},
-{id:'gp098',ile:'GP',name:'Plage du Gosier Caraïbe',commune:'Petit-Bourg',lat:16.1940,lng:-61.5700,risk:'safe',h2s:false,type:'sable brun',desc:'Côté Caraïbe de Petit-Bourg. Baie protégée.'},
-{id:'gp099',ile:'GP',name:'Anse Bertrand (Petit-Bourg)',commune:'Petit-Bourg',lat:16.1720,lng:-61.5820,risk:'warn',h2s:false,type:'sable brun',desc:'Petite anse proche du bourg. Eau calme et peu profonde.'},
+{id:'gp096',ile:'GP',name:'Plage de Goyave',commune:'Goyave',lat:16.2122767,lng:-61.5075236,risk:'warn',h2s:false,type:'sable brun',desc:'Côte atlantique de Basse-Terre. Vagues modérées. Manguiers alentour.'},
+{id:'gp097',ile:'GP',name:'Anse Sable Rouge',commune:'Petit-Bourg',lat:16.2058352,lng:-61.5042124,risk:'warn',h2s:false,type:'sable roux',desc:'Sable roux volcanique caractéristique. Belle forêt derrière la plage.'},
+{id:'gp098',ile:'GP',name:'Plage du Gosier Caraïbe',commune:'Petit-Bourg',lat:16.2438293,lng:-61.3243047,risk:'safe',h2s:false,type:'sable brun',desc:'Côté Caraïbe de Petit-Bourg. Baie protégée.'},
+{id:'gp099',ile:'GP',name:'Anse Bertrand (Petit-Bourg)',commune:'Petit-Bourg',lat:16.2163816,lng:-61.5274862,risk:'warn',h2s:false,type:'sable brun',desc:'Petite anse proche du bourg. Eau calme et peu profonde.'},
 
 // ── LES SAINTES : TERRE-DE-HAUT (complet) ──
-{id:'gp100',ile:'GP',name:'Plage du Bourg (Terre-de-Haut)',commune:'Terre-de-Haut (Les Saintes)',lat:16.2225738,lng:-61.38283715,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage centrale du village des Saintes. Bateaux de pêcheurs colorés. Vue sur le fort Napoléon.'},
-{id:'gp101',ile:'GP',name:'Anse du Figuier',commune:'Terre-de-Haut (Les Saintes)',lat:15.85904,lng:-61.58836105,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage calme au fond d\'une baie protégée. Eau translucide.'},
-{id:'gp102',ile:'GP',name:'Anse Crawen (Saintes)',commune:'Terre-de-Haut (Les Saintes)',lat:15.8790,lng:-61.5760,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage sauvage accessible à pied depuis le bourg. Peu fréquentée.'},
-{id:'gp103',ile:'GP',name:'Plage de Grand Anse (Saintes)',commune:'Terre-de-Haut (Les Saintes)',lat:15.8650,lng:-61.5710,risk:'warn',h2s:false,type:'sable blanc',desc:'Côte Atlantique de Terre-de-Haut. Belle mais vagues.'},
-{id:'gp104',ile:'GP',name:'Anse Rodrigue',commune:'Terre-de-Haut (Les Saintes)',lat:15.85796515,lng:-61.579543,risk:'safe',h2s:false,type:'sable blanc',desc:'Petite anse isolée. Accessible uniquement par bateau ou sentier.'},
+{id:'gp100',ile:'GP',name:'Plage du Bourg (Terre-de-Haut)',commune:'Terre-de-Haut (Les Saintes)',lat:16.2225738,lng:-61.3828372,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage centrale du village des Saintes. Bateaux de pêcheurs colorés. Vue sur le fort Napoléon.'},
+{id:'gp101',ile:'GP',name:'Anse du Figuier',commune:'Terre-de-Haut (Les Saintes)',lat:15.85904,lng:-61.5883611,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage calme au fond d\'une baie protégée. Eau translucide.'},
+{id:'gp102',ile:'GP',name:'Anse Crawen (Saintes)',commune:'Terre-de-Haut (Les Saintes)',lat:15.8577736,lng:-61.6030399,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage sauvage accessible à pied depuis le bourg. Peu fréquentée.'},
+{id:'gp103',ile:'GP',name:'Plage de Grand Anse (Saintes)',commune:'Terre-de-Haut (Les Saintes)',lat:16.353999,lng:-61.7633517,risk:'warn',h2s:false,type:'sable blanc',desc:'Côte Atlantique de Terre-de-Haut. Belle mais vagues.'},
+{id:'gp104',ile:'GP',name:'Anse Rodrigue',commune:'Terre-de-Haut (Les Saintes)',lat:15.8579651,lng:-61.579543,risk:'safe',h2s:false,type:'sable blanc',desc:'Petite anse isolée. Accessible uniquement par bateau ou sentier.'},
 
 // ── LES SAINTES : TERRE-DE-BAS ──
 {id:'gp105',ile:'GP',name:'Plage de Grande Anse (Terre-de-Bas)',commune:'Terre-de-Bas (Les Saintes)',lat:15.9589717,lng:-61.6719389,risk:'safe',h2s:false,type:'sable blanc',desc:'Belle plage sauvage. Accessible depuis le bourg de Terre-de-Bas.'},
-{id:'gp106',ile:'GP',name:'Plage du Bourg (Terre-de-Bas)',commune:'Terre-de-Bas (Les Saintes)',lat:16.2225738,lng:-61.38283715,risk:'safe',h2s:false,type:'sable blanc',desc:'Petite plage centrale de l\'île. Village de pêcheurs authentique.'},
-{id:'gp107',ile:'GP',name:'Anse des Muriers',commune:'Terre-de-Bas (Les Saintes)',lat:15.8580,lng:-61.6490,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage protégée par une pointe rocheuse. Eau turquoise.'},
+{id:'gp106',ile:'GP',name:'Plage du Bourg (Terre-de-Bas)',commune:'Terre-de-Bas (Les Saintes)',lat:16.2225738,lng:-61.3828372,risk:'safe',h2s:false,type:'sable blanc',desc:'Petite plage centrale de l\'île. Village de pêcheurs authentique.'},
+{id:'gp107',ile:'GP',name:'Anse des Muriers',commune:'Terre-de-Bas (Les Saintes)',lat:16.2956554,lng:-61.8023301,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage protégée par une pointe rocheuse. Eau turquoise.'},
 
 // ── MARIE-GALANTE : TOUR COMPLÈTE ──
-{id:'gp108',ile:'GP',name:'Plage de l\'Anse Ballet',commune:'Capesterre (Marie-Galante)',lat:15.8750,lng:-61.2180,risk:'warn',h2s:false,type:'sable blanc',desc:'Côte Atlantique de Marie-Galante. Vagues régulières.'},
-{id:'gp109',ile:'GP',name:'Anse du Vieux Fort (MG)',commune:'Capesterre (Marie-Galante)',lat:16.355228750000002,lng:-61.75916775,risk:'safe',h2s:false,type:'sable blanc',desc:'Ruines du fort du 17e siècle en surplomb. Vue panoramique.'},
-{id:'gp110',ile:'GP',name:'Plage de la Baie Orientale (MG)',commune:'Grand-Bourg',lat:15.8970,lng:-61.2800,risk:'danger',h2s:true,type:'sable blanc',desc:'Côte est de Marie-Galante. Zone fortement exposée aux sargasses.'},
-{id:'gp111',ile:'GP',name:'Plage Moustique (MG)',commune:'Grand-Bourg',lat:15.8830,lng:-61.3200,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage calme côté Caraïbe. Vue sur la Guadeloupe continentale.'},
+{id:'gp108',ile:'GP',name:'Plage de l\'Anse Ballet',commune:'Capesterre (Marie-Galante)',lat:16.2444357,lng:-61.2931382,risk:'warn',h2s:false,type:'sable blanc',desc:'Côte Atlantique de Marie-Galante. Vagues régulières.'},
+{id:'gp109',ile:'GP',name:'Anse du Vieux Fort (MG)',commune:'Capesterre (Marie-Galante)',lat:16.3552287,lng:-61.7591678,risk:'safe',h2s:false,type:'sable blanc',desc:'Ruines du fort du 17e siècle en surplomb. Vue panoramique.'},
+{id:'gp110',ile:'GP',name:'Plage de la Baie Orientale (MG)',commune:'Grand-Bourg',lat:16.2418431,lng:-61.3276049,risk:'danger',h2s:true,type:'sable blanc',desc:'Côte est de Marie-Galante. Zone fortement exposée aux sargasses.'},
+{id:'gp111',ile:'GP',name:'Plage Moustique (MG)',commune:'Grand-Bourg',lat:15.9780289,lng:-61.3113527,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage calme côté Caraïbe. Vue sur la Guadeloupe continentale.'},
 {id:'gp112',ile:'GP',name:'Anse Canot (MG)',commune:'Grand-Bourg',lat:15.9819535,lng:-61.3057874,risk:'safe',h2s:false,type:'sable blanc',desc:'Plage bien entretenue. Eau limpide. Idéale famille.'},
-{id:'gp113',ile:'GP',name:'Plage de Petite Anse',commune:'Saint-Louis (Marie-Galante)',lat:16.2679105,lng:-61.805835099999996,risk:'safe',h2s:false,type:'sable blanc',desc:'Petite anse calme au nord de Saint-Louis. Cocotiers.'},
-{id:'gp114',ile:'GP',name:'Anse Pirogue',commune:'Saint-Louis (Marie-Galante)',lat:15.9510,lng:-61.3050,risk:'warn',h2s:false,type:'sable blanc',desc:'Côte Atlantique nord de Marie-Galante. Bonne exposition.'},
-{id:'gp115',ile:'GP',name:'Plage de Folle Anse',commune:'Saint-Louis (Marie-Galante)',lat:15.9493507,lng:-61.32336115,risk:'warn',h2s:false,type:'sable blanc',desc:'Longue plage rectiligne côté Atlantique. Vents constants. Kite possible.'},
-{id:'gp116',ile:'GP',name:'Anse Talbot',commune:'Capesterre (Marie-Galante)',lat:15.8900,lng:-61.2100,risk:'danger',h2s:false,type:'sable blanc',desc:'Côte est sauvage de Marie-Galante. Sargasses fréquentes.'},
+{id:'gp113',ile:'GP',name:'Plage de Petite Anse',commune:'Saint-Louis (Marie-Galante)',lat:16.2679105,lng:-61.8058351,risk:'safe',h2s:false,type:'sable blanc',desc:'Petite anse calme au nord de Saint-Louis. Cocotiers.'},
+{id:'gp114',ile:'GP',name:'Anse Pirogue',commune:'Saint-Louis (Marie-Galante)',lat:16.1997493,lng:-61.4915724,risk:'warn',h2s:false,type:'sable blanc',desc:'Côte Atlantique nord de Marie-Galante. Bonne exposition.'},
+{id:'gp115',ile:'GP',name:'Plage de Folle Anse',commune:'Saint-Louis (Marie-Galante)',lat:15.9493507,lng:-61.3233611,risk:'warn',h2s:false,type:'sable blanc',desc:'Longue plage rectiligne côté Atlantique. Vents constants. Kite possible.'},
+{id:'gp116',ile:'GP',name:'Anse Talbot',commune:'Capesterre (Marie-Galante)',lat:16.3410517,lng:-61.5265237,risk:'danger',h2s:false,type:'sable blanc',desc:'Côte est sauvage de Marie-Galante. Sargasses fréquentes.'},
 
 // ── LA DÉSIRADE : TOUR COMPLÈTE ──
-{id:'gp117',ile:'GP',name:'Plage du Bourg (La Désirade)',commune:'La Désirade',lat:16.2225738,lng:-61.38283715,risk:'warn',h2s:false,type:'sable blanc',desc:'Côté Caraïbe protégé de La Désirade. Bonne baignade.'},
-{id:'gp118',ile:'GP',name:'Anse des Galets (Désirade)',commune:'La Désirade',lat:16.3060,lng:-61.0800,risk:'warn',h2s:false,type:'galets',desc:'Plage de galets coralliens. Accès par sentier côtier.'},
-{id:'gp119',ile:'GP',name:'Plage du Baril',commune:'La Désirade',lat:16.3150,lng:-61.1200,risk:'safe',h2s:false,type:'sable blanc',desc:'Belle plage abritée côté Caraïbe. Vue sur Grande-Terre.'},
-{id:'gp120',ile:'GP',name:'Anse Petite Rivière',commune:'La Désirade',lat:16.3090,lng:-61.0560,risk:'danger',h2s:true,type:'sable brun',desc:'Côte Atlantique. Exposition extrême. H2S fréquent en été.'},
+{id:'gp117',ile:'GP',name:'Plage du Bourg (La Désirade)',commune:'La Désirade',lat:16.2225738,lng:-61.3828372,risk:'warn',h2s:false,type:'sable blanc',desc:'Côté Caraïbe protégé de La Désirade. Bonne baignade.'},
+{id:'gp118',ile:'GP',name:'Anse des Galets (Désirade)',commune:'La Désirade',lat:15.9111055,lng:-61.1998476,risk:'warn',h2s:false,type:'galets',desc:'Plage de galets coralliens. Accès par sentier côtier.'},
+{id:'gp119',ile:'GP',name:'Plage du Baril',commune:'La Désirade',lat:15.9323909,lng:-61.1964738,risk:'safe',h2s:false,type:'sable blanc',desc:'Belle plage abritée côté Caraïbe. Vue sur Grande-Terre.'},
+{id:'gp120',ile:'GP',name:'Anse Petite Rivière',commune:'La Désirade',lat:16.1649476,lng:-61.5842398,risk:'danger',h2s:true,type:'sable brun',desc:'Côte Atlantique. Exposition extrême. H2S fréquent en été.'},
 ];
 // Beach photos: Backup (/beaches/) pour GP si dispo ; Wikimedia pour MQ + GP (fiches comme Martinique)
 const PHOTOS_WIKI = {
@@ -773,8 +756,8 @@ const FALLBACK = {
 // Garantir une image pour chaque plage (sinon repli par île)
 BEACHES.forEach(b=>{ if(!PHOTOS[b.id]) PHOTOS[b.id]=FALLBACK[b.ile]; });
 
-const RISK_C = {safe:'#26D97A',warn:'#F08C14',danger:'#E83030'};
-const RISK_BG= {safe:'rgba(38,217,122,.14)',warn:'rgba(240,140,20,.14)',danger:'rgba(232,48,48,.14)'};
+const RISK_C = {safe:'#22C55E',warn:'#E8A800',danger:'#E8522A'};
+const RISK_BG= {safe:'rgba(34,197,94,.14)',warn:'rgba(232,168,0,.14)',danger:'rgba(232,82,42,.14)'};
 const col = b => b.h2s ? '#CC28FF' : (RISK_C[b.risk]||'#00D4C8');
 
 // ── i18n FR / EN ──
@@ -857,71 +840,68 @@ const RISK_L = { safe: () => t('low'), warn: () => t('moderate'), danger: () => 
 // Coordonnées WGS84 depuis Backup (Sargav1/copernicus/beaches.json + guadeloupe/beaches.json)
 const COORD_FIX = (typeof BEACHES_BACKUP !== 'undefined' && BEACHES_BACKUP.COORD_FIX) ? BEACHES_BACKUP.COORD_FIX : (function(){
   var fallback = {
-  mq001:{lat:14.4165,lng:-60.8690}, mq002:{lat:14.4240,lng:-60.8770}, mq003:{lat:14.4185,lng:-60.8610},
-  mq004:{lat:14.4293,lng:-60.8868}, mq005:{lat:14.4105,lng:-60.8530}, mq006:{lat:14.4070,lng:-60.8455},
-  mq007:{lat:14.4345,lng:-60.8775}, mq008:{lat:14.4685,lng:-60.8740}, mq009:{lat:14.4655,lng:-60.8495},
-  mq010:{lat:14.5325,lng:-61.0260}, mq011:{lat:14.5502,lng:-61.0402}, mq012:{lat:14.5129,lng:-61.0706},
-  mq013:{lat:14.4960,lng:-61.0660}, mq014:{lat:14.5027,lng:-61.0843}, mq015:{lat:14.5115,lng:-61.0710},
-  mq016:{lat:14.4699,lng:-61.0264}, mq017:{lat:14.4635,lng:-61.0155}, mq018:{lat:14.4755,lng:-61.0360},
-  mq019:{lat:14.4815,lng:-60.9218}, mq020:{lat:14.4885,lng:-60.9260}, mq021:{lat:14.4775,lng:-60.9190},
-  mq022:{lat:14.4615,lng:-60.8995}, mq023:{lat:14.6035,lng:-61.0675}, mq024:{lat:14.6276,lng:-61.1207},
-  mq025:{lat:14.6275,lng:-61.0860}, mq026:{lat:14.6345,lng:-61.0935},
-  mq027:{lat:14.6955,lng:-61.1685}, mq028:{lat:14.6925,lng:-61.1635}, mq029:{lat:14.7345,lng:-61.1755},
-  mq030:{lat:14.7945,lng:-61.2095}, mq031:{lat:14.8070,lng:-61.2220}, mq032:{lat:14.8230,lng:-61.2370},
-  mq033:{lat:14.8165,lng:-61.2280}, mq034:{lat:14.7595,lng:-60.9180}, mq035:{lat:14.7555,lng:-60.9835},
-  mq036:{lat:14.7315,lng:-60.9730}, mq037:{lat:14.7425,lng:-60.9772}, mq038:{lat:14.7275,lng:-60.9692},
-  mq039:{lat:14.7785,lng:-60.9315}, mq040:{lat:14.7805,lng:-60.9395}, mq041:{lat:14.7710,lng:-60.9215},
-  mq042:{lat:14.6895,lng:-60.9365}, mq043:{lat:14.6815,lng:-60.9295}, mq044:{lat:14.6125,lng:-60.8965},
-  mq045:{lat:14.6245,lng:-60.8915}, mq046:{lat:14.5496,lng:-60.8346}, mq047:{lat:14.5475,lng:-60.8315},
-  mq048:{lat:14.5595,lng:-60.8415}, mq049:{lat:14.8710,lng:-61.1835}, mq050:{lat:14.8585,lng:-61.1575},
-  mq051:{lat:14.8675,lng:-61.1265}, mq052:{lat:14.8275,lng:-61.0775}, mq053:{lat:14.7845,lng:-60.9895},
-  mq054:{lat:14.7775,lng:-60.9835}, mq055:{lat:14.5115,lng:-60.9495}, mq056:{lat:14.4523,lng:-60.8695},
-  mq057:{lat:14.4215,lng:-60.8665}, mq058:{lat:14.5355,lng:-60.8215}, mq059:{lat:14.5175,lng:-60.9530},
-  mq060:{lat:14.5395,lng:-61.0360}, mq062:{lat:14.6475,lng:-61.1160}, mq063:{lat:14.6415,lng:-61.1095},
-  mq064:{lat:14.6675,lng:-61.1445}, mq065:{lat:14.8745,lng:-61.1910}, mq066:{lat:14.8075,lng:-61.2170},
-  mq067:{lat:14.8195,lng:-61.2290}, mq068:{lat:14.4285,lng:-60.8762}, mq069:{lat:14.4845,lng:-60.9298},
-  mq070:{lat:14.4915,lng:-60.9160},
-  gp001:{lat:16.2506,lng:-61.2676}, gp002:{lat:16.2469,lng:-61.2864}, gp003:{lat:16.248,lng:-61.275},
-  gp004:{lat:16.2597,lng:-61.214}, gp005:{lat:16.2447,lng:-61.1766}, gp006:{lat:16.2564,lng:-61.1986},
-  gp007:{lat:16.229,lng:-61.205}, gp008:{lat:16.2373,lng:-61.3491}, gp009:{lat:16.2181,lng:-61.3965},
-  gp010:{lat:16.2226,lng:-61.3828}, gp011:{lat:16.222,lng:-61.36}, gp012:{lat:16.21,lng:-61.495},
-  gp013:{lat:16.206,lng:-61.505}, gp014:{lat:16.238,lng:-61.52}, gp015:{lat:16.4795,lng:-61.482},
-  gp016:{lat:16.489,lng:-61.474}, gp017:{lat:16.4222,lng:-61.5337}, gp018:{lat:16.333,lng:-61.479},
-  gp019:{lat:16.2318,lng:-61.7848}, gp020:{lat:16.472,lng:-61.482}, gp021:{lat:15.98,lng:-61.658},
-  gp022:{lat:16.01,lng:-61.726}, gp023:{lat:16.068,lng:-61.758}, gp024:{lat:16.307,lng:-61.796},
-  gp025:{lat:16.3212,lng:-61.7919}, gp026:{lat:16.302,lng:-61.802}, gp027:{lat:16.334,lng:-61.72},
-  gp028:{lat:16.328,lng:-61.71}, gp029:{lat:16.235,lng:-61.787}, gp030:{lat:16.242,lng:-61.793},
-  gp031:{lat:16.128,lng:-61.777}, gp032:{lat:16.135,lng:-61.78}, gp033:{lat:16.124,lng:-61.775},
-  gp034:{lat:16.118,lng:-61.77}, gp035:{lat:16.038,lng:-61.705}, gp036:{lat:16.004,lng:-61.696},
-  gp037:{lat:16.065,lng:-61.589}, gp038:{lat:16.072,lng:-61.575}, gp039:{lat:16.058,lng:-61.58},
-  gp040:{lat:15.882,lng:-61.228}, gp041:{lat:15.884,lng:-61.308}, gp042:{lat:15.878,lng:-61.315},
-  gp043:{lat:15.947,lng:-61.313}, gp044:{lat:15.864,lng:-61.587}, gp045:{lat:15.873,lng:-61.578},
-  gp046:{lat:15.876,lng:-61.582}, gp047:{lat:15.864,lng:-61.654}, gp048:{lat:16.308,lng:-61.066},
-  gp049:{lat:16.304,lng:-61.095}, gp050:{lat:16.331,lng:-61.348}, gp051:{lat:16.338,lng:-61.355},
-  gp052:{lat:16.219,lng:-61.348}, gp053:{lat:16.224,lng:-61.352}, gp054:{lat:16.255,lng:-61.282}, gp055:{lat:15.89,lng:-61.302},
-  gp056:{lat:16.043,lng:-61.71}, gp057:{lat:16.08,lng:-61.57}, gp058:{lat:16.2,lng:-61.568}, gp059:{lat:15.968,lng:-61.712},
-  gp060:{lat:16.328,lng:-61.368}, gp061:{lat:16.204,lng:-61.488}, gp062:{lat:16.198,lng:-61.482},
-  gp063:{lat:16.207,lng:-61.494}, gp064:{lat:16.202,lng:-61.476}, gp065:{lat:16.21,lng:-61.503},
-  gp066:{lat:16.242,lng:-61.542}, gp067:{lat:16.265,lng:-61.504}, gp068:{lat:16.23,lng:-61.376}, gp069:{lat:16.232,lng:-61.385},
-  gp070:{lat:16.218,lng:-61.364}, gp071:{lat:16.234,lng:-61.2}, gp072:{lat:16.249,lng:-61.265}, gp073:{lat:16.253,lng:-61.272},
-  gp074:{lat:16.26,lng:-61.254}, gp075:{lat:16.342,lng:-61.35}, gp076:{lat:16.35,lng:-61.358}, gp077:{lat:16.336,lng:-61.36}, gp078:{lat:16.47,lng:-61.496},
-  gp079:{lat:16.422,lng:-61.54}, gp080:{lat:16.41,lng:-61.528}, gp081:{lat:16.336,lng:-61.489}, gp082:{lat:16.009,lng:-61.7}, gp083:{lat:16.018,lng:-61.73},
-  gp084:{lat:16.005,lng:-61.725}, gp085:{lat:15.974,lng:-61.706}, gp086:{lat:16.048,lng:-61.588}, gp087:{lat:16.054,lng:-61.74}, gp088:{lat:16.32,lng:-61.695},
-  gp089:{lat:16.34,lng:-61.705}, gp090:{lat:16.326,lng:-61.715}, gp091:{lat:16.248,lng:-61.798}, gp092:{lat:16.229,lng:-61.785}, gp093:{lat:16.3,lng:-61.798},
-  gp094:{lat:16.318,lng:-61.804}, gp095:{lat:16.325,lng:-61.81}, gp096:{lat:16.2122767,lng:-61.5075236}, gp097:{lat:16.2058352,lng:-61.5042124},
-  gp098:{lat:16.2438293,lng:-61.3243047}, gp099:{lat:16.2163816,lng:-61.5274862}, gp100:{lat:15.977811,lng:-61.308393},
-  gp101:{lat:16.3552287,lng:-61.7591678}, gp102:{lat:16.3544093,lng:-61.7529087}, gp103:{lat:16.353999,lng:-61.7633517},
-  gp104:{lat:15.8883683,lng:-61.2230323}, gp105:{lat:16.2553352,lng:-61.2492434}, gp106:{lat:16.278391,lng:-61.2480957},
-  gp107:{lat:16.2956554,lng:-61.8023301}, gp108:{lat:16.2444357,lng:-61.2931382}, gp109:{lat:16.2414427,lng:-61.3387307},
-  gp110:{lat:16.2418431,lng:-61.3276049}, gp111:{lat:16.2093046,lng:-61.4257696}, gp112:{lat:16.2096079,lng:-61.4232852},
-  gp113:{lat:16.1224493,lng:-61.566964}, gp114:{lat:16.1993342,lng:-61.4910419}, gp115:{lat:16.5010557,lng:-61.4627045},
-  gp116:{lat:16.3410517,lng:-61.5265237}, gp117:{lat:15.9574973,lng:-61.3188637}, gp118:{lat:15.8914888,lng:-61.2207639},
+  mq001:{lat:14.3958521,lng:-60.8689802}, mq002:{lat:14.4260922,lng:-60.8876691}, mq003:{lat:14.4144971,lng:-60.8872148},
+  mq004:{lat:14.4304809,lng:-60.8849519}, mq005:{lat:14.4101296,lng:-60.8482068}, mq006:{lat:14.505925,lng:-60.8235499},
+  mq007:{lat:14.437773,lng:-60.8258012}, mq008:{lat:14.4511181,lng:-60.8835717}, mq009:{lat:14.4605782,lng:-60.9104676},
+  mq010:{lat:14.5410671,lng:-61.0657633}, mq011:{lat:14.5522593,lng:-61.0552056}, mq012:{lat:14.5277232,lng:-61.0873771},
+  mq013:{lat:14.5256583,lng:-61.08949844}, mq014:{lat:14.5027854,lng:-61.0856311}, mq015:{lat:14.5027854,lng:-61.0856311},
+  mq016:{lat:14.4758027,lng:-61.0314046}, mq017:{lat:14.46926902,lng:-61.04569643}, mq018:{lat:14.4758027,lng:-61.0314046},
+  mq019:{lat:14.4658147,lng:-60.9260982}, mq020:{lat:14.46469668,lng:-60.93956904}, mq021:{lat:14.4656037,lng:-60.9423696},
+  mq022:{lat:14.4533661,lng:-60.90242566}, mq023:{lat:14.6011133,lng:-61.0674743}, mq024:{lat:14.6177983,lng:-61.1036302},
+  mq025:{lat:14.6147915,lng:-61.1010321}, mq026:{lat:14.62183945,lng:-61.10756925},
+  mq027:{lat:14.7126886,lng:-61.1840442}, mq028:{lat:14.7278647,lng:-61.1803843}, mq029:{lat:14.7404792,lng:-61.1768484},
+  mq030:{lat:14.8333961,lng:-61.224677}, mq031:{lat:14.8333961,lng:-61.224677}, mq032:{lat:14.8418367,lng:-61.2198551},
+  mq033:{lat:14.83325984,lng:-61.22447763}, mq034:{lat:14.7507215,lng:-60.9256857}, mq035:{lat:14.7542793,lng:-60.9462446},
+  mq036:{lat:14.765875,lng:-60.9058586}, mq037:{lat:14.7424251,lng:-60.9429967}, mq038:{lat:14.7704908,lng:-60.9796444},
+  mq039:{lat:14.7609594,lng:-60.9336012}, mq040:{lat:14.7609594,lng:-60.9336012}, mq041:{lat:14.7638007,lng:-60.9116108},
+  mq042:{lat:14.6619988,lng:-60.8834495}, mq044:{lat:14.5413754,lng:-60.8291578},
+  mq045:{lat:14.4101296,lng:-60.8482068}, mq046:{lat:14.5480552,lng:-60.837672}, mq047:{lat:14.4840623,lng:-60.8129297},
+  mq048:{lat:14.5413754,lng:-60.8291578}, mq049:{lat:14.8711392,lng:-61.1833745}, mq050:{lat:14.8741957,lng:-61.1773891},
+  mq051:{lat:14.8086385,lng:-61.0172223}, mq053:{lat:14.7856693,lng:-60.9931755},
+  mq054:{lat:14.7704908,lng:-60.9796444}, mq055:{lat:14.46801066,lng:-60.95755056}, mq056:{lat:14.4511181,lng:-60.8835717},
+  mq057:{lat:14.4341256,lng:-60.8821104}, mq058:{lat:14.4840623,lng:-60.8129297},
+  mq060:{lat:14.55983072,lng:-61.05279031}, mq062:{lat:14.64192241,lng:-61.13879442}, mq063:{lat:14.6334662,lng:-61.1309528}, mq065:{lat:14.8711392,lng:-61.1833745}, mq066:{lat:14.8011963,lng:-61.2260898},
+  mq067:{lat:14.8195,lng:-61.229}, mq068:{lat:14.4341256,lng:-60.8821104}, mq069:{lat:14.4658147,lng:-60.9260982},
+  gp001:{lat:16.2521,lng:-61.2644}, gp002:{lat:16.2469172,lng:-61.2864305}, gp003:{lat:16.2048,lng:-61.4947},
+  gp004:{lat:16.2597,lng:-61.214}, gp005:{lat:16.2531027,lng:-61.2306694}, gp006:{lat:16.2564,lng:-61.1986}, gp008:{lat:16.2373343,lng:-61.3491006}, gp009:{lat:16.2181,lng:-61.3965},
+  gp010:{lat:16.2226,lng:-61.3828}, gp011:{lat:16.2528628,lng:-61.2298825}, gp012:{lat:16.2048,lng:-61.4948},
+  gp013:{lat:16.2047339,lng:-61.4947073}, gp014:{lat:16.2140114,lng:-61.5237064}, gp015:{lat:16.4861861,lng:-61.4416828},
+  gp016:{lat:16.4840401,lng:-61.5014268}, gp017:{lat:16.4222,lng:-61.5337}, gp018:{lat:16.1649476,lng:-61.5842398},
+  gp019:{lat:16.2938849,lng:-61.0937489}, gp020:{lat:16.4856804,lng:-61.4973785}, gp021:{lat:15.9589717,lng:-61.6719389}, gp023:{lat:16.2438293,lng:-61.3243047}, gp024:{lat:16.3053509,lng:-61.7950711},
+  gp025:{lat:15.863176,lng:-61.5777867}, gp026:{lat:16.2054591,lng:-61.5000744}, gp027:{lat:16.3544093,lng:-61.7529087},
+  gp028:{lat:16.3450735,lng:-61.7173643}, gp029:{lat:16.2354834,lng:-61.7923244}, gp030:{lat:16.2354834,lng:-61.7923244},
+  gp031:{lat:16.1721,lng:-61.7767}, gp032:{lat:16.1483668,lng:-61.7751493}, gp033:{lat:16.1720515,lng:-61.7767401},
+  gp034:{lat:16.1649476,lng:-61.5842398}, gp036:{lat:16.3515936,lng:-61.723192},
+  gp037:{lat:15.863176,lng:-61.5777867}, gp038:{lat:16.0931635,lng:-61.559275},
+  gp040:{lat:15.8858408,lng:-61.2261838}, gp041:{lat:15.8789306,lng:-61.3089004}, gp042:{lat:16.3552287,lng:-61.7591678},
+  gp043:{lat:15.9526203,lng:-61.320184}, gp044:{lat:15.8721723,lng:-61.5708634}, gp045:{lat:15.8635,lng:-61.5988},
+  gp046:{lat:15.8761973,lng:-61.5796963}, gp047:{lat:15.86462,lng:-61.5848797}, gp048:{lat:16.3029048,lng:-61.0697215},
+  gp049:{lat:16.3103402,lng:-61.0450143}, gp050:{lat:16.329701,lng:-61.3409379}, gp051:{lat:16.3356823,lng:-61.3586839},
+  gp052:{lat:16.2414427,lng:-61.3387307}, gp053:{lat:16.2373343,lng:-61.3491006}, gp054:{lat:16.2501895,lng:-61.2802841}, gp055:{lat:16.1649476,lng:-61.5842398},
+  gp056:{lat:15.863176,lng:-61.5777867}, gp057:{lat:16.275477,lng:-61.8045317}, gp059:{lat:16.2420878,lng:-61.3059386},
+  gp060:{lat:16.3578828,lng:-61.7358953}, gp061:{lat:16.1997493,lng:-61.4915724}, gp062:{lat:15.9819535,lng:-61.3057874},
+  gp063:{lat:16.2047339,lng:-61.4947073}, gp064:{lat:16.1993365,lng:-61.4698434}, gp065:{lat:16.2420878,lng:-61.3059386},
+  gp066:{lat:16.2186526,lng:-61.5430846}, gp068:{lat:16.2290921,lng:-61.3721018}, gp069:{lat:15.9780289,lng:-61.3113527},
+  gp070:{lat:16.2290921,lng:-61.3721018}, gp071:{lat:16.2512974,lng:-61.1862385}, gp072:{lat:16.205254,lng:-61.4430474}, gp073:{lat:16.2506377,lng:-61.2675518},
+  gp074:{lat:15.8577736,lng:-61.6030399}, gp075:{lat:16.3356823,lng:-61.3586839}, gp076:{lat:16.3356823,lng:-61.3586839}, gp077:{lat:16.2938849,lng:-61.0937489}, gp078:{lat:16.4721758,lng:-61.5109255},
+  gp079:{lat:16.3515936,lng:-61.723192}, gp080:{lat:16.4125789,lng:-61.5329735}, gp081:{lat:15.8555027,lng:-61.6204834}, gp083:{lat:16.0272932,lng:-61.7483834},
+  gp084:{lat:15.9809237,lng:-61.7158019}, gp085:{lat:15.9809237,lng:-61.7158019}, gp087:{lat:16.0402721,lng:-61.7549166}, gp088:{lat:15.8732946,lng:-61.5786862},
+  gp089:{lat:16.3450735,lng:-61.7173643}, gp090:{lat:16.3450735,lng:-61.7173643}, gp091:{lat:16.2354834,lng:-61.7923244}, gp092:{lat:16.2354834,lng:-61.7923244}, gp093:{lat:16.2956554,lng:-61.8023301},
+  gp094:{lat:16.3212415,lng:-61.7918821}, gp095:{lat:16.3212415,lng:-61.7918821}, gp096:{lat:16.2122767,lng:-61.5075236}, gp097:{lat:16.2058352,lng:-61.5042124},
+  gp098:{lat:16.2438293,lng:-61.3243047}, gp099:{lat:16.2163816,lng:-61.5274862}, gp100:{lat:16.2225738,lng:-61.3828372},
+  gp101:{lat:15.85904,lng:-61.5883611}, gp102:{lat:15.8577736,lng:-61.6030399}, gp103:{lat:16.353999,lng:-61.7633517},
+  gp104:{lat:15.8579651,lng:-61.579543}, gp105:{lat:15.9589717,lng:-61.6719389}, gp106:{lat:16.2225738,lng:-61.3828372},
+  gp107:{lat:16.2956554,lng:-61.8023301}, gp108:{lat:16.2444357,lng:-61.2931382}, gp109:{lat:16.3552287,lng:-61.7591678},
+  gp110:{lat:16.2418431,lng:-61.3276049}, gp111:{lat:15.9780289,lng:-61.3113527}, gp112:{lat:15.9819535,lng:-61.3057874},
+  gp113:{lat:16.2679105,lng:-61.8058351}, gp114:{lat:16.1997493,lng:-61.4915724}, gp115:{lat:15.9493507,lng:-61.3233611},
+  gp116:{lat:16.3410517,lng:-61.5265237}, gp117:{lat:16.2225738,lng:-61.3828372}, gp118:{lat:15.9111055,lng:-61.1998476},
   gp119:{lat:15.9323909,lng:-61.1964738}, gp120:{lat:16.1649476,lng:-61.5842398}
   };
   return fallback;
 })();
 // Coordonnées de référence (backup ou fallback) : appliquées à toutes les plages pour un placement correct sur la carte.
 // Coordonnées corrigées Copernicus/OSM — appliquées pour un placement précis sur la carte.
+  // Coordonnées OSM appliquées inline. COORD_FIX en fallback pour les plages sans match OSM.
   BEACHES.forEach(b=>{ const fix=COORD_FIX[b.id]; if(fix){ b.lat=fix.lat; b.lng=fix.lng; } });
 
 // AFAI mock
@@ -955,7 +935,7 @@ function setLayer(m){
   document.querySelectorAll('#lp .pill').forEach(b=>b.classList.remove('on'));
   document.getElementById('lp-'+m).classList.add('on');
 }
-setLayer('ter');
+setLayer('sat');
 
 // Cadrage initial : englober Martinique + Guadeloupe (avec marge)
 const BOUNDS_ANTILLES = L.latLngBounds(L.latLng(14.25, -61.95), L.latLng(16.65, -60.65));
@@ -963,6 +943,18 @@ const VIEWS={MQ:{c:[14.641,-61.024],z:11},GP:{c:[16.18,-61.55],z:10},both:{c:[15
 map.setView(VIEWS.both.c, VIEWS.both.z);
 map.fitBounds(BOUNDS_ANTILLES, { padding: [40, 40], maxZoom: 9 });
 map.setMaxBounds(BOUNDS_ANTILLES.pad(0.15));
+
+// Fix tile/coord alignment in iframe: remove bottom padding when embedded
+if (window.self !== window.top) {
+  // In iframe — no need for bottom bar space, the parent app handles navigation
+  document.getElementById('map').style.bottom = '0';
+  document.getElementById('panel').style.bottom = '0';
+}
+// Recalculate map size after layout settles
+setTimeout(()=>map.invalidateSize({animate:false}),100);
+setTimeout(()=>map.invalidateSize({animate:false}),500);
+setTimeout(()=>map.invalidateSize({animate:false}),1500);
+window.addEventListener('resize',()=>setTimeout(()=>map.invalidateSize(),50));
 
 function flyTo(k){
   const v=VIEWS[k];map.flyTo(v.c,v.z,{duration:1.5});
@@ -975,7 +967,7 @@ function makeMarker(b){
   const c=col(b);
   const isDanger=b.risk==='danger'||b.h2s;
   const html=`<div class="uber-mk" data-bid="${b.id}" style="transform:translate(-50%,-50%);pointer-events:auto;cursor:pointer;position:relative;width:28px;height:28px">
-    <div class="uber-label" style="position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%) scale(.92);opacity:0;background:rgba(255,255,255,.95);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1.5px solid ${c}44;border-radius:10px;padding:4px 10px;font:600 11px 'DM Sans',system-ui;color:#0D0D0D;white-space:nowrap;box-shadow:0 3px 12px rgba(0,0,0,.12);display:flex;align-items:center;gap:5px;transition:all .18s ease;pointer-events:none">
+    <div class="uber-label" style="position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%) scale(.92);opacity:0;background:rgba(255,255,255,.95);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1.5px solid ${c}44;border-radius:10px;padding:4px 10px;font:600 11px 'Bricolage Grotesque',system-ui;color:#0D0D0D;white-space:nowrap;box-shadow:0 3px 12px rgba(0,0,0,.12);display:flex;align-items:center;gap:5px;transition:all .18s ease;pointer-events:none">
       <div style="width:6px;height:6px;border-radius:50%;background:${c};flex-shrink:0"></div>
       ${b.name}
     </div>
