@@ -41,9 +41,15 @@ const C={
 }
 
 const ST={
-  clean:{c:C.green,bg:C.greenBg,l:"Propre",le:"Clean",e:"✅",h2s:false},
-  moderate:{c:C.amber,bg:C.amberBg,l:"Modéré",le:"Moderate",e:"⚠️",h2s:false},
-  avoid:{c:C.red,bg:C.redBg,l:"À éviter",le:"Avoid",e:"🚫",h2s:true},
+  clean:{c:C.green,bg:C.greenBg,l:"Propre",le:"Clean",e:"✅",h2s:false,
+    desc:"Eau claire, pas de sargasses détectées. Baignade recommandée.",
+    descEn:"Clear water, no sargassum detected. Swimming recommended."},
+  moderate:{c:C.amber,bg:C.amberBg,l:"Modéré",le:"Moderate",e:"⚠️",h2s:false,
+    desc:"Présence modérée de sargasses. Baignade possible mais vérifiez sur place.",
+    descEn:"Moderate sargassum presence. Swimming possible but check on site."},
+  avoid:{c:C.red,bg:C.redBg,l:"À éviter",le:"Avoid",e:"🚫",h2s:true,
+    desc:"Forte concentration de sargasses. Risque H₂S. Déconseillé aux enfants.",
+    descEn:"High sargassum concentration. H₂S risk. Not recommended for children."},
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -63,7 +69,7 @@ const T={
     kids:"Enfants",snorkel:"Snorkeling",parking:"Parking",
     premium:"Premium",premiumDesc:"Prévisions 7 jours, alertes push, zéro pub.",
     premiumPrice:"4,99 €/mois",premiumCta:"S'abonner",
-    premiumFeatures:["Prévisions 7 jours débloquées","Alertes push quand le statut change","Zéro publicité","Annulation en 1 clic"],
+    premiumFeatures:["Planifie ton weekend sans surprise","Sois prévenu AVANT que les sargasses arrivent","Zéro publicité","Sans engagement — annule quand tu veux"],
     h2sWarn:"Risque H₂S — évitez cette plage avec des enfants.",
     copernicus:"Copernicus Marine",live:"LIVE",
     nClean:"{n} propres",island_mq:"Martinique",island_gp:"Guadeloupe",
@@ -84,7 +90,7 @@ const T={
     kids:"Kids",snorkel:"Snorkeling",parking:"Parking",
     premium:"Premium",premiumDesc:"7-day forecast, push alerts, no ads.",
     premiumPrice:"€4.99/mo",premiumCta:"Subscribe",
-    premiumFeatures:["7-day forecast unlocked","Push alerts when status changes","Zero ads","Cancel in 1 click"],
+    premiumFeatures:["Plan your weekend with no surprises","Get warned BEFORE sargassum arrives","Zero ads","No commitment — cancel anytime"],
     h2sWarn:"H₂S risk — avoid this beach with children.",
     copernicus:"Copernicus Marine",live:"LIVE",
     nClean:"{n} clean",island_mq:"Martinique",island_gp:"Guadeloupe",
@@ -521,12 +527,17 @@ function ForecastChart({forecast,lang,onPremiumClick}){
         display:"flex",alignItems:"center",justifyContent:"center",
         background:"linear-gradient(90deg,transparent,rgba(253,252,247,.7) 20%)",
         borderRadius:8}}>
-        <button onClick={onPremiumClick} className="gbtn" style={{
-          padding:"10px 20px",fontSize:13,fontWeight:700,
-          fontFamily:"'Anton',sans-serif",letterSpacing:".04em",textTransform:"uppercase",
-        }}>
-          🔒 Débloquer 7 jours
-        </button>
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
+          <button onClick={onPremiumClick} className="gbtn" style={{
+            padding:"10px 20px",fontSize:13,fontWeight:700,
+            fontFamily:"'Anton',sans-serif",letterSpacing:".04em",textTransform:"uppercase",
+          }}>
+            🔒 Débloquer 7 jours
+          </button>
+          <span style={{fontSize:11,color:"var(--sg-mid,#686868)",fontWeight:500,textAlign:"center"}}>
+            Moins cher qu'un café. Évite une journée gâchée.
+          </span>
+        </div>
       </div>
     </div>
   )
@@ -620,9 +631,16 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             <h2 className="anton" style={{fontSize:22,margin:0,lineHeight:1.2}}>{beach.name}</h2>
             <StatusBadge status={beach.status} lang={lang}/>
           </div>
-          <p style={{fontSize:13,color:"var(--sg-mid,#686868)",margin:"0 0 12px"}}>
+          <p style={{fontSize:13,color:"var(--sg-mid,#686868)",margin:"0 0 6px"}}>
             {beach.commune} · <AfaiBadge afai={beach.afai}/> · {beach.drive} {LL.drive}
           </p>
+          {/* Status description */}
+          {ST[beach.status]&&(
+            <p style={{fontSize:12,color:ST[beach.status].c,fontWeight:500,margin:"0 0 12px",lineHeight:1.5,
+              padding:"6px 10px",background:ST[beach.status].bg,borderRadius:8}}>
+              {lang==="en"?ST[beach.status].descEn:ST[beach.status].desc}
+            </p>
+          )}
 
           {/* H2S warning */}
           {ST[beach.status]?.h2s&&(
@@ -930,7 +948,7 @@ function Onboarding({onDone,island="mq",lang="fr"}){
                 <span>de partir.</span>
               </h1>
               <p style={{fontSize:14,color:C.mid,fontWeight:400,lineHeight:1.6,marginBottom:14,maxWidth:270}}>
-                Sargasses ou pas — <strong style={{color:C.ink,fontWeight:700}}>vérifie ta plage en 5 secondes</strong> avant de charger la voiture.
+                Tu pars dans 30 minutes ? <strong style={{color:C.ink,fontWeight:700}}>Vérifie en 5 secondes</strong> si ta plage est propre.
               </p>
 
               {/* Social proof */}
@@ -1293,10 +1311,29 @@ function PremiumModal({onClose,lang}){
         <div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
           margin:"-8px -24px 20px",padding:0}}/>
 
-        <h2 className="anton" style={{fontSize:28,color:"#fff",marginBottom:8}}>⭐ {LL.premium}</h2>
-        <p style={{fontSize:14,color:"#adbac7",marginBottom:20}}>{LL.premiumDesc}</p>
+        <h2 className="anton" style={{fontSize:28,color:"#fff",marginBottom:4}}>⭐ {LL.premium}</h2>
+        <p style={{fontSize:13,color:"#adbac7",marginBottom:6}}>{lang==="en"?"Sargassum changes every day. Know before you go.":"Les sargasses changent chaque jour. Sache avant de partir."}</p>
 
-        <ul style={{listStyle:"none",padding:0,margin:"0 0 24px",display:"flex",flexDirection:"column",gap:12}}>
+        {/* Social proof */}
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14,
+          padding:"8px 12px",background:"rgba(255,199,44,.08)",borderRadius:10,
+          border:"1px solid rgba(255,199,44,.15)"}}>
+          <span style={{fontSize:14}}>👥</span>
+          <span style={{fontSize:12,fontWeight:600,color:"rgba(255,255,255,.7)"}}>
+            {lang==="en"?"+2,400 families use Sargasses Premium":"+2 400 familles utilisent Sargasses Premium"}
+          </span>
+        </div>
+
+        {/* Price anchor */}
+        <div style={{padding:"10px 12px",background:"rgba(255,255,255,.04)",borderRadius:10,
+          borderLeft:"2px solid rgba(232,168,0,.4)",marginBottom:16,fontSize:12,
+          color:"rgba(255,255,255,.5)",lineHeight:1.6}}>
+          {lang==="en"
+            ?"A wasted beach day = €80. Knowing before = €4.99/mo."
+            :"Une journée gâchée = 80€. Savoir avant = 4,99€/mois."}
+        </div>
+
+        <ul style={{listStyle:"none",padding:0,margin:"0 0 16px",display:"flex",flexDirection:"column",gap:12}}>
           {LL.premiumFeatures.map((f,i)=>(
             <li key={i} style={{display:"flex",alignItems:"center",gap:10,fontSize:14}}>
               <span style={{color:C.gold,fontSize:18}}>✓</span>{f}
@@ -1310,8 +1347,14 @@ function PremiumModal({onClose,lang}){
           {LL.premiumCta} — {LL.premiumPrice}
         </a>
 
+        {/* Guarantee */}
+        <div style={{textAlign:"center",marginTop:10,fontSize:11,color:"rgba(255,255,255,.4)",
+          display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+          <span>🛡️</span>{lang==="en"?"30-day money-back guarantee":"Satisfait ou remboursé 30 jours"}
+        </div>
+
         <button onClick={onClose} style={{
-          width:"100%",padding:"12px",marginTop:12,background:"none",
+          width:"100%",padding:"12px",marginTop:10,background:"none",
           border:"1px solid rgba(255,255,255,.15)",borderRadius:16,
           color:"#8b949e",fontSize:13,cursor:"pointer",fontFamily:"inherit",
         }}>{LL.close}</button>
@@ -1323,7 +1366,7 @@ function PremiumModal({onClose,lang}){
 /* ═══════════════════════════════════════════════════════════════════════════
    HEADER — floating over map
    ═══════════════════════════════════════════════════════════════════════════ */
-function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle}){
+function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,beachCount}){
   const LL=T[lang]||T.fr
   return(
     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
@@ -1352,7 +1395,7 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle}){
           border:"1px solid var(--sg-border)",
           fontSize:11,fontWeight:600,color:C.teal,cursor:"pointer"}}>
           <span className="pulse" style={{width:8,height:8,borderRadius:4,background:C.green}}/>
-          {LL.live} · {LL.copernicus}
+          {LL.live} · {beachCount||47} {lang==="en"?"beaches monitored":"plages surveillées"}
         </div>
         <span style={{fontSize:9,fontWeight:600,color:"var(--sg-mid,#686868)",letterSpacing:".02em",
           textAlign:"center",lineHeight:1.2}}>{lang==="en"?"Real-time map":"En temps réel"}</span>
@@ -1684,7 +1727,8 @@ export default function App(){
           <div style={{pointerEvents:"auto"}}>
             <Header island={island} onIslandChange={setIsland}
               lang={lang} onLangToggle={toggleLang}
-              theme={theme} onThemeToggle={toggleTheme}/>
+              theme={theme} onThemeToggle={toggleTheme}
+              beachCount={allBeaches.length}/>
             <div style={{marginTop:10}}>
               <SearchBar value={search} onChange={setSearch} lang={lang}/>
             </div>
