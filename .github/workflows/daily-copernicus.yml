@@ -26,25 +26,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # ── 1. Fetch LIVE Copernicus data (Python) ────────────
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install Copernicus Marine toolbox
-        run: pip install copernicusmarine xarray numpy
-
-      - name: Fetch LIVE sargassum data from Copernicus
+      # ── 1. Fetch LIVE sargassum data (ERDDAP + fallback) ──
+      - name: Fetch LIVE sargassum data from ERDDAP
         continue-on-error: true
-        env:
-          COPERNICUSMARINE_SERVICE_USERNAME: ${{ secrets.COPERNICUS_USERNAME }}
-          COPERNICUSMARINE_SERVICE_PASSWORD: ${{ secrets.COPERNICUS_PASSWORD }}
-          COPERNICUS_USERNAME: ${{ secrets.COPERNICUS_USERNAME }}
-          COPERNICUS_PASSWORD: ${{ secrets.COPERNICUS_PASSWORD }}
-        run: python3 scripts/fetch-copernicus-live.py
+        run: node scripts/fetch-sargassum-live.cjs
 
-      - name: Fallback to Node.js scraper if Python failed
+      - name: Fallback to Node.js scraper if ERDDAP failed
         run: |
           echo "${{ secrets.COPERNICUS_USERNAME }}" > copernicustxt.txt
           echo "${{ secrets.COPERNICUS_PASSWORD }}" >> copernicustxt.txt
