@@ -8,7 +8,6 @@
 import React,{useState,useEffect,useRef,useMemo,useCallback,createContext,useContext,Component}from"react"
 import L from"leaflet"
 import"leaflet/dist/leaflet.css"
-import SargassesGame from"./SargassesGame.jsx"
 
 class ErrBound extends Component{
   constructor(p){super(p);this.state={err:null}}
@@ -297,7 +296,6 @@ function BottomNav({view,onChangeView,lang}){
   const tabs=[
     {id:"map",label:LL.navMap,icon:"🗺️"},
     {id:"list",label:LL.navList,icon:"📋"},
-    {id:"jeu",label:LL.navGame,icon:"🎮"},
     {id:"premium",label:LL.navPremium,icon:"⭐"},
   ]
   return(
@@ -1665,8 +1663,6 @@ export default function App(){
         {view==="map"?(
           <ErrBound><MapView beaches={showOnboarding?[]:filtered} island={island}
             onBeachClick={onBeachClick} selectedBeach={selectedBeach} sargData={sargData}/></ErrBound>
-        ):view==="jeu"?(
-          <ErrBound><SargassesGame island={island}/></ErrBound>
         ):(
           <BeachListView beaches={filtered} onBeachClick={onBeachClick}
             favorites={favorites} lang={lang} imageMap={imageMap}/>
