@@ -997,35 +997,63 @@ function ListeScreen({beaches,favs,onFavToggle,onOpenBeach,gps,onXP,localBeachIm
     return list
   },[filter,search,beaches,favs,gps])
 
+  const statusChipStyle=(status)=>{
+    if(status==="clean") return {background:"rgba(34,197,94,.1)",color:"#16A34A"}
+    if(status==="moderate") return {background:"rgba(232,168,0,.1)",color:C.amber}
+    return {background:"rgba(232,82,42,.1)",color:C.red}
+  }
+  const statusLabel=(status)=>status==="clean"?(L.statusClean||"Propre"):status==="moderate"?(L.statusModerate||"Modéré"):(L.statusAvoid||"À éviter")
+
   return(
-    <div style={{display:"flex",flexDirection:"column",height:"100%"}}>
-      <div style={{padding:"10px 14px 8px",borderBottom:`1px solid var(--sg-border)`,background:"var(--sg-card)",flexShrink:0}}>
-        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher une plage ou commune…" style={{width:"100%",padding:"12px 16px",fontSize:15,border:"1.5px solid var(--sg-border)",borderRadius:100,background:"var(--sg-bg)",color:"var(--sg-ink)",outline:"none"}}/>
+    <div style={{display:"flex",flexDirection:"column",height:"100%",background:"var(--sg-bg)"}}>
+      {/* Search bar — pill shape, warm bg */}
+      <div style={{padding:"14px 18px 10px",flexShrink:0}}>
+        <div style={{position:"relative"}}>
+          <span style={{position:"absolute",left:16,top:"50%",transform:"translateY(-50%)",fontSize:15,opacity:.4,pointerEvents:"none"}}>🔍</span>
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={lang==="en"?"Search a beach or town...":"Rechercher une plage ou commune..."} style={{width:"100%",padding:"13px 16px 13px 42px",fontSize:14,fontWeight:500,border:"1px solid rgba(232,168,0,.15)",borderRadius:100,background:"rgba(255,255,255,.75)",color:"var(--sg-ink)",outline:"none",boxShadow:"0 2px 12px rgba(232,168,0,.06),inset 0 1px 0 rgba(255,255,255,.9)",backdropFilter:"blur(12px)",fontFamily:"'Bricolage Grotesque',sans-serif",transition:"border-color .2s,box-shadow .2s"}} onFocus={e=>{e.target.style.borderColor="rgba(232,168,0,.35)";e.target.style.boxShadow="0 2px 18px rgba(232,168,0,.12),inset 0 1px 0 rgba(255,255,255,.9)"}} onBlur={e=>{e.target.style.borderColor="rgba(232,168,0,.15)";e.target.style.boxShadow="0 2px 12px rgba(232,168,0,.06),inset 0 1px 0 rgba(255,255,255,.9)"}}/>
+        </div>
       </div>
-      <div style={{padding:"8px 14px",display:"flex",gap:6,overflowX:"auto",borderBottom:"1px solid var(--sg-border)",flexShrink:0}}>
-        {FILTERS.map(f=><button key={f.id} onClick={()=>setFilter(f.id)} style={{padding:"8px 16px",borderRadius:100,cursor:"pointer",whiteSpace:"nowrap",fontSize:13,fontWeight:600,fontFamily:"'Bricolage Grotesque',sans-serif",background:filter===f.id?"linear-gradient(135deg,#FFC72C,#E8A800)":"rgba(0,0,0,.04)",color:filter===f.id?"#0D0D0D":"var(--sg-mid)",border:filter===f.id?"1px solid rgba(232,168,0,.22)":"1px solid transparent",transition:"all .2s"}}>{f.l}</button>)}
+
+      {/* Filter chips — gold gradient active */}
+      <div style={{padding:"0 18px 10px",display:"flex",gap:7,overflowX:"auto",flexShrink:0,WebkitOverflowScrolling:"touch"}}>
+        {FILTERS.map(f=><button key={f.id} onClick={()=>setFilter(f.id)} style={{padding:"8px 18px",borderRadius:100,cursor:"pointer",whiteSpace:"nowrap",fontSize:12.5,fontWeight:700,fontFamily:"'Bricolage Grotesque',sans-serif",letterSpacing:".02em",background:filter===f.id?`linear-gradient(135deg,${C.goldL},${C.gold})`:"rgba(0,0,0,.035)",color:filter===f.id?"white":"var(--sg-mid)",border:filter===f.id?"1px solid rgba(232,168,0,.3)":"1px solid rgba(0,0,0,.06)",boxShadow:filter===f.id?"0 3px 12px rgba(232,168,0,.25)":"none",transition:"all .25s cubic-bezier(.16,1,.3,1)",transform:filter===f.id?"scale(1.02)":"scale(1)"}}>{f.l}</button>)}
       </div>
-      <div style={{padding:"10px 16px 4px",fontSize:14,color:"var(--sg-mute)",fontWeight:600,flexShrink:0}}>{filtered.length} plage{filtered.length>1?"s":""}{gps?" · triées par distance":""}</div>
-      <div style={{flex:1,overflowY:"auto",padding:"4px 12px 12px"}}>
-        {filtered.length===0&&<div style={{textAlign:"center",padding:"48px 0",color:"var(--sg-mute)",fontSize:13}}>Aucune plage</div>}
+
+      {/* Count header — Anton font */}
+      <div style={{padding:"2px 20px 8px",display:"flex",alignItems:"baseline",gap:8,flexShrink:0}}>
+        <span style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:28,color:"var(--sg-ink)",letterSpacing:"-.02em",lineHeight:1}}>{filtered.length}</span>
+        <span style={{fontSize:13,fontWeight:600,color:"var(--sg-mute)"}}>{lang==="en"?"beach":"plage"}{filtered.length>1?(lang==="en"?"es":"s"):""}{gps?(lang==="en"?" · sorted by distance":" · par distance"):""}</span>
+      </div>
+
+      {/* Beach rows — v11 .beach-row style */}
+      <div style={{flex:1,overflowY:"auto",padding:"0 14px 14px",WebkitOverflowScrolling:"touch"}}>
+        {filtered.length===0&&<div style={{textAlign:"center",padding:"56px 20px",color:"var(--sg-mute)",fontSize:14,fontWeight:500}}>
+          <div style={{fontSize:40,marginBottom:12,opacity:.5}}>🏖️</div>
+          {lang==="en"?"No beach found":"Aucune plage trouvée"}
+        </div>}
         {filtered.map((b,i)=>{
           const dist=gps?hav(gps.lat,gps.lng,b.lat,b.lng):null
+          const sc=statusChipStyle(b.status)
           return(
-            <div key={b.id} onClick={()=>{onOpenBeach(b);onXP("open")}} className="row" style={{display:"flex",alignItems:"center",gap:13,padding:"12px 12px",borderRadius:14,cursor:"pointer",marginBottom:5,background:"var(--sg-card)",border:"1px solid var(--sg-border)",transition:"all .18s",animation:`up .3s ease ${i*.04}s both`,opacity:b.status==="avoid"?.72:1}}>
-              <div style={{width:56,height:56,borderRadius:12,overflow:"hidden",flexShrink:0,background:"var(--sg-rowHover)"}}>
+            <div key={b.id} onClick={()=>{onOpenBeach(b);onXP("open")}} className="tap" style={{display:"flex",alignItems:"center",gap:11,padding:"10px 14px",borderRadius:14,cursor:"pointer",marginBottom:6,background:"white",border:"1px solid rgba(0,0,0,.04)",boxShadow:"0 2px 10px rgba(0,0,0,.04)",transition:"all .18s",animation:`up .3s ease ${Math.min(i*.03,.6)}s both`,opacity:b.status==="avoid"?.72:1}}>
+              {/* Photo thumbnail */}
+              <div style={{width:52,height:52,borderRadius:12,overflow:"hidden",flexShrink:0,background:"var(--sg-rowHover)"}}>
                 <img referrerPolicy="no-referrer" src={(localBeachImages[b.id] ? getBaseUrl().replace(/\/$/, "") + "/beaches/" + localBeachImages[b.id] : null) || getBeachPhoto(b) || getBeachSatelliteImage(b,112)} alt={b?.name ? (lang==="en" ? `Beach ${b.name}, ${b.commune} — sargassum status` : `Plage ${b.name}, ${b.commune} — état sargasses`) : L.altPlage} style={{width:"100%",height:"100%",objectFit:"cover"}} onError={e=>{const img=e.target;if(img.dataset.fallback) { img.src=BEACH_IMG_PLACEHOLDER; img.onerror=null; return } img.dataset.fallback="1"; img.src=getBeachSatelliteImage(b,112)||getBeachPhoto(b)||BEACH_IMG_PLACEHOLDER; img.onerror=ev=>{ev.target.onerror=null;ev.target.src=BEACH_IMG_PLACEHOLDER}}}/>
               </div>
-              <SDot s={b.status} sz={11}/>
+              {/* Name + commune + amenity pills */}
               <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:16,fontWeight:700,color:"var(--sg-ink)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{b.name}</div>
-                <div style={{fontSize:13,color:"var(--sg-mute)",marginTop:3,display:"flex",gap:7,alignItems:"center"}}>
-                  <span>{b.commune}</span>
-                  {b.kids&&<span>🧒</span>}{b.snorkel&&<span>🤿</span>}{b.parking&&<span>🅿️</span>}
-                  {dist&&<span style={{color:C.ocean,fontWeight:700}}>📍{dist}km</span>}
+                <div style={{fontSize:13,fontWeight:700,color:"var(--sg-ink)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",lineHeight:1.2,marginBottom:3}}>{b.name}</div>
+                <div style={{fontSize:11,color:"var(--sg-mute)",marginBottom:5}}>{b.commune}{dist?` · ${dist} km`:""}</div>
+                <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+                  {b.kids&&<span style={{fontSize:9.5,fontWeight:700,padding:"2px 7px",borderRadius:100,background:"rgba(139,92,246,.08)",color:"#7C3AED",letterSpacing:".02em"}}>🧒 Kids</span>}
+                  {b.snorkel&&<span style={{fontSize:9.5,fontWeight:700,padding:"2px 7px",borderRadius:100,background:"rgba(0,158,142,.08)",color:C.teal,letterSpacing:".02em"}}>🤿 Snorkel</span>}
+                  {b.parking&&<span style={{fontSize:9.5,fontWeight:700,padding:"2px 7px",borderRadius:100,background:"rgba(0,0,0,.04)",color:"var(--sg-mid)",letterSpacing:".02em"}}>🅿️</span>}
                 </div>
               </div>
-              <Chip status={b.status} sm/>
-              <button onClick={e=>{e.stopPropagation();onFavToggle(b.id);onXP("fav")}} style={{background:"none",border:"none",cursor:"pointer",fontSize:22,flexShrink:0,padding:"8px",minWidth:44,minHeight:44,display:"flex",alignItems:"center",justifyContent:"center"}}>{favs.includes(b.id)?"❤️":"🤍"}</button>
+              {/* Status chip */}
+              <span style={{fontSize:10,fontWeight:700,padding:"4px 10px",borderRadius:100,whiteSpace:"nowrap",flexShrink:0,...sc}}>{statusLabel(b.status)}</span>
+              {/* Fav button */}
+              <button onClick={e=>{e.stopPropagation();onFavToggle(b.id);onXP("fav")}} style={{background:"none",border:"none",cursor:"pointer",fontSize:20,flexShrink:0,padding:"6px",minWidth:40,minHeight:40,display:"flex",alignItems:"center",justifyContent:"center"}}>{favs.includes(b.id)?"❤️":"🤍"}</button>
             </div>
           )
         })}
@@ -1126,7 +1154,7 @@ function EvolutionSection({historyData,island,onOpenBeach,beaches}){
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// ░░ ACCUEIL — briefing quotidien
+// ░░ ACCUEIL — briefing quotidien (v11 premium redesign)
 // ═══════════════════════════════════════════════════════════════════════════════
 function AccueilScreen({beaches,favs,onFavToggle,onOpenBeach,onAskChat,gps,onGPS,premium,onGoToPremium,onXP,island,sargassumData,historyData}){
   const lang=useLang()
@@ -1136,157 +1164,258 @@ function AccueilScreen({beaches,favs,onFavToggle,onOpenBeach,onAskChat,gps,onGPS
   const favAlerts=beaches.filter(b=>favs.includes(b.id)&&b.status==="avoid")
   const favClean=beaches.filter(b=>favs.includes(b.id)&&b.status==="clean")
   const answer=clean.length>4?"OUI":clean.length>2?"OUI*":"NON"
-  const answerColor=answer==="NON"?C.red:answer==="OUI*"?C.amber:C.green
+  const answerGrad=answer==="NON"
+    ?`linear-gradient(138deg,#FF8066 0%,${C.red} 48%,#B03018 100%)`
+    :answer==="OUI*"
+    ?`linear-gradient(138deg,#FFD860 0%,${C.amber} 48%,#8B6914 100%)`
+    :`linear-gradient(138deg,#6EE7A0 0%,${C.green} 48%,#16A34A 100%)`
   const best=useMemo(()=>{
     if(favClean.length>0) return favClean[0]
     if(gps) return[...clean].sort((a,b)=>hav(gps.lat,gps.lng,a.lat,a.lng)-hav(gps.lat,gps.lng,b.lat,b.lng))[0]
     return clean[0]
   },[favClean,clean,gps])
   const {w}=useWeather(best?.lat,best?.lng,best?.island==="gp"?"America/Guadeloupe":"America/Martinique")
-  const h=new Date().getHours()
-  const greet=h<6?"Bonne nuit 🌙":h<12?"Bon matin 🌅":h<18?"Bonne après-midi ☀️":"Bonne soirée 🌊"
+  const bestPhoto=best?(getBeachPhoto(best)||getBeachSatelliteImage(best,{width:400,height:260})):null
+  const islandName=island==="gp"?"Guadeloupe":"Martinique"
+  const satDate=sargassumData?.updatedAt?new Date(sargassumData.updatedAt).toLocaleDateString("fr-FR",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"--"
 
   const USE_CASES=[
-    {e:"🚗",t:"Je pars maintenant",    s:best?`${best.name} · ${best.drive}min`:"Aucune propre",   fn:()=>best&&onOpenBeach(best),active:!!best},
-    {e:"🧒",t:"Avec des enfants",       s:`${clean.filter(b=>b.kids).length} plages adaptées`,      fn:()=>onAskChat("Quelle plage propre adaptée aux enfants ?"),active:true},
-    {e:"🤿",t:"Snorkeling",             s:`${clean.filter(b=>b.snorkel).length} spots propres`,     fn:()=>onAskChat("Meilleur spot snorkeling propre maintenant ?"),active:true},
-    {e:"📅",t:"Planifier le week-end",  s:"Prévisions J+1 → J+7",      fn:()=>onAskChat("Quelles plages propres ce week-end ?"),active:true},
-    {e:"🗺️",t:"Road trip du jour",      s:`${clean.length} plages propres`, fn:()=>onAskChat("Donne-moi un road trip de 3 plages propres aujourd'hui"),active:true},
-    {e:"🧳",t:"Je suis touriste",       s:"Meilleures recommandations", fn:()=>onAskChat("Je suis touriste pour 3 jours, quelles plages dois-je absolument voir ?"),active:true},
+    {e:"🚗",t:"Je pars maintenant",    s:best?`${best.name} · ${best.drive}min`:"Aucune propre",   fn:()=>best&&onOpenBeach(best),active:!!best,grad:"linear-gradient(135deg,#D6F5EF,#A8EDE4)"},
+    {e:"🧒",t:"Avec des enfants",       s:`${clean.filter(b=>b.kids).length} plages adaptées`,      fn:()=>onAskChat("Quelle plage propre adaptée aux enfants ?"),active:true,grad:"linear-gradient(135deg,#FFE4DC,#FFCAB8)"},
+    {e:"🤿",t:"Snorkeling",             s:`${clean.filter(b=>b.snorkel).length} spots propres`,     fn:()=>onAskChat("Meilleur spot snorkeling propre maintenant ?"),active:true,grad:"linear-gradient(135deg,#D0EEF8,#A8D8F0)"},
+    {e:"📅",t:"Planifier le week-end",  s:"Prévisions J+1 → J+7",      fn:()=>onAskChat("Quelles plages propres ce week-end ?"),active:true,grad:"linear-gradient(135deg,#E8E0F8,#D0C4F0)"},
+    {e:"🗺️",t:"Road trip du jour",      s:`${clean.length} plages propres`, fn:()=>onAskChat("Donne-moi un road trip de 3 plages propres aujourd'hui"),active:true,grad:"linear-gradient(135deg,#FDECB0,#F0D878)"},
+    {e:"🧳",t:"Je suis touriste",       s:"Meilleures recommandations", fn:()=>onAskChat("Je suis touriste pour 3 jours, quelles plages dois-je absolument voir ?"),active:true,grad:"linear-gradient(135deg,#FFE4DC,#FFD0C0)"},
   ]
 
   return(
-    <div style={{overflowY:"auto",height:"100%",WebkitOverflowScrolling:"touch"}}>
-      {/* Hero */}
-      <div style={{padding:"28px 22px 24px",background:"linear-gradient(168deg, var(--sg-bg) 0%, var(--sg-bgD) 100%)",position:"relative",overflow:"hidden"}}>
-        <div style={{position:"absolute",top:-60,right:-50,width:220,height:220,borderRadius:"50%",background:`${C.tealL}0C`,animation:"driftB 15s ease-in-out infinite",pointerEvents:"none",filter:"blur(40px)"}}/>
-        <div style={{position:"absolute",bottom:-40,left:-30,width:180,height:180,borderRadius:"50%",background:`${C.goldL}0A`,animation:"driftB 20s ease-in-out 4s infinite",pointerEvents:"none",filter:"blur(40px)"}}/>
+    <div style={{overflowY:"auto",height:"100%",WebkitOverflowScrolling:"touch",background:"var(--sg-bg)"}}>
 
-        <h1 style={{position:"absolute",width:"1px",height:"1px",padding:0,margin:"-1px",overflow:"hidden",clip:"rect(0,0,0,0)",whiteSpace:"nowrap",border:0}}>{(L.h1||"Sargasses {island} en temps réel").replace("{island}",island==="gp"?"Guadeloupe":"Martinique")}</h1>
-        <div style={{fontSize:13,fontWeight:600,color:"var(--sg-mute)",marginBottom:8,animation:"up .4s ease both",position:"relative",zIndex:1}}>{greet}</div>
-        <div style={{animation:"up .4s ease .04s both",position:"relative",zIndex:1}}>
-          <div style={{fontSize:16,color:"var(--sg-ink)",fontWeight:600,marginBottom:6}}>La plage aujourd'hui ?</div>
-          <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:80,lineHeight:.88,letterSpacing:"-.02em",textTransform:"uppercase",color:answerColor,marginBottom:10,animation:"countUp .6s cubic-bezier(.16,1,.3,1) .1s both"}}>{answer}</div>
-          <div style={{fontSize:16,color:"var(--sg-ink)",fontWeight:600,marginBottom:20}}>{clean.length} propre{clean.length>1?"s":""} · {avoid.length} à éviter</div>
-          {sargassumData&&(
-            <div style={{fontSize:13,color:"var(--sg-mute)",display:"flex",alignItems:"center",gap:7,flexWrap:"wrap"}}>
-              <span>Dernière mise à jour :</span>
-              <span style={{fontWeight:700,color:sargassumData.source==="copernicus"?C.teal:"var(--sg-mid)"}}>{sargassumData.source==="copernicus"?"Copernicus Marine":"Données de référence"}</span>
-              <span>— {sargassumData.updatedAt ? new Date(sargassumData.updatedAt).toLocaleDateString("fr-FR",{ day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit" }) : "—"}</span>
-            </div>
-          )}
+      {/* ═══ HERO ═══ */}
+      <div style={{padding:"0 0 28px",position:"relative",overflow:"hidden"}}>
+        {/* Ambient blobs */}
+        <div style={{position:"absolute",top:-80,right:-60,width:260,height:260,borderRadius:"50%",background:`${C.tealL}0C`,animation:"driftB 15s ease-in-out infinite",pointerEvents:"none",filter:"blur(50px)"}}/>
+        <div style={{position:"absolute",bottom:-40,left:-40,width:200,height:200,borderRadius:"50%",background:`${C.goldL}0A`,animation:"driftB 20s ease-in-out 4s infinite",pointerEvents:"none",filter:"blur(50px)"}}/>
+
+        <h1 style={{position:"absolute",width:"1px",height:"1px",padding:0,margin:"-1px",overflow:"hidden",clip:"rect(0,0,0,0)",whiteSpace:"nowrap",border:0}}>{(L.h1||"Sargasses {island} en temps réel").replace("{island}",islandName)}</h1>
+
+        {/* Live strip */}
+        <div style={{margin:"16px 20px 0",background:"rgba(255,255,255,.75)",border:"1px solid rgba(232,168,0,.26)",borderRadius:100,padding:"8px 10px 8px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"relative",zIndex:10,backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",boxShadow:"0 2px 18px rgba(232,168,0,.09),inset 0 1px 0 rgba(255,255,255,.95)",animation:"up .4s ease both"}}>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <div style={{width:7,height:7,borderRadius:"50%",background:C.green,flexShrink:0,boxShadow:"0 0 0 2px rgba(34,197,94,.2)",animation:"beacon 2s ease-in-out infinite"}}/>
+            <span style={{fontSize:11.5,fontWeight:600,color:C.ink}}><strong style={{color:"#B87A00",fontWeight:700}}>{clean.length} plages propres</strong> en temps réel</span>
+          </div>
+          <span style={{background:`linear-gradient(135deg,${C.tealL},${C.teal})`,color:"white",fontSize:9,fontWeight:800,letterSpacing:".14em",padding:"5px 13px",borderRadius:100,boxShadow:"0 3px 12px rgba(0,158,142,.32)"}}>LIVE</span>
         </div>
 
-        {best&&(
-          <div onClick={()=>{onOpenBeach(best);onXP("open")}} className="tap hover" style={{background:"var(--sg-card)",border:"1px solid var(--sg-border)",borderRadius:20,padding:"18px 20px",cursor:"pointer",boxShadow:"var(--sg-card-shadow-lg, var(--sg-card-shadow))",animation:"up .4s ease .08s both",position:"relative",zIndex:1}}>
-            <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:14}}>
-              <div>
-                <div style={{fontSize:14,fontWeight:600,color:"var(--sg-mute)",marginBottom:6}}>{gps?"Meilleure plage près de toi":favClean.length>0?"Ta plage favorite":"Meilleure plage du jour"}</div>
-                <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:24,textTransform:"uppercase",color:"var(--sg-ink)",lineHeight:1}}>{best.name}</div>
-                <div style={{fontSize:13,color:"var(--sg-mute)",marginTop:4}}>{best.commune}</div>
-              </div>
-              <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6}}>
-                <Chip status={best.status}/>
-                <button onClick={e=>{e.stopPropagation();onFavToggle(best.id);onXP("fav")}} style={{background:"none",border:"none",cursor:"pointer",fontSize:22,padding:"8px",minWidth:44,minHeight:44,display:"flex",alignItems:"center",justifyContent:"center"}}>{favs.includes(best.id)?"❤️":"🤍"}</button>
-              </div>
-            </div>
-            <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14}}>
-              {w&&<><div style={{background:"var(--sg-bgD)",borderRadius:10,padding:"6px 12px",fontSize:13,fontWeight:600,color:"var(--sg-ink)",display:"flex",alignItems:"center",gap:5}}><span>💨</span>{w.wind}km/h</div><div style={{background:"var(--sg-bgD)",borderRadius:10,padding:"6px 12px",fontSize:13,fontWeight:600,color:"var(--sg-ink)",display:"flex",alignItems:"center",gap:5}}><span>☀️</span>UV {w.uv}</div><div style={{background:"var(--sg-bgD)",borderRadius:10,padding:"6px 12px",fontSize:13,fontWeight:600,color:"var(--sg-ink)",display:"flex",alignItems:"center",gap:5}}><span>🌡️</span>{w.temp}°C</div></>}
-              {gps&&<div style={{marginLeft:"auto",fontSize:14,color:C.ocean,fontWeight:700}}>📍 {hav(gps.lat,gps.lng,best.lat,best.lng)} km</div>}
-            </div>
-            <div style={{display:"flex",gap:8}}>
-              <GBtn sm style={{flex:1}}>Y aller →</GBtn>
-              {gps&&<a href={`https://maps.google.com/?q=${best.lat},${best.lng}&travelmode=driving`} target="_blank" rel="noreferrer" style={{flex:1,padding:"10px",background:"var(--sg-rowHover)",borderRadius:14,fontSize:14,fontWeight:700,color:"var(--sg-mid)",textDecoration:"none",textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center",gap:4,minHeight:44}}>🗺️ Maps</a>}
-            </div>
-          </div>
-        )}
+        {/* Satellite badge */}
+        <div style={{margin:"10px 20px 0",background:"rgba(13,13,13,.06)",border:"1px solid rgba(13,13,13,.08)",borderRadius:100,padding:"6px 14px",display:"flex",alignItems:"center",gap:7,position:"relative",overflow:"hidden",animation:"up .4s ease .04s both"}}>
+          <span style={{fontSize:12}}>🛰️</span>
+          <span style={{fontSize:10,fontWeight:600,color:C.mid}}>Copernicus · <em style={{fontStyle:"normal",color:C.teal,fontWeight:700}}>{islandName}</em></span>
+          <span style={{marginLeft:"auto",fontSize:9,fontWeight:700,background:"rgba(0,158,142,.1)",color:C.teal,padding:"2px 7px",borderRadius:100,letterSpacing:".06em"}}>{satDate}</span>
+        </div>
 
+        {/* Big answer */}
+        <div style={{padding:"28px 22px 0",position:"relative",zIndex:1,animation:"up .4s ease .06s both"}}>
+          <div style={{fontSize:13,fontWeight:600,color:"var(--sg-mute)",marginBottom:8}}>La plage aujourd'hui ?</div>
+          <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:88,lineHeight:.85,letterSpacing:"-.03em",textTransform:"uppercase",background:answerGrad,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",marginBottom:14,animation:"countUp .6s cubic-bezier(.16,1,.3,1) .1s both"}}>{answer}</div>
+
+          {/* Count pills */}
+          <div style={{display:"flex",gap:8,marginBottom:0,animation:"up .4s ease .1s both"}}>
+            <div style={{display:"inline-flex",alignItems:"center",gap:6,padding:"6px 14px",borderRadius:100,background:C.greenBg,border:"1px solid rgba(34,197,94,.18)"}}>
+              <div style={{width:6,height:6,borderRadius:"50%",background:C.green}}/>
+              <span style={{fontSize:14,fontWeight:700,color:C.greenL}}>{clean.length} propre{clean.length>1?"s":""}</span>
+            </div>
+            {avoid.length>0&&<div style={{display:"inline-flex",alignItems:"center",gap:6,padding:"6px 14px",borderRadius:100,background:C.redBg,border:"1px solid rgba(232,82,42,.18)"}}>
+              <div style={{width:6,height:6,borderRadius:"50%",background:C.red}}/>
+              <span style={{fontSize:14,fontWeight:700,color:C.red}}>{avoid.length} à éviter</span>
+            </div>}
+          </div>
+        </div>
+
+        {/* Fav alerts */}
         {favAlerts.length>0&&(
-          <div style={{marginTop:12,padding:"12px 14px",background:"rgba(176,27,27,.07)",border:"1.5px solid rgba(176,27,27,.2)",borderRadius:14,animation:"up .4s ease .12s both",position:"relative",zIndex:1}}>
-            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}><span style={{fontSize:16}}>☣️</span><div style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontWeight:800,fontSize:13,color:C.red,letterSpacing:".04em",textTransform:"uppercase"}}>Alerte H2S — {favAlerts.length} favori{favAlerts.length>1?"s":""}</div></div>
-            <div style={{fontSize:14,color:C.red,lineHeight:1.6,opacity:.8,marginBottom:8}}>{favAlerts.map(b=>b.name).join(", ")} — évitez si asthmatique, enfant ou femme enceinte.</div>
-            {favAlerts.map(b=><div key={b.id} onClick={()=>onOpenBeach(b)} className="tap" style={{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",background:"rgba(176,27,27,.06)",borderRadius:9,cursor:"pointer",marginBottom:3,minHeight:44}}><SDot s="avoid" sz={7}/><span style={{fontSize:14,fontWeight:700,color:"var(--sg-ink)",flex:1}}>{b.name}</span><span style={{fontSize:14,color:"var(--sg-mute)"}}>Voir →</span></div>)}
+          <div style={{margin:"16px 20px 0",padding:"12px 14px",background:"rgba(232,82,42,.06)",border:"1.5px solid rgba(232,82,42,.18)",borderRadius:16,animation:"up .4s ease .12s both",position:"relative",zIndex:1}}>
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+              <div style={{width:28,height:28,borderRadius:9,background:"linear-gradient(135deg,#FFE4DC,#FFCAB8)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>☣️</div>
+              <div style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontWeight:800,fontSize:12,color:C.red,letterSpacing:".06em",textTransform:"uppercase"}}>Alerte H2S — {favAlerts.length} favori{favAlerts.length>1?"s":""}</div>
+            </div>
+            <div style={{fontSize:13,color:C.red,lineHeight:1.6,opacity:.75,marginBottom:8}}>{favAlerts.map(b=>b.name).join(", ")} — évitez si asthmatique, enfant ou femme enceinte.</div>
+            {favAlerts.map(b=><div key={b.id} onClick={()=>onOpenBeach(b)} className="tap" style={{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",background:"rgba(232,82,42,.05)",borderRadius:10,cursor:"pointer",marginBottom:3,minHeight:44}}><SDot s="avoid" sz={7}/><span style={{fontSize:14,fontWeight:700,color:"var(--sg-ink)",flex:1}}>{b.name}</span><span style={{fontSize:13,color:"var(--sg-mute)"}}>Voir →</span></div>)}
           </div>
         )}
       </div>
 
-      {/* Use cases */}
-      <div style={{padding:"22px 18px 10px"}}>
+      {/* ═══ BEST BEACH CARD ═══ */}
+      {best&&(
+        <div style={{padding:"0 16px 24px",animation:"up .4s ease .08s both"}}>
+          <div onClick={()=>{onOpenBeach(best);onXP("open")}} className="tap hover" style={{borderRadius:22,overflow:"hidden",cursor:"pointer",position:"relative",boxShadow:"0 8px 32px rgba(0,0,0,.1),0 2px 10px rgba(0,0,0,.06)"}}>
+            {/* Photo background */}
+            <div style={{position:"relative",height:180,background:`${C.teal}22`}}>
+              {bestPhoto&&<img src={bestPhoto} alt={best.name} style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} onError={e=>{e.target.style.display="none"}}/>}
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(0,0,0,.05) 0%,rgba(0,0,0,.55) 100%)"}}/>
+              <div style={{position:"absolute",top:14,left:16,fontSize:11,fontWeight:700,color:"rgba(255,255,255,.8)",letterSpacing:".06em",textTransform:"uppercase"}}>{gps?"Meilleure plage près de toi":favClean.length>0?"Ta plage favorite":"Meilleure plage du jour"}</div>
+              <button onClick={e=>{e.stopPropagation();onFavToggle(best.id);onXP("fav")}} style={{position:"absolute",top:10,right:12,background:"rgba(0,0,0,.25)",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",border:"none",borderRadius:"50%",width:40,height:40,cursor:"pointer",fontSize:20,display:"flex",alignItems:"center",justifyContent:"center",minWidth:44,minHeight:44}}>{favs.includes(best.id)?"❤️":"🤍"}</button>
+              <div style={{position:"absolute",bottom:14,left:16,right:16}}>
+                <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:28,textTransform:"uppercase",color:"white",lineHeight:.95,letterSpacing:"-.01em",textShadow:"0 2px 8px rgba(0,0,0,.3)"}}>{best.name}</div>
+                <div style={{fontSize:13,color:"rgba(255,255,255,.7)",marginTop:4,fontWeight:500}}>{best.commune}{gps?` · ${hav(gps.lat,gps.lng,best.lat,best.lng)} km`:""}</div>
+              </div>
+            </div>
+
+            {/* Card body */}
+            <div style={{background:"var(--sg-card)",padding:"14px 16px 16px"}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginBottom:14}}>
+                <span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"5px 13px",borderRadius:100,fontSize:12,fontWeight:700,color:best.status==="clean"?C.greenL:best.status==="moderate"?C.amber:C.red,background:best.status==="clean"?C.greenBg:best.status==="moderate"?C.amberBg:C.redBg,border:`1px solid ${best.status==="clean"?"rgba(34,197,94,.18)":best.status==="moderate"?"rgba(184,122,0,.18)":"rgba(232,82,42,.18)"}`}}>{ST[best.status]?.e} {ST[best.status]?.l}</span>
+                {w&&<>
+                  <div style={{display:"flex",alignItems:"center",gap:5,padding:"4px 10px 4px 4px",borderRadius:100,background:"rgba(0,158,142,.06)",border:"1px solid rgba(0,158,142,.1)"}}>
+                    <div style={{width:24,height:24,borderRadius:8,background:"linear-gradient(135deg,#D6F5EF,#A8EDE4)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,flexShrink:0}}>💨</div>
+                    <span style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)"}}>{w.wind}km/h</span>
+                  </div>
+                  <div style={{display:"flex",alignItems:"center",gap:5,padding:"4px 10px 4px 4px",borderRadius:100,background:"rgba(232,168,0,.06)",border:"1px solid rgba(232,168,0,.1)"}}>
+                    <div style={{width:24,height:24,borderRadius:8,background:"linear-gradient(135deg,#FDECB0,#F0D878)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,flexShrink:0}}>☀️</div>
+                    <span style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)"}}>UV {w.uv}</span>
+                  </div>
+                  <div style={{display:"flex",alignItems:"center",gap:5,padding:"4px 10px 4px 4px",borderRadius:100,background:"rgba(232,82,42,.06)",border:"1px solid rgba(232,82,42,.1)"}}>
+                    <div style={{width:24,height:24,borderRadius:8,background:"linear-gradient(135deg,#FFE4DC,#FFCAB8)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,flexShrink:0}}>🌡️</div>
+                    <span style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)"}}>{w.temp}°C</span>
+                  </div>
+                </>}
+              </div>
+              <div style={{display:"flex",gap:8}}>
+                <GBtn sm style={{flex:1}}>Y aller →</GBtn>
+                {gps&&<a href={`https://maps.google.com/?q=${best.lat},${best.lng}&travelmode=driving`} target="_blank" rel="noreferrer" style={{flex:1,padding:"10px",background:"var(--sg-rowHover)",borderRadius:14,fontSize:14,fontWeight:700,color:"var(--sg-mid)",textDecoration:"none",textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center",gap:4,minHeight:44}}>🗺️ Maps</a>}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ USE CASES GRID ═══ */}
+      <div style={{padding:"4px 18px 10px"}}>
         <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:18,textTransform:"uppercase",letterSpacing:"-.02em",color:"var(--sg-ink)",marginBottom:14}}>Qu'est-ce que tu veux faire ?</div>
-        <div className="uc-grid" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+        <div className="uc-grid" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
           {USE_CASES.map((uc,i)=>(
-            <div key={uc.e} onClick={uc.fn} className="tap hover" style={{background:"var(--sg-card)",border:"1px solid var(--sg-border)",borderRadius:18,padding:"16px 16px 14px",cursor:"pointer",boxShadow:"var(--sg-card-shadow)",transition:"all .2s",animation:`up .4s ease ${.14+i*.04}s both`,opacity:uc.active?1:.5}}>
-              <div style={{fontSize:30,marginBottom:10,lineHeight:1}}>{uc.e}</div>
+            <div key={uc.e} onClick={uc.fn} className="tap hover" style={{background:"var(--sg-card)",border:"1px solid var(--sg-border)",borderRadius:18,padding:"16px 16px 14px",cursor:"pointer",boxShadow:"0 2px 10px rgba(0,0,0,.04)",transition:"all .2s",animation:`up .4s ease ${.14+i*.04}s both`,opacity:uc.active?1:.5}}>
+              <div style={{width:42,height:42,borderRadius:13,background:uc.grad,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,marginBottom:10,boxShadow:"0 2px 8px rgba(0,0,0,.06)"}}>{uc.e}</div>
               <div style={{fontSize:15,fontWeight:700,color:"var(--sg-ink)",marginBottom:4,lineHeight:1.3}}>{uc.t}</div>
-              <div style={{fontSize:13,color:"var(--sg-mute)",lineHeight:1.4}}>{uc.s}</div>
+              <div style={{fontSize:12,color:"var(--sg-mute)",lineHeight:1.4}}>{uc.s}</div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Scroll propres */}
-      <div style={{padding:"8px 0 8px",overflow:"hidden"}}>
+      {/* ═══ CLEAN BEACHES SCROLL ═══ */}
+      <div style={{padding:"12px 0 12px",overflow:"hidden"}}>
         <div style={{padding:"0 18px",fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:18,textTransform:"uppercase",letterSpacing:"-.02em",color:"var(--sg-ink)",marginBottom:12}}>Propres aujourd'hui</div>
-        <div className="clean-scroll" style={{display:"flex",gap:10,overflowX:"auto",paddingLeft:16,paddingRight:16,paddingBottom:4,WebkitOverflowScrolling:"touch"}}>
+        <div className="clean-scroll" style={{display:"flex",gap:10,overflowX:"auto",paddingLeft:16,paddingRight:16,paddingBottom:6,WebkitOverflowScrolling:"touch"}}>
           {clean.map((b,i)=>(
-            <div key={b.id} onClick={()=>{onOpenBeach(b);onXP("open")}} className="tap" style={{flexShrink:0,width:148,background:"var(--sg-card)",border:"1px solid var(--sg-status-clean-border, rgba(39,112,58,.25))",borderRadius:16,padding:"12px 13px",cursor:"pointer",animation:`up .3s ease ${i*.06}s both`}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}><SDot s="clean" sz={8} pulse={false}/><button onClick={e=>{e.stopPropagation();onFavToggle(b.id);onXP("fav")}} style={{background:"none",border:"none",cursor:"pointer",fontSize:20,padding:"6px",minWidth:44,minHeight:44,display:"flex",alignItems:"center",justifyContent:"center"}}>{favs.includes(b.id)?"❤️":"🤍"}</button></div>
-              <div style={{fontWeight:700,fontSize:15,color:"var(--sg-ink)",lineHeight:1.2,marginBottom:4}}>{b.name}</div>
-              <div style={{fontSize:14,color:"var(--sg-mute)",marginBottom:8}}>{b.commune}</div>
-              <div style={{display:"flex",gap:6,flexWrap:"wrap"}}><span style={{fontSize:14,fontWeight:600,color:C.ocean}}>🚗 {b.drive}min</span>{b.island==="gp"&&<span style={{fontSize:14,color:"var(--sg-mute)"}}>PaP</span>}{b.snorkel&&<span style={{fontSize:14,color:C.teal}}>🤿</span>}{b.kids&&<span style={{fontSize:14}}>🧒</span>}</div>
+            <div key={b.id} onClick={()=>{onOpenBeach(b);onXP("open")}} className="tap" style={{flexShrink:0,width:156,background:"var(--sg-card)",borderRadius:16,padding:"13px 14px",cursor:"pointer",boxShadow:"0 2px 10px rgba(0,0,0,.04)",border:"1px solid rgba(0,0,0,.04)",animation:`up .3s ease ${i*.06}s both`}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+                <span style={{display:"inline-flex",alignItems:"center",gap:4,padding:"3px 9px",borderRadius:100,fontSize:10,fontWeight:700,color:C.greenL,background:C.greenBg}}>{ST.clean.e} Propre</span>
+                <button onClick={e=>{e.stopPropagation();onFavToggle(b.id);onXP("fav")}} style={{background:"none",border:"none",cursor:"pointer",fontSize:18,padding:"6px",minWidth:44,minHeight:44,display:"flex",alignItems:"center",justifyContent:"center"}}>{favs.includes(b.id)?"❤️":"🤍"}</button>
+              </div>
+              <div style={{fontWeight:700,fontSize:15,color:"var(--sg-ink)",lineHeight:1.2,marginBottom:3}}>{b.name}</div>
+              <div style={{fontSize:12,color:"var(--sg-mute)",marginBottom:8}}>{b.commune}</div>
+              <div style={{display:"flex",gap:5,flexWrap:"wrap",alignItems:"center"}}>
+                <span style={{fontSize:12,fontWeight:700,color:C.ocean}}>🚗 {b.drive}min</span>
+                {b.snorkel&&<span style={{fontSize:12,color:C.teal}}>🤿</span>}
+                {b.kids&&<span style={{fontSize:12}}>🧒</span>}
+              </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Prévisions rapides */}
+      {/* ═══ FORECAST PREVIEW ═══ */}
       {best&&<div style={{padding:"4px 16px 16px"}}>
-        <div style={{fontSize:16,fontWeight:700,color:"var(--sg-ink)",marginBottom:12}}>Prochains jours — {best.name}</div>
+        <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:18,textTransform:"uppercase",letterSpacing:"-.02em",color:"var(--sg-ink)",marginBottom:12}}>Prochains jours — {best.name}</div>
         <div style={{display:"flex",gap:6}}>
           {getForecast(best,sargassumData,lang).slice(0,premium?7:3).map((d,i)=>{const st=ST[d.status];return(
-            <div key={i} style={{flex:1,background:"var(--sg-card)",borderRadius:14,padding:"12px 6px",textAlign:"center",border:"1px solid var(--sg-border)",boxShadow:"var(--sg-card-shadow)"}}>
-              <div style={{fontSize:14,fontWeight:700,color:"var(--sg-mute)",marginBottom:6}}>{d.day}</div>
+            <div key={i} style={{flex:1,background:"var(--sg-card)",borderRadius:14,padding:"12px 6px",textAlign:"center",border:"1px solid var(--sg-border)",boxShadow:"0 2px 10px rgba(0,0,0,.04)"}}>
+              <div style={{fontSize:13,fontWeight:700,color:"var(--sg-mute)",marginBottom:6}}>{d.day}</div>
               <div style={{fontSize:18,marginBottom:4}}>{st.e}</div>
               <div style={{width:"60%",height:3,borderRadius:3,background:st.c,margin:"0 auto"}}/>
-              <div style={{fontSize:14,color:"var(--sg-mute)",marginTop:4,fontWeight:600}}>{Math.round(d.afai*100)}%</div>
+              <div style={{fontSize:13,color:"var(--sg-mute)",marginTop:4,fontWeight:600}}>{Math.round(d.afai*100)}%</div>
             </div>
           )})}
-          {!premium&&<div onClick={onGoToPremium} className="tap" style={{flex:1,background:"var(--sg-rowHover)",borderRadius:12,padding:"10px 4px",textAlign:"center",border:"1.5px dashed var(--sg-border)",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:3}}>
+          {!premium&&<div onClick={onGoToPremium} className="tap" style={{flex:1,background:"var(--sg-rowHover)",borderRadius:14,padding:"10px 4px",textAlign:"center",border:"1.5px dashed var(--sg-border)",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:3}}>
             <div style={{fontSize:15}}>🔒</div>
-            <div style={{fontSize:14,fontWeight:700,color:"var(--sg-mute)"}}>+4j</div>
-            <div style={{fontSize:14,fontWeight:700,color:C.gold}}>PREMIUM</div>
+            <div style={{fontSize:13,fontWeight:700,color:"var(--sg-mute)"}}>+4j</div>
+            <div style={{fontSize:12,fontWeight:700,color:C.gold}}>PREMIUM</div>
           </div>}
         </div>
       </div>}
 
+      {/* GPS prompt */}
       {!gps&&<div style={{padding:"0 16px 20px"}}>
-        <button onClick={onGPS} className="tap" style={{width:"100%",padding:"14px",background:C.tealBg,border:`1.5px dashed rgba(0,150,136,.3)`,borderRadius:13,fontSize:14,fontWeight:700,color:C.teal,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontFamily:"'Bricolage Grotesque',sans-serif",minHeight:44}}>
+        <button onClick={onGPS} className="tap" style={{width:"100%",padding:"14px",background:C.tealBg,border:`1.5px dashed rgba(0,150,136,.3)`,borderRadius:14,fontSize:14,fontWeight:700,color:C.teal,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontFamily:"'Bricolage Grotesque',sans-serif",minHeight:44}}>
           📍 Activer ma position pour les plages proches
         </button>
       </div>}
 
-      {/* Évolution des plages */}
+      {/* Evolution */}
       <EvolutionSection historyData={historyData} island={island} onOpenBeach={onOpenBeach} beaches={beaches}/>
 
-      {/* Social proof + CTA conversion */}
-      {!premium&&<div style={{padding:"0 16px 20px"}}>
-        <div onClick={onGoToPremium} className="tap" style={{background:`linear-gradient(145deg,${C.night},${C.night2})`,borderRadius:18,padding:"18px 18px 16px",cursor:"pointer",position:"relative",overflow:"hidden"}}>
-          <div style={{position:"absolute",top:-20,right:-20,width:100,height:100,borderRadius:"50%",background:"rgba(255,208,96,.06)",pointerEvents:"none"}}/>
-          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:10,position:"relative",zIndex:1}}>
+      {/* ═══ PREMIUM CTA — v11 .premium-card style ═══ */}
+      {!premium&&<div style={{padding:"0 16px 24px"}}>
+        <div onClick={onGoToPremium} className="tap" style={{background:`linear-gradient(145deg,${C.night},${C.night2})`,borderRadius:26,padding:"20px 20px 18px",cursor:"pointer",position:"relative",overflow:"hidden",boxShadow:"0 16px 48px rgba(0,0,0,.18)"}}>
+          {/* Gold top border line */}
+          <div style={{position:"absolute",top:0,left:0,right:0,height:1,background:`linear-gradient(90deg,transparent,${C.goldL},transparent)`}}/>
+          {/* Ambient glow */}
+          <div style={{position:"absolute",top:-50,right:-30,width:160,height:160,borderRadius:"50%",background:"radial-gradient(circle,rgba(232,168,0,.1) 0%,transparent 70%)",pointerEvents:"none"}}/>
+
+          {/* Tag pill */}
+          <div style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(255,199,44,.12)",border:"1px solid rgba(255,199,44,.18)",borderRadius:100,padding:"4px 11px",fontSize:9.5,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:C.goldL,marginBottom:12}}>
+            <div style={{width:4,height:4,borderRadius:"50%",background:C.goldL}}/>
+            SATELLITE PRO
+          </div>
+
+          {/* Price row */}
+          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14,position:"relative",zIndex:1}}>
             <div style={{fontSize:28}}>🛰️</div>
             <div style={{flex:1}}>
-              <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:16,color:"white",textTransform:"uppercase",letterSpacing:"-.01em",lineHeight:1.1}}>Prévisions 7 jours</div>
-              <div style={{fontSize:14,color:"rgba(255,255,255,.55)",marginTop:2}}>Prévisions 30 jours · Alertes push</div>
+              <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:18,color:"white",textTransform:"uppercase",letterSpacing:"-.01em",lineHeight:1.1}}>Prévisions 7 jours</div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,.45)",marginTop:3}}>Alertes push · 2 îles · données 6h</div>
             </div>
             <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end"}}>
-              <span style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:22,color:C.goldL,lineHeight:1}}>4,99€</span>
-              <span style={{fontSize:14,color:"rgba(255,255,255,.4)"}}>30 jours</span>
+              <span style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:26,color:C.goldL,lineHeight:1}}>4,99€</span>
+              <span style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>/ 30 jours</span>
             </div>
           </div>
-          <div style={{display:"flex",alignItems:"center",gap:8,position:"relative",zIndex:1}}>
-            <div style={{flex:1,height:1,background:"rgba(255,255,255,.08)"}}/>
-            <span style={{fontSize:14,color:"rgba(255,255,255,.3)",fontWeight:700}}>= 1 aller-retour évité</span>
-            <div style={{flex:1,height:1,background:"rgba(255,255,255,.08)"}}/>
+
+          {/* Forecast preview with blur */}
+          <div style={{marginBottom:14,position:"relative",zIndex:1}}>
+            <div style={{fontSize:9.5,fontWeight:700,color:"rgba(255,255,255,.4)",letterSpacing:".1em",textTransform:"uppercase",marginBottom:8}}>Aperçu prévisions</div>
+            <div style={{display:"flex",gap:5}}>
+              {["Lun","Mar","Mer","Jeu","Ven"].map((d,i)=>{
+                const locked=i>=2
+                return(
+                  <div key={d} style={{flex:1,background:"rgba(255,255,255,.05)",borderRadius:10,padding:"8px 4px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:3,filter:locked?(i===2?"blur(1.5px)":"blur(3px)"):"none",opacity:locked?(i===2?.5:.35):1}}>
+                    <div style={{fontSize:8.5,fontWeight:700,color:"rgba(255,255,255,.4)"}}>{d}</div>
+                    <div style={{fontSize:15}}>{i%2===0?"✅":"⚠️"}</div>
+                    <div style={{fontSize:8,fontWeight:700,padding:"2px 5px",borderRadius:100,background:i%2===0?"rgba(34,197,94,.15)":"rgba(232,168,0,.15)",color:i%2===0?"#4ADE80":C.goldL}}>{i%2===0?"OK":"Moyen"}</div>
+                  </div>
+                )
+              })}
+            </div>
+            <div style={{position:"relative",marginTop:-24,background:"linear-gradient(0deg,rgba(13,30,28,.95) 60%,transparent)",padding:"18px 8px 6px",textAlign:"center",fontSize:10.5,fontWeight:600,color:"rgba(255,255,255,.5)",borderRadius:"0 0 10px 10px"}}>🔓 Débloquer les 7 jours</div>
+          </div>
+
+          {/* Features list */}
+          <div style={{display:"flex",flexDirection:"column",gap:7,marginBottom:14,position:"relative",zIndex:1}}>
+            {["Prévisions 7 jours par plage","Alertes push automatiques","Données satellite toutes les 6h"].map(f=>(
+              <div key={f} style={{display:"flex",alignItems:"center",gap:9}}>
+                <div style={{width:18,height:18,borderRadius:"50%",background:"rgba(0,158,142,.18)",border:"1px solid rgba(0,158,142,.28)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,color:C.tealL,flexShrink:0}}>✓</div>
+                <span style={{fontSize:12,color:"rgba(255,255,255,.7)"}}>{f}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Divider + anchor */}
+          <div style={{display:"flex",alignItems:"center",gap:8,position:"relative",zIndex:1,marginBottom:2}}>
+            <div style={{flex:1,height:1,background:"rgba(255,255,255,.06)"}}/>
+            <span style={{fontSize:11,color:"rgba(255,255,255,.3)",fontWeight:600}}>= 1 aller-retour évité</span>
+            <div style={{flex:1,height:1,background:"rgba(255,255,255,.06)"}}/>
           </div>
         </div>
       </div>}
@@ -1326,143 +1455,163 @@ function CodePromoBlock({ onActivate }) {
 
 function PremiumScreen({premium,onActivate}){
   const TESTIMONIALS=[
-    {name:"Marie-Claire T.",role:"Mère de 3 enfants · Fort-de-France",text:"Mon mari était parti faire 40km avec les enfants. Sargasses partout. Depuis j'ouvre l'app avant de partir.",avatar:"👩‍👧‍👦"},
-    {name:"Julien M.",role:"Kitesurf · Sainte-Anne",text:"Je reçois l'alerte le matin si les conditions changent. J'ai annulé 2 sessions inutiles ce mois-ci.",avatar:"🏄"},
-    {name:"Hôtel Cap Sud",role:"Résidence touristique · Le Diamant",text:"On affiche le statut des plages à la réception. Nos clients adorent. On recommande l'app à chaque arrivée.",avatar:"🏨"},
+    {name:"Marie-Claire T.",loc:"Fort-de-France",text:"Mon mari était parti faire 40km avec les enfants. Sargasses partout. Depuis j'ouvre l'app avant de partir.",init:"M",grad:"linear-gradient(135deg,#FF6B6B,#FF8E53)"},
+    {name:"Julien M.",loc:"Sainte-Anne",text:"Je reçois l'alerte le matin si les conditions changent. J'ai annulé 2 sessions inutiles ce mois-ci.",init:"J",grad:"linear-gradient(135deg,#4ECDC4,#44A08D)"},
+    {name:"Hôtel Cap Sud",loc:"Le Diamant",text:"On affiche le statut à la réception. Nos clients adorent.",init:"H",grad:"linear-gradient(135deg,#A18CD1,#FBC2EB)"},
   ]
 
-  const COMPARE=[
-    {f:"Statut des plages",free:true,premium:true},
-    {f:"Carte interactive",free:true,premium:true},
-    {f:"Assistant IA",free:true,premium:true},
-    {f:"Prévisions J+1 → J+2",free:true,premium:true},
-    {f:"Prévisions J+3 → J+7",free:false,premium:true},
-    {f:"Alertes push automatiques",free:false,premium:true},
-    {f:"Alerte H2S par plage",free:false,premium:true},
-    {f:"2 îles (MQ + GP)",free:false,premium:true},
-    {f:"Données satellite 6h",free:false,premium:true},
-    {f:"Historique 30 jours",free:false,premium:true},
+  const forecastDays=[
+    {day:"Lun",icon:"🏖️",status:"Propre",cls:"g"},
+    {day:"Mar",icon:"🏖️",status:"Propre",cls:"g"},
+    {day:"Mer",icon:"⚡",status:"Modéré",cls:"o",semi:true},
+    {day:"Jeu",icon:"🚫",status:"Éviter",cls:"r",locked:true},
+    {day:"Ven",icon:"🚫",status:"Éviter",cls:"r",locked:true},
+    {day:"Sam",icon:"⚡",status:"Modéré",cls:"o",locked:true},
+    {day:"Dim",icon:"🏖️",status:"Propre",cls:"g",locked:true},
   ]
+  const fcColors={g:{bg:"rgba(34,197,94,.15)",color:"#4ADE80"},o:{bg:"rgba(232,168,0,.15)",color:C.goldL},r:{bg:"rgba(232,82,42,.2)",color:"#FF8066"}}
 
   if(premium) return(
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100%",padding:"30px",textAlign:"center"}}>
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100%",padding:"30px",textAlign:"center",background:"var(--sg-bg)"}}>
       <div style={{fontSize:64,marginBottom:16,animation:"levelUp .6s cubic-bezier(.16,1,.3,1) both"}}>⭐</div>
       <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:26,textTransform:"uppercase",letterSpacing:"-.02em",color:"var(--sg-ink)",marginBottom:8}}>Premium Actif</div>
       <div style={{fontSize:13,color:"var(--sg-mid)",lineHeight:1.7,marginBottom:20}}>30 jours de prévisions · Alertes push<br/>MQ + GP · Données satellite toutes les 6h</div>
-      <div style={{background:C.greenBg,borderRadius:13,padding:"12px 20px",fontSize:14,fontWeight:700,color:C.green}}>✅ Tous les accès débloqués</div>
+      <div style={{background:C.greenBg,borderRadius:13,padding:"12px 20px",fontSize:14,fontWeight:700,color:C.green}}>Tous les accès débloqués</div>
     </div>
   )
 
   return(
-    <div style={{overflowY:"auto",height:"100%",WebkitOverflowScrolling:"touch"}}>
-      {/* Hero — fond clair lisible */}
-      <div className="grain" style={{background:"var(--sg-bg)",padding:"32px 16px 28px",textAlign:"center",position:"relative",overflow:"hidden",maxWidth:"100%",boxSizing:"border-box"}}>
-        <div style={{position:"absolute",top:-40,left:-40,width:200,height:200,borderRadius:"50%",background:`${C.goldL}08`,animation:"driftB 12s ease-in-out infinite",pointerEvents:"none"}}/>
-        <div style={{position:"absolute",bottom:-60,right:-30,width:240,height:240,borderRadius:"50%",background:`${C.tealL}06`,animation:"driftB 18s ease-in-out 3s infinite",pointerEvents:"none"}}/>
-        <div style={{position:"relative",zIndex:1}}>
-          <div style={{display:"inline-block",padding:"4px 14px",borderRadius:100,background:C.goldBg,border:`1px solid ${C.goldL}30`,marginBottom:14}}>
-            <span style={{fontSize:14,fontWeight:800,letterSpacing:".12em",textTransform:"uppercase",color:C.gold}}>⭐ PREMIUM</span>
+    <div style={{overflowY:"auto",height:"100%",WebkitOverflowScrolling:"touch",background:"var(--sg-bg)"}}>
+      {/* Live strip + satellite badge — like onboarding slide 1 */}
+      <div style={{padding:"20px 20px 0"}}>
+        <div style={{background:"rgba(255,255,255,.75)",border:"1px solid rgba(232,168,0,.26)",borderRadius:100,padding:"8px 10px 8px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",backdropFilter:"blur(16px)",boxShadow:"0 2px 18px rgba(232,168,0,.09),inset 0 1px 0 rgba(255,255,255,.95)",animation:"up .4s ease both"}}>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <div style={{width:7,height:7,borderRadius:"50%",background:C.green,flexShrink:0,animation:"beacon 2s ease-in-out infinite"}}/>
+            <span style={{fontSize:11.5,fontWeight:600,color:"var(--sg-ink)"}}><strong style={{color:C.amber}}>47 plages</strong> surveillées en temps réel</span>
           </div>
-          <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:36,textTransform:"uppercase",letterSpacing:"-.02em",color:"var(--sg-ink)",lineHeight:1.05,marginBottom:16,animation:"up .5s ease both"}}>
-            Cette fois,<br/>tu seras prévenu.
-          </div>
-          <div style={{fontSize:16,color:"var(--sg-ink)",marginBottom:14,lineHeight:1.7,fontWeight:500,animation:"up .5s ease .08s both"}}>
-            Accès 30 jours à toutes les prévisions,<br/>alertes push et données satellite.
-          </div>
-          <div style={{display:"inline-block",padding:"6px 16px",borderRadius:10,background:C.tealBg,border:`1px solid ${C.tealL}25`,marginBottom:18,animation:"up .5s ease .1s both"}}>
-            <span style={{fontSize:14,fontWeight:700,color:C.teal}}>📅 30 jours de prévisions complètes</span>
-          </div>
-          <div style={{display:"flex",alignItems:"baseline",justifyContent:"center",gap:6,marginBottom:6,animation:"up .5s ease .12s both"}}>
-            <span style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:56,color:C.gold,lineHeight:1}}>4,99€</span>
-            <span style={{fontSize:16,color:"var(--sg-mute)",fontWeight:600}}> / 30 jours</span>
-          </div>
-          <div style={{fontSize:14,color:"var(--sg-mute)",marginBottom:24}}>Soit 0,17€/jour · = 1 aller-retour évité</div>
-          <div style={{animation:"up .5s ease .16s both"}}>
-            <GBtn full onClick={()=>window.open(STRIPE_PAYMENT_URL,"_blank", "noopener,noreferrer")} style={{maxWidth:320,margin:"0 auto",animation:"glow 3s ease-in-out infinite"}}>Payer avec Stripe →</GBtn>
-          </div>
-          <div style={{display:"flex",justifyContent:"center",gap:14,marginTop:16,fontSize:13,color:"var(--sg-mute)",fontWeight:500}}>
-            <span>📅 30 jours</span><span>🔒 Stripe sécurisé</span><span>🛡️ Remboursé 7j</span>
-          </div>
-          <CodePromoBlock onActivate={onActivate} />
+          <span style={{background:`linear-gradient(135deg,${C.tealL},${C.teal})`,color:"white",fontSize:9,fontWeight:800,letterSpacing:".14em",padding:"5px 13px",borderRadius:100,boxShadow:"0 3px 12px rgba(0,158,142,.32)"}}>LIVE</span>
         </div>
       </div>
 
-      {/* Avantages Premium — cartes visuelles */}
-      <div style={{padding:"20px 16px 8px"}}>
-        <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:18,textTransform:"uppercase",letterSpacing:"-.02em",color:"var(--sg-ink)",marginBottom:12}}>Ce que tu débloques</div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-          {[
-            {e:"📅",t:"Prévisions 7j",s:"Prévisions complètes pendant 30 jours"},
-            {e:"📡",t:"Satellite 6h",s:"Données fraîches toutes les 6 heures"},
-            {e:"🔔",t:"Alertes push",s:"Notifié dès qu'une plage change"},
-            {e:"🗺️",t:"MQ + GP",s:"Martinique et Guadeloupe couvertes"},
-            {e:"📊",t:"Historique 30j",s:"Évolution complète de chaque plage"},
-            {e:"☣️",t:"Alerte H2S",s:"Risque santé par plage en temps réel"},
-          ].map((item,i)=>(
-            <Card key={i} style={{padding:"16px",animation:`up .4s ease ${i*.05}s both`}}>
-              <div style={{fontSize:28,marginBottom:10}}>{item.e}</div>
-              <div style={{fontSize:15,fontWeight:700,color:"var(--sg-ink)",marginBottom:4,lineHeight:1.2}}>{item.t}</div>
-              <div style={{fontSize:13,color:"var(--sg-mute)",lineHeight:1.6}}>{item.s}</div>
-            </Card>
+      {/* Satellite badge */}
+      <div style={{margin:"10px 20px 0",background:"rgba(13,13,13,.06)",border:"1px solid rgba(13,13,13,.08)",borderRadius:100,padding:"6px 14px",display:"flex",alignItems:"center",gap:7,position:"relative",overflow:"hidden",animation:"up .4s ease .05s both"}}>
+        <span style={{fontSize:12}}>🛰️</span>
+        <span style={{fontSize:10,fontWeight:600,color:"var(--sg-mute)"}}>Sentinel-2 · <em style={{fontStyle:"normal",color:C.teal,fontWeight:700}}>ESA Copernicus</em></span>
+        <span style={{marginLeft:"auto",fontSize:9,fontWeight:700,background:"rgba(0,158,142,.1)",color:C.teal,padding:"2px 7px",borderRadius:100,letterSpacing:".06em"}}>FRAIS</span>
+      </div>
+
+      {/* Social proof counter */}
+      <div style={{margin:"10px 20px 0",display:"flex",alignItems:"center",gap:7,padding:"7px 13px",background:"rgba(34,197,94,.06)",border:"1px solid rgba(34,197,94,.14)",borderRadius:100,animation:"up .4s ease .1s both"}}>
+        <div style={{width:5,height:5,borderRadius:"50%",background:C.green,animation:"beacon 1.4s ease-in-out infinite"}}/>
+        <span style={{fontSize:12,fontWeight:800,color:"var(--sg-ink)"}}>+2 400</span>
+        <span style={{fontSize:11,fontWeight:500,color:"var(--sg-mute)"}}>utilisateurs · <em style={{fontStyle:"normal",color:"#16A34A",fontWeight:700}}>en ligne</em></span>
+      </div>
+
+      {/* Eyebrow */}
+      <div style={{padding:"18px 22px 0",fontSize:12.5,fontStyle:"italic",color:"var(--sg-mute)",animation:"up .4s ease .12s both"}}>Pour les weekends qui comptent vraiment.</div>
+
+      {/* Headline — Anton + gradient text */}
+      <div style={{padding:"6px 22px 0",fontFamily:"'Anton',sans-serif",fontSize:40,lineHeight:.9,letterSpacing:"-.02em",textTransform:"uppercase",color:"var(--sg-ink)",marginBottom:6,animation:"up .4s ease .15s both"}}>
+        <span>Cette </span>
+        <span style={{display:"inline",background:"linear-gradient(138deg,#FFD860 0%,#E8A800 48%,#B07000 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>fois,</span><br/>
+        tu seras<br/>prévenu.
+      </div>
+
+      {/* Tagline */}
+      <p style={{padding:"0 22px",fontSize:13,color:"var(--sg-mute)",lineHeight:1.55,marginBottom:14,animation:"up .4s ease .18s both"}}>Les données du jour c'est bien. <strong style={{color:"var(--sg-ink)",fontWeight:700}}>Savoir ce qui arrive ce weekend</strong>, c'est mieux.</p>
+
+      {/* Premium card — dark teal, matches onboarding .premium-card */}
+      <div style={{margin:"0 22px",background:`linear-gradient(145deg,${C.night},${C.night2})`,borderRadius:26,padding:20,position:"relative",overflow:"hidden",boxShadow:"0 16px 48px rgba(0,0,0,.18)",animation:"up .5s ease .2s both"}}>
+        {/* Gold top border line */}
+        <div style={{position:"absolute",top:0,left:0,right:0,height:1,background:`linear-gradient(90deg,transparent,${C.goldL},transparent)`}}/>
+        {/* Glow orb */}
+        <div style={{position:"absolute",top:-50,right:-30,width:160,height:160,borderRadius:"50%",background:"radial-gradient(circle,rgba(232,168,0,.1) 0%,transparent 70%)",pointerEvents:"none"}}/>
+
+        {/* Premium tag */}
+        <div style={{display:"inline-flex",alignItems:"center",gap:5,background:"rgba(255,199,44,.12)",border:"1px solid rgba(255,199,44,.18)",borderRadius:100,padding:"4px 11px",fontSize:9.5,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:C.goldL,marginBottom:12,position:"relative",zIndex:1}}>
+          <div style={{width:4,height:4,borderRadius:"50%",background:C.goldL}}/>Premium
+        </div>
+
+        {/* Price block */}
+        <div style={{marginBottom:6,position:"relative",zIndex:1}}>
+          <div style={{display:"flex",alignItems:"baseline",gap:3}}>
+            <span style={{fontSize:20,fontWeight:700,color:"rgba(255,255,255,.6)",marginTop:6}}>€</span>
+            <span style={{fontFamily:"'Anton',sans-serif",fontSize:52,color:"white",lineHeight:1,letterSpacing:"-.02em"}}>4,99</span>
+            <span style={{fontSize:13,color:"rgba(255,255,255,.35)",fontWeight:500,alignSelf:"flex-end",marginBottom:4}}>/ mois</span>
+          </div>
+        </div>
+
+        {/* Price anchor copywriting */}
+        <div style={{fontSize:11,color:"rgba(255,255,255,.35)",marginBottom:14,lineHeight:1.5,padding:"8px 10px",background:"rgba(255,255,255,.04)",borderRadius:10,borderLeft:"2px solid rgba(232,168,0,.3)",position:"relative",zIndex:1}}>
+          Une journée plage pour 4 personnes = <strong style={{color:"rgba(255,255,255,.6)"}}>80€ minimum.</strong><br/>
+          Savoir à l'avance = <strong style={{color:"rgba(255,255,255,.6)"}}>4,99€.</strong>
+        </div>
+
+        {/* 7-day forecast preview with blur on locked days */}
+        <div style={{marginBottom:14,position:"relative",zIndex:1}}>
+          <div style={{fontSize:9.5,fontWeight:700,color:"rgba(255,255,255,.4)",letterSpacing:".1em",textTransform:"uppercase",marginBottom:8}}>Prévisions de ta semaine</div>
+          <div style={{display:"flex",gap:5}}>
+            {forecastDays.map(d=>{const fc=fcColors[d.cls];return(
+              <div key={d.day} style={{flex:1,background:"rgba(255,255,255,.05)",borderRadius:10,padding:"8px 6px",textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:3,filter:d.locked?"blur(3px)":d.semi?"blur(1.5px)":"none",opacity:d.locked?.35:d.semi?.5:1}}>
+                <div style={{fontSize:8.5,fontWeight:700,color:"rgba(255,255,255,.4)"}}>{d.day}</div>
+                <div style={{fontSize:15}}>{d.icon}</div>
+                <div style={{fontSize:8,fontWeight:700,padding:"2px 5px",borderRadius:100,background:fc.bg,color:fc.color}}>{d.status}</div>
+              </div>
+            )})}
+          </div>
+        </div>
+        {/* Unlock overlay */}
+        <div style={{position:"relative",marginTop:-28,marginBottom:14,background:"linear-gradient(0deg,rgba(13,30,28,.95) 60%,transparent)",padding:"20px 8px 8px",textAlign:"center",fontSize:10.5,fontWeight:600,color:"rgba(255,255,255,.5)",zIndex:2}}>🔒 Débloque les 5 prochains jours</div>
+
+        {/* Feature checklist with teal check circles */}
+        <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16,position:"relative",zIndex:1}}>
+          {[{t:"Prévisions 7 jours",s:"dérive satellite"},{t:"Alertes",s:"avant que ça arrive"},{t:"Annulation",s:"à tout moment"}].map(f=>(
+            <div key={f.t} style={{display:"flex",alignItems:"center",gap:9}}>
+              <div style={{width:18,height:18,borderRadius:"50%",background:"rgba(0,158,142,.18)",border:"1px solid rgba(0,158,142,.28)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,color:C.tealL,flexShrink:0}}>✓</div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,.7)"}}><strong style={{color:"white"}}>{f.t}</strong> · {f.s}</div>
+            </div>
           ))}
         </div>
+
+        {/* Gold gradient CTA button */}
+        <button className="gbtn" onClick={()=>window.open&&window.open(typeof STRIPE_PAYMENT_URL!=="undefined"?STRIPE_PAYMENT_URL:"#","_blank")} style={{width:"100%",background:`linear-gradient(135deg,${C.goldL},${C.gold})`,color:"#0D0D0D",border:"none",borderRadius:16,padding:"16px 20px",fontFamily:"'Anton',sans-serif",fontSize:18,letterSpacing:".05em",textTransform:"uppercase",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between",boxShadow:"0 8px 24px rgba(232,168,0,.38),inset 0 1px 0 rgba(255,255,255,.4)",position:"relative",overflow:"hidden",zIndex:1}}>
+          <span style={{position:"relative",zIndex:1}}>Débloquer mes prévisions</span>
+          <span style={{width:36,height:36,background:"rgba(0,0,0,.15)",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,position:"relative",zIndex:1}}>→</span>
+        </button>
       </div>
 
-      {/* Testimonials */}
-      <div style={{padding:"12px 16px 4px"}}>
-        <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:18,textTransform:"uppercase",letterSpacing:"-.02em",color:"var(--sg-ink)",marginBottom:12}}>Ce que disent les utilisateurs</div>
+      {/* Testimonials — onboarding avatar circle + quote style */}
+      <div style={{padding:"16px 22px 0"}}>
+        <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:18,textTransform:"uppercase",letterSpacing:"-.02em",color:"var(--sg-ink)",marginBottom:12}}>Ils l'utilisent</div>
         {TESTIMONIALS.map((t,i)=>(
-          <Card key={i} style={{padding:"18px 18px",marginBottom:12,animation:`up .4s ease ${.3+i*.08}s both`}}>
-            <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
-              <div style={{fontSize:32,flexShrink:0}}>{t.avatar}</div>
-              <div>
-                <div style={{fontSize:15,fontWeight:700,color:"var(--sg-ink)"}}>{t.name}</div>
-                <div style={{fontSize:13,color:"var(--sg-mute)"}}>{ t.role}</div>
-              </div>
-              <div style={{marginLeft:"auto",display:"flex",gap:2}}>{[1,2,3,4,5].map(s=><span key={s} style={{fontSize:14,color:C.goldL}}>★</span>)}</div>
+          <div key={i} style={{background:"rgba(255,255,255,.6)",border:"1px solid rgba(232,168,0,.12)",borderRadius:14,padding:"12px 14px",display:"flex",gap:10,alignItems:"flex-start",marginBottom:8,animation:`up .4s ease ${.3+i*.08}s both`}}>
+            <div style={{width:30,height:30,borderRadius:"50%",background:t.grad,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"white",flexShrink:0}}>{t.init}</div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:10,fontWeight:700,color:"var(--sg-ink)",marginBottom:3}}>{t.name} · {t.loc}</div>
+              <div style={{fontSize:11.5,color:"var(--sg-mute)",lineHeight:1.5,fontStyle:"italic"}}>"{t.text}"</div>
             </div>
-            <div style={{fontSize:15,color:"var(--sg-ink)",lineHeight:1.7,fontStyle:"italic",opacity:.8}}>"{t.text}"</div>
-          </Card>
+            <div style={{display:"flex",gap:1,flexShrink:0,marginTop:2}}>{[1,2,3,4,5].map(s=><span key={s} style={{fontSize:10,color:C.goldL}}>★</span>)}</div>
+          </div>
         ))}
       </div>
 
-      {/* Comparison table */}
-      <div style={{padding:"4px 16px 16px",maxWidth:"100%",boxSizing:"border-box"}}>
-        <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:18,textTransform:"uppercase",letterSpacing:"-.02em",color:"var(--sg-ink)",marginBottom:12}}>Gratuit vs Premium</div>
-        <Card style={{overflow:"hidden",padding:0,maxWidth:"100%"}}>
-          <div style={{display:"grid",gridTemplateColumns:"1fr auto auto",borderBottom:"1px solid var(--sg-border)"}}>
-            <div style={{padding:"12px 16px",fontSize:13,fontWeight:700,color:"var(--sg-ink)"}}>Fonctionnalité</div>
-            <div style={{padding:"12px 18px",fontSize:13,fontWeight:700,color:"var(--sg-mute)",textAlign:"center"}}>Gratuit</div>
-            <div style={{padding:"12px 18px",fontSize:13,fontWeight:700,color:C.gold,textAlign:"center",background:C.goldBg}}>Premium</div>
-          </div>
-          {COMPARE.map((row,i)=>(
-            <div key={i} style={{display:"grid",gridTemplateColumns:"1fr auto auto",borderBottom:i<COMPARE.length-1?"1px solid var(--sg-border)":"none"}}>
-              <div style={{padding:"11px 16px",fontSize:14,fontWeight:row.premium&&!row.free?600:400,color:row.premium&&!row.free?"var(--sg-ink)":"var(--sg-mute)"}}>{row.f}</div>
-              <div style={{padding:"11px 18px",textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>{row.free?"✅":"—"}</div>
-              <div style={{padding:"11px 18px",textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,background:C.goldBg}}>{row.premium?"✅":"—"}</div>
-            </div>
-          ))}
-        </Card>
-      </div>
-
       {/* Guarantee */}
-      <div style={{padding:"0 16px 20px"}}>
-        <div style={{background:`linear-gradient(135deg,${C.greenBg},rgba(56,146,78,.05))`,border:"1.5px solid rgba(39,112,58,.2)",borderRadius:16,padding:"16px",display:"flex",gap:14,alignItems:"center"}}>
-          <div style={{fontSize:34,flexShrink:0}}>🛡️</div>
+      <div style={{padding:"12px 22px 0"}}>
+        <div style={{background:`linear-gradient(135deg,${C.greenBg},rgba(56,146,78,.05))`,border:"1.5px solid rgba(39,112,58,.2)",borderRadius:16,padding:"14px 16px",display:"flex",gap:12,alignItems:"center"}}>
+          <div style={{fontSize:30,flexShrink:0}}>🛡️</div>
           <div>
-            <div style={{fontSize:16,fontWeight:700,color:C.green,marginBottom:4}}>Garanti 7 jours</div>
-            <div style={{fontSize:14,color:"var(--sg-ink)",lineHeight:1.7}}>Pas satisfait dans les 7 jours ? On te rembourse, sans question. Aucun risque.</div>
+            <div style={{fontSize:14,fontWeight:700,color:C.green,marginBottom:2}}>Garanti 7 jours</div>
+            <div style={{fontSize:12,color:"var(--sg-ink)",lineHeight:1.6}}>Pas satisfait ? Remboursé sans question.</div>
           </div>
         </div>
       </div>
 
-      {/* Sticky CTA */}
-      <div style={{padding:"0 16px 28px"}}>
+      {/* Skip + microcopy */}
+      <div style={{padding:"12px 22px 0",textAlign:"center"}}>
         <CodePromoBlock onActivate={onActivate} />
-        <div style={{marginTop:14}}>
-          <GBtn full onClick={()=>window.open(STRIPE_PAYMENT_URL,"_blank","noopener,noreferrer")} style={{animation:"glow 3s ease-in-out infinite"}}>4,99€ pour 30 jours — Payer avec Stripe →</GBtn>
-        </div>
-        <div style={{fontSize:13,color:"var(--sg-mute)",textAlign:"center",marginTop:10}}>Accès 30 jours · Pas de renouvellement automatique</div>
+      </div>
+      <div style={{padding:"8px 22px",textAlign:"center",fontSize:10.5,color:"rgba(104,104,104,.6)",display:"flex",alignItems:"center",justifyContent:"center",gap:6,paddingBottom:28}}>
+        Paiement sécurisé<span style={{width:3,height:3,borderRadius:"50%",background:"rgba(104,104,104,.25)"}}/>Annulation à tout moment<span style={{width:3,height:3,borderRadius:"50%",background:"rgba(104,104,104,.25)"}}/>Pas de renouvellement auto
       </div>
     </div>
   )

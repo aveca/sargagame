@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SARGASSES.MQ — App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --gold:    #E8A800;
+  --gold-lt: #FFC72C;
+  --gold-dk: #B87A00;
+  --teal:    #009E8E;
+  --teal-lt: #1EC8B0;
+  --coral:   #E8522A;
+  --ink:     #0D0D0D;
+  --mid:     #686868;
+  --bg:      #FDFCF7;
+  --surface: #F4F1E8;
+  --border:  rgba(232,168,0,.12);
+}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Bricolage Grotesque',sans-serif;color:var(--ink);background:var(--bg);}
+
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes dot-pulse{0%,100%{box-shadow:0 0 0 2px rgba(34,197,94,.2)}50%{box-shadow:0 0 0 5px rgba(34,197,94,.07)}}
+@keyframes pin-pulse{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(2.4);opacity:0}}
+@keyframes beacon{0%,100%{box-shadow:0 0 0 0 rgba(232,82,42,.45)}60%{box-shadow:0 0 0 10px rgba(232,82,42,0)}}
+@keyframes slide-in{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ─── APP SHELL ──────────────────────────────── */
+.app{
+  display:grid;
+  grid-template-columns:260px 1fr 320px;
+  grid-template-rows:100vh;
+  height:100vh;
+}
+
+/* ─── SIDEBAR ────────────────────────────────── */
+.sidebar{
+  background:var(--bg);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+
+.sidebar-logo{
+  padding:20px 20px 0;
+  display:flex;align-items:center;gap:9px;
+  font-family:'Anton',sans-serif;font-size:16px;letter-spacing:.05em;
+  border-bottom:1px solid var(--border);
+  padding-bottom:18px;
+}
+.logo-disc{
+  width:22px;height:22px;border-radius:50%;
+  background:conic-gradient(from -10deg,#FFE898 0deg 25deg,#E8A800 25deg 65deg,#FFD040 65deg 110deg,#B87A00 110deg 155deg,#FFE07A 155deg 195deg,#E09000 195deg 240deg,#FFC72C 240deg 285deg,#B07000 285deg 325deg,#FFE898 325deg 360deg);
+  box-shadow:0 2px 8px rgba(232,168,0,.28);
+  animation:spin 20s linear infinite;flex-shrink:0;
+}
+
+.sidebar-section{padding:16px 16px 0;}
+.sidebar-label{
+  font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--mid);margin-bottom:8px;
+  padding:0 4px;
+}
+
+/* live strip */
+.live-strip{
+  display:flex;align-items:center;gap:7px;
+  background:rgba(34,197,94,.07);
+  border:1px solid rgba(34,197,94,.15);
+  border-radius:10px;padding:9px 12px;
+  margin-bottom:16px;
+}
+.ldot{width:6px;height:6px;border-radius:50%;background:#22C55E;flex-shrink:0;animation:dot-pulse 2s ease-in-out infinite;}
+.live-txt{font-size:11px;font-weight:600;color:var(--ink);}
+.live-txt em{font-style:normal;color:#16A34A;font-weight:700;}
+
+/* beach list */
+.beach-list{
+  flex:1;overflow-y:auto;padding:0 16px 16px;
+}
+.beach-list::-webkit-scrollbar{width:3px;}
+.beach-list::-webkit-scrollbar-track{background:transparent;}
+.beach-list::-webkit-scrollbar-thumb{background:rgba(232,168,0,.2);border-radius:3px;}
+
+.beach-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 10px;border-radius:12px;
+  cursor:pointer;transition:background .15s;margin-bottom:3px;
+}
+.beach-item:hover{background:rgba(232,168,0,.06);}
+.beach-item.active{background:rgba(0,158,142,.08);border:1px solid rgba(0,158,142,.12);}
+
+.bi-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;border:1.5px solid white;box-shadow:0 1px 4px rgba(0,0,0,.2);}
+.bi-dot.green{background:#22C55E;}
+.bi-dot.red{background:var(--coral);}
+.bi-dot.orange{background:var(--gold-lt);}
+
+.bi-info{flex:1;min-width:0;}
+.bi-name{font-size:12px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bi-loc{font-size:10px;color:var(--mid);}
+
+.bi-badge{font-size:9.5px;font-weight:700;padding:3px 8px;border-radius:100px;flex-shrink:0;}
+.bi-badge.green{background:rgba(34,197,94,.1);color:#16A34A;}
+.bi-badge.red{background:rgba(232,82,42,.1);color:var(--coral);}
+.bi-badge.orange{background:rgba(232,168,0,.1);color:var(--gold-dk);}
+
+/* sidebar bottom */
+.sidebar-bottom{
+  border-top:1px solid var(--border);
+  padding:14px 16px;
+  display:flex;flex-direction:column;gap:8px;
+}
+.premium-pill{
+  display:flex;align-items:center;gap:9px;
+  background:linear-gradient(135deg,#0D1E1C,#0A1714);
+  border-radius:14px;padding:12px 14px;cursor:pointer;
+  border:1px solid rgba(255,199,44,.12);
+  transition:transform .12s;
+}
+.premium-pill:hover{transform:translateY(-1px);}
+.pp-icon{font-size:18px;flex-shrink:0;}
+.pp-info{flex:1;}
+.pp-title{font-size:11.5px;font-weight:700;color:white;margin-bottom:1px;}
+.pp-sub{font-size:9.5px;color:rgba(255,255,255,.4);}
+.pp-arrow{font-size:13px;color:var(--gold-lt);}
+
+.user-row{
+  display:flex;align-items:center;gap:9px;padding:6px 4px;
+}
+.user-av{
+  width:28px;height:28px;border-radius:50%;
+  background:linear-gradient(135deg,#4ECDC4,#44A08D);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;color:white;flex-shrink:0;
+}
+.user-info{flex:1;}
+.user-name{font-size:12px;font-weight:700;color:var(--ink);}
+.user-plan{font-size:10px;color:var(--mid);}
+
+/* ─── MAP AREA ───────────────────────────────── */
+.map-area{
+  position:relative;overflow:hidden;
+  background:linear-gradient(145deg,#C8E8F4 0%,#B8DCF0 40%,#C4EAE6 100%);
+}
+
+/* topographic overlay */
+.map-area::before{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:1;
+  background-image:
+    repeating-radial-gradient(circle at 52% 48%,transparent 0,transparent 48px,rgba(0,100,130,.03) 49px,transparent 50px),
+    repeating-radial-gradient(circle at 52% 48%,transparent 0,transparent 98px,rgba(0,100,130,.025) 99px,transparent 100px);
+}
+
+/* island */
+.island{
+  position:absolute;top:50%;left:52%;
+  transform:translate(-50%,-52%);
+  width:360px;height:270px;
+  background:linear-gradient(145deg,#C8E8C0,#B4D8A8 60%,#A8CC9C);
+  border-radius:42% 56% 48% 62% / 52% 42% 58% 46%;
+  box-shadow:0 10px 40px rgba(0,80,40,.15),inset 0 2px 10px rgba(255,255,255,.25);
+  z-index:2;
+}
+.island::before{content:'';position:absolute;inset:10px;background:linear-gradient(145deg,rgba(255,255,255,.1),transparent);border-radius:inherit;}
+
+/* pins */
+.pin{
+  position:absolute;z-index:4;cursor:pointer;
+  transform:translate(-50%,-50%);
+}
+.pin-dot{
+  width:16px;height:16px;border-radius:50%;
+  border:3px solid white;
+  box-shadow:0 2px 12px rgba(0,0,0,.25);
+  position:relative;z-index:2;
+  transition:transform .2s;
+}
+.pin:hover .pin-dot{transform:scale(1.25);}
+.pin.active .pin-dot{transform:scale(1.4);box-shadow:0 0 0 4px rgba(0,158,142,.3),0 2px 12px rgba(0,0,0,.25);}
+.pin-ring{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:16px;height:16px;border-radius:50%;
+  animation:pin-pulse 2.5s ease-out infinite;z-index:1;
+}
+.pin.green .pin-dot{background:#22C55E;}
+.pin.green .pin-ring{border:2px solid rgba(34,197,94,.4);}
+.pin.red .pin-dot{background:var(--coral);animation:beacon 2s ease-in-out infinite;}
+.pin.red .pin-ring{border:2px solid rgba(232,82,42,.4);}
+.pin.orange .pin-dot{background:var(--gold-lt);}
+.pin.orange .pin-ring{border:2px solid rgba(255,199,44,.4);}
+
+.pin-label{
+  position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);
+  background:rgba(13,13,13,.88);color:white;
+  font-size:10px;font-weight:600;white-space:nowrap;
+  padding:4px 9px;border-radius:7px;
+  pointer-events:none;backdrop-filter:blur(8px);
+  opacity:0;transition:opacity .18s;
+}
+.pin.active .pin-label,.pin:hover .pin-label{opacity:1;}
+
+/* pin positions */
+.pa{top:29%;left:61%;} .pb{top:46%;left:74%;} .pc{top:65%;left:57%;}
+.pd{top:36%;left:34%;} .pe{top:57%;left:30%;} .pf2{top:72%;left:43%;}
+.pg{top:19%;left:50%;} .ph2{top:51%;left:65%;} .pi{top:40%;left:55%;}
+
+/* map controls */
+.map-controls{
+  position:absolute;bottom:24px;left:24px;z-index:5;
+  display:flex;flex-direction:column;gap:4px;
+}
+.map-btn{
+  width:36px;height:36px;
+  background:rgba(255,255,255,.92);
+  border:1px solid rgba(0,0,0,.08);
+  border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;cursor:pointer;
+  box-shadow:0 2px 12px rgba(0,0,0,.1);
+  backdrop-filter:blur(8px);
+  transition:background .15s;
+}
+.map-btn:hover{background:white;}
+
+/* map top bar */
+.map-topbar{
+  position:absolute;top:16px;left:50%;transform:translateX(-50%);
+  z-index:5;
+  background:rgba(255,255,255,.88);
+  border:1px solid rgba(232,168,0,.15);
+  border-radius:100px;padding:8px 16px;
+  display:flex;align-items:center;gap:10px;
+  backdrop-filter:blur(12px);
+  box-shadow:0 4px 20px rgba(0,0,0,.08);
+}
+.mt-dot{width:6px;height:6px;border-radius:50%;background:#22C55E;animation:dot-pulse 2s ease-in-out infinite;}
+.mt-txt{font-size:12px;font-weight:600;color:var(--ink);}
+.mt-txt em{font-style:normal;color:var(--gold-dk);font-weight:700;}
+.mt-badge{background:linear-gradient(135deg,var(--teal-lt),var(--teal));color:white;font-size:8px;font-weight:800;letter-spacing:.12em;padding:4px 9px;border-radius:100px;}
+
+/* legend */
+.map-leg{
+  position:absolute;bottom:24px;right:24px;z-index:5;
+  background:rgba(255,255,255,.9);
+  border:1px solid rgba(0,0,0,.07);
+  border-radius:14px;padding:12px 16px;
+  box-shadow:0 6px 24px rgba(0,0,0,.07);
+  backdrop-filter:blur(10px);
+}
+.ml-title{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mid);margin-bottom:8px;}
+.ml-row{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:600;color:var(--ink);margin-bottom:5px;}
+.ml-row:last-child{margin-bottom:0;}
+.ml-dot{width:10px;height:10px;border-radius:50%;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,.2);flex-shrink:0;}
+
+/* ─── DETAIL PANEL ───────────────────────────── */
+.detail{
+  background:var(--bg);
+  border-left:1px solid var(--border);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  animation:slide-in .3s cubic-bezier(.16,1,.3,1);
+}
+
+.detail-header{
+  padding:20px 20px 16px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.detail-title{font-size:13px;font-weight:700;color:var(--mid);letter-spacing:.08em;text-transform:uppercase;}
+.detail-close{
+  width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.05);
+  border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;
+}
+
+.detail-scroll{flex:1;overflow-y:auto;padding:20px;}
+.detail-scroll::-webkit-scrollbar{width:3px;}
+.detail-scroll::-webkit-scrollbar-thumb{background:rgba(232,168,0,.2);border-radius:3px;}
+
+/* beach hero */
+.beach-hero{
+  background:linear-gradient(145deg,#EAF6F4,#E0F4F0);
+  border:1px solid rgba(0,158,142,.1);
+  border-radius:20px;padding:20px;margin-bottom:16px;
+  display:flex;align-items:center;gap:14px;
+}
+.beach-emoji{font-size:36px;}
+.beach-head{flex:1;}
+.beach-name-big{font-family:'Anton',sans-serif;font-size:22px;letter-spacing:.02em;color:var(--ink);line-height:1;margin-bottom:4px;}
+.beach-loc{font-size:12px;color:var(--mid);font-weight:500;}
+.status-badge{
+  padding:8px 14px;border-radius:100px;
+  font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+}
+.status-green{background:rgba(34,197,94,.12);color:#16A34A;border:1px solid rgba(34,197,94,.2);}
+.status-red{background:rgba(232,82,42,.1);color:var(--coral);border:1px solid rgba(232,82,42,.18);}
+
+/* stats grid */
+.stats-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;
+  margin-bottom:16px;
+}
+.stat-card{
+  background:white;border:1px solid rgba(0,0,0,.05);
+  border-radius:14px;padding:14px;
+  box-shadow:0 2px 10px rgba(0,0,0,.04);
+}
+.stat-label{font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mid);margin-bottom:4px;}
+.stat-value{font-size:18px;font-weight:800;color:var(--ink);line-height:1.1;}
+.stat-sub{font-size:10px;color:var(--mid);margin-top:2px;}
+
+/* forecast strip — premium */
+.forecast-section{margin-bottom:16px;}
+.forecast-title{
+  font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--mid);margin-bottom:10px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.forecast-lock{
+  display:flex;align-items:center;gap:5px;
+  font-size:10px;font-weight:700;color:var(--gold-dk);
+  background:rgba(232,168,0,.1);border-radius:100px;padding:3px 9px;
+}
+
+.forecast-days{display:flex;gap:6px;}
+.forecast-day{
+  flex:1;
+  background:white;border:1px solid rgba(0,0,0,.05);
+  border-radius:12px;padding:10px 8px;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  text-align:center;
+}
+.fd-day{font-size:9.5px;font-weight:700;color:var(--mid);}
+.fd-icon{font-size:16px;}
+.fd-status{font-size:9px;font-weight:700;border-radius:100px;padding:2px 7px;}
+.fd-status.green{background:rgba(34,197,94,.1);color:#16A34A;}
+.fd-status.orange{background:rgba(232,168,0,.1);color:var(--gold-dk);}
+.fd-status.red{background:rgba(232,82,42,.1);color:var(--coral);}
+
+/* premium locked overlay */
+.forecast-locked{
+  position:relative;
+  background:linear-gradient(145deg,#0D1E1C,#0A1714);
+  border-radius:16px;padding:20px;
+  margin-bottom:16px;overflow:hidden;
+}
+.forecast-locked::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,199,44,.3),transparent);
+}
+.fl-tag{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(255,199,44,.1);border:1px solid rgba(255,199,44,.15);
+  border-radius:100px;padding:4px 10px;
+  font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--gold-lt);margin-bottom:10px;
+}
+.fl-title{font-size:14px;font-weight:700;color:white;margin-bottom:4px;}
+.fl-sub{font-size:12px;color:rgba(255,255,255,.45);margin-bottom:14px;}
+.fl-preview{
+  display:flex;gap:5px;margin-bottom:14px;
+  filter:blur(2px);opacity:.4;
+}
+.fl-day{flex:1;background:rgba(255,255,255,.06);border-radius:10px;padding:8px;text-align:center;}
+.fl-d{font-size:9px;color:rgba(255,255,255,.5);margin-bottom:4px;}
+.fl-i{font-size:14px;}
+.fl-btn{
+  width:100%;
+  background:linear-gradient(135deg,var(--gold-lt),var(--gold));
+  color:var(--ink);border:none;border-radius:12px;
+  padding:13px;
+  font-family:'Anton',sans-serif;font-size:14px;letter-spacing:.05em;text-transform:uppercase;
+  cursor:pointer;
+  box-shadow:0 6px 20px rgba(232,168,0,.35);
+  position:relative;overflow:hidden;
+}
+
+/* recent reports */
+.reports-section{margin-bottom:8px;}
+.report-item{
+  display:flex;gap:10px;padding:10px 0;
+  border-bottom:1px solid rgba(0,0,0,.05);
+}
+.report-item:last-child{border-bottom:none;}
+.rep-av{
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;color:white;flex-shrink:0;
+}
+.rep-body{flex:1;}
+.rep-name{font-size:11.5px;font-weight:700;color:var(--ink);}
+.rep-msg{font-size:11px;color:var(--mid);line-height:1.45;margin-top:1px;}
+.rep-time{font-size:10px;color:rgba(104,104,104,.6);margin-top:2px;}
+
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ─── SIDEBAR ─── -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-disc"></div>
+      SARGASSES.MQ
+    </div>
+
+    <div class="sidebar-section">
+      <div class="live-strip">
+        <div class="ldot"></div>
+        <span class="live-txt"><em>47 plages</em> · mis à jour il y a 4 min</span>
+      </div>
+      <div class="sidebar-label">Plages ce matin</div>
+    </div>
+
+    <div class="beach-list">
+      <div class="beach-item active" onclick="selectBeach('arlet')">
+        <div class="bi-dot green"></div>
+        <div class="bi-info"><div class="bi-name">Grande Anse d'Arlet</div><div class="bi-loc">Sud · 12 km</div></div>
+        <div class="bi-badge green">Propre</div>
+      </div>
+      <div class="beach-item" onclick="selectBeach('anse-mitan')">
+        <div class="bi-dot green"></div>
+        <div class="bi-info"><div class="bi-name">Anse Mitan</div><div class="bi-loc">Sud · 8 km</div></div>
+        <div class="bi-badge green">Propre</div>
+      </div>
+      <div class="beach-item" onclick="selectBeach('tartane')">
+        <div class="bi-dot green"></div>
+        <div class="bi-info"><div class="bi-name">Tartane</div><div class="bi-loc">Nord-Est · 35 km</div></div>
+        <div class="bi-badge green">Propre</div>
+      </div>
+      <div class="beach-item" onclick="selectBeach('diamant')">
+        <div class="bi-dot orange"></div>
+        <div class="bi-info"><div class="bi-name">Le Diamant</div><div class="bi-loc">Sud · 25 km</div></div>
+        <div class="bi-badge orange">Modéré</div>
+      </div>
+      <div class="beach-item" onclick="selectBeach('ste-luce')">
+        <div class="bi-dot orange"></div>
+        <div class="bi-info"><div class="bi-name">Sainte-Luce</div><div class="bi-loc">Sud · 20 km</div></div>
+        <div class="bi-badge orange">Modéré</div>
+      </div>
+      <div class="beach-item" onclick="selectBeach('ste-anne')">
+        <div class="bi-dot red"></div>
+        <div class="bi-info"><div class="bi-name">Sainte-Anne</div><div class="bi-loc">Extrême Sud · 38 km</div></div>
+        <div class="bi-badge red">Éviter</div>
+      </div>
+      <div class="beach-item" onclick="selectBeach('vauclin')">
+        <div class="bi-dot red"></div>
+        <div class="bi-info"><div class="bi-name">Le Vauclin</div><div class="bi-loc">Sud-Est · 32 km</div></div>
+        <div class="bi-badge red">Éviter</div>
+      </div>
+      <div class="beach-item" onclick="">
+        <div class="bi-dot green"></div>
+        <div class="bi-info"><div class="bi-name">Anse Noire</div><div class="bi-loc">Sud · 18 km</div></div>
+        <div class="bi-badge green">Propre</div>
+      </div>
+      <div class="beach-item">
+        <div class="bi-dot green"></div>
+        <div class="bi-info"><div class="bi-name">Anse Dufour</div><div class="bi-loc">Sud · 17 km</div></div>
+        <div class="bi-badge green">Propre</div>
+      </div>
+    </div>
+
+    <div class="sidebar-bottom">
+      <div class="premium-pill">
+        <div class="pp-icon">⭐</div>
+        <div class="pp-info">
+          <div class="pp-title">Passer à Premium</div>
+          <div class="pp-sub">Prévisions 7 jours · 4,99€/mois</div>
+        </div>
+        <div class="pp-arrow">→</div>
+      </div>
+      <div class="user-row">
+        <div class="user-av">Y</div>
+        <div class="user-info">
+          <div class="user-name">Yacov</div>
+          <div class="user-plan">Gratuit</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── MAP ─── -->
+  <div class="map-area">
+    <div class="map-topbar">
+      <div class="mt-dot"></div>
+      <span class="mt-txt"><em>47 plages</em> · Martinique en direct</span>
+      <div class="mt-badge">LIVE</div>
+    </div>
+
+    <div class="island"></div>
+
+    <!-- Pins -->
+    <div class="pin green pa active" onclick="selectBeach('arlet')"><div class="pin-ring"></div><div class="pin-dot"></div><div class="pin-label">Grande Anse d'Arlet</div></div>
+    <div class="pin green pb" onclick="selectBeach('anse-mitan')"><div class="pin-ring"></div><div class="pin-dot"></div><div class="pin-label">Anse Mitan</div></div>
+    <div class="pin red pc" onclick="selectBeach('ste-anne')"><div class="pin-ring"></div><div class="pin-dot"></div><div class="pin-label">Sainte-Anne · Éviter</div></div>
+    <div class="pin orange pd" onclick="selectBeach('diamant')"><div class="pin-ring"></div><div class="pin-dot"></div><div class="pin-label">Le Diamant</div></div>
+    <div class="pin green pe"><div class="pin-ring"></div><div class="pin-dot"></div><div class="pin-label">Anses d'Arlet</div></div>
+    <div class="pin red pf2" onclick="selectBeach('vauclin')"><div class="pin-ring"></div><div class="pin-dot"></div><div class="pin-label">Le Vauclin · Éviter</div></div>
+    <div class="pin green pg" onclick="selectBeach('tartane')"><div class="pin-ring"></div><div class="pin-dot"></div><div class="pin-label">Tartane</div></div>
+    <div class="pin orange ph2"><div class="pin-ring"></div><div class="pin-dot"></div><div class="pin-label">Sainte-Luce</div></div>
+    <div class="pin green pi"><div class="pin-ring"></div><div class="pin-dot"></div><div class="pin-label">Anse Noire</div></div>
+
+    <div class="map-controls">
+      <div class="map-btn">＋</div>
+      <div class="map-btn">－</div>
+      <div class="map-btn">📍</div>
+    </div>
+
+    <div class="map-leg">
+      <div class="ml-title">Statut plages</div>
+      <div class="ml-row"><div class="ml-dot" style="background:#22C55E;"></div>Propre</div>
+      <div class="ml-row"><div class="ml-dot" style="background:var(--gold-lt);"></div>Modéré</div>
+      <div class="ml-row"><div class="ml-dot" style="background:var(--coral);"></div>Éviter</div>
+    </div>
+  </div>
+
+  <!-- ─── DETAIL PANEL ─── -->
+  <div class="detail" id="detail">
+    <div class="detail-header">
+      <div class="detail-title">Détail</div>
+      <button class="detail-close">✕</button>
+    </div>
+    <div class="detail-scroll">
+
+      <div class="beach-hero">
+        <div class="beach-emoji">🏖️</div>
+        <div class="beach-head">
+          <div class="beach-name-big">Grande Anse<br>d'Arlet</div>
+          <div class="beach-loc">Sud · 12 km de Fort-de-France</div>
+        </div>
+        <div class="status-badge status-green">✓ Propre</div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Sargasses</div>
+          <div class="stat-value">Absent</div>
+          <div class="stat-sub">Depuis 3 jours</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Tendance</div>
+          <div class="stat-value">↗ Stable</div>
+          <div class="stat-sub">7 derniers jours</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Mis à jour</div>
+          <div class="stat-value">4 min</div>
+          <div class="stat-sub">Satellite + terrain</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Signalements</div>
+          <div class="stat-value">12</div>
+          <div class="stat-sub">Cette semaine</div>
+        </div>
+      </div>
+
+      <!-- Forecast free day -->
+      <div class="forecast-section">
+        <div class="forecast-title">
+          Aujourd'hui / Demain
+        </div>
+        <div class="forecast-days">
+          <div class="forecast-day">
+            <div class="fd-day">Lun</div>
+            <div class="fd-icon">🏖️</div>
+            <div class="fd-status green">Propre</div>
+          </div>
+          <div class="forecast-day">
+            <div class="fd-day">Mar</div>
+            <div class="fd-icon">🏖️</div>
+            <div class="fd-status green">Propre</div>
+          </div>
+          <div class="forecast-day" style="opacity:.35;filter:blur(1.5px);">
+            <div class="fd-day">Mer</div>
+            <div class="fd-icon">⚡</div>
+            <div class="fd-status orange">Modéré</div>
+          </div>
+          <div class="forecast-day" style="opacity:.2;filter:blur(2px);">
+            <div class="fd-day">Jeu</div>
+            <div class="fd-icon">🚫</div>
+            <div class="fd-status red">Éviter</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Premium upsell -->
+      <div class="forecast-locked">
+        <div class="fl-tag">⭐ Premium</div>
+        <div class="fl-title">Prévisions 7 jours débloquées</div>
+        <div class="fl-sub">Vois les 7 prochains jours pour toutes tes plages</div>
+        <div class="fl-preview">
+          <div class="fl-day"><div class="fl-d">Ven</div><div class="fl-i">🚫</div></div>
+          <div class="fl-day"><div class="fl-d">Sam</div><div class="fl-i">⚡</div></div>
+          <div class="fl-day"><div class="fl-d">Dim</div><div class="fl-i">🏖️</div></div>
+          <div class="fl-day"><div class="fl-d">Lun</div><div class="fl-i">🏖️</div></div>
+          <div class="fl-day"><div class="fl-d">Mar</div><div class="fl-i">🏖️</div></div>
+        </div>
+        <button class="fl-btn">Activer Premium — 4,99€/mois</button>
+      </div>
+
+      <!-- Community reports -->
+      <div class="reports-section">
+        <div class="forecast-title">Signalements récents</div>
+        <div class="report-item">
+          <div class="rep-av" style="background:linear-gradient(135deg,#4ECDC4,#44A08D);">M</div>
+          <div class="rep-body">
+            <div class="rep-name">Marie-Jo</div>
+            <div class="rep-msg">RAS ce matin, eau cristalline ☀️ On a passé une super journée</div>
+            <div class="rep-time">il y a 2h</div>
+          </div>
+        </div>
+        <div class="report-item">
+          <div class="rep-av" style="background:linear-gradient(135deg,#FF6B6B,#FF8E53);">R</div>
+          <div class="rep-body">
+            <div class="rep-name">Raphaël</div>
+            <div class="rep-msg">Aucune sargasse visible depuis le parking. Plage propre.</div>
+            <div class="rep-time">il y a 4h</div>
+          </div>
+        </div>
+        <div class="report-item">
+          <div class="rep-av" style="background:linear-gradient(135deg,#A18CD1,#FBC2EB);">S</div>
+          <div class="rep-body">
+            <div class="rep-name">Sylvie</div>
+            <div class="rep-msg">Parfait pour nager avec les enfants 🌊</div>
+            <div class="rep-time">il y a 6h</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+function selectBeach(id){
+  // Update sidebar active item
+  document.querySelectorAll('.beach-item').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.pin').forEach(el => el.classList.remove('active'));
+}
+</script>
+</body>
+</html>

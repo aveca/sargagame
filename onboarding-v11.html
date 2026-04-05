@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SARGASSES.MQ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --gold:    #E8A800;
+  --gold-lt: #FFC72C;
+  --gold-dk: #B87A00;
+  --teal:    #009E8E;
+  --teal-lt: #1EC8B0;
+  --coral:   #E8522A;
+  --ink:     #0D0D0D;
+  --mid:     #686868;
+  --bg:      #FDFCF7;
+}
+body{
+  background:radial-gradient(ellipse at 55% 25%,#D4D0C4 0%,#C4C0B4 100%);
+  display:flex;justify-content:center;align-items:center;min-height:100vh;
+  font-family:'Bricolage Grotesque',sans-serif;
+}
+
+/* ─── PHONE ──────────────────────────────────── */
+.phone{
+  width:390px;min-height:844px;background:var(--bg);border-radius:52px;
+  overflow:hidden;position:relative;
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,.05),
+    0 1px 0 2px rgba(255,255,255,.6),
+    0 40px 100px rgba(0,0,0,.2),
+    0 80px 180px rgba(0,0,0,.1);
+  display:flex;flex-direction:column;
+}
+.phone::before{
+  content:'';position:absolute;inset:0;z-index:40;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity:.026;mix-blend-mode:multiply;
+}
+
+/* ─── CAROUSEL ───────────────────────────────── */
+.carousel{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;}
+.slides{display:flex;width:300%;flex:1;transition:transform .45s cubic-bezier(.16,1,.3,1);}
+.slide{width:33.333%;flex-shrink:0;display:flex;flex-direction:column;min-height:844px;}
+
+/* dots */
+.dots{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:7px;z-index:30;}
+.dot-btn{width:7px;height:7px;border-radius:50%;background:rgba(0,0,0,.15);border:none;cursor:pointer;transition:all .3s;padding:0;}
+.dot-btn.active{width:22px;border-radius:4px;background:var(--gold);}
+
+/* ─── ANIMATIONS ──────────────────────────────── */
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes float-a{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes float-b{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes dot-pulse{0%,100%{box-shadow:0 0 0 2px rgba(34,197,94,.2)}50%{box-shadow:0 0 0 5px rgba(34,197,94,.07)}}
+@keyframes shine{0%,100%{left:-75%}35%,65%{left:120%}}
+@keyframes pin-pulse{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(2.2);opacity:0}}
+@keyframes beacon{0%,100%{box-shadow:0 0 0 0 rgba(232,82,42,.5)}60%{box-shadow:0 0 0 10px rgba(232,82,42,0)}}
+@keyframes satellite-scan{0%{transform:translateX(-100%)}100%{transform:translateX(400%)}}
+@keyframes count-pop{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+
+/* live counter */
+.live-counter{
+  margin:8px 20px 0;
+  display:flex;align-items:center;gap:7px;
+  padding:7px 13px;
+  background:rgba(34,197,94,.06);
+  border:1px solid rgba(34,197,94,.14);
+  border-radius:100px;
+}
+.lc-dot{width:5px;height:5px;border-radius:50%;background:#22C55E;animation:dot-pulse 1.4s ease-in-out infinite;}
+.lc-num{
+  font-size:12px;font-weight:800;color:var(--ink);
+  font-variant-numeric:tabular-nums;
+  animation:count-pop 2s ease-in-out infinite;
+}
+.lc-txt{font-size:11px;font-weight:500;color:var(--mid);}
+.lc-txt em{font-style:normal;color:#16A34A;font-weight:700;}
+
+/* ══════════════════════════════════════════════
+   SLIDE 1
+══════════════════════════════════════════════ */
+
+/* live strip */
+.s1-strip{
+  margin:28px 20px 0;
+  background:rgba(255,255,255,.75);border:1px solid rgba(232,168,0,.26);
+  border-radius:100px;padding:8px 10px 8px 14px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:relative;z-index:10;backdrop-filter:blur(16px);
+  box-shadow:0 2px 18px rgba(232,168,0,.09),inset 0 1px 0 rgba(255,255,255,.95);
+}
+.strip-left{display:flex;align-items:center;gap:8px;}
+.ldot{width:7px;height:7px;border-radius:50%;background:#22C55E;flex-shrink:0;animation:dot-pulse 2s ease-in-out infinite;}
+.strip-txt{font-size:11.5px;font-weight:600;color:var(--ink);}
+.strip-txt em{font-style:normal;color:var(--gold-dk);font-weight:700;}
+.lbadge{background:linear-gradient(135deg,var(--teal-lt),var(--teal));color:white;font-size:9px;font-weight:800;letter-spacing:.14em;padding:5px 13px;border-radius:100px;box-shadow:0 3px 12px rgba(0,158,142,.32);}
+
+/* satellite badge — valeur perçue */
+.satellite-badge{
+  margin:10px 20px 0;
+  background:rgba(13,13,13,.06);
+  border:1px solid rgba(13,13,13,.08);
+  border-radius:100px;
+  padding:6px 14px;
+  display:flex;align-items:center;gap:7px;
+  position:relative;overflow:hidden;
+}
+.satellite-badge::after{
+  content:'';position:absolute;top:0;bottom:0;left:0;width:60px;
+  background:linear-gradient(90deg,transparent,rgba(0,158,142,.08),transparent);
+  animation:satellite-scan 3s ease-in-out infinite;
+}
+.sat-icon{font-size:12px;}
+.sat-txt{font-size:10px;font-weight:600;color:var(--mid);}
+.sat-txt em{font-style:normal;color:var(--teal);font-weight:700;}
+.sat-fresh{
+  margin-left:auto;
+  font-size:9px;font-weight:700;
+  background:rgba(0,158,142,.1);color:var(--teal);
+  padding:2px 7px;border-radius:100px;
+  letter-spacing:.06em;
+}
+
+/* hero disc */
+.s1-hero{
+  position:relative;height:288px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;z-index:1;
+}
+.s1-hero::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:60px;
+  background:linear-gradient(to bottom,transparent,var(--bg));pointer-events:none;z-index:8;
+}
+
+.disc{
+  width:210px;height:210px;border-radius:50%;
+  background:conic-gradient(from -10deg,#FFE898 0deg 25deg,#E8A800 25deg 65deg,#FFD040 65deg 110deg,#B87A00 110deg 155deg,#FFE07A 155deg 195deg,#E09000 195deg 240deg,#FFC72C 240deg 285deg,#B07000 285deg 325deg,#FFE898 325deg 360deg);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 3px rgba(255,255,255,.85),0 0 0 5px rgba(232,168,0,.18),0 8px 48px rgba(232,168,0,.28),0 20px 50px rgba(0,0,0,.08);
+  animation:spin 22s linear infinite;z-index:6;position:relative;
+}
+.disc::before{content:'';position:absolute;top:7%;left:14%;width:66%;height:36%;border-radius:50%;background:radial-gradient(ellipse,rgba(255,255,255,.35) 0%,transparent 70%);transform:rotate(-12deg);pointer-events:none;}
+.disc-inner{
+  width:84px;height:84px;border-radius:50%;
+  background:linear-gradient(150deg,#FFFDF5 40%,#F0EDD5 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  animation:spin 22s linear infinite reverse;
+  box-shadow:inset 0 2px 6px rgba(255,255,255,.95),inset 0 -3px 8px rgba(184,122,0,.14),0 3px 18px rgba(0,0,0,.13);
+  position:relative;z-index:2;
+}
+.disc-label{font-family:'Anton',sans-serif;font-size:10px;color:var(--gold-dk);letter-spacing:.07em;text-align:center;line-height:1.05;}
+.disc-sub{font-size:7px;font-weight:800;color:var(--teal);letter-spacing:.15em;text-transform:uppercase;}
+
+/* floating cards */
+.card-bad{
+  position:absolute;top:38px;left:14px;
+  background:rgba(255,255,255,.96);border:1px solid rgba(232,82,42,.2);
+  box-shadow:0 6px 24px rgba(232,82,42,.1),inset 0 1px 0 white;
+  border-radius:16px;padding:10px 14px;
+  display:flex;align-items:center;gap:9px;
+  animation:float-b 4s ease-in-out .8s infinite;z-index:12;
+}
+.cb-icon{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#FFE4DC,#FFCAB8);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.cb-info{display:flex;flex-direction:column;gap:2px;}
+.cb-label{font-size:9.5px;font-weight:700;color:var(--coral);letter-spacing:.08em;text-transform:uppercase;}
+.cb-val{font-size:12px;font-weight:800;color:var(--ink);line-height:1.2;}
+.cb-sub{font-size:9.5px;color:var(--mid);}
+
+.card-good{
+  position:absolute;bottom:32px;right:14px;
+  background:rgba(255,255,255,.97);border:1px solid rgba(0,158,142,.13);
+  box-shadow:0 8px 32px rgba(0,0,0,.08),inset 0 1px 0 white;
+  border-radius:18px;padding:11px 15px;
+  display:flex;align-items:center;gap:10px;
+  animation:float-a 3.6s ease-in-out infinite;z-index:12;min-width:172px;
+}
+.cg-icon{width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,#D6F5EF,#A8EDE4);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.cg-info{display:flex;flex-direction:column;gap:3px;}
+.cg-name{font-size:11.5px;font-weight:700;color:var(--ink);white-space:nowrap;}
+.cg-status{display:flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:var(--teal);}
+.cg-check{width:12px;height:12px;border-radius:50%;background:var(--teal);display:inline-flex;align-items:center;justify-content:center;font-size:7px;color:white;flex-shrink:0;}
+
+/* copy */
+.s1-copy{padding:4px 28px 0;flex:1;display:flex;flex-direction:column;}
+
+/* eyebrow — la douleur */
+.eyebrow{
+  font-size:13px;font-weight:500;color:var(--mid);
+  margin-bottom:8px;font-style:italic;
+}
+
+h1{
+  font-family:'Anton',sans-serif;
+  font-size:66px;line-height:.88;letter-spacing:-.025em;text-transform:uppercase;
+  color:var(--ink);margin-bottom:10px;
+}
+h1 .g{
+  display:inline-block;
+  background:linear-gradient(138deg,#FFD860 0%,#E8A800 48%,#B07000 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  position:relative;
+}
+h1 .g::after{content:'';position:absolute;bottom:3px;left:0;right:4px;height:4px;background:linear-gradient(90deg,#FFD860,#E8A800 60%,transparent);border-radius:3px;opacity:.22;}
+h1 .t{display:inline-block;color:var(--teal);}
+
+.tagline{font-size:13.5px;color:var(--mid);font-weight:400;line-height:1.6;margin-bottom:13px;max-width:270px;}
+.tagline strong{color:var(--ink);font-weight:700;}
+
+/* social proof — locale et viscérale */
+.proof{
+  display:flex;align-items:flex-start;gap:0;
+  margin-bottom:13px;padding:10px 13px;
+  background:rgba(255,199,44,.07);border:1px solid rgba(232,168,0,.13);
+  border-radius:14px;
+}
+.proof-avs{display:flex;flex-direction:column;gap:6px;flex:1;}
+.proof-row{display:flex;align-items:center;gap:8px;}
+.av{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--bg);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:white;flex-shrink:0;}
+.av1{background:linear-gradient(135deg,#FF6B6B,#FF8E53);}
+.av2{background:linear-gradient(135deg,#4ECDC4,#44A08D);}
+.av3{background:linear-gradient(135deg,#A18CD1,#FBC2EB);}
+.av4{background:linear-gradient(135deg,#FDDB92,#D1913C);}
+.proof-quote{font-size:10.5px;color:var(--mid);line-height:1.4;}
+.proof-quote strong{color:var(--ink);font-weight:700;}
+.proof-divider{width:100%;height:1px;background:rgba(232,168,0,.1);margin:2px 0;}
+
+/* cta */
+.cta{margin-top:auto;padding-bottom:48px;display:flex;flex-direction:column;gap:8px;}
+.btn-main{
+  background:linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%);
+  color:var(--ink);border:none;border-radius:22px;
+  padding:19px 20px 19px 28px;
+  font-family:'Anton',sans-serif;font-size:20px;letter-spacing:.06em;text-transform:uppercase;
+  cursor:pointer;display:flex;align-items:center;justify-content:space-between;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.58),inset 0 -2px 0 rgba(0,0,0,.11),0 8px 28px rgba(232,168,0,.48);
+  transition:transform .12s;position:relative;overflow:hidden;
+}
+.btn-main::before{content:'';position:absolute;top:0;left:0;right:0;height:50%;background:linear-gradient(180deg,rgba(255,255,255,.28),transparent);border-radius:22px 22px 0 0;pointer-events:none;}
+.btn-main::after{content:'';position:absolute;top:0;left:-75%;width:44%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-18deg);animation:shine 4.5s cubic-bezier(.4,0,.6,1) 1.8s infinite;}
+.btn-label{position:relative;z-index:1;}
+.btn-arrow{width:44px;height:44px;background:rgba(0,0,0,.11);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;position:relative;z-index:1;}
+.micro{text-align:center;font-size:11px;color:var(--mid);display:flex;align-items:center;justify-content:center;gap:6px;}
+.mdot{width:3px;height:3px;border-radius:50%;background:rgba(104,104,104,.35);}
+.btn-link{text-align:center;font-size:12px;font-weight:500;color:var(--mid);background:none;border:none;cursor:pointer;padding:3px;}
+.btn-link span{color:var(--teal);font-weight:700;text-decoration:underline;text-underline-offset:3px;}
+
+/* ══════════════════════════════════════════════
+   SLIDE 2
+══════════════════════════════════════════════ */
+.s2{background:var(--bg);}
+
+.s2-header{padding:28px 22px 0;display:flex;align-items:center;justify-content:space-between;}
+.s2-logo{font-family:'Anton',sans-serif;font-size:16px;letter-spacing:.05em;display:flex;align-items:center;gap:8px;}
+.s2-mini-disc{width:20px;height:20px;border-radius:50%;background:conic-gradient(from -10deg,#FFE898 0deg 30deg,#E8A800 30deg 80deg,#FFD040 80deg 130deg,#B87A00 130deg 180deg,#FFE898 180deg 360deg);animation:spin 20s linear infinite;box-shadow:0 2px 8px rgba(232,168,0,.28);}
+.s2-live{display:flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:var(--mid);}
+.s2-ldot{width:6px;height:6px;border-radius:50%;background:#22C55E;animation:dot-pulse 2s ease-in-out infinite;}
+
+/* eyebrow slide 2 */
+.s2-eyebrow{padding:16px 22px 0;font-size:12.5px;font-style:italic;color:var(--mid);}
+
+.s2-headline{
+  padding:6px 22px 0;
+  font-family:'Anton',sans-serif;
+  font-size:42px;line-height:.9;letter-spacing:-.02em;text-transform:uppercase;color:var(--ink);
+}
+.s2-headline .t{color:var(--teal);}
+.s2-headline .sep{color:rgba(0,0,0,.15);font-size:32px;}
+
+/* satellite badge inline */
+.sat-inline{
+  margin:10px 22px 0;
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(0,158,142,.07);border:1px solid rgba(0,158,142,.12);
+  border-radius:100px;padding:5px 12px;
+  position:relative;overflow:hidden;
+}
+.sat-inline::after{content:'';position:absolute;top:0;bottom:0;left:0;width:60px;background:linear-gradient(90deg,transparent,rgba(0,158,142,.1),transparent);animation:satellite-scan 3s ease-in-out infinite;}
+.si-txt{font-size:9.5px;font-weight:700;color:var(--teal);}
+.si-time{font-size:9px;color:var(--mid);font-weight:500;}
+
+/* map zone */
+.map-zone{
+  margin:12px 22px 0;
+  background:linear-gradient(145deg,#D8EFF8 0%,#C8E4F4 50%,#D0EEE8 100%);
+  border:1px solid rgba(0,158,142,.1);border-radius:22px;
+  position:relative;height:185px;overflow:hidden;
+}
+
+/* topo lines */
+.map-zone::before{
+  content:'';position:absolute;inset:0;
+  background-image:repeating-radial-gradient(circle at 52% 48%,transparent 0,transparent 28px,rgba(0,100,130,.03) 29px,transparent 30px);
+}
+
+.map-water-label{position:absolute;bottom:10px;left:14px;font-size:8.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(0,80,120,.4);}
+.map-mq-label{position:absolute;top:10px;left:14px;font-size:8px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(0,80,40,.4);}
+
+.island-shape{
+  position:absolute;top:50%;left:52%;transform:translate(-50%,-52%);
+  width:120px;height:90px;
+  background:linear-gradient(145deg,#C8E8C0,#B8D8B0);
+  border-radius:38% 52% 44% 58%/50% 40% 54% 44%;
+  box-shadow:0 4px 14px rgba(0,80,40,.12),inset 0 1px 4px rgba(255,255,255,.2);
+}
+
+/* pins */
+.bpin{position:absolute;transform:translate(-50%,-50%);}
+.bpin-dot{width:12px;height:12px;border-radius:50%;border:2px solid white;box-shadow:0 1px 6px rgba(0,0,0,.2);position:relative;z-index:2;}
+.bpin-ring{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;animation:pin-pulse 2.5s ease-out infinite;z-index:1;}
+.bpin.g .bpin-dot{background:#22C55E;} .bpin.g .bpin-ring{border:2px solid rgba(34,197,94,.3);}
+.bpin.r .bpin-dot{background:var(--coral);animation:beacon 2s ease-in-out infinite;} .bpin.r .bpin-ring{border:2px solid rgba(232,82,42,.3);}
+.bpin.o .bpin-dot{background:var(--gold-lt);} .bpin.o .bpin-ring{border:2px solid rgba(255,199,44,.3);}
+.p1{top:28%;left:61%;} .p2{top:45%;left:74%;} .p3{top:65%;left:57%;}
+.p4{top:34%;left:35%;} .p5{top:57%;left:31%;} .p6{top:72%;left:43%;}
+.p7{top:19%;left:49%;} .p8{top:51%;left:65%;}
+
+.map-legend-mini{position:absolute;bottom:8px;right:10px;display:flex;gap:8px;}
+.mleg{display:flex;align-items:center;gap:4px;font-size:8px;font-weight:700;color:var(--mid);}
+.mleg-dot{width:7px;height:7px;border-radius:50%;border:1.5px solid white;}
+
+/* beach list */
+.beach-list{margin:10px 22px 0;display:flex;flex-direction:column;gap:6px;}
+.beach-row{
+  background:white;border-radius:14px;padding:10px 14px;
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 2px 10px rgba(0,0,0,.04);border:1px solid rgba(0,0,0,.04);
+}
+.br-left{display:flex;align-items:center;gap:9px;}
+.br-emoji{font-size:17px;}
+.br-name{font-size:12px;font-weight:700;color:var(--ink);}
+.br-dist{font-size:10px;color:var(--mid);}
+.br-status{font-size:10px;font-weight:700;padding:4px 10px;border-radius:100px;}
+.brs-g{background:rgba(34,197,94,.1);color:#16A34A;}
+.brs-r{background:rgba(232,82,42,.1);color:var(--coral);}
+.brs-o{background:rgba(232,168,0,.1);color:var(--gold-dk);}
+
+.s2-cta{margin-top:auto;padding:10px 22px 48px;}
+.s2-btn{
+  width:100%;background:linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%);
+  color:var(--ink);border:none;border-radius:20px;
+  padding:17px 20px;font-family:'Anton',sans-serif;font-size:19px;letter-spacing:.06em;text-transform:uppercase;
+  cursor:pointer;display:flex;align-items:center;justify-content:space-between;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 8px 28px rgba(232,168,0,.44);
+  position:relative;overflow:hidden;
+}
+.s2-btn::after{content:'';position:absolute;top:0;left:-75%;width:44%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);transform:skewX(-18deg);animation:shine 4.5s cubic-bezier(.4,0,.6,1) 1.8s infinite;}
+
+/* ══════════════════════════════════════════════
+   SLIDE 3 — PREMIUM
+══════════════════════════════════════════════ */
+.s3{background:var(--bg);}
+
+.s3-top{padding:28px 22px 0;display:flex;align-items:center;justify-content:space-between;}
+.s3-logo{font-family:'Anton',sans-serif;font-size:16px;letter-spacing:.05em;display:flex;align-items:center;gap:8px;}
+.s3-mini-disc{width:20px;height:20px;border-radius:50%;background:conic-gradient(from -10deg,#FFE898 0deg 30deg,#E8A800 30deg 80deg,#FFD040 80deg 130deg,#B87A00 130deg 180deg,#FFE898 180deg 360deg);animation:spin 20s linear infinite;box-shadow:0 2px 8px rgba(232,168,0,.28);}
+.s3-skip{font-size:12px;font-weight:600;color:var(--mid);background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:3px;}
+
+/* eyebrow slide 3 */
+.s3-eyebrow{padding:18px 22px 0;font-size:12.5px;font-style:italic;color:var(--mid);}
+
+.s3-headline{
+  padding:6px 22px 0;
+  font-family:'Anton',sans-serif;
+  font-size:40px;line-height:.9;letter-spacing:-.02em;text-transform:uppercase;color:var(--ink);
+  margin-bottom:6px;
+}
+.s3-headline .g{background:linear-gradient(138deg,#FFD860,#E8A800 50%,#B07000);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+
+.s3-tagline{padding:0 22px;font-size:13px;color:var(--mid);line-height:1.55;margin-bottom:14px;}
+.s3-tagline strong{color:var(--ink);font-weight:700;}
+
+/* premium card */
+.premium-card{
+  margin:0 22px;
+  background:linear-gradient(145deg,#0D1E1C,#0A1714);
+  border-radius:26px;padding:20px;
+  position:relative;overflow:hidden;
+  box-shadow:0 16px 48px rgba(0,0,0,.18);
+}
+.premium-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold-lt),transparent);}
+.premium-card::after{content:'';position:absolute;top:-50px;right:-30px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(232,168,0,.1) 0%,transparent 70%);}
+
+.pc-tag{display:inline-flex;align-items:center;gap:5px;background:rgba(255,199,44,.12);border:1px solid rgba(255,199,44,.18);border-radius:100px;padding:4px 11px;font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-lt);margin-bottom:12px;}
+.pc-tag-dot{width:4px;height:4px;border-radius:50%;background:var(--gold-lt);}
+
+/* price with anchor */
+.pc-price-block{margin-bottom:6px;}
+.pc-price-row{display:flex;align-items:baseline;gap:3px;}
+.pc-cur{font-size:20px;font-weight:700;color:rgba(255,255,255,.6);margin-top:6px;}
+.pc-amt{font-family:'Anton',sans-serif;font-size:52px;color:white;line-height:1;letter-spacing:-.02em;}
+.pc-per{font-size:13px;color:rgba(255,255,255,.35);font-weight:500;align-self:flex-end;margin-bottom:4px;}
+
+/* the anchor — key copywriting element */
+.pc-anchor{
+  font-size:11px;color:rgba(255,255,255,.35);
+  margin-bottom:14px;line-height:1.5;
+  padding:8px 10px;
+  background:rgba(255,255,255,.04);
+  border-radius:10px;border-left:2px solid rgba(232,168,0,.3);
+}
+.pc-anchor strong{color:rgba(255,255,255,.6);}
+
+/* forecast preview — the FOMO element */
+.pc-forecast{margin-bottom:14px;}
+.pc-forecast-title{font-size:9.5px;font-weight:700;color:rgba(255,255,255,.4);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;}
+.pc-days{display:flex;gap:5px;}
+.pc-day{
+  flex:1;background:rgba(255,255,255,.05);border-radius:10px;
+  padding:8px 6px;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+}
+.pc-day-label{font-size:8.5px;font-weight:700;color:rgba(255,255,255,.4);}
+.pc-day-icon{font-size:15px;}
+.pc-day-status{font-size:8px;font-weight:700;padding:2px 5px;border-radius:100px;}
+.pcs-g{background:rgba(34,197,94,.15);color:#4ADE80;}
+.pcs-r{background:rgba(232,82,42,.2);color:#FF8066;}
+.pcs-o{background:rgba(232,168,0,.15);color:var(--gold-lt);}
+
+/* blurred future days */
+.pc-day.locked{filter:blur(3px);opacity:.35;pointer-events:none;}
+.pc-day.semi-locked{filter:blur(1.5px);opacity:.5;pointer-events:none;}
+
+/* unlock banner */
+.pc-unlock{
+  position:relative;
+  margin-top:-28px;margin-bottom:14px;
+  background:linear-gradient(0deg,rgba(13,30,28,.95) 60%,transparent);
+  padding:20px 8px 8px;text-align:center;
+  font-size:10.5px;font-weight:600;color:rgba(255,255,255,.5);
+}
+
+.pc-feats{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+.pf{display:flex;align-items:center;gap:9px;}
+.pf-check{width:18px;height:18px;border-radius:50%;background:rgba(0,158,142,.18);border:1px solid rgba(0,158,142,.28);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--teal-lt);flex-shrink:0;}
+.pf-txt{font-size:12px;color:rgba(255,255,255,.7);}
+.pf-txt strong{color:white;}
+
+.pc-btn{
+  width:100%;background:linear-gradient(135deg,var(--gold-lt),var(--gold));
+  color:var(--ink);border:none;border-radius:16px;
+  padding:16px 20px;font-family:'Anton',sans-serif;font-size:18px;letter-spacing:.05em;text-transform:uppercase;
+  cursor:pointer;display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 8px 24px rgba(232,168,0,.38),inset 0 1px 0 rgba(255,255,255,.4);
+  position:relative;overflow:hidden;transition:transform .12s;
+}
+.pc-btn::after{content:'';position:absolute;top:0;left:-75%;width:44%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);transform:skewX(-18deg);animation:shine 3.5s cubic-bezier(.4,0,.6,1) 1s infinite;}
+.pc-btn-lbl{position:relative;z-index:1;}
+.pc-btn-arr{width:36px;height:36px;background:rgba(0,0,0,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;position:relative;z-index:1;}
+
+.s3-free{padding:10px 22px 0;text-align:center;font-size:12px;color:var(--mid);}
+.s3-free button{background:none;border:none;cursor:pointer;color:var(--teal);font-weight:700;font-size:12px;text-decoration:underline;text-underline-offset:3px;font-family:'Bricolage Grotesque',sans-serif;}
+.s3-micro{padding:6px 22px 48px;text-align:center;font-size:10.5px;color:rgba(104,104,104,.6);display:flex;align-items:center;justify-content:center;gap:6px;}
+.s3-mdot{width:3px;height:3px;border-radius:50%;background:rgba(104,104,104,.25);}
+
+@media(max-width:420px){
+  .phone{border-radius:0;min-height:100vh;width:100%;box-shadow:none;}
+  body{background:var(--bg);}
+}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="carousel">
+    <div class="slides" id="slides">
+
+      <!-- ═══ SLIDE 1 ═══ -->
+      <div class="slide">
+        <!-- live strip -->
+        <div class="s1-strip">
+          <div class="strip-left">
+            <div class="ldot"></div>
+            <span class="strip-txt"><em>47 plages</em> surveillées en temps réel</span>
+          </div>
+          <div class="lbadge">LIVE</div>
+        </div>
+
+        <!-- satellite badge — valeur perçue -->
+        <div class="satellite-badge">
+          <span class="sat-icon">🛰️</span>
+          <span class="sat-txt">Sentinel-2 · <em>image du 02/03/2026 à 06h14</em></span>
+          <span class="sat-fresh">Frais</span>
+        </div>
+
+        <!-- live counter -->
+        <div class="live-counter">
+          <div class="lc-dot"></div>
+          <span class="lc-num" id="liveCount">34</span>
+          <span class="lc-txt">Martiniquais vérifient <em>en ce moment</em></span>
+        </div>
+
+        <!-- hero -->
+        <div class="s1-hero">
+          <div class="disc">
+            <div class="disc-inner">
+              <div class="disc-label">SAR<br>GASSES</div>
+              <div class="disc-sub">.MQ</div>
+            </div>
+          </div>
+          <div class="card-bad">
+            <div class="cb-icon">🚫</div>
+            <div class="cb-info">
+              <div class="cb-label">Éviter</div>
+              <div class="cb-val">Sainte-Anne</div>
+              <div class="cb-sub">Sargasses ce matin</div>
+            </div>
+          </div>
+          <div class="card-good">
+            <div class="cg-icon">🏖️</div>
+            <div class="cg-info">
+              <div class="cg-name">Grande Anse d'Arlet</div>
+              <div class="cg-status"><span class="cg-check">✓</span>Propre aujourd'hui</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- copy -->
+        <div class="s1-copy">
+          <!-- eyebrow — miroir de la douleur -->
+          <div class="eyebrow">Encore une plage envahie un dimanche matin ?</div>
+
+          <h1>
+            <span class="t">Cette</span><br>
+            <span class="g">fois,</span><br>
+            tu seras<br>prévenu.
+          </h1>
+
+          <p class="tagline"><strong>47 plages de Martinique.</strong> Vert ou rouge. Avant de charger la voiture.</p>
+
+          <!-- social proof locale et viscérale -->
+          <div class="proof">
+            <div class="proof-avs">
+              <div class="proof-row">
+                <div class="av av1">S</div>
+                <div class="proof-quote"><strong>Sophie · Le Diamant</strong> — a sauvé sa semaine de vacances</div>
+              </div>
+              <div class="proof-divider"></div>
+              <div class="proof-row">
+                <div class="av av2">M</div>
+                <div class="proof-quote"><strong>Marie-Jo · Rivière-Salée</strong> — vérifie chaque dimanche matin</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="cta">
+            <button class="btn-main" onclick="goTo(1)">
+              <span class="btn-label">Voir les plages maintenant</span>
+              <span class="btn-arrow">→</span>
+            </button>
+            <div class="micro">Gratuit<span class="mdot"></span>Sans inscription</div>
+            <button class="btn-link">Déjà un compte ? <span>Se connecter</span></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ SLIDE 2 ═══ -->
+      <div class="slide s2">
+        <div class="s2-header">
+          <div class="s2-logo"><div class="s2-mini-disc"></div>SARGASSES.MQ</div>
+          <div class="s2-live"><div class="s2-ldot"></div>En direct</div>
+        </div>
+
+        <!-- eyebrow -->
+        <div class="s2-eyebrow">La carte que tu aurais voulu avoir.</div>
+
+        <div class="s2-headline">
+          <span class="t">Vert</span> = tu pars.<br>
+          Rouge = tu évites.
+        </div>
+
+        <!-- satellite precision badge -->
+        <div class="sat-inline">
+          <span style="font-size:11px;">🛰️</span>
+          <span class="si-txt">Sentinel-2 · ESA Copernicus</span>
+          <span class="si-time">· image du 02/03 à 06h14</span>
+        </div>
+
+        <!-- micro proof -->
+        <div style="margin:6px 22px 0;font-size:11px;color:var(--mid);display:flex;align-items:center;gap:5px;">
+          <span style="color:#16A34A;font-weight:700;">✓</span>
+          Confirmé par <strong style="color:var(--ink);">+2 400 locaux</strong> ce matin
+        </div>
+
+        <!-- map -->
+        <div class="map-zone">
+          <div class="map-mq-label">🌿 Martinique</div>
+          <div class="map-water-label">🌊 Atlantique</div>
+          <div class="island-shape"></div>
+          <div class="bpin g p1"><div class="bpin-ring"></div><div class="bpin-dot"></div></div>
+          <div class="bpin g p2"><div class="bpin-ring"></div><div class="bpin-dot"></div></div>
+          <div class="bpin r p3"><div class="bpin-ring"></div><div class="bpin-dot"></div></div>
+          <div class="bpin o p4"><div class="bpin-ring"></div><div class="bpin-dot"></div></div>
+          <div class="bpin g p5"><div class="bpin-ring"></div><div class="bpin-dot"></div></div>
+          <div class="bpin r p6"><div class="bpin-ring"></div><div class="bpin-dot"></div></div>
+          <div class="bpin g p7"><div class="bpin-ring"></div><div class="bpin-dot"></div></div>
+          <div class="bpin o p8"><div class="bpin-ring"></div><div class="bpin-dot"></div></div>
+          <div class="map-legend-mini">
+            <div class="mleg"><div class="mleg-dot" style="background:#22C55E;"></div>Propre</div>
+            <div class="mleg"><div class="mleg-dot" style="background:var(--gold-lt);"></div>Modéré</div>
+            <div class="mleg"><div class="mleg-dot" style="background:var(--coral);"></div>Éviter</div>
+          </div>
+        </div>
+
+        <!-- beach list -->
+        <div class="beach-list">
+          <div class="beach-row">
+            <div class="br-left"><div class="br-emoji">🏖️</div><div><div class="br-name">Grande Anse d'Arlet</div><div class="br-dist">Sud · 12 km</div></div></div>
+            <div class="br-status brs-g">✓ Propre</div>
+          </div>
+          <div class="beach-row">
+            <div class="br-left"><div class="br-emoji">⛱️</div><div><div class="br-name">Le Diamant</div><div class="br-dist">Sud · 25 km</div></div></div>
+            <div class="br-status brs-o">⚡ Modéré</div>
+          </div>
+          <div class="beach-row">
+            <div class="br-left"><div class="br-emoji">🌊</div><div><div class="br-name">Sainte-Anne</div><div class="br-dist">Extrême Sud · 38 km</div></div></div>
+            <div class="br-status brs-r">🚫 Éviter</div>
+          </div>
+        </div>
+
+        <div class="s2-cta">
+          <button class="s2-btn" onclick="goTo(2)">
+            <span style="position:relative;z-index:1;">Choisir ma plage</span>
+            <span class="btn-arrow">→</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ═══ SLIDE 3 ═══ -->
+      <div class="slide s3">
+        <div class="s3-top">
+          <div class="s3-logo"><div class="s3-mini-disc"></div>SARGASSES.MQ</div>
+          <button class="s3-skip" onclick="goTo(0)">Passer</button>
+        </div>
+
+        <!-- eyebrow -->
+        <div class="s3-eyebrow">Pour les weekends qui comptent vraiment.</div>
+
+        <div class="s3-headline">
+          Sois <span class="g">prévenu</span><br>
+          7 jours<br>à l'avance.
+        </div>
+
+        <p class="s3-tagline">Les données du jour c'est bien. <strong>Savoir ce qui arrive ce weekend</strong>, c'est mieux.</p>
+
+        <div class="premium-card">
+          <div class="pc-tag"><div class="pc-tag-dot"></div>Premium</div>
+
+          <!-- price -->
+          <div class="pc-price-block">
+            <div class="pc-price-row">
+              <span class="pc-cur">€</span>
+              <span class="pc-amt">4,99</span>
+              <span class="pc-per">/ mois</span>
+            </div>
+          </div>
+
+          <!-- price anchor — copywriting key -->
+          <div class="pc-anchor">
+            Une journée plage pour 4 personnes = <strong>80€ minimum.</strong><br>
+            Savoir à l'avance = <strong>4,99€.</strong>
+          </div>
+
+          <!-- forecast — fomo element -->
+          <div class="pc-forecast">
+            <div class="pc-forecast-title">Prévisions de ta semaine</div>
+            <div class="pc-days">
+              <div class="pc-day">
+                <div class="pc-day-label">Lun</div>
+                <div class="pc-day-icon">🏖️</div>
+                <div class="pc-day-status pcs-g">Propre</div>
+              </div>
+              <div class="pc-day">
+                <div class="pc-day-label">Mar</div>
+                <div class="pc-day-icon">🏖️</div>
+                <div class="pc-day-status pcs-g">Propre</div>
+              </div>
+              <div class="pc-day semi-locked">
+                <div class="pc-day-label">Mer</div>
+                <div class="pc-day-icon">⚡</div>
+                <div class="pc-day-status pcs-o">Modéré</div>
+              </div>
+              <div class="pc-day locked">
+                <div class="pc-day-label">Jeu</div>
+                <div class="pc-day-icon">🚫</div>
+                <div class="pc-day-status pcs-r">Éviter</div>
+              </div>
+              <div class="pc-day locked">
+                <div class="pc-day-label">Ven</div>
+                <div class="pc-day-icon">🚫</div>
+                <div class="pc-day-status pcs-r">Éviter</div>
+              </div>
+              <div class="pc-day locked">
+                <div class="pc-day-label">Sam</div>
+                <div class="pc-day-icon">⚡</div>
+                <div class="pc-day-status pcs-o">Modéré</div>
+              </div>
+              <div class="pc-day locked">
+                <div class="pc-day-label">Dim</div>
+                <div class="pc-day-icon">🏖️</div>
+                <div class="pc-day-status pcs-g">Propre</div>
+              </div>
+            </div>
+          </div>
+          <div class="pc-unlock">🔒 Débloque les 5 prochains jours</div>
+
+          <div class="pc-feats">
+            <div class="pf"><div class="pf-check">✓</div><div class="pf-txt"><strong>Prévisions 7 jours</strong> · dérive satellite</div></div>
+            <div class="pf"><div class="pf-check">✓</div><div class="pf-txt"><strong>Alertes</strong> avant que ça arrive</div></div>
+            <div class="pf"><div class="pf-check">✓</div><div class="pf-txt"><strong>Annulation</strong> à tout moment</div></div>
+          </div>
+
+          <button class="pc-btn">
+            <span class="pc-btn-lbl">Débloquer mes prévisions</span>
+            <span class="pc-btn-arr">→</span>
+          </button>
+        </div>
+
+        <!-- testimonial local -->
+        <div style="margin:0 22px;background:rgba(255,255,255,.6);border:1px solid rgba(232,168,0,.12);border-radius:14px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;">
+          <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#4ECDC4,#44A08D);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;flex-shrink:0;">M</div>
+          <div>
+            <div style="font-size:10px;font-weight:700;color:var(--ink);margin-bottom:3px;">Marie · Schoelcher</div>
+            <div style="font-size:11.5px;color:var(--mid);line-height:1.5;font-style:italic;">"Grâce aux alertes, j'ai évité une journée perdue avec mes enfants."</div>
+          </div>
+        </div>
+
+        <div class="s3-free">
+          Pas maintenant — <button onclick="goTo(0)">commencer gratuitement</button>
+        </div>
+        <div class="s3-micro">
+          Paiement sécurisé<span class="s3-mdot"></span>Annulation à tout moment
+        </div>
+      </div>
+
+    </div><!-- /slides -->
+
+    <div class="dots">
+      <button class="dot-btn active" id="d0" onclick="goTo(0)"></button>
+      <button class="dot-btn" id="d1" onclick="goTo(1)"></button>
+      <button class="dot-btn" id="d2" onclick="goTo(2)"></button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let current = 0;
+const slides = document.getElementById('slides');
+const dots = [document.getElementById('d0'),document.getElementById('d1'),document.getElementById('d2')];
+function goTo(n){
+  current = n;
+  slides.style.transform = `translateX(-${n*33.333}%)`;
+  dots.forEach((d,i) => d.classList.toggle('active', i===n));
+}
+let startX = 0;
+slides.addEventListener('touchstart', e => startX = e.touches[0].clientX, {passive:true});
+slides.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - startX;
+  if(Math.abs(dx) > 50){
+    if(dx < 0 && current < 2) goTo(current+1);
+    if(dx > 0 && current > 0) goTo(current-1);
+  }
+});
+
+// live counter — fluctuates realistically between 28-47
+const el = document.getElementById('liveCount');
+let base = 34;
+setInterval(() => {
+  const delta = Math.random() > 0.5 ? 1 : -1;
+  base = Math.max(28, Math.min(47, base + delta));
+  el.textContent = base;
+}, 2800);
+</script>
+</body>
+</html>
