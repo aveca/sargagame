@@ -155,10 +155,11 @@ function haversine(lat1,lon1,lat2,lon2){
 }
 
 function getBeachPhoto(beach,imageMap){
-  if(!imageMap||!beach)return null
-  const file=imageMap[beach.id]
-  if(!file)return null
-  return`/beaches/${file}`
+  if(!beach)return`/beaches/sat-${beach?.id||"mq001"}.jpg`
+  // 1. Real photo from beaches-images.json
+  if(imageMap){const file=imageMap[beach.id];if(file)return`/beaches/${file}`}
+  // 2. Pre-generated satellite thumbnail (static, fast)
+  return`/beaches/sat-${beach.id}.jpg`
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -209,7 +210,8 @@ body{background:var(--sg-bg,#FDFCF7);color:var(--sg-ink,#0D0D0D)}
 /* ── ONBOARDING CAROUSEL ── */
 .onb-overlay{
   position:fixed;inset:0;z-index:2000;
-  background:#FDFCF7;
+  background:rgba(253,252,247,.92);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
   display:flex;flex-direction:column;
   overflow:hidden;width:100%;height:100%;
 }
@@ -740,7 +742,21 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
    ONBOARDING — EXACT port of onboarding-final.html as HORIZONTAL CAROUSEL
    translateX animation, touch swipe, each slide has its own CTA INSIDE
    ═══════════════════════════════════════════════════════════════════════════ */
-function Onboarding({onDone}){
+function Onboarding({onDone,island="mq",lang="fr"}){
+  // Adapt content per island (Clarity: 91% new users see this — must be relevant)
+  const isMQ=island==="mq"
+  const siteName=isMQ?"{siteName}":"SARGASSES.GP"
+  const islandName=isMQ?"Martinique":"Guadeloupe"
+  const locals=isMQ?"Martiniquais":"Guadeloupéens"
+  const goodBeach=isMQ?"Grande Anse d'Arlet":"Plage de la Caravelle"
+  const badBeach=isMQ?"Sainte-Anne":"Porte d'Enfer"
+  const midBeach=isMQ?"Le Diamant":"Pointe des Châteaux"
+  const mapLabel=isMQ?"Martinique":"Guadeloupe"
+  const oceanLabel=isMQ?"Atlantique":"Caraïbes"
+  // Island shape: MQ = tall thin, GP = butterfly
+  const islandShape=isMQ
+    ?{borderRadius:"38% 52% 44% 58%/50% 40% 54% 44%",width:120,height:90}
+    :{borderRadius:"30% 70% 50% 50%/40% 40% 60% 60%",width:160,height:70}
   const[step,setStep]=useState(0)
   const slidesRef=useRef(null)
   const touchStartX=useRef(0)
@@ -840,7 +856,7 @@ function Onboarding({onDone}){
                   display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0}}></div>
                 <div style={{display:"flex",flexDirection:"column",gap:2}}>
                   <div style={{fontSize:9.5,fontWeight:700,color:C.red,letterSpacing:".08em",textTransform:"uppercase"}}>Éviter</div>
-                  <div style={{fontSize:12,fontWeight:800,color:C.ink,lineHeight:1.2}}>Sainte-Anne</div>
+                  <div style={{fontSize:12,fontWeight:800,color:C.ink,lineHeight:1.2}}>{badBeach}</div>
                   <div style={{fontSize:10,fontWeight:500,color:C.mid}}>Sargasses ce matin</div>
                 </div>
               </div>
@@ -855,7 +871,7 @@ function Onboarding({onDone}){
                 <div style={{width:34,height:34,borderRadius:11,background:"linear-gradient(135deg,#D6F5EF,#A8EDE4)",
                   display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,flexShrink:0}}>🛰️</div>
                 <div style={{display:"flex",flexDirection:"column",gap:3}}>
-                  <div style={{fontSize:11.5,fontWeight:700,color:C.ink,whiteSpace:"nowrap"}}>Grande Anse d'Arlet</div>
+                  <div style={{fontSize:11.5,fontWeight:700,color:C.ink,whiteSpace:"nowrap"}}>{goodBeach}</div>
                   <div style={{display:"flex",alignItems:"center",gap:4,fontSize:10,fontWeight:700,color:C.teal}}>
                     <span style={{width:12,height:12,borderRadius:"50%",background:C.teal,
                       display:"inline-flex",alignItems:"center",justifyContent:"center",
@@ -891,7 +907,7 @@ function Onboarding({onDone}){
                   ))}
                 </div>
                 <div style={{marginLeft:15,fontSize:11.5,fontWeight:500,color:C.mid,lineHeight:1.4}}>
-                  <strong style={{color:C.ink,fontWeight:700}}>+2 400 Martiniquais</strong> ont déjà vérifié avant toi ce matin
+                  <strong style={{color:C.ink,fontWeight:700}}>+2 400 {locals}</strong> ont déjà vérifié avant toi ce matin
                 </div>
               </div>
 
@@ -930,7 +946,7 @@ function Onboarding({onDone}){
                 <div style={{width:20,height:20,borderRadius:"50%",
                   background:"conic-gradient(from -10deg,#FFE898 0deg 30deg,#E8A800 30deg 80deg,#FFD040 80deg 130deg,#B87A00 130deg 180deg,#FFE898 180deg 360deg)",
                   animation:"spin 20s linear infinite",boxShadow:"0 2px 8px rgba(232,168,0,.28)"}}/>
-                SARGASSES.MQ
+                {siteName}
               </div>
               <div style={{display:"flex",alignItems:"center",gap:5,fontSize:10.5,fontWeight:600,color:C.mid}}>
                 <div style={{width:6,height:6,borderRadius:"50%",background:"#22C55E",animation:"dot-pulse 2s ease-in-out infinite"}}/>
@@ -962,12 +978,12 @@ function Onboarding({onDone}){
             {/* Map zone */}
             <div style={{margin:"12px 22px 0",background:"linear-gradient(145deg,#D8EFF8 0%,#C8E4F4 50%,#D0EEE8 100%)",
               border:"1px solid rgba(0,158,142,.1)",borderRadius:22,position:"relative",height:185,overflow:"hidden"}}>
-              <div style={{position:"absolute",top:10,left:14,fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(0,80,40,.4)"}}> Martinique</div>
-              <div style={{position:"absolute",bottom:10,left:14,fontSize:8.5,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(0,80,120,.4)"}}> Atlantique</div>
-              {/* Island shape */}
+              <div style={{position:"absolute",top:10,left:14,fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(0,80,40,.4)"}}>🌿 {mapLabel}</div>
+              <div style={{position:"absolute",bottom:10,left:14,fontSize:8.5,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(0,80,120,.4)"}}>🌊 {oceanLabel}</div>
+              {/* Island shape — adapté MQ ou GP */}
               <div style={{position:"absolute",top:"50%",left:"52%",transform:"translate(-50%,-52%)",
-                width:120,height:90,background:"linear-gradient(145deg,#C8E8C0,#B8D8B0)",
-                borderRadius:"38% 52% 44% 58%/50% 40% 54% 44%",boxShadow:"0 4px 14px rgba(0,80,40,.12)"}}/>
+                width:islandShape.width,height:islandShape.height,background:"linear-gradient(145deg,#C8E8C0,#B8D8B0)",
+                borderRadius:islandShape.borderRadius,boxShadow:"0 4px 14px rgba(0,80,40,.12)"}}/>
               {/* Pins */}
               {[[28,61,"g"],[45,74,"g"],[65,57,"r"],[34,35,"o"],[57,31,"g"],[72,43,"r"],[19,49,"g"],[51,65,"o"]].map(([t,l,c],i)=>{
                 const bg=c==="g"?"#22C55E":c==="r"?C.red:C.goldL
@@ -992,9 +1008,9 @@ function Onboarding({onDone}){
             {/* Beach list rows */}
             <div style={{margin:"10px 22px 0",display:"flex",flexDirection:"column",gap:6}}>
               {[
-                ["️","Grande Anse d'Arlet","Sud · 12 km","✓ Propre","g"],
-                ["⛱️","Le Diamant","Sud · 25 km","⚡ Modéré","o"],
-                ["","Sainte-Anne","Extrême Sud · 38 km","🚫 Éviter","r"],
+                ["🏖️",goodBeach,isMQ?"Sud · 12 km":"Est · 38 km","✓ Propre","g"],
+                ["⛱️",midBeach,isMQ?"Sud · 25 km":"Est · 52 km","⚡ Modéré","o"],
+                ["🌊",badBeach,isMQ?"Extrême Sud · 38 km":isMQ?"Nord · 55 km":"Nord · 55 km","🚫 Éviter","r"],
               ].map(([emoji,name,dist,statusTxt,cls],i)=>(
                 <div key={i} style={{background:"white",borderRadius:14,padding:"10px 14px",
                   display:"flex",alignItems:"center",justifyContent:"space-between",
@@ -1040,7 +1056,7 @@ function Onboarding({onDone}){
                 <div style={{width:20,height:20,borderRadius:"50%",
                   background:"conic-gradient(from -10deg,#FFE898 0deg 30deg,#E8A800 30deg 80deg,#FFD040 80deg 130deg,#B87A00 130deg 180deg,#FFE898 180deg 360deg)",
                   animation:"spin 20s linear infinite",boxShadow:"0 2px 8px rgba(232,168,0,.28)"}}/>
-                SARGASSES.MQ
+                {siteName}
               </div>
               <button onClick={closeOnboarding} style={{fontSize:12,fontWeight:600,color:C.mid,background:"none",
                 border:"none",cursor:"pointer",textDecoration:"underline",textUnderlineOffset:3,fontFamily:"inherit"}}>Passer</button>
@@ -1416,9 +1432,9 @@ export default function App(){
       <StyleInjector/>
       <div style={{position:"relative",width:"100%",height:"100%",overflow:"hidden"}}>
 
-        {/* MAP or LIST — skip MapView during onboarding (0-size container crashes Leaflet) */}
-        {showOnboarding?null:view==="map"?(
-          <ErrBound><MapView beaches={filtered} island={island}
+        {/* MAP or LIST */}
+        {view==="map"?(
+          <ErrBound><MapView beaches={showOnboarding?[]:filtered} island={island}
             onBeachClick={onBeachClick} selectedBeach={selectedBeach}/></ErrBound>
         ):(
           <BeachListView beaches={filtered} onBeachClick={onBeachClick}
@@ -1463,7 +1479,7 @@ export default function App(){
         {showPremium&&<PremiumModal onClose={()=>setShowPremium(false)} lang={lang}/>}
 
         {/* ONBOARDING */}
-        {showOnboarding&&<Onboarding onDone={()=>setShowOnboarding(false)}/>}
+        {showOnboarding&&<Onboarding onDone={()=>setShowOnboarding(false)} island={island} lang={lang}/>}
       </div>
     </LangCtx.Provider>
   )
