@@ -356,11 +356,14 @@ async function main() {
     console.warn(`  GP grid fetch failed: ${err.message}`)
   }
 
-  const hasAnyData = (mqGrid && mqGrid.points.length > 0) || (gpGrid && gpGrid.points.length > 0)
-  if (!hasAnyData) {
-    console.error('ERROR: No ERDDAP data for either region. Exiting with code 1 so fallback runs.')
+  const mqFetched = mqGrid && mqGrid.points !== undefined
+  const gpFetched = gpGrid && gpGrid.points !== undefined
+  if (!mqFetched && !gpFetched) {
+    console.error('ERROR: ERDDAP unreachable for both regions. Exiting with code 1 so fallback runs.')
     process.exit(1)
   }
+  // If grids were fetched but all values are null → no sargassum detected = all clean (this is valid data!)
+  console.log(`  MQ grid: ${mqGrid ? mqGrid.points.length + ' points' : 'failed'} | GP grid: ${gpGrid ? gpGrid.points.length + ' points' : 'failed'}`)
 
   // 2. Extract AFAI for each beach
   console.log('')
