@@ -43,6 +43,11 @@ jobs:
         continue-on-error: true
         run: node scripts/automation/auto-optimize.cjs
 
+      # ── 1d. Auto-Copywriting (GSC-driven meta optimization)
+      - name: Auto-copywriting (GSC-driven)
+        continue-on-error: true
+        run: node scripts/automation/auto-copywriting.cjs
+
       # ── 2. Auto-fix 404 errors ───────────────────────────
       - name: Fix 404 errors (auto-redirect)
         run: node scripts/automation/seo-fix-404.cjs
@@ -75,7 +80,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in public/.htaccess vite.config.js scripts/automation/data/automation-log.json scripts/automation/data/meta-overrides.json scripts/automation/data/enrichments.json scripts/automation/data/new-pages.json scripts/automation/data/audit-summary.json scripts/automation/data/audit-full.json scripts/automation/data/ux-report.json scripts/automation/data/optimization-log.json; do
+          for f in public/.htaccess vite.config.js scripts/automation/data/automation-log.json scripts/automation/data/meta-overrides.json scripts/automation/data/enrichments.json scripts/automation/data/new-pages.json scripts/automation/data/audit-summary.json scripts/automation/data/audit-full.json scripts/automation/data/ux-report.json scripts/automation/data/optimization-log.json scripts/automation/data/copywriting-log.json; do
             [ -f "$f" ] && git add "$f"
           done
           git diff --cached --quiet || git commit -m "seo: weekly automation $(date -u +'%Y-%m-%d')"
