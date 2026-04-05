@@ -53,7 +53,7 @@ async function getPlacePhoto(beachName, commune, island) {
 
   // Step 2: Get photo URL (max width 800px for good quality without being too heavy)
   const photoRef = place.photos[0].photo_reference
-  const photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photo_reference=${photoRef}&key=${API_KEY}`
+  const photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=1600&photo_reference=${photoRef}&key=${API_KEY}`
 
   return photoUrl
 }
