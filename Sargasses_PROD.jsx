@@ -156,8 +156,10 @@ function haversine(lat1,lon1,lat2,lon2){
 
 function getBeachPhoto(beach,imageMap){
   if(!beach)return null
-  // 1. Real photo from beaches-images.json (17 GP photos)
+  // 1. Real photo from beaches-images.json (GP photos from Google Places)
   if(imageMap){const file=imageMap[beach.id];if(file)return`/beaches/${file}`}
+  // 2. Wikimedia Commons photo (MQ beaches: photo-mq001.jpg etc.)
+  if(beach.island==="mq")return`/beaches/photo-${beach.id}.jpg`
   // 3. Pre-generated satellite thumbnail (static, fast)
   return`/beaches/sat-${beach.id}.jpg`
 }
@@ -757,9 +759,7 @@ function Onboarding({onDone,island="mq",lang="fr"}){
   const closeOnboarding=useCallback(()=>{
     s("sg_onb",1)
     onDone()
-    // Show push notification prompt AFTER onboarding (not during — blocks CTA clicks)
-    // Push notification — utilise le prompt natif du navigateur (FR si système FR)
-    try{window.OneSignalDeferred?.push(o=>o.Notifications?.requestPermission())}catch(e){}
+    // Push prompt is now handled by PushPrompt component (custom French UI)
   },[onDone])
 
   const openStripe=useCallback(()=>{
@@ -1311,6 +1311,78 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle}){
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   PUSH PROMPT — Custom French notification prompt (replaces OneSignal slidedown)
+   ═══════════════════════════════════════════════════════════════════════════ */
+function PushPrompt({onClose}){
+  const timerRef=useRef(null)
+  const[visible,setVisible]=useState(false)
+
+  useEffect(()=>{
+    // Slide in after a short delay
+    const showTimer=setTimeout(()=>setVisible(true),80)
+    // Auto-dismiss after 10 seconds
+    timerRef.current=setTimeout(()=>{setVisible(false);setTimeout(onClose,350)},10000)
+    return()=>{clearTimeout(showTimer);clearTimeout(timerRef.current)}
+  },[onClose])
+
+  const handleActivate=useCallback(()=>{
+    clearTimeout(timerRef.current)
+    try{window.OneSignalDeferred?.push(o=>o.Notifications?.requestPermission())}catch(e){}
+    setVisible(false)
+    setTimeout(onClose,350)
+  },[onClose])
+
+  const handleDismiss=useCallback(()=>{
+    clearTimeout(timerRef.current)
+    setVisible(false)
+    setTimeout(onClose,350)
+  },[onClose])
+
+  return(
+    <div style={{
+      position:"fixed",top:0,left:0,right:0,zIndex:1500,
+      display:"flex",justifyContent:"center",
+      padding:"max(12px,env(safe-area-inset-top)) 16px 0",
+      pointerEvents:"none",
+    }}>
+      <div style={{
+        pointerEvents:"auto",
+        maxWidth:380,width:"100%",
+        background:"rgba(255,255,255,.88)",
+        backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
+        borderRadius:16,
+        border:"1px solid rgba(232,168,0,.18)",
+        boxShadow:"0 4px 24px rgba(0,0,0,.10),0 1px 4px rgba(0,0,0,.06)",
+        padding:"16px 18px",
+        transform:visible?"translateY(0)":"translateY(-100%)",
+        opacity:visible?1:0,
+        transition:"transform .35s cubic-bezier(.22,1,.36,1),opacity .35s ease",
+      }}>
+        <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
+          <span style={{fontSize:22,lineHeight:"28px",flexShrink:0}} role="img" aria-label="bell">🔔</span>
+          <div style={{flex:1,minWidth:0}}>
+            <p style={{margin:0,fontSize:13.5,fontWeight:600,color:C.ink,lineHeight:"19px"}}>
+              Recevez une alerte quand les sargasses arrivent à votre plage.
+            </p>
+            <div style={{display:"flex",gap:10,marginTop:12}}>
+              <button onClick={handleActivate} style={{
+                flex:1,padding:"9px 0",borderRadius:10,border:"none",cursor:"pointer",
+                background:C.gold,color:"#fff",fontSize:13,fontWeight:700,
+                boxShadow:"0 2px 8px rgba(232,168,0,.25)",
+              }}>Activer</button>
+              <button onClick={handleDismiss} style={{
+                flex:1,padding:"9px 0",borderRadius:10,border:"none",cursor:"pointer",
+                background:"rgba(0,0,0,.05)",color:C.mid,fontSize:13,fontWeight:600,
+              }}>Plus tard</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    APP PRINCIPAL
    ═══════════════════════════════════════════════════════════════════════════ */
 export default function App(){
@@ -1329,6 +1401,7 @@ export default function App(){
   const[selectedBeach,setSelectedBeach]=useState(null)
   const[favorites,setFavorites]=useState(()=>g("sg_fav",[]))
   const[showOnboarding,setShowOnboarding]=useState(()=>!g("sg_onb",0))
+  const[showPushPrompt,setShowPushPrompt]=useState(false)
   const[showPremium,setShowPremium]=useState(false)
 
   // Runtime data sources
@@ -1466,7 +1539,10 @@ export default function App(){
         {showPremium&&<PremiumModal onClose={()=>setShowPremium(false)} lang={lang}/>}
 
         {/* ONBOARDING */}
-        {showOnboarding&&<Onboarding onDone={()=>setShowOnboarding(false)} island={island} lang={lang}/>}
+        {showOnboarding&&<Onboarding onDone={()=>{setShowOnboarding(false);setShowPushPrompt(true)}} island={island} lang={lang}/>}
+
+        {/* CUSTOM FRENCH PUSH PROMPT */}
+        {showPushPrompt&&<PushPrompt onClose={()=>setShowPushPrompt(false)}/>}
       </div>
     </LangCtx.Provider>
   )
