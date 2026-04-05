@@ -156,8 +156,8 @@ function haversine(lat1,lon1,lat2,lon2){
 
 function getBeachPhoto(beach){
   if(!beach)return null
-  // Google Places photo (50/50 plages, vraies photos visiteurs)
-  return`/beaches/gplace-${beach.id}.jpg`
+  // Google Places photo (50/50 plages, 1600px HQ)
+  return`/beaches/gplace-${beach.id}.jpg?v=2`
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
