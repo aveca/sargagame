@@ -163,6 +163,41 @@
       "script": "seo-enrich-content",
       "action": "enriched",
       "beachCount": 20
+    },
+    {
+      "timestamp": "2026-04-02T11:47:42.253Z",
+      "dryRun": false,
+      "script": "seo-audit",
+      "action": "data-collection",
+      "results": {
+        "mq": {
+          "indexed": 3,
+          "total": 26,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 0,
+          "cwvIssues": 0
+        },
+        "gp": {
+          "indexed": 5,
+          "total": 26,
+          "notIndexed": 0,
+          "lowCtr": 3,
+          "highBounce": 0,
+          "cwvIssues": 0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-04-02T11:47:42.302Z",
+      "dryRun": false,
+      "script": "ux-audit",
+      "action": "report-generated",
+      "issues": {
+        "totalIssues": 0,
+        "critical": 0,
+        "warnings": 0
+      }
     }
   ]
 }
