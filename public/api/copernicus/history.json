@@ -742,63 +742,63 @@
       "beach": "diamant",
       "from": "moderate",
       "to": "clean",
-      "afai": 0
+      "afai": 0.05
     },
     {
       "date": "2026-04-05",
       "beach": "pt-marin",
       "from": "moderate",
       "to": "clean",
-      "afai": 0
+      "afai": 0.05
     },
     {
       "date": "2026-04-05",
       "beach": "sainte-anne",
       "from": "avoid",
       "to": "clean",
-      "afai": 0
+      "afai": 0.05
     },
     {
       "date": "2026-04-05",
       "beach": "les-salines",
       "from": "avoid",
       "to": "clean",
-      "afai": 0
+      "afai": 0.05
     },
     {
       "date": "2026-04-05",
       "beach": "vauclin",
       "from": "avoid",
       "to": "clean",
-      "afai": 0
+      "afai": 0.05
     },
     {
       "date": "2026-04-05",
       "beach": "gp-pt-chateaux",
       "from": "moderate",
       "to": "clean",
-      "afai": 0
+      "afai": 0.06
     },
     {
       "date": "2026-04-05",
       "beach": "gp-bas-du-fort",
       "from": "moderate",
       "to": "clean",
-      "afai": 0
+      "afai": 0.07
     },
     {
       "date": "2026-04-05",
       "beach": "gp-moule",
       "from": "moderate",
       "to": "clean",
-      "afai": 0.05
+      "afai": 0.06
     },
     {
       "date": "2026-04-05",
       "beach": "gp-vieux-fort",
       "from": "avoid",
       "to": "clean",
-      "afai": 0
+      "afai": 0.06
     }
   ]
 }
