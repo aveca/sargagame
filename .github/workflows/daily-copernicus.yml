@@ -38,6 +38,13 @@ jobs:
           ONESIGNAL_API_KEY_GP: ${{ secrets.ONESIGNAL_API_KEY_GP }}
         run: node scripts/scrape-copernicus.cjs
 
+      - name: Send notifications (push + email)
+        continue-on-error: true
+        env:
+          ONESIGNAL_API_KEY_MQ: ${{ secrets.ONESIGNAL_API_KEY_MQ }}
+          ONESIGNAL_API_KEY_GP: ${{ secrets.ONESIGNAL_API_KEY_GP }}
+        run: node scripts/automation/send-notifications.cjs
+
       # ── 2. Build ──────────────────────────────────────────
       - name: Build site (Vite)
         run: npm run build
