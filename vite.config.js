@@ -345,6 +345,62 @@ export default defineConfig({
             if (isMQ) sitemapMQBeaches += sitemapEntry
             else sitemapGPBeaches += sitemapEntry
           }
+          // ── /plages/ index page — all beaches grouped by commune ──
+          for (const islandCode of ['mq', 'gp']) {
+            const isMQ = islandCode === 'mq'
+            const island = isMQ ? 'Martinique' : 'Guadeloupe'
+            const domain = isMQ ? domainMQ : domainGP
+            const islandBeaches = beaches.filter(b => b.island === islandCode)
+            // Group by commune
+            const communes = {}
+            for (const b of islandBeaches) {
+              if (!communes[b.commune]) communes[b.commune] = []
+              communes[b.commune].push(b)
+            }
+            const communeNames = Object.keys(communes).sort()
+            // Status from SARGASSUM_REF
+            const statusById = Object.fromEntries(SARGASSUM_REF.map(r => [r.id, r.status]))
+            const statusBadge = (st) => {
+              if (st === 'clean') return '<span style="display:inline-block;padding:1px 8px;border-radius:8px;background:#dcfce7;color:#16a34a;font-size:12px;font-weight:600">Propre</span>'
+              if (st === 'moderate') return '<span style="display:inline-block;padding:1px 8px;border-radius:8px;background:#fef3c7;color:#b87a00;font-size:12px;font-weight:600">Mod\\u00e9r\\u00e9</span>'
+              return '<span style="display:inline-block;padding:1px 8px;border-radius:8px;background:#fee2e2;color:#e8522a;font-size:12px;font-weight:600">\\u00c0 \\u00e9viter</span>'
+            }
+            let communeListHtml = ''
+            for (const commune of communeNames) {
+              const cBeaches = communes[commune]
+              const beachLinks = cBeaches.map(b => {
+                const st = statusById[b.id] || 'clean'
+                return `<li style="padding:6px 0"><a href="/plages/${b.slug}/" style="color:#0D0D0D;text-decoration:none;font-weight:500">${b.name}</a> ${statusBadge(st)}</li>`
+              }).join('')
+              communeListHtml += `<h2 style="margin:28px 0 8px;font-size:18px;color:#0D0D0D">${commune}</h2><ul style="list-style:none;padding:0">${beachLinks}</ul>`
+            }
+            const plagesTitle = `Toutes les plages \u2014 Sargasses ${island}`
+            const plagesDesc = `Liste compl\u00e8te des ${islandBeaches.length} plages surveill\u00e9es en ${island}. \u00c9tat des sargasses en temps r\u00e9el, regroup\u00e9es par commune.`
+            const plagesUrl = `https://${domain}/plages/`
+            const plagesNoscript = `<article style="max-width:700px;margin:0 auto;padding:24px 16px;font-family:system-ui,sans-serif"><h1 style="font-size:26px;margin-bottom:8px">Toutes les plages de ${island}</h1><p style="color:#686868;margin-bottom:24px">${islandBeaches.length} plages surveill\u00e9es par satellite \u2014 donn\u00e9es Copernicus</p>${communeListHtml}<nav style="margin-top:32px;padding-top:16px;border-top:1px solid #eee"><a href="/carte-sargasses/" style="color:#E8A800;font-weight:600;margin-right:16px">Carte des sargasses</a><a href="/alertes/" style="color:#E8A800;font-weight:600">Alertes sargasses</a></nav></article>`
+            const plagesSchema = JSON.stringify({"@context":"https://schema.org","@type":"CollectionPage","name":plagesTitle,"description":plagesDesc,"url":plagesUrl,"isPartOf":{"@type":"WebApplication","name":`Sargasses ${island}`,"url":`https://${domain}/`},"dateModified":today})
+            const breadcrumbPlages = JSON.stringify({"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Accueil","item":`https://${domain}/`},{"@type":"ListItem","position":2,"name":"Plages","item":plagesUrl}]})
+            const plagesDir = resolve(outDir, 'plages')
+            mkdirSync(plagesDir, { recursive: true })
+            const plagesHtml = html
+              .replace(/<title>[^<]*<\/title>/, `<title>${plagesTitle}</title>`)
+              .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${plagesDesc}" />`)
+              .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${plagesUrl}" />`)
+              .replace(/<meta property="og:title"[^>]*>/, `<meta property="og:title" content="${plagesTitle}" />`)
+              .replace(/<meta property="og:description"[^>]*>/, `<meta property="og:description" content="${plagesDesc}" />`)
+              .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="${plagesUrl}" />`)
+              .replace(/<meta name="twitter:title"[^>]*>/, `<meta name="twitter:title" content="${plagesTitle}" />`)
+              .replace(/<meta name="twitter:description"[^>]*>/, `<meta name="twitter:description" content="${plagesDesc}" />`)
+              .replace('</head>', `\n    <script type="application/ld+json">\n    ${plagesSchema}\n    </script>\n    <script type="application/ld+json">\n    ${breadcrumbPlages}\n    </script>\n</head>`)
+              .replace('</body>', `\n    <noscript>${plagesNoscript}</noscript>\n</body>`)
+            writeFileSync(resolve(plagesDir, 'index.html'), plagesHtml)
+            // Add to sitemap
+            const plagesSitemapEntry = `  <url><loc>${plagesUrl}</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>\n`
+            if (isMQ) sitemapMQBeaches += plagesSitemapEntry
+            else sitemapGPBeaches += plagesSitemapEntry
+          }
+          console.log('   \u2192 /plages/ index page g\u00e9n\u00e9r\u00e9e (MQ + GP)')
+
           // Réécrire les sitemaps avec les plages
           const sitemapMQFull = sitemapMQ.replace('</urlset>', sitemapMQBeaches + '</urlset>')
           const sitemapGPFull = sitemapGP.replace('</urlset>', sitemapGPBeaches + '</urlset>')

@@ -71,21 +71,6 @@ for (const { dir, title, domain, onesignalAppId } of readmes) {
     }
   }
 
-  // Patch GA4 + Clarity IDs pour Guadeloupe
-  if (dir === 'guadeloupe-ftp') {
-    const analyticsFiles = ['index.html', 'carte-sargasses/index.html', 'previsions/index.html', 'en/index.html']
-    for (const relPath of analyticsFiles) {
-      const filePath = path.join(out, relPath)
-      if (fs.existsSync(filePath)) {
-        let content = fs.readFileSync(filePath, 'utf-8')
-        content = content.replace(/G-V83JGMDZ2Y/g, 'G-Q31VV3LLM9')
-        content = content.replace(/w4o6w9aenv/g, 'w4oect7ph3')
-        fs.writeFileSync(filePath, content, 'utf-8')
-      }
-    }
-    console.log('   → GA4 + Clarity IDs patchés pour Guadeloupe')
-  }
-
   // Sitemap + robots par domaine
   const sitemapName = dir === 'martinique-ftp' ? 'sitemap-martinique.xml' : 'sitemap-guadeloupe.xml'
   const sitemapSrc = path.join(out, sitemapName)
@@ -103,24 +88,99 @@ Sitemap: https://${domain}/sitemap.xml
   fs.writeFileSync(path.join(out, 'robots.txt'), robotsTxt, 'utf-8')
   console.log(`   → robots.txt (${domain})`)
 
-  // Patch canonicals + og:image pour Guadeloupe (pages légales + sous-pages)
+  // ── Guadeloupe: patch ALL HTML files (SEO, analytics, geo, schema, OG) ──
+  // The index.html is fully rewritten below; this patches every OTHER html file
+  // so that subpages (carte-sargasses, previsions, alertes, en/, editorial, plages/*)
+  // all carry correct GP branding instead of Martinique leftovers.
   if (dir === 'guadeloupe-ftp') {
-    const filesToFixCanonical = [
-      'confidentialite.html',
-      'mentions-legales.html',
-      'carte-sargasses/index.html',
-      'previsions/index.html',
-      'en/index.html',
-    ]
-    for (const relPath of filesToFixCanonical) {
-      const filePath = path.join(out, relPath)
-      if (fs.existsSync(filePath)) {
-        let content = fs.readFileSync(filePath, 'utf-8')
-        content = content.replace(/sargasses-martinique\.com/g, 'sargasses-guadeloupe.com')
+    function collectHtmlFiles(dirPath) {
+      const results = []
+      for (const entry of fs.readdirSync(dirPath)) {
+        const full = path.join(dirPath, entry)
+        const stat = fs.statSync(full)
+        if (stat.isDirectory()) {
+          results.push(...collectHtmlFiles(full))
+        } else if (entry.endsWith('.html')) {
+          results.push(full)
+        }
+      }
+      return results
+    }
+    const allHtmlFiles = collectHtmlFiles(out)
+    let patchedCount = 0
+    for (const filePath of allHtmlFiles) {
+      const relPath = path.relative(out, filePath).replace(/\\/g, '/')
+      // Skip root index.html — it is fully rewritten further below
+      if (relPath === 'index.html') continue
+      let content = fs.readFileSync(filePath, 'utf-8')
+      const before = content
+
+      // 0. Protect "Martinique et Guadeloupe" / "Martinique & Guadeloupe" / "Martinique and Guadeloupe"
+      //    patterns from double-replacement (→ "Guadeloupe et Guadeloupe"). We swap GP first on the GP site.
+      content = content.replace(/Martinique et Guadeloupe/g, '##GP_ET_MQ##')
+      content = content.replace(/Martinique &amp; Guadeloupe/g, '##GP_AMP_MQ##')
+      content = content.replace(/Martinique and Guadeloupe/g, '##GP_AND_MQ##')
+
+      // 1. Domain: sargasses-martinique.com → sargasses-guadeloupe.com (canonicals, OG urls, hreflang, JSON-LD, breadcrumbs, sitemaps)
+      content = content.replace(/sargasses-martinique\.com/g, 'sargasses-guadeloupe.com')
+
+      // 2. GA4 + Clarity IDs
+      content = content.replace(/G-V83JGMDZ2Y/g, 'G-Q31VV3LLM9')
+      content = content.replace(/w4o6w9aenv/g, 'w4oect7ph3')
+
+      // 3. Geo meta tags
+      content = content.replace(/<meta name="geo\.region" content="MQ"\s*\/?>/g, '<meta name="geo.region" content="GP" />')
+      content = content.replace(/<meta name="geo\.placename" content="Martinique"\s*\/?>/g, '<meta name="geo.placename" content="Guadeloupe" />')
+
+      // 4. Title tag: "Martinique" → "Guadeloupe" (covers all subpage titles)
+      content = content.replace(/(<title>[^<]*?)Martinique([^<]*?<\/title>)/g, '$1Guadeloupe$2')
+
+      // 5. Meta description: "Martinique" → "Guadeloupe"
+      content = content.replace(/(<meta name="description" content="[^"]*?)Martinique([^"]*?")/g, '$1Guadeloupe$2')
+
+      // 6. OG tags: title, description, site_name, image alt
+      content = content.replace(/(<meta property="og:title" content="[^"]*?)Martinique([^"]*?")/g, '$1Guadeloupe$2')
+      content = content.replace(/(<meta property="og:description" content="[^"]*?)Martinique([^"]*?")/g, '$1Guadeloupe$2')
+      content = content.replace(/(<meta property="og:site_name" content="[^"]*?)Martinique([^"]*?")/g, '$1Guadeloupe$2')
+      content = content.replace(/(<meta property="og:image:alt" content="[^"]*?)Martinique([^"]*?")/g, '$1Guadeloupe$2')
+
+      // 7. Twitter tags: title, description, image alt
+      content = content.replace(/(<meta name="twitter:title" content="[^"]*?)Martinique([^"]*?")/g, '$1Guadeloupe$2')
+      content = content.replace(/(<meta name="twitter:description" content="[^"]*?)Martinique([^"]*?")/g, '$1Guadeloupe$2')
+      content = content.replace(/(<meta name="twitter:image:alt" content="[^"]*?)Martinique([^"]*?")/g, '$1Guadeloupe$2')
+
+      // 8. Schema.org JSON-LD: replace "Martinique" in JSON-LD blocks (name, description, publisher, FAQ answers)
+      //    Careful: only replace inside <script type="application/ld+json"> blocks
+      content = content.replace(/(<script type="application\/ld\+json">)([\s\S]*?)(<\/script>)/g, (match, open, json, close) => {
+        const patched = json
+          .replace(/Sargasses Martinique/g, 'Sargasses Guadeloupe')
+          .replace(/Sargassum Martinique/g, 'Sargassum Guadeloupe')
+          .replace(/sargasses en Martinique/g, 'sargasses en Guadeloupe')
+          .replace(/plages Martinique/g, 'plages Guadeloupe')
+          .replace(/"addressRegion"\s*:\s*"Martinique"/g, '"addressRegion":"Guadeloupe"')
+          .replace(/"addressCountry"\s*:\s*"MQ"/g, '"addressCountry":"GP"')
+        return open + patched + close
+      })
+
+      // 9. EN pages: "Martinique" → "Martinique & Guadeloupe" is already correct in the build
+      //    but "Sargassum Martinique real-time" → "Sargassum Guadeloupe real-time" for EN root
+      if (relPath.startsWith('en/')) {
+        content = content.replace(/(<title>[^<]*?)Martinique([^<]*?<\/title>)/g, '$1Guadeloupe$2')
+        content = content.replace(/(<meta property="og:title" content="[^"]*?)Martinique([^"]*?")/g, '$1Guadeloupe$2')
+        content = content.replace(/(<meta name="twitter:title" content="[^"]*?)Martinique([^"]*?")/g, '$1Guadeloupe$2')
+      }
+
+      // Restore protected bi-island phrases (GP listed first on the GP site)
+      content = content.replace(/##GP_ET_MQ##/g, 'Guadeloupe et Martinique')
+      content = content.replace(/##GP_AMP_MQ##/g, 'Guadeloupe &amp; Martinique')
+      content = content.replace(/##GP_AND_MQ##/g, 'Guadeloupe and Martinique')
+
+      if (content !== before) {
         fs.writeFileSync(filePath, content, 'utf-8')
-        console.log(`   → Canonical patché pour Guadeloupe dans ${relPath}`)
+        patchedCount++
       }
     }
+    console.log(`   → ${patchedCount} fichiers HTML patchés SEO/analytics/geo pour Guadeloupe`)
   }
 
   // Index SEO spécifique Guadeloupe (title/meta/JSON-LD GP)

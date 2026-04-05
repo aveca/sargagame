@@ -8,6 +8,7 @@
 import React,{useState,useEffect,useRef,useMemo,useCallback,createContext,useContext,Component}from"react"
 import L from"leaflet"
 import"leaflet/dist/leaflet.css"
+import SargassesGame from"./SargassesGame.jsx"
 
 class ErrBound extends Component{
   constructor(p){super(p);this.state={err:null}}
@@ -56,7 +57,7 @@ const T={
     search:"Rechercher une plage…",
     filters:["Toutes","Propres","Favoris","Enfants","Snorkeling","À éviter"],
     filtersIcon:["🌊","✅","❤️","🧒","🤿","🚫"],
-    navMap:"Carte",navList:"Plages",navPremium:"Premium",
+    navMap:"Carte",navList:"Plages",navGame:"Jeu",navPremium:"Premium",
     forecast:"Prévisions 7j",weather:"Météo",directions:"Y aller",
     fav:"Favori",addFav:"Ajouter aux favoris",removeFav:"Retirer des favoris",
     wind:"Vent",uv:"UV",temp:"Température",drive:"min",
@@ -77,7 +78,7 @@ const T={
     search:"Search a beach…",
     filters:["All","Clean","Favourites","Kids","Snorkeling","Avoid"],
     filtersIcon:["🌊","✅","❤️","🧒","🤿","🚫"],
-    navMap:"Map",navList:"Beaches",navPremium:"Premium",
+    navMap:"Map",navList:"Beaches",navGame:"Game",navPremium:"Premium",
     forecast:"7-day forecast",weather:"Weather",directions:"Directions",
     fav:"Favourite",addFav:"Add to favourites",removeFav:"Remove from favourites",
     wind:"Wind",uv:"UV",temp:"Temperature",drive:"min",
@@ -296,6 +297,7 @@ function BottomNav({view,onChangeView,lang}){
   const tabs=[
     {id:"map",label:LL.navMap,icon:"🗺️"},
     {id:"list",label:LL.navList,icon:"📋"},
+    {id:"jeu",label:LL.navGame,icon:"🎮"},
     {id:"premium",label:LL.navPremium,icon:"⭐"},
   ]
   return(
@@ -1454,6 +1456,102 @@ function PushPrompt({onClose}){
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   EMAIL CAPTURE — Weekly sargasses bulletin signup
+   ═══════════════════════════════════════════════════════════════════════════ */
+function EmailCapture(){
+  const[visible,setVisible]=useState(false)
+  const[email,setEmail]=useState("")
+  const[submitted,setSubmitted]=useState(false)
+  const timerRef=useRef(null)
+
+  useEffect(()=>{
+    // Only show once
+    if(g("sg_email_prompt",false))return
+    const showTimer=setTimeout(()=>setVisible(true),15000)
+    // Auto-dismiss after 30s of visibility
+    timerRef.current=setTimeout(()=>{setVisible(false)},45000) // 15s delay + 30s visible
+    return()=>{clearTimeout(showTimer);clearTimeout(timerRef.current)}
+  },[])
+
+  const handleSubmit=useCallback(e=>{
+    e.preventDefault()
+    if(!email||!email.includes("@"))return
+    s("sg_email",email)
+    s("sg_email_prompt",true)
+    setSubmitted(true)
+    clearTimeout(timerRef.current)
+    setTimeout(()=>setVisible(false),2000)
+  },[email])
+
+  const handleDismiss=useCallback(()=>{
+    s("sg_email_prompt",true)
+    clearTimeout(timerRef.current)
+    setVisible(false)
+  },[])
+
+  if(!visible)return null
+
+  return(
+    <div style={{
+      position:"fixed",bottom:68,left:0,right:0,zIndex:1200,
+      display:"flex",justifyContent:"center",
+      padding:"0 12px",
+      pointerEvents:"none",
+    }}>
+      <div style={{
+        pointerEvents:"auto",
+        maxWidth:400,width:"100%",
+        background:"rgba(255,255,255,.88)",
+        backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
+        borderRadius:16,
+        border:"1px solid rgba(232,168,0,.18)",
+        boxShadow:"0 4px 24px rgba(0,0,0,.10),0 1px 4px rgba(0,0,0,.06)",
+        padding:"14px 16px",
+        animation:"slideUp .35s cubic-bezier(.22,1,.36,1)",
+      }}>
+        {submitted?(
+          <p style={{margin:0,fontSize:14,fontWeight:600,color:C.green,textAlign:"center"}}>
+            Merci ! Tu recevras le bulletin chaque semaine.
+          </p>
+        ):(
+          <>
+            <p style={{margin:"0 0 10px",fontSize:13.5,fontWeight:600,color:C.ink,lineHeight:"19px"}}>
+              {"\uD83D\uDCE7"} Re\u00e7ois le bulletin sargasses chaque semaine
+            </p>
+            <form onSubmit={handleSubmit} style={{display:"flex",gap:8,alignItems:"center"}}>
+              <input
+                type="email"
+                placeholder="ton@email.com"
+                value={email}
+                onChange={e=>setEmail(e.target.value)}
+                style={{
+                  flex:1,padding:"9px 12px",borderRadius:10,
+                  border:"1px solid rgba(0,0,0,.1)",
+                  fontSize:14,fontFamily:"inherit",
+                  background:"rgba(255,255,255,.7)",
+                  outline:"none",minWidth:0,
+                }}
+              />
+              <button type="submit" style={{
+                padding:"9px 16px",borderRadius:10,border:"none",cursor:"pointer",
+                background:"linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%)",
+                color:"#fff",fontSize:13,fontWeight:700,whiteSpace:"nowrap",
+                boxShadow:"0 2px 8px rgba(232,168,0,.25)",
+              }}>S'inscrire</button>
+            </form>
+            <button onClick={handleDismiss} style={{
+              display:"block",margin:"8px auto 0",background:"none",border:"none",
+              cursor:"pointer",color:C.mid,fontSize:12,fontWeight:500,
+              textDecoration:"underline",padding:0,
+            }}>Plus tard</button>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    APP PRINCIPAL
    ═══════════════════════════════════════════════════════════════════════════ */
 export default function App(){
@@ -1466,7 +1564,7 @@ export default function App(){
     try{if(window.location.hostname.includes("guadeloupe"))return"gp"}catch{}
     return"mq"
   })
-  const[view,setView]=useState("map") // map | list | premium
+  const[view,setView]=useState("map") // map | list | jeu | premium
   const[search,setSearch]=useState("")
   const[filter,setFilter]=useState(0) // index in T.filters
   const[selectedBeach,setSelectedBeach]=useState(null)
@@ -1563,10 +1661,12 @@ export default function App(){
       <StyleInjector/>
       <div style={{position:"relative",width:"100%",height:"100%",overflow:"hidden"}}>
 
-        {/* MAP or LIST */}
+        {/* MAP, LIST or GAME */}
         {view==="map"?(
           <ErrBound><MapView beaches={showOnboarding?[]:filtered} island={island}
             onBeachClick={onBeachClick} selectedBeach={selectedBeach} sargData={sargData}/></ErrBound>
+        ):view==="jeu"?(
+          <ErrBound><SargassesGame island={island}/></ErrBound>
         ):(
           <BeachListView beaches={filtered} onBeachClick={onBeachClick}
             favorites={favorites} lang={lang} imageMap={imageMap}/>
@@ -1614,6 +1714,9 @@ export default function App(){
 
         {/* CUSTOM FRENCH PUSH PROMPT */}
         {showPushPrompt&&<PushPrompt onClose={()=>setShowPushPrompt(false)}/>}
+
+        {/* EMAIL CAPTURE — shows 15s after onboarding, once only */}
+        {!showOnboarding&&!showPushPrompt&&<EmailCapture/>}
       </div>
     </LangCtx.Provider>
   )

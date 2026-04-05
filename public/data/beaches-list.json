@@ -728,54 +728,12 @@
     "drive": 30
   },
   {
-    "id": "mq064",
-    "island": "mq",
-    "name": "Bourg de Bellefontaine",
-    "commune": "Bellefontaine",
-    "lat": 14.67320445,
-    "lng": -61.16511236,
-    "status": "clean",
-    "afai": 0.2,
-    "kids": true,
-    "snorkel": false,
-    "parking": false,
-    "drive": 30
-  },
-  {
     "id": "mq066",
     "island": "mq",
     "name": "Anse des Galets",
     "commune": "Le Prêcheur",
     "lat": 14.8011963,
     "lng": -61.2260898,
-    "status": "clean",
-    "afai": 0.2,
-    "kids": true,
-    "snorkel": false,
-    "parking": false,
-    "drive": 30
-  },
-  {
-    "id": "mq067",
-    "island": "mq",
-    "name": "Anse Lévrier",
-    "commune": "Le Prêcheur",
-    "lat": 14.8195,
-    "lng": -61.229,
-    "status": "clean",
-    "afai": 0.2,
-    "kids": true,
-    "snorkel": false,
-    "parking": false,
-    "drive": 30
-  },
-  {
-    "id": "mq070",
-    "island": "mq",
-    "name": "Anse Rivière-Pilote Sud",
-    "commune": "Rivière-Pilote",
-    "lat": 14.4915,
-    "lng": -60.916,
     "status": "clean",
     "afai": 0.2,
     "kids": true,
@@ -866,20 +824,6 @@
     "snorkel": true,
     "parking": false,
     "drive": 51
-  },
-  {
-    "id": "gp007",
-    "island": "gp",
-    "name": "Anse des Rochers (Saint-François)",
-    "commune": "Saint-François",
-    "lat": 16.229,
-    "lng": -61.205,
-    "status": "clean",
-    "afai": 0.2,
-    "kids": true,
-    "snorkel": false,
-    "parking": false,
-    "drive": 30
   },
   {
     "id": "gp008",
@@ -1078,20 +1022,6 @@
     "drive": 45
   },
   {
-    "id": "gp022",
-    "island": "gp",
-    "name": "Plage de Vieux-Habitants",
-    "commune": "Vieux-Habitants",
-    "lat": 16.01,
-    "lng": -61.726,
-    "status": "clean",
-    "afai": 0.2,
-    "kids": true,
-    "snorkel": false,
-    "parking": false,
-    "drive": 30
-  },
-  {
     "id": "gp023",
     "island": "gp",
     "name": "Anse à la Barque (Ste-Anne)",
@@ -1232,20 +1162,6 @@
     "drive": 42
   },
   {
-    "id": "gp035",
-    "island": "gp",
-    "name": "Plage de Rocroy",
-    "commune": "Gourbeyre",
-    "lat": 16.038,
-    "lng": -61.705,
-    "status": "clean",
-    "afai": 0.2,
-    "kids": true,
-    "snorkel": false,
-    "parking": false,
-    "drive": 30
-  },
-  {
     "id": "gp036",
     "island": "gp",
     "name": "Plage des Amandiers",
@@ -1266,20 +1182,6 @@
     "commune": "Capesterre-Belle-Eau",
     "lat": 16.0931635,
     "lng": -61.559275,
-    "status": "clean",
-    "afai": 0.2,
-    "kids": true,
-    "snorkel": false,
-    "parking": false,
-    "drive": 30
-  },
-  {
-    "id": "gp039",
-    "island": "gp",
-    "name": "Plage de Sainte-Marie (CBE)",
-    "commune": "Capesterre-Belle-Eau",
-    "lat": 16.058,
-    "lng": -61.58,
     "status": "clean",
     "afai": 0.2,
     "kids": true,
@@ -1498,20 +1400,6 @@
     "drive": 30
   },
   {
-    "id": "gp058",
-    "island": "gp",
-    "name": "Plage de Jarry",
-    "commune": "Baie-Mahault",
-    "lat": 16.2,
-    "lng": -61.568,
-    "status": "clean",
-    "afai": 0.2,
-    "kids": true,
-    "snorkel": false,
-    "parking": false,
-    "drive": 30
-  },
-  {
     "id": "gp059",
     "island": "gp",
     "name": "Anse du Mancenillier",
@@ -1722,20 +1610,6 @@
     "drive": 30
   },
   {
-    "id": "gp082",
-    "island": "gp",
-    "name": "Plage de Vieux-Habitants Sud",
-    "commune": "Vieux-Habitants",
-    "lat": 16.009,
-    "lng": -61.7,
-    "status": "clean",
-    "afai": 0.2,
-    "kids": true,
-    "snorkel": false,
-    "parking": false,
-    "drive": 30
-  },
-  {
     "id": "gp083",
     "island": "gp",
     "name": "Anse à la Barque (VH)",
@@ -1756,20 +1630,6 @@
     "commune": "Basse-Terre",
     "lat": 15.9809237,
     "lng": -61.7158019,
-    "status": "clean",
-    "afai": 0.2,
-    "kids": true,
-    "snorkel": false,
-    "parking": false,
-    "drive": 30
-  },
-  {
-    "id": "gp086",
-    "island": "gp",
-    "name": "Plage de Capesterre Nord",
-    "commune": "Capesterre-Belle-Eau",
-    "lat": 16.048,
-    "lng": -61.588,
     "status": "clean",
     "afai": 0.2,
     "kids": true,
