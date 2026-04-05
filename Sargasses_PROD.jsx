@@ -608,7 +608,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
         <div className="sheet-handle"/>
 
         {/* Photo (real or satellite) */}
-        <div style={{height:220,background:`url(${bgImage}) center 35%/cover`,
+        <div style={{height:240,background:`url(${bgImage}) center center/cover`,
           borderRadius:"0",position:"relative"}}>
           <div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 40%,var(--sg-card,#fff) 100%)"}}/>
           <button onClick={onClose} style={{position:"absolute",top:12,right:12,
@@ -1398,7 +1398,7 @@ function PushPrompt({onClose}){
 
   const handleActivate=useCallback(()=>{
     clearTimeout(timerRef.current)
-    try{window.OneSignalDeferred?.push(o=>o.Notifications?.requestPermission())}catch(e){}
+    try{window.loadOneSignal?.()}catch(e){}
     setVisible(false)
     setTimeout(onClose,350)
   },[onClose])

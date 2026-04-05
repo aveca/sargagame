@@ -48,18 +48,28 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preload" href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
   <noscript><link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet" /></noscript>
-  <!-- OneSignal Push Notifications -->
+  <!-- OneSignal Push — SDK chargé à la demande (pas au démarrage) pour éviter le popup EN -->
   <script src="/config/push.js"></script>
-  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script>
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(function(OneSignal) {
-      OneSignal.init({
-        appId: window.ONESIGNAL_APP_ID || "4280dcab-fc43-415d-a9cd-a3da8cf601f1",
-        allowLocalhostAsSecureOrigin: true,
-        autoPrompt: false
-      });
-    });
+    // OneSignal SDK loaded ONLY when user clicks "Activer" in our custom FR prompt
+    window.loadOneSignal = function() {
+      if (window.__osLoaded) return;
+      window.__osLoaded = true;
+      var s = document.createElement('script');
+      s.src = 'https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';
+      s.onload = function() {
+        window.OneSignalDeferred = window.OneSignalDeferred || [];
+        OneSignalDeferred.push(function(OneSignal) {
+          OneSignal.init({
+            appId: window.ONESIGNAL_APP_ID || "4280dcab-fc43-415d-a9cd-a3da8cf601f1",
+            allowLocalhostAsSecureOrigin: true,
+            autoPrompt: false
+          });
+          OneSignal.Notifications.requestPermission();
+        });
+      };
+      document.head.appendChild(s);
+    };
   </script>
   <!-- Google Analytics 4 -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-V83JGMDZ2Y"></script>
