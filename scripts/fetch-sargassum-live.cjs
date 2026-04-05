@@ -5,10 +5,11 @@
  * No authentication required — free public API.
  *
  * For each of the 20 monitored beaches:
- *   1. Find the nearest ERDDAP grid point
- *   2. If null, search ~5 km radius for non-null values
- *   3. Average nearby grid points for the beach AFAI
- *   4. Build a 7-day forecast from historical drift
+ *   1. Query a WIDE offshore area (not coastal points — sargassum is detected 10-100km offshore)
+ *   2. Nearby zone (0-30km): direct threat, weighted heavily
+ *   3. Offshore zone (30-100km east/NE): incoming threat from Atlantic, weighted less
+ *   4. Normalize raw AFAI (small floats ~0.001-0.01) to our 0-1 scale
+ *   5. Build a 7-day forecast from drift trends
  *
  * Outputs:
  *   public/api/copernicus/sargassum.json  (source: "erddap-live")
@@ -46,15 +47,19 @@ const BEACHES = [
 
 // ── ERDDAP configuration ──────────────────────────────────────────
 const ERDDAP_BASE = 'https://cwcgom.aoml.noaa.gov/erddap/griddap/noaa_aoml_atlantic_oceanwatch_AFAI_7D.json'
-const FETCH_TIMEOUT_MS = 30000
+const FETCH_TIMEOUT_MS = 60000 // Wider bounding boxes = more data, need more time
 const NO_DATA_AFAI = 0.05 // If null / no detection = clean ocean
-const SEARCH_RADIUS_DEG = 0.05 // ~5 km at these latitudes
 
-// Two separate bounding boxes for MQ and GP to minimise data transfer
+// Wide bounding boxes: sargassum is detected OFFSHORE (10-100km from coast),
+// not at coastal coordinates. Cover the Atlantic approach zones.
 const REGIONS = {
-  mq: { latMin: 14.3, latMax: 14.9, lngMin: -61.3, lngMax: -60.8 },
-  gp: { latMin: 15.8, latMax: 16.5, lngMin: -61.9, lngMax: -61.0 },
+  mq: { latMin: 13.5, latMax: 15.5, lngMin: -62.0, lngMax: -59.5 },
+  gp: { latMin: 15.5, latMax: 17.0, lngMin: -62.5, lngMax: -60.0 },
 }
+
+// Radius bands for threat assessment (km)
+const NEARBY_RADIUS_KM = 30   // direct threat zone
+const OFFSHORE_RADIUS_KM = 100 // incoming threat zone (east/northeast)
 
 const DAYS = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
 
@@ -99,6 +104,33 @@ async function safeFetch(url, timeoutMs) {
     }
     return null
   }
+}
+
+/**
+ * Convert raw ERDDAP AFAI value to our 0-1 threat scale.
+ * AFAI values are small floats: 0.001-0.01 moderate, >0.01 heavy.
+ * Negative values = no sargassum = clean.
+ */
+function normalizeAfai(raw) {
+  if (raw <= 0) return 0.05 // negative or zero → clean
+  if (raw < 0.002) return 0.05 + (raw / 0.002) * 0.10 // 0.05-0.15 clean
+  if (raw < 0.005) return 0.15 + ((raw - 0.002) / 0.003) * 0.25 // 0.15-0.40 transitioning
+  if (raw < 0.01) return 0.40 + ((raw - 0.005) / 0.005) * 0.25 // 0.40-0.65 moderate
+  // > 0.01 → heavy
+  return Math.min(1.0, 0.65 + ((raw - 0.01) / 0.02) * 0.35) // 0.65-1.0 avoid
+}
+
+/**
+ * Compute bearing from point1 to point2 in degrees (0=N, 90=E, 180=S, 270=W)
+ */
+function bearing(lat1, lng1, lat2, lng2) {
+  const toRad = d => d * Math.PI / 180
+  const toDeg = r => r * 180 / Math.PI
+  const dLng = toRad(lng2 - lng1)
+  const y = Math.sin(dLng) * Math.cos(toRad(lat2))
+  const x = Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) -
+    Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLng)
+  return (toDeg(Math.atan2(y, x)) + 360) % 360
 }
 
 // ── ERDDAP grid fetching ──────────────────────────────────────────
@@ -155,7 +187,9 @@ async function fetchErddapGrid(region) {
 
   console.log(`  Got ${points.length} grid points (${latSet.size} lats x ${lngSet.size} lngs)`)
   const nonNull = points.filter(p => p.AFAI !== null && p.AFAI !== undefined)
-  console.log(`  Non-null AFAI values: ${nonNull.length}`)
+  const positive = nonNull.filter(p => p.AFAI > 0)
+  const negative = nonNull.filter(p => p.AFAI <= 0)
+  console.log(`  Non-null AFAI: ${nonNull.length} (${positive.length} positive/sargassum, ${negative.length} negative/clean)`)
 
   return {
     points,
@@ -165,59 +199,84 @@ async function fetchErddapGrid(region) {
 }
 
 /**
- * For a given beach, find its AFAI from the grid.
- *   1. Find the nearest grid point
- *   2. If that is null, search within SEARCH_RADIUS_DEG (~5 km)
- *   3. Average all non-null values within the radius
- *   4. If still nothing, return NO_DATA_AFAI (clean)
+ * For a given beach, compute sargassum threat level from the OFFSHORE grid.
+ *
+ * Sargassum is detected offshore (10-100km from coast), not at beach coordinates.
+ * Strategy:
+ *   1. Nearby zone (0-30km): direct threat — weighted heavily
+ *   2. Offshore zone (30-100km, east/northeast): incoming threat — weighted less
+ *   3. Combine both with nearby having 70% weight, offshore 30%
+ *   4. Normalize raw AFAI values to our 0-1 scale
  */
 function extractBeachAfai(beach, grid) {
   if (!grid || !grid.points || grid.points.length === 0) {
-    return { afai: NO_DATA_AFAI, method: 'no-grid' }
+    return { afai: NO_DATA_AFAI, method: 'no-grid', nearbyPts: 0, offshorePts: 0 }
   }
 
-  // 1. Find nearest point
-  let nearestDist = Infinity
-  let nearestPoint = null
+  const nearbyValues = []  // within 30km — direct threat
+  const offshoreValues = [] // 30-100km east/NE — incoming threat
+
   for (const p of grid.points) {
-    const d = haversineKm(beach.lat, beach.lng, p.latitude, p.longitude)
-    if (d < nearestDist) {
-      nearestDist = d
-      nearestPoint = p
-    }
-  }
-
-  // If nearest point has data, use it
-  if (nearestPoint && nearestPoint.AFAI !== null && nearestPoint.AFAI !== undefined) {
-    const raw = Math.abs(nearestPoint.AFAI)
-    return { afai: Math.max(0, Math.min(1, raw)), method: 'nearest', dist: nearestDist }
-  }
-
-  // 2. Search in ~5 km radius
-  const nearby = []
-  for (const p of grid.points) {
+    // Skip only literal null — negative AFAI is valid (means clean)
     if (p.AFAI === null || p.AFAI === undefined) continue
-    const d = haversineKm(beach.lat, beach.lng, p.latitude, p.longitude)
-    if (d <= 5) {
-      nearby.push({ afai: Math.abs(p.AFAI), dist: d })
+
+    const dist = haversineKm(beach.lat, beach.lng, p.latitude, p.longitude)
+    if (dist > OFFSHORE_RADIUS_KM) continue
+
+    const normalized = normalizeAfai(p.AFAI)
+
+    if (dist <= NEARBY_RADIUS_KM) {
+      // Nearby zone: weight by inverse distance (closer = more relevant)
+      const weight = 1 / (1 + dist)
+      nearbyValues.push({ value: normalized, weight, dist })
+    } else {
+      // Offshore zone: only count if east or northeast of beach (incoming from Atlantic)
+      const bear = bearing(beach.lat, beach.lng, p.latitude, p.longitude)
+      // East = 90, NE = 45, SE = 135. Accept 20-160 degrees (broad east arc)
+      if (bear >= 20 && bear <= 160) {
+        const weight = 1 / (1 + dist * 0.5) // lighter weight for distance
+        offshoreValues.push({ value: normalized, weight, dist })
+      }
     }
   }
 
-  if (nearby.length > 0) {
-    // Weighted average (closer = more weight)
-    let sumW = 0
-    let sumV = 0
-    for (const n of nearby) {
-      const w = 1 / (1 + n.dist)
-      sumW += w
-      sumV += w * n.afai
+  // Weighted average for each zone
+  function weightedAvg(arr) {
+    if (arr.length === 0) return null
+    let sumW = 0, sumV = 0
+    for (const { value, weight } of arr) {
+      sumW += weight
+      sumV += weight * value
     }
-    const avg = sumV / sumW
-    return { afai: Math.max(0, Math.min(1, avg)), method: `radius-${nearby.length}pts`, dist: nearestDist }
+    return sumV / sumW
   }
 
-  // 3. Nothing found — ocean is clean
-  return { afai: NO_DATA_AFAI, method: 'no-data' }
+  const nearbyAvg = weightedAvg(nearbyValues)
+  const offshoreAvg = weightedAvg(offshoreValues)
+
+  let afai
+  let method
+
+  if (nearbyAvg !== null && offshoreAvg !== null) {
+    // Combine: 70% nearby direct threat, 30% offshore incoming
+    afai = nearbyAvg * 0.7 + offshoreAvg * 0.3
+    method = `combined-${nearbyValues.length}near-${offshoreValues.length}off`
+  } else if (nearbyAvg !== null) {
+    afai = nearbyAvg
+    method = `nearby-${nearbyValues.length}pts`
+  } else if (offshoreAvg !== null) {
+    // Only offshore data — incoming risk is lower (it hasn't arrived yet)
+    afai = offshoreAvg * 0.5
+    method = `offshore-only-${offshoreValues.length}pts`
+  } else {
+    // No valid AFAI points at all in 100km — ocean is clean
+    afai = NO_DATA_AFAI
+    method = 'no-data'
+  }
+
+  afai = Math.max(0, Math.min(1, Math.round(afai * 100) / 100))
+
+  return { afai, method, nearbyPts: nearbyValues.length, offshorePts: offshoreValues.length }
 }
 
 // ── Weekly forecast builder (same logic as scrape-copernicus.cjs) ──
@@ -376,7 +435,7 @@ async function main() {
     const afai = Math.round(result.afai * 100) / 100
     const status = statusFromAfai(afai)
     levels.push({ id: beach.id, afai, status })
-    console.log(`  ${beach.id}: AFAI=${afai.toFixed(2)} (${status}) [${result.method}]`)
+    console.log(`  ${beach.id}: AFAI=${afai.toFixed(2)} (${status}) [${result.method}] nearby=${result.nearbyPts} offshore=${result.offshorePts}`)
   }
 
   // 3. Build forecast + write output
