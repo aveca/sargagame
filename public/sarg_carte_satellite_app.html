@@ -937,6 +937,12 @@ function setLayer(m){
 }
 setLayer('sat');
 
+// ── SARGASSUM OVERLAY — TODO: integrer WMTS Copernicus Marine quand le format sera valide ──
+// Le WMTS de Copernicus Marine utilise un format non-standard (pas XYZ tiles).
+// Il faut d'abord appeler GetCapabilities pour decouvrir les TileMatrixSets disponibles.
+// Endpoint: https://wmts.marine.copernicus.eu/teroWmts/MULTIOBS_GLO_BGC_SURFACE_NRT_015_016/cmems_obs-mob_glo_bgc_nrt_mr_multi_P7D-m_202511?service=WMTS&request=GetCapabilities
+// Dataset: MULTIOBS_GLO_BGC_SURFACE_NRT_015_016 / nfai (Normalized Floating Algae Index)
+
 // Cadrage initial : englober Martinique + Guadeloupe (avec marge)
 const BOUNDS_ANTILLES = L.latLngBounds(L.latLng(14.25, -61.95), L.latLng(16.65, -60.65));
 const VIEWS={MQ:{c:[14.641,-61.024],z:11},GP:{c:[16.18,-61.55],z:10},both:{c:[15.38,-61.35],z:8}};
