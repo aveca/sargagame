@@ -291,6 +291,13 @@ export default defineConfig({
             name: b.name,
             commune: b.commune,
             slug: slugify(b.name),
+            lat: b.lat,
+            lng: b.lng,
+            status: b.status || 'clean',
+            kids: !!b.kids,
+            snorkel: !!b.snorkel,
+            parking: !!b.parking,
+            drive: b.drive || 0,
           }))
 
           // Beach images for og:image
@@ -311,10 +318,17 @@ export default defineConfig({
             const beachDir = resolve(outDir, beachPath)
             mkdirSync(beachDir, { recursive: true })
             const beachTitle = `${b.name} — Sargasses ${island} aujourd'hui`
-            const beachDesc = `État des sargasses à ${b.name} (${b.commune}, ${island}) aujourd'hui. Plage propre ou à éviter ? Consultez la fiche, les prévisions 7 jours et la carte en temps réel.`
+            const statusTextMap = { clean: 'Plage propre aujourd\u2019hui', moderate: 'Présence modérée de sargasses', avoid: 'Plage à éviter aujourd\u2019hui' }
+            const statusText = statusTextMap[b.status] || statusTextMap.clean
+            const beachDesc = `État des sargasses à ${b.name} (${b.commune}) aujourd'hui. ${statusText}. Prévisions 7 jours, météo, photos. Mis à jour quotidiennement.`
             const beachUrl = `https://${domain}/plages/${b.slug}/`
-            const beachSchema = JSON.stringify({"@context":"https://schema.org","@type":"Beach","name":b.name,"description":`Fiche sargasses ${b.name}, ${b.commune} (${island}). État en temps réel et prévisions.`,"url":beachUrl,"address":{"@type":"PostalAddress","addressLocality":b.commune,"addressRegion":island,"addressCountry":isMQ?"MQ":"GP"},"isPartOf":{"@type":"WebApplication","name":`Sargasses ${island}`,"url":`https://${domain}/`}})
+            const beachSchema = JSON.stringify({"@context":"https://schema.org","@type":"Beach","name":b.name,"description":`Fiche sargasses ${b.name}, ${b.commune} (${island}). État en temps réel et prévisions.`,"url":beachUrl,"address":{"@type":"PostalAddress","addressLocality":b.commune,"addressRegion":island,"addressCountry":isMQ?"MQ":"GP"},"geo":{"@type":"GeoCoordinates","latitude":b.lat,"longitude":b.lng},"isPartOf":{"@type":"WebApplication","name":`Sargasses ${island}`,"url":`https://${domain}/`}})
             const breadcrumbBeach = JSON.stringify({"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Accueil","item":`https://${domain}/`},{"@type":"ListItem","position":2,"name":"Plages","item":`https://${domain}/`},{"@type":"ListItem","position":3,"name":b.name,"item":beachUrl}]})
+            // FAQPage schema — use enrichment if available, otherwise generate per-beach FAQ
+            const mainCity = isMQ ? 'Fort-de-France' : 'Pointe-à-Pitre'
+            const baignadeAnswer = b.status === 'clean' ? `Oui, ${b.name} est actuellement propre et adaptée à la baignade. Consultez notre carte en temps réel pour les dernières mises à jour.` : b.status === 'moderate' ? `La baignade est possible à ${b.name} mais avec prudence, une présence modérée de sargasses est signalée. Vérifiez l'état en temps réel avant de vous déplacer.` : `La baignade est déconseillée à ${b.name} aujourd'hui en raison d'une forte présence de sargasses. Consultez les plages propres à proximité sur notre carte.`
+            const generatedFaq = JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":`Les sargasses sont-elles présentes à ${b.name} aujourd'hui ?`,"acceptedAnswer":{"@type":"Answer","text":`Consultez l'état en temps réel des sargasses à ${b.name} (${b.commune}, ${island}) sur notre carte interactive. Données satellite Copernicus mises à jour quotidiennement.`}},{"@type":"Question","name":`Peut-on se baigner à ${b.name} ?`,"acceptedAnswer":{"@type":"Answer","text":baignadeAnswer}},{"@type":"Question","name":`Comment accéder à ${b.name} ?`,"acceptedAnswer":{"@type":"Answer","text":`${b.name} se trouve à ${b.commune}, ${island}. Accessible en ${b.drive} minutes en voiture depuis ${mainCity}.`}}]})
+            const faqSchema = _enrichments[b.slug] ? _enrichments[b.slug].faq : generatedFaq
             const beachHtml = html
               .replace(/<title>[^<]*<\/title>/, `<title>${beachTitle}</title>`)
               .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${beachDesc}" />`)
@@ -326,18 +340,28 @@ export default defineConfig({
               .replace(/<meta name="twitter:description"[^>]*>/, `<meta name="twitter:description" content="${beachDesc}" />`)
               .replace(/<meta property="og:image" [^>]*>/, _beachImages[b.id] ? `<meta property="og:image" content="https://${domain}/beaches/${_beachImages[b.id]}" />` : `<meta property="og:image" content="https://${domain}/og-image.png" />`)
               .replace(/<meta name="twitter:image" [^>]*>/, _beachImages[b.id] ? `<meta name="twitter:image" content="https://${domain}/beaches/${_beachImages[b.id]}" />` : `<meta name="twitter:image" content="https://${domain}/og-image.png" />`)
-              .replace('</head>', `\n    <script type="application/ld+json">\n    ${beachSchema}\n    </script>\n    <script type="application/ld+json">\n    ${breadcrumbBeach}\n    </script>${_enrichments[b.slug] ? '\n    <script type="application/ld+json">\n    ' + _enrichments[b.slug].faq + '\n    </script>' : ''}\n</head>`)
+              .replace('</head>', `\n    <script type="application/ld+json">\n    ${beachSchema}\n    </script>\n    <script type="application/ld+json">\n    ${breadcrumbBeach}\n    </script>\n    <script type="application/ld+json">\n    ${faqSchema}\n    </script>\n</head>`)
             // Build noscript with nearby beaches (same commune first, then same island), nav links
+            // Extra SEO sections appended to ALL beaches (enriched or not)
+            const condBaignade = b.status === 'clean' ? `<h2>Conditions de baignade</h2><p>${b.name} est actuellement propre. La baignade est possible dans de bonnes conditions. Aucune présence notable de sargasses.</p>` : b.status === 'moderate' ? `<h2>Conditions de baignade</h2><p>Présence modérée de sargasses à ${b.name}. La baignade reste possible mais soyez vigilant. Évitez les zones d'accumulation d'algues.</p>` : `<h2>Conditions de baignade</h2><p>La baignade est déconseillée à ${b.name} aujourd'hui. Forte présence de sargasses. Le H2S dégagé peut provoquer des irritations. Consultez les <a href="/plages-sans-sargasses/">plages propres à proximité</a>.</p>`
+            const accessSection = `<h2>Comment s'y rendre</h2><p>${b.name} se trouve à ${b.commune}, ${island}. Accessible en ${b.drive} minutes en voiture depuis ${mainCity}.</p>`
+            const tagsList = []
+            if (b.kids) tagsList.push('Adaptée aux enfants')
+            if (b.snorkel) tagsList.push('Snorkeling possible')
+            if (b.parking) tagsList.push('Parking disponible')
+            const tagsHtml = tagsList.length > 0 ? `<p><strong>Équipements :</strong> ${tagsList.join(' · ')}</p>` : ''
+            const extraSections = `${accessSection}${condBaignade}${tagsHtml}`
             let noscriptBlock
             if (_enrichments[b.slug]) {
-              noscriptBlock = _enrichments[b.slug].noscript
+              // Keep existing enrichment noscript but append extra sections inside the article
+              noscriptBlock = _enrichments[b.slug].noscript.replace('</article>', `${extraSections}</article>`)
             } else {
               const sameCommune = beaches.filter(o => o.commune === b.commune && o.slug !== b.slug)
               const sameIsland = beaches.filter(o => o.island === b.island && o.commune !== b.commune && o.slug !== b.slug)
               const nearby = sameCommune.slice(0, 4)
               if (nearby.length < 4) nearby.push(...sameIsland.slice(0, 4 - nearby.length))
               const nearbyLi = nearby.map(o => `<li><a href="/plages/${o.slug}/">${o.name}</a> — ${o.commune}</li>`).join('')
-              noscriptBlock = `\n    <noscript>\n      <article>\n        <h1>Sargasses à ${b.name} (${b.commune}, ${island})</h1>\n        <p>État des sargasses à ${b.name} en temps réel. Cette plage de ${b.commune} en ${island} est surveillée quotidiennement par satellite.</p>\n        <h3>Plages à proximité</h3>\n        <ul>${nearbyLi}</ul>\n        <p><a href="/carte-sargasses/">Voir la carte des sargasses</a> · <a href="/alertes/">Alertes sargasses</a> · <a href="/">Accueil Sargasses ${island}</a></p>\n      </article>\n    </noscript>`
+              noscriptBlock = `\n    <noscript>\n      <article>\n        <h1>Sargasses à ${b.name} (${b.commune}, ${island})</h1>\n        <p>État des sargasses à ${b.name} en temps réel. Cette plage de ${b.commune} en ${island} est surveillée quotidiennement par satellite.</p>\n        ${extraSections}\n        <h3>Plages à proximité</h3>\n        <ul>${nearbyLi}</ul>\n        <p><a href="/carte-sargasses/">Voir la carte des sargasses</a> · <a href="/alertes/">Alertes sargasses</a> · <a href="/">Accueil Sargasses ${island}</a></p>\n      </article>\n    </noscript>`
             }
             const finalHtml = beachHtml.replace('</body>', noscriptBlock + '\n</body>')
             writeFileSync(resolve(beachDir, 'index.html'), finalHtml)
