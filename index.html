@@ -56,7 +56,21 @@
     OneSignalDeferred.push(function(OneSignal) {
       OneSignal.init({
         appId: window.ONESIGNAL_APP_ID || "4280dcab-fc43-415d-a9cd-a3da8cf601f1",
-        allowLocalhostAsSecureOrigin: true
+        allowLocalhostAsSecureOrigin: true,
+        promptOptions: {
+          slidedown: {
+            prompts: [{
+              type: "push",
+              autoPrompt: false,
+              text: {
+                actionMessage: "Recevez une alerte quand les sargasses arrivent à votre plage.",
+                acceptButton: "Activer",
+                cancelButton: "Plus tard"
+              },
+              delay: { pageViews: 1, timeDelay: 5 }
+            }]
+          }
+        }
       });
     });
   </script>

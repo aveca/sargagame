@@ -720,7 +720,7 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
   const LL=T[lang]||T.fr
   const nClean=beaches.filter(b=>b.status==="clean").length
   return(
-    <div style={{height:"100%",overflowY:"auto",paddingTop:130,paddingBottom:80,
+    <div style={{height:"100%",overflowY:"auto",paddingTop:150,paddingBottom:80,
       background:"var(--sg-bg,#FDFCF7)"}}>
       <div style={{padding:"8px 16px 0",fontSize:13,color:"var(--sg-mid,#686868)",fontWeight:500}}>
         {LL.nClean.replace("{n}",nClean)} / {beaches.length}
@@ -768,7 +768,7 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
 function Onboarding({onDone,island="mq",lang="fr"}){
   // Adapt content per island (Clarity: 91% new users see this — must be relevant)
   const isMQ=island==="mq"
-  const siteName=isMQ?"{siteName}":"SARGASSES.GP"
+  const siteName=isMQ?"SARGASSES.MQ":"SARGASSES.GP"
   const islandName=isMQ?"Martinique":"Guadeloupe"
   const locals=isMQ?"Martiniquais":"Guadeloupéens"
   const goodBeach=isMQ?"Grande Anse d'Arlet":"Plage de la Caravelle"
@@ -799,6 +799,8 @@ function Onboarding({onDone,island="mq",lang="fr"}){
   const closeOnboarding=useCallback(()=>{
     s("sg_onb",1)
     onDone()
+    // Show push notification prompt AFTER onboarding (not during — blocks CTA clicks)
+    try{window.OneSignalDeferred?.push(o=>o.Slidedown?.promptPush())}catch(e){}
   },[onDone])
 
   const openStripe=useCallback(()=>{
@@ -822,7 +824,7 @@ function Onboarding({onDone,island="mq",lang="fr"}){
     <div className="onb-overlay">
       <div className="onb-phone">
       <div className="onb-carousel" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-        <div className="onb-slides" ref={slidesRef}>
+        <div className="onb-slides" ref={slidesRef} style={{transform:"translateX(0%)"}}>
 
           {/* ═══════════════════════════════════════════
               SLIDE 1 — "Sache avant de partir"
@@ -936,7 +938,7 @@ function Onboarding({onDone,island="mq",lang="fr"}){
               </div>
 
               {/* CTA — INSIDE slide 1 */}
-              <div style={{marginTop:"auto",paddingBottom:50,display:"flex",flexDirection:"column",gap:8}}>
+              <div style={{marginTop:20,paddingBottom:50,display:"flex",flexDirection:"column",gap:8}}>
                 <button onClick={()=>goTo(1)} style={{
                   background:"linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%)",
                   color:C.ink,border:"none",borderRadius:22,padding:"19px 20px 19px 28px",
@@ -1054,7 +1056,7 @@ function Onboarding({onDone,island="mq",lang="fr"}){
             </div>
 
             {/* CTA — INSIDE slide 2 */}
-            <div style={{marginTop:"auto",padding:"10px 22px 48px"}}>
+            <div style={{marginTop:16,padding:"10px 22px 48px"}}>
               <button onClick={()=>goTo(2)} style={{
                 width:"100%",background:"linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%)",
                 color:C.ink,border:"none",borderRadius:20,padding:"17px 20px",
