@@ -327,7 +327,19 @@ export default defineConfig({
               .replace(/<meta property="og:image" [^>]*>/, _beachImages[b.id] ? `<meta property="og:image" content="https://${domain}/beaches/${_beachImages[b.id]}" />` : `<meta property="og:image" content="https://${domain}/og-image.png" />`)
               .replace(/<meta name="twitter:image" [^>]*>/, _beachImages[b.id] ? `<meta name="twitter:image" content="https://${domain}/beaches/${_beachImages[b.id]}" />` : `<meta name="twitter:image" content="https://${domain}/og-image.png" />`)
               .replace('</head>', `\n    <script type="application/ld+json">\n    ${beachSchema}\n    </script>\n    <script type="application/ld+json">\n    ${breadcrumbBeach}\n    </script>${_enrichments[b.slug] ? '\n    <script type="application/ld+json">\n    ' + _enrichments[b.slug].faq + '\n    </script>' : ''}\n</head>`)
-            const finalHtml = _enrichments[b.slug] ? beachHtml.replace('</body>', _enrichments[b.slug].noscript + '\n</body>') : beachHtml
+            // Build noscript with nearby beaches (same commune first, then same island), nav links
+            let noscriptBlock
+            if (_enrichments[b.slug]) {
+              noscriptBlock = _enrichments[b.slug].noscript
+            } else {
+              const sameCommune = beaches.filter(o => o.commune === b.commune && o.slug !== b.slug)
+              const sameIsland = beaches.filter(o => o.island === b.island && o.commune !== b.commune && o.slug !== b.slug)
+              const nearby = sameCommune.slice(0, 4)
+              if (nearby.length < 4) nearby.push(...sameIsland.slice(0, 4 - nearby.length))
+              const nearbyLi = nearby.map(o => `<li><a href="/plages/${o.slug}/">${o.name}</a> — ${o.commune}</li>`).join('')
+              noscriptBlock = `\n    <noscript>\n      <article>\n        <h1>Sargasses à ${b.name} (${b.commune}, ${island})</h1>\n        <p>État des sargasses à ${b.name} en temps réel. Cette plage de ${b.commune} en ${island} est surveillée quotidiennement par satellite.</p>\n        <h3>Plages à proximité</h3>\n        <ul>${nearbyLi}</ul>\n        <p><a href="/carte-sargasses/">Voir la carte des sargasses</a> · <a href="/alertes/">Alertes sargasses</a> · <a href="/">Accueil Sargasses ${island}</a></p>\n      </article>\n    </noscript>`
+            }
+            const finalHtml = beachHtml.replace('</body>', noscriptBlock + '\n</body>')
             writeFileSync(resolve(beachDir, 'index.html'), finalHtml)
             const sitemapEntry = `  <url><loc>${beachUrl}</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>\n`
             if (isMQ) sitemapMQBeaches += sitemapEntry
