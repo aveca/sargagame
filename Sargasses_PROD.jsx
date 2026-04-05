@@ -1335,7 +1335,13 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle}){
 export default function App(){
   const[lang,setLang]=useState(getLang)
   const[theme,setTheme]=useState(()=>g("sg_theme","light"))
-  const[island,setIsland]=useState(()=>g("sg_island","mq"))
+  const[island,setIsland]=useState(()=>{
+    const saved=g("sg_island",null)
+    if(saved)return saved
+    // Auto-detect island from hostname (GSC: GP at position 70 → must show GP content on GP domain)
+    try{if(window.location.hostname.includes("guadeloupe"))return"gp"}catch{}
+    return"mq"
+  })
   const[view,setView]=useState("map") // map | list | premium
   const[search,setSearch]=useState("")
   const[filter,setFilter]=useState(0) // index in T.filters
