@@ -500,7 +500,7 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData}){
    FORECAST CHART — Day 1 (today) free, days 2-7 LOCKED (blurred) for premium
    Data: 1.57% conversion — show only today free to increase premium value
    ═══════════════════════════════════════════════════════════════════════════ */
-function ForecastChart({forecast,lang,onPremiumClick}){
+function ForecastChart({forecast,lang,onPremiumClick,isPremium}){
   if(!forecast||!forecast.length)return null
   const LL=T[lang]||T.fr
   const max=Math.max(...forecast.map(d=>d.afai),.1)
@@ -510,7 +510,7 @@ function ForecastChart({forecast,lang,onPremiumClick}){
         {forecast.map((d,i)=>{
           const h=Math.max(8,(d.afai/max)*80)
           const st=ST[d.status]||ST.clean
-          const isLocked=i>=1
+          const isLocked=!isPremium&&i>=1
           return(
             <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4,
               filter:isLocked?"blur(3px)":"none",opacity:isLocked?.4:1,
@@ -522,8 +522,8 @@ function ForecastChart({forecast,lang,onPremiumClick}){
           )
         })}
       </div>
-      {/* Lock overlay for days 2-7 (today is free, rest is premium) */}
-      <div style={{position:"absolute",top:0,right:0,bottom:0,width:`${(6/7*100).toFixed(1)}%`,
+      {/* Lock overlay for days 2-7 — hidden if premium */}
+      {!isPremium&&<div style={{position:"absolute",top:0,right:0,bottom:0,width:`${(6/7*100).toFixed(1)}%`,
         display:"flex",alignItems:"center",justifyContent:"center",
         background:"linear-gradient(90deg,transparent,rgba(253,252,247,.7) 20%)",
         borderRadius:8}}>
@@ -538,7 +538,7 @@ function ForecastChart({forecast,lang,onPremiumClick}){
             Moins cher qu'un café. Évite une journée gâchée.
           </span>
         </div>
-      </div>
+      </div>}
     </div>
   )
 }
@@ -568,7 +568,7 @@ function useWeather(beach){
 /* ═══════════════════════════════════════════════════════════════════════════
    BOTTOM SHEET — beach detail with photo, forecast, weather, nearby
    ═══════════════════════════════════════════════════════════════════════════ */
-function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMap,onBeachClick,onPremiumClick}){
+function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMap,onBeachClick,onPremiumClick,isPremium}){
   const LL=T[lang]||T.fr
   const weather=useWeather(beach)
   const forecast=useMemo(()=>beach?generateForecast(beach.afai,lang):null,[beach?.id,lang])
@@ -671,7 +671,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
 
           {/* Forecast (days 4-7 locked) */}
           <h3 style={{fontSize:15,fontWeight:700,marginBottom:8}}>{LL.forecast}</h3>
-          <ForecastChart forecast={forecast} lang={lang} onPremiumClick={onPremiumClick}/>
+          <ForecastChart forecast={forecast} lang={lang} onPremiumClick={onPremiumClick} isPremium={isPremium}/>
 
           {/* Weather */}
           {weather&&(
@@ -1620,6 +1620,20 @@ export default function App(){
   const[showOnboarding,setShowOnboarding]=useState(()=>!g("sg_onb",0))
   const[showPushPrompt,setShowPushPrompt]=useState(false)
   const[showPremium,setShowPremium]=useState(false)
+  const[isPremium,setIsPremium]=useState(()=>{
+    // Check localStorage OR URL param ?premium=1 (Stripe success redirect)
+    if(g("sg_premium",false))return true
+    try{
+      const params=new URLSearchParams(window.location.search)
+      if(params.get("premium")==="1"||params.get("success")==="1"){
+        s("sg_premium",true)
+        // Clean URL
+        window.history.replaceState({},"",window.location.pathname)
+        return true
+      }
+    }catch(e){}
+    return false
+  })
 
   // Runtime data sources
   const[allBeaches,setAllBeaches]=useState(BEACHES_FALLBACK)
@@ -1750,7 +1764,7 @@ export default function App(){
           <BeachSheet beach={selectedBeach} onClose={closeSheet}
             favorites={favorites} onToggleFav={toggleFav} lang={lang}
             allBeaches={allBeaches} imageMap={imageMap}
-            onBeachClick={onBeachClick} onPremiumClick={openPremium}/>
+            onBeachClick={onBeachClick} onPremiumClick={openPremium} isPremium={isPremium}/>
         )}
 
         {/* PREMIUM MODAL */}

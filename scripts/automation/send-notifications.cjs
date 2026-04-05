@@ -229,13 +229,13 @@ async function sendAllPushNotifications(alerts, goodNews) {
   const results = []
 
   for (const a of alerts) {
-    const msg = `\u26a0\ufe0f ${a.name} passe en ${statusLabel(a.to)} \u2014 sargasses d\u00e9tect\u00e9es`
+    const msg = `\u26a0\ufe0f ${a.name} passe en ${statusLabel(a.to)} \u2014 Avec Premium, tu aurais su hier. 4,99\u20ac/mois`
     const res = await sendPushNotification(a.island, msg)
     results.push({ type: 'alert', beach: a.id, island: a.island, message: msg, ...res })
   }
 
   for (const g of goodNews) {
-    const msg = `\u2705 ${g.name} est propre \u2014 bonne nouvelle !`
+    const msg = `\u2705 ${g.name} est propre \u2014 Pr\u00e9vois ton weekend avec Premium (7j)`
     const res = await sendPushNotification(g.island, msg)
     results.push({ type: 'good-news', beach: g.id, island: g.island, message: msg, ...res })
   }
