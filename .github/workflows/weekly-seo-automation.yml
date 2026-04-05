@@ -40,6 +40,7 @@ jobs:
 
       # ── 1c. Auto-Optimize (data-driven self-improvement) ─
       - name: Auto-Optimize (apply data-driven fixes)
+        continue-on-error: true
         run: node scripts/automation/auto-optimize.cjs
 
       # ── 2. Auto-fix 404 errors ───────────────────────────
