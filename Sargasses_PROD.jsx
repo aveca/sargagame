@@ -1516,7 +1516,7 @@ function EmailCapture(){
         ):(
           <>
             <p style={{margin:"0 0 10px",fontSize:13.5,fontWeight:600,color:C.ink,lineHeight:"19px"}}>
-              {"\uD83D\uDCE7"} Re\u00e7ois le bulletin sargasses chaque semaine
+              {"📧"} Reçois le bulletin sargasses chaque semaine
             </p>
             <form onSubmit={handleSubmit} style={{display:"flex",gap:8,alignItems:"center"}}>
               <input
