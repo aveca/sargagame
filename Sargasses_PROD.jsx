@@ -154,14 +154,10 @@ function haversine(lat1,lon1,lat2,lon2){
   return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))
 }
 
-function getBeachPhoto(beach,imageMap){
+function getBeachPhoto(beach){
   if(!beach)return null
-  // 1. Real photo from beaches-images.json (GP photos from Google Places)
-  if(imageMap){const file=imageMap[beach.id];if(file)return`/beaches/${file}`}
-  // 2. Wikimedia Commons photo (MQ beaches: photo-mq001.jpg etc.)
-  if(beach.island==="mq")return`/beaches/photo-${beach.id}.jpg`
-  // 3. Pre-generated satellite thumbnail (static, fast)
-  return`/beaches/sat-${beach.id}.jpg`
+  // Google Places photo (50/50 plages, vraies photos visiteurs)
+  return`/beaches/gplace-${beach.id}.jpg`
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -539,7 +535,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
         <div className="sheet-handle"/>
 
         {/* Photo (real or satellite) */}
-        <div style={{height:180,background:`url(${bgImage}) center/cover`,
+        <div style={{height:220,background:`url(${bgImage}) center 35%/cover`,
           borderRadius:"0",position:"relative"}}>
           <div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 40%,var(--sg-card,#fff) 100%)"}}/>
           <button onClick={onClose} style={{position:"absolute",top:12,right:12,
@@ -712,8 +708,8 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
               transition:"background .15s",
             }}>
               {/* Photo thumbnail */}
-              <div style={{width:56,height:56,borderRadius:12,
-                background:`url(${photo||satImg(b.lat,b.lng,112)}) center/cover`,flexShrink:0}}/>
+              <div style={{width:64,height:48,borderRadius:10,
+                background:`url(${photo||satImg(b.lat,b.lng,128)}) center 40%/cover`,flexShrink:0}}/>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontSize:14,fontWeight:700,whiteSpace:"nowrap",
                   overflow:"hidden",textOverflow:"ellipsis",color:"var(--sg-ink)"}}>
