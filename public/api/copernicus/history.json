@@ -635,103 +635,103 @@
       "levels": [
         {
           "id": "grande-anse",
-          "afai": 0.05,
+          "afai": 0.11,
           "status": "clean"
         },
         {
           "id": "anse-mitan",
-          "afai": 0.06,
+          "afai": 0.17,
           "status": "clean"
         },
         {
           "id": "anse-noire",
-          "afai": 0.06,
+          "afai": 0.08,
           "status": "clean"
         },
         {
           "id": "tartane",
-          "afai": 0.06,
+          "afai": 0.19,
           "status": "clean"
         },
         {
           "id": "anse-madame",
-          "afai": 0.06,
+          "afai": 0.14,
           "status": "clean"
         },
         {
           "id": "diamant",
-          "afai": 0.05,
-          "status": "clean"
+          "afai": 0.42,
+          "status": "moderate"
         },
         {
           "id": "pt-marin",
-          "afai": 0.05,
-          "status": "clean"
+          "afai": 0.47,
+          "status": "moderate"
         },
         {
           "id": "sainte-anne",
-          "afai": 0.05,
-          "status": "clean"
+          "afai": 0.78,
+          "status": "avoid"
         },
         {
           "id": "les-salines",
-          "afai": 0.05,
-          "status": "clean"
+          "afai": 0.82,
+          "status": "avoid"
         },
         {
           "id": "vauclin",
-          "afai": 0.05,
-          "status": "clean"
+          "afai": 0.71,
+          "status": "avoid"
         },
         {
           "id": "gp-grande-anse",
-          "afai": 0.08,
+          "afai": 0.15,
           "status": "clean"
         },
         {
           "id": "gp-malendure",
-          "afai": 0.08,
+          "afai": 0.12,
           "status": "clean"
         },
         {
           "id": "gp-sainte-anne",
-          "afai": 0.07,
+          "afai": 0.22,
           "status": "clean"
         },
         {
           "id": "gp-pt-chateaux",
-          "afai": 0.06,
-          "status": "clean"
+          "afai": 0.38,
+          "status": "moderate"
         },
         {
           "id": "gp-gosier",
-          "afai": 0.07,
+          "afai": 0.18,
           "status": "clean"
         },
         {
           "id": "gp-caravelle",
-          "afai": 0.07,
+          "afai": 0.14,
           "status": "clean"
         },
         {
           "id": "gp-bas-du-fort",
-          "afai": 0.07,
-          "status": "clean"
+          "afai": 0.35,
+          "status": "moderate"
         },
         {
           "id": "gp-deshaies",
-          "afai": 0.06,
+          "afai": 0.11,
           "status": "clean"
         },
         {
           "id": "gp-moule",
-          "afai": 0.06,
-          "status": "clean"
+          "afai": 0.44,
+          "status": "moderate"
         },
         {
           "id": "gp-vieux-fort",
-          "afai": 0.06,
-          "status": "clean"
+          "afai": 0.72,
+          "status": "avoid"
         }
       ]
     }
