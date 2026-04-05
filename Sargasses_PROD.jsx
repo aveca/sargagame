@@ -1341,20 +1341,21 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle}){
         ))}
       </div>
 
-      {/* Live indicator + GSC subtitle (#1 query: "sargasse martinique en temps réel") */}
-      <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
+      {/* Live indicator — cliquable (Clarity: 10+ dead clicks) */}
+      <a href="https://marine.copernicus.eu/" target="_blank" rel="noopener"
+        style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,textDecoration:"none"}}>
         <div style={{display:"flex",alignItems:"center",gap:6,
           padding:"6px 12px",borderRadius:100,
           background:"var(--sg-card,#fff)",
           boxShadow:"0 2px 8px rgba(0,0,0,.06)",
           border:"1px solid var(--sg-border)",
-          fontSize:11,fontWeight:600,color:C.teal}}>
+          fontSize:11,fontWeight:600,color:C.teal,cursor:"pointer"}}>
           <span className="pulse" style={{width:8,height:8,borderRadius:4,background:C.green}}/>
           {LL.live} · {LL.copernicus}
         </div>
         <span style={{fontSize:9,fontWeight:600,color:"var(--sg-mid,#686868)",letterSpacing:".02em",
           whiteSpace:"nowrap"}}>{lang==="en"?"Sargassum map in real time":"Carte des sargasses en temps réel"}</span>
-      </div>
+      </a>
 
       {/* Theme + Lang */}
       <div style={{display:"flex",gap:4}}>
