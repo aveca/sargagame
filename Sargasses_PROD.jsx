@@ -1479,6 +1479,15 @@ function EmailCapture(){
     setSubmitted(true)
     clearTimeout(timerRef.current)
     setTimeout(()=>setVisible(false),2000)
+    // Send to Brevo (Sendinblue) free API — or fallback beacon
+    const island=window.location.hostname.includes("guadeloupe")?"GP":"MQ"
+    try{
+      // Google Sheets webhook (Apps Script) — illimité, gratuit
+      fetch("https://script.google.com/macros/s/AKfycbxICUOQ3KDireo8sY1ZF8b9QiglPV7_sK0Q3hTIUPeQXTAhs-DWmtZ4hb_6v8c2fhhuBg/exec",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({email,island,source:"sargasses-app",date:new Date().toISOString()})
+      }).catch(()=>{})
+    }catch(ex){}
   },[email])
 
   const handleDismiss=useCallback(()=>{
