@@ -521,14 +521,11 @@ function ForecastChart({forecast,lang,onPremiumClick}){
         display:"flex",alignItems:"center",justifyContent:"center",
         background:"linear-gradient(90deg,transparent,rgba(253,252,247,.7) 20%)",
         borderRadius:8}}>
-        <button onClick={onPremiumClick} style={{
-          display:"flex",alignItems:"center",gap:6,
-          padding:"8px 16px",borderRadius:100,border:"none",
-          background:"linear-gradient(135deg,"+C.goldL+","+C.gold+")",
-          color:C.ink,fontSize:11,fontWeight:700,cursor:"pointer",
-          boxShadow:"0 2px 12px rgba(232,168,0,.3)",fontFamily:"inherit",
+        <button onClick={onPremiumClick} className="gbtn" style={{
+          padding:"10px 20px",fontSize:13,fontWeight:700,
+          fontFamily:"'Anton',sans-serif",letterSpacing:".04em",textTransform:"uppercase",
         }}>
-           {LL.locked}
+          🔒 Débloquer 7 jours
         </button>
       </div>
     </div>
