@@ -586,10 +586,13 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
 
   const onTouchStart=e=>{startY.current=e.touches[0].clientY}
   const onTouchMove=e=>{
+    // Only allow swipe-dismiss when sheet is scrolled to top (not mid-scroll)
+    if(sheetRef.current&&sheetRef.current.scrollTop>5)return
     const dy=e.touches[0].clientY-startY.current
     if(dy>0&&sheetRef.current)sheetRef.current.style.transform=`translateY(${dy}px)`
   }
   const onTouchEnd=e=>{
+    if(sheetRef.current&&sheetRef.current.scrollTop>5){sheetRef.current.style.transform="";return}
     const dy=(e.changedTouches[0]?.clientY||0)-startY.current
     if(dy>100)onClose()
     else if(sheetRef.current)sheetRef.current.style.transform=""
@@ -614,7 +617,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
         </div>
 
-        <div style={{padding:"0 20px 100px"}}>
+        <div style={{padding:"0 20px calc(80px + env(safe-area-inset-bottom,0px))"}}>
           {/* Name + Status */}
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
             <h2 className="anton" style={{fontSize:22,margin:0,lineHeight:1.2}}>{beach.name}</h2>
@@ -760,7 +763,8 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
   const LL=T[lang]||T.fr
   const nClean=beaches.filter(b=>b.status==="clean").length
   return(
-    <div style={{height:"100%",overflowY:"auto",paddingTop:150,paddingBottom:80,
+    <div style={{height:"100%",overflowY:"auto",
+      paddingTop:"calc(140px + env(safe-area-inset-top,0px))",paddingBottom:80,
       background:"var(--sg-bg,#FDFCF7)"}}>
       <div style={{padding:"8px 16px 0",fontSize:13,color:"var(--sg-mid,#686868)",fontWeight:500}}>
         {LL.nClean.replace("{n}",nClean)} / {beaches.length}
@@ -1354,7 +1358,7 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle}){
           {LL.live} · {LL.copernicus}
         </div>
         <span style={{fontSize:9,fontWeight:600,color:"var(--sg-mid,#686868)",letterSpacing:".02em",
-          whiteSpace:"nowrap"}}>{lang==="en"?"Sargassum map in real time":"Carte des sargasses en temps réel"}</span>
+          textAlign:"center",lineHeight:1.2}}>{lang==="en"?"Real-time map":"En temps réel"}</span>
       </a>
 
       {/* Theme + Lang */}
