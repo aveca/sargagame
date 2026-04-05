@@ -76,6 +76,9 @@ const T={
     reportThanks:"Merci pour ton signalement !",report:"Signaler",
     openWaze:"Ouvrir Waze",driftDown:"Dispersion attendue",driftUp:"Arrivée possible",driftStable:"Stable",
     close:"Fermer",nearby:"Plages à proximité",locked:"Premium",
+    beachScore:"Score plage",waves:"Vagues",swell:"Houle",rain:"Pluie",
+    scoreExcellent:"Excellent",scoreGood:"Bon",scoreMedium:"Moyen",scoreBad:"Déconseillé",
+    marine:"Conditions marines",
   },
   en:{
     days:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],today:"Today",tomorrow:"Tmrw",
@@ -97,6 +100,9 @@ const T={
     reportThanks:"Thanks for your report!",report:"Report",
     openWaze:"Open Waze",driftDown:"Dispersing",driftUp:"Incoming",driftStable:"Stable",
     close:"Close",nearby:"Nearby beaches",locked:"Premium",
+    beachScore:"Beach Score",waves:"Waves",swell:"Swell",rain:"Rain",
+    scoreExcellent:"Excellent",scoreGood:"Good",scoreMedium:"Fair",scoreBad:"Not recommended",
+    marine:"Marine conditions",
   },
 }
 
@@ -356,7 +362,17 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData}){
     L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{
       maxZoom:18,
     }).addTo(map)
-    // Labels overlay (on top of satellite)
+    // ERDDAP WMS: real-time sargassum satellite data overlay (NOAA AFAI 7-day cumulative)
+    // Data: USF AFAI satellite detection — shows actual sargassum bands drifting in the ocean
+    try{
+      L.tileLayer.wms("https://cwcgom.aoml.noaa.gov/erddap/wms/noaa_aoml_atlantic_oceanwatch_AFAI_7D/request",{
+        layers:"noaa_aoml_atlantic_oceanwatch_AFAI_7D:AFAI",
+        styles:"",format:"image/png",transparent:true,
+        version:"1.1.1",time:"last",opacity:0.6,
+        maxZoom:18,
+      }).addTo(map)
+    }catch(e){console.warn("WMS layer failed:",e.message)}
+    // Labels overlay (on top of satellite + sargassum)
     L.tileLayer("https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png",{
       maxZoom:18,subdomains:"abcd",
     }).addTo(map)
@@ -500,21 +516,30 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData}){
    FORECAST CHART — Day 1 (today) free, days 2-7 LOCKED (blurred) for premium
    Data: 1.57% conversion — show only today free to increase premium value
    ═══════════════════════════════════════════════════════════════════════════ */
-function ForecastChart({forecast,lang,onPremiumClick,isPremium}){
+function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily}){
   if(!forecast||!forecast.length)return null
   const LL=T[lang]||T.fr
   const max=Math.max(...forecast.map(d=>d.afai),.1)
   return(
     <div style={{position:"relative"}}>
-      <div style={{display:"flex",gap:6,alignItems:"flex-end",height:100,padding:"8px 0"}}>
+      <div style={{display:"flex",gap:6,alignItems:"flex-end",height:140,padding:"8px 0"}}>
         {forecast.map((d,i)=>{
-          const h=Math.max(8,(d.afai/max)*80)
+          const h=Math.max(8,(d.afai/max)*70)
           const st=ST[d.status]||ST.clean
           const isLocked=!isPremium&&i>=1
+          // Weather data for this day (if available)
+          const hasDaily=weatherDaily&&weatherDaily.tempMax&&i<weatherDaily.tempMax.length
+          const dayPrecip=hasDaily?weatherDaily.precipSum[i]:0
+          const dayCloud=hasDaily?weatherDaily.cloudMean[i]:0
+          const dayWind=hasDaily?weatherDaily.windMax[i]:0
+          const dayTemp=hasDaily?Math.round(weatherDaily.tempMax[i]):null
+          const wxIcon=hasDaily?getDayWeatherIcon(dayPrecip,dayCloud,dayWind):null
           return(
-            <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4,
+            <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,
               filter:isLocked?"blur(3px)":"none",opacity:isLocked?.4:1,
               pointerEvents:isLocked?"none":"auto"}}>
+              {wxIcon&&<span style={{fontSize:13,lineHeight:1}}>{wxIcon}</span>}
+              {dayTemp!=null&&<span style={{fontSize:9,fontWeight:600,color:"var(--sg-mid,#686868)"}}>{dayTemp}°</span>}
               <span style={{fontSize:10,fontWeight:600,color:st.c}}>{Math.round(d.afai*100)}%</span>
               <div className="fc-bar" style={{width:"100%",height:h,background:st.c,opacity:.8}}/>
               <span style={{fontSize:10,color:"var(--sg-mid,#686868)",fontWeight:500}}>{d.day}</span>
@@ -551,15 +576,35 @@ function useWeather(beach){
   useEffect(()=>{
     if(!beach)return setData(null)
     let cancel=false
-    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${beach.lat}&longitude=${beach.lng}&current=temperature_2m,wind_speed_10m,wind_direction_10m,uv_index&timezone=America/Martinique`)
-      .then(r=>r.json()).then(j=>{
-        if(!cancel&&j.current)setData({
-          temp:Math.round(j.current.temperature_2m),
-          wind:Math.round(j.current.wind_speed_10m),
-          windDir:j.current.wind_direction_10m,
-          uv:j.current.uv_index,
-        })
-      }).catch(()=>{})
+    const weatherUrl=`https://api.open-meteo.com/v1/forecast?latitude=${beach.lat}&longitude=${beach.lng}&current=temperature_2m,wind_speed_10m,wind_direction_10m,uv_index,precipitation&daily=temperature_2m_max,precipitation_sum,cloud_cover_mean,wind_speed_10m_max&timezone=America/Martinique`
+    const marineUrl=`https://marine-api.open-meteo.com/v1/marine?latitude=${beach.lat}&longitude=${beach.lng}&current=wave_height,wave_direction,swell_wave_height&timezone=America/Martinique`
+    Promise.allSettled([
+      fetch(weatherUrl).then(r=>r.json()),
+      fetch(marineUrl).then(r=>r.json()),
+    ]).then(([weatherRes,marineRes])=>{
+      if(cancel)return
+      const w=weatherRes.status==="fulfilled"?weatherRes.value:null
+      const m=marineRes.status==="fulfilled"?marineRes.value:null
+      if(!w?.current)return
+      setData({
+        temp:Math.round(w.current.temperature_2m),
+        wind:Math.round(w.current.wind_speed_10m),
+        windDir:w.current.wind_direction_10m,
+        uv:w.current.uv_index,
+        precipitation:w.current.precipitation||0,
+        // Marine data (graceful — may be null)
+        waveHeight:m?.current?.wave_height??null,
+        swellHeight:m?.current?.swell_wave_height??null,
+        waveDir:m?.current?.wave_direction??null,
+        // Daily forecast (7 days)
+        daily:w.daily?{
+          tempMax:w.daily.temperature_2m_max,
+          precipSum:w.daily.precipitation_sum,
+          cloudMean:w.daily.cloud_cover_mean,
+          windMax:w.daily.wind_speed_10m_max,
+        }:null,
+      })
+    })
     return()=>{cancel=true}
   },[beach?.id])
   return data
@@ -634,6 +679,9 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
           <p style={{fontSize:13,color:"var(--sg-mid,#686868)",margin:"0 0 6px"}}>
             {beach.commune} · <AfaiBadge afai={beach.afai}/> · {beach.drive} {LL.drive}
           </p>
+          {/* Beach Score du Jour */}
+          <BeachScoreBadge afai={beach.afai} weather={weather} lang={lang}/>
+
           {/* Status description */}
           {ST[beach.status]&&(
             <p style={{fontSize:12,color:ST[beach.status].c,fontWeight:500,margin:"0 0 12px",lineHeight:1.5,
@@ -671,17 +719,26 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
 
           {/* Forecast (days 4-7 locked) */}
           <h3 style={{fontSize:15,fontWeight:700,marginBottom:8}}>{LL.forecast}</h3>
-          <ForecastChart forecast={forecast} lang={lang} onPremiumClick={onPremiumClick} isPremium={isPremium}/>
+          <ForecastChart forecast={forecast} lang={lang} onPremiumClick={onPremiumClick} isPremium={isPremium}
+            weatherDaily={weather?.daily||null}/>
 
           {/* Weather */}
           {weather&&(
             <>
               <h3 style={{fontSize:15,fontWeight:700,margin:"20px 0 10px"}}>{LL.weather}</h3>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
-                <WeatherCard icon="️" label={LL.temp} value={`${weather.temp}°C`}/>
-                <WeatherCard icon="" label={LL.wind} value={`${weather.wind} km/h`}/>
+                <WeatherCard icon="🌡️" label={LL.temp} value={`${weather.temp}°C`}/>
+                <WeatherCard icon="💨" label={LL.wind} value={`${weather.wind} km/h`}/>
                 <WeatherCard icon="☀️" label={LL.uv} value={weather.uv}/>
               </div>
+              {/* Marine conditions (waves, swell, rain) */}
+              {(weather.waveHeight!=null||weather.swellHeight!=null||weather.precipitation!=null)&&(
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginTop:10}}>
+                  {weather.waveHeight!=null&&<WeatherCard icon="🌊" label={LL.waves} value={`${weather.waveHeight}m`}/>}
+                  {weather.swellHeight!=null&&<WeatherCard icon="🏄" label={LL.swell} value={`${weather.swellHeight}m`}/>}
+                  <WeatherCard icon="💧" label={LL.rain} value={`${weather.precipitation}mm`}/>
+                </div>
+              )}
             </>
           )}
 
@@ -743,6 +800,95 @@ function WeatherCard({icon,label,value}){
       <div style={{fontSize:11,color:"var(--sg-mid,#686868)"}}>{label}</div>
     </div>
   )
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BEACH SCORE — Combined conditions /10 (Clarity: 25.71% map clicks)
+   ═══════════════════════════════════════════════════════════════════════════ */
+function calcBeachScore(afai,weather){
+  // Sargasses (40%): AFAI 0=10, 0.3=7, 0.65=3, 1.0=0
+  const sargScore=Math.max(0,Math.min(10,10-afai*(10/1)))
+  let parts=[{score:sargScore,weight:0.4}]
+  let totalWeight=0.4
+
+  if(weather){
+    // Vent (20%): <15=10, 15-25=7, 25-35=4, >35=1
+    if(weather.wind!=null){
+      const w=weather.wind
+      const windScore=w<15?10:w<=25?7:w<=35?4:1
+      parts.push({score:windScore,weight:0.2})
+      totalWeight+=0.2
+    }
+    // UV (20%): 0-5=10, 5-8=7, 8-10=4, >10=2
+    if(weather.uv!=null){
+      const u=weather.uv
+      const uvScore=u<=5?10:u<=8?7:u<=10?4:2
+      parts.push({score:uvScore,weight:0.2})
+      totalWeight+=0.2
+    }
+    // Vagues (20%): <0.5=10, 0.5-1.5=8, 1.5-2.5=5, >2.5=2
+    if(weather.waveHeight!=null){
+      const v=weather.waveHeight
+      const waveScore=v<0.5?10:v<=1.5?8:v<=2.5?5:2
+      parts.push({score:waveScore,weight:0.2})
+      totalWeight+=0.2
+    }
+  }
+
+  // Weighted average, normalized to total available weight
+  const raw=parts.reduce((sum,p)=>sum+p.score*(p.weight/totalWeight),0)
+  return Math.round(raw*10)/10
+}
+
+function getScoreStyle(score){
+  if(score>=8)return{color:"#16A34A",bg:"rgba(34,197,94,.12)",border:"rgba(34,197,94,.25)"}
+  if(score>=6)return{color:"#B87A00",bg:"rgba(232,168,0,.10)",border:"rgba(232,168,0,.22)"}
+  if(score>=4)return{color:"#E07800",bg:"rgba(224,120,0,.10)",border:"rgba(224,120,0,.22)"}
+  return{color:"#E8522A",bg:"rgba(232,82,42,.10)",border:"rgba(232,82,42,.22)"}
+}
+
+function getScoreLabel(score,lang){
+  const LL=T[lang]||T.fr
+  if(score>=8)return LL.scoreExcellent
+  if(score>=6)return LL.scoreGood
+  if(score>=4)return LL.scoreMedium
+  return LL.scoreBad
+}
+
+function BeachScoreBadge({afai,weather,lang}){
+  const score=calcBeachScore(afai,weather)
+  const st=getScoreStyle(score)
+  const label=getScoreLabel(score,lang)
+  return(
+    <div style={{display:"flex",alignItems:"center",gap:10,
+      padding:"8px 14px 8px 8px",borderRadius:16,
+      background:st.bg,border:`1.5px solid ${st.border}`,marginBottom:12}}>
+      <div style={{width:48,height:48,borderRadius:"50%",
+        background:`conic-gradient(${st.color} ${score*36}deg, rgba(0,0,0,.06) ${score*36}deg)`,
+        display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+        <div style={{width:38,height:38,borderRadius:"50%",background:"var(--sg-card,#fff)",
+          display:"flex",alignItems:"center",justifyContent:"center",
+          flexDirection:"column",boxShadow:"0 1px 3px rgba(0,0,0,.06)"}}>
+          <span style={{fontFamily:"'Anton',sans-serif",fontSize:18,lineHeight:1,color:st.color}}>{score}</span>
+          <span style={{fontSize:8,color:"var(--sg-mid,#686868)",fontWeight:600}}>/10</span>
+        </div>
+      </div>
+      <div>
+        <div style={{fontSize:14,fontWeight:700,color:st.color}}>{label}</div>
+        <div style={{fontSize:11,color:"var(--sg-mid,#686868)"}}>{(T[lang]||T.fr).beachScore}</div>
+      </div>
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WEATHER ICON helper (for 7-day forecast)
+   ═══════════════════════════════════════════════════════════════════════════ */
+function getDayWeatherIcon(precipMm,cloudPct,windKmh){
+  if(windKmh>30)return"\uD83D\uDCA8" // wind
+  if(precipMm>2)return"\uD83C\uDF27\uFE0F" // rain
+  if(cloudPct>60)return"\uD83C\uDF24\uFE0F" // partly cloudy
+  return"\u2600\uFE0F" // sun
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
