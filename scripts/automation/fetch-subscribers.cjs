@@ -1,53 +1,83 @@
 #!/usr/bin/env node
 /**
- * Fetch Subscribers — pulls email list from Apps Script webhook
+ * Fetch Subscribers — reads email list directly from Google Sheet
  *
- * The Apps Script stores emails in a Google Sheet.
- * This script fetches them via GET ?action=subscribers and saves locally.
+ * Uses the service account (GOOGLE_SERVICE_ACCOUNT_JSON) to read
+ * the 'emails' sheet (columns: date, email, island, source).
+ * Saves to data/subscribers.json for welcome-email.cjs.
+ *
+ * The service account must have read access to the sheet.
+ * Share the sheet with the service account email address.
  *
  * Usage: node scripts/automation/fetch-subscribers.cjs
  */
-const https = require('https')
 const fs = require('fs')
 const path = require('path')
+const { google } = require('googleapis')
 
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec?action=subscribers'
+const SHEET_ID = '1LrpJeILNGIccCVn7AzZrEiLPr8ALTp20F5b1ihHC9FQ'
+const SHEET_RANGE = 'emails!A:D' // date, email, island, source
 const OUT_PATH = path.join(__dirname, 'data', 'subscribers.json')
 
-function fetchJSON(url) {
-  return new Promise((resolve, reject) => {
-    const get = (u) => {
-      https.get(u, { timeout: 15000 }, res => {
-        // Follow redirects (Apps Script returns 302)
-        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-          return get(res.headers.location)
-        }
-        let d = ''; res.on('data', c => d += c)
-        res.on('end', () => {
-          try { resolve(JSON.parse(d)) } catch { resolve(null) }
-        })
-      }).on('error', reject)
-    }
-    get(url)
-  })
-}
-
 async function main() {
-  console.log('=== Fetch Subscribers ===')
+  console.log('=== Fetch Subscribers (Google Sheets) ===')
+
+  const raw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON
+  if (!raw) {
+    console.log('GOOGLE_SERVICE_ACCOUNT_JSON not set — skipping.')
+    return
+  }
+
+  let auth
+  try {
+    const key = JSON.parse(raw)
+    auth = new google.auth.GoogleAuth({
+      credentials: key,
+      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+    })
+  } catch (e) {
+    console.log('Failed to parse service account:', e.message)
+    return
+  }
+
+  const sheets = google.sheets({ version: 'v4', auth })
 
   try {
-    const data = await fetchJSON(WEBHOOK_URL)
-    if (data && Array.isArray(data.subscribers)) {
-      fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true })
-      fs.writeFileSync(OUT_PATH, JSON.stringify(data.subscribers, null, 2))
-      console.log(`Saved ${data.subscribers.length} subscribers to ${OUT_PATH}`)
-    } else {
-      console.log('Apps Script did not return subscribers array.')
-      console.log('To enable: add action=subscribers handling in doGet()')
-      console.log('Response:', JSON.stringify(data)?.substring(0, 200))
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: SHEET_ID,
+      range: SHEET_RANGE,
+    })
+
+    const rows = res.data.values || []
+    if (rows.length <= 1) {
+      console.log('No subscribers found (empty sheet).')
+      return
     }
+
+    // Skip header row, map to objects
+    const subscribers = rows.slice(1)
+      .filter(r => r[1] && r[1].includes('@')) // must have valid email
+      .map(r => ({
+        date: r[0] || '',
+        email: r[1].trim().toLowerCase(),
+        island: (r[2] || 'MQ').toUpperCase(),
+        source: r[3] || 'unknown',
+      }))
+
+    // Deduplicate by email (keep latest)
+    const seen = new Map()
+    for (const s of subscribers) seen.set(s.email, s)
+    const unique = [...seen.values()]
+
+    fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true })
+    fs.writeFileSync(OUT_PATH, JSON.stringify(unique, null, 2))
+    console.log(`Saved ${unique.length} unique subscribers (${rows.length - 1} total rows)`)
+
   } catch (e) {
-    console.log(`Error fetching subscribers: ${e.message}`)
+    console.log(`Error reading sheet: ${e.message}`)
+    if (e.message.includes('not found') || e.message.includes('403')) {
+      console.log(`Share the sheet with the service account email to grant access.`)
+    }
   }
 }
 
