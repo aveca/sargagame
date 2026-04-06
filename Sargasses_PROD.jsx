@@ -2178,6 +2178,55 @@ function EmailCapture(){
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   PWA INSTALL PROMPT — custom "Add to Home Screen" banner
+   ═══════════════════════════════════════════════════════════════════════════ */
+function InstallPrompt(){
+  const[deferredPrompt,setDeferredPrompt]=useState(null)
+  const[visible,setVisible]=useState(false)
+  const[dismissed,setDismissed]=useState(()=>!!g("sg_pwa_prompt",0))
+
+  useEffect(()=>{
+    if(dismissed)return
+    // Check if already installed (standalone mode)
+    if(window.matchMedia("(display-mode: standalone)").matches)return
+    const handler=e=>{e.preventDefault();setDeferredPrompt(e);setTimeout(()=>setVisible(true),45000)}
+    window.addEventListener("beforeinstallprompt",handler)
+    return()=>window.removeEventListener("beforeinstallprompt",handler)
+  },[dismissed])
+
+  if(!visible||!deferredPrompt)return null
+
+  const handleInstall=async()=>{
+    track("sg_pwa_install")
+    deferredPrompt.prompt()
+    const{outcome}=await deferredPrompt.userChoice
+    track("sg_pwa_install_result",{outcome})
+    setVisible(false);s("sg_pwa_prompt",1)
+  }
+
+  return(
+    <div style={{position:"fixed",bottom:68,left:12,right:12,zIndex:760,
+      background:"linear-gradient(135deg,rgba(0,158,142,.95),rgba(30,200,176,.92))",
+      backdropFilter:"blur(16px)",borderRadius:18,padding:"14px 16px",
+      boxShadow:"0 8px 32px rgba(0,158,142,.35)",display:"flex",alignItems:"center",gap:12,
+      animation:"slideUp .4s cubic-bezier(.22,1,.36,1)"}}>
+      <div style={{width:42,height:42,borderRadius:12,background:"rgba(255,255,255,.15)",
+        display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>📱</div>
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{fontSize:13,fontWeight:700,color:"#fff"}}>Ajouter a l'ecran d'accueil</div>
+        <div style={{fontSize:11,color:"rgba(255,255,255,.7)",marginTop:1}}>Acces direct, hors-ligne, notifications</div>
+      </div>
+      <button onClick={handleInstall} style={{background:"#fff",color:C.teal,border:"none",
+        borderRadius:12,padding:"8px 14px",fontWeight:700,fontSize:12,cursor:"pointer",
+        fontFamily:"inherit",flexShrink:0}}>Installer</button>
+      <button onClick={()=>{setVisible(false);setDismissed(true);s("sg_pwa_prompt",1);track("sg_pwa_dismiss")}}
+        style={{position:"absolute",top:6,right:8,background:"none",border:"none",
+          color:"rgba(255,255,255,.4)",cursor:"pointer",fontSize:14,padding:4}}>✕</button>
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    APP PRINCIPAL
    ═══════════════════════════════════════════════════════════════════════════ */
 export default function App(){
@@ -2461,6 +2510,9 @@ export default function App(){
 
         {/* EMAIL CAPTURE — shows 15s after onboarding, once only */}
         {!showOnboarding&&!showPushPrompt&&<EmailCapture/>}
+
+        {/* PWA INSTALL PROMPT — 45s after load, once only */}
+        {!showOnboarding&&<InstallPrompt/>}
 
         {/* PREMIUM WELCOME TOAST */}
         {showWelcome&&(

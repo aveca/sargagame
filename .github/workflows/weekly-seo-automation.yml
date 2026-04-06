@@ -75,6 +75,11 @@ jobs:
         run: node scripts/automation/seo-submit-urls.cjs
         continue-on-error: true
 
+      # ── 7. A/B Test Evaluation ──────────────────────
+      - name: Evaluate A/B tests
+        continue-on-error: true
+        run: node scripts/automation/ab-evaluate.cjs
+
       # ── 8. Commit all SEO changes ────────────────────────
       - name: Commit SEO automation changes
         run: |

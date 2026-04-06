@@ -1,7 +1,7 @@
 // Service Worker — Sargasses PWA
 // Cache-first for static assets, network-first for API data
-const CACHE_NAME = 'sargasses-v2'
-const STATIC_ASSETS = ['/', '/index.html', '/manifest.json', '/favicon.svg']
+const CACHE_NAME = 'sargasses-v3'
+const STATIC_ASSETS = ['/', '/index.html', '/manifest.json', '/favicon.svg', '/icon-192.png']
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
