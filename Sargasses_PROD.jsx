@@ -932,6 +932,14 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
           <div style={{display:"flex",gap:10,marginBottom:20}}>
             <a href={wazeUrl} target="_blank" rel="noopener" className="gbtn"
               style={{flex:1,textDecoration:"none",textAlign:"center"}}>{LL.directions}</a>
+            <button onClick={()=>{
+              const url=window.location.origin+"/weekend.html"
+              if(navigator.share){navigator.share({title:"Sargasses ce weekend",url}).catch(()=>{})}
+              else{navigator.clipboard?.writeText(url);track("sg_share")}
+            }} style={{flex:0,padding:"14px 20px",borderRadius:22,border:"1.5px solid var(--sg-border)",
+              background:"var(--sg-card)",cursor:"pointer",fontSize:18,fontFamily:"inherit"}}>
+              📤
+            </button>
             <button onClick={()=>onToggleFav(beach.id)} style={{
               flex:0,padding:"14px 20px",borderRadius:22,border:"1.5px solid var(--sg-border)",
               background:"var(--sg-card)",cursor:"pointer",fontSize:18,
