@@ -60,8 +60,8 @@ const T={
     days:["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"],today:"Auj.",tomorrow:"Dem.",
     clean:"Propre",moderate:"Modéré",avoid:"Alerte",
     search:"Rechercher une plage…",
-    filters:["Toutes","Propres","Favoris","Enfants","Snorkeling","Alertes"],
-    filtersIcon:["🌊","✅","❤️","🧒","🤿","🚫"],
+    filters:["Toutes","Propres","Favoris","Alertes"],
+    filtersIcon:["🌊","✅","❤️","🚫"],
     navMap:"Carte",navList:"Plages",navGame:"Jeu",navPremium:"Premium",
     forecast:"Tendance 7j",weather:"Météo",directions:"Y aller",
     fav:"Favori",addFav:"Ajouter aux favoris",removeFav:"Retirer des favoris",
@@ -86,8 +86,8 @@ const T={
     days:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],today:"Today",tomorrow:"Tmrw",
     clean:"Clean",moderate:"Moderate",avoid:"Alert",
     search:"Search a beach…",
-    filters:["All","Clean","Favourites","Kids","Snorkeling","Alerts"],
-    filtersIcon:["🌊","✅","❤️","🧒","🤿","🚫"],
+    filters:["All","Clean","Favourites","Alerts"],
+    filtersIcon:["🌊","✅","❤️","🚫"],
     navMap:"Map",navList:"Beaches",navGame:"Game",navPremium:"Premium",
     forecast:"7-day forecast",weather:"Weather",directions:"Directions",
     fav:"Favourite",addFav:"Add to favourites",removeFav:"Remove from favourites",
@@ -837,25 +837,8 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos,fav
         }} style={{fontSize:16,color:"rgba(255,255,255,.5)",cursor:"pointer",padding:"4px"}}>{"\u2715"}</div>
       </div>
     )}
-    {/* Time Slider with progress bar */}
-    {banksData&&banksData.banks.length>0&&(
-      <div style={{position:"absolute",bottom:140,left:"50%",transform:"translateX(-50%)",display:"flex",gap:3,padding:"3px 4px",background:"rgba(10,26,46,.85)",borderRadius:20,zIndex:800,backdropFilter:"blur(8px)",boxShadow:"0 2px 12px rgba(0,0,0,.4)",overflow:"hidden"}}>
-        {[0,6,12,24].map(h=>(
-          <button key={h} onClick={()=>{
-            setTimeStep(h)
-            if(autoPlaying){autoPlayTimersRef.current.forEach(clearTimeout);setAutoPlaying(false)}
-          }} style={{padding:"6px 12px",borderRadius:16,border:"none",background:timeStep===h?"#E8522A":"transparent",color:"#fff",fontSize:11,fontWeight:timeStep===h?700:500,cursor:"pointer",transition:"all .2s",opacity:timeStep===h?1:.7,
-            boxShadow:autoPlaying&&timeStep===h?"0 0 10px rgba(232,82,42,.5)":"none"}}>
-            {h===0?"Maintenant":"+"+h+"h"}
-          </button>
-        ))}
-        <button onClick={()=>{track("sg_7j_slider_tap");onPremiumClick?.("map_slider")}} style={{padding:"6px 10px",borderRadius:16,border:"1px solid rgba(255,215,0,.4)",background:"transparent",color:"#FFD700",fontSize:11,fontWeight:700,cursor:"pointer",opacity:.85}}>
-          {"7j"}
-        </button>
-        <div style={{position:"absolute",bottom:0,left:0,height:2,borderRadius:1,background:"#E8522A",transition:"width .4s ease",
-          width:timeStep===0?"25%":timeStep===6?"50%":timeStep===12?"75%":"100%"}}/>
-      </div>
-    )}
+    {/* Time slider removed — drift predictions use fixed speed/bearing, not real ocean data.
+       All banks move identically. Slider showed no meaningful change between timeframes. */}
   </div>)
 }
 
@@ -2992,9 +2975,7 @@ export default function App(){
     // Filter
     if(filter===1)list=list.filter(b=>b.status==="clean")
     else if(filter===2)list=list.filter(b=>favorites.includes(b.id))
-    else if(filter===3)list=list.filter(b=>b.kids)
-    else if(filter===4)list=list.filter(b=>b.snorkel)
-    else if(filter===5)list=list.filter(b=>b.status==="avoid")
+    else if(filter===3)list=list.filter(b=>b.status==="avoid")
     // Sort by distance when GPS available
     if(userPos){list.sort((a,b)=>(a._dist||999)-(b._dist||999))}
     return list
