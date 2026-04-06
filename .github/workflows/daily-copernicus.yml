@@ -63,6 +63,10 @@ jobs:
         continue-on-error: true
         run: node scripts/automation/email-weekend.cjs
 
+      - name: Daily stats check (metrics + trend detection)
+        continue-on-error: true
+        run: node scripts/automation/daily-stats-check.cjs
+
       # ── 2. Build (full rebuild 1x/day at 10h UTC = 6h MQ, or manual) ──
       - name: Check if full build needed
         id: check_build
@@ -116,6 +120,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add public/api/copernicus/sargassum.json public/api/copernicus/history.json public/api/copernicus/sargassum-grid.json
+          [ -f scripts/automation/data/daily-metrics.json ] && git add scripts/automation/data/daily-metrics.json
           git diff --cached --quiet || git commit -m "chore: update Copernicus data $(date -u +'%Y-%m-%d %H:%M UTC')"
           git push || true
 
