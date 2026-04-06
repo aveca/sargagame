@@ -2870,10 +2870,14 @@ export default function App(){
   const[lang,setLang]=useState(getLang)
   const[theme,setTheme]=useState(()=>g("sg_theme","light"))
   const[island,setIsland]=useState(()=>{
+    // Domain detection takes priority over saved preference
+    try{
+      if(window.location.hostname.includes("guadeloupe"))return"gp"
+      if(window.location.hostname.includes("martinique"))return"mq"
+    }catch{}
+    // Fallback to saved preference (for localhost/dev)
     const saved=g("sg_island",null)
     if(saved)return saved
-    // Auto-detect island from hostname (GSC: GP at position 70 → must show GP content on GP domain)
-    try{if(window.location.hostname.includes("guadeloupe"))return"gp"}catch{}
     return"mq"
   })
   const[view,setView]=useState("map") // map | list | jeu | premium
