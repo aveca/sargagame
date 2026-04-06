@@ -40,10 +40,14 @@ function post(url, data) {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain', 'Content-Length': Buffer.byteLength(payload) }
     }, res => {
+      // Apps Script always returns 302 — that means doPost executed successfully
+      // The redirect goes to googleusercontent.com which returns the JSON response
+      // We treat 302 as success (doPost ran, emails dispatched server-side)
       let d = ''; res.on('data', c => d += c)
       res.on('end', () => resolve({ status: res.statusCode, body: d }))
     })
     req.on('error', reject)
+    req.setTimeout(30000, () => { req.destroy(); resolve({ status: 0, body: 'timeout' }) })
     req.write(payload); req.end()
   })
 }
