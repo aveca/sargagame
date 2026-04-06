@@ -19,12 +19,12 @@ const crypto = require('crypto')
 
 // Custom dimensions to register
 const DIMENSIONS = [
-  { parameterName: 'ab_lock1',  displayName: 'A/B: Lock CTA',       description: 'Forecast lock button copy variant' },
-  { parameterName: 'ab_modal1', displayName: 'A/B: Modal headline',  description: 'Premium modal headline variant' },
-  { parameterName: 'ab_onb1',   displayName: 'A/B: Onboarding',      description: 'Onboarding slides variant' },
-  { parameterName: 'ab_free1',  displayName: 'A/B: Free days',       description: 'Free forecast days variant' },
-  { parameterName: 'ab_vp1',    displayName: 'A/B: Value prop',      description: 'Weekend banner value proposition variant' },
-  { parameterName: 'ab_price1', displayName: 'A/B: Price',           description: 'Monthly price variant' },
+  { parameterName: 'ab_lock1',  displayName: 'AB Lock CTA',       description: 'Forecast lock button copy variant' },
+  { parameterName: 'ab_modal1', displayName: 'AB Modal headline',  description: 'Premium modal headline variant' },
+  { parameterName: 'ab_onb1',   displayName: 'AB Onboarding',      description: 'Onboarding slides variant' },
+  { parameterName: 'ab_free1',  displayName: 'AB Free days',       description: 'Free forecast days variant' },
+  { parameterName: 'ab_vp1',    displayName: 'AB Value prop',      description: 'Weekend banner value proposition variant' },
+  { parameterName: 'ab_price1', displayName: 'AB Price',           description: 'Monthly price variant' },
 ]
 
 // ── JWT Auth (same approach as google-auth.cjs but standalone) ──
