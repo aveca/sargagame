@@ -745,22 +745,22 @@
         },
         {
           "id": "anse-mitan",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "anse-noire",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "tartane",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
           "id": "anse-madame",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
@@ -800,7 +800,7 @@
         },
         {
           "id": "gp-sainte-anne",
-          "afai": 0.07,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -810,17 +810,17 @@
         },
         {
           "id": "gp-gosier",
-          "afai": 0.07,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp-caravelle",
-          "afai": 0.07,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp-bas-du-fort",
-          "afai": 0.07,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -952,7 +952,7 @@
       "beach": "gp-bas-du-fort",
       "from": "moderate",
       "to": "clean",
-      "afai": 0.07
+      "afai": 0.06
     },
     {
       "date": "2026-04-06",
