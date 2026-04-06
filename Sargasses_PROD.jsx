@@ -1236,8 +1236,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             </p>
           )}
 
-          {/* Methodology — "Comment c'est calcule?" expandable */}
-          <MethodologyLink beach={beach} lang={lang} sargData={sargData}/>
+          {/* MethodologyLink removed — technical jargon (IDW, pipeline) doesn't help users */}
 
           {/* H2S warning */}
           {ST[beach.status]?.h2s&&(
