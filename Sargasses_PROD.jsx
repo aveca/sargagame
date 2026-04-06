@@ -79,6 +79,8 @@ const T={
     beachScore:"Score plage",waves:"Vagues",swell:"Houle",rain:"Pluie",
     scoreExcellent:"Excellent",scoreGood:"Bon",scoreMedium:"Moyen",scoreBad:"Déconseillé",
     marine:"Conditions marines",
+    history:"Tendance récente",historyEmpty:"Pas encore d'historique",
+    historyDays:"{n}j",
   },
   en:{
     days:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],today:"Today",tomorrow:"Tmrw",
@@ -103,6 +105,8 @@ const T={
     beachScore:"Beach Score",waves:"Waves",swell:"Swell",rain:"Rain",
     scoreExcellent:"Excellent",scoreGood:"Good",scoreMedium:"Fair",scoreBad:"Not recommended",
     marine:"Marine conditions",
+    history:"Recent trend",historyEmpty:"No history yet",
+    historyDays:"{n}d",
   },
 }
 
@@ -133,6 +137,10 @@ const BEACHES_FALLBACK=[
 ]
 
 const ISLAND_CENTER={mq:[14.64,-61.02],gp:[16.22,-61.55]}
+
+// Mapping: sargassum.json / history.json IDs → beaches-list.json IDs
+const SARG_TO_BEACH={"grande-anse":"mq014","anse-mitan":"mq011","anse-noire":"mq012","tartane":"mq034","anse-madame":"mq024","diamant":"mq016","pt-marin":"mq008","sainte-anne":"mq004","les-salines":"mq001","vauclin":"mq044","gp-grande-anse":"gp021","gp-malendure":"gp031","gp-sainte-anne":"gp010","gp-pt-chateaux":"gp005","gp-gosier":"gp012","gp-caravelle":"gp009","gp-bas-du-fort":"gp014","gp-deshaies":"gp024","gp-moule":"gp080","gp-vieux-fort":"gp042"}
+const BEACH_TO_SARG=Object.fromEntries(Object.entries(SARG_TO_BEACH).map(([k,v])=>[v,k]))
 const STRIPE_URL="https://buy.stripe.com/28E7sN2pd5F07Ktesr0co0p"
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -166,9 +174,16 @@ function haversine(lat1,lon1,lat2,lon2){
   return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))
 }
 
-function getBeachPhoto(beach){
+// Beaches missing Google Places photos — use satellite fallback
+const NO_PHOTO=new Set(["gp011","gp087","gp103","gp118","gp119","mq035"])
+
+function getBeachPhoto(beach,imageMap){
   if(!beach)return null
-  // Google Places photo (50/50 plages, 1600px HQ)
+  // Local imageMap override (legacy beaches-images.json)
+  if(imageMap&&imageMap[beach.id])return`/beaches/${imageMap[beach.id]}`
+  // Skip if no Google Places photo exists
+  if(NO_PHOTO.has(beach.id))return null
+  // Google Places photo (128/135 plages, 1600px HQ)
   return`/beaches/gplace-${beach.id}.jpg?v=2`
 }
 
@@ -362,16 +377,18 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData}){
     L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{
       maxZoom:18,
     }).addTo(map)
-    // ERDDAP WMS: real-time sargassum satellite data overlay (NOAA AFAI 7-day cumulative)
-    // Data: USF AFAI satellite detection — shows actual sargassum bands drifting in the ocean
+    // Copernicus Marine WMS: chlorophyll overlay — shows sargassum bands at sea
+    // EPSG:4326 required (Copernicus does not support 3857)
     try{
-      L.tileLayer.wms("https://cwcgom.aoml.noaa.gov/erddap/wms/noaa_aoml_atlantic_oceanwatch_AFAI_7D/request",{
-        layers:"noaa_aoml_atlantic_oceanwatch_AFAI_7D:AFAI",
-        styles:"",format:"image/png",transparent:true,
-        version:"1.1.1",time:"last",opacity:0.6,
-        maxZoom:18,
+      L.tileLayer.wms("https://nrt.cmems-du.eu/thredds/wms/cmems_obs-oc_atl_bgc-plankton_nrt_l4-gapfree-multi-1km_P1D",{
+        layers:"CHL",
+        styles:"boxfill/rainbow",format:"image/png",transparent:true,
+        version:"1.1.1",time:"",
+        colorscalerange:"0.1,10",logscale:true,
+        opacity:0.45,maxZoom:18,
+        crs:L.CRS.EPSG4326,
       }).addTo(map)
-    }catch(e){console.warn("WMS layer failed:",e.message)}
+    }catch(e){console.warn("Copernicus WMS failed:",e.message)}
     // Labels overlay (on top of satellite + sargassum)
     L.tileLayer("https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png",{
       maxZoom:18,subdomains:"abcd",
@@ -613,7 +630,7 @@ function useWeather(beach){
 /* ═══════════════════════════════════════════════════════════════════════════
    BOTTOM SHEET — beach detail with photo, forecast, weather, nearby
    ═══════════════════════════════════════════════════════════════════════════ */
-function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMap,onBeachClick,onPremiumClick,isPremium}){
+function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMap,onBeachClick,onPremiumClick,isPremium,historyData}){
   const LL=T[lang]||T.fr
   const weather=useWeather(beach)
   const forecast=useMemo(()=>beach?generateForecast(beach.afai,lang):null,[beach?.id,lang])
@@ -741,6 +758,9 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               )}
             </>
           )}
+
+          {/* History trend chart */}
+          <HistoryChart beachId={beach.id} historyData={historyData} lang={lang}/>
 
           {/* Nearby beaches (netlinking) */}
           {nearby.length>0&&(
@@ -889,6 +909,89 @@ function getDayWeatherIcon(precipMm,cloudPct,windKmh){
   if(precipMm>2)return"\uD83C\uDF27\uFE0F" // rain
   if(cloudPct>60)return"\uD83C\uDF24\uFE0F" // partly cloudy
   return"\u2600\uFE0F" // sun
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HISTORY CHART — Sparkline SVG showing AFAI trend (7-30 days)
+   ═══════════════════════════════════════════════════════════════════════════ */
+function HistoryChart({beachId,historyData,lang}){
+  const LL=T[lang]||T.fr
+  const points=useMemo(()=>{
+    if(!historyData||!beachId)return[]
+    const sargId=BEACH_TO_SARG[beachId]
+    if(!sargId)return[]
+    return historyData.map(day=>{
+      const entry=day.levels.find(l=>l.id===sargId)
+      return entry?{date:day.date,afai:entry.afai,status:entry.status}:null
+    }).filter(Boolean)
+  },[beachId,historyData])
+
+  if(!points.length)return null
+
+  const W=280,H=60,PAD=4
+  const max=Math.max(.15,...points.map(p=>p.afai))
+  const xStep=(W-PAD*2)/(Math.max(points.length-1,1))
+
+  const coords=points.map((p,i)=>({
+    x:PAD+i*xStep,
+    y:PAD+(1-p.afai/max)*(H-PAD*2),
+    afai:p.afai,status:p.status,date:p.date,
+  }))
+
+  const pathD=coords.map((c,i)=>`${i===0?"M":"L"}${c.x.toFixed(1)} ${c.y.toFixed(1)}`).join(" ")
+  const areaD=pathD+` L${coords[coords.length-1].x.toFixed(1)} ${H-PAD} L${coords[0].x.toFixed(1)} ${H-PAD} Z`
+
+  // Status color for last point
+  const last=coords[coords.length-1]
+  const first=coords[0]
+  const lineColor=last.status==="avoid"?C.red:last.status==="moderate"?C.amber:C.teal
+
+  // Trend arrow
+  const delta=points[points.length-1].afai-points[0].afai
+  const trend=delta>0.05?"up":delta<-0.05?"down":"stable"
+  const trendIcon=trend==="up"?"\u2197\uFE0F":trend==="down"?"\u2198\uFE0F":"\u27A1\uFE0F"
+
+  // Date labels
+  const firstDate=points[0].date.slice(5) // "03-30"
+  const lastDate=points[points.length-1].date.slice(5)
+
+  return(
+    <div style={{marginTop:16}}>
+      <h3 style={{fontSize:15,fontWeight:700,margin:"0 0 8px",display:"flex",alignItems:"center",gap:6}}>
+        {LL.history} <span style={{fontSize:13}}>{trendIcon}</span>
+      </h3>
+      <div style={{background:"var(--sg-cardS,#FAFAFA)",borderRadius:12,padding:"12px 14px",
+        border:"1px solid var(--sg-border,rgba(0,0,0,.04))"}}>
+        <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} style={{display:"block"}}>
+          {/* Background zones */}
+          <rect x={0} y={0} width={W} height={H*0.3} fill="rgba(232,82,42,.04)" rx={0}/>
+          <rect x={0} y={H*0.3} width={W} height={H*0.35} fill="rgba(184,122,0,.04)" rx={0}/>
+          <rect x={0} y={H*0.65} width={W} height={H*0.35} fill="rgba(34,197,94,.04)" rx={0}/>
+          {/* Threshold lines */}
+          <line x1={0} y1={PAD+(1-0.3/max)*(H-PAD*2)} x2={W} y2={PAD+(1-0.3/max)*(H-PAD*2)}
+            stroke="rgba(184,122,0,.2)" strokeDasharray="3 3" strokeWidth={0.5}/>
+          <line x1={0} y1={PAD+(1-0.65/max)*(H-PAD*2)} x2={W} y2={PAD+(1-0.65/max)*(H-PAD*2)}
+            stroke="rgba(232,82,42,.2)" strokeDasharray="3 3" strokeWidth={0.5}/>
+          {/* Area fill */}
+          <path d={areaD} fill={lineColor} opacity={0.1}/>
+          {/* Line */}
+          <path d={pathD} fill="none" stroke={lineColor} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
+          {/* Dots */}
+          {coords.map((c,i)=>{
+            const dotColor=c.status==="avoid"?C.red:c.status==="moderate"?C.amber:C.teal
+            return <circle key={i} cx={c.x} cy={c.y} r={i===coords.length-1?3.5:2} fill={dotColor} stroke="#fff" strokeWidth={1}/>
+          })}
+        </svg>
+        <div style={{display:"flex",justifyContent:"space-between",marginTop:4}}>
+          <span style={{fontSize:10,color:"var(--sg-mid,#686868)"}}>{firstDate}</span>
+          <span style={{fontSize:10,color:"var(--sg-mid,#686868)",fontWeight:600}}>
+            {LL.historyDays.replace("{n}",points.length)}
+          </span>
+          <span style={{fontSize:10,color:"var(--sg-mid,#686868)"}}>{lastDate}</span>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -1773,6 +1876,7 @@ export default function App(){
       const params=new URLSearchParams(window.location.search)
       if(params.get("premium")==="1"||params.get("success")==="1"){
         s("sg_premium",true)
+        s("sg_premium_welcome",true) // Flag to show welcome toast
         // Clean URL
         window.history.replaceState({},"",window.location.pathname)
         return true
@@ -1780,11 +1884,18 @@ export default function App(){
     }catch(e){}
     return false
   })
+  const[showWelcome,setShowWelcome]=useState(()=>{
+    const w=g("sg_premium_welcome",false)
+    if(w){s("sg_premium_welcome",false)}
+    return w
+  })
+  useEffect(()=>{if(showWelcome){const t=setTimeout(()=>setShowWelcome(false),5000);return()=>clearTimeout(t)}},[showWelcome])
 
   // Runtime data sources
   const[allBeaches,setAllBeaches]=useState(BEACHES_FALLBACK)
   const[imageMap,setImageMap]=useState(null)
   const[sargData,setSargData]=useState(null)
+  const[historyData,setHistoryData]=useState(null)
 
   const LL=T[lang]||T.fr
 
@@ -1815,6 +1926,14 @@ export default function App(){
       .then(data=>{
         setSargData(data)
       })
+      .catch(()=>{})
+  },[])
+
+  // Fetch history.json for trend chart
+  useEffect(()=>{
+    fetch("/api/copernicus/history.json")
+      .then(r=>r.json())
+      .then(data=>{if(data?.history)setHistoryData(data.history)})
       .catch(()=>{})
   },[])
 
@@ -1910,7 +2029,8 @@ export default function App(){
           <BeachSheet beach={selectedBeach} onClose={closeSheet}
             favorites={favorites} onToggleFav={toggleFav} lang={lang}
             allBeaches={allBeaches} imageMap={imageMap}
-            onBeachClick={onBeachClick} onPremiumClick={openPremium} isPremium={isPremium}/>
+            onBeachClick={onBeachClick} onPremiumClick={openPremium} isPremium={isPremium}
+            historyData={historyData}/>
         )}
 
         {/* PREMIUM MODAL */}
@@ -1924,6 +2044,25 @@ export default function App(){
 
         {/* EMAIL CAPTURE — shows 15s after onboarding, once only */}
         {!showOnboarding&&!showPushPrompt&&<EmailCapture/>}
+
+        {/* PREMIUM WELCOME TOAST */}
+        {showWelcome&&(
+          <div style={{position:"fixed",bottom:90,left:"50%",transform:"translateX(-50%)",
+            zIndex:9999,background:"linear-gradient(135deg,#009E8E,#1EC8B0)",color:"#fff",
+            padding:"14px 24px",borderRadius:16,fontSize:14,fontWeight:600,
+            boxShadow:"0 8px 24px rgba(0,158,142,.35)",
+            display:"flex",alignItems:"center",gap:10,maxWidth:"90vw",
+            animation:"slideUp .4s ease"}}>
+            <span style={{fontSize:22}}>🎉</span>
+            <div>
+              <div>Premium activé !</div>
+              <div style={{fontSize:11,fontWeight:400,opacity:.85,marginTop:2}}>Prévisions 7 jours débloquées.</div>
+            </div>
+            <button onClick={()=>setShowWelcome(false)} style={{
+              background:"rgba(255,255,255,.2)",border:"none",color:"#fff",
+              borderRadius:12,padding:"4px 10px",cursor:"pointer",fontSize:16,marginLeft:8}}>✕</button>
+          </div>
+        )}
       </div>
     </LangCtx.Provider>
   )
