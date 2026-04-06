@@ -136,7 +136,20 @@ function doPost(e) {
       return jsonResponse({ ok: true, sent: sent, island: island })
     }
 
-    // 5. Weekly digest (legacy)
+    // 5. Beach report (user sargassum level report)
+    if (type === 'beach_report') {
+      const sheet = getOrCreateSheet('beach_reports', ['date', 'beach_id', 'beach_name', 'island', 'level'])
+      sheet.appendRow([
+        payload.date || new Date().toISOString(),
+        payload.beach_id || '',
+        payload.beach_name || '',
+        (payload.island || 'MQ').toUpperCase(),
+        payload.level || 'clean'
+      ])
+      return jsonResponse({ ok: true, action: 'beach_report_saved' })
+    }
+
+    // 6. Weekly digest (legacy)
     if (payload.email === 'WEEKLY_DIGEST') {
       const sheet = getOrCreateSheet('digest_log', ['date', 'island', 'digest'])
       sheet.appendRow([new Date().toISOString(), payload.island || 'MQ', payload.digest || ''])
@@ -250,5 +263,29 @@ function doGet(e) {
     }
   }
 
-  return jsonResponse({ error: 'unknown action. Use ?action=stats|emails|feedback' })
+  // Beach reports — aggregated last 48h per beach
+  if (action === 'beach_reports') {
+    try {
+      const sheet = getOrCreateSheet('beach_reports', ['date', 'beach_id', 'beach_name', 'island', 'level'])
+      const data = sheet.getDataRange().getValues()
+      const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()
+      const agg = {}
+      for (let i = 1; i < data.length; i++) {
+        const date = data[i][0] || ''
+        if (date < cutoff) continue
+        const bid = data[i][1]
+        const level = data[i][4] || 'clean'
+        if (!bid) continue
+        if (!agg[bid]) agg[bid] = { clean: 0, moderate: 0, avoid: 0, total: 0, latest: date }
+        agg[bid][level] = (agg[bid][level] || 0) + 1
+        agg[bid].total++
+        if (date > agg[bid].latest) agg[bid].latest = date
+      }
+      return jsonResponse({ reports: agg })
+    } catch (err) {
+      return jsonResponse({ error: err.message })
+    }
+  }
+
+  return jsonResponse({ error: 'unknown action. Use ?action=stats|emails|feedback|beach_reports' })
 }
