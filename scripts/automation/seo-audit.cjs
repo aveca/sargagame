@@ -125,8 +125,7 @@ async function fetchClarityEvents(analyticsdata, propertyId) {
         dateRanges: [{ startDate: '28daysAgo', endDate: 'today' }],
         dimensions: [
           { name: 'eventName' },
-          { name: 'customEvent:page' },
-          { name: 'customEvent:target' },
+          { name: 'pagePath' },
         ],
         metrics: [
           { name: 'eventCount' },
@@ -142,8 +141,8 @@ async function fetchClarityEvents(analyticsdata, propertyId) {
     })
     return (res.data.rows || []).map(row => ({
       event: row.dimensionValues[0].value,
-      page: row.dimensionValues[1].value,
-      target: row.dimensionValues[2].value,
+      page: row.dimensionValues[1]?.value || '',
+      target: '',
       count: parseInt(row.metricValues[0].value) || 0,
     }))
   } catch (e) {
