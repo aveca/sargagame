@@ -574,21 +574,25 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos,fav
 
   // Auto-zoom on most relevant threat (once per session)
   useEffect(()=>{
-    if(!mapRef.current||!banksData||autoZoomDoneRef.current)return
-    if(sessionStorage.getItem("sg_autozoom_done"))return
-    const threat=findMostRelevantThreat(banksData.banks,allBeaches||beaches,favorites,userPos,island)
+    if(!mapRef.current||!banksData)return
+    if(autoZoomDoneRef.current||sessionStorage.getItem("sg_autozoom_done"))return
+    const bList=allBeaches&&allBeaches.length>30?allBeaches:beaches
+    const threat=findMostRelevantThreat(banksData.banks,bList,favorites,userPos,island)
     if(!threat)return
-    autoZoomDoneRef.current=true
+    // Set ref inside timeout so cleanup doesn't orphan state
+    let cancelled=false
     const tid=setTimeout(()=>{
+      if(cancelled)return
+      autoZoomDoneRef.current=true
       try{
         const bounds=L.latLngBounds([threat.bank.centroid,[threat.beach.lat,threat.beach.lng]])
         mapRef.current.flyToBounds(bounds.pad(0.4),{duration:1.5,maxZoom:13})
         sessionStorage.setItem("sg_autozoom_done","1")
         track("sg_autozoom",{bankId:threat.bank.id,beachId:threat.beach.id,km:threat.km})
       }catch(e){}
-    },1200)
-    return()=>clearTimeout(tid)
-  },[banksData,island])
+    },1500)
+    return()=>{cancelled=true;clearTimeout(tid)}
+  },[banksData,island,allBeaches])
 
   // Auto-animate timeline: cycle 0→6→12→24h (once per session)
   useEffect(()=>{
