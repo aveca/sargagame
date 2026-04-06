@@ -1053,8 +1053,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             {beach.commune} · {beach.drive} {LL.drive}
             {userPos&&beach.lat&&<> · {Math.round(haversine(userPos.lat,userPos.lng,beach.lat,beach.lng))} km</>}
           </p>
-          {/* Beach Score du Jour */}
-          <BeachScoreBadge afai={beach.afai} weather={weather} lang={lang}/>
+          {/* BeachScoreBadge removed — confusing score, status already says it all */}
 
           {/* Status description */}
           {ST[beach.status]&&(
@@ -1086,11 +1085,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
           {/* ── AXE 2: Beach Reports — 3-level user sargassum reports ── */}
           <BeachReport beach={beach} lang={lang} communityReports={communityReports}/>
 
-          {/* ── Inline email capture (after 2nd beach view) ── */}
-          <InlineEmailCapture lang={lang}/>
-
-          {/* ── Inline push CTA (after 3rd beach view) ── */}
-          <InlinePushCTA lang={lang}/>
+          {/* InlinePushCTA removed — OneSignal handles native push prompt */}
 
           {/* Tags — only parking (actionable info) */}
           {beach.parking&&(
@@ -1178,6 +1173,9 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               </div>
             </>
           )}
+
+          {/* Email capture — at the bottom, after all useful content */}
+          <InlineEmailCapture lang={lang}/>
         </div>
       </div>
     </>
