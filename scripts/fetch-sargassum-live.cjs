@@ -20,6 +20,8 @@
  */
 const fs = require('fs')
 const path = require('path')
+const { satelliteConfidence, memoryConfidence } = require('./lib/confidence.cjs')
+const { buildHonestForecast, statusFromAfai: statusFromAfaiForecast, DAYS: FDAYS } = require('./lib/forecast.cjs')
 
 // ── Beach coordinates (same as fetch-copernicus-live.py) ───────────
 const BEACHES = [
@@ -167,10 +169,25 @@ async function fetchErddapGrid(region) {
   const latIdx = colNames.indexOf('latitude')
   const lngIdx = colNames.indexOf('longitude')
   const afaiIdx = colNames.indexOf('AFAI')
+  const timeIdx = colNames.indexOf('time')
 
   if (latIdx < 0 || lngIdx < 0 || afaiIdx < 0) {
     console.warn('  ERDDAP columns missing. Got:', colNames)
     return null
+  }
+
+  // Extract ERDDAP data timestamp (first non-null time value)
+  let erddapTimestamp = null
+  if (timeIdx >= 0) {
+    for (const row of rows) {
+      if (row[timeIdx]) { erddapTimestamp = row[timeIdx]; break }
+    }
+  }
+  const dataAgeHours = erddapTimestamp
+    ? Math.max(0, (Date.now() - new Date(erddapTimestamp).getTime()) / (1000 * 60 * 60))
+    : 24 // assume 24h if unknown
+  if (erddapTimestamp) {
+    console.log(`  ERDDAP data timestamp: ${erddapTimestamp} (${Math.round(dataAgeHours)}h ago)`)
   }
 
   // Parse into structured array
@@ -197,6 +214,8 @@ async function fetchErddapGrid(region) {
     points,
     latitudes: [...latSet].sort((a, b) => a - b),
     longitudes: [...lngSet].sort((a, b) => a - b),
+    erddapTimestamp,
+    dataAgeHours,
   }
 }
 
@@ -212,8 +231,9 @@ async function fetchErddapGrid(region) {
  */
 function extractBeachAfai(beach, grid) {
   if (!grid || !grid.points || grid.points.length === 0) {
-    return { afai: NO_DATA_AFAI, method: 'no-grid', nearbyPts: 0, offshorePts: 0 }
+    return { afai: NO_DATA_AFAI, method: 'no-grid', nearbyPts: 0, offshorePts: 0, confidence: 8 }
   }
+  const dataAgeHours = grid.dataAgeHours || 24
 
   const nearbyValues = []  // within 30km — direct threat
   const offshoreValues = [] // 30-100km east/NE — incoming threat
@@ -278,45 +298,13 @@ function extractBeachAfai(beach, grid) {
 
   afai = Math.max(0, Math.min(1, Math.round(afai * 100) / 100))
 
-  return { afai, method, nearbyPts: nearbyValues.length, offshorePts: offshoreValues.length }
+  const confidence = satelliteConfidence(method, nearbyValues.length, offshoreValues.length, dataAgeHours)
+  return { afai, method, nearbyPts: nearbyValues.length, offshorePts: offshoreValues.length, confidence }
 }
 
-// ── Weekly forecast builder (same logic as scrape-copernicus.cjs) ──
-
-function buildWeeklyBatch(levels) {
-  const weekly = {}
-  for (const { id, afai } of levels) {
-    const drift = afai > 0.6
-      ? 0.02 + (id.length % 5) * 0.008
-      : afai < 0.25
-        ? -0.01 - (id.length % 3) * 0.005
-        : (id.length % 7) * 0.006 - 0.02
-    const base = Math.max(0, Math.min(1, afai))
-    const series = []
-    const t = new Date()
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(t)
-      d.setDate(d.getDate() + i)
-      const noise = Math.sin((id.length + i) * 1.3) * 0.04 + Math.cos(i * 0.9) * 0.02
-      const v = Math.max(0, Math.min(1, base + drift * i + noise))
-      const s = statusFromAfai(v)
-      series.push({
-        day: i === 0 ? 'Auj.' : i === 1 ? 'Dem.' : DAYS[d.getDay()],
-        date: d.toISOString().slice(0, 10),
-        afai: Math.round(v * 100) / 100,
-        status: s,
-      })
-    }
-    const trend = series[6].afai - series[0].afai
-    weekly[id] = {
-      forecast: series,
-      drift: trend > 0.05 ? 'up' : trend < -0.05 ? 'down' : 'stable',
-      driftLabel: trend > 0.05 ? 'Dérive possible vers la côte' : trend < -0.05 ? 'Dispersion attendue' : 'Stable',
-      driftValue: Math.round(trend * 100) / 100,
-    }
-  }
-  return weekly
-}
+// ── Weekly forecast: uses lib/forecast.cjs (honest model) ──
+// buildWeeklyBatch removed — was fabricating data with sin/cos + id.length % N
+// Now using buildHonestForecast() from lib/forecast.cjs
 
 // ── History tracking (same as scrape-copernicus.cjs) ───────────────
 
@@ -428,6 +416,7 @@ function applyBeachAccumulation(levels, dir) {
   let boosted = 0
   for (const level of levels) {
     let peakDecayed = 0
+    let bestDaysAgo = 0
 
     for (const entry of history) {
       const daysAgo = (new Date(today) - new Date(entry.date)) / (1000 * 60 * 60 * 24)
@@ -438,18 +427,26 @@ function applyBeachAccumulation(levels, dir) {
 
       // Exponential decay: value decreases by 50% every HALF_LIFE_DAYS
       const decayed = beachEntry.afai * Math.exp(-DECAY_LAMBDA * daysAgo)
-      peakDecayed = Math.max(peakDecayed, decayed)
+      if (decayed > peakDecayed) {
+        peakDecayed = decayed
+        bestDaysAgo = daysAgo
+      }
     }
 
     // Only flag beachMemory when accumulation actually changes the STATUS
     const effectiveAfai = Math.round(peakDecayed * 100) / 100
     if (peakDecayed > level.afai && statusFromAfai(effectiveAfai) !== level.status) {
       level.afaiSat = level.afai  // preserve raw satellite value
+      const origConf = level.confidence || 75
       level.afai = effectiveAfai
       level.status = statusFromAfai(level.afai)
       level.beachMemory = true
+      level.memoryDaysAgo = Math.round(bestDaysAgo * 10) / 10
+      level.memoryConfidence = memoryConfidence(bestDaysAgo, origConf)
+      level.confidence = level.memoryConfidence // memory replaces satellite confidence
+      level.source = 'memory'
       boosted++
-      console.log(`    ${level.id}: satellite=${level.afaiSat.toFixed(2)} → effective=${level.afai.toFixed(2)} (${level.status}) [beach memory]`)
+      console.log(`    ${level.id}: satellite=${level.afaiSat.toFixed(2)} → effective=${level.afai.toFixed(2)} (${level.status}) [beach memory, ${level.memoryDaysAgo}d ago, conf=${level.confidence}%]`)
     }
   }
 
@@ -561,17 +558,28 @@ async function fetchRegionalWind() {
   const wind = {}
   const centers = { mq: [14.6, -61.0], gp: [16.2, -61.5] }
   for (const [island, [lat, lng]] of Object.entries(centers)) {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=wind_speed_10m,wind_direction_10m&timezone=America/Martinique`
+    // Fetch current + 7-day hourly forecast (168 hours)
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=wind_speed_10m,wind_direction_10m&hourly=wind_speed_10m,wind_direction_10m&forecast_days=7&timezone=America/Martinique`
     const data = await safeFetch(url, 15000)
     if (data?.current) {
       wind[island] = {
         speed: Math.round(data.current.wind_speed_10m * 10) / 10,
         dir: Math.round(data.current.wind_direction_10m),
       }
-      console.log(`  Wind ${island.toUpperCase()}: ${wind[island].speed} km/h from ${wind[island].dir}°`)
+      // Parse hourly forecast
+      if (data.hourly?.time?.length) {
+        wind[island].hourly = data.hourly.time.map((t, i) => ({
+          time: t,
+          speed: data.hourly.wind_speed_10m[i] || 0,
+          dir: data.hourly.wind_direction_10m[i] || 0,
+        }))
+        console.log(`  Wind ${island.toUpperCase()}: ${wind[island].speed} km/h from ${wind[island].dir}° + ${wind[island].hourly.length}h forecast`)
+      } else {
+        console.log(`  Wind ${island.toUpperCase()}: ${wind[island].speed} km/h from ${wind[island].dir}° (no hourly forecast)`)
+      }
     } else {
-      // Fallback: typical trade wind (15 km/h from ENE)
-      wind[island] = { speed: 15, dir: 75 }
+      // Fallback: typical trade wind (15 km/h from ENE), no hourly
+      wind[island] = { speed: 15, dir: 75, hourly: null }
       console.log(`  Wind ${island.toUpperCase()}: fallback 15 km/h from 75° (trade wind)`)
     }
   }
@@ -579,10 +587,30 @@ async function fetchRegionalWind() {
 }
 
 /**
+ * Average wind from hourly forecast over a window of hours.
+ */
+function avgWindForHours(hourlyWind, startH, endH) {
+  if (!hourlyWind || !hourlyWind.length) return null
+  const slice = hourlyWind.slice(startH, endH)
+  if (!slice.length) return null
+  let sumSpeed = 0, sumSin = 0, sumCos = 0
+  for (const w of slice) {
+    sumSpeed += w.speed
+    sumSin += Math.sin(w.dir * Math.PI / 180)
+    sumCos += Math.cos(w.dir * Math.PI / 180)
+  }
+  return {
+    speed: sumSpeed / slice.length,
+    dir: (Math.atan2(sumSin / slice.length, sumCos / slice.length) * 180 / Math.PI + 360) % 360,
+  }
+}
+
+/**
  * Compute drift predictions for a bank.
  * Model: wind Stokes drift (2.5% of wind speed) + Caribbean current (0.5 km/h west).
+ * Uses forecast wind when available for 6h/12h/24h predictions.
  */
-function computeBankDrift(centroid, hull, windSpeed, windDir, island) {
+function computeBankDrift(centroid, hull, windSpeed, windDir, island, hourlyWind) {
   // Wind drift: ~2.5% of wind speed, direction = opposite of "from"
   const driftBearing = (windDir + 180) % 360
   const driftSpeed = windSpeed * 0.025 // km/h
@@ -623,18 +651,32 @@ function computeBankDrift(centroid, hull, windSpeed, windDir, island) {
   }
 
   const predictions = {}
+  const confByHorizon = { 6: 75, 12: 55, 24: 35 }
   for (const h of [6, 12, 24]) {
+    // Use forecast wind if available for this time window
+    const forecastWind = avgWindForHours(hourlyWind, 0, h)
+    let useDLatH = dLatH, useDLngH = dLngH
+    if (forecastWind) {
+      const fDriftBearing = (forecastWind.dir + 180) % 360
+      const fDriftSpeed = forecastWind.speed * 0.025
+      const fTotalN = fDriftSpeed * Math.cos(toRad(fDriftBearing)) + curSpeed * Math.cos(toRad(curBearing))
+      const fTotalE = fDriftSpeed * Math.sin(toRad(fDriftBearing)) + curSpeed * Math.sin(toRad(curBearing))
+      useDLatH = fTotalN / 111.0
+      useDLngH = fTotalE / (111.0 * Math.cos(toRad(centroid[0])))
+    }
+
     const effH = Math.min(h, maxDriftH) // cap at coastline
     predictions[`${h}h`] = {
       centroid: [
-        Math.round((centroid[0] + dLatH * effH) * 1000) / 1000,
-        Math.round((centroid[1] + dLngH * effH) * 1000) / 1000,
+        Math.round((centroid[0] + useDLatH * effH) * 1000) / 1000,
+        Math.round((centroid[1] + useDLngH * effH) * 1000) / 1000,
       ],
       hull: hull.map(([lat, lng]) => [
-        Math.round((lat + dLatH * effH) * 1000) / 1000,
-        Math.round((lng + dLngH * effH) * 1000) / 1000,
+        Math.round((lat + useDLatH * effH) * 1000) / 1000,
+        Math.round((lng + useDLngH * effH) * 1000) / 1000,
       ]),
       beached: h > maxDriftH,
+      confidence: confByHorizon[h],
     }
   }
   return { speed, bearing: bear, predictions }
@@ -643,7 +685,7 @@ function computeBankDrift(centroid, hull, windSpeed, windDir, island) {
 /**
  * Build sargassum-banks.json: clustered banks with drift predictions.
  */
-async function buildSargassumBanks(gridPoints, dir) {
+async function buildSargassumBanks(gridPoints, dir, wind) {
   if (!gridPoints || gridPoints.length < 3) {
     console.log('  Skipping banks: not enough grid points')
     return
@@ -653,8 +695,7 @@ async function buildSargassumBanks(gridPoints, dir) {
   const clusters = dbscan(gridPoints, 0.06, 3)
   console.log(`  DBSCAN: ${clusters.length} banks from ${gridPoints.length} points`)
 
-  // 2. Fetch wind
-  const wind = await fetchRegionalWind()
+  // 2. Wind already fetched (passed in from main)
 
   // 3. Build bank objects
   const banks = clusters.map((cluster, i) => {
@@ -674,9 +715,9 @@ async function buildSargassumBanks(gridPoints, dir) {
     let hull = convexHull(cluster)
     hull = inflateHull(hull, centroid, 1.2)
 
-    // Drift
+    // Drift (uses forecast wind when available)
     const w = wind[island] || { speed: 15, dir: 75 }
-    const drift = computeBankDrift(centroid, hull, w.speed, w.dir, island)
+    const drift = computeBankDrift(centroid, hull, w.speed, w.dir, island, w.hourly || null)
 
     // Threatened beaches at each time step
     const threatens = {}
@@ -781,8 +822,13 @@ async function main() {
     const result = extractBeachAfai(beach, grid)
     const afai = Math.round(result.afai * 100) / 100
     const status = statusFromAfai(afai)
-    levels.push({ id: beach.id, afai, status })
-    console.log(`  ${beach.id}: AFAI=${afai.toFixed(2)} (${status}) [${result.method}] nearby=${result.nearbyPts} offshore=${result.offshorePts}`)
+    levels.push({
+      id: beach.id, afai, status,
+      confidence: result.confidence,
+      source: 'erddap-satellite',
+      sourceDetail: result.method,
+    })
+    console.log(`  ${beach.id}: AFAI=${afai.toFixed(2)} (${status}) [${result.method}] conf=${result.confidence}% nearby=${result.nearbyPts} offshore=${result.offshorePts}`)
   }
 
   // 2b. Apply beach memory (accumulation decay from recent history)
@@ -796,13 +842,38 @@ async function main() {
   console.log('[2b] Applying beach memory (accumulation decay)...')
   applyBeachAccumulation(levels, dir)
 
-  // 3. Build forecast + write output
+  // 3. Build honest forecast + write output
   console.log('')
-  console.log('[3/3] Building forecast and writing output...')
+  console.log('[3/3] Building honest forecast and writing output...')
+
+  // Load history for satellite trend
+  const historyPath = path.join(dir, 'history.json')
+  let historyEntries = []
+  try {
+    const raw = JSON.parse(fs.readFileSync(historyPath, 'utf-8'))
+    historyEntries = raw.history || []
+  } catch (_) {}
+
+  // Fetch wind forecast (7-day hourly) for drift model
+  console.log('  Fetching 7-day wind forecast...')
+  const windForecast = await fetchRegionalWind()
 
   const updatedAt = new Date().toISOString()
-  const weekly = buildWeeklyBatch(levels)
-  const payload = { source: 'erddap-live', updatedAt, levels, weekly }
+  const erddapTimestamp = (mqGrid?.erddapTimestamp || gpGrid?.erddapTimestamp) || null
+  const dataAgeMinutes = erddapTimestamp
+    ? Math.round((Date.now() - new Date(erddapTimestamp).getTime()) / 60000)
+    : null
+
+  const weekly = buildHonestForecast(levels, windForecast, historyEntries, BEACHES)
+  const payload = {
+    source: 'erddap-live',
+    updatedAt,
+    erddapTimestamp,
+    dataAgeMinutes,
+    pipelineVersion: '2.0',
+    levels,
+    weekly,
+  }
 
   const outPath = path.join(dir, 'sargassum.json')
   fs.writeFileSync(outPath, JSON.stringify(payload), 'utf-8')
@@ -837,7 +908,7 @@ async function main() {
   // 5. Cluster AFAI grid points into sargassum BANKS + drift predictions
   console.log('')
   console.log('[5/6] Clustering sargassum banks + drift predictions...')
-  await buildSargassumBanks(gridPoints, dir)
+  await buildSargassumBanks(gridPoints, dir, windForecast)
 
   // History — store RAW satellite values (not accumulated) to prevent compounding
   const changes = updateHistory(dir, rawLevels)

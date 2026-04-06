@@ -63,11 +63,11 @@ const T={
     filters:["Toutes","Propres","Favoris","Enfants","Snorkeling","Alertes"],
     filtersIcon:["🌊","✅","❤️","🧒","🤿","🚫"],
     navMap:"Carte",navList:"Plages",navGame:"Jeu",navPremium:"Premium",
-    forecast:"Prévisions 7j",weather:"Météo",directions:"Y aller",
+    forecast:"Tendance 7j",weather:"Météo",directions:"Y aller",
     fav:"Favori",addFav:"Ajouter aux favoris",removeFav:"Retirer des favoris",
     wind:"Vent",uv:"UV",temp:"Température",drive:"min",
     kids:"Enfants",snorkel:"Snorkeling",parking:"Parking",
-    premium:"Premium",premiumDesc:"Prévisions 7 jours, alertes push, zéro pub.",
+    premium:"Premium",premiumDesc:"Tendance 7 jours, alertes push, zéro pub.",
     premiumPrice:"4,99 €/mois",premiumCta:"Essai gratuit 7 jours",
     premiumFeatures:["7 jours gratuits — sans engagement","Sois prévenu AVANT que les sargasses arrivent","Prévisions 7 jours pour 135 plages","Annule quand tu veux, zéro pub"],
     h2sWarn:"Si des sargasses sont échouées et en décomposition sur place, éloignez-vous (risque H₂S). Source : HCSP/ARS.",
@@ -803,14 +803,15 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos,fav
   if(mapError)return <div style={{padding:40,color:"red"}}>{mapError}</div>
   return(<div style={{position:"relative",width:"100%",height:"100%"}}>
     <div ref={containerRef} style={{width:"100%",height:"100%"}}/>
-    {/* Threat Banner — dramatic alert */}
-    {threat&&!threatDismissed&&(
+    {/* Threat Banner — confidence-gated alert */}
+    {threat&&!threatDismissed&&(threat.bank?.drift?.predictions?.[threat.timeKey==="now"?"6h":threat.timeKey]?.confidence||60)>=40&&(
       <div onClick={()=>{
         track("sg_threat_banner_tap",{bankId:threat.bank.id,beachId:threat.beach.id})
         onBeachClick(threat.beach)
       }} style={{
         position:"absolute",bottom:200,left:12,right:12,zIndex:780,
-        background:threat.timeKey==="now"?"linear-gradient(135deg,#E8522A,#C0392B)":"linear-gradient(135deg,#E8A800,#D4820A)",
+        background:(()=>{const c=threat.bank?.drift?.predictions?.[threat.timeKey==="now"?"6h":threat.timeKey]?.confidence||60
+          return c>70?"linear-gradient(135deg,#E8522A,#C0392B)":"linear-gradient(135deg,#E8A800,#D4820A)"})(),
         borderRadius:16,padding:"14px 16px",cursor:"pointer",
         animation:"sg-threat-slide .4s ease-out",
         display:"flex",alignItems:"center",gap:12,
@@ -818,11 +819,15 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos,fav
       }}>
         <div style={{flex:1,minWidth:0}}>
           <div style={{fontSize:14,fontWeight:800,color:"#fff",lineHeight:1.3}}>
-            {threat.timeKey==="now"?"Sargasses sur "+threat.beach.name+" maintenant":
-              "Sargasses vers "+threat.beach.name+" dans ~"+threat.timeKey.replace("h","")+"h"}
+            {(()=>{const c=threat.bank?.drift?.predictions?.[threat.timeKey==="now"?"6h":threat.timeKey]?.confidence||60
+              return c>70
+                ?(threat.timeKey==="now"?"Sargasses detectees vers "+threat.beach.name:"Sargasses vers "+threat.beach.name+" dans ~"+threat.timeKey.replace("h","")+"h")
+                :(threat.timeKey==="now"?"Risque probable de sargasses vers "+threat.beach.name:"Sargasses possibles vers "+threat.beach.name+" dans ~"+threat.timeKey.replace("h","")+"h")
+            })()}
           </div>
-          <div style={{fontSize:11,color:"rgba(255,255,255,.85)",marginTop:3}}>
-            {"Voir les details et previsions >"}
+          <div style={{fontSize:10,color:"rgba(255,255,255,.7)",marginTop:3}}>
+            {"Source\u00a0: NOAA AFAI"}{sargData?.erddapTimestamp&&" | MAJ il y a "+Math.round((Date.now()-new Date(sargData.erddapTimestamp).getTime())/3600000)+"h"}
+            {" · Voir tendance >"}
           </div>
         </div>
         <div onClick={(e)=>{
@@ -887,18 +892,25 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily}){
           const dayWind=hasDaily?weatherDaily.windMax[i]:0
           const dayTemp=hasDaily?Math.round(weatherDaily.tempMax[i]):null
           const wxIcon=hasDaily?getDayWeatherIcon(dayPrecip,dayCloud,dayWind):null
+          const fType=d.type||(i===0?"observation":i<=3?"tendance":"horizon")
+          const fConf=d.confidence||null
+          const typeOpacity=fType==="observation"?1:fType==="tendance"?.85:.6
           return(
             <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,
-              filter:isLocked?"blur(3px)":"none",opacity:isLocked?.4:1,
+              filter:isLocked?"blur(3px)":"none",opacity:isLocked?0.4:typeOpacity,
               pointerEvents:isLocked?"none":"auto"}}>
               {wxIcon&&<span style={{fontSize:13,lineHeight:1}}>{wxIcon}</span>}
               {dayTemp!=null&&<span style={{fontSize:9,fontWeight:600,color:"var(--sg-mid,#686868)"}}>{dayTemp}°</span>}
               <span style={{fontSize:10,fontWeight:600,color:st.c}}>{Math.round(d.afai*100)}%</span>
               <div className="fc-bar" style={{width:"100%",height:h,background:st.c,opacity:.8}}/>
               <span style={{fontSize:10,color:"var(--sg-mid,#686868)",fontWeight:500}}>{d.day}</span>
+              {fConf!=null&&!isLocked&&<span style={{fontSize:8,color:"var(--sg-mid,#999)",fontWeight:400}}>{fConf}%</span>}
             </div>
           )
         })}
+      </div>
+      <div style={{fontSize:9,color:"var(--sg-mid,#999)",textAlign:"center",padding:"2px 0 0",lineHeight:1.3}}>
+        {forecast[0]?.sources?"Tendance basee sur satellite + vent prevu. Fiabilite decroit avec les jours.":""}
       </div>
       {!isPremium&&<div style={{position:"absolute",top:0,right:0,bottom:0,width:`${(lockedCount/7*100).toFixed(1)}%`,
         display:"flex",alignItems:"center",justifyContent:"center",
@@ -918,6 +930,34 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily}){
       </div>}
     </div>
   )
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   METHODOLOGY LINK — "Comment c'est calcule?" expandable
+   ═══════════════════════════════════════════════════════════════════════════ */
+function MethodologyLink({beach,lang,sargData}){
+  const[open,setOpen]=useState(false)
+  if(!beach)return null
+  const fr=lang!=="en"
+  const chain=beach._communityOverride
+    ?(fr?"Signalements visiteurs (48h) → Consensus ≥3 → Votre écran":"Visitor reports (48h) → Consensus ≥3 → Your screen")
+    :beach.beachMemory
+    ?(fr?"Historique satellite 7j → Décroissance exponentielle (demi-vie 3.5j) → Votre écran":"Satellite history 7d → Exponential decay (half-life 3.5d) → Your screen")
+    :beach._src==="live"
+    ?(fr?"NOAA ERDDAP (satellite AFAI) → Normalisation → Votre écran":"NOAA ERDDAP (satellite AFAI) → Normalization → Your screen")
+    :(fr?"3 plages proches avec satellite → Interpolation IDW → Votre écran":"3 nearest satellite beaches → IDW interpolation → Your screen")
+  return(<div style={{marginBottom:8}}>
+    <button onClick={()=>setOpen(!open)} style={{
+      background:"none",border:"none",padding:0,cursor:"pointer",
+      fontSize:10,color:"var(--sg-mid,#999)",textDecoration:"underline",fontWeight:500,
+    }}>{fr?"Comment c'est calculé ?":"How is this calculated?"} {open?"▲":"▼"}</button>
+    {open&&<div style={{fontSize:10,color:"var(--sg-mid,#686868)",marginTop:4,padding:"6px 10px",
+      background:"rgba(0,0,0,.03)",borderRadius:8,lineHeight:1.5}}>
+      <div style={{fontWeight:600,marginBottom:2}}>{fr?"Chaîne de données":"Data chain"}</div>
+      <div>{chain}</div>
+      {sargData?.pipelineVersion&&<div style={{marginTop:4,fontSize:9,opacity:.6}}>Pipeline v{sargData.pipelineVersion}</div>}
+    </div>}
+  </div>)
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -1161,16 +1201,25 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             {beach.commune} · <AfaiBadge afai={beach.afai}/> · {beach.drive} {LL.drive}
             {userPos&&beach.lat&&<> · {Math.round(haversine(userPos.lat,userPos.lng,beach.lat,beach.lng))} km</>}
           </p>
-          <div style={{display:"inline-flex",alignItems:"center",gap:4,marginBottom:6,
-            padding:"2px 8px",borderRadius:100,fontSize:10,fontWeight:600,
-            background:beach._communityOverride?C.goldBg:beach.beachMemory?"rgba(139,105,20,.1)":beach._src==="live"?"rgba(34,197,94,.1)":"rgba(184,122,0,.08)",
-            color:beach._communityOverride?C.gold:beach.beachMemory?C.sarg:beach._src==="live"?"#16A34A":"#B87A00"}}>
-            <span style={{width:5,height:5,borderRadius:3,
-              background:beach._communityOverride?C.gold:beach.beachMemory?C.sarg:beach._src==="live"?"#22C55E":"#B87A00"}}/>
-            {beach._communityOverride?(lang==="en"?`Reported by ${beach._communityTotal} visitors`:`Signalé par ${beach._communityTotal} visiteurs`)
-              :beach.beachMemory?(lang==="en"?"Beach memory (7d)":"Mémoire plage (7j)")
-              :beach._src==="live"?(lang==="en"?"Satellite data":"Donnée satellite")
-              :(lang==="en"?"Estimated (IDW)":"Estimation (IDW)")}
+          <div style={{display:"flex",flexWrap:"wrap",alignItems:"center",gap:4,marginBottom:6}}>
+            <div style={{display:"inline-flex",alignItems:"center",gap:4,
+              padding:"2px 8px",borderRadius:100,fontSize:10,fontWeight:600,
+              background:beach._communityOverride?C.goldBg:beach.beachMemory?"rgba(139,105,20,.1)":beach._src==="live"?"rgba(34,197,94,.1)":"rgba(184,122,0,.08)",
+              color:beach._communityOverride?C.gold:beach.beachMemory?C.sarg:beach._src==="live"?"#16A34A":"#B87A00"}}>
+              <span style={{width:5,height:5,borderRadius:3,
+                background:beach._communityOverride?C.gold:beach.beachMemory?C.sarg:beach._src==="live"?"#22C55E":"#B87A00"}}/>
+              {beach._communityOverride?(lang==="en"?`Reported by ${beach._communityTotal} visitors`:`Signalé par ${beach._communityTotal} visiteurs`)
+                :beach.beachMemory?(lang==="en"?`Beach memory — conf: ${beach.memoryConfidence||"?"}%`:`Mémoire plage — conf\u00a0: ${beach.memoryConfidence||"?"}%`)
+                :beach._src==="live"?(lang==="en"?`Satellite (${beach.confidence||"?"}%)`:`Satellite (${beach.confidence||"?"}%)`)
+                :(lang==="en"?`IDW estimate (${beach.confidence||"?"}%)`:`Estimation IDW (${beach.confidence||"?"}%)`)}
+            </div>
+            {sargData?.erddapTimestamp&&!beach._communityOverride&&(()=>{
+              const ageH=Math.round((Date.now()-new Date(sargData.erddapTimestamp).getTime())/3600000)
+              const ageColor=ageH<6?"#16A34A":ageH<24?"#B87A00":"#DC2626"
+              return <span style={{fontSize:9,color:ageColor,fontWeight:500}}>
+                {lang==="en"?`Last reading: ${ageH}h ago`:`Mesure\u00a0: il y a ${ageH}h`}
+              </span>
+            })()}
           </div>
           {/* Beach Score du Jour */}
           <BeachScoreBadge afai={beach.afai} weather={weather} lang={lang}/>
@@ -1203,6 +1252,9 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               </span></>)}
             </p>
           )}
+
+          {/* Methodology — "Comment c'est calcule?" expandable */}
+          <MethodologyLink beach={beach} lang={lang} sargData={sargData}/>
 
           {/* H2S warning */}
           {ST[beach.status]?.h2s&&(
@@ -1703,6 +1755,271 @@ function Onboarding({onDone,island="mq",lang="fr"}){
             fontSize:14,padding:4,marginLeft:"auto",flexShrink:0}}>✕</button>
         </div>
       )}
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BEACH PICKER — "Quelle est ta plage ?" (new user onboarding → 1 tap)
+   Design: onboarding-final.html level — floating cards, gold accents, shine
+   ═══════════════════════════════════════════════════════════════════════════ */
+const POPULAR_BEACHES={
+  mq:["mq001","mq014","mq011","mq016","mq024"],
+  gp:["gp009","gp012","gp031","gp010","gp005"]
+}
+
+function BeachPicker({island,allBeaches,onSelect,lang,userPos,onDismiss}){
+  const ids=POPULAR_BEACHES[island]||POPULAR_BEACHES.mq
+  let picks=ids.map(id=>allBeaches.find(b=>b.id===id)).filter(Boolean)
+  if(userPos&&picks.length){
+    picks=picks.map(b=>({...b,_d:haversine(userPos.lat,userPos.lng,b.lat,b.lng)}))
+      .sort((a,b)=>a._d-b._d)
+  }
+  const isMQ=island==="mq"
+
+  return(
+    <div onClick={e=>{if(e.target===e.currentTarget&&onDismiss)onDismiss()}} style={{
+      position:"absolute",top:0,left:0,right:0,bottom:0,zIndex:750,
+      display:"flex",flexDirection:"column",
+      background:"linear-gradient(180deg,#0D1E1C 0%,#0A1714 100%)",
+      animation:"fadeIn .3s ease",overflow:"auto",
+    }}>
+      {/* Ambient orbs */}
+      <div style={{position:"absolute",top:-60,right:-40,width:220,height:220,borderRadius:"50%",
+        background:"radial-gradient(circle,rgba(232,168,0,.12) 0%,transparent 70%)",pointerEvents:"none"}}/>
+      <div style={{position:"absolute",bottom:200,left:-60,width:180,height:180,borderRadius:"50%",
+        background:"radial-gradient(circle,rgba(0,158,142,.08) 0%,transparent 70%)",pointerEvents:"none"}}/>
+
+      {/* Top bar */}
+      <div style={{padding:"max(16px,env(safe-area-inset-top)) 22px 0",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <div style={{width:22,height:22,borderRadius:"50%",flexShrink:0,
+            background:"conic-gradient(from -10deg,#FFE898 0deg 25deg,#E8A800 25deg 65deg,#FFD040 65deg 110deg,#B87A00 110deg 155deg,#FFE07A 155deg 195deg,#E09000 195deg 240deg,#FFC72C 240deg 285deg,#B07000 285deg 325deg,#FFE898 325deg 360deg)",
+            animation:"spin 20s linear infinite",
+            boxShadow:"0 2px 10px rgba(232,168,0,.35)",
+          }}/>
+          <span style={{fontSize:13,fontWeight:700,letterSpacing:".06em",color:"#fff",
+            fontFamily:"'Anton',sans-serif",textTransform:"uppercase"}}>
+            SARGASSES.{isMQ?"MQ":"GP"}
+          </span>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:5}}>
+          <div style={{width:6,height:6,borderRadius:"50%",background:"#22C55E",
+            animation:"dot-pulse 2s ease-in-out infinite"}}/>
+          <span style={{fontSize:10.5,fontWeight:600,color:"rgba(255,255,255,.5)"}}>{lang==="en"?"Live":"En direct"}</span>
+        </div>
+      </div>
+
+      {/* Headline */}
+      <div style={{padding:"28px 22px 0"}}>
+        <div style={{fontSize:12,fontStyle:"italic",color:"rgba(255,255,255,.4)",marginBottom:6}}>
+          {lang==="en"?"Sargassum or not — know before you go.":"Sargasses ou pas — sache avant de partir."}
+        </div>
+        <div style={{fontFamily:"'Anton',sans-serif",fontSize:42,lineHeight:.9,
+          textTransform:"uppercase",color:"#fff",letterSpacing:"-.02em"}}>
+          {lang==="en"?<>What's <span style={{color:C.tealL}}>your</span><br/>beach?</>
+            :<>Quelle est<br/><span style={{color:C.tealL}}>ta</span> plage ?</>}
+        </div>
+        <p style={{fontSize:13.5,color:"rgba(255,255,255,.5)",margin:"8px 0 0",lineHeight:1.5}}>
+          {lang==="en"
+            ?"We'll tell you every day if it's clear."
+            :"On te dit chaque jour si tu peux y aller."}
+        </p>
+      </div>
+
+      {/* Satellite inline badge */}
+      <div style={{padding:"12px 22px 0"}}>
+        <div style={{display:"inline-flex",alignItems:"center",gap:6,
+          background:"rgba(0,158,142,.07)",border:"1px solid rgba(0,158,142,.12)",
+          borderRadius:100,padding:"5px 12px",position:"relative",overflow:"hidden"}}>
+          <div style={{position:"absolute",top:0,bottom:0,left:0,width:60,
+            background:"linear-gradient(90deg,transparent,rgba(0,158,142,.1),transparent)",
+            animation:"satellite-scan 3s ease-in-out infinite"}}/>
+          <span style={{fontSize:9.5,fontWeight:700,color:C.tealL,position:"relative"}}>COPERNICUS MARINE</span>
+          <span style={{fontSize:9,color:"rgba(255,255,255,.35)",fontWeight:500,position:"relative"}}>
+            {lang==="en"?"Updated today":"Mis à jour aujourd'hui"}
+          </span>
+        </div>
+      </div>
+
+      {/* Beach options */}
+      <div style={{padding:"16px 22px 0",display:"flex",flexDirection:"column",gap:7}}>
+        {picks.map(b=>{
+          const st=ST[b.status]||ST.clean
+          const isC=b.status==="clean"
+          return(
+            <button key={b.id} onClick={()=>{track("sg_beach_pick",{beach_id:b.id});onSelect(b.id)}}
+              style={{
+                display:"flex",alignItems:"center",gap:12,
+                background:"rgba(255,255,255,.05)",
+                border:`1px solid ${isC?"rgba(34,197,94,.15)":b.status==="avoid"?"rgba(232,82,42,.15)":"rgba(232,168,0,.15)"}`,
+                borderRadius:16,padding:"13px 14px",cursor:"pointer",
+                fontFamily:"inherit",textAlign:"left",width:"100%",
+                boxShadow:"0 2px 12px rgba(0,0,0,.15)",
+                transition:"all .2s",
+              }}>
+              <div style={{width:36,height:36,borderRadius:12,flexShrink:0,
+                background:isC?"linear-gradient(135deg,#D6F5EF,#A8EDE4)":"linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.02))",
+                display:"flex",alignItems:"center",justifyContent:"center",position:"relative"}}>
+                <div style={{width:12,height:12,borderRadius:"50%",background:st.c,
+                  border:"2px solid rgba(255,255,255,.8)",boxShadow:`0 1px 6px ${st.c}50`,position:"relative",zIndex:2}}/>
+                <div style={{position:"absolute",width:12,height:12,borderRadius:"50%",
+                  border:`2px solid ${st.c}30`,animation:"pin-pulse 2.5s ease-out infinite"}}/>
+              </div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:14,fontWeight:700,color:"#fff"}}>{b.name}</div>
+                <div style={{fontSize:11,color:"rgba(255,255,255,.4)",display:"flex",alignItems:"center",gap:6}}>
+                  {b.commune}{b._d!=null?` · ${Math.round(b._d)} km`:""}
+                </div>
+              </div>
+              <span style={{fontSize:10,fontWeight:700,padding:"4px 10px",borderRadius:100,
+                background:isC?"rgba(34,197,94,.15)":b.status==="avoid"?"rgba(232,82,42,.2)":"rgba(232,168,0,.15)",
+                color:isC?"#4ADE80":b.status==="avoid"?"#FF8066":C.goldL}}>
+                {st.l}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Micro proof footer */}
+      <div style={{padding:"16px 22px max(20px,calc(env(safe-area-inset-bottom,12px) + 12px))",
+        textAlign:"center",fontSize:10.5,color:"rgba(255,255,255,.25)",
+        display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+        {lang==="en"?"Free":"Gratuit"}
+        <span style={{width:3,height:3,borderRadius:"50%",background:"rgba(255,255,255,.15)"}}/>
+        {lang==="en"?"No signup":"Sans inscription"}
+        <span style={{width:3,height:3,borderRadius:"50%",background:"rgba(255,255,255,.15)"}}/>
+        {lang==="en"?"Updated daily":"Mis à jour chaque jour"}
+      </div>
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HERO CARD — "Baignade OK" (résout "je peux aller à la plage ?" en 0 clic)
+   Dark opaque card — same DNA as onboarding-final slide 3
+   ═══════════════════════════════════════════════════════════════════════════ */
+function HeroCard({beach,sargData,onTap,onChangeBeach,onPremiumClick,isPremium,lang}){
+  const st=ST[beach.status]||ST.clean
+  const isClean=beach.status==="clean",isAvoid=beach.status==="avoid"
+  const forecast=useMemo(()=>{
+    if(!beach)return null
+    const sargId=BEACH_TO_SARG[beach.id]
+    if(sargId&&sargData?.weekly?.[sargId]?.forecast)return sargData.weekly[sargId].forecast
+    const interpKey=`_interp_${beach.id}`
+    if(sargData?._enrichedWeekly?.[interpKey]?.forecast)return sargData._enrichedWeekly[interpKey].forecast
+    return generateForecast(beach.afai,lang)
+  },[beach?.id,sargData,lang])
+
+  const label=isClean
+    ?(lang==="en"?"Clear today":"Baignade OK")
+    :beach.status==="moderate"
+    ?(lang==="en"?"Check on site":"À vérifier sur place")
+    :(lang==="en"?"Sargassum alert":"Sargasses détectées")
+
+  const glowC=isClean?"rgba(34,197,94,.25)":isAvoid?"rgba(232,82,42,.22)":"rgba(232,168,0,.22)"
+
+  return(
+    <div style={{marginTop:10,pointerEvents:"auto"}}>
+      <div onClick={onTap} style={{
+        background:"linear-gradient(145deg,#0D1E1C,#0A1714)",
+        borderRadius:22,padding:"16px 18px 14px",cursor:"pointer",
+        position:"relative",overflow:"hidden",
+        boxShadow:`0 8px 32px rgba(0,0,0,.35),0 0 0 1px ${st.c}18,inset 0 1px 0 rgba(255,255,255,.06)`,
+        animation:"slideUp .5s cubic-bezier(.22,1,.36,1)",
+      }}>
+        {/* Top gold line accent */}
+        <div style={{position:"absolute",top:0,left:0,right:0,height:1,
+          background:`linear-gradient(90deg,transparent,${st.c}60,transparent)`}}/>
+
+        {/* Ambient glow orb */}
+        <div style={{position:"absolute",top:-40,right:-30,width:140,height:140,borderRadius:"50%",
+          background:`radial-gradient(circle,${glowC} 0%,transparent 70%)`,pointerEvents:"none"}}/>
+
+        {/* Top: beach name + change */}
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10,position:"relative",zIndex:1}}>
+          <div style={{display:"flex",alignItems:"center",gap:7}}>
+            <div style={{position:"relative",width:12,height:12}}>
+              <div style={{width:12,height:12,borderRadius:"50%",background:st.c,
+                border:"2px solid rgba(255,255,255,.7)",boxShadow:`0 0 10px ${st.c}80`,
+                position:"relative",zIndex:2}}/>
+              <div style={{position:"absolute",top:0,left:0,width:12,height:12,borderRadius:"50%",
+                border:`2px solid ${st.c}40`,animation:"pin-pulse 2.5s ease-out infinite"}}/>
+            </div>
+            <span style={{fontSize:13,fontWeight:700,color:"#fff"}}>{beach.name}</span>
+            <span style={{fontSize:11,color:"rgba(255,255,255,.35)",fontWeight:400}}>{beach.commune}</span>
+          </div>
+          <button onClick={e=>{e.stopPropagation();onChangeBeach()}} style={{
+            background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.1)",cursor:"pointer",
+            fontSize:10,color:"rgba(255,255,255,.5)",fontFamily:"inherit",fontWeight:600,
+            padding:"4px 10px",borderRadius:100,
+          }}>
+            {lang==="en"?"Change":"Changer"}
+          </button>
+        </div>
+
+        {/* Big status */}
+        <div style={{
+          fontFamily:"'Anton',sans-serif",fontSize:36,lineHeight:1,
+          textTransform:"uppercase",color:isClean?"#4ADE80":isAvoid?"#FF8066":C.goldL,
+          marginBottom:4,position:"relative",zIndex:1,
+          letterSpacing:"-.02em",
+          textShadow:`0 2px 20px ${glowC}`,
+        }}>
+          {label}
+        </div>
+
+        {/* Subtitle */}
+        <div style={{fontSize:12,color:"rgba(255,255,255,.4)",marginBottom:12,position:"relative",zIndex:1,fontWeight:500}}>
+          {isClean
+            ?(lang==="en"?"No sargassum detected by satellite":"Pas de sargasses détectées par satellite")
+            :isAvoid
+            ?(lang==="en"?"High concentration detected offshore":"Forte concentration détectée au large")
+            :(lang==="en"?"Moderate presence detected offshore":"Présence modérée détectée au large")}
+        </div>
+
+        {/* Mini 7-day forecast */}
+        {forecast&&forecast.length>0&&(
+          <div style={{position:"relative",background:"rgba(255,255,255,.04)",borderRadius:12,padding:"10px 12px 8px",
+            border:"1px solid rgba(255,255,255,.06)"}}>
+            <div style={{fontSize:9,fontWeight:700,color:"rgba(255,255,255,.3)",letterSpacing:".1em",
+              textTransform:"uppercase",marginBottom:6}}>
+              {lang==="en"?"This week":"Cette semaine"}
+            </div>
+            <div style={{display:"flex",gap:5,alignItems:"flex-end",height:40}}>
+              {forecast.slice(0,7).map((d,i)=>{
+                const fst=ST[d.status]||ST.clean
+                const h=Math.max(8,Math.min(30,(d.afai/.8)*30))
+                const isLocked=!isPremium&&i>=1
+                return(
+                  <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,
+                    filter:isLocked?"blur(3px)":"none",opacity:isLocked?.35:1}}>
+                    <div className="fc-bar" style={{width:"100%",height:h,background:fst.c,opacity:.8}}/>
+                    <span style={{fontSize:8.5,color:"rgba(255,255,255,.3)",fontWeight:600}}>{d.day}</span>
+                  </div>
+                )
+              })}
+            </div>
+            {!isPremium&&(
+              <div style={{
+                position:"absolute",top:0,right:0,bottom:0,width:"78%",
+                display:"flex",alignItems:"center",justifyContent:"center",
+                background:"linear-gradient(90deg,transparent,rgba(10,23,20,.85) 30%)",
+                borderRadius:"0 12px 12px 0",
+              }}>
+                <button onClick={e=>{e.stopPropagation();track("sg_hero_forecast_cta");onPremiumClick("hero")}}
+                  className="gbtn" style={{
+                    padding:"9px 18px",fontSize:12,fontWeight:700,
+                    fontFamily:"'Anton',sans-serif",letterSpacing:".04em",textTransform:"uppercase",
+                  }}>
+                  🔒 {lang==="en"?"See 7 days":"Voir 7 jours"}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -2551,6 +2868,15 @@ export default function App(){
   const[filter,setFilter]=useState(0) // index in T.filters
   const[selectedBeach,setSelectedBeach]=useState(null)
   const[favorites,setFavorites]=useState(()=>g("sg_fav",[]))
+  const[myBeachId,setMyBeachId]=useState(()=>{
+    const saved=g("sg_my_beach",null)
+    if(saved)return saved
+    // Migration: existing users with favorites → auto-pick first fav
+    const favs=g("sg_fav",[])
+    if(favs.length>0){s("sg_my_beach",favs[0]);return favs[0]}
+    return null
+  })
+  const[showPicker,setShowPicker]=useState(false)
   const[showOnboarding,setShowOnboarding]=useState(()=>!g("sg_onb",0))
   const[showPremium,setShowPremium]=useState(false)
   const[showFavToast,setShowFavToast]=useState(false)
@@ -2739,6 +3065,27 @@ export default function App(){
   // Favorites
   useEffect(()=>{s("sg_fav",favorites)},[favorites])
 
+  // My beach persistence
+  useEffect(()=>{if(myBeachId)s("sg_my_beach",myBeachId)},[myBeachId])
+
+  // Resolve myBeach object from allBeaches
+  const myBeach=useMemo(()=>{
+    if(!myBeachId)return null
+    return allBeaches.find(b=>b.id===myBeachId)||null
+  },[myBeachId,allBeaches])
+
+  // Beach picker selection handler
+  const onPickBeach=useCallback(id=>{
+    setMyBeachId(id)
+    s("sg_my_beach",id)
+    setShowPicker(false)
+    // Also add to favorites
+    setFavorites(f=>f.includes(id)?f:[...f,id])
+    // Mark old onboarding as done
+    s("sg_onb",1)
+    setShowOnboarding(false)
+  },[])
+
   const toggleFav=useCallback(id=>{
     setFavorites(f=>{
       const isAdding=!f.includes(id)
@@ -2866,8 +3213,16 @@ export default function App(){
         {/* PREMIUM MODAL */}
         {showPremium&&<PremiumModal onClose={()=>setShowPremium(false)} lang={lang}/>}
 
-        {/* ONBOARDING — inline coachmark, map visible behind */}
-        {showOnboarding&&<Onboarding onDone={()=>setShowOnboarding(false)} island={island} lang={lang}/>}
+        {/* ONBOARDING — inline coachmark for brand new users */}
+        {showOnboarding&&!myBeachId&&view==="map"&&(
+          <Onboarding onDone={()=>setShowOnboarding(false)} island={island} lang={lang}/>
+        )}
+
+        {/* BEACH PICKER — after onboarding dismissed, or when "Changer" tapped */}
+        {(!myBeachId||showPicker)&&!showOnboarding&&view==="map"&&!selectedBeach&&(
+          <BeachPicker island={island} allBeaches={allBeaches} lang={lang} userPos={userPos}
+            onSelect={onPickBeach} onDismiss={myBeachId?()=>setShowPicker(false):null}/>
+        )}
 
         {/* RETURN USER CARD — welcome back for returning visitors */}
         {view==="map"&&!showOnboarding&&!selectedBeach&&(

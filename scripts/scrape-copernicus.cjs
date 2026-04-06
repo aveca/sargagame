@@ -1,11 +1,15 @@
 /**
  * Scraping Copernicus Marine de la journée :
  * - Appel API subset (Antilles, 7 derniers jours) avec copernicustxt.txt
- * - Met à jour public/api/copernicus/sargassum.json (niveaux plages + prévisions 7j)
+ * - Met à jour public/api/copernicus/sargassum.json (niveaux plages + tendances 7j)
  * À lancer avant "vite build" pour déploiement FTP avec données du jour.
+ *
+ * Pipeline v2.0: uses lib/forecast.cjs (honest model) + lib/confidence.cjs
  */
 const fs = require('fs')
 const path = require('path')
+const { referenceConfidence } = require('./lib/confidence.cjs')
+const { buildHonestForecast, statusFromAfai } = require('./lib/forecast.cjs')
 
 const BEACH_NAMES = {
   'grande-anse': 'Grande Anse d\'Arlet',
@@ -31,7 +35,6 @@ const BEACH_NAMES = {
 }
 
 const SARGASSUM_REF = [
-  // Status computed from NOAA SIR thresholds: <0.15=clean, 0.15-0.40=moderate, >=0.40=avoid
   { id: "grande-anse",     afai: 0.11, status: "clean" }, { id: "anse-mitan",      afai: 0.17, status: "moderate" },
   { id: "anse-noire",      afai: 0.08, status: "clean" }, { id: "tartane",         afai: 0.19, status: "moderate" },
   { id: "anse-madame",     afai: 0.14, status: "clean" }, { id: "diamant",         afai: 0.42, status: "avoid" },
@@ -43,46 +46,6 @@ const SARGASSUM_REF = [
   { id: "gp-bas-du-fort",  afai: 0.35, status: "moderate" }, { id: "gp-deshaies",   afai: 0.11, status: "clean" },
   { id: "gp-moule",        afai: 0.44, status: "avoid" }, { id: "gp-vieux-fort", afai: 0.72, status: "avoid" },
 ]
-
-const DAYS = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"]
-
-// Thresholds aligned with NOAA SIR (raw AFAI: 0.001/0.003)
-function statusFromAfai(afai) {
-  if (afai < 0.15) return "clean"
-  if (afai < 0.40) return "moderate"
-  return "avoid"
-}
-
-function buildWeeklyBatch(levels) {
-  const weekly = {}
-  for (const { id, afai } of levels) {
-    const drift = afai > 0.6 ? 0.02 + (id.length % 5) * 0.008 : afai < 0.25 ? -0.01 - (id.length % 3) * 0.005 : (id.length % 7) * 0.006 - 0.02
-    const base = Math.max(0, Math.min(1, afai))
-    const series = []
-    const t = new Date()
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(t)
-      d.setDate(d.getDate() + i)
-      const noise = Math.sin((id.length + i) * 1.3) * 0.04 + Math.cos(i * 0.9) * 0.02
-      const v = Math.max(0, Math.min(1, base + drift * i + noise))
-      const s = statusFromAfai(v)
-      series.push({
-        day: i === 0 ? "Auj." : i === 1 ? "Dem." : DAYS[d.getDay()],
-        date: d.toISOString().slice(0, 10),
-        afai: Math.round(v * 100) / 100,
-        status: s,
-      })
-    }
-    const trend = series[6].afai - series[0].afai
-    weekly[id] = {
-      forecast: series,
-      drift: trend > 0.05 ? "up" : trend < -0.05 ? "down" : "stable",
-      driftLabel: trend > 0.05 ? "Dérive possible vers la côte" : trend < -0.05 ? "Dispersion attendue" : "Stable",
-      driftValue: Math.round(trend * 100) / 100,
-    }
-  }
-  return weekly
-}
 
 function getCopernicusCreds() {
   try {
@@ -128,7 +91,6 @@ async function fetchCopernicusSubset(username, password) {
         }
         console.log('Réponse JSON inattendue:', JSON.stringify(data).slice(0, 200))
       } else {
-        // L'API peut renvoyer un fichier binaire (NetCDF) — on considère la connexion OK
         console.log('Réponse non-JSON (content-type:', contentType, ') — connexion API validée')
         return { source: 'copernicus', levels: null }
       }
@@ -209,7 +171,6 @@ function updateHistory(dir, levels) {
   const today = new Date().toISOString().slice(0, 10)
   const historyPath = path.join(dir, 'history.json')
 
-  // Read existing history
   let historyData = { history: [], changes: [] }
   try {
     const raw = fs.readFileSync(historyPath, 'utf-8')
@@ -218,13 +179,11 @@ function updateHistory(dir, levels) {
     if (!Array.isArray(historyData.changes)) historyData.changes = []
   } catch (_) {}
 
-  // Build today's entry
   const todayEntry = {
     date: today,
     levels: levels.map(l => ({ id: l.id, afai: l.afai, status: l.status })),
   }
 
-  // Replace today's entry if it already exists, otherwise append
   const existingIdx = historyData.history.findIndex(h => h.date === today)
   if (existingIdx >= 0) {
     historyData.history[existingIdx] = todayEntry
@@ -232,7 +191,6 @@ function updateHistory(dir, levels) {
     historyData.history.push(todayEntry)
   }
 
-  // Detect status changes vs yesterday
   const newChanges = []
   const yesterday = historyData.history
     .filter(h => h.date < today)
@@ -254,7 +212,6 @@ function updateHistory(dir, levels) {
     }
   }
 
-  // Append new changes (avoid duplicates for same date+beach)
   for (const c of newChanges) {
     const dupIdx = historyData.changes.findIndex(
       x => x.date === c.date && x.beach === c.beach
@@ -266,7 +223,6 @@ function updateHistory(dir, levels) {
     }
   }
 
-  // Keep only last 30 days
   const cutoff = new Date()
   cutoff.setDate(cutoff.getDate() - 30)
   const cutoffStr = cutoff.toISOString().slice(0, 10)
@@ -276,13 +232,19 @@ function updateHistory(dir, levels) {
   fs.writeFileSync(historyPath, JSON.stringify(historyData, null, 2), 'utf-8')
   console.log('History:', historyPath, '|', historyData.history.length, 'jours |', newChanges.length, 'changement(s) détecté(s)')
 
-  return newChanges
+  return { newChanges, historyEntries: historyData.history }
 }
 
 async function main() {
   const creds = getCopernicusCreds()
   let source = 'reference'
-  let levels = SARGASSUM_REF.map(l => ({ ...l }))
+  const refConf = referenceConfidence()
+  let levels = SARGASSUM_REF.map(l => ({
+    ...l,
+    confidence: refConf,
+    source: 'reference-fallback',
+    sourceDetail: 'hardcoded-reference',
+  }))
 
   if (creds) {
     console.log('Appel API Copernicus Marine (subset Antilles, 7 derniers jours)...')
@@ -293,6 +255,9 @@ async function main() {
         id: l.id,
         afai: Number(l.afai) || 0,
         status: l.status || statusFromAfai(Number(l.afai) || 0),
+        confidence: 60, // Copernicus direct = moderate confidence
+        source: 'copernicus',
+        sourceDetail: 'api-subset',
       }))
       console.log('Données Copernicus reçues:', levels.length, 'plages')
     } else if (source === 'copernicus') {
@@ -302,21 +267,39 @@ async function main() {
     console.warn('Fichier copernicustxt.txt absent ou invalide → données de référence uniquement.')
   }
 
-  const updatedAt = new Date().toISOString()
-  const weekly = buildWeeklyBatch(levels)
-  const payload = { source, updatedAt, levels, weekly }
-
   const dir = path.join(__dirname, '..', 'public', 'api', 'copernicus')
   fs.mkdirSync(dir, { recursive: true })
+
+  // Load history for satellite trend
+  const { newChanges, historyEntries } = updateHistory(dir, levels)
+
+  const updatedAt = new Date().toISOString()
+  // No wind forecast available in fallback mode — satellite-only forecasts
+  const weekly = buildHonestForecast(levels, null, historyEntries, null)
+  const payload = {
+    source,
+    updatedAt,
+    erddapTimestamp: null,
+    dataAgeMinutes: null,
+    pipelineVersion: '2.0',
+    levels,
+    weekly,
+  }
+
   const outPath = path.join(dir, 'sargassum.json')
   fs.writeFileSync(outPath, JSON.stringify(payload), 'utf-8')
   console.log('OK:', outPath)
   console.log('   source:', source, '| updatedAt:', updatedAt.slice(0, 19))
 
-  // History tracking + notifications
-  const changes = updateHistory(dir, levels)
-  for (const change of changes) {
-    await sendOneSignalNotification(change)
+  // Notifications
+  for (const change of newChanges) {
+    // Only notify if confidence > 50 (don't push uncertain alerts)
+    const level = levels.find(l => l.id === change.beach)
+    if (level && level.confidence >= 50) {
+      await sendOneSignalNotification(change)
+    } else {
+      console.log(`  Skipping notification for ${change.beach}: confidence ${level?.confidence || 0}% too low`)
+    }
   }
 }
 

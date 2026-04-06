@@ -1,9 +1,13 @@
 /**
  * Génère public/api/copernicus/sargassum.json pour déploiement FTP statique
  * (même structure que l'API /api/copernicus/sargassum)
+ *
+ * Pipeline v2.0: uses lib/forecast.cjs (honest model) + lib/confidence.cjs
  */
 const fs = require('fs')
 const path = require('path')
+const { referenceConfidence } = require('./lib/confidence.cjs')
+const { buildHonestForecast, statusFromAfai } = require('./lib/forecast.cjs')
 
 const SARGASSUM_REF = [
   { id: "grande-anse",     afai: 0.11, status: "clean" }, { id: "anse-mitan",      afai: 0.17, status: "clean" },
@@ -18,39 +22,6 @@ const SARGASSUM_REF = [
   { id: "gp-moule",        afai: 0.44, status: "avoid" }, { id: "gp-vieux-fort", afai: 0.72, status: "avoid" },
 ]
 
-const DAYS = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"]
-
-function buildWeeklyBatch(levels) {
-  const weekly = {}
-  for (const { id, afai } of levels) {
-    const drift = afai > 0.6 ? 0.02 + (id.length % 5) * 0.008 : afai < 0.25 ? -0.01 - (id.length % 3) * 0.005 : (id.length % 7) * 0.006 - 0.02
-    const base = Math.max(0, Math.min(1, afai))
-    const series = []
-    const t = new Date()
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(t)
-      d.setDate(d.getDate() + i)
-      const noise = Math.sin((id.length + i) * 1.3) * 0.04 + Math.cos(i * 0.9) * 0.02
-      const v = Math.max(0, Math.min(1, base + drift * i + noise))
-      const s = v < 0.15 ? "clean" : v < 0.40 ? "moderate" : "avoid"
-      series.push({
-        day: i === 0 ? "Auj." : i === 1 ? "Dem." : DAYS[d.getDay()],
-        date: d.toISOString().slice(0, 10),
-        afai: Math.round(v * 100) / 100,
-        status: s,
-      })
-    }
-    const trend = series[6].afai - series[0].afai
-    weekly[id] = {
-      forecast: series,
-      drift: trend > 0.05 ? "up" : trend < -0.05 ? "down" : "stable",
-      driftLabel: trend > 0.05 ? "Dérive possible vers la côte" : trend < -0.05 ? "Dispersion attendue" : "Stable",
-      driftValue: Math.round(trend * 100) / 100,
-    }
-  }
-  return weekly
-}
-
 const dir = path.join(__dirname, '..', 'public', 'api', 'copernicus')
 fs.mkdirSync(dir, { recursive: true })
 const outPath = path.join(dir, 'sargassum.json')
@@ -64,12 +35,32 @@ try {
 if (existing && existing.source === 'erddap-live') {
   console.log('OK: public/api/copernicus/sargassum.json (kept erddap-live data, not overwriting)')
 } else {
+  const refConf = referenceConfidence()
+  const levels = SARGASSUM_REF.map(l => ({
+    ...l,
+    confidence: refConf,
+    source: 'reference-fallback',
+    sourceDetail: 'hardcoded-reference',
+  }))
+
+  // Load history if available
+  let historyEntries = []
+  try {
+    const histPath = path.join(dir, 'history.json')
+    const raw = JSON.parse(fs.readFileSync(histPath, 'utf-8'))
+    historyEntries = raw.history || []
+  } catch (_) {}
+
+  const weekly = buildHonestForecast(levels, null, historyEntries, null)
   const payload = {
     source: 'reference',
     updatedAt: new Date().toISOString(),
-    levels: SARGASSUM_REF,
-    weekly: buildWeeklyBatch(SARGASSUM_REF),
+    erddapTimestamp: null,
+    dataAgeMinutes: null,
+    pipelineVersion: '2.0',
+    levels,
+    weekly,
   }
   fs.writeFileSync(outPath, JSON.stringify(payload), 'utf-8')
-  console.log('OK: public/api/copernicus/sargassum.json (reference fallback)')
+  console.log('OK: public/api/copernicus/sargassum.json (reference fallback, pipeline v2.0)')
 }
