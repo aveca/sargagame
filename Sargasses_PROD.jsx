@@ -482,7 +482,7 @@ function BottomNav({view,onChangeView,lang}){
 /* ═══════════════════════════════════════════════════════════════════════════
    MAP VIEW (Leaflet — satellite tiles, CircleMarkers + heatmap)
    ═══════════════════════════════════════════════════════════════════════════ */
-function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos,favorites,allBeaches,onThreatChange,onPremiumClick}){
+function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos,favorites,allBeaches,onThreatChange,onPremiumClick,lang}){
   const containerRef=useRef(null)
   const mapRef=useRef(null)
   const markersRef=useRef([])
@@ -2841,7 +2841,7 @@ export default function App(){
 
         {/* MAP, LIST or GAME */}
         {view==="map"?(
-          <ErrBound><MapView beaches={filtered} island={island}
+          <ErrBound><MapView beaches={filtered} island={island} lang={lang}
             onBeachClick={onBeachClick} selectedBeach={selectedBeach} sargData={sargData} userPos={userPos}
             favorites={favorites} allBeaches={allBeaches} onThreatChange={setHasActiveThreat}
             onPremiumClick={openPremium}/></ErrBound>
