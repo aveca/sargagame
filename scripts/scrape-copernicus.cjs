@@ -45,9 +45,10 @@ const SARGASSUM_REF = [
 
 const DAYS = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"]
 
+// Thresholds aligned with NOAA SIR (raw AFAI: 0.001/0.003)
 function statusFromAfai(afai) {
-  if (afai < 0.3) return "clean"
-  if (afai < 0.65) return "moderate"
+  if (afai < 0.15) return "clean"
+  if (afai < 0.40) return "moderate"
   return "avoid"
 }
 

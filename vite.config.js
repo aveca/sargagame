@@ -50,7 +50,7 @@ function buildWeeklyBatch(levels) {
       d.setDate(d.getDate() + i)
       const noise = Math.sin((id.length + i) * 1.3) * 0.04 + Math.cos(i * 0.9) * 0.02
       const v = Math.max(0, Math.min(1, base + drift * i + noise))
-      const s = v < 0.3 ? "clean" : v < 0.65 ? "moderate" : "avoid"
+      const s = v < 0.15 ? "clean" : v < 0.40 ? "moderate" : "avoid"
       series.push({
         day: i === 0 ? "Auj." : i === 1 ? "Dem." : DAYS[d.getDay()],
         date: d.toISOString().slice(0, 10),

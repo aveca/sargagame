@@ -149,7 +149,13 @@ const STRIPE_URL="https://buy.stripe.com/28E7sN2pd5F07Ktesr0co0p"
 const g=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}}
 const s=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
 
-function statusFromAfai(afai){return afai<.3?"clean":afai<.65?"moderate":"avoid"}
+/**
+ * Status thresholds aligned with NOAA SIR (Sargassum Inundation Risk).
+ * NOAA raw AFAI deviation thresholds: 0.001 (low/medium), 0.003 (medium/high).
+ * Our normalizeAfai() maps: raw 0.002→0.15, raw 0.005→0.40.
+ * Sources: NOAA/AOML SIR v1.4, Wang & Hu 2016 (USF MODIS).
+ */
+function statusFromAfai(afai){return afai<.15?"clean":afai<.40?"moderate":"avoid"}
 
 function generateForecast(afai,lang="fr"){
   const LL=T[lang]||T.fr,now=new Date()

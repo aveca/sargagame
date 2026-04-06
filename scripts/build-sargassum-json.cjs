@@ -8,14 +8,14 @@ const path = require('path')
 const SARGASSUM_REF = [
   { id: "grande-anse",     afai: 0.11, status: "clean" }, { id: "anse-mitan",      afai: 0.17, status: "clean" },
   { id: "anse-noire",      afai: 0.08, status: "clean" }, { id: "tartane",         afai: 0.19, status: "clean" },
-  { id: "anse-madame",     afai: 0.14, status: "clean" }, { id: "diamant",         afai: 0.42, status: "moderate" },
-  { id: "pt-marin",        afai: 0.47, status: "moderate" }, { id: "sainte-anne",  afai: 0.78, status: "avoid" },
+  { id: "anse-madame",     afai: 0.14, status: "clean" }, { id: "diamant",         afai: 0.42, status: "avoid" },
+  { id: "pt-marin",        afai: 0.47, status: "avoid" }, { id: "sainte-anne",  afai: 0.78, status: "avoid" },
   { id: "les-salines",     afai: 0.82, status: "avoid" }, { id: "vauclin",         afai: 0.71, status: "avoid" },
   { id: "gp-grande-anse",  afai: 0.15, status: "clean" }, { id: "gp-malendure",    afai: 0.12, status: "clean" },
-  { id: "gp-sainte-anne",  afai: 0.22, status: "clean" }, { id: "gp-pt-chateaux",  afai: 0.38, status: "moderate" },
+  { id: "gp-sainte-anne",  afai: 0.22, status: "moderate" }, { id: "gp-pt-chateaux",  afai: 0.38, status: "moderate" },
   { id: "gp-gosier",       afai: 0.18, status: "clean" }, { id: "gp-caravelle",    afai: 0.14, status: "clean" },
   { id: "gp-bas-du-fort",  afai: 0.35, status: "moderate" }, { id: "gp-deshaies",   afai: 0.11, status: "clean" },
-  { id: "gp-moule",        afai: 0.44, status: "moderate" }, { id: "gp-vieux-fort", afai: 0.72, status: "avoid" },
+  { id: "gp-moule",        afai: 0.44, status: "avoid" }, { id: "gp-vieux-fort", afai: 0.72, status: "avoid" },
 ]
 
 const DAYS = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"]
@@ -32,7 +32,7 @@ function buildWeeklyBatch(levels) {
       d.setDate(d.getDate() + i)
       const noise = Math.sin((id.length + i) * 1.3) * 0.04 + Math.cos(i * 0.9) * 0.02
       const v = Math.max(0, Math.min(1, base + drift * i + noise))
-      const s = v < 0.3 ? "clean" : v < 0.65 ? "moderate" : "avoid"
+      const s = v < 0.15 ? "clean" : v < 0.40 ? "moderate" : "avoid"
       series.push({
         day: i === 0 ? "Auj." : i === 1 ? "Dem." : DAYS[d.getDay()],
         date: d.toISOString().slice(0, 10),

@@ -65,9 +65,11 @@ const DAYS = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
 
 // ── Helpers ────────────────────────────────────────────────────────
 
+// Thresholds aligned with NOAA SIR (raw AFAI: 0.001/0.003).
+// normalizeAfai maps: raw 0.002→0.15, raw 0.005→0.40.
 function statusFromAfai(afai) {
-  if (afai < 0.3) return 'clean'
-  if (afai < 0.65) return 'moderate'
+  if (afai < 0.15) return 'clean'
+  if (afai < 0.40) return 'moderate'
   return 'avoid'
 }
 
