@@ -628,10 +628,18 @@ function useWeather(beach){
 /* ═══════════════════════════════════════════════════════════════════════════
    BOTTOM SHEET — beach detail with photo, forecast, weather, nearby
    ═══════════════════════════════════════════════════════════════════════════ */
-function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMap,onBeachClick,onPremiumClick,isPremium,historyData}){
+function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMap,onBeachClick,onPremiumClick,isPremium,historyData,sargData}){
   const LL=T[lang]||T.fr
   const weather=useWeather(beach)
-  const forecast=useMemo(()=>beach?generateForecast(beach.afai,lang):null,[beach?.id,lang])
+  // Use REAL forecast from sargassum.json when available, fallback to generated
+  const forecast=useMemo(()=>{
+    if(!beach)return null
+    const sargId=BEACH_TO_SARG[beach.id]
+    if(sargId&&sargData?.weekly?.[sargId]?.forecast){
+      return sargData.weekly[sargId].forecast
+    }
+    return generateForecast(beach.afai,lang)
+  },[beach?.id,lang,sargData])
   const isFav=favorites.includes(beach?.id)
   const startY=useRef(0)
   const sheetRef=useRef(null)
@@ -1917,12 +1925,27 @@ export default function App(){
       .catch(()=>{})
   },[])
 
-  // Fetch sargassum.json at mount and merge AFAI levels
+  // Fetch sargassum.json at mount and merge AFAI levels into beaches
   useEffect(()=>{
     fetch("/api/copernicus/sargassum.json")
       .then(r=>r.json())
       .then(data=>{
         setSargData(data)
+        // Merge live AFAI into allBeaches (20 sentinel stations → 20 beach objects)
+        if(data?.levels){
+          setAllBeaches(prev=>{
+            const updated=[...prev]
+            for(const lvl of data.levels){
+              const beachId=SARG_TO_BEACH[lvl.id]
+              if(!beachId)continue
+              const idx=updated.findIndex(b=>b.id===beachId)
+              if(idx>=0){
+                updated[idx]={...updated[idx],afai:lvl.afai,status:statusFromAfai(lvl.afai)}
+              }
+            }
+            return updated
+          })
+        }
       })
       .catch(()=>{})
   },[])
@@ -2028,7 +2051,7 @@ export default function App(){
             favorites={favorites} onToggleFav={toggleFav} lang={lang}
             allBeaches={allBeaches} imageMap={imageMap}
             onBeachClick={onBeachClick} onPremiumClick={openPremium} isPremium={isPremium}
-            historyData={historyData}/>
+            historyData={historyData} sargData={sargData}/>
         )}
 
         {/* PREMIUM MODAL */}
