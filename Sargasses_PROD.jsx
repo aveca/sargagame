@@ -1202,14 +1202,14 @@ function HistoryChart({beachId,historyData,lang}){
       <div style={{background:"var(--sg-cardS,#FAFAFA)",borderRadius:12,padding:"12px 14px",
         border:"1px solid var(--sg-border,rgba(0,0,0,.04))"}}>
         <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} style={{display:"block"}}>
-          {/* Background zones */}
-          <rect x={0} y={0} width={W} height={H*0.3} fill="rgba(232,82,42,.04)" rx={0}/>
-          <rect x={0} y={H*0.3} width={W} height={H*0.35} fill="rgba(184,122,0,.04)" rx={0}/>
-          <rect x={0} y={H*0.65} width={W} height={H*0.35} fill="rgba(34,197,94,.04)" rx={0}/>
+          {/* Background zones — aligned with NOAA SIR thresholds (0.15/0.40) */}
+          <rect x={0} y={0} width={W} height={H*0.15} fill="rgba(232,82,42,.04)" rx={0}/>
+          <rect x={0} y={H*0.15} width={W} height={H*0.25} fill="rgba(184,122,0,.04)" rx={0}/>
+          <rect x={0} y={H*0.40} width={W} height={H*0.60} fill="rgba(34,197,94,.04)" rx={0}/>
           {/* Threshold lines */}
-          <line x1={0} y1={PAD+(1-0.3/max)*(H-PAD*2)} x2={W} y2={PAD+(1-0.3/max)*(H-PAD*2)}
+          <line x1={0} y1={PAD+(1-0.15/max)*(H-PAD*2)} x2={W} y2={PAD+(1-0.15/max)*(H-PAD*2)}
             stroke="rgba(184,122,0,.2)" strokeDasharray="3 3" strokeWidth={0.5}/>
-          <line x1={0} y1={PAD+(1-0.65/max)*(H-PAD*2)} x2={W} y2={PAD+(1-0.65/max)*(H-PAD*2)}
+          <line x1={0} y1={PAD+(1-0.40/max)*(H-PAD*2)} x2={W} y2={PAD+(1-0.40/max)*(H-PAD*2)}
             stroke="rgba(232,82,42,.2)" strokeDasharray="3 3" strokeWidth={0.5}/>
           {/* Area fill */}
           <path d={areaD} fill={lineColor} opacity={0.1}/>

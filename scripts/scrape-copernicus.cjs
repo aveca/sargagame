@@ -31,16 +31,17 @@ const BEACH_NAMES = {
 }
 
 const SARGASSUM_REF = [
-  { id: "grande-anse",     afai: 0.11, status: "clean" }, { id: "anse-mitan",      afai: 0.17, status: "clean" },
-  { id: "anse-noire",      afai: 0.08, status: "clean" }, { id: "tartane",         afai: 0.19, status: "clean" },
-  { id: "anse-madame",     afai: 0.14, status: "clean" }, { id: "diamant",         afai: 0.42, status: "moderate" },
-  { id: "pt-marin",        afai: 0.47, status: "moderate" }, { id: "sainte-anne",  afai: 0.78, status: "avoid" },
+  // Status computed from NOAA SIR thresholds: <0.15=clean, 0.15-0.40=moderate, >=0.40=avoid
+  { id: "grande-anse",     afai: 0.11, status: "clean" }, { id: "anse-mitan",      afai: 0.17, status: "moderate" },
+  { id: "anse-noire",      afai: 0.08, status: "clean" }, { id: "tartane",         afai: 0.19, status: "moderate" },
+  { id: "anse-madame",     afai: 0.14, status: "clean" }, { id: "diamant",         afai: 0.42, status: "avoid" },
+  { id: "pt-marin",        afai: 0.47, status: "avoid" }, { id: "sainte-anne",  afai: 0.78, status: "avoid" },
   { id: "les-salines",     afai: 0.82, status: "avoid" }, { id: "vauclin",         afai: 0.71, status: "avoid" },
-  { id: "gp-grande-anse",  afai: 0.15, status: "clean" }, { id: "gp-malendure",    afai: 0.12, status: "clean" },
-  { id: "gp-sainte-anne",  afai: 0.22, status: "clean" }, { id: "gp-pt-chateaux",  afai: 0.38, status: "moderate" },
-  { id: "gp-gosier",       afai: 0.18, status: "clean" }, { id: "gp-caravelle",    afai: 0.14, status: "clean" },
+  { id: "gp-grande-anse",  afai: 0.15, status: "moderate" }, { id: "gp-malendure",    afai: 0.12, status: "clean" },
+  { id: "gp-sainte-anne",  afai: 0.22, status: "moderate" }, { id: "gp-pt-chateaux",  afai: 0.38, status: "moderate" },
+  { id: "gp-gosier",       afai: 0.18, status: "moderate" }, { id: "gp-caravelle",    afai: 0.14, status: "clean" },
   { id: "gp-bas-du-fort",  afai: 0.35, status: "moderate" }, { id: "gp-deshaies",   afai: 0.11, status: "clean" },
-  { id: "gp-moule",        afai: 0.44, status: "moderate" }, { id: "gp-vieux-fort", afai: 0.72, status: "avoid" },
+  { id: "gp-moule",        afai: 0.44, status: "avoid" }, { id: "gp-vieux-fort", afai: 0.72, status: "avoid" },
 ]
 
 const DAYS = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"]
