@@ -76,7 +76,7 @@ function buildEmailHTML(island, topBeaches, stats, domain) {
   <div style="background:#0D1E1C;border-radius:16px 16px 0 0;padding:24px;text-align:center">
     <div style="font-size:12px;font-weight:700;color:#E8A800;text-transform:uppercase;letter-spacing:.08em">Bulletin weekend</div>
     <div style="font-size:24px;font-weight:800;color:#fff;margin-top:8px">Sargasses ${islandName}</div>
-    <div style="font-size:13px;color:rgba(255,255,255,.6);margin-top:4px">Ce weekend — ou aller ?</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.6);margin-top:4px">Ce weekend — tes plages propres</div>
   </div>
 
   <div style="background:#fff;padding:20px">
@@ -102,10 +102,10 @@ function buildEmailHTML(island, topBeaches, stats, domain) {
   <!-- Premium upsell -->
   <div style="background:#0D1E1C;padding:20px 24px;text-align:center">
     <div style="font-size:11px;font-weight:700;color:#E8A800;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Premium</div>
-    <div style="font-size:17px;font-weight:800;color:#fff;margin-bottom:6px">Previsions 7 jours</div>
+    <div style="font-size:17px;font-weight:800;color:#fff;margin-bottom:6px">Sache samedi des lundi</div>
     <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:14px;line-height:1.4">
-      Sois prevenu <em>avant</em> que les sargasses arrivent.<br>
-      Planifie ton weekend en avance, pas de mauvaise surprise.
+      Previsions 7 jours + alertes push.<br>
+      Rejoins les familles qui planifient leur weekend a l'avance.
     </div>
     <a href="https://buy.stripe.com/6oU3cxgg36J48Ox6ZZ0co0s" style="display:inline-block;padding:12px 28px;
       background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);

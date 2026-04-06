@@ -229,13 +229,13 @@ async function sendAllPushNotifications(alerts, goodNews) {
   const results = []
 
   for (const a of alerts) {
-    const msg = `\u26a0\ufe0f ${a.name} passe en ${statusLabel(a.to)}. Quelle plage choisir ? Essai gratuit 7 jours`
+    const msg = `\u26a0\ufe0f ${a.name} passe en ${statusLabel(a.to)}. Vois les alternatives sur la carte.`
     const res = await sendPushNotification(a.island, msg, `Sargasses ${a.island === 'gp' ? 'Guadeloupe' : 'Martinique'} \u2014 Alerte`)
     results.push({ type: 'alert', beach: a.id, island: a.island, message: msg, ...res })
   }
 
   for (const g of goodNews) {
-    const msg = `\u2705 Bonne nouvelle : ${g.name} est propre ! Planifie ton weekend \u2192 pr\u00e9visions 7j gratuites`
+    const msg = `\u2705 ${g.name} est propre ! Parfait pour ce weekend.`
     const res = await sendPushNotification(g.island, msg, `${g.name} est propre \u2705`)
     results.push({ type: 'good-news', beach: g.id, island: g.island, message: msg, ...res })
   }

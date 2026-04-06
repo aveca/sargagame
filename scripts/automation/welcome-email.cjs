@@ -47,7 +47,7 @@ function buildWelcomeHTML(island, cleanCount) {
   <div style="background:#0D1E1C;border-radius:16px 16px 0 0;padding:28px 24px;text-align:center">
     <div style="font-size:11px;font-weight:700;color:#E8A800;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Bienvenue</div>
     <div style="font-size:26px;font-weight:800;color:#fff;line-height:1.1">Sargasses ${name}</div>
-    <div style="font-size:13px;color:rgba(255,255,255,.5);margin-top:6px">Tu ne seras plus jamais surpris.</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.5);margin-top:6px">Ne gache plus un samedi a la plage.</div>
   </div>
 
   <div style="background:#fff;padding:24px 20px">
@@ -80,9 +80,9 @@ function buildWelcomeHTML(island, cleanCount) {
 
   <div style="background:#0D1E1C;padding:20px 24px;text-align:center">
     <div style="font-size:11px;font-weight:700;color:#E8A800;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Premium</div>
-    <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:6px">Tendance 7 jours + alertes</div>
+    <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:6px">Sache samedi des lundi</div>
     <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:12px;line-height:1.4">
-      Sache a l'avance si ta plage sera propre ce weekend.
+      Previsions 7 jours + alertes push. Planifie ton weekend a l'avance.
     </div>
     <a href="${stripe}" style="display:inline-block;padding:10px 24px;
       background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);
@@ -138,7 +138,7 @@ async function main() {
       const { error } = await resend.emails.send({
         from,
         to: sub.email,
-        subject: `Bienvenue — Sargasses ${name}`,
+        subject: cleanCount > 0 ? `${cleanCount} plages propres maintenant en ${name}` : `Sargasses ${name} — tu es inscrit`,
         html: buildWelcomeHTML(island, cleanCount),
       })
 

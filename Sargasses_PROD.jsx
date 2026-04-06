@@ -69,7 +69,7 @@ const T={
     kids:"Enfants",snorkel:"Snorkeling",parking:"Parking",
     premium:"Premium",premiumDesc:"Prévisions 7 jours, alertes push, zéro pub.",
     premiumPrice:"4,99 €/mois",premiumCta:"Essai gratuit 7 jours",
-    premiumFeatures:["7 jours gratuits — sans engagement","Sois prévenu AVANT que les sargasses arrivent","Prévisions 7 jours pour 135 plages","Annule quand tu veux, zéro pub"],
+    premiumFeatures:["Essaie 7 jours — 0€, annule en 1 clic","Sois prévenu AVANT que les sargasses arrivent","Prévisions 7 jours — sache samedi dès lundi","Sans pub · Sans engagement · Satisfait ou remboursé"],
     h2sWarn:"Si des sargasses sont échouées et en décomposition sur place, éloignez-vous (risque H₂S). Source : HCSP/ARS.",
     copernicus:"Copernicus Marine",live:"LIVE",
     nClean:"{n} propres",island_mq:"Martinique",island_gp:"Guadeloupe",
@@ -95,7 +95,7 @@ const T={
     kids:"Kids",snorkel:"Snorkeling",parking:"Parking",
     premium:"Premium",premiumDesc:"7-day forecast, push alerts, no ads.",
     premiumPrice:"€4.99/mo",premiumCta:"Free 7-day trial",
-    premiumFeatures:["7 days free — no commitment","Get warned BEFORE sargassum arrives","7-day forecast for 135 beaches","Cancel anytime, zero ads"],
+    premiumFeatures:["Try 7 days free — cancel in 1 click","Get warned BEFORE sargassum arrives","7-day forecast — know Saturday by Monday","No ads · No commitment · 30-day guarantee"],
     h2sWarn:"If sargassum is beached and decomposing on site, move away (H₂S risk). Source: HCSP/ARS.",
     copernicus:"Copernicus Marine",live:"LIVE",
     nClean:"{n} clean",island_mq:"Martinique",island_gp:"Guadeloupe",
@@ -208,7 +208,7 @@ function AbDebug(){
   useEffect(()=>{try{if(new URLSearchParams(window.location.search).get("ab_debug")==="1")setShow(true)}catch{}},[])
   if(!show)return null
   const ab=g("sg_ab",{})
-  const tests={lock1:["control","loss"],modal1:["control","family"],onb1:["control","skip"],free1:["control","two_free"]}
+  const tests={lock1:["control","loss"],modal1:["control","family"],free1:["control","two_free"]}
   return(
     <div style={{position:"fixed",top:8,right:8,zIndex:99999,background:"rgba(0,0,0,.9)",color:"#0f0",
       padding:12,borderRadius:8,fontSize:11,fontFamily:"monospace",maxWidth:260}}>
@@ -727,10 +727,10 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily}){
   const lockV=abVariant("lock1",["control","loss"],[.5,.5])
   const lockCTA=lockV==="loss"
     ?(lang==="en"?"Don't miss this weekend":"Ne rate pas ce weekend")
-    :(lang==="en"?"Unlock 7 days":"Débloquer 7 jours")
+    :(lang==="en"?"See the rest — free trial":"Voir la suite — essai gratuit")
   const lockSub=lockV==="loss"
     ?(lang==="en"?"Saturday, it'll be too late to switch beaches.":"Samedi, il sera trop tard pour changer de plage.")
-    :(lang==="en"?"Cheaper than a coffee. Avoid a wasted day.":"Moins cher qu'un café. Évite une journée gâchée.")
+    :(lang==="en"?"A ti-punch costs more. 7 days free.":"Un ti-punch coûte plus cher. 7 jours gratuits.")
   return(
     <div style={{position:"relative"}}>
       <div style={{display:"flex",gap:6,alignItems:"flex-end",height:140,padding:"8px 0"}}>
@@ -1493,7 +1493,7 @@ function Onboarding({onDone,island="mq",lang="fr"}){
               animation:"dot-pulse 2s ease-in-out infinite"}}/>
             <span style={{fontSize:12,fontWeight:700,color:C.ink}}>
               <em style={{fontStyle:"normal",color:C.amber,fontWeight:700}}>
-                {isMQ?"30 plages":"20 plages"}
+                {isMQ?"53 plages":"82 plages"}
               </em> {lang==="en"?"monitored live":"surveillées en temps réel"}
             </span>
           </div>
@@ -1760,7 +1760,7 @@ function BestBeachWidget({allBeaches,sargData,island,lang,isPremium,onBeachClick
       {!isPremium&&(
         <div style={{marginTop:8,fontSize:10,fontWeight:700,color:C.goldL,
           display:"flex",alignItems:"center",gap:4}}>
-          <span>🔓</span>{lang==="en"?"Try free 7 days":"Essai gratuit 7 jours"}
+          <span>🔓</span>{lang==="en"?"Which beach Saturday? Free trial":"Quelle plage samedi ? Essai gratuit"}
         </div>
       )}
     </div>
@@ -1916,7 +1916,7 @@ function StripeInlineCheckout({plan,lang,source,onSuccess}){
   const handleSubmit=async()=>{
     if(!stripeRef.current||!elementsRef.current||!email.includes("@"))return
     setSubmitting(true);setError(null)
-    track("sg_premium_modal_cta",{plan,source:source||"unknown"})
+    track("sg_checkout_submit",{plan,source:source||"unknown"})
     const{error:stripeErr,setupIntent}=await stripeRef.current.confirmSetup({
       elements:elementsRef.current,
       confirmParams:{return_url:window.location.href},
@@ -1925,13 +1925,14 @@ function StripeInlineCheckout({plan,lang,source,onSuccess}){
     if(stripeErr){setError(stripeErr.message);setSubmitting(false);return}
     const res=await fetch("/api/create-checkout.php",{
       method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({action:"subscribe",email,plan,setupIntentId:setupIntent.id})
+      body:JSON.stringify({action:"subscribe",email,plan,setupIntentId:setupIntent.id,lang:lang||"fr"})
     })
     const data=await res.json()
     if(data.error){setError(data.error);setSubmitting(false);return}
     track("sg_premium_subscribed",{plan,source})
     localStorage.setItem("sg_premium","1")
     localStorage.setItem("sg_premium_trial_end",String(data.trialEnd))
+    localStorage.setItem("sg_premium_email",email)
     onSuccess?.()
   }
 
@@ -1960,9 +1961,19 @@ function StripeInlineCheckout({plan,lang,source,onSuccess}){
 /* ═══════════════════════════════════════════════════════════════════════════
    PREMIUM MODAL
    ═══════════════════════════════════════════════════════════════════════════ */
-function PremiumModal({onClose,lang,source}){
+function PremiumModal({onClose,lang,source,allBeaches,sargData}){
   const LL=T[lang]||T.fr
   const hasAnnual=!!STRIPE_LINK_ANNUAL
+  // Compute dynamic beach change count from weekly data
+  const changingCount=useMemo(()=>{
+    if(!sargData?.weekly||!allBeaches)return 3
+    let count=0
+    for(const b of allBeaches){
+      const w=sargData.weekly?.[b.sarg_id]
+      if(w?.forecast?.length>=2&&w.forecast[0].status!==w.forecast[w.forecast.length-1].status)count++
+    }
+    return Math.max(count,1)
+  },[sargData,allBeaches])
   const[plan,setPlan]=useState("monthly") // "monthly" | "annual"
   const[showCheckout,setShowCheckout]=useState(false)
   // A/B Test 2: modal value proposition
@@ -1978,7 +1989,7 @@ function PremiumModal({onClose,lang,source}){
     ?(lang==="en"?"Satellite data updated 4x per day":"Données satellite mises à jour 4x par jour")
     :(lang==="en"?"Used by families across Martinique and Guadeloupe":"Utilisé par les familles de Martinique et Guadeloupe")
   const anchor=isFamily
-    ?(lang==="en"?"This week, 3 beaches will change status. You'll know which ones.":"Cette semaine, 3 plages vont changer de statut. Tu sauras lesquelles.")
+    ?(lang==="en"?`This week, ${changingCount} beach${changingCount>1?"es":""} will change status. You'll know which.`:`Cette semaine, ${changingCount} plage${changingCount>1?"s":""} va changer de statut. Tu sauras ${changingCount>1?"lesquelles":"laquelle"}.`)
     :(lang==="en"?"A wasted beach day = €80. Knowing before = €4.99/mo.":"Une journée gâchée = 80€. Savoir avant = 4,99€/mois.")
   // Season urgency
   const seasonStart=new Date("2026-05-01")
@@ -2071,7 +2082,7 @@ function PremiumModal({onClose,lang,source}){
           </button>
         ):(
           <StripeInlineCheckout plan={effectivePlan} lang={lang} source={source}
-            onSuccess={()=>{track("sg_premium_success");onClose()}}/>
+            onSuccess={()=>{track("sg_premium_success",{plan:effectivePlan,source:source||"unknown"});onClose()}}/>
         )}
 
         {/* Guarantee */}
@@ -2154,15 +2165,17 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
 /* ═══════════════════════════════════════════════════════════════════════════
    INLINE PUSH CTA — Contextual in beach sheet after 3rd beach view
    ═══════════════════════════════════════════════════════════════════════════ */
-function InlinePushCTA({lang}){
+function InlinePushCTA({lang,beachId}){
   const[accepted,setAccepted]=useState(false)
   const[dismissed,setDismissed]=useState(false)
+  const tracked=useRef(false)
   // Only show after 3 beach views and if push not already set up
   const beachViews=parseInt(sessionStorage.getItem("sg_beach_views")||"0")
   if(beachViews<3||dismissed||g("sg_push_done",false))return null
+  if(!tracked.current){tracked.current=true;track("sg_push_view",{beach_id:beachId||"unknown"})}
 
   const handleActivate=()=>{
-    track("sg_push_accept")
+    track("sg_push_accept",{beach_id:beachId||"unknown"})
     s("sg_push_done",true)
     setAccepted(true)
     try{window.loadOneSignal?.()}catch(e){}
@@ -2182,10 +2195,10 @@ function InlinePushCTA({lang}){
         <span style={{fontSize:18,flexShrink:0}}>🔔</span>
         <div style={{flex:1,minWidth:0}}>
           <div style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)"}}>
-            {lang==="en"?"Get alerts for this beach":"Reçois une alerte pour cette plage"}
+            {lang==="en"?"Know before you go":"Sois prévenu avant d'aller à la plage"}
           </div>
           <div style={{fontSize:11,color:"var(--sg-mid)",marginTop:1}}>
-            {lang==="en"?"When sargassum arrives or conditions change":"Quand les sargasses arrivent ou les conditions changent"}
+            {lang==="en"?"We'll alert you if this beach changes status. Free.":"On te prévient si ta plage change de statut. Gratuit."}
           </div>
         </div>
         <button onClick={handleActivate} style={{
@@ -2196,7 +2209,7 @@ function InlinePushCTA({lang}){
           {lang==="en"?"Activate":"Activer"}
         </button>
       </div>
-      <button onClick={()=>setDismissed(true)} style={{
+      <button onClick={()=>{setDismissed(true);track("sg_push_dismiss",{beach_id:beachId||"unknown"})}} style={{
         display:"block",margin:"6px auto 0",background:"none",border:"none",
         cursor:"pointer",color:"var(--sg-mid)",fontSize:11,padding:0}}>
         {lang==="en"?"Not now":"Plus tard"}
@@ -2212,8 +2225,10 @@ function InlineEmailCapture({lang}){
   const[email,setEmail]=useState("")
   const[submitted,setSubmitted]=useState(false)
   const[dismissed,setDismissed]=useState(false)
+  const tracked=useRef(false)
   const beachViews=parseInt(sessionStorage.getItem("sg_beach_views")||"0")
   if(beachViews<2||dismissed||g("sg_email_prompt",false))return null
+  if(!tracked.current){tracked.current=true;track("sg_email_view")}
 
   const handleSubmit=e=>{
     e.preventDefault()
@@ -2239,9 +2254,12 @@ function InlineEmailCapture({lang}){
   return(
     <div style={{margin:"12px 0",padding:"12px 14px",borderRadius:14,
       background:"var(--sg-bgD,#F7F5EF)",border:"1px solid var(--sg-border,rgba(0,0,0,.04))"}}>
-      <div style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)",marginBottom:8,display:"flex",alignItems:"center",gap:6}}>
+      <div style={{fontSize:13,fontWeight:700,color:"var(--sg-ink)",marginBottom:4,display:"flex",alignItems:"center",gap:6}}>
         <span>📧</span>
-        {lang==="en"?"Get the weekly sargassum bulletin":"Reçois le bulletin sargasses chaque semaine"}
+        {lang==="en"?"Stop wasting a Saturday at the beach":"Ne gâche plus un samedi à la plage"}
+      </div>
+      <div style={{fontSize:11,color:"var(--sg-mid)",marginBottom:8}}>
+        {lang==="en"?"Every Friday, the 5 cleanest beaches in your inbox.":"Chaque vendredi, les 5 plages les plus propres dans ta boîte."}
       </div>
       <form onSubmit={handleSubmit} style={{display:"flex",gap:8,alignItems:"center"}}>
         <input type="email" placeholder={lang==="en"?"your@email.com":"ton@email.com"}
@@ -2258,7 +2276,7 @@ function InlineEmailCapture({lang}){
           {lang==="en"?"Subscribe":"S'inscrire"}
         </button>
       </form>
-      <button onClick={()=>{setDismissed(true);s("sg_email_prompt",true)}} style={{
+      <button onClick={()=>{setDismissed(true);s("sg_email_prompt",true);track("sg_email_dismiss")}} style={{
         display:"block",margin:"6px auto 0",background:"none",border:"none",
         cursor:"pointer",color:"var(--sg-mid)",fontSize:11,padding:0}}>
         {lang==="en"?"Not now":"Plus tard"}
@@ -2651,6 +2669,19 @@ export default function App(){
         window.history.replaceState({},"",window.location.pathname)
         return true
       }
+      // ?manage=1 → ouvrir le portail Stripe
+      if(params.get("manage")==="1"){
+        const em=localStorage.getItem("sg_premium_email")
+        if(em){
+          fetch("/api/create-checkout.php",{
+            method:"POST",headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({action:"portal",email:em})
+          }).then(r=>r.json()).then(d=>{
+            if(d.url)window.location.href=d.url
+          }).catch(()=>{})
+        }
+        window.history.replaceState({},"",window.location.pathname)
+      }
     }catch(e){}
     return false
   })
@@ -2659,7 +2690,7 @@ export default function App(){
     if(w){s("sg_premium_welcome",false)}
     return w
   })
-  useEffect(()=>{if(showWelcome){const t=setTimeout(()=>setShowWelcome(false),5000);return()=>clearTimeout(t)}},[showWelcome])
+  useEffect(()=>{if(showWelcome){track("sg_welcome_toast_view");const t=setTimeout(()=>setShowWelcome(false),5000);return()=>clearTimeout(t)}},[showWelcome])
 
   // Analytics: session start
   useEffect(()=>{track("sg_session_start",{island,is_premium:isPremium,is_returning:!!g("sg_seen",0)});s("sg_seen",1)},[])
@@ -2957,7 +2988,7 @@ export default function App(){
         )}
 
         {/* PREMIUM MODAL */}
-        {showPremium&&<PremiumModal onClose={()=>setShowPremium(false)} lang={lang} source={premiumSource}/>}
+        {showPremium&&<PremiumModal onClose={()=>setShowPremium(false)} lang={lang} source={premiumSource} allBeaches={allBeaches} sargData={sargData}/>}
 
         {/* BEACH PICKER — for new users or when "Changer" tapped */}
         {(!myBeachId||showPicker)&&view==="map"&&!selectedBeach&&(
@@ -2992,6 +3023,7 @@ export default function App(){
             <div>
               <div>Premium activé !</div>
               <div style={{fontSize:11,fontWeight:400,opacity:.85,marginTop:2}}>Prévisions 7 jours débloquées.</div>
+              <a href="?manage=1" onClick={e=>{e.stopPropagation();track("sg_manage_click")}} style={{fontSize:10,color:"rgba(255,255,255,.6)",marginTop:3,display:"inline-block"}}>Gérer mon abonnement</a>
             </div>
             <button onClick={()=>setShowWelcome(false)} style={{
               background:"rgba(255,255,255,.2)",border:"none",color:"#fff",
