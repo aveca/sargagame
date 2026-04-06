@@ -187,9 +187,13 @@ Sitemap: https://${domain}/sitemap.xml
   if (dir === 'guadeloupe-ftp') {
     const distIndex = path.join(dist, 'index.html')
     let scriptSrc = '/assets/index.js'
+    let cssSrc = ''
     if (fs.existsSync(distIndex)) {
-      const match = fs.readFileSync(distIndex, 'utf-8').match(/type="module"[^>]+src="([^"]+\.js)"/)
-      if (match) scriptSrc = match[1]
+      const html = fs.readFileSync(distIndex, 'utf-8')
+      const jsMatch = html.match(/type="module"[^>]+src="([^"]+\.js)"/)
+      if (jsMatch) scriptSrc = jsMatch[1]
+      const cssMatch = html.match(/href="([^"]+\.css)"/)
+      if (cssMatch) cssSrc = cssMatch[1]
     }
     const gpIndex = `<!DOCTYPE html>
 <html lang="fr">
@@ -237,6 +241,7 @@ Sitemap: https://${domain}/sitemap.xml
     <script>
     (function(){if(!window.clarity||!window.gtag)return;var sent={};function send(n,d){var k=n+d.target;if(sent[k])return;sent[k]=1;gtag('event',n,d)}var clicks=[],RT=3,RW=1500;document.addEventListener('click',function(e){var now=Date.now(),t=e.target,tag=t.tagName+'.'+(t.className||'').split(' ')[0]+'#'+(t.id||'');clicks.push({time:now,tag:tag});clicks=clicks.filter(function(c){return now-c.time<RW});var same=clicks.filter(function(c){return c.tag===tag});if(same.length>=RT){send('clarity_rage_click',{target:tag,page:location.pathname,count:same.length});clicks=[]}},true);document.addEventListener('click',function(e){var t=e.target,ii=['A','BUTTON','INPUT','SELECT','TEXTAREA','LABEL'];if(ii.indexOf(t.tagName)>=0||t.closest('a,button'))return;var tag=t.tagName+'.'+(t.className||'').split(' ')[0]+'#'+(t.id||''),url=location.href;setTimeout(function(){if(location.href===url)send('clarity_dead_click',{target:tag,page:location.pathname})},2000)},true);var loaded=Date.now();window.addEventListener('beforeunload',function(){if(Date.now()-loaded<10000){navigator.sendBeacon&&navigator.sendBeacon('https://www.google-analytics.com/g/collect?v=2&tid=G-Q31VV3LLM9&en=clarity_quick_bounce&ep.page='+encodeURIComponent(location.pathname))}})})();
     </script>
+    ${cssSrc ? `<link rel="stylesheet" crossorigin href="${cssSrc}" />` : ''}
     <script type="module" crossorigin src="${scriptSrc}"></script>
   </head>
   <body>
