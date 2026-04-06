@@ -456,6 +456,31 @@ async function main() {
   console.log(`OK: ${outPath}`)
   console.log(`   source: erddap-live | updatedAt: ${updatedAt.slice(0, 19)}`)
 
+  // 4. Export AFAI grid for client-side heatmap
+  // Only positive AFAI points (sargassum detected), downsampled for performance
+  const gridPoints = []
+  for (const grid of [mqGrid, gpGrid]) {
+    if (!grid || !grid.points) continue
+    for (const p of grid.points) {
+      if (p.AFAI == null || p.AFAI <= 0) continue
+      // Downsample: keep ~1 in 4 points (skip odd lat/lng indices)
+      const latIdx = grid.latitudes.indexOf(p.latitude)
+      const lngIdx = grid.longitudes.indexOf(p.longitude)
+      if (latIdx % 2 !== 0 || lngIdx % 2 !== 0) continue
+      const norm = normalizeAfai(p.AFAI)
+      if (norm < 0.06) continue // below noise floor
+      gridPoints.push([
+        Math.round(p.latitude * 1000) / 1000,
+        Math.round(p.longitude * 1000) / 1000,
+        Math.round(norm * 100) / 100,
+      ])
+    }
+  }
+  const gridPayload = { updatedAt, count: gridPoints.length, points: gridPoints }
+  const gridPath = path.join(dir, 'sargassum-grid.json')
+  fs.writeFileSync(gridPath, JSON.stringify(gridPayload), 'utf-8')
+  console.log(`Grid: ${gridPath} | ${gridPoints.length} points (AFAI > 0)`)
+
   // History
   const changes = updateHistory(dir, levels)
   if (changes.length > 0) {

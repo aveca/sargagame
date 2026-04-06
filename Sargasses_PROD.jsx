@@ -457,9 +457,11 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos}){
   const mapRef=useRef(null)
   const markersRef=useRef([])
   const heatRef=useRef([])
+  const gridLayerRef=useRef(null)
   const userMarkerRef=useRef(null)
   const driftRef=useRef(null) // animation interval
   const[mapError,setMapError]=useState(null)
+  const[afaiGrid,setAfaiGrid]=useState(null)
 
   // Init map once
   useEffect(()=>{
@@ -530,6 +532,46 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos}){
       .addTo(mapRef.current)
     return()=>{if(userMarkerRef.current){userMarkerRef.current.remove();userMarkerRef.current=null}}
   },[userPos])
+
+  // Fetch AFAI grid for offshore heatmap
+  useEffect(()=>{
+    fetch("/api/copernicus/sargassum-grid.json")
+      .then(r=>r.json())
+      .then(d=>{if(d?.points?.length)setAfaiGrid(d)})
+      .catch(()=>{})
+  },[])
+
+  // Render AFAI heatmap from grid data (canvas circles, efficient)
+  useEffect(()=>{
+    if(!mapRef.current)return
+    if(gridLayerRef.current){gridLayerRef.current.remove();gridLayerRef.current=null}
+    if(!afaiGrid||!afaiGrid.points.length)return
+    // Filter to current island region
+    const isGP=island==="gp"
+    const pts=afaiGrid.points.filter(p=>isGP?p[0]>=15.5:p[0]<15.5)
+    if(!pts.length)return
+    // Canvas layer for performance (hundreds of circles)
+    const renderer=L.canvas({padding:0.5})
+    const group=L.layerGroup()
+    for(const[lat,lng,afai]of pts){
+      const r=Math.max(800,afai*5000) // radius in meters
+      const opacity=Math.min(0.55,afai*0.8)
+      const color=afai<.15?"rgba(34,197,94,.6)":afai<.40?"rgba(232,168,0,.7)":"rgba(232,82,42,.8)"
+      const c=L.circle([lat,lng],{radius:r,fillColor:color,color:"transparent",weight:0,
+        fillOpacity:opacity,renderer,interactive:true})
+      // Tunnel clic: tap hotspot → find nearest beach → open it
+      c.on("click",()=>{
+        track("sg_heatmap_click",{afai,lat,lng})
+        const nearest=beaches.slice().sort((a,b)=>
+          haversine(lat,lng,a.lat,a.lng)-haversine(lat,lng,b.lat,b.lng))[0]
+        if(nearest)onBeachClick(nearest)
+      })
+      c.addTo(group)
+    }
+    group.addTo(mapRef.current)
+    gridLayerRef.current=group
+    return()=>{if(gridLayerRef.current){gridLayerRef.current.remove();gridLayerRef.current=null}}
+  },[afaiGrid,island,beaches,onBeachClick])
 
   // Update markers + heatmap
   useEffect(()=>{
