@@ -36,8 +36,11 @@ async function fetchGSCPerformance(searchconsole, siteUrl) {
 }
 
 async function fetchGSCIndexStatus(searchconsole, siteUrl, urls) {
+  const MAX_INSPECT = parseInt(process.env.URL_INSPECT_LIMIT || '30', 10)
+  const limited = urls.slice(0, MAX_INSPECT)
+  if (urls.length > MAX_INSPECT) console.log(`  (limited to ${MAX_INSPECT}/${urls.length} URLs)`)
   const results = []
-  for (const url of urls) {
+  for (const url of limited) {
     try {
       const res = await searchconsole.urlInspection.index.inspect({
         requestBody: {

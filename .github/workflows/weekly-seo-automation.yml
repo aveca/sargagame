@@ -36,7 +36,7 @@ jobs:
 
       # ── 1. Collect SEO data from GSC + GA4 + CrUX ────────
       - name: SEO Audit (data collection)
-        timeout-minutes: 10
+        timeout-minutes: 20
         env:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           GA4_PROPERTY_ID_MQ: ${{ secrets.GA4_PROPERTY_ID_MQ }}
