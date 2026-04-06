@@ -12,7 +12,7 @@ permissions:
 jobs:
   seo-automation:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
@@ -36,11 +36,13 @@ jobs:
 
       # ── 1. Collect SEO data from GSC + GA4 + CrUX ────────
       - name: SEO Audit (data collection)
+        timeout-minutes: 10
         env:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           GA4_PROPERTY_ID_MQ: ${{ secrets.GA4_PROPERTY_ID_MQ }}
           GA4_PROPERTY_ID_GP: ${{ secrets.GA4_PROPERTY_ID_GP }}
         run: node scripts/automation/seo-audit.cjs
+        continue-on-error: true
 
       # ── 1b. UX Audit (from audit data) ───────────────────
       - name: UX Audit (analyze UX issues)
