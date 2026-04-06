@@ -69,7 +69,7 @@ const T={
     kids:"Enfants",snorkel:"Snorkeling",parking:"Parking",
     premium:"Premium",premiumDesc:"Tendance 7 jours, alertes push, zéro pub.",
     premiumPrice:"4,99 €/mois",premiumCta:"Essai gratuit 7 jours",
-    premiumFeatures:["7 jours gratuits — sans engagement","Sois prévenu AVANT que les sargasses arrivent","Prévisions 7 jours pour 135 plages","Annule quand tu veux, zéro pub"],
+    premiumFeatures:["7 jours gratuits — sans engagement","Sois prévenu AVANT que les sargasses arrivent","Tendance 7 jours pour 135 plages","Annule quand tu veux, zéro pub"],
     h2sWarn:"Si des sargasses sont échouées et en décomposition sur place, éloignez-vous (risque H₂S). Source : HCSP/ARS.",
     copernicus:"Copernicus Marine",live:"LIVE",
     nClean:"{n} propres",island_mq:"Martinique",island_gp:"Guadeloupe",
@@ -89,13 +89,13 @@ const T={
     filters:["All","Clean","Favourites","Alerts"],
     filtersIcon:["🌊","✅","❤️","🚫"],
     navMap:"Map",navList:"Beaches",navGame:"Game",navPremium:"Premium",
-    forecast:"7-day forecast",weather:"Weather",directions:"Directions",
+    forecast:"7-day trend",weather:"Weather",directions:"Directions",
     fav:"Favourite",addFav:"Add to favourites",removeFav:"Remove from favourites",
     wind:"Wind",uv:"UV",temp:"Temperature",drive:"min",
     kids:"Kids",snorkel:"Snorkeling",parking:"Parking",
-    premium:"Premium",premiumDesc:"7-day forecast, push alerts, no ads.",
+    premium:"Premium",premiumDesc:"7-day trend, push alerts, no ads.",
     premiumPrice:"€4.99/mo",premiumCta:"Free 7-day trial",
-    premiumFeatures:["7 days free — no commitment","Get warned BEFORE sargassum arrives","7-day forecast for 135 beaches","Cancel anytime, zero ads"],
+    premiumFeatures:["7 days free — no commitment","Get warned BEFORE sargassum arrives","7-day trend for 135 beaches","Cancel anytime, zero ads"],
     h2sWarn:"If sargassum is beached and decomposing on site, move away (H₂S risk). Source: HCSP/ARS.",
     copernicus:"Copernicus Marine",live:"LIVE",
     nClean:"{n} clean",island_mq:"Martinique",island_gp:"Guadeloupe",
@@ -1832,13 +1832,13 @@ function WeekendBanner({allBeaches,sargData,island,lang,isPremium,onPremiumClick
                   :`Meilleur choix : ${bestBeach.name} (${Math.round(bestDist)} km)`)
                 :(lang==="en"
                   ?"Unlock the full weekend forecast"
-                  :"Débloquer les prévisions weekend")}
+                  :"Débloquer la tendance weekend")}
             </div>
           </>
         ):(
           <>
             <div style={{fontSize:14,fontWeight:700,color:"#fff",lineHeight:1.3}}>
-              {lang==="en"?"7-day forecast for all beaches":"Prévisions 7j pour toutes les plages"}
+              {lang==="en"?"7-day forecast for all beaches":"Tendance 7j pour toutes les plages"}
             </div>
             <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginTop:2}}>
               {lang==="en"
@@ -2864,13 +2864,8 @@ export default function App(){
         {/* PREMIUM MODAL */}
         {showPremium&&<PremiumModal onClose={()=>setShowPremium(false)} lang={lang}/>}
 
-        {/* ONBOARDING — inline coachmark for brand new users */}
-        {showOnboarding&&!myBeachId&&view==="map"&&(
-          <Onboarding onDone={()=>setShowOnboarding(false)} island={island} lang={lang}/>
-        )}
-
-        {/* BEACH PICKER — after onboarding dismissed, or when "Changer" tapped */}
-        {(!myBeachId||showPicker)&&!showOnboarding&&view==="map"&&!selectedBeach&&(
+        {/* BEACH PICKER — for new users or when "Changer" tapped */}
+        {(!myBeachId||showPicker)&&view==="map"&&!selectedBeach&&(
           <BeachPicker island={island} allBeaches={allBeaches} lang={lang} userPos={userPos}
             onSelect={onPickBeach} onDismiss={myBeachId?()=>setShowPicker(false):null}/>
         )}
@@ -2901,7 +2896,7 @@ export default function App(){
             <span style={{fontSize:22}}>🎉</span>
             <div>
               <div>Premium activé !</div>
-              <div style={{fontSize:11,fontWeight:400,opacity:.85,marginTop:2}}>Prévisions 7 jours débloquées.</div>
+              <div style={{fontSize:11,fontWeight:400,opacity:.85,marginTop:2}}>Tendance 7 jours débloquée.</div>
             </div>
             <button onClick={()=>setShowWelcome(false)} style={{
               background:"rgba(255,255,255,.2)",border:"none",color:"#fff",
