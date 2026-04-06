@@ -1169,14 +1169,14 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
                 <WeatherCard icon="💨" label={LL.wind} value={`${weather.wind} km/h`}/>
                 <WeatherCard icon="☀️" label={LL.uv} value={weather.uv}/>
               </div>
-              {/* Marine conditions (waves, swell, rain) */}
-              {(weather.waveHeight!=null||weather.swellHeight!=null||weather.precipitation!=null)&&(
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginTop:10}}>
-                  {weather.waveHeight!=null&&<WeatherCard icon="🌊" label={LL.waves} value={`${weather.waveHeight}m`}/>}
-                  {weather.swellHeight!=null&&<WeatherCard icon="🏄" label={LL.swell} value={`${weather.swellHeight}m`}/>}
-                  <WeatherCard icon="💧" label={LL.rain} value={`${weather.precipitation}mm`}/>
-                </div>
-              )}
+              {/* Marine — only when significant */}
+              {(()=>{
+                const cards=[]
+                if(weather.waveHeight!=null&&weather.waveHeight>=1.5)cards.push(<WeatherCard key="w" icon="🌊" label={LL.waves} value={`${weather.waveHeight}m`}/>)
+                if(weather.swellHeight!=null&&weather.swellHeight>=1.5)cards.push(<WeatherCard key="s" icon="🏄" label={LL.swell} value={`${weather.swellHeight}m`}/>)
+                if(weather.precipitation>0)cards.push(<WeatherCard key="r" icon="💧" label={LL.rain} value={`${weather.precipitation}mm`}/>)
+                return cards.length>0?<div style={{display:"grid",gridTemplateColumns:`repeat(${cards.length},1fr)`,gap:10,marginTop:10}}>{cards}</div>:null
+              })()}
             </>
           )}
 
