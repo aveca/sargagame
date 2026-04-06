@@ -141,6 +141,35 @@ const ISLAND_CENTER={mq:[14.64,-61.02],gp:[16.22,-61.55]}
 // Mapping: sargassum.json / history.json IDs → beaches-list.json IDs
 const SARG_TO_BEACH={"grande-anse":"mq014","anse-mitan":"mq011","anse-noire":"mq012","tartane":"mq034","anse-madame":"mq024","diamant":"mq016","pt-marin":"mq008","sainte-anne":"mq004","les-salines":"mq001","vauclin":"mq044","gp-grande-anse":"gp021","gp-malendure":"gp031","gp-sainte-anne":"gp010","gp-pt-chateaux":"gp005","gp-gosier":"gp012","gp-caravelle":"gp009","gp-bas-du-fort":"gp014","gp-deshaies":"gp024","gp-moule":"gp080","gp-vieux-fort":"gp042"}
 const BEACH_TO_SARG=Object.fromEntries(Object.entries(SARG_TO_BEACH).map(([k,v])=>[v,k]))
+
+function findMostRelevantThreat(banks,beaches,favorites,userPos,island){
+  if(!banks||!banks.length||!beaches||!beaches.length)return null
+  const isGP=island==="gp"
+  const visible=banks.filter(b=>isGP?b.centroid[0]>=15.5:b.centroid[0]<15.5)
+  let best=null,bestScore=-1
+  for(const bank of visible){
+    if(!bank.threatens)continue
+    for(const tk of["now","6h","12h","24h"]){
+      const threats=bank.threatens[tk];if(!threats)continue
+      for(const t of threats){
+        const beachId=SARG_TO_BEACH[t.id]
+        const beach=beachId?beaches.find(b=>b.id===beachId):null
+        if(!beach)continue
+        let score=0
+        if(favorites&&favorites.includes(beach.id))score+=100
+        if(userPos){
+          const d=haversine(userPos.lat,userPos.lng,beach.lat,beach.lng)
+          score+=Math.max(0,50*(1-d/50))
+        }
+        score+=tk==="now"?40:tk==="6h"?30:tk==="12h"?20:10
+        score+=bank.mass*20
+        if(score>bestScore){bestScore=score;best={bank,beach,timeKey:tk,km:t.km}}
+      }
+    }
+  }
+  return best
+}
+
 const STRIPE_URL="https://buy.stripe.com/6oU3cxgg36J48Ox6ZZ0co0s" // 4.99 EUR/mois recurring + 7d trial
 const STRIPE_ANNUAL_URL="https://buy.stripe.com/14AeVf0h5c3o4yhgAz0co0r" // 39.99 EUR/an recurring + 7d trial
 
@@ -319,6 +348,7 @@ body{background:var(--sg-bg,#FDFCF7);color:var(--sg-ink,#0D0D0D)}
 /* Bottom sheet */
 .sheet{
   position:fixed;bottom:0;left:0;right:0;z-index:900;
+  max-width:520px;margin:0 auto;
   background:var(--sg-card,#fff);border-radius:20px 20px 0 0;
   box-shadow:0 -4px 30px rgba(0,0,0,.12);
   transition:transform .35s cubic-bezier(.32,.72,0,1);
@@ -338,6 +368,10 @@ body{background:var(--sg-bg,#FDFCF7);color:var(--sg-ink,#0D0D0D)}
 @keyframes float-b{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 @keyframes dot-pulse{0%,100%{box-shadow:0 0 0 2px rgba(34,197,94,.2)}50%{box-shadow:0 0 0 5px rgba(34,197,94,.07)}}
 @keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+@keyframes sg-threat-slide{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes sg-threat-glow{0%,100%{box-shadow:0 4px 20px rgba(232,82,42,.3)}50%{box-shadow:0 4px 30px rgba(232,82,42,.55)}}
+@keyframes sg-dash-flow{from{stroke-dashoffset:20}to{stroke-dashoffset:0}}
+.sg-drift-path{animation:sg-dash-flow 1.5s linear infinite}
 @keyframes goldGlow{0%,100%{box-shadow:0 4px 20px rgba(232,168,0,.25)}50%{box-shadow:0 4px 30px rgba(232,168,0,.5)}}
 @keyframes confirmPop{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
 @keyframes pin-pulse{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.8);opacity:0}}
@@ -448,7 +482,7 @@ function BottomNav({view,onChangeView,lang}){
 /* ═══════════════════════════════════════════════════════════════════════════
    MAP VIEW (Leaflet — satellite tiles, CircleMarkers + heatmap)
    ═══════════════════════════════════════════════════════════════════════════ */
-function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos}){
+function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos,favorites,allBeaches}){
   const containerRef=useRef(null)
   const mapRef=useRef(null)
   const markersRef=useRef([])
@@ -460,6 +494,10 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos}){
   const[afaiGrid,setAfaiGrid]=useState(null)
   const[banksData,setBanksData]=useState(null)
   const[timeStep,setTimeStep]=useState(0) // 0=now, 6, 12, 24 hours
+  const[autoPlaying,setAutoPlaying]=useState(false)
+  const autoPlayTimersRef=useRef([])
+  const autoZoomDoneRef=useRef(false)
+  const[threatDismissed,setThreatDismissed]=useState(()=>sessionStorage.getItem("sg_threat_dismissed")==="1")
   const banksLayerRef=useRef(null)
 
   // Init map once
@@ -534,6 +572,41 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos}){
   // Fetch sargassum banks (clustered AFAI + drift predictions)
   useEffect(()=>{fetch("/api/copernicus/sargassum-banks.json").then(r=>r.json()).then(d=>{if(d?.banks?.length)setBanksData(d)}).catch(()=>{})},[])
 
+  // Auto-zoom on most relevant threat (once per session)
+  useEffect(()=>{
+    if(!mapRef.current||!banksData||autoZoomDoneRef.current)return
+    if(sessionStorage.getItem("sg_autozoom_done"))return
+    const threat=findMostRelevantThreat(banksData.banks,allBeaches||beaches,favorites,userPos,island)
+    if(!threat)return
+    autoZoomDoneRef.current=true
+    const tid=setTimeout(()=>{
+      try{
+        const bounds=L.latLngBounds([threat.bank.centroid,[threat.beach.lat,threat.beach.lng]])
+        mapRef.current.flyToBounds(bounds.pad(0.4),{duration:1.5,maxZoom:13})
+        sessionStorage.setItem("sg_autozoom_done","1")
+        track("sg_autozoom",{bankId:threat.bank.id,beachId:threat.beach.id,km:threat.km})
+      }catch(e){}
+    },1200)
+    return()=>clearTimeout(tid)
+  },[banksData,island])
+
+  // Auto-animate timeline: cycle 0→6→12→24h (once per session)
+  useEffect(()=>{
+    if(!banksData||!banksData.banks.length)return
+    if(sessionStorage.getItem("sg_autoplay_done"))return
+    const steps=[0,6,12,24],delay=2200
+    const startDelay=setTimeout(()=>{
+      setAutoPlaying(true)
+      sessionStorage.setItem("sg_autoplay_done","1")
+      const timers=steps.map((h,i)=>setTimeout(()=>{
+        setTimeStep(h)
+        if(i===steps.length-1)setTimeout(()=>setAutoPlaying(false),delay)
+      },i*delay))
+      autoPlayTimersRef.current=timers
+    },3000)
+    return()=>{clearTimeout(startDelay);autoPlayTimersRef.current.forEach(clearTimeout)}
+  },[banksData])
+
   // Render sargassum BANKS — clean, animated, wow effect
   const bankAnimRef=useRef(null)
   useEffect(()=>{
@@ -541,9 +614,7 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos}){
     if(banksLayerRef.current){banksLayerRef.current.remove();banksLayerRef.current=null}
     if(bankAnimRef.current){clearInterval(bankAnimRef.current);bankAnimRef.current=null}
     if(!banksData||!banksData.banks.length)return
-    const showBanks=abVariant("banks_v1",["on","off"],[.5,.5])
-    if(showBanks==="off")return
-    track("sg_banks_shown",{variant:showBanks,timeStep,island})
+    track("sg_banks_shown",{timeStep,island})
     const isGP=island==="gp"
     const visible=banksData.banks.filter(b=>isGP?b.centroid[0]>=15.5:b.centroid[0]<15.5)
     if(!visible.length)return
@@ -595,6 +666,41 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos}){
       const ec=eta==="now"?"#E8522A":"#E8A820"
       L.marker([bch.lat+.006,bch.lng+.010],{icon:L.divIcon({className:"",html:'<div class="sg-eta-badge" style="background:'+ec+';color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px;pointer-events:none;box-shadow:0 2px 6px rgba(0,0,0,.4)">'+el+'</div>',iconSize:[36,16],iconAnchor:[18,8]}),interactive:false,zIndexOffset:900}).addTo(bGroup)
       etaCount++
+    }
+    // Drift path corridors — animated dashed lines from bank to threatened beach
+    const beachList=allBeaches||beaches
+    for(const bank of visible){
+      if(!bank.threatens||!bank.drift?.predictions)continue
+      const threats=bank.threatens["now"]||bank.threatens["6h"]||bank.threatens["12h"]||bank.threatens["24h"]
+      if(!threats||!threats.length)continue
+      const topThreat=threats[0] // closest beach
+      const beachId=SARG_TO_BEACH[topThreat.id]
+      const tBeach=beachId?beachList.find(b=>b.id===beachId):null
+      if(!tBeach)continue
+      // Build waypoints: current → 6h → 12h → 24h → beach
+      const waypoints=[bank.centroid]
+      for(const ts of["6h","12h","24h"]){
+        const pred=bank.drift.predictions[ts]
+        if(pred?.centroid)waypoints.push(pred.centroid)
+      }
+      waypoints.push([tBeach.lat,tBeach.lng])
+      // Animated dashed polyline
+      const urgency=bank.threatens["now"]?"#E8522A":bank.threatens["6h"]?"#E8A800":"#B87A00"
+      L.polyline(waypoints,{color:urgency,weight:2.5,opacity:.65,dashArray:"8 12",interactive:false,className:"sg-drift-path"}).addTo(bGroup)
+      // Ghost polygons at prediction timesteps (fading)
+      const ghostOps=[.12,.08,.05]
+      ;["6h","12h","24h"].forEach((ts,gi)=>{
+        const pred=bank.drift.predictions[ts]
+        if(!pred?.hull||pred.hull.length<3)return
+        L.polygon(pred.hull,{fillColor:urgency,fillOpacity:ghostOps[gi],color:urgency,weight:.5,opacity:.3,interactive:false}).addTo(bGroup)
+      })
+      // Direction chevrons along the path
+      for(let ci=0;ci<waypoints.length-1;ci++){
+        const p1=waypoints[ci],p2=waypoints[ci+1]
+        const mid=[(p1[0]+p2[0])/2,(p1[1]+p2[1])/2]
+        const angle=Math.atan2(p2[0]-p1[0],p2[1]-p1[1])*180/Math.PI
+        L.marker(mid,{icon:L.divIcon({className:"",html:'<div style="font-size:14px;font-weight:900;color:'+urgency+';opacity:.7;transform:rotate('+(90-angle)+'deg);pointer-events:none;text-shadow:0 1px 3px rgba(0,0,0,.5)">\u203A</div>',iconSize:[14,14],iconAnchor:[7,7]}),interactive:false}).addTo(bGroup)
+      }
     }
     bGroup.addTo(mapRef.current);banksLayerRef.current=bGroup
     // Animate: pulse polygon opacity
@@ -771,19 +877,64 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos}){
     return()=>{if(driftRef.current)clearInterval(driftRef.current)}
   },[beaches,onBeachClick,selectedBeach,sargData])
 
+  // Compute threat for banner
+  const threat=useMemo(()=>{
+    if(!banksData)return null
+    return findMostRelevantThreat(banksData.banks,allBeaches||beaches,favorites,userPos,island)
+  },[banksData,allBeaches,beaches,favorites,userPos,island])
+
   if(mapError)return <div style={{padding:40,color:"red"}}>{mapError}</div>
   return(<div style={{position:"relative",width:"100%",height:"100%"}}>
     <div ref={containerRef} style={{width:"100%",height:"100%"}}/>
+    {/* Threat Banner — dramatic alert */}
+    {threat&&!threatDismissed&&(
+      <div onClick={()=>{
+        try{
+          const bounds=L.latLngBounds([threat.bank.centroid,[threat.beach.lat,threat.beach.lng]])
+          mapRef.current?.flyToBounds(bounds.pad(0.4),{duration:1.5,maxZoom:13})
+          track("sg_threat_banner_tap",{bankId:threat.bank.id,beachId:threat.beach.id})
+        }catch(e){}
+      }} style={{
+        position:"absolute",bottom:200,left:12,right:12,zIndex:780,
+        background:threat.timeKey==="now"?"linear-gradient(135deg,#E8522A,#C0392B)":"linear-gradient(135deg,#E8A800,#D4820A)",
+        borderRadius:16,padding:"12px 16px",cursor:"pointer",
+        animation:"sg-threat-slide .4s ease-out,sg-threat-glow 3s ease-in-out infinite",
+        display:"flex",alignItems:"center",gap:10,
+        boxShadow:"0 4px 24px rgba(0,0,0,.4)",
+      }}>
+        <div style={{fontSize:24,flexShrink:0}}>{threat.timeKey==="now"?"\u26a0\ufe0f":"\ud83c\udf0a"}</div>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:13,fontWeight:800,color:"#fff",lineHeight:1.3}}>
+            {threat.timeKey==="now"?"Banc de sargasses sur "+threat.beach.name:
+              "Un banc arrive sur "+threat.beach.name+" dans ~"+threat.timeKey.replace("h","")+"h"}
+          </div>
+          <div style={{fontSize:11,color:"rgba(255,255,255,.8)",marginTop:2}}>
+            {threat.km} km \u2014 {Math.round(threat.bank.mass*100)}% de couverture \u2022 Tap pour voir
+          </div>
+        </div>
+        <div onClick={(e)=>{
+          e.stopPropagation()
+          setThreatDismissed(true)
+          sessionStorage.setItem("sg_threat_dismissed","1")
+        }} style={{fontSize:18,color:"rgba(255,255,255,.6)",cursor:"pointer",padding:"4px 2px"}}>{"\u2715"}</div>
+      </div>
+    )}
+    {/* Time Slider with progress bar */}
     {banksData&&banksData.banks.length>0&&(
-      <div style={{position:"absolute",bottom:140,left:"50%",transform:"translateX(-50%)",display:"flex",gap:3,padding:"3px 4px",background:"rgba(10,26,46,.85)",borderRadius:20,zIndex:800,backdropFilter:"blur(8px)",boxShadow:"0 2px 12px rgba(0,0,0,.4)"}}>
+      <div style={{position:"absolute",bottom:140,left:"50%",transform:"translateX(-50%)",display:"flex",gap:3,padding:"3px 4px",background:"rgba(10,26,46,.85)",borderRadius:20,zIndex:800,backdropFilter:"blur(8px)",boxShadow:"0 2px 12px rgba(0,0,0,.4)",overflow:"hidden"}}>
         {[0,6,12,24].map(h=>(
-          <button key={h} onClick={()=>setTimeStep(h)} style={{padding:"6px 12px",borderRadius:16,border:"none",background:timeStep===h?"#E8522A":"transparent",color:"#fff",fontSize:11,fontWeight:timeStep===h?700:500,cursor:"pointer",transition:"all .2s",opacity:timeStep===h?1:.7}}>
+          <button key={h} onClick={()=>{
+            setTimeStep(h)
+            if(autoPlaying){autoPlayTimersRef.current.forEach(clearTimeout);setAutoPlaying(false)}
+          }} style={{padding:"6px 12px",borderRadius:16,border:"none",background:timeStep===h?"#E8522A":"transparent",color:"#fff",fontSize:11,fontWeight:timeStep===h?700:500,cursor:"pointer",transition:"all .2s",opacity:timeStep===h?1:.7,
+            boxShadow:autoPlaying&&timeStep===h?"0 0 10px rgba(232,82,42,.5)":"none"}}>
             {h===0?"Maintenant":"+"+h+"h"}
           </button>
         ))}
+        <div style={{position:"absolute",bottom:0,left:0,height:2,borderRadius:1,background:"#E8522A",transition:"width .4s ease",
+          width:timeStep===0?"25%":timeStep===6?"50%":timeStep===12?"75%":"100%"}}/>
       </div>
     )}
-{/* Prévision badge removed — time slider provides enough context */}
   </div>)
 }
 
@@ -2736,7 +2887,8 @@ export default function App(){
         {/* MAP, LIST or GAME */}
         {view==="map"?(
           <ErrBound><MapView beaches={filtered} island={island}
-            onBeachClick={onBeachClick} selectedBeach={selectedBeach} sargData={sargData} userPos={userPos}/></ErrBound>
+            onBeachClick={onBeachClick} selectedBeach={selectedBeach} sargData={sargData} userPos={userPos}
+            favorites={favorites} allBeaches={allBeaches}/></ErrBound>
         ):(
           <BeachListView beaches={filtered} onBeachClick={onBeachClick}
             favorites={favorites} lang={lang} imageMap={imageMap}/>
