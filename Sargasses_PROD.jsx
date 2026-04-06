@@ -2062,7 +2062,7 @@ function WeekendBanner({allBeaches,sargData,island,lang,isPremium,onPremiumClick
   }
 
   return(
-    <div style={{position:"absolute",bottom:68,left:12,right:12,zIndex:750,
+    <div style={{position:"fixed",bottom:68,left:12,right:12,zIndex:750,
       background:"linear-gradient(135deg,rgba(13,30,28,.95),rgba(10,23,20,.95))",
       backdropFilter:"blur(16px)",borderRadius:18,padding:"14px 16px",
       boxShadow:"0 8px 32px rgba(0,0,0,.35),0 0 0 1px rgba(255,199,44,.15)",
