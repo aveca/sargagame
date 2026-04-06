@@ -2548,51 +2548,150 @@ function FeedbackWidget(){
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   PWA INSTALL PROMPT — custom "Add to Home Screen" banner
+   PWA INSTALL PROMPT — Android (beforeinstallprompt) + iOS (Safari tutorial)
+   Best practice: show after 2nd beach view (value demonstrated), not on timer
    ═══════════════════════════════════════════════════════════════════════════ */
 function InstallPrompt(){
   const[deferredPrompt,setDeferredPrompt]=useState(null)
   const[visible,setVisible]=useState(false)
+  const[showIosTutorial,setShowIosTutorial]=useState(false)
   const[dismissed,setDismissed]=useState(()=>!!g("sg_pwa_prompt",0))
 
-  useEffect(()=>{
-    if(dismissed)return
-    // Check if already installed (standalone mode)
-    if(window.matchMedia("(display-mode: standalone)").matches)return
-    const handler=e=>{e.preventDefault();setDeferredPrompt(e);setTimeout(()=>setVisible(true),45000)}
-    window.addEventListener("beforeinstallprompt",handler)
-    return()=>window.removeEventListener("beforeinstallprompt",handler)
-  },[dismissed])
+  const isIos=useMemo(()=>/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream,[])
+  const isStandalone=useMemo(()=>window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true,[])
 
-  if(!visible||!deferredPrompt)return null
+  useEffect(()=>{
+    if(dismissed||isStandalone)return
+    // Android/Chrome: listen for beforeinstallprompt
+    const handler=e=>{e.preventDefault();setDeferredPrompt(e)}
+    window.addEventListener("beforeinstallprompt",handler)
+    // Show prompt after user has viewed 2 beaches (value demonstrated)
+    const checkEngagement=()=>{
+      const beachViews=parseInt(sessionStorage.getItem("sg_beach_views")||"0")
+      if(beachViews>=2){setVisible(true);track("sg_pwa_prompt_shown",{platform:isIos?"ios":"android"})}
+    }
+    const interval=setInterval(checkEngagement,5000)
+    // Fallback: show after 60s if no beach views
+    const fallback=setTimeout(()=>{if(!visible)checkEngagement()},60000)
+    return()=>{window.removeEventListener("beforeinstallprompt",handler);clearInterval(interval);clearTimeout(fallback)}
+  },[dismissed,isStandalone])
+
+  if(!visible||isStandalone)return null
 
   const handleInstall=async()=>{
-    track("sg_pwa_install")
-    deferredPrompt.prompt()
-    const{outcome}=await deferredPrompt.userChoice
-    track("sg_pwa_install_result",{outcome})
-    setVisible(false);s("sg_pwa_prompt",1)
+    if(deferredPrompt){
+      track("sg_pwa_install",{platform:"android"})
+      deferredPrompt.prompt()
+      const{outcome}=await deferredPrompt.userChoice
+      track("sg_pwa_install_result",{outcome,platform:"android"})
+      setVisible(false);setDismissed(true);s("sg_pwa_prompt",1)
+    }else if(isIos){
+      track("sg_pwa_ios_tutorial_open")
+      setShowIosTutorial(true)
+    }
   }
 
+  const dismiss=()=>{setVisible(false);setDismissed(true);s("sg_pwa_prompt",1);track("sg_pwa_dismiss",{platform:isIos?"ios":"android"})}
+
   return(
-    <div style={{position:"fixed",bottom:68,left:12,right:12,zIndex:760,
-      background:"linear-gradient(135deg,rgba(0,158,142,.95),rgba(30,200,176,.92))",
-      backdropFilter:"blur(16px)",borderRadius:18,padding:"14px 16px",
-      boxShadow:"0 8px 32px rgba(0,158,142,.35)",display:"flex",alignItems:"center",gap:12,
-      animation:"slideUp .4s cubic-bezier(.22,1,.36,1)"}}>
-      <div style={{width:42,height:42,borderRadius:12,background:"rgba(255,255,255,.15)",
-        display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>📱</div>
-      <div style={{flex:1,minWidth:0}}>
-        <div style={{fontSize:13,fontWeight:700,color:"#fff"}}>Ajouter a l'ecran d'accueil</div>
-        <div style={{fontSize:11,color:"rgba(255,255,255,.7)",marginTop:1}}>Acces direct, hors-ligne, notifications</div>
+    <>
+      <div style={{position:"fixed",bottom:68,left:12,right:12,zIndex:760,
+        background:"linear-gradient(135deg,rgba(0,158,142,.95),rgba(30,200,176,.92))",
+        backdropFilter:"blur(16px)",borderRadius:18,padding:"14px 16px",
+        boxShadow:"0 8px 32px rgba(0,158,142,.35)",display:"flex",alignItems:"center",gap:12,
+        animation:"slideUp .4s cubic-bezier(.22,1,.36,1)"}}>
+        <div style={{width:42,height:42,borderRadius:12,background:"rgba(255,255,255,.15)",
+          display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>📱</div>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:13,fontWeight:700,color:"#fff"}}>
+            {isIos?"Ajoute l'app sur ton iPhone":"Installer l'app"}
+          </div>
+          <div style={{fontSize:11,color:"rgba(255,255,255,.7)",marginTop:1}}>
+            {isIos?"Accès direct + alertes sargasses":"Accès direct, alertes push, hors-ligne"}
+          </div>
+        </div>
+        <button onClick={handleInstall} style={{background:"#fff",color:C.teal,border:"none",
+          borderRadius:12,padding:"8px 14px",fontWeight:700,fontSize:12,cursor:"pointer",
+          fontFamily:"inherit",flexShrink:0}}>{isIos?"Voir comment":"Installer"}</button>
+        <button onClick={dismiss}
+          style={{position:"absolute",top:6,right:8,background:"none",border:"none",
+            color:"rgba(255,255,255,.4)",cursor:"pointer",fontSize:14,padding:4}}>✕</button>
       </div>
-      <button onClick={handleInstall} style={{background:"#fff",color:C.teal,border:"none",
-        borderRadius:12,padding:"8px 14px",fontWeight:700,fontSize:12,cursor:"pointer",
-        fontFamily:"inherit",flexShrink:0}}>Installer</button>
-      <button onClick={()=>{setVisible(false);setDismissed(true);s("sg_pwa_prompt",1);track("sg_pwa_dismiss")}}
-        style={{position:"absolute",top:6,right:8,background:"none",border:"none",
-          color:"rgba(255,255,255,.4)",cursor:"pointer",fontSize:14,padding:4}}>✕</button>
-    </div>
+
+      {/* iOS Safari tutorial overlay */}
+      {showIosTutorial&&(
+        <>
+          <div className="backdrop" onClick={()=>{setShowIosTutorial(false);dismiss()}}
+            style={{zIndex:1200}}/>
+          <div style={{
+            position:"fixed",bottom:0,left:0,right:0,zIndex:1201,
+            background:"var(--sg-card,#fff)",borderRadius:"24px 24px 0 0",
+            padding:"28px 24px 40px",maxHeight:"70vh",overflow:"auto",
+            boxShadow:"0 -8px 40px rgba(0,0,0,.2)",
+            animation:"slideUp .4s cubic-bezier(.22,1,.36,1)",
+          }}>
+            <div className="sheet-handle"/>
+            <h3 className="anton" style={{fontSize:22,marginBottom:4,color:"var(--sg-ink)"}}>
+              Ajoute Sargasses sur ton iPhone
+            </h3>
+            <p style={{fontSize:12,color:"var(--sg-mid)",marginBottom:16,lineHeight:1.5}}>
+              En 3 secondes, tu auras l'app sur ton ecran d'accueil avec les alertes sargasses.
+            </p>
+
+            {/* Step 1 */}
+            <div style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:16}}>
+              <div style={{width:32,height:32,borderRadius:10,background:C.tealBg,
+                display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,
+                fontWeight:800,color:C.teal,flexShrink:0}}>1</div>
+              <div>
+                <div style={{fontSize:14,fontWeight:700,color:"var(--sg-ink)"}}>
+                  Appuie sur <span style={{display:"inline-flex",alignItems:"center",
+                    padding:"2px 8px",background:"rgba(0,122,255,.1)",borderRadius:6,
+                    fontSize:18,verticalAlign:"middle"}}>⬆️</span> en bas de Safari
+                </div>
+                <div style={{fontSize:11,color:"var(--sg-mid)",marginTop:2}}>Le bouton partager (carre avec fleche)</div>
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:16}}>
+              <div style={{width:32,height:32,borderRadius:10,background:C.tealBg,
+                display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,
+                fontWeight:800,color:C.teal,flexShrink:0}}>2</div>
+              <div>
+                <div style={{fontSize:14,fontWeight:700,color:"var(--sg-ink)"}}>
+                  Scroll et appuie sur <strong>"Sur l'ecran d'accueil"</strong>
+                </div>
+                <div style={{fontSize:11,color:"var(--sg-mid)",marginTop:2}}>Icone + avec un carre</div>
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:20}}>
+              <div style={{width:32,height:32,borderRadius:10,background:C.tealBg,
+                display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,
+                fontWeight:800,color:C.teal,flexShrink:0}}>3</div>
+              <div>
+                <div style={{fontSize:14,fontWeight:700,color:"var(--sg-ink)"}}>
+                  Appuie <strong>"Ajouter"</strong> en haut a droite
+                </div>
+                <div style={{fontSize:11,color:"var(--sg-mid)",marginTop:2}}>L'app apparait sur ton ecran d'accueil</div>
+              </div>
+            </div>
+
+            <button onClick={()=>{setShowIosTutorial(false);dismiss();track("sg_pwa_ios_tutorial_done")}}
+              className="gbtn" style={{width:"100%",textAlign:"center",fontSize:15,padding:"14px 24px"}}>
+              J'ai compris
+            </button>
+
+            {/* Arrow pointing down to Safari bar */}
+            <div style={{position:"absolute",bottom:-8,left:"50%",transform:"translateX(-50%)",
+              width:0,height:0,borderLeft:"10px solid transparent",borderRight:"10px solid transparent",
+              borderTop:"10px solid var(--sg-card,#fff)"}}/>
+          </div>
+        </>
+      )}
+    </>
   )
 }
 
@@ -2808,7 +2907,12 @@ export default function App(){
     return list
   },[island,search,filter,favorites,allBeaches,userPos])
 
-  const onBeachClick=useCallback(b=>{setSelectedBeach(b);track("sg_beach_open",{beach_id:b?.id,status:b?.status})},[])
+  const onBeachClick=useCallback(b=>{
+    setSelectedBeach(b);track("sg_beach_open",{beach_id:b?.id,status:b?.status})
+    // Track beach views for PWA install prompt timing
+    const v=parseInt(sessionStorage.getItem("sg_beach_views")||"0")+1
+    sessionStorage.setItem("sg_beach_views",String(v))
+  },[])
   const closeSheet=useCallback(()=>setSelectedBeach(null),[])
 
   const onChangeView=useCallback(v=>{
