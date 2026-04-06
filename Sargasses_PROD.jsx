@@ -2463,6 +2463,141 @@ function EmailCapture(){
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   EXIT-INTENT POPUP — last chance email capture before user leaves
+   Desktop: mouseleave at top of viewport. Mobile: fast scroll-up.
+   Shows once only. Skips if email already captured or premium.
+   ═══════════════════════════════════════════════════════════════════════════ */
+function ExitIntent(){
+  const[visible,setVisible]=useState(false)
+  const[email,setEmail]=useState("")
+  const[submitted,setSubmitted]=useState(false)
+  const shownRef=useRef(false)
+
+  useEffect(()=>{
+    if(g("sg_exit_shown",false)||g("sg_email_prompt",false)||g("sg_premium",false))return
+    // Delay activation — don't trigger on accidental mouse moves in first 8s
+    const arm=setTimeout(()=>{
+      // Desktop: mouse leaves viewport at top
+      const onLeave=e=>{
+        if(e.clientY<=0&&!shownRef.current){
+          shownRef.current=true
+          setVisible(true)
+          track("sg_exit_intent_show")
+          document.removeEventListener("mouseout",onLeave)
+        }
+      }
+      document.addEventListener("mouseout",onLeave)
+
+      // Mobile: detect fast scroll-up (user reaching for back/URL bar)
+      let lastY=window.scrollY,lastT=Date.now()
+      const onScroll=()=>{
+        const y=window.scrollY,t=Date.now(),dt=t-lastT
+        if(dt>50&&dt<300){
+          const speed=(lastY-y)/dt // positive = scrolling up
+          if(speed>2&&y<100&&!shownRef.current){
+            shownRef.current=true
+            setVisible(true)
+            track("sg_exit_intent_show")
+            window.removeEventListener("scroll",onScroll)
+          }
+        }
+        lastY=y;lastT=t
+      }
+      window.addEventListener("scroll",onScroll,{passive:true})
+
+      return()=>{
+        document.removeEventListener("mouseout",onLeave)
+        window.removeEventListener("scroll",onScroll)
+      }
+    },8000)
+    return()=>clearTimeout(arm)
+  },[])
+
+  const handleSubmit=useCallback(e=>{
+    e.preventDefault()
+    if(!email||!email.includes("@"))return
+    track("sg_exit_email_submit")
+    s("sg_email",email)
+    s("sg_email_prompt",true)
+    s("sg_exit_shown",true)
+    setSubmitted(true)
+    setTimeout(()=>setVisible(false),2000)
+    const island=window.location.hostname.includes("guadeloupe")?"GP":"MQ"
+    try{fetch("https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec",{
+      method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
+      body:JSON.stringify({email,island,source:"exit-intent",date:new Date().toISOString()})
+    }).catch(()=>{})}catch{}
+  },[email])
+
+  const handleDismiss=useCallback(()=>{
+    s("sg_exit_shown",true)
+    setVisible(false)
+    track("sg_exit_intent_dismiss")
+  },[])
+
+  if(!visible)return null
+
+  return(
+    <div style={{
+      position:"fixed",inset:0,zIndex:9998,
+      background:"rgba(0,0,0,.55)",backdropFilter:"blur(4px)",WebkitBackdropFilter:"blur(4px)",
+      display:"flex",alignItems:"center",justifyContent:"center",
+      padding:16,animation:"fadeIn .25s ease",
+    }} onClick={handleDismiss}>
+      <div onClick={e=>e.stopPropagation()} style={{
+        maxWidth:380,width:"100%",
+        background:"#fff",borderRadius:24,
+        padding:"32px 24px",textAlign:"center",
+        boxShadow:"0 20px 60px rgba(0,0,0,.25)",
+        animation:"slideUp .35s cubic-bezier(.22,1,.36,1)",
+      }}>
+        {submitted?(
+          <p style={{margin:0,fontSize:16,fontWeight:700,color:C.green}}>
+            Inscrit ! A vendredi.
+          </p>
+        ):(
+          <>
+            <div style={{fontSize:32,marginBottom:8}}>{"🏖️"}</div>
+            <h3 style={{margin:"0 0 6px",fontSize:20,fontWeight:800,color:C.ink}}>
+              Avant de partir...
+            </h3>
+            <p style={{margin:"0 0 16px",fontSize:14,color:C.mid,lineHeight:"20px"}}>
+              La saison des sargasses arrive bientot.<br/>
+              Recois chaque vendredi les <strong style={{color:C.ink}}>meilleures plages</strong> pour ton weekend.
+            </p>
+            <form onSubmit={handleSubmit} style={{display:"flex",gap:8,marginBottom:10}}>
+              <input type="email" value={email} onChange={e=>setEmail(e.target.value)}
+                placeholder="ton@email.com" required
+                style={{
+                  flex:1,padding:"12px 14px",borderRadius:12,
+                  border:"1.5px solid #e0e0e0",fontSize:15,fontFamily:"inherit",
+                  outline:"none",minWidth:0,
+                }}
+                onFocus={e=>e.target.style.borderColor="#E8A800"}
+                onBlur={e=>e.target.style.borderColor="#e0e0e0"}
+              />
+              <button type="submit" style={{
+                padding:"12px 18px",borderRadius:12,border:"none",cursor:"pointer",
+                background:"linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%)",
+                color:"#0D0D0D",fontSize:14,fontWeight:700,whiteSpace:"nowrap",
+                boxShadow:"0 4px 16px rgba(232,168,0,.3)",
+              }}>OK</button>
+            </form>
+            <p style={{margin:0,fontSize:11,color:"#999"}}>
+              Gratuit, zero spam, desinscription en 1 clic.
+            </p>
+            <button onClick={handleDismiss} style={{
+              display:"block",margin:"12px auto 0",background:"none",border:"none",
+              cursor:"pointer",color:C.mid,fontSize:12,fontWeight:500,padding:0,
+            }}>Non merci</button>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    FEEDBACK WIDGET — appears after 3 visits, once only
    ═══════════════════════════════════════════════════════════════════════════ */
 function FeedbackWidget(){
@@ -3003,6 +3138,9 @@ export default function App(){
 
         {/* PWA INSTALL PROMPT — 45s after load, once only */}
         {!showOnboarding&&<InstallPrompt/>}
+
+        {/* EXIT-INTENT POPUP — email capture before user leaves */}
+        {!showOnboarding&&!isPremium&&<ExitIntent/>}
 
         {/* FEEDBACK WIDGET — after 3rd visit, once only */}
         {!showOnboarding&&!showPushPrompt&&<FeedbackWidget/>}
