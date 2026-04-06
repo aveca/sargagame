@@ -458,6 +458,253 @@ function applyBeachAccumulation(levels, dir) {
   }
 }
 
+// ── SARGASSUM BANKS: clustering + convex hull + drift predictions ──
+
+/**
+ * DBSCAN clustering of AFAI grid points.
+ * Groups adjacent positive-AFAI points into "banks" (sargassum masses).
+ * @param {Array} points - [[lat, lng, afai], ...]
+ * @param {number} eps - max distance in degrees (~0.06° ≈ 6.5km)
+ * @param {number} minPts - minimum points to form a cluster
+ * @returns {Array} array of clusters, each cluster is an array of [lat, lng, afai]
+ */
+function dbscan(points, eps = 0.06, minPts = 3) {
+  const n = points.length
+  const labels = new Int16Array(n).fill(-1) // -1 = unvisited
+  let clusterId = 0
+
+  for (let i = 0; i < n; i++) {
+    if (labels[i] !== -1) continue
+    const neighbors = []
+    for (let j = 0; j < n; j++) {
+      if (i === j) continue
+      const dlat = points[i][0] - points[j][0]
+      const dlng = points[i][1] - points[j][1]
+      if (dlat * dlat + dlng * dlng <= eps * eps) neighbors.push(j)
+    }
+    if (neighbors.length < minPts) { labels[i] = 0; continue } // noise
+    clusterId++
+    labels[i] = clusterId
+    const queue = [...neighbors]
+    while (queue.length > 0) {
+      const qi = queue.shift()
+      if (labels[qi] === 0) labels[qi] = clusterId
+      if (labels[qi] !== -1) continue
+      labels[qi] = clusterId
+      const qn = []
+      for (let j = 0; j < n; j++) {
+        if (qi === j) continue
+        const dlat = points[qi][0] - points[j][0]
+        const dlng = points[qi][1] - points[j][1]
+        if (dlat * dlat + dlng * dlng <= eps * eps) qn.push(j)
+      }
+      if (qn.length >= minPts) queue.push(...qn)
+    }
+  }
+
+  const clusters = {}
+  for (let i = 0; i < n; i++) {
+    if (labels[i] <= 0) continue
+    if (!clusters[labels[i]]) clusters[labels[i]] = []
+    clusters[labels[i]].push(points[i])
+  }
+  return Object.values(clusters)
+}
+
+/**
+ * Graham scan convex hull.
+ * @param {Array} points - [[lat, lng, afai], ...]
+ * @returns {Array} hull vertices [[lat, lng], ...]
+ */
+function convexHull(points) {
+  if (points.length <= 2) return points.map(p => [p[0], p[1]])
+  const pts = points.map(p => [p[0], p[1]])
+  // Find bottom-left point
+  let s = 0
+  for (let i = 1; i < pts.length; i++) {
+    if (pts[i][0] < pts[s][0] || (pts[i][0] === pts[s][0] && pts[i][1] < pts[s][1])) s = i
+  }
+  ;[pts[0], pts[s]] = [pts[s], pts[0]]
+  const p0 = pts[0]
+  const rest = pts.slice(1).sort((a, b) => {
+    const cross = (a[0] - p0[0]) * (b[1] - p0[1]) - (a[1] - p0[1]) * (b[0] - p0[0])
+    if (Math.abs(cross) > 1e-10) return cross > 0 ? -1 : 1
+    return ((a[0] - p0[0]) ** 2 + (a[1] - p0[1]) ** 2) - ((b[0] - p0[0]) ** 2 + (b[1] - p0[1]) ** 2)
+  })
+  const hull = [p0, rest[0]]
+  for (let i = 1; i < rest.length; i++) {
+    while (hull.length > 1) {
+      const a = hull[hull.length - 2], b = hull[hull.length - 1], c = rest[i]
+      if ((b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]) <= 0) hull.pop()
+      else break
+    }
+    hull.push(rest[i])
+  }
+  return hull
+}
+
+/**
+ * Inflate hull outward from centroid (makes small polygons look more organic).
+ */
+function inflateHull(hull, centroid, factor = 1.2) {
+  return hull.map(([lat, lng]) => [
+    Math.round((centroid[0] + (lat - centroid[0]) * factor) * 1000) / 1000,
+    Math.round((centroid[1] + (lng - centroid[1]) * factor) * 1000) / 1000,
+  ])
+}
+
+/**
+ * Fetch regional wind data from Open-Meteo for drift estimation.
+ * Returns { speed (km/h), dir (degrees, "from" convention) } for each island.
+ */
+async function fetchRegionalWind() {
+  const wind = {}
+  const centers = { mq: [14.6, -61.0], gp: [16.2, -61.5] }
+  for (const [island, [lat, lng]] of Object.entries(centers)) {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=wind_speed_10m,wind_direction_10m&timezone=America/Martinique`
+    const data = await safeFetch(url, 15000)
+    if (data?.current) {
+      wind[island] = {
+        speed: Math.round(data.current.wind_speed_10m * 10) / 10,
+        dir: Math.round(data.current.wind_direction_10m),
+      }
+      console.log(`  Wind ${island.toUpperCase()}: ${wind[island].speed} km/h from ${wind[island].dir}°`)
+    } else {
+      // Fallback: typical trade wind (15 km/h from ENE)
+      wind[island] = { speed: 15, dir: 75 }
+      console.log(`  Wind ${island.toUpperCase()}: fallback 15 km/h from 75° (trade wind)`)
+    }
+  }
+  return wind
+}
+
+/**
+ * Compute drift predictions for a bank.
+ * Model: wind Stokes drift (2.5% of wind speed) + Caribbean current (0.5 km/h west).
+ */
+function computeBankDrift(centroid, hull, windSpeed, windDir) {
+  // Wind drift: ~2.5% of wind speed, direction = opposite of "from"
+  const driftBearing = (windDir + 180) % 360
+  const driftSpeed = windSpeed * 0.025 // km/h
+
+  // Caribbean baseline current: ~0.5 km/h westward (bearing 270°)
+  const curSpeed = 0.5, curBearing = 270
+
+  // Vector sum (bearing → N/E components)
+  const toRad = d => d * Math.PI / 180
+  const totalN = driftSpeed * Math.cos(toRad(driftBearing)) + curSpeed * Math.cos(toRad(curBearing))
+  const totalE = driftSpeed * Math.sin(toRad(driftBearing)) + curSpeed * Math.sin(toRad(curBearing))
+  const speed = Math.round(Math.sqrt(totalN ** 2 + totalE ** 2) * 10) / 10
+  const bear = Math.round((Math.atan2(totalE, totalN) * 180 / Math.PI + 360) % 360)
+
+  // Displacement per hour in degrees
+  const dLatH = totalN / 111.0
+  const dLngH = totalE / (111.0 * Math.cos(toRad(centroid[0])))
+
+  const predictions = {}
+  for (const h of [6, 12, 24]) {
+    predictions[`${h}h`] = {
+      centroid: [
+        Math.round((centroid[0] + dLatH * h) * 1000) / 1000,
+        Math.round((centroid[1] + dLngH * h) * 1000) / 1000,
+      ],
+      hull: hull.map(([lat, lng]) => [
+        Math.round((lat + dLatH * h) * 1000) / 1000,
+        Math.round((lng + dLngH * h) * 1000) / 1000,
+      ]),
+    }
+  }
+  return { speed, bearing: bear, predictions }
+}
+
+/**
+ * Build sargassum-banks.json: clustered banks with drift predictions.
+ */
+async function buildSargassumBanks(gridPoints, dir) {
+  if (!gridPoints || gridPoints.length < 3) {
+    console.log('  Skipping banks: not enough grid points')
+    return
+  }
+
+  // 1. Cluster
+  const clusters = dbscan(gridPoints, 0.06, 3)
+  console.log(`  DBSCAN: ${clusters.length} banks from ${gridPoints.length} points`)
+
+  // 2. Fetch wind
+  const wind = await fetchRegionalWind()
+
+  // 3. Build bank objects
+  const banks = clusters.map((cluster, i) => {
+    // Centroid (weighted by AFAI)
+    let sumLat = 0, sumLng = 0, sumW = 0
+    for (const [lat, lng, afai] of cluster) {
+      sumLat += lat * afai; sumLng += lng * afai; sumW += afai
+    }
+    const centroid = [
+      Math.round((sumLat / sumW) * 1000) / 1000,
+      Math.round((sumLng / sumW) * 1000) / 1000,
+    ]
+    const mass = Math.round((sumW / cluster.length) * 100) / 100 // avg AFAI
+    const island = centroid[0] >= 15.5 ? 'gp' : 'mq'
+
+    // Hull
+    let hull = convexHull(cluster)
+    hull = inflateHull(hull, centroid, 1.2)
+
+    // Drift
+    const w = wind[island] || { speed: 15, dir: 75 }
+    const drift = computeBankDrift(centroid, hull, w.speed, w.dir)
+
+    // Threatened beaches at each time step
+    const threatens = {}
+    for (const timeKey of ['now', '6h', '12h', '24h']) {
+      const c = timeKey === 'now' ? centroid : drift.predictions[timeKey].centroid
+      const threatened = BEACHES
+        .filter(b => b.island === island)
+        .map(b => ({ id: b.id, km: Math.round(haversineKm(c[0], c[1], b.lat, b.lng)) }))
+        .filter(t => t.km <= 30)
+        .sort((a, b) => a.km - b.km)
+      if (threatened.length) threatens[timeKey] = threatened
+    }
+
+    return {
+      id: i + 1,
+      island,
+      centroid,
+      mass,
+      count: cluster.length,
+      hull,
+      drift,
+      threatens,
+    }
+  })
+
+  // Sort by mass descending (biggest banks first)
+  banks.sort((a, b) => b.mass - a.mass || b.count - a.count)
+
+  const payload = {
+    updatedAt: new Date().toISOString(),
+    wind,
+    bankCount: banks.length,
+    banks,
+  }
+
+  const outPath = path.join(dir, 'sargassum-banks.json')
+  fs.writeFileSync(outPath, JSON.stringify(payload), 'utf-8')
+  console.log(`  Banks: ${outPath} | ${banks.length} banks`)
+
+  // Log threats
+  const withThreats = banks.filter(b => Object.keys(b.threatens).length > 0)
+  if (withThreats.length) {
+    for (const b of withThreats) {
+      const times = Object.entries(b.threatens).map(([t, beaches]) =>
+        `${t}: ${beaches.map(x => `${x.id}(${x.km}km)`).join(', ')}`
+      ).join(' | ')
+      console.log(`    Bank #${b.id} (mass=${b.mass}): ${times}`)
+    }
+  }
+}
+
 // ── MAIN ───────────────────────────────────────────────────────────
 
 async function main() {
@@ -556,6 +803,11 @@ async function main() {
   const gridPath = path.join(dir, 'sargassum-grid.json')
   fs.writeFileSync(gridPath, JSON.stringify(gridPayload), 'utf-8')
   console.log(`Grid: ${gridPath} | ${gridPoints.length} points (AFAI > 0)`)
+
+  // 5. Cluster AFAI grid points into sargassum BANKS + drift predictions
+  console.log('')
+  console.log('[5/6] Clustering sargassum banks + drift predictions...')
+  await buildSargassumBanks(gridPoints, dir)
 
   // History — store RAW satellite values (not accumulated) to prevent compounding
   const changes = updateHistory(dir, rawLevels)

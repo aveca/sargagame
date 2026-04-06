@@ -331,20 +331,7 @@ body{background:var(--sg-bg,#FDFCF7);color:var(--sg-ink,#0D0D0D)}
 .backdrop{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:899;animation:fadeIn .2s}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 
-/* ── ONBOARDING (conditional render) ── */
-.onb-overlay{
-  position:fixed;inset:0;z-index:2000;
-  background:#FDFCF7;
-  display:flex;align-items:center;justify-content:center;
-  overflow:hidden;
-}
-.onb-overlay::before{
-  content:'';position:fixed;inset:0;z-index:1;pointer-events:none;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  opacity:.026;mix-blend-mode:multiply;
-}
-.onb-inner{position:relative;z-index:2;width:100%;max-width:390px;height:100%;display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}
-@media(max-width:420px){.onb-inner{max-width:100%;}}
+/* ── ONBOARDING (removed full-screen overlay, now inline coachmark) ── */
 
 @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 @keyframes float-a{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
@@ -465,6 +452,9 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos}){
   const driftRef=useRef(null) // animation interval
   const[mapError,setMapError]=useState(null)
   const[afaiGrid,setAfaiGrid]=useState(null)
+  const[banksData,setBanksData]=useState(null)
+  const[timeStep,setTimeStep]=useState(0) // 0=now, 6, 12, 24 hours
+  const banksLayerRef=useRef(null)
 
   // Init map once
   useEffect(()=>{
@@ -534,6 +524,60 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos}){
       .then(d=>{if(d?.points?.length)setAfaiGrid(d)})
       .catch(()=>{})
   },[])
+
+  // Fetch sargassum banks (clustered AFAI + drift predictions)
+  useEffect(()=>{fetch("/api/copernicus/sargassum-banks.json").then(r=>r.json()).then(d=>{if(d?.banks?.length)setBanksData(d)}).catch(()=>{})},[])
+
+  // Render sargassum BANKS as polygons with drift arrows
+  useEffect(()=>{
+    if(!mapRef.current)return
+    if(banksLayerRef.current){banksLayerRef.current.remove();banksLayerRef.current=null}
+    if(!banksData||!banksData.banks.length)return
+    const isGP=island==="gp"
+    const bGroup=L.layerGroup()
+    for(const bank of banksData.banks){
+      if(isGP?bank.centroid[0]<15.5:bank.centroid[0]>=15.5)continue
+      const hull=timeStep===0?bank.hull:bank.drift?.predictions?.[timeStep+"h"]?.hull
+      if(!hull||hull.length<3)continue
+      const cent=timeStep===0?bank.centroid:bank.drift?.predictions?.[timeStep+"h"]?.centroid||bank.centroid
+      const mc=bank.mass<.15?"34,197,94":bank.mass<.40?"232,168,0":"232,82,42"
+      const poly=L.polygon(hull,{fillColor:"rgba("+mc+",.35)",color:"rgba("+mc+",.7)",weight:1.5,fillOpacity:.35,smoothFactor:3,interactive:true})
+      poly.on("click",()=>{track("sg_bank_click",{bankId:bank.id,mass:bank.mass});const nearest=beaches.slice().sort((a,b)=>haversine(cent[0],cent[1],a.lat,a.lng)-haversine(cent[0],cent[1],b.lat,b.lng))[0];if(nearest)onBeachClick(nearest)})
+      poly.addTo(bGroup)
+      L.marker(cent,{icon:L.divIcon({className:"",html:'<div style="font-size:10px;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7);white-space:nowrap;pointer-events:none;text-align:center">'+Math.round(bank.mass*100)+'%<br><span style="font-size:8px;font-weight:400;opacity:.8">'+bank.count+' pts</span></div>',iconSize:[50,24],iconAnchor:[25,12]}),interactive:false,zIndexOffset:500}).addTo(bGroup)
+      if(timeStep===0&&bank.drift){
+        const bng=bank.drift.bearing,spd=bank.drift.speed,arrowLen=0.04+spd*0.008
+        const arrowEnd=[cent[0]+Math.cos(bng*Math.PI/180)*arrowLen,cent[1]+Math.sin(bng*Math.PI/180)*arrowLen/(Math.cos(cent[0]*Math.PI/180)||1)]
+        L.polyline([cent,arrowEnd],{color:"#fff",weight:2,opacity:.7,dashArray:"6,4",interactive:false}).addTo(bGroup)
+        const isAppr=bng>180&&bng<360,ac=isAppr?"#E8522A":"#22C55E"
+        L.marker(arrowEnd,{icon:L.divIcon({className:"",html:'<div style="transform:rotate('+(bng-90)+'deg);font-size:14px;color:'+ac+';text-shadow:0 1px 3px rgba(0,0,0,.6);pointer-events:none">\u27a4</div>',iconSize:[20,20],iconAnchor:[10,10]}),interactive:false}).addTo(bGroup)
+        if(spd>0.3)L.marker([cent[0]-.015,cent[1]],{icon:L.divIcon({className:"",html:'<div style="font-size:9px;font-weight:600;color:'+ac+';text-shadow:0 1px 2px rgba(0,0,0,.5);white-space:nowrap;pointer-events:none">'+spd+' km/h '+(isAppr?"\u2192 c\u00f4te":"\u2192 large")+'</div>',iconSize:[80,14],iconAnchor:[40,7]}),interactive:false}).addTo(bGroup)
+      }
+      if(timeStep===0&&bank.drift?.predictions){
+        for(const[tk,pred]of Object.entries(bank.drift.predictions)){
+          if(!pred.hull||pred.hull.length<3)continue
+          const op=tk==="6h"?.15:tk==="12h"?.10:.06
+          L.polygon(pred.hull,{fillColor:"rgba("+mc+","+op+")",color:"rgba("+mc+",.2)",weight:1,fillOpacity:op,dashArray:"4,4",smoothFactor:3,interactive:false}).addTo(bGroup)
+        }
+      }
+    }
+    const etaMap=new Map()
+    for(const bnk of banksData.banks){
+      if(isGP?bnk.centroid[0]<15.5:bnk.centroid[0]>=15.5)continue
+      for(const tk of["now","6h","12h","24h"]){
+        const threats=bnk.threatens?.[tk];if(!threats)continue
+        for(const t of threats){if(!etaMap.has(t.id))etaMap.set(t.id,tk)}
+      }
+    }
+    for(const bch of beaches){
+      const sargId=BEACH_TO_SARG[bch.id];if(!sargId)continue
+      const eta=etaMap.get(sargId);if(!eta)continue
+      const el=eta==="now"?"Maintenant":eta,ec=eta==="now"?"#E8522A":eta==="6h"?"#E8A820":"#22C55E"
+      L.marker([bch.lat+.008,bch.lng+.012],{icon:L.divIcon({className:"",html:'<div style="background:'+ec+';color:#fff;font-size:8px;font-weight:700;padding:2px 5px;border-radius:8px;white-space:nowrap;pointer-events:none;box-shadow:0 1px 3px rgba(0,0,0,.3)">\u26a0 '+el+'</div>',iconSize:[50,16],iconAnchor:[25,8]}),interactive:false,zIndexOffset:900}).addTo(bGroup)
+    }
+    bGroup.addTo(mapRef.current);banksLayerRef.current=bGroup
+    return()=>{if(banksLayerRef.current){banksLayerRef.current.remove();banksLayerRef.current=null}}
+  },[banksData,island,timeStep,beaches,onBeachClick])
 
   // Render AFAI heatmap from grid data (canvas circles, efficient)
   useEffect(()=>{
@@ -695,7 +739,23 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos}){
   },[beaches,onBeachClick,selectedBeach,sargData])
 
   if(mapError)return <div style={{padding:40,color:"red"}}>{mapError}</div>
-  return <div ref={containerRef} style={{width:"100%",height:"100%"}}/>
+  return(<div style={{position:"relative",width:"100%",height:"100%"}}>
+    <div ref={containerRef} style={{width:"100%",height:"100%"}}/>
+    {banksData&&banksData.banks.length>0&&(
+      <div style={{position:"absolute",bottom:100,left:"50%",transform:"translateX(-50%)",display:"flex",gap:3,padding:"3px 4px",background:"rgba(10,26,46,.85)",borderRadius:20,zIndex:800,backdropFilter:"blur(8px)",boxShadow:"0 2px 12px rgba(0,0,0,.4)"}}>
+        {[0,6,12,24].map(h=>(
+          <button key={h} onClick={()=>setTimeStep(h)} style={{padding:"6px 12px",borderRadius:16,border:"none",background:timeStep===h?"#E8522A":"transparent",color:"#fff",fontSize:11,fontWeight:timeStep===h?700:500,cursor:"pointer",transition:"all .2s",opacity:timeStep===h?1:.7}}>
+            {h===0?"Maintenant":"+"+h+"h"}
+          </button>
+        ))}
+      </div>
+    )}
+    {banksData&&timeStep>0&&(
+      <div style={{position:"absolute",top:8,right:8,background:"rgba(10,26,46,.85)",color:"#fff",fontSize:10,fontWeight:600,padding:"4px 10px",borderRadius:12,zIndex:800,backdropFilter:"blur(8px)"}}>
+        {"Pr\u00e9vision +"}{timeStep}{"h \u00b7 "}{banksData.wind?.[island]?.speed||"?"}  {" km/h vent"}
+      </div>
+    )}
+  </div>)
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -1059,6 +1119,12 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
 
           {/* ── AXE 2: Beach Reports — 3-level user sargassum reports ── */}
           <BeachReport beach={beach} lang={lang} communityReports={communityReports}/>
+
+          {/* ── Inline email capture (after 2nd beach view) ── */}
+          <InlineEmailCapture lang={lang}/>
+
+          {/* ── Inline push CTA (after 3rd beach view) ── */}
+          <InlinePushCTA lang={lang}/>
 
           {/* ── AXE 3: Reliability Score from history ── */}
           <ReliabilityScore beachId={beach.id} historyData={historyData} lang={lang}/>
@@ -1459,480 +1525,88 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   ONBOARDING — Conditional render (step===0/1/2), no carousel/translateX
-   Fixes: OneSignal phantom clicks, phone container cropping, slide order
+   ONBOARDING — Inline coachmark (progressive disclosure, no overlay)
+   Map visible immediately. Small card guides user to tap a marker.
    ═══════════════════════════════════════════════════════════════════════════ */
 function Onboarding({onDone,island="mq",lang="fr"}){
-  // Adapt content per island (Clarity: 91% new users see this — must be relevant)
-  const isMQ=island==="mq"
-  const siteName=isMQ?"SARGASSES.MQ":"SARGASSES.GP"
-  const islandName=isMQ?"Martinique":"Guadeloupe"
-  const locals=isMQ?"Martiniquais":"Guadeloupéens"
-  const goodBeach=isMQ?"Grande Anse d'Arlet":"Plage de la Caravelle"
-  const badBeach=isMQ?"Sainte-Anne":"Porte d'Enfer"
-  const midBeach=isMQ?"Le Diamant":"Pointe des Châteaux"
-  const mapLabel=isMQ?"Martinique":"Guadeloupe"
-  const oceanLabel=isMQ?"Atlantique":"Caraïbes"
-  // Island shape: MQ = tall thin, GP = butterfly
-  const islandShape=isMQ
-    ?{borderRadius:"38% 52% 44% 58%/50% 40% 54% 44%",width:120,height:90}
-    :{borderRadius:"30% 70% 50% 50%/40% 40% 60% 60%",width:160,height:70}
   const[step,setStep]=useState(0)
-  // A/B Test 3: skip slide 3 (premium pitch)
-  const onbV=abVariant("onb1",["control","skip"],[.5,.5])
+  const isMQ=island==="mq"
 
-  const goStep=useCallback((n)=>{track("sg_onb_slide",{slide:n});setStep(n)},[])
+  useEffect(()=>{
+    // Auto-advance from welcome (step 0) to hint (step 1) after 6s
+    if(step===0){const t=setTimeout(()=>setStep(1),6000);return()=>clearTimeout(t)}
+    // Auto-dismiss hint after 8s
+    if(step===1){const t=setTimeout(()=>{s("sg_onb",1);onDone()},8000);return()=>clearTimeout(t)}
+  },[step,onDone])
 
-  const closeOnboarding=useCallback(()=>{
-    track("sg_onb_skip",{from_slide:step})
+  const dismiss=useCallback(()=>{
+    track("sg_onb_skip",{from_step:step})
     s("sg_onb",1)
     onDone()
   },[onDone,step])
 
-  const openStripe=useCallback(()=>{
-    track("sg_onb_premium_click")
-    track("sg_stripe_redirect",{source:"onboarding"})
-    window.open(STRIPE_URL,"_blank")
-  },[])
-
   return(
-    <div className="onb-overlay">
-      <div className="onb-inner">
+    <div style={{position:"absolute",
+      top:"max(108px, calc(env(safe-area-inset-top,12px) + 100px))",
+      left:12,right:12,zIndex:750,pointerEvents:"none"}}>
 
-      {step===0 && (
-          <>{/* ═══════════════════════════════════════════
-              SLIDE 1 — "Sache avant de partir"
-              ═══════════════════════════════════════════ */}
-          <div style={{display:"flex",flexDirection:"column",flex:1}}>
-            {/* Live strip */}
-            <div style={{margin:"28px 20px 0",
-              background:"rgba(255,255,255,.75)",border:"1px solid rgba(232,168,0,.26)",
-              borderRadius:100,padding:"8px 10px 8px 14px",
-              display:"flex",alignItems:"center",justifyContent:"space-between",
-              position:"relative",zIndex:10,backdropFilter:"blur(16px)",
-              boxShadow:"0 2px 18px rgba(232,168,0,.09),inset 0 1px 0 rgba(255,255,255,.95)"}}>
-              <div style={{display:"flex",alignItems:"center",gap:8}}>
-                <div style={{width:7,height:7,borderRadius:"50%",background:"#22C55E",flexShrink:0,animation:"dot-pulse 2s ease-in-out infinite"}}/>
-                <span style={{fontSize:11.5,fontWeight:600,color:C.ink}}>
-                  <em style={{fontStyle:"normal",color:C.amber,fontWeight:700}}>47 plages</em> surveillées en temps réel
-                </span>
-              </div>
-              <div style={{background:"linear-gradient(135deg,"+C.tealL+","+C.teal+")",color:"white",
-                fontSize:9,fontWeight:800,letterSpacing:".14em",padding:"5px 13px",borderRadius:100,
-                boxShadow:"0 3px 12px rgba(0,158,142,.32)"}}>LIVE</div>
-            </div>
-
-            {/* Hero section */}
-            <div style={{position:"relative",height:310,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",zIndex:1}}>
-              <div style={{position:"absolute",bottom:0,left:0,right:0,height:60,
-                background:"linear-gradient(to bottom,transparent,#FDFCF7)",pointerEvents:"none",zIndex:8}}/>
-
-              {/* Rotating disc */}
-              <div style={{width:216,height:216,borderRadius:"50%",
-                background:"conic-gradient(from -10deg,#FFE898 0deg 25deg,#E8A800 25deg 65deg,#FFD040 65deg 110deg,#B87A00 110deg 155deg,#FFE07A 155deg 195deg,#E09000 195deg 240deg,#FFC72C 240deg 285deg,#B07000 285deg 325deg,#FFE898 325deg 360deg)",
-                display:"flex",alignItems:"center",justifyContent:"center",
-                boxShadow:"0 0 0 3px rgba(255,255,255,.85),0 0 0 5px rgba(232,168,0,.18),0 0 0 7px rgba(255,255,255,.12),0 8px 48px rgba(232,168,0,.28),0 20px 50px rgba(0,0,0,.08)",
-                animation:"spin 22s linear infinite",zIndex:6,position:"relative"}}>
-                {/* Inner disc */}
-                <div style={{width:86,height:86,borderRadius:"50%",
-                  background:"linear-gradient(150deg,#FFFDF5 40%,#F0EDD5 100%)",
-                  display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,
-                  animation:"spin 22s linear infinite reverse",
-                  boxShadow:"inset 0 2px 6px rgba(255,255,255,.95),inset 0 -3px 8px rgba(184,122,0,.14),0 3px 18px rgba(0,0,0,.13)",
-                  position:"relative",zIndex:2}}>
-                  <div style={{fontFamily:"'Anton',sans-serif",fontSize:11,color:C.amber,letterSpacing:".07em",textAlign:"center",lineHeight:1.05}}>SAR<br/>GASSES</div>
-                  <div style={{fontSize:8,fontWeight:800,color:C.teal,letterSpacing:".15em",textTransform:"uppercase"}}>.MQ</div>
-                </div>
-              </div>
-
-              {/* Danger card (floating) */}
-              <div style={{position:"absolute",top:42,left:14,
-                background:"rgba(255,255,255,.96)",border:"1px solid rgba(232,82,42,.2)",
-                boxShadow:"0 6px 24px rgba(232,82,42,.1),inset 0 1px 0 white",
-                borderRadius:16,padding:"10px 14px",
-                display:"flex",alignItems:"center",gap:9,
-                animation:"float-b 4s ease-in-out .8s infinite",zIndex:12}}>
-                <div style={{width:32,height:32,borderRadius:10,background:"linear-gradient(135deg,#FFE4DC,#FFCAB8)",
-                  display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0}}></div>
-                <div style={{display:"flex",flexDirection:"column",gap:2}}>
-                  <div style={{fontSize:9.5,fontWeight:700,color:C.red,letterSpacing:".08em",textTransform:"uppercase"}}>Éviter</div>
-                  <div style={{fontSize:12,fontWeight:800,color:C.ink,lineHeight:1.2}}>{badBeach}</div>
-                  <div style={{fontSize:10,fontWeight:500,color:C.mid}}>Sargasses ce matin</div>
-                </div>
-              </div>
-
-              {/* Good card (floating) */}
-              <div style={{position:"absolute",bottom:36,right:14,
-                background:"rgba(255,255,255,.97)",border:"1px solid rgba(0,158,142,.13)",
-                boxShadow:"0 8px 32px rgba(0,0,0,.08),inset 0 1px 0 white",
-                borderRadius:18,padding:"11px 15px",
-                display:"flex",alignItems:"center",gap:10,
-                animation:"float-a 3.6s ease-in-out infinite",zIndex:12,minWidth:172}}>
-                <div style={{width:34,height:34,borderRadius:11,background:"linear-gradient(135deg,#D6F5EF,#A8EDE4)",
-                  display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,flexShrink:0}}>🛰️</div>
-                <div style={{display:"flex",flexDirection:"column",gap:3}}>
-                  <div style={{fontSize:11.5,fontWeight:700,color:C.ink,whiteSpace:"nowrap"}}>{goodBeach}</div>
-                  <div style={{display:"flex",alignItems:"center",gap:4,fontSize:10,fontWeight:700,color:C.teal}}>
-                    <span style={{width:12,height:12,borderRadius:"50%",background:C.teal,
-                      display:"inline-flex",alignItems:"center",justifyContent:"center",
-                      fontSize:7,color:"white",flexShrink:0}}>✓</span>
-                    Propre aujourd'hui
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Copy section */}
-            <div style={{padding:"8px 28px 0",flex:1,display:"flex",flexDirection:"column"}}>
-              <h1 style={{fontFamily:"'Anton',sans-serif",fontSize:68,lineHeight:.88,letterSpacing:"-.025em",
-                textTransform:"uppercase",color:C.ink,marginBottom:10}}>
-                <span style={{color:C.teal}}>Sache</span><br/>
-                <span style={{display:"inline-block",background:"linear-gradient(138deg,#FFD860 0%,#E8A800 48%,#B07000 100%)",
-                  WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text",position:"relative"}}>avant</span><br/>
-                <span>de partir.</span>
-              </h1>
-              <p style={{fontSize:14,color:C.mid,fontWeight:400,lineHeight:1.6,marginBottom:14,maxWidth:270}}>
-                Tu pars dans 30 minutes ? <strong style={{color:C.ink,fontWeight:700}}>Vérifie en 5 secondes</strong> si ta plage est propre.
-              </p>
-
-              {/* Social proof */}
-              <div style={{display:"flex",alignItems:"center",marginBottom:14,padding:"9px 13px",
-                background:"rgba(255,199,44,.07)",border:"1px solid rgba(232,168,0,.13)",borderRadius:14}}>
-                <div style={{fontSize:11,letterSpacing:-1,flexShrink:0,marginRight:9}}>⭐⭐⭐⭐⭐</div>
-                <div style={{display:"flex",flexShrink:0}}>
-                  {[["#FF6B6B","#FF8E53","M"],["#4ECDC4","#44A08D","J"],["#A18CD1","#FBC2EB","S"],["#FDDB92","#D1913C","R"]].map(([a,b,l],i)=>(
-                    <div key={i} style={{width:25,height:25,borderRadius:"50%",border:"2px solid #FDFCF7",marginRight:-7,
-                      background:`linear-gradient(135deg,${a},${b})`,display:"flex",alignItems:"center",
-                      justifyContent:"center",fontSize:10,fontWeight:700,color:"#fff"}}>{l}</div>
-                  ))}
-                </div>
-                <div style={{marginLeft:15,fontSize:11.5,fontWeight:500,color:C.mid,lineHeight:1.4}}>
-                  <strong style={{color:C.ink,fontWeight:700}}>135 plages</strong> surveillées par satellite en temps réel
-                </div>
-              </div>
-
-              {/* CTA — INSIDE slide 1 */}
-              <div style={{marginTop:20,paddingBottom:50,display:"flex",flexDirection:"column",gap:8}}>
-                <button onClick={()=>goStep(1)} style={{
-                  background:"linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%)",
-                  color:C.ink,border:"none",borderRadius:22,padding:"19px 20px 19px 28px",
-                  fontFamily:"'Anton',sans-serif",fontSize:21,letterSpacing:".06em",textTransform:"uppercase",
-                  cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between",
-                  boxShadow:"inset 0 1px 0 rgba(255,255,255,.58),inset 0 -2px 0 rgba(0,0,0,.11),0 8px 28px rgba(232,168,0,.48),0 2px 8px rgba(232,168,0,.22)",
-                  position:"relative",overflow:"hidden"}}>
-                  <span style={{position:"relative",zIndex:1}}>Voir les plages propres</span>
-                  <span style={{width:44,height:44,background:"rgba(0,0,0,.11)",borderRadius:"50%",
-                    display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,
-                    flexShrink:0,position:"relative",zIndex:1}}>→</span>
-                </button>
-                <div style={{textAlign:"center",fontSize:11,color:C.mid,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-                  Gratuit<span style={{width:3,height:3,borderRadius:"50%",background:"rgba(104,104,104,.35)"}}/>Sans inscription<span style={{width:3,height:3,borderRadius:"50%",background:"rgba(104,104,104,.35)"}}/>Mis à jour chaque jour
-                </div>
-                <button onClick={closeOnboarding} style={{textAlign:"center",fontSize:12.5,fontWeight:500,color:C.mid,
-                  background:"none",border:"none",cursor:"pointer",padding:4,fontFamily:"inherit"}}>
-                  Déjà un compte ? <span style={{color:C.teal,fontWeight:700,textDecoration:"underline",textUnderlineOffset:3}}>Se connecter</span>
-                </button>
-              </div>
-            </div>
+      {step===0&&(
+        <div style={{pointerEvents:"auto",
+          background:"rgba(255,255,255,.96)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",
+          borderRadius:18,padding:"16px 18px",
+          boxShadow:"0 8px 32px rgba(0,0,0,.12),0 0 0 1px rgba(232,168,0,.12)",
+          animation:"slideUp .4s cubic-bezier(.22,1,.36,1)"}}>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+            <div style={{width:7,height:7,borderRadius:"50%",background:"#22C55E",flexShrink:0,
+              animation:"dot-pulse 2s ease-in-out infinite"}}/>
+            <span style={{fontSize:12,fontWeight:700,color:C.ink}}>
+              <em style={{fontStyle:"normal",color:C.amber,fontWeight:700}}>
+                {isMQ?"30 plages":"20 plages"}
+              </em> {lang==="en"?"monitored live":"surveillées en temps réel"}
+            </span>
           </div>
-          </>
+          <div style={{fontFamily:"'Anton',sans-serif",fontSize:26,lineHeight:1,
+            textTransform:"uppercase",color:C.ink,marginBottom:8}}>
+            <span style={{color:C.teal}}>{lang==="en"?"Green":"Vert"}</span> = {lang==="en"?"clean":"propre"}.{" "}
+            <span style={{color:C.red}}>{lang==="en"?"Red":"Rouge"}</span> = sargasses.
+          </div>
+          <p style={{fontSize:13,color:C.mid,margin:"0 0 12px",lineHeight:1.5}}>
+            {lang==="en"
+              ?"Tap a beach on the map to see real-time conditions."
+              :"Touche une plage sur la carte pour voir son état en temps réel."}
+          </p>
+          <div style={{display:"flex",gap:8}}>
+            <button onClick={()=>setStep(1)} style={{
+              flex:1,padding:"11px",borderRadius:12,border:"none",cursor:"pointer",
+              background:"linear-gradient(158deg,#FFE47A,#FFC72C,#E89400)",
+              fontFamily:"inherit",fontSize:13,fontWeight:700,color:C.ink,
+              boxShadow:"0 4px 16px rgba(232,168,0,.3)"}}>
+              {lang==="en"?"Got it":"Compris"}
+            </button>
+          </div>
+        </div>
       )}
 
-      {step===1 && (
-          <>{/* ═══════════════════════════════════════════
-              SLIDE 2 — "Vert = tu pars. Rouge = tu évites."
-              ═══════════════════════════════════════════ */}
-          <div style={{display:"flex",flexDirection:"column",flex:1}}>
-            {/* Header */}
-            <div style={{padding:"28px 22px 0",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-              <div style={{fontFamily:"'Anton',sans-serif",fontSize:16,letterSpacing:".05em",display:"flex",alignItems:"center",gap:8}}>
-                <div style={{width:20,height:20,borderRadius:"50%",
-                  background:"conic-gradient(from -10deg,#FFE898 0deg 30deg,#E8A800 30deg 80deg,#FFD040 80deg 130deg,#B87A00 130deg 180deg,#FFE898 180deg 360deg)",
-                  animation:"spin 20s linear infinite",boxShadow:"0 2px 8px rgba(232,168,0,.28)"}}/>
-                {siteName}
-              </div>
-              <div style={{display:"flex",alignItems:"center",gap:5,fontSize:10.5,fontWeight:600,color:C.mid}}>
-                <div style={{width:6,height:6,borderRadius:"50%",background:"#22C55E",animation:"dot-pulse 2s ease-in-out infinite"}}/>
-                En direct
-              </div>
-            </div>
-
-            <div style={{padding:"16px 22px 0",fontSize:12.5,fontStyle:"italic",color:C.mid}}>La carte que tu aurais voulu avoir.</div>
-
-            <div style={{padding:"6px 22px 0",fontFamily:"'Anton',sans-serif",fontSize:42,lineHeight:.9,
-              letterSpacing:"-.02em",textTransform:"uppercase",color:C.ink}}>
-              <span style={{color:C.teal}}>Vert</span> = tu pars.<br/>Rouge = tu évites.
-            </div>
-
-            {/* Satellite badge */}
-            <div style={{margin:"10px 22px 0",display:"inline-flex",alignItems:"center",gap:6,
-              background:"rgba(0,158,142,.07)",border:"1px solid rgba(0,158,142,.12)",
-              borderRadius:100,padding:"5px 12px",position:"relative",overflow:"hidden"}}>
-              <span style={{fontSize:11}}>🛰️</span>
-              <span style={{fontSize:9.5,fontWeight:700,color:C.teal}}>Sentinel-2 · ESA Copernicus</span>
-            </div>
-
-            {/* Proof */}
-            <div style={{margin:"6px 22px 0",fontSize:11,color:C.mid,display:"flex",alignItems:"center",gap:5}}>
-              <span style={{color:"#16A34A",fontWeight:700}}>✓</span>
-              Données NOAA AFAI mises à jour <strong style={{color:C.ink}}>4x par jour</strong>
-            </div>
-
-            {/* Map zone */}
-            <div style={{margin:"12px 22px 0",background:"linear-gradient(145deg,#D8EFF8 0%,#C8E4F4 50%,#D0EEE8 100%)",
-              border:"1px solid rgba(0,158,142,.1)",borderRadius:22,position:"relative",height:185,overflow:"hidden"}}>
-              <div style={{position:"absolute",top:10,left:14,fontSize:8,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(0,80,40,.4)"}}>🌿 {mapLabel}</div>
-              <div style={{position:"absolute",bottom:10,left:14,fontSize:8.5,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(0,80,120,.4)"}}>🌊 {oceanLabel}</div>
-              {/* Island shape — adapté MQ ou GP */}
-              <div style={{position:"absolute",top:"50%",left:"52%",transform:"translate(-50%,-52%)",
-                width:islandShape.width,height:islandShape.height,background:"linear-gradient(145deg,#C8E8C0,#B8D8B0)",
-                borderRadius:islandShape.borderRadius,boxShadow:"0 4px 14px rgba(0,80,40,.12)"}}/>
-              {/* Pins */}
-              {[[28,61,"g"],[45,74,"g"],[65,57,"r"],[34,35,"o"],[57,31,"g"],[72,43,"r"],[19,49,"g"],[51,65,"o"]].map(([t,l,c],i)=>{
-                const bg=c==="g"?"#22C55E":c==="r"?C.red:C.goldL
-                return(
-                  <div key={i} style={{position:"absolute",top:t+"%",left:l+"%",transform:"translate(-50%,-50%)"}}>
-                    <div style={{width:12,height:12,borderRadius:"50%",border:"2px solid white",background:bg,
-                      boxShadow:"0 1px 6px rgba(0,0,0,.2)",position:"relative",zIndex:2}}/>
-                  </div>
-                )
-              })}
-              {/* Legend */}
-              <div style={{position:"absolute",bottom:8,right:10,display:"flex",gap:8}}>
-                {[["Propre","#22C55E"],["Modéré",C.goldL],["Éviter",C.red]].map(([lab,col],i)=>(
-                  <div key={i} style={{display:"flex",alignItems:"center",gap:4,fontSize:8,fontWeight:700,color:C.mid}}>
-                    <div style={{width:7,height:7,borderRadius:"50%",background:col,border:"1.5px solid white"}}/>
-                    {lab}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Beach list rows */}
-            <div style={{margin:"10px 22px 0",display:"flex",flexDirection:"column",gap:6}}>
-              {[
-                ["🏖️",goodBeach,isMQ?"Sud · 12 km":"Est · 38 km","✓ Propre","g"],
-                ["⛱️",midBeach,isMQ?"Sud · 25 km":"Est · 52 km","⚡ Modéré","o"],
-                ["🌊",badBeach,isMQ?"Extrême Sud · 38 km":isMQ?"Nord · 55 km":"Nord · 55 km","🚫 Éviter","r"],
-              ].map(([emoji,name,dist,statusTxt,cls],i)=>(
-                <div key={i} style={{background:"white",borderRadius:14,padding:"10px 14px",
-                  display:"flex",alignItems:"center",justifyContent:"space-between",
-                  boxShadow:"0 2px 10px rgba(0,0,0,.04)",border:"1px solid rgba(0,0,0,.04)"}}>
-                  <div style={{display:"flex",alignItems:"center",gap:9}}>
-                    <span style={{fontSize:17}}>{emoji}</span>
-                    <div>
-                      <div style={{fontSize:12,fontWeight:700,color:C.ink}}>{name}</div>
-                      <div style={{fontSize:10,color:C.mid}}>{dist}</div>
-                    </div>
-                  </div>
-                  <span style={{fontSize:10,fontWeight:700,padding:"4px 10px",borderRadius:100,
-                    background:cls==="g"?C.greenBg:cls==="r"?C.redBg:C.amberBg,
-                    color:cls==="g"?C.greenL:cls==="r"?C.red:C.amber}}>{statusTxt}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* CTA — INSIDE slide 2 */}
-            <div style={{marginTop:16,padding:"10px 22px 48px"}}>
-              <button onClick={()=>{onbV==="skip"?closeOnboarding():goStep(2)}} style={{
-                width:"100%",background:"linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%)",
-                color:C.ink,border:"none",borderRadius:20,padding:"17px 20px",
-                fontFamily:"'Anton',sans-serif",fontSize:19,letterSpacing:".06em",textTransform:"uppercase",
-                cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between",
-                boxShadow:"inset 0 1px 0 rgba(255,255,255,.55),0 8px 28px rgba(232,168,0,.44)",
-                position:"relative",overflow:"hidden"}}>
-                <span style={{position:"relative",zIndex:1}}>{onbV==="skip"?"Voir la carte":"Choisir ma plage"}</span>
-                <div style={{width:36,height:36,background:"rgba(0,0,0,.11)",borderRadius:"50%",
-                  display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,
-                  position:"relative",zIndex:1}}>→</div>
-              </button>
-            </div>
-          </div>
-          </>
+      {step===1&&(
+        <div style={{pointerEvents:"auto",
+          background:"rgba(255,255,255,.92)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",
+          borderRadius:14,padding:"10px 14px",
+          boxShadow:"0 4px 16px rgba(0,0,0,.1),0 0 0 1px rgba(0,158,142,.1)",
+          display:"flex",alignItems:"center",gap:8,
+          animation:"slideUp .3s cubic-bezier(.22,1,.36,1)"}}>
+          <span style={{fontSize:18}}>👆</span>
+          <span style={{fontSize:12,fontWeight:600,color:C.ink}}>
+            {lang==="en"?"Tap a ":"Touche un "}{" "}
+            <span style={{color:C.green}}>●</span>{" "}
+            <span style={{color:C.amber}}>●</span>{" "}
+            <span style={{color:C.red}}>●</span>{" "}
+            {lang==="en"?"to see details":"pour voir les détails"}
+          </span>
+          <button onClick={dismiss} style={{
+            background:"none",border:"none",color:C.mid,cursor:"pointer",
+            fontSize:14,padding:4,marginLeft:"auto",flexShrink:0}}>✕</button>
+        </div>
       )}
-
-      {step===2 && (
-          <>{/* ═══════════════════════════════════════════
-              SLIDE 3 — Premium / Forecast
-              ═══════════════════════════════════════════ */}
-          <div style={{display:"flex",flexDirection:"column",flex:1}}>
-            {/* Header */}
-            <div style={{padding:"28px 22px 0",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-              <div style={{fontFamily:"'Anton',sans-serif",fontSize:16,letterSpacing:".05em",display:"flex",alignItems:"center",gap:8}}>
-                <div style={{width:20,height:20,borderRadius:"50%",
-                  background:"conic-gradient(from -10deg,#FFE898 0deg 30deg,#E8A800 30deg 80deg,#FFD040 80deg 130deg,#B87A00 130deg 180deg,#FFE898 180deg 360deg)",
-                  animation:"spin 20s linear infinite",boxShadow:"0 2px 8px rgba(232,168,0,.28)"}}/>
-                {siteName}
-              </div>
-              <button onClick={closeOnboarding} style={{fontSize:12,fontWeight:600,color:C.mid,background:"none",
-                border:"none",cursor:"pointer",textDecoration:"underline",textUnderlineOffset:3,fontFamily:"inherit"}}>Passer</button>
-            </div>
-
-            <div style={{padding:"18px 22px 0",fontSize:12.5,fontStyle:"italic",color:C.mid}}>Pour les weekends qui comptent vraiment.</div>
-
-            <div style={{padding:"6px 22px 0",fontFamily:"'Anton',sans-serif",fontSize:40,lineHeight:.9,
-              letterSpacing:"-.02em",textTransform:"uppercase",color:C.ink,marginBottom:6}}>
-              Sois <span style={{background:"linear-gradient(138deg,#FFD860,#E8A800 50%,#B07000)",
-                WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>prévenu</span><br/>
-              7 jours<br/>à l'avance.
-            </div>
-
-            <p style={{padding:"0 22px",fontSize:13,color:C.mid,lineHeight:1.55,marginBottom:14}}>
-              Les données du jour c'est bien. <strong style={{color:C.ink,fontWeight:700}}>Savoir ce qui arrive ce weekend</strong>, c'est mieux.
-            </p>
-
-            {/* Premium card */}
-            <div style={{margin:"0 22px",background:"linear-gradient(145deg,#0D1E1C,#0A1714)",
-              borderRadius:26,padding:20,position:"relative",overflow:"hidden",
-              boxShadow:"0 16px 48px rgba(0,0,0,.18)"}}>
-              {/* Gold top border */}
-              <div style={{position:"absolute",top:0,left:0,right:0,height:1,
-                background:"linear-gradient(90deg,transparent,"+C.goldL+",transparent)"}}/>
-              {/* Glow */}
-              <div style={{position:"absolute",top:-50,right:-30,width:160,height:160,borderRadius:"50%",
-                background:"radial-gradient(circle,rgba(232,168,0,.1) 0%,transparent 70%)"}}/>
-
-              {/* PREMIUM badge */}
-              <div style={{display:"inline-flex",alignItems:"center",gap:5,
-                background:"rgba(255,199,44,.12)",border:"1px solid rgba(255,199,44,.18)",
-                borderRadius:100,padding:"4px 11px",fontSize:9.5,fontWeight:700,
-                letterSpacing:".1em",textTransform:"uppercase",color:C.goldL,marginBottom:12}}>
-                <span style={{width:4,height:4,borderRadius:"50%",background:C.goldL}}/>PREMIUM
-              </div>
-
-              {/* Price */}
-              <div style={{marginBottom:6}}>
-                <div style={{display:"flex",alignItems:"baseline",gap:3}}>
-                  <span style={{fontSize:20,fontWeight:700,color:"rgba(255,255,255,.6)",marginTop:6}}>€</span>
-                  <span style={{fontFamily:"'Anton',sans-serif",fontSize:52,color:"white",lineHeight:1,letterSpacing:"-.02em"}}>4,99</span>
-                  <span style={{fontSize:13,color:"rgba(255,255,255,.35)",fontWeight:500,alignSelf:"flex-end",marginBottom:4}}>/ mois</span>
-                </div>
-              </div>
-
-              {/* Price anchor */}
-              <div style={{fontSize:11,color:"rgba(255,255,255,.35)",marginBottom:14,lineHeight:1.5,
-                padding:"8px 10px",background:"rgba(255,255,255,.04)",borderRadius:10,
-                borderLeft:"2px solid rgba(232,168,0,.3)"}}>
-                Une journée plage pour 4 personnes = <strong style={{color:"rgba(255,255,255,.6)"}}>80€ minimum.</strong><br/>
-                Savoir à l'avance = <strong style={{color:"rgba(255,255,255,.6)"}}>4,99€.</strong>
-              </div>
-
-              {/* Forecast preview */}
-              <div style={{marginBottom:14}}>
-                <div style={{fontSize:9.5,fontWeight:700,color:"rgba(255,255,255,.4)",
-                  letterSpacing:".1em",textTransform:"uppercase",marginBottom:8}}>Prévisions de ta semaine</div>
-                <div style={{display:"flex",gap:5}}>
-                  {[
-                    ["Lun","️","Propre","g",false],
-                    ["Mar","️","Propre","g",false],
-                    ["Mer","⚡","Modéré","o","semi"],
-                    ["Jeu","🚫","Éviter","r",true],
-                    ["Ven","🚫","Éviter","r",true],
-                    ["Sam","⚡","Modéré","o",true],
-                    ["Dim","️","Propre","g",true],
-                  ].map(([day,ic,st,cl,locked],i)=>(
-                    <div key={i} style={{flex:1,background:"rgba(255,255,255,.05)",borderRadius:10,
-                      padding:"8px 6px",textAlign:"center",display:"flex",flexDirection:"column",
-                      alignItems:"center",gap:3,
-                      filter:locked===true?"blur(3px)":locked==="semi"?"blur(1.5px)":"none",
-                      opacity:locked===true?.35:locked==="semi"?.5:1,
-                      pointerEvents:locked?"none":"auto"}}>
-                      <span style={{fontSize:8.5,fontWeight:700,color:"rgba(255,255,255,.4)"}}>{day}</span>
-                      <span style={{fontSize:15}}>{ic}</span>
-                      <span style={{fontSize:8,fontWeight:700,padding:"2px 5px",borderRadius:100,
-                        background:cl==="g"?"rgba(34,197,94,.15)":cl==="r"?"rgba(232,82,42,.2)":"rgba(232,168,0,.15)",
-                        color:cl==="g"?"#4ADE80":cl==="r"?"#FF8066":C.goldL}}>{st}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Unlock banner */}
-              <div style={{position:"relative",marginTop:-28,marginBottom:14,
-                background:"linear-gradient(0deg,rgba(13,30,28,.95) 60%,transparent)",
-                padding:"20px 8px 8px",textAlign:"center",fontSize:10.5,fontWeight:600,
-                color:"rgba(255,255,255,.5)"}}>
-                 Débloque les 5 prochains jours
-              </div>
-
-              {/* Features */}
-              <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
-                {[
-                  ["Prévisions 7 jours","· dérive satellite"],
-                  ["Alertes","avant que ça arrive"],
-                  ["Annulation","à tout moment"],
-                ].map(([bold,rest],i)=>(
-                  <div key={i} style={{display:"flex",alignItems:"center",gap:9}}>
-                    <div style={{width:18,height:18,borderRadius:"50%",
-                      background:"rgba(0,158,142,.18)",border:"1px solid rgba(0,158,142,.28)",
-                      display:"flex",alignItems:"center",justifyContent:"center",
-                      fontSize:9,color:C.tealL,flexShrink:0}}>✓</div>
-                    <span style={{fontSize:12,color:"rgba(255,255,255,.7)"}}>
-                      <strong style={{color:"#fff"}}>{bold}</strong> {rest}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              {/* CTA — INSIDE slide 3 (premium card) */}
-              <button onClick={openStripe} style={{
-                width:"100%",background:"linear-gradient(135deg,"+C.goldL+","+C.gold+")",
-                color:C.ink,border:"none",borderRadius:16,padding:"16px 20px",
-                fontFamily:"'Anton',sans-serif",fontSize:18,letterSpacing:".05em",textTransform:"uppercase",
-                cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between",
-                boxShadow:"0 8px 24px rgba(232,168,0,.38),inset 0 1px 0 rgba(255,255,255,.4)",
-                position:"relative",overflow:"hidden",transition:"transform .12s"}}>
-                <span style={{position:"relative",zIndex:1}}>Débloquer mes prévisions</span>
-                <span style={{width:36,height:36,background:"rgba(0,0,0,.15)",borderRadius:"50%",
-                  display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,
-                  position:"relative",zIndex:1}}>→</span>
-              </button>
-            </div>
-
-            {/* Testimonial */}
-            <div style={{margin:"12px 22px 0",background:"rgba(255,255,255,.6)",
-              border:"1px solid rgba(232,168,0,.12)",borderRadius:14,padding:"12px 14px",
-              display:"flex",gap:10,alignItems:"flex-start"}}>
-              <div style={{width:30,height:30,borderRadius:"50%",background:"linear-gradient(135deg,#4ECDC4,#44A08D)",
-                display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,
-                color:"#fff",flexShrink:0}}>M</div>
-              <div>
-                <div style={{fontSize:10,fontWeight:700,color:C.ink,marginBottom:3}}>Marie · Schoelcher</div>
-                <div style={{fontSize:11.5,color:C.mid,lineHeight:1.5,fontStyle:"italic"}}>
-                  "Grâce aux alertes, j'ai évité une journée perdue avec mes enfants."
-                </div>
-              </div>
-            </div>
-
-            {/* Free entry */}
-            <div style={{padding:"10px 22px 0",textAlign:"center",fontSize:12,color:C.mid}}>
-              Pas maintenant —{" "}
-              <button onClick={closeOnboarding} style={{background:"none",border:"none",cursor:"pointer",
-                color:C.teal,fontWeight:700,fontSize:12,textDecoration:"underline",textUnderlineOffset:3,
-                fontFamily:"'Bricolage Grotesque',sans-serif"}}>commencer gratuitement</button>
-            </div>
-
-            {/* Micro */}
-            <div style={{padding:"6px 22px 48px",textAlign:"center",fontSize:10.5,color:"rgba(104,104,104,.6)",
-              display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-              Paiement sécurisé<span style={{width:3,height:3,borderRadius:"50%",background:"rgba(104,104,104,.25)"}}/>Annulation à tout moment
-            </div>
-          </div>
-          </>
-      )}
-
-      </div>{/* /onb-inner */}
-
-      {/* Dots — fixed at bottom, outside scroll */}
-      <div style={{position:"absolute",bottom:20,left:"50%",transform:"translateX(-50%)",
-        display:"flex",gap:7,zIndex:30}}>
-        {(onbV==="skip"?[0,1]:[0,1,2]).map(i=>(
-          <button key={i} onClick={()=>goStep(i)}
-            style={{width:i===step?22:7,height:7,borderRadius:i===step?4:7,
-              background:i===step?"#E8A800":"rgba(0,0,0,.15)",
-              border:"none",cursor:"pointer",transition:"all .3s",padding:0}}/>
-        ))}
-      </div>
     </div>
   )
 }
@@ -2316,312 +1990,117 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   PUSH PROMPT — Custom French notification prompt (replaces OneSignal slidedown)
+   INLINE PUSH CTA — Contextual in beach sheet after 3rd beach view
    ═══════════════════════════════════════════════════════════════════════════ */
-function PushPrompt({onClose}){
-  const timerRef=useRef(null)
-  const[visible,setVisible]=useState(false)
+function InlinePushCTA({lang}){
+  const[accepted,setAccepted]=useState(false)
+  const[dismissed,setDismissed]=useState(false)
+  // Only show after 3 beach views and if push not already set up
+  const beachViews=parseInt(sessionStorage.getItem("sg_beach_views")||"0")
+  if(beachViews<3||dismissed||g("sg_push_done",false))return null
 
-  useEffect(()=>{
-    // Slide in after a short delay
-    const showTimer=setTimeout(()=>setVisible(true),80)
-    // Auto-dismiss after 10 seconds
-    timerRef.current=setTimeout(()=>{setVisible(false);setTimeout(onClose,350)},10000)
-    return()=>{clearTimeout(showTimer);clearTimeout(timerRef.current)}
-  },[onClose])
-
-  const handleActivate=useCallback(()=>{
+  const handleActivate=()=>{
     track("sg_push_accept")
-    clearTimeout(timerRef.current)
+    s("sg_push_done",true)
+    setAccepted(true)
     try{window.loadOneSignal?.()}catch(e){}
-    setVisible(false)
-    setTimeout(onClose,350)
-  },[onClose])
+  }
 
-  const handleDismiss=useCallback(()=>{
-    track("sg_push_dismiss")
-    clearTimeout(timerRef.current)
-    setVisible(false)
-    setTimeout(onClose,350)
-  },[onClose])
+  if(accepted)return(
+    <div style={{margin:"12px 0",padding:"12px 14px",borderRadius:12,
+      background:C.greenBg,textAlign:"center",fontSize:13,fontWeight:600,color:C.green}}>
+      {lang==="en"?"Alerts activated! You'll be notified.":"Alertes activées ! Tu seras notifié."}
+    </div>
+  )
 
   return(
-    <div style={{
-      position:"fixed",top:0,left:0,right:0,zIndex:1500,
-      display:"flex",justifyContent:"center",
-      padding:"max(12px,env(safe-area-inset-top)) 16px 0",
-      pointerEvents:"none",
-    }}>
-      <div style={{
-        pointerEvents:"auto",
-        maxWidth:380,width:"100%",
-        background:"rgba(255,255,255,.88)",
-        backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
-        borderRadius:16,
-        border:"1px solid rgba(232,168,0,.18)",
-        boxShadow:"0 4px 24px rgba(0,0,0,.10),0 1px 4px rgba(0,0,0,.06)",
-        padding:"16px 18px",
-        transform:visible?"translateY(0)":"translateY(-100%)",
-        opacity:visible?1:0,
-        transition:"transform .35s cubic-bezier(.22,1,.36,1),opacity .35s ease",
-      }}>
-        <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
-          <span style={{fontSize:22,lineHeight:"28px",flexShrink:0}} role="img" aria-label="bell">🔔</span>
-          <div style={{flex:1,minWidth:0}}>
-            <p style={{margin:0,fontSize:13.5,fontWeight:600,color:C.ink,lineHeight:"19px"}}>
-              Recevez une alerte quand les sargasses arrivent à votre plage.
-            </p>
-            <div style={{display:"flex",gap:10,marginTop:12}}>
-              <button onClick={handleActivate} style={{
-                flex:1,padding:"9px 0",borderRadius:10,border:"none",cursor:"pointer",
-                background:C.gold,color:"#fff",fontSize:13,fontWeight:700,
-                boxShadow:"0 2px 8px rgba(232,168,0,.25)",
-              }}>Activer</button>
-              <button onClick={handleDismiss} style={{
-                flex:1,padding:"9px 0",borderRadius:10,border:"none",cursor:"pointer",
-                background:"rgba(0,0,0,.05)",color:C.mid,fontSize:13,fontWeight:600,
-              }}>Plus tard</button>
-            </div>
+    <div style={{margin:"12px 0",padding:"12px 14px",borderRadius:14,
+      background:"var(--sg-bgD,#F7F5EF)",border:"1px solid var(--sg-border,rgba(0,0,0,.04))"}}>
+      <div style={{display:"flex",alignItems:"center",gap:10}}>
+        <span style={{fontSize:18,flexShrink:0}}>🔔</span>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)"}}>
+            {lang==="en"?"Get alerts for this beach":"Reçois une alerte pour cette plage"}
+          </div>
+          <div style={{fontSize:11,color:"var(--sg-mid)",marginTop:1}}>
+            {lang==="en"?"When sargassum arrives or conditions change":"Quand les sargasses arrivent ou les conditions changent"}
           </div>
         </div>
+        <button onClick={handleActivate} style={{
+          padding:"8px 14px",borderRadius:10,border:"none",cursor:"pointer",
+          background:C.gold,color:"#fff",fontSize:12,fontWeight:700,
+          fontFamily:"inherit",flexShrink:0,
+          boxShadow:"0 2px 8px rgba(232,168,0,.25)"}}>
+          {lang==="en"?"Activate":"Activer"}
+        </button>
       </div>
+      <button onClick={()=>setDismissed(true)} style={{
+        display:"block",margin:"6px auto 0",background:"none",border:"none",
+        cursor:"pointer",color:"var(--sg-mid)",fontSize:11,padding:0}}>
+        {lang==="en"?"Not now":"Plus tard"}
+      </button>
     </div>
   )
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   EMAIL CAPTURE — Weekly sargasses bulletin signup
+   INLINE EMAIL CAPTURE — Contextual in beach sheet after 2nd beach view
    ═══════════════════════════════════════════════════════════════════════════ */
-function EmailCapture(){
-  const[visible,setVisible]=useState(false)
+function InlineEmailCapture({lang}){
   const[email,setEmail]=useState("")
   const[submitted,setSubmitted]=useState(false)
-  const timerRef=useRef(null)
+  const[dismissed,setDismissed]=useState(false)
+  const beachViews=parseInt(sessionStorage.getItem("sg_beach_views")||"0")
+  if(beachViews<2||dismissed||g("sg_email_prompt",false))return null
 
-  useEffect(()=>{
-    // Only show once
-    if(g("sg_email_prompt",false))return
-    const showTimer=setTimeout(()=>setVisible(true),15000)
-    // Auto-dismiss after 30s of visibility
-    timerRef.current=setTimeout(()=>{setVisible(false)},45000) // 15s delay + 30s visible
-    return()=>{clearTimeout(showTimer);clearTimeout(timerRef.current)}
-  },[])
-
-  const handleSubmit=useCallback(e=>{
+  const handleSubmit=e=>{
     e.preventDefault()
     if(!email||!email.includes("@"))return
-    track("sg_email_submit")
+    track("sg_email_submit",{source:"inline_beach"})
     s("sg_email",email)
     s("sg_email_prompt",true)
     setSubmitted(true)
-    clearTimeout(timerRef.current)
-    setTimeout(()=>setVisible(false),2000)
-    // Send to Brevo (Sendinblue) free API — or fallback beacon
-    const island=window.location.hostname.includes("guadeloupe")?"GP":"MQ"
-    try{
-      // Google Sheets webhook (Apps Script) — illimité, gratuit
-      fetch("https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec",{
-        method:"POST",mode:"no-cors",
-        headers:{"Content-Type":"text/plain"},
-        body:JSON.stringify({email,island,source:"sargasses-app",date:new Date().toISOString()})
-      }).catch(()=>{})
-    }catch(ex){}
-  },[email])
-
-  const handleDismiss=useCallback(()=>{
-    s("sg_email_prompt",true)
-    clearTimeout(timerRef.current)
-    setVisible(false)
-  },[])
-
-  if(!visible)return null
-
-  return(
-    <div style={{
-      position:"fixed",bottom:68,left:0,right:0,zIndex:1200,
-      display:"flex",justifyContent:"center",
-      padding:"0 12px",
-      pointerEvents:"none",
-    }}>
-      <div style={{
-        pointerEvents:"auto",
-        maxWidth:400,width:"100%",
-        background:"rgba(255,255,255,.88)",
-        backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
-        borderRadius:16,
-        border:"1px solid rgba(232,168,0,.18)",
-        boxShadow:"0 4px 24px rgba(0,0,0,.10),0 1px 4px rgba(0,0,0,.06)",
-        padding:"14px 16px",
-        animation:"slideUp .35s cubic-bezier(.22,1,.36,1)",
-      }}>
-        {submitted?(
-          <p style={{margin:0,fontSize:14,fontWeight:600,color:C.green,textAlign:"center"}}>
-            Merci ! Tu recevras le bulletin chaque semaine.
-          </p>
-        ):(
-          <>
-            <p style={{margin:"0 0 10px",fontSize:13.5,fontWeight:600,color:C.ink,lineHeight:"19px"}}>
-              {"📧"} Reçois le bulletin sargasses chaque semaine
-            </p>
-            <form onSubmit={handleSubmit} style={{display:"flex",gap:8,alignItems:"center"}}>
-              <input
-                type="email"
-                placeholder="ton@email.com"
-                value={email}
-                onChange={e=>setEmail(e.target.value)}
-                style={{
-                  flex:1,padding:"9px 12px",borderRadius:10,
-                  border:"1px solid rgba(0,0,0,.1)",
-                  fontSize:14,fontFamily:"inherit",
-                  background:"rgba(255,255,255,.7)",
-                  outline:"none",minWidth:0,
-                }}
-              />
-              <button type="submit" style={{
-                padding:"9px 16px",borderRadius:10,border:"none",cursor:"pointer",
-                background:"linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%)",
-                color:"#fff",fontSize:13,fontWeight:700,whiteSpace:"nowrap",
-                boxShadow:"0 2px 8px rgba(232,168,0,.25)",
-              }}>S'inscrire</button>
-            </form>
-            <button onClick={handleDismiss} style={{
-              display:"block",margin:"8px auto 0",background:"none",border:"none",
-              cursor:"pointer",color:C.mid,fontSize:12,fontWeight:500,
-              textDecoration:"underline",padding:0,
-            }}>Plus tard</button>
-          </>
-        )}
-      </div>
-    </div>
-  )
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   EXIT-INTENT POPUP — last chance email capture before user leaves
-   Desktop: mouseleave at top of viewport. Mobile: fast scroll-up.
-   Shows once only. Skips if email already captured or premium.
-   ═══════════════════════════════════════════════════════════════════════════ */
-function ExitIntent(){
-  const[visible,setVisible]=useState(false)
-  const[email,setEmail]=useState("")
-  const[submitted,setSubmitted]=useState(false)
-  const shownRef=useRef(false)
-
-  useEffect(()=>{
-    if(g("sg_exit_shown",false)||g("sg_email_prompt",false)||g("sg_premium",false))return
-    const arm=setTimeout(()=>{
-      const onLeave=e=>{
-        if(e.clientY<=0&&!shownRef.current){
-          shownRef.current=true
-          setVisible(true)
-          track("sg_exit_intent_show")
-          document.removeEventListener("mouseout",onLeave)
-        }
-      }
-      document.addEventListener("mouseout",onLeave)
-      let lastY=window.scrollY,lastT=Date.now()
-      const onScroll=()=>{
-        const y=window.scrollY,t=Date.now(),dt=t-lastT
-        if(dt>50&&dt<300){
-          const speed=(lastY-y)/dt
-          if(speed>2&&y<100&&!shownRef.current){
-            shownRef.current=true
-            setVisible(true)
-            track("sg_exit_intent_show")
-            window.removeEventListener("scroll",onScroll)
-          }
-        }
-        lastY=y;lastT=t
-      }
-      window.addEventListener("scroll",onScroll,{passive:true})
-      return()=>{
-        document.removeEventListener("mouseout",onLeave)
-        window.removeEventListener("scroll",onScroll)
-      }
-    },8000)
-    return()=>clearTimeout(arm)
-  },[])
-
-  const handleSubmit=useCallback(e=>{
-    e.preventDefault()
-    if(!email||!email.includes("@"))return
-    track("sg_exit_email_submit")
-    s("sg_email",email)
-    s("sg_email_prompt",true)
-    s("sg_exit_shown",true)
-    setSubmitted(true)
-    setTimeout(()=>setVisible(false),2000)
     const island=window.location.hostname.includes("guadeloupe")?"GP":"MQ"
     try{fetch("https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec",{
       method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
-      body:JSON.stringify({email,island,source:"exit-intent",date:new Date().toISOString()})
+      body:JSON.stringify({email,island,source:"inline-beach",date:new Date().toISOString()})
     }).catch(()=>{})}catch{}
-  },[email])
+  }
 
-  const handleDismiss=useCallback(()=>{
-    s("sg_exit_shown",true)
-    setVisible(false)
-    track("sg_exit_intent_dismiss")
-  },[])
-
-  if(!visible)return null
+  if(submitted)return(
+    <div style={{margin:"12px 0",padding:"12px 14px",borderRadius:12,
+      background:C.greenBg,textAlign:"center",fontSize:13,fontWeight:600,color:C.green}}>
+      {lang==="en"?"Subscribed! See you Friday.":"Inscrit ! À vendredi."}
+    </div>
+  )
 
   return(
-    <div style={{
-      position:"fixed",inset:0,zIndex:9998,
-      background:"rgba(0,0,0,.55)",backdropFilter:"blur(4px)",WebkitBackdropFilter:"blur(4px)",
-      display:"flex",alignItems:"center",justifyContent:"center",
-      padding:16,animation:"fadeIn .25s ease",
-    }} onClick={handleDismiss}>
-      <div onClick={e=>e.stopPropagation()} style={{
-        maxWidth:380,width:"100%",
-        background:"#fff",borderRadius:24,
-        padding:"32px 24px",textAlign:"center",
-        boxShadow:"0 20px 60px rgba(0,0,0,.25)",
-        animation:"slideUp .35s cubic-bezier(.22,1,.36,1)",
-      }}>
-        {submitted?(
-          <p style={{margin:0,fontSize:16,fontWeight:700,color:C.green}}>
-            Inscrit ! A vendredi.
-          </p>
-        ):(
-          <>
-            <div style={{fontSize:32,marginBottom:8}}>{"🏖️"}</div>
-            <h3 style={{margin:"0 0 6px",fontSize:20,fontWeight:800,color:C.ink}}>
-              Avant de partir...
-            </h3>
-            <p style={{margin:"0 0 16px",fontSize:14,color:C.mid,lineHeight:"20px"}}>
-              La saison des sargasses arrive bientot.<br/>
-              Recois chaque vendredi les <strong style={{color:C.ink}}>meilleures plages</strong> pour ton weekend.
-            </p>
-            <form onSubmit={handleSubmit} style={{display:"flex",gap:8,marginBottom:10}}>
-              <input type="email" value={email} onChange={e=>setEmail(e.target.value)}
-                placeholder="ton@email.com" required
-                style={{
-                  flex:1,padding:"12px 14px",borderRadius:12,
-                  border:"1.5px solid #e0e0e0",fontSize:15,fontFamily:"inherit",
-                  outline:"none",minWidth:0,
-                }}
-                onFocus={e=>e.target.style.borderColor="#E8A800"}
-                onBlur={e=>e.target.style.borderColor="#e0e0e0"}
-              />
-              <button type="submit" style={{
-                padding:"12px 18px",borderRadius:12,border:"none",cursor:"pointer",
-                background:"linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%)",
-                color:"#0D0D0D",fontSize:14,fontWeight:700,whiteSpace:"nowrap",
-                boxShadow:"0 4px 16px rgba(232,168,0,.3)",
-              }}>OK</button>
-            </form>
-            <p style={{margin:0,fontSize:11,color:"#999"}}>
-              Gratuit, zero spam, desinscription en 1 clic.
-            </p>
-            <button onClick={handleDismiss} style={{
-              display:"block",margin:"12px auto 0",background:"none",border:"none",
-              cursor:"pointer",color:C.mid,fontSize:12,fontWeight:500,padding:0,
-            }}>Non merci</button>
-          </>
-        )}
+    <div style={{margin:"12px 0",padding:"12px 14px",borderRadius:14,
+      background:"var(--sg-bgD,#F7F5EF)",border:"1px solid var(--sg-border,rgba(0,0,0,.04))"}}>
+      <div style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)",marginBottom:8,display:"flex",alignItems:"center",gap:6}}>
+        <span>📧</span>
+        {lang==="en"?"Get the weekly sargassum bulletin":"Reçois le bulletin sargasses chaque semaine"}
       </div>
+      <form onSubmit={handleSubmit} style={{display:"flex",gap:8,alignItems:"center"}}>
+        <input type="email" placeholder={lang==="en"?"your@email.com":"ton@email.com"}
+          value={email} onChange={e=>setEmail(e.target.value)}
+          style={{flex:1,padding:"9px 12px",borderRadius:10,
+            border:"1px solid var(--sg-border,rgba(0,0,0,.08))",
+            fontSize:13,fontFamily:"inherit",background:"var(--sg-card,#fff)",
+            outline:"none",minWidth:0,color:"var(--sg-ink)"}}/>
+        <button type="submit" style={{
+          padding:"9px 14px",borderRadius:10,border:"none",cursor:"pointer",
+          background:"linear-gradient(158deg,#FFE47A,#FFC72C,#E89400)",
+          color:C.ink,fontSize:12,fontWeight:700,whiteSpace:"nowrap",fontFamily:"inherit",
+          boxShadow:"0 2px 8px rgba(232,168,0,.25)"}}>
+          {lang==="en"?"Subscribe":"S'inscrire"}
+        </button>
+      </form>
+      <button onClick={()=>{setDismissed(true);s("sg_email_prompt",true)}} style={{
+        display:"block",margin:"6px auto 0",background:"none",border:"none",
+        cursor:"pointer",color:"var(--sg-mid)",fontSize:11,padding:0}}>
+        {lang==="en"?"Not now":"Plus tard"}
+      </button>
     </div>
   )
 }
@@ -2707,6 +2186,97 @@ function FeedbackWidget(){
           <div style={{fontSize:13,fontWeight:600,color:"var(--sg-ink)",marginTop:4}}>Merci pour ton retour !</div>
         </div>
       )}
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RETURN USER CARD — inline welcome for returning users (J+1/J+7)
+   Shows on map, not a popup. Auto-dismisses after 6s.
+   ═══════════════════════════════════════════════════════════════════════════ */
+function ReturnUserCard({lang,allBeaches}){
+  const[visible,setVisible]=useState(false)
+  const[dismissed,setDismissed]=useState(false)
+  // Capture last visit ONCE on mount (before useEffect overwrites it)
+  const lastVisitRef=useRef(g("sg_last_visit",0))
+
+  const info=useMemo(()=>{
+    const lastVisit=lastVisitRef.current
+    const now=Date.now()
+    if(!lastVisit||now-lastVisit<12*3600*1000)return null // less than 12h ago
+    const daysSince=Math.round((now-lastVisit)/(24*3600*1000))
+    const changed=allBeaches.filter(b=>b.status&&b.status!=="clean").length
+    return{daysSince,changed}
+  },[allBeaches])
+
+  useEffect(()=>{
+    if(!info||dismissed||sessionStorage.getItem("sg_return_card_shown"))return
+    const t=setTimeout(()=>setVisible(true),1500)
+    const auto=setTimeout(()=>{setVisible(false);sessionStorage.setItem("sg_return_card_shown","1")},8000)
+    return()=>{clearTimeout(t);clearTimeout(auto)}
+  },[info,dismissed])
+
+  // Record visit time for next session
+  useEffect(()=>{s("sg_last_visit",Date.now())},[])
+
+  if(!visible||!info)return null
+
+  const dismiss=()=>{setDismissed(true);setVisible(false);sessionStorage.setItem("sg_return_card_shown","1")}
+
+  return(
+    <div style={{position:"absolute",
+      top:"max(108px, calc(env(safe-area-inset-top,12px) + 100px))",
+      left:12,right:12,zIndex:745,pointerEvents:"none"}}>
+      <div style={{pointerEvents:"auto",
+        background:"rgba(255,255,255,.94)",backdropFilter:"blur(14px)",WebkitBackdropFilter:"blur(14px)",
+        borderRadius:14,padding:"12px 14px",
+        boxShadow:"0 4px 20px rgba(0,0,0,.1),0 0 0 1px rgba(0,158,142,.1)",
+        display:"flex",alignItems:"center",gap:10,
+        animation:"slideUp .35s cubic-bezier(.22,1,.36,1)"}}>
+        <span style={{fontSize:18,flexShrink:0}}>👋</span>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:13,fontWeight:700,color:"var(--sg-ink)"}}>
+            {info.daysSince>=7
+              ?(lang==="en"?"Welcome back! Here's what changed":"Bon retour ! Voici ce qui a changé")
+              :(lang==="en"?"Welcome back!":"Bon retour !")}
+          </div>
+          <div style={{fontSize:11,color:"var(--sg-mid)",marginTop:1}}>
+            {info.changed>0
+              ?(lang==="en"
+                ?`${info.changed} beach${info.changed>1?"es":""} changed status since your last visit`
+                :`${info.changed} plage${info.changed>1?"s":""} ${info.changed>1?"ont":"a"} changé de statut`)
+              :(lang==="en"?"All beaches stable — enjoy!":"Toutes les plages sont stables")}
+          </div>
+        </div>
+        <button onClick={dismiss} style={{
+          background:"none",border:"none",color:"var(--sg-mid)",cursor:"pointer",
+          fontSize:14,padding:4,flexShrink:0}}>✕</button>
+      </div>
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FAV TOAST — brief inline toast when user adds first favorite
+   ═══════════════════════════════════════════════════════════════════════════ */
+function FavToast({show,lang}){
+  const[visible,setVisible]=useState(false)
+  useEffect(()=>{
+    if(!show)return
+    setVisible(true)
+    const t=setTimeout(()=>setVisible(false),3000)
+    return()=>clearTimeout(t)
+  },[show])
+  if(!visible)return null
+  return(
+    <div style={{position:"fixed",bottom:74,left:"50%",transform:"translateX(-50%)",
+      zIndex:800,background:"var(--sg-card,#fff)",color:"var(--sg-ink)",
+      padding:"10px 18px",borderRadius:14,fontSize:13,fontWeight:600,
+      boxShadow:"0 4px 20px rgba(0,0,0,.12),0 0 0 1px var(--sg-border)",
+      display:"flex",alignItems:"center",gap:8,whiteSpace:"nowrap",
+      animation:"slideUp .3s cubic-bezier(.22,1,.36,1)"}}>
+      <span style={{color:C.green}}>✓</span>
+      {lang==="en"?"Added to favorites":"Ajouté aux favoris"}
     </div>
   )
 }
@@ -2886,8 +2456,8 @@ export default function App(){
   const[selectedBeach,setSelectedBeach]=useState(null)
   const[favorites,setFavorites]=useState(()=>g("sg_fav",[]))
   const[showOnboarding,setShowOnboarding]=useState(()=>!g("sg_onb",0))
-  const[showPushPrompt,setShowPushPrompt]=useState(false)
   const[showPremium,setShowPremium]=useState(false)
+  const[showFavToast,setShowFavToast]=useState(false)
   const[isPremium,setIsPremium]=useState(()=>{
     if(g("sg_premium",false))return true
     try{
@@ -3073,7 +2643,15 @@ export default function App(){
   useEffect(()=>{s("sg_fav",favorites)},[favorites])
 
   const toggleFav=useCallback(id=>{
-    setFavorites(f=>f.includes(id)?f.filter(x=>x!==id):[...f,id])
+    setFavorites(f=>{
+      const isAdding=!f.includes(id)
+      if(isAdding&&!g("sg_fav_toast_shown",false)){
+        setShowFavToast(true)
+        s("sg_fav_toast_shown",true)
+        setTimeout(()=>setShowFavToast(false),3500)
+      }
+      return isAdding?[...f,id]:f.filter(x=>x!==id)
+    })
   },[])
 
   const toggleTheme=useCallback(()=>setTheme(t=>t==="dark"?"light":"dark"),[])
@@ -3104,10 +2682,12 @@ export default function App(){
 
   const onBeachClick=useCallback(b=>{
     setSelectedBeach(b);track("sg_beach_open",{beach_id:b?.id,status:b?.status})
+    // Auto-dismiss onboarding coachmark on first beach interaction
+    if(showOnboarding){setShowOnboarding(false);s("sg_onb",1)}
     // Track beach views for PWA install prompt timing
     const v=parseInt(sessionStorage.getItem("sg_beach_views")||"0")+1
     sessionStorage.setItem("sg_beach_views",String(v))
-  },[])
+  },[showOnboarding])
   const closeSheet=useCallback(()=>setSelectedBeach(null),[])
 
   const onChangeView=useCallback(v=>{
@@ -3126,7 +2706,7 @@ export default function App(){
 
         {/* MAP, LIST or GAME */}
         {view==="map"?(
-          <ErrBound><MapView beaches={showOnboarding?[]:filtered} island={island}
+          <ErrBound><MapView beaches={filtered} island={island}
             onBeachClick={onBeachClick} selectedBeach={selectedBeach} sargData={sargData} userPos={userPos}/></ErrBound>
         ):(
           <BeachListView beaches={filtered} onBeachClick={onBeachClick}
@@ -3187,30 +2767,26 @@ export default function App(){
         {/* PREMIUM MODAL */}
         {showPremium&&<PremiumModal onClose={()=>setShowPremium(false)} lang={lang}/>}
 
-        {/* ONBOARDING */}
-        {showOnboarding&&<Onboarding onDone={()=>{setShowOnboarding(false);setShowPushPrompt(true)}} island={island} lang={lang}/>}
+        {/* ONBOARDING — inline coachmark, map visible behind */}
+        {showOnboarding&&<Onboarding onDone={()=>setShowOnboarding(false)} island={island} lang={lang}/>}
 
-        {/* CUSTOM FRENCH PUSH PROMPT */}
-        {showPushPrompt&&<PushPrompt onClose={()=>setShowPushPrompt(false)}/>}
+        {/* RETURN USER CARD — welcome back for returning visitors */}
+        {view==="map"&&!showOnboarding&&!selectedBeach&&(
+          <ReturnUserCard lang={lang} allBeaches={allBeaches}/>
+        )}
 
-        {/* BOTTOM PROMPTS — ONE AT A TIME, priority: feedback > install > email
-             Exit-intent is a full overlay (separate, triggered by mouse leave) */}
-        {!showOnboarding&&!showPushPrompt&&(()=>{
+        {/* BOTTOM PROMPTS — feedback + install only (email/push moved inline to beach sheet) */}
+        {!showOnboarding&&(()=>{
           const feedbackDone=g("sg_feedback_done",false)
           const visits=g("sg_visits",0)
           const pwaShown=g("sg_pwa_prompt",0)
-          const emailShown=g("sg_email_prompt",false)
-          // Priority 1: Feedback (3rd+ visit, not done yet)
           if(!feedbackDone&&visits>=3)return<FeedbackWidget/>
-          // Priority 2: Install prompt (not yet shown)
           if(!pwaShown)return<InstallPrompt/>
-          // Priority 3: Email capture (not yet shown)
-          if(!emailShown)return<EmailCapture/>
           return null
         })()}
 
-        {/* EXIT-INTENT POPUP — full overlay, separate from bottom stack */}
-        {!showOnboarding&&!isPremium&&<ExitIntent/>}
+        {/* FAV TOAST — inline, first favorite only */}
+        <FavToast show={showFavToast} lang={lang}/>
 
         {/* PREMIUM WELCOME TOAST */}
         {showWelcome&&(
