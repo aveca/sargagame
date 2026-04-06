@@ -177,13 +177,11 @@ function haversine(lat1,lon1,lat2,lon2){
 // Beaches missing Google Places photos — use satellite fallback
 const NO_PHOTO=new Set(["gp011","gp087","gp103","gp118","gp119","mq035"])
 
-function getBeachPhoto(beach,imageMap){
+function getBeachPhoto(beach){
   if(!beach)return null
-  // Local imageMap override (legacy beaches-images.json)
-  if(imageMap&&imageMap[beach.id])return`/beaches/${imageMap[beach.id]}`
   // Skip if no Google Places photo exists
   if(NO_PHOTO.has(beach.id))return null
-  // Google Places photo (128/135 plages, 1600px HQ)
+  // Google Places photo (129/135 plages, 1600px HQ)
   return`/beaches/gplace-${beach.id}.jpg?v=2`
 }
 
@@ -651,7 +649,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
 
   if(!beach)return null
 
-  const photo=getBeachPhoto(beach,imageMap)
+  const photo=getBeachPhoto(beach)
   const bgImage=photo||satImg(beach.lat,beach.lng,560)
 
   const onTouchStart=e=>{startY.current=e.touches[0].clientY}
@@ -769,7 +767,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               <div style={{display:"flex",flexDirection:"column",gap:8}}>
                 {nearby.map(nb=>{
                   const nst=ST[nb.status]||ST.clean
-                  const nbPhoto=getBeachPhoto(nb,imageMap)
+                  const nbPhoto=getBeachPhoto(nb)
                   return(
                     <button key={nb.id} onClick={()=>onBeachClick(nb)} style={{
                       display:"flex",alignItems:"center",gap:10,padding:10,
@@ -1035,7 +1033,7 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
       </div>
       <div style={{padding:"8px 16px",display:"flex",flexDirection:"column",gap:10}}>
         {beaches.map(b=>{
-          const photo=getBeachPhoto(b,imageMap)
+          const photo=getBeachPhoto(b)
           return(
             <button key={b.id} onClick={()=>onBeachClick(b)} style={{
               display:"flex",alignItems:"center",gap:12,padding:12,
