@@ -99,6 +99,21 @@ function buildEmailHTML(island, topBeaches, stats, domain) {
     <table style="width:100%;border-collapse:collapse">${beachRows}</table>
   </div>
 
+  <!-- Premium upsell -->
+  <div style="background:#0D1E1C;padding:20px 24px;text-align:center">
+    <div style="font-size:11px;font-weight:700;color:#E8A800;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Premium</div>
+    <div style="font-size:17px;font-weight:800;color:#fff;margin-bottom:6px">Previsions 7 jours</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:14px;line-height:1.4">
+      Sois prevenu <em>avant</em> que les sargasses arrivent.<br>
+      Planifie ton weekend en avance, pas de mauvaise surprise.
+    </div>
+    <a href="https://buy.stripe.com/6oU3cxgg36J48Ox6ZZ0co0s" style="display:inline-block;padding:12px 28px;
+      background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);
+      color:#0D0D0D;text-decoration:none;border-radius:10px;font-size:14px;font-weight:700;
+      box-shadow:0 4px 16px rgba(232,168,0,.3)">Essai gratuit 7 jours</a>
+    <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:8px">4,99 EUR/mois apres l'essai · Annule quand tu veux</div>
+  </div>
+
   <div style="text-align:center;padding:20px;background:#fff;border-radius:0 0 16px 16px;border-top:1px solid #f0f0f0">
     <a href="https://${domain}" style="display:inline-block;padding:14px 32px;background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);
       color:#0D0D0D;text-decoration:none;border-radius:12px;font-size:15px;font-weight:700;
