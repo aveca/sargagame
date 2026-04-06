@@ -229,7 +229,7 @@ function interpolateForecast(beach,sentinels,weeklyData,k=3,power=2){
 }
 
 // Beaches missing Google Places photos — use satellite fallback
-const NO_PHOTO=new Set(["gp011","gp087","gp103","gp118","gp119","mq035"])
+const NO_PHOTO=new Set([])
 
 function getBeachPhoto(beach){
   if(!beach)return null
