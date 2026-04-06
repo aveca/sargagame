@@ -698,48 +698,11 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos,fav
     return()=>{if(driftRef.current)clearInterval(driftRef.current)}
   },[beaches,onBeachClick,selectedBeach,sargData])
 
-  // Compute threat for banner
-  const threat=useMemo(()=>{
-    if(!banksData)return null
-    return findMostRelevantThreat(banksData.banks,allBeaches||beaches,favorites,userPos,island)
-  },[banksData,allBeaches,beaches,favorites,userPos,island])
-  useEffect(()=>{onThreatChange?.(!!threat)},[threat])
+  /* Threat banner + time slider removed — based on fake drift model (fixed speed/bearing) */
 
   if(mapError)return <div style={{padding:40,color:"red"}}>{mapError}</div>
   return(<div style={{position:"relative",width:"100%",height:"100%"}}>
     <div ref={containerRef} style={{width:"100%",height:"100%"}}/>
-    {/* Threat Banner — simple, no fake time predictions */}
-    {threat&&!threatDismissed&&(
-      <div onClick={()=>{
-        track("sg_threat_banner_tap",{beachId:threat.beach.id})
-        onBeachClick(threat.beach)
-      }} style={{
-        position:"absolute",bottom:140,left:12,right:12,zIndex:780,
-        background:"linear-gradient(135deg,#E8522A,#C0392B)",
-        borderRadius:16,padding:"14px 16px",cursor:"pointer",
-        animation:"sg-threat-slide .4s ease-out",
-        display:"flex",alignItems:"center",gap:12,
-        boxShadow:"0 4px 24px rgba(0,0,0,.4)",
-      }}>
-        <div style={{flex:1,minWidth:0}}>
-          <div style={{fontSize:14,fontWeight:800,color:"#fff",lineHeight:1.3}}>
-            {lang==="en"
-              ?"Sargassum detected near "+threat.beach.name
-              :"Sargasses détectées vers "+threat.beach.name}
-          </div>
-          <div style={{fontSize:10,color:"rgba(255,255,255,.7)",marginTop:3}}>
-            {lang==="en"?"Tap to see details":"Voir les détails >"}
-          </div>
-        </div>
-        <div onClick={(e)=>{
-          e.stopPropagation()
-          setThreatDismissed(true)
-          sessionStorage.setItem("sg_threat_dismissed","1")
-        }} style={{fontSize:16,color:"rgba(255,255,255,.5)",cursor:"pointer",padding:"4px"}}>{"\u2715"}</div>
-      </div>
-    )}
-    {/* Time slider removed — drift predictions use fixed speed/bearing, not real ocean data.
-       All banks move identically. Slider showed no meaningful change between timeframes. */}
   </div>)
 }
 
