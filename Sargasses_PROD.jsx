@@ -1180,30 +1180,10 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             <h2 className="anton" style={{fontSize:22,margin:0,lineHeight:1.2}}>{beach.name}</h2>
             <StatusBadge status={beach.status} lang={lang}/>
           </div>
-          <p style={{fontSize:13,color:"var(--sg-mid,#686868)",margin:"0 0 4px"}}>
-            {beach.commune} · <AfaiBadge afai={beach.afai}/> · {beach.drive} {LL.drive}
+          <p style={{fontSize:13,color:"var(--sg-mid,#686868)",margin:"0 0 8px"}}>
+            {beach.commune} · {beach.drive} {LL.drive}
             {userPos&&beach.lat&&<> · {Math.round(haversine(userPos.lat,userPos.lng,beach.lat,beach.lng))} km</>}
           </p>
-          <div style={{display:"flex",flexWrap:"wrap",alignItems:"center",gap:4,marginBottom:6}}>
-            <div style={{display:"inline-flex",alignItems:"center",gap:4,
-              padding:"2px 8px",borderRadius:100,fontSize:10,fontWeight:600,
-              background:beach._communityOverride?C.goldBg:beach.beachMemory?"rgba(139,105,20,.1)":beach._src==="live"?"rgba(34,197,94,.1)":"rgba(184,122,0,.08)",
-              color:beach._communityOverride?C.gold:beach.beachMemory?C.sarg:beach._src==="live"?"#16A34A":"#B87A00"}}>
-              <span style={{width:5,height:5,borderRadius:3,
-                background:beach._communityOverride?C.gold:beach.beachMemory?C.sarg:beach._src==="live"?"#22C55E":"#B87A00"}}/>
-              {beach._communityOverride?(lang==="en"?`Reported by ${beach._communityTotal} visitors`:`Signalé par ${beach._communityTotal} visiteurs`)
-                :beach.beachMemory?(lang==="en"?`Beach memory — conf: ${beach.memoryConfidence||"?"}%`:`Mémoire plage — conf\u00a0: ${beach.memoryConfidence||"?"}%`)
-                :beach._src==="live"?(lang==="en"?`Satellite (${beach.confidence||"?"}%)`:`Satellite (${beach.confidence||"?"}%)`)
-                :(lang==="en"?`IDW estimate (${beach.confidence||"?"}%)`:`Estimation IDW (${beach.confidence||"?"}%)`)}
-            </div>
-            {sargData?.erddapTimestamp&&!beach._communityOverride&&(()=>{
-              const ageH=Math.round((Date.now()-new Date(sargData.erddapTimestamp).getTime())/3600000)
-              const ageColor=ageH<6?"#16A34A":ageH<24?"#B87A00":"#DC2626"
-              return <span style={{fontSize:9,color:ageColor,fontWeight:500}}>
-                {lang==="en"?`Last reading: ${ageH}h ago`:`Mesure\u00a0: il y a ${ageH}h`}
-              </span>
-            })()}
-          </div>
           {/* Beach Score du Jour */}
           <BeachScoreBadge afai={beach.afai} weather={weather} lang={lang}/>
 
@@ -1220,19 +1200,6 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
                   ?"Satellite no longer detects sargassum offshore, but beaching occurred in recent days. Algae can persist on the beach for 7 to 14 days without cleanup."
                   :"Le satellite ne détecte plus de sargasses au large, mais des échouages ont eu lieu ces derniers jours. Les algues peuvent persister sur la plage 7 à 14 jours sans ramassage.")
                 :(lang==="en"?ST[beach.status].descEn:ST[beach.status].desc)}
-              {beach._communityOverride&&(<><br/><span style={{fontSize:10,fontWeight:400,opacity:.7}}>
-                {lang==="en"?"Source: on-site user reports (last 48h)":"Source\u00a0: signalements visiteurs sur place (48h)"}
-              </span></>)}
-              {beach.beachMemory&&!beach._communityOverride&&beach.afaiSat!=null&&(<><br/><span style={{fontSize:10,fontWeight:400,opacity:.7}}>
-                {lang==="en"
-                  ?`Satellite now: AFAI ${Math.round(beach.afaiSat*100)}% (clean) · Adjusted for recent beaching history`
-                  :`Satellite actuel\u00a0: AFAI ${Math.round(beach.afaiSat*100)}% (propre) · Ajusté selon l'historique d'échouages`}
-              </span></>)}
-              {!beach.beachMemory&&!beach._communityOverride&&(<><br/><span style={{fontSize:10,fontWeight:400,opacity:.7}}>
-                {lang==="en"
-                  ?"Offshore satellite estimate (NOAA AFAI) — not an on-site measurement."
-                  :"Estimation satellite au large (NOAA AFAI) — pas une mesure sur place."}
-              </span></>)}
             </p>
           )}
 
@@ -1256,15 +1223,12 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
           {/* ── Inline push CTA (after 3rd beach view) ── */}
           <InlinePushCTA lang={lang}/>
 
-          {/* ── AXE 3: Reliability Score from history ── */}
-          <ReliabilityScore beachId={beach.id} historyData={historyData} lang={lang}/>
-
-          {/* Tags */}
-          <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:16}}>
-            {beach.kids&&<Tag icon="🏖️" label={LL.kids}/>}
-            {beach.snorkel&&<Tag icon="🏖️" label={LL.snorkel}/>}
-            {beach.parking&&<Tag icon="🏖️️" label={LL.parking}/>}
-          </div>
+          {/* Tags — only parking (actionable info) */}
+          {beach.parking&&(
+            <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:16}}>
+              <Tag icon="🅿️" label={LL.parking}/>
+            </div>
+          )}
 
           {/* Actions */}
           <div style={{display:"flex",gap:10,marginBottom:20}}>
@@ -1310,44 +1274,9 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             </>
           )}
 
-          {/* History trend chart */}
-          <HistoryChart beachId={beach.id} historyData={historyData} lang={lang}/>
+          {/* HistoryChart removed — technical trend, users just want today's status */}
 
-          {/* Season context — show value when everything is clean */}
-          {beach.status==="clean"&&!isPremium&&(()=>{
-            const month=new Date().getMonth() // 0-indexed
-            const isOffSeason=month<4||month>8 // Nov-Apr = off-season
-            if(!isOffSeason)return null
-            const seasonStart=new Date(new Date().getFullYear(),4,1) // May 1
-            const daysUntil=Math.max(0,Math.ceil((seasonStart-new Date())/(86400000)))
-            return(
-              <div style={{margin:"16px 0",padding:"14px 16px",borderRadius:14,
-                background:"linear-gradient(135deg,rgba(232,168,0,.06),rgba(232,82,42,.04))",
-                border:"1px solid rgba(232,168,0,.12)"}}>
-                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
-                  <span style={{fontSize:18}}>📅</span>
-                  <div>
-                    <div style={{fontSize:13,fontWeight:700,color:"var(--sg-ink)"}}>
-                      {lang==="en"?"Sargassum season starts in":"La saison des sargasses commence dans"} <span style={{color:C.amber}}>{daysUntil} {lang==="en"?"days":"jours"}</span>
-                    </div>
-                    <div style={{fontSize:11,color:"var(--sg-mid)",marginTop:2}}>
-                      {lang==="en"
-                        ?"May to August — conditions change fast. Get alerted before it happens."
-                        :"Mai à août — les conditions changent vite. Sois alerté avant que ça n'arrive."}
-                    </div>
-                  </div>
-                </div>
-                <button onClick={()=>{track("sg_season_cta");onPremiumClick("season_alert")}} style={{
-                  width:"100%",padding:"10px",borderRadius:10,border:"none",cursor:"pointer",
-                  background:"linear-gradient(158deg,#FFE47A,#FFC72C,#E89400)",
-                  fontFamily:"inherit",fontSize:12,fontWeight:700,color:C.ink}}>
-                  {lang==="en"?"Get early alerts — €4.99/mo":"Alertes précoces — 4,99 €/mois"}
-                </button>
-              </div>
-            )
-          })()}
-
-          {/* Nearby beaches (netlinking) */}
+          {/* Nearby beaches */}
           {nearby.length>0&&(
             <>
               <h3 style={{fontSize:15,fontWeight:700,margin:"20px 0 10px"}}>{LL.nearby}</h3>
@@ -3046,12 +2975,7 @@ export default function App(){
             userPos={userPos} onPremiumClick={openPremium}/>
         )}
 
-        {/* WEEKEND BANNER — hidden when ThreatBanner active */}
-        {view==="map"&&!selectedBeach&&!showOnboarding&&!hasActiveThreat&&(
-          <WeekendBanner allBeaches={allBeaches} sargData={sargData} island={island}
-            lang={lang} isPremium={isPremium} onPremiumClick={openPremium}
-            onBeachClick={onBeachClick} userPos={userPos}/>
-        )}
+        {/* WeekendBanner removed — upsell disguised as feature */}
 
         {/* BOTTOM NAV */}
         <BottomNav view={view} onChangeView={onChangeView} lang={lang}/>
@@ -3080,10 +3004,7 @@ export default function App(){
             onSelect={onPickBeach} onDismiss={myBeachId?()=>setShowPicker(false):null}/>
         )}
 
-        {/* RETURN USER CARD — welcome back for returning visitors */}
-        {view==="map"&&!showOnboarding&&!selectedBeach&&(
-          <ReturnUserCard lang={lang} allBeaches={allBeaches}/>
-        )}
+        {/* ReturnUserCard removed — "Bon retour" popup adds no value */}
 
         {/* BOTTOM PROMPTS — feedback + install only (email/push moved inline to beach sheet) */}
         {!showOnboarding&&(()=>{
