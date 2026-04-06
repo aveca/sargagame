@@ -149,6 +149,46 @@ const STRIPE_URL="https://buy.stripe.com/28E7sN2pd5F07Ktesr0co0p"
 const g=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}}
 const s=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   A/B TESTING + ANALYTICS
+   ═══════════════════════════════════════════════════════════════════════════ */
+function abVariant(testId,variants,weights){
+  const ab=g("sg_ab",{})
+  if(ab[testId]!=null&&ab[testId]<variants.length)return variants[ab[testId]]
+  const r=Math.random();let cum=0,pick=0
+  for(let i=0;i<weights.length;i++){cum+=weights[i];if(r<cum){pick=i;break}}
+  ab[testId]=pick;s("sg_ab",ab)
+  return variants[pick]
+}
+
+function track(event,params={}){
+  const ab=g("sg_ab",{})
+  const p={...params}
+  for(const[k,v]of Object.entries(ab))p["ab_"+k]=v
+  try{window.gtag("event",event,p)}catch(e){}
+}
+
+function AbDebug(){
+  const[show,setShow]=useState(false)
+  useEffect(()=>{try{if(new URLSearchParams(window.location.search).get("ab_debug")==="1")setShow(true)}catch{}},[])
+  if(!show)return null
+  const ab=g("sg_ab",{})
+  const tests={lock1:["control","loss"],modal1:["control","family"],onb1:["control","skip"],free1:["control","two_free"]}
+  return(
+    <div style={{position:"fixed",top:8,right:8,zIndex:99999,background:"rgba(0,0,0,.9)",color:"#0f0",
+      padding:12,borderRadius:8,fontSize:11,fontFamily:"monospace",maxWidth:260}}>
+      <div style={{fontWeight:700,marginBottom:6}}>A/B Debug</div>
+      {Object.entries(tests).map(([id,vars])=>{
+        const idx=ab[id]
+        return <div key={id}>{id}: <b>{idx!=null?vars[idx]:"unassigned"}</b> ({idx})</div>
+      })}
+      <button onClick={()=>{localStorage.removeItem("sg_ab");window.location.reload()}}
+        style={{marginTop:8,background:"#333",color:"#0f0",border:"1px solid #0f0",borderRadius:4,
+          padding:"4px 8px",cursor:"pointer",fontSize:10}}>Reset variants</button>
+    </div>
+  )
+}
+
 /**
  * Status thresholds aligned with NOAA SIR (Sargassum Inundation Risk).
  * NOAA raw AFAI deviation thresholds: 0.001 (low/medium), 0.003 (medium/high).
@@ -619,14 +659,25 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily}){
   if(!forecast||!forecast.length)return null
   const LL=T[lang]||T.fr
   const max=Math.max(...forecast.map(d=>d.afai),.1)
+  // A/B Test 4: free days (1 vs 2)
+  const freeV=abVariant("free1",["control","two_free"],[.5,.5])
+  const freeThreshold=freeV==="two_free"?2:1
+  const lockedCount=7-freeThreshold
+  // A/B Test 1: lock framing
+  const lockV=abVariant("lock1",["control","loss"],[.5,.5])
+  const lockCTA=lockV==="loss"
+    ?(lang==="en"?"Don't miss this weekend":"Ne rate pas ce weekend")
+    :(lang==="en"?"Unlock 7 days":"Débloquer 7 jours")
+  const lockSub=lockV==="loss"
+    ?(lang==="en"?"Saturday, it'll be too late to switch beaches.":"Samedi, il sera trop tard pour changer de plage.")
+    :(lang==="en"?"Cheaper than a coffee. Avoid a wasted day.":"Moins cher qu'un café. Évite une journée gâchée.")
   return(
     <div style={{position:"relative"}}>
       <div style={{display:"flex",gap:6,alignItems:"flex-end",height:140,padding:"8px 0"}}>
         {forecast.map((d,i)=>{
           const h=Math.max(8,(d.afai/max)*70)
           const st=ST[d.status]||ST.clean
-          const isLocked=!isPremium&&i>=1
-          // Weather data for this day (if available)
+          const isLocked=!isPremium&&i>=freeThreshold
           const hasDaily=weatherDaily&&weatherDaily.tempMax&&i<weatherDaily.tempMax.length
           const dayPrecip=hasDaily?weatherDaily.precipSum[i]:0
           const dayCloud=hasDaily?weatherDaily.cloudMean[i]:0
@@ -646,20 +697,19 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily}){
           )
         })}
       </div>
-      {/* Lock overlay for days 2-7 — hidden if premium */}
-      {!isPremium&&<div style={{position:"absolute",top:0,right:0,bottom:0,width:`${(6/7*100).toFixed(1)}%`,
+      {!isPremium&&<div style={{position:"absolute",top:0,right:0,bottom:0,width:`${(lockedCount/7*100).toFixed(1)}%`,
         display:"flex",alignItems:"center",justifyContent:"center",
         background:"linear-gradient(90deg,transparent,rgba(253,252,247,.7) 20%)",
         borderRadius:8}}>
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
-          <button onClick={onPremiumClick} className="gbtn" style={{
+          <button onClick={()=>{track("sg_forecast_lock_click");onPremiumClick("forecast")}} className="gbtn" style={{
             padding:"10px 20px",fontSize:13,fontWeight:700,
             fontFamily:"'Anton',sans-serif",letterSpacing:".04em",textTransform:"uppercase",
           }}>
-            🔒 Débloquer 7 jours
+            🔒 {lockCTA}
           </button>
           <span style={{fontSize:11,color:"var(--sg-mid,#686868)",fontWeight:500,textAlign:"center"}}>
-            Moins cher qu'un café. Évite une journée gâchée.
+            {lockSub}
           </span>
         </div>
       </div>}
@@ -1202,14 +1252,20 @@ function Onboarding({onDone,island="mq",lang="fr"}){
     ?{borderRadius:"38% 52% 44% 58%/50% 40% 54% 44%",width:120,height:90}
     :{borderRadius:"30% 70% 50% 50%/40% 40% 60% 60%",width:160,height:70}
   const[step,setStep]=useState(0)
+  // A/B Test 3: skip slide 3 (premium pitch)
+  const onbV=abVariant("onb1",["control","skip"],[.5,.5])
+
+  const goStep=useCallback((n)=>{track("sg_onb_slide",{slide:n});setStep(n)},[])
 
   const closeOnboarding=useCallback(()=>{
+    track("sg_onb_skip",{from_slide:step})
     s("sg_onb",1)
     onDone()
-    // Push prompt is now handled by PushPrompt component (custom French UI)
-  },[onDone])
+  },[onDone,step])
 
   const openStripe=useCallback(()=>{
+    track("sg_onb_premium_click")
+    track("sg_stripe_redirect",{source:"onboarding"})
     window.open(STRIPE_URL,"_blank")
   },[])
 
@@ -1331,7 +1387,7 @@ function Onboarding({onDone,island="mq",lang="fr"}){
 
               {/* CTA — INSIDE slide 1 */}
               <div style={{marginTop:20,paddingBottom:50,display:"flex",flexDirection:"column",gap:8}}>
-                <button onClick={()=>setStep(1)} style={{
+                <button onClick={()=>goStep(1)} style={{
                   background:"linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%)",
                   color:C.ink,border:"none",borderRadius:22,padding:"19px 20px 19px 28px",
                   fontFamily:"'Anton',sans-serif",fontSize:21,letterSpacing:".06em",textTransform:"uppercase",
@@ -1452,14 +1508,14 @@ function Onboarding({onDone,island="mq",lang="fr"}){
 
             {/* CTA — INSIDE slide 2 */}
             <div style={{marginTop:16,padding:"10px 22px 48px"}}>
-              <button onClick={()=>setStep(2)} style={{
+              <button onClick={()=>{onbV==="skip"?closeOnboarding():goStep(2)}} style={{
                 width:"100%",background:"linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%)",
                 color:C.ink,border:"none",borderRadius:20,padding:"17px 20px",
                 fontFamily:"'Anton',sans-serif",fontSize:19,letterSpacing:".06em",textTransform:"uppercase",
                 cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between",
                 boxShadow:"inset 0 1px 0 rgba(255,255,255,.55),0 8px 28px rgba(232,168,0,.44)",
                 position:"relative",overflow:"hidden"}}>
-                <span style={{position:"relative",zIndex:1}}>Choisir ma plage</span>
+                <span style={{position:"relative",zIndex:1}}>{onbV==="skip"?"Voir la carte":"Choisir ma plage"}</span>
                 <div style={{width:36,height:36,background:"rgba(0,0,0,.11)",borderRadius:"50%",
                   display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,
                   position:"relative",zIndex:1}}>→</div>
@@ -1644,8 +1700,8 @@ function Onboarding({onDone,island="mq",lang="fr"}){
       {/* Dots — fixed at bottom, outside scroll */}
       <div style={{position:"absolute",bottom:20,left:"50%",transform:"translateX(-50%)",
         display:"flex",gap:7,zIndex:30}}>
-        {[0,1,2].map(i=>(
-          <button key={i} onClick={()=>setStep(i)}
+        {(onbV==="skip"?[0,1]:[0,1,2]).map(i=>(
+          <button key={i} onClick={()=>goStep(i)}
             style={{width:i===step?22:7,height:7,borderRadius:i===step?4:7,
               background:i===step?"#E8A800":"rgba(0,0,0,.15)",
               border:"none",cursor:"pointer",transition:"all .3s",padding:0}}/>
@@ -1660,9 +1716,24 @@ function Onboarding({onDone,island="mq",lang="fr"}){
    ═══════════════════════════════════════════════════════════════════════════ */
 function PremiumModal({onClose,lang}){
   const LL=T[lang]||T.fr
+  // A/B Test 2: modal value proposition
+  const modalV=abVariant("modal1",["control","family"],[.5,.5])
+  const isFamily=modalV==="family"
+  const headline=isFamily
+    ?(lang==="en"?"Protect your weekend":"Protège ton weekend")
+    :`⭐ ${LL.premium}`
+  const subtitle=isFamily
+    ?(lang==="en"?"Your kids count on you to find the right beach.":"Tes enfants comptent sur toi pour trouver la bonne plage.")
+    :(lang==="en"?"Sargassum changes every day. Know before you go.":"Les sargasses changent chaque jour. Sache avant de partir.")
+  const socialProof=isFamily
+    ?(lang==="en"?"2 out of 3 families come back every weekend":"2 familles sur 3 reviennent chaque weekend")
+    :(lang==="en"?"+2,400 families use Sargasses Premium":"+2 400 familles utilisent Sargasses Premium")
+  const anchor=isFamily
+    ?(lang==="en"?"This week, 3 beaches will change status. You'll know which ones.":"Cette semaine, 3 plages vont changer de statut. Tu sauras lesquelles.")
+    :(lang==="en"?"A wasted beach day = €80. Knowing before = €4.99/mo.":"Une journée gâchée = 80€. Savoir avant = 4,99€/mois.")
   return(
     <>
-      <div className="backdrop" onClick={onClose}/>
+      <div className="backdrop" onClick={()=>{track("sg_premium_modal_close");onClose()}}/>
       <div style={{
         position:"fixed",bottom:0,left:0,right:0,zIndex:1100,
         background:"linear-gradient(145deg,#0D1E1C,#0A1714)",
@@ -1673,26 +1744,20 @@ function PremiumModal({onClose,lang}){
         <div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
           margin:"-8px -24px 20px",padding:0}}/>
 
-        <h2 className="anton" style={{fontSize:28,color:"#fff",marginBottom:4}}>⭐ {LL.premium}</h2>
-        <p style={{fontSize:13,color:"#adbac7",marginBottom:6}}>{lang==="en"?"Sargassum changes every day. Know before you go.":"Les sargasses changent chaque jour. Sache avant de partir."}</p>
+        <h2 className="anton" style={{fontSize:28,color:"#fff",marginBottom:4}}>{headline}</h2>
+        <p style={{fontSize:13,color:"#adbac7",marginBottom:6}}>{subtitle}</p>
 
-        {/* Social proof */}
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14,
           padding:"8px 12px",background:"rgba(255,199,44,.08)",borderRadius:10,
           border:"1px solid rgba(255,199,44,.15)"}}>
-          <span style={{fontSize:14}}>👥</span>
-          <span style={{fontSize:12,fontWeight:600,color:"rgba(255,255,255,.7)"}}>
-            {lang==="en"?"+2,400 families use Sargasses Premium":"+2 400 familles utilisent Sargasses Premium"}
-          </span>
+          <span style={{fontSize:14}}>{isFamily?"👨‍👩‍👧‍👦":"👥"}</span>
+          <span style={{fontSize:12,fontWeight:600,color:"rgba(255,255,255,.7)"}}>{socialProof}</span>
         </div>
 
-        {/* Price anchor */}
         <div style={{padding:"10px 12px",background:"rgba(255,255,255,.04)",borderRadius:10,
-          borderLeft:"2px solid rgba(232,168,0,.4)",marginBottom:16,fontSize:12,
+          borderLeft:`2px solid rgba(${isFamily?"232,82,42":"232,168,0"},.4)`,marginBottom:16,fontSize:12,
           color:"rgba(255,255,255,.5)",lineHeight:1.6}}>
-          {lang==="en"
-            ?"A wasted beach day = €80. Knowing before = €4.99/mo."
-            :"Une journée gâchée = 80€. Savoir avant = 4,99€/mois."}
+          {anchor}
         </div>
 
         <ul style={{listStyle:"none",padding:0,margin:"0 0 16px",display:"flex",flexDirection:"column",gap:12}}>
@@ -1704,6 +1769,7 @@ function PremiumModal({onClose,lang}){
         </ul>
 
         <a href={STRIPE_URL} target="_blank" rel="noopener" className="gbtn"
+          onClick={()=>track("sg_premium_modal_cta")}
           style={{width:"100%",textDecoration:"none",textAlign:"center",
             fontSize:17,padding:"16px 24px",display:"block"}}>
           {LL.premiumCta} — {LL.premiumPrice}
@@ -1715,7 +1781,7 @@ function PremiumModal({onClose,lang}){
           <span>🛡️</span>{lang==="en"?"30-day money-back guarantee":"Satisfait ou remboursé 30 jours"}
         </div>
 
-        <button onClick={onClose} style={{
+        <button onClick={()=>{track("sg_premium_modal_close");onClose()}} style={{
           width:"100%",padding:"12px",marginTop:10,background:"none",
           border:"1px solid rgba(255,255,255,.15)",borderRadius:16,
           color:"#8b949e",fontSize:13,cursor:"pointer",fontFamily:"inherit",
@@ -1802,6 +1868,7 @@ function PushPrompt({onClose}){
   },[onClose])
 
   const handleActivate=useCallback(()=>{
+    track("sg_push_accept")
     clearTimeout(timerRef.current)
     try{window.loadOneSignal?.()}catch(e){}
     setVisible(false)
@@ -1809,6 +1876,7 @@ function PushPrompt({onClose}){
   },[onClose])
 
   const handleDismiss=useCallback(()=>{
+    track("sg_push_dismiss")
     clearTimeout(timerRef.current)
     setVisible(false)
     setTimeout(onClose,350)
@@ -1879,6 +1947,7 @@ function EmailCapture(){
   const handleSubmit=useCallback(e=>{
     e.preventDefault()
     if(!email||!email.includes("@"))return
+    track("sg_email_submit")
     s("sg_email",email)
     s("sg_email_prompt",true)
     setSubmitted(true)
@@ -1992,8 +2061,8 @@ export default function App(){
       const params=new URLSearchParams(window.location.search)
       if(params.get("premium")==="1"||params.get("success")==="1"){
         s("sg_premium",true)
-        s("sg_premium_welcome",true) // Flag to show welcome toast
-        // Clean URL
+        s("sg_premium_welcome",true)
+        track("sg_conversion")
         window.history.replaceState({},"",window.location.pathname)
         return true
       }
@@ -2006,6 +2075,9 @@ export default function App(){
     return w
   })
   useEffect(()=>{if(showWelcome){const t=setTimeout(()=>setShowWelcome(false),5000);return()=>clearTimeout(t)}},[showWelcome])
+
+  // Analytics: session start
+  useEffect(()=>{track("sg_session_start",{island,is_premium:isPremium,is_returning:!!g("sg_seen",0)});s("sg_seen",1)},[])
 
   // Runtime data sources
   const[allBeaches,setAllBeaches]=useState(BEACHES_FALLBACK)
@@ -2164,19 +2236,21 @@ export default function App(){
     return list
   },[island,search,filter,favorites,allBeaches,userPos])
 
-  const onBeachClick=useCallback(b=>{setSelectedBeach(b)},[])
+  const onBeachClick=useCallback(b=>{setSelectedBeach(b);track("sg_beach_open",{beach_id:b?.id,status:b?.status})},[])
   const closeSheet=useCallback(()=>setSelectedBeach(null),[])
 
   const onChangeView=useCallback(v=>{
+    track("sg_nav_change",{tab:v})
     if(v==="premium")setShowPremium(true)
     else setView(v)
   },[])
 
-  const openPremium=useCallback(()=>setShowPremium(true),[])
+  const openPremium=useCallback((src)=>{setShowPremium(true);track("sg_premium_modal_open",{source:src||"nav"})},[])
 
   return(
     <LangCtx.Provider value={lang}>
       <StyleInjector/>
+      <AbDebug/>
       <div style={{position:"relative",width:"100%",height:"100%",overflow:"hidden"}}>
 
         {/* MAP, LIST or GAME */}
