@@ -967,6 +967,40 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
           {/* History trend chart */}
           <HistoryChart beachId={beach.id} historyData={historyData} lang={lang}/>
 
+          {/* Season context — show value when everything is clean */}
+          {beach.status==="clean"&&!isPremium&&(()=>{
+            const month=new Date().getMonth() // 0-indexed
+            const isOffSeason=month<4||month>8 // Nov-Apr = off-season
+            if(!isOffSeason)return null
+            const seasonStart=new Date(new Date().getFullYear(),4,1) // May 1
+            const daysUntil=Math.max(0,Math.ceil((seasonStart-new Date())/(86400000)))
+            return(
+              <div style={{margin:"16px 0",padding:"14px 16px",borderRadius:14,
+                background:"linear-gradient(135deg,rgba(232,168,0,.06),rgba(232,82,42,.04))",
+                border:"1px solid rgba(232,168,0,.12)"}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+                  <span style={{fontSize:18}}>📅</span>
+                  <div>
+                    <div style={{fontSize:13,fontWeight:700,color:"var(--sg-ink)"}}>
+                      {lang==="en"?"Sargassum season starts in":"La saison des sargasses commence dans"} <span style={{color:C.amber}}>{daysUntil} {lang==="en"?"days":"jours"}</span>
+                    </div>
+                    <div style={{fontSize:11,color:"var(--sg-mid)",marginTop:2}}>
+                      {lang==="en"
+                        ?"May to August — conditions change fast. Get alerted before it happens."
+                        :"Mai à août — les conditions changent vite. Sois alerté avant que ça n'arrive."}
+                    </div>
+                  </div>
+                </div>
+                <button onClick={()=>{track("sg_season_cta");onPremiumClick("season_alert")}} style={{
+                  width:"100%",padding:"10px",borderRadius:10,border:"none",cursor:"pointer",
+                  background:"linear-gradient(158deg,#FFE47A,#FFC72C,#E89400)",
+                  fontFamily:"inherit",fontSize:12,fontWeight:700,color:C.ink}}>
+                  {lang==="en"?"Get early alerts — €4.99/mo":"Alertes précoces — 4,99 €/mois"}
+                </button>
+              </div>
+            )
+          })()}
+
           {/* Nearby beaches (netlinking) */}
           {nearby.length>0&&(
             <>
@@ -2178,6 +2212,91 @@ function EmailCapture(){
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   FEEDBACK WIDGET — appears after 3 visits, once only
+   ═══════════════════════════════════════════════════════════════════════════ */
+function FeedbackWidget(){
+  const[visible,setVisible]=useState(false)
+  const[step,setStep]=useState(0) // 0=rating, 1=text, 2=done
+  const[rating,setRating]=useState(0)
+  const[text,setText]=useState("")
+
+  useEffect(()=>{
+    if(g("sg_feedback_done",false))return
+    const visits=g("sg_visits",0)+1
+    s("sg_visits",visits)
+    if(visits>=3){setTimeout(()=>setVisible(true),30000)} // 30s after 3rd visit
+  },[])
+
+  if(!visible)return null
+
+  const submit=()=>{
+    track("sg_feedback",{rating,text:text.slice(0,200)})
+    const island=window.location.hostname.includes("guadeloupe")?"GP":"MQ"
+    try{fetch("https://script.google.com/macros/s/AKfycbxICUOQ3KDireo8sY1ZF8b9QiglPV7_sK0Q3hTIUPeQXTAhs-DWmtZ4hb_6v8c2fhhuBg/exec",{
+      method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
+      body:JSON.stringify({type:"feedback",rating,text:text.slice(0,500),island,date:new Date().toISOString()})
+    }).catch(()=>{})}catch{}
+    s("sg_feedback_done",true)
+    setStep(2)
+    setTimeout(()=>setVisible(false),2000)
+  }
+
+  return(
+    <div style={{position:"fixed",bottom:68,left:12,right:12,zIndex:755,
+      background:"var(--sg-card,#fff)",borderRadius:18,padding:"16px 18px",
+      boxShadow:"0 8px 32px rgba(0,0,0,.15),0 0 0 1px var(--sg-border)",
+      animation:"slideUp .4s cubic-bezier(.22,1,.36,1)"}}>
+      <button onClick={()=>{setVisible(false);s("sg_feedback_done",true)}}
+        style={{position:"absolute",top:8,right:10,background:"none",border:"none",
+          color:"var(--sg-mid)",cursor:"pointer",fontSize:14}}>✕</button>
+      {step===0&&(
+        <div>
+          <div style={{fontSize:13,fontWeight:700,color:"var(--sg-ink)",marginBottom:10}}>
+            Cette app t'est utile ?
+          </div>
+          <div style={{display:"flex",gap:6,justifyContent:"center"}}>
+            {[1,2,3,4,5].map(n=>(
+              <button key={n} onClick={()=>{setRating(n);setStep(1)}}
+                style={{width:44,height:44,borderRadius:12,border:"1.5px solid var(--sg-border)",
+                  background:rating===n?C.goldBg:"var(--sg-card)",cursor:"pointer",
+                  fontSize:18,fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center",
+                  transition:"all .2s"}}>
+                {n<=2?"😕":n===3?"😐":n===4?"🙂":"🤩"}
+              </button>
+            ))}
+          </div>
+          <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:"var(--sg-mid)",marginTop:4,padding:"0 4px"}}>
+            <span>Pas du tout</span><span>Indispensable</span>
+          </div>
+        </div>
+      )}
+      {step===1&&(
+        <div>
+          <div style={{fontSize:13,fontWeight:700,color:"var(--sg-ink)",marginBottom:8}}>
+            {rating>=4?"Super ! Qu'est-ce qui te plait le plus ?":"Qu'est-ce qui manque ?"}
+          </div>
+          <textarea value={text} onChange={e=>setText(e.target.value)}
+            placeholder={rating>=4?"Ce que j'utilise le plus...":"Ce qui me manque..."}
+            style={{width:"100%",height:60,borderRadius:10,border:"1.5px solid var(--sg-border)",
+              padding:"8px 10px",fontSize:13,fontFamily:"inherit",resize:"none",
+              background:"var(--sg-bgD)",color:"var(--sg-ink)"}}/>
+          <button onClick={submit} style={{width:"100%",marginTop:8,padding:"10px",
+            borderRadius:10,border:"none",cursor:"pointer",fontFamily:"inherit",
+            background:"linear-gradient(158deg,#FFE47A,#FFC72C,#E89400)",
+            fontSize:13,fontWeight:700,color:C.ink}}>Envoyer</button>
+        </div>
+      )}
+      {step===2&&(
+        <div style={{textAlign:"center",padding:"8px 0"}}>
+          <span style={{fontSize:24}}>🙏</span>
+          <div style={{fontSize:13,fontWeight:600,color:"var(--sg-ink)",marginTop:4}}>Merci pour ton retour !</div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    PWA INSTALL PROMPT — custom "Add to Home Screen" banner
    ═══════════════════════════════════════════════════════════════════════════ */
 function InstallPrompt(){
@@ -2248,14 +2367,23 @@ export default function App(){
   const[showPushPrompt,setShowPushPrompt]=useState(false)
   const[showPremium,setShowPremium]=useState(false)
   const[isPremium,setIsPremium]=useState(()=>{
-    // Check localStorage OR URL param ?premium=1 (Stripe success redirect)
     if(g("sg_premium",false))return true
     try{
       const params=new URLSearchParams(window.location.search)
-      if(params.get("premium")==="1"||params.get("success")==="1"){
+      // Stripe redirect: ?premium=1 OR ?session_id=cs_xxx
+      const sessionId=params.get("session_id")
+      if(params.get("premium")==="1"||params.get("success")==="1"||sessionId){
         s("sg_premium",true)
         s("sg_premium_welcome",true)
-        track("sg_conversion")
+        track("sg_conversion",{session_id:sessionId||"direct"})
+        // Log payment to Apps Script (fire-and-forget)
+        if(sessionId){
+          try{fetch("https://script.google.com/macros/s/AKfycbxICUOQ3KDireo8sY1ZF8b9QiglPV7_sK0Q3hTIUPeQXTAhs-DWmtZ4hb_6v8c2fhhuBg/exec",{
+            method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
+            body:JSON.stringify({type:"checkout.session.completed",data:{object:{id:sessionId,payment_status:"paid",
+              metadata:{island:window.location.hostname.includes("guadeloupe")?"GP":"MQ"}}}})
+          }).catch(()=>{})}catch(ex){}
+        }
         window.history.replaceState({},"",window.location.pathname)
         return true
       }
@@ -2513,6 +2641,9 @@ export default function App(){
 
         {/* PWA INSTALL PROMPT — 45s after load, once only */}
         {!showOnboarding&&<InstallPrompt/>}
+
+        {/* FEEDBACK WIDGET — after 3rd visit, once only */}
+        {!showOnboarding&&!showPushPrompt&&<FeedbackWidget/>}
 
         {/* PREMIUM WELCOME TOAST */}
         {showWelcome&&(
