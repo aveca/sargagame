@@ -1,0 +1,85 @@
+{
+  "_comment": "Fill in from GA4 Explorations. sessions = total sessions per variant, conversions = target event count.",
+  "tests": [
+    {
+      "id": "lock1",
+      "variants": [
+        "control",
+        "loss"
+      ],
+      "sessions": [
+        0,
+        0
+      ],
+      "conversions": [
+        0,
+        0
+      ],
+      "metric": "sg_forecast_lock_click"
+    },
+    {
+      "id": "modal1",
+      "variants": [
+        "control",
+        "family"
+      ],
+      "sessions": [
+        0,
+        0
+      ],
+      "conversions": [
+        0,
+        0
+      ],
+      "metric": "sg_premium_modal_cta"
+    },
+    {
+      "id": "onb1",
+      "variants": [
+        "control",
+        "skip"
+      ],
+      "sessions": [
+        0,
+        0
+      ],
+      "conversions": [
+        0,
+        0
+      ],
+      "metric": "sg_conversion"
+    },
+    {
+      "id": "free1",
+      "variants": [
+        "control",
+        "two_free"
+      ],
+      "sessions": [
+        0,
+        0
+      ],
+      "conversions": [
+        0,
+        0
+      ],
+      "metric": "sg_forecast_lock_click"
+    },
+    {
+      "id": "vp1",
+      "variants": [
+        "feature",
+        "outcome"
+      ],
+      "sessions": [
+        0,
+        0
+      ],
+      "conversions": [
+        0,
+        0
+      ],
+      "metric": "sg_weekend_banner_click"
+    }
+  ]
+}

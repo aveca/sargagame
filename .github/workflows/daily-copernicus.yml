@@ -2,8 +2,8 @@ name: Daily Copernicus + Deploy
 
 on:
   schedule:
-    # 6h heure Martinique (UTC-4) = 10h UTC
-    - cron: '0 10 * * *'
+    # 4x/jour: 6h, 12h, 18h, 0h Martinique (UTC-4)
+    - cron: '0 4,10,16,22 * * *'
   workflow_dispatch: # Déclenchement manuel possible
 
 permissions:
@@ -59,26 +59,59 @@ jobs:
           ONESIGNAL_API_KEY_GP: ${{ secrets.ONESIGNAL_API_KEY_GP }}
         run: node scripts/automation/send-notifications.cjs
 
-      # ── 2. Build ──────────────────────────────────────────
+      # ── 2. Build (full rebuild 1x/day at 10h UTC = 6h MQ, or manual) ──
+      - name: Check if full build needed
+        id: check_build
+        run: |
+          HOUR=$(date -u +%H)
+          if [ "$HOUR" = "10" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "full=true" >> $GITHUB_OUTPUT
+          else
+            echo "full=false" >> $GITHUB_OUTPUT
+          fi
+          echo "Hour: $HOUR, Full build: $([ "$HOUR" = "10" ] && echo yes || echo no)"
+
       - name: Build site (Vite)
+        if: steps.check_build.outputs.full == 'true'
         run: npm run build
 
       - name: Prepare FTP folders
+        if: steps.check_build.outputs.full == 'true'
         run: node scripts/prepare-ftp.cjs
 
-      # ── 2b. Submit URLs to Google Indexing API ─────────────
       - name: Submit URLs to Google Indexing
+        if: steps.check_build.outputs.full == 'true'
         env:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: node scripts/automation/seo-submit-urls.cjs
         continue-on-error: true
+
+      # ── 2b. Data-only deploy (3x/day — just copy fresh JSON to FTP folders) ──
+      - name: Quick data deploy (no full build)
+        if: steps.check_build.outputs.full == 'false'
+        run: |
+          for DIR in martinique-ftp guadeloupe-ftp; do
+            if [ -d "$DIR" ]; then
+              mkdir -p "$DIR/api/copernicus"
+              cp public/api/copernicus/sargassum.json "$DIR/api/copernicus/"
+              cp public/api/copernicus/sargassum-grid.json "$DIR/api/copernicus/"
+              cp public/api/copernicus/history.json "$DIR/api/copernicus/"
+              echo "Updated data in $DIR"
+            fi
+          done
+          # If FTP dirs don't exist yet (first run), do full build
+          if [ ! -d "martinique-ftp" ]; then
+            npm run build
+            node scripts/prepare-ftp.cjs
+            echo "First run — did full build"
+          fi
 
       # ── 3. Commit updated data to repo ────────────────────
       - name: Commit updated sargassum.json
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public/api/copernicus/sargassum.json public/api/copernicus/history.json
+          git add public/api/copernicus/sargassum.json public/api/copernicus/history.json public/api/copernicus/sargassum-grid.json
           git diff --cached --quiet || git commit -m "chore: update Copernicus data $(date -u +'%Y-%m-%d %H:%M UTC')"
           git push || true
 
