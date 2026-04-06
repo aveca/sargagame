@@ -2722,7 +2722,11 @@ function InstallPrompt(){
   const[dismissed,setDismissed]=useState(()=>!!g("sg_pwa_prompt",0))
 
   const isIos=useMemo(()=>/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream,[])
-  const isStandalone=useMemo(()=>window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true,[])
+  const isStandalone=useMemo(()=>
+    window.matchMedia("(display-mode: standalone)").matches
+    ||window.matchMedia("(display-mode: window-controls-overlay)").matches
+    ||window.matchMedia("(display-mode: minimal-ui)").matches
+    ||window.navigator.standalone===true,[])
 
   useEffect(()=>{
     if(dismissed||isStandalone)return
@@ -2732,7 +2736,7 @@ function InstallPrompt(){
     // Show prompt after user has viewed 2 beaches (value demonstrated)
     const checkEngagement=()=>{
       const beachViews=parseInt(sessionStorage.getItem("sg_beach_views")||"0")
-      if(beachViews>=2){setVisible(true);track("sg_pwa_prompt_shown",{platform:isIos?"ios":"android"})}
+      if(beachViews>=2){setVisible(true);s("sg_pwa_prompt",1);track("sg_pwa_prompt_shown",{platform:isIos?"ios":"android"})}
     }
     const interval=setInterval(checkEngagement,5000)
     // Fallback: show after 60s if no beach views
@@ -3189,7 +3193,7 @@ export default function App(){
         {!showOnboarding&&!showPushPrompt&&<EmailCapture/>}
 
         {/* PWA INSTALL PROMPT — 45s after load, once only */}
-        {!showOnboarding&&<InstallPrompt/>}
+        {!showOnboarding&&(g("sg_feedback_done",false)||g("sg_visits",0)<3)&&<InstallPrompt/>}
 
         {/* EXIT-INTENT POPUP — email capture before user leaves */}
         {!showOnboarding&&!isPremium&&<ExitIntent/>}
