@@ -1101,7 +1101,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             <button onClick={()=>{
               const slug=beach.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/-+$/,"")
               const url=window.location.origin+"/plages/"+slug
-              if(navigator.share){navigator.share({title:beach.name+" — Sargasses",text:(ST[beach.status]||ST.clean).l+" aujourd'hui",url}).catch(()=>{})}
+              if(navigator.share){track("sg_share",{beach_id:beach.id,method:"native"});navigator.share({title:beach.name+" — Sargasses",text:(ST[beach.status]||ST.clean).l+" aujourd'hui",url}).catch(()=>{})}
               else{navigator.clipboard?.writeText(url);track("sg_share",{beach_id:beach.id})}
             }} style={{flex:0,padding:"14px 20px",borderRadius:22,border:"1.5px solid var(--sg-border)",
               background:"var(--sg-card)",cursor:"pointer",fontSize:18,fontFamily:"inherit"}}>
@@ -1867,7 +1867,7 @@ function WeekendBanner({allBeaches,sargData,island,lang,isPremium,onPremiumClick
 /* ═══════════════════════════════════════════════════════════════════════════
    PREMIUM MODAL
    ═══════════════════════════════════════════════════════════════════════════ */
-function PremiumModal({onClose,lang}){
+function PremiumModal({onClose,lang,source}){
   const LL=T[lang]||T.fr
   const hasAnnual=!!STRIPE_ANNUAL_URL
   const[plan,setPlan]=useState("monthly") // "monthly" | "annual"
@@ -1974,7 +1974,7 @@ function PremiumModal({onClose,lang}){
         )}
 
         <a href={stripeUrl} target="_blank" rel="noopener" className="gbtn"
-          onClick={()=>track("sg_premium_modal_cta",{plan:effectivePlan})}
+          onClick={()=>track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown"})}
           style={{width:"100%",textDecoration:"none",textAlign:"center",
             fontSize:17,padding:"16px 24px",display:"block"}}>
           {LL.premiumCta} — {priceLabel}
@@ -2011,7 +2011,7 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
         border:"1.5px solid var(--sg-border,rgba(0,0,0,.08))",
         background:"var(--sg-card,#fff)",boxShadow:"0 2px 8px rgba(0,0,0,.06)"}}>
         {["mq","gp"].map(id=>(
-          <button key={id} onClick={()=>onIslandChange(id)} style={{
+          <button key={id} onClick={()=>{onIslandChange(id);track("sg_island_switch",{to:id})}} style={{
             padding:"8px 14px",border:"none",cursor:"pointer",
             background:island===id?C.gold:"transparent",
             color:island===id?"#0D0D0D":"var(--sg-mid,#686868)",
@@ -2534,6 +2534,7 @@ export default function App(){
   const[showPicker,setShowPicker]=useState(false)
   const[showOnboarding,setShowOnboarding]=useState(()=>!g("sg_onb",0))
   const[showPremium,setShowPremium]=useState(false)
+  const[premiumSource,setPremiumSource]=useState(null)
   const[showFavToast,setShowFavToast]=useState(false)
   const[isPremium,setIsPremium]=useState(()=>{
     if(g("sg_premium",false))return true
@@ -2744,6 +2745,7 @@ export default function App(){
   const toggleFav=useCallback(id=>{
     setFavorites(f=>{
       const isAdding=!f.includes(id)
+      track(isAdding?"sg_fav_add":"sg_fav_remove",{beach_id:id})
       if(isAdding&&!g("sg_fav_toast_shown",false)){
         setShowFavToast(true)
         s("sg_fav_toast_shown",true)
@@ -2793,7 +2795,7 @@ export default function App(){
     else setView(v)
   },[])
 
-  const openPremium=useCallback((src)=>{setShowPremium(true);track("sg_premium_modal_open",{source:src||"nav"})},[])
+  const openPremium=useCallback((src)=>{const s=src||"nav";setPremiumSource(s);setShowPremium(true);track("sg_premium_modal_open",{source:s})},[])
 
   return(
     <LangCtx.Provider value={lang}>
@@ -2832,7 +2834,7 @@ export default function App(){
               paddingBottom:4,scrollbarWidth:"none",WebkitOverflowScrolling:"touch"}}>
               {LL.filters.map((f,i)=>(
                 <FilterChip key={i} label={f} icon={LL.filtersIcon[i]}
-                  active={filter===i} onClick={()=>setFilter(i)}/>
+                  active={filter===i} onClick={()=>{setFilter(i);track("sg_filter",{filter:f,index:i})}}/>
               ))}
             </div>
           </div>
@@ -2861,7 +2863,7 @@ export default function App(){
         )}
 
         {/* PREMIUM MODAL */}
-        {showPremium&&<PremiumModal onClose={()=>setShowPremium(false)} lang={lang}/>}
+        {showPremium&&<PremiumModal onClose={()=>setShowPremium(false)} lang={lang} source={premiumSource}/>}
 
         {/* BEACH PICKER — for new users or when "Changer" tapped */}
         {(!myBeachId||showPicker)&&view==="map"&&!selectedBeach&&(
