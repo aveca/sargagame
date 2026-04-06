@@ -59,13 +59,9 @@ jobs:
           ONESIGNAL_API_KEY_GP: ${{ secrets.ONESIGNAL_API_KEY_GP }}
         run: node scripts/automation/send-notifications.cjs
 
-      - name: Send Telegram bulletin (daily + weekend Friday)
+      - name: Send weekend email bulletin (Fridays only)
         continue-on-error: true
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHANNEL_MQ: ${{ secrets.TELEGRAM_CHANNEL_MQ }}
-          TELEGRAM_CHANNEL_GP: ${{ secrets.TELEGRAM_CHANNEL_GP }}
-        run: node scripts/automation/telegram-bulletin.cjs --daily
+        run: node scripts/automation/email-weekend.cjs
 
       # ── 2. Build (full rebuild 1x/day at 10h UTC = 6h MQ, or manual) ──
       - name: Check if full build needed

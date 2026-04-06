@@ -31,7 +31,7 @@ h1 span{background:linear-gradient(135deg,#E8A800,#FFC72C);-webkit-background-cl
 <body>
 <div class="card">
   <h1>Ce weekend,<br><span>quelle plage choisir ?</span></h1>
-  <p class="sub">Chaque vendredi soir, recois les plages propres pour ton weekend. Gratuit. Par Telegram.</p>
+  <p class="sub">Chaque vendredi soir, recois par email les meilleures plages pour ton weekend. Gratuit.</p>
 
   <div class="preview">
     <div class="preview-header">Exemple — vendredi dernier</div>
@@ -58,22 +58,31 @@ h1 span{background:linear-gradient(135deg,#E8A800,#FFC72C);-webkit-background-cl
     </div>
   </div>
 
-  <a href="https://t.me/sargasses_martinique" class="cta" id="cta-mq">Rejoindre — Martinique</a>
-  <a href="https://t.me/sargasses_guadeloupe" class="alt" id="cta-gp">Guadeloupe ? Rejoindre ici</a>
+  <form id="signup" style="margin-bottom:16px">
+    <input type="email" id="email" placeholder="ton@email.com" required style="width:100%;padding:16px 18px;border-radius:14px;border:1.5px solid #e0e0e0;font-size:15px;font-family:inherit;margin-bottom:10px;outline:none;transition:border .2s" onfocus="this.style.borderColor='#E8A800'" onblur="this.style.borderColor='#e0e0e0'">
+    <button type="submit" class="cta">Recevoir le bulletin weekend</button>
+  </form>
 
   <p class="proof">
-    <b>Donnees satellite NOAA</b> mises a jour 4x/jour<br>
-    135 plages surveillees · Gratuit, sans inscription
+    <b>Gratuit</b> · Chaque vendredi · Desabonnement en 1 clic<br>
+    Donnees satellite NOAA mises a jour 4x/jour · 135 plages
   </p>
+  <p id="success" style="display:none;color:#16A34A;font-weight:700;font-size:14px;margin-top:12px">Inscrit ! Tu recevras ton premier bulletin vendredi.</p>
 </div>
 
 <script>
-// Track clicks
-document.getElementById('cta-mq').addEventListener('click',()=>{
-  try{gtag('event','sg_telegram_join',{island:'mq',source:'landing'})}catch(e){}
-})
-document.getElementById('cta-gp').addEventListener('click',()=>{
-  try{gtag('event','sg_telegram_join',{island:'gp',source:'landing'})}catch(e){}
+document.getElementById('signup').addEventListener('submit', function(e) {
+  e.preventDefault()
+  var email = document.getElementById('email').value
+  if (!email) return
+  var island = location.hostname.includes('guadeloupe') ? 'GP' : 'MQ'
+  fetch('https://script.google.com/macros/s/AKfycbxICUOQ3KDireo8sY1ZF8b9QiglPV7_sK0Q3hTIUPeQXTAhs-DWmtZ4hb_6v8c2fhhuBg/exec', {
+    method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'text/plain'},
+    body: JSON.stringify({email: email, island: island, source: 'weekend-landing', date: new Date().toISOString()})
+  })
+  document.getElementById('signup').style.display = 'none'
+  document.getElementById('success').style.display = 'block'
+  try { gtag('event', 'sg_weekend_signup', {island: island, source: 'landing'}) } catch(e) {}
 })
 // Auto-detect GP from hostname
 if(location.hostname.includes('guadeloupe')){
