@@ -572,104 +572,9 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos,fav
   // Fetch sargassum banks (clustered AFAI + drift predictions)
   useEffect(()=>{fetch("/api/copernicus/sargassum-banks.json").then(r=>r.json()).then(d=>{if(d?.banks?.length)setBanksData(d)}).catch(()=>{})},[])
 
-  // Auto-zoom on most relevant threat (once per session)
-  useEffect(()=>{
-    if(!mapRef.current||!banksData)return
-    if(autoZoomDoneRef.current||sessionStorage.getItem("sg_autozoom_done"))return
-    const bList=allBeaches&&allBeaches.length>30?allBeaches:beaches
-    const threat=findMostRelevantThreat(banksData.banks,bList,favorites,userPos,island)
-    if(!threat)return
-    // Set ref inside timeout so cleanup doesn't orphan state
-    let cancelled=false
-    const tid=setTimeout(()=>{
-      if(cancelled)return
-      autoZoomDoneRef.current=true
-      try{
-        const bounds=L.latLngBounds([threat.bank.centroid,[threat.beach.lat,threat.beach.lng]])
-        mapRef.current.flyToBounds(bounds.pad(0.4),{duration:1.5,maxZoom:13})
-        sessionStorage.setItem("sg_autozoom_done","1")
-        track("sg_autozoom",{bankId:threat.bank.id,beachId:threat.beach.id,km:threat.km})
-      }catch(e){}
-    },1500)
-    return()=>{cancelled=true;clearTimeout(tid)}
-  },[banksData,island,allBeaches])
-
-  // Auto-animate timeline: cycle 0→6→12→24h (once per session)
-  useEffect(()=>{
-    if(!banksData||!banksData.banks.length)return
-    if(sessionStorage.getItem("sg_autoplay_done"))return
-    const steps=[0,6,12,24],delay=2200
-    const startDelay=setTimeout(()=>{
-      setAutoPlaying(true)
-      sessionStorage.setItem("sg_autoplay_done","1")
-      const timers=steps.map((h,i)=>setTimeout(()=>{
-        setTimeStep(h)
-        if(i===steps.length-1)setTimeout(()=>setAutoPlaying(false),delay)
-      },i*delay))
-      autoPlayTimersRef.current=timers
-    },3000)
-    return()=>{clearTimeout(startDelay);autoPlayTimersRef.current.forEach(clearTimeout)}
-  },[banksData])
-
-  // Render sargassum BANKS — clean, animated, wow effect
-  const bankAnimRef=useRef(null)
-  useEffect(()=>{
-    if(!mapRef.current)return
-    if(banksLayerRef.current){banksLayerRef.current.remove();banksLayerRef.current=null}
-    if(bankAnimRef.current){clearInterval(bankAnimRef.current);bankAnimRef.current=null}
-    if(!banksData||!banksData.banks.length)return
-    track("sg_banks_shown",{timeStep,island})
-    const isGP=island==="gp"
-    const visible=banksData.banks.filter(b=>isGP?b.centroid[0]>=15.5:b.centroid[0]<15.5)
-    if(!visible.length)return
-    const bGroup=L.layerGroup()
-    const polys=[] // for animation
-    visible.forEach((bank,idx)=>{
-      const hull=timeStep===0?bank.hull:bank.drift?.predictions?.[timeStep+"h"]?.hull
-      if(!hull||hull.length<3)return
-      const cent=timeStep===0?bank.centroid:bank.drift?.predictions?.[timeStep+"h"]?.centroid||bank.centroid
-      const mc=bank.mass<.15?"34,197,94":bank.mass<.40?"232,168,0":"232,82,42"
-      // Bank polygon — clean, no border noise
-      const poly=L.polygon(hull,{fillColor:"rgba("+mc+",.4)",color:"rgba("+mc+",.6)",weight:1,fillOpacity:.3,smoothFactor:3,interactive:true,className:"sg-bank"})
-      poly.on("click",()=>{track("sg_bank_click",{bankId:bank.id,mass:bank.mass});const nearest=beaches.slice().sort((a,b)=>haversine(cent[0],cent[1],a.lat,a.lng)-haversine(cent[0],cent[1],b.lat,b.lng))[0];if(nearest)onBeachClick(nearest)})
-      poly.addTo(bGroup);polys.push(poly)
-    })
-    // Drift path — single animated dashed line from most threatening bank to beach
-    const beachList=allBeaches||beaches
-    let driftDrawn=false
-    for(const bank of visible){
-      if(driftDrawn)break
-      if(!bank.threatens||!bank.drift?.predictions)continue
-      const threats=bank.threatens["now"]||bank.threatens["6h"]||bank.threatens["12h"]||bank.threatens["24h"]
-      if(!threats||!threats.length)continue
-      const beachId=SARG_TO_BEACH[threats[0].id]
-      const tBeach=beachId?beachList.find(b=>b.id===beachId):null
-      if(!tBeach)continue
-      const waypoints=[bank.centroid]
-      for(const ts of["6h","12h","24h"]){
-        const pred=bank.drift.predictions[ts]
-        if(pred?.centroid)waypoints.push(pred.centroid)
-      }
-      waypoints.push([tBeach.lat,tBeach.lng])
-      const urgency=bank.threatens["now"]?"#E8522A":"#E8A800"
-      L.polyline(waypoints,{color:urgency,weight:2,opacity:.5,dashArray:"6 10",interactive:false,className:"sg-drift-path"}).addTo(bGroup)
-      driftDrawn=true
-    }
-    bGroup.addTo(mapRef.current);banksLayerRef.current=bGroup
-    // Animate: pulse polygon opacity
-    let tick=0
-    bankAnimRef.current=setInterval(()=>{
-      tick++
-      polys.forEach((p,i)=>{
-        const pulse=.25+Math.sin(tick*.12+i*.5)*.10
-        try{p.setStyle({fillOpacity:pulse})}catch(e){}
-      })
-    },600)
-    return()=>{
-      if(banksLayerRef.current){banksLayerRef.current.remove();banksLayerRef.current=null}
-      if(bankAnimRef.current){clearInterval(bankAnimRef.current);bankAnimRef.current=null}
-    }
-  },[banksData,island,timeStep,beaches,onBeachClick])
+  /* Bank polygons, drift paths, auto-zoom, auto-play all removed.
+     Drift predictions use fixed speed/bearing — not real ocean modeling.
+     Keeping only the AFAI heatmap (real satellite data). */
 
   // Render AFAI heatmap from grid data (canvas circles, efficient)
   useEffect(()=>{
@@ -803,15 +708,14 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos,fav
   if(mapError)return <div style={{padding:40,color:"red"}}>{mapError}</div>
   return(<div style={{position:"relative",width:"100%",height:"100%"}}>
     <div ref={containerRef} style={{width:"100%",height:"100%"}}/>
-    {/* Threat Banner — confidence-gated alert */}
-    {threat&&!threatDismissed&&(threat.bank?.drift?.predictions?.[threat.timeKey==="now"?"6h":threat.timeKey]?.confidence||60)>=40&&(
+    {/* Threat Banner — simple, no fake time predictions */}
+    {threat&&!threatDismissed&&(
       <div onClick={()=>{
-        track("sg_threat_banner_tap",{bankId:threat.bank.id,beachId:threat.beach.id})
+        track("sg_threat_banner_tap",{beachId:threat.beach.id})
         onBeachClick(threat.beach)
       }} style={{
-        position:"absolute",bottom:200,left:12,right:12,zIndex:780,
-        background:(()=>{const c=threat.bank?.drift?.predictions?.[threat.timeKey==="now"?"6h":threat.timeKey]?.confidence||60
-          return c>70?"linear-gradient(135deg,#E8522A,#C0392B)":"linear-gradient(135deg,#E8A800,#D4820A)"})(),
+        position:"absolute",bottom:140,left:12,right:12,zIndex:780,
+        background:"linear-gradient(135deg,#E8522A,#C0392B)",
         borderRadius:16,padding:"14px 16px",cursor:"pointer",
         animation:"sg-threat-slide .4s ease-out",
         display:"flex",alignItems:"center",gap:12,
@@ -819,14 +723,12 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos,fav
       }}>
         <div style={{flex:1,minWidth:0}}>
           <div style={{fontSize:14,fontWeight:800,color:"#fff",lineHeight:1.3}}>
-            {(()=>{const c=threat.bank?.drift?.predictions?.[threat.timeKey==="now"?"6h":threat.timeKey]?.confidence||60
-              return c>70
-                ?(threat.timeKey==="now"?"Sargasses detectees vers "+threat.beach.name:"Sargasses vers "+threat.beach.name+" dans ~"+threat.timeKey.replace("h","")+"h")
-                :(threat.timeKey==="now"?"Risque probable de sargasses vers "+threat.beach.name:"Sargasses possibles vers "+threat.beach.name+" dans ~"+threat.timeKey.replace("h","")+"h")
-            })()}
+            {lang==="en"
+              ?"Sargassum detected near "+threat.beach.name
+              :"Sargasses détectées vers "+threat.beach.name}
           </div>
           <div style={{fontSize:10,color:"rgba(255,255,255,.7)",marginTop:3}}>
-            {lang==="en"?"Tap to see details and forecast >":"Voir les details et previsions >"}
+            {lang==="en"?"Tap to see details":"Voir les détails >"}
           </div>
         </div>
         <div onClick={(e)=>{
