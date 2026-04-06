@@ -585,14 +585,20 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos}){
     heatRef.current=[]
 
     // Get drift data from sargassum.json weekly forecasts
+    // FIX: map sarg slug keys → beach IDs via SARG_TO_BEACH
     const driftMap={}
     if(sargData?.weekly){
-      for(const[id,w]of Object.entries(sargData.weekly)){
-        driftMap[id]={drift:w.drift,dv:w.driftValue||0}
+      for(const[sargId,w]of Object.entries(sargData.weekly)){
+        const beachId=SARG_TO_BEACH[sargId]
+        if(beachId)driftMap[beachId]={drift:w.drift,dv:w.driftValue||0}
       }
     }
 
-    beaches.forEach(b=>{
+    // Batch all layers in groups to avoid per-marker redraws (perf: 161 addTo → 2)
+    const heatGroup=L.layerGroup()
+    const markerGroup=L.layerGroup()
+
+    beaches.forEach((b,bi)=>{
       const st=ST[b.status]||ST.clean
       const isSelected=selectedBeach?.id===b.id
 
@@ -614,7 +620,7 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos}){
           fillOpacity:Math.min(.3,b.afai*.4),
           interactive:false,
         })
-        main.addTo(mapRef.current)
+        main.addTo(heatGroup)
         heatRef.current.push(main)
 
         // Drift trail — smaller circles showing direction of movement
@@ -626,14 +632,16 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos}){
             const trailLng=b.lng+lngDir*(1+i*.8)
             const trailRadius=mainRadius*(0.7-i*0.15)
             const trailOpacity=Math.max(.08,(.25-i*.06)*b.afai)
-            const trail=L.circle([b.lat+(Math.random()-.5)*.005,trailLng],{
+            // Deterministic offset per beach (avoids random jitter on re-render)
+            const latOff=((bi*7+i*13)%100-50)*.0001
+            const trail=L.circle([b.lat+latOff,trailLng],{
               radius:Math.max(300,trailRadius),
               fillColor:heatColor,
               color:"transparent",
               fillOpacity:trailOpacity,
               interactive:false,
             })
-            trail.addTo(mapRef.current)
+            trail.addTo(heatGroup)
             heatRef.current.push(trail)
           }
 
@@ -641,7 +649,6 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos}){
           if(driftInfo&&b.afai>.4){
             const arrowLat=b.lat
             const arrowLng=b.lng+lngDir*.5
-            const arrowDir=isDrifting?"→ côte":"← large"
             const arrowColor=isDrifting?"#E8522A":"#009E8E"
             const arrow=L.marker([arrowLat,arrowLng],{
               icon:L.divIcon({
@@ -652,7 +659,7 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos}){
               }),
               interactive:false,
             })
-            arrow.addTo(mapRef.current)
+            arrow.addTo(heatGroup)
             heatRef.current.push(arrow)
           }
         }
@@ -671,9 +678,13 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos}){
         permanent:false,
       })
       marker.on("click",()=>onBeachClick(b))
-      marker.addTo(mapRef.current)
+      marker.addTo(markerGroup)
       markersRef.current.push(marker)
     })
+
+    // Add both groups at once (2 redraws instead of 161)
+    heatGroup.addTo(mapRef.current)
+    markerGroup.addTo(mapRef.current)
 
     // Animate drift: slowly pulse the sargassum masses
     if(driftRef.current)clearInterval(driftRef.current)
@@ -807,54 +818,68 @@ function useWeather(beach){
 /* ═══════════════════════════════════════════════════════════════════════════
    AXE 2: COMMUNITY REPORTS — "Tu es sur place ? Confirme le statut"
    ═══════════════════════════════════════════════════════════════════════════ */
-function CommunityReport({beach,lang}){
-  const key="sg_report_"+beach.id
-  const[voted,setVoted]=useState(()=>g(key,null))
-  const[counts,setCounts]=useState(()=>g("sg_reports_"+beach.id,{confirm:0,disagree:0}))
-  const submit=(vote)=>{
+function BeachReport({beach,lang,communityReports}){
+  const key="sg_breport_"+beach.id
+  const cooldownKey="sg_breport_t_"+beach.id
+  const[voted,setVoted]=useState(()=>{
+    const last=g(cooldownKey,0)
+    if(last&&Date.now()-last<12*3600*1000)return g(key,null)
+    return null
+  })
+  const counts=communityReports[beach.id]||communityReports[BEACH_TO_SARG[beach.id]]||{clean:0,moderate:0,avoid:0,total:0}
+  const total=counts.total||0
+  const LEVELS=[
+    {id:"clean",e:"✅",l:"Propre",le:"Clean",c:C.green,bg:C.greenBg},
+    {id:"moderate",e:"⚠️",l:"Modéré",le:"Moderate",c:C.amber,bg:C.amberBg},
+    {id:"avoid",e:"🚫",l:"Beaucoup",le:"Heavy",c:C.red,bg:C.redBg},
+  ]
+  const submit=(level)=>{
     if(voted)return
-    setVoted(vote);s(key,vote)
-    const c={...counts,[vote]:counts[vote]+1}
-    setCounts(c);s("sg_reports_"+beach.id,c)
-    track("sg_community_report",{beach_id:beach.id,vote,status:beach.status})
+    setVoted(level);s(key,level);s(cooldownKey,Date.now())
+    track("sg_beach_report",{beach_id:beach.id,level,satellite_status:beach.status,island:beach.island})
     try{fetch("https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec",{
       method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
-      body:JSON.stringify({type:"report",beach_id:beach.id,beach_name:beach.name,vote,satellite_status:beach.status,island:beach.island,date:new Date().toISOString()})
+      body:JSON.stringify({type:"beach_report",beach_id:BEACH_TO_SARG[beach.id]||beach.id,beach_name:beach.name,level,island:beach.island,date:new Date().toISOString()})
     }).catch(()=>{})}catch{}
   }
-  const total=counts.confirm+counts.disagree
+  // Community consensus (mode of reports)
+  const consensus=total>=3?(counts.avoid>=counts.moderate&&counts.avoid>=counts.clean?"avoid":counts.moderate>=counts.clean?"moderate":"clean"):null
   return(
     <div style={{margin:"12px 0",padding:"12px 14px",borderRadius:14,
       background:"var(--sg-bgD,#F7F5EF)",border:"1px solid var(--sg-border,rgba(0,0,0,.04))"}}>
       <div style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)",marginBottom:8,display:"flex",alignItems:"center",gap:6}}>
         <span>📍</span>
-        {lang==="en"?"Are you there? Confirm the status":"Tu es sur place ? Confirme le statut"}
+        {lang==="en"?"On the beach? Report sargassum level":"Sur place ? Signale le niveau de sargasses"}
       </div>
       <div style={{display:"flex",gap:8}}>
-        <button onClick={()=>submit("confirm")} disabled={!!voted} style={{
-          flex:1,padding:"10px 12px",borderRadius:12,border:"none",cursor:voted?"default":"pointer",
-          background:voted==="confirm"?C.greenBg:"var(--sg-card,#fff)",
-          color:voted==="confirm"?C.green:"var(--sg-ink)",fontSize:13,fontWeight:600,
-          fontFamily:"inherit",transition:"all .2s",
-          boxShadow:voted==="confirm"?"inset 0 0 0 1.5px "+C.green:"0 1px 4px rgba(0,0,0,.04)",
-          animation:voted==="confirm"?"confirmPop .3s ease":"none",
-          opacity:voted&&voted!=="confirm"?.4:1,
-        }}>✅ {lang==="en"?"Confirm":"Confirme"}</button>
-        <button onClick={()=>submit("disagree")} disabled={!!voted} style={{
-          flex:1,padding:"10px 12px",borderRadius:12,border:"none",cursor:voted?"default":"pointer",
-          background:voted==="disagree"?C.redBg:"var(--sg-card,#fff)",
-          color:voted==="disagree"?C.red:"var(--sg-ink)",fontSize:13,fontWeight:600,
-          fontFamily:"inherit",transition:"all .2s",
-          boxShadow:voted==="disagree"?"inset 0 0 0 1.5px "+C.red:"0 1px 4px rgba(0,0,0,.04)",
-          animation:voted==="disagree"?"confirmPop .3s ease":"none",
-          opacity:voted&&voted!=="disagree"?.4:1,
-        }}>❌ {lang==="en"?"Disagree":"Pas d'accord"}</button>
+        {LEVELS.map(lv=>(
+          <button key={lv.id} onClick={()=>submit(lv.id)} disabled={!!voted} style={{
+            flex:1,padding:"10px 8px",borderRadius:12,border:"none",cursor:voted?"default":"pointer",
+            background:voted===lv.id?lv.bg:"var(--sg-card,#fff)",
+            color:voted===lv.id?lv.c:"var(--sg-ink)",fontSize:12,fontWeight:600,
+            fontFamily:"inherit",transition:"all .2s",
+            boxShadow:voted===lv.id?"inset 0 0 0 1.5px "+lv.c:"0 1px 4px rgba(0,0,0,.04)",
+            animation:voted===lv.id?"confirmPop .3s ease":"none",
+            opacity:voted&&voted!==lv.id?.4:1,
+          }}>{lv.e} {lang==="en"?lv.le:lv.l}</button>
+        ))}
       </div>
       {total>0&&(
-        <div style={{marginTop:8,fontSize:11,color:"var(--sg-mid)",textAlign:"center"}}>
-          {counts.confirm} {lang==="en"?"confirmed":"confirmations"} · {counts.disagree} {lang==="en"?"disagreed":"desaccords"}
+        <div style={{marginTop:8}}>
+          <div style={{display:"flex",height:4,borderRadius:2,overflow:"hidden",background:"var(--sg-border,rgba(0,0,0,.06))"}}>
+            {counts.clean>0&&<div style={{flex:counts.clean,background:C.green}}/>}
+            {counts.moderate>0&&<div style={{flex:counts.moderate,background:C.amber}}/>}
+            {counts.avoid>0&&<div style={{flex:counts.avoid,background:C.red}}/>}
+          </div>
+          <div style={{marginTop:4,fontSize:11,color:"var(--sg-mid)",textAlign:"center"}}>
+            {total} {lang==="en"?"report"+(total>1?"s":""):"signalement"+(total>1?"s":"")} (48h)
+            {consensus&&<> · {lang==="en"?"Consensus: ":"Consensus : "}<span style={{fontWeight:700,color:ST[consensus].c}}>{ST[consensus].e} {lang==="en"?ST[consensus].le:ST[consensus].l}</span></>}
+          </div>
         </div>
       )}
+      {voted&&<div style={{marginTop:6,fontSize:11,color:C.green,textAlign:"center",fontWeight:500}}>
+        {lang==="en"?"Thanks for your report!":"Merci pour ton signalement !"}
+      </div>}
     </div>
   )
 }
@@ -906,7 +931,7 @@ function ReliabilityScore({beachId,historyData,lang}){
 /* ═══════════════════════════════════════════════════════════════════════════
    BOTTOM SHEET — beach detail with photo, forecast, weather, nearby
    ═══════════════════════════════════════════════════════════════════════════ */
-function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMap,onBeachClick,onPremiumClick,isPremium,historyData,sargData,dataSource,userPos}){
+function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMap,onBeachClick,onPremiumClick,isPremium,historyData,sargData,dataSource,userPos,communityReports}){
   const LL=T[lang]||T.fr
   const weather=useWeather(beach)
   // Use REAL forecast, then interpolated, then fallback generated
@@ -991,11 +1016,12 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
           </p>
           <div style={{display:"inline-flex",alignItems:"center",gap:4,marginBottom:6,
             padding:"2px 8px",borderRadius:100,fontSize:10,fontWeight:600,
-            background:beach.beachMemory?"rgba(139,105,20,.1)":beach._src==="live"?"rgba(34,197,94,.1)":"rgba(184,122,0,.08)",
-            color:beach.beachMemory?C.sarg:beach._src==="live"?"#16A34A":"#B87A00"}}>
+            background:beach._communityOverride?C.goldBg:beach.beachMemory?"rgba(139,105,20,.1)":beach._src==="live"?"rgba(34,197,94,.1)":"rgba(184,122,0,.08)",
+            color:beach._communityOverride?C.gold:beach.beachMemory?C.sarg:beach._src==="live"?"#16A34A":"#B87A00"}}>
             <span style={{width:5,height:5,borderRadius:3,
-              background:beach.beachMemory?C.sarg:beach._src==="live"?"#22C55E":"#B87A00"}}/>
-            {beach.beachMemory?(lang==="en"?"Beach memory (7d)":"Mémoire plage (7j)")
+              background:beach._communityOverride?C.gold:beach.beachMemory?C.sarg:beach._src==="live"?"#22C55E":"#B87A00"}}/>
+            {beach._communityOverride?(lang==="en"?`Reported by ${beach._communityTotal} visitors`:`Signalé par ${beach._communityTotal} visiteurs`)
+              :beach.beachMemory?(lang==="en"?"Beach memory (7d)":"Mémoire plage (7j)")
               :beach._src==="live"?(lang==="en"?"Satellite data":"Donnée satellite")
               :(lang==="en"?"Estimated (IDW)":"Estimation (IDW)")}
           </div>
@@ -1004,19 +1030,26 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
 
           {/* Status description */}
           {ST[beach.status]&&(
-            <p style={{fontSize:12,color:beach.beachMemory?C.sarg:ST[beach.status].c,fontWeight:500,margin:"0 0 12px",lineHeight:1.5,
-              padding:"6px 10px",background:beach.beachMemory?C.sargBg:ST[beach.status].bg,borderRadius:8}}>
-              {beach.beachMemory
+            <p style={{fontSize:12,color:beach._communityOverride?C.gold:beach.beachMemory?C.sarg:ST[beach.status].c,fontWeight:500,margin:"0 0 12px",lineHeight:1.5,
+              padding:"6px 10px",background:beach._communityOverride?C.goldBg:beach.beachMemory?C.sargBg:ST[beach.status].bg,borderRadius:8}}>
+              {beach._communityOverride
+                ?(lang==="en"
+                  ?`${beach._communityTotal} visitors report this level on site. Community reports take priority over satellite data.`
+                  :`${beach._communityTotal} visiteurs signalent ce niveau sur place. Les signalements terrain priment sur les données satellite.`)
+                :beach.beachMemory
                 ?(lang==="en"
                   ?"Satellite no longer detects sargassum offshore, but beaching occurred in recent days. Algae can persist on the beach for 7 to 14 days without cleanup."
                   :"Le satellite ne détecte plus de sargasses au large, mais des échouages ont eu lieu ces derniers jours. Les algues peuvent persister sur la plage 7 à 14 jours sans ramassage.")
                 :(lang==="en"?ST[beach.status].descEn:ST[beach.status].desc)}
-              {beach.beachMemory&&beach.afaiSat!=null&&(<><br/><span style={{fontSize:10,fontWeight:400,opacity:.7}}>
+              {beach._communityOverride&&(<><br/><span style={{fontSize:10,fontWeight:400,opacity:.7}}>
+                {lang==="en"?"Source: on-site user reports (last 48h)":"Source\u00a0: signalements visiteurs sur place (48h)"}
+              </span></>)}
+              {beach.beachMemory&&!beach._communityOverride&&beach.afaiSat!=null&&(<><br/><span style={{fontSize:10,fontWeight:400,opacity:.7}}>
                 {lang==="en"
                   ?`Satellite now: AFAI ${Math.round(beach.afaiSat*100)}% (clean) · Adjusted for recent beaching history`
                   :`Satellite actuel\u00a0: AFAI ${Math.round(beach.afaiSat*100)}% (propre) · Ajusté selon l'historique d'échouages`}
               </span></>)}
-              {!beach.beachMemory&&(<><br/><span style={{fontSize:10,fontWeight:400,opacity:.7}}>
+              {!beach.beachMemory&&!beach._communityOverride&&(<><br/><span style={{fontSize:10,fontWeight:400,opacity:.7}}>
                 {lang==="en"
                   ?"Offshore satellite estimate (NOAA AFAI) — not an on-site measurement."
                   :"Estimation satellite au large (NOAA AFAI) — pas une mesure sur place."}
@@ -1033,8 +1066,8 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             </div>
           )}
 
-          {/* ── AXE 2: Community Reports — "Confirmer / Pas d'accord" ── */}
-          <CommunityReport beach={beach} lang={lang}/>
+          {/* ── AXE 2: Beach Reports — 3-level user sargassum reports ── */}
+          <BeachReport beach={beach} lang={lang} communityReports={communityReports}/>
 
           {/* ── AXE 3: Reliability Score from history ── */}
           <ReliabilityScore beachId={beach.id} historyData={historyData} lang={lang}/>
@@ -2473,6 +2506,136 @@ function EmailCapture(){
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   EXIT-INTENT POPUP — last chance email capture before user leaves
+   Desktop: mouseleave at top of viewport. Mobile: fast scroll-up.
+   Shows once only. Skips if email already captured or premium.
+   ═══════════════════════════════════════════════════════════════════════════ */
+function ExitIntent(){
+  const[visible,setVisible]=useState(false)
+  const[email,setEmail]=useState("")
+  const[submitted,setSubmitted]=useState(false)
+  const shownRef=useRef(false)
+
+  useEffect(()=>{
+    if(g("sg_exit_shown",false)||g("sg_email_prompt",false)||g("sg_premium",false))return
+    const arm=setTimeout(()=>{
+      const onLeave=e=>{
+        if(e.clientY<=0&&!shownRef.current){
+          shownRef.current=true
+          setVisible(true)
+          track("sg_exit_intent_show")
+          document.removeEventListener("mouseout",onLeave)
+        }
+      }
+      document.addEventListener("mouseout",onLeave)
+      let lastY=window.scrollY,lastT=Date.now()
+      const onScroll=()=>{
+        const y=window.scrollY,t=Date.now(),dt=t-lastT
+        if(dt>50&&dt<300){
+          const speed=(lastY-y)/dt
+          if(speed>2&&y<100&&!shownRef.current){
+            shownRef.current=true
+            setVisible(true)
+            track("sg_exit_intent_show")
+            window.removeEventListener("scroll",onScroll)
+          }
+        }
+        lastY=y;lastT=t
+      }
+      window.addEventListener("scroll",onScroll,{passive:true})
+      return()=>{
+        document.removeEventListener("mouseout",onLeave)
+        window.removeEventListener("scroll",onScroll)
+      }
+    },8000)
+    return()=>clearTimeout(arm)
+  },[])
+
+  const handleSubmit=useCallback(e=>{
+    e.preventDefault()
+    if(!email||!email.includes("@"))return
+    track("sg_exit_email_submit")
+    s("sg_email",email)
+    s("sg_email_prompt",true)
+    s("sg_exit_shown",true)
+    setSubmitted(true)
+    setTimeout(()=>setVisible(false),2000)
+    const island=window.location.hostname.includes("guadeloupe")?"GP":"MQ"
+    try{fetch("https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec",{
+      method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
+      body:JSON.stringify({email,island,source:"exit-intent",date:new Date().toISOString()})
+    }).catch(()=>{})}catch{}
+  },[email])
+
+  const handleDismiss=useCallback(()=>{
+    s("sg_exit_shown",true)
+    setVisible(false)
+    track("sg_exit_intent_dismiss")
+  },[])
+
+  if(!visible)return null
+
+  return(
+    <div style={{
+      position:"fixed",inset:0,zIndex:9998,
+      background:"rgba(0,0,0,.55)",backdropFilter:"blur(4px)",WebkitBackdropFilter:"blur(4px)",
+      display:"flex",alignItems:"center",justifyContent:"center",
+      padding:16,animation:"fadeIn .25s ease",
+    }} onClick={handleDismiss}>
+      <div onClick={e=>e.stopPropagation()} style={{
+        maxWidth:380,width:"100%",
+        background:"#fff",borderRadius:24,
+        padding:"32px 24px",textAlign:"center",
+        boxShadow:"0 20px 60px rgba(0,0,0,.25)",
+        animation:"slideUp .35s cubic-bezier(.22,1,.36,1)",
+      }}>
+        {submitted?(
+          <p style={{margin:0,fontSize:16,fontWeight:700,color:C.green}}>
+            Inscrit ! A vendredi.
+          </p>
+        ):(
+          <>
+            <div style={{fontSize:32,marginBottom:8}}>{"🏖️"}</div>
+            <h3 style={{margin:"0 0 6px",fontSize:20,fontWeight:800,color:C.ink}}>
+              Avant de partir...
+            </h3>
+            <p style={{margin:"0 0 16px",fontSize:14,color:C.mid,lineHeight:"20px"}}>
+              La saison des sargasses arrive bientot.<br/>
+              Recois chaque vendredi les <strong style={{color:C.ink}}>meilleures plages</strong> pour ton weekend.
+            </p>
+            <form onSubmit={handleSubmit} style={{display:"flex",gap:8,marginBottom:10}}>
+              <input type="email" value={email} onChange={e=>setEmail(e.target.value)}
+                placeholder="ton@email.com" required
+                style={{
+                  flex:1,padding:"12px 14px",borderRadius:12,
+                  border:"1.5px solid #e0e0e0",fontSize:15,fontFamily:"inherit",
+                  outline:"none",minWidth:0,
+                }}
+                onFocus={e=>e.target.style.borderColor="#E8A800"}
+                onBlur={e=>e.target.style.borderColor="#e0e0e0"}
+              />
+              <button type="submit" style={{
+                padding:"12px 18px",borderRadius:12,border:"none",cursor:"pointer",
+                background:"linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%)",
+                color:"#0D0D0D",fontSize:14,fontWeight:700,whiteSpace:"nowrap",
+                boxShadow:"0 4px 16px rgba(232,168,0,.3)",
+              }}>OK</button>
+            </form>
+            <p style={{margin:0,fontSize:11,color:"#999"}}>
+              Gratuit, zero spam, desinscription en 1 clic.
+            </p>
+            <button onClick={handleDismiss} style={{
+              display:"block",margin:"12px auto 0",background:"none",border:"none",
+              cursor:"pointer",color:C.mid,fontSize:12,fontWeight:500,padding:0,
+            }}>Non merci</button>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    FEEDBACK WIDGET — appears after 3 visits, once only
    ═══════════════════════════════════════════════════════════════════════════ */
 function FeedbackWidget(){
@@ -2767,6 +2930,7 @@ export default function App(){
   const[historyData,setHistoryData]=useState(null)
   const[dataSource,setDataSource]=useState("loading")
   const[userPos,setUserPos]=useState(null) // {lat,lng}
+  const[communityReports,setCommunityReports]=useState({})
 
   const LL=T[lang]||T.fr
 
@@ -2777,6 +2941,14 @@ export default function App(){
       .then(data=>{
         if(Array.isArray(data)&&data.length>0)setAllBeaches(data)
       })
+      .catch(()=>{})
+  },[])
+
+  // Fetch community beach reports (last 48h)
+  useEffect(()=>{
+    fetch("https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec?action=beach_reports")
+      .then(r=>r.json())
+      .then(data=>{if(data?.reports)setCommunityReports(data.reports)})
       .catch(()=>{})
   },[])
 
@@ -2821,8 +2993,9 @@ export default function App(){
             // 2. IDW interpolation for non-sentinel beaches
             for(let i=0;i<updated.length;i++){
               if(updated[i]._src==="live")continue // already has live data
+              // FIX: threshold 15.5 (was 16) — includes Les Saintes, Marie-Galante, Désirade, gp-grande-anse sentinel
               const same=sentinels.filter(s=>
-                (updated[i].island==="mq"&&s.lat<16)||(updated[i].island==="gp"&&s.lat>=16))
+                (updated[i].island==="mq"&&s.lat<15.5)||(updated[i].island==="gp"&&s.lat>=15.5))
               const interp=interpolateIDW(updated[i],same.length>0?same:sentinels)
               if(interp!==null){
                 updated[i]={...updated[i],afai:interp,status:statusFromAfai(interp),_src:"interpolated"}
@@ -2835,7 +3008,7 @@ export default function App(){
                 const sargId=BEACH_TO_SARG[b.id]
                 if(sargId&&data.weekly[sargId])continue // already has real forecast
                 const same=sentinels.filter(s=>
-                  (b.island==="mq"&&s.lat<16)||(b.island==="gp"&&s.lat>=16))
+                  (b.island==="mq"&&s.lat<15.5)||(b.island==="gp"&&s.lat>=15.5))
                 const interp=interpolateForecast(b,same.length>0?same:sentinels,data.weekly)
                 if(interp){
                   const syntheticId=`_interp_${b.id}`
@@ -2844,12 +3017,25 @@ export default function App(){
               }
               data._enrichedWeekly=enrichedWeekly
             }
+            // 4. Cross with community reports (source 2): elevate status if users report worse
+            if(Object.keys(communityReports).length>0){
+              for(let i=0;i<updated.length;i++){
+                const sargId=BEACH_TO_SARG[updated[i].id]
+                const rpt=communityReports[updated[i].id]||communityReports[sargId]
+                if(!rpt||!rpt.total||rpt.total<3)continue // need 3+ reports for consensus
+                const consensus=rpt.avoid>=rpt.moderate&&rpt.avoid>=rpt.clean?"avoid":rpt.moderate>=rpt.clean?"moderate":"clean"
+                const STATUS_RANK={clean:0,moderate:1,avoid:2}
+                if(STATUS_RANK[consensus]>STATUS_RANK[updated[i].status]){
+                  updated[i]={...updated[i],status:consensus,_communityOverride:true,_communityTotal:rpt.total}
+                }
+              }
+            }
             return updated
           })
         }
       })
       .catch(()=>{})
-  },[])
+  },[communityReports])
 
   // Fetch history.json for trend chart
   useEffect(()=>{
@@ -2996,7 +3182,7 @@ export default function App(){
             allBeaches={allBeaches} imageMap={imageMap}
             onBeachClick={onBeachClick} onPremiumClick={openPremium} isPremium={isPremium}
             historyData={historyData} sargData={sargData}
-            dataSource={dataSource} userPos={userPos}/>
+            dataSource={dataSource} userPos={userPos} communityReports={communityReports}/>
         )}
 
         {/* PREMIUM MODAL */}
@@ -3013,6 +3199,9 @@ export default function App(){
 
         {/* PWA INSTALL PROMPT — 45s after load, once only */}
         {!showOnboarding&&<InstallPrompt/>}
+
+        {/* EXIT-INTENT POPUP — email capture before user leaves */}
+        {!showOnboarding&&!isPremium&&<ExitIntent/>}
 
         {/* FEEDBACK WIDGET — after 3rd visit, once only */}
         {!showOnboarding&&!showPushPrompt&&<FeedbackWidget/>}
