@@ -826,8 +826,7 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos,fav
             })()}
           </div>
           <div style={{fontSize:10,color:"rgba(255,255,255,.7)",marginTop:3}}>
-            {"Source\u00a0: NOAA AFAI"}{sargData?.erddapTimestamp&&" | MAJ il y a "+Math.round((Date.now()-new Date(sargData.erddapTimestamp).getTime())/3600000)+"h"}
-            {" · Voir tendance >"}
+            {lang==="en"?"Tap to see details and forecast >":"Voir les details et previsions >"}
           </div>
         </div>
         <div onClick={(e)=>{
