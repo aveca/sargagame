@@ -484,14 +484,18 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos}){
     // Copernicus Marine WMS: chlorophyll overlay — shows sargassum bands at sea
     // EPSG:4326 required (Copernicus does not support 3857)
     try{
-      L.tileLayer.wms("https://nrt.cmems-du.eu/thredds/wms/cmems_obs-oc_atl_bgc-plankton_nrt_l4-gapfree-multi-1km_P1D",{
+      const wms=L.tileLayer.wms("https://nrt.cmems-du.eu/thredds/wms/cmems_obs-oc_atl_bgc-plankton_nrt_l4-gapfree-multi-1km_P1D",{
         layers:"CHL",
         styles:"boxfill/rainbow",format:"image/png",transparent:true,
-        version:"1.1.1",time:"",
+        version:"1.1.1",
         colorscalerange:"0.1,10",logscale:true,
         opacity:0.45,maxZoom:18,
         crs:L.CRS.EPSG4326,
-      }).addTo(map)
+      })
+      // Remove WMS if tiles fail (prevents gray patches over satellite)
+      let wmsErrors=0
+      wms.on("tileerror",()=>{if(++wmsErrors>=4){try{wms.remove()}catch(e){}}})
+      wms.addTo(map)
     }catch(e){console.warn("Copernicus WMS failed:",e.message)}
     // Labels overlay (on top of satellite + sargassum)
     L.tileLayer("https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png",{
