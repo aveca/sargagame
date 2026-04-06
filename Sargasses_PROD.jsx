@@ -991,11 +991,12 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
           </p>
           <div style={{display:"inline-flex",alignItems:"center",gap:4,marginBottom:6,
             padding:"2px 8px",borderRadius:100,fontSize:10,fontWeight:600,
-            background:beach._src==="live"?"rgba(34,197,94,.1)":"rgba(184,122,0,.08)",
-            color:beach._src==="live"?"#16A34A":"#B87A00"}}>
+            background:beach.beachMemory?"rgba(139,105,20,.1)":beach._src==="live"?"rgba(34,197,94,.1)":"rgba(184,122,0,.08)",
+            color:beach.beachMemory?C.sarg:beach._src==="live"?"#16A34A":"#B87A00"}}>
             <span style={{width:5,height:5,borderRadius:3,
-              background:beach._src==="live"?"#22C55E":"#B87A00"}}/>
-            {beach._src==="live"?(lang==="en"?"Satellite data":"Donnée satellite")
+              background:beach.beachMemory?C.sarg:beach._src==="live"?"#22C55E":"#B87A00"}}/>
+            {beach.beachMemory?(lang==="en"?"Beach memory (7d)":"Mémoire plage (7j)")
+              :beach._src==="live"?(lang==="en"?"Satellite data":"Donnée satellite")
               :(lang==="en"?"Estimated (IDW)":"Estimation (IDW)")}
           </div>
           {/* Beach Score du Jour */}
@@ -1003,14 +1004,23 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
 
           {/* Status description */}
           {ST[beach.status]&&(
-            <p style={{fontSize:12,color:ST[beach.status].c,fontWeight:500,margin:"0 0 12px",lineHeight:1.5,
-              padding:"6px 10px",background:ST[beach.status].bg,borderRadius:8}}>
-              {lang==="en"?ST[beach.status].descEn:ST[beach.status].desc}
-              <br/><span style={{fontSize:10,fontWeight:400,opacity:.7}}>
+            <p style={{fontSize:12,color:beach.beachMemory?C.sarg:ST[beach.status].c,fontWeight:500,margin:"0 0 12px",lineHeight:1.5,
+              padding:"6px 10px",background:beach.beachMemory?C.sargBg:ST[beach.status].bg,borderRadius:8}}>
+              {beach.beachMemory
+                ?(lang==="en"
+                  ?"Satellite no longer detects sargassum offshore, but beaching occurred in recent days. Algae can persist on the beach for 7 to 14 days without cleanup."
+                  :"Le satellite ne détecte plus de sargasses au large, mais des échouages ont eu lieu ces derniers jours. Les algues peuvent persister sur la plage 7 à 14 jours sans ramassage.")
+                :(lang==="en"?ST[beach.status].descEn:ST[beach.status].desc)}
+              {beach.beachMemory&&beach.afaiSat!=null&&(<><br/><span style={{fontSize:10,fontWeight:400,opacity:.7}}>
+                {lang==="en"
+                  ?`Satellite now: AFAI ${Math.round(beach.afaiSat*100)}% (clean) · Adjusted for recent beaching history`
+                  :`Satellite actuel\u00a0: AFAI ${Math.round(beach.afaiSat*100)}% (propre) · Ajusté selon l'historique d'échouages`}
+              </span></>)}
+              {!beach.beachMemory&&(<><br/><span style={{fontSize:10,fontWeight:400,opacity:.7}}>
                 {lang==="en"
                   ?"Offshore satellite estimate (NOAA AFAI) — not an on-site measurement."
                   :"Estimation satellite au large (NOAA AFAI) — pas une mesure sur place."}
-              </span>
+              </span></>)}
             </p>
           )}
 
@@ -2940,7 +2950,7 @@ export default function App(){
               if(!beachId)continue
               const idx=updated.findIndex(b=>b.id===beachId)
               if(idx>=0){
-                updated[idx]={...updated[idx],afai:lvl.afai,status:statusFromAfai(lvl.afai),_src:"live"}
+                updated[idx]={...updated[idx],afai:lvl.afai,status:statusFromAfai(lvl.afai),_src:"live",beachMemory:lvl.beachMemory||false,afaiSat:lvl.afaiSat}
               }
             }
             // 2. IDW interpolation for non-sentinel beaches

@@ -390,6 +390,74 @@ function updateHistory(dir, levels) {
   return newChanges
 }
 
+// ── Beach Memory: accumulation decay from recent beaching events ──
+//
+// Rationale (cross-validated with external sources):
+// - Sargassum material persists 14+ days on beaches without cleanup
+//   (Source: EPA SIE guidelines, MDPI Remote Sensing 2025)
+// - Decomposition starts at ~48h but physical mass remains visible
+//   (Source: DAN Boater, ScienceDirect 2024 S0013935124001397)
+// - Even equipped communes cannot keep up during heavy events
+//   (Source: Sargassum Hub - French Antilles, Le Diamant daily ops)
+// - 2026 is a record year with continuous beaching since Nov 2025
+//   (Source: USF SaWS Bulletin 03/2026, La 1ere Guadeloupe)
+//
+// Parameters:
+// - Half-life: 3.5 days (λ = ln(2)/3.5 ≈ 0.198)
+//   → Day 1: 82% remains, Day 3: 55%, Day 7: 24%, Day 10: 14%
+// - Window: 10 days lookback
+// - Only boosts AFAI upward (never reduces current satellite reading)
+//
+// Sources: NOAA SIR v1.4, USF SaWS 2026, Wang & Hu 2016, EPA SIE
+
+function applyBeachAccumulation(levels, dir) {
+  const today = new Date().toISOString().slice(0, 10)
+  const HALF_LIFE_DAYS = 3.5
+  const DECAY_LAMBDA = Math.LN2 / HALF_LIFE_DAYS
+  const WINDOW_DAYS = 10
+
+  const historyPath = path.join(dir, 'history.json')
+  let history = []
+  try {
+    const raw = JSON.parse(fs.readFileSync(historyPath, 'utf-8'))
+    history = raw.history || []
+  } catch (_) {}
+
+  if (history.length === 0) return
+
+  let boosted = 0
+  for (const level of levels) {
+    let peakDecayed = 0
+
+    for (const entry of history) {
+      const daysAgo = (new Date(today) - new Date(entry.date)) / (1000 * 60 * 60 * 24)
+      if (daysAgo <= 0 || daysAgo > WINDOW_DAYS) continue
+
+      const beachEntry = entry.levels.find(l => l.id === level.id)
+      if (!beachEntry || beachEntry.afai < 0.15) continue // ignore history with no beaching
+
+      // Exponential decay: value decreases by 50% every HALF_LIFE_DAYS
+      const decayed = beachEntry.afai * Math.exp(-DECAY_LAMBDA * daysAgo)
+      peakDecayed = Math.max(peakDecayed, decayed)
+    }
+
+    // Only flag beachMemory when accumulation actually changes the STATUS
+    const effectiveAfai = Math.round(peakDecayed * 100) / 100
+    if (peakDecayed > level.afai && statusFromAfai(effectiveAfai) !== level.status) {
+      level.afaiSat = level.afai  // preserve raw satellite value
+      level.afai = effectiveAfai
+      level.status = statusFromAfai(level.afai)
+      level.beachMemory = true
+      boosted++
+      console.log(`    ${level.id}: satellite=${level.afaiSat.toFixed(2)} → effective=${level.afai.toFixed(2)} (${level.status}) [beach memory]`)
+    }
+  }
+
+  if (boosted > 0) {
+    console.log(`  Beach memory: ${boosted} beach(es) boosted (half-life=${HALF_LIFE_DAYS}d, window=${WINDOW_DAYS}d)`)
+  }
+}
+
 // ── MAIN ───────────────────────────────────────────────────────────
 
 async function main() {
@@ -440,6 +508,17 @@ async function main() {
     console.log(`  ${beach.id}: AFAI=${afai.toFixed(2)} (${status}) [${result.method}] nearby=${result.nearbyPts} offshore=${result.offshorePts}`)
   }
 
+  // 2b. Apply beach memory (accumulation decay from recent history)
+  // IMPORTANT: save raw satellite levels BEFORE accumulation for history tracking
+  const rawLevels = levels.map(l => ({ id: l.id, afai: l.afai, status: l.status }))
+
+  const dir = path.join(__dirname, '..', 'public', 'api', 'copernicus')
+  fs.mkdirSync(dir, { recursive: true })
+
+  console.log('')
+  console.log('[2b] Applying beach memory (accumulation decay)...')
+  applyBeachAccumulation(levels, dir)
+
   // 3. Build forecast + write output
   console.log('')
   console.log('[3/3] Building forecast and writing output...')
@@ -447,9 +526,6 @@ async function main() {
   const updatedAt = new Date().toISOString()
   const weekly = buildWeeklyBatch(levels)
   const payload = { source: 'erddap-live', updatedAt, levels, weekly }
-
-  const dir = path.join(__dirname, '..', 'public', 'api', 'copernicus')
-  fs.mkdirSync(dir, { recursive: true })
 
   const outPath = path.join(dir, 'sargassum.json')
   fs.writeFileSync(outPath, JSON.stringify(payload), 'utf-8')
@@ -481,8 +557,8 @@ async function main() {
   fs.writeFileSync(gridPath, JSON.stringify(gridPayload), 'utf-8')
   console.log(`Grid: ${gridPath} | ${gridPoints.length} points (AFAI > 0)`)
 
-  // History
-  const changes = updateHistory(dir, levels)
+  // History — store RAW satellite values (not accumulated) to prevent compounding
+  const changes = updateHistory(dir, rawLevels)
   if (changes.length > 0) {
     console.log(`Status changes detected:`)
     for (const c of changes) {
