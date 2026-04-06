@@ -63,6 +63,16 @@ jobs:
         continue-on-error: true
         run: node scripts/automation/email-weekend.cjs
 
+      - name: Fetch subscriber list
+        continue-on-error: true
+        run: node scripts/automation/fetch-subscribers.cjs
+
+      - name: Send welcome emails (Resend)
+        continue-on-error: true
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: node scripts/automation/welcome-email.cjs
+
       - name: Health check (uptime monitoring)
         run: node scripts/automation/health-check.cjs
 
@@ -124,6 +134,8 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add public/api/copernicus/sargassum.json public/api/copernicus/history.json public/api/copernicus/sargassum-grid.json
           [ -f scripts/automation/data/daily-metrics.json ] && git add scripts/automation/data/daily-metrics.json
+          [ -f scripts/automation/data/subscribers.json ] && git add scripts/automation/data/subscribers.json
+          [ -f scripts/automation/data/welcome-sent.json ] && git add scripts/automation/data/welcome-sent.json
           git diff --cached --quiet || git commit -m "chore: update Copernicus data $(date -u +'%Y-%m-%d %H:%M UTC')"
           git push || true
 
