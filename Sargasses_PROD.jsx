@@ -3193,17 +3193,24 @@ export default function App(){
         {/* CUSTOM FRENCH PUSH PROMPT */}
         {showPushPrompt&&<PushPrompt onClose={()=>setShowPushPrompt(false)}/>}
 
-        {/* EMAIL CAPTURE — shows 15s after onboarding, once only */}
-        {!showOnboarding&&!showPushPrompt&&<EmailCapture/>}
+        {/* BOTTOM PROMPTS — ONE AT A TIME, priority: feedback > install > email
+             Exit-intent is a full overlay (separate, triggered by mouse leave) */}
+        {!showOnboarding&&!showPushPrompt&&(()=>{
+          const feedbackDone=g("sg_feedback_done",false)
+          const visits=g("sg_visits",0)
+          const pwaShown=g("sg_pwa_prompt",0)
+          const emailShown=g("sg_email_prompt",false)
+          // Priority 1: Feedback (3rd+ visit, not done yet)
+          if(!feedbackDone&&visits>=3)return<FeedbackWidget/>
+          // Priority 2: Install prompt (not yet shown)
+          if(!pwaShown)return<InstallPrompt/>
+          // Priority 3: Email capture (not yet shown)
+          if(!emailShown)return<EmailCapture/>
+          return null
+        })()}
 
-        {/* PWA INSTALL PROMPT — 45s after load, once only */}
-        {!showOnboarding&&(g("sg_feedback_done",false)||g("sg_visits",0)<3)&&<InstallPrompt/>}
-
-        {/* EXIT-INTENT POPUP — email capture before user leaves */}
+        {/* EXIT-INTENT POPUP — full overlay, separate from bottom stack */}
         {!showOnboarding&&!isPremium&&<ExitIntent/>}
-
-        {/* FEEDBACK WIDGET — after 3rd visit, once only */}
-        {!showOnboarding&&!showPushPrompt&&<FeedbackWidget/>}
 
         {/* PREMIUM WELCOME TOAST */}
         {showWelcome&&(
