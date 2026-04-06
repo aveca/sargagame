@@ -63,6 +63,9 @@ jobs:
         continue-on-error: true
         run: node scripts/automation/email-weekend.cjs
 
+      - name: Health check (uptime monitoring)
+        run: node scripts/automation/health-check.cjs
+
       - name: Daily stats check (metrics + trend detection)
         continue-on-error: true
         run: node scripts/automation/daily-stats-check.cjs
