@@ -482,7 +482,7 @@ function BottomNav({view,onChangeView,lang}){
 /* ═══════════════════════════════════════════════════════════════════════════
    MAP VIEW (Leaflet — satellite tiles, CircleMarkers + heatmap)
    ═══════════════════════════════════════════════════════════════════════════ */
-function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos,favorites,allBeaches}){
+function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos,favorites,allBeaches,onThreatChange,onPremiumClick}){
   const containerRef=useRef(null)
   const mapRef=useRef(null)
   const markersRef=useRef([])
@@ -633,78 +633,27 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos,fav
       const poly=L.polygon(hull,{fillColor:"rgba("+mc+",.4)",color:"rgba("+mc+",.6)",weight:1,fillOpacity:.3,smoothFactor:3,interactive:true,className:"sg-bank"})
       poly.on("click",()=>{track("sg_bank_click",{bankId:bank.id,mass:bank.mass});const nearest=beaches.slice().sort((a,b)=>haversine(cent[0],cent[1],a.lat,a.lng)-haversine(cent[0],cent[1],b.lat,b.lng))[0];if(nearest)onBeachClick(nearest)})
       poly.addTo(bGroup);polys.push(poly)
-      // Label only on top 3 biggest banks — just the % number, clean
-      if(idx<3&&bank.mass>=.10){
-        L.marker(cent,{icon:L.divIcon({className:"",html:'<div style="font-size:11px;font-weight:800;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.8);pointer-events:none">'+Math.round(bank.mass*100)+'%</div>',iconSize:[30,16],iconAnchor:[15,8]}),interactive:false,zIndexOffset:500}).addTo(bGroup)
-      }
-      // Drift arrow — only on the biggest bank, only at T=0
-      if(idx===0&&timeStep===0&&bank.drift){
-        const bng=bank.drift.bearing,spd=bank.drift.speed
-        const arrowLen=0.06+spd*0.01
-        const steps=4 // animated trail dots
-        for(let s=0;s<steps;s++){
-          const t=(s+1)/steps
-          const pt=[cent[0]+Math.cos(bng*Math.PI/180)*arrowLen*t,cent[1]+Math.sin(bng*Math.PI/180)*arrowLen*t/(Math.cos(cent[0]*Math.PI/180)||1)]
-          const size=8-s*1.5,op=.8-s*.15
-          L.circleMarker(pt,{radius:size,fillColor:"#fff",color:"transparent",fillOpacity:op,interactive:false,className:"sg-drift-dot sg-drift-dot-"+s}).addTo(bGroup)
-        }
-        const arrowEnd=[cent[0]+Math.cos(bng*Math.PI/180)*arrowLen,cent[1]+Math.sin(bng*Math.PI/180)*arrowLen/(Math.cos(cent[0]*Math.PI/180)||1)]
-        const isAppr=bng>180&&bng<360
-        L.marker(arrowEnd,{icon:L.divIcon({className:"",html:'<div style="font-size:10px;font-weight:700;color:'+(isAppr?"#E8522A":"#22C55E")+';text-shadow:0 1px 3px rgba(0,0,0,.6);pointer-events:none;white-space:nowrap">'+spd+' km/h \u2192</div>',iconSize:[60,14],iconAnchor:[0,7]}),interactive:false}).addTo(bGroup)
-      }
     })
-    // ETA badges — only "now" and "6h" (urgent ones, max 3)
-    const etaMap=new Map()
-    for(const bnk of visible){
-      for(const tk of["now","6h"]){
-        const threats=bnk.threatens?.[tk];if(!threats)continue
-        for(const t of threats){if(!etaMap.has(t.id))etaMap.set(t.id,tk)}
-      }
-    }
-    let etaCount=0
-    for(const bch of beaches){
-      if(etaCount>=3)break
-      const sargId=BEACH_TO_SARG[bch.id];if(!sargId)continue
-      const eta=etaMap.get(sargId);if(!eta)continue
-      const el=eta==="now"?"\u26a0":"\u23f1 6h"
-      const ec=eta==="now"?"#E8522A":"#E8A820"
-      L.marker([bch.lat+.006,bch.lng+.010],{icon:L.divIcon({className:"",html:'<div class="sg-eta-badge" style="background:'+ec+';color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px;pointer-events:none;box-shadow:0 2px 6px rgba(0,0,0,.4)">'+el+'</div>',iconSize:[36,16],iconAnchor:[18,8]}),interactive:false,zIndexOffset:900}).addTo(bGroup)
-      etaCount++
-    }
-    // Drift path corridors — animated dashed lines from bank to threatened beach
+    // Drift path — single animated dashed line from most threatening bank to beach
     const beachList=allBeaches||beaches
+    let driftDrawn=false
     for(const bank of visible){
+      if(driftDrawn)break
       if(!bank.threatens||!bank.drift?.predictions)continue
       const threats=bank.threatens["now"]||bank.threatens["6h"]||bank.threatens["12h"]||bank.threatens["24h"]
       if(!threats||!threats.length)continue
-      const topThreat=threats[0] // closest beach
-      const beachId=SARG_TO_BEACH[topThreat.id]
+      const beachId=SARG_TO_BEACH[threats[0].id]
       const tBeach=beachId?beachList.find(b=>b.id===beachId):null
       if(!tBeach)continue
-      // Build waypoints: current → 6h → 12h → 24h → beach
       const waypoints=[bank.centroid]
       for(const ts of["6h","12h","24h"]){
         const pred=bank.drift.predictions[ts]
         if(pred?.centroid)waypoints.push(pred.centroid)
       }
       waypoints.push([tBeach.lat,tBeach.lng])
-      // Animated dashed polyline
-      const urgency=bank.threatens["now"]?"#E8522A":bank.threatens["6h"]?"#E8A800":"#B87A00"
-      L.polyline(waypoints,{color:urgency,weight:2.5,opacity:.65,dashArray:"8 12",interactive:false,className:"sg-drift-path"}).addTo(bGroup)
-      // Ghost polygons at prediction timesteps (fading)
-      const ghostOps=[.12,.08,.05]
-      ;["6h","12h","24h"].forEach((ts,gi)=>{
-        const pred=bank.drift.predictions[ts]
-        if(!pred?.hull||pred.hull.length<3)return
-        L.polygon(pred.hull,{fillColor:urgency,fillOpacity:ghostOps[gi],color:urgency,weight:.5,opacity:.3,interactive:false}).addTo(bGroup)
-      })
-      // Direction chevrons along the path
-      for(let ci=0;ci<waypoints.length-1;ci++){
-        const p1=waypoints[ci],p2=waypoints[ci+1]
-        const mid=[(p1[0]+p2[0])/2,(p1[1]+p2[1])/2]
-        const angle=Math.atan2(p2[0]-p1[0],p2[1]-p1[1])*180/Math.PI
-        L.marker(mid,{icon:L.divIcon({className:"",html:'<div style="font-size:14px;font-weight:900;color:'+urgency+';opacity:.7;transform:rotate('+(90-angle)+'deg);pointer-events:none;text-shadow:0 1px 3px rgba(0,0,0,.5)">\u203A</div>',iconSize:[14,14],iconAnchor:[7,7]}),interactive:false}).addTo(bGroup)
-      }
+      const urgency=bank.threatens["now"]?"#E8522A":"#E8A800"
+      L.polyline(waypoints,{color:urgency,weight:2,opacity:.5,dashArray:"6 10",interactive:false,className:"sg-drift-path"}).addTo(bGroup)
+      driftDrawn=true
     }
     bGroup.addTo(mapRef.current);banksLayerRef.current=bGroup
     // Animate: pulse polygon opacity
@@ -801,45 +750,8 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos,fav
         main.addTo(heatGroup)
         heatRef.current.push(main)
 
-        // Drift trail — smaller circles showing direction of movement
+        // Drift trails + arrows removed — ThreatBanner handles threat communication
         if(b.afai>.3){
-          const driftInfo=driftMap[b.id]
-          const isDrifting=driftInfo?.drift==="up" // approaching coast
-          const trailCount=isDrifting?3:1
-          for(let i=1;i<=trailCount;i++){
-            const trailLng=b.lng+lngDir*(1+i*.8)
-            const trailRadius=mainRadius*(0.7-i*0.15)
-            const trailOpacity=Math.max(.08,(.25-i*.06)*b.afai)
-            // Deterministic offset per beach (avoids random jitter on re-render)
-            const latOff=((bi*7+i*13)%100-50)*.0001
-            const trail=L.circle([b.lat+latOff,trailLng],{
-              radius:Math.max(300,trailRadius),
-              fillColor:heatColor,
-              color:"transparent",
-              fillOpacity:trailOpacity,
-              interactive:false,
-            })
-            trail.addTo(heatGroup)
-            heatRef.current.push(trail)
-          }
-
-          // Arrow indicator showing drift direction
-          if(driftInfo&&b.afai>.4){
-            const arrowLat=b.lat
-            const arrowLng=b.lng+lngDir*.5
-            const arrowColor=isDrifting?"#E8522A":"#009E8E"
-            const arrow=L.marker([arrowLat,arrowLng],{
-              icon:L.divIcon({
-                className:"",
-                html:`<div style="font-size:11px;font-weight:800;color:${arrowColor};text-shadow:0 1px 3px rgba(0,0,0,.5);white-space:nowrap;pointer-events:none">${isDrifting?"⬅":"➡"} ${isDrifting?"Dérive côte":"Dispersion"}</div>`,
-                iconSize:[100,20],
-                iconAnchor:[50,10],
-              }),
-              interactive:false,
-            })
-            arrow.addTo(heatGroup)
-            heatRef.current.push(arrow)
-          }
         }
       }
 
@@ -886,6 +798,7 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos,fav
     if(!banksData)return null
     return findMostRelevantThreat(banksData.banks,allBeaches||beaches,favorites,userPos,island)
   },[banksData,allBeaches,beaches,favorites,userPos,island])
+  useEffect(()=>{onThreatChange?.(!!threat)},[threat])
 
   if(mapError)return <div style={{padding:40,color:"red"}}>{mapError}</div>
   return(<div style={{position:"relative",width:"100%",height:"100%"}}>
@@ -893,34 +806,30 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos,fav
     {/* Threat Banner — dramatic alert */}
     {threat&&!threatDismissed&&(
       <div onClick={()=>{
-        try{
-          const bounds=L.latLngBounds([threat.bank.centroid,[threat.beach.lat,threat.beach.lng]])
-          mapRef.current?.flyToBounds(bounds.pad(0.4),{duration:1.5,maxZoom:13})
-          track("sg_threat_banner_tap",{bankId:threat.bank.id,beachId:threat.beach.id})
-        }catch(e){}
+        track("sg_threat_banner_tap",{bankId:threat.bank.id,beachId:threat.beach.id})
+        onBeachClick(threat.beach)
       }} style={{
         position:"absolute",bottom:200,left:12,right:12,zIndex:780,
         background:threat.timeKey==="now"?"linear-gradient(135deg,#E8522A,#C0392B)":"linear-gradient(135deg,#E8A800,#D4820A)",
-        borderRadius:16,padding:"12px 16px",cursor:"pointer",
-        animation:"sg-threat-slide .4s ease-out,sg-threat-glow 3s ease-in-out infinite",
-        display:"flex",alignItems:"center",gap:10,
+        borderRadius:16,padding:"14px 16px",cursor:"pointer",
+        animation:"sg-threat-slide .4s ease-out",
+        display:"flex",alignItems:"center",gap:12,
         boxShadow:"0 4px 24px rgba(0,0,0,.4)",
       }}>
-        <div style={{fontSize:24,flexShrink:0}}>{threat.timeKey==="now"?"\u26a0\ufe0f":"\ud83c\udf0a"}</div>
         <div style={{flex:1,minWidth:0}}>
-          <div style={{fontSize:13,fontWeight:800,color:"#fff",lineHeight:1.3}}>
-            {threat.timeKey==="now"?"Banc de sargasses sur "+threat.beach.name:
-              "Un banc arrive sur "+threat.beach.name+" dans ~"+threat.timeKey.replace("h","")+"h"}
+          <div style={{fontSize:14,fontWeight:800,color:"#fff",lineHeight:1.3}}>
+            {threat.timeKey==="now"?"Sargasses sur "+threat.beach.name+" maintenant":
+              "Sargasses vers "+threat.beach.name+" dans ~"+threat.timeKey.replace("h","")+"h"}
           </div>
-          <div style={{fontSize:11,color:"rgba(255,255,255,.8)",marginTop:2}}>
-            {threat.km} km \u2014 {Math.round(threat.bank.mass*100)}% de couverture \u2022 Tap pour voir
+          <div style={{fontSize:11,color:"rgba(255,255,255,.85)",marginTop:3}}>
+            {"Voir les details et previsions >"}
           </div>
         </div>
         <div onClick={(e)=>{
           e.stopPropagation()
           setThreatDismissed(true)
           sessionStorage.setItem("sg_threat_dismissed","1")
-        }} style={{fontSize:18,color:"rgba(255,255,255,.6)",cursor:"pointer",padding:"4px 2px"}}>{"\u2715"}</div>
+        }} style={{fontSize:16,color:"rgba(255,255,255,.5)",cursor:"pointer",padding:"4px"}}>{"\u2715"}</div>
       </div>
     )}
     {/* Time Slider with progress bar */}
@@ -935,6 +844,9 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos,fav
             {h===0?"Maintenant":"+"+h+"h"}
           </button>
         ))}
+        <button onClick={()=>{track("sg_7j_slider_tap");onPremiumClick?.("map_slider")}} style={{padding:"6px 10px",borderRadius:16,border:"1px solid rgba(255,215,0,.4)",background:"transparent",color:"#FFD700",fontSize:11,fontWeight:700,cursor:"pointer",opacity:.85}}>
+          {"7j"}
+        </button>
         <div style={{position:"absolute",bottom:0,left:0,height:2,borderRadius:1,background:"#E8522A",transition:"width .4s ease",
           width:timeStep===0?"25%":timeStep===6?"50%":timeStep===12?"75%":"100%"}}/>
       </div>
@@ -2684,6 +2596,7 @@ export default function App(){
   const[dataSource,setDataSource]=useState("loading")
   const[userPos,setUserPos]=useState(null) // {lat,lng}
   const[communityReports,setCommunityReports]=useState({})
+  const[hasActiveThreat,setHasActiveThreat]=useState(false)
 
   const LL=T[lang]||T.fr
 
@@ -2892,7 +2805,8 @@ export default function App(){
         {view==="map"?(
           <ErrBound><MapView beaches={filtered} island={island}
             onBeachClick={onBeachClick} selectedBeach={selectedBeach} sargData={sargData} userPos={userPos}
-            favorites={favorites} allBeaches={allBeaches}/></ErrBound>
+            favorites={favorites} allBeaches={allBeaches} onThreatChange={setHasActiveThreat}
+            onPremiumClick={openPremium}/></ErrBound>
         ):(
           <BeachListView beaches={filtered} onBeachClick={onBeachClick}
             favorites={favorites} lang={lang} imageMap={imageMap}/>
@@ -2922,15 +2836,15 @@ export default function App(){
           </div>
         </div>
 
-        {/* BEST BEACH WIDGET — "Meilleure plage pour toi" */}
-        {view==="map"&&!selectedBeach&&!showOnboarding&&(
+        {/* BEST BEACH WIDGET — hidden when ThreatBanner active to avoid clutter */}
+        {view==="map"&&!selectedBeach&&!showOnboarding&&!hasActiveThreat&&(
           <BestBeachWidget allBeaches={allBeaches} sargData={sargData} island={island}
             lang={lang} isPremium={isPremium} onBeachClick={onBeachClick}
             userPos={userPos} onPremiumClick={openPremium}/>
         )}
 
-        {/* WEEKEND BANNER — premium teaser on map */}
-        {view==="map"&&!selectedBeach&&!showOnboarding&&(
+        {/* WEEKEND BANNER — hidden when ThreatBanner active */}
+        {view==="map"&&!selectedBeach&&!showOnboarding&&!hasActiveThreat&&(
           <WeekendBanner allBeaches={allBeaches} sargData={sargData} island={island}
             lang={lang} isPremium={isPremium} onPremiumClick={openPremium}
             onBeachClick={onBeachClick} userPos={userPos}/>
