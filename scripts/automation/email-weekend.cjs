@@ -20,7 +20,7 @@ const https = require('https')
 const FORCE = process.argv.includes('--force')
 const SARG_PATH = path.join(__dirname, '../../public/api/copernicus/sargassum.json')
 const BEACHES_PATH = path.join(__dirname, '../../public/data/beaches-list.json')
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxICUOQ3KDireo8sY1ZF8b9QiglPV7_sK0Q3hTIUPeQXTAhs-DWmtZ4hb_6v8c2fhhuBg/exec'
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec'
 
 const SARG_TO_BEACH = {
   "grande-anse":"mq014","anse-mitan":"mq011","anse-noire":"mq012","tartane":"mq034",

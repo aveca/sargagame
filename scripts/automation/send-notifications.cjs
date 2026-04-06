@@ -60,7 +60,7 @@ const ONESIGNAL_APPS = {
 }
 
 // ── Google Sheets webhook ────────────────────────────────────
-const SHEETS_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxICUOQ3KDireo8sY1ZF8b9QiglPV7_sK0Q3hTIUPeQXTAhs-DWmtZ4hb_6v8c2fhhuBg/exec'
+const SHEETS_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec'
 
 // ── Helpers ──────────────────────────────────────────────────
 

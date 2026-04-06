@@ -82,7 +82,7 @@ document.getElementById('signup').addEventListener('submit', function(e) {
   var email = document.getElementById('email').value
   if (!email) return
   var island = location.hostname.includes('guadeloupe') ? 'GP' : 'MQ'
-  fetch('https://script.google.com/macros/s/AKfycbxICUOQ3KDireo8sY1ZF8b9QiglPV7_sK0Q3hTIUPeQXTAhs-DWmtZ4hb_6v8c2fhhuBg/exec', {
+  fetch('https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec', {
     method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'text/plain'},
     body: JSON.stringify({email: email, island: island, source: 'weekend-landing', date: new Date().toISOString()})
   })

@@ -68,8 +68,8 @@ const T={
     wind:"Vent",uv:"UV",temp:"Température",drive:"min",
     kids:"Enfants",snorkel:"Snorkeling",parking:"Parking",
     premium:"Premium",premiumDesc:"Prévisions 7 jours, alertes push, zéro pub.",
-    premiumPrice:"4,99 €/mois",premiumCta:"S'abonner",
-    premiumFeatures:["Planifie ton weekend sans surprise","Sois prévenu AVANT que les sargasses arrivent","Zéro publicité","Sans engagement — annule quand tu veux"],
+    premiumPrice:"4,99 €/mois",premiumCta:"Essai gratuit 7 jours",
+    premiumFeatures:["7 jours gratuits — sans engagement","Sois prévenu AVANT que les sargasses arrivent","Prévisions 7 jours pour 135 plages","Annule quand tu veux, zéro pub"],
     h2sWarn:"Si des sargasses sont échouées et en décomposition sur place, éloignez-vous (risque H₂S). Source : HCSP/ARS.",
     copernicus:"Copernicus Marine",live:"LIVE",
     nClean:"{n} propres",island_mq:"Martinique",island_gp:"Guadeloupe",
@@ -94,8 +94,8 @@ const T={
     wind:"Wind",uv:"UV",temp:"Temperature",drive:"min",
     kids:"Kids",snorkel:"Snorkeling",parking:"Parking",
     premium:"Premium",premiumDesc:"7-day forecast, push alerts, no ads.",
-    premiumPrice:"€4.99/mo",premiumCta:"Subscribe",
-    premiumFeatures:["Plan your weekend with no surprises","Get warned BEFORE sargassum arrives","Zero ads","No commitment — cancel anytime"],
+    premiumPrice:"€4.99/mo",premiumCta:"Free 7-day trial",
+    premiumFeatures:["7 days free — no commitment","Get warned BEFORE sargassum arrives","7-day forecast for 135 beaches","Cancel anytime, zero ads"],
     h2sWarn:"If sargassum is beached and decomposing on site, move away (H₂S risk). Source: HCSP/ARS.",
     copernicus:"Copernicus Marine",live:"LIVE",
     nClean:"{n} clean",island_mq:"Martinique",island_gp:"Guadeloupe",
@@ -141,7 +141,8 @@ const ISLAND_CENTER={mq:[14.64,-61.02],gp:[16.22,-61.55]}
 // Mapping: sargassum.json / history.json IDs → beaches-list.json IDs
 const SARG_TO_BEACH={"grande-anse":"mq014","anse-mitan":"mq011","anse-noire":"mq012","tartane":"mq034","anse-madame":"mq024","diamant":"mq016","pt-marin":"mq008","sainte-anne":"mq004","les-salines":"mq001","vauclin":"mq044","gp-grande-anse":"gp021","gp-malendure":"gp031","gp-sainte-anne":"gp010","gp-pt-chateaux":"gp005","gp-gosier":"gp012","gp-caravelle":"gp009","gp-bas-du-fort":"gp014","gp-deshaies":"gp024","gp-moule":"gp080","gp-vieux-fort":"gp042"}
 const BEACH_TO_SARG=Object.fromEntries(Object.entries(SARG_TO_BEACH).map(([k,v])=>[v,k]))
-const STRIPE_URL="https://buy.stripe.com/28E7sN2pd5F07Ktesr0co0p"
+const STRIPE_URL="https://buy.stripe.com/6oU3cxgg36J48Ox6ZZ0co0s" // 4.99 EUR/mois recurring + 7d trial
+const STRIPE_ANNUAL_URL="https://buy.stripe.com/14AeVf0h5c3o4yhgAz0co0r" // 39.99 EUR/an recurring + 7d trial
 
 /* ═══════════════════════════════════════════════════════════════════════════
    UTILITIES
@@ -350,6 +351,8 @@ body{background:var(--sg-bg,#FDFCF7);color:var(--sg-ink,#0D0D0D)}
 @keyframes float-b{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 @keyframes dot-pulse{0%,100%{box-shadow:0 0 0 2px rgba(34,197,94,.2)}50%{box-shadow:0 0 0 5px rgba(34,197,94,.07)}}
 @keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+@keyframes goldGlow{0%,100%{box-shadow:0 4px 20px rgba(232,168,0,.25)}50%{box-shadow:0 4px 30px rgba(232,168,0,.5)}}
+@keyframes confirmPop{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
 @keyframes pin-pulse{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.8);opacity:0}}
 @keyframes beacon{0%,100%{box-shadow:0 0 0 0 rgba(232,82,42,.5)}60%{box-shadow:0 0 0 10px rgba(232,82,42,0)}}
 @keyframes satellite-scan{0%{transform:translateX(-100%)}100%{transform:translateX(400%)}}
@@ -802,6 +805,105 @@ function useWeather(beach){
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   AXE 2: COMMUNITY REPORTS — "Tu es sur place ? Confirme le statut"
+   ═══════════════════════════════════════════════════════════════════════════ */
+function CommunityReport({beach,lang}){
+  const key="sg_report_"+beach.id
+  const[voted,setVoted]=useState(()=>g(key,null))
+  const[counts,setCounts]=useState(()=>g("sg_reports_"+beach.id,{confirm:0,disagree:0}))
+  const submit=(vote)=>{
+    if(voted)return
+    setVoted(vote);s(key,vote)
+    const c={...counts,[vote]:counts[vote]+1}
+    setCounts(c);s("sg_reports_"+beach.id,c)
+    track("sg_community_report",{beach_id:beach.id,vote,status:beach.status})
+    try{fetch("https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec",{
+      method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
+      body:JSON.stringify({type:"report",beach_id:beach.id,beach_name:beach.name,vote,satellite_status:beach.status,island:beach.island,date:new Date().toISOString()})
+    }).catch(()=>{})}catch{}
+  }
+  const total=counts.confirm+counts.disagree
+  return(
+    <div style={{margin:"12px 0",padding:"12px 14px",borderRadius:14,
+      background:"var(--sg-bgD,#F7F5EF)",border:"1px solid var(--sg-border,rgba(0,0,0,.04))"}}>
+      <div style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)",marginBottom:8,display:"flex",alignItems:"center",gap:6}}>
+        <span>📍</span>
+        {lang==="en"?"Are you there? Confirm the status":"Tu es sur place ? Confirme le statut"}
+      </div>
+      <div style={{display:"flex",gap:8}}>
+        <button onClick={()=>submit("confirm")} disabled={!!voted} style={{
+          flex:1,padding:"10px 12px",borderRadius:12,border:"none",cursor:voted?"default":"pointer",
+          background:voted==="confirm"?C.greenBg:"var(--sg-card,#fff)",
+          color:voted==="confirm"?C.green:"var(--sg-ink)",fontSize:13,fontWeight:600,
+          fontFamily:"inherit",transition:"all .2s",
+          boxShadow:voted==="confirm"?"inset 0 0 0 1.5px "+C.green:"0 1px 4px rgba(0,0,0,.04)",
+          animation:voted==="confirm"?"confirmPop .3s ease":"none",
+          opacity:voted&&voted!=="confirm"?.4:1,
+        }}>✅ {lang==="en"?"Confirm":"Confirme"}</button>
+        <button onClick={()=>submit("disagree")} disabled={!!voted} style={{
+          flex:1,padding:"10px 12px",borderRadius:12,border:"none",cursor:voted?"default":"pointer",
+          background:voted==="disagree"?C.redBg:"var(--sg-card,#fff)",
+          color:voted==="disagree"?C.red:"var(--sg-ink)",fontSize:13,fontWeight:600,
+          fontFamily:"inherit",transition:"all .2s",
+          boxShadow:voted==="disagree"?"inset 0 0 0 1.5px "+C.red:"0 1px 4px rgba(0,0,0,.04)",
+          animation:voted==="disagree"?"confirmPop .3s ease":"none",
+          opacity:voted&&voted!=="disagree"?.4:1,
+        }}>❌ {lang==="en"?"Disagree":"Pas d'accord"}</button>
+      </div>
+      {total>0&&(
+        <div style={{marginTop:8,fontSize:11,color:"var(--sg-mid)",textAlign:"center"}}>
+          {counts.confirm} {lang==="en"?"confirmed":"confirmations"} · {counts.disagree} {lang==="en"?"disagreed":"desaccords"}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   AXE 3: RELIABILITY SCORE — "85% propre en avril" from history
+   ═══════════════════════════════════════════════════════════════════════════ */
+function ReliabilityScore({beachId,historyData,lang}){
+  const stats=useMemo(()=>{
+    if(!historyData)return null
+    const sargId=BEACH_TO_SARG[beachId]
+    if(!sargId||!historyData[sargId])return null
+    const entries=historyData[sargId]
+    if(!Array.isArray(entries)||entries.length<3)return null
+    const clean=entries.filter(e=>e.afai<0.15).length
+    const pct=Math.round(clean/entries.length*100)
+    const month=new Date().toLocaleString(lang==="en"?"en":"fr",{month:"long"})
+    return{pct,total:entries.length,month}
+  },[beachId,historyData,lang])
+  if(!stats)return null
+  const color=stats.pct>=80?C.green:stats.pct>=50?C.amber:C.red
+  const bg=stats.pct>=80?C.greenBg:stats.pct>=50?C.amberBg:C.redBg
+  return(
+    <div style={{display:"inline-flex",alignItems:"center",gap:8,margin:"8px 0 12px",
+      padding:"8px 14px",borderRadius:12,background:bg,border:"1px solid "+color+"22"}}>
+      <div style={{position:"relative",width:36,height:36}}>
+        <svg width={36} height={36} viewBox="0 0 36 36">
+          <circle cx={18} cy={18} r={15} fill="none" stroke="rgba(0,0,0,.06)" strokeWidth={3}/>
+          <circle cx={18} cy={18} r={15} fill="none" stroke={color} strokeWidth={3}
+            strokeDasharray={`${stats.pct*.94} 100`}
+            strokeLinecap="round" transform="rotate(-90 18 18)"
+            style={{transition:"stroke-dasharray .6s ease"}}/>
+        </svg>
+        <span style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",
+          fontSize:10,fontWeight:800,color}}>{stats.pct}%</span>
+      </div>
+      <div>
+        <div style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)"}}>
+          {lang==="en"?`Clean ${stats.pct}% of the time`:`Propre ${stats.pct}% du temps`}
+        </div>
+        <div style={{fontSize:10,color:"var(--sg-mid)"}}>
+          {lang==="en"?`Based on ${stats.total} readings in ${stats.month}`:`${stats.total} mesures en ${stats.month}`}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    BOTTOM SHEET — beach detail with photo, forecast, weather, nearby
    ═══════════════════════════════════════════════════════════════════════════ */
 function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMap,onBeachClick,onPremiumClick,isPremium,historyData,sargData,dataSource,userPos}){
@@ -920,6 +1022,12 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               ⚠️ {LL.h2sWarn}
             </div>
           )}
+
+          {/* ── AXE 2: Community Reports — "Confirmer / Pas d'accord" ── */}
+          <CommunityReport beach={beach} lang={lang}/>
+
+          {/* ── AXE 3: Reliability Score from history ── */}
+          <ReliabilityScore beachId={beach.id} historyData={historyData} lang={lang}/>
 
           {/* Tags */}
           <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:16}}>
@@ -1465,7 +1573,7 @@ function Onboarding({onDone,island="mq",lang="fr"}){
                   ))}
                 </div>
                 <div style={{marginLeft:15,fontSize:11.5,fontWeight:500,color:C.mid,lineHeight:1.4}}>
-                  <strong style={{color:C.ink,fontWeight:700}}>+2 400 {locals}</strong> ont déjà vérifié avant toi ce matin
+                  <strong style={{color:C.ink,fontWeight:700}}>135 plages</strong> surveillées par satellite en temps réel
                 </div>
               </div>
 
@@ -1533,7 +1641,7 @@ function Onboarding({onDone,island="mq",lang="fr"}){
             {/* Proof */}
             <div style={{margin:"6px 22px 0",fontSize:11,color:C.mid,display:"flex",alignItems:"center",gap:5}}>
               <span style={{color:"#16A34A",fontWeight:700}}>✓</span>
-              Confirmé par <strong style={{color:C.ink}}>+2 400 locaux</strong> ce matin
+              Données NOAA AFAI mises à jour <strong style={{color:C.ink}}>4x par jour</strong>
             </div>
 
             {/* Map zone */}
@@ -1796,6 +1904,89 @@ function Onboarding({onDone,island="mq",lang="fr"}){
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   BEST BEACH WIDGET — "Quelle plage ce weekend ?" — THE differentiator
+   Scores: forecast cleanliness × distance × amenities × weather
+   ═══════════════════════════════════════════════════════════════════════════ */
+function BestBeachWidget({allBeaches,sargData,island,lang,isPremium,onBeachClick,userPos,onPremiumClick}){
+  const pick=useMemo(()=>{
+    if(!sargData?.weekly)return null
+    const islandBeaches=allBeaches.filter(b=>b.island===island&&b.status==="clean")
+    if(!islandBeaches.length)return null
+    const scored=islandBeaches.map(b=>{
+      let score=0
+      const sargId=BEACH_TO_SARG[b.id]
+      const wkEntry=sargId&&sargData.weekly[sargId]
+      if(wkEntry){
+        const wk=Array.isArray(wkEntry)?wkEntry:(wkEntry.forecast||[])
+        score+=wk.filter(d=>d&&d.afai<0.15).length*10
+      }else{score+=b.afai<0.15?50:b.afai<0.4?20:0}
+      const dist=userPos?haversine(userPos.lat,userPos.lng,b.lat,b.lng):30
+      score+=Math.max(0,30-dist)
+      if(b.kids)score+=8
+      if(b.parking)score+=5
+      if(b.snorkel)score+=5
+      return{...b,_score:score,_dist:dist}
+    })
+    scored.sort((a,b)=>b._score-a._score)
+    return scored[0]||null
+  },[allBeaches,sargData,island,userPos])
+  const weather=useWeather(pick)
+  if(!pick)return null
+  const distLabel=userPos?Math.round(pick._dist)+"km":pick.drive?pick.drive+"min":""
+  // Weekend day name
+  const now=new Date(),dow=now.getDay()
+  const dayLabel=dow===6?(lang==="en"?"Today":"Aujourd'hui"):dow===0?(lang==="en"?"Today":"Aujourd'hui")
+    :(lang==="en"?"This Saturday":"Ce samedi")
+  return(
+    <div onClick={()=>{
+      if(isPremium){onBeachClick(pick);track("sg_best_beach_click",{beach:pick.id})}
+      else{onPremiumClick("best_beach");track("sg_best_beach_lock",{beach:pick.id})}
+    }} style={{
+      position:"absolute",top:"max(120px,env(safe-area-inset-top,12px) + 110px)",right:12,zIndex:750,
+      background:"linear-gradient(145deg,rgba(13,30,28,.95),rgba(10,23,20,.95))",
+      backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
+      borderRadius:18,padding:"14px 16px",maxWidth:210,cursor:"pointer",
+      border:"1px solid rgba(255,199,44,.25)",
+      animation:"slideUp .5s cubic-bezier(.22,1,.36,1), goldGlow 3s ease-in-out infinite",
+    }}>
+      {/* Gold accent line */}
+      <div style={{position:"absolute",top:0,left:16,right:16,height:2,borderRadius:1,
+        background:"linear-gradient(90deg,transparent,"+C.goldL+",transparent)"}}/>
+      <div style={{fontSize:8,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",
+        color:C.goldL,marginBottom:8,display:"flex",alignItems:"center",gap:5}}>
+        <span style={{display:"inline-block",width:5,height:5,borderRadius:3,background:C.goldL,
+          animation:"pulse 2s infinite"}}/>
+        {dayLabel}
+      </div>
+      <div style={{fontSize:15,fontWeight:700,color:"#fff",marginBottom:4,lineHeight:1.2,
+        whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{isPremium?pick.name:"••••••••••"}</div>
+      <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:"rgba(255,255,255,.6)",flexWrap:"wrap"}}>
+        <span style={{color:C.green,fontSize:13}}>✅</span>
+        <span>{lang==="en"?"Clean":"Propre"}</span>
+        {distLabel&&<><span style={{color:"rgba(255,255,255,.15)"}}>·</span><span>{distLabel}</span></>}
+        {pick.kids&&<span>🧒</span>}
+        {pick.snorkel&&<span>🤿</span>}
+      </div>
+      {/* Weather preview */}
+      {weather&&(
+        <div style={{display:"flex",gap:8,marginTop:8,padding:"6px 0 0",
+          borderTop:"1px solid rgba(255,255,255,.08)"}}>
+          <span style={{fontSize:10,color:"rgba(255,255,255,.5)"}}>🌡️{weather.temp}°</span>
+          <span style={{fontSize:10,color:"rgba(255,255,255,.5)"}}>💨{weather.wind}km/h</span>
+          {weather.uv!=null&&<span style={{fontSize:10,color:weather.uv>6?"#FF8066":"rgba(255,255,255,.5)"}}>☀️UV{weather.uv}</span>}
+        </div>
+      )}
+      {!isPremium&&(
+        <div style={{marginTop:8,fontSize:10,fontWeight:700,color:C.goldL,
+          display:"flex",alignItems:"center",gap:4}}>
+          <span>🔓</span>{lang==="en"?"Try free 7 days":"Essai gratuit 7 jours"}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    WEEKEND BANNER — visible on map, teases premium value
    ═══════════════════════════════════════════════════════════════════════════ */
 function WeekendBanner({allBeaches,sargData,island,lang,isPremium,onPremiumClick,onBeachClick,userPos}){
@@ -1902,6 +2093,8 @@ function WeekendBanner({allBeaches,sargData,island,lang,isPremium,onPremiumClick
    ═══════════════════════════════════════════════════════════════════════════ */
 function PremiumModal({onClose,lang}){
   const LL=T[lang]||T.fr
+  const hasAnnual=!!STRIPE_ANNUAL_URL
+  const[plan,setPlan]=useState("monthly") // "monthly" | "annual"
   // A/B Test 2: modal value proposition
   const modalV=abVariant("modal1",["control","family"],[.5,.5])
   const isFamily=modalV==="family"
@@ -1912,11 +2105,19 @@ function PremiumModal({onClose,lang}){
     ?(lang==="en"?"Your kids count on you to find the right beach.":"Tes enfants comptent sur toi pour trouver la bonne plage.")
     :(lang==="en"?"Sargassum changes every day. Know before you go.":"Les sargasses changent chaque jour. Sache avant de partir.")
   const socialProof=isFamily
-    ?(lang==="en"?"2 out of 3 families come back every weekend":"2 familles sur 3 reviennent chaque weekend")
-    :(lang==="en"?"+2,400 families use Sargasses Premium":"+2 400 familles utilisent Sargasses Premium")
+    ?(lang==="en"?"Satellite data updated 4x per day":"Données satellite mises à jour 4x par jour")
+    :(lang==="en"?"Used by families across Martinique and Guadeloupe":"Utilisé par les familles de Martinique et Guadeloupe")
   const anchor=isFamily
     ?(lang==="en"?"This week, 3 beaches will change status. You'll know which ones.":"Cette semaine, 3 plages vont changer de statut. Tu sauras lesquelles.")
     :(lang==="en"?"A wasted beach day = €80. Knowing before = €4.99/mo.":"Une journée gâchée = 80€. Savoir avant = 4,99€/mois.")
+  // Season urgency
+  const seasonStart=new Date("2026-05-01")
+  const daysLeft=Math.max(0,Math.ceil((seasonStart-Date.now())/864e5))
+  const effectivePlan=hasAnnual?plan:"monthly"
+  const stripeUrl=effectivePlan==="annual"?STRIPE_ANNUAL_URL:STRIPE_URL
+  const priceLabel=effectivePlan==="annual"
+    ?(lang==="en"?"€39.99/year":"39,99 €/an")
+    :LL.premiumPrice
   return(
     <>
       <div className="backdrop" onClick={()=>{track("sg_premium_modal_close");onClose()}}/>
@@ -1929,6 +2130,20 @@ function PremiumModal({onClose,lang}){
         <div className="sheet-handle" style={{background:"rgba(255,255,255,.2)"}}/>
         <div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
           margin:"-8px -24px 20px",padding:0}}/>
+
+        {/* Season urgency banner */}
+        {daysLeft>0&&daysLeft<=60&&(
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14,
+            padding:"10px 12px",background:"rgba(232,82,42,.12)",borderRadius:10,
+            border:"1px solid rgba(232,82,42,.25)"}}>
+            <span style={{fontSize:16}}>⏰</span>
+            <span style={{fontSize:12,fontWeight:700,color:"#FF8066"}}>
+              {lang==="en"
+                ?`Sargassum season in ${daysLeft} days — be ready`
+                :`Saison sargasses dans ${daysLeft} jours — sois prêt`}
+            </span>
+          </div>
+        )}
 
         <h2 className="anton" style={{fontSize:28,color:"#fff",marginBottom:4}}>{headline}</h2>
         <p style={{fontSize:13,color:"#adbac7",marginBottom:6}}>{subtitle}</p>
@@ -1954,11 +2169,39 @@ function PremiumModal({onClose,lang}){
           ))}
         </ul>
 
-        <a href={STRIPE_URL} target="_blank" rel="noopener" className="gbtn"
-          onClick={()=>track("sg_premium_modal_cta")}
+        {/* Plan toggle: monthly vs annual — only visible when annual Stripe link is configured */}
+        {hasAnnual&&(
+        <div style={{display:"flex",gap:8,marginBottom:14}}>
+          <button onClick={()=>{setPlan("monthly");track("sg_plan_toggle",{plan:"monthly"})}} style={{
+            flex:1,padding:"10px 8px",borderRadius:12,cursor:"pointer",fontFamily:"inherit",
+            background:plan==="monthly"?"rgba(255,199,44,.15)":"rgba(255,255,255,.04)",
+            border:plan==="monthly"?"1.5px solid rgba(255,199,44,.4)":"1.5px solid rgba(255,255,255,.1)",
+            color:plan==="monthly"?"#fff":"rgba(255,255,255,.5)",fontSize:13,fontWeight:600,
+            transition:"all .2s"}}>
+            <div>{lang==="en"?"Monthly":"Mensuel"}</div>
+            <div style={{fontSize:18,fontWeight:700,marginTop:2}}>{lang==="en"?"€4.99":"4,99 €"}<span style={{fontSize:11,fontWeight:400}}>/{lang==="en"?"mo":"mois"}</span></div>
+          </button>
+          <button onClick={()=>{setPlan("annual");track("sg_plan_toggle",{plan:"annual"})}} style={{
+            flex:1,padding:"10px 8px",borderRadius:12,cursor:"pointer",fontFamily:"inherit",position:"relative",
+            background:plan==="annual"?"rgba(255,199,44,.15)":"rgba(255,255,255,.04)",
+            border:plan==="annual"?"1.5px solid rgba(255,199,44,.4)":"1.5px solid rgba(255,255,255,.1)",
+            color:plan==="annual"?"#fff":"rgba(255,255,255,.5)",fontSize:13,fontWeight:600,
+            transition:"all .2s"}}>
+            <div style={{position:"absolute",top:-8,right:8,background:C.gold,color:C.ink,
+              fontSize:9,fontWeight:800,padding:"2px 7px",borderRadius:100,letterSpacing:".02em"}}>
+              -33%
+            </div>
+            <div>{lang==="en"?"Annual":"Annuel"}</div>
+            <div style={{fontSize:18,fontWeight:700,marginTop:2}}>{lang==="en"?"€39.99":"39,99 €"}<span style={{fontSize:11,fontWeight:400}}>/{lang==="en"?"yr":"an"}</span></div>
+          </button>
+        </div>
+        )}
+
+        <a href={stripeUrl} target="_blank" rel="noopener" className="gbtn"
+          onClick={()=>track("sg_premium_modal_cta",{plan:effectivePlan})}
           style={{width:"100%",textDecoration:"none",textAlign:"center",
             fontSize:17,padding:"16px 24px",display:"block"}}>
-          {LL.premiumCta} — {LL.premiumPrice}
+          {LL.premiumCta} — {priceLabel}
         </a>
 
         {/* Guarantee */}
@@ -2143,7 +2386,7 @@ function EmailCapture(){
     const island=window.location.hostname.includes("guadeloupe")?"GP":"MQ"
     try{
       // Google Sheets webhook (Apps Script) — illimité, gratuit
-      fetch("https://script.google.com/macros/s/AKfycbxICUOQ3KDireo8sY1ZF8b9QiglPV7_sK0Q3hTIUPeQXTAhs-DWmtZ4hb_6v8c2fhhuBg/exec",{
+      fetch("https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec",{
         method:"POST",mode:"no-cors",
         headers:{"Content-Type":"text/plain"},
         body:JSON.stringify({email,island,source:"sargasses-app",date:new Date().toISOString()})
@@ -2240,7 +2483,7 @@ function FeedbackWidget(){
   const submit=()=>{
     track("sg_feedback",{rating,text:text.slice(0,200)})
     const island=window.location.hostname.includes("guadeloupe")?"GP":"MQ"
-    try{fetch("https://script.google.com/macros/s/AKfycbxICUOQ3KDireo8sY1ZF8b9QiglPV7_sK0Q3hTIUPeQXTAhs-DWmtZ4hb_6v8c2fhhuBg/exec",{
+    try{fetch("https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec",{
       method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
       body:JSON.stringify({type:"feedback",rating,text:text.slice(0,500),island,date:new Date().toISOString()})
     }).catch(()=>{})}catch{}
@@ -2386,7 +2629,7 @@ export default function App(){
         track("sg_conversion",{session_id:sessionId||"direct"})
         // Log payment to Apps Script (fire-and-forget)
         if(sessionId){
-          try{fetch("https://script.google.com/macros/s/AKfycbxICUOQ3KDireo8sY1ZF8b9QiglPV7_sK0Q3hTIUPeQXTAhs-DWmtZ4hb_6v8c2fhhuBg/exec",{
+          try{fetch("https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec",{
             method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
             body:JSON.stringify({type:"checkout.session.completed",data:{object:{id:sessionId,payment_status:"paid",
               metadata:{island:window.location.hostname.includes("guadeloupe")?"GP":"MQ"}}}})
@@ -2614,6 +2857,13 @@ export default function App(){
             </div>
           </div>
         </div>
+
+        {/* BEST BEACH WIDGET — "Meilleure plage pour toi" */}
+        {view==="map"&&!selectedBeach&&!showOnboarding&&(
+          <BestBeachWidget allBeaches={allBeaches} sargData={sargData} island={island}
+            lang={lang} isPremium={isPremium} onBeachClick={onBeachClick}
+            userPos={userPos} onPremiumClick={openPremium}/>
+        )}
 
         {/* WEEKEND BANNER — premium teaser on map */}
         {view==="map"&&!selectedBeach&&!showOnboarding&&(
