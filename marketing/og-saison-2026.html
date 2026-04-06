@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:1200px;height:630px;font-family:'Segoe UI',Arial,sans-serif;background:linear-gradient(160deg,#1B2D2A 0%,#0D1F1C 50%,#2D1A1A 100%);overflow:hidden;position:relative}
+.content{position:relative;z-index:2;padding:50px 70px;height:100%;display:flex;flex-direction:column;justify-content:space-between}
+.badge{display:inline-flex;align-items:center;gap:8px;background:rgba(239,71,111,0.15);border:1px solid rgba(239,71,111,0.3);padding:8px 18px;border-radius:20px;font-size:13px;font-weight:700;color:#EF476F;letter-spacing:2px;text-transform:uppercase}
+.title{font-size:52px;font-weight:800;color:white;line-height:1.2;margin-top:24px}
+.title span{color:#FFD166}
+.subtitle{font-size:22px;color:rgba(255,255,255,0.7);margin-top:12px;line-height:1.5}
+.timeline{display:flex;align-items:center;gap:0;margin-top:auto}
+.step{display:flex;flex-direction:column;align-items:center;gap:8px}
+.step-dot{width:18px;height:18px;border-radius:50%;border:3px solid}
+.step-now{border-color:#06D6A0;background:#06D6A0}
+.step-soon{border-color:#FFD166;background:transparent}
+.step-peak{border-color:#EF476F;background:transparent}
+.step-label{font-size:12px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px}
+.step-date{font-size:15px;color:white;font-weight:600}
+.line{flex:1;height:3px;background:rgba(255,255,255,0.15);margin:0 0 28px 0}
+.bottom{display:flex;justify-content:space-between;align-items:flex-end;margin-top:24px}
+.cta{font-size:18px;color:white;font-weight:600}
+.cta span{color:#06D6A0}
+.url{color:rgba(255,255,255,0.4);font-size:14px}
+</style></head>
+<body>
+<div class="content">
+  <div>
+    <div class="badge">SAISON 2026</div>
+    <div class="title">Les sargasses arrivent<br>dans <span>3 semaines</span></div>
+    <div class="subtitle">Cette annee, vous pouvez anticiper.<br>135 plages surveillees par satellite en temps reel.</div>
+  </div>
+  <div>
+    <div class="timeline">
+      <div class="step">
+        <div class="step-dot step-now"></div>
+        <div class="step-date">Avril</div>
+        <div class="step-label">Calme</div>
+      </div>
+      <div class="line"></div>
+      <div class="step">
+        <div class="step-dot step-soon"></div>
+        <div class="step-date">Mai</div>
+        <div class="step-label">Debut</div>
+      </div>
+      <div class="line"></div>
+      <div class="step">
+        <div class="step-dot step-peak"></div>
+        <div class="step-date">Juin-Aout</div>
+        <div class="step-label">Pic</div>
+      </div>
+      <div class="line"></div>
+      <div class="step">
+        <div class="step-dot step-soon"></div>
+        <div class="step-date">Sept</div>
+        <div class="step-label">Fin</div>
+      </div>
+    </div>
+    <div class="bottom">
+      <div class="cta">Bulletin gratuit chaque vendredi <span>&#8594;</span></div>
+      <div class="url">sargasses-martinique.com/weekend.html</div>
+    </div>
+  </div>
+</div>
+</body></html>

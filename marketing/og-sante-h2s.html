@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:1200px;height:630px;font-family:'Segoe UI',Arial,sans-serif;background:#1B2D2A;overflow:hidden;position:relative}
+.accent{position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,#EF476F,#FFD166,#06D6A0)}
+.content{position:relative;z-index:2;padding:50px 70px;height:100%;display:flex;flex-direction:column;justify-content:space-between}
+.tag{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:#EF476F;letter-spacing:2px;text-transform:uppercase}
+.tag-icon{font-size:18px}
+.title{font-size:48px;font-weight:800;color:white;line-height:1.2;margin-top:20px;max-width:800px}
+.title span{color:#FFD166}
+.facts{display:flex;gap:24px;margin-top:auto}
+.fact{flex:1;background:rgba(255,255,255,0.06);border-radius:14px;padding:22px;border-left:4px solid}
+.fact-warn{border-color:#EF476F}
+.fact-info{border-color:#FFD166}
+.fact-ok{border-color:#06D6A0}
+.fact-title{font-size:14px;font-weight:700;color:rgba(255,255,255,0.9);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px}
+.fact-text{font-size:15px;color:rgba(255,255,255,0.6);line-height:1.4}
+.bottom{display:flex;justify-content:space-between;align-items:flex-end;margin-top:20px}
+.source{font-size:13px;color:rgba(255,255,255,0.35)}
+.url{font-size:15px;color:rgba(255,255,255,0.5);font-weight:600}
+</style></head>
+<body>
+<div class="accent"></div>
+<div class="content">
+  <div>
+    <div class="tag"><span class="tag-icon">&#9888;</span> SANTE</div>
+    <div class="title">Sargasses et <span>H2S</span> :<br>ce qu'il faut savoir</div>
+  </div>
+  <div>
+    <div class="facts">
+      <div class="fact fact-warn">
+        <div class="fact-title">Symptomes</div>
+        <div class="fact-text">Maux de tete, irritation yeux et gorge, nausees</div>
+      </div>
+      <div class="fact fact-info">
+        <div class="fact-title">Qui est concerne</div>
+        <div class="fact-text">Enfants, personnes asthmatiques, femmes enceintes</div>
+      </div>
+      <div class="fact fact-ok">
+        <div class="fact-title">Comment eviter</div>
+        <div class="fact-text">Verifier l'etat des plages avant de se deplacer</div>
+      </div>
+    </div>
+    <div class="bottom">
+      <div class="source">Sources : HCSP, ARS Martinique</div>
+      <div class="url">sargasses-martinique.com</div>
+    </div>
+  </div>
+</div>
+</body></html>

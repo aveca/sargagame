@@ -170,8 +170,13 @@ function findMostRelevantThreat(banks,beaches,favorites,userPos,island){
   return best
 }
 
-const STRIPE_URL="https://buy.stripe.com/6oU3cxgg36J48Ox6ZZ0co0s" // 4.99 EUR/mois recurring + 7d trial
-const STRIPE_ANNUAL_URL="https://buy.stripe.com/14AeVf0h5c3o4yhgAz0co0r" // 39.99 EUR/an recurring + 7d trial
+// Stripe — Payment Links (fallback popup) + Buy Button (embedded, si configure)
+const STRIPE_LINK_MONTHLY="https://buy.stripe.com/6oU3cxgg36J48Ox6ZZ0co0s" // 4.99 EUR/mois + 7d trial
+const STRIPE_LINK_ANNUAL="https://buy.stripe.com/14AeVf0h5c3o4yhgAz0co0r" // 39.99 EUR/an + 7d trial
+const STRIPE_PK="pk_live_51PW2TGP9RK8Orx516Nx5mGUixrk2ozE8ppOcygq9Wkb1Tz5CkozRcRFcPAv53uNOmuVCHakWAse09I7KXuUiAb5r00CKYHh9zE"
+// Buy Button IDs — creer sur dashboard.stripe.com/buy-buttons puis coller ici
+const STRIPE_BUY_BTN_MONTHLY="buy_btn_1TJLdoP9RK8Orx514zzwL1B4" // 4.99€/mois + trial 7j + taxes
+const STRIPE_BUY_BTN_ANNUAL="buy_btn_1TJLcjP9RK8Orx51JDzUFge3"
 
 /* ═══════════════════════════════════════════════════════════════════════════
    UTILITIES
@@ -1865,12 +1870,101 @@ function WeekendBanner({allBeaches,sargData,island,lang,isPremium,onPremiumClick
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   STRIPE BUY BUTTON — web component, checkout in-app
+   ═══════════════════════════════════════════════════════════════════════════ */
+function StripeInlineCheckout({plan,lang,source,onSuccess}){
+  const cardRef=useRef(null)
+  const stripeRef=useRef(null)
+  const elementsRef=useRef(null)
+  const[email,setEmail]=useState("")
+  const[ready,setReady]=useState(false)
+  const[submitting,setSubmitting]=useState(false)
+  const[error,setError]=useState(null)
+  const LL=T[lang]||T.fr
+
+  useEffect(()=>{
+    if(!window.Stripe) return
+    fetch("/api/create-checkout.php",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({action:"setup"})
+    }).then(r=>r.json()).then(data=>{
+      if(data.error){setError(data.error);return}
+      const stripe=window.Stripe(STRIPE_PK)
+      stripeRef.current=stripe
+      const elements=stripe.elements({
+        clientSecret:data.clientSecret,
+        appearance:{
+          theme:"night",
+          variables:{
+            colorPrimary:"#E8A800",colorBackground:"#0A1714",
+            colorText:"#e6edf3",colorDanger:"#ff6b6b",
+            fontFamily:"Bricolage Grotesque,system-ui,sans-serif",
+            borderRadius:"12px",spacingUnit:"4px",
+          },
+          rules:{".Input":{border:"1.5px solid rgba(255,255,255,.15)",
+            backgroundColor:"rgba(255,255,255,.06)",padding:"14px 16px"}}
+        }
+      })
+      elementsRef.current=elements
+      const pe=elements.create("payment",{layout:"tabs"})
+      pe.on("ready",()=>setReady(true))
+      pe.mount(cardRef.current)
+    }).catch(()=>setError("Connexion impossible"))
+    return()=>{elementsRef.current?.getElement?.("payment")?.destroy?.()}
+  },[])
+
+  const handleSubmit=async()=>{
+    if(!stripeRef.current||!elementsRef.current||!email.includes("@"))return
+    setSubmitting(true);setError(null)
+    track("sg_premium_modal_cta",{plan,source:source||"unknown"})
+    const{error:stripeErr,setupIntent}=await stripeRef.current.confirmSetup({
+      elements:elementsRef.current,
+      confirmParams:{return_url:window.location.href},
+      redirect:"if_required"
+    })
+    if(stripeErr){setError(stripeErr.message);setSubmitting(false);return}
+    const res=await fetch("/api/create-checkout.php",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({action:"subscribe",email,plan,setupIntentId:setupIntent.id})
+    })
+    const data=await res.json()
+    if(data.error){setError(data.error);setSubmitting(false);return}
+    track("sg_premium_subscribed",{plan,source})
+    localStorage.setItem("sg_premium","1")
+    localStorage.setItem("sg_premium_trial_end",String(data.trialEnd))
+    onSuccess?.()
+  }
+
+  return(
+    <div style={{display:"flex",flexDirection:"column",gap:12}}>
+      <input type="email" placeholder={lang==="en"?"Your email":"Ton email"}
+        value={email} onChange={e=>setEmail(e.target.value)}
+        style={{width:"100%",padding:"14px 16px",fontSize:15,fontFamily:"inherit",
+          background:"rgba(255,255,255,.06)",border:"1.5px solid rgba(255,255,255,.15)",
+          borderRadius:12,color:"#e6edf3",outline:"none",boxSizing:"border-box"}}/>
+      <div ref={cardRef}/>
+      {!ready&&!error&&<div style={{textAlign:"center",color:"rgba(255,255,255,.4)",fontSize:13,padding:12}}>
+        {lang==="en"?"Loading secure form...":"Chargement du formulaire sécurisé..."}</div>}
+      {error&&<p style={{color:"#ff6b6b",fontSize:12,textAlign:"center",margin:0}}>{error}</p>}
+      <button onClick={handleSubmit} disabled={submitting||!ready||!email.includes("@")}
+        className="gbtn" style={{width:"100%",fontSize:17,padding:"16px 24px",
+          border:"none",cursor:submitting?"wait":"pointer",fontFamily:"inherit",
+          opacity:(submitting||!ready||!email.includes("@"))?0.6:1}}>
+        {submitting?(lang==="en"?"Processing...":"En cours...")
+          :(lang==="en"?"Start free trial":"Démarrer l'essai gratuit")}
+      </button>
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    PREMIUM MODAL
    ═══════════════════════════════════════════════════════════════════════════ */
 function PremiumModal({onClose,lang,source}){
   const LL=T[lang]||T.fr
-  const hasAnnual=!!STRIPE_ANNUAL_URL
+  const hasAnnual=!!STRIPE_LINK_ANNUAL
   const[plan,setPlan]=useState("monthly") // "monthly" | "annual"
+  const[showCheckout,setShowCheckout]=useState(false)
   // A/B Test 2: modal value proposition
   const modalV=abVariant("modal1",["control","family"],[.5,.5])
   const isFamily=modalV==="family"
@@ -1890,10 +1984,6 @@ function PremiumModal({onClose,lang,source}){
   const seasonStart=new Date("2026-05-01")
   const daysLeft=Math.max(0,Math.ceil((seasonStart-Date.now())/864e5))
   const effectivePlan=hasAnnual?plan:"monthly"
-  const stripeUrl=effectivePlan==="annual"?STRIPE_ANNUAL_URL:STRIPE_URL
-  const priceLabel=effectivePlan==="annual"
-    ?(lang==="en"?"€39.99/year":"39,99 €/an")
-    :LL.premiumPrice
   return(
     <>
       <div className="backdrop" onClick={()=>{track("sg_premium_modal_close");onClose()}}/>
@@ -1973,12 +2063,16 @@ function PremiumModal({onClose,lang,source}){
         </div>
         )}
 
-        <a href={stripeUrl} target="_blank" rel="noopener" className="gbtn"
-          onClick={()=>track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown"})}
-          style={{width:"100%",textDecoration:"none",textAlign:"center",
-            fontSize:17,padding:"16px 24px",display:"block"}}>
-          {LL.premiumCta} — {priceLabel}
-        </a>
+        {!showCheckout?(
+          <button onClick={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown"});setShowCheckout(true)}}
+            className="gbtn" style={{width:"100%",textAlign:"center",fontSize:17,
+              padding:"16px 24px",display:"block",border:"none",cursor:"pointer",fontFamily:"inherit"}}>
+            {LL.premiumCta} — {effectivePlan==="annual"?(lang==="en"?"€39.99/year":"39,99 €/an"):LL.premiumPrice}
+          </button>
+        ):(
+          <StripeInlineCheckout plan={effectivePlan} lang={lang} source={source}
+            onSuccess={()=>{track("sg_premium_success");onClose()}}/>
+        )}
 
         {/* Guarantee */}
         <div style={{textAlign:"center",marginTop:10,fontSize:11,color:"rgba(255,255,255,.4)",
