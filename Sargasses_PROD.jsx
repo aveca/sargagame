@@ -1124,6 +1124,11 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
   const startY=useRef(0)
   const sheetRef=useRef(null)
 
+  // Scroll to top when beach changes
+  useEffect(()=>{
+    if(sheetRef.current)sheetRef.current.scrollTop=0
+  },[beach?.id])
+
   // Nearby beaches: same COMMUNE first (SEO internal linking), then by distance
   const nearby=useMemo(()=>{
     if(!beach||!allBeaches)return[]
@@ -2954,6 +2959,11 @@ export default function App(){
               lang={lang} onLangToggle={toggleLang}
               theme={theme} onThemeToggle={toggleTheme}
               beachCount={allBeaches.length} dataSource={dataSource}/>
+            {view!=="map"&&(
+              <div style={{marginTop:10}}>
+                <SearchBar value={search} onChange={setSearch} lang={lang}/>
+              </div>
+            )}
             <div style={{marginTop:8,display:"flex",gap:6,overflowX:"auto",
               paddingBottom:4,scrollbarWidth:"none",WebkitOverflowScrolling:"touch"}}>
               {LL.filters.map((f,i)=>(
