@@ -318,7 +318,7 @@ export default defineConfig({
             const beachDir = resolve(outDir, beachPath)
             mkdirSync(beachDir, { recursive: true })
             const beachTitle = `${b.name} — Sargasses ${island} aujourd'hui`
-            const statusTextMap = { clean: 'Plage propre aujourd\u2019hui', moderate: 'Présence modérée de sargasses', avoid: 'Plage à éviter aujourd\u2019hui' }
+            const statusTextMap = { clean: 'Plage propre aujourd\u2019hui', moderate: 'Présence modérée de sargasses détectée au large', avoid: 'Alerte sargasses — forte concentration détectée au large' }
             const statusText = statusTextMap[b.status] || statusTextMap.clean
             const beachDesc = `État des sargasses à ${b.name} (${b.commune}) aujourd'hui. ${statusText}. Prévisions 7 jours, météo, photos. Mis à jour quotidiennement.`
             const beachUrl = `https://${domain}/plages/${b.slug}/`
@@ -333,6 +333,9 @@ export default defineConfig({
               .replace(/<title>[^<]*<\/title>/, `<title>${beachTitle}</title>`)
               .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${beachDesc}" />`)
               .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${beachUrl}" />`)
+              // Fix hreflang: point to actual page URL, not homepage
+              .replace(/<link rel="alternate" hreflang="fr"[^>]*>/, `<link rel="alternate" hreflang="fr" href="${beachUrl}" />`)
+              .replace(/<link rel="alternate" hreflang="x-default"[^>]*>/, `<link rel="alternate" hreflang="x-default" href="${beachUrl}" />`)
               .replace(/<meta property="og:title"[^>]*>/, `<meta property="og:title" content="${beachTitle}" />`)
               .replace(/<meta property="og:description"[^>]*>/, `<meta property="og:description" content="${beachDesc}" />`)
               .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="${beachUrl}" />`)
@@ -343,7 +346,7 @@ export default defineConfig({
               .replace('</head>', `\n    <script type="application/ld+json">\n    ${beachSchema}\n    </script>\n    <script type="application/ld+json">\n    ${breadcrumbBeach}\n    </script>\n    <script type="application/ld+json">\n    ${faqSchema}\n    </script>\n</head>`)
             // Build noscript with nearby beaches (same commune first, then same island), nav links
             // Extra SEO sections appended to ALL beaches (enriched or not)
-            const condBaignade = b.status === 'clean' ? `<h2>Conditions de baignade</h2><p>${b.name} est actuellement propre. La baignade est possible dans de bonnes conditions. Aucune présence notable de sargasses.</p>` : b.status === 'moderate' ? `<h2>Conditions de baignade</h2><p>Présence modérée de sargasses à ${b.name}. La baignade reste possible mais soyez vigilant. Évitez les zones d'accumulation d'algues.</p>` : `<h2>Conditions de baignade</h2><p>La baignade est déconseillée à ${b.name} aujourd'hui. Forte présence de sargasses. Le H2S dégagé peut provoquer des irritations. Consultez les <a href="/plages-sans-sargasses/">plages propres à proximité</a>.</p>`
+            const condBaignade = b.status === 'clean' ? `<h2>Conditions</h2><p>Peu ou pas de sargasses détectées par satellite au large de ${b.name}. Vérifiez toujours sur place avant de vous baigner.</p>` : b.status === 'moderate' ? `<h2>Conditions</h2><p>Présence modérée de sargasses détectée par satellite au large de ${b.name}. Vérifiez l'état de la plage sur place.</p>` : `<h2>Conditions</h2><p>Forte concentration de sargasses détectée par satellite au large de ${b.name}. Échouages probables. Si des sargasses sont en décomposition sur place, éloignez-vous (risque H₂S — source HCSP). Consultez les <a href="/">plages propres à proximité</a>.</p>`
             const accessSection = `<h2>Comment s'y rendre</h2><p>${b.name} se trouve à ${b.commune}, ${island}. Accessible en ${b.drive} minutes en voiture depuis ${mainCity}.</p>`
             const tagsList = []
             if (b.kids) tagsList.push('Adaptée aux enfants')
