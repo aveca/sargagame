@@ -582,7 +582,7 @@ async function fetchRegionalWind() {
  * Compute drift predictions for a bank.
  * Model: wind Stokes drift (2.5% of wind speed) + Caribbean current (0.5 km/h west).
  */
-function computeBankDrift(centroid, hull, windSpeed, windDir) {
+function computeBankDrift(centroid, hull, windSpeed, windDir, island) {
   // Wind drift: ~2.5% of wind speed, direction = opposite of "from"
   const driftBearing = (windDir + 180) % 360
   const driftSpeed = windSpeed * 0.025 // km/h
@@ -601,17 +601,40 @@ function computeBankDrift(centroid, hull, windSpeed, windDir) {
   const dLatH = totalN / 111.0
   const dLngH = totalE / (111.0 * Math.cos(toRad(centroid[0])))
 
+  // Coast capping: compute max hours before hitting nearest coast
+  // Project drift vector onto direction-to-nearest-beach, cap at 85%
+  const coastBeaches = BEACHES.filter(b => b.island === island)
+  const nearest = coastBeaches
+    .map(b => ({ lat: b.lat, lng: b.lng, dist: haversineKm(centroid[0], centroid[1], b.lat, b.lng) }))
+    .sort((a, b) => a.dist - b.dist)[0]
+  let maxDriftH = Infinity
+  if (nearest) {
+    const toBeachLat = nearest.lat - centroid[0]
+    const toBeachLng = nearest.lng - centroid[1]
+    const toBeachNorm = Math.sqrt(toBeachLat ** 2 + toBeachLng ** 2)
+    if (toBeachNorm > 0) {
+      // Drift component toward beach (degrees/h)
+      const driftToward = (dLatH * toBeachLat + dLngH * toBeachLng) / toBeachNorm
+      if (driftToward > 0) {
+        // Drifting toward coast — cap at 85% of distance
+        maxDriftH = (toBeachNorm * 0.85) / driftToward
+      }
+    }
+  }
+
   const predictions = {}
   for (const h of [6, 12, 24]) {
+    const effH = Math.min(h, maxDriftH) // cap at coastline
     predictions[`${h}h`] = {
       centroid: [
-        Math.round((centroid[0] + dLatH * h) * 1000) / 1000,
-        Math.round((centroid[1] + dLngH * h) * 1000) / 1000,
+        Math.round((centroid[0] + dLatH * effH) * 1000) / 1000,
+        Math.round((centroid[1] + dLngH * effH) * 1000) / 1000,
       ],
       hull: hull.map(([lat, lng]) => [
-        Math.round((lat + dLatH * h) * 1000) / 1000,
-        Math.round((lng + dLngH * h) * 1000) / 1000,
+        Math.round((lat + dLatH * effH) * 1000) / 1000,
+        Math.round((lng + dLngH * effH) * 1000) / 1000,
       ]),
+      beached: h > maxDriftH,
     }
   }
   return { speed, bearing: bear, predictions }
@@ -653,7 +676,7 @@ async function buildSargassumBanks(gridPoints, dir) {
 
     // Drift
     const w = wind[island] || { speed: 15, dir: 75 }
-    const drift = computeBankDrift(centroid, hull, w.speed, w.dir)
+    const drift = computeBankDrift(centroid, hull, w.speed, w.dir, island)
 
     // Threatened beaches at each time step
     const threatens = {}
@@ -679,22 +702,29 @@ async function buildSargassumBanks(gridPoints, dir) {
     }
   })
 
-  // Sort by mass descending (biggest banks first)
-  banks.sort((a, b) => b.mass - a.mass || b.count - a.count)
+  // Filter noise: only keep significant banks (mass >= 0.08 and 4+ points)
+  const significant = banks.filter(b => b.mass >= 0.08 && b.count >= 4)
+  // Sort by mass descending, keep top 15 per island to avoid clutter
+  significant.sort((a, b) => b.mass - a.mass || b.count - a.count)
+  const mqBanks = significant.filter(b => b.island === 'mq').slice(0, 15)
+  const gpBanks = significant.filter(b => b.island === 'gp').slice(0, 15)
+  const banks2 = [...mqBanks, ...gpBanks]
+  banks2.forEach((b, i) => { b.id = i + 1 }) // re-index
 
+  console.log(`  Filtered: ${banks.length} raw → ${banks2.length} significant banks`)
   const payload = {
     updatedAt: new Date().toISOString(),
     wind,
-    bankCount: banks.length,
-    banks,
+    bankCount: banks2.length,
+    banks: banks2,
   }
 
   const outPath = path.join(dir, 'sargassum-banks.json')
   fs.writeFileSync(outPath, JSON.stringify(payload), 'utf-8')
-  console.log(`  Banks: ${outPath} | ${banks.length} banks`)
+  console.log(`  Banks: ${outPath} | ${banks2.length} banks`)
 
   // Log threats
-  const withThreats = banks.filter(b => Object.keys(b.threatens).length > 0)
+  const withThreats = banks2.filter(b => Object.keys(b.threatens).length > 0)
   if (withThreats.length) {
     for (const b of withThreats) {
       const times = Object.entries(b.threatens).map(([t, beaches]) =>

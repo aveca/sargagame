@@ -355,6 +355,12 @@ body{background:var(--sg-bg,#FDFCF7);color:var(--sg-ink,#0D0D0D)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 .pulse{animation:pulse 2s infinite}
 
+/* Sargassum bank animations */
+.sg-bank{transition:fill-opacity .6s ease}
+.sg-drift-dot{transition:all .6s ease}
+@keyframes sg-eta-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.sg-eta-badge{animation:sg-eta-pulse 2s ease-in-out infinite}
+
 /* Shine for onboarding buttons */
 @keyframes onb-shine{0%,100%{left:-75%}35%,65%{left:120%}}
 `
@@ -528,55 +534,82 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos}){
   // Fetch sargassum banks (clustered AFAI + drift predictions)
   useEffect(()=>{fetch("/api/copernicus/sargassum-banks.json").then(r=>r.json()).then(d=>{if(d?.banks?.length)setBanksData(d)}).catch(()=>{})},[])
 
-  // Render sargassum BANKS as polygons with drift arrows
+  // Render sargassum BANKS — clean, animated, wow effect
+  const bankAnimRef=useRef(null)
   useEffect(()=>{
     if(!mapRef.current)return
     if(banksLayerRef.current){banksLayerRef.current.remove();banksLayerRef.current=null}
+    if(bankAnimRef.current){clearInterval(bankAnimRef.current);bankAnimRef.current=null}
     if(!banksData||!banksData.banks.length)return
+    const showBanks=abVariant("banks_v1",["on","off"],[.5,.5])
+    if(showBanks==="off")return
+    track("sg_banks_shown",{variant:showBanks,timeStep,island})
     const isGP=island==="gp"
+    const visible=banksData.banks.filter(b=>isGP?b.centroid[0]>=15.5:b.centroid[0]<15.5)
+    if(!visible.length)return
     const bGroup=L.layerGroup()
-    for(const bank of banksData.banks){
-      if(isGP?bank.centroid[0]<15.5:bank.centroid[0]>=15.5)continue
+    const polys=[] // for animation
+    visible.forEach((bank,idx)=>{
       const hull=timeStep===0?bank.hull:bank.drift?.predictions?.[timeStep+"h"]?.hull
-      if(!hull||hull.length<3)continue
+      if(!hull||hull.length<3)return
       const cent=timeStep===0?bank.centroid:bank.drift?.predictions?.[timeStep+"h"]?.centroid||bank.centroid
       const mc=bank.mass<.15?"34,197,94":bank.mass<.40?"232,168,0":"232,82,42"
-      const poly=L.polygon(hull,{fillColor:"rgba("+mc+",.35)",color:"rgba("+mc+",.7)",weight:1.5,fillOpacity:.35,smoothFactor:3,interactive:true})
+      // Bank polygon — clean, no border noise
+      const poly=L.polygon(hull,{fillColor:"rgba("+mc+",.4)",color:"rgba("+mc+",.6)",weight:1,fillOpacity:.3,smoothFactor:3,interactive:true,className:"sg-bank"})
       poly.on("click",()=>{track("sg_bank_click",{bankId:bank.id,mass:bank.mass});const nearest=beaches.slice().sort((a,b)=>haversine(cent[0],cent[1],a.lat,a.lng)-haversine(cent[0],cent[1],b.lat,b.lng))[0];if(nearest)onBeachClick(nearest)})
-      poly.addTo(bGroup)
-      L.marker(cent,{icon:L.divIcon({className:"",html:'<div style="font-size:10px;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7);white-space:nowrap;pointer-events:none;text-align:center">'+Math.round(bank.mass*100)+'%<br><span style="font-size:8px;font-weight:400;opacity:.8">'+bank.count+' pts</span></div>',iconSize:[50,24],iconAnchor:[25,12]}),interactive:false,zIndexOffset:500}).addTo(bGroup)
-      if(timeStep===0&&bank.drift){
-        const bng=bank.drift.bearing,spd=bank.drift.speed,arrowLen=0.04+spd*0.008
-        const arrowEnd=[cent[0]+Math.cos(bng*Math.PI/180)*arrowLen,cent[1]+Math.sin(bng*Math.PI/180)*arrowLen/(Math.cos(cent[0]*Math.PI/180)||1)]
-        L.polyline([cent,arrowEnd],{color:"#fff",weight:2,opacity:.7,dashArray:"6,4",interactive:false}).addTo(bGroup)
-        const isAppr=bng>180&&bng<360,ac=isAppr?"#E8522A":"#22C55E"
-        L.marker(arrowEnd,{icon:L.divIcon({className:"",html:'<div style="transform:rotate('+(bng-90)+'deg);font-size:14px;color:'+ac+';text-shadow:0 1px 3px rgba(0,0,0,.6);pointer-events:none">\u27a4</div>',iconSize:[20,20],iconAnchor:[10,10]}),interactive:false}).addTo(bGroup)
-        if(spd>0.3)L.marker([cent[0]-.015,cent[1]],{icon:L.divIcon({className:"",html:'<div style="font-size:9px;font-weight:600;color:'+ac+';text-shadow:0 1px 2px rgba(0,0,0,.5);white-space:nowrap;pointer-events:none">'+spd+' km/h '+(isAppr?"\u2192 c\u00f4te":"\u2192 large")+'</div>',iconSize:[80,14],iconAnchor:[40,7]}),interactive:false}).addTo(bGroup)
+      poly.addTo(bGroup);polys.push(poly)
+      // Label only on top 3 biggest banks — just the % number, clean
+      if(idx<3&&bank.mass>=.10){
+        L.marker(cent,{icon:L.divIcon({className:"",html:'<div style="font-size:11px;font-weight:800;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.8);pointer-events:none">'+Math.round(bank.mass*100)+'%</div>',iconSize:[30,16],iconAnchor:[15,8]}),interactive:false,zIndexOffset:500}).addTo(bGroup)
       }
-      if(timeStep===0&&bank.drift?.predictions){
-        for(const[tk,pred]of Object.entries(bank.drift.predictions)){
-          if(!pred.hull||pred.hull.length<3)continue
-          const op=tk==="6h"?.15:tk==="12h"?.10:.06
-          L.polygon(pred.hull,{fillColor:"rgba("+mc+","+op+")",color:"rgba("+mc+",.2)",weight:1,fillOpacity:op,dashArray:"4,4",smoothFactor:3,interactive:false}).addTo(bGroup)
+      // Drift arrow — only on the biggest bank, only at T=0
+      if(idx===0&&timeStep===0&&bank.drift){
+        const bng=bank.drift.bearing,spd=bank.drift.speed
+        const arrowLen=0.06+spd*0.01
+        const steps=4 // animated trail dots
+        for(let s=0;s<steps;s++){
+          const t=(s+1)/steps
+          const pt=[cent[0]+Math.cos(bng*Math.PI/180)*arrowLen*t,cent[1]+Math.sin(bng*Math.PI/180)*arrowLen*t/(Math.cos(cent[0]*Math.PI/180)||1)]
+          const size=8-s*1.5,op=.8-s*.15
+          L.circleMarker(pt,{radius:size,fillColor:"#fff",color:"transparent",fillOpacity:op,interactive:false,className:"sg-drift-dot sg-drift-dot-"+s}).addTo(bGroup)
         }
+        const arrowEnd=[cent[0]+Math.cos(bng*Math.PI/180)*arrowLen,cent[1]+Math.sin(bng*Math.PI/180)*arrowLen/(Math.cos(cent[0]*Math.PI/180)||1)]
+        const isAppr=bng>180&&bng<360
+        L.marker(arrowEnd,{icon:L.divIcon({className:"",html:'<div style="font-size:10px;font-weight:700;color:'+(isAppr?"#E8522A":"#22C55E")+';text-shadow:0 1px 3px rgba(0,0,0,.6);pointer-events:none;white-space:nowrap">'+spd+' km/h \u2192</div>',iconSize:[60,14],iconAnchor:[0,7]}),interactive:false}).addTo(bGroup)
       }
-    }
+    })
+    // ETA badges — only "now" and "6h" (urgent ones, max 3)
     const etaMap=new Map()
-    for(const bnk of banksData.banks){
-      if(isGP?bnk.centroid[0]<15.5:bnk.centroid[0]>=15.5)continue
-      for(const tk of["now","6h","12h","24h"]){
+    for(const bnk of visible){
+      for(const tk of["now","6h"]){
         const threats=bnk.threatens?.[tk];if(!threats)continue
         for(const t of threats){if(!etaMap.has(t.id))etaMap.set(t.id,tk)}
       }
     }
+    let etaCount=0
     for(const bch of beaches){
+      if(etaCount>=3)break
       const sargId=BEACH_TO_SARG[bch.id];if(!sargId)continue
       const eta=etaMap.get(sargId);if(!eta)continue
-      const el=eta==="now"?"Maintenant":eta,ec=eta==="now"?"#E8522A":eta==="6h"?"#E8A820":"#22C55E"
-      L.marker([bch.lat+.008,bch.lng+.012],{icon:L.divIcon({className:"",html:'<div style="background:'+ec+';color:#fff;font-size:8px;font-weight:700;padding:2px 5px;border-radius:8px;white-space:nowrap;pointer-events:none;box-shadow:0 1px 3px rgba(0,0,0,.3)">\u26a0 '+el+'</div>',iconSize:[50,16],iconAnchor:[25,8]}),interactive:false,zIndexOffset:900}).addTo(bGroup)
+      const el=eta==="now"?"\u26a0":"\u23f1 6h"
+      const ec=eta==="now"?"#E8522A":"#E8A820"
+      L.marker([bch.lat+.006,bch.lng+.010],{icon:L.divIcon({className:"",html:'<div class="sg-eta-badge" style="background:'+ec+';color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px;pointer-events:none;box-shadow:0 2px 6px rgba(0,0,0,.4)">'+el+'</div>',iconSize:[36,16],iconAnchor:[18,8]}),interactive:false,zIndexOffset:900}).addTo(bGroup)
+      etaCount++
     }
     bGroup.addTo(mapRef.current);banksLayerRef.current=bGroup
-    return()=>{if(banksLayerRef.current){banksLayerRef.current.remove();banksLayerRef.current=null}}
+    // Animate: pulse polygon opacity
+    let tick=0
+    bankAnimRef.current=setInterval(()=>{
+      tick++
+      polys.forEach((p,i)=>{
+        const pulse=.25+Math.sin(tick*.12+i*.5)*.10
+        try{p.setStyle({fillOpacity:pulse})}catch(e){}
+      })
+    },600)
+    return()=>{
+      if(banksLayerRef.current){banksLayerRef.current.remove();banksLayerRef.current=null}
+      if(bankAnimRef.current){clearInterval(bankAnimRef.current);bankAnimRef.current=null}
+    }
   },[banksData,island,timeStep,beaches,onBeachClick])
 
   // Render AFAI heatmap from grid data (canvas circles, efficient)
@@ -742,7 +775,7 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos}){
   return(<div style={{position:"relative",width:"100%",height:"100%"}}>
     <div ref={containerRef} style={{width:"100%",height:"100%"}}/>
     {banksData&&banksData.banks.length>0&&(
-      <div style={{position:"absolute",bottom:100,left:"50%",transform:"translateX(-50%)",display:"flex",gap:3,padding:"3px 4px",background:"rgba(10,26,46,.85)",borderRadius:20,zIndex:800,backdropFilter:"blur(8px)",boxShadow:"0 2px 12px rgba(0,0,0,.4)"}}>
+      <div style={{position:"absolute",bottom:140,left:"50%",transform:"translateX(-50%)",display:"flex",gap:3,padding:"3px 4px",background:"rgba(10,26,46,.85)",borderRadius:20,zIndex:800,backdropFilter:"blur(8px)",boxShadow:"0 2px 12px rgba(0,0,0,.4)"}}>
         {[0,6,12,24].map(h=>(
           <button key={h} onClick={()=>setTimeStep(h)} style={{padding:"6px 12px",borderRadius:16,border:"none",background:timeStep===h?"#E8522A":"transparent",color:"#fff",fontSize:11,fontWeight:timeStep===h?700:500,cursor:"pointer",transition:"all .2s",opacity:timeStep===h?1:.7}}>
             {h===0?"Maintenant":"+"+h+"h"}
@@ -750,11 +783,7 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos}){
         ))}
       </div>
     )}
-    {banksData&&timeStep>0&&(
-      <div style={{position:"absolute",top:8,right:8,background:"rgba(10,26,46,.85)",color:"#fff",fontSize:10,fontWeight:600,padding:"4px 10px",borderRadius:12,zIndex:800,backdropFilter:"blur(8px)"}}>
-        {"Pr\u00e9vision +"}{timeStep}{"h \u00b7 "}{banksData.wind?.[island]?.speed||"?"}  {" km/h vent"}
-      </div>
-    )}
+{/* Prévision badge removed — time slider provides enough context */}
   </div>)
 }
 
@@ -1650,7 +1679,7 @@ function BestBeachWidget({allBeaches,sargData,island,lang,isPremium,onBeachClick
       if(isPremium){onBeachClick(pick);track("sg_best_beach_click",{beach:pick.id})}
       else{onPremiumClick("best_beach");track("sg_best_beach_lock",{beach:pick.id})}
     }} style={{
-      position:"absolute",top:"max(120px,env(safe-area-inset-top,12px) + 110px)",right:12,zIndex:750,
+      position:"absolute",top:"max(170px,env(safe-area-inset-top,12px) + 160px)",right:12,zIndex:750,
       background:"linear-gradient(145deg,rgba(13,30,28,.95),rgba(10,23,20,.95))",
       backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
       borderRadius:18,padding:"14px 16px",maxWidth:210,cursor:"pointer",
