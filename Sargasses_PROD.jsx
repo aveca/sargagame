@@ -2954,9 +2954,6 @@ export default function App(){
               lang={lang} onLangToggle={toggleLang}
               theme={theme} onThemeToggle={toggleTheme}
               beachCount={allBeaches.length} dataSource={dataSource}/>
-            <div style={{marginTop:10}}>
-              <SearchBar value={search} onChange={setSearch} lang={lang}/>
-            </div>
             <div style={{marginTop:8,display:"flex",gap:6,overflowX:"auto",
               paddingBottom:4,scrollbarWidth:"none",WebkitOverflowScrolling:"touch"}}>
               {LL.filters.map((f,i)=>(
