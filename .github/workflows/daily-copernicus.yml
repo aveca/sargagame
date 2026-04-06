@@ -28,14 +28,29 @@ jobs:
 
       # ── 1. Fetch LIVE sargassum data (ERDDAP + fallback) ──
       - name: Fetch LIVE sargassum data from ERDDAP
+        id: erddap
         continue-on-error: true
         run: node scripts/fetch-sargassum-live.cjs
 
-      - name: Fallback to Node.js scraper if ERDDAP failed
+      - name: Check if ERDDAP produced live data
+        id: check_live
+        run: |
+          if [ -f public/api/copernicus/sargassum.json ]; then
+            SOURCE=$(node -e "console.log(JSON.parse(require('fs').readFileSync('public/api/copernicus/sargassum.json','utf-8')).source)")
+            echo "source=$SOURCE" >> $GITHUB_OUTPUT
+            echo "ERDDAP result: source=$SOURCE"
+          else
+            echo "source=none" >> $GITHUB_OUTPUT
+            echo "No sargassum.json found"
+          fi
+
+      - name: Fallback to Node.js scraper (only if ERDDAP failed)
+        if: steps.check_live.outputs.source != 'erddap-live'
         run: |
           echo "${{ secrets.COPERNICUS_USERNAME }}" > copernicustxt.txt
           echo "${{ secrets.COPERNICUS_PASSWORD }}" >> copernicustxt.txt
           node scripts/scrape-copernicus.cjs
+          rm -f copernicustxt.txt
 
       - name: Send notifications (push + email)
         continue-on-error: true

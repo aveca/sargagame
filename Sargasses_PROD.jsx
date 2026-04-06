@@ -174,6 +174,60 @@ function haversine(lat1,lon1,lat2,lon2){
   return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))
 }
 
+/**
+ * Inverse Distance Weighting — interpolate AFAI for non-sentinel beaches
+ * from the K nearest sentinel beaches. Power=2, K=3.
+ */
+function interpolateIDW(beach,sentinels,k=3,power=2){
+  if(!sentinels||sentinels.length===0)return null
+  const withDist=sentinels.map(s=>({...s,dist:haversine(beach.lat,beach.lng,s.lat,s.lng)}))
+    .sort((a,b)=>a.dist-b.dist).slice(0,k)
+  // If closest sentinel is <0.5km, just use its value directly
+  if(withDist[0].dist<0.5)return withDist[0].afai
+  let sumW=0,sumV=0
+  for(const s of withDist){
+    const w=1/Math.pow(s.dist,power)
+    sumW+=w;sumV+=w*s.afai
+  }
+  return Math.round((sumV/sumW)*100)/100
+}
+
+/**
+ * Interpolate 7-day forecast for non-sentinel beaches
+ * by IDW-blending forecasts from K nearest sentinels
+ */
+function interpolateForecast(beach,sentinels,weeklyData,k=3,power=2){
+  if(!weeklyData||!sentinels||sentinels.length===0)return null
+  const withDist=sentinels
+    .filter(s=>weeklyData[s.sargId])
+    .map(s=>({...s,dist:haversine(beach.lat,beach.lng,s.lat,s.lng)}))
+    .sort((a,b)=>a.dist-b.dist).slice(0,k)
+  if(withDist.length===0)return null
+  // Compute weights
+  const weights=withDist.map(s=>({w:1/Math.pow(Math.max(s.dist,0.1),power),id:s.sargId}))
+  const sumW=weights.reduce((s,x)=>s+x.w,0)
+  // Blend each day
+  const ref=weeklyData[weights[0].id].forecast
+  const forecast=ref.map((dayRef,i)=>{
+    let blended=0
+    for(const{w,id}of weights){
+      const f=weeklyData[id].forecast[i]
+      blended+=(w/sumW)*(f?f.afai:dayRef.afai)
+    }
+    const afai=Math.round(Math.max(0,Math.min(1,blended))*100)/100
+    return{day:dayRef.day,date:dayRef.date,afai,status:statusFromAfai(afai)}
+  })
+  // Drift from blended forecast
+  const trend=forecast[6].afai-forecast[0].afai
+  return{
+    forecast,
+    drift:trend>0.05?"up":trend<-0.05?"down":"stable",
+    driftLabel:trend>0.05?"Dérive possible vers la côte":trend<-0.05?"Dispersion attendue":"Stable",
+    driftValue:Math.round(trend*100)/100,
+    interpolated:true,
+  }
+}
+
 // Beaches missing Google Places photos — use satellite fallback
 const NO_PHOTO=new Set(["gp011","gp087","gp103","gp118","gp119","mq035"])
 
@@ -352,11 +406,12 @@ function BottomNav({view,onChangeView,lang}){
 /* ═══════════════════════════════════════════════════════════════════════════
    MAP VIEW (Leaflet — satellite tiles, CircleMarkers + heatmap)
    ═══════════════════════════════════════════════════════════════════════════ */
-function MapView({beaches,island,onBeachClick,selectedBeach,sargData}){
+function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos}){
   const containerRef=useRef(null)
   const mapRef=useRef(null)
   const markersRef=useRef([])
   const heatRef=useRef([])
+  const userMarkerRef=useRef(null)
   const driftRef=useRef(null) // animation interval
   const[mapError,setMapError]=useState(null)
 
@@ -399,13 +454,36 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData}){
   // Fly to island (setView if container has 0 size, flyTo otherwise)
   useEffect(()=>{
     if(!mapRef.current)return
+    // If user GPS is on this island, center on them; else default island center
+    if(userPos){
+      const onMq=userPos.lat<15.5,onGp=userPos.lat>=15.5
+      if((island==="mq"&&onMq)||(island==="gp"&&onGp)){
+        mapRef.current.flyTo([userPos.lat,userPos.lng],12,{duration:1})
+        return
+      }
+    }
     const center=ISLAND_CENTER[island]||ISLAND_CENTER.mq
     try{
       const size=mapRef.current.getSize()
       if(size.x===0||size.y===0){mapRef.current.setView(center,11)}
       else{mapRef.current.flyTo(center,11,{duration:1})}
     }catch(e){mapRef.current.setView(center,11)}
-  },[island])
+  },[island,userPos])
+
+  // User location marker (blue pulsing dot)
+  useEffect(()=>{
+    if(!mapRef.current)return
+    if(userMarkerRef.current){userMarkerRef.current.remove();userMarkerRef.current=null}
+    if(!userPos)return
+    const icon=L.divIcon({
+      className:"",
+      html:`<div style="width:16px;height:16px;border-radius:50%;background:#4285F4;border:3px solid #fff;box-shadow:0 0 8px rgba(66,133,244,.5);animation:pulse 2s infinite"></div>`,
+      iconSize:[16,16],iconAnchor:[8,8],
+    })
+    userMarkerRef.current=L.marker([userPos.lat,userPos.lng],{icon,interactive:false,zIndexOffset:1000})
+      .addTo(mapRef.current)
+    return()=>{if(userMarkerRef.current){userMarkerRef.current.remove();userMarkerRef.current=null}}
+  },[userPos])
 
   // Update markers + heatmap
   useEffect(()=>{
@@ -628,16 +706,24 @@ function useWeather(beach){
 /* ═══════════════════════════════════════════════════════════════════════════
    BOTTOM SHEET — beach detail with photo, forecast, weather, nearby
    ═══════════════════════════════════════════════════════════════════════════ */
-function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMap,onBeachClick,onPremiumClick,isPremium,historyData,sargData}){
+function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMap,onBeachClick,onPremiumClick,isPremium,historyData,sargData,dataSource,userPos}){
   const LL=T[lang]||T.fr
   const weather=useWeather(beach)
-  // Use REAL forecast from sargassum.json when available, fallback to generated
+  // Use REAL forecast, then interpolated, then fallback generated
   const forecast=useMemo(()=>{
     if(!beach)return null
     const sargId=BEACH_TO_SARG[beach.id]
+    // 1. Direct sentinel forecast
     if(sargId&&sargData?.weekly?.[sargId]?.forecast){
       return sargData.weekly[sargId].forecast
     }
+    // 2. IDW-interpolated forecast
+    const interpKey=`_interp_${beach.id}`
+    const enriched=sargData?._enrichedWeekly
+    if(enriched?.[interpKey]?.forecast){
+      return enriched[interpKey].forecast
+    }
+    // 3. Math.sin fallback (should not happen with 20 sentinels)
     return generateForecast(beach.afai,lang)
   },[beach?.id,lang,sargData])
   const isFav=favorites.includes(beach?.id)
@@ -699,9 +785,19 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             <h2 className="anton" style={{fontSize:22,margin:0,lineHeight:1.2}}>{beach.name}</h2>
             <StatusBadge status={beach.status} lang={lang}/>
           </div>
-          <p style={{fontSize:13,color:"var(--sg-mid,#686868)",margin:"0 0 6px"}}>
+          <p style={{fontSize:13,color:"var(--sg-mid,#686868)",margin:"0 0 4px"}}>
             {beach.commune} · <AfaiBadge afai={beach.afai}/> · {beach.drive} {LL.drive}
+            {userPos&&beach.lat&&<> · {Math.round(haversine(userPos.lat,userPos.lng,beach.lat,beach.lng))} km</>}
           </p>
+          <div style={{display:"inline-flex",alignItems:"center",gap:4,marginBottom:6,
+            padding:"2px 8px",borderRadius:100,fontSize:10,fontWeight:600,
+            background:beach._src==="live"?"rgba(34,197,94,.1)":"rgba(184,122,0,.08)",
+            color:beach._src==="live"?"#16A34A":"#B87A00"}}>
+            <span style={{width:5,height:5,borderRadius:3,
+              background:beach._src==="live"?"#22C55E":"#B87A00"}}/>
+            {beach._src==="live"?(lang==="en"?"Satellite data":"Donnée satellite")
+              :(lang==="en"?"Estimated (IDW)":"Estimation (IDW)")}
+          </div>
           {/* Beach Score du Jour */}
           <BeachScoreBadge afai={beach.afai} weather={weather} lang={lang}/>
 
@@ -1621,8 +1717,11 @@ function PremiumModal({onClose,lang}){
 /* ═══════════════════════════════════════════════════════════════════════════
    HEADER — floating over map
    ═══════════════════════════════════════════════════════════════════════════ */
-function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,beachCount}){
+function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,beachCount,dataSource}){
   const LL=T[lang]||T.fr
+  const isLive=dataSource==="erddap-live"
+  const srcLabel=isLive?(lang==="en"?"LIVE satellite":"LIVE satellite"):(lang==="en"?"Estimation":"Estimation")
+  const srcColor=isLive?C.green:C.amber
   return(
     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
       {/* Island toggle */}
@@ -1640,17 +1739,17 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
         ))}
       </div>
 
-      {/* Live indicator — cliquable (Clarity: 10+ dead clicks) */}
+      {/* Live indicator — shows LIVE or Estimation based on data source */}
       <a href="https://marine.copernicus.eu/" target="_blank" rel="noopener"
         style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,textDecoration:"none"}}>
         <div style={{display:"flex",alignItems:"center",gap:6,
           padding:"6px 12px",borderRadius:100,
           background:"var(--sg-card,#fff)",
           boxShadow:"0 2px 8px rgba(0,0,0,.06)",
-          border:"1px solid var(--sg-border)",
-          fontSize:11,fontWeight:600,color:C.teal,cursor:"pointer"}}>
-          <span className="pulse" style={{width:8,height:8,borderRadius:4,background:C.green}}/>
-          {LL.live} · {beachCount||47} {lang==="en"?"beaches monitored":"plages surveillées"}
+          border:`1px solid ${isLive?"var(--sg-border)":"rgba(184,122,0,.2)"}`,
+          fontSize:11,fontWeight:600,color:isLive?C.teal:C.amber,cursor:"pointer"}}>
+          <span className={isLive?"pulse":""} style={{width:8,height:8,borderRadius:4,background:srcColor}}/>
+          {srcLabel} · {beachCount||47} {lang==="en"?"beaches":"plages"}
         </div>
         <span style={{fontSize:9,fontWeight:600,color:"var(--sg-mid,#686868)",letterSpacing:".02em",
           textAlign:"center",lineHeight:1.2}}>{lang==="en"?"Real-time map":"En temps réel"}</span>
@@ -1902,6 +2001,8 @@ export default function App(){
   const[imageMap,setImageMap]=useState(null)
   const[sargData,setSargData]=useState(null)
   const[historyData,setHistoryData]=useState(null)
+  const[dataSource,setDataSource]=useState("loading")
+  const[userPos,setUserPos]=useState(null) // {lat,lng}
 
   const LL=T[lang]||T.fr
 
@@ -1925,23 +2026,59 @@ export default function App(){
       .catch(()=>{})
   },[])
 
-  // Fetch sargassum.json at mount and merge AFAI levels into beaches
+  // Fetch sargassum.json at mount and merge AFAI levels into ALL 135 beaches
   useEffect(()=>{
     fetch("/api/copernicus/sargassum.json")
       .then(r=>r.json())
       .then(data=>{
         setSargData(data)
-        // Merge live AFAI into allBeaches (20 sentinel stations → 20 beach objects)
+        setDataSource(data?.source||"reference")
         if(data?.levels){
           setAllBeaches(prev=>{
             const updated=[...prev]
+            // Build sentinel lookup: beachId → {lat, lng, afai, sargId}
+            const sentinelMap={}
+            for(const lvl of data.levels){
+              const beachId=SARG_TO_BEACH[lvl.id]
+              if(!beachId)continue
+              const bch=updated.find(b=>b.id===beachId)
+              if(bch)sentinelMap[beachId]={lat:bch.lat,lng:bch.lng,afai:lvl.afai,sargId:lvl.id}
+            }
+            const sentinels=Object.values(sentinelMap)
+            // 1. Update sentinels with live data
             for(const lvl of data.levels){
               const beachId=SARG_TO_BEACH[lvl.id]
               if(!beachId)continue
               const idx=updated.findIndex(b=>b.id===beachId)
               if(idx>=0){
-                updated[idx]={...updated[idx],afai:lvl.afai,status:statusFromAfai(lvl.afai)}
+                updated[idx]={...updated[idx],afai:lvl.afai,status:statusFromAfai(lvl.afai),_src:"live"}
               }
+            }
+            // 2. IDW interpolation for non-sentinel beaches
+            for(let i=0;i<updated.length;i++){
+              if(updated[i]._src==="live")continue // already has live data
+              const same=sentinels.filter(s=>
+                (updated[i].island==="mq"&&s.lat<16)||(updated[i].island==="gp"&&s.lat>=16))
+              const interp=interpolateIDW(updated[i],same.length>0?same:sentinels)
+              if(interp!==null){
+                updated[i]={...updated[i],afai:interp,status:statusFromAfai(interp),_src:"interpolated"}
+              }
+            }
+            // 3. Interpolate weekly forecasts for non-sentinel beaches
+            if(data.weekly){
+              const enrichedWeekly={...data.weekly}
+              for(const b of updated){
+                const sargId=BEACH_TO_SARG[b.id]
+                if(sargId&&data.weekly[sargId])continue // already has real forecast
+                const same=sentinels.filter(s=>
+                  (b.island==="mq"&&s.lat<16)||(b.island==="gp"&&s.lat>=16))
+                const interp=interpolateForecast(b,same.length>0?same:sentinels,data.weekly)
+                if(interp){
+                  const syntheticId=`_interp_${b.id}`
+                  enrichedWeekly[syntheticId]=interp
+                }
+              }
+              data._enrichedWeekly=enrichedWeekly
             }
             return updated
           })
@@ -1956,6 +2093,22 @@ export default function App(){
       .then(r=>r.json())
       .then(data=>{if(data?.history)setHistoryData(data.history)})
       .catch(()=>{})
+  },[])
+
+  // Geolocation — center map on user, find nearest beach
+  useEffect(()=>{
+    if(!navigator.geolocation)return
+    navigator.geolocation.getCurrentPosition(pos=>{
+      const lat=pos.coords.latitude,lng=pos.coords.longitude
+      setUserPos({lat,lng})
+      // Auto-detect island from GPS (Martinique ~14.6°N, Guadeloupe ~16.2°N)
+      const gpsIsland=lat>15.5?"gp":"mq"
+      setIsland(prev=>{
+        const saved=g("sg_island",null)
+        if(!saved)return gpsIsland // only override if no manual selection
+        return prev
+      })
+    },()=>{},{enableHighAccuracy:false,timeout:8000,maximumAge:300000})
   },[])
 
   // Theme
@@ -1977,9 +2130,13 @@ export default function App(){
   const toggleTheme=useCallback(()=>setTheme(t=>t==="dark"?"light":"dark"),[])
   const toggleLang=useCallback(()=>setLang(l=>l==="fr"?"en":"fr"),[])
 
-  // Filter beaches
+  // Filter beaches + sort by distance if GPS available
   const filtered=useMemo(()=>{
     let list=allBeaches.filter(b=>b.island===island)
+    // Attach distance from user
+    if(userPos){
+      list=list.map(b=>({...b,_dist:haversine(userPos.lat,userPos.lng,b.lat,b.lng)}))
+    }
     // Search
     if(search.trim()){
       const q=search.trim().toLowerCase()
@@ -1991,8 +2148,10 @@ export default function App(){
     else if(filter===3)list=list.filter(b=>b.kids)
     else if(filter===4)list=list.filter(b=>b.snorkel)
     else if(filter===5)list=list.filter(b=>b.status==="avoid")
+    // Sort by distance when GPS available
+    if(userPos){list.sort((a,b)=>(a._dist||999)-(b._dist||999))}
     return list
-  },[island,search,filter,favorites,allBeaches])
+  },[island,search,filter,favorites,allBeaches,userPos])
 
   const onBeachClick=useCallback(b=>{setSelectedBeach(b)},[])
   const closeSheet=useCallback(()=>setSelectedBeach(null),[])
@@ -2012,7 +2171,7 @@ export default function App(){
         {/* MAP, LIST or GAME */}
         {view==="map"?(
           <ErrBound><MapView beaches={showOnboarding?[]:filtered} island={island}
-            onBeachClick={onBeachClick} selectedBeach={selectedBeach} sargData={sargData}/></ErrBound>
+            onBeachClick={onBeachClick} selectedBeach={selectedBeach} sargData={sargData} userPos={userPos}/></ErrBound>
         ):(
           <BeachListView beaches={filtered} onBeachClick={onBeachClick}
             favorites={favorites} lang={lang} imageMap={imageMap}/>
@@ -2028,7 +2187,7 @@ export default function App(){
             <Header island={island} onIslandChange={setIsland}
               lang={lang} onLangToggle={toggleLang}
               theme={theme} onThemeToggle={toggleTheme}
-              beachCount={allBeaches.length}/>
+              beachCount={allBeaches.length} dataSource={dataSource}/>
             <div style={{marginTop:10}}>
               <SearchBar value={search} onChange={setSearch} lang={lang}/>
             </div>
@@ -2051,7 +2210,8 @@ export default function App(){
             favorites={favorites} onToggleFav={toggleFav} lang={lang}
             allBeaches={allBeaches} imageMap={imageMap}
             onBeachClick={onBeachClick} onPremiumClick={openPremium} isPremium={isPremium}
-            historyData={historyData} sargData={sargData}/>
+            historyData={historyData} sargData={sargData}
+            dataSource={dataSource} userPos={userPos}/>
         )}
 
         {/* PREMIUM MODAL */}

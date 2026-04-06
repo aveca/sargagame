@@ -53,11 +53,23 @@ function buildWeeklyBatch(levels) {
 
 const dir = path.join(__dirname, '..', 'public', 'api', 'copernicus')
 fs.mkdirSync(dir, { recursive: true })
-const payload = {
-  source: 'reference',
-  updatedAt: new Date().toISOString(),
-  levels: SARGASSUM_REF,
-  weekly: buildWeeklyBatch(SARGASSUM_REF),
+const outPath = path.join(dir, 'sargassum.json')
+
+// Don't overwrite if sargassum.json already has live ERDDAP data
+let existing = null
+try {
+  existing = JSON.parse(fs.readFileSync(outPath, 'utf-8'))
+} catch (_) {}
+
+if (existing && existing.source === 'erddap-live') {
+  console.log('OK: public/api/copernicus/sargassum.json (kept erddap-live data, not overwriting)')
+} else {
+  const payload = {
+    source: 'reference',
+    updatedAt: new Date().toISOString(),
+    levels: SARGASSUM_REF,
+    weekly: buildWeeklyBatch(SARGASSUM_REF),
+  }
+  fs.writeFileSync(outPath, JSON.stringify(payload), 'utf-8')
+  console.log('OK: public/api/copernicus/sargassum.json (reference fallback)')
 }
-fs.writeFileSync(path.join(dir, 'sargassum.json'), JSON.stringify(payload), 'utf-8')
-console.log('OK: public/api/copernicus/sargassum.json')

@@ -734,6 +734,111 @@
           "status": "avoid"
         }
       ]
+    },
+    {
+      "date": "2026-04-06",
+      "levels": [
+        {
+          "id": "grande-anse",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "anse-mitan",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-noire",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "tartane",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "anse-madame",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "diamant",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "pt-marin",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "sainte-anne",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "les-salines",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "vauclin",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "gp-grande-anse",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-malendure",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-sainte-anne",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-pt-chateaux",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-gosier",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-caravelle",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-bas-du-fort",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-deshaies",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-moule",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "gp-vieux-fort",
+          "afai": 0.06,
+          "status": "clean"
+        }
+      ]
     }
   ],
   "changes": [
@@ -795,6 +900,69 @@
     },
     {
       "date": "2026-04-05",
+      "beach": "gp-vieux-fort",
+      "from": "avoid",
+      "to": "clean",
+      "afai": 0.06
+    },
+    {
+      "date": "2026-04-06",
+      "beach": "diamant",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.05
+    },
+    {
+      "date": "2026-04-06",
+      "beach": "pt-marin",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.05
+    },
+    {
+      "date": "2026-04-06",
+      "beach": "sainte-anne",
+      "from": "avoid",
+      "to": "clean",
+      "afai": 0.05
+    },
+    {
+      "date": "2026-04-06",
+      "beach": "les-salines",
+      "from": "avoid",
+      "to": "clean",
+      "afai": 0.05
+    },
+    {
+      "date": "2026-04-06",
+      "beach": "vauclin",
+      "from": "avoid",
+      "to": "clean",
+      "afai": 0.05
+    },
+    {
+      "date": "2026-04-06",
+      "beach": "gp-pt-chateaux",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.06
+    },
+    {
+      "date": "2026-04-06",
+      "beach": "gp-bas-du-fort",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.07
+    },
+    {
+      "date": "2026-04-06",
+      "beach": "gp-moule",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.05
+    },
+    {
+      "date": "2026-04-06",
       "beach": "gp-vieux-fort",
       "from": "avoid",
       "to": "clean",
