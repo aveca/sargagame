@@ -42,14 +42,14 @@ const C={
 
 const ST={
   clean:{c:C.green,bg:C.greenBg,l:"Propre",le:"Clean",e:"✅",h2s:false,
-    desc:"Eau claire, pas de sargasses détectées. Baignade recommandée.",
-    descEn:"Clear water, no sargassum detected. Swimming recommended."},
+    desc:"Peu ou pas de sargasses détectées par satellite au large.",
+    descEn:"Little to no sargassum detected by satellite offshore."},
   moderate:{c:C.amber,bg:C.amberBg,l:"Modéré",le:"Moderate",e:"⚠️",h2s:false,
-    desc:"Présence modérée de sargasses. Baignade possible mais vérifiez sur place.",
-    descEn:"Moderate sargassum presence. Swimming possible but check on site."},
-  avoid:{c:C.red,bg:C.redBg,l:"À éviter",le:"Avoid",e:"🚫",h2s:true,
-    desc:"Forte concentration de sargasses. Risque H₂S. Déconseillé aux enfants.",
-    descEn:"High sargassum concentration. H₂S risk. Not recommended for children."},
+    desc:"Présence modérée de sargasses détectée au large. Vérifiez sur place avant de vous baigner.",
+    descEn:"Moderate sargassum detected offshore. Check conditions on site before swimming."},
+  avoid:{c:C.red,bg:C.redBg,l:"Alerte",le:"Alert",e:"🚫",h2s:true,
+    desc:"Forte concentration de sargasses détectée au large. Échouages probables — vérifiez l'état de la plage sur place.",
+    descEn:"High sargassum concentration detected offshore. Beaching likely — check beach conditions on site."},
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -58,9 +58,9 @@ const ST={
 const T={
   fr:{
     days:["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"],today:"Auj.",tomorrow:"Dem.",
-    clean:"Propre",moderate:"Modéré",avoid:"À éviter",
+    clean:"Propre",moderate:"Modéré",avoid:"Alerte",
     search:"Rechercher une plage…",
-    filters:["Toutes","Propres","Favoris","Enfants","Snorkeling","À éviter"],
+    filters:["Toutes","Propres","Favoris","Enfants","Snorkeling","Alertes"],
     filtersIcon:["🌊","✅","❤️","🧒","🤿","🚫"],
     navMap:"Carte",navList:"Plages",navGame:"Jeu",navPremium:"Premium",
     forecast:"Prévisions 7j",weather:"Météo",directions:"Y aller",
@@ -70,23 +70,23 @@ const T={
     premium:"Premium",premiumDesc:"Prévisions 7 jours, alertes push, zéro pub.",
     premiumPrice:"4,99 €/mois",premiumCta:"S'abonner",
     premiumFeatures:["Planifie ton weekend sans surprise","Sois prévenu AVANT que les sargasses arrivent","Zéro publicité","Sans engagement — annule quand tu veux"],
-    h2sWarn:"Risque H₂S — évitez cette plage avec des enfants.",
+    h2sWarn:"Si des sargasses sont échouées et en décomposition sur place, éloignez-vous (risque H₂S). Source : HCSP/ARS.",
     copernicus:"Copernicus Marine",live:"LIVE",
     nClean:"{n} propres",island_mq:"Martinique",island_gp:"Guadeloupe",
     reportThanks:"Merci pour ton signalement !",report:"Signaler",
     openWaze:"Ouvrir Waze",driftDown:"Dispersion attendue",driftUp:"Arrivée possible",driftStable:"Stable",
     close:"Fermer",nearby:"Plages à proximité",locked:"Premium",
     beachScore:"Score plage",waves:"Vagues",swell:"Houle",rain:"Pluie",
-    scoreExcellent:"Excellent",scoreGood:"Bon",scoreMedium:"Moyen",scoreBad:"Déconseillé",
+    scoreExcellent:"Excellent",scoreGood:"Bon",scoreMedium:"Moyen",scoreBad:"Conditions difficiles",
     marine:"Conditions marines",
     history:"Tendance récente",historyEmpty:"Pas encore d'historique",
     historyDays:"{n}j",
   },
   en:{
     days:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],today:"Today",tomorrow:"Tmrw",
-    clean:"Clean",moderate:"Moderate",avoid:"Avoid",
+    clean:"Clean",moderate:"Moderate",avoid:"Alert",
     search:"Search a beach…",
-    filters:["All","Clean","Favourites","Kids","Snorkeling","Avoid"],
+    filters:["All","Clean","Favourites","Kids","Snorkeling","Alerts"],
     filtersIcon:["🌊","✅","❤️","🧒","🤿","🚫"],
     navMap:"Map",navList:"Beaches",navGame:"Game",navPremium:"Premium",
     forecast:"7-day forecast",weather:"Weather",directions:"Directions",
@@ -96,14 +96,14 @@ const T={
     premium:"Premium",premiumDesc:"7-day forecast, push alerts, no ads.",
     premiumPrice:"€4.99/mo",premiumCta:"Subscribe",
     premiumFeatures:["Plan your weekend with no surprises","Get warned BEFORE sargassum arrives","Zero ads","No commitment — cancel anytime"],
-    h2sWarn:"H₂S risk — avoid this beach with children.",
+    h2sWarn:"If sargassum is beached and decomposing on site, move away (H₂S risk). Source: HCSP/ARS.",
     copernicus:"Copernicus Marine",live:"LIVE",
     nClean:"{n} clean",island_mq:"Martinique",island_gp:"Guadeloupe",
     reportThanks:"Thanks for your report!",report:"Report",
     openWaze:"Open Waze",driftDown:"Dispersing",driftUp:"Incoming",driftStable:"Stable",
     close:"Close",nearby:"Nearby beaches",locked:"Premium",
     beachScore:"Beach Score",waves:"Waves",swell:"Swell",rain:"Rain",
-    scoreExcellent:"Excellent",scoreGood:"Good",scoreMedium:"Fair",scoreBad:"Not recommended",
+    scoreExcellent:"Excellent",scoreGood:"Good",scoreMedium:"Fair",scoreBad:"Difficult conditions",
     marine:"Marine conditions",
     history:"Recent trend",historyEmpty:"No history yet",
     historyDays:"{n}d",
@@ -806,6 +806,11 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             <p style={{fontSize:12,color:ST[beach.status].c,fontWeight:500,margin:"0 0 12px",lineHeight:1.5,
               padding:"6px 10px",background:ST[beach.status].bg,borderRadius:8}}>
               {lang==="en"?ST[beach.status].descEn:ST[beach.status].desc}
+              <br/><span style={{fontSize:10,fontWeight:400,opacity:.7}}>
+                {lang==="en"
+                  ?"Offshore satellite estimate (NOAA AFAI) — not an on-site measurement."
+                  :"Estimation satellite au large (NOAA AFAI) — pas une mesure sur place."}
+              </span>
             </p>
           )}
 
