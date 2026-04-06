@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sargasses ce weekend — Martinique & Guadeloupe</title>
+<meta name="description" content="Chaque vendredi, reçois les 3 meilleures plages pour ton weekend. Gratuit, par Telegram.">
+<link rel="canonical" href="https://sargasses-martinique.com/weekend.html">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#FDFCF7;color:#0D0D0D;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{max-width:420px;width:100%;background:#fff;border-radius:24px;padding:40px 28px;box-shadow:0 8px 40px rgba(0,0,0,.08);text-align:center}
+h1{font-size:28px;font-weight:800;line-height:1.2;margin-bottom:8px}
+h1 span{background:linear-gradient(135deg,#E8A800,#FFC72C);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sub{font-size:15px;color:#686868;line-height:1.5;margin-bottom:24px}
+.preview{background:#F7F5EF;border-radius:16px;padding:20px;margin-bottom:24px;text-align:left}
+.preview-header{font-size:11px;font-weight:700;color:#E8A800;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px}
+.beach-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.04)}
+.beach-row:last-child{border:none}
+.dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.beach-name{font-size:14px;font-weight:600;flex:1}
+.beach-commune{font-size:12px;color:#686868}
+.cta{display:block;width:100%;padding:18px;border-radius:16px;border:none;cursor:pointer;font-size:17px;font-weight:700;color:#0D0D0D;background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);box-shadow:0 6px 24px rgba(232,168,0,.35);text-decoration:none;margin-bottom:12px;transition:transform .2s}
+.cta:hover{transform:translateY(-2px)}
+.alt{display:block;font-size:13px;color:#686868;text-decoration:none;margin-bottom:20px}
+.alt:hover{color:#0D0D0D}
+.proof{font-size:12px;color:#999;line-height:1.5}
+.proof b{color:#686868}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Ce weekend,<br><span>quelle plage choisir ?</span></h1>
+  <p class="sub">Chaque vendredi soir, recois les plages propres pour ton weekend. Gratuit. Par Telegram.</p>
+
+  <div class="preview">
+    <div class="preview-header">Exemple — vendredi dernier</div>
+    <div class="beach-row">
+      <div class="dot" style="background:#22C55E"></div>
+      <div>
+        <div class="beach-name">Grande Anse d'Arlet</div>
+        <div class="beach-commune">Les Anses-d'Arlet · 25 min</div>
+      </div>
+    </div>
+    <div class="beach-row">
+      <div class="dot" style="background:#22C55E"></div>
+      <div>
+        <div class="beach-name">Anse Noire</div>
+        <div class="beach-commune">Les Anses-d'Arlet · 28 min</div>
+      </div>
+    </div>
+    <div class="beach-row">
+      <div class="dot" style="background:#B87A00"></div>
+      <div>
+        <div class="beach-name">Plage du Diamant</div>
+        <div class="beach-commune">Le Diamant · 32 min — a surveiller</div>
+      </div>
+    </div>
+  </div>
+
+  <a href="https://t.me/sargasses_martinique" class="cta" id="cta-mq">Rejoindre — Martinique</a>
+  <a href="https://t.me/sargasses_guadeloupe" class="alt" id="cta-gp">Guadeloupe ? Rejoindre ici</a>
+
+  <p class="proof">
+    <b>Donnees satellite NOAA</b> mises a jour 4x/jour<br>
+    135 plages surveillees · Gratuit, sans inscription
+  </p>
+</div>
+
+<script>
+// Track clicks
+document.getElementById('cta-mq').addEventListener('click',()=>{
+  try{gtag('event','sg_telegram_join',{island:'mq',source:'landing'})}catch(e){}
+})
+document.getElementById('cta-gp').addEventListener('click',()=>{
+  try{gtag('event','sg_telegram_join',{island:'gp',source:'landing'})}catch(e){}
+})
+// Auto-detect GP from hostname
+if(location.hostname.includes('guadeloupe')){
+  document.getElementById('cta-mq').href='https://t.me/sargasses_guadeloupe'
+  document.getElementById('cta-mq').textContent='Rejoindre — Guadeloupe'
+  document.getElementById('cta-gp').href='https://t.me/sargasses_martinique'
+  document.getElementById('cta-gp').textContent='Martinique ? Rejoindre ici'
+}
+</script>
+</body>
+</html>
