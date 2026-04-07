@@ -1,6 +1,6 @@
 // Service Worker — Sargasses PWA
 // Cache-first for static assets, network-first for API data
-const CACHE_NAME = 'sargasses-v9'
+const CACHE_NAME = 'sargasses-v10'
 const STATIC_ASSETS = ['/', '/index.html', '/manifest.json', '/favicon.svg', '/icon-192.png', '/data/beaches-list.json', '/data/beaches-images.json']
 
 self.addEventListener('install', (e) => {
