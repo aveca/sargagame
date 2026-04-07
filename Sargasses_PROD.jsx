@@ -79,7 +79,7 @@ const T={
     kids:"Enfants",snorkel:"Snorkeling",parking:"Parking",
     premium:"Premium",premiumDesc:"Prévisions 7 jours, alertes push, zéro pub.",
     premiumPrice:"4,99 €/mois",premiumCta:"Essai gratuit 7 jours",
-    premiumFeatures:["Essaie 7 jours — 0€, annule en 1 clic","Sois prévenu AVANT que les sargasses arrivent","Prévisions 7 jours — sache samedi dès lundi","Sans pub · Sans engagement · Satisfait ou remboursé"],
+    premiumFeatures:["Essaie 7 jours — 0€, annule en 1 clic","Sois prévenu AVANT que les sargasses arrivent","Prévisions 7 jours — planifie ton weekend sereinement","Sans pub · Sans engagement · Satisfait ou remboursé"],
     h2sWarn:"Si des sargasses sont échouées et en décomposition sur place, éloignez-vous (risque H₂S). Source : HCSP/ARS.",
     copernicus:"Copernicus Marine",live:"LIVE",
     nClean:"{n} propres",island_mq:"Martinique",island_gp:"Guadeloupe",
@@ -105,7 +105,7 @@ const T={
     kids:"Kids",snorkel:"Snorkeling",parking:"Parking",
     premium:"Premium",premiumDesc:"7-day forecast, push alerts, no ads.",
     premiumPrice:"€4.99/mo",premiumCta:"Free 7-day trial",
-    premiumFeatures:["Try 7 days free — cancel in 1 click","Get warned BEFORE sargassum arrives","7-day forecast — know Saturday by Monday","No ads · No commitment · 30-day guarantee"],
+    premiumFeatures:["Try 7 days free — cancel in 1 click","Get warned BEFORE sargassum arrives","7-day forecast — plan your weekend with confidence","No ads · No commitment · 30-day guarantee"],
     h2sWarn:"If sargassum is beached and decomposing on site, move away (H₂S risk). Source: HCSP/ARS.",
     copernicus:"Copernicus Marine",live:"LIVE",
     nClean:"{n} clean",island_mq:"Martinique",island_gp:"Guadeloupe",
@@ -2303,8 +2303,8 @@ function PremiumModal({onClose,lang,source,allBeaches,sargData}){
 
         <ul style={{listStyle:"none",padding:0,margin:"0 0 16px",display:"flex",flexDirection:"column",gap:12}}>
           {(SARGASSES_SEASON==="high"?(lang==="en"
-            ?["Season active — forecasts are most reliable NOW","Get warned BEFORE sargassum arrives","7-day forecast — know Saturday by Monday","No ads · No commitment · 30-day guarantee"]
-            :["Saison active — les prévisions sont fiables MAINTENANT","Sois prévenu AVANT que les sargasses arrivent","Prévisions 7 jours — sache samedi dès lundi","Sans pub · Sans engagement · Satisfait ou remboursé"])
+            ?["Season active — forecasts are most reliable NOW","Get warned BEFORE sargassum arrives","7-day forecast — plan your weekend with confidence","No ads · No commitment · 30-day guarantee"]
+            :["Saison active — les prévisions sont fiables MAINTENANT","Sois prévenu AVANT que les sargasses arrivent","Prévisions 7 jours — planifie ton weekend sereinement","Sans pub · Sans engagement · Satisfait ou remboursé"])
           :LL.premiumFeatures).map((f,i)=>(
             <li key={i} style={{display:"flex",alignItems:"center",gap:10,fontSize:14}}>
               <span style={{color:C.gold,fontSize:18}}>✓</span>{f}
