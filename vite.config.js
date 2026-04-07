@@ -353,7 +353,36 @@ export default defineConfig({
             if (b.snorkel) tagsList.push('Snorkeling possible')
             if (b.parking) tagsList.push('Parking disponible')
             const tagsHtml = tagsList.length > 0 ? `<p><strong>Équipements :</strong> ${tagsList.join(' · ')}</p>` : ''
-            const extraSections = `${accessSection}${condBaignade}${tagsHtml}`
+            // 1. Beach orientation based on coordinates
+            let cote, coteExpo
+            if (isMQ) {
+              if (b.lng > -61.0) { cote = 'côte Atlantique'; coteExpo = 'plus exposée aux sargasses portées par les courants' }
+              else if (b.lng < -61.1) { cote = 'côte Caraïbe'; coteExpo = 'généralement plus protégée des échouages de sargasses' }
+              else { cote = 'côte centre'; coteExpo = 'modérément exposée aux sargasses selon les courants' }
+            } else {
+              if (b.lng > -61.3) { cote = 'côte Atlantique / Grand Cul-de-Sac Marin'; coteExpo = 'plus exposée aux sargasses portées par les courants' }
+              else if (b.lng < -61.6) { cote = 'côte sous-le-vent'; coteExpo = 'généralement plus protégée des échouages de sargasses' }
+              else { cote = 'côte centrale'; coteExpo = 'modérément exposée aux sargasses selon les courants' }
+            }
+            const orientationSection = `<h2>Orientation</h2><p>Située sur la ${cote}, ${b.name} est ${coteExpo}.</p>`
+            // 2. Activity description from kids/snorkel/parking flags
+            const actParts = []
+            if (b.kids) actParts.push('adaptée aux enfants')
+            if (b.parking) actParts.push('avec parking')
+            if (b.snorkel) actParts.push('snorkeling possible')
+            let activitySection = ''
+            if (actParts.length > 0) {
+              activitySection = `<h2>Activités</h2><p>Plage familiale ${actParts.join(', ')}.</p>`
+            } else {
+              activitySection = `<h2>Activités</h2><p>Plage sauvage sans parking — accessible à pied uniquement.</p>`
+            }
+            // 3. Season tip
+            const seasonSection = `<h2>Saison des sargasses</h2><p>La saison des sargasses aux Antilles s'étend généralement d'avril à septembre. Consultez les prévisions 7 jours avant votre visite.</p>`
+            // 4. Drive context
+            const driveMin = parseInt(b.drive, 10) || 30
+            const driveType = driveMin < 20 ? 'sortie rapide' : 'excursion à la journée'
+            const driveContext = `<p>À ${b.drive} minutes de ${mainCity}, idéale pour une ${driveType}.</p>`
+            const extraSections = `${accessSection}${driveContext}${orientationSection}${condBaignade}${activitySection}${seasonSection}${tagsHtml}`
             let noscriptBlock
             if (_enrichments[b.slug]) {
               // Keep existing enrichment noscript but append extra sections inside the article
