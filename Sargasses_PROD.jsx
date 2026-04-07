@@ -1918,9 +1918,10 @@ function StripeInlineCheckout({plan,lang,source,onSuccess}){
     }
     if(window.Stripe){init()}
     else{
-      const tag=document.querySelector('script[src*="js.stripe.com"]')
-      if(tag)tag.addEventListener("load",init)
-      else setError("Stripe non disponible")
+      // Load Stripe.js on demand (works even without window.loadStripe in index.html)
+      const s=document.createElement('script');s.src='https://js.stripe.com/v3/'
+      s.onload=()=>init();s.onerror=()=>setError("Stripe non disponible")
+      document.head.appendChild(s)
     }
     return()=>{cancelled=true;elementsRef.current?.getElement?.("payment")?.destroy?.()}
   },[])

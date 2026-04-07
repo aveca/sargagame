@@ -48,65 +48,66 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preload" href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
   <noscript><link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet" /></noscript>
-  <!-- OneSignal Push — SDK chargé à la demande (pas au démarrage) pour éviter le popup EN -->
-  <script src="/config/push.js"></script>
+  <!-- OneSignal Push — SDK chargé à la demande (pas au démarrage) -->
   <script>
-    // OneSignal SDK loaded ONLY when user clicks "Activer" in our custom FR prompt
-    window.loadOneSignal = function() {
-      if (window.__osLoaded) return;
-      window.__osLoaded = true;
-      var s = document.createElement('script');
-      s.src = 'https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';
-      s.onload = function() {
-        window.OneSignalDeferred = window.OneSignalDeferred || [];
-        OneSignalDeferred.push(function(OneSignal) {
-          OneSignal.init({
-            appId: window.ONESIGNAL_APP_ID || "4280dcab-fc43-415d-a9cd-a3da8cf601f1",
-            allowLocalhostAsSecureOrigin: true,
-            autoPrompt: false
-          });
-          OneSignal.Notifications.requestPermission();
-        });
-      };
-      document.head.appendChild(s);
+    window.ONESIGNAL_APP_ID="4280dcab-fc43-415d-a9cd-a3da8cf601f1";
+    window.loadOneSignal=function(){
+      if(window.__osLoaded)return;window.__osLoaded=true;
+      var s=document.createElement('script');
+      s.src='https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';
+      s.onload=function(){
+        window.OneSignalDeferred=window.OneSignalDeferred||[];
+        OneSignalDeferred.push(function(O){O.init({appId:window.ONESIGNAL_APP_ID,allowLocalhostAsSecureOrigin:true,autoPrompt:false});O.Notifications.requestPermission()});
+      };document.head.appendChild(s);
     };
   </script>
   <!-- Google Analytics 4 -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-V83JGMDZ2Y"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-V83JGMDZ2Y');</script>
-  <!-- Stripe.js — preconnect + Elements + PaymentElement inline -->
-  <link rel="preconnect" href="https://js.stripe.com" crossorigin/>
-  <link rel="preconnect" href="https://api.stripe.com" crossorigin/>
-  <script async src="https://js.stripe.com/v3/"></script>
-  <!-- Microsoft Clarity -->
-  <script>(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script","w4o6w9aenv");</script>
-  <!-- Clarity → GA4 bridge -->
+  <!-- Stripe.js — chargé à la demande (seulement si l'utilisateur ouvre Premium) -->
+  <script>
+    window.loadStripe=function(){
+      if(window.Stripe)return Promise.resolve(window.Stripe);
+      return new Promise(function(ok){
+        var s=document.createElement('script');s.src='https://js.stripe.com/v3/';
+        s.onload=function(){ok(window.Stripe)};document.head.appendChild(s);
+      });
+    };
+  </script>
+  <!-- Microsoft Clarity + bridge — deferred after first paint -->
   <script>
   (function(){
-    if(!window.clarity||!window.gtag)return;
-    var sent={};
-    function send(name,data){var key=name+data.target;if(sent[key])return;sent[key]=1;gtag('event',name,data);}
-    var clicks=[],RAGE_THRESHOLD=3,RAGE_WINDOW=1500;
-    document.addEventListener('click',function(e){
-      var now=Date.now(),t=e.target,tag=t.tagName+'.'+(t.className||'').split(' ')[0]+'#'+(t.id||'');
-      clicks.push({time:now,tag:tag});clicks=clicks.filter(function(c){return now-c.time<RAGE_WINDOW});
-      var same=clicks.filter(function(c){return c.tag===tag});
-      if(same.length>=RAGE_THRESHOLD){send('clarity_rage_click',{target:tag,page:location.pathname,count:same.length});clicks=[];}
-    },true);
-    document.addEventListener('click',function(e){
-      var t=e.target,interactive=['A','BUTTON','INPUT','SELECT','TEXTAREA','LABEL'];
-      if(interactive.indexOf(t.tagName)>=0||t.closest('a,button'))return;
-      var tag=t.tagName+'.'+(t.className||'').split(' ')[0]+'#'+(t.id||''),url=location.href;
-      setTimeout(function(){if(location.href===url)send('clarity_dead_click',{target:tag,page:location.pathname});},2000);
-    },true);
-    var loaded=Date.now();
-    window.addEventListener('beforeunload',function(){
-      if(Date.now()-loaded<10000){
-        navigator.sendBeacon&&navigator.sendBeacon('https://www.google-analytics.com/g/collect?v=2&tid='+
-          (document.querySelector('script[src*="gtag"]').src.match(/id=([^&]+)/)||[])[1]+
-          '&en=clarity_quick_bounce&ep.page='+encodeURIComponent(location.pathname));
-      }
-    });
+    function boot(){
+      // Clarity
+      (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script","w4o6w9aenv");
+      // Clarity → GA4 bridge
+      if(!window.gtag)return;
+      var sent={};
+      function send(name,data){var key=name+data.target;if(sent[key])return;sent[key]=1;gtag('event',name,data);}
+      var clicks=[],RAGE_THRESHOLD=3,RAGE_WINDOW=1500;
+      document.addEventListener('click',function(e){
+        var now=Date.now(),t=e.target,tag=t.tagName+'.'+(t.className||'').split(' ')[0]+'#'+(t.id||'');
+        clicks.push({time:now,tag:tag});clicks=clicks.filter(function(c){return now-c.time<RAGE_WINDOW});
+        var same=clicks.filter(function(c){return c.tag===tag});
+        if(same.length>=RAGE_THRESHOLD){send('clarity_rage_click',{target:tag,page:location.pathname,count:same.length});clicks=[];}
+      },true);
+      document.addEventListener('click',function(e){
+        var t=e.target,interactive=['A','BUTTON','INPUT','SELECT','TEXTAREA','LABEL'];
+        if(interactive.indexOf(t.tagName)>=0||t.closest('a,button'))return;
+        var tag=t.tagName+'.'+(t.className||'').split(' ')[0]+'#'+(t.id||''),url=location.href;
+        setTimeout(function(){if(location.href===url)send('clarity_dead_click',{target:tag,page:location.pathname});},2000);
+      },true);
+      var loaded=Date.now();
+      window.addEventListener('beforeunload',function(){
+        if(Date.now()-loaded<10000){
+          navigator.sendBeacon&&navigator.sendBeacon('https://www.google-analytics.com/g/collect?v=2&tid='+
+            (document.querySelector('script[src*="gtag"]').src.match(/id=([^&]+)/)||[])[1]+
+            '&en=clarity_quick_bounce&ep.page='+encodeURIComponent(location.pathname));
+        }
+      });
+    }
+    if('requestIdleCallback' in window)requestIdleCallback(boot,{timeout:3000});
+    else setTimeout(boot,2000);
   })();
   </script>
 </head>
@@ -123,32 +124,22 @@
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
     <script>
-    // Version check — force reload if server has a newer version (bypasses all caches)
+    // Version check — save version, nuke caches silently (next navigation gets fresh assets)
     (function(){
       var LOCAL_KEY='sg_v';
       fetch('/version.json',{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){
         var cur=d&&d.v;if(!cur)return;
         var prev=localStorage.getItem(LOCAL_KEY);
-        if(prev&&prev!==cur){
-          // New version deployed — nuke SW caches and hard reload
-          if('caches' in window)caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k)})});
-          localStorage.setItem(LOCAL_KEY,cur);
-          window.location.reload();
-          return;
+        if(prev&&prev!==cur&&'caches' in window){
+          caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k)})});
         }
         localStorage.setItem(LOCAL_KEY,cur);
       }).catch(function(){});
     })();
-    // Service Worker registration
+    // Service Worker registration — no auto-reload on controller change
     if('serviceWorker' in navigator){
       window.addEventListener('load',function(){
-        navigator.serviceWorker.register('/sw.js').then(function(reg){
-          if(reg.active){
-            navigator.serviceWorker.addEventListener('controllerchange',function(){
-              if(!window.__swReloaded){window.__swReloaded=true;window.location.reload()}
-            })
-          }
-        }).catch(function(){})
+        navigator.serviceWorker.register('/sw.js').catch(function(){})
       })
     }
     </script>

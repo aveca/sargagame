@@ -453,6 +453,16 @@ export default defineConfig({
     },
   ].filter(Boolean),
   root: '.',
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'leaflet': ['leaflet'],
+          'react-vendor': ['react', 'react-dom'],
+        },
+      },
+    },
+  },
   // Si le site est dans un sous-dossier (ex. example.com/sargasses/), décommenter et adapter :
   // base: '/sargasses/',
 })
