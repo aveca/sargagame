@@ -199,6 +199,21 @@ if ($action === 'subscribe') {
             : "C'est parti - tes previsions 7 jours sont actives";
         $html = buildWelcomeEmail($island, $sub['trial_end'], $domain, $lang);
         resend($email, $subject, $html);
+        // Log to Google Sheet (fire-and-forget)
+        $trackData = json_encode([
+            'type' => 'email_tracking',
+            'to' => $email,
+            'subject' => $subject,
+            'email_type' => 'post_checkout',
+            'island' => $island,
+            'status' => 'sent',
+            'plan' => $plan,
+            'source' => $input['source'] ?? '',
+            'date' => date('c'),
+        ]);
+        $ch2 = curl_init('https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec');
+        curl_setopt_array($ch2, [CURLOPT_POST => true, CURLOPT_POSTFIELDS => $trackData, CURLOPT_HTTPHEADER => ['Content-Type: application/json'], CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 3]);
+        curl_exec($ch2); curl_close($ch2);
     } catch (Exception $e) {}
     exit;
 }

@@ -134,11 +134,12 @@ async function main() {
     const from = island === 'GP' ? FROM_GP : FROM_MQ
     const name = island === 'MQ' ? 'Martinique' : 'Guadeloupe'
 
+    const subjectLine = cleanCount > 0 ? `${cleanCount} plages propres maintenant en ${name}` : `Sargasses ${name} - tu es inscrit`
     try {
-      const { error } = await resend.emails.send({
+      const { data, error } = await resend.emails.send({
         from,
         to: sub.email,
-        subject: cleanCount > 0 ? `${cleanCount} plages propres maintenant en ${name}` : `Sargasses ${name} — tu es inscrit`,
+        subject: subjectLine,
         html: buildWelcomeHTML(island, cleanCount),
       })
 
@@ -147,6 +148,17 @@ async function main() {
       } else {
         console.log(`  ✅ ${sub.email} (${island})`)
         sentSet.add(sub.email)
+        // Track to Google Sheet
+        try {
+          await fetch('https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'email_tracking', resend_id: data?.id || '', to: sub.email,
+              subject: subjectLine, email_type: 'welcome', island,
+              status: 'sent', source: sub.source || '', date: new Date().toISOString()
+            })
+          })
+        } catch {}
       }
     } catch (e) {
       console.log(`  ❌ ${sub.email}: ${e.message}`)

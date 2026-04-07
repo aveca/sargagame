@@ -149,7 +149,28 @@ function doPost(e) {
       return jsonResponse({ ok: true, action: 'beach_report_saved' })
     }
 
-    // 6. Weekly digest (legacy)
+    // 6. Email tracking (Resend delivery + opens + clicks)
+    if (type === 'email_tracking') {
+      const sheet = getOrCreateSheet('email_tracking', [
+        'date', 'resend_id', 'to', 'subject', 'email_type', 'island',
+        'status', 'plan', 'source', 'ab_tests'
+      ])
+      sheet.appendRow([
+        payload.date || new Date().toISOString(),
+        payload.resend_id || '',
+        payload.to || '',
+        (payload.subject || '').substring(0, 200),
+        payload.email_type || 'unknown',   // welcome, post_checkout, weekend
+        (payload.island || 'MQ').toUpperCase(),
+        payload.status || 'sent',
+        payload.plan || '',                 // monthly, annual
+        payload.source || '',               // forecast, nav, best_beach...
+        payload.ab_tests || ''              // JSON string of active tests
+      ])
+      return jsonResponse({ ok: true, action: 'email_tracked' })
+    }
+
+    // 7. Weekly digest (legacy)
     if (payload.email === 'WEEKLY_DIGEST') {
       const sheet = getOrCreateSheet('digest_log', ['date', 'island', 'digest'])
       sheet.appendRow([new Date().toISOString(), payload.island || 'MQ', payload.digest || ''])

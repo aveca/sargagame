@@ -169,15 +169,29 @@ async function main() {
     console.log(`Top 5: ${topBeaches.map(b => b.name).join(', ')}`)
 
     // Send to Apps Script which will dispatch to all subscribers
+    const subject = `Ce weekend : ${stats.clean} plages propres en ${islandName}`
     const res = await post(WEBHOOK_URL, {
       type: 'weekend_email',
       island: island.toUpperCase(),
-      subject: `Ce weekend : ${stats.clean} plages propres en ${islandName}`,
+      subject,
       html,
       date: new Date().toISOString(),
     })
 
     console.log(`Sent to webhook: status=${res.status}`)
+
+    // Track in Sheet
+    try {
+      await post(WEBHOOK_URL, {
+        type: 'email_tracking',
+        to: `all_${island}`,
+        subject,
+        email_type: 'weekend_bulletin',
+        island: island.toUpperCase(),
+        status: 'dispatched',
+        date: new Date().toISOString(),
+      })
+    } catch {}
   }
 
   console.log('\nDone.')
