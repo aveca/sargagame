@@ -65,6 +65,8 @@ jobs:
 
       - name: Fetch subscriber list
         continue-on-error: true
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: node scripts/automation/fetch-subscribers.cjs
 
       - name: Send welcome emails (Resend)
