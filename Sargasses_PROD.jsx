@@ -459,6 +459,13 @@ button:active,a:active,[role="button"]:active{transform:scale(.96)!important;opa
 
 /* Shine for onboarding buttons */
 @keyframes onb-shine{0%,100%{left:-75%}35%,65%{left:120%}}
+
+/* Small screens — iPhone SE, Galaxy S5, etc. */
+@media(max-width:360px){
+  .gbtn{padding:12px 18px !important;font-size:14px !important}
+  .sheet{border-radius:16px 16px 0 0 !important}
+  .anton{letter-spacing:0 !important}
+}
 `
 
 function StyleInjector(){
@@ -1155,7 +1162,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
           borderRadius:"0",position:"relative"}}>
           <div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 40%,var(--sg-card,#fff) 100%)"}}/>
           <button onClick={onClose} style={{position:"absolute",top:12,right:12,
-            width:36,height:36,borderRadius:18,background:"rgba(0,0,0,.45)",
+            width:44,height:44,borderRadius:22,background:"rgba(0,0,0,.45)",
             border:"none",color:"#fff",fontSize:18,cursor:"pointer",
             display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
         </div>
@@ -2207,7 +2214,10 @@ function PremiumModal({onClose,lang,source,allBeaches,sargData}){
     }
     return Math.max(count,1)
   },[sargData,allBeaches])
-  const[plan,setPlan]=useState("monthly") // "monthly" | "annual"
+  // A/B Test: pricing — season pass vs standard
+  const priceV=abVariant("price1",["control","season"],[.5,.5])
+  const hasSeason=priceV==="season"
+  const[plan,setPlan]=useState(hasSeason?"season":"monthly") // "monthly" | "annual" | "season"
   const[showCheckout,setShowCheckout]=useState(false)
   const[showReferral,setShowReferral]=useState(false)
   const[refCopied,setRefCopied]=useState(false)
@@ -2229,7 +2239,7 @@ function PremiumModal({onClose,lang,source,allBeaches,sargData}){
   // Season urgency
   const seasonStart=new Date("2026-05-01")
   const daysLeft=Math.max(0,Math.ceil((seasonStart-Date.now())/864e5))
-  const effectivePlan=hasAnnual?plan:"monthly"
+  const effectivePlan=hasSeason?plan:(hasAnnual?plan:"monthly")
   return(
     <>
       <div className="backdrop" onClick={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,saw_checkout:sawCheckoutRef.current});onClose()}}/>
@@ -2281,8 +2291,35 @@ function PremiumModal({onClose,lang,source,allBeaches,sargData}){
           ))}
         </ul>
 
-        {/* Plan toggle: monthly vs annual — only visible when annual Stripe link is configured */}
-        {hasAnnual&&(
+        {/* Plan toggle — season variant shows season pass + monthly, control shows monthly + annual */}
+        {hasSeason?(
+        <div style={{display:"flex",gap:8,marginBottom:14}}>
+          <button onClick={()=>{setPlan("season");track("sg_plan_toggle",{plan:"season",variant:"season"})}} style={{
+            flex:1,padding:"10px 8px",borderRadius:12,cursor:"pointer",fontFamily:"inherit",position:"relative",
+            background:plan==="season"?"rgba(255,199,44,.15)":"rgba(255,255,255,.04)",
+            border:plan==="season"?"1.5px solid rgba(255,199,44,.4)":"1.5px solid rgba(255,255,255,.1)",
+            color:plan==="season"?"#fff":"rgba(255,255,255,.5)",fontSize:13,fontWeight:600,
+            transition:"all .2s"}}>
+            <div style={{position:"absolute",top:-8,right:8,background:C.gold,color:C.ink,
+              fontSize:9,fontWeight:800,padding:"2px 7px",borderRadius:100,letterSpacing:".02em"}}>
+              {lang==="en"?"BEST":"TOP"}
+            </div>
+            <div>{lang==="en"?"Season pass":"Pass saison"}</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{lang==="en"?"Apr–Sep":"Avr–Sep"}</div>
+            <div style={{fontSize:18,fontWeight:700,marginTop:2}}>9,99 €</div>
+          </button>
+          <button onClick={()=>{setPlan("monthly");track("sg_plan_toggle",{plan:"monthly",variant:"season"})}} style={{
+            flex:1,padding:"10px 8px",borderRadius:12,cursor:"pointer",fontFamily:"inherit",
+            background:plan==="monthly"?"rgba(255,199,44,.15)":"rgba(255,255,255,.04)",
+            border:plan==="monthly"?"1.5px solid rgba(255,199,44,.4)":"1.5px solid rgba(255,255,255,.1)",
+            color:plan==="monthly"?"#fff":"rgba(255,255,255,.5)",fontSize:13,fontWeight:600,
+            transition:"all .2s"}}>
+            <div>{lang==="en"?"Monthly":"Mensuel"}</div>
+            <div style={{fontSize:11,color:"transparent"}}>.</div>
+            <div style={{fontSize:18,fontWeight:700,marginTop:2}}>{lang==="en"?"€4.99":"4,99 €"}<span style={{fontSize:11,fontWeight:400}}>/{lang==="en"?"mo":"mois"}</span></div>
+          </button>
+        </div>
+        ):hasAnnual&&(
         <div style={{display:"flex",gap:8,marginBottom:14}}>
           <button onClick={()=>{setPlan("monthly");track("sg_plan_toggle",{plan:"monthly"})}} style={{
             flex:1,padding:"10px 8px",borderRadius:12,cursor:"pointer",fontFamily:"inherit",
@@ -2359,7 +2396,7 @@ function PremiumModal({onClose,lang,source,allBeaches,sargData}){
           <button onClick={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown"});sawCheckoutRef.current=true;setShowCheckout(true)}}
             className="gbtn" style={{width:"100%",textAlign:"center",fontSize:17,
               padding:"16px 24px",display:"block",border:"none",cursor:"pointer",fontFamily:"inherit"}}>
-            {LL.premiumCta} — {effectivePlan==="annual"?(lang==="en"?"€39.99/year":"39,99 €/an"):LL.premiumPrice}
+            {LL.premiumCta} — {effectivePlan==="season"?"9,99 €":effectivePlan==="annual"?(lang==="en"?"€39.99/year":"39,99 €/an"):LL.premiumPrice}
           </button>
         ):(
           <StripeInlineCheckout plan={effectivePlan} lang={lang} source={source}
@@ -2428,13 +2465,13 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
       {/* Theme + Lang */}
       <div style={{display:"flex",gap:4}}>
         <button onClick={onThemeToggle} style={{
-          width:36,height:36,borderRadius:12,border:"1px solid var(--sg-border)",
+          width:44,height:44,borderRadius:12,border:"1px solid var(--sg-border)",
           background:"var(--sg-card,#fff)",cursor:"pointer",fontSize:16,
           display:"flex",alignItems:"center",justifyContent:"center",
           boxShadow:"0 2px 8px rgba(0,0,0,.06)",
         }}>{theme==="dark"?"☀️":"🌙"}</button>
         <button onClick={onLangToggle} style={{
-          width:36,height:36,borderRadius:12,border:"1px solid var(--sg-border)",
+          width:44,height:44,borderRadius:12,border:"1px solid var(--sg-border)",
           background:"var(--sg-card,#fff)",cursor:"pointer",fontSize:12,fontWeight:700,
           fontFamily:"inherit",color:"var(--sg-ink)",
           display:"flex",alignItems:"center",justifyContent:"center",
