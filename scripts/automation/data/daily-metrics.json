@@ -481,20 +481,10 @@
   },
   {
     "date": "2026-04-07",
-    "time": "2026-04-07T08:15:46.132Z",
+    "time": "2026-04-07T13:01:57.566Z",
     "payments": 3,
     "revenue": 14.97,
-    "emails": 12,
-    "feedbacks": 1,
-    "avgRating": 4,
-    "pipelineOk": true
-  },
-  {
-    "date": "2026-04-07",
-    "time": "2026-04-07T11:09:18.792Z",
-    "payments": 3,
-    "revenue": 14.97,
-    "emails": 12,
+    "emails": 15,
     "feedbacks": 1,
     "avgRating": 4,
     "pipelineOk": true

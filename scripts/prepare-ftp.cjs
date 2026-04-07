@@ -247,6 +247,9 @@ Sitemap: https://${domain}/sitemap.xml
   </style>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="dns-prefetch" href="https://api.open-meteo.com" />
+  <link rel="dns-prefetch" href="https://marine-api.open-meteo.com" />
+  <link rel="dns-prefetch" href="https://server.arcgisonline.com" />
   <link rel="preload" href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
   <noscript><link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet" /></noscript>
   <!-- OneSignal Push — SDK chargé à la demande -->
