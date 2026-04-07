@@ -1,0 +1,152 @@
+name: Weekly Optimization
+
+on:
+  schedule:
+    # Lundi 10h UTC (6h MQ) — SEO + A/B + rebuild
+    - cron: '0 10 * * 1'
+    # Mardi 10h UTC — Email cleanup + drip check
+    - cron: '0 10 * * 2'
+    # Vendredi 14h UTC (10h MQ) — Weekend prep
+    - cron: '0 14 * * 5'
+  workflow_dispatch:
+    inputs:
+      day_override:
+        description: 'Force a specific day task (monday/tuesday/friday)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  optimize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Determine day
+        id: day
+        run: |
+          if [ -n "${{ github.event.inputs.day_override }}" ]; then
+            echo "task=${{ github.event.inputs.day_override }}" >> $GITHUB_OUTPUT
+          else
+            DOW=$(date -u +%u)
+            case $DOW in
+              1) echo "task=monday" >> $GITHUB_OUTPUT ;;
+              2) echo "task=tuesday" >> $GITHUB_OUTPUT ;;
+              5) echo "task=friday" >> $GITHUB_OUTPUT ;;
+              *) echo "task=none" >> $GITHUB_OUTPUT ;;
+            esac
+          fi
+          echo "Running: $(cat $GITHUB_OUTPUT)"
+
+      # ── LUNDI: SEO optimization + full rebuild ──
+      - name: "[Monday] SEO enrichment — regenerate beach content"
+        if: steps.day.outputs.task == 'monday'
+        continue-on-error: true
+        run: node scripts/automation/seo-enrich-content.cjs
+
+      - name: "[Monday] Auto-optimize — CTR analysis + meta rewrite"
+        if: steps.day.outputs.task == 'monday'
+        continue-on-error: true
+        run: node scripts/automation/auto-optimize.cjs
+
+      - name: "[Monday] A/B test evaluate"
+        if: steps.day.outputs.task == 'monday'
+        continue-on-error: true
+        run: node scripts/automation/ab-evaluate.cjs
+
+      - name: "[Monday] Full rebuild"
+        if: steps.day.outputs.task == 'monday'
+        run: |
+          npm run build
+          node scripts/prepare-ftp.cjs
+
+      - name: "[Monday] Submit URLs to Google"
+        if: steps.day.outputs.task == 'monday'
+        continue-on-error: true
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: node scripts/automation/seo-submit-urls.cjs
+
+      # ── MARDI: Email optimization ──
+      - name: "[Tuesday] Bounce cleanup via Apps Script"
+        if: steps.day.outputs.task == 'tuesday'
+        continue-on-error: true
+        run: |
+          RESULT=$(curl -sL "https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec?action=clean_bounces")
+          echo "Bounce cleanup: $RESULT"
+
+      - name: "[Tuesday] Drip check via Apps Script"
+        if: steps.day.outputs.task == 'tuesday'
+        continue-on-error: true
+        run: |
+          RESULT=$(curl -sL "https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec?action=drip_check")
+          echo "Drip check: $RESULT"
+
+      - name: "[Tuesday] Email stats snapshot"
+        if: steps.day.outputs.task == 'tuesday'
+        continue-on-error: true
+        run: |
+          RESULT=$(curl -sL "https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec?action=email_stats")
+          echo "Email stats: $RESULT"
+
+      # ── VENDREDI: Weekend prep ──
+      - name: "[Friday] Fetch fresh data"
+        if: steps.day.outputs.task == 'friday'
+        continue-on-error: true
+        run: node scripts/fetch-sargassum-live.cjs
+
+      - name: "[Friday] Weekend email bulletin"
+        if: steps.day.outputs.task == 'friday'
+        continue-on-error: true
+        run: node scripts/automation/email-weekend.cjs
+
+      - name: "[Friday] Full rebuild for weekend traffic"
+        if: steps.day.outputs.task == 'friday'
+        run: |
+          npm run build
+          node scripts/prepare-ftp.cjs
+
+      # ── Deploy (Monday + Friday) ──
+      - name: Commit changes
+        if: steps.day.outputs.task == 'monday' || steps.day.outputs.task == 'friday'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "chore: weekly ${{ steps.day.outputs.task }} optimization $(date -u +'%Y-%m-%d')"
+          git push || true
+
+      - name: Deploy Martinique (FTP)
+        if: steps.day.outputs.task == 'monday' || steps.day.outputs.task == 'friday'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER_MQ }}
+          username: ${{ secrets.FTP_USERNAME_MQ }}
+          password: ${{ secrets.FTP_PASSWORD_MQ }}
+          local-dir: ./martinique-ftp/
+          server-dir: ./
+          dangerous-clean-slate: false
+
+      - name: Deploy Guadeloupe (FTP)
+        if: steps.day.outputs.task == 'monday' || steps.day.outputs.task == 'friday'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER_GP }}
+          username: ${{ secrets.FTP_USERNAME_GP }}
+          password: ${{ secrets.FTP_PASSWORD_GP }}
+          local-dir: ./guadeloupe-ftp/
+          server-dir: ./
+          dangerous-clean-slate: false
