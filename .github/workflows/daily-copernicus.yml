@@ -82,6 +82,10 @@ jobs:
       - name: Health check (uptime monitoring)
         run: node scripts/automation/health-check.cjs
 
+      - name: Backtest forecast accuracy (archive vs observations)
+        continue-on-error: true
+        run: node scripts/automation/backtest-forecast.cjs
+
       - name: Check email delivery stats (opens, clicks, bounces)
         continue-on-error: true
         run: node scripts/automation/check-email-status.cjs
@@ -148,6 +152,8 @@ jobs:
           [ -f scripts/automation/data/welcome-sent.json ] && git add scripts/automation/data/welcome-sent.json
           [ -f scripts/automation/data/drip-sent.json ] && git add scripts/automation/data/drip-sent.json
           [ -f scripts/automation/data/bounced-emails.json ] && git add scripts/automation/data/bounced-emails.json
+          [ -f scripts/automation/data/backtest-results.json ] && git add scripts/automation/data/backtest-results.json
+          [ -f public/api/copernicus/forecast-archive.json ] && git add public/api/copernicus/forecast-archive.json
           git diff --cached --quiet || git commit -m "chore: update Copernicus data $(date -u +'%Y-%m-%d %H:%M UTC')"
           git push || true
 

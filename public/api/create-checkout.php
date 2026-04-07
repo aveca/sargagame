@@ -211,7 +211,7 @@ if ($action === 'subscribe') {
             'source' => $input['source'] ?? '',
             'date' => date('c'),
         ]);
-        $ch2 = curl_init('https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec');
+        $ch2 = curl_init('https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec');
         curl_setopt_array($ch2, [CURLOPT_POST => true, CURLOPT_POSTFIELDS => $trackData, CURLOPT_HTTPHEADER => ['Content-Type: application/json'], CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 3]);
         curl_exec($ch2); curl_close($ch2);
     } catch (Exception $e) {}

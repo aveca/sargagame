@@ -10,7 +10,7 @@ const fs = require('fs')
 const path = require('path')
 const https = require('https')
 
-const STATS_URL = 'https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec?action=stats'
+const STATS_URL = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec?action=stats'
 const METRICS_PATH = path.join(__dirname, 'data', 'daily-metrics.json')
 const SARG_PATH = path.join(__dirname, '../../public/api/copernicus/sargassum.json')
 
