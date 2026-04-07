@@ -2302,11 +2302,11 @@ function PremiumModal({onClose,lang,source,allBeaches,sargData}){
             transition:"all .2s"}}>
             <div style={{position:"absolute",top:-8,right:8,background:C.gold,color:C.ink,
               fontSize:9,fontWeight:800,padding:"2px 7px",borderRadius:100,letterSpacing:".02em"}}>
-              {lang==="en"?"BEST":"TOP"}
+              -33%
             </div>
             <div>{lang==="en"?"Season pass":"Pass saison"}</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{lang==="en"?"Apr–Sep":"Avr–Sep"}</div>
-            <div style={{fontSize:18,fontWeight:700,marginTop:2}}>9,99 €</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{lang==="en"?"Apr–Sep · 6 months":"Avr–Sep · 6 mois"}</div>
+            <div style={{fontSize:18,fontWeight:700,marginTop:2}}>19,99 €</div>
           </button>
           <button onClick={()=>{setPlan("monthly");track("sg_plan_toggle",{plan:"monthly",variant:"season"})}} style={{
             flex:1,padding:"10px 8px",borderRadius:12,cursor:"pointer",fontFamily:"inherit",
@@ -2315,7 +2315,7 @@ function PremiumModal({onClose,lang,source,allBeaches,sargData}){
             color:plan==="monthly"?"#fff":"rgba(255,255,255,.5)",fontSize:13,fontWeight:600,
             transition:"all .2s"}}>
             <div>{lang==="en"?"Monthly":"Mensuel"}</div>
-            <div style={{fontSize:11,color:"transparent"}}>.</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{lang==="en"?"No commitment":"Sans engagement"}</div>
             <div style={{fontSize:18,fontWeight:700,marginTop:2}}>{lang==="en"?"€4.99":"4,99 €"}<span style={{fontSize:11,fontWeight:400}}>/{lang==="en"?"mo":"mois"}</span></div>
           </button>
         </div>
@@ -2396,7 +2396,7 @@ function PremiumModal({onClose,lang,source,allBeaches,sargData}){
           <button onClick={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown"});sawCheckoutRef.current=true;setShowCheckout(true)}}
             className="gbtn" style={{width:"100%",textAlign:"center",fontSize:17,
               padding:"16px 24px",display:"block",border:"none",cursor:"pointer",fontFamily:"inherit"}}>
-            {LL.premiumCta} — {effectivePlan==="season"?"9,99 €":effectivePlan==="annual"?(lang==="en"?"€39.99/year":"39,99 €/an"):LL.premiumPrice}
+            {LL.premiumCta} — {effectivePlan==="season"?"19,99 €":effectivePlan==="annual"?(lang==="en"?"€39.99/year":"39,99 €/an"):LL.premiumPrice}
           </button>
         ):(
           <StripeInlineCheckout plan={effectivePlan} lang={lang} source={source}
