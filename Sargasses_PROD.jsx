@@ -771,7 +771,7 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily}){
         })}
       </div>
       <div style={{fontSize:9,color:"var(--sg-mid,#999)",textAlign:"center",padding:"2px 0 0",lineHeight:1.3}}>
-        {forecast[0]?.sources?"Tendance basee sur satellite + vent prevu. Fiabilite decroit avec les jours.":""}
+        {forecast[0]?.sources?(lang==="en"?"Trend based on satellite + wind. Reliability decreases with days.":"Tendance satellite + vent. Fiabilité : "+Math.round((forecast[1]?.confidence||40))+"% demain, décroît ensuite."):""}
       </div>
       {!isPremium&&<div onClick={()=>{track("sg_forecast_lock_click",{variant:lockV});onPremiumClick("forecast")}}
         style={{position:"absolute",top:0,right:0,bottom:0,width:`${(lockedCount/7*100).toFixed(1)}%`,

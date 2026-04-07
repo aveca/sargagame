@@ -149,6 +149,12 @@ function buildHonestForecast(levels, windForecast, history, beaches) {
     const trend = computeSatelliteTrend(level.id, history)
     const baseConf = level.confidence || 75
 
+    // Beach memory flag: if today's value comes from memory (not fresh satellite),
+    // predictions should decay faster toward clean baseline
+    const isMemory = !!(level.beachMemory || (level.source && level.source.includes('memory')))
+    const memoryDecay = isMemory ? 0.5 : 0 // 50% pull toward clean if memory-sourced
+    const CLEAN_BASELINE = 0.05 // typical clean beach AFAI
+
     const series = []
     const t = new Date()
 
@@ -165,24 +171,33 @@ function buildHonestForecast(levels, windForecast, history, beaches) {
         afai = level.afai
         sources = ['satellite']
       } else if (i === 1) {
-        // Day 1: persistence-anchored — 80% today + 20% (wind+trend)
-        // Backtesting shows sargassum is highly persistent (91% status stability day-to-day)
+        // Day 1: persistence-anchored with regression toward clean
+        // Backtest S14: model over-predicted → add pull toward clean baseline
         const windEffect = beach ? windDriftEffect(beach, hourlyWind, i) : 0
         const trendEffect = trend ? trend.slope : 0
         const modelDelta = windEffect * 0.6 + trendEffect * 0.4
-        afai = clamp01(level.afai + modelDelta * 0.3) // dampen: only 30% of model delta
+        const raw = clamp01(level.afai + modelDelta * 0.3)
+        // Regression toward clean: blend 20% toward baseline (40% if memory-sourced)
+        const cleanPull = isMemory ? 0.4 : 0.2
+        afai = raw * (1 - cleanPull) + CLEAN_BASELINE * cleanPull
         sources = hourlyWind ? ['wind-forecast', 'satellite-trend'] : ['satellite-trend']
       } else if (i <= 3) {
-        // Days 2-3: more trend influence but still damped
+        // Days 2-3: stronger regression toward clean
         const windEffect = beach ? windDriftEffect(beach, hourlyWind, i) : 0
         const trendEffect = trend ? trend.slope * i : 0
         const modelDelta = windEffect * 0.3 + trendEffect * 0.5
-        afai = clamp01(level.afai + modelDelta * 0.5) // 50% of model delta
+        const raw = clamp01(level.afai + modelDelta * 0.5)
+        // Increasing pull toward clean: 30-40% (50-60% if memory)
+        const cleanPull = (0.25 + i * 0.05) + memoryDecay * 0.2
+        afai = raw * (1 - cleanPull) + CLEAN_BASELINE * cleanPull
         sources = hourlyWind ? ['wind-forecast', 'satellite-trend'] : ['satellite-trend']
       } else {
-        // Days 4-7: satellite trend only, capped at 70% of raw extrapolation
+        // Days 4-7: satellite trend + strong regression toward clean
         const trendEffect = trend ? trend.slope * i : 0
-        afai = clamp01(level.afai + trendEffect * 0.7)
+        const raw = clamp01(level.afai + trendEffect * 0.7)
+        // Heavy pull toward clean: 50-70% (60-80% if memory)
+        const cleanPull = (0.45 + (i - 4) * 0.08) + memoryDecay * 0.15
+        afai = raw * (1 - Math.min(0.85, cleanPull)) + CLEAN_BASELINE * Math.min(0.85, cleanPull)
         sources = trend ? ['satellite-trend'] : []
       }
 
