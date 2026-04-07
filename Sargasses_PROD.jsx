@@ -53,6 +53,16 @@ const ST={
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   SEASON DETECTION
+   ═══════════════════════════════════════════════════════════════════════════ */
+const SARGASSES_SEASON=(()=>{
+  const m=new Date().getMonth() // 0-indexed
+  if(m>=3&&m<=8)return"high"     // April-September
+  if(m===2||m===9)return"shoulder" // March, October
+  return"off"                      // November-February
+})()
+
+/* ═══════════════════════════════════════════════════════════════════════════
    I18N
    ═══════════════════════════════════════════════════════════════════════════ */
 const T={
@@ -1738,9 +1748,11 @@ function BestBeachWidget({allBeaches,sargData,island,lang,isPremium,onBeachClick
   const weather=useWeather(pick)
   if(!pick)return null
   const distLabel=userPos?Math.round(pick._dist)+"km":pick.drive?pick.drive+"min":""
-  // Weekend day name
+  // Weekend day name — season-aware
   const now=new Date(),dow=now.getDay()
-  const dayLabel=dow===6?(lang==="en"?"Today":"Aujourd'hui"):dow===0?(lang==="en"?"Today":"Aujourd'hui")
+  const dayLabel=SARGASSES_SEASON==="high"
+    ?(lang==="en"?"Sargasses season":"Saison sargasses")
+    :dow===6?(lang==="en"?"Today":"Aujourd'hui"):dow===0?(lang==="en"?"Today":"Aujourd'hui")
     :(lang==="en"?"This Saturday":"Ce samedi")
   return(
     <div onClick={()=>{
@@ -1784,9 +1796,41 @@ function BestBeachWidget({allBeaches,sargData,island,lang,isPremium,onBeachClick
       {!isPremium&&(
         <div style={{marginTop:8,fontSize:10,fontWeight:700,color:C.goldL,
           display:"flex",alignItems:"center",gap:4}}>
-          <span>🔓</span>{lang==="en"?"Which beach Saturday? Free trial":"Quelle plage samedi ? Essai gratuit"}
+          <span>🔓</span>{SARGASSES_SEASON==="high"
+            ?(lang==="en"?"Know before you go — free trial":"Sois prevenu avant d'y aller — essai gratuit")
+            :(lang==="en"?"Which beach Saturday? Free trial":"Quelle plage samedi ? Essai gratuit")}
         </div>
       )}
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SEASON BANNER — subtle top bar during high season (April-September)
+   sessionStorage: shows once per session, dismissible
+   ═══════════════════════════════════════════════════════════════════════════ */
+function SeasonBanner({lang}){
+  const[visible,setVisible]=useState(()=>{
+    if(SARGASSES_SEASON!=="high")return false
+    try{return!sessionStorage.getItem("sg_season_banner_dismissed")}catch{return true}
+  })
+  useEffect(()=>{if(visible)track("sg_season_banner_view")},[visible])
+  if(!visible)return null
+  return(
+    <div style={{position:"absolute",top:0,left:0,right:0,zIndex:800,
+      background:"rgba(232,168,0,.92)",backdropFilter:"blur(8px)",
+      display:"flex",alignItems:"center",justifyContent:"center",gap:8,
+      padding:"6px 32px 6px 12px",fontSize:11,fontWeight:600,color:C.ink}}>
+      <span>{lang==="en"
+        ?"Sargasses season active \u2014 forecasts are more reliable right now"
+        :"Saison sargasses active \u2014 les pr\u00e9visions sont plus fiables en ce moment"}</span>
+      <button onClick={()=>{
+        setVisible(false)
+        try{sessionStorage.setItem("sg_season_banner_dismissed","1")}catch{}
+        track("sg_season_banner_dismiss")
+      }} style={{position:"absolute",right:8,top:"50%",transform:"translateY(-50%)",
+        background:"none",border:"none",cursor:"pointer",fontSize:13,
+        color:"rgba(13,13,13,.5)",padding:4,lineHeight:1}}>&#x2715;</button>
     </div>
   )
 }
@@ -1947,6 +1991,29 @@ function StripeInlineCheckout({plan,lang,source,onSuccess}){
     return()=>{cancelled=true;elementsRef.current?.getElement?.("payment")?.destroy?.()}
   },[])
 
+  // Checkout abandonment tracking: if email entered but no payment within 60s, mark as abandoned
+  const abandonTimerRef=useRef(null)
+  useEffect(()=>{
+    if(validEmail&&!submitting){
+      // Save email immediately for potential recovery
+      localStorage.setItem("sg_checkout_abandoned",JSON.stringify({email,ts:Date.now()}))
+      // Start 60s abandonment timer
+      if(abandonTimerRef.current)clearTimeout(abandonTimerRef.current)
+      abandonTimerRef.current=setTimeout(()=>{
+        // Only fire if checkout still not completed
+        if(!localStorage.getItem("sg_premium")){
+          track("sg_checkout_abandoned",{plan,email_domain:email.split("@")[1],source:source||"unknown"})
+          // Notify Apps Script for follow-up email
+          try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
+            method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
+            body:JSON.stringify({type:"checkout_abandoned",email,island:window.location.hostname.includes("guadeloupe")?"GP":"MQ"})
+          }).catch(()=>{})}catch(ex){}
+        }
+      },60000)
+    }
+    return()=>{if(abandonTimerRef.current)clearTimeout(abandonTimerRef.current)}
+  },[validEmail,submitting])
+
   const handleSubmit=async()=>{
     if(!stripeRef.current||!elementsRef.current||!validEmail)return
     setSubmitting(true);setError(null)
@@ -1980,6 +2047,9 @@ function StripeInlineCheckout({plan,lang,source,onSuccess}){
     localStorage.setItem("sg_premium","1")
     localStorage.setItem("sg_premium_trial_end",String(data.trialEnd))
     localStorage.setItem("sg_premium_email",email)
+    // Clear abandonment tracking on success
+    localStorage.removeItem("sg_checkout_abandoned")
+    if(abandonTimerRef.current)clearTimeout(abandonTimerRef.current)
     onSuccess?.()
   }
 
@@ -2752,6 +2822,25 @@ export default function App(){
   // Analytics: session start
   useEffect(()=>{track("sg_session_start",{island,is_premium:isPremium,is_returning:!!g("sg_seen",0)});s("sg_seen",1)},[])
 
+  // Checkout abandonment recovery: show banner if user left mid-checkout within last 24h
+  const[showRecoveryBanner,setShowRecoveryBanner]=useState(false)
+  useEffect(()=>{
+    if(isPremium)return
+    try{
+      const raw=localStorage.getItem("sg_checkout_abandoned")
+      if(!raw)return
+      const{email,ts}=JSON.parse(raw)
+      const age=Date.now()-ts
+      if(age<24*60*60*1000&&email){
+        setShowRecoveryBanner(true)
+        track("sg_checkout_recovery_eligible",{age_hours:Math.round(age/3600000),island})
+      }else{
+        // Expired — clean up
+        localStorage.removeItem("sg_checkout_abandoned")
+      }
+    }catch{localStorage.removeItem("sg_checkout_abandoned")}
+  },[])
+
   // Runtime data sources
   const[allBeaches,setAllBeaches]=useState(BEACHES_FALLBACK)
   const[imageMap,setImageMap]=useState(null)
@@ -2995,6 +3084,33 @@ export default function App(){
       <h1 style={{position:"absolute",width:"1px",height:"1px",overflow:"hidden",clip:"rect(0,0,0,0)",whiteSpace:"nowrap"}}>{island==="mq"?"Sargasses Martinique en temps réel — carte et plages aujourd'hui":"Sargasses Guadeloupe en temps réel — carte et plages aujourd'hui"}</h1>
       <div style={{position:"relative",width:"100%",height:"100%",overflow:"hidden"}}>
 
+        {/* CHECKOUT RECOVERY BANNER */}
+        {showRecoveryBanner&&(
+          <div style={{position:"fixed",top:0,left:0,right:0,zIndex:9999,
+            background:"linear-gradient(90deg,#0A1714 0%,#1a2f28 100%)",
+            borderBottom:"1px solid rgba(232,168,0,.3)",
+            padding:"10px 16px",display:"flex",alignItems:"center",justifyContent:"center",gap:12,
+            fontSize:13,color:"#e6edf3",fontFamily:"inherit"}}>
+            <span style={{opacity:.9}}>{lang==="en"?"You were almost Premium! Pick up where you left off.":"Tu \u00e9tais presque Premium\u00a0! Reprends o\u00f9 tu en \u00e9tais."}</span>
+            <button onClick={()=>{
+              track("sg_checkout_recovery_click",{island})
+              setShowRecoveryBanner(false)
+              openPremium("recovery_banner")
+            }} style={{background:"#E8A800",color:"#0A1714",border:"none",borderRadius:8,
+              padding:"6px 14px",fontSize:12,fontWeight:700,fontFamily:"inherit",cursor:"pointer",
+              whiteSpace:"nowrap"}}>
+              {lang==="en"?"Go Premium":"Passer Premium"}
+            </button>
+            <button onClick={()=>{
+              track("sg_checkout_recovery_dismiss",{island})
+              setShowRecoveryBanner(false)
+              localStorage.removeItem("sg_checkout_abandoned")
+            }} style={{background:"none",border:"none",color:"rgba(255,255,255,.5)",
+              cursor:"pointer",fontSize:18,lineHeight:1,padding:"0 4px"}}
+              aria-label="Fermer">&times;</button>
+          </div>
+        )}
+
         {/* MAP, LIST or GAME */}
         {view==="map"?(
           <ErrBound><MapView beaches={filtered} island={island} lang={lang}
@@ -3040,6 +3156,9 @@ export default function App(){
         )}
 
         {/* WeekendBanner removed — upsell disguised as feature */}
+
+        {/* SEASON BANNER — top of map, high season only, once per session */}
+        {view==="map"&&<SeasonBanner lang={lang}/>}
 
         {/* BOTTOM NAV */}
         <BottomNav view={view} onChangeView={onChangeView} lang={lang}/>
