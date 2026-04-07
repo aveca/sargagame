@@ -64,8 +64,16 @@ self.addEventListener('fetch', (e) => {
     return
   }
 
-  // Network-first for HTML pages
+  // Stale-while-revalidate for HTML pages (instant repeat visits)
   e.respondWith(
-    fetch(e.request).catch(() => caches.match(e.request))
+    caches.open(CACHE_NAME).then(cache =>
+      cache.match(e.request).then(cached => {
+        const fresh = fetch(e.request).then(res => {
+          cache.put(e.request, res.clone())
+          return res
+        }).catch(() => cached)
+        return cached || fresh
+      })
+    )
   )
 })

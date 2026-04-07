@@ -54,9 +54,14 @@ function check(site) {
 async function main() {
   console.log(`Health check — ${new Date().toISOString()}\n`)
   const results = await Promise.all(SITES.map(check))
-  const allOk = results.every(r => r.ok)
-  console.log(`\n${allOk ? '✅ All sites healthy' : '❌ SOME SITES DOWN — check above'}`)
-  process.exit(allOk ? 0 : 1)
+  // MQ is critical (must pass), GP is best-effort (DNS migration in progress)
+  const critical = results.filter(r => r.name.includes('Martinique') || r.name === 'MQ API')
+  const optional = results.filter(r => r.name.includes('Guadeloupe') || r.name === 'GP API')
+  const criticalOk = critical.every(r => r.ok)
+  const optionalOk = optional.every(r => r.ok)
+  if (!optionalOk) console.log(`\n⚠️  GP down (DNS migration) — deploy continues`)
+  console.log(`\n${criticalOk ? '✅ Critical sites healthy' : '❌ CRITICAL SITES DOWN — check above'}`)
+  process.exit(criticalOk ? 0 : 1)
 }
 
 main()
