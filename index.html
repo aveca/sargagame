@@ -121,16 +121,32 @@
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
     <script>
+    // Version check — force reload if server has a newer version (bypasses all caches)
+    (function(){
+      var LOCAL_KEY='sg_v';
+      fetch('/version.json',{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){
+        var cur=d&&d.v;if(!cur)return;
+        var prev=localStorage.getItem(LOCAL_KEY);
+        if(prev&&prev!==cur){
+          // New version deployed — nuke SW caches and hard reload
+          if('caches' in window)caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k)})});
+          localStorage.setItem(LOCAL_KEY,cur);
+          window.location.reload();
+          return;
+        }
+        localStorage.setItem(LOCAL_KEY,cur);
+      }).catch(function(){});
+    })();
+    // Service Worker registration
     if('serviceWorker' in navigator){
-      window.addEventListener('load',()=>{
-        navigator.serviceWorker.register('/sw.js').then(reg=>{
-          // When a new SW is installed and activates, reload to get fresh assets
+      window.addEventListener('load',function(){
+        navigator.serviceWorker.register('/sw.js').then(function(reg){
           if(reg.active){
-            navigator.serviceWorker.addEventListener('controllerchange',()=>{
+            navigator.serviceWorker.addEventListener('controllerchange',function(){
               if(!window.__swReloaded){window.__swReloaded=true;window.location.reload()}
             })
           }
-        }).catch(()=>{})
+        }).catch(function(){})
       })
     }
     </script>
