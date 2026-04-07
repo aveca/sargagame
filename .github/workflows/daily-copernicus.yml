@@ -2,8 +2,9 @@ name: Daily Copernicus + Deploy
 
 on:
   schedule:
-    # 4x/jour: 6h, 12h, 18h, 0h Martinique (UTC-4)
-    - cron: '0 4,10,16,22 * * *'
+    # 4x/jour: 5h, 11h, 17h, 23h Martinique (UTC-4)
+    # Décalé de 1h pour éviter collision avec weekly-optimize (10h UTC lun/mar/mer/ven)
+    - cron: '0 3,9,15,21 * * *'
   workflow_dispatch: # Déclenchement manuel possible
 
 permissions:
@@ -25,6 +26,10 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Determine day of week
+        id: check_day
+        run: echo "dow=$(date -u +%u)" >> $GITHUB_OUTPUT
 
       # ── 1. Fetch LIVE sargassum data (ERDDAP + fallback) ──
       - name: Fetch LIVE sargassum data from ERDDAP
@@ -60,6 +65,7 @@ jobs:
         run: node scripts/automation/send-notifications.cjs
 
       - name: Send weekend email bulletin (Fridays only)
+        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && contains('5', steps.check_day.outputs.dow))
         continue-on-error: true
         run: node scripts/automation/email-weekend.cjs
 
@@ -157,7 +163,7 @@ jobs:
           [ -f scripts/automation/data/backtest-results.json ] && git add scripts/automation/data/backtest-results.json
           [ -f public/api/copernicus/forecast-archive.json ] && git add public/api/copernicus/forecast-archive.json
           git diff --cached --quiet || git commit -m "chore: update Copernicus data $(date -u +'%Y-%m-%d %H:%M UTC')"
-          git push || true
+          git push || (echo "::warning::git push failed — possible conflict" && git pull --rebase && git push)
 
       # ── 4. Deploy Martinique via FTP ──────────────────────
       - name: Deploy Martinique (FTP)

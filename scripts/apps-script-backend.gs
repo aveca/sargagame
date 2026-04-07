@@ -122,7 +122,7 @@ function doPost(e) {
             subject: subject,
             htmlBody: html,
             name: 'Sargasses ' + (island === 'GP' ? 'Guadeloupe' : 'Martinique'),
-            replyTo: 'noreply@sargasses-martinique.com'
+            replyTo: 'alerte@sargasses-martinique.com'
           })
           sent++
         } catch (err) {
@@ -406,27 +406,27 @@ var DRIP_SEQUENCES = [
     subject: function(clean) { return clean + ' plages propres cette semaine' },
     html: function(island, clean) {
       var name = island === 'GP' ? 'Guadeloupe' : 'Martinique'
-      return '<div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:24px">'
+      return '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body><div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:24px">'
         + '<h1 style="color:#E8A800;font-size:22px;margin:0 0 16px">' + clean + ' plages propres en ' + name + '</h1>'
         + '<p style="color:#333;font-size:15px;line-height:1.6">Bonne nouvelle ! Cette semaine, <strong>' + clean + ' plages</strong> sont propres en ' + name + '.</p>'
-        + '<p style="color:#333;font-size:15px;line-height:1.6">La carte est mise à jour chaque jour grâce aux données satellite Copernicus.</p>'
+        + '<p style="color:#333;font-size:15px;line-height:1.6">La carte est mise &agrave; jour chaque jour gr&acirc;ce aux donn&eacute;es satellite Copernicus.</p>'
         + '<a href="https://sargasses-' + name.toLowerCase() + '.com/?utm_source=email&utm_medium=drip&utm_campaign=j3" style="display:inline-block;background:#E8A800;color:#000;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;margin:16px 0">Voir la carte →</a>'
-        + '<p style="color:#999;font-size:12px;margin-top:32px">Sargasses ' + name + ' · Données satellite en temps réel</p>'
+        + '<p style="color:#999;font-size:12px;margin-top:32px">Sargasses ' + name + ' · Donn&eacute;es satellite en temps r&eacute;el</p>'
         + '</div>'
     }
   },
   {
     day: 7, id: 'drip_j7',
-    subject: function() { return 'Sache samedi dès lundi ☀️' },
+    subject: function() { return 'Sache samedi d&egrave;s lundi ☀️' },
     html: function(island) {
       var name = island === 'GP' ? 'Guadeloupe' : 'Martinique'
-      return '<div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:24px">'
+      return '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body><div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:24px">'
         + '<h1 style="color:#E8A800;font-size:22px;margin:0 0 16px">Planifie ton weekend sans surprise</h1>'
         + '<p style="color:#333;font-size:15px;line-height:1.6">Tu utilises la carte depuis une semaine — super ! Mais savais-tu que les sargasses changent en quelques jours ?</p>'
-        + '<p style="color:#333;font-size:15px;line-height:1.6">Avec les <strong>prévisions 7 jours</strong>, tu sais dès lundi quelle plage sera propre samedi. Plus de mauvaise surprise en arrivant.</p>'
+        + '<p style="color:#333;font-size:15px;line-height:1.6">Avec les <strong>pr&eacute;visions 7 jours</strong>, tu sais d&egrave;s lundi quelle plage sera propre samedi. Plus de mauvaise surprise en arrivant.</p>'
         + '<a href="https://sargasses-' + name.toLowerCase() + '.com/?utm_source=email&utm_medium=drip&utm_campaign=j7#premium" style="display:inline-block;background:#E8A800;color:#000;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;margin:16px 0">Essayer 7 jours gratuit →</a>'
         + '<p style="color:#666;font-size:13px">Essai gratuit, annulation en 1 clic.</p>'
-        + '<p style="color:#999;font-size:12px;margin-top:32px">Sargasses ' + name + ' · Données satellite en temps réel</p>'
+        + '<p style="color:#999;font-size:12px;margin-top:32px">Sargasses ' + name + ' · Donn&eacute;es satellite en temps r&eacute;el</p>'
         + '</div>'
     }
   },
@@ -435,18 +435,18 @@ var DRIP_SEQUENCES = [
     subject: function() { return 'Ton weekend sans surprise 🏖️' },
     html: function(island) {
       var name = island === 'GP' ? 'Guadeloupe' : 'Martinique'
-      return '<div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:24px">'
+      return '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body><div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:24px">'
         + '<h1 style="color:#E8A800;font-size:22px;margin:0 0 16px">135 plages. Laquelle samedi ?</h1>'
-        + '<p style="color:#333;font-size:15px;line-height:1.6">Depuis 2 semaines tu as accès à la carte. Nos utilisateurs Premium vont plus loin :</p>'
+        + '<p style="color:#333;font-size:15px;line-height:1.6">Depuis 2 semaines tu as acc&egrave;s &agrave; la carte. Nos utilisateurs Premium vont plus loin :</p>'
         + '<ul style="color:#333;font-size:15px;line-height:1.8;padding-left:20px">'
-        + '<li><strong>Prévisions 7 jours</strong> — sache samedi dès lundi</li>'
-        + '<li><strong>Alertes plage</strong> — ta plage préférée change ? On te prévient</li>'
-        + '<li><strong>Données vent + courants</strong> — comprends pourquoi</li>'
+        + '<li><strong>Pr&eacute;visions 7 jours</strong> — sache samedi d&egrave;s lundi</li>'
+        + '<li><strong>Alertes plage</strong> — ta plage pr&eacute;f&eacute;r&eacute;e change ? On te pr&eacute;vient</li>'
+        + '<li><strong>Donn&eacute;es vent + courants</strong> — comprends pourquoi</li>'
         + '</ul>'
-        + '<p style="color:#333;font-size:15px;line-height:1.6"><em>« J\'ai évité 3 weekends pourris grâce aux prévisions »</em> — un utilisateur ' + name + '</p>'
+        + '<p style="color:#333;font-size:15px;line-height:1.6"><em>« J\'ai &eacute;vit&eacute; 3 weekends pourris gr&acirc;ce aux pr&eacute;visions »</em> — un utilisateur ' + name + '</p>'
         + '<a href="https://sargasses-' + name.toLowerCase() + '.com/?utm_source=email&utm_medium=drip&utm_campaign=j14#premium" style="display:inline-block;background:#E8A800;color:#000;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;margin:16px 0">Essai gratuit 7 jours →</a>'
-        + '<p style="color:#666;font-size:13px">4,99 €/mois après l\'essai. Annulation en 1 clic.</p>'
-        + '<p style="color:#999;font-size:12px;margin-top:32px">Sargasses ' + name + ' · Données satellite en temps réel</p>'
+        + '<p style="color:#666;font-size:13px">4,99 €/mois apr&egrave;s l\'essai. Annulation en 1 clic.</p>'
+        + '<p style="color:#999;font-size:12px;margin-top:32px">Sargasses ' + name + ' · Donn&eacute;es satellite en temps r&eacute;el</p>'
         + '</div>'
     }
   }
@@ -499,7 +499,7 @@ function runDripEmails() {
           subject: subject,
           htmlBody: html,
           name: senderName,
-          replyTo: 'noreply@sargasses-martinique.com'
+          replyTo: 'alerte@sargasses-martinique.com'
         })
 
         dripSheet.appendRow([now.toISOString(), email, seq.id, island, 'sent'])
@@ -539,13 +539,13 @@ function sendFeedbackRequest() {
       MailApp.sendEmail({
         to: email,
         subject: 'Merci pour ton abonnement Premium ! Une question rapide',
-        htmlBody: '<div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:24px">'
+        htmlBody: '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body><div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:24px">'
           + '<h1 style="color:#E8A800;font-size:20px;margin:0 0 16px">Merci pour ta confiance !</h1>'
-          + '<p style="color:#333;font-size:15px;line-height:1.6">Tu fais partie des premiers abonnés Premium de Sargasses. Ça représente beaucoup pour nous.</p>'
+          + '<p style="color:#333;font-size:15px;line-height:1.6">Tu fais partie des premiers abonn&eacute;s Premium de Sargasses. &Ccedil;a repr&eacute;sente beaucoup pour nous.</p>'
           + '<p style="color:#333;font-size:15px;line-height:1.6"><strong>Une seule question :</strong> qu\'est-ce qui t\'a convaincu de t\'abonner ? (en une phrase, c\'est parfait)</p>'
-          + '<p style="color:#333;font-size:15px;line-height:1.6">Réponds simplement à cet email — ta réponse nous aide à améliorer le service pour tout le monde.</p>'
+          + '<p style="color:#333;font-size:15px;line-height:1.6">R&eacute;ponds simplement &agrave; cet email — ta r&eacute;ponse nous aide &agrave; am&eacute;liorer le service pour tout le monde.</p>'
           + '<p style="color:#333;font-size:15px;line-height:1.6">Merci 🤙</p>'
-          + '<p style="color:#999;font-size:12px;margin-top:32px">L\'équipe Sargasses</p>'
+          + '<p style="color:#999;font-size:12px;margin-top:32px">L\'&eacute;quipe Sargasses</p>'
           + '</div>',
         name: 'Sargasses',
         replyTo: 'alerte@sargasses-martinique.com'
