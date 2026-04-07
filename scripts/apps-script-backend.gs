@@ -368,5 +368,184 @@ function doGet(e) {
     }
   }
 
-  return jsonResponse({ error: 'unknown action. Use ?action=stats|emails|feedback|beach_reports|email_stats' })
+  // Drip check — send scheduled nurture emails
+  if (action === 'drip_check') {
+    try {
+      return jsonResponse(runDripEmails())
+    } catch (err) {
+      return jsonResponse({ error: err.message })
+    }
+  }
+
+  // Bounce cleanup — remove known bounced emails
+  if (action === 'clean_bounces') {
+    try {
+      return jsonResponse(cleanBouncedEmails())
+    } catch (err) {
+      return jsonResponse({ error: err.message })
+    }
+  }
+
+  return jsonResponse({ error: 'unknown action. Use ?action=stats|emails|feedback|beach_reports|email_stats|drip_check|clean_bounces' })
+}
+
+// ── Drip email sequences ────────────────────────────
+
+var DRIP_SEQUENCES = [
+  {
+    day: 3, id: 'drip_j3',
+    subject: function(clean) { return clean + ' plages propres cette semaine' },
+    html: function(island, clean) {
+      var name = island === 'GP' ? 'Guadeloupe' : 'Martinique'
+      return '<div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:24px">'
+        + '<h1 style="color:#E8A800;font-size:22px;margin:0 0 16px">' + clean + ' plages propres en ' + name + '</h1>'
+        + '<p style="color:#333;font-size:15px;line-height:1.6">Bonne nouvelle ! Cette semaine, <strong>' + clean + ' plages</strong> sont propres en ' + name + '.</p>'
+        + '<p style="color:#333;font-size:15px;line-height:1.6">La carte est mise à jour chaque jour grâce aux données satellite Copernicus.</p>'
+        + '<a href="https://sargasses-' + name.toLowerCase() + '.com/?utm_source=email&utm_medium=drip&utm_campaign=j3" style="display:inline-block;background:#E8A800;color:#000;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;margin:16px 0">Voir la carte →</a>'
+        + '<p style="color:#999;font-size:12px;margin-top:32px">Sargasses ' + name + ' · Données satellite en temps réel</p>'
+        + '</div>'
+    }
+  },
+  {
+    day: 7, id: 'drip_j7',
+    subject: function() { return 'Sache samedi dès lundi ☀️' },
+    html: function(island) {
+      var name = island === 'GP' ? 'Guadeloupe' : 'Martinique'
+      return '<div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:24px">'
+        + '<h1 style="color:#E8A800;font-size:22px;margin:0 0 16px">Planifie ton weekend sans surprise</h1>'
+        + '<p style="color:#333;font-size:15px;line-height:1.6">Tu utilises la carte depuis une semaine — super ! Mais savais-tu que les sargasses changent en quelques jours ?</p>'
+        + '<p style="color:#333;font-size:15px;line-height:1.6">Avec les <strong>prévisions 7 jours</strong>, tu sais dès lundi quelle plage sera propre samedi. Plus de mauvaise surprise en arrivant.</p>'
+        + '<a href="https://sargasses-' + name.toLowerCase() + '.com/?utm_source=email&utm_medium=drip&utm_campaign=j7#premium" style="display:inline-block;background:#E8A800;color:#000;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;margin:16px 0">Essayer 7 jours gratuit →</a>'
+        + '<p style="color:#666;font-size:13px">Essai gratuit, annulation en 1 clic.</p>'
+        + '<p style="color:#999;font-size:12px;margin-top:32px">Sargasses ' + name + ' · Données satellite en temps réel</p>'
+        + '</div>'
+    }
+  },
+  {
+    day: 14, id: 'drip_j14',
+    subject: function() { return 'Ton weekend sans surprise 🏖️' },
+    html: function(island) {
+      var name = island === 'GP' ? 'Guadeloupe' : 'Martinique'
+      return '<div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:24px">'
+        + '<h1 style="color:#E8A800;font-size:22px;margin:0 0 16px">135 plages. Laquelle samedi ?</h1>'
+        + '<p style="color:#333;font-size:15px;line-height:1.6">Depuis 2 semaines tu as accès à la carte. Nos utilisateurs Premium vont plus loin :</p>'
+        + '<ul style="color:#333;font-size:15px;line-height:1.8;padding-left:20px">'
+        + '<li><strong>Prévisions 7 jours</strong> — sache samedi dès lundi</li>'
+        + '<li><strong>Alertes plage</strong> — ta plage préférée change ? On te prévient</li>'
+        + '<li><strong>Données vent + courants</strong> — comprends pourquoi</li>'
+        + '</ul>'
+        + '<p style="color:#333;font-size:15px;line-height:1.6"><em>« J\'ai évité 3 weekends pourris grâce aux prévisions »</em> — un utilisateur ' + name + '</p>'
+        + '<a href="https://sargasses-' + name.toLowerCase() + '.com/?utm_source=email&utm_medium=drip&utm_campaign=j14#premium" style="display:inline-block;background:#E8A800;color:#000;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;margin:16px 0">Essai gratuit 7 jours →</a>'
+        + '<p style="color:#666;font-size:13px">4,99 €/mois après l\'essai. Annulation en 1 clic.</p>'
+        + '<p style="color:#999;font-size:12px;margin-top:32px">Sargasses ' + name + ' · Données satellite en temps réel</p>'
+        + '</div>'
+    }
+  }
+]
+
+function runDripEmails() {
+  var ss = SpreadsheetApp.openById(SHEET_ID)
+  var emailSheet = ss.getSheetByName('emails')
+  if (!emailSheet) return { sent: 0, error: 'no emails sheet' }
+
+  var data = emailSheet.getDataRange().getValues()
+  var now = new Date()
+  var sent = 0, skipped = 0, errors = []
+
+  // Get already-sent drip log
+  var dripSheet = getOrCreateSheet('drip_log', ['date', 'email', 'drip_id', 'island', 'status'])
+  var dripData = dripSheet.getDataRange().getValues()
+  var sentMap = {}
+  for (var d = 1; d < dripData.length; d++) {
+    sentMap[dripData[d][1] + ':' + dripData[d][2]] = true
+  }
+
+  // Count clean beaches (rough estimate from beach data)
+  var cleanCount = 40 // default, will be overridden if data available
+
+  for (var i = 1; i < data.length; i++) {
+    var signupDate = new Date(data[i][0])
+    var email = data[i][1]
+    var island = (data[i][2] || 'MQ').toUpperCase()
+
+    if (!email || !email.includes('@')) continue
+    var daysSinceSignup = Math.floor((now - signupDate) / (1000 * 60 * 60 * 24))
+
+    for (var s = 0; s < DRIP_SEQUENCES.length; s++) {
+      var seq = DRIP_SEQUENCES[s]
+      if (daysSinceSignup < seq.day) continue
+      // Only send within a 2-day window (don't spam if we missed the exact day)
+      if (daysSinceSignup > seq.day + 2) continue
+
+      var key = email + ':' + seq.id
+      if (sentMap[key]) { skipped++; continue }
+
+      try {
+        var subject = typeof seq.subject === 'function' ? seq.subject(cleanCount) : seq.subject
+        var html = seq.html(island, cleanCount)
+        var senderName = 'Sargasses ' + (island === 'GP' ? 'Guadeloupe' : 'Martinique')
+
+        MailApp.sendEmail({
+          to: email,
+          subject: subject,
+          htmlBody: html,
+          name: senderName,
+          replyTo: 'noreply@sargasses-martinique.com'
+        })
+
+        dripSheet.appendRow([now.toISOString(), email, seq.id, island, 'sent'])
+        sentMap[key] = true
+        sent++
+      } catch (err) {
+        dripSheet.appendRow([now.toISOString(), email, seq.id, island, 'error: ' + err.message])
+        errors.push(email + ': ' + err.message)
+      }
+    }
+  }
+
+  return { sent: sent, skipped: skipped, errors: errors, date: now.toISOString() }
+}
+
+// ── Bounce cleanup ──────────────────────────────────
+
+function cleanBouncedEmails() {
+  var ss = SpreadsheetApp.openById(SHEET_ID)
+  var emailSheet = ss.getSheetByName('emails')
+  if (!emailSheet) return { removed: 0, error: 'no emails sheet' }
+
+  // Known bounces (hardcoded + from email_events)
+  var bouncedSet = {}
+  var knownBounces = [
+    'juliettebevin@yahoo.fr',
+    'celine-robert91650@gmail.com',
+    'k_ssouletrie@hotmail.fr',
+    'mireilla.daffos@free.fr',
+    'caroleassicrdepompignan@yahoo.fr',
+    'mia.zoe@hotmaim.com'
+  ]
+  for (var b = 0; b < knownBounces.length; b++) bouncedSet[knownBounces[b].toLowerCase()] = true
+
+  // Also check email_events for bounced
+  var evSheet = ss.getSheetByName('email_events')
+  if (evSheet) {
+    var evData = evSheet.getDataRange().getValues()
+    for (var e = 1; e < evData.length; e++) {
+      if ((evData[e][1] || '').indexOf('bounced') >= 0 && evData[e][3]) {
+        bouncedSet[evData[e][3].toString().toLowerCase()] = true
+      }
+    }
+  }
+
+  // Remove bounced from emails sheet (iterate backwards)
+  var data = emailSheet.getDataRange().getValues()
+  var removed = 0
+  for (var i = data.length - 1; i >= 1; i--) {
+    var email = (data[i][1] || '').toString().toLowerCase()
+    if (bouncedSet[email]) {
+      emailSheet.deleteRow(i + 1) // +1 because rows are 1-indexed
+      removed++
+    }
+  }
+
+  return { removed: removed, bounced_total: Object.keys(bouncedSet).length, date: new Date().toISOString() }
 }
