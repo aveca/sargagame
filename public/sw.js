@@ -1,7 +1,7 @@
 // Service Worker — Sargasses PWA
 // Cache-first for static assets, network-first for API data
-const CACHE_NAME = 'sargasses-v7'
-const STATIC_ASSETS = ['/', '/index.html', '/manifest.json', '/favicon.svg', '/icon-192.png']
+const CACHE_NAME = 'sargasses-v8'
+const STATIC_ASSETS = ['/', '/index.html', '/manifest.json', '/favicon.svg', '/icon-192.png', '/data/beaches-list.json', '/data/beaches-images.json']
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
@@ -21,6 +21,22 @@ self.addEventListener('activate', (e) => {
 
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url)
+
+  // Stale-while-revalidate for /data/ files (beaches-list, images)
+  if (url.pathname.startsWith('/data/')) {
+    e.respondWith(
+      caches.open(CACHE_NAME).then(cache =>
+        cache.match(e.request).then(cached => {
+          const fresh = fetch(e.request).then(res => {
+            cache.put(e.request, res.clone())
+            return res
+          }).catch(() => cached)
+          return cached || fresh
+        })
+      )
+    )
+    return
+  }
 
   // Network-first for API data (sargassum.json)
   if (url.pathname.startsWith('/api/')) {
