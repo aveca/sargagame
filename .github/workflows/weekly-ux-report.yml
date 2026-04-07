@@ -28,6 +28,8 @@ jobs:
 
       # ── 1. Collect data ──────────────────────────────────
       - name: SEO Audit (data collection)
+        id: seo-audit
+        continue-on-error: true
         env:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           GA4_PROPERTY_ID_MQ: ${{ secrets.GA4_PROPERTY_ID_MQ }}
@@ -36,6 +38,7 @@ jobs:
 
       # ── 2. Generate UX report ────────────────────────────
       - name: UX Audit (report)
+        if: steps.seo-audit.outcome == 'success'
         run: node scripts/automation/ux-audit.cjs
 
       # ── 3. Commit report ─────────────────────────────────
@@ -45,4 +48,4 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add scripts/automation/data/automation-log.json scripts/automation/data/ux-report.json scripts/automation/data/audit-summary.json scripts/automation/data/audit-full.json
           git diff --cached --quiet || git commit -m "ux: weekly report $(date -u +'%Y-%m-%d')"
-          git push || true
+          git push || (echo "::warning::git push failed — retrying with rebase" && git pull --rebase && git push)

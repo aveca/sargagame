@@ -6,12 +6,14 @@ on:
     - cron: '0 10 * * 1'
     # Mardi 10h UTC — Email cleanup + drip check
     - cron: '0 10 * * 2'
+    # Mercredi 10h UTC — Data quality + forecast accuracy
+    - cron: '0 10 * * 3'
     # Vendredi 14h UTC (10h MQ) — Weekend prep
     - cron: '0 14 * * 5'
   workflow_dispatch:
     inputs:
       day_override:
-        description: 'Force a specific day task (monday/tuesday/friday)'
+        description: 'Force a specific day task (monday/tuesday/wednesday/friday)'
         required: false
         default: ''
 
@@ -45,6 +47,7 @@ jobs:
             case $DOW in
               1) echo "task=monday" >> $GITHUB_OUTPUT ;;
               2) echo "task=tuesday" >> $GITHUB_OUTPUT ;;
+              3) echo "task=wednesday" >> $GITHUB_OUTPUT ;;
               5) echo "task=friday" >> $GITHUB_OUTPUT ;;
               *) echo "task=none" >> $GITHUB_OUTPUT ;;
             esac
@@ -85,22 +88,46 @@ jobs:
         if: steps.day.outputs.task == 'tuesday'
         continue-on-error: true
         run: |
-          RESULT=$(curl -sL "https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec?action=clean_bounces")
+          RESULT=$(curl -sL "${{ secrets.APPS_SCRIPT_URL }}?action=clean_bounces")
           echo "Bounce cleanup: $RESULT"
 
       - name: "[Tuesday] Drip check via Apps Script"
         if: steps.day.outputs.task == 'tuesday'
         continue-on-error: true
         run: |
-          RESULT=$(curl -sL "https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec?action=drip_check")
+          RESULT=$(curl -sL "${{ secrets.APPS_SCRIPT_URL }}?action=drip_check")
           echo "Drip check: $RESULT"
 
       - name: "[Tuesday] Email stats snapshot"
         if: steps.day.outputs.task == 'tuesday'
         continue-on-error: true
         run: |
-          RESULT=$(curl -sL "https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec?action=email_stats")
+          RESULT=$(curl -sL "${{ secrets.APPS_SCRIPT_URL }}?action=email_stats")
           echo "Email stats: $RESULT"
+
+      # ── MERCREDI: Data quality + forecast accuracy ──
+      - name: "[Wednesday] Backtest forecast accuracy"
+        if: steps.day.outputs.task == 'wednesday'
+        continue-on-error: true
+        run: node scripts/automation/backtest-forecast.cjs
+
+      - name: "[Wednesday] Health check both sites"
+        if: steps.day.outputs.task == 'wednesday'
+        run: node scripts/automation/health-check.cjs
+
+      - name: "[Wednesday] Daily stats + trend detection"
+        if: steps.day.outputs.task == 'wednesday'
+        continue-on-error: true
+        run: node scripts/automation/daily-stats-check.cjs
+
+      - name: "[Wednesday] Commit data quality snapshot"
+        if: steps.day.outputs.task == 'wednesday'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add scripts/automation/data/daily-metrics.json scripts/automation/data/backtest-results.json || true
+          git diff --cached --quiet || git commit -m "chore: wednesday data quality check $(date -u +'%Y-%m-%d')"
+          git push || true
 
       # ── VENDREDI: Weekend prep ──
       - name: "[Friday] Fetch fresh data"
@@ -127,7 +154,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
           git diff --cached --quiet || git commit -m "chore: weekly ${{ steps.day.outputs.task }} optimization $(date -u +'%Y-%m-%d')"
-          git push || true
+          git push || (echo "::warning::git push failed — retrying with rebase" && git pull --rebase && git push)
 
       - name: Deploy Martinique (FTP)
         if: steps.day.outputs.task == 'monday' || steps.day.outputs.task == 'friday'

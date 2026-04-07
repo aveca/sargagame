@@ -36,6 +36,7 @@ jobs:
 
       # ── 1. Collect SEO data from GSC + GA4 + CrUX ────────
       - name: SEO Audit (data collection)
+        id: seo-audit
         timeout-minutes: 20
         env:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
@@ -46,6 +47,7 @@ jobs:
 
       # ── 1b. UX Audit (from audit data) ───────────────────
       - name: UX Audit (analyze UX issues)
+        if: steps.seo-audit.outcome == 'success'
         run: node scripts/automation/ux-audit.cjs
 
       # ── 1c. Auto-Optimize (data-driven self-improvement) ─
@@ -99,4 +101,4 @@ jobs:
             [ -f "$f" ] && git add "$f"
           done
           git diff --cached --quiet || git commit -m "seo: weekly automation $(date -u +'%Y-%m-%d')"
-          git push || true
+          git push || (echo "::warning::git push failed — retrying with rebase" && git pull --rebase && git push)
