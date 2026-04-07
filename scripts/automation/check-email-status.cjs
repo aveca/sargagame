@@ -14,7 +14,7 @@ const fs = require('fs')
 const path = require('path')
 const https = require('https')
 
-const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec'
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec'
 const BOUNCED_PATH = path.join(__dirname, 'data', 'bounced-emails.json')
 
 function loadJSON(p, fallback) {

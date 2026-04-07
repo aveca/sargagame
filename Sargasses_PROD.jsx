@@ -326,7 +326,7 @@ function getBeachPhoto(beach){
 const CSS=`
 @import url('https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
-html,body,#root{height:100%;overflow:hidden;font-family:'Bricolage Grotesque',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+html,body,#root{height:100vh;height:100dvh;overflow:hidden;font-family:'Bricolage Grotesque',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 body{background:var(--sg-bg,#FDFCF7);color:var(--sg-ink,#0D0D0D)}
 .anton{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:-.02em}
 .leaflet-container{background:#0a1a2e!important}
@@ -876,7 +876,7 @@ function BeachReport({beach,lang,communityReports}){
     if(voted)return
     setVoted(level);s(key,level);s(cooldownKey,Date.now())
     track("sg_beach_report",{beach_id:beach.id,level,satellite_status:beach.status,island:beach.island})
-    try{fetch("https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec",{
+    try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
       method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
       body:JSON.stringify({type:"beach_report",beach_id:BEACH_TO_SARG[beach.id]||beach.id,beach_name:beach.name,level,island:beach.island,date:new Date().toISOString()})
     }).catch(()=>{})}catch{}
@@ -2238,7 +2238,7 @@ function InlineEmailCapture({lang}){
     s("sg_email_prompt",true)
     setSubmitted(true)
     const island=window.location.hostname.includes("guadeloupe")?"GP":"MQ"
-    try{fetch("https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec",{
+    try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
       method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
       body:JSON.stringify({email,island,source:"inline-beach",date:new Date().toISOString()})
     }).catch(()=>{})}catch{}
@@ -2306,7 +2306,7 @@ function FeedbackWidget(){
   const submit=()=>{
     track("sg_feedback",{rating,text:text.slice(0,200)})
     const island=window.location.hostname.includes("guadeloupe")?"GP":"MQ"
-    try{fetch("https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec",{
+    try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
       method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
       body:JSON.stringify({type:"feedback",rating,text:text.slice(0,500),island,date:new Date().toISOString()})
     }).catch(()=>{})}catch{}
@@ -2660,7 +2660,7 @@ export default function App(){
         track("sg_conversion",{session_id:sessionId||"direct"})
         // Log payment to Apps Script (fire-and-forget)
         if(sessionId){
-          try{fetch("https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec",{
+          try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
             method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
             body:JSON.stringify({type:"checkout.session.completed",data:{object:{id:sessionId,payment_status:"paid",
               metadata:{island:window.location.hostname.includes("guadeloupe")?"GP":"MQ"}}}})
@@ -2719,7 +2719,7 @@ export default function App(){
 
   // Fetch community beach reports (last 48h)
   useEffect(()=>{
-    fetch("https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec?action=beach_reports")
+    fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec?action=beach_reports")
       .then(r=>r.json())
       .then(data=>{if(data?.reports)setCommunityReports(data.reports)})
       .catch(()=>{})

@@ -880,6 +880,30 @@ async function main() {
   console.log(`OK: ${outPath}`)
   console.log(`   source: erddap-live | updatedAt: ${updatedAt.slice(0, 19)}`)
 
+  // Archive today's forecasts for backtesting (1 snapshot per day, keep 30 days)
+  const archivePath = path.join(dir, 'forecast-archive.json')
+  const todayDate = updatedAt.slice(0, 10)
+  let archive = { snapshots: [] }
+  try { archive = JSON.parse(fs.readFileSync(archivePath, 'utf-8')) } catch {}
+  // Replace today's snapshot if it already exists (last run wins)
+  archive.snapshots = archive.snapshots.filter(s => s.date !== todayDate)
+  archive.snapshots.push({
+    date: todayDate,
+    updatedAt,
+    forecasts: Object.fromEntries(
+      Object.entries(weekly).map(([id, w]) => [id, {
+        forecast: w.forecast,
+        forecastMethod: w.forecastMethod,
+      }])
+    ),
+  })
+  // Keep only last 30 days
+  archive.snapshots = archive.snapshots
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(-30)
+  fs.writeFileSync(archivePath, JSON.stringify(archive), 'utf-8')
+  console.log(`Forecast archive: ${archive.snapshots.length} days saved`)
+
   // 4. Export AFAI grid for client-side heatmap
   // Only positive AFAI points (sargassum detected), downsampled for performance
   const gridPoints = []

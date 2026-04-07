@@ -150,7 +150,7 @@ async function main() {
         sentSet.add(sub.email)
         // Track to Google Sheet
         try {
-          await fetch('https://script.google.com/macros/s/AKfycbzCtiAXjUrE2oMctkDzw8S0IPX0jDMkRFSeIOaQ3NOGQ8r8EawuolH9f1qnP7-cxPxKhA/exec', {
+          await fetch('https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               type: 'email_tracking', resend_id: data?.id || '', to: sub.email,
