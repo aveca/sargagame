@@ -183,26 +183,35 @@ Sitemap: https://${domain}/sitemap.xml
     console.log(`   → ${patchedCount} fichiers HTML patchés SEO/analytics/geo pour Guadeloupe`)
   }
 
-  // Index SEO spécifique Guadeloupe (title/meta/JSON-LD GP)
+  // Index SEO spécifique Guadeloupe — parity complète avec MQ (PWA, fonts, lazy loaders, SW, perf)
   if (dir === 'guadeloupe-ftp') {
     const distIndex = path.join(dist, 'index.html')
     let scriptSrc = '/assets/index.js'
     let cssSrc = ''
+    let modulePreloads = ''
     if (fs.existsSync(distIndex)) {
       const html = fs.readFileSync(distIndex, 'utf-8')
       const jsMatch = html.match(/type="module"[^>]+src="([^"]+\.js)"/)
       if (jsMatch) scriptSrc = jsMatch[1]
       const cssMatch = html.match(/href="([^"]+\.css)"/)
       if (cssMatch) cssSrc = cssMatch[1]
+      // Extract modulepreload hints (React, Leaflet chunks)
+      const preloadMatches = html.matchAll(/<link rel="modulepreload"[^>]+>/g)
+      for (const m of preloadMatches) modulePreloads += '\n  ' + m[0]
     }
     const gpIndex = `<!DOCTYPE html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#C4830A" />
+    <meta name="theme-color" content="#E8A800" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/og-image.png" />
     <title>Sargasses Guadeloupe en temps réel · Carte et plages aujourd'hui</title>
-    <meta name="description" content="Sargasses Guadeloupe : où se baigner aujourd'hui ? Carte en temps réel des 10 plages surveillées, prévisions sargasses 7 jours, alertes H2S. Données satellite Copernicus." />
+    <meta name="description" content="Sargasses Guadeloupe : où se baigner aujourd'hui ? Carte en temps réel, prévisions sargasses 7 jours, alertes push. Données satellite Copernicus Marine mises à jour quotidiennement." />
     <link rel="canonical" href="https://sargasses-guadeloupe.com/" />
     <link rel="alternate" hreflang="fr" href="https://sargasses-guadeloupe.com/" />
     <link rel="alternate" hreflang="en" href="https://sargasses-guadeloupe.com/en/" />
@@ -211,7 +220,7 @@ Sitemap: https://${domain}/sitemap.xml
     <meta name="geo.placename" content="Guadeloupe" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Sargasses Guadeloupe en temps réel · Carte et plages aujourd'hui" />
-    <meta property="og:description" content="Sargasses Guadeloupe : où se baigner aujourd'hui ? Carte en temps réel, prévisions 7 jours, alertes H2S." />
+    <meta property="og:description" content="Sargasses Guadeloupe : où se baigner aujourd'hui ? Carte en temps réel, prévisions 7 jours, alertes push." />
     <meta property="og:url" content="https://sargasses-guadeloupe.com/" />
     <meta property="og:locale" content="fr_FR" />
     <meta property="og:locale:alternate" content="en_US" />
@@ -222,44 +231,119 @@ Sitemap: https://${domain}/sitemap.xml
     <meta property="og:image:alt" content="Carte des sargasses en Guadeloupe - plages propres et à éviter" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Sargasses Guadeloupe en temps réel · Carte et plages aujourd'hui" />
-    <meta name="twitter:description" content="Sargasses Guadeloupe : où se baigner aujourd'hui ? Carte en temps réel, prévisions 7 jours, alertes H2S." />
+    <meta name="twitter:description" content="Sargasses Guadeloupe : où se baigner aujourd'hui ? Carte en temps réel, prévisions 7 jours, alertes push." />
     <meta name="twitter:image" content="https://sargasses-guadeloupe.com/og-image.png" />
-    <meta name="twitter:image:alt" content="Carte des sargasses en Guadeloupe - plages propres et à éviter" />
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"WebApplication","name":"Sargasses Guadeloupe en temps réel","description":"Carte et état des plages Guadeloupe aujourd'hui. Sargasses, plages propres, prévisions 7 jours.","url":"https://sargasses-guadeloupe.com/","applicationCategory":"EnvironmentApplication","operatingSystem":"Web","inLanguage":["fr","en"],"dateModified":"${new Date().toISOString().slice(0,10)}","datePublished":"2026-02-21","publisher":{"@type":"Organization","name":"Sargasses Guadeloupe"}}
     </script>
     <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Quand arrivent les sargasses en Guadeloupe ?","acceptedAnswer":{"@type":"Answer","text":"Les sargasses varient avec les courants et le vent. La saison la plus concernée s’étend généralement d’avril à septembre, avec des pics possibles jusqu’en octobre. Consultez la carte et les prévisions 7 jours pour l’état du jour."}},{"@type":"Question","name":"C'est quoi l'AFAI ?","acceptedAnswer":{"@type":"Answer","text":"L'AFAI (Algal Floating Algae Index) est un indice de détection des algues par satellite. Plus il est bas, mieux c’est : en dessous de 0,3 la plage est considérée comme propre, au-dessus de 0,65 il vaut mieux éviter. La courbe est affichée sur chaque fiche plage."}},{"@type":"Question","name":"Quel risque pour la santé (H2S) ?","acceptedAnswer":{"@type":"Answer","text":"Le H2S (sulfure d’hydrogène) est un gaz libéré quand les sargasses pourrissent. En forte concentration il peut irriter les yeux et la gorge. Les plages en rouge « À éviter » signalent ce risque — à éviter surtout avec des enfants ou personnes fragiles."}},{"@type":"Question","name":"Quelle plage est propre aujourd'hui en Guadeloupe ?","acceptedAnswer":{"@type":"Answer","text":"Ouvrez la carte ou l’onglet Plages : les statuts (propre / modéré / à éviter) sont mis à jour régulièrement à partir des données satellite et du modèle de dérive Copernicus Marine. L’assistant IA peut aussi vous recommander une plage selon vos critères."}},{"@type":"Question","name":"D'où viennent les données ?","acceptedAnswer":{"@type":"Answer","text":"Les statuts viennent de Copernicus Marine : produit satellite (détection des algues) et modèle de dérive océanique. Les données sont rafraîchies régulièrement pour les Antilles. L’indicateur « Copernicus » en haut de l’app confirme la source active."}}]}
+    {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Quand arrivent les sargasses en Guadeloupe ?","acceptedAnswer":{"@type":"Answer","text":"Les sargasses varient avec les courants et le vent. La saison s'étend d'avril à septembre. Consultez la carte et les prévisions 7 jours pour l'état du jour."}},{"@type":"Question","name":"C'est quoi l'AFAI ?","acceptedAnswer":{"@type":"Answer","text":"L'AFAI (Algal Floating Algae Index) est un indice de détection des algues par satellite. En dessous de 0,3 la plage est propre, au-dessus de 0,65 il vaut mieux éviter."}},{"@type":"Question","name":"Quel risque pour la santé (H2S) ?","acceptedAnswer":{"@type":"Answer","text":"Le H2S est un gaz libéré quand les sargasses pourrissent. En forte concentration il irrite les yeux et la gorge. Les plages en rouge signalent ce risque."}},{"@type":"Question","name":"Quelle plage est propre aujourd'hui en Guadeloupe ?","acceptedAnswer":{"@type":"Answer","text":"Ouvrez la carte : les statuts sont mis à jour quotidiennement à partir des données satellite Copernicus Marine."}},{"@type":"Question","name":"D'où viennent les données ?","acceptedAnswer":{"@type":"Answer","text":"Les statuts viennent de Copernicus Marine : produit satellite et modèle de dérive océanique, rafraîchis quotidiennement pour les Antilles."}}]}
     </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="dns-prefetch" href="https://cdn.onesignal.com" />
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q31VV3LLM9"></script>
-    <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-Q31VV3LLM9');</script>
-    <script>(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script","w4oect7ph3");</script>
-    <!-- Clarity → GA4 bridge -->
-    <script>
-    (function(){if(!window.clarity||!window.gtag)return;var sent={};function send(n,d){var k=n+d.target;if(sent[k])return;sent[k]=1;gtag('event',n,d)}var clicks=[],RT=3,RW=1500;document.addEventListener('click',function(e){var now=Date.now(),t=e.target,tag=t.tagName+'.'+(t.className||'').split(' ')[0]+'#'+(t.id||'');clicks.push({time:now,tag:tag});clicks=clicks.filter(function(c){return now-c.time<RW});var same=clicks.filter(function(c){return c.tag===tag});if(same.length>=RT){send('clarity_rage_click',{target:tag,page:location.pathname,count:same.length});clicks=[]}},true);document.addEventListener('click',function(e){var t=e.target,ii=['A','BUTTON','INPUT','SELECT','TEXTAREA','LABEL'];if(ii.indexOf(t.tagName)>=0||t.closest('a,button'))return;var tag=t.tagName+'.'+(t.className||'').split(' ')[0]+'#'+(t.id||''),url=location.href;setTimeout(function(){if(location.href===url)send('clarity_dead_click',{target:tag,page:location.pathname})},2000)},true);var loaded=Date.now();window.addEventListener('beforeunload',function(){if(Date.now()-loaded<10000){navigator.sendBeacon&&navigator.sendBeacon('https://www.google-analytics.com/g/collect?v=2&tid=G-Q31VV3LLM9&en=clarity_quick_bounce&ep.page='+encodeURIComponent(location.pathname))}})})();
-    </script>
-    ${cssSrc ? `<link rel="stylesheet" crossorigin href="${cssSrc}" />` : ''}
-    <script type="module" crossorigin src="${scriptSrc}"></script>
-  </head>
+  <style>
+    :root,.theme-light{--sg-bg:#FFFFFF;--sg-bgD:#F7F7F8;--sg-card:#FFFFFF;--sg-cardS:#FAFAFA;--sg-ink:#000000;--sg-mid:#000000;--sg-mute:#333333;--sg-border:rgba(0,0,0,.08);--sg-borderM:rgba(0,0,0,.14);--sg-glass:rgba(255,255,255,.92);--sg-glassBorder:rgba(0,0,0,.06);--sg-rowHover:rgba(0,0,0,.03);--sg-handle:rgba(0,0,0,.25);--sg-card-shadow:0 1px 3px rgba(0,0,0,.06),0 8px 24px rgba(0,0,0,.06);}
+    .theme-dark{--sg-bg:#0d1117;--sg-bgD:#161b22;--sg-card:#161b22;--sg-cardS:#21262d;--sg-ink:#e6edf3;--sg-mid:#adbac7;--sg-mute:#8b949e;--sg-border:rgba(255,255,255,.08);--sg-borderM:rgba(255,255,255,.14);--sg-glass:rgba(22,27,34,.85);--sg-glassBorder:rgba(255,255,255,.08);--sg-rowHover:rgba(255,255,255,.06);--sg-handle:rgba(255,255,255,.2);}
+    html{font-size:clamp(14px,2.2vw + 12px,16px);-webkit-text-size-adjust:100%}
+    html,body{font-family:'Bricolage Grotesque',system-ui,sans-serif;background:var(--sg-bg);color:var(--sg-ink);height:100vh;height:100dvh;margin:0;-webkit-font-smoothing:antialiased}
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet" /></noscript>
+  <!-- OneSignal Push — SDK chargé à la demande -->
+  <script>
+    window.ONESIGNAL_APP_ID="${onesignalAppId}";
+    window.loadOneSignal=function(){
+      if(window.__osLoaded)return;window.__osLoaded=true;
+      var s=document.createElement('script');
+      s.src='https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';
+      s.onload=function(){
+        window.OneSignalDeferred=window.OneSignalDeferred||[];
+        OneSignalDeferred.push(function(O){O.init({appId:window.ONESIGNAL_APP_ID,allowLocalhostAsSecureOrigin:true,autoPrompt:false});O.Notifications.requestPermission()});
+      };document.head.appendChild(s);
+    };
+  </script>
+  <!-- Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q31VV3LLM9"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-Q31VV3LLM9');</script>
+  <!-- Stripe.js — chargé à la demande -->
+  <script>
+    window.loadStripe=function(){
+      if(window.Stripe)return Promise.resolve(window.Stripe);
+      return new Promise(function(ok){
+        var s=document.createElement('script');s.src='https://js.stripe.com/v3/';
+        s.onload=function(){ok(window.Stripe)};document.head.appendChild(s);
+      });
+    };
+  </script>
+  <!-- Microsoft Clarity + bridge — deferred after first paint -->
+  <script>
+  (function(){
+    function boot(){
+      (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script","w4oect7ph3");
+      if(!window.gtag)return;
+      var sent={};
+      function send(name,data){var key=name+data.target;if(sent[key])return;sent[key]=1;gtag('event',name,data);}
+      var clicks=[],RAGE_THRESHOLD=3,RAGE_WINDOW=1500;
+      document.addEventListener('click',function(e){
+        var now=Date.now(),t=e.target,cn=typeof t.className==='string'?t.className:'',tag=t.tagName+'.'+cn.split(' ')[0]+'#'+(t.id||'');
+        clicks.push({time:now,tag:tag});clicks=clicks.filter(function(c){return now-c.time<RAGE_WINDOW});
+        var same=clicks.filter(function(c){return c.tag===tag});
+        if(same.length>=RAGE_THRESHOLD){send('clarity_rage_click',{target:tag,page:location.pathname,count:same.length});clicks=[];}
+      },true);
+      document.addEventListener('click',function(e){
+        var t=e.target,interactive=['A','BUTTON','INPUT','SELECT','TEXTAREA','LABEL'];
+        if(interactive.indexOf(t.tagName)>=0||t.closest('a,button'))return;
+        var cn=typeof t.className==='string'?t.className:'',tag=t.tagName+'.'+cn.split(' ')[0]+'#'+(t.id||''),url=location.href;
+        setTimeout(function(){if(location.href===url)send('clarity_dead_click',{target:tag,page:location.pathname});},2000);
+      },true);
+      var loaded=Date.now();
+      window.addEventListener('beforeunload',function(){
+        if(Date.now()-loaded<10000){
+          navigator.sendBeacon&&navigator.sendBeacon('https://www.google-analytics.com/g/collect?v=2&tid=G-Q31VV3LLM9&en=clarity_quick_bounce&ep.page='+encodeURIComponent(location.pathname));
+        }
+      });
+    }
+    if('requestIdleCallback' in window)requestIdleCallback(boot,{timeout:3000});
+    else setTimeout(boot,2000);
+  })();
+  </script>
+  <script type="module" crossorigin src="${scriptSrc}"></script>${modulePreloads}
+  ${cssSrc ? `<link rel="stylesheet" crossorigin href="${cssSrc}" />` : ''}
+</head>
   <body>
     <script>
       (function(){
         try {
           var v = localStorage.getItem("sg_theme");
-          if (v === "dark") document.documentElement.classList.add("theme-dark");
-          else if (v !== "light" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement.classList.add("theme-dark");
+          if (v === '"dark"') document.documentElement.classList.add("theme-dark");
+          else if (v !== '"light"' && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement.classList.add("theme-dark");
         } catch (e) {}
       })();
     </script>
     <div id="root"></div>
+    <script>
+    (function(){
+      var LOCAL_KEY='sg_v';
+      fetch('/version.json',{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){
+        var cur=d&&d.v;if(!cur)return;
+        var prev=localStorage.getItem(LOCAL_KEY);
+        if(prev&&prev!==cur&&'caches' in window){
+          caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k)})});
+        }
+        localStorage.setItem(LOCAL_KEY,cur);
+      }).catch(function(){});
+    })();
+    if('serviceWorker' in navigator){
+      window.addEventListener('load',function(){
+        navigator.serviceWorker.register('/sw.js').catch(function(){})
+      })
+    }
+    </script>
   </body>
 </html>
 `
     fs.writeFileSync(path.join(out, 'index.html'), gpIndex, 'utf-8')
-    console.log(`   → index.html Guadeloupe (SEO) écrit avec script ${scriptSrc}`)
+    console.log(`   → index.html Guadeloupe (SEO + PWA + perf parity) écrit avec script ${scriptSrc}`)
   }
   const readme = `# Upload FTP ${title} — Sargasses
 

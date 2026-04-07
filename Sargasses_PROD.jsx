@@ -758,7 +758,7 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily}){
           const typeOpacity=fType==="observation"?1:fType==="tendance"?.85:.6
           return(
             <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,
-              filter:isLocked?"blur(3px)":"none",opacity:isLocked?0.4:typeOpacity,
+              filter:isLocked?"blur(2px)":"none",opacity:isLocked?0.55:typeOpacity,
               pointerEvents:isLocked?"none":"auto"}}>
               {wxIcon&&<span style={{fontSize:13,lineHeight:1}}>{wxIcon}</span>}
               {dayTemp!=null&&<span style={{fontSize:9,fontWeight:600,color:"var(--sg-mid,#686868)"}}>{dayTemp}°</span>}
@@ -773,18 +773,20 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily}){
       <div style={{fontSize:9,color:"var(--sg-mid,#999)",textAlign:"center",padding:"2px 0 0",lineHeight:1.3}}>
         {forecast[0]?.sources?"Tendance basee sur satellite + vent prevu. Fiabilite decroit avec les jours.":""}
       </div>
-      {!isPremium&&<div style={{position:"absolute",top:0,right:0,bottom:0,width:`${(lockedCount/7*100).toFixed(1)}%`,
-        display:"flex",alignItems:"center",justifyContent:"center",
-        background:"linear-gradient(90deg,transparent,rgba(253,252,247,.7) 20%)",
+      {!isPremium&&<div onClick={()=>{track("sg_forecast_lock_click",{variant:lockV});onPremiumClick("forecast")}}
+        style={{position:"absolute",top:0,right:0,bottom:0,width:`${(lockedCount/7*100).toFixed(1)}%`,
+        display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",
+        background:"linear-gradient(90deg,transparent,var(--sg-bg,#FDFCF7) 25%)",
         borderRadius:8}}>
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6}}>
-          <button onClick={()=>{track("sg_forecast_lock_click");onPremiumClick("forecast")}} className="gbtn" style={{
+          <button className="gbtn" style={{
             padding:"10px 20px",fontSize:13,fontWeight:700,
             fontFamily:"'Anton',sans-serif",letterSpacing:".04em",textTransform:"uppercase",
+            animation:"pulse 2s ease-in-out infinite",
           }}>
             🔒 {lockCTA}
           </button>
-          <span style={{fontSize:11,color:"var(--sg-mid,#686868)",fontWeight:500,textAlign:"center"}}>
+          <span style={{fontSize:11,color:"var(--sg-mid,#686868)",fontWeight:500,textAlign:"center",maxWidth:160}}>
             {lockSub}
           </span>
         </div>
@@ -1890,6 +1892,12 @@ function StripeInlineCheckout({plan,lang,source,onSuccess}){
   const[submitting,setSubmitting]=useState(false)
   const[error,setError]=useState(null)
   const LL=T[lang]||T.fr
+  const openedAt=useRef(Date.now())
+  const emailTracked=useRef(false)
+  const validEmail=email.match(/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/)
+
+  // Track checkout form view
+  useEffect(()=>{track("sg_checkout_view",{plan,source:source||"unknown"})},[])
 
   useEffect(()=>{
     let cancelled=false
@@ -1927,11 +1935,11 @@ function StripeInlineCheckout({plan,lang,source,onSuccess}){
   },[])
 
   const handleSubmit=async()=>{
-    if(!stripeRef.current||!elementsRef.current||!email.includes("@"))return
+    if(!stripeRef.current||!elementsRef.current||!validEmail)return
     setSubmitting(true);setError(null)
     track("sg_checkout_submit",{plan,source:source||"unknown"})
     const{error:submitErr}=await elementsRef.current.submit()
-    if(submitErr){setError(submitErr.message);setSubmitting(false);return}
+    if(submitErr){setError(submitErr.message);setSubmitting(false);track("sg_checkout_error",{step:"elements_submit",error:submitErr.message,plan});return}
     let clientSecret
     try{
       const r=await fetch("/api/create-checkout.php",{
@@ -1939,21 +1947,22 @@ function StripeInlineCheckout({plan,lang,source,onSuccess}){
         body:JSON.stringify({action:"setup"})
       })
       const d=await r.json()
-      if(d.error){setError(d.error);setSubmitting(false);return}
+      if(d.error){setError(d.error);setSubmitting(false);track("sg_checkout_error",{step:"setup_intent",error:d.error,plan});return}
       clientSecret=d.clientSecret
-    }catch{setError("Connexion impossible");setSubmitting(false);return}
+    }catch{setError("Connexion impossible");setSubmitting(false);track("sg_checkout_error",{step:"network",error:"fetch_failed",plan});return}
     const{error:stripeErr,setupIntent}=await stripeRef.current.confirmSetup({
       elements:elementsRef.current,clientSecret,
       confirmParams:{return_url:window.location.href},
       redirect:"if_required"
     })
-    if(stripeErr){setError(stripeErr.message);setSubmitting(false);return}
+    if(stripeErr){setError(stripeErr.message);setSubmitting(false);track("sg_checkout_error",{step:"confirm_setup",error:stripeErr.message,plan});return}
+    track("sg_checkout_card_confirmed",{plan,source:source||"unknown"})
     const res=await fetch("/api/create-checkout.php",{
       method:"POST",headers:{"Content-Type":"application/json"},
       body:JSON.stringify({action:"subscribe",email,plan,setupIntentId:setupIntent.id,lang:lang||"fr"})
     })
     const data=await res.json()
-    if(data.error){setError(data.error);setSubmitting(false);return}
+    if(data.error){setError(data.error);setSubmitting(false);track("sg_checkout_error",{step:"subscribe",error:data.error,plan});return}
     track("sg_premium_subscribed",{plan,source})
     localStorage.setItem("sg_premium","1")
     localStorage.setItem("sg_premium_trial_end",String(data.trialEnd))
@@ -1964,7 +1973,10 @@ function StripeInlineCheckout({plan,lang,source,onSuccess}){
   return(
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
       <input type="email" placeholder={lang==="en"?"Your email":"Ton email"}
-        value={email} onChange={e=>setEmail(e.target.value)}
+        value={email} onChange={e=>{
+          setEmail(e.target.value)
+          if(!emailTracked.current&&e.target.value.includes("@")){emailTracked.current=true;track("sg_checkout_email",{plan,source:source||"unknown"})}
+        }}
         style={{width:"100%",padding:"14px 16px",fontSize:15,fontFamily:"inherit",
           background:"rgba(255,255,255,.06)",border:"1.5px solid rgba(255,255,255,.15)",
           borderRadius:12,color:"#e6edf3",outline:"none",boxSizing:"border-box"}}/>
@@ -1972,13 +1984,18 @@ function StripeInlineCheckout({plan,lang,source,onSuccess}){
       {!ready&&!error&&<div style={{textAlign:"center",color:"rgba(255,255,255,.4)",fontSize:13,padding:12}}>
         {lang==="en"?"Loading secure form...":"Chargement du formulaire sécurisé..."}</div>}
       {error&&<p style={{color:"#ff6b6b",fontSize:12,textAlign:"center",margin:0}}>{error}</p>}
-      <button onClick={handleSubmit} disabled={submitting||!ready||!email.includes("@")}
+      <button onClick={handleSubmit} disabled={submitting||!ready||!validEmail}
         className="gbtn" style={{width:"100%",fontSize:17,padding:"16px 24px",
           border:"none",cursor:submitting?"wait":"pointer",fontFamily:"inherit",
-          opacity:(submitting||!ready||!email.includes("@"))?0.6:1}}>
+          opacity:(submitting||!ready||!validEmail)?0.6:1}}>
         {submitting?(lang==="en"?"Processing...":"En cours...")
           :(lang==="en"?"Start free trial":"Démarrer l'essai gratuit")}
       </button>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,
+        fontSize:10,color:"rgba(255,255,255,.35)",marginTop:2}}>
+        <span>🔒</span>
+        {lang==="en"?"Secured by Stripe · Cancel anytime":"Sécurisé par Stripe · Annule quand tu veux"}
+      </div>
     </div>
   )
 }
@@ -1989,6 +2006,8 @@ function StripeInlineCheckout({plan,lang,source,onSuccess}){
 function PremiumModal({onClose,lang,source,allBeaches,sargData}){
   const LL=T[lang]||T.fr
   const hasAnnual=!!STRIPE_LINK_ANNUAL
+  const modalOpenedAt=useRef(Date.now())
+  const sawCheckoutRef=useRef(false)
   // Compute dynamic beach change count from weekly data
   const changingCount=useMemo(()=>{
     if(!sargData?.weekly||!allBeaches)return 3
@@ -2022,7 +2041,7 @@ function PremiumModal({onClose,lang,source,allBeaches,sargData}){
   const effectivePlan=hasAnnual?plan:"monthly"
   return(
     <>
-      <div className="backdrop" onClick={()=>{track("sg_premium_modal_close");onClose()}}/>
+      <div className="backdrop" onClick={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,saw_checkout:sawCheckoutRef.current});onClose()}}/>
       <div style={{
         position:"fixed",bottom:0,left:0,right:0,zIndex:1100,
         background:"linear-gradient(145deg,#0D1E1C,#0A1714)",
@@ -2100,7 +2119,7 @@ function PremiumModal({onClose,lang,source,allBeaches,sargData}){
         )}
 
         {!showCheckout?(
-          <button onClick={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown"});setShowCheckout(true)}}
+          <button onClick={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown"});sawCheckoutRef.current=true;setShowCheckout(true)}}
             className="gbtn" style={{width:"100%",textAlign:"center",fontSize:17,
               padding:"16px 24px",display:"block",border:"none",cursor:"pointer",fontFamily:"inherit"}}>
             {LL.premiumCta} — {effectivePlan==="annual"?(lang==="en"?"€39.99/year":"39,99 €/an"):LL.premiumPrice}
@@ -2116,7 +2135,7 @@ function PremiumModal({onClose,lang,source,allBeaches,sargData}){
           <span>🛡️</span>{lang==="en"?"30-day money-back guarantee":"Satisfait ou remboursé 30 jours"}
         </div>
 
-        <button onClick={()=>{track("sg_premium_modal_close");onClose()}} style={{
+        <button onClick={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,saw_checkout:sawCheckoutRef.current});onClose()}} style={{
           width:"100%",padding:"12px",marginTop:10,background:"none",
           border:"1px solid rgba(255,255,255,.15)",borderRadius:16,
           color:"#8b949e",fontSize:13,cursor:"pointer",fontFamily:"inherit",
