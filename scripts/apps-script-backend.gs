@@ -368,6 +368,15 @@ function doGet(e) {
     }
   }
 
+  // Send feedback request to premium clients
+  if (action === 'feedback_request') {
+    try {
+      return jsonResponse(sendFeedbackRequest())
+    } catch (err) {
+      return jsonResponse({ error: err.message })
+    }
+  }
+
   // Drip check — send scheduled nurture emails
   if (action === 'drip_check') {
     try {
@@ -504,6 +513,51 @@ function runDripEmails() {
   }
 
   return { sent: sent, skipped: skipped, errors: errors, date: now.toISOString() }
+}
+
+// ── Feedback request to premium clients ─────────────
+
+function sendFeedbackRequest() {
+  var ss = SpreadsheetApp.openById(SHEET_ID)
+  var paySheet = ss.getSheetByName('payments')
+  if (!paySheet) return { sent: 0, error: 'no payments sheet' }
+
+  var feedbackSheet = getOrCreateSheet('feedback_requests', ['date', 'email', 'status'])
+  var alreadySent = {}
+  var frData = feedbackSheet.getDataRange().getValues()
+  for (var i = 1; i < frData.length; i++) {
+    alreadySent[frData[i][1]] = true
+  }
+
+  var pData = paySheet.getDataRange().getValues()
+  var sent = 0
+  for (var i = 1; i < pData.length; i++) {
+    var email = pData[i][2]
+    if (!email || !email.includes('@') || alreadySent[email]) continue
+
+    try {
+      MailApp.sendEmail({
+        to: email,
+        subject: 'Merci pour ton abonnement Premium ! Une question rapide',
+        htmlBody: '<div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:24px">'
+          + '<h1 style="color:#E8A800;font-size:20px;margin:0 0 16px">Merci pour ta confiance !</h1>'
+          + '<p style="color:#333;font-size:15px;line-height:1.6">Tu fais partie des premiers abonnés Premium de Sargasses. Ça représente beaucoup pour nous.</p>'
+          + '<p style="color:#333;font-size:15px;line-height:1.6"><strong>Une seule question :</strong> qu\'est-ce qui t\'a convaincu de t\'abonner ? (en une phrase, c\'est parfait)</p>'
+          + '<p style="color:#333;font-size:15px;line-height:1.6">Réponds simplement à cet email — ta réponse nous aide à améliorer le service pour tout le monde.</p>'
+          + '<p style="color:#333;font-size:15px;line-height:1.6">Merci 🤙</p>'
+          + '<p style="color:#999;font-size:12px;margin-top:32px">L\'équipe Sargasses</p>'
+          + '</div>',
+        name: 'Sargasses',
+        replyTo: 'alerte@sargasses-martinique.com'
+      })
+      feedbackSheet.appendRow([new Date().toISOString(), email, 'sent'])
+      alreadySent[email] = true
+      sent++
+    } catch (err) {
+      feedbackSheet.appendRow([new Date().toISOString(), email, 'error: ' + err.message])
+    }
+  }
+  return { sent: sent, total_clients: pData.length - 1, date: new Date().toISOString() }
 }
 
 // ── Bounce cleanup ──────────────────────────────────
