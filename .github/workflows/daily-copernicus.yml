@@ -73,8 +73,18 @@ jobs:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         run: node scripts/automation/welcome-email.cjs
 
+      - name: Send drip emails (J+3, J+7, J+14)
+        continue-on-error: true
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: node scripts/automation/drip-email.cjs
+
       - name: Health check (uptime monitoring)
         run: node scripts/automation/health-check.cjs
+
+      - name: Check email delivery stats (opens, clicks, bounces)
+        continue-on-error: true
+        run: node scripts/automation/check-email-status.cjs
 
       - name: Daily stats check (metrics + trend detection)
         continue-on-error: true
@@ -136,6 +146,8 @@ jobs:
           [ -f scripts/automation/data/daily-metrics.json ] && git add scripts/automation/data/daily-metrics.json
           [ -f scripts/automation/data/subscribers.json ] && git add scripts/automation/data/subscribers.json
           [ -f scripts/automation/data/welcome-sent.json ] && git add scripts/automation/data/welcome-sent.json
+          [ -f scripts/automation/data/drip-sent.json ] && git add scripts/automation/data/drip-sent.json
+          [ -f scripts/automation/data/bounced-emails.json ] && git add scripts/automation/data/bounced-emails.json
           git diff --cached --quiet || git commit -m "chore: update Copernicus data $(date -u +'%Y-%m-%d %H:%M UTC')"
           git push || true
 

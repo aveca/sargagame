@@ -64,9 +64,16 @@ async function main() {
         source: r[3] || 'unknown',
       }))
 
+    // Filter out bounced emails
+    const BOUNCED_PATH = path.join(__dirname, 'data', 'bounced-emails.json')
+    let bounced = new Set()
+    try { bounced = new Set(JSON.parse(fs.readFileSync(BOUNCED_PATH, 'utf-8'))) } catch {}
+    const filtered = subscribers.filter(s => !bounced.has(s.email))
+    if (bounced.size) console.log(`Filtered ${subscribers.length - filtered.length} bounced emails`)
+
     // Deduplicate by email (keep latest)
     const seen = new Map()
-    for (const s of subscribers) seen.set(s.email, s)
+    for (const s of filtered) seen.set(s.email, s)
     const unique = [...seen.values()]
 
     fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true })
