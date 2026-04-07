@@ -320,7 +320,16 @@ Sitemap: https://${domain}/sitemap.xml
         } catch (e) {}
       })();
     </script>
-    <div id="root"></div>
+    <div id="root">
+      <noscript>
+        <h1>Sargasses Guadeloupe en temps réel — carte et plages aujourd'hui</h1>
+        <p>Carte interactive des sargasses en Guadeloupe mise à jour quotidiennement avec les données satellite Copernicus Marine. Retrouvez l'état de 82 plages : propres, à surveiller ou à éviter.</p>
+        <h2>82 plages surveillées en Guadeloupe</h2>
+        <p>Plage de Bois Jolan, Plage de Sainte-Anne, Anse du Souffleur, Plage de la Caravelle, Grande Anse Deshaies, Plage de Malendure, Plage du Gosier, Anse Bertrand, Petit-Havre et plus.</p>
+        <h2>Prévisions sargasses 7 jours</h2>
+        <p>Recevez des alertes push quand l'état de votre plage change. Prévisions basées sur les courants marins et les vents pour planifier vos sorties plage en Guadeloupe.</p>
+      </noscript>
+    </div>
     <script>
     (function(){
       var LOCAL_KEY='sg_v';

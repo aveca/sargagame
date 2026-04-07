@@ -826,6 +826,20 @@ function MethodologyLink({beach,lang,sargData}){
 /* ═══════════════════════════════════════════════════════════════════════════
    WEATHER (Open-Meteo)
    ═══════════════════════════════════════════════════════════════════════════ */
+const WEATHER_TTL=30*60*1000 // 30 min cache
+function cachedFetch(url,cacheKey){
+  try{
+    const raw=sessionStorage.getItem(cacheKey)
+    if(raw){const c=JSON.parse(raw);if(Date.now()-c.t<WEATHER_TTL)return Promise.resolve(c.d)}
+  }catch{}
+  return fetch(url).then(r=>{
+    if(!r.ok)throw new Error(r.status)
+    return r.json()
+  }).then(d=>{
+    try{sessionStorage.setItem(cacheKey,JSON.stringify({t:Date.now(),d}))}catch{}
+    return d
+  })
+}
 function useWeather(beach){
   const[data,setData]=useState(null)
   useEffect(()=>{
@@ -833,9 +847,10 @@ function useWeather(beach){
     let cancel=false
     const weatherUrl=`https://api.open-meteo.com/v1/forecast?latitude=${beach.lat}&longitude=${beach.lng}&current=temperature_2m,wind_speed_10m,wind_direction_10m,uv_index,precipitation&daily=temperature_2m_max,precipitation_sum,cloud_cover_mean,wind_speed_10m_max&timezone=America/Martinique`
     const marineUrl=`https://marine-api.open-meteo.com/v1/marine?latitude=${beach.lat}&longitude=${beach.lng}&current=wave_height,wave_direction,swell_wave_height&timezone=America/Martinique`
+    const wKey=`sg_wx_${beach.id}`,mKey=`sg_mx_${beach.id}`
     Promise.allSettled([
-      fetch(weatherUrl).then(r=>r.json()),
-      fetch(marineUrl).then(r=>r.json()),
+      cachedFetch(weatherUrl,wKey),
+      cachedFetch(marineUrl,mKey),
     ]).then(([weatherRes,marineRes])=>{
       if(cancel)return
       const w=weatherRes.status==="fulfilled"?weatherRes.value:null
@@ -847,11 +862,9 @@ function useWeather(beach){
         windDir:w.current.wind_direction_10m,
         uv:w.current.uv_index,
         precipitation:w.current.precipitation||0,
-        // Marine data (graceful — may be null)
         waveHeight:m?.current?.wave_height??null,
         swellHeight:m?.current?.swell_wave_height??null,
         waveDir:m?.current?.wave_direction??null,
-        // Daily forecast (7 days)
         daily:w.daily?{
           tempMax:w.daily.temperature_2m_max,
           precipSum:w.daily.precipitation_sum,
@@ -2979,6 +2992,7 @@ export default function App(){
     <LangCtx.Provider value={lang}>
       <StyleInjector/>
       <AbDebug/>
+      <h1 style={{position:"absolute",width:"1px",height:"1px",overflow:"hidden",clip:"rect(0,0,0,0)",whiteSpace:"nowrap"}}>{island==="mq"?"Sargasses Martinique en temps réel — carte et plages aujourd'hui":"Sargasses Guadeloupe en temps réel — carte et plages aujourd'hui"}</h1>
       <div style={{position:"relative",width:"100%",height:"100%",overflow:"hidden"}}>
 
         {/* MAP, LIST or GAME */}

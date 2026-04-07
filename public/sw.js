@@ -1,6 +1,6 @@
 // Service Worker — Sargasses PWA
 // Cache-first for static assets, network-first for API data
-const CACHE_NAME = 'sargasses-v10'
+const CACHE_NAME = 'sargasses-v11'
 const STATIC_ASSETS = ['/', '/index.html', '/manifest.json', '/favicon.svg', '/icon-192.png', '/data/beaches-list.json', '/data/beaches-images.json']
 
 self.addEventListener('install', (e) => {
@@ -45,6 +45,22 @@ self.addEventListener('fetch', (e) => {
         .then(res => {
           const clone = res.clone()
           caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone))
+          return res
+        })
+        .catch(() => caches.match(e.request))
+    )
+    return
+  }
+
+  // Network-first with cache fallback for Open-Meteo weather APIs (avoid 429)
+  if (url.hostname === 'api.open-meteo.com' || url.hostname === 'marine-api.open-meteo.com') {
+    e.respondWith(
+      fetch(e.request)
+        .then(res => {
+          if (res.ok) {
+            const clone = res.clone()
+            caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone))
+          }
           return res
         })
         .catch(() => caches.match(e.request))
