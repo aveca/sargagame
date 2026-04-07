@@ -120,6 +120,19 @@
     </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
-    <script>if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>
+    <script>
+    if('serviceWorker' in navigator){
+      window.addEventListener('load',()=>{
+        navigator.serviceWorker.register('/sw.js').then(reg=>{
+          // When a new SW is installed and activates, reload to get fresh assets
+          if(reg.active){
+            navigator.serviceWorker.addEventListener('controllerchange',()=>{
+              if(!window.__swReloaded){window.__swReloaded=true;window.location.reload()}
+            })
+          }
+        }).catch(()=>{})
+      })
+    }
+    </script>
   </body>
 </html>
