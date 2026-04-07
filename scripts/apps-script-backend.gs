@@ -9,6 +9,8 @@
  * 4. POST type="weekend_email" → dispatch HTML email to all subscribers
  * 5. GET ?action=stats         → return all metrics as JSON
  * 6. GET ?action=emails&island=MQ → return email list for an island
+ * 7. POST type="email.*"           → Resend webhook events (opens, clicks, bounces)
+ * 8. GET ?action=email_stats       → open/click/bounce rates
  *
  * Google Sheet ID: 1LrpJeILNGIccCVn7AzZrEiLPr8ALTp20F5b1ihHC9FQ
  */
@@ -170,7 +172,24 @@ function doPost(e) {
       return jsonResponse({ ok: true, action: 'email_tracked' })
     }
 
-    // 7. Weekly digest (legacy)
+    // 7. Resend webhook events (email.delivered, email.opened, email.clicked, email.bounced, etc.)
+    if (type && type.startsWith('email.')) {
+      var eventData = payload.data || {}
+      var sheet = getOrCreateSheet('email_events', [
+        'date', 'event_type', 'resend_id', 'to', 'subject', 'from'
+      ])
+      sheet.appendRow([
+        payload.created_at || new Date().toISOString(),
+        type,
+        eventData.email_id || '',
+        Array.isArray(eventData.to) ? eventData.to[0] : (eventData.to || ''),
+        eventData.subject || '',
+        eventData.from || ''
+      ])
+      return jsonResponse({ ok: true, action: 'event_logged', type: type })
+    }
+
+    // 8. Weekly digest (legacy)
     if (payload.email === 'WEEKLY_DIGEST') {
       const sheet = getOrCreateSheet('digest_log', ['date', 'island', 'digest'])
       sheet.appendRow([new Date().toISOString(), payload.island || 'MQ', payload.digest || ''])
@@ -308,5 +327,46 @@ function doGet(e) {
     }
   }
 
-  return jsonResponse({ error: 'unknown action. Use ?action=stats|emails|feedback|beach_reports' })
+  // Email stats — open/click/bounce rates from email_events
+  if (action === 'email_stats') {
+    try {
+      var ss = SpreadsheetApp.openById(SHEET_ID)
+      var counts = { sent: 0, delivered: 0, opened: 0, clicked: 0, bounced: 0, complained: 0 }
+      var bouncedEmails = []
+
+      // Count events
+      var evSheet = ss.getSheetByName('email_events')
+      if (evSheet) {
+        var evData = evSheet.getDataRange().getValues()
+        for (var i = 1; i < evData.length; i++) {
+          var evType = (evData[i][1] || '').replace('email.', '')
+          if (counts.hasOwnProperty(evType)) counts[evType]++
+          if (evType === 'bounced' && evData[i][3]) bouncedEmails.push(evData[i][3])
+        }
+      }
+
+      // Count sends from email_tracking
+      var trSheet = ss.getSheetByName('email_tracking')
+      if (trSheet) {
+        var trData = trSheet.getDataRange().getValues()
+        counts.sent = Math.max(0, trData.length - 1)
+      }
+
+      return jsonResponse({
+        counts: counts,
+        rates: {
+          delivery: counts.sent > 0 ? Math.round(counts.delivered / counts.sent * 100) : 0,
+          open: counts.delivered > 0 ? Math.round(counts.opened / counts.delivered * 100) : 0,
+          click: counts.opened > 0 ? Math.round(counts.clicked / counts.opened * 100) : 0,
+          bounce: counts.sent > 0 ? Math.round(counts.bounced / counts.sent * 100) : 0
+        },
+        bounced_emails: bouncedEmails,
+        date: new Date().toISOString()
+      })
+    } catch (err) {
+      return jsonResponse({ error: err.message })
+    }
+  }
+
+  return jsonResponse({ error: 'unknown action. Use ?action=stats|emails|feedback|beach_reports|email_stats' })
 }
