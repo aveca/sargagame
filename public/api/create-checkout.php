@@ -195,8 +195,8 @@ if ($action === 'subscribe') {
         $island = (strpos($origin, 'guadeloupe') !== false) ? 'GP' : 'MQ';
         $domain = ($island === 'GP') ? 'sargasses-guadeloupe.com' : 'sargasses-martinique.com';
         $subject = ($lang === 'en')
-            ? "You're in — your 7-day forecast is live"
-            : "C'est parti — tes previsions 7 jours sont actives";
+            ? "You're in - your 7-day forecast is live"
+            : "C'est parti - tes previsions 7 jours sont actives";
         $html = buildWelcomeEmail($island, $sub['trial_end'], $domain, $lang);
         resend($email, $subject, $html);
     } catch (Exception $e) {}
