@@ -201,7 +201,7 @@ export default defineConfig({
               .replace(/<meta name="description"[^>]*>/, () => `<meta name="description" content="${desc}" />`)
             // Inject noscript editorial content if available
             if (editorialContent[p]) {
-              const articleSchema = JSON.stringify({"@context":"https://schema.org","@type":"Article","headline":title,"description":desc,"url":`https://sargasses-martinique.com/${p}/`,"dateModified":new Date().toISOString().slice(0,10),"publisher":{"@type":"Organization","name":"Sargasses Martinique"}})
+              const articleSchema = JSON.stringify({"@context":"https://schema.org","@type":"Article","headline":title,"description":desc,"url":`https://sargasses-martinique.com/${p}/`,"datePublished":"2026-03-01","dateModified":new Date().toISOString().slice(0,10),"publisher":{"@type":"Organization","name":"Sargasses Martinique"},"author":{"@type":"Organization","name":"Sargasses Martinique","url":"https://sargasses-martinique.com/"}})
               pageHtml = pageHtml
                 .replace('</head>', `\n    <script type="application/ld+json">\n    ${articleSchema}\n    </script>\n</head>`)
                 .replace('</body>', `\n    <noscript>${editorialContent[p]}</noscript>\n</body>`)
@@ -248,26 +248,34 @@ export default defineConfig({
 
           // Sitemaps dynamiques avec lastmod = date du build
           const today = new Date().toISOString().slice(0, 10)
-          const sitemapMQ = `<?xml version="1.0" encoding="UTF-8"?>
+          // Sitemap helper — generates domain-specific XML with correct priorities
+          const buildSitemap = (domain, isGP) => {
+            const d = `https://${domain}`
+            // Editorial pages: own island gets higher priority
+            const mqEditPrio = isGP ? '0.5' : '0.8'
+            const gpEditPrio = isGP ? '0.8' : '0.5'
+            return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://sargasses-martinique.com/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>
-  <url><loc>https://sargasses-martinique.com/carte-sargasses/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
-  <url><loc>https://sargasses-martinique.com/previsions/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
-  <url><loc>https://sargasses-martinique.com/alertes/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>
-  <url><loc>https://sargasses-martinique.com/en/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://sargasses-martinique.com/en/sargassum-map/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://sargasses-martinique.com/en/best-beaches-no-sargassum/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://sargasses-martinique.com/en/sargassum-season/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://sargasses-martinique.com/en/sargassum-alerts/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://sargasses-martinique.com/saison-sargasses-martinique/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://sargasses-martinique.com/saison-sargasses-guadeloupe/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://sargasses-martinique.com/plages-sans-sargasses/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>
-  <url><loc>https://sargasses-martinique.com/danger-sargasses-h2s/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://sargasses-martinique.com/mentions-legales.html</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://sargasses-martinique.com/confidentialite.html</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>${d}/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>
+  <url><loc>${d}/carte-sargasses/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>${d}/previsions/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>${d}/alertes/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>${d}/en/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>${d}/en/sargassum-map/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>${d}/en/best-beaches-no-sargassum/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>${d}/en/sargassum-season/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>${d}/en/sargassum-alerts/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>${d}/saison-sargasses-martinique/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>${mqEditPrio}</priority></url>
+  <url><loc>${d}/saison-sargasses-guadeloupe/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>${gpEditPrio}</priority></url>
+  <url><loc>${d}/plages-sans-sargasses/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>${d}/danger-sargasses-h2s/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>${d}/mentions-legales.html</loc><lastmod>${today}</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>${d}/confidentialite.html</loc><lastmod>${today}</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
 </urlset>
 `
-          const sitemapGP = sitemapMQ.replace(/sargasses-martinique\.com/g, 'sargasses-guadeloupe.com')
+          }
+          const sitemapMQ = buildSitemap('sargasses-martinique.com', false)
+          const sitemapGP = buildSitemap('sargasses-guadeloupe.com', true)
           writeFileSync(resolve(outDir, 'sitemap-martinique.xml'), sitemapMQ)
           writeFileSync(resolve(outDir, 'sitemap-guadeloupe.xml'), sitemapGP)
           console.log('   → Sitemaps générés avec lastmod:', today)
@@ -331,12 +339,46 @@ export default defineConfig({
             const beachSchemaObj = {"@context":"https://schema.org","@type":"Beach","name":b.name,"description":`Fiche sargasses ${b.name}, ${b.commune} (${island}). État en temps réel et prévisions.`,"url":beachUrl,"address":{"@type":"PostalAddress","addressLocality":b.commune,"addressRegion":island,"addressCountry":isMQ?"MQ":"GP"},"geo":{"@type":"GeoCoordinates","latitude":b.lat,"longitude":b.lng},"isPartOf":{"@type":"WebApplication","name":`Sargasses ${island}`,"url":`https://${domain}/`},"aggregateRating":{"@type":"AggregateRating","ratingValue":ratingValue,"bestRating":5,"worstRating":1,"ratingCount":1,"reviewAspect":`Sargasses — ${ratingName}`}}
             if (amenities.length > 0) beachSchemaObj.amenityFeature = amenities
             const beachSchema = JSON.stringify(beachSchemaObj)
-            const breadcrumbBeach = JSON.stringify({"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Accueil","item":`https://${domain}/`},{"@type":"ListItem","position":2,"name":"Plages","item":`https://${domain}/`},{"@type":"ListItem","position":3,"name":b.name,"item":beachUrl}]})
+            const breadcrumbBeach = JSON.stringify({"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Accueil","item":`https://${domain}/`},{"@type":"ListItem","position":2,"name":"Plages","item":`https://${domain}/plages/`},{"@type":"ListItem","position":3,"name":b.name,"item":beachUrl}]})
             // FAQPage schema — use enrichment if available, otherwise generate per-beach FAQ
+            // Each beach gets contextually unique questions based on its characteristics
             const mainCity = isMQ ? 'Fort-de-France' : 'Pointe-à-Pitre'
-            const baignadeAnswer = b.status === 'clean' ? `Oui, ${b.name} est actuellement propre et adaptée à la baignade. Consultez notre carte en temps réel pour les dernières mises à jour.` : b.status === 'moderate' ? `La baignade est possible à ${b.name} mais avec prudence, une présence modérée de sargasses est signalée. Vérifiez l'état en temps réel avant de vous déplacer.` : `La baignade est déconseillée à ${b.name} aujourd'hui en raison d'une forte présence de sargasses. Consultez les plages propres à proximité sur notre carte.`
-            const generatedFaq = JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":`Les sargasses sont-elles présentes à ${b.name} aujourd'hui ?`,"acceptedAnswer":{"@type":"Answer","text":`Consultez l'état en temps réel des sargasses à ${b.name} (${b.commune}, ${island}) sur notre carte interactive. Données satellite Copernicus mises à jour quotidiennement.`}},{"@type":"Question","name":`Peut-on se baigner à ${b.name} ?`,"acceptedAnswer":{"@type":"Answer","text":baignadeAnswer}},{"@type":"Question","name":`Comment accéder à ${b.name} ?`,"acceptedAnswer":{"@type":"Answer","text":`${b.name} se trouve à ${b.commune}, ${island}. Accessible en ${b.drive} minutes en voiture depuis ${mainCity}.`}}]})
-            const faqSchema = _enrichments[b.slug] ? _enrichments[b.slug].faq : generatedFaq
+            // Determine coast type for unique content
+            let coastType, coastExposure
+            if (isMQ) {
+              coastType = b.lng > -61.0 ? 'côte Atlantique' : b.lng < -61.1 ? 'côte Caraïbe' : 'côte centre'
+              coastExposure = b.lng > -61.0 ? 'exposée aux courants atlantiques' : b.lng < -61.1 ? 'protégée des courants atlantiques' : 'moyennement exposée'
+            } else {
+              coastType = b.lng > -61.3 ? 'côte Atlantique' : b.lng < -61.6 ? 'côte sous-le-vent' : 'côte centrale'
+              coastExposure = b.lng > -61.3 ? 'exposée aux courants atlantiques' : b.lng < -61.6 ? 'protégée par la Basse-Terre' : 'moyennement exposée'
+            }
+            // Build unique FAQ questions pool — pick 3 most relevant per beach
+            const faqQuestions = []
+            // Q1: Always include status question (unique per status)
+            if (b.status === 'clean') {
+              faqQuestions.push({"@type":"Question","name":`${b.name} est-elle une plage sans sargasses ?`,"acceptedAnswer":{"@type":"Answer","text":`Actuellement, ${b.name} à ${b.commune} présente peu ou pas de sargasses. Cette plage de la ${coastType} est ${coastExposure}. L'état peut changer rapidement — consultez notre carte mise à jour quotidiennement par satellite Copernicus.`}})
+            } else if (b.status === 'moderate') {
+              faqQuestions.push({"@type":"Question","name":`Quel est l'état des sargasses à ${b.name} aujourd'hui ?`,"acceptedAnswer":{"@type":"Answer","text":`${b.name} (${b.commune}) présente une présence modérée de sargasses. Située sur la ${coastType}, cette plage est ${coastExposure}. Vérifiez l'état en temps réel sur notre carte avant de vous déplacer.`}})
+            } else {
+              faqQuestions.push({"@type":"Question","name":`Pourquoi éviter ${b.name} en ce moment ?`,"acceptedAnswer":{"@type":"Answer","text":`Une forte concentration de sargasses est détectée par satellite au large de ${b.name} (${b.commune}). Les sargasses en décomposition libèrent du H₂S, un gaz irritant. Consultez les plages propres à proximité sur notre carte en temps réel.`}})
+            }
+            // Q2: Contextual question based on amenities
+            if (b.kids) {
+              faqQuestions.push({"@type":"Question","name":`${b.name} est-elle adaptée aux enfants ?`,"acceptedAnswer":{"@type":"Answer","text":`Oui, ${b.name} à ${b.commune} est adaptée aux familles${b.parking ? ' et dispose d\'un parking' : ''}. En période de sargasses (avril-septembre), vérifiez l'état de la plage sur notre carte avant de vous y rendre avec des enfants, le H₂S pouvant être irritant.`}})
+            } else if (b.snorkel) {
+              faqQuestions.push({"@type":"Question","name":`Peut-on faire du snorkeling à ${b.name} ?`,"acceptedAnswer":{"@type":"Answer","text":`${b.name} à ${b.commune} offre de bonnes conditions de snorkeling. La présence de sargasses en surface peut gêner la visibilité et l'accès à l'eau. Consultez l'état en temps réel avant votre sortie.`}})
+            } else {
+              const driveMin = parseInt(b.drive, 10) || 30
+              faqQuestions.push({"@type":"Question","name":`Comment se rendre à ${b.name} depuis ${mainCity} ?`,"acceptedAnswer":{"@type":"Answer","text":`${b.name} se trouve à ${b.commune}, à environ ${b.drive} minutes en voiture depuis ${mainCity}. ${driveMin < 20 ? 'Facilement accessible pour une sortie rapide.' : driveMin < 40 ? 'Prévoyez le trajet, surtout le week-end.' : 'Excursion à la journée recommandée.'}`}})
+            }
+            // Q3: Season/coast question unique per zone
+            if (b.lng > (isMQ ? -61.0 : -61.3)) {
+              faqQuestions.push({"@type":"Question","name":`Quand éviter ${b.name} pour les sargasses ?`,"acceptedAnswer":{"@type":"Answer","text":`${b.name}, sur la ${coastType}, est plus exposée d'avril à septembre quand les alizés poussent les sargasses vers la côte est. Les mois de juin à août sont généralement les plus touchés. Consultez nos prévisions 7 jours pour planifier votre visite.`}})
+            } else {
+              faqQuestions.push({"@type":"Question","name":`${b.name} est-elle touchée par les sargasses ?`,"acceptedAnswer":{"@type":"Answer","text":`${b.name}, située sur la ${coastType}, est ${coastExposure}. Elle est généralement moins touchée que les plages de la côte est. La saison des sargasses aux Antilles va d'avril à septembre, avec des pics entre juin et août.`}})
+            }
+            // Always use contextually-generated FAQ (enrichments FAQ was identical across all beaches)
+            const faqSchema = JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":faqQuestions})
             const beachHtml = html
               .replace(/<title>[^<]*<\/title>/, `<title>${beachTitle}</title>`)
               .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${beachDesc}" />`)
@@ -351,6 +393,8 @@ export default defineConfig({
               .replace(/<meta name="twitter:description"[^>]*>/, `<meta name="twitter:description" content="${beachDesc}" />`)
               .replace(/<meta property="og:image" [^>]*>/, _beachImages[b.id] ? `<meta property="og:image" content="https://${domain}/beaches/${_beachImages[b.id]}" />` : `<meta property="og:image" content="https://${domain}/og-image.png" />`)
               .replace(/<meta name="twitter:image" [^>]*>/, _beachImages[b.id] ? `<meta name="twitter:image" content="https://${domain}/beaches/${_beachImages[b.id]}" />` : `<meta name="twitter:image" content="https://${domain}/og-image.png" />`)
+              // Strip homepage schemas (WebApplication, FAQPage, Organization, SiteNavigationElement) — beach pages get their own
+              .replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g, '')
               .replace('</head>', `\n    <script type="application/ld+json">\n    ${beachSchema}\n    </script>\n    <script type="application/ld+json">\n    ${breadcrumbBeach}\n    </script>\n    <script type="application/ld+json">\n    ${faqSchema}\n    </script>\n</head>`)
             // Build noscript with nearby beaches (same commune first, then same island), nav links
             // Extra SEO sections appended to ALL beaches (enriched or not)
@@ -391,17 +435,22 @@ export default defineConfig({
             const driveType = driveMin < 20 ? 'sortie rapide' : 'excursion à la journée'
             const driveContext = `<p>À ${b.drive} minutes de ${mainCity}, idéale pour une ${driveType}.</p>`
             const extraSections = `${accessSection}${driveContext}${orientationSection}${condBaignade}${activitySection}${seasonSection}${tagsHtml}`
+            // Beach photo for noscript (Google Images indexing)
+            const beachImgTag = _beachImages[b.id]
+              ? `<img src="/beaches/${_beachImages[b.id]}" alt="${b.name} — plage ${b.commune}, ${island}" width="800" height="450" loading="lazy" />`
+              : ''
             let noscriptBlock
             if (_enrichments[b.slug]) {
-              // Keep existing enrichment noscript but append extra sections inside the article
-              noscriptBlock = _enrichments[b.slug].noscript.replace('</article>', `${extraSections}</article>`)
+              // Keep existing enrichment noscript but prepend image and append extra sections
+              const enrichedWithImg = _enrichments[b.slug].noscript.replace('<article>', `<article>${beachImgTag}`)
+              noscriptBlock = enrichedWithImg.replace('</article>', `${extraSections}</article>`)
             } else {
               const sameCommune = beaches.filter(o => o.commune === b.commune && o.slug !== b.slug)
               const sameIsland = beaches.filter(o => o.island === b.island && o.commune !== b.commune && o.slug !== b.slug)
               const nearby = sameCommune.slice(0, 4)
               if (nearby.length < 4) nearby.push(...sameIsland.slice(0, 4 - nearby.length))
               const nearbyLi = nearby.map(o => `<li><a href="/plages/${o.slug}/">${o.name}</a> — ${o.commune}</li>`).join('')
-              noscriptBlock = `\n    <noscript>\n      <article>\n        <h1>Sargasses à ${b.name} (${b.commune}, ${island})</h1>\n        <p>État des sargasses à ${b.name} en temps réel. Cette plage de ${b.commune} en ${island} est surveillée quotidiennement par satellite.</p>\n        ${extraSections}\n        <h3>Plages à proximité</h3>\n        <ul>${nearbyLi}</ul>\n        <p><a href="/carte-sargasses/">Voir la carte des sargasses</a> · <a href="/alertes/">Alertes sargasses</a> · <a href="/">Accueil Sargasses ${island}</a></p>\n      </article>\n    </noscript>`
+              noscriptBlock = `\n    <noscript>\n      <article>\n        <h1>Sargasses à ${b.name} (${b.commune}, ${island})</h1>\n        ${beachImgTag}\n        <p>État des sargasses à ${b.name} en temps réel. Cette plage de ${b.commune} en ${island} est surveillée quotidiennement par satellite.</p>\n        ${extraSections}\n        <h3>Plages à proximité</h3>\n        <ul>${nearbyLi}</ul>\n        <p><a href="/carte-sargasses/">Voir la carte des sargasses</a> · <a href="/alertes/">Alertes sargasses</a> · <a href="/">Accueil Sargasses ${island}</a></p>\n      </article>\n    </noscript>`
             }
             const finalHtml = beachHtml.replace('</body>', noscriptBlock + '\n</body>')
             writeFileSync(resolve(beachDir, 'index.html'), finalHtml)
