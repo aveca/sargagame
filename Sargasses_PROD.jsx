@@ -1139,9 +1139,11 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               style={{flex:1,textDecoration:"none",textAlign:"center"}}>{LL.directions}</a>
             <button onClick={()=>{
               const slug=beach.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/-+$/,"")
-              const url=window.location.origin+"/plages/"+slug
-              if(navigator.share){track("sg_share",{beach_id:beach.id,method:"native"});navigator.share({title:beach.name+" — Sargasses",text:(ST[beach.status]||ST.clean).l+" aujourd'hui",url}).catch(()=>{})}
-              else{navigator.clipboard?.writeText(url);track("sg_share",{beach_id:beach.id})}
+              const refCode=isPremium?localStorage.getItem("sg_referral_code"):""
+              const url=window.location.origin+"/plages/"+slug+(refCode?"?ref="+refCode:"")
+              const isRef=!!refCode
+              if(navigator.share){track("sg_share",{beach_id:beach.id,method:"native",has_referral:isRef});navigator.share({title:beach.name+" — Sargasses",text:(ST[beach.status]||ST.clean).l+" aujourd'hui",url}).catch(()=>{})}
+              else{navigator.clipboard?.writeText(url);track("sg_share",{beach_id:beach.id,has_referral:isRef})}
             }} style={{flex:0,padding:"14px 20px",borderRadius:22,border:"1.5px solid var(--sg-border)",
               background:"var(--sg-card)",cursor:"pointer",fontSize:18,fontFamily:"inherit"}}>
               📤
@@ -2043,7 +2045,18 @@ function StripeInlineCheckout({plan,lang,source,onSuccess}){
     })
     const data=await res.json()
     if(data.error){setError(data.error);setSubmitting(false);track("sg_checkout_error",{step:"subscribe",error:data.error,plan});return}
-    track("sg_premium_subscribed",{plan,source})
+    // Generate referral code for this new premium user
+    const refCode="REF-"+Math.random().toString(36).slice(2,8).toUpperCase()
+    localStorage.setItem("sg_referral_code",refCode)
+    // Check if this user was referred
+    const referredBy=localStorage.getItem("sg_referred_by")||""
+    track("sg_premium_subscribed",{plan,source,referral_code:refCode,referred_by:referredBy})
+    if(referredBy){
+      try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
+        method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
+        body:JSON.stringify({type:"referral_conversion",referrer_code:referredBy,new_subscriber_email:email,plan,island:window.location.hostname.includes("guadeloupe")?"GP":"MQ",date:new Date().toISOString()})
+      }).catch(()=>{})}catch{}
+    }
     localStorage.setItem("sg_premium","1")
     localStorage.setItem("sg_premium_trial_end",String(data.trialEnd))
     localStorage.setItem("sg_premium_email",email)
@@ -2103,6 +2116,8 @@ function PremiumModal({onClose,lang,source,allBeaches,sargData}){
   },[sargData,allBeaches])
   const[plan,setPlan]=useState("monthly") // "monthly" | "annual"
   const[showCheckout,setShowCheckout]=useState(false)
+  const[showReferral,setShowReferral]=useState(false)
+  const[refCopied,setRefCopied]=useState(false)
   // A/B Test 2: modal value proposition
   const modalV=abVariant("modal1",["control","family"],[.5,.5])
   const isFamily=modalV==="family"
@@ -2201,6 +2216,52 @@ function PremiumModal({onClose,lang,source,allBeaches,sargData}){
         </div>
         )}
 
+        {showReferral?(
+          <div style={{textAlign:"center",padding:"10px 0"}}>
+            <div style={{fontSize:36,marginBottom:12}}>🎉</div>
+            <div style={{fontSize:18,fontWeight:700,marginBottom:6}}>
+              {lang==="en"?"Premium activated!":"Premium activé !"}
+            </div>
+            <div style={{fontSize:13,color:"rgba(255,255,255,.6)",marginBottom:20}}>
+              {lang==="en"?"7-day forecasts unlocked.":"Prévisions 7 jours débloquées."}
+            </div>
+            <div style={{background:"rgba(255,255,255,.06)",border:"1.5px solid rgba(255,255,255,.12)",
+              borderRadius:16,padding:"16px 20px",marginBottom:16}}>
+              <div style={{fontSize:13,fontWeight:600,marginBottom:8,color:C.goldL}}>
+                {lang==="en"?"Refer a friend — 1 free month for both of you":"Parraine un ami — 1 mois offert pour vous deux"}
+              </div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginBottom:14}}>
+                {lang==="en"?"Share your link. When they subscribe, you both get 1 extra month free.":"Partage ton lien. Quand il s'abonne, vous avez chacun 1 mois offert."}
+              </div>
+              <button onClick={()=>{
+                const code=localStorage.getItem("sg_referral_code")||""
+                const refUrl=window.location.origin+"/?ref="+code
+                track("sg_referral_share",{code,method:navigator.share?"native":"clipboard"})
+                if(navigator.share){
+                  navigator.share({title:lang==="en"?"Sargasses — Beach forecast":"Sargasses — Prévisions plage",
+                    text:lang==="en"?"Check which beaches are sargassum-free before you go!":"Vérifie quelles plages sont propres avant d'y aller !",
+                    url:refUrl}).catch(()=>{})
+                }else{
+                  navigator.clipboard?.writeText(refUrl)
+                  setRefCopied(true);setTimeout(()=>setRefCopied(false),2000)
+                }
+              }} className="gbtn" style={{width:"100%",fontSize:15,padding:"14px 20px",
+                border:"none",cursor:"pointer",fontFamily:"inherit",display:"flex",
+                alignItems:"center",justifyContent:"center",gap:8}}>
+                <span style={{fontSize:18}}>{refCopied?"✅":"📤"}</span>
+                {refCopied
+                  ?(lang==="en"?"Link copied!":"Lien copié !")
+                  :(lang==="en"?"Share my referral link":"Partager mon lien")}
+              </button>
+            </div>
+            <button onClick={onClose} style={{
+              width:"100%",padding:"12px",background:"none",
+              border:"1px solid rgba(255,255,255,.15)",borderRadius:16,
+              color:"#8b949e",fontSize:13,cursor:"pointer",fontFamily:"inherit",
+            }}>{lang==="en"?"Continue":"Continuer"}</button>
+          </div>
+        ):(
+        <>
         {!showCheckout?(
           <button onClick={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown"});sawCheckoutRef.current=true;setShowCheckout(true)}}
             className="gbtn" style={{width:"100%",textAlign:"center",fontSize:17,
@@ -2209,7 +2270,7 @@ function PremiumModal({onClose,lang,source,allBeaches,sargData}){
           </button>
         ):(
           <StripeInlineCheckout plan={effectivePlan} lang={lang} source={source}
-            onSuccess={()=>{track("sg_premium_success",{plan:effectivePlan,source:source||"unknown"});onClose()}}/>
+            onSuccess={()=>{track("sg_premium_success",{plan:effectivePlan,source:source||"unknown"});setShowReferral(true)}}/>
         )}
 
         {/* Guarantee */}
@@ -2223,6 +2284,8 @@ function PremiumModal({onClose,lang,source,allBeaches,sargData}){
           border:"1px solid rgba(255,255,255,.15)",borderRadius:16,
           color:"#8b949e",fontSize:13,cursor:"pointer",fontFamily:"inherit",
         }}>{LL.close}</button>
+        </>
+        )}
       </div>
     </>
   )
@@ -2305,7 +2368,23 @@ function InlinePushCTA({lang,beachId}){
     track("sg_push_accept",{beach_id:beachId||"unknown"})
     s("sg_push_done",true)
     setAccepted(true)
-    try{window.loadOneSignal?.()}catch(e){}
+    try{
+      window.loadOneSignal?.()
+      // Tag user's beach for segmented push notifications
+      const tagBeach=beachId||g("sg_my_beach",null)
+      if(tagBeach){
+        const waitForOS=setInterval(()=>{
+          if(window.OneSignalDeferred){
+            clearInterval(waitForOS)
+            window.OneSignalDeferred.push(function(O){
+              O.User.addTag("my_beach",tagBeach)
+              O.User.addTag("sarg_alert","1")
+            })
+          }
+        },500)
+        setTimeout(()=>clearInterval(waitForOS),10000)
+      }
+    }catch(e){}
   }
 
   if(accepted)return(
@@ -2346,16 +2425,16 @@ function InlinePushCTA({lang,beachId}){
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   INLINE EMAIL CAPTURE — Contextual in beach sheet after 2nd beach view
+   INLINE EMAIL CAPTURE — Smart visit-based trigger (visit 3+)
    ═══════════════════════════════════════════════════════════════════════════ */
 function InlineEmailCapture({lang}){
   const[email,setEmail]=useState("")
   const[submitted,setSubmitted]=useState(false)
   const[dismissed,setDismissed]=useState(false)
   const tracked=useRef(false)
-  const beachViews=parseInt(sessionStorage.getItem("sg_beach_views")||"0")
-  if(beachViews<2||dismissed||g("sg_email_prompt",false))return null
-  if(!tracked.current){tracked.current=true;track("sg_email_view")}
+  const visitCount=g("sg_visit_count",0)
+  if(visitCount<3||dismissed||g("sg_email_prompt",false))return null
+  if(!tracked.current){tracked.current=true;track("sg_smart_email_trigger",{visit_count:visitCount});track("sg_email_view")}
 
   const handleSubmit=e=>{
     e.preventDefault()
@@ -2383,10 +2462,10 @@ function InlineEmailCapture({lang}){
       background:"var(--sg-bgD,#F7F5EF)",border:"1px solid var(--sg-border,rgba(0,0,0,.04))"}}>
       <div style={{fontSize:13,fontWeight:700,color:"var(--sg-ink)",marginBottom:4,display:"flex",alignItems:"center",gap:6}}>
         <span>📧</span>
-        {lang==="en"?"Stop wasting a Saturday at the beach":"Ne gâche plus un samedi à la plage"}
+        {lang==="en"?"You keep coming back!":"Tu reviens souvent !"}
       </div>
       <div style={{fontSize:11,color:"var(--sg-mid)",marginBottom:8}}>
-        {lang==="en"?"Every Friday, the 5 cleanest beaches in your inbox.":"Chaque vendredi, les 5 plages les plus propres dans ta boîte."}
+        {lang==="en"?"Get your beaches status every Friday in your inbox.":"Reçois l'état de tes plages chaque vendredi."}
       </div>
       <form onSubmit={handleSubmit} style={{display:"flex",gap:8,alignItems:"center"}}>
         <input type="email" placeholder={lang==="en"?"your@email.com":"ton@email.com"}
@@ -2822,6 +2901,25 @@ export default function App(){
   // Analytics: session start
   useEffect(()=>{track("sg_session_start",{island,is_premium:isPremium,is_returning:!!g("sg_seen",0)});s("sg_seen",1)},[])
 
+  // Referral detection: check ?ref= param on landing
+  const[showReferralBanner,setShowReferralBanner]=useState(false)
+  useEffect(()=>{
+    try{
+      const params=new URLSearchParams(window.location.search)
+      const refCode=params.get("ref")
+      if(refCode&&refCode.startsWith("REF-")){
+        localStorage.setItem("sg_referred_by",refCode)
+        track("sg_referral_landing",{ref_code:refCode,island})
+        if(!isPremium)setShowReferralBanner(true)
+        // Clean URL but keep other params
+        params.delete("ref")
+        const qs=params.toString()
+        window.history.replaceState({},"",window.location.pathname+(qs?"?"+qs:""))
+      }
+    }catch{}
+  },[])
+  useEffect(()=>{if(showReferralBanner){const t=setTimeout(()=>setShowReferralBanner(false),8000);return()=>clearTimeout(t)}},[showReferralBanner])
+
   // Checkout abandonment recovery: show banner if user left mid-checkout within last 24h
   const[showRecoveryBanner,setShowRecoveryBanner]=useState(false)
   useEffect(()=>{
@@ -2994,6 +3092,12 @@ export default function App(){
     document.documentElement.classList.toggle("theme-dark",theme==="dark")
     s("sg_theme",theme)
   },[theme])
+
+  // Visit counter (persists across sessions for smart email trigger)
+  useEffect(()=>{
+    const vc=g("sg_visit_count",0)+1
+    s("sg_visit_count",vc)
+  },[])
 
   // Island
   useEffect(()=>{s("sg_island",island)},[island])
@@ -3196,6 +3300,27 @@ export default function App(){
 
         {/* FAV TOAST — inline, first favorite only */}
         <FavToast show={showFavToast} lang={lang}/>
+
+        {/* REFERRAL LANDING BANNER */}
+        {showReferralBanner&&(
+          <div onClick={()=>{openPremium("referral_banner");setShowReferralBanner(false)}} style={{position:"fixed",bottom:90,left:"50%",transform:"translateX(-50%)",
+            zIndex:9998,background:"linear-gradient(135deg,#7C3AED,#A855F7)",color:"#fff",
+            padding:"12px 20px",borderRadius:14,fontSize:13,fontWeight:600,
+            boxShadow:"0 8px 24px rgba(124,58,237,.35)",cursor:"pointer",
+            display:"flex",alignItems:"center",gap:10,maxWidth:"90vw",
+            animation:"slideUp .4s ease"}}>
+            <span style={{fontSize:20}}>🎁</span>
+            <div>
+              <div>{lang==="en"?"Recommended by a friend":"Recommandé par un ami"}</div>
+              <div style={{fontSize:10,fontWeight:400,opacity:.85,marginTop:2}}>
+                {lang==="en"?"Tap to start your free premium trial":"Appuie pour essayer premium gratuitement"}
+              </div>
+            </div>
+            <button onClick={e=>{e.stopPropagation();setShowReferralBanner(false)}} style={{
+              background:"rgba(255,255,255,.2)",border:"none",color:"#fff",
+              borderRadius:12,padding:"4px 10px",cursor:"pointer",fontSize:16,marginLeft:8}}>✕</button>
+          </div>
+        )}
 
         {/* PREMIUM WELCOME TOAST */}
         {showWelcome&&(
