@@ -466,6 +466,14 @@ button:active,a:active,[role="button"]:active{transform:scale(.96)!important;opa
   .sheet{border-radius:16px 16px 0 0 !important}
   .anton{letter-spacing:0 !important}
 }
+
+/* Reduced motion — kill infinite animations, keep one-shot transitions */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+  .gbtn::after{animation:none !important}
+  .sg-nearest-ring,.sg-eta-badge,.pulse,.sg-drift-path{animation:none !important}
+  .heart-pop{animation:none !important}
+}
 `
 
 function StyleInjector(){
@@ -829,11 +837,16 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily}){
   const lockedCount=7-freeThreshold
   // A/B Test 1: lock framing
   const lockV=abVariant("lock1",["control","loss"],[.5,.5])
+  const inSeason=SARGASSES_SEASON==="high"
   const lockCTA=lockV==="loss"
-    ?(lang==="en"?"Don't miss this weekend":"Ne rate pas ce weekend")
+    ?(lang==="en"
+      ?(inSeason?"Beaches change daily":"Don't miss this weekend")
+      :(inSeason?"Les plages changent chaque jour":"Ne rate pas ce weekend"))
     :(lang==="en"?"See 7-day forecast":"Voir les 7 jours")
   const lockSub=lockV==="loss"
-    ?(lang==="en"?"Saturday, it'll be too late to switch beaches.":"Samedi, il sera trop tard pour changer de plage.")
+    ?(lang==="en"
+      ?(inSeason?"Sargassum season is active. Know before you go.":"Saturday, it'll be too late to switch beaches.")
+      :(inSeason?"La saison est là. Sache avant d'y aller.":"Samedi, il sera trop tard pour changer de plage."))
     :(lang==="en"?"Free 7-day trial · cancel anytime":"Essai gratuit 7 jours · sans engagement")
   return(
     <div style={{position:"relative"}}>
@@ -2229,16 +2242,19 @@ function PremiumModal({onClose,lang,source,allBeaches,sargData}){
     :`⭐ ${LL.premium}`
   const subtitle=isFamily
     ?(lang==="en"?"Your kids count on you to find the right beach.":"Tes enfants comptent sur toi pour trouver la bonne plage.")
-    :(lang==="en"?"Sargassum changes every day. Know before you go.":"Les sargasses changent chaque jour. Sache avant de partir.")
+    :(SARGASSES_SEASON==="high"
+      ?(lang==="en"?"Right now, beaches change status every day. Don't waste a trip.":"En ce moment, les plages changent de statut chaque jour. Ne gaspille pas un trajet.")
+      :(lang==="en"?"Sargassum changes every day. Know before you go.":"Les sargasses changent chaque jour. Sache avant de partir."))
   const socialProof=isFamily
     ?(lang==="en"?"135 beaches monitored 4x per day via satellite":"135 plages surveillées 4x par jour par satellite")
     :(lang==="en"?"300+ families check every week":"300+ familles consultent chaque semaine")
   const anchor=isFamily
     ?(lang==="en"?`This week, ${changingCount} beach${changingCount>1?"es":""} will change status. You'll know which.`:`Cette semaine, ${changingCount} plage${changingCount>1?"s":""} va changer de statut. Tu sauras ${changingCount>1?"lesquelles":"laquelle"}.`)
     :(lang==="en"?"A wasted beach day = €80. Knowing before = €4.99/mo.":"Une journée gâchée = 80€. Savoir avant = 4,99€/mois.")
-  // Season urgency
-  const seasonStart=new Date("2026-05-01")
-  const daysLeft=Math.max(0,Math.ceil((seasonStart-Date.now())/864e5))
+  // Season urgency — peak is May 1, but high season starts April
+  const peakStart=new Date("2026-05-01")
+  const daysToPeak=Math.max(0,Math.ceil((peakStart-Date.now())/864e5))
+  const isHighSeason=SARGASSES_SEASON==="high"
   const effectivePlan=hasSeason?plan:(hasAnnual?plan:"monthly")
   return(
     <>
@@ -2253,16 +2269,18 @@ function PremiumModal({onClose,lang,source,allBeaches,sargData}){
         <div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
           margin:"-8px -24px 20px",padding:0}}/>
 
-        {/* Season urgency banner */}
-        {daysLeft>0&&daysLeft<=60&&(
+        {/* Season urgency banner — adapts to current season state */}
+        {(isHighSeason||daysToPeak<=60)&&(
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14,
-            padding:"10px 12px",background:"rgba(232,82,42,.12)",borderRadius:10,
-            border:"1px solid rgba(232,82,42,.25)"}}>
-            <span style={{fontSize:16}}>⏰</span>
-            <span style={{fontSize:12,fontWeight:700,color:"#FF8066"}}>
-              {lang==="en"
-                ?`Sargassum season in ${daysLeft} days — be ready`
-                :`Saison sargasses dans ${daysLeft} jours — sois prêt`}
+            padding:"10px 12px",background:daysToPeak<=0?"rgba(232,82,42,.18)":"rgba(232,82,42,.12)",borderRadius:10,
+            border:`1px solid rgba(232,82,42,${daysToPeak<=0?.35:.25})`}}>
+            <span style={{fontSize:16}}>{daysToPeak<=0?"🔴":"⏰"}</span>
+            <span style={{fontSize:12,fontWeight:700,color:daysToPeak<=0?"#FF6B4A":"#FF8066"}}>
+              {daysToPeak<=0
+                ?(lang==="en"?"Sargassum season is NOW — beaches change daily":"Saison sargasses EN COURS — les plages changent chaque jour")
+                :daysToPeak<=30
+                  ?(lang==="en"?`Peak season in ${daysToPeak} days — don't get caught off guard`:`Pic saison dans ${daysToPeak} jours — ne te fais pas surprendre`)
+                  :(lang==="en"?`Sargassum season in ${daysToPeak} days — be ready`:`Saison sargasses dans ${daysToPeak} jours — sois prêt`)}
             </span>
           </div>
         )}
@@ -2284,7 +2302,10 @@ function PremiumModal({onClose,lang,source,allBeaches,sargData}){
         </div>
 
         <ul style={{listStyle:"none",padding:0,margin:"0 0 16px",display:"flex",flexDirection:"column",gap:12}}>
-          {LL.premiumFeatures.map((f,i)=>(
+          {(SARGASSES_SEASON==="high"?(lang==="en"
+            ?["Season active — forecasts are most reliable NOW","Get warned BEFORE sargassum arrives","7-day forecast — know Saturday by Monday","No ads · No commitment · 30-day guarantee"]
+            :["Saison active — les prévisions sont fiables MAINTENANT","Sois prévenu AVANT que les sargasses arrivent","Prévisions 7 jours — sache samedi dès lundi","Sans pub · Sans engagement · Satisfait ou remboursé"])
+          :LL.premiumFeatures).map((f,i)=>(
             <li key={i} style={{display:"flex",alignItems:"center",gap:10,fontSize:14}}>
               <span style={{color:C.gold,fontSize:18}}>✓</span>{f}
             </li>
@@ -2592,14 +2613,18 @@ function InlineEmailCapture({lang}){
       background:"var(--sg-bgD,#F7F5EF)",border:"1px solid var(--sg-border,rgba(0,0,0,.04))"}}>
       <div style={{fontSize:13,fontWeight:700,color:"var(--sg-ink)",marginBottom:4,display:"flex",alignItems:"center",gap:6}}>
         <span>📧</span>
-        {visitCount>=3
-          ?(lang==="en"?"You keep coming back!":"Tu reviens souvent !")
-          :(lang==="en"?"Stay ahead of sargassum":"Ne te fais pas surprendre")}
+        {SARGASSES_SEASON==="high"
+          ?(lang==="en"?"Season is active — stay informed":"Saison en cours — reste informé")
+          :visitCount>=3
+            ?(lang==="en"?"You keep coming back!":"Tu reviens souvent !")
+            :(lang==="en"?"Stay ahead of sargassum":"Ne te fais pas surprendre")}
       </div>
       <div style={{fontSize:11,color:"var(--sg-mid)",marginBottom:8}}>
-        {visitCount>=3
-          ?(lang==="en"?"Get your beaches status every Friday in your inbox.":"Reçois l'état de tes plages chaque vendredi.")
-          :(lang==="en"?"Free weekly update: which beaches are clean this weekend.":"Chaque vendredi : quelles plages sont propres ce weekend. Gratuit.")}
+        {SARGASSES_SEASON==="high"
+          ?(lang==="en"?"Beaches change fast right now. Get your Friday status update — free.":"Les plages changent vite en ce moment. Reçois ton bilan du vendredi — gratuit.")
+          :visitCount>=3
+            ?(lang==="en"?"Get your beaches status every Friday in your inbox.":"Reçois l'état de tes plages chaque vendredi.")
+            :(lang==="en"?"Free weekly update: which beaches are clean this weekend.":"Chaque vendredi : quelles plages sont propres ce weekend. Gratuit.")}
       </div>
       <form onSubmit={handleSubmit} style={{display:"flex",gap:8,alignItems:"center"}}>
         <input type="email" placeholder={lang==="en"?"your@email.com":"ton@email.com"}
@@ -3335,7 +3360,9 @@ export default function App(){
             borderBottom:"1px solid rgba(232,168,0,.3)",
             padding:"10px 16px",display:"flex",alignItems:"center",justifyContent:"center",gap:12,
             fontSize:13,color:"#e6edf3",fontFamily:"inherit"}}>
-            <span style={{opacity:.9}}>{lang==="en"?"You were almost Premium! Pick up where you left off.":"Tu \u00e9tais presque Premium\u00a0! Reprends o\u00f9 tu en \u00e9tais."}</span>
+            <span style={{opacity:.9}}>{SARGASSES_SEASON==="high"
+              ?(lang==="en"?"Beaches are changing fast. You almost had Premium — finish now.":"Les plages bougent vite. Tu étais presque Premium — termine maintenant.")
+              :(lang==="en"?"You were almost Premium! Pick up where you left off.":"Tu étais presque Premium\u00a0! Reprends où tu en étais.")}</span>
             <button onClick={()=>{
               track("sg_checkout_recovery_click",{island})
               setShowRecoveryBanner(false)
