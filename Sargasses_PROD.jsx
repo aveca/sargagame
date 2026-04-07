@@ -324,13 +324,15 @@ function getBeachPhoto(beach){
    GLOBAL STYLES (injected once)
    ═══════════════════════════════════════════════════════════════════════════ */
 const CSS=`
-*{box-sizing:border-box;margin:0;padding:0}
-html,body,#root{height:100vh;height:100dvh;overflow:hidden;font-family:'Bricolage Grotesque',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body,#root{height:100vh;height:100dvh;overflow:hidden;font-family:'Bricolage Grotesque',system-ui,sans-serif;-webkit-font-smoothing:antialiased;touch-action:manipulation}
 body{background:var(--sg-bg,#FDFCF7);color:var(--sg-ink,#0D0D0D)}
+button,a,[role="button"]{touch-action:manipulation;cursor:pointer;-webkit-user-select:none;user-select:none}
 .anton{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:-.02em}
-.leaflet-container{background:#0a1a2e!important}
+.leaflet-container{background:#0a1a2e!important;touch-action:manipulation}
 .leaflet-control-attribution{display:none!important}
 .leaflet-control-zoom{display:none!important}
+.leaflet-interactive{cursor:pointer!important}
 
 /* Gold button */
 .gbtn{
@@ -512,6 +514,7 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos,fav
       zoomControl:false,
       attributionControl:false,
       maxBoundsViscosity:1,
+      tap:false, // Prevent Leaflet synthetic tap (causes double-click on mobile)
     })
     map.setView(center,11)
     // Satellite tiles (users prefer satellite — 21 clics Clarity)
@@ -671,18 +674,18 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos,fav
         }
       }
 
-      // Beach marker
+      // Beach marker — bigger on touch for fat fingers
+      const isMobile="ontouchstart" in window
       const marker=L.circleMarker([b.lat,b.lng],{
-        radius:isSelected?12:8,
+        radius:isSelected?14:(isMobile?11:8),
         fillColor:st.c,
         color:"#fff",
         weight:isSelected?3:2,
         fillOpacity:.9,
+        bubblingMouseEvents:false, // Don't propagate to map click handler
       })
-      marker.bindTooltip(b.name,{direction:"top",offset:[0,-12],
-        className:"",
-        permanent:false,
-      })
+      // Tooltip only on desktop (hover). On mobile it steals taps and adds nothing
+      if(!("ontouchstart" in window))marker.bindTooltip(b.name,{direction:"top",offset:[0,-12],className:"",permanent:false})
       marker.on("click",()=>onBeachClick(b))
       marker.addTo(markerGroup)
       markersRef.current.push(marker)
@@ -1889,16 +1892,13 @@ function StripeInlineCheckout({plan,lang,source,onSuccess}){
   const LL=T[lang]||T.fr
 
   useEffect(()=>{
-    if(!window.Stripe) return
-    fetch("/api/create-checkout.php",{
-      method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({action:"setup"})
-    }).then(r=>r.json()).then(data=>{
-      if(data.error){setError(data.error);return}
+    let cancelled=false
+    const init=()=>{
+      if(cancelled||!cardRef.current) return
       const stripe=window.Stripe(STRIPE_PK)
       stripeRef.current=stripe
       const elements=stripe.elements({
-        clientSecret:data.clientSecret,
+        mode:"setup",currency:"eur",
         appearance:{
           theme:"night",
           variables:{
@@ -1913,18 +1913,36 @@ function StripeInlineCheckout({plan,lang,source,onSuccess}){
       })
       elementsRef.current=elements
       const pe=elements.create("payment",{layout:"tabs"})
-      pe.on("ready",()=>setReady(true))
+      pe.on("ready",()=>{if(!cancelled)setReady(true)})
       pe.mount(cardRef.current)
-    }).catch(()=>setError("Connexion impossible"))
-    return()=>{elementsRef.current?.getElement?.("payment")?.destroy?.()}
+    }
+    if(window.Stripe){init()}
+    else{
+      const tag=document.querySelector('script[src*="js.stripe.com"]')
+      if(tag)tag.addEventListener("load",init)
+      else setError("Stripe non disponible")
+    }
+    return()=>{cancelled=true;elementsRef.current?.getElement?.("payment")?.destroy?.()}
   },[])
 
   const handleSubmit=async()=>{
     if(!stripeRef.current||!elementsRef.current||!email.includes("@"))return
     setSubmitting(true);setError(null)
     track("sg_checkout_submit",{plan,source:source||"unknown"})
+    const{error:submitErr}=await elementsRef.current.submit()
+    if(submitErr){setError(submitErr.message);setSubmitting(false);return}
+    let clientSecret
+    try{
+      const r=await fetch("/api/create-checkout.php",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({action:"setup"})
+      })
+      const d=await r.json()
+      if(d.error){setError(d.error);setSubmitting(false);return}
+      clientSecret=d.clientSecret
+    }catch{setError("Connexion impossible");setSubmitting(false);return}
     const{error:stripeErr,setupIntent}=await stripeRef.current.confirmSetup({
-      elements:elementsRef.current,
+      elements:elementsRef.current,clientSecret,
       confirmParams:{return_url:window.location.href},
       redirect:"if_required"
     })
