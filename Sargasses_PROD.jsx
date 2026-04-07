@@ -206,12 +206,44 @@ function abVariant(testId,variants,weights){
   return variants[pick]
 }
 
+const TRACK_QUEUE_KEY="sg_track_queue"
+const APPS_SCRIPT_URL="https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec"
 function track(event,params={}){
   const ab=g("sg_ab",{})
   const p={...params}
   for(const[k,v]of Object.entries(ab))p["ab_"+k]=v
+  // Primary: GA4
   try{window.gtag("event",event,p)}catch(e){}
+  // Backup: queue critical conversion events to localStorage + beacon to Apps Script
+  const critical=event.startsWith("sg_checkout")||event.startsWith("sg_premium")||event==="sg_conversion"
+    ||event==="sg_email_submit"||event==="sg_forecast_lock_click"||event==="sg_session_start"
+    ||event==="sg_push_accept"||event==="sg_weekend_banner_click"||event==="sg_referral_share"
+  if(critical){
+    const entry={e:event,p,t:Date.now(),island:window.location.hostname.includes("guadeloupe")?"GP":"MQ"}
+    try{
+      const q=JSON.parse(localStorage.getItem(TRACK_QUEUE_KEY)||"[]")
+      q.push(entry)
+      if(q.length>200)q.splice(0,q.length-200) // cap
+      localStorage.setItem(TRACK_QUEUE_KEY,JSON.stringify(q))
+    }catch{}
+    // Fire-and-forget beacon to Apps Script as backup
+    try{navigator.sendBeacon&&navigator.sendBeacon(APPS_SCRIPT_URL,
+      JSON.stringify({type:"analytics_event",...entry}))}catch{}
+  }
 }
+// Flush queued events on next session if GA4 is available
+function flushTrackQueue(){
+  try{
+    if(!window.gtag)return
+    const q=JSON.parse(localStorage.getItem(TRACK_QUEUE_KEY)||"[]")
+    if(!q.length)return
+    // Send top 50 oldest events, clear them
+    const batch=q.splice(0,50)
+    localStorage.setItem(TRACK_QUEUE_KEY,JSON.stringify(q))
+    for(const{e,p}of batch){try{window.gtag("event","recovery_"+e,p)}catch{}}
+  }catch{}
+}
+try{if(typeof window!=="undefined")setTimeout(flushTrackQueue,5000)}catch{}
 
 function AbDebug(){
   const[show,setShow]=useState(false)
@@ -746,10 +778,10 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily}){
   const lockV=abVariant("lock1",["control","loss"],[.5,.5])
   const lockCTA=lockV==="loss"
     ?(lang==="en"?"Don't miss this weekend":"Ne rate pas ce weekend")
-    :(lang==="en"?"See the rest — free trial":"Voir la suite — essai gratuit")
+    :(lang==="en"?"See 7-day forecast":"Voir les 7 jours")
   const lockSub=lockV==="loss"
     ?(lang==="en"?"Saturday, it'll be too late to switch beaches.":"Samedi, il sera trop tard pour changer de plage.")
-    :(lang==="en"?"A ti-punch costs more. 7 days free.":"Un ti-punch coûte plus cher. 7 jours gratuits.")
+    :(lang==="en"?"Free 7-day trial · cancel anytime":"Essai gratuit 7 jours · sans engagement")
   return(
     <div style={{position:"relative"}}>
       <div style={{display:"flex",gap:6,alignItems:"flex-end",height:140,padding:"8px 0"}}>
@@ -2128,8 +2160,8 @@ function PremiumModal({onClose,lang,source,allBeaches,sargData}){
     ?(lang==="en"?"Your kids count on you to find the right beach.":"Tes enfants comptent sur toi pour trouver la bonne plage.")
     :(lang==="en"?"Sargassum changes every day. Know before you go.":"Les sargasses changent chaque jour. Sache avant de partir.")
   const socialProof=isFamily
-    ?(lang==="en"?"Satellite data updated 4x per day":"Données satellite mises à jour 4x par jour")
-    :(lang==="en"?"Used by families across Martinique and Guadeloupe":"Utilisé par les familles de Martinique et Guadeloupe")
+    ?(lang==="en"?"135 beaches monitored 4x per day via satellite":"135 plages surveillées 4x par jour par satellite")
+    :(lang==="en"?"300+ families check every week":"300+ familles consultent chaque semaine")
   const anchor=isFamily
     ?(lang==="en"?`This week, ${changingCount} beach${changingCount>1?"es":""} will change status. You'll know which.`:`Cette semaine, ${changingCount} plage${changingCount>1?"s":""} va changer de statut. Tu sauras ${changingCount>1?"lesquelles":"laquelle"}.`)
     :(lang==="en"?"A wasted beach day = €80. Knowing before = €4.99/mo.":"Une journée gâchée = 80€. Savoir avant = 4,99€/mois.")
@@ -2433,7 +2465,7 @@ function InlineEmailCapture({lang}){
   const[dismissed,setDismissed]=useState(false)
   const tracked=useRef(false)
   const visitCount=g("sg_visit_count",0)
-  if(visitCount<3||dismissed||g("sg_email_prompt",false))return null
+  if(visitCount<1||dismissed||g("sg_email_prompt",false))return null
   if(!tracked.current){tracked.current=true;track("sg_smart_email_trigger",{visit_count:visitCount});track("sg_email_view")}
 
   const handleSubmit=e=>{
@@ -2462,10 +2494,14 @@ function InlineEmailCapture({lang}){
       background:"var(--sg-bgD,#F7F5EF)",border:"1px solid var(--sg-border,rgba(0,0,0,.04))"}}>
       <div style={{fontSize:13,fontWeight:700,color:"var(--sg-ink)",marginBottom:4,display:"flex",alignItems:"center",gap:6}}>
         <span>📧</span>
-        {lang==="en"?"You keep coming back!":"Tu reviens souvent !"}
+        {visitCount>=3
+          ?(lang==="en"?"You keep coming back!":"Tu reviens souvent !")
+          :(lang==="en"?"Stay ahead of sargassum":"Ne te fais pas surprendre")}
       </div>
       <div style={{fontSize:11,color:"var(--sg-mid)",marginBottom:8}}>
-        {lang==="en"?"Get your beaches status every Friday in your inbox.":"Reçois l'état de tes plages chaque vendredi."}
+        {visitCount>=3
+          ?(lang==="en"?"Get your beaches status every Friday in your inbox.":"Reçois l'état de tes plages chaque vendredi.")
+          :(lang==="en"?"Free weekly update: which beaches are clean this weekend.":"Chaque vendredi : quelles plages sont propres ce weekend. Gratuit.")}
       </div>
       <form onSubmit={handleSubmit} style={{display:"flex",gap:8,alignItems:"center"}}>
         <input type="email" placeholder={lang==="en"?"your@email.com":"ton@email.com"}
