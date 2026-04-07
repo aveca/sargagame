@@ -322,7 +322,15 @@ export default defineConfig({
             const statusText = statusTextMap[b.status] || statusTextMap.clean
             const beachDesc = `État des sargasses à ${b.name} (${b.commune}) aujourd'hui. ${statusText}. Prévisions 7 jours, météo, photos. Mis à jour quotidiennement.`
             const beachUrl = `https://${domain}/plages/${b.slug}/`
-            const beachSchema = JSON.stringify({"@context":"https://schema.org","@type":"Beach","name":b.name,"description":`Fiche sargasses ${b.name}, ${b.commune} (${island}). État en temps réel et prévisions.`,"url":beachUrl,"address":{"@type":"PostalAddress","addressLocality":b.commune,"addressRegion":island,"addressCountry":isMQ?"MQ":"GP"},"geo":{"@type":"GeoCoordinates","latitude":b.lat,"longitude":b.lng},"isPartOf":{"@type":"WebApplication","name":`Sargasses ${island}`,"url":`https://${domain}/`}})
+            const amenities = []
+            if (b.parking) amenities.push({"@type":"LocationFeatureSpecification","name":"Parking","value":true})
+            if (b.snorkel) amenities.push({"@type":"LocationFeatureSpecification","name":"Snorkeling","value":true})
+            if (b.kids) amenities.push({"@type":"LocationFeatureSpecification","name":"Famille","value":true})
+            const ratingValue = b.status === 'clean' ? 5 : b.status === 'moderate' ? 3 : 1
+            const ratingName = b.status === 'clean' ? 'Propre' : b.status === 'moderate' ? 'Modéré' : 'À éviter'
+            const beachSchemaObj = {"@context":"https://schema.org","@type":"Beach","name":b.name,"description":`Fiche sargasses ${b.name}, ${b.commune} (${island}). État en temps réel et prévisions.`,"url":beachUrl,"address":{"@type":"PostalAddress","addressLocality":b.commune,"addressRegion":island,"addressCountry":isMQ?"MQ":"GP"},"geo":{"@type":"GeoCoordinates","latitude":b.lat,"longitude":b.lng},"isPartOf":{"@type":"WebApplication","name":`Sargasses ${island}`,"url":`https://${domain}/`},"aggregateRating":{"@type":"AggregateRating","ratingValue":ratingValue,"bestRating":5,"worstRating":1,"ratingCount":1,"reviewAspect":`Sargasses — ${ratingName}`}}
+            if (amenities.length > 0) beachSchemaObj.amenityFeature = amenities
+            const beachSchema = JSON.stringify(beachSchemaObj)
             const breadcrumbBeach = JSON.stringify({"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Accueil","item":`https://${domain}/`},{"@type":"ListItem","position":2,"name":"Plages","item":`https://${domain}/`},{"@type":"ListItem","position":3,"name":b.name,"item":beachUrl}]})
             // FAQPage schema — use enrichment if available, otherwise generate per-beach FAQ
             const mainCity = isMQ ? 'Fort-de-France' : 'Pointe-à-Pitre'
