@@ -64,16 +64,24 @@ jobs:
           ONESIGNAL_API_KEY_GP: ${{ secrets.ONESIGNAL_API_KEY_GP }}
         run: node scripts/automation/send-notifications.cjs
 
-      - name: Send weekend email bulletin (Fridays only)
-        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && contains('5', steps.check_day.outputs.dow))
+      # ── Email pipeline: clean bounces → fetch → send ──
+      - name: Clean bounced emails from Sheet
         continue-on-error: true
-        run: node scripts/automation/email-weekend.cjs
+        run: |
+          echo "Calling clean_bounces on Apps Script..."
+          RESULT=$(curl -sL --max-time 30 "https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec?action=clean_bounces")
+          echo "Result: $RESULT"
 
       - name: Fetch subscriber list
         continue-on-error: true
         env:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: node scripts/automation/fetch-subscribers.cjs
+
+      - name: Send weekend email bulletin (Fridays only)
+        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && contains('5', steps.check_day.outputs.dow))
+        continue-on-error: true
+        run: node scripts/automation/email-weekend.cjs
 
       - name: Send welcome emails (Resend)
         continue-on-error: true
