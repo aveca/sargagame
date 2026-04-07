@@ -324,7 +324,6 @@ function getBeachPhoto(beach){
    GLOBAL STYLES (injected once)
    ═══════════════════════════════════════════════════════════════════════════ */
 const CSS=`
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 html,body,#root{height:100vh;height:100dvh;overflow:hidden;font-family:'Bricolage Grotesque',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 body{background:var(--sg-bg,#FDFCF7);color:var(--sg-ink,#0D0D0D)}
@@ -357,7 +356,7 @@ body{background:var(--sg-bg,#FDFCF7);color:var(--sg-ink,#0D0D0D)}
   background:var(--sg-card,#fff);border-radius:20px 20px 0 0;
   box-shadow:0 -4px 30px rgba(0,0,0,.12);
   transition:transform .35s cubic-bezier(.32,.72,0,1);
-  max-height:85vh;overflow-y:auto;overscroll-behavior:contain;
+  max-height:85vh;max-height:85dvh;overflow-y:auto;overscroll-behavior:contain;
   -webkit-overflow-scrolling:touch;
 }
 .sheet-handle{width:40px;height:4px;border-radius:2px;background:var(--sg-handle,rgba(0,0,0,.25));margin:12px auto 8px}
@@ -465,8 +464,7 @@ function BottomNav({view,onChangeView,lang}){
       background:"var(--sg-glass,rgba(255,255,255,.92))",
       backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
       borderTop:"1px solid var(--sg-glassBorder,rgba(0,0,0,.06))",
-      padding:"8px 0 max(8px,env(safe-area-inset-bottom))",
-      height:60,
+      padding:"8px 0 max(12px,env(safe-area-inset-bottom))",
     }}>
       {tabs.map(t=>(
         <button key={t.id} onClick={()=>onChangeView(t.id)} style={{
@@ -598,19 +596,27 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos,fav
       const opacity=Math.min(0.55,afai*0.8)
       const color=afai<.15?"rgba(34,197,94,.6)":afai<.40?"rgba(232,168,0,.7)":"rgba(232,82,42,.8)"
       const c=L.circle([lat,lng],{radius:r,fillColor:color,color:"transparent",weight:0,
-        fillOpacity:opacity,renderer,interactive:true})
-      // Tunnel clic: tap hotspot → find nearest beach → open it
-      c.on("click",()=>{
-        track("sg_heatmap_click",{afai,lat,lng})
-        const nearest=beaches.slice().sort((a,b)=>
-          haversine(lat,lng,a.lat,a.lng)-haversine(lat,lng,b.lat,b.lng))[0]
-        if(nearest)onBeachClick(nearest)
-      })
+        fillOpacity:opacity,renderer,interactive:false})
       c.addTo(group)
     }
+    // Single map click handler instead of per-circle (perf: hundreds of listeners → 1)
+    const onMapClick=(e)=>{
+      const{lat:cLat,lng:cLng}=e.latlng
+      // Check if click is near any AFAI hotspot
+      const hit=pts.find(([pLat,pLng])=>Math.abs(pLat-cLat)<.03&&Math.abs(pLng-cLng)<.03)
+      if(!hit)return
+      track("sg_heatmap_click",{afai:hit[2],lat:hit[0],lng:hit[1]})
+      const nearest=beaches.slice().sort((a,b)=>
+        haversine(hit[0],hit[1],a.lat,a.lng)-haversine(hit[0],hit[1],b.lat,b.lng))[0]
+      if(nearest)onBeachClick(nearest)
+    }
+    mapRef.current.on("click",onMapClick)
     group.addTo(mapRef.current)
     gridLayerRef.current=group
-    return()=>{if(gridLayerRef.current){gridLayerRef.current.remove();gridLayerRef.current=null}}
+    return()=>{
+      if(gridLayerRef.current){gridLayerRef.current.remove();gridLayerRef.current=null}
+      mapRef.current?.off("click",onMapClick)
+    }
   },[afaiGrid,island,beaches,onBeachClick])
 
   // Update markers + heatmap
@@ -1048,7 +1054,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
         </div>
 
-        <div style={{padding:"0 20px calc(80px + env(safe-area-inset-bottom,0px))"}}>
+        <div style={{padding:"0 20px calc(70px + env(safe-area-inset-bottom,12px))"}}>
           {/* Name + Status */}
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
             <h2 className="anton" style={{fontSize:22,margin:0,lineHeight:1.2}}>{beach.name}</h2>
@@ -1415,7 +1421,7 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
   const nClean=beaches.filter(b=>b.status==="clean").length
   return(
     <div style={{height:"100%",overflowY:"auto",
-      paddingTop:"calc(140px + env(safe-area-inset-top,0px))",paddingBottom:80,
+      paddingTop:"calc(140px + env(safe-area-inset-top,0px))",paddingBottom:"calc(70px + env(safe-area-inset-bottom,12px))",
       background:"var(--sg-bg,#FDFCF7)"}}>
       <div style={{padding:"8px 16px 0",fontSize:13,color:"var(--sg-mid,#686868)",fontWeight:500}}>
         {LL.nClean.replace("{n}",nClean)} / {beaches.length}
@@ -2717,22 +2723,28 @@ export default function App(){
       .catch(()=>{})
   },[])
 
-  // Fetch community beach reports (last 48h)
+  // Fetch community beach reports (last 48h) — deferred 3s to not compete with critical data
   useEffect(()=>{
-    fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec?action=beach_reports")
-      .then(r=>r.json())
-      .then(data=>{if(data?.reports)setCommunityReports(data.reports)})
-      .catch(()=>{})
+    const t=setTimeout(()=>{
+      fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec?action=beach_reports")
+        .then(r=>r.json())
+        .then(data=>{if(data?.reports)setCommunityReports(data.reports)})
+        .catch(()=>{})
+    },3000)
+    return()=>clearTimeout(t)
   },[])
 
-  // Fetch beaches-images.json at mount
+  // Fetch beaches-images.json — deferred (only needed when opening beach sheet)
   useEffect(()=>{
-    fetch("/data/beaches-images.json")
-      .then(r=>r.json())
-      .then(data=>{
-        if(data&&typeof data==="object")setImageMap(data)
-      })
-      .catch(()=>{})
+    const t=setTimeout(()=>{
+      fetch("/data/beaches-images.json")
+        .then(r=>r.json())
+        .then(data=>{
+          if(data&&typeof data==="object")setImageMap(data)
+        })
+        .catch(()=>{})
+    },1500)
+    return()=>clearTimeout(t)
   },[])
 
   // Fetch sargassum.json at mount and merge AFAI levels into ALL 135 beaches
@@ -2810,12 +2822,15 @@ export default function App(){
       .catch(()=>{})
   },[communityReports])
 
-  // Fetch history.json for trend chart
+  // Fetch history.json for trend chart — deferred (only needed in beach sheet)
   useEffect(()=>{
-    fetch("/api/copernicus/history.json")
-      .then(r=>r.json())
-      .then(data=>{if(data?.history)setHistoryData(data.history)})
-      .catch(()=>{})
+    const t=setTimeout(()=>{
+      fetch("/api/copernicus/history.json")
+        .then(r=>r.json())
+        .then(data=>{if(data?.history)setHistoryData(data.history)})
+        .catch(()=>{})
+    },2000)
+    return()=>clearTimeout(t)
   },[])
 
   // Geolocation — center map on user, find nearest beach
