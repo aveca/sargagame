@@ -369,12 +369,21 @@ const CSS=`
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body,#root{height:100vh;height:100dvh;overflow:hidden;font-family:'Bricolage Grotesque',system-ui,sans-serif;-webkit-font-smoothing:antialiased;touch-action:manipulation}
 body{background:var(--sg-bg,#FDFCF7);color:var(--sg-ink,#0D0D0D)}
-button,a,[role="button"]{touch-action:manipulation;cursor:pointer;-webkit-user-select:none;user-select:none}
+button,a,[role="button"]{touch-action:manipulation;cursor:pointer;-webkit-user-select:none;user-select:none;transition:transform .12s,opacity .12s}
+button:active,a:active,[role="button"]:active{transform:scale(.96)!important;opacity:.85}
 .anton{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:-.02em}
 .leaflet-container{background:#0a1a2e!important;touch-action:manipulation}
 .leaflet-control-attribution{display:none!important}
+/* Marker glow — status-colored halo around beach dots */
+.leaflet-interactive{filter:drop-shadow(0 0 4px rgba(255,255,255,.3))}
+/* Fav heart bounce */
+@keyframes heartPop{0%{transform:scale(1)}30%{transform:scale(1.3)}60%{transform:scale(.9)}100%{transform:scale(1)}}
+.heart-pop{animation:heartPop .4s cubic-bezier(.22,1,.36,1)}
 .leaflet-control-zoom{display:none!important}
 .leaflet-interactive{cursor:pointer!important}
+/* Nearest clean beach — golden pulsing ring */
+.sg-nearest-ring{animation:nearestPulse 2s ease-in-out infinite}
+@keyframes nearestPulse{0%,100%{stroke-opacity:.4;r:22}50%{stroke-opacity:.1;r:30}}
 
 /* Gold button */
 .gbtn{
@@ -385,7 +394,7 @@ button,a,[role="button"]{touch-action:manipulation;cursor:pointer;-webkit-user-s
   font-family:'Bricolage Grotesque',system-ui,sans-serif;
   box-shadow:0 2px 12px rgba(232,168,0,.3);transition:transform .15s,box-shadow .15s;
 }
-.gbtn:active{transform:scale(.97)}
+.gbtn:active{transform:scale(.95);box-shadow:0 1px 6px rgba(232,168,0,.2)}
 .gbtn::after{
   content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
   background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);
@@ -402,11 +411,13 @@ button,a,[role="button"]{touch-action:manipulation;cursor:pointer;-webkit-user-s
   transition:transform .35s cubic-bezier(.32,.72,0,1);
   max-height:85vh;max-height:85dvh;overflow-y:auto;overscroll-behavior:contain;
   -webkit-overflow-scrolling:touch;
+  animation:sheetSlideUp .4s cubic-bezier(.32,.72,0,1);
 }
-.sheet-handle{width:40px;height:4px;border-radius:2px;background:var(--sg-handle,rgba(0,0,0,.25));margin:12px auto 8px}
+@keyframes sheetSlideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sheet-handle{width:48px;height:5px;border-radius:3px;background:var(--sg-handle,rgba(0,0,0,.2));margin:10px auto 6px;cursor:grab}
 
 /* Backdrop */
-.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:899;animation:fadeIn .2s}
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:899;animation:fadeIn .25s ease-out;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 
 /* ── ONBOARDING (removed full-screen overlay, now inline coachmark) ── */
@@ -430,8 +441,11 @@ button,a,[role="button"]{touch-action:manipulation;cursor:pointer;-webkit-user-s
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:2px}
 
-/* Forecast bars */
-.fc-bar{border-radius:3px 3px 0 0;transition:height .4s ease}
+/* Forecast bars — staggered grow-in */
+.fc-bar{border-radius:3px 3px 0 0;animation:barGrow .6s cubic-bezier(.22,1,.36,1) backwards}
+.fc-bar:nth-child(1){animation-delay:0s}.fc-bar:nth-child(2){animation-delay:.06s}.fc-bar:nth-child(3){animation-delay:.12s}
+.fc-bar:nth-child(4){animation-delay:.18s}.fc-bar:nth-child(5){animation-delay:.24s}.fc-bar:nth-child(6){animation-delay:.3s}.fc-bar:nth-child(7){animation-delay:.36s}
+@keyframes barGrow{from{transform:scaleY(0);transform-origin:bottom}to{transform:scaleY(1);transform-origin:bottom}}
 
 /* Status pulse */
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
@@ -463,8 +477,9 @@ function StatusBadge({status,lang="fr"}){
   const st=ST[status]||ST.clean
   const label=lang==="en"?st.le:st.l
   return(
-    <span style={{display:"inline-flex",alignItems:"center",gap:6,padding:"4px 12px",
-      borderRadius:100,background:st.bg,color:st.c,fontSize:13,fontWeight:700}}>
+    <span style={{display:"inline-flex",alignItems:"center",gap:6,padding:"5px 14px",
+      borderRadius:100,background:st.bg,color:st.c,fontSize:13,fontWeight:700,
+      boxShadow:`0 2px 8px ${st.c}20`,animation:"confirmPop .35s cubic-bezier(.22,1,.36,1)"}}>
       <span>{st.e}</span>{label}
     </span>
   )
@@ -478,7 +493,7 @@ function AfaiBadge({afai}){
   )
 }
 
-function FilterChip({label,icon,active,onClick}){
+function FilterChip({label,icon,active,onClick,count}){
   return(
     <button onClick={onClick} style={{
       display:"inline-flex",alignItems:"center",gap:5,padding:"8px 16px",
@@ -486,10 +501,13 @@ function FilterChip({label,icon,active,onClick}){
       background:active?"linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%)":"var(--sg-card,#fff)",
       color:active?C.ink:"var(--sg-ink,#0D0D0D)",fontSize:13,fontWeight:active?700:500,
       cursor:"pointer",whiteSpace:"nowrap",fontFamily:"inherit",
-      boxShadow:active?"0 2px 8px rgba(232,168,0,.2)":"none",
+      boxShadow:active?"0 2px 8px rgba(232,168,0,.2)":"0 1px 4px rgba(0,0,0,.04)",
       transition:"all .2s",
     }}>
       <span>{icon}</span>{label}
+      {count!=null&&<span style={{fontSize:11,fontWeight:600,opacity:.6,
+        background:active?"rgba(0,0,0,.1)":"rgba(0,0,0,.05)",
+        borderRadius:100,padding:"1px 6px",marginLeft:1}}>{count}</span>}
     </button>
   )
 }
@@ -510,18 +528,23 @@ function BottomNav({view,onChangeView,lang}){
       borderTop:"1px solid var(--sg-glassBorder,rgba(0,0,0,.06))",
       padding:"8px 0 max(12px,env(safe-area-inset-bottom))",
     }}>
-      {tabs.map(t=>(
+      {tabs.map(t=>{
+        const active=view===t.id||(t.id==="premium"&&false)
+        return(
         <button key={t.id} onClick={()=>onChangeView(t.id)} style={{
           display:"flex",flexDirection:"column",alignItems:"center",gap:2,
           background:"none",border:"none",cursor:"pointer",
-          color:view===t.id?C.gold:"var(--sg-mid,#686868)",
-          fontSize:10,fontWeight:view===t.id?700:500,fontFamily:"inherit",
-          transition:"color .2s",padding:"4px 16px",
+          color:active?C.gold:"var(--sg-mid,#686868)",
+          fontSize:10,fontWeight:active?700:500,fontFamily:"inherit",
+          transition:"all .2s",padding:"4px 16px",position:"relative",
         }}>
-          <span style={{fontSize:20}}>{t.icon}</span>
+          {active&&<div style={{position:"absolute",top:-1,width:24,height:3,
+            borderRadius:2,background:C.gold,transition:"width .2s"}}/>}
+          <span style={{fontSize:20,transition:"transform .2s",
+            transform:active?"scale(1.1)":"scale(1)"}}>{t.icon}</span>
           <span>{t.label}</span>
         </button>
-      ))}
+      )})}
     </nav>
   )
 }
@@ -682,6 +705,18 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos,fav
       }
     }
 
+    // Find nearest clean beach to user for golden highlight
+    let nearestCleanId=null
+    if(userPos){
+      let bestDist=Infinity
+      beaches.forEach(b=>{
+        if(b.status==="clean"){
+          const d=haversine(userPos.lat,userPos.lng,b.lat,b.lng)
+          if(d<bestDist){bestDist=d;nearestCleanId=b.id}
+        }
+      })
+    }
+
     // Batch all layers in groups to avoid per-marker redraws (perf: 161 addTo → 2)
     const heatGroup=L.layerGroup()
     const markerGroup=L.layerGroup()
@@ -718,16 +753,27 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos,fav
 
       // Beach marker — bigger on touch for fat fingers
       const isMobile="ontouchstart" in window
+      const isNearest=b.id===nearestCleanId
       const marker=L.circleMarker([b.lat,b.lng],{
-        radius:isSelected?14:(isMobile?11:8),
+        radius:isSelected?16:(isNearest?16:(isMobile?14:8)),
         fillColor:st.c,
-        color:"#fff",
-        weight:isSelected?3:2,
+        color:isNearest?C.gold:"#fff",
+        weight:isSelected?3:(isNearest?3:2),
         fillOpacity:.9,
-        bubblingMouseEvents:false, // Don't propagate to map click handler
+        bubblingMouseEvents:false,
+        className:isNearest?"sg-nearest":"",
       })
+      // Golden pulsing ring for nearest clean beach
+      if(isNearest&&!isSelected){
+        const ring=L.circleMarker([b.lat,b.lng],{
+          radius:22,fillColor:"transparent",color:C.gold,weight:2,
+          fillOpacity:0,opacity:.4,bubblingMouseEvents:false,interactive:false,
+          className:"sg-nearest-ring",
+        })
+        ring.addTo(markerGroup)
+      }
       // Tooltip only on desktop (hover). On mobile it steals taps and adds nothing
-      if(!("ontouchstart" in window))marker.bindTooltip(b.name,{direction:"top",offset:[0,-12],className:"",permanent:false})
+      if(!("ontouchstart" in window))marker.bindTooltip(b.name+(isNearest?(lang==="en"?" · Nearest clean":" · La plus proche propre"):""),{direction:"top",offset:[0,-12],className:"",permanent:false})
       marker.on("click",()=>onBeachClick(b))
       marker.addTo(markerGroup)
       markersRef.current.push(marker)
@@ -752,7 +798,7 @@ function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos,fav
       })
     },800)
     return()=>{if(driftRef.current)clearInterval(driftRef.current)}
-  },[beaches,onBeachClick,selectedBeach,sargData])
+  },[beaches,onBeachClick,selectedBeach,sargData,userPos,lang])
 
   /* Threat banner + time slider removed — based on fake drift model (fixed speed/bearing) */
 
@@ -1091,8 +1137,8 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
   const onTouchEnd=e=>{
     if(sheetRef.current&&sheetRef.current.scrollTop>5){sheetRef.current.style.transform="";return}
     const dy=(e.changedTouches[0]?.clientY||0)-startY.current
-    if(dy>100)onClose()
-    else if(sheetRef.current)sheetRef.current.style.transform=""
+    if(dy>60)onClose()
+    else if(sheetRef.current){sheetRef.current.style.transition="transform .3s cubic-bezier(.32,.72,0,1)";sheetRef.current.style.transform="";setTimeout(()=>{if(sheetRef.current)sheetRef.current.style.transition=""},300)}
   }
 
   const wazeUrl=`https://waze.com/ul?ll=${beach.lat},${beach.lng}&navigate=yes`
@@ -1105,12 +1151,12 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
         <div className="sheet-handle"/>
 
         {/* Photo (real or satellite) */}
-        <div style={{height:240,background:`url(${bgImage}) center center/cover`,
+        <div style={{height:"min(240px, 30vh)",background:`url(${bgImage}) center center/cover`,
           borderRadius:"0",position:"relative"}}>
           <div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 40%,var(--sg-card,#fff) 100%)"}}/>
           <button onClick={onClose} style={{position:"absolute",top:12,right:12,
-            width:32,height:32,borderRadius:16,background:"rgba(0,0,0,.4)",
-            border:"none",color:"#fff",fontSize:16,cursor:"pointer",
+            width:36,height:36,borderRadius:18,background:"rgba(0,0,0,.45)",
+            border:"none",color:"#fff",fontSize:18,cursor:"pointer",
             display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
         </div>
 
@@ -1180,11 +1226,11 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               background:"var(--sg-card)",cursor:"pointer",fontSize:18,fontFamily:"inherit"}}>
               📤
             </button>
-            <button onClick={()=>onToggleFav(beach.id)} style={{
-              flex:0,padding:"14px 20px",borderRadius:22,border:"1.5px solid var(--sg-border)",
-              background:"var(--sg-card)",cursor:"pointer",fontSize:18,
-              fontFamily:"inherit",
-            }}>{isFav?"❤️":""}</button>
+            <button onClick={e=>{onToggleFav(beach.id);e.currentTarget.classList.remove("heart-pop");void e.currentTarget.offsetWidth;e.currentTarget.classList.add("heart-pop")}} style={{
+              flex:0,padding:"14px 20px",borderRadius:22,border:isFav?`1.5px solid ${C.red}22`:"1.5px solid var(--sg-border)",
+              background:isFav?"rgba(232,82,42,.06)":"var(--sg-card)",cursor:"pointer",fontSize:18,
+              fontFamily:"inherit",transition:"all .2s",
+            }}>{isFav?"❤️":"🤍"}</button>
           </div>
 
           {/* Forecast (days 4-7 locked) */}
@@ -1269,9 +1315,10 @@ function Tag({icon,label}){
 function WeatherCard({icon,label,value}){
   return(
     <div style={{padding:"12px",borderRadius:14,background:"var(--sg-bgD,#F7F5EF)",
-      textAlign:"center"}}>
-      <div style={{fontSize:20,marginBottom:4}}>{icon}</div>
-      <div style={{fontSize:14,fontWeight:700}}>{value}</div>
+      textAlign:"center",border:"1px solid var(--sg-border,rgba(0,0,0,.04))",
+      transition:"transform .2s"}}>
+      <div style={{fontSize:20,marginBottom:4,animation:"float-b 3s ease-in-out infinite"}}>{icon}</div>
+      <div style={{fontSize:14,fontWeight:700,color:"var(--sg-ink)"}}>{value}</div>
       <div style={{fontSize:11,color:"var(--sg-mid,#686868)"}}>{label}</div>
     </div>
   )
@@ -1488,6 +1535,17 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
       <div style={{padding:"8px 16px 0",fontSize:13,color:"var(--sg-mid,#686868)",fontWeight:500}}>
         {LL.nClean.replace("{n}",nClean)} / {beaches.length}
       </div>
+      {beaches.length===0?(
+        <div style={{padding:"60px 32px",textAlign:"center",animation:"fadeIn .3s ease"}}>
+          <div style={{fontSize:48,marginBottom:12}}>🏖️</div>
+          <div style={{fontSize:16,fontWeight:700,color:"var(--sg-ink)",marginBottom:6}}>
+            {lang==="en"?"No beaches match":"Aucune plage trouvée"}
+          </div>
+          <div style={{fontSize:13,color:"var(--sg-mid,#686868)",lineHeight:1.5}}>
+            {lang==="en"?"Try a different filter or search.":"Essaie un autre filtre ou une autre recherche."}
+          </div>
+        </div>
+      ):(
       <div style={{padding:"8px 16px",display:"flex",flexDirection:"column",gap:10}}>
         {beaches.map(b=>{
           const photo=getBeachPhoto(b)
@@ -1497,8 +1555,10 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
               borderRadius:16,border:"1px solid var(--sg-border)",
               background:"var(--sg-card,#fff)",cursor:"pointer",
               textAlign:"left",fontFamily:"inherit",width:"100%",
-              boxShadow:"0 1px 4px rgba(0,0,0,.04)",
-              transition:"background .15s",
+              boxShadow:"0 2px 8px rgba(0,0,0,.04)",
+              transition:"all .2s cubic-bezier(.22,1,.36,1)",
+              animation:"slideUp .3s cubic-bezier(.22,1,.36,1) backwards",
+              animationDelay:`${Math.min(b._dist||0,10)*20}ms`,
             }}>
               {/* Photo thumbnail */}
               <div style={{width:64,height:48,borderRadius:10,
@@ -1520,6 +1580,7 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
           )
         })}
       </div>
+      )}
     </div>
   )
 }
@@ -2333,36 +2394,36 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
   const srcColor=isLive?C.green:C.amber
   return(
     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
-      {/* Island toggle */}
-      <div style={{display:"flex",borderRadius:12,overflow:"hidden",
+      {/* Island toggle — sliding pill indicator */}
+      <div style={{display:"flex",borderRadius:12,overflow:"hidden",position:"relative",
         border:"1.5px solid var(--sg-border,rgba(0,0,0,.08))",
         background:"var(--sg-card,#fff)",boxShadow:"0 2px 8px rgba(0,0,0,.06)"}}>
+        <div style={{position:"absolute",top:2,bottom:2,width:"calc(50% - 2px)",borderRadius:10,
+          background:"linear-gradient(158deg,#FFE47A,#FFC72C,#E89400)",
+          transform:island==="mq"?"translateX(2px)":"translateX(calc(100% + 2px))",
+          transition:"transform .3s cubic-bezier(.22,1,.36,1)",
+          boxShadow:"0 2px 6px rgba(232,168,0,.3)"}}/>
         {["mq","gp"].map(id=>(
           <button key={id} onClick={()=>{onIslandChange(id);track("sg_island_switch",{to:id})}} style={{
             padding:"8px 14px",border:"none",cursor:"pointer",
-            background:island===id?C.gold:"transparent",
+            background:"transparent",position:"relative",zIndex:1,
             color:island===id?"#0D0D0D":"var(--sg-mid,#686868)",
             fontSize:12,fontWeight:700,fontFamily:"inherit",
-            transition:"all .2s",
+            transition:"color .2s",
           }}>{id==="mq"?"MQ":"GP"}</button>
         ))}
       </div>
 
       {/* Live indicator — shows LIVE or Estimation based on data source */}
-      <a href="https://marine.copernicus.eu/" target="_blank" rel="noopener"
-        style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,textDecoration:"none"}}>
-        <div style={{display:"flex",alignItems:"center",gap:6,
+      <div style={{display:"flex",alignItems:"center",gap:6,
           padding:"6px 12px",borderRadius:100,
           background:"var(--sg-card,#fff)",
           boxShadow:"0 2px 8px rgba(0,0,0,.06)",
           border:`1px solid ${isLive?"var(--sg-border)":"rgba(184,122,0,.2)"}`,
-          fontSize:11,fontWeight:600,color:isLive?C.teal:C.amber,cursor:"pointer"}}>
+          fontSize:11,fontWeight:600,color:isLive?C.teal:C.amber}}>
           <span className={isLive?"pulse":""} style={{width:8,height:8,borderRadius:4,background:srcColor}}/>
           {srcLabel} · {beachCount||47} {lang==="en"?"beaches":"plages"}
         </div>
-        <span style={{fontSize:9,fontWeight:600,color:"var(--sg-mid,#686868)",letterSpacing:".02em",
-          textAlign:"center",lineHeight:1.2}}>{lang==="en"?"Real-time map":"En temps réel"}</span>
-      </a>
 
       {/* Theme + Lang */}
       <div style={{display:"flex",gap:4}}>
@@ -3199,6 +3260,12 @@ export default function App(){
     return list
   },[island,search,filter,favorites,allBeaches,userPos])
 
+  // Filter chip counts (unfiltered, per island)
+  const filterCounts=useMemo(()=>{
+    const ib=allBeaches.filter(b=>b.island===island)
+    return[ib.length,ib.filter(b=>b.status==="clean").length,favorites.filter(id=>ib.some(b=>b.id===id)).length,ib.filter(b=>b.status==="avoid").length]
+  },[allBeaches,island,favorites])
+
   const onBeachClick=useCallback(b=>{
     setSelectedBeach(b);track("sg_beach_open",{beach_id:b?.id,status:b?.status})
     // Auto-dismiss onboarding coachmark on first beach interaction
@@ -3251,45 +3318,78 @@ export default function App(){
           </div>
         )}
 
-        {/* MAP, LIST or GAME */}
-        {view==="map"?(
+        {/* MAP, LIST or GAME — both rendered, visibility toggled for instant switch */}
+        <div style={{position:"absolute",inset:0,opacity:view==="map"?1:0,
+          pointerEvents:view==="map"?"auto":"none",transition:"opacity .25s ease"}}>
           <ErrBound><MapView beaches={filtered} island={island} lang={lang}
             onBeachClick={onBeachClick} selectedBeach={selectedBeach} sargData={sargData} userPos={userPos}
             favorites={favorites} allBeaches={allBeaches} onThreatChange={setHasActiveThreat}
             onPremiumClick={openPremium}/></ErrBound>
-        ):(
+        </div>
+        <div style={{position:"absolute",inset:0,opacity:view==="list"?1:0,
+          pointerEvents:view==="list"?"auto":"none",transition:"opacity .25s ease"}}>
           <BeachListView beaches={filtered} onBeachClick={onBeachClick}
             favorites={favorites} lang={lang} imageMap={imageMap}/>
-        )}
+        </div>
 
-        {/* FLOATING UI (over map) */}
+        {/* FLOATING UI (over map) — frosted glass panel */}
         <div style={{
           position:"absolute",top:0,left:0,right:0,zIndex:700,
           padding:"max(12px,env(safe-area-inset-top)) 16px 0",
           pointerEvents:"none",
+          background:view==="map"?"linear-gradient(180deg,rgba(253,252,247,.88) 0%,rgba(253,252,247,.7) 85%,transparent 100%)":"none",
+          backdropFilter:view==="map"?"blur(8px)":"none",
+          WebkitBackdropFilter:view==="map"?"blur(8px)":"none",
         }}>
           <div style={{pointerEvents:"auto"}}>
             <Header island={island} onIslandChange={setIsland}
               lang={lang} onLangToggle={toggleLang}
               theme={theme} onThemeToggle={toggleTheme}
               beachCount={allBeaches.length} dataSource={dataSource}/>
-            {view!=="map"&&(
-              <div style={{marginTop:10}}>
-                <SearchBar value={search} onChange={setSearch} lang={lang}/>
+            <div style={{marginTop:10}}>
+              <SearchBar value={search} onChange={setSearch} lang={lang}/>
+            </div>
+            <div style={{marginTop:8,position:"relative"}}>
+              <div style={{display:"flex",gap:6,overflowX:"auto",
+                paddingBottom:4,paddingRight:24,scrollbarWidth:"none",WebkitOverflowScrolling:"touch"}}>
+                {LL.filters.map((f,i)=>(
+                  <FilterChip key={i} label={f} icon={LL.filtersIcon[i]} count={filterCounts[i]||null}
+                    active={filter===i} onClick={()=>{setFilter(i);track("sg_filter",{filter:f,index:i})}}/>
+                ))}
+              </div>
+              {/* Fade hint for scrollable chips */}
+              <div style={{position:"absolute",top:0,right:0,bottom:4,width:32,
+                background:"linear-gradient(90deg,transparent,var(--sg-bg,#FDFCF7))",pointerEvents:"none"}}/>
+            </div>
+            {/* Search results dropdown on map */}
+            {view==="map"&&search.trim().length>=2&&filtered.length>0&&filtered.length<=8&&(
+              <div style={{marginTop:4,background:"var(--sg-card,#fff)",borderRadius:14,
+                boxShadow:"0 4px 20px rgba(0,0,0,.12)",border:"1px solid var(--sg-border,rgba(0,0,0,.06))",
+                maxHeight:240,overflowY:"auto",overscrollBehavior:"contain"}}>
+                {filtered.slice(0,5).map(b=>{
+                  const st=ST[b.status]||ST.clean
+                  return(
+                    <button key={b.id} onClick={()=>{setSearch("");onBeachClick(b)}} style={{
+                      display:"flex",alignItems:"center",gap:10,padding:"10px 14px",
+                      background:"none",border:"none",borderBottom:"1px solid var(--sg-border,rgba(0,0,0,.04))",
+                      cursor:"pointer",textAlign:"left",fontFamily:"inherit",width:"100%"}}>
+                      <div style={{width:8,height:8,borderRadius:4,background:st.c,flexShrink:0}}/>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontSize:13,fontWeight:600,color:"var(--sg-ink)",
+                          whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.name}</div>
+                        <div style={{fontSize:11,color:"var(--sg-mid,#686868)"}}>{b.commune}</div>
+                      </div>
+                      <span style={{fontSize:10,fontWeight:700,color:st.c}}>{lang==="en"?st.le:st.l}</span>
+                    </button>
+                  )
+                })}
               </div>
             )}
-            <div style={{marginTop:8,display:"flex",gap:6,overflowX:"auto",
-              paddingBottom:4,scrollbarWidth:"none",WebkitOverflowScrolling:"touch"}}>
-              {LL.filters.map((f,i)=>(
-                <FilterChip key={i} label={f} icon={LL.filtersIcon[i]}
-                  active={filter===i} onClick={()=>{setFilter(i);track("sg_filter",{filter:f,index:i})}}/>
-              ))}
-            </div>
           </div>
         </div>
 
         {/* BEST BEACH WIDGET — hidden when ThreatBanner active to avoid clutter */}
-        {view==="map"&&!selectedBeach&&!showOnboarding&&!hasActiveThreat&&(
+        {view==="map"&&!selectedBeach&&!showOnboarding&&!hasActiveThreat&&!search.trim()&&(
           <BestBeachWidget allBeaches={allBeaches} sargData={sargData} island={island}
             lang={lang} isPremium={isPremium} onBeachClick={onBeachClick}
             userPos={userPos} onPremiumClick={openPremium}/>
@@ -3297,8 +3397,7 @@ export default function App(){
 
         {/* WeekendBanner removed — upsell disguised as feature */}
 
-        {/* SEASON BANNER — top of map, high season only, once per session */}
-        {view==="map"&&<SeasonBanner lang={lang}/>}
+        {/* SeasonBanner removed — "saison active" doesn't help decide beach visit */}
 
         {/* BOTTOM NAV */}
         <BottomNav view={view} onChangeView={onChangeView} lang={lang}/>
@@ -3316,13 +3415,20 @@ export default function App(){
         {/* PREMIUM MODAL */}
         {showPremium&&<PremiumModal onClose={()=>setShowPremium(false)} lang={lang} source={premiumSource} allBeaches={allBeaches} sargData={sargData}/>}
 
-        {/* BEACH PICKER — for new users or when "Changer" tapped */}
-        {(!myBeachId||showPicker)&&view==="map"&&!selectedBeach&&(
-          <BeachPicker island={island} allBeaches={allBeaches} lang={lang} userPos={userPos}
-            onSelect={onPickBeach} onDismiss={myBeachId?()=>setShowPicker(false):null}/>
+        {/* First-visit hint — auto-dismiss on first tap or after 5s */}
+        {showOnboarding&&view==="map"&&!selectedBeach&&(
+          <div style={{position:"fixed",bottom:74,left:"50%",transform:"translateX(-50%)",
+            zIndex:750,background:"rgba(255,255,255,.95)",backdropFilter:"blur(12px)",
+            WebkitBackdropFilter:"blur(12px)",padding:"10px 20px",borderRadius:100,
+            boxShadow:"0 4px 20px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04)",
+            display:"flex",alignItems:"center",gap:8,whiteSpace:"nowrap",
+            animation:"slideUp .4s cubic-bezier(.22,1,.36,1)",pointerEvents:"none"}}>
+            <span style={{fontSize:16}}>👆</span>
+            <span style={{fontSize:13,fontWeight:600,color:C.ink}}>
+              {lang==="en"?"Tap a beach to see its status":"Touche une plage sur la carte"}
+            </span>
+          </div>
         )}
-
-        {/* ReturnUserCard removed — "Bon retour" popup adds no value */}
 
         {/* BOTTOM PROMPTS — feedback + install only (email/push moved inline to beach sheet) */}
         {!showOnboarding&&(()=>{
