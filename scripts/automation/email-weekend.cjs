@@ -107,7 +107,7 @@ function buildEmailHTML(island, topBeaches, stats, domain) {
       Previsions 7 jours + alertes push.<br>
       Rejoins les familles qui planifient leur weekend a l'avance.
     </div>
-    <a href="https://buy.stripe.com/6oU3cxgg36J48Ox6ZZ0co0s" style="display:inline-block;padding:12px 28px;
+    <a href="https://buy.stripe.com/6oU3cxgg36J48Ox6ZZ0co0s?utm_source=email&utm_medium=weekend_bulletin&utm_campaign=sargasses" style="display:inline-block;padding:12px 28px;
       background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);
       color:#0D0D0D;text-decoration:none;border-radius:10px;font-size:14px;font-weight:700;
       box-shadow:0 4px 16px rgba(232,168,0,.3)">Essai gratuit 7 jours</a>
