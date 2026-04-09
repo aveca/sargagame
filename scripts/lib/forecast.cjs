@@ -172,23 +172,29 @@ function buildHonestForecast(levels, windForecast, history, beaches) {
         sources = ['satellite']
       } else if (i === 1) {
         // Day 1: persistence-anchored with regression toward clean
-        // Backtest S14: model over-predicted → add pull toward clean baseline
+        // When satellite trend is strong (R²>0.5), trust it more than wind
         const windEffect = beach ? windDriftEffect(beach, hourlyWind, i) : 0
         const trendEffect = trend ? trend.slope : 0
-        const modelDelta = windEffect * 0.6 + trendEffect * 0.4
+        const strongTrend = trend && trend.r2 >= 0.5 && Math.abs(trend.slope) > 0.05
+        const windW = strongTrend ? 0.3 : 0.6
+        const trendW = strongTrend ? 0.7 : 0.4
+        const modelDelta = windEffect * windW + trendEffect * trendW
         const raw = clamp01(level.afai + modelDelta * 0.3)
-        // Regression toward clean: blend 20% toward baseline (40% if memory-sourced)
-        const cleanPull = isMemory ? 0.4 : 0.2
+        // Regression toward clean: 30% baseline (50% if memory-sourced)
+        const cleanPull = isMemory ? 0.5 : 0.3
         afai = raw * (1 - cleanPull) + CLEAN_BASELINE * cleanPull
         sources = hourlyWind ? ['wind-forecast', 'satellite-trend'] : ['satellite-trend']
       } else if (i <= 3) {
         // Days 2-3: stronger regression toward clean
         const windEffect = beach ? windDriftEffect(beach, hourlyWind, i) : 0
         const trendEffect = trend ? trend.slope * i : 0
-        const modelDelta = windEffect * 0.3 + trendEffect * 0.5
+        const strongTrend = trend && trend.r2 >= 0.5 && Math.abs(trend.slope) > 0.05
+        const windW = strongTrend ? 0.2 : 0.3
+        const trendW = strongTrend ? 0.6 : 0.5
+        const modelDelta = windEffect * windW + trendEffect * trendW
         const raw = clamp01(level.afai + modelDelta * 0.5)
-        // Increasing pull toward clean: 30-40% (50-60% if memory)
-        const cleanPull = (0.25 + i * 0.05) + memoryDecay * 0.2
+        // Increasing pull toward clean: 35-45% (55-65% if memory)
+        const cleanPull = (0.30 + i * 0.05) + memoryDecay * 0.2
         afai = raw * (1 - cleanPull) + CLEAN_BASELINE * cleanPull
         sources = hourlyWind ? ['wind-forecast', 'satellite-trend'] : ['satellite-trend']
       } else {
