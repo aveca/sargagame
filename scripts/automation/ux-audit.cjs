@@ -80,7 +80,7 @@ function main() {
           severity: rc.count >= 10 ? 'critical' : 'warning',
           page: rc.page,
           target: rc.target,
-          metric: `${rc.count} rage clicks on ${rc.target}`,
+          metric: `${rc.count} rage clicks on ${rc.target || '?'} (${rc.page})`,
           recommendation: 'Element receives frustrated repeated clicks. Check if it looks interactive but is not, or if it responds too slowly.',
         })
       }
@@ -94,7 +94,7 @@ function main() {
           severity: dc.count >= 15 ? 'critical' : 'warning',
           page: dc.page,
           target: dc.target,
-          metric: `${dc.count} dead clicks on ${dc.target}`,
+          metric: `${dc.count} dead clicks on ${dc.target || '?'} (${dc.page})`,
           recommendation: 'Non-interactive element receives clicks. Either make it clickable or change its visual style to not look interactive.',
         })
       }
