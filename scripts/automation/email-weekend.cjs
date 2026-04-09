@@ -144,8 +144,15 @@ async function main() {
   try { sargData = JSON.parse(fs.readFileSync(SARG_PATH, 'utf-8')) } catch { console.error('No sargassum.json'); return }
   try { beaches = JSON.parse(fs.readFileSync(BEACHES_PATH, 'utf-8')) } catch { beaches = [] }
 
+  // Merge real-time status from sargassum.json into beaches
   const beachMap = {}
   for (const b of beaches) beachMap[b.id] = b
+  for (const level of (sargData.levels || [])) {
+    const beachId = SARG_TO_BEACH[level.id]
+    if (beachId && beachMap[beachId]) {
+      beachMap[beachId].status = level.status
+    }
+  }
 
   for (const island of ['mq', 'gp']) {
     const islandName = island === 'mq' ? 'Martinique' : 'Guadeloupe'
