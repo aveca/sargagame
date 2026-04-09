@@ -433,6 +433,22 @@ function applyBeachAccumulation(levels, dir) {
       }
     }
 
+    // If satellite shows clean (AFAI < 0.10) for 2+ consecutive recent days,
+    // trust the satellite — sargassum has dissipated, skip memory boost.
+    const sortedRecent = history
+      .filter(h => {
+        const d = (new Date(today) - new Date(h.date)) / (1000 * 60 * 60 * 24)
+        return d > 0 && d <= 10
+      })
+      .sort((a, b) => b.date.localeCompare(a.date))
+    let consecutiveClean = 0
+    for (const entry of sortedRecent) {
+      const bl = entry.levels.find(l => l.id === level.id)
+      if (!bl || bl.afai >= 0.10) break
+      consecutiveClean++
+    }
+    if (consecutiveClean >= 2) continue // satellite confirmed clean 2+ days
+
     // Only flag beachMemory when accumulation actually changes the STATUS
     const effectiveAfai = Math.round(peakDecayed * 100) / 100
     if (peakDecayed > level.afai && statusFromAfai(effectiveAfai) !== level.status) {
