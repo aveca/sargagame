@@ -30,7 +30,9 @@ const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIH
 // GP uses MQ verified domain (free plan = 1 domain)
 const FROM_MQ = 'Sargasses Martinique <alerte@sargasses-martinique.com>'
 const FROM_GP = 'Sargasses Guadeloupe <alerte@sargasses-martinique.com>'
-const STRIPE_LINK = 'https://buy.stripe.com/6oU3cxgg36J48Ox6ZZ0co0s'
+const STRIPE_BASE = 'https://buy.stripe.com/6oU3cxgg36J48Ox6ZZ0co0s'
+function stripeLink(step) { return `${STRIPE_BASE}?utm_source=email&utm_medium=drip_${step}&utm_campaign=sargasses` }
+const STRIPE_LINK = STRIPE_BASE // compat
 
 // Drip steps: day threshold + email builder key
 const DRIP_STEPS = [
@@ -154,7 +156,7 @@ function buildJ7(island, cleanCount) {
     </div>
 
     <div style="text-align:center">
-      ${ctaButton('Essai gratuit 7 jours', STRIPE_LINK)}
+      ${ctaButton('Essai gratuit 7 jours', stripeLink('j7'))}
       <div style="font-size:11px;color:#999;margin-top:8px">4,99 EUR/mois apres l'essai · Annule quand tu veux</div>
     </div>
   </div>
@@ -190,7 +192,7 @@ function buildJ14(island, cleanCount) {
     </div>
 
     <div style="text-align:center;margin-bottom:16px">
-      ${ctaButton('Rejoins-les — essai gratuit', STRIPE_LINK)}
+      ${ctaButton('Rejoins-les — essai gratuit', stripeLink('j14'))}
       <div style="font-size:11px;color:#999;margin-top:8px">4,99 EUR/mois · Annule en 1 clic · Un ti-punch coute plus cher</div>
     </div>
 
