@@ -21,6 +21,7 @@ const FORCE = process.argv.includes('--force')
 const SARG_PATH = path.join(__dirname, '../../public/api/copernicus/sargassum.json')
 const BEACHES_PATH = path.join(__dirname, '../../public/data/beaches-list.json')
 const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec'
+function unsubUrl(island) { return `${WEBHOOK_URL}?action=unsubscribe&email={{EMAIL}}&island=${island.toUpperCase()}` }
 
 const SARG_TO_BEACH = {
   "grande-anse":"mq014","anse-mitan":"mq011","anse-noire":"mq012","tartane":"mq034",
@@ -123,7 +124,7 @@ function buildEmailHTML(island, topBeaches, stats, domain) {
 
   <div style="text-align:center;padding:16px;font-size:10px;color:#999">
     Sargasses ${islandName} · sargasses-${islandName.toLowerCase()}.com<br>
-    <a href="https://${domain}" style="color:#999">Se desinscrire</a>
+    <a href="${unsubUrl(island)}" style="color:#999">Se d\u00E9sabonner</a>
   </div>
 </div>
 </body>

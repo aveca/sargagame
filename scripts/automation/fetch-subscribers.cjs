@@ -16,7 +16,7 @@ const path = require('path')
 const { google } = require('googleapis')
 
 const SHEET_ID = '1LrpJeILNGIccCVn7AzZrEiLPr8ALTp20F5b1ihHC9FQ'
-const SHEET_RANGE = 'emails!A:D' // date, email, island, source
+const SHEET_RANGE = 'emails!A:E' // date, email, island, source, unsubscribed
 const OUT_PATH = path.join(__dirname, 'data', 'subscribers.json')
 
 async function main() {
@@ -54,9 +54,10 @@ async function main() {
       return
     }
 
-    // Skip header row, map to objects
+    // Skip header row, map to objects, exclude unsubscribed
     const subscribers = rows.slice(1)
       .filter(r => r[1] && r[1].includes('@')) // must have valid email
+      .filter(r => (r[4] || '').toString().toLowerCase() !== 'yes') // skip unsubscribed
       .map(r => ({
         date: r[0] || '',
         email: r[1].trim().toLowerCase(),

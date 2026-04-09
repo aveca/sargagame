@@ -33,6 +33,8 @@ const FROM_GP = 'Sargasses Guadeloupe <alerte@sargasses-martinique.com>'
 const STRIPE_BASE = 'https://buy.stripe.com/6oU3cxgg36J48Ox6ZZ0co0s'
 function stripeLink(step) { return `${STRIPE_BASE}?utm_source=email&utm_medium=drip_${step}&utm_campaign=sargasses` }
 const STRIPE_LINK = STRIPE_BASE // compat
+const UNSUB_BASE = WEBHOOK_URL
+function unsubUrl(email, island) { return `${UNSUB_BASE}?action=unsubscribe&email=${encodeURIComponent(email)}&island=${island}` }
 
 // Drip steps: day threshold + email builder key
 const DRIP_STEPS = [
@@ -70,10 +72,10 @@ function header(title, subtitle) {
   </div>`
 }
 
-function footer(islandName, domain) {
+function footer(islandName, domain, email, island) {
   return `<div style="background:#fff;border-radius:0 0 16px 16px;text-align:center;padding:16px;font-size:10px;color:#999">
     Sargasses ${islandName} · ${domain}<br>
-    <a href="https://${domain}" style="color:#999">Se desinscrire</a>
+    <a href="${unsubUrl(email, island)}" style="color:#999">Se d\u00E9sabonner</a>
   </div>`
 }
 
@@ -87,7 +89,7 @@ function ctaButton(text, url, size = 'normal') {
 }
 
 // J+3 — Pure value, no premium push
-function buildJ3(island, cleanCount, topBeaches) {
+function buildJ3(island, cleanCount, topBeaches, email) {
   const name = island === 'MQ' ? 'Martinique' : 'Guadeloupe'
   const domain = island === 'MQ' ? 'sargasses-martinique.com' : 'sargasses-guadeloupe.com'
 
@@ -121,12 +123,12 @@ function buildJ3(island, cleanCount, topBeaches) {
       ${ctaButton('Voir toutes les plages', `https://${domain}`)}
     </div>
   </div>
-  ${footer(name, domain)}
+  ${footer(name, domain, email, island)}
 </div></body></html>`
 }
 
 // J+7 — Intro premium (soft CTA)
-function buildJ7(island, cleanCount) {
+function buildJ7(island, cleanCount, email) {
   const name = island === 'MQ' ? 'Martinique' : 'Guadeloupe'
   const domain = island === 'MQ' ? 'sargasses-martinique.com' : 'sargasses-guadeloupe.com'
 
@@ -164,12 +166,12 @@ function buildJ7(island, cleanCount) {
   <div style="background:#fff;padding:16px 20px;border-top:1px solid #f0f0f0;text-align:center">
     <a href="https://${domain}" style="color:#E89400;font-size:13px;font-weight:600;text-decoration:none">Voir la carte maintenant</a>
   </div>
-  ${footer(name, domain)}
+  ${footer(name, domain, email, island)}
 </div></body></html>`
 }
 
 // J+14 — Social proof + strong CTA
-function buildJ14(island, cleanCount) {
+function buildJ14(island, cleanCount, email) {
   const name = island === 'MQ' ? 'Martinique' : 'Guadeloupe'
   const domain = island === 'MQ' ? 'sargasses-martinique.com' : 'sargasses-guadeloupe.com'
 
@@ -200,7 +202,7 @@ function buildJ14(island, cleanCount) {
       <a href="https://${domain}" style="color:#E89400;font-size:13px;font-weight:600;text-decoration:none">Ou continue gratuitement avec la carte</a>
     </div>
   </div>
-  ${footer(name, domain)}
+  ${footer(name, domain, email, island)}
 </div></body></html>`
 }
 
@@ -221,11 +223,11 @@ function getSubject(step, island, cleanCount) {
   }
 }
 
-function getHTML(step, island, cleanCount, topBeaches) {
+function getHTML(step, island, cleanCount, topBeaches, email) {
   switch (step) {
-    case 'j3':  return buildJ3(island, cleanCount, topBeaches)
-    case 'j7':  return buildJ7(island, cleanCount)
-    case 'j14': return buildJ14(island, cleanCount)
+    case 'j3':  return buildJ3(island, cleanCount, topBeaches, email)
+    case 'j7':  return buildJ7(island, cleanCount, email)
+    case 'j14': return buildJ14(island, cleanCount, email)
   }
 }
 
@@ -290,10 +292,17 @@ async function main() {
       const { cleanCount, topBeaches } = beachData[island] || beachData['MQ']
       const from = island === 'GP' ? FROM_GP : FROM_MQ
       const subject = getSubject(step.key, island, cleanCount)
-      const html = getHTML(step.key, island, cleanCount, topBeaches)
+      const html = getHTML(step.key, island, cleanCount, topBeaches, email)
+      const unsub = unsubUrl(email, island)
 
       try {
-        const { data, error } = await resend.emails.send({ from, to: email, subject, html })
+        const { data, error } = await resend.emails.send({
+          from, to: email, subject, html,
+          headers: {
+            'List-Unsubscribe': `<${unsub}>`,
+            'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+          },
+        })
         if (error) {
           console.log(`  x ${email} [${step.key}]: ${error.message}`)
         } else {

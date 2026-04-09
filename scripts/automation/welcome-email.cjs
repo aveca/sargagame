@@ -24,6 +24,8 @@ const BEACHES_PATH = path.join(__dirname, '../../public/data/beaches-list.json')
 // From address — GP uses MQ verified domain (free plan = 1 domain)
 const FROM_MQ = 'Sargasses Martinique <alerte@sargasses-martinique.com>'
 const FROM_GP = 'Sargasses Guadeloupe <alerte@sargasses-martinique.com>'
+const UNSUB_BASE = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec'
+function unsubUrl(email, island) { return `${UNSUB_BASE}?action=unsubscribe&email=${encodeURIComponent(email)}&island=${island}` }
 
 function loadJSON(p, fallback) {
   try { return JSON.parse(fs.readFileSync(p, 'utf-8')) } catch { return fallback }
@@ -33,7 +35,7 @@ function saveJSON(p, data) {
   fs.writeFileSync(p, JSON.stringify(data, null, 2))
 }
 
-function buildWelcomeHTML(island, cleanCount) {
+function buildWelcomeHTML(island, cleanCount, email) {
   const name = island === 'MQ' ? 'Martinique' : 'Guadeloupe'
   const domain = island === 'MQ' ? 'sargasses-martinique.com' : 'sargasses-guadeloupe.com'
   const stripe = 'https://buy.stripe.com/6oU3cxgg36J48Ox6ZZ0co0s'
@@ -93,7 +95,8 @@ function buildWelcomeHTML(island, cleanCount) {
   </div>
 
   <div style="background:#fff;border-radius:0 0 16px 16px;text-align:center;padding:16px;font-size:10px;color:#999">
-    Sargasses ${name} \u00B7 ${domain}
+    Sargasses ${name} \u00B7 ${domain}<br>
+    <a href="${unsubUrl(email, island)}" style="color:#999">Se d\u00E9sabonner</a>
   </div>
 </div>
 </body>
@@ -138,11 +141,16 @@ async function main() {
 
     const subjectLine = cleanCount > 0 ? `${cleanCount} plages propres en ${name} \u2014 ta carte est pr\u00EAte` : `Bienvenue \u2014 ta carte sargasses ${name} est pr\u00EAte`
     try {
+      const unsub = unsubUrl(sub.email, island)
       const { data, error } = await resend.emails.send({
         from,
         to: sub.email,
         subject: subjectLine,
-        html: buildWelcomeHTML(island, cleanCount),
+        html: buildWelcomeHTML(island, cleanCount, sub.email),
+        headers: {
+          'List-Unsubscribe': `<${unsub}>`,
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        },
       })
 
       if (error) {
