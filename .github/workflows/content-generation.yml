@@ -2,7 +2,7 @@ name: Content Generation (SEO)
 
 on:
   schedule:
-    # 3x/semaine : Lun + Mer + Ven à 8h UTC (4h Martinique = fresh morning content)
+    # 3x/sem articles : Lun + Mer + Ven à 8h UTC
     - cron: '0 8 * * 1,3,5'
   workflow_dispatch:
 

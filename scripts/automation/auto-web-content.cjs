@@ -35,13 +35,23 @@ const SITES = {
   gp: { domain: 'sargasses-guadeloupe.com', island: 'Guadeloupe', appUrl: 'https://sargasses-guadeloupe.com/' },
 }
 
-// Article types — rotate by day of week
+// Article types — 15 intents, cycle every ~5 weeks
 const ARTICLE_TYPES = [
-  'point-hebdo',      // situation report cette semaine
-  'guide-quand',      // quand partir sans sargasses ce mois-ci
-  'alerte-saison',    // alerte saison 2026
-  'plages-propres',   // quelles plages sont propres maintenant
-  'comparatif',       // côte atlantique vs caraïbe
+  'point-hebdo',         // situation report cette semaine
+  'guide-quand',         // quand partir sans sargasses ce mois-ci
+  'alerte-saison',       // alerte saison 2026
+  'plages-propres',      // quelles plages sont propres maintenant
+  'comparatif-cotes',    // côte atlantique vs caraïbe
+  'famille',             // top plages famille sans sargasses
+  'sante-h2s',           // dangers H2S, précautions santé
+  'science-satellite',   // comment le satellite détecte les sargasses
+  'mensuel',             // martinique [mois] 2026 : état des plages
+  'mq-vs-gp',            // martinique ou guadeloupe en saison sargasses
+  'commune',             // sargasses commune par commune (Robert, Vauclin...)
+  'baignade-danger',     // peut-on se baigner avec des sargasses ?
+  'touriste-guide',      // guide touriste : vacances sans sargasses
+  'hotel-conseils',      // quel hôtel choisir pour éviter les sargasses
+  'historique',          // historique des saisons sargasses depuis 2011
 ]
 
 // ─── Helpers ──────────────────────────────────────────────────
@@ -168,7 +178,17 @@ async function generateArticle(islandKey, articleType, news, sargData) {
     'guide-quand': `Écris un guide "Quand partir en ${island} sans sargasses — ${month} ${year}" : calendrier des mois favorables, explication du cycle saisonnier, recommandations pour ${month}, lien avec les données actuelles.`,
     'alerte-saison': `Écris un article d'alerte "Sargasses ${island} ${year} : ce qu'il faut savoir pour cet été" : pourquoi 2026 est une année exceptionnelle, quelles zones protéger, comment suivre l'évolution en temps réel.`,
     'plages-propres': `Écris un article "Plages sans sargasses en ${island} aujourd'hui ${today}" : liste des zones actuellement propres, explique pourquoi ces plages sont épargnées (géographie, courants), conseils pour vérifier avant de partir.`,
-    'comparatif': `Écris un article "Côte caraïbe vs côte atlantique en ${island} : où fuir les sargasses ?" : comparaison des deux côtes, données AFAI, recommandations pratiques, carte mentale des zones.`,
+    'comparatif-cotes': `Écris un article "Côte caraïbe vs côte atlantique en ${island} : où fuir les sargasses ?" : comparaison des deux côtes, données AFAI, recommandations pratiques.`,
+    'famille': `Écris un article "Top 5 plages famille en ${island} sans sargasses — ${month} ${year}" : plages sûres avec enfants, critères (sable, eau calme, sargasses), données satellite actuelles.`,
+    'sante-h2s': `Écris un article "Sargasses et santé en ${island} : le danger du H2S" : qu'est-ce que le sulfure d'hydrogène, symptômes, seuils d'alerte, précautions pour enfants et personnes sensibles, comment vérifier la qualité de l'air.`,
+    'science-satellite': `Écris un article "Comment le satellite Copernicus détecte les sargasses en ${island}" : explication vulgarisée de l'indice AFAI, résolution 300m, comment les données deviennent la carte, différence avec les bulletins Météo-France.`,
+    'mensuel': `Écris un article "${island} en ${month} ${year} : état des sargasses et où aller à la plage" : prévisions pour le mois, quelles plages cibler, quoi éviter, alternatives si les sargasses sont là.`,
+    'mq-vs-gp': `Écris un article "Martinique ou Guadeloupe en ${month} ${year} : quelle île choisir face aux sargasses ?" : comparaison des deux îles, zones protégées, données satellite, recommandation selon le profil du voyageur.`,
+    'commune': `Écris un article "Sargasses en ${island} commune par commune — bilan ${month} ${year}" : état des principales communes côtières, classement des mieux loties aux plus touchées, données AFAI.`,
+    'baignade-danger': `Écris un article "Peut-on se baigner avec des sargasses en ${island} ?" : risques réels (H2S, irritation), quand c'est OK vs quand il faut éviter, seuils AFAI, comment vérifier avant d'y aller.`,
+    'touriste-guide': `Écris un article "Vacances en ${island} ${year} : guide complet pour éviter les sargasses" : quand venir, quelles plages, comment se préparer, applis et outils utiles, plan B si sargasses.`,
+    'hotel-conseils': `Écris un article "Quel hôtel choisir en ${island} pour éviter les sargasses ?" : quelles zones côtières privilégier, côte caraïbe vs atlantique, critères de choix, plages propres à proximité des zones hôtelières.`,
+    'historique': `Écris un article "Sargasses en ${island} : retour sur 15 ans de prolifération (2011-${year})" : chronologie, pires années, évolution des volumes, causes (Amazon, fertilisants, réchauffement), perspectives.`,
   }
 
   const prompt = typeInstructions[articleType] || typeInstructions['point-hebdo']

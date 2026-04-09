@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,-apple-system,sans-serif;background:transparent}
+.w{display:flex;align-items:center;gap:12px;padding:10px 16px;border-radius:12px;border:1px solid rgba(0,0,0,.08);background:#fff}
+.dot{width:14px;height:14px;border-radius:50%;flex-shrink:0}
+.dot.clean{background:#22C55E}
+.dot.moderate{background:#B87A00}
+.dot.avoid{background:#E8522A}
+.name{font-weight:600;font-size:14px;color:#0D0D0D}
+.status{font-size:13px;color:#686868;margin-left:auto}
+.link{font-size:11px;color:#009E8E;text-decoration:none;margin-left:8px;white-space:nowrap}
+.link:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="w" id="widget">
+  <div class="dot" id="dot"></div>
+  <span class="name" id="name">Chargement...</span>
+  <span class="status" id="status"></span>
+  <a class="link" id="link" target="_blank" rel="noopener">Carte →</a>
+</div>
+<script>
+(function(){
+  var path = location.pathname.replace('/widget/embed/','').replace(/\/$/,'');
+  var slug = path || 'anse-mitan';
+  var host = location.hostname;
+  var isGP = host.includes('guadeloupe');
+  var domain = isGP ? 'sargasses-guadeloupe.com' : 'sargasses-martinique.com';
+  var base = 'https://' + domain;
+
+  fetch(base + '/api/copernicus/sargassum.json')
+    .then(function(r){return r.json()})
+    .then(function(d){
+      var levels = d.levels || d.beaches || [];
+      var b = levels.find(function(l){return l.id === slug});
+      if(!b){
+        document.getElementById('name').textContent = slug;
+        document.getElementById('status').textContent = 'Plage non trouvée';
+        return;
+      }
+      var names = {
+        'grande-anse':"Grande Anse",'anse-mitan':'Anse Mitan','anse-noire':'Anse Noire',
+        'tartane':'Tartane','anse-madame':'Anse Madame','diamant':'Le Diamant',
+        'pt-marin':'Pointe du Marin','sainte-anne':'Sainte-Anne','les-salines':'Les Salines',
+        'vauclin':'Le Vauclin','gp-grande-anse':'Grande Anse','gp-malendure':'Malendure',
+        'gp-sainte-anne':'Sainte-Anne','gp-pt-chateaux':'Pointe des Châteaux',
+        'gp-gosier':'Le Gosier','gp-caravelle':'La Caravelle','gp-bas-du-fort':'Bas du Fort',
+        'gp-deshaies':'Deshaies','gp-moule':'Le Moule','gp-vieux-fort':'Vieux-Fort'
+      };
+      var statusLabels = {clean:'Propre',moderate:'Modéré',avoid:'À éviter'};
+      document.getElementById('dot').className = 'dot ' + b.status;
+      document.getElementById('name').textContent = names[slug] || slug;
+      document.getElementById('status').textContent = (statusLabels[b.status]||b.status) + ' — AFAI ' + b.afai.toFixed(2);
+      document.getElementById('link').href = base;
+    })
+    .catch(function(){
+      document.getElementById('status').textContent = 'Données indisponibles';
+    });
+
+  document.getElementById('link').href = base;
+})();
+</script>
+</body>
+</html>

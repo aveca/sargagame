@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Widget Sargasses — Intégrez l'état des plages sur votre site</title>
+  <meta name="description" content="Widget gratuit sargasses Martinique et Guadeloupe. Intégrez l'état des plages en temps réel sur votre site d'hôtel, location ou blog voyage.">
+  <link rel="canonical" href="https://sargasses-martinique.com/widget/">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Anton&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
+    body { font-family: 'Bricolage Grotesque', sans-serif; background: #FDFCF7; color: #0D0D0D; font-size: 17px; line-height: 1.65 }
+    header { background: #0D0D0D; padding: 14px 24px; display: flex; align-items: center; gap: 12px }
+    header a { color: #fff; text-decoration: none; font-family: Anton, sans-serif; font-size: 20px; letter-spacing: -.02em }
+    header span { color: #E8A800 }
+    .back { color: rgba(255,255,255,.6); font-size: 13px; text-decoration: none; margin-left: auto }
+    main { max-width: 800px; margin: 0 auto; padding: 48px 20px 80px }
+    h1 { font-family: Anton, sans-serif; font-size: clamp(28px,5vw,42px); letter-spacing: -.02em; text-transform: uppercase; line-height: 1.1; margin-bottom: 16px }
+    .sub { color: #686868; font-size: 15px; margin-bottom: 40px }
+    h2 { font-family: Anton, sans-serif; font-size: 20px; text-transform: uppercase; letter-spacing: -.01em; margin: 40px 0 12px }
+    p { margin-bottom: 16px }
+    .demo-frame { border: 1px solid rgba(0,0,0,.08); border-radius: 12px; overflow: hidden; margin: 24px 0 }
+    pre { background: #1a1a1a; color: #e0e0e0; padding: 20px; border-radius: 12px; overflow-x: auto; font-size: 14px; line-height: 1.5; margin: 16px 0 }
+    code { font-family: 'JetBrains Mono', monospace }
+    .copy-btn { background: linear-gradient(158deg, #FFE47A 0%, #FFC72C 40%, #E89400 100%); border: none; padding: 10px 24px; border-radius: 100px; font-weight: 700; cursor: pointer; font-size: 14px; margin-top: 8px }
+    .beaches-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; margin: 16px 0 }
+    .beaches-list code { background: #f0f0f0; padding: 4px 8px; border-radius: 6px; font-size: 13px }
+    .benefit { display: flex; gap: 12px; align-items: start; margin-bottom: 16px; padding: 16px; background: #fff; border-radius: 12px; border: 1px solid rgba(0,0,0,.05) }
+    .benefit-icon { font-size: 24px; flex-shrink: 0 }
+    .benefit strong { display: block; margin-bottom: 2px }
+    .benefit p { margin: 0; font-size: 14px; color: #686868 }
+    footer { text-align: center; padding: 24px; color: #686868; font-size: 13px; border-top: 1px solid rgba(0,0,0,.06) }
+    footer a { color: #009E8E; text-decoration: none }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/">Sargasses <span>Martinique</span></a>
+    <a class="back" href="/">← Retour à la carte</a>
+  </header>
+  <main>
+    <h1>Widget sargasses gratuit pour votre site</h1>
+    <p class="sub">Hôtel, location, blog voyage — affichez l'état des plages en temps réel. Données satellite Copernicus, mises à jour 4x/jour. Gratuit, sans inscription.</p>
+
+    <h2>Aperçu</h2>
+    <div class="demo-frame">
+      <iframe src="/widget/embed/anse-mitan/" width="100%" height="90" frameborder="0" style="border:0"></iframe>
+    </div>
+
+    <h2>Comment l'intégrer</h2>
+    <p>Copiez ce code HTML et collez-le sur votre site. Remplacez <code>anse-mitan</code> par le slug de la plage souhaitée.</p>
+    <pre><code>&lt;iframe
+  src="https://sargasses-martinique.com/widget/embed/anse-mitan/"
+  width="100%" height="90"
+  frameborder="0"
+  title="Sargasses Anse Mitan - état en temps réel"
+&gt;&lt;/iframe&gt;</code></pre>
+    <button class="copy-btn" onclick="navigator.clipboard.writeText(document.querySelector('pre code').textContent);this.textContent='Copié !'">Copier le code</button>
+
+    <h2>Pourquoi l'utiliser</h2>
+    <div class="benefit">
+      <span class="benefit-icon">🛰️</span>
+      <div>
+        <strong>Données satellite réelles</strong>
+        <p>Indice AFAI Copernicus Marine, pas du déclaratif. Mis à jour 4 fois par jour automatiquement.</p>
+      </div>
+    </div>
+    <div class="benefit">
+      <span class="benefit-icon">⚡</span>
+      <div>
+        <strong>Ultra-léger</strong>
+        <p>Iframe de 90px de haut, aucun JavaScript à charger, aucun impact sur la performance de votre site.</p>
+      </div>
+    </div>
+    <div class="benefit">
+      <span class="benefit-icon">🎨</span>
+      <div>
+        <strong>S'adapte à votre design</strong>
+        <p>Fond transparent, taille flexible. Fonctionne sur mobile et desktop.</p>
+      </div>
+    </div>
+
+    <h2>Plages disponibles</h2>
+    <p><strong>Martinique :</strong></p>
+    <div class="beaches-list">
+      <code>grande-anse</code><code>anse-mitan</code><code>anse-noire</code>
+      <code>tartane</code><code>anse-madame</code><code>diamant</code>
+      <code>pt-marin</code><code>sainte-anne</code><code>les-salines</code><code>vauclin</code>
+    </div>
+    <p><strong>Guadeloupe</strong> (utiliser sargasses-guadeloupe.com) :</p>
+    <div class="beaches-list">
+      <code>gp-grande-anse</code><code>gp-malendure</code><code>gp-sainte-anne</code>
+      <code>gp-pt-chateaux</code><code>gp-gosier</code><code>gp-caravelle</code>
+      <code>gp-bas-du-fort</code><code>gp-deshaies</code><code>gp-moule</code><code>gp-vieux-fort</code>
+    </div>
+
+    <h2>Contact partenariat</h2>
+    <p>Vous gérez un hôtel, une agence de location ou un blog voyage aux Antilles ? Nous pouvons créer un widget personnalisé avec votre logo. Contactez-nous à <strong>contact@sargasses-martinique.com</strong>.</p>
+  </main>
+  <footer>
+    <p>Source : données satellite Copernicus Marine — <a href="/">sargasses-martinique.com</a></p>
+  </footer>
+</body>
+</html>
