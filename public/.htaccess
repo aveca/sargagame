@@ -217,6 +217,14 @@ Header set Expires "0"
 </FilesMatch>
 </IfModule>
 
+# Hashed assets (JS/CSS in /assets/) — immutable, cache 1 year
+# The "immutable" directive tells browsers AND Cloudflare to never revalidate
+<IfModule mod_headers.c>
+<FilesMatch "\.(js|css)$">
+Header set Cache-Control "public, max-age=31536000, immutable"
+</FilesMatch>
+</IfModule>
+
 <IfModule mod_expires.c>
 ExpiresActive On
 ExpiresByType text/html "access plus 0 seconds"
