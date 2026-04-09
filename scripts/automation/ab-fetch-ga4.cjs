@@ -187,24 +187,34 @@ async function main() {
   console.log(`Date: ${new Date().toISOString()}\n`)
 
   const analyticsdata = getAnalyticsData()
-  const propertyId = process.env.GA4_PROPERTY_ID_MQ
+  const propertyIds = [
+    { key: 'MQ', id: process.env.GA4_PROPERTY_ID_MQ },
+    { key: 'GP', id: process.env.GA4_PROPERTY_ID_GP },
+  ].filter(p => p.id)
 
   const tests = []
   let anyData = false
 
-  // Try GA4 first
-  if (analyticsdata && propertyId) {
+  // Try GA4 — query both MQ and GP properties, merge results
+  if (analyticsdata && propertyIds.length) {
     for (const test of TESTS) {
-      console.log(`Fetching ${test.id} from GA4...`)
-      const data = await fetchTestData(analyticsdata, propertyId, test)
-      if (data) {
-        const total = data.sessions[0] + data.sessions[1]
-        if (total > 0) {
-          console.log(`  sessions: ${data.sessions[0]}/${data.sessions[1]} (total=${total})`)
-          console.log(`  conversions: ${data.conversions[0]}/${data.conversions[1]}`)
-          anyData = true
-          tests.push({ id: test.id, variants: test.variants, ...data, metric: test.metric })
+      let merged = { sessions: [0, 0], conversions: [0, 0] }
+      for (const prop of propertyIds) {
+        console.log(`Fetching ${test.id} from GA4 ${prop.key}...`)
+        const data = await fetchTestData(analyticsdata, prop.id, test)
+        if (data) {
+          merged.sessions[0] += data.sessions[0]
+          merged.sessions[1] += data.sessions[1]
+          merged.conversions[0] += data.conversions[0]
+          merged.conversions[1] += data.conversions[1]
         }
+      }
+      const total = merged.sessions[0] + merged.sessions[1]
+      if (total > 0) {
+        console.log(`  sessions: ${merged.sessions[0]}/${merged.sessions[1]} (total=${total})`)
+        console.log(`  conversions: ${merged.conversions[0]}/${merged.conversions[1]}`)
+        anyData = true
+        tests.push({ id: test.id, variants: test.variants, ...merged, metric: test.metric })
       }
     }
   }

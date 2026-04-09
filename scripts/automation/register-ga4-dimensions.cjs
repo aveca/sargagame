@@ -108,45 +108,53 @@ async function main() {
     process.exit(1)
   }
 
-  const propertyId = process.env.GA4_PROPERTY_ID_MQ
-  if (!propertyId) {
-    console.error('ERROR: GA4_PROPERTY_ID_MQ env var not set.')
+  const properties = [
+    { key: 'MQ', id: process.env.GA4_PROPERTY_ID_MQ },
+    { key: 'GP', id: process.env.GA4_PROPERTY_ID_GP },
+  ].filter(p => p.id)
+
+  if (!properties.length) {
+    console.error('ERROR: No GA4 property IDs set (need GA4_PROPERTY_ID_MQ or GA4_PROPERTY_ID_GP).')
     process.exit(1)
   }
 
   const sa = JSON.parse(raw)
   console.log(`Service account: ${sa.client_email}`)
-  console.log(`GA4 property: ${propertyId}\n`)
+  console.log(`Properties: ${properties.map(p => `${p.key}=${p.id}`).join(', ')}\n`)
 
   const token = await getAccessToken(sa)
   console.log('Access token obtained.\n')
 
-  // First list existing dimensions to avoid duplicates
-  const existing = await ga4Request('GET', `/v1beta/properties/${propertyId}/customDimensions?pageSize=100`, token)
-  let existingNames = []
-  try {
-    const parsed = JSON.parse(existing.body)
-    existingNames = (parsed.customDimensions || []).map(d => d.parameterName)
-    console.log(`Existing dimensions: ${existingNames.length}`)
-  } catch { /* ignore */ }
+  for (const prop of properties) {
+    console.log(`\n── ${prop.key} (property ${prop.id}) ──`)
 
-  for (const dim of DIMENSIONS) {
-    if (existingNames.includes(dim.parameterName)) {
-      console.log(`SKIP: ${dim.parameterName} (already exists)`)
-      continue
-    }
+    // First list existing dimensions to avoid duplicates
+    const existing = await ga4Request('GET', `/v1beta/properties/${prop.id}/customDimensions?pageSize=100`, token)
+    let existingNames = []
+    try {
+      const parsed = JSON.parse(existing.body)
+      existingNames = (parsed.customDimensions || []).map(d => d.parameterName)
+      console.log(`Existing dimensions: ${existingNames.length}`)
+    } catch { /* ignore */ }
 
-    const result = await ga4Request('POST', `/v1beta/properties/${propertyId}/customDimensions`, token, {
-      parameterName: dim.parameterName,
-      displayName: dim.displayName,
-      description: dim.description,
-      scope: 'EVENT',
-    })
+    for (const dim of DIMENSIONS) {
+      if (existingNames.includes(dim.parameterName)) {
+        console.log(`SKIP: ${dim.parameterName} (already exists)`)
+        continue
+      }
 
-    if (result.status === 200 || result.status === 201) {
-      console.log(`OK: ${dim.parameterName} → ${dim.displayName}`)
-    } else {
-      console.log(`FAIL (${result.status}): ${dim.parameterName} → ${result.body.slice(0, 200)}`)
+      const result = await ga4Request('POST', `/v1beta/properties/${prop.id}/customDimensions`, token, {
+        parameterName: dim.parameterName,
+        displayName: dim.displayName,
+        description: dim.description,
+        scope: 'EVENT',
+      })
+
+      if (result.status === 200 || result.status === 201) {
+        console.log(`OK: ${dim.parameterName} → ${dim.displayName}`)
+      } else {
+        console.log(`FAIL (${result.status}): ${dim.parameterName} → ${result.body.slice(0, 200)}`)
+      }
     }
   }
 

@@ -243,6 +243,108 @@ async function sendAllPushNotifications(alerts, goodNews) {
   return results
 }
 
+// ── Proactive forecast push notifications ────────────────────
+
+/**
+ * Sends proactive push based on forecast data:
+ *   1. "Clean tomorrow" — today moderate/avoid, tomorrow clean (conf > 40%)
+ *   2. "Weekend outlook" — Friday only, count of clean beaches for Sat+Sun
+ *   3. "Degradation incoming" — today clean, tomorrow moderate/avoid (conf > 40%)
+ */
+async function sendProactiveForecastPush(sargassum) {
+  if (!sargassum.weekly) {
+    console.log('[FORECAST-PUSH] No weekly forecast data — skipping.')
+    return []
+  }
+
+  const results = []
+  const now = new Date()
+  const dayOfWeek = now.getDay() // 0=Sun, 5=Fri
+  const MIN_CONFIDENCE = 40
+
+  // Group forecast improvements/degradations by island
+  const improvements = { mq: [], gp: [] }
+  const degradations = { mq: [], gp: [] }
+
+  for (const [beachId, data] of Object.entries(sargassum.weekly)) {
+    if (!data.forecast || data.forecast.length < 2) continue
+
+    const today = data.forecast[0]
+    const tomorrow = data.forecast[1]
+    if (!today || !tomorrow || tomorrow.confidence < MIN_CONFIDENCE) continue
+
+    const island = beachId.startsWith('gp-') ? 'gp' : 'mq'
+    const name = BEACH_NAMES[beachId] || beachId
+
+    // Clean tomorrow (improvement)
+    if (
+      (today.status === 'moderate' || today.status === 'avoid') &&
+      tomorrow.status === 'clean'
+    ) {
+      improvements[island].push(name)
+    }
+
+    // Degradation incoming
+    if (
+      today.status === 'clean' &&
+      (tomorrow.status === 'moderate' || tomorrow.status === 'avoid')
+    ) {
+      degradations[island].push(name)
+    }
+  }
+
+  // Send "clean tomorrow" push (max 1 per island)
+  for (const island of ['mq', 'gp']) {
+    if (improvements[island].length > 0) {
+      const count = improvements[island].length
+      const names = improvements[island].slice(0, 3).join(', ')
+      const msg = count === 1
+        ? `\u2600\ufe0f ${names} sera propre demain ! Previsions satellite.`
+        : `\u2600\ufe0f ${count} plages propres demain : ${names}${count > 3 ? '...' : ''}. Vois la carte.`
+      const res = await sendPushNotification(island, msg, 'Bonne nouvelle demain')
+      results.push({ type: 'forecast-improvement', island, count, ...res })
+    }
+
+    if (degradations[island].length > 0) {
+      const count = degradations[island].length
+      const names = degradations[island].slice(0, 3).join(', ')
+      const msg = count === 1
+        ? `\u26a0\ufe0f ${names} risque de se degrader demain. Verifie avant d'y aller.`
+        : `\u26a0\ufe0f ${count} plages a surveiller demain : ${names}${count > 3 ? '...' : ''}. Vois les alternatives.`
+      const res = await sendPushNotification(island, msg, 'Prevision sargasses')
+      results.push({ type: 'forecast-degradation', island, count, ...res })
+    }
+  }
+
+  // Friday: Weekend outlook push
+  if (dayOfWeek === 5) {
+    for (const island of ['mq', 'gp']) {
+      const islandName = island === 'gp' ? 'Guadeloupe' : 'Martinique'
+      let cleanWeekend = 0
+
+      for (const [beachId, data] of Object.entries(sargassum.weekly)) {
+        if ((beachId.startsWith('gp-') ? 'gp' : 'mq') !== island) continue
+        if (!data.forecast || data.forecast.length < 3) continue
+
+        // Check Saturday (index 1) and Sunday (index 2) — relative to Friday
+        const sat = data.forecast[1]
+        const sun = data.forecast[2]
+        if (sat && sat.status === 'clean' && sun && sun.status === 'clean') {
+          cleanWeekend++
+        }
+      }
+
+      if (cleanWeekend > 0) {
+        const msg = `\ud83c\udfd6\ufe0f Ce weekend : ${cleanWeekend} plages propres en ${islandName}. Planifie ta sortie !`
+        const res = await sendPushNotification(island, msg, `Weekend en ${islandName}`)
+        results.push({ type: 'weekend-outlook', island, cleanWeekend, ...res })
+      }
+    }
+  }
+
+  return results
+}
+
 // ── Weekly email digest via Google Sheets webhook ────────────
 
 async function sendWeeklyDigest(currentLevels, alerts, goodNews) {
@@ -365,7 +467,24 @@ async function main() {
     })
   }
 
-  // 4. Weekly email digest (only on Mondays)
+  // 4. Proactive forecast push (clean tomorrow, weekend outlook, degradation warning)
+  try {
+    const forecastResults = await sendProactiveForecastPush(sargassum)
+    const forecastSent = forecastResults.filter(r => r.sent).length
+    if (forecastSent > 0) {
+      console.log(`[FORECAST-PUSH] ${forecastSent} proactive push(es) sent`)
+      appendLog({
+        script: 'send-notifications',
+        action: 'forecast-push-sent',
+        count: forecastSent,
+        details: forecastResults,
+      })
+    }
+  } catch (e) {
+    console.error(`[ERROR] Forecast push failed: ${e.message}`)
+  }
+
+  // 5. Weekly email digest (only on Mondays)
   try {
     const digestResult = await sendWeeklyDigest(currentLevels, alerts, goodNews)
     if (digestResult.sent) {
