@@ -396,6 +396,41 @@
         "https://sargasses-guadeloupe.com/plages/anse-laborde/",
         "https://sargasses-guadeloupe.com/plages/plage-du-souffleur/"
       ]
+    },
+    {
+      "timestamp": "2026-04-09T17:22:47.375Z",
+      "dryRun": false,
+      "script": "seo-audit",
+      "action": "data-collection",
+      "results": {
+        "mq": {
+          "indexed": 3,
+          "total": 30,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 0,
+          "cwvIssues": 0
+        },
+        "gp": {
+          "indexed": 3,
+          "total": 30,
+          "notIndexed": 0,
+          "lowCtr": 6,
+          "highBounce": 0,
+          "cwvIssues": 0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-04-09T17:22:47.429Z",
+      "dryRun": false,
+      "script": "ux-audit",
+      "action": "report-generated",
+      "issues": {
+        "totalIssues": 0,
+        "critical": 0,
+        "warnings": 0
+      }
     }
   ]
 }
