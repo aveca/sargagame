@@ -172,6 +172,27 @@ function doPost(e) {
       return jsonResponse({ ok: true, action: 'email_tracked' })
     }
 
+    // 6b. Analytics events fallback (when GA4 returns 503)
+    if (type === 'analytics_event') {
+      var aSheet = getOrCreateSheet('analytics_events', [
+        'date', 'event_name', 'island', 'ab_lock1', 'ab_modal1', 'ab_onb1', 'ab_free1', 'ab_vp1', 'ab_price1', 'raw_params'
+      ])
+      var p = payload.p || {}
+      aSheet.appendRow([
+        new Date(payload.t || Date.now()).toISOString(),
+        payload.e || '',
+        payload.island || 'MQ',
+        p.ab_lock1 != null ? p.ab_lock1 : '',
+        p.ab_modal1 != null ? p.ab_modal1 : '',
+        p.ab_onb1 != null ? p.ab_onb1 : '',
+        p.ab_free1 != null ? p.ab_free1 : '',
+        p.ab_vp1 != null ? p.ab_vp1 : '',
+        p.ab_price1 != null ? p.ab_price1 : '',
+        JSON.stringify(p).substring(0, 500)
+      ])
+      return jsonResponse({ ok: true, action: 'analytics_event_saved' })
+    }
+
     // 7. Resend webhook events (email.delivered, email.opened, email.clicked, email.bounced, etc.)
     if (type && type.startsWith('email.')) {
       var eventData = payload.data || {}
