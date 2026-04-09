@@ -213,7 +213,7 @@ async function sendPushNotification(island, message, heading) {
   const result = await httpsPost(
     'https://onesignal.com/api/v1/notifications',
     payload,
-    { Authorization: `Basic ${config.apiKey}` }
+    { Authorization: `Key ${config.apiKey}` }
   )
 
   if (result.status === 200 || result.status === 201) {
