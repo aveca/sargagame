@@ -212,8 +212,8 @@ Sitemap: https://${domain}/sitemap.xml
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/og-image.png" />
-    <title>Sargasses Guadeloupe en temps réel · Carte et plages aujourd'hui</title>
-    <meta name="description" content="Sargasses Guadeloupe : où se baigner aujourd'hui ? Carte en temps réel, prévisions sargasses 7 jours, alertes push. Données satellite Copernicus Marine mises à jour quotidiennement." />
+    <title>Sargasses Guadeloupe en temps réel · Carte plages Sainte-Anne, Le Gosier, Deshaies</title>
+    <meta name="description" content="Sargasses Guadeloupe : où se baigner en Grande-Terre et Basse-Terre ? Carte en temps réel des 82 plages, prévisions 7 jours, alertes push. Sainte-Anne, Le Gosier, Malendure — données satellite mises à jour 4x/jour." />
     <link rel="canonical" href="https://sargasses-guadeloupe.com/" />
     <link rel="alternate" hreflang="fr" href="https://sargasses-guadeloupe.com/" />
     <link rel="alternate" hreflang="en" href="https://sargasses-guadeloupe.com/en/" />
@@ -221,8 +221,8 @@ Sitemap: https://${domain}/sitemap.xml
     <meta name="geo.region" content="GP" />
     <meta name="geo.placename" content="Guadeloupe" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Sargasses Guadeloupe en temps réel · Carte et plages aujourd'hui" />
-    <meta property="og:description" content="Sargasses Guadeloupe : où se baigner aujourd'hui ? Carte en temps réel, prévisions 7 jours, alertes push." />
+    <meta property="og:title" content="Sargasses Guadeloupe en temps réel · Carte plages Sainte-Anne, Le Gosier, Deshaies" />
+    <meta property="og:description" content="Sargasses Guadeloupe : où se baigner en Grande-Terre et Basse-Terre ? 82 plages, prévisions 7 jours, alertes push." />
     <meta property="og:url" content="https://sargasses-guadeloupe.com/" />
     <meta property="og:locale" content="fr_FR" />
     <meta property="og:locale:alternate" content="en_US" />
@@ -232,8 +232,8 @@ Sitemap: https://${domain}/sitemap.xml
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Carte des sargasses en Guadeloupe - plages propres et à éviter" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Sargasses Guadeloupe en temps réel · Carte et plages aujourd'hui" />
-    <meta name="twitter:description" content="Sargasses Guadeloupe : où se baigner aujourd'hui ? Carte en temps réel, prévisions 7 jours, alertes push." />
+    <meta name="twitter:title" content="Sargasses Guadeloupe en temps réel · Carte plages Sainte-Anne, Le Gosier, Deshaies" />
+    <meta name="twitter:description" content="Sargasses Guadeloupe : où se baigner en Grande-Terre et Basse-Terre ? 82 plages, prévisions 7 jours, alertes push." />
     <meta name="twitter:image" content="https://sargasses-guadeloupe.com/og-image.png" />
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"WebApplication","name":"Sargasses Guadeloupe en temps réel","description":"Carte et état des plages Guadeloupe aujourd'hui. Sargasses, plages propres, prévisions 7 jours.","url":"https://sargasses-guadeloupe.com/","applicationCategory":"EnvironmentApplication","operatingSystem":"Web","inLanguage":["fr","en"],"dateModified":"${new Date().toISOString().slice(0,10)}","datePublished":"2026-02-21","publisher":{"@type":"Organization","name":"Sargasses Guadeloupe"}}
