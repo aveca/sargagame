@@ -9,7 +9,7 @@
  */
 const { readFileSync, existsSync } = require('fs')
 const { resolve } = require('path')
-const { getIndexing } = require('./lib/google-auth.cjs')
+const { getIndexing, getSearchConsole } = require('./lib/google-auth.cjs')
 const { SITES } = require('./lib/config.cjs')
 const { DRY_RUN, LIMITS, readLog, appendLog } = require('./lib/safety.cjs')
 
@@ -48,6 +48,23 @@ async function main() {
   if (!indexing) {
     console.error('No Google credentials found. Set GOOGLE_SERVICE_ACCOUNT_JSON env var.')
     process.exit(1)
+  }
+
+  // Submit sitemaps to GSC (idempotent — Google ignores if already submitted)
+  const sc = getSearchConsole()
+  if (sc) {
+    for (const [key, site] of Object.entries(SITES)) {
+      try {
+        await sc.sitemaps.submit({
+          siteUrl: `https://${site.domain}`,
+          feedpath: `https://${site.domain}/sitemap.xml`,
+        })
+        console.log(`GSC sitemap submitted: ${site.domain}/sitemap.xml`)
+      } catch (e) {
+        console.log(`GSC sitemap submit ${site.domain}: ${e.message}`)
+      }
+    }
+    console.log()
   }
 
   const { dailyCount, recentlySubmitted } = getRecentSubmissions()
