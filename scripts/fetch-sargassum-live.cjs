@@ -451,7 +451,9 @@ function applyBeachAccumulation(levels, dir) {
     let consecutiveClean = 0
     for (const entry of sortedRecent) {
       const bl = entry.levels.find(l => l.id === level.id)
-      if (!bl || bl.afai >= 0.10) break
+      if (!bl) break
+      if (bl.afai <= 0.05) continue // no satellite data (NO_DATA_AFAI) — skip, don't count
+      if (bl.afai >= 0.10) break    // actual sargassum detected — break streak
       consecutiveClean++
     }
     const requiredCleanDays = rawPeak >= 0.60 ? 6 : rawPeak >= 0.40 ? 5 : rawPeak >= 0.25 ? 4 : 3
