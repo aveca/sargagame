@@ -12,6 +12,7 @@
     "verify-ftp": "node scripts/verify-ftp-ready.cjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.87.0",
     "googleapis": "^171.4.0",
     "leaflet": "^1.9.4",
     "react": "^18.2.0",
