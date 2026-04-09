@@ -119,6 +119,7 @@ Sitemap: https://${domain}/sitemap.xml
       //    patterns from double-replacement (→ "Guadeloupe et Guadeloupe"). We swap GP first on the GP site.
       content = content.replace(/Martinique et Guadeloupe/g, '##GP_ET_MQ##')
       content = content.replace(/Martinique &amp; Guadeloupe/g, '##GP_AMP_MQ##')
+      content = content.replace(/Martinique & Guadeloupe/g, '##GP_AMPRAW_MQ##')
       content = content.replace(/Martinique and Guadeloupe/g, '##GP_AND_MQ##')
 
       // 1. Domain: sargasses-martinique.com → sargasses-guadeloupe.com (canonicals, OG urls, hreflang, JSON-LD, breadcrumbs, sitemaps)
@@ -173,6 +174,7 @@ Sitemap: https://${domain}/sitemap.xml
       // Restore protected bi-island phrases (GP listed first on the GP site)
       content = content.replace(/##GP_ET_MQ##/g, 'Guadeloupe et Martinique')
       content = content.replace(/##GP_AMP_MQ##/g, 'Guadeloupe &amp; Martinique')
+      content = content.replace(/##GP_AMPRAW_MQ##/g, 'Guadeloupe & Martinique')
       content = content.replace(/##GP_AND_MQ##/g, 'Guadeloupe and Martinique')
 
       if (content !== before) {
