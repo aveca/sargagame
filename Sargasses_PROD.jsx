@@ -2227,7 +2227,7 @@ function PremiumModal({onClose,lang,source,allBeaches,sargData}){
     if(!sargData?.weekly||!allBeaches)return 3
     let count=0
     for(const b of allBeaches){
-      const w=sargData.weekly?.[b.sarg_id]
+      const w=sargData.weekly?.[BEACH_TO_SARG[b.id]]
       if(w?.forecast?.length>=2&&w.forecast[0].status!==w.forecast[w.forecast.length-1].status)count++
     }
     return Math.max(count,1)
