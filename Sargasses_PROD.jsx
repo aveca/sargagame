@@ -2478,15 +2478,18 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
       </div>
 
       {/* Live indicator — shows LIVE or Estimation based on data source */}
-      <div style={{display:"flex",alignItems:"center",gap:6,
+      <a href="https://marine.copernicus.eu" target="_blank" rel="noopener noreferrer"
+        onClick={()=>track("sg_live_badge_click",{source:dataSource})}
+        style={{display:"flex",alignItems:"center",gap:6,
           padding:"6px 12px",borderRadius:100,
           background:"var(--sg-card,#fff)",
           boxShadow:"0 2px 8px rgba(0,0,0,.06)",
           border:`1px solid ${isLive?"var(--sg-border)":"rgba(184,122,0,.2)"}`,
-          fontSize:11,fontWeight:600,color:isLive?C.teal:C.amber}}>
+          fontSize:11,fontWeight:600,color:isLive?C.teal:C.amber,
+          textDecoration:"none",cursor:"pointer"}}>
           <span className={isLive?"pulse":""} style={{width:8,height:8,borderRadius:4,background:srcColor}}/>
           {srcLabel} · {beachCount||47} {lang==="en"?"beaches":"plages"}
-        </div>
+        </a>
 
       {/* Theme + Lang */}
       <div style={{display:"flex",gap:4}}>
