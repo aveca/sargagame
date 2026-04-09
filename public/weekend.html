@@ -73,7 +73,13 @@ h1 span{background:linear-gradient(135deg,#E8A800,#FFC72C);-webkit-background-cl
     <b>Gratuit</b> · Chaque vendredi · Desabonnement en 1 clic<br>
     Donnees satellite NOAA mises a jour 4x/jour · 135 plages
   </p>
-  <p id="success" style="display:none;color:#16A34A;font-weight:700;font-size:14px;margin-top:12px">Inscrit ! Tu recevras ton premier bulletin vendredi.</p>
+  <p id="season" style="display:none;margin-top:12px;padding:8px 14px;background:rgba(232,82,42,.08);border:1px solid rgba(232,82,42,.2);border-radius:10px;font-size:12px;font-weight:700;color:#E8522A">
+    🔴 Saison sargasses en cours — les plages changent chaque jour
+  </p>
+  <div id="success" style="display:none;text-align:center;margin-top:16px">
+    <p style="color:#16A34A;font-weight:700;font-size:14px;margin-bottom:12px">Inscrit ! Tu recevras ton premier bulletin vendredi.</p>
+    <a href="/" style="display:inline-block;padding:12px 24px;background:#0D1E1C;color:#fff;border-radius:12px;font-size:14px;font-weight:600;text-decoration:none">Voir la carte en direct</a>
+  </div>
 </div>
 
 <script>
@@ -90,13 +96,9 @@ document.getElementById('signup').addEventListener('submit', function(e) {
   document.getElementById('success').style.display = 'block'
   try { gtag('event', 'sg_weekend_signup', {island: island, source: 'landing'}) } catch(e) {}
 })
-// Auto-detect GP from hostname
-if(location.hostname.includes('guadeloupe')){
-  document.getElementById('cta-mq').href='https://t.me/sargasses_guadeloupe'
-  document.getElementById('cta-mq').textContent='Rejoindre — Guadeloupe'
-  document.getElementById('cta-gp').href='https://t.me/sargasses_martinique'
-  document.getElementById('cta-gp').textContent='Martinique ? Rejoindre ici'
-}
+// Show season urgency banner (April-September)
+var m = new Date().getMonth()
+if (m >= 3 && m <= 8) document.getElementById('season').style.display = 'block'
 </script>
 </body>
 </html>
