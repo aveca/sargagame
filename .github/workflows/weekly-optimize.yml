@@ -2,12 +2,10 @@ name: Weekly Optimization
 
 on:
   schedule:
+    # 7j/7 — Optimisation continue max agressif
     # Monday handled by weekly-seo-automation.yml (more comprehensive)
-    # Mardi 10h UTC — Email cleanup + drip check
-    - cron: '0 10 * * 2'
-    # Mercredi 10h UTC — Data quality + forecast accuracy
-    - cron: '0 10 * * 3'
-    # Vendredi 14h UTC (10h MQ) — Weekend prep
+    # Mardi-Dimanche 10h UTC (6h MQ) + Vendredi bonus 14h UTC (weekend prep)
+    - cron: '0 10 * * *'
     - cron: '0 14 * * 5'
   workflow_dispatch:
     inputs:
@@ -49,8 +47,10 @@ jobs:
               1) echo "task=monday" >> $GITHUB_OUTPUT ;;
               2) echo "task=tuesday" >> $GITHUB_OUTPUT ;;
               3) echo "task=wednesday" >> $GITHUB_OUTPUT ;;
+              4) echo "task=thursday" >> $GITHUB_OUTPUT ;;
               5) echo "task=friday" >> $GITHUB_OUTPUT ;;
-              *) echo "task=none" >> $GITHUB_OUTPUT ;;
+              6) echo "task=saturday" >> $GITHUB_OUTPUT ;;
+              0) echo "task=sunday" >> $GITHUB_OUTPUT ;;
             esac
           fi
           echo "Running: $(cat $GITHUB_OUTPUT)"
@@ -141,6 +141,43 @@ jobs:
           git diff --cached --quiet || git commit -m "chore: wednesday data quality check $(date -u +'%Y-%m-%d')"
           git push || true
 
+      # ── JEUDI: A/B mid-week check + email stats ──
+      - name: "[Thursday] Fetch A/B data from GA4 (mid-week)"
+        if: steps.day.outputs.task == 'thursday'
+        continue-on-error: true
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GA4_PROPERTY_ID_MQ: ${{ secrets.GA4_PROPERTY_ID_MQ }}
+        run: node scripts/automation/ab-fetch-ga4.cjs
+
+      - name: "[Thursday] A/B test evaluate (mid-week)"
+        if: steps.day.outputs.task == 'thursday'
+        continue-on-error: true
+        run: node scripts/automation/ab-evaluate.cjs
+
+      - name: "[Thursday] Email stats snapshot"
+        if: steps.day.outputs.task == 'thursday'
+        continue-on-error: true
+        run: |
+          RESULT=$(curl -sL "${{ secrets.APPS_SCRIPT_URL }}?action=email_stats")
+          echo "Email stats: $RESULT"
+
+      - name: "[Thursday] Health check"
+        if: steps.day.outputs.task == 'thursday'
+        continue-on-error: true
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: node scripts/automation/health-check.cjs
+
+      - name: "[Thursday] Commit A/B data"
+        if: steps.day.outputs.task == 'thursday'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          [ -f scripts/automation/data/ab-results.json ] && git add scripts/automation/data/ab-results.json
+          git diff --cached --quiet || git commit -m "chore: thursday A/B mid-week check $(date -u +'%Y-%m-%d')"
+          git push || true
+
       # ── VENDREDI: Weekend prep ──
       - name: "[Friday] Fetch fresh data"
         if: steps.day.outputs.task == 'friday'
@@ -157,6 +194,67 @@ jobs:
         run: |
           npm run build
           node scripts/prepare-ftp.cjs
+
+      # ── SAMEDI: Weekend monitoring actif ──
+      - name: "[Saturday] Health check (weekend monitoring)"
+        if: steps.day.outputs.task == 'saturday'
+        continue-on-error: true
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: node scripts/automation/health-check.cjs
+
+      - name: "[Saturday] Backtest forecast accuracy"
+        if: steps.day.outputs.task == 'saturday'
+        continue-on-error: true
+        run: node scripts/automation/backtest-forecast.cjs
+
+      - name: "[Saturday] Daily stats + trend detection"
+        if: steps.day.outputs.task == 'saturday'
+        continue-on-error: true
+        run: node scripts/automation/daily-stats-check.cjs
+
+      - name: "[Saturday] Bounce cleanup"
+        if: steps.day.outputs.task == 'saturday'
+        continue-on-error: true
+        run: |
+          RESULT=$(curl -sL "${{ secrets.APPS_SCRIPT_URL }}?action=clean_bounces")
+          echo "Bounce cleanup: $RESULT"
+
+      - name: "[Saturday] Commit weekend data"
+        if: steps.day.outputs.task == 'saturday'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add scripts/automation/data/daily-metrics.json scripts/automation/data/backtest-results.json || true
+          git diff --cached --quiet || git commit -m "chore: saturday monitoring $(date -u +'%Y-%m-%d')"
+          git push || true
+
+      # ── DIMANCHE: Pre-Monday prep (données fraîches pour SEO lundi) ──
+      - name: "[Sunday] Health check"
+        if: steps.day.outputs.task == 'sunday'
+        continue-on-error: true
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: node scripts/automation/health-check.cjs
+
+      - name: "[Sunday] Daily stats snapshot (pre-Monday baseline)"
+        if: steps.day.outputs.task == 'sunday'
+        continue-on-error: true
+        run: node scripts/automation/daily-stats-check.cjs
+
+      - name: "[Sunday] Forecast backtest"
+        if: steps.day.outputs.task == 'sunday'
+        continue-on-error: true
+        run: node scripts/automation/backtest-forecast.cjs
+
+      - name: "[Sunday] Commit Sunday data"
+        if: steps.day.outputs.task == 'sunday'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add scripts/automation/data/daily-metrics.json scripts/automation/data/backtest-results.json || true
+          git diff --cached --quiet || git commit -m "chore: sunday pre-monday prep $(date -u +'%Y-%m-%d')"
+          git push || true
 
       # ── Deploy (Monday + Friday) ──
       - name: Commit changes

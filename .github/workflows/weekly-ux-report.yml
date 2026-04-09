@@ -2,8 +2,8 @@ name: Weekly UX Report
 
 on:
   schedule:
-    # Jeudi 7h Martinique (UTC-4) = 11h UTC
-    - cron: '0 11 * * 4'
+    # 2x/sem: Mardi + Vendredi 7h Martinique (UTC-4) = 11h UTC
+    - cron: '0 11 * * 2,5'
   workflow_dispatch:
 
 permissions:

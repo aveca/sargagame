@@ -2,8 +2,8 @@ name: Weekly SEO Automation
 
 on:
   schedule:
-    # Lundi 7h Martinique (UTC-4) = 11h UTC
-    - cron: '0 11 * * 1'
+    # 2x/sem: Lundi + Jeudi 7h Martinique (UTC-4) = 11h UTC
+    - cron: '0 11 * * 1,4'
   workflow_dispatch: # Déclenchement manuel possible
 
 permissions:
