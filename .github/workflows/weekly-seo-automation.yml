@@ -112,7 +112,7 @@ jobs:
           [ -f scripts/automation/data/ab-results.json ] && git add scripts/automation/data/ab-results.json
           [ -f scripts/automation/ab-results.json ] && git add scripts/automation/ab-results.json
           git diff --cached --quiet || git commit -m "seo: weekly automation $(date -u +'%Y-%m-%d')"
-          git push || (echo "::warning::git push failed — retrying with rebase" && git pull --rebase && git push)
+          git push || (echo "::warning::git push failed — retrying with rebase" && git pull --rebase --autostash && git push)
 
   # ── Notify on failure ──────────────────────────────────
   notify-failure:

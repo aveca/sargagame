@@ -393,12 +393,14 @@ button:active,a:active,[role="button"]:active{transform:scale(.96)!important;opa
   padding:14px 28px;cursor:pointer;position:relative;overflow:hidden;
   font-family:'Bricolage Grotesque',system-ui,sans-serif;
   box-shadow:0 2px 12px rgba(232,168,0,.3);transition:transform .15s,box-shadow .15s;
+  will-change:transform;
 }
 .gbtn:active{transform:scale(.95);box-shadow:0 1px 6px rgba(232,168,0,.2)}
 .gbtn::after{
   content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
   background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);
   animation:shine 4.5s infinite;
+  will-change:left;
 }
 @keyframes shine{0%,70%{left:-100%}100%{left:100%}}
 
@@ -412,12 +414,13 @@ button:active,a:active,[role="button"]:active{transform:scale(.96)!important;opa
   max-height:85vh;max-height:85dvh;overflow-y:auto;overscroll-behavior:contain;
   -webkit-overflow-scrolling:touch;
   animation:sheetSlideUp .4s cubic-bezier(.32,.72,0,1);
+  will-change:transform;
 }
 @keyframes sheetSlideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .sheet-handle{width:48px;height:5px;border-radius:3px;background:var(--sg-handle,rgba(0,0,0,.2));margin:10px auto 6px;cursor:grab}
 
 /* Backdrop */
-.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:899;animation:fadeIn .25s ease-out;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:899;animation:fadeIn .25s ease-out;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);will-change:opacity}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 
 /* ── ONBOARDING (removed full-screen overlay, now inline coachmark) ── */

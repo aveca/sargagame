@@ -176,7 +176,7 @@ jobs:
           [ -f scripts/automation/data/backtest-results.json ] && git add scripts/automation/data/backtest-results.json
           [ -f public/api/copernicus/forecast-archive.json ] && git add public/api/copernicus/forecast-archive.json
           git diff --cached --quiet || git commit -m "chore: update Copernicus data $(date -u +'%Y-%m-%d %H:%M UTC')"
-          git push || (echo "::warning::git push failed — possible conflict" && git pull --rebase && git push)
+          git push || (echo "::warning::git push failed — possible conflict" && git pull --rebase --autostash && git push)
 
       # ── 4. Deploy Martinique via FTP ──────────────────────
       - name: Deploy Martinique (FTP)
