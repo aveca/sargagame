@@ -52,4 +52,4 @@ jobs:
             [ -f "$f" ] && git add -f "$f"
           done
           git diff --cached --quiet || git commit -m "ux: weekly report $(date -u +'%Y-%m-%d')"
-          git push || (echo "::warning::git push failed — retrying with rebase" && git stash --include-untracked && git pull --rebase && git stash pop && git push)
+          git push || (echo "::warning::git push failed — retrying with rebase" && git pull --rebase && git push)

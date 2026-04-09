@@ -427,6 +427,8 @@ function doGet(e) {
     try {
       var email = (e.parameter.email || '').trim().toLowerCase()
       if (!email) return htmlResponse('Adresse email manquante.')
+      // Sanitize email for safe HTML output
+      var safeEmail = email.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
       var ss = SpreadsheetApp.openById(SHEET_ID)
       var sheet = ss.getSheetByName('emails')
@@ -456,7 +458,7 @@ function doGet(e) {
       if (found) {
         return htmlResponse('<h2 style="color:#16A34A">Desabonnement confirme</h2><p>Tu ne recevras plus d\'emails de Sargasses ' + name + '.</p><p>Tu peux toujours consulter la carte sur <a href="https://sargasses-' + name.toLowerCase() + '.com">sargasses-' + name.toLowerCase() + '.com</a></p>')
       } else {
-        return htmlResponse('<h2>Adresse non trouvee</h2><p>' + email + ' n\'est pas dans notre liste.</p>')
+        return htmlResponse('<h2>Adresse non trouvee</h2><p>' + safeEmail + ' n\'est pas dans notre liste.</p>')
       }
     } catch (err) {
       return htmlResponse('Erreur: ' + err.message)
