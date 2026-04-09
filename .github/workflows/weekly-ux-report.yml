@@ -48,6 +48,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add scripts/automation/data/automation-log.json scripts/automation/data/ux-report.json scripts/automation/data/audit-summary.json scripts/automation/data/audit-full.json
+          for f in scripts/automation/data/automation-log.json scripts/automation/data/ux-report.json scripts/automation/data/audit-summary.json scripts/automation/data/audit-full.json; do
+            [ -f "$f" ] && git add -f "$f"
+          done
           git diff --cached --quiet || git commit -m "ux: weekly report $(date -u +'%Y-%m-%d')"
-          git push || (echo "::warning::git push failed — retrying with rebase" && git pull --rebase && git push)
+          git push || (echo "::warning::git push failed — retrying with rebase" && git stash --include-untracked && git pull --rebase && git stash pop && git push)
