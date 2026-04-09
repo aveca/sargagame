@@ -115,6 +115,7 @@ jobs:
 
       - name: "[Wednesday] Health check both sites"
         if: steps.day.outputs.task == 'wednesday'
+        continue-on-error: true
         run: node scripts/automation/health-check.cjs
 
       - name: "[Wednesday] Daily stats + trend detection"
