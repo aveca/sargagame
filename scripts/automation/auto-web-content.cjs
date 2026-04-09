@@ -106,9 +106,9 @@ async function scrapeNews(query) {
 
 function readSargassumData() {
   const data = readJSON(SARGASSUM_JSON)
-  if (!data || !data.beaches) return null
+  if (!data || (!data.beaches && !data.levels)) return null
 
-  const beaches = data.beaches
+  const beaches = data.levels || data.beaches
   const clean = beaches.filter(b => b.status === 'clean').length
   const moderate = beaches.filter(b => b.status === 'moderate').length
   const avoid = beaches.filter(b => b.status === 'avoid').length
@@ -203,7 +203,7 @@ Réponds uniquement avec le JSON demandé, sans markdown ni code block.`
     const client = new Anthropic.default({ apiKey: ANTHROPIC_API_KEY })
 
     const msg = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-opus-4-6',
       max_tokens: 1200,
       messages: [{ role: 'user', content: userPrompt }],
       system: systemPrompt,
