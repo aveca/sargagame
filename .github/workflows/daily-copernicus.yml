@@ -29,9 +29,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Determine day of week
+      - name: Determine day of week and hour
         id: check_day
-        run: echo "dow=$(date -u +%u)" >> $GITHUB_OUTPUT
+        run: |
+          echo "dow=$(date -u +%u)" >> $GITHUB_OUTPUT
+          echo "hour=$(date -u +%H)" >> $GITHUB_OUTPUT
 
       # ── 1. Fetch LIVE sargassum data (ERDDAP + fallback) ──
       - name: Fetch LIVE sargassum data from ERDDAP
@@ -80,8 +82,8 @@ jobs:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: node scripts/automation/fetch-subscribers.cjs
 
-      - name: Send weekend email bulletin (Fridays only)
-        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && contains('5', steps.check_day.outputs.dow))
+      - name: Send weekend email bulletin (Friday 12h UTC = 8h MQ only)
+        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && steps.check_day.outputs.dow == '5' && steps.check_day.outputs.hour == '12')
         continue-on-error: true
         run: node scripts/automation/email-weekend.cjs
 
