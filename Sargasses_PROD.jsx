@@ -440,9 +440,11 @@ button:active,a:active,[role="button"]:active{transform:scale(.96)!important;opa
 @keyframes beacon{0%,100%{box-shadow:0 0 0 0 rgba(232,82,42,.5)}60%{box-shadow:0 0 0 10px rgba(232,82,42,0)}}
 @keyframes satellite-scan{0%{transform:translateX(-100%)}100%{transform:translateX(400%)}}
 
-/* Scrollbar */
-::-webkit-scrollbar{width:4px}
-::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:2px}
+/* Scrollbar — 8px for touch targets */
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,.18);border-radius:4px}
+::-webkit-scrollbar-track{background:transparent}
+*{scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.18) transparent}
 
 /* Forecast bars — staggered grow-in */
 .fc-bar{border-radius:3px 3px 0 0;animation:barGrow .6s cubic-bezier(.22,1,.36,1) backwards}
