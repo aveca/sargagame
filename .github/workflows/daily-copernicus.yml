@@ -97,8 +97,10 @@ jobs:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         run: node scripts/automation/drip-email.cjs
 
-      - name: Health check (uptime monitoring)
+      - name: Health check (uptime monitoring + staleness alerts)
         continue-on-error: true
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         run: node scripts/automation/health-check.cjs
 
       - name: Backtest forecast accuracy (archive vs observations)
@@ -197,3 +199,35 @@ jobs:
           local-dir: ./guadeloupe-ftp/
           server-dir: ./
           dangerous-clean-slate: false
+
+  # ── Notify on failure ──────────────────────────────────
+  notify-failure:
+    needs: update-and-deploy
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci
+      - name: Send failure alert email
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          WORKFLOW_NAME: 'Daily Copernicus + Deploy'
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: node scripts/automation/notify-failure.cjs
+
+  # ── Auto-retry on failure (once, after 5 min) ─────────
+  retry-on-failure:
+    needs: update-and-deploy
+    if: failure() && github.run_attempt == '1'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait 5 minutes before retry
+        run: sleep 300
+      - name: Retry workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run daily-copernicus.yml --repo ${{ github.repository }} --ref ${{ github.ref }}
