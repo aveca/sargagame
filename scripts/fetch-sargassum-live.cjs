@@ -417,6 +417,7 @@ function applyBeachAccumulation(levels, dir) {
   for (const level of levels) {
     let peakDecayed = 0
     let bestDaysAgo = 0
+    let rawPeak = 0 // undecayed historical peak (for bypass threshold)
 
     for (const entry of history) {
       const daysAgo = (new Date(today) - new Date(entry.date)) / (1000 * 60 * 60 * 24)
@@ -424,6 +425,8 @@ function applyBeachAccumulation(levels, dir) {
 
       const beachEntry = entry.levels.find(l => l.id === level.id)
       if (!beachEntry || beachEntry.afai < 0.15) continue // ignore history with no beaching
+
+      if (beachEntry.afai > rawPeak) rawPeak = beachEntry.afai
 
       // Exponential decay: value decreases by 50% every HALF_LIFE_DAYS
       const decayed = beachEntry.afai * Math.exp(-DECAY_LAMBDA * daysAgo)
@@ -433,8 +436,12 @@ function applyBeachAccumulation(levels, dir) {
       }
     }
 
-    // If satellite shows clean (AFAI < 0.10) for 2+ consecutive recent days,
+    // If satellite shows clean (AFAI < 0.10) for N consecutive recent days,
     // trust the satellite — sargassum has dissipated, skip memory boost.
+    // N scales with the historical peak: a beach at 0.78 (avoid) can't
+    // physically clear in 2 days — cloud cover or satellite gaps would
+    // produce false "clean" readings. Require more confirmation for
+    // higher contamination levels.
     const sortedRecent = history
       .filter(h => {
         const d = (new Date(today) - new Date(h.date)) / (1000 * 60 * 60 * 24)
@@ -447,7 +454,8 @@ function applyBeachAccumulation(levels, dir) {
       if (!bl || bl.afai >= 0.10) break
       consecutiveClean++
     }
-    if (consecutiveClean >= 2) continue // satellite confirmed clean 2+ days
+    const requiredCleanDays = rawPeak >= 0.60 ? 6 : rawPeak >= 0.40 ? 5 : rawPeak >= 0.25 ? 4 : 3
+    if (consecutiveClean >= requiredCleanDays) continue
 
     // Only flag beachMemory when accumulation actually changes the STATUS
     const effectiveAfai = Math.round(peakDecayed * 100) / 100
