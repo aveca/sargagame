@@ -1049,6 +1049,111 @@
           "status": "clean"
         }
       ]
+    },
+    {
+      "date": "2026-04-09",
+      "levels": [
+        {
+          "id": "grande-anse",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "anse-mitan",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "anse-noire",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "tartane",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "anse-madame",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "diamant",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "pt-marin",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "sainte-anne",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "les-salines",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "vauclin",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "gp-grande-anse",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-malendure",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "gp-sainte-anne",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-pt-chateaux",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "gp-gosier",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-caravelle",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-bas-du-fort",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-deshaies",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "gp-moule",
+          "afai": 0.05,
+          "status": "clean"
+        },
+        {
+          "id": "gp-vieux-fort",
+          "afai": 0.05,
+          "status": "clean"
+        }
+      ]
     }
   ],
   "changes": [
