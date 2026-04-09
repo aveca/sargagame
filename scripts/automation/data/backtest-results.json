@@ -21,7 +21,7 @@
     },
     "day3": {
       "statusHitRate": 45,
-      "afaiMAE": 0.164,
+      "afaiMAE": 0.165,
       "avgConfidence": 29,
       "pairs": 20
     }
@@ -89,7 +89,7 @@
     },
     "gp-sainte-anne": {
       "statusHitRate": 50,
-      "afaiMAE": 0.07,
+      "afaiMAE": 0.075,
       "pairs": 6
     },
     "gp-pt-chateaux": {
@@ -104,7 +104,7 @@
     },
     "gp-caravelle": {
       "statusHitRate": 100,
-      "afaiMAE": 0.002,
+      "afaiMAE": 0.003,
       "pairs": 6
     },
     "gp-bas-du-fort": {
@@ -132,7 +132,7 @@
     "statusHitRate": 52,
     "afaiMAE": 0.128
   },
-  "computed": "2026-04-09T21:37:19.324Z",
+  "computed": "2026-04-09T23:12:04.429Z",
   "pairs": [
     {
       "snapshotDate": "2026-04-06",
@@ -451,11 +451,11 @@
         "confidence": 29
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.1
+      "afaiError": 0.11
     },
     {
       "snapshotDate": "2026-04-06",
@@ -604,11 +604,11 @@
         "confidence": 29
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-04-06",
@@ -1250,11 +1250,11 @@
         "confidence": 34
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.04
+      "afaiError": 0.05
     },
     {
       "snapshotDate": "2026-04-07",
@@ -1352,11 +1352,11 @@
         "confidence": 34
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
       "snapshotDate": "2026-04-07",
@@ -1709,11 +1709,11 @@
         "confidence": 47
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-04-08",
@@ -1760,11 +1760,11 @@
         "confidence": 47
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-04-08",
