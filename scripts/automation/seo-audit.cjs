@@ -129,7 +129,6 @@ async function fetchClarityEvents(analyticsdata, propertyId) {
         dimensions: [
           { name: 'eventName' },
           { name: 'pagePath' },
-          { name: 'customEvent:clarity_element_id' },
         ],
         metrics: [
           { name: 'eventCount' },
@@ -146,7 +145,7 @@ async function fetchClarityEvents(analyticsdata, propertyId) {
     return (res.data.rows || []).map(row => ({
       event: row.dimensionValues[0].value,
       page: row.dimensionValues[1]?.value || '',
-      target: row.dimensionValues[2]?.value || '',
+      target: '',
       count: parseInt(row.metricValues[0].value) || 0,
     }))
   } catch (e) {
