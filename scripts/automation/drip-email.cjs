@@ -27,8 +27,9 @@ const SARG_PATH = path.join(__dirname, '../../public/api/copernicus/sargassum.js
 const BEACHES_PATH = path.join(__dirname, '../../public/data/beaches-list.json')
 const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec'
 
+// GP uses MQ verified domain (free plan = 1 domain)
 const FROM_MQ = 'Sargasses Martinique <alerte@sargasses-martinique.com>'
-const FROM_GP = 'Sargasses Guadeloupe <alerte@sargasses-guadeloupe.com>'
+const FROM_GP = 'Sargasses Guadeloupe <alerte@sargasses-martinique.com>'
 const STRIPE_LINK = 'https://buy.stripe.com/6oU3cxgg36J48Ox6ZZ0co0s'
 
 // Drip steps: day threshold + email builder key

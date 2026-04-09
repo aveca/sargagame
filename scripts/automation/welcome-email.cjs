@@ -21,9 +21,9 @@ const SENT_PATH = path.join(__dirname, 'data', 'welcome-sent.json')
 const SARG_PATH = path.join(__dirname, '../../public/api/copernicus/sargassum.json')
 const BEACHES_PATH = path.join(__dirname, '../../public/data/beaches-list.json')
 
-// From address — must match verified domain in Resend
+// From address — GP uses MQ verified domain (free plan = 1 domain)
 const FROM_MQ = 'Sargasses Martinique <alerte@sargasses-martinique.com>'
-const FROM_GP = 'Sargasses Guadeloupe <alerte@sargasses-guadeloupe.com>'
+const FROM_GP = 'Sargasses Guadeloupe <alerte@sargasses-martinique.com>'
 
 function loadJSON(p, fallback) {
   try { return JSON.parse(fs.readFileSync(p, 'utf-8')) } catch { return fallback }
