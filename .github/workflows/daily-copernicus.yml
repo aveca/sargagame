@@ -115,17 +115,17 @@ jobs:
         continue-on-error: true
         run: node scripts/automation/daily-stats-check.cjs
 
-      # ── 2. Build (full rebuild 1x/day at 10h UTC = 6h MQ, or manual) ──
+      # ── 2. Build (full rebuild 1x/day at 9h UTC = 5h MQ, or manual) ──
       - name: Check if full build needed
         id: check_build
         run: |
           HOUR=$(date -u +%H)
-          if [ "$HOUR" = "10" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          if [ "$HOUR" = "09" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "full=true" >> $GITHUB_OUTPUT
           else
             echo "full=false" >> $GITHUB_OUTPUT
           fi
-          echo "Hour: $HOUR, Full build: $([ "$HOUR" = "10" ] && echo yes || echo no)"
+          echo "Hour: $HOUR, Full build: $([ "$HOUR" = "09" ] && echo yes || echo no)"
 
       - name: Build site (Vite)
         if: steps.check_build.outputs.full == 'true'

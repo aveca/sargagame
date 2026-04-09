@@ -79,8 +79,10 @@ jobs:
         run: node scripts/automation/generate-seo-pages.cjs
 
       # ── 6. Rebuild with all SEO changes ──────────────────
-      - name: Build site (Vite)
-        run: npm run build
+      - name: Build site (Vite) + prepare FTP
+        run: |
+          npm run build
+          node scripts/prepare-ftp.cjs
 
       # ── 4. Submit URLs to Google Indexing API ─────────────
       - name: Submit URLs to Google Indexing
@@ -113,6 +115,27 @@ jobs:
           [ -f scripts/automation/ab-results.json ] && git add scripts/automation/ab-results.json
           git diff --cached --quiet || git commit -m "seo: weekly automation $(date -u +'%Y-%m-%d')"
           git push || (echo "::warning::git push failed — retrying with rebase" && git pull --rebase --autostash && git push)
+
+      # ── 9. Deploy via FTP ────────────────────────────────
+      - name: Deploy Martinique (FTP)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER_MQ }}
+          username: ${{ secrets.FTP_USERNAME_MQ }}
+          password: ${{ secrets.FTP_PASSWORD_MQ }}
+          local-dir: ./martinique-ftp/
+          server-dir: ./
+          dangerous-clean-slate: false
+
+      - name: Deploy Guadeloupe (FTP)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER_GP }}
+          username: ${{ secrets.FTP_USERNAME_GP }}
+          password: ${{ secrets.FTP_PASSWORD_GP }}
+          local-dir: ./guadeloupe-ftp/
+          server-dir: ./
+          dangerous-clean-slate: false
 
   # ── Notify on failure ──────────────────────────────────
   notify-failure:

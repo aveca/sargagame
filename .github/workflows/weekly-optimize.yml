@@ -2,8 +2,7 @@ name: Weekly Optimization
 
 on:
   schedule:
-    # Lundi 10h UTC (6h MQ) — SEO + A/B + rebuild
-    - cron: '0 10 * * 1'
+    # Monday handled by weekly-seo-automation.yml (more comprehensive)
     # Mardi 10h UTC — Email cleanup + drip check
     - cron: '0 10 * * 2'
     # Mercredi 10h UTC — Data quality + forecast accuracy
