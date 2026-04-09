@@ -54,6 +54,10 @@ function daysSince(dateStr) {
   return Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24))
 }
 
+// Season detection (matches Sargasses_PROD.jsx logic)
+const MONTH = new Date().getMonth() // 0-indexed
+const IS_HIGH_SEASON = MONTH >= 3 && MONTH <= 8 // April-September
+
 // ── Email templates ──────────────────────────────────────────
 
 function header(title, subtitle) {
@@ -94,13 +98,21 @@ function buildJ3(island, cleanCount, topBeaches) {
     </td></tr>`
   ).join('')
 
+  const seasonBanner = IS_HIGH_SEASON
+    ? `<div style="background:rgba(232,82,42,.08);border:1px solid rgba(232,82,42,.2);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:12px;font-weight:700;color:#E8522A">
+        &#x1f534; Saison sargasses en cours — les plages changent chaque jour
+      </div>` : ''
+
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
 <body style="margin:0;padding:0;background:#F7F5EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
 <div style="max-width:480px;margin:0 auto;padding:20px">
-  ${header(`${cleanCount} plages propres`, `Cette semaine en ${name}`)}
+  ${header(`${cleanCount} plages propres`, IS_HIGH_SEASON ? `Saison active en ${name}` : `Cette semaine en ${name}`)}
   <div style="background:#fff;padding:24px 20px">
+    ${seasonBanner}
     <div style="font-size:15px;color:#333;line-height:1.5;margin-bottom:16px">
-      Salut ! Voici les plages les plus propres cette semaine en ${name}. Donnees satellite mises a jour 4 fois par jour.
+      ${IS_HIGH_SEASON
+        ? `Salut ! La saison sargasses est la. Voici les plages les plus propres aujourd'hui en ${name}. Donnees satellite mises a jour 4 fois par jour.`
+        : `Salut ! Voici les plages les plus propres cette semaine en ${name}. Donnees satellite mises a jour 4 fois par jour.`}
     </div>
     <table style="width:100%;border-collapse:collapse">${beachList}</table>
     <div style="text-align:center;margin-top:20px">
@@ -119,13 +131,17 @@ function buildJ7(island, cleanCount) {
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
 <body style="margin:0;padding:0;background:#F7F5EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
 <div style="max-width:480px;margin:0 auto;padding:20px">
-  ${header('Sache samedi des lundi', `Previsions 7 jours en ${name}`)}
+  ${header(IS_HIGH_SEASON ? 'Les plages bougent vite' : 'Sache samedi des lundi', `Previsions 7 jours en ${name}`)}
   <div style="background:#fff;padding:24px 20px">
     <div style="font-size:15px;color:#333;line-height:1.6;margin-bottom:16px">
-      Aujourd'hui, ${cleanCount} plages sont propres en ${name}. Mais qu'en sera-t-il ce weekend ?
+      ${IS_HIGH_SEASON
+        ? `En ce moment, les sargasses arrivent vite. ${cleanCount} plages propres aujourd'hui en ${name} — mais ca peut changer demain.`
+        : `Aujourd'hui, ${cleanCount} plages sont propres en ${name}. Mais qu'en sera-t-il ce weekend ?`}
     </div>
     <div style="font-size:15px;color:#333;line-height:1.6;margin-bottom:20px">
-      Avec les <strong>previsions 7 jours</strong>, tu peux planifier ton weekend a l'avance. Plus besoin de verifier le matin meme.
+      ${IS_HIGH_SEASON
+        ? `Les <strong>previsions 7 jours</strong> te disent exactement quand et ou les sargasses arrivent. Ne decouvre pas ca sur la plage.`
+        : `Avec les <strong>previsions 7 jours</strong>, tu peux planifier ton weekend a l'avance. Plus besoin de verifier le matin meme.`}
     </div>
 
     <div style="background:rgba(13,30,28,.03);border-radius:12px;padding:16px;margin-bottom:20px">
@@ -191,9 +207,15 @@ function buildJ14(island, cleanCount) {
 function getSubject(step, island, cleanCount) {
   const name = island === 'MQ' ? 'Martinique' : 'Guadeloupe'
   switch (step) {
-    case 'j3':  return `${cleanCount} plages propres cette semaine en ${name}`
-    case 'j7':  return `Sache samedi des lundi - previsions ${name}`
-    case 'j14': return `Ton weekend sans surprise en ${name}`
+    case 'j3':  return IS_HIGH_SEASON
+      ? `Saison sargasses : ${cleanCount} plages propres en ${name}`
+      : `${cleanCount} plages propres cette semaine en ${name}`
+    case 'j7':  return IS_HIGH_SEASON
+      ? `Les plages changent vite — previsions 7 jours ${name}`
+      : `Sache samedi des lundi - previsions ${name}`
+    case 'j14': return IS_HIGH_SEASON
+      ? `Ne rate pas ton weekend — ${name}`
+      : `Ton weekend sans surprise en ${name}`
   }
 }
 

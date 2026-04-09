@@ -99,6 +99,11 @@ document.getElementById('signup').addEventListener('submit', function(e) {
 // Show season urgency banner (April-September)
 var m = new Date().getMonth()
 if (m >= 3 && m <= 8) document.getElementById('season').style.display = 'block'
+// Adapt title for GP hostname
+if (location.hostname.includes('guadeloupe')) {
+  document.title = 'Sargasses ce weekend — Guadeloupe'
+  document.querySelector('meta[name="description"]').content = 'Chaque vendredi, recois les 3 meilleures plages de Guadeloupe pour ton weekend. Gratuit, par email.'
+}
 </script>
 </body>
 </html>
