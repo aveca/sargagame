@@ -184,5 +184,11 @@
     "email": "***RGPD-PURGE***",
     "island": "GP",
     "source": "inline-beach"
+  },
+  {
+    "date": "2026-04-09T02:58:49.561Z",
+    "email": "***RGPD-PURGE***",
+    "island": "MQ",
+    "source": "manual-invite"
   }
 ]
