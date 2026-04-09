@@ -212,8 +212,10 @@ function track(event,params={}){
   const ab=g("sg_ab",{})
   const p={...params}
   for(const[k,v]of Object.entries(ab))p["ab_"+k]=v
-  // Primary: GA4
+  // Primary: GA4 (gtag.js — may 503 in EU/DMA regions without consent)
   try{window.gtag("event",event,p)}catch(e){}
+  // TODO: add Measurement Protocol fallback when api_secret is configured
+  // Create secret in GA4 Admin > Data Streams > Measurement Protocol API secrets
   // Backup: queue critical conversion events to localStorage + beacon to Apps Script
   const critical=event.startsWith("sg_checkout")||event.startsWith("sg_premium")||event==="sg_conversion"
     ||event==="sg_email_submit"||event==="sg_forecast_lock_click"||event==="sg_session_start"

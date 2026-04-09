@@ -271,7 +271,7 @@ Sitemap: https://${domain}/sitemap.xml
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-Q31VV3LLM9"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
   gtag('consent','default',{analytics_storage:'granted',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',functionality_storage:'granted',security_storage:'granted',wait_for_update:500});
-  gtag('js',new Date());gtag('config','G-Q31VV3LLM9');</script>
+  gtag('js',new Date());gtag('config','G-Q31VV3LLM9',{transport_url:'https://www.google-analytics.com'});</script>
   <!-- Stripe.js — chargé à la demande -->
   <script>
     window.loadStripe=function(){
