@@ -1111,22 +1111,40 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
   const LL=T[lang]||T.fr
   const weather=useWeather(beach)
   // Use REAL forecast, then interpolated, then fallback generated
+  // If community reports override status, blend into forecast
   const forecast=useMemo(()=>{
     if(!beach)return null
     const sargId=BEACH_TO_SARG[beach.id]
+    let fc=null
     // 1. Direct sentinel forecast
     if(sargId&&sargData?.weekly?.[sargId]?.forecast){
-      return sargData.weekly[sargId].forecast
+      fc=sargData.weekly[sargId].forecast
     }
     // 2. IDW-interpolated forecast
-    const interpKey=`_interp_${beach.id}`
-    const enriched=sargData?._enrichedWeekly
-    if(enriched?.[interpKey]?.forecast){
-      return enriched[interpKey].forecast
+    if(!fc){
+      const interpKey=`_interp_${beach.id}`
+      const enriched=sargData?._enrichedWeekly
+      if(enriched?.[interpKey]?.forecast) fc=enriched[interpKey].forecast
     }
     // 3. Math.sin fallback (should not happen with 20 sentinels)
-    return generateForecast(beach.afai,lang)
-  },[beach?.id,lang,sargData])
+    if(!fc) fc=generateForecast(beach.afai,lang)
+    // 4. Blend community reports into forecast when terrain says worse
+    if(fc&&beach?._communityOverride){
+      const RANK={clean:0,moderate:1,avoid:2}
+      const STATUS_AFAI={clean:.05,moderate:.25,avoid:.60}
+      const communityAfai=STATUS_AFAI[beach.status]||.05
+      if(RANK[beach.status]>(RANK[fc[0]?.status]||0)){
+        fc=fc.map((d,i)=>{
+          // Day 1 = community status, then decay influence over 3 days
+          const w=Math.max(0,1-i*.33)
+          const blended=Math.round((communityAfai*w+d.afai*(1-w))*100)/100
+          const st=statusFromAfai(blended)
+          return {...d,afai:blended,status:st,sources:[...(d.sources||[]),...(i===0?["community"]:[])]}
+        })
+      }
+    }
+    return fc
+  },[beach?.id,beach?.status,beach?._communityOverride,lang,sargData])
   const isFav=favorites.includes(beach?.id)
   const startY=useRef(0)
   const sheetRef=useRef(null)
