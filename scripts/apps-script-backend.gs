@@ -110,17 +110,23 @@ function doPost(e) {
       // Get subscriber emails for this island
       const sheet = getOrCreateSheet('emails', ['date', 'email', 'island', 'source'])
       const data = sheet.getDataRange().getValues()
+      const headers = data[0]
+      const unsubCol = headers.indexOf('unsubscribed')
       let sent = 0
       for (let i = 1; i < data.length; i++) {
         const email = data[i][1]
         const sub_island = (data[i][2] || 'MQ').toUpperCase()
         if (!email || !email.includes('@')) continue
         if (sub_island !== island.toUpperCase() && sub_island !== 'ALL') continue
+        // Skip unsubscribed
+        if (unsubCol >= 0 && (data[i][unsubCol] || '').toString().toLowerCase() === 'yes') continue
         try {
+          // Replace {{EMAIL}} placeholder with actual subscriber email
+          const personalHtml = html.replace(/\{\{EMAIL\}\}/g, encodeURIComponent(email))
           MailApp.sendEmail({
             to: email,
             subject: subject,
-            htmlBody: html,
+            htmlBody: personalHtml,
             name: 'Sargasses ' + (island === 'GP' ? 'Guadeloupe' : 'Martinique'),
             replyTo: 'alerte@sargasses-martinique.com'
           })
@@ -416,7 +422,55 @@ function doGet(e) {
     }
   }
 
-  return jsonResponse({ error: 'unknown action. Use ?action=stats|emails|feedback|beach_reports|email_stats|drip_check|clean_bounces' })
+  // Unsubscribe — mark email as unsubscribed in Sheet
+  if (action === 'unsubscribe') {
+    try {
+      var email = (e.parameter.email || '').trim().toLowerCase()
+      if (!email) return htmlResponse('Adresse email manquante.')
+
+      var ss = SpreadsheetApp.openById(SHEET_ID)
+      var sheet = ss.getSheetByName('emails')
+      if (!sheet) return htmlResponse('Erreur interne.')
+
+      var data = sheet.getDataRange().getValues()
+      var headers = data[0]
+      var emailCol = headers.indexOf('email')
+      var unsubCol = headers.indexOf('unsubscribed')
+
+      // Add unsubscribed column if missing
+      if (unsubCol === -1) {
+        unsubCol = headers.length
+        sheet.getRange(1, unsubCol + 1).setValue('unsubscribed')
+      }
+
+      var found = false
+      for (var i = 1; i < data.length; i++) {
+        if ((data[i][emailCol] || '').toString().trim().toLowerCase() === email) {
+          sheet.getRange(i + 1, unsubCol + 1).setValue('yes')
+          found = true
+        }
+      }
+
+      var island = e.parameter.island || ''
+      var name = island === 'GP' ? 'Guadeloupe' : 'Martinique'
+      if (found) {
+        return htmlResponse('<h2 style="color:#16A34A">Desabonnement confirme</h2><p>Tu ne recevras plus d\'emails de Sargasses ' + name + '.</p><p>Tu peux toujours consulter la carte sur <a href="https://sargasses-' + name.toLowerCase() + '.com">sargasses-' + name.toLowerCase() + '.com</a></p>')
+      } else {
+        return htmlResponse('<h2>Adresse non trouvee</h2><p>' + email + ' n\'est pas dans notre liste.</p>')
+      }
+    } catch (err) {
+      return htmlResponse('Erreur: ' + err.message)
+    }
+  }
+
+  return jsonResponse({ error: 'unknown action. Use ?action=stats|emails|feedback|beach_reports|email_stats|drip_check|clean_bounces|unsubscribe' })
+}
+
+function htmlResponse(body) {
+  var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">'
+    + '<style>body{font-family:-apple-system,sans-serif;max-width:480px;margin:40px auto;padding:20px;text-align:center;color:#333}</style>'
+    + '</head><body>' + body + '</body></html>'
+  return HtmlService.createHtmlOutput(html)
 }
 
 // ── Drip email sequences ────────────────────────────
