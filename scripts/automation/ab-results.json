@@ -80,6 +80,22 @@
         0
       ],
       "metric": "sg_weekend_banner_click"
+    },
+    {
+      "id": "price1",
+      "variants": [
+        "control",
+        "season"
+      ],
+      "sessions": [
+        0,
+        0
+      ],
+      "conversions": [
+        0,
+        0
+      ],
+      "metric": "sg_premium_modal_cta"
     }
   ]
 }
