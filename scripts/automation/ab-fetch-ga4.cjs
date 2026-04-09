@@ -26,6 +26,7 @@ const TESTS = [
   { id: 'onb1', dimension: 'customEvent:ab_onb1', variants: ['control', 'skip'], metric: 'sg_conversion' },
   { id: 'free1', dimension: 'customEvent:ab_free1', variants: ['control', 'two_free'], metric: 'sg_forecast_lock_click' },
   { id: 'vp1', dimension: 'customEvent:ab_vp1', variants: ['feature', 'outcome'], metric: 'sg_weekend_banner_click' },
+  { id: 'price1', dimension: 'customEvent:ab_price1', variants: ['control', 'season'], metric: 'sg_checkout_submit' },
 ]
 
 async function fetchTestData(analyticsdata, propertyId, test) {

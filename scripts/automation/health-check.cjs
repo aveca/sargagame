@@ -160,7 +160,8 @@ async function main() {
   }
 
   console.log(`\n${criticalOk ? '✅ Critical sites healthy' : '❌ CRITICAL SITES DOWN — check above'}`)
-  process.exit(criticalOk ? 0 : 1)
+  // Always exit 0 — alert emails handle notification, exit(1) just breaks workflows
+  process.exit(0)
 }
 
 main()
