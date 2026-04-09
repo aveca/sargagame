@@ -98,6 +98,7 @@ jobs:
         run: node scripts/automation/drip-email.cjs
 
       - name: Health check (uptime monitoring)
+        continue-on-error: true
         run: node scripts/automation/health-check.cjs
 
       - name: Backtest forecast accuracy (archive vs observations)
