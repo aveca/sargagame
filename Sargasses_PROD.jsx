@@ -2894,24 +2894,70 @@ export default function App(){
 
   const LL=T[lang]||T.fr
 
-  // Fetch beaches-list.json at mount — strip stale status/afai so dots stay neutral until sargassum.json arrives
-  // Uses functional updater to preserve any sargassum data already merged (race condition guard)
+  // Fetch beaches-list.json + sargassum.json in parallel, merge in correct order
+  // Promise.all eliminates race condition: IDW always runs on full 135-beach list
   useEffect(()=>{
-    fetch("/data/beaches-list.json")
-      .then(r=>r.json())
-      .then(data=>{
-        if(Array.isArray(data)&&data.length>0)setAllBeaches(prev=>{
-          // Preserve sargassum-enriched data if sargassum.json resolved first
-          const sargMap=new Map()
-          for(const b of prev)if(b._src)sargMap.set(b.id,{status:b.status,afai:b.afai,_src:b._src,beachMemory:b.beachMemory,afaiSat:b.afaiSat})
-          return data.map(b=>{
-            const{status,afai,...rest}=b
-            const sarg=sargMap.get(b.id)
-            return sarg?{...rest,...sarg}:rest
-          })
-        })
-      })
-      .catch(()=>{})
+    Promise.all([
+      fetch("/data/beaches-list.json").then(r=>r.json()).catch(()=>null),
+      fetch("/api/copernicus/sargassum.json").then(r=>r.json()).catch(()=>null)
+    ]).then(([beachData,sargResult])=>{
+      // 1. Build full beach list (strip stale status/afai from JSON)
+      let beaches=Array.isArray(beachData)&&beachData.length>0
+        ?beachData.map(b=>{const{status,afai,...rest}=b;return rest})
+        :[...BEACHES_FALLBACK]
+      // 2. Merge sargassum data if available
+      if(sargResult){
+        setSargData(sargResult)
+        setDataSource(sargResult?.source||"reference")
+        if(sargResult?.levels){
+          // Build sentinel lookup: beachId → {lat, lng, afai, sargId}
+          const sentinelMap={}
+          for(const lvl of sargResult.levels){
+            const beachId=SARG_TO_BEACH[lvl.id]
+            if(!beachId)continue
+            const bch=beaches.find(b=>b.id===beachId)
+            if(bch)sentinelMap[beachId]={lat:bch.lat,lng:bch.lng,afai:lvl.afai,sargId:lvl.id}
+          }
+          const sentinels=Object.values(sentinelMap)
+          // Update sentinels with live data
+          for(const lvl of sargResult.levels){
+            const beachId=SARG_TO_BEACH[lvl.id]
+            if(!beachId)continue
+            const idx=beaches.findIndex(b=>b.id===beachId)
+            if(idx>=0){
+              beaches[idx]={...beaches[idx],afai:lvl.afai,status:statusFromAfai(lvl.afai),_src:"live",beachMemory:lvl.beachMemory||false,afaiSat:lvl.afaiSat}
+            }
+          }
+          // IDW interpolation for non-sentinel beaches
+          for(let i=0;i<beaches.length;i++){
+            if(beaches[i]._src==="live")continue
+            const same=sentinels.filter(s=>
+              (beaches[i].island==="mq"&&s.lat<15.5)||(beaches[i].island==="gp"&&s.lat>=15.5))
+            const interp=interpolateIDW(beaches[i],same.length>0?same:sentinels)
+            if(interp!==null){
+              beaches[i]={...beaches[i],afai:interp,status:statusFromAfai(interp),_src:"interpolated"}
+            }
+          }
+          // Interpolate weekly forecasts for non-sentinel beaches
+          if(sargResult.weekly){
+            const enrichedWeekly={...sargResult.weekly}
+            for(const b of beaches){
+              const sargId=BEACH_TO_SARG[b.id]
+              if(sargId&&sargResult.weekly[sargId])continue
+              const same=sentinels.filter(s=>
+                (b.island==="mq"&&s.lat<15.5)||(b.island==="gp"&&s.lat>=15.5))
+              const interp=interpolateForecast(b,same.length>0?same:sentinels,sargResult.weekly)
+              if(interp){
+                const syntheticId=`_interp_${b.id}`
+                enrichedWeekly[syntheticId]=interp
+              }
+            }
+            sargResult._enrichedWeekly=enrichedWeekly
+          }
+        }
+      }
+      setAllBeaches(beaches)
+    })
   },[])
 
   // Fetch community beach reports (last 48h) — deferred 3s to not compete with critical data
@@ -2936,68 +2982,6 @@ export default function App(){
         .catch(()=>{})
     },1500)
     return()=>clearTimeout(t)
-  },[])
-
-  // Fetch sargassum.json ONCE at mount and merge AFAI levels into ALL 135 beaches
-  useEffect(()=>{
-    fetch("/api/copernicus/sargassum.json")
-      .then(r=>r.json())
-      .then(data=>{
-        setSargData(data)
-        setDataSource(data?.source||"reference")
-        if(data?.levels){
-          setAllBeaches(prev=>{
-            const updated=[...prev]
-            // Build sentinel lookup: beachId → {lat, lng, afai, sargId}
-            const sentinelMap={}
-            for(const lvl of data.levels){
-              const beachId=SARG_TO_BEACH[lvl.id]
-              if(!beachId)continue
-              const bch=updated.find(b=>b.id===beachId)
-              if(bch)sentinelMap[beachId]={lat:bch.lat,lng:bch.lng,afai:lvl.afai,sargId:lvl.id}
-            }
-            const sentinels=Object.values(sentinelMap)
-            // 1. Update sentinels with live data
-            for(const lvl of data.levels){
-              const beachId=SARG_TO_BEACH[lvl.id]
-              if(!beachId)continue
-              const idx=updated.findIndex(b=>b.id===beachId)
-              if(idx>=0){
-                updated[idx]={...updated[idx],afai:lvl.afai,status:statusFromAfai(lvl.afai),_src:"live",beachMemory:lvl.beachMemory||false,afaiSat:lvl.afaiSat}
-              }
-            }
-            // 2. IDW interpolation for non-sentinel beaches
-            for(let i=0;i<updated.length;i++){
-              if(updated[i]._src==="live")continue // already has live data
-              // FIX: threshold 15.5 (was 16) — includes Les Saintes, Marie-Galante, Désirade, gp-grande-anse sentinel
-              const same=sentinels.filter(s=>
-                (updated[i].island==="mq"&&s.lat<15.5)||(updated[i].island==="gp"&&s.lat>=15.5))
-              const interp=interpolateIDW(updated[i],same.length>0?same:sentinels)
-              if(interp!==null){
-                updated[i]={...updated[i],afai:interp,status:statusFromAfai(interp),_src:"interpolated"}
-              }
-            }
-            // 3. Interpolate weekly forecasts for non-sentinel beaches
-            if(data.weekly){
-              const enrichedWeekly={...data.weekly}
-              for(const b of updated){
-                const sargId=BEACH_TO_SARG[b.id]
-                if(sargId&&data.weekly[sargId])continue // already has real forecast
-                const same=sentinels.filter(s=>
-                  (b.island==="mq"&&s.lat<15.5)||(b.island==="gp"&&s.lat>=15.5))
-                const interp=interpolateForecast(b,same.length>0?same:sentinels,data.weekly)
-                if(interp){
-                  const syntheticId=`_interp_${b.id}`
-                  enrichedWeekly[syntheticId]=interp
-                }
-              }
-              data._enrichedWeekly=enrichedWeekly
-            }
-            return updated
-          })
-        }
-      })
-      .catch(()=>{})
   },[])
 
   // Apply community reports overlay SEPARATELY — no re-fetch of sargassum.json
