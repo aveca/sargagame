@@ -41,6 +41,8 @@ const C={
 }
 
 const ST={
+  _loading:{c:"#666",bg:"rgba(100,100,100,.1)",l:"Chargement…",le:"Loading…",e:"⏳",h2s:false,
+    desc:"Données en cours de chargement…",descEn:"Loading data…"},
   clean:{c:C.green,bg:C.greenBg,l:"Propre",le:"Clean",e:"✅",h2s:false,
     desc:"Peu ou pas de sargasses détectées par satellite au large.",
     descEn:"Little to no sargassum detected by satellite offshore."},
@@ -124,26 +126,26 @@ const T={
    BEACH DATA — 20 inline fallback + runtime fetch for 190
    ═══════════════════════════════════════════════════════════════════════════ */
 const BEACHES_FALLBACK=[
-  {id:"mq001",island:"mq",name:"Plage des Salines",commune:"Sainte-Anne",lat:14.3958521,lng:-60.8689802,status:"moderate",afai:.42,kids:true,snorkel:false,parking:true,drive:52},
-  {id:"mq011",island:"mq",name:"Anse Mitan",commune:"Les Trois-Îles",lat:14.5522593,lng:-61.0552056,status:"clean",afai:.17,kids:true,snorkel:false,parking:true,drive:18},
-  {id:"mq014",island:"mq",name:"Grande Anse d'Arlet",commune:"Les Anses-d'Arlet",lat:14.5027854,lng:-61.0856311,status:"clean",afai:.12,kids:true,snorkel:true,parking:true,drive:25},
-  {id:"mq016",island:"mq",name:"Plage du Diamant",commune:"Le Diamant",lat:14.4758027,lng:-61.0314046,status:"moderate",afai:.42,kids:false,snorkel:false,parking:true,drive:32},
-  {id:"mq005",island:"mq",name:"Anse Trabaud",commune:"Sainte-Anne",lat:14.4101296,lng:-60.8482068,status:"avoid",afai:.78,kids:false,snorkel:false,parking:true,drive:52},
-  {id:"mq024",island:"mq",name:"Anse Madame",commune:"Schoelcher",lat:14.6177983,lng:-61.1036302,status:"clean",afai:.14,kids:true,snorkel:false,parking:true,drive:12},
-  {id:"mq029",island:"mq",name:"Plage de Saint-Pierre",commune:"Saint-Pierre",lat:14.7404792,lng:-61.1768484,status:"clean",afai:.15,kids:true,snorkel:true,parking:true,drive:32},
-  {id:"mq012",island:"mq",name:"Anse Noire",commune:"Les Anses-d'Arlet",lat:14.5277232,lng:-61.0873771,status:"clean",afai:.08,kids:true,snorkel:true,parking:false,drive:28},
-  {id:"mq019",island:"mq",name:"Anse Gros Raisins",commune:"Sainte-Luce",lat:14.4658147,lng:-60.9260982,status:"clean",afai:.16,kids:true,snorkel:true,parking:false,drive:38},
-  {id:"mq023",island:"mq",name:"Plage de la Française",commune:"Fort-de-France",lat:14.6011133,lng:-61.0674743,status:"clean",afai:.2,kids:true,snorkel:false,parking:true,drive:8},
-  {id:"gp009",island:"gp",name:"Plage de la Caravelle",commune:"Sainte-Anne",lat:16.2181,lng:-61.3965,status:"clean",afai:.14,kids:true,snorkel:true,parking:true,drive:38},
-  {id:"gp012",island:"gp",name:"Plage du Gosier",commune:"Le Gosier",lat:16.2048,lng:-61.4948,status:"clean",afai:.18,kids:true,snorkel:true,parking:true,drive:12},
-  {id:"gp031",island:"gp",name:"Plage de Malendure",commune:"Bouillante",lat:16.1721,lng:-61.7767,status:"clean",afai:.12,kids:true,snorkel:true,parking:true,drive:42},
-  {id:"gp024",island:"gp",name:"Plage de Deshaies",commune:"Deshaies",lat:16.3053509,lng:-61.7950711,status:"clean",afai:.11,kids:true,snorkel:true,parking:true,drive:55},
-  {id:"gp005",island:"gp",name:"Pointe des Châteaux",commune:"Saint-François",lat:16.2531027,lng:-61.2306694,status:"moderate",afai:.38,kids:false,snorkel:false,parking:true,drive:52},
-  {id:"gp015",island:"gp",name:"Porte d'Enfer",commune:"Anse-Bertrand",lat:16.4861861,lng:-61.4416828,status:"avoid",afai:.7,kids:false,snorkel:false,parking:true,drive:55},
-  {id:"gp045",island:"gp",name:"Plage Pain de Sucre",commune:"Terre-de-Haut (Les Saintes)",lat:15.8635,lng:-61.5988,status:"clean",afai:.07,kids:true,snorkel:true,parking:false,drive:60},
-  {id:"gp001",island:"gp",name:"Plage de Saint-François",commune:"Saint-François",lat:16.2521,lng:-61.2644,status:"moderate",afai:.35,kids:true,snorkel:true,parking:true,drive:48},
-  {id:"gp010",island:"gp",name:"Plage de Sainte-Anne",commune:"Sainte-Anne",lat:16.2226,lng:-61.3828,status:"clean",afai:.22,kids:true,snorkel:false,parking:true,drive:38},
-  {id:"gp021",island:"gp",name:"Plage de Grande Anse",commune:"Trois-Rivières",lat:15.9589717,lng:-61.6719389,status:"clean",afai:.15,kids:true,snorkel:true,parking:true,drive:45},
+  {id:"mq001",island:"mq",name:"Plage des Salines",commune:"Sainte-Anne",lat:14.3958521,lng:-60.8689802,kids:true,snorkel:false,parking:true,drive:52},
+  {id:"mq011",island:"mq",name:"Anse Mitan",commune:"Les Trois-Îles",lat:14.5522593,lng:-61.0552056,kids:true,snorkel:false,parking:true,drive:18},
+  {id:"mq014",island:"mq",name:"Grande Anse d'Arlet",commune:"Les Anses-d'Arlet",lat:14.5027854,lng:-61.0856311,kids:true,snorkel:true,parking:true,drive:25},
+  {id:"mq016",island:"mq",name:"Plage du Diamant",commune:"Le Diamant",lat:14.4758027,lng:-61.0314046,kids:false,snorkel:false,parking:true,drive:32},
+  {id:"mq005",island:"mq",name:"Anse Trabaud",commune:"Sainte-Anne",lat:14.4101296,lng:-60.8482068,kids:false,snorkel:false,parking:true,drive:52},
+  {id:"mq024",island:"mq",name:"Anse Madame",commune:"Schoelcher",lat:14.6177983,lng:-61.1036302,kids:true,snorkel:false,parking:true,drive:12},
+  {id:"mq029",island:"mq",name:"Plage de Saint-Pierre",commune:"Saint-Pierre",lat:14.7404792,lng:-61.1768484,kids:true,snorkel:true,parking:true,drive:32},
+  {id:"mq012",island:"mq",name:"Anse Noire",commune:"Les Anses-d'Arlet",lat:14.5277232,lng:-61.0873771,kids:true,snorkel:true,parking:false,drive:28},
+  {id:"mq019",island:"mq",name:"Anse Gros Raisins",commune:"Sainte-Luce",lat:14.4658147,lng:-60.9260982,kids:true,snorkel:true,parking:false,drive:38},
+  {id:"mq023",island:"mq",name:"Plage de la Française",commune:"Fort-de-France",lat:14.6011133,lng:-61.0674743,kids:true,snorkel:false,parking:true,drive:8},
+  {id:"gp009",island:"gp",name:"Plage de la Caravelle",commune:"Sainte-Anne",lat:16.2181,lng:-61.3965,kids:true,snorkel:true,parking:true,drive:38},
+  {id:"gp012",island:"gp",name:"Plage du Gosier",commune:"Le Gosier",lat:16.2048,lng:-61.4948,kids:true,snorkel:true,parking:true,drive:12},
+  {id:"gp031",island:"gp",name:"Plage de Malendure",commune:"Bouillante",lat:16.1721,lng:-61.7767,kids:true,snorkel:true,parking:true,drive:42},
+  {id:"gp024",island:"gp",name:"Plage de Deshaies",commune:"Deshaies",lat:16.3053509,lng:-61.7950711,kids:true,snorkel:true,parking:true,drive:55},
+  {id:"gp005",island:"gp",name:"Pointe des Châteaux",commune:"Saint-François",lat:16.2531027,lng:-61.2306694,kids:false,snorkel:false,parking:true,drive:52},
+  {id:"gp015",island:"gp",name:"Porte d'Enfer",commune:"Anse-Bertrand",lat:16.4861861,lng:-61.4416828,kids:false,snorkel:false,parking:true,drive:55},
+  {id:"gp045",island:"gp",name:"Plage Pain de Sucre",commune:"Terre-de-Haut (Les Saintes)",lat:15.8635,lng:-61.5988,kids:true,snorkel:true,parking:false,drive:60},
+  {id:"gp001",island:"gp",name:"Plage de Saint-François",commune:"Saint-François",lat:16.2521,lng:-61.2644,kids:true,snorkel:true,parking:true,drive:48},
+  {id:"gp010",island:"gp",name:"Plage de Sainte-Anne",commune:"Sainte-Anne",lat:16.2226,lng:-61.3828,kids:true,snorkel:false,parking:true,drive:38},
+  {id:"gp021",island:"gp",name:"Plage de Grande Anse",commune:"Trois-Rivières",lat:15.9589717,lng:-61.6719389,kids:true,snorkel:true,parking:true,drive:45},
 ]
 
 const ISLAND_CENTER={mq:[14.64,-61.02],gp:[16.22,-61.55]}
@@ -504,7 +506,7 @@ function StyleInjector(){
    SMALL COMPONENTS
    ═══════════════════════════════════════════════════════════════════════════ */
 function StatusBadge({status,lang="fr"}){
-  const st=ST[status]||ST.clean
+  const st=ST[status]||ST._loading
   const label=lang==="en"?st.le:st.l
   return(
     <span style={{display:"inline-flex",alignItems:"center",gap:6,padding:"5px 14px",
@@ -516,6 +518,7 @@ function StatusBadge({status,lang="fr"}){
 }
 
 function AfaiBadge({afai}){
+  if(afai==null)return null
   const pct=Math.round(afai*100)
   const color=afai<.3?C.green:afai<.65?C.amber:C.red
   return(
@@ -611,7 +614,7 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily}){
       <div style={{display:"flex",gap:6,alignItems:"flex-end",height:140,padding:"8px 0"}}>
         {forecast.map((d,i)=>{
           const h=Math.max(8,(d.afai/max)*70)
-          const st=ST[d.status]||ST.clean
+          const st=ST[d.status]||ST._loading
           const isLocked=!isPremium&&i>=freeThreshold
           const hasDaily=weatherDaily&&weatherDaily.tempMax&&i<weatherDaily.tempMax.length
           const dayPrecip=hasDaily?weatherDaily.precipSum[i]:0
@@ -1016,7 +1019,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               const refCode=isPremium?localStorage.getItem("sg_referral_code"):""
               const url=window.location.origin+"/plages/"+slug+(refCode?"?ref="+refCode:"")
               const isRef=!!refCode
-              if(navigator.share){track("sg_share",{beach_id:beach.id,method:"native",has_referral:isRef});navigator.share({title:beach.name+" — Sargasses",text:(ST[beach.status]||ST.clean).l+" aujourd'hui",url}).catch(()=>{})}
+              if(navigator.share){track("sg_share",{beach_id:beach.id,method:"native",has_referral:isRef});navigator.share({title:beach.name+" — Sargasses",text:(ST[beach.status]||ST._loading).l+" aujourd'hui",url}).catch(()=>{})}
               else{navigator.clipboard?.writeText(url);track("sg_share",{beach_id:beach.id,has_referral:isRef})}
             }} style={{flex:0,padding:"14px 20px",borderRadius:22,border:"1.5px solid var(--sg-border)",
               background:"var(--sg-card)",cursor:"pointer",fontSize:18,fontFamily:"inherit"}}>
@@ -1062,7 +1065,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               <h3 style={{fontSize:15,fontWeight:700,margin:"20px 0 10px"}}>{LL.nearby}</h3>
               <div style={{display:"flex",flexDirection:"column",gap:8}}>
                 {nearby.map(nb=>{
-                  const nst=ST[nb.status]||ST.clean
+                  const nst=ST[nb.status]||ST._loading
                   const nbPhoto=getBeachPhoto(nb)
                   return(
                     <button key={nb.id} onClick={()=>onBeachClick(nb)} style={{
@@ -1554,14 +1557,17 @@ function BeachPicker({island,allBeaches,onSelect,lang,userPos,onDismiss}){
       {/* Beach options */}
       <div style={{padding:"16px 22px 0",display:"flex",flexDirection:"column",gap:7}}>
         {picks.map(b=>{
-          const st=ST[b.status]||ST.clean
+          const st=ST[b.status]||ST._loading
           const isC=b.status==="clean"
+          const borderC=!b.status?"rgba(100,100,100,.15)":isC?"rgba(34,197,94,.15)":b.status==="avoid"?"rgba(232,82,42,.15)":"rgba(232,168,0,.15)"
+          const badgeBg=!b.status?"rgba(100,100,100,.1)":isC?"rgba(34,197,94,.15)":b.status==="avoid"?"rgba(232,82,42,.2)":"rgba(232,168,0,.15)"
+          const badgeColor=!b.status?"#999":isC?"#4ADE80":b.status==="avoid"?"#FF8066":C.goldL
           return(
             <button key={b.id} onClick={()=>{track("sg_beach_pick",{beach_id:b.id});onSelect(b.id)}}
               style={{
                 display:"flex",alignItems:"center",gap:12,
                 background:"rgba(255,255,255,.05)",
-                border:`1px solid ${isC?"rgba(34,197,94,.15)":b.status==="avoid"?"rgba(232,82,42,.15)":"rgba(232,168,0,.15)"}`,
+                border:`1px solid ${borderC}`,
                 borderRadius:16,padding:"13px 14px",cursor:"pointer",
                 fontFamily:"inherit",textAlign:"left",width:"100%",
                 boxShadow:"0 2px 12px rgba(0,0,0,.15)",
@@ -1582,8 +1588,7 @@ function BeachPicker({island,allBeaches,onSelect,lang,userPos,onDismiss}){
                 </div>
               </div>
               <span style={{fontSize:10,fontWeight:700,padding:"4px 10px",borderRadius:100,
-                background:isC?"rgba(34,197,94,.15)":b.status==="avoid"?"rgba(232,82,42,.2)":"rgba(232,168,0,.15)",
-                color:isC?"#4ADE80":b.status==="avoid"?"#FF8066":C.goldL}}>
+                background:badgeBg,color:badgeColor}}>
                 {st.l}
               </span>
             </button>
@@ -2889,12 +2894,12 @@ export default function App(){
 
   const LL=T[lang]||T.fr
 
-  // Fetch beaches-list.json at mount
+  // Fetch beaches-list.json at mount — strip stale status/afai so dots stay neutral until sargassum.json arrives
   useEffect(()=>{
     fetch("/data/beaches-list.json")
       .then(r=>r.json())
       .then(data=>{
-        if(Array.isArray(data)&&data.length>0)setAllBeaches(data)
+        if(Array.isArray(data)&&data.length>0)setAllBeaches(data.map(b=>{const{status,afai,...rest}=b;return rest}))
       })
       .catch(()=>{})
   },[])
@@ -2923,7 +2928,7 @@ export default function App(){
     return()=>clearTimeout(t)
   },[])
 
-  // Fetch sargassum.json at mount and merge AFAI levels into ALL 135 beaches
+  // Fetch sargassum.json ONCE at mount and merge AFAI levels into ALL 135 beaches
   useEffect(()=>{
     fetch("/api/copernicus/sargassum.json")
       .then(r=>r.json())
@@ -2978,24 +2983,33 @@ export default function App(){
               }
               data._enrichedWeekly=enrichedWeekly
             }
-            // 4. Cross with community reports (source 2): elevate status if users report worse
-            if(Object.keys(communityReports).length>0){
-              for(let i=0;i<updated.length;i++){
-                const sargId=BEACH_TO_SARG[updated[i].id]
-                const rpt=communityReports[updated[i].id]||communityReports[sargId]
-                if(!rpt||!rpt.total||rpt.total<3)continue // need 3+ reports for consensus
-                const consensus=rpt.avoid>=rpt.moderate&&rpt.avoid>=rpt.clean?"avoid":rpt.moderate>=rpt.clean?"moderate":"clean"
-                const STATUS_RANK={clean:0,moderate:1,avoid:2}
-                if(STATUS_RANK[consensus]>STATUS_RANK[updated[i].status]){
-                  updated[i]={...updated[i],status:consensus,_communityOverride:true,_communityTotal:rpt.total}
-                }
-              }
-            }
             return updated
           })
         }
       })
       .catch(()=>{})
+  },[])
+
+  // Apply community reports overlay SEPARATELY — no re-fetch of sargassum.json
+  useEffect(()=>{
+    if(Object.keys(communityReports).length===0)return
+    setAllBeaches(prev=>{
+      let changed=false
+      const updated=prev.map(b=>{
+        if(!b.status)return b // sargassum not loaded yet, skip
+        const sargId=BEACH_TO_SARG[b.id]
+        const rpt=communityReports[b.id]||communityReports[sargId]
+        if(!rpt||!rpt.total||rpt.total<3)return b
+        const consensus=rpt.avoid>=rpt.moderate&&rpt.avoid>=rpt.clean?"avoid":rpt.moderate>=rpt.clean?"moderate":"clean"
+        const STATUS_RANK={clean:0,moderate:1,avoid:2}
+        if(STATUS_RANK[consensus]>STATUS_RANK[b.status]){
+          changed=true
+          return{...b,status:consensus,_communityOverride:true,_communityTotal:rpt.total}
+        }
+        return b
+      })
+      return changed?updated:prev
+    })
   },[communityReports])
 
   // Fetch history.json for trend chart — deferred (only needed in beach sheet)
@@ -3212,7 +3226,7 @@ export default function App(){
                 boxShadow:"0 4px 20px rgba(0,0,0,.12)",border:"1px solid var(--sg-border,rgba(0,0,0,.06))",
                 maxHeight:240,overflowY:"auto",overscrollBehavior:"contain"}}>
                 {filtered.slice(0,5).map(b=>{
-                  const st=ST[b.status]||ST.clean
+                  const st=ST[b.status]||ST._loading
                   return(
                     <button key={b.id} onClick={()=>{setSearch("");onBeachClick(b)}} style={{
                       display:"flex",alignItems:"center",gap:10,padding:"10px 14px",
