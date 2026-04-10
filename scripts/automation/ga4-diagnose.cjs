@@ -64,19 +64,27 @@ async function diag(label, propertyId) {
 
   // 3) Realtime (last 30 min)
   try {
-    const r = await ad.properties.runRealtimeReport({
+    // Active users (no dimensions — realtime constraint)
+    const users = await ad.properties.runRealtimeReport({
+      property,
+      requestBody: { metrics: [{ name: 'activeUsers' }] },
+    })
+    const u = users.data.rows?.[0]?.metricValues?.[0]?.value || '0'
+    console.log(`  Realtime activeUsers (30min): ${u}`)
+    // Event counts per name
+    const events = await ad.properties.runRealtimeReport({
       property,
       requestBody: {
-        metrics: [{ name: 'activeUsers' }],
+        metrics: [{ name: 'eventCount' }],
         dimensions: [{ name: 'eventName' }],
-        limit: 10,
+        limit: 15,
       },
     })
     console.log(`  Realtime events (last 30min):`)
-    for (const row of (r.data.rows || [])) {
+    for (const row of (events.data.rows || [])) {
       console.log(`    ${row.dimensionValues[0].value.padEnd(30)} ${row.metricValues[0].value}`)
     }
-    if (!(r.data.rows || []).length) console.log(`    (none active)`)
+    if (!(events.data.rows || []).length) console.log(`    (none active)`)
   } catch (e) {
     console.log(`  realtime error: ${e.message}`)
   }
