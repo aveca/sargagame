@@ -80,7 +80,7 @@ const T={
     wind:"Vent",uv:"UV",temp:"Température",drive:"min",
     kids:"Enfants",snorkel:"Snorkeling",parking:"Parking",
     premium:"Premium",premiumDesc:"Prévisions 7 jours, alertes push, zéro pub.",
-    premiumPrice:"4,99 €/mois",premiumCta:"Essai gratuit 7 jours",
+    premiumPrice:"4,99 €/mois",premiumCta:"Commencer — 0€ aujourd'hui",
     premiumFeatures:["Essaie 7 jours — 0€, annule en 1 clic","Sois prévenu AVANT que les sargasses arrivent","Prévisions 7 jours — planifie ton weekend sereinement","Sans pub · Sans engagement · Satisfait ou remboursé"],
     h2sWarn:"Si des sargasses sont échouées et en décomposition sur place, éloignez-vous (risque H₂S). Source : HCSP/ARS.",
     copernicus:"Copernicus Marine",live:"LIVE",
@@ -106,7 +106,7 @@ const T={
     wind:"Wind",uv:"UV",temp:"Temperature",drive:"min",
     kids:"Kids",snorkel:"Snorkeling",parking:"Parking",
     premium:"Premium",premiumDesc:"7-day forecast, push alerts, no ads.",
-    premiumPrice:"€4.99/mo",premiumCta:"Free 7-day trial",
+    premiumPrice:"€4.99/mo",premiumCta:"Start free — 0€ today",
     premiumFeatures:["Try 7 days free — cancel in 1 click","Get warned BEFORE sargassum arrives","7-day forecast — plan your weekend with confidence","No ads · No commitment · 30-day guarantee"],
     h2sWarn:"If sargassum is beached and decomposing on site, move away (H₂S risk). Source: HCSP/ARS.",
     copernicus:"Copernicus Marine",live:"LIVE",
@@ -2184,7 +2184,7 @@ function PremiumModal({onClose,lang,source,onActivated}){
   const isFamily=modalV==="family"
   const headline=isFamily
     ?(lang==="en"?"Protect your weekend":"Protège ton weekend")
-    :`⭐ ${LL.premium}`
+    :(lang==="en"?"⭐ Your sargassum watchman":"⭐ Ton veilleur sargasses")
   const subtitle=isFamily
     ?(lang==="en"?"Your kids count on you to find the right beach.":"Tes enfants comptent sur toi pour trouver la bonne plage.")
     :(SARGASSES_SEASON==="high"
@@ -2209,8 +2209,8 @@ function PremiumModal({onClose,lang,source,onActivated}){
 
         <ul style={{listStyle:"none",padding:0,margin:"0 0 16px",display:"flex",flexDirection:"column",gap:12}}>
           {(lang==="en"
-            ?["7 days free — 0€ charged today","Get warned BEFORE sargassum arrives","7-day forecast to plan with confidence"]
-            :["7 jours gratuits — 0€ débité aujourd'hui","Sois prévenu AVANT que les sargasses arrivent","Prévisions 7 jours pour planifier sereinement"]
+            ?["Morning pick — your best beach for today","Alerts before sargassum reaches shore","7-day forecast to plan your weekend"]
+            :["Recommandation du matin — ta meilleure plage du jour","Alertes avant que les sargasses atteignent le bord","Prévisions 7 jours pour planifier ton weekend"]
           ).map((f,i)=>(
             <li key={i} style={{display:"flex",alignItems:"center",gap:10,fontSize:14}}>
               <span style={{color:C.gold,fontSize:18}}>✓</span>{f}
