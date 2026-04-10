@@ -358,10 +358,10 @@ function doGet(e) {
   if (action === 'email_stats') {
     try {
       var ss = SpreadsheetApp.openById(SHEET_ID)
+      // All counts come from email_events (Resend webhooks) for consistency
       var counts = { sent: 0, delivered: 0, opened: 0, clicked: 0, bounced: 0, complained: 0 }
       var bouncedEmails = []
 
-      // Count events
       var evSheet = ss.getSheetByName('email_events')
       if (evSheet) {
         var evData = evSheet.getDataRange().getValues()
@@ -372,12 +372,18 @@ function doGet(e) {
         }
       }
 
-      // Count sends from email_tracking
+      // sent = email_tracking rows (each row = 1 Resend send, consistent with delivered events)
       var trSheet = ss.getSheetByName('email_tracking')
       if (trSheet) {
         var trData = trSheet.getDataRange().getValues()
         counts.sent = Math.max(0, trData.length - 1)
       }
+
+      // Use sent from email_events if email_tracking is lower (catches unsynchronized tracking)
+      if (counts.delivered > counts.sent) counts.sent = counts.delivered
+
+      // Deduplicate bounced emails list
+      var uniqueBounced = bouncedEmails.filter(function(v, i, a) { return a.indexOf(v) === i })
 
       return jsonResponse({
         counts: counts,
@@ -387,9 +393,59 @@ function doGet(e) {
           click: counts.opened > 0 ? Math.round(counts.clicked / counts.opened * 100) : 0,
           bounce: counts.sent > 0 ? Math.round(counts.bounced / counts.sent * 100) : 0
         },
-        bounced_emails: bouncedEmails,
+        bounced_emails: uniqueBounced,
         date: new Date().toISOString()
       })
+    } catch (err) {
+      return jsonResponse({ error: err.message })
+    }
+  }
+
+  // Conversion funnel — reads analytics_events (last 28 days)
+  if (action === 'funnel') {
+    try {
+      var ss = SpreadsheetApp.openById(SHEET_ID)
+      var funnel = {
+        session: 0, forecast_lock_click: 0,
+        premium_modal_open: 0, premium_modal_cta: 0,
+        checkout_view: 0, checkout_submit: 0,
+        conversion: 0, checkout_error: 0
+      }
+
+      var aSheet = ss.getSheetByName('analytics_events')
+      if (aSheet) {
+        var aData = aSheet.getDataRange().getValues()
+        var cutoff = new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString()
+        var abCounts = {}
+        var abCols = ['lock1', 'modal1', 'onb1', 'free1', 'vp1', 'price1']
+
+        for (var i = 1; i < aData.length; i++) {
+          if ((aData[i][0] || '') < cutoff) continue
+          var evt = (aData[i][1] || '').replace('sg_', '')
+          if (funnel.hasOwnProperty(evt)) funnel[evt]++
+
+          // Aggregate A/B variant counts (cols 3-8: ab_lock1..ab_price1)
+          for (var j = 0; j < abCols.length; j++) {
+            var v = aData[i][3 + j]
+            if (v !== '' && v != null) {
+              var key = abCols[j] + ':' + v
+              abCounts[key] = (abCounts[key] || 0) + 1
+            }
+          }
+        }
+        funnel.total_events = aData.length - 1
+        funnel.ab_variants = abCounts
+      }
+
+      funnel.rates = {
+        session_to_lock: funnel.session > 0 ? Math.round(funnel.forecast_lock_click / funnel.session * 1000) / 10 : 0,
+        lock_to_modal: funnel.forecast_lock_click > 0 ? Math.round(funnel.premium_modal_open / funnel.forecast_lock_click * 100) : 0,
+        modal_to_cta: funnel.premium_modal_open > 0 ? Math.round(funnel.premium_modal_cta / funnel.premium_modal_open * 100) : 0,
+        cta_to_checkout: funnel.premium_modal_cta > 0 ? Math.round(funnel.checkout_view / funnel.premium_modal_cta * 100) : 0,
+        checkout_to_submit: funnel.checkout_view > 0 ? Math.round(funnel.checkout_submit / funnel.checkout_view * 100) : 0
+      }
+
+      return jsonResponse(funnel)
     } catch (err) {
       return jsonResponse({ error: err.message })
     }
@@ -465,7 +521,7 @@ function doGet(e) {
     }
   }
 
-  return jsonResponse({ error: 'unknown action. Use ?action=stats|emails|feedback|beach_reports|email_stats|drip_check|clean_bounces|unsubscribe' })
+  return jsonResponse({ error: 'unknown action. Use ?action=stats|emails|feedback|beach_reports|email_stats|funnel|drip_check|clean_bounces|unsubscribe' })
 }
 
 function htmlResponse(body) {
