@@ -1993,21 +1993,11 @@ function StripeInlineCheckout({plan,lang,source,onSuccess}){
 /* ═══════════════════════════════════════════════════════════════════════════
    PREMIUM MODAL
    ═══════════════════════════════════════════════════════════════════════════ */
-function PremiumModal({onClose,lang,source,allBeaches,sargData}){
+function PremiumModal({onClose,lang,source}){
   const LL=T[lang]||T.fr
   const hasAnnual=!!STRIPE_LINK_ANNUAL
   const modalOpenedAt=useRef(Date.now())
   const sawCheckoutRef=useRef(false)
-  // Compute dynamic beach change count from weekly data
-  const changingCount=useMemo(()=>{
-    if(!sargData?.weekly||!allBeaches)return 3
-    let count=0
-    for(const b of allBeaches){
-      const w=sargData.weekly?.[BEACH_TO_SARG[b.id]]
-      if(w?.forecast?.length>=2&&w.forecast[0].status!==w.forecast[w.forecast.length-1].status)count++
-    }
-    return Math.max(count,1)
-  },[sargData,allBeaches])
   // A/B Test: pricing — season pass vs standard
   const priceV=abVariant("price1",["control","season"],[.5,.5])
   const hasSeason=priceV==="season"
@@ -2015,7 +2005,7 @@ function PremiumModal({onClose,lang,source,allBeaches,sargData}){
   const[showCheckout,setShowCheckout]=useState(false)
   const[showReferral,setShowReferral]=useState(false)
   const[refCopied,setRefCopied]=useState(false)
-  // A/B Test 2: modal value proposition
+  // A/B Test 2: modal value proposition — headline+subtitle only (social proof/anchor removed for simplicity)
   const modalV=abVariant("modal1",["control","family"],[.5,.5])
   const isFamily=modalV==="family"
   const headline=isFamily
@@ -2026,16 +2016,6 @@ function PremiumModal({onClose,lang,source,allBeaches,sargData}){
     :(SARGASSES_SEASON==="high"
       ?(lang==="en"?"Right now, beaches change status every day. Don't waste a trip.":"En ce moment, les plages changent de statut chaque jour. Ne gaspille pas un trajet.")
       :(lang==="en"?"Sargassum changes every day. Know before you go.":"Les sargasses changent chaque jour. Sache avant de partir."))
-  const socialProof=isFamily
-    ?(lang==="en"?"135 beaches monitored 4x per day via satellite":"135 plages surveillées 4x par jour par satellite")
-    :(lang==="en"?"300+ families check every week":"300+ familles consultent chaque semaine")
-  const anchor=isFamily
-    ?(lang==="en"?`This week, ${changingCount} beach${changingCount>1?"es":""} will change status. You'll know which.`:`Cette semaine, ${changingCount} plage${changingCount>1?"s":""} va changer de statut. Tu sauras ${changingCount>1?"lesquelles":"laquelle"}.`)
-    :(lang==="en"?"A wasted beach day = €80. Knowing before = €4.99/mo.":"Une journée gâchée = 80€. Savoir avant = 4,99€/mois.")
-  // Season urgency — peak is May 1, but high season starts April
-  const peakStart=new Date("2026-05-01")
-  const daysToPeak=Math.max(0,Math.ceil((peakStart-Date.now())/864e5))
-  const isHighSeason=SARGASSES_SEASON==="high"
   const effectivePlan=hasSeason?plan:(hasAnnual?plan:"monthly")
   return(
     <>
@@ -2050,43 +2030,14 @@ function PremiumModal({onClose,lang,source,allBeaches,sargData}){
         <div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
           margin:"-8px -24px 20px",padding:0}}/>
 
-        {/* Season urgency banner — adapts to current season state */}
-        {(isHighSeason||daysToPeak<=60)&&(
-          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14,
-            padding:"10px 12px",background:daysToPeak<=0?"rgba(232,82,42,.18)":"rgba(232,82,42,.12)",borderRadius:10,
-            border:`1px solid rgba(232,82,42,${daysToPeak<=0?.35:.25})`}}>
-            <span style={{fontSize:16}}>{daysToPeak<=0?"🔴":"⏰"}</span>
-            <span style={{fontSize:12,fontWeight:700,color:daysToPeak<=0?"#FF6B4A":"#FF8066"}}>
-              {daysToPeak<=0
-                ?(lang==="en"?"Sargassum season is NOW — beaches change daily":"Saison sargasses EN COURS — les plages changent chaque jour")
-                :daysToPeak<=30
-                  ?(lang==="en"?`Peak season in ${daysToPeak} days — don't get caught off guard`:`Pic saison dans ${daysToPeak} jours — ne te fais pas surprendre`)
-                  :(lang==="en"?`Sargassum season in ${daysToPeak} days — be ready`:`Saison sargasses dans ${daysToPeak} jours — sois prêt`)}
-            </span>
-          </div>
-        )}
-
-        <h2 className="anton" style={{fontSize:28,color:"#fff",marginBottom:4}}>{headline}</h2>
-        <p style={{fontSize:13,color:"#adbac7",marginBottom:6}}>{subtitle}</p>
-
-        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14,
-          padding:"8px 12px",background:"rgba(255,199,44,.08)",borderRadius:10,
-          border:"1px solid rgba(255,199,44,.15)"}}>
-          <span style={{fontSize:14}}>{isFamily?"👨‍👩‍👧‍👦":"👥"}</span>
-          <span style={{fontSize:12,fontWeight:600,color:"rgba(255,255,255,.7)"}}>{socialProof}</span>
-        </div>
-
-        <div style={{padding:"10px 12px",background:"rgba(255,255,255,.04)",borderRadius:10,
-          borderLeft:`2px solid rgba(${isFamily?"232,82,42":"232,168,0"},.4)`,marginBottom:16,fontSize:12,
-          color:"rgba(255,255,255,.5)",lineHeight:1.6}}>
-          {anchor}
-        </div>
+        <h2 className="anton" style={{fontSize:28,color:"#fff",marginBottom:6}}>{headline}</h2>
+        <p style={{fontSize:13,color:"#adbac7",marginBottom:18}}>{subtitle}</p>
 
         <ul style={{listStyle:"none",padding:0,margin:"0 0 16px",display:"flex",flexDirection:"column",gap:12}}>
-          {(SARGASSES_SEASON==="high"?(lang==="en"
-            ?["Season active — forecasts are most reliable NOW","Get warned BEFORE sargassum arrives","7-day forecast — plan your weekend with confidence","No ads · No commitment · 30-day guarantee"]
-            :["Saison active — les prévisions sont fiables MAINTENANT","Sois prévenu AVANT que les sargasses arrivent","Prévisions 7 jours — planifie ton weekend sereinement","Sans pub · Sans engagement · Satisfait ou remboursé"])
-          :LL.premiumFeatures).map((f,i)=>(
+          {(lang==="en"
+            ?["Get warned BEFORE sargassum arrives","7-day forecast to plan with confidence","Cancel in 1 click, no commitment"]
+            :["Sois prévenu AVANT que les sargasses arrivent","Prévisions 7 jours pour planifier sereinement","Annule en 1 clic, sans engagement"]
+          ).map((f,i)=>(
             <li key={i} style={{display:"flex",alignItems:"center",gap:10,fontSize:14}}>
               <span style={{color:C.gold,fontSize:18}}>✓</span>{f}
             </li>
@@ -2203,7 +2154,7 @@ function PremiumModal({onClose,lang,source,allBeaches,sargData}){
           <button onClick={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown"});sawCheckoutRef.current=true;setShowCheckout(true)}}
             className="gbtn" style={{width:"100%",textAlign:"center",fontSize:17,
               padding:"16px 24px",display:"block",border:"none",cursor:"pointer",fontFamily:"inherit"}}>
-            {LL.premiumCta} — {effectivePlan==="season"?"19,99 €":effectivePlan==="annual"?(lang==="en"?"€39.99/year":"39,99 €/an"):LL.premiumPrice}
+            {LL.premiumCta}
           </button>
         ):(
           <StripeInlineCheckout plan={effectivePlan} lang={lang} source={source}
@@ -3272,7 +3223,7 @@ export default function App(){
         )}
 
         {/* PREMIUM MODAL */}
-        {showPremium&&<PremiumModal onClose={()=>setShowPremium(false)} lang={lang} source={premiumSource} allBeaches={allBeaches} sargData={sargData}/>}
+        {showPremium&&<PremiumModal onClose={()=>setShowPremium(false)} lang={lang} source={premiumSource}/>}
 
         {/* First-visit hint — auto-dismiss on first tap or after 5s */}
         {showOnboarding&&view==="map"&&!selectedBeach&&(
