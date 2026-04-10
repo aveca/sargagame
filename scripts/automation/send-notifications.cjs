@@ -445,27 +445,64 @@ const FEATURED_BEACHES = {
 
 /**
  * Pick the top beach for morning brief on a given island.
- * Priority: clean > moderate > avoid. Within same status: shortest drive first,
- * kid-friendly bonus, beachMemory penalty.
- * Returns {top, alternatives, anyClean} or null if no data.
+ * Signals used (v2, 2026-04-10 — parity with DailyRecoStrip client):
+ * • status today (clean/moderate/avoid) — primary
+ * • AFAI continuous — rewards very clean waters
+ * • forecast J+1 — penalty if degrading tomorrow
+ * • drift trend — penalty if sargasses approaching
+ * • confidence — dampens unreliable picks
+ * • beach memory — persistent echouage penalty
+ * • drive time from hub — proximity proxy (no user geoloc at cron time)
+ * • amenities (kids)
+ * Returns {top, alternatives, anyClean, degradingTomorrow}.
  */
 function pickTopForBrief(sargassum, island) {
   const featured = FEATURED_BEACHES[island]
   if (!featured) return null
   const levelById = {}
   for (const lv of (sargassum.levels || [])) levelById[lv.id] = lv
+  const weekly = sargassum.weekly || {}
 
   const scored = featured.map(b => {
     const lv = levelById[b.id]
+    const wk = weekly[b.id]
+    const fc1 = wk?.forecast?.[1]
+    const drift = wk?.drift || null
+    const conf = (wk?.forecast?.[0]?.confidence) || 60
     const status = lv?.status || 'unknown'
     let score = 0
+    // 1. Status today
     if (status === 'clean') score += 1000
     else if (status === 'moderate') score += 400
     else if (status === 'avoid') score -= 500
-    score -= b.drive
-    if (b.kids) score += 5
-    if (lv?.beachMemory) score -= 150
-    return { ...b, status, afai: lv?.afai, beachMemory: lv?.beachMemory, _score: score }
+    // 2. Continuous AFAI — rewards 0.05 over 0.14
+    if (typeof lv?.afai === 'number') score -= lv.afai * 300
+    // 3. Forecast J+1 — heavy penalty if tomorrow degrades
+    if (fc1) {
+      if (fc1.status === 'avoid') score -= 300
+      else if (fc1.status === 'moderate') score -= 120
+    }
+    // 4. Drift trend
+    if (drift === 'up') score -= 150
+    else if (drift === 'down') score += 30
+    // 5. Confidence dampener
+    score = score * (0.6 + Math.min(conf, 100) / 250)
+    // 6. Beach memory
+    if (lv?.beachMemory) score -= 200
+    // 7. Drive time from hub
+    score -= b.drive * 1.5
+    // 8. Amenities tie-breaker
+    if (b.kids) score += 10
+    return {
+      ...b,
+      status,
+      afai: lv?.afai,
+      beachMemory: lv?.beachMemory,
+      forecastJ1: fc1?.status,
+      drift,
+      confidence: conf,
+      _score: Math.round(score * 10) / 10,
+    }
   })
   scored.sort((a, b) => b._score - a._score)
   const cleanOnes = scored.filter(s => s.status === 'clean')
@@ -474,27 +511,37 @@ function pickTopForBrief(sargassum, island) {
     alternatives: scored.slice(1, 3),
     anyClean: cleanOnes.length > 0,
     cleanCount: cleanOnes.length,
+    degradingTomorrow: scored[0]?.forecastJ1 && scored[0].forecastJ1 !== 'clean',
   }
 }
 
 /**
  * Build the morning brief message for one island.
- * Pattern: DayStart / Brella — short, actionable, one reco + alternatives count.
+ * Pattern: DayStart / Brella — short, actionable, one reco + context.
+ * v2: includes forecast-tomorrow warning and drift-approaching flag.
  */
 function buildBriefMessage(pick, islandName) {
   if (!pick || !pick.top) return null
   const t = pick.top
-  // Status-aware framing
   if (!pick.anyClean) {
     return `\u26a0\ufe0f Aujourd'hui en ${islandName}, aucune plage propre parmi les plus populaires. Verifie la carte avant de partir.`
   }
-  const base = t.status === 'clean'
+  // Base: top pick
+  let msg = t.status === 'clean'
     ? `\u2600\ufe0f Ta meilleure plage ${islandName} aujourd'hui : ${t.name} (${t.drive} min). Propre.`
     : `\u2600\ufe0f ${t.name} reste le meilleur choix ${islandName} aujourd'hui (${t.drive} min, ${statusLabel(t.status)}).`
-  const altPart = pick.alternatives.filter(a => a.status === 'clean').length > 0
-    ? ` +${pick.alternatives.filter(a => a.status === 'clean').length} alternative(s) proche(s).`
-    : ''
-  return base + altPart
+  // Forward-looking warnings
+  if (t.forecastJ1 && t.forecastJ1 !== 'clean') {
+    msg += ` Attention : ${statusLabel(t.forecastJ1)} prevu demain.`
+  } else if (t.drift === 'up') {
+    msg += ` Sargasses en approche ces prochains jours.`
+  }
+  // Alternatives count (clean only)
+  const cleanAlts = pick.alternatives.filter(a => a.status === 'clean').length
+  if (cleanAlts > 0 && !msg.includes('Attention') && !msg.includes('approche')) {
+    msg += ` +${cleanAlts} alternative(s) proche(s).`
+  }
+  return msg
 }
 
 /**

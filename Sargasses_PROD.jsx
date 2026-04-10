@@ -1629,29 +1629,68 @@ function windCompass(deg,lang){
   return dirs[Math.round(deg/45)%8]
 }
 
-function DailyRecoStrip({allBeaches,sargData,island,lang,isPremium,onBeachClick,userPos,onPremiumClick}){
+function DailyRecoStrip({allBeaches,sargData,island,lang,isPremium,onBeachClick,userPos,onPremiumClick,communityReports}){
   const[expanded,setExpanded]=useState(false)
 
-  // Score NOW (not 7-day avg) — data-driven: users search "aujourd'hui"
+  // Score NOW + near-term forecast. Signals used (v2, 2026-04-10):
+  // • status today (clean/moderate/avoid) — primary
+  // • AFAI continuous value — differentiates 0.05 vs 0.14 (both "clean")
+  // • forecast J+1 status — penalty if degrading tomorrow
+  // • trend drift (up/stable/down) — penalty if sargasses drifting toward beach
+  // • confidence — dampens unreliable picks
+  // • beach memory — persistent echouage penalty
+  // • community reports — terrain wins over satellite when ≥3 reports differ
+  // • distance (geoloc) OR drive time fallback — proximity wins ties
+  // • amenities (kids, parking)
   const picks=useMemo(()=>{
     if(!allBeaches?.length)return[]
     const islandBeaches=allBeaches.filter(b=>b.island===island&&b.status&&b.status!=="_loading")
     if(!islandBeaches.length)return[]
     const scored=islandBeaches.map(b=>{
       const dist=userPos?haversine(userPos.lat,userPos.lng,b.lat,b.lng):null
+      const sargId=BEACH_TO_SARG[b.id]
+      const weekly=sargId&&sargData?.weekly?.[sargId]
+      const fc1=weekly?.forecast?.[1]
+      const drift=weekly?.drift||null
       let score=0
+      // 1. Status today (dominant)
       if(b.status==="clean")score+=100
       else if(b.status==="moderate")score+=40
-      else score-=50 // avoid
-      if(dist!=null)score-=Math.min(dist,50)
+      else score-=50
+      // 2. Continuous AFAI — reward very clean waters (0.05) over borderline (0.14)
+      if(typeof b.afai==="number")score-=b.afai*60 // 0.05→-3, 0.14→-8, 0.42→-25
+      // 3. Forecast J+1 — heavy penalty if tomorrow degrades
+      if(fc1){
+        if(fc1.status==="avoid")score-=35
+        else if(fc1.status==="moderate")score-=15
+      }
+      // 4. Trend drift — banc approaching is bad news
+      if(drift==="up")score-=20
+      else if(drift==="down")score+=5
+      // 5. Confidence dampener — low confidence reduces the score's signal
+      const conf=(weekly?.forecast?.[0]?.confidence)||60
+      score=score*(0.6+Math.min(conf,100)/250) // conf 60→0.84, 100→1.0, 20→0.68
+      // 6. Community reports override (terrain wins)
+      const cReports=communityReports?.[b.id]||communityReports?.[sargId]
+      if(cReports&&cReports.total>=3){
+        const avoidPct=cReports.avoid/cReports.total
+        const modPct=cReports.moderate/cReports.total
+        if(avoidPct>=0.5)score-=50
+        else if(modPct>=0.5)score-=20
+      }
+      // 7. Beach memory (recent echouage still on sand)
+      if(b.beachMemory)score-=25
+      // 8. Distance — geoloc real distance or drive time fallback
+      if(dist!=null)score-=Math.min(dist,50)*1.2
+      else if(typeof b.drive==="number")score-=Math.min(b.drive,90)*0.6 // 18min→-11, 52min→-31
+      // 9. Amenities (tie-breakers)
       if(b.kids)score+=5
       if(b.parking)score+=3
-      if(b.beachMemory)score-=15 // penalty: recent echouage persistant
-      return{...b,_score:score,_dist:dist}
+      return{...b,_score:Math.round(score*10)/10,_dist:dist,_fc1:fc1,_drift:drift,_conf:conf,_communityReports:cReports}
     })
     scored.sort((a,b)=>b._score-a._score)
     return scored.slice(0,3)
-  },[allBeaches,island,userPos])
+  },[allBeaches,island,userPos,sargData,communityReports])
 
   const top=picks[0]
   const weather=useWeather(top)
@@ -1660,13 +1699,28 @@ function DailyRecoStrip({allBeaches,sargData,island,lang,isPremium,onBeachClick,
   const topSt=ST[top.status]||ST._loading
 
   // Verdict text — Smart Forecast pattern (Weather Underground)
+  // Verdict text — priorities: community > memory > forecast J+1 > drift > weather > default
   const verdict=(()=>{
+    const fc1=top._fc1,drift=top._drift
+    if(top._communityReports&&top._communityReports.total>=3){
+      return lang==="en"?`${top._communityReports.total} visitor reports on site`:`${top._communityReports.total} signalements visiteurs sur place`
+    }
     if(top.beachMemory)return lang==="en"?"Recent beaching — check on site":"Mémoire échouage — vérifie sur place"
     if(top.status==="avoid")return lang==="en"?"Difficult conditions island-wide":"Conditions difficiles partout"
     if(top.status==="moderate")return lang==="en"?"Moderate — verify on site":"Modéré — vérifie sur place"
+    // Top is clean — look ahead
+    if(fc1&&fc1.status&&fc1.status!=="clean"){
+      return lang==="en"?`Clean today but ${fc1.status} tomorrow`:`Propre aujourd'hui, ${statusFromAfai(fc1.afai)==="moderate"?"modéré":"alerte"} demain`
+    }
+    if(drift==="up"){
+      return lang==="en"?"Clean now but sargassum drifting in":"Propre mais sargasses en approche"
+    }
+    if(weather?.precipitation>5){
+      return lang==="en"?`Clean but rain ${Math.round(weather.precipitation)}mm today`:`Propre mais pluie ${Math.round(weather.precipitation)}mm aujourd'hui`
+    }
     if(weather?.wind!=null&&weather.windDir!=null){
       const wd=windCompass(weather.windDir,lang)
-      return lang==="en"?`Wind ${wd} ${weather.wind}km/h · stable`:`Vent ${wd} ${weather.wind}km/h · stable`
+      return lang==="en"?`Wind ${wd} ${weather.wind}km/h · clean & stable`:`Vent ${wd} ${weather.wind}km/h · propre et stable`
     }
     return lang==="en"?"Stable conditions":"Conditions stables"
   })()
@@ -3478,7 +3532,7 @@ export default function App(){
         {view==="map"&&!selectedBeach&&!showOnboarding&&!hasActiveThreat&&!search.trim()&&(
           <DailyRecoStrip allBeaches={allBeaches} sargData={sargData} island={island}
             lang={lang} isPremium={isPremium} onBeachClick={onBeachClick}
-            userPos={userPos} onPremiumClick={openPremium}/>
+            userPos={userPos} onPremiumClick={openPremium} communityReports={communityReports}/>
         )}
 
         {/* WeekendBanner removed — upsell disguised as feature */}
