@@ -345,6 +345,125 @@ async function sendProactiveForecastPush(sargassum) {
   return results
 }
 
+// ── Morning brief — daily personalized push (F3) ─────────────
+
+/**
+ * Featured beaches per island with drive time from main hub
+ * (Fort-de-France for MQ, Pointe-a-Pitre for GP).
+ * Used by the morning brief to pick a top "go-to" beach with context.
+ */
+const FEATURED_BEACHES = {
+  mq: [
+    { id: 'anse-mitan',   name: 'Anse Mitan',              drive: 18, kids: true },
+    { id: 'anse-noire',   name: 'Anse Noire',              drive: 28, kids: true },
+    { id: 'grande-anse',  name: "Grande Anse d'Arlet",     drive: 25, kids: true },
+    { id: 'anse-madame',  name: 'Anse Madame',             drive: 12, kids: true },
+    { id: 'tartane',      name: 'Tartane',                 drive: 30, kids: true },
+    { id: 'diamant',      name: 'Le Diamant',              drive: 32, kids: false },
+    { id: 'pt-marin',     name: 'Pointe du Marin',         drive: 42, kids: true },
+    { id: 'sainte-anne',  name: 'Sainte-Anne (bourg)',     drive: 48, kids: true },
+    { id: 'les-salines',  name: 'Plage des Salines',       drive: 52, kids: true },
+    { id: 'vauclin',      name: 'Le Vauclin',              drive: 55, kids: true },
+  ],
+  gp: [
+    { id: 'gp-bas-du-fort',  name: 'Bas du Fort',            drive: 12, kids: true },
+    { id: 'gp-gosier',       name: 'Le Gosier',              drive: 15, kids: true },
+    { id: 'gp-sainte-anne',  name: 'Sainte-Anne',            drive: 30, kids: true },
+    { id: 'gp-caravelle',    name: 'La Caravelle',           drive: 32, kids: true },
+    { id: 'gp-pt-chateaux',  name: 'Pointe des Ch\u00e2teaux',drive: 45, kids: false },
+    { id: 'gp-grande-anse',  name: 'Grande Anse',            drive: 40, kids: true },
+    { id: 'gp-deshaies',     name: 'Deshaies',               drive: 45, kids: true },
+    { id: 'gp-malendure',    name: 'Malendure',              drive: 50, kids: true },
+    { id: 'gp-moule',        name: 'Le Moule',               drive: 35, kids: true },
+    { id: 'gp-vieux-fort',   name: 'Vieux-Fort',             drive: 55, kids: false },
+  ],
+}
+
+/**
+ * Pick the top beach for morning brief on a given island.
+ * Priority: clean > moderate > avoid. Within same status: shortest drive first,
+ * kid-friendly bonus, beachMemory penalty.
+ * Returns {top, alternatives, anyClean} or null if no data.
+ */
+function pickTopForBrief(sargassum, island) {
+  const featured = FEATURED_BEACHES[island]
+  if (!featured) return null
+  const levelById = {}
+  for (const lv of (sargassum.levels || [])) levelById[lv.id] = lv
+
+  const scored = featured.map(b => {
+    const lv = levelById[b.id]
+    const status = lv?.status || 'unknown'
+    let score = 0
+    if (status === 'clean') score += 1000
+    else if (status === 'moderate') score += 400
+    else if (status === 'avoid') score -= 500
+    score -= b.drive
+    if (b.kids) score += 5
+    if (lv?.beachMemory) score -= 150
+    return { ...b, status, afai: lv?.afai, beachMemory: lv?.beachMemory, _score: score }
+  })
+  scored.sort((a, b) => b._score - a._score)
+  const cleanOnes = scored.filter(s => s.status === 'clean')
+  return {
+    top: scored[0],
+    alternatives: scored.slice(1, 3),
+    anyClean: cleanOnes.length > 0,
+    cleanCount: cleanOnes.length,
+  }
+}
+
+/**
+ * Build the morning brief message for one island.
+ * Pattern: DayStart / Brella — short, actionable, one reco + alternatives count.
+ */
+function buildBriefMessage(pick, islandName) {
+  if (!pick || !pick.top) return null
+  const t = pick.top
+  // Status-aware framing
+  if (!pick.anyClean) {
+    return `\u26a0\ufe0f Aujourd'hui en ${islandName}, aucune plage propre parmi les plus populaires. Verifie la carte avant de partir.`
+  }
+  const base = t.status === 'clean'
+    ? `\u2600\ufe0f Ta meilleure plage ${islandName} aujourd'hui : ${t.name} (${t.drive} min). Propre.`
+    : `\u2600\ufe0f ${t.name} reste le meilleur choix ${islandName} aujourd'hui (${t.drive} min, ${statusLabel(t.status)}).`
+  const altPart = pick.alternatives.filter(a => a.status === 'clean').length > 0
+    ? ` +${pick.alternatives.filter(a => a.status === 'clean').length} alternative(s) proche(s).`
+    : ''
+  return base + altPart
+}
+
+/**
+ * Send the morning brief push for both islands.
+ * Called by CLI mode --morning-brief (GH Actions cron 7h57 Antilles = 11h57 UTC).
+ */
+async function sendMorningBriefPush(sargassum) {
+  const results = []
+  for (const island of ['mq', 'gp']) {
+    const islandName = island === 'gp' ? 'Guadeloupe' : 'Martinique'
+    const pick = pickTopForBrief(sargassum, island)
+    if (!pick || !pick.top) {
+      console.log(`[MORNING-BRIEF] No pick for ${island} — skipping.`)
+      continue
+    }
+    const msg = buildBriefMessage(pick, islandName)
+    if (!msg) continue
+    const heading = `Ton brief plages \u2600\ufe0f`
+    console.log(`[MORNING-BRIEF] ${island.toUpperCase()}: ${msg}`)
+    const res = await sendPushNotification(island, msg, heading)
+    results.push({
+      type: 'morning-brief',
+      island,
+      topBeach: pick.top.id,
+      topStatus: pick.top.status,
+      cleanCount: pick.cleanCount,
+      message: msg,
+      ...res,
+    })
+  }
+  return results
+}
+
 // ── Weekly email digest via Google Sheets webhook ────────────
 
 async function sendWeeklyDigest(currentLevels, alerts, goodNews) {
@@ -410,8 +529,12 @@ async function sendWeeklyDigest(currentLevels, alerts, goodNews) {
 // ── Main ─────────────────────────────────────────────────────
 
 async function main() {
+  const argv = process.argv.slice(2)
+  const MODE_MORNING_BRIEF = argv.includes('--morning-brief')
+
   console.log('=== send-notifications.cjs ===')
   console.log(`Date: ${new Date().toISOString()}`)
+  if (MODE_MORNING_BRIEF) console.log('Mode: --morning-brief (skip change detection + digest)')
 
   // 1. Read data
   const sargassum = readJSON(SARGASSUM_PATH)
@@ -420,6 +543,26 @@ async function main() {
   if (!sargassum || !sargassum.levels) {
     console.error('[ERROR] sargassum.json missing or invalid — aborting.')
     appendLog({ script: 'send-notifications', action: 'error', error: 'sargassum.json missing or invalid' })
+    return
+  }
+
+  // Morning brief mode: send only the daily brief, nothing else
+  if (MODE_MORNING_BRIEF) {
+    try {
+      const briefResults = await sendMorningBriefPush(sargassum)
+      const sentCount = briefResults.filter(r => r.sent).length
+      console.log(`[MORNING-BRIEF] Done. ${sentCount}/${briefResults.length} push(es) sent.`)
+      appendLog({
+        script: 'send-notifications',
+        action: 'morning-brief',
+        sent: sentCount,
+        total: briefResults.length,
+        details: briefResults,
+      })
+    } catch (e) {
+      console.error(`[ERROR] Morning brief failed: ${e.message}`)
+      appendLog({ script: 'send-notifications', action: 'morning-brief-error', error: e.message })
+    }
     return
   }
 

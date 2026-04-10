@@ -1,0 +1,49 @@
+name: Morning Brief — daily push (F3)
+
+# Sends a personalized morning brief push to all OneSignal subscribers,
+# picking the top beach of the day per island. Pattern: DayStart / Brella /
+# Fitbit Morning Brief / Weather Underground Smart Forecast.
+#
+# Timing: 07:57 Antilles local (UTC-4, no DST) = 11:57 UTC year-round.
+# Why 11:57 and not 12:00? Deterministic cron load balancing — see Claude
+# feedback on avoiding :00/:30 marks when the exact time doesn't matter.
+
+on:
+  schedule:
+    - cron: '57 11 * * *'  # 07:57 MQ/GP local, every day
+  workflow_dispatch: # manual trigger for testing
+
+permissions:
+  contents: read
+
+jobs:
+  send-morning-brief:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      # No npm install — script uses only Node built-ins (https, fs, path)
+
+      - name: Send morning brief push
+        env:
+          ONESIGNAL_API_KEY_MQ: ${{ secrets.ONESIGNAL_API_KEY_MQ }}
+          ONESIGNAL_API_KEY_GP: ${{ secrets.ONESIGNAL_API_KEY_GP }}
+        run: node scripts/automation/send-notifications.cjs --morning-brief
+
+      - name: Upload log artifact (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: morning-brief-log
+          path: scripts/automation/data/automation-log.json
+          retention-days: 7
