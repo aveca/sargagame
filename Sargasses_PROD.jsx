@@ -2040,8 +2040,8 @@ function PremiumModal({onClose,lang,source,onActivated}){
 
         <ul style={{listStyle:"none",padding:0,margin:"0 0 16px",display:"flex",flexDirection:"column",gap:12}}>
           {(lang==="en"
-            ?["Get warned BEFORE sargassum arrives","7-day forecast to plan with confidence","Cancel in 1 click, no commitment"]
-            :["Sois prévenu AVANT que les sargasses arrivent","Prévisions 7 jours pour planifier sereinement","Annule en 1 clic, sans engagement"]
+            ?["7 days free — 0€ charged today","Get warned BEFORE sargassum arrives","7-day forecast to plan with confidence"]
+            :["7 jours gratuits — 0€ débité aujourd'hui","Sois prévenu AVANT que les sargasses arrivent","Prévisions 7 jours pour planifier sereinement"]
           ).map((f,i)=>(
             <li key={i} style={{display:"flex",alignItems:"center",gap:10,fontSize:14}}>
               <span style={{color:C.gold,fontSize:18}}>✓</span>{f}
@@ -2158,8 +2158,11 @@ function PremiumModal({onClose,lang,source,onActivated}){
         {!showCheckout?(
           <button onClick={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown"});sawCheckoutRef.current=true;setShowCheckout(true)}}
             className="gbtn" style={{width:"100%",textAlign:"center",fontSize:17,
-              padding:"16px 24px",display:"block",border:"none",cursor:"pointer",fontFamily:"inherit"}}>
-            {LL.premiumCta}
+              padding:"16px 24px",display:"block",border:"none",cursor:"pointer",fontFamily:"inherit",lineHeight:1.2}}>
+            <div>{LL.premiumCta}</div>
+            <div style={{fontSize:11,opacity:.7,fontWeight:400,marginTop:3}}>
+              {lang==="en"?"0€ charged today · cancel anytime":"0€ débité aujourd'hui · annule quand tu veux"}
+            </div>
           </button>
         ):(
           <StripeInlineCheckout plan={effectivePlan} lang={lang} source={source}
