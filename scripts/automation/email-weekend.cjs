@@ -96,7 +96,7 @@ function buildEmailHTML(island, topBeaches, stats, domain) {
       </div>
     </div>
 
-    <div style="font-size:13px;font-weight:700;color:#0D0D0D;margin-bottom:10px">Plages recommandees ce weekend :</div>
+    <div style="font-size:13px;font-weight:700;color:#0D0D0D;margin-bottom:10px">Plages recommandees samedi :</div>
     <table style="width:100%;border-collapse:collapse">${beachRows}</table>
   </div>
 
@@ -119,7 +119,7 @@ function buildEmailHTML(island, topBeaches, stats, domain) {
     <a href="https://${domain}" style="display:inline-block;padding:14px 32px;background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);
       color:#0D0D0D;text-decoration:none;border-radius:12px;font-size:15px;font-weight:700;
       box-shadow:0 4px 16px rgba(232,168,0,.3)">Voir la carte en temps reel</a>
-    <div style="font-size:11px;color:#999;margin-top:12px">Donnees satellite NOAA · Mis a jour 4x/jour</div>
+    <div style="font-size:11px;color:#999;margin-top:12px">Prevision satellite pour samedi · Mise a jour 4x/jour</div>
   </div>
 
   <div style="text-align:center;padding:16px;font-size:10px;color:#999">
@@ -144,13 +144,25 @@ async function main() {
   try { sargData = JSON.parse(fs.readFileSync(SARG_PATH, 'utf-8')) } catch { console.error('No sargassum.json'); return }
   try { beaches = JSON.parse(fs.readFileSync(BEACHES_PATH, 'utf-8')) } catch { beaches = [] }
 
-  // Merge real-time status from sargassum.json into beaches
+  // Build Saturday forecast map (tomorrow from Friday = Saturday)
+  const saturday = new Date()
+  saturday.setDate(saturday.getDate() + 1)
+  const saturdayDate = saturday.toISOString().split('T')[0]
+  const satStatusMap = {}
+  for (const [sargId, beachData] of Object.entries(sargData.weekly || {})) {
+    const satForecast = (beachData.forecast || []).find(f => f.date === saturdayDate)
+    if (satForecast) satStatusMap[sargId] = satForecast.status
+  }
+  const usedForecast = Object.keys(satStatusMap).length > 0
+  console.log(`Saturday forecast (${saturdayDate}): ${usedForecast ? Object.keys(satStatusMap).length + ' beaches' : 'none, using current'}`)
+
+  // Merge weekend status into beaches: prefer Saturday forecast over current status
   const beachMap = {}
   for (const b of beaches) beachMap[b.id] = b
   for (const level of (sargData.levels || [])) {
     const beachId = SARG_TO_BEACH[level.id]
     if (beachId && beachMap[beachId]) {
-      beachMap[beachId].status = level.status
+      beachMap[beachId].status = satStatusMap[level.id] || level.status
     }
   }
 
