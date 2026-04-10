@@ -4,7 +4,7 @@
 
 | Outil | Martinique | Guadeloupe | URL |
 |-------|-----------|------------|-----|
-| Google Analytics 4 | G-V83JGMDZ2Y | G-Q31VV3LLM9 | https://analytics.google.com |
+| Google Analytics 4 | G-V8JGMDZZ2Y | G-Q31VV3LLM9 | https://analytics.google.com |
 | Microsoft Clarity | w4o6w9aenv | w4oect7ph3 | https://clarity.microsoft.com |
 | Google Search Console | sc-domain:sargasses-martinique.com | sc-domain:sargasses-guadeloupe.com | https://search.google.com/search-console |
 | GA4 <-> GSC | Associe | Associe | Admin > Associations > Search Console |

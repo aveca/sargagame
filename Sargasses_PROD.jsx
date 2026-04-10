@@ -219,7 +219,7 @@ function track(event,params={}){
   // Measurement Protocol direct beacon — bypasses gtag.js DMA block
   try{
     const isGP=window.location.hostname.includes("guadeloupe")
-    const mid=isGP?"G-Q31VV3LLM9":"G-V83JGMDZ2Y"
+    const mid=isGP?"G-Q31VV3LLM9":"G-V8JGMDZZ2Y"
     const sec=isGP?"eWAv3vACT6uVzcrAi7JgYQ":"eFHMRr4tQ-2B-JYidixOSA"
     const cid=document.cookie.match(/_ga=GA\d+\.\d+\.(\d+\.\d+)/)?.[1]||"a."+Date.now()
     navigator.sendBeacon&&navigator.sendBeacon(

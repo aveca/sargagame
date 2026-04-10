@@ -126,7 +126,7 @@ Sitemap: https://${domain}/sitemap.xml
       content = content.replace(/sargasses-martinique\.com/g, 'sargasses-guadeloupe.com')
 
       // 2. GA4 + Clarity IDs
-      content = content.replace(/G-V83JGMDZ2Y/g, 'G-Q31VV3LLM9')
+      content = content.replace(/G-V8JGMDZZ2Y/g, 'G-Q31VV3LLM9')
       content = content.replace(/w4o6w9aenv/g, 'w4oect7ph3')
 
       // 3. Geo meta tags
