@@ -328,7 +328,16 @@ export default defineConfig({
             const beachTitle = `${b.name} — Sargasses ${island} aujourd'hui`
             const statusTextMap = { clean: 'Plage propre aujourd\u2019hui', moderate: 'Présence modérée de sargasses détectée au large', avoid: 'Alerte sargasses — forte concentration détectée au large' }
             const statusText = statusTextMap[b.status] || statusTextMap.clean
-            const beachDesc = `État des sargasses à ${b.name} (${b.commune}) aujourd'hui. ${statusText}. Prévisions 7 jours, météo, photos. Mis à jour quotidiennement.`
+            // Rich unique meta description: beach name + commune + island + coast type + status + amenity
+            const _isAtl = isMQ ? b.lng > -61.0 : b.lng > -61.3
+            const _isCarib = isMQ ? b.lng < -61.1 : b.lng < -61.6
+            const _cote = _isAtl ? 'côte Atlantique' : _isCarib ? (isMQ ? 'côte Caraïbe' : 'côte sous-le-vent') : 'côte centrale'
+            const _amenity = b.snorkel ? 'Snorkeling. ' : b.kids ? 'Idéal familles. ' : ''
+            const beachDesc = b.status === 'clean'
+              ? `${b.name} (${b.commune}, ${island}) — plage propre aujourd'hui. ${_cote}${_isAtl ? ', état favorable en ce moment' : ', généralement protégée des sargasses'}. ${_amenity}Prévisions 7 jours.`
+              : b.status === 'moderate'
+              ? `Sargasses à ${b.name} (${b.commune}, ${island}) — présence modérée détectée au large. ${_cote}. ${_amenity}Carte en temps réel et prévisions 7 jours.`
+              : `Alerte sargasses à ${b.name} (${b.commune}, ${island}). Forte concentration détectée sur la ${_cote}. Carte des plages propres à proximité.`
             const beachUrl = `https://${domain}/plages/${b.slug}/`
             const amenities = []
             if (b.parking) amenities.push({"@type":"LocationFeatureSpecification","name":"Parking","value":true})
