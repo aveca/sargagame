@@ -2043,8 +2043,8 @@ function PremiumModal({onClose,lang,source,allBeaches,sargData}){
       <div style={{
         position:"fixed",bottom:0,left:0,right:0,zIndex:1100,
         background:"linear-gradient(145deg,#0D1E1C,#0A1714)",
-        borderRadius:"24px 24px 0 0",padding:"28px 24px 40px",
-        color:"#e6edf3",maxHeight:"80vh",overflow:"auto",
+        borderRadius:"24px 24px 0 0",padding:"28px 24px 20px",
+        color:"#e6edf3",maxHeight:"85vh",overflow:"auto",
       }}>
         <div className="sheet-handle" style={{background:"rgba(255,255,255,.2)"}}/>
         <div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
@@ -2092,6 +2092,11 @@ function PremiumModal({onClose,lang,source,allBeaches,sargData}){
             </li>
           ))}
         </ul>
+
+        {/* CTA section — sticky so it's always visible even if user hasn't scrolled */}
+        <div style={{position:"sticky",bottom:0,
+          background:"linear-gradient(180deg,transparent 0,#0A1714 16px)",
+          paddingTop:8,paddingBottom:12,marginLeft:-24,marginRight:-24,paddingLeft:24,paddingRight:24}}>
 
         {/* Plan toggle — season variant shows season pass + monthly, control shows monthly + annual */}
         {hasSeason?(
@@ -2218,6 +2223,7 @@ function PremiumModal({onClose,lang,source,allBeaches,sargData}){
         }}>{LL.close}</button>
         </>
         )}
+        </div>{/* end sticky CTA section */}
       </div>
     </>
   )
