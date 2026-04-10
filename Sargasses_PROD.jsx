@@ -1615,86 +1615,199 @@ function BeachPicker({island,allBeaches,onSelect,lang,userPos,onDismiss}){
    TODO: revisit when UX flow for "my beach status" is decided. */
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   BEST BEACH WIDGET — "Quelle plage ce weekend ?" — THE differentiator
-   Scores: forecast cleanliness × distance × amenities × weather
+   DAILY RECO STRIP — "Ta meilleure plage maintenant" — smart forecast pattern
+   Data-driven decision (2026-04-10 audit premium):
+   • GSC intent = "aujourd'hui / temps réel" (162 clics top query, 0 sur "weekend")
+   • Funnel 2% CTA → value prop cassée, angle "7j débloqués" ne matche pas
+   • Clarity carte = 25.71% clics → la carte reste le canvas principal
+   • Pattern: Weather Underground Smart Forecast + Windy + card mobile 2026
+   Gratuit : nom visible + reco principale. Premium : alternatives dépliables.
    ═══════════════════════════════════════════════════════════════════════════ */
-function BestBeachWidget({allBeaches,sargData,island,lang,isPremium,onBeachClick,userPos,onPremiumClick}){
-  const pick=useMemo(()=>{
-    if(!sargData?.weekly)return null
-    const islandBeaches=allBeaches.filter(b=>b.island===island&&b.status==="clean")
-    if(!islandBeaches.length)return null
+function windCompass(deg,lang){
+  if(deg==null)return""
+  const dirs=lang==="en"?["N","NE","E","SE","S","SW","W","NW"]:["N","NE","E","SE","S","SO","O","NO"]
+  return dirs[Math.round(deg/45)%8]
+}
+
+function DailyRecoStrip({allBeaches,sargData,island,lang,isPremium,onBeachClick,userPos,onPremiumClick}){
+  const[expanded,setExpanded]=useState(false)
+
+  // Score NOW (not 7-day avg) — data-driven: users search "aujourd'hui"
+  const picks=useMemo(()=>{
+    if(!allBeaches?.length)return[]
+    const islandBeaches=allBeaches.filter(b=>b.island===island&&b.status&&b.status!=="_loading")
+    if(!islandBeaches.length)return[]
     const scored=islandBeaches.map(b=>{
+      const dist=userPos?haversine(userPos.lat,userPos.lng,b.lat,b.lng):null
       let score=0
-      const sargId=BEACH_TO_SARG[b.id]
-      const wkEntry=sargId&&sargData.weekly[sargId]
-      if(wkEntry){
-        const wk=Array.isArray(wkEntry)?wkEntry:(wkEntry.forecast||[])
-        score+=wk.filter(d=>d&&d.afai<0.15).length*10
-      }else{score+=b.afai<0.15?50:b.afai<0.4?20:0}
-      const dist=userPos?haversine(userPos.lat,userPos.lng,b.lat,b.lng):30
-      score+=Math.max(0,30-dist)
-      if(b.kids)score+=8
-      if(b.parking)score+=5
-      if(b.snorkel)score+=5
+      if(b.status==="clean")score+=100
+      else if(b.status==="moderate")score+=40
+      else score-=50 // avoid
+      if(dist!=null)score-=Math.min(dist,50)
+      if(b.kids)score+=5
+      if(b.parking)score+=3
+      if(b.beachMemory)score-=15 // penalty: recent echouage persistant
       return{...b,_score:score,_dist:dist}
     })
     scored.sort((a,b)=>b._score-a._score)
-    return scored[0]||null
-  },[allBeaches,sargData,island,userPos])
-  const weather=useWeather(pick)
-  if(!pick)return null
-  const distLabel=userPos?Math.round(pick._dist)+"km":pick.drive?pick.drive+"min":""
-  // Weekend day name — season-aware
-  const now=new Date(),dow=now.getDay()
-  const dayLabel=SARGASSES_SEASON==="high"
-    ?(lang==="en"?"Sargasses season":"Saison sargasses")
-    :dow===6?(lang==="en"?"Today":"Aujourd'hui"):dow===0?(lang==="en"?"Today":"Aujourd'hui")
-    :(lang==="en"?"This Saturday":"Ce samedi")
+    return scored.slice(0,3)
+  },[allBeaches,island,userPos])
+
+  const top=picks[0]
+  const weather=useWeather(top)
+  if(!top)return null
+
+  const topSt=ST[top.status]||ST._loading
+
+  // Verdict text — Smart Forecast pattern (Weather Underground)
+  const verdict=(()=>{
+    if(top.beachMemory)return lang==="en"?"Recent beaching — check on site":"Mémoire échouage — vérifie sur place"
+    if(top.status==="avoid")return lang==="en"?"Difficult conditions island-wide":"Conditions difficiles partout"
+    if(top.status==="moderate")return lang==="en"?"Moderate — verify on site":"Modéré — vérifie sur place"
+    if(weather?.wind!=null&&weather.windDir!=null){
+      const wd=windCompass(weather.windDir,lang)
+      return lang==="en"?`Wind ${wd} ${weather.wind}km/h · stable`:`Vent ${wd} ${weather.wind}km/h · stable`
+    }
+    return lang==="en"?"Stable conditions":"Conditions stables"
+  })()
+
+  const distLabel=top._dist!=null?`${Math.round(top._dist)} km`:""
+  const driveLabel=top.drive?`${top.drive} min`:""
+
+  const handleMainClick=()=>{
+    track("sg_daily_reco_main_click",{beach_id:top.id,status:top.status,is_premium:isPremium})
+    onBeachClick(top)
+  }
+  const handleAltClick=(e)=>{
+    e.stopPropagation()
+    if(isPremium){
+      setExpanded(!expanded)
+      track("sg_daily_reco_alt_toggle",{expanded:!expanded})
+    }else{
+      track("sg_daily_reco_lock_click",{source:"alternatives"})
+      onPremiumClick("daily_reco")
+    }
+  }
+  const handleWazeClick=(e)=>{
+    e.stopPropagation()
+    track("sg_daily_reco_waze",{beach_id:top.id})
+  }
+  const wazeUrl=`https://waze.com/ul?ll=${top.lat},${top.lng}&navigate=yes`
+
   return(
-    <div onClick={()=>{
-      if(isPremium){onBeachClick(pick);track("sg_best_beach_click",{beach:pick.id})}
-      else{onPremiumClick("best_beach");track("sg_best_beach_lock",{beach:pick.id})}
-    }} style={{
-      position:"absolute",top:"max(170px,env(safe-area-inset-top,12px) + 160px)",right:12,zIndex:750,
-      background:"linear-gradient(145deg,rgba(13,30,28,.95),rgba(10,23,20,.95))",
-      backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
-      borderRadius:18,padding:"14px 16px",maxWidth:210,cursor:"pointer",
-      border:"1px solid rgba(255,199,44,.25)",
-      animation:"slideUp .5s cubic-bezier(.22,1,.36,1), goldGlow 3s ease-in-out infinite",
+    <div style={{
+      position:"fixed",
+      bottom:"calc(74px + env(safe-area-inset-bottom,0px))",
+      left:12,right:12,zIndex:720,
+      maxWidth:480,margin:"0 auto",
+      background:"var(--sg-card,#fff)",
+      borderRadius:16,
+      boxShadow:"0 4px 20px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04)",
+      overflow:"hidden",
+      animation:"slideUp .4s cubic-bezier(.22,1,.36,1)",
     }}>
-      {/* Gold accent line */}
-      <div style={{position:"absolute",top:0,left:16,right:16,height:2,borderRadius:1,
-        background:"linear-gradient(90deg,transparent,"+C.goldL+",transparent)"}}/>
-      <div style={{fontSize:8,fontWeight:700,letterSpacing:".12em",textTransform:"uppercase",
-        color:C.goldL,marginBottom:8,display:"flex",alignItems:"center",gap:5}}>
-        <span style={{display:"inline-block",width:5,height:5,borderRadius:3,background:C.goldL,
-          animation:"pulse 2s infinite"}}/>
-        {dayLabel}
-      </div>
-      <div style={{fontSize:15,fontWeight:700,color:"#fff",marginBottom:4,lineHeight:1.2,
-        whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{isPremium?pick.name:"••••••••••"}</div>
-      <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:"rgba(255,255,255,.6)",flexWrap:"wrap"}}>
-        <span style={{color:C.green,fontSize:13}}>✅</span>
-        <span>{lang==="en"?"Clean":"Propre"}</span>
-        {distLabel&&<><span style={{color:"rgba(255,255,255,.15)"}}>·</span><span>{distLabel}</span></>}
-        {pick.kids&&<span>🧒</span>}
-        {pick.snorkel&&<span>🤿</span>}
-      </div>
-      {/* Weather preview */}
-      {weather&&(
-        <div style={{display:"flex",gap:8,marginTop:8,padding:"6px 0 0",
-          borderTop:"1px solid rgba(255,255,255,.08)"}}>
-          <span style={{fontSize:10,color:"rgba(255,255,255,.5)"}}>🌡️{weather.temp}°</span>
-          <span style={{fontSize:10,color:"rgba(255,255,255,.5)"}}>💨{weather.wind}km/h</span>
-          {weather.uv!=null&&<span style={{fontSize:10,color:weather.uv>6?"#FF8066":"rgba(255,255,255,.5)"}}>☀️UV{weather.uv}</span>}
+      {/* Main row — tap opens beach sheet */}
+      <div onClick={handleMainClick} style={{
+        padding:"11px 14px",cursor:"pointer",
+        display:"flex",alignItems:"center",gap:12,
+      }}>
+        <div style={{
+          width:44,height:44,borderRadius:14,flexShrink:0,
+          background:topSt.bg,
+          display:"flex",alignItems:"center",justifyContent:"center",
+          fontSize:22,
+        }}>{topSt.e}</div>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontSize:9.5,fontWeight:700,color:"var(--sg-mid,#686868)",letterSpacing:".05em",
+            textTransform:"uppercase",marginBottom:2}}>
+            {lang==="en"?"Best beach now":"Ta meilleure plage maintenant"}
+          </div>
+          <div style={{fontSize:15,fontWeight:700,color:"var(--sg-ink,#0D0D0D)",lineHeight:1.2,
+            whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+            {top.name}
+          </div>
+          <div style={{fontSize:11,color:"var(--sg-mid,#686868)",marginTop:2,
+            whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+            {distLabel&&<>{distLabel}</>}
+            {distLabel&&driveLabel&&<> · </>}
+            {driveLabel&&<>{driveLabel}</>}
+            {verdict&&(distLabel||driveLabel)&&<> · </>}
+            {verdict}
+          </div>
         </div>
-      )}
-      {!isPremium&&(
-        <div style={{marginTop:8,fontSize:10,fontWeight:700,color:C.goldL,
-          display:"flex",alignItems:"center",gap:4}}>
-          <span>🔓</span>{SARGASSES_SEASON==="high"
-            ?(lang==="en"?"Know before you go — free trial":"Sois prevenu avant d'y aller — essai gratuit")
-            :(lang==="en"?"Which beach Saturday? Free trial":"Quelle plage samedi ? Essai gratuit")}
+      </div>
+      {/* Action row */}
+      <div style={{
+        display:"flex",gap:8,padding:"0 14px 12px",
+      }}>
+        <a href={wazeUrl} target="_blank" rel="noopener" onClick={handleWazeClick}
+          style={{
+            flex:"1 1 auto",minWidth:0,textDecoration:"none",textAlign:"center",
+            background:"var(--sg-ink,#0D0D0D)",color:"#fff",
+            padding:"10px 12px",borderRadius:10,
+            fontSize:13,fontWeight:700,fontFamily:"inherit",
+            whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
+          }}>
+          {lang==="en"?"Go there":"Y aller"}
+        </a>
+        {picks.length>1&&(
+          <button onClick={handleAltClick} style={{
+            flex:"1 1 auto",minWidth:0,
+            background:isPremium?"var(--sg-bgD,#F7F5EF)":C.goldBg,
+            border:`1px solid ${isPremium?"rgba(0,0,0,.08)":C.gold}`,
+            color:"var(--sg-ink,#0D0D0D)",
+            padding:"10px 12px",borderRadius:10,cursor:"pointer",
+            fontSize:13,fontWeight:700,fontFamily:"inherit",
+            display:"flex",alignItems:"center",justifyContent:"center",gap:4,
+            whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
+          }}>
+            {isPremium
+              ?(expanded
+                ?(lang==="en"?"Less ▲":"Moins ▲")
+                :(lang==="en"?`+${picks.length-1} options`:`+${picks.length-1} options`))
+              :<>🔒 {lang==="en"?`+${picks.length-1} options`:`+${picks.length-1} options`}</>}
+          </button>
+        )}
+      </div>
+      {/* Expanded alternatives — premium only */}
+      {isPremium&&expanded&&picks.length>1&&(
+        <div style={{
+          borderTop:"1px solid var(--sg-border,rgba(0,0,0,.06))",
+          background:"var(--sg-bgD,#FAFAFA)",
+          maxHeight:200,overflowY:"auto",
+        }}>
+          {picks.slice(1).map(alt=>{
+            const altSt=ST[alt.status]||ST._loading
+            const altDist=alt._dist!=null?`${Math.round(alt._dist)} km`:""
+            const altDrive=alt.drive?`${alt.drive} min`:""
+            return(
+              <button key={alt.id} onClick={()=>{
+                track("sg_daily_reco_alt_click",{beach_id:alt.id,status:alt.status})
+                onBeachClick(alt)
+              }} style={{
+                display:"flex",alignItems:"center",gap:10,
+                padding:"10px 14px",width:"100%",
+                background:"transparent",border:"none",
+                borderBottom:"1px solid var(--sg-border,rgba(0,0,0,.06))",
+                cursor:"pointer",fontFamily:"inherit",textAlign:"left",
+              }}>
+                <span style={{fontSize:16,flexShrink:0}}>{altSt.e}</span>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:13,fontWeight:600,color:"var(--sg-ink,#0D0D0D)",
+                    whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+                    {alt.name}
+                  </div>
+                  <div style={{fontSize:10.5,color:"var(--sg-mid,#686868)"}}>
+                    {altDist}{altDist&&altDrive&&" · "}{altDrive}
+                  </div>
+                </div>
+                <span style={{fontSize:9.5,fontWeight:700,padding:"3px 8px",borderRadius:100,
+                  background:altSt.bg,color:altSt.c,flexShrink:0}}>
+                  {lang==="en"?altSt.le:altSt.l}
+                </span>
+              </button>
+            )
+          })}
         </div>
       )}
     </div>
@@ -2430,7 +2543,7 @@ function FeedbackWidget(){
   }
 
   return(
-    <div style={{position:"fixed",bottom:68,left:12,right:12,zIndex:755,
+    <div style={{position:"fixed",bottom:"calc(220px + env(safe-area-inset-bottom,0px))",left:12,right:12,zIndex:755,
       background:"var(--sg-card,#fff)",borderRadius:18,padding:"16px 18px",
       boxShadow:"0 8px 32px rgba(0,0,0,.15),0 0 0 1px var(--sg-border)",
       animation:"slideUp .4s cubic-bezier(.22,1,.36,1)"}}>
@@ -2627,7 +2740,7 @@ function InstallPrompt(){
 
   return(
     <>
-      <div style={{position:"fixed",bottom:68,left:12,right:12,zIndex:760,
+      <div style={{position:"fixed",bottom:"calc(220px + env(safe-area-inset-bottom,0px))",left:12,right:12,zIndex:760,
         background:"linear-gradient(135deg,rgba(0,158,142,.95),rgba(30,200,176,.92))",
         backdropFilter:"blur(16px)",borderRadius:18,padding:"14px 16px",
         boxShadow:"0 8px 32px rgba(0,158,142,.35)",display:"flex",alignItems:"center",gap:12,
@@ -3267,9 +3380,10 @@ export default function App(){
           </div>
         </div>
 
-        {/* BEST BEACH WIDGET — hidden when ThreatBanner active to avoid clutter */}
+        {/* DAILY RECO STRIP — replaces BestBeachWidget (masked "••••") with visible reco
+            Hidden when ThreatBanner active, sheet open, onboarding, or searching */}
         {view==="map"&&!selectedBeach&&!showOnboarding&&!hasActiveThreat&&!search.trim()&&(
-          <BestBeachWidget allBeaches={allBeaches} sargData={sargData} island={island}
+          <DailyRecoStrip allBeaches={allBeaches} sargData={sargData} island={island}
             lang={lang} isPremium={isPremium} onBeachClick={onBeachClick}
             userPos={userPos} onPremiumClick={openPremium}/>
         )}

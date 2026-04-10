@@ -1,5 +1,7 @@
 {
-  "_comment": "Fill in from GA4 Explorations. sessions = total sessions per variant, conversions = target event count.",
+  "_comment": "Auto-fetched from GA4 Data API (with Sheets fallback).",
+  "_fetchedAt": "2026-04-10T17:01:43.428Z",
+  "_source": "none",
   "tests": [
     {
       "id": "lock1",
@@ -95,7 +97,7 @@
         0,
         0
       ],
-      "metric": "sg_premium_modal_cta"
+      "metric": "sg_checkout_submit"
     }
   ]
 }
