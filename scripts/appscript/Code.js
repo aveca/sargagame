@@ -194,11 +194,13 @@ function doPost(e) {
       ])
       var trData = trSheet.getDataRange().getValues()
       var now = Date.now()
-      for (var wi = 1; wi < trData.length; wi++) {
-        if (trData[wi][2] === wEmail && trData[wi][4] === 'welcome') {
-          var sent = new Date(trData[wi][0]).getTime()
-          if (now - sent < 24 * 3600 * 1000) {
-            return jsonResponse({ ok: true, skipped: true, reason: 'already_sent_24h' })
+      if (!payload.force) {
+        for (var wi = 1; wi < trData.length; wi++) {
+          if (trData[wi][2] === wEmail && trData[wi][4] === 'welcome') {
+            var sent = new Date(trData[wi][0]).getTime()
+            if (now - sent < 24 * 3600 * 1000) {
+              return jsonResponse({ ok: true, skipped: true, reason: 'already_sent_24h' })
+            }
           }
         }
       }
