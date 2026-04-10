@@ -63,3 +63,27 @@ beaches.filter(b => b.ile === 'MQ').slice(0, 5).forEach(b =>
 beaches.filter(b => b.ile === 'GP').slice(0, 5).forEach(b =>
   console.log(`  ${b.id} ${b.name}: ${b.lat}, ${b.lng}`)
 );
+
+// ── Duplicate coords check — source of truth: public/data/beaches-list.json ──
+// Incident 2026-04-10 : mq014/mq015 and mq016/mq018 shared identical lat/lng,
+// causing pins to stack invisibly on the Leaflet map. Guard against regression.
+const LIST_PATH = path.join(__dirname, '..', 'public', 'data', 'beaches-list.json');
+try {
+  const list = JSON.parse(fs.readFileSync(LIST_PATH, 'utf8'));
+  const coordToIds = {};
+  for (const b of list) {
+    const key = `${b.lat.toFixed(6)},${b.lng.toFixed(6)}`;
+    (coordToIds[key] ??= []).push(`${b.id} (${b.name})`);
+  }
+  const dups = Object.entries(coordToIds).filter(([, ids]) => ids.length > 1);
+  console.log(`\nbeaches-list.json: ${list.length} plages, ${dups.length} doublon(s) de coordonnees`);
+  if (dups.length) {
+    console.log('DOUBLONS DETECTES (pins se chevaucheront sur la carte):');
+    for (const [coord, ids] of dups) {
+      console.log(`  ${coord} → ${ids.join(', ')}`);
+    }
+    process.exitCode = 1;
+  }
+} catch (e) {
+  console.log('\n[skip] beaches-list.json check:', e.message);
+}
