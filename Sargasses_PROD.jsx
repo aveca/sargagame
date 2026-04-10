@@ -2983,6 +2983,24 @@ export default function App(){
   // Analytics: session start
   useEffect(()=>{track("sg_session_start",{island,is_premium:isPremium,is_returning:!!g("sg_seen",0)});s("sg_seen",1)},[])
 
+  // F2: sync OneSignal tags so backend can segment pushes by premium + island
+  // Re-runs when isPremium or island changes. Fav tags are set in toggleFav.
+  useEffect(()=>{
+    try{
+      if(!window.OneSignalDeferred)return
+      window.OneSignalDeferred.push(function(O){
+        if(isPremium)O.User.addTag("sg_premium","1")
+        else O.User.removeTag("sg_premium")
+        O.User.addTag("sg_island",island)
+        // Sync existing favorites on mount/change
+        const favs=g("sg_fav",[])
+        if(Array.isArray(favs)){
+          for(const fid of favs)O.User.addTag("fav_"+fid,"1")
+        }
+      })
+    }catch(e){}
+  },[isPremium,island])
+
   // Referral detection: check ?ref= param on landing
   const[showReferralBanner,setShowReferralBanner]=useState(false)
   useEffect(()=>{
@@ -3220,6 +3238,16 @@ export default function App(){
         s("sg_fav_toast_shown",true)
         setTimeout(()=>setShowFavToast(false),3500)
       }
+      // F2: sync OneSignal tag so backend can segment "favorite changed" pushes
+      try{
+        if(window.OneSignalDeferred){
+          window.OneSignalDeferred.push(function(O){
+            const tagKey="fav_"+id
+            if(isAdding)O.User.addTag(tagKey,"1")
+            else O.User.removeTag(tagKey)
+          })
+        }
+      }catch(e){}
       return isAdding?[...f,id]:f.filter(x=>x!==id)
     })
   },[])
