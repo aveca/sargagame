@@ -1697,7 +1697,9 @@ function DailyRecoStrip({allBeaches,sargData,island,lang,isPremium,onBeachClick,
   return(
     <div style={{
       position:"fixed",
-      bottom:"calc(74px + env(safe-area-inset-bottom,0px))",
+      // Align with BottomNav height: 8px top + ~40px button + max(12, safe-area) bottom = 60 + max(12, safe-area)
+      // +12px gap above the nav
+      bottom:"calc(60px + max(12px, env(safe-area-inset-bottom,0px)) + 12px)",
       left:12,right:12,zIndex:720,
       maxWidth:480,margin:"0 auto",
       background:"var(--sg-card,#fff)",
@@ -2288,8 +2290,43 @@ function PremiumModal({onClose,lang,source,onActivated}){
           <span>🛡️</span>{lang==="en"?"30-day money-back guarantee":"Satisfait ou remboursé 30 jours"}
         </div>
 
+        {/* Already subscribed — for users who installed the PWA after paying.
+            iOS PWA and Safari have separate localStorage, so the ?premium_email=
+            link from the welcome email opens in Safari and never reaches the PWA.
+            This button lets them re-validate their sub from INSIDE the PWA. */}
+        <button onClick={()=>{
+          track("sg_premium_already_click",{source:source||"unknown"})
+          const em=prompt(lang==="en"?"Enter the email used for your subscription:":"Entre l'email utilise pour ton abonnement :")
+          if(!em||!em.includes("@"))return
+          fetch("/api/create-checkout.php",{
+            method:"POST",headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({action:"verify_subscription",email:em})
+          }).then(r=>r.json()).then(d=>{
+            if(d.active){
+              localStorage.setItem("sg_premium","1")
+              localStorage.setItem("sg_premium_email",em)
+              if(d.trialEnd)localStorage.setItem("sg_premium_trial_end",String(d.trialEnd))
+              track("sg_premium_already_success",{source:source||"unknown"})
+              onActivated?.()
+              onClose()
+            }else{
+              track("sg_premium_already_failed",{reason:d.reason||d.error||"inactive"})
+              alert(lang==="en"
+                ?"No active subscription found for this email. Check the address or contact alerte@sargasses-martinique.com."
+                :"Aucun abonnement actif trouvé pour cet email. Vérifie l'adresse ou contacte alerte@sargasses-martinique.com.")
+            }
+          }).catch(e=>{
+            track("sg_premium_already_failed",{reason:e?.message||"network"})
+            alert(lang==="en"?"Connection issue. Try again in a moment.":"Connexion impossible. Reessaie dans un instant.")
+          })
+        }} style={{
+          width:"100%",padding:"10px",marginTop:10,background:"none",
+          border:"1px dashed rgba(255,255,255,.2)",borderRadius:14,
+          color:"rgba(255,255,255,.55)",fontSize:12,cursor:"pointer",fontFamily:"inherit",
+        }}>{lang==="en"?"I already have a subscription":"J'ai deja un abonnement"}</button>
+
         <button onClick={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,saw_checkout:sawCheckoutRef.current});onClose()}} style={{
-          width:"100%",padding:"12px",marginTop:10,background:"none",
+          width:"100%",padding:"12px",marginTop:8,background:"none",
           border:"1px solid rgba(255,255,255,.15)",borderRadius:16,
           color:"#8b949e",fontSize:13,cursor:"pointer",fontFamily:"inherit",
         }}>{LL.close}</button>
@@ -2543,7 +2580,7 @@ function FeedbackWidget(){
   }
 
   return(
-    <div style={{position:"fixed",bottom:"calc(220px + env(safe-area-inset-bottom,0px))",left:12,right:12,zIndex:755,
+    <div style={{position:"fixed",bottom:"calc(60px + max(12px, env(safe-area-inset-bottom,0px)) + 160px)",left:12,right:12,zIndex:755,
       background:"var(--sg-card,#fff)",borderRadius:18,padding:"16px 18px",
       boxShadow:"0 8px 32px rgba(0,0,0,.15),0 0 0 1px var(--sg-border)",
       animation:"slideUp .4s cubic-bezier(.22,1,.36,1)"}}>
@@ -2710,14 +2747,20 @@ function InstallPrompt(){
     // Android/Chrome: listen for beforeinstallprompt
     const handler=e=>{e.preventDefault();setDeferredPrompt(e)}
     window.addEventListener("beforeinstallprompt",handler)
-    // Show prompt after user has viewed 2 beaches (value demonstrated)
+    // iOS never fires beforeinstallprompt — on iOS web push requires PWA install,
+    // so be aggressive: show the prompt after 8s regardless of beach views.
+    // Android also gets this fallback if the native prompt doesn't fire.
+    const showPrompt=(reason)=>{
+      setVisible(true);s("sg_pwa_prompt",1)
+      track("sg_pwa_prompt_shown",{platform:isIos?"ios":"android",reason})
+    }
     const checkEngagement=()=>{
       const beachViews=parseInt(sessionStorage.getItem("sg_beach_views")||"0")
-      if(beachViews>=2){setVisible(true);s("sg_pwa_prompt",1);track("sg_pwa_prompt_shown",{platform:isIos?"ios":"android"})}
+      if(beachViews>=2)showPrompt("beach-views")
     }
     const interval=setInterval(checkEngagement,5000)
-    // Fallback: show after 60s if no beach views
-    const fallback=setTimeout(()=>{if(!visible)checkEngagement()},60000)
+    // iOS: show after 8s regardless. Android: fallback after 60s.
+    const fallback=setTimeout(()=>{if(!visible)showPrompt(isIos?"ios-timer":"android-fallback")},isIos?8000:60000)
     return()=>{window.removeEventListener("beforeinstallprompt",handler);clearInterval(interval);clearTimeout(fallback)}
   },[dismissed,isStandalone])
 
@@ -2740,7 +2783,7 @@ function InstallPrompt(){
 
   return(
     <>
-      <div style={{position:"fixed",bottom:"calc(220px + env(safe-area-inset-bottom,0px))",left:12,right:12,zIndex:760,
+      <div style={{position:"fixed",bottom:"calc(60px + max(12px, env(safe-area-inset-bottom,0px)) + 160px)",left:12,right:12,zIndex:760,
         background:"linear-gradient(135deg,rgba(0,158,142,.95),rgba(30,200,176,.92))",
         backdropFilter:"blur(16px)",borderRadius:18,padding:"14px 16px",
         boxShadow:"0 8px 32px rgba(0,158,142,.35)",display:"flex",alignItems:"center",gap:12,
@@ -2982,6 +3025,28 @@ export default function App(){
 
   // Analytics: session start
   useEffect(()=>{track("sg_session_start",{island,is_premium:isPremium,is_returning:!!g("sg_seen",0)});s("sg_seen",1)},[])
+
+  // Auto-load OneSignal so users get the push permission prompt without
+  // needing to click "Activer les alertes" manually. On iOS, web push requires
+  // the PWA to be installed (iOS 16.4+), so we only trigger it in standalone
+  // mode there. On Android/desktop, trigger after a short delay.
+  useEffect(()=>{
+    if(g("sg_push_loaded_once",0))return
+    const isIos=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream
+    const isStandalone=window.matchMedia("(display-mode: standalone)").matches
+      ||window.navigator.standalone===true
+    // Skip iOS Safari (not standalone) — push won't work anyway, prompt is useless
+    if(isIos&&!isStandalone)return
+    const delay=isStandalone?1500:12000 // PWA: quick. Browser: wait ~12s
+    const t=setTimeout(()=>{
+      try{
+        window.loadOneSignal?.()
+        s("sg_push_loaded_once",1)
+        track("sg_push_auto_loaded",{standalone:isStandalone,ios:isIos})
+      }catch(e){}
+    },delay)
+    return()=>clearTimeout(t)
+  },[])
 
   // F2: sync OneSignal tags so backend can segment pushes by premium + island
   // Re-runs when isPremium or island changes. Fav tags are set in toggleFav.
