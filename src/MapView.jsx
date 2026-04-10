@@ -14,6 +14,7 @@ const SARG_TO_BEACH={"grande-anse":"mq014","anse-mitan":"mq011","anse-noire":"mq
 const GOLD="#E8A800"
 
 const ST={
+  _loading:{c:"#666",bg:"rgba(100,100,100,.1)"},
   clean:{c:"#22C55E",bg:"rgba(34,197,94,.1)"},
   moderate:{c:"#B87A00",bg:"rgba(184,122,0,.1)"},
   avoid:{c:"#E8522A",bg:"rgba(232,82,42,.1)"},
@@ -179,7 +180,7 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
     const markerGroup=L.layerGroup()
 
     beaches.forEach((b,bi)=>{
-      const st=ST[b.status]||ST.clean
+      const st=ST[b.status]||ST._loading
       const isSelected=selectedBeach?.id===b.id
 
       if(b.afai>.15){
