@@ -1957,6 +1957,11 @@ function StripeInlineCheckout({plan,lang,source,onSuccess}){
     // Clear abandonment tracking on success
     localStorage.removeItem("sg_checkout_abandoned")
     if(abandonTimerRef.current)clearTimeout(abandonTimerRef.current)
+    // Fire-and-forget welcome email via Apps Script (safety net if PHP/Resend path fails silently)
+    try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
+      method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
+      body:JSON.stringify({type:"send_welcome_email",email,lang:lang||"fr",plan,trial_end:data.trialEnd,island:window.location.hostname.includes("guadeloupe")?"GP":"MQ",source:source||"unknown"})
+    }).catch(()=>{})}catch{}
     onSuccess?.()
   }
 
@@ -1993,7 +1998,7 @@ function StripeInlineCheckout({plan,lang,source,onSuccess}){
 /* ═══════════════════════════════════════════════════════════════════════════
    PREMIUM MODAL
    ═══════════════════════════════════════════════════════════════════════════ */
-function PremiumModal({onClose,lang,source}){
+function PremiumModal({onClose,lang,source,onActivated}){
   const LL=T[lang]||T.fr
   const hasAnnual=!!STRIPE_LINK_ANNUAL
   const modalOpenedAt=useRef(Date.now())
@@ -2158,7 +2163,7 @@ function PremiumModal({onClose,lang,source}){
           </button>
         ):(
           <StripeInlineCheckout plan={effectivePlan} lang={lang} source={source}
-            onSuccess={()=>{track("sg_premium_success",{plan:effectivePlan,source:source||"unknown"});setShowReferral(true)}}/>
+            onSuccess={()=>{track("sg_premium_success",{plan:effectivePlan,source:source||"unknown"});setShowReferral(true);onActivated?.()}}/>
         )}
 
         {/* Guarantee */}
@@ -3223,7 +3228,8 @@ export default function App(){
         )}
 
         {/* PREMIUM MODAL */}
-        {showPremium&&<PremiumModal onClose={()=>setShowPremium(false)} lang={lang} source={premiumSource}/>}
+        {showPremium&&<PremiumModal onClose={()=>setShowPremium(false)} lang={lang} source={premiumSource}
+          onActivated={()=>{setIsPremium(true);setShowWelcome(true)}}/>}
 
         {/* First-visit hint — auto-dismiss on first tap or after 5s */}
         {showOnboarding&&view==="map"&&!selectedBeach&&(

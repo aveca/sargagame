@@ -172,6 +172,104 @@ function doPost(e) {
       return jsonResponse({ ok: true, action: 'beach_report_saved' })
     }
 
+    // 6z. Welcome email after successful trial signup — fallback path
+    // Client fires this from StripeInlineCheckout.handleSubmit as a safety net
+    // when PHP/Resend path silently fails (e.g. missing resend_key in stripe-config.php)
+    if (type === 'send_welcome_email') {
+      var wEmail = (payload.email || '').trim()
+      if (!wEmail || wEmail.indexOf('@') < 0) return jsonResponse({ error: 'invalid email' })
+      var wLang = (payload.lang || 'fr').toLowerCase()
+      var wIsland = (payload.island || 'MQ').toUpperCase()
+      var wPlan = payload.plan || 'monthly'
+      var wTrialEnd = parseInt(payload.trial_end || 0, 10)
+      var wDomain = (wIsland === 'GP') ? 'sargasses-guadeloupe.com' : 'sargasses-martinique.com'
+      var wIslandName = (wIsland === 'GP') ? 'Guadeloupe' : 'Martinique'
+      var wDateEnd = wTrialEnd
+        ? Utilities.formatDate(new Date(wTrialEnd * 1000), 'Europe/Paris', 'dd/MM/yyyy')
+        : ''
+      // Server-side dedup: skip if welcome email already sent for this email in last 24h
+      var trSheet = getOrCreateSheet('email_tracking', [
+        'date', 'resend_id', 'to', 'subject', 'email_type', 'island',
+        'status', 'plan', 'source', 'ab_tests'
+      ])
+      var trData = trSheet.getDataRange().getValues()
+      var now = Date.now()
+      for (var wi = 1; wi < trData.length; wi++) {
+        if (trData[wi][2] === wEmail && trData[wi][4] === 'welcome') {
+          var sent = new Date(trData[wi][0]).getTime()
+          if (now - sent < 24 * 3600 * 1000) {
+            return jsonResponse({ ok: true, skipped: true, reason: 'already_sent_24h' })
+          }
+        }
+      }
+      // Build email
+      var wSubject, wTitle, wSubtitle, wFeat1, wFeat2, wFeat3, wCta, wTrialNote, wManage
+      if (wLang === 'en') {
+        wSubject = "You're in — your 7-day forecast is live"
+        wTitle = "You're in!"
+        wSubtitle = "Your 7-day forecast is now active."
+        wFeat1 = "7-day forecast for all beaches"
+        wFeat2 = "Push alerts when conditions change"
+        wFeat3 = "Zero ads, clean experience"
+        wCta = "Open the map"
+        wTrialNote = wDateEnd ? "Your free trial ends on " + wDateEnd + ". You'll only be charged if you stay." : "Your free trial is active."
+        wManage = "Manage my subscription"
+      } else {
+        wSubject = "C'est parti — tes prévisions 7 jours sont actives"
+        wTitle = "C'est parti !"
+        wSubtitle = "Tes prévisions 7 jours sont actives."
+        wFeat1 = "Prévisions 7 jours pour toutes les plages"
+        wFeat2 = "Alertes push quand les conditions changent"
+        wFeat3 = "Zéro pub, expérience propre"
+        wCta = "Voir la carte"
+        wTrialNote = wDateEnd ? "Ton essai gratuit se termine le " + wDateEnd + ". Tu ne seras débité que si tu restes." : "Ton essai gratuit est actif."
+        wManage = "Gérer mon abonnement"
+      }
+      var wMapUrl = 'https://' + wDomain + '/'
+      var wManageUrl = 'https://' + wDomain + '/?manage=1'
+      var wHtml = '' +
+        '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>' +
+        '<body style="margin:0;padding:0;background:#f4f4f4;font-family:Helvetica,Arial,sans-serif;">' +
+        '<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4;padding:24px 0;"><tr><td align="center">' +
+        '<table width="480" cellpadding="0" cellspacing="0" style="max-width:480px;width:100%;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08);">' +
+        '<tr><td style="background:#0D1E1C;padding:40px 32px 32px;text-align:center;">' +
+        '<div style="display:inline-block;background:rgba(232,168,0,.15);color:#E8A800;font-size:11px;font-weight:700;letter-spacing:1.5px;padding:6px 16px;border-radius:20px;text-transform:uppercase;margin-bottom:16px;">PREMIUM</div>' +
+        '<h1 style="color:#fff;font-size:26px;margin:12px 0 8px;font-weight:800;">' + wTitle + '</h1>' +
+        '<p style="color:rgba(255,255,255,.7);font-size:15px;margin:0;">' + wSubtitle + '</p></td></tr>' +
+        '<tr><td style="background:#fff;padding:32px;">' +
+        '<table width="100%" cellpadding="0" cellspacing="0">' +
+        '<tr><td style="padding:10px 0;font-size:15px;color:#1a1a1a;"><span style="color:#009E8E;font-weight:700;margin-right:8px;">&#10003;</span> ' + wFeat1 + '</td></tr>' +
+        '<tr><td style="padding:10px 0;font-size:15px;color:#1a1a1a;"><span style="color:#009E8E;font-weight:700;margin-right:8px;">&#10003;</span> ' + wFeat2 + '</td></tr>' +
+        '<tr><td style="padding:10px 0;font-size:15px;color:#1a1a1a;"><span style="color:#009E8E;font-weight:700;margin-right:8px;">&#10003;</span> ' + wFeat3 + '</td></tr>' +
+        '</table>' +
+        '<table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0 16px;"><tr><td align="center">' +
+        '<a href="' + wMapUrl + '" style="display:inline-block;background:linear-gradient(135deg,#E8A800,#F0C040);color:#1a1a1a;font-size:16px;font-weight:700;padding:16px 40px;border-radius:14px;text-decoration:none;">' + wCta + '</a>' +
+        '</td></tr></table>' +
+        '<p style="color:#888;font-size:12px;text-align:center;margin:16px 0 0;line-height:1.5;">' + wTrialNote + '</p>' +
+        '</td></tr>' +
+        '<tr><td style="background:#f9f9f9;padding:20px 32px;text-align:center;border-top:1px solid #eee;">' +
+        '<a href="' + wManageUrl + '" style="color:#888;font-size:12px;text-decoration:underline;">' + wManage + '</a>' +
+        '<p style="color:#bbb;font-size:11px;margin:8px 0 0;">Sargasses ' + wIslandName + ' · ' + wDomain + '</p>' +
+        '</td></tr>' +
+        '</table></td></tr></table></body></html>'
+      try {
+        MailApp.sendEmail({
+          to: wEmail,
+          subject: wSubject,
+          htmlBody: wHtml,
+          name: 'Sargasses ' + wIslandName,
+          replyTo: 'alerte@sargasses-martinique.com'
+        })
+        trSheet.appendRow([
+          new Date().toISOString(), '', wEmail, wSubject.substring(0, 200),
+          'welcome', wIsland, 'sent', wPlan, payload.source || '', ''
+        ])
+        return jsonResponse({ ok: true, action: 'welcome_sent', to: wEmail })
+      } catch (err) {
+        return jsonResponse({ error: 'send_failed: ' + err.message })
+      }
+    }
+
     // 6. Email tracking (Resend delivery + opens + clicks)
     if (type === 'email_tracking') {
       const sheet = getOrCreateSheet('email_tracking', [
