@@ -9,12 +9,17 @@
 - **Jeudi** : UX report
 - **Continu** : GA4 events (15 events funnel + 5 A/B tests), Clarity heatmaps
 
-## Quand tu as 10 minutes
+## Deploy Apps Script (via clasp)
 
-1. Ouvre https://script.google.com (projet ID: 1v23rVvp2Oa7bergwETnODYRf-kRbxRiIvGtY3bKonNtxp6ZR1UfpAsRV)
-2. Remplace le code par `scripts/apps-script-backend.gs`
-3. Deploy > New version
-4. Ca debloque : dispatch emails weekend + endpoint /stats + webhook Stripe propre
+Le code canonique vit dans `scripts/appscript/Code.js`. Deploy en 2 commandes :
+
+```bash
+cd scripts/appscript
+clasp push --force
+clasp deploy -i AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w -d "v21 description"
+```
+
+Le `deploymentId` est fixe — l'URL webhook ne change jamais. Voir `memory/reference_apps_script_deploy.md` pour la procédure complète.
 
 ## Metriques a ce jour
 
