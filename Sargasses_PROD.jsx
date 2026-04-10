@@ -2784,15 +2784,40 @@ export default function App(){
         return true
       }
       // ?manage=1 → ouvrir le portail Stripe
+      // Accept email via ?email= URL param (from welcome email link) as fallback
+      // for localStorage being empty on a fresh device/browser
       if(params.get("manage")==="1"){
-        const em=localStorage.getItem("sg_premium_email")
+        const urlEmail=params.get("email")||""
+        const em=urlEmail||localStorage.getItem("sg_premium_email")
         if(em){
+          // Persist for future opens on this device
+          if(urlEmail)localStorage.setItem("sg_premium_email",urlEmail)
+          track("sg_manage_portal_open",{has_url_email:!!urlEmail})
           fetch("/api/create-checkout.php",{
             method:"POST",headers:{"Content-Type":"application/json"},
             body:JSON.stringify({action:"portal",email:em})
           }).then(r=>r.json()).then(d=>{
-            if(d.url)window.location.href=d.url
-          }).catch(()=>{})
+            if(d.url){window.location.href=d.url;return}
+            // Error path: alert user so they don't stare at a broken link silently
+            track("sg_manage_portal_error",{error:d.error||"no_url"})
+            alert((d.error||"Erreur Stripe")+"\n\nContacte alerte@sargasses-martinique.com si le probleme persiste.")
+          }).catch(e=>{
+            track("sg_manage_portal_error",{error:e?.message||"network"})
+            alert("Connexion impossible au portail Stripe. Reessaie dans un instant ou contacte alerte@sargasses-martinique.com.")
+          })
+        }else{
+          // No email available anywhere — prompt the user
+          const promptEmail=prompt("Entre ton email pour gerer ton abonnement :")
+          if(promptEmail&&promptEmail.includes("@")){
+            localStorage.setItem("sg_premium_email",promptEmail)
+            fetch("/api/create-checkout.php",{
+              method:"POST",headers:{"Content-Type":"application/json"},
+              body:JSON.stringify({action:"portal",email:promptEmail})
+            }).then(r=>r.json()).then(d=>{
+              if(d.url){window.location.href=d.url;return}
+              alert(d.error||"Email introuvable chez Stripe")
+            }).catch(()=>alert("Connexion impossible"))
+          }
         }
         window.history.replaceState({},"",window.location.pathname)
       }

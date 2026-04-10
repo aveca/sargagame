@@ -226,7 +226,7 @@ function doPost(e) {
         wManage = "Gérer mon abonnement"
       }
       var wMapUrl = 'https://' + wDomain + '/'
-      var wManageUrl = 'https://' + wDomain + '/?manage=1'
+      var wManageUrl = 'https://' + wDomain + '/?manage=1&email=' + encodeURIComponent(wEmail)
       var wHtml = '' +
         '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>' +
         '<body style="margin:0;padding:0;background:#f4f4f4;font-family:Helvetica,Arial,sans-serif;">' +
