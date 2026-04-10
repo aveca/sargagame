@@ -1,0 +1,621 @@
+{
+  "computedAt": "2026-04-10T21:06:40.954Z",
+  "snapshotsUsed": 5,
+  "dateRange": {
+    "from": "2026-04-06",
+    "to": "2026-04-10"
+  },
+  "beaches": 20,
+  "healthScore": 84,
+  "horizons": {
+    "J+1": {
+      "horizon": 1,
+      "samples": 80,
+      "statusMatchPct": 86,
+      "underPredictPct": 28,
+      "overPredictPct": 18,
+      "meanAbsErr": 0.036,
+      "bias": 0.01,
+      "perBeach": [
+        {
+          "beach": "grande-anse",
+          "samples": 4,
+          "matchRate": 100,
+          "mae": 0.002,
+          "bias": -0.002
+        },
+        {
+          "beach": "anse-mitan",
+          "samples": 4,
+          "matchRate": 100,
+          "mae": 0,
+          "bias": 0
+        },
+        {
+          "beach": "anse-noire",
+          "samples": 4,
+          "matchRate": 100,
+          "mae": 0.002,
+          "bias": -0.002
+        },
+        {
+          "beach": "anse-madame",
+          "samples": 4,
+          "matchRate": 100,
+          "mae": 0,
+          "bias": 0
+        },
+        {
+          "beach": "vauclin",
+          "samples": 4,
+          "matchRate": 100,
+          "mae": 0.083,
+          "bias": 0.042
+        },
+        {
+          "beach": "gp-grande-anse",
+          "samples": 4,
+          "matchRate": 100,
+          "mae": 0.003,
+          "bias": 0.003
+        },
+        {
+          "beach": "gp-malendure",
+          "samples": 4,
+          "matchRate": 100,
+          "mae": 0.003,
+          "bias": 0.003
+        },
+        {
+          "beach": "gp-sainte-anne",
+          "samples": 4,
+          "matchRate": 100,
+          "mae": 0.023,
+          "bias": -0.022
+        },
+        {
+          "beach": "gp-caravelle",
+          "samples": 4,
+          "matchRate": 100,
+          "mae": 0.002,
+          "bias": -0.002
+        },
+        {
+          "beach": "gp-deshaies",
+          "samples": 4,
+          "matchRate": 100,
+          "mae": 0.005,
+          "bias": 0.005
+        },
+        {
+          "beach": "tartane",
+          "samples": 4,
+          "matchRate": 75,
+          "mae": 0.028,
+          "bias": -0.027
+        },
+        {
+          "beach": "diamant",
+          "samples": 4,
+          "matchRate": 75,
+          "mae": 0.048,
+          "bias": 0.023
+        },
+        {
+          "beach": "pt-marin",
+          "samples": 4,
+          "matchRate": 75,
+          "mae": 0.05,
+          "bias": 0.02
+        },
+        {
+          "beach": "sainte-anne",
+          "samples": 4,
+          "matchRate": 75,
+          "mae": 0.1,
+          "bias": 0.05
+        },
+        {
+          "beach": "gp-pt-chateaux",
+          "samples": 4,
+          "matchRate": 75,
+          "mae": 0.04,
+          "bias": -0.005
+        },
+        {
+          "beach": "gp-gosier",
+          "samples": 4,
+          "matchRate": 75,
+          "mae": 0.023,
+          "bias": -0.022
+        },
+        {
+          "beach": "gp-bas-du-fort",
+          "samples": 4,
+          "matchRate": 75,
+          "mae": 0.035,
+          "bias": -0.005
+        },
+        {
+          "beach": "gp-moule",
+          "samples": 4,
+          "matchRate": 75,
+          "mae": 0.042,
+          "bias": 0.018
+        },
+        {
+          "beach": "gp-vieux-fort",
+          "samples": 4,
+          "matchRate": 75,
+          "mae": 0.09,
+          "bias": 0.045
+        },
+        {
+          "beach": "les-salines",
+          "samples": 4,
+          "matchRate": 50,
+          "mae": 0.135,
+          "bias": 0.085
+        }
+      ]
+    },
+    "J+2": {
+      "horizon": 2,
+      "samples": 60,
+      "statusMatchPct": 87,
+      "underPredictPct": 13,
+      "overPredictPct": 25,
+      "meanAbsErr": 0.04,
+      "bias": -0.004,
+      "perBeach": [
+        {
+          "beach": "grande-anse",
+          "samples": 3,
+          "matchRate": 100,
+          "mae": 0,
+          "bias": 0
+        },
+        {
+          "beach": "anse-mitan",
+          "samples": 3,
+          "matchRate": 100,
+          "mae": 0.007,
+          "bias": 0.007
+        },
+        {
+          "beach": "anse-noire",
+          "samples": 3,
+          "matchRate": 100,
+          "mae": 0.003,
+          "bias": -0.003
+        },
+        {
+          "beach": "anse-madame",
+          "samples": 3,
+          "matchRate": 100,
+          "mae": 0.003,
+          "bias": 0.003
+        },
+        {
+          "beach": "sainte-anne",
+          "samples": 3,
+          "matchRate": 100,
+          "mae": 0.093,
+          "bias": 0.007
+        },
+        {
+          "beach": "gp-grande-anse",
+          "samples": 3,
+          "matchRate": 100,
+          "mae": 0.007,
+          "bias": 0.007
+        },
+        {
+          "beach": "gp-malendure",
+          "samples": 3,
+          "matchRate": 100,
+          "mae": 0.007,
+          "bias": 0.007
+        },
+        {
+          "beach": "gp-pt-chateaux",
+          "samples": 3,
+          "matchRate": 100,
+          "mae": 0.053,
+          "bias": -0.04
+        },
+        {
+          "beach": "gp-gosier",
+          "samples": 3,
+          "matchRate": 100,
+          "mae": 0.033,
+          "bias": -0.02
+        },
+        {
+          "beach": "gp-caravelle",
+          "samples": 3,
+          "matchRate": 100,
+          "mae": 0,
+          "bias": 0
+        },
+        {
+          "beach": "gp-deshaies",
+          "samples": 3,
+          "matchRate": 100,
+          "mae": 0.013,
+          "bias": 0.013
+        },
+        {
+          "beach": "gp-vieux-fort",
+          "samples": 3,
+          "matchRate": 100,
+          "mae": 0.087,
+          "bias": 0.013
+        },
+        {
+          "beach": "tartane",
+          "samples": 3,
+          "matchRate": 67,
+          "mae": 0.04,
+          "bias": -0.027
+        },
+        {
+          "beach": "diamant",
+          "samples": 3,
+          "matchRate": 67,
+          "mae": 0.043,
+          "bias": -0.003
+        },
+        {
+          "beach": "pt-marin",
+          "samples": 3,
+          "matchRate": 67,
+          "mae": 0.05,
+          "bias": -0.01
+        },
+        {
+          "beach": "les-salines",
+          "samples": 3,
+          "matchRate": 67,
+          "mae": 0.137,
+          "bias": 0.05
+        },
+        {
+          "beach": "vauclin",
+          "samples": 3,
+          "matchRate": 67,
+          "mae": 0.08,
+          "bias": 0
+        },
+        {
+          "beach": "gp-sainte-anne",
+          "samples": 3,
+          "matchRate": 67,
+          "mae": 0.053,
+          "bias": -0.053
+        },
+        {
+          "beach": "gp-bas-du-fort",
+          "samples": 3,
+          "matchRate": 67,
+          "mae": 0.047,
+          "bias": -0.033
+        },
+        {
+          "beach": "gp-moule",
+          "samples": 3,
+          "matchRate": 67,
+          "mae": 0.047,
+          "bias": -0.007
+        }
+      ]
+    },
+    "J+3": {
+      "horizon": 3,
+      "samples": 40,
+      "statusMatchPct": 80,
+      "underPredictPct": 10,
+      "overPredictPct": 38,
+      "meanAbsErr": 0.052,
+      "bias": -0.029,
+      "perBeach": [
+        {
+          "beach": "grande-anse",
+          "samples": 2,
+          "matchRate": 100,
+          "mae": 0.005,
+          "bias": -0.005
+        },
+        {
+          "beach": "anse-mitan",
+          "samples": 2,
+          "matchRate": 100,
+          "mae": 0.005,
+          "bias": 0.005
+        },
+        {
+          "beach": "anse-noire",
+          "samples": 2,
+          "matchRate": 100,
+          "mae": 0.005,
+          "bias": -0.005
+        },
+        {
+          "beach": "anse-madame",
+          "samples": 2,
+          "matchRate": 100,
+          "mae": 0.005,
+          "bias": 0.005
+        },
+        {
+          "beach": "pt-marin",
+          "samples": 2,
+          "matchRate": 100,
+          "mae": 0.065,
+          "bias": -0.055
+        },
+        {
+          "beach": "gp-grande-anse",
+          "samples": 2,
+          "matchRate": 100,
+          "mae": 0.005,
+          "bias": 0.005
+        },
+        {
+          "beach": "gp-malendure",
+          "samples": 2,
+          "matchRate": 100,
+          "mae": 0.005,
+          "bias": 0.005
+        },
+        {
+          "beach": "gp-pt-chateaux",
+          "samples": 2,
+          "matchRate": 100,
+          "mae": 0.085,
+          "bias": -0.085
+        },
+        {
+          "beach": "gp-gosier",
+          "samples": 2,
+          "matchRate": 100,
+          "mae": 0.045,
+          "bias": -0.035
+        },
+        {
+          "beach": "gp-caravelle",
+          "samples": 2,
+          "matchRate": 100,
+          "mae": 0.005,
+          "bias": -0.005
+        },
+        {
+          "beach": "gp-bas-du-fort",
+          "samples": 2,
+          "matchRate": 100,
+          "mae": 0.08,
+          "bias": -0.08
+        },
+        {
+          "beach": "gp-deshaies",
+          "samples": 2,
+          "matchRate": 100,
+          "mae": 0.015,
+          "bias": 0.015
+        },
+        {
+          "beach": "gp-moule",
+          "samples": 2,
+          "matchRate": 100,
+          "mae": 0.055,
+          "bias": -0.045
+        },
+        {
+          "beach": "tartane",
+          "samples": 2,
+          "matchRate": 50,
+          "mae": 0.055,
+          "bias": -0.045
+        },
+        {
+          "beach": "diamant",
+          "samples": 2,
+          "matchRate": 50,
+          "mae": 0.055,
+          "bias": -0.035
+        },
+        {
+          "beach": "sainte-anne",
+          "samples": 2,
+          "matchRate": 50,
+          "mae": 0.11,
+          "bias": -0.06
+        },
+        {
+          "beach": "vauclin",
+          "samples": 2,
+          "matchRate": 50,
+          "mae": 0.095,
+          "bias": -0.055
+        },
+        {
+          "beach": "gp-sainte-anne",
+          "samples": 2,
+          "matchRate": 50,
+          "mae": 0.075,
+          "bias": -0.075
+        },
+        {
+          "beach": "gp-vieux-fort",
+          "samples": 2,
+          "matchRate": 50,
+          "mae": 0.095,
+          "bias": -0.045
+        },
+        {
+          "beach": "les-salines",
+          "samples": 2,
+          "matchRate": 0,
+          "mae": 0.175,
+          "bias": 0.005
+        }
+      ]
+    },
+    "J+4": {
+      "horizon": 4,
+      "samples": 20,
+      "statusMatchPct": 85,
+      "underPredictPct": 25,
+      "overPredictPct": 45,
+      "meanAbsErr": 0.046,
+      "bias": -0.014,
+      "perBeach": [
+        {
+          "beach": "grande-anse",
+          "samples": 1,
+          "matchRate": 100,
+          "mae": 0.02,
+          "bias": 0.02
+        },
+        {
+          "beach": "anse-mitan",
+          "samples": 1,
+          "matchRate": 100,
+          "mae": 0.05,
+          "bias": 0.05
+        },
+        {
+          "beach": "anse-noire",
+          "samples": 1,
+          "matchRate": 100,
+          "mae": 0.01,
+          "bias": 0.01
+        },
+        {
+          "beach": "tartane",
+          "samples": 1,
+          "matchRate": 100,
+          "mae": 0.05,
+          "bias": -0.05
+        },
+        {
+          "beach": "anse-madame",
+          "samples": 1,
+          "matchRate": 100,
+          "mae": 0.04,
+          "bias": 0.04
+        },
+        {
+          "beach": "diamant",
+          "samples": 1,
+          "matchRate": 100,
+          "mae": 0.02,
+          "bias": -0.02
+        },
+        {
+          "beach": "pt-marin",
+          "samples": 1,
+          "matchRate": 100,
+          "mae": 0.04,
+          "bias": -0.04
+        },
+        {
+          "beach": "sainte-anne",
+          "samples": 1,
+          "matchRate": 100,
+          "mae": 0.04,
+          "bias": -0.04
+        },
+        {
+          "beach": "vauclin",
+          "samples": 1,
+          "matchRate": 100,
+          "mae": 0.04,
+          "bias": -0.04
+        },
+        {
+          "beach": "gp-grande-anse",
+          "samples": 1,
+          "matchRate": 100,
+          "mae": 0.04,
+          "bias": 0.04
+        },
+        {
+          "beach": "gp-malendure",
+          "samples": 1,
+          "matchRate": 100,
+          "mae": 0.02,
+          "bias": 0.02
+        },
+        {
+          "beach": "gp-sainte-anne",
+          "samples": 1,
+          "matchRate": 100,
+          "mae": 0.07,
+          "bias": -0.07
+        },
+        {
+          "beach": "gp-gosier",
+          "samples": 1,
+          "matchRate": 100,
+          "mae": 0.04,
+          "bias": -0.04
+        },
+        {
+          "beach": "gp-caravelle",
+          "samples": 1,
+          "matchRate": 100,
+          "mae": 0.02,
+          "bias": 0.02
+        },
+        {
+          "beach": "gp-deshaies",
+          "samples": 1,
+          "matchRate": 100,
+          "mae": 0.03,
+          "bias": 0.03
+        },
+        {
+          "beach": "gp-moule",
+          "samples": 1,
+          "matchRate": 100,
+          "mae": 0.03,
+          "bias": -0.03
+        },
+        {
+          "beach": "gp-vieux-fort",
+          "samples": 1,
+          "matchRate": 100,
+          "mae": 0.04,
+          "bias": -0.04
+        },
+        {
+          "beach": "les-salines",
+          "samples": 1,
+          "matchRate": 0,
+          "mae": 0.09,
+          "bias": 0.09
+        },
+        {
+          "beach": "gp-pt-chateaux",
+          "samples": 1,
+          "matchRate": 0,
+          "mae": 0.12,
+          "bias": -0.12
+        },
+        {
+          "beach": "gp-bas-du-fort",
+          "samples": 1,
+          "matchRate": 0,
+          "mae": 0.11,
+          "bias": -0.11
+        }
+      ]
+    }
+  },
+  "interpretation": {
+    "statusMatchMeaning": "Percentage of predictions where predicted status (clean/moderate/avoid) matches actual observation",
+    "biasMeaning": "Positive = under-prediction (actual > pred), Negative = over-prediction (pred > actual)",
+    "maeMeaning": "Mean Absolute Error in AFAI units (0.0 = perfect, 0.1 = typical threshold between status levels)"
+  }
+}

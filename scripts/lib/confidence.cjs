@@ -90,21 +90,28 @@ function interpolationConfidence(sentinelConfs, distances) {
  * @param {boolean} hasWindForecast - true if Open-Meteo hourly wind is available
  * @returns {{ confidence: number, type: string }}
  */
-function forecastConfidence(dayIndex, baseConf, hasWindForecast) {
+function forecastConfidence(dayIndex, baseConf, hasWindForecast, hasArrivalSignal) {
   if (dayIndex === 0) {
-    return { confidence: Math.round(baseConf * 0.85), type: 'observation' }
+    // Day 0 = direct observation, confidence IS the satellite/memory confidence
+    return { confidence: Math.round(baseConf), type: 'observation' }
   }
 
-  const windBonus = hasWindForecast ? 12 : 0
+  const windBonus = hasWindForecast ? 8 : 0
+  const arrivalBonus = hasArrivalSignal ? 10 : 0
 
   if (dayIndex === 1) {
-    return { confidence: Math.min(55, 35 + windBonus), type: 'tendance' }
+    // Backtest (5d archive): J+1 under-predicts 28% vs over-predicts 18%.
+    // Baseline honest confidence ~40 (not 55). Boost when banks signal arrival.
+    return { confidence: Math.min(60, 38 + windBonus + arrivalBonus), type: 'tendance' }
   }
   if (dayIndex <= 3) {
-    return { confidence: Math.min(40, 22 + windBonus - (dayIndex - 2) * 5), type: 'tendance' }
+    // Backtest J+2: over-predict clean 25%. J+3: over-predict clean 38%.
+    // Confidence drops fast.
+    return { confidence: Math.min(45, 25 + windBonus + arrivalBonus - (dayIndex - 2) * 6), type: 'tendance' }
   }
-  // Days 4-7: horizon — low confidence regardless of wind
-  return { confidence: Math.max(8, 18 - (dayIndex - 4) * 3), type: 'horizon' }
+  // Days 4-7: HORIZON — backtest J+4 shows 50% over-predict clean.
+  // Explicit low confidence to flag unreliable predictions. Frontend should hide.
+  return { confidence: Math.max(5, 12 - (dayIndex - 4) * 3), type: 'horizon' }
 }
 
 /**

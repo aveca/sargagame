@@ -884,13 +884,39 @@ async function main() {
   console.log('  Fetching 7-day wind forecast...')
   const windForecast = await fetchRegionalWind()
 
+  // v3: Load previous run's banks for arrival signal (forecast needs them)
+  // Banks are recomputed later in step [5]; previous run's data is max 3h old.
+  let previousBanks = []
+  try {
+    const banksPath = path.join(dir, 'sargassum-banks.json')
+    const banksData = JSON.parse(fs.readFileSync(banksPath, 'utf-8'))
+    if (Array.isArray(banksData.banks)) previousBanks = banksData.banks
+    console.log(`  Loaded ${previousBanks.length} banks from previous run for arrival signal`)
+  } catch (_) {
+    console.log(`  No previous banks file (first run or missing) — forecast without arrival signal`)
+  }
+
+  // v3: Fetch community reports (48h aggregated) for Day 0/1 bias
+  let communityReports = {}
+  try {
+    const url = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec?action=beach_reports'
+    const reportsData = await safeFetch(url, 10000)
+    if (reportsData?.reports && typeof reportsData.reports === 'object') {
+      communityReports = reportsData.reports
+      const reportedBeaches = Object.keys(communityReports).length
+      console.log(`  Community reports: ${reportedBeaches} beaches with recent reports`)
+    }
+  } catch (_) {
+    console.log(`  Community reports unavailable (Apps Script down) — forecast without community bias`)
+  }
+
   const updatedAt = new Date().toISOString()
   const erddapTimestamp = (mqGrid?.erddapTimestamp || gpGrid?.erddapTimestamp) || null
   const dataAgeMinutes = erddapTimestamp
     ? Math.round((Date.now() - new Date(erddapTimestamp).getTime()) / 60000)
     : null
 
-  const weekly = buildHonestForecast(levels, windForecast, historyEntries, BEACHES)
+  const weekly = buildHonestForecast(levels, windForecast, historyEntries, BEACHES, previousBanks, communityReports)
   const payload = {
     source: 'erddap-live',
     updatedAt,
