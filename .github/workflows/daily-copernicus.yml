@@ -178,6 +178,7 @@ jobs:
           [ -f scripts/automation/data/drip-sent.json ] && git add scripts/automation/data/drip-sent.json
           [ -f scripts/automation/data/bounced-emails.json ] && git add scripts/automation/data/bounced-emails.json
           [ -f scripts/automation/data/backtest-results.json ] && git add scripts/automation/data/backtest-results.json
+          [ -f scripts/automation/data/weekend-sent.json ] && git add scripts/automation/data/weekend-sent.json
           [ -f public/api/copernicus/forecast-archive.json ] && git add public/api/copernicus/forecast-archive.json
           git diff --cached --quiet || git commit -m "chore: update Copernicus data $(date -u +'%Y-%m-%d %H:%M UTC')"
           git push || (echo "::warning::git push failed — retrying with rebase" && git pull --rebase && git push) || echo "::error::git push failed after rebase"
