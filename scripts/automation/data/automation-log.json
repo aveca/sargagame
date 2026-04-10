@@ -431,6 +431,112 @@
         "critical": 0,
         "warnings": 0
       }
+    },
+    {
+      "timestamp": "2026-04-09T22:53:03.400Z",
+      "script": "send-notifications",
+      "action": "notifications-sent",
+      "alertCount": 9,
+      "goodNewsCount": 0,
+      "pushSent": 0,
+      "pushFailed": 9,
+      "changes": [
+        {
+          "type": "alert",
+          "beach": "diamant",
+          "from": "clean",
+          "to": "moderate"
+        },
+        {
+          "type": "alert",
+          "beach": "pt-marin",
+          "from": "clean",
+          "to": "moderate"
+        },
+        {
+          "type": "alert",
+          "beach": "sainte-anne",
+          "from": "clean",
+          "to": "moderate"
+        },
+        {
+          "type": "alert",
+          "beach": "les-salines",
+          "from": "clean",
+          "to": "moderate"
+        },
+        {
+          "type": "alert",
+          "beach": "vauclin",
+          "from": "clean",
+          "to": "moderate"
+        },
+        {
+          "type": "alert",
+          "beach": "gp-pt-chateaux",
+          "from": "clean",
+          "to": "moderate"
+        },
+        {
+          "type": "alert",
+          "beach": "gp-bas-du-fort",
+          "from": "clean",
+          "to": "moderate"
+        },
+        {
+          "type": "alert",
+          "beach": "gp-moule",
+          "from": "clean",
+          "to": "moderate"
+        },
+        {
+          "type": "alert",
+          "beach": "gp-vieux-fort",
+          "from": "clean",
+          "to": "moderate"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-04-10T05:02:59.763Z",
+      "script": "bug-hunter",
+      "action": "health-check",
+      "status": "ok",
+      "details": {
+        "sites": "MQ+GP HTTP 200",
+        "dataAge": "0.6h",
+        "beaches": "20 in sargassum.json / 135 in beaches-list.json",
+        "nullAfai": 0,
+        "nanAfai": 0,
+        "forecastSanity": "clean",
+        "buildWarnings": 0,
+        "npmVulnerabilities": 0,
+        "workflowsOk": true,
+        "localVsLiveSync": "0 diffs"
+      }
+    },
+    {
+      "timestamp": "2026-04-10T08:36:42.039Z",
+      "dryRun": false,
+      "action": "weekend-prep",
+      "summary": "Friday weekend prep: verified email-weekend.cjs configured in daily-copernicus.yml (fires at 12h UTC). Fixed bug: weekend-sent.json was not committed → dedup broken → potential duplicate sends. Added to git commit list. Saturday forecast (2026-04-11): MQ 8/10 clean (Diamant+PtMarin+Vauclin recovering from moderate), GP 9/10 clean. 39 subscribers. Email will fire today at 12h UTC.",
+      "details": {
+        "bug_fixed": "weekend-sent.json not committed to repo — dedup file lost on each runner checkout, could send email 3-4x on Friday",
+        "saturday_mq": {
+          "clean": 8,
+          "moderate": 2,
+          "avoid": 0,
+          "notable": "Diamant, Pt-Marin, Vauclin recovering to clean"
+        },
+        "saturday_gp": {
+          "clean": 9,
+          "moderate": 1,
+          "avoid": 0,
+          "notable": "Vieux-Fort still moderate"
+        },
+        "subscribers": 39,
+        "email_fires_at": "2026-04-10T12:00:00Z"
+      }
     }
   ]
 }
