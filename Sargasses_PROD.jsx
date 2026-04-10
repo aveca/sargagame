@@ -328,8 +328,8 @@ function interpolateIDW(beach,sentinels,k=3,power=2){
 }
 
 /**
- * Interpolate 7-day forecast for non-sentinel beaches
- * by IDW-blending forecasts from K nearest sentinels
+ * Interpolate forecast for non-sentinel beaches by IDW-blending K nearest sentinels
+ * v3: propagates arrivalDetected, forecastMethod, reliableHorizon from sentinels
  */
 function interpolateForecast(beach,sentinels,weeklyData,k=3,power=2){
   if(!weeklyData||!sentinels||sentinels.length===0)return null
@@ -338,28 +338,41 @@ function interpolateForecast(beach,sentinels,weeklyData,k=3,power=2){
     .map(s=>({...s,dist:haversine(beach.lat,beach.lng,s.lat,s.lng)}))
     .sort((a,b)=>a.dist-b.dist).slice(0,k)
   if(withDist.length===0)return null
-  // Compute weights
   const weights=withDist.map(s=>({w:1/Math.pow(Math.max(s.dist,0.1),power),id:s.sargId}))
   const sumW=weights.reduce((s,x)=>s+x.w,0)
-  // Blend each day
   const ref=weeklyData[weights[0].id].forecast
   const forecast=ref.map((dayRef,i)=>{
     let blended=0
+    let blendedConf=0
     for(const{w,id}of weights){
       const f=weeklyData[id].forecast[i]
       blended+=(w/sumW)*(f?f.afai:dayRef.afai)
+      blendedConf+=(w/sumW)*((f?.confidence)||dayRef.confidence||40)
     }
     const afai=Math.round(Math.max(0,Math.min(1,blended))*100)/100
-    return{day:dayRef.day,date:dayRef.date,afai,status:statusFromAfai(afai)}
+    return{day:dayRef.day,date:dayRef.date,afai,status:statusFromAfai(afai),
+      confidence:Math.round(blendedConf),type:dayRef.type,sources:dayRef.sources}
   })
-  // Drift from blended forecast
-  const trend=forecast[6].afai-forecast[0].afai
+  // Propagate arrivalDetected if ANY nearby sentinel flags arrival (union)
+  const anyArrival=withDist.some(s=>weeklyData[s.sargId]?.arrivalDetected)
+  const maxArrival=Math.max(...withDist.map(s=>weeklyData[s.sargId]?.arrivalStrength||0))
+  // reliableHorizon = min of nearby sentinels (most conservative)
+  const minHorizon=Math.min(...withDist.map(s=>weeklyData[s.sargId]?.reliableHorizon||3))
+  // Drift from day 0 to day 3 (meaningful short horizon)
+  const trend=(forecast[3]?.afai||forecast[forecast.length-1].afai)-forecast[0].afai
   return{
     forecast,
     drift:trend>0.05?"up":trend<-0.05?"down":"stable",
     driftLabel:trend>0.05?"Dérive possible vers la côte":trend<-0.05?"Dispersion attendue":"Stable",
     driftValue:Math.round(trend*100)/100,
     interpolated:true,
+    arrivalDetected:anyArrival,
+    arrivalStrength:Math.round(maxArrival*100)/100,
+    reliableHorizon:minHorizon,
+    forecastMethod:anyArrival?"arrival-banks":"interpolated",
+    forecastDisclaimer:anyArrival
+      ?"Banc detecte pres des plages voisines — risque de derive."
+      :"Interpolation des plages voisines surveillees.",
   }
 }
 
@@ -588,14 +601,19 @@ function BottomNav({view,onChangeView,lang}){
    FORECAST CHART — Day 1 (today) free, days 2-7 LOCKED (blurred) for premium
    Data: 1.57% conversion — show only today free to increase premium value
    ═══════════════════════════════════════════════════════════════════════════ */
-function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily}){
+function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,weeklyData}){
   if(!forecast||!forecast.length)return null
   const LL=T[lang]||T.fr
-  const max=Math.max(...forecast.map(d=>d.afai),.1)
+  // v3: cap visible days at J+3 (horizon beyond that is unreliable per backtest)
+  // Memory beaches: show only J+1 reliably
+  const reliableHorizon=weeklyData?.reliableHorizon||3
+  const visibleDays=Math.min(forecast.length,Math.max(4,reliableHorizon+1))
+  const visible=forecast.slice(0,visibleDays)
+  const max=Math.max(...visible.map(d=>d.afai),.1)
   // A/B Test 4: free days (1 vs 2)
   const freeV=abVariant("free1",["control","two_free"],[.5,.5])
   const freeThreshold=freeV==="two_free"?2:1
-  const lockedCount=7-freeThreshold
+  const lockedCount=visibleDays-freeThreshold
   // A/B Test 1: lock framing
   const lockV=abVariant("lock1",["control","loss"],[.5,.5])
   const inSeason=SARGASSES_SEASON==="high"
@@ -603,16 +621,17 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily}){
     ?(lang==="en"
       ?(inSeason?"Beaches change daily":"Don't miss this weekend")
       :(inSeason?"Les plages changent chaque jour":"Ne rate pas ce weekend"))
-    :(lang==="en"?"See 7-day forecast":"Voir les 7 jours")
+    :(lang==="en"?"See 4-day forecast":"Voir les 4 jours")
   const lockSub=lockV==="loss"
     ?(lang==="en"
       ?(inSeason?"Sargassum season is active. Know before you go.":"Saturday, it'll be too late to switch beaches.")
       :(inSeason?"La saison est là. Sache avant d'y aller.":"Samedi, il sera trop tard pour changer de plage."))
-    :(lang==="en"?"Free 7-day trial · cancel anytime":"Essai gratuit 7 jours · sans engagement")
+    :(lang==="en"?"Free trial · cancel anytime":"Essai gratuit · sans engagement")
+  const firstConf=visible[1]?.confidence||40
   return(
     <div style={{position:"relative"}}>
       <div style={{display:"flex",gap:6,alignItems:"flex-end",height:140,padding:"8px 0"}}>
-        {forecast.map((d,i)=>{
+        {visible.map((d,i)=>{
           const h=Math.max(8,(d.afai/max)*70)
           const st=ST[d.status]||ST._loading
           const isLocked=!isPremium&&i>=freeThreshold
@@ -624,7 +643,7 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily}){
           const wxIcon=hasDaily?getDayWeatherIcon(dayPrecip,dayCloud,dayWind):null
           const fType=d.type||(i===0?"observation":i<=3?"tendance":"horizon")
           const fConf=d.confidence||null
-          const typeOpacity=fType==="observation"?1:fType==="tendance"?.85:.6
+          const typeOpacity=fType==="observation"?1:fType==="tendance"?.9:.55
           return(
             <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,
               filter:isLocked?"blur(2px)":"none",opacity:isLocked?0.55:typeOpacity,
@@ -640,10 +659,12 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily}){
         })}
       </div>
       <div style={{fontSize:9,color:"var(--sg-mid,#999)",textAlign:"center",padding:"2px 0 0",lineHeight:1.3}}>
-        {forecast[0]?.sources?(lang==="en"?"Trend based on satellite + wind. Reliability decreases with days.":"Tendance satellite + vent. Fiabilité : "+Math.round((forecast[1]?.confidence||40))+"% demain, décroît ensuite."):""}
+        {lang==="en"
+          ?`Reliable up to 4 days. ${Math.round(firstConf)}% confidence tomorrow.`
+          :`Fiable jusqu'a 4 jours. Fiabilite ${Math.round(firstConf)}% demain.`}
       </div>
-      {!isPremium&&<div onClick={()=>{track("sg_forecast_lock_click",{variant:lockV});onPremiumClick("forecast")}}
-        style={{position:"absolute",top:0,right:0,bottom:0,width:`${(lockedCount/7*100).toFixed(1)}%`,
+      {!isPremium&&lockedCount>0&&<div onClick={()=>{track("sg_forecast_lock_click",{variant:lockV});onPremiumClick("forecast")}}
+        style={{position:"absolute",top:0,right:0,bottom:0,width:`${(lockedCount/visibleDays*100).toFixed(1)}%`,
         display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",
         background:"linear-gradient(90deg,transparent,var(--sg-bg,#FDFCF7) 25%)",
         borderRadius:8}}>
@@ -868,20 +889,16 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
   const weather=useWeather(beach)
   // Use REAL forecast, then interpolated, then fallback generated
   // If community reports override status, blend into forecast
+  const weeklyData=useMemo(()=>{
+    if(!beach||!sargData)return null
+    const sargId=BEACH_TO_SARG[beach.id]
+    if(sargId&&sargData.weekly?.[sargId])return sargData.weekly[sargId]
+    const interpKey=`_interp_${beach.id}`
+    return sargData._enrichedWeekly?.[interpKey]||null
+  },[beach?.id,sargData])
   const forecast=useMemo(()=>{
     if(!beach)return null
-    const sargId=BEACH_TO_SARG[beach.id]
-    let fc=null
-    // 1. Direct sentinel forecast
-    if(sargId&&sargData?.weekly?.[sargId]?.forecast){
-      fc=sargData.weekly[sargId].forecast
-    }
-    // 2. IDW-interpolated forecast
-    if(!fc){
-      const interpKey=`_interp_${beach.id}`
-      const enriched=sargData?._enrichedWeekly
-      if(enriched?.[interpKey]?.forecast) fc=enriched[interpKey].forecast
-    }
+    let fc=weeklyData?.forecast||null
     // 3. Math.sin fallback (should not happen with 20 sentinels)
     if(!fc) fc=generateForecast(beach.afai,lang)
     // 4. Blend community reports into forecast when terrain says worse
@@ -900,7 +917,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
       }
     }
     return fc
-  },[beach?.id,beach?.status,beach?._communityOverride,lang,sargData])
+  },[beach?.id,beach?.status,beach?._communityOverride,lang,weeklyData])
   const isFav=favorites.includes(beach?.id)
   const startY=useRef(0)
   const sheetRef=useRef(null)
@@ -1034,8 +1051,34 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
 
           {/* Forecast (days 4-7 locked) */}
           <h3 style={{fontSize:15,fontWeight:700,marginBottom:8}}>{LL.forecast}</h3>
+          {/* v3: Arrival banner — strongest signal the app provides */}
+          {weeklyData?.arrivalDetected&&(
+            <div style={{
+              padding:"10px 12px",marginBottom:10,borderRadius:12,
+              background:"linear-gradient(135deg,rgba(232,143,42,.12),rgba(232,82,42,.08))",
+              border:"1px solid rgba(232,143,42,.35)",
+              display:"flex",alignItems:"center",gap:10,
+            }}>
+              <span style={{fontSize:20}}>⚠</span>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,fontWeight:700,color:"#b35818"}}>
+                  {lang==="en"?"Sargassum bank approaching":"Banc de sargasses en approche"}
+                </div>
+                <div style={{fontSize:11,color:"var(--sg-mid,#686868)",marginTop:2}}>
+                  {lang==="en"
+                    ?"Satellite detects a bank drifting toward this beach (1–3 days)."
+                    :"Le satellite detecte un banc derivant vers cette plage (1–3 jours)."}
+                </div>
+              </div>
+            </div>
+          )}
           <ForecastChart forecast={forecast} lang={lang} onPremiumClick={onPremiumClick} isPremium={isPremium}
-            weatherDaily={weather?.daily||null}/>
+            weatherDaily={weather?.daily||null} weeklyData={weeklyData}/>
+          {weeklyData?.forecastDisclaimer&&(
+            <div style={{fontSize:10,color:"var(--sg-mid,#999)",marginTop:4,fontStyle:"italic"}}>
+              {weeklyData.forecastDisclaimer}
+            </div>
+          )}
 
           {/* Weather */}
           {weather&&(
@@ -1650,8 +1693,13 @@ function DailyRecoStrip({allBeaches,sargData,island,lang,isPremium,onBeachClick,
       const dist=userPos?haversine(userPos.lat,userPos.lng,b.lat,b.lng):null
       const sargId=BEACH_TO_SARG[b.id]
       const weekly=sargId&&sargData?.weekly?.[sargId]
-      const fc1=weekly?.forecast?.[1]
-      const drift=weekly?.drift||null
+      const enriched=sargData?._enrichedWeekly?.[`_interp_${b.id}`]
+      const activeWeekly=weekly||enriched
+      const fc1=activeWeekly?.forecast?.[1]
+      const fc3=activeWeekly?.forecast?.[3]
+      const drift=activeWeekly?.drift||null
+      const arrivalDetected=!!activeWeekly?.arrivalDetected
+      const arrivalStrength=activeWeekly?.arrivalStrength||0
       let score=0
       // 1. Status today (dominant)
       if(b.status==="clean")score+=100
@@ -1664,11 +1712,18 @@ function DailyRecoStrip({allBeaches,sargData,island,lang,isPremium,onBeachClick,
         if(fc1.status==="avoid")score-=35
         else if(fc1.status==="moderate")score-=15
       }
+      // 3b. v3: Forecast J+3 — bigger penalty if 3-day outlook degrades
+      if(fc3){
+        if(fc3.status==="avoid")score-=25
+        else if(fc3.status==="moderate")score-=12
+      }
       // 4. Trend drift — banc approaching is bad news
       if(drift==="up")score-=20
       else if(drift==="down")score+=5
+      // 4b. v3: Arrival signal from banks — real incoming threat
+      if(arrivalDetected)score-=Math.round(arrivalStrength*200) // 0.03→-6, 0.08→-16
       // 5. Confidence dampener — low confidence reduces the score's signal
-      const conf=(weekly?.forecast?.[0]?.confidence)||60
+      const conf=(activeWeekly?.forecast?.[0]?.confidence)||60
       score=score*(0.6+Math.min(conf,100)/250) // conf 60→0.84, 100→1.0, 20→0.68
       // 6. Community reports override (terrain wins)
       const cReports=communityReports?.[b.id]||communityReports?.[sargId]
@@ -1686,7 +1741,7 @@ function DailyRecoStrip({allBeaches,sargData,island,lang,isPremium,onBeachClick,
       // 9. Amenities (tie-breakers)
       if(b.kids)score+=5
       if(b.parking)score+=3
-      return{...b,_score:Math.round(score*10)/10,_dist:dist,_fc1:fc1,_drift:drift,_conf:conf,_communityReports:cReports}
+      return{...b,_score:Math.round(score*10)/10,_dist:dist,_fc1:fc1,_fc3:fc3,_drift:drift,_conf:conf,_communityReports:cReports,_arrivalDetected:arrivalDetected,_arrivalStrength:arrivalStrength}
     })
     scored.sort((a,b)=>b._score-a._score)
     return scored.slice(0,3)
@@ -1699,9 +1754,13 @@ function DailyRecoStrip({allBeaches,sargData,island,lang,isPremium,onBeachClick,
   const topSt=ST[top.status]||ST._loading
 
   // Verdict text — Smart Forecast pattern (Weather Underground)
-  // Verdict text — priorities: community > memory > forecast J+1 > drift > weather > default
+  // v3 priorities: arrival > community > memory > forecast J+3 > J+1 > drift > weather
   const verdict=(()=>{
-    const fc1=top._fc1,drift=top._drift
+    const fc1=top._fc1,fc3=top._fc3,drift=top._drift
+    // v3: arrival signal is the HIGHEST actionable priority
+    if(top._arrivalDetected&&top.status==="clean"){
+      return lang==="en"?"Clean now — sargassum bank approaching":"Propre mais banc en approche"
+    }
     if(top._communityReports&&top._communityReports.total>=3){
       return lang==="en"?`${top._communityReports.total} visitor reports on site`:`${top._communityReports.total} signalements visiteurs sur place`
     }
@@ -1711,6 +1770,9 @@ function DailyRecoStrip({allBeaches,sargData,island,lang,isPremium,onBeachClick,
     // Top is clean — look ahead
     if(fc1&&fc1.status&&fc1.status!=="clean"){
       return lang==="en"?`Clean today but ${fc1.status} tomorrow`:`Propre aujourd'hui, ${statusFromAfai(fc1.afai)==="moderate"?"modéré":"alerte"} demain`
+    }
+    if(fc3&&fc3.status&&fc3.status!=="clean"){
+      return lang==="en"?`Clean now — ${fc3.status} in 3 days`:`Propre — ${statusFromAfai(fc3.afai)==="moderate"?"modéré":"alerte"} dans 3 jours`
     }
     if(drift==="up"){
       return lang==="en"?"Clean now but sargassum drifting in":"Propre mais sargasses en approche"
