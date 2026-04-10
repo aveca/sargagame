@@ -2783,44 +2783,6 @@ export default function App(){
         window.history.replaceState({},"",window.location.pathname)
         return true
       }
-      // ?manage=1 → ouvrir le portail Stripe
-      // Accept email via ?email= URL param (from welcome email link) as fallback
-      // for localStorage being empty on a fresh device/browser
-      if(params.get("manage")==="1"){
-        const urlEmail=params.get("email")||""
-        const em=urlEmail||localStorage.getItem("sg_premium_email")
-        if(em){
-          // Persist for future opens on this device
-          if(urlEmail)localStorage.setItem("sg_premium_email",urlEmail)
-          track("sg_manage_portal_open",{has_url_email:!!urlEmail})
-          fetch("/api/create-checkout.php",{
-            method:"POST",headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({action:"portal",email:em})
-          }).then(r=>r.json()).then(d=>{
-            if(d.url){window.location.href=d.url;return}
-            // Error path: alert user so they don't stare at a broken link silently
-            track("sg_manage_portal_error",{error:d.error||"no_url"})
-            alert((d.error||"Erreur Stripe")+"\n\nContacte alerte@sargasses-martinique.com si le probleme persiste.")
-          }).catch(e=>{
-            track("sg_manage_portal_error",{error:e?.message||"network"})
-            alert("Connexion impossible au portail Stripe. Reessaie dans un instant ou contacte alerte@sargasses-martinique.com.")
-          })
-        }else{
-          // No email available anywhere — prompt the user
-          const promptEmail=prompt("Entre ton email pour gerer ton abonnement :")
-          if(promptEmail&&promptEmail.includes("@")){
-            localStorage.setItem("sg_premium_email",promptEmail)
-            fetch("/api/create-checkout.php",{
-              method:"POST",headers:{"Content-Type":"application/json"},
-              body:JSON.stringify({action:"portal",email:promptEmail})
-            }).then(r=>r.json()).then(d=>{
-              if(d.url){window.location.href=d.url;return}
-              alert(d.error||"Email introuvable chez Stripe")
-            }).catch(()=>alert("Connexion impossible"))
-          }
-        }
-        window.history.replaceState({},"",window.location.pathname)
-      }
     }catch(e){}
     return false
   })
@@ -2830,6 +2792,51 @@ export default function App(){
     return w
   })
   useEffect(()=>{if(showWelcome){track("sg_welcome_toast_view");const t=setTimeout(()=>setShowWelcome(false),5000);return()=>clearTimeout(t)}},[showWelcome])
+
+  // Handle ?manage=1 → open Stripe Customer Portal
+  // MUST run independently of isPremium state: the user is already premium and
+  // clicks the link from email to manage/cancel, so a "return true" early-exit
+  // in the isPremium useState initializer would skip this handler on the 2nd+
+  // click (1st click worked because localStorage was empty at that moment).
+  useEffect(()=>{
+    try{
+      const params=new URLSearchParams(window.location.search)
+      if(params.get("manage")!=="1")return
+      const urlEmail=params.get("email")||""
+      const em=urlEmail||localStorage.getItem("sg_premium_email")
+      if(em){
+        if(urlEmail)localStorage.setItem("sg_premium_email",urlEmail)
+        track("sg_manage_portal_open",{has_url_email:!!urlEmail})
+        fetch("/api/create-checkout.php",{
+          method:"POST",headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({action:"portal",email:em})
+        }).then(r=>r.json()).then(d=>{
+          if(d.url){window.location.href=d.url;return}
+          track("sg_manage_portal_error",{error:d.error||"no_url"})
+          alert((d.error||"Erreur Stripe")+"\n\nContacte alerte@sargasses-martinique.com si le probleme persiste.")
+        }).catch(e=>{
+          track("sg_manage_portal_error",{error:e?.message||"network"})
+          alert("Connexion impossible au portail Stripe. Reessaie dans un instant ou contacte alerte@sargasses-martinique.com.")
+        })
+      }else{
+        const promptEmail=prompt("Entre ton email pour gerer ton abonnement :")
+        if(promptEmail&&promptEmail.includes("@")){
+          localStorage.setItem("sg_premium_email",promptEmail)
+          fetch("/api/create-checkout.php",{
+            method:"POST",headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({action:"portal",email:promptEmail})
+          }).then(r=>r.json()).then(d=>{
+            if(d.url){window.location.href=d.url;return}
+            alert(d.error||"Email introuvable chez Stripe")
+          }).catch(()=>alert("Connexion impossible"))
+        }
+      }
+      params.delete("manage")
+      params.delete("email")
+      const qs=params.toString()
+      window.history.replaceState({},"",window.location.pathname+(qs?"?"+qs:""))
+    }catch{}
+  },[])
 
   // Auto-unlock premium from welcome email link on a fresh device
   // Link format: /?premium_email=<encoded>. Verifies active Stripe sub via PHP.
