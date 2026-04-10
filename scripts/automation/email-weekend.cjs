@@ -20,6 +20,7 @@ const https = require('https')
 const FORCE = process.argv.includes('--force')
 const SARG_PATH = path.join(__dirname, '../../public/api/copernicus/sargassum.json')
 const BEACHES_PATH = path.join(__dirname, '../../public/data/beaches-list.json')
+const SENT_PATH = path.join(__dirname, 'data/weekend-sent.json')
 const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec'
 function unsubUrl(island) { return `${WEBHOOK_URL}?action=unsubscribe&email={{EMAIL}}&island=${island.toUpperCase()}` }
 
@@ -140,6 +141,16 @@ async function main() {
     return
   }
 
+  // Deduplication: only send once per Friday
+  const todayKey = new Date().toISOString().split('T')[0]
+  try {
+    const sent = JSON.parse(fs.readFileSync(SENT_PATH, 'utf-8'))
+    if (sent.lastSent === todayKey && !FORCE) {
+      console.log(`Already sent today (${todayKey}). Use --force to resend.`)
+      return
+    }
+  } catch {}
+
   let sargData, beaches
   try { sargData = JSON.parse(fs.readFileSync(SARG_PATH, 'utf-8')) } catch { console.error('No sargassum.json'); return }
   try { beaches = JSON.parse(fs.readFileSync(BEACHES_PATH, 'utf-8')) } catch { beaches = [] }
@@ -213,6 +224,9 @@ async function main() {
       })
     } catch {}
   }
+
+  // Mark as sent for deduplication
+  try { fs.writeFileSync(SENT_PATH, JSON.stringify({ lastSent: todayKey })) } catch {}
 
   console.log('\nDone.')
 }

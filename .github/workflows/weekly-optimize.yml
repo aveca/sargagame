@@ -184,10 +184,8 @@ jobs:
         continue-on-error: true
         run: node scripts/fetch-sargassum-live.cjs
 
-      - name: "[Friday] Weekend email bulletin"
-        if: steps.day.outputs.task == 'friday'
-        continue-on-error: true
-        run: node scripts/automation/email-weekend.cjs
+      # Weekend email bulletin is sent by daily-copernicus.yml (Friday 12h UTC)
+      # Removed from here to prevent duplicate sends
 
       - name: "[Friday] Full rebuild for weekend traffic"
         if: steps.day.outputs.task == 'friday'
