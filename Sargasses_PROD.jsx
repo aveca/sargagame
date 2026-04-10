@@ -2831,6 +2831,35 @@ export default function App(){
   })
   useEffect(()=>{if(showWelcome){track("sg_welcome_toast_view");const t=setTimeout(()=>setShowWelcome(false),5000);return()=>clearTimeout(t)}},[showWelcome])
 
+  // Auto-unlock premium from welcome email link on a fresh device
+  // Link format: /?premium_email=<encoded>. Verifies active Stripe sub via PHP.
+  useEffect(()=>{
+    if(isPremium)return
+    try{
+      const params=new URLSearchParams(window.location.search)
+      const pEmail=params.get("premium_email")
+      if(!pEmail||!pEmail.includes("@"))return
+      fetch("/api/create-checkout.php",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({action:"verify_subscription",email:pEmail})
+      }).then(r=>r.json()).then(d=>{
+        if(d.active){
+          localStorage.setItem("sg_premium","1")
+          localStorage.setItem("sg_premium_email",pEmail)
+          if(d.trialEnd)localStorage.setItem("sg_premium_trial_end",String(d.trialEnd))
+          setIsPremium(true)
+          setShowWelcome(true)
+          track("sg_premium_unlock_from_email",{status:d.status||"unknown"})
+        }else{
+          track("sg_premium_unlock_failed",{reason:d.reason||d.error||"inactive"})
+        }
+      }).catch(e=>track("sg_premium_unlock_failed",{reason:e?.message||"network"}))
+      params.delete("premium_email")
+      const qs=params.toString()
+      window.history.replaceState({},"",window.location.pathname+(qs?"?"+qs:""))
+    }catch{}
+  },[])
+
   // Analytics: session start
   useEffect(()=>{track("sg_session_start",{island,is_premium:isPremium,is_returning:!!g("sg_seen",0)});s("sg_seen",1)},[])
 

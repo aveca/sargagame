@@ -225,7 +225,7 @@ function doPost(e) {
         wTrialNote = wDateEnd ? "Ton essai gratuit se termine le " + wDateEnd + ". Tu ne seras débité que si tu restes." : "Ton essai gratuit est actif."
         wManage = "Gérer mon abonnement"
       }
-      var wMapUrl = 'https://' + wDomain + '/'
+      var wMapUrl = 'https://' + wDomain + '/?premium_email=' + encodeURIComponent(wEmail)
       var wManageUrl = 'https://' + wDomain + '/?manage=1&email=' + encodeURIComponent(wEmail)
       var wHtml = '' +
         '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>' +
