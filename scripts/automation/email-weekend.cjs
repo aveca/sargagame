@@ -65,7 +65,7 @@ function buildEmailHTML(island, topBeaches, stats, domain) {
       <td style="padding:12px 16px;border-bottom:1px solid #f0f0f0;text-align:right">
         <span style="display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;
           background:${b.status === 'clean' ? 'rgba(34,197,94,.1);color:#16A34A' : 'rgba(184,122,0,.1);color:#B87A00'}">
-          ${b.status === 'clean' ? 'Propre' : 'Modere'}
+          ${b.status === 'clean' ? 'Propre' : 'Mod\u00E9r\u00E9'}
         </span>
       </td>
     </tr>`).join('')
@@ -89,7 +89,7 @@ function buildEmailHTML(island, topBeaches, stats, domain) {
       </div>
       <div style="flex:1;padding:12px;background:rgba(184,122,0,.06);border-radius:10px">
         <div style="font-size:24px;font-weight:800;color:#B87A00">${stats.moderate}</div>
-        <div style="font-size:11px;color:#686868">a surveiller</div>
+        <div style="font-size:11px;color:#686868">\u00E0 surveiller</div>
       </div>
       <div style="flex:1;padding:12px;background:rgba(232,82,42,.06);border-radius:10px">
         <div style="font-size:24px;font-weight:800;color:#E8522A">${stats.avoid}</div>
@@ -97,30 +97,30 @@ function buildEmailHTML(island, topBeaches, stats, domain) {
       </div>
     </div>
 
-    <div style="font-size:13px;font-weight:700;color:#0D0D0D;margin-bottom:10px">Plages recommandees samedi :</div>
+    <div style="font-size:13px;font-weight:700;color:#0D0D0D;margin-bottom:10px">Plages recommand\u00E9es samedi :</div>
     <table style="width:100%;border-collapse:collapse">${beachRows}</table>
   </div>
 
   <!-- Premium upsell -->
   <div style="background:#0D1E1C;padding:20px 24px;text-align:center">
     <div style="font-size:11px;font-weight:700;color:#E8A800;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Premium</div>
-    <div style="font-size:17px;font-weight:800;color:#fff;margin-bottom:6px">Sache samedi des lundi</div>
+    <div style="font-size:17px;font-weight:800;color:#fff;margin-bottom:6px">Sache samedi d\u00E8s lundi</div>
     <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:14px;line-height:1.4">
-      Previsions 7 jours + alertes push.<br>
-      Rejoins les familles qui planifient leur weekend a l'avance.
+      Pr\u00E9visions 7 jours + alertes push.<br>
+      Rejoins les familles qui planifient leur weekend \u00E0 l'avance.
     </div>
     <a href="https://buy.stripe.com/6oU3cxgg36J48Ox6ZZ0co0s?utm_source=email&utm_medium=weekend_bulletin&utm_campaign=sargasses" style="display:inline-block;padding:12px 28px;
       background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);
       color:#0D0D0D;text-decoration:none;border-radius:10px;font-size:14px;font-weight:700;
       box-shadow:0 4px 16px rgba(232,168,0,.3)">Essai gratuit 7 jours</a>
-    <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:8px">4,99 EUR/mois apres l'essai · Annule quand tu veux</div>
+    <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:8px">4,99\u00A0\u20AC/mois apr\u00E8s l'essai \u00B7 Annule quand tu veux</div>
   </div>
 
   <div style="text-align:center;padding:20px;background:#fff;border-radius:0 0 16px 16px;border-top:1px solid #f0f0f0">
     <a href="https://${domain}" style="display:inline-block;padding:14px 32px;background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);
       color:#0D0D0D;text-decoration:none;border-radius:12px;font-size:15px;font-weight:700;
-      box-shadow:0 4px 16px rgba(232,168,0,.3)">Voir la carte en temps reel</a>
-    <div style="font-size:11px;color:#999;margin-top:12px">Prevision satellite pour samedi · Mise a jour 4x/jour</div>
+      box-shadow:0 4px 16px rgba(232,168,0,.3)">Voir la carte en temps r\u00E9el</a>
+    <div style="font-size:11px;color:#999;margin-top:12px">Pr\u00E9vision satellite pour samedi \u00B7 Mise \u00E0 jour 4\u00D7/jour</div>
   </div>
 
   <div style="text-align:center;padding:16px;font-size:10px;color:#999">

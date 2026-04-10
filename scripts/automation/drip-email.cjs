@@ -115,8 +115,8 @@ function buildJ3(island, cleanCount, topBeaches, email) {
     ${seasonBanner}
     <div style="font-size:15px;color:#333;line-height:1.5;margin-bottom:16px">
       ${IS_HIGH_SEASON
-        ? `Salut ! La saison sargasses est la. Voici les plages les plus propres aujourd'hui en ${name}. Donnees satellite mises a jour 4 fois par jour.`
-        : `Salut ! Voici les plages les plus propres cette semaine en ${name}. Donnees satellite mises a jour 4 fois par jour.`}
+        ? `Salut\u00A0! La saison sargasses est l\u00E0. Voici les plages les plus propres aujourd'hui en ${name}. Donn\u00E9es satellite mises \u00E0 jour 4 fois par jour.`
+        : `Salut\u00A0! Voici les plages les plus propres cette semaine en ${name}. Donn\u00E9es satellite mises \u00E0 jour 4 fois par jour.`}
     </div>
     <table style="width:100%;border-collapse:collapse">${beachList}</table>
     <div style="text-align:center;margin-top:20px">
@@ -135,31 +135,31 @@ function buildJ7(island, cleanCount, email) {
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
 <body style="margin:0;padding:0;background:#F7F5EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
 <div style="max-width:480px;margin:0 auto;padding:20px">
-  ${header(IS_HIGH_SEASON ? 'Les plages bougent vite' : 'Sache samedi des lundi', `Previsions 7 jours en ${name}`)}
+  ${header(IS_HIGH_SEASON ? 'Les plages bougent vite' : 'Sache samedi d\u00E8s lundi', `Pr\u00E9visions 7 jours en ${name}`)}
   <div style="background:#fff;padding:24px 20px">
     <div style="font-size:15px;color:#333;line-height:1.6;margin-bottom:16px">
       ${IS_HIGH_SEASON
-        ? `En ce moment, les sargasses arrivent vite. ${cleanCount} plages propres aujourd'hui en ${name} — mais ca peut changer demain.`
-        : `Aujourd'hui, ${cleanCount} plages sont propres en ${name}. Mais qu'en sera-t-il ce weekend ?`}
+        ? `En ce moment, les sargasses arrivent vite. ${cleanCount} plages propres aujourd'hui en ${name} — mais \u00E7a peut changer demain.`
+        : `Aujourd'hui, ${cleanCount} plages sont propres en ${name}. Mais qu'en sera-t-il ce weekend\u00A0?`}
     </div>
     <div style="font-size:15px;color:#333;line-height:1.6;margin-bottom:20px">
       ${IS_HIGH_SEASON
-        ? `Les <strong>previsions 7 jours</strong> te disent exactement quand et ou les sargasses arrivent. Ne decouvre pas ca sur la plage.`
-        : `Avec les <strong>previsions 7 jours</strong>, tu peux planifier ton weekend a l'avance. Plus besoin de verifier le matin meme.`}
+        ? `Les <strong>pr\u00E9visions 7 jours</strong> te disent exactement quand et o\u00F9 les sargasses arrivent. Ne d\u00E9couvre pas \u00E7a sur la plage.`
+        : `Avec les <strong>pr\u00E9visions 7 jours</strong>, tu peux planifier ton weekend \u00E0 l'avance. Plus besoin de v\u00E9rifier le matin m\u00EAme.`}
     </div>
 
     <div style="background:rgba(13,30,28,.03);border-radius:12px;padding:16px;margin-bottom:20px">
-      <div style="font-size:13px;font-weight:700;color:#0D0D0D;margin-bottom:10px">Ce que tu debloques :</div>
+      <div style="font-size:13px;font-weight:700;color:#0D0D0D;margin-bottom:10px">Ce que tu d\u00E9bloques :</div>
       <div style="font-size:13px;color:#333;line-height:1.8">
-        &#x1f4c5; Previsions 7 jours par plage<br>
+        &#x1f4c5; Pr\u00E9visions 7 jours par plage<br>
         &#x1f514; Alertes push sur tes plages favorites<br>
-        &#x1f3d6;&#xfe0f; Accede a toutes les plages, sans limite
+        &#x1f3d6;&#xfe0f; Acc\u00E8de \u00E0 toutes les plages, sans limite
       </div>
     </div>
 
     <div style="text-align:center">
       ${ctaButton('Essai gratuit 7 jours', stripeLink('j7'))}
-      <div style="font-size:11px;color:#999;margin-top:8px">4,99 EUR/mois apres l'essai · Annule quand tu veux</div>
+      <div style="font-size:11px;color:#999;margin-top:8px">4,99\u00A0\u20AC/mois apr\u00E8s l'essai \u00B7 Annule quand tu veux</div>
     </div>
   </div>
 
@@ -181,21 +181,21 @@ function buildJ14(island, cleanCount, email) {
   ${header('Ton weekend sans surprise', `Planifie en ${name}`)  }
   <div style="background:#fff;padding:24px 20px">
     <div style="font-size:15px;color:#333;line-height:1.6;margin-bottom:20px">
-      Ca fait 2 semaines que tu utilises la carte. Tu sais que les sargasses changent vite — <strong>${cleanCount} plages propres</strong> aujourd'hui, peut-etre moins demain.
+      \u00C7a fait 2 semaines que tu utilises la carte. Tu sais que les sargasses changent vite — <strong>${cleanCount} plages propres</strong> aujourd'hui, peut-\u00EAtre moins demain.
     </div>
 
     <div style="background:#0D1E1C;border-radius:12px;padding:20px;margin-bottom:20px;text-align:center">
-      <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:8px">Des familles de ${name} utilisent deja les previsions pour :</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:8px">Des familles de ${name} utilisent d\u00E9j\u00E0 les pr\u00E9visions pour :</div>
       <div style="font-size:14px;color:#fff;line-height:1.8;text-align:left;padding-left:20px">
-        &#x2705; Choisir leur plage des lundi<br>
-        &#x2705; Eviter les mauvaises surprises<br>
-        &#x2705; Recevoir une alerte si ca change
+        &#x2705; Choisir leur plage d\u00E8s lundi<br>
+        &#x2705; \u00C9viter les mauvaises surprises<br>
+        &#x2705; Recevoir une alerte si \u00E7a change
       </div>
     </div>
 
     <div style="text-align:center;margin-bottom:16px">
       ${ctaButton('Rejoins-les — essai gratuit', stripeLink('j14'))}
-      <div style="font-size:11px;color:#999;margin-top:8px">4,99 EUR/mois · Annule en 1 clic · Un ti-punch coute plus cher</div>
+      <div style="font-size:11px;color:#999;margin-top:8px">4,99\u00A0\u20AC/mois \u00B7 Annule en 1 clic \u00B7 Un ti-punch co\u00FBte plus cher</div>
     </div>
 
     <div style="text-align:center;padding-top:12px;border-top:1px solid #f0f0f0">
@@ -215,8 +215,8 @@ function getSubject(step, island, cleanCount) {
       ? `Saison sargasses : ${cleanCount} plages propres en ${name}`
       : `${cleanCount} plages propres cette semaine en ${name}`
     case 'j7':  return IS_HIGH_SEASON
-      ? `Les plages changent vite — previsions 7 jours ${name}`
-      : `Sache samedi des lundi - previsions ${name}`
+      ? `Les plages changent vite — pr\u00E9visions 7 jours ${name}`
+      : `Sache samedi d\u00E8s lundi - pr\u00E9visions ${name}`
     case 'j14': return IS_HIGH_SEASON
       ? `Ne rate pas ton weekend — ${name}`
       : `Ton weekend sans surprise en ${name}`

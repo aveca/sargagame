@@ -107,6 +107,21 @@ function doPost(e) {
 
       if (!html) return jsonResponse({ error: 'no html' })
 
+      // Server-side deduplication: refuse if already dispatched today for this island.
+      // Prevents duplicate sends if the GH Actions step fires multiple times
+      // (e.g. workflow_dispatch bypass, retry-on-failure storm).
+      const logSheetCheck = getOrCreateSheet('email_log', ['date', 'island', 'subject', 'sent', 'total_subscribers'])
+      const logData = logSheetCheck.getDataRange().getValues()
+      const todayStr = new Date().toISOString().split('T')[0]
+      for (let i = 1; i < logData.length; i++) {
+        const logDate = (logData[i][0] || '').toString().split('T')[0]
+        const logIsland = (logData[i][1] || '').toString().toUpperCase()
+        if (logDate === todayStr && logIsland === island.toUpperCase()) {
+          Logger.log('weekend_email refused: already dispatched today for ' + island)
+          return jsonResponse({ ok: false, skipped: true, reason: 'already_dispatched_today', island: island })
+        }
+      }
+
       // Get subscriber emails for this island
       const sheet = getOrCreateSheet('emails', ['date', 'email', 'island', 'source'])
       const data = sheet.getDataRange().getValues()
