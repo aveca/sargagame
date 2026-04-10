@@ -579,6 +579,35 @@
         "critical": 5,
         "warnings": 5
       }
+    },
+    {
+      "timestamp": "2026-04-10T19:01:57.056Z",
+      "script": "send-notifications",
+      "action": "morning-brief",
+      "sent": 0,
+      "total": 2,
+      "details": [
+        {
+          "type": "morning-brief",
+          "island": "mq",
+          "topBeach": "anse-madame",
+          "topStatus": "clean",
+          "cleanCount": 5,
+          "message": "☀️ Ta meilleure plage Martinique aujourd'hui : Anse Madame (12 min). Propre. +2 alternative(s) proche(s).",
+          "sent": false,
+          "reason": "no-api-key"
+        },
+        {
+          "type": "morning-brief",
+          "island": "gp",
+          "topBeach": "gp-bas-du-fort",
+          "topStatus": "clean",
+          "cleanCount": 8,
+          "message": "☀️ Ta meilleure plage Guadeloupe aujourd'hui : Bas du Fort (12 min). Propre. +2 alternative(s) proche(s).",
+          "sent": false,
+          "reason": "no-api-key"
+        }
+      ]
     }
   ]
 }
