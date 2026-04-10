@@ -75,13 +75,13 @@ const T={
     filters:["Toutes","Propres","Favoris","Alertes"],
     filtersIcon:["🌊","✅","❤️","🚫"],
     navMap:"Carte",navList:"Plages",navGame:"Jeu",navPremium:"Premium",
-    forecast:"Prévisions 7j",weather:"Météo",directions:"Y aller",
+    forecast:"Prévisions",weather:"Météo",directions:"Y aller",
     fav:"Favori",addFav:"Ajouter aux favoris",removeFav:"Retirer des favoris",
     wind:"Vent",uv:"UV",temp:"Température",drive:"min",
     kids:"Enfants",snorkel:"Snorkeling",parking:"Parking",
-    premium:"Premium",premiumDesc:"Prévisions 7 jours, alertes push, zéro pub.",
+    premium:"Premium",premiumDesc:"Ton veilleur sargasses : brief matin, alertes plages favorites, reco du jour.",
     premiumPrice:"4,99 €/mois",premiumCta:"Commencer — 0€ aujourd'hui",
-    premiumFeatures:["Essaie 7 jours — 0€, annule en 1 clic","Sois prévenu AVANT que les sargasses arrivent","Prévisions 7 jours — planifie ton weekend sereinement","Sans pub · Sans engagement · Satisfait ou remboursé"],
+    premiumFeatures:["Essai 7 jours — 0€, annule en 1 clic","Brief matin : ta meilleure plage, chaque jour","Alertes push avant que les sargasses arrivent","Sans pub · Sans engagement · Satisfait ou remboursé"],
     h2sWarn:"Si des sargasses sont échouées et en décomposition sur place, éloignez-vous (risque H₂S). Source : HCSP/ARS.",
     copernicus:"Copernicus Marine",live:"LIVE",
     nClean:"{n} propres",island_mq:"Martinique",island_gp:"Guadeloupe",
@@ -101,13 +101,13 @@ const T={
     filters:["All","Clean","Favourites","Alerts"],
     filtersIcon:["🌊","✅","❤️","🚫"],
     navMap:"Map",navList:"Beaches",navGame:"Game",navPremium:"Premium",
-    forecast:"7-day forecast",weather:"Weather",directions:"Directions",
+    forecast:"Forecast",weather:"Weather",directions:"Directions",
     fav:"Favourite",addFav:"Add to favourites",removeFav:"Remove from favourites",
     wind:"Wind",uv:"UV",temp:"Temperature",drive:"min",
     kids:"Kids",snorkel:"Snorkeling",parking:"Parking",
-    premium:"Premium",premiumDesc:"7-day forecast, push alerts, no ads.",
+    premium:"Premium",premiumDesc:"Your sargassum watchman: morning brief, favourite-beach alerts, daily pick.",
     premiumPrice:"€4.99/mo",premiumCta:"Start free — 0€ today",
-    premiumFeatures:["Try 7 days free — cancel in 1 click","Get warned BEFORE sargassum arrives","7-day forecast — plan your weekend with confidence","No ads · No commitment · 30-day guarantee"],
+    premiumFeatures:["7-day free trial — cancel in 1 click","Morning brief: your best beach, every day","Push alerts before sargassum hits your favourites","No ads · No commitment · 30-day guarantee"],
     h2sWarn:"If sargassum is beached and decomposing on site, move away (H₂S risk). Source: HCSP/ARS.",
     copernicus:"Copernicus Marine",live:"LIVE",
     nClean:"{n} clean",island_mq:"Martinique",island_gp:"Guadeloupe",
@@ -328,8 +328,35 @@ function interpolateIDW(beach,sentinels,k=3,power=2){
 }
 
 /**
+ * Classify a beach coast: 'atlantic' (exposed to trade winds / sargassum arrivals)
+ * or 'sheltered' (protected by relief, never receives sargassum).
+ * Rule-based from lat/lng/island — Anses d'Arlet + sud MQ restent atlantic
+ * (contournement sud possible).
+ */
+function classifyBeachCoast(lat,lng,island){
+  if(island==="mq"){
+    // Baie de Fort-de-France (Trois-Îlets, Schoelcher) : abritée
+    if(lat>14.54&&lat<14.68&&lng<-61.02&&lng>-61.16)return"sheltered"
+    // Anses d'Arlet nord (Anse Noire, Anse Dufour) : partiellement abritées
+    if(lat>14.52&&lat<14.55&&lng<-61.08)return"sheltered"
+    // Cote nord-ouest (Prêcheur, Grand'Rivière) : abritée par Pelée
+    if(lat>14.78&&lng<-61.10)return"sheltered"
+    return"atlantic"
+  }
+  if(island==="gp"){
+    // Basse-Terre côte ouest (Bouillante, Pointe-Noire, Vieux-Habitants, Deshaies)
+    if(lng<-61.70)return"sheltered"
+    // Basse-Terre nord-ouest (Sainte-Rose, Deshaies)
+    if(lng<-61.55&&lat>16.25)return"sheltered"
+    return"atlantic"
+  }
+  return"atlantic"
+}
+
+/**
  * Interpolate forecast for non-sentinel beaches by IDW-blending K nearest sentinels
  * v3: propagates arrivalDetected, forecastMethod, reliableHorizon from sentinels
+ * v3.1: caribbean beaches never show arrivalDetected (geography rule)
  */
 function interpolateForecast(beach,sentinels,weeklyData,k=3,power=2){
   if(!weeklyData||!sentinels||sentinels.length===0)return null
@@ -353,9 +380,12 @@ function interpolateForecast(beach,sentinels,weeklyData,k=3,power=2){
     return{day:dayRef.day,date:dayRef.date,afai,status:statusFromAfai(afai),
       confidence:Math.round(blendedConf),type:dayRef.type,sources:dayRef.sources}
   })
-  // Propagate arrivalDetected if ANY nearby sentinel flags arrival (union)
-  const anyArrival=withDist.some(s=>weeklyData[s.sargId]?.arrivalDetected)
-  const maxArrival=Math.max(...withDist.map(s=>weeklyData[s.sargId]?.arrivalStrength||0))
+  // Sheltered beaches NEVER get arrival signal (baie FDF + Basse-Terre ouest)
+  const beachCoast=beach.coast||classifyBeachCoast(beach.lat,beach.lng,beach.island)
+  const isSheltered=beachCoast==="sheltered"
+  // Propagate arrivalDetected if ANY nearby sentinel flags arrival (union) — unless sheltered
+  const anyArrival=!isSheltered&&withDist.some(s=>weeklyData[s.sargId]?.arrivalDetected)
+  const maxArrival=isSheltered?0:Math.max(...withDist.map(s=>weeklyData[s.sargId]?.arrivalStrength||0))
   // reliableHorizon = min of nearby sentinels (most conservative)
   const minHorizon=Math.min(...withDist.map(s=>weeklyData[s.sargId]?.reliableHorizon||3))
   // Drift from day 0 to day 3 (meaningful short horizon)
@@ -892,9 +922,19 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
   const weeklyData=useMemo(()=>{
     if(!beach||!sargData)return null
     const sargId=BEACH_TO_SARG[beach.id]
-    if(sargId&&sargData.weekly?.[sargId])return sargData.weekly[sargId]
-    const interpKey=`_interp_${beach.id}`
-    return sargData._enrichedWeekly?.[interpKey]||null
+    let w=null
+    if(sargId&&sargData.weekly?.[sargId])w=sargData.weekly[sargId]
+    else{
+      const interpKey=`_interp_${beach.id}`
+      w=sargData._enrichedWeekly?.[interpKey]||null
+    }
+    if(!w)return null
+    // Force sheltered beaches to never show arrival (geography rule)
+    const coast=beach.coast||classifyBeachCoast(beach.lat,beach.lng,beach.island)
+    if(coast==="sheltered"&&w.arrivalDetected){
+      return{...w,arrivalDetected:false,arrivalStrength:0}
+    }
+    return w
   },[beach?.id,sargData])
   const forecast=useMemo(()=>{
     if(!beach)return null
@@ -2037,7 +2077,7 @@ function WeekendBanner({allBeaches,sargData,island,lang,isPremium,onPremiumClick
         ):(
           <>
             <div style={{fontSize:14,fontWeight:700,color:"#fff",lineHeight:1.3}}>
-              {lang==="en"?"7-day forecast for all beaches":"Prévisions 7j pour toutes les plages"}
+              {lang==="en"?"Full forecast for all beaches":"Prévisions détaillées pour toutes les plages"}
             </div>
             <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginTop:2}}>
               {lang==="en"
@@ -2271,8 +2311,8 @@ function PremiumModal({onClose,lang,source,onActivated}){
 
         <ul style={{listStyle:"none",padding:0,margin:"0 0 16px",display:"flex",flexDirection:"column",gap:12}}>
           {(lang==="en"
-            ?["Morning pick — your best beach for today","Alerts before sargassum reaches shore","7-day forecast to plan your weekend"]
-            :["Recommandation du matin — ta meilleure plage du jour","Alertes avant que les sargasses atteignent le bord","Prévisions 7 jours pour planifier ton weekend"]
+            ?["Morning pick — your best beach for today","Alerts before sargassum reaches your favourites","Daily pick strip on the map"]
+            :["Brief matin — ta meilleure plage du jour","Alertes push sur tes plages favorites","Recommandation du jour sur la carte"]
           ).map((f,i)=>(
             <li key={i} style={{display:"flex",alignItems:"center",gap:10,fontSize:14}}>
               <span style={{color:C.gold,fontSize:18}}>✓</span>{f}
@@ -2347,7 +2387,7 @@ function PremiumModal({onClose,lang,source,onActivated}){
               {lang==="en"?"Premium activated!":"Premium activé !"}
             </div>
             <div style={{fontSize:13,color:"rgba(255,255,255,.6)",marginBottom:20}}>
-              {lang==="en"?"7-day forecasts unlocked.":"Prévisions 7 jours débloquées."}
+              {lang==="en"?"Premium activated — morning brief, alerts, daily pick.":"Premium activé — brief matin, alertes, reco du jour."}
             </div>
             <div style={{background:"rgba(255,255,255,.06)",border:"1.5px solid rgba(255,255,255,.12)",
               borderRadius:16,padding:"16px 20px",marginBottom:16}}>
@@ -3678,7 +3718,7 @@ export default function App(){
             <span style={{fontSize:22}}>🎉</span>
             <div>
               <div>Premium activé !</div>
-              <div style={{fontSize:11,fontWeight:400,opacity:.85,marginTop:2}}>Prévisions 7 jours débloquées.</div>
+              <div style={{fontSize:11,fontWeight:400,opacity:.85,marginTop:2}}>Brief matin + alertes + reco du jour.</div>
               <a href="?manage=1" onClick={e=>{e.stopPropagation();track("sg_manage_click")}} style={{fontSize:10,color:"rgba(255,255,255,.6)",marginTop:3,display:"inline-block"}}>Gérer mon abonnement</a>
             </div>
             <button onClick={()=>setShowWelcome(false)} style={{

@@ -23,28 +23,33 @@ const path = require('path')
 const { satelliteConfidence, memoryConfidence } = require('./lib/confidence.cjs')
 const { buildHonestForecast, statusFromAfai: statusFromAfaiForecast, DAYS: FDAYS } = require('./lib/forecast.cjs')
 
-// ── Beach coordinates (same as fetch-copernicus-live.py) ───────────
+// ── Beach coordinates + coast exposure ────────────────────────────
+// coast: 'atlantic'  = cote exposee aux alizes (sargasses arrivent par l'est)
+//        'sheltered' = cote ouest VRAIMENT abritee (baie FDF + cote ouest Basse-Terre)
+//                      → NEVER has arrival signal (protegee par le relief)
+// Note: Anses d'Arlet + Diamant sud PEUVENT recevoir sargasses qui contournent
+// le sud de l'ile, classees 'atlantic' pour ne pas cacher un vrai risque.
 const BEACHES = [
-  { id: 'grande-anse',    lat: 14.5028, lng: -61.0856, island: 'mq' },
-  { id: 'anse-mitan',     lat: 14.5523, lng: -61.0552, island: 'mq' },
-  { id: 'anse-noire',     lat: 14.5277, lng: -61.0874, island: 'mq' },
-  { id: 'tartane',        lat: 14.7507, lng: -60.9257, island: 'mq' },
-  { id: 'anse-madame',    lat: 14.6178, lng: -61.1036, island: 'mq' },
-  { id: 'diamant',        lat: 14.4758, lng: -61.0314, island: 'mq' },
-  { id: 'pt-marin',       lat: 14.4511, lng: -60.8836, island: 'mq' },
-  { id: 'sainte-anne',     lat: 14.4305, lng: -60.8850, island: 'mq' },
-  { id: 'les-salines',    lat: 14.3959, lng: -60.8690, island: 'mq' },
-  { id: 'vauclin',        lat: 14.5414, lng: -60.8292, island: 'mq' },
-  { id: 'gp-grande-anse', lat: 16.1312, lng: -61.7682, island: 'gp' },
-  { id: 'gp-malendure',   lat: 16.1721, lng: -61.7767, island: 'gp' },
-  { id: 'gp-sainte-anne', lat: 16.2226, lng: -61.3828, island: 'gp' },
-  { id: 'gp-pt-chateaux', lat: 16.2531, lng: -61.2307, island: 'gp' },
-  { id: 'gp-gosier',      lat: 16.2048, lng: -61.4948, island: 'gp' },
-  { id: 'gp-caravelle',   lat: 16.2181, lng: -61.3965, island: 'gp' },
-  { id: 'gp-bas-du-fort', lat: 16.2140, lng: -61.5237, island: 'gp' },
-  { id: 'gp-deshaies',    lat: 16.3054, lng: -61.7951, island: 'gp' },
-  { id: 'gp-moule',       lat: 16.4222, lng: -61.5337, island: 'gp' },
-  { id: 'gp-vieux-fort',  lat: 16.2488, lng: -61.1428, island: 'gp' },
+  { id: 'grande-anse',    lat: 14.5028, lng: -61.0856, island: 'mq', coast: 'atlantic' },  // Anses d'Arlet sud — contournement possible
+  { id: 'anse-mitan',     lat: 14.5523, lng: -61.0552, island: 'mq', coast: 'sheltered' }, // Trois-Ilets, baie FDF fermee
+  { id: 'anse-noire',     lat: 14.5277, lng: -61.0874, island: 'mq', coast: 'sheltered' }, // Anses d'Arlet nord, abritee
+  { id: 'tartane',        lat: 14.7507, lng: -60.9257, island: 'mq', coast: 'atlantic' },  // Caravelle, exposee E
+  { id: 'anse-madame',    lat: 14.6178, lng: -61.1036, island: 'mq', coast: 'sheltered' }, // Schoelcher, baie FDF
+  { id: 'diamant',        lat: 14.4758, lng: -61.0314, island: 'mq', coast: 'atlantic' },  // sud ouvert
+  { id: 'pt-marin',       lat: 14.4511, lng: -60.8836, island: 'mq', coast: 'atlantic' },  // Sainte-Anne
+  { id: 'sainte-anne',    lat: 14.4305, lng: -60.8850, island: 'mq', coast: 'atlantic' },
+  { id: 'les-salines',    lat: 14.3959, lng: -60.8690, island: 'mq', coast: 'atlantic' },  // sud exposee
+  { id: 'vauclin',        lat: 14.5414, lng: -60.8292, island: 'mq', coast: 'atlantic' },
+  { id: 'gp-grande-anse', lat: 16.1312, lng: -61.7682, island: 'gp', coast: 'sheltered' }, // Basse-Terre cote ouest
+  { id: 'gp-malendure',   lat: 16.1721, lng: -61.7767, island: 'gp', coast: 'sheltered' }, // Bouillante, cote ouest
+  { id: 'gp-sainte-anne', lat: 16.2226, lng: -61.3828, island: 'gp', coast: 'atlantic' },  // Grande-Terre sud
+  { id: 'gp-pt-chateaux', lat: 16.2531, lng: -61.2307, island: 'gp', coast: 'atlantic' },  // extreme est
+  { id: 'gp-gosier',      lat: 16.2048, lng: -61.4948, island: 'gp', coast: 'atlantic' },
+  { id: 'gp-caravelle',   lat: 16.2181, lng: -61.3965, island: 'gp', coast: 'atlantic' },
+  { id: 'gp-bas-du-fort', lat: 16.2140, lng: -61.5237, island: 'gp', coast: 'atlantic' },
+  { id: 'gp-deshaies',    lat: 16.3054, lng: -61.7951, island: 'gp', coast: 'sheltered' }, // Basse-Terre nord-ouest
+  { id: 'gp-moule',       lat: 16.4222, lng: -61.5337, island: 'gp', coast: 'atlantic' },  // Grande-Terre nord-est
+  { id: 'gp-vieux-fort',  lat: 16.2488, lng: -61.1428, island: 'gp', coast: 'atlantic' },  // Basse-Terre sud, expose
 ]
 
 // ── ERDDAP configuration ──────────────────────────────────────────
