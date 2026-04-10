@@ -218,6 +218,37 @@ if ($action === 'subscribe') {
     exit;
 }
 
+// ── Action: verify_subscription — check if email has active/trialing sub
+// Used by welcome email "Voir la carte" link to unlock premium on fresh devices
+if ($action === 'verify_subscription') {
+    $email = $input['email'] ?? '';
+    if (!$email) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Missing email']);
+        exit;
+    }
+    $customers = stripe('GET', '/customers?email=' . urlencode($email) . '&limit=1');
+    if (empty($customers['data'])) {
+        echo json_encode(['active' => false, 'reason' => 'no_customer']);
+        exit;
+    }
+    $customerId = $customers['data'][0]['id'];
+    $subs = stripe('GET', '/subscriptions?customer=' . $customerId . '&status=all&limit=5');
+    $active = false;
+    $trialEnd = null;
+    $status = null;
+    foreach ($subs['data'] as $sub) {
+        if (in_array($sub['status'], ['active', 'trialing', 'past_due'])) {
+            $active = true;
+            $trialEnd = $sub['trial_end'] ?? null;
+            $status = $sub['status'];
+            break;
+        }
+    }
+    echo json_encode(['active' => $active, 'trialEnd' => $trialEnd, 'status' => $status]);
+    exit;
+}
+
 // ── Action: portal — Customer Portal (gerer / annuler abonnement)
 if ($action === 'portal') {
     $email = $input['email'] ?? '';
