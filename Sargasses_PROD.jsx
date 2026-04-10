@@ -2895,11 +2895,21 @@ export default function App(){
   const LL=T[lang]||T.fr
 
   // Fetch beaches-list.json at mount — strip stale status/afai so dots stay neutral until sargassum.json arrives
+  // Uses functional updater to preserve any sargassum data already merged (race condition guard)
   useEffect(()=>{
     fetch("/data/beaches-list.json")
       .then(r=>r.json())
       .then(data=>{
-        if(Array.isArray(data)&&data.length>0)setAllBeaches(data.map(b=>{const{status,afai,...rest}=b;return rest}))
+        if(Array.isArray(data)&&data.length>0)setAllBeaches(prev=>{
+          // Preserve sargassum-enriched data if sargassum.json resolved first
+          const sargMap=new Map()
+          for(const b of prev)if(b._src)sargMap.set(b.id,{status:b.status,afai:b.afai,_src:b._src,beachMemory:b.beachMemory,afaiSat:b.afaiSat})
+          return data.map(b=>{
+            const{status,afai,...rest}=b
+            const sarg=sargMap.get(b.id)
+            return sarg?{...rest,...sarg}:rest
+          })
+        })
       })
       .catch(()=>{})
   },[])
