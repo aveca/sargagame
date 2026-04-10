@@ -544,6 +544,41 @@
       "script": "auto-web-content",
       "action": "generation-failed",
       "island": "mq"
+    },
+    {
+      "timestamp": "2026-04-10T11:59:21.424Z",
+      "dryRun": false,
+      "script": "seo-audit",
+      "action": "data-collection",
+      "results": {
+        "mq": {
+          "indexed": 3,
+          "total": 30,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 1,
+          "cwvIssues": 0
+        },
+        "gp": {
+          "indexed": 2,
+          "total": 30,
+          "notIndexed": 0,
+          "lowCtr": 6,
+          "highBounce": 0,
+          "cwvIssues": 0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-04-10T11:59:21.477Z",
+      "dryRun": false,
+      "script": "ux-audit",
+      "action": "report-generated",
+      "issues": {
+        "totalIssues": 10,
+        "critical": 5,
+        "warnings": 5
+      }
     }
   ]
 }

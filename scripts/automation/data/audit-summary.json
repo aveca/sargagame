@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-09T17:16:07.480Z",
+  "generatedAt": "2026-04-10T11:52:59.640Z",
   "sites": {
     "mq": {
       "domain": "sargasses-martinique.com",
@@ -9,10 +9,25 @@
         "notIndexed": [],
         "softErrors": [],
         "lowCtrPages": [],
-        "highBouncePages": [],
+        "highBouncePages": [
+          {
+            "pagePath": "/",
+            "device": "mobile",
+            "sessions": 21,
+            "bounceRate": 100,
+            "avgDuration": 89
+          }
+        ],
         "cwvIssues": [],
         "rageClicks": [],
-        "deadClicks": [],
+        "deadClicks": [
+          {
+            "event": "clarity_dead_click",
+            "page": "/",
+            "target": "",
+            "count": 2
+          }
+        ],
         "quickBounces": []
       },
       "crux": null,
@@ -29,18 +44,53 @@
     },
     "gp": {
       "domain": "sargasses-guadeloupe.com",
-      "indexedCount": 3,
+      "indexedCount": 2,
       "totalUrls": 30,
       "findings": {
         "notIndexed": [],
         "softErrors": [],
         "lowCtrPages": [
           {
+            "page": "https://sargasses-guadeloupe.com/previsions-sargasses-guadeloupe/",
+            "avgPosition": 6,
+            "actualCtr": 3.46,
+            "expectedCtr": 5,
+            "impressions": 376,
+            "clicks": 13,
+            "topQueries": [
+              {
+                "query": "bulletin sargasses guadeloupe",
+                "impressions": 43,
+                "clicks": 0
+              },
+              {
+                "query": "sargasse guadeloupe 2026",
+                "impressions": 39,
+                "clicks": 2
+              },
+              {
+                "query": "sargasse guadeloupe 2026",
+                "impressions": 26,
+                "clicks": 0
+              },
+              {
+                "query": "guadeloupe sargasse 2026",
+                "impressions": 22,
+                "clicks": 1
+              },
+              {
+                "query": "prevision sargasse guadeloupe",
+                "impressions": 15,
+                "clicks": 1
+              }
+            ]
+          },
+          {
             "page": "https://sargasses-guadeloupe.com/quand-sargasses-guadeloupe/",
             "avgPosition": 10,
-            "actualCtr": 1.01,
+            "actualCtr": 1.04,
             "expectedCtr": 2,
-            "impressions": 494,
+            "impressions": 483,
             "clicks": 5,
             "topQueries": [
               {
@@ -50,12 +100,12 @@
               },
               {
                 "query": "sargasse guadeloupe 2026",
-                "impressions": 65,
+                "impressions": 61,
                 "clicks": 2
               },
               {
                 "query": "guadeloupe sargasse 2026",
-                "impressions": 33,
+                "impressions": 31,
                 "clicks": 1
               },
               {
@@ -73,14 +123,14 @@
           {
             "page": "https://sargasses-guadeloupe.com/plages-sans-sargasses-guadeloupe/",
             "avgPosition": 5,
-            "actualCtr": 2.96,
+            "actualCtr": 2.88,
             "expectedCtr": 6,
-            "impressions": 203,
+            "impressions": 208,
             "clicks": 6,
             "topQueries": [
               {
                 "query": "plage sans sargasse guadeloupe",
-                "impressions": 36,
+                "impressions": 38,
                 "clicks": 0
               },
               {
@@ -90,7 +140,7 @@
               },
               {
                 "query": "plage sans sargasse guadeloupe",
-                "impressions": 12,
+                "impressions": 13,
                 "clicks": 0
               },
               {
@@ -145,12 +195,12 @@
             "avgPosition": 7,
             "actualCtr": 0,
             "expectedCtr": 4,
-            "impressions": 22,
+            "impressions": 25,
             "clicks": 0,
             "topQueries": [
               {
                 "query": "anse a la fontaine",
-                "impressions": 8,
+                "impressions": 11,
                 "clicks": 0
               },
               {
@@ -176,46 +226,11 @@
             ]
           },
           {
-            "page": "https://sargasses-guadeloupe.com/plages/anse-patate/",
-            "avgPosition": 9,
-            "actualCtr": 0,
-            "expectedCtr": 3,
-            "impressions": 24,
-            "clicks": 0,
-            "topQueries": [
-              {
-                "query": "anse patate guadeloupe",
-                "impressions": 9,
-                "clicks": 0
-              },
-              {
-                "query": "anse patate guadeloupe",
-                "impressions": 6,
-                "clicks": 0
-              },
-              {
-                "query": "anse patate guadeloupe",
-                "impressions": 2,
-                "clicks": 0
-              },
-              {
-                "query": "anse patate guadeloupe",
-                "impressions": 1,
-                "clicks": 0
-              },
-              {
-                "query": "anse patate guadeloupe",
-                "impressions": 1,
-                "clicks": 0
-              }
-            ]
-          },
-          {
             "page": "https://sargasses-guadeloupe.com/plages/paul-thomas/",
             "avgPosition": 9,
             "actualCtr": 0,
             "expectedCtr": 3,
-            "impressions": 33,
+            "impressions": 34,
             "clicks": 0,
             "topQueries": [
               {
@@ -248,8 +263,130 @@
         ],
         "highBouncePages": [],
         "cwvIssues": [],
-        "rageClicks": [],
-        "deadClicks": [],
+        "rageClicks": [
+          {
+            "event": "clarity_rage_click",
+            "page": "/",
+            "target": "",
+            "count": 171
+          },
+          {
+            "event": "clarity_rage_click",
+            "page": "/plages/plage-caravelle/",
+            "target": "",
+            "count": 2
+          },
+          {
+            "event": "clarity_rage_click",
+            "page": "/carte-sargasses/",
+            "target": "",
+            "count": 1
+          },
+          {
+            "event": "clarity_rage_click",
+            "page": "/plages/le-gosier/",
+            "target": "",
+            "count": 1
+          }
+        ],
+        "deadClicks": [
+          {
+            "event": "clarity_dead_click",
+            "page": "/",
+            "target": "",
+            "count": 2461
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/plage-caravelle/",
+            "target": "",
+            "count": 21
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/carte-sargasses/",
+            "target": "",
+            "count": 15
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/le-gosier/",
+            "target": "",
+            "count": 10
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/previsions/",
+            "target": "",
+            "count": 8
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/en/",
+            "target": "",
+            "count": 6
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/en/sargassum-map/",
+            "target": "",
+            "count": 6
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/plage-bois-jolan/",
+            "target": "",
+            "count": 5
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/malendure/",
+            "target": "",
+            "count": 3
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/saint-francois-pointe-des-chateaux/",
+            "target": "",
+            "count": 3
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/de-petit-havre/",
+            "target": "",
+            "count": 2
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/du-bourg/",
+            "target": "",
+            "count": 2
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/grande-anse-bouillante/",
+            "target": "",
+            "count": 2
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/de-l-anse-des-rochers/",
+            "target": "",
+            "count": 1
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/de-l-anse-du-figuier/",
+            "target": "",
+            "count": 1
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/grande-anse-deshaies/",
+            "target": "",
+            "count": 1
+          }
+        ],
         "quickBounces": []
       },
       "crux": null,
