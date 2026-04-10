@@ -5,9 +5,9 @@
  * Architecture : Map-first, data-driven (Clarity — 25% clics = carte)
  * Stack : React 18 · Leaflet · Bricolage Grotesque + Anton · Open-Meteo
  */
-import React,{useState,useEffect,useRef,useMemo,useCallback,createContext,useContext,Component}from"react"
-import L from"leaflet"
-import"leaflet/dist/leaflet.css"
+import React,{useState,useEffect,useRef,useMemo,useCallback,createContext,useContext,Component,Suspense,lazy}from"react"
+
+const LazyMapView=lazy(()=>import("./src/MapView"))
 
 class ErrBound extends Component{
   constructor(p){super(p);this.state={err:null}}
@@ -579,264 +579,7 @@ function BottomNav({view,onChangeView,lang}){
   )
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   MAP VIEW (Leaflet — satellite tiles, CircleMarkers + heatmap)
-   ═══════════════════════════════════════════════════════════════════════════ */
-function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos,favorites,allBeaches,onThreatChange,onPremiumClick,lang}){
-  const containerRef=useRef(null)
-  const mapRef=useRef(null)
-  const markersRef=useRef([])
-  const heatRef=useRef([])
-  const gridLayerRef=useRef(null)
-  const userMarkerRef=useRef(null)
-  const driftRef=useRef(null) // animation interval
-  const[mapError,setMapError]=useState(null)
-  const[afaiGrid,setAfaiGrid]=useState(null)
-  const[banksData,setBanksData]=useState(null)
-  const[timeStep,setTimeStep]=useState(0) // 0=now, 6, 12, 24 hours
-  const[autoPlaying,setAutoPlaying]=useState(false)
-  const autoPlayTimersRef=useRef([])
-  const autoZoomDoneRef=useRef(false)
-  const[threatDismissed,setThreatDismissed]=useState(()=>sessionStorage.getItem("sg_threat_dismissed")==="1")
-  const banksLayerRef=useRef(null)
-
-  // Init map once
-  useEffect(()=>{
-    if(!containerRef.current||mapRef.current)return
-    try{
-    const center=ISLAND_CENTER[island]||ISLAND_CENTER.mq
-    const map=L.map(containerRef.current,{
-      zoomControl:false,
-      attributionControl:false,
-      maxBoundsViscosity:1,
-      tap:false, // Prevent Leaflet synthetic tap (causes double-click on mobile)
-    })
-    map.setView(center,11)
-    // Satellite tiles (users prefer satellite — 21 clics Clarity)
-    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{
-      maxZoom:18,
-    }).addTo(map)
-    // Copernicus WMS removed — server is unreliable (503 returns opaque PNG error tiles
-    // that mask the satellite layer). AFAI grid from sargassum-grid.json provides
-    // the sargassum visualization instead (rendered in canvas, see useEffect below).
-    // Labels overlay (on top of satellite + sargassum)
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png",{
-      maxZoom:18,subdomains:"abcd",
-    }).addTo(map)
-    mapRef.current=map
-    }catch(err){console.error("MAP INIT ERROR:",err.message,err.stack);setMapError(err.message)}
-    return()=>{try{mapRef.current?.remove()}catch(e){};mapRef.current=null}
-  },[])
-
-  // Fly to island (setView if container has 0 size, flyTo otherwise)
-  useEffect(()=>{
-    if(!mapRef.current)return
-    // If user GPS is on this island, center on them; else default island center
-    if(userPos){
-      const onMq=userPos.lat<15.5,onGp=userPos.lat>=15.5
-      if((island==="mq"&&onMq)||(island==="gp"&&onGp)){
-        mapRef.current.flyTo([userPos.lat,userPos.lng],12,{duration:1})
-        return
-      }
-    }
-    const center=ISLAND_CENTER[island]||ISLAND_CENTER.mq
-    try{
-      const size=mapRef.current.getSize()
-      if(size.x===0||size.y===0){mapRef.current.setView(center,11)}
-      else{mapRef.current.flyTo(center,11,{duration:1})}
-    }catch(e){mapRef.current.setView(center,11)}
-  },[island,userPos])
-
-  // User location marker (blue pulsing dot)
-  useEffect(()=>{
-    if(!mapRef.current)return
-    if(userMarkerRef.current){userMarkerRef.current.remove();userMarkerRef.current=null}
-    if(!userPos)return
-    const icon=L.divIcon({
-      className:"",
-      html:`<div style="width:16px;height:16px;border-radius:50%;background:#4285F4;border:3px solid #fff;box-shadow:0 0 8px rgba(66,133,244,.5);animation:pulse 2s infinite"></div>`,
-      iconSize:[16,16],iconAnchor:[8,8],
-    })
-    userMarkerRef.current=L.marker([userPos.lat,userPos.lng],{icon,interactive:false,zIndexOffset:1000})
-      .addTo(mapRef.current)
-    return()=>{if(userMarkerRef.current){userMarkerRef.current.remove();userMarkerRef.current=null}}
-  },[userPos])
-
-  // Fetch AFAI grid for offshore heatmap
-  useEffect(()=>{
-    fetch("/api/copernicus/sargassum-grid.json")
-      .then(r=>r.json())
-      .then(d=>{if(d?.points?.length)setAfaiGrid(d)})
-      .catch(()=>{})
-  },[])
-
-  // Fetch sargassum banks (clustered AFAI + drift predictions)
-  useEffect(()=>{fetch("/api/copernicus/sargassum-banks.json").then(r=>r.json()).then(d=>{if(d?.banks?.length)setBanksData(d)}).catch(()=>{})},[])
-
-  /* Bank polygons, drift paths, auto-zoom, auto-play all removed.
-     Drift predictions use fixed speed/bearing — not real ocean modeling.
-     Keeping only the AFAI heatmap (real satellite data). */
-
-  // Render AFAI heatmap from grid data (canvas circles, efficient)
-  useEffect(()=>{
-    if(!mapRef.current)return
-    if(gridLayerRef.current){gridLayerRef.current.remove();gridLayerRef.current=null}
-    if(!afaiGrid||!afaiGrid.points.length)return
-    // Filter to current island region
-    const isGP=island==="gp"
-    const pts=afaiGrid.points.filter(p=>isGP?p[0]>=15.5:p[0]<15.5)
-    if(!pts.length)return
-    // Canvas layer for performance (hundreds of circles)
-    const renderer=L.canvas({padding:0.5})
-    const group=L.layerGroup()
-    for(const[lat,lng,afai]of pts){
-      const r=Math.max(800,afai*5000) // radius in meters
-      const opacity=Math.min(0.55,afai*0.8)
-      const color=afai<.15?"rgba(34,197,94,.6)":afai<.40?"rgba(232,168,0,.7)":"rgba(232,82,42,.8)"
-      const c=L.circle([lat,lng],{radius:r,fillColor:color,color:"transparent",weight:0,
-        fillOpacity:opacity,renderer,interactive:false})
-      c.addTo(group)
-    }
-    // Single map click handler instead of per-circle (perf: hundreds of listeners → 1)
-    const onMapClick=(e)=>{
-      const{lat:cLat,lng:cLng}=e.latlng
-      // Check if click is near any AFAI hotspot
-      const hit=pts.find(([pLat,pLng])=>Math.abs(pLat-cLat)<.03&&Math.abs(pLng-cLng)<.03)
-      if(!hit)return
-      track("sg_heatmap_click",{afai:hit[2],lat:hit[0],lng:hit[1]})
-      const nearest=beaches.slice().sort((a,b)=>
-        haversine(hit[0],hit[1],a.lat,a.lng)-haversine(hit[0],hit[1],b.lat,b.lng))[0]
-      if(nearest)onBeachClick(nearest)
-    }
-    mapRef.current.on("click",onMapClick)
-    group.addTo(mapRef.current)
-    gridLayerRef.current=group
-    return()=>{
-      if(gridLayerRef.current){gridLayerRef.current.remove();gridLayerRef.current=null}
-      mapRef.current?.off("click",onMapClick)
-    }
-  },[afaiGrid,island,beaches,onBeachClick])
-
-  // Update markers + heatmap
-  useEffect(()=>{
-    if(!mapRef.current)return
-    markersRef.current.forEach(m=>m.remove())
-    markersRef.current=[]
-    heatRef.current.forEach(m=>m.remove())
-    heatRef.current=[]
-
-    // Get drift data from sargassum.json weekly forecasts
-    // FIX: map sarg slug keys → beach IDs via SARG_TO_BEACH
-    const driftMap={}
-    if(sargData?.weekly){
-      for(const[sargId,w]of Object.entries(sargData.weekly)){
-        const beachId=SARG_TO_BEACH[sargId]
-        if(beachId)driftMap[beachId]={drift:w.drift,dv:w.driftValue||0}
-      }
-    }
-
-    // Find nearest clean beach to user for golden highlight
-    let nearestCleanId=null
-    if(userPos){
-      let bestDist=Infinity
-      beaches.forEach(b=>{
-        if(b.status==="clean"){
-          const d=haversine(userPos.lat,userPos.lng,b.lat,b.lng)
-          if(d<bestDist){bestDist=d;nearestCleanId=b.id}
-        }
-      })
-    }
-
-    // Batch all layers in groups to avoid per-marker redraws (perf: 161 addTo → 2)
-    const heatGroup=L.layerGroup()
-    const markerGroup=L.layerGroup()
-
-    beaches.forEach((b,bi)=>{
-      const st=ST[b.status]||ST.clean
-      const isSelected=selectedBeach?.id===b.id
-
-      // Sargassum drift visualization — animated ellipses on ocean
-      if(b.afai>.15){
-        const heatColor=b.afai<.3?"rgba(34,197,94,.2)":b.afai<.65?"rgba(184,122,0,.25)":"rgba(232,82,42,.3)"
-        const strokeColor=b.afai<.3?"rgba(34,197,94,.1)":b.afai<.65?"rgba(184,122,0,.12)":"rgba(232,82,42,.15)"
-        // Direction: east coast MQ = drift from east, west coast = from west
-        const isEastCoast=b.island==="mq"?b.lng>-61.0:b.lng>-61.5
-        const lngDir=isEastCoast?.02:-.02
-
-        // Main sargassum mass — elongated ellipse toward ocean
-        const mainRadius=Math.max(600,b.afai*3500)
-        const main=L.circle([b.lat,b.lng+lngDir],{
-          radius:mainRadius,
-          fillColor:heatColor,
-          color:strokeColor,
-          weight:1,
-          fillOpacity:Math.min(.3,b.afai*.4),
-          interactive:false,
-        })
-        main.addTo(heatGroup)
-        heatRef.current.push(main)
-
-        // Drift trails + arrows removed — ThreatBanner handles threat communication
-        if(b.afai>.3){
-        }
-      }
-
-      // Beach marker — bigger on touch for fat fingers
-      const isMobile="ontouchstart" in window
-      const isNearest=b.id===nearestCleanId
-      const marker=L.circleMarker([b.lat,b.lng],{
-        radius:isSelected?16:(isNearest?16:(isMobile?14:8)),
-        fillColor:st.c,
-        color:isNearest?C.gold:"#fff",
-        weight:isSelected?3:(isNearest?3:2),
-        fillOpacity:.9,
-        bubblingMouseEvents:false,
-        className:isNearest?"sg-nearest":"",
-      })
-      // Golden pulsing ring for nearest clean beach
-      if(isNearest&&!isSelected){
-        const ring=L.circleMarker([b.lat,b.lng],{
-          radius:22,fillColor:"transparent",color:C.gold,weight:2,
-          fillOpacity:0,opacity:.4,bubblingMouseEvents:false,interactive:false,
-          className:"sg-nearest-ring",
-        })
-        ring.addTo(markerGroup)
-      }
-      // Tooltip only on desktop (hover). On mobile it steals taps and adds nothing
-      if(!("ontouchstart" in window))marker.bindTooltip(b.name+(isNearest?(lang==="en"?" · Nearest clean":" · La plus proche propre"):""),{direction:"top",offset:[0,-12],className:"",permanent:false})
-      marker.on("click",()=>onBeachClick(b))
-      marker.addTo(markerGroup)
-      markersRef.current.push(marker)
-    })
-
-    // Add both groups at once (2 redraws instead of 161)
-    heatGroup.addTo(mapRef.current)
-    markerGroup.addTo(mapRef.current)
-
-    // Animate drift: slowly pulse the sargassum masses
-    if(driftRef.current)clearInterval(driftRef.current)
-    let tick=0
-    driftRef.current=setInterval(()=>{
-      tick++
-      heatRef.current.forEach((h,i)=>{
-        if(h.setRadius&&h.options?.interactive===false){
-          const baseR=h._mRadius||h.getRadius()
-          if(!h._baseR)h._baseR=baseR
-          const pulse=Math.sin(tick*.15+i*.3)*.08
-          try{h.setRadius(h._baseR*(1+pulse))}catch(e){}
-        }
-      })
-    },800)
-    return()=>{if(driftRef.current)clearInterval(driftRef.current)}
-  },[beaches,onBeachClick,selectedBeach,sargData,userPos,lang])
-
-  /* Threat banner + time slider removed — based on fake drift model (fixed speed/bearing) */
-
-  if(mapError)return <div style={{padding:40,color:"red"}}>{mapError}</div>
-  return(<div style={{position:"relative",width:"100%",height:"100%"}}>
-    <div ref={containerRef} style={{width:"100%",height:"100%"}}/>
-  </div>)
-}
+/* MapView extracted to src/MapView.jsx — lazy-loaded via LazyMapView */
 
 /* ═══════════════════════════════════════════════════════════════════════════
    FORECAST CHART — Day 1 (today) free, days 2-7 LOCKED (blurred) for premium
@@ -3421,10 +3164,12 @@ export default function App(){
         {/* MAP, LIST or GAME — both rendered, visibility toggled for instant switch */}
         <div style={{position:"absolute",inset:0,opacity:view==="map"?1:0,
           pointerEvents:view==="map"?"auto":"none",transition:"opacity .25s ease"}}>
-          <ErrBound><MapView beaches={filtered} island={island} lang={lang}
+          <ErrBound><Suspense fallback={<div style={{width:"100%",height:"100%",background:"#0A1714"}}/>}>
+            <LazyMapView beaches={filtered} island={island} lang={lang}
             onBeachClick={onBeachClick} selectedBeach={selectedBeach} sargData={sargData} userPos={userPos}
             favorites={favorites} allBeaches={allBeaches} onThreatChange={setHasActiveThreat}
-            onPremiumClick={openPremium}/></ErrBound>
+            onPremiumClick={openPremium} track={track}/>
+          </Suspense></ErrBound>
         </div>
         <div style={{position:"absolute",inset:0,opacity:view==="list"?1:0,
           pointerEvents:view==="list"?"auto":"none",transition:"opacity .25s ease"}}>

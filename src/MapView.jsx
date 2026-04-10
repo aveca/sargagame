@@ -1,0 +1,255 @@
+/**
+ * MapView — Leaflet map extracted from monolith for lazy-loading.
+ * Dynamic import shaves ~150KB off first paint (leaflet chunk deferred).
+ */
+import React,{useState,useEffect,useRef}from"react"
+import L from"leaflet"
+import"leaflet/dist/leaflet.css"
+
+/* ── Duplicated stable constants (small, avoids circular imports) ───────── */
+const ISLAND_CENTER={mq:[14.64,-61.02],gp:[16.22,-61.55]}
+
+const SARG_TO_BEACH={"grande-anse":"mq014","anse-mitan":"mq011","anse-noire":"mq012","tartane":"mq034","anse-madame":"mq024","diamant":"mq016","pt-marin":"mq008","sainte-anne":"mq004","les-salines":"mq001","vauclin":"mq044","gp-grande-anse":"gp021","gp-malendure":"gp031","gp-sainte-anne":"gp010","gp-pt-chateaux":"gp005","gp-gosier":"gp012","gp-caravelle":"gp009","gp-bas-du-fort":"gp014","gp-deshaies":"gp024","gp-moule":"gp080","gp-vieux-fort":"gp042"}
+
+const GOLD="#E8A800"
+
+const ST={
+  clean:{c:"#22C55E",bg:"rgba(34,197,94,.1)"},
+  moderate:{c:"#B87A00",bg:"rgba(184,122,0,.1)"},
+  avoid:{c:"#E8522A",bg:"rgba(232,82,42,.1)"},
+}
+
+function haversine(lat1,lon1,lat2,lon2){
+  const R=6371,toR=Math.PI/180
+  const dLat=(lat2-lat1)*toR,dLon=(lon2-lon1)*toR
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*toR)*Math.cos(lat2*toR)*Math.sin(dLon/2)**2
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))
+}
+
+/* ── Component ─────────────────────────────────────────────────────────── */
+export default function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos,favorites,allBeaches,onThreatChange,onPremiumClick,lang,track}){
+  const containerRef=useRef(null)
+  const mapRef=useRef(null)
+  const markersRef=useRef([])
+  const heatRef=useRef([])
+  const gridLayerRef=useRef(null)
+  const userMarkerRef=useRef(null)
+  const driftRef=useRef(null)
+  const[mapError,setMapError]=useState(null)
+  const[afaiGrid,setAfaiGrid]=useState(null)
+  const[banksData,setBanksData]=useState(null)
+  const[timeStep,setTimeStep]=useState(0)
+  const[autoPlaying,setAutoPlaying]=useState(false)
+  const autoPlayTimersRef=useRef([])
+  const autoZoomDoneRef=useRef(false)
+  const[threatDismissed,setThreatDismissed]=useState(()=>sessionStorage.getItem("sg_threat_dismissed")==="1")
+  const banksLayerRef=useRef(null)
+
+  // Init map once
+  useEffect(()=>{
+    if(!containerRef.current||mapRef.current)return
+    try{
+    const center=ISLAND_CENTER[island]||ISLAND_CENTER.mq
+    const map=L.map(containerRef.current,{
+      zoomControl:false,
+      attributionControl:false,
+      maxBoundsViscosity:1,
+      tap:false,
+    })
+    map.setView(center,11)
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{
+      maxZoom:18,
+    }).addTo(map)
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png",{
+      maxZoom:18,subdomains:"abcd",
+    }).addTo(map)
+    mapRef.current=map
+    }catch(err){console.error("MAP INIT ERROR:",err.message,err.stack);setMapError(err.message)}
+    return()=>{try{mapRef.current?.remove()}catch(e){};mapRef.current=null}
+  },[])
+
+  // Fly to island
+  useEffect(()=>{
+    if(!mapRef.current)return
+    if(userPos){
+      const onMq=userPos.lat<15.5,onGp=userPos.lat>=15.5
+      if((island==="mq"&&onMq)||(island==="gp"&&onGp)){
+        mapRef.current.flyTo([userPos.lat,userPos.lng],12,{duration:1})
+        return
+      }
+    }
+    const center=ISLAND_CENTER[island]||ISLAND_CENTER.mq
+    try{
+      const size=mapRef.current.getSize()
+      if(size.x===0||size.y===0){mapRef.current.setView(center,11)}
+      else{mapRef.current.flyTo(center,11,{duration:1})}
+    }catch(e){mapRef.current.setView(center,11)}
+  },[island,userPos])
+
+  // User location marker (blue pulsing dot)
+  useEffect(()=>{
+    if(!mapRef.current)return
+    if(userMarkerRef.current){userMarkerRef.current.remove();userMarkerRef.current=null}
+    if(!userPos)return
+    const icon=L.divIcon({
+      className:"",
+      html:`<div style="width:16px;height:16px;border-radius:50%;background:#4285F4;border:3px solid #fff;box-shadow:0 0 8px rgba(66,133,244,.5);animation:pulse 2s infinite"></div>`,
+      iconSize:[16,16],iconAnchor:[8,8],
+    })
+    userMarkerRef.current=L.marker([userPos.lat,userPos.lng],{icon,interactive:false,zIndexOffset:1000})
+      .addTo(mapRef.current)
+    return()=>{if(userMarkerRef.current){userMarkerRef.current.remove();userMarkerRef.current=null}}
+  },[userPos])
+
+  // Fetch AFAI grid for offshore heatmap
+  useEffect(()=>{
+    fetch("/api/copernicus/sargassum-grid.json")
+      .then(r=>r.json())
+      .then(d=>{if(d?.points?.length)setAfaiGrid(d)})
+      .catch(()=>{})
+  },[])
+
+  // Fetch sargassum banks
+  useEffect(()=>{fetch("/api/copernicus/sargassum-banks.json").then(r=>r.json()).then(d=>{if(d?.banks?.length)setBanksData(d)}).catch(()=>{})},[])
+
+  // Render AFAI heatmap from grid data (canvas circles, efficient)
+  useEffect(()=>{
+    if(!mapRef.current)return
+    if(gridLayerRef.current){gridLayerRef.current.remove();gridLayerRef.current=null}
+    if(!afaiGrid||!afaiGrid.points.length)return
+    const isGP=island==="gp"
+    const pts=afaiGrid.points.filter(p=>isGP?p[0]>=15.5:p[0]<15.5)
+    if(!pts.length)return
+    const renderer=L.canvas({padding:0.5})
+    const group=L.layerGroup()
+    for(const[lat,lng,afai]of pts){
+      const r=Math.max(800,afai*5000)
+      const opacity=Math.min(0.55,afai*0.8)
+      const color=afai<.15?"rgba(34,197,94,.6)":afai<.40?"rgba(232,168,0,.7)":"rgba(232,82,42,.8)"
+      const c=L.circle([lat,lng],{radius:r,fillColor:color,color:"transparent",weight:0,
+        fillOpacity:opacity,renderer,interactive:false})
+      c.addTo(group)
+    }
+    const onMapClick=(e)=>{
+      const{lat:cLat,lng:cLng}=e.latlng
+      const hit=pts.find(([pLat,pLng])=>Math.abs(pLat-cLat)<.03&&Math.abs(pLng-cLng)<.03)
+      if(!hit)return
+      track("sg_heatmap_click",{afai:hit[2],lat:hit[0],lng:hit[1]})
+      const nearest=beaches.slice().sort((a,b)=>
+        haversine(hit[0],hit[1],a.lat,a.lng)-haversine(hit[0],hit[1],b.lat,b.lng))[0]
+      if(nearest)onBeachClick(nearest)
+    }
+    mapRef.current.on("click",onMapClick)
+    group.addTo(mapRef.current)
+    gridLayerRef.current=group
+    return()=>{
+      if(gridLayerRef.current){gridLayerRef.current.remove();gridLayerRef.current=null}
+      mapRef.current?.off("click",onMapClick)
+    }
+  },[afaiGrid,island,beaches,onBeachClick])
+
+  // Update markers + heatmap
+  useEffect(()=>{
+    if(!mapRef.current)return
+    markersRef.current.forEach(m=>m.remove())
+    markersRef.current=[]
+    heatRef.current.forEach(m=>m.remove())
+    heatRef.current=[]
+
+    const driftMap={}
+    if(sargData?.weekly){
+      for(const[sargId,w]of Object.entries(sargData.weekly)){
+        const beachId=SARG_TO_BEACH[sargId]
+        if(beachId)driftMap[beachId]={drift:w.drift,dv:w.driftValue||0}
+      }
+    }
+
+    let nearestCleanId=null
+    if(userPos){
+      let bestDist=Infinity
+      beaches.forEach(b=>{
+        if(b.status==="clean"){
+          const d=haversine(userPos.lat,userPos.lng,b.lat,b.lng)
+          if(d<bestDist){bestDist=d;nearestCleanId=b.id}
+        }
+      })
+    }
+
+    const heatGroup=L.layerGroup()
+    const markerGroup=L.layerGroup()
+
+    beaches.forEach((b,bi)=>{
+      const st=ST[b.status]||ST.clean
+      const isSelected=selectedBeach?.id===b.id
+
+      if(b.afai>.15){
+        const heatColor=b.afai<.3?"rgba(34,197,94,.2)":b.afai<.65?"rgba(184,122,0,.25)":"rgba(232,82,42,.3)"
+        const strokeColor=b.afai<.3?"rgba(34,197,94,.1)":b.afai<.65?"rgba(184,122,0,.12)":"rgba(232,82,42,.15)"
+        const isEastCoast=b.island==="mq"?b.lng>-61.0:b.lng>-61.5
+        const lngDir=isEastCoast?.02:-.02
+
+        const mainRadius=Math.max(600,b.afai*3500)
+        const main=L.circle([b.lat,b.lng+lngDir],{
+          radius:mainRadius,
+          fillColor:heatColor,
+          color:strokeColor,
+          weight:1,
+          fillOpacity:Math.min(.3,b.afai*.4),
+          interactive:false,
+        })
+        main.addTo(heatGroup)
+        heatRef.current.push(main)
+
+        if(b.afai>.3){
+        }
+      }
+
+      const isMobile="ontouchstart" in window
+      const isNearest=b.id===nearestCleanId
+      const marker=L.circleMarker([b.lat,b.lng],{
+        radius:isSelected?16:(isNearest?16:(isMobile?14:8)),
+        fillColor:st.c,
+        color:isNearest?GOLD:"#fff",
+        weight:isSelected?3:(isNearest?3:2),
+        fillOpacity:.9,
+        bubblingMouseEvents:false,
+        className:isNearest?"sg-nearest":"",
+      })
+      if(isNearest&&!isSelected){
+        const ring=L.circleMarker([b.lat,b.lng],{
+          radius:22,fillColor:"transparent",color:GOLD,weight:2,
+          fillOpacity:0,opacity:.4,bubblingMouseEvents:false,interactive:false,
+          className:"sg-nearest-ring",
+        })
+        ring.addTo(markerGroup)
+      }
+      if(!("ontouchstart" in window))marker.bindTooltip(b.name+(isNearest?(lang==="en"?" · Nearest clean":" · La plus proche propre"):""),{direction:"top",offset:[0,-12],className:"",permanent:false})
+      marker.on("click",()=>onBeachClick(b))
+      marker.addTo(markerGroup)
+      markersRef.current.push(marker)
+    })
+
+    heatGroup.addTo(mapRef.current)
+    markerGroup.addTo(mapRef.current)
+
+    if(driftRef.current)clearInterval(driftRef.current)
+    let tick=0
+    driftRef.current=setInterval(()=>{
+      tick++
+      heatRef.current.forEach((h,i)=>{
+        if(h.setRadius&&h.options?.interactive===false){
+          const baseR=h._mRadius||h.getRadius()
+          if(!h._baseR)h._baseR=baseR
+          const pulse=Math.sin(tick*.15+i*.3)*.08
+          try{h.setRadius(h._baseR*(1+pulse))}catch(e){}
+        }
+      })
+    },800)
+    return()=>{if(driftRef.current)clearInterval(driftRef.current)}
+  },[beaches,onBeachClick,selectedBeach,sargData,userPos,lang])
+
+  if(mapError)return <div style={{padding:40,color:"red"}}>{mapError}</div>
+  return(<div style={{position:"relative",width:"100%",height:"100%"}}>
+    <div ref={containerRef} style={{width:"100%",height:"100%"}}/>
+  </div>)
+}
