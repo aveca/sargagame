@@ -104,7 +104,15 @@ function distKm(lat1, lng1, lat2, lng2) {
  * Uses current position + 6h/12h/24h drift predictions to find the MINIMUM
  * distance the bank will come to the beach in the next 24h.
  *
- * @param {object} beach - { id, lat, lng }
+ * GEOGRAPHY RULE: 'sheltered' beaches (baie Fort-de-France, Basse-Terre
+ * west coast) are protected by the relief and trade winds push sargassum
+ * away. These return 0 — never an arrival signal.
+ *
+ * Anses d'Arlet + south-Martinique + Vieux-Fort (GP) are kept 'atlantic'
+ * because sargassum can round the southern tip of the island with shifting
+ * currents and reach them (rare but possible).
+ *
+ * @param {object} beach - { id, lat, lng, coast }
  * @param {Array} banks - sargassum-banks.json entries
  * @param {number} dayIndex - 1..3 (arrival only modeled in short term)
  * @returns {number} arrival contribution to AFAI (0 to 0.25)
@@ -112,6 +120,8 @@ function distKm(lat1, lng1, lat2, lng2) {
 function arrivalSignalFromBanks(beach, banks, dayIndex) {
   if (!banks || !banks.length || dayIndex < 1 || dayIndex > 3) return 0
   if (!beach || beach.lat == null) return 0
+  // RULE: sheltered beaches (baie FDF + Basse-Terre west) are always protected
+  if (beach.coast === 'sheltered') return 0
 
   // Search radius: banks within 40km are potentially threatening
   const THREAT_RADIUS = 40
@@ -132,12 +142,20 @@ function arrivalSignalFromBanks(beach, banks, dayIndex) {
 
     // Find minimum distance the bank comes to the beach within day 1
     let minDist = Infinity
+    let bestPos = null
     for (const pos of positions) {
       const d = distKm(beach.lat, beach.lng, pos.centroid[0], pos.centroid[1])
-      if (d < minDist) minDist = d
+      if (d < minDist) { minDist = d; bestPos = pos.centroid }
     }
 
     if (minDist > THREAT_RADIUS) continue
+    if (!bestPos) continue
+
+    // GEOGRAPHIC ORIENTATION: for atlantic beaches, bank must be east of
+    // or aligned with the beach. Trade winds blow E→W, so a bank west of
+    // the beach moves AWAY from it (unless very close & currents shift).
+    // Allow banks slightly west (0.10° ≈ 11km) as residual risk.
+    if (bestPos[1] < beach.lng - 0.10) continue
 
     // Signal strength: proximity × mass, degraded for far-out days
     const proximity = Math.max(0, 1 - minDist / THREAT_RADIUS)
