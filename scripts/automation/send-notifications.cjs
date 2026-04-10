@@ -345,6 +345,70 @@ async function sendProactiveForecastPush(sargassum) {
   return results
 }
 
+// ── Favorite alerts — segmented push per fav (F2) ────────────
+
+/**
+ * Send a segmented push for a single beach change, targeted at OneSignal
+ * users who tagged `fav_<id>=1`. Pattern: Windy Premium custom alerts,
+ * Surfline live wind, StormWatch+ personalized alerts.
+ *
+ * This runs IN ADDITION to the broadcast change push — users with the
+ * favorite tag receive both, but the targeted one uses more personal copy.
+ */
+async function sendFavoriteAlert(beachChange, type) {
+  const config = ONESIGNAL_APPS[beachChange.island]
+  if (!config || !config.apiKey) {
+    return { sent: false, reason: 'no-api-key' }
+  }
+  const label = statusLabel(beachChange.to)
+  const msg = type === 'alert'
+    ? `\ud83d\udc94 Ta plage pref\u00e9r\u00e9e ${beachChange.name} vient de passer en ${label}. Vois les alternatives sur la carte.`
+    : `\ud83d\udc9a ${beachChange.name} est redevenue ${label} ! Ta plage pr\u00e9f\u00e9r\u00e9e est OK.`
+  const heading = type === 'alert'
+    ? `Ta plage pr\u00e9f\u00e9r\u00e9e change`
+    : `Bonne nouvelle pour toi`
+
+  const payload = {
+    app_id: config.appId,
+    filters: [
+      { field: 'tag', key: 'fav_' + beachChange.id, relation: '=', value: '1' },
+    ],
+    contents: { en: msg, fr: msg },
+    headings: { en: heading, fr: heading },
+    url: config.url,
+  }
+
+  console.log(`[FAV-ALERT] ${beachChange.island.toUpperCase()} ${type} fav_${beachChange.id}: ${msg}`)
+  const result = await httpsPost(
+    'https://onesignal.com/api/v1/notifications',
+    payload,
+    { Authorization: `Key ${config.apiKey}` }
+  )
+  if (result.status === 200 || result.status === 201) {
+    // OneSignal returns {"id": "...", "recipients": 0} if no one matches the filter.
+    // We treat 0-recipient as success but log it separately.
+    let recipients = 0
+    try { recipients = JSON.parse(result.body).recipients || 0 } catch {}
+    console.log(`[FAV-ALERT] OK — ${recipients} recipient(s)`)
+    return { sent: true, recipients, status: result.status }
+  }
+  console.error(`[FAV-ALERT] Failed (${result.status}): ${result.body}`)
+  return { sent: false, status: result.status, error: result.body }
+}
+
+async function sendAllFavoriteAlerts(alerts, goodNews) {
+  const results = []
+  for (const a of alerts) {
+    const r = await sendFavoriteAlert(a, 'alert')
+    results.push({ type: 'fav-alert', beach: a.id, ...r })
+  }
+  for (const g of goodNews) {
+    const r = await sendFavoriteAlert(g, 'good-news')
+    results.push({ type: 'fav-good-news', beach: g.id, ...r })
+  }
+  return results
+}
+
 // ── Morning brief — daily personalized push (F3) ─────────────
 
 /**
@@ -596,6 +660,19 @@ async function main() {
     const failedCount = pushResults.filter(r => !r.sent).length
     console.log(`[INFO] Push results: ${sentCount} sent, ${failedCount} failed`)
 
+    // F2: ALSO send a targeted push per change, segmented on OneSignal tag fav_<id>=1.
+    // Users who favorited the beach receive this in ADDITION to the broadcast.
+    // OneSignal returns recipients=0 silently when no one matches → no spam.
+    let favSent = 0, favRecipientsTotal = 0
+    try {
+      const favResults = await sendAllFavoriteAlerts(alerts, goodNews)
+      favSent = favResults.filter(r => r.sent).length
+      favRecipientsTotal = favResults.reduce((s, r) => s + (r.recipients || 0), 0)
+      console.log(`[INFO] Favorite-targeted pushes: ${favSent} dispatched, ${favRecipientsTotal} recipient(s) total`)
+    } catch (e) {
+      console.error(`[ERROR] Favorite alerts failed: ${e.message}`)
+    }
+
     appendLog({
       script: 'send-notifications',
       action: 'notifications-sent',
@@ -603,6 +680,8 @@ async function main() {
       goodNewsCount: goodNews.length,
       pushSent: sentCount,
       pushFailed: failedCount,
+      favPushDispatched: favSent,
+      favRecipientsTotal,
       changes: [
         ...alerts.map(a => ({ type: 'alert', beach: a.id, from: a.from, to: a.to })),
         ...goodNews.map(g => ({ type: 'good-news', beach: g.id, from: g.from, to: g.to })),
