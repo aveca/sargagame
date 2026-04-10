@@ -1,6 +1,12 @@
 {
+  "weekendEmailFix": {
+    "date": "2026-04-09T23:00:00.000Z",
+    "action": "email-weekend-saturday-forecast",
+    "description": "Weekend bulletin now uses Saturday forecast statuses instead of current day. MQ: 8 clean (was 5), GP: 9 clean (was 6) for weekend Apr 11-12.",
+    "commit": "09ed250"
+  },
   "abTests": {
-    "lastEvaluated": "2026-04-07T08:03:24.577Z",
+    "lastEvaluated": "2026-04-09T23:42:00.227Z",
     "results": [
       {
         "id": "lock1",
@@ -26,7 +32,46 @@
         "id": "vp1",
         "status": "no-data",
         "message": "No data yet"
+      },
+      {
+        "id": "price1",
+        "status": "no-data",
+        "message": "No data yet"
       }
     ]
+  },
+  "weekendPrep": {
+    "date": "2026-04-10T08:00:00.000Z",
+    "action": "weekend-prep-verified",
+    "description": "Weekend email prep for Apr 11-12 verified. MQ: 45 clean/6 mod/2 avoid. GP: 78 clean/3 mod/1 avoid. Subjects generated. Duplicate send fix confirmed (weekly-optimize.yml clean, dedup guard active). 39 subscribers ready (27 MQ, 12 GP). Will fire Fri Apr 11 at 12h UTC.",
+    "saturdayDate": "2026-04-11",
+    "mqStats": {
+      "clean": 45,
+      "moderate": 6,
+      "avoid": 2
+    },
+    "gpStats": {
+      "clean": 78,
+      "moderate": 3,
+      "avoid": 1
+    },
+    "mqTop5": [
+      "Anse Caritan",
+      "Anse Michel",
+      "Grande Anse d Arlet",
+      "Grande Anse du Carbet",
+      "Anse Turin"
+    ],
+    "gpTop5": [
+      "Plage des Raisins Clairs",
+      "Anse à la Gourde",
+      "Plage de la Caravelle",
+      "Plage du Gosier",
+      "Plage de Grande Anse"
+    ],
+    "subscribersReady": 39,
+    "mqSubject": "Ce weekend : 45 plages propres en Martinique",
+    "gpSubject": "Ce weekend : 78 plages propres en Guadeloupe",
+    "workflowCheck": "daily-copernicus.yml fires at 12h UTC Fri (dow=5, hour=12) — CONFIRMED"
   }
 }
