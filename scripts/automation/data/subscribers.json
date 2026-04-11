@@ -150,12 +150,6 @@
     "source": "inline-beach"
   },
   {
-    "date": "2026-04-08T12:55:51.932Z",
-    "email": "nell77.muhr@free.fr",
-    "island": "MQ",
-    "source": "inline-beach"
-  },
-  {
     "date": "2026-04-08T17:01:25.534Z",
     "email": "laubrams@hotmail.fr",
     "island": "GP",
@@ -249,6 +243,12 @@
     "date": "2026-04-11T07:40:44.413Z",
     "email": "julie.legarsmeur@orange.fr",
     "island": "GP",
+    "source": "weekend-landing"
+  },
+  {
+    "date": "2026-04-11T13:17:33.579Z",
+    "email": "m.lopez@videotron.ca",
+    "island": "MQ",
     "source": "weekend-landing"
   }
 ]
