@@ -264,15 +264,17 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
 
       let afai, sources = []
       const arrivalContribution = hasArrival ? arrivalSignalFromBanks(beach, islandBanks, i) : 0
-      const { confidence, type } = forecastConfidence(i, baseConf, hasWind, arrivalContribution > 0.02)
+      let { confidence, type } = forecastConfidence(i, baseConf, hasWind, arrivalContribution > 0.02)
+      // Memory beach forecasts must never be more confident than the memory observation itself
+      if (isMemory && i > 0) confidence = Math.min(confidence, baseConf)
 
       if (i === 0) {
         // Day 0: direct observation (with community bias)
         afai = day0Raw
         sources = bReports && bReports.total >= 3 ? ['satellite', 'community'] : ['satellite']
-      } else if (isMemory && i > 1) {
-        // Memory beaches: NO forecast beyond day 1. Show decay but flag.
-        // Pure exponential decay (half-life 3.5d)
+      } else if (isMemory) {
+        // Memory beaches: pure exponential decay for ALL forecast days.
+        // No arrival/wind contributions — the beach-memory model only knows the last event decayed.
         const decayFactor = Math.exp(-DECAY_LAMBDA * i)
         afai = Math.max(CLEAN_BASELINE, day0Raw * decayFactor)
         sources = ['memory-decay']
