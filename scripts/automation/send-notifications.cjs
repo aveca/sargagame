@@ -128,7 +128,13 @@ function detectChanges(currentLevels, history) {
     const prevStatus = prevMap[beach.id]
     if (!prevStatus) continue // new beach, no comparison
 
-    const curStatus = beach.status
+    // IMPORTANT: compare RAW satellite status, not memory-enhanced.
+    // history.json stores raw satellite readings, while beach.status/beach.afai
+    // may be memory-enhanced (accumulation decay model) for sheltered beaches.
+    // Using memory-enhanced values here triggered false "clean -> moderate"
+    // alerts every run for sainte-anne/les-salines/vauclin/gp-vieux-fort.
+    const rawAfai = typeof beach.afaiSat === 'number' ? beach.afaiSat : beach.afai
+    const curStatus = rawAfai < 0.15 ? 'clean' : rawAfai < 0.40 ? 'moderate' : 'avoid'
     if (prevStatus === curStatus) continue // no change
 
     const name = BEACH_NAMES[beach.id] || beach.id
