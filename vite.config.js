@@ -316,6 +316,60 @@ export default defineConfig({
           try { _enrichments = JSON.parse(readFileSync(resolve(__dirname, 'scripts/automation/data/enrichments.json'), 'utf-8')) } catch {}
           const domainMQ = 'sargasses-martinique.com'
           const domainGP = 'sargasses-guadeloupe.com'
+          // Per-beach meta description overrides for top-searched beaches
+          // Keyword-rich, status-aware, unique — improves Google ranking for specific beach queries
+          const BEACH_DESC_OVERRIDES = {
+            'Plage des Salines': {
+              clean: 'Plage des Salines à Sainte-Anne (Martinique) — propre en temps réel. Côte Atlantique, idéal familles. La plus célèbre plage de Martinique. Carte sargasses et prévisions 7 jours.',
+              moderate: 'Sargasses à la Plage des Salines, Sainte-Anne (Martinique) — présence modérée détectée en temps réel. Côte Atlantique. Idéal familles. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à la Plage des Salines (Sainte-Anne, Martinique) — forte concentration côte Atlantique. Voir les plages propres à proximité sur notre carte en temps réel.'
+            },
+            'Plage du Diamant': {
+              clean: 'Plage du Diamant (Martinique) — propre en temps réel. Face au célèbre Rocher du Diamant, côte Caraïbe. Carte sargasses Martinique et prévisions 7 jours.',
+              moderate: 'Sargasses à la Plage du Diamant (Le Diamant, Martinique) — présence modérée détectée en temps réel. Face au Rocher du Diamant. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à la Plage du Diamant (Martinique) — forte concentration détectée en temps réel. Rocher du Diamant. Carte des plages propres à proximité.'
+            },
+            'Pointe Faula': {
+              clean: 'Pointe Faula au Vauclin (Martinique) — plage propre en temps réel. Côte Atlantique, idéal familles. Carte sargasses Martinique mise à jour quotidiennement.',
+              moderate: 'Sargasses à Pointe Faula, Le Vauclin (Martinique) — présence modérée en temps réel. Côte Atlantique. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à Pointe Faula (Le Vauclin, Martinique) — forte concentration côte Atlantique. Voir les plages propres à proximité.'
+            },
+            'Grande Anse d\'Arlet': {
+              clean: 'Grande Anse d\'Arlet (Martinique) — plage propre en temps réel. Côte Caraïbe, snorkeling, idéal familles. Carte sargasses Martinique et prévisions 7 jours.',
+              moderate: 'Sargasses à Grande Anse d\'Arlet (Les Anses-d\'Arlet, Martinique) — présence modérée en temps réel. Côte Caraïbe. Snorkeling. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à Grande Anse d\'Arlet (Martinique) — forte concentration côte Caraïbe. Carte des plages propres à proximité.'
+            },
+            'Anse Mitan': {
+              clean: 'Anse Mitan aux Trois-Îlets (Martinique) — plage propre en temps réel. À 18 min de Fort-de-France, côte centrale, idéal familles. Carte sargasses et prévisions 7 jours.',
+              moderate: 'Sargasses à Anse Mitan (Les Trois-Îlets, Martinique) — présence modérée en temps réel. Côte centrale. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à Anse Mitan (Les Trois-Îlets, Martinique) — forte concentration détectée en temps réel. Carte des plages propres proches de Fort-de-France.'
+            },
+            'Plage Bois Jolan': {
+              clean: 'Plage Bois Jolan à Sainte-Anne (Guadeloupe) — propre en temps réel. Côte Atlantique de Grande-Terre, idéal familles. Carte sargasses Guadeloupe et prévisions 7 jours.',
+              moderate: 'Sargasses à Plage Bois Jolan (Sainte-Anne, Guadeloupe) — présence modérée en temps réel. Côte Atlantique. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à Plage Bois Jolan (Sainte-Anne, Guadeloupe) — forte concentration côte Atlantique. Voir les plages propres à proximité.'
+            },
+            'Plage de Sainte-Anne': {
+              clean: 'Plage de Sainte-Anne (Guadeloupe) — propre en temps réel. Grande plage de Grande-Terre, côte Atlantique, idéal familles. Carte sargasses et prévisions 7 jours.',
+              moderate: 'Sargasses à la Plage de Sainte-Anne (Guadeloupe) — présence modérée en temps réel. Côte Atlantique. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à la Plage de Sainte-Anne (Guadeloupe) — forte concentration côte Atlantique. Voir les plages propres à proximité.'
+            },
+            'Plage du Gosier': {
+              clean: 'Plage du Gosier (Guadeloupe) — propre en temps réel. À 12 min de Pointe-à-Pitre, snorkeling, idéal familles. Carte sargasses Guadeloupe et prévisions 7 jours.',
+              moderate: 'Sargasses à la Plage du Gosier (Guadeloupe) — présence modérée en temps réel. Snorkeling. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à la Plage du Gosier (Guadeloupe) — forte concentration détectée en temps réel. Carte des plages propres à Le Gosier.'
+            },
+            'Plage de Malendure': {
+              clean: 'Plage de Malendure à Bouillante (Guadeloupe) — propre en temps réel. Côte sous-le-vent, snorkeling exceptionnel. Généralement protégée des sargasses. Prévisions 7 jours.',
+              moderate: 'Sargasses à Malendure (Bouillante, Guadeloupe) — présence modérée en temps réel. Côte sous-le-vent. Snorkeling. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à Plage de Malendure (Bouillante, Guadeloupe) — forte concentration côte sous-le-vent. Voir les plages propres à proximité.'
+            },
+            'Plage de la Caravelle': {
+              clean: 'Plage de la Caravelle à Sainte-Anne (Guadeloupe) — propre en temps réel. Côte Atlantique, snorkeling, idéal familles. Carte sargasses Guadeloupe et prévisions 7 jours.',
+              moderate: 'Sargasses à Plage de la Caravelle (Sainte-Anne, Guadeloupe) — présence modérée en temps réel. Côte Atlantique. Snorkeling. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à la Plage de la Caravelle (Sainte-Anne, Guadeloupe) — forte concentration côte Atlantique. Voir les plages propres à proximité.'
+            }
+          }
           let sitemapMQBeaches = ''
           let sitemapGPBeaches = ''
           for (const b of beaches) {
@@ -333,11 +387,11 @@ export default defineConfig({
             const _isCarib = isMQ ? b.lng < -61.1 : b.lng < -61.6
             const _cote = _isAtl ? 'côte Atlantique' : _isCarib ? (isMQ ? 'côte Caraïbe' : 'côte sous-le-vent') : 'côte centrale'
             const _amenity = b.snorkel ? 'Snorkeling. ' : b.kids ? 'Idéal familles. ' : ''
-            const beachDesc = b.status === 'clean'
-              ? `${b.name} (${b.commune}, ${island}) — plage propre aujourd'hui. ${_cote}${_isAtl ? ', état favorable en ce moment' : ', généralement protégée des sargasses'}. ${_amenity}Prévisions 7 jours.`
+            const beachDesc = BEACH_DESC_OVERRIDES[b.name]?.[b.status] || (b.status === 'clean'
+              ? `${b.name} à ${b.commune} (${island}) — plage propre en temps réel. ${_cote}${_isAtl ? ', peu de sargasses actuellement' : ', généralement protégée des sargasses'}. ${_amenity}Carte sargasses et prévisions 7 jours.`
               : b.status === 'moderate'
-              ? `Sargasses à ${b.name} (${b.commune}, ${island}) — présence modérée détectée au large. ${_cote}. ${_amenity}Carte en temps réel et prévisions 7 jours.`
-              : `Alerte sargasses à ${b.name} (${b.commune}, ${island}). Forte concentration détectée sur la ${_cote}. Carte des plages propres à proximité.`
+              ? `Sargasses à ${b.name} (${b.commune}, ${island}) — présence modérée détectée en temps réel. ${_cote}. ${_amenity}Carte et prévisions 7 jours.`
+              : `Alerte sargasses à ${b.name} (${b.commune}, ${island}) — forte concentration détectée en temps réel. ${_cote}. Voir les plages propres à proximité.`)
             const beachUrl = `https://${domain}/plages/${b.slug}/`
             const amenities = []
             if (b.parking) amenities.push({"@type":"LocationFeatureSpecification","name":"Parking","value":true})
