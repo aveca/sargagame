@@ -444,9 +444,15 @@ function applyBeachAccumulation(levels, dir) {
     // If satellite shows clean (AFAI < 0.10) for N consecutive recent days,
     // trust the satellite — sargassum has dissipated, skip memory boost.
     // N scales with the historical peak: a beach at 0.78 (avoid) can't
-    // physically clear in 2 days — cloud cover or satellite gaps would
-    // produce false "clean" readings. Require more confirmation for
-    // higher contamination levels.
+    // physically clear in 2 days, so require more confirmation for higher
+    // past contamination.
+    //
+    // BUG FIX (2026-04-11): clean satellite observations often read exactly
+    // 0.05 (the CLEAN_BASELINE / NO_DATA sentinel). The previous check
+    // `bl.afai <= 0.05 => continue` treated those as no-data and never
+    // counted them, so memory-enhanced beaches never cleared even after
+    // weeks of clean satellite. Now we count anything below 0.10 as a
+    // clean day. ERDDAP outage remains rare — backup scraper catches it.
     const sortedRecent = history
       .filter(h => {
         const d = (new Date(today) - new Date(h.date)) / (1000 * 60 * 60 * 24)
@@ -457,9 +463,8 @@ function applyBeachAccumulation(levels, dir) {
     for (const entry of sortedRecent) {
       const bl = entry.levels.find(l => l.id === level.id)
       if (!bl) break
-      if (bl.afai <= 0.05) continue // no satellite data (NO_DATA_AFAI) — skip, don't count
       if (bl.afai >= 0.10) break    // actual sargassum detected — break streak
-      consecutiveClean++
+      consecutiveClean++            // clean reading (includes 0.05 baseline)
     }
     const requiredCleanDays = rawPeak >= 0.60 ? 6 : rawPeak >= 0.40 ? 5 : rawPeak >= 0.25 ? 4 : 3
     if (consecutiveClean >= requiredCleanDays) continue
@@ -927,7 +932,7 @@ async function main() {
     updatedAt,
     erddapTimestamp,
     dataAgeMinutes,
-    pipelineVersion: '2.0',
+    pipelineVersion: '3.0',
     levels,
     weekly,
   }
