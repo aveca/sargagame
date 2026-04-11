@@ -2311,8 +2311,8 @@ function PremiumModal({onClose,lang,source,onActivated}){
 
         <ul style={{listStyle:"none",padding:0,margin:"0 0 16px",display:"flex",flexDirection:"column",gap:12}}>
           {(lang==="en"
-            ?["Morning pick — your best beach for today","Alerts before sargassum reaches your favourites","Daily pick strip on the map"]
-            :["Brief matin — ta meilleure plage du jour","Alertes push sur tes plages favorites","Recommandation du jour sur la carte"]
+            ?["Morning pick — your best beach for today","Alerts before sargassum reaches your favourites","4-day forecast unlocked — plan your outings"]
+            :["Brief matin — ta meilleure plage du jour","Alertes push sur tes plages favorites","4 jours de prévisions débloqués — planifie tes sorties"]
           ).map((f,i)=>(
             <li key={i} style={{display:"flex",alignItems:"center",gap:10,fontSize:14}}>
               <span style={{color:C.gold,fontSize:18}}>✓</span>{f}
