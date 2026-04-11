@@ -1,0 +1,63 @@
+name: Push debug — subscriber count / test fav alert
+
+# Manual workflow to diagnose the OneSignal push stack:
+#   - count-subscribers : how many devices are actually subscribed per island?
+#   - test-fav-alert    : fire a fake "your favorite changed" push on a beach id,
+#                         to verify the F2 targeted push end-to-end on a real device.
+#
+# Triggered only by workflow_dispatch. Never runs on schedule — this is a
+# human-in-the-loop diagnostic tool, not an automated side-effect producer.
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Which diagnostic to run'
+        required: true
+        type: choice
+        options:
+          - count-subscribers
+          - test-fav-alert
+      beach_id:
+        description: 'Beach id for --test-fav-alert (ignored otherwise). E.g. anse-madame, gp-gosier'
+        required: false
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  run-debug:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Run count-subscribers
+        if: ${{ github.event.inputs.mode == 'count-subscribers' }}
+        env:
+          ONESIGNAL_API_KEY_MQ: ${{ secrets.ONESIGNAL_API_KEY_MQ }}
+          ONESIGNAL_API_KEY_GP: ${{ secrets.ONESIGNAL_API_KEY_GP }}
+        run: node scripts/automation/send-notifications.cjs --count-subscribers
+
+      - name: Run test-fav-alert
+        if: ${{ github.event.inputs.mode == 'test-fav-alert' }}
+        env:
+          ONESIGNAL_API_KEY_MQ: ${{ secrets.ONESIGNAL_API_KEY_MQ }}
+          ONESIGNAL_API_KEY_GP: ${{ secrets.ONESIGNAL_API_KEY_GP }}
+        run: |
+          if [ -z "${{ github.event.inputs.beach_id }}" ]; then
+            echo "ERROR: beach_id input required for test-fav-alert"
+            exit 1
+          fi
+          node scripts/automation/send-notifications.cjs --test-fav-alert "${{ github.event.inputs.beach_id }}"

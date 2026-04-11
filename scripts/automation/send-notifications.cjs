@@ -361,18 +361,20 @@ async function sendProactiveForecastPush(sargassum) {
  * This runs IN ADDITION to the broadcast change push — users with the
  * favorite tag receive both, but the targeted one uses more personal copy.
  */
-async function sendFavoriteAlert(beachChange, type) {
+async function sendFavoriteAlert(beachChange, type, opts = {}) {
+  const { isTest = false } = opts
   const config = ONESIGNAL_APPS[beachChange.island]
   if (!config || !config.apiKey) {
     return { sent: false, reason: 'no-api-key' }
   }
   const label = statusLabel(beachChange.to)
+  const prefix = isTest ? '[TEST] ' : ''
   const msg = type === 'alert'
-    ? `\ud83d\udc94 Ta plage pref\u00e9r\u00e9e ${beachChange.name} vient de passer en ${label}. Vois les alternatives sur la carte.`
-    : `\ud83d\udc9a ${beachChange.name} est redevenue ${label} ! Ta plage pr\u00e9f\u00e9r\u00e9e est OK.`
-  const heading = type === 'alert'
-    ? `Ta plage pr\u00e9f\u00e9r\u00e9e change`
-    : `Bonne nouvelle pour toi`
+    ? `${prefix}\ud83d\udc94 Ta plage pref\u00e9r\u00e9e ${beachChange.name} vient de passer en ${label}. Vois les alternatives sur la carte.`
+    : `${prefix}\ud83d\udc9a ${beachChange.name} est redevenue ${label} ! Ta plage pr\u00e9f\u00e9r\u00e9e est OK.`
+  const heading = isTest
+    ? `[TEST] Ta plage pr\u00e9f\u00e9r\u00e9e change`
+    : (type === 'alert' ? `Ta plage pr\u00e9f\u00e9r\u00e9e change` : `Bonne nouvelle pour toi`)
 
   const payload = {
     app_id: config.appId,
@@ -648,10 +650,79 @@ async function sendWeeklyDigest(currentLevels, alerts, goodNews) {
 async function main() {
   const argv = process.argv.slice(2)
   const MODE_MORNING_BRIEF = argv.includes('--morning-brief')
+  const MODE_TEST_FAV_IDX = argv.indexOf('--test-fav-alert')
+  const MODE_TEST_FAV = MODE_TEST_FAV_IDX !== -1 ? argv[MODE_TEST_FAV_IDX + 1] : null
+  const MODE_COUNT_SUBS = argv.includes('--count-subscribers')
 
   console.log('=== send-notifications.cjs ===')
   console.log(`Date: ${new Date().toISOString()}`)
   if (MODE_MORNING_BRIEF) console.log('Mode: --morning-brief (skip change detection + digest)')
+  if (MODE_TEST_FAV) console.log(`Mode: --test-fav-alert ${MODE_TEST_FAV}`)
+  if (MODE_COUNT_SUBS) console.log('Mode: --count-subscribers')
+
+  // --count-subscribers: query OneSignal for messageable player counts per island.
+  // Used to diagnose "is anybody actually subscribed to push?" without touching data.
+  if (MODE_COUNT_SUBS) {
+    for (const island of ['mq', 'gp']) {
+      const cfg = ONESIGNAL_APPS[island]
+      if (!cfg || !cfg.apiKey) {
+        console.log(`[COUNT-SUBS] ${island.toUpperCase()}: no API key — skipping`)
+        continue
+      }
+      const result = await new Promise((resolve) => {
+        try {
+          const opts = {
+            hostname: 'onesignal.com', port: 443,
+            path: `/api/v1/apps/${cfg.appId}`, method: 'GET',
+            headers: { Authorization: `Key ${cfg.apiKey}` },
+          }
+          const req = https.request(opts, (r) => {
+            let d = ''
+            r.on('data', (c) => { d += c })
+            r.on('end', () => resolve({ status: r.statusCode, body: d }))
+          })
+          req.on('error', (e) => resolve({ status: 0, body: e.message }))
+          req.setTimeout(10000, () => { req.destroy(); resolve({ status: 0, body: 'timeout' }) })
+          req.end()
+        } catch (e) {
+          resolve({ status: 0, body: e.message })
+        }
+      })
+      if (result.status === 200) {
+        try {
+          const data = JSON.parse(result.body)
+          console.log(`[COUNT-SUBS] ${island.toUpperCase()}: messageable=${data.messageable_players ?? '?'} total=${data.players ?? '?'}`)
+        } catch (e) {
+          console.log(`[COUNT-SUBS] ${island.toUpperCase()}: parse error — ${e.message}`)
+        }
+      } else {
+        console.log(`[COUNT-SUBS] ${island.toUpperCase()}: HTTP ${result.status} — ${result.body.slice(0, 200)}`)
+      }
+    }
+    return
+  }
+
+  // --test-fav-alert <beach-id>: sends a fake "your favorite changed" push
+  // targeted at users tagged fav_<id>=1, without needing an actual status change
+  // in the satellite data. Used to verify the F2 loop end-to-end on a real device.
+  // The push copy is prefixed with [TEST] so accidental re-runs stay obvious.
+  if (MODE_TEST_FAV) {
+    const beachId = MODE_TEST_FAV
+    const name = BEACH_NAMES[beachId] || beachId
+    const island = getIsland(beachId)
+    const beachChange = { id: beachId, name, island, from: 'clean', to: 'moderate', afai: 0.18 }
+    console.log(`[TEST-FAV] Dispatching test fav alert: ${name} (${island}) clean -> moderate`)
+    const res = await sendFavoriteAlert(beachChange, 'alert', { isTest: true })
+    console.log(`[TEST-FAV] Result:`, JSON.stringify(res))
+    appendLog({
+      script: 'send-notifications',
+      action: 'test-fav-alert',
+      beach: beachId,
+      island,
+      result: res,
+    })
+    return
+  }
 
   // 1. Read data
   const sargassum = readJSON(SARGASSUM_PATH)
