@@ -149,6 +149,41 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
     }
   },[afaiGrid,island,beaches,onBeachClick])
 
+  // Render offshore sargassum banks (hull polygons + drift arrows)
+  useEffect(()=>{
+    if(!mapRef.current)return
+    if(banksLayerRef.current){banksLayerRef.current.remove();banksLayerRef.current=null}
+    if(!banksData?.banks?.length)return
+    const isGP=island==="gp"
+    const banks=banksData.banks.filter(b=>b.island===(isGP?"gp":"mq"))
+    if(!banks.length)return
+    const group=L.layerGroup()
+    for(const bank of banks){
+      // Hull polygon (bank shape)
+      if(bank.hull?.length>=3){
+        const color=bank.mass>=0.07?"rgba(232,82,42,.5)":"rgba(232,168,0,.5)"
+        const fill=bank.mass>=0.07?"rgba(232,82,42,.2)":"rgba(232,168,0,.15)"
+        L.polygon(bank.hull,{color,fillColor:fill,weight:1.5,fillOpacity:1,interactive:false}).addTo(group)
+      }
+      // Drift arrow: centroid now → centroid 24h prediction
+      const pred24=bank.drift?.predictions?.["24h"]
+      if(pred24?.centroid&&bank.centroid){
+        const from=bank.centroid,to=pred24.centroid
+        L.polyline([from,to],{color:"rgba(232,82,42,.6)",weight:2,dashArray:"6,4",interactive:false}).addTo(group)
+        // Arrowhead at destination
+        const dx=to[1]-from[1],dy=to[0]-from[0]
+        const angle=Math.atan2(dy,dx)
+        const aLen=0.015
+        const p1=[to[0]-Math.sin(angle+0.5)*aLen,to[1]-Math.cos(angle+0.5)*aLen]
+        const p2=[to[0]-Math.sin(angle-0.5)*aLen,to[1]-Math.cos(angle-0.5)*aLen]
+        L.polyline([p1,to,p2],{color:"rgba(232,82,42,.6)",weight:2,interactive:false}).addTo(group)
+      }
+    }
+    group.addTo(mapRef.current)
+    banksLayerRef.current=group
+    return()=>{if(banksLayerRef.current){banksLayerRef.current.remove();banksLayerRef.current=null}}
+  },[banksData,island])
+
   // Update markers + heatmap
   useEffect(()=>{
     if(!mapRef.current)return

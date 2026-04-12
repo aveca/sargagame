@@ -445,23 +445,45 @@ function doGet(e) {
     }
   }
 
-  // Beach reports — aggregated last 48h per beach
+  // Beach reports — aggregated last 7 days per beach, with trend
   if (action === 'beach_reports') {
     try {
       const sheet = getOrCreateSheet('beach_reports', ['date', 'beach_id', 'beach_name', 'island', 'level'])
       const data = sheet.getDataRange().getValues()
-      const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()
+      const now = Date.now()
+      const cutoff7d = new Date(now - 7 * 24 * 3600000).toISOString()
+      const cutoff24h = new Date(now - 24 * 3600000).toISOString()
+      const cutoff48h = new Date(now - 48 * 3600000).toISOString()
       const agg = {}
       for (let i = 1; i < data.length; i++) {
         const date = data[i][0] || ''
-        if (date < cutoff) continue
+        if (date < cutoff7d) continue
         const bid = data[i][1]
         const level = data[i][4] || 'clean'
         if (!bid) continue
-        if (!agg[bid]) agg[bid] = { clean: 0, moderate: 0, avoid: 0, total: 0, latest: date }
+        if (!agg[bid]) agg[bid] = {
+          clean: 0, moderate: 0, avoid: 0, total: 0, latest: date,
+          recent24h: { clean: 0, moderate: 0, avoid: 0 },
+          prev24_48h: { clean: 0, moderate: 0, avoid: 0 }
+        }
         agg[bid][level] = (agg[bid][level] || 0) + 1
         agg[bid].total++
         if (date > agg[bid].latest) agg[bid].latest = date
+        if (date >= cutoff24h) agg[bid].recent24h[level] = (agg[bid].recent24h[level] || 0) + 1
+        else if (date >= cutoff48h) agg[bid].prev24_48h[level] = (agg[bid].prev24_48h[level] || 0) + 1
+      }
+      // Compute trend per beach
+      for (const bid in agg) {
+        const r = agg[bid].recent24h, p = agg[bid].prev24_48h
+        const rBad = (r.moderate || 0) + (r.avoid || 0), rTotal = (r.clean || 0) + rBad
+        const pBad = (p.moderate || 0) + (p.avoid || 0), pTotal = (p.clean || 0) + pBad
+        if (rTotal === 0 && pTotal === 0) agg[bid].trend = 'stable'
+        else if (pTotal === 0) agg[bid].trend = rBad > 0 ? 'worsening' : 'stable'
+        else if (rTotal === 0) agg[bid].trend = 'improving'
+        else {
+          const rRatio = rBad / rTotal, pRatio = pBad / pTotal
+          agg[bid].trend = rRatio > pRatio + 0.15 ? 'worsening' : rRatio < pRatio - 0.15 ? 'improving' : 'stable'
+        }
       }
       return jsonResponse({ reports: agg })
     } catch (err) {

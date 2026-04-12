@@ -176,17 +176,28 @@ function arrivalSignalFromBanks(beach, banks, dayIndex) {
  */
 function communityBias(reports) {
   if (!reports || !reports.total || reports.total < 2) return 0
-  const t = reports.total
-  const avoidFrac = (reports.avoid || 0) / t
-  const moderateFrac = (reports.moderate || 0) / t
-  const cleanFrac = (reports.clean || 0) / t
+  // Age-weighted counts: recent reports matter more (7-day window)
+  const r24 = reports.recent24h || {}
+  const p48 = reports.prev24_48h || {}
+  const r24Total = (r24.clean || 0) + (r24.moderate || 0) + (r24.avoid || 0)
+  const p48Total = (p48.clean || 0) + (p48.moderate || 0) + (p48.avoid || 0)
+  const olderTotal = Math.max(0, reports.total - r24Total - p48Total)
+  // Weighted: 0-24h=1.0, 24-48h=0.6, 48h-7d=0.3
+  const wClean = (r24.clean || 0) * 1.0 + (p48.clean || 0) * 0.6 + Math.max(0, (reports.clean || 0) - (r24.clean || 0) - (p48.clean || 0)) * 0.3
+  const wMod = (r24.moderate || 0) * 1.0 + (p48.moderate || 0) * 0.6 + Math.max(0, (reports.moderate || 0) - (r24.moderate || 0) - (p48.moderate || 0)) * 0.3
+  const wAvoid = (r24.avoid || 0) * 1.0 + (p48.avoid || 0) * 0.6 + Math.max(0, (reports.avoid || 0) - (r24.avoid || 0) - (p48.avoid || 0)) * 0.3
+  const t = wClean + wMod + wAvoid
+  if (t < 1.5) return 0 // ~2 recent reports minimum
+  const avoidFrac = wAvoid / t
+  const moderateFrac = wMod / t
+  const cleanFrac = wClean / t
 
   // Strong avoid consensus → bias up
   if (avoidFrac >= 0.5) return Math.min(0.15, 0.08 + avoidFrac * 0.1)
   // Moderate consensus → slight bias up
   if (moderateFrac + avoidFrac >= 0.6) return 0.06
   // Strong clean consensus overrides (boats often know faster than satellite)
-  if (cleanFrac >= 0.7 && t >= 3) return -0.08
+  if (cleanFrac >= 0.7 && t >= 2.5) return -0.08
   return 0
 }
 

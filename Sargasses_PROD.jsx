@@ -856,7 +856,9 @@ function BeachReport({beach,lang,communityReports}){
             {counts.avoid>0&&<div style={{flex:counts.avoid,background:C.red}}/>}
           </div>
           <div style={{marginTop:4,fontSize:11,color:"var(--sg-mid)",textAlign:"center"}}>
-            {total} {lang==="en"?"report"+(total>1?"s":""):"signalement"+(total>1?"s":"")} (48h)
+            {total} {lang==="en"?"report"+(total>1?"s":""):"signalement"+(total>1?"s":"")} (7j)
+            {counts.trend&&counts.trend!=="stable"&&<span style={{marginLeft:4,color:counts.trend==="worsening"?C.red:C.green}}>
+              {counts.trend==="worsening"?"↗":"↘"}</span>}
             {consensus&&<> · {lang==="en"?"Consensus: ":"Consensus : "}<span style={{fontWeight:700,color:ST[consensus].c}}>{ST[consensus].e} {lang==="en"?ST[consensus].le:ST[consensus].l}</span></>}
           </div>
         </div>
