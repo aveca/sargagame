@@ -1,7 +1,7 @@
 {
-  "_comment": "Auto-fetched from GA4 Data API (with Sheets fallback).",
-  "_fetchedAt": "2026-04-12T13:25:12.305Z",
-  "_source": "none",
+  "_comment": "Auto-fetched: Apps Script funnel > GA4 > Sheets. See _source.",
+  "_fetchedAt": "2026-04-12T18:41:34.143Z",
+  "_source": "apps-script-funnel",
   "tests": [
     {
       "id": "lock1",
@@ -10,14 +10,15 @@
         "loss"
       ],
       "sessions": [
-        0,
-        0
+        1195,
+        824
       ],
       "conversions": [
-        0,
-        0
+        31,
+        21
       ],
-      "metric": "sg_forecast_lock_click"
+      "metric": "sg_forecast_lock_click",
+      "_source": "apps-script-funnel"
     },
     {
       "id": "modal1",
@@ -26,14 +27,15 @@
         "family"
       ],
       "sessions": [
-        0,
-        0
+        645,
+        241
       ],
       "conversions": [
-        0,
-        0
+        8,
+        3
       ],
-      "metric": "sg_premium_modal_cta"
+      "metric": "sg_premium_modal_cta",
+      "_source": "apps-script-funnel"
     },
     {
       "id": "onb1",
@@ -42,14 +44,15 @@
         "skip"
       ],
       "sessions": [
-        0,
-        0
+        17,
+        16
       ],
       "conversions": [
         0,
         0
       ],
-      "metric": "sg_conversion"
+      "metric": "sg_conversion",
+      "_source": "apps-script-funnel"
     },
     {
       "id": "free1",
@@ -58,14 +61,15 @@
         "two_free"
       ],
       "sessions": [
-        0,
-        0
+        801,
+        1218
       ],
       "conversions": [
-        0,
-        0
+        21,
+        31
       ],
-      "metric": "sg_forecast_lock_click"
+      "metric": "sg_forecast_lock_click",
+      "_source": "apps-script-funnel"
     },
     {
       "id": "vp1",
@@ -74,14 +78,15 @@
         "outcome"
       ],
       "sessions": [
-        0,
-        0
+        84,
+        82
       ],
       "conversions": [
         0,
         0
       ],
-      "metric": "sg_weekend_banner_click"
+      "metric": "sg_weekend_banner_click",
+      "_source": "apps-script-funnel"
     },
     {
       "id": "price1",
@@ -90,14 +95,15 @@
         "season"
       ],
       "sessions": [
-        0,
-        0
+        501,
+        289
       ],
       "conversions": [
-        0,
+        1,
         0
       ],
-      "metric": "sg_checkout_submit"
+      "metric": "sg_checkout_submit",
+      "_source": "apps-script-funnel"
     }
   ]
 }
