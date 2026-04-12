@@ -238,20 +238,6 @@
     "drive": 33
   },
   {
-    "id": "mq018",
-    "island": "mq",
-    "name": "Petite Anse du Diamant",
-    "commune": "Le Diamant",
-    "lat": 14.4709,
-    "lng": -61.0473,
-    "status": "moderate",
-    "afai": 0.35,
-    "kids": true,
-    "snorkel": false,
-    "parking": true,
-    "drive": 31
-  },
-  {
     "id": "mq019",
     "island": "mq",
     "name": "Anse Gros Raisins",
