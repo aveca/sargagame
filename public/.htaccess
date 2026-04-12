@@ -112,10 +112,16 @@ RewriteRule ^politique-de-confidentialite/?$ /confidentialite.html [R=301,L]
 RewriteRule ^contact/?$ / [R=301,L]
 RewriteRule ^a-propos/?$ / [R=301,L]
 RewriteRule ^premium/?$ / [R=301,L]
-RewriteRule ^quand-sargasses-guadeloupe/?$ / [R=301,L]
+RewriteRule ^quand-sargasses-guadeloupe/?$ /saison-sargasses-guadeloupe/ [R=301,L]
 RewriteRule ^plages-deshaies-guadeloupe/?$ /plages/la-grande-anse-deshaies/ [R=301,L]
 RewriteRule ^plages-saint-francois-guadeloupe/?$ /plages/plage-de-la-caravelle/ [R=301,L]
-RewriteRule ^plages-sans-sargasses-guadeloupe/?$ / [R=301,L]
+RewriteRule ^plages-sans-sargasses-guadeloupe/?$ /plages-sans-sargasses/ [R=301,L]
+
+# --- GSC 404 fixes: beaches crawled but not in current list → nearest match ---
+RewriteRule ^plages/anse-a-la-fontaine/?$ /plages/anse-champagne/ [R=301,L]
+RewriteRule ^plages/paul-thomas/?$ /plages/plage-de-sainte-anne/ [R=301,L]
+RewriteRule ^plages-guadeloupe/plage-d-anse-champagne/?$ /plages/anse-champagne/ [R=301,L]
+RewriteRule ^plages/petite-anse-du-diamant/?$ /plages/anse-cafard/ [R=301,L]
 
 # =====================================================================
 # MARTINIQUE — Smart redirects : old /plage(s)/{old} → /plages/{new}
@@ -169,7 +175,7 @@ RewriteRule ^plages-martinique/tartane/?$ /plages/bourg-de-tartane/ [R=301,L]
 # =====================================================================
 RewriteRule ^sante-et-science/?$ / [R=301,L]
 RewriteRule ^sargasses-outre-mer/?$ / [R=301,L]
-RewriteRule ^plages-sans-sargasses-martinique/?$ / [R=301,L]
+RewriteRule ^plages-sans-sargasses-martinique/?$ /plages-sans-sargasses/ [R=301,L]
 RewriteRule ^previsions-bulletin-direct/?$ /previsions/ [R=301,L]
 
 # =====================================================================
