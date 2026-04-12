@@ -52,7 +52,7 @@
     },
     "anse-mitan": {
       "statusHitRate": 100,
-      "afaiMAE": 0.017,
+      "afaiMAE": 0.014,
       "pairs": 21
     },
     "anse-noire": {
@@ -122,7 +122,7 @@
     },
     "gp-caravelle": {
       "statusHitRate": 100,
-      "afaiMAE": 0.009,
+      "afaiMAE": 0.011,
       "pairs": 21
     },
     "gp-bas-du-fort": {
@@ -150,7 +150,7 @@
     "statusHitRate": 74,
     "afaiMAE": 0.073
   },
-  "computed": "2026-04-12T20:13:18.120Z",
+  "computed": "2026-04-12T20:49:26.613Z",
   "pairs": [
     {
       "snapshotDate": "2026-04-09",
@@ -622,11 +622,11 @@
         "confidence": 29
       },
       "actual": {
-        "afai": 0.05,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0.02
     },
     {
       "snapshotDate": "2026-04-09",
@@ -894,11 +894,11 @@
         "confidence": 33
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
       "snapshotDate": "2026-04-10",
@@ -1370,11 +1370,11 @@
         "confidence": 33
       },
       "actual": {
-        "afai": 0.05,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-04-10",
@@ -1540,11 +1540,11 @@
         "confidence": 46
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
       "snapshotDate": "2026-04-11",
@@ -1778,11 +1778,11 @@
         "confidence": 46
       },
       "actual": {
-        "afai": 0.05,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-04-11",
