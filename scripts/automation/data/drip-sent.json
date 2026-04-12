@@ -90,7 +90,9 @@
     "j3": "2026-04-12T03:19:46.356Z"
   },
   "test@example.com": {},
-  "***RGPD-PURGE***": {},
+  "***RGPD-PURGE***": {
+    "j3": "2026-04-12T08:39:56.167Z"
+  },
   "***RGPD-PURGE***": {},
   "***RGPD-PURGE***": {},
   "***RGPD-PURGE***": {},
