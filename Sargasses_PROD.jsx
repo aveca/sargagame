@@ -1025,7 +1025,6 @@ function BottomNav({view,onChangeView,lang}){
   const tabs=[
     {id:"map",label:LL.navMap,icon:"🗺️"},
     {id:"list",label:LL.navList,icon:"📋"},
-    {id:"learn",label:LL.navLearn,icon:"🔬"},
     {id:"premium",label:LL.navPremium,icon:"⭐"},
   ]
   return(
@@ -4434,9 +4433,6 @@ export default function App(){
 
         {/* LEARN VIEW — educational tunnel */}
         {view==="learn"&&<LearnView lang={lang} onBack={()=>setView("map")} onGoMap={()=>setView("map")}/>}
-
-        {/* SCIENTIFIC FOOTER — map view only, discret */}
-        {view==="map"&&!selectedBeach&&<SciFooter lang={lang}/>}
 
         {/* BOTTOM NAV */}
         <BottomNav view={view} onChangeView={onChangeView} lang={lang}/>
