@@ -26,7 +26,18 @@
 const { forecastConfidence, HALF_LIFE_DAYS, DECAY_LAMBDA } = require('./confidence.cjs')
 
 const DAYS = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
-const CLEAN_BASELINE = 0.05 // AFAI baseline for a quiet beach
+const CLEAN_BASELINE = 0.05 // AFAI baseline for a quiet beach (caribbean/sheltered)
+
+// v3.2 (2026-04-12): coast-aware clean floor. Backtest showed atlantic-facing
+// beaches (sainte-anne, salines, vauclin, gp-vieux-fort) at 19% hit rate with
+// MAE=0.20 — they receive constant fresh sargassum from atlantic drift, so
+// their "quiet" state is persistent moderate, not clean. Raise their baseline
+// from 0.05 to 0.15 so persistence decay bottoms out at moderate, not clean.
+function cleanFloorFor(beach) {
+  if (!beach) return CLEAN_BASELINE
+  if (beach.coast === 'atlantic') return 0.15
+  return CLEAN_BASELINE
+}
 
 function statusFromAfai(afai) {
   if (afai < 0.15) return 'clean'
@@ -326,7 +337,7 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
         // Memory beaches: pure exponential decay for ALL forecast days.
         // No arrival/wind contributions — the beach-memory model only knows the last event decayed.
         const decayFactor = Math.exp(-DECAY_LAMBDA * i)
-        afai = Math.max(CLEAN_BASELINE, day0Raw * decayFactor)
+        afai = Math.max(cleanFloorFor(beach), day0Raw * decayFactor)
         sources = ['memory-decay']
       } else {
         // Days 1-6 (non-memory): persistence + arrival + wind
@@ -334,7 +345,7 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
         const prevAfai = series[i - 1]?.afai || day0Raw
 
         // 1 day decay
-        const dayDecay = Math.exp(-DECAY_LAMBDA) // ~0.82 per day
+        const dayDecay = Math.exp(-DECAY_LAMBDA) // ~0.87 per day @ half-life 5.0
 
         // Wind: small contribution, weaker as days increase
         const windEffect = beach && i <= 3 ? windDriftEffect(beach, hourlyWind, i, marineData) * (1 - (i - 1) * 0.25) : 0
@@ -346,8 +357,8 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
         // Persist + add arrival + wind + trend
         let raw = prevAfai * dayDecay + arrivalContribution + windEffect + trendEffect
 
-        // Floor: can't go below clean baseline unless decay drives it there
-        afai = clamp01(Math.max(CLEAN_BASELINE, raw))
+        // Coast-aware floor: atlantic beaches never go cleaner than 0.15
+        afai = clamp01(Math.max(cleanFloorFor(beach), raw))
 
         sources = []
         sources.push('persistence')
