@@ -272,6 +272,44 @@ export default defineConfig({
           }
           console.log(`   → ${enPages.length} pages EN supplémentaires générées`)
 
+          // Page ES : app en español (pathname /es/ → getLang() = 'es'), SEO ES, script depuis racine
+          const esDir = resolve(outDir, 'es')
+          mkdirSync(esDir, { recursive: true })
+          const esIndex = html
+            .replace(/<html lang="fr">/, '<html lang="es">')
+            .replace(/<title>[^<]*<\/title>/, '<title>Sargazo Martinica en tiempo real · Mapa y playas hoy (2026)</title>')
+            .replace(/<meta name="description"[^>]*>/, '<meta name="description" content="Mapa de sargazo en tiempo real en Martinica. Qué playas están limpias o evitar, pronóstico de 7 días. Para viajeros y residentes." />')
+            .replace(/<link rel="canonical"[^>]*>/, '<link rel="canonical" href="https://sargasses-martinique.com/es/" />')
+            .replace(/<meta property="og:title"[^>]*>/, '<meta property="og:title" content="Sargazo Martinica en tiempo real · Mapa y playas hoy" />')
+            .replace(/<meta property="og:description"[^>]*>/, '<meta property="og:description" content="Mapa de sargazo en tiempo real en Martinica. Playas limpias o a evitar, pronóstico de 7 días." />')
+            .replace(/<meta property="og:url"[^>]*>/, '<meta property="og:url" content="https://sargasses-martinique.com/es/" />')
+            .replace(/<meta property="og:locale"[^>]*>/, '<meta property="og:locale" content="es_MX" />\n    <meta property="og:locale:alternate" content="fr_FR" />\n    <meta property="og:locale:alternate" content="en_US" />')
+            .replace(/<meta name="twitter:title"[^>]*>/, '<meta name="twitter:title" content="Sargazo Martinica en tiempo real · Mapa y playas hoy" />')
+            .replace(/<meta name="twitter:description"[^>]*>/, '<meta name="twitter:description" content="Mapa de sargazo en tiempo real en Martinica. Playas limpias o a evitar, pronóstico de 7 días." />')
+            .replace(/src="assets\//, 'src="/assets/')
+          const esJsonLd = '<script type="application/ld+json">\n    {"@context":"https://schema.org","@type":"WebApplication","name":"Sargazo Martinica en tiempo real","description":"Mapa de sargazo en tiempo real y estado de playas en Martinica. Limpias o a evitar, pronóstico de 7 días.","url":"https://sargasses-martinique.com/es/","applicationCategory":"EnvironmentApplication","operatingSystem":"Web","inLanguage":"es","dateModified":"' + new Date().toISOString().slice(0, 10) + '","publisher":{"@type":"Organization","name":"Sargasses Martinique"}}\n    </script>'
+          writeFileSync(resolve(esDir, 'index.html'), esIndex.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/, esJsonLd))
+
+          // ES subpages for international SEO (Mexique, RD, Puerto Rico, Caraïbes hispanophones)
+          const esPages = [
+            { path: 'es/mapa-sargazo', title: 'Mapa de sargazo Martinica y Guadalupe — Satélite en tiempo real', desc: 'Mapa interactivo de sargazo para Martinica y Guadalupe. Datos satelitales en tiempo real, pronóstico de 7 días. Encuentra playas limpias hoy.' },
+            { path: 'es/mejores-playas-sin-sargazo', title: 'Mejores playas sin sargazo en Martinica y Guadalupe', desc: '¿Qué playas están limpias hoy? Monitoreo de sargazo en tiempo real para Martinica y Guadalupe. Actualizado cada día con datos satelitales.' },
+            { path: 'es/temporada-sargazo', title: 'Temporada de sargazo en el Caribe — Cuándo evitar', desc: '¿Cuándo comienza la temporada de sargazo? Meses pico, qué playas se ven afectadas, pronósticos en tiempo real para Martinica y Guadalupe.' },
+            { path: 'es/alertas-sargazo', title: 'Alertas de sargazo Martinica y Guadalupe — Notificaciones en tiempo real', desc: 'Recibe alertas de sargazo en tiempo real para tus playas favoritas en Martinica y Guadalupe. Entérate antes de ir.' },
+          ]
+          for (const ep of esPages) {
+            const epDir = resolve(outDir, ep.path)
+            mkdirSync(epDir, { recursive: true })
+            const epHtml = esIndex
+              .replace(/<title>[^<]*<\/title>/, `<title>${ep.title}</title>`)
+              .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${ep.desc}" />`)
+              .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="https://sargasses-martinique.com/${ep.path}/" />`)
+              .replace(/<meta property="og:title"[^>]*>/, `<meta property="og:title" content="${ep.title}" />`)
+              .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="https://sargasses-martinique.com/${ep.path}/" />`)
+            writeFileSync(resolve(epDir, 'index.html'), epHtml.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/, esJsonLd))
+          }
+          console.log(`   → ${esPages.length} pages ES supplémentaires générées`)
+
           // Sitemaps dynamiques avec lastmod = date du build
           const today = new Date().toISOString().slice(0, 10)
           // Sitemap helper — generates domain-specific XML with correct priorities
@@ -291,6 +329,11 @@ export default defineConfig({
   <url><loc>${d}/en/best-beaches-no-sargassum/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>${d}/en/sargassum-season/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>${d}/en/sargassum-alerts/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>${d}/es/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>${d}/es/mapa-sargazo/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>${d}/es/mejores-playas-sin-sargazo/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>${d}/es/temporada-sargazo/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>${d}/es/alertas-sargazo/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>${d}/saison-sargasses-martinique/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>${mqEditPrio}</priority></url>
   <url><loc>${d}/saison-sargasses-guadeloupe/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>${gpEditPrio}</priority></url>
   <url><loc>${d}/plages-sans-sargasses/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
@@ -661,13 +704,15 @@ export default defineConfig({
         }
       },
     },
-    // En dev : réécrire /en et /en/ vers / pour charger l'app (pathname reste /en/ → getLang() = 'en')
+    // En dev : réécrire /en, /en/, /es, /es/ vers / pour charger l'app (pathname reste /en/ ou /es/ → getLang())
     {
-      name: 'en-spa-rewrite',
+      name: 'i18n-spa-rewrite',
       configureServer(server) {
         server.middlewares.use((req, res, next) => {
           const u = req.url?.split('?')[0] || ''
-          if (u === '/en' || u === '/en/') req.url = '/' + (req.url?.includes('?') ? '?' + req.url.split('?')[1] : '')
+          if (u === '/en' || u === '/en/' || u === '/es' || u === '/es/') {
+            req.url = '/' + (req.url?.includes('?') ? '?' + req.url.split('?')[1] : '')
+          }
           next()
         })
       },

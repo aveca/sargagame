@@ -21,7 +21,9 @@ class ErrBound extends Component{
    ═══════════════════════════════════════════════════════════════════════════ */
 const LangCtx=createContext("fr")
 export function useLang(){return useContext(LangCtx)||"fr"}
-function getLang(){try{return typeof window!=="undefined"&&window.location.pathname.startsWith("/en")?"en":"fr"}catch{return"fr"}}
+function getLang(){try{if(typeof window==="undefined")return"fr";const p=window.location.pathname;if(p.startsWith("/es"))return"es";if(p.startsWith("/en"))return"en";return"fr"}catch{return"fr"}}
+/* i18n inline helper — returns fr/en/es string based on current lang */
+function _t(lang,fr,en,es){return lang==="es"?es:lang==="en"?en:fr}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    DESIGN TOKENS
@@ -41,17 +43,20 @@ const C={
 }
 
 const ST={
-  _loading:{c:"#666",bg:"rgba(100,100,100,.1)",l:"Chargement…",le:"Loading…",e:"⏳",h2s:false,
-    desc:"Données en cours de chargement…",descEn:"Loading data…"},
-  clean:{c:C.green,bg:C.greenBg,l:"Propre",le:"Clean",e:"✅",h2s:false,
+  _loading:{c:"#666",bg:"rgba(100,100,100,.1)",l:"Chargement…",le:"Loading…",les:"Cargando…",e:"⏳",h2s:false,
+    desc:"Données en cours de chargement…",descEn:"Loading data…",descEs:"Cargando datos…"},
+  clean:{c:C.green,bg:C.greenBg,l:"Propre",le:"Clean",les:"Limpia",e:"✅",h2s:false,
     desc:"Peu ou pas de sargasses détectées par satellite au large.",
-    descEn:"Little to no sargassum detected by satellite offshore."},
-  moderate:{c:C.amber,bg:C.amberBg,l:"Modéré",le:"Moderate",e:"⚠️",h2s:false,
+    descEn:"Little to no sargassum detected by satellite offshore.",
+    descEs:"Poco o nada de sargazo detectado por satélite en alta mar."},
+  moderate:{c:C.amber,bg:C.amberBg,l:"Modéré",le:"Moderate",les:"Moderado",e:"⚠️",h2s:false,
     desc:"Présence modérée de sargasses détectée au large. Vérifiez sur place avant de vous baigner.",
-    descEn:"Moderate sargassum detected offshore. Check conditions on site before swimming."},
-  avoid:{c:C.red,bg:C.redBg,l:"Alerte",le:"Alert",e:"🚫",h2s:true,
+    descEn:"Moderate sargassum detected offshore. Check conditions on site before swimming.",
+    descEs:"Presencia moderada de sargazo detectada en alta mar. Verifique en el lugar antes de nadar."},
+  avoid:{c:C.red,bg:C.redBg,l:"Alerte",le:"Alert",les:"Alerta",e:"🚫",h2s:true,
     desc:"Forte concentration de sargasses détectée au large. Échouages probables — vérifiez l'état de la plage sur place.",
-    descEn:"High sargassum concentration detected offshore. Beaching likely — check beach conditions on site."},
+    descEn:"High sargassum concentration detected offshore. Beaching likely — check beach conditions on site.",
+    descEs:"Alta concentración de sargazo detectada en alta mar. Probable llegada a la playa — verifique las condiciones en el lugar."},
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -197,6 +202,71 @@ const T={
     learnS4P3:"Our method — IDW interpolation + drifting-raft forecast + arrival signal.",
     learnS4Sources:"Sources: Wang & Hu 2016 · NOAA/AOML SIR · USF Optical Oceanography Lab · Copernicus Marine Service.",
     learnCta:"See the sargassum map",
+  },
+  es:{
+    days:["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"],today:"Hoy",tomorrow:"Mañ.",
+    clean:"Limpia",moderate:"Moderado",avoid:"Alerta",
+    search:"Buscar una playa…",
+    filters:["Todas","Limpias","Favoritas","Alertas"],
+    filtersIcon:["🌊","✅","❤️","🚫"],
+    navMap:"Mapa",navList:"Playas",navGame:"Juego",navPremium:"Premium",
+    forecast:"Pronóstico",weather:"Clima",directions:"Cómo llegar",
+    fav:"Favorita",addFav:"Agregar a favoritas",removeFav:"Quitar de favoritas",
+    wind:"Viento",uv:"UV",temp:"Temperatura",drive:"min",
+    kids:"Niños",snorkel:"Snorkel",parking:"Estacionamiento",
+    premium:"Premium",premiumDesc:"Tu vigía del sargazo: resumen matutino, alertas de playas favoritas, recomendación del día.",
+    premiumPrice:"4,99 €/mes",premiumCta:"Comenzar — 0€ hoy",
+    premiumFeatures:["Prueba 7 días — 0€, cancela en 1 clic","Resumen matutino: tu mejor playa, cada día","Alertas push antes de que llegue el sargazo","Sin anuncios · Sin compromiso · Garantía de satisfacción"],
+    h2sWarn:"Si el sargazo está varado y en descomposición, aléjese (riesgo de H₂S). Fuente: HCSP/ARS.",
+    copernicus:"Copernicus Marine",live:"EN VIVO",
+    nClean:"{n} limpias",island_mq:"Martinica",island_gp:"Guadalupe",
+    reportThanks:"¡Gracias por tu reporte!",report:"Reportar",
+    openWaze:"Abrir Waze",driftDown:"Dispersión esperada",driftUp:"Llegada posible",driftStable:"Estable",
+    close:"Cerrar",nearby:"Playas cercanas",locked:"Premium",
+    beachScore:"Puntuación playa",waves:"Olas",swell:"Oleaje",rain:"Lluvia",
+    scoreExcellent:"Excelente",scoreGood:"Bueno",scoreMedium:"Regular",scoreBad:"Condiciones difíciles",
+    marine:"Condiciones marinas",
+    history:"Tendencia reciente",historyEmpty:"Sin historial aún",
+    historyDays:"{n}d",
+    caribbeanView:"Vista Caribe",localView:"Vista local",
+    caribbeanLegendTitle:"Concentración AFAI",
+    caribbeanLegendLow:"Baja",caribbeanLegendMod:"Moderada",caribbeanLegendHigh:"Alta",
+    caribbeanSource:"Fuente: NOAA ERDDAP — Datos satelitales AFAI",
+    caribbeanZoneSargasso:"Mar de los Sargazos",caribbeanZoneNERR:"NERR",
+    caribbeanZoneLesser:"Antillas Menores",caribbeanZoneGreater:"Antillas Mayores",
+    caribbeanZoneGulf:"Golfo de México",caribbeanZoneAfrica:"Costa África Occ.",
+    reliabilityHigh:"Alta",reliabilityMedium:"Media",reliabilityLow:"Baja",
+    reliabilityLabel:"Fiabilidad",
+    reliabilityHighDesc:"Datos satelitales recientes, modelo bien calibrado para esta zona.",
+    reliabilityMediumDesc:"Datos parciales o interpolados. Verifique en el lugar.",
+    reliabilityLowDesc:"Pronóstico incierto (horizonte lejano o datos faltantes).",
+    sourceLabel:"Fuente",
+    sciFooter:"Copernicus · NOAA/AOML SIR v1.4 · Wang & Hu 2016",
+    sciUpdated:"Actualizado cada 3h",
+    navLearn:"Ciencia",
+    learnTitle:"Entender el sargazo",
+    learnBack:"Volver",
+    learnHero:"Del satélite a tu playa",
+    learnHeroSub:"La ciencia detrás del pronóstico",
+    learnS1Title:"¿Qué es el sargazo?",
+    learnS1P1:"Algas pardas pelágicas (Sargassum natans + fluitans) que flotan gracias a pequeñas vesículas de gas. Nunca tocan el fondo.",
+    learnS1P2:"Reproducción vegetativa: un fragmento genera una nueva colonia. Población se duplica cada 18 días en condiciones favorables.",
+    learnS1P3:"En 2018, descubrimiento del Gran Cinturón Atlántico (GASB): más de 20 millones de toneladas, de África al Golfo de México.",
+    learnS2Title:"¿Por qué llegan?",
+    learnS2P1:"Nutrientes — Deforestación amazónica, río Congo, fertilizantes agrícolas. Nitrógeno + fósforo fertilizan el océano.",
+    learnS2P2:"Temperatura — Aumento de la SST que acelera el crecimiento y amplía las zonas favorables.",
+    learnS2P3:"Corrientes — La NERR (North Equatorial Recirculation Region) transporta los bancos hacia el Caribe.",
+    learnS2P4:"Temporada — Pico de llegada de abril a septiembre, máximo en junio-julio.",
+    learnS3Title:"Impacto",
+    learnS3Eco:"Ecológico — Asfixia de arrecifes, mortalidad de tortugas, peces, erizos.",
+    learnS3Health:"Sanitario — H₂S (sulfuro de hidrógeno) + amoníaco. Dolores de cabeza, náuseas, dificultad respiratoria.",
+    learnS3Econ:"Económico — Retroceso del turismo, pesca perturbada. Costo de limpieza: decenas de millones por año.",
+    learnS4Title:"Cómo lo detectamos",
+    learnS4P1:"Satélites — MODIS (NASA) + Copernicus (ESA) miden el índice AFAI por firma espectral.",
+    learnS4P2:"Umbrales NOAA — < 0.15 limpia · 0.15–0.40 moderada · > 0.40 alerta.",
+    learnS4P3:"Nuestro método — Interpolación IDW + pronóstico por bancos a la deriva + señal de llegada.",
+    learnS4Sources:"Fuentes: Wang & Hu 2016 · NOAA/AOML SIR · USF Optical Oceanography Lab · Copernicus Marine Service.",
+    learnCta:"Ver el mapa del sargazo",
   },
 }
 
@@ -704,7 +774,7 @@ function SectionReveal({children,delay=0,className=""}){
    ═══════════════════════════════════════════════════════════════════════════ */
 function StatusBadge({status,lang="fr"}){
   const st=ST[status]||ST._loading
-  const label=lang==="en"?st.le:st.l
+  const label=lang==="es"?st.les:lang==="en"?st.le:st.l
   return(
     <span style={{display:"inline-flex",alignItems:"center",gap:6,padding:"5px 14px",
       borderRadius:100,background:st.bg,color:st.c,fontSize:13,fontWeight:700,
@@ -3114,13 +3184,13 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
           display:"flex",alignItems:"center",justifyContent:"center",
           boxShadow:"0 2px 8px rgba(0,0,0,.06)",
         }}>{theme==="dark"?"☀️":"🌙"}</button>
-        <button onClick={onLangToggle} aria-label={lang==="fr"?"Switch to English":"Passer en français"} style={{
+        <button onClick={onLangToggle} aria-label={lang==="fr"?"Switch to English":lang==="en"?"Cambiar a español":"Passer en français"} style={{
           width:44,height:44,borderRadius:12,border:"1px solid var(--sg-border)",
           background:"var(--sg-card,#fff)",cursor:"pointer",fontSize:12,fontWeight:700,
           fontFamily:"inherit",color:"var(--sg-ink)",
           display:"flex",alignItems:"center",justifyContent:"center",
           boxShadow:"0 2px 8px rgba(0,0,0,.06)",
-        }}>{lang==="fr"?"EN":"FR"}</button>
+        }}>{lang==="fr"?"EN":lang==="en"?"ES":"FR"}</button>
       </div>
     </div>
   )
@@ -4083,7 +4153,9 @@ export default function App(){
   },[])
 
   const toggleTheme=useCallback(()=>setTheme(t=>t==="dark"?"light":"dark"),[])
-  const toggleLang=useCallback(()=>setLang(l=>l==="fr"?"en":"fr"),[])
+  const toggleLang=useCallback(()=>setLang(l=>l==="fr"?"en":l==="en"?"es":"fr"),[])
+  // Sync document.documentElement.lang when lang changes (SEO + a11y)
+  useEffect(()=>{try{if(typeof document!=="undefined")document.documentElement.lang=lang}catch{}},[lang])
 
   // Filter beaches + sort by distance if GPS available
   const filtered=useMemo(()=>{
@@ -4286,7 +4358,7 @@ export default function App(){
                           whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.name}</div>
                         <div style={{fontSize:11,color:"var(--sg-mid,#686868)"}}>{b.commune}</div>
                       </div>
-                      <span style={{fontSize:10,fontWeight:700,color:st.c}}>{lang==="en"?st.le:st.l}</span>
+                      <span style={{fontSize:10,fontWeight:700,color:st.c}}>{lang==="es"?st.les:lang==="en"?st.le:st.l}</span>
                     </button>
                   )
                 })}
