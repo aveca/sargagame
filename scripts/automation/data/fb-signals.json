@@ -1,0 +1,52 @@
+{
+  "_generatedAt": "2026-04-12T22:23:10.927Z",
+  "_sourcePosts": 2,
+  "summary": {
+    "contentGapsFound": 0,
+    "beachesWithCommunitySignal": 2,
+    "seoIntentsExtracted": 2
+  },
+  "contentGaps": [],
+  "communitySignals": {
+    "gp120": {
+      "avoid": 0,
+      "moderate": 3,
+      "clean": 1,
+      "total": 4,
+      "samples": [
+        {
+          "text": "Bonsoir, petite question … comment ça se passe au niveau des sargasses a l'île de la petite terre ? J'aimerai avoir l'av",
+          "date": "2026-04-12T21:53:00Z",
+          "source": "facebook"
+        }
+      ]
+    },
+    "mq067": {
+      "avoid": 1,
+      "moderate": 0,
+      "clean": 0,
+      "total": 1,
+      "samples": [
+        {
+          "text": "Pointe Lynch - pointe Fort / tellement épais que les oiseaux marchent dessus 😭",
+          "date": "2026-04-12T21:58:00Z",
+          "source": "facebook"
+        }
+      ]
+    }
+  },
+  "seoIntents": [
+    {
+      "question": "Bonsoir, petite question … comment ça se passe au niveau des sargasses a l'île de la petite terre ?",
+      "island": "gp",
+      "beachMentioned": "Petite Terre",
+      "sourcePost": "https://www.facebook.com/groups/1264655221572269/permalink/1736901381014315/"
+    },
+    {
+      "question": "J'aimerai avoir l'avis de personnes sur place … merci d'avance",
+      "island": "gp",
+      "beachMentioned": "Petite Terre",
+      "sourcePost": "https://www.facebook.com/groups/1264655221572269/permalink/1736901381014315/"
+    }
+  ]
+}
