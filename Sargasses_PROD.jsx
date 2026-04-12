@@ -2326,25 +2326,15 @@ function PremiumModal({onClose,lang,source,onActivated}){
   const hasAnnual=!!STRIPE_LINK_ANNUAL
   const modalOpenedAt=useRef(Date.now())
   const sawCheckoutRef=useRef(false)
-  // A/B Test: pricing — season pass vs standard
-  const priceV=abVariant("price1",["control","season"],[.5,.5])
-  const hasSeason=priceV==="season"
-  const[plan,setPlan]=useState(hasSeason?"season":"monthly") // "monthly" | "annual" | "season"
+  // price1 A/B test ended: season pass variant got 0 checkouts vs 1 for monthly. Monthly wins.
+  const[plan,setPlan]=useState("monthly") // "monthly" | "annual"
   const[showCheckout,setShowCheckout]=useState(false)
   const[showReferral,setShowReferral]=useState(false)
   const[refCopied,setRefCopied]=useState(false)
-  // A/B Test 2: modal value proposition — headline+subtitle only (social proof/anchor removed for simplicity)
-  const modalV=abVariant("modal1",["control","family"],[.5,.5])
-  const isFamily=modalV==="family"
-  const headline=isFamily
-    ?(lang==="en"?"Protect your weekend":"Protège ton weekend")
-    :(lang==="en"?"⭐ Your sargassum watchman":"⭐ Ton veilleur sargasses")
-  const subtitle=isFamily
-    ?(lang==="en"?"Your kids count on you to find the right beach.":"Tes enfants comptent sur toi pour trouver la bonne plage.")
-    :(SARGASSES_SEASON==="high"
-      ?(lang==="en"?"Right now, beaches change status every day. Don't waste a trip.":"En ce moment, les plages changent de statut chaque jour. Ne gaspille pas un trajet.")
-      :(lang==="en"?"Sargassum changes every day. Know before you go.":"Les sargasses changent chaque jour. Sache avant de partir."))
-  const effectivePlan=hasSeason?plan:(hasAnnual?plan:"monthly")
+  // modal1 A/B test ended: family framing 2.1% vs control 1.4%. Family wins.
+  const headline=lang==="en"?"Protect your weekend":"Protège ton weekend"
+  const subtitle=lang==="en"?"Your kids count on you to find the right beach.":"Tes enfants comptent sur toi pour trouver la bonne plage."
+  const effectivePlan=hasAnnual?plan:"monthly"
   return(
     <>
       <div className="backdrop" onClick={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,saw_checkout:sawCheckoutRef.current});onClose()}}/>
@@ -2377,35 +2367,8 @@ function PremiumModal({onClose,lang,source,onActivated}){
           background:"linear-gradient(180deg,transparent 0,#0A1714 16px)",
           paddingTop:8,paddingBottom:12,marginLeft:-24,marginRight:-24,paddingLeft:24,paddingRight:24}}>
 
-        {/* Plan toggle — season variant shows season pass + monthly, control shows monthly + annual */}
-        {hasSeason?(
-        <div style={{display:"flex",gap:8,marginBottom:14}}>
-          <button onClick={()=>{setPlan("season");track("sg_plan_toggle",{plan:"season",variant:"season"})}} style={{
-            flex:1,padding:"10px 8px",borderRadius:12,cursor:"pointer",fontFamily:"inherit",position:"relative",
-            background:plan==="season"?"rgba(255,199,44,.15)":"rgba(255,255,255,.04)",
-            border:plan==="season"?"1.5px solid rgba(255,199,44,.4)":"1.5px solid rgba(255,255,255,.1)",
-            color:plan==="season"?"#fff":"rgba(255,255,255,.5)",fontSize:13,fontWeight:600,
-            transition:"all .2s"}}>
-            <div style={{position:"absolute",top:-8,right:8,background:C.gold,color:C.ink,
-              fontSize:9,fontWeight:800,padding:"2px 7px",borderRadius:100,letterSpacing:".02em"}}>
-              -33%
-            </div>
-            <div>{lang==="en"?"Season pass":"Pass saison"}</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{lang==="en"?"Apr–Sep · 6 months":"Avr–Sep · 6 mois"}</div>
-            <div style={{fontSize:18,fontWeight:700,marginTop:2}}>19,99 €</div>
-          </button>
-          <button onClick={()=>{setPlan("monthly");track("sg_plan_toggle",{plan:"monthly",variant:"season"})}} style={{
-            flex:1,padding:"10px 8px",borderRadius:12,cursor:"pointer",fontFamily:"inherit",
-            background:plan==="monthly"?"rgba(255,199,44,.15)":"rgba(255,255,255,.04)",
-            border:plan==="monthly"?"1.5px solid rgba(255,199,44,.4)":"1.5px solid rgba(255,255,255,.1)",
-            color:plan==="monthly"?"#fff":"rgba(255,255,255,.5)",fontSize:13,fontWeight:600,
-            transition:"all .2s"}}>
-            <div>{lang==="en"?"Monthly":"Mensuel"}</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.4)"}}>{lang==="en"?"No commitment":"Sans engagement"}</div>
-            <div style={{fontSize:18,fontWeight:700,marginTop:2}}>{lang==="en"?"€4.99":"4,99 €"}<span style={{fontSize:11,fontWeight:400}}>/{lang==="en"?"mo":"mois"}</span></div>
-          </button>
-        </div>
-        ):hasAnnual&&(
+        {/* Plan toggle — monthly + annual */}
+        {hasAnnual&&(
         <div style={{display:"flex",gap:8,marginBottom:14}}>
           <button onClick={()=>{setPlan("monthly");track("sg_plan_toggle",{plan:"monthly"})}} style={{
             flex:1,padding:"10px 8px",borderRadius:12,cursor:"pointer",fontFamily:"inherit",
