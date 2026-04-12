@@ -57,8 +57,11 @@ const BEACHES = [
 ]
 
 // ── ERDDAP configuration ──────────────────────────────────────────
-const ERDDAP_BASE = 'https://cwcgom.aoml.noaa.gov/erddap/griddap/noaa_aoml_atlantic_oceanwatch_AFAI_7D.json'
+const ERDDAP_7D = 'https://cwcgom.aoml.noaa.gov/erddap/griddap/noaa_aoml_atlantic_oceanwatch_AFAI_7D.json'
+const ERDDAP_1D = 'https://cwcgom.aoml.noaa.gov/erddap/griddap/noaa_aoml_atlantic_oceanwatch_AFAI_1D.json'
+const ERDDAP_BASE = ERDDAP_7D // backward compat alias
 const FETCH_TIMEOUT_MS = 60000 // Wider bounding boxes = more data, need more time
+const FETCH_1D_TIMEOUT_MS = 15000 // 1D is a bonus — don't block on it
 const NO_DATA_AFAI = 0.05 // If null / no detection = clean ocean
 
 // Wide bounding boxes: sargassum is detected OFFSHORE (10-100km from coast),
@@ -226,6 +229,57 @@ async function fetchErddapGrid(region) {
     erddapTimestamp,
     dataAgeHours,
   }
+}
+
+/**
+ * Fetch the 1-day AFAI composite (rapid change detection).
+ * Same structure as 7D but shorter integration period → detects arrivals ~24h earlier.
+ * Non-critical: returns null on any failure (used as bonus signal, never blocks pipeline).
+ */
+async function fetchErddapGrid1D(region) {
+  const { latMin, latMax, lngMin, lngMax } = region
+  const url = `${ERDDAP_1D}?AFAI[(last)][(${latMin}):(${latMax})][(${lngMin}):(${lngMax})]`
+  const data = await safeFetch(url, FETCH_1D_TIMEOUT_MS)
+  if (!data || !data.table) return null
+  const table = data.table
+  const colNames = table.columnNames
+  const rows = table.rows
+  if (!colNames || !rows || rows.length === 0) return null
+  const latIdx = colNames.indexOf('latitude')
+  const lngIdx = colNames.indexOf('longitude')
+  const afaiIdx = colNames.indexOf('AFAI')
+  if (latIdx < 0 || lngIdx < 0 || afaiIdx < 0) return null
+  const points = rows.map(row => ({ latitude: row[latIdx], longitude: row[lngIdx], AFAI: row[afaiIdx] }))
+  return { points, dataAgeHours: 12 } // assume ~12h since 1D composites are daily
+}
+
+/**
+ * Compare 1D vs 7D AFAI for a beach to detect rapid changes.
+ * Returns a correction factor: positive = recent arrival, negative = recent clearance.
+ */
+function compute1DCorrection(beach, grid7D, grid1D) {
+  if (!grid1D || !grid1D.points || grid1D.points.length === 0) return 0
+  if (!grid7D || !grid7D.points || grid7D.points.length === 0) return 0
+  // Extract AFAI from both grids using nearby zone only (0-30km)
+  function nearbyAvg(grid) {
+    let sumW = 0, sumV = 0
+    for (const p of grid.points) {
+      if (p.AFAI === null || p.AFAI === undefined) continue
+      const dist = haversineKm(beach.lat, beach.lng, p.latitude, p.longitude)
+      if (dist > NEARBY_RADIUS_KM) continue
+      const w = 1 / (1 + dist)
+      sumW += w; sumV += w * normalizeAfai(p.AFAI)
+    }
+    return sumW > 0 ? sumV / sumW : null
+  }
+  const avg7D = nearbyAvg(grid7D)
+  const avg1D = nearbyAvg(grid1D)
+  if (avg7D === null || avg1D === null) return 0
+  const diff = avg1D - avg7D
+  // Only apply correction if the difference is significant (>0.10)
+  if (Math.abs(diff) < 0.10) return 0
+  // Cap correction to prevent wild swings: max ±0.15
+  return Math.max(-0.15, Math.min(0.15, diff * 0.7))
 }
 
 /**
@@ -842,24 +896,23 @@ async function main() {
   console.log('Source: NOAA ERDDAP (7-day AFAI composite)')
   console.log('')
 
-  // 1. Fetch grids for both regions
+  // 1. Fetch grids for both regions (7D primary + 1D bonus for rapid change detection)
   console.log('[1/3] Fetching ERDDAP grids...')
   let mqGrid = null
   let gpGrid = null
+  let mqGrid1D = null
+  let gpGrid1D = null
 
-  try {
-    console.log('  -- Martinique --')
-    mqGrid = await fetchErddapGrid(REGIONS.mq)
-  } catch (err) {
-    console.warn(`  MQ grid fetch failed: ${err.message}`)
-  }
-
-  try {
-    console.log('  -- Guadeloupe --')
-    gpGrid = await fetchErddapGrid(REGIONS.gp)
-  } catch (err) {
-    console.warn(`  GP grid fetch failed: ${err.message}`)
-  }
+  // Fetch 7D (primary) and 1D (bonus) in parallel
+  const fetchPromises = []
+  fetchPromises.push(
+    (async () => { console.log('  -- Martinique 7D --'); mqGrid = await fetchErddapGrid(REGIONS.mq) })().catch(e => console.warn(`  MQ 7D failed: ${e.message}`)),
+    (async () => { console.log('  -- Guadeloupe 7D --'); gpGrid = await fetchErddapGrid(REGIONS.gp) })().catch(e => console.warn(`  GP 7D failed: ${e.message}`)),
+    (async () => { mqGrid1D = await fetchErddapGrid1D(REGIONS.mq) })().catch(() => {}),
+    (async () => { gpGrid1D = await fetchErddapGrid1D(REGIONS.gp) })().catch(() => {}),
+  )
+  await Promise.all(fetchPromises)
+  if (mqGrid1D || gpGrid1D) console.log(`  1D grids: MQ=${mqGrid1D ? mqGrid1D.points.length + 'pts' : 'n/a'} GP=${gpGrid1D ? gpGrid1D.points.length + 'pts' : 'n/a'}`)
 
   const mqFetched = mqGrid && mqGrid.points !== undefined
   const gpFetched = gpGrid && gpGrid.points !== undefined
@@ -877,16 +930,20 @@ async function main() {
 
   for (const beach of BEACHES) {
     const grid = beach.island === 'mq' ? mqGrid : gpGrid
+    const grid1D = beach.island === 'mq' ? mqGrid1D : gpGrid1D
     const result = extractBeachAfai(beach, grid)
-    const afai = Math.round(result.afai * 100) / 100
+    // Apply 1D rapid-change correction (detects recent arrivals/clearances ~24h before 7D)
+    const correction1D = compute1DCorrection(beach, grid, grid1D)
+    const afaiRaw = result.afai + correction1D
+    const afai = Math.round(Math.max(0, Math.min(1, afaiRaw)) * 100) / 100
     const status = statusFromAfai(afai)
     levels.push({
       id: beach.id, afai, status,
-      confidence: result.confidence,
+      confidence: result.confidence + (correction1D !== 0 ? 5 : 0), // multi-source boost
       source: 'erddap-satellite',
-      sourceDetail: result.method,
+      sourceDetail: result.method + (correction1D !== 0 ? '+1D' : ''),
     })
-    console.log(`  ${beach.id}: AFAI=${afai.toFixed(2)} (${status}) [${result.method}] conf=${result.confidence}% nearby=${result.nearbyPts} offshore=${result.offshorePts}`)
+    console.log(`  ${beach.id}: AFAI=${afai.toFixed(2)} (${status}) [${result.method}${correction1D ? ' 1D:' + (correction1D > 0 ? '+' : '') + correction1D.toFixed(2) : ''}] conf=${result.confidence}%`)
   }
 
   // 2b. Apply beach memory (accumulation decay from recent history)
