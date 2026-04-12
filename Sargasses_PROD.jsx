@@ -3232,6 +3232,17 @@ export default function App(){
   // Analytics: session start
   useEffect(()=>{track("sg_session_start",{island,is_premium:isPremium,is_returning:!!g("sg_seen",0)});s("sg_seen",1)},[])
 
+  // Deep-link: /plages/:slug → auto-open beach sheet
+  useEffect(()=>{
+    if(!allBeaches.length)return
+    const m=window.location.pathname.match(/^\/plages\/([^/]+)/)
+    if(!m)return
+    const slug=m[1]
+    const match=allBeaches.find(b=>
+      b.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/-+$/,"")===slug)
+    if(match){setSelectedBeach(match);track("sg_beach_open",{beach_id:match.id,status:match.status,source:"deeplink"})}
+  },[allBeaches])
+
   // Push opt-in: contextual primer + native OneSignal prompt at a VALUE moment.
   // Old timing (1.5s PWA / 12s browser, no primer) gave 6% opt-in on 376 sessions.
   // New flow (2026-04-12):
