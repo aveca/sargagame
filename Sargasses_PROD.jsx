@@ -229,7 +229,8 @@ function track(event,params={}){
   // Backup: queue critical conversion events to localStorage + beacon to Apps Script
   const critical=event.startsWith("sg_checkout")||event.startsWith("sg_premium")||event==="sg_conversion"
     ||event==="sg_email_submit"||event==="sg_forecast_lock_click"||event==="sg_session_start"
-    ||event==="sg_push_accept"||event==="sg_weekend_banner_click"||event==="sg_referral_share"
+    ||event==="sg_push_accept"||event==="sg_push_primer_accept"||event==="sg_push_primer_dismiss"
+    ||event==="sg_weekend_banner_click"||event==="sg_referral_share"
   if(critical){
     const entry={e:event,p,t:Date.now(),island:window.location.hostname.includes("guadeloupe")?"GP":"MQ"}
     try{
