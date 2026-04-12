@@ -2932,10 +2932,8 @@ function PremiumModal({onClose,lang,source,onActivated}){
   const hasAnnual=!!STRIPE_LINK_ANNUAL
   const modalOpenedAt=useRef(Date.now())
   const sawCheckoutRef=useRef(false)
-  // pay1 A/B: inline checkout form vs direct Payment Link redirect.
-  // Inline: current flow (0 conversions from 12 form views observed).
-  // Link: open STRIPE_LINK_* in new tab — flow 3 paying customers used.
-  const payV=abVariant("pay1",["inline","link"],[.5,.5])
+  // pay1 A/B ended 2026-04-12: link=3 conversions, inline=0 → link wins.
+  const payV="link"
   const panelRef=useRef(null)
   const startYRef=useRef(0)
   // Swipe-down to dismiss
@@ -3150,7 +3148,7 @@ function PremiumModal({onClose,lang,source,onActivated}){
             }}
             className="gbtn" style={{width:"100%",textAlign:"center",fontSize:17,
               padding:"16px 24px",display:"block",border:"none",cursor:"pointer",fontFamily:"inherit",lineHeight:1.2}}>
-            <div>{lang==="en"?"Try free for 7 days":"Essayer 7 jours gratuit"}</div>
+            <div>{lang==="en"?"Activate my watcher — 7 days free":"Activer mon veilleur — 7j gratuit"}</div>
             <div style={{fontSize:12,opacity:.8,fontWeight:400,marginTop:4}}>
               {lang==="en"?"Then €4.99/mo · cancel in 1 click":"Puis 4,99 €/mois · annule en 1 clic"}
             </div>
