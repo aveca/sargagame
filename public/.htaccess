@@ -247,7 +247,7 @@ AddOutputFilterByType DEFLATE text/html text/css application/javascript applicat
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_URI} !/$
 RewriteCond %{REQUEST_URI} !\.
-RewriteRule ^(carte-sargasses|previsions|en)$ /$1/ [R=301,L]
+RewriteRule ^(carte-sargasses|previsions|alertes|en|saison-sargasses-martinique|saison-sargasses-guadeloupe|plages-sans-sargasses|danger-sargasses-h2s)$ /$1/ [R=301,L]
 </IfModule>
 
 # Security headers (trust signals SEO + sécurité)
