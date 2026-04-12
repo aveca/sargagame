@@ -93,6 +93,45 @@ const T={
     marine:"Conditions marines",
     history:"Tendance récente",historyEmpty:"Pas encore d'historique",
     historyDays:"{n}j",
+    caribbeanView:"Vue Caraïbe",localView:"Vue locale",
+    caribbeanLegendTitle:"Concentration AFAI",
+    caribbeanLegendLow:"Faible",caribbeanLegendMod:"Modéré",caribbeanLegendHigh:"Fort",
+    caribbeanSource:"Source : NOAA ERDDAP — Données satellite AFAI",
+    caribbeanZoneSargasso:"Mer des Sargasses",caribbeanZoneNERR:"NERR",
+    caribbeanZoneLesser:"Petites Antilles",caribbeanZoneGreater:"Grandes Antilles",
+    caribbeanZoneGulf:"Golfe du Mexique",caribbeanZoneAfrica:"Côte Afrique Ouest",
+    reliabilityHigh:"Haute",reliabilityMedium:"Moyenne",reliabilityLow:"Basse",
+    reliabilityLabel:"Fiabilité",
+    reliabilityHighDesc:"Données satellite récentes, modèle bien calibré pour cette zone.",
+    reliabilityMediumDesc:"Données partielles ou interpolées. Vérifiez sur place.",
+    reliabilityLowDesc:"Prévision incertaine (horizon lointain ou données manquantes).",
+    sourceLabel:"Source",
+    sciFooter:"Copernicus · NOAA/AOML SIR v1.4 · Wang & Hu 2016",
+    sciUpdated:"Mis à jour toutes les 3h",
+    navLearn:"Science",
+    learnTitle:"Comprendre les sargasses",
+    learnBack:"Retour",
+    learnHero:"Du satellite à ta plage",
+    learnHeroSub:"La science derrière la prévision",
+    learnS1Title:"Qu'est-ce que les sargasses ?",
+    learnS1P1:"Algues brunes pélagiques (Sargassum natans + fluitans) qui flottent grâce à de petites vésicules de gaz. Elles ne touchent jamais le fond.",
+    learnS1P2:"Reproduction végétative : un fragment donne une nouvelle colonie. Population doublée tous les 18 jours en conditions favorables.",
+    learnS1P3:"En 2018, découverte de la Grande Ceinture Atlantique (GASB) : plus de 20 millions de tonnes, de l'Afrique au Golfe du Mexique.",
+    learnS2Title:"Pourquoi elles arrivent ?",
+    learnS2P1:"Nutriments — Déforestation amazonienne, fleuve Congo, engrais agricoles. Azote + phosphore fertilisent l'océan.",
+    learnS2P2:"Température — Hausse des SST qui accélère la croissance et élargit les zones favorables.",
+    learnS2P3:"Courants — La NERR (North Equatorial Recirculation Region) transporte les bancs vers les Antilles.",
+    learnS2P4:"Saison — Pic d'échouage avril à septembre, maximum en juin-juillet.",
+    learnS3Title:"Impact",
+    learnS3Eco:"Écologique — Étouffement des récifs, mortalité des tortues, poissons, oursins.",
+    learnS3Health:"Sanitaire — H₂S (hydrogène sulfuré) + ammoniaque. Maux de tête, nausées, détresse respiratoire.",
+    learnS3Econ:"Économique — Recul du tourisme, pêche perturbée. Coût de nettoyage : des dizaines de millions par an.",
+    learnS4Title:"Comment on détecte",
+    learnS4P1:"Satellites — MODIS (NASA) + Copernicus (ESA) mesurent l'indice AFAI par signature spectrale.",
+    learnS4P2:"Seuils NOAA — < 0.15 propre · 0.15–0.40 modéré · > 0.40 alerte.",
+    learnS4P3:"Notre méthode — Interpolation IDW + forecast par bancs dérivants + signal d'arrivée.",
+    learnS4Sources:"Sources : Wang & Hu 2016 · NOAA/AOML SIR · USF Optical Oceanography Lab · Copernicus Marine Service.",
+    learnCta:"Voir la carte des sargasses",
   },
   en:{
     days:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],today:"Today",tomorrow:"Tmrw",
@@ -119,6 +158,45 @@ const T={
     marine:"Marine conditions",
     history:"Recent trend",historyEmpty:"No history yet",
     historyDays:"{n}d",
+    caribbeanView:"Caribbean View",localView:"Local View",
+    caribbeanLegendTitle:"AFAI Concentration",
+    caribbeanLegendLow:"Low",caribbeanLegendMod:"Moderate",caribbeanLegendHigh:"High",
+    caribbeanSource:"Source: NOAA ERDDAP — AFAI Satellite Data",
+    caribbeanZoneSargasso:"Sargasso Sea",caribbeanZoneNERR:"NERR",
+    caribbeanZoneLesser:"Lesser Antilles",caribbeanZoneGreater:"Greater Antilles",
+    caribbeanZoneGulf:"Gulf of Mexico",caribbeanZoneAfrica:"West Africa Coast",
+    reliabilityHigh:"High",reliabilityMedium:"Medium",reliabilityLow:"Low",
+    reliabilityLabel:"Reliability",
+    reliabilityHighDesc:"Recent satellite data, model well-calibrated for this area.",
+    reliabilityMediumDesc:"Partial or interpolated data. Check on site.",
+    reliabilityLowDesc:"Uncertain forecast (far horizon or missing data).",
+    sourceLabel:"Source",
+    sciFooter:"Copernicus · NOAA/AOML SIR v1.4 · Wang & Hu 2016",
+    sciUpdated:"Updated every 3h",
+    navLearn:"Science",
+    learnTitle:"Understanding sargassum",
+    learnBack:"Back",
+    learnHero:"From satellite to your beach",
+    learnHeroSub:"The science behind the forecast",
+    learnS1Title:"What is sargassum?",
+    learnS1P1:"Pelagic brown algae (Sargassum natans + fluitans) that float via gas-filled bladders. They never touch the seabed.",
+    learnS1P2:"Vegetative reproduction: one fragment grows a new colony. Population doubles every 18 days in favorable conditions.",
+    learnS1P3:"In 2018, researchers discovered the Great Atlantic Sargassum Belt (GASB): over 20 million tonnes, from Africa to the Gulf of Mexico.",
+    learnS2Title:"Why do they arrive?",
+    learnS2P1:"Nutrients — Amazon deforestation, Congo river, agricultural fertilizers. Nitrogen + phosphorus feed the ocean.",
+    learnS2P2:"Temperature — Rising SST accelerates growth and expands favorable zones.",
+    learnS2P3:"Currents — The NERR (North Equatorial Recirculation Region) carries rafts toward the Caribbean.",
+    learnS2P4:"Season — Peak beaching April to September, max in June–July.",
+    learnS3Title:"Impact",
+    learnS3Eco:"Ecological — Coral reef smothering, mortality of turtles, fish, sea urchins.",
+    learnS3Health:"Health — H₂S (hydrogen sulfide) + ammonia. Headaches, nausea, respiratory distress.",
+    learnS3Econ:"Economic — Tourism decline, disrupted fishing. Cleanup costs: tens of millions per year.",
+    learnS4Title:"How we detect",
+    learnS4P1:"Satellites — MODIS (NASA) + Copernicus (ESA) measure the AFAI index via spectral signature.",
+    learnS4P2:"NOAA thresholds — < 0.15 clean · 0.15–0.40 moderate · > 0.40 alert.",
+    learnS4P3:"Our method — IDW interpolation + drifting-raft forecast + arrival signal.",
+    learnS4Sources:"Sources: Wang & Hu 2016 · NOAA/AOML SIR · USF Optical Oceanography Lab · Copernicus Marine Service.",
+    learnCta:"See the sargassum map",
   },
 }
 
@@ -490,6 +568,40 @@ button:active,a:active,[role="button"]:active{transform:scale(.96)!important;opa
 @keyframes beacon{0%,100%{box-shadow:0 0 0 0 rgba(232,82,42,.5)}60%{box-shadow:0 0 0 10px rgba(232,82,42,0)}}
 @keyframes satellite-scan{0%{transform:translateX(-100%)}100%{transform:translateX(400%)}}
 
+/* ── WOW TRANSITIONS ── */
+@keyframes viewFadeIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes viewFadeOut{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(.96)}}
+.view-enter{animation:viewFadeIn .35s cubic-bezier(.22,1,.36,1) both}
+.view-exit{animation:viewFadeOut .2s ease both}
+
+/* Staggered card entrance */
+@keyframes cardReveal{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.card-reveal{animation:cardReveal .4s cubic-bezier(.22,1,.36,1) both}
+.card-reveal:nth-child(1){animation-delay:0s}
+.card-reveal:nth-child(2){animation-delay:.06s}
+.card-reveal:nth-child(3){animation-delay:.08s}
+.card-reveal:nth-child(4){animation-delay:.12s}
+.card-reveal:nth-child(5){animation-delay:.16s}
+
+/* Number count-up shimmer */
+@keyframes countShimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.count-shimmer{background:linear-gradient(90deg,currentColor 40%,rgba(255,199,44,.8) 50%,currentColor 60%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:countShimmer 1.5s ease-in-out}
+
+/* Glow badge pulse */
+@keyframes glowPulse{0%,100%{box-shadow:0 0 8px rgba(0,158,142,.3)}50%{box-shadow:0 0 20px rgba(0,158,142,.6)}}
+.glow-pulse{animation:glowPulse 2.5s ease-in-out infinite}
+
+/* Ocean wave ambient */
+@keyframes oceanWave{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+.ocean-gradient{background-size:200% 200%;animation:oceanWave 8s ease-in-out infinite}
+
+/* Hero zoom in */
+@keyframes heroZoom{from{transform:scale(1.08);opacity:.7}to{transform:scale(1);opacity:1}}
+.hero-zoom{animation:heroZoom .8s cubic-bezier(.22,1,.36,1) both}
+
+/* Floating particles for learn/science sections */
+@keyframes floatParticle{0%,100%{transform:translateY(0) translateX(0);opacity:.3}25%{transform:translateY(-15px) translateX(5px);opacity:.6}50%{transform:translateY(-8px) translateX(-3px);opacity:.4}75%{transform:translateY(-20px) translateX(7px);opacity:.5}}
+
 /* Scrollbar — 8px for touch targets */
 ::-webkit-scrollbar{width:8px}
 ::-webkit-scrollbar-thumb{background:rgba(0,0,0,.18);border-radius:4px}
@@ -553,6 +665,41 @@ function StyleInjector(){
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   WOW UTILITIES
+   ═══════════════════════════════════════════════════════════════════════════ */
+function AnimatedNumber({value,duration=800,suffix="",prefix=""}){
+  const[display,setDisplay]=useState(0)
+  const ref=useRef(null)
+  useEffect(()=>{
+    const n=typeof value==="number"?value:parseFloat(value)||0
+    const start=performance.now()
+    const from=display
+    const step=ts=>{
+      const p=Math.min((ts-start)/duration,1)
+      const ease=1-Math.pow(1-p,3) // easeOutCubic
+      setDisplay(Math.round(from+(n-from)*ease))
+      if(p<1)ref.current=requestAnimationFrame(step)
+    }
+    ref.current=requestAnimationFrame(step)
+    return()=>cancelAnimationFrame(ref.current)
+  },[value])
+  return React.createElement("span",{className:"count-shimmer"},prefix+display+suffix)
+}
+
+function SectionReveal({children,delay=0,className=""}){
+  const[visible,setVisible]=useState(false)
+  const ref=useRef(null)
+  useEffect(()=>{
+    const el=ref.current;if(!el)return
+    const obs=new IntersectionObserver(([e])=>{if(e.isIntersecting){setVisible(true);obs.disconnect()}},{threshold:.15})
+    obs.observe(el)
+    return()=>obs.disconnect()
+  },[])
+  return React.createElement("div",{ref,className:visible?`card-reveal ${className}`:className,
+    style:{opacity:visible?1:0,animationDelay:`${delay}s`,transition:visible?"none":"opacity .01s"}},children)
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    SMALL COMPONENTS
    ═══════════════════════════════════════════════════════════════════════════ */
 function StatusBadge({status,lang="fr"}){
@@ -595,11 +742,220 @@ function FilterChip({label,icon,active,onClick,count}){
   )
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   FORECAST CREDIBILITY — confidence bar + source + method
+   ═══════════════════════════════════════════════════════════════════════════ */
+function ForecastCredibility({weeklyData,lang,sargData}){
+  const LL=T[lang]||T.fr
+  const[showTip,setShowTip]=useState(false)
+  const avgConf=weeklyData?.forecast?.[0]?.confidence||40
+  const level=avgConf>=50?"high":avgConf>=30?"medium":"low"
+  const levelLabel=level==="high"?LL.reliabilityHigh:level==="medium"?LL.reliabilityMedium:LL.reliabilityLow
+  const levelDesc=level==="high"?LL.reliabilityHighDesc:level==="medium"?LL.reliabilityMediumDesc:LL.reliabilityLowDesc
+  const levelColor=level==="high"?C.green:level==="medium"?C.amber:C.red
+  const barPct=Math.min(100,Math.max(8,avgConf))
+  const updatedAt=sargData?.erddapTimestamp||sargData?.updatedAt||null
+  const dateStr=updatedAt?new Date(updatedAt).toLocaleDateString(lang==="en"?"en-GB":"fr-FR",{day:"numeric",month:"short"}):null
+  const method=weeklyData?.forecastMethod||"persistence"
+  const methodLabel=method==="arrival-banks"?"AFAI + Banks":method==="banks-persistence"?"AFAI + Persistence":method==="memory-decay"?"Memory decay":method==="interpolated"?"IDW":"Persistence + wind"
+  return(
+    <div style={{marginTop:10,padding:"10px 12px",borderRadius:12,
+      background:"var(--sg-bgD,#F7F5EF)",border:"1px solid var(--sg-border,rgba(0,0,0,.06))"}}>
+      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+        <span style={{fontSize:10,fontWeight:700,color:"var(--sg-mid,#686868)",minWidth:52,letterSpacing:".03em",textTransform:"uppercase"}}>{LL.reliabilityLabel}</span>
+        <div style={{flex:1,height:5,borderRadius:3,background:"var(--sg-border,rgba(0,0,0,.08))",overflow:"hidden"}}>
+          <div style={{width:`${barPct}%`,height:"100%",borderRadius:3,
+            background:`linear-gradient(90deg,${levelColor},${levelColor}cc)`,
+            transition:"width .8s cubic-bezier(.22,1,.36,1)",boxShadow:`0 0 8px ${levelColor}66`}}/>
+        </div>
+        <button onClick={()=>setShowTip(!showTip)} style={{
+          background:"none",border:"none",cursor:"pointer",padding:0,
+          fontSize:10,fontWeight:800,color:levelColor,display:"flex",alignItems:"center",gap:3,
+          fontFamily:"inherit"}}>
+          {levelLabel}
+          <span style={{fontSize:9,opacity:.6}}>ⓘ</span>
+        </button>
+      </div>
+      {showTip&&(
+        <div style={{fontSize:11,color:"var(--sg-mid,#686868)",marginBottom:6,lineHeight:1.5,
+          padding:"8px 10px",borderRadius:8,background:"var(--sg-card,#fff)",
+          animation:"slideUp .25s cubic-bezier(.22,1,.36,1)"}}>
+          {levelDesc}
+          <div style={{marginTop:4,opacity:.7,fontSize:10}}>{lang==="en"?"Method":"Méthode"} · {methodLabel}</div>
+        </div>
+      )}
+      <div style={{fontSize:9.5,color:"var(--sg-mid,#999)",display:"flex",alignItems:"center",gap:5,flexWrap:"wrap"}}>
+        <span>🛰️</span>
+        <span style={{fontWeight:700}}>Copernicus OLCI</span>
+        {dateStr&&<><span style={{opacity:.4}}>·</span><span>{dateStr}</span></>}
+        <span style={{opacity:.4}}>·</span>
+        <span>{methodLabel}</span>
+      </div>
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SCIENTIFIC FOOTER — floating on map view
+   ═══════════════════════════════════════════════════════════════════════════ */
+function SciFooter({lang}){
+  const LL=T[lang]||T.fr
+  return(
+    <div style={{
+      position:"fixed",bottom:68,left:"50%",transform:"translateX(-50%)",
+      zIndex:699,maxWidth:560,width:"calc(100% - 32px)",
+      padding:"6px 14px",borderRadius:100,
+      background:"var(--sg-glass,rgba(255,255,255,.82))",
+      backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",
+      border:"1px solid var(--sg-glassBorder,rgba(0,0,0,.04))",
+      textAlign:"center",
+      fontSize:9,color:"var(--sg-mid,#686868)",letterSpacing:".02em",lineHeight:1.5,
+    }}>
+      <span>🛰️ {LL.sciFooter}</span>
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LEARN VIEW — Educational section with wow design
+   ═══════════════════════════════════════════════════════════════════════════ */
+function LearnCard({icon,title,children,delay=0,accent=C.teal}){
+  return(
+    <SectionReveal delay={delay}>
+      <div style={{background:"var(--sg-card,#fff)",borderRadius:20,
+        border:"1px solid var(--sg-border,rgba(0,0,0,.06))",
+        boxShadow:"0 4px 24px rgba(0,0,0,.06),0 1px 3px rgba(0,0,0,.04)",
+        padding:"22px 20px",marginBottom:14,position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",top:0,left:0,right:0,height:3,
+          background:`linear-gradient(90deg,${accent},${accent}00)`}}/>
+        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
+          <div style={{width:44,height:44,borderRadius:14,
+            background:`linear-gradient(135deg,${accent}20,${accent}08)`,
+            display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,
+            border:`1px solid ${accent}20`}}>{icon}</div>
+          <h3 style={{margin:0,fontSize:17,fontWeight:800,color:"var(--sg-ink,#0D0D0D)",fontFamily:"inherit",letterSpacing:"-.01em"}}>{title}</h3>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:11}}>
+          {children}
+        </div>
+      </div>
+    </SectionReveal>
+  )
+}
+
+function LearnParagraph({text,accent}){
+  const dashIdx=text.indexOf(" — ")
+  if(dashIdx>0&&dashIdx<40){
+    const label=text.slice(0,dashIdx)
+    const rest=text.slice(dashIdx+3)
+    return(
+      <p style={{margin:0,fontSize:13.5,lineHeight:1.65,color:"var(--sg-mid,#686868)"}}>
+        <span style={{fontWeight:800,color:accent||"var(--sg-ink,#0D0D0D)"}}>{label}</span>
+        <span style={{opacity:.4,margin:"0 4px"}}>·</span>
+        {rest}
+      </p>
+    )
+  }
+  return <p style={{margin:0,fontSize:13.5,lineHeight:1.65,color:"var(--sg-mid,#686868)"}}>{text}</p>
+}
+
+function LearnView({lang,onBack,onGoMap}){
+  const LL=T[lang]||T.fr
+  return(
+    <div className="view-enter" style={{position:"absolute",inset:0,zIndex:750,
+      background:"var(--sg-bg,#FDFCF7)",overflowY:"auto",
+      WebkitOverflowScrolling:"touch"}}>
+      {/* Ambient gradient glow */}
+      <div style={{position:"absolute",top:-80,left:"50%",transform:"translateX(-50%)",
+        width:420,height:420,borderRadius:"50%",
+        background:`radial-gradient(circle,${C.teal}18 0%,${C.teal}00 60%)`,
+        pointerEvents:"none",filter:"blur(20px)"}}/>
+      {/* Floating particles */}
+      <div style={{position:"absolute",top:60,left:"20%",fontSize:20,opacity:.15,
+        animation:"floatParticle 8s ease-in-out infinite",pointerEvents:"none"}}>🌊</div>
+      <div style={{position:"absolute",top:120,right:"15%",fontSize:16,opacity:.12,
+        animation:"floatParticle 10s ease-in-out infinite .5s",pointerEvents:"none"}}>🌿</div>
+
+      <div style={{maxWidth:600,margin:"0 auto",position:"relative",
+        padding:"max(16px,env(safe-area-inset-top)) 16px 110px"}}>
+
+        {/* Header bar */}
+        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:24}}>
+          <button aria-label={LL.learnBack} onClick={onBack} style={{
+            width:44,height:44,borderRadius:14,border:"1px solid var(--sg-border,rgba(0,0,0,.08))",
+            background:"var(--sg-card,#fff)",cursor:"pointer",fontSize:20,
+            display:"flex",alignItems:"center",justifyContent:"center",
+            boxShadow:"0 2px 12px rgba(0,0,0,.06)",color:"var(--sg-ink,#0D0D0D)",fontFamily:"inherit",
+          }}>←</button>
+        </div>
+
+        {/* Hero headline */}
+        <SectionReveal>
+          <div style={{marginBottom:28,position:"relative"}}>
+            <div style={{display:"inline-block",fontSize:10,fontWeight:800,
+              color:C.teal,letterSpacing:".12em",textTransform:"uppercase",
+              padding:"4px 10px",borderRadius:100,
+              background:`${C.teal}12`,border:`1px solid ${C.teal}22`,marginBottom:12}}>
+              🔬 {LL.learnHeroSub}
+            </div>
+            <h1 className="anton" style={{margin:0,fontSize:"clamp(28px,7vw,38px)",
+              fontWeight:900,color:"var(--sg-ink,#0D0D0D)",lineHeight:1.05,letterSpacing:"-.02em"}}>
+              {LL.learnHero}
+            </h1>
+          </div>
+        </SectionReveal>
+
+        {/* Section 1 */}
+        <LearnCard icon="🌿" title={LL.learnS1Title} delay={0} accent={C.teal}>
+          <LearnParagraph text={LL.learnS1P1}/>
+          <LearnParagraph text={LL.learnS1P2}/>
+          <LearnParagraph text={LL.learnS1P3}/>
+        </LearnCard>
+
+        {/* Section 2 */}
+        <LearnCard icon="🌊" title={LL.learnS2Title} delay={.05} accent={C.ocean}>
+          <LearnParagraph text={LL.learnS2P1} accent={C.sargL}/>
+          <LearnParagraph text={LL.learnS2P2} accent={C.red}/>
+          <LearnParagraph text={LL.learnS2P3} accent={C.ocean}/>
+          <LearnParagraph text={LL.learnS2P4} accent={C.amber}/>
+        </LearnCard>
+
+        {/* Section 3 */}
+        <LearnCard icon="⚠️" title={LL.learnS3Title} delay={.1} accent={C.red}>
+          <LearnParagraph text={LL.learnS3Eco} accent={C.green}/>
+          <LearnParagraph text={LL.learnS3Health} accent={C.red}/>
+          <LearnParagraph text={LL.learnS3Econ} accent={C.amber}/>
+        </LearnCard>
+
+        {/* Section 4 — the credibility moment */}
+        <LearnCard icon="🛰️" title={LL.learnS4Title} delay={.15} accent={C.gold}>
+          <LearnParagraph text={LL.learnS4P1}/>
+          <LearnParagraph text={LL.learnS4P2}/>
+          <LearnParagraph text={LL.learnS4P3}/>
+          <p style={{margin:0,fontSize:11,lineHeight:1.6,color:"var(--sg-mute,#999)",
+            fontStyle:"italic",paddingTop:10,borderTop:"1px solid var(--sg-border,rgba(0,0,0,.06))"}}>
+            {LL.learnS4Sources}
+          </p>
+        </LearnCard>
+
+        {/* CTA back to map — the tunnel moment */}
+        <SectionReveal delay={.2}>
+          <button onClick={onGoMap} className="gbtn" style={{width:"100%",marginTop:8,padding:"18px 28px",fontSize:15}}>
+            🗺️ {LL.learnCta} →
+          </button>
+        </SectionReveal>
+
+      </div>
+    </div>
+  )
+}
+
 function BottomNav({view,onChangeView,lang}){
   const LL=T[lang]||T.fr
   const tabs=[
     {id:"map",label:LL.navMap,icon:"🗺️"},
     {id:"list",label:LL.navList,icon:"📋"},
+    {id:"learn",label:LL.navLearn,icon:"🔬"},
     {id:"premium",label:LL.navPremium,icon:"⭐"},
   ]
   return(
@@ -1249,6 +1605,9 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               {weeklyData.forecastDisclaimer}
             </div>
           )}
+
+          {/* Forecast confidence + source (credibility) */}
+          {weeklyData&&<ForecastCredibility weeklyData={weeklyData} lang={lang} sargData={sargData}/>}
 
           {/* Weather */}
           {weather&&(
@@ -3225,7 +3584,7 @@ export default function App(){
     if(saved)return saved
     return"mq"
   })
-  const[view,setView]=useState("map") // map | list | jeu | premium
+  const[view,setView]=useState("map") // map | list | learn | premium
   const[search,setSearch]=useState("")
   const[filter,setFilter]=useState(0) // index in T.filters
   const[selectedBeach,setSelectedBeach]=useState(null)
@@ -4000,6 +4359,12 @@ export default function App(){
             </button>
           </div>
         )}
+
+        {/* LEARN VIEW — educational tunnel */}
+        {view==="learn"&&<LearnView lang={lang} onBack={()=>setView("map")} onGoMap={()=>setView("map")}/>}
+
+        {/* SCIENTIFIC FOOTER — map view only, discret */}
+        {view==="map"&&!selectedBeach&&<SciFooter lang={lang}/>}
 
         {/* BOTTOM NAV */}
         <BottomNav view={view} onChangeView={onChangeView} lang={lang}/>

@@ -2,7 +2,7 @@
  * MapView — Leaflet map extracted from monolith for lazy-loading.
  * Dynamic import shaves ~150KB off first paint (leaflet chunk deferred).
  */
-import React,{useState,useEffect,useRef}from"react"
+import React,{useState,useEffect,useRef,useCallback}from"react"
 import L from"leaflet"
 import"leaflet/dist/leaflet.css"
 
@@ -12,6 +12,39 @@ const ISLAND_CENTER={mq:[14.64,-61.02],gp:[16.22,-61.55]}
 const SARG_TO_BEACH={"grande-anse":"mq014","anse-mitan":"mq011","anse-noire":"mq012","tartane":"mq034","anse-madame":"mq024","diamant":"mq016","pt-marin":"mq008","sainte-anne":"mq004","les-salines":"mq001","vauclin":"mq044","gp-grande-anse":"gp021","gp-malendure":"gp031","gp-sainte-anne":"gp010","gp-pt-chateaux":"gp005","gp-gosier":"gp012","gp-caravelle":"gp009","gp-bas-du-fort":"gp014","gp-deshaies":"gp024","gp-moule":"gp080","gp-vieux-fort":"gp042"}
 
 const GOLD="#E8A800"
+
+/* ── i18n subset for Caribbean view ─────────────────────────────── */
+const T_CARIB={
+  fr:{
+    caribbeanView:"Vue Caraibe",localView:"Vue locale",
+    legendTitle:"Concentration AFAI",legendLow:"Faible",legendMod:"Modere",legendHigh:"Fort",
+    source:"Source : NOAA ERDDAP",
+    zoneSargasso:"Mer des Sargasses",zoneNERR:"NERR",
+    zoneLesser:"Petites Antilles",zoneGreater:"Grandes Antilles",
+    zoneGulf:"Golfe du Mexique",zoneAfrica:"Cote Afrique Ouest",
+  },
+  en:{
+    caribbeanView:"Caribbean View",localView:"Local View",
+    legendTitle:"AFAI Concentration",legendLow:"Low",legendMod:"Moderate",legendHigh:"High",
+    source:"Source: NOAA ERDDAP",
+    zoneSargasso:"Sargasso Sea",zoneNERR:"NERR",
+    zoneLesser:"Lesser Antilles",zoneGreater:"Greater Antilles",
+    zoneGulf:"Gulf of Mexico",zoneAfrica:"West Africa Coast",
+  },
+}
+
+/* ── Caribbean zone labels ────────────────────────────────────── */
+const CARIBBEAN_ZONES=[
+  {id:"sargasso",lat:26,lng:-64,key:"zoneSargasso"},
+  {id:"nerr",lat:11,lng:-52,key:"zoneNERR"},
+  {id:"lesser",lat:14.5,lng:-60,key:"zoneLesser"},
+  {id:"greater",lat:19.5,lng:-73,key:"zoneGreater"},
+  {id:"gulf",lat:24,lng:-88,key:"zoneGulf"},
+  {id:"africa",lat:12,lng:-20,key:"zoneAfrica"},
+]
+
+/* ── Caribbean bounds ─────────────────────────────────────────── */
+const CARIB_BOUNDS=[[8,-90],[28,-55]]
 
 const ST={
   _loading:{c:"#666",bg:"rgba(100,100,100,.1)"},
@@ -41,6 +74,11 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
   const[banksData,setBanksData]=useState(null)
   const[timeStep,setTimeStep]=useState(0)
   const[autoPlaying,setAutoPlaying]=useState(false)
+  const[caribbeanMode,setCaribbeanMode]=useState(false)
+  const[caribbeanData,setCaribbeanData]=useState(null)
+  const caribLayerRef=useRef(null)
+  const caribLabelsRef=useRef(null)
+  const prevViewRef=useRef(null) // store zoom/center before switching
   const autoPlayTimersRef=useRef([])
   const autoZoomDoneRef=useRef(false)
   const[threatDismissed,setThreatDismissed]=useState(()=>sessionStorage.getItem("sg_threat_dismissed")==="1")
@@ -284,8 +322,182 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
     return()=>{if(driftRef.current)clearInterval(driftRef.current)}
   },[beaches,onBeachClick,selectedBeach,sargData,userPos,lang])
 
+  // Fetch Caribbean AFAI data (lazy — only when first toggled)
+  useEffect(()=>{
+    if(!caribbeanMode||caribbeanData)return
+    fetch("/api/copernicus/caribbean-afai.json")
+      .then(r=>r.json())
+      .then(d=>{if(d?.grid?.length)setCaribbeanData(d)})
+      .catch(()=>{})
+  },[caribbeanMode])
+
+  // Toggle Caribbean mode: zoom out / zoom back
+  const toggleCaribbean=useCallback(()=>{
+    if(!mapRef.current)return
+    const map=mapRef.current
+    if(!caribbeanMode){
+      // Save current view
+      prevViewRef.current={center:map.getCenter(),zoom:map.getZoom()}
+      map.flyToBounds(CARIB_BOUNDS,{duration:1.2,padding:[20,20]})
+      setCaribbeanMode(true)
+      track("sg_caribbean_view",{action:"open"})
+    }else{
+      // Restore previous view
+      if(prevViewRef.current){
+        map.flyTo(prevViewRef.current.center,prevViewRef.current.zoom,{duration:1})
+      }else{
+        const center=ISLAND_CENTER[island]||ISLAND_CENTER.mq
+        map.flyTo(center,11,{duration:1})
+      }
+      setCaribbeanMode(false)
+      track("sg_caribbean_view",{action:"close"})
+    }
+  },[caribbeanMode,island,track])
+
+  // Render Caribbean heatmap layer (rectangles)
+  useEffect(()=>{
+    if(!mapRef.current)return
+    // Remove previous layers
+    if(caribLayerRef.current){caribLayerRef.current.remove();caribLayerRef.current=null}
+    if(caribLabelsRef.current){caribLabelsRef.current.remove();caribLabelsRef.current=null}
+    if(!caribbeanMode||!caribbeanData?.grid?.length)return
+    const map=mapRef.current
+    const group=L.layerGroup()
+    const labelsGroup=L.layerGroup()
+    const cellSize=0.25 // degrees
+    const half=cellSize/2
+
+    for(const pt of caribbeanData.grid){
+      const{lat,lng,afai}=pt
+      if(afai<0.06)continue
+
+      // Color: green → orange → red
+      let color,fillOpacity
+      if(afai<0.15){
+        // Green range
+        const t=afai/0.15
+        color=`rgba(34,197,94,${0.15+t*0.25})`
+        fillOpacity=0.15+t*0.25
+      }else if(afai<0.40){
+        // Orange range
+        const t=(afai-0.15)/0.25
+        const r=Math.round(34+(232-34)*t)
+        const g=Math.round(197+(168-197)*t)
+        const b=Math.round(94+(0-94)*t)
+        fillOpacity=0.3+t*0.2
+        color=`rgba(${r},${g},${b},${fillOpacity})`
+      }else{
+        // Red range
+        const t=Math.min(1,(afai-0.40)/0.40)
+        fillOpacity=0.4+t*0.25
+        color=`rgba(232,${Math.round(82-40*t)},${Math.round(42-20*t)},${fillOpacity})`
+      }
+
+      const bounds=[[lat-half,lng-half],[lat+half,lng+half]]
+      L.rectangle(bounds,{
+        color:"transparent",weight:0,
+        fillColor:color,fillOpacity,
+        interactive:false,
+      }).addTo(group)
+    }
+
+    // Zone labels
+    const tl=T_CARIB[lang]||T_CARIB.fr
+    for(const zone of CARIBBEAN_ZONES){
+      const icon=L.divIcon({
+        className:"",
+        html:`<div style="
+          font-family:'Bricolage Grotesque',system-ui,sans-serif;
+          font-size:11px;font-weight:600;color:#fff;
+          text-shadow:0 1px 4px rgba(0,0,0,.7),0 0 8px rgba(0,0,0,.4);
+          white-space:nowrap;pointer-events:none;
+          letter-spacing:0.5px;text-transform:uppercase;
+        ">${tl[zone.key]||zone.id}</div>`,
+        iconSize:[0,0],iconAnchor:[0,0],
+      })
+      L.marker([zone.lat,zone.lng],{icon,interactive:false,zIndexOffset:500}).addTo(labelsGroup)
+    }
+
+    group.addTo(map)
+    labelsGroup.addTo(map)
+    caribLayerRef.current=group
+    caribLabelsRef.current=labelsGroup
+
+    return()=>{
+      if(caribLayerRef.current){caribLayerRef.current.remove();caribLayerRef.current=null}
+      if(caribLabelsRef.current){caribLabelsRef.current.remove();caribLabelsRef.current=null}
+    }
+  },[caribbeanMode,caribbeanData,lang])
+
+  // Hide local markers/heatmap in Caribbean mode, show them back in local mode
+  useEffect(()=>{
+    if(!mapRef.current)return
+    if(caribbeanMode){
+      markersRef.current.forEach(m=>{try{m.setStyle({opacity:0,fillOpacity:0})}catch(e){}})
+      heatRef.current.forEach(h=>{try{h.setStyle({opacity:0,fillOpacity:0})}catch(e){}})
+      if(gridLayerRef.current)try{mapRef.current.removeLayer(gridLayerRef.current)}catch(e){}
+      if(banksLayerRef.current)try{mapRef.current.removeLayer(banksLayerRef.current)}catch(e){}
+    }else{
+      markersRef.current.forEach(m=>{try{m.setStyle({opacity:1,fillOpacity:.9})}catch(e){}})
+      heatRef.current.forEach(h=>{try{h.setStyle({opacity:1,fillOpacity:h.options?.fillOpacity||.3})}catch(e){}})
+      if(gridLayerRef.current)try{gridLayerRef.current.addTo(mapRef.current)}catch(e){}
+      if(banksLayerRef.current)try{banksLayerRef.current.addTo(mapRef.current)}catch(e){}
+    }
+  },[caribbeanMode])
+
+  const tl=T_CARIB[lang]||T_CARIB.fr
+
   if(mapError)return <div style={{padding:40,color:"red"}}>{mapError}</div>
   return(<div style={{position:"relative",width:"100%",height:"100%"}}>
     <div ref={containerRef} style={{width:"100%",height:"100%"}}/>
+
+    {/* Caribbean View Toggle Button */}
+    <button onClick={toggleCaribbean} style={{
+      position:"absolute",top:12,right:12,zIndex:1000,
+      display:"flex",alignItems:"center",gap:6,
+      padding:"8px 14px",
+      background:caribbeanMode?"rgba(0,158,142,.9)":"rgba(13,30,28,.75)",
+      color:"#fff",border:"1px solid rgba(255,255,255,.15)",
+      borderRadius:20,fontSize:12,fontWeight:600,
+      fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",
+      cursor:"pointer",backdropFilter:"blur(8px)",
+      boxShadow:"0 2px 12px rgba(0,0,0,.3)",
+      transition:"all .2s ease",
+      letterSpacing:"0.3px",
+    }}>
+      <span style={{fontSize:15}}>{caribbeanMode?"🏝":"🌎"}</span>
+      {caribbeanMode?tl.localView:tl.caribbeanView}
+    </button>
+
+    {/* Caribbean Legend */}
+    {caribbeanMode&&<div style={{
+      position:"absolute",bottom:20,left:12,zIndex:1000,
+      background:"rgba(13,30,28,.85)",backdropFilter:"blur(8px)",
+      borderRadius:10,padding:"10px 14px",
+      border:"1px solid rgba(255,255,255,.1)",
+      boxShadow:"0 2px 12px rgba(0,0,0,.3)",
+      fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",
+      color:"#fff",fontSize:11,
+    }}>
+      <div style={{fontWeight:700,fontSize:12,marginBottom:6,letterSpacing:"0.3px"}}>
+        {tl.legendTitle}
+      </div>
+      <div style={{display:"flex",alignItems:"center",gap:4,marginBottom:3}}>
+        <div style={{width:20,height:10,borderRadius:2,background:"rgba(34,197,94,.5)"}}/>
+        <span style={{opacity:.8}}>{"< 0.15"} — {tl.legendLow}</span>
+      </div>
+      <div style={{display:"flex",alignItems:"center",gap:4,marginBottom:3}}>
+        <div style={{width:20,height:10,borderRadius:2,background:"rgba(232,168,0,.6)"}}/>
+        <span style={{opacity:.8}}>{"0.15 – 0.40"} — {tl.legendMod}</span>
+      </div>
+      <div style={{display:"flex",alignItems:"center",gap:4,marginBottom:3}}>
+        <div style={{width:20,height:10,borderRadius:2,background:"rgba(232,82,42,.65)"}}/>
+        <span style={{opacity:.8}}>{"> 0.40"} — {tl.legendHigh}</span>
+      </div>
+      <div style={{marginTop:6,opacity:.5,fontSize:9,lineHeight:"1.3"}}>
+        {tl.source}
+        {caribbeanData?.dataDate&&<><br/>{new Date(caribbeanData.dataDate).toLocaleDateString(lang==="fr"?"fr-FR":"en-US")}</>}
+      </div>
+    </div>}
   </div>)
 }
