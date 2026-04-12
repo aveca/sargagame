@@ -1007,27 +1007,63 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
         onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
         <div className="sheet-handle"/>
 
-        {/* Photo (real or satellite) */}
-        <div style={{height:"min(240px, 30vh)",background:`url(${bgImage}) center center/cover`,
-          borderRadius:"0",position:"relative"}}>
-          <div style={{position:"absolute",inset:0,background:"linear-gradient(transparent 40%,var(--sg-card,#fff) 100%)"}}/>
+        {/* Photo hero — immersive */}
+        <div style={{height:"min(300px, 38vh)",background:`url(${bgImage}) center 40%/cover`,
+          borderRadius:"0",position:"relative",overflow:"hidden"}}>
+          {/* Cinematic gradient overlay */}
+          <div style={{position:"absolute",inset:0,
+            background:"linear-gradient(180deg, rgba(0,0,0,.15) 0%, transparent 30%, transparent 50%, var(--sg-card,#fff) 100%)"}}/>
+          {/* Status glow — colored ambient light based on beach status */}
+          <div style={{position:"absolute",bottom:0,left:0,right:0,height:"40%",
+            background:`radial-gradient(ellipse at 50% 100%, ${(ST[beach.status]||ST._loading).c}22 0%, transparent 70%)`,
+            pointerEvents:"none"}}/>
+          {/* Close button */}
           <button onClick={onClose} style={{position:"absolute",top:12,right:12,
-            width:44,height:44,borderRadius:22,background:"rgba(0,0,0,.45)",
-            border:"none",color:"#fff",fontSize:18,cursor:"pointer",
+            width:40,height:40,borderRadius:20,
+            background:"rgba(0,0,0,.3)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",
+            border:"1px solid rgba(255,255,255,.15)",color:"#fff",fontSize:16,cursor:"pointer",
             display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+          {/* Fav button on photo */}
+          <button onClick={e=>{onToggleFav(beach.id);e.currentTarget.classList.remove("heart-pop");void e.currentTarget.offsetWidth;e.currentTarget.classList.add("heart-pop")}}
+            style={{position:"absolute",top:12,left:12,
+              width:40,height:40,borderRadius:20,
+              background:isFav?"rgba(232,82,42,.2)":"rgba(0,0,0,.3)",
+              backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",
+              border:isFav?"1px solid rgba(232,82,42,.4)":"1px solid rgba(255,255,255,.15)",
+              color:"#fff",fontSize:18,cursor:"pointer",
+              display:"flex",alignItems:"center",justifyContent:"center",
+              transition:"all .3s cubic-bezier(.22,1,.36,1)",
+            }}>{isFav?"❤️":"🤍"}</button>
+          {/* Floating status pill on photo */}
+          <div style={{position:"absolute",bottom:60,left:20,
+            display:"flex",alignItems:"center",gap:8,
+            padding:"6px 14px 6px 10px",borderRadius:100,
+            background:"rgba(0,0,0,.35)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",
+            border:"1px solid rgba(255,255,255,.12)"}}>
+            <span style={{width:10,height:10,borderRadius:5,
+              background:(ST[beach.status]||ST._loading).c,
+              boxShadow:`0 0 8px ${(ST[beach.status]||ST._loading).c}`,
+              animation:beach.status==="clean"?"none":"pulse 2s ease-in-out infinite"}}/>
+            <span style={{fontSize:13,fontWeight:700,color:"#fff",letterSpacing:".01em"}}>
+              {lang==="en"?(ST[beach.status]||ST._loading).le:(ST[beach.status]||ST._loading).l}
+            </span>
+          </div>
         </div>
 
         <div style={{padding:"0 20px calc(70px + env(safe-area-inset-bottom,12px))"}}>
-          {/* Name + Status */}
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
-            <h2 className="anton" style={{fontSize:22,margin:0,lineHeight:1.2}}>{beach.name}</h2>
-            <StatusBadge status={beach.status} lang={lang}/>
-          </div>
-          <p style={{fontSize:13,color:"var(--sg-mid,#686868)",margin:"0 0 8px"}}>
-            {beach.commune} · {beach.drive} {LL.drive}
-            {userPos&&beach.lat&&<> · {Math.round(haversine(userPos.lat,userPos.lng,beach.lat,beach.lng))} km</>}
+          {/* Name — large, no duplicate status badge (already on photo) */}
+          <h2 className="anton" style={{fontSize:"clamp(24px,6vw,30px)",margin:"0 0 4px",lineHeight:1.15,
+            color:"var(--sg-ink)"}}>{beach.name}</h2>
+          <p style={{fontSize:13,color:"var(--sg-mid,#686868)",margin:"0 0 12px",
+            display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
+            <span>{beach.commune}</span>
+            <span style={{width:3,height:3,borderRadius:2,background:"var(--sg-mid,#999)",opacity:.5}}/>
+            <span>{beach.drive} {LL.drive}</span>
+            {userPos&&beach.lat&&<>
+              <span style={{width:3,height:3,borderRadius:2,background:"var(--sg-mid,#999)",opacity:.5}}/>
+              <span>{Math.round(haversine(userPos.lat,userPos.lng,beach.lat,beach.lng))} km</span>
+            </>}
           </p>
-          {/* BeachScoreBadge removed — confusing score, status already says it all */}
 
           {/* Status description */}
           {ST[beach.status]&&(
@@ -1059,20 +1095,38 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
           {/* Forecast teaser — above the fold, every user sees it */}
           {!isPremium&&forecast&&forecast[1]&&(
             <div onClick={()=>{track("sg_forecast_teaser_click",{beach_id:beach.id,tomorrow:forecast[1].status});onPremiumClick("forecast_teaser")}}
-              style={{padding:"12px 14px",borderRadius:12,marginBottom:12,cursor:"pointer",
-                background:"linear-gradient(135deg,var(--sg-card,#fff),rgba(232,168,0,.06))",
-                border:"1.5px solid rgba(232,168,0,.25)",display:"flex",alignItems:"center",gap:12}}>
-              <div style={{flex:1}}>
-                <div style={{fontSize:13,fontWeight:700,color:"var(--sg-text,#333)"}}>
-                  {lang==="en"?"Tomorrow":"Demain"} :
-                  <span style={{filter:"blur(5px)",userSelect:"none",marginLeft:6,
-                    color:ST[forecast[1].status]?.c||"#999"}}>{ST[forecast[1].status]?.l||"?"}</span>
+              style={{padding:"14px 16px",borderRadius:16,marginBottom:12,cursor:"pointer",
+                background:"linear-gradient(135deg,#0D1E1C,#142824)",
+                border:"1px solid rgba(232,168,0,.2)",
+                display:"flex",alignItems:"center",gap:14,
+                boxShadow:"0 4px 20px rgba(0,0,0,.12)",
+                transition:"transform .2s",position:"relative",overflow:"hidden"}}>
+              {/* Ambient glow */}
+              <div style={{position:"absolute",top:"-50%",right:"-20%",width:"60%",height:"200%",
+                background:"radial-gradient(ellipse, rgba(232,168,0,.08) 0%, transparent 70%)",pointerEvents:"none"}}/>
+              <div style={{flex:1,position:"relative"}}>
+                <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,.4)",
+                  textTransform:"uppercase",letterSpacing:".08em",marginBottom:6}}>
+                  {lang==="en"?"Tomorrow forecast":"Prévision demain"}
                 </div>
-                <div style={{fontSize:11,color:"var(--sg-mid,#686868)",marginTop:3}}>
-                  {lang==="en"?"Free trial · cancel anytime":"Essai gratuit · sans engagement"}
+                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <span style={{fontSize:14,fontWeight:700,color:"#fff"}}>
+                    {beach.name}
+                  </span>
+                  <span style={{filter:"blur(6px)",userSelect:"none",fontSize:13,fontWeight:700,
+                    color:ST[forecast[1].status]?.c||"#999"}}>{lang==="en"?ST[forecast[1].status]?.le:ST[forecast[1].status]?.l||"?"}</span>
+                </div>
+                <div style={{fontSize:11,color:"rgba(255,255,255,.45)",marginTop:4}}>
+                  {lang==="en"?"Unlock with free trial":"Débloquer · 7 jours gratuit"}
                 </div>
               </div>
-              <div style={{fontSize:22,opacity:.7}}>🔔</div>
+              <div style={{width:44,height:44,borderRadius:12,
+                background:"linear-gradient(158deg,#FFE47A,#FFC72C,#E89400)",
+                display:"flex",alignItems:"center",justifyContent:"center",
+                fontSize:20,flexShrink:0,
+                boxShadow:"0 2px 12px rgba(232,168,0,.4)"}}>
+                🔓
+              </div>
             </div>
           )}
 
@@ -1090,10 +1144,13 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             </div>
           )}
 
-          {/* Actions */}
+          {/* Actions — Waze + Share (Fav moved to photo hero) */}
           <div style={{display:"flex",gap:10,marginBottom:16}}>
             <a href={wazeUrl} target="_blank" rel="noopener" className="gbtn"
-              style={{flex:1,textDecoration:"none",textAlign:"center"}}>{LL.directions}</a>
+              style={{flex:1,textDecoration:"none",textAlign:"center",
+                display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+              <span style={{fontSize:16}}>🚗</span> {LL.directions}
+            </a>
             <button onClick={()=>{
               const slug=beach.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/-+$/,"")
               const refCode=isPremium?localStorage.getItem("sg_referral_code"):""
@@ -1101,15 +1158,12 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               const isRef=!!refCode
               if(navigator.share){track("sg_share",{beach_id:beach.id,method:"native",has_referral:isRef});navigator.share({title:beach.name+" — Sargasses",text:(ST[beach.status]||ST._loading).l+" aujourd'hui",url}).catch(()=>{})}
               else{navigator.clipboard?.writeText(url);track("sg_share",{beach_id:beach.id,has_referral:isRef})}
-            }} style={{flex:0,padding:"14px 20px",borderRadius:22,border:"1.5px solid var(--sg-border)",
-              background:"var(--sg-card)",cursor:"pointer",fontSize:18,fontFamily:"inherit"}}>
+            }} style={{flex:0,padding:"14px 20px",borderRadius:16,
+              border:"1.5px solid var(--sg-border)",
+              background:"var(--sg-card)",cursor:"pointer",fontSize:18,fontFamily:"inherit",
+              display:"flex",alignItems:"center",justifyContent:"center"}}>
               📤
             </button>
-            <button onClick={e=>{onToggleFav(beach.id);e.currentTarget.classList.remove("heart-pop");void e.currentTarget.offsetWidth;e.currentTarget.classList.add("heart-pop")}} style={{
-              flex:0,padding:"14px 20px",borderRadius:22,border:isFav?`1.5px solid ${C.red}22`:"1.5px solid var(--sg-border)",
-              background:isFav?"rgba(232,82,42,.06)":"var(--sg-card)",cursor:"pointer",fontSize:18,
-              fontFamily:"inherit",transition:"all .2s",
-            }}>{isFav?"❤️":"🤍"}</button>
           </div>
 
           {/* Nearby beaches — horizontal scroll carousel (above fold = browse loop) */}
@@ -1225,12 +1279,18 @@ function Tag({icon,label}){
 
 function WeatherCard({icon,label,value}){
   return(
-    <div style={{padding:"12px",borderRadius:14,background:"var(--sg-bgD,#F7F5EF)",
+    <div style={{padding:"14px 12px",borderRadius:16,
+      background:"var(--sg-bgD,#F7F5EF)",
       textAlign:"center",border:"1px solid var(--sg-border,rgba(0,0,0,.04))",
-      transition:"transform .2s"}}>
-      <div style={{fontSize:20,marginBottom:4,animation:"float-b 3s ease-in-out infinite"}}>{icon}</div>
-      <div style={{fontSize:14,fontWeight:700,color:"var(--sg-ink)"}}>{value}</div>
-      <div style={{fontSize:11,color:"var(--sg-mid,#686868)"}}>{label}</div>
+      transition:"transform .2s",position:"relative",overflow:"hidden"}}>
+      {/* Subtle shimmer */}
+      <div style={{position:"absolute",top:0,left:0,right:0,height:"50%",
+        background:"linear-gradient(180deg,rgba(255,255,255,.5),transparent)",
+        borderRadius:"16px 16px 0 0",pointerEvents:"none"}}/>
+      <div style={{fontSize:22,marginBottom:6,position:"relative"}}>{icon}</div>
+      <div style={{fontSize:16,fontWeight:800,color:"var(--sg-ink)",position:"relative",letterSpacing:"-.02em"}}>{value}</div>
+      <div style={{fontSize:10,color:"var(--sg-mid,#686868)",marginTop:2,fontWeight:500,
+        textTransform:"uppercase",letterSpacing:".04em",position:"relative"}}>{label}</div>
     </div>
   )
 }
@@ -1464,7 +1524,7 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
           const photo=getBeachPhoto(b)
           return(
             <button key={b.id} onClick={()=>onBeachClick(b)} style={{
-              display:"flex",alignItems:"center",gap:12,padding:12,
+              display:"flex",alignItems:"center",gap:12,padding:0,
               borderRadius:16,border:"1px solid var(--sg-border)",
               background:"var(--sg-card,#fff)",cursor:"pointer",
               textAlign:"left",fontFamily:"inherit",width:"100%",
@@ -1472,11 +1532,21 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
               transition:"all .2s cubic-bezier(.22,1,.36,1)",
               animation:"slideUp .3s cubic-bezier(.22,1,.36,1) backwards",
               animationDelay:`${Math.min(b._dist||0,10)*20}ms`,
+              overflow:"hidden",position:"relative",
             }}>
-              {/* Photo thumbnail */}
-              <div style={{width:64,height:48,borderRadius:10,
-                background:`url(${photo||satImg(b.lat,b.lng,128)}) center 40%/cover`,flexShrink:0}}/>
-              <div style={{flex:1,minWidth:0}}>
+              {/* Status accent line — left edge */}
+              <div style={{position:"absolute",left:0,top:0,bottom:0,width:3,
+                background:(ST[b.status]||ST._loading).c,borderRadius:"16px 0 0 16px"}}/>
+              {/* Photo thumbnail — taller */}
+              <div style={{width:72,height:72,
+                background:`url(${photo||satImg(b.lat,b.lng,144)}) center 40%/cover`,flexShrink:0,
+                position:"relative"}}>
+                {/* Status dot on photo */}
+                <span style={{position:"absolute",bottom:4,right:4,width:10,height:10,borderRadius:5,
+                  background:(ST[b.status]||ST._loading).c,border:"2px solid var(--sg-card,#fff)",
+                  boxShadow:`0 0 6px ${(ST[b.status]||ST._loading).c}44`}}/>
+              </div>
+              <div style={{flex:1,minWidth:0,padding:"12px 12px 12px 0"}}>
                 <div style={{fontSize:14,fontWeight:700,whiteSpace:"nowrap",
                   overflow:"hidden",textOverflow:"ellipsis",color:"var(--sg-ink)"}}>
                   {favorites.includes(b.id)?"❤️ ":""}{b.name}
@@ -1484,10 +1554,10 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
                 <div style={{fontSize:12,color:"var(--sg-mid,#686868)",marginTop:2}}>
                   {b.commune} · {b.drive} {LL.drive}
                 </div>
-              </div>
-              <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}}>
-                <StatusBadge status={b.status} lang={lang}/>
-                <AfaiBadge afai={b.afai}/>
+                <div style={{fontSize:11,fontWeight:600,marginTop:4,
+                  color:(ST[b.status]||ST._loading).c}}>
+                  {lang==="en"?(ST[b.status]||ST._loading).le:(ST[b.status]||ST._loading).l}
+                </div>
               </div>
             </button>
           )
