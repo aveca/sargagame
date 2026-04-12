@@ -522,6 +522,18 @@ button:active,a:active,[role="button"]:active{transform:scale(.96)!important;opa
   .anton{letter-spacing:0 !important}
 }
 
+/* Tablets & desktop — constrain width, center content */
+@media(min-width:768px){
+  .sheet{max-width:520px;margin:0 auto !important}
+  .sg-modal-panel{max-width:520px !important;margin:0 auto !important;left:50% !important;right:auto !important;transform:translateX(-50%) !important}
+  .sg-float-panel{max-width:600px;margin:0 auto;left:50% !important;right:auto !important;transform:translateX(-50%)}
+}
+
+/* Landscape — reduce vertical footprint */
+@media(orientation:landscape) and (max-height:500px){
+  .sheet{max-height:92dvh !important}
+}
+
 /* Reduced motion — kill infinite animations, keep one-shot transitions */
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
@@ -567,7 +579,7 @@ function AfaiBadge({afai}){
 function FilterChip({label,icon,active,onClick,count}){
   return(
     <button onClick={onClick} style={{
-      display:"inline-flex",alignItems:"center",gap:5,padding:"8px 16px",
+      display:"inline-flex",alignItems:"center",gap:5,padding:"10px 16px",minHeight:44,
       borderRadius:100,border:active?"1.5px solid "+C.gold:"1.5px solid var(--sg-border,rgba(0,0,0,.08))",
       background:active?"linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%)":"var(--sg-card,#fff)",
       color:active?C.ink:"var(--sg-ink,#0D0D0D)",fontSize:13,fontWeight:active?700:500,
@@ -598,6 +610,7 @@ function BottomNav({view,onChangeView,lang}){
       backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
       borderTop:"1px solid var(--sg-glassBorder,rgba(0,0,0,.06))",
       padding:"8px 0 max(12px,env(safe-area-inset-bottom))",
+      maxWidth:600,margin:"0 auto",
     }}>
       {tabs.map(t=>{
         const active=view===t.id||(t.id==="premium"&&false)
@@ -606,8 +619,9 @@ function BottomNav({view,onChangeView,lang}){
           display:"flex",flexDirection:"column",alignItems:"center",gap:2,
           background:"none",border:"none",cursor:"pointer",
           color:active?C.gold:"var(--sg-mid,#686868)",
-          fontSize:10,fontWeight:active?700:500,fontFamily:"inherit",
-          transition:"all .2s",padding:"4px 16px",position:"relative",
+          fontSize:11,fontWeight:active?700:500,fontFamily:"inherit",
+          transition:"all .2s",padding:"6px 20px",position:"relative",
+          minHeight:44,justifyContent:"center",
         }}>
           {active&&<div style={{position:"absolute",top:-1,width:24,height:3,
             borderRadius:2,background:C.gold,transition:"width .2s"}}/>}
@@ -1422,7 +1436,7 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
   return(
     <div style={{height:"100%",overflowY:"auto",
       paddingTop:"calc(140px + env(safe-area-inset-top,0px))",paddingBottom:"calc(70px + env(safe-area-inset-bottom,12px))",
-      background:"var(--sg-bg,#FDFCF7)"}}>
+      background:"var(--sg-bg,#FDFCF7)",maxWidth:600,margin:"0 auto"}}>
       <div style={{padding:"8px 16px 0",fontSize:13,color:"var(--sg-mid,#686868)",fontWeight:500}}>
         {LL.nClean.replace("{n}",nClean)} / {beaches.length}
       </div>
@@ -1500,7 +1514,8 @@ function Onboarding({onDone,island="mq",lang="fr"}){
   return(
     <div style={{position:"absolute",
       top:"max(108px, calc(env(safe-area-inset-top,12px) + 100px))",
-      left:12,right:12,zIndex:750,pointerEvents:"none"}}>
+      left:"max(12px, 3vw)",right:"max(12px, 3vw)",zIndex:750,pointerEvents:"none",
+      maxWidth:520,margin:"0 auto"}}>
 
       {step===0&&(
         <div style={{pointerEvents:"auto",
@@ -1517,7 +1532,7 @@ function Onboarding({onDone,island="mq",lang="fr"}){
               </em> {lang==="en"?"monitored live":"surveillées en temps réel"}
             </span>
           </div>
-          <div style={{fontFamily:"'Anton',sans-serif",fontSize:26,lineHeight:1,
+          <div style={{fontFamily:"'Anton',sans-serif",fontSize:"clamp(20px,5.5vw,26px)",lineHeight:1,
             textTransform:"uppercase",color:C.ink,marginBottom:8}}>
             <span style={{color:C.teal}}>{lang==="en"?"Green":"Vert"}</span> = {lang==="en"?"clean":"propre"}.{" "}
             <span style={{color:C.red}}>{lang==="en"?"Red":"Rouge"}</span> = sargasses.
@@ -1556,7 +1571,8 @@ function Onboarding({onDone,island="mq",lang="fr"}){
           </span>
           <button onClick={dismiss} style={{
             background:"none",border:"none",color:C.mid,cursor:"pointer",
-            fontSize:14,padding:4,marginLeft:"auto",flexShrink:0}}>✕</button>
+            fontSize:16,padding:8,minWidth:44,minHeight:44,display:"flex",alignItems:"center",justifyContent:"center",
+            marginLeft:"auto",flexShrink:0}}>✕</button>
         </div>
       )}
     </div>
@@ -1914,7 +1930,7 @@ function DailyRecoStrip({allBeaches,sargData,island,lang,isPremium,onBeachClick,
       // Align with BottomNav height: 8px top + ~40px button + max(12, safe-area) bottom = 60 + max(12, safe-area)
       // +12px gap above the nav
       bottom:"calc(60px + max(12px, env(safe-area-inset-bottom,0px)) + 12px)",
-      left:12,right:12,zIndex:720,
+      left:"max(12px, 3vw)",right:"max(12px, 3vw)",zIndex:720,
       maxWidth:480,margin:"0 auto",
       background:"var(--sg-card,#fff)",
       borderRadius:16,
@@ -2344,7 +2360,7 @@ function PremiumModal({onClose,lang,source,onActivated}){
   return(
     <>
       <div className="backdrop" onClick={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,saw_checkout:sawCheckoutRef.current});onClose()}}/>
-      <div style={{
+      <div className="sg-modal-panel" style={{
         position:"fixed",bottom:0,left:0,right:0,zIndex:1100,
         background:"linear-gradient(145deg,#0D1E1C,#0A1714)",
         borderRadius:"24px 24px 0 0",padding:"28px 24px 20px",
@@ -2354,7 +2370,7 @@ function PremiumModal({onClose,lang,source,onActivated}){
         <div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
           margin:"-8px -24px 20px",padding:0}}/>
 
-        <h2 className="anton" style={{fontSize:28,color:"#fff",marginBottom:6}}>{headline}</h2>
+        <h2 className="anton" style={{fontSize:"clamp(22px,6vw,28px)",color:"#fff",marginBottom:6}}>{headline}</h2>
         <p style={{fontSize:13,color:"#adbac7",marginBottom:18}}>{subtitle}</p>
 
         <ul style={{listStyle:"none",padding:0,margin:"0 0 16px",display:"flex",flexDirection:"column",gap:12}}>
@@ -3622,7 +3638,7 @@ export default function App(){
           backdropFilter:view==="map"?"blur(8px)":"none",
           WebkitBackdropFilter:view==="map"?"blur(8px)":"none",
         }}>
-          <div style={{pointerEvents:"auto"}}>
+          <div style={{pointerEvents:"auto",maxWidth:600,margin:"0 auto"}}>
             <Header island={island} onIslandChange={setIsland}
               lang={lang} onLangToggle={toggleLang}
               theme={theme} onThemeToggle={toggleTheme}
@@ -3646,8 +3662,8 @@ export default function App(){
             {view==="map"&&search.trim().length>=2&&filtered.length>0&&(
               <div style={{marginTop:4,background:"var(--sg-card,#fff)",borderRadius:14,
                 boxShadow:"0 4px 20px rgba(0,0,0,.12)",border:"1px solid var(--sg-border,rgba(0,0,0,.06))",
-                maxHeight:240,overflowY:"auto",overscrollBehavior:"contain"}}>
-                {filtered.slice(0,5).map(b=>{
+                maxHeight:"min(280px,40vh)",overflowY:"auto",overscrollBehavior:"contain"}}>
+                {filtered.slice(0,8).map(b=>{
                   const st=ST[b.status]||ST._loading
                   return(
                     <button key={b.id} onClick={()=>{setSearch("");onBeachClick(b)}} style={{
