@@ -51,8 +51,10 @@ jobs:
           git diff --cached --quiet || git commit -m "content: auto-article $(date -u +'%Y-%m-%d')"
           git push || (git pull --rebase --autostash && git push)
 
-      # ── 5. Deploy Martinique ─────────────────────────────────
-      - name: Deploy Martinique (FTP)
+      # ── 5. Deploy Martinique (with retry on timeout) ──────────
+      - name: Deploy Martinique (FTP) — attempt 1
+        id: ftp_mq_1
+        continue-on-error: true
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER_MQ }}
@@ -62,8 +64,32 @@ jobs:
           server-dir: ./
           dangerous-clean-slate: false
 
-      # ── 6. Deploy Guadeloupe ─────────────────────────────────
-      - name: Deploy Guadeloupe (FTP)
+      - name: Deploy Martinique (FTP) — retry
+        if: steps.ftp_mq_1.outcome == 'failure'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER_MQ }}
+          username: ${{ secrets.FTP_USERNAME_MQ }}
+          password: ${{ secrets.FTP_PASSWORD_MQ }}
+          local-dir: ./martinique-ftp/
+          server-dir: ./
+          dangerous-clean-slate: false
+
+      # ── 6. Deploy Guadeloupe (with retry on timeout) ──────────
+      - name: Deploy Guadeloupe (FTP) — attempt 1
+        id: ftp_gp_1
+        continue-on-error: true
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER_GP }}
+          username: ${{ secrets.FTP_USERNAME_GP }}
+          password: ${{ secrets.FTP_PASSWORD_GP }}
+          local-dir: ./guadeloupe-ftp/
+          server-dir: ./
+          dangerous-clean-slate: false
+
+      - name: Deploy Guadeloupe (FTP) — retry
+        if: steps.ftp_gp_1.outcome == 'failure'
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER_GP }}
