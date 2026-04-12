@@ -201,7 +201,7 @@ RewriteRule ^landing-v2\.html$ / [R=301,L]
 <IfModule mod_rewrite.c>
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(?!api/|assets/|en/|beaches/|config/)(.*)$ /index.html [L]
+RewriteRule ^(?!api/|assets/|en/|beaches/|config/|plages/)(.*)$ /index.html [L]
 </IfModule>
 
 # Page 404 personnalisée
