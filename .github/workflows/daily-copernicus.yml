@@ -202,8 +202,14 @@ jobs:
           server-dir: ./
           dangerous-clean-slate: false
 
-      - name: Deploy Martinique (FTP) — retry after 30s
+      - name: Wait 30s before FTP retry
         if: steps.ftp_mq_1.outcome == 'failure'
+        run: sleep 30
+
+      - name: Deploy Martinique (FTP) — retry after 30s
+        id: ftp_mq_2
+        if: steps.ftp_mq_1.outcome == 'failure'
+        continue-on-error: true
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER_MQ }}
@@ -226,8 +232,14 @@ jobs:
           server-dir: ./
           dangerous-clean-slate: false
 
-      - name: Deploy Guadeloupe (FTP) — retry after 30s
+      - name: Wait 30s before FTP retry
         if: steps.ftp_gp_1.outcome == 'failure'
+        run: sleep 30
+
+      - name: Deploy Guadeloupe (FTP) — retry after 30s
+        id: ftp_gp_2
+        if: steps.ftp_gp_1.outcome == 'failure'
+        continue-on-error: true
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER_GP }}
@@ -236,6 +248,28 @@ jobs:
           local-dir: ./guadeloupe-ftp/
           server-dir: ./
           dangerous-clean-slate: false
+
+      # ── 6. Final health check — fail workflow only if sites actually down ──
+      # FTP can be flaky; data is already committed to git so next run redeploys.
+      # We only want to fail the workflow (and alert) when the live sites are
+      # actually broken, not when FTP had a transient hiccup.
+      - name: Health check after deploy
+        run: |
+          sleep 10
+          MQ_STATUS=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 https://sargasses-martinique.com || echo 000)
+          GP_STATUS=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 https://sargasses-guadeloupe.com || echo 000)
+          echo "MQ: $MQ_STATUS | GP: $GP_STATUS"
+          MQ_DATA=$(curl -sL --max-time 15 https://sargasses-martinique.com/api/copernicus/sargassum.json | node -e "let d=''; process.stdin.on('data',c=>d+=c); process.stdin.on('end',()=>{try{const j=JSON.parse(d);const h=(Date.now()-new Date(j.updatedAt))/3.6e6;console.log(h.toFixed(1))}catch{console.log('NaN')}})" || echo NaN)
+          GP_DATA=$(curl -sL --max-time 15 https://sargasses-guadeloupe.com/api/copernicus/sargassum.json | node -e "let d=''; process.stdin.on('data',c=>d+=c); process.stdin.on('end',()=>{try{const j=JSON.parse(d);const h=(Date.now()-new Date(j.updatedAt))/3.6e6;console.log(h.toFixed(1))}catch{console.log('NaN')}})" || echo NaN)
+          echo "MQ data age: ${MQ_DATA}h | GP data age: ${GP_DATA}h"
+          if [ "$MQ_STATUS" != "200" ] || [ "$GP_STATUS" != "200" ]; then
+            echo "::error::One or both sites are down — FTP deploys failed and sites not serving"
+            exit 1
+          fi
+          # If FTP attempt 2 also failed AND data is stale (>6h), alert
+          if [ "${{ steps.ftp_mq_2.outcome }}" = "failure" ] || [ "${{ steps.ftp_gp_2.outcome }}" = "failure" ]; then
+            echo "::warning::FTP deploys failed both attempts — sites up but data may be stale. Next run will redeploy from git-committed data."
+          fi
 
   # ── Notify on failure ──────────────────────────────────
   notify-failure:
