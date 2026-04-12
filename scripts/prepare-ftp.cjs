@@ -351,10 +351,12 @@ Sitemap: https://${domain}/sitemap.xml
       fetch('/version.json',{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){
         var cur=d&&d.v;if(!cur)return;
         var prev=localStorage.getItem(LOCAL_KEY);
-        if(prev&&prev!==cur&&'caches' in window){
-          caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k)})});
-        }
         localStorage.setItem(LOCAL_KEY,cur);
+        if(prev&&prev!==cur&&'caches' in window){
+          caches.keys().then(function(ks){
+            return Promise.all(ks.map(function(k){return caches.delete(k)}));
+          }).then(function(){location.reload()});
+        }
       }).catch(function(){});
     })();
     if('serviceWorker' in navigator){

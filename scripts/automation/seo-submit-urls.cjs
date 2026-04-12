@@ -76,7 +76,17 @@ async function main() {
     return
   }
 
-  const allUrls = []
+  const priorityUrls = []
+  const normalUrls = []
+
+  // Editorial/strategic pages to submit FIRST (before beach pages eat the quota)
+  const PRIORITY_SLUGS = [
+    'comprendre-sargasses', 'bilan-sargasses-2025', 'detection-satellite-sargasses',
+    'previsions-methode', 'nettoyer-sargasses', 'sargasses-record-2026',
+    'understanding-sargassum', 'satellite-sargassum-detection',
+    'carte-sargasses', 'previsions', 'alertes', 'saison-sargasses',
+    'plages-sans-sargasses', 'danger-sargasses-h2s',
+  ]
 
   for (const [key, site] of Object.entries(SITES)) {
     const sitemapPath = resolve(DIST_DIR, `sitemap-${key === 'mq' ? 'martinique' : 'guadeloupe'}.xml`)
@@ -87,8 +97,18 @@ async function main() {
     const xml = readFileSync(sitemapPath, 'utf-8')
     const urls = parseSitemap(xml)
     console.log(`${site.domain}: ${urls.length} URLs in sitemap`)
-    allUrls.push(...urls)
+    for (const url of urls) {
+      if (PRIORITY_SLUGS.some(s => url.includes(`/${s}`))) {
+        priorityUrls.push(url)
+      } else {
+        normalUrls.push(url)
+      }
+    }
   }
+
+  // Priority pages first, then beach/other pages
+  const allUrls = [...priorityUrls, ...normalUrls]
+  console.log(`Priority URLs: ${priorityUrls.length}, Normal URLs: ${normalUrls.length}`)
 
   // Filter out recently submitted URLs
   const toSubmit = allUrls.filter(u => !recentlySubmitted.has(u)).slice(0, remaining)

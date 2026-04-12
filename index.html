@@ -154,16 +154,18 @@
     </div>
     <script type="module" src="/src/main.jsx"></script>
     <script>
-    // Version check — save version, nuke caches silently (next navigation gets fresh assets)
+    // Version check — nuke caches + auto-reload on version change (zero user action)
     (function(){
       var LOCAL_KEY='sg_v';
       fetch('/version.json',{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){
         var cur=d&&d.v;if(!cur)return;
         var prev=localStorage.getItem(LOCAL_KEY);
-        if(prev&&prev!==cur&&'caches' in window){
-          caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k)})});
-        }
         localStorage.setItem(LOCAL_KEY,cur);
+        if(prev&&prev!==cur&&'caches' in window){
+          caches.keys().then(function(ks){
+            return Promise.all(ks.map(function(k){return caches.delete(k)}));
+          }).then(function(){location.reload()});
+        }
       }).catch(function(){});
     })();
     // Service Worker registration — no auto-reload on controller change
