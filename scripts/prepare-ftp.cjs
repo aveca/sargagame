@@ -329,6 +329,14 @@ Sitemap: https://${domain}/sitemap.xml
         } catch (e) {}
       })();
     </script>
+    <script>
+    window.onerror=function(msg,src,line){
+      if(sessionStorage.getItem('sg_crash'))return;
+      sessionStorage.setItem('sg_crash','1');
+      setTimeout(function(){location.reload()},500);
+    };
+    window.addEventListener('load',function(){sessionStorage.removeItem('sg_crash')});
+    </script>
     <div id="root">
       <noscript>
         <h1>Sargasses Guadeloupe en temps réel — carte et plages aujourd'hui (2026)</h1>

@@ -136,6 +136,16 @@
         } catch (e) {}
       })();
     </script>
+    <script>
+    // Crash recovery — if React dies, auto-reload once instead of blank page
+    window.onerror=function(msg,src,line){
+      if(sessionStorage.getItem('sg_crash'))return;
+      sessionStorage.setItem('sg_crash','1');
+      setTimeout(function(){location.reload()},500);
+    };
+    // Clear crash flag on successful load
+    window.addEventListener('load',function(){sessionStorage.removeItem('sg_crash')});
+    </script>
     <div id="root">
       <noscript>
         <h1>Sargasses Martinique en temps réel — carte et plages aujourd'hui (2026)</h1>
