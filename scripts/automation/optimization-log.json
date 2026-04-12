@@ -6,37 +6,121 @@
     "commit": "09ed250"
   },
   "abTests": {
-    "lastEvaluated": "2026-04-12T02:45:47.253Z",
+    "lastEvaluated": "2026-04-12T18:41:42.520Z",
     "results": [
       {
         "id": "lock1",
-        "status": "no-data",
-        "message": "No data yet"
+        "metric": "sg_forecast_lock_click",
+        "variants": [
+          "control",
+          "loss"
+        ],
+        "rates": [
+          "2.59%",
+          "2.55%"
+        ],
+        "lift": "-1.8%",
+        "z": 0.06,
+        "p": 0.475,
+        "significant": false,
+        "winner": null,
+        "status": "not-significant",
+        "recommendation": "Keep running. Need more data (2019 sessions, need ~1500+)."
       },
       {
         "id": "modal1",
-        "status": "no-data",
-        "message": "No data yet"
+        "metric": "sg_premium_modal_cta",
+        "variants": [
+          "control",
+          "family"
+        ],
+        "rates": [
+          "1.24%",
+          "1.24%"
+        ],
+        "lift": "0.4%",
+        "z": -0.01,
+        "p": 0.502,
+        "significant": false,
+        "winner": null,
+        "status": "not-significant",
+        "recommendation": "Keep running. Need more data (886 sessions, need ~1500+)."
       },
       {
         "id": "onb1",
-        "status": "no-data",
-        "message": "No data yet"
+        "metric": "sg_conversion",
+        "variants": [
+          "control",
+          "skip"
+        ],
+        "rates": [
+          "0.00%",
+          "0.00%"
+        ],
+        "lift": "NaN%",
+        "z": 0,
+        "p": 1,
+        "significant": false,
+        "winner": null,
+        "status": "too-early",
+        "recommendation": "Keep running. Need more data (33 sessions, need ~1500+)."
       },
       {
         "id": "free1",
-        "status": "no-data",
-        "message": "No data yet"
+        "metric": "sg_forecast_lock_click",
+        "variants": [
+          "control",
+          "two_free"
+        ],
+        "rates": [
+          "2.62%",
+          "2.55%"
+        ],
+        "lift": "-2.9%",
+        "z": 0.11,
+        "p": 0.458,
+        "significant": false,
+        "winner": null,
+        "status": "not-significant",
+        "recommendation": "Keep running. Need more data (2019 sessions, need ~1500+)."
       },
       {
         "id": "vp1",
-        "status": "no-data",
-        "message": "No data yet"
+        "metric": "sg_weekend_banner_click",
+        "variants": [
+          "feature",
+          "outcome"
+        ],
+        "rates": [
+          "0.00%",
+          "0.00%"
+        ],
+        "lift": "NaN%",
+        "z": 0,
+        "p": 1,
+        "significant": false,
+        "winner": null,
+        "status": "too-early",
+        "recommendation": "Keep running. Need more data (166 sessions, need ~1500+)."
       },
       {
         "id": "price1",
-        "status": "no-data",
-        "message": "No data yet"
+        "metric": "sg_checkout_submit",
+        "variants": [
+          "control",
+          "season"
+        ],
+        "rates": [
+          "0.20%",
+          "0.00%"
+        ],
+        "lift": "-100.0%",
+        "z": 0.76,
+        "p": 0.223,
+        "significant": false,
+        "winner": null,
+        "status": "not-significant",
+        "recommendation": "Keep running. Need more data (790 sessions, need ~1500+)."
       }
     ]
   },

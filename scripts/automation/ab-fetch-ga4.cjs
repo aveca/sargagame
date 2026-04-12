@@ -186,10 +186,18 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zF
 
 async function fetchFromAppsFunnel() {
   try {
-    const res = await fetch(`${APPS_SCRIPT_URL}?action=funnel`, { signal: AbortSignal.timeout(15000) })
-    if (!res.ok) return null
-    const data = await res.json()
-    if (!data.ab_variants) return null
+    const url = `${APPS_SCRIPT_URL}?action=funnel`
+    console.log(`  Fetching ${url.slice(0, 80)}...`)
+    const res = await fetch(url, { signal: AbortSignal.timeout(15000), redirect: 'follow' })
+    console.log(`  Apps Script HTTP ${res.status} ok=${res.ok}`)
+    if (!res.ok) { console.log('  Apps Script non-2xx — aborting'); return null }
+    const text = await res.text()
+    let data
+    try { data = JSON.parse(text) } catch (pe) {
+      console.log(`  Apps Script parse error: ${pe.message} — body[0:200]="${text.slice(0, 200)}"`)
+      return null
+    }
+    if (!data.ab_variants) { console.log(`  Apps Script response missing ab_variants — keys=${Object.keys(data).join(',')}`); return null }
 
     console.log(`  Apps Script funnel: ${data.total_events} total events`)
     const testData = {}
@@ -225,9 +233,28 @@ async function main() {
 
   const tests = []
   let anyData = false
+  let sourceUsed = 'none'
 
-  // Try GA4 — query both MQ and GP properties, merge results
-  if (analyticsdata && propertyIds.length) {
+  // Priority 1: Apps Script funnel — no creds needed, most reliable, always up-to-date.
+  // We try this FIRST because GA4/Sheets both return empty when custom dimensions
+  // aren't registered, which was hiding real funnel data for weeks.
+  console.log('Trying Apps Script funnel (priority 1)...')
+  const funnelData = await fetchFromAppsFunnel()
+  if (funnelData) {
+    for (const test of TESTS) {
+      const d = funnelData[test.id]
+      if (d) {
+        const total = d.sessions[0] + d.sessions[1]
+        console.log(`  ${test.id}: sessions=${total}, conv=${d.conversions[0]}/${d.conversions[1]}`)
+        if (total > 0) anyData = true
+        tests.push({ id: test.id, variants: test.variants, ...d, metric: test.metric, _source: 'apps-script-funnel' })
+      }
+    }
+    if (anyData) sourceUsed = 'apps-script-funnel'
+  }
+
+  // Priority 2: GA4 — query both MQ and GP properties, merge results
+  if (!anyData && analyticsdata && propertyIds.length) {
     for (const test of TESTS) {
       let merged = { sessions: [0, 0], conversions: [0, 0] }
       for (const prop of propertyIds) {
@@ -250,34 +277,19 @@ async function main() {
     }
   }
 
-  // Fallback to Sheets if GA4 gave zero data
+  if (!anyData && sourceUsed === 'none' && analyticsdata && propertyIds.length) sourceUsed = 'ga4-empty'
+
+  // Priority 3: Sheets fallback (last resort)
   if (!anyData) {
-    console.log('\nGA4 returned no data — trying Sheets fallback...')
+    console.log('\nGA4 + Apps Script returned no data — trying Sheets fallback...')
     const sheetsData = await fetchFromSheets()
     if (sheetsData) {
       for (const test of TESTS) {
         const d = sheetsData[test.id]
         const total = d.sessions[0] + d.sessions[1]
         console.log(`  ${test.id}: sessions=${total}, conv=${d.conversions[0]}/${d.conversions[1]}`)
-        if (total > 0) anyData = true
+        if (total > 0) { anyData = true; sourceUsed = 'sheets' }
         tests.push({ id: test.id, variants: test.variants, ...d, metric: test.metric, _source: 'sheets' })
-      }
-    }
-  }
-
-  // Fallback to Apps Script funnel endpoint if both GA4 and Sheets are empty
-  if (!anyData) {
-    console.log('\nSheets also empty — trying Apps Script funnel...')
-    const funnelData = await fetchFromAppsFunnel()
-    if (funnelData) {
-      for (const test of TESTS) {
-        const d = funnelData[test.id]
-        if (d) {
-          const total = d.sessions[0] + d.sessions[1]
-          console.log(`  ${test.id}: sessions=${total}, conv=${d.conversions[0]}/${d.conversions[1]}`)
-          if (total > 0) anyData = true
-          tests.push({ id: test.id, variants: test.variants, ...d, metric: test.metric, _source: 'apps-script-funnel' })
-        }
       }
     }
   }
@@ -290,9 +302,9 @@ async function main() {
   }
 
   const payload = {
-    _comment: 'Auto-fetched from GA4 Data API (with Sheets fallback).',
+    _comment: 'Auto-fetched: Apps Script funnel > GA4 > Sheets. See _source.',
     _fetchedAt: new Date().toISOString(),
-    _source: anyData ? (tests[0]?._source || 'ga4') : 'none',
+    _source: anyData ? sourceUsed : 'none',
     tests,
   }
 
