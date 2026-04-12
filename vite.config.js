@@ -368,6 +368,46 @@ export default defineConfig({
               clean: 'Plage de la Caravelle à Sainte-Anne (Guadeloupe) — propre en temps réel. Côte Atlantique, snorkeling, idéal familles. Carte sargasses Guadeloupe et prévisions 7 jours.',
               moderate: 'Sargasses à Plage de la Caravelle (Sainte-Anne, Guadeloupe) — présence modérée en temps réel. Côte Atlantique. Snorkeling. Carte et prévisions 7 jours.',
               avoid: 'Alerte sargasses à la Plage de la Caravelle (Sainte-Anne, Guadeloupe) — forte concentration côte Atlantique. Voir les plages propres à proximité.'
+            },
+            'La Grande Anse (Deshaies)': {
+              clean: 'La Grande Anse à Deshaies (Guadeloupe) — plage propre en temps réel. Côte sous-le-vent, Nord Basse-Terre, généralement épargnée des sargasses. Idéal familles. Prévisions 7 jours.',
+              moderate: 'Sargasses à La Grande Anse de Deshaies (Guadeloupe) — présence modérée en temps réel. Côte sous-le-vent. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à La Grande Anse (Deshaies, Guadeloupe) — forte concentration détectée en temps réel. Côte sous-le-vent. Voir les plages propres à proximité.'
+            },
+            'Plage de Saint-François': {
+              clean: 'Plage de Saint-François (Guadeloupe) — propre en temps réel. Grande-Terre, côte Atlantique, snorkeling, idéal familles. Carte sargasses Guadeloupe et prévisions 7 jours.',
+              moderate: 'Sargasses à la Plage de Saint-François (Guadeloupe) — présence modérée en temps réel. Côte Atlantique Grande-Terre. Snorkeling. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à la Plage de Saint-François (Guadeloupe) — forte concentration côte Atlantique. Voir les plages propres à Saint-François et alentours.'
+            },
+            'Anse à la Gourde': {
+              clean: 'Anse à la Gourde à Saint-François (Guadeloupe) — plage propre en temps réel. Côte Atlantique, snorkeling exceptionnel, eaux turquoise. Carte sargasses Guadeloupe et prévisions 7 jours.',
+              moderate: 'Sargasses à l\'Anse à la Gourde (Saint-François, Guadeloupe) — présence modérée en temps réel. Côte Atlantique. Snorkeling. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à l\'Anse à la Gourde (Saint-François, Guadeloupe) — forte concentration côte Atlantique. Voir les plages propres à proximité.'
+            },
+            'Plage de Bas-du-Fort': {
+              clean: 'Plage de Bas-du-Fort à Pointe-à-Pitre (Guadeloupe) — propre en temps réel. À 8 min de PAP, côte centrale, idéal familles. Carte sargasses Guadeloupe et prévisions 7 jours.',
+              moderate: 'Sargasses à Bas-du-Fort (Pointe-à-Pitre, Guadeloupe) — présence modérée en temps réel. Côte centrale. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à Plage de Bas-du-Fort (Pointe-à-Pitre, Guadeloupe) — forte concentration détectée. Carte des plages propres à proximité de PAP.'
+            },
+            'Bourg de Tartane': {
+              clean: 'Bourg de Tartane à La Trinité (Martinique) — plage propre en temps réel. Côte Atlantique, presqu\'île de la Caravelle. Idéal familles. Carte sargasses Martinique et prévisions 7 jours.',
+              moderate: 'Sargasses à Tartane (La Trinité, Martinique) — présence modérée en temps réel. Côte Atlantique, presqu\'île de la Caravelle. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à Tartane (La Trinité, Martinique) — forte concentration côte Atlantique. Presqu\'île de la Caravelle. Voir les plages propres à proximité.'
+            },
+            'Anse Cafard': {
+              clean: 'Anse Cafard au Diamant (Martinique) — propre en temps réel. Près du Mémorial de l\'Anse Cafard, côte Caraïbe. Carte sargasses Martinique et prévisions 7 jours.',
+              moderate: 'Sargasses à l\'Anse Cafard (Le Diamant, Martinique) — présence modérée en temps réel. Mémorial de l\'Anse Cafard, côte Caraïbe. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à l\'Anse Cafard (Le Diamant, Martinique) — forte concentration côte Caraïbe. Voir les plages propres autour du Diamant.'
+            },
+            'Anse Noire': {
+              clean: 'Anse Noire aux Anses-d\'Arlet (Martinique) — plage propre en temps réel. Petite crique volcanique, snorkeling, côte Caraïbe. Généralement épargnée des sargasses. Prévisions 7 jours.',
+              moderate: 'Sargasses à Anse Noire (Les Anses-d\'Arlet, Martinique) — présence modérée en temps réel. Crique volcanique, snorkeling. Côte Caraïbe. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à Anse Noire (Les Anses-d\'Arlet, Martinique) — forte concentration côte Caraïbe. Crique volcanique. Voir les plages propres à proximité.'
+            },
+            'Anse à l\'Âne': {
+              clean: 'Anse à l\'Âne aux Trois-Îlets (Martinique) — plage propre en temps réel. À 22 min de Fort-de-France, côte Caraïbe, idéal familles. Généralement épargnée des sargasses. Prévisions 7 jours.',
+              moderate: 'Sargasses à Anse à l\'Âne (Les Trois-Îlets, Martinique) — présence modérée en temps réel. Côte Caraïbe. Idéal familles. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à Anse à l\'Âne (Les Trois-Îlets, Martinique) — forte concentration côte Caraïbe. Carte des plages propres proches de Fort-de-France.'
             }
           }
           let sitemapMQBeaches = ''
