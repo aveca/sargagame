@@ -2932,6 +2932,10 @@ function PremiumModal({onClose,lang,source,onActivated}){
   const hasAnnual=!!STRIPE_LINK_ANNUAL
   const modalOpenedAt=useRef(Date.now())
   const sawCheckoutRef=useRef(false)
+  // pay1 A/B: inline checkout form vs direct Payment Link redirect.
+  // Inline: current flow (0 conversions from 12 form views observed).
+  // Link: open STRIPE_LINK_* in new tab — flow 3 paying customers used.
+  const payV=abVariant("pay1",["inline","link"],[.5,.5])
   const panelRef=useRef(null)
   const startYRef=useRef(0)
   // Swipe-down to dismiss
@@ -3132,7 +3136,18 @@ function PremiumModal({onClose,lang,source,onActivated}){
         ):(
         <>
         {!showCheckout?(
-          <button onClick={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown"});sawCheckoutRef.current=true;setShowCheckout(true)}}
+          <button onClick={()=>{
+              track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown",pay_variant:payV})
+              sawCheckoutRef.current=true
+              if(payV==="link"){
+                // Direct redirect to proven Payment Link
+                const link=effectivePlan==="annual"?STRIPE_LINK_ANNUAL:STRIPE_LINK_MONTHLY
+                track("sg_checkout_redirect",{plan:effectivePlan,source:source||"unknown",destination:"payment_link"})
+                window.open(link,"_blank","noopener")
+              }else{
+                setShowCheckout(true)
+              }
+            }}
             className="gbtn" style={{width:"100%",textAlign:"center",fontSize:17,
               padding:"16px 24px",display:"block",border:"none",cursor:"pointer",fontFamily:"inherit",lineHeight:1.2}}>
             <div>{lang==="en"?"Try free for 7 days":"Essayer 7 jours gratuit"}</div>
