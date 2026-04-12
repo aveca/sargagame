@@ -1394,13 +1394,15 @@ function SearchBar({value,onChange,lang}){
     <div style={{position:"relative"}}>
       <span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",
         fontSize:16,opacity:.5}}>🔍</span>
-      <input type="text" value={value} onChange={e=>onChange(e.target.value)}
+      <input type="search" value={value} onChange={e=>onChange(e.target.value)}
         placeholder={LL.search}
+        autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
+        enterKeyHint="search"
         style={{
           width:"100%",padding:"12px 16px 12px 42px",borderRadius:100,
           border:"1.5px solid var(--sg-border,rgba(0,0,0,.08))",
           background:"var(--sg-card,#fff)",color:"var(--sg-ink)",
-          fontSize:14,fontFamily:"inherit",outline:"none",
+          fontSize:16,fontFamily:"inherit",outline:"none",
           boxShadow:"0 2px 12px rgba(0,0,0,.06)",
           transition:"border-color .2s",
         }}
@@ -3518,10 +3520,11 @@ export default function App(){
     if(userPos){
       list=list.map(b=>({...b,_dist:haversine(userPos.lat,userPos.lng,b.lat,b.lng)}))
     }
-    // Search
+    // Search (accent-folding so "sainte anne" matches "Sainte-Anne")
     if(search.trim()){
-      const q=search.trim().toLowerCase()
-      list=list.filter(b=>b.name.toLowerCase().includes(q)||b.commune.toLowerCase().includes(q))
+      const fold=v=>v.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+      const q=fold(search.trim())
+      list=list.filter(b=>fold(b.name).includes(q)||fold(b.commune).includes(q))
     }
     // Filter
     if(filter===1)list=list.filter(b=>b.status==="clean")
@@ -3640,7 +3643,7 @@ export default function App(){
                 background:"linear-gradient(90deg,transparent,var(--sg-bg,#FDFCF7))",pointerEvents:"none"}}/>
             </div>
             {/* Search results dropdown on map */}
-            {view==="map"&&search.trim().length>=2&&filtered.length>0&&filtered.length<=8&&(
+            {view==="map"&&search.trim().length>=2&&filtered.length>0&&(
               <div style={{marginTop:4,background:"var(--sg-card,#fff)",borderRadius:14,
                 boxShadow:"0 4px 20px rgba(0,0,0,.12)",border:"1px solid var(--sg-border,rgba(0,0,0,.06))",
                 maxHeight:240,overflowY:"auto",overscrollBehavior:"contain"}}>
