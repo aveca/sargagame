@@ -35,7 +35,10 @@
         3
       ],
       "metric": "sg_premium_modal_cta",
-      "_source": "sheets"
+      "_source": "sheets",
+      "_status": "ended",
+      "_winner": "family",
+      "_note": "family 2.1% vs control 1.4% — applied 2026-04-12"
     },
     {
       "id": "onb1",
@@ -103,7 +106,10 @@
         0
       ],
       "metric": "sg_checkout_submit",
-      "_source": "sheets"
+      "_source": "sheets",
+      "_status": "ended",
+      "_winner": "control",
+      "_note": "season pass 0 checkouts vs monthly 1 checkout — season pass removed 2026-04-12"
     }
   ]
 }
