@@ -56,19 +56,29 @@ function post(url, data) {
 
 function buildEmailHTML(island, topBeaches, stats, domain) {
   const islandName = island === 'mq' ? 'Martinique' : 'Guadeloupe'
-  const beachRows = topBeaches.map(b => `
+  const beachRows = topBeaches.map(b => {
+    const hasScore = typeof b.unifiedScore === 'number'
+    const color = b.unifiedColor || (b.status === 'clean' ? '#16A34A' : '#B87A00')
+    const label = b.unifiedLabel || (b.status === 'clean' ? 'Propre' : 'Mod\u00E9r\u00E9')
+    const reasonLine = hasScore && b.unifiedReason
+      ? `<div style="font-size:11px;color:#888;margin-top:3px;font-style:italic">${b.unifiedReason}</div>`
+      : ''
+    const badgeInner = hasScore
+      ? `<div style="font-size:16px;font-weight:800;color:${color};line-height:1">${b.unifiedScore}<span style="font-size:10px;font-weight:600;opacity:.7">/100</span></div>
+         <div style="font-size:9px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.04em;margin-top:2px">${label}</div>`
+      : `<span style="display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;background:${color}1a;color:${color}">${label}</span>`
+    return `
     <tr>
-      <td style="padding:12px 16px;border-bottom:1px solid #f0f0f0">
+      <td style="padding:12px 16px;border-bottom:1px solid #f0f0f0;vertical-align:top">
         <div style="font-size:15px;font-weight:700;color:#0D0D0D">${b.name}</div>
         <div style="font-size:12px;color:#686868;margin-top:2px">${b.commune} · ${b.drive} min</div>
+        ${reasonLine}
       </td>
-      <td style="padding:12px 16px;border-bottom:1px solid #f0f0f0;text-align:right">
-        <span style="display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;
-          background:${b.status === 'clean' ? 'rgba(34,197,94,.1);color:#16A34A' : 'rgba(184,122,0,.1);color:#B87A00'}">
-          ${b.status === 'clean' ? 'Propre' : 'Mod\u00E9r\u00E9'}
-        </span>
+      <td style="padding:12px 16px;border-bottom:1px solid #f0f0f0;text-align:right;vertical-align:middle">
+        ${badgeInner}
       </td>
-    </tr>`).join('')
+    </tr>`
+  }).join('')
 
   return `<!DOCTYPE html>
 <html>
@@ -167,13 +177,21 @@ async function main() {
   const usedForecast = Object.keys(satStatusMap).length > 0
   console.log(`Saturday forecast (${saturdayDate}): ${usedForecast ? Object.keys(satStatusMap).length + ' beaches' : 'none, using current'}`)
 
-  // Merge weekend status into beaches: prefer Saturday forecast over current status
+  // Merge weekend status + unified score into beaches
+  // Prefer Saturday forecast status over current, and attach score/label/reason
+  // from pipeline levels so the email can rank by year-round experiential quality
   const beachMap = {}
   for (const b of beaches) beachMap[b.id] = b
   for (const level of (sargData.levels || [])) {
     const beachId = SARG_TO_BEACH[level.id]
     if (beachId && beachMap[beachId]) {
       beachMap[beachId].status = satStatusMap[level.id] || level.status
+      if (typeof level.score === 'number') {
+        beachMap[beachId].unifiedScore = level.score
+        beachMap[beachId].unifiedLabel = level.label
+        beachMap[beachId].unifiedColor = level.color
+        beachMap[beachId].unifiedReason = level.reason
+      }
     }
   }
 
@@ -188,19 +206,34 @@ async function main() {
       avoid: islandBeaches.filter(b => b.status === 'avoid').length,
     }
 
-    // Top 5 clean beaches (prefer with kids + parking)
-    const topBeaches = islandBeaches
-      .filter(b => b.status === 'clean')
-      .sort((a, b) => (b.kids + b.parking + b.snorkel) - (a.kids + a.parking + a.snorkel))
+    // Top 5 beaches ranked by unified score (year-round quality)
+    // Falls back to clean+amenities for beaches without pipeline score
+    const rank = b => {
+      const s = typeof b.unifiedScore === 'number' ? b.unifiedScore : -1
+      const amen = (b.kids || 0) + (b.parking || 0) + (b.snorkel || 0)
+      return s * 10 + amen
+    }
+    const scoreCandidates = islandBeaches.filter(b =>
+      typeof b.unifiedScore === 'number' && b.unifiedScore >= 40 && b.status !== 'avoid'
+    )
+    const topBeaches = (scoreCandidates.length >= 3
+      ? scoreCandidates
+      : islandBeaches.filter(b => b.status === 'clean' || b.status === 'moderate')
+    )
+      .sort((a, b) => rank(b) - rank(a))
       .slice(0, 5)
 
     const html = buildEmailHTML(island, topBeaches, stats, domain)
 
+    const bestScore = topBeaches[0]?.unifiedScore
+    const bestLabel = topBeaches[0]?.unifiedLabel
     console.log(`\n${islandName}: ${stats.clean} propres, ${stats.moderate} moderees, ${stats.avoid} alertes`)
-    console.log(`Top 5: ${topBeaches.map(b => b.name).join(', ')}`)
+    console.log(`Top 5: ${topBeaches.map(b => `${b.name}${typeof b.unifiedScore === 'number' ? ` (${b.unifiedScore})` : ''}`).join(', ')}`)
 
     // Send to Apps Script which will dispatch to all subscribers
-    const subject = `Ce weekend : ${stats.clean} plages propres en ${islandName}`
+    const subject = typeof bestScore === 'number'
+      ? `Ce weekend en ${islandName} : ${topBeaches[0].name} ${bestScore}/100 ${bestLabel || ''}`
+      : `Ce weekend : ${stats.clean} plages propres en ${islandName}`
     const res = await post(WEBHOOK_URL, {
       type: 'weekend_email',
       island: island.toUpperCase(),
