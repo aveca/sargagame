@@ -206,10 +206,11 @@ function communityBias(reports) {
 }
 
 /**
- * Onshore wind drift effect — kept from v2 but bounded smaller.
- * Effect is small: wind influences banks drift more than beach-local AFAI.
+ * Surface drift effect (wind + waves + ocean current → onshore component).
+ * Uses real marine data (waves for physical Stokes drift, current direction)
+ * when available. Falls back to wind-based 2.5% Stokes estimate if not.
  */
-function windDriftEffect(beach, hourlyWind, dayIndex) {
+function windDriftEffect(beach, hourlyWind, dayIndex, marineData) {
   if (!hourlyWind || !hourlyWind.length) return 0
 
   const startH = dayIndex * 24
@@ -227,17 +228,48 @@ function windDriftEffect(beach, hourlyWind, dayIndex) {
   const avgSpeed = sumSpeed / relevant.length
   const avgDir = (Math.atan2(sumSinDir / relevant.length, sumCosDir / relevant.length) * 180 / Math.PI + 360) % 360
 
-  const stokes = avgSpeed * 0.025
-  const windBearing = (avgDir + 180) % 360
-  // coastNormal: direction the coast faces. Wind pushing FROM that direction is "onshore".
+  // Stokes drift: prefer wave-based physical calculation from marine data
+  const island = beach.island || (beach.lat < 15.5 ? 'mq' : 'gp')
+  const marine = marineData?.[island]
+  const marineH = marine?.hourly?.slice(startH, Math.min(endH, (marine?.hourly?.length || 0)))
+  let stokes, driftBearing
+  if (marineH?.length > 0) {
+    // Physical Stokes drift from waves: V_s ≈ 0.016 * H² / T (m/s → km/h)
+    let sumStk = 0, sumStkSin = 0, sumStkCos = 0, n = 0
+    for (const mh of marineH) {
+      if (mh.waveH > 0 && mh.wavePeriod > 1) {
+        const s = 0.016 * (mh.waveH ** 2) / mh.wavePeriod * 3.6 // km/h
+        const dir = (mh.waveDir + 180) % 360 // push direction
+        sumStk += s; sumStkSin += Math.sin(dir * Math.PI / 180); sumStkCos += Math.cos(dir * Math.PI / 180); n++
+      }
+    }
+    if (n > 0) {
+      stokes = sumStk / n
+      driftBearing = (Math.atan2(sumStkSin / n, sumStkCos / n) * 180 / Math.PI + 360) % 360
+    } else {
+      stokes = avgSpeed * 0.025
+      driftBearing = (avgDir + 180) % 360
+    }
+  } else {
+    stokes = avgSpeed * 0.025
+    driftBearing = (avgDir + 180) % 360
+  }
+
+  // coastNormal: direction the coast faces. Drift pushing in that direction is "onshore".
   const coastBearing = beach.coastNormal || (beach.lng < -61.5 ? 270 : 260)
-  const angleDiff = (windBearing - coastBearing + 360) % 360
+  const angleDiff = (driftBearing - coastBearing + 360) % 360
   const onshoreComponent = stokes * Math.cos(angleDiff * Math.PI / 180)
 
-  // Increased multiplier (0.02→0.035) — south-coast beaches now correctly capture
-  // onshore wind that was previously under-weighted due to wrong coastBearing
-  const effect = onshoreComponent * 0.035
-  return Math.max(-0.03, Math.min(0.06, Math.round(effect * 1000) / 1000))
+  // Ocean current contribution (adds to onshore push)
+  let currentOnshore = 0
+  if (marine?.current?.speed) {
+    const curKmh = marine.current.speed * 3.6
+    const curAngle = (marine.current.dir - coastBearing + 360) % 360
+    currentOnshore = curKmh * Math.cos(curAngle * Math.PI / 180) * 0.01 // scaled down
+  }
+
+  const effect = (onshoreComponent * 0.035) + currentOnshore
+  return Math.max(-0.04, Math.min(0.08, Math.round(effect * 1000) / 1000))
 }
 
 /**
@@ -250,7 +282,7 @@ function windDriftEffect(beach, hourlyWind, dayIndex) {
  * @param {Array} [banks] - sargassum-banks.json entries (optional)
  * @param {object} [communityReports] - { beachId: { clean, moderate, avoid, total } } (optional)
  */
-function buildHonestForecast(levels, windForecast, history, beaches, banks, communityReports) {
+function buildHonestForecast(levels, windForecast, history, beaches, banks, communityReports, marineData) {
   const weekly = {}
   const hasWind = !!(windForecast && (windForecast.mq?.hourly?.length || windForecast.gp?.hourly?.length))
   const hasBanks = Array.isArray(banks) && banks.length > 0
@@ -305,7 +337,7 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
         const dayDecay = Math.exp(-DECAY_LAMBDA) // ~0.82 per day
 
         // Wind: small contribution, weaker as days increase
-        const windEffect = beach && i <= 3 ? windDriftEffect(beach, hourlyWind, i) * (1 - (i - 1) * 0.25) : 0
+        const windEffect = beach && i <= 3 ? windDriftEffect(beach, hourlyWind, i, marineData) * (1 - (i - 1) * 0.25) : 0
 
         // Trend: only if r² passed gate (computeSatelliteTrend returns null otherwise)
         // Apply only for days 1-3 where short-term trend matters
