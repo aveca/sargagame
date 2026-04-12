@@ -1698,6 +1698,55 @@ function BeachPicker({island,allBeaches,onSelect,lang,userPos,onDismiss}){
    TODO: revisit when UX flow for "my beach status" is decided. */
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   PUSH PRIMER — contextual soft prompt before OneSignal native dialog.
+   Why: ga4-diagnose 2026-04-12 measured opt-in = 23/376 = 6%. Industry best
+   practice (OneSignal blog, Urban Airship 2025 report): a contextual soft
+   prompt before the native browser dialog lifts opt-in 2-3×. The native
+   prompt cannot be re-shown if denied, so we filter the audience first.
+   Render rules: top banner, slideDown, dismissible, 7-day cooldown.
+   ═══════════════════════════════════════════════════════════════════════════ */
+function PushPrimer({lang,onAccept,onDismiss}){
+  return(
+    <div style={{
+      position:"fixed",top:0,left:0,right:0,zIndex:780,
+      paddingTop:"env(safe-area-inset-top, 0px)",
+      background:"var(--sg-card,#fff)",
+      boxShadow:"0 4px 20px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04)",
+      animation:"sg-threat-slide .4s cubic-bezier(.22,1,.36,1)",
+    }}>
+      <div style={{
+        maxWidth:480,margin:"0 auto",padding:"12px 14px",
+        display:"flex",alignItems:"center",gap:10,
+      }}>
+        <div style={{fontSize:22,flexShrink:0}}>{"\ud83d\udd14"}</div>
+        <div style={{flex:1,minWidth:0,fontSize:13,fontWeight:600,
+          color:"var(--sg-ink,#0D0D0D)",lineHeight:1.3}}>
+          {lang==="en"
+            ?"Get notified when your favorite beaches change."
+            :"Sois pr\u00e9venu si tes plages favorites changent."}
+        </div>
+        <button onClick={onAccept} style={{
+          background:"#16a34a",color:"#fff",border:"none",
+          padding:"9px 14px",borderRadius:10,fontSize:13,fontWeight:700,
+          cursor:"pointer",flexShrink:0,whiteSpace:"nowrap",
+          minHeight:36,
+        }}>
+          {lang==="en"?"Activate":"Activer"}
+        </button>
+        <button onClick={onDismiss} aria-label={lang==="en"?"Dismiss":"Plus tard"}
+          style={{
+            background:"transparent",border:"none",padding:"8px 4px",
+            fontSize:18,color:"var(--sg-mid,#686868)",cursor:"pointer",
+            flexShrink:0,minHeight:36,minWidth:32,
+          }}>
+          {"\u2715"}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    DAILY RECO STRIP — "Ta meilleure plage maintenant" — smart forecast pattern
    Data-driven decision (2026-04-10 audit premium):
    • GSC intent = "aujourd'hui / temps réel" (162 clics top query, 0 sur "weekend")
@@ -2311,8 +2360,8 @@ function PremiumModal({onClose,lang,source,onActivated}){
 
         <ul style={{listStyle:"none",padding:0,margin:"0 0 16px",display:"flex",flexDirection:"column",gap:12}}>
           {(lang==="en"
-            ?["Morning pick — your best beach for today","Alerts before sargassum reaches your favourites","4-day forecast unlocked — plan your outings"]
-            :["Brief matin — ta meilleure plage du jour","Alertes push sur tes plages favorites","4 jours de prévisions débloqués — planifie tes sorties"]
+            ?["Daily pick — your best beach, updated in real time","Alerts before sargassum hits your favourites","Morning brief at 7am — ready for you, no need to open the app"]
+            :["Reco du jour — ta meilleure plage, mise à jour en temps réel","Alertes avant que les sargasses arrivent sur tes favoris","Brief matin 7h — prêt pour toi, sans ouvrir l'app"]
           ).map((f,i)=>(
             <li key={i} style={{display:"flex",alignItems:"center",gap:10,fontSize:14}}>
               <span style={{color:C.gold,fontSize:18}}>✓</span>{f}
