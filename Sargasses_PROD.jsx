@@ -407,14 +407,8 @@ function interpolateForecast(beach,sentinels,weeklyData,k=3,power=2){
   }
 }
 
-// Beaches missing Google Places photos — use satellite fallback
-const NO_PHOTO=new Set([])
-
 function getBeachPhoto(beach){
   if(!beach)return null
-  // Skip if no Google Places photo exists
-  if(NO_PHOTO.has(beach.id))return null
-  // Google Places photo (129/135 plages, 1600px HQ)
   return`/beaches/gplace-${beach.id}.jpg?v=2`
 }
 
@@ -2811,72 +2805,6 @@ function FeedbackWidget(){
           <div style={{fontSize:13,fontWeight:600,color:"var(--sg-ink)",marginTop:4}}>Merci pour ton retour !</div>
         </div>
       )}
-    </div>
-  )
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   RETURN USER CARD — inline welcome for returning users (J+1/J+7)
-   Shows on map, not a popup. Auto-dismisses after 6s.
-   ═══════════════════════════════════════════════════════════════════════════ */
-function ReturnUserCard({lang,allBeaches}){
-  const[visible,setVisible]=useState(false)
-  const[dismissed,setDismissed]=useState(false)
-  // Capture last visit ONCE on mount (before useEffect overwrites it)
-  const lastVisitRef=useRef(g("sg_last_visit",0))
-
-  const info=useMemo(()=>{
-    const lastVisit=lastVisitRef.current
-    const now=Date.now()
-    if(!lastVisit||now-lastVisit<12*3600*1000)return null // less than 12h ago
-    const daysSince=Math.round((now-lastVisit)/(24*3600*1000))
-    const changed=allBeaches.filter(b=>b.status&&b.status!=="clean").length
-    return{daysSince,changed}
-  },[allBeaches])
-
-  useEffect(()=>{
-    if(!info||dismissed||sessionStorage.getItem("sg_return_card_shown"))return
-    const t=setTimeout(()=>setVisible(true),1500)
-    const auto=setTimeout(()=>{setVisible(false);sessionStorage.setItem("sg_return_card_shown","1")},8000)
-    return()=>{clearTimeout(t);clearTimeout(auto)}
-  },[info,dismissed])
-
-  // Record visit time for next session
-  useEffect(()=>{s("sg_last_visit",Date.now())},[])
-
-  if(!visible||!info)return null
-
-  const dismiss=()=>{setDismissed(true);setVisible(false);sessionStorage.setItem("sg_return_card_shown","1")}
-
-  return(
-    <div style={{position:"absolute",
-      top:"max(108px, calc(env(safe-area-inset-top,12px) + 100px))",
-      left:12,right:12,zIndex:745,pointerEvents:"none"}}>
-      <div style={{pointerEvents:"auto",
-        background:"rgba(255,255,255,.94)",backdropFilter:"blur(14px)",WebkitBackdropFilter:"blur(14px)",
-        borderRadius:14,padding:"12px 14px",
-        boxShadow:"0 4px 20px rgba(0,0,0,.1),0 0 0 1px rgba(0,158,142,.1)",
-        display:"flex",alignItems:"center",gap:10,
-        animation:"slideUp .35s cubic-bezier(.22,1,.36,1)"}}>
-        <span style={{fontSize:18,flexShrink:0}}>👋</span>
-        <div style={{flex:1,minWidth:0}}>
-          <div style={{fontSize:13,fontWeight:700,color:"var(--sg-ink)"}}>
-            {info.daysSince>=7
-              ?(lang==="en"?"Welcome back! Here's what changed":"Bon retour ! Voici ce qui a changé")
-              :(lang==="en"?"Welcome back!":"Bon retour !")}
-          </div>
-          <div style={{fontSize:11,color:"var(--sg-mid)",marginTop:1}}>
-            {info.changed>0
-              ?(lang==="en"
-                ?`${info.changed} beach${info.changed>1?"es":""} changed status since your last visit`
-                :`${info.changed} plage${info.changed>1?"s":""} ${info.changed>1?"ont":"a"} changé de statut`)
-              :(lang==="en"?"All beaches stable — enjoy!":"Toutes les plages sont stables")}
-          </div>
-        </div>
-        <button onClick={dismiss} style={{
-          background:"none",border:"none",color:"var(--sg-mid)",cursor:"pointer",
-          fontSize:14,padding:4,flexShrink:0}}>✕</button>
-      </div>
     </div>
   )
 }
