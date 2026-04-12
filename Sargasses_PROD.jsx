@@ -415,7 +415,7 @@ function AbDebug(){
   useEffect(()=>{try{if(new URLSearchParams(window.location.search).get("ab_debug")==="1")setShow(true)}catch{}},[])
   if(!show)return null
   const ab=g("sg_ab",{})
-  const tests={onb1:["control","skip"],vp1:["feature","outcome"]}
+  const tests={vp1:["feature","outcome"],em1:["control","curiosity"]}
   return(
     <div style={{position:"fixed",top:8,right:8,zIndex:99999,background:"rgba(0,0,0,.9)",color:"#0f0",
       padding:12,borderRadius:8,fontSize:11,fontFamily:"monospace",maxWidth:260}}>
@@ -3731,12 +3731,14 @@ function InlineEmailCapture({lang}){
   const tracked=useRef(false)
   // Show from first visit (was visit 2+). Already subscribed? hide.
   if(dismissed||g("sg_email_prompt",false))return null
+  // em1 test: control (loss-frame "know before you go") vs curiosity ("where's the best beach today?")
+  const em1V=abVariant("em1",["control","curiosity"],[.5,.5])
   if(!tracked.current){tracked.current=true;track("sg_smart_email_trigger",{visit_count:g("sg_visit_count",0)});track("sg_email_view")}
 
   const handleSubmit=e=>{
     e.preventDefault()
     if(!email||!email.includes("@"))return
-    track("sg_email_submit",{source:"inline_beach"})
+    track("sg_email_submit",{source:"inline_beach",variant:em1V})
     s("sg_email",email)
     s("sg_email_prompt",true)
     setSubmitted(true)
@@ -3769,14 +3771,18 @@ function InlineEmailCapture({lang}){
           {lang==="en"?"FREE":"GRATUIT"}
         </div>
         <div style={{fontSize:14,fontWeight:700,color:"#fff",marginBottom:4}}>
-          {SARGASSES_SEASON==="high"
-            ?(lang==="en"?"Beaches are changing fast":"Les plages changent tous les jours")
-            :(lang==="en"?"Know before you go":"Sois prévenu avant de partir")}
+          {em1V==="curiosity"
+            ?(lang==="en"?"Where's the cleanest beach today?":"Où est la plus belle plage aujourd'hui ?")
+            :SARGASSES_SEASON==="high"
+              ?(lang==="en"?"Beaches are changing fast":"Les plages changent tous les jours")
+              :(lang==="en"?"Know before you go":"Sois prévenu avant de partir")}
         </div>
         <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginBottom:12,lineHeight:1.4}}>
-          {SARGASSES_SEASON==="high"
-            ?(lang==="en"?"Get alerted when your beach status changes. Free.":"Reçois une alerte quand ta plage change de statut. Gratuit.")
-            :(lang==="en"?"Weekly beach status + alerts if things change. Free.":"Bilan hebdo + alerte si ça change. Gratuit.")}
+          {em1V==="curiosity"
+            ?(lang==="en"?"We tell you every morning. Free.":"On te le dit chaque matin. Gratuit.")
+            :SARGASSES_SEASON==="high"
+              ?(lang==="en"?"Get alerted when your beach status changes. Free.":"Reçois une alerte quand ta plage change de statut. Gratuit.")
+              :(lang==="en"?"Weekly beach status + alerts if things change. Free.":"Bilan hebdo + alerte si ça change. Gratuit.")}
         </div>
         <form onSubmit={handleSubmit} style={{display:"flex",gap:8,alignItems:"center"}}>
           <input type="email" inputMode="email" autoComplete="email" placeholder={lang==="en"?"your@email.com":"ton@email.com"}
