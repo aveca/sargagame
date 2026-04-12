@@ -3231,45 +3231,76 @@ export default function App(){
   // Analytics: session start
   useEffect(()=>{track("sg_session_start",{island,is_premium:isPremium,is_returning:!!g("sg_seen",0)});s("sg_seen",1)},[])
 
-  // Auto-load OneSignal at a VALUE moment, not at mount.
-  // Old timing (1.5s PWA / 12s browser) gave 6% opt-in on 376 prompted sessions.
-  // Best practice 2026 (OneSignal, Urban Airship, WU): prompt AFTER the user
-  // has experienced value, not on arrival. Trigger = first beach opened.
-  // Fallback timer at 60s so users who don't open a beach still get prompted.
-  // Measured via 'trigger' param on sg_push_auto_loaded so we can A/B the lift.
+  // Push opt-in: contextual primer + native OneSignal prompt at a VALUE moment.
+  // Old timing (1.5s PWA / 12s browser, no primer) gave 6% opt-in on 376 sessions.
+  // New flow (2026-04-12):
+  //   1. User opens first beach (sg:value_moment)
+  //   2. After 1.5s delay, show PushPrimer banner (top, dismissable)
+  //   3. User clicks "Activer" -> loadOneSignal() -> native prompt -> opt-in
+  //   4. User clicks "X" -> 7-day cooldown, no native prompt
+  //   5. Fallback: 60s on browser, 30s on PWA -> direct loadOneSignal() (legacy 6% floor)
+  // Skipped if recently dismissed, already loaded, or iOS Safari (not standalone).
+  const[showPushPrimer,setShowPushPrimer]=useState(false)
+  const pushLoadedRef=useRef(false)
+
+  const loadPushNow=useCallback((trigger)=>{
+    if(pushLoadedRef.current)return
+    if(g("sg_push_loaded_once",0)){pushLoadedRef.current=true;return}
+    pushLoadedRef.current=true
+    try{
+      window.loadOneSignal?.()
+      s("sg_push_loaded_once",1)
+      track("sg_push_auto_loaded",{trigger})
+    }catch(e){}
+    setShowPushPrimer(false)
+  },[])
+
   useEffect(()=>{
     if(g("sg_push_loaded_once",0))return
     const isIos=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream
     const isStandalone=window.matchMedia("(display-mode: standalone)").matches
       ||window.navigator.standalone===true
-    // Skip iOS Safari (not standalone) — push won't work anyway, prompt is useless
     if(isIos&&!isStandalone)return
 
-    let loaded=false
-    const doLoad=(trigger)=>{
-      if(loaded)return
-      loaded=true
-      try{
-        window.loadOneSignal?.()
-        s("sg_push_loaded_once",1)
-        track("sg_push_auto_loaded",{standalone:isStandalone,ios:isIos,trigger})
-      }catch(e){}
-    }
+    const dismissedAt=g("sg_push_primer_dismissed_at",0)
+    const SEVEN_DAYS=7*24*3600*1000
+    const recentlyDismissed=dismissedAt&&(Date.now()-dismissedAt)<SEVEN_DAYS
 
-    // Primary trigger: fire when user opens their first beach (value moment).
-    // onBeachClick dispatches this custom event below.
-    const onValueMoment=()=>doLoad("beach_open")
+    let primerTimeout=null
+    const onValueMoment=()=>{
+      if(pushLoadedRef.current)return
+      if(recentlyDismissed){
+        loadPushNow("beach_open_no_primer")
+        return
+      }
+      if(primerTimeout)return
+      primerTimeout=setTimeout(()=>{
+        if(pushLoadedRef.current)return
+        setShowPushPrimer(true)
+        track("sg_push_primer_shown",{trigger:"beach_open"})
+      },1500)
+    }
     window.addEventListener("sg:value_moment",onValueMoment)
 
-    // Fallback: still prompt after 60s even if user hasn't clicked a beach.
-    // Keeps the 6% floor from the old behavior intact for passive visitors.
-    const FALLBACK_MS=isStandalone?20000:60000
-    const t=setTimeout(()=>doLoad("fallback_timer"),FALLBACK_MS)
+    const FALLBACK_MS=isStandalone?30000:60000
+    const t=setTimeout(()=>loadPushNow("fallback_timer"),FALLBACK_MS)
 
     return()=>{
       clearTimeout(t)
+      if(primerTimeout)clearTimeout(primerTimeout)
       window.removeEventListener("sg:value_moment",onValueMoment)
     }
+  },[loadPushNow])
+
+  const onPushPrimerAccept=useCallback(()=>{
+    track("sg_push_primer_accept",{})
+    loadPushNow("primer_accept")
+  },[loadPushNow])
+
+  const onPushPrimerDismiss=useCallback(()=>{
+    track("sg_push_primer_dismiss",{})
+    s("sg_push_primer_dismissed_at",Date.now())
+    setShowPushPrimer(false)
   },[])
 
   // F2: sync OneSignal tags so backend can segment pushes by premium + island
@@ -3698,6 +3729,12 @@ export default function App(){
             )}
           </div>
         </div>
+
+        {/* PUSH PRIMER — contextual soft prompt before native OneSignal dialog.
+            Triggered 1.5s after first beach_open. Dismissable. 7-day cooldown. */}
+        {showPushPrimer&&(
+          <PushPrimer lang={lang} onAccept={onPushPrimerAccept} onDismiss={onPushPrimerDismiss}/>
+        )}
 
         {/* DAILY RECO STRIP — replaces BestBeachWidget (masked "••••") with visible reco
             Hidden when ThreatBanner active, sheet open, onboarding, or searching */}
