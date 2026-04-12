@@ -1959,7 +1959,7 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
   const nClean=beaches.filter(b=>b.status==="clean").length
   return(
     <div style={{height:"100%",overflowY:"auto",
-      paddingTop:"calc(140px + env(safe-area-inset-top,0px))",paddingBottom:"calc(70px + env(safe-area-inset-bottom,12px))",
+      paddingTop:"calc(var(--sg-header-offset,140px) + env(safe-area-inset-top,0px))",paddingBottom:"calc(70px + env(safe-area-inset-bottom,12px))",
       background:"var(--sg-bg,#FDFCF7)",maxWidth:600,margin:"0 auto"}}>
       <div style={{padding:"8px 16px 0",fontSize:13,color:"var(--sg-mid,#686868)",fontWeight:500}}>
         {LL.nClean.replace("{n}",nClean)} / {beaches.length}
@@ -3234,9 +3234,9 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
   const srcColor=isLive?C.green:C.amber
   const fresh=formatFreshness(updatedAt,lang)
   return(
-    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
+    <div className="sg-header-row" style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:6,flexWrap:"wrap",rowGap:8}}>
       {/* Island toggle — sliding pill indicator */}
-      <div style={{display:"flex",borderRadius:12,overflow:"hidden",position:"relative",
+      <div style={{display:"flex",borderRadius:12,overflow:"hidden",position:"relative",flexShrink:0,
         border:"1.5px solid var(--sg-border,rgba(0,0,0,.08))",
         background:"var(--sg-card,#fff)",boxShadow:"0 2px 8px rgba(0,0,0,.06)"}}>
         <div style={{position:"absolute",top:2,bottom:2,width:"calc(50% - 2px)",borderRadius:10,
@@ -3246,7 +3246,7 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
           boxShadow:"0 2px 6px rgba(232,168,0,.3)"}}/>
         {["mq","gp"].map(id=>(
           <button key={id} onClick={()=>{onIslandChange(id);track("sg_island_switch",{to:id})}} style={{
-            padding:"8px 14px",border:"none",cursor:"pointer",
+            padding:"8px 12px",border:"none",cursor:"pointer",
             background:"transparent",position:"relative",zIndex:1,
             color:island===id?"#0D0D0D":"var(--sg-mid,#686868)",
             fontSize:12,fontWeight:700,fontFamily:"inherit",
@@ -3259,28 +3259,28 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
       <a href="https://marine.copernicus.eu" target="_blank" rel="noopener noreferrer"
         onClick={()=>track("sg_live_badge_click",{source:dataSource})}
         style={{display:"flex",alignItems:"center",gap:6,
-          padding:"6px 12px",borderRadius:100,
+          padding:"6px 10px",borderRadius:100,flex:"0 1 auto",minWidth:0,
           background:"var(--sg-card,#fff)",
           boxShadow:"0 2px 8px rgba(0,0,0,.06)",
           border:`1px solid ${isLive?"var(--sg-border)":"rgba(184,122,0,.2)"}`,
           fontSize:11,fontWeight:600,color:isLive?C.teal:C.amber,
-          textDecoration:"none",cursor:"pointer"}}>
-          <span className={isLive?"pulse":""} style={{width:8,height:8,borderRadius:4,background:srcColor}}/>
-          <span>{srcLabel}</span>
-          {fresh&&<span style={{opacity:.55,fontWeight:500}}>· {fresh}</span>}
-          <span style={{opacity:.55,fontWeight:500}}>· {beachCount||47} {lang==="en"?"beaches":lang==="es"?"playas":"plages"}</span>
+          textDecoration:"none",cursor:"pointer",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+          <span className={isLive?"pulse":""} style={{width:8,height:8,borderRadius:4,background:srcColor,flexShrink:0}}/>
+          <span style={{flexShrink:0}}>{srcLabel}</span>
+          {fresh&&<span style={{opacity:.55,fontWeight:500,flexShrink:1,overflow:"hidden",textOverflow:"ellipsis"}}>· {fresh}</span>}
+          <span style={{opacity:.55,fontWeight:500,flexShrink:0}}>· {beachCount||47} {lang==="en"?"beaches":lang==="es"?"playas":"plages"}</span>
         </a>
 
       {/* Theme + Lang */}
-      <div style={{display:"flex",gap:4}}>
+      <div style={{display:"flex",gap:4,flexShrink:0}}>
         <button onClick={onThemeToggle} aria-label={theme==="dark"?"Light mode":"Dark mode"} style={{
-          width:44,height:44,borderRadius:12,border:"1px solid var(--sg-border)",
+          width:40,height:40,borderRadius:12,border:"1px solid var(--sg-border)",
           background:"var(--sg-card,#fff)",cursor:"pointer",fontSize:16,
           display:"flex",alignItems:"center",justifyContent:"center",
           boxShadow:"0 2px 8px rgba(0,0,0,.06)",
         }}>{theme==="dark"?"☀️":"🌙"}</button>
         <button onClick={onLangToggle} aria-label={lang==="fr"?"Switch to English":lang==="en"?"Cambiar a español":"Passer en français"} style={{
-          width:44,height:44,borderRadius:12,border:"1px solid var(--sg-border)",
+          width:40,height:40,borderRadius:12,border:"1px solid var(--sg-border)",
           background:"var(--sg-card,#fff)",cursor:"pointer",fontSize:12,fontWeight:700,
           fontFamily:"inherit",color:"var(--sg-ink)",
           display:"flex",alignItems:"center",justifyContent:"center",
