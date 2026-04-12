@@ -18,7 +18,10 @@
         13
       ],
       "metric": "sg_forecast_lock_click",
-      "_source": "sheets"
+      "_source": "sheets",
+      "_status": "ended",
+      "_winner": "control",
+      "_note": "control 3.66% vs loss framing 2.35% — simple CTA wins, applied 2026-04-12"
     },
     {
       "id": "modal1",
@@ -72,7 +75,10 @@
         23
       ],
       "metric": "sg_forecast_lock_click",
-      "_source": "sheets"
+      "_source": "sheets",
+      "_status": "ended",
+      "_winner": "control",
+      "_note": "control 3.29% (1 free day) vs two_free 2.99% — 1 free day wins, applied 2026-04-12"
     },
     {
       "id": "vp1",
