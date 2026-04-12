@@ -3295,7 +3295,25 @@ export default function App(){
   const onPushPrimerAccept=useCallback(()=>{
     track("sg_push_primer_accept",{})
     loadPushNow("primer_accept")
-  },[loadPushNow])
+    // Auto-favorite the 3 closest beaches so F2 has something to alert on.
+    // Only fires if user has zero favorites + we have a GPS position +
+    // beaches loaded. Tags sync via the existing F2 useEffect on next render.
+    try{
+      const favs=g("sg_fav",[])
+      if(Array.isArray(favs)&&favs.length===0&&userPos&&allBeaches?.length){
+        const islandBeaches=allBeaches
+          .filter(b=>b.island===island&&b.lat&&b.lng)
+          .map(b=>({...b,_d:haversine(userPos.lat,userPos.lng,b.lat,b.lng)}))
+          .sort((a,b)=>a._d-b._d)
+          .slice(0,3)
+        const ids=islandBeaches.map(b=>b.id)
+        if(ids.length){
+          setFavorites(ids)
+          track("sg_auto_fav_set",{count:ids.length,beach_ids:ids.join(","),source:"primer_accept"})
+        }
+      }
+    }catch(e){}
+  },[loadPushNow,userPos,allBeaches,island])
 
   const onPushPrimerDismiss=useCallback(()=>{
     track("sg_push_primer_dismiss",{})
@@ -3304,7 +3322,9 @@ export default function App(){
   },[])
 
   // F2: sync OneSignal tags so backend can segment pushes by premium + island
-  // Re-runs when isPremium or island changes. Fav tags are set in toggleFav.
+  // Re-runs when isPremium, island, OR favorites change. Fav tags also set
+  // individually in toggleFav for immediate effect; this useEffect catches
+  // batch updates (e.g. auto-favorite on primer accept).
   useEffect(()=>{
     try{
       if(!window.OneSignalDeferred)return
@@ -3312,14 +3332,12 @@ export default function App(){
         if(isPremium)O.User.addTag("sg_premium","1")
         else O.User.removeTag("sg_premium")
         O.User.addTag("sg_island",island)
-        // Sync existing favorites on mount/change
-        const favs=g("sg_fav",[])
-        if(Array.isArray(favs)){
-          for(const fid of favs)O.User.addTag("fav_"+fid,"1")
+        if(Array.isArray(favorites)){
+          for(const fid of favorites)O.User.addTag("fav_"+fid,"1")
         }
       })
     }catch(e){}
-  },[isPremium,island])
+  },[isPremium,island,favorites])
 
   // Referral detection: check ?ref= param on landing
   const[showReferralBanner,setShowReferralBanner]=useState(false)
