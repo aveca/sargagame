@@ -189,8 +189,10 @@ jobs:
           git diff --cached --quiet || git commit -m "chore: update Copernicus data $(date -u +'%Y-%m-%d %H:%M UTC')"
           git push || (echo "::warning::git push failed — retrying with rebase" && git pull --rebase && git push) || echo "::error::git push failed after rebase"
 
-      # ── 4. Deploy Martinique via FTP ──────────────────────
-      - name: Deploy Martinique (FTP)
+      # ── 4. Deploy Martinique via FTP (with retry on timeout) ──
+      - name: Deploy Martinique (FTP) — attempt 1
+        id: ftp_mq_1
+        continue-on-error: true
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER_MQ }}
@@ -200,8 +202,32 @@ jobs:
           server-dir: ./
           dangerous-clean-slate: false
 
-      # ── 5. Deploy Guadeloupe via FTP ──────────────────────
-      - name: Deploy Guadeloupe (FTP)
+      - name: Deploy Martinique (FTP) — retry after 30s
+        if: steps.ftp_mq_1.outcome == 'failure'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER_MQ }}
+          username: ${{ secrets.FTP_USERNAME_MQ }}
+          password: ${{ secrets.FTP_PASSWORD_MQ }}
+          local-dir: ./martinique-ftp/
+          server-dir: ./
+          dangerous-clean-slate: false
+
+      # ── 5. Deploy Guadeloupe via FTP (with retry on timeout) ──
+      - name: Deploy Guadeloupe (FTP) — attempt 1
+        id: ftp_gp_1
+        continue-on-error: true
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER_GP }}
+          username: ${{ secrets.FTP_USERNAME_GP }}
+          password: ${{ secrets.FTP_PASSWORD_GP }}
+          local-dir: ./guadeloupe-ftp/
+          server-dir: ./
+          dangerous-clean-slate: false
+
+      - name: Deploy Guadeloupe (FTP) — retry after 30s
+        if: steps.ftp_gp_1.outcome == 'failure'
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER_GP }}
@@ -234,6 +260,9 @@ jobs:
     needs: update-and-deploy
     if: failure() && github.run_attempt == '1'
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
     steps:
       - name: Wait 5 minutes before retry
         run: sleep 300
