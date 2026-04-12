@@ -1,7 +1,7 @@
 {
   "_comment": "Auto-fetched from GA4 Data API (with Sheets fallback).",
-  "_fetchedAt": "2026-04-12T00:34:35.940Z",
-  "_source": "none",
+  "_fetchedAt": "2026-04-12T03:07:21.786Z",
+  "_source": "sheets",
   "tests": [
     {
       "id": "lock1",
@@ -10,14 +10,15 @@
         "loss"
       ],
       "sessions": [
-        0,
-        0
+        764,
+        553
       ],
       "conversions": [
-        0,
-        0
+        28,
+        13
       ],
-      "metric": "sg_forecast_lock_click"
+      "metric": "sg_forecast_lock_click",
+      "_source": "sheets"
     },
     {
       "id": "modal1",
@@ -26,14 +27,15 @@
         "family"
       ],
       "sessions": [
-        0,
-        0
+        356,
+        143
       ],
       "conversions": [
-        0,
-        0
+        5,
+        3
       ],
-      "metric": "sg_premium_modal_cta"
+      "metric": "sg_premium_modal_cta",
+      "_source": "sheets"
     },
     {
       "id": "onb1",
@@ -42,14 +44,15 @@
         "skip"
       ],
       "sessions": [
-        0,
-        0
+        13,
+        13
       ],
       "conversions": [
         0,
         0
       ],
-      "metric": "sg_conversion"
+      "metric": "sg_conversion",
+      "_source": "sheets"
     },
     {
       "id": "free1",
@@ -58,14 +61,15 @@
         "two_free"
       ],
       "sessions": [
-        0,
-        0
+        547,
+        770
       ],
       "conversions": [
-        0,
-        0
+        18,
+        23
       ],
-      "metric": "sg_forecast_lock_click"
+      "metric": "sg_forecast_lock_click",
+      "_source": "sheets"
     },
     {
       "id": "vp1",
@@ -74,14 +78,15 @@
         "outcome"
       ],
       "sessions": [
-        0,
-        0
+        72,
+        36
       ],
       "conversions": [
         0,
         0
       ],
-      "metric": "sg_weekend_banner_click"
+      "metric": "sg_weekend_banner_click",
+      "_source": "sheets"
     },
     {
       "id": "price1",
@@ -90,14 +95,15 @@
         "season"
       ],
       "sessions": [
-        0,
-        0
+        254,
+        190
       ],
       "conversions": [
-        0,
+        1,
         0
       ],
-      "metric": "sg_checkout_submit"
+      "metric": "sg_checkout_submit",
+      "_source": "sheets"
     }
   ]
 }

@@ -1,59 +1,64 @@
 {
-  "generatedAt": "2026-04-10T11:52:59.640Z",
+  "generatedAt": "2026-04-12T03:00:00.643Z",
   "sites": {
     "mq": {
       "domain": "sargasses-martinique.com",
       "performance": {
         "https://sargasses-martinique.com/": {
-          "clicks": 1135,
-          "impressions": 8168,
-          "position": 2740.9786705010765,
-          "count": 465,
+          "clicks": 1199,
+          "impressions": 8130,
+          "position": 2757.509304720155,
+          "count": 463,
           "topQueries": [
             {
               "query": "sargasse martinique en temps réel",
-              "impressions": 356,
-              "clicks": 220
+              "impressions": 388,
+              "clicks": 245
             },
             {
               "query": "sargasse martinique en temps réel",
-              "impressions": 433,
-              "clicks": 214
+              "impressions": 458,
+              "clicks": 229
             },
             {
               "query": "sargasse martinique aujourd'hui",
-              "impressions": 496,
-              "clicks": 76
+              "impressions": 504,
+              "clicks": 87
             },
             {
               "query": "sargasse martinique aujourd'hui",
-              "impressions": 389,
-              "clicks": 67
+              "impressions": 420,
+              "clicks": 78
             },
             {
               "query": "sargasses martinique",
-              "impressions": 2006,
-              "clicks": 50
+              "impressions": 1964,
+              "clicks": 48
             },
             {
               "query": "sargasse martinique en temps réel",
-              "impressions": 63,
-              "clicks": 36
+              "impressions": 62,
+              "clicks": 37
             },
             {
               "query": "sargasse martinique aujourd'hui",
-              "impressions": 88,
-              "clicks": 27
+              "impressions": 83,
+              "clicks": 28
             },
             {
               "query": "sargasses martinique",
-              "impressions": 360,
-              "clicks": 23
+              "impressions": 345,
+              "clicks": 22
             },
             {
               "query": "sargasses martinique",
-              "impressions": 323,
+              "impressions": 316,
               "clicks": 19
+            },
+            {
+              "query": "sargasse martinique",
+              "impressions": 355,
+              "clicks": 18
             },
             {
               "query": "sargasse martinique aujourd'hui",
@@ -62,63 +67,58 @@
             },
             {
               "query": "sargasse martinique en direct",
-              "impressions": 33,
+              "impressions": 35,
               "clicks": 17
             },
             {
               "query": "sargasse martinique",
-              "impressions": 351,
+              "impressions": 363,
+              "clicks": 16
+            },
+            {
+              "query": "sargasse martinique en direct",
+              "impressions": 30,
               "clicks": 16
             },
             {
               "query": "sargasse martinique",
-              "impressions": 361,
-              "clicks": 16
-            },
-            {
-              "query": "sargasse martinique",
-              "impressions": 124,
+              "impressions": 122,
               "clicks": 15
             },
             {
               "query": "sargasse martinique",
-              "impressions": 103,
+              "impressions": 104,
               "clicks": 13
             },
             {
               "query": "sargasse martinique en temps réel",
-              "impressions": 16,
-              "clicks": 13
+              "impressions": 14,
+              "clicks": 12
             },
             {
               "query": "carte sargasse martinique 2026",
-              "impressions": 163,
-              "clicks": 12
+              "impressions": 157,
+              "clicks": 11
             },
             {
               "query": "sargasse martinique en direct",
-              "impressions": 26,
-              "clicks": 12
+              "impressions": 14,
+              "clicks": 11
             },
             {
               "query": "sargasse martinique en temps réel",
-              "impressions": 17,
+              "impressions": 18,
               "clicks": 11
             },
             {
               "query": "carte sargasse martinique",
-              "impressions": 135,
-              "clicks": 10
+              "impressions": 124,
+              "clicks": 9
             },
             {
               "query": "carte sargasse martinique",
-              "impressions": 79,
-              "clicks": 10
-            },
-            {
-              "query": "sargasse martinique en temps réel",
-              "impressions": 23,
-              "clicks": 10
+              "impressions": 72,
+              "clicks": 8
             },
             {
               "query": "carte sargasse martinique 2026",
@@ -126,33 +126,33 @@
               "clicks": 8
             },
             {
-              "query": "sargasse martinique en direct",
-              "impressions": 11,
+              "query": "sargasse martinique aujourd'hui",
+              "impressions": 23,
+              "clicks": 8
+            },
+            {
+              "query": "sargasse martinique en temps réel",
+              "impressions": 20,
               "clicks": 8
             },
             {
               "query": "martinique sargasses",
-              "impressions": 84,
+              "impressions": 83,
               "clicks": 7
             },
             {
-              "query": "carte sargasses martinique",
-              "impressions": 26,
-              "clicks": 6
-            },
-            {
-              "query": "sargasse martinique aujourd'hui",
-              "impressions": 21,
-              "clicks": 6
-            },
-            {
-              "query": "carte sargasse martinique 2026",
-              "impressions": 40,
+              "query": "carte des sargasses martinique",
+              "impressions": 24,
               "clicks": 5
             },
             {
               "query": "carte sargasses martinique",
-              "impressions": 21,
+              "impressions": 22,
+              "clicks": 5
+            },
+            {
+              "query": "carte sargasses martinique",
+              "impressions": 25,
               "clicks": 5
             },
             {
@@ -171,18 +171,13 @@
               "clicks": 5
             },
             {
-              "query": "sargasses martinique carte",
-              "impressions": 28,
-              "clicks": 5
-            },
-            {
               "query": "carte des sargasses martinique",
-              "impressions": 24,
+              "impressions": 25,
               "clicks": 4
             },
             {
-              "query": "carte des sargasses martinique",
-              "impressions": 22,
+              "query": "carte sargasse martinique 2026",
+              "impressions": 39,
               "clicks": 4
             },
             {
@@ -191,13 +186,23 @@
               "clicks": 4
             },
             {
-              "query": "sargasse martinique aujourd'hui",
-              "impressions": 6,
+              "query": "sargasse martinique aujourd hui",
+              "impressions": 10,
               "clicks": 4
             },
             {
               "query": "sargasse martinique aujourd'hui",
-              "impressions": 20,
+              "impressions": 7,
+              "clicks": 4
+            },
+            {
+              "query": "sargasse martinique aujourd'hui",
+              "impressions": 19,
+              "clicks": 4
+            },
+            {
+              "query": "sargasse martinique en temps réel",
+              "impressions": 10,
               "clicks": 4
             },
             {
@@ -206,33 +211,23 @@
               "clicks": 4
             },
             {
+              "query": "sargasses martinique carte",
+              "impressions": 25,
+              "clicks": 4
+            },
+            {
               "query": "carte des sargasses martinique",
               "impressions": 7,
               "clicks": 3
             },
             {
-              "query": "info sargasse martinique",
+              "query": "meteo sargasse martinique",
               "impressions": 4,
               "clicks": 3
             },
             {
-              "query": "meteo sargasse martinique",
-              "impressions": 3,
-              "clicks": 3
-            },
-            {
-              "query": "sargasse martinique aujourd hui",
-              "impressions": 8,
-              "clicks": 3
-            },
-            {
               "query": "sargasse martinique en temps réel",
               "impressions": 3,
-              "clicks": 3
-            },
-            {
-              "query": "sargasse martinique en temps réel",
-              "impressions": 9,
               "clicks": 3
             },
             {
@@ -242,12 +237,12 @@
             },
             {
               "query": "sargasses en martinique",
-              "impressions": 54,
+              "impressions": 53,
               "clicks": 3
             },
             {
               "query": "sargasses en martinique",
-              "impressions": 30,
+              "impressions": 28,
               "clicks": 3
             },
             {
@@ -257,7 +252,12 @@
             },
             {
               "query": "carte sargasse martinique 2026",
-              "impressions": 12,
+              "impressions": 11,
+              "clicks": 2
+            },
+            {
+              "query": "info sargasse martinique",
+              "impressions": 3,
               "clicks": 2
             },
             {
@@ -297,7 +297,12 @@
             },
             {
               "query": "sargasse martinique aujourd'hui",
-              "impressions": 16,
+              "impressions": 17,
+              "clicks": 2
+            },
+            {
+              "query": "sargasse martinique en ce moment",
+              "impressions": 19,
               "clicks": 2
             },
             {
@@ -321,13 +326,13 @@
               "clicks": 2
             },
             {
-              "query": "sargasse martinique en temps réel",
-              "impressions": 2,
+              "query": "sargasse plage des salines martinique",
+              "impressions": 6,
               "clicks": 2
             },
             {
               "query": "sargasses martinique",
-              "impressions": 35,
+              "impressions": 34,
               "clicks": 2
             },
             {
@@ -356,16 +361,6 @@
               "clicks": 1
             },
             {
-              "query": "carte sargasse martinique",
-              "impressions": 10,
-              "clicks": 1
-            },
-            {
-              "query": "carte sargasse martinique 2026",
-              "impressions": 6,
-              "clicks": 1
-            },
-            {
               "query": "carte sargasse martinique 2026",
               "impressions": 4,
               "clicks": 1
@@ -381,8 +376,13 @@
               "clicks": 1
             },
             {
+              "query": "carte satellite sargasse martinique",
+              "impressions": 2,
+              "clicks": 1
+            },
+            {
               "query": "info sargasse martinique",
-              "impressions": 6,
+              "impressions": 7,
               "clicks": 1
             },
             {
@@ -411,6 +411,11 @@
               "clicks": 1
             },
             {
+              "query": "martinique sargasse",
+              "impressions": 1,
+              "clicks": 1
+            },
+            {
               "query": "martinique sargasses carte",
               "impressions": 2,
               "clicks": 1
@@ -418,11 +423,6 @@
             {
               "query": "martinique sargasses carte",
               "impressions": 4,
-              "clicks": 1
-            },
-            {
-              "query": "martinique sargasses carte",
-              "impressions": 24,
               "clicks": 1
             },
             {
@@ -442,6 +442,11 @@
             },
             {
               "query": "prevision sargasse martinique",
+              "impressions": 1,
+              "clicks": 1
+            },
+            {
+              "query": "previsions sargasses martinique",
               "impressions": 1,
               "clicks": 1
             },
@@ -482,12 +487,12 @@
             },
             {
               "query": "sargasse en temps réel",
-              "impressions": 164,
+              "impressions": 147,
               "clicks": 1
             },
             {
               "query": "sargasse en temps réel",
-              "impressions": 40,
+              "impressions": 29,
               "clicks": 1
             },
             {
@@ -517,7 +522,12 @@
             },
             {
               "query": "sargasse martinique 2026",
-              "impressions": 2,
+              "impressions": 3,
+              "clicks": 1
+            },
+            {
+              "query": "sargasse martinique actuellement",
+              "impressions": 1,
               "clicks": 1
             },
             {
@@ -527,7 +537,7 @@
             },
             {
               "query": "sargasse martinique aujourd hui",
-              "impressions": 10,
+              "impressions": 11,
               "clicks": 1
             },
             {
@@ -556,61 +566,51 @@
               "clicks": 1
             },
             {
-              "query": "sargasse martinique aujourd'hui",
-              "impressions": 1,
-              "clicks": 1
-            },
-            {
               "query": "sargasse martinique carte",
               "impressions": 2,
               "clicks": 1
             },
             {
               "query": "sargasse martinique carte",
-              "impressions": 8,
-              "clicks": 1
-            },
-            {
-              "query": "sargasse martinique en ce moment",
-              "impressions": 2,
-              "clicks": 1
-            },
-            {
-              "query": "sargasse martinique en ce moment",
-              "impressions": 18,
-              "clicks": 1
-            },
-            {
-              "query": "sargasse martinique en direct",
-              "impressions": 2,
-              "clicks": 1
-            },
-            {
-              "query": "sargasse martinique en direct",
-              "impressions": 1,
-              "clicks": 1
-            },
-            {
-              "query": "sargasse martinique en direct",
-              "impressions": 1,
-              "clicks": 1
-            },
-            {
-              "query": "sargasse martinique en direct",
-              "impressions": 4,
-              "clicks": 1
-            },
-            {
-              "query": "sargasse martinique en temps réel",
-              "impressions": 1,
-              "clicks": 1
-            },
-            {
-              "query": "sargasse martinique en temps réel",
               "impressions": 7,
               "clicks": 1
             },
             {
+              "query": "sargasse martinique en ce moment",
+              "impressions": 2,
+              "clicks": 1
+            },
+            {
+              "query": "sargasse martinique en direct",
+              "impressions": 3,
+              "clicks": 1
+            },
+            {
+              "query": "sargasse martinique en direct",
+              "impressions": 1,
+              "clicks": 1
+            },
+            {
+              "query": "sargasse martinique en direct",
+              "impressions": 1,
+              "clicks": 1
+            },
+            {
+              "query": "sargasse martinique en direct",
+              "impressions": 2,
+              "clicks": 1
+            },
+            {
+              "query": "sargasse martinique en temps réel",
+              "impressions": 1,
+              "clicks": 1
+            },
+            {
+              "query": "sargasse martinique en temps réel",
+              "impressions": 5,
+              "clicks": 1
+            },
+            {
               "query": "sargasse martinique en temps réel",
               "impressions": 1,
               "clicks": 1
@@ -638,11 +638,6 @@
             {
               "query": "sargasse martinique en temps réel",
               "impressions": 1,
-              "clicks": 1
-            },
-            {
-              "query": "sargasse plage des salines martinique",
-              "impressions": 3,
               "clicks": 1
             },
             {
@@ -677,7 +672,7 @@
             },
             {
               "query": "sargasses martinique",
-              "impressions": 18,
+              "impressions": 16,
               "clicks": 1
             },
             {
@@ -687,7 +682,7 @@
             },
             {
               "query": "sargasses martinique",
-              "impressions": 4,
+              "impressions": 2,
               "clicks": 1
             },
             {
@@ -712,12 +707,7 @@
             },
             {
               "query": "sargasses martinique",
-              "impressions": 109,
-              "clicks": 1
-            },
-            {
-              "query": "sargasses martinique",
-              "impressions": 1,
+              "impressions": 107,
               "clicks": 1
             },
             {
@@ -727,12 +717,17 @@
             },
             {
               "query": "sargasses martinique carte",
-              "impressions": 5,
+              "impressions": 3,
               "clicks": 1
             },
             {
               "query": "sargasses martinique carte",
-              "impressions": 7,
+              "impressions": 6,
+              "clicks": 1
+            },
+            {
+              "query": "sargasses salines martinique",
+              "impressions": 4,
               "clicks": 1
             },
             {
@@ -746,6 +741,11 @@
               "clicks": 0
             },
             {
+              "query": "anse michel martinique sargasse",
+              "impressions": 2,
+              "clicks": 0
+            },
+            {
               "query": "bulletin sargasses martinique",
               "impressions": 4,
               "clicks": 0
@@ -782,12 +782,7 @@
             },
             {
               "query": "carte des sargasses",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "carte des sargasses",
-              "impressions": 4,
+              "impressions": 2,
               "clicks": 0
             },
             {
@@ -806,11 +801,6 @@
               "clicks": 0
             },
             {
-              "query": "carte des sargasses martinique",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
               "query": "carte interactive sargasse",
               "impressions": 1,
               "clicks": 0
@@ -847,31 +837,11 @@
             },
             {
               "query": "carte sargasse",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "carte sargasse",
               "impressions": 2,
               "clicks": 0
             },
             {
               "query": "carte sargasse",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "carte sargasse",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "carte sargasse en direct",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "carte sargasse en direct",
               "impressions": 1,
               "clicks": 0
             },
@@ -897,17 +867,22 @@
             },
             {
               "query": "carte sargasse martinique",
-              "impressions": 2,
+              "impressions": 6,
               "clicks": 0
             },
             {
               "query": "carte sargasse martinique",
-              "impressions": 1,
+              "impressions": 2,
               "clicks": 0
             },
             {
               "query": "carte sargasse martinique",
               "impressions": 4,
+              "clicks": 0
+            },
+            {
+              "query": "carte sargasse martinique 2026",
+              "impressions": 5,
               "clicks": 0
             },
             {
@@ -918,11 +893,6 @@
             {
               "query": "carte sargasse martinique 2026",
               "impressions": 3,
-              "clicks": 0
-            },
-            {
-              "query": "carte sargasse martinique 2026",
-              "impressions": 2,
               "clicks": 0
             },
             {
@@ -987,7 +957,7 @@
             },
             {
               "query": "carte sargasse martinique 2026",
-              "impressions": 2,
+              "impressions": 1,
               "clicks": 0
             },
             {
@@ -1027,11 +997,6 @@
             },
             {
               "query": "carte sargasses martinique",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "info sargasse martinique",
               "impressions": 1,
               "clicks": 0
             },
@@ -1102,7 +1067,7 @@
             },
             {
               "query": "martinique sargasses",
-              "impressions": 22,
+              "impressions": 21,
               "clicks": 0
             },
             {
@@ -1157,6 +1122,11 @@
             },
             {
               "query": "martinique sargasses carte",
+              "impressions": 21,
+              "clicks": 0
+            },
+            {
+              "query": "martinique sargasses carte",
               "impressions": 3,
               "clicks": 0
             },
@@ -1197,7 +1167,7 @@
             },
             {
               "query": "meteo sargasses martinique",
-              "impressions": 1,
+              "impressions": 2,
               "clicks": 0
             },
             {
@@ -1222,6 +1192,21 @@
             },
             {
               "query": "plage des salines sargasses",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "plage des salines sargasses",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "plage des salines sargasses",
+              "impressions": 3,
+              "clicks": 0
+            },
+            {
+              "query": "plage martinique sargasse",
               "impressions": 1,
               "clicks": 0
             },
@@ -1257,7 +1242,7 @@
             },
             {
               "query": "plage sargasse martinique",
-              "impressions": 1,
+              "impressions": 2,
               "clicks": 0
             },
             {
@@ -1346,7 +1331,17 @@
               "clicks": 0
             },
             {
+              "query": "sargasse carte",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
               "query": "sargasse diamant martinique",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse en direct",
               "impressions": 1,
               "clicks": 0
             },
@@ -1402,7 +1397,7 @@
             },
             {
               "query": "sargasse en martinique aujourd hui",
-              "impressions": 1,
+              "impressions": 2,
               "clicks": 0
             },
             {
@@ -1431,13 +1426,8 @@
               "clicks": 0
             },
             {
-              "query": "sargasse en martinique carte",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
               "query": "sargasse en temps réel",
-              "impressions": 9,
+              "impressions": 8,
               "clicks": 0
             },
             {
@@ -1452,17 +1442,7 @@
             },
             {
               "query": "sargasse en temps réel",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "sargasse en temps réel",
-              "impressions": 4,
-              "clicks": 0
-            },
-            {
-              "query": "sargasse en temps réel",
-              "impressions": 2,
+              "impressions": 3,
               "clicks": 0
             },
             {
@@ -1477,7 +1457,12 @@
             },
             {
               "query": "sargasse en temps réel",
-              "impressions": 34,
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse en temps réel",
+              "impressions": 32,
               "clicks": 0
             },
             {
@@ -1492,7 +1477,7 @@
             },
             {
               "query": "sargasse en temps réel",
-              "impressions": 7,
+              "impressions": 6,
               "clicks": 0
             },
             {
@@ -1512,7 +1497,7 @@
             },
             {
               "query": "sargasse en temps réel",
-              "impressions": 2,
+              "impressions": 1,
               "clicks": 0
             },
             {
@@ -1572,32 +1557,32 @@
             },
             {
               "query": "sargasse en temps réel",
-              "impressions": 18,
-              "clicks": 0
-            },
-            {
-              "query": "sargasse en temps réel",
-              "impressions": 6,
-              "clicks": 0
-            },
-            {
-              "query": "sargasse en temps réel",
               "impressions": 1,
               "clicks": 0
             },
             {
               "query": "sargasse en temps réel",
-              "impressions": 7,
-              "clicks": 0
-            },
-            {
-              "query": "sargasse en temps réel",
-              "impressions": 1,
+              "impressions": 17,
               "clicks": 0
             },
             {
               "query": "sargasse en temps réel",
               "impressions": 5,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse en temps réel",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse en temps réel",
+              "impressions": 4,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse en temps réel",
+              "impressions": 4,
               "clicks": 0
             },
             {
@@ -1667,7 +1652,12 @@
             },
             {
               "query": "sargasse martinique",
-              "impressions": 3,
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse martinique",
+              "impressions": 2,
               "clicks": 0
             },
             {
@@ -1717,6 +1707,11 @@
             },
             {
               "query": "sargasse martinique",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse martinique",
               "impressions": 2,
               "clicks": 0
             },
@@ -1792,7 +1787,7 @@
             },
             {
               "query": "sargasse martinique 2026",
-              "impressions": 11,
+              "impressions": 12,
               "clicks": 0
             },
             {
@@ -1827,16 +1822,16 @@
             },
             {
               "query": "sargasse martinique 2026",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "sargasse martinique 2026",
               "impressions": 2,
               "clicks": 0
             },
             {
               "query": "sargasse martinique 2026",
+              "impressions": 3,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse martinique 2026",
               "impressions": 1,
               "clicks": 0
             },
@@ -1891,18 +1886,18 @@
               "clicks": 0
             },
             {
-              "query": "sargasse martinique aujourd'hui",
+              "query": "sargasse martinique aujourd hui",
               "impressions": 1,
               "clicks": 0
             },
             {
               "query": "sargasse martinique aujourd'hui",
-              "impressions": 4,
+              "impressions": 2,
               "clicks": 0
             },
             {
               "query": "sargasse martinique aujourd'hui",
-              "impressions": 4,
+              "impressions": 5,
               "clicks": 0
             },
             {
@@ -2008,6 +2003,11 @@
             {
               "query": "sargasse plage des salines martinique",
               "impressions": 2,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse sainte luce martinique",
+              "impressions": 1,
               "clicks": 0
             },
             {
@@ -2062,7 +2062,7 @@
             },
             {
               "query": "sargasses en martinique aujourd hui",
-              "impressions": 3,
+              "impressions": 2,
               "clicks": 0
             },
             {
@@ -2172,12 +2172,7 @@
             },
             {
               "query": "sargasses martinique",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "sargasses martinique",
-              "impressions": 3,
+              "impressions": 2,
               "clicks": 0
             },
             {
@@ -2291,11 +2286,6 @@
               "clicks": 0
             },
             {
-              "query": "sargasses salines martinique",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
               "query": "y a t il des sargasses en martinique en ce moment",
               "impressions": 1,
               "clicks": 0
@@ -2312,12 +2302,12 @@
             },
             {
               "query": "y a t il des sargasses en martinique en ce moment",
-              "impressions": 11,
+              "impressions": 15,
               "clicks": 0
             },
             {
               "query": "y a t il des sargasses en martinique en ce moment",
-              "impressions": 2,
+              "impressions": 3,
               "clicks": 0
             },
             {
@@ -2338,20 +2328,15 @@
           ]
         },
         "https://sargasses-martinique.com/en/": {
-          "clicks": 16,
-          "impressions": 89,
-          "position": 533.9045454545454,
+          "clicks": 15,
+          "impressions": 85,
+          "position": 486.5474747474747,
           "count": 45,
           "topQueries": [
             {
               "query": "martinique sargassum",
-              "impressions": 10,
+              "impressions": 11,
               "clicks": 3
-            },
-            {
-              "query": "sargassum martinique",
-              "impressions": 5,
-              "clicks": 2
             },
             {
               "query": "sargassum martinique",
@@ -2399,6 +2384,11 @@
               "clicks": 1
             },
             {
+              "query": "sargassum martinique",
+              "impressions": 1,
+              "clicks": 1
+            },
+            {
               "query": "martinique sargasse",
               "impressions": 1,
               "clicks": 0
@@ -2420,7 +2410,7 @@
             },
             {
               "query": "martinique sargassum",
-              "impressions": 2,
+              "impressions": 3,
               "clicks": 0
             },
             {
@@ -2444,8 +2434,13 @@
               "clicks": 0
             },
             {
+              "query": "sargasse en temps réel",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
               "query": "sargasse martinique",
-              "impressions": 4,
+              "impressions": 1,
               "clicks": 0
             },
             {
@@ -2465,7 +2460,7 @@
             },
             {
               "query": "sargasse martinique en direct",
-              "impressions": 2,
+              "impressions": 4,
               "clicks": 0
             },
             {
@@ -2485,11 +2480,6 @@
             },
             {
               "query": "sargasse martinique en temps réel",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "sargasses",
               "impressions": 1,
               "clicks": 0
             },
@@ -2550,7 +2540,12 @@
             },
             {
               "query": "sargassum martinique",
-              "impressions": 11,
+              "impressions": 9,
+              "clicks": 0
+            },
+            {
+              "query": "sargassum martinique",
+              "impressions": 2,
               "clicks": 0
             },
             {
@@ -2562,19 +2557,14 @@
               "query": "sargassum martinique",
               "impressions": 2,
               "clicks": 0
-            },
-            {
-              "query": "sargassum monitoring martinique",
-              "impressions": 1,
-              "clicks": 0
             }
           ]
         },
         "https://sargasses-martinique.com/plages/anse-letang/": {
           "clicks": 2,
-          "impressions": 46,
-          "position": 378.2,
-          "count": 29,
+          "impressions": 43,
+          "position": 369.2,
+          "count": 28,
           "topQueries": [
             {
               "query": "plage tartane martinique sargasse",
@@ -2667,11 +2657,6 @@
               "clicks": 0
             },
             {
-              "query": "plage de l'anse l'etang",
-              "impressions": 2,
-              "clicks": 0
-            },
-            {
               "query": "plage de l'anse l'etang martinique",
               "impressions": 1,
               "clicks": 0
@@ -2698,7 +2683,7 @@
             },
             {
               "query": "plage tartane martinique sargasse",
-              "impressions": 2,
+              "impressions": 1,
               "clicks": 0
             },
             {
@@ -2725,14 +2710,24 @@
         },
         "https://sargasses-martinique.com/en/sargassum-map/": {
           "clicks": 1,
-          "impressions": 4,
-          "position": 35,
-          "count": 4,
+          "impressions": 6,
+          "position": 60,
+          "count": 6,
           "topQueries": [
             {
               "query": "sargassum martinique",
               "impressions": 1,
               "clicks": 1
+            },
+            {
+              "query": "sargasse en temps réel",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse en temps réel",
+              "impressions": 1,
+              "clicks": 0
             },
             {
               "query": "sargasse guadeloupe en direct",
@@ -2771,15 +2766,10 @@
         },
         "https://sargasses-martinique.com/plages/": {
           "clicks": 0,
-          "impressions": 18,
-          "position": 126.16666666666666,
-          "count": 14,
+          "impressions": 14,
+          "position": 102.16666666666666,
+          "count": 11,
           "topQueries": [
-            {
-              "query": "anse figuier sargasse",
-              "impressions": 2,
-              "clicks": 0
-            },
             {
               "query": "anse figuier sargasse",
               "impressions": 1,
@@ -2826,16 +2816,6 @@
               "clicks": 0
             },
             {
-              "query": "sargasse sainte luce martinique",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "sargasse sainte luce martinique",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
               "query": "sargasses sainte luce martinique",
               "impressions": 1,
               "clicks": 0
@@ -2877,12 +2857,17 @@
         },
         "https://sargasses-martinique.com/plages/pointe-marin/": {
           "clicks": 0,
-          "impressions": 2,
-          "position": 11,
-          "count": 2,
+          "impressions": 3,
+          "position": 12,
+          "count": 3,
           "topQueries": [
             {
               "query": "carte sargasse martinique 2026",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse martinique 2026",
               "impressions": 1,
               "clicks": 0
             },
@@ -2895,9 +2880,9 @@
         },
         "https://sargasses-martinique.com/plages/case-navire/": {
           "clicks": 0,
-          "impressions": 14,
-          "position": 132.75,
-          "count": 9,
+          "impressions": 12,
+          "position": 125.75,
+          "count": 8,
           "topQueries": [
             {
               "query": "case navire",
@@ -2906,11 +2891,6 @@
             },
             {
               "query": "case navire",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "case navire martinique",
               "impressions": 1,
               "clicks": 0
             },
@@ -2936,7 +2916,7 @@
             },
             {
               "query": "plage de case navire",
-              "impressions": 2,
+              "impressions": 1,
               "clicks": 0
             },
             {
@@ -3024,6 +3004,19 @@
               "clicks": 0
             }
           ]
+        },
+        "https://sargasses-martinique.com/plages/sainte-anne-guadeloupe/": {
+          "clicks": 0,
+          "impressions": 1,
+          "position": 8,
+          "count": 1,
+          "topQueries": [
+            {
+              "query": "sargasse sainte anne",
+              "impressions": 1,
+              "clicks": 0
+            }
+          ]
         }
       },
       "indexStatus": [
@@ -3032,7 +3025,7 @@
           "verdict": "PASS",
           "pageFetchState": "SUCCESSFUL",
           "robotsTxtState": "ALLOWED",
-          "lastCrawlTime": "2026-04-09T04:06:13Z",
+          "lastCrawlTime": "2026-04-11T13:55:16Z",
           "coverageState": "Submitted and indexed"
         },
         {
@@ -3064,7 +3057,7 @@
           "verdict": "PASS",
           "pageFetchState": "SUCCESSFUL",
           "robotsTxtState": "ALLOWED",
-          "lastCrawlTime": "2026-04-06T08:10:24Z",
+          "lastCrawlTime": "2026-04-11T18:10:16Z",
           "coverageState": "Submitted and indexed"
         },
         {
@@ -3129,7 +3122,7 @@
           "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
           "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
           "lastCrawlTime": null,
-          "coverageState": "Discovered - currently not indexed"
+          "coverageState": "URL is unknown to Google"
         },
         {
           "url": "https://sargasses-martinique.com/plages/anse-michel/",
@@ -3249,7 +3242,7 @@
           "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
           "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
           "lastCrawlTime": null,
-          "coverageState": "URL is unknown to Google"
+          "coverageState": "Discovered - currently not indexed"
         },
         {
           "url": "https://sargasses-martinique.com/plages/pointe-borgnesse/",
@@ -3282,38 +3275,65 @@
         {
           "pagePath": "/",
           "device": "mobile",
-          "sessions": 21,
-          "bounceRate": 1,
-          "avgDuration": 88.6160600952381,
-          "pageViews": 14,
-          "engagedSessions": 0
+          "sessions": 729,
+          "bounceRate": 0.8203017832647462,
+          "avgDuration": 245.57327445679016,
+          "pageViews": 916,
+          "engagedSessions": 131
         },
         {
           "pagePath": "/",
           "device": "desktop",
+          "sessions": 61,
+          "bounceRate": 0.6065573770491803,
+          "avgDuration": 501.2995299672131,
+          "pageViews": 166,
+          "engagedSessions": 24
+        },
+        {
+          "pagePath": "/",
+          "device": "tablet",
+          "sessions": 14,
+          "bounceRate": 0.6428571428571429,
+          "avgDuration": 216.21703499999998,
+          "pageViews": 18,
+          "engagedSessions": 5
+        },
+        {
+          "pagePath": "/en/sargassum-map/",
+          "device": "mobile",
+          "sessions": 5,
+          "bounceRate": 0.8,
+          "avgDuration": 121.89601680000001,
+          "pageViews": 3,
+          "engagedSessions": 1
+        },
+        {
+          "pagePath": "/en/",
+          "device": "mobile",
           "sessions": 4,
-          "bounceRate": 1,
-          "avgDuration": 224.54040975,
+          "bounceRate": 0.25,
+          "avgDuration": 165.68355400000002,
           "pageViews": 5,
-          "engagedSessions": 0
+          "engagedSessions": 3
         },
         {
           "pagePath": "/en/",
           "device": "desktop",
           "sessions": 1,
-          "bounceRate": 1,
-          "avgDuration": 164.206638,
+          "bounceRate": 0,
+          "avgDuration": 107.574179,
           "pageViews": 1,
-          "engagedSessions": 0
+          "engagedSessions": 1
         },
         {
           "pagePath": "/plages/case-navire/",
           "device": "mobile",
           "sessions": 1,
-          "bounceRate": 1,
-          "avgDuration": 59.053371,
-          "pageViews": 0,
-          "engagedSessions": 0
+          "bounceRate": 0,
+          "avgDuration": 796.868605,
+          "pageViews": 2,
+          "engagedSessions": 1
         }
       ],
       "crux": null,
@@ -3325,19 +3345,38 @@
           {
             "pagePath": "/",
             "device": "mobile",
-            "sessions": 21,
-            "bounceRate": 100,
-            "avgDuration": 89
+            "sessions": 729,
+            "bounceRate": 82,
+            "avgDuration": 246
           }
         ],
         "cwvIssues": [],
-        "rageClicks": [],
+        "rageClicks": [
+          {
+            "event": "clarity_rage_click",
+            "page": "/",
+            "target": "",
+            "count": 9
+          }
+        ],
         "deadClicks": [
           {
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
+            "count": 230
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/en/sargassum-map/",
+            "target": "",
             "count": 2
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/en/",
+            "target": "",
+            "count": 1
           }
         ],
         "quickBounces": []
@@ -3347,49 +3386,49 @@
       "domain": "sargasses-guadeloupe.com",
       "performance": {
         "https://sargasses-guadeloupe.com/": {
-          "clicks": 486,
-          "impressions": 2965,
-          "position": 1993.8749842223015,
-          "count": 254,
+          "clicks": 543,
+          "impressions": 3078,
+          "position": 2081.638642619628,
+          "count": 255,
           "topQueries": [
             {
               "query": "sargasse guadeloupe en direct",
-              "impressions": 973,
-              "clicks": 186
+              "impressions": 1030,
+              "clicks": 209
             },
             {
               "query": "sargasse guadeloupe en direct",
-              "impressions": 333,
-              "clicks": 77
+              "impressions": 372,
+              "clicks": 96
             },
             {
               "query": "sargasses en guadeloupe aujourd'hui",
-              "impressions": 303,
-              "clicks": 33
+              "impressions": 321,
+              "clicks": 34
             },
             {
               "query": "sargasse guadeloupe en direct",
-              "impressions": 121,
+              "impressions": 124,
               "clicks": 24
             },
             {
               "query": "sargasse guadeloupe en direct",
-              "impressions": 62,
-              "clicks": 17
+              "impressions": 65,
+              "clicks": 19
             },
             {
               "query": "sargasses en guadeloupe aujourd'hui",
-              "impressions": 127,
-              "clicks": 16
-            },
-            {
-              "query": "sargasse guadeloupe en direct",
-              "impressions": 27,
-              "clicks": 14
+              "impressions": 134,
+              "clicks": 17
             },
             {
               "query": "sargasse guadeloupe en direct",
               "impressions": 29,
+              "clicks": 16
+            },
+            {
+              "query": "sargasse guadeloupe en direct",
+              "impressions": 30,
               "clicks": 10
             },
             {
@@ -3408,8 +3447,13 @@
               "clicks": 5
             },
             {
+              "query": "sargasse guadeloupe en temps réel",
+              "impressions": 5,
+              "clicks": 5
+            },
+            {
               "query": "carte sargasse guadeloupe 2026",
-              "impressions": 48,
+              "impressions": 47,
               "clicks": 4
             },
             {
@@ -3419,7 +3463,7 @@
             },
             {
               "query": "sargasse en temps réel 2026",
-              "impressions": 32,
+              "impressions": 29,
               "clicks": 4
             },
             {
@@ -3429,7 +3473,7 @@
             },
             {
               "query": "sargasses en guadeloupe aujourd'hui",
-              "impressions": 19,
+              "impressions": 20,
               "clicks": 4
             },
             {
@@ -3438,8 +3482,13 @@
               "clicks": 3
             },
             {
-              "query": "sargasse guadeloupe en temps réel",
-              "impressions": 3,
+              "query": "sargasse guadeloupe aujourd'hui",
+              "impressions": 10,
+              "clicks": 3
+            },
+            {
+              "query": "sargasse guadeloupe en direct",
+              "impressions": 15,
               "clicks": 3
             },
             {
@@ -3458,23 +3507,8 @@
               "clicks": 2
             },
             {
-              "query": "sargasse guadeloupe 2026",
-              "impressions": 22,
-              "clicks": 2
-            },
-            {
               "query": "sargasse guadeloupe aujourd'hui",
               "impressions": 4,
-              "clicks": 2
-            },
-            {
-              "query": "sargasse guadeloupe aujourd'hui",
-              "impressions": 9,
-              "clicks": 2
-            },
-            {
-              "query": "sargasse guadeloupe en direct",
-              "impressions": 14,
               "clicks": 2
             },
             {
@@ -3484,17 +3518,37 @@
             },
             {
               "query": "sargasse guadeloupe en direct",
-              "impressions": 23,
+              "impressions": 24,
               "clicks": 2
             },
             {
               "query": "sargasse guadeloupe en direct",
               "impressions": 4,
+              "clicks": 2
+            },
+            {
+              "query": "sargasse guadeloupe en temps réel",
+              "impressions": 2,
+              "clicks": 2
+            },
+            {
+              "query": "sargasse guadeloupe en temps réel",
+              "impressions": 2,
               "clicks": 2
             },
             {
               "query": "sargasses en guadeloupe aujourd'hui",
               "impressions": 5,
+              "clicks": 2
+            },
+            {
+              "query": "sargasses en guadeloupe aujourd'hui",
+              "impressions": 4,
+              "clicks": 2
+            },
+            {
+              "query": "sargasses guadeloupe aujourd'hui",
+              "impressions": 2,
               "clicks": 2
             },
             {
@@ -3504,12 +3558,12 @@
             },
             {
               "query": "carte des sargasses 2026",
-              "impressions": 6,
+              "impressions": 4,
               "clicks": 1
             },
             {
               "query": "carte des sargasses 2026",
-              "impressions": 43,
+              "impressions": 37,
               "clicks": 1
             },
             {
@@ -3543,13 +3597,18 @@
               "clicks": 1
             },
             {
+              "query": "carte sargasse guadeloupe en direct",
+              "impressions": 6,
+              "clicks": 1
+            },
+            {
               "query": "carte sargasses",
               "impressions": 1,
               "clicks": 1
             },
             {
-              "query": "carte sargasses guadeloupe",
-              "impressions": 1,
+              "query": "meteo sargasses guadeloupe",
+              "impressions": 2,
               "clicks": 1
             },
             {
@@ -3559,7 +3618,7 @@
             },
             {
               "query": "sargasse en guadeloupe aujourd'hui",
-              "impressions": 2,
+              "impressions": 3,
               "clicks": 1
             },
             {
@@ -3574,12 +3633,17 @@
             },
             {
               "query": "sargasse guadeloupe 2026",
-              "impressions": 33,
+              "impressions": 32,
               "clicks": 1
             },
             {
               "query": "sargasse guadeloupe 2026",
-              "impressions": 4,
+              "impressions": 16,
+              "clicks": 1
+            },
+            {
+              "query": "sargasse guadeloupe 2026",
+              "impressions": 3,
               "clicks": 1
             },
             {
@@ -3589,7 +3653,7 @@
             },
             {
               "query": "sargasse guadeloupe aujourd'hui",
-              "impressions": 4,
+              "impressions": 5,
               "clicks": 1
             },
             {
@@ -3643,11 +3707,6 @@
               "clicks": 1
             },
             {
-              "query": "sargasse guadeloupe en temps réel",
-              "impressions": 1,
-              "clicks": 1
-            },
-            {
               "query": "sargasses en guadeloupe aujourd hui",
               "impressions": 14,
               "clicks": 1
@@ -3655,11 +3714,6 @@
             {
               "query": "sargasses en guadeloupe aujourd'hui",
               "impressions": 9,
-              "clicks": 1
-            },
-            {
-              "query": "sargasses en guadeloupe aujourd'hui",
-              "impressions": 2,
               "clicks": 1
             },
             {
@@ -3679,17 +3733,12 @@
             },
             {
               "query": "sargasses guadeloupe aujourd'hui",
-              "impressions": 1,
-              "clicks": 1
-            },
-            {
-              "query": "sargasses guadeloupe aujourd'hui",
               "impressions": 2,
               "clicks": 1
             },
             {
               "query": "suivi sargasses guadeloupe",
-              "impressions": 2,
+              "impressions": 3,
               "clicks": 1
             },
             {
@@ -3759,7 +3808,7 @@
             },
             {
               "query": "carte des sargasses",
-              "impressions": 11,
+              "impressions": 10,
               "clicks": 0
             },
             {
@@ -3819,7 +3868,7 @@
             },
             {
               "query": "carte des sargasses 2026",
-              "impressions": 2,
+              "impressions": 1,
               "clicks": 0
             },
             {
@@ -3829,12 +3878,7 @@
             },
             {
               "query": "carte des sargasses 2026",
-              "impressions": 32,
-              "clicks": 0
-            },
-            {
-              "query": "carte des sargasses 2026",
-              "impressions": 1,
+              "impressions": 24,
               "clicks": 0
             },
             {
@@ -3884,7 +3928,7 @@
             },
             {
               "query": "carte des sargasses 2026",
-              "impressions": 5,
+              "impressions": 4,
               "clicks": 0
             },
             {
@@ -3909,11 +3953,6 @@
             },
             {
               "query": "carte des sargasses guadeloupe",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "carte sargasse",
               "impressions": 1,
               "clicks": 0
             },
@@ -4018,11 +4057,6 @@
               "clicks": 0
             },
             {
-              "query": "carte sargasse guadeloupe 2026",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
               "query": "carte sargasse guadeloupe en direct",
               "impressions": 1,
               "clicks": 0
@@ -4030,11 +4064,6 @@
             {
               "query": "carte sargasse guadeloupe en direct",
               "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "carte sargasse guadeloupe en direct",
-              "impressions": 2,
               "clicks": 0
             },
             {
@@ -4164,17 +4193,12 @@
             },
             {
               "query": "meteo sargasses guadeloupe",
-              "impressions": 1,
+              "impressions": 2,
               "clicks": 0
             },
             {
               "query": "meteo sargasses guadeloupe",
               "impressions": 5,
-              "clicks": 0
-            },
-            {
-              "query": "meteo sargasses guadeloupe",
-              "impressions": 1,
               "clicks": 0
             },
             {
@@ -4203,13 +4227,33 @@
               "clicks": 0
             },
             {
+              "query": "prevision sargasse guadeloupe",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "previsions sargasses guadeloupe",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "previsions sargasses guadeloupe",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
               "query": "riviera maya sargasse",
               "impressions": 1,
               "clicks": 0
             },
             {
               "query": "sargasse carte",
-              "impressions": 2,
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse carte",
+              "impressions": 1,
               "clicks": 0
             },
             {
@@ -4249,7 +4293,12 @@
             },
             {
               "query": "sargasse en guadeloupe aujourd'hui",
-              "impressions": 15,
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse en guadeloupe aujourd'hui",
+              "impressions": 17,
               "clicks": 0
             },
             {
@@ -4274,7 +4323,7 @@
             },
             {
               "query": "sargasse en temps réel",
-              "impressions": 14,
+              "impressions": 13,
               "clicks": 0
             },
             {
@@ -4309,7 +4358,7 @@
             },
             {
               "query": "sargasse en temps réel 2026",
-              "impressions": 8,
+              "impressions": 7,
               "clicks": 0
             },
             {
@@ -4349,11 +4398,6 @@
             },
             {
               "query": "sargasse en temps réel 2026",
-              "impressions": 2,
-              "clicks": 0
-            },
-            {
-              "query": "sargasse en temps réel 2026",
               "impressions": 1,
               "clicks": 0
             },
@@ -4364,7 +4408,7 @@
             },
             {
               "query": "sargasse en temps réel 2026",
-              "impressions": 2,
+              "impressions": 1,
               "clicks": 0
             },
             {
@@ -4374,7 +4418,7 @@
             },
             {
               "query": "sargasse en temps réel 2026",
-              "impressions": 8,
+              "impressions": 6,
               "clicks": 0
             },
             {
@@ -4399,7 +4443,7 @@
             },
             {
               "query": "sargasse en temps réel 2026",
-              "impressions": 2,
+              "impressions": 1,
               "clicks": 0
             },
             {
@@ -4504,17 +4548,7 @@
             },
             {
               "query": "sargasse guadeloupe 2026",
-              "impressions": 2,
-              "clicks": 0
-            },
-            {
-              "query": "sargasse guadeloupe 2026",
               "impressions": 6,
-              "clicks": 0
-            },
-            {
-              "query": "sargasse guadeloupe 2026",
-              "impressions": 2,
               "clicks": 0
             },
             {
@@ -4530,6 +4564,11 @@
             {
               "query": "sargasse guadeloupe aujourd hui",
               "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse guadeloupe aujourd hui",
+              "impressions": 2,
               "clicks": 0
             },
             {
@@ -4545,6 +4584,11 @@
             {
               "query": "sargasse guadeloupe en direct",
               "impressions": 2,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse guadeloupe en direct",
+              "impressions": 1,
               "clicks": 0
             },
             {
@@ -4625,15 +4669,15 @@
           ]
         },
         "https://sargasses-guadeloupe.com/plages/plage-caravelle/": {
-          "clicks": 3,
-          "impressions": 21,
-          "position": 277.33333333333337,
+          "clicks": 4,
+          "impressions": 22,
+          "position": 277.7142857142857,
           "count": 10,
           "topQueries": [
             {
               "query": "plage de la caravelle sargasse",
-              "impressions": 6,
-              "clicks": 3
+              "impressions": 7,
+              "clicks": 4
             },
             {
               "query": "plage caravelle guadeloupe",
@@ -4682,20 +4726,78 @@
             }
           ]
         },
+        "https://sargasses-guadeloupe.com/en/": {
+          "clicks": 4,
+          "impressions": 16,
+          "position": 40.2,
+          "count": 11,
+          "topQueries": [
+            {
+              "query": "guadeloupe sargassum",
+              "impressions": 2,
+              "clicks": 2
+            },
+            {
+              "query": "guadeloupe sargassum",
+              "impressions": 1,
+              "clicks": 1
+            },
+            {
+              "query": "sargasses guadeloupe",
+              "impressions": 5,
+              "clicks": 1
+            },
+            {
+              "query": "carte sargasse guadeloupe en direct",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "guadeloupe sargassum",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "guadeloupe sargassum",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "guadeloupe sargassum",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "martinique sargassum",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse guadeloupe",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse guadeloupe",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse guadeloupe",
+              "impressions": 1,
+              "clicks": 0
+            }
+          ]
+        },
         "https://sargasses-guadeloupe.com/carte-temps-reel/": {
-          "clicks": 10,
-          "impressions": 458,
-          "position": 1158.167633964501,
-          "count": 116,
+          "clicks": 9,
+          "impressions": 431,
+          "position": 1170.5482426070664,
+          "count": 117,
           "topQueries": [
             {
               "query": "meteo sargasse guadeloupe",
               "impressions": 34,
-              "clicks": 2
-            },
-            {
-              "query": "sargasse guadeloupe en direct",
-              "impressions": 39,
               "clicks": 2
             },
             {
@@ -4716,6 +4818,11 @@
             {
               "query": "sargasse en temps réel",
               "impressions": 13,
+              "clicks": 1
+            },
+            {
+              "query": "sargasse guadeloupe en direct",
+              "impressions": 36,
               "clicks": 1
             },
             {
@@ -4745,7 +4852,17 @@
             },
             {
               "query": "carte des sargasse",
-              "impressions": 2,
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "carte des sargasses",
+              "impressions": 8,
+              "clicks": 0
+            },
+            {
+              "query": "carte des sargasses",
+              "impressions": 3,
               "clicks": 0
             },
             {
@@ -4755,12 +4872,7 @@
             },
             {
               "query": "carte des sargasses",
-              "impressions": 10,
-              "clicks": 0
-            },
-            {
-              "query": "carte des sargasses",
-              "impressions": 4,
+              "impressions": 3,
               "clicks": 0
             },
             {
@@ -4770,17 +4882,7 @@
             },
             {
               "query": "carte des sargasses",
-              "impressions": 5,
-              "clicks": 0
-            },
-            {
-              "query": "carte des sargasses",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "carte des sargasses",
-              "impressions": 16,
+              "impressions": 12,
               "clicks": 0
             },
             {
@@ -4815,11 +4917,6 @@
             },
             {
               "query": "carte des sargasses",
-              "impressions": 2,
-              "clicks": 0
-            },
-            {
-              "query": "carte des sargasses",
               "impressions": 1,
               "clicks": 0
             },
@@ -4886,11 +4983,6 @@
             {
               "query": "carte sargasse guadeloupe 2026",
               "impressions": 2,
-              "clicks": 0
-            },
-            {
-              "query": "carte sargasse guadeloupe 2026",
-              "impressions": 1,
               "clicks": 0
             },
             {
@@ -4930,7 +5022,7 @@
             },
             {
               "query": "carte sargasses",
-              "impressions": 5,
+              "impressions": 4,
               "clicks": 0
             },
             {
@@ -4945,11 +5037,6 @@
             },
             {
               "query": "carte sargasses",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "carte sargasses guadeloupe",
               "impressions": 1,
               "clicks": 0
             },
@@ -5045,12 +5132,7 @@
             },
             {
               "query": "prevision sargasse guadeloupe",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "prevision sargasse guadeloupe",
-              "impressions": 7,
+              "impressions": 6,
               "clicks": 0
             },
             {
@@ -5075,7 +5157,7 @@
             },
             {
               "query": "sargasse en temps réel",
-              "impressions": 3,
+              "impressions": 2,
               "clicks": 0
             },
             {
@@ -5095,22 +5177,12 @@
             },
             {
               "query": "sargasse en temps réel",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "sargasse en temps réel",
               "impressions": 2,
               "clicks": 0
             },
             {
               "query": "sargasse en temps réel",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "sargasse en temps réel",
-              "impressions": 23,
+              "impressions": 20,
               "clicks": 0
             },
             {
@@ -5135,22 +5207,12 @@
             },
             {
               "query": "sargasse en temps réel",
-              "impressions": 60,
+              "impressions": 48,
               "clicks": 0
             },
             {
               "query": "sargasse en temps réel",
               "impressions": 2,
-              "clicks": 0
-            },
-            {
-              "query": "sargasse en temps réel",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "sargasse en temps réel",
-              "impressions": 1,
               "clicks": 0
             },
             {
@@ -5200,17 +5262,7 @@
             },
             {
               "query": "sargasse en temps réel",
-              "impressions": 4,
-              "clicks": 0
-            },
-            {
-              "query": "sargasse en temps réel",
               "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "sargasse en temps réel 2026",
-              "impressions": 2,
               "clicks": 0
             },
             {
@@ -5267,23 +5319,146 @@
               "query": "sargasse guadeloupe en direct",
               "impressions": 4,
               "clicks": 0
+            },
+            {
+              "query": "sargasse guadeloupe en direct",
+              "impressions": 3,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse guadeloupe en direct",
+              "impressions": 4,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse guadeloupe en direct",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse guadeloupe en direct",
+              "impressions": 2,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse guadeloupe en direct",
+              "impressions": 2,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse guadeloupe en direct",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse guadeloupe en direct",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse guadeloupe en direct",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse guadeloupe en direct",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse guadeloupe en direct",
+              "impressions": 2,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse guadeloupe en direct",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse guadeloupe en direct",
+              "impressions": 1,
+              "clicks": 0
+            }
+          ]
+        },
+        "https://sargasses-guadeloupe.com/plages/plage-bois-jolan/": {
+          "clicks": 2,
+          "impressions": 27,
+          "position": 92.95238095238095,
+          "count": 11,
+          "topQueries": [
+            {
+              "query": "plage bois jolan sargasse",
+              "impressions": 7,
+              "clicks": 2
+            },
+            {
+              "query": "bois jolan sargasse",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "plage bois jolan sargasse",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "plage bois jolan sargasse",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "plage bois jolan sargasse",
+              "impressions": 6,
+              "clicks": 0
+            },
+            {
+              "query": "plage de bois jolan sargasses",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "plage de bois jolan sargasses",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "plage de bois jolan sargasses",
+              "impressions": 6,
+              "clicks": 0
+            },
+            {
+              "query": "plage de bois jolan sargasses",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse bois jolan",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse bois jolan",
+              "impressions": 1,
+              "clicks": 0
             }
           ]
         },
         "https://sargasses-guadeloupe.com/previsions-sargasses-guadeloupe/": {
-          "clicks": 13,
-          "impressions": 376,
-          "position": 656.5782888945679,
-          "count": 110,
+          "clicks": 9,
+          "impressions": 342,
+          "position": 652.1703629703629,
+          "count": 102,
           "topQueries": [
             {
               "query": "bulletin sargasses guadeloupe",
-              "impressions": 43,
+              "impressions": 42,
               "clicks": 0
             },
             {
               "query": "sargasse guadeloupe 2026",
-              "impressions": 39,
+              "impressions": 37,
               "clicks": 2
             },
             {
@@ -5293,46 +5468,31 @@
             },
             {
               "query": "guadeloupe sargasse 2026",
-              "impressions": 22,
+              "impressions": 21,
               "clicks": 1
             },
             {
               "query": "prevision sargasse guadeloupe",
-              "impressions": 15,
+              "impressions": 14,
               "clicks": 1
             },
             {
               "query": "bulletin sargasse guadeloupe",
-              "impressions": 13,
+              "impressions": 11,
+              "clicks": 0
+            },
+            {
+              "query": "meteo sargasse guadeloupe",
+              "impressions": 7,
+              "clicks": 0
+            },
+            {
+              "query": "prevision sargasse guadeloupe",
+              "impressions": 7,
               "clicks": 0
             },
             {
               "query": "sargasse guadeloupe 2026",
-              "impressions": 10,
-              "clicks": 0
-            },
-            {
-              "query": "sargasse guadeloupe en direct",
-              "impressions": 9,
-              "clicks": 1
-            },
-            {
-              "query": "bulletin sargasses guadeloupe",
-              "impressions": 7,
-              "clicks": 0
-            },
-            {
-              "query": "meteo sargasse guadeloupe",
-              "impressions": 7,
-              "clicks": 0
-            },
-            {
-              "query": "meteo sargasse guadeloupe",
-              "impressions": 7,
-              "clicks": 0
-            },
-            {
-              "query": "prevision sargasse guadeloupe",
               "impressions": 7,
               "clicks": 0
             },
@@ -5352,17 +5512,22 @@
               "clicks": 0
             },
             {
-              "query": "prevision sargasse guadeloupe",
-              "impressions": 6,
-              "clicks": 0
-            },
-            {
-              "query": "saison sargasse guadeloupe",
+              "query": "bulletin sargasses guadeloupe",
               "impressions": 5,
               "clicks": 0
             },
             {
-              "query": "sargasse guadeloupe 2026",
+              "query": "meteo sargasse guadeloupe",
+              "impressions": 5,
+              "clicks": 0
+            },
+            {
+              "query": "prevision sargasse guadeloupe",
+              "impressions": 5,
+              "clicks": 0
+            },
+            {
+              "query": "saison sargasse guadeloupe",
               "impressions": 5,
               "clicks": 0
             },
@@ -5388,6 +5553,16 @@
             },
             {
               "query": "météo sargasses guadeloupe",
+              "impressions": 4,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse guadeloupe 2026",
+              "impressions": 4,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse guadeloupe en direct",
               "impressions": 4,
               "clicks": 0
             },
@@ -5427,16 +5602,6 @@
               "clicks": 0
             },
             {
-              "query": "meteo sargasse guadeloupe",
-              "impressions": 2,
-              "clicks": 1
-            },
-            {
-              "query": "bulletin sargasse guadeloupe",
-              "impressions": 2,
-              "clicks": 0
-            },
-            {
               "query": "bulletin sargasse guadeloupe",
               "impressions": 2,
               "clicks": 0
@@ -5482,17 +5647,7 @@
               "clicks": 0
             },
             {
-              "query": "prevision sargasse guadeloupe",
-              "impressions": 2,
-              "clicks": 0
-            },
-            {
               "query": "previsions sargasses guadeloupe",
-              "impressions": 2,
-              "clicks": 0
-            },
-            {
-              "query": "sargasse en temps réel 2026",
               "impressions": 2,
               "clicks": 0
             },
@@ -5502,22 +5657,7 @@
               "clicks": 0
             },
             {
-              "query": "sargasse guadeloupe 2026",
-              "impressions": 2,
-              "clicks": 0
-            },
-            {
               "query": "bulletin sargasse guadeloupe",
-              "impressions": 1,
-              "clicks": 1
-            },
-            {
-              "query": "sargasse guadeloupe en direct",
-              "impressions": 1,
-              "clicks": 1
-            },
-            {
-              "query": "sargasses en guadeloupe aujourd'hui",
               "impressions": 1,
               "clicks": 1
             },
@@ -5558,11 +5698,6 @@
             },
             {
               "query": "bulletin sargasses guadeloupe",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "carte sargasse guadeloupe 2026",
               "impressions": 1,
               "clicks": 0
             },
@@ -5617,11 +5752,6 @@
               "clicks": 0
             },
             {
-              "query": "meteo des sargasses guadeloupe",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
               "query": "meteo guadeloupe sargasses",
               "impressions": 1,
               "clicks": 0
@@ -5632,7 +5762,7 @@
               "clicks": 0
             },
             {
-              "query": "meteo guadeloupe sargasses",
+              "query": "meteo sargasse guadeloupe",
               "impressions": 1,
               "clicks": 0
             },
@@ -5697,17 +5827,17 @@
               "clicks": 0
             },
             {
-              "query": "météo sargasse guadeloupe",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
               "query": "météo sargasses guadeloupe",
               "impressions": 1,
               "clicks": 0
             },
             {
               "query": "periode des sargasses en guadeloupe",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "prevision sargasse guadeloupe",
               "impressions": 1,
               "clicks": 0
             },
@@ -5825,14 +5955,19 @@
               "query": "sargasse guadeloupe 2026",
               "impressions": 1,
               "clicks": 0
+            },
+            {
+              "query": "sargasse guadeloupe en direct",
+              "impressions": 1,
+              "clicks": 0
             }
           ]
         },
         "https://sargasses-guadeloupe.com/quand-sargasses-guadeloupe/": {
           "clicks": 5,
-          "impressions": 483,
-          "position": 982.9741328730493,
-          "count": 100,
+          "impressions": 438,
+          "position": 873.9456146054508,
+          "count": 94,
           "topQueries": [
             {
               "query": "sargasse guadeloupe 2026",
@@ -5841,12 +5976,12 @@
             },
             {
               "query": "sargasse guadeloupe 2026",
-              "impressions": 61,
+              "impressions": 59,
               "clicks": 2
             },
             {
               "query": "guadeloupe sargasse 2026",
-              "impressions": 31,
+              "impressions": 29,
               "clicks": 1
             },
             {
@@ -5865,24 +6000,14 @@
               "clicks": 0
             },
             {
-              "query": "sargasse en temps réel 2026",
-              "impressions": 18,
+              "query": "sargasse guadeloupe 2026",
+              "impressions": 10,
               "clicks": 0
             },
             {
               "query": "sargasse guadeloupe 2026",
-              "impressions": 12,
+              "impressions": 9,
               "clicks": 1
-            },
-            {
-              "query": "sargasse guadeloupe 2026",
-              "impressions": 11,
-              "clicks": 0
-            },
-            {
-              "query": "sargasse en temps réel 2026",
-              "impressions": 8,
-              "clicks": 0
             },
             {
               "query": "sargasse guadeloupe 2026",
@@ -5910,13 +6035,8 @@
               "clicks": 0
             },
             {
-              "query": "période sargasse guadeloupe",
-              "impressions": 5,
-              "clicks": 0
-            },
-            {
               "query": "période sargasses guadeloupe",
-              "impressions": 5,
+              "impressions": 4,
               "clicks": 0
             },
             {
@@ -5931,11 +6051,6 @@
             },
             {
               "query": "guadeloupe sargasse",
-              "impressions": 3,
-              "clicks": 0
-            },
-            {
-              "query": "periode des sargasses en guadeloupe",
               "impressions": 3,
               "clicks": 0
             },
@@ -6005,12 +6120,22 @@
               "clicks": 0
             },
             {
+              "query": "periode des sargasses en guadeloupe",
+              "impressions": 2,
+              "clicks": 0
+            },
+            {
               "query": "période des sargasses en guadeloupe",
               "impressions": 2,
               "clicks": 0
             },
             {
               "query": "période des sargasses en guadeloupe",
+              "impressions": 2,
+              "clicks": 0
+            },
+            {
+              "query": "période sargasse guadeloupe",
               "impressions": 2,
               "clicks": 0
             },
@@ -6025,11 +6150,6 @@
               "clicks": 0
             },
             {
-              "query": "sargasse en temps réel 2026",
-              "impressions": 2,
-              "clicks": 0
-            },
-            {
               "query": "sargasse guadeloupe",
               "impressions": 2,
               "clicks": 0
@@ -6041,11 +6161,6 @@
             },
             {
               "query": "sargasse guadeloupe",
-              "impressions": 2,
-              "clicks": 0
-            },
-            {
-              "query": "sargasse guadeloupe 2026",
               "impressions": 2,
               "clicks": 0
             },
@@ -6131,16 +6246,6 @@
             },
             {
               "query": "guadeloupe sargasses",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "guadeloupe sargasses 2026",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "guadeloupe sargasses 2026",
               "impressions": 1,
               "clicks": 0
             },
@@ -6265,11 +6370,6 @@
               "clicks": 0
             },
             {
-              "query": "sargasse en guadeloupe",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
               "query": "sargasse en temps réel 2026",
               "impressions": 1,
               "clicks": 0
@@ -6333,6 +6433,11 @@
               "query": "sargasse guadeloupe 2026",
               "impressions": 1,
               "clicks": 0
+            },
+            {
+              "query": "sargasse guadeloupe 2026",
+              "impressions": 1,
+              "clicks": 0
             }
           ]
         },
@@ -6356,8 +6461,8 @@
         },
         "https://sargasses-guadeloupe.com/plages/de-l-anse-du-figuier/": {
           "clicks": 2,
-          "impressions": 15,
-          "position": 33.125,
+          "impressions": 17,
+          "position": 33.285714285714285,
           "count": 5,
           "topQueries": [
             {
@@ -6372,12 +6477,12 @@
             },
             {
               "query": "anse figuier sargasse",
-              "impressions": 4,
+              "impressions": 7,
               "clicks": 0
             },
             {
               "query": "anse figuier sargasse",
-              "impressions": 8,
+              "impressions": 7,
               "clicks": 0
             },
             {
@@ -6388,13 +6493,18 @@
           ]
         },
         "https://sargasses-guadeloupe.com/carte-sargasses/": {
-          "clicks": 4,
-          "impressions": 75,
-          "position": 183.16,
-          "count": 25,
+          "clicks": 5,
+          "impressions": 78,
+          "position": 211.16,
+          "count": 28,
           "topQueries": [
             {
               "query": "carte sargasse guadeloupe en direct",
+              "impressions": 1,
+              "clicks": 1
+            },
+            {
+              "query": "carte sargasses guadeloupe",
               "impressions": 1,
               "clicks": 1
             },
@@ -6459,6 +6569,11 @@
               "clicks": 0
             },
             {
+              "query": "carte des sargasses guadeloupe",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
               "query": "carte sargasse",
               "impressions": 1,
               "clicks": 0
@@ -6509,6 +6624,11 @@
               "clicks": 0
             },
             {
+              "query": "sargasse carte",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
               "query": "sargasse carte guadeloupe",
               "impressions": 2,
               "clicks": 0
@@ -6522,9 +6642,9 @@
         },
         "https://sargasses-guadeloupe.com/plages/de-bois-jolan/": {
           "clicks": 4,
-          "impressions": 70,
-          "position": 129.74877450980392,
-          "count": 17,
+          "impressions": 60,
+          "position": 122.92916666666667,
+          "count": 16,
           "topQueries": [
             {
               "query": "plage bois jolan sargasse",
@@ -6538,7 +6658,7 @@
             },
             {
               "query": "plage de bois jolan sargasses",
-              "impressions": 17,
+              "impressions": 15,
               "clicks": 1
             },
             {
@@ -6557,37 +6677,27 @@
               "clicks": 0
             },
             {
-              "query": "plage bois jolan carte",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
               "query": "plage bois jolan guadeloupe carte",
-              "impressions": 6,
-              "clicks": 0
-            },
-            {
-              "query": "plage bois jolan sargasse",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "plage de bois jolan carte",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "plage de bois jolan carte",
               "impressions": 2,
               "clicks": 0
             },
             {
+              "query": "plage bois jolan sargasse",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "plage de bois jolan carte",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "plage de bois jolan carte",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
               "query": "plage de bois jolan google maps",
-              "impressions": 3,
-              "clicks": 0
-            },
-            {
-              "query": "plage de bois jolan sargasses",
               "impressions": 1,
               "clicks": 0
             },
@@ -6604,44 +6714,6 @@
             {
               "query": "plage de bois jolan sargasses",
               "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "sargasse bois jolan",
-              "impressions": 3,
-              "clicks": 0
-            }
-          ]
-        },
-        "https://sargasses-guadeloupe.com/plages/plage-bois-jolan/": {
-          "clicks": 1,
-          "impressions": 17,
-          "position": 59.4,
-          "count": 7,
-          "topQueries": [
-            {
-              "query": "plage bois jolan sargasse",
-              "impressions": 4,
-              "clicks": 1
-            },
-            {
-              "query": "plage bois jolan sargasse",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "plage bois jolan sargasse",
-              "impressions": 4,
-              "clicks": 0
-            },
-            {
-              "query": "plage de bois jolan sargasses",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "plage de bois jolan sargasses",
-              "impressions": 5,
               "clicks": 0
             },
             {
@@ -6651,16 +6723,16 @@
             },
             {
               "query": "sargasse bois jolan",
-              "impressions": 1,
+              "impressions": 3,
               "clicks": 0
             }
           ]
         },
         "https://sargasses-guadeloupe.com/plages/la-caravelle/": {
           "clicks": 1,
-          "impressions": 17,
-          "position": 26.875,
-          "count": 5,
+          "impressions": 16,
+          "position": 17.875,
+          "count": 4,
           "topQueries": [
             {
               "query": "plage de la caravelle sargasse",
@@ -6668,11 +6740,6 @@
               "clicks": 1
             },
             {
-              "query": "plage de la caravelle guadeloupe carte",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
               "query": "plage de la caravelle sargasse",
               "impressions": 6,
               "clicks": 0
@@ -6689,15 +6756,33 @@
             }
           ]
         },
+        "https://sargasses-guadeloupe.com/plages/plage-souffleur/": {
+          "clicks": 1,
+          "impressions": 4,
+          "position": 18.333333333333336,
+          "count": 2,
+          "topQueries": [
+            {
+              "query": "plage du souffleur sargasse",
+              "impressions": 3,
+              "clicks": 1
+            },
+            {
+              "query": "plage du souffleur sargasse",
+              "impressions": 1,
+              "clicks": 0
+            }
+          ]
+        },
         "https://sargasses-guadeloupe.com/plages-sans-sargasses-guadeloupe/": {
           "clicks": 6,
-          "impressions": 208,
-          "position": 359.7011622880044,
-          "count": 67,
+          "impressions": 209,
+          "position": 370.43693753693753,
+          "count": 69,
           "topQueries": [
             {
               "query": "plage sans sargasse guadeloupe",
-              "impressions": 38,
+              "impressions": 37,
               "clicks": 0
             },
             {
@@ -6721,12 +6806,12 @@
               "clicks": 1
             },
             {
-              "query": "plage sans sargasse guadeloupe",
-              "impressions": 8,
+              "query": "plage guadeloupe sans sargasse",
+              "impressions": 7,
               "clicks": 0
             },
             {
-              "query": "plage guadeloupe sans sargasse",
+              "query": "plage sans sargasse guadeloupe",
               "impressions": 7,
               "clicks": 0
             },
@@ -6841,6 +6926,11 @@
               "clicks": 0
             },
             {
+              "query": "sargasse guadeloupe en direct",
+              "impressions": 2,
+              "clicks": 0
+            },
+            {
               "query": "plages sans sargasses guadeloupe",
               "impressions": 1,
               "clicks": 1
@@ -6877,6 +6967,11 @@
             },
             {
               "query": "carte snorkeling guadeloupe",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "guadeloupe et sargasses",
               "impressions": 1,
               "clicks": 0
             },
@@ -6926,11 +7021,6 @@
               "clicks": 0
             },
             {
-              "query": "oui",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
               "query": "où aller en guadeloupe pour éviter les sargasses",
               "impressions": 1,
               "clicks": 0
@@ -6952,11 +7042,6 @@
             },
             {
               "query": "plage guadeloupe sans sargasse",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "plage sans sargasse",
               "impressions": 1,
               "clicks": 0
             },
@@ -7029,13 +7114,23 @@
               "query": "sargasse guadeloupe 2026",
               "impressions": 1,
               "clicks": 0
+            },
+            {
+              "query": "sargasse guadeloupe en direct",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "sargasse guadeloupe en direct",
+              "impressions": 1,
+              "clicks": 0
             }
           ]
         },
         "https://sargasses-guadeloupe.com/communes/saint-francois/": {
           "clicks": 6,
-          "impressions": 51,
-          "position": 183.24899267399266,
+          "impressions": 48,
+          "position": 183.30714285714285,
           "count": 15,
           "topQueries": [
             {
@@ -7050,12 +7145,12 @@
             },
             {
               "query": "sargasse guadeloupe saint-françois",
-              "impressions": 8,
+              "impressions": 7,
               "clicks": 1
             },
             {
               "query": "sargasse guadeloupe saint-françois",
-              "impressions": 13,
+              "impressions": 12,
               "clicks": 1
             },
             {
@@ -7090,7 +7185,7 @@
             },
             {
               "query": "saint francois guadeloupe sargasse",
-              "impressions": 7,
+              "impressions": 6,
               "clicks": 0
             },
             {
@@ -7117,9 +7212,9 @@
         },
         "https://sargasses-guadeloupe.com/plages/": {
           "clicks": 1,
-          "impressions": 18,
-          "position": 71.83333333333333,
-          "count": 8,
+          "impressions": 19,
+          "position": 76.83333333333333,
+          "count": 9,
           "topQueries": [
             {
               "query": "plage sargasse guadeloupe",
@@ -7157,6 +7252,11 @@
               "clicks": 0
             },
             {
+              "query": "plage sargasse guadeloupe",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
               "query": "plages guadeloupe sargasses",
               "impressions": 1,
               "clicks": 0
@@ -7165,9 +7265,9 @@
         },
         "https://sargasses-guadeloupe.com/faq/": {
           "clicks": 1,
-          "impressions": 61,
-          "position": 73.94117647058823,
-          "count": 26,
+          "impressions": 62,
+          "position": 77.44117647058823,
+          "count": 27,
           "topQueries": [
             {
               "query": "sargasse guadeloupe",
@@ -7190,13 +7290,18 @@
               "clicks": 0
             },
             {
-              "query": "période sargasse guadeloupe",
+              "query": "saison des sargasses guadeloupe",
               "impressions": 3,
               "clicks": 0
             },
             {
-              "query": "saison des sargasses guadeloupe",
-              "impressions": 3,
+              "query": "guadeloupe et sargasses",
+              "impressions": 2,
+              "clicks": 0
+            },
+            {
+              "query": "période sargasse guadeloupe",
+              "impressions": 2,
               "clicks": 0
             },
             {
@@ -7230,7 +7335,7 @@
               "clicks": 0
             },
             {
-              "query": "guadeloupe et sargasses",
+              "query": "guadeloupe sargasses",
               "impressions": 1,
               "clicks": 0
             },
@@ -7302,16 +7407,11 @@
           ]
         },
         "https://www.sargasses-guadeloupe.com/": {
-          "clicks": 4,
-          "impressions": 9,
-          "position": 45.333333333333336,
-          "count": 7,
+          "clicks": 3,
+          "impressions": 5,
+          "position": 35,
+          "count": 5,
           "topQueries": [
-            {
-              "query": "sargasse guadeloupe en direct",
-              "impressions": 3,
-              "clicks": 1
-            },
             {
               "query": "sargasse guadeloupe en direct",
               "impressions": 1,
@@ -7336,29 +7436,19 @@
               "query": "sargasse en temps réel",
               "impressions": 1,
               "clicks": 0
-            },
-            {
-              "query": "sargasse en temps réel",
-              "impressions": 1,
-              "clicks": 0
             }
           ]
         },
         "http://www.sargasses-guadeloupe.com/": {
           "clicks": 1,
-          "impressions": 3,
-          "position": 15,
-          "count": 3,
+          "impressions": 2,
+          "position": 14,
+          "count": 2,
           "topQueries": [
             {
               "query": "sargasses guadeloupe",
               "impressions": 1,
               "clicks": 1
-            },
-            {
-              "query": "sargasse guadeloupe",
-              "impressions": 1,
-              "clicks": 0
             },
             {
               "query": "sargasse guadeloupe",
@@ -7405,8 +7495,8 @@
         },
         "https://sargasses-guadeloupe.com/plages/anse-a-la-fontaine/": {
           "clicks": 0,
-          "impressions": 25,
-          "position": 44.04924242424243,
+          "impressions": 27,
+          "position": 44.67424242424242,
           "count": 6,
           "topQueries": [
             {
@@ -7416,12 +7506,12 @@
             },
             {
               "query": "anse a la fontaine",
-              "impressions": 8,
+              "impressions": 9,
               "clicks": 0
             },
             {
               "query": "anse fontaine guadeloupe",
-              "impressions": 3,
+              "impressions": 4,
               "clicks": 0
             },
             {
@@ -7443,13 +7533,13 @@
         },
         "https://sargasses-guadeloupe.com/plages-guadeloupe/anse-canot-marie-galante/": {
           "clicks": 0,
-          "impressions": 6,
-          "position": 22,
+          "impressions": 5,
+          "position": 21.75,
           "count": 2,
           "topQueries": [
             {
               "query": "anse canot marie-galante carte",
-              "impressions": 5,
+              "impressions": 4,
               "clicks": 0
             },
             {
@@ -7494,46 +7584,26 @@
         },
         "https://sargasses-guadeloupe.com/plages-guadeloupe/plage-d-anse-champagne/": {
           "clicks": 0,
-          "impressions": 45,
-          "position": 137.4424603174603,
-          "count": 13,
+          "impressions": 42,
+          "position": 146.375,
+          "count": 14,
           "topQueries": [
-            {
-              "query": "anse champagne guadeloupe itinéraire",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "anse champagne guadeloupe itinéraire",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "anse champagne guadeloupe itinéraire",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "anse champagne guadeloupe itinéraire",
-              "impressions": 7,
-              "clicks": 0
-            },
-            {
-              "query": "anse champagne guadeloupe itinéraire",
-              "impressions": 9,
-              "clicks": 0
-            },
-            {
-              "query": "anse champagne guadeloupe itinéraire",
-              "impressions": 1,
-              "clicks": 0
-            },
             {
               "query": "anse champagne guadeloupe maps",
               "impressions": 16,
               "clicks": 0
             },
             {
+              "query": "anse champagne guadeloupe itinéraire",
+              "impressions": 8,
+              "clicks": 0
+            },
+            {
+              "query": "anse champagne guadeloupe itinéraire",
+              "impressions": 4,
+              "clicks": 0
+            },
+            {
               "query": "anse champagne guadeloupe maps",
               "impressions": 2,
               "clicks": 0
@@ -7545,17 +7615,42 @@
             },
             {
               "query": "plage anse champagne",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "plage anse champagne",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "plage anse champagne",
               "impressions": 2,
+              "clicks": 0
+            },
+            {
+              "query": "anse champagne guadeloupe itinéraire",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "anse champagne guadeloupe itinéraire",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "anse champagne guadeloupe itinéraire",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "anse champagne guadeloupe itinéraire",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "plage anse champagne",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "plage anse champagne",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "plage anse champagne guadeloupe",
+              "impressions": 1,
               "clicks": 0
             },
             {
@@ -7567,9 +7662,9 @@
         },
         "https://sargasses-guadeloupe.com/plages-guadeloupe/plage-de-l-anse-colas/": {
           "clicks": 0,
-          "impressions": 2,
-          "position": 12,
-          "count": 2,
+          "impressions": 3,
+          "position": 13,
+          "count": 3,
           "topQueries": [
             {
               "query": "anse colas",
@@ -7578,6 +7673,11 @@
             },
             {
               "query": "anse colas guadeloupe",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "anse colas guadeloupe itinéraire",
               "impressions": 1,
               "clicks": 0
             }
@@ -7644,8 +7744,8 @@
         },
         "https://sargasses-guadeloupe.com/plages/anse-patate/": {
           "clicks": 0,
-          "impressions": 20,
-          "position": 84.7,
+          "impressions": 17,
+          "position": 85,
           "count": 9,
           "topQueries": [
             {
@@ -7665,7 +7765,7 @@
             },
             {
               "query": "anse patate guadeloupe",
-              "impressions": 8,
+              "impressions": 5,
               "clicks": 0
             },
             {
@@ -7710,8 +7810,8 @@
         },
         "https://sargasses-guadeloupe.com/plages/anse-rodrigue/": {
           "clicks": 0,
-          "impressions": 3,
-          "position": 20.5,
+          "impressions": 4,
+          "position": 19.666666666666664,
           "count": 2,
           "topQueries": [
             {
@@ -7721,25 +7821,20 @@
             },
             {
               "query": "anse rodrigue",
-              "impressions": 2,
+              "impressions": 3,
               "clicks": 0
             }
           ]
         },
         "https://sargasses-guadeloupe.com/plages-guadeloupe/plage-de-l-anse-tabarin/": {
           "clicks": 0,
-          "impressions": 5,
-          "position": 64.33333333333334,
-          "count": 3,
+          "impressions": 4,
+          "position": 57.333333333333336,
+          "count": 2,
           "topQueries": [
             {
               "query": "anse tabarin",
               "impressions": 3,
-              "clicks": 0
-            },
-            {
-              "query": "anse tabarin carte",
-              "impressions": 1,
               "clicks": 0
             },
             {
@@ -7764,13 +7859,13 @@
         },
         "https://sargasses-guadeloupe.com/plages/anse-a-dos-terre-de-bas-les-saintes/": {
           "clicks": 0,
-          "impressions": 6,
-          "position": 11.833333333333334,
+          "impressions": 1,
+          "position": 12,
           "count": 1,
           "topQueries": [
             {
               "query": "anse à dos guadeloupe",
-              "impressions": 6,
+              "impressions": 1,
               "clicks": 0
             }
           ]
@@ -7823,8 +7918,8 @@
         },
         "https://sargasses-guadeloupe.com/plages-guadeloupe/malendure-bouillante/": {
           "clicks": 0,
-          "impressions": 9,
-          "position": 163.14285714285714,
+          "impressions": 7,
+          "position": 165.5,
           "count": 3,
           "topQueries": [
             {
@@ -7834,21 +7929,21 @@
             },
             {
               "query": "plage bouillante guadeloupe",
-              "impressions": 1,
+              "impressions": 2,
               "clicks": 0
             },
             {
               "query": "plage malendure bouillante",
-              "impressions": 7,
+              "impressions": 4,
               "clicks": 0
             }
           ]
         },
         "https://sargasses-guadeloupe.com/methode-carte/": {
           "clicks": 0,
-          "impressions": 8,
-          "position": 120.5,
-          "count": 7,
+          "impressions": 9,
+          "position": 166.5,
+          "count": 8,
           "topQueries": [
             {
               "query": "carte des sargasses",
@@ -7881,6 +7976,11 @@
               "clicks": 0
             },
             {
+              "query": "sargasse carte",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
               "query": "sargasse carte guadeloupe",
               "impressions": 1,
               "clicks": 0
@@ -7889,9 +7989,9 @@
         },
         "https://sargasses-guadeloupe.com/plages/de-viard/": {
           "clicks": 0,
-          "impressions": 2,
-          "position": 2,
-          "count": 2,
+          "impressions": 4,
+          "position": 4,
+          "count": 3,
           "topQueries": [
             {
               "query": "carte sargasse en direct",
@@ -7899,8 +7999,13 @@
               "clicks": 0
             },
             {
-              "query": "playacar sargasse",
+              "query": "carte sargasse mexique en direct",
               "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "playacar sargasse",
+              "impressions": 2,
               "clicks": 0
             }
           ]
@@ -7913,49 +8018,6 @@
           "topQueries": [
             {
               "query": "carte sargasse guadeloupe",
-              "impressions": 1,
-              "clicks": 0
-            }
-          ]
-        },
-        "https://sargasses-guadeloupe.com/en/": {
-          "clicks": 0,
-          "impressions": 7,
-          "position": 22,
-          "count": 7,
-          "topQueries": [
-            {
-              "query": "carte sargasse guadeloupe en direct",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "guadeloupe sargassum",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "guadeloupe sargassum",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "guadeloupe sargassum",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "martinique sargassum",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "sargasse guadeloupe",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "sargasse guadeloupe",
               "impressions": 1,
               "clicks": 0
             }
@@ -7981,23 +8043,13 @@
         },
         "https://sargasses-guadeloupe.com/plages-guadeloupe/grand-baie-gosier/": {
           "clicks": 0,
-          "impressions": 8,
-          "position": 61.5,
-          "count": 6,
+          "impressions": 4,
+          "position": 43,
+          "count": 4,
           "topQueries": [
             {
               "query": "grand baie guadeloupe",
-              "impressions": 2,
-              "clicks": 0
-            },
-            {
-              "query": "grand baie guadeloupe",
               "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "grand baie guadeloupe",
-              "impressions": 2,
               "clicks": 0
             },
             {
@@ -8011,7 +8063,7 @@
               "clicks": 0
             },
             {
-              "query": "grand baie guadeloupe maps",
+              "query": "grand baie guadeloupe",
               "impressions": 1,
               "clicks": 0
             }
@@ -8042,8 +8094,8 @@
         },
         "https://sargasses-guadeloupe.com/plages-guadeloupe/ilet-boissard/": {
           "clicks": 0,
-          "impressions": 9,
-          "position": 67.5,
+          "impressions": 8,
+          "position": 68.5,
           "count": 6,
           "topQueries": [
             {
@@ -8073,20 +8125,20 @@
             },
             {
               "query": "ilet boissard guadeloupe",
-              "impressions": 2,
+              "impressions": 1,
               "clicks": 0
             }
           ]
         },
         "https://sargasses-guadeloupe.com/plages-guadeloupe/ilet-caret/": {
           "clicks": 0,
-          "impressions": 5,
-          "position": 255.33333333333331,
+          "impressions": 4,
+          "position": 253.5,
           "count": 3,
           "topQueries": [
             {
               "query": "ilet caret",
-              "impressions": 3,
+              "impressions": 2,
               "clicks": 0
             },
             {
@@ -8216,9 +8268,9 @@
         },
         "https://sargasses-guadeloupe.com/plages-guadeloupe/plage-du-mancellinier/": {
           "clicks": 0,
-          "impressions": 5,
-          "position": 91,
-          "count": 4,
+          "impressions": 3,
+          "position": 80,
+          "count": 3,
           "topQueries": [
             {
               "query": "mancellinier",
@@ -8233,20 +8285,15 @@
             {
               "query": "mancellinier",
               "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "mancellinier",
-              "impressions": 2,
               "clicks": 0
             }
           ]
         },
         "https://sargasses-guadeloupe.com/plages-guadeloupe/plage-anse-du-mancenillier/": {
           "clicks": 0,
-          "impressions": 14,
-          "position": 97.66666666666667,
-          "count": 9,
+          "impressions": 12,
+          "position": 84.33333333333334,
+          "count": 8,
           "topQueries": [
             {
               "query": "mancenillier guadeloupe plage",
@@ -8265,17 +8312,12 @@
             },
             {
               "query": "plage anse du mancenillier",
-              "impressions": 3,
+              "impressions": 2,
               "clicks": 0
             },
             {
               "query": "plage anse du mancenillier",
               "impressions": 3,
-              "clicks": 0
-            },
-            {
-              "query": "plage anse du mancenillier",
-              "impressions": 1,
               "clicks": 0
             },
             {
@@ -8320,17 +8362,12 @@
         },
         "https://sargasses-guadeloupe.com/plages/de-petite-anse/": {
           "clicks": 0,
-          "impressions": 2,
-          "position": 22,
-          "count": 2,
+          "impressions": 1,
+          "position": 13,
+          "count": 1,
           "topQueries": [
             {
               "query": "petite anse guadeloupe carte",
-              "impressions": 1,
-              "clicks": 0
-            },
-            {
-              "query": "plage petite anse guadeloupe carte",
               "impressions": 1,
               "clicks": 0
             }
@@ -8351,15 +8388,10 @@
         },
         "https://sargasses-guadeloupe.com/communes/bouillante/": {
           "clicks": 0,
-          "impressions": 2,
-          "position": 145,
-          "count": 2,
+          "impressions": 1,
+          "position": 75,
+          "count": 1,
           "topQueries": [
-            {
-              "query": "plage bouillante",
-              "impressions": 1,
-              "clicks": 0
-            },
             {
               "query": "plage bouillante guadeloupe",
               "impressions": 1,
@@ -8424,7 +8456,7 @@
         "https://sargasses-guadeloupe.com/plages-guadeloupe/plage-de-l-ilet-du-gosier/": {
           "clicks": 0,
           "impressions": 14,
-          "position": 292.25,
+          "position": 266.85,
           "count": 6,
           "topQueries": [
             {
@@ -8434,7 +8466,7 @@
             },
             {
               "query": "plage de l'ilet du gosier",
-              "impressions": 2,
+              "impressions": 1,
               "clicks": 0
             },
             {
@@ -8454,22 +8486,17 @@
             },
             {
               "query": "plage îlet du gosier guadeloupe",
-              "impressions": 4,
+              "impressions": 5,
               "clicks": 0
             }
           ]
         },
         "https://sargasses-guadeloupe.com/plages/de-l-ilet-du-gosier/": {
           "clicks": 0,
-          "impressions": 4,
-          "position": 159.5,
-          "count": 3,
+          "impressions": 3,
+          "position": 106.5,
+          "count": 2,
           "topQueries": [
-            {
-              "query": "plage de l'ilet du gosier",
-              "impressions": 1,
-              "clicks": 0
-            },
             {
               "query": "plage de l'ilet du gosier",
               "impressions": 1,
@@ -8520,10 +8547,15 @@
         },
         "https://sargasses-guadeloupe.com/plages/de-montal/": {
           "clicks": 0,
-          "impressions": 1,
-          "position": 11,
-          "count": 1,
+          "impressions": 2,
+          "position": 21,
+          "count": 2,
           "topQueries": [
+            {
+              "query": "plage de montal",
+              "impressions": 1,
+              "clicks": 0
+            },
             {
               "query": "plage de montal",
               "impressions": 1,
@@ -8625,9 +8657,9 @@
         },
         "https://sargasses-guadeloupe.com/plages/des-bebes/": {
           "clicks": 0,
-          "impressions": 4,
-          "position": 10.666666666666668,
-          "count": 2,
+          "impressions": 5,
+          "position": 11.666666666666668,
+          "count": 3,
           "topQueries": [
             {
               "query": "plage des bebes marie galante",
@@ -8636,6 +8668,11 @@
             },
             {
               "query": "plage des bebes marie galante",
+              "impressions": 1,
+              "clicks": 0
+            },
+            {
+              "query": "port louis guadeloupe",
               "impressions": 1,
               "clicks": 0
             }
@@ -8656,10 +8693,15 @@
         },
         "https://sargasses-guadeloupe.com/plages-guadeloupe/plage-de-gros-sable/": {
           "clicks": 0,
-          "impressions": 2,
-          "position": 22,
-          "count": 2,
+          "impressions": 3,
+          "position": 33,
+          "count": 3,
           "topQueries": [
+            {
+              "query": "plage du gros sable guadeloupe",
+              "impressions": 1,
+              "clicks": 0
+            },
             {
               "query": "plage du gros sable guadeloupe",
               "impressions": 1,
@@ -8723,19 +8765,6 @@
             }
           ]
         },
-        "https://sargasses-guadeloupe.com/plages/plage-souffleur/": {
-          "clicks": 0,
-          "impressions": 2,
-          "position": 9.5,
-          "count": 1,
-          "topQueries": [
-            {
-              "query": "plage du souffleur sargasse",
-              "impressions": 2,
-              "clicks": 0
-            }
-          ]
-        },
         "https://sargasses-guadeloupe.com/plages-guadeloupe/plage-de-gros-cap/": {
           "clicks": 0,
           "impressions": 5,
@@ -8759,23 +8788,10 @@
             }
           ]
         },
-        "https://sargasses-guadeloupe.com/communes/la-desirade/": {
-          "clicks": 0,
-          "impressions": 2,
-          "position": 47,
-          "count": 1,
-          "topQueries": [
-            {
-              "query": "plage la désirade",
-              "impressions": 2,
-              "clicks": 0
-            }
-          ]
-        },
         "https://sargasses-guadeloupe.com/plages/paul-thomas/": {
           "clicks": 0,
-          "impressions": 34,
-          "position": 85.59999999999998,
+          "impressions": 32,
+          "position": 85.99999999999999,
           "count": 10,
           "topQueries": [
             {
@@ -8785,7 +8801,7 @@
             },
             {
               "query": "plage paul thomas guadeloupe",
-              "impressions": 10,
+              "impressions": 8,
               "clicks": 0
             },
             {
@@ -8863,10 +8879,15 @@
         },
         "https://sargasses-guadeloupe.com/plages-guadeloupe/plage-de-port-louis-grande-terre-nord/": {
           "clicks": 0,
-          "impressions": 3,
-          "position": 6.5,
-          "count": 2,
+          "impressions": 4,
+          "position": 7.5,
+          "count": 3,
           "topQueries": [
+            {
+              "query": "plage port louis guadeloupe sargasse",
+              "impressions": 1,
+              "clicks": 0
+            },
             {
               "query": "plage port louis guadeloupe sargasse",
               "impressions": 1,
@@ -8899,9 +8920,9 @@
         },
         "https://sargasses-guadeloupe.com/plages/de-port-louis-nord-grande-terre/": {
           "clicks": 0,
-          "impressions": 11,
-          "position": 32,
-          "count": 4,
+          "impressions": 15,
+          "position": 31.1,
+          "count": 5,
           "topQueries": [
             {
               "query": "plage port louis guadeloupe sargasse",
@@ -8915,12 +8936,17 @@
             },
             {
               "query": "plage port louis guadeloupe sargasse",
-              "impressions": 8,
+              "impressions": 1,
               "clicks": 0
             },
             {
               "query": "plage port louis guadeloupe sargasse",
-              "impressions": 1,
+              "impressions": 10,
+              "clicks": 0
+            },
+            {
+              "query": "plage port louis guadeloupe sargasse",
+              "impressions": 2,
               "clicks": 0
             }
           ]
@@ -9051,6 +9077,19 @@
             }
           ]
         },
+        "https://sargasses-guadeloupe.com/en/sargassum-map/": {
+          "clicks": 0,
+          "impressions": 1,
+          "position": 27,
+          "count": 1,
+          "topQueries": [
+            {
+              "query": "sargasse en temps réel",
+              "impressions": 1,
+              "clicks": 0
+            }
+          ]
+        },
         "https://sargasses-guadeloupe.com/plages/gosier-plage/": {
           "clicks": 0,
           "impressions": 3,
@@ -9097,7 +9136,7 @@
           "verdict": "PASS",
           "pageFetchState": "SUCCESSFUL",
           "robotsTxtState": "ALLOWED",
-          "lastCrawlTime": "2026-04-10T07:19:14Z",
+          "lastCrawlTime": "2026-04-11T21:44:37Z",
           "coverageState": "Submitted and indexed"
         },
         {
@@ -9129,7 +9168,7 @@
           "verdict": "PASS",
           "pageFetchState": "SUCCESSFUL",
           "robotsTxtState": "ALLOWED",
-          "lastCrawlTime": "2026-04-06T22:56:34Z",
+          "lastCrawlTime": "2026-04-12T02:55:54Z",
           "coverageState": "Submitted and indexed"
         },
         {
@@ -9337,7 +9376,7 @@
         {
           "path": "https://sargasses-guadeloupe.com/sitemap.xml",
           "lastSubmitted": "2026-02-23T06:03:02.704Z",
-          "lastDownloaded": "2026-04-09T05:44:34.692Z",
+          "lastDownloaded": "2026-04-11T10:37:53.197Z",
           "isPending": false,
           "warnings": "0",
           "errors": "0"
@@ -9347,56 +9386,56 @@
         {
           "pagePath": "/",
           "device": "mobile",
-          "sessions": 3282,
-          "bounceRate": 0.376599634369287,
-          "avgDuration": 153.00074923430836,
-          "pageViews": 4069,
-          "engagedSessions": 2046
+          "sessions": 3841,
+          "bounceRate": 0.41187190835719867,
+          "avgDuration": 159.60988612652957,
+          "pageViews": 4785,
+          "engagedSessions": 2259
         },
         {
           "pagePath": "/",
           "device": "desktop",
-          "sessions": 251,
-          "bounceRate": 0.3107569721115538,
-          "avgDuration": 871.576140187251,
-          "pageViews": 334,
-          "engagedSessions": 173
+          "sessions": 290,
+          "bounceRate": 0.31724137931034485,
+          "avgDuration": 778.8866376517242,
+          "pageViews": 386,
+          "engagedSessions": 198
         },
         {
           "pagePath": "/",
           "device": "tablet",
-          "sessions": 116,
-          "bounceRate": 0.3275862068965517,
-          "avgDuration": 69.17779959482759,
-          "pageViews": 124,
-          "engagedSessions": 78
+          "sessions": 126,
+          "bounceRate": 0.373015873015873,
+          "avgDuration": 67.61320126984126,
+          "pageViews": 132,
+          "engagedSessions": 79
         },
         {
           "pagePath": "/plages/plage-caravelle/",
           "device": "mobile",
-          "sessions": 22,
-          "bounceRate": 0.2727272727272727,
-          "avgDuration": 175.80414954545452,
-          "pageViews": 34,
-          "engagedSessions": 16
+          "sessions": 26,
+          "bounceRate": 0.2692307692307692,
+          "avgDuration": 207.61233507692307,
+          "pageViews": 41,
+          "engagedSessions": 19
         },
         {
           "pagePath": "/carte-sargasses/",
           "device": "mobile",
-          "sessions": 13,
-          "bounceRate": 0.15384615384615385,
-          "avgDuration": 57.98689107692308,
-          "pageViews": 19,
-          "engagedSessions": 11
+          "sessions": 15,
+          "bounceRate": 0.13333333333333333,
+          "avgDuration": 67.461526,
+          "pageViews": 22,
+          "engagedSessions": 13
         },
         {
           "pagePath": "/plages/le-gosier/",
           "device": "mobile",
-          "sessions": 11,
-          "bounceRate": 0.2727272727272727,
-          "avgDuration": 302.04089536363637,
-          "pageViews": 18,
-          "engagedSessions": 8
+          "sessions": 15,
+          "bounceRate": 0.2,
+          "avgDuration": 247.731068,
+          "pageViews": 24,
+          "engagedSessions": 12
         },
         {
           "pagePath": "/carte-sargasses/",
@@ -9408,22 +9447,49 @@
           "engagedSessions": 5
         },
         {
+          "pagePath": "/plages/anse-a-la-fontaine/",
+          "device": "mobile",
+          "sessions": 8,
+          "bounceRate": 0.75,
+          "avgDuration": 9.905925625,
+          "pageViews": 8,
+          "engagedSessions": 2
+        },
+        {
+          "pagePath": "/plages/malendure/",
+          "device": "mobile",
+          "sessions": 8,
+          "bounceRate": 0.5,
+          "avgDuration": 72.5144475,
+          "pageViews": 12,
+          "engagedSessions": 4
+        },
+        {
           "pagePath": "/previsions/",
           "device": "mobile",
+          "sessions": 8,
+          "bounceRate": 0.25,
+          "avgDuration": 204.14507000000003,
+          "pageViews": 12,
+          "engagedSessions": 6
+        },
+        {
+          "pagePath": "/en/",
+          "device": "desktop",
           "sessions": 7,
           "bounceRate": 0.2857142857142857,
-          "avgDuration": 156.09066185714283,
-          "pageViews": 11,
+          "avgDuration": 484.79765985714283,
+          "pageViews": 8,
           "engagedSessions": 5
         },
         {
-          "pagePath": "/plages/anse-a-la-fontaine/",
+          "pagePath": "/en/",
           "device": "mobile",
-          "sessions": 6,
-          "bounceRate": 0.6666666666666666,
-          "avgDuration": 10.216787166666668,
-          "pageViews": 6,
-          "engagedSessions": 2
+          "sessions": 7,
+          "bounceRate": 0.5714285714285714,
+          "avgDuration": 1034.6364832857143,
+          "pageViews": 10,
+          "engagedSessions": 3
         },
         {
           "pagePath": "/weekend.htmlLa",
@@ -9435,66 +9501,39 @@
           "engagedSessions": 2
         },
         {
-          "pagePath": "/en/",
-          "device": "desktop",
-          "sessions": 5,
-          "bounceRate": 0.4,
-          "avgDuration": 381.8651504,
-          "pageViews": 5,
-          "engagedSessions": 3
-        },
-        {
           "pagePath": "/en/sargassum-map/",
           "device": "mobile",
-          "sessions": 4,
-          "bounceRate": 0.25,
-          "avgDuration": 200.3786735,
-          "pageViews": 5,
-          "engagedSessions": 3
-        },
-        {
-          "pagePath": "/plages/malendure/",
-          "device": "mobile",
-          "sessions": 4,
-          "bounceRate": 0.25,
-          "avgDuration": 89.73273675,
-          "pageViews": 5,
+          "sessions": 5,
+          "bounceRate": 0.4,
+          "avgDuration": 184.758278,
+          "pageViews": 6,
           "engagedSessions": 3
         },
         {
           "pagePath": "/plages/grande-anse-bouillante/",
           "device": "mobile",
-          "sessions": 3,
-          "bounceRate": 0,
-          "avgDuration": 47.34366666666667,
-          "pageViews": 4,
+          "sessions": 4,
+          "bounceRate": 0.25,
+          "avgDuration": 52.0762275,
+          "pageViews": 5,
           "engagedSessions": 3
         },
         {
           "pagePath": "/plages/plage-bois-jolan/",
           "device": "mobile",
-          "sessions": 3,
-          "bounceRate": 0.3333333333333333,
-          "avgDuration": 133.823682,
-          "pageViews": 6,
-          "engagedSessions": 2
+          "sessions": 4,
+          "bounceRate": 0.25,
+          "avgDuration": 152.520736,
+          "pageViews": 9,
+          "engagedSessions": 3
         },
         {
           "pagePath": "/plages/saint-francois-pointe-des-chateaux/",
           "device": "mobile",
-          "sessions": 3,
-          "bounceRate": 0.6666666666666666,
-          "avgDuration": 37.05959,
-          "pageViews": 3,
-          "engagedSessions": 1
-        },
-        {
-          "pagePath": "/en/",
-          "device": "mobile",
-          "sessions": 2,
-          "bounceRate": 0,
-          "avgDuration": 119.9588485,
-          "pageViews": 3,
+          "sessions": 4,
+          "bounceRate": 0.5,
+          "avgDuration": 32.87134075,
+          "pageViews": 4,
           "engagedSessions": 2
         },
         {
@@ -9513,6 +9552,24 @@
           "bounceRate": 0.5,
           "avgDuration": 928.230788,
           "pageViews": 3,
+          "engagedSessions": 1
+        },
+        {
+          "pagePath": "/plages/du-bourg/",
+          "device": "mobile",
+          "sessions": 2,
+          "bounceRate": 0.5,
+          "avgDuration": 11.612601999999999,
+          "pageViews": 2,
+          "engagedSessions": 1
+        },
+        {
+          "pagePath": "/plages/grande-anse-terre-de-bas-les-saintes/",
+          "device": "mobile",
+          "sessions": 2,
+          "bounceRate": 0.5,
+          "avgDuration": 30.873931,
+          "pageViews": 2,
           "engagedSessions": 1
         },
         {
@@ -9552,6 +9609,15 @@
           "engagedSessions": 1
         },
         {
+          "pagePath": "/plages/bas-du-fort/",
+          "device": "mobile",
+          "sessions": 1,
+          "bounceRate": 1,
+          "avgDuration": 227.318867,
+          "pageViews": 2,
+          "engagedSessions": 0
+        },
+        {
           "pagePath": "/plages/de-l-anse-des-rochers/",
           "device": "mobile",
           "sessions": 1,
@@ -9559,6 +9625,15 @@
           "avgDuration": 115.931369,
           "pageViews": 2,
           "engagedSessions": 1
+        },
+        {
+          "pagePath": "/plages/de-l-autre-bord/",
+          "device": "mobile",
+          "sessions": 1,
+          "bounceRate": 1,
+          "avgDuration": 2.534072,
+          "pageViews": 1,
+          "engagedSessions": 0
         },
         {
           "pagePath": "/plages/de-port-louis-nord-grande-terre/",
@@ -9579,15 +9654,6 @@
           "engagedSessions": 1
         },
         {
-          "pagePath": "/plages/du-bourg/",
-          "device": "mobile",
-          "sessions": 1,
-          "bounceRate": 1,
-          "avgDuration": 8.352174,
-          "pageViews": 1,
-          "engagedSessions": 0
-        },
-        {
           "pagePath": "/plages/grande-anse-deshaies/",
           "device": "desktop",
           "sessions": 1,
@@ -9606,13 +9672,22 @@
           "engagedSessions": 1
         },
         {
-          "pagePath": "/plages/grande-anse-terre-de-bas-les-saintes/",
+          "pagePath": "/plages/ilet-caret/",
           "device": "mobile",
           "sessions": 1,
-          "bounceRate": 1,
-          "avgDuration": 4.361027,
+          "bounceRate": 0,
+          "avgDuration": 43.987041,
           "pageViews": 1,
-          "engagedSessions": 0
+          "engagedSessions": 1
+        },
+        {
+          "pagePath": "/plages/plage-souffleur/",
+          "device": "mobile",
+          "sessions": 1,
+          "bounceRate": 0,
+          "avgDuration": 134.024111,
+          "pageViews": 2,
+          "engagedSessions": 1
         },
         {
           "pagePath": "/plages/pointe-des-chateaux/",
@@ -9641,19 +9716,19 @@
           {
             "page": "https://sargasses-guadeloupe.com/previsions-sargasses-guadeloupe/",
             "avgPosition": 6,
-            "actualCtr": 3.46,
+            "actualCtr": 2.63,
             "expectedCtr": 5,
-            "impressions": 376,
-            "clicks": 13,
+            "impressions": 342,
+            "clicks": 9,
             "topQueries": [
               {
                 "query": "bulletin sargasses guadeloupe",
-                "impressions": 43,
+                "impressions": 42,
                 "clicks": 0
               },
               {
                 "query": "sargasse guadeloupe 2026",
-                "impressions": 39,
+                "impressions": 37,
                 "clicks": 2
               },
               {
@@ -9663,22 +9738,22 @@
               },
               {
                 "query": "guadeloupe sargasse 2026",
-                "impressions": 22,
+                "impressions": 21,
                 "clicks": 1
               },
               {
                 "query": "prevision sargasse guadeloupe",
-                "impressions": 15,
+                "impressions": 14,
                 "clicks": 1
               }
             ]
           },
           {
             "page": "https://sargasses-guadeloupe.com/quand-sargasses-guadeloupe/",
-            "avgPosition": 10,
-            "actualCtr": 1.04,
-            "expectedCtr": 2,
-            "impressions": 483,
+            "avgPosition": 9,
+            "actualCtr": 1.14,
+            "expectedCtr": 3,
+            "impressions": 438,
             "clicks": 5,
             "topQueries": [
               {
@@ -9688,12 +9763,12 @@
               },
               {
                 "query": "sargasse guadeloupe 2026",
-                "impressions": 61,
+                "impressions": 59,
                 "clicks": 2
               },
               {
                 "query": "guadeloupe sargasse 2026",
-                "impressions": 31,
+                "impressions": 29,
                 "clicks": 1
               },
               {
@@ -9711,14 +9786,14 @@
           {
             "page": "https://sargasses-guadeloupe.com/plages-sans-sargasses-guadeloupe/",
             "avgPosition": 5,
-            "actualCtr": 2.88,
+            "actualCtr": 2.87,
             "expectedCtr": 6,
-            "impressions": 208,
+            "impressions": 209,
             "clicks": 6,
             "topQueries": [
               {
                 "query": "plage sans sargasse guadeloupe",
-                "impressions": 38,
+                "impressions": 37,
                 "clicks": 0
               },
               {
@@ -9746,9 +9821,9 @@
           {
             "page": "https://sargasses-guadeloupe.com/faq/",
             "avgPosition": 3,
-            "actualCtr": 1.64,
+            "actualCtr": 1.61,
             "expectedCtr": 11,
-            "impressions": 61,
+            "impressions": 62,
             "clicks": 1,
             "topQueries": [
               {
@@ -9772,7 +9847,7 @@
                 "clicks": 0
               },
               {
-                "query": "période sargasse guadeloupe",
+                "query": "saison des sargasses guadeloupe",
                 "impressions": 3,
                 "clicks": 0
               }
@@ -9783,7 +9858,7 @@
             "avgPosition": 7,
             "actualCtr": 0,
             "expectedCtr": 4,
-            "impressions": 25,
+            "impressions": 27,
             "clicks": 0,
             "topQueries": [
               {
@@ -9793,12 +9868,12 @@
               },
               {
                 "query": "anse a la fontaine",
-                "impressions": 8,
+                "impressions": 9,
                 "clicks": 0
               },
               {
                 "query": "anse fontaine guadeloupe",
-                "impressions": 3,
+                "impressions": 4,
                 "clicks": 0
               },
               {
@@ -9814,11 +9889,46 @@
             ]
           },
           {
+            "page": "https://sargasses-guadeloupe.com/plages-guadeloupe/plage-d-anse-champagne/",
+            "avgPosition": 10,
+            "actualCtr": 0,
+            "expectedCtr": 2,
+            "impressions": 42,
+            "clicks": 0,
+            "topQueries": [
+              {
+                "query": "anse champagne guadeloupe maps",
+                "impressions": 16,
+                "clicks": 0
+              },
+              {
+                "query": "anse champagne guadeloupe itinéraire",
+                "impressions": 8,
+                "clicks": 0
+              },
+              {
+                "query": "anse champagne guadeloupe itinéraire",
+                "impressions": 4,
+                "clicks": 0
+              },
+              {
+                "query": "anse champagne guadeloupe maps",
+                "impressions": 2,
+                "clicks": 0
+              },
+              {
+                "query": "plage anse champagne",
+                "impressions": 2,
+                "clicks": 0
+              }
+            ]
+          },
+          {
             "page": "https://sargasses-guadeloupe.com/plages/paul-thomas/",
             "avgPosition": 9,
             "actualCtr": 0,
             "expectedCtr": 3,
-            "impressions": 34,
+            "impressions": 32,
             "clicks": 0,
             "topQueries": [
               {
@@ -9828,7 +9938,7 @@
               },
               {
                 "query": "plage paul thomas guadeloupe",
-                "impressions": 10,
+                "impressions": 8,
                 "clicks": 0
               },
               {
@@ -9856,11 +9966,23 @@
             "event": "clarity_rage_click",
             "page": "/",
             "target": "",
-            "count": 171
+            "count": 194
+          },
+          {
+            "event": "clarity_rage_click",
+            "page": "/en/",
+            "target": "",
+            "count": 2
           },
           {
             "event": "clarity_rage_click",
             "page": "/plages/plage-caravelle/",
+            "target": "",
+            "count": 2
+          },
+          {
+            "event": "clarity_rage_click",
+            "page": "/plages/plage-souffleur/",
             "target": "",
             "count": 2
           },
@@ -9882,37 +10004,37 @@
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 2461
+            "count": 3024
           },
           {
             "event": "clarity_dead_click",
             "page": "/plages/plage-caravelle/",
             "target": "",
-            "count": 21
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/carte-sargasses/",
-            "target": "",
-            "count": 15
+            "count": 27
           },
           {
             "event": "clarity_dead_click",
             "page": "/plages/le-gosier/",
             "target": "",
-            "count": 10
+            "count": 18
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/carte-sargasses/",
+            "target": "",
+            "count": 16
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/en/",
+            "target": "",
+            "count": 13
           },
           {
             "event": "clarity_dead_click",
             "page": "/previsions/",
             "target": "",
             "count": 8
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/en/",
-            "target": "",
-            "count": 6
           },
           {
             "event": "clarity_dead_click",
@@ -9924,11 +10046,41 @@
             "event": "clarity_dead_click",
             "page": "/plages/plage-bois-jolan/",
             "target": "",
-            "count": 5
+            "count": 6
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/grande-anse-bouillante/",
+            "target": "",
+            "count": 4
           },
           {
             "event": "clarity_dead_click",
             "page": "/plages/malendure/",
+            "target": "",
+            "count": 4
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/plage-souffleur/",
+            "target": "",
+            "count": 4
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/bas-du-fort/",
+            "target": "",
+            "count": 3
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/du-bourg/",
+            "target": "",
+            "count": 3
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/grande-anse-terre-de-bas-les-saintes/",
             "target": "",
             "count": 3
           },
@@ -9941,18 +10093,6 @@
           {
             "event": "clarity_dead_click",
             "page": "/plages/de-petit-havre/",
-            "target": "",
-            "count": 2
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/du-bourg/",
-            "target": "",
-            "count": 2
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/grande-anse-bouillante/",
             "target": "",
             "count": 2
           },
@@ -9971,6 +10111,12 @@
           {
             "event": "clarity_dead_click",
             "page": "/plages/grande-anse-deshaies/",
+            "target": "",
+            "count": 1
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/ilet-caret/",
             "target": "",
             "count": 1
           }
