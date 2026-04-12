@@ -24,7 +24,7 @@ const RESULTS_PATH = path.join(__dirname, 'ab-results.json')
 // sg_ab localStorage entries on every event, so returning users keep poisoning
 // the funnel with phantom conversions long after a test is inlined. Fetching
 // them means ab-evaluate keeps "finding" data for tests that were archived
-// weeks ago (happened 2026-04-12 with lock1/modal1/free1/price1/pay1).
+// weeks ago (happened 2026-04-12 with lock1/modal1/free1/price1/pay1/vp1).
 //
 // Decided (hardcoded winners in Sargasses_PROD.jsx):
 //   - lock1  → control (simple CTA) beat loss framing — line 1084
@@ -32,9 +32,9 @@ const RESULTS_PATH = path.join(__dirname, 'ab-results.json')
 //   - free1  → control (1 free day) beat two_free — line 1081
 //   - price1 → monthly beat season pass — line 3293
 //   - pay1   → link beat inline checkout — line 3270
+// Removed (dead component / never rendered): vp1 (WeekendBanner deleted)
 // Removed (never wired / no call site): onb1, hero2
 const TESTS = [
-  { id: 'vp1', dimension: 'customEvent:ab_vp1', variants: ['feature', 'outcome'], metric: 'sg_weekend_banner_click' },
   { id: 'em1', dimension: 'customEvent:ab_em1', variants: ['control', 'curiosity'], metric: 'sg_email_submit' },
 ]
 
@@ -169,7 +169,10 @@ async function fetchFromSheets() {
 
   for (const row of data) {
     const eventName = row[1] || ''
-    const abCols = { vp1: row[7] }
+    // No legacy sheet column maps to em1 — it lives in raw_params. Fallback
+    // path returns [0,0]/[0,0] for em1 and lets the Apps Script funnel path
+    // (primary) serve the real data via dict-keyed ab_variants.
+    const abCols = {}
 
     for (const test of TESTS) {
       const variantStr = abCols[test.id]
