@@ -654,8 +654,8 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
   const lockedCount=visibleDays-freeThreshold
   // lock1 A/B test ended: control (simple CTA) 3.66% vs loss framing 2.35% — simple CTA wins.
   const inSeason=SARGASSES_SEASON==="high"
-  const lockCTA=lang==="en"?"See 4-day forecast":"Voir les 4 jours"
-  const lockSub=lang==="en"?"Free trial · cancel anytime":"Essai gratuit · sans engagement"
+  const lockCTA=lang==="en"?"Unlock forecast":"Débloquer"
+  const lockSub=lang==="en"?"+ morning brief & alerts · 7 days free":"+ brief matin & alertes · 7j gratuit"
   const firstConf=visible[1]?.confidence||40
   return(
     <div style={{position:"relative"}}>
