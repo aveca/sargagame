@@ -1,0 +1,41 @@
+{
+  "contacted": {
+    "jumbocar-martinique.com": {
+      "date": "2026-04-12T18:23:12.984Z",
+      "email": "***RGPD-PURGE***",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.jumbocar-martinique.com/blog-voyage/informations-pratiques/sargasses-martinique"
+    },
+    "jumbocar-guadeloupe.com": {
+      "date": "2026-04-12T18:23:15.772Z",
+      "email": "***RGPD-PURGE***",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.jumbocar-guadeloupe.com/visitez-la-guadeloupe/informations-pratiques/sargasses"
+    },
+    "chrissandvoyage.com": {
+      "date": "2026-04-12T18:23:20.521Z",
+      "email": "***RGPD-PURGE***",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.chrissandvoyage.com/sargasses"
+    },
+    "lagons-plages.com": {
+      "date": "2026-04-12T18:23:21.090Z",
+      "email": "***RGPD-PURGE***",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.lagons-plages.com/sargasses-caraibes.php"
+    },
+    "chouetteworld.com": {
+      "date": "2026-04-12T18:23:34.240Z",
+      "email": "***RGPD-PURGE***",
+      "status": "sent",
+      "error": null,
+      "url": "https://chouetteworld.com/plus-belles-plages-de-martinique/"
+    }
+  },
+  "lastRun": "2026-04-12T18:23:34.240Z",
+  "totalSent": 5
+}
