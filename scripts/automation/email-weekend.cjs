@@ -87,8 +87,8 @@ function buildEmailHTML(island, topBeaches, stats, domain) {
 <div style="max-width:480px;margin:0 auto;padding:20px">
   <div style="background:#0D1E1C;border-radius:16px 16px 0 0;padding:24px;text-align:center">
     <div style="font-size:12px;font-weight:700;color:#E8A800;text-transform:uppercase;letter-spacing:.08em">Bulletin weekend</div>
-    <div style="font-size:24px;font-weight:800;color:#fff;margin-top:8px">Sargasses ${islandName}</div>
-    <div style="font-size:13px;color:rgba(255,255,255,.6);margin-top:4px">Ce weekend — tes plages propres</div>
+    <div style="font-size:24px;font-weight:800;color:#fff;margin-top:8px">Plages ${islandName}</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.6);margin-top:4px">Ce weekend — tes meilleures plages not\u00E9es</div>
   </div>
 
   <div style="background:#fff;padding:20px">
@@ -107,7 +107,7 @@ function buildEmailHTML(island, topBeaches, stats, domain) {
       </div>
     </div>
 
-    <div style="font-size:13px;font-weight:700;color:#0D0D0D;margin-bottom:10px">Plages recommand\u00E9es samedi :</div>
+    <div style="font-size:13px;font-weight:700;color:#0D0D0D;margin-bottom:10px">Top 5 pour samedi &mdash; score sur 100 :</div>
     <table style="width:100%;border-collapse:collapse">${beachRows}</table>
   </div>
 
