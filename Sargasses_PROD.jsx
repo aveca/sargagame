@@ -2844,9 +2844,28 @@ function StripeInlineCheckout({plan,lang,source,onSuccess}){
     onSuccess?.()
   }
 
+  // Trust reassurances — kill the "will I be charged now?" fear (design-scout run #3, conversion angle)
+  const trustLines=lang==="en"
+    ?[{icon:"💳",text:"€0 charged today"},{icon:"✋",text:"Cancel in 1 click"},{icon:"🔒",text:"Stripe secure payment"}]
+    :lang==="es"
+    ?[{icon:"💳",text:"0 € hoy"},{icon:"✋",text:"Cancela en 1 clic"},{icon:"🔒",text:"Pago seguro Stripe"}]
+    :[{icon:"💳",text:"0 € aujourd'hui"},{icon:"✋",text:"Annule en 1 clic"},{icon:"🔒",text:"Paiement sécurisé Stripe"}]
   return(
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
-      <input type="email" inputMode="email" autoComplete="email" placeholder={lang==="en"?"Your email":"Ton email"}
+      {/* Trust block — 3 fear-killing reassurances above the form */}
+      <div style={{display:"flex",gap:8,justifyContent:"space-between",
+        padding:"10px 12px",borderRadius:12,
+        background:"rgba(34,197,94,.06)",border:"1px solid rgba(34,197,94,.18)"}}>
+        {trustLines.map((t,i)=>(
+          <div key={i} style={{display:"flex",alignItems:"center",gap:5,flex:1,
+            justifyContent:"center",fontSize:11,fontWeight:600,
+            color:"rgba(198,245,213,.92)",whiteSpace:"nowrap"}}>
+            <span style={{fontSize:13}}>{t.icon}</span>
+            <span>{t.text}</span>
+          </div>
+        ))}
+      </div>
+      <input type="email" inputMode="email" autoComplete="email" placeholder={lang==="en"?"Your email":lang==="es"?"Tu email":"Ton email"}
         value={email} onChange={e=>{
           setEmail(e.target.value)
           if(!emailTracked.current&&e.target.value.includes("@")){emailTracked.current=true;track("sg_checkout_email",{plan,source:source||"unknown"})}
@@ -2856,20 +2875,15 @@ function StripeInlineCheckout({plan,lang,source,onSuccess}){
           borderRadius:12,color:"#e6edf3",outline:"none",boxSizing:"border-box"}}/>
       <div ref={cardRef}/>
       {!ready&&!error&&<div style={{textAlign:"center",color:"rgba(255,255,255,.4)",fontSize:13,padding:12}}>
-        {lang==="en"?"Loading secure form...":"Chargement du formulaire sécurisé..."}</div>}
+        {lang==="en"?"Loading secure form...":lang==="es"?"Cargando formulario seguro...":"Chargement du formulaire sécurisé..."}</div>}
       {error&&<p style={{color:"#ff6b6b",fontSize:12,textAlign:"center",margin:0}}>{error}</p>}
       <button onClick={handleSubmit} disabled={submitting||!ready||!validEmail}
         className="gbtn" style={{width:"100%",fontSize:17,padding:"16px 24px",
           border:"none",cursor:submitting?"wait":"pointer",fontFamily:"inherit",
           opacity:(submitting||!ready||!validEmail)?0.6:1}}>
-        {submitting?(lang==="en"?"Processing...":"En cours...")
-          :(lang==="en"?"Start free trial":"Démarrer l'essai gratuit")}
+        {submitting?(lang==="en"?"Processing...":lang==="es"?"Procesando...":"En cours...")
+          :(lang==="en"?"Activate my 7 free days →":lang==="es"?"Activar mis 7 días gratis →":"Activer mes 7 jours gratuits →")}
       </button>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,
-        fontSize:10,color:"rgba(255,255,255,.35)",marginTop:2}}>
-        <span>🔒</span>
-        {lang==="en"?"Secured by Stripe · Cancel anytime":"Sécurisé par Stripe · Annule quand tu veux"}
-      </div>
     </div>
   )
 }
