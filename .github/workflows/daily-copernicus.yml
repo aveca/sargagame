@@ -63,6 +63,13 @@ jobs:
           node scripts/scrape-copernicus.cjs
           rm -f copernicustxt.txt
 
+      # Year-round beach weather (Open-Meteo) — refreshes daily so the build-time
+      # SEO meta + noscript "Conditions du jour" blocks stay current. Free API,
+      # no key, ~4s for 136 beaches via batched coords.
+      - name: Fetch beach weather (Open-Meteo)
+        continue-on-error: true
+        run: node scripts/fetch-beach-weather.cjs
+
       - name: Send notifications (push + email)
         continue-on-error: true
         env:
