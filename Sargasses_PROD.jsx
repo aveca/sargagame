@@ -3544,8 +3544,9 @@ function FavToast({show,lang,onPremiumClick,isPremium}){
   },[show,isPremium])
   if(!visible)return null
   return(
-    <div style={{position:"fixed",bottom:74,left:"50%",transform:"translateX(-50%)",
-      zIndex:800,background:"var(--sg-card,#fff)",color:"var(--sg-ink)",
+    <div style={{position:"fixed",bottom:"calc(74px + env(safe-area-inset-bottom, 0px))",left:"50%",transform:"translateX(-50%)",
+      zIndex:805,background:"var(--sg-card,#fff)",color:"var(--sg-ink)",
+      boxSizing:"border-box",
       padding:isPremium?"10px 18px":"12px 16px",borderRadius:14,
       boxShadow:"0 4px 20px rgba(0,0,0,.12),0 0 0 1px var(--sg-border)",
       display:"flex",alignItems:"center",gap:10,maxWidth:"calc(100vw - 32px)",
@@ -4333,12 +4334,15 @@ export default function App(){
 
         {/* CHECKOUT RECOVERY BANNER */}
         {showRecoveryBanner&&(
-          <div style={{position:"fixed",top:0,left:0,right:0,zIndex:9999,
+          <div style={{position:"fixed",top:0,left:0,right:0,zIndex:1500,
             background:"linear-gradient(90deg,#0A1714 0%,#1a2f28 100%)",
             borderBottom:"1px solid rgba(232,168,0,.3)",
-            padding:"10px 16px",display:"flex",alignItems:"center",justifyContent:"center",gap:12,
+            padding:"10px max(12px,env(safe-area-inset-right)) 10px max(12px,env(safe-area-inset-left))",
+            paddingTop:"max(10px, calc(10px + env(safe-area-inset-top)))",
+            display:"flex",alignItems:"center",justifyContent:"center",gap:10,
+            flexWrap:"wrap",
             fontSize:13,color:"#e6edf3",fontFamily:"inherit"}}>
-            <span style={{opacity:.9}}>{SARGASSES_SEASON==="high"
+            <span style={{opacity:.9,flex:"1 1 180px",minWidth:0,textAlign:"center"}}>{SARGASSES_SEASON==="high"
               ?(lang==="en"?"Beaches are changing fast. You almost had Premium — finish now.":"Les plages bougent vite. Tu étais presque Premium — termine maintenant.")
               :(lang==="en"?"You were almost Premium! Pick up where you left off.":"Tu étais presque Premium\u00a0! Reprends où tu en étais.")}</span>
             <button onClick={()=>{
@@ -4347,7 +4351,7 @@ export default function App(){
               openPremium("recovery_banner")
             }} style={{background:"#E8A800",color:"#0A1714",border:"none",borderRadius:8,
               padding:"6px 14px",fontSize:12,fontWeight:700,fontFamily:"inherit",cursor:"pointer",
-              whiteSpace:"nowrap"}}>
+              whiteSpace:"nowrap",flexShrink:0}}>
               {lang==="en"?"Go Premium":"Passer Premium"}
             </button>
             <button onClick={()=>{
@@ -4355,7 +4359,7 @@ export default function App(){
               setShowRecoveryBanner(false)
               localStorage.removeItem("sg_checkout_abandoned")
             }} style={{background:"none",border:"none",color:"rgba(255,255,255,.5)",
-              cursor:"pointer",fontSize:18,lineHeight:1,padding:"0 4px"}}
+              cursor:"pointer",fontSize:18,lineHeight:1,padding:"0 4px",flexShrink:0}}
               aria-label="Fermer">&times;</button>
           </div>
         )}
@@ -4379,11 +4383,12 @@ export default function App(){
         {/* FLOATING UI (over map) — frosted glass panel */}
         <div style={{
           position:"absolute",top:0,left:0,right:0,zIndex:700,
-          padding:"max(12px,env(safe-area-inset-top)) 16px 0",
+          padding:`calc(max(12px, env(safe-area-inset-top)) + ${showRecoveryBanner?64:0}px) 16px 0`,
           pointerEvents:"none",
           background:view==="map"?"linear-gradient(180deg,rgba(253,252,247,.88) 0%,rgba(253,252,247,.7) 85%,transparent 100%)":"none",
           backdropFilter:view==="map"?"blur(8px)":"none",
           WebkitBackdropFilter:view==="map"?"blur(8px)":"none",
+          transition:"padding-top .25s ease",
         }}>
           <div style={{pointerEvents:"auto",maxWidth:600,margin:"0 auto"}}>
             <Header island={island} onIslandChange={setIsland}
@@ -4549,12 +4554,12 @@ export default function App(){
           onActivated={()=>{setIsPremium(true);setShowWelcome(true)}}/>}
 
         {/* First-visit hint — auto-dismiss on first tap or after 5s */}
-        {showOnboarding&&view==="map"&&!selectedBeach&&(
-          <div style={{position:"fixed",bottom:74,left:"50%",transform:"translateX(-50%)",
+        {showOnboarding&&view==="map"&&!selectedBeach&&!showFavToast&&(
+          <div style={{position:"fixed",bottom:"calc(74px + env(safe-area-inset-bottom, 0px))",left:"50%",transform:"translateX(-50%)",
             zIndex:750,background:"rgba(255,255,255,.95)",backdropFilter:"blur(12px)",
             WebkitBackdropFilter:"blur(12px)",padding:"10px 20px",borderRadius:100,
             boxShadow:"0 4px 20px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04)",
-            display:"flex",alignItems:"center",gap:8,whiteSpace:"nowrap",
+            display:"flex",alignItems:"center",gap:8,whiteSpace:"nowrap",maxWidth:"calc(100vw - 32px)",
             animation:"slideUp .4s cubic-bezier(.22,1,.36,1)",pointerEvents:"none"}}>
             <span style={{fontSize:16}}>👆</span>
             <span style={{fontSize:13,fontWeight:600,color:C.ink}}>
@@ -4576,13 +4581,13 @@ export default function App(){
         {/* FAV TOAST — inline, first favorite only */}
         <FavToast show={showFavToast} lang={lang} onPremiumClick={openPremium} isPremium={isPremium}/>
 
-        {/* REFERRAL LANDING BANNER */}
-        {showReferralBanner&&(
-          <div onClick={()=>{openPremium("referral_banner");setShowReferralBanner(false)}} style={{position:"fixed",bottom:90,left:"50%",transform:"translateX(-50%)",
-            zIndex:9998,background:"linear-gradient(135deg,#7C3AED,#A855F7)",color:"#fff",
+        {/* REFERRAL LANDING BANNER — hidden if Welcome toast is showing to avoid overlap */}
+        {showReferralBanner&&!showWelcome&&(
+          <div onClick={()=>{openPremium("referral_banner");setShowReferralBanner(false)}} style={{position:"fixed",bottom:"calc(104px + env(safe-area-inset-bottom, 0px))",left:"50%",transform:"translateX(-50%)",
+            zIndex:1300,background:"linear-gradient(135deg,#7C3AED,#A855F7)",color:"#fff",
             padding:"12px 20px",borderRadius:14,fontSize:13,fontWeight:600,
             boxShadow:"0 8px 24px rgba(124,58,237,.35)",cursor:"pointer",
-            display:"flex",alignItems:"center",gap:10,maxWidth:"90vw",
+            display:"flex",alignItems:"center",gap:10,maxWidth:"min(90vw, 460px)",boxSizing:"border-box",
             animation:"slideUp .4s ease"}}>
             <span style={{fontSize:20}}>🎁</span>
             <div>
@@ -4600,11 +4605,11 @@ export default function App(){
 
         {/* PREMIUM WELCOME TOAST */}
         {showWelcome&&(
-          <div style={{position:"fixed",bottom:90,left:"50%",transform:"translateX(-50%)",
-            zIndex:9999,background:"linear-gradient(135deg,#009E8E,#1EC8B0)",color:"#fff",
+          <div style={{position:"fixed",bottom:"calc(104px + env(safe-area-inset-bottom, 0px))",left:"50%",transform:"translateX(-50%)",
+            zIndex:1400,background:"linear-gradient(135deg,#009E8E,#1EC8B0)",color:"#fff",
             padding:"14px 24px",borderRadius:16,fontSize:14,fontWeight:600,
             boxShadow:"0 8px 24px rgba(0,158,142,.35)",
-            display:"flex",alignItems:"center",gap:10,maxWidth:"90vw",
+            display:"flex",alignItems:"center",gap:10,maxWidth:"min(90vw, 460px)",boxSizing:"border-box",
             animation:"slideUp .4s ease"}}>
             <span style={{fontSize:22}}>🎉</span>
             <div>
