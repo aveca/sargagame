@@ -4777,7 +4777,7 @@ export default function App(){
               lang={lang} onLangToggle={toggleLang}
               theme={theme} onThemeToggle={toggleTheme}
               beachCount={allBeaches.length} dataSource={dataSource}
-              updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt}/>
+              updatedAt={sargData?.updatedAt||sargData?.erddapTimestamp}/>
             {/* HERO RECO — big opinionated card. Answers "where do I go NOW" in 1 glance:
                 #1 scored beach + score ring + verdict + distance + 2 inline alternatives.
                 Replaces the abstract A/B strip/nearest (aha moment not reached on those). */}
