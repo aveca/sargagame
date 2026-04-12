@@ -698,7 +698,11 @@ export default defineConfig({
             else sitemapGPBeaches += sitemapEntry
           }
           // ── /plages/ index page — all beaches grouped by commune ──
-          for (const islandCode of ['mq', 'gp']) {
+          // Loop order GP → MQ is deliberate: dist/ is copied to both FTP dirs,
+          // and prepare-ftp.cjs only substitutes Martinique→Guadeloupe on the GP
+          // side. So we need the FINAL state of dist/ to be Martinique-flavored
+          // (hence MQ last) for the MQ copy to be correct.
+          for (const islandCode of ['gp', 'mq']) {
             const isMQ = islandCode === 'mq'
             const island = isMQ ? 'Martinique' : 'Guadeloupe'
             const domain = isMQ ? domainMQ : domainGP
@@ -752,6 +756,134 @@ export default defineConfig({
             else sitemapGPBeaches += plagesSitemapEntry
           }
           console.log('   \u2192 /plages/ index page g\u00e9n\u00e9r\u00e9e (MQ + GP)')
+
+          // ── /conditions/* — aggregation pages by today's weather + sargassum ──
+          // New URL surface area that updates daily without fresh editorial work.
+          // Each page targets a long-tail intent: "mer calme martinique aujourd'hui",
+          // "baignade ideale martinique", etc. Build-time generation reads _weather
+          // (Open-Meteo) + beach status so content is unique per build, per island.
+          {
+            const conditionPages = [
+              {
+                slug: 'baignade-ideale',
+                titleMq: 'Plages parfaites pour la baignade aujourd\u2019hui \u2014 Martinique',
+                titleGp: 'Plages parfaites pour la baignade aujourd\u2019hui \u2014 Guadeloupe',
+                h1Mq: 'Les meilleures plages pour la baignade aujourd\u2019hui en Martinique',
+                h1Gp: 'Les meilleures plages pour la baignade aujourd\u2019hui en Guadeloupe',
+                intro: 'Ces plages combinent aujourd\u2019hui un \u00e9tat sargasses propre, une mer calme et une eau chaude. Id\u00e9al pour une sortie en famille, un bain prolong\u00e9 ou des vacanciers peu habitu\u00e9s aux courants caribbean.',
+                filter: (b, w) => b.status === 'clean' && w && w.condition === 'calm',
+                fallback: 'Aucune plage ne r\u00e9unit aujourd\u2019hui les trois crit\u00e8res id\u00e9aux (propre + mer calme + eau chaude). Consultez la carte pour identifier le meilleur compromis du moment.',
+              },
+              {
+                slug: 'mer-calme',
+                titleMq: 'Plages avec mer calme aujourd\u2019hui \u2014 Martinique',
+                titleGp: 'Plages avec mer calme aujourd\u2019hui \u2014 Guadeloupe',
+                h1Mq: 'Plages avec mer calme en Martinique aujourd\u2019hui',
+                h1Gp: 'Plages avec mer calme en Guadeloupe aujourd\u2019hui',
+                intro: 'Donn\u00e9es marines Open-Meteo mises \u00e0 jour quotidiennement. Une mer calme (vagues inf\u00e9rieures \u00e0 0,8\u00a0m) facilite la baignade avec de jeunes enfants, le snorkeling et le paddle. Les conditions peuvent changer rapidement\u00a0: v\u00e9rifiez la fiche d\u00e9taill\u00e9e de chaque plage avant de partir.',
+                filter: (b, w) => w && (w.condition === 'calm' || (w.waveHeight != null && w.waveHeight < 0.8)),
+                fallback: 'Aucune plage ne pr\u00e9sente une mer calme aujourd\u2019hui. La houle est g\u00e9n\u00e9ralis\u00e9e \u2014 optez plut\u00f4t pour des spots abrit\u00e9s c\u00f4te sous-le-vent.',
+              },
+              {
+                slug: 'mer-agitee',
+                titleMq: 'Plages avec mer agit\u00e9e aujourd\u2019hui \u2014 Martinique (surf, bodyboard)',
+                titleGp: 'Plages avec mer agit\u00e9e aujourd\u2019hui \u2014 Guadeloupe (surf, bodyboard)',
+                h1Mq: 'Plages avec mer agit\u00e9e en Martinique aujourd\u2019hui',
+                h1Gp: 'Plages avec mer agit\u00e9e en Guadeloupe aujourd\u2019hui',
+                intro: 'Pour les surfeurs, bodyboarders et longboarders qui cherchent de la vague. Mais attention\u00a0: ces conditions sont d\u00e9conseill\u00e9es aux enfants et aux baigneurs occasionnels. V\u00e9rifiez le drapeau de baignade sur place.',
+                filter: (b, w) => w && (w.condition === 'rough' || (w.waveHeight != null && w.waveHeight >= 1.5)),
+                fallback: 'Aucune plage n\u2019affiche une mer agit\u00e9e aujourd\u2019hui. Conditions tr\u00e8s plates \u2014 revenez demain.',
+              },
+              {
+                slug: 'uv-fort',
+                titleMq: 'Plages avec UV tr\u00e8s fort aujourd\u2019hui \u2014 Martinique (prot\u00e9gez-vous)',
+                titleGp: 'Plages avec UV tr\u00e8s fort aujourd\u2019hui \u2014 Guadeloupe (prot\u00e9gez-vous)',
+                h1Mq: 'Indice UV tr\u00e8s fort aujourd\u2019hui en Martinique',
+                h1Gp: 'Indice UV tr\u00e8s fort aujourd\u2019hui en Guadeloupe',
+                intro: 'Un indice UV sup\u00e9rieur ou \u00e9gal \u00e0 9 correspond \u00e0 un risque tr\u00e8s \u00e9lev\u00e9 de coup de soleil en moins de 15 minutes sans protection. \u00c9vitez l\u2019exposition entre 11\u00a0h et 15\u00a0h, utilisez un \u00e9cran solaire SPF 50, portez chapeau et t-shirt anti-UV pour les enfants.',
+                filter: (b, w) => w && w.uvMax != null && w.uvMax >= 9,
+                fallback: 'L\u2019indice UV est mod\u00e9r\u00e9 partout aujourd\u2019hui \u2014 conditions plus souples pour la journ\u00e9e \u00e0 la plage.',
+              },
+            ]
+            const statusByIdCond = Object.fromEntries(SARGASSUM_REF.map(r => [r.id, r.status]))
+            // Same GP-first/MQ-last ordering as /plages/ — see comment there.
+            for (const islandCode of ['gp', 'mq']) {
+              const isMQ = islandCode === 'mq'
+              const island = isMQ ? 'Martinique' : 'Guadeloupe'
+              const domain = isMQ ? domainMQ : domainGP
+              const islandBeaches = beaches.filter(b => b.island === islandCode)
+              for (const page of conditionPages) {
+                // Apply today's status to each beach before filtering
+                const enrichedBeaches = islandBeaches.map(b => ({
+                  ...b,
+                  status: statusByIdCond[b.id] || b.status,
+                }))
+                const matching = enrichedBeaches
+                  .filter(b => page.filter(b, _weather[b.id]))
+                  .map(b => ({ ...b, _w: _weather[b.id] }))
+                  .sort((a, b) => (a.drive || 99) - (b.drive || 99))
+                  .slice(0, 30)
+                const pageTitle = isMQ ? page.titleMq : page.titleGp
+                const pageH1 = isMQ ? page.h1Mq : page.h1Gp
+                const pageUrl = `https://${domain}/conditions/${page.slug}/`
+                const pageDesc = `${matching.length > 0 ? `${matching.length} plage${matching.length > 1 ? 's' : ''} correspond${matching.length > 1 ? 'ent' : ''} aujourd\u2019hui en ${island}.` : 'Aucune plage ne correspond aujourd\u2019hui.'} ${page.intro.slice(0, 120)}`.slice(0, 170)
+                const beachListHtml = matching.length > 0
+                  ? matching.map(b => {
+                      const w = b._w
+                      const wTxt = w && w.waveHeight != null ? `vagues ${w.waveHeight}m` : ''
+                      const sTxt = w && w.sst != null ? `eau ${w.sst}\u00b0C` : ''
+                      const uTxt = w && w.uvMax != null ? `UV ${w.uvMax}` : ''
+                      const details = [wTxt, sTxt, uTxt].filter(Boolean).join(' \u00b7 ')
+                      const driveTxt = b.drive ? ` \u00b7 ${b.drive} min depuis ${isMQ ? 'Fort-de-France' : 'Pointe-\u00e0-Pitre'}` : ''
+                      return `<li style="padding:10px 0;border-bottom:1px solid #eee"><a href="/plages/${b.slug}/" style="color:#0D0D0D;text-decoration:none;font-weight:600">${b.name}</a><br><span style="color:#686868;font-size:14px">${b.commune}${driveTxt}${details ? ' \u00b7 ' + details : ''}</span></li>`
+                    }).join('')
+                  : `<li style="padding:10px 0;color:#686868">${page.fallback}</li>`
+                const pageNoscript = `<article style="max-width:720px;margin:0 auto;padding:24px 16px;font-family:system-ui,sans-serif"><nav style="font-size:13px;color:#686868;margin-bottom:12px"><a href="/" style="color:#686868">Accueil</a> \u203a <a href="/plages/" style="color:#686868">Plages</a> \u203a Conditions</nav><h1 style="font-size:26px;margin-bottom:8px">${pageH1}</h1><p style="color:#444;margin-bottom:12px;font-size:15px">${page.intro}</p><p style="color:#686868;font-size:13px;margin-bottom:20px">Donn\u00e9es rafra\u00eechies le ${today}. Sources\u00a0: Copernicus Sentinel-3 (sargasses) + Open-Meteo Marine (vagues, temp\u00e9rature, UV).</p><h2 style="font-size:18px;margin:24px 0 12px">Plages correspondantes (${matching.length})</h2><ul style="list-style:none;padding:0;margin:0">${beachListHtml}</ul><nav style="margin-top:32px;padding-top:16px;border-top:1px solid #eee;font-size:14px"><a href="/conditions/baignade-ideale/" style="color:#E8A800;font-weight:600;margin-right:16px">Baignade id\u00e9ale</a><a href="/conditions/mer-calme/" style="color:#E8A800;font-weight:600;margin-right:16px">Mer calme</a><a href="/conditions/mer-agitee/" style="color:#E8A800;font-weight:600;margin-right:16px">Mer agit\u00e9e</a><a href="/conditions/uv-fort/" style="color:#E8A800;font-weight:600;margin-right:16px">UV fort</a><a href="/carte-sargasses/" style="color:#E8A800;font-weight:600">Carte</a></nav></article>`
+                const pageSchema = JSON.stringify({"@context":"https://schema.org","@type":"CollectionPage","name":pageTitle,"description":pageDesc,"url":pageUrl,"isPartOf":{"@type":"WebApplication","name":`Sargasses ${island}`,"url":`https://${domain}/`},"dateModified":today})
+                const breadcrumbCond = JSON.stringify({"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Accueil","item":`https://${domain}/`},{"@type":"ListItem","position":2,"name":"Plages","item":`https://${domain}/plages/`},{"@type":"ListItem","position":3,"name":"Conditions","item":`https://${domain}/conditions/`},{"@type":"ListItem","position":4,"name":pageH1,"item":pageUrl}]})
+                const condDir = resolve(outDir, 'conditions', page.slug)
+                mkdirSync(condDir, { recursive: true })
+                const condHtml = html
+                  .replace(/<title>[^<]*<\/title>/, `<title>${pageTitle}</title>`)
+                  .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${pageDesc}" />`)
+                  .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${pageUrl}" />`)
+                  .replace(/<meta property="og:title"[^>]*>/, `<meta property="og:title" content="${pageTitle}" />`)
+                  .replace(/<meta property="og:description"[^>]*>/, `<meta property="og:description" content="${pageDesc}" />`)
+                  .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="${pageUrl}" />`)
+                  .replace(/<meta name="twitter:title"[^>]*>/, `<meta name="twitter:title" content="${pageTitle}" />`)
+                  .replace(/<meta name="twitter:description"[^>]*>/, `<meta name="twitter:description" content="${pageDesc}" />`)
+                  .replace('</head>', `\n    <script type="application/ld+json">\n    ${pageSchema}\n    </script>\n    <script type="application/ld+json">\n    ${breadcrumbCond}\n    </script>\n</head>`)
+                  .replace('</body>', `\n    <noscript>${pageNoscript}</noscript>\n</body>`)
+                writeFileSync(resolve(condDir, 'index.html'), condHtml)
+                const condSitemapEntry = `  <url><loc>${pageUrl}</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>\n`
+                if (isMQ) sitemapMQBeaches += condSitemapEntry
+                else sitemapGPBeaches += condSitemapEntry
+              }
+              // /conditions/ landing (hub) — lists all 4 sub-pages
+              const hubTitle = `Conditions des plages aujourd\u2019hui \u2014 ${island}`
+              const hubDesc = `Plages de ${island} class\u00e9es par conditions du jour\u00a0: baignade id\u00e9ale, mer calme, mer agit\u00e9e, UV fort. Donn\u00e9es satellite + Open-Meteo rafra\u00eechies quotidiennement.`
+              const hubUrl = `https://${domain}/conditions/`
+              const hubLinks = conditionPages.map(p => `<li style="padding:12px 0;border-bottom:1px solid #eee"><a href="/conditions/${p.slug}/" style="color:#0D0D0D;text-decoration:none;font-weight:600;font-size:16px">${isMQ ? p.h1Mq : p.h1Gp}</a><br><span style="color:#686868;font-size:14px">${p.intro.slice(0, 140)}\u2026</span></li>`).join('')
+              const hubNoscript = `<article style="max-width:720px;margin:0 auto;padding:24px 16px;font-family:system-ui,sans-serif"><h1 style="font-size:26px;margin-bottom:8px">${hubTitle}</h1><p style="color:#686868;margin-bottom:20px;font-size:15px">Quatre s\u00e9lections mises \u00e0 jour chaque jour. Choisissez le crit\u00e8re qui compte pour vous aujourd\u2019hui.</p><ul style="list-style:none;padding:0;margin:0">${hubLinks}</ul><nav style="margin-top:32px;padding-top:16px;border-top:1px solid #eee"><a href="/plages/" style="color:#E8A800;font-weight:600;margin-right:16px">Toutes les plages</a><a href="/carte-sargasses/" style="color:#E8A800;font-weight:600">Carte sargasses</a></nav></article>`
+              const hubSchema = JSON.stringify({"@context":"https://schema.org","@type":"CollectionPage","name":hubTitle,"description":hubDesc,"url":hubUrl,"isPartOf":{"@type":"WebApplication","name":`Sargasses ${island}`,"url":`https://${domain}/`},"dateModified":today})
+              const hubDir = resolve(outDir, 'conditions')
+              mkdirSync(hubDir, { recursive: true })
+              const hubHtml = html
+                .replace(/<title>[^<]*<\/title>/, `<title>${hubTitle}</title>`)
+                .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${hubDesc}" />`)
+                .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${hubUrl}" />`)
+                .replace(/<meta property="og:title"[^>]*>/, `<meta property="og:title" content="${hubTitle}" />`)
+                .replace(/<meta property="og:description"[^>]*>/, `<meta property="og:description" content="${hubDesc}" />`)
+                .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="${hubUrl}" />`)
+                .replace('</head>', `\n    <script type="application/ld+json">\n    ${hubSchema}\n    </script>\n</head>`)
+                .replace('</body>', `\n    <noscript>${hubNoscript}</noscript>\n</body>`)
+              writeFileSync(resolve(hubDir, 'index.html'), hubHtml)
+              const hubSitemapEntry = `  <url><loc>${hubUrl}</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>\n`
+              if (isMQ) sitemapMQBeaches += hubSitemapEntry
+              else sitemapGPBeaches += hubSitemapEntry
+            }
+            console.log('   \u2192 /conditions/ hub + 4 aggregation pages (MQ + GP) = 10 pages')
+          }
 
           // Réécrire les sitemaps avec les plages
           const sitemapMQFull = sitemapMQ.replace('</urlset>', sitemapMQBeaches + '</urlset>')
