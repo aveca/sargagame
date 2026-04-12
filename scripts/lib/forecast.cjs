@@ -151,11 +151,15 @@ function arrivalSignalFromBanks(beach, banks, dayIndex) {
     if (minDist > THREAT_RADIUS) continue
     if (!bestPos) continue
 
-    // GEOGRAPHIC ORIENTATION: for atlantic beaches, bank must be east of
-    // or aligned with the beach. Trade winds blow E→W, so a bank west of
-    // the beach moves AWAY from it (unless very close & currents shift).
-    // Allow banks slightly west (0.10° ≈ 11km) as residual risk.
-    if (bestPos[1] < beach.lng - 0.10) continue
+    // GEOGRAPHIC ORIENTATION: bank must be in the "incoming" direction for this beach.
+    // Uses coastNormal (direction the coast faces) to define a 140° acceptance cone.
+    // A bank outside this cone is drifting away from the beach, not toward it.
+    const cn = beach.coastNormal || 90 // default: faces east (old behavior)
+    const bankBearing = Math.round((Math.atan2(bestPos[1] - beach.lng, bestPos[0] - beach.lat) * 180 / Math.PI + 360) % 360)
+    // Accept banks within 70° of coastNormal (symmetric cone)
+    let diff = Math.abs(bankBearing - cn)
+    if (diff > 180) diff = 360 - diff
+    if (diff > 70 && minDist > 15) continue // reject if outside cone AND not very close
 
     // Signal strength: proximity × mass, degraded for far-out days
     const proximity = Math.max(0, 1 - minDist / THREAT_RADIUS)
@@ -225,12 +229,15 @@ function windDriftEffect(beach, hourlyWind, dayIndex) {
 
   const stokes = avgSpeed * 0.025
   const windBearing = (avgDir + 180) % 360
-  const coastBearing = beach.lng < -61.5 ? 270 : 260
+  // coastNormal: direction the coast faces. Wind pushing FROM that direction is "onshore".
+  const coastBearing = beach.coastNormal || (beach.lng < -61.5 ? 270 : 260)
   const angleDiff = (windBearing - coastBearing + 360) % 360
   const onshoreComponent = stokes * Math.cos(angleDiff * Math.PI / 180)
 
-  const effect = onshoreComponent * 0.02
-  return Math.max(-0.02, Math.min(0.04, Math.round(effect * 1000) / 1000))
+  // Increased multiplier (0.02→0.035) — south-coast beaches now correctly capture
+  // onshore wind that was previously under-weighted due to wrong coastBearing
+  const effect = onshoreComponent * 0.035
+  return Math.max(-0.03, Math.min(0.06, Math.round(effect * 1000) / 1000))
 }
 
 /**

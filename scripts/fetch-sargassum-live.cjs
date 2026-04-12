@@ -30,26 +30,30 @@ const { buildHonestForecast, statusFromAfai: statusFromAfaiForecast, DAYS: FDAYS
 // Note: Anses d'Arlet + Diamant sud PEUVENT recevoir sargasses qui contournent
 // le sud de l'ile, classees 'atlantic' pour ne pas cacher un vrai risque.
 const BEACHES = [
-  { id: 'grande-anse',    lat: 14.5028, lng: -61.0856, island: 'mq', coast: 'atlantic' },  // Anses d'Arlet sud — contournement possible
-  { id: 'anse-mitan',     lat: 14.5523, lng: -61.0552, island: 'mq', coast: 'sheltered' }, // Trois-Ilets, baie FDF fermee
-  { id: 'anse-noire',     lat: 14.5277, lng: -61.0874, island: 'mq', coast: 'sheltered' }, // Anses d'Arlet nord, abritee
-  { id: 'tartane',        lat: 14.7507, lng: -60.9257, island: 'mq', coast: 'atlantic' },  // Caravelle, exposee E
-  { id: 'anse-madame',    lat: 14.6178, lng: -61.1036, island: 'mq', coast: 'sheltered' }, // Schoelcher, baie FDF
-  { id: 'diamant',        lat: 14.4758, lng: -61.0314, island: 'mq', coast: 'atlantic' },  // sud ouvert
-  { id: 'pt-marin',       lat: 14.4511, lng: -60.8836, island: 'mq', coast: 'atlantic' },  // Sainte-Anne
-  { id: 'sainte-anne',    lat: 14.4305, lng: -60.8850, island: 'mq', coast: 'atlantic' },
-  { id: 'les-salines',    lat: 14.3959, lng: -60.8690, island: 'mq', coast: 'atlantic' },  // sud exposee
-  { id: 'vauclin',        lat: 14.5414, lng: -60.8292, island: 'mq', coast: 'atlantic' },
-  { id: 'gp-grande-anse', lat: 16.1312, lng: -61.7682, island: 'gp', coast: 'sheltered' }, // Basse-Terre cote ouest
-  { id: 'gp-malendure',   lat: 16.1721, lng: -61.7767, island: 'gp', coast: 'sheltered' }, // Bouillante, cote ouest
-  { id: 'gp-sainte-anne', lat: 16.2226, lng: -61.3828, island: 'gp', coast: 'atlantic' },  // Grande-Terre sud
-  { id: 'gp-pt-chateaux', lat: 16.2531, lng: -61.2307, island: 'gp', coast: 'atlantic' },  // extreme est
-  { id: 'gp-gosier',      lat: 16.2048, lng: -61.4948, island: 'gp', coast: 'atlantic' },
-  { id: 'gp-caravelle',   lat: 16.2181, lng: -61.3965, island: 'gp', coast: 'atlantic' },
-  { id: 'gp-bas-du-fort', lat: 16.2140, lng: -61.5237, island: 'gp', coast: 'atlantic' },
-  { id: 'gp-deshaies',    lat: 16.3054, lng: -61.7951, island: 'gp', coast: 'sheltered' }, // Basse-Terre nord-ouest
-  { id: 'gp-moule',       lat: 16.4222, lng: -61.5337, island: 'gp', coast: 'atlantic' },  // Grande-Terre nord-est
-  { id: 'gp-vieux-fort',  lat: 16.2488, lng: -61.1428, island: 'gp', coast: 'atlantic' },  // Basse-Terre sud, expose
+  // coastNormal = direction the coastline faces (degrees from N). Determines:
+  //   - Which offshore bearing range to sample for incoming sargassum
+  //   - Onshore wind component calculation
+  //   - Bank arrival detection acceptance cone
+  { id: 'grande-anse',    lat: 14.5028, lng: -61.0856, island: 'mq', coast: 'atlantic', coastNormal: 200 },  // Anses d'Arlet sud — faces S-SSW, contournement sud
+  { id: 'anse-mitan',     lat: 14.5523, lng: -61.0552, island: 'mq', coast: 'sheltered', coastNormal: 270 }, // Trois-Ilets, baie FDF fermee
+  { id: 'anse-noire',     lat: 14.5277, lng: -61.0874, island: 'mq', coast: 'sheltered', coastNormal: 270 }, // Anses d'Arlet nord, abritee
+  { id: 'tartane',        lat: 14.7507, lng: -60.9257, island: 'mq', coast: 'atlantic', coastNormal: 80 },   // Caravelle, faces E-ENE
+  { id: 'anse-madame',    lat: 14.6178, lng: -61.1036, island: 'mq', coast: 'sheltered', coastNormal: 270 }, // Schoelcher, baie FDF
+  { id: 'diamant',        lat: 14.4758, lng: -61.0314, island: 'mq', coast: 'atlantic', coastNormal: 210 },  // faces SSW, ouvert au sud
+  { id: 'pt-marin',       lat: 14.4511, lng: -60.8836, island: 'mq', coast: 'atlantic', coastNormal: 160 },  // Sainte-Anne sud, faces SSE
+  { id: 'sainte-anne',    lat: 14.4305, lng: -60.8850, island: 'mq', coast: 'atlantic', coastNormal: 170 },  // faces S-SSE
+  { id: 'les-salines',    lat: 14.3959, lng: -60.8690, island: 'mq', coast: 'atlantic', coastNormal: 180 },  // pointe sud, faces plein sud
+  { id: 'vauclin',        lat: 14.5414, lng: -60.8292, island: 'mq', coast: 'atlantic', coastNormal: 110 },  // cote est, faces ESE
+  { id: 'gp-grande-anse', lat: 16.1312, lng: -61.7682, island: 'gp', coast: 'sheltered', coastNormal: 270 }, // Basse-Terre cote ouest
+  { id: 'gp-malendure',   lat: 16.1721, lng: -61.7767, island: 'gp', coast: 'sheltered', coastNormal: 270 }, // Bouillante, cote ouest
+  { id: 'gp-sainte-anne', lat: 16.2226, lng: -61.3828, island: 'gp', coast: 'atlantic', coastNormal: 170 },  // Grande-Terre sud, faces S-SSE
+  { id: 'gp-pt-chateaux', lat: 16.2531, lng: -61.2307, island: 'gp', coast: 'atlantic', coastNormal: 90 },   // extreme est, faces E
+  { id: 'gp-gosier',      lat: 16.2048, lng: -61.4948, island: 'gp', coast: 'atlantic', coastNormal: 180 },  // faces sud
+  { id: 'gp-caravelle',   lat: 16.2181, lng: -61.3965, island: 'gp', coast: 'atlantic', coastNormal: 170 },  // faces S-SSE
+  { id: 'gp-bas-du-fort', lat: 16.2140, lng: -61.5237, island: 'gp', coast: 'atlantic', coastNormal: 200 },  // faces S-SSW
+  { id: 'gp-deshaies',    lat: 16.3054, lng: -61.7951, island: 'gp', coast: 'sheltered', coastNormal: 290 }, // Basse-Terre nord-ouest
+  { id: 'gp-moule',       lat: 16.4222, lng: -61.5337, island: 'gp', coast: 'atlantic', coastNormal: 60 },   // Grande-Terre nord-est, faces ENE
+  { id: 'gp-vieux-fort',  lat: 16.2488, lng: -61.1428, island: 'gp', coast: 'atlantic', coastNormal: 130 },  // Basse-Terre sud-est, faces SE
 ]
 
 // ── ERDDAP configuration ──────────────────────────────────────────
@@ -257,10 +261,22 @@ function extractBeachAfai(beach, grid) {
       const weight = 1 / (1 + dist)
       nearbyValues.push({ value: normalized, weight, dist })
     } else {
-      // Offshore zone: only count if east or northeast of beach (incoming from Atlantic)
+      // Offshore zone: only count if the point is in the "incoming" direction for this beach
       const bear = bearing(beach.lat, beach.lng, p.latitude, p.longitude)
-      // East = 90, NE = 45, SE = 135. Accept 20-160 degrees (broad east arc)
-      if (bear >= 20 && bear <= 160) {
+      // Acceptance cone: 140° arc centered on coastNormal (where sargassum arrives FROM)
+      // Default (east coast): accept 20-160°. South coast (coastNormal ~180): accept 110-250°.
+      const cn = beach.coastNormal || 90 // default: faces east
+      const halfCone = 70 // 70° each side of coastNormal
+      let bearMin = cn - halfCone
+      let bearMax = cn + halfCone
+      // Normalize to 0-360
+      if (bearMin < 0) bearMin += 360
+      if (bearMax > 360) bearMax -= 360
+      // Check if bearing is within the cone (handle wraparound)
+      const inCone = bearMin < bearMax
+        ? (bear >= bearMin && bear <= bearMax)
+        : (bear >= bearMin || bear <= bearMax)
+      if (inCone) {
         const weight = 1 / (1 + dist * 0.5) // lighter weight for distance
         offshoreValues.push({ value: normalized, weight, dist })
       }
@@ -651,8 +667,14 @@ function computeBankDrift(centroid, hull, windSpeed, windDir, island, hourlyWind
   const driftBearing = (windDir + 180) % 360
   const driftSpeed = windSpeed * 0.025 // km/h
 
-  // Caribbean baseline current: ~0.5 km/h westward (bearing 270°)
-  const curSpeed = 0.5, curBearing = 270
+  // Ocean current baseline — varies by region:
+  // - General Caribbean: 0.5 km/h westward (trade-wind driven)
+  // - South Martinique eddy (below 14.5N, between -61.2W and -60.7W):
+  //   counter-clockwise gyre funnels sargassum NNW toward south coast
+  let curSpeed = 0.5, curBearing = 270
+  if (centroid[0] < 14.5 && centroid[1] > -61.2 && centroid[1] < -60.7) {
+    curSpeed = 0.3; curBearing = 330 // NNW — south MQ eddy correction
+  }
 
   // Vector sum (bearing → N/E components)
   const toRad = d => d * Math.PI / 180
