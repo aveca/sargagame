@@ -382,7 +382,7 @@ function track(event,params={}){
   const critical=event.startsWith("sg_checkout")||event.startsWith("sg_premium")||event==="sg_conversion"
     ||event==="sg_email_submit"||event==="sg_forecast_lock_click"||event==="sg_session_start"
     ||event==="sg_push_accept"||event==="sg_push_primer_accept"||event==="sg_push_primer_dismiss"
-    ||event==="sg_weekend_banner_click"||event==="sg_referral_share"
+    ||event==="sg_referral_share"
   if(critical){
     const entry={e:event,p,t:Date.now(),island:window.location.hostname.includes("guadeloupe")?"GP":"MQ"}
     try{
@@ -415,7 +415,7 @@ function AbDebug(){
   useEffect(()=>{try{if(new URLSearchParams(window.location.search).get("ab_debug")==="1")setShow(true)}catch{}},[])
   if(!show)return null
   const ab=g("sg_ab",{})
-  const tests={vp1:["feature","outcome"],em1:["control","curiosity"]}
+  const tests={em1:["control","curiosity"]}
   return(
     <div style={{position:"fixed",top:8,right:8,zIndex:99999,background:"rgba(0,0,0,.9)",color:"#0f0",
       padding:12,borderRadius:8,fontSize:11,fontFamily:"monospace",maxWidth:260}}>
@@ -2946,108 +2946,6 @@ function SeasonBanner({lang}){
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   WEEKEND BANNER — visible on map, teases premium value
-   ═══════════════════════════════════════════════════════════════════════════ */
-function WeekendBanner({allBeaches,sargData,island,lang,isPremium,onPremiumClick,onBeachClick,userPos}){
-  const[dismissed,setDismissed]=useState(false)
-  // Don't show if premium, dismissed, or no data
-  if(isPremium||dismissed||!sargData?.weekly)return null
-  const LL=T[lang]||T.fr
-  // A/B test: value proposition framing
-  const vpV=abVariant("vp1",["feature","outcome"],[.5,.5])
-
-  // Compute weekend forecast (next Saturday/Sunday)
-  const now=new Date()
-  const daysUntilSat=(6-now.getDay()+7)%7||7
-  const islandBeaches=allBeaches.filter(b=>b.island===island)
-
-  // Count clean beaches this weekend (from interpolated forecasts)
-  let cleanWeekend=0,totalWeekend=0
-  let bestBeach=null,bestDist=Infinity
-  for(const b of islandBeaches){
-    const sargId=BEACH_TO_SARG[b.id]
-    const fc=sargId&&sargData.weekly?.[sargId]?.forecast
-    const interpFc=sargData._enrichedWeekly?.[`_interp_${b.id}`]?.forecast
-    const forecast=fc||interpFc
-    if(!forecast||forecast.length<6)continue
-    totalWeekend++
-    // Check Saturday (index = daysUntilSat) — clamp to array bounds
-    const satIdx=Math.min(daysUntilSat,6)
-    if(forecast[satIdx]&&forecast[satIdx].afai<0.15)cleanWeekend++
-    // Find best nearby beach for weekend
-    if(userPos&&forecast[satIdx]){
-      const dist=haversine(userPos.lat,userPos.lng,b.lat,b.lng)
-      if(forecast[satIdx].afai<0.15&&dist<bestDist){bestDist=dist;bestBeach=b}
-    }
-  }
-
-  const handleClick=()=>{
-    track("sg_weekend_banner_click",{variant:vpV})
-    onPremiumClick("weekend_banner")
-  }
-
-  return(
-    <div style={{position:"fixed",bottom:68,left:12,right:12,zIndex:750,
-      background:"linear-gradient(135deg,rgba(13,30,28,.95),rgba(10,23,20,.95))",
-      backdropFilter:"blur(16px)",borderRadius:18,padding:"14px 16px",
-      boxShadow:"0 8px 32px rgba(0,0,0,.35),0 0 0 1px rgba(255,199,44,.15)",
-      display:"flex",alignItems:"center",gap:12,
-      animation:"slideUp .4s cubic-bezier(.22,1,.36,1)"}}>
-      <div style={{flex:1,minWidth:0}}>
-        <div style={{fontSize:11,fontWeight:700,color:C.gold,letterSpacing:".04em",
-          textTransform:"uppercase",marginBottom:3}}>
-          {lang==="en"?"This weekend":"Ce weekend"}
-        </div>
-        {vpV==="outcome"?(
-          <>
-            <div style={{fontSize:14,fontWeight:700,color:"#fff",lineHeight:1.3}}>
-              {cleanWeekend>0
-                ?(lang==="en"
-                  ?`${cleanWeekend} clean beaches nearby`
-                  :`${cleanWeekend} plages propres à proximité`)
-                :(lang==="en"?"Check which beaches are safe":"Vérifie quelles plages sont sûres")}
-            </div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginTop:2}}>
-              {bestBeach&&!isPremium
-                ?(lang==="en"
-                  ?`Best bet: ${bestBeach.name} (${Math.round(bestDist)} km)`
-                  :`Meilleur choix : ${bestBeach.name} (${Math.round(bestDist)} km)`)
-                :(lang==="en"
-                  ?"Unlock the full weekend forecast"
-                  :"Débloquer les prévisions weekend")}
-            </div>
-          </>
-        ):(
-          <>
-            <div style={{fontSize:14,fontWeight:700,color:"#fff",lineHeight:1.3}}>
-              {lang==="en"?"Full forecast for all beaches":"Prévisions détaillées pour toutes les plages"}
-            </div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginTop:2}}>
-              {lang==="en"
-                ?`${totalWeekend} beaches monitored · Updated daily`
-                :`${totalWeekend} plages surveillées · Mis à jour chaque jour`}
-            </div>
-          </>
-        )}
-      </div>
-      <button onClick={handleClick} style={{
-        background:"linear-gradient(158deg,#FFE47A,#FFC72C,#E89400)",
-        border:"none",borderRadius:14,padding:"10px 16px",cursor:"pointer",
-        fontFamily:"'Anton',sans-serif",fontSize:13,color:C.ink,letterSpacing:".04em",
-        textTransform:"uppercase",whiteSpace:"nowrap",flexShrink:0,
-        boxShadow:"0 4px 16px rgba(232,168,0,.35)"}}>
-        {vpV==="outcome"
-          ?(lang==="en"?"Plan my weekend":"Planifier")
-          :(lang==="en"?"Unlock":"Débloquer")}
-      </button>
-      <button onClick={()=>{setDismissed(true);track("sg_weekend_banner_dismiss")}} style={{
-        position:"absolute",top:6,right:8,background:"none",border:"none",
-        color:"rgba(255,255,255,.3)",cursor:"pointer",fontSize:14,padding:4}}>✕</button>
-    </div>
-  )
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
    STRIPE BUY BUTTON — web component, checkout in-app
    ═══════════════════════════════════════════════════════════════════════════ */
 function StripeInlineCheckout({plan,lang,source,onSuccess}){
@@ -4899,8 +4797,6 @@ export default function App(){
         {/* DAILY RECO STRIP — disabled 2026-04-12. HeroReco at the top now delivers the
             same value (top pick + 2 alts) without the bottom-of-screen duplication.
             Kept as component for potential per-view re-use but not rendered. */}
-
-        {/* WeekendBanner removed — upsell disguised as feature */}
 
         {/* SeasonBanner removed — "saison active" doesn't help decide beach visit */}
 
