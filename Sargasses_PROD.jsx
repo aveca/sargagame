@@ -3152,11 +3152,24 @@ function PremiumModal({onClose,lang,source,onActivated}){
 /* ═══════════════════════════════════════════════════════════════════════════
    HEADER — floating over map
    ═══════════════════════════════════════════════════════════════════════════ */
-function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,beachCount,dataSource}){
+function formatFreshness(updatedAt,lang){
+  if(!updatedAt)return null
+  const ms=Date.now()-new Date(updatedAt).getTime()
+  if(!isFinite(ms)||ms<0)return null
+  const min=Math.floor(ms/60000)
+  if(min<1)return lang==="en"?"just now":lang==="es"?"ahora":"à l'instant"
+  if(min<60)return lang==="en"?`${min}m ago`:lang==="es"?`hace ${min}m`:`il y a ${min}m`
+  const h=Math.floor(min/60)
+  if(h<24)return lang==="en"?`${h}h ago`:lang==="es"?`hace ${h}h`:`il y a ${h}h`
+  const d=Math.floor(h/24)
+  return lang==="en"?`${d}d ago`:lang==="es"?`hace ${d}d`:`il y a ${d}j`
+}
+function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,beachCount,dataSource,updatedAt}){
   const LL=T[lang]||T.fr
   const isLive=dataSource==="erddap-live"
   const srcLabel=isLive?(lang==="en"?"LIVE satellite":"LIVE satellite"):(lang==="en"?"Estimation":"Estimation")
   const srcColor=isLive?C.green:C.amber
+  const fresh=formatFreshness(updatedAt,lang)
   return(
     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8}}>
       {/* Island toggle — sliding pill indicator */}
@@ -3190,7 +3203,9 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
           fontSize:11,fontWeight:600,color:isLive?C.teal:C.amber,
           textDecoration:"none",cursor:"pointer"}}>
           <span className={isLive?"pulse":""} style={{width:8,height:8,borderRadius:4,background:srcColor}}/>
-          {srcLabel} · {beachCount||47} {lang==="en"?"beaches":"plages"}
+          <span>{srcLabel}</span>
+          {fresh&&<span style={{opacity:.55,fontWeight:500}}>· {fresh}</span>}
+          <span style={{opacity:.55,fontWeight:500}}>· {beachCount||47} {lang==="en"?"beaches":lang==="es"?"playas":"plages"}</span>
         </a>
 
       {/* Theme + Lang */}
@@ -4311,7 +4326,8 @@ export default function App(){
             <Header island={island} onIslandChange={setIsland}
               lang={lang} onLangToggle={toggleLang}
               theme={theme} onThemeToggle={toggleTheme}
-              beachCount={allBeaches.length} dataSource={dataSource}/>
+              beachCount={allBeaches.length} dataSource={dataSource}
+              updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt}/>
             <div style={{marginTop:10}}>
               <SearchBar value={search} onChange={setSearch} lang={lang}/>
             </div>
