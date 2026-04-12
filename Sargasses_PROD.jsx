@@ -1081,15 +1081,17 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
 
           {/* InlinePushCTA removed — OneSignal handles native push prompt */}
 
-          {/* Tags — only parking (actionable info) */}
-          {beach.parking&&(
+          {/* Amenities — tappable chips */}
+          {(beach.kids||beach.snorkel||beach.parking)&&(
             <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:16}}>
-              <Tag icon="🅿️" label={LL.parking}/>
+              {beach.kids&&<Tag icon="👶" label={LL.kids}/>}
+              {beach.snorkel&&<Tag icon="🤿" label={LL.snorkel}/>}
+              {beach.parking&&<Tag icon="🅿️" label={LL.parking}/>}
             </div>
           )}
 
           {/* Actions */}
-          <div style={{display:"flex",gap:10,marginBottom:20}}>
+          <div style={{display:"flex",gap:10,marginBottom:16}}>
             <a href={wazeUrl} target="_blank" rel="noopener" className="gbtn"
               style={{flex:1,textDecoration:"none",textAlign:"center"}}>{LL.directions}</a>
             <button onClick={()=>{
@@ -1109,6 +1111,48 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               fontFamily:"inherit",transition:"all .2s",
             }}>{isFav?"❤️":"🤍"}</button>
           </div>
+
+          {/* Nearby beaches — horizontal scroll carousel (above fold = browse loop) */}
+          {nearby.length>0&&(
+            <div style={{marginBottom:16}}>
+              <h3 style={{fontSize:14,fontWeight:700,marginBottom:8,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                {LL.nearby}
+                <span style={{fontSize:11,fontWeight:500,color:"var(--sg-mid,#686868)"}}>
+                  {lang==="en"?"Tap to compare":"Compare"}
+                </span>
+              </h3>
+              <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:4,
+                scrollbarWidth:"none",WebkitOverflowScrolling:"touch",margin:"0 -20px",padding:"0 20px 4px"}}>
+                {nearby.map(nb=>{
+                  const nst=ST[nb.status]||ST._loading
+                  const nbPhoto=getBeachPhoto(nb)
+                  return(
+                    <button key={nb.id} onClick={()=>{track("sg_nearby_click",{from:beach.id,to:nb.id,status:nb.status});onBeachClick(nb)}} style={{
+                      flex:"0 0 auto",width:140,padding:0,
+                      borderRadius:14,border:"1px solid var(--sg-border)",overflow:"hidden",
+                      background:"var(--sg-card,#fff)",cursor:"pointer",
+                      textAlign:"left",fontFamily:"inherit",
+                      boxShadow:"0 2px 8px rgba(0,0,0,.06)",
+                    }}>
+                      <div style={{height:80,background:`url(${nbPhoto||satImg(nb.lat,nb.lng,140)}) center/cover`,
+                        position:"relative"}}>
+                        <span style={{position:"absolute",top:6,right:6,fontSize:9,fontWeight:700,
+                          padding:"2px 6px",borderRadius:100,background:nst.bg,color:nst.c,
+                          backdropFilter:"blur(4px)"}}>{nst.e} {lang==="en"?nst.le:nst.l}</span>
+                      </div>
+                      <div style={{padding:"8px 10px"}}>
+                        <div style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)",
+                          whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{nb.name}</div>
+                        <div style={{fontSize:10,color:"var(--sg-mid)",marginTop:2}}>
+                          {Math.round(nb.dist)} km
+                        </div>
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Forecast (days 4-7 locked) */}
           <h3 style={{fontSize:15,fontWeight:700,marginBottom:8}}>{LL.forecast}</h3>
@@ -1158,42 +1202,6 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
                 if(weather.precipitation>0)cards.push(<WeatherCard key="r" icon="💧" label={LL.rain} value={`${weather.precipitation}mm`}/>)
                 return cards.length>0?<div style={{display:"grid",gridTemplateColumns:`repeat(${cards.length},1fr)`,gap:10,marginTop:10}}>{cards}</div>:null
               })()}
-            </>
-          )}
-
-          {/* HistoryChart removed — technical trend, users just want today's status */}
-
-          {/* Nearby beaches */}
-          {nearby.length>0&&(
-            <>
-              <h3 style={{fontSize:15,fontWeight:700,margin:"20px 0 10px"}}>{LL.nearby}</h3>
-              <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                {nearby.map(nb=>{
-                  const nst=ST[nb.status]||ST._loading
-                  const nbPhoto=getBeachPhoto(nb)
-                  return(
-                    <button key={nb.id} onClick={()=>onBeachClick(nb)} style={{
-                      display:"flex",alignItems:"center",gap:10,padding:10,
-                      borderRadius:14,border:"1px solid var(--sg-border)",
-                      background:"var(--sg-card,#fff)",cursor:"pointer",
-                      textAlign:"left",fontFamily:"inherit",width:"100%",
-                      boxShadow:"0 1px 4px rgba(0,0,0,.04)",
-                    }}>
-                      <div style={{width:44,height:44,borderRadius:10,flexShrink:0,
-                        background:`url(${nbPhoto||satImg(nb.lat,nb.lng,88)}) center/cover`}}/>
-                      <div style={{flex:1,minWidth:0}}>
-                        <div style={{fontSize:13,fontWeight:700,color:"var(--sg-ink)",
-                          whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{nb.name}</div>
-                        <div style={{fontSize:11,color:"var(--sg-mid)",marginTop:1}}>
-                          {Math.round(nb.dist)} km
-                        </div>
-                      </div>
-                      <span style={{fontSize:10,fontWeight:700,padding:"3px 8px",borderRadius:100,
-                        background:nst.bg,color:nst.c}}>{nst.e} {lang==="en"?nst.le:nst.l}</span>
-                    </button>
-                  )
-                })}
-              </div>
             </>
           )}
 
@@ -2830,24 +2838,41 @@ function FeedbackWidget(){
 /* ═══════════════════════════════════════════════════════════════════════════
    FAV TOAST — brief inline toast when user adds first favorite
    ═══════════════════════════════════════════════════════════════════════════ */
-function FavToast({show,lang}){
+function FavToast({show,lang,onPremiumClick,isPremium}){
   const[visible,setVisible]=useState(false)
   useEffect(()=>{
     if(!show)return
     setVisible(true)
-    const t=setTimeout(()=>setVisible(false),3000)
+    const t=setTimeout(()=>setVisible(false),isPremium?3000:5000)
     return()=>clearTimeout(t)
-  },[show])
+  },[show,isPremium])
   if(!visible)return null
   return(
     <div style={{position:"fixed",bottom:74,left:"50%",transform:"translateX(-50%)",
       zIndex:800,background:"var(--sg-card,#fff)",color:"var(--sg-ink)",
-      padding:"10px 18px",borderRadius:14,fontSize:13,fontWeight:600,
+      padding:isPremium?"10px 18px":"12px 16px",borderRadius:14,
       boxShadow:"0 4px 20px rgba(0,0,0,.12),0 0 0 1px var(--sg-border)",
-      display:"flex",alignItems:"center",gap:8,whiteSpace:"nowrap",
+      display:"flex",alignItems:"center",gap:10,maxWidth:"calc(100vw - 32px)",
       animation:"slideUp .3s cubic-bezier(.22,1,.36,1)"}}>
-      <span style={{color:C.green}}>✓</span>
-      {lang==="en"?"Added to favorites":"Ajouté aux favoris"}
+      <span style={{color:C.green,fontSize:16}}>✓</span>
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{fontSize:13,fontWeight:600,whiteSpace:"nowrap"}}>
+          {lang==="en"?"Added to favorites":"Ajouté aux favoris"}
+        </div>
+        {!isPremium&&(
+          <div style={{fontSize:11,color:"var(--sg-mid,#686868)",marginTop:2}}>
+            {lang==="en"?"Get alerts when conditions change":"Reçois une alerte quand ça change"}
+          </div>
+        )}
+      </div>
+      {!isPremium&&(
+        <button onClick={()=>{track("sg_fav_toast_premium_click");onPremiumClick("fav_toast");setVisible(false)}}
+          style={{flexShrink:0,background:C.gold,color:C.ink,border:"none",borderRadius:8,
+            padding:"6px 12px",fontSize:11,fontWeight:700,fontFamily:"inherit",cursor:"pointer",
+            whiteSpace:"nowrap"}}>
+          {lang==="en"?"Alerts":"Alertes"}
+        </button>
+      )}
     </div>
   )
 }
@@ -3507,10 +3532,9 @@ export default function App(){
     setFavorites(f=>{
       const isAdding=!f.includes(id)
       track(isAdding?"sg_fav_add":"sg_fav_remove",{beach_id:id})
-      if(isAdding&&!g("sg_fav_toast_shown",false)){
+      if(isAdding){
         setShowFavToast(true)
-        s("sg_fav_toast_shown",true)
-        setTimeout(()=>setShowFavToast(false),3500)
+        setTimeout(()=>setShowFavToast(false),5500)
       }
       // F2: sync OneSignal tag so backend can segment "favorite changed" pushes
       try{
@@ -3557,8 +3581,14 @@ export default function App(){
     return[ib.length,ib.filter(b=>b.status==="clean").length,favorites.filter(id=>ib.some(b=>b.id===id)).length,ib.filter(b=>b.status==="avoid").length]
   },[allBeaches,island,favorites])
 
+  // "Next beach" suggestion state — drives browse loop after sheet close
+  const[nextSuggestion,setNextSuggestion]=useState(null)
+  const nextSuggestTimer=useRef(null)
+
   const onBeachClick=useCallback(b=>{
     setSelectedBeach(b);track("sg_beach_open",{beach_id:b?.id,status:b?.status})
+    setNextSuggestion(null) // clear any pending suggestion
+    if(nextSuggestTimer.current)clearTimeout(nextSuggestTimer.current)
     // Signal to push auto-loader that user reached a value moment
     try{window.dispatchEvent(new Event("sg:value_moment"))}catch(e){}
     // Auto-dismiss onboarding coachmark on first beach interaction
@@ -3567,7 +3597,25 @@ export default function App(){
     const v=parseInt(sessionStorage.getItem("sg_beach_views")||"0")+1
     sessionStorage.setItem("sg_beach_views",String(v))
   },[showOnboarding])
-  const closeSheet=useCallback(()=>setSelectedBeach(null),[])
+  const closeSheet=useCallback(()=>{
+    const closing=selectedBeach
+    setSelectedBeach(null)
+    // Find nearest CLEAN beach different from the one just closed
+    if(closing&&allBeaches.length>0){
+      const islandBeaches=allBeaches.filter(b=>b.id!==closing.id&&b.island===closing.island&&b.status==="clean")
+      if(islandBeaches.length>0){
+        const withDist=islandBeaches.map(b=>({...b,_d:haversine(closing.lat,closing.lng,b.lat,b.lng)}))
+        withDist.sort((a,b)=>a._d-b._d)
+        const best=withDist[0]
+        if(best._d<30){
+          setNextSuggestion({beach:best,dist:Math.round(best._d)})
+          track("sg_next_suggest_show",{from:closing.id,to:best.id})
+          if(nextSuggestTimer.current)clearTimeout(nextSuggestTimer.current)
+          nextSuggestTimer.current=setTimeout(()=>setNextSuggestion(null),6000)
+        }
+      }
+    }
+  },[selectedBeach,allBeaches])
 
   const onChangeView=useCallback(v=>{
     track("sg_nav_change",{tab:v})
@@ -3658,6 +3706,36 @@ export default function App(){
               <div style={{position:"absolute",top:0,right:0,bottom:4,width:32,
                 background:"linear-gradient(90deg,transparent,var(--sg-bg,#FDFCF7))",pointerEvents:"none"}}/>
             </div>
+            {/* Clean beaches nearby — contextual nudge to explore */}
+            {view==="map"&&!search.trim()&&userPos&&(()=>{
+              const nearClean=allBeaches.filter(b=>b.island===island&&b.status==="clean")
+                .map(b=>({...b,_d:haversine(userPos.lat,userPos.lng,b.lat,b.lng)}))
+                .filter(b=>b._d<=20)
+              if(nearClean.length===0)return null
+              nearClean.sort((a,b)=>a._d-b._d)
+              const closest=nearClean[0]
+              return(
+                <button onClick={()=>{
+                  track("sg_clean_nearby_click",{count:nearClean.length,closest:closest.id})
+                  setFilter(1) // switch to "clean" filter
+                  onChangeView("list")
+                }} style={{
+                  display:"flex",alignItems:"center",gap:8,marginTop:6,padding:"8px 12px",
+                  borderRadius:10,background:"rgba(34,197,94,.08)",border:"1px solid rgba(34,197,94,.18)",
+                  cursor:"pointer",width:"100%",fontFamily:"inherit",textAlign:"left",
+                }}>
+                  <div style={{width:8,height:8,borderRadius:4,background:C.green,flexShrink:0}}/>
+                  <span style={{fontSize:12,fontWeight:600,color:C.green,flex:1}}>
+                    {nearClean.length} {lang==="en"
+                      ?`clean beach${nearClean.length>1?"es":""} within 20 km`
+                      :`plage${nearClean.length>1?"s":""} propre${nearClean.length>1?"s":""} à moins de 20 km`}
+                  </span>
+                  <span style={{fontSize:11,color:"var(--sg-mid,#686868)",flexShrink:0}}>
+                    {lang==="en"?"See all":"Voir"}
+                  </span>
+                </button>
+              )
+            })()}
             {/* Search results dropdown on map */}
             {view==="map"&&search.trim().length>=2&&filtered.length>0&&(
               <div style={{marginTop:4,background:"var(--sg-card,#fff)",borderRadius:14,
@@ -3703,6 +3781,53 @@ export default function App(){
 
         {/* SeasonBanner removed — "saison active" doesn't help decide beach visit */}
 
+        {/* NEXT BEACH SUGGESTION — browse loop after closing a beach sheet */}
+        {nextSuggestion&&!selectedBeach&&view==="map"&&(
+          <div style={{position:"fixed",
+            bottom:"calc(60px + max(12px, env(safe-area-inset-bottom,0px)) + 12px)",
+            left:"max(12px, 3vw)",right:"max(12px, 3vw)",zIndex:710,
+            maxWidth:480,margin:"0 auto",
+            animation:"slideUp .35s cubic-bezier(.22,1,.36,1)"}}>
+            <button onClick={()=>{
+              track("sg_next_suggest_click",{beach_id:nextSuggestion.beach.id})
+              const b=nextSuggestion.beach
+              setNextSuggestion(null)
+              onBeachClick(b)
+            }} style={{
+              display:"flex",alignItems:"center",gap:12,padding:"12px 16px",
+              background:"var(--sg-card,#fff)",borderRadius:16,width:"100%",
+              border:"1.5px solid rgba(34,197,94,.25)",cursor:"pointer",
+              boxShadow:"0 4px 20px rgba(0,0,0,.10)",fontFamily:"inherit",textAlign:"left",
+            }}>
+              <div style={{width:10,height:10,borderRadius:5,background:C.green,flexShrink:0,
+                animation:"dot-pulse 2s ease-in-out infinite"}}/>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:13,fontWeight:700,color:"var(--sg-ink)",
+                  whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+                  {nextSuggestion.beach.name}
+                  <span style={{fontWeight:500,color:C.green,marginLeft:6}}>
+                    {lang==="en"?"is clean":"est propre"}
+                  </span>
+                </div>
+                <div style={{fontSize:11,color:"var(--sg-mid,#686868)",marginTop:1}}>
+                  {nextSuggestion.dist} km {lang==="en"?"away":"d'ici"}
+                </div>
+              </div>
+              <span style={{fontSize:12,fontWeight:700,color:C.green,flexShrink:0}}>
+                {lang==="en"?"View":"Voir"}
+              </span>
+            </button>
+            <button onClick={()=>setNextSuggestion(null)} style={{
+              position:"absolute",top:-8,right:-4,width:28,height:28,borderRadius:14,
+              background:"var(--sg-card,#fff)",border:"1px solid var(--sg-border)",
+              cursor:"pointer",fontSize:12,color:"var(--sg-mid)",
+              display:"flex",alignItems:"center",justifyContent:"center",
+              boxShadow:"0 2px 8px rgba(0,0,0,.08)"}}>
+              ✕
+            </button>
+          </div>
+        )}
+
         {/* BOTTOM NAV */}
         <BottomNav view={view} onChangeView={onChangeView} lang={lang}/>
 
@@ -3746,7 +3871,7 @@ export default function App(){
         })()}
 
         {/* FAV TOAST — inline, first favorite only */}
-        <FavToast show={showFavToast} lang={lang}/>
+        <FavToast show={showFavToast} lang={lang} onPremiumClick={openPremium} isPremium={isPremium}/>
 
         {/* REFERRAL LANDING BANNER */}
         {showReferralBanner&&(
