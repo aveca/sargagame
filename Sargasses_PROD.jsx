@@ -998,6 +998,13 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
     else if(sheetRef.current){sheetRef.current.style.transition="transform .3s cubic-bezier(.32,.72,0,1)";sheetRef.current.style.transform="";setTimeout(()=>{if(sheetRef.current)sheetRef.current.style.transition=""},300)}
   }
 
+  // Escape key to close
+  useEffect(()=>{
+    const h=e=>{if(e.key==="Escape")onClose()}
+    document.addEventListener("keydown",h)
+    return()=>document.removeEventListener("keydown",h)
+  },[onClose])
+
   const wazeUrl=`https://waze.com/ul?ll=${beach.lat},${beach.lng}&navigate=yes`
 
   return(
@@ -1018,15 +1025,16 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             background:`radial-gradient(ellipse at 50% 100%, ${(ST[beach.status]||ST._loading).c}22 0%, transparent 70%)`,
             pointerEvents:"none"}}/>
           {/* Close button */}
-          <button onClick={onClose} style={{position:"absolute",top:12,right:12,
-            width:40,height:40,borderRadius:20,
+          <button onClick={onClose} aria-label={lang==="en"?"Close":"Fermer"} style={{position:"absolute",top:12,right:12,
+            width:44,height:44,borderRadius:22,
             background:"rgba(0,0,0,.3)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",
             border:"1px solid rgba(255,255,255,.15)",color:"#fff",fontSize:16,cursor:"pointer",
             display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
           {/* Fav button on photo */}
           <button onClick={e=>{onToggleFav(beach.id);e.currentTarget.classList.remove("heart-pop");void e.currentTarget.offsetWidth;e.currentTarget.classList.add("heart-pop")}}
+            aria-label={isFav?(lang==="en"?"Remove from favourites":"Retirer des favoris"):(lang==="en"?"Add to favourites":"Ajouter aux favoris")}
             style={{position:"absolute",top:12,left:12,
-              width:40,height:40,borderRadius:20,
+              width:44,height:44,borderRadius:22,
               background:isFav?"rgba(232,82,42,.2)":"rgba(0,0,0,.3)",
               backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",
               border:isFav?"1px solid rgba(232,82,42,.4)":"1px solid rgba(255,255,255,.15)",
@@ -2392,12 +2400,12 @@ function StripeInlineCheckout({plan,lang,source,onSuccess}){
 
   return(
     <div style={{display:"flex",flexDirection:"column",gap:12}}>
-      <input type="email" placeholder={lang==="en"?"Your email":"Ton email"}
+      <input type="email" inputMode="email" autoComplete="email" placeholder={lang==="en"?"Your email":"Ton email"}
         value={email} onChange={e=>{
           setEmail(e.target.value)
           if(!emailTracked.current&&e.target.value.includes("@")){emailTracked.current=true;track("sg_checkout_email",{plan,source:source||"unknown"})}
         }}
-        style={{width:"100%",padding:"14px 16px",fontSize:15,fontFamily:"inherit",
+        style={{width:"100%",padding:"14px 16px",fontSize:16,fontFamily:"inherit",
           background:"rgba(255,255,255,.06)",border:"1.5px solid rgba(255,255,255,.15)",
           borderRadius:12,color:"#e6edf3",outline:"none",boxSizing:"border-box"}}/>
       <div ref={cardRef}/>
@@ -2428,6 +2436,27 @@ function PremiumModal({onClose,lang,source,onActivated}){
   const hasAnnual=!!STRIPE_LINK_ANNUAL
   const modalOpenedAt=useRef(Date.now())
   const sawCheckoutRef=useRef(false)
+  const panelRef=useRef(null)
+  const startYRef=useRef(0)
+  // Swipe-down to dismiss
+  const onTouchStartModal=e=>{startYRef.current=e.touches[0].clientY}
+  const onTouchMoveModal=e=>{
+    if(panelRef.current&&panelRef.current.scrollTop>5)return
+    const dy=e.touches[0].clientY-startYRef.current
+    if(dy>0&&panelRef.current)panelRef.current.style.transform=`translateY(${dy}px)`
+  }
+  const onTouchEndModal=e=>{
+    if(panelRef.current&&panelRef.current.scrollTop>5){if(panelRef.current)panelRef.current.style.transform="";return}
+    const dy=(e.changedTouches[0]?.clientY||0)-startYRef.current
+    if(dy>60)onClose()
+    else if(panelRef.current){panelRef.current.style.transition="transform .3s cubic-bezier(.32,.72,0,1)";panelRef.current.style.transform="";setTimeout(()=>{if(panelRef.current)panelRef.current.style.transition=""},300)}
+  }
+  // Escape key to close
+  useEffect(()=>{
+    const h=e=>{if(e.key==="Escape"){const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,saw_checkout:sawCheckoutRef.current});onClose()}}
+    document.addEventListener("keydown",h)
+    return()=>document.removeEventListener("keydown",h)
+  },[onClose,source])
   // price1 A/B test ended: season pass variant got 0 checkouts vs 1 for monthly. Monthly wins.
   const[plan,setPlan]=useState("monthly") // "monthly" | "annual"
   const[showCheckout,setShowCheckout]=useState(false)
@@ -2446,7 +2475,7 @@ function PremiumModal({onClose,lang,source,onActivated}){
   return(
     <>
       <div className="backdrop" onClick={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,saw_checkout:sawCheckoutRef.current});onClose()}}/>
-      <div className="sg-modal-panel" style={{
+      <div ref={panelRef} className="sg-modal-panel" onTouchStart={onTouchStartModal} onTouchMove={onTouchMoveModal} onTouchEnd={onTouchEndModal} style={{
         position:"fixed",bottom:0,left:0,right:0,zIndex:1100,
         background:"linear-gradient(145deg,#0D1E1C,#0A1714)",
         borderRadius:"24px 24px 0 0",padding:"28px 24px 20px",
@@ -2720,13 +2749,13 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
 
       {/* Theme + Lang */}
       <div style={{display:"flex",gap:4}}>
-        <button onClick={onThemeToggle} style={{
+        <button onClick={onThemeToggle} aria-label={theme==="dark"?"Light mode":"Dark mode"} style={{
           width:44,height:44,borderRadius:12,border:"1px solid var(--sg-border)",
           background:"var(--sg-card,#fff)",cursor:"pointer",fontSize:16,
           display:"flex",alignItems:"center",justifyContent:"center",
           boxShadow:"0 2px 8px rgba(0,0,0,.06)",
         }}>{theme==="dark"?"☀️":"🌙"}</button>
-        <button onClick={onLangToggle} style={{
+        <button onClick={onLangToggle} aria-label={lang==="fr"?"Switch to English":"Passer en français"} style={{
           width:44,height:44,borderRadius:12,border:"1px solid var(--sg-border)",
           background:"var(--sg-card,#fff)",cursor:"pointer",fontSize:12,fontWeight:700,
           fontFamily:"inherit",color:"var(--sg-ink)",
@@ -2868,11 +2897,11 @@ function InlineEmailCapture({lang}){
             :(lang==="en"?"Weekly beach status + alerts if things change. Free.":"Bilan hebdo + alerte si ça change. Gratuit.")}
         </div>
         <form onSubmit={handleSubmit} style={{display:"flex",gap:8,alignItems:"center"}}>
-          <input type="email" placeholder={lang==="en"?"your@email.com":"ton@email.com"}
+          <input type="email" inputMode="email" autoComplete="email" placeholder={lang==="en"?"your@email.com":"ton@email.com"}
             value={email} onChange={e=>setEmail(e.target.value)}
             style={{flex:1,padding:"10px 14px",borderRadius:12,
               border:"1px solid rgba(255,255,255,.12)",
-              fontSize:14,fontFamily:"inherit",background:"rgba(255,255,255,.06)",
+              fontSize:16,fontFamily:"inherit",background:"rgba(255,255,255,.06)",
               outline:"none",minWidth:0,color:"#fff"}}/>
           <button type="submit" style={{
             padding:"10px 18px",borderRadius:12,border:"none",cursor:"pointer",
@@ -2927,9 +2956,10 @@ function FeedbackWidget(){
       background:"var(--sg-card,#fff)",borderRadius:18,padding:"16px 18px",
       boxShadow:"0 8px 32px rgba(0,0,0,.15),0 0 0 1px var(--sg-border)",
       animation:"slideUp .4s cubic-bezier(.22,1,.36,1)"}}>
-      <button onClick={()=>{setVisible(false);s("sg_feedback_done",true)}}
-        style={{position:"absolute",top:8,right:10,background:"none",border:"none",
-          color:"var(--sg-mid)",cursor:"pointer",fontSize:14}}>✕</button>
+      <button onClick={()=>{setVisible(false);s("sg_feedback_done",true)}} aria-label="Fermer"
+        style={{position:"absolute",top:4,right:4,background:"none",border:"none",
+          color:"var(--sg-mid)",cursor:"pointer",fontSize:16,
+          width:44,height:44,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
       {step===0&&(
         <div>
           <div style={{fontSize:13,fontWeight:700,color:"var(--sg-ink)",marginBottom:10}}>
@@ -3095,9 +3125,10 @@ function InstallPrompt(){
         <button onClick={handleInstall} style={{background:"#fff",color:C.teal,border:"none",
           borderRadius:12,padding:"8px 14px",fontWeight:700,fontSize:12,cursor:"pointer",
           fontFamily:"inherit",flexShrink:0}}>{isIos?"Voir comment":"Installer"}</button>
-        <button onClick={dismiss}
-          style={{position:"absolute",top:6,right:8,background:"none",border:"none",
-            color:"rgba(255,255,255,.4)",cursor:"pointer",fontSize:14,padding:4}}>✕</button>
+        <button onClick={dismiss} aria-label={lang==="en"?"Close":"Fermer"}
+          style={{position:"absolute",top:2,right:2,background:"none",border:"none",
+            color:"rgba(255,255,255,.5)",cursor:"pointer",fontSize:16,
+            width:44,height:44,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
       </div>
 
       {/* iOS Safari tutorial overlay */}
@@ -4030,9 +4061,10 @@ export default function App(){
                 {lang==="en"?"Tap to start your free premium trial":"Appuie pour essayer premium gratuitement"}
               </div>
             </div>
-            <button onClick={e=>{e.stopPropagation();setShowReferralBanner(false)}} style={{
+            <button aria-label="Close" onClick={e=>{e.stopPropagation();setShowReferralBanner(false)}} style={{
               background:"rgba(255,255,255,.2)",border:"none",color:"#fff",
-              borderRadius:12,padding:"4px 10px",cursor:"pointer",fontSize:16,marginLeft:8}}>✕</button>
+              borderRadius:12,minWidth:44,minHeight:44,display:"flex",alignItems:"center",justifyContent:"center",
+              cursor:"pointer",fontSize:16,marginLeft:8}}>✕</button>
           </div>
         )}
 
@@ -4050,9 +4082,10 @@ export default function App(){
               <div style={{fontSize:11,fontWeight:400,opacity:.85,marginTop:2}}>Brief matin + alertes + reco du jour.</div>
               <a href="?manage=1" onClick={e=>{e.stopPropagation();track("sg_manage_click")}} style={{fontSize:10,color:"rgba(255,255,255,.6)",marginTop:3,display:"inline-block"}}>Gérer mon abonnement</a>
             </div>
-            <button onClick={()=>setShowWelcome(false)} style={{
+            <button aria-label="Close" onClick={()=>setShowWelcome(false)} style={{
               background:"rgba(255,255,255,.2)",border:"none",color:"#fff",
-              borderRadius:12,padding:"4px 10px",cursor:"pointer",fontSize:16,marginLeft:8}}>✕</button>
+              borderRadius:12,minWidth:44,minHeight:44,display:"flex",alignItems:"center",justifyContent:"center",
+              cursor:"pointer",fontSize:16,marginLeft:8}}>✕</button>
           </div>
         )}
       </div>
