@@ -1874,5 +1874,33 @@
     "snorkel": false,
     "parking": false,
     "drive": 30
+  },
+  {
+    "id": "gp120",
+    "island": "gp",
+    "name": "Île de la Petite Terre",
+    "commune": "La Désirade",
+    "lat": 16.1719,
+    "lng": -61.115,
+    "status": "moderate",
+    "afai": 0.22,
+    "kids": false,
+    "snorkel": true,
+    "parking": true,
+    "drive": 45
+  },
+  {
+    "id": "mq067",
+    "island": "mq",
+    "name": "Pointe Fort (Caravelle)",
+    "commune": "La Trinité",
+    "lat": 14.7716,
+    "lng": -60.8714,
+    "status": "avoid",
+    "afai": 0.48,
+    "kids": false,
+    "snorkel": false,
+    "parking": false,
+    "drive": 50
   }
 ]
