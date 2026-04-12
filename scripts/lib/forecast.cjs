@@ -364,11 +364,21 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
       forecastDisclaimer = 'Persistance simple (half-life 3.5j). Pas de signal externe.'
     }
 
+    // arrivalDetected overrides trend-based drift: a bank is inbound regardless
+    // of the J0→J3 delta (which may be <0.05 because the bank hasn't arrived yet)
+    const driftDir = arrivalDetected ? 'up'
+      : meaningfulTrend > 0.05 ? 'up'
+      : meaningfulTrend < -0.05 ? 'down'
+      : 'stable'
+    const driftLbl = arrivalDetected ? 'Arrivee imminente (banc detecte)'
+      : meaningfulTrend > 0.05 ? 'Derive possible vers la cote'
+      : meaningfulTrend < -0.05 ? 'Dispersion attendue'
+      : 'Stable'
+
     weekly[level.id] = {
       forecast: series,
-      drift: meaningfulTrend > 0.05 ? 'up' : meaningfulTrend < -0.05 ? 'down' : 'stable',
-      driftLabel: meaningfulTrend > 0.05 ? 'Derive possible vers la cote'
-        : meaningfulTrend < -0.05 ? 'Dispersion attendue' : 'Stable',
+      drift: driftDir,
+      driftLabel: driftLbl,
       driftValue: Math.round(meaningfulTrend * 100) / 100,
       forecastMethod,
       forecastDisclaimer,
