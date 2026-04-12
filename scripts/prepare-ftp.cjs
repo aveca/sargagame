@@ -313,9 +313,13 @@ Sitemap: https://${domain}/sitemap.xml
       },true);
       document.addEventListener('click',function(e){
         var t=e.target,interactive=['A','BUTTON','INPUT','SELECT','TEXTAREA','LABEL'];
-        if(interactive.indexOf(t.tagName)>=0||t.closest('a,button'))return;
+        if(interactive.indexOf(t.tagName)>=0||t.closest('a,button,[role="button"],[data-click],.gbtn,.sg-click'))return;
         var cn=typeof t.className==='string'?t.className:'',tag=t.tagName+'.'+cn.split(' ')[0]+'#'+(t.id||''),url=location.href;
-        setTimeout(function(){if(location.href===url)send('clarity_dead_click',{target:tag,page:location.pathname});},2000);
+        var preCount=document.getElementsByTagName('*').length;
+        setTimeout(function(){
+          var postCount=document.getElementsByTagName('*').length;
+          if(location.href===url&&Math.abs(postCount-preCount)<5)send('clarity_dead_click',{target:tag,page:location.pathname});
+        },2000);
       },true);
       var loaded=Date.now();
       window.addEventListener('beforeunload',function(){
