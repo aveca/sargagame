@@ -80,6 +80,7 @@ const T={
     filters:["Toutes","Propres","Favoris","Alertes"],
     filtersIcon:["🌊","✅","❤️","🚫"],
     navMap:"Carte",navList:"Plages",navGame:"Jeu",navPremium:"Premium",
+    verdictGo:"Tu peux y aller",verdictModerate:"Modéré, à toi de voir",verdictAvoid:"À éviter aujourd'hui",verdictUnknown:"État non confirmé",
     forecast:"Prévisions",weather:"Météo",directions:"Y aller",
     fav:"Favori",addFav:"Ajouter aux favoris",removeFav:"Retirer des favoris",
     wind:"Vent",uv:"UV",temp:"Température",drive:"min",
@@ -145,6 +146,7 @@ const T={
     filters:["All","Clean","Favourites","Alerts"],
     filtersIcon:["🌊","✅","❤️","🚫"],
     navMap:"Map",navList:"Beaches",navGame:"Game",navPremium:"Premium",
+    verdictGo:"Go for it",verdictModerate:"Moderate, your call",verdictAvoid:"Skip it today",verdictUnknown:"Status unconfirmed",
     forecast:"Forecast",weather:"Weather",directions:"Directions",
     fav:"Favourite",addFav:"Add to favourites",removeFav:"Remove from favourites",
     wind:"Wind",uv:"UV",temp:"Temperature",drive:"min",
@@ -210,6 +212,7 @@ const T={
     filters:["Todas","Limpias","Favoritas","Alertas"],
     filtersIcon:["🌊","✅","❤️","🚫"],
     navMap:"Mapa",navList:"Playas",navGame:"Juego",navPremium:"Premium",
+    verdictGo:"Puedes ir",verdictModerate:"Moderado, tú decides",verdictAvoid:"Evita hoy",verdictUnknown:"Estado no confirmado",
     forecast:"Pronóstico",weather:"Clima",directions:"Cómo llegar",
     fav:"Favorita",addFav:"Agregar a favoritas",removeFav:"Quitar de favoritas",
     wind:"Viento",uv:"UV",temp:"Temperatura",drive:"min",
@@ -1497,6 +1500,21 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               <span>{Math.round(haversine(userPos.lat,userPos.lng,beach.lat,beach.lng))} km</span>
             </>}
           </p>
+
+          {/* Verdict line — glanceable "can I go today?" answer (design-scout 2026-04-12) */}
+          {ST[beach.status]&&(() => {
+            const verdictKey = beach.status==="clean"?"verdictGo":beach.status==="moderate"?"verdictModerate":beach.status==="avoid"?"verdictAvoid":"verdictUnknown"
+            const verdictText = LL[verdictKey]||LL.verdictUnknown
+            const verdictColor = ST[beach.status].c
+            return (
+              <div style={{display:"flex",alignItems:"center",gap:10,margin:"0 0 14px"}}>
+                <span aria-hidden="true" style={{width:4,height:24,borderRadius:2,background:verdictColor,flexShrink:0}}/>
+                <span className="anton" style={{fontSize:"clamp(18px,4.6vw,22px)",lineHeight:1.1,color:verdictColor,letterSpacing:"-.01em",textTransform:"uppercase"}}>
+                  {verdictText}
+                </span>
+              </div>
+            )
+          })()}
 
           {/* Status description */}
           {ST[beach.status]&&(

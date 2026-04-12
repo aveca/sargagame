@@ -1,7 +1,7 @@
 {
   "_comment": "Auto-fetched from GA4 Data API (with Sheets fallback).",
-  "_fetchedAt": "2026-04-12T03:07:21.786Z",
-  "_source": "sheets",
+  "_fetchedAt": "2026-04-12T13:25:12.305Z",
+  "_source": "none",
   "tests": [
     {
       "id": "lock1",
@@ -10,18 +10,14 @@
         "loss"
       ],
       "sessions": [
-        764,
-        553
+        0,
+        0
       ],
       "conversions": [
-        28,
-        13
+        0,
+        0
       ],
-      "metric": "sg_forecast_lock_click",
-      "_source": "sheets",
-      "_status": "ended",
-      "_winner": "control",
-      "_note": "control 3.66% vs loss framing 2.35% — simple CTA wins, applied 2026-04-12"
+      "metric": "sg_forecast_lock_click"
     },
     {
       "id": "modal1",
@@ -30,18 +26,14 @@
         "family"
       ],
       "sessions": [
-        356,
-        143
+        0,
+        0
       ],
       "conversions": [
-        5,
-        3
+        0,
+        0
       ],
-      "metric": "sg_premium_modal_cta",
-      "_source": "sheets",
-      "_status": "ended",
-      "_winner": "family",
-      "_note": "family 2.1% vs control 1.4% — applied 2026-04-12"
+      "metric": "sg_premium_modal_cta"
     },
     {
       "id": "onb1",
@@ -50,15 +42,14 @@
         "skip"
       ],
       "sessions": [
-        13,
-        13
+        0,
+        0
       ],
       "conversions": [
         0,
         0
       ],
-      "metric": "sg_conversion",
-      "_source": "sheets"
+      "metric": "sg_conversion"
     },
     {
       "id": "free1",
@@ -67,18 +58,14 @@
         "two_free"
       ],
       "sessions": [
-        547,
-        770
+        0,
+        0
       ],
       "conversions": [
-        18,
-        23
+        0,
+        0
       ],
-      "metric": "sg_forecast_lock_click",
-      "_source": "sheets",
-      "_status": "ended",
-      "_winner": "control",
-      "_note": "control 3.29% (1 free day) vs two_free 2.99% — 1 free day wins, applied 2026-04-12"
+      "metric": "sg_forecast_lock_click"
     },
     {
       "id": "vp1",
@@ -87,15 +74,14 @@
         "outcome"
       ],
       "sessions": [
-        72,
-        36
+        0,
+        0
       ],
       "conversions": [
         0,
         0
       ],
-      "metric": "sg_weekend_banner_click",
-      "_source": "sheets"
+      "metric": "sg_weekend_banner_click"
     },
     {
       "id": "price1",
@@ -104,18 +90,14 @@
         "season"
       ],
       "sessions": [
-        254,
-        190
-      ],
-      "conversions": [
-        1,
+        0,
         0
       ],
-      "metric": "sg_checkout_submit",
-      "_source": "sheets",
-      "_status": "ended",
-      "_winner": "control",
-      "_note": "season pass 0 checkouts vs monthly 1 checkout — season pass removed 2026-04-12"
+      "conversions": [
+        0,
+        0
+      ],
+      "metric": "sg_checkout_submit"
     }
   ]
 }
