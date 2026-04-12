@@ -1048,6 +1048,26 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             </div>
           )}
 
+          {/* Forecast teaser — above the fold, every user sees it */}
+          {!isPremium&&forecast&&forecast[1]&&(
+            <div onClick={()=>{track("sg_forecast_teaser_click",{beach_id:beach.id,tomorrow:forecast[1].status});onPremiumClick("forecast_teaser")}}
+              style={{padding:"12px 14px",borderRadius:12,marginBottom:12,cursor:"pointer",
+                background:"linear-gradient(135deg,var(--sg-card,#fff),rgba(232,168,0,.06))",
+                border:"1.5px solid rgba(232,168,0,.25)",display:"flex",alignItems:"center",gap:12}}>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,fontWeight:700,color:"var(--sg-text,#333)"}}>
+                  {lang==="en"?"Tomorrow":"Demain"} :
+                  <span style={{filter:"blur(5px)",userSelect:"none",marginLeft:6,
+                    color:ST[forecast[1].status]?.c||"#999"}}>{ST[forecast[1].status]?.l||"?"}</span>
+                </div>
+                <div style={{fontSize:11,color:"var(--sg-mid,#686868)",marginTop:3}}>
+                  {lang==="en"?"Free trial · see the 4-day forecast":"Essai gratuit · previsions 4 jours"}
+                </div>
+              </div>
+              <div style={{fontSize:22,opacity:.7}}>🔓</div>
+            </div>
+          )}
+
           {/* ── AXE 2: Beach Reports — 3-level user sargassum reports ── */}
           <BeachReport beach={beach} lang={lang} communityReports={communityReports}/>
 
