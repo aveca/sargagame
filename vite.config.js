@@ -176,13 +176,13 @@ export default defineConfig({
           const scriptMatch = html.match(/src="([^"]+\.js)"/)
           const scriptSrc = scriptMatch ? (scriptMatch[1].startsWith('/') ? scriptMatch[1] : '/' + scriptMatch[1]) : '/assets/index.js'
           const pages = [
-            { path: 'carte-sargasses', title: 'Carte des sargasses Martinique en temps réel', desc: 'Carte interactive des sargasses en Martinique. Où se baigner, plages propres, état en direct.' },
-            { path: 'previsions', title: 'Prévisions sargasses Martinique 7 jours', desc: 'Prévisions sargasses Martinique J+1 à J+7. Où aller à la plage cette semaine.' },
+            { path: 'carte-sargasses', title: 'Carte des sargasses Martinique en temps réel (2026)', desc: 'Carte interactive des sargasses en Martinique. Où se baigner aujourd\'hui, plages propres, état en direct. Données satellite Copernicus.' },
+            { path: 'previsions', title: 'Prévisions sargasses Martinique 7 jours (2026)', desc: 'Prévisions sargasses Martinique J+1 à J+7. Où aller à la plage cette semaine. Courants, vent, satellite.' },
             { path: 'alertes', title: 'Alertes sargasses Martinique et Guadeloupe — Notifications en temps réel', desc: 'Recevez des alertes sargasses pour vos plages en Martinique et Guadeloupe. Notifications en temps réel quand l\'état change. Planifiez vos sorties plage sereinement.' },
             // SEO editorial pages
-            { path: 'saison-sargasses-martinique', title: 'Saison des sargasses en Martinique — Quand et où ?', desc: 'Quand arrivent les sargasses en Martinique ? Pic de saison, mois à éviter, plages les plus touchées. Prévisions en temps réel et conseils pratiques.' },
-            { path: 'saison-sargasses-guadeloupe', title: 'Saison des sargasses en Guadeloupe — Quand et où ?', desc: 'Quand arrivent les sargasses en Guadeloupe ? Pic de saison, mois à éviter, plages les plus touchées. Prévisions en temps réel et conseils pratiques.' },
-            { path: 'plages-sans-sargasses', title: 'Plages sans sargasses en Martinique et Guadeloupe', desc: 'Liste des plages propres aujourd\'hui en Martinique et Guadeloupe. Données satellite en temps réel. Trouvez où vous baigner sans sargasses.' },
+            { path: 'saison-sargasses-martinique', title: 'Saison des sargasses en Martinique 2026 — Quand et où ?', desc: 'Quand arrivent les sargasses en Martinique en 2026 ? Pic de saison avril-septembre, mois à éviter, plages les plus touchées. Prévisions en temps réel.' },
+            { path: 'saison-sargasses-guadeloupe', title: 'Saison des sargasses en Guadeloupe 2026 — Quand et où ?', desc: 'Quand arrivent les sargasses en Guadeloupe en 2026 ? Pic de saison avril-septembre, mois à éviter, plages les plus touchées. Prévisions en temps réel.' },
+            { path: 'plages-sans-sargasses', title: 'Plages sans sargasses en Martinique et Guadeloupe (2026)', desc: 'Plages propres aujourd\'hui en Martinique et Guadeloupe. Données satellite en temps réel. Trouvez où vous baigner sans sargasses.' },
             { path: 'danger-sargasses-h2s', title: 'Sargasses et H2S : dangers pour la santé, précautions', desc: 'Le H2S dégagé par les sargasses en décomposition peut irriter les yeux et les voies respiratoires. Risques, seuils, précautions pour enfants et personnes fragiles.' },
           ]
           // Noscript editorial content for Google crawling
@@ -199,11 +199,13 @@ export default defineConfig({
             let pageHtml = html
               .replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`)
               .replace(/<meta name="description"[^>]*>/, () => `<meta name="description" content="${desc}" />`)
-            // Inject noscript editorial content if available
+            // Inject noscript editorial content + article schema + OG freshness tags
             if (editorialContent[p]) {
-              const articleSchema = JSON.stringify({"@context":"https://schema.org","@type":"Article","headline":title,"description":desc,"url":`https://sargasses-martinique.com/${p}/`,"datePublished":"2026-03-01","dateModified":new Date().toISOString().slice(0,10),"publisher":{"@type":"Organization","name":"Sargasses Martinique"},"author":{"@type":"Organization","name":"Sargasses Martinique","url":"https://sargasses-martinique.com/"}})
+              const modDate = new Date().toISOString().slice(0,10)
+              const articleSchema = JSON.stringify({"@context":"https://schema.org","@type":"Article","headline":title,"description":desc,"url":`https://sargasses-martinique.com/${p}/`,"datePublished":"2026-03-01","dateModified":modDate,"publisher":{"@type":"Organization","name":"Sargasses Martinique","logo":"https://sargasses-martinique.com/icon-512.png"},"author":{"@type":"Organization","name":"Sargasses Martinique","url":"https://sargasses-martinique.com/"}})
+              const ogArticleTags = `\n    <meta property="article:published_time" content="2026-03-01" />\n    <meta property="article:modified_time" content="${modDate}" />`
               pageHtml = pageHtml
-                .replace('</head>', `\n    <script type="application/ld+json">\n    ${articleSchema}\n    </script>\n</head>`)
+                .replace('</head>', `${ogArticleTags}\n    <script type="application/ld+json">\n    ${articleSchema}\n    </script>\n</head>`)
                 .replace('</body>', `\n    <noscript>${editorialContent[p]}</noscript>\n</body>`)
             }
             writeFileSync(resolve(dir, 'index.html'), pageHtml)
