@@ -856,7 +856,7 @@ function BeachReport({beach,lang,communityReports}){
             {counts.avoid>0&&<div style={{flex:counts.avoid,background:C.red}}/>}
           </div>
           <div style={{marginTop:4,fontSize:11,color:"var(--sg-mid)",textAlign:"center"}}>
-            {total} {lang==="en"?"report"+(total>1?"s":""):"signalement"+(total>1?"s":"")} (7j)
+            {counts.rawTotal||Math.round(total)} {lang==="en"?"report"+((counts.rawTotal||total)>1?"s":""):"signalement"+((counts.rawTotal||total)>1?"s":"")}
             {counts.trend&&counts.trend!=="stable"&&<span style={{marginLeft:4,color:counts.trend==="worsening"?C.red:C.green}}>
               {counts.trend==="worsening"?"↗":"↘"}</span>}
             {consensus&&<> · {lang==="en"?"Consensus: ":"Consensus : "}<span style={{fontWeight:700,color:ST[consensus].c}}>{ST[consensus].e} {lang==="en"?ST[consensus].le:ST[consensus].l}</span></>}
@@ -3468,7 +3468,7 @@ export default function App(){
         if(!b.status)return b // sargassum not loaded yet, skip
         const sargId=BEACH_TO_SARG[b.id]
         const rpt=communityReports[b.id]||communityReports[sargId]
-        if(!rpt||!rpt.total||rpt.total<3)return b
+        if(!rpt||!rpt.total||rpt.total<2)return b // weighted total: 2 = ~2 recent or ~4 week-old
         const consensus=rpt.avoid>=rpt.moderate&&rpt.avoid>=rpt.clean?"avoid":rpt.moderate>=rpt.clean?"moderate":"clean"
         const STATUS_RANK={clean:0,moderate:1,avoid:2}
         if(STATUS_RANK[consensus]>STATUS_RANK[b.status]){
