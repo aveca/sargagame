@@ -176,14 +176,14 @@ export default defineConfig({
           const scriptMatch = html.match(/src="([^"]+\.js)"/)
           const scriptSrc = scriptMatch ? (scriptMatch[1].startsWith('/') ? scriptMatch[1] : '/' + scriptMatch[1]) : '/assets/index.js'
           const pages = [
-            { path: 'carte-sargasses', title: 'Carte des sargasses Martinique en temps réel (2026)', desc: 'Carte interactive des sargasses en Martinique. Où se baigner aujourd\'hui, plages propres, état en direct. Données satellite Copernicus.' },
-            { path: 'previsions', title: 'Prévisions sargasses Martinique 7 jours (2026)', desc: 'Prévisions sargasses Martinique J+1 à J+7. Où aller à la plage cette semaine. Courants, vent, satellite.' },
-            { path: 'alertes', title: 'Alertes sargasses Martinique et Guadeloupe — Notifications en temps réel', desc: 'Recevez des alertes sargasses pour vos plages en Martinique et Guadeloupe. Notifications en temps réel quand l\'état change. Planifiez vos sorties plage sereinement.' },
+            { path: 'carte-sargasses', enPath: 'en/sargassum-map', title: 'Carte des sargasses Martinique en temps réel (2026)', desc: 'Carte interactive des sargasses en Martinique. Où se baigner aujourd\'hui, plages propres, état en direct. Données satellite Copernicus.' },
+            { path: 'previsions', enPath: null, title: 'Prévisions sargasses Martinique 7 jours (2026)', desc: 'Prévisions sargasses Martinique J+1 à J+7. Où aller à la plage cette semaine. Courants, vent, satellite.' },
+            { path: 'alertes', enPath: 'en/sargassum-alerts', title: 'Alertes sargasses Martinique et Guadeloupe — Notifications en temps réel', desc: 'Recevez des alertes sargasses pour vos plages en Martinique et Guadeloupe. Notifications en temps réel quand l\'état change. Planifiez vos sorties plage sereinement.' },
             // SEO editorial pages
-            { path: 'saison-sargasses-martinique', title: 'Saison des sargasses en Martinique 2026 — Quand et où ?', desc: 'Quand arrivent les sargasses en Martinique en 2026 ? Pic de saison avril-septembre, mois à éviter, plages les plus touchées. Prévisions en temps réel.' },
-            { path: 'saison-sargasses-guadeloupe', title: 'Saison des sargasses en Guadeloupe 2026 — Quand et où ?', desc: 'Quand arrivent les sargasses en Guadeloupe en 2026 ? Pic de saison avril-septembre, mois à éviter, plages les plus touchées. Prévisions en temps réel.' },
-            { path: 'plages-sans-sargasses', title: 'Plages sans sargasses en Martinique et Guadeloupe (2026)', desc: 'Plages propres aujourd\'hui en Martinique et Guadeloupe. Données satellite en temps réel. Trouvez où vous baigner sans sargasses.' },
-            { path: 'danger-sargasses-h2s', title: 'Sargasses et H2S : dangers pour la santé, précautions', desc: 'Le H2S dégagé par les sargasses en décomposition peut irriter les yeux et les voies respiratoires. Risques, seuils, précautions pour enfants et personnes fragiles.' },
+            { path: 'saison-sargasses-martinique', enPath: 'en/sargassum-season', title: 'Saison des sargasses en Martinique 2026 — Quand et où ?', desc: 'Quand arrivent les sargasses en Martinique en 2026 ? Pic de saison avril-septembre, mois à éviter, plages les plus touchées. Prévisions en temps réel.' },
+            { path: 'saison-sargasses-guadeloupe', enPath: null, title: 'Saison des sargasses en Guadeloupe 2026 — Quand et où ?', desc: 'Quand arrivent les sargasses en Guadeloupe en 2026 ? Pic de saison avril-septembre, mois à éviter, plages les plus touchées. Prévisions en temps réel.' },
+            { path: 'plages-sans-sargasses', enPath: 'en/best-beaches-no-sargassum', title: 'Plages sans sargasses en Martinique et Guadeloupe (2026)', desc: 'Plages propres aujourd\'hui en Martinique et Guadeloupe. Données satellite en temps réel. Trouvez où vous baigner sans sargasses.' },
+            { path: 'danger-sargasses-h2s', enPath: null, title: 'Sargasses et H2S : dangers pour la santé, précautions', desc: 'Le H2S dégagé par les sargasses en décomposition peut irriter les yeux et les voies respiratoires. Risques, seuils, précautions pour enfants et personnes fragiles.' },
           ]
           // Noscript editorial content for Google crawling
           const editorialContent = {
@@ -193,15 +193,17 @@ export default defineConfig({
             'danger-sargasses-h2s': `<article><h1>Sargasses et H2S : dangers pour la santé</h1><p>Lorsque les sargasses s'échouent et se décomposent sur les plages, elles libèrent du sulfure d'hydrogène (H2S), un gaz toxique reconnaissable à son odeur d'œuf pourri.</p><h2>Quels sont les risques ?</h2><p>À faible concentration, le H2S provoque des irritations des yeux, du nez et de la gorge. À forte concentration (au-dessus de 5 ppm), il peut causer des maux de tête, nausées et difficultés respiratoires. Les enfants, personnes âgées et asthmatiques sont particulièrement vulnérables.</p><h2>Précautions à prendre</h2><ul><li>Évitez les plages marquées "À éviter" sur notre <a href="/">carte en temps réel</a></li><li>Ne laissez pas les enfants jouer dans ou près des amas de sargasses en décomposition</li><li>Si vous sentez une forte odeur d'œuf pourri, éloignez-vous immédiatement</li><li>Consultez les <a href="/previsions/">prévisions 7 jours</a> avant de planifier une sortie plage</li></ul><h2>L'indice AFAI</h2><p>L'AFAI (Algal Floating Algae Index) est l'indice satellite que nous utilisons pour détecter les sargasses. En dessous de 0,3 la plage est propre. Au-dessus de 0,65, il vaut mieux éviter.</p></article>`,
             'alertes': `<article><h1>Alertes sargasses Martinique et Guadeloupe</h1><p>Recevez des alertes en temps réel sur l'état des sargasses sur vos plages préférées en Martinique et Guadeloupe.</p><h2>Comment ça marche ?</h2><p>Sélectionnez vos plages favorites et activez les notifications. Vous serez alerté dès que l'état change (plage propre, modéré ou à éviter) grâce aux données satellite Copernicus mises à jour quotidiennement.</p><h2>Pourquoi s'abonner aux alertes ?</h2><ul><li>Ne perdez plus de temps à aller sur une plage envahie de sargasses</li><li>Planifiez vos sorties plage en toute sérénité</li><li>Protégez votre famille du H2S (gaz toxique des sargasses en décomposition)</li></ul><p><a href="/">Consulter la carte en temps réel</a> · <a href="/previsions/">Prévisions 7 jours</a></p></article>`,
           }
-          for (const { path: p, title, desc } of pages) {
+          for (const { path: p, title, desc, enPath } of pages) {
             const dir = resolve(outDir, p)
             mkdirSync(dir, { recursive: true })
             const pageUrl = `https://sargasses-martinique.com/${p}/`
+            const enUrl = enPath ? `https://sargasses-martinique.com/${enPath}/` : null
             let pageHtml = html
               .replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`)
               .replace(/<meta name="description"[^>]*>/, () => `<meta name="description" content="${desc}" />`)
               .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${pageUrl}" />`)
               .replace(/<link rel="alternate" hreflang="fr"[^>]*>/, `<link rel="alternate" hreflang="fr" href="${pageUrl}" />`)
+              .replace(/<link rel="alternate" hreflang="en"[^>]*>/, enUrl ? `<link rel="alternate" hreflang="en" href="${enUrl}" />` : '')
               .replace(/<link rel="alternate" hreflang="x-default"[^>]*>/, `<link rel="alternate" hreflang="x-default" href="${pageUrl}" />`)
               .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="${pageUrl}" />`)
               .replace(/<meta property="og:title"[^>]*>/, `<meta property="og:title" content="${title}" />`)
