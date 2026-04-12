@@ -6,6 +6,7 @@
  * Stack : React 18 · Leaflet · Bricolage Grotesque + Anton · Open-Meteo
  */
 import React,{useState,useEffect,useRef,useMemo,useCallback,createContext,useContext,Component,Suspense,lazy}from"react"
+import {computeScore as _computeBeachScore} from "./src/lib/score.js"
 
 const LazyMapView=lazy(()=>import("./src/MapView"))
 
@@ -1085,7 +1086,10 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
   const lockCTA=lang==="en"?"Unlock forecast":"Débloquer"
   const lockSub=lang==="en"?"+ morning brief & alerts · 7 days free":"+ brief matin & alertes · 7j gratuit"
   const firstConf=visible[1]?.confidence||40
+  // Compute locked-day status colors for teaser strip
+  const lockedDays=!isPremium&&lockedCount>0?visible.slice(freeThreshold):[]
   return(
+    <>
     <div style={{position:"relative"}}>
       <div style={{display:"flex",gap:6,alignItems:"flex-end",height:140,padding:"8px 0"}}>
         {visible.map((d,i)=>{
@@ -1139,6 +1143,31 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
         </div>
       </div>}
     </div>
+    {/* Locked-days teaser strip — outside the chart overlay so always visible */}
+    {lockedDays.length>0&&(
+      <div onClick={()=>{track("sg_forecast_lock_click",{variant:"strip"});onPremiumClick("forecast")}}
+        style={{display:"flex",alignItems:"center",gap:8,marginTop:8,padding:"9px 12px",
+        background:"rgba(0,0,0,.04)",borderRadius:10,cursor:"pointer",border:"1px solid rgba(0,0,0,.06)"}}>
+        <span style={{fontSize:10,color:"var(--sg-mid,#999)",fontWeight:600,flexShrink:0}}>
+          {lang==="en"?"Next days:":"Jours suivants :"}
+        </span>
+        <div style={{display:"flex",gap:6,flex:1}}>
+          {lockedDays.map((d,i)=>{
+            const st=ST[d.status]||ST._loading
+            return(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:3,filter:"blur(3px)",opacity:.65,pointerEvents:"none"}}>
+                <div style={{width:7,height:7,borderRadius:2,background:st.c,flexShrink:0}}/>
+                <span style={{fontSize:9,fontWeight:700,color:st.c}}>{d.day}</span>
+              </div>
+            )
+          })}
+        </div>
+        <span style={{fontSize:10,fontWeight:700,color:"var(--sg-mid,#686868)",flexShrink:0}}>
+          {lang==="en"?"Unlock →":"Voir →"}
+        </span>
+      </div>
+    )}
+    </>
   )
 }
 
@@ -1500,6 +1529,36 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               <span>{Math.round(haversine(userPos.lat,userPos.lng,beach.lat,beach.lng))} km</span>
             </>}
           </p>
+
+          {/* v3.1 Beach Score 0-100 — year-round multi-factor (sargassum + waves + wind + sun + water temp) */}
+          {typeof beach.score==="number"&&(
+            <div style={{display:"flex",alignItems:"center",gap:14,margin:"4px 0 14px",
+              padding:"12px 14px",borderRadius:16,
+              background:"var(--sg-bgD,rgba(0,0,0,.03))",
+              border:"1px solid var(--sg-border,rgba(0,0,0,.06))"}}>
+              <div style={{width:64,height:64,borderRadius:"50%",flexShrink:0,
+                background:`conic-gradient(${beach.scoreColor} ${beach.score*3.6}deg, rgba(0,0,0,.06) ${beach.score*3.6}deg)`,
+                display:"flex",alignItems:"center",justifyContent:"center"}}>
+                <div style={{width:52,height:52,borderRadius:"50%",background:"var(--sg-card,#fff)",
+                  display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+                  boxShadow:"0 1px 4px rgba(0,0,0,.08)"}}>
+                  <span style={{fontFamily:"'Anton',sans-serif",fontSize:24,lineHeight:1,color:beach.scoreColor}}>
+                    {beach.score}
+                  </span>
+                  <span style={{fontSize:8,fontWeight:700,color:"var(--sg-mid,#686868)",letterSpacing:".04em",marginTop:1}}>/100</span>
+                </div>
+              </div>
+              <div style={{flex:1,minWidth:0}}>
+                <div className="anton" style={{fontSize:20,lineHeight:1.1,color:beach.scoreColor,
+                  letterSpacing:"-.01em",textTransform:"uppercase"}}>
+                  {beach.scoreLabel}
+                </div>
+                <div style={{fontSize:12,color:"var(--sg-mid,#686868)",marginTop:4,lineHeight:1.4}}>
+                  {beach.scoreReason}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Verdict line — glanceable "can I go today?" answer (design-scout 2026-04-12) */}
           {ST[beach.status]&&(() => {
@@ -2349,7 +2408,10 @@ function DailyRecoStrip({allBeaches,sargData,island,lang,isPremium,onBeachClick,
       const arrivalDetected=!!activeWeekly?.arrivalDetected
       const arrivalStrength=activeWeekly?.arrivalStrength||0
       let score=0
-      // 1. Status today (dominant)
+      // 0. v3.1 unified Beach Score 0-100 (year-round multi-factor) — primary ranking signal
+      // Heavily weighted (×3) so a 90/100 beach beats a clean beach with no weather data.
+      if(typeof b.score==="number")score+=b.score*3
+      // 1. Status today (dominant — legacy signal still contributes)
       if(b.status==="clean")score+=100
       else if(b.status==="moderate")score+=40
       else score-=50
@@ -2405,9 +2467,13 @@ function DailyRecoStrip({allBeaches,sargData,island,lang,isPremium,onBeachClick,
   // v3 priorities: arrival > community > memory > forecast J+3 > J+1 > drift > weather
   const verdict=(()=>{
     const fc1=top._fc1,fc3=top._fc3,drift=top._drift
-    // v3: arrival signal is the HIGHEST actionable priority
+    // v3.1: arrival ALWAYS wins over scoreReason (actionable threat)
     if(top._arrivalDetected&&top.status==="clean"){
       return lang==="en"?"Clean now — sargassum bank approaching":"Propre mais banc en approche"
+    }
+    // v3.1: if we have a unified score reason (FR only for now), use it
+    if(top.scoreReason&&lang==="fr"&&!top.beachMemory&&top.status==="clean"){
+      return top.scoreReason
     }
     if(top._communityReports&&top._communityReports.total>=3){
       return lang==="en"?`${top._communityReports.total} visitor reports on site`:`${top._communityReports.total} signalements visiteurs sur place`
@@ -2477,16 +2543,35 @@ function DailyRecoStrip({allBeaches,sargData,island,lang,isPremium,onBeachClick,
         padding:"11px 14px",cursor:"pointer",
         display:"flex",alignItems:"center",gap:12,
       }}>
-        <div style={{
-          width:44,height:44,borderRadius:14,flexShrink:0,
-          background:topSt.bg,
-          display:"flex",alignItems:"center",justifyContent:"center",
-          fontSize:22,
-        }}>{topSt.e}</div>
+        {typeof top.score==="number"?(
+          <div style={{
+            width:48,height:48,borderRadius:"50%",flexShrink:0,
+            background:`conic-gradient(${top.scoreColor||topSt.c} ${top.score*3.6}deg, rgba(0,0,0,.06) ${top.score*3.6}deg)`,
+            display:"flex",alignItems:"center",justifyContent:"center",
+          }}>
+            <div style={{width:38,height:38,borderRadius:"50%",background:"var(--sg-card,#fff)",
+              display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+              boxShadow:"0 1px 3px rgba(0,0,0,.08)"}}>
+              <span style={{fontFamily:"'Anton',sans-serif",fontSize:17,lineHeight:1,color:top.scoreColor||topSt.c}}>
+                {top.score}
+              </span>
+              <span style={{fontSize:7,fontWeight:700,color:"var(--sg-mid,#686868)",letterSpacing:".04em"}}>/100</span>
+            </div>
+          </div>
+        ):(
+          <div style={{
+            width:44,height:44,borderRadius:14,flexShrink:0,
+            background:topSt.bg,
+            display:"flex",alignItems:"center",justifyContent:"center",
+            fontSize:22,
+          }}>{topSt.e}</div>
+        )}
         <div style={{flex:1,minWidth:0}}>
           <div style={{fontSize:9.5,fontWeight:700,color:"var(--sg-mid,#686868)",letterSpacing:".05em",
             textTransform:"uppercase",marginBottom:2}}>
-            {lang==="en"?"Best beach now":"Ta meilleure plage maintenant"}
+            {typeof top.score==="number"
+              ?(lang==="en"?`Best beach today · ${top.scoreLabel||""}`:`Meilleure plage aujourd'hui · ${top.scoreLabel||""}`)
+              :(lang==="en"?"Best beach now":"Ta meilleure plage maintenant")}
           </div>
           <div style={{fontSize:15,fontWeight:700,color:"var(--sg-ink,#0D0D0D)",lineHeight:1.2,
             whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
@@ -4090,6 +4175,25 @@ export default function App(){
             const interp=interpolateIDW(beaches[i],same.length>0?same:sentinels)
             if(interp!==null){
               beaches[i]={...beaches[i],afai:interp,status:statusFromAfai(interp),_src:"interpolated"}
+            }
+          }
+          // Beach Score 0-100 — year-round multi-factor (pipeline v3.1+)
+          // Uses pipeline-computed weather snapshot per island + AFAI per beach (live or interpolated)
+          if(sargResult.weather){
+            for(let i=0;i<beaches.length;i++){
+              const w=sargResult.weather[beaches[i].island]
+              if(!w)continue
+              const snap={
+                afai:beaches[i].afai,
+                wind_speed:w.wind_speed,
+                cloud_cover:w.cloud_cover,
+                uv_index:w.uv_index,
+                sst:w.sst,
+                wave_height:w.wave_height,
+                tide_ratio:null,
+              }
+              const r=_computeBeachScore(snap)
+              beaches[i]={...beaches[i],score:r.score,scoreLabel:r.label,scoreColor:r.color,scoreReason:r.reason,scoreBreakdown:r.breakdown}
             }
           }
           // Interpolate weekly forecasts for non-sentinel beaches
