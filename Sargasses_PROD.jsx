@@ -263,7 +263,7 @@ function AbDebug(){
   useEffect(()=>{try{if(new URLSearchParams(window.location.search).get("ab_debug")==="1")setShow(true)}catch{}},[])
   if(!show)return null
   const ab=g("sg_ab",{})
-  const tests={lock1:["control","loss"],modal1:["control","family"],free1:["control","two_free"]}
+  const tests={onb1:["control","skip"],vp1:["feature","outcome"]}
   return(
     <div style={{position:"fixed",top:8,right:8,zIndex:99999,background:"rgba(0,0,0,.9)",color:"#0f0",
       padding:12,borderRadius:8,fontSize:11,fontFamily:"monospace",maxWidth:260}}>
@@ -641,23 +641,13 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
   const visibleDays=Math.min(forecast.length,Math.max(4,reliableHorizon+1))
   const visible=forecast.slice(0,visibleDays)
   const max=Math.max(...visible.map(d=>d.afai),.1)
-  // A/B Test 4: free days (1 vs 2)
-  const freeV=abVariant("free1",["control","two_free"],[.5,.5])
-  const freeThreshold=freeV==="two_free"?2:1
+  // free1 A/B test ended: control (1 free day) 3.29% vs two_free 2.99% — 1 free day wins.
+  const freeThreshold=1
   const lockedCount=visibleDays-freeThreshold
-  // A/B Test 1: lock framing
-  const lockV=abVariant("lock1",["control","loss"],[.5,.5])
+  // lock1 A/B test ended: control (simple CTA) 3.66% vs loss framing 2.35% — simple CTA wins.
   const inSeason=SARGASSES_SEASON==="high"
-  const lockCTA=lockV==="loss"
-    ?(lang==="en"
-      ?(inSeason?"Beaches change daily":"Don't miss this weekend")
-      :(inSeason?"Les plages changent chaque jour":"Ne rate pas ce weekend"))
-    :(lang==="en"?"See 4-day forecast":"Voir les 4 jours")
-  const lockSub=lockV==="loss"
-    ?(lang==="en"
-      ?(inSeason?"Sargassum season is active. Know before you go.":"Saturday, it'll be too late to switch beaches.")
-      :(inSeason?"La saison est là. Sache avant d'y aller.":"Samedi, il sera trop tard pour changer de plage."))
-    :(lang==="en"?"Free trial · cancel anytime":"Essai gratuit · sans engagement")
+  const lockCTA=lang==="en"?"See 4-day forecast":"Voir les 4 jours"
+  const lockSub=lang==="en"?"Free trial · cancel anytime":"Essai gratuit · sans engagement"
   const firstConf=visible[1]?.confidence||40
   return(
     <div style={{position:"relative"}}>
@@ -694,7 +684,7 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
           ?`Reliable up to 4 days. ${Math.round(firstConf)}% confidence tomorrow.`
           :`Fiable jusqu'a 4 jours. Fiabilite ${Math.round(firstConf)}% demain.`}
       </div>
-      {!isPremium&&lockedCount>0&&<div onClick={()=>{track("sg_forecast_lock_click",{variant:lockV});onPremiumClick("forecast")}}
+      {!isPremium&&lockedCount>0&&<div onClick={()=>{track("sg_forecast_lock_click",{variant:"control"});onPremiumClick("forecast")}}
         style={{position:"absolute",top:0,right:0,bottom:0,width:`${(lockedCount/visibleDays*100).toFixed(1)}%`,
         display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",
         background:"linear-gradient(90deg,transparent,var(--sg-bg,#FDFCF7) 25%)",
