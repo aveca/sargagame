@@ -479,7 +479,9 @@ function pickTopForBrief(sargassum, island) {
     const conf = (wk?.forecast?.[0]?.confidence) || 60
     const status = lv?.status || 'unknown'
     let score = 0
-    // 1. Status today
+    // 0. v3.1 unified Beach Score 0-100 (year-round) — primary signal when present
+    if (typeof lv?.score === 'number') score += lv.score * 10
+    // 1. Status today — legacy signal still contributes (less dominant now)
     if (status === 'clean') score += 1000
     else if (status === 'moderate') score += 400
     else if (status === 'avoid') score -= 500
@@ -509,6 +511,9 @@ function pickTopForBrief(sargassum, island) {
       forecastJ1: fc1?.status,
       drift,
       confidence: conf,
+      unifiedScore: lv?.score,
+      unifiedLabel: lv?.label,
+      unifiedReason: lv?.reason,
       _score: Math.round(score * 10) / 10,
     }
   })
@@ -531,20 +536,30 @@ function pickTopForBrief(sargassum, island) {
 function buildBriefMessage(pick, islandName) {
   if (!pick || !pick.top) return null
   const t = pick.top
-  if (!pick.anyClean) {
+  if (!pick.anyClean && typeof t.unifiedScore !== 'number') {
     return `\u26a0\ufe0f Aujourd'hui en ${islandName}, aucune plage propre parmi les plus populaires. Verifie la carte avant de partir.`
   }
-  // Base: top pick
+  // v3.1: prefer unified 0-100 score + reason (year-round, works when all beaches clean)
+  if (typeof t.unifiedScore === 'number' && t.unifiedScore >= 40) {
+    // Strip trailing period if present — we add our own sentence structure
+    const reason = (t.unifiedReason || '').replace(/\.\s*$/, '')
+    let msg = `\u2600\ufe0f ${t.name} ${islandName} \u2014 ${t.unifiedScore}/100 ${t.unifiedLabel || ''}. ${reason}. (${t.drive} min)`
+    if (t.forecastJ1 && t.forecastJ1 !== 'clean') {
+      msg += ` Attention : ${statusLabel(t.forecastJ1)} demain.`
+    } else if (t.drift === 'up') {
+      msg += ` Sargasses en approche.`
+    }
+    return msg
+  }
+  // Legacy fallback (score < 40 or missing)
   let msg = t.status === 'clean'
     ? `\u2600\ufe0f Ta meilleure plage ${islandName} aujourd'hui : ${t.name} (${t.drive} min). Propre.`
     : `\u2600\ufe0f ${t.name} reste le meilleur choix ${islandName} aujourd'hui (${t.drive} min, ${statusLabel(t.status)}).`
-  // Forward-looking warnings
   if (t.forecastJ1 && t.forecastJ1 !== 'clean') {
     msg += ` Attention : ${statusLabel(t.forecastJ1)} prevu demain.`
   } else if (t.drift === 'up') {
     msg += ` Sargasses en approche ces prochains jours.`
   }
-  // Alternatives count (clean only)
   const cleanAlts = pick.alternatives.filter(a => a.status === 'clean').length
   if (cleanAlts > 0 && !msg.includes('Attention') && !msg.includes('approche')) {
     msg += ` +${cleanAlts} alternative(s) proche(s).`
