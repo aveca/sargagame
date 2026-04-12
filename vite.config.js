@@ -196,9 +196,16 @@ export default defineConfig({
           for (const { path: p, title, desc } of pages) {
             const dir = resolve(outDir, p)
             mkdirSync(dir, { recursive: true })
+            const pageUrl = `https://sargasses-martinique.com/${p}/`
             let pageHtml = html
               .replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`)
               .replace(/<meta name="description"[^>]*>/, () => `<meta name="description" content="${desc}" />`)
+              .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${pageUrl}" />`)
+              .replace(/<link rel="alternate" hreflang="fr"[^>]*>/, `<link rel="alternate" hreflang="fr" href="${pageUrl}" />`)
+              .replace(/<link rel="alternate" hreflang="x-default"[^>]*>/, `<link rel="alternate" hreflang="x-default" href="${pageUrl}" />`)
+              .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="${pageUrl}" />`)
+              .replace(/<meta property="og:title"[^>]*>/, `<meta property="og:title" content="${title}" />`)
+              .replace(/<meta property="og:description"[^>]*>/, `<meta property="og:description" content="${desc}" />`)
             // Inject noscript editorial content + article schema + OG freshness tags
             if (editorialContent[p]) {
               const modDate = new Date().toISOString().slice(0,10)
