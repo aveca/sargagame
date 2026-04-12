@@ -1,6 +1,8 @@
 name: Daily Copernicus + Deploy
 
 on:
+  push:
+    branches: [main]
   schedule:
     # 8x/jour toutes les 3h — max freshness données sargasses
     # Heures MQ (UTC-4): 20h, 23h, 2h, 5h, 8h, 11h, 14h, 17h
