@@ -53,7 +53,15 @@ function saveJSON(p, data) {
 
 function daysSince(dateStr) {
   if (!dateStr) return 999
-  const d = new Date(dateStr)
+  let d
+  // Handle DD/MM/YYYY HH:MM:SS format (French locale from Google Sheets)
+  const frMatch = dateStr.match(/^(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{2}:\d{2}:\d{2}))?$/)
+  if (frMatch) {
+    const [, dd, mm, yyyy, time] = frMatch
+    d = new Date(`${yyyy}-${mm}-${dd}T${time || '00:00:00'}`)
+  } else {
+    d = new Date(dateStr)
+  }
   if (isNaN(d)) return 999
   return Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24))
 }
