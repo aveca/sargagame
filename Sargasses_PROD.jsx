@@ -3182,10 +3182,12 @@ export default function App(){
   // Analytics: session start
   useEffect(()=>{track("sg_session_start",{island,is_premium:isPremium,is_returning:!!g("sg_seen",0)});s("sg_seen",1)},[])
 
-  // Auto-load OneSignal so users get the push permission prompt without
-  // needing to click "Activer les alertes" manually. On iOS, web push requires
-  // the PWA to be installed (iOS 16.4+), so we only trigger it in standalone
-  // mode there. On Android/desktop, trigger after a short delay.
+  // Auto-load OneSignal at a VALUE moment, not at mount.
+  // Old timing (1.5s PWA / 12s browser) gave 6% opt-in on 376 prompted sessions.
+  // Best practice 2026 (OneSignal, Urban Airship, WU): prompt AFTER the user
+  // has experienced value, not on arrival. Trigger = first beach opened.
+  // Fallback timer at 60s so users who don't open a beach still get prompted.
+  // Measured via 'trigger' param on sg_push_auto_loaded so we can A/B the lift.
   useEffect(()=>{
     if(g("sg_push_loaded_once",0))return
     const isIos=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream
@@ -3193,15 +3195,32 @@ export default function App(){
       ||window.navigator.standalone===true
     // Skip iOS Safari (not standalone) — push won't work anyway, prompt is useless
     if(isIos&&!isStandalone)return
-    const delay=isStandalone?1500:12000 // PWA: quick. Browser: wait ~12s
-    const t=setTimeout(()=>{
+
+    let loaded=false
+    const doLoad=(trigger)=>{
+      if(loaded)return
+      loaded=true
       try{
         window.loadOneSignal?.()
         s("sg_push_loaded_once",1)
-        track("sg_push_auto_loaded",{standalone:isStandalone,ios:isIos})
+        track("sg_push_auto_loaded",{standalone:isStandalone,ios:isIos,trigger})
       }catch(e){}
-    },delay)
-    return()=>clearTimeout(t)
+    }
+
+    // Primary trigger: fire when user opens their first beach (value moment).
+    // onBeachClick dispatches this custom event below.
+    const onValueMoment=()=>doLoad("beach_open")
+    window.addEventListener("sg:value_moment",onValueMoment)
+
+    // Fallback: still prompt after 60s even if user hasn't clicked a beach.
+    // Keeps the 6% floor from the old behavior intact for passive visitors.
+    const FALLBACK_MS=isStandalone?20000:60000
+    const t=setTimeout(()=>doLoad("fallback_timer"),FALLBACK_MS)
+
+    return()=>{
+      clearTimeout(t)
+      window.removeEventListener("sg:value_moment",onValueMoment)
+    }
   },[])
 
   // F2: sync OneSignal tags so backend can segment pushes by premium + island
@@ -3505,6 +3524,8 @@ export default function App(){
 
   const onBeachClick=useCallback(b=>{
     setSelectedBeach(b);track("sg_beach_open",{beach_id:b?.id,status:b?.status})
+    // Signal to push auto-loader that user reached a value moment
+    try{window.dispatchEvent(new Event("sg:value_moment"))}catch(e){}
     // Auto-dismiss onboarding coachmark on first beach interaction
     if(showOnboarding){setShowOnboarding(false);s("sg_onb",1)}
     // Track beach views for PWA install prompt timing
