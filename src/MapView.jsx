@@ -452,8 +452,8 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
     <div ref={containerRef} style={{width:"100%",height:"100%"}}/>
 
     {/* Caribbean View Toggle Button */}
-    <button onClick={toggleCaribbean} style={{
-      position:"absolute",top:12,right:12,zIndex:1000,
+    <button onClick={toggleCaribbean} className="sg-carib-btn" title={caribbeanMode?tl.localView:tl.caribbeanView} aria-label={caribbeanMode?tl.localView:tl.caribbeanView} style={{
+      position:"absolute",top:"calc(12px + env(safe-area-inset-top, 0px))",right:"calc(12px + env(safe-area-inset-right, 0px))",zIndex:1000,
       display:"flex",alignItems:"center",gap:6,
       padding:"8px 14px",
       background:caribbeanMode?"rgba(0,158,142,.9)":"rgba(13,30,28,.75)",
@@ -466,7 +466,7 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
       letterSpacing:"0.3px",
     }}>
       <span style={{fontSize:15}}>{caribbeanMode?"🏝":"🌎"}</span>
-      {caribbeanMode?tl.localView:tl.caribbeanView}
+      <span className="sg-carib-label">{caribbeanMode?tl.localView:tl.caribbeanView}</span>
     </button>
 
     {/* Caribbean Legend */}
