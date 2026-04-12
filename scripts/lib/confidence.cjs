@@ -12,7 +12,11 @@
  *    5-15  Reference/fallback (static hardcoded data)
  */
 
-const HALF_LIFE_DAYS = 3.5
+// v3.1 (2026-04-12): half-life 3.5 → 5.0 after backtest showed 66% J+1 hit
+// (< 75% threshold) + chronic "over-predicts clean" bias at J+1..J+4.
+// Slower decay (~13%/day vs 18%/day) keeps sargassum persistence on atlantic
+// beaches without hurting the already-strong J+4 85% hit rate.
+const HALF_LIFE_DAYS = 5.0
 const DECAY_LAMBDA = Math.LN2 / HALF_LIFE_DAYS
 
 /**
