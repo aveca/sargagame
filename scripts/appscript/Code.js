@@ -445,34 +445,37 @@ function doGet(e) {
     }
   }
 
-  // Beach reports — aggregated last 7 days per beach, with trend
+  // Beach reports — ALL reports, weighted by age (0.95^days_old)
   if (action === 'beach_reports') {
     try {
       const sheet = getOrCreateSheet('beach_reports', ['date', 'beach_id', 'beach_name', 'island', 'level'])
       const data = sheet.getDataRange().getValues()
       const now = Date.now()
-      const cutoff7d = new Date(now - 7 * 24 * 3600000).toISOString()
       const cutoff24h = new Date(now - 24 * 3600000).toISOString()
       const cutoff48h = new Date(now - 48 * 3600000).toISOString()
+      const DAY_MS = 86400000
       const agg = {}
       for (let i = 1; i < data.length; i++) {
         const date = data[i][0] || ''
-        if (date < cutoff7d) continue
+        if (!date) continue
         const bid = data[i][1]
         const level = data[i][4] || 'clean'
         if (!bid) continue
+        const daysOld = Math.max(0, (now - new Date(date).getTime()) / DAY_MS)
+        const weight = Math.pow(0.95, daysOld) // recent=1.0, 7d=0.70, 14d=0.49, 30d=0.21
         if (!agg[bid]) agg[bid] = {
-          clean: 0, moderate: 0, avoid: 0, total: 0, latest: date,
+          clean: 0, moderate: 0, avoid: 0, total: 0, rawTotal: 0, latest: date,
           recent24h: { clean: 0, moderate: 0, avoid: 0 },
           prev24_48h: { clean: 0, moderate: 0, avoid: 0 }
         }
-        agg[bid][level] = (agg[bid][level] || 0) + 1
-        agg[bid].total++
+        agg[bid][level] = Math.round(((agg[bid][level] || 0) + weight) * 100) / 100
+        agg[bid].total = Math.round(((agg[bid].total || 0) + weight) * 100) / 100
+        agg[bid].rawTotal = (agg[bid].rawTotal || 0) + 1
         if (date > agg[bid].latest) agg[bid].latest = date
         if (date >= cutoff24h) agg[bid].recent24h[level] = (agg[bid].recent24h[level] || 0) + 1
         else if (date >= cutoff48h) agg[bid].prev24_48h[level] = (agg[bid].prev24_48h[level] || 0) + 1
       }
-      // Compute trend per beach
+      // Compute trend per beach (based on raw 24h vs 24-48h counts)
       for (const bid in agg) {
         const r = agg[bid].recent24h, p = agg[bid].prev24_48h
         const rBad = (r.moderate || 0) + (r.avoid || 0), rTotal = (r.clean || 0) + rBad
