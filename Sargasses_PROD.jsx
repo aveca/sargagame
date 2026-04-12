@@ -2472,12 +2472,13 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
     :null
   const driveLbl=typeof top.drive==="number"?`${top.drive} min`:null
 
-  // Time-aware greeting — feels alive, not static
+  // Always-current framing — sargasse state is slow-changing, user wants NOW info.
+  // "Pour demain" tested poorly: felt like a forecast, not a recommendation.
   const greet=(()=>{
     const h=new Date().getHours()
     if(h<12)return lang==="en"?"This morning":"Ce matin"
-    if(h<17)return lang==="en"?"Right now":"Maintenant"
-    return lang==="en"?"For tomorrow":"Pour demain"
+    if(h<18)return lang==="en"?"Right now":"Maintenant"
+    return lang==="en"?"Tonight":"Ce soir"
   })()
 
   return(
@@ -2540,29 +2541,29 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
           </div>
         )}
 
-        {/* Main text */}
+        {/* Main text — beach name wraps to 2 lines rather than ellipsis (long names like "Plage de la Française") */}
         <div style={{flex:1,minWidth:0}}>
           <div style={{
-            fontSize:17,fontWeight:900,color:"var(--sg-ink,#0D0D0D)",
-            lineHeight:1.15,marginBottom:3,
-            whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
+            fontSize:16,fontWeight:900,color:"var(--sg-ink,#0D0D0D)",
+            lineHeight:1.15,marginBottom:4,
+            display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",
+            overflow:"hidden",wordBreak:"break-word",
           }}>
             {top.name}
           </div>
           <div style={{
-            fontSize:12,fontWeight:700,color:topSt.c,
-            marginBottom:3,
-            whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
+            fontSize:11.5,fontWeight:700,color:topSt.c,
+            marginBottom:3,lineHeight:1.25,
           }}>
             {verdict}
           </div>
           <div style={{
             fontSize:11,color:"var(--sg-mid,#686868)",
-            display:"flex",alignItems:"center",gap:10,
-            whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
+            display:"flex",alignItems:"center",gap:8,
+            whiteSpace:"nowrap",overflow:"hidden",
           }}>
-            {distLbl&&<span>📍 {distLbl}</span>}
             {driveLbl&&<span>🚗 {driveLbl}</span>}
+            {distLbl&&<span>· {distLbl}</span>}
             {!distLbl&&!driveLbl&&top.commune&&<span>{top.commune}</span>}
           </div>
         </div>
@@ -2613,9 +2614,10 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
                     {alt.name}
                   </div>
                   <div style={{fontSize:10,color:"var(--sg-mid,#686868)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+                    {/* Alt shows distance OR drive OR commune — never redundant score since all picks share similar base */}
                     {alt._dist!=null
-                      ?`${Math.round(alt._dist)} km${typeof alt.score==="number"?` · ${alt.score}/100`:""}`
-                      :(typeof alt.score==="number"?`${alt.score}/100`:(alt.commune||""))}
+                      ?`${alt._dist<1?Math.round(alt._dist*1000)+" m":Math.round(alt._dist)+" km"}${typeof alt.drive==="number"?` · ${alt.drive} min`:""}`
+                      :(typeof alt.drive==="number"?`${alt.drive} min`:(alt.commune||""))}
                   </div>
                 </div>
               </button>
