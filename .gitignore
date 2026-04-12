@@ -29,3 +29,6 @@ SECRETS-GITHUB.txt
 # Claude Code
 .claude
 memory
+
+# Local Playwright UI test output
+.ui-test/

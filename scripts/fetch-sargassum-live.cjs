@@ -22,6 +22,7 @@ const fs = require('fs')
 const path = require('path')
 const { satelliteConfidence, memoryConfidence } = require('./lib/confidence.cjs')
 const { buildHonestForecast, statusFromAfai: statusFromAfaiForecast, DAYS: FDAYS } = require('./lib/forecast.cjs')
+const { computeScore } = require('./lib/score.cjs')
 
 // ── Beach coordinates + coast exposure ────────────────────────────
 // coast: 'atlantic'  = cote exposee aux alizes (sargasses arrivent par l'est)
@@ -665,28 +666,40 @@ async function fetchRegionalWind() {
   const centers = { mq: [14.6, -61.0], gp: [16.2, -61.5] }
   for (const [island, [lat, lng]] of Object.entries(centers)) {
     // Fetch current + 7-day hourly forecast (168 hours)
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=wind_speed_10m,wind_direction_10m&hourly=wind_speed_10m,wind_direction_10m&forecast_days=7&timezone=America/Martinique`
+    // v3.1: extended for Beach Score engine — now also fetches cloud_cover, uv_index, temperature_2m, precipitation_probability
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}`
+      + `&current=wind_speed_10m,wind_direction_10m,cloud_cover,temperature_2m,precipitation,uv_index`
+      + `&hourly=wind_speed_10m,wind_direction_10m,cloud_cover,uv_index,temperature_2m,precipitation_probability`
+      + `&forecast_days=7&timezone=America/Martinique`
     const data = await safeFetch(url, 15000)
     if (data?.current) {
       wind[island] = {
         speed: Math.round(data.current.wind_speed_10m * 10) / 10,
         dir: Math.round(data.current.wind_direction_10m),
+        cloud_cover: data.current.cloud_cover ?? null,
+        temperature: data.current.temperature_2m ?? null,
+        precipitation: data.current.precipitation ?? null,
+        uv_index: data.current.uv_index ?? null,
       }
-      // Parse hourly forecast
+      // Parse hourly forecast (wind + weather for score forecast)
       if (data.hourly?.time?.length) {
         wind[island].hourly = data.hourly.time.map((t, i) => ({
           time: t,
           speed: data.hourly.wind_speed_10m[i] || 0,
           dir: data.hourly.wind_direction_10m[i] || 0,
+          cloud_cover: data.hourly.cloud_cover?.[i] ?? null,
+          uv_index: data.hourly.uv_index?.[i] ?? null,
+          temperature: data.hourly.temperature_2m?.[i] ?? null,
+          precip_prob: data.hourly.precipitation_probability?.[i] ?? null,
         }))
-        console.log(`  Wind ${island.toUpperCase()}: ${wind[island].speed} km/h from ${wind[island].dir}° + ${wind[island].hourly.length}h forecast`)
+        console.log(`  Wind ${island.toUpperCase()}: ${wind[island].speed} km/h from ${wind[island].dir}° | cloud ${wind[island].cloud_cover}% | UV ${wind[island].uv_index} | ${wind[island].hourly.length}h forecast`)
       } else {
         console.log(`  Wind ${island.toUpperCase()}: ${wind[island].speed} km/h from ${wind[island].dir}° (no hourly forecast)`)
       }
     } else {
-      // Fallback: typical trade wind (15 km/h from ENE), no hourly
-      wind[island] = { speed: 15, dir: 75, hourly: null }
-      console.log(`  Wind ${island.toUpperCase()}: fallback 15 km/h from 75° (trade wind)`)
+      // Fallback: typical trade wind (15 km/h from ENE), no hourly, neutral weather
+      wind[island] = { speed: 15, dir: 75, hourly: null, cloud_cover: 40, temperature: 28, precipitation: 0, uv_index: 7 }
+      console.log(`  Wind ${island.toUpperCase()}: fallback 15 km/h from 75° (trade wind + neutral weather)`)
     }
   }
   return wind
@@ -720,7 +733,7 @@ async function fetchMarineData() {
   const marine = {}
   const centers = { mq: [14.6, -61.0], gp: [16.2, -61.5] }
   for (const [island, [lat, lng]] of Object.entries(centers)) {
-    const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lng}&current=ocean_current_velocity,ocean_current_direction&hourly=ocean_current_velocity,ocean_current_direction,wave_height,wave_direction,wave_period&forecast_days=3`
+    const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lng}&current=ocean_current_velocity,ocean_current_direction,sea_surface_temperature&hourly=ocean_current_velocity,ocean_current_direction,wave_height,wave_direction,wave_period,sea_surface_temperature&forecast_days=3`
     const data = await safeFetch(url, 15000)
     if (data?.current?.ocean_current_velocity != null) {
       marine[island] = {
@@ -728,6 +741,8 @@ async function fetchMarineData() {
           speed: data.current.ocean_current_velocity, // m/s
           dir: data.current.ocean_current_direction,  // degrees (direction current flows TO)
         },
+        sst: data.current.sea_surface_temperature ?? null,  // °C — for beach scoring
+        wave_height: data.hourly?.wave_height?.[0] ?? null, // m — representative wave for scoring
         hourly: data.hourly?.time?.map((t, i) => ({
           time: t,
           curSpeed: data.hourly.ocean_current_velocity[i] || 0,
@@ -735,13 +750,14 @@ async function fetchMarineData() {
           waveH: data.hourly.wave_height?.[i] || 0,
           waveDir: data.hourly.wave_direction?.[i] || 0,
           wavePeriod: data.hourly.wave_period?.[i] || 0,
+          sst: data.hourly.sea_surface_temperature?.[i] ?? null,
         })) || null,
       }
-      console.log(`  Marine ${island.toUpperCase()}: current ${(marine[island].current.speed * 3.6).toFixed(1)} km/h @${marine[island].current.dir}°, waves available=${!!marine[island].hourly}`)
+      console.log(`  Marine ${island.toUpperCase()}: current ${(marine[island].current.speed * 3.6).toFixed(1)} km/h @${marine[island].current.dir}°, SST ${marine[island].sst?.toFixed(1) ?? '?'}°C, wave ${marine[island].wave_height?.toFixed(1) ?? '?'}m`)
     } else {
-      // Fallback: hardcoded Caribbean current
-      marine[island] = { current: { speed: 0.14, dir: 270 }, hourly: null } // 0.14 m/s ≈ 0.5 km/h
-      console.log(`  Marine ${island.toUpperCase()}: fallback 0.5 km/h @270° (API unavailable)`)
+      // Fallback: hardcoded Caribbean current + neutral SST/wave
+      marine[island] = { current: { speed: 0.14, dir: 270 }, sst: 27, wave_height: 0.8, hourly: null }
+      console.log(`  Marine ${island.toUpperCase()}: fallback 0.5 km/h @270°, SST 27°C, wave 0.8m (API unavailable)`)
     }
   }
   return marine
@@ -893,7 +909,7 @@ function computeBankDrift(centroid, hull, windSpeed, windDir, island, hourlyWind
 /**
  * Build sargassum-banks.json: clustered banks with drift predictions.
  */
-async function buildSargassumBanks(gridPoints, dir, wind) {
+async function buildSargassumBanks(gridPoints, dir, wind, marineData) {
   if (!gridPoints || gridPoints.length < 3) {
     console.log('  Skipping banks: not enough grid points')
     return
@@ -1105,14 +1121,54 @@ async function main() {
     : null
 
   const weekly = buildHonestForecast(levels, windForecast, historyEntries, BEACHES, previousBanks, communityReports, marineData)
+
+  // ── Beach Score 0-100 (v1) — year-round multi-factor ──
+  // Build per-island weather snapshot (SST + waves from marine, wind/cloud/UV from Open-Meteo forecast)
+  const weather = {}
+  for (const island of ['mq', 'gp']) {
+    const w = windForecast?.[island] || {}
+    const m = marineData?.[island] || {}
+    weather[island] = {
+      wind_speed: w.speed ?? null,          // km/h
+      cloud_cover: w.cloud_cover ?? null,   // %
+      uv_index: w.uv_index ?? null,
+      air_temperature: w.temperature ?? null, // °C
+      precipitation: w.precipitation ?? null,
+      sst: m.sst ?? null,                   // °C sea surface
+      wave_height: m.wave_height ?? null,   // m
+    }
+  }
+  console.log('')
+  console.log('[3b] Computing Beach Score 0-100 (year-round)...')
+  const scores = {}
+  for (const beach of BEACHES) {
+    const level = levels.find(l => l.id === beach.id)
+    if (!level) continue
+    const snap = {
+      afai: level.afai,
+      ...weather[beach.island],
+      tide_ratio: null, // v2 will plug real tide
+    }
+    const result = computeScore(snap)
+    level.score = result.score
+    level.label = result.label
+    level.color = result.color
+    level.reason = result.reason
+    level.breakdown = result.breakdown
+    scores[beach.id] = result
+    console.log(`  ${beach.id}: ${result.score}/100 · ${result.label} — ${result.reason}`)
+  }
+
   const payload = {
     source: 'erddap-live',
     updatedAt,
     erddapTimestamp,
     dataAgeMinutes,
-    pipelineVersion: '3.0',
+    pipelineVersion: '3.1', // +Beach Score
     levels,
     weekly,
+    weather,  // per-island snapshot so client can re-compute scores for interpolated beaches
+    scores,   // convenience map: beachId → {score, label, reason, breakdown}
   }
 
   const outPath = path.join(dir, 'sargassum.json')
@@ -1172,7 +1228,7 @@ async function main() {
   // 5. Cluster AFAI grid points into sargassum BANKS + drift predictions
   console.log('')
   console.log('[5/6] Clustering sargassum banks + drift predictions...')
-  await buildSargassumBanks(gridPoints, dir, windForecast)
+  await buildSargassumBanks(gridPoints, dir, windForecast, marineData)
 
   // History — store RAW satellite values (not accumulated) to prevent compounding
   const changes = updateHistory(dir, rawLevels)
