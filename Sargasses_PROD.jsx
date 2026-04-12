@@ -4496,13 +4496,33 @@ export default function App(){
     })
   },[])
 
-  // Fetch community beach reports (last 48h) — deferred 3s to not compete with critical data
+  // Fetch community beach reports (last 48h) — deferred 3s to not compete with critical data.
+  // Merges two sources: (1) Apps Script /beach_reports (in-app user reports)
+  // and (2) /api/community/fb-reports.json (scraped FB group signals via fb-to-reports.cjs).
+  // FB signals are pre-aggregated and gated by a ≥3-reports threshold in rankBeaches to
+  // prevent single posts from moving the hero pick.
   useEffect(()=>{
     const t=setTimeout(()=>{
-      fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec?action=beach_reports")
-        .then(r=>r.json())
-        .then(data=>{if(data?.reports)setCommunityReports(data.reports)})
-        .catch(()=>{})
+      Promise.all([
+        fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec?action=beach_reports").then(r=>r.json()).catch(()=>null),
+        fetch("/api/community/fb-reports.json").then(r=>r.json()).catch(()=>null),
+      ]).then(([userData,fbData])=>{
+        const merged={}
+        const merge=(src)=>{
+          if(!src?.reports)return
+          for(const[id,r]of Object.entries(src.reports)){
+            if(!merged[id]){merged[id]={avoid:0,moderate:0,clean:0,total:0,samples:[]}}
+            merged[id].avoid+=r.avoid||0
+            merged[id].moderate+=r.moderate||0
+            merged[id].clean+=r.clean||0
+            merged[id].total+=r.total||0
+            if(r.samples)merged[id].samples.push(...r.samples.slice(0,2))
+          }
+        }
+        merge(userData)
+        merge(fbData)
+        if(Object.keys(merged).length>0)setCommunityReports(merged)
+      })
     },3000)
     return()=>clearTimeout(t)
   },[])

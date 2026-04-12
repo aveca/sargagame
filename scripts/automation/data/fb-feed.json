@@ -29,7 +29,15 @@
         }
       ],
       "inferredStatus": "moderate",
-      "replyStatus": "drafted"
+      "replyStatus": "drafted",
+      "draftReply": {
+        "tone": "helpful-first, app-mention-subtle",
+        "text": "Hello ! On suit Petite Terre via satellite NASA + retours terrain. Aujourd'hui : modéré — une petite bande à traverser comme disent les retours récents, rien qui bloque la sortie tortues 🐢. Le matin c'est plus calme (vent plus stable). Fiche à jour (3x/jour) : https://sargasses-guadeloupe.com/plages/ile-de-la-petite-terre/?utm_source=facebook&utm_medium=social&utm_campaign=fb_reply&utm_content=petite_terre_q",
+        "targetUrl": "https://sargasses-guadeloupe.com/plages/ile-de-la-petite-terre/?utm_source=facebook&utm_medium=social&utm_campaign=fb_reply&utm_content=petite_terre_q",
+        "action": "reply-to-op",
+        "postManuallyFrom": "user FB account",
+        "status": "queued-for-manual-post"
+      }
     },
     {
       "scrapedAt": "2026-04-12T21:58:00Z",
@@ -50,7 +58,15 @@
       "comments": [],
       "inferredStatus": "avoid",
       "replyStatus": "drafted",
-      "opportunity": "first-comment"
+      "opportunity": "first-comment",
+      "draftReply": {
+        "tone": "acknowledge-report, offer-alternative, app-mention-subtle",
+        "text": "Merci pour le retour photo 🙏 On a Pointe Fort / Pointe Lynch en surveillance (satellite + retours terrain comme le tien). Pour ceux qui cherchent une alternative côté Caravelle aujourd'hui : Tartane / Anse L'Étang tient mieux. Fiche live du coin : https://sargasses-martinique.com/plages/pointe-fort-caravelle/?utm_source=facebook&utm_medium=social&utm_campaign=fb_reply&utm_content=pointe_fort_photo",
+        "targetUrl": "https://sargasses-martinique.com/plages/pointe-fort-caravelle/?utm_source=facebook&utm_medium=social&utm_campaign=fb_reply&utm_content=pointe_fort_photo",
+        "action": "first-comment",
+        "postManuallyFrom": "user FB account",
+        "status": "queued-for-manual-post"
+      }
     }
   ],
   "targetGroups": [
