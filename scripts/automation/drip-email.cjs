@@ -135,7 +135,7 @@ function buildJ3(island, cleanCount, topBeaches, email) {
 </div></body></html>`
 }
 
-// J+7 — Intro premium (soft CTA)
+// J+7 — Show premium experience (soft CTA, "veilleur" positioning)
 function buildJ7(island, cleanCount, email) {
   const name = island === 'MQ' ? 'Martinique' : 'Guadeloupe'
   const domain = island === 'MQ' ? 'sargasses-martinique.com' : 'sargasses-guadeloupe.com'
@@ -143,31 +143,52 @@ function buildJ7(island, cleanCount, email) {
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
 <body style="margin:0;padding:0;background:#F7F5EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
 <div style="max-width:480px;margin:0 auto;padding:20px">
-  ${header(IS_HIGH_SEASON ? 'Les plages bougent vite' : 'Sache samedi d\u00E8s lundi', `Pr\u00E9visions 7 jours en ${name}`)}
+  ${header('Arr\u00EAte de v\u00E9rifier', `On surveille ${cleanCount} plages pour toi`)}
   <div style="background:#fff;padding:24px 20px">
-    <div style="font-size:15px;color:#333;line-height:1.6;margin-bottom:16px">
-      ${IS_HIGH_SEASON
-        ? `En ce moment, les sargasses arrivent vite. ${cleanCount} plages propres aujourd'hui en ${name} — mais \u00E7a peut changer demain.`
-        : `Aujourd'hui, ${cleanCount} plages sont propres en ${name}. Mais qu'en sera-t-il ce weekend\u00A0?`}
-    </div>
     <div style="font-size:15px;color:#333;line-height:1.6;margin-bottom:20px">
       ${IS_HIGH_SEASON
-        ? `Les <strong>pr\u00E9visions 7 jours</strong> te disent exactement quand et o\u00F9 les sargasses arrivent. Ne d\u00E9couvre pas \u00E7a sur la plage.`
-        : `Avec les <strong>pr\u00E9visions 7 jours</strong>, tu peux planifier ton weekend \u00E0 l'avance. Plus besoin de v\u00E9rifier le matin m\u00EAme.`}
+        ? `\u00C7a fait une semaine que tu v\u00E9rifies la carte. Les sargasses bougent vite en ce moment. Et si on te pr\u00E9venait <strong>avant</strong> que tu partes\u00A0?`
+        : `\u00C7a fait une semaine que tu utilises la carte. Et si tu n'avais <strong>plus besoin de l'ouvrir</strong>\u00A0?`}
     </div>
 
-    <div style="background:rgba(13,30,28,.03);border-radius:12px;padding:16px;margin-bottom:20px">
-      <div style="font-size:13px;font-weight:700;color:#0D0D0D;margin-bottom:10px">Ce que tu d\u00E9bloques :</div>
-      <div style="font-size:13px;color:#333;line-height:1.8">
-        &#x1f4c5; Pr\u00E9visions 7 jours par plage<br>
-        &#x1f514; Alertes push sur tes plages favorites<br>
-        &#x1f3d6;&#xfe0f; Acc\u00E8de \u00E0 toutes les plages, sans limite
+    <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px">Voil\u00E0 ce que tu recevrais</div>
+
+    <div style="background:#0D1E1C;border-radius:12px;padding:16px;margin-bottom:10px">
+      <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.4);letter-spacing:.05em;margin-bottom:8px">CHAQUE MATIN \u00C0 7H</div>
+      <div style="display:flex;align-items:center">
+        <span style="font-size:22px;margin-right:10px">&#x1F4F2;</span>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#fff">Ta meilleure plage : Anse Dufour</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.5)">Propre \u00B7 12 min \u00B7 mer calme</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:rgba(255,199,44,.06);border:1px solid rgba(255,199,44,.15);border-radius:12px;padding:16px;margin-bottom:10px">
+      <div style="font-size:10px;font-weight:700;color:rgba(200,160,0,.7);letter-spacing:.05em;margin-bottom:8px">ALERTE INSTANTAN\u00C9E</div>
+      <div style="display:flex;align-items:center">
+        <span style="font-size:22px;margin-right:10px">&#x1F514;</span>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#333">Sainte-Anne a chang\u00E9</div>
+          <div style="font-size:12px;color:#666">Propre \u2192 Mod\u00E9r\u00E9 \u2014 va aux Salines</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.15);border-radius:12px;padding:16px;margin-bottom:20px">
+      <div style="font-size:10px;font-weight:700;color:rgba(22,163,74,.7);letter-spacing:.05em;margin-bottom:8px">RECO DU JOUR</div>
+      <div style="display:flex;align-items:center">
+        <span style="font-size:22px;margin-right:10px">&#x1F3D6;&#xFE0F;</span>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#333">Samedi : Grande Anse</div>
+          <div style="font-size:12px;color:#666">Propre tout le weekend \u00B7 id\u00E9al enfants</div>
+        </div>
       </div>
     </div>
 
     <div style="text-align:center">
-      ${ctaButton('Essai gratuit 7 jours', stripeLink('j7'))}
-      <div style="font-size:11px;color:#999;margin-top:8px">4,99\u00A0\u20AC/mois apr\u00E8s l'essai \u00B7 Annule quand tu veux</div>
+      ${ctaButton('Essayer 7 jours gratuit', stripeLink('j7'))}
+      <div style="font-size:11px;color:#999;margin-top:8px">Puis 4,99\u00A0\u20AC/mois \u00B7 Annule en 1 clic</div>
     </div>
   </div>
 
@@ -178,36 +199,63 @@ function buildJ7(island, cleanCount, email) {
 </div></body></html>`
 }
 
-// J+14 — Social proof + strong CTA
+// J+14 — Last chance: urgency + loss aversion + strong CTA
 function buildJ14(island, cleanCount, email) {
   const name = island === 'MQ' ? 'Martinique' : 'Guadeloupe'
   const domain = island === 'MQ' ? 'sargasses-martinique.com' : 'sargasses-guadeloupe.com'
 
+  // Dynamic seasonal urgency
+  const now = new Date()
+  const seasonStart = new Date(now.getFullYear(), 3, 20) // ~20 April
+  const daysToSeason = Math.max(0, Math.ceil((seasonStart - now) / (1000 * 60 * 60 * 24)))
+  const urgencyLine = daysToSeason > 0
+    ? `La saison sargasses commence dans <strong>${daysToSeason} jours</strong>. Apr\u00E8s, les plages changent chaque jour.`
+    : `La saison sargasses est l\u00E0. Les plages changent <strong>chaque jour</strong>.`
+
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
 <body style="margin:0;padding:0;background:#F7F5EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
 <div style="max-width:480px;margin:0 auto;padding:20px">
-  ${header('Ton weekend sans surprise', `Planifie en ${name}`)  }
+  ${header('Ne d\u00E9couvre pas \u00E7a sur la plage', `${cleanCount} plages propres \u2014 pour l'instant`)}
   <div style="background:#fff;padding:24px 20px">
-    <div style="font-size:15px;color:#333;line-height:1.6;margin-bottom:20px">
-      \u00C7a fait 2 semaines que tu utilises la carte. Tu sais que les sargasses changent vite — <strong>${cleanCount} plages propres</strong> aujourd'hui, peut-\u00EAtre moins demain.
+
+    <div style="background:rgba(232,82,42,.06);border:1px solid rgba(232,82,42,.15);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:#C0392B;line-height:1.5">
+      ${urgencyLine}
     </div>
 
-    <div style="background:#0D1E1C;border-radius:12px;padding:20px;margin-bottom:20px;text-align:center">
-      <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:8px">Des familles de ${name} utilisent d\u00E9j\u00E0 les pr\u00E9visions pour :</div>
-      <div style="font-size:14px;color:#fff;line-height:1.8;text-align:left;padding-left:20px">
-        &#x2705; Choisir leur plage d\u00E8s lundi<br>
-        &#x2705; \u00C9viter les mauvaises surprises<br>
-        &#x2705; Recevoir une alerte si \u00E7a change
+    <div style="font-size:15px;color:#333;line-height:1.6;margin-bottom:20px">
+      Imagine : tu arrives \u00E0 Sainte-Anne samedi avec les enfants. Sargasses partout. Weekend g\u00E2ch\u00E9.
+    </div>
+    <div style="font-size:15px;color:#333;line-height:1.6;margin-bottom:20px">
+      Avec le <strong>veilleur sargasses</strong>, tu aurais su vendredi soir. Tu aurais chang\u00E9 pour les Salines. Weekend sauv\u00E9.
+    </div>
+
+    <div style="background:#0D1E1C;border-radius:12px;padding:16px;margin-bottom:10px">
+      <div style="display:flex;align-items:center">
+        <span style="font-size:22px;margin-right:10px">&#x1F4F2;</span>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#fff">Vendredi 19h \u2014 push notif</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.5)">\u00AB\u00A0Sainte-Anne \u2192 mod\u00E9r\u00E9. Va aux Salines (propre)\u00A0\u00BB</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.15);border-radius:12px;padding:16px;margin-bottom:20px">
+      <div style="display:flex;align-items:center">
+        <span style="font-size:22px;margin-right:10px">&#x2705;</span>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#333">Samedi matin \u2014 brief 7h</div>
+          <div style="font-size:12px;color:#666">\u00AB\u00A0Ta meilleure plage : Les Salines \u00B7 propre \u00B7 15 min\u00A0\u00BB</div>
+        </div>
       </div>
     </div>
 
     <div style="text-align:center;margin-bottom:16px">
-      ${ctaButton('Rejoins-les — essai gratuit', stripeLink('j14'))}
-      <div style="font-size:11px;color:#999;margin-top:8px">4,99\u00A0\u20AC/mois \u00B7 Annule en 1 clic \u00B7 Un ti-punch co\u00FBte plus cher</div>
+      ${ctaButton('Essayer 7 jours gratuit', stripeLink('j14'))}
+      <div style="font-size:11px;color:#999;margin-top:8px">Puis 4,99\u00A0\u20AC/mois \u00B7 Annule en 1 clic \u00B7 Un ti-punch co\u00FBte plus cher</div>
     </div>
 
     <div style="text-align:center;padding-top:12px;border-top:1px solid #f0f0f0">
-      <a href="https://${domain}" style="color:#E89400;font-size:13px;font-weight:600;text-decoration:none">Ou continue gratuitement avec la carte</a>
+      <a href="https://${domain}" style="color:#E89400;font-size:13px;font-weight:600;text-decoration:none">Ou continue avec la carte gratuite</a>
     </div>
   </div>
   ${footer(name, domain, email, island)}
@@ -223,11 +271,11 @@ function getSubject(step, island, cleanCount) {
       ? `Saison sargasses : ${cleanCount} plages propres en ${name}`
       : `${cleanCount} plages propres cette semaine en ${name}`
     case 'j7':  return IS_HIGH_SEASON
-      ? `Les plages changent vite — pr\u00E9visions 7 jours ${name}`
-      : `Sache samedi d\u00E8s lundi - pr\u00E9visions ${name}`
+      ? `Tu v\u00E9rifies encore la carte tous les jours\u00A0?`
+      : `Et si tu n'avais plus besoin d'ouvrir la carte\u00A0?`
     case 'j14': return IS_HIGH_SEASON
-      ? `Ne rate pas ton weekend — ${name}`
-      : `Ton weekend sans surprise en ${name}`
+      ? `Samedi, sargasses \u00E0 Sainte-Anne. Tu le savais\u00A0?`
+      : `Ne d\u00E9couvre pas les sargasses sur la plage`
   }
 }
 
