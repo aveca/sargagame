@@ -3292,34 +3292,9 @@ export default function App(){
     }
   },[loadPushNow])
 
-  const onPushPrimerAccept=useCallback(()=>{
-    track("sg_push_primer_accept",{})
-    loadPushNow("primer_accept")
-    // Auto-favorite the 3 closest beaches so F2 has something to alert on.
-    // Only fires if user has zero favorites + we have a GPS position +
-    // beaches loaded. Tags sync via the existing F2 useEffect on next render.
-    try{
-      const favs=g("sg_fav",[])
-      if(Array.isArray(favs)&&favs.length===0&&userPos&&allBeaches?.length){
-        const islandBeaches=allBeaches
-          .filter(b=>b.island===island&&b.lat&&b.lng)
-          .map(b=>({...b,_d:haversine(userPos.lat,userPos.lng,b.lat,b.lng)}))
-          .sort((a,b)=>a._d-b._d)
-          .slice(0,3)
-        const ids=islandBeaches.map(b=>b.id)
-        if(ids.length){
-          setFavorites(ids)
-          track("sg_auto_fav_set",{count:ids.length,beach_ids:ids.join(","),source:"primer_accept"})
-        }
-      }
-    }catch(e){}
-  },[loadPushNow,userPos,allBeaches,island])
-
-  const onPushPrimerDismiss=useCallback(()=>{
-    track("sg_push_primer_dismiss",{})
-    s("sg_push_primer_dismissed_at",Date.now())
-    setShowPushPrimer(false)
-  },[])
+  // onPushPrimerAccept + onPushPrimerDismiss are defined later, after the
+  // userPos / allBeaches state declarations they reference (search for
+  // "PRIMER CALLBACKS" below). Splitting here avoids a temporal dead zone.
 
   // F2: sync OneSignal tags so backend can segment pushes by premium + island
   // Re-runs when isPremium, island, OR favorites change. Fav tags also set
@@ -3386,6 +3361,34 @@ export default function App(){
   const[userPos,setUserPos]=useState(null) // {lat,lng}
   const[communityReports,setCommunityReports]=useState({})
   const[hasActiveThreat,setHasActiveThreat]=useState(false)
+
+  // PRIMER CALLBACKS — must come after userPos/allBeaches/island state to
+  // avoid temporal dead zone in their dep arrays.
+  const onPushPrimerAccept=useCallback(()=>{
+    track("sg_push_primer_accept",{})
+    loadPushNow("primer_accept")
+    try{
+      const favs=g("sg_fav",[])
+      if(Array.isArray(favs)&&favs.length===0&&userPos&&allBeaches?.length){
+        const islandBeaches=allBeaches
+          .filter(b=>b.island===island&&b.lat&&b.lng)
+          .map(b=>({...b,_d:haversine(userPos.lat,userPos.lng,b.lat,b.lng)}))
+          .sort((a,b)=>a._d-b._d)
+          .slice(0,3)
+        const ids=islandBeaches.map(b=>b.id)
+        if(ids.length){
+          setFavorites(ids)
+          track("sg_auto_fav_set",{count:ids.length,beach_ids:ids.join(","),source:"primer_accept"})
+        }
+      }
+    }catch(e){}
+  },[loadPushNow,userPos,allBeaches,island])
+
+  const onPushPrimerDismiss=useCallback(()=>{
+    track("sg_push_primer_dismiss",{})
+    s("sg_push_primer_dismissed_at",Date.now())
+    setShowPushPrimer(false)
+  },[])
 
   const LL=T[lang]||T.fr
 
