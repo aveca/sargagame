@@ -28,6 +28,7 @@ const TESTS = [
   { id: 'vp1', dimension: 'customEvent:ab_vp1', variants: ['feature', 'outcome'], metric: 'sg_weekend_banner_click' },
   { id: 'price1', dimension: 'customEvent:ab_price1', variants: ['control', 'season'], metric: 'sg_checkout_submit' },
   { id: 'pay1', dimension: 'customEvent:ab_pay1', variants: ['inline', 'link'], metric: 'sg_conversion' },
+  { id: 'hero2', dimension: 'customEvent:ab_hero2', variants: ['strip', 'nearest'], metric: 'sg_hero_cta' },
 ]
 
 async function fetchTestData(analyticsdata, propertyId, test) {

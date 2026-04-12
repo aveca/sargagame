@@ -3243,6 +3243,29 @@ function PremiumModal({onClose,lang,source,onActivated}){
             onSuccess={()=>{track("sg_premium_success",{plan:effectivePlan,source:source||"unknown"});setShowReferral(true);onActivated?.()}}/>
         )}
 
+        {/* Zero-friction 24h sample — no card, no Stripe, no signup. Once per device.
+            Reduces paywall friction from "enter card" to "tap once". Converted users pay later. */}
+        {!showCheckout&&!localStorage.getItem("sg_sample_used")&&!localStorage.getItem("sg_sample_until")&&(
+          <button onClick={()=>{
+            const until=Date.now()+24*3600*1000
+            try{
+              localStorage.setItem("sg_sample_until",String(until))
+              localStorage.setItem("sg_sample_used","1")
+            }catch{}
+            track("sg_sample_start",{source:source||"unknown"})
+            onActivated?.()
+            onClose()
+          }} style={{
+            width:"100%",padding:"12px 16px",marginTop:10,
+            background:"rgba(255,255,255,.05)",
+            border:"1px solid rgba(255,255,255,.18)",borderRadius:14,
+            color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",
+            display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+            <span style={{fontSize:15}}>⚡</span>
+            {lang==="en"?"Try free 24h — no card":"Essayer 24h gratuit — sans carte"}
+          </button>
+        )}
+
         {/* Guarantee */}
         <div style={{textAlign:"center",marginTop:10,fontSize:11,color:"rgba(255,255,255,.4)",
           display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
@@ -3855,6 +3878,11 @@ export default function App(){
   const[showFavToast,setShowFavToast]=useState(false)
   const[isPremium,setIsPremium]=useState(()=>{
     if(g("sg_premium",false))return true
+    // Zero-friction 24h sample: local trial, no card required. Used at most once per device.
+    try{
+      const sampleUntil=parseInt(localStorage.getItem("sg_sample_until")||"0")
+      if(sampleUntil>Date.now())return true
+    }catch{}
     try{
       const params=new URLSearchParams(window.location.search)
       // Stripe redirect: ?premium=1 OR ?session_id=cs_xxx
@@ -4500,17 +4528,56 @@ export default function App(){
               theme={theme} onThemeToggle={toggleTheme}
               beachCount={allBeaches.length} dataSource={dataSource}
               updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt}/>
-            {/* STATUS STRIP — aggregate answer ABOVE search, reduces 82% mobile bounce.
-                Renders as soon as sargData loaded, no geoloc dependency. One-tap CTA to clean list. */}
+            {/* HERO — A/B test hero2: "strip" (aggregate counts) vs "nearest" (geoloc closest beach).
+                Both target the 82% MQ mobile bounce by answering "what's the state NOW" fast.
+                strip = universal (no geoloc needed). nearest = personalized, 1 click closer. */}
             {view==="map"&&sargData&&!search.trim()&&(()=>{
               const ib=allBeaches.filter(b=>b.island===island&&b.status&&b.status!=="_loading")
               if(ib.length===0)return null
+              const heroV=abVariant("hero2",["strip","nearest"],[.5,.5])
+              const todayLbl=lang==="en"?"today":lang==="es"?"hoy":"aujourd'hui"
+
+              // Variant B: nearest beach — requires userPos. Fallback to strip if not geolocated.
+              if(heroV==="nearest"&&userPos){
+                const scored=ib.map(b=>({...b,_d:haversine(userPos.lat,userPos.lng,b.lat,b.lng)}))
+                scored.sort((a,b)=>a._d-b._d)
+                const n=scored[0]
+                if(!n)return null
+                const st=ST[n.status]||ST._loading
+                const statusLbl=lang==="es"?st.les:lang==="en"?st.le:st.l
+                const ctaLbl=lang==="en"?"See details →":lang==="es"?"Ver detalle →":"Voir le détail →"
+                const distLbl=n._d<1?`${Math.round(n._d*1000)} m`:`${n._d.toFixed(1)} km`
+                const closestLbl=lang==="en"?"Nearest beach":lang==="es"?"Playa más cercana":"La plage la plus proche"
+                return(
+                  <button onClick={()=>{
+                    track("sg_hero_cta",{variant:"nearest",beach_id:n.id,status:n.status,dist:Math.round(n._d*10)/10})
+                    onBeachClick(n)
+                  }} style={{
+                    display:"flex",alignItems:"center",gap:12,marginTop:10,padding:"12px 14px",
+                    borderRadius:14,background:"var(--sg-card,rgba(255,255,255,.92))",
+                    border:`1.5px solid ${st.c}33`,
+                    boxShadow:"0 2px 10px rgba(0,0,0,.06)",width:"100%",cursor:"pointer",
+                    fontFamily:"inherit",textAlign:"left"}}>
+                    <div style={{width:10,height:10,borderRadius:5,background:st.c,flexShrink:0}}/>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:10,fontWeight:700,color:"var(--sg-mid,#686868)",
+                        letterSpacing:".04em",textTransform:"uppercase",marginBottom:2}}>{closestLbl} · {distLbl}</div>
+                      <div style={{fontSize:14,fontWeight:800,color:"var(--sg-ink,#0D0D0D)",
+                        whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+                        {n.name} — <span style={{color:st.c}}>{statusLbl}</span>
+                      </div>
+                    </div>
+                    <span style={{fontSize:11,fontWeight:700,color:st.c,flexShrink:0,whiteSpace:"nowrap"}}>{ctaLbl}</span>
+                  </button>
+                )
+              }
+
+              // Variant A (control): aggregate status strip. Also the fallback when geoloc denied.
               const c=ib.filter(b=>b.status==="clean").length
               const m=ib.filter(b=>b.status==="moderate").length
               const a=ib.filter(b=>b.status==="avoid").length
               const total=c+m+a
               if(total===0)return null
-              const todayLbl=lang==="en"?"today":lang==="es"?"hoy":"aujourd'hui"
               const ctaLbl=lang==="en"?`See ${c} clean →`:lang==="es"?`Ver ${c} limpias →`:`Voir ${c} propres →`
               return(
                 <div role="group" aria-label={`${c} clean, ${m} moderate, ${a} alert ${todayLbl}`}
@@ -4536,7 +4603,7 @@ export default function App(){
                   </div>
                   {c>0&&(
                     <button onClick={()=>{
-                      track("sg_status_strip_click",{clean:c,moderate:m,avoid:a,island})
+                      track("sg_hero_cta",{variant:"strip",clean:c,moderate:m,avoid:a,island})
                       setFilter(1)
                       onChangeView("list")
                     }} style={{
