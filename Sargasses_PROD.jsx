@@ -2379,6 +2379,254 @@ function windCompass(deg,lang){
   return dirs[Math.round(deg/45)%8]
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   rankBeaches — shared scoring used by HeroReco (top) + DailyRecoStrip (bottom).
+   Signals: beach score + status + forecast + drift + arrival + community
+            + memory + distance + amenities. See DailyRecoStrip for doc.
+   Returns beaches sorted desc by _score with _dist/_fc1/_fc3/_drift/_conf added.
+   ═══════════════════════════════════════════════════════════════════════════ */
+function rankBeaches(allBeaches,island,userPos,sargData,communityReports){
+  if(!allBeaches?.length)return[]
+  const islandBeaches=allBeaches.filter(b=>b.island===island&&b.status&&b.status!=="_loading")
+  if(!islandBeaches.length)return[]
+  const scored=islandBeaches.map(b=>{
+    const dist=userPos?haversine(userPos.lat,userPos.lng,b.lat,b.lng):null
+    const sargId=BEACH_TO_SARG[b.id]
+    const weekly=sargId&&sargData?.weekly?.[sargId]
+    const enriched=sargData?._enrichedWeekly?.[`_interp_${b.id}`]
+    const activeWeekly=weekly||enriched
+    const fc1=activeWeekly?.forecast?.[1]
+    const fc3=activeWeekly?.forecast?.[3]
+    const drift=activeWeekly?.drift||null
+    const arrivalDetected=!!activeWeekly?.arrivalDetected
+    const arrivalStrength=activeWeekly?.arrivalStrength||0
+    let score=0
+    if(typeof b.score==="number")score+=b.score*3
+    if(b.status==="clean")score+=100
+    else if(b.status==="moderate")score+=40
+    else score-=50
+    if(typeof b.afai==="number")score-=b.afai*60
+    if(fc1){
+      if(fc1.status==="avoid")score-=35
+      else if(fc1.status==="moderate")score-=15
+    }
+    if(fc3){
+      if(fc3.status==="avoid")score-=25
+      else if(fc3.status==="moderate")score-=12
+    }
+    if(drift==="up")score-=20
+    else if(drift==="down")score+=5
+    if(arrivalDetected)score-=Math.round(arrivalStrength*200)
+    const conf=(activeWeekly?.forecast?.[0]?.confidence)||60
+    score=score*(0.6+Math.min(conf,100)/250)
+    const cReports=communityReports?.[b.id]||communityReports?.[sargId]
+    if(cReports&&cReports.total>=3){
+      const avoidPct=cReports.avoid/cReports.total
+      const modPct=cReports.moderate/cReports.total
+      if(avoidPct>=0.5)score-=50
+      else if(modPct>=0.5)score-=20
+    }
+    if(b.beachMemory)score-=25
+    if(dist!=null)score-=Math.min(dist,50)*1.2
+    else if(typeof b.drive==="number")score-=Math.min(b.drive,90)*0.6
+    if(b.kids)score+=5
+    if(b.parking)score+=3
+    return{...b,_score:Math.round(score*10)/10,_dist:dist,_fc1:fc1,_fc3:fc3,_drift:drift,_conf:conf,_communityReports:cReports,_arrivalDetected:arrivalDetected,_arrivalStrength:arrivalStrength}
+  })
+  scored.sort((a,b)=>b._score-a._score)
+  return scored
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HeroReco — BIG top card that delivers the aha moment in <2s.
+   Shows #1 scored beach with score ring + name + verdict + distance,
+   plus 2 inline alternatives. Replaces the abstract status-strip hero.
+   Why: map tiles + aggregate counts don't answer "where do I go NOW" —
+        one opinionated card does.
+   ═══════════════════════════════════════════════════════════════════════════ */
+function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communityReports}){
+  const picks=useMemo(
+    ()=>rankBeaches(allBeaches,island,userPos,sargData,communityReports).slice(0,3),
+    [allBeaches,island,userPos,sargData,communityReports]
+  )
+  const top=picks[0]
+  if(!top)return null
+  const topSt=ST[top.status]||ST._loading
+  const alts=picks.slice(1,3)
+
+  // Short verdict — clear & punchy (fuller text lives in beach sheet)
+  const verdict=(()=>{
+    if(top._arrivalDetected&&top.status==="clean")return lang==="en"?"Clean · bank approaching":"Propre · banc en approche"
+    if(top._fc1&&top._fc1.status&&top._fc1.status!=="clean"&&top.status==="clean"){
+      return lang==="en"?`Clean today, ${top._fc1.status} tomorrow`:`Propre aujourd'hui, ${top._fc1.status==="moderate"?"modéré":"alerte"} demain`
+    }
+    if(top.beachMemory)return lang==="en"?"Recent beaching — verify":"Mémoire échouage — vérifie"
+    if(top.status==="clean")return lang==="en"?"Clean & stable":"Propre et stable"
+    if(top.status==="moderate")return lang==="en"?"Moderate — best option today":"Modéré — meilleure option du jour"
+    return lang==="en"?"Best compromise today":"Meilleur compromis aujourd'hui"
+  })()
+
+  // Distance & drive labels
+  const distLbl=top._dist!=null
+    ?(top._dist<1?`${Math.round(top._dist*1000)} m`:`${Math.round(top._dist)} km`)
+    :null
+  const driveLbl=typeof top.drive==="number"?`${top.drive} min`:null
+
+  // Time-aware greeting — feels alive, not static
+  const greet=(()=>{
+    const h=new Date().getHours()
+    if(h<12)return lang==="en"?"This morning":"Ce matin"
+    if(h<17)return lang==="en"?"Right now":"Maintenant"
+    return lang==="en"?"For tomorrow":"Pour demain"
+  })()
+
+  return(
+    <div style={{
+      marginTop:10,
+      background:"var(--sg-card,#fff)",
+      border:`1.5px solid ${topSt.c}44`,
+      borderRadius:18,
+      boxShadow:`0 8px 28px ${topSt.c}1f, 0 1px 3px rgba(0,0,0,.04)`,
+      overflow:"hidden",
+    }}>
+      {/* Greeting label */}
+      <div style={{
+        padding:"10px 14px 0",
+        fontSize:10,fontWeight:800,
+        letterSpacing:".08em",textTransform:"uppercase",
+        color:"var(--sg-mid,#686868)",
+      }}>
+        {greet} · {lang==="en"?"your pick":"ta plage"}
+      </div>
+
+      {/* Main row — tap opens sheet */}
+      <button
+        onClick={()=>{
+          track("sg_hero_reco_click",{beach_id:top.id,status:top.status,score:top.score})
+          onBeachClick(top)
+        }}
+        style={{
+          display:"flex",alignItems:"center",gap:14,
+          padding:"8px 14px 12px",
+          background:"none",border:"none",width:"100%",
+          cursor:"pointer",fontFamily:"inherit",textAlign:"left",
+        }}
+      >
+        {/* Score ring (60px, dominant visual) */}
+        {typeof top.score==="number"?(
+          <div style={{
+            width:60,height:60,borderRadius:"50%",flexShrink:0,
+            background:`conic-gradient(${top.scoreColor||topSt.c} ${top.score*3.6}deg, rgba(0,0,0,.06) ${top.score*3.6}deg)`,
+            display:"flex",alignItems:"center",justifyContent:"center",
+          }}>
+            <div style={{
+              width:48,height:48,borderRadius:"50%",
+              background:"var(--sg-card,#fff)",
+              display:"flex",flexDirection:"column",
+              alignItems:"center",justifyContent:"center",
+              boxShadow:"0 1px 3px rgba(0,0,0,.08)",
+            }}>
+              <span style={{fontFamily:"'Anton',sans-serif",fontSize:22,lineHeight:1,color:top.scoreColor||topSt.c}}>{top.score}</span>
+              <span style={{fontSize:8,fontWeight:700,color:"var(--sg-mid,#686868)",letterSpacing:".04em"}}>/100</span>
+            </div>
+          </div>
+        ):(
+          <div style={{
+            width:60,height:60,borderRadius:"50%",flexShrink:0,
+            background:topSt.c,
+            display:"flex",alignItems:"center",justifyContent:"center",
+          }}>
+            <div style={{width:14,height:14,borderRadius:7,background:"#fff"}}/>
+          </div>
+        )}
+
+        {/* Main text */}
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{
+            fontSize:17,fontWeight:900,color:"var(--sg-ink,#0D0D0D)",
+            lineHeight:1.15,marginBottom:3,
+            whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
+          }}>
+            {top.name}
+          </div>
+          <div style={{
+            fontSize:12,fontWeight:700,color:topSt.c,
+            marginBottom:3,
+            whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
+          }}>
+            {verdict}
+          </div>
+          <div style={{
+            fontSize:11,color:"var(--sg-mid,#686868)",
+            display:"flex",alignItems:"center",gap:10,
+            whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
+          }}>
+            {distLbl&&<span>📍 {distLbl}</span>}
+            {driveLbl&&<span>🚗 {driveLbl}</span>}
+            {!distLbl&&!driveLbl&&top.commune&&<span>{top.commune}</span>}
+          </div>
+        </div>
+
+        {/* CTA pill */}
+        <span style={{
+          fontSize:12,fontWeight:800,color:"#fff",
+          flexShrink:0,whiteSpace:"nowrap",
+          padding:"8px 14px",borderRadius:100,
+          background:topSt.c,
+          boxShadow:`0 2px 8px ${topSt.c}44`,
+          letterSpacing:".02em",
+        }}>
+          {lang==="en"?"Go →":"Voir →"}
+        </span>
+      </button>
+
+      {/* Alternatives row — 2 more picks, inline */}
+      {alts.length>0&&(
+        <div style={{
+          display:"flex",
+          borderTop:"1px solid var(--sg-border,rgba(0,0,0,.06))",
+          background:"rgba(0,0,0,.015)",
+        }}>
+          {alts.map((alt,i)=>{
+            const aSt=ST[alt.status]||ST._loading
+            return(
+              <button
+                key={alt.id}
+                onClick={()=>{
+                  track("sg_hero_alt_click",{beach_id:alt.id,rank:i+2,status:alt.status})
+                  onBeachClick(alt)
+                }}
+                style={{
+                  flex:1,padding:"10px 12px",
+                  background:"none",border:"none",
+                  borderLeft:i>0?"1px solid var(--sg-border,rgba(0,0,0,.06))":"none",
+                  cursor:"pointer",fontFamily:"inherit",textAlign:"left",
+                  display:"flex",alignItems:"center",gap:8,minWidth:0,
+                }}
+              >
+                <div style={{width:8,height:8,borderRadius:4,background:aSt.c,flexShrink:0}}/>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{
+                    fontSize:11,fontWeight:700,color:"var(--sg-ink,#0D0D0D)",
+                    whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
+                  }}>
+                    {alt.name}
+                  </div>
+                  <div style={{fontSize:10,color:"var(--sg-mid,#686868)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+                    {alt._dist!=null
+                      ?`${Math.round(alt._dist)} km${typeof alt.score==="number"?` · ${alt.score}/100`:""}`
+                      :(typeof alt.score==="number"?`${alt.score}/100`:(alt.commune||""))}
+                  </div>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function DailyRecoStrip({allBeaches,sargData,island,lang,isPremium,onBeachClick,userPos,onPremiumClick,communityReports}){
   const[expanded,setExpanded]=useState(false)
 
@@ -4528,94 +4776,20 @@ export default function App(){
               theme={theme} onThemeToggle={toggleTheme}
               beachCount={allBeaches.length} dataSource={dataSource}
               updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt}/>
-            {/* HERO — A/B test hero2: "strip" (aggregate counts) vs "nearest" (geoloc closest beach).
-                Both target the 82% MQ mobile bounce by answering "what's the state NOW" fast.
-                strip = universal (no geoloc needed). nearest = personalized, 1 click closer. */}
-            {view==="map"&&sargData&&!search.trim()&&(()=>{
-              const ib=allBeaches.filter(b=>b.island===island&&b.status&&b.status!=="_loading")
-              if(ib.length===0)return null
-              const heroV=abVariant("hero2",["strip","nearest"],[.5,.5])
-              const todayLbl=lang==="en"?"today":lang==="es"?"hoy":"aujourd'hui"
-
-              // Variant B: nearest beach — requires userPos. Fallback to strip if not geolocated.
-              if(heroV==="nearest"&&userPos){
-                const scored=ib.map(b=>({...b,_d:haversine(userPos.lat,userPos.lng,b.lat,b.lng)}))
-                scored.sort((a,b)=>a._d-b._d)
-                const n=scored[0]
-                if(!n)return null
-                const st=ST[n.status]||ST._loading
-                const statusLbl=lang==="es"?st.les:lang==="en"?st.le:st.l
-                const ctaLbl=lang==="en"?"See details →":lang==="es"?"Ver detalle →":"Voir le détail →"
-                const distLbl=n._d<1?`${Math.round(n._d*1000)} m`:`${n._d.toFixed(1)} km`
-                const closestLbl=lang==="en"?"Nearest beach":lang==="es"?"Playa más cercana":"La plage la plus proche"
-                return(
-                  <button onClick={()=>{
-                    track("sg_hero_cta",{variant:"nearest",beach_id:n.id,status:n.status,dist:Math.round(n._d*10)/10})
-                    onBeachClick(n)
-                  }} style={{
-                    display:"flex",alignItems:"center",gap:12,marginTop:10,padding:"12px 14px",
-                    borderRadius:14,background:"var(--sg-card,rgba(255,255,255,.92))",
-                    border:`1.5px solid ${st.c}33`,
-                    boxShadow:"0 2px 10px rgba(0,0,0,.06)",width:"100%",cursor:"pointer",
-                    fontFamily:"inherit",textAlign:"left"}}>
-                    <div style={{width:10,height:10,borderRadius:5,background:st.c,flexShrink:0}}/>
-                    <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontSize:10,fontWeight:700,color:"var(--sg-mid,#686868)",
-                        letterSpacing:".04em",textTransform:"uppercase",marginBottom:2}}>{closestLbl} · {distLbl}</div>
-                      <div style={{fontSize:14,fontWeight:800,color:"var(--sg-ink,#0D0D0D)",
-                        whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
-                        {n.name} — <span style={{color:st.c}}>{statusLbl}</span>
-                      </div>
-                    </div>
-                    <span style={{fontSize:11,fontWeight:700,color:st.c,flexShrink:0,whiteSpace:"nowrap"}}>{ctaLbl}</span>
-                  </button>
-                )
-              }
-
-              // Variant A (control): aggregate status strip. Also the fallback when geoloc denied.
-              const c=ib.filter(b=>b.status==="clean").length
-              const m=ib.filter(b=>b.status==="moderate").length
-              const a=ib.filter(b=>b.status==="avoid").length
-              const total=c+m+a
-              if(total===0)return null
-              const ctaLbl=lang==="en"?`See ${c} clean →`:lang==="es"?`Ver ${c} limpias →`:`Voir ${c} propres →`
-              return(
-                <div role="group" aria-label={`${c} clean, ${m} moderate, ${a} alert ${todayLbl}`}
-                  style={{display:"flex",alignItems:"center",gap:10,marginTop:10,padding:"10px 14px",
-                  borderRadius:14,background:"var(--sg-card,rgba(255,255,255,.92))",
-                  border:"1px solid var(--sg-border,rgba(0,0,0,.06))",
-                  boxShadow:"0 1px 4px rgba(0,0,0,.04)"}}>
-                  <div style={{display:"flex",alignItems:"center",gap:10,flex:1,minWidth:0}}>
-                    <div style={{display:"flex",alignItems:"center",gap:4}}>
-                      <div style={{width:8,height:8,borderRadius:4,background:C.green,flexShrink:0}}/>
-                      <span style={{fontSize:13,fontWeight:800,color:C.green,fontVariantNumeric:"tabular-nums"}}>{c}</span>
-                    </div>
-                    <div style={{display:"flex",alignItems:"center",gap:4}}>
-                      <div style={{width:8,height:8,borderRadius:4,background:C.amber,flexShrink:0}}/>
-                      <span style={{fontSize:13,fontWeight:800,color:C.amber,fontVariantNumeric:"tabular-nums"}}>{m}</span>
-                    </div>
-                    <div style={{display:"flex",alignItems:"center",gap:4}}>
-                      <div style={{width:8,height:8,borderRadius:4,background:C.red,flexShrink:0}}/>
-                      <span style={{fontSize:13,fontWeight:800,color:C.red,fontVariantNumeric:"tabular-nums"}}>{a}</span>
-                    </div>
-                    <span style={{fontSize:11,color:"var(--sg-mid,#686868)",whiteSpace:"nowrap",
-                      overflow:"hidden",textOverflow:"ellipsis"}}>{todayLbl}</span>
-                  </div>
-                  {c>0&&(
-                    <button onClick={()=>{
-                      track("sg_hero_cta",{variant:"strip",clean:c,moderate:m,avoid:a,island})
-                      setFilter(1)
-                      onChangeView("list")
-                    }} style={{
-                      padding:"7px 13px",borderRadius:100,border:"none",
-                      background:C.green,color:"#fff",fontSize:11,fontWeight:800,
-                      cursor:"pointer",fontFamily:"inherit",flexShrink:0,whiteSpace:"nowrap",
-                      boxShadow:"0 2px 8px rgba(34,197,94,.25)",letterSpacing:".01em"
-                    }}>{ctaLbl}</button>
-                  )}
-                </div>
-              )
-            })()}
+            {/* HERO RECO — big opinionated card. Answers "where do I go NOW" in 1 glance:
+                #1 scored beach + score ring + verdict + distance + 2 inline alternatives.
+                Replaces the abstract A/B strip/nearest (aha moment not reached on those). */}
+            {view==="map"&&sargData&&!search.trim()&&(
+              <HeroReco
+                allBeaches={allBeaches}
+                sargData={sargData}
+                island={island}
+                lang={lang}
+                userPos={userPos}
+                onBeachClick={onBeachClick}
+                communityReports={communityReports}
+              />
+            )}
             <div style={{marginTop:10}}>
               <SearchBar value={search} onChange={setSearch} lang={lang}/>
             </div>
@@ -4694,13 +4868,9 @@ export default function App(){
           <PushPrimer lang={lang} onAccept={onPushPrimerAccept} onDismiss={onPushPrimerDismiss}/>
         )}
 
-        {/* DAILY RECO STRIP — replaces BestBeachWidget (masked "••••") with visible reco
-            Hidden when ThreatBanner active, sheet open, onboarding, or searching */}
-        {view==="map"&&!selectedBeach&&!showOnboarding&&!hasActiveThreat&&!search.trim()&&(
-          <DailyRecoStrip allBeaches={allBeaches} sargData={sargData} island={island}
-            lang={lang} isPremium={isPremium} onBeachClick={onBeachClick}
-            userPos={userPos} onPremiumClick={openPremium} communityReports={communityReports}/>
-        )}
+        {/* DAILY RECO STRIP — disabled 2026-04-12. HeroReco at the top now delivers the
+            same value (top pick + 2 alts) without the bottom-of-screen duplication.
+            Kept as component for potential per-view re-use but not rendered. */}
 
         {/* WeekendBanner removed — upsell disguised as feature */}
 
