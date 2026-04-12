@@ -2723,6 +2723,7 @@ function StripeInlineCheckout({plan,lang,source,onSuccess}){
   const[ready,setReady]=useState(false)
   const[submitting,setSubmitting]=useState(false)
   const[error,setError]=useState(null)
+  const[fallback,setFallback]=useState(false)
   const LL=T[lang]||T.fr
   const openedAt=useRef(Date.now())
   const emailTracked=useRef(false)
@@ -2733,38 +2734,59 @@ function StripeInlineCheckout({plan,lang,source,onSuccess}){
 
   useEffect(()=>{
     let cancelled=false
+    let readyTimer=null
     const init=()=>{
       if(cancelled||!cardRef.current) return
-      const stripe=window.Stripe(STRIPE_PK)
-      stripeRef.current=stripe
-      const elements=stripe.elements({
-        mode:"setup",currency:"eur",
-        appearance:{
-          theme:"night",
-          variables:{
-            colorPrimary:"#E8A800",colorBackground:"#0A1714",
-            colorText:"#e6edf3",colorDanger:"#ff6b6b",
-            fontFamily:"Bricolage Grotesque,system-ui,sans-serif",
-            borderRadius:"12px",spacingUnit:"4px",
-          },
-          rules:{".Input":{border:"1.5px solid rgba(255,255,255,.15)",
-            backgroundColor:"rgba(255,255,255,.06)",padding:"14px 16px"}}
-        }
-      })
-      elementsRef.current=elements
-      const pe=elements.create("payment",{layout:"tabs"})
-      pe.on("ready",()=>{if(!cancelled)setReady(true)})
-      pe.mount(cardRef.current)
+      try{
+        const stripe=window.Stripe(STRIPE_PK)
+        stripeRef.current=stripe
+        const elements=stripe.elements({
+          mode:"setup",currency:"eur",
+          paymentMethodCreation:"manual",
+          appearance:{
+            theme:"night",
+            variables:{
+              colorPrimary:"#E8A800",colorBackground:"#0A1714",
+              colorText:"#e6edf3",colorDanger:"#ff6b6b",
+              fontFamily:"Bricolage Grotesque,system-ui,sans-serif",
+              borderRadius:"12px",spacingUnit:"4px",
+            },
+            rules:{".Input":{border:"1.5px solid rgba(255,255,255,.15)",
+              backgroundColor:"rgba(255,255,255,.06)",padding:"14px 16px"}}
+          }
+        })
+        elementsRef.current=elements
+        const pe=elements.create("payment",{layout:"tabs"})
+        pe.on("ready",()=>{if(!cancelled){setReady(true);if(readyTimer)clearTimeout(readyTimer)}})
+        pe.on("loaderror",ev=>{
+          track("sg_checkout_error",{step:"element_loaderror",error:ev?.error?.message||"unknown",plan})
+          if(!cancelled)setFallback(true)
+        })
+        pe.mount(cardRef.current)
+        // If not ready in 4s, surface fallback (ad blocker, network, Stripe down)
+        readyTimer=setTimeout(()=>{
+          if(!cancelled&&!stripeRef.current?._ready){
+            track("sg_checkout_error",{step:"element_timeout",error:"not_ready_4s",plan})
+            setFallback(true)
+          }
+        },4000)
+      }catch(ex){
+        track("sg_checkout_error",{step:"stripe_init",error:ex?.message||"init_failed",plan})
+        if(!cancelled)setFallback(true)
+      }
     }
     if(window.Stripe){init()}
     else{
-      // Load Stripe.js on demand (works even without window.loadStripe in index.html)
       const s=document.createElement('script');s.src='https://js.stripe.com/v3/'
-      s.onload=()=>init();s.onerror=()=>setError("Stripe non disponible")
+      s.onload=()=>init()
+      s.onerror=()=>{track("sg_checkout_error",{step:"stripe_js_load",error:"blocked",plan});setFallback(true)}
       document.head.appendChild(s)
     }
-    return()=>{cancelled=true;elementsRef.current?.getElement?.("payment")?.destroy?.()}
+    return()=>{cancelled=true;if(readyTimer)clearTimeout(readyTimer);elementsRef.current?.getElement?.("payment")?.destroy?.()}
   },[])
+
+  // Mark ready on the stripe ref so timeout check can read it
+  useEffect(()=>{if(ready&&stripeRef.current)stripeRef.current._ready=true},[ready])
 
   // Checkout abandonment tracking: if email entered but no payment within 60s, mark as abandoned
   const abandonTimerRef=useRef(null)
@@ -2884,6 +2906,20 @@ function StripeInlineCheckout({plan,lang,source,onSuccess}){
         {submitting?(lang==="en"?"Processing...":lang==="es"?"Procesando...":"En cours...")
           :(lang==="en"?"Activate my 7 free days →":lang==="es"?"Activar mis 7 días gratis →":"Activer mes 7 jours gratuits →")}
       </button>
+      {/* Proven-working fallback — Payment Link. Always visible so users who can't use
+          inline form (ad blocker, iOS in-app browser, Stripe.js blocked) still convert. */}
+      <a href={plan==="annual"?STRIPE_LINK_ANNUAL:STRIPE_LINK_MONTHLY}
+        target="_blank" rel="noopener"
+        onClick={()=>track("sg_checkout_fallback_click",{plan,source:source||"unknown",reason:fallback?"auto":"manual"})}
+        style={{display:"block",textAlign:"center",fontSize:13,color:fallback?"#E8A800":"rgba(255,255,255,.5)",
+          padding:fallback?"14px":"8px 0",marginTop:fallback?4:0,
+          textDecoration:fallback?"none":"underline",fontWeight:fallback?700:400,
+          border:fallback?"1.5px solid rgba(232,168,0,.4)":"none",borderRadius:12,
+          background:fallback?"rgba(232,168,0,.08)":"transparent"}}>
+        {fallback
+          ?(lang==="en"?"Open secure payment on Stripe →":lang==="es"?"Abrir pago seguro en Stripe →":"Ouvrir le paiement sécurisé Stripe →")
+          :(lang==="en"?"Or pay directly on Stripe":lang==="es"?"O pagar directamente en Stripe":"Ou payer directement sur Stripe")}
+      </a>
     </div>
   )
 }
