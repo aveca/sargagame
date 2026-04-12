@@ -19,16 +19,23 @@ const { getAnalyticsData } = require('./lib/google-auth.cjs')
 
 const RESULTS_PATH = path.join(__dirname, 'ab-results.json')
 
-// Active A/B tests — keep in sync with Sargasses_PROD.jsx abVariant() calls
+// Active A/B tests — keep in sync with Sargasses_PROD.jsx abVariant() calls.
+// Decided/dead tests must be REMOVED from this list — track() loops over all
+// sg_ab localStorage entries on every event, so returning users keep poisoning
+// the funnel with phantom conversions long after a test is inlined. Fetching
+// them means ab-evaluate keeps "finding" data for tests that were archived
+// weeks ago (happened 2026-04-12 with lock1/modal1/free1/price1/pay1).
+//
+// Decided (hardcoded winners in Sargasses_PROD.jsx):
+//   - lock1  → control (simple CTA) beat loss framing — line 1084
+//   - modal1 → family framing beat control — line 3298
+//   - free1  → control (1 free day) beat two_free — line 1081
+//   - price1 → monthly beat season pass — line 3293
+//   - pay1   → link beat inline checkout — line 3270
+// Removed (never wired / no call site): onb1, hero2
 const TESTS = [
-  { id: 'lock1', dimension: 'customEvent:ab_lock1', variants: ['control', 'loss'], metric: 'sg_forecast_lock_click' },
-  { id: 'modal1', dimension: 'customEvent:ab_modal1', variants: ['control', 'family'], metric: 'sg_premium_modal_cta' },
-  { id: 'onb1', dimension: 'customEvent:ab_onb1', variants: ['control', 'skip'], metric: 'sg_conversion' },
-  { id: 'free1', dimension: 'customEvent:ab_free1', variants: ['control', 'two_free'], metric: 'sg_forecast_lock_click' },
   { id: 'vp1', dimension: 'customEvent:ab_vp1', variants: ['feature', 'outcome'], metric: 'sg_weekend_banner_click' },
-  { id: 'price1', dimension: 'customEvent:ab_price1', variants: ['control', 'season'], metric: 'sg_checkout_submit' },
-  { id: 'pay1', dimension: 'customEvent:ab_pay1', variants: ['inline', 'link'], metric: 'sg_conversion' },
-  { id: 'hero2', dimension: 'customEvent:ab_hero2', variants: ['strip', 'nearest'], metric: 'sg_hero_cta' },
+  { id: 'em1', dimension: 'customEvent:ab_em1', variants: ['control', 'curiosity'], metric: 'sg_email_submit' },
 ]
 
 async function fetchTestData(analyticsdata, propertyId, test) {
@@ -147,6 +154,11 @@ async function fetchFromSheets() {
   console.log(`  Sheets fallback: ${data.length} events found`)
 
   // Columns: date, event_name, island, ab_lock1, ab_modal1, ab_onb1, ab_free1, ab_vp1, ab_price1, raw_params
+  // NOTE: this fallback path relies on dedicated Sheet columns from the old
+  // Apps Script schema. Newer tests (em1+) live only in raw_params and are
+  // resolved via the Apps Script funnel path above, which is dict-keyed.
+  // The loop below uses `abCols[test.id]` and short-circuits on `== null`,
+  // so new tests simply return [0,0]/[0,0] here — safe, just not populated.
   const testData = {}
   for (const test of TESTS) {
     testData[test.id] = { sessions: [0, 0], conversions: [0, 0] }
@@ -157,7 +169,7 @@ async function fetchFromSheets() {
 
   for (const row of data) {
     const eventName = row[1] || ''
-    const abCols = { lock1: row[3], modal1: row[4], onb1: row[5], free1: row[6], vp1: row[7], price1: row[8] }
+    const abCols = { vp1: row[7] }
 
     for (const test of TESTS) {
       const variantStr = abCols[test.id]

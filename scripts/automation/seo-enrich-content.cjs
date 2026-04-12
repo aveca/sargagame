@@ -265,7 +265,28 @@ function main() {
     // Rich noscript content block (~1000 words, crawlable by Google)
     const noscript = buildRichNoscript({ beach, fullRecord, neighbors, history, island, domain })
 
-    enrichments[beach.slug] = { faq: JSON.stringify(faq), noscript }
+    // Data-driven meta title/description — uses historical % to create clickable differentiator
+    // in SERP. Example: "Les Salines: 86% propres sur 7j (Martinique) — Prévisions sargasses"
+    let metaTitle = null
+    let metaDesc = null
+    if (history && history.total >= 3) {
+      const pctClean = Math.round((history.clean / history.total) * 100)
+      const pctAvoid = Math.round((history.avoid / history.total) * 100)
+      const days = history.total
+      if (pctClean >= 60) {
+        metaTitle = `${beach.name}: propre ${pctClean}% du temps (${days}j) — Sargasses ${island}`
+        metaDesc = `Sur ${days} jours surveillés, ${beach.name} (${beach.commune}) a été propre ${pctClean}% du temps. État en temps réel, prévisions 7 jours, carte interactive ${island}.`
+      } else if (pctAvoid >= 40) {
+        metaTitle = `${beach.name}: ${pctAvoid}% en alerte sargasses (${days}j) — Alternatives`
+        metaDesc = `${beach.name} a connu ${pctAvoid}% de jours en alerte sargasses sur ${days} jours. Consultez l'état en temps réel, les prévisions, et les plages propres à proximité (${island}).`
+      } else {
+        const pctMod = Math.round((history.moderate / history.total) * 100)
+        metaTitle = `${beach.name}: ${pctMod}% modéré, ${pctClean}% propre (${days}j) — ${island}`
+        metaDesc = `Historique sargasses ${beach.name} (${beach.commune}): ${pctClean}% propre, ${pctMod}% modéré, ${pctAvoid}% alerte sur ${days} jours. Prévisions 7 jours en temps réel.`
+      }
+    }
+
+    enrichments[beach.slug] = { faq: JSON.stringify(faq), noscript, metaTitle, metaDesc }
   }
 
   console.log(`Generated enrichments for ${Object.keys(enrichments).length} beaches`)
