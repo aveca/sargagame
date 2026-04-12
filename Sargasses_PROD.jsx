@@ -2362,9 +2362,15 @@ function PremiumModal({onClose,lang,source,onActivated}){
   const[showReferral,setShowReferral]=useState(false)
   const[refCopied,setRefCopied]=useState(false)
   // modal1 A/B test ended: family framing 2.1% vs control 1.4%. Family wins.
-  const headline=lang==="en"?"Protect your weekend":"Protège ton weekend"
-  const subtitle=lang==="en"?"Your kids count on you to find the right beach.":"Tes enfants comptent sur toi pour trouver la bonne plage."
+  const headline=lang==="en"?"Stop checking. We watch for you.":"Arrête de vérifier. On surveille pour toi."
   const effectivePlan=hasAnnual?plan:"monthly"
+  // Seasonal urgency — sargassum season is April-September
+  const now=new Date()
+  const seasonStart=new Date(now.getFullYear(),3,20) // ~20 April
+  const daysToSeason=Math.max(0,Math.ceil((seasonStart-now)/(1000*60*60*24)))
+  const seasonMsg=daysToSeason>0
+    ?(lang==="en"?`Season starts in ${daysToSeason} days`:`La saison commence dans ${daysToSeason} jours`)
+    :(lang==="en"?"Sargassum season is here":"La saison des sargasses est là")
   return(
     <>
       <div className="backdrop" onClick={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,saw_checkout:sawCheckoutRef.current});onClose()}}/>
@@ -2378,19 +2384,76 @@ function PremiumModal({onClose,lang,source,onActivated}){
         <div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
           margin:"-8px -24px 20px",padding:0}}/>
 
-        <h2 className="anton" style={{fontSize:"clamp(22px,6vw,28px)",color:"#fff",marginBottom:6}}>{headline}</h2>
-        <p style={{fontSize:13,color:"#adbac7",marginBottom:18}}>{subtitle}</p>
+        {/* Seasonal urgency badge */}
+        <div style={{display:"inline-block",background:"rgba(255,80,50,.15)",border:"1px solid rgba(255,80,50,.3)",
+          borderRadius:100,padding:"4px 12px",fontSize:11,fontWeight:700,color:"#ff6b4a",marginBottom:14,
+          letterSpacing:".02em"}}>
+          {seasonMsg}
+        </div>
 
-        <ul style={{listStyle:"none",padding:0,margin:"0 0 16px",display:"flex",flexDirection:"column",gap:12}}>
-          {(lang==="en"
-            ?["Daily pick — your best beach, updated in real time","Alerts before sargassum hits your favourites","Morning brief at 7am — ready for you, no need to open the app"]
-            :["Reco du jour — ta meilleure plage, mise à jour en temps réel","Alertes avant que les sargasses arrivent sur tes favoris","Brief matin 7h — prêt pour toi, sans ouvrir l'app"]
-          ).map((f,i)=>(
-            <li key={i} style={{display:"flex",alignItems:"center",gap:10,fontSize:14}}>
-              <span style={{color:C.gold,fontSize:18}}>✓</span>{f}
-            </li>
-          ))}
-        </ul>
+        <h2 className="anton" style={{fontSize:"clamp(22px,6vw,28px)",color:"#fff",marginBottom:16,lineHeight:1.15}}>{headline}</h2>
+
+        {/* Simulated morning brief — shows what premium feels like */}
+        <div style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",
+          borderRadius:16,padding:"14px 16px",marginBottom:12}}>
+          <div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginBottom:6,fontWeight:600,letterSpacing:".05em"}}>
+            {lang==="en"?"EVERY MORNING AT 7AM":"CHAQUE MATIN À 7H"}
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <span style={{fontSize:24}}>📲</span>
+            <div>
+              <div style={{fontSize:14,fontWeight:600,color:"#fff"}}>
+                {lang==="en"?"Your best beach today: Anse Dufour":"Ta meilleure plage : Anse Dufour"}
+              </div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,.5)"}}>
+                {lang==="en"?"Clean · 12 min drive · calm sea":"Propre · 12 min · mer calme"}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Simulated alert — shows the killer feature */}
+        <div style={{background:"rgba(255,199,44,.06)",border:"1px solid rgba(255,199,44,.15)",
+          borderRadius:16,padding:"14px 16px",marginBottom:12}}>
+          <div style={{fontSize:10,color:"rgba(255,199,44,.6)",marginBottom:6,fontWeight:600,letterSpacing:".05em"}}>
+            {lang==="en"?"INSTANT ALERT":"ALERTE INSTANTANÉE"}
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <span style={{fontSize:24}}>🔔</span>
+            <div>
+              <div style={{fontSize:14,fontWeight:600,color:"#fff"}}>
+                {lang==="en"?"Sainte-Anne status changed":"Sainte-Anne a changé"}
+              </div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,.5)"}}>
+                {lang==="en"?"Clean → Moderate — switch to Les Salines":"Propre → Modéré — va aux Salines"}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Daily pick preview */}
+        <div style={{background:"rgba(76,175,80,.06)",border:"1px solid rgba(76,175,80,.15)",
+          borderRadius:16,padding:"14px 16px",marginBottom:16}}>
+          <div style={{fontSize:10,color:"rgba(76,175,80,.7)",marginBottom:6,fontWeight:600,letterSpacing:".05em"}}>
+            {lang==="en"?"DAILY PICK":"RECO DU JOUR"}
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <span style={{fontSize:24}}>🏖️</span>
+            <div>
+              <div style={{fontSize:14,fontWeight:600,color:"#fff"}}>
+                {lang==="en"?"Best for Saturday: Grande Anse":"Samedi : Grande Anse"}
+              </div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,.5)"}}>
+                {lang==="en"?"Clean all weekend · ideal for kids":"Propre tout le weekend · idéal enfants"}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Social proof */}
+        <div style={{textAlign:"center",fontSize:12,color:"rgba(255,255,255,.4)",marginBottom:16}}>
+          {lang==="en"?"135 beaches monitored · 24/7 satellite data":"135 plages surveillées · données satellite 24/7"}
+        </div>
 
         {/* CTA section — sticky so it's always visible even if user hasn't scrolled */}
         <div style={{position:"sticky",bottom:0,
@@ -2475,9 +2538,9 @@ function PremiumModal({onClose,lang,source,onActivated}){
           <button onClick={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown"});sawCheckoutRef.current=true;setShowCheckout(true)}}
             className="gbtn" style={{width:"100%",textAlign:"center",fontSize:17,
               padding:"16px 24px",display:"block",border:"none",cursor:"pointer",fontFamily:"inherit",lineHeight:1.2}}>
-            <div>{LL.premiumCta}</div>
-            <div style={{fontSize:11,opacity:.7,fontWeight:400,marginTop:3}}>
-              {lang==="en"?"0€ charged today · cancel anytime":"0€ débité aujourd'hui · annule quand tu veux"}
+            <div>{lang==="en"?"Try free for 7 days":"Essayer 7 jours gratuit"}</div>
+            <div style={{fontSize:12,opacity:.8,fontWeight:400,marginTop:4}}>
+              {lang==="en"?"Then €4.99/mo · cancel in 1 click":"Puis 4,99 €/mois · annule en 1 clic"}
             </div>
           </button>
         ):(
