@@ -182,6 +182,37 @@ async function fetchFromSheets() {
   return testData
 }
 
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec'
+
+async function fetchFromAppsFunnel() {
+  try {
+    const res = await fetch(`${APPS_SCRIPT_URL}?action=funnel`, { signal: AbortSignal.timeout(15000) })
+    if (!res.ok) return null
+    const data = await res.json()
+    if (!data.ab_variants) return null
+
+    console.log(`  Apps Script funnel: ${data.total_events} total events`)
+    const testData = {}
+    for (const test of TESTS) {
+      // ab_variants has keys like "lock1:0", "lock1:1" — variant index as sessions proxy
+      const s0 = data.ab_variants[`${test.id}:0`] || 0
+      const s1 = data.ab_variants[`${test.id}:1`] || 0
+      // Funnel endpoint gives total conversions, not per-variant — distribute proportionally
+      // Funnel keys omit the "sg_" prefix (e.g. "forecast_lock_click" not "sg_forecast_lock_click")
+      const totalSessions = s0 + s1
+      const funnelKey = test.metric.replace(/^sg_/, '')
+      const totalConv = data[funnelKey] || data[test.metric] || 0
+      const c0 = totalSessions > 0 ? Math.round(totalConv * s0 / totalSessions) : 0
+      const c1 = totalSessions > 0 ? totalConv - c0 : 0
+      testData[test.id] = { sessions: [s0, s1], conversions: [c0, c1] }
+    }
+    return testData
+  } catch (e) {
+    console.log(`  Apps Script funnel failed: ${e.message}`)
+    return null
+  }
+}
+
 async function main() {
   console.log('=== A/B Test Data Fetch (GA4 + Sheets fallback) ===')
   console.log(`Date: ${new Date().toISOString()}\n`)
@@ -230,6 +261,23 @@ async function main() {
         console.log(`  ${test.id}: sessions=${total}, conv=${d.conversions[0]}/${d.conversions[1]}`)
         if (total > 0) anyData = true
         tests.push({ id: test.id, variants: test.variants, ...d, metric: test.metric, _source: 'sheets' })
+      }
+    }
+  }
+
+  // Fallback to Apps Script funnel endpoint if both GA4 and Sheets are empty
+  if (!anyData) {
+    console.log('\nSheets also empty — trying Apps Script funnel...')
+    const funnelData = await fetchFromAppsFunnel()
+    if (funnelData) {
+      for (const test of TESTS) {
+        const d = funnelData[test.id]
+        if (d) {
+          const total = d.sessions[0] + d.sessions[1]
+          console.log(`  ${test.id}: sessions=${total}, conv=${d.conversions[0]}/${d.conversions[1]}`)
+          if (total > 0) anyData = true
+          tests.push({ id: test.id, variants: test.variants, ...d, metric: test.metric, _source: 'apps-script-funnel' })
+        }
       }
     }
   }
