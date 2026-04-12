@@ -1092,6 +1092,9 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             </div>
           )}
 
+          {/* Email capture — above the fold, before forecast teaser */}
+          <InlineEmailCapture lang={lang}/>
+
           {/* Forecast teaser — above the fold, every user sees it */}
           {!isPremium&&forecast&&forecast[1]&&(
             <div onClick={()=>{track("sg_forecast_teaser_click",{beach_id:beach.id,tomorrow:forecast[1].status});onPremiumClick("forecast_teaser")}}
@@ -1259,8 +1262,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             </>
           )}
 
-          {/* Email capture — at the bottom, after all useful content */}
-          <InlineEmailCapture lang={lang}/>
+          {/* Email capture removed from bottom — moved above forecast teaser */}
         </div>
       </div>
     </>
@@ -2816,9 +2818,9 @@ function InlineEmailCapture({lang}){
   const[submitted,setSubmitted]=useState(false)
   const[dismissed,setDismissed]=useState(false)
   const tracked=useRef(false)
-  const visitCount=g("sg_visit_count",0)
-  if(visitCount<1||dismissed||g("sg_email_prompt",false))return null
-  if(!tracked.current){tracked.current=true;track("sg_smart_email_trigger",{visit_count:visitCount});track("sg_email_view")}
+  // Show from first visit (was visit 2+). Already subscribed? hide.
+  if(dismissed||g("sg_email_prompt",false))return null
+  if(!tracked.current){tracked.current=true;track("sg_smart_email_trigger",{visit_count:g("sg_visit_count",0)});track("sg_email_view")}
 
   const handleSubmit=e=>{
     e.preventDefault()
@@ -2835,50 +2837,57 @@ function InlineEmailCapture({lang}){
   }
 
   if(submitted)return(
-    <div style={{margin:"12px 0",padding:"12px 14px",borderRadius:12,
-      background:C.greenBg,textAlign:"center",fontSize:13,fontWeight:600,color:C.green}}>
-      {lang==="en"?"Subscribed! See you Friday.":"Inscrit ! À vendredi."}
+    <div style={{margin:"0 0 12px",padding:"14px 16px",borderRadius:16,
+      background:"linear-gradient(135deg,#0D1E1C,#142824)",
+      textAlign:"center",fontSize:13,fontWeight:600,color:C.green}}>
+      <span style={{fontSize:20,display:"block",marginBottom:4}}>✅</span>
+      {lang==="en"?"You're in! First email in 3 days.":"C'est fait ! Premier email dans 3 jours."}
     </div>
   )
 
   return(
-    <div style={{margin:"12px 0",padding:"12px 14px",borderRadius:14,
-      background:"var(--sg-bgD,#F7F5EF)",border:"1px solid var(--sg-border,rgba(0,0,0,.04))"}}>
-      <div style={{fontSize:13,fontWeight:700,color:"var(--sg-ink)",marginBottom:4,display:"flex",alignItems:"center",gap:6}}>
-        <span>📧</span>
-        {SARGASSES_SEASON==="high"
-          ?(lang==="en"?"Season is active — stay informed":"Saison en cours — reste informé")
-          :visitCount>=3
-            ?(lang==="en"?"You keep coming back!":"Tu reviens souvent !")
-            :(lang==="en"?"Stay ahead of sargassum":"Ne te fais pas surprendre")}
-      </div>
-      <div style={{fontSize:11,color:"var(--sg-mid)",marginBottom:8}}>
-        {SARGASSES_SEASON==="high"
-          ?(lang==="en"?"Beaches change fast right now. Get your Friday status update — free.":"Les plages changent vite en ce moment. Reçois ton bilan du vendredi — gratuit.")
-          :visitCount>=3
-            ?(lang==="en"?"Get your beaches status every Friday in your inbox.":"Reçois l'état de tes plages chaque vendredi.")
-            :(lang==="en"?"Free weekly update: which beaches are clean this weekend.":"Chaque vendredi : quelles plages sont propres ce weekend. Gratuit.")}
-      </div>
-      <form onSubmit={handleSubmit} style={{display:"flex",gap:8,alignItems:"center"}}>
-        <input type="email" placeholder={lang==="en"?"your@email.com":"ton@email.com"}
-          value={email} onChange={e=>setEmail(e.target.value)}
-          style={{flex:1,padding:"9px 12px",borderRadius:10,
-            border:"1px solid var(--sg-border,rgba(0,0,0,.08))",
-            fontSize:13,fontFamily:"inherit",background:"var(--sg-card,#fff)",
-            outline:"none",minWidth:0,color:"var(--sg-ink)"}}/>
-        <button type="submit" style={{
-          padding:"9px 14px",borderRadius:10,border:"none",cursor:"pointer",
-          background:"linear-gradient(158deg,#FFE47A,#FFC72C,#E89400)",
-          color:C.ink,fontSize:12,fontWeight:700,whiteSpace:"nowrap",fontFamily:"inherit",
-          boxShadow:"0 2px 8px rgba(232,168,0,.25)"}}>
-          {lang==="en"?"Subscribe":"S'inscrire"}
+    <div style={{margin:"0 0 12px",padding:"14px 16px",borderRadius:16,
+      background:"linear-gradient(135deg,#0D1E1C,#142824)",
+      border:"1px solid rgba(255,255,255,.08)",position:"relative",overflow:"hidden"}}>
+      {/* Ambient glow */}
+      <div style={{position:"absolute",top:"-50%",left:"-20%",width:"60%",height:"200%",
+        background:"radial-gradient(ellipse, rgba(34,197,94,.06) 0%, transparent 70%)",pointerEvents:"none"}}/>
+      <div style={{position:"relative"}}>
+        <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,.4)",
+          textTransform:"uppercase",letterSpacing:".08em",marginBottom:6}}>
+          {lang==="en"?"FREE":"GRATUIT"}
+        </div>
+        <div style={{fontSize:14,fontWeight:700,color:"#fff",marginBottom:4}}>
+          {SARGASSES_SEASON==="high"
+            ?(lang==="en"?"Beaches are changing fast":"Les plages changent tous les jours")
+            :(lang==="en"?"Know before you go":"Sois prévenu avant de partir")}
+        </div>
+        <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginBottom:12,lineHeight:1.4}}>
+          {SARGASSES_SEASON==="high"
+            ?(lang==="en"?"Get alerted when your beach status changes. Free.":"Reçois une alerte quand ta plage change de statut. Gratuit.")
+            :(lang==="en"?"Weekly beach status + alerts if things change. Free.":"Bilan hebdo + alerte si ça change. Gratuit.")}
+        </div>
+        <form onSubmit={handleSubmit} style={{display:"flex",gap:8,alignItems:"center"}}>
+          <input type="email" placeholder={lang==="en"?"your@email.com":"ton@email.com"}
+            value={email} onChange={e=>setEmail(e.target.value)}
+            style={{flex:1,padding:"10px 14px",borderRadius:12,
+              border:"1px solid rgba(255,255,255,.12)",
+              fontSize:14,fontFamily:"inherit",background:"rgba(255,255,255,.06)",
+              outline:"none",minWidth:0,color:"#fff"}}/>
+          <button type="submit" style={{
+            padding:"10px 18px",borderRadius:12,border:"none",cursor:"pointer",
+            background:"linear-gradient(158deg,#FFE47A,#FFC72C,#E89400)",
+            color:C.ink,fontSize:13,fontWeight:700,whiteSpace:"nowrap",fontFamily:"inherit",
+            boxShadow:"0 2px 12px rgba(232,168,0,.3)"}}>
+            {lang==="en"?"Go":"OK"}
+          </button>
+        </form>
+        <button onClick={()=>{setDismissed(true);s("sg_email_prompt",true);track("sg_email_dismiss")}} style={{
+          display:"block",margin:"8px auto 0",background:"none",border:"none",
+          cursor:"pointer",color:"rgba(255,255,255,.3)",fontSize:11,padding:0}}>
+          {lang==="en"?"Not now":"Plus tard"}
         </button>
-      </form>
-      <button onClick={()=>{setDismissed(true);s("sg_email_prompt",true);track("sg_email_dismiss")}} style={{
-        display:"block",margin:"6px auto 0",background:"none",border:"none",
-        cursor:"pointer",color:"var(--sg-mid)",fontSize:11,padding:0}}>
-        {lang==="en"?"Not now":"Plus tard"}
-      </button>
+      </div>
     </div>
   )
 }
