@@ -1,6 +1,6 @@
 {
   "_comment": "Auto-fetched: Apps Script funnel > GA4 > Sheets. See _source.",
-  "_fetchedAt": "2026-04-12T18:41:34.143Z",
+  "_fetchedAt": "2026-04-12T21:02:19.399Z",
   "_source": "apps-script-funnel",
   "tests": [
     {
@@ -10,11 +10,11 @@
         "loss"
       ],
       "sessions": [
-        1195,
-        824
+        1248,
+        844
       ],
       "conversions": [
-        31,
+        32,
         21
       ],
       "metric": "sg_forecast_lock_click",
@@ -27,12 +27,12 @@
         "family"
       ],
       "sessions": [
-        645,
-        241
+        678,
+        246
       ],
       "conversions": [
-        8,
-        3
+        10,
+        4
       ],
       "metric": "sg_premium_modal_cta",
       "_source": "apps-script-funnel"
@@ -61,12 +61,12 @@
         "two_free"
       ],
       "sessions": [
-        801,
-        1218
+        828,
+        1264
       ],
       "conversions": [
         21,
-        31
+        32
       ],
       "metric": "sg_forecast_lock_click",
       "_source": "apps-script-funnel"
@@ -78,8 +78,8 @@
         "outcome"
       ],
       "sessions": [
-        84,
-        82
+        87,
+        89
       ],
       "conversions": [
         0,
@@ -95,14 +95,31 @@
         "season"
       ],
       "sessions": [
-        501,
-        289
+        531,
+        292
       ],
       "conversions": [
         1,
         0
       ],
       "metric": "sg_checkout_submit",
+      "_source": "apps-script-funnel"
+    },
+    {
+      "id": "pay1",
+      "variants": [
+        "inline",
+        "link"
+      ],
+      "sessions": [
+        0,
+        0
+      ],
+      "conversions": [
+        0,
+        0
+      ],
+      "metric": "sg_conversion",
       "_source": "apps-script-funnel"
     }
   ]
