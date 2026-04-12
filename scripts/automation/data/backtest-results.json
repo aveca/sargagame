@@ -27,19 +27,19 @@
     },
     "day4": {
       "statusHitRate": 85,
-      "afaiMAE": 0.055,
+      "afaiMAE": 0.054,
       "avgConfidence": 18,
       "pairs": 60
     },
     "day5": {
       "statusHitRate": 85,
-      "afaiMAE": 0.05,
+      "afaiMAE": 0.049,
       "avgConfidence": 15,
       "pairs": 40
     },
     "day6": {
       "statusHitRate": 80,
-      "afaiMAE": 0.058,
+      "afaiMAE": 0.057,
       "avgConfidence": 12,
       "pairs": 20
     }
@@ -122,7 +122,7 @@
     },
     "gp-caravelle": {
       "statusHitRate": 100,
-      "afaiMAE": 0.011,
+      "afaiMAE": 0.009,
       "pairs": 21
     },
     "gp-bas-du-fort": {
@@ -148,9 +148,9 @@
   },
   "overall": {
     "statusHitRate": 74,
-    "afaiMAE": 0.073
+    "afaiMAE": 0.072
   },
-  "computed": "2026-04-12T22:57:31.807Z",
+  "computed": "2026-04-12T23:19:33.207Z",
   "pairs": [
     {
       "snapshotDate": "2026-04-09",
@@ -622,11 +622,11 @@
         "confidence": 29
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.02
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-04-09",
@@ -1370,11 +1370,11 @@
         "confidence": 33
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
       "snapshotDate": "2026-04-10",
@@ -1778,11 +1778,11 @@
         "confidence": 46
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
       "snapshotDate": "2026-04-11",
