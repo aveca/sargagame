@@ -1061,7 +1061,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
                     color:ST[forecast[1].status]?.c||"#999"}}>{ST[forecast[1].status]?.l||"?"}</span>
                 </div>
                 <div style={{fontSize:11,color:"var(--sg-mid,#686868)",marginTop:3}}>
-                  {lang==="en"?"Morning brief + alerts · 7-day free trial":"Brief matin + alertes · essai 7 jours"}
+                  {lang==="en"?"Free trial · cancel anytime":"Essai gratuit · sans engagement"}
                 </div>
               </div>
               <div style={{fontSize:22,opacity:.7}}>🔔</div>
