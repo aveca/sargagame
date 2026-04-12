@@ -4500,6 +4500,55 @@ export default function App(){
               theme={theme} onThemeToggle={toggleTheme}
               beachCount={allBeaches.length} dataSource={dataSource}
               updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt}/>
+            {/* STATUS STRIP — aggregate answer ABOVE search, reduces 82% mobile bounce.
+                Renders as soon as sargData loaded, no geoloc dependency. One-tap CTA to clean list. */}
+            {view==="map"&&sargData&&!search.trim()&&(()=>{
+              const ib=allBeaches.filter(b=>b.island===island&&b.status&&b.status!=="_loading")
+              if(ib.length===0)return null
+              const c=ib.filter(b=>b.status==="clean").length
+              const m=ib.filter(b=>b.status==="moderate").length
+              const a=ib.filter(b=>b.status==="avoid").length
+              const total=c+m+a
+              if(total===0)return null
+              const todayLbl=lang==="en"?"today":lang==="es"?"hoy":"aujourd'hui"
+              const ctaLbl=lang==="en"?`See ${c} clean →`:lang==="es"?`Ver ${c} limpias →`:`Voir ${c} propres →`
+              return(
+                <div role="group" aria-label={`${c} clean, ${m} moderate, ${a} alert ${todayLbl}`}
+                  style={{display:"flex",alignItems:"center",gap:10,marginTop:10,padding:"10px 14px",
+                  borderRadius:14,background:"var(--sg-card,rgba(255,255,255,.92))",
+                  border:"1px solid var(--sg-border,rgba(0,0,0,.06))",
+                  boxShadow:"0 1px 4px rgba(0,0,0,.04)"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:10,flex:1,minWidth:0}}>
+                    <div style={{display:"flex",alignItems:"center",gap:4}}>
+                      <div style={{width:8,height:8,borderRadius:4,background:C.green,flexShrink:0}}/>
+                      <span style={{fontSize:13,fontWeight:800,color:C.green,fontVariantNumeric:"tabular-nums"}}>{c}</span>
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:4}}>
+                      <div style={{width:8,height:8,borderRadius:4,background:C.amber,flexShrink:0}}/>
+                      <span style={{fontSize:13,fontWeight:800,color:C.amber,fontVariantNumeric:"tabular-nums"}}>{m}</span>
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:4}}>
+                      <div style={{width:8,height:8,borderRadius:4,background:C.red,flexShrink:0}}/>
+                      <span style={{fontSize:13,fontWeight:800,color:C.red,fontVariantNumeric:"tabular-nums"}}>{a}</span>
+                    </div>
+                    <span style={{fontSize:11,color:"var(--sg-mid,#686868)",whiteSpace:"nowrap",
+                      overflow:"hidden",textOverflow:"ellipsis"}}>{todayLbl}</span>
+                  </div>
+                  {c>0&&(
+                    <button onClick={()=>{
+                      track("sg_status_strip_click",{clean:c,moderate:m,avoid:a,island})
+                      setFilter(1)
+                      onChangeView("list")
+                    }} style={{
+                      padding:"7px 13px",borderRadius:100,border:"none",
+                      background:C.green,color:"#fff",fontSize:11,fontWeight:800,
+                      cursor:"pointer",fontFamily:"inherit",flexShrink:0,whiteSpace:"nowrap",
+                      boxShadow:"0 2px 8px rgba(34,197,94,.25)",letterSpacing:".01em"
+                    }}>{ctaLbl}</button>
+                  )}
+                </div>
+              )
+            })()}
             <div style={{marginTop:10}}>
               <SearchBar value={search} onChange={setSearch} lang={lang}/>
             </div>
