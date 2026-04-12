@@ -364,13 +364,15 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
       forecastDisclaimer = 'Persistance simple (half-life 3.5j). Pas de signal externe.'
     }
 
-    // arrivalDetected overrides trend-based drift: a bank is inbound regardless
-    // of the J0→J3 delta (which may be <0.05 because the bank hasn't arrived yet)
-    const driftDir = arrivalDetected ? 'up'
+    // arrivalDetected overrides trend-based drift only when signal is strong enough (>=0.05).
+    // Weak borderline signals (0.03–0.04) still set forecastMethod=arrival-banks but don't
+    // override the drift label — the actual trajectory determines drift in that case.
+    const strongArrival = arrivalDetected && maxArrival >= 0.05
+    const driftDir = strongArrival ? 'up'
       : meaningfulTrend > 0.05 ? 'up'
       : meaningfulTrend < -0.05 ? 'down'
       : 'stable'
-    const driftLbl = arrivalDetected ? 'Arrivee imminente (banc detecte)'
+    const driftLbl = strongArrival ? 'Arrivee imminente (banc detecte)'
       : meaningfulTrend > 0.05 ? 'Derive possible vers la cote'
       : meaningfulTrend < -0.05 ? 'Dispersion attendue'
       : 'Stable'
