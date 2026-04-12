@@ -1,14 +1,149 @@
 #!/usr/bin/env node
 /**
- * SEO Enrich Content — Add FAQ schema, noscript content blocks, and internal
- * links to beach pages. Modifies vite.config.js to inject richer HTML.
+ * SEO Enrich Content — Add FAQ schema + rich noscript content (~1000 words/beach)
+ * to help beach pages escape thin-content indexation filter.
  *
- * Safety: max 5 enrichments per run. Dry-run support.
+ * Sources:
+ *   - beaches-list.json (amenities: kids, parking, snorkel, drive time)
+ *   - forecast-archive.json (historical status breakdown)
+ *   - Nearest beaches (internal linking)
+ *
+ * Output: enrichments.json consumed by vite.config.js at build time.
  */
 const { readFileSync, writeFileSync, existsSync } = require('fs')
 const { resolve } = require('path')
 const { BEACHES } = require('./lib/config.cjs')
 const { DRY_RUN, LIMITS, appendLog } = require('./lib/safety.cjs')
+
+/**
+ * Load full beach records (with amenities) from beaches-list.json.
+ * Returns a map keyed by slug.
+ */
+function loadFullBeaches() {
+  try {
+    const raw = JSON.parse(readFileSync(resolve(__dirname, '..', '..', 'public', 'data', 'beaches-list.json'), 'utf-8'))
+    const byId = {}
+    for (const b of raw) byId[b.id] = b
+    return byId
+  } catch { return {} }
+}
+
+/**
+ * Load forecast archive — indexed by snapshot date.
+ * Returns { beachSlug: { clean: n, moderate: n, avoid: n, total: n } }
+ */
+function loadHistoricalStatus() {
+  try {
+    const arch = JSON.parse(readFileSync(resolve(__dirname, '..', '..', 'public', 'api', 'copernicus', 'forecast-archive.json'), 'utf-8'))
+    const counts = {}
+    for (const snap of arch.snapshots || []) {
+      for (const [slug, data] of Object.entries(snap.forecasts || {})) {
+        if (!counts[slug]) counts[slug] = { clean: 0, moderate: 0, avoid: 0, total: 0 }
+        const todayStatus = data.forecast?.[0]?.status
+        if (todayStatus === 'clean') counts[slug].clean++
+        else if (todayStatus === 'moderate') counts[slug].moderate++
+        else if (todayStatus === 'avoid') counts[slug].avoid++
+        counts[slug].total++
+      }
+    }
+    return counts
+  } catch { return {} }
+}
+
+/**
+ * Build a rich noscript content block (~1000 words) for a single beach.
+ * Optimized for Google's crawlable-but-not-thin threshold.
+ */
+function buildRichNoscript({ beach, fullRecord, neighbors, history, island, domain }) {
+  const commune = beach.commune || ''
+  const amenities = []
+  if (fullRecord?.kids) amenities.push('adaptée aux enfants')
+  if (fullRecord?.snorkel) amenities.push('propice au snorkeling et palmes-masque-tuba')
+  if (fullRecord?.parking) amenities.push('parking accessible à proximité')
+  const drive = typeof fullRecord?.drive === 'number' ? fullRecord.drive : null
+
+  // Historical narrative — turns raw counts into readable sentences
+  let histNarrative = ''
+  if (history && history.total >= 3) {
+    const pctClean = Math.round((history.clean / history.total) * 100)
+    const pctMod = Math.round((history.moderate / history.total) * 100)
+    const pctAvoid = Math.round((history.avoid / history.total) * 100)
+    const dominant = pctClean >= 60 ? 'majoritairement propre'
+      : pctAvoid >= 40 ? 'régulièrement impactée par les sargasses'
+      : pctMod >= 40 ? 'fluctuante avec des épisodes modérés'
+      : 'variable selon les vents dominants'
+    histNarrative = `Sur les ${history.total} derniers jours surveillés par satellite, <strong>${beach.name}</strong> a été ${dominant} : ${history.clean} jours en statut propre (${pctClean}%), ${history.moderate} jours en statut modéré (${pctMod}%), et ${history.avoid} jours en statut d'alerte sargasses (${pctAvoid}%). Ces observations continues permettent d'anticiper les fenêtres favorables pour planifier une baignade ou une sortie famille.`
+  } else {
+    histNarrative = `La plage de <strong>${beach.name}</strong> est surveillée en continu par les satellites Sentinel-3 du programme européen Copernicus. L'historique des observations est actualisé chaque jour, ce qui permet de repérer rapidement les fenêtres de baignade favorables et d'anticiper l'arrivée éventuelle de sargasses sur la côte.`
+  }
+
+  const amenityText = amenities.length > 0
+    ? `Cette plage de ${commune} est ${amenities.join(', ')}.`
+    : `Cette plage de ${commune} fait partie des sites surveillés de ${island}.`
+
+  const driveText = drive !== null
+    ? `Elle se situe à environ <strong>${drive} minutes</strong> en voiture du chef-lieu, ce qui en fait une destination accessible pour une sortie à la journée.`
+    : ''
+
+  const neighborLinks = neighbors.map(n =>
+    `<li><a href="https://${domain}/plages/${n.slug}/">Sargasses à ${n.name}</a> — ${Math.round(n.distance)} km de ${beach.name}</li>`
+  ).join('\n          ')
+
+  const neighborText = neighbors.length > 0
+    ? neighbors.map(n => `${n.name} (${Math.round(n.distance)} km)`).join(', ')
+    : 'les autres plages surveillées de l\'île'
+
+  return `
+    <noscript>
+      <article>
+        <header>
+          <h1>Sargasses à ${beach.name} — état en temps réel (${island})</h1>
+          <p><em>Prévisions sargasses pour ${beach.name}, ${commune}, ${island}. Données satellite Sentinel-3 mises à jour quotidiennement.</em></p>
+        </header>
+
+        <section>
+          <h2>État actuel et surveillance satellite</h2>
+          <p>La plage de <strong>${beach.name}</strong>, située à ${commune} en ${island}, fait l'objet d'une surveillance satellite continue dans le cadre de notre service de prévisions sargasses. L'indice AFAI (Alternative Floating Algae Index), dérivé des images Sentinel-3 du programme Copernicus Marine, permet de détecter la présence et la densité des radeaux de sargasses flottantes jusqu'à 40 km au large de la côte. ${amenityText} ${driveText}</p>
+          <p>Les données sont mises à jour toutes les 3 heures via notre pipeline automatisé, ce qui permet aux visiteurs de ${beach.name} de consulter l'état le plus récent avant de se déplacer. La carte interactive affiche les plages propres, modérément touchées et en alerte, avec un code couleur conforme aux seuils NOAA/AOML (Wang & Hu 2016).</p>
+        </section>
+
+        <section>
+          <h2>Historique récent des sargasses à ${beach.name}</h2>
+          <p>${histNarrative}</p>
+          <p>Les sargasses suivent des cycles saisonniers marqués par les courants du Gulf Stream et les vents d'alizé. En ${island}, la saison principale s'étend typiquement d'avril à septembre, avec des pics d'échouage souvent observés entre mai et juillet. Toutefois, l'évolution du climat et la variabilité des courants peuvent décaler ces fenêtres : c'est précisément pour cette raison que nous proposons une surveillance 365 jours par an plutôt qu'une information saisonnière figée.</p>
+        </section>
+
+        <section>
+          <h2>Comment lire les prévisions de ${beach.name}</h2>
+          <p>Pour chaque plage surveillée, trois états sont possibles selon l'indice AFAI observé :</p>
+          <ul>
+            <li><strong>Propre (vert)</strong> — AFAI inférieur à 0,15. Pas de sargasses détectées ou présence très faible. Baignade recommandée.</li>
+            <li><strong>Modéré (orange)</strong> — AFAI entre 0,15 et 0,40. Présence variable, vigilance recommandée surtout pour les enfants et les personnes sensibles aux émanations de sulfure d'hydrogène.</li>
+            <li><strong>Alerte (rouge)</strong> — AFAI supérieur à 0,40. Échouage significatif probable ou en cours. Baignade déconseillée tant que la situation n'est pas revenue à la normale.</li>
+          </ul>
+          <p>Notre système combine plusieurs signaux pour chaque prévision : observation satellite du jour, indice AFAI continu (qui différencie 0,05 de 0,14, tous deux classés « propre »), prévision à J+1 et J+3, détection de bancs en approche dans un rayon de 40 km, et mémoire des plages régulièrement impactées. Le Beach Score 0-100 synthétise ces facteurs pour permettre une comparaison rapide entre plages voisines.</p>
+        </section>
+
+        <section>
+          <h2>Plages proches de ${beach.name}</h2>
+          <p>Si ${beach.name} n'est pas accessible pour une raison ou une autre — échouage en cours, marée défavorable, fréquentation — vous pouvez vous rabattre sur ${neighborText}. Ces plages proches partagent souvent des conditions similaires mais peuvent présenter un état sargasses différent selon l'orientation de la côte et les courants locaux.</p>
+          <ul>
+          ${neighborLinks}
+          </ul>
+        </section>
+
+        <section>
+          <h2>Sources et méthodologie</h2>
+          <p>Les prévisions sargasses pour ${beach.name} s'appuient sur les données publiques du programme Copernicus Marine Service (Union Européenne), via l'API ERDDAP de la NOAA/AOML (Atlantic Oceanographic and Meteorological Laboratory). Les seuils d'interprétation de l'indice AFAI suivent les recommandations de la publication scientifique de Wang & Hu (2016, Geophysical Research Letters) ainsi que le Sargassum Inundation Report v1.4 du NOAA. Notre application ne remplace pas l'observation terrain : en cas de doute, nous recommandons de consulter les bulletins locaux des communes et les signalements citoyens.</p>
+          <p>Pour explorer l'ensemble des plages de ${island}, consultez notre <a href="https://${domain}/carte-sargasses/">carte interactive des sargasses</a>, nos <a href="https://${domain}/previsions/">prévisions 7 jours</a>, ou notre <a href="https://${domain}/alertes/">système d'alertes instantanées</a>. Pour ne plus avoir à vérifier manuellement chaque matin, le service premium envoie un brief quotidien à 7h avec la meilleure plage du jour.</p>
+        </section>
+
+        <footer>
+          <p><a href="https://${domain}/">Retour à l'accueil — Sargasses ${island}</a> · <a href="https://${domain}/plages/">Toutes les plages</a> · <a href="https://${domain}/carte-sargasses/">Carte</a> · <a href="https://${domain}/previsions/">Prévisions</a></p>
+        </footer>
+      </article>
+    </noscript>`
+}
 
 const VITE_CONFIG_PATH = resolve(__dirname, '..', '..', 'vite.config.js')
 const ENRICHMENT_PATH = resolve(__dirname, 'data', 'enrichments.json')
@@ -82,12 +217,16 @@ function main() {
   console.log(`=== SEO Enrich Content ${DRY_RUN ? '(DRY RUN)' : ''} ===\n`)
 
   const coords = loadBeachCoords()
+  const fullBeachesById = loadFullBeaches()
+  const historicalStatus = loadHistoricalStatus()
   const enrichments = {}
 
   for (const beach of BEACHES) {
     const island = beach.island === 'mq' ? 'Martinique' : 'Guadeloupe'
     const domain = beach.island === 'mq' ? 'sargasses-martinique.com' : 'sargasses-guadeloupe.com'
     const neighbors = findNearestBeaches(beach.id, beach.island, coords, 3)
+    const fullRecord = fullBeachesById[beach.id] || null
+    const history = historicalStatus[beach.slug] || historicalStatus[beach.id] || null
 
     // FAQ schema (3 questions per beach)
     const faq = {
@@ -123,23 +262,8 @@ function main() {
       ]
     }
 
-    // Noscript content block (crawlable by Google)
-    const neighborLinks = neighbors.map(n =>
-      `<li><a href="https://${domain}/plages/${n.slug}/">Sargasses ${n.name}</a> (${Math.round(n.distance)} km)</li>`
-    ).join('\n          ')
-
-    const noscript = `
-    <noscript>
-      <article>
-        <h1>Sargasses à ${beach.name} (${beach.commune}, ${island})</h1>
-        <p>État des sargasses à ${beach.name} en temps réel. Cette plage de ${beach.commune} en ${island} est surveillée quotidiennement par satellite (Sentinel-3). Consultez les prévisions sargasses sur 7 jours, l'indice AFAI et la carte interactive.</p>
-        <h2>Plages proches de ${beach.name}</h2>
-        <ul>
-          ${neighborLinks}
-        </ul>
-        <p><a href="https://${domain}/">Retour à l'accueil — Sargasses ${island}</a> | <a href="https://${domain}/carte-sargasses/">Carte des sargasses</a> | <a href="https://${domain}/previsions/">Prévisions 7 jours</a></p>
-      </article>
-    </noscript>`
+    // Rich noscript content block (~1000 words, crawlable by Google)
+    const noscript = buildRichNoscript({ beach, fullRecord, neighbors, history, island, domain })
 
     enrichments[beach.slug] = { faq: JSON.stringify(faq), noscript }
   }
