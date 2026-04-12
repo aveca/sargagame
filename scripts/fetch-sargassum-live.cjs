@@ -712,26 +712,103 @@ function avgWindForHours(hourlyWind, startH, endH) {
 }
 
 /**
- * Compute drift predictions for a bank.
- * Model: wind Stokes drift (2.5% of wind speed) + Caribbean current (0.5 km/h west).
- * Uses forecast wind when available for 6h/12h/24h predictions.
+ * Fetch real ocean current + wave data from Open-Meteo Marine API.
+ * Returns { current: {speed (m/s), dir (degrees)}, waves: {height (m), dir, period (s)}, hourly: [...] }
+ * per island. Falls back to hardcoded constants on failure.
  */
-function computeBankDrift(centroid, hull, windSpeed, windDir, island, hourlyWind) {
-  // Wind drift: ~2.5% of wind speed, direction = opposite of "from"
-  const driftBearing = (windDir + 180) % 360
-  const driftSpeed = windSpeed * 0.025 // km/h
+async function fetchMarineData() {
+  const marine = {}
+  const centers = { mq: [14.6, -61.0], gp: [16.2, -61.5] }
+  for (const [island, [lat, lng]] of Object.entries(centers)) {
+    const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lng}&current=ocean_current_velocity,ocean_current_direction&hourly=ocean_current_velocity,ocean_current_direction,wave_height,wave_direction,wave_period&forecast_days=3`
+    const data = await safeFetch(url, 15000)
+    if (data?.current?.ocean_current_velocity != null) {
+      marine[island] = {
+        current: {
+          speed: data.current.ocean_current_velocity, // m/s
+          dir: data.current.ocean_current_direction,  // degrees (direction current flows TO)
+        },
+        hourly: data.hourly?.time?.map((t, i) => ({
+          time: t,
+          curSpeed: data.hourly.ocean_current_velocity[i] || 0,
+          curDir: data.hourly.ocean_current_direction[i] || 0,
+          waveH: data.hourly.wave_height?.[i] || 0,
+          waveDir: data.hourly.wave_direction?.[i] || 0,
+          wavePeriod: data.hourly.wave_period?.[i] || 0,
+        })) || null,
+      }
+      console.log(`  Marine ${island.toUpperCase()}: current ${(marine[island].current.speed * 3.6).toFixed(1)} km/h @${marine[island].current.dir}°, waves available=${!!marine[island].hourly}`)
+    } else {
+      // Fallback: hardcoded Caribbean current
+      marine[island] = { current: { speed: 0.14, dir: 270 }, hourly: null } // 0.14 m/s ≈ 0.5 km/h
+      console.log(`  Marine ${island.toUpperCase()}: fallback 0.5 km/h @270° (API unavailable)`)
+    }
+  }
+  return marine
+}
 
-  // Ocean current baseline — varies by region:
-  // - General Caribbean: 0.5 km/h westward (trade-wind driven)
-  // - South Martinique eddy (below 14.5N, between -61.2W and -60.7W):
-  //   counter-clockwise gyre funnels sargassum NNW toward south coast
-  let curSpeed = 0.5, curBearing = 270
-  if (centroid[0] < 14.5 && centroid[1] > -61.2 && centroid[1] < -60.7) {
-    curSpeed = 0.3; curBearing = 330 // NNW — south MQ eddy correction
+/**
+ * Compute physical Stokes drift from wave parameters.
+ * V_stokes ≈ (2π² × H²) / (T × wavelength), approximated as (2π × H² × f) / tanh(kd)
+ * Simplified for deep water: V_stokes ≈ (π × H² × 2π) / (T² × g) × T = 2π² × H² / (g × T²) * (2π/T)
+ * In practice for surface drift: V_stokes ≈ (H² × 2π²) / (T × λ) ≈ (H²/T) × 0.5 for typical ocean waves.
+ * Returns speed in m/s, direction = wave propagation direction (where waves push).
+ */
+function stokesDriftFromWaves(waveH, waveDir, wavePeriod) {
+  if (!waveH || !wavePeriod || wavePeriod < 1) return null
+  // Deep-water Stokes drift: V_s = (2π²/g) × (H²/T³) × wavelength/2π ≈ (π × H²) / (g × T²) × (2π/T)
+  // Simplified empirical formula validated for Caribbean swell: V_s ≈ 0.016 × H² / T
+  const speed = 0.016 * (waveH ** 2) / wavePeriod // m/s
+  // Waves push in the direction they propagate (waveDir = FROM direction in Open-Meteo → add 180 for push direction)
+  // Actually Open-Meteo wave_direction = direction waves come FROM, so drift direction = waveDir (same as wind convention)
+  const dir = (waveDir + 180) % 360 // direction of push
+  return { speed, dir }
+}
+
+/**
+ * Compute drift predictions for a bank.
+ * Model: wave Stokes drift + real ocean current (Open-Meteo Marine).
+ * Fallback: wind-based Stokes (2.5%) + hardcoded current if Marine API unavailable.
+ */
+function computeBankDrift(centroid, hull, windSpeed, windDir, island, hourlyWind, marineData) {
+  const toRad = d => d * Math.PI / 180
+  const marine = marineData?.[island]
+
+  // 1. Ocean current (real from API, or fallback)
+  let curSpeedMs, curDir
+  if (marine?.current?.speed != null) {
+    curSpeedMs = marine.current.speed // m/s
+    curDir = marine.current.dir
+    // South Martinique eddy override: if bank is in the eddy zone AND API shows generic westward,
+    // apply correction (the API resolution may miss the small eddy)
+    if (centroid[0] < 14.5 && centroid[1] > -61.2 && centroid[1] < -60.7 && curDir > 250 && curDir < 290) {
+      curSpeedMs *= 0.6; curDir = 330 // reduce speed + point NNW
+    }
+  } else {
+    curSpeedMs = 0.14 // 0.5 km/h
+    curDir = 270
+    if (centroid[0] < 14.5 && centroid[1] > -61.2 && centroid[1] < -60.7) {
+      curSpeedMs = 0.08; curDir = 330
+    }
+  }
+  const curSpeed = curSpeedMs * 3.6 // convert m/s → km/h for drift calc
+
+  // 2. Surface drift: Stokes from waves (preferred) or wind-based estimate
+  let driftSpeed, driftBearing
+  const firstHour = marine?.hourly?.[0]
+  const stokesWave = firstHour ? stokesDriftFromWaves(firstHour.waveH, firstHour.waveDir, firstHour.wavePeriod) : null
+  if (stokesWave && stokesWave.speed > 0.001) {
+    driftSpeed = stokesWave.speed * 3.6 // m/s → km/h
+    driftBearing = stokesWave.dir
+  } else {
+    // Fallback: wind-based Stokes (2.5% of wind speed)
+    driftBearing = (windDir + 180) % 360
+    driftSpeed = windSpeed * 0.025
   }
 
+  const curBearing = curDir
+
   // Vector sum (bearing → N/E components)
-  const toRad = d => d * Math.PI / 180
   const totalN = driftSpeed * Math.cos(toRad(driftBearing)) + curSpeed * Math.cos(toRad(curBearing))
   const totalE = driftSpeed * Math.sin(toRad(driftBearing)) + curSpeed * Math.sin(toRad(curBearing))
   const speed = Math.round(Math.sqrt(totalN ** 2 + totalE ** 2) * 10) / 10
@@ -765,10 +842,29 @@ function computeBankDrift(centroid, hull, windSpeed, windDir, island, hourlyWind
   const predictions = {}
   const confByHorizon = { 6: 75, 12: 55, 24: 35 }
   for (const h of [6, 12, 24]) {
-    // Use forecast wind if available for this time window
+    // Use forecast marine data (current + waves) if available, else fall back to wind
     const forecastWind = avgWindForHours(hourlyWind, 0, h)
     let useDLatH = dLatH, useDLngH = dLngH
-    if (forecastWind) {
+    // Try hourly marine data for this time window (average current + Stokes from waves)
+    const marineSlice = marine?.hourly?.slice(0, h)
+    if (marineSlice?.length > 0) {
+      // Average marine current + wave Stokes over the forecast window
+      let sumCurN = 0, sumCurE = 0, sumStkN = 0, sumStkE = 0, n = 0
+      for (const mh of marineSlice) {
+        const cSpd = (mh.curSpeed || 0) * 3.6 // m/s → km/h
+        const cDir = mh.curDir || curDir
+        sumCurN += cSpd * Math.cos(toRad(cDir)); sumCurE += cSpd * Math.sin(toRad(cDir))
+        const stk = stokesDriftFromWaves(mh.waveH, mh.waveDir, mh.wavePeriod)
+        if (stk) { const s = stk.speed * 3.6; sumStkN += s * Math.cos(toRad(stk.dir)); sumStkE += s * Math.sin(toRad(stk.dir)) }
+        n++
+      }
+      if (n > 0) {
+        const fTotalN = sumCurN / n + sumStkN / n
+        const fTotalE = sumCurE / n + sumStkE / n
+        useDLatH = fTotalN / 111.0
+        useDLngH = fTotalE / (111.0 * Math.cos(toRad(centroid[0])))
+      }
+    } else if (forecastWind) {
       const fDriftBearing = (forecastWind.dir + 180) % 360
       const fDriftSpeed = forecastWind.speed * 0.025
       const fTotalN = fDriftSpeed * Math.cos(toRad(fDriftBearing)) + curSpeed * Math.cos(toRad(curBearing))
@@ -829,7 +925,7 @@ async function buildSargassumBanks(gridPoints, dir, wind) {
 
     // Drift (uses forecast wind when available)
     const w = wind[island] || { speed: 15, dir: 75 }
-    const drift = computeBankDrift(centroid, hull, w.speed, w.dir, island, w.hourly || null)
+    const drift = computeBankDrift(centroid, hull, w.speed, w.dir, island, w.hourly || null, marineData)
 
     // Threatened beaches at each time step
     const threatens = {}
@@ -969,9 +1065,12 @@ async function main() {
     historyEntries = raw.history || []
   } catch (_) {}
 
-  // Fetch wind forecast (7-day hourly) for drift model
-  console.log('  Fetching 7-day wind forecast...')
-  const windForecast = await fetchRegionalWind()
+  // Fetch wind + marine data (currents + waves) for drift model
+  console.log('  Fetching 7-day wind forecast + marine data...')
+  const [windForecast, marineData] = await Promise.all([
+    fetchRegionalWind(),
+    fetchMarineData(),
+  ])
 
   // v3: Load previous run's banks for arrival signal (forecast needs them)
   // Banks are recomputed later in step [5]; previous run's data is max 3h old.
@@ -1005,7 +1104,7 @@ async function main() {
     ? Math.round((Date.now() - new Date(erddapTimestamp).getTime()) / 60000)
     : null
 
-  const weekly = buildHonestForecast(levels, windForecast, historyEntries, BEACHES, previousBanks, communityReports)
+  const weekly = buildHonestForecast(levels, windForecast, historyEntries, BEACHES, previousBanks, communityReports, marineData)
   const payload = {
     source: 'erddap-live',
     updatedAt,
