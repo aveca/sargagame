@@ -1520,17 +1520,17 @@
         },
         {
           "id": "vauclin",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp-grande-anse",
-          "afai": 0.07,
+          "afai": 0.08,
           "status": "clean"
         },
         {
           "id": "gp-malendure",
-          "afai": 0.07,
+          "afai": 0.08,
           "status": "clean"
         },
         {
@@ -1545,7 +1545,7 @@
         },
         {
           "id": "gp-gosier",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
