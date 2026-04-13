@@ -548,6 +548,7 @@ function doGet(e) {
       var funnel = {
         session: 0, forecast_lock_click: 0,
         premium_modal_open: 0, premium_modal_cta: 0,
+        sample_start: 0,
         checkout_view: 0, checkout_submit: 0,
         conversion: 0, checkout_error: 0
       }
@@ -600,6 +601,8 @@ function doGet(e) {
         session_to_lock: funnel.session > 0 ? Math.round(funnel.forecast_lock_click / funnel.session * 1000) / 10 : 0,
         lock_to_modal: funnel.forecast_lock_click > 0 ? Math.round(funnel.premium_modal_open / funnel.forecast_lock_click * 100) : 0,
         modal_to_cta: funnel.premium_modal_open > 0 ? Math.round(funnel.premium_modal_cta / funnel.premium_modal_open * 100) : 0,
+        modal_to_sample: funnel.premium_modal_open > 0 ? Math.round(funnel.sample_start / funnel.premium_modal_open * 100) : 0,
+        modal_to_any_action: funnel.premium_modal_open > 0 ? Math.round((funnel.premium_modal_cta + funnel.sample_start) / funnel.premium_modal_open * 100) : 0,
         cta_to_checkout: funnel.premium_modal_cta > 0 ? Math.round(funnel.checkout_view / funnel.premium_modal_cta * 100) : 0,
         checkout_to_submit: funnel.checkout_view > 0 ? Math.round(funnel.checkout_submit / funnel.checkout_view * 100) : 0
       }
