@@ -1,0 +1,345 @@
+{
+  "generatedAt": "2026-04-13T06:41:40.847Z",
+  "sites": {
+    "mq": {
+      "pageCount": 101,
+      "medianWords": 1508,
+      "thinCount": 32,
+      "richCount": 55,
+      "thinPages": [
+        {
+          "url": "/carte-sargasses/",
+          "words": 0
+        },
+        {
+          "url": "/en/best-beaches-martinique/",
+          "words": 0
+        },
+        {
+          "url": "/en/best-beaches-no-sargassum/",
+          "words": 0
+        },
+        {
+          "url": "/en/",
+          "words": 0
+        },
+        {
+          "url": "/en/sargassum-alerts/",
+          "words": 0
+        },
+        {
+          "url": "/en/sargassum-map/",
+          "words": 0
+        },
+        {
+          "url": "/en/sargassum-season/",
+          "words": 0
+        },
+        {
+          "url": "/en/satellite-sargassum-detection/",
+          "words": 0
+        },
+        {
+          "url": "/en/understanding-sargassum/",
+          "words": 0
+        },
+        {
+          "url": "/es/alertas-sargazo/",
+          "words": 0
+        },
+        {
+          "url": "/es/",
+          "words": 0
+        },
+        {
+          "url": "/es/mapa-sargazo/",
+          "words": 0
+        },
+        {
+          "url": "/es/mejores-playas-sin-sargazo/",
+          "words": 0
+        },
+        {
+          "url": "/es/temporada-sargazo/",
+          "words": 0
+        },
+        {
+          "url": "/previsions/",
+          "words": 0
+        },
+        {
+          "url": "/widget/embed/",
+          "words": 2
+        },
+        {
+          "url": "/404.html",
+          "words": 28
+        },
+        {
+          "url": "/sarg_carte_satellite_app.html",
+          "words": 56
+        },
+        {
+          "url": "/weekend.html",
+          "words": 82
+        },
+        {
+          "url": "/neptunes_fury.html",
+          "words": 96
+        },
+        {
+          "url": "/widget/",
+          "words": 165
+        },
+        {
+          "url": "/alertes/",
+          "words": 192
+        },
+        {
+          "url": "/plages-sans-sargasses/",
+          "words": 196
+        },
+        {
+          "url": "/saison-sargasses-guadeloupe/",
+          "words": 220
+        },
+        {
+          "url": "/mentions-legales.html",
+          "words": 221
+        },
+        {
+          "url": "/",
+          "words": 228
+        },
+        {
+          "url": "/onboarding.html",
+          "words": 253
+        },
+        {
+          "url": "/saison-sargasses-martinique/",
+          "words": 256
+        },
+        {
+          "url": "/conditions/",
+          "words": 274
+        },
+        {
+          "url": "/bilan-sargasses-2025/",
+          "words": 280
+        }
+      ],
+      "topPages": [
+        {
+          "url": "/plages/grande-anse-du-carbet/",
+          "words": 1606
+        },
+        {
+          "url": "/plages/anse-corps-de-garde/",
+          "words": 1588
+        },
+        {
+          "url": "/plages/plage-du-bourg-sainte-anne/",
+          "words": 1576
+        },
+        {
+          "url": "/plages/plage-de-saint-pierre/",
+          "words": 1574
+        },
+        {
+          "url": "/plages/plage-de-la-francaise/",
+          "words": 1574
+        },
+        {
+          "url": "/plages/pointe-fort-caravelle/",
+          "words": 1572
+        },
+        {
+          "url": "/plages/grande-anse-d-arlet/",
+          "words": 1572
+        },
+        {
+          "url": "/plages/plage-du-marin/",
+          "words": 1564
+        },
+        {
+          "url": "/plages/petite-anse-d-arlet/",
+          "words": 1562
+        },
+        {
+          "url": "/plages/anse-gros-raisins/",
+          "words": 1562
+        }
+      ]
+    },
+    "gp": {
+      "pageCount": 131,
+      "medianWords": 1524,
+      "thinCount": 30,
+      "richCount": 85,
+      "thinPages": [
+        {
+          "url": "/carte-sargasses/",
+          "words": 0
+        },
+        {
+          "url": "/en/best-beaches-martinique/",
+          "words": 0
+        },
+        {
+          "url": "/en/best-beaches-no-sargassum/",
+          "words": 0
+        },
+        {
+          "url": "/en/",
+          "words": 0
+        },
+        {
+          "url": "/en/sargassum-alerts/",
+          "words": 0
+        },
+        {
+          "url": "/en/sargassum-map/",
+          "words": 0
+        },
+        {
+          "url": "/en/sargassum-season/",
+          "words": 0
+        },
+        {
+          "url": "/en/satellite-sargassum-detection/",
+          "words": 0
+        },
+        {
+          "url": "/en/understanding-sargassum/",
+          "words": 0
+        },
+        {
+          "url": "/es/alertas-sargazo/",
+          "words": 0
+        },
+        {
+          "url": "/es/",
+          "words": 0
+        },
+        {
+          "url": "/es/mapa-sargazo/",
+          "words": 0
+        },
+        {
+          "url": "/es/mejores-playas-sin-sargazo/",
+          "words": 0
+        },
+        {
+          "url": "/es/temporada-sargazo/",
+          "words": 0
+        },
+        {
+          "url": "/previsions/",
+          "words": 0
+        },
+        {
+          "url": "/widget/embed/",
+          "words": 2
+        },
+        {
+          "url": "/404.html",
+          "words": 28
+        },
+        {
+          "url": "/sarg_carte_satellite_app.html",
+          "words": 56
+        },
+        {
+          "url": "/weekend.html",
+          "words": 82
+        },
+        {
+          "url": "/neptunes_fury.html",
+          "words": 96
+        },
+        {
+          "url": "/widget/",
+          "words": 165
+        },
+        {
+          "url": "/alertes/",
+          "words": 192
+        },
+        {
+          "url": "/plages-sans-sargasses/",
+          "words": 196
+        },
+        {
+          "url": "/saison-sargasses-guadeloupe/",
+          "words": 220
+        },
+        {
+          "url": "/mentions-legales.html",
+          "words": 221
+        },
+        {
+          "url": "/onboarding.html",
+          "words": 253
+        },
+        {
+          "url": "/saison-sargasses-martinique/",
+          "words": 256
+        },
+        {
+          "url": "/conditions/",
+          "words": 274
+        },
+        {
+          "url": "/bilan-sargasses-2025/",
+          "words": 280
+        },
+        {
+          "url": "/confidentialite.html",
+          "words": 281
+        }
+      ],
+      "topPages": [
+        {
+          "url": "/plages/ile-de-la-petite-terre/",
+          "words": 1630
+        },
+        {
+          "url": "/plages/plage-de-la-desirade-sud/",
+          "words": 1624
+        },
+        {
+          "url": "/plages/plage-des-raisins-clairs/",
+          "words": 1618
+        },
+        {
+          "url": "/plages/anse-de-la-baie-olive/",
+          "words": 1612
+        },
+        {
+          "url": "/plages/pointe-de-la-verdure-sud/",
+          "words": 1610
+        },
+        {
+          "url": "/plages/plage-de-grande-anse/",
+          "words": 1608
+        },
+        {
+          "url": "/plages/plage-de-la-caravelle/",
+          "words": 1606
+        },
+        {
+          "url": "/plages/la-grande-anse-deshaies/",
+          "words": 1600
+        },
+        {
+          "url": "/plages/plage-pain-de-sucre/",
+          "words": 1598
+        },
+        {
+          "url": "/plages/plage-de-la-desirade/",
+          "words": 1592
+        }
+      ]
+    }
+  }
+}

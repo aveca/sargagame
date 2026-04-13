@@ -1,0 +1,15 @@
+{
+  "snapshots": [
+    {
+      "date": "2026-04-13",
+      "sites": {
+        "mq": {
+          "combined": null
+        },
+        "gp": {
+          "combined": null
+        }
+      }
+    }
+  ]
+}

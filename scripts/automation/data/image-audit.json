@@ -1,0 +1,49 @@
+{
+  "generatedAt": "2026-04-13T06:44:12.393Z",
+  "sites": {
+    "mq": {
+      "pageCount": 101,
+      "totalImages": 55,
+      "issueCount": 2,
+      "byKind": {
+        "empty-alt": 2
+      },
+      "issues": [
+        {
+          "url": "/onboarding.html",
+          "kind": "empty-alt",
+          "src": "/island-mq.svg",
+          "alt": ""
+        },
+        {
+          "url": "/sarg_carte_satellite_app.html",
+          "kind": "empty-alt",
+          "src": "",
+          "alt": ""
+        }
+      ]
+    },
+    "gp": {
+      "pageCount": 131,
+      "totalImages": 85,
+      "issueCount": 2,
+      "byKind": {
+        "empty-alt": 2
+      },
+      "issues": [
+        {
+          "url": "/onboarding.html",
+          "kind": "empty-alt",
+          "src": "/island-mq.svg",
+          "alt": ""
+        },
+        {
+          "url": "/sarg_carte_satellite_app.html",
+          "kind": "empty-alt",
+          "src": "",
+          "alt": ""
+        }
+      ]
+    }
+  }
+}

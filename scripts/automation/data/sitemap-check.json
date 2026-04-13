@@ -1,0 +1,55 @@
+{
+  "generatedAt": "2026-04-13T06:44:12.296Z",
+  "sites": {
+    "mq": {
+      "sitemapSize": 90,
+      "ownDomainCount": 90,
+      "crossDomainCount": 0,
+      "diskCount": 100,
+      "sitemapUrls404Count": 2,
+      "diskMissingCount": 10,
+      "sitemapUrls404": [
+        "/mentions-legales.html",
+        "/confidentialite.html"
+      ],
+      "diskMissing": [
+        "/articles/alerte-saison-2026-gp-2026-04-09/",
+        "/articles/point-semaine-avril-2026-mq-2026-04-09/",
+        "/en/satellite-sargassum-detection/",
+        "/en/understanding-sargassum/",
+        "/neptunes_fury.html",
+        "/onboarding.html",
+        "/sarg_carte_satellite_app.html",
+        "/weekend.html",
+        "/widget/embed/",
+        "/widget/"
+      ],
+      "crossDomainSample": []
+    },
+    "gp": {
+      "sitemapSize": 120,
+      "ownDomainCount": 120,
+      "crossDomainCount": 0,
+      "diskCount": 130,
+      "sitemapUrls404Count": 2,
+      "diskMissingCount": 10,
+      "sitemapUrls404": [
+        "/mentions-legales.html",
+        "/confidentialite.html"
+      ],
+      "diskMissing": [
+        "/articles/alerte-saison-2026-gp-2026-04-09/",
+        "/articles/point-semaine-avril-2026-mq-2026-04-09/",
+        "/en/satellite-sargassum-detection/",
+        "/en/understanding-sargassum/",
+        "/neptunes_fury.html",
+        "/onboarding.html",
+        "/sarg_carte_satellite_app.html",
+        "/weekend.html",
+        "/widget/embed/",
+        "/widget/"
+      ],
+      "crossDomainSample": []
+    }
+  }
+}
