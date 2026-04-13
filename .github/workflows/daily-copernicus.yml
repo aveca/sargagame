@@ -16,13 +16,15 @@ permissions:
 jobs:
   update-and-deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -189,6 +191,7 @@ jobs:
       # ── 3. Commit updated data to repo ────────────────────
       - name: Commit updated sargassum.json
         run: |
+          set -e
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add public/api/copernicus/sargassum.json public/api/copernicus/history.json public/api/copernicus/sargassum-grid.json
@@ -200,68 +203,46 @@ jobs:
           [ -f scripts/automation/data/backtest-results.json ] && git add scripts/automation/data/backtest-results.json
           [ -f scripts/automation/data/weekend-sent.json ] && git add scripts/automation/data/weekend-sent.json
           [ -f public/api/copernicus/forecast-archive.json ] && git add public/api/copernicus/forecast-archive.json
-          git diff --cached --quiet || git commit -m "chore: update Copernicus data $(date -u +'%Y-%m-%d %H:%M UTC')"
-          git push || (echo "::warning::git push failed — retrying with rebase" && git pull --rebase && git push) || echo "::error::git push failed after rebase"
+          if git diff --cached --quiet; then
+            echo "No data file changes to commit"
+          else
+            git commit -m "chore: update Copernicus data $(date -u +'%Y-%m-%d %H:%M UTC')"
+          fi
+          BRANCH="${GITHUB_REF_NAME:-main}"
+          push_ok=0
+          for i in 1 2 3 4 5; do
+            git fetch origin "$BRANCH"
+            if ! git rebase "origin/$BRANCH"; then
+              echo "::error::git rebase failed (conflit ou historique) sur $BRANCH"
+              git rebase --abort || true
+              exit 1
+            fi
+            if git push origin "HEAD:$BRANCH"; then
+              push_ok=1
+              echo "git push OK (tentative $i)"
+              break
+            fi
+            echo "::warning::git push échoué (tentative $i/5), pause 20s"
+            sleep 20
+          done
+          if [ "$push_ok" != "1" ]; then
+            echo "::error::git push a échoué après 5 tentatives"
+            exit 1
+          fi
 
-      # ── 4. Deploy Martinique via FTP (with retry on timeout) ──
-      - name: Deploy Martinique (FTP) — attempt 1
-        id: ftp_mq_1
+      # ── 4–5. FTPS déployé en sessions fragmentées (basic-ftp) — évite
+      # "Timeout (control socket)" de l'hébergeur (~660 STOR / session).
+      - name: Deploy FTPS Martinique + Guadeloupe (sessions fragmentées)
+        id: ftp_deploy
         continue-on-error: true
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER_MQ }}
-          username: ${{ secrets.FTP_USERNAME_MQ }}
-          password: ${{ secrets.FTP_PASSWORD_MQ }}
-          local-dir: ./martinique-ftp/
-          server-dir: ./
-          dangerous-clean-slate: false
-
-      - name: Wait 30s before FTP retry
-        if: steps.ftp_mq_1.outcome == 'failure'
-        run: sleep 30
-
-      - name: Deploy Martinique (FTP) — retry after 30s
-        id: ftp_mq_2
-        if: steps.ftp_mq_1.outcome == 'failure'
-        continue-on-error: true
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER_MQ }}
-          username: ${{ secrets.FTP_USERNAME_MQ }}
-          password: ${{ secrets.FTP_PASSWORD_MQ }}
-          local-dir: ./martinique-ftp/
-          server-dir: ./
-          dangerous-clean-slate: false
-
-      # ── 5. Deploy Guadeloupe via FTP (with retry on timeout) ──
-      - name: Deploy Guadeloupe (FTP) — attempt 1
-        id: ftp_gp_1
-        continue-on-error: true
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER_GP }}
-          username: ${{ secrets.FTP_USERNAME_GP }}
-          password: ${{ secrets.FTP_PASSWORD_GP }}
-          local-dir: ./guadeloupe-ftp/
-          server-dir: ./
-          dangerous-clean-slate: false
-
-      - name: Wait 30s before FTP retry
-        if: steps.ftp_gp_1.outcome == 'failure'
-        run: sleep 30
-
-      - name: Deploy Guadeloupe (FTP) — retry after 30s
-        id: ftp_gp_2
-        if: steps.ftp_gp_1.outcome == 'failure'
-        continue-on-error: true
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER_GP }}
-          username: ${{ secrets.FTP_USERNAME_GP }}
-          password: ${{ secrets.FTP_PASSWORD_GP }}
-          local-dir: ./guadeloupe-ftp/
-          server-dir: ./
-          dangerous-clean-slate: false
+        env:
+          FTP_SERVER_MQ: ${{ secrets.FTP_SERVER_MQ }}
+          FTP_USERNAME_MQ: ${{ secrets.FTP_USERNAME_MQ }}
+          FTP_PASSWORD_MQ: ${{ secrets.FTP_PASSWORD_MQ }}
+          FTP_SERVER_GP: ${{ secrets.FTP_SERVER_GP }}
+          FTP_USERNAME_GP: ${{ secrets.FTP_USERNAME_GP }}
+          FTP_PASSWORD_GP: ${{ secrets.FTP_PASSWORD_GP }}
+        run: node scripts/manual-ftp-deploy.cjs
 
       # ── 6. Final health check — fail workflow only if sites actually down ──
       # FTP can be flaky; data is already committed to git so next run redeploys.
@@ -281,8 +262,8 @@ jobs:
             exit 1
           fi
           # If FTP attempt 2 also failed AND data is stale (>6h), alert
-          if [ "${{ steps.ftp_mq_2.outcome }}" = "failure" ] || [ "${{ steps.ftp_gp_2.outcome }}" = "failure" ]; then
-            echo "::warning::FTP deploys failed both attempts — sites up but data may be stale. Next run will redeploy from git-committed data."
+          if [ "${{ steps.ftp_deploy.outcome }}" = "failure" ]; then
+            echo "::warning::FTP deploy failed — sites may be up but files stale. Next run or manual-ftp-deploy.cjs peut corriger."
           fi
 
   # ── Notify on failure ──────────────────────────────────
