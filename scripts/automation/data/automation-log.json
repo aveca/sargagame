@@ -804,6 +804,228 @@
         "https://sargasses-martinique.com/plages/anse-bonneville/",
         "https://sargasses-martinique.com/plages/anse-l-etang/"
       ]
+    },
+    {
+      "timestamp": "2026-04-13T06:04:19.898Z",
+      "dryRun": false,
+      "script": "seo-audit",
+      "action": "data-collection",
+      "results": {
+        "mq": {
+          "indexed": 3,
+          "total": 74,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 0,
+          "cwvIssues": 0
+        },
+        "gp": {
+          "indexed": 13,
+          "total": 100,
+          "notIndexed": 0,
+          "lowCtr": 6,
+          "highBounce": 0,
+          "cwvIssues": 0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-04-13T06:04:19.950Z",
+      "dryRun": false,
+      "script": "ux-audit",
+      "action": "report-generated",
+      "issues": {
+        "totalIssues": 11,
+        "critical": 8,
+        "warnings": 3
+      }
+    },
+    {
+      "timestamp": "2026-04-13T06:04:19.995Z",
+      "dryRun": false,
+      "script": "auto-optimize",
+      "action": "optimizations-applied",
+      "results": {
+        "lowCtr": 0,
+        "highBounce": 0,
+        "deadClicks": 9,
+        "conversion": 0,
+        "gpSeoGap": 0
+      },
+      "totalActions": 9,
+      "metaOverridesCount": 0,
+      "decisionsCount": 10
+    },
+    {
+      "timestamp": "2026-04-13T06:04:20.061Z",
+      "dryRun": false,
+      "script": "auto-copywriting",
+      "action": "copywriting-optimized",
+      "results": {
+        "beachMetaOverrides": 136,
+        "h1Suggestions": 6,
+        "topQueriesAnalyzed": 298,
+        "highValueKeywords": {
+          "en temps réel": {
+            "totalClicks": 787,
+            "totalImpressions": 1627,
+            "matchingQueries": 4
+          },
+          "aujourd'hui": {
+            "totalClicks": 368,
+            "totalImpressions": 1772,
+            "matchingQueries": 5
+          },
+          "carte": {
+            "totalClicks": 116,
+            "totalImpressions": 1343,
+            "matchingQueries": 40
+          },
+          "prévisions": {
+            "totalClicks": 6,
+            "totalImpressions": 87,
+            "matchingQueries": 5
+          },
+          "alertes": {
+            "totalClicks": 0,
+            "totalImpressions": 3,
+            "matchingQueries": 1
+          },
+          "plage propre": {
+            "totalClicks": 0,
+            "totalImpressions": 0,
+            "matchingQueries": 0
+          }
+        }
+      }
+    },
+    {
+      "timestamp": "2026-04-13T06:04:20.158Z",
+      "dryRun": false,
+      "script": "seo-fix-404",
+      "action": "redirects-added",
+      "redirectsAdded": 4,
+      "rules": [
+        {
+          "path": "/plages/anse-laborde/",
+          "target": "/plages/anse-laborde/",
+          "method": "exact",
+          "score": 1
+        },
+        {
+          "path": "/plages/plage-des-amandiers/",
+          "target": "/plages/plage-des-amandiers/",
+          "method": "exact",
+          "score": 1
+        },
+        {
+          "path": "/plages/plage-de-sainte-claire/",
+          "target": "/plages/plage-de-sainte-claire/",
+          "method": "exact",
+          "score": 1
+        },
+        {
+          "path": "/plages/plage-de-la-desirade-sud/",
+          "target": "/plages/plage-de-la-desirade-sud/",
+          "method": "exact",
+          "score": 1
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-04-13T06:04:20.219Z",
+      "dryRun": false,
+      "script": "seo-optimize-meta",
+      "action": "no-changes",
+      "changesCount": 0
+    },
+    {
+      "timestamp": "2026-04-13T06:04:20.311Z",
+      "dryRun": false,
+      "script": "seo-enrich-content",
+      "action": "enriched",
+      "beachCount": 136
+    },
+    {
+      "timestamp": "2026-04-13T06:04:20.381Z",
+      "dryRun": false,
+      "script": "generate-seo-pages",
+      "action": "pages-created",
+      "pagesCount": 3,
+      "pages": [
+        {
+          "type": "commune",
+          "path": "communes/trois-ilets"
+        },
+        {
+          "type": "commune",
+          "path": "communes/sainte-luce"
+        },
+        {
+          "type": "commune",
+          "path": "communes/trinite"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-04-13T06:05:09.603Z",
+      "dryRun": false,
+      "script": "seo-submit-urls",
+      "action": "urls-submitted",
+      "urlsSubmitted": 0,
+      "errors": 200,
+      "urls": [
+        "https://sargasses-martinique.com/alertes/",
+        "https://sargasses-martinique.com/saison-sargasses-martinique/",
+        "https://sargasses-martinique.com/saison-sargasses-guadeloupe/",
+        "https://sargasses-martinique.com/plages-sans-sargasses/",
+        "https://sargasses-martinique.com/meilleures-plages-martinique-sargasses/",
+        "https://sargasses-martinique.com/danger-sargasses-h2s/",
+        "https://sargasses-martinique.com/comprendre-sargasses/",
+        "https://sargasses-martinique.com/bilan-sargasses-2025/",
+        "https://sargasses-martinique.com/detection-satellite-sargasses/",
+        "https://sargasses-martinique.com/previsions-methode/",
+        "https://sargasses-martinique.com/nettoyer-sargasses/",
+        "https://sargasses-martinique.com/sargasses-record-2026/",
+        "https://sargasses-martinique.com/faq/",
+        "https://sargasses-martinique.com/lexique/",
+        "https://sargasses-martinique.com/methode-carte/",
+        "https://sargasses-martinique.com/mentions-legales.html",
+        "https://sargasses-martinique.com/confidentialite.html",
+        "https://sargasses-martinique.com/plages/plage-des-salines/",
+        "https://sargasses-martinique.com/plages/anse-caritan/",
+        "https://sargasses-martinique.com/plages/anse-meunier/",
+        "https://sargasses-martinique.com/plages/plage-du-bourg-sainte-anne/",
+        "https://sargasses-martinique.com/plages/anse-trabaud/",
+        "https://sargasses-martinique.com/plages/anse-macabou/",
+        "https://sargasses-martinique.com/plages/anse-michel/",
+        "https://sargasses-martinique.com/plages/plage-du-marin/",
+        "https://sargasses-martinique.com/plages/anse-figuier/",
+        "https://sargasses-martinique.com/plages/anse-a-l-ane/",
+        "https://sargasses-martinique.com/plages/anse-mitan/",
+        "https://sargasses-martinique.com/plages/anse-noire/",
+        "https://sargasses-martinique.com/plages/grande-anse-d-arlet/",
+        "https://sargasses-martinique.com/plages/petite-anse-d-arlet/",
+        "https://sargasses-martinique.com/plages/plage-du-diamant/",
+        "https://sargasses-martinique.com/plages/anse-cafard/",
+        "https://sargasses-martinique.com/plages/anse-gros-raisins/",
+        "https://sargasses-martinique.com/plages/plage-de-sainte-luce/",
+        "https://sargasses-martinique.com/plages/anse-corps-de-garde/",
+        "https://sargasses-martinique.com/plages/pointe-borgnesse/",
+        "https://sargasses-martinique.com/plages/plage-de-la-francaise/",
+        "https://sargasses-martinique.com/plages/anse-madame/",
+        "https://sargasses-martinique.com/plages/plage-de-sch-lcher/",
+        "https://sargasses-martinique.com/plages/anse-collat/",
+        "https://sargasses-martinique.com/plages/grande-anse-du-carbet/",
+        "https://sargasses-martinique.com/plages/anse-turin/",
+        "https://sargasses-martinique.com/plages/plage-de-saint-pierre/",
+        "https://sargasses-martinique.com/plages/anse-belleville/",
+        "https://sargasses-martinique.com/plages/anse-couleuvre/",
+        "https://sargasses-martinique.com/plages/anse-ceron/",
+        "https://sargasses-martinique.com/plages/bourg-de-tartane/",
+        "https://sargasses-martinique.com/plages/anse-bonneville/",
+        "https://sargasses-martinique.com/plages/anse-l-etang/"
+      ]
     }
   ]
 }
