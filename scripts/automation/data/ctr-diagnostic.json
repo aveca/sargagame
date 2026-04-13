@@ -1,0 +1,66 @@
+{
+  "generatedAt": "2026-04-13T06:42:41.462Z",
+  "sites": {
+    "mq": {
+      "opportunityCount": 0,
+      "winCount": 2,
+      "totalLostClicks": 0,
+      "opportunities": [],
+      "wins": [
+        {
+          "url": "https://sargasses-martinique.com/en/",
+          "impressions": 84,
+          "clicks": 14,
+          "position": 9.7,
+          "actualCtr": 16.67,
+          "expectedCtr": 1.63,
+          "ctrLift": 15.04
+        },
+        {
+          "url": "https://sargasses-martinique.com/",
+          "impressions": 8101,
+          "clicks": 1246,
+          "position": 6,
+          "actualCtr": 15.38,
+          "expectedCtr": 4.1,
+          "ctrLift": 11.29
+        }
+      ]
+    },
+    "gp": {
+      "opportunityCount": 0,
+      "winCount": 3,
+      "totalLostClicks": 0,
+      "opportunities": [],
+      "wins": [
+        {
+          "url": "https://sargasses-guadeloupe.com/",
+          "impressions": 3153,
+          "clicks": 576,
+          "position": 8.3,
+          "actualCtr": 18.27,
+          "expectedCtr": 2.37,
+          "ctrLift": 15.9
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/de-bois-jolan/",
+          "impressions": 56,
+          "clicks": 4,
+          "position": 8,
+          "actualCtr": 7.14,
+          "expectedCtr": 2.49,
+          "ctrLift": 4.65
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
+          "impressions": 80,
+          "clicks": 5,
+          "position": 7.5,
+          "actualCtr": 6.25,
+          "expectedCtr": 2.74,
+          "ctrLift": 3.51
+        }
+      ]
+    }
+  }
+}
