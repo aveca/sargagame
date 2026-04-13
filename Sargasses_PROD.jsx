@@ -2755,8 +2755,30 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
     if(h<18)return lang==="en"?"Right now":"Maintenant"
     return lang==="en"?"Tonight":"Ce soir"
   })()
+  // First-person pre-chewed decision — shifts the user from "browsing the map"
+  // to "accepting a recommendation". Copy is ephemeral per hour-of-day.
+  const myPickLead=lang==="en"?"My pick":lang==="es"?"Mi elección":"Ma reco"
 
   const strengthsList=(top.scoreStrengths||[]).slice(0,3)
+
+  // Above-the-fold authority strip — Copernicus ESA source + freshness + coverage.
+  // Why: first-visit users need a 1-second credibility signal that the score isn't
+  // random. ESA is the strongest trust anchor we have (official EU satellite data,
+  // cannot be faked), freshness kills the "stale screenshot" objection, and the
+  // beach count signals coverage. All three answer the implicit "why should I trust
+  // this number?" that gates every conversion downstream.
+  const dataUpdatedAt=sargData?.erddapTimestamp||sargData?.updatedAt||null
+  const freshLbl=(()=>{
+    if(!dataUpdatedAt)return null
+    const diffMin=Math.max(0,Math.round((Date.now()-new Date(dataUpdatedAt).getTime())/60000))
+    if(diffMin<60)return lang==="en"?`${diffMin} min ago`:`il y a ${diffMin} min`
+    const h=Math.round(diffMin/60)
+    if(h<24)return lang==="en"?`${h}h ago`:`il y a ${h}h`
+    return lang==="en"?"today":"aujourd'hui"
+  })()
+  const coverageLbl=withScore.length>0
+    ?(lang==="en"?`${withScore.length} beaches`:`${withScore.length} plages`)
+    :null
 
   return(
     <div style={{
@@ -2781,6 +2803,30 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
         background:`radial-gradient(closest-side, ${topSt.c}1f 0%, transparent 70%)`,
         pointerEvents:"none",
       }}/>
+
+      {/* Authority strip — Copernicus ESA + freshness + coverage. Always visible
+          in both peek and expanded modes so the first second of eye contact lands
+          on a trust anchor, not a sales pitch. */}
+      <div style={{
+        position:"relative",
+        display:"flex",alignItems:"center",justifyContent:"center",gap:6,
+        padding:"7px 14px 5px",
+        fontSize:10,fontWeight:600,
+        color:"var(--sg-mid,#686868)",
+        letterSpacing:".01em",
+        whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
+      }}>
+        <span aria-hidden="true" style={{fontSize:11}}>🛰</span>
+        <span style={{fontWeight:800,color:"#005A9E",letterSpacing:".02em"}}>Copernicus ESA</span>
+        {freshLbl&&(<>
+          <span aria-hidden style={{width:3,height:3,borderRadius:"50%",background:"currentColor",opacity:.4}}/>
+          <span>{lang==="en"?`Updated ${freshLbl}`:`MAJ ${freshLbl}`}</span>
+        </>)}
+        {coverageLbl&&(<>
+          <span aria-hidden style={{width:3,height:3,borderRadius:"50%",background:"currentColor",opacity:.4}}/>
+          <span>{coverageLbl}</span>
+        </>)}
+      </div>
 
       {/* Collapse handle — iOS sheet grab-bar. Tap to toggle peek mode so the
           map gets its full vertical space back. */}
@@ -2851,8 +2897,15 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
           )}
           <div style={{flex:1,minWidth:0}}>
             <div style={{
+              fontSize:9,fontWeight:800,
+              letterSpacing:".14em",textTransform:"uppercase",
+              color:"#009E8E",opacity:.85,marginBottom:1,
+            }}>
+              {myPickLead} · {greet}
+            </div>
+            <div style={{
               fontFamily:"'Anton',sans-serif",
-              fontSize:17,textTransform:"uppercase",letterSpacing:"-.015em",
+              fontSize:18,textTransform:"uppercase",letterSpacing:"-.015em",
               color:"var(--sg-ink,#0D0D0D)",lineHeight:1.02,
               whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
             }}>
@@ -2874,12 +2927,12 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
           <span style={{
             fontSize:12,fontWeight:800,color:"#fff",
             flexShrink:0,whiteSpace:"nowrap",
-            padding:"9px 16px",borderRadius:100,
-            background:`linear-gradient(135deg, ${topSt.c} 0%, ${topSt.c}cc 100%)`,
-            boxShadow:`0 4px 14px ${topSt.c}55, inset 0 1px 0 rgba(255,255,255,.3)`,
+            padding:"10px 18px",borderRadius:100,
+            background:"linear-gradient(135deg,#00C2B0 0%,#009E8E 100%)",
+            boxShadow:"0 6px 18px rgba(0,158,142,.45), inset 0 1px 0 rgba(255,255,255,.35)",
             letterSpacing:".03em",
           }}>
-            {lang==="en"?"Go →":"Voir →"}
+            {lang==="en"?"Take me →":"J'y vais →"}
           </span>
         </button>
       ):(<>
