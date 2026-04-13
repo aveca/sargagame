@@ -130,17 +130,23 @@ jobs:
         continue-on-error: true
         run: node scripts/automation/daily-stats-check.cjs
 
-      # ── 2. Build (full rebuild 1x/day at 9h UTC = 5h MQ, or manual) ──
+      # ── 2. Build (full rebuild 1x/day at 9h UTC = 5h MQ, or manual, or on human push) ──
       - name: Check if full build needed
         id: check_build
         run: |
           HOUR=$(date -u +%H)
+          FULL=false
           if [ "$HOUR" = "09" ] || [ "$HOUR" = "21" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "full=true" >> $GITHUB_OUTPUT
-          else
-            echo "full=false" >> $GITHUB_OUTPUT
+            FULL=true
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            # Push events from GITHUB_TOKEN (chore bot commits) don't re-trigger this
+            # workflow by default, so reaching this branch means a human/PAT push.
+            # Full build ensures asset changes (photos, JSX, SEO pages) ship immediately
+            # instead of waiting up to 12h for the next 09/21 UTC slot.
+            FULL=true
           fi
-          echo "Hour: $HOUR, Full build: $([ "$HOUR" = "09" ] || [ "$HOUR" = "21" ] && echo yes || echo no)"
+          echo "full=$FULL" >> $GITHUB_OUTPUT
+          echo "Hour: $HOUR, event: ${{ github.event_name }}, Full build: $FULL"
 
       - name: Build site (Vite)
         if: steps.check_build.outputs.full == 'true'
