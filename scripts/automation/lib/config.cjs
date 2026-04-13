@@ -77,9 +77,12 @@ function getKnownUrls(siteKey) {
     `${base}/en/`,
   ]
   for (const slug of EDITORIAL_SLUGS) urls.push(`${base}/${slug}/`)
+  // Filter beaches by island. Before session 35 both sites mirrored all beaches
+  // (cross-domain duplicate content). Now /plages/<wrong-island>/ returns 404,
+  // so feeding those URLs to GSC inspection / Indexing API would waste quota
+  // and send Google bad signals about non-existent pages.
   for (const b of BEACHES) {
-    // All beaches appear on both sites (same /plages/ structure)
-    urls.push(`${base}/plages/${b.slug}/`)
+    if (b.island === siteKey) urls.push(`${base}/plages/${b.slug}/`)
   }
   urls.push(`${base}/mentions-legales.html`, `${base}/confidentialite.html`)
   return urls
