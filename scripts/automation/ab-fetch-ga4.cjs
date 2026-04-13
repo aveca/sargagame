@@ -226,7 +226,12 @@ async function fetchFromAppsFunnel() {
       // Funnel keys omit the "sg_" prefix (e.g. "forecast_lock_click" not "sg_forecast_lock_click")
       const totalSessions = s0 + s1
       const funnelKey = test.metric.replace(/^sg_/, '')
-      const totalConv = data[funnelKey] || data[test.metric] || 0
+      // sg_conversion client event misses 100% of real conversions (Payment Link
+      // _blank tab → user never returns → track() never fires). Prefer payments_real
+      // from Stripe webhook truth when available.
+      const totalConv = funnelKey === 'conversion' && data.payments_real != null
+        ? data.payments_real
+        : (data[funnelKey] || data[test.metric] || 0)
       const c0 = totalSessions > 0 ? Math.round(totalConv * s0 / totalSessions) : 0
       const c1 = totalSessions > 0 ? totalConv - c0 : 0
       testData[test.id] = { sessions: [s0, s1], conversions: [c0, c1] }

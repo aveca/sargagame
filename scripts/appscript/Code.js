@@ -552,10 +552,11 @@ function doGet(e) {
         conversion: 0, checkout_error: 0
       }
 
+      var cutoff = new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString()
+
       var aSheet = ss.getSheetByName('analytics_events')
       if (aSheet) {
         var aData = aSheet.getDataRange().getValues()
-        var cutoff = new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString()
         var abCounts = {}
         var abCols = ['lock1', 'modal1', 'onb1', 'free1', 'vp1', 'price1']
 
@@ -575,6 +576,24 @@ function doGet(e) {
         }
         funnel.total_events = aData.length - 1
         funnel.ab_variants = abCounts
+      }
+
+      // payments_real: Stripe webhook truth (sg_conversion client event misses
+      // 100% of real conversions because Payment Link opens in _blank tab —
+      // user never returns to original tab to fire track()). 28-day window.
+      var paySheet = ss.getSheetByName('payments')
+      if (paySheet) {
+        var pData = paySheet.getDataRange().getValues()
+        var paymentsReal = 0, revenueReal = 0
+        for (var k = 1; k < pData.length; k++) {
+          var pDate = pData[k][0]
+          var iso = pDate instanceof Date ? pDate.toISOString() : String(pDate || '')
+          if (iso < cutoff) continue
+          paymentsReal++
+          revenueReal += parseFloat(pData[k][3]) || 0
+        }
+        funnel.payments_real = paymentsReal
+        funnel.revenue_real = Math.round(revenueReal * 100) / 100
       }
 
       funnel.rates = {
