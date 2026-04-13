@@ -20,6 +20,7 @@
  *
  * Le fichier .env à la racine du dépôt est chargé automatiquement (mêmes clés
  * que les secrets GitHub : FTP_SERVER_MQ, FTP_USERNAME_MQ, FTP_PASSWORD_MQ, …).
+ * Publication locale sans GitHub : npm run martinique && npm run ftp-deploy
  */
 const { Client } = require("basic-ftp")
 const path = require("path")
@@ -134,7 +135,7 @@ async function deployOne(t) {
       } catch (err) {
         client.trackProgress()
         try { client.close() } catch {}
-        if (attempt === MAX || !/ECONNRESET|timeout|ETIMEDOUT/i.test(err.message)) throw err
+        if (attempt === MAX || !/ECONNRESET|timeout|ETIMEDOUT|control socket/i.test(err.message)) throw err
         console.log(`  [${t.label}] ${label} reset @ ${count}, retry ${attempt + 1}/${MAX}…`)
       }
     }

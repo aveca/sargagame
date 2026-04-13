@@ -9,10 +9,12 @@
     "daily": "node scripts/scrape-copernicus.cjs && vite build && node scripts/prepare-ftp.cjs && node scripts/verify-ftp-ready.cjs",
     "preview": "vite preview",
     "martinique": "npm run build && node scripts/prepare-ftp.cjs",
+    "ftp-deploy": "node scripts/manual-ftp-deploy.cjs",
     "verify-ftp": "node scripts/verify-ftp-ready.cjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.87.0",
+    "basic-ftp": "^5.2.2",
     "googleapis": "^171.4.0",
     "leaflet": "^1.9.4",
     "react": "^18.2.0",

@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -49,55 +51,27 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add public/articles/ scripts/automation/data/automation-log.json
           git diff --cached --quiet || git commit -m "content: auto-article $(date -u +'%Y-%m-%d')"
-          git push || (git pull --rebase --autostash && git push)
+          BRANCH="${GITHUB_REF_NAME:-main}"
+          push_ok=0
+          for i in 1 2 3 4 5; do
+            git fetch origin "$BRANCH"
+            git rebase "origin/$BRANCH" || { echo "::error::git rebase failed"; git rebase --abort || true; exit 1; }
+            if git push origin "HEAD:$BRANCH"; then push_ok=1; break; fi
+            echo "::warning::git push failed ($i/5), sleep 20s"; sleep 20
+          done
+          [ "$push_ok" = "1" ] || { echo "::error::git push failed after 5 attempts"; exit 1; }
 
-      # ── 5. Deploy Martinique (with retry on timeout) ──────────
-      - name: Deploy Martinique (FTP) — attempt 1
-        id: ftp_mq_1
+      # ── 5–6. FTPS sessions fragmentées
+      - name: Deploy FTPS Martinique + Guadeloupe
         continue-on-error: true
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER_MQ }}
-          username: ${{ secrets.FTP_USERNAME_MQ }}
-          password: ${{ secrets.FTP_PASSWORD_MQ }}
-          local-dir: ./martinique-ftp/
-          server-dir: ./
-          dangerous-clean-slate: false
-
-      - name: Deploy Martinique (FTP) — retry
-        if: steps.ftp_mq_1.outcome == 'failure'
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER_MQ }}
-          username: ${{ secrets.FTP_USERNAME_MQ }}
-          password: ${{ secrets.FTP_PASSWORD_MQ }}
-          local-dir: ./martinique-ftp/
-          server-dir: ./
-          dangerous-clean-slate: false
-
-      # ── 6. Deploy Guadeloupe (with retry on timeout) ──────────
-      - name: Deploy Guadeloupe (FTP) — attempt 1
-        id: ftp_gp_1
-        continue-on-error: true
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER_GP }}
-          username: ${{ secrets.FTP_USERNAME_GP }}
-          password: ${{ secrets.FTP_PASSWORD_GP }}
-          local-dir: ./guadeloupe-ftp/
-          server-dir: ./
-          dangerous-clean-slate: false
-
-      - name: Deploy Guadeloupe (FTP) — retry
-        if: steps.ftp_gp_1.outcome == 'failure'
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER_GP }}
-          username: ${{ secrets.FTP_USERNAME_GP }}
-          password: ${{ secrets.FTP_PASSWORD_GP }}
-          local-dir: ./guadeloupe-ftp/
-          server-dir: ./
-          dangerous-clean-slate: false
+        env:
+          FTP_SERVER_MQ: ${{ secrets.FTP_SERVER_MQ }}
+          FTP_USERNAME_MQ: ${{ secrets.FTP_USERNAME_MQ }}
+          FTP_PASSWORD_MQ: ${{ secrets.FTP_PASSWORD_MQ }}
+          FTP_SERVER_GP: ${{ secrets.FTP_SERVER_GP }}
+          FTP_USERNAME_GP: ${{ secrets.FTP_USERNAME_GP }}
+          FTP_PASSWORD_GP: ${{ secrets.FTP_PASSWORD_GP }}
+        run: node scripts/manual-ftp-deploy.cjs
 
   notify-failure:
     needs: generate-content
