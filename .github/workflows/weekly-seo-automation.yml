@@ -65,6 +65,10 @@ jobs:
         continue-on-error: true
         run: node scripts/automation/seo-orphan-detector.cjs
 
+      # ── 1b4. Link Graph (structural orphans + phantom hrefs) ─────
+      # Runs after the build so the FTP folders exist (the analyzer
+      # walks martinique-ftp/ and guadeloupe-ftp/). Wired in step 6.5.
+
       # ── 1c. Auto-Optimize (data-driven self-improvement) ─
       - name: Auto-Optimize (apply data-driven fixes)
         continue-on-error: true
@@ -97,6 +101,11 @@ jobs:
           npm run build
           node scripts/prepare-ftp.cjs
 
+      # ── 6.5. Link Graph (post-build, reads martinique-ftp/) ─────
+      - name: Analyze internal link graph
+        continue-on-error: true
+        run: node scripts/automation/seo-link-graph.cjs
+
       # ── 4. Submit URLs to Google Indexing API ─────────────
       - name: Submit URLs to Google Indexing
         env:
@@ -121,7 +130,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in public/.htaccess vite.config.js scripts/automation/data/automation-log.json scripts/automation/data/meta-overrides.json scripts/automation/data/enrichments.json scripts/automation/data/new-pages.json scripts/automation/data/audit-summary.json scripts/automation/data/audit-full.json scripts/automation/data/ux-report.json scripts/automation/data/optimization-log.json scripts/automation/data/copywriting-log.json scripts/automation/data/position-history.json scripts/automation/data/position-changes.json scripts/automation/data/orphan-pages.json; do
+          for f in public/.htaccess vite.config.js scripts/automation/data/automation-log.json scripts/automation/data/meta-overrides.json scripts/automation/data/enrichments.json scripts/automation/data/new-pages.json scripts/automation/data/audit-summary.json scripts/automation/data/audit-full.json scripts/automation/data/ux-report.json scripts/automation/data/optimization-log.json scripts/automation/data/copywriting-log.json scripts/automation/data/position-history.json scripts/automation/data/position-changes.json scripts/automation/data/orphan-pages.json scripts/automation/data/link-graph.json; do
             [ -f "$f" ] && git add "$f"
           done
           [ -f scripts/automation/data/ab-results.json ] && git add scripts/automation/data/ab-results.json
