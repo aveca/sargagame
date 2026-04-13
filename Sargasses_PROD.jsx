@@ -708,11 +708,43 @@ button:active,a:active,[role="button"]:active{transform:scale(.96)!important;opa
   .anton{letter-spacing:0 !important}
 }
 
-/* Tablets & desktop — constrain width, center content */
+/* Tablets & desktop — keep the mobile app feel on every screen.
+   Strategy: full-bleed map as ambient backdrop, app chrome (nav/sheet/panels)
+   capped at ~520px centered. BottomNav becomes a floating dock pill.
+   One simple rule set — no split-pane, no sidebar — works at every resolution. */
 @media(min-width:768px){
   .sheet{max-width:520px;margin:0 auto !important}
   .sg-modal-panel{max-width:520px !important;margin:0 auto !important;left:50% !important;right:auto !important;transform:translateX(-50%) !important}
-  .sg-float-panel{max-width:600px;margin:0 auto;left:50% !important;right:auto !important;transform:translateX(-50%)}
+  .sg-float-panel{max-width:560px;margin:0 auto;left:50% !important;right:auto !important;transform:translateX(-50%)}
+
+  /* BottomNav → floating dock pill, detached from bottom edge */
+  .sg-bottom-nav{
+    left:50% !important;
+    right:auto !important;
+    transform:translateX(-50%);
+    bottom:18px !important;
+    width:min(440px, calc(100vw - 48px));
+    border-radius:999px !important;
+    border:1px solid rgba(0,0,0,.08) !important;
+    border-top:1px solid rgba(0,0,0,.08) !important;
+    padding:10px 12px !important;
+    box-shadow:0 12px 40px rgba(0,0,0,.14), 0 2px 10px rgba(0,0,0,.06);
+    transition:transform .3s cubic-bezier(.22,1,.36,1), box-shadow .3s ease;
+  }
+  .sg-bottom-nav:hover{
+    transform:translateX(-50%) translateY(-2px);
+    box-shadow:0 16px 48px rgba(0,0,0,.18), 0 3px 12px rgba(0,0,0,.08);
+  }
+
+  /* Ambient radial backdrop on wide screens — the map fades into a soft halo
+     at the edges so the app chrome reads as a floating card, not a browser frame */
+  html,body,#root{background:radial-gradient(ellipse at center, #FDFCF7 0%, #F0ECE0 100%)}
+}
+
+/* Larger desktops — same behaviour, just a touch more breathing room */
+@media(min-width:1200px){
+  .sg-bottom-nav{bottom:24px !important}
+  .sheet{max-width:540px}
 }
 
 /* Landscape — reduce vertical footprint */
@@ -1032,14 +1064,13 @@ function BottomNav({view,onChangeView,lang}){
     {id:"premium",label:LL.navPremium,icon:"⭐"},
   ]
   return(
-    <nav style={{
+    <nav className="sg-bottom-nav" style={{
       position:"fixed",bottom:0,left:0,right:0,zIndex:800,
       display:"flex",justifyContent:"space-around",alignItems:"center",
       background:"var(--sg-glass,rgba(255,255,255,.92))",
       backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
       borderTop:"1px solid var(--sg-glassBorder,rgba(0,0,0,.06))",
       padding:"8px 0 max(12px,env(safe-area-inset-bottom))",
-      maxWidth:600,margin:"0 auto",
     }}>
       {tabs.map(t=>{
         const active=view===t.id||(t.id==="premium"&&false)
