@@ -65,7 +65,25 @@ jobs:
         continue-on-error: true
         run: node scripts/automation/seo-orphan-detector.cjs
 
-      # ── 1b4. Link Graph (structural orphans + phantom hrefs) ─────
+      # ── 1b4. CTR diagnostic (position-vs-CTR gap detection) ──────
+      - name: CTR diagnostic (AWR curve)
+        if: steps.seo-audit.outcome == 'success'
+        continue-on-error: true
+        run: node scripts/automation/seo-ctr-diagnostic.cjs
+
+      # ── 1b5. Cannibalization (queries with multiple competing pages)
+      - name: Detect keyword cannibalization
+        if: steps.seo-audit.outcome == 'success'
+        continue-on-error: true
+        run: node scripts/automation/seo-cannibalization.cjs
+
+      # ── 1b6. CWV tracker (rolling 90d CrUX history) ──────────────
+      - name: Track Core Web Vitals over time
+        if: steps.seo-audit.outcome == 'success'
+        continue-on-error: true
+        run: node scripts/automation/seo-cwv-tracker.cjs
+
+      # ── 1b7. Link Graph (structural orphans + phantom hrefs) ─────
       # Runs after the build so the FTP folders exist (the analyzer
       # walks martinique-ftp/ and guadeloupe-ftp/). Wired in step 6.5.
 
@@ -106,6 +124,48 @@ jobs:
         continue-on-error: true
         run: node scripts/automation/seo-link-graph.cjs
 
+      # ── 6.6. Broken links (0-tolerance: hard fail in CI) ────────
+      - name: Check for broken internal links
+        continue-on-error: true
+        run: node scripts/automation/seo-broken-links.cjs
+
+      # ── 6.7. JSON-LD schema validator ───────────────────────────
+      - name: Validate JSON-LD schemas
+        continue-on-error: true
+        run: node scripts/automation/seo-schema-validator.cjs
+
+      # ── 6.8. Meta uniqueness (duplicate titles/descriptions) ────
+      - name: Check meta title/description uniqueness
+        continue-on-error: true
+        run: node scripts/automation/seo-meta-uniqueness.cjs
+
+      # ── 6.9. Canonical + hreflang validation ────────────────────
+      - name: Validate canonical and hreflang
+        continue-on-error: true
+        run: node scripts/automation/seo-canonical-hreflang.cjs
+
+      # ── 6.10. Content depth (thin pages + rich winners) ─────────
+      - name: Audit content depth
+        continue-on-error: true
+        run: node scripts/automation/seo-content-depth.cjs
+
+      # ── 6.11. Sitemap completeness check ────────────────────────
+      - name: Cross-check sitemap vs disk
+        continue-on-error: true
+        run: node scripts/automation/seo-sitemap-check.cjs
+
+      # ── 6.12. Image alt audit ───────────────────────────────────
+      - name: Audit image alt text
+        continue-on-error: true
+        run: node scripts/automation/seo-image-audit.cjs
+
+      # ── 6.13. Orphan healer (inject related-links into donors) ──
+      # Modifies HTML in martinique-ftp/ and guadeloupe-ftp/, must
+      # run AFTER orphan-detector + link-graph and BEFORE FTP deploy.
+      - name: Heal orphan pages (inject related-links blocks)
+        continue-on-error: true
+        run: node scripts/automation/seo-orphan-healer.cjs
+
       # ── 4. Submit URLs to Google Indexing API ─────────────
       - name: Submit URLs to Google Indexing
         env:
@@ -130,7 +190,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in public/.htaccess vite.config.js scripts/automation/data/automation-log.json scripts/automation/data/meta-overrides.json scripts/automation/data/enrichments.json scripts/automation/data/new-pages.json scripts/automation/data/audit-summary.json scripts/automation/data/audit-full.json scripts/automation/data/ux-report.json scripts/automation/data/optimization-log.json scripts/automation/data/copywriting-log.json scripts/automation/data/position-history.json scripts/automation/data/position-changes.json scripts/automation/data/orphan-pages.json scripts/automation/data/link-graph.json; do
+          for f in public/.htaccess vite.config.js scripts/automation/data/automation-log.json scripts/automation/data/meta-overrides.json scripts/automation/data/enrichments.json scripts/automation/data/new-pages.json scripts/automation/data/audit-summary.json scripts/automation/data/audit-full.json scripts/automation/data/ux-report.json scripts/automation/data/optimization-log.json scripts/automation/data/copywriting-log.json scripts/automation/data/position-history.json scripts/automation/data/position-changes.json scripts/automation/data/orphan-pages.json scripts/automation/data/link-graph.json scripts/automation/data/broken-links.json scripts/automation/data/orphan-healer.json scripts/automation/data/schema-validation.json scripts/automation/data/meta-uniqueness.json scripts/automation/data/canonical-hreflang.json scripts/automation/data/content-depth.json scripts/automation/data/ctr-diagnostic.json scripts/automation/data/cannibalization.json scripts/automation/data/sitemap-check.json scripts/automation/data/image-audit.json scripts/automation/data/cwv-history.json scripts/automation/data/cwv-changes.json; do
             [ -f "$f" ] && git add "$f"
           done
           [ -f scripts/automation/data/ab-results.json ] && git add scripts/automation/data/ab-results.json
