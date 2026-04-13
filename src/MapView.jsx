@@ -278,26 +278,17 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
         }
       }
 
-      const isMobile="ontouchstart" in window
       const isNearest=b.id===nearestCleanId
-      const marker=L.circleMarker([b.lat,b.lng],{
-        radius:isSelected?16:(isNearest?16:(isMobile?14:8)),
-        fillColor:st.c,
-        color:isNearest?GOLD:"#fff",
-        weight:isSelected?3:(isNearest?3:2),
-        fillOpacity:.9,
-        bubblingMouseEvents:false,
-        className:isNearest?"sg-nearest":"",
-      })
-      if(isNearest&&!isSelected){
-        const ring=L.circleMarker([b.lat,b.lng],{
-          radius:22,fillColor:"transparent",color:GOLD,weight:2,
-          fillOpacity:0,opacity:.4,bubblingMouseEvents:false,interactive:false,
-          className:"sg-nearest-ring",
-        })
-        ring.addTo(markerGroup)
-      }
-      if(!("ontouchstart" in window))marker.bindTooltip(b.name+(isNearest?(lang==="en"?" · Nearest clean":" · La plus proche propre"):""),{direction:"top",offset:[0,-12],className:"",permanent:false})
+      const hasScore=typeof b.score==="number"
+      const size=isSelected?34:(isNearest?30:26)
+      const bg=st.c
+      const ring=isNearest?`box-shadow:0 0 0 2px ${GOLD},0 4px 12px rgba(0,0,0,.35);`:`box-shadow:0 2px 8px rgba(0,0,0,.35);`
+      const scale=isSelected?"scale(1.08)":"scale(1)"
+      const label=hasScore?String(b.score):"·"
+      const html=`<div class="sg-pin${isNearest?" sg-pin-nearest":""}${isSelected?" sg-pin-selected":""}" style="width:${size}px;height:${size}px;border-radius:50%;background:${bg};color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:${isSelected?15:13}px;font-weight:800;letter-spacing:-.3px;border:2px solid #fff;${ring}transform:${scale};transition:transform .15s ease;cursor:pointer">${label}</div>`
+      const icon=L.divIcon({className:"",html,iconSize:[size,size],iconAnchor:[size/2,size/2]})
+      const marker=L.marker([b.lat,b.lng],{icon,riseOnHover:true,zIndexOffset:isSelected?1000:(isNearest?500:0)})
+      if(!("ontouchstart" in window))marker.bindTooltip(b.name+(isNearest?(lang==="en"?" · Nearest clean":" · La plus proche propre"):""),{direction:"top",offset:[0,-size/2-4],className:"",permanent:false})
       marker.on("click",()=>onBeachClick(b))
       marker.addTo(markerGroup)
       markersRef.current.push(marker)
