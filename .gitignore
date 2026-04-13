@@ -35,6 +35,9 @@ memory
 
 # Local Playwright UI test output
 .ui-test/
+.playwright-mcp/
+session*-*.png
+responsive-*.png
 
 # FB scraper persistent session (cookies — NEVER commit)
 .fb-session/
