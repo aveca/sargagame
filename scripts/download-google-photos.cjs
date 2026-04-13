@@ -1,16 +1,25 @@
 #!/usr/bin/env node
 /**
- * Download real beach photos from Google Places API (New).
- * Uses Text Search to find each beach, then downloads the first photo.
- * Output: public/beaches/gp-photo-{beachId}.jpg
+ * Download beach photos from Google Places API.
+ * Text Search + locationbias (5km radius) so lesser-known beaches don't collide
+ * on a generic POI photo. Previous version hit 5 binary-duplicate pairs for
+ * beaches with weak name recognition (e.g. Pointe Fort Caravelle vs Anse des Galets).
+ *
+ * Usage:
+ *   GOOGLE_PLACES_KEY=... node scripts/download-google-photos.cjs
+ *   GOOGLE_PLACES_KEY=... node scripts/download-google-photos.cjs --only=mq066,mq067 --force
  */
 const fs = require('fs')
 const path = require('path')
 const https = require('https')
 
-const API_KEY = 'REDACTED_GOOGLE_KEY'
+const API_KEY = process.env.GOOGLE_PLACES_KEY || 'REDACTED_GOOGLE_KEY'
 const BEACHES = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../public/data/beaches-list.json'), 'utf8'))
 const OUT_DIR = path.resolve(__dirname, '../public/beaches')
+
+const ARGS = process.argv.slice(2)
+const ONLY = (ARGS.find(a => a.startsWith('--only=')) || '').replace('--only=', '').split(',').filter(Boolean)
+const FORCE = ARGS.includes('--force')
 
 function fetchJSON(url) {
   return new Promise((resolve, reject) => {
@@ -38,12 +47,12 @@ function downloadFile(url, dest) {
   })
 }
 
-async function getPlacePhoto(beachName, commune, island) {
-  const islandName = island === 'mq' ? 'Martinique' : 'Guadeloupe'
-  const query = encodeURIComponent(`${beachName} ${commune} ${islandName} plage`)
+async function getPlacePhoto(beach) {
+  const islandName = beach.island === 'mq' ? 'Martinique' : 'Guadeloupe'
+  const query = encodeURIComponent(`${beach.name} ${beach.commune} ${islandName} plage`)
+  const bias = `circle:5000@${beach.lat},${beach.lng}`
 
-  // Step 1: Find Place via Text Search
-  const searchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${query}&key=${API_KEY}&language=fr`
+  const searchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${query}&locationbias=${encodeURIComponent(bias)}&key=${API_KEY}&language=fr`
   const searchResult = await fetchJSON(searchUrl)
 
   if (!searchResult.results || searchResult.results.length === 0) return null
@@ -51,30 +60,27 @@ async function getPlacePhoto(beachName, commune, island) {
   const place = searchResult.results[0]
   if (!place.photos || place.photos.length === 0) return null
 
-  // Step 2: Get photo URL (max width 800px for good quality without being too heavy)
   const photoRef = place.photos[0].photo_reference
-  const photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=1600&photo_reference=${photoRef}&key=${API_KEY}`
-
-  return photoUrl
+  return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=1600&photo_reference=${photoRef}&key=${API_KEY}`
 }
 
 async function main() {
-  console.log(`Downloading Google Places photos for ${BEACHES.length} beaches...`)
+  const targets = ONLY.length ? BEACHES.filter(b => ONLY.includes(b.id)) : BEACHES
+  console.log(`Downloading Google Places photos for ${targets.length} beaches${ONLY.length ? ' (filtered)' : ''}${FORCE ? ' [FORCE]' : ''}...`)
   if (!fs.existsSync(OUT_DIR)) fs.mkdirSync(OUT_DIR, { recursive: true })
 
   let ok = 0, fail = 0, skip = 0
-  for (const beach of BEACHES) {
+  for (const beach of targets) {
     const dest = path.join(OUT_DIR, `gplace-${beach.id}.jpg`)
 
-    // Skip if already downloaded
-    if (fs.existsSync(dest) && fs.statSync(dest).size > 5000) {
+    if (!FORCE && fs.existsSync(dest) && fs.statSync(dest).size > 5000) {
       skip++
       console.log(`  skip ${beach.id} (exists)`)
       continue
     }
 
     try {
-      const photoUrl = await getPlacePhoto(beach.name, beach.commune, beach.island)
+      const photoUrl = await getPlacePhoto(beach)
       if (!photoUrl) {
         console.log(`  ✗ ${beach.id} — no photo found for "${beach.name}"`)
         fail++
