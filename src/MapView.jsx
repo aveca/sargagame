@@ -126,7 +126,8 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
       zoomControl:false,
       attributionControl:false,
       maxBoundsViscosity:1,
-      tap:false,
+      // tap:true (defaut Leaflet) — tap:false cassait des ouvertures de fiche plage sur mobile
+      // (synthetic click / touch chain vers divIcon markers).
       zoomSnap:.25, // allow fitBounds to land on 10.5, 10.75, etc. so MQ fills the viewport without wasting ocean
     })
     map.setView(center,11)
@@ -149,29 +150,29 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
   // on 390px viewports, which is why users couldn't click ~21 of 53 pins.
   useEffect(()=>{
     if(!mapRef.current)return
+    const islandBeaches=(beaches||[]).filter(b=>b.island===island)
+    const fallbackCenter=ISLAND_CENTER[island]||ISLAND_CENTER.mq
+    // Toujours inclure TOUTES les plages dans les bounds. Ne jamais flyTo(user) seul au z12 :
+    // ça recoupait l'est MQ / pins hors écran → clics "qui ne font rien" visuellement.
+    const latlngs=islandBeaches.map(b=>[b.lat,b.lng])
     if(userPos){
       const onMq=userPos.lat<15.5,onGp=userPos.lat>=15.5
       if((island==="mq"&&onMq)||(island==="gp"&&onGp)){
-        mapRef.current.flyTo([userPos.lat,userPos.lng],12,{duration:1})
-        return
+        latlngs.push([userPos.lat,userPos.lng])
       }
     }
-    const islandBeaches=(beaches||[]).filter(b=>b.island===island)
-    const fallbackCenter=ISLAND_CENTER[island]||ISLAND_CENTER.mq
     try{
       const size=mapRef.current.getSize()
       if(size.x===0||size.y===0){mapRef.current.setView(fallbackCenter,11);return}
-      if(islandBeaches.length>=3){
-        const latlngs=islandBeaches.map(b=>[b.lat,b.lng])
-        // Tight fit so the island fills the viewport. paddingTopLeft reserves space for header,
-        // paddingBottomRight reserves space for slider + search bar so pins never clip under them.
-        // zoomSnap:.25 at init lets this land on 10.5 instead of dropping to 9.
+      if(latlngs.length>=3){
         mapRef.current.fitBounds(latlngs,{
           paddingTopLeft:[20,110],
           paddingBottomRight:[20,190],
           maxZoom:12,
           animate:true,duration:.8,
         })
+      }else if(latlngs.length>=1){
+        mapRef.current.fitBounds(latlngs,{padding:[40,40],maxZoom:12,animate:true,duration:.6})
       }else{
         mapRef.current.flyTo(fallbackCenter,11,{duration:1})
       }
