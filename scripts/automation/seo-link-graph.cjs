@@ -55,6 +55,11 @@ function fileToUrlPath(file, ftpRoot) {
   return '/' + rel
 }
 
+// Asset extensions are valid hrefs but not "pages" — they live in skipped
+// dirs (assets/, api/, icons/) so the HTML walker never sees them and they
+// show up as phantoms. Filter them before the phantom check.
+const ASSET_EXT_RE = /\.(js|mjs|css|png|jpe?g|gif|svg|ico|webp|avif|json|xml|txt|pdf|woff2?|ttf|map)$/i
+
 function extractLinks(html) {
   const slice = html.length > MAX_PARSE_BYTES ? html.slice(0, MAX_PARSE_BYTES) : html
   const links = new Set()
@@ -63,6 +68,7 @@ function extractLinks(html) {
     if (!href) continue
     if (href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('javascript:')) continue
     href = href.split('?')[0]
+    if (ASSET_EXT_RE.test(href)) continue
     links.add(href)
   }
   return links

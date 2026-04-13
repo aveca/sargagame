@@ -173,6 +173,12 @@ export default defineConfig({
           let html = readFileSync(indexPath, 'utf-8')
           html = html.replace(/"dateModified":"[^"]*"/, `"dateModified":"${new Date().toISOString().slice(0,10)}"`)
           writeFileSync(indexPath, html)
+          // Sub-page template: strip the root SEO noscript (the long block starting
+          // with <h1>) because every sub-page (beach, editorial, /plages/, hub, EN, ES,
+          // conditions) appends its own page-specific noscript. Leaving the root version
+          // duplicates content AND, on the GP build, ships hardcoded MQ beach links that
+          // 404 on guadeloupe — exactly the phantom-href bug surfaced by seo-link-graph.
+          const htmlSubpage = html.replace(/<noscript>\s*<h1>[\s\S]*?<\/noscript>/, '')
           const scriptMatch = html.match(/src="([^"]+\.js)"/)
           const scriptSrc = scriptMatch ? (scriptMatch[1].startsWith('/') ? scriptMatch[1] : '/' + scriptMatch[1]) : '/assets/index.js'
           const pages = [
@@ -228,12 +234,31 @@ export default defineConfig({
               { q: "Les sargasses sont-elles dangereuses pour la santé ?", a: "Les sargasses fraîches sont inoffensives. La décomposition libère du sulfure d'hydrogène (H₂S), irritant dès 1 ppm. Asthmatiques, personnes âgées, enfants et femmes enceintes doivent éviter les zones en décomposition." },
             ],
           }
+          // Per-island slug allowlists — used to rewrite cross-island beach
+          // refs in editorials. A /plages/{slug}/ link to a slug that lives
+          // on the partner island becomes an absolute https://partner/ URL
+          // (good for SEO, fixes phantoms). A slug missing from both islands
+          // is dead — strip the <a> wrapper, keep the text.
+          const mqSlugs = new Set(ALL_BEACHES.filter(b => b.island === 'mq').map(b => slugify(b.name)))
+          const gpSlugs = new Set(ALL_BEACHES.filter(b => b.island === 'gp').map(b => slugify(b.name)))
+          const rewriteCrossIsland = (html, isMQ) => {
+            const ownSlugs = isMQ ? mqSlugs : gpSlugs
+            const otherSlugs = isMQ ? gpSlugs : mqSlugs
+            const otherDomain = isMQ ? 'sargasses-guadeloupe.com' : 'sargasses-martinique.com'
+            return html.replace(/<a([^>]*)href="\/plages\/([a-z0-9-]+)\/?"([^>]*)>([^<]*)<\/a>/gi, (m, pre, slug, post, text) => {
+              if (ownSlugs.has(slug)) return m
+              if (otherSlugs.has(slug)) {
+                return `<a${pre}href="https://${otherDomain}/plages/${slug}/"${post}>${text}</a>`
+              }
+              return text
+            })
+          }
           for (const { path: p, title, desc, enPath } of pages) {
             const dir = resolve(outDir, p)
             mkdirSync(dir, { recursive: true })
             const pageUrl = `https://sargasses-martinique.com/${p}/`
             const enUrl = enPath ? `https://sargasses-martinique.com/${enPath}/` : null
-            let pageHtml = html
+            let pageHtml = htmlSubpage
               .replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`)
               .replace(/<meta name="description"[^>]*>/, () => `<meta name="description" content="${desc}" />`)
               .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${pageUrl}" />`)
@@ -258,12 +283,33 @@ export default defineConfig({
                 .replace('</head>', `${ogArticleTags}\n    <script type="application/ld+json">\n    ${articleSchema}\n    </script>${faqSchemaTag}\n</head>`)
                 .replace('</body>', `\n    <noscript>${editorialContent[p]}</noscript>\n</body>`)
             }
-            writeFileSync(resolve(dir, 'index.html'), pageHtml)
+            // MQ variant: rewrite GP-only beach refs to absolute partner URLs
+            const mqPageHtml = rewriteCrossIsland(pageHtml, true)
+            writeFileSync(resolve(dir, 'index.html'), mqPageHtml)
+            // GP variant: same body, swap canonical/og/hreflang/JSON-LD URLs
+            // to sargasses-guadeloupe.com, then rewrite MQ-only beach refs to
+            // absolute partner URLs. Mirror to dist/_gp/{p}/ — prepare-ftp
+            // overlays this onto guadeloupe-ftp/ post-copy.
+            const gpPageUrl = `https://sargasses-guadeloupe.com/${p}/`
+            const gpEnUrl = enPath ? `https://sargasses-guadeloupe.com/${enPath}/` : null
+            let gpPageHtml = pageHtml
+              .replace(/https:\/\/sargasses-martinique\.com/g, 'https://sargasses-guadeloupe.com')
+            // hreflang/canonical re-anchor (idempotent — replace already swapped them above)
+            gpPageHtml = gpPageHtml
+              .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${gpPageUrl}" />`)
+              .replace(/<link rel="alternate" hreflang="fr"[^>]*>/, `<link rel="alternate" hreflang="fr" href="${gpPageUrl}" />`)
+              .replace(/<link rel="alternate" hreflang="en"[^>]*>/, gpEnUrl ? `<link rel="alternate" hreflang="en" href="${gpEnUrl}" />` : '')
+              .replace(/<link rel="alternate" hreflang="x-default"[^>]*>/, `<link rel="alternate" hreflang="x-default" href="${gpPageUrl}" />`)
+              .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="${gpPageUrl}" />`)
+            gpPageHtml = rewriteCrossIsland(gpPageHtml, false)
+            const gpMirrorEditorialDir = resolve(outDir, '_gp', p)
+            mkdirSync(gpMirrorEditorialDir, { recursive: true })
+            writeFileSync(resolve(gpMirrorEditorialDir, 'index.html'), gpPageHtml)
           }
           // Page EN : app en anglais (pathname /en/ → getLang() = 'en'), SEO EN, script depuis racine
           const enDir = resolve(outDir, 'en')
           mkdirSync(enDir, { recursive: true })
-          const enIndex = html
+          const enIndex = htmlSubpage
             .replace(/<html lang="fr">/, '<html lang="en">')
             .replace(/<title>[^<]*<\/title>/, '<title>Sargassum Martinique real-time · Map &amp; beaches today</title>')
             .replace(/<meta name="description"[^>]*>/, '<meta name="description" content="Real-time sargassum map in Martinique. Which beaches are clean or to avoid, 7-day outlook. For travelers and residents." />')
@@ -304,7 +350,7 @@ export default defineConfig({
           // Page ES : app en español (pathname /es/ → getLang() = 'es'), SEO ES, script depuis racine
           const esDir = resolve(outDir, 'es')
           mkdirSync(esDir, { recursive: true })
-          const esIndex = html
+          const esIndex = htmlSubpage
             .replace(/<html lang="fr">/, '<html lang="es">')
             .replace(/<title>[^<]*<\/title>/, '<title>Sargazo Martinica en tiempo real · Mapa y playas hoy (2026)</title>')
             .replace(/<meta name="description"[^>]*>/, '<meta name="description" content="Mapa de sargazo en tiempo real en Martinica. Qué playas están limpias o evitar, pronóstico de 7 días. Para viajeros y residentes." />')
@@ -625,7 +671,7 @@ export default defineConfig({
             }
             // Always use contextually-generated FAQ (enrichments FAQ was identical across all beaches)
             const faqSchema = JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":faqQuestions})
-            const beachHtml = html
+            const beachHtml = htmlSubpage
               .replace(/<title>[^<]*<\/title>/, `<title>${beachTitle}</title>`)
               .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${beachDesc}" />`)
               .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${beachUrl}" />`)
@@ -767,7 +813,7 @@ export default defineConfig({
             const breadcrumbPlages = JSON.stringify({"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Accueil","item":`https://${domain}/`},{"@type":"ListItem","position":2,"name":"Plages","item":plagesUrl}]})
             const plagesDir = resolve(outDir, 'plages')
             mkdirSync(plagesDir, { recursive: true })
-            const plagesHtml = html
+            const plagesHtml = htmlSubpage
               .replace(/<title>[^<]*<\/title>/, `<title>${plagesTitle}</title>`)
               .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${plagesDesc}" />`)
               .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${plagesUrl}" />`)
@@ -779,6 +825,14 @@ export default defineConfig({
               .replace('</head>', `\n    <script type="application/ld+json">\n    ${plagesSchema}\n    </script>\n    <script type="application/ld+json">\n    ${breadcrumbPlages}\n    </script>\n</head>`)
               .replace('</body>', `\n    <noscript>${plagesNoscript}</noscript>\n</body>`)
             writeFileSync(resolve(plagesDir, 'index.html'), plagesHtml)
+            // Stash the GP-flavored version in the _gp/ mirror so prepare-ftp.cjs
+            // can stamp it onto guadeloupe-ftp/ after the MQ iteration overwrites
+            // dist/plages/index.html on its second pass.
+            if (!isMQ) {
+              const gpMirrorDir = resolve(outDir, '_gp', 'plages')
+              mkdirSync(gpMirrorDir, { recursive: true })
+              writeFileSync(resolve(gpMirrorDir, 'index.html'), plagesHtml)
+            }
             // Add to sitemap
             const plagesSitemapEntry = `  <url><loc>${plagesUrl}</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>\n`
             if (isMQ) sitemapMQBeaches += plagesSitemapEntry
@@ -872,7 +926,7 @@ export default defineConfig({
                 const breadcrumbCond = JSON.stringify({"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Accueil","item":`https://${domain}/`},{"@type":"ListItem","position":2,"name":"Plages","item":`https://${domain}/plages/`},{"@type":"ListItem","position":3,"name":"Conditions","item":`https://${domain}/conditions/`},{"@type":"ListItem","position":4,"name":pageH1,"item":pageUrl}]})
                 const condDir = resolve(outDir, 'conditions', page.slug)
                 mkdirSync(condDir, { recursive: true })
-                const condHtml = html
+                const condHtml = htmlSubpage
                   .replace(/<title>[^<]*<\/title>/, `<title>${pageTitle}</title>`)
                   .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${pageDesc}" />`)
                   .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${pageUrl}" />`)
@@ -884,6 +938,11 @@ export default defineConfig({
                   .replace('</head>', `\n    <script type="application/ld+json">\n    ${pageSchema}\n    </script>\n    <script type="application/ld+json">\n    ${breadcrumbCond}\n    </script>\n</head>`)
                   .replace('</body>', `\n    <noscript>${pageNoscript}</noscript>\n</body>`)
                 writeFileSync(resolve(condDir, 'index.html'), condHtml)
+                if (!isMQ) {
+                  const gpMirrorDir = resolve(outDir, '_gp', 'conditions', page.slug)
+                  mkdirSync(gpMirrorDir, { recursive: true })
+                  writeFileSync(resolve(gpMirrorDir, 'index.html'), condHtml)
+                }
                 const condSitemapEntry = `  <url><loc>${pageUrl}</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>\n`
                 if (isMQ) sitemapMQBeaches += condSitemapEntry
                 else sitemapGPBeaches += condSitemapEntry
@@ -897,7 +956,7 @@ export default defineConfig({
               const hubSchema = JSON.stringify({"@context":"https://schema.org","@type":"CollectionPage","name":hubTitle,"description":hubDesc,"url":hubUrl,"isPartOf":{"@type":"WebApplication","name":`Sargasses ${island}`,"url":`https://${domain}/`},"dateModified":today})
               const hubDir = resolve(outDir, 'conditions')
               mkdirSync(hubDir, { recursive: true })
-              const hubHtml = html
+              const hubHtml = htmlSubpage
                 .replace(/<title>[^<]*<\/title>/, `<title>${hubTitle}</title>`)
                 .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${hubDesc}" />`)
                 .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${hubUrl}" />`)
@@ -907,6 +966,11 @@ export default defineConfig({
                 .replace('</head>', `\n    <script type="application/ld+json">\n    ${hubSchema}\n    </script>\n</head>`)
                 .replace('</body>', `\n    <noscript>${hubNoscript}</noscript>\n</body>`)
               writeFileSync(resolve(hubDir, 'index.html'), hubHtml)
+              if (!isMQ) {
+                const gpMirrorDir = resolve(outDir, '_gp', 'conditions')
+                mkdirSync(gpMirrorDir, { recursive: true })
+                writeFileSync(resolve(gpMirrorDir, 'index.html'), hubHtml)
+              }
               const hubSitemapEntry = `  <url><loc>${hubUrl}</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>\n`
               if (isMQ) sitemapMQBeaches += hubSitemapEntry
               else sitemapGPBeaches += hubSitemapEntry
