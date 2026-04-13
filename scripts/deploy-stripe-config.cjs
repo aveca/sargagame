@@ -2,10 +2,14 @@
 /**
  * One-shot FTP uploader for public/api/stripe-config.php → both sites.
  * Used during the "go public" migration to push rotated Stripe/Resend keys
- * without rebuilding the whole site. Reads creds from env (passed inline).
+ * without rebuilding the whole site. Reads creds from env or racine/.env
+ * (mêmes noms que les secrets GitHub).
  */
 const { Client } = require("basic-ftp");
 const path = require("path");
+const { loadProjectEnv } = require("./lib/load-project-env.cjs");
+
+loadProjectEnv();
 
 const LOCAL_FILE = path.join(__dirname, "..", "public", "api", "stripe-config.php");
 const REMOTE_PATH = "api/stripe-config.php";
@@ -13,15 +17,15 @@ const REMOTE_PATH = "api/stripe-config.php";
 const targets = [
   {
     label: "Martinique",
-    host: process.env.FTP_HOST_MQ,
-    user: process.env.FTP_USER_MQ,
-    pass: process.env.FTP_PASS_MQ,
+    host: process.env.FTP_HOST_MQ || process.env.FTP_SERVER_MQ,
+    user: process.env.FTP_USER_MQ || process.env.FTP_USERNAME_MQ,
+    pass: process.env.FTP_PASS_MQ || process.env.FTP_PASSWORD_MQ,
   },
   {
     label: "Guadeloupe",
-    host: process.env.FTP_HOST_GP,
-    user: process.env.FTP_USER_GP,
-    pass: process.env.FTP_PASS_GP,
+    host: process.env.FTP_HOST_GP || process.env.FTP_SERVER_GP,
+    user: process.env.FTP_USER_GP || process.env.FTP_USERNAME_GP,
+    pass: process.env.FTP_PASS_GP || process.env.FTP_PASSWORD_GP,
   },
 ];
 
