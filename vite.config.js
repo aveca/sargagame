@@ -302,6 +302,27 @@ export default defineConfig({
               .replace(/<link rel="alternate" hreflang="x-default"[^>]*>/, `<link rel="alternate" hreflang="x-default" href="${gpPageUrl}" />`)
               .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="${gpPageUrl}" />`)
             gpPageHtml = rewriteCrossIsland(gpPageHtml, false)
+            // Swap "Martinique" → "Guadeloupe" in visible text (title, meta,
+            // og, twitter, H1). Protects composites like "Martinique et
+            // Guadeloupe" first. Without this, GP SEO landing pages (previsions,
+            // carte-sargasses) kept MQ titles and cannibalized GSC queries.
+            gpPageHtml = gpPageHtml
+              .replace(/Martinique et Guadeloupe/g, '\u0000MQ_ET_GP\u0000')
+              .replace(/Martinique &amp; Guadeloupe/g, '\u0000MQ_AMPE_GP\u0000')
+              .replace(/Martinique & Guadeloupe/g, '\u0000MQ_AMP_GP\u0000')
+              .replace(/Martinique and Guadeloupe/g, '\u0000MQ_AND_GP\u0000')
+              .replace(/(<title>[^<]*?)Martinique([^<]*?<\/title>)/g, '$1Guadeloupe$2')
+              .replace(/(<meta name="description" content="[^"]*?)Martinique([^"]*?")/g, '$1Guadeloupe$2')
+              .replace(/(<meta property="og:title" content="[^"]*?)Martinique([^"]*?")/g, '$1Guadeloupe$2')
+              .replace(/(<meta property="og:description" content="[^"]*?)Martinique([^"]*?")/g, '$1Guadeloupe$2')
+              .replace(/(<meta property="og:image:alt" content="[^"]*?)Martinique([^"]*?")/g, '$1Guadeloupe$2')
+              .replace(/(<meta name="twitter:title" content="[^"]*?)Martinique([^"]*?")/g, '$1Guadeloupe$2')
+              .replace(/(<meta name="twitter:description" content="[^"]*?)Martinique([^"]*?")/g, '$1Guadeloupe$2')
+              .replace(/(<h1[^>]*>[^<]*?)Martinique([^<]*?<\/h1>)/g, '$1Guadeloupe$2')
+              .replace(/\u0000MQ_ET_GP\u0000/g, 'Martinique et Guadeloupe')
+              .replace(/\u0000MQ_AMPE_GP\u0000/g, 'Martinique &amp; Guadeloupe')
+              .replace(/\u0000MQ_AMP_GP\u0000/g, 'Martinique & Guadeloupe')
+              .replace(/\u0000MQ_AND_GP\u0000/g, 'Martinique and Guadeloupe')
             const gpMirrorEditorialDir = resolve(outDir, '_gp', p)
             mkdirSync(gpMirrorEditorialDir, { recursive: true })
             writeFileSync(resolve(gpMirrorEditorialDir, 'index.html'), gpPageHtml)
