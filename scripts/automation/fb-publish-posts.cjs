@@ -40,7 +40,7 @@ const OUT_PATH = path.join(__dirname, '..', '..', 'public', 'api', 'community', 
 const MAX_AGE_DAYS = 14
 const MAX_PER_BEACH = 3
 const MAX_TEXT_LEN = 220
-const MAX_PHOTOS = 3
+const MAX_PHOTOS = 6
 
 function loadFeed() {
   try { return JSON.parse(fs.readFileSync(FEED_PATH, 'utf-8')) }

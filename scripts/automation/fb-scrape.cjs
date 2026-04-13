@@ -29,22 +29,37 @@ const fs = require('fs')
 const path = require('path')
 
 const FEED_PATH = path.join(__dirname, 'data', 'fb-feed.json')
+const BEACHES_PATH = path.join(__dirname, '..', '..', 'public', 'data', 'beaches-list.json')
 const SESSION_DIR = path.join(__dirname, '..', '..', '.fb-session')
 
-// Beach keywords — posts must mention at least one to be saved
-const BEACH_KEYWORDS = [
-  'sargasse', 'sargassum', 'algue', 'plage',
-  // MQ beaches + landmarks
-  'salines', 'anse', 'tartane', 'caravelle', 'diamant', 'carbet', 'prêcheur',
-  'couleuvre', 'céron', 'trabaud', 'cap chevalier', 'schoelcher', 'pointe lynch',
-  'pointe fort', 'trinité', 'sainte-anne', 'sainte anne', 'vauclin',
-  // GP beaches + landmarks
-  'grande anse', 'malendure', 'bois jolan', 'saint-françois', 'saint francois',
-  'sainte-anne', 'petite terre', 'désirade', 'desirade', 'saintes',
-  'terre-de-haut', 'terre de haut', 'bouillante', 'deshaies',
-  // generic state words
-  'propre', 'alerte', 'échouage', 'echouage', 'banc', 'sargassière',
-]
+// Auto-derive beach keywords from the live beaches list so we never drift from
+// the real DB. Keeps the "topic" guards (sargasse/algue) hand-curated.
+function buildBeachKeywords() {
+  const topicKeywords = [
+    'sargasse', 'sargassum', 'algue', 'plage',
+    'propre', 'alerte', 'échouage', 'echouage', 'banc', 'sargassière',
+  ]
+  try {
+    const beaches = JSON.parse(fs.readFileSync(BEACHES_PATH, 'utf-8'))
+    const seen = new Set(topicKeywords)
+    for (const b of beaches) {
+      // Split beach name on whitespace/punct, keep tokens >=4 chars (avoids "de"/"la")
+      const tokens = String(b.name || '').toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .split(/[\s\-'()/,]+/).filter(t => t.length >= 4)
+      const commune = String(b.commune || '').toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      if (commune.length >= 4) seen.add(commune)
+      for (const t of tokens) seen.add(t)
+    }
+    return [...seen]
+  } catch (e) {
+    console.warn('⚠ beaches-list.json not loadable, using fallback keywords:', e.message)
+    return topicKeywords
+  }
+}
+
+const BEACH_KEYWORDS = buildBeachKeywords()
 
 const TARGET_GROUPS = [
   { url: 'https://www.facebook.com/groups/169026757271139/', name: 'SOS Sargasses Martinique', island: 'mq', privacy: 'public' },
@@ -61,8 +76,15 @@ function saveFeed(feed) {
   fs.writeFileSync(FEED_PATH, JSON.stringify(feed, null, 2), 'utf-8')
 }
 
+// Topic gate: post must mention sargassum explicitly (not just a beach name).
+// Prevents noise from unrelated group posts ("panne voiture", "location",
+// "météo humide") that happen to namedrop a commune/beach token.
+const SARGASSUM_TOPIC = /(sargass|algu[ei]|échoua|echoua|pourri|puanteur|banc[s ]|sargassi[eè]re)/i
+
 function matchesBeachKeywords(text) {
   const lower = (text || '').toLowerCase()
+  if (!SARGASSUM_TOPIC.test(lower)) return false
+  // And at least one beach-name or commune token
   return BEACH_KEYWORDS.some(k => lower.includes(k))
 }
 
@@ -75,44 +97,105 @@ function inferStatus(text) {
 }
 
 async function extractPost(page) {
-  // Scroll once to trigger lazy content
-  await page.evaluate(() => window.scrollTo(0, 400))
-  await page.waitForTimeout(800)
+  // Scroll progressively to trigger lazy content + all comments (photos live
+  // in comments too — that's where people actually post "here's what it looks
+  // like today" shots, which is the highest-value sargassum content).
+  for (let y = 0; y <= 2400; y += 600) {
+    await page.evaluate(yy => window.scrollTo(0, yy), y)
+    await page.waitForTimeout(500)
+  }
 
-  // Try clicking "Voir plus de commentaires" if present
+  // Click all "Voir plus de commentaires" / "See more comments" buttons we can find
+  for (let i = 0; i < 3; i++) {
+    try {
+      const more = await page.$('text=/Voir (plus de|tous les|d.autres) commentaires|See more comments|View (more|previous)/i')
+      if (!more) break
+      await more.click({ force: true }).catch(() => {})
+      await page.waitForTimeout(900)
+    } catch { break }
+  }
+
+  // Expand "Voir plus" (See more) on long posts so we capture full text
   try {
-    const more = await page.$('text=/Voir (plus de|tous les) commentaires/i')
-    if (more) { await more.click(); await page.waitForTimeout(1000) }
+    const seeMore = await page.$$('text=/^Voir plus$|^See more$/i')
+    for (const b of seeMore.slice(0, 5)) { await b.click({ force: true }).catch(() => {}) }
+    await page.waitForTimeout(400)
   } catch {}
 
   return await page.evaluate(() => {
     const blocks = Array.from(document.querySelectorAll('div[dir="auto"], span[dir="auto"]'))
       .map(el => (el.innerText || '').trim())
-      .filter(t => t.length > 20 && t.length < 800)
+      .filter(t => t.length > 20 && t.length < 1200)
     const seen = new Set()
     const unique = []
     for (const t of blocks) {
       if (!seen.has(t)) { seen.add(t); unique.push(t) }
     }
+
+    // Scontent images — exclude profile pictures (they live in <a> with
+    // /user/ or /profile/, or have very small aspect ratio). Keep photos with
+    // meaningful dimensions (w>=400 catches typical FB beach shots).
     const imgs = Array.from(document.querySelectorAll('img'))
-      .filter(i => (i.src || '').includes('scontent') && i.naturalWidth >= 300)
-      .map(i => ({ src: i.src, w: i.naturalWidth, h: i.naturalHeight }))
-      .slice(0, 8)
-    return { title: document.title, texts: unique, imgs }
+      .filter(i => {
+        const src = i.src || ''
+        if (!src.includes('scontent') && !src.includes('fbcdn')) return false
+        if (i.naturalWidth < 400) return false
+        // Skip profile/avatar images — they sit inside an <a href="/user/…">
+        const parentA = i.closest('a[href*="/user/"], a[href*="/profile/"]')
+        if (parentA && i.naturalWidth < 200) return false
+        return true
+      })
+      .map(i => ({
+        src: i.src,
+        w: i.naturalWidth,
+        h: i.naturalHeight,
+        alt: i.alt || '',
+      }))
+      // Dedupe by src
+      .filter((v, i, arr) => arr.findIndex(x => x.src === v.src) === i)
+      .slice(0, 12)
+
+    // Author — profile link *inside* the post article. Reject generic FB chrome
+    // (the home link labelled "Facebook", skip-to-content, Menu, etc.)
+    let author = null
+    try {
+      const FB_CHROME = /^(facebook|menu|accueil|home|marketplace|watch|gaming|notifications|accessibility)$/i
+      const article = document.querySelector('[role="article"]') || document
+      // Look for strong/span inside an anchor that points to a user profile
+      const candidates = Array.from(article.querySelectorAll(
+        'h2 strong span, h3 strong span, h4 strong span, strong > a, a[role="link"] > strong span, a[role="link"] span strong'
+      )).map(el => (el.innerText || '').trim()).filter(Boolean)
+      for (const c of candidates) {
+        const clean = c.split('\n')[0].trim()
+        if (clean && clean.length >= 3 && clean.length <= 80 && !FB_CHROME.test(clean)) {
+          author = clean
+          break
+        }
+      }
+    } catch {}
+
+    return { title: document.title, texts: unique, imgs, author }
   })
 }
 
-async function scrapeGroupFeed(page, group, limit = 8) {
+async function scrapeGroupFeed(page, group, limit = 12) {
   console.log(`→ Scraping ${group.name} (${group.privacy})...`)
   await page.goto(group.url, { waitUntil: 'domcontentloaded', timeout: 30000 })
   await page.waitForTimeout(2500)
 
-  // Try to collect recent post permalinks
+  // Scroll the feed a few times to trigger lazy-load of more posts
+  // (FB only renders ~3-5 posts in initial DOM). 3 scrolls ≈ 12-18 posts.
+  for (let i = 0; i < 3; i++) {
+    await page.evaluate(() => window.scrollBy(0, 1500))
+    await page.waitForTimeout(1200)
+  }
+
+  // Collect recent post permalinks
   const postLinks = await page.evaluate(() => {
     const links = Array.from(document.querySelectorAll('a[href*="/permalink/"], a[href*="/posts/"]'))
       .map(a => a.href)
       .filter(h => /\/permalink\/\d+|\/posts\/\d+/.test(h))
-    return [...new Set(links)].slice(0, 12)
+    return [...new Set(links)].slice(0, 25)
   })
 
   console.log(`  Found ${postLinks.length} post links`)
@@ -131,8 +214,9 @@ async function scrapeGroupFeed(page, group, limit = 8) {
         groupPrivacy: group.privacy,
         island: group.island,
         title: data.title,
-        texts: data.texts.slice(0, 15),
-        images: data.imgs.slice(0, 5),
+        author: data.author || null,
+        texts: data.texts.slice(0, 20),
+        images: data.imgs.slice(0, 10),
         inferredStatus: inferStatus(joined),
         replyStatus: 'pending',
       })
@@ -148,8 +232,12 @@ async function main() {
   if (args.includes('--dry')) {
     console.log('DRY RUN — target groups:')
     TARGET_GROUPS.forEach(g => console.log(' •', g.name, '['+g.island+']', g.privacy))
+    console.log('  keywords:', BEACH_KEYWORDS.length, 'tokens (auto-derived from beaches-list.json)')
     return
   }
+  // --headless = run without UI using the persisted .fb-session cookies.
+  // Only works if the user has logged in at least once interactively before.
+  const HEADLESS = args.includes('--headless') || process.env.FB_HEADLESS === '1'
 
   let chromium
   try { ({ chromium } = require('playwright')) }
@@ -159,7 +247,7 @@ async function main() {
   }
 
   const ctx = await chromium.launchPersistentContext(SESSION_DIR, {
-    headless: false,
+    headless: HEADLESS,
     viewport: { width: 1280, height: 800 },
     locale: 'fr-FR',
   })

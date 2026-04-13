@@ -1396,8 +1396,8 @@ function FbPostsStrip({beach,fbPosts,lang}){
             </div>
           )}
           {p.photos&&p.photos.length>0&&(
-            <div style={{display:"flex",gap:6,marginBottom:p.commentSample?8:4,overflowX:"auto"}}>
-              {p.photos.slice(0,3).map((url,j)=>(
+            <div style={{display:"flex",gap:6,marginBottom:p.commentSample?8:4,overflowX:"auto",scrollbarWidth:"thin"}}>
+              {p.photos.slice(0,6).map((url,j)=>(
                 <a key={j} href={p.sourceUrl} target="_blank" rel="noopener nofollow" style={{flexShrink:0,lineHeight:0}}>
                   <img src={url} alt={`Photo ${j+1}`} loading="lazy" referrerPolicy="no-referrer"
                     style={{width:96,height:72,objectFit:"cover",borderRadius:8,
