@@ -14,6 +14,32 @@ const { SITES } = require('./lib/config.cjs')
 const { DRY_RUN, LIMITS, readLog, appendLog } = require('./lib/safety.cjs')
 
 const DIST_DIR = resolve(__dirname, '..', '..', 'dist')
+const AUDIT_PATH = resolve(__dirname, 'data', 'audit-full.json')
+
+// Build a Set of URLs the most recent audit reported as not-indexed.
+// These are the ones that actually need a nudge — submitting URLs that are
+// already PASS just wastes the daily quota.
+function loadNotIndexedFromAudit() {
+  if (!existsSync(AUDIT_PATH)) return new Set()
+  try {
+    const audit = JSON.parse(readFileSync(AUDIT_PATH, 'utf-8'))
+    const NOT_INDEXED_STATES = new Set([
+      'Discovered - currently not indexed',
+      'Crawled - currently not indexed',
+      'URL is unknown to Google',
+    ])
+    const set = new Set()
+    for (const site of Object.values(audit.sites || {})) {
+      for (const r of site.indexStatus || []) {
+        if (NOT_INDEXED_STATES.has(r.coverageState)) set.add(r.url)
+      }
+    }
+    return set
+  } catch (e) {
+    console.warn(`audit-full.json read failed: ${e.message}`)
+    return new Set()
+  }
+}
 
 function parseSitemap(xmlContent) {
   const urls = []
@@ -76,6 +102,15 @@ async function main() {
     return
   }
 
+  // Tier 1: URLs the audit just reported as not-indexed (highest signal — Google
+  // already knows about them but isn't indexing → a publish nudge is exactly the
+  // intended use case)
+  // Tier 2: editorial/strategic pages by slug (priority before they're audited)
+  // Tier 3: everything else from the sitemap
+  const auditNotIndexed = loadNotIndexedFromAudit()
+  console.log(`Audit reports ${auditNotIndexed.size} URLs not indexed (tier 1)\n`)
+
+  const auditUrls = []
   const priorityUrls = []
   const normalUrls = []
 
@@ -98,7 +133,9 @@ async function main() {
     const urls = parseSitemap(xml)
     console.log(`${site.domain}: ${urls.length} URLs in sitemap`)
     for (const url of urls) {
-      if (PRIORITY_SLUGS.some(s => url.includes(`/${s}`))) {
+      if (auditNotIndexed.has(url)) {
+        auditUrls.push(url)
+      } else if (PRIORITY_SLUGS.some(s => url.includes(`/${s}`))) {
         priorityUrls.push(url)
       } else {
         normalUrls.push(url)
@@ -106,9 +143,9 @@ async function main() {
     }
   }
 
-  // Priority pages first, then beach/other pages
-  const allUrls = [...priorityUrls, ...normalUrls]
-  console.log(`Priority URLs: ${priorityUrls.length}, Normal URLs: ${normalUrls.length}`)
+  // Audit-driven first (proven gap), then editorial slug priority, then rest
+  const allUrls = [...auditUrls, ...priorityUrls, ...normalUrls]
+  console.log(`Audit-not-indexed: ${auditUrls.length}, Priority slugs: ${priorityUrls.length}, Normal: ${normalUrls.length}`)
 
   // Filter out recently submitted URLs
   const toSubmit = allUrls.filter(u => !recentlySubmitted.has(u)).slice(0, remaining)

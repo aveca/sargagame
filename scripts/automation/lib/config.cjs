@@ -43,7 +43,29 @@ try {
   console.warn('config.cjs: BEACHES array will be empty — slug lookups will fail gracefully.')
 }
 
-// All known URLs per site (for indexation checks)
+// Editorial long-tail pages (priority for indexation — these target the year-round
+// SEO strategy and Google was not crawling them as of session 35 audit).
+const EDITORIAL_SLUGS = [
+  'comprendre-sargasses',
+  'danger-sargasses-h2s',
+  'detection-satellite-sargasses',
+  'previsions-methode',
+  'nettoyer-sargasses',
+  'sargasses-record-2026',
+  'bilan-sargasses-2025',
+  'saison-sargasses-martinique',
+  'saison-sargasses-guadeloupe',
+  'meilleures-plages-martinique-sargasses',
+  'plages-sans-sargasses',
+  'methode-carte',
+  'faq',
+  'lexique',
+]
+
+// All known URLs per site (for indexation checks).
+// Order matters: GSC URL Inspection is rate-limited (200/day/site) and the audit
+// caps the sample (URL_INSPECT_LIMIT). Front-load high-value pages so they're
+// always inspected.
 function getKnownUrls(siteKey) {
   const domain = SITES[siteKey].domain
   const base = `https://${domain}`
@@ -53,13 +75,13 @@ function getKnownUrls(siteKey) {
     `${base}/previsions/`,
     `${base}/alertes/`,
     `${base}/en/`,
-    `${base}/mentions-legales.html`,
-    `${base}/confidentialite.html`,
   ]
+  for (const slug of EDITORIAL_SLUGS) urls.push(`${base}/${slug}/`)
   for (const b of BEACHES) {
     // All beaches appear on both sites (same /plages/ structure)
     urls.push(`${base}/plages/${b.slug}/`)
   }
+  urls.push(`${base}/mentions-legales.html`, `${base}/confidentialite.html`)
   return urls
 }
 
