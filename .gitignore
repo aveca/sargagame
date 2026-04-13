@@ -24,6 +24,9 @@ guadeloupe-ftp
 # Secrets guide (ne pas committer)
 SECRETS-GITHUB.txt
 
+# Stripe + Resend live keys — deployed via FTP manually, never in git
+public/api/stripe-config.php
+
 # SEO Automation (log + overrides + reports are committed)
 
 # Claude Code
@@ -36,3 +39,4 @@ memory
 # FB scraper persistent session (cookies — NEVER commit)
 .fb-session/
 scripts/automation/data/fb-reply-log.jsonl
+.secrets-to-redact.txt
