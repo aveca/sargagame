@@ -2671,11 +2671,12 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
     return()=>raf&&cancelAnimationFrame(raf)
   },[top?.id,top?.score])
 
-  // Collapsible hero — tap the handle to peek just the score+name row so the
-  // map behind gets its full vertical space back. Persisted so the user's
-  // choice sticks across reloads.
+  // Collapsible hero — map-first layout: default to peek mode so the user's
+  // first sight is the map, not a 240px card. Tap the handle to expand the
+  // full score + alternatives. Choice persisted so returning users get their
+  // preferred state (only explicit "0" keeps it expanded).
   const[heroCollapsed,setHeroCollapsed]=useState(()=>{
-    try{return localStorage.getItem("sg_hero_collapsed")==="1"}catch{return false}
+    try{return localStorage.getItem("sg_hero_collapsed")!=="0"}catch{return true}
   })
   const toggleCollapse=e=>{
     e.stopPropagation()
@@ -5058,14 +5059,12 @@ export default function App(){
             favorites={favorites} lang={lang} imageMap={imageMap}/>
         </div>
 
-        {/* FLOATING UI (over map) — frosted glass panel */}
+        {/* TOP FLOATING — Header pill only. Transparent over map so the full
+            viewport reads as the map. Chrome is capped at 600px centered. */}
         <div style={{
           position:"absolute",top:0,left:0,right:0,zIndex:700,
           padding:`calc(max(12px, env(safe-area-inset-top)) + ${showRecoveryBanner?64:0}px) 16px 0`,
           pointerEvents:"none",
-          background:view==="map"?"linear-gradient(180deg,rgba(253,252,247,.88) 0%,rgba(253,252,247,.7) 85%,transparent 100%)":"none",
-          backdropFilter:view==="map"?"blur(8px)":"none",
-          WebkitBackdropFilter:view==="map"?"blur(8px)":"none",
           transition:"padding-top .25s ease",
         }}>
           <div style={{pointerEvents:"auto",maxWidth:600,margin:"0 auto"}}>
@@ -5074,92 +5073,112 @@ export default function App(){
               theme={theme} onThemeToggle={toggleTheme}
               beachCount={allBeaches.length} dataSource={dataSource}
               updatedAt={sargData?.updatedAt||sargData?.erddapTimestamp}/>
-            {/* HERO RECO — big opinionated card. Answers "where do I go NOW" in 1 glance:
-                #1 scored beach + score ring + verdict + distance + 2 inline alternatives.
-                Replaces the abstract A/B strip/nearest (aha moment not reached on those). */}
-            {view==="map"&&sargData&&!search.trim()&&(
-              <HeroReco
-                allBeaches={allBeaches}
-                sargData={sargData}
-                island={island}
-                lang={lang}
-                userPos={userPos}
-                onBeachClick={onBeachClick}
-                communityReports={communityReports}
-                onPremiumClick={openPremium}
-              />
-            )}
-            <div style={{marginTop:10}}>
-              <SearchBar value={search} onChange={setSearch} lang={lang}/>
-            </div>
-            <div style={{marginTop:8,position:"relative"}}>
-              <div style={{display:"flex",gap:6,overflowX:"auto",
-                paddingBottom:4,paddingRight:24,scrollbarWidth:"none",WebkitOverflowScrolling:"touch"}}>
-                {LL.filters.map((f,i)=>(
-                  <FilterChip key={i} label={f} icon={LL.filtersIcon[i]} count={filterCounts[i]||null}
-                    active={filter===i} onClick={()=>{setFilter(i);track("sg_filter",{filter:f,index:i})}}/>
-                ))}
-              </div>
-              {/* Fade hint for scrollable chips */}
-              <div style={{position:"absolute",top:0,right:0,bottom:4,width:32,
-                background:"linear-gradient(90deg,transparent,var(--sg-bg,#FDFCF7))",pointerEvents:"none"}}/>
-            </div>
-            {/* Clean beaches nearby — contextual nudge to explore */}
-            {view==="map"&&!search.trim()&&userPos&&(()=>{
-              const nearClean=allBeaches.filter(b=>b.island===island&&b.status==="clean")
-                .map(b=>({...b,_d:haversine(userPos.lat,userPos.lng,b.lat,b.lng)}))
-                .filter(b=>b._d<=20)
-              if(nearClean.length===0)return null
-              nearClean.sort((a,b)=>a._d-b._d)
-              const closest=nearClean[0]
-              return(
-                <button onClick={()=>{
-                  track("sg_clean_nearby_click",{count:nearClean.length,closest:closest.id})
-                  setFilter(1) // switch to "clean" filter
-                  onChangeView("list")
-                }} style={{
-                  display:"flex",alignItems:"center",gap:8,marginTop:6,padding:"8px 12px",
-                  borderRadius:10,background:"rgba(34,197,94,.08)",border:"1px solid rgba(34,197,94,.18)",
-                  cursor:"pointer",width:"100%",fontFamily:"inherit",textAlign:"left",
-                }}>
-                  <div style={{width:8,height:8,borderRadius:4,background:C.green,flexShrink:0}}/>
-                  <span style={{fontSize:12,fontWeight:600,color:C.green,flex:1}}>
-                    {nearClean.length} {lang==="en"
-                      ?`clean beach${nearClean.length>1?"es":""} within 20 km`
-                      :`plage${nearClean.length>1?"s":""} propre${nearClean.length>1?"s":""} à moins de 20 km`}
-                  </span>
-                  <span style={{fontSize:11,color:"var(--sg-mid,#686868)",flexShrink:0}}>
-                    {lang==="en"?"See all":"Voir"}
-                  </span>
-                </button>
-              )
-            })()}
-            {/* Search results dropdown on map */}
-            {view==="map"&&search.trim().length>=2&&filtered.length>0&&(
-              <div style={{marginTop:4,background:"var(--sg-card,#fff)",borderRadius:14,
-                boxShadow:"0 4px 20px rgba(0,0,0,.12)",border:"1px solid var(--sg-border,rgba(0,0,0,.06))",
-                maxHeight:"min(280px,40vh)",overflowY:"auto",overscrollBehavior:"contain"}}>
-                {filtered.slice(0,8).map(b=>{
-                  const st=ST[b.status]||ST._loading
-                  return(
-                    <button key={b.id} onClick={()=>{setSearch("");onBeachClick(b)}} style={{
-                      display:"flex",alignItems:"center",gap:10,padding:"10px 14px",
-                      background:"none",border:"none",borderBottom:"1px solid var(--sg-border,rgba(0,0,0,.04))",
-                      cursor:"pointer",textAlign:"left",fontFamily:"inherit",width:"100%"}}>
-                      <div style={{width:8,height:8,borderRadius:4,background:st.c,flexShrink:0}}/>
-                      <div style={{flex:1,minWidth:0}}>
-                        <div style={{fontSize:13,fontWeight:600,color:"var(--sg-ink)",
-                          whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.name}</div>
-                        <div style={{fontSize:11,color:"var(--sg-mid,#686868)"}}>{b.commune}</div>
-                      </div>
-                      <span style={{fontSize:10,fontWeight:700,color:st.c}}>{lang==="es"?st.les:lang==="en"?st.le:st.l}</span>
-                    </button>
-                  )
-                })}
-              </div>
-            )}
           </div>
         </div>
+
+        {/* BOTTOM SHEET (over map) — hero peek + search + chips + nudge stacked
+            just above the floating nav pill. Map-first layout: the map owns the
+            viewport, this stack is glass chrome that rests on top. */}
+        {view==="map"&&(
+          <div style={{
+            position:"absolute",left:0,right:0,zIndex:700,
+            bottom:"calc(60px + max(12px, env(safe-area-inset-bottom,0px)) + 12px)",
+            padding:"0 16px",
+            pointerEvents:"none",
+            maxHeight:"calc(100vh - 120px)",
+          }}>
+            <div style={{pointerEvents:"auto",maxWidth:600,margin:"0 auto",
+              display:"flex",flexDirection:"column",gap:8}}>
+              {/* Search results dropdown — shown when typing, floats above the stack */}
+              {search.trim().length>=2&&filtered.length>0&&(
+                <div style={{background:"var(--sg-card,#fff)",borderRadius:14,
+                  boxShadow:"0 12px 32px rgba(0,0,0,.18)",border:"1px solid var(--sg-border,rgba(0,0,0,.06))",
+                  maxHeight:"min(280px,40vh)",overflowY:"auto",overscrollBehavior:"contain"}}>
+                  {filtered.slice(0,8).map(b=>{
+                    const st=ST[b.status]||ST._loading
+                    return(
+                      <button key={b.id} onClick={()=>{setSearch("");onBeachClick(b)}} style={{
+                        display:"flex",alignItems:"center",gap:10,padding:"10px 14px",
+                        background:"none",border:"none",borderBottom:"1px solid var(--sg-border,rgba(0,0,0,.04))",
+                        cursor:"pointer",textAlign:"left",fontFamily:"inherit",width:"100%"}}>
+                        <div style={{width:8,height:8,borderRadius:4,background:st.c,flexShrink:0}}/>
+                        <div style={{flex:1,minWidth:0}}>
+                          <div style={{fontSize:13,fontWeight:600,color:"var(--sg-ink)",
+                            whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.name}</div>
+                          <div style={{fontSize:11,color:"var(--sg-mid,#686868)"}}>{b.commune}</div>
+                        </div>
+                        <span style={{fontSize:10,fontWeight:700,color:st.c}}>{lang==="es"?st.les:lang==="en"?st.le:st.l}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+              {/* Clean beaches nearby — solid glass pill so it pops over the map */}
+              {!search.trim()&&userPos&&(()=>{
+                const nearClean=allBeaches.filter(b=>b.island===island&&b.status==="clean")
+                  .map(b=>({...b,_d:haversine(userPos.lat,userPos.lng,b.lat,b.lng)}))
+                  .filter(b=>b._d<=20)
+                if(nearClean.length===0)return null
+                nearClean.sort((a,b)=>a._d-b._d)
+                const closest=nearClean[0]
+                return(
+                  <button onClick={()=>{
+                    track("sg_clean_nearby_click",{count:nearClean.length,closest:closest.id})
+                    setFilter(1)
+                    onChangeView("list")
+                  }} style={{
+                    display:"flex",alignItems:"center",gap:8,padding:"9px 14px",
+                    borderRadius:100,background:"rgba(255,255,255,.94)",
+                    backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",
+                    border:"1px solid rgba(34,197,94,.3)",
+                    cursor:"pointer",width:"100%",fontFamily:"inherit",textAlign:"left",
+                    boxShadow:"0 6px 18px rgba(0,0,0,.12)",
+                  }}>
+                    <div style={{width:8,height:8,borderRadius:4,background:C.green,flexShrink:0,
+                      boxShadow:`0 0 0 3px ${C.green}22`}}/>
+                    <span style={{fontSize:12,fontWeight:700,color:C.green,flex:1}}>
+                      {nearClean.length} {lang==="en"
+                        ?`clean beach${nearClean.length>1?"es":""} within 20 km`
+                        :`plage${nearClean.length>1?"s":""} propre${nearClean.length>1?"s":""} à moins de 20 km`}
+                    </span>
+                    <span style={{fontSize:11,color:"var(--sg-mid,#686868)",flexShrink:0}}>
+                      {lang==="en"?"See all":"Voir"}
+                    </span>
+                  </button>
+                )
+              })()}
+              {/* Filter chips — scrollable row */}
+              <div style={{position:"relative"}}>
+                <div style={{display:"flex",gap:6,overflowX:"auto",
+                  paddingBottom:4,paddingRight:24,scrollbarWidth:"none",WebkitOverflowScrolling:"touch"}}>
+                  {LL.filters.map((f,i)=>(
+                    <FilterChip key={i} label={f} icon={LL.filtersIcon[i]} count={filterCounts[i]||null}
+                      active={filter===i} onClick={()=>{setFilter(i);track("sg_filter",{filter:f,index:i})}}/>
+                  ))}
+                </div>
+                {/* Fade hint — soft edge now that the parent has no solid bg */}
+                <div style={{position:"absolute",top:0,right:0,bottom:4,width:32,
+                  background:"linear-gradient(90deg,transparent,rgba(253,252,247,.7))",
+                  pointerEvents:"none",backdropFilter:"blur(4px)",WebkitBackdropFilter:"blur(4px)"}}/>
+              </div>
+              {/* Search pill */}
+              <SearchBar value={search} onChange={setSearch} lang={lang}/>
+              {/* Hero reco card (peek mode by default — map-first) */}
+              {sargData&&!search.trim()&&(
+                <HeroReco
+                  allBeaches={allBeaches}
+                  sargData={sargData}
+                  island={island}
+                  lang={lang}
+                  userPos={userPos}
+                  onBeachClick={onBeachClick}
+                  communityReports={communityReports}
+                  onPremiumClick={openPremium}
+                />
+              )}
+            </div>
+          </div>
+        )}
 
         {/* PUSH PRIMER — contextual soft prompt before native OneSignal dialog.
             Triggered 1.5s after first beach_open. Dismissable. 7-day cooldown. */}
@@ -5240,20 +5259,10 @@ export default function App(){
         {showPremium&&<PremiumModal onClose={()=>setShowPremium(false)} lang={lang} source={premiumSource}
           onActivated={()=>{setIsPremium(true);setShowWelcome(true)}} sargData={sargData} island={island}/>}
 
-        {/* First-visit hint — auto-dismiss on first tap or after 5s */}
-        {showOnboarding&&view==="map"&&!selectedBeach&&!showFavToast&&(
-          <div style={{position:"fixed",bottom:"calc(74px + env(safe-area-inset-bottom, 0px))",left:"50%",transform:"translateX(-50%)",
-            zIndex:750,background:"rgba(255,255,255,.95)",backdropFilter:"blur(12px)",
-            WebkitBackdropFilter:"blur(12px)",padding:"10px 20px",borderRadius:100,
-            boxShadow:"0 4px 20px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.04)",
-            display:"flex",alignItems:"center",gap:8,whiteSpace:"nowrap",maxWidth:"calc(100vw - 32px)",
-            animation:"slideUp .4s cubic-bezier(.22,1,.36,1)",pointerEvents:"none"}}>
-            <span style={{fontSize:16}}>👆</span>
-            <span style={{fontSize:13,fontWeight:600,color:C.ink}}>
-              {lang==="en"?"Tap a beach to see its status":"Touche une plage sur la carte"}
-            </span>
-          </div>
-        )}
+        {/* First-visit hint removed — the Hero peek card now carries the same
+            affordance ("Plage de la Française · Voir →") without competing with
+            it visually, and the toast was overlapping the peek at every
+            breakpoint after the map-first layout shift. */}
 
         {/* BOTTOM PROMPTS — feedback + install only (email/push moved inline to beach sheet) */}
         {!showOnboarding&&(()=>{
