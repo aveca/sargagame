@@ -2461,14 +2461,64 @@ function rankBeaches(allBeaches,island,userPos,sargData,communityReports){
         one opinionated card does.
    ═══════════════════════════════════════════════════════════════════════════ */
 function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communityReports}){
-  const picks=useMemo(
-    ()=>rankBeaches(allBeaches,island,userPos,sargData,communityReports).slice(0,3),
+  // Full sorted list — we derive top, alts, worst, and score variance all from it.
+  const sorted=useMemo(
+    ()=>rankBeaches(allBeaches,island,userPos,sargData,communityReports),
     [allBeaches,island,userPos,sargData,communityReports]
   )
+  const picks=sorted.slice(0,3)
   const top=picks[0]
+
+  // Count-up score animation on mount / when top changes — instant "wow, look at that number climb".
+  const[animScore,setAnimScore]=useState(0)
+  useEffect(()=>{
+    if(!top||typeof top.score!=="number"){setAnimScore(0);return}
+    let raf,start
+    const target=top.score
+    const dur=900
+    const step=ts=>{
+      if(!start)start=ts
+      const t=Math.min(1,(ts-start)/dur)
+      const eased=1-Math.pow(1-t,3)
+      setAnimScore(Math.round(target*eased))
+      if(t<1)raf=requestAnimationFrame(step)
+    }
+    raf=requestAnimationFrame(step)
+    return()=>raf&&cancelAnimationFrame(raf)
+  },[top?.id,top?.score])
+
+  // First-visit inline email capture (persisted via localStorage once submitted OR dismissed)
+  const[heroEmail,setHeroEmail]=useState("")
+  const[heroEmailSent,setHeroEmailSent]=useState(false)
+  const[heroEmailHidden,setHeroEmailHidden]=useState(()=>{
+    try{return !!localStorage.getItem("sg_email")||!!localStorage.getItem("sg_hero_email_dismiss")}catch{return false}
+  })
+  const submitHeroEmail=()=>{
+    if(!heroEmail||!heroEmail.includes("@"))return
+    track("sg_hero_email_submit",{beach_id:top?.id,score:top?.score})
+    try{localStorage.setItem("sg_email",heroEmail)}catch{}
+    try{
+      const isl=window.location.hostname.includes("guadeloupe")?"GP":"MQ"
+      fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
+        method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
+        body:JSON.stringify({email:heroEmail,island:isl,source:"hero_inline",date:new Date().toISOString()})
+      }).catch(()=>{})
+    }catch{}
+    setHeroEmailSent(true)
+  }
+
   if(!top)return null
   const topSt=ST[top.status]||ST._loading
   const alts=picks.slice(1,3)
+
+  // Score variance across the island — the "WOW, we analyzed 130+ beaches" proof.
+  const withScore=sorted.filter(b=>typeof b.score==="number")
+  const minScore=withScore.length?Math.min(...withScore.map(b=>b.score)):null
+  const maxScore=withScore.length?Math.max(...withScore.map(b=>b.score)):null
+  const variance=(minScore!=null&&maxScore!=null)?maxScore-minScore:0
+  // Worst pick for the "évite aussi" band — only show if gap is meaningful (≥12 pts)
+  const worst=withScore.length>=5?withScore[withScore.length-1]:null
+  const showWorst=worst&&typeof top.score==="number"&&(top.score-worst.score)>=12
 
   // Short verdict — clear & punchy (fuller text lives in beach sheet)
   const verdict=(()=>{
@@ -2488,14 +2538,14 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
     :null
   const driveLbl=typeof top.drive==="number"?`${top.drive} min`:null
 
-  // Always-current framing — sargasse state is slow-changing, user wants NOW info.
-  // "Pour demain" tested poorly: felt like a forecast, not a recommendation.
   const greet=(()=>{
     const h=new Date().getHours()
     if(h<12)return lang==="en"?"This morning":"Ce matin"
     if(h<18)return lang==="en"?"Right now":"Maintenant"
     return lang==="en"?"Tonight":"Ce soir"
   })()
+
+  const strengthsList=(top.scoreStrengths||[]).slice(0,3)
 
   return(
     <div style={{
@@ -2506,14 +2556,29 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
       boxShadow:`0 8px 28px ${topSt.c}1f, 0 1px 3px rgba(0,0,0,.04)`,
       overflow:"hidden",
     }}>
-      {/* Greeting label */}
+      {/* Top bar — greeting + score-variance badge */}
       <div style={{
-        padding:"10px 14px 0",
-        fontSize:10,fontWeight:800,
-        letterSpacing:".08em",textTransform:"uppercase",
-        color:"var(--sg-mid,#686868)",
+        display:"flex",justifyContent:"space-between",alignItems:"center",
+        padding:"10px 14px 0",gap:10,
       }}>
-        {greet} · {lang==="en"?"your pick":"ta plage"}
+        <div style={{
+          fontSize:10,fontWeight:800,
+          letterSpacing:".08em",textTransform:"uppercase",
+          color:"var(--sg-mid,#686868)",
+        }}>
+          {greet} · {lang==="en"?"your pick":"ta plage"}
+        </div>
+        {variance>=12&&(
+          <div style={{
+            fontSize:9.5,fontWeight:700,
+            padding:"3px 8px",borderRadius:100,
+            background:"rgba(0,0,0,.045)",
+            color:"var(--sg-mid,#686868)",
+            letterSpacing:".02em",whiteSpace:"nowrap",
+          }}>
+            {minScore}→{maxScore} · {variance} pts · {withScore.length} {lang==="en"?"beaches":"plages"}
+          </div>
+        )}
       </div>
 
       {/* Main row — tap opens sheet */}
@@ -2524,32 +2589,32 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
         }}
         style={{
           display:"flex",alignItems:"center",gap:14,
-          padding:"8px 14px 12px",
+          padding:"10px 14px 14px",
           background:"none",border:"none",width:"100%",
           cursor:"pointer",fontFamily:"inherit",textAlign:"left",
         }}
       >
-        {/* Score ring (60px, dominant visual) */}
+        {/* XL score ring (96px) — dominant visual, animated count-up */}
         {typeof top.score==="number"?(
           <div style={{
-            width:60,height:60,borderRadius:"50%",flexShrink:0,
-            background:`conic-gradient(${top.scoreColor||topSt.c} ${top.score*3.6}deg, rgba(0,0,0,.06) ${top.score*3.6}deg)`,
+            width:96,height:96,borderRadius:"50%",flexShrink:0,
+            background:`conic-gradient(${top.scoreColor||topSt.c} ${animScore*3.6}deg, rgba(0,0,0,.06) ${animScore*3.6}deg)`,
             display:"flex",alignItems:"center",justifyContent:"center",
           }}>
             <div style={{
-              width:48,height:48,borderRadius:"50%",
+              width:78,height:78,borderRadius:"50%",
               background:"var(--sg-card,#fff)",
               display:"flex",flexDirection:"column",
               alignItems:"center",justifyContent:"center",
-              boxShadow:"0 1px 3px rgba(0,0,0,.08)",
+              boxShadow:"0 1px 4px rgba(0,0,0,.1)",
             }}>
-              <span style={{fontFamily:"'Anton',sans-serif",fontSize:22,lineHeight:1,color:top.scoreColor||topSt.c}}>{top.score}</span>
-              <span style={{fontSize:8,fontWeight:700,color:"var(--sg-mid,#686868)",letterSpacing:".04em"}}>/100</span>
+              <span style={{fontFamily:"'Anton',sans-serif",fontSize:38,lineHeight:1,color:top.scoreColor||topSt.c}}>{animScore}</span>
+              <span style={{fontSize:9,fontWeight:700,marginTop:2,color:"var(--sg-mid,#686868)",letterSpacing:".04em"}}>/100</span>
             </div>
           </div>
         ):(
           <div style={{
-            width:60,height:60,borderRadius:"50%",flexShrink:0,
+            width:96,height:96,borderRadius:"50%",flexShrink:0,
             background:topSt.c,
             display:"flex",alignItems:"center",justifyContent:"center",
           }}>
@@ -2557,10 +2622,9 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
           </div>
         )}
 
-        {/* Main text — beach name wraps to 2 lines rather than ellipsis (long names like "Plage de la Française") */}
         <div style={{flex:1,minWidth:0}}>
           <div style={{
-            fontSize:16,fontWeight:900,color:"var(--sg-ink,#0D0D0D)",
+            fontSize:17,fontWeight:900,color:"var(--sg-ink,#0D0D0D)",
             lineHeight:1.15,marginBottom:4,
             display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",
             overflow:"hidden",wordBreak:"break-word",
@@ -2569,10 +2633,22 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
           </div>
           <div style={{
             fontSize:11.5,fontWeight:700,color:topSt.c,
-            marginBottom:3,lineHeight:1.25,
+            marginBottom:strengthsList.length>0?6:3,lineHeight:1.25,
           }}>
             {verdict}
           </div>
+          {strengthsList.length>0&&(
+            <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:6}}>
+              {strengthsList.map((s,i)=>(
+                <span key={i} style={{
+                  fontSize:10,fontWeight:700,
+                  padding:"2px 7px",borderRadius:100,
+                  background:"rgba(34,197,94,.12)",color:"#16A34A",
+                  whiteSpace:"nowrap",
+                }}>✓ {s}</span>
+              ))}
+            </div>
+          )}
           <div style={{
             fontSize:11,color:"var(--sg-mid,#686868)",
             display:"flex",alignItems:"center",gap:8,
@@ -2584,11 +2660,10 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
           </div>
         </div>
 
-        {/* CTA pill */}
         <span style={{
           fontSize:12,fontWeight:800,color:"#fff",
           flexShrink:0,whiteSpace:"nowrap",
-          padding:"8px 14px",borderRadius:100,
+          padding:"9px 15px",borderRadius:100,
           background:topSt.c,
           boxShadow:`0 2px 8px ${topSt.c}44`,
           letterSpacing:".02em",
@@ -2597,7 +2672,38 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
         </span>
       </button>
 
-      {/* Alternatives row — 2 more picks, inline */}
+      {/* "Évite aussi" strip — makes the score variance actionable */}
+      {showWorst&&(
+        <button
+          onClick={()=>{
+            track("sg_hero_worst_click",{beach_id:worst.id,score:worst.score})
+            onBeachClick(worst)
+          }}
+          style={{
+            display:"flex",alignItems:"center",gap:8,width:"100%",
+            padding:"9px 14px",border:"none",borderTop:"1px solid rgba(224,120,0,.14)",
+            background:"rgba(224,120,0,.06)",
+            cursor:"pointer",fontFamily:"inherit",textAlign:"left",
+          }}
+        >
+          <span style={{fontSize:13,flexShrink:0}}>⚠️</span>
+          <span style={{
+            fontSize:11,fontWeight:700,color:"#B45309",
+            overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1,
+          }}>
+            {lang==="en"?"Skip":"Évite"} {worst.name}
+          </span>
+          <span style={{
+            fontSize:10,fontWeight:800,color:"#E07800",
+            padding:"2px 7px",borderRadius:100,
+            background:"rgba(224,120,0,.15)",whiteSpace:"nowrap",flexShrink:0,
+          }}>
+            {worst.score}/100 · −{top.score-worst.score} pts
+          </span>
+        </button>
+      )}
+
+      {/* Alternatives row — 2 more picks, inline, each with its own score */}
       {alts.length>0&&(
         <div style={{
           display:"flex",
@@ -2630,15 +2736,79 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
                     {alt.name}
                   </div>
                   <div style={{fontSize:10,color:"var(--sg-mid,#686868)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
-                    {/* Alt shows distance OR drive OR commune — never redundant score since all picks share similar base */}
+                    {typeof alt.score==="number"?`${alt.score}/100`:""}
+                    {(typeof alt.score==="number"&&(alt._dist!=null||typeof alt.drive==="number"||alt.commune))?" · ":""}
                     {alt._dist!=null
-                      ?`${alt._dist<1?Math.round(alt._dist*1000)+" m":Math.round(alt._dist)+" km"}${typeof alt.drive==="number"?` · ${alt.drive} min`:""}`
+                      ?`${alt._dist<1?Math.round(alt._dist*1000)+" m":Math.round(alt._dist)+" km"}`
                       :(typeof alt.drive==="number"?`${alt.drive} min`:(alt.commune||""))}
                   </div>
                 </div>
               </button>
             )
           })}
+        </div>
+      )}
+
+      {/* Inline email mini-capture — first visit only, dismissable */}
+      {!heroEmailHidden&&!heroEmailSent&&(
+        <div style={{
+          borderTop:"1px solid var(--sg-border,rgba(0,0,0,.06))",
+          padding:"10px 12px",
+          background:"linear-gradient(90deg,rgba(255,199,44,.06),rgba(255,199,44,.11))",
+          display:"flex",alignItems:"center",gap:7,
+        }}>
+          <span style={{fontSize:14,flexShrink:0}}>📬</span>
+          <input
+            type="email" inputMode="email" autoComplete="email"
+            placeholder={lang==="en"?"email — daily pick at 7am":"ton@email — ma reco à 7h"}
+            value={heroEmail}
+            onChange={e=>setHeroEmail(e.target.value)}
+            onKeyDown={e=>{if(e.key==="Enter")submitHeroEmail()}}
+            onClick={e=>e.stopPropagation()}
+            style={{
+              flex:1,minWidth:0,
+              padding:"7px 10px",borderRadius:8,
+              border:"1px solid rgba(0,0,0,.1)",
+              fontSize:13,fontFamily:"inherit",
+              background:"var(--sg-card,#fff)",
+              color:"var(--sg-ink,#0D0D0D)",outline:"none",
+            }}
+          />
+          <button
+            onClick={submitHeroEmail}
+            disabled={!heroEmail||!heroEmail.includes("@")}
+            style={{
+              padding:"7px 13px",borderRadius:8,border:"none",
+              background:(heroEmail&&heroEmail.includes("@"))?"linear-gradient(135deg,#FFE47A,#FFC72C)":"rgba(0,0,0,.07)",
+              color:(heroEmail&&heroEmail.includes("@"))?"#0D0D0D":"rgba(0,0,0,.35)",
+              fontSize:12,fontWeight:800,
+              cursor:(heroEmail&&heroEmail.includes("@"))?"pointer":"not-allowed",
+              fontFamily:"inherit",whiteSpace:"nowrap",flexShrink:0,
+            }}
+          >{lang==="en"?"OK":"OK"}</button>
+          <button
+            onClick={()=>{
+              try{localStorage.setItem("sg_hero_email_dismiss","1")}catch{}
+              setHeroEmailHidden(true)
+              track("sg_hero_email_dismiss")
+            }}
+            aria-label="dismiss"
+            style={{
+              background:"none",border:"none",cursor:"pointer",
+              color:"rgba(0,0,0,.35)",fontSize:16,padding:"4px 2px",
+              fontFamily:"inherit",flexShrink:0,
+            }}
+          >×</button>
+        </div>
+      )}
+      {heroEmailSent&&(
+        <div style={{
+          borderTop:"1px solid var(--sg-border,rgba(0,0,0,.06))",
+          padding:"10px 14px",textAlign:"center",
+          background:"rgba(34,197,94,.07)",
+          fontSize:12,fontWeight:700,color:"#16A34A",
+        }}>
+          ✓ {lang==="en"?"You're in! First pick tomorrow 7am.":"C'est fait ! Ta reco demain à 7h."}
         </div>
       )}
     </div>
