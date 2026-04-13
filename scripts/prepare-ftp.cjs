@@ -23,17 +23,44 @@ const ISLAND_SLUGS = {
   'guadeloupe-ftp': new Set(BEACHES_LIST.filter(b => b.island === 'gp').map(b => slugify(b.name))),
 }
 
-function copyRecursive(src, dest) {
+// Names that must never be copied into either FTP folder. _gp/ holds the
+// GP-flavored mirror of pages whose vite generator runs in a GP→MQ loop
+// (where MQ wins in dist/) — it gets overlaid onto guadeloupe-ftp/ later
+// so the GP build ends up with GP-correct beach lists, not MQ ones.
+const COPY_SKIP_TOP = new Set(['_gp'])
+
+function copyRecursive(src, dest, isTopLevel = false) {
   const stat = fs.statSync(src)
   if (stat.isDirectory()) {
     fs.mkdirSync(dest, { recursive: true })
     for (const name of fs.readdirSync(src)) {
+      if (isTopLevel && COPY_SKIP_TOP.has(name)) continue
       copyRecursive(path.join(src, name), path.join(dest, name))
     }
   } else {
     fs.mkdirSync(path.dirname(dest), { recursive: true })
     fs.copyFileSync(src, dest)
   }
+}
+
+// Walk `srcDir` and overwrite every matching file under `destDir`. Used to
+// stamp the GP-mirror pages on top of guadeloupe-ftp/ after the base copy.
+function overlayDir(srcDir, destDir) {
+  if (!fs.existsSync(srcDir)) return 0
+  let count = 0
+  for (const name of fs.readdirSync(srcDir)) {
+    const s = path.join(srcDir, name)
+    const d = path.join(destDir, name)
+    if (fs.statSync(s).isDirectory()) {
+      fs.mkdirSync(d, { recursive: true })
+      count += overlayDir(s, d)
+    } else {
+      fs.mkdirSync(path.dirname(d), { recursive: true })
+      fs.copyFileSync(s, d)
+      count++
+    }
+  }
+  return count
 }
 
 // OneSignal App IDs par site
@@ -61,7 +88,12 @@ const readmes = [
 for (const { dir, title, domain, onesignalAppId } of readmes) {
   const out = path.join(root, dir)
   if (fs.existsSync(out)) fs.rmSync(out, { recursive: true })
-  copyRecursive(dist, out)
+  copyRecursive(dist, out, true)
+
+  // GP-mirror overlay is deferred until the END of this iteration (after all
+  // content patching) — see comment near the OK log. If we stamped here, the
+  // bulk sargasses-martinique→sargasses-guadeloupe URL swap would clobber the
+  // cross-island absolute URLs the vite plugin wrote into the editorials.
 
   // Drop beach pages that don't belong to this island. The build emits
   // dist/plages/<slug>/ for ALL 136 beaches; without this filter both FTP
@@ -471,6 +503,13 @@ Ne pas envoyer ce README (LISEZMOI-FTP.txt) si ton FTP n'accepte que les fichier
 Ouvre ton domaine (ex. ${domain}) : la page d'accueil doit s'afficher. Les données sargasses et prévisions sont chargées depuis le fichier JSON (pas de serveur Node nécessaire).
 `
   fs.writeFileSync(path.join(out, 'LISEZMOI-FTP.txt'), readme.replace(/\n/g, '\r\n'), 'utf-8')
+  // Stamp GP-mirror files LAST — after the bulk URL swap and all per-island
+  // patching — so the cross-island absolute URLs in editorials survive.
+  if (dir === 'guadeloupe-ftp') {
+    const gpMirror = path.join(dist, '_gp')
+    const overlaid = overlayDir(gpMirror, out)
+    if (overlaid > 0) console.log(`   → ${overlaid} fichiers GP-mirror overlaid sur guadeloupe-ftp/ (post-patch)`)
+  }
   console.log(`OK: ${dir}/ créé (contenu de dist/ + LISEZMOI-FTP.txt)`)
 }
 
