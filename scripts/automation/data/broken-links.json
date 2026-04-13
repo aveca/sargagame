@@ -1,0 +1,19 @@
+{
+  "generatedAt": "2026-04-13T16:18:29.688Z",
+  "sites": {
+    "mq": {
+      "pageCount": 100,
+      "totalLinks": 2535,
+      "checkedLinks": 1805,
+      "brokenCount": 0,
+      "broken": []
+    },
+    "gp": {
+      "pageCount": 130,
+      "totalLinks": 3437,
+      "checkedLinks": 2467,
+      "brokenCount": 0,
+      "broken": []
+    }
+  }
+}

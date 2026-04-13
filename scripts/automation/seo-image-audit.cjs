@@ -35,6 +35,7 @@ const MAX_PARSE_BYTES = 256 * 1024
 const LAZY_PLACEHOLDERS = new Set(['image', 'photo', 'picture', 'img', 'imagen', 'foto'])
 const ALT_MIN = 5
 const ALT_MAX = 125
+const NOINDEX_RE = /<meta\s+name=["']robots["']\s+content=["'][^"']*noindex/i
 
 function walkHtml(dir) {
   const out = []
@@ -103,11 +104,15 @@ function checkSite(site) {
   const issues = []
   const byKind = {}
 
+  let pagesSkippedNoindex = 0
   for (const file of files) {
     const url = fileToUrlPath(file, ftpRoot)
     let html
     try { html = readFileSync(file, 'utf-8') } catch { continue }
     const slice = html.length > MAX_PARSE_BYTES ? html.slice(0, MAX_PARSE_BYTES) : html
+    // Skip noindex pages — Google doesn't index them so alt-text SEO is moot.
+    // (a11y still matters but is out of scope for this auditor.)
+    if (NOINDEX_RE.test(slice.slice(0, 8192))) { pagesSkippedNoindex++; continue }
     for (const m of slice.matchAll(/<img\b[^>]*>/gi)) {
       totalImages++
       const { src, alt, issues: imgIssues } = classifyImg(m[0])
@@ -120,6 +125,7 @@ function checkSite(site) {
 
   return {
     pageCount: files.length,
+    pagesSkippedNoindex,
     totalImages,
     issueCount: issues.length,
     byKind,

@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { readFileSync, writeFileSync, mkdirSync } from 'fs'
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs'
 import { resolve } from 'path'
 
 // Identifiants Copernicus Marine (copernicustxt.txt : ligne 1 = username, ligne 2 = password)
@@ -404,6 +404,8 @@ export default defineConfig({
   <url><loc>${d}/en/best-beaches-no-sargassum/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>${d}/en/sargassum-season/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>${d}/en/sargassum-alerts/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>${d}/en/satellite-sargassum-detection/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>${d}/en/understanding-sargassum/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>${d}/es/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>${d}/es/mapa-sargazo/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>${d}/es/mejores-playas-sin-sargazo/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
@@ -424,6 +426,9 @@ export default defineConfig({
   <url><loc>${d}/faq/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>${d}/lexique/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>${d}/methode-carte/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>${d}/weekend.html</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>${d}/widget/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>${d}/sarg_carte_satellite_app.html</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>${d}/mentions-legales.html</loc><lastmod>${today}</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>${d}/confidentialite.html</loc><lastmod>${today}</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
 </urlset>
@@ -592,6 +597,23 @@ export default defineConfig({
           }
           let sitemapMQBeaches = ''
           let sitemapGPBeaches = ''
+          // Editorial articles: each article lives in one island's sitemap only
+          // (the island it canonicalizes to). Cross-island mirrors are kept on
+          // disk for redirect fallbacks but must not be advertised to Google.
+          try {
+            const articlesIndexPath = resolve(outDir, 'articles', 'index.json')
+            if (existsSync(articlesIndexPath)) {
+              const articlesIndex = JSON.parse(readFileSync(articlesIndexPath, 'utf-8'))
+              for (const art of articlesIndex.articles || []) {
+                const entry = `  <url><loc>https://${art.island === 'mq' ? domainMQ : domainGP}/articles/${art.slug}/</loc><lastmod>${art.date || today}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>\n`
+                if (art.island === 'mq') sitemapMQBeaches += entry
+                else sitemapGPBeaches += entry
+              }
+              console.log(`   → ${(articlesIndex.articles||[]).length} articles éditoriaux ajoutés aux sitemaps`)
+            }
+          } catch (e) {
+            console.warn('   → articles index skipped:', e.message)
+          }
           for (const b of beaches) {
             const isMQ = b.island === 'mq'
             const domain = isMQ ? domainMQ : domainGP

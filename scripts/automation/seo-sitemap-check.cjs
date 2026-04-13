@@ -23,6 +23,7 @@ const SITES = [
   { key: 'mq', dir: 'martinique-ftp', domain: 'sargasses-martinique.com', sitemap: 'sitemap-martinique.xml' },
   { key: 'gp', dir: 'guadeloupe-ftp', domain: 'sargasses-guadeloupe.com', sitemap: 'sitemap-guadeloupe.xml' },
 ]
+const KNOWN_DOMAINS = new Set(SITES.map(s => s.domain))
 
 const SKIP_DIRS = new Set(['assets', 'icons', 'images', 'data', 'api'])
 
@@ -31,6 +32,28 @@ const SITEMAP_EXCLUDE = new Set([
   '/404.html',
   '/LISEZMOI-FTP.txt',
 ])
+
+const NOINDEX_RE = /<meta\s+name=["']robots["']\s+content=["'][^"']*noindex/i
+const CANONICAL_RE = /<link\s+rel=["']canonical["']\s+href=["']([^"']+)["']/i
+const HEAD_BYTES = 8 * 1024
+
+function readHead(file) {
+  try { return readFileSync(file, 'utf-8').slice(0, HEAD_BYTES) }
+  catch { return '' }
+}
+
+function isNoindex(file) {
+  return NOINDEX_RE.test(readHead(file))
+}
+
+// Pages whose canonical points to a different domain are intentionally
+// off-sitemap here (they belong on the partner island's sitemap).
+function canonicalHostOf(file) {
+  const m = readHead(file).match(CANONICAL_RE)
+  if (!m) return null
+  try { return new URL(m[1]).hostname }
+  catch { return null }
+}
 
 function walkHtml(dir) {
   const out = []
@@ -61,6 +84,7 @@ function parseSitemapUrls(xml) {
 function pathToFile(sitePath, ftpRoot) {
   const clean = sitePath.replace(/^\/+/, '').replace(/\/+$/, '')
   if (clean === '') return join(ftpRoot, 'index.html')
+  if (/\.html$/i.test(clean)) return join(ftpRoot, clean)
   return join(ftpRoot, clean, 'index.html')
 }
 
@@ -73,8 +97,18 @@ function checkSite(site) {
 
   const sitemapUrls = parseSitemapUrls(readFileSync(sitemapPath, 'utf-8'))
   const onDiskFiles = walkHtml(ftpRoot)
+  // Filter out pages that don't belong in this site's sitemap:
+  //   - noindex pages (Google is told to skip them)
+  //   - pages whose canonical points to a known partner domain (cross-island
+  //     mirrors kept on disk as redirect fallbacks)
+  const indexableFiles = onDiskFiles.filter(f => {
+    if (isNoindex(f)) return false
+    const ch = canonicalHostOf(f)
+    if (ch && KNOWN_DOMAINS.has(ch) && ch !== site.domain) return false
+    return true
+  })
   const onDiskPaths = new Set(
-    onDiskFiles
+    indexableFiles
       .map(f => fileToUrlPath(f, ftpRoot))
       .filter(p => !SITEMAP_EXCLUDE.has(p))
   )

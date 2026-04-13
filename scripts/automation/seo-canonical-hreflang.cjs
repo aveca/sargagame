@@ -60,7 +60,9 @@ function extractLinks(html) {
   for (const m of slice.matchAll(/<link\s+rel=["']alternate["']\s+hreflang=["']([^"']+)["']\s+href=["']([^"']+)["']/gi)) {
     hreflangs.push({ lang: m[1].trim(), href: m[2].trim() })
   }
-  return { canonical, hreflangs }
+  const robotsMatch = slice.match(/<meta\s+name=["']robots["']\s+content=["']([^"']+)["']/i)
+  const noindex = robotsMatch ? /noindex/i.test(robotsMatch[1]) : false
+  return { canonical, hreflangs, noindex }
 }
 
 function pathToFile(sitePath, ftpRoot) {
@@ -77,13 +79,18 @@ function checkSite(site, allFtpRoots) {
 
   let pagesWithCanonical = 0
   let pagesWithHreflang = 0
+  let pagesSkippedNoindex = 0
 
   for (const file of files) {
     const fileLabel = relative(ftpRoot, file).split(sep).join('/')
     const pageUrlPath = fileToUrlPath(file, ftpRoot)
     let html
     try { html = readFileSync(file, 'utf-8') } catch { continue }
-    const { canonical, hreflangs } = extractLinks(html)
+    const { canonical, hreflangs, noindex } = extractLinks(html)
+
+    // Noindex pages are told "don't index me" — Google skips them entirely,
+    // so canonical/hreflang are moot. Skip to avoid false positives.
+    if (noindex) { pagesSkippedNoindex++; continue }
 
     // === CANONICAL ===
     if (!canonical) {
@@ -93,7 +100,16 @@ function checkSite(site, allFtpRoots) {
       try {
         const u = new URL(canonical)
         if (u.hostname !== site.domain) {
-          issues.push({ file: fileLabel, kind: 'canonical-off-domain', canonical, expected: site.domain })
+          // Cross-domain canonical is valid IF the target actually exists on the
+          // partner FTP — this is how we handle cross-island duplicate content
+          // (a GP article pre-rendered into the MQ folder as a fallback).
+          const partner = SITES.find(s => s.domain === u.hostname)
+          const partnerRoot = partner ? allFtpRoots[partner.key] : null
+          const target = partnerRoot ? pathToFile(u.pathname, partnerRoot) : null
+          const partnerExists = target && existsSync(target)
+          if (!partnerExists) {
+            issues.push({ file: fileLabel, kind: 'canonical-off-domain', canonical, expected: site.domain })
+          }
         } else if (u.pathname !== pageUrlPath) {
           // Tolerate trailing slash diff
           const a = u.pathname.replace(/\/$/, '')
@@ -152,6 +168,7 @@ function checkSite(site, allFtpRoots) {
 
   return {
     pageCount: files.length,
+    pagesSkippedNoindex,
     pagesWithCanonical,
     pagesWithHreflang,
     issueCount: issues.length,

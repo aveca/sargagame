@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-04-13T06:15:39.098Z",
+  "generatedAt": "2026-04-13T06:38:59.304Z",
   "sites": {
     "mq": {
       "pageCount": 101,
-      "noIncomingCount": 15,
-      "fewIncomingCount": 18,
-      "phantomCount": 12,
+      "noIncomingCount": 14,
+      "fewIncomingCount": 16,
+      "phantomCount": 0,
       "noIncoming": [
         {
           "url": "/404.html",
@@ -23,29 +23,24 @@
           "out": 1
         },
         {
-          "url": "/conditions/",
-          "in": 0,
-          "out": 29
-        },
-        {
           "url": "/es/alertas-sargazo/",
           "in": 0,
-          "out": 24
+          "out": 3
         },
         {
           "url": "/es/mapa-sargazo/",
           "in": 0,
-          "out": 24
+          "out": 3
         },
         {
           "url": "/es/mejores-playas-sin-sargazo/",
           "in": 0,
-          "out": 24
+          "out": 3
         },
         {
           "url": "/es/temporada-sargazo/",
           "in": 0,
-          "out": 24
+          "out": 3
         },
         {
           "url": "/neptunes_fury.html",
@@ -55,7 +50,7 @@
         {
           "url": "/nettoyer-sargasses/",
           "in": 0,
-          "out": 23
+          "out": 5
         },
         {
           "url": "/onboarding.html",
@@ -87,72 +82,62 @@
         {
           "url": "/en/best-beaches-martinique/",
           "in": 1,
-          "out": 24
+          "out": 3
         },
         {
           "url": "/en/best-beaches-no-sargassum/",
           "in": 1,
-          "out": 24
+          "out": 3
         },
         {
           "url": "/en/sargassum-alerts/",
           "in": 1,
-          "out": 24
+          "out": 3
         },
         {
           "url": "/en/sargassum-map/",
           "in": 1,
-          "out": 24
+          "out": 3
         },
         {
           "url": "/en/sargassum-season/",
           "in": 1,
-          "out": 24
+          "out": 3
         },
         {
           "url": "/en/satellite-sargassum-detection/",
           "in": 1,
-          "out": 24
+          "out": 3
         },
         {
           "url": "/en/understanding-sargassum/",
           "in": 1,
-          "out": 24
+          "out": 3
         },
         {
           "url": "/lexique/",
           "in": 1,
-          "out": 25
+          "out": 8
         },
         {
           "url": "/meilleures-plages-martinique-sargasses/",
           "in": 1,
-          "out": 26
+          "out": 13
         },
         {
           "url": "/methode-carte/",
           "in": 1,
-          "out": 27
+          "out": 8
         },
         {
           "url": "/saison-sargasses-guadeloupe/",
           "in": 1,
-          "out": 26
+          "out": 3
         },
         {
           "url": "/sargasses-record-2026/",
           "in": 1,
-          "out": 25
-        },
-        {
-          "url": "/bilan-sargasses-2025/",
-          "in": 2,
-          "out": 28
-        },
-        {
-          "url": "/comprendre-sargasses/",
-          "in": 2,
-          "out": 26
+          "out": 9
         },
         {
           "url": "/confidentialite.html",
@@ -162,7 +147,7 @@
         {
           "url": "/faq/",
           "in": 2,
-          "out": 24
+          "out": 7
         },
         {
           "url": "/mentions-legales.html",
@@ -172,210 +157,120 @@
         {
           "url": "/plages/pointe-fort-caravelle/",
           "in": 2,
-          "out": 27
+          "out": 10
         }
       ],
       "topTargets": [
         {
-          "url": "/carte-sargasses/",
-          "in": 92,
-          "out": 22
-        },
-        {
-          "url": "/previsions/",
-          "in": 92,
-          "out": 21
-        },
-        {
           "url": "/",
           "in": 90,
-          "out": 23
-        },
-        {
-          "url": "/alertes/",
-          "in": 89,
-          "out": 23
-        },
-        {
-          "url": "/danger-sargasses-h2s/",
-          "in": 89,
-          "out": 22
+          "out": 21
         },
         {
           "url": "/es/",
           "in": 89,
-          "out": 23
+          "out": 2
         },
         {
-          "url": "/plages-sans-sargasses/",
-          "in": 89,
-          "out": 26
+          "url": "/en/",
+          "in": 72,
+          "out": 2
         },
         {
-          "url": "/plages/anse-a-l-ane/",
-          "in": 89,
-          "out": 25
+          "url": "/previsions/",
+          "in": 68,
+          "out": 8
         },
         {
-          "url": "/plages/anse-dufour/",
-          "in": 89,
-          "out": 24
+          "url": "/carte-sargasses/",
+          "in": 67,
+          "out": 8
         },
         {
-          "url": "/plages/anse-mitan/",
-          "in": 89,
-          "out": 25
+          "url": "/alertes/",
+          "in": 63,
+          "out": 4
+        },
+        {
+          "url": "/plages/",
+          "in": 58,
+          "out": 63
+        },
+        {
+          "url": "/plages/bourg-de-tartane/",
+          "in": 12,
+          "out": 10
+        },
+        {
+          "url": "/danger-sargasses-h2s/",
+          "in": 11,
+          "out": 3
+        },
+        {
+          "url": "/plages/grande-anse-d-arlet/",
+          "in": 11,
+          "out": 10
         }
       ],
       "topDonors": [
         {
           "url": "/plages/",
           "in": 58,
-          "out": 68
+          "out": 63
         },
         {
           "url": "/conditions/uv-fort/",
           "in": 4,
-          "out": 51
+          "out": 38
         },
         {
           "url": "/conditions/mer-agitee/",
           "in": 4,
-          "out": 42
+          "out": 26
+        },
+        {
+          "url": "/",
+          "in": 90,
+          "out": 21
         },
         {
           "url": "/conditions/baignade-ideale/",
           "in": 4,
-          "out": 35
+          "out": 15
         },
         {
           "url": "/conditions/mer-calme/",
           "in": 4,
-          "out": 35
+          "out": 15
         },
         {
           "url": "/conditions/",
-          "in": 0,
-          "out": 29
+          "in": 4,
+          "out": 14
         },
         {
-          "url": "/bilan-sargasses-2025/",
+          "url": "/meilleures-plages-martinique-sargasses/",
+          "in": 1,
+          "out": 13
+        },
+        {
+          "url": "/plages/pointe-fort-caravelle/",
           "in": 2,
-          "out": 28
+          "out": 10
         },
         {
-          "url": "/plages/anse-figuier/",
+          "url": "/plages/anse-cafard/",
           "in": 3,
-          "out": 28
-        },
-        {
-          "url": "/plages/plage-de-grand-riviere/",
-          "in": 3,
-          "out": 28
-        },
-        {
-          "url": "/plages/plage-de-saint-pierre/",
-          "in": 3,
-          "out": 28
+          "out": 10
         }
       ],
-      "phantom": [
-        {
-          "url": "/manifest.json",
-          "incomingFrom": [
-            "/alertes/",
-            "/bilan-sargasses-2025/",
-            "/carte-sargasses/"
-          ]
-        },
-        {
-          "url": "/favicon.svg",
-          "incomingFrom": [
-            "/alertes/",
-            "/bilan-sargasses-2025/",
-            "/carte-sargasses/"
-          ]
-        },
-        {
-          "url": "/og-image.png",
-          "incomingFrom": [
-            "/alertes/",
-            "/bilan-sargasses-2025/",
-            "/carte-sargasses/"
-          ]
-        },
-        {
-          "url": "/api/copernicus/sargassum.json",
-          "incomingFrom": [
-            "/alertes/",
-            "/bilan-sargasses-2025/",
-            "/carte-sargasses/"
-          ]
-        },
-        {
-          "url": "/assets/leaflet-DU5C8HEI.js",
-          "incomingFrom": [
-            "/alertes/",
-            "/bilan-sargasses-2025/",
-            "/carte-sargasses/"
-          ]
-        },
-        {
-          "url": "/assets/react-vendor-CP3NX7uj.js",
-          "incomingFrom": [
-            "/alertes/",
-            "/bilan-sargasses-2025/",
-            "/carte-sargasses/"
-          ]
-        },
-        {
-          "url": "/plages/plage-de-sainte-anne/",
-          "incomingFrom": [
-            "/bilan-sargasses-2025/",
-            "/saison-sargasses-guadeloupe/"
-          ]
-        },
-        {
-          "url": "/plages/plage-du-gosier/",
-          "incomingFrom": [
-            "/bilan-sargasses-2025/"
-          ]
-        },
-        {
-          "url": "/plages/plage-de-malendure/",
-          "incomingFrom": [
-            "/bilan-sargasses-2025/",
-            "/plages-sans-sargasses/",
-            "/saison-sargasses-guadeloupe/"
-          ]
-        },
-        {
-          "url": "/plages/la-grande-anse-deshaies/",
-          "incomingFrom": [
-            "/bilan-sargasses-2025/",
-            "/plages-sans-sargasses/",
-            "/saison-sargasses-guadeloupe/"
-          ]
-        },
-        {
-          "url": "/plages/cap-chevalier/",
-          "incomingFrom": [
-            "/meilleures-plages-martinique-sargasses/"
-          ]
-        },
-        {
-          "url": "/plages/plage-de-la-caravelle/",
-          "incomingFrom": [
-            "/plages-sans-sargasses/"
-          ]
-        }
-      ]
+      "phantom": []
     },
     "gp": {
       "pageCount": 131,
-      "noIncomingCount": 17,
-      "fewIncomingCount": 43,
-      "phantomCount": 60,
+      "noIncomingCount": 14,
+      "fewIncomingCount": 19,
+      "phantomCount": 0,
       "noIncoming": [
         {
           "url": "/404.html",
@@ -393,29 +288,24 @@
           "out": 1
         },
         {
-          "url": "/conditions/",
-          "in": 0,
-          "out": 29
-        },
-        {
           "url": "/es/alertas-sargazo/",
           "in": 0,
-          "out": 24
+          "out": 3
         },
         {
           "url": "/es/mapa-sargazo/",
           "in": 0,
-          "out": 24
+          "out": 3
         },
         {
           "url": "/es/mejores-playas-sin-sargazo/",
           "in": 0,
-          "out": 24
+          "out": 3
         },
         {
           "url": "/es/temporada-sargazo/",
           "in": 0,
-          "out": 24
+          "out": 3
         },
         {
           "url": "/neptunes_fury.html",
@@ -425,22 +315,12 @@
         {
           "url": "/nettoyer-sargasses/",
           "in": 0,
-          "out": 23
+          "out": 5
         },
         {
           "url": "/onboarding.html",
           "in": 0,
           "out": 0
-        },
-        {
-          "url": "/plages/ile-de-la-petite-terre/",
-          "in": 0,
-          "out": 28
-        },
-        {
-          "url": "/plages/les-salines-saint-francois/",
-          "in": 0,
-          "out": 28
         },
         {
           "url": "/sarg_carte_satellite_app.html",
@@ -467,107 +347,62 @@
         {
           "url": "/en/best-beaches-martinique/",
           "in": 1,
-          "out": 24
+          "out": 3
         },
         {
           "url": "/en/best-beaches-no-sargassum/",
           "in": 1,
-          "out": 24
+          "out": 3
         },
         {
           "url": "/en/sargassum-alerts/",
           "in": 1,
-          "out": 24
+          "out": 3
         },
         {
           "url": "/en/sargassum-map/",
           "in": 1,
-          "out": 24
+          "out": 3
         },
         {
           "url": "/en/sargassum-season/",
           "in": 1,
-          "out": 24
+          "out": 3
         },
         {
           "url": "/en/satellite-sargassum-detection/",
           "in": 1,
-          "out": 24
+          "out": 3
         },
         {
           "url": "/en/understanding-sargassum/",
           "in": 1,
-          "out": 24
-        },
-        {
-          "url": "/lexique/",
-          "in": 1,
-          "out": 25
+          "out": 3
         },
         {
           "url": "/meilleures-plages-martinique-sargasses/",
           "in": 1,
-          "out": 26
+          "out": 7
         },
         {
           "url": "/methode-carte/",
           "in": 1,
-          "out": 27
+          "out": 8
         },
         {
-          "url": "/plages/anse-crawen/",
+          "url": "/plages/les-salines-saint-francois/",
           "in": 1,
-          "out": 28
-        },
-        {
-          "url": "/plages/l-autre-bord/",
-          "in": 1,
-          "out": 28
-        },
-        {
-          "url": "/plages/plage-de-babin/",
-          "in": 1,
-          "out": 28
-        },
-        {
-          "url": "/plages/plage-de-capesterre-belle-eau/",
-          "in": 1,
-          "out": 28
-        },
-        {
-          "url": "/plages/plage-de-petit-bourg/",
-          "in": 1,
-          "out": 28
-        },
-        {
-          "url": "/plages/saint-felix-sud/",
-          "in": 1,
-          "out": 28
-        },
-        {
-          "url": "/plages/saint-felix/",
-          "in": 1,
-          "out": 28
+          "out": 10
         },
         {
           "url": "/saison-sargasses-guadeloupe/",
           "in": 1,
-          "out": 26
+          "out": 6
         },
         {
           "url": "/sargasses-record-2026/",
           "in": 1,
-          "out": 25
-        },
-        {
-          "url": "/bilan-sargasses-2025/",
-          "in": 2,
-          "out": 28
-        },
-        {
-          "url": "/comprendre-sargasses/",
-          "in": 2,
-          "out": 26
+          "out": 9
         },
         {
           "url": "/confidentialite.html",
@@ -577,7 +412,7 @@
         {
           "url": "/faq/",
           "in": 2,
-          "out": 24
+          "out": 7
         },
         {
           "url": "/mentions-legales.html",
@@ -585,302 +420,131 @@
           "out": 4
         },
         {
-          "url": "/plages/anse-du-figuier-saintes/",
+          "url": "/plages/anse-crawen/",
           "in": 2,
-          "out": 28
+          "out": 10
         },
         {
-          "url": "/plages/anse-rodrigue/",
+          "url": "/plages/ile-de-la-petite-terre/",
           "in": 2,
-          "out": 28
+          "out": 10
         },
         {
-          "url": "/plages/grande-anse-desirade/",
+          "url": "/plages/plage-de-babin/",
           "in": 2,
-          "out": 28
+          "out": 10
         },
         {
-          "url": "/plages/le-souffleur-desirade/",
+          "url": "/plages/saint-felix-sud/",
           "in": 2,
-          "out": 28
-        },
-        {
-          "url": "/plages/petite-plage-malendure/",
-          "in": 2,
-          "out": 28
-        },
-        {
-          "url": "/plages/plage-de-baie-mahault-desirade/",
-          "in": 2,
-          "out": 28
+          "out": 10
         }
       ],
       "topTargets": [
         {
-          "url": "/carte-sargasses/",
-          "in": 122,
-          "out": 22
-        },
-        {
-          "url": "/previsions/",
-          "in": 122,
+          "url": "/",
+          "in": 119,
           "out": 21
         },
         {
-          "url": "/",
-          "in": 121,
-          "out": 20
-        },
-        {
-          "url": "/alertes/",
-          "in": 119,
-          "out": 23
-        },
-        {
-          "url": "/danger-sargasses-h2s/",
-          "in": 118,
-          "out": 22
-        },
-        {
           "url": "/es/",
-          "in": 118,
-          "out": 23
+          "in": 115,
+          "out": 2
         },
         {
-          "url": "/plages-sans-sargasses/",
-          "in": 118,
-          "out": 26
+          "url": "/previsions/",
+          "in": 98,
+          "out": 8
         },
         {
-          "url": "/saison-sargasses-martinique/",
-          "in": 118,
-          "out": 23
+          "url": "/carte-sargasses/",
+          "in": 96,
+          "out": 9
         },
         {
           "url": "/en/",
-          "in": 102,
-          "out": 23
+          "in": 96,
+          "out": 2
+        },
+        {
+          "url": "/alertes/",
+          "in": 93,
+          "out": 4
         },
         {
           "url": "/plages/",
           "in": 88,
-          "out": 68
+          "out": 92
+        },
+        {
+          "url": "/danger-sargasses-h2s/",
+          "in": 11,
+          "out": 3
+        },
+        {
+          "url": "/plages/la-grande-anse-deshaies/",
+          "in": 10,
+          "out": 10
+        },
+        {
+          "url": "/plages/plage-du-gosier/",
+          "in": 10,
+          "out": 10
         }
       ],
       "topDonors": [
         {
           "url": "/plages/",
           "in": 88,
-          "out": 68
+          "out": 92
         },
         {
           "url": "/conditions/uv-fort/",
           "in": 4,
-          "out": 51
+          "out": 36
         },
         {
           "url": "/conditions/mer-agitee/",
           "in": 4,
-          "out": 42
+          "out": 25
         },
         {
-          "url": "/conditions/baignade-ideale/",
-          "in": 4,
-          "out": 35
+          "url": "/",
+          "in": 119,
+          "out": 21
         },
         {
           "url": "/conditions/mer-calme/",
           "in": 4,
-          "out": 35
+          "out": 17
+        },
+        {
+          "url": "/conditions/baignade-ideale/",
+          "in": 4,
+          "out": 16
         },
         {
           "url": "/conditions/",
-          "in": 0,
-          "out": 29
-        },
-        {
-          "url": "/plages/ile-de-la-petite-terre/",
-          "in": 0,
-          "out": 28
+          "in": 4,
+          "out": 13
         },
         {
           "url": "/plages/les-salines-saint-francois/",
-          "in": 0,
-          "out": 28
+          "in": 1,
+          "out": 10
         },
         {
           "url": "/plages/anse-crawen/",
-          "in": 1,
-          "out": 28
+          "in": 2,
+          "out": 10
         },
         {
-          "url": "/plages/l-autre-bord/",
-          "in": 1,
-          "out": 28
+          "url": "/plages/ile-de-la-petite-terre/",
+          "in": 2,
+          "out": 10
         }
       ],
-      "phantom": [
-        {
-          "url": "/manifest.json",
-          "incomingFrom": [
-            "/alertes/",
-            "/bilan-sargasses-2025/",
-            "/carte-sargasses/"
-          ]
-        },
-        {
-          "url": "/favicon.svg",
-          "incomingFrom": [
-            "/alertes/",
-            "/bilan-sargasses-2025/",
-            "/carte-sargasses/"
-          ]
-        },
-        {
-          "url": "/og-image.png",
-          "incomingFrom": [
-            "/alertes/",
-            "/bilan-sargasses-2025/",
-            "/carte-sargasses/"
-          ]
-        },
-        {
-          "url": "/api/copernicus/sargassum.json",
-          "incomingFrom": [
-            "/alertes/",
-            "/bilan-sargasses-2025/",
-            "/carte-sargasses/"
-          ]
-        },
-        {
-          "url": "/assets/leaflet-DU5C8HEI.js",
-          "incomingFrom": [
-            "/alertes/",
-            "/bilan-sargasses-2025/",
-            "/carte-sargasses/"
-          ]
-        },
-        {
-          "url": "/assets/react-vendor-CP3NX7uj.js",
-          "incomingFrom": [
-            "/alertes/",
-            "/bilan-sargasses-2025/",
-            "/carte-sargasses/"
-          ]
-        },
-        {
-          "url": "/plages/anse-mitan/",
-          "incomingFrom": [
-            "/alertes/",
-            "/bilan-sargasses-2025/",
-            "/carte-sargasses/"
-          ]
-        },
-        {
-          "url": "/plages/anse-noire/",
-          "incomingFrom": [
-            "/alertes/",
-            "/bilan-sargasses-2025/",
-            "/carte-sargasses/"
-          ]
-        },
-        {
-          "url": "/plages/grande-anse-d-arlet/",
-          "incomingFrom": [
-            "/alertes/",
-            "/bilan-sargasses-2025/",
-            "/carte-sargasses/"
-          ]
-        },
-        {
-          "url": "/plages/anse-dufour/",
-          "incomingFrom": [
-            "/alertes/",
-            "/bilan-sargasses-2025/",
-            "/carte-sargasses/"
-          ]
-        },
-        {
-          "url": "/plages/anse-a-l-ane/",
-          "incomingFrom": [
-            "/alertes/",
-            "/bilan-sargasses-2025/",
-            "/carte-sargasses/"
-          ]
-        },
-        {
-          "url": "/plages/plage-des-salines/",
-          "incomingFrom": [
-            "/alertes/",
-            "/bilan-sargasses-2025/",
-            "/carte-sargasses/"
-          ]
-        },
-        {
-          "url": "/plages/pointe-faula/",
-          "incomingFrom": [
-            "/alertes/",
-            "/bilan-sargasses-2025/",
-            "/carte-sargasses/"
-          ]
-        },
-        {
-          "url": "/plages/anse-trabaud/",
-          "incomingFrom": [
-            "/alertes/",
-            "/bilan-sargasses-2025/",
-            "/carte-sargasses/"
-          ]
-        },
-        {
-          "url": "/plages/bourg-de-tartane/",
-          "incomingFrom": [
-            "/alertes/",
-            "/bilan-sargasses-2025/",
-            "/carte-sargasses/"
-          ]
-        },
-        {
-          "url": "/plages/plage-de-la-francaise/",
-          "incomingFrom": [
-            "/conditions/baignade-ideale/",
-            "/conditions/mer-calme/",
-            "/conditions/uv-fort/"
-          ]
-        },
-        {
-          "url": "/plages/plage-de-sch-lcher/",
-          "incomingFrom": [
-            "/conditions/baignade-ideale/",
-            "/conditions/mer-calme/",
-            "/conditions/uv-fort/"
-          ]
-        },
-        {
-          "url": "/plages/anse-collat/",
-          "incomingFrom": [
-            "/conditions/baignade-ideale/",
-            "/conditions/mer-calme/",
-            "/conditions/uv-fort/"
-          ]
-        },
-        {
-          "url": "/plages/anse-madame/",
-          "incomingFrom": [
-            "/conditions/baignade-ideale/",
-            "/conditions/mer-calme/",
-            "/conditions/uv-fort/"
-          ]
-        },
-        {
-          "url": "/plages/anse-charpentier/",
-          "incomingFrom": [
-            "/conditions/baignade-ideale/",
-            "/conditions/mer-calme/",
-            "/conditions/uv-fort/"
-          ]
-        }
-      ]
+      "phantom": []
     }
   }
 }

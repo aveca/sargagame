@@ -1,0 +1,77 @@
+{
+  "generatedAt": "2026-04-13T06:49:00.513Z",
+  "sites": {
+    "mq": {
+      "donorCount": 5,
+      "targetCount": 29,
+      "injections": [
+        {
+          "donor": "/",
+          "targetCount": 8
+        },
+        {
+          "donor": "/plages/",
+          "targetCount": 8
+        },
+        {
+          "donor": "/carte-sargasses/",
+          "targetCount": 8
+        },
+        {
+          "donor": "/previsions/",
+          "targetCount": 8
+        },
+        {
+          "donor": "/conditions/",
+          "targetCount": 8
+        }
+      ],
+      "targets": [
+        "/alertes/",
+        "/bilan-sargasses-2025/",
+        "/carte-sargasses/",
+        "/comprendre-sargasses/",
+        "/conditions/",
+        "/danger-sargasses-h2s/",
+        "/detection-satellite-sargasses/",
+        "/es/"
+      ]
+    },
+    "gp": {
+      "donorCount": 5,
+      "targetCount": 25,
+      "injections": [
+        {
+          "donor": "/",
+          "targetCount": 8
+        },
+        {
+          "donor": "/plages/",
+          "targetCount": 8
+        },
+        {
+          "donor": "/carte-sargasses/",
+          "targetCount": 8
+        },
+        {
+          "donor": "/previsions/",
+          "targetCount": 8
+        },
+        {
+          "donor": "/conditions/",
+          "targetCount": 8
+        }
+      ],
+      "targets": [
+        "/alertes/",
+        "/bilan-sargasses-2025/",
+        "/comprendre-sargasses/",
+        "/conditions/",
+        "/danger-sargasses-h2s/",
+        "/detection-satellite-sargasses/",
+        "/es/",
+        "/lexique/"
+      ]
+    }
+  }
+}
