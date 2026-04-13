@@ -583,9 +583,16 @@ button:active,a:active,[role="button"]:active{transform:scale(.96)!important;opa
 .heart-pop{animation:heartPop .4s cubic-bezier(.22,1,.36,1)}
 .leaflet-control-zoom{display:none!important}
 .leaflet-interactive{cursor:pointer!important}
-/* Nearest clean beach — golden pulsing ring */
-.sg-nearest-ring{animation:nearestPulse 2s ease-in-out infinite}
-@keyframes nearestPulse{0%,100%{stroke-opacity:.4;r:22}50%{stroke-opacity:.1;r:30}}
+/* Pin score pills (divIcon) — nearest clean gets a soft gold halo that pulses */
+.sg-pin{backface-visibility:hidden;will-change:transform}
+.sg-pin:hover{transform:scale(1.12)!important}
+.sg-pin-nearest{animation:sgPinNearest 2.4s ease-in-out infinite}
+@keyframes sgPinNearest{
+  0%,100%{box-shadow:0 0 0 2px #E8A800,0 0 0 6px rgba(232,168,0,.25),0 4px 12px rgba(0,0,0,.35)}
+  50%{box-shadow:0 0 0 2px #E8A800,0 0 0 12px rgba(232,168,0,0),0 4px 12px rgba(0,0,0,.35)}
+}
+.sg-pin-selected{animation:sgPinSelected .5s cubic-bezier(.22,1,.36,1)}
+@keyframes sgPinSelected{0%{transform:scale(.8)}60%{transform:scale(1.18)}100%{transform:scale(1.08)}}
 
 /* Gold button */
 .gbtn{
@@ -2815,24 +2822,29 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
         >
           {typeof top.score==="number"&&(
             <div style={{
-              position:"relative",width:48,height:48,flexShrink:0,
+              position:"relative",width:60,height:60,flexShrink:0,
               display:"flex",alignItems:"center",justifyContent:"center",
             }}>
               <div style={{
-                position:"relative",width:48,height:48,borderRadius:"50%",
-                background:`conic-gradient(${top.scoreColor||topSt.c} ${top.score*3.6}deg, rgba(0,0,0,.055) ${top.score*3.6}deg)`,
+                position:"relative",width:60,height:60,borderRadius:"50%",
+                background:`conic-gradient(${top.scoreColor||topSt.c} ${top.score*3.6}deg, rgba(0,0,0,.05) ${top.score*3.6}deg)`,
                 display:"flex",alignItems:"center",justifyContent:"center",
-                boxShadow:`inset 0 0 0 1px ${top.scoreColor||topSt.c}22, 0 2px 8px ${topSt.c}33`,
+                boxShadow:`inset 0 0 0 1px ${top.scoreColor||topSt.c}33, 0 4px 14px ${topSt.c}44`,
               }}>
                 <div style={{
-                  width:36,height:36,borderRadius:"50%",
+                  width:46,height:46,borderRadius:"50%",
                   background:"linear-gradient(180deg,#fff 0%, #FDFCF7 100%)",
-                  display:"flex",alignItems:"center",justifyContent:"center",
+                  display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+                  lineHeight:.85,
                 }}>
                   <span style={{
-                    fontFamily:"'Anton',sans-serif",fontSize:18,lineHeight:.9,
-                    color:top.scoreColor||topSt.c,letterSpacing:"-.02em",
+                    fontFamily:"'Anton',sans-serif",fontSize:26,
+                    color:top.scoreColor||topSt.c,letterSpacing:"-.03em",
                   }}>{top.score}</span>
+                  <span style={{
+                    fontSize:7,fontWeight:700,letterSpacing:".08em",
+                    color:"var(--sg-mid,#9a9a9a)",textTransform:"uppercase",marginTop:1,
+                  }}>{lang==="en"?"score":lang==="es"?"nota":"note"}</span>
                 </div>
               </div>
             </div>
@@ -2840,27 +2852,32 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
           <div style={{flex:1,minWidth:0}}>
             <div style={{
               fontFamily:"'Anton',sans-serif",
-              fontSize:15,textTransform:"uppercase",letterSpacing:"-.01em",
-              color:"var(--sg-ink,#0D0D0D)",lineHeight:1.05,
+              fontSize:17,textTransform:"uppercase",letterSpacing:"-.015em",
+              color:"var(--sg-ink,#0D0D0D)",lineHeight:1.02,
               whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
             }}>
               {top.name}
             </div>
             <div style={{
-              fontSize:10,fontWeight:700,color:topSt.c,
-              letterSpacing:".02em",marginTop:2,
+              fontSize:11,fontWeight:700,color:topSt.c,
+              letterSpacing:".01em",marginTop:3,
+              display:"flex",alignItems:"center",gap:6,
               whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
             }}>
-              {verdict}
+              <span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{verdict}</span>
+              {distLbl&&(<>
+                <span aria-hidden style={{width:3,height:3,borderRadius:"50%",background:"currentColor",opacity:.4,flexShrink:0}}/>
+                <span style={{color:"var(--sg-mid,#686868)",fontWeight:600,flexShrink:0}}>{distLbl}</span>
+              </>)}
             </div>
           </div>
           <span style={{
-            fontSize:11,fontWeight:800,color:"#fff",
+            fontSize:12,fontWeight:800,color:"#fff",
             flexShrink:0,whiteSpace:"nowrap",
-            padding:"7px 12px",borderRadius:100,
-            background:topSt.c,
-            boxShadow:`0 2px 8px ${topSt.c}44`,
-            letterSpacing:".02em",
+            padding:"9px 16px",borderRadius:100,
+            background:`linear-gradient(135deg, ${topSt.c} 0%, ${topSt.c}cc 100%)`,
+            boxShadow:`0 4px 14px ${topSt.c}55, inset 0 1px 0 rgba(255,255,255,.3)`,
+            letterSpacing:".03em",
           }}>
             {lang==="en"?"Go →":"Voir →"}
           </span>

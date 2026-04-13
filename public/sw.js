@@ -1,6 +1,6 @@
 // Service Worker — Sargasses PWA
 // Cache-first for static assets, network-first for API data
-const CACHE_NAME = 'sargasses-v22'
+const CACHE_NAME = 'sargasses-v23'
 const STATIC_ASSETS = ['/', '/index.html', '/manifest.json', '/favicon.svg', '/icon-192.png', '/data/beaches-list.json', '/data/beaches-images.json']
 
 self.addEventListener('install', (e) => {
@@ -80,16 +80,13 @@ self.addEventListener('fetch', (e) => {
     return
   }
 
-  // Stale-while-revalidate for HTML pages (instant repeat visits)
+  // Network-first for HTML pages — HTML points to hash-fingerprinted JS, MUST be fresh.
+  // Stale HTML trapped users on old bundles for days (v22 bug, fixed 2026-04-13).
   e.respondWith(
-    caches.open(CACHE_NAME).then(cache =>
-      cache.match(e.request).then(cached => {
-        const fresh = fetch(e.request).then(res => {
-          cache.put(e.request, res.clone())
-          return res
-        }).catch(() => cached)
-        return cached || fresh
-      })
-    )
+    fetch(e.request).then(res => {
+      const clone = res.clone()
+      caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone))
+      return res
+    }).catch(() => caches.match(e.request))
   )
 })
