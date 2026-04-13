@@ -561,7 +561,7 @@ function interpolateForecast(beach,sentinels,weeklyData,k=3,power=2){
 
 function getBeachPhoto(beach){
   if(!beach)return null
-  return`/beaches/gplace-${beach.id}.jpg?v=2`
+  return`/beaches/gplace-${beach.id}.jpg?v=3`
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
