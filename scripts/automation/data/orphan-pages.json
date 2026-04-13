@@ -1,0 +1,1814 @@
+{
+  "generatedAt": "2026-04-13T06:12:42.995Z",
+  "sites": {
+    "mq": {
+      "sitemapSize": 90,
+      "orphanCount": 86,
+      "orphansByKind": {
+        "editorial": 19,
+        "beach": 53,
+        "other": 14
+      },
+      "linkDonors": [
+        {
+          "url": "https://sargasses-martinique.com/",
+          "impressions": 8101,
+          "clicks": 1246
+        }
+      ],
+      "orphans": [
+        {
+          "url": "https://sargasses-martinique.com/alertes/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/bilan-sargasses-2025/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/carte-sargasses/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/comprendre-sargasses/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/conditions/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/danger-sargasses-h2s/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/detection-satellite-sargasses/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/es/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/faq/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/lexique/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/meilleures-plages-martinique-sargasses/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/methode-carte/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/nettoyer-sargasses/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages-sans-sargasses/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/previsions-methode/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/previsions/",
+          "impressions": 2,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/saison-sargasses-guadeloupe/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/saison-sargasses-martinique/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/sargasses-record-2026/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/anse-a-l-ane/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/anse-belleville/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/anse-bonneville/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/anse-cafard/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/anse-caritan/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/anse-ceron/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/anse-charpentier/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/anse-collat/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/anse-corps-de-garde/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/anse-cosmy/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/anse-couleuvre/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/anse-des-galets/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/anse-dufour/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/anse-figuier/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/anse-gros-raisins/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/anse-grosse-roche/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/anse-l-etang/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/anse-mabouya/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/anse-macabou/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/anse-madame/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/anse-meunier/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/anse-michel/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/anse-mitan/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/anse-noire/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/anse-riviere-trinite/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/anse-trabaud/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/anse-turin/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/baie-coco/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/bourg-de-case-pilote/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/bourg-de-tartane/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/bourg-sainte-marie/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/grande-anse-d-arlet/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/grande-anse-du-carbet/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/l-autre-bord-trinite/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/les-raisiniers/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/macabou-nord/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/petite-anse-d-arlet/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/plage-de-grand-riviere/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/plage-de-la-francaise/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/plage-de-saint-pierre/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/plage-de-sainte-luce/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/plage-de-sch-lcher/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/plage-de-sinai/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/plage-des-boucaniers/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/plage-des-salines/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/plage-du-bourg-sainte-anne/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/plage-du-diamant/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/plage-du-marin/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/plage-du-vetiver/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/pointe-borgnesse/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/pointe-du-bout/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/pointe-faula/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages/pointe-fort-caravelle/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/conditions/baignade-ideale/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/conditions/mer-agitee/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/conditions/mer-calme/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/conditions/uv-fort/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/confidentialite.html",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/en/best-beaches-martinique/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/en/best-beaches-no-sargassum/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/en/sargassum-alerts/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/en/sargassum-season/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/es/alertas-sargazo/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/es/mapa-sargazo/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/es/mejores-playas-sin-sargazo/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/es/temporada-sargazo/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/mentions-legales.html",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        }
+      ]
+    },
+    "gp": {
+      "sitemapSize": 120,
+      "orphanCount": 111,
+      "orphansByKind": {
+        "editorial": 15,
+        "beach": 81,
+        "other": 15
+      },
+      "linkDonors": [
+        {
+          "url": "https://sargasses-guadeloupe.com/",
+          "impressions": 3153,
+          "clicks": 576
+        }
+      ],
+      "orphans": [
+        {
+          "url": "https://sargasses-guadeloupe.com/alertes/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/bilan-sargasses-2025/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/comprendre-sargasses/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/conditions/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/danger-sargasses-h2s/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/detection-satellite-sargasses/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/es/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/lexique/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/meilleures-plages-martinique-sargasses/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/nettoyer-sargasses/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/previsions-methode/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/previsions/",
+          "impressions": 3,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/saison-sargasses-guadeloupe/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/saison-sargasses-martinique/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/sargasses-record-2026/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/anse-a-l-eau/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/anse-a-la-barque-ste-anne/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/anse-a-la-barque-vh/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/anse-a-la-gourde/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/anse-a-sable/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/anse-bertrand-nord/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/anse-canot-marie-galante/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/anse-champagne/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/anse-crawen/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/anse-de-galet/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/anse-de-la-baie-olive/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/anse-de-pigeon/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/anse-de-vieux-fort-mg/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/anse-du-bourg-saintes/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/anse-du-figuier-saintes/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/anse-du-mancenillier/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/anse-gros-sable/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/anse-kahouanne/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/anse-laborde/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/anse-mire/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/anse-piton/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/anse-sainte-marguerite/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/anse-tarare/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/anse-turlet/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/grand-baie-sud/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/grand-baie/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/grande-anse-desirade/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/gros-cap/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/ile-de-la-petite-terre/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/l-autre-bord/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/la-datcha/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/la-feuillere/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/la-grande-anse-deshaies/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/le-souffleur-desirade/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/les-salines-saint-francois/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/petit-havre-gosier/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/petit-havre-sud/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/petite-plage-malendure/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-babin/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-baie-mahault-desirade/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-baille-argent/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-bananier/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-bas-du-fort-sud/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-bas-du-fort/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-capesterre-belle-eau/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-capesterre-mg/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-clugny/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-cluny-nord/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-deshaies/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-fouillole/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-grand-bourg/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-grande-anse/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-la-caravelle/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-la-desirade-sud/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-la-desirade/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-la-perle/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-la-verdure/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-malendure/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-moustique/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-nogent/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-petit-bourg/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-pompierre/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-saint-francois/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-sainte-anne/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-sainte-claire/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-tillet/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-des-amandiers/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-des-raisins-clairs/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-du-gosier/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-du-manganao/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-du-moule/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-du-souffleur/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-du-vieux-fort/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-pain-de-sucre/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/pointe-de-la-verdure-sud/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/pointe-de-la-verdure/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/pointe-des-chateaux/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/porte-d-enfer/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/saint-felix-sud/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/saint-felix/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/vieux-fort-sainte-rose/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "beach",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/conditions/baignade-ideale/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/conditions/mer-agitee/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/conditions/mer-calme/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/conditions/uv-fort/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/confidentialite.html",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/en/best-beaches-martinique/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/en/best-beaches-no-sargassum/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/en/sargassum-alerts/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/en/sargassum-map/",
+          "impressions": 1,
+          "clicks": 0,
+          "kind": "other",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/en/sargassum-season/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/es/alertas-sargazo/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/es/mapa-sargazo/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/es/mejores-playas-sin-sargazo/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/es/temporada-sargazo/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/mentions-legales.html",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other",
+          "recommendedLinkSources": [
+            "https://sargasses-guadeloupe.com/"
+          ]
+        }
+      ]
+    }
+  }
+}
