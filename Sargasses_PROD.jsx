@@ -708,6 +708,9 @@ button:active,a:active,[role="button"]:active{transform:scale(.96)!important;opa
 @keyframes sg-eta-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
 .sg-eta-badge{animation:sg-eta-pulse 2s ease-in-out infinite}
 
+/* Radar v2 — NAMED insight bubble entry */
+@keyframes sgRadarInsightIn{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+
 /* Shine for onboarding buttons */
 @keyframes onb-shine{0%,100%{left:-75%}35%,65%{left:120%}}
 
@@ -2199,7 +2202,7 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
   const nClean=beaches.filter(b=>b.status==="clean").length
   return(
     <div style={{height:"100%",overflowY:"auto",
-      paddingTop:"calc(var(--sg-header-offset,140px) + env(safe-area-inset-top,0px))",paddingBottom:"calc(70px + env(safe-area-inset-bottom,12px))",
+      paddingTop:"calc(var(--sg-header-offset,108px) + env(safe-area-inset-top,0px))",paddingBottom:"calc(70px + env(safe-area-inset-bottom,12px))",
       background:"var(--sg-bg,#FDFCF7)",maxWidth:600,margin:"0 auto"}}>
       {/* Editorial kicker — Anton count echoes the hero variance pill */}
       <div style={{padding:"10px 18px 6px",display:"flex",alignItems:"baseline",gap:8}}>
@@ -3899,7 +3902,7 @@ function formatFreshness(updatedAt,lang){
 function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,beachCount,dataSource,updatedAt}){
   const LL=T[lang]||T.fr
   const isLive=dataSource==="erddap-live"
-  const srcLabel=isLive?(lang==="en"?"LIVE satellite":"LIVE satellite"):(lang==="en"?"Estimation":"Estimation")
+  const srcLabel=isLive?"LIVE":(lang==="en"?"Estimation":"Estimation")
   const srcColor=isLive?C.green:C.amber
   const fresh=formatFreshness(updatedAt,lang)
   // Unified 40px-tall control rail. Three segments share the same shadow,
@@ -3955,7 +3958,6 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
           </span>
           <span style={{flexShrink:0,letterSpacing:".01em"}}>{srcLabel}</span>
           {fresh&&<span style={{opacity:.5,fontWeight:500,flexShrink:1,overflow:"hidden",textOverflow:"ellipsis"}}>· {fresh}</span>}
-          <span style={{opacity:.5,fontWeight:500,flexShrink:0}}>· {beachCount||47} {lang==="en"?"beaches":lang==="es"?"playas":"plages"}</span>
         </a>
 
       {/* Theme + Lang — grouped in a single rail segment for cohesion */}
@@ -5120,7 +5122,8 @@ export default function App(){
             <LazyMapView beaches={filtered} island={island} lang={lang}
             onBeachClick={onBeachClick} selectedBeach={selectedBeach} sargData={sargData} userPos={userPos}
             favorites={favorites} allBeaches={allBeaches} onThreatChange={setHasActiveThreat}
-            onPremiumClick={openPremium} track={track}/>
+            onPremiumClick={openPremium} track={track}
+            searchActive={search.trim().length>=2&&filtered.length>0}/>
           </Suspense></ErrBound>
         </div>
         <div style={{position:"absolute",inset:0,opacity:view==="list"?1:0,
@@ -5183,21 +5186,9 @@ export default function App(){
                   })}
                 </div>
               )}
-              {/* Carte = UN point focal : search + hero peek. Filters & clean-nearby live on Plages tab. */}
+              {/* Carte = map vivante + radar time-slider. Le pick hero vit sur l'onglet Plages.
+                  Focal element = le slider temporel dans MapView.jsx (buildRadarFrames). */}
               <SearchBar value={search} onChange={setSearch} lang={lang}/>
-              {/* Hero reco card (peek mode by default — map-first) */}
-              {sargData&&!search.trim()&&(
-                <HeroReco
-                  allBeaches={allBeaches}
-                  sargData={sargData}
-                  island={island}
-                  lang={lang}
-                  userPos={userPos}
-                  onBeachClick={onBeachClick}
-                  communityReports={communityReports}
-                  onPremiumClick={openPremium}
-                />
-              )}
             </div>
           </div>
         )}

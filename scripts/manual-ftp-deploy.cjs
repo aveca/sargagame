@@ -10,9 +10,9 @@
  * (root files as one chunk, then each top-level subdir as its own chunk).
  * The biggest subdir (beaches/) is ~420 files, well under the reset threshold.
  *
- * Required env vars:
- *   FTP_HOST_MQ, FTP_USER_MQ, FTP_PASS_MQ
- *   FTP_HOST_GP, FTP_USER_GP, FTP_PASS_GP
+ * Required env vars (aliases GitHub Actions acceptés) :
+ *   FTP_HOST_MQ | FTP_SERVER_MQ, FTP_USER_MQ | FTP_USERNAME_MQ, FTP_PASS_MQ | FTP_PASSWORD_MQ
+ *   idem _GP
  * Optional:
  *   FTP_REMOTE_MQ (default "/"), FTP_REMOTE_GP (default "/")
  *   ONLY=mq|gp (skip the other)
@@ -26,18 +26,18 @@ const targets = [
   {
     key: "mq",
     label: "Martinique",
-    host: process.env.FTP_HOST_MQ,
-    user: process.env.FTP_USER_MQ,
-    pass: process.env.FTP_PASS_MQ,
+    host: process.env.FTP_HOST_MQ || process.env.FTP_SERVER_MQ,
+    user: process.env.FTP_USER_MQ || process.env.FTP_USERNAME_MQ,
+    pass: process.env.FTP_PASS_MQ || process.env.FTP_PASSWORD_MQ,
     remote: process.env.FTP_REMOTE_MQ || "/",
     local: path.join(__dirname, "..", "martinique-ftp"),
   },
   {
     key: "gp",
     label: "Guadeloupe",
-    host: process.env.FTP_HOST_GP,
-    user: process.env.FTP_USER_GP,
-    pass: process.env.FTP_PASS_GP,
+    host: process.env.FTP_HOST_GP || process.env.FTP_SERVER_GP,
+    user: process.env.FTP_USER_GP || process.env.FTP_USERNAME_GP,
+    pass: process.env.FTP_PASS_GP || process.env.FTP_PASSWORD_GP,
     remote: process.env.FTP_REMOTE_GP || "/",
     local: path.join(__dirname, "..", "guadeloupe-ftp"),
   },
@@ -101,6 +101,7 @@ async function deployOne(t) {
 
   const entries = fs.readdirSync(t.local).sort()
   const skipUntil = process.env.SKIP_UNTIL || ""
+  const exclude = new Set((process.env.EXCLUDE || "").split(",").map(s => s.trim()).filter(Boolean))
 
   // Generic retry wrapper: fresh Client per attempt. Retries only on
   // ECONNRESET/timeout; other errors bubble up.
@@ -138,6 +139,7 @@ async function deployOne(t) {
   // Chunks 1..N: each top-level subdir in its own fresh session
   const subdirs = entries.filter(e => {
     if (skipUntil && e < skipUntil) return false
+    if (exclude.has(e)) return false
     return fs.statSync(path.join(t.local, e)).isDirectory()
   })
   for (const d of subdirs) {

@@ -10,8 +10,40 @@ import"leaflet/dist/leaflet.css"
 const ISLAND_CENTER={mq:[14.64,-61.02],gp:[16.22,-61.55]}
 
 const SARG_TO_BEACH={"grande-anse":"mq014","anse-mitan":"mq011","anse-noire":"mq012","tartane":"mq034","anse-madame":"mq024","diamant":"mq016","pt-marin":"mq008","sainte-anne":"mq004","les-salines":"mq001","vauclin":"mq044","gp-grande-anse":"gp021","gp-malendure":"gp031","gp-sainte-anne":"gp010","gp-pt-chateaux":"gp005","gp-gosier":"gp012","gp-caravelle":"gp009","gp-bas-du-fort":"gp014","gp-deshaies":"gp024","gp-moule":"gp080","gp-vieux-fort":"gp042"}
+const BEACH_TO_SARG=Object.fromEntries(Object.entries(SARG_TO_BEACH).map(([k,v])=>[v,k]))
 
 const GOLD="#E8A800"
+
+/* Radar time-slider frames. Generated dynamically so the chip label is the real weekday name,
+   not "+1" — "AUJ · LUN · MAR · MER · JEU" reads as a weather-app timeline, not a dev knob. */
+const DAY_SHORT_FR=["dim","lun","mar","mer","jeu","ven","sam"]
+const DAY_SHORT_EN=["sun","mon","tue","wed","thu","fri","sat"]
+const DAY_SHORT_ES=["dom","lun","mar","mié","jue","vie","sáb"]
+function buildRadarFrames(lang){
+  const labels={fr:DAY_SHORT_FR,en:DAY_SHORT_EN,es:DAY_SHORT_ES}[lang]||DAY_SHORT_FR
+  const now=new Date()
+  const frames=[]
+  for(let i=0;i<5;i++){
+    const d=new Date(now);d.setDate(now.getDate()+i)
+    const dayName=labels[d.getDay()]
+    const key=i===0?(lang==="en"?"TODAY":lang==="es"?"HOY":"AUJ"):dayName.toUpperCase()
+    frames.push({i,label:key,date:d})
+  }
+  return frames
+}
+
+/* For each beach b and a time step, return {status, afai} from forecast if available.
+   Falls back to current b.status. This is the heart of the radar: same beach, future state. */
+function getBeachAtStep(b,step,sargData){
+  if(step===0)return{status:b.status,afai:b.afai}
+  const sargId=BEACH_TO_SARG[b.id]
+  const direct=sargId&&sargData?.weekly?.[sargId]
+  const interp=sargData?._enrichedWeekly?.[`_interp_${b.id}`]
+  const weekly=direct||interp
+  const fc=weekly?.forecast?.[step]
+  if(fc&&fc.status)return{status:fc.status,afai:fc.afai??b.afai}
+  return{status:b.status,afai:b.afai}
+}
 
 /* ── i18n subset for Caribbean view ─────────────────────────────── */
 const T_CARIB={
@@ -61,7 +93,7 @@ function haversine(lat1,lon1,lat2,lon2){
 }
 
 /* ── Component ─────────────────────────────────────────────────────────── */
-export default function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos,favorites,allBeaches,onThreatChange,onPremiumClick,lang,track}){
+export default function MapView({beaches,island,onBeachClick,selectedBeach,sargData,userPos,favorites,allBeaches,onThreatChange,onPremiumClick,lang,track,searchActive}){
   const containerRef=useRef(null)
   const mapRef=useRef(null)
   const markersRef=useRef([])
@@ -76,6 +108,7 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
   const[autoPlaying,setAutoPlaying]=useState(false)
   const[caribbeanMode,setCaribbeanMode]=useState(false)
   const[caribbeanData,setCaribbeanData]=useState(null)
+  const[zoomTick,setZoomTick]=useState(0)
   const caribLayerRef=useRef(null)
   const caribLabelsRef=useRef(null)
   const prevViewRef=useRef(null) // store zoom/center before switching
@@ -94,20 +127,26 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
       attributionControl:false,
       maxBoundsViscosity:1,
       tap:false,
+      zoomSnap:.25, // allow fitBounds to land on 10.5, 10.75, etc. so MQ fills the viewport without wasting ocean
     })
     map.setView(center,11)
-    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{
-      maxZoom:18,
+    // Voyager base (free, no key) — turquoise sea + verdant land, "vacation feel"
+    // vs the old satellite which read as "Google Maps dark" and killed the tropical mood.
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",{
+      maxZoom:19,subdomains:"abcd",
+      attribution:"© OpenStreetMap © CARTO",
     }).addTo(map)
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png",{
-      maxZoom:18,subdomains:"abcd",
-    }).addTo(map)
+    // Bump zoomTick on zoomend only (not moveend: pixel-spacing is zoom-invariant under pan).
+    // This triggers the marker useEffect to re-run the declutter for the new zoom.
+    map.on("zoomend",()=>setZoomTick(t=>t+1))
     mapRef.current=map
     }catch(err){console.error("MAP INIT ERROR:",err.message,err.stack);setMapError(err.message)}
     return()=>{try{mapRef.current?.remove()}catch(e){};mapRef.current=null}
   },[])
 
-  // Fly to island
+  // Fly to island — fitBounds on the visible beaches so EVERY pin is on screen & clickable.
+  // The old fixed zoom-11 center cut off MQ east coast (La Trinité, Caravelle, Le François)
+  // on 390px viewports, which is why users couldn't click ~21 of 53 pins.
   useEffect(()=>{
     if(!mapRef.current)return
     if(userPos){
@@ -117,13 +156,27 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
         return
       }
     }
-    const center=ISLAND_CENTER[island]||ISLAND_CENTER.mq
+    const islandBeaches=(beaches||[]).filter(b=>b.island===island)
+    const fallbackCenter=ISLAND_CENTER[island]||ISLAND_CENTER.mq
     try{
       const size=mapRef.current.getSize()
-      if(size.x===0||size.y===0){mapRef.current.setView(center,11)}
-      else{mapRef.current.flyTo(center,11,{duration:1})}
-    }catch(e){mapRef.current.setView(center,11)}
-  },[island,userPos])
+      if(size.x===0||size.y===0){mapRef.current.setView(fallbackCenter,11);return}
+      if(islandBeaches.length>=3){
+        const latlngs=islandBeaches.map(b=>[b.lat,b.lng])
+        // Tight fit so the island fills the viewport. paddingTopLeft reserves space for header,
+        // paddingBottomRight reserves space for slider + search bar so pins never clip under them.
+        // zoomSnap:.25 at init lets this land on 10.5 instead of dropping to 9.
+        mapRef.current.fitBounds(latlngs,{
+          paddingTopLeft:[20,110],
+          paddingBottomRight:[20,190],
+          maxZoom:12,
+          animate:true,duration:.8,
+        })
+      }else{
+        mapRef.current.flyTo(fallbackCenter,11,{duration:1})
+      }
+    }catch(e){mapRef.current.setView(fallbackCenter,11)}
+  },[island,userPos,beaches])
 
   // User location marker (blue pulsing dot)
   useEffect(()=>{
@@ -249,47 +302,123 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
       })
     }
 
+    // Pixel-space declutter: sort by importance (selected > nearest > score),
+    // place the highest first, demote any beach within MIN_PX of an already-placed
+    // full pin to a tiny 8px dot. This is what Google Maps does — hierarchy by rendering
+    // tier, not data filter. Runs on zoom via zoomTick dep. Panning is no-op (zoom-invariant).
+    const withScoreSorted=beaches
+      .filter(b=>typeof b.score==="number")
+      .slice()
+      .sort((a,b)=>b.score-a.score)
+    const topIds=new Set(withScoreSorted.slice(0,3).map(b=>b.id))
+
+    const tier={}
+    try{
+      const pts=beaches.map(b=>({b,px:mapRef.current.latLngToContainerPoint([b.lat,b.lng])}))
+      pts.sort((A,B)=>{
+        const rank=o=>(o.b.id===selectedBeach?.id?1e6:0)+(o.b.id===nearestCleanId?1e5:0)+(topIds.has(o.b.id)?1e4:0)+(o.b.score||0)
+        return rank(B)-rank(A)
+      })
+      const MIN_PX=36
+      const placed=[]
+      for(const{b,px}of pts){
+        let close=false
+        for(const p of placed){
+          const dx=p.x-px.x,dy=p.y-px.y
+          if(dx*dx+dy*dy<MIN_PX*MIN_PX){close=true;break}
+        }
+        if(close){tier[b.id]="dot"}
+        else{tier[b.id]="full";placed.push(px)}
+      }
+    }catch(e){/* map not ready: render all full */}
+
     const heatGroup=L.layerGroup()
     const markerGroup=L.layerGroup()
 
+    // Dense-cluster click arbiter: when any marker is clicked, find the marker
+    // whose center is closest to the actual click point and open THAT beach.
+    // Fixes the bug where an overlapping hit wrapper wins Leaflet's z-order
+    // but the user visually aimed at a different pin.
+    const pickClosest=(clickPt,fallbackBeach)=>{
+      if(!clickPt||!mapRef.current)return fallbackBeach
+      let bestBeach=fallbackBeach,bestD=Infinity
+      for(const m of markersRef.current){
+        if(!m._sgBeach)continue
+        const mp=mapRef.current.latLngToContainerPoint(m.getLatLng())
+        const dx=mp.x-clickPt.x,dy=mp.y-clickPt.y
+        const d=dx*dx+dy*dy
+        if(d<bestD){bestD=d;bestBeach=m._sgBeach}
+      }
+      return bestBeach
+    }
+
     beaches.forEach((b,bi)=>{
-      const st=ST[b.status]||ST._loading
+      // Radar: at step>0 we use the forecast status, not the live one.
+      const at=getBeachAtStep(b,timeStep,sargData)
+      const effectiveStatus=at.status||b.status
+      const effectiveAfai=typeof at.afai==="number"?at.afai:b.afai
+      const st=ST[effectiveStatus]||ST._loading
       const isSelected=selectedBeach?.id===b.id
 
-      if(b.afai>.15){
-        const heatColor=b.afai<.3?"rgba(34,197,94,.2)":b.afai<.65?"rgba(184,122,0,.25)":"rgba(232,82,42,.3)"
-        const strokeColor=b.afai<.3?"rgba(34,197,94,.1)":b.afai<.65?"rgba(184,122,0,.12)":"rgba(232,82,42,.15)"
+      if(effectiveAfai>.2){
+        // Soft heat halo only. Capped low so it never obscures tile labels or beach pins.
+        const heatColor=effectiveAfai<.3?"rgba(34,197,94,.14)":effectiveAfai<.65?"rgba(184,122,0,.18)":"rgba(232,82,42,.22)"
         const isEastCoast=b.island==="mq"?b.lng>-61.0:b.lng>-61.5
         const lngDir=isEastCoast?.02:-.02
 
-        const mainRadius=Math.max(600,b.afai*3500)
+        const mainRadius=Math.max(600,effectiveAfai*2400)
         const main=L.circle([b.lat,b.lng+lngDir],{
           radius:mainRadius,
           fillColor:heatColor,
-          color:strokeColor,
-          weight:1,
-          fillOpacity:Math.min(.3,b.afai*.4),
+          color:"transparent",
+          weight:0,
+          fillOpacity:Math.min(.12,effectiveAfai*.18),
           interactive:false,
         })
         main.addTo(heatGroup)
         heatRef.current.push(main)
-
-        if(b.afai>.3){
-        }
       }
 
       const isNearest=b.id===nearestCleanId
       const hasScore=typeof b.score==="number"
-      const size=isSelected?34:(isNearest?30:26)
+      const isTop=topIds.has(b.id)
+      const isEmph=isSelected||isNearest||isTop
+
+      // DOT TIER — overlap-demoted, still tappable via 22px hit zone.
+      if(tier[b.id]==="dot"&&!isSelected&&!isNearest){
+        const dotColor=st.c
+        const dotHit=22
+        const html=`<div style="width:${dotHit}px;height:${dotHit}px;display:flex;align-items:center;justify-content:center;cursor:pointer"><div style="width:9px;height:9px;border-radius:50%;background:${dotColor};border:1.5px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.35)"></div></div>`
+        const dotIcon=L.divIcon({className:"",html,iconSize:[dotHit,dotHit],iconAnchor:[dotHit/2,dotHit/2]})
+        const dotMarker=L.marker([b.lat,b.lng],{icon:dotIcon,riseOnHover:true,zIndexOffset:0})
+        dotMarker._sgBeach=b
+        if(!("ontouchstart" in window))dotMarker.bindTooltip(b.name+(hasScore?` · ${b.score}/100`:""),{direction:"top",offset:[0,-12],className:"",permanent:false})
+        dotMarker.on("click",(e)=>onBeachClick(pickClosest(e.containerPoint,b)))
+        dotMarker.addTo(markerGroup)
+        markersRef.current.push(dotMarker)
+        return
+      }
+
       const bg=st.c
-      const ring=isNearest?`box-shadow:0 0 0 2px ${GOLD},0 4px 12px rgba(0,0,0,.35);`:`box-shadow:0 2px 8px rgba(0,0,0,.35);`
+      // All pins clickable (hit area ≥34px via outer wrapper). Visual size reflects importance.
+      const inner=isSelected?34:(isNearest?32:(isTop?30:24))
+      const ring=isNearest
+        ?`box-shadow:0 0 0 2px ${GOLD},0 4px 14px rgba(0,0,0,.4);`
+        :(isTop?`box-shadow:0 3px 10px rgba(0,0,0,.4);`:`box-shadow:0 2px 6px rgba(0,0,0,.3);`)
       const scale=isSelected?"scale(1.08)":"scale(1)"
       const label=hasScore?String(b.score):"·"
-      const html=`<div class="sg-pin${isNearest?" sg-pin-nearest":""}${isSelected?" sg-pin-selected":""}" style="width:${size}px;height:${size}px;border-radius:50%;background:${bg};color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:${isSelected?15:13}px;font-weight:800;letter-spacing:-.3px;border:2px solid #fff;${ring}transform:${scale};transition:transform .15s ease;cursor:pointer">${label}</div>`
+      const fontSize=isSelected?15:(isEmph?13:11)
+      const border=isEmph?"2.5px solid #fff":"2px solid #fff"
+      const opacity=isEmph?1:.9
+      const hit=Math.max(inner,38) // ≥38px tappable hit zone
+      const cls=`sg-pin${isNearest?" sg-pin-nearest":""}${isSelected?" sg-pin-selected":""}`
+      const html=`<div style="width:${hit}px;height:${hit}px;display:flex;align-items:center;justify-content:center;cursor:pointer"><div class="${cls}" style="width:${inner}px;height:${inner}px;border-radius:50%;background:${bg};color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:${fontSize}px;font-weight:800;letter-spacing:-.3px;border:${border};${ring}transform:${scale};transition:transform .15s ease;opacity:${opacity}">${label}</div></div>`
+      const size=hit
       const icon=L.divIcon({className:"",html,iconSize:[size,size],iconAnchor:[size/2,size/2]})
-      const marker=L.marker([b.lat,b.lng],{icon,riseOnHover:true,zIndexOffset:isSelected?1000:(isNearest?500:0)})
-      if(!("ontouchstart" in window))marker.bindTooltip(b.name+(isNearest?(lang==="en"?" · Nearest clean":" · La plus proche propre"):""),{direction:"top",offset:[0,-size/2-4],className:"",permanent:false})
-      marker.on("click",()=>onBeachClick(b))
+      const marker=L.marker([b.lat,b.lng],{icon,riseOnHover:true,zIndexOffset:isSelected?1000:(isEmph?500:200)})
+      marker._sgBeach=b
+      if(!("ontouchstart" in window))marker.bindTooltip(b.name+(hasScore?` · ${b.score}/100`:"")+(isNearest?(lang==="en"?" · Nearest clean":" · La plus proche propre"):""),{direction:"top",offset:[0,-size/2-4],className:"",permanent:false})
+      marker.on("click",(e)=>onBeachClick(pickClosest(e.containerPoint,b)))
       marker.addTo(markerGroup)
       markersRef.current.push(marker)
     })
@@ -311,7 +440,7 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
       })
     },800)
     return()=>{if(driftRef.current)clearInterval(driftRef.current)}
-  },[beaches,onBeachClick,selectedBeach,sargData,userPos,lang])
+  },[beaches,onBeachClick,selectedBeach,sargData,userPos,lang,timeStep,zoomTick])
 
   // Fetch Caribbean AFAI data (lazy — only when first toggled)
   useEffect(()=>{
@@ -438,6 +567,41 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
 
   const tl=T_CARIB[lang]||T_CARIB.fr
 
+  const radarFrames=buildRadarFrames(lang)
+
+  // Radar insight — the NAMED aha moment.
+  // Current (step 0): counts only.
+  // Future (step > 0): finds the beach that has the biggest swing and names it explicitly.
+  // "À Tartane, mer orange dans 2 jours" reads emotional; "3 empirent" reads bureaucratic.
+  const radarInsight=(()=>{
+    if(!beaches?.length)return null
+    const rank={clean:0,moderate:1,avoid:2}
+    let clean=0,mod=0,avoid=0
+    let topWorse=null,topBetter=null
+    for(const b of beaches){
+      const cur=getBeachAtStep(b,0,sargData).status
+      const fut=getBeachAtStep(b,timeStep,sargData).status
+      if(fut==="clean")clean++
+      else if(fut==="moderate")mod++
+      else if(fut==="avoid")avoid++
+      if(timeStep>0){
+        const delta=(rank[fut]||0)-(rank[cur]||0)
+        if(delta>0&&(!topWorse||delta>topWorse.delta))topWorse={name:b.name,from:cur,to:fut,delta}
+        else if(delta<0&&(!topBetter||delta<topBetter.delta))topBetter={name:b.name,from:cur,to:fut,delta}
+      }
+    }
+    return{clean,mod,avoid,topWorse,topBetter}
+  })()
+
+  // Autoplay: advance 1 frame every 1.6s, loop at end.
+  useEffect(()=>{
+    if(!autoPlaying)return
+    const id=setInterval(()=>{
+      setTimeStep(s=>(s+1)%radarFrames.length)
+    },1600)
+    return()=>clearInterval(id)
+  },[autoPlaying,radarFrames.length])
+
   if(mapError)return <div style={{padding:40,color:"red"}}>{mapError}</div>
   return(<div style={{position:"relative",width:"100%",height:"100%"}}>
     <div ref={containerRef} style={{width:"100%",height:"100%"}}/>
@@ -488,6 +652,101 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
       <div style={{marginTop:6,opacity:.5,fontSize:9,lineHeight:"1.3"}}>
         {tl.source}
         {caribbeanData?.dataDate&&<><br/>{new Date(caribbeanData.dataDate).toLocaleDateString(lang==="fr"?"fr-FR":"en-US")}</>}
+      </div>
+    </div>}
+
+    {/* RADAR TIME-SLIDER v2 — light glass bar, day-name chips, NAMED aha-insight.
+        Architecture: conteneur externe pointerEvents:none (clicks passent aux pins dessous);
+        chaque pill (day chip + play) a pointerEvents:auto. Le conteneur ne bloque jamais les markers.
+        Hidden while search results dropdown is open so it never covers match rows. */}
+    {!caribbeanMode&&!searchActive&&<div style={{
+      position:"absolute",
+      left:12,right:12,
+      bottom:"calc(140px + env(safe-area-inset-bottom,0px))",
+      zIndex:900,
+      display:"flex",flexDirection:"column",alignItems:"center",gap:6,
+      pointerEvents:"none",
+      fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",
+    }}>
+      {/* NAMED insight bubble — this is the aha. Appears only when a named swing exists. */}
+      {radarInsight&&timeStep>0&&(radarInsight.topWorse||radarInsight.topBetter)&&(()=>{
+        const w=radarInsight.topWorse,g=radarInsight.topBetter
+        const primary=w||g
+        const toLabel=s=>s==="clean"?(lang==="en"?"clean":lang==="es"?"limpia":"propre"):s==="moderate"?(lang==="en"?"moderate":lang==="es"?"moderada":"modérée"):(lang==="en"?"avoid":lang==="es"?"evitar":"à éviter")
+        const arrow=w?"↑":"↓"
+        const color=w?"#E8522A":"#22C55E"
+        const verb=lang==="en"?(w?"turning":"clearing to"):lang==="es"?(w?"pasa a":"mejora a"):(w?"passe en":"repasse en")
+        return<div style={{
+          background:"rgba(13,30,28,.9)",backdropFilter:"blur(12px)",
+          color:"#fff",padding:"5px 12px",borderRadius:100,
+          border:`1px solid ${color}55`,
+          boxShadow:`0 4px 14px ${color}33`,
+          fontSize:11,fontWeight:700,letterSpacing:"-.005em",
+          display:"flex",alignItems:"center",gap:6,
+          maxWidth:"calc(100vw - 40px)",
+          animation:"sgRadarInsightIn .35s cubic-bezier(.22,1,.36,1)",
+        }}>
+          <span style={{fontSize:12,color,lineHeight:1}}>{arrow}</span>
+          <span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:"100%"}}>
+            <span style={{color}}>{primary.name}</span>
+            <span style={{opacity:.75}}>{" "}{verb}{" "}</span>
+            <span style={{color}}>{toLabel(primary.to)}</span>
+          </span>
+        </div>
+      })()}
+
+      {/* Day-chip strip — pill row, light glass, day names not +1/+2 */}
+      <div style={{
+        display:"flex",alignItems:"center",gap:6,
+        padding:"6px 6px 6px 8px",
+        background:"rgba(255,255,255,.92)",
+        backdropFilter:"blur(14px)",
+        borderRadius:999,
+        border:"1px solid rgba(0,0,0,.06)",
+        boxShadow:"0 10px 28px rgba(0,0,0,.18), 0 2px 6px rgba(0,0,0,.08)",
+        pointerEvents:"none",
+      }}>
+        <button
+          onClick={()=>setAutoPlaying(a=>!a)}
+          aria-label={autoPlaying?"Pause":"Play"}
+          style={{
+            width:32,height:32,borderRadius:"50%",
+            border:"none",cursor:"pointer",padding:0,
+            background:autoPlaying?"linear-gradient(135deg,#00C2B0,#009E8E)":"rgba(0,0,0,.06)",
+            color:autoPlaying?"#fff":"#0A1714",
+            fontSize:11,fontWeight:800,
+            display:"flex",alignItems:"center",justifyContent:"center",
+            transition:"all .2s ease",
+            flexShrink:0,
+            pointerEvents:"auto",
+            boxShadow:autoPlaying?"0 3px 10px rgba(0,194,176,.5)":"none",
+          }}>
+          {autoPlaying?"❚❚":"▶"}
+        </button>
+        {radarFrames.map((f,i)=>{
+          const active=i===timeStep
+          return<button key={i}
+            onClick={()=>{setAutoPlaying(false);setTimeStep(i);track&&track("sg_radar_step",{step:i})}}
+            aria-label={f.label}
+            style={{
+              minWidth:44,height:32,padding:"0 12px",
+              border:"none",cursor:"pointer",
+              borderRadius:999,
+              background:active?"linear-gradient(135deg,#00C2B0,#009E8E)":"transparent",
+              color:active?"#fff":"#0A1714",
+              fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",
+              fontSize:11,fontWeight:800,letterSpacing:".06em",
+              textTransform:"uppercase",
+              display:"flex",alignItems:"center",justifyContent:"center",
+              transition:"all .22s cubic-bezier(.22,1,.36,1)",
+              transform:active?"scale(1.02)":"scale(1)",
+              boxShadow:active?"0 3px 10px rgba(0,194,176,.45)":"none",
+              pointerEvents:"auto",
+              flexShrink:0,
+            }}>
+            {f.label}
+          </button>
+        })}
       </div>
     </div>}
   </div>)
