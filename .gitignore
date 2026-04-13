@@ -32,3 +32,7 @@ memory
 
 # Local Playwright UI test output
 .ui-test/
+
+# FB scraper persistent session (cookies — NEVER commit)
+.fb-session/
+scripts/automation/data/fb-reply-log.jsonl

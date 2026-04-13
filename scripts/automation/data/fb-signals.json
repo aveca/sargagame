@@ -1,9 +1,9 @@
 {
-  "_generatedAt": "2026-04-12T22:23:10.927Z",
-  "_sourcePosts": 2,
+  "_generatedAt": "2026-04-13T01:12:27.056Z",
+  "_sourcePosts": 3,
   "summary": {
     "contentGapsFound": 0,
-    "beachesWithCommunitySignal": 2,
+    "beachesWithCommunitySignal": 3,
     "seoIntentsExtracted": 2
   },
   "contentGaps": [],
@@ -33,6 +33,19 @@
           "source": "facebook"
         }
       ]
+    },
+    "mq009": {
+      "avoid": 0,
+      "moderate": 0,
+      "clean": 1,
+      "total": 1,
+      "samples": [
+        {
+          "text": "",
+          "date": "2026-04-13T01:10:55.830Z",
+          "source": "facebook"
+        }
+      ]
     }
   },
   "seoIntents": [
@@ -40,13 +53,13 @@
       "question": "Bonsoir, petite question … comment ça se passe au niveau des sargasses a l'île de la petite terre ?",
       "island": "gp",
       "beachMentioned": "Petite Terre",
-      "sourcePost": "https://www.facebook.com/groups/1264655221572269/permalink/1736901381014315/"
+      "sourcePost": "https://www.facebook.com/groups/1264655221572269/permalink/1736901381014315"
     },
     {
       "question": "J'aimerai avoir l'avis de personnes sur place … merci d'avance",
       "island": "gp",
       "beachMentioned": "Petite Terre",
-      "sourcePost": "https://www.facebook.com/groups/1264655221572269/permalink/1736901381014315/"
+      "sourcePost": "https://www.facebook.com/groups/1264655221572269/permalink/1736901381014315"
     }
   ]
 }

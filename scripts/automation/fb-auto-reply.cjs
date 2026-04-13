@@ -136,14 +136,26 @@ async function main() {
   })
   const page = ctx.pages()[0] || await ctx.newPage()
 
-  // Sanity: not logged out
+  // Sanity: not logged out. Poll up to 30s — fresh sessions can be slow to hydrate.
   await page.goto('https://www.facebook.com/', { waitUntil: 'domcontentloaded' })
-  await sleep(2500)
-  const loggedIn = await page.evaluate(() => !document.querySelector('input[name="email"]'))
+  let loggedIn = false
+  const loginDeadline = Date.now() + 30000
+  while (!loggedIn && Date.now() < loginDeadline) {
+    await sleep(2000)
+    try {
+      loggedIn = await page.evaluate(() => {
+        if (document.querySelector('input[name="email"]')) return false
+        if (document.querySelector('input[name="pass"]')) return false
+        return !/login|checkpoint/i.test(location.pathname)
+      })
+    } catch {}
+  }
   if (!loggedIn) {
-    console.error('✗ Not logged in. Run fb-scrape.cjs first (interactive) to seed .fb-session/')
+    console.error('✗ Not logged in after 30s. URL:', page.url())
+    console.error('  → Session may have expired. Run: node scripts/automation/fb-scrape.cjs')
     await ctx.close(); process.exit(1)
   }
+  console.log('✓ Logged-in session detected, proceeding...')
 
   for (let i = 0; i < toPost.length; i++) {
     const p = toPost[i]

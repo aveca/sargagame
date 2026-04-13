@@ -165,30 +165,50 @@ async function main() {
   })
   const page = ctx.pages()[0] || await ctx.newPage()
 
-  // Check login state
+  // Check login state — poll for up to 5 minutes so the flow works from background
   await page.goto('https://www.facebook.com/', { waitUntil: 'domcontentloaded' })
   await page.waitForTimeout(2500)
-  const loggedIn = await page.evaluate(() => !document.querySelector('input[name="email"]'))
+  let loggedIn = await page.evaluate(() => !document.querySelector('input[name="email"]'))
   if (!loggedIn) {
-    console.log('⚠ Not logged in. Log into Facebook in the open window, then press ENTER here...')
-    await new Promise(r => process.stdin.once('data', r))
+    console.log('⚠ Not logged in. Complete login in the open Chromium window (up to 5 min)...')
+    const deadline = Date.now() + 5 * 60 * 1000
+    while (!loggedIn && Date.now() < deadline) {
+      await page.waitForTimeout(5000)
+      try {
+        loggedIn = await page.evaluate(() => !document.querySelector('input[name="email"]'))
+        if (loggedIn) console.log('✓ Login detected, proceeding...')
+      } catch {}
+    }
+    if (!loggedIn) { console.error('✗ Login timeout. Rerun when ready.'); await ctx.close(); process.exit(1) }
   }
 
   const feed = loadFeed()
-  const existing = new Set((feed.posts || []).map(p => p.sourceUrl))
+  const canonicalUrl = u => String(u || '').split('?')[0].replace(/\/$/, '')
+  const existing = new Set((feed.posts || []).map(p => canonicalUrl(p.sourceUrl)))
   const newPosts = []
   for (const group of TARGET_GROUPS) {
     try {
       const found = await scrapeGroupFeed(page, group, 8)
       for (const p of found) {
-        if (!existing.has(p.sourceUrl)) newPosts.push(p)
+        p.sourceUrl = canonicalUrl(p.sourceUrl)
+        if (!existing.has(p.sourceUrl)) { existing.add(p.sourceUrl); newPosts.push(p) }
       }
     } catch (e) {
       console.error(`Group ${group.name} failed:`, e.message)
     }
   }
 
-  feed.posts = [...(feed.posts || []), ...newPosts].slice(-200) // keep last 200
+  // De-dupe existing feed entries that still have tracking params
+  const seenCanonical = new Set()
+  const deduped = []
+  for (const p of (feed.posts || [])) {
+    const c = canonicalUrl(p.sourceUrl)
+    if (seenCanonical.has(c)) continue
+    seenCanonical.add(c)
+    p.sourceUrl = c
+    deduped.push(p)
+  }
+  feed.posts = [...deduped, ...newPosts].slice(-200) // keep last 200
   feed._lastRun = new Date().toISOString()
   saveFeed(feed)
 

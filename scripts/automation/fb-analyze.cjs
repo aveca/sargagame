@@ -111,13 +111,30 @@ function analyze() {
   const contentGaps = []          // beaches mentioned but not in DB
   const communitySignals = new Map() // beachId → {avoid, moderate, clean, total, samples}
   const seoIntents = []           // user questions we could answer
+  let enriched = 0                // posts we back-fill with beachId/status
 
   for (const post of (feed.posts || [])) {
-    // Combine post text + comments into one analysis blob
+    // Combine post text + comments + scraped texts[] into one analysis blob
     const allText = [
       post.question || post.postText || '',
+      ...(post.texts || []),
       ...(post.comments || []).map(c => c.text || '')
-    ].join(' | ')
+    ].filter(Boolean).join(' | ')
+
+    // Back-fill beachId by matching text against beach-token index
+    if (!post.beachId && allText) {
+      const matches = findBeachMatches(allText, index, post.island || 'mq')
+      if (matches.length && matches[0].score >= 1) {
+        post.beachId = matches[0].id
+        post.beachMentioned = beachById.get(matches[0].id)?.name || post.beachMentioned
+        enriched++
+      }
+    }
+    // Back-fill status if missing
+    if (!post.inferredStatus && allText) {
+      const status = inferStatus(allText)
+      if (status) { post.inferredStatus = status; enriched++ }
+    }
 
     // 1. Content gap detection
     // If post.beachId exists but is not in beaches-list.json → gap
@@ -196,7 +213,13 @@ function analyze() {
   if (!fs.existsSync(path.dirname(OUT_PATH))) fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true })
   fs.writeFileSync(OUT_PATH, JSON.stringify(output, null, 2), 'utf-8')
 
+  // Persist back-fills (beachId, inferredStatus) to feed so downstream scripts see them
+  if (enriched > 0) {
+    fs.writeFileSync(FEED_PATH, JSON.stringify(feed, null, 2), 'utf-8')
+  }
+
   console.log(`✓ Analyzed ${output._sourcePosts} FB posts`)
+  console.log(`  Back-filled: ${enriched} fields (beachId/inferredStatus)`)
   console.log(`  Content gaps: ${output.summary.contentGapsFound}`)
   console.log(`  Community signals: ${output.summary.beachesWithCommunitySignal} beaches`)
   console.log(`  SEO intents: ${output.summary.seoIntentsExtracted}`)

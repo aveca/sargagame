@@ -47,12 +47,18 @@ function loadFeed() {
   catch { return { posts: [] } }
 }
 
+function bestPostText(p) {
+  return [p.postText, p.question, ...(p.texts || [])]
+    .filter(Boolean).map(s => String(s).trim())
+    .sort((a, b) => b.length - a.length)[0] || ''
+}
+
 function publishablePost(p) {
   if (!p.beachId) return false
   const age = Date.now() - new Date(p.scrapedAt || 0).getTime()
   if (age > MAX_AGE_DAYS * 86400 * 1000) return false
-  const hasPhotos = (p.photoSamples || []).length > 0
-  const hasText = !!(p.postText || p.question || '').trim()
+  const hasPhotos = (p.photoSamples || p.images || []).length > 0
+  const hasText = bestPostText(p).length >= 20
   const hasComment = (p.comments || []).length > 0
   return hasPhotos || hasText || hasComment
 }
@@ -66,12 +72,13 @@ function pickBestComment(comments) {
 }
 
 function transform(post) {
-  const rawText = post.postText || post.question || ''
+  const rawText = bestPostText(post)
+  const photoSources = (post.photoSamples || []).length ? post.photoSamples : (post.images || []).map(i => i.src || i)
   return {
     author: post.author || 'Anonyme',
     text: rawText.slice(0, MAX_TEXT_LEN),
     textTruncated: rawText.length > MAX_TEXT_LEN,
-    photos: (post.photoSamples || []).slice(0, MAX_PHOTOS),
+    photos: photoSources.slice(0, MAX_PHOTOS),
     commentSample: pickBestComment(post.comments),
     commentCount: (post.comments || []).length,
     inferredStatus: post.inferredStatus || null,
