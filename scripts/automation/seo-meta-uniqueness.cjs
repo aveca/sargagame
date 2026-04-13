@@ -64,10 +64,13 @@ function decode(s) {
 function extractMeta(html) {
   const slice = html.length > MAX_PARSE_BYTES ? html.slice(0, MAX_PARSE_BYTES) : html
   const titleMatch = slice.match(/<title[^>]*>([^<]*)<\/title>/i)
-  const descMatch = slice.match(/<meta\s+name=["']description["']\s+content=["']([^"']*)["']/i)
+  // Use a backreference so apostrophes inside double-quoted attrs (and vice
+  // versa) aren't treated as terminators. Previous version truncated
+  // `content="Anses d'Arlet..."` to `Anses d` at the first inner quote.
+  const descMatch = slice.match(/<meta\s+name=["']description["']\s+content=(["'])([\s\S]*?)\1/i)
   return {
     title: titleMatch ? decode(titleMatch[1]) : '',
-    description: descMatch ? decode(descMatch[1]) : '',
+    description: descMatch ? decode(descMatch[2]) : '',
   }
 }
 

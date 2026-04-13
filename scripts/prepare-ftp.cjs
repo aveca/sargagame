@@ -95,6 +95,31 @@ for (const { dir, title, domain, onesignalAppId } of readmes) {
   // bulk sargasses-martinique→sargasses-guadeloupe URL swap would clobber the
   // cross-island absolute URLs the vite plugin wrote into the editorials.
 
+  // Drop editorial articles that belong to the other island. The build copies
+  // public/articles/ verbatim to both FTP folders, and the bulk URL swap would
+  // otherwise rewrite a cross-island article's canonical to the wrong domain.
+  // Keeping only the island's own articles also avoids duplicate-content risk.
+  const articlesDir = path.join(out, 'articles')
+  const articlesIndexPath = path.join(articlesDir, 'index.json')
+  const ownIsland = dir === 'martinique-ftp' ? 'mq' : 'gp'
+  if (fs.existsSync(articlesIndexPath)) {
+    try {
+      const idx = JSON.parse(fs.readFileSync(articlesIndexPath, 'utf-8'))
+      let removed = 0
+      const kept = []
+      for (const art of idx.articles || []) {
+        if (art.island === ownIsland) { kept.push(art); continue }
+        const artDir = path.join(articlesDir, art.slug)
+        if (fs.existsSync(artDir)) {
+          fs.rmSync(artDir, { recursive: true })
+          removed++
+        }
+      }
+      fs.writeFileSync(articlesIndexPath, JSON.stringify({ ...idx, articles: kept }, null, 2))
+      if (removed > 0) console.log(`   → articles cross-island supprimés (${title}): ${removed}`)
+    } catch (e) { console.warn(`   → articles filter skipped (${title}):`, e.message) }
+  }
+
   // Drop beach pages that don't belong to this island. The build emits
   // dist/plages/<slug>/ for ALL 136 beaches; without this filter both FTP
   // folders ship the full set and Google sees the same beach page on both

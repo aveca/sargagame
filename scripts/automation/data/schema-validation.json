@@ -1,0 +1,197 @@
+{
+  "generatedAt": "2026-04-13T06:48:56.462Z",
+  "sites": {
+    "mq": {
+      "pageCount": 101,
+      "pagesWithSchema": 92,
+      "totalBlocks": 339,
+      "parseFailures": 0,
+      "errorCount": 0,
+      "warningCount": 17,
+      "errors": [],
+      "warnings": [
+        {
+          "file": "martinique-ftp/alertes/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "martinique-ftp/articles/alerte-saison-2026-gp-2026-04-09/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "martinique-ftp/articles/point-semaine-avril-2026-mq-2026-04-09/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "martinique-ftp/bilan-sargasses-2025/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "martinique-ftp/comprendre-sargasses/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "martinique-ftp/danger-sargasses-h2s/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "martinique-ftp/detection-satellite-sargasses/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "martinique-ftp/faq/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "martinique-ftp/lexique/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "martinique-ftp/meilleures-plages-martinique-sargasses/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "martinique-ftp/methode-carte/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "martinique-ftp/nettoyer-sargasses/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "martinique-ftp/plages-sans-sargasses/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "martinique-ftp/previsions-methode/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "martinique-ftp/saison-sargasses-guadeloupe/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "martinique-ftp/saison-sargasses-martinique/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "martinique-ftp/sargasses-record-2026/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        }
+      ]
+    },
+    "gp": {
+      "pageCount": 131,
+      "pagesWithSchema": 122,
+      "totalBlocks": 428,
+      "parseFailures": 0,
+      "errorCount": 0,
+      "warningCount": 17,
+      "errors": [],
+      "warnings": [
+        {
+          "file": "guadeloupe-ftp/alertes/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "guadeloupe-ftp/articles/alerte-saison-2026-gp-2026-04-09/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "guadeloupe-ftp/articles/point-semaine-avril-2026-mq-2026-04-09/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "guadeloupe-ftp/bilan-sargasses-2025/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "guadeloupe-ftp/comprendre-sargasses/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "guadeloupe-ftp/danger-sargasses-h2s/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "guadeloupe-ftp/detection-satellite-sargasses/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "guadeloupe-ftp/faq/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "guadeloupe-ftp/lexique/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "guadeloupe-ftp/meilleures-plages-martinique-sargasses/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "guadeloupe-ftp/methode-carte/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "guadeloupe-ftp/nettoyer-sargasses/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "guadeloupe-ftp/plages-sans-sargasses/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "guadeloupe-ftp/previsions-methode/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "guadeloupe-ftp/saison-sargasses-guadeloupe/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "guadeloupe-ftp/saison-sargasses-martinique/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "guadeloupe-ftp/sargasses-record-2026/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        }
+      ]
+    }
+  }
+}

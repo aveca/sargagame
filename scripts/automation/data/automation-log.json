@@ -1026,6 +1026,378 @@
         "https://sargasses-martinique.com/plages/anse-bonneville/",
         "https://sargasses-martinique.com/plages/anse-l-etang/"
       ]
+    },
+    {
+      "timestamp": "2026-04-13T06:11:20.406Z",
+      "dryRun": false,
+      "script": "seo-orphan-detector",
+      "action": "scan",
+      "sites": 0,
+      "totalOrphans": 0
+    },
+    {
+      "timestamp": "2026-04-13T06:11:35.594Z",
+      "dryRun": false,
+      "script": "seo-orphan-detector",
+      "action": "scan",
+      "sites": 2,
+      "totalOrphans": 23
+    },
+    {
+      "timestamp": "2026-04-13T06:12:43.004Z",
+      "dryRun": false,
+      "script": "seo-orphan-detector",
+      "action": "scan",
+      "sites": 2,
+      "totalOrphans": 197
+    },
+    {
+      "timestamp": "2026-04-13T06:15:39.219Z",
+      "dryRun": false,
+      "script": "seo-link-graph",
+      "action": "analyze",
+      "sites": 2,
+      "structuralOrphans": 32
+    },
+    {
+      "timestamp": "2026-04-13T06:25:22.289Z",
+      "dryRun": false,
+      "script": "seo-link-graph",
+      "action": "analyze",
+      "sites": 2,
+      "structuralOrphans": 32
+    },
+    {
+      "timestamp": "2026-04-13T06:30:34.211Z",
+      "dryRun": false,
+      "script": "seo-link-graph",
+      "action": "analyze",
+      "sites": 2,
+      "structuralOrphans": 30
+    },
+    {
+      "timestamp": "2026-04-13T06:34:11.098Z",
+      "dryRun": false,
+      "script": "seo-link-graph",
+      "action": "analyze",
+      "sites": 2,
+      "structuralOrphans": 30
+    },
+    {
+      "timestamp": "2026-04-13T06:36:37.236Z",
+      "dryRun": false,
+      "script": "seo-link-graph",
+      "action": "analyze",
+      "sites": 2,
+      "structuralOrphans": 30
+    },
+    {
+      "timestamp": "2026-04-13T06:37:36.951Z",
+      "dryRun": false,
+      "script": "seo-broken-links",
+      "action": "check",
+      "sites": 2,
+      "totalBroken": 0
+    },
+    {
+      "timestamp": "2026-04-13T06:38:54.051Z",
+      "dryRun": false,
+      "script": "seo-orphan-detector",
+      "action": "scan",
+      "sites": 2,
+      "totalOrphans": 197
+    },
+    {
+      "timestamp": "2026-04-13T06:38:54.117Z",
+      "dryRun": false,
+      "script": "seo-orphan-healer",
+      "action": "inject",
+      "sites": 2,
+      "totalInjections": 10
+    },
+    {
+      "timestamp": "2026-04-13T06:38:59.367Z",
+      "dryRun": false,
+      "script": "seo-link-graph",
+      "action": "analyze",
+      "sites": 2,
+      "structuralOrphans": 28
+    },
+    {
+      "timestamp": "2026-04-13T06:39:52.472Z",
+      "dryRun": false,
+      "script": "seo-schema-validator",
+      "action": "validate",
+      "sites": 2,
+      "totalErrors": 0
+    },
+    {
+      "timestamp": "2026-04-13T06:40:23.437Z",
+      "dryRun": false,
+      "script": "seo-meta-uniqueness",
+      "action": "check",
+      "sites": 2,
+      "totalDupTitles": 0,
+      "totalDupDescs": 6
+    },
+    {
+      "timestamp": "2026-04-13T06:41:00.976Z",
+      "dryRun": false,
+      "script": "seo-canonical-hreflang",
+      "action": "validate",
+      "sites": 2,
+      "totalIssues": 11
+    },
+    {
+      "timestamp": "2026-04-13T06:41:40.939Z",
+      "dryRun": false,
+      "script": "seo-content-depth",
+      "action": "score",
+      "sites": 2,
+      "totalThin": 62
+    },
+    {
+      "timestamp": "2026-04-13T06:42:41.465Z",
+      "dryRun": false,
+      "script": "seo-ctr-diagnostic",
+      "action": "diagnose",
+      "sites": 2,
+      "totalLost": 0
+    },
+    {
+      "timestamp": "2026-04-13T06:43:08.034Z",
+      "dryRun": false,
+      "script": "seo-cannibalization",
+      "action": "detect",
+      "sites": 2,
+      "totalCanni": 8
+    },
+    {
+      "timestamp": "2026-04-13T06:44:12.334Z",
+      "dryRun": false,
+      "script": "seo-sitemap-check",
+      "action": "check",
+      "sites": 2,
+      "total404": 4,
+      "totalMissing": 20
+    },
+    {
+      "timestamp": "2026-04-13T06:44:12.443Z",
+      "dryRun": false,
+      "script": "seo-image-audit",
+      "action": "audit",
+      "sites": 2,
+      "totalIssues": 4
+    },
+    {
+      "timestamp": "2026-04-13T06:47:03.868Z",
+      "dryRun": false,
+      "script": "seo-cwv-tracker",
+      "action": "snapshot",
+      "historyCount": 1,
+      "deltaCount": 0
+    },
+    {
+      "timestamp": "2026-04-13T06:48:52.860Z",
+      "dryRun": false,
+      "script": "seo-ctr-diagnostic",
+      "action": "diagnose",
+      "sites": 2,
+      "totalLost": 0
+    },
+    {
+      "timestamp": "2026-04-13T06:48:52.917Z",
+      "dryRun": false,
+      "script": "seo-cannibalization",
+      "action": "detect",
+      "sites": 2,
+      "totalCanni": 8
+    },
+    {
+      "timestamp": "2026-04-13T06:48:52.983Z",
+      "dryRun": false,
+      "script": "seo-cwv-tracker",
+      "action": "snapshot",
+      "historyCount": 1,
+      "deltaCount": 0
+    },
+    {
+      "timestamp": "2026-04-13T06:48:56.411Z",
+      "dryRun": false,
+      "script": "seo-broken-links",
+      "action": "check",
+      "sites": 2,
+      "totalBroken": 0
+    },
+    {
+      "timestamp": "2026-04-13T06:48:56.510Z",
+      "dryRun": false,
+      "script": "seo-schema-validator",
+      "action": "validate",
+      "sites": 2,
+      "totalErrors": 0
+    },
+    {
+      "timestamp": "2026-04-13T06:48:56.622Z",
+      "dryRun": false,
+      "script": "seo-meta-uniqueness",
+      "action": "check",
+      "sites": 2,
+      "totalDupTitles": 0,
+      "totalDupDescs": 6
+    },
+    {
+      "timestamp": "2026-04-13T06:48:56.768Z",
+      "dryRun": false,
+      "script": "seo-canonical-hreflang",
+      "action": "validate",
+      "sites": 2,
+      "totalIssues": 11
+    },
+    {
+      "timestamp": "2026-04-13T06:49:00.244Z",
+      "dryRun": false,
+      "script": "seo-content-depth",
+      "action": "score",
+      "sites": 2,
+      "totalThin": 62
+    },
+    {
+      "timestamp": "2026-04-13T06:49:00.334Z",
+      "dryRun": false,
+      "script": "seo-sitemap-check",
+      "action": "check",
+      "sites": 2,
+      "total404": 4,
+      "totalMissing": 20
+    },
+    {
+      "timestamp": "2026-04-13T06:49:00.449Z",
+      "dryRun": false,
+      "script": "seo-image-audit",
+      "action": "audit",
+      "sites": 2,
+      "totalIssues": 4
+    },
+    {
+      "timestamp": "2026-04-13T06:49:00.520Z",
+      "dryRun": false,
+      "script": "seo-orphan-healer",
+      "action": "inject",
+      "sites": 2,
+      "totalInjections": 10
+    },
+    {
+      "timestamp": "2026-04-13T16:07:28.588Z",
+      "dryRun": false,
+      "script": "seo-canonical-hreflang",
+      "action": "validate",
+      "sites": 2,
+      "totalIssues": 0
+    },
+    {
+      "timestamp": "2026-04-13T16:07:43.200Z",
+      "dryRun": false,
+      "script": "seo-sitemap-check",
+      "action": "check",
+      "sites": 2,
+      "total404": 4,
+      "totalMissing": 20
+    },
+    {
+      "timestamp": "2026-04-13T16:08:23.037Z",
+      "dryRun": false,
+      "script": "seo-sitemap-check",
+      "action": "check",
+      "sites": 2,
+      "total404": 0,
+      "totalMissing": 14
+    },
+    {
+      "timestamp": "2026-04-13T16:15:31.060Z",
+      "dryRun": false,
+      "script": "seo-sitemap-check",
+      "action": "check",
+      "sites": 2,
+      "total404": 11,
+      "totalMissing": 1
+    },
+    {
+      "timestamp": "2026-04-13T16:16:48.564Z",
+      "dryRun": false,
+      "script": "seo-sitemap-check",
+      "action": "check",
+      "sites": 2,
+      "total404": 0,
+      "totalMissing": 2
+    },
+    {
+      "timestamp": "2026-04-13T16:17:23.950Z",
+      "dryRun": false,
+      "script": "seo-sitemap-check",
+      "action": "check",
+      "sites": 2,
+      "total404": 0,
+      "totalMissing": 1
+    },
+    {
+      "timestamp": "2026-04-13T16:18:24.698Z",
+      "dryRun": false,
+      "script": "seo-sitemap-check",
+      "action": "check",
+      "sites": 2,
+      "total404": 0,
+      "totalMissing": 0
+    },
+    {
+      "timestamp": "2026-04-13T16:18:29.636Z",
+      "dryRun": false,
+      "script": "seo-canonical-hreflang",
+      "action": "validate",
+      "sites": 2,
+      "totalIssues": 0
+    },
+    {
+      "timestamp": "2026-04-13T16:18:29.853Z",
+      "dryRun": false,
+      "script": "seo-broken-links",
+      "action": "check",
+      "sites": 2,
+      "totalBroken": 0
+    },
+    {
+      "timestamp": "2026-04-13T16:18:48.107Z",
+      "dryRun": false,
+      "script": "seo-image-audit",
+      "action": "audit",
+      "sites": 2,
+      "totalIssues": 4
+    },
+    {
+      "timestamp": "2026-04-13T16:19:47.175Z",
+      "dryRun": false,
+      "script": "seo-image-audit",
+      "action": "audit",
+      "sites": 2,
+      "totalIssues": 0
+    },
+    {
+      "timestamp": "2026-04-13T16:19:58.476Z",
+      "dryRun": false,
+      "script": "seo-meta-uniqueness",
+      "action": "check",
+      "sites": 2,
+      "totalDupTitles": 0,
+      "totalDupDescs": 6
+    },
+    {
+      "timestamp": "2026-04-13T16:22:34.361Z",
+      "dryRun": false,
+      "script": "seo-meta-uniqueness",
+      "action": "check",
+      "sites": 2,
+      "totalDupTitles": 0,
+      "totalDupDescs": 0
     }
   ]
 }
