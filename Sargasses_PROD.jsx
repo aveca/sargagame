@@ -1326,6 +1326,74 @@ function BeachReport({beach,lang,communityReports}){
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   FB POSTS STRIP — real visitor photos + quotes from public FB groups
+   Displayed inside the beach sheet when fbPosts has entries for this beach.
+   Hotlinks scontent CDN photos (legal: we don't re-host).
+   ═══════════════════════════════════════════════════════════════════════════ */
+function FbPostsStrip({beach,fbPosts,lang}){
+  const posts=fbPosts?.[beach?.id]||fbPosts?.[BEACH_TO_SARG?.[beach?.id]]||[]
+  if(!posts.length)return null
+  const statusEmoji=(s)=>s==="avoid"?"🚫":s==="moderate"?"⚠️":s==="clean"?"✅":"💬"
+  const timeAgo=(iso)=>{
+    try{
+      const d=Math.max(0,Date.now()-new Date(iso).getTime())
+      const h=Math.round(d/3600000)
+      if(h<1)return lang==="en"?"just now":"à l'instant"
+      if(h<24)return (lang==="en"?`${h}h ago`:`il y a ${h}h`)
+      const days=Math.round(h/24)
+      return lang==="en"?`${days}d ago`:`il y a ${days}j`
+    }catch{return""}
+  }
+  return(
+    <div style={{margin:"14px 0 4px",padding:"12px 14px",borderRadius:14,
+      background:"var(--sg-bgD,#F7F5EF)",border:"1px solid var(--sg-border,rgba(0,0,0,.04))"}}>
+      <div style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)",marginBottom:10,display:"flex",alignItems:"center",gap:6}}>
+        <span>📷</span>
+        {lang==="en"?`${posts.length} recent visitor ${posts.length>1?"reports":"report"} (Facebook)`:`${posts.length} retour${posts.length>1?"s":""} visiteur${posts.length>1?"s":""} récent${posts.length>1?"s":""} (Facebook)`}
+      </div>
+      {posts.map((p,i)=>(
+        <div key={i} style={{marginBottom:i<posts.length-1?14:0,paddingBottom:i<posts.length-1?14:0,
+          borderBottom:i<posts.length-1?"1px solid var(--sg-border,rgba(0,0,0,.05))":"none"}}>
+          <div style={{display:"flex",alignItems:"baseline",gap:8,marginBottom:6}}>
+            <span style={{fontSize:18,lineHeight:1}}>{statusEmoji(p.inferredStatus)}</span>
+            <span style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)"}}>{p.author}</span>
+            <span style={{fontSize:11,color:"var(--sg-mid)"}}>{timeAgo(p.scrapedAt)}</span>
+          </div>
+          {p.text&&(
+            <div style={{fontSize:12,lineHeight:1.45,color:"var(--sg-ink)",marginBottom:p.photos?.length||p.commentSample?8:4}}>
+              "{p.text}"{p.textTruncated?"…":""}
+            </div>
+          )}
+          {p.photos&&p.photos.length>0&&(
+            <div style={{display:"flex",gap:6,marginBottom:p.commentSample?8:4,overflowX:"auto"}}>
+              {p.photos.slice(0,3).map((url,j)=>(
+                <a key={j} href={p.sourceUrl} target="_blank" rel="noopener nofollow" style={{flexShrink:0,lineHeight:0}}>
+                  <img src={url} alt={`Photo ${j+1}`} loading="lazy" referrerPolicy="no-referrer"
+                    style={{width:96,height:72,objectFit:"cover",borderRadius:8,
+                      border:"1px solid var(--sg-border,rgba(0,0,0,.06))",
+                      cursor:"pointer",transition:"transform .15s"}}
+                    onError={(e)=>{e.target.parentNode.style.display="none"}}/>
+                </a>
+              ))}
+            </div>
+          )}
+          {p.commentSample&&(
+            <div style={{fontSize:11,color:"var(--sg-mid)",lineHeight:1.4,paddingLeft:10,borderLeft:"2px solid rgba(0,0,0,.08)"}}>
+              💬 {p.commentSample}{p.commentCount>1?` · +${p.commentCount-1} ${lang==="en"?"more":"autres"}`:""}
+            </div>
+          )}
+          <a href={p.sourceUrl} target="_blank" rel="noopener nofollow" style={{
+            display:"inline-block",marginTop:6,fontSize:10,color:"var(--sg-mid)",textDecoration:"none",
+            borderBottom:"1px dashed rgba(0,0,0,.15)"}}>
+            {lang==="en"?"view on Facebook →":"voir sur Facebook →"}
+          </a>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    AXE 3: RELIABILITY SCORE — "85% propre en avril" from history
    ═══════════════════════════════════════════════════════════════════════════ */
 function ReliabilityScore({beachId,historyData,lang}){
@@ -1372,7 +1440,7 @@ function ReliabilityScore({beachId,historyData,lang}){
 /* ═══════════════════════════════════════════════════════════════════════════
    BOTTOM SHEET — beach detail with photo, forecast, weather, nearby
    ═══════════════════════════════════════════════════════════════════════════ */
-function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMap,onBeachClick,onPremiumClick,isPremium,historyData,sargData,dataSource,userPos,communityReports}){
+function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMap,onBeachClick,onPremiumClick,isPremium,historyData,sargData,dataSource,userPos,communityReports,fbPosts}){
   const LL=T[lang]||T.fr
   const weather=useWeather(beach)
   // Use REAL forecast, then interpolated, then fallback generated
@@ -1661,6 +1729,9 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
 
           {/* ── AXE 2: Beach Reports — 3-level user sargassum reports ── */}
           <BeachReport beach={beach} lang={lang} communityReports={communityReports}/>
+
+          {/* ── FB POSTS: real visitor photos + quotes from public FB groups ── */}
+          <FbPostsStrip beach={beach} fbPosts={fbPosts} lang={lang}/>
 
           {/* InlinePushCTA removed — OneSignal handles native push prompt */}
 
@@ -4473,6 +4544,7 @@ export default function App(){
   const[dataSource,setDataSource]=useState("loading")
   const[userPos,setUserPos]=useState(null) // {lat,lng}
   const[communityReports,setCommunityReports]=useState({})
+  const[fbPosts,setFbPosts]=useState({})
   const[hasActiveThreat,setHasActiveThreat]=useState(false)
 
   // Deep-link: /plages/:slug → auto-open beach sheet
@@ -4620,7 +4692,8 @@ export default function App(){
       Promise.all([
         fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec?action=beach_reports").then(r=>r.json()).catch(()=>null),
         fetch("/api/community/fb-reports.json").then(r=>r.json()).catch(()=>null),
-      ]).then(([userData,fbData])=>{
+        fetch("/api/community/fb-posts.json").then(r=>r.json()).catch(()=>null),
+      ]).then(([userData,fbData,fbPostsData])=>{
         const merged={}
         const merge=(src)=>{
           if(!src?.reports)return
@@ -4636,6 +4709,7 @@ export default function App(){
         merge(userData)
         merge(fbData)
         if(Object.keys(merged).length>0)setCommunityReports(merged)
+        if(fbPostsData?.postsByBeach)setFbPosts(fbPostsData.postsByBeach)
       })
     },3000)
     return()=>clearTimeout(t)
@@ -5070,7 +5144,7 @@ export default function App(){
             allBeaches={allBeaches} imageMap={imageMap}
             onBeachClick={onBeachClick} onPremiumClick={openPremium} isPremium={isPremium}
             historyData={historyData} sargData={sargData}
-            dataSource={dataSource} userPos={userPos} communityReports={communityReports}/>
+            dataSource={dataSource} userPos={userPos} communityReports={communityReports} fbPosts={fbPosts}/>
         )}
 
         {/* PREMIUM MODAL */}
