@@ -4315,13 +4315,19 @@ export default function App(){
 
   const LL=T[lang]||T.fr
 
-  // Fetch beaches-list.json + sargassum.json in parallel, merge in correct order
-  // Promise.all eliminates race condition: IDW always runs on full 135-beach list
+  // Fetch beaches-list.json + sargassum.json + beaches-weather.json in parallel.
+  // beaches-weather.json gives per-beach waves/wind/UV/SST from Open-Meteo Marine,
+  // refreshed daily by CI. Without it, all 136 beaches share one island-level
+  // weather snapshot and the score engine produces identical results (the
+  // "tous les scores à 73" bug). With it, the snap passed to computeScore
+  // varies per beach, so ranking + label + reason actually differentiate.
   useEffect(()=>{
     Promise.all([
       fetch("/data/beaches-list.json").then(r=>r.json()).catch(()=>null),
-      fetch("/api/copernicus/sargassum.json").then(r=>r.json()).catch(()=>null)
-    ]).then(([beachData,sargResult])=>{
+      fetch("/api/copernicus/sargassum.json").then(r=>r.json()).catch(()=>null),
+      fetch("/api/weather/beaches-weather.json").then(r=>r.json()).catch(()=>null)
+    ]).then(([beachData,sargResult,beachWx])=>{
+      const perBeachWx=beachWx?.beaches||{}
       // 1. Build full beach list (strip stale status/afai from JSON)
       let beaches=Array.isArray(beachData)&&beachData.length>0
         ?beachData.map(b=>{const{status,afai,...rest}=b;return rest})
@@ -4360,20 +4366,23 @@ export default function App(){
             }
           }
           // Beach Score 0-100 — year-round multi-factor (pipeline v3.1+)
-          // Uses pipeline-computed weather snapshot per island + AFAI per beach (live or interpolated)
-          if(sargResult.weather){
+          // Per-beach weather from beaches-weather.json (136 unique Open-Meteo points)
+          // takes priority; island-level snapshot is the fallback. This is what
+          // makes the ranking non-degenerate during clean-ocean / low-AFAI days.
+          if(sargResult.weather||Object.keys(perBeachWx).length){
             for(let i=0;i<beaches.length;i++){
-              const w=sargResult.weather[beaches[i].island]
-              if(!w)continue
+              const islandW=sargResult.weather?.[beaches[i].island]||{}
+              const bw=perBeachWx[beaches[i].id]
               const snap={
                 afai:beaches[i].afai,
-                wind_speed:w.wind_speed,
-                cloud_cover:w.cloud_cover,
-                uv_index:w.uv_index,
-                sst:w.sst,
-                wave_height:w.wave_height,
+                wind_speed:bw?.windSpeed??islandW.wind_speed,
+                cloud_cover:islandW.cloud_cover, // Open-Meteo Marine doesn't give cloud; island value stays
+                uv_index:bw?.uvMax??islandW.uv_index,
+                sst:bw?.sst??islandW.sst,
+                wave_height:bw?.waveHeight??islandW.wave_height,
                 tide_ratio:null,
               }
+              if(snap.wave_height==null&&snap.wind_speed==null)continue
               const r=_computeBeachScore(snap)
               beaches[i]={...beaches[i],score:r.score,scoreLabel:r.label,scoreColor:r.color,scoreReason:r.reason,scoreBreakdown:r.breakdown}
             }
