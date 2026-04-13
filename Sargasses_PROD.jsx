@@ -2671,6 +2671,22 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
     return()=>raf&&cancelAnimationFrame(raf)
   },[top?.id,top?.score])
 
+  // Collapsible hero — tap the handle to peek just the score+name row so the
+  // map behind gets its full vertical space back. Persisted so the user's
+  // choice sticks across reloads.
+  const[heroCollapsed,setHeroCollapsed]=useState(()=>{
+    try{return localStorage.getItem("sg_hero_collapsed")==="1"}catch{return false}
+  })
+  const toggleCollapse=e=>{
+    e.stopPropagation()
+    setHeroCollapsed(c=>{
+      const next=!c
+      try{localStorage.setItem("sg_hero_collapsed",next?"1":"0")}catch{}
+      track(next?"sg_hero_collapse":"sg_hero_expand")
+      return next
+    })
+  }
+
   // First-visit inline email capture (persisted via localStorage once submitted OR dismissed)
   const[heroEmail,setHeroEmail]=useState("")
   const[heroEmailSent,setHeroEmailSent]=useState(false)
@@ -2757,6 +2773,98 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
         background:`radial-gradient(closest-side, ${topSt.c}1f 0%, transparent 70%)`,
         pointerEvents:"none",
       }}/>
+
+      {/* Collapse handle — iOS sheet grab-bar. Tap to toggle peek mode so the
+          map gets its full vertical space back. */}
+      <button
+        onClick={toggleCollapse}
+        aria-label={heroCollapsed?(lang==="en"?"Expand":"Déplier"):(lang==="en"?"Collapse":"Réduire")}
+        aria-expanded={!heroCollapsed}
+        style={{
+          position:"relative",
+          display:"flex",justifyContent:"center",alignItems:"center",
+          width:"100%",padding:"8px 0 4px",
+          background:"none",border:"none",cursor:"pointer",
+          fontFamily:"inherit",
+        }}
+      >
+        <span aria-hidden="true" style={{
+          width:38,height:4,borderRadius:2,
+          background:`rgba(15,42,58,${heroCollapsed?.28:.18})`,
+          transition:"background .2s",
+        }}/>
+      </button>
+
+      {heroCollapsed?(
+        /* Peek mode — compact single row, ~70px tall. Everything else hidden
+           so the map gets ~240px back. Tap opens the beach sheet (same contract
+           as expanded main button). */
+        <button
+          onClick={()=>{
+            track("sg_hero_reco_click",{beach_id:top.id,status:top.status,score:top.score,collapsed:1})
+            onBeachClick(top)
+          }}
+          style={{
+            position:"relative",
+            display:"flex",alignItems:"center",gap:12,
+            padding:"2px 14px 14px",
+            background:"none",border:"none",width:"100%",
+            cursor:"pointer",fontFamily:"inherit",textAlign:"left",
+          }}
+        >
+          {typeof top.score==="number"&&(
+            <div style={{
+              position:"relative",width:48,height:48,flexShrink:0,
+              display:"flex",alignItems:"center",justifyContent:"center",
+            }}>
+              <div style={{
+                position:"relative",width:48,height:48,borderRadius:"50%",
+                background:`conic-gradient(${top.scoreColor||topSt.c} ${top.score*3.6}deg, rgba(0,0,0,.055) ${top.score*3.6}deg)`,
+                display:"flex",alignItems:"center",justifyContent:"center",
+                boxShadow:`inset 0 0 0 1px ${top.scoreColor||topSt.c}22, 0 2px 8px ${topSt.c}33`,
+              }}>
+                <div style={{
+                  width:36,height:36,borderRadius:"50%",
+                  background:"linear-gradient(180deg,#fff 0%, #FDFCF7 100%)",
+                  display:"flex",alignItems:"center",justifyContent:"center",
+                }}>
+                  <span style={{
+                    fontFamily:"'Anton',sans-serif",fontSize:18,lineHeight:.9,
+                    color:top.scoreColor||topSt.c,letterSpacing:"-.02em",
+                  }}>{top.score}</span>
+                </div>
+              </div>
+            </div>
+          )}
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{
+              fontFamily:"'Anton',sans-serif",
+              fontSize:15,textTransform:"uppercase",letterSpacing:"-.01em",
+              color:"var(--sg-ink,#0D0D0D)",lineHeight:1.05,
+              whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
+            }}>
+              {top.name}
+            </div>
+            <div style={{
+              fontSize:10,fontWeight:700,color:topSt.c,
+              letterSpacing:".02em",marginTop:2,
+              whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
+            }}>
+              {verdict}
+            </div>
+          </div>
+          <span style={{
+            fontSize:11,fontWeight:800,color:"#fff",
+            flexShrink:0,whiteSpace:"nowrap",
+            padding:"7px 12px",borderRadius:100,
+            background:topSt.c,
+            boxShadow:`0 2px 8px ${topSt.c}44`,
+            letterSpacing:".02em",
+          }}>
+            {lang==="en"?"Go →":"Voir →"}
+          </span>
+        </button>
+      ):(<>
 
       {/* Top bar — greeting + score-variance badge */}
       <div style={{
@@ -3081,6 +3189,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
           )}
         </div>
       )}
+      </>)}
     </div>
   )
 }
