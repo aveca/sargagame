@@ -2,10 +2,11 @@ name: Weekly Optimization
 
 on:
   schedule:
-    # 7j/7 — Optimisation continue max agressif
-    # Monday handled by weekly-seo-automation.yml (more comprehensive)
-    # Mardi-Dimanche 10h UTC (6h MQ) + Vendredi bonus 14h UTC (weekend prep)
-    - cron: '0 10 * * *'
+    # Mardi + Mercredi + Vendredi 10h UTC (6h MQ) — les autres jours sont couverts
+    # par weekly-seo-automation (Lun+Jeu), weekly-ux-report (Mar+Ven),
+    # weekly-outreach (Mar+Jeu). Weekend bonus Vendredi 14h UTC conservé.
+    # Cf. quota GH Actions 2000 min/mo.
+    - cron: '0 10 * * 2,3,5'
     - cron: '0 14 * * 5'
   workflow_dispatch:
     inputs:
