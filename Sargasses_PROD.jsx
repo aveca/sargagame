@@ -3350,13 +3350,14 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
   const LL=T[lang]||T.fr
   const hasAnnual=!!STRIPE_LINK_ANNUAL
   // Real beach data from live sargassum.json — makes the "morning brief" preview genuine
-  const _lvls=sargData?.levels||{}
-  const _islandLvls=Object.entries(_lvls).filter(([id])=>island==="gp"?id.startsWith("gp-"):!id.startsWith("gp-"))
-  const _cleanCount=_islandLvls.filter(([,b])=>b.score>=70).length
+  // levels is keyed by numeric index ("0","1",...); beach id is in b.id field
+  const _lvls=Object.values(sargData?.levels||{})
+  const _islandLvls=_lvls.filter(b=>island==="gp"?b.id?.startsWith("gp-"):!b.id?.startsWith("gp-"))
+  const _cleanCount=_islandLvls.filter(b=>b.score>=70).length
   const _totalCount=_islandLvls.length
-  const _topEntry=_islandLvls.sort((a,b)=>b[1].score-a[1].score)[0]
-  const _topName=_topEntry?_topEntry[0].replace(/^gp-/,"").split("-").map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(" "):null
-  const _topScore=_topEntry?_topEntry[1].score:null
+  const _topBeach=[..._islandLvls].sort((a,b)=>b.score-a.score)[0]
+  const _topName=_topBeach?.id?.replace(/^gp-/,"").split("-").map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(" ")||null
+  const _topScore=_topBeach?.score||null
   const modalOpenedAt=useRef(Date.now())
   const sawCheckoutRef=useRef(false)
   // pay1 A/B ended 2026-04-12: link=3 conversions, inline=0 → link wins.
