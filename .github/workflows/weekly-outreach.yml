@@ -2,10 +2,9 @@ name: Weekly Outreach (Backlinks + Social)
 
 on:
   schedule:
-    # Mardi 10h UTC (6h Martinique) — outreach emails
+    # Cut 2026-04-13 (quota 100%): Tue+Thu -> Tue only. 8 runs/mo -> 4.
+    # Tue outreach stays (fresh targets), Thu relance dropped for this cycle.
     - cron: '0 10 * * 2'
-    # Jeudi 14h UTC (10h Martinique) — relance des cibles
-    - cron: '0 14 * * 4'
   workflow_dispatch:
 
 permissions:

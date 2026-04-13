@@ -2,8 +2,9 @@ name: Weekly UX Report
 
 on:
   schedule:
-    # 2x/sem: Mardi + Vendredi 7h Martinique (UTC-4) = 11h UTC
-    - cron: '0 11 * * 2,5'
+    # Cut 2026-04-13 (quota 100%): Tue+Fri -> Fri only. 8 runs/mo -> 4.
+    # Fri keeps the weekend-prep signal, Tue was redundant with Mon SEO.
+    - cron: '0 11 * * 5'
   workflow_dispatch:
 
 permissions:

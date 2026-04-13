@@ -1,14 +1,15 @@
 name: Daily Copernicus + Deploy
 
 on:
-  push:
-    branches: [main]
   schedule:
     # 4x/jour toutes les 6h — Copernicus publie 1x/jour, 6h freshness largement
     # sous le seuil "< 12h OK" de CLAUDE.md. Cf. quota GH Actions 2000 min/mo.
     # Heures MQ (UTC-4): 20h, 2h, 8h, 14h
     - cron: '0 0,6,12,18 * * *'
-  workflow_dispatch: # Déclenchement manuel possible
+  workflow_dispatch: # Déclenchement manuel pour deploy après push
+  # Push trigger removed 2026-04-13 (quota 100%). Was firing on every
+  # commit to main + costing ~8 min each. Deploys now require either:
+  # the next scheduled run (max 6h wait) OR a manual workflow_dispatch.
 
 permissions:
   contents: write
