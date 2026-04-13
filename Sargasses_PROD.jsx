@@ -2652,33 +2652,51 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
   return(
     <div style={{
       marginTop:10,
+      position:"relative",
       background:"var(--sg-card,#fff)",
-      border:`1.5px solid ${topSt.c}44`,
-      borderRadius:18,
-      boxShadow:`0 8px 28px ${topSt.c}1f, 0 1px 3px rgba(0,0,0,.04)`,
+      border:`1px solid ${topSt.c}33`,
+      borderRadius:22,
+      boxShadow:`0 18px 48px -14px ${topSt.c}38, 0 2px 8px rgba(0,0,0,.05)`,
       overflow:"hidden",
     }}>
+      {/* Aurora backdrop — soft radial halo derived from status color.
+          Sits behind all content (zIndex 0), absolutely positioned.
+          Why: gives the hero card a "lit-from-within" feel instead of a flat tile. */}
+      <div aria-hidden style={{
+        position:"absolute",inset:0,
+        background:`radial-gradient(120% 80% at 18% 38%, ${topSt.c}22 0%, ${topSt.c}0d 32%, transparent 62%), linear-gradient(180deg, ${topSt.c}0f 0%, transparent 100%)`,
+        pointerEvents:"none",
+      }}/>
+      <div aria-hidden style={{
+        position:"absolute",top:-18,right:-18,width:120,height:120,
+        background:`radial-gradient(closest-side, ${topSt.c}1f 0%, transparent 70%)`,
+        pointerEvents:"none",
+      }}/>
+
       {/* Top bar — greeting + score-variance badge */}
       <div style={{
+        position:"relative",
         display:"flex",justifyContent:"space-between",alignItems:"center",
-        padding:"10px 14px 0",gap:10,
+        padding:"12px 16px 0",gap:10,
       }}>
         <div style={{
           fontSize:10,fontWeight:800,
-          letterSpacing:".08em",textTransform:"uppercase",
-          color:"var(--sg-mid,#686868)",
+          letterSpacing:".1em",textTransform:"uppercase",
+          color:topSt.c,opacity:.85,
         }}>
-          {greet} · {lang==="en"?"your pick":"ta plage"}
+          ● {greet}
         </div>
         {variance>=12&&(
           <div style={{
-            fontSize:9.5,fontWeight:700,
+            fontSize:9,fontWeight:700,
             padding:"3px 8px",borderRadius:100,
-            background:"rgba(0,0,0,.045)",
+            background:"rgba(255,255,255,.7)",
+            backdropFilter:"blur(6px)",
+            border:"1px solid rgba(0,0,0,.05)",
             color:"var(--sg-mid,#686868)",
             letterSpacing:".02em",whiteSpace:"nowrap",
           }}>
-            {minScore}→{maxScore} · {variance} pts · {withScore.length} {lang==="en"?"beaches":"plages"}
+            {withScore.length} {lang==="en"?"analyzed":"analysées"} · Δ{variance}
           </div>
         )}
       </div>
@@ -2690,52 +2708,74 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
           onBeachClick(top)
         }}
         style={{
-          display:"flex",alignItems:"center",gap:14,
-          padding:"10px 14px 14px",
+          position:"relative",
+          display:"flex",alignItems:"center",gap:16,
+          padding:"12px 16px 16px",
           background:"none",border:"none",width:"100%",
           cursor:"pointer",fontFamily:"inherit",textAlign:"left",
         }}
       >
-        {/* XL score ring (96px) — dominant visual, animated count-up */}
+        {/* XL score ring (108px) in a 132px halo box — dominant visual with soft outer glow.
+            Why 108 not 96: the ring needs to out-compete the beach name typographically. */}
         {typeof top.score==="number"?(
           <div style={{
-            width:96,height:96,borderRadius:"50%",flexShrink:0,
-            background:`conic-gradient(${top.scoreColor||topSt.c} ${animScore*3.6}deg, rgba(0,0,0,.06) ${animScore*3.6}deg)`,
+            position:"relative",
+            width:112,height:112,flexShrink:0,
             display:"flex",alignItems:"center",justifyContent:"center",
           }}>
+            {/* halo */}
+            <div aria-hidden style={{
+              position:"absolute",inset:-12,borderRadius:"50%",
+              background:`radial-gradient(closest-side, ${top.scoreColor||topSt.c}33 0%, transparent 70%)`,
+              filter:"blur(2px)",pointerEvents:"none",
+            }}/>
+            {/* conic ring */}
             <div style={{
-              width:78,height:78,borderRadius:"50%",
-              background:"var(--sg-card,#fff)",
-              display:"flex",flexDirection:"column",
-              alignItems:"center",justifyContent:"center",
-              boxShadow:"0 1px 4px rgba(0,0,0,.1)",
+              position:"relative",
+              width:108,height:108,borderRadius:"50%",
+              background:`conic-gradient(${top.scoreColor||topSt.c} ${animScore*3.6}deg, rgba(0,0,0,.055) ${animScore*3.6}deg)`,
+              display:"flex",alignItems:"center",justifyContent:"center",
+              boxShadow:`inset 0 0 0 1px ${top.scoreColor||topSt.c}22`,
+              transition:"background 120ms linear",
             }}>
-              <span style={{fontFamily:"'Anton',sans-serif",fontSize:38,lineHeight:1,color:top.scoreColor||topSt.c}}>{animScore}</span>
-              <span style={{fontSize:9,fontWeight:700,marginTop:2,color:"var(--sg-mid,#686868)",letterSpacing:".04em"}}>/100</span>
+              <div style={{
+                width:88,height:88,borderRadius:"50%",
+                background:"linear-gradient(180deg,#fff 0%, #FDFCF7 100%)",
+                display:"flex",flexDirection:"column",
+                alignItems:"center",justifyContent:"center",
+                boxShadow:"0 2px 10px rgba(0,0,0,.08), inset 0 0 0 1px rgba(255,255,255,.9)",
+              }}>
+                <span style={{fontFamily:"'Anton',sans-serif",fontSize:44,lineHeight:.95,color:top.scoreColor||topSt.c,letterSpacing:"-.02em"}}>{animScore}</span>
+                <span style={{fontSize:9,fontWeight:800,marginTop:1,color:"var(--sg-mid,#686868)",letterSpacing:".08em"}}>/100</span>
+              </div>
             </div>
           </div>
         ):(
           <div style={{
-            width:96,height:96,borderRadius:"50%",flexShrink:0,
+            width:112,height:112,borderRadius:"50%",flexShrink:0,
             background:topSt.c,
             display:"flex",alignItems:"center",justifyContent:"center",
           }}>
-            <div style={{width:14,height:14,borderRadius:7,background:"#fff"}}/>
+            <div style={{width:16,height:16,borderRadius:8,background:"#fff"}}/>
           </div>
         )}
 
-        <div style={{flex:1,minWidth:0}}>
+        <div style={{flex:1,minWidth:0,position:"relative"}}>
           <div style={{
-            fontSize:17,fontWeight:900,color:"var(--sg-ink,#0D0D0D)",
-            lineHeight:1.15,marginBottom:4,
+            fontFamily:"'Anton',sans-serif",
+            fontSize:22,fontWeight:400,
+            textTransform:"uppercase",letterSpacing:"-.015em",
+            color:"var(--sg-ink,#0D0D0D)",
+            lineHeight:1.02,marginBottom:6,
             display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",
             overflow:"hidden",wordBreak:"break-word",
           }}>
             {top.name}
           </div>
           <div style={{
-            fontSize:11.5,fontWeight:700,color:topSt.c,
+            fontSize:12,fontWeight:800,color:topSt.c,
             marginBottom:strengthsList.length>0?6:3,lineHeight:1.25,
+            letterSpacing:".005em",
           }}>
             {verdict}
           </div>
@@ -2782,6 +2822,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
             onBeachClick(worst)
           }}
           style={{
+            position:"relative",
             display:"flex",alignItems:"center",gap:8,width:"100%",
             padding:"9px 14px",border:"none",borderTop:"1px solid rgba(224,120,0,.14)",
             background:"rgba(224,120,0,.06)",
@@ -2808,9 +2849,11 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
       {/* Alternatives row — 2 more picks, inline, each with its own score */}
       {alts.length>0&&(
         <div style={{
+          position:"relative",
           display:"flex",
           borderTop:"1px solid var(--sg-border,rgba(0,0,0,.06))",
-          background:"rgba(0,0,0,.015)",
+          background:"linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.25))",
+          backdropFilter:"blur(4px)",
         }}>
           {alts.map((alt,i)=>{
             const aSt=ST[alt.status]||ST._loading
@@ -2854,9 +2897,10 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
       {/* Inline email mini-capture — first visit only, dismissable */}
       {!heroEmailHidden&&!heroEmailSent&&(
         <div style={{
+          position:"relative",
           borderTop:"1px solid var(--sg-border,rgba(0,0,0,.06))",
           padding:"10px 12px",
-          background:"linear-gradient(90deg,rgba(255,199,44,.06),rgba(255,199,44,.11))",
+          background:"linear-gradient(90deg,rgba(255,199,44,.1),rgba(255,199,44,.18))",
           display:"flex",alignItems:"center",gap:7,
         }}>
           <span style={{fontSize:14,flexShrink:0}}>📬</span>
@@ -2905,9 +2949,10 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
       )}
       {heroEmailSent&&(
         <div style={{
+          position:"relative",
           borderTop:"1px solid var(--sg-border,rgba(0,0,0,.06))",
           padding:"10px 14px",textAlign:"center",
-          background:"rgba(34,197,94,.07)",
+          background:"rgba(34,197,94,.09)",
         }}>
           <div style={{fontSize:12,fontWeight:700,color:"#16A34A"}}>
             ✓ {lang==="en"?"You're in! First pick tomorrow 7am.":"C'est fait ! Ta reco demain à 7h."}
