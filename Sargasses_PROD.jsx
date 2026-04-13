@@ -3365,63 +3365,97 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
           {seasonMsg}
         </div>
 
-        <h2 className="anton" style={{fontSize:"clamp(22px,6vw,28px)",color:"#fff",marginBottom:16,lineHeight:1.15}}>{headline}</h2>
+        <h2 className="anton" style={{fontSize:"clamp(22px,6vw,28px)",color:"#fff",marginBottom:18,lineHeight:1.1,letterSpacing:"-.015em"}}>
+          {lang==="en"?(<>Your <span style={{background:"linear-gradient(135deg,#FFE47A,#FFC72C 55%,#E89400)",WebkitBackgroundClip:"text",backgroundClip:"text",WebkitTextFillColor:"transparent",color:"transparent"}}>daily pick</span> every morning at 7am</>)
+                      :(<>Ta <span style={{background:"linear-gradient(135deg,#FFE47A,#FFC72C 55%,#E89400)",WebkitBackgroundClip:"text",backgroundClip:"text",WebkitTextFillColor:"transparent",color:"transparent"}}>reco</span> chaque matin à 7h</>)}
+        </h2>
 
-        {/* Simulated morning brief — shows what premium feels like */}
-        <div style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",
-          borderRadius:16,padding:"14px 16px",marginBottom:12}}>
-          <div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginBottom:6,fontWeight:600,letterSpacing:".05em"}}>
-            {lang==="en"?"EVERY MORNING AT 7AM":"CHAQUE MATIN À 7H"}
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <span style={{fontSize:24}}>📲</span>
-            <div>
-              <div style={{fontSize:14,fontWeight:600,color:"#fff"}}>
+        {/* Value cards stack — wrapped in a relative container so we can lay a
+            soft gold halo behind all 3 cards. Echo of the aurora backdrop on HeroReco.
+            Why: the dark modal needs one warm focal area to anchor the eye on the promise. */}
+        <div style={{position:"relative",marginBottom:16}}>
+          <div aria-hidden style={{
+            position:"absolute",inset:"-8px -20px",borderRadius:24,
+            background:"radial-gradient(60% 70% at 50% 0%, rgba(255,199,44,.09) 0%, transparent 70%)",
+            pointerEvents:"none",
+          }}/>
+
+          {/* Card 01 — morning brief (gold accent, the hero promise) */}
+          <div style={{position:"relative",
+            background:"linear-gradient(180deg,rgba(255,199,44,.09),rgba(255,199,44,.04))",
+            border:"1px solid rgba(255,199,44,.28)",
+            borderRadius:18,padding:"14px 16px 14px 18px",marginBottom:10,
+            boxShadow:"0 8px 24px -14px rgba(255,199,44,.3), inset 0 1px 0 rgba(255,255,255,.06)",
+            display:"flex",alignItems:"center",gap:14}}>
+            <div style={{
+              fontFamily:"'Anton',sans-serif",fontSize:30,lineHeight:1,
+              color:"transparent",
+              background:"linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E89400)",
+              WebkitBackgroundClip:"text",backgroundClip:"text",
+              letterSpacing:"-.02em",flexShrink:0,width:30,textAlign:"center",
+            }}>01</div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:9.5,color:"rgba(255,199,44,.75)",marginBottom:4,fontWeight:800,letterSpacing:".08em"}}>
+                {lang==="en"?"EVERY MORNING · 7AM":"CHAQUE MATIN · 7H"}
+              </div>
+              <div style={{fontSize:14.5,fontWeight:700,color:"#fff",lineHeight:1.25}}>
                 {_topName
                   ?(lang==="en"?`Your best beach today: ${_topName}`:`Ta meilleure plage : ${_topName}`)
                   :(lang==="en"?"Your best beach today: Anse Dufour":"Ta meilleure plage : Anse Dufour")}
               </div>
-              <div style={{fontSize:12,color:"rgba(255,255,255,.5)"}}>
+              <div style={{fontSize:11.5,color:"rgba(255,255,255,.5)",marginTop:3}}>
                 {_topScore
-                  ?(lang==="en"?`Score ${_topScore}/100 · satellite-verified today`:`Score ${_topScore}/100 · vérifié par satellite aujourd'hui`)
+                  ?(lang==="en"?`Score ${_topScore}/100 · satellite-verified`:`Score ${_topScore}/100 · satellite`)
                   :(lang==="en"?"Clean · 12 min drive · calm sea":"Propre · 12 min · mer calme")}
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Simulated alert — shows the killer feature */}
-        <div style={{background:"rgba(255,199,44,.06)",border:"1px solid rgba(255,199,44,.15)",
-          borderRadius:16,padding:"14px 16px",marginBottom:12}}>
-          <div style={{fontSize:10,color:"rgba(255,199,44,.6)",marginBottom:6,fontWeight:600,letterSpacing:".05em"}}>
-            {lang==="en"?"INSTANT ALERT":"ALERTE INSTANTANÉE"}
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <span style={{fontSize:24}}>🔔</span>
-            <div>
-              <div style={{fontSize:14,fontWeight:600,color:"#fff"}}>
+          {/* Card 02 — instant alert */}
+          <div style={{position:"relative",
+            background:"linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.02))",
+            border:"1px solid rgba(255,255,255,.1)",
+            borderRadius:18,padding:"14px 16px 14px 18px",marginBottom:10,
+            boxShadow:"inset 0 1px 0 rgba(255,255,255,.05)",
+            display:"flex",alignItems:"center",gap:14}}>
+            <div style={{
+              fontFamily:"'Anton',sans-serif",fontSize:30,lineHeight:1,
+              color:"rgba(255,255,255,.22)",
+              letterSpacing:"-.02em",flexShrink:0,width:30,textAlign:"center",
+            }}>02</div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:9.5,color:"rgba(255,255,255,.42)",marginBottom:4,fontWeight:800,letterSpacing:".08em"}}>
+                {lang==="en"?"INSTANT ALERT":"ALERTE INSTANTANÉE"}
+              </div>
+              <div style={{fontSize:14.5,fontWeight:700,color:"#fff",lineHeight:1.25}}>
                 {lang==="en"?"Sainte-Anne status changed":"Sainte-Anne a changé"}
               </div>
-              <div style={{fontSize:12,color:"rgba(255,255,255,.5)"}}>
+              <div style={{fontSize:11.5,color:"rgba(255,255,255,.5)",marginTop:3}}>
                 {lang==="en"?"Clean → Moderate — switch to Les Salines":"Propre → Modéré — va aux Salines"}
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Daily pick preview */}
-        <div style={{background:"rgba(76,175,80,.06)",border:"1px solid rgba(76,175,80,.15)",
-          borderRadius:16,padding:"14px 16px",marginBottom:16}}>
-          <div style={{fontSize:10,color:"rgba(76,175,80,.7)",marginBottom:6,fontWeight:600,letterSpacing:".05em"}}>
-            {lang==="en"?"DAILY PICK":"RECO DU JOUR"}
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <span style={{fontSize:24}}>🏖️</span>
-            <div>
-              <div style={{fontSize:14,fontWeight:600,color:"#fff"}}>
+          {/* Card 03 — weekend daily pick */}
+          <div style={{position:"relative",
+            background:"linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.02))",
+            border:"1px solid rgba(255,255,255,.1)",
+            borderRadius:18,padding:"14px 16px 14px 18px",
+            boxShadow:"inset 0 1px 0 rgba(255,255,255,.05)",
+            display:"flex",alignItems:"center",gap:14}}>
+            <div style={{
+              fontFamily:"'Anton',sans-serif",fontSize:30,lineHeight:1,
+              color:"rgba(255,255,255,.22)",
+              letterSpacing:"-.02em",flexShrink:0,width:30,textAlign:"center",
+            }}>03</div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:9.5,color:"rgba(255,255,255,.42)",marginBottom:4,fontWeight:800,letterSpacing:".08em"}}>
+                {lang==="en"?"WEEKEND FORECAST":"LE WEEKEND"}
+              </div>
+              <div style={{fontSize:14.5,fontWeight:700,color:"#fff",lineHeight:1.25}}>
                 {lang==="en"?"Best for Saturday: Grande Anse":"Samedi : Grande Anse"}
               </div>
-              <div style={{fontSize:12,color:"rgba(255,255,255,.5)"}}>
+              <div style={{fontSize:11.5,color:"rgba(255,255,255,.5)",marginTop:3}}>
                 {lang==="en"?"Clean all weekend · ideal for kids":"Propre tout le weekend · idéal enfants"}
               </div>
             </div>
