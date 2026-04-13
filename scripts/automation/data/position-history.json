@@ -1,0 +1,98 @@
+{
+  "snapshots": [
+    {
+      "date": "2026-04-12",
+      "sites": {
+        "mq": {
+          "https://sargasses-martinique.com/": {
+            "avgPos": 6,
+            "clicks": 1199,
+            "impressions": 8130
+          },
+          "https://sargasses-martinique.com/en/": {
+            "avgPos": 10.8,
+            "clicks": 15,
+            "impressions": 85
+          },
+          "https://sargasses-martinique.com/plages/anse-letang/": {
+            "avgPos": 13.2,
+            "clicks": 2,
+            "impressions": 43
+          }
+        },
+        "gp": {
+          "https://sargasses-guadeloupe.com/": {
+            "avgPos": 8.2,
+            "clicks": 543,
+            "impressions": 3078
+          },
+          "https://sargasses-guadeloupe.com/plages/plage-caravelle/": {
+            "avgPos": 27.8,
+            "clicks": 4,
+            "impressions": 22
+          },
+          "https://sargasses-guadeloupe.com/carte-temps-reel/": {
+            "avgPos": 10,
+            "clicks": 9,
+            "impressions": 431
+          },
+          "https://sargasses-guadeloupe.com/plages/plage-bois-jolan/": {
+            "avgPos": 8.5,
+            "clicks": 2,
+            "impressions": 27
+          },
+          "https://sargasses-guadeloupe.com/previsions-sargasses-guadeloupe/": {
+            "avgPos": 6.4,
+            "clicks": 9,
+            "impressions": 342
+          },
+          "https://sargasses-guadeloupe.com/quand-sargasses-guadeloupe/": {
+            "avgPos": 9.3,
+            "clicks": 5,
+            "impressions": 438
+          },
+          "https://sargasses-guadeloupe.com/carte-sargasses/": {
+            "avgPos": 7.5,
+            "clicks": 5,
+            "impressions": 78
+          },
+          "https://sargasses-guadeloupe.com/plages/de-bois-jolan/": {
+            "avgPos": 7.7,
+            "clicks": 4,
+            "impressions": 60
+          },
+          "https://sargasses-guadeloupe.com/plages-sans-sargasses-guadeloupe/": {
+            "avgPos": 5.4,
+            "clicks": 6,
+            "impressions": 209
+          },
+          "https://sargasses-guadeloupe.com/communes/saint-francois/": {
+            "avgPos": 12.2,
+            "clicks": 6,
+            "impressions": 48
+          },
+          "https://sargasses-guadeloupe.com/faq/": {
+            "avgPos": 2.9,
+            "clicks": 1,
+            "impressions": 62
+          },
+          "https://sargasses-guadeloupe.com/plages/anse-a-la-fontaine/": {
+            "avgPos": 7.4,
+            "clicks": 0,
+            "impressions": 27
+          },
+          "https://sargasses-guadeloupe.com/plages-guadeloupe/plage-d-anse-champagne/": {
+            "avgPos": 10.5,
+            "clicks": 0,
+            "impressions": 42
+          },
+          "https://sargasses-guadeloupe.com/plages/paul-thomas/": {
+            "avgPos": 8.6,
+            "clicks": 0,
+            "impressions": 32
+          }
+        }
+      }
+    }
+  ]
+}
