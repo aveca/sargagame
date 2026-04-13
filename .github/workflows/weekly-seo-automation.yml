@@ -2,8 +2,11 @@ name: Weekly SEO Automation
 
 on:
   schedule:
-    # 2x/sem: Lundi + Jeudi 7h Martinique (UTC-4) = 11h UTC
-    - cron: '0 11 * * 1,4'
+    # Cut 2026-04-13 (quota 100%) : Mon+Thu -> Mon only. The 22-step
+    # workflow grew to ~12 min/run after 11 new analyzers landed, so
+    # 8 runs/mo = 96 min/mo. Mon only = 4 runs/mo ≈ 48 min/mo.
+    # Re-enable Thu when budget allows.
+    - cron: '0 11 * * 1'
   workflow_dispatch: # Déclenchement manuel possible
 
 permissions:
