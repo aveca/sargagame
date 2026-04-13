@@ -1139,9 +1139,9 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
   return(
     <>
     <div style={{position:"relative"}}>
-      <div style={{display:"flex",gap:6,alignItems:"flex-end",height:140,padding:"8px 0"}}>
+      <div style={{display:"flex",gap:8,alignItems:"flex-end",height:152,padding:"10px 0 4px"}}>
         {visible.map((d,i)=>{
-          const h=Math.max(8,(d.afai/max)*70)
+          const h=Math.max(10,(d.afai/max)*74)
           const st=ST[d.status]||ST._loading
           const isLocked=!isPremium&&i>=freeThreshold
           const hasDaily=weatherDaily&&weatherDaily.tempMax&&i<weatherDaily.tempMax.length
@@ -1152,22 +1152,32 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
           const wxIcon=hasDaily?getDayWeatherIcon(dayPrecip,dayCloud,dayWind):null
           const fType=d.type||(i===0?"observation":i<=3?"tendance":"horizon")
           const fConf=d.confidence||null
-          const typeOpacity=fType==="observation"?1:fType==="tendance"?.9:.55
+          const typeOpacity=fType==="observation"?1:fType==="tendance"?.9:.6
           return(
             <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,
               filter:isLocked?"blur(2px)":"none",opacity:isLocked?0.55:typeOpacity,
               pointerEvents:isLocked?"none":"auto"}}>
               {wxIcon&&<span style={{fontSize:13,lineHeight:1}}>{wxIcon}</span>}
-              {dayTemp!=null&&<span style={{fontSize:9,fontWeight:600,color:"var(--sg-mid,#686868)"}}>{dayTemp}°</span>}
-              <span style={{fontSize:10,fontWeight:600,color:st.c}}>{Math.round(d.afai*100)}%</span>
-              <div className="fc-bar" style={{width:"100%",height:h,background:st.c,opacity:.8}}/>
-              <span style={{fontSize:10,color:"var(--sg-mid,#686868)",fontWeight:500}}>{d.day}</span>
-              {fConf!=null&&!isLocked&&<span style={{fontSize:8,color:"var(--sg-mid,#999)",fontWeight:400}}>{fConf}%</span>}
+              {dayTemp!=null&&<span style={{fontSize:9,fontWeight:700,color:"var(--sg-mid,#686868)",
+                letterSpacing:".01em"}}>{dayTemp}°</span>}
+              <span style={{fontFamily:"'Anton',sans-serif",fontSize:13,lineHeight:1,
+                letterSpacing:"-.01em",color:st.c}}>
+                {Math.round(d.afai*100)}%
+              </span>
+              <div className="fc-bar" style={{width:"100%",height:h,
+                background:`linear-gradient(180deg, ${st.c}, ${st.c}cc)`,
+                borderRadius:"6px 6px 2px 2px",
+                boxShadow:`0 -4px 14px -6px ${st.c}88, inset 0 1px 0 rgba(255,255,255,.3)`}}/>
+              <span className="anton" style={{fontSize:11,lineHeight:1,letterSpacing:".02em",
+                color:"var(--sg-mid,#686868)",textTransform:"uppercase",marginTop:2}}>
+                {d.day}
+              </span>
+              {fConf!=null&&!isLocked&&<span style={{fontSize:8,color:"var(--sg-mid,#999)",fontWeight:600}}>{fConf}%</span>}
             </div>
           )
         })}
       </div>
-      <div style={{fontSize:9,color:"var(--sg-mid,#999)",textAlign:"center",padding:"2px 0 0",lineHeight:1.3}}>
+      <div style={{fontSize:9,color:"var(--sg-mid,#999)",textAlign:"center",padding:"4px 0 0",lineHeight:1.3}}>
         {lang==="en"
           ?`Reliable up to 4 days. ${Math.round(firstConf)}% confidence tomorrow.`
           :`Fiable jusqu'a 4 jours. Fiabilite ${Math.round(firstConf)}% demain.`}
