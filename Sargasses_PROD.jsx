@@ -692,6 +692,9 @@ button:active,a:active,[role="button"]:active{transform:scale(.96)!important;opa
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 .pulse{animation:pulse 2s infinite}
 
+/* Header LIVE badge halo — soft breathing glow around the status dot */
+@keyframes sg-live-halo{0%,100%{opacity:.35;transform:scale(.9)}50%{opacity:.85;transform:scale(1.35)}}
+
 /* Sargassum bank animations */
 .sg-bank{transition:fill-opacity .6s ease}
 .sg-drift-dot{transition:all .6s ease}
@@ -3613,58 +3616,76 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
   const srcLabel=isLive?(lang==="en"?"LIVE satellite":"LIVE satellite"):(lang==="en"?"Estimation":"Estimation")
   const srcColor=isLive?C.green:C.amber
   const fresh=formatFreshness(updatedAt,lang)
+  // Unified 40px-tall control rail. Three segments share the same shadow,
+  // border token and height so the header reads as one cohesive status bar
+  // instead of three disconnected widgets. Why: session 37 aurora + editorial
+  // modal made the old header (3 different heights/shadows) feel cheap.
+  const RAIL_H=40
+  const RAIL_SHADOW="0 2px 10px rgba(0,0,0,.05), 0 1px 2px rgba(0,0,0,.04)"
+  const RAIL_BORDER="1px solid var(--sg-border,rgba(0,0,0,.07))"
   return(
-    <div className="sg-header-row" style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:6,flexWrap:"wrap",rowGap:8}}>
-      {/* Island toggle — sliding pill indicator */}
-      <div style={{display:"flex",borderRadius:12,overflow:"hidden",position:"relative",flexShrink:0,
-        border:"1.5px solid var(--sg-border,rgba(0,0,0,.08))",
-        background:"var(--sg-card,#fff)",boxShadow:"0 2px 8px rgba(0,0,0,.06)"}}>
-        <div style={{position:"absolute",top:2,bottom:2,width:"calc(50% - 2px)",borderRadius:10,
+    <div className="sg-header-row" style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,flexWrap:"wrap",rowGap:8}}>
+      {/* Island toggle — sliding pill indicator, 40px tall, Anton on MQ/GP */}
+      <div style={{display:"flex",height:RAIL_H,borderRadius:14,overflow:"hidden",position:"relative",flexShrink:0,
+        border:RAIL_BORDER,
+        background:"var(--sg-card,#fff)",boxShadow:RAIL_SHADOW}}>
+        <div style={{position:"absolute",top:3,bottom:3,width:"calc(50% - 3px)",borderRadius:12,
           background:"linear-gradient(158deg,#FFE47A,#FFC72C,#E89400)",
-          transform:island==="mq"?"translateX(2px)":"translateX(calc(100% + 2px))",
+          transform:island==="mq"?"translateX(3px)":"translateX(calc(100% + 3px))",
           transition:"transform .3s cubic-bezier(.22,1,.36,1)",
-          boxShadow:"0 2px 6px rgba(232,168,0,.3)"}}/>
+          boxShadow:"0 3px 10px rgba(232,168,0,.35), inset 0 1px 0 rgba(255,255,255,.5)"}}/>
         {["mq","gp"].map(id=>(
           <button key={id} onClick={()=>{onIslandChange(id);track("sg_island_switch",{to:id})}} style={{
-            padding:"8px 12px",border:"none",cursor:"pointer",
+            padding:"0 16px",border:"none",cursor:"pointer",
             background:"transparent",position:"relative",zIndex:1,
             color:island===id?"#0D0D0D":"var(--sg-mid,#686868)",
-            fontSize:12,fontWeight:700,fontFamily:"inherit",
+            fontFamily:"'Anton',sans-serif",
+            fontSize:15,fontWeight:400,
+            letterSpacing:".02em",
             transition:"color .2s",
+            display:"flex",alignItems:"center",
           }}>{id==="mq"?"MQ":"GP"}</button>
         ))}
       </div>
 
-      {/* Live indicator — shows LIVE or Estimation based on data source */}
+      {/* Live indicator — shows LIVE or Estimation based on data source.
+          Halo pulse derived from srcColor, editorial feel. */}
       <a href="https://marine.copernicus.eu" target="_blank" rel="noopener noreferrer"
         onClick={()=>track("sg_live_badge_click",{source:dataSource})}
-        style={{display:"flex",alignItems:"center",gap:6,
-          padding:"6px 10px",borderRadius:100,flex:"0 1 auto",minWidth:0,
+        style={{display:"flex",alignItems:"center",gap:7,height:RAIL_H,
+          padding:"0 14px",borderRadius:100,flex:"1 1 auto",minWidth:0,
+          maxWidth:"fit-content",
           background:"var(--sg-card,#fff)",
-          boxShadow:"0 2px 8px rgba(0,0,0,.06)",
-          border:`1px solid ${isLive?"var(--sg-border)":"rgba(184,122,0,.2)"}`,
-          fontSize:11,fontWeight:600,color:isLive?C.teal:C.amber,
+          boxShadow:RAIL_SHADOW,
+          border:RAIL_BORDER,
+          fontSize:11.5,fontWeight:700,color:isLive?C.teal:C.amber,
           textDecoration:"none",cursor:"pointer",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
-          <span className={isLive?"pulse":""} style={{width:8,height:8,borderRadius:4,background:srcColor,flexShrink:0}}/>
-          <span style={{flexShrink:0}}>{srcLabel}</span>
-          {fresh&&<span style={{opacity:.55,fontWeight:500,flexShrink:1,overflow:"hidden",textOverflow:"ellipsis"}}>· {fresh}</span>}
-          <span style={{opacity:.55,fontWeight:500,flexShrink:0}}>· {beachCount||47} {lang==="en"?"beaches":lang==="es"?"playas":"plages"}</span>
+          <span style={{position:"relative",width:10,height:10,flexShrink:0,display:"inline-flex",alignItems:"center",justifyContent:"center"}}>
+            <span aria-hidden style={{position:"absolute",inset:-4,borderRadius:"50%",
+              background:`radial-gradient(closest-side, ${srcColor}55 0%, transparent 70%)`,
+              animation:isLive?"sg-live-halo 2.2s ease-in-out infinite":"none",pointerEvents:"none"}}/>
+            <span className={isLive?"pulse":""} style={{position:"relative",width:8,height:8,borderRadius:4,background:srcColor,
+              boxShadow:`0 0 0 2px ${srcColor}22`,flexShrink:0}}/>
+          </span>
+          <span style={{flexShrink:0,letterSpacing:".01em"}}>{srcLabel}</span>
+          {fresh&&<span style={{opacity:.5,fontWeight:500,flexShrink:1,overflow:"hidden",textOverflow:"ellipsis"}}>· {fresh}</span>}
+          <span style={{opacity:.5,fontWeight:500,flexShrink:0}}>· {beachCount||47} {lang==="en"?"beaches":lang==="es"?"playas":"plages"}</span>
         </a>
 
-      {/* Theme + Lang */}
-      <div style={{display:"flex",gap:4,flexShrink:0}}>
+      {/* Theme + Lang — grouped in a single rail segment for cohesion */}
+      <div style={{display:"flex",height:RAIL_H,borderRadius:14,overflow:"hidden",
+        border:RAIL_BORDER,background:"var(--sg-card,#fff)",boxShadow:RAIL_SHADOW,flexShrink:0}}>
         <button onClick={onThemeToggle} aria-label={theme==="dark"?"Light mode":"Dark mode"} style={{
-          width:40,height:40,borderRadius:12,border:"1px solid var(--sg-border)",
-          background:"var(--sg-card,#fff)",cursor:"pointer",fontSize:16,
+          width:40,height:"100%",border:"none",borderRight:"1px solid var(--sg-border,rgba(0,0,0,.06))",
+          background:"transparent",cursor:"pointer",fontSize:16,
           display:"flex",alignItems:"center",justifyContent:"center",
-          boxShadow:"0 2px 8px rgba(0,0,0,.06)",
         }}>{theme==="dark"?"☀️":"🌙"}</button>
         <button onClick={onLangToggle} aria-label={lang==="fr"?"Switch to English":lang==="en"?"Cambiar a español":"Passer en français"} style={{
-          width:40,height:40,borderRadius:12,border:"1px solid var(--sg-border)",
-          background:"var(--sg-card,#fff)",cursor:"pointer",fontSize:12,fontWeight:700,
-          fontFamily:"inherit",color:"var(--sg-ink)",
+          width:40,height:"100%",border:"none",
+          background:"transparent",cursor:"pointer",
+          fontFamily:"'Anton',sans-serif",fontSize:13,fontWeight:400,
+          letterSpacing:".03em",color:"var(--sg-ink)",
           display:"flex",alignItems:"center",justifyContent:"center",
-          boxShadow:"0 2px 8px rgba(0,0,0,.06)",
         }}>{lang==="fr"?"EN":lang==="en"?"ES":"FR"}</button>
       </div>
     </div>
