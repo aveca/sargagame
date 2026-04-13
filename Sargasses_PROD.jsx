@@ -5113,55 +5113,7 @@ export default function App(){
                   })}
                 </div>
               )}
-              {/* Clean beaches nearby — solid glass pill so it pops over the map */}
-              {!search.trim()&&userPos&&(()=>{
-                const nearClean=allBeaches.filter(b=>b.island===island&&b.status==="clean")
-                  .map(b=>({...b,_d:haversine(userPos.lat,userPos.lng,b.lat,b.lng)}))
-                  .filter(b=>b._d<=20)
-                if(nearClean.length===0)return null
-                nearClean.sort((a,b)=>a._d-b._d)
-                const closest=nearClean[0]
-                return(
-                  <button onClick={()=>{
-                    track("sg_clean_nearby_click",{count:nearClean.length,closest:closest.id})
-                    setFilter(1)
-                    onChangeView("list")
-                  }} style={{
-                    display:"flex",alignItems:"center",gap:8,padding:"9px 14px",
-                    borderRadius:100,background:"rgba(255,255,255,.94)",
-                    backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",
-                    border:"1px solid rgba(34,197,94,.3)",
-                    cursor:"pointer",width:"100%",fontFamily:"inherit",textAlign:"left",
-                    boxShadow:"0 6px 18px rgba(0,0,0,.12)",
-                  }}>
-                    <div style={{width:8,height:8,borderRadius:4,background:C.green,flexShrink:0,
-                      boxShadow:`0 0 0 3px ${C.green}22`}}/>
-                    <span style={{fontSize:12,fontWeight:700,color:C.green,flex:1}}>
-                      {nearClean.length} {lang==="en"
-                        ?`clean beach${nearClean.length>1?"es":""} within 20 km`
-                        :`plage${nearClean.length>1?"s":""} propre${nearClean.length>1?"s":""} à moins de 20 km`}
-                    </span>
-                    <span style={{fontSize:11,color:"var(--sg-mid,#686868)",flexShrink:0}}>
-                      {lang==="en"?"See all":"Voir"}
-                    </span>
-                  </button>
-                )
-              })()}
-              {/* Filter chips — scrollable row */}
-              <div style={{position:"relative"}}>
-                <div style={{display:"flex",gap:6,overflowX:"auto",
-                  paddingBottom:4,paddingRight:24,scrollbarWidth:"none",WebkitOverflowScrolling:"touch"}}>
-                  {LL.filters.map((f,i)=>(
-                    <FilterChip key={i} label={f} icon={LL.filtersIcon[i]} count={filterCounts[i]||null}
-                      active={filter===i} onClick={()=>{setFilter(i);track("sg_filter",{filter:f,index:i})}}/>
-                  ))}
-                </div>
-                {/* Fade hint — soft edge now that the parent has no solid bg */}
-                <div style={{position:"absolute",top:0,right:0,bottom:4,width:32,
-                  background:"linear-gradient(90deg,transparent,rgba(253,252,247,.7))",
-                  pointerEvents:"none",backdropFilter:"blur(4px)",WebkitBackdropFilter:"blur(4px)"}}/>
-              </div>
-              {/* Search pill */}
+              {/* Carte = UN point focal : search + hero peek. Filters & clean-nearby live on Plages tab. */}
               <SearchBar value={search} onChange={setSearch} lang={lang}/>
               {/* Hero reco card (peek mode by default — map-first) */}
               {sargData&&!search.trim()&&(
