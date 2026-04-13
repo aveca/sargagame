@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "martinique": "npm run build && node scripts/prepare-ftp.cjs",
     "ftp-deploy": "node scripts/manual-ftp-deploy.cjs",
-    "verify-ftp": "node scripts/verify-ftp-ready.cjs"
+    "verify-ftp": "node scripts/verify-ftp-ready.cjs",
+    "session": "node scripts/cursor-session-startup.cjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.87.0",

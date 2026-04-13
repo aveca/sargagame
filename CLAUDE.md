@@ -2,6 +2,8 @@
 
 ## Session Startup
 
+**Raccourci (Cursor + terminal)** : `npm run session` → `scripts/cursor-session-startup.cjs` regroupe les points 1–5 ci-dessous + mémoire.
+
 Au lancement de chaque session depuis ce dossier, exécuter automatiquement (zéro confirmation) :
 
 1. **Pipeline freshness** :
