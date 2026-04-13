@@ -17,10 +17,16 @@
  *   FTP_REMOTE_MQ (default "/"), FTP_REMOTE_GP (default "/")
  *   ONLY=mq|gp (skip the other)
  *   SKIP_UNTIL=<name>  (resume: skip chunks alphabetically before this)
+ *
+ * Le fichier .env à la racine du dépôt est chargé automatiquement (mêmes clés
+ * que les secrets GitHub : FTP_SERVER_MQ, FTP_USERNAME_MQ, FTP_PASSWORD_MQ, …).
  */
 const { Client } = require("basic-ftp")
 const path = require("path")
 const fs = require("fs")
+const { loadProjectEnv } = require("./lib/load-project-env.cjs")
+
+loadProjectEnv()
 
 const targets = [
   {
@@ -87,9 +93,18 @@ async function uploadChunk(t, chunkName, localPath, remotePath, isFile) {
   }
 }
 
+function ftpHelpLines() {
+  return [
+    "Définis dans .env (racine du repo) les mêmes noms que les secrets GitHub :",
+    "  FTP_SERVER_MQ, FTP_USERNAME_MQ, FTP_PASSWORD_MQ",
+    "  FTP_SERVER_GP, FTP_USERNAME_GP, FTP_PASSWORD_GP",
+    "(aliases acceptés : FTP_HOST_*, FTP_USER_*, FTP_PASS_*.)",
+  ].join("\n")
+}
+
 async function deployOne(t) {
   if (!t.host || !t.user || !t.pass) {
-    console.error(`[${t.key}] Missing env vars — skipping`)
+    console.error(`[${t.key}] Identifiants FTP manquants — ignoré.\n${ftpHelpLines()}`)
     return false
   }
   if (!fs.existsSync(t.local)) {
