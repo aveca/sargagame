@@ -26,16 +26,9 @@
 const { forecastConfidence, HALF_LIFE_DAYS, DECAY_LAMBDA } = require('./confidence.cjs')
 
 const DAYS = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
-const CLEAN_BASELINE = 0.05 // AFAI baseline for a quiet beach (caribbean/sheltered)
+const CLEAN_BASELINE = 0.05 // AFAI baseline for a quiet beach
 
-// v3.2 (2026-04-12): coast-aware clean floor. Backtest showed atlantic-facing
-// beaches (sainte-anne, salines, vauclin, gp-vieux-fort) at 19% hit rate with
-// MAE=0.20 — they receive constant fresh sargassum from atlantic drift, so
-// their "quiet" state is persistent moderate, not clean. Raise their baseline
-// from 0.05 to 0.15 so persistence decay bottoms out at moderate, not clean.
-function cleanFloorFor(beach) {
-  if (!beach) return CLEAN_BASELINE
-  if (beach.coast === 'atlantic') return 0.15
+function cleanFloorFor() {
   return CLEAN_BASELINE
 }
 
