@@ -12,6 +12,17 @@ if (!fs.existsSync(dist)) {
   process.exit(1)
 }
 
+// Build per-island slug sets so each FTP folder only ships the beaches that
+// actually belong to its domain. Without this, both martinique-ftp and
+// guadeloupe-ftp end up with all 136 beach pages → cross-domain duplicate
+// content → Google flags ~90% of URLs as "Discovered, currently not indexed".
+const slugify = (n) => n.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+const BEACHES_LIST = JSON.parse(fs.readFileSync(path.join(root, 'public/data/beaches-list.json'), 'utf-8'))
+const ISLAND_SLUGS = {
+  'martinique-ftp': new Set(BEACHES_LIST.filter(b => b.island === 'mq').map(b => slugify(b.name))),
+  'guadeloupe-ftp': new Set(BEACHES_LIST.filter(b => b.island === 'gp').map(b => slugify(b.name))),
+}
+
 function copyRecursive(src, dest) {
   const stat = fs.statSync(src)
   if (stat.isDirectory()) {
@@ -51,6 +62,26 @@ for (const { dir, title, domain, onesignalAppId } of readmes) {
   const out = path.join(root, dir)
   if (fs.existsSync(out)) fs.rmSync(out, { recursive: true })
   copyRecursive(dist, out)
+
+  // Drop beach pages that don't belong to this island. The build emits
+  // dist/plages/<slug>/ for ALL 136 beaches; without this filter both FTP
+  // folders ship the full set and Google sees the same beach page on both
+  // domains → duplicate content → "Discovered, currently not indexed".
+  const plagesDir = path.join(out, 'plages')
+  const islandSlugs = ISLAND_SLUGS[dir]
+  if (islandSlugs && fs.existsSync(plagesDir)) {
+    let removed = 0
+    for (const entry of fs.readdirSync(plagesDir)) {
+      const full = path.join(plagesDir, entry)
+      if (!fs.statSync(full).isDirectory()) continue // keep plages/index.html
+      if (!islandSlugs.has(entry)) {
+        fs.rmSync(full, { recursive: true })
+        removed++
+      }
+    }
+    const kept = fs.readdirSync(plagesDir).filter(e => fs.statSync(path.join(plagesDir, e)).isDirectory()).length
+    console.log(`   → plages filtrées (${title}): ${kept} gardées, ${removed} supprimées`)
+  }
 
   // Remplacer l'ancien OneSignal App ID par le bon pour ce site
   const filesToPatch = [
