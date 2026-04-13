@@ -5037,7 +5037,8 @@ export default function App(){
   const nextSuggestTimer=useRef(null)
 
   const onBeachClick=useCallback(b=>{
-    setSelectedBeach(b);track("sg_beach_open",{beach_id:b?.id,status:b?.status})
+    if(!b||!b.id)return
+    setSelectedBeach(b);track("sg_beach_open",{beach_id:b.id,status:b.status})
     setNextSuggestion(null) // clear any pending suggestion
     if(nextSuggestTimer.current)clearTimeout(nextSuggestTimer.current)
     // Signal to push auto-loader that user reached a value moment
