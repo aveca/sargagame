@@ -1646,48 +1646,64 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             </>}
           </p>
 
-          {/* v3.1 Beach Score 0-100 — year-round multi-factor (sargassum + waves + wind + sun + water temp) */}
+          {/* v3.1 Beach Score 0-100 — editorial aurora card echoing the home hero */}
           {typeof beach.score==="number"&&(
-            <div style={{display:"flex",alignItems:"center",gap:14,margin:"4px 0 14px",
-              padding:"12px 14px",borderRadius:16,
-              background:"var(--sg-bgD,rgba(0,0,0,.03))",
-              border:"1px solid var(--sg-border,rgba(0,0,0,.06))"}}>
-              <div style={{width:64,height:64,borderRadius:"50%",flexShrink:0,
-                background:`conic-gradient(${beach.scoreColor} ${beach.score*3.6}deg, rgba(0,0,0,.06) ${beach.score*3.6}deg)`,
-                display:"flex",alignItems:"center",justifyContent:"center"}}>
-                <div style={{width:52,height:52,borderRadius:"50%",background:"var(--sg-card,#fff)",
-                  display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
-                  boxShadow:"0 1px 4px rgba(0,0,0,.08)"}}>
-                  <span style={{fontFamily:"'Anton',sans-serif",fontSize:24,lineHeight:1,color:beach.scoreColor}}>
-                    {beach.score}
-                  </span>
-                  <span style={{fontSize:8,fontWeight:700,color:"var(--sg-mid,#686868)",letterSpacing:".04em",marginTop:1}}>/100</span>
-                </div>
-              </div>
-              <div style={{flex:1,minWidth:0}}>
-                <div className="anton" style={{fontSize:20,lineHeight:1.1,color:beach.scoreColor,
-                  letterSpacing:"-.01em",textTransform:"uppercase"}}>
-                  {beach.scoreLabel}
-                </div>
-                <div style={{fontSize:12,color:"var(--sg-mid,#686868)",marginTop:4,lineHeight:1.4}}>
-                  {beach.scoreReason}
-                </div>
-                {((beach.scoreStrengths?.length||0)+(beach.scoreWeaknesses?.length||0))>0&&(
-                  <div style={{display:"flex",flexWrap:"wrap",gap:4,marginTop:8}}>
-                    {(beach.scoreStrengths||[]).slice(0,3).map((s,i)=>(
-                      <span key={`s${i}`} style={{fontSize:10,fontWeight:600,padding:"3px 8px",borderRadius:10,
-                        background:"rgba(34,197,94,.12)",color:"#16A34A",whiteSpace:"nowrap"}}>
-                        ✓ {s}
+            <div style={{position:"relative",margin:"4px 0 14px"}}>
+              <div aria-hidden="true" style={{position:"absolute",inset:-4,borderRadius:22,
+                background:`radial-gradient(120% 100% at 0% 0%, ${beach.scoreColor}1f 0%, transparent 60%)`,
+                filter:"blur(8px)",pointerEvents:"none"}}/>
+              <div style={{position:"relative",display:"flex",alignItems:"center",gap:16,
+                padding:"14px 16px",borderRadius:18,
+                background:"linear-gradient(180deg,rgba(255,255,255,.75),rgba(255,255,255,.55))",
+                backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",
+                border:`1px solid ${beach.scoreColor}22`,
+                boxShadow:`0 14px 34px -16px ${beach.scoreColor}3a, inset 0 1px 0 rgba(255,255,255,.5)`}}>
+                <div style={{position:"relative",width:80,height:80,flexShrink:0}}>
+                  <div aria-hidden="true" style={{position:"absolute",inset:-8,borderRadius:"50%",
+                    background:`radial-gradient(closest-side, ${beach.scoreColor}2b, transparent 72%)`,
+                    filter:"blur(2px)",pointerEvents:"none"}}/>
+                  <div style={{position:"absolute",inset:4,borderRadius:"50%",
+                    background:`conic-gradient(${beach.scoreColor} ${beach.score*3.6}deg, rgba(15,42,58,.06) ${beach.score*3.6}deg)`,
+                    boxShadow:`inset 0 0 0 1px ${beach.scoreColor}22`,
+                    display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <div style={{width:60,height:60,borderRadius:"50%",
+                      background:"linear-gradient(180deg,#fff,#FDFCF7)",
+                      display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+                      boxShadow:"inset 0 1px 0 rgba(255,255,255,.9), 0 1px 4px rgba(15,42,58,.08)"}}>
+                      <span style={{fontFamily:"'Anton',sans-serif",fontSize:30,lineHeight:.95,
+                        letterSpacing:"-.02em",color:beach.scoreColor}}>
+                        {beach.score}
                       </span>
-                    ))}
-                    {(beach.scoreWeaknesses||[]).slice(0,2).map((w,i)=>(
-                      <span key={`w${i}`} style={{fontSize:10,fontWeight:600,padding:"3px 8px",borderRadius:10,
-                        background:"rgba(224,120,0,.12)",color:"#E07800",whiteSpace:"nowrap"}}>
-                        ⚠ {w}
-                      </span>
-                    ))}
+                      <span style={{fontSize:8,fontWeight:800,color:"var(--sg-mid,#686868)",
+                        letterSpacing:".08em",marginTop:1}}>/100</span>
+                    </div>
                   </div>
-                )}
+                </div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div className="anton" style={{fontSize:21,lineHeight:1.05,color:beach.scoreColor,
+                    letterSpacing:"-.015em",textTransform:"uppercase"}}>
+                    {beach.scoreLabel}
+                  </div>
+                  <div style={{fontSize:12,color:"var(--sg-mid,#686868)",marginTop:5,lineHeight:1.4}}>
+                    {beach.scoreReason}
+                  </div>
+                  {((beach.scoreStrengths?.length||0)+(beach.scoreWeaknesses?.length||0))>0&&(
+                    <div style={{display:"flex",flexWrap:"wrap",gap:4,marginTop:8}}>
+                      {(beach.scoreStrengths||[]).slice(0,3).map((s,i)=>(
+                        <span key={`s${i}`} style={{fontSize:10,fontWeight:700,padding:"3px 9px",borderRadius:100,
+                          background:"rgba(34,197,94,.14)",color:"#16A34A",whiteSpace:"nowrap",letterSpacing:".01em"}}>
+                          ✓ {s}
+                        </span>
+                      ))}
+                      {(beach.scoreWeaknesses||[]).slice(0,2).map((w,i)=>(
+                        <span key={`w${i}`} style={{fontSize:10,fontWeight:700,padding:"3px 9px",borderRadius:100,
+                          background:"rgba(224,120,0,.14)",color:"#E07800",whiteSpace:"nowrap",letterSpacing:".01em"}}>
+                          ⚠ {w}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
