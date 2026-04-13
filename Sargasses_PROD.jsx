@@ -3346,9 +3346,17 @@ function StripeInlineCheckout({plan,lang,source,onSuccess}){
 /* ═══════════════════════════════════════════════════════════════════════════
    PREMIUM MODAL
    ═══════════════════════════════════════════════════════════════════════════ */
-function PremiumModal({onClose,lang,source,onActivated}){
+function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
   const LL=T[lang]||T.fr
   const hasAnnual=!!STRIPE_LINK_ANNUAL
+  // Real beach data from live sargassum.json — makes the "morning brief" preview genuine
+  const _lvls=sargData?.levels||{}
+  const _islandLvls=Object.entries(_lvls).filter(([id])=>island==="gp"?id.startsWith("gp-"):!id.startsWith("gp-"))
+  const _cleanCount=_islandLvls.filter(([,b])=>b.score>=70).length
+  const _totalCount=_islandLvls.length
+  const _topEntry=_islandLvls.sort((a,b)=>b[1].score-a[1].score)[0]
+  const _topName=_topEntry?_topEntry[0].replace(/^gp-/,"").split("-").map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(" "):null
+  const _topScore=_topEntry?_topEntry[1].score:null
   const modalOpenedAt=useRef(Date.now())
   const sawCheckoutRef=useRef(false)
   // pay1 A/B ended 2026-04-12: link=3 conversions, inline=0 → link wins.
@@ -3421,10 +3429,14 @@ function PremiumModal({onClose,lang,source,onActivated}){
             <span style={{fontSize:24}}>📲</span>
             <div>
               <div style={{fontSize:14,fontWeight:600,color:"#fff"}}>
-                {lang==="en"?"Your best beach today: Anse Dufour":"Ta meilleure plage : Anse Dufour"}
+                {_topName
+                  ?(lang==="en"?`Your best beach today: ${_topName}`:`Ta meilleure plage : ${_topName}`)
+                  :(lang==="en"?"Your best beach today: Anse Dufour":"Ta meilleure plage : Anse Dufour")}
               </div>
               <div style={{fontSize:12,color:"rgba(255,255,255,.5)"}}>
-                {lang==="en"?"Clean · 12 min drive · calm sea":"Propre · 12 min · mer calme"}
+                {_topScore
+                  ?(lang==="en"?`Score ${_topScore}/100 · satellite-verified today`:`Score ${_topScore}/100 · vérifié par satellite aujourd'hui`)
+                  :(lang==="en"?"Clean · 12 min drive · calm sea":"Propre · 12 min · mer calme")}
               </div>
             </div>
           </div>
@@ -3468,9 +3480,11 @@ function PremiumModal({onClose,lang,source,onActivated}){
           </div>
         </div>
 
-        {/* Social proof */}
+        {/* Social proof — live clean count makes the data feel real and current */}
         <div style={{textAlign:"center",fontSize:12,color:"rgba(255,255,255,.4)",marginBottom:16}}>
-          {lang==="en"?"135 beaches monitored · 24/7 satellite data":"135 plages surveillées · données satellite 24/7"}
+          {_cleanCount>0
+            ?(lang==="en"?`${_cleanCount}/${_totalCount} beaches clean right now · satellite 24/7`:`${_cleanCount}/${_totalCount} plages propres en ce moment · satellite 24/7`)
+            :(lang==="en"?"135 beaches monitored · 24/7 satellite data":"135 plages surveillées · données satellite 24/7")}
         </div>
 
         {/* CTA section — sticky so it's always visible even if user hasn't scrolled */}
@@ -5060,7 +5074,7 @@ export default function App(){
 
         {/* PREMIUM MODAL */}
         {showPremium&&<PremiumModal onClose={()=>setShowPremium(false)} lang={lang} source={premiumSource}
-          onActivated={()=>{setIsPremium(true);setShowWelcome(true)}}/>}
+          onActivated={()=>{setIsPremium(true);setShowWelcome(true)}} sargData={sargData} island={island}/>}
 
         {/* First-visit hint — auto-dismiss on first tap or after 5s */}
         {showOnboarding&&view==="map"&&!selectedBeach&&!showFavToast&&(
