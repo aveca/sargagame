@@ -2562,7 +2562,7 @@ function rankBeaches(allBeaches,island,userPos,sargData,communityReports){
    Why: map tiles + aggregate counts don't answer "where do I go NOW" —
         one opinionated card does.
    ═══════════════════════════════════════════════════════════════════════════ */
-function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communityReports}){
+function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communityReports,onPremiumClick}){
   // Full sorted list — we derive top, alts, worst, and score variance all from it.
   const sorted=useMemo(
     ()=>rankBeaches(allBeaches,island,userPos,sargData,communityReports),
@@ -2908,9 +2908,23 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
           borderTop:"1px solid var(--sg-border,rgba(0,0,0,.06))",
           padding:"10px 14px",textAlign:"center",
           background:"rgba(34,197,94,.07)",
-          fontSize:12,fontWeight:700,color:"#16A34A",
         }}>
-          ✓ {lang==="en"?"You're in! First pick tomorrow 7am.":"C'est fait ! Ta reco demain à 7h."}
+          <div style={{fontSize:12,fontWeight:700,color:"#16A34A"}}>
+            ✓ {lang==="en"?"You're in! First pick tomorrow 7am.":"C'est fait ! Ta reco demain à 7h."}
+          </div>
+          {onPremiumClick&&(
+            <button
+              onClick={e=>{e.stopPropagation();onPremiumClick("hero_email_success")}}
+              style={{
+                marginTop:6,background:"none",border:"none",
+                color:"var(--sg-mid,#686868)",fontSize:11,fontWeight:600,
+                cursor:"pointer",fontFamily:"inherit",textDecoration:"underline",
+                textDecorationColor:"rgba(0,0,0,.2)",textUnderlineOffset:2,
+              }}
+            >
+              {lang==="en"?"Want live alerts too? See Premium →":"Alertes en direct aussi ? Voir Premium →"}
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -3234,220 +3248,14 @@ function SeasonBanner({lang}){
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   STRIPE BUY BUTTON — web component, checkout in-app
-   ═══════════════════════════════════════════════════════════════════════════ */
-function StripeInlineCheckout({plan,lang,source,onSuccess}){
-  const cardRef=useRef(null)
-  const stripeRef=useRef(null)
-  const elementsRef=useRef(null)
-  const[email,setEmail]=useState("")
-  const[ready,setReady]=useState(false)
-  const[submitting,setSubmitting]=useState(false)
-  const[error,setError]=useState(null)
-  const[fallback,setFallback]=useState(false)
-  const LL=T[lang]||T.fr
-  const openedAt=useRef(Date.now())
-  const emailTracked=useRef(false)
-  const validEmail=email.match(/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/)
-
-  // Track checkout form view
-  useEffect(()=>{track("sg_checkout_view",{plan,source:source||"unknown"})},[])
-
-  useEffect(()=>{
-    let cancelled=false
-    let readyTimer=null
-    const init=()=>{
-      if(cancelled||!cardRef.current) return
-      try{
-        const stripe=window.Stripe(STRIPE_PK)
-        stripeRef.current=stripe
-        const elements=stripe.elements({
-          mode:"setup",currency:"eur",
-          paymentMethodCreation:"manual",
-          appearance:{
-            theme:"night",
-            variables:{
-              colorPrimary:"#E8A800",colorBackground:"#0A1714",
-              colorText:"#e6edf3",colorDanger:"#ff6b6b",
-              fontFamily:"Bricolage Grotesque,system-ui,sans-serif",
-              borderRadius:"12px",spacingUnit:"4px",
-            },
-            rules:{".Input":{border:"1.5px solid rgba(255,255,255,.15)",
-              backgroundColor:"rgba(255,255,255,.06)",padding:"14px 16px"}}
-          }
-        })
-        elementsRef.current=elements
-        const pe=elements.create("payment",{layout:"tabs"})
-        pe.on("ready",()=>{if(!cancelled){setReady(true);if(readyTimer)clearTimeout(readyTimer)}})
-        pe.on("loaderror",ev=>{
-          track("sg_checkout_error",{step:"element_loaderror",error:ev?.error?.message||"unknown",plan})
-          if(!cancelled)setFallback(true)
-        })
-        pe.mount(cardRef.current)
-        // If not ready in 4s, surface fallback (ad blocker, network, Stripe down)
-        readyTimer=setTimeout(()=>{
-          if(!cancelled&&!stripeRef.current?._ready){
-            track("sg_checkout_error",{step:"element_timeout",error:"not_ready_4s",plan})
-            setFallback(true)
-          }
-        },4000)
-      }catch(ex){
-        track("sg_checkout_error",{step:"stripe_init",error:ex?.message||"init_failed",plan})
-        if(!cancelled)setFallback(true)
-      }
-    }
-    if(window.Stripe){init()}
-    else{
-      const s=document.createElement('script');s.src='https://js.stripe.com/v3/'
-      s.onload=()=>init()
-      s.onerror=()=>{track("sg_checkout_error",{step:"stripe_js_load",error:"blocked",plan});setFallback(true)}
-      document.head.appendChild(s)
-    }
-    return()=>{cancelled=true;if(readyTimer)clearTimeout(readyTimer);elementsRef.current?.getElement?.("payment")?.destroy?.()}
-  },[])
-
-  // Mark ready on the stripe ref so timeout check can read it
-  useEffect(()=>{if(ready&&stripeRef.current)stripeRef.current._ready=true},[ready])
-
-  // Checkout abandonment tracking: if email entered but no payment within 60s, mark as abandoned
-  const abandonTimerRef=useRef(null)
-  useEffect(()=>{
-    if(validEmail&&!submitting){
-      // Save email immediately for potential recovery
-      localStorage.setItem("sg_checkout_abandoned",JSON.stringify({email,ts:Date.now()}))
-      // Start 60s abandonment timer
-      if(abandonTimerRef.current)clearTimeout(abandonTimerRef.current)
-      abandonTimerRef.current=setTimeout(()=>{
-        // Only fire if checkout still not completed
-        if(!localStorage.getItem("sg_premium")){
-          track("sg_checkout_abandoned",{plan,email_domain:email.split("@")[1],source:source||"unknown"})
-          // Notify Apps Script for follow-up email
-          try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
-            method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
-            body:JSON.stringify({type:"checkout_abandoned",email,island:window.location.hostname.includes("guadeloupe")?"GP":"MQ"})
-          }).catch(()=>{})}catch(ex){}
-        }
-      },60000)
-    }
-    return()=>{if(abandonTimerRef.current)clearTimeout(abandonTimerRef.current)}
-  },[validEmail,submitting])
-
-  const handleSubmit=async()=>{
-    if(!stripeRef.current||!elementsRef.current||!validEmail)return
-    setSubmitting(true);setError(null)
-    track("sg_checkout_submit",{plan,source:source||"unknown"})
-    const{error:submitErr}=await elementsRef.current.submit()
-    if(submitErr){setError(submitErr.message);setSubmitting(false);track("sg_checkout_error",{step:"elements_submit",error:submitErr.message,plan});return}
-    let clientSecret
-    try{
-      const r=await fetch("/api/create-checkout.php",{
-        method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({action:"setup"})
-      })
-      const d=await r.json()
-      if(d.error){setError(d.error);setSubmitting(false);track("sg_checkout_error",{step:"setup_intent",error:d.error,plan});return}
-      clientSecret=d.clientSecret
-    }catch{setError("Connexion impossible");setSubmitting(false);track("sg_checkout_error",{step:"network",error:"fetch_failed",plan});return}
-    const{error:stripeErr,setupIntent}=await stripeRef.current.confirmSetup({
-      elements:elementsRef.current,clientSecret,
-      confirmParams:{return_url:window.location.href},
-      redirect:"if_required"
-    })
-    if(stripeErr){setError(stripeErr.message);setSubmitting(false);track("sg_checkout_error",{step:"confirm_setup",error:stripeErr.message,plan});return}
-    track("sg_checkout_card_confirmed",{plan,source:source||"unknown"})
-    const res=await fetch("/api/create-checkout.php",{
-      method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({action:"subscribe",email,plan,setupIntentId:setupIntent.id,lang:lang||"fr"})
-    })
-    const data=await res.json()
-    if(data.error){setError(data.error);setSubmitting(false);track("sg_checkout_error",{step:"subscribe",error:data.error,plan});return}
-    // Generate referral code for this new premium user
-    const refCode="REF-"+Math.random().toString(36).slice(2,8).toUpperCase()
-    localStorage.setItem("sg_referral_code",refCode)
-    // Check if this user was referred
-    const referredBy=localStorage.getItem("sg_referred_by")||""
-    track("sg_premium_subscribed",{plan,source,referral_code:refCode,referred_by:referredBy})
-    if(referredBy){
-      try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
-        method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
-        body:JSON.stringify({type:"referral_conversion",referrer_code:referredBy,new_subscriber_email:email,plan,island:window.location.hostname.includes("guadeloupe")?"GP":"MQ",date:new Date().toISOString()})
-      }).catch(()=>{})}catch{}
-    }
-    localStorage.setItem("sg_premium","1")
-    localStorage.setItem("sg_premium_trial_end",String(data.trialEnd))
-    localStorage.setItem("sg_premium_email",email)
-    // Clear abandonment tracking on success
-    localStorage.removeItem("sg_checkout_abandoned")
-    if(abandonTimerRef.current)clearTimeout(abandonTimerRef.current)
-    // Fire-and-forget welcome email via Apps Script (safety net if PHP/Resend path fails silently)
-    try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
-      method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
-      body:JSON.stringify({type:"send_welcome_email",email,lang:lang||"fr",plan,trial_end:data.trialEnd,island:window.location.hostname.includes("guadeloupe")?"GP":"MQ",source:source||"unknown"})
-    }).catch(()=>{})}catch{}
-    onSuccess?.()
-  }
-
-  // Trust reassurances — kill the "will I be charged now?" fear (design-scout run #3, conversion angle)
-  const trustLines=lang==="en"
-    ?[{icon:"💳",text:"€0 charged today"},{icon:"✋",text:"Cancel in 1 click"},{icon:"🔒",text:"Stripe secure payment"}]
-    :lang==="es"
-    ?[{icon:"💳",text:"0 € hoy"},{icon:"✋",text:"Cancela en 1 clic"},{icon:"🔒",text:"Pago seguro Stripe"}]
-    :[{icon:"💳",text:"0 € aujourd'hui"},{icon:"✋",text:"Annule en 1 clic"},{icon:"🔒",text:"Paiement sécurisé Stripe"}]
-  return(
-    <div style={{display:"flex",flexDirection:"column",gap:12}}>
-      {/* Trust block — 3 fear-killing reassurances above the form */}
-      <div style={{display:"flex",gap:8,justifyContent:"space-between",
-        padding:"10px 12px",borderRadius:12,
-        background:"rgba(34,197,94,.06)",border:"1px solid rgba(34,197,94,.18)"}}>
-        {trustLines.map((t,i)=>(
-          <div key={i} style={{display:"flex",alignItems:"center",gap:5,flex:1,
-            justifyContent:"center",fontSize:11,fontWeight:600,
-            color:"rgba(198,245,213,.92)",whiteSpace:"nowrap"}}>
-            <span style={{fontSize:13}}>{t.icon}</span>
-            <span>{t.text}</span>
-          </div>
-        ))}
-      </div>
-      <input type="email" inputMode="email" autoComplete="email" placeholder={lang==="en"?"Your email":lang==="es"?"Tu email":"Ton email"}
-        value={email} onChange={e=>{
-          setEmail(e.target.value)
-          if(!emailTracked.current&&e.target.value.includes("@")){emailTracked.current=true;track("sg_checkout_email",{plan,source:source||"unknown"})}
-        }}
-        style={{width:"100%",padding:"14px 16px",fontSize:16,fontFamily:"inherit",
-          background:"rgba(255,255,255,.06)",border:"1.5px solid rgba(255,255,255,.15)",
-          borderRadius:12,color:"#e6edf3",outline:"none",boxSizing:"border-box"}}/>
-      <div ref={cardRef}/>
-      {!ready&&!error&&<div style={{textAlign:"center",color:"rgba(255,255,255,.4)",fontSize:13,padding:12}}>
-        {lang==="en"?"Loading secure form...":lang==="es"?"Cargando formulario seguro...":"Chargement du formulaire sécurisé..."}</div>}
-      {error&&<p style={{color:"#ff6b6b",fontSize:12,textAlign:"center",margin:0}}>{error}</p>}
-      <button onClick={handleSubmit} disabled={submitting||!ready||!validEmail}
-        className="gbtn" style={{width:"100%",fontSize:17,padding:"16px 24px",
-          border:"none",cursor:submitting?"wait":"pointer",fontFamily:"inherit",
-          opacity:(submitting||!ready||!validEmail)?0.6:1}}>
-        {submitting?(lang==="en"?"Processing...":lang==="es"?"Procesando...":"En cours...")
-          :(lang==="en"?"Activate my 7 free days →":lang==="es"?"Activar mis 7 días gratis →":"Activer mes 7 jours gratuits →")}
-      </button>
-      {/* Proven-working fallback — Payment Link. Always visible so users who can't use
-          inline form (ad blocker, iOS in-app browser, Stripe.js blocked) still convert. */}
-      <a href={plan==="annual"?STRIPE_LINK_ANNUAL:STRIPE_LINK_MONTHLY}
-        target="_blank" rel="noopener"
-        onClick={()=>track("sg_checkout_fallback_click",{plan,source:source||"unknown",reason:fallback?"auto":"manual"})}
-        style={{display:"block",textAlign:"center",fontSize:13,color:fallback?"#E8A800":"rgba(255,255,255,.5)",
-          padding:fallback?"14px":"8px 0",marginTop:fallback?4:0,
-          textDecoration:fallback?"none":"underline",fontWeight:fallback?700:400,
-          border:fallback?"1.5px solid rgba(232,168,0,.4)":"none",borderRadius:12,
-          background:fallback?"rgba(232,168,0,.08)":"transparent"}}>
-        {fallback
-          ?(lang==="en"?"Open secure payment on Stripe →":lang==="es"?"Abrir pago seguro en Stripe →":"Ouvrir le paiement sécurisé Stripe →")
-          :(lang==="en"?"Or pay directly on Stripe":lang==="es"?"O pagar directamente en Stripe":"Ou payer directement sur Stripe")}
-      </a>
-    </div>
-  )
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
    PREMIUM MODAL
    ═══════════════════════════════════════════════════════════════════════════ */
+/* StripeInlineCheckout was removed session 36: payV="link" was hardcoded after
+   pay1 test ended (link=3, inline=0), so the inline form was unreachable dead
+   code whose Stripe.js 4s timeout fallback produced fake sg_checkout_view/submit
+   events that polluted the funnel. All paid conversion now flows through the
+   Stripe Payment Link via same-tab redirect (window.location.href in the modal
+   CTA) + dashboard-configured success_url that fires sg_conversion on return. */
 function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
   const LL=T[lang]||T.fr
   const hasAnnual=!!STRIPE_LINK_ANNUAL
@@ -3461,9 +3269,6 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
   const _topName=_topBeach?.id?.replace(/^gp-/,"").split("-").map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(" ")||null
   const _topScore=_topBeach?.score||null
   const modalOpenedAt=useRef(Date.now())
-  const sawCheckoutRef=useRef(false)
-  // pay1 A/B ended 2026-04-12: link=3 conversions, inline=0 → link wins.
-  const payV="link"
   const panelRef=useRef(null)
   const startYRef=useRef(0)
   // Swipe-down to dismiss
@@ -3481,17 +3286,12 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
   }
   // Escape key to close
   useEffect(()=>{
-    const h=e=>{if(e.key==="Escape"){const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,saw_checkout:sawCheckoutRef.current});onClose()}}
+    const h=e=>{if(e.key==="Escape"){const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts});onClose()}}
     document.addEventListener("keydown",h)
     return()=>document.removeEventListener("keydown",h)
   },[onClose,source])
-  // price1 A/B test ended: season pass variant got 0 checkouts vs 1 for monthly. Monthly wins.
-  const[plan,setPlan]=useState("monthly") // "monthly" | "annual"
-  const[showCheckout,setShowCheckout]=useState(false)
-  const[showReferral,setShowReferral]=useState(false)
-  const[refCopied,setRefCopied]=useState(false)
-  // modal1 A/B test ended: family framing 2.1% vs control 1.4%. Family wins.
-  const headline=lang==="en"?"Stop checking. We watch for you.":"Arrête de vérifier. On surveille pour toi."
+  const[plan,setPlan]=useState("monthly")
+  const headline=lang==="en"?"Your daily pick every morning at 7am":"Ta reco chaque matin à 7h"
   const effectivePlan=hasAnnual?plan:"monthly"
   // Seasonal urgency — sargassum season is April-September
   const now=new Date()
@@ -3502,7 +3302,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
     :(lang==="en"?"Sargassum season is here":"La saison des sargasses est là")
   return(
     <>
-      <div className="backdrop" onClick={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,saw_checkout:sawCheckoutRef.current});onClose()}}/>
+      <div className="backdrop" onClick={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts});onClose()}}/>
       <div ref={panelRef} className="sg-modal-panel" onTouchStart={onTouchStartModal} onTouchMove={onTouchMoveModal} onTouchEnd={onTouchEndModal} style={{
         position:"fixed",bottom:0,left:0,right:0,zIndex:1100,
         background:"linear-gradient(145deg,#0D1E1C,#0A1714)",
@@ -3623,80 +3423,24 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
         </div>
         )}
 
-        {showReferral?(
-          <div style={{textAlign:"center",padding:"10px 0"}}>
-            <div style={{fontSize:36,marginBottom:12}}>🎉</div>
-            <div style={{fontSize:18,fontWeight:700,marginBottom:6}}>
-              {lang==="en"?"Premium activated!":"Premium activé !"}
-            </div>
-            <div style={{fontSize:13,color:"rgba(255,255,255,.6)",marginBottom:20}}>
-              {lang==="en"?"Premium activated — morning brief, alerts, daily pick.":"Premium activé — brief matin, alertes, reco du jour."}
-            </div>
-            <div style={{background:"rgba(255,255,255,.06)",border:"1.5px solid rgba(255,255,255,.12)",
-              borderRadius:16,padding:"16px 20px",marginBottom:16}}>
-              <div style={{fontSize:13,fontWeight:600,marginBottom:8,color:C.goldL}}>
-                {lang==="en"?"Refer a friend — 1 free month for both of you":"Parraine un ami — 1 mois offert pour vous deux"}
-              </div>
-              <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginBottom:14}}>
-                {lang==="en"?"Share your link. When they subscribe, you both get 1 extra month free.":"Partage ton lien. Quand il s'abonne, vous avez chacun 1 mois offert."}
-              </div>
-              <button onClick={()=>{
-                const code=localStorage.getItem("sg_referral_code")||""
-                const refUrl=window.location.origin+"/?ref="+code
-                track("sg_referral_share",{code,method:navigator.share?"native":"clipboard"})
-                if(navigator.share){
-                  navigator.share({title:lang==="en"?"Sargasses — Beach forecast":"Sargasses — Prévisions plage",
-                    text:lang==="en"?"Check which beaches are sargassum-free before you go!":"Vérifie quelles plages sont propres avant d'y aller !",
-                    url:refUrl}).catch(()=>{})
-                }else{
-                  navigator.clipboard?.writeText(refUrl)
-                  setRefCopied(true);setTimeout(()=>setRefCopied(false),2000)
-                }
-              }} className="gbtn" style={{width:"100%",fontSize:15,padding:"14px 20px",
-                border:"none",cursor:"pointer",fontFamily:"inherit",display:"flex",
-                alignItems:"center",justifyContent:"center",gap:8}}>
-                <span style={{fontSize:18}}>{refCopied?"✅":"📤"}</span>
-                {refCopied
-                  ?(lang==="en"?"Link copied!":"Lien copié !")
-                  :(lang==="en"?"Share my referral link":"Partager mon lien")}
-              </button>
-            </div>
-            <button onClick={onClose} style={{
-              width:"100%",padding:"12px",background:"none",
-              border:"1px solid rgba(255,255,255,.15)",borderRadius:16,
-              color:"#8b949e",fontSize:13,cursor:"pointer",fontFamily:"inherit",
-            }}>{lang==="en"?"Continue":"Continuer"}</button>
+        <button onClick={()=>{
+            track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown"})
+            const link=effectivePlan==="annual"?STRIPE_LINK_ANNUAL:STRIPE_LINK_MONTHLY
+            track("sg_checkout_redirect",{plan:effectivePlan,source:source||"unknown",destination:"payment_link"})
+            // Same-tab redirect so Stripe success_url returns to ?premium=1 and fires sg_conversion.
+            window.location.href=link
+          }}
+          className="gbtn" style={{width:"100%",textAlign:"center",fontSize:17,
+            padding:"16px 24px",display:"block",border:"none",cursor:"pointer",fontFamily:"inherit",lineHeight:1.2}}>
+          <div>{lang==="en"?"Start my daily pick — 7 days free":"Activer ma reco — 7 jours offerts"}</div>
+          <div style={{fontSize:12,opacity:.8,fontWeight:400,marginTop:4}}>
+            {lang==="en"?"Then €4.99/mo · cancel in 1 click":"Puis 4,99 €/mois · annule en 1 clic"}
           </div>
-        ):(
-        <>
-        {!showCheckout?(
-          <button onClick={()=>{
-              track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown",pay_variant:payV})
-              sawCheckoutRef.current=true
-              if(payV==="link"){
-                // Direct redirect to proven Payment Link
-                const link=effectivePlan==="annual"?STRIPE_LINK_ANNUAL:STRIPE_LINK_MONTHLY
-                track("sg_checkout_redirect",{plan:effectivePlan,source:source||"unknown",destination:"payment_link"})
-                window.open(link,"_blank","noopener")
-              }else{
-                setShowCheckout(true)
-              }
-            }}
-            className="gbtn" style={{width:"100%",textAlign:"center",fontSize:17,
-              padding:"16px 24px",display:"block",border:"none",cursor:"pointer",fontFamily:"inherit",lineHeight:1.2}}>
-            <div>{lang==="en"?"Activate my watcher — 7 days free":"Activer mon veilleur — 7j gratuit"}</div>
-            <div style={{fontSize:12,opacity:.8,fontWeight:400,marginTop:4}}>
-              {lang==="en"?"Then €4.99/mo · cancel in 1 click":"Puis 4,99 €/mois · annule en 1 clic"}
-            </div>
-          </button>
-        ):(
-          <StripeInlineCheckout plan={effectivePlan} lang={lang} source={source}
-            onSuccess={()=>{track("sg_premium_success",{plan:effectivePlan,source:source||"unknown"});setShowReferral(true);onActivated?.()}}/>
-        )}
+        </button>
 
         {/* Zero-friction 24h sample — no card, no Stripe, no signup. Once per device.
             Reduces paywall friction from "enter card" to "tap once". Converted users pay later. */}
-        {!showCheckout&&!localStorage.getItem("sg_sample_used")&&!localStorage.getItem("sg_sample_until")&&(
+        {!localStorage.getItem("sg_sample_used")&&!localStorage.getItem("sg_sample_until")&&(
           <button onClick={()=>{
             const until=Date.now()+24*3600*1000
             try{
@@ -3758,13 +3502,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
           color:"rgba(255,255,255,.55)",fontSize:12,cursor:"pointer",fontFamily:"inherit",
         }}>{lang==="en"?"I already have a subscription":"J'ai deja un abonnement"}</button>
 
-        <button onClick={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,saw_checkout:sawCheckoutRef.current});onClose()}} style={{
+        <button onClick={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts});onClose()}} style={{
           width:"100%",padding:"12px",marginTop:8,background:"none",
           border:"1px solid rgba(255,255,255,.15)",borderRadius:16,
           color:"#8b949e",fontSize:13,cursor:"pointer",fontFamily:"inherit",
         }}>{LL.close}</button>
-        </>
-        )}
         </div>{/* end sticky CTA section */}
       </div>
     </>
@@ -5029,6 +4771,7 @@ export default function App(){
                 userPos={userPos}
                 onBeachClick={onBeachClick}
                 communityReports={communityReports}
+                onPremiumClick={openPremium}
               />
             )}
             <div style={{marginTop:10}}>
