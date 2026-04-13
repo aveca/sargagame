@@ -1,24 +1,15 @@
 {
-  "generatedAt": "2026-04-12T03:06:34.203Z",
+  "generatedAt": "2026-04-13T06:04:19.948Z",
   "sites": {
     "mq": {
       "domain": "sargasses-martinique.com",
       "issues": [
         {
-          "type": "high-bounce",
-          "severity": "warning",
-          "page": "/",
-          "device": "mobile",
-          "metric": "82% bounce rate",
-          "sessions": 729,
-          "recommendation": "Check mobile responsiveness, font sizes, and touch targets"
-        },
-        {
           "type": "rage-click",
-          "severity": "warning",
+          "severity": "critical",
           "page": "/",
           "target": "",
-          "metric": "9 rage clicks on ? (/)",
+          "metric": "20 rage clicks on ? (/)",
           "recommendation": "Element receives frustrated repeated clicks. Check if it looks interactive but is not, or if it responds too slowly."
         },
         {
@@ -26,15 +17,15 @@
           "severity": "critical",
           "page": "/",
           "target": "",
-          "metric": "230 dead clicks on ? (/)",
+          "metric": "417 dead clicks on ? (/)",
           "recommendation": "Non-interactive element receives clicks. Either make it clickable or change its visual style to not look interactive."
         }
       ],
       "crux": null,
       "stats": {
-        "total": 3,
-        "critical": 1,
-        "warnings": 2
+        "total": 2,
+        "critical": 2,
+        "warnings": 0
       }
     },
     "gp": {
@@ -45,7 +36,7 @@
           "severity": "critical",
           "page": "/",
           "target": "",
-          "metric": "194 rage clicks on ? (/)",
+          "metric": "209 rage clicks on ? (/)",
           "recommendation": "Element receives frustrated repeated clicks. Check if it looks interactive but is not, or if it responds too slowly."
         },
         {
@@ -53,7 +44,7 @@
           "severity": "critical",
           "page": "/",
           "target": "",
-          "metric": "3024 dead clicks on ? (/)",
+          "metric": "3361 dead clicks on ? (/)",
           "recommendation": "Non-interactive element receives clicks. Either make it clickable or change its visual style to not look interactive."
         },
         {
@@ -69,7 +60,7 @@
           "severity": "critical",
           "page": "/plages/le-gosier/",
           "target": "",
-          "metric": "18 dead clicks on ? (/plages/le-gosier/)",
+          "metric": "19 dead clicks on ? (/plages/le-gosier/)",
           "recommendation": "Non-interactive element receives clicks. Either make it clickable or change its visual style to not look interactive."
         },
         {
@@ -82,10 +73,10 @@
         },
         {
           "type": "dead-click",
-          "severity": "warning",
+          "severity": "critical",
           "page": "/en/",
           "target": "",
-          "metric": "13 dead clicks on ? (/en/)",
+          "metric": "16 dead clicks on ? (/en/)",
           "recommendation": "Non-interactive element receives clicks. Either make it clickable or change its visual style to not look interactive."
         },
         {
@@ -116,14 +107,14 @@
       "crux": null,
       "stats": {
         "total": 9,
-        "critical": 5,
-        "warnings": 4
+        "critical": 6,
+        "warnings": 3
       }
     }
   },
   "summary": {
-    "totalIssues": 12,
-    "critical": 6,
-    "warnings": 6
+    "totalIssues": 11,
+    "critical": 8,
+    "warnings": 3
   }
 }

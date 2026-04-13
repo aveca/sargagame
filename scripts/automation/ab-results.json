@@ -1,115 +1,13 @@
 {
   "_comment": "Auto-fetched: Apps Script funnel > GA4 > Sheets. See _source.",
-  "_fetchedAt": "2026-04-12T21:02:19.399Z",
-  "_source": "apps-script-funnel",
+  "_fetchedAt": "2026-04-13T06:05:14.050Z",
+  "_source": "none",
   "tests": [
     {
-      "id": "lock1",
+      "id": "em1",
       "variants": [
         "control",
-        "loss"
-      ],
-      "sessions": [
-        1248,
-        844
-      ],
-      "conversions": [
-        32,
-        21
-      ],
-      "metric": "sg_forecast_lock_click",
-      "_source": "apps-script-funnel"
-    },
-    {
-      "id": "modal1",
-      "variants": [
-        "control",
-        "family"
-      ],
-      "sessions": [
-        678,
-        246
-      ],
-      "conversions": [
-        10,
-        4
-      ],
-      "metric": "sg_premium_modal_cta",
-      "_source": "apps-script-funnel"
-    },
-    {
-      "id": "onb1",
-      "variants": [
-        "control",
-        "skip"
-      ],
-      "sessions": [
-        17,
-        16
-      ],
-      "conversions": [
-        0,
-        0
-      ],
-      "metric": "sg_conversion",
-      "_source": "apps-script-funnel"
-    },
-    {
-      "id": "free1",
-      "variants": [
-        "control",
-        "two_free"
-      ],
-      "sessions": [
-        828,
-        1264
-      ],
-      "conversions": [
-        21,
-        32
-      ],
-      "metric": "sg_forecast_lock_click",
-      "_source": "apps-script-funnel"
-    },
-    {
-      "id": "vp1",
-      "variants": [
-        "feature",
-        "outcome"
-      ],
-      "sessions": [
-        87,
-        89
-      ],
-      "conversions": [
-        0,
-        0
-      ],
-      "metric": "sg_weekend_banner_click",
-      "_source": "apps-script-funnel"
-    },
-    {
-      "id": "price1",
-      "variants": [
-        "control",
-        "season"
-      ],
-      "sessions": [
-        531,
-        292
-      ],
-      "conversions": [
-        1,
-        0
-      ],
-      "metric": "sg_checkout_submit",
-      "_source": "apps-script-funnel"
-    },
-    {
-      "id": "pay1",
-      "variants": [
-        "inline",
-        "link"
+        "curiosity"
       ],
       "sessions": [
         0,
@@ -119,8 +17,25 @@
         0,
         0
       ],
-      "metric": "sg_conversion",
+      "metric": "sg_email_submit",
       "_source": "apps-script-funnel"
+    },
+    {
+      "id": "em1",
+      "variants": [
+        "control",
+        "curiosity"
+      ],
+      "sessions": [
+        0,
+        0
+      ],
+      "conversions": [
+        0,
+        0
+      ],
+      "metric": "sg_email_submit",
+      "_source": "sheets"
     }
   ]
 }
