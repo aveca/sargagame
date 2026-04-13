@@ -1556,6 +1556,22 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
                 <div style={{fontSize:12,color:"var(--sg-mid,#686868)",marginTop:4,lineHeight:1.4}}>
                   {beach.scoreReason}
                 </div>
+                {((beach.scoreStrengths?.length||0)+(beach.scoreWeaknesses?.length||0))>0&&(
+                  <div style={{display:"flex",flexWrap:"wrap",gap:4,marginTop:8}}>
+                    {(beach.scoreStrengths||[]).slice(0,3).map((s,i)=>(
+                      <span key={`s${i}`} style={{fontSize:10,fontWeight:600,padding:"3px 8px",borderRadius:10,
+                        background:"rgba(34,197,94,.12)",color:"#16A34A",whiteSpace:"nowrap"}}>
+                        ✓ {s}
+                      </span>
+                    ))}
+                    {(beach.scoreWeaknesses||[]).slice(0,2).map((w,i)=>(
+                      <span key={`w${i}`} style={{fontSize:10,fontWeight:600,padding:"3px 8px",borderRadius:10,
+                        background:"rgba(224,120,0,.12)",color:"#E07800",whiteSpace:"nowrap"}}>
+                        ⚠ {w}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -4384,7 +4400,7 @@ export default function App(){
               }
               if(snap.wave_height==null&&snap.wind_speed==null)continue
               const r=_computeBeachScore(snap)
-              beaches[i]={...beaches[i],score:r.score,scoreLabel:r.label,scoreColor:r.color,scoreReason:r.reason,scoreBreakdown:r.breakdown}
+              beaches[i]={...beaches[i],score:r.score,scoreLabel:r.label,scoreColor:r.color,scoreReason:r.reason,scoreBreakdown:r.breakdown,scoreStrengths:r.strengths||[],scoreWeaknesses:r.weaknesses||[]}
             }
           }
           // Interpolate weekly forecasts for non-sentinel beaches
