@@ -2664,8 +2664,11 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
   const minScore=withScore.length?Math.min(...withScore.map(b=>b.score)):null
   const maxScore=withScore.length?Math.max(...withScore.map(b=>b.score)):null
   const variance=(minScore!=null&&maxScore!=null)?maxScore-minScore:0
-  // Worst pick for the "évite aussi" band — only show if gap is meaningful (≥12 pts)
-  const worst=withScore.length>=5?withScore[withScore.length-1]:null
+  // Worst pick for the "évite aussi" band — true min-score beach (not last-ranked,
+  // since ranking blends status priority with score).
+  const worst=withScore.length>=5
+    ?withScore.reduce((m,b)=>(!m||b.score<m.score?b:m),null)
+    :null
   const showWorst=worst&&typeof top.score==="number"&&(top.score-worst.score)>=12
 
   // Short verdict — clear & punchy (fuller text lives in beach sheet)
@@ -2860,7 +2863,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
         </span>
       </button>
 
-      {/* "Évite aussi" strip — makes the score variance actionable */}
+      {/* "Évite aussi" strip — editorial counter-beat to the top pick */}
       {showWorst&&(
         <button
           onClick={()=>{
@@ -2869,25 +2872,49 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
           }}
           style={{
             position:"relative",
-            display:"flex",alignItems:"center",gap:8,width:"100%",
-            padding:"9px 14px",border:"none",borderTop:"1px solid rgba(224,120,0,.14)",
-            background:"rgba(224,120,0,.06)",
+            display:"flex",alignItems:"center",gap:10,width:"100%",
+            padding:"11px 14px 11px 12px",border:"none",
+            borderTop:"1px solid rgba(224,120,0,.2)",
+            background:"linear-gradient(90deg, rgba(224,120,0,.14) 0%, rgba(224,120,0,.05) 40%, rgba(224,120,0,.02) 100%)",
             cursor:"pointer",fontFamily:"inherit",textAlign:"left",
           }}
         >
-          <span style={{fontSize:13,flexShrink:0}}>⚠️</span>
+          {/* Left rail — amber coaster stripe, signals inversion from green top */}
+          <span aria-hidden="true" style={{
+            width:3,alignSelf:"stretch",borderRadius:2,
+            background:"linear-gradient(180deg, #E07800, #B45309)",
+            boxShadow:"0 0 8px rgba(224,120,0,.35)",flexShrink:0,
+          }}/>
           <span style={{
-            fontSize:11,fontWeight:700,color:"#B45309",
-            overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1,
+            fontSize:10,fontWeight:800,color:"#B45309",letterSpacing:".08em",
+            textTransform:"uppercase",flexShrink:0,
           }}>
-            {lang==="en"?"Skip":"Évite"} {worst.name}
+            {lang==="en"?"Skip":"Évite"}
           </span>
           <span style={{
-            fontSize:10,fontWeight:800,color:"#E07800",
-            padding:"2px 7px",borderRadius:100,
-            background:"rgba(224,120,0,.15)",whiteSpace:"nowrap",flexShrink:0,
+            fontSize:12,fontWeight:700,color:"#7C3E03",
+            overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1,
           }}>
-            {worst.score}/100 · −{top.score-worst.score} pts
+            {worst.name}
+          </span>
+          <span style={{
+            display:"inline-flex",alignItems:"baseline",gap:3,
+            padding:"3px 9px 2px",borderRadius:100,
+            background:"rgba(255,255,255,.75)",
+            border:"1px solid rgba(224,120,0,.3)",
+            boxShadow:"inset 0 1px 0 rgba(255,255,255,.7)",
+            whiteSpace:"nowrap",flexShrink:0,
+          }}>
+            <span style={{fontFamily:"'Anton',sans-serif",fontSize:14,lineHeight:1,
+              letterSpacing:"-.01em",color:"#E07800"}}>
+              {worst.score}
+            </span>
+            <span style={{fontSize:9,fontWeight:800,color:"#B45309",letterSpacing:".04em"}}>
+              /100
+            </span>
+            <span style={{fontSize:10,fontWeight:800,color:"#E07800",marginLeft:2,letterSpacing:".02em"}}>
+              −{top.score-worst.score}
+            </span>
           </span>
         </button>
       )}
