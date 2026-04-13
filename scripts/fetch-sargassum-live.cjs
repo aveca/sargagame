@@ -1140,13 +1140,41 @@ async function main() {
   }
   console.log('')
   console.log('[3b] Computing Beach Score 0-100 (year-round)...')
+  // Load per-beach weather written by fetch-beach-weather.cjs earlier in the
+  // workflow. We match by nearest lat/lng because the 20-beach legacy BEACHES
+  // array uses slug IDs while beaches-list.json uses mq###/gp### IDs.
+  let perBeachWx = {}
+  try {
+    const wxPath = path.join(__dirname, '..', 'public', 'api', 'weather', 'beaches-weather.json')
+    const wx = JSON.parse(fs.readFileSync(wxPath, 'utf-8'))
+    const listPath = path.join(__dirname, '..', 'public', 'data', 'beaches-list.json')
+    const list = JSON.parse(fs.readFileSync(listPath, 'utf-8'))
+    for (const b of BEACHES) {
+      const sameIsland = list.filter(x => x.island === b.island)
+      let best = null, bestD = Infinity
+      for (const x of sameIsland) {
+        const d = haversineKm(b.lat, b.lng, x.lat, x.lng)
+        if (d < bestD) { bestD = d; best = x }
+      }
+      if (best && wx.beaches?.[best.id]) perBeachWx[b.id] = wx.beaches[best.id]
+    }
+    console.log(`  Per-beach weather resolved for ${Object.keys(perBeachWx).length}/${BEACHES.length} legacy beaches`)
+  } catch (e) {
+    console.log(`  Per-beach weather unavailable (${e.message}) — falling back to island snapshot`)
+  }
   const scores = {}
   for (const beach of BEACHES) {
     const level = levels.find(l => l.id === beach.id)
     if (!level) continue
+    const bw = perBeachWx[beach.id]
+    const isl = weather[beach.island] || {}
     const snap = {
       afai: level.afai,
-      ...weather[beach.island],
+      wind_speed: bw?.windSpeed ?? isl.wind_speed,
+      cloud_cover: isl.cloud_cover, // Marine API doesn't ship cloud; keep island
+      uv_index: bw?.uvMax ?? isl.uv_index,
+      sst: bw?.sst ?? isl.sst,
+      wave_height: bw?.waveHeight ?? isl.wave_height,
       tide_ratio: null, // v2 will plug real tide
     }
     const result = computeScore(snap)

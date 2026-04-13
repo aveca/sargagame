@@ -192,6 +192,10 @@ export default defineConfig({
             { path: 'previsions-methode', enPath: null, title: 'Prévision sargasses : notre méthode vs Météo France (2026)', desc: 'Comment nous prédisons les échouages de sargasses. Modèle de dérive, courants, vent, persistance exponentielle. Comparaison avec le bulletin Météo France MOTHY.' },
             { path: 'nettoyer-sargasses', enPath: null, title: 'Sargasses sur la plage : que faire, protection, signalement', desc: 'Que faire face aux sargasses ? Précautions H2S, qui prévenir, comment signaler un échouage. Guide pratique pour résidents et touristes aux Antilles.' },
             { path: 'sargasses-record-2026', enPath: null, title: 'Sargasses 2026 : année record aux Antilles — Suivi en temps réel', desc: 'Sargasses 2026 : niveaux exceptionnels attendus. Suivi satellite quotidien, prévisions, alertes. Martinique et Guadeloupe — situation jour par jour.' },
+            // Ported from legacy sargasses-martinique repo — high-intent SEO queries
+            { path: 'faq', enPath: null, title: 'FAQ Sargasses Martinique — Réponses aux questions fréquentes (2026)', desc: 'Quand arrivent les sargasses en Martinique ? Où se baigner sans sargasses ? Côte Caraïbe ou Atlantique ? Réponses courtes et claires, carte en temps réel.', isFaq: true },
+            { path: 'lexique', enPath: null, title: 'Lexique sargasses : NFAI, échouage, Sentinel, niveau de risque', desc: 'Définitions utiles pour comprendre les sargasses : NFAI, échouage, H2S, côte Caraïbe vs Atlantique, Sentinel-2/3, niveau de risque 1 à 10.' },
+            { path: 'methode-carte', enPath: null, title: 'Comment fonctionne la carte sargasses : méthode et sources', desc: 'Satellites Sentinel-2/3, indice NFAI, observations citoyennes, prévisions 7 jours. Comment nous calculons le niveau de risque de chaque plage.' },
           ]
           // Noscript editorial content for Google crawling
           const editorialContent = {
