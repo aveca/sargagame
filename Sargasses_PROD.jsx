@@ -833,20 +833,34 @@ function AfaiBadge({afai}){
 }
 
 function FilterChip({label,icon,active,onClick,count}){
+  // Editorial chip: unified 40px rail, Anton count for display voice, frosted
+  // inactive / gold aurora active. Icon becomes a status dot when active for
+  // a tighter visual hierarchy with the header's colored-dot language.
   return(
     <button onClick={onClick} style={{
-      display:"inline-flex",alignItems:"center",gap:5,padding:"10px 16px",minHeight:44,
-      borderRadius:100,border:active?"1.5px solid "+C.gold:"1.5px solid var(--sg-border,rgba(0,0,0,.08))",
-      background:active?"linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%)":"var(--sg-card,#fff)",
-      color:active?C.ink:"var(--sg-ink,#0D0D0D)",fontSize:13,fontWeight:active?700:500,
+      display:"inline-flex",alignItems:"center",gap:7,padding:"0 14px 0 12px",height:40,minHeight:40,
+      borderRadius:100,
+      border:active?"1px solid rgba(232,168,0,.55)":"1px solid rgba(15,42,58,.08)",
+      background:active
+        ?"linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%)"
+        :"linear-gradient(180deg,rgba(255,255,255,.85),rgba(255,255,255,.6))",
+      backdropFilter:active?"none":"blur(8px)",
+      WebkitBackdropFilter:active?"none":"blur(8px)",
+      color:active?"#1a1200":"var(--sg-ink,#0D0D0D)",
+      fontSize:13,fontWeight:active?700:600,letterSpacing:".005em",
       cursor:"pointer",whiteSpace:"nowrap",fontFamily:"inherit",
-      boxShadow:active?"0 2px 8px rgba(232,168,0,.2)":"0 1px 4px rgba(0,0,0,.04)",
-      transition:"all .2s",
+      boxShadow:active
+        ?"0 4px 14px -4px rgba(232,168,0,.4), inset 0 1px 0 rgba(255,255,255,.5)"
+        :"0 2px 8px rgba(15,42,58,.06), inset 0 1px 0 rgba(255,255,255,.5)",
+      transition:"all .25s cubic-bezier(.22,1,.36,1)",
     }}>
-      <span>{icon}</span>{label}
-      {count!=null&&<span style={{fontSize:11,fontWeight:600,opacity:.6,
-        background:active?"rgba(0,0,0,.1)":"rgba(0,0,0,.05)",
-        borderRadius:100,padding:"1px 6px",marginLeft:1}}>{count}</span>}
+      <span style={{fontSize:14,lineHeight:1,filter:active?"none":"grayscale(.35)",opacity:active?1:.85}}>{icon}</span>
+      <span>{label}</span>
+      {count!=null&&<span style={{
+        fontFamily:"'Anton',sans-serif",fontSize:12,letterSpacing:".02em",lineHeight:1,
+        color:active?"rgba(26,18,0,.75)":"var(--sg-mid,#686868)",
+        background:active?"rgba(26,18,0,.1)":"rgba(15,42,58,.05)",
+        borderRadius:100,padding:"3px 7px 2px",marginLeft:1}}>{count}</span>}
     </button>
   )
 }
@@ -2108,25 +2122,38 @@ function HistoryChart({beachId,historyData,lang}){
    ═══════════════════════════════════════════════════════════════════════════ */
 function SearchBar({value,onChange,lang}){
   const LL=T[lang]||T.fr
+  const[focused,setFocused]=useState(false)
   return(
     <div style={{position:"relative"}}>
-      <span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",
-        fontSize:16,opacity:.5}}>🔍</span>
-      <input type="search" value={value} onChange={e=>onChange(e.target.value)}
-        placeholder={LL.search}
-        autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
-        enterKeyHint="search"
-        style={{
-          width:"100%",padding:"12px 16px 12px 42px",borderRadius:100,
-          border:"1.5px solid var(--sg-border,rgba(0,0,0,.08))",
-          background:"var(--sg-card,#fff)",color:"var(--sg-ink)",
-          fontSize:16,fontFamily:"inherit",outline:"none",
-          boxShadow:"0 2px 12px rgba(0,0,0,.06)",
-          transition:"border-color .2s",
-        }}
-        onFocus={e=>e.target.style.borderColor=C.gold}
-        onBlur={e=>e.target.style.borderColor="var(--sg-border,rgba(0,0,0,.08))"}
-      />
+      {/* Frosted halo — brightens on focus */}
+      <div style={{position:"absolute",inset:-2,borderRadius:100,
+        background:focused?"radial-gradient(80% 120% at 50% 50%, rgba(232,168,0,.22), transparent 72%)":"transparent",
+        filter:"blur(6px)",transition:"background .3s",pointerEvents:"none"}}/>
+      <div style={{position:"relative",display:"flex",alignItems:"center"}}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+          style={{position:"absolute",left:16,top:"50%",transform:"translateY(-50%)",
+            color:focused?C.gold:"var(--sg-mid,#686868)",transition:"color .2s",flexShrink:0}}>
+          <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2"/>
+          <path d="m20 20-3.5-3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+        </svg>
+        <input type="search" value={value} onChange={e=>onChange(e.target.value)}
+          placeholder={LL.search}
+          autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
+          enterKeyHint="search"
+          onFocus={()=>setFocused(true)}
+          onBlur={()=>setFocused(false)}
+          style={{
+            width:"100%",padding:"13px 16px 13px 42px",borderRadius:100,
+            border:focused?"1.5px solid rgba(232,168,0,.55)":"1.5px solid rgba(15,42,58,.08)",
+            background:"linear-gradient(180deg,rgba(255,255,255,.85),rgba(255,255,255,.65))",
+            backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",
+            color:"var(--sg-ink)",fontSize:15,fontWeight:500,letterSpacing:".005em",
+            fontFamily:"inherit",outline:"none",
+            boxShadow:focused?"0 4px 16px rgba(232,168,0,.14), inset 0 1px 0 rgba(255,255,255,.6)":"0 2px 10px rgba(15,42,58,.06), inset 0 1px 0 rgba(255,255,255,.5)",
+            transition:"all .25s cubic-bezier(.22,1,.36,1)",
+          }}
+        />
+      </div>
     </div>
   )
 }
