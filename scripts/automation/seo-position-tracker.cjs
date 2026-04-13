@@ -26,6 +26,11 @@ const HISTORY_DAYS = 90
 const MIN_IMPRESSIONS = 20 // ignore noise from low-impression pages
 const SIGNIFICANT_DROP = 3 // positions worse → alert
 const SIGNIFICANT_GAIN = 5 // positions better → log win
+// Per-query tracking is finer-grained: a high-volume query (100+ impr) that
+// slips half a position matters more than a page-level average drop of 3.
+const QUERY_MIN_IMPRESSIONS = 50
+const QUERY_SIGNIFICANT_DROP = 1.5
+const QUERY_SIGNIFICANT_GAIN = 2
 
 function loadAudit() {
   if (!existsSync(AUDIT_PATH)) {
@@ -51,10 +56,32 @@ function snapshotFromAudit(audit) {
     const pages = {}
     for (const [page, m] of Object.entries(siteData.performance || {})) {
       if (!m.count || m.impressions < MIN_IMPRESSIONS) continue
+      // Snapshot the top queries attached to this page so downstream diffing
+      // can detect per-query drops. GSC returns one row per (query, page,
+      // device, country), so merge rows for the same query and impression-
+      // weight the position average before filtering by min impressions.
+      const merged = {}
+      for (const q of m.topQueries || []) {
+        if (typeof q.position !== 'number') continue
+        if (!merged[q.query]) merged[q.query] = { impressions: 0, clicks: 0, posSum: 0 }
+        merged[q.query].impressions += q.impressions
+        merged[q.query].clicks += q.clicks
+        merged[q.query].posSum += q.position * q.impressions
+      }
+      const queries = {}
+      for (const [query, agg] of Object.entries(merged)) {
+        if (agg.impressions < QUERY_MIN_IMPRESSIONS) continue
+        queries[query] = {
+          pos: Math.round((agg.posSum / agg.impressions) * 10) / 10,
+          impressions: agg.impressions,
+          clicks: agg.clicks,
+        }
+      }
       pages[page] = {
         avgPos: Math.round((m.position / m.count) * 10) / 10,
         clicks: m.clicks,
         impressions: m.impressions,
+        queries,
       }
     }
     sites[siteKey] = pages
@@ -78,14 +105,14 @@ function findPrevious(history, currentDate) {
 }
 
 function diffSnapshots(prev, curr) {
-  const alerts = { drops: [], gains: [], appeared: [], vanished: [] }
+  const alerts = { drops: [], gains: [], appeared: [], vanished: [], queryDrops: [], queryGains: [] }
   for (const [siteKey, currPages] of Object.entries(curr.sites)) {
     const prevPages = prev.sites[siteKey] || {}
     for (const [page, currMetrics] of Object.entries(currPages)) {
       const prevMetrics = prevPages[page]
       if (!prevMetrics) {
         if (currMetrics.impressions >= MIN_IMPRESSIONS * 2) {
-          alerts.appeared.push({ site: siteKey, page, ...currMetrics })
+          alerts.appeared.push({ site: siteKey, page, avgPos: currMetrics.avgPos, clicks: currMetrics.clicks, impressions: currMetrics.impressions })
         }
         continue
       }
@@ -103,6 +130,28 @@ function diffSnapshots(prev, curr) {
           impressions: currMetrics.impressions,
         })
       }
+      // Per-query diff within this page
+      const prevQ = prevMetrics.queries || {}
+      const currQ = currMetrics.queries || {}
+      for (const [query, c] of Object.entries(currQ)) {
+        const p = prevQ[query]
+        if (!p) continue
+        const qDelta = c.pos - p.pos
+        if (qDelta >= QUERY_SIGNIFICANT_DROP) {
+          alerts.queryDrops.push({
+            site: siteKey, page, query,
+            prevPos: p.pos, currPos: c.pos, delta: Math.round(qDelta * 10) / 10,
+            prevImpressions: p.impressions, impressions: c.impressions,
+            clicks: c.clicks, prevClicks: p.clicks,
+          })
+        } else if (qDelta <= -QUERY_SIGNIFICANT_GAIN) {
+          alerts.queryGains.push({
+            site: siteKey, page, query,
+            prevPos: p.pos, currPos: c.pos, delta: Math.round(qDelta * 10) / 10,
+            impressions: c.impressions, clicks: c.clicks,
+          })
+        }
+      }
     }
     // Pages that vanished from this snapshot (lost all impressions)
     for (const [page, prevMetrics] of Object.entries(prevPages)) {
@@ -114,6 +163,8 @@ function diffSnapshots(prev, curr) {
   // Sort drops by severity (impressions × delta) so the workflow can prioritise
   alerts.drops.sort((a, b) => (b.impressions * b.delta) - (a.impressions * a.delta))
   alerts.gains.sort((a, b) => (a.delta - b.delta)) // most negative delta first
+  alerts.queryDrops.sort((a, b) => (b.impressions * b.delta) - (a.impressions * a.delta))
+  alerts.queryGains.sort((a, b) => a.delta - b.delta)
   return alerts
 }
 
@@ -140,23 +191,31 @@ function main() {
   writeFileSync(HISTORY_PATH, JSON.stringify(history, null, 2))
   console.log(`History updated: ${history.snapshots.length} snapshots over ${HISTORY_DAYS}d window`)
 
-  let changes = { generatedAt: new Date().toISOString(), comparedTo: prevDate, alerts: { drops: [], gains: [], appeared: [], vanished: [] } }
+  let changes = { generatedAt: new Date().toISOString(), comparedTo: prevDate, alerts: { drops: [], gains: [], appeared: [], vanished: [], queryDrops: [], queryGains: [] } }
   if (prev) {
     changes.alerts = diffSnapshots(prev, snapshot)
-    console.log(`\nDrops    (>= ${SIGNIFICANT_DROP} pos worse): ${changes.alerts.drops.length}`)
-    console.log(`Gains    (>= ${SIGNIFICANT_GAIN} pos better): ${changes.alerts.gains.length}`)
-    console.log(`Appeared (new in audit):                   ${changes.alerts.appeared.length}`)
-    console.log(`Vanished (gone from audit):                ${changes.alerts.vanished.length}`)
+    console.log(`\nPage drops    (>= ${SIGNIFICANT_DROP} pos worse):    ${changes.alerts.drops.length}`)
+    console.log(`Page gains    (>= ${SIGNIFICANT_GAIN} pos better):   ${changes.alerts.gains.length}`)
+    console.log(`Query drops   (>= ${QUERY_SIGNIFICANT_DROP} pos, ${QUERY_MIN_IMPRESSIONS}+ impr): ${changes.alerts.queryDrops.length}`)
+    console.log(`Query gains   (>= ${QUERY_SIGNIFICANT_GAIN} pos better):   ${changes.alerts.queryGains.length}`)
+    console.log(`Appeared      (new in audit):                 ${changes.alerts.appeared.length}`)
+    console.log(`Vanished      (gone from audit):              ${changes.alerts.vanished.length}`)
 
     if (changes.alerts.drops.length > 0) {
-      console.log('\n--- Top 5 drops ---')
+      console.log('\n--- Top 5 page drops ---')
       for (const d of changes.alerts.drops.slice(0, 5)) {
         const short = d.page.replace(/^https?:\/\/[^/]+/, '')
         console.log(`  [${d.site}] ${short.padEnd(40)} ${d.prevPos} → ${d.currPos} (Δ +${d.delta}, impr=${d.impressions})`)
       }
     }
+    if (changes.alerts.queryDrops.length > 0) {
+      console.log('\n--- Top 5 query drops ---')
+      for (const d of changes.alerts.queryDrops.slice(0, 5)) {
+        console.log(`  [${d.site}] "${d.query}" ${d.prevPos} → ${d.currPos} (Δ +${d.delta}, impr=${d.impressions})`)
+      }
+    }
     if (changes.alerts.gains.length > 0) {
-      console.log('\n--- Top 5 gains ---')
+      console.log('\n--- Top 5 page gains ---')
       for (const g of changes.alerts.gains.slice(0, 5)) {
         const short = g.page.replace(/^https?:\/\/[^/]+/, '')
         console.log(`  [${g.site}] ${short.padEnd(40)} ${g.prevPos} → ${g.currPos} (Δ ${g.delta}, impr=${g.impressions})`)
@@ -175,6 +234,8 @@ function main() {
     snapshots: history.snapshots.length,
     drops: changes.alerts.drops.length,
     gains: changes.alerts.gains.length,
+    queryDrops: changes.alerts.queryDrops.length,
+    queryGains: changes.alerts.queryGains.length,
     appeared: changes.alerts.appeared.length,
     vanished: changes.alerts.vanished.length,
   })

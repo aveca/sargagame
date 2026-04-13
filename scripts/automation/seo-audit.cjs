@@ -259,7 +259,7 @@ async function main() {
       pageMetrics[page].impressions += row.impressions
       pageMetrics[page].position += row.position
       pageMetrics[page].count++
-      pageMetrics[page].topQueries.push({ query: row.keys[0], impressions: row.impressions, clicks: row.clicks })
+      pageMetrics[page].topQueries.push({ query: row.keys[0], impressions: row.impressions, clicks: row.clicks, position: row.position })
     }
     for (const [page, m] of Object.entries(pageMetrics)) {
       const avgPos = Math.round(m.position / m.count)
