@@ -201,6 +201,7 @@ jobs:
           [ -f scripts/automation/data/ab-results.json ] && git add scripts/automation/data/ab-results.json
           [ -f scripts/automation/ab-results.json ] && git add scripts/automation/ab-results.json
           git diff --cached --quiet || git commit -m "seo: weekly automation $(date -u +'%Y-%m-%d')"
+          git stash push -u -m "actions-pre-rebase" || true
           BRANCH="${GITHUB_REF_NAME:-main}"
           push_ok=0
           for i in 1 2 3 4 5; do

@@ -208,6 +208,8 @@ jobs:
           else
             git commit -m "chore: update Copernicus data $(date -u +'%Y-%m-%d %H:%M UTC')"
           fi
+          # git rebase refuse un arbre sale : le job modifie d'autres fichiers (build, JSON annexes…)
+          git stash push -u -m "actions-pre-rebase" || true
           BRANCH="${GITHUB_REF_NAME:-main}"
           push_ok=0
           for i in 1 2 3 4 5; do
