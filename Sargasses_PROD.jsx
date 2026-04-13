@@ -2184,8 +2184,16 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
     <div style={{height:"100%",overflowY:"auto",
       paddingTop:"calc(var(--sg-header-offset,140px) + env(safe-area-inset-top,0px))",paddingBottom:"calc(70px + env(safe-area-inset-bottom,12px))",
       background:"var(--sg-bg,#FDFCF7)",maxWidth:600,margin:"0 auto"}}>
-      <div style={{padding:"8px 16px 0",fontSize:13,color:"var(--sg-mid,#686868)",fontWeight:500}}>
-        {LL.nClean.replace("{n}",nClean)} / {beaches.length}
+      {/* Editorial kicker — Anton count echoes the hero variance pill */}
+      <div style={{padding:"10px 18px 6px",display:"flex",alignItems:"baseline",gap:8}}>
+        <span style={{fontFamily:"'Anton',sans-serif",fontSize:20,lineHeight:1,
+          letterSpacing:"-.02em",color:"var(--sg-ink)"}}>
+          {beaches.length}
+        </span>
+        <span style={{fontSize:11,fontWeight:800,letterSpacing:".08em",textTransform:"uppercase",
+          color:"var(--sg-mid,#686868)"}}>
+          {lang==="en"?`beaches · ${nClean} clean`:`plages · ${nClean} propres`}
+        </span>
       </div>
       {beaches.length===0?(
         <div style={{padding:"60px 32px",textAlign:"center",animation:"fadeIn .3s ease"}}>
@@ -2198,46 +2206,64 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
           </div>
         </div>
       ):(
-      <div style={{padding:"8px 16px",display:"flex",flexDirection:"column",gap:10}}>
+      <div style={{padding:"6px 16px",display:"flex",flexDirection:"column",gap:10}}>
         {beaches.map(b=>{
           const photo=getBeachPhoto(b)
+          const st=ST[b.status]||ST._loading
+          const hasScore=typeof b.score==="number"
+          const scoreColor=b.scoreColor||st.c
           return(
             <button key={b.id} onClick={()=>onBeachClick(b)} style={{
+              position:"relative",
               display:"flex",alignItems:"center",gap:12,padding:0,
-              borderRadius:16,border:"1px solid var(--sg-border)",
-              background:"var(--sg-card,#fff)",cursor:"pointer",
-              textAlign:"left",fontFamily:"inherit",width:"100%",
-              boxShadow:"0 2px 8px rgba(0,0,0,.04)",
-              transition:"all .2s cubic-bezier(.22,1,.36,1)",
+              borderRadius:16,border:`1px solid ${scoreColor}22`,
+              background:"linear-gradient(180deg,rgba(255,255,255,.9),rgba(255,255,255,.72))",
+              backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",
+              cursor:"pointer",textAlign:"left",fontFamily:"inherit",width:"100%",
+              boxShadow:`0 6px 18px -10px ${scoreColor}40, inset 0 1px 0 rgba(255,255,255,.55)`,
+              transition:"all .25s cubic-bezier(.22,1,.36,1)",
               animation:"slideUp .3s cubic-bezier(.22,1,.36,1) backwards",
               animationDelay:`${Math.min(b._dist||0,10)*20}ms`,
-              overflow:"hidden",position:"relative",
+              overflow:"hidden",
             }}>
-              {/* Status accent line — left edge */}
-              <div style={{position:"absolute",left:0,top:0,bottom:0,width:3,
-                background:(ST[b.status]||ST._loading).c,borderRadius:"16px 0 0 16px"}}/>
-              {/* Photo thumbnail — taller */}
-              <div style={{width:72,height:72,
-                background:`url(${photo||satImg(b.lat,b.lng,144)}) center 40%/cover`,flexShrink:0,
-                position:"relative"}}>
-                {/* Status dot on photo */}
-                <span style={{position:"absolute",bottom:4,right:4,width:10,height:10,borderRadius:5,
-                  background:(ST[b.status]||ST._loading).c,border:"2px solid var(--sg-card,#fff)",
-                  boxShadow:`0 0 6px ${(ST[b.status]||ST._loading).c}44`}}/>
+              {/* Score-colored left rail — wider + gradient */}
+              <div aria-hidden="true" style={{position:"absolute",left:0,top:0,bottom:0,width:4,
+                background:`linear-gradient(180deg, ${scoreColor}, ${scoreColor}aa)`,
+                boxShadow:`0 0 12px ${scoreColor}55`}}/>
+              {/* Photo thumbnail */}
+              <div style={{width:72,height:72,flexShrink:0,position:"relative",marginLeft:4,
+                background:`url(${photo||satImg(b.lat,b.lng,144)}) center 40%/cover`}}>
+                <span aria-hidden="true" style={{position:"absolute",bottom:5,right:5,width:10,height:10,borderRadius:5,
+                  background:st.c,border:"2px solid #fff",
+                  boxShadow:`0 0 6px ${st.c}66`}}/>
               </div>
-              <div style={{flex:1,minWidth:0,padding:"12px 12px 12px 0"}}>
-                <div style={{fontSize:14,fontWeight:700,whiteSpace:"nowrap",
-                  overflow:"hidden",textOverflow:"ellipsis",color:"var(--sg-ink)"}}>
-                  {favorites.includes(b.id)?"❤️ ":""}{b.name}
+              <div style={{flex:1,minWidth:0,padding:"12px 6px 12px 0"}}>
+                <div className="anton" style={{fontSize:15,lineHeight:1.1,letterSpacing:"-.005em",
+                  textTransform:"uppercase",color:"var(--sg-ink)",
+                  whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+                  {favorites.includes(b.id)?"♥ ":""}{b.name}
                 </div>
-                <div style={{fontSize:12,color:"var(--sg-mid,#686868)",marginTop:2}}>
+                <div style={{fontSize:11,color:"var(--sg-mid,#686868)",marginTop:3,fontWeight:500,
+                  whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
                   {b.commune} · {b.drive} {LL.drive}
                 </div>
-                <div style={{fontSize:11,fontWeight:600,marginTop:4,
-                  color:(ST[b.status]||ST._loading).c}}>
-                  {lang==="en"?(ST[b.status]||ST._loading).le:(ST[b.status]||ST._loading).l}
+                <div style={{fontSize:10,fontWeight:800,marginTop:4,letterSpacing:".03em",
+                  textTransform:"uppercase",color:scoreColor}}>
+                  {hasScore?(b.scoreLabel||(lang==="en"?st.le:st.l)):(lang==="en"?st.le:st.l)}
                 </div>
               </div>
+              {/* Score badge — Anton numeral, status-colored */}
+              {hasScore&&(
+                <div style={{flexShrink:0,padding:"0 14px 0 0",display:"flex",flexDirection:"column",
+                  alignItems:"flex-end",justifyContent:"center"}}>
+                  <span style={{fontFamily:"'Anton',sans-serif",fontSize:26,lineHeight:.95,
+                    letterSpacing:"-.02em",color:scoreColor}}>
+                    {b.score}
+                  </span>
+                  <span style={{fontSize:8,fontWeight:800,color:"var(--sg-mid,#686868)",
+                    letterSpacing:".08em",marginTop:1}}>/100</span>
+                </div>
+              )}
             </button>
           )
         })}
