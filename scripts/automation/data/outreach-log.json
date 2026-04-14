@@ -34,8 +34,43 @@
       "status": "sent",
       "error": null,
       "url": "https://chouetteworld.com/plus-belles-plages-de-martinique/"
+    },
+    "zotcar.com": {
+      "date": "2026-04-14T11:02:48.745Z",
+      "email": "***RGPD-PURGE***",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.zotcar.com/blog/plus-belle-plage-martinique/"
+    },
+    "voyage-martinique.fr": {
+      "date": "2026-04-14T11:02:52.579Z",
+      "email": "***RGPD-PURGE***",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.voyage-martinique.fr/sargasse.html"
+    },
+    "couleurvoyage.com": {
+      "date": "2026-04-14T11:03:02.249Z",
+      "email": "***RGPD-PURGE***",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.couleurvoyage.com/martinique-avis-complet-dun-voyageur-ce-quil-faut-vraiment-savoir/"
+    },
+    "evazeo.com": {
+      "date": "2026-04-14T11:03:03.932Z",
+      "email": "***RGPD-PURGE***",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.evazeo.com/blog/top-10-des-plus-belles-plages-de-martinique/"
+    },
+    "generationvoyage.fr": {
+      "date": "2026-04-14T11:03:05.138Z",
+      "email": "***RGPD-PURGE***",
+      "status": "sent",
+      "error": null,
+      "url": "https://generationvoyage.fr/plus-belles-plages-guadeloupe/"
     }
   },
-  "lastRun": "2026-04-12T18:23:34.240Z",
-  "totalSent": 5
+  "lastRun": "2026-04-14T11:03:05.138Z",
+  "totalSent": 10
 }
