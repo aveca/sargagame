@@ -1,16 +1,6 @@
 [
   {
     "date": "2026-04-12",
-    "time": "2026-04-12T00:44:55.742Z",
-    "payments": 3,
-    "revenue": 14.97,
-    "emails": 42,
-    "feedbacks": 1,
-    "avgRating": 4,
-    "pipelineOk": true
-  },
-  {
-    "date": "2026-04-12",
     "time": "2026-04-12T00:59:48.306Z",
     "payments": 3,
     "revenue": 14.97,
@@ -895,6 +885,16 @@
     "payments": 5,
     "revenue": 24.95,
     "emails": 51,
+    "feedbacks": 1,
+    "avgRating": 4,
+    "pipelineOk": true
+  },
+  {
+    "date": "2026-04-15",
+    "time": "2026-04-15T07:51:25.347Z",
+    "payments": 5,
+    "revenue": 24.95,
+    "emails": 52,
     "feedbacks": 1,
     "avgRating": 4,
     "pipelineOk": true
