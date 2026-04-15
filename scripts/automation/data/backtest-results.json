@@ -39,7 +39,7 @@
     },
     "day6": {
       "statusHitRate": 95,
-      "afaiMAE": 0.033,
+      "afaiMAE": 0.034,
       "avgConfidence": 12,
       "pairs": 80
     }
@@ -52,7 +52,7 @@
     },
     "anse-mitan": {
       "statusHitRate": 100,
-      "afaiMAE": 0.011,
+      "afaiMAE": 0.012,
       "pairs": 39
     },
     "anse-noire": {
@@ -150,7 +150,7 @@
     "statusHitRate": 78,
     "afaiMAE": 0.056
   },
-  "computed": "2026-04-15T11:06:16.551Z",
+  "computed": "2026-04-15T13:26:22.513Z",
   "pairs": [
     {
       "snapshotDate": "2026-04-12",
@@ -894,11 +894,11 @@
         "confidence": 33
       },
       "actual": {
-        "afai": 0.05,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-04-13",
@@ -1540,11 +1540,11 @@
         "confidence": 46
       },
       "actual": {
-        "afai": 0.05,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-04-14",
