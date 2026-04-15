@@ -1398,6 +1398,13 @@
       "sites": 2,
       "totalDupTitles": 0,
       "totalDupDescs": 0
+    },
+    {
+      "timestamp": "2026-04-15T09:10:13.852Z",
+      "dryRun": false,
+      "script": "auto-web-content",
+      "action": "generation-failed",
+      "island": "mq"
     }
   ]
 }
