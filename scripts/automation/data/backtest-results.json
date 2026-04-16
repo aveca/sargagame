@@ -39,7 +39,7 @@
     },
     "day6": {
       "statusHitRate": 96,
-      "afaiMAE": 0.03,
+      "afaiMAE": 0.031,
       "avgConfidence": 11,
       "pairs": 100
     }
@@ -132,7 +132,7 @@
     },
     "gp-deshaies": {
       "statusHitRate": 100,
-      "afaiMAE": 0.018,
+      "afaiMAE": 0.02,
       "pairs": 45
     },
     "gp-moule": {
@@ -150,7 +150,7 @@
     "statusHitRate": 79,
     "afaiMAE": 0.053
   },
-  "computed": "2026-04-16T07:47:27.106Z",
+  "computed": "2026-04-16T13:46:05.209Z",
   "pairs": [
     {
       "snapshotDate": "2026-04-13",
@@ -724,11 +724,11 @@
         "confidence": 27
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.08,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.02
+      "afaiError": 0.03
     },
     {
       "snapshotDate": "2026-04-13",
@@ -1438,11 +1438,11 @@
         "confidence": 33
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.08,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-04-14",
@@ -1812,11 +1812,11 @@
         "confidence": 46
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.08,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-04-15",
