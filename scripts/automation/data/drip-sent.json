@@ -128,16 +128,20 @@
   },
   "test@example.com": {},
   "isabelle.goffart@laposte.net": {
-    "j3": "2026-04-12T08:39:56.167Z"
+    "j3": "2026-04-12T08:39:56.167Z",
+    "j7": "2026-04-16T13:45:54.490Z"
   },
   "gyslecomte@gmail.com": {
-    "j3": "2026-04-12T11:03:07.519Z"
+    "j3": "2026-04-12T11:03:07.519Z",
+    "j7": "2026-04-16T13:45:57.680Z"
   },
   "extremes95@hotmail.com": {
-    "j3": "2026-04-12T11:03:09.555Z"
+    "j3": "2026-04-12T11:03:09.555Z",
+    "j7": "2026-04-16T13:46:00.437Z"
   },
   "isarondeau@hotmail.com": {
-    "j3": "2026-04-12T12:59:22.186Z"
+    "j3": "2026-04-12T12:59:22.186Z",
+    "j7": "2026-04-16T13:46:02.600Z"
   },
   "clariviere1971@gmail.com": {
     "j3": "2026-04-12T16:52:28.829Z"
@@ -171,5 +175,8 @@
   "laetitia.1982@hotmail.fr": {},
   "olivier.bonneau@univ-poitiers.fr": {},
   "anniedidier.charron@orange.fr": {},
-  "castillomanon@gmail.com": {}
+  "castillomanon@gmail.com": {},
+  "ajp.hache@gmail.com": {},
+  "goudryjoanne@gmail.com": {},
+  "caro.b34@hotmail.com": {}
 }
