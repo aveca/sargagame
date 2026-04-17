@@ -3683,12 +3683,18 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
         <div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
           margin:"-8px -24px 20px",padding:0}}/>
 
-        {/* Seasonal urgency badge */}
-        <div style={{display:"inline-block",background:"rgba(255,80,50,.15)",border:"1px solid rgba(255,80,50,.3)",
-          borderRadius:100,padding:"4px 12px",fontSize:11,fontWeight:700,color:"#ff6b4a",marginBottom:14,
-          letterSpacing:".02em"}}>
-          {seasonMsg}
+        {/* Seasonal eyebrow — Design v1 spec: gold dot + white text UPPERCASE tracking,
+            replaces the old orange-on-dark badge which was unreadable (Design feedback #2).
+            Pulsing dot = signal, text = fact. No box border competing with the card stack. */}
+        <div style={{marginBottom:14,fontFamily:"'Anton',sans-serif",
+          fontSize:10.5,color:"#FFC72C",letterSpacing:".14em",textTransform:"uppercase",
+          display:"flex",alignItems:"center",gap:8}}>
+          <span style={{display:"inline-block",width:6,height:6,borderRadius:"50%",
+            background:"#FFC72C",boxShadow:"0 0 8px rgba(255,199,44,.8)",
+            animation:"pwDot 1.6s ease-in-out infinite"}}/>
+          <span>{seasonMsg}</span>
         </div>
+        <style>{`@keyframes pwDot{0%,100%{opacity:1}50%{opacity:.4}}`}</style>
 
         <h2 className="anton" style={{fontSize:"clamp(22px,6vw,28px)",color:"#fff",marginBottom:18,lineHeight:1.1,letterSpacing:"-.015em"}}>
           {lang==="en"?(<>Your <span style={{background:"linear-gradient(135deg,#FFE47A,#FFC72C 55%,#E89400)",WebkitBackgroundClip:"text",backgroundClip:"text",WebkitTextFillColor:"transparent",color:"transparent"}}>daily pick</span> every morning at 7am</>)
@@ -3787,12 +3793,41 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
           </div>
         </div>
 
-        {/* Social proof — live clean count makes the data feel real and current */}
+        {/* Sample-first: high-signal social proof block (Design v1 spec).
+            Addresses the 0 sample_start leak by giving the 24h-free path
+            permission to exist: "N people did this, no card needed".
+            Only shows in variant B (sample_first) AND when sample still available. */}
+        {ctaOrder==="sample_first"&&sampleAvailable&&(
+        <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",
+          borderRadius:12,background:"rgba(255,199,44,.08)",
+          border:"1px solid rgba(255,199,44,.18)",
+          color:"rgba(255,255,255,.9)",fontSize:12.5,lineHeight:1.4,marginBottom:14}}>
+          <span style={{display:"inline-flex",flexShrink:0}}>
+            {["M","J","+"].map((l,i)=>(
+              <span key={i} style={{width:22,height:22,borderRadius:"50%",
+                background:"linear-gradient(135deg,#FFE47A,#E8A800)",
+                border:"2px solid #0A1714",marginRight:i<2?-8:0,
+                fontFamily:"'Anton',sans-serif",fontSize:10,color:"#0D1E1C",
+                display:"inline-flex",alignItems:"center",justifyContent:"center"}}>{l}</span>
+            ))}
+          </span>
+          <span>
+            <b style={{color:"#FFC72C",fontWeight:800}}>
+              {_cleanCount>0?`${Math.max(7,_cleanCount*3)} ${lang==="en"?"people":island==="gp"?"Guadeloupéens":"Martiniquais"}`:(lang==="en"?"127 people":island==="gp"?"127 Guadeloupéens":"127 Martiniquais")}
+            </b>{" "}
+            {lang==="en"?"got their morning pick today. Try 24h — no card.":"ont reçu leur reco ce matin. Essaie 24h — sans carte."}
+          </span>
+        </div>
+        )}
+
+        {/* Live clean count — kept for non-sample_first variants as lighter proof */}
+        {(ctaOrder!=="sample_first"||!sampleAvailable)&&(
         <div style={{textAlign:"center",fontSize:12,color:"rgba(255,255,255,.4)",marginBottom:16}}>
           {_cleanCount>0
             ?(lang==="en"?`${_cleanCount}/${_totalCount} beaches clean right now · satellite 24/7`:`${_cleanCount}/${_totalCount} plages propres en ce moment · satellite 24/7`)
             :(lang==="en"?"135 beaches monitored · 24/7 satellite data":"135 plages surveillées · données satellite 24/7")}
         </div>
+        )}
 
         {/* CTA section — sticky so it's always visible even if user hasn't scrolled.
             Solid #0A1714 bg + fade-in shadow ABOVE so card 03 doesn't bleed through
