@@ -3837,23 +3837,26 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
           paddingTop:12,paddingBottom:12,marginLeft:-24,marginRight:-24,paddingLeft:24,paddingRight:24,
           boxShadow:"0 -12px 16px -8px rgba(10,23,20,.85)"}}>
 
-        {/* Plan toggle — monthly + annual */}
+        {/* Plan toggle — monthly + annual. Wrapped in a 4px-padded grouped
+            container with 5% white bg (Design v1 spec) — visually says "pick one,
+            they're grouped" instead of loose side-by-side pill look. */}
         {hasAnnual&&(
-        <div style={{display:"flex",gap:8,marginBottom:14}}>
+        <div style={{display:"flex",gap:8,marginBottom:14,padding:4,
+          background:"rgba(255,255,255,.05)",borderRadius:14}}>
           <button onClick={()=>{setPlan("monthly");track("sg_plan_toggle",{plan:"monthly"})}} style={{
-            flex:1,padding:"10px 8px",borderRadius:12,cursor:"pointer",fontFamily:"inherit",
-            background:plan==="monthly"?"rgba(255,199,44,.15)":"rgba(255,255,255,.04)",
-            border:plan==="monthly"?"1.5px solid rgba(255,199,44,.4)":"1.5px solid rgba(255,255,255,.1)",
-            color:plan==="monthly"?"#fff":"rgba(255,255,255,.5)",fontSize:13,fontWeight:600,
+            flex:1,padding:"10px 8px",borderRadius:10,cursor:"pointer",fontFamily:"inherit",
+            background:plan==="monthly"?"rgba(255,199,44,.12)":"transparent",
+            border:plan==="monthly"?"1.5px solid rgba(255,199,44,.4)":"1.5px solid transparent",
+            color:plan==="monthly"?"#fff":"rgba(255,255,255,.7)",fontSize:13,fontWeight:600,
             transition:"all .2s"}}>
             <div>{lang==="en"?"Monthly":"Mensuel"}</div>
             <div style={{fontSize:18,fontWeight:700,marginTop:2}}>{lang==="en"?"€4.99":"4,99 €"}<span style={{fontSize:11,fontWeight:400}}>/{lang==="en"?"mo":"mois"}</span></div>
           </button>
           <button onClick={()=>{setPlan("annual");track("sg_plan_toggle",{plan:"annual"})}} style={{
-            flex:1,padding:"10px 8px",borderRadius:12,cursor:"pointer",fontFamily:"inherit",position:"relative",
-            background:plan==="annual"?"rgba(255,199,44,.15)":"rgba(255,255,255,.04)",
-            border:plan==="annual"?"1.5px solid rgba(255,199,44,.4)":"1.5px solid rgba(255,255,255,.1)",
-            color:plan==="annual"?"#fff":"rgba(255,255,255,.5)",fontSize:13,fontWeight:600,
+            flex:1,padding:"10px 8px",borderRadius:10,cursor:"pointer",fontFamily:"inherit",position:"relative",
+            background:plan==="annual"?"rgba(255,199,44,.12)":"transparent",
+            border:plan==="annual"?"1.5px solid rgba(255,199,44,.4)":"1.5px solid transparent",
+            color:plan==="annual"?"#fff":"rgba(255,255,255,.7)",fontSize:13,fontWeight:600,
             transition:"all .2s"}}>
             <div style={{position:"absolute",top:-8,right:8,background:C.gold,color:C.ink,
               fontSize:9,fontWeight:800,padding:"2px 7px",borderRadius:100,letterSpacing:".02em"}}>
@@ -3864,10 +3867,10 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
           </button>
           {hasPro&&(
           <button onClick={()=>{setPlan("pro");track("sg_plan_toggle",{plan:"pro"})}} style={{
-            flex:1,padding:"10px 8px",borderRadius:12,cursor:"pointer",fontFamily:"inherit",position:"relative",
-            background:plan==="pro"?"rgba(255,100,100,.12)":"rgba(255,255,255,.04)",
-            border:plan==="pro"?"1.5px solid rgba(255,100,100,.45)":"1.5px solid rgba(255,255,255,.1)",
-            color:plan==="pro"?"#fff":"rgba(255,255,255,.5)",fontSize:13,fontWeight:600,
+            flex:1,padding:"10px 8px",borderRadius:10,cursor:"pointer",fontFamily:"inherit",position:"relative",
+            background:plan==="pro"?"rgba(255,100,100,.12)":"transparent",
+            border:plan==="pro"?"1.5px solid rgba(255,100,100,.45)":"1.5px solid transparent",
+            color:plan==="pro"?"#fff":"rgba(255,255,255,.7)",fontSize:13,fontWeight:600,
             transition:"all .2s"}}>
             <div style={{position:"absolute",top:-8,right:8,background:"#ff6464",color:"#fff",
               fontSize:9,fontWeight:800,padding:"2px 7px",borderRadius:100,letterSpacing:".02em"}}>
