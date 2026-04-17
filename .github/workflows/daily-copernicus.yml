@@ -36,6 +36,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
@@ -294,7 +295,7 @@ jobs:
           name: ops-events-${{ github.run_id }}-main
           path: scripts/automation/data/ops-events.jsonl
           if-no-files-found: ignore
-          retention-days: 90
+          retention-days: 14
 
   # ── Notify on failure ──────────────────────────────────
   notify-failure:
@@ -306,6 +307,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+          cache: 'npm'
       - run: npm ci
       - name: Send failure alert email
         env:
@@ -323,7 +325,7 @@ jobs:
           name: ops-events-${{ github.run_id }}-fail
           path: scripts/automation/data/ops-events.jsonl
           if-no-files-found: ignore
-          retention-days: 90
+          retention-days: 14
 
   # ── Auto-retry on failure (once, after 5 min) ─────────
   retry-on-failure:
