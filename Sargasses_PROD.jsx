@@ -3630,6 +3630,13 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
   const[plan,setPlan]=useState("monthly")
   const headline=lang==="en"?"Your daily pick every morning at 7am":"Ta reco chaque matin à 7h"
   const effectivePlan=hasAnnual?plan:"monthly"
+  // A/B test pw_cta_order: control shows paid-first+sample-below,
+  // sample_first shows sample-above+paid-below. Hypothesis: 85% dismiss
+  // on paywall is driven by card-friction signal — leading with a
+  // zero-friction "try free 24h" may convert more of those before the
+  // paid decision. Metric: sg_premium_modal_cta AND sg_sample_start.
+  const ctaOrder=abVariant("pw_cta_order",["control","sample_first"],[.5,.5])
+  const sampleAvailable=!localStorage.getItem("sg_sample_used")&&!localStorage.getItem("sg_sample_until")
   // Seasonal urgency — sargassum season is April-September
   const now=new Date()
   const seasonStart=new Date(now.getFullYear(),3,20) // ~20 April
@@ -3794,45 +3801,57 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
         </div>
         )}
 
-        <button onClick={()=>{
-            track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown"})
-            const link=effectivePlan==="annual"?STRIPE_LINK_ANNUAL:STRIPE_LINK_MONTHLY
-            track("sg_checkout_redirect",{plan:effectivePlan,source:source||"unknown",destination:"payment_link"})
-            // Defer navigation by one macrotask so both sendBeacon calls above flush
-            // before unload. Measured 50% loss on checkout_redirect when nav was sync
-            // (modal_cta landed, redirect dropped). See project_funnel_cta_redirect_leak.md.
-            setTimeout(()=>{window.location.href=link},0)
-          }}
-          className="gbtn" style={{width:"100%",textAlign:"center",fontSize:17,
-            padding:"16px 24px",display:"block",border:"none",cursor:"pointer",fontFamily:"inherit",lineHeight:1.2}}>
-          <div>{lang==="en"?"Start my daily pick — 7 days free":"Activer ma reco — 7 jours offerts"}</div>
-          <div style={{fontSize:12,opacity:.8,fontWeight:400,marginTop:4}}>
-            {lang==="en"?"Then €4.99/mo · cancel in 1 click":"Puis 4,99 €/mois · annule en 1 clic"}
-          </div>
-        </button>
-
-        {/* Zero-friction 24h sample — no card, no Stripe, no signup. Once per device.
-            Reduces paywall friction from "enter card" to "tap once". Converted users pay later. */}
-        {!localStorage.getItem("sg_sample_used")&&!localStorage.getItem("sg_sample_until")&&(
-          <button onClick={()=>{
-            const until=Date.now()+24*3600*1000
-            try{
-              localStorage.setItem("sg_sample_until",String(until))
-              localStorage.setItem("sg_sample_used","1")
-            }catch{}
-            track("sg_sample_start",{source:source||"unknown"})
-            onActivated?.()
-            onClose()
-          }} style={{
-            width:"100%",padding:"12px 16px",marginTop:10,
-            background:"rgba(255,255,255,.05)",
-            border:"1px solid rgba(255,255,255,.18)",borderRadius:14,
-            color:"#fff",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",
-            display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-            <span style={{fontSize:15}}>⚡</span>
-            {lang==="en"?"Try free 24h — no card":"Essayer 24h gratuit — sans carte"}
-          </button>
-        )}
+        {/* Paid CTA + zero-friction sample. Order depends on ctaOrder A/B variant.
+            control: paid first (original), sample_first: sample first (new variant). */}
+        {(() => {
+          const paidCTA = (
+            <button key="paid" onClick={()=>{
+              track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown"})
+              const link=effectivePlan==="annual"?STRIPE_LINK_ANNUAL:STRIPE_LINK_MONTHLY
+              track("sg_checkout_redirect",{plan:effectivePlan,source:source||"unknown",destination:"payment_link"})
+              // Defer navigation by one macrotask so both sendBeacon calls above flush
+              // before unload (see project_funnel_cta_redirect_leak.md).
+              setTimeout(()=>{window.location.href=link},0)
+            }}
+            className="gbtn" style={{width:"100%",textAlign:"center",fontSize:17,
+              padding:"16px 24px",display:"block",border:"none",cursor:"pointer",fontFamily:"inherit",lineHeight:1.2,
+              // When sample is the primary above, de-emphasise the paid CTA visually
+              ...(ctaOrder==="sample_first"&&sampleAvailable?{marginTop:10,opacity:.95}:null)}}>
+              <div>{lang==="en"?"Start my daily pick — 7 days free":"Activer ma reco — 7 jours offerts"}</div>
+              <div style={{fontSize:12,opacity:.8,fontWeight:400,marginTop:4}}>
+                {lang==="en"?"Then €4.99/mo · cancel in 1 click":"Puis 4,99 €/mois · annule en 1 clic"}
+              </div>
+            </button>
+          )
+          const sampleCTA = sampleAvailable ? (
+            <button key="sample" onClick={()=>{
+              const until=Date.now()+24*3600*1000
+              try{
+                localStorage.setItem("sg_sample_until",String(until))
+                localStorage.setItem("sg_sample_used","1")
+              }catch{}
+              track("sg_sample_start",{source:source||"unknown"})
+              onActivated?.()
+              onClose()
+            }} style={{
+              width:"100%",padding: ctaOrder==="sample_first"?"16px 24px":"12px 16px",
+              marginTop: ctaOrder==="sample_first"?0:10,
+              // Promote visually when shown first
+              background: ctaOrder==="sample_first"?"rgba(255,199,44,.10)":"rgba(255,255,255,.05)",
+              border: ctaOrder==="sample_first"?"1px solid rgba(255,199,44,.35)":"1px solid rgba(255,255,255,.18)",
+              borderRadius:14,
+              color:"#fff",
+              fontSize: ctaOrder==="sample_first"?16:13,
+              fontWeight:700,cursor:"pointer",fontFamily:"inherit",
+              display:"flex",alignItems:"center",justifyContent:"center",gap:8,lineHeight:1.2}}>
+              <span style={{fontSize:15}}>⚡</span>
+              {lang==="en"?"Try free 24h — no card":"Essayer 24h gratuit — sans carte"}
+            </button>
+          ) : null
+          return ctaOrder==="sample_first"
+            ? <>{sampleCTA}{paidCTA}</>
+            : <>{paidCTA}{sampleCTA}</>
+        })()}
 
         {/* Guarantee */}
         <div style={{textAlign:"center",marginTop:10,fontSize:11,color:"rgba(255,255,255,.4)",
