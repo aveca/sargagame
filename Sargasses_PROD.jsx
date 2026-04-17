@@ -3653,6 +3653,20 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
   // paid decision. Metric: sg_premium_modal_cta AND sg_sample_start.
   const ctaOrder=abVariant("pw_cta_order",["control","sample_first"],[.5,.5])
   const sampleAvailable=!localStorage.getItem("sg_sample_used")&&!localStorage.getItem("sg_sample_until")
+  // Stripe Prelude A/B (pw_prelude): control=direct redirect (v1), prelude=2-step
+  // micro-interstitial inside modal. Design v2 bet #2 — addresses the 50% drop
+  // measured at redirect→payment by showing "exactly what happens" (plan summary,
+  // timeline, trust row) before the tab navigates to buy.stripe.com.
+  const preludeVariant=abVariant("pw_prelude",["direct","prelude"],[.5,.5])
+  const[showPrelude,setShowPrelude]=useState(false)
+  // Compute upcoming dates for the Prelude ledger
+  const _preludeDates=(()=>{
+    const today=new Date()
+    const remindDate=new Date(today.getTime()+5*24*3600*1000)
+    const chargeDate=new Date(today.getTime()+7*24*3600*1000)
+    const fmt=d=>d.toLocaleDateString(lang==="en"?"en-GB":"fr-FR",{day:"numeric",month:"long"})
+    return{remind:fmt(remindDate),charge:fmt(chargeDate)}
+  })()
   // Seasonal urgency — sargassum season is April-September
   const now=new Date()
   const seasonStart=new Date(now.getFullYear(),3,20) // ~20 April
@@ -3682,6 +3696,118 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
             zIndex:5,fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
         <div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
           margin:"-8px -24px 20px",padding:0}}/>
+
+        {/* ═══ STRIPE PRELUDE (Design v2 bet #2) ═══
+            A/B variant "prelude": intercepts the paid CTA click and shows
+            this 2nd screen INSIDE the modal — plan summary + dates timeline
+            + 3 trust badges — before redirecting to Stripe. Addresses the
+            50% drop measured at redirect→payment (users abandon when they
+            see an unfamiliar buy.stripe.com URL after leaving the app).
+            Back arrow returns to the paywall. Continue → actual redirect. */}
+        {showPrelude&&(
+        <div style={{position:"absolute",inset:0,zIndex:10,
+          background:"linear-gradient(145deg,#0D1E1C,#0A1714)",
+          borderRadius:"24px 24px 0 0",padding:"28px 24px 20px",overflow:"auto",
+          display:"flex",flexDirection:"column"}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
+            <button
+              aria-label={lang==="en"?"Back":"Retour"}
+              onClick={()=>{track("sg_prelude_back",{source:source||"unknown"});setShowPrelude(false)}}
+              style={{width:32,height:32,borderRadius:"50%",background:"rgba(255,255,255,.08)",
+                border:"none",color:"rgba(255,255,255,.85)",fontSize:18,cursor:"pointer",
+                display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontFamily:"inherit"}}>‹</button>
+            <div style={{display:"flex",gap:4,flex:1}}>
+              <span style={{flex:1,height:3,borderRadius:2,background:"rgba(255,199,44,.35)"}}/>
+              <span style={{flex:1,height:3,borderRadius:2,background:"#FFC72C"}}/>
+              <span style={{flex:1,height:3,borderRadius:2,background:"rgba(255,255,255,.12)"}}/>
+            </div>
+            <button
+              aria-label={lang==="en"?"Close":"Fermer"}
+              onClick={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"prelude_close"});onClose()}}
+              style={{width:32,height:32,borderRadius:"50%",background:"rgba(255,255,255,.08)",
+                border:"none",color:"rgba(255,255,255,.85)",fontSize:18,cursor:"pointer",
+                display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontFamily:"inherit"}}>×</button>
+          </div>
+
+          <div style={{fontFamily:"'Anton',sans-serif",fontSize:10.5,color:"#14C4B0",
+            letterSpacing:".18em",textTransform:"uppercase",marginBottom:8}}>
+            {lang==="en"?"Before we redirect you":"Avant de te rediriger"}
+          </div>
+          <h2 style={{fontFamily:"'Anton',sans-serif",fontSize:26,lineHeight:1.05,letterSpacing:"-.01em",color:"#fff",margin:"0 0 14px"}}>
+            {lang==="en"?<>Here's exactly<br/>what happens.</>:<>Voilà exactement<br/>ce qui se passe.</>}
+          </h2>
+
+          {/* Plan summary card */}
+          <div style={{background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.1)",
+            borderRadius:16,padding:14,marginBottom:12}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,
+              paddingBottom:12,borderBottom:"1px solid rgba(255,255,255,.08)",marginBottom:12}}>
+              <div>
+                <div style={{fontWeight:800,fontSize:15,color:"#fff"}}>
+                  {effectivePlan==="annual"?(lang==="en"?"Annual · 7 days free":"Annuel · 7 jours offerts"):(lang==="en"?"Monthly · 7 days free":"Mensuel · 7 jours offerts")}
+                </div>
+                <div style={{fontWeight:500,color:"rgba(255,255,255,.55)",fontSize:11,marginTop:2}}>
+                  {effectivePlan==="annual"?(lang==="en"?"Then €39.99/yr · cancel anytime":"Puis 39,99 €/an · annule en 1 clic"):(lang==="en"?"Then €4.99/mo · cancel anytime":"Puis 4,99 €/mois · annule en 1 clic")}
+                </div>
+              </div>
+              <div style={{fontFamily:"'Anton',sans-serif",fontSize:22,color:"#FFC72C",letterSpacing:"-.01em",textAlign:"right"}}>
+                0 €
+                <div style={{fontFamily:"inherit",fontWeight:500,fontSize:11,color:"rgba(255,199,44,.7)",marginTop:2,letterSpacing:0}}>
+                  {lang==="en"?"today":"aujourd'hui"}
+                </div>
+              </div>
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:8,fontSize:12.5}}>
+              {[
+                {k:lang==="en"?"Today":"Aujourd'hui",v:lang==="en"?"€0 · 7-day trial starts":"0 € · tu testes 7 jours"},
+                {k:_preludeDates.remind,v:lang==="en"?"Reminder · 2 days before first charge":"Rappel · 2 jours avant la 1re charge"},
+                {k:_preludeDates.charge,v:effectivePlan==="annual"?(lang==="en"?"€39.99 · unless you cancel":"39,99 € · sauf si tu annules"):(lang==="en"?"€4.99 · unless you cancel":"4,99 € · sauf si tu annules")},
+              ].map((r,i)=>(
+                <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <span style={{color:"rgba(255,255,255,.72)"}}>{r.k}</span>
+                  <span style={{color:"#fff",fontWeight:600,textAlign:"right"}}>{r.v}</span>
+                </div>
+              ))}
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",
+                paddingTop:8,borderTop:"1px dashed rgba(255,255,255,.12)",marginTop:2}}>
+                <span style={{color:"rgba(255,255,255,.72)"}}>{lang==="en"?"Due today":"À payer aujourd'hui"}</span>
+                <span style={{color:"#22C55E",fontFamily:"'Anton',sans-serif",fontSize:15,letterSpacing:"-.01em"}}>0,00 €</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Trust row 3 columns */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,marginBottom:14}}>
+            {[
+              {icon:"🛡",title:"Stripe",sub:lang==="en"?"EU secure payment":"Paiement sécurisé EU"},
+              {icon:"⏱",title:lang==="en"?"30 days":"30 jours",sub:lang==="en"?"Money-back":"Satisfait ou remboursé"},
+              {icon:"✕",title:lang==="en"?"1 click":"1 clic",sub:lang==="en"?"Cancel anytime":"Annule quand tu veux"},
+            ].map((t,i)=>(
+              <div key={i} style={{padding:"10px 8px",borderRadius:10,
+                background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",
+                display:"flex",flexDirection:"column",alignItems:"center",gap:4,textAlign:"center"}}>
+                <span style={{fontSize:18,color:"#14C4B0"}}>{t.icon}</span>
+                <b style={{fontSize:10.5,color:"#fff",fontWeight:700}}>{t.title}</b>
+                <span style={{fontSize:9.5,color:"rgba(255,255,255,.55)",lineHeight:1.3}}>{t.sub}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Continue to Stripe CTA — THE actual redirect */}
+          <button onClick={()=>{
+            const link=stripeLinkFor[effectivePlan]||STRIPE_LINK_MONTHLY
+            track("sg_checkout_redirect",{plan:effectivePlan,source:source||"unknown",destination:"payment_link",via:"prelude"})
+            setTimeout(()=>{window.location.href=link},0)
+          }} className="gbtn" style={{width:"100%",padding:14,borderRadius:14,border:"none",
+            cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:15,lineHeight:1.15,
+            display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+            {lang==="en"?"Continue to Stripe":"Continuer vers Stripe"} →
+          </button>
+          <div style={{textAlign:"center",fontSize:10.5,color:"rgba(255,255,255,.48)",marginTop:10}}>
+            {lang==="en"?"You can always come back.":"Tu pourras toujours revenir en arrière."}
+          </div>
+        </div>
+        )}
 
         {/* Seasonal eyebrow — Design v1 spec: gold dot + white text UPPERCASE tracking,
             replaces the old orange-on-dark badge which was unreadable (Design feedback #2).
@@ -3927,7 +4053,14 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
         {(() => {
           const paidCTA = (
             <button key="paid" onClick={()=>{
-              track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown"})
+              track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown",prelude_variant:preludeVariant})
+              if(preludeVariant==="prelude"){
+                // Stripe Prelude variant — show interstitial summary BEFORE redirect.
+                // User clicks "Continuer vers Stripe" from the prelude = THEN we redirect.
+                track("sg_prelude_opened",{plan:effectivePlan,source:source||"unknown"})
+                setShowPrelude(true)
+                return
+              }
               const link=stripeLinkFor[effectivePlan]||STRIPE_LINK_MONTHLY
               track("sg_checkout_redirect",{plan:effectivePlan,source:source||"unknown",destination:"payment_link"})
               // Defer navigation by one macrotask so both sendBeacon calls above flush
