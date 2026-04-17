@@ -330,7 +330,7 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
         const rank=o=>(o.b.id===selectedBeach?.id?1e6:0)+(o.b.id===nearestCleanId?1e5:0)+(topIds.has(o.b.id)?1e4:0)+(o.b.score||0)
         return rank(B)-rank(A)
       })
-      const MIN_PX=36
+      const MIN_PX=48 // was 36. Tighter clusters hid too many beaches behind dots; spreading reduces overlap visually AND makes dots farther apart so each is individually tappable.
       const placed=[]
       for(const{b,px}of pts){
         let close=false
@@ -399,10 +399,13 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
       const isEmph=isSelected||isNearest||isTop
 
       // DOT TIER — overlap-demoted; hit zone ≥32px so dense clusters stay tappable.
+      // Visible dot bumped 9→14px so users can visually TARGET it (9px was below
+      // fitts-law threshold for reliable finger/mouse hits) — user reported
+      // "can't click on all points" directly from this invisible-dot UX.
       if(tier[b.id]==="dot"&&!isSelected&&!isNearest){
         const dotColor=st.c
-        const dotHit=34
-        const html=`<div style="width:${dotHit}px;height:${dotHit}px;display:flex;align-items:center;justify-content:center;cursor:pointer"><div style="width:9px;height:9px;border-radius:50%;background:${dotColor};border:1.5px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.35)"></div></div>`
+        const dotHit=36
+        const html=`<div style="width:${dotHit}px;height:${dotHit}px;display:flex;align-items:center;justify-content:center;cursor:pointer"><div style="width:14px;height:14px;border-radius:50%;background:${dotColor};border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.4)"></div></div>`
         const dotIcon=L.divIcon({className:"",html,iconSize:[dotHit,dotHit],iconAnchor:[dotHit/2,dotHit/2]})
         const dotMarker=L.marker([b.lat,b.lng],{icon:dotIcon,riseOnHover:true,zIndexOffset:0})
         dotMarker._sgBeach=b
