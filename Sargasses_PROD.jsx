@@ -3952,10 +3952,25 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
             : <>{paidCTA}{sampleCTA}</>
         })()}
 
-        {/* Guarantee */}
-        <div style={{textAlign:"center",marginTop:10,fontSize:11,color:"rgba(255,255,255,.4)",
-          display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-          <span>🛡️</span>{lang==="en"?"30-day money-back guarantee":"Satisfait ou remboursé 30 jours"}
+        {/* Trust foot — Design v1 spec: 2 lines, first is a tagline with
+            interpunct separators, second is a badge row (guarantee + Stripe).
+            The Stripe badge is the key addition — addresses 50% redirect→payment
+            leak by signaling WHERE the money goes BEFORE the tab redirect. */}
+        <div style={{textAlign:"center",marginTop:12,fontSize:10.5,
+          color:"rgba(255,255,255,.48)",letterSpacing:".01em"}}>
+          {lang==="en"?"No ads · No commitment · Cancel in 1 click":"Sans pub · Sans engagement · Annule en 1 clic"}
+        </div>
+        <div style={{display:"flex",justifyContent:"center",alignItems:"center",
+          gap:8,marginTop:8}}>
+          <span style={{display:"inline-flex",alignItems:"center",gap:4,
+            fontSize:10,color:"rgba(255,255,255,.7)",fontWeight:500}}>
+            <span>🛡</span>{lang==="en"?"30-day money-back":"Satisfait ou remboursé 30 j"}
+          </span>
+          <span style={{color:"rgba(255,255,255,.4)"}}>·</span>
+          <span style={{display:"inline-flex",alignItems:"center",gap:4,
+            fontSize:10,color:"rgba(255,255,255,.7)",fontWeight:500}}>
+            <span>🔒</span>Stripe
+          </span>
         </div>
 
         {/* Already subscribed — for users who installed the PWA after paying.
