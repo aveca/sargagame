@@ -51,12 +51,12 @@
   },
   {
     "date": "2026-04-17",
-    "time": "2026-04-17T13:35:11.363Z",
-    "payments": 7,
-    "revenue": 34.93,
-    "emails": 57,
-    "feedbacks": 1,
-    "avgRating": 4,
+    "time": "2026-04-17T17:32:13.395Z",
+    "payments": null,
+    "revenue": null,
+    "emails": null,
+    "feedbacks": null,
+    "avgRating": null,
     "pipelineOk": true
   }
 ]
