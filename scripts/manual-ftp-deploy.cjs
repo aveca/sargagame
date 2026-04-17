@@ -152,18 +152,50 @@ async function deployOne(t) {
     console.log(`  [${t.label}] <root> ✓ (${rootFiles.length} files, tracked ${n})`)
   }
 
-  // Chunks 1..N: each top-level subdir in its own fresh session
+  // Chunks 1..N: each top-level subdir in its own fresh session.
+  // When a subdir exceeds BATCH_SIZE flat files, split into sub-chunks with a
+  // fresh session per batch — the shared host resets the control socket past
+  // ~660 cumulative STORs (beaches/ alone is now 422 files, so a single retry
+  // after a mid-upload reset cumulates past the threshold).
+  const BATCH_SIZE = 150
   const subdirs = entries.filter(e => {
     if (skipUntil && e < skipUntil) return false
     if (exclude.has(e)) return false
     return fs.statSync(path.join(t.local, e)).isDirectory()
   })
   for (const d of subdirs) {
-    const n = await withFreshClient(`${d}/`, async client => {
-      await client.ensureDir(`/${d}`)
-      await client.uploadFromDir(path.join(t.local, d))
-    })
-    console.log(`  [${t.label}] ${d}/ ✓ (${n} files)`)
+    const localDir = path.join(t.local, d)
+    const dirEntries = fs.readdirSync(localDir)
+    const flatFiles = dirEntries.filter(e => fs.statSync(path.join(localDir, e)).isFile()).sort()
+    const nestedDirs = dirEntries.filter(e => fs.statSync(path.join(localDir, e)).isDirectory()).sort()
+
+    if (flatFiles.length <= BATCH_SIZE && nestedDirs.length === 0) {
+      const n = await withFreshClient(`${d}/`, async client => {
+        await client.ensureDir(`/${d}`)
+        await client.uploadFromDir(localDir)
+      })
+      console.log(`  [${t.label}] ${d}/ ✓ (${n} files)`)
+      continue
+    }
+
+    for (let i = 0; i < flatFiles.length; i += BATCH_SIZE) {
+      const batch = flatFiles.slice(i, i + BATCH_SIZE)
+      const label = `${d}/ [${i + 1}-${i + batch.length}/${flatFiles.length}]`
+      const n = await withFreshClient(label, async client => {
+        await client.ensureDir(`/${d}`)
+        for (const f of batch) {
+          await client.uploadFrom(path.join(localDir, f), f)
+        }
+      })
+      console.log(`  [${t.label}] ${label} ✓ (${n} files)`)
+    }
+    for (const sd of nestedDirs) {
+      const n = await withFreshClient(`${d}/${sd}/`, async client => {
+        await client.ensureDir(`/${d}/${sd}`)
+        await client.uploadFromDir(path.join(localDir, sd))
+      })
+      console.log(`  [${t.label}] ${d}/${sd}/ ✓ (${n} files)`)
+    }
   }
 
   const dt = ((Date.now() - t0) / 1000).toFixed(1)
