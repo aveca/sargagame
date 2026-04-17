@@ -1,6 +1,18 @@
-# SARG SEO AGENT — Prompt IA Locale
-# Usage : Coller dans LM Studio / Ollama / Jan.ai (modèle : llama3, mistral, qwen2.5)
-# Mise à jour : 08 mars 2026 · Basé sur données GSC réelles
+# SARG SEO AGENT — Prompt IA Locale [ARCHIVÉ 2026-04-17]
+#
+# ⚠️ OBSOLÈTE : La stack LLM locale (Ollama / LM Studio / LiteLLM) a été
+# désinstallée le 2026-04-17 (cf. `C:\Users\user\CLAUDE.md`). Les ports 4000
+# et 11434 doivent rester libres.
+#
+# L'audit SEO est désormais automatisé via `weekly-seo-automation.yml`
+# (lundi 11h UTC, 22-step pipeline) qui utilise directement les APIs GSC/GA4/CrUX.
+# Voir `ROUTINE-SEO-ANALYTICS.md` pour le détail.
+#
+# Ce fichier est conservé uniquement comme référence historique pour le format
+# du system prompt SEO. Ne pas relancer LM Studio / Ollama / Jan.ai.
+#
+# Ancien usage : Coller dans LM Studio / Ollama / Jan.ai (modèle : llama3, mistral, qwen2.5)
+# Ancienne mise à jour : 08 mars 2026 · Basé sur données GSC réelles
 #
 # Données détaillées (KPIs, requêtes, pages, opportunités, comparatif MQ vs GP) :
 # → sarg_gsc_gp_dashboard.html (onglets Guadeloupe | Martinique | Comparatif)
