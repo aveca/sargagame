@@ -1,100 +1,99 @@
 # Routine SEO & Analytics — Sargasses Martinique & Guadeloupe
 
-## Outils connectes
+*Mis à jour 2026-04-17. 90% de cette routine est désormais AUTOMATISÉE via GH Actions. Ce doc sert de backup pour les checks manuels + rappels de config.*
+
+## Outils connectés
 
 | Outil | Martinique | Guadeloupe | URL |
 |-------|-----------|------------|-----|
 | Google Analytics 4 | G-V8JGMDZZ2Y | G-Q31VV3LLM9 | https://analytics.google.com |
 | Microsoft Clarity | w4o6w9aenv | w4oect7ph3 | https://clarity.microsoft.com |
 | Google Search Console | sc-domain:sargasses-martinique.com | sc-domain:sargasses-guadeloupe.com | https://search.google.com/search-console |
-| GA4 <-> GSC | Associe | Associe | Admin > Associations > Search Console |
+| Bing Webmaster Tools | validé 2026-04-13 (`public/BingSiteAuth.xml`) | pas encore ajouté | https://www.bing.com/webmasters |
+| GA4 ↔ GSC | Associé | Associé | Admin > Associations > Search Console |
 
----
+## Automatisations actives
 
-## Routine hebdomadaire (15 min)
+### `weekly-seo-automation.yml` (Lundi 11h UTC)
+Pipeline 22-step qui fait automatiquement :
+- SEO audit (GSC + GA4 + CrUX)
+- UX audit (Clarity data)
+- Position tracker 90j avec drop alerts
+- Orphan detector, CTR diagnostic, cannibalization, CWV tracker
+- `auto-optimize.cjs` + `auto-copywriting.cjs` (meta rewrites GSC-driven)
+- Fix 404, optimize meta, enrich content, generate new SEO pages
+- Build + deploy + submit URLs to Google Indexing API
+- Link-graph analysis, broken-links check, schema validation, meta uniqueness, canonical/hreflang, content depth, sitemap check, image audit, orphan healer
 
-### Lundi — UX (Clarity) — 5 min
-1. Ouvrir https://clarity.microsoft.com
-2. Regarder **5 session recordings** (filtre : mobile, derniers 7 jours)
-3. Noter les frustrations : ou les gens hesitent, quittent, rage-cliquent
-4. Verifier le **dashboard rage clicks** — si > 5% des sessions = probleme UX urgent
-5. Verifier les **dead clicks** — boutons qui ne marchent pas
-6. **Action** : noter les problemes trouves et me les donner pour correction
+Output : ~15 JSON dans `scripts/automation/data/` avec findings exploitables.
 
-### Mercredi — SEO (GSC) — 5 min
-1. Ouvrir https://search.google.com/search-console
-2. Verifier **Indexation > Pages** : nouvelles erreurs 404 ou redirections ?
-3. Verifier **Performances** : quels mots-cles apportent du trafic ?
-4. Verifier **Core Web Vitals** : tout en vert ?
-5. **Sitemaps** : verifier que les sitemaps sont bien lus (derniere lecture < 7 jours)
-6. **Action** : si nouvelles erreurs, me les donner pour correction immediate
+### `weekly-optimize.yml` (Mar/Mer/Ven 10h UTC)
+- Mardi : bounce cleanup, drip check, email stats
+- Mercredi : backtest forecast, health check, daily stats + trend
+- Vendredi : weekend prep, full rebuild, submit URLs
 
-### Vendredi — Trafic (GA4) — 5 min
-1. Ouvrir https://analytics.google.com
-2. **Rapports > Engagement > Pages** : quelles pages sont les plus vues ?
-3. **Rapports > Acquisition** : d'ou viennent les visiteurs ? (Google, direct, social)
-4. **Rapports > Tech** : mobile vs desktop (ratio)
-5. **Temps reel** : verifier que le tracking fonctionne (visiter le site et voir le hit)
-6. **Action** : identifier les pages populaires pour enrichir leur contenu
+### `weekly-ux-report.yml` (Vendredi 11h UTC)
+UX audit automatique avec Clarity + GA4 → rapport JSON.
 
----
+### `weekly-outreach.yml` (Mardi 10h UTC)
+Outreach backlinks + social.
 
-## Quand me demander d'intervenir
+## Checks manuels utiles (si tu veux un coup d'œil)
 
-Dis-moi "lance la routine SEO" et je ferai automatiquement :
-1. Explorer la GSC pour nouvelles erreurs et les corriger
-2. Verifier les Core Web Vitals et optimiser si besoin
-3. Analyser les pages les plus performantes et proposer des ameliorations
-4. Soumettre les nouvelles URLs a l'indexation
-5. Verifier que le deploiement cron n'a rien casse
+### GSC — 2 min
+1. **Indexation** : pas de nouvelles erreurs 404 ? Sitemaps lus < 7 jours ?
+2. **Performances** : quels mots-clés apportent du trafic cette semaine ?
+3. **CWV** : tout en vert ?
 
-Dis-moi "lance la routine UX" et je ferai :
-1. Verifier le site en mobile et desktop
-2. Tester les boutons, la navigation, les formulaires
-3. Corriger les problemes de responsive trouves
-4. Optimiser les Core Web Vitals (LCP, FID, CLS)
+### Clarity — 2 min
+1. Dashboard : rage clicks < 5% ? dead clicks en baisse ?
+2. 3-5 session recordings récentes (filtre mobile, 7j) : friction apparente ?
 
-Dis-moi "lance la routine analytics" et je ferai :
-1. Verifier que GA4 et Clarity recoivent des donnees
-2. Analyser les metriques cles (taux de rebond, duree session, pages/session)
-3. Identifier les pages a fort potentiel et proposer des optimisations
-4. Creer des evenements personnalises si besoin
+### GA4 — 1 min
+1. **Temps réel** : tracking fonctionne (ouvre le site, voir le hit)
+2. **Engagement > Pages** : top pages cette semaine
+3. **Acquisition** : ratio Google / direct / social
 
----
+### Apps Script funnel — 30 sec
+```bash
+curl -sL "https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec?action=funnel"
+```
+Source de vérité revenu : `payments_real` + `revenue_real` + rates.
 
-## Metriques cles a surveiller
+## Commandes Claude utiles
 
-| Metrique | Objectif | Ou la voir |
-|----------|----------|-----------|
-| Pages indexees | > 30 (MQ) + > 30 (GP) | GSC > Indexation |
-| Clics organiques/semaine | > 200 | GSC > Performances |
-| Taux de rebond | < 60% | GA4 > Engagement |
-| Mobile / Desktop | Suivi du ratio | GA4 > Tech |
-| Core Web Vitals | Tout en vert | GSC > Experience |
-| Rage clicks | < 3% des sessions | Clarity > Dashboard |
-| Session recordings | 5/semaine minimum | Clarity > Recordings |
-| Erreurs 404 | 0 | GSC > Indexation > Pages |
+- "lance la routine SEO" → je check GSC manuellement + corrige les nouvelles erreurs
+- "lance la routine UX" → je teste mobile/desktop + optim CWV si besoin
+- "lance la routine analytics" → je vérifie tracking + propose optims pages populaires
 
----
+## Métriques clés à surveiller
 
-## Checklist mensuelle
+| Métrique | Objectif | Actuel (2026-04-17) | Source |
+|----------|----------|---------------------|--------|
+| Pages indexées | >30 MQ + >30 GP | 136 total (54 MQ + 83 GP sitemap) | GSC Indexation |
+| Clics organiques/semaine | >200 MQ+GP combiné | ~1200 MQ + 400 GP | GSC Performances |
+| Position moyenne MQ | <5 | 3,8 (all-time best) | GSC |
+| Position moyenne GP head term | <20 | 70 (pré-fix cannibalization) | GSC |
+| Taux de rebond | <60% | à vérifier | GA4 |
+| Rage clicks | <3% des sessions | variable | Clarity |
+| Erreurs 404 | 0 | 0 | GSC |
+| MRR | 100 €/mois (3m) | 34,93 €/mois | Apps Script funnel |
+| Subscribers | 50 (2 sem) | 58 | Apps Script funnel |
 
-- [ ] Verifier que le cron Copernicus tourne (GitHub Actions > dernier run)
-- [ ] Verifier que les sitemaps sont a jour (GSC > Sitemaps)
-- [ ] Soumettre les nouvelles pages a l'indexation si besoin
-- [ ] Analyser les mots-cles en position 5-15 (opportunites de gain rapide)
-- [ ] Verifier la validite des donnees structurees (GSC > Ameliorations > FAQ)
-- [ ] Comparer le trafic mois N vs mois N-1
+## Checklist mensuelle (le 1er du mois)
 
----
+- [ ] Workflow GH Actions quotidien n'a rien cassé (run list ≥ 25 succès consécutifs)
+- [ ] Sitemaps lus < 7 jours (GSC > Sitemaps)
+- [ ] Mots-clés position 5-15 : opportunités gain rapide
+- [ ] Validité données structurées (GSC > Améliorations)
+- [ ] Trafic mois N vs mois N-1 : tendance
+- [ ] Revenue trend (Stripe Dashboard + Apps Script `payments` sheet)
 
 ## Architecture technique
 
-- **Cron quotidien** : GitHub Actions (`daily-copernicus.yml`) a 10h UTC
-  - Scrape Copernicus Marine → build Vite → prepare-ftp → FTP deploy
-  - `dangerous-clean-slate: false` = ne supprime rien, ne fait que mettre a jour
-- **GA4** : balise gtag.js dans `<head>` de index.html, patche par prepare-ftp.cjs pour GP
-- **Clarity** : script async dans `<head>`, patche par prepare-ftp.cjs pour GP
-- **Sitemaps** : generes dynamiquement pendant `npm run build` (lastmod = date du build)
-- **Pages plages** : 20 pages statiques generees pendant le build (10 MQ + 10 GP)
-- **Redirections 301** : ~100 regles dans public/.htaccess
+- **Cron principal** : `daily-copernicus.yml` 4×/jour (0/6/12/18 UTC). Full build à 09h/21h UTC ou sur push human. Data-only deploy autrement.
+- **GA4** : `gtag.js` dans `<head>` + Measurement Protocol beacon direct (bypass DMA block) + Apps Script queue critique events
+- **Clarity** : script async dans `<head>`, patché par `prepare-ftp.cjs` pour GP
+- **Sitemaps** : générés dynamiquement pendant `npm run build` (lastmod = date build)
+- **Pages plages** : 136 pages statiques générées pendant le build (53 MQ + 83 GP)
+- **Redirections 301** : ~100 règles dans `public/.htaccess`
