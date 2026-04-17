@@ -5443,18 +5443,24 @@ export default function App(){
           </div>
         </div>
 
-        {/* BOTTOM SHEET (over map) — hero peek + search + chips + nudge stacked
-            just above the floating nav pill. Map-first layout: the map owns the
-            viewport, this stack is glass chrome that rests on top. */}
+        {/* BOTTOM SHEET (over map) — search stack above the floating nav pill.
+            Fixes 2026-04-17 (long-standing bug):
+            (1) Bottom offset now `90px + ...` (was 60+12+12=84) so the search
+                card clears the floating nav pill (itself at bottom:18 + ~55px
+                tall = ~73 top) with a visible ~15-20px gap.
+            (2) Inner container max-width 460px instead of 600 so the invisible
+                pointerEvents:auto hitbox doesn't eat clicks on beach pins
+                flanking the search zone (user screenshot confirmed pins beneath
+                the search card were unclickable in some zones). */}
         {view==="map"&&(
           <div style={{
             position:"absolute",left:0,right:0,zIndex:700,
-            bottom:"calc(60px + max(12px, env(safe-area-inset-bottom,0px)) + 12px)",
+            bottom:"calc(90px + max(12px, env(safe-area-inset-bottom,0px)) + 8px)",
             padding:"0 16px",
             pointerEvents:"none",
-            maxHeight:"calc(100vh - 120px)",
+            maxHeight:"calc(100vh - 140px)",
           }}>
-            <div style={{pointerEvents:"auto",maxWidth:600,margin:"0 auto",
+            <div style={{pointerEvents:"auto",maxWidth:460,margin:"0 auto",
               display:"flex",flexDirection:"column",gap:8}}>
               {/* Search results dropdown — shown when typing, floats above the stack */}
               {search.trim().length>=2&&filtered.length>0&&(
