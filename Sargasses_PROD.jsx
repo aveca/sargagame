@@ -5434,12 +5434,19 @@ export default function App(){
           pointerEvents:"none",
           transition:"padding-top .25s ease",
         }}>
-          <div style={{pointerEvents:"auto",maxWidth:460,margin:"0 auto"}}>
-            <Header island={island} onIslandChange={setIsland}
-              lang={lang} onLangToggle={toggleLang}
-              theme={theme} onThemeToggle={toggleTheme}
-              beachCount={allBeaches.length} dataSource={dataSource}
-              updatedAt={sargData?.updatedAt||sargData?.erddapTimestamp}/>
+          {/* pointerEvents scoped to the Header element itself, NOT its
+              centering wrapper. The wrapper still centers but passes clicks
+              through to the map. Fixes the last pocket of unclickable pins
+              around the center-top of MQ/GP which the b0bb553 + c1c88dd
+              fixes only partially resolved. */}
+          <div style={{maxWidth:460,margin:"0 auto",pointerEvents:"none"}}>
+            <div style={{pointerEvents:"auto",display:"inline-block",width:"100%"}}>
+              <Header island={island} onIslandChange={setIsland}
+                lang={lang} onLangToggle={toggleLang}
+                theme={theme} onThemeToggle={toggleTheme}
+                beachCount={allBeaches.length} dataSource={dataSource}
+                updatedAt={sargData?.updatedAt||sargData?.erddapTimestamp}/>
+            </div>
           </div>
         </div>
 
@@ -5460,8 +5467,13 @@ export default function App(){
             pointerEvents:"none",
             maxHeight:"calc(100vh - 140px)",
           }}>
-            <div style={{pointerEvents:"auto",maxWidth:460,margin:"0 auto",
+            {/* Wrapper no longer has pointerEvents:auto — it would block
+                clicks on pins flanking the search band horizontally even at
+                460px. Only the visible child (search input / results dropdown)
+                catches clicks via explicit pointerEvents:auto on each. */}
+            <div className="sg-map-chrome" style={{maxWidth:460,margin:"0 auto",pointerEvents:"none",
               display:"flex",flexDirection:"column",gap:8}}>
+              <style>{`.sg-map-chrome > *{pointer-events:auto}`}</style>
               {/* Search results dropdown — shown when typing, floats above the stack */}
               {search.trim().length>=2&&filtered.length>0&&(
                 <div style={{background:"var(--sg-card,#fff)",borderRadius:14,
