@@ -3701,9 +3701,33 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
                       :(<>Ta <span style={{background:"linear-gradient(135deg,#FFE47A,#FFC72C 55%,#E89400)",WebkitBackgroundClip:"text",backgroundClip:"text",WebkitTextFillColor:"transparent",color:"transparent"}}>reco</span> chaque matin à 7h</>)}
         </h2>
 
-        {/* Value cards stack — wrapped in a relative container so we can lay a
-            soft gold halo behind all 3 cards. Echo of the aurora backdrop on HeroReco.
-            Why: the dark modal needs one warm focal area to anchor the eye on the promise. */}
+        {/* Sample-first variant swap: lean bullets in place of value cards.
+            Hypothesis (Design v1): users arriving at the paywall because they hit
+            a soft lock may not need to be SOLD the features — they need permission
+            to try for free without fear of a card/email trap. Tight 3-bullet list
+            removes 150px of "product pitch" and reinforces zero-friction framing.
+            Control variant keeps the 3 value cards (product pitch). */}
+        {ctaOrder==="sample_first"&&sampleAvailable&&(
+        <div style={{display:"flex",flexDirection:"column",gap:4,marginBottom:12}}>
+          {[
+            {emoji:"🎁",bold:lang==="en"?"24h free":"24h offertes",tail:lang==="en"?" · no card, no email trap":" · sans carte, sans email piège"},
+            {emoji:"📬",bold:null,tail:lang==="en"?"Email tomorrow at 7:57 am":"Email demain matin à 7h57"},
+            {emoji:"🔓",bold:null,tail:lang==="en"?"Cancel in 1 tap if you don't like it":"Annule en 1 tap si tu n'aimes pas"},
+          ].map((b,i)=>(
+            <div key={i} style={{display:"flex",alignItems:"center",gap:10,fontSize:13,
+              color:"rgba(255,255,255,.85)",padding:"6px 0"}}>
+              <span style={{fontSize:17,width:22,display:"inline-block",textAlign:"center"}}>{b.emoji}</span>
+              <span>{b.bold&&<b style={{color:"#fff",fontWeight:700}}>{b.bold}</b>}{b.tail}</span>
+            </div>
+          ))}
+        </div>
+        )}
+
+        {/* Value cards stack (control variant only) — wrapped in a relative
+            container so we can lay a soft gold halo behind all 3 cards. Why:
+            the dark modal needs one warm focal area to anchor the eye on the
+            promise. */}
+        {(ctaOrder!=="sample_first"||!sampleAvailable)&&(
         <div style={{position:"relative",marginBottom:16}}>
           <div aria-hidden style={{
             position:"absolute",inset:"-8px -20px",borderRadius:24,
@@ -3792,6 +3816,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
             </div>
           </div>
         </div>
+        )}
 
         {/* Sample-first: high-signal social proof block (Design v1 spec).
             Addresses the 0 sample_start leak by giving the 24h-free path
