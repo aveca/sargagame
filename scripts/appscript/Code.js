@@ -546,10 +546,10 @@ function doGet(e) {
     try {
       var ss = SpreadsheetApp.openById(SHEET_ID)
       var funnel = {
-        session: 0, forecast_lock_click: 0,
+        session_start: 0, forecast_lock_click: 0,
         premium_modal_open: 0, premium_modal_cta: 0,
         sample_start: 0,
-        checkout_view: 0, checkout_submit: 0,
+        checkout_redirect: 0,
         conversion: 0, checkout_error: 0
       }
 
@@ -562,7 +562,9 @@ function doGet(e) {
         var abCols = ['lock1', 'modal1', 'onb1', 'free1', 'vp1', 'price1']
 
         for (var i = 1; i < aData.length; i++) {
-          if ((aData[i][0] || '') < cutoff) continue
+          var tsCell = aData[i][0]
+          var tsIso = tsCell instanceof Date ? tsCell.toISOString() : String(tsCell || '')
+          if (tsIso < cutoff) continue
           var evt = (aData[i][1] || '').replace('sg_', '')
           if (funnel.hasOwnProperty(evt)) funnel[evt]++
 
@@ -598,13 +600,13 @@ function doGet(e) {
       }
 
       funnel.rates = {
-        session_to_lock: funnel.session > 0 ? Math.round(funnel.forecast_lock_click / funnel.session * 1000) / 10 : 0,
+        session_to_lock: funnel.session_start > 0 ? Math.round(funnel.forecast_lock_click / funnel.session_start * 1000) / 10 : 0,
         lock_to_modal: funnel.forecast_lock_click > 0 ? Math.round(funnel.premium_modal_open / funnel.forecast_lock_click * 100) : 0,
         modal_to_cta: funnel.premium_modal_open > 0 ? Math.round(funnel.premium_modal_cta / funnel.premium_modal_open * 100) : 0,
         modal_to_sample: funnel.premium_modal_open > 0 ? Math.round(funnel.sample_start / funnel.premium_modal_open * 100) : 0,
         modal_to_any_action: funnel.premium_modal_open > 0 ? Math.round((funnel.premium_modal_cta + funnel.sample_start) / funnel.premium_modal_open * 100) : 0,
-        cta_to_checkout: funnel.premium_modal_cta > 0 ? Math.round(funnel.checkout_view / funnel.premium_modal_cta * 100) : 0,
-        checkout_to_submit: funnel.checkout_view > 0 ? Math.round(funnel.checkout_submit / funnel.checkout_view * 100) : 0
+        cta_to_redirect: funnel.premium_modal_cta > 0 ? Math.round(funnel.checkout_redirect / funnel.premium_modal_cta * 100) : 0,
+        redirect_to_payment: funnel.checkout_redirect > 0 ? Math.round((funnel.payments_real || 0) / funnel.checkout_redirect * 100) : 0
       }
 
       return jsonResponse(funnel)
