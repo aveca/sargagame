@@ -11,11 +11,38 @@
  * Usage: node scripts/automation/notify-failure.cjs
  */
 const https = require('https')
+const fs = require('fs')
+const path = require('path')
 
 const API_KEY = process.env.RESEND_API_KEY
 const WORKFLOW = process.env.WORKFLOW_NAME || 'Unknown workflow'
 const RUN_URL = process.env.RUN_URL || ''
 const STEP = process.env.FAILURE_STEP || ''
+
+// ADR-B ops bus event: append pipeline_fail to repo file (drained by local cron).
+// Writing here is best-effort; cloud runner cannot reach the local SQLite bus directly.
+// The main job's commit step does NOT run when this job fires (separate job), so the
+// event lives in the runner filesystem until Étape 5 adds a push step here.
+try {
+  const dir = path.join('scripts', 'automation', 'data')
+  fs.mkdirSync(dir, { recursive: true })
+  const event = {
+    ts: Date.now(),
+    source: 'sargagame/daily_copernicus',
+    kind: 'pipeline_fail',
+    ok: 0,
+    payload: {
+      workflow: WORKFLOW,
+      run_url: RUN_URL,
+      step: STEP || null,
+      run_id: process.env.GITHUB_RUN_ID || null,
+    },
+  }
+  fs.appendFileSync(path.join(dir, 'ops-events.jsonl'), JSON.stringify(event) + '\n')
+  console.log('ops-events.jsonl appended (pipeline_fail)')
+} catch (e) {
+  console.error('ops event write failed:', e.message)
+}
 
 const TO = 'aveca@aveca.fr'
 const FROM = 'Sargasses Pipeline <alerts@sargasses-martinique.com>'
