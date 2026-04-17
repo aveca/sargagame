@@ -13,6 +13,12 @@ on:
 permissions:
   contents: write
 
+# S\u00e9rialise les runs sur main pour \u00e9liminer les conflits rebase entre 2 runs
+# concurrents qui se battent pour committer les JSONs Copernicus.
+concurrency:
+  group: daily-copernicus-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   update-and-deploy:
     runs-on: ubuntu-latest
@@ -214,10 +220,14 @@ jobs:
           push_ok=0
           for i in 1 2 3 4 5; do
             git fetch origin "$BRANCH"
-            if ! git rebase "origin/$BRANCH"; then
-              echo "::error::git rebase failed (conflit ou historique) sur $BRANCH"
+            # -X theirs : sur conflit, garde NOTRE version (les JSONs Copernicus frais
+            # qu'on vient de g\u00e9n\u00e9rer). "theirs" en rebase = commit appliqu\u00e9 = notre commit.
+            # Sans \u00e7a, un push humain concurrent sur les m\u00eames JSONs \u00e9chouait le rebase.
+            if ! git rebase -X theirs "origin/$BRANCH"; then
+              echo "::warning::git rebase -X theirs a \u00e9chou\u00e9 (tentative $i/5), retry apr\u00e8s fetch"
               git rebase --abort || true
-              exit 1
+              sleep 10
+              continue
             fi
             if git push origin "HEAD:$BRANCH"; then
               push_ok=1
