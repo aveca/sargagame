@@ -5434,19 +5434,19 @@ export default function App(){
           pointerEvents:"none",
           transition:"padding-top .25s ease",
         }}>
-          {/* pointerEvents scoped to the Header element itself, NOT its
-              centering wrapper. The wrapper still centers but passes clicks
-              through to the map. Fixes the last pocket of unclickable pins
-              around the center-top of MQ/GP which the b0bb553 + c1c88dd
-              fixes only partially resolved. */}
-          <div style={{maxWidth:460,margin:"0 auto",pointerEvents:"none"}}>
-            <div style={{pointerEvents:"auto",display:"inline-block",width:"100%"}}>
-              <Header island={island} onIslandChange={setIsland}
-                lang={lang} onLangToggle={toggleLang}
-                theme={theme} onThemeToggle={toggleTheme}
-                beachCount={allBeaches.length} dataSource={dataSource}
-                updatedAt={sargData?.updatedAt||sargData?.erddapTimestamp}/>
-            </div>
+          {/* Header chrome follows the same pattern as sg-map-chrome:
+              wrapper pe:none so the empty band between pill-items passes
+              clicks to the map, and only direct children (the pills) absorb
+              clicks. The previous inline-block+width:100% wrapper was a
+              460×88 click-blocker covering the top of the map, making pins
+              in that band unclickable on both mobile and desktop. */}
+          <div className="sg-header-chrome" style={{maxWidth:460,margin:"0 auto",pointerEvents:"none"}}>
+            <style>{`.sg-header-chrome .sg-header-row{pointer-events:none}.sg-header-chrome .sg-header-row > *{pointer-events:auto}`}</style>
+            <Header island={island} onIslandChange={setIsland}
+              lang={lang} onLangToggle={toggleLang}
+              theme={theme} onThemeToggle={toggleTheme}
+              beachCount={allBeaches.length} dataSource={dataSource}
+              updatedAt={sargData?.updatedAt||sargData?.erddapTimestamp}/>
           </div>
         </div>
 
