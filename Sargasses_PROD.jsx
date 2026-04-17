@@ -3798,8 +3798,10 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
             track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown"})
             const link=effectivePlan==="annual"?STRIPE_LINK_ANNUAL:STRIPE_LINK_MONTHLY
             track("sg_checkout_redirect",{plan:effectivePlan,source:source||"unknown",destination:"payment_link"})
-            // Same-tab redirect so Stripe success_url returns to ?premium=1 and fires sg_conversion.
-            window.location.href=link
+            // Defer navigation by one macrotask so both sendBeacon calls above flush
+            // before unload. Measured 50% loss on checkout_redirect when nav was sync
+            // (modal_cta landed, redirect dropped). See project_funnel_cta_redirect_leak.md.
+            setTimeout(()=>{window.location.href=link},0)
           }}
           className="gbtn" style={{width:"100%",textAlign:"center",fontSize:17,
             padding:"16px 24px",display:"block",border:"none",cursor:"pointer",fontFamily:"inherit",lineHeight:1.2}}>
