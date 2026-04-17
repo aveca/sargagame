@@ -1,0 +1,177 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   SARGASSES ANTILLES — Design Tokens
+   Lifted directly from sargagame/Sargasses_PROD.jsx (object C) and the
+   :root blocks in martinique-ftp/index.html + guadeloupe-ftp/index.html.
+   Philosophy: "Tidal Cartography" — restricted palette, gold as signal.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&display=swap');
+
+:root {
+  /* ───── LIGHT SURFACES (default) ───── */
+  --sg-bg: #FDFCF7;          /* cream paper — the ocean's white foam */
+  --sg-bg-d: #F7F5EF;        /* subtle recessed background */
+  --sg-card: #FFFFFF;
+  --sg-card-s: #FAFAFA;
+
+  --sg-ink: #0D0D0D;         /* near-black for text, not pure #000 */
+  --sg-mid: #686868;
+  --sg-mute: #686868;
+
+  --sg-border: rgba(0,0,0,.04);
+  --sg-border-m: rgba(0,0,0,.08);
+  --sg-glass: rgba(255,255,255,.92);
+  --sg-glass-border: rgba(0,0,0,.06);
+  --sg-row-hover: rgba(0,0,0,.03);
+  --sg-handle: rgba(0,0,0,.25);
+
+  /* ───── BRAND — GOLD (signal, never decoration) ───── */
+  --sg-gold: #E8A800;        /* primary gold — CTAs, brand accent */
+  --sg-gold-l: #FFC72C;      /* brighter — modal headlines, glints */
+  --sg-gold-ll: #FFE47A;     /* lightest — gradient stops */
+  --sg-gold-bg: rgba(232,168,0,.07);
+  --sg-gold-bg-l: rgba(255,199,44,.15);
+
+  /* ───── SEMANTIC STATUS — the whole app's vocabulary ───── */
+  --sg-clean: #22C55E;       /* ✅ Propre — safe, verified */
+  --sg-clean-l: #16A34A;
+  --sg-clean-bg: rgba(34,197,94,.1);
+
+  --sg-moderate: #B87A00;    /* ⚠️ Modéré — amber caution */
+  --sg-moderate-bg: rgba(184,122,0,.1);
+
+  --sg-avoid: #E8522A;       /* 🚫 Alerte — warm red, not angry red */
+  --sg-avoid-bg: rgba(232,82,42,.1);
+
+  --sg-teal: #009E8E;        /* clinical all-clear, science/confidence */
+  --sg-teal-l: #1EC8B0;
+  --sg-teal-bg: rgba(0,158,142,.08);
+
+  /* ───── DEEP MARINE — paywall modal + dark moments ───── */
+  --sg-night: #0D1E1C;       /* deep ocean floor */
+  --sg-night-2: #0A1714;     /* even deeper — gradient endpoint */
+  --sg-ocean: #014F86;       /* verified-depth blue */
+
+  /* ───── SARGASSUM BROWN — the algae itself ───── */
+  --sg-sarg: #8B6914;
+  --sg-sarg-l: #A67C1A;
+  --sg-sarg-bg: rgba(139,105,20,.12);
+
+  /* ───── ELEVATION ───── */
+  --sg-shadow-sm: 0 1px 3px rgba(0,0,0,.06);
+  --sg-shadow-md: 0 1px 3px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.06);
+  --sg-shadow-lg: 0 4px 24px rgba(0,0,0,.06), 0 1px 3px rgba(0,0,0,.04);
+  --sg-shadow-gold: 0 2px 12px rgba(232,168,0,.4);
+  --sg-card-shadow: 0 1px 3px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.06);
+
+  /* ───── RADII ───── */
+  --sg-r-xs: 8px;
+  --sg-r-sm: 12px;
+  --sg-r-md: 14px;
+  --sg-r-lg: 16px;           /* default buttons, cards */
+  --sg-r-xl: 20px;           /* learn cards */
+  --sg-r-2xl: 24px;          /* modal top corners */
+  --sg-r-pill: 100px;
+
+  /* ───── SPACING (4px base) ───── */
+  --sg-1: 4px;
+  --sg-2: 8px;
+  --sg-3: 12px;
+  --sg-4: 16px;
+  --sg-5: 20px;
+  --sg-6: 24px;
+  --sg-8: 32px;
+
+  /* ───── TYPE ───── */
+  --sg-font-sans: 'Bricolage Grotesque', system-ui, -apple-system, sans-serif;
+  --sg-font-display: 'Anton', 'Bricolage Grotesque', sans-serif;
+  --sg-font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --sg-fs-xs: 9px;
+  --sg-fs-sm: 11px;
+  --sg-fs-base: 13px;
+  --sg-fs-md: 14px;
+  --sg-fs-lg: 16px;
+  --sg-fs-xl: 22px;
+  --sg-fs-2xl: 28px;
+  --sg-fs-3xl: 38px;
+  --sg-fs-display: clamp(28px, 7vw, 38px);
+
+  --sg-lh-tight: 1.05;
+  --sg-lh-snug: 1.25;
+  --sg-lh-normal: 1.5;
+  --sg-lh-loose: 1.65;
+
+  --sg-tracking-tight: -.02em;
+  --sg-tracking-display: -.015em;
+  --sg-tracking-wide: .04em;
+  --sg-tracking-caps: .08em;        /* for micro-eyebrows */
+  --sg-tracking-caps-wide: .12em;
+}
+
+html.theme-dark, .theme-dark {
+  /* Note: the prod app's dark theme is a pragmatic GitHub-dim, not the
+     night-ocean palette. The night-ocean is reserved for the paywall modal. */
+  --sg-bg: #0d1117;
+  --sg-bg-d: #161b22;
+  --sg-card: #161b22;
+  --sg-card-s: #21262d;
+  --sg-ink: #e6edf3;
+  --sg-mid: #adbac7;
+  --sg-mute: #8b949e;
+  --sg-border: rgba(255,255,255,.08);
+  --sg-border-m: rgba(255,255,255,.14);
+  --sg-glass: rgba(22,27,34,.85);
+  --sg-glass-border: rgba(255,255,255,.08);
+  --sg-row-hover: rgba(255,255,255,.06);
+  --sg-handle: rgba(255,255,255,.2);
+}
+
+/* ───── TYPE RAMP — semantic ───── */
+html { font-size: clamp(14px, 2.2vw + 12px, 16px); -webkit-text-size-adjust: 100%; }
+
+body, .sg-body {
+  font-family: var(--sg-font-sans);
+  color: var(--sg-ink);
+  background: var(--sg-bg);
+  -webkit-font-smoothing: antialiased;
+  line-height: var(--sg-lh-normal);
+}
+
+.sg-display, h1.sg-h1 {
+  font-family: var(--sg-font-display);
+  font-size: var(--sg-fs-display);
+  font-weight: 900;
+  line-height: var(--sg-lh-tight);
+  letter-spacing: var(--sg-tracking-tight);
+}
+
+.sg-h2 { font-size: var(--sg-fs-2xl); font-weight: 800; letter-spacing: var(--sg-tracking-display); line-height: var(--sg-lh-snug); }
+.sg-h3 { font-size: 17px; font-weight: 800; letter-spacing: -.01em; }
+.sg-h4 { font-size: 15px; font-weight: 700; }
+
+.sg-body-lg { font-size: var(--sg-fs-md); line-height: var(--sg-lh-loose); color: var(--sg-mid); }
+.sg-body { font-size: 13.5px; line-height: var(--sg-lh-loose); color: var(--sg-mid); }
+.sg-caption { font-size: var(--sg-fs-sm); color: var(--sg-mid); font-weight: 500; }
+.sg-micro { font-size: 10px; color: var(--sg-mute); }
+
+/* Eyebrow label — micro uppercase tag above headlines */
+.sg-eyebrow {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: var(--sg-tracking-caps-wide);
+  text-transform: uppercase;
+  color: var(--sg-teal);
+}
+
+/* Numeric monument — gold Anton numeral that anchors compositions */
+.sg-monument {
+  font-family: var(--sg-font-display);
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: var(--sg-tracking-tight);
+  color: transparent;
+  background: linear-gradient(135deg, var(--sg-gold-ll), var(--sg-gold-l) 50%, #E89400);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
