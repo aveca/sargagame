@@ -681,7 +681,7 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
     {!caribbeanMode&&!searchActive&&<div style={{
       position:"absolute",
       left:12,right:12,
-      bottom:"calc(140px + env(safe-area-inset-bottom,0px))",
+      bottom:"calc(190px + env(safe-area-inset-bottom,0px))",
       zIndex:900,
       display:"flex",flexDirection:"column",alignItems:"center",gap:6,
       pointerEvents:"none",
