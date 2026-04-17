@@ -9,6 +9,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: content-generation-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   generate-content:
     runs-on: ubuntu-latest
@@ -56,7 +60,7 @@ jobs:
           push_ok=0
           for i in 1 2 3 4 5; do
             git fetch origin "$BRANCH"
-            git rebase "origin/$BRANCH" || { echo "::error::git rebase failed"; git rebase --abort || true; exit 1; }
+            git rebase -X theirs "origin/$BRANCH" || { echo "::warning::rebase failed ($i/5)"; git rebase --abort || true; sleep 10; continue; }
             if git push origin "HEAD:$BRANCH"; then push_ok=1; break; fi
             echo "::warning::git push failed ($i/5), sleep 20s"; sleep 20
           done
