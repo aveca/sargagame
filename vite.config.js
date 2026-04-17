@@ -618,6 +618,21 @@ export default defineConfig({
               clean: 'Anse à l\'Âne aux Trois-Îlets (Martinique) — plage propre en temps réel. À 22 min de Fort-de-France, côte Caraïbe, idéal familles. Généralement épargnée des sargasses. Prévisions 7 jours.',
               moderate: 'Sargasses à Anse à l\'Âne (Les Trois-Îlets, Martinique) — présence modérée en temps réel. Côte Caraïbe. Idéal familles. Carte et prévisions 7 jours.',
               avoid: 'Alerte sargasses à Anse à l\'Âne (Les Trois-Îlets, Martinique) — forte concentration côte Caraïbe. Carte des plages propres proches de Fort-de-France.'
+            },
+            'Anse Dufour': {
+              clean: 'Anse Dufour aux Anses-d\'Arlet (Martinique) — plage propre en temps réel. Côte Caraïbe, snorkeling avec les tortues. Généralement protégée des sargasses. Carte et prévisions 7 jours.',
+              moderate: 'Sargasses à Anse Dufour (Les Anses-d\'Arlet, Martinique) — présence modérée en temps réel. Côte Caraïbe. Tortues, snorkeling. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à Anse Dufour (Les Anses-d\'Arlet, Martinique) — forte concentration côte Caraïbe. Voir les plages propres à proximité.'
+            },
+            'Petite Anse d\'Arlet': {
+              clean: 'Petite Anse d\'Arlet (Martinique) — plage propre en temps réel. Célèbre église face à la mer, côte Caraïbe, snorkeling, idéal familles. Généralement protégée des sargasses. Prévisions 7 jours.',
+              moderate: 'Sargasses à Petite Anse d\'Arlet (Les Anses-d\'Arlet, Martinique) — présence modérée en temps réel. Côte Caraïbe. Église iconique, snorkeling. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à Petite Anse d\'Arlet (Les Anses-d\'Arlet, Martinique) — forte concentration côte Caraïbe. Voir les plages propres à proximité.'
+            },
+            'Plage de la Perle': {
+              clean: 'Plage de la Perle à Deshaies (Guadeloupe) — plage propre en temps réel. Côte sous-le-vent, nord Basse-Terre, décor de "Meurtres au Paradis". Généralement protégée des sargasses. Prévisions 7 jours.',
+              moderate: 'Sargasses à la Plage de la Perle (Deshaies, Guadeloupe) — présence modérée en temps réel. Côte sous-le-vent, nord Basse-Terre. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à la Plage de la Perle (Deshaies, Guadeloupe) — forte concentration côte sous-le-vent. Voir les plages propres à proximité.'
             }
           }
           let sitemapMQBeaches = ''
