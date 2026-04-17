@@ -1,5 +1,9 @@
 # Publication FTP — données Copernicus du jour
 
+> **2026-04-17** : Le deploy FTP est désormais **automatique** via `daily-copernicus.yml`
+> (4×/jour, full build à 09h/21h UTC + push to main). Ce doc reste valable pour
+> les deploys manuels de secours (FTP creds : `memory/reference_deploy.md`).
+
 ## Checklist avant mise en ligne
 
 1. **Données du jour**
