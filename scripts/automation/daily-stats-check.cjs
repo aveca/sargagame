@@ -66,8 +66,13 @@ async function main() {
   let metrics = []
   try { metrics = JSON.parse(fs.readFileSync(METRICS_PATH, 'utf-8')) } catch {}
 
+  const today = now.toISOString().slice(0, 10)
+  // Upsert by date: drop any prior same-day rows so the last write of the day wins.
+  // Without this, 4x/day crons + local runs bloat the file (90-day cap = ~15 real days)
+  // and trend detection below would compare same-day dups instead of day-over-day.
+  metrics = metrics.filter(r => r.date !== today)
   metrics.push({
-    date: now.toISOString().slice(0, 10),
+    date: today,
     time: now.toISOString(),
     payments: stats?.payments || null,
     revenue: stats?.revenue || null,
@@ -82,10 +87,10 @@ async function main() {
   fs.writeFileSync(METRICS_PATH, JSON.stringify(metrics, null, 2), 'utf-8')
   console.log(`Metrics saved (${metrics.length} days)`)
 
-  // 4. Trend detection
-  if (metrics.length >= 2) {
-    const prev = metrics[metrics.length - 2]
-    const curr = metrics[metrics.length - 1]
+  // 4. Trend detection — compare today vs last entry from a prior date
+  const curr = metrics[metrics.length - 1]
+  const prev = [...metrics].reverse().find(r => r.date !== curr.date)
+  if (prev) {
     if (prev.payments != null && curr.payments != null && curr.payments > prev.payments) {
       console.log(`NEW PAYMENT DETECTED: ${prev.payments} -> ${curr.payments}`)
     }
