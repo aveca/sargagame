@@ -4879,6 +4879,10 @@ export default function App(){
   //   5. Fallback: 60s on browser, 30s on PWA -> direct loadOneSignal() (legacy 6% floor)
   // Skipped if recently dismissed, already loaded, or iOS Safari (not standalone).
   const[showPushPrimer,setShowPushPrimer]=useState(false)
+  // Tick state — bumped on hero-card dismiss to trigger rerender. The dismiss
+  // status lives in localStorage (per-day key) but React doesn't subscribe to
+  // that, so we increment a counter to force a re-read.
+  const[heroTick,setHeroTick]=useState(0)
   const pushLoadedRef=useRef(false)
 
   const loadPushNow=useCallback((trigger)=>{
@@ -5441,6 +5445,64 @@ export default function App(){
               beachCount={allBeaches.length} dataSource={dataSource}
               updatedAt={sargData?.updatedAt||sargData?.erddapTimestamp}/>
           </div>
+          {/* Today's pick hero banner — Design v2 Map Hero v1 minimal port.
+              Shows the highest-score beach for the current island with a
+              one-tap Itinéraire link. Sticky top under Header. Dismissible
+              (until midnight local reset via localStorage). Only on Carte. */}
+          {view==="map"&&sargData?.levels&&(heroTick>=0)&&!localStorage.getItem(`sg_hero_dismiss_${new Date().toDateString()}`)&&(() => {
+            const islandBeaches=allBeaches.filter(b=>island==="gp"?b.id?.startsWith("gp-"):!b.id?.startsWith("gp-"))
+            const withScore=islandBeaches
+              .map(b=>{const lvl=sargData.levels[b.id]; return lvl?{...b,score:Math.round(lvl.score||0)}:null})
+              .filter(Boolean)
+              .sort((a,b)=>b.score-a.score)
+            const top=withScore[0]
+            if(!top||top.score<60)return null
+            const color=top.score>=70?"#22C55E":top.score>=50?"#B87A00":"#E8522A"
+            const verdictFr=top.score>=70?"Tu peux y aller":top.score>=50?"Modéré":"À éviter"
+            const verdictEn=top.score>=70?"Go for it":top.score>=50?"Moderate":"Skip it"
+            return(
+              <div style={{pointerEvents:"auto",maxWidth:600,margin:"8px auto 0",
+                background:"rgba(255,255,255,.95)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",
+                borderRadius:16,padding:"10px 12px",
+                boxShadow:"0 8px 24px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.04)",
+                border:"1px solid rgba(0,0,0,.04)",
+                display:"flex",alignItems:"center",gap:10}}>
+                <div style={{width:46,height:46,borderRadius:12,
+                  background:`linear-gradient(135deg,${color},${color}dd)`,
+                  color:"#fff",fontFamily:"'Anton',sans-serif",fontSize:18,
+                  display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,
+                  boxShadow:`0 4px 12px ${color}40`}}>{top.score}</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:9.5,color:"#686868",fontWeight:800,
+                    letterSpacing:".08em",textTransform:"uppercase",marginBottom:1}}>
+                    {lang==="en"?"Your beach today":"Ta plage aujourd'hui"}
+                  </div>
+                  <div style={{fontSize:14,fontWeight:700,color:"#0D0D0D",lineHeight:1.2,
+                    whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{top.name}</div>
+                  <div style={{fontSize:11,color:color,fontWeight:600,marginTop:2}}>
+                    {lang==="en"?verdictEn:verdictFr} · {top.commune}
+                  </div>
+                </div>
+                <a href={`https://www.google.com/maps/dir/?api=1&destination=${top.lat},${top.lng}`}
+                  target="_blank" rel="noreferrer"
+                  onClick={()=>track("sg_hero_itineraire",{beach_id:top.id,score:top.score})}
+                  style={{background:"#0D1E1C",color:"#FFC72C",
+                    padding:"8px 12px",borderRadius:100,fontSize:12,fontWeight:700,
+                    textDecoration:"none",whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:4,flexShrink:0}}>
+                  {lang==="en"?"Route":"Itinéraire"} →
+                </a>
+                <button onClick={()=>{
+                  localStorage.setItem(`sg_hero_dismiss_${new Date().toDateString()}`,"1")
+                  track("sg_hero_dismiss",{beach_id:top.id})
+                  setHeroTick(t=>t+1)
+                }} aria-label="Fermer"
+                  style={{width:24,height:24,borderRadius:"50%",
+                    background:"rgba(0,0,0,.06)",border:"none",color:"#686868",
+                    fontSize:14,cursor:"pointer",display:"flex",alignItems:"center",
+                    justifyContent:"center",flexShrink:0,fontFamily:"inherit",lineHeight:1}}>×</button>
+              </div>
+            )
+          })()}
         </div>
 
         {/* BOTTOM SHEET (over map) — hero peek + search + chips + nudge stacked
