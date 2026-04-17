@@ -3670,6 +3670,16 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
         color:"#e6edf3",maxHeight:"85vh",overflow:"auto",
       }}>
         <div className="sheet-handle" style={{background:"rgba(255,255,255,.2)"}}/>
+        {/* Close X top-right — resolves Design feedback "no close affordance
+            visible, users dismiss by backdrop tap". Sticky so always reachable
+            even when modal is scrolled. */}
+        <button
+          aria-label={lang==="en"?"Close":"Fermer"}
+          onClick={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"close_x"});onClose()}}
+          style={{position:"absolute",top:14,right:14,width:30,height:30,
+            borderRadius:"50%",background:"rgba(255,255,255,.08)",border:"none",
+            color:"rgba(255,255,255,.7)",fontSize:18,cursor:"pointer",lineHeight:1,
+            zIndex:5,fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
         <div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
           margin:"-8px -24px 20px",padding:0}}/>
 
@@ -3784,10 +3794,13 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
             :(lang==="en"?"135 beaches monitored · 24/7 satellite data":"135 plages surveillées · données satellite 24/7")}
         </div>
 
-        {/* CTA section — sticky so it's always visible even if user hasn't scrolled */}
-        <div style={{position:"sticky",bottom:0,
-          background:"linear-gradient(180deg,transparent 0,#0A1714 16px)",
-          paddingTop:8,paddingBottom:12,marginLeft:-24,marginRight:-24,paddingLeft:24,paddingRight:24}}>
+        {/* CTA section — sticky so it's always visible even if user hasn't scrolled.
+            Solid #0A1714 bg + fade-in shadow ABOVE so card 03 doesn't bleed through
+            (was: transparent→ink gradient that made WEEKEND card visible under the
+            plan toggle per screenshot 05-paywall-control.png). */}
+        <div style={{position:"sticky",bottom:0,background:"#0A1714",
+          paddingTop:12,paddingBottom:12,marginLeft:-24,marginRight:-24,paddingLeft:24,paddingRight:24,
+          boxShadow:"0 -12px 16px -8px rgba(10,23,20,.85)"}}>
 
         {/* Plan toggle — monthly + annual */}
         {hasAnnual&&(
@@ -3879,18 +3892,21 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
               onActivated?.()
               onClose()
             }} style={{
-              width:"100%",padding: ctaOrder==="sample_first"?"16px 24px":"12px 16px",
+              width:"100%",
+              padding: ctaOrder==="sample_first"?"14px 16px":"12px 16px",
               marginTop: ctaOrder==="sample_first"?0:10,
-              // Promote visually when shown first
-              background: ctaOrder==="sample_first"?"rgba(255,199,44,.10)":"rgba(255,255,255,.05)",
-              border: ctaOrder==="sample_first"?"1px solid rgba(255,199,44,.35)":"1px solid rgba(255,255,255,.18)",
+              // Promote visually when shown first (Design v1 style — gold border + 4px halo)
+              background: ctaOrder==="sample_first"?"rgba(255,199,44,.06)":"rgba(255,255,255,.05)",
+              border: ctaOrder==="sample_first"?"1.5px solid #FFC72C":"1px solid rgba(255,255,255,.18)",
               borderRadius:14,
-              color:"#fff",
-              fontSize: ctaOrder==="sample_first"?16:13,
-              fontWeight:700,cursor:"pointer",fontFamily:"inherit",
-              display:"flex",alignItems:"center",justifyContent:"center",gap:8,lineHeight:1.2}}>
+              color: ctaOrder==="sample_first"?"#FFC72C":"#fff",
+              fontSize: ctaOrder==="sample_first"?15:13,
+              fontWeight:800,cursor:"pointer",fontFamily:"inherit",
+              boxShadow: ctaOrder==="sample_first"?"0 0 0 4px rgba(255,199,44,.08)":"none",
+              display:"flex",alignItems:"center",justifyContent:"center",gap:6,
+              lineHeight:1.15,whiteSpace:"nowrap"}}>
               <span style={{fontSize:15}}>⚡</span>
-              {lang==="en"?"Try free 24h — no card":"Essayer 24h gratuit — sans carte"}
+              {lang==="en"?"Try free 24h — no card":"Essayer 24h · sans carte"}
             </button>
           ) : null
           return ctaOrder==="sample_first"
