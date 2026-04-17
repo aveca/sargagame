@@ -268,6 +268,24 @@ jobs:
             echo "::warning::FTP deploy failed — sites may be up but files stale. Next run or manual-ftp-deploy.cjs peut corriger."
           fi
 
+      # ── ADR-B ops bus event: pipeline_success ──
+      # Writes event to ops-events.jsonl, uploaded as artifact; drained locally
+      # by `ops/drain_gh_events.py` via `gh run download` (Étape 5).
+      - name: Record pipeline_success event
+        if: success()
+        run: |
+          mkdir -p scripts/automation/data
+          node -e "require('fs').appendFileSync('scripts/automation/data/ops-events.jsonl', JSON.stringify({ts:Date.now(),source:'sargagame/daily_copernicus',kind:'pipeline_success',ok:1,payload:{run_id:process.env.GITHUB_RUN_ID,sha:process.env.GITHUB_SHA,event_name:process.env.GITHUB_EVENT_NAME}}) + '\n')"
+
+      - name: Upload ops events artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ops-events-${{ github.run_id }}-main
+          path: scripts/automation/data/ops-events.jsonl
+          if-no-files-found: ignore
+          retention-days: 90
+
   # ── Notify on failure ──────────────────────────────────
   notify-failure:
     needs: update-and-deploy
@@ -285,6 +303,17 @@ jobs:
           WORKFLOW_NAME: 'Daily Copernicus + Deploy'
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: node scripts/automation/notify-failure.cjs
+
+      # ADR-B: upload the pipeline_fail event written by notify-failure.cjs as
+      # an artifact; local drain cron fetches it via `gh run download`.
+      - name: Upload ops events artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ops-events-${{ github.run_id }}-fail
+          path: scripts/automation/data/ops-events.jsonl
+          if-no-files-found: ignore
+          retention-days: 90
 
   # ── Auto-retry on failure (once, after 5 min) ─────────
   retry-on-failure:
