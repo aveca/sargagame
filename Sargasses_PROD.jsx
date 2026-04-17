@@ -5434,7 +5434,7 @@ export default function App(){
           pointerEvents:"none",
           transition:"padding-top .25s ease",
         }}>
-          <div style={{pointerEvents:"auto",maxWidth:600,margin:"0 auto"}}>
+          <div style={{pointerEvents:"auto",maxWidth:460,margin:"0 auto"}}>
             <Header island={island} onIslandChange={setIsland}
               lang={lang} onLangToggle={toggleLang}
               theme={theme} onThemeToggle={toggleTheme}
@@ -5505,10 +5505,12 @@ export default function App(){
 
         {/* SeasonBanner removed — "saison active" doesn't help decide beach visit */}
 
-        {/* NEXT BEACH SUGGESTION — browse loop after closing a beach sheet */}
+        {/* NEXT BEACH SUGGESTION — browse loop after closing a beach sheet.
+            Same bottom-offset fix as the search stack (2026-04-17): 60→90 so
+            this pill clears the floating nav pill with a visible gap. */}
         {nextSuggestion&&!selectedBeach&&view==="map"&&(
           <div style={{position:"fixed",
-            bottom:"calc(60px + max(12px, env(safe-area-inset-bottom,0px)) + 12px)",
+            bottom:"calc(90px + max(12px, env(safe-area-inset-bottom,0px)) + 8px)",
             left:"max(12px, 3vw)",right:"max(12px, 3vw)",zIndex:710,
             maxWidth:480,margin:"0 auto",
             animation:"slideUp .35s cubic-bezier(.22,1,.36,1)"}}>
