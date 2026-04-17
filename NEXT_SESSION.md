@@ -65,6 +65,18 @@ gh run list --limit 10 --json conclusion,workflowName
 - **GP SEO push** : position 70 → cible 20 (5x traffic). Le workflow `weekly-seo-automation` lundi matin s'en occupe automatiquement.
 - **Modal_dismiss** : attendre data 4-8 semaines avant prochain iteration
 
+## 🐛 Bug connu carte (pré-existant, à fixer)
+
+**Superpositions + pins pas tous cliquables** sur `/` (carte) — utilisateur a confirmé le 2026-04-17 que ce bug existait AVANT mes commits. Pas causé par le hero banner (commit `f3e35e6` reverted quand même via `1d2b48d` pour pas cumuler le bruit).
+
+Hypothèses à investiguer au retour :
+- Leaflet cluster overlap en zone dense (Sainte-Marie NE, Diamant sud)
+- Z-index conflit entre le Header top pill et un element flottant
+- La carte des zones hazard orange/rouge pourrait intercepter des clics sur les pins
+- Potentiellement lié aux `417 dead clicks` que Clarity a tracké sur `/` dans audit-summary.json
+
+Pour diagnostic : screenshot + DevTools elements tab sur un pin non-cliquable → identifier quel element overlappe.
+
 ## 🚫 Ce qui reste bloqué côté Design
 
 - Map Hero V2 dark = à rejeter
