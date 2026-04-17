@@ -33,6 +33,9 @@ public/api/stripe-config.php
 .claude
 memory
 
+# Claude Code (local lock file if created)
+.claude/scheduled_tasks.lock
+
 # Local Playwright UI test output
 .ui-test/
 .playwright-mcp/

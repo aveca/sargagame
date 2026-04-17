@@ -116,6 +116,8 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
   const autoZoomDoneRef=useRef(false)
   const[threatDismissed,setThreatDismissed]=useState(()=>sessionStorage.getItem("sg_threat_dismissed")==="1")
   const banksLayerRef=useRef(null)
+  /** Keeps beach pins above async layers (AFAI grid canvas, etc.) so pins stay clickable */
+  const markerLayerGroupRef=useRef(null)
 
   // Init map once
   useEffect(()=>{
@@ -235,6 +237,8 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
     mapRef.current.on("click",onMapClick)
     group.addTo(mapRef.current)
     gridLayerRef.current=group
+    try{group.bringToBack()}catch(e){}
+    try{markerLayerGroupRef.current?.bringToFront?.()}catch(e){}
     return()=>{
       if(gridLayerRef.current){gridLayerRef.current.remove();gridLayerRef.current=null}
       mapRef.current?.off("click",onMapClick)
@@ -273,6 +277,8 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
     }
     group.addTo(mapRef.current)
     banksLayerRef.current=group
+    try{group.bringToBack()}catch(e){}
+    try{markerLayerGroupRef.current?.bringToFront?.()}catch(e){}
     return()=>{if(banksLayerRef.current){banksLayerRef.current.remove();banksLayerRef.current=null}}
   },[banksData,island])
 
@@ -338,8 +344,10 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
 
     // Dense-cluster click arbiter: when any marker is clicked, find the marker
     // whose center is closest to the actual click point and open THAT beach.
-    // Fixes the bug where an overlapping hit wrapper wins Leaflet's z-order
-    // but the user visually aimed at a different pin.
+    // Fixes overlapping hit wrappers vs z-order.
+    // If the global "closest" is implausibly far (stale coords / layer quirks),
+    // keep the marker that actually received the event (fallback).
+    const MAX_PICK_PX=40
     const pickClosest=(clickPt,fallbackBeach)=>{
       if(!clickPt||!mapRef.current)return fallbackBeach
       let bestBeach=fallbackBeach,bestD=Infinity
@@ -350,6 +358,7 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
         const d=dx*dx+dy*dy
         if(d<bestD){bestD=d;bestBeach=m._sgBeach}
       }
+      if(bestD>MAX_PICK_PX*MAX_PICK_PX&&fallbackBeach)return fallbackBeach
       return bestBeach
     }
 
@@ -385,10 +394,10 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
       const isTop=topIds.has(b.id)
       const isEmph=isSelected||isNearest||isTop
 
-      // DOT TIER — overlap-demoted, still tappable via 22px hit zone.
+      // DOT TIER — overlap-demoted; hit zone ≥32px so dense clusters stay tappable.
       if(tier[b.id]==="dot"&&!isSelected&&!isNearest){
         const dotColor=st.c
-        const dotHit=22
+        const dotHit=34
         const html=`<div style="width:${dotHit}px;height:${dotHit}px;display:flex;align-items:center;justify-content:center;cursor:pointer"><div style="width:9px;height:9px;border-radius:50%;background:${dotColor};border:1.5px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.35)"></div></div>`
         const dotIcon=L.divIcon({className:"",html,iconSize:[dotHit,dotHit],iconAnchor:[dotHit/2,dotHit/2]})
         const dotMarker=L.marker([b.lat,b.lng],{icon:dotIcon,riseOnHover:true,zIndexOffset:0})
@@ -426,6 +435,8 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
 
     heatGroup.addTo(mapRef.current)
     markerGroup.addTo(mapRef.current)
+    markerLayerGroupRef.current=markerGroup
+    try{markerGroup.bringToFront()}catch(e){}
 
     if(driftRef.current)clearInterval(driftRef.current)
     let tick=0
