@@ -1,53 +1,54 @@
 /sargasses
 
-Session 6 — Pre-saison, 2 semaines avant le pic.
+# Next session prompt (template)
 
-## Contexte
-- 3 clients premium (4.99 EUR/mois = ~15 EUR MRR), 3 emails, 0 feedbacks
-- Stripe: 2 liens recurrents (mensuel + annuel) avec trial 7j. Fonctionnel.
-- Apps Script backend deploye (v9), emails fonctionnels, webhook Stripe configure
-- 5 A/B tests actifs depuis le 6 avril — resultats attendus ~14 avril
-- GA4 custom dimensions: FAIL 403 — Analytics Admin API pas activee dans GCP. Les event params sont envoyes via gtag mais pas filtrables dans Explorations tant que l'API n'est pas activee.
-- Web Search Indexing API: FAIL 403 — pas activee dans GCP non plus. URLs pas soumises automatiquement.
-- SEO audit: timeout reduit (URL inspection limitee a 30 URLs). A relancer.
-- Exit-intent popup deploye (email capture avant depart)
-- Email weekend ameliore (CTA premium visible)
-- Posts Facebook/WhatsApp rediges dans marketing/posts-session5.md + images social generees
+*Mis à jour 2026-04-17.*
 
-## APIs Google a activer (bloquant)
-Aller dans Google Cloud Console (https://console.developers.google.com) pour le projet 48071671409 :
-1. Google Analytics Admin API → permet register-ga4-dimensions.cjs
-2. Web Search Indexing API → permet submit-indexing.cjs
+## Contexte actuel
 
-## A faire cette session
+- **MRR** : €34,93/mois (7 clients × 4,99). +133% en 5 jours (3 → 7 payants).
+- **Leads** : 58 subscribers, 10 bounces nettoyés lifetime.
+- **Stripe** : Payment Links same-tab fonctionnels, trial 7j. Webhook vers Apps Script `payments` sheet (source de vérité revenu).
+- **Apps Script** : v22 @38, endpoint `?action=funnel` source canonique.
+- **A/B live** : `pw_cta_order` (paid-first vs sample-first) + `pw_prelude` (direct redirect vs interstitiel Stripe Prelude). Mesure 4-8 semaines.
+- **Pipeline v3** : ERDDAP-live, 4×/j, stable. Beach Score 0-100 en prod.
+- **SEO** : MQ pos 3,8 (all-time best), GP 119 clk/j peak après fix cannibalization session 38.
 
-### 1. A/B tests — lire les vrais resultats (14 jours de data)
-- Les custom dims GA4 collectent-elles enfin des donnees ? (verifier apres activation API)
-- node scripts/automation/ab-evaluate.cjs → appliquer les gagnants
-- Si pas assez de data : attendre la saison (trafic naturel)
+## Shipped récemment (2026-04-17)
 
-### 2. Poster sur Facebook/WhatsApp (si pas fait manuellement)
-- Posts prets dans marketing/posts-session5.md
-- Images dans public/social-facebook-mq.png et public/social-facebook-gp.png
-- Groupe cible : "Bons Plans En Martinique" (105K membres) + groupes GP
-- Verifier resultats : combien de nouveaux emails apres le post ?
+15+ commits sur la journée :
+- Paywall : 7 itérations Design v1+v2 (social proof, Stripe Prelude, bullets lean, foot trust)
+- Map : 3 fixes click/overlap (b0bb553, c1c88dd, 158b7f4)
+- Trust page `/a-propos/` (commit 9ec81fe)
+- Pro tier 9,99€ scaffold (commit 5ce0ea2, activation manuelle Stripe Link requise)
+- CI optim : npm cache + rebase -X theirs + concurrency guard
 
-### 3. Check metriques reelles
-- node scripts/automation/daily-stats-check.cjs
-- GSC : GP position (etait 70, hreflang deploye fin mars)
-- GA4 : sessions, exit-intent conversion, push opt-in rate
-- Stripe dashboard : nouveaux abonnes trial ?
+## Décisions pendantes
 
-### 4. Mode saison haute (mai)
-- Le trafic va augmenter naturellement avec les sargasses
-- Adapter le contenu : messages plus urgents quand AFAI monte
-- Verifier les push notifs fonctionnent quand une plage passe en "avoid"
-- Monitorer le funnel : push recu → app ouverte → trial demarre
+1. **Activer Pro tier** : créer Stripe Payment Link 9,99€/mois + coller URL dans `STRIPE_LINK_PRO` (Sargasses_PROD.jsx:341) → +€10-30 MRR potentiel
+2. **Attendre A/B data** : ne pas itérer paywall avant 4+ semaines de mesure
+3. **GP SEO** : mesurer impact fix cannibalization, viser head term "sargasses guadeloupe"
+4. **Bug map click** : si ouvertures depuis dimanche confirment le fix, clore. Sinon diagnostiquer via DevTools sur élément non-cliquable.
 
-### 5. Si temps
-- Referral program (parraine = 1 mois offert)
-- Notifications personnalisees par plage favorite
-- Enrichissement SEO par plage (contenu unique long-tail)
-- Contacter les 3 clients existants (comprendre pourquoi ils paient)
+## Bloqueurs connus
 
-Regle : autonomie totale, commit+push apres chaque modif, ne jamais demander.
+- GA4 custom dimensions FAIL 403 (Analytics Admin API pas activée, projet GCP 48071671409)
+- Resend GP domaine pas vérifié (plan gratuit = 1 seul domaine)
+- Design en cours sur Trust/Morning Brief/Map Hero v2
+
+## Commandes démarrage session
+
+```bash
+# 1. Pipeline freshness
+node -e "const d=JSON.parse(require('fs').readFileSync('public/api/copernicus/sargassum.json'));const h=(Date.now()-new Date(d.updatedAt))/3.6e6;console.log('Source:',d.source,'Age:',h.toFixed(1)+'h',h<12?'OK':'STALE')"
+
+# 2. Funnel live
+curl -sL "https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec?action=funnel"
+
+# 3. GH Actions status
+gh run list --repo aveca/sargagame --limit 5
+
+# 4. Dernier commit + éventuel work in progress
+git log --oneline -5
+git status --short
+```
