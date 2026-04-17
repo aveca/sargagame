@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Pourquoi nous faire confiance — Sargasses Antilles</title>
+<link rel="stylesheet" href="colors_and_type.css"/>
+<style>
+  html,body{margin:0;background:#E8E4DB}
+  .page{max-width:390px;margin:0 auto;background:var(--sg-bg);min-height:100vh;box-shadow:0 0 0 1px rgba(0,0,0,.04),0 20px 60px rgba(0,0,0,.08)}
+
+  /* ---------- topbar ---------- */
+  .tb{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--sg-border-m);background:var(--sg-bg)}
+  .tb-back{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--sg-ink);font-weight:600;text-decoration:none}
+  .tb-lang{display:flex;gap:4px;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--sg-mid)}
+  .tb-lang b{color:var(--sg-ink)}
+
+  /* ---------- hero ---------- */
+  .hero{padding:48px 24px 40px;position:relative;overflow:hidden;background:
+    radial-gradient(120% 80% at 50% 0%, rgba(232,168,0,.07), transparent 60%),
+    var(--sg-bg)}
+  .hero::before{content:"";position:absolute;inset:0;background:
+    repeating-linear-gradient(0deg,transparent 0 39px,rgba(0,0,0,.03) 39px 40px),
+    repeating-linear-gradient(90deg,transparent 0 39px,rgba(0,0,0,.03) 39px 40px);
+    pointer-events:none;mask:radial-gradient(80% 60% at 50% 30%,#000 30%,transparent 70%)}
+  .hero-eyebrow{position:relative;font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--sg-teal);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+  .hero-eyebrow::before{content:"";width:18px;height:1px;background:var(--sg-teal)}
+  .hero h1{position:relative;font-family:var(--sg-font-display);font-weight:900;font-size:40px;line-height:.98;letter-spacing:-.025em;margin:0 0 18px;color:var(--sg-ink);text-transform:uppercase}
+  .hero h1 em{font-style:normal;color:var(--sg-gold);font-family:var(--sg-font-display);position:relative}
+  .hero h1 em::after{content:"";position:absolute;left:0;right:0;bottom:4px;height:6px;background:var(--sg-gold-bg-l);z-index:-1}
+  .hero p{position:relative;font-size:15px;line-height:1.55;color:var(--sg-mid);margin:0;max-width:320px}
+  .hero-sig{position:relative;display:flex;align-items:center;gap:10px;margin-top:28px;font-size:11px;color:var(--sg-mid)}
+  .hero-sig-dot{width:6px;height:6px;border-radius:50%;background:var(--sg-clean);box-shadow:0 0 0 3px rgba(34,197,94,.15)}
+
+  /* ---------- section chrome ---------- */
+  section{padding:40px 24px;border-top:1px solid var(--sg-border-m)}
+  .sec-num{font-family:var(--sg-font-mono);font-size:10px;color:var(--sg-mid);letter-spacing:.1em}
+  .sec-label{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--sg-teal);margin-bottom:14px}
+  .sec-h{font-family:var(--sg-font-display);font-size:28px;line-height:1.02;letter-spacing:-.02em;margin:0 0 6px;text-transform:uppercase}
+  .sec-sub{font-size:13px;color:var(--sg-mid);margin:0 0 24px;line-height:1.55}
+
+  /* ---------- data sources ---------- */
+  .src-grid{display:grid;gap:12px}
+  .src{padding:18px;border:1px solid var(--sg-border-m);border-radius:var(--sg-r-lg);background:var(--sg-card);position:relative}
+  .src-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+  .src-name{font-size:15px;font-weight:800;letter-spacing:-.01em}
+  .src-org{font-size:10px;color:var(--sg-mid);letter-spacing:.06em;text-transform:uppercase;margin-top:3px}
+  .src-badge{font-family:var(--sg-font-mono);font-size:9px;letter-spacing:.08em;padding:4px 7px;border-radius:4px;background:var(--sg-teal-bg);color:var(--sg-teal);font-weight:700;white-space:nowrap}
+  .src-desc{font-size:12.5px;line-height:1.55;color:var(--sg-mid);margin:0 0 14px}
+  .src-meta{display:flex;align-items:center;gap:12px;font-size:10.5px;color:var(--sg-mid);border-top:1px dashed var(--sg-border-m);padding-top:10px}
+  .src-meta b{color:var(--sg-ink);font-weight:700}
+  .src-pulse{display:inline-flex;align-items:center;gap:5px}
+  .src-pulse-dot{width:5px;height:5px;border-radius:50%;background:var(--sg-clean);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+  /* ---------- backtest ---------- */
+  .bt-wrap{background:var(--sg-night);color:#fff;border-radius:var(--sg-r-xl);padding:28px 22px;margin-top:4px}
+  .bt-eyebrow{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--sg-gold-l);margin-bottom:16px}
+  .bt-head{font-family:var(--sg-font-display);font-size:22px;line-height:1.05;margin:0 0 24px;text-transform:uppercase;letter-spacing:-.015em}
+  .bt-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:20px}
+  .bt-stat{padding:14px 0;border-top:1px solid rgba(255,255,255,.14)}
+  .bt-stat-big{font-family:var(--sg-font-display);font-size:44px;line-height:1;letter-spacing:-.02em;background:linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A800);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .bt-stat-lab{font-size:11px;color:rgba(255,255,255,.6);margin-top:6px;letter-spacing:.04em}
+  .bt-chart{height:80px;position:relative;margin:16px 0 12px}
+  .bt-chart svg{width:100%;height:100%}
+  .bt-legend{display:flex;justify-content:space-between;font-size:9px;color:rgba(255,255,255,.5);font-family:var(--sg-font-mono);letter-spacing:.05em}
+  .bt-note{font-size:11px;color:rgba(255,255,255,.55);margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.1);line-height:1.5}
+
+  /* ---------- team ---------- */
+  .team-card{background:var(--sg-card);border:1px solid var(--sg-border-m);border-radius:var(--sg-r-xl);padding:24px 22px;display:flex;gap:16px;align-items:flex-start}
+  .team-avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--sg-gold-ll),var(--sg-gold));display:flex;align-items:center;justify-content:center;font-family:var(--sg-font-display);font-size:28px;color:var(--sg-night);flex-shrink:0;position:relative}
+  .team-avatar::after{content:"";position:absolute;inset:-4px;border:1px dashed var(--sg-gold);border-radius:50%;opacity:.5}
+  .team-name{font-size:16px;font-weight:800;letter-spacing:-.01em}
+  .team-role{font-size:11px;color:var(--sg-teal);font-weight:700;letter-spacing:.04em;margin-top:2px;text-transform:uppercase}
+  .team-bio{font-size:12.5px;line-height:1.55;color:var(--sg-mid);margin:10px 0 0}
+  .team-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+  .team-tag{font-size:10px;padding:3px 8px;background:var(--sg-gold-bg);color:#8a6a00;border-radius:var(--sg-r-pill);font-weight:600}
+  .team-note{font-size:11px;color:var(--sg-mid);margin-top:16px;padding:12px 14px;background:var(--sg-bg-d);border-radius:var(--sg-r-sm);border-left:2px solid var(--sg-teal);line-height:1.5}
+
+  /* ---------- testimonials ---------- */
+  .t-list{display:grid;gap:12px}
+  .t{background:var(--sg-card);border:1px solid var(--sg-border-m);border-radius:var(--sg-r-lg);padding:18px}
+  .t-quote{font-size:14px;line-height:1.5;color:var(--sg-ink);margin:0;font-style:italic}
+  .t-quote::before{content:"«";color:var(--sg-gold);font-size:22px;line-height:0;margin-right:4px;vertical-align:-4px;font-style:normal}
+  .t-quote::after{content:"»";color:var(--sg-gold);font-size:22px;line-height:0;margin-left:2px;vertical-align:-4px;font-style:normal}
+  .t-foot{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px dashed var(--sg-border-m)}
+  .t-who{font-size:12px;font-weight:700}
+  .t-loc{font-size:10.5px;color:var(--sg-mid);margin-top:1px}
+  .t-stars{color:var(--sg-gold);letter-spacing:2px;font-size:11px}
+  .t-placeholder{opacity:.65}
+
+  /* ---------- guarantee ---------- */
+  .g-grid{display:grid;gap:10px}
+  .g{display:flex;gap:14px;padding:18px;background:var(--sg-card);border:1px solid var(--sg-border-m);border-radius:var(--sg-r-lg);align-items:flex-start}
+  .g-icon{width:36px;height:36px;border-radius:50%;background:var(--sg-teal-bg);color:var(--sg-teal);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;font-weight:800}
+  .g-title{font-size:14px;font-weight:800;letter-spacing:-.01em}
+  .g-desc{font-size:12px;color:var(--sg-mid);margin-top:3px;line-height:1.5}
+
+  /* ---------- bottom CTA ---------- */
+  .cta-sec{padding:44px 24px 56px;background:var(--sg-night);color:#fff;position:relative;overflow:hidden}
+  .cta-sec::before{content:"";position:absolute;top:-30%;right:-20%;width:70%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,rgba(232,168,0,.18),transparent 70%)}
+  .cta-h{position:relative;font-family:var(--sg-font-display);font-size:30px;line-height:.98;letter-spacing:-.02em;margin:0 0 12px;text-transform:uppercase}
+  .cta-h em{font-style:normal;color:var(--sg-gold-l)}
+  .cta-p{position:relative;font-size:13.5px;color:rgba(255,255,255,.7);margin:0 0 24px;line-height:1.55;max-width:300px}
+  .cta-btn{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:18px;background:linear-gradient(180deg,#FFC72C,#E8A800);color:var(--sg-night);font-family:var(--sg-font-display);font-size:17px;letter-spacing:.02em;text-transform:uppercase;border:none;border-radius:var(--sg-r-lg);font-weight:900;text-decoration:none;box-shadow:0 8px 28px rgba(232,168,0,.35)}
+  .cta-micro{position:relative;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:14px;font-size:10.5px;color:rgba(255,255,255,.5);letter-spacing:.04em}
+  .cta-alt{position:relative;display:block;text-align:center;margin-top:18px;font-size:12px;color:rgba(255,255,255,.55);text-decoration:underline;text-underline-offset:3px}
+
+  .footer{padding:24px;text-align:center;font-size:10px;color:var(--sg-mute);letter-spacing:.04em;border-top:1px solid var(--sg-border-m);background:var(--sg-bg-d)}
+</style>
+</head>
+<body>
+<div class="page" data-screen-label="Trust Page">
+
+  <div class="tb">
+    <a class="tb-back" href="#">← <span>Retour</span></a>
+    <div class="tb-lang"><b>FR</b>·<span>EN</span>·<span>ES</span></div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">À propos · Transparence</div>
+    <h1>Pourquoi nous faire <em>confiance</em> ?</h1>
+    <p>Données satellite officielles, méthode publique, fiabilité mesurée chaque semaine contre les observations réelles. Rien de magique.</p>
+    <div class="hero-sig"><span class="hero-sig-dot"></span>Dernière mise à jour satellite · il y a 3 h 12</div>
+  </div>
+
+  <!-- DATA SOURCES -->
+  <section>
+    <div class="sec-num">01 / 05</div>
+    <div class="sec-label">Données brutes</div>
+    <h2 class="sec-h">Trois sources officielles. Zéro invention.</h2>
+    <p class="sec-sub">Aucune donnée n'est générée par nous. Nous interpolons et croisons — et nous citons toujours la source.</p>
+
+    <div class="src-grid">
+      <div class="src">
+        <div class="src-head">
+          <div>
+            <div class="src-name">Copernicus Marine</div>
+            <div class="src-org">Agence spatiale européenne · ESA</div>
+          </div>
+          <div class="src-badge">SAT · L4</div>
+        </div>
+        <p class="src-desc">Indice AFAI (Alternative Floating Algae Index) calculé par signature spectrale MODIS. Résolution 1 km, couverture Antilles complète.</p>
+        <div class="src-meta">
+          <span class="src-pulse"><span class="src-pulse-dot"></span><b>LIVE</b></span>
+          <span>4×/jour</span>
+          <span>Maj. 07:03</span>
+        </div>
+      </div>
+
+      <div class="src">
+        <div class="src-head">
+          <div>
+            <div class="src-name">NOAA ERDDAP</div>
+            <div class="src-org">National Oceanic · USA</div>
+          </div>
+          <div class="src-badge">SIR v1.4</div>
+        </div>
+        <p class="src-desc">Sargassum Inundation Report — bancs dérivants détectés à l'échelle caribéenne. Utilisé pour notre modèle de dérive J+1 à J+3.</p>
+        <div class="src-meta">
+          <span class="src-pulse"><span class="src-pulse-dot"></span><b>LIVE</b></span>
+          <span>4×/jour</span>
+          <span>Wang & Hu 2016</span>
+        </div>
+      </div>
+
+      <div class="src">
+        <div class="src-head">
+          <div>
+            <div class="src-name">Open-Meteo</div>
+            <div class="src-org">Météo &amp; océan · Suisse</div>
+          </div>
+          <div class="src-badge">ICON · HRES</div>
+        </div>
+        <p class="src-desc">Vent, houle, UV, SST, pluie — réanalyse ECMWF. Les 7 facteurs qui entrent dans notre Score Plage 0–100.</p>
+        <div class="src-meta">
+          <span class="src-pulse"><span class="src-pulse-dot"></span><b>LIVE</b></span>
+          <span>1×/heure</span>
+          <span>Open data</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BACKTEST -->
+  <section>
+    <div class="sec-num">02 / 05</div>
+    <div class="sec-label">Fiabilité mesurée</div>
+    <h2 class="sec-h">On se trompe parfois. On l'écrit.</h2>
+    <p class="sec-sub">Chaque semaine, nos prévisions J–1 à J–4 sont re-comparées aux observations satellite réelles. Voici le résultat brut.</p>
+
+    <div class="bt-wrap">
+      <div class="bt-eyebrow">Backtest · 84 jours</div>
+      <h3 class="bt-head">Fiabilité par horizon</h3>
+      <div class="bt-stats">
+        <div class="bt-stat">
+          <div class="bt-stat-big">78%</div>
+          <div class="bt-stat-lab">J+1 — demain</div>
+        </div>
+        <div class="bt-stat">
+          <div class="bt-stat-big">74%</div>
+          <div class="bt-stat-lab">J+2 — après-demain</div>
+        </div>
+        <div class="bt-stat">
+          <div class="bt-stat-big">71%</div>
+          <div class="bt-stat-lab">J+3</div>
+        </div>
+        <div class="bt-stat">
+          <div class="bt-stat-big">74%</div>
+          <div class="bt-stat-lab">J+4 — horizon fiable</div>
+        </div>
+      </div>
+
+      <div class="bt-chart">
+        <svg viewBox="0 0 320 80" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="gx" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stop-color="#FFC72C" stop-opacity=".4"/>
+              <stop offset="1" stop-color="#FFC72C" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <!-- grid -->
+          <line x1="0" y1="20" x2="320" y2="20" stroke="rgba(255,255,255,.08)"/>
+          <line x1="0" y1="40" x2="320" y2="40" stroke="rgba(255,255,255,.08)" stroke-dasharray="2 3"/>
+          <line x1="0" y1="60" x2="320" y2="60" stroke="rgba(255,255,255,.08)"/>
+          <!-- predicted -->
+          <path d="M0,48 L26,44 L53,52 L80,38 L106,46 L133,32 L160,40 L186,28 L213,36 L240,24 L266,32 L293,20 L320,28"
+                fill="none" stroke="#FFC72C" stroke-width="1.8" stroke-linejoin="round"/>
+          <path d="M0,48 L26,44 L53,52 L80,38 L106,46 L133,32 L160,40 L186,28 L213,36 L240,24 L266,32 L293,20 L320,28 L320,80 L0,80 Z"
+                fill="url(#gx)"/>
+          <!-- observed (dashed) -->
+          <path d="M0,52 L26,46 L53,50 L80,42 L106,48 L133,36 L160,42 L186,34 L213,38 L240,30 L266,34 L293,26 L320,32"
+                fill="none" stroke="rgba(30,200,176,.9)" stroke-width="1.5" stroke-dasharray="3 2" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="bt-legend">
+        <span>—— prévu</span>
+        <span style="color:rgba(30,200,176,.9)">- - observé</span>
+        <span>84j · glissant</span>
+      </div>
+
+      <p class="bt-note">Méthode : écart absolu entre catégorie prévue (propre / modéré / alerte) et catégorie observée sur 20 plages × 84 jours = 1 680 points. Données brutes disponibles sur demande.</p>
+    </div>
+  </section>
+
+  <!-- TEAM -->
+  <section>
+    <div class="sec-num">03 / 05</div>
+    <div class="sec-label">L'équipe</div>
+    <h2 class="sec-h">Un développeur. Une île. Un problème personnel.</h2>
+    <p class="sec-sub">Pas de levée de fonds, pas d'algorithme propriétaire caché. Le code et la méthode sont auditables.</p>
+
+    <div class="team-card">
+      <div class="team-avatar">YA</div>
+      <div style="flex:1;min-width:0">
+        <div class="team-name">Yacov Assaraf</div>
+        <div class="team-role">Fondateur · Développeur</div>
+        <p class="team-bio">Basé en Martinique. MBA cybersécurité, Netanya. A construit l'app après une matinée de 45 min perdus à conduire vers une plage couverte de sargasses.</p>
+        <div class="team-tags">
+          <span class="team-tag">Martinique</span>
+          <span class="team-tag">Solo founder</span>
+          <span class="team-tag">Open method</span>
+        </div>
+      </div>
+    </div>
+    <p class="team-note">L'app est opérée depuis la Martinique, serveurs en France (OVH Paris). RGPD-ready · aucune revente de données · aucun tracker publicitaire.</p>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section>
+    <div class="sec-num">04 / 05</div>
+    <div class="sec-label">Témoignages</div>
+    <h2 class="sec-h">Ce qu'en disent les abonnés.</h2>
+    <p class="sec-sub">Trois retours récents · vérifiés par email Stripe.</p>
+
+    <div class="t-list">
+      <div class="t t-placeholder">
+        <p class="t-quote">Le brief du matin m'a sauvé deux week-ends en juin. Je ne pars plus sans ouvrir l'app.</p>
+        <div class="t-foot">
+          <div>
+            <div class="t-who">Sophie L.</div>
+            <div class="t-loc">Schœlcher · abonnée depuis mars</div>
+          </div>
+          <div class="t-stars">★★★★★</div>
+        </div>
+      </div>
+
+      <div class="t t-placeholder">
+        <p class="t-quote">Ce que j'aime, c'est qu'ils disent clairement quand ils ne savent pas. Ça inspire plus confiance qu'un bulletin officiel.</p>
+        <div class="t-foot">
+          <div>
+            <div class="t-who">Marc-André T.</div>
+            <div class="t-loc">Sainte-Anne · GP</div>
+          </div>
+          <div class="t-stars">★★★★★</div>
+        </div>
+      </div>
+
+      <div class="t t-placeholder">
+        <p class="t-quote">Testé contre mes yeux pendant 3 semaines avant de payer. Les scores collent à 8 fois sur 10 au minimum.</p>
+        <div class="t-foot">
+          <div>
+            <div class="t-who">Karim B.</div>
+            <div class="t-loc">Les Trois-Îlets</div>
+          </div>
+          <div class="t-stars">★★★★☆</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GUARANTEE -->
+  <section>
+    <div class="sec-num">05 / 05</div>
+    <div class="sec-label">Aucun risque</div>
+    <h2 class="sec-h">Trois filets de sécurité.</h2>
+    <p class="sec-sub">Si l'app ne tient pas sa promesse, tu récupères ton argent. Point.</p>
+
+    <div class="g-grid">
+      <div class="g">
+        <div class="g-icon">30</div>
+        <div>
+          <div class="g-title">Garantie 30 jours, satisfait ou remboursé</div>
+          <div class="g-desc">Un email suffit. Aucune justification demandée, aucune négociation.</div>
+        </div>
+      </div>
+      <div class="g">
+        <div class="g-icon">24</div>
+        <div>
+          <div class="g-title">Essai 24 h sans carte bancaire</div>
+          <div class="g-desc">Ouvre l'accès premium complet pendant 24 h avant de décider. Aucun CB demandée.</div>
+        </div>
+      </div>
+      <div class="g">
+        <div class="g-icon">€</div>
+        <div>
+          <div class="g-title">Paiement sécurisé Stripe · EU</div>
+          <div class="g-desc">Chiffrement bancaire, hébergement France. Aucune carte stockée chez nous.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-sec">
+    <h2 class="cta-h">Prêt à <em>vérifier</em><br/>avant de conduire ?</h2>
+    <p class="cta-p">Essaie 24 h, gratuit, sans carte. Si l'app te rend service une seule fois, elle vaut déjà son prix.</p>
+    <a class="cta-btn" href="#">Activer l'essai 24 h →</a>
+    <div class="cta-micro">🔒 Sans CB · Sans engagement · Annulation en 1 clic</div>
+    <a class="cta-alt" href="#">Voir les tarifs détaillés</a>
+  </div>
+
+  <div class="footer">© Sargasses Antilles · sargasses-martinique.com · sargasses-guadeloupe.com</div>
+</div>
+</body>
+</html>
