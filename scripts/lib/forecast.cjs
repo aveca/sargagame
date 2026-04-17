@@ -377,8 +377,11 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
     const meaningfulTrend = series[3].afai - series[0].afai
 
     // Arrival detection: significant arrival signal on day 1, 2 or 3
-    // This is the USER-FACING "sargasses coming soon" signal
-    // Threshold 0.03 = bank within ~30km OR bigger bank within 40km
+    // This is the USER-FACING "sargasses coming soon" signal — drives banner,
+    // disclaimer, drift label, and score penalty in lockstep. Threshold 0.05
+    // is the point at which the signal is strong enough to actually move the
+    // displayed forecast numbers; weaker signals (0.03-0.04) produced flat
+    // forecasts paired with "arrival imminent" messaging = false alarms.
     const maxArrival = beach && islandBanks.length > 0
       ? Math.max(
           arrivalSignalFromBanks(beach, islandBanks, 1),
@@ -386,7 +389,7 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
           arrivalSignalFromBanks(beach, islandBanks, 3),
         )
       : 0
-    const arrivalDetected = maxArrival >= 0.03 && level.afai < 0.20
+    const arrivalDetected = maxArrival >= 0.05 && level.afai < 0.20
 
     // Forecast method label
     let forecastMethod, forecastDisclaimer
@@ -407,15 +410,11 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
       forecastDisclaimer = 'Persistance simple (half-life 3.5j). Pas de signal externe.'
     }
 
-    // arrivalDetected overrides trend-based drift only when signal is strong enough (>=0.05).
-    // Weak borderline signals (0.03–0.04) still set forecastMethod=arrival-banks but don't
-    // override the drift label — the actual trajectory determines drift in that case.
-    const strongArrival = arrivalDetected && maxArrival >= 0.05
-    const driftDir = strongArrival ? 'up'
+    const driftDir = arrivalDetected ? 'up'
       : meaningfulTrend > 0.05 ? 'up'
       : meaningfulTrend < -0.05 ? 'down'
       : 'stable'
-    const driftLbl = strongArrival ? 'Arrivee imminente (banc detecte)'
+    const driftLbl = arrivalDetected ? 'Arrivee imminente (banc detecte)'
       : meaningfulTrend > 0.05 ? 'Derive possible vers la cote'
       : meaningfulTrend < -0.05 ? 'Dispersion attendue'
       : 'Stable'
