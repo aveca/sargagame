@@ -337,6 +337,11 @@ function findMostRelevantThreat(banks,beaches,favorites,userPos,island){
 // Stripe — Payment Links (fallback popup) + Buy Button (embedded, si configure)
 const STRIPE_LINK_MONTHLY="https://buy.stripe.com/6oU3cxgg36J48Ox6ZZ0co0s" // 4.99 EUR/mois + 7d trial
 const STRIPE_LINK_ANNUAL="https://buy.stripe.com/14AeVf0h5c3o4yhgAz0co0r" // 39.99 EUR/an + 7d trial
+// Pro tier — activate by creating a new Stripe Payment Link @ 9.99 EUR/mo
+// (dashboard.stripe.com/payment-links) then paste the URL below. When empty,
+// the Pro tier is not shown anywhere in the UI. See `hasPro` flag below.
+const STRIPE_LINK_PRO=""   // TODO: 9.99 EUR/mo + 7d trial — Pro tier (WhatsApp alerts + 14d forecast + API)
+const STRIPE_BUY_BTN_PRO=""  // TODO: Buy Button ID for Pro tier
 const STRIPE_PK="pk_live_51PW2TGP9RK8Orx516Nx5mGUixrk2ozE8ppOcygq9Wkb1Tz5CkozRcRFcPAv53uNOmuVCHakWAse09I7KXuUiAb5r00CKYHh9zE"
 // Buy Button IDs — creer sur dashboard.stripe.com/buy-buttons puis coller ici
 const STRIPE_BUY_BTN_MONTHLY="buy_btn_1TJLdoP9RK8Orx514zzwL1B4" // 4.99€/mois + trial 7j + taxes
@@ -3596,6 +3601,11 @@ function SeasonBanner({lang}){
 function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
   const LL=T[lang]||T.fr
   const hasAnnual=!!STRIPE_LINK_ANNUAL
+  const hasPro=!!STRIPE_LINK_PRO
+  // isPro = user has paid for the Pro tier (9.99€, unlocks WhatsApp alerts,
+  // 14-day forecast, priority email support). Separate flag from sg_premium
+  // so existing €4.99 subs keep their current access; Pro is strictly additive.
+  const isPro=typeof window!=="undefined"&&localStorage.getItem("sg_premium_pro")==="1"
   // Real beach data from live sargassum.json — makes the "morning brief" preview genuine
   // levels is keyed by numeric index ("0","1",...); beach id is in b.id field
   const _lvls=Object.values(sargData?.levels||{})
@@ -3629,7 +3639,13 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
   },[onClose,source])
   const[plan,setPlan]=useState("monthly")
   const headline=lang==="en"?"Your daily pick every morning at 7am":"Ta reco chaque matin à 7h"
-  const effectivePlan=hasAnnual?plan:"monthly"
+  // effectivePlan is what we ship to Stripe on CTA click. Fallback chain:
+  //   pro → annual → monthly, only if Stripe Link is configured for that tier.
+  const effectivePlan=
+    (plan==="pro"&&hasPro)?"pro"
+    :(plan==="annual"&&hasAnnual)?"annual"
+    :"monthly"
+  const stripeLinkFor={monthly:STRIPE_LINK_MONTHLY,annual:STRIPE_LINK_ANNUAL,pro:STRIPE_LINK_PRO}
   // A/B test pw_cta_order: control shows paid-first+sample-below,
   // sample_first shows sample-above+paid-below. Hypothesis: 85% dismiss
   // on paywall is driven by card-friction signal — leading with a
@@ -3798,6 +3814,35 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
             <div>{lang==="en"?"Annual":"Annuel"}</div>
             <div style={{fontSize:18,fontWeight:700,marginTop:2}}>{lang==="en"?"€39.99":"39,99 €"}<span style={{fontSize:11,fontWeight:400}}>/{lang==="en"?"yr":"an"}</span></div>
           </button>
+          {hasPro&&(
+          <button onClick={()=>{setPlan("pro");track("sg_plan_toggle",{plan:"pro"})}} style={{
+            flex:1,padding:"10px 8px",borderRadius:12,cursor:"pointer",fontFamily:"inherit",position:"relative",
+            background:plan==="pro"?"rgba(255,100,100,.12)":"rgba(255,255,255,.04)",
+            border:plan==="pro"?"1.5px solid rgba(255,100,100,.45)":"1.5px solid rgba(255,255,255,.1)",
+            color:plan==="pro"?"#fff":"rgba(255,255,255,.5)",fontSize:13,fontWeight:600,
+            transition:"all .2s"}}>
+            <div style={{position:"absolute",top:-8,right:8,background:"#ff6464",color:"#fff",
+              fontSize:9,fontWeight:800,padding:"2px 7px",borderRadius:100,letterSpacing:".02em"}}>
+              PRO
+            </div>
+            <div>{lang==="en"?"Pro":"Pro"}</div>
+            <div style={{fontSize:18,fontWeight:700,marginTop:2}}>{lang==="en"?"€9.99":"9,99 €"}<span style={{fontSize:11,fontWeight:400}}>/{lang==="en"?"mo":"mois"}</span></div>
+          </button>
+          )}
+        </div>
+        )}
+        {/* Pro tier perks — only shown when Pro is selected and configured.
+            Enables: WhatsApp instant alerts, 14-day forecast (vs 7), 90-day
+            history, API access for power users (hoteliers, surfers, fishermen). */}
+        {plan==="pro"&&hasPro&&(
+        <div style={{background:"rgba(255,100,100,.05)",border:"1px solid rgba(255,100,100,.15)",
+          borderRadius:12,padding:"10px 14px",marginBottom:14,fontSize:12,color:"rgba(255,255,255,.75)"}}>
+          <div style={{fontWeight:700,color:"#ff8a8a",marginBottom:4}}>
+            {lang==="en"?"What's in Pro":"Dans Pro"}
+          </div>
+          <div>• {lang==="en"?"Instant WhatsApp alerts when a beach flips":"Alertes WhatsApp instantanées dès qu'une plage change"}</div>
+          <div>• {lang==="en"?"14-day forecast (vs 7-day standard)":"Prévisions 14 jours (vs 7 standard)"}</div>
+          <div>• {lang==="en"?"90-day history + full API access":"Historique 90 jours + accès API complet"}</div>
         </div>
         )}
 
@@ -3807,7 +3852,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
           const paidCTA = (
             <button key="paid" onClick={()=>{
               track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown"})
-              const link=effectivePlan==="annual"?STRIPE_LINK_ANNUAL:STRIPE_LINK_MONTHLY
+              const link=stripeLinkFor[effectivePlan]||STRIPE_LINK_MONTHLY
               track("sg_checkout_redirect",{plan:effectivePlan,source:source||"unknown",destination:"payment_link"})
               // Defer navigation by one macrotask so both sendBeacon calls above flush
               // before unload (see project_funnel_cta_redirect_leak.md).
