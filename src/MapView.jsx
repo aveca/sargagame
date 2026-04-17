@@ -246,6 +246,8 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
   },[afaiGrid,island,beaches,onBeachClick])
 
   // Render offshore sargassum banks (hull polygons + drift arrows)
+  // Visual weight tuned to read as "data layer" not "alarm overlay": low fill (.06),
+  // dashed thin stroke, muted drift arrow. Hidden at low zoom where shapes dominate the map.
   useEffect(()=>{
     if(!mapRef.current)return
     if(banksLayerRef.current){banksLayerRef.current.remove();banksLayerRef.current=null}
@@ -253,26 +255,28 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
     const isGP=island==="gp"
     const banks=banksData.banks.filter(b=>b.island===(isGP?"gp":"mq"))
     if(!banks.length)return
+    const zoom=mapRef.current.getZoom?.()||9
+    if(zoom<9)return // national view: banks too dominant visually
     const group=L.layerGroup()
     for(const bank of banks){
-      // Hull polygon (bank shape)
+      // Hull polygon (bank shape) — dashed thin border, very low fill
       if(bank.hull?.length>=3){
-        const color=bank.mass>=0.07?"rgba(232,82,42,.5)":"rgba(232,168,0,.5)"
-        const fill=bank.mass>=0.07?"rgba(232,82,42,.2)":"rgba(232,168,0,.15)"
-        L.polygon(bank.hull,{color,fillColor:fill,weight:1.5,fillOpacity:1,interactive:false}).addTo(group)
+        const color=bank.mass>=0.07?"rgba(232,82,42,.28)":"rgba(232,168,0,.28)"
+        const fill=bank.mass>=0.07?"rgba(232,82,42,.06)":"rgba(232,168,0,.05)"
+        L.polygon(bank.hull,{color,fillColor:fill,weight:0.8,fillOpacity:1,dashArray:"4,3",interactive:false}).addTo(group)
       }
       // Drift arrow: centroid now → centroid 24h prediction
       const pred24=bank.drift?.predictions?.["24h"]
       if(pred24?.centroid&&bank.centroid){
         const from=bank.centroid,to=pred24.centroid
-        L.polyline([from,to],{color:"rgba(232,82,42,.6)",weight:2,dashArray:"6,4",interactive:false}).addTo(group)
+        L.polyline([from,to],{color:"rgba(232,82,42,.35)",weight:1.2,dashArray:"5,4",interactive:false}).addTo(group)
         // Arrowhead at destination
         const dx=to[1]-from[1],dy=to[0]-from[0]
         const angle=Math.atan2(dy,dx)
-        const aLen=0.015
+        const aLen=0.012
         const p1=[to[0]-Math.sin(angle+0.5)*aLen,to[1]-Math.cos(angle+0.5)*aLen]
         const p2=[to[0]-Math.sin(angle-0.5)*aLen,to[1]-Math.cos(angle-0.5)*aLen]
-        L.polyline([p1,to,p2],{color:"rgba(232,82,42,.6)",weight:2,interactive:false}).addTo(group)
+        L.polyline([p1,to,p2],{color:"rgba(232,82,42,.45)",weight:1.2,interactive:false}).addTo(group)
       }
     }
     group.addTo(mapRef.current)
@@ -280,7 +284,7 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
     try{group.bringToBack()}catch(e){}
     try{markerLayerGroupRef.current?.bringToFront?.()}catch(e){}
     return()=>{if(banksLayerRef.current){banksLayerRef.current.remove();banksLayerRef.current=null}}
-  },[banksData,island])
+  },[banksData,island,zoomTick])
 
   // Update markers + heatmap
   useEffect(()=>{
