@@ -18,6 +18,7 @@ const { Resend } = require('resend')
 const API_KEY = process.env.RESEND_API_KEY
 const SUBSCRIBERS_PATH = path.join(__dirname, 'data', 'subscribers.json')
 const SENT_PATH = path.join(__dirname, 'data', 'welcome-sent.json')
+const BOUNCED_PATH = path.join(__dirname, 'data', 'bounced-emails.json')
 const SARG_PATH = path.join(__dirname, '../../public/api/copernicus/sargassum.json')
 const BEACHES_PATH = path.join(__dirname, '../../public/data/beaches-list.json')
 
@@ -117,9 +118,10 @@ async function main() {
   const subscribers = loadJSON(SUBSCRIBERS_PATH, [])
   const sent = loadJSON(SENT_PATH, [])
   const sentSet = new Set(sent)
+  const bouncedSet = new Set(loadJSON(BOUNCED_PATH, []))
 
-  // Find new subscribers not yet welcomed
-  const newSubs = subscribers.filter(s => s.email && !sentSet.has(s.email))
+  // Find new subscribers not yet welcomed (skip bounced)
+  const newSubs = subscribers.filter(s => s.email && !sentSet.has(s.email) && !bouncedSet.has(s.email))
 
   if (!newSubs.length) {
     console.log('No new subscribers to welcome.')
