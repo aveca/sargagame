@@ -23,6 +23,7 @@ const API_KEY = process.env.RESEND_API_KEY
 const FORCE = process.argv.includes('--force')
 const SUBSCRIBERS_PATH = path.join(__dirname, 'data', 'subscribers.json')
 const DRIP_SENT_PATH = path.join(__dirname, 'data', 'drip-sent.json')
+const BOUNCED_PATH = path.join(__dirname, 'data', 'bounced-emails.json')
 const SARG_PATH = path.join(__dirname, '../../public/api/copernicus/sargassum.json')
 const BEACHES_PATH = path.join(__dirname, '../../public/data/beaches-list.json')
 const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec'
@@ -313,6 +314,7 @@ async function main() {
   const subscribers = loadJSON(SUBSCRIBERS_PATH, [])
   const dripSent = loadJSON(DRIP_SENT_PATH, {})
   const beaches = loadJSON(BEACHES_PATH, [])
+  const bouncedSet = new Set(loadJSON(BOUNCED_PATH, []))
 
   if (!subscribers.length) {
     console.log('No subscribers.')
@@ -336,6 +338,7 @@ async function main() {
 
   for (const sub of subscribers) {
     const email = sub.email
+    if (bouncedSet.has(email)) continue
     const island = (sub.island || 'MQ').toUpperCase()
     const age = daysSince(sub.date)
     const record = dripSent[email] || {}
