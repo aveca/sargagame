@@ -69,8 +69,36 @@
       "status": "sent",
       "error": null,
       "url": "https://generationvoyage.fr/plus-belles-plages-guadeloupe/"
+    },
+    "toploc.com": {
+      "date": "2026-04-18T22:55:44.669Z",
+      "email": "jean.dupont@email.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://toploc.com/blog/amerique/plages-guadeloupe"
+    },
+    "antilleslocation.com": {
+      "date": "2026-04-18T22:55:49.798Z",
+      "email": "***RGPD-PURGE***",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.antilleslocation.com/blog-voyage/les-plus-belles-plages-de-la-guadeloupe.html"
+    },
+    "espaces.ca": {
+      "date": "2026-04-18T22:55:51.339Z",
+      "email": "***RGPD-PURGE***",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.espaces.ca/articles/destinations/25273-les-7-plus-belles-plages-de-la-martinique"
+    },
+    "airvacances.fr": {
+      "date": "2026-04-18T22:55:59.003Z",
+      "email": "***RGPD-PURGE***",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.airvacances.fr/sargasses-guadeloupe-martinique-periodes-eviter/"
     }
   },
-  "lastRun": "2026-04-14T11:03:05.138Z",
-  "totalSent": 10
+  "lastRun": "2026-04-18T22:55:59.003Z",
+  "totalSent": 14
 }
