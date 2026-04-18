@@ -1,19 +1,33 @@
 {
-  "generatedAt": "2026-04-13T16:18:29.688Z",
+  "generatedAt": "2026-04-18T23:14:08.485Z",
   "sites": {
     "mq": {
-      "pageCount": 100,
-      "totalLinks": 2535,
-      "checkedLinks": 1805,
-      "brokenCount": 0,
-      "broken": []
+      "pageCount": 102,
+      "totalLinks": 2571,
+      "checkedLinks": 1833,
+      "brokenCount": 1,
+      "broken": [
+        {
+          "from": "/meilleures-plages-guadeloupe-sargasses/",
+          "href": "https://sargasses-martinique.com/en/best-beaches-guadeloupe/",
+          "target": "martinique-ftp/en/best-beaches-guadeloupe/index.html",
+          "kind": "cross-domain"
+        }
+      ]
     },
     "gp": {
-      "pageCount": 130,
-      "totalLinks": 3437,
-      "checkedLinks": 2467,
-      "brokenCount": 0,
-      "broken": []
+      "pageCount": 132,
+      "totalLinks": 3473,
+      "checkedLinks": 2495,
+      "brokenCount": 1,
+      "broken": [
+        {
+          "from": "/meilleures-plages-guadeloupe-sargasses/",
+          "href": "https://sargasses-guadeloupe.com/en/best-beaches-guadeloupe/",
+          "target": "guadeloupe-ftp/en/best-beaches-guadeloupe/index.html",
+          "kind": "cross-domain"
+        }
+      ]
     }
   }
 }

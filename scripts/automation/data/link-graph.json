@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-04-13T06:38:59.304Z",
+  "generatedAt": "2026-04-18T23:14:08.394Z",
   "sites": {
     "mq": {
-      "pageCount": 101,
-      "noIncomingCount": 14,
-      "fewIncomingCount": 16,
-      "phantomCount": 0,
+      "pageCount": 102,
+      "noIncomingCount": 16,
+      "fewIncomingCount": 18,
+      "phantomCount": 1,
       "noIncoming": [
         {
           "url": "/404.html",
@@ -13,7 +13,7 @@
           "out": 5
         },
         {
-          "url": "/articles/alerte-saison-2026-gp-2026-04-09/",
+          "url": "/a-propos/",
           "in": 0,
           "out": 0
         },
@@ -21,6 +21,11 @@
           "url": "/articles/point-semaine-avril-2026-mq-2026-04-09/",
           "in": 0,
           "out": 1
+        },
+        {
+          "url": "/conditions/",
+          "in": 0,
+          "out": 9
         },
         {
           "url": "/es/alertas-sargazo/",
@@ -41,6 +46,11 @@
           "url": "/es/temporada-sargazo/",
           "in": 0,
           "out": 3
+        },
+        {
+          "url": "/meilleures-plages-guadeloupe-sargasses/",
+          "in": 0,
+          "out": 7
         },
         {
           "url": "/neptunes_fury.html",
@@ -130,13 +140,18 @@
           "out": 8
         },
         {
-          "url": "/saison-sargasses-guadeloupe/",
-          "in": 1,
-          "out": 3
-        },
-        {
           "url": "/sargasses-record-2026/",
           "in": 1,
+          "out": 9
+        },
+        {
+          "url": "/bilan-sargasses-2025/",
+          "in": 2,
+          "out": 5
+        },
+        {
+          "url": "/comprendre-sargasses/",
+          "in": 2,
           "out": 9
         },
         {
@@ -158,17 +173,22 @@
           "url": "/plages/pointe-fort-caravelle/",
           "in": 2,
           "out": 10
+        },
+        {
+          "url": "/saison-sargasses-guadeloupe/",
+          "in": 2,
+          "out": 3
         }
       ],
       "topTargets": [
         {
           "url": "/",
-          "in": 90,
-          "out": 21
+          "in": 91,
+          "out": 17
         },
         {
           "url": "/es/",
-          "in": 89,
+          "in": 90,
           "out": 2
         },
         {
@@ -178,23 +198,23 @@
         },
         {
           "url": "/previsions/",
-          "in": 68,
-          "out": 8
+          "in": 69,
+          "out": 1
         },
         {
           "url": "/carte-sargasses/",
-          "in": 67,
-          "out": 8
+          "in": 66,
+          "out": 2
         },
         {
           "url": "/alertes/",
-          "in": 63,
+          "in": 61,
           "out": 4
         },
         {
           "url": "/plages/",
           "in": 58,
-          "out": 63
+          "out": 58
         },
         {
           "url": "/plages/bourg-de-tartane/",
@@ -202,13 +222,13 @@
           "out": 10
         },
         {
-          "url": "/danger-sargasses-h2s/",
-          "in": 11,
-          "out": 3
-        },
-        {
           "url": "/plages/grande-anse-d-arlet/",
           "in": 11,
+          "out": 10
+        },
+        {
+          "url": "/plages/anse-madame/",
+          "in": 9,
           "out": 10
         }
       ],
@@ -216,7 +236,7 @@
         {
           "url": "/plages/",
           "in": 58,
-          "out": 63
+          "out": 58
         },
         {
           "url": "/conditions/uv-fort/",
@@ -230,8 +250,8 @@
         },
         {
           "url": "/",
-          "in": 90,
-          "out": 21
+          "in": 91,
+          "out": 17
         },
         {
           "url": "/conditions/baignade-ideale/",
@@ -242,11 +262,6 @@
           "url": "/conditions/mer-calme/",
           "in": 4,
           "out": 15
-        },
-        {
-          "url": "/conditions/",
-          "in": 4,
-          "out": 14
         },
         {
           "url": "/meilleures-plages-martinique-sargasses/",
@@ -262,15 +277,27 @@
           "url": "/plages/anse-cafard/",
           "in": 3,
           "out": 10
+        },
+        {
+          "url": "/plages/anse-figuier/",
+          "in": 3,
+          "out": 10
         }
       ],
-      "phantom": []
+      "phantom": [
+        {
+          "url": "/en/best-beaches-guadeloupe/",
+          "incomingFrom": [
+            "/meilleures-plages-guadeloupe-sargasses/"
+          ]
+        }
+      ]
     },
     "gp": {
-      "pageCount": 131,
-      "noIncomingCount": 14,
-      "fewIncomingCount": 19,
-      "phantomCount": 0,
+      "pageCount": 132,
+      "noIncomingCount": 16,
+      "fewIncomingCount": 22,
+      "phantomCount": 1,
       "noIncoming": [
         {
           "url": "/404.html",
@@ -278,14 +305,19 @@
           "out": 5
         },
         {
+          "url": "/a-propos/",
+          "in": 0,
+          "out": 0
+        },
+        {
           "url": "/articles/alerte-saison-2026-gp-2026-04-09/",
           "in": 0,
           "out": 1
         },
         {
-          "url": "/articles/point-semaine-avril-2026-mq-2026-04-09/",
+          "url": "/conditions/",
           "in": 0,
-          "out": 1
+          "out": 6
         },
         {
           "url": "/es/alertas-sargazo/",
@@ -306,6 +338,11 @@
           "url": "/es/temporada-sargazo/",
           "in": 0,
           "out": 3
+        },
+        {
+          "url": "/meilleures-plages-guadeloupe-sargasses/",
+          "in": 0,
+          "out": 17
         },
         {
           "url": "/neptunes_fury.html",
@@ -380,6 +417,11 @@
           "out": 3
         },
         {
+          "url": "/lexique/",
+          "in": 1,
+          "out": 8
+        },
+        {
           "url": "/meilleures-plages-martinique-sargasses/",
           "in": 1,
           "out": 7
@@ -395,13 +437,18 @@
           "out": 10
         },
         {
-          "url": "/saison-sargasses-guadeloupe/",
-          "in": 1,
-          "out": 6
-        },
-        {
           "url": "/sargasses-record-2026/",
           "in": 1,
+          "out": 9
+        },
+        {
+          "url": "/bilan-sargasses-2025/",
+          "in": 2,
+          "out": 7
+        },
+        {
+          "url": "/comprendre-sargasses/",
+          "in": 2,
           "out": 9
         },
         {
@@ -438,28 +485,33 @@
           "url": "/plages/saint-felix-sud/",
           "in": 2,
           "out": 10
+        },
+        {
+          "url": "/saison-sargasses-guadeloupe/",
+          "in": 2,
+          "out": 6
         }
       ],
       "topTargets": [
         {
           "url": "/",
           "in": 119,
-          "out": 21
+          "out": 14
         },
         {
           "url": "/es/",
-          "in": 115,
+          "in": 113,
           "out": 2
         },
         {
           "url": "/previsions/",
-          "in": 98,
-          "out": 8
+          "in": 99,
+          "out": 1
         },
         {
           "url": "/carte-sargasses/",
           "in": 96,
-          "out": 9
+          "out": 2
         },
         {
           "url": "/en/",
@@ -468,26 +520,26 @@
         },
         {
           "url": "/alertes/",
-          "in": 93,
+          "in": 91,
           "out": 4
         },
         {
           "url": "/plages/",
           "in": 88,
-          "out": 92
-        },
-        {
-          "url": "/danger-sargasses-h2s/",
-          "in": 11,
-          "out": 3
+          "out": 85
         },
         {
           "url": "/plages/la-grande-anse-deshaies/",
-          "in": 10,
+          "in": 11,
           "out": 10
         },
         {
           "url": "/plages/plage-du-gosier/",
+          "in": 11,
+          "out": 10
+        },
+        {
+          "url": "/plages/plage-de-malendure/",
           "in": 10,
           "out": 10
         }
@@ -496,7 +548,7 @@
         {
           "url": "/plages/",
           "in": 88,
-          "out": 92
+          "out": 85
         },
         {
           "url": "/conditions/uv-fort/",
@@ -509,9 +561,9 @@
           "out": 25
         },
         {
-          "url": "/",
-          "in": 119,
-          "out": 21
+          "url": "/meilleures-plages-guadeloupe-sargasses/",
+          "in": 0,
+          "out": 17
         },
         {
           "url": "/conditions/mer-calme/",
@@ -524,9 +576,9 @@
           "out": 16
         },
         {
-          "url": "/conditions/",
-          "in": 4,
-          "out": 13
+          "url": "/",
+          "in": 119,
+          "out": 14
         },
         {
           "url": "/plages/les-salines-saint-francois/",
@@ -544,7 +596,14 @@
           "out": 10
         }
       ],
-      "phantom": []
+      "phantom": [
+        {
+          "url": "/en/best-beaches-guadeloupe/",
+          "incomingFrom": [
+            "/meilleures-plages-guadeloupe-sargasses/"
+          ]
+        }
+      ]
     }
   }
 }

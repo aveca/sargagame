@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-13T06:48:52.858Z",
+  "generatedAt": "2026-04-18T23:14:05.529Z",
   "sites": {
     "mq": {
       "opportunityCount": 0,
@@ -9,21 +9,21 @@
       "wins": [
         {
           "url": "https://sargasses-martinique.com/en/",
-          "impressions": 84,
-          "clicks": 14,
-          "position": 9.7,
-          "actualCtr": 16.67,
-          "expectedCtr": 1.63,
-          "ctrLift": 15.04
+          "impressions": 93,
+          "clicks": 16,
+          "position": 7.4,
+          "actualCtr": 17.2,
+          "expectedCtr": 2.79,
+          "ctrLift": 14.41
         },
         {
           "url": "https://sargasses-martinique.com/",
-          "impressions": 8101,
-          "clicks": 1246,
+          "impressions": 7738,
+          "clicks": 1360,
           "position": 6,
-          "actualCtr": 15.38,
-          "expectedCtr": 4.1,
-          "ctrLift": 11.29
+          "actualCtr": 17.58,
+          "expectedCtr": 4.04,
+          "ctrLift": 13.54
         }
       ]
     },
@@ -35,30 +35,30 @@
       "wins": [
         {
           "url": "https://sargasses-guadeloupe.com/",
-          "impressions": 3153,
-          "clicks": 576,
-          "position": 8.3,
-          "actualCtr": 18.27,
-          "expectedCtr": 2.37,
-          "ctrLift": 15.9
+          "impressions": 3602,
+          "clicks": 787,
+          "position": 7.1,
+          "actualCtr": 21.85,
+          "expectedCtr": 2.95,
+          "ctrLift": 18.9
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/communes/saint-francois/",
+          "impressions": 68,
+          "clicks": 5,
+          "position": 7.3,
+          "actualCtr": 7.35,
+          "expectedCtr": 2.86,
+          "ctrLift": 4.5
         },
         {
           "url": "https://sargasses-guadeloupe.com/plages/de-bois-jolan/",
-          "impressions": 56,
-          "clicks": 4,
-          "position": 8,
-          "actualCtr": 7.14,
-          "expectedCtr": 2.49,
-          "ctrLift": 4.65
-        },
-        {
-          "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
-          "impressions": 80,
-          "clicks": 5,
-          "position": 7.5,
-          "actualCtr": 6.25,
-          "expectedCtr": 2.74,
-          "ctrLift": 3.51
+          "impressions": 50,
+          "clicks": 3,
+          "position": 7.7,
+          "actualCtr": 6,
+          "expectedCtr": 2.63,
+          "ctrLift": 3.37
         }
       ]
     }
