@@ -548,7 +548,7 @@ function doGet(e) {
       var funnel = {
         session_start: 0, forecast_lock_click: 0,
         premium_modal_open: 0, premium_modal_cta: 0,
-        sample_start: 0,
+        sample_start: 0, email_submit: 0,
         checkout_redirect: 0,
         conversion: 0, checkout_error: 0
       }
@@ -575,6 +575,23 @@ function doGet(e) {
               var key = abCols[j] + ':' + v
               abCounts[key] = (abCounts[key] || 0) + 1
             }
+          }
+          // Parse raw_params (col 9) for newer A/B tests not in dedicated columns
+          var rawParams = aData[i][9]
+          if (rawParams) {
+            try {
+              var rp = typeof rawParams === 'string' ? JSON.parse(rawParams) : rawParams
+              var rpKeys = Object.keys(rp)
+              for (var ri = 0; ri < rpKeys.length; ri++) {
+                if (rpKeys[ri].indexOf('ab_') === 0) {
+                  var testId = rpKeys[ri].replace('ab_', '')
+                  if (abCols.indexOf(testId) === -1 && rp[rpKeys[ri]] != null) {
+                    var rpKey = testId + ':' + rp[rpKeys[ri]]
+                    abCounts[rpKey] = (abCounts[rpKey] || 0) + 1
+                  }
+                }
+              }
+            } catch (rpErr) {}
           }
         }
         funnel.total_events = aData.length - 1

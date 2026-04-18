@@ -6,52 +6,33 @@
     "commit": "09ed250"
   },
   "abTests": {
-    "lastEvaluated": "2026-04-13T01:42:03.924Z",
+    "lastEvaluated": "2026-04-18T22:56:29.123Z",
     "results": [
       {
-        "id": "lock1",
-        "metric": "sg_forecast_lock_click",
+        "id": "em1",
+        "metric": "sg_email_submit",
         "variants": [
           "control",
-          "loss"
+          "curiosity"
         ],
         "rates": [
-          "2.56%",
-          "2.49%"
+          "0.79%",
+          "0.79%"
         ],
-        "lift": "-3.0%",
-        "z": 0.11,
-        "p": 0.457,
+        "lift": "0.6%",
+        "z": -0.02,
+        "p": 0.507,
         "significant": false,
         "winner": null,
         "status": "not-significant",
-        "recommendation": "Keep running. Need more data (2092 sessions, need ~1500+)."
+        "recommendation": "Keep running. Need more data (3790 sessions, need ~1500+)."
       },
       {
-        "id": "modal1",
-        "metric": "sg_premium_modal_cta",
+        "id": "pw_cta_order",
+        "metric": "sg_sample_start",
         "variants": [
           "control",
-          "family"
-        ],
-        "rates": [
-          "1.47%",
-          "1.63%"
-        ],
-        "lift": "10.2%",
-        "z": -0.17,
-        "p": 0.566,
-        "significant": false,
-        "winner": null,
-        "status": "not-significant",
-        "recommendation": "Keep running. Need more data (924 sessions, need ~1500+)."
-      },
-      {
-        "id": "onb1",
-        "metric": "sg_conversion",
-        "variants": [
-          "control",
-          "skip"
+          "sample_first"
         ],
         "rates": [
           "0.00%",
@@ -63,69 +44,26 @@
         "significant": false,
         "winner": null,
         "status": "too-early",
-        "recommendation": "Keep running. Need more data (33 sessions, need ~1500+)."
+        "recommendation": "Keep running. Need more data (129 sessions, need ~1500+)."
       },
       {
-        "id": "free1",
-        "metric": "sg_forecast_lock_click",
+        "id": "pw_prelude",
+        "metric": "sg_checkout_redirect",
         "variants": [
-          "control",
-          "two_free"
+          "direct",
+          "prelude"
         ],
         "rates": [
-          "2.54%",
-          "2.53%"
+          "15.09%",
+          "15.09%"
         ],
-        "lift": "-0.2%",
-        "z": 0.01,
-        "p": 0.497,
-        "significant": false,
-        "winner": null,
-        "status": "not-significant",
-        "recommendation": "Keep running. Need more data (2092 sessions, need ~1500+)."
-      },
-      {
-        "id": "vp1",
-        "metric": "sg_weekend_banner_click",
-        "variants": [
-          "feature",
-          "outcome"
-        ],
-        "rates": [
-          "0.00%",
-          "0.00%"
-        ],
-        "lift": "NaN%",
+        "lift": "0.0%",
         "z": 0,
-        "p": 1,
+        "p": 0.5,
         "significant": false,
         "winner": null,
         "status": "too-early",
-        "recommendation": "Keep running. Need more data (176 sessions, need ~1500+)."
-      },
-      {
-        "id": "price1",
-        "metric": "sg_checkout_submit",
-        "variants": [
-          "control",
-          "season"
-        ],
-        "rates": [
-          "0.19%",
-          "0.00%"
-        ],
-        "lift": "-100.0%",
-        "z": 0.74,
-        "p": 0.228,
-        "significant": false,
-        "winner": null,
-        "status": "not-significant",
-        "recommendation": "Keep running. Need more data (823 sessions, need ~1500+)."
-      },
-      {
-        "id": "pay1",
-        "status": "no-data",
-        "message": "No data yet"
+        "recommendation": "Keep running. Need more data (106 sessions, need ~1500+)."
       }
     ]
   },

@@ -36,6 +36,8 @@ const RESULTS_PATH = path.join(__dirname, 'ab-results.json')
 // Removed (never wired / no call site): onb1, hero2
 const TESTS = [
   { id: 'em1', dimension: 'customEvent:ab_em1', variants: ['control', 'curiosity'], metric: 'sg_email_submit' },
+  { id: 'pw_cta_order', dimension: 'customEvent:ab_pw_cta_order', variants: ['control', 'sample_first'], metric: 'sg_sample_start' },
+  { id: 'pw_prelude', dimension: 'customEvent:ab_pw_prelude', variants: ['direct', 'prelude'], metric: 'sg_checkout_redirect' },
 ]
 
 async function fetchTestData(analyticsdata, propertyId, test) {
