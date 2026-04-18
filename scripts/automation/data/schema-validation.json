@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-04-13T06:48:56.462Z",
+  "generatedAt": "2026-04-18T23:14:08.601Z",
   "sites": {
     "mq": {
-      "pageCount": 101,
+      "pageCount": 102,
       "pagesWithSchema": 92,
-      "totalBlocks": 339,
+      "totalBlocks": 343,
       "parseFailures": 0,
       "errorCount": 0,
       "warningCount": 17,
@@ -12,11 +12,6 @@
       "warnings": [
         {
           "file": "martinique-ftp/alertes/index.html",
-          "type": "Article",
-          "message": "missing recommended field \"image\""
-        },
-        {
-          "file": "martinique-ftp/articles/alerte-saison-2026-gp-2026-04-09/index.html",
           "type": "Article",
           "message": "missing recommended field \"image\""
         },
@@ -52,6 +47,11 @@
         },
         {
           "file": "martinique-ftp/lexique/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "martinique-ftp/meilleures-plages-guadeloupe-sargasses/index.html",
           "type": "Article",
           "message": "missing recommended field \"image\""
         },
@@ -98,9 +98,9 @@
       ]
     },
     "gp": {
-      "pageCount": 131,
+      "pageCount": 132,
       "pagesWithSchema": 122,
-      "totalBlocks": 428,
+      "totalBlocks": 432,
       "parseFailures": 0,
       "errorCount": 0,
       "warningCount": 17,
@@ -113,11 +113,6 @@
         },
         {
           "file": "guadeloupe-ftp/articles/alerte-saison-2026-gp-2026-04-09/index.html",
-          "type": "Article",
-          "message": "missing recommended field \"image\""
-        },
-        {
-          "file": "guadeloupe-ftp/articles/point-semaine-avril-2026-mq-2026-04-09/index.html",
           "type": "Article",
           "message": "missing recommended field \"image\""
         },
@@ -148,6 +143,11 @@
         },
         {
           "file": "guadeloupe-ftp/lexique/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "guadeloupe-ftp/meilleures-plages-guadeloupe-sargasses/index.html",
           "type": "Article",
           "message": "missing recommended field \"image\""
         },

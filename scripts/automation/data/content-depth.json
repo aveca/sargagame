@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-04-13T06:49:00.151Z",
+  "generatedAt": "2026-04-18T23:14:08.843Z",
   "sites": {
     "mq": {
-      "pageCount": 101,
+      "pageCount": 102,
       "medianWords": 1508,
       "thinCount": 32,
       "richCount": 55,
@@ -172,7 +172,7 @@
       ]
     },
     "gp": {
-      "pageCount": 131,
+      "pageCount": 132,
       "medianWords": 1524,
       "thinCount": 30,
       "richCount": 85,

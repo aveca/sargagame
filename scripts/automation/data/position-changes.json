@@ -1,10 +1,18 @@
 {
-  "generatedAt": "2026-04-13T06:07:15.741Z",
-  "comparedTo": "none",
+  "generatedAt": "2026-04-18T23:14:05.430Z",
+  "comparedTo": "2026-04-12",
   "alerts": {
     "drops": [],
     "gains": [],
     "appeared": [],
-    "vanished": []
+    "vanished": [
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/plages-guadeloupe/plage-d-anse-champagne/",
+        "prevImpressions": 42
+      }
+    ],
+    "queryDrops": [],
+    "queryGains": []
   }
 }
