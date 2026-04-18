@@ -71,34 +71,41 @@
       "url": "https://generationvoyage.fr/plus-belles-plages-guadeloupe/"
     },
     "toploc.com": {
-      "date": "2026-04-18T22:55:44.669Z",
+      "date": "2026-04-17T21:58:19.119Z",
       "email": "jean.dupont@email.com",
       "status": "sent",
       "error": null,
       "url": "https://toploc.com/blog/amerique/plages-guadeloupe"
     },
     "antilleslocation.com": {
-      "date": "2026-04-18T22:55:49.798Z",
+      "date": "2026-04-17T21:58:25.000Z",
       "email": "contact@antilleslocation.com",
       "status": "sent",
       "error": null,
       "url": "https://www.antilleslocation.com/blog-voyage/les-plus-belles-plages-de-la-guadeloupe.html"
     },
     "espaces.ca": {
-      "date": "2026-04-18T22:55:51.339Z",
+      "date": "2026-04-17T21:58:27.843Z",
       "email": "contact@espaces.ca",
       "status": "sent",
       "error": null,
       "url": "https://www.espaces.ca/articles/destinations/25273-les-7-plus-belles-plages-de-la-martinique"
     },
     "airvacances.fr": {
-      "date": "2026-04-18T22:55:59.003Z",
+      "date": "2026-04-17T21:58:37.395Z",
       "email": "contact@airvacances.fr",
       "status": "sent",
       "error": null,
       "url": "https://www.airvacances.fr/sargasses-guadeloupe-martinique-periodes-eviter/"
+    },
+    "lesilesdeguadeloupe.com": {
+      "date": "2026-04-17T21:58:39.116Z",
+      "email": "no-reply@lesilesdeguadeloupe.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.lesilesdeguadeloupe.com/"
     }
   },
-  "lastRun": "2026-04-18T22:55:59.003Z",
-  "totalSent": 14
+  "lastRun": "2026-04-17T21:58:39.116Z",
+  "totalSent": 15
 }

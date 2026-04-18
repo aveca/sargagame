@@ -46,6 +46,12 @@ const SEED_TARGETS = [
   { domain: 'antilleslocation.com', url: 'https://www.antilleslocation.com/blog-voyage/les-plus-belles-plages-de-la-guadeloupe.html', reason: 'Location Antilles, article plages' },
   { domain: 'espaces.ca', url: 'https://www.espaces.ca/articles/destinations/25273-les-7-plus-belles-plages-de-la-martinique', reason: 'Mag plein air québécois, public nord-américain francophone' },
   { domain: 'airvacances.fr', url: 'https://www.airvacances.fr/sargasses-guadeloupe-martinique-periodes-eviter/', reason: 'Article "quand partir sans sargasses", pas de lien outil temps réel' },
+  // GP-focused boost (2026-04-17 data-driven — GP trails MQ 45% in clicks)
+  { domain: 'lesilesdeguadeloupe.com', url: 'https://www.lesilesdeguadeloupe.com/', reason: 'Office du tourisme officiel GP — audience #1 requête destination' },
+  { domain: 'karukera-guadeloupe.com', url: 'https://www.karukera-guadeloupe.com/guadeloupe/plages.html', reason: 'Guide plages GP, pas de lien état sargasses temps réel' },
+  { domain: 'guadeloupe-fr.com', url: 'https://www.guadeloupe-fr.com/plages-de-guadeloupe/', reason: 'Répertoire plages GP, sans outil temps réel' },
+  { domain: 'tourisme-guadeloupe.fr', url: 'https://www.tourisme-guadeloupe.fr/', reason: 'Portail tourisme GP, public actuel sans data sargasses' },
+  { domain: 'guideguadeloupe.com', url: 'https://www.guideguadeloupe.com/plages-guadeloupe.html', reason: 'Guide voyage GP, pas de mention sargasses' },
 ]
 
 // ── Helpers ──────────────────────────────────────────────────
