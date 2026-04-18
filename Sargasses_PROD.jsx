@@ -5370,6 +5370,19 @@ export default function App(){
 
   const openPremium=useCallback((src)=>{const s=src||"nav";setPremiumSource(s);setShowPremium(true);track("sg_premium_modal_open",{source:s})},[])
 
+  // Engagement trigger: modal open rate is 1.72% of sessions — most users never hit a paywall gate.
+  // After 50s on visit 2+, show the modal once per session to returning users who've had time to explore.
+  useEffect(()=>{
+    if(isPremium)return
+    if(g("sg_visit_count",0)<2)return
+    try{if(sessionStorage.getItem("sg_eng_shown"))return}catch{}
+    const t=setTimeout(()=>{
+      try{sessionStorage.setItem("sg_eng_shown","1")}catch{}
+      openPremium("engagement_50s")
+    },50000)
+    return()=>clearTimeout(t)
+  },[])
+
   return(
     <LangCtx.Provider value={lang}>
       <StyleInjector/>
