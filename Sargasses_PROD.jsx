@@ -5371,16 +5371,25 @@ export default function App(){
   const openPremium=useCallback((src)=>{const s=src||"nav";setPremiumSource(s);setShowPremium(true);track("sg_premium_modal_open",{source:s})},[])
 
   // Engagement trigger: modal open rate is 1.72% of sessions — most users never hit a paywall gate.
-  // After 50s on visit 2+, show the modal once per session to returning users who've had time to explore.
+  // Show modal only to IDLE returning users (no beach-sheet interaction for 50s on visit 2+).
+  // Was hijacking active explorers mid-flow, reading as "the app keeps bugging on my 3rd click".
   useEffect(()=>{
     if(isPremium)return
     if(g("sg_visit_count",0)<2)return
     try{if(sessionStorage.getItem("sg_eng_shown"))return}catch{}
-    const t=setTimeout(()=>{
-      try{sessionStorage.setItem("sg_eng_shown","1")}catch{}
-      openPremium("engagement_50s")
-    },50000)
-    return()=>clearTimeout(t)
+    let t=null
+    const arm=()=>{
+      if(t)clearTimeout(t)
+      t=setTimeout(()=>{
+        if(document.querySelector(".sheet"))return // user is reading a beach right now
+        try{sessionStorage.setItem("sg_eng_shown","1")}catch{}
+        openPremium("engagement_50s")
+      },50000)
+    }
+    const reset=()=>arm()
+    arm()
+    window.addEventListener("sg:value_moment",reset)
+    return()=>{if(t)clearTimeout(t);window.removeEventListener("sg:value_moment",reset)}
   },[])
 
   return(
