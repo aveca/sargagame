@@ -131,6 +131,10 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
       // tap:true (defaut Leaflet) — tap:false cassait des ouvertures de fiche plage sur mobile
       // (synthetic click / touch chain vers divIcon markers).
       zoomSnap:.25, // allow fitBounds to land on 10.5, 10.75, etc. so MQ fills the viewport without wasting ocean
+      doubleClickZoom:false, // user reported "parfois ça zoom mais ça clic pas les pastilles" —
+                             // double-tap on a small dot pin was registering as a Leaflet zoom
+                             // gesture instead of the marker click. Killing dblclick zoom keeps
+                             // pin taps reliable. Pinch-zoom (touchZoom) and scroll-zoom remain.
     })
     map.setView(center,11)
     // Voyager base (free, no key) — turquoise sea + verdant land, "vacation feel"
