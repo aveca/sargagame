@@ -352,6 +352,19 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
     // If the global "closest" is implausibly far (stale coords / layer quirks),
     // keep the marker that actually received the event (fallback).
     const MAX_PICK_PX=40
+    // Leaflet sets e.containerPoint to the MARKER'S center on marker clicks,
+    // not where the user actually clicked. In dense clusters, the front pin
+    // always wins because every pin's hitbox routes to its own center. Read
+    // the real cursor/touch position from e.originalEvent so pickClosest can
+    // route to whichever visible pin the user was actually aiming at.
+    const realClickPoint=e=>{
+      if(!e||!mapRef.current)return null
+      const oe=e.originalEvent
+      if(oe&&typeof oe.clientX==="number"){
+        try{return mapRef.current.mouseEventToContainerPoint(oe)}catch(_){}
+      }
+      return e.containerPoint||null
+    }
     const pickClosest=(clickPt,fallbackBeach)=>{
       if(!clickPt||!mapRef.current)return fallbackBeach
       let bestBeach=fallbackBeach,bestD=Infinity
@@ -410,7 +423,7 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
         const dotMarker=L.marker([b.lat,b.lng],{icon:dotIcon,riseOnHover:true,zIndexOffset:0})
         dotMarker._sgBeach=b
         if(!("ontouchstart" in window))dotMarker.bindTooltip(b.name+(hasScore?` · ${b.score}/100`:""),{direction:"top",offset:[0,-12],className:"",permanent:false})
-        dotMarker.on("click",(e)=>onBeachClick(pickClosest(e.containerPoint,b)))
+        dotMarker.on("click",(e)=>onBeachClick(pickClosest(realClickPoint(e),b)))
         dotMarker.addTo(markerGroup)
         markersRef.current.push(dotMarker)
         return
@@ -435,7 +448,7 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
       const marker=L.marker([b.lat,b.lng],{icon,riseOnHover:true,zIndexOffset:isSelected?1000:(isEmph?500:200)})
       marker._sgBeach=b
       if(!("ontouchstart" in window))marker.bindTooltip(b.name+(hasScore?` · ${b.score}/100`:"")+(isNearest?(lang==="en"?" · Nearest clean":" · La plus proche propre"):""),{direction:"top",offset:[0,-size/2-4],className:"",permanent:false})
-      marker.on("click",(e)=>onBeachClick(pickClosest(e.containerPoint,b)))
+      marker.on("click",(e)=>onBeachClick(pickClosest(realClickPoint(e),b)))
       marker.addTo(markerGroup)
       markersRef.current.push(marker)
     })
