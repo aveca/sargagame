@@ -633,13 +633,8 @@ button:active,a:active,[role="button"]:active{transform:scale(.96)!important;opa
 @keyframes sheetSlideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .sheet-handle{width:48px;height:5px;border-radius:3px;background:var(--sg-handle,rgba(0,0,0,.2));margin:10px auto 6px;cursor:grab}
 
-/* Backdrop — pointer-events:none so map pins behind/around the sheet stay
-   clickable. Without this, the backdrop ate every pin click while the sheet
-   was open: users tapped a visible pin, the click hit the invisible backdrop
-   instead, the sheet closed, the pin "disappeared" (re-rendered by the
-   selectedBeach=null marker effect) and no new beach opened. Reads as
-   "le clic bug et la pastille s'en va". */
-.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.18);z-index:899;animation:fadeIn .25s ease-out;will-change:opacity;pointer-events:none}
+/* Backdrop */
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:899;animation:fadeIn .25s ease-out;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);will-change:opacity}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 
 /* ── ONBOARDING (removed full-screen overlay, now inline coachmark) ── */
