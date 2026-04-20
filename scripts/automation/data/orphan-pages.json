@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-18T23:14:05.474Z",
+  "generatedAt": "2026-04-20T12:19:28.439Z",
   "sites": {
     "mq": {
       "sitemapSize": 15,
@@ -12,8 +12,8 @@
       "linkDonors": [
         {
           "url": "https://sargasses-martinique.com/",
-          "impressions": 7738,
-          "clicks": 1360
+          "impressions": 7674,
+          "clicks": 1392
         }
       ],
       "orphans": [
@@ -129,8 +129,8 @@
       "linkDonors": [
         {
           "url": "https://sargasses-guadeloupe.com/",
-          "impressions": 3602,
-          "clicks": 787
+          "impressions": 3729,
+          "clicks": 861
         }
       ],
       "orphans": [

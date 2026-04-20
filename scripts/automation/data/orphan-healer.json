@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-04-18T23:14:09.134Z",
+  "generatedAt": "2026-04-20T12:19:32.109Z",
   "sites": {
     "mq": {
       "donorCount": 5,
-      "targetCount": 20,
+      "targetCount": 19,
       "injections": [
         {
           "donor": "/",
@@ -39,7 +39,7 @@
     },
     "gp": {
       "donorCount": 5,
-      "targetCount": 18,
+      "targetCount": 17,
       "injections": [
         {
           "donor": "/",

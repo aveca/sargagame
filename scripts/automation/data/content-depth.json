@@ -1,14 +1,18 @@
 {
-  "generatedAt": "2026-04-18T23:14:08.843Z",
+  "generatedAt": "2026-04-20T12:19:31.810Z",
   "sites": {
     "mq": {
-      "pageCount": 102,
+      "pageCount": 103,
       "medianWords": 1508,
-      "thinCount": 32,
-      "richCount": 55,
+      "thinCount": 31,
+      "richCount": 57,
       "thinPages": [
         {
           "url": "/carte-sargasses/",
+          "words": 0
+        },
+        {
+          "url": "/en/best-beaches-guadeloupe/",
           "words": 0
         },
         {
@@ -100,10 +104,6 @@
           "words": 196
         },
         {
-          "url": "/saison-sargasses-guadeloupe/",
-          "words": 220
-        },
-        {
           "url": "/mentions-legales.html",
           "words": 221
         },
@@ -116,16 +116,16 @@
           "words": 253
         },
         {
-          "url": "/saison-sargasses-martinique/",
-          "words": 256
-        },
-        {
           "url": "/conditions/",
           "words": 274
         },
         {
           "url": "/bilan-sargasses-2025/",
           "words": 280
+        },
+        {
+          "url": "/confidentialite.html",
+          "words": 281
         }
       ],
       "topPages": [
@@ -172,13 +172,17 @@
       ]
     },
     "gp": {
-      "pageCount": 132,
-      "medianWords": 1524,
-      "thinCount": 30,
-      "richCount": 85,
+      "pageCount": 133,
+      "medianWords": 1520,
+      "thinCount": 29,
+      "richCount": 87,
       "thinPages": [
         {
           "url": "/carte-sargasses/",
+          "words": 0
+        },
+        {
+          "url": "/en/best-beaches-guadeloupe/",
           "words": 0
         },
         {
@@ -270,20 +274,12 @@
           "words": 196
         },
         {
-          "url": "/saison-sargasses-guadeloupe/",
-          "words": 220
-        },
-        {
           "url": "/mentions-legales.html",
           "words": 221
         },
         {
           "url": "/onboarding.html",
           "words": 253
-        },
-        {
-          "url": "/saison-sargasses-martinique/",
-          "words": 256
         },
         {
           "url": "/conditions/",

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-18T23:14:05.529Z",
+  "generatedAt": "2026-04-20T12:19:28.491Z",
   "sites": {
     "mq": {
       "opportunityCount": 0,
@@ -9,56 +9,47 @@
       "wins": [
         {
           "url": "https://sargasses-martinique.com/en/",
-          "impressions": 93,
-          "clicks": 16,
-          "position": 7.4,
-          "actualCtr": 17.2,
-          "expectedCtr": 2.79,
-          "ctrLift": 14.41
+          "impressions": 89,
+          "clicks": 15,
+          "position": 7.6,
+          "actualCtr": 16.85,
+          "expectedCtr": 2.7,
+          "ctrLift": 14.16
         },
         {
           "url": "https://sargasses-martinique.com/",
-          "impressions": 7738,
-          "clicks": 1360,
-          "position": 6,
-          "actualCtr": 17.58,
-          "expectedCtr": 4.04,
-          "ctrLift": 13.54
+          "impressions": 7674,
+          "clicks": 1392,
+          "position": 5.9,
+          "actualCtr": 18.14,
+          "expectedCtr": 4.15,
+          "ctrLift": 13.99
         }
       ]
     },
     "gp": {
       "opportunityCount": 0,
-      "winCount": 3,
+      "winCount": 2,
       "totalLostClicks": 0,
       "opportunities": [],
       "wins": [
         {
           "url": "https://sargasses-guadeloupe.com/",
-          "impressions": 3602,
-          "clicks": 787,
+          "impressions": 3729,
+          "clicks": 861,
           "position": 7.1,
-          "actualCtr": 21.85,
-          "expectedCtr": 2.95,
-          "ctrLift": 18.9
+          "actualCtr": 23.09,
+          "expectedCtr": 2.96,
+          "ctrLift": 20.13
         },
         {
           "url": "https://sargasses-guadeloupe.com/communes/saint-francois/",
-          "impressions": 68,
+          "impressions": 75,
           "clicks": 5,
-          "position": 7.3,
-          "actualCtr": 7.35,
-          "expectedCtr": 2.86,
-          "ctrLift": 4.5
-        },
-        {
-          "url": "https://sargasses-guadeloupe.com/plages/de-bois-jolan/",
-          "impressions": 50,
-          "clicks": 3,
-          "position": 7.7,
-          "actualCtr": 6,
-          "expectedCtr": 2.63,
-          "ctrLift": 3.37
+          "position": 7.2,
+          "actualCtr": 6.67,
+          "expectedCtr": 2.91,
+          "ctrLift": 3.76
         }
       ]
     }
