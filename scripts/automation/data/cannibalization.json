@@ -1,170 +1,136 @@
 {
-  "generatedAt": "2026-04-18T23:14:05.569Z",
+  "generatedAt": "2026-04-20T12:19:28.535Z",
   "sites": {
     "mq": {
-      "queryCount": 116,
+      "queryCount": 125,
       "cannibalizedCount": 0,
       "cannibalized": []
     },
     "gp": {
-      "queryCount": 216,
-      "cannibalizedCount": 7,
+      "queryCount": 211,
+      "cannibalizedCount": 5,
       "cannibalized": [
         {
           "query": "sargasse guadeloupe 2026",
-          "totalImpressions": 283,
-          "totalClicks": 6,
+          "totalImpressions": 254,
+          "totalClicks": 7,
           "competitorCount": 2,
           "competitors": [
             {
               "url": "https://sargasses-guadeloupe.com/quand-sargasses-guadeloupe/",
-              "impressions": 188,
+              "impressions": 161,
               "clicks": 1,
-              "share": 0.6643109540636042
+              "share": 0.6338582677165354
             },
             {
               "url": "https://sargasses-guadeloupe.com/",
-              "impressions": 45,
-              "clicks": 2,
-              "share": 0.15901060070671377
+              "impressions": 47,
+              "clicks": 3,
+              "share": 0.18503937007874016
             }
           ]
         },
         {
           "query": "carte des sargasses",
-          "totalImpressions": 130,
+          "totalImpressions": 118,
           "totalClicks": 0,
           "competitorCount": 3,
           "competitors": [
             {
               "url": "https://sargasses-guadeloupe.com/",
-              "impressions": 84,
+              "impressions": 76,
               "clicks": 0,
-              "share": 0.6461538461538462
+              "share": 0.6440677966101694
             },
             {
               "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
               "impressions": 26,
               "clicks": 0,
-              "share": 0.2
+              "share": 0.22033898305084745
             },
             {
               "url": "https://sargasses-guadeloupe.com/carte-temps-reel/",
-              "impressions": 17,
+              "impressions": 13,
               "clicks": 0,
-              "share": 0.13076923076923078
+              "share": 0.11016949152542373
             }
           ]
         },
         {
           "query": "sargasse guadeloupe",
-          "totalImpressions": 107,
-          "totalClicks": 1,
+          "totalImpressions": 105,
+          "totalClicks": 4,
           "competitorCount": 4,
           "competitors": [
             {
+              "url": "https://sargasses-guadeloupe.com/",
+              "impressions": 31,
+              "clicks": 3,
+              "share": 0.29523809523809524
+            },
+            {
               "url": "https://sargasses-guadeloupe.com/quand-sargasses-guadeloupe/",
-              "impressions": 32,
+              "impressions": 27,
               "clicks": 0,
-              "share": 0.29906542056074764
+              "share": 0.2571428571428571
             },
             {
               "url": "https://sargasses-guadeloupe.com/faq/",
-              "impressions": 25,
+              "impressions": 21,
               "clicks": 1,
-              "share": 0.2336448598130841
-            },
-            {
-              "url": "https://sargasses-guadeloupe.com/",
-              "impressions": 23,
-              "clicks": 0,
-              "share": 0.21495327102803738
+              "share": 0.2
             },
             {
               "url": "https://sargasses-guadeloupe.com/plages-sans-sargasses-guadeloupe/",
-              "impressions": 19,
+              "impressions": 17,
               "clicks": 0,
-              "share": 0.17757009345794392
+              "share": 0.1619047619047619
             }
           ]
         },
         {
           "query": "meteo sargasse guadeloupe",
-          "totalImpressions": 93,
+          "totalImpressions": 90,
           "totalClicks": 2,
-          "competitorCount": 2,
+          "competitorCount": 3,
           "competitors": [
             {
               "url": "https://sargasses-guadeloupe.com/carte-temps-reel/",
               "impressions": 54,
               "clicks": 2,
-              "share": 0.5806451612903226
+              "share": 0.6
             },
             {
               "url": "https://sargasses-guadeloupe.com/previsions-sargasses-guadeloupe/",
-              "impressions": 29,
+              "impressions": 26,
               "clicks": 0,
-              "share": 0.3118279569892473
+              "share": 0.28888888888888886
+            },
+            {
+              "url": "https://sargasses-guadeloupe.com/",
+              "impressions": 9,
+              "clicks": 0,
+              "share": 0.1
             }
           ]
         },
         {
           "query": "sargasse en temps réel",
-          "totalImpressions": 67,
+          "totalImpressions": 57,
           "totalClicks": 0,
           "competitorCount": 2,
           "competitors": [
             {
               "url": "https://sargasses-guadeloupe.com/carte-temps-reel/",
-              "impressions": 56,
+              "impressions": 42,
               "clicks": 0,
-              "share": 0.835820895522388
+              "share": 0.7368421052631579
             },
             {
               "url": "https://sargasses-guadeloupe.com/",
-              "impressions": 10,
+              "impressions": 12,
               "clicks": 0,
-              "share": 0.14925373134328357
-            }
-          ]
-        },
-        {
-          "query": "guadeloupe sargasse 2026",
-          "totalImpressions": 52,
-          "totalClicks": 0,
-          "competitorCount": 2,
-          "competitors": [
-            {
-              "url": "https://sargasses-guadeloupe.com/quand-sargasses-guadeloupe/",
-              "impressions": 40,
-              "clicks": 0,
-              "share": 0.7692307692307693
-            },
-            {
-              "url": "https://sargasses-guadeloupe.com/previsions-sargasses-guadeloupe/",
-              "impressions": 6,
-              "clicks": 0,
-              "share": 0.11538461538461539
-            }
-          ]
-        },
-        {
-          "query": "meteo sargasses guadeloupe",
-          "totalImpressions": 50,
-          "totalClicks": 2,
-          "competitorCount": 2,
-          "competitors": [
-            {
-              "url": "https://sargasses-guadeloupe.com/carte-temps-reel/",
-              "impressions": 36,
-              "clicks": 1,
-              "share": 0.72
-            },
-            {
-              "url": "https://sargasses-guadeloupe.com/",
-              "impressions": 11,
-              "clicks": 1,
-              "share": 0.22
+              "share": 0.21052631578947367
             }
           ]
         }

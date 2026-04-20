@@ -1,16 +1,14 @@
 {
-  "generatedAt": "2026-04-18T23:14:08.978Z",
+  "generatedAt": "2026-04-20T12:19:31.950Z",
   "sites": {
     "mq": {
       "sitemapSize": 98,
       "ownDomainCount": 98,
       "crossDomainCount": 0,
-      "diskCount": 98,
-      "sitemapUrls404Count": 1,
+      "diskCount": 99,
+      "sitemapUrls404Count": 0,
       "diskMissingCount": 1,
-      "sitemapUrls404": [
-        "/en/best-beaches-guadeloupe/"
-      ],
+      "sitemapUrls404": [],
       "diskMissing": [
         "/a-propos/"
       ],
@@ -20,12 +18,10 @@
       "sitemapSize": 128,
       "ownDomainCount": 128,
       "crossDomainCount": 0,
-      "diskCount": 128,
-      "sitemapUrls404Count": 1,
+      "diskCount": 129,
+      "sitemapUrls404Count": 0,
       "diskMissingCount": 1,
-      "sitemapUrls404": [
-        "/en/best-beaches-guadeloupe/"
-      ],
+      "sitemapUrls404": [],
       "diskMissing": [
         "/a-propos/"
       ],

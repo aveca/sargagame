@@ -1,49 +1,35 @@
 {
-  "generatedAt": "2026-04-18T23:14:08.754Z",
+  "generatedAt": "2026-04-20T12:19:31.722Z",
   "sites": {
     "mq": {
-      "pageCount": 102,
+      "pageCount": 103,
       "pagesSkippedNoindex": 4,
-      "pagesWithCanonical": 97,
-      "pagesWithHreflang": 91,
-      "issueCount": 2,
+      "pagesWithCanonical": 98,
+      "pagesWithHreflang": 92,
+      "issueCount": 1,
       "byKind": {
-        "missing-canonical": 1,
-        "hreflang-target-missing": 1
+        "missing-canonical": 1
       },
       "issues": [
         {
           "file": "a-propos/index.html",
           "kind": "missing-canonical"
-        },
-        {
-          "file": "meilleures-plages-guadeloupe-sargasses/index.html",
-          "kind": "hreflang-target-missing",
-          "lang": "en",
-          "href": "https://sargasses-martinique.com/en/best-beaches-guadeloupe/"
         }
       ]
     },
     "gp": {
-      "pageCount": 132,
+      "pageCount": 133,
       "pagesSkippedNoindex": 4,
-      "pagesWithCanonical": 127,
-      "pagesWithHreflang": 121,
-      "issueCount": 2,
+      "pagesWithCanonical": 128,
+      "pagesWithHreflang": 122,
+      "issueCount": 1,
       "byKind": {
-        "missing-canonical": 1,
-        "hreflang-target-missing": 1
+        "missing-canonical": 1
       },
       "issues": [
         {
           "file": "a-propos/index.html",
           "kind": "missing-canonical"
-        },
-        {
-          "file": "meilleures-plages-guadeloupe-sargasses/index.html",
-          "kind": "hreflang-target-missing",
-          "lang": "en",
-          "href": "https://sargasses-guadeloupe.com/en/best-beaches-guadeloupe/"
         }
       ]
     }

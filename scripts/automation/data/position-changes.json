@@ -1,17 +1,19 @@
 {
-  "generatedAt": "2026-04-18T23:14:05.430Z",
-  "comparedTo": "2026-04-12",
+  "generatedAt": "2026-04-20T12:19:28.394Z",
+  "comparedTo": "2026-04-18",
   "alerts": {
     "drops": [],
     "gains": [],
-    "appeared": [],
-    "vanished": [
+    "appeared": [
       {
-        "site": "gp",
-        "page": "https://sargasses-guadeloupe.com/plages-guadeloupe/plage-d-anse-champagne/",
-        "prevImpressions": 42
+        "site": "mq",
+        "page": "https://sargasses-martinique.com/sargasses-record-2026/",
+        "avgPos": 5.7,
+        "clicks": 3,
+        "impressions": 46
       }
     ],
+    "vanished": [],
     "queryDrops": [],
     "queryGains": []
   }

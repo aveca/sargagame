@@ -1,17 +1,17 @@
 {
-  "generatedAt": "2026-04-18T23:14:08.674Z",
+  "generatedAt": "2026-04-20T12:19:31.631Z",
   "sites": {
     "mq": {
-      "pageCount": 102,
-      "uniqueTitles": 101,
-      "uniqueDescs": 98,
+      "pageCount": 103,
+      "uniqueTitles": 102,
+      "uniqueDescs": 99,
       "duplicateTitleGroups": 0,
       "duplicateDescGroups": 0,
       "duplicateTitlePages": 0,
       "duplicateDescPages": 0,
       "duplicateTitles": [],
       "duplicateDescs": [],
-      "issueCount": 89,
+      "issueCount": 90,
       "issues": [
         {
           "file": "404.html",
@@ -104,6 +104,12 @@
           "value": "Détection satellite des sargasses : AFAI, OLCI, Copernicus (2026)"
         },
         {
+          "file": "en/best-beaches-guadeloupe/index.html",
+          "kind": "title-length-warn",
+          "length": 61,
+          "value": "Best beaches in Guadeloupe without sargassum — Real-time 2026"
+        },
+        {
           "file": "en/best-beaches-martinique/index.html",
           "kind": "title-length-warn",
           "length": 61,
@@ -170,24 +176,26 @@
           "file": "index.html",
           "kind": "desc-length-warn",
           "length": 167
-        },
-        {
-          "file": "lexique/index.html",
-          "kind": "title-length-warn",
-          "length": 62,
-          "value": "Lexique sargasses : NFAI, échouage, Sentinel, niveau de risque"
         }
       ]
     },
     "gp": {
-      "pageCount": 132,
+      "pageCount": 133,
       "uniqueTitles": 129,
-      "uniqueDescs": 127,
-      "duplicateTitleGroups": 2,
+      "uniqueDescs": 128,
+      "duplicateTitleGroups": 3,
       "duplicateDescGroups": 1,
-      "duplicateTitlePages": 4,
+      "duplicateTitlePages": 6,
       "duplicateDescPages": 2,
       "duplicateTitles": [
+        {
+          "title": "Best beaches in Guadeloupe without sargassum — Real-time 2026",
+          "count": 2,
+          "sample": [
+            "en/best-beaches-guadeloupe/index.html",
+            "en/best-beaches-martinique/index.html"
+          ]
+        },
         {
           "title": "Meilleures plages de Guadeloupe sans sargasses — Carte en temps réel 2026",
           "count": 2,
@@ -215,7 +223,7 @@
           ]
         }
       ],
-      "issueCount": 124,
+      "issueCount": 125,
       "issues": [
         {
           "file": "404.html",
@@ -308,6 +316,12 @@
           "value": "Détection satellite des sargasses : AFAI, OLCI, Copernicus (2026)"
         },
         {
+          "file": "en/best-beaches-guadeloupe/index.html",
+          "kind": "title-length-warn",
+          "length": 61,
+          "value": "Best beaches in Guadeloupe without sargassum — Real-time 2026"
+        },
+        {
           "file": "en/best-beaches-martinique/index.html",
           "kind": "title-length-warn",
           "length": 61,
@@ -374,12 +388,6 @@
           "file": "index.html",
           "kind": "desc-length-warn",
           "length": 171
-        },
-        {
-          "file": "lexique/index.html",
-          "kind": "title-length-warn",
-          "length": 62,
-          "value": "Lexique sargasses : NFAI, échouage, Sentinel, niveau de risque"
         }
       ]
     }
