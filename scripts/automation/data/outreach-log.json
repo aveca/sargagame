@@ -104,8 +104,36 @@
       "status": "sent",
       "error": null,
       "url": "https://www.lesilesdeguadeloupe.com/"
+    },
+    "karukera-guadeloupe.com": {
+      "date": "2026-04-21T11:06:23.746Z",
+      "email": "***RGPD-PURGE***",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.karukera-guadeloupe.com/guadeloupe/plages.html"
+    },
+    "guadeloupe-fr.com": {
+      "date": "2026-04-21T11:06:26.479Z",
+      "email": "***RGPD-PURGE***",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.guadeloupe-fr.com/plages-de-guadeloupe/"
+    },
+    "tourisme-guadeloupe.fr": {
+      "date": "2026-04-21T11:06:26.991Z",
+      "email": "***RGPD-PURGE***",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.tourisme-guadeloupe.fr/"
+    },
+    "guideguadeloupe.com": {
+      "date": "2026-04-21T11:06:27.594Z",
+      "email": "***RGPD-PURGE***",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.guideguadeloupe.com/plages-guadeloupe.html"
     }
   },
-  "lastRun": "2026-04-17T21:58:39.116Z",
-  "totalSent": 15
+  "lastRun": "2026-04-21T11:06:27.594Z",
+  "totalSent": 19
 }
