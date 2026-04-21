@@ -2365,17 +2365,17 @@
         },
         {
           "id": "gp-grande-anse",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
           "id": "gp-malendure",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
           "id": "gp-sainte-anne",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
@@ -2405,7 +2405,7 @@
         },
         {
           "id": "gp-moule",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
