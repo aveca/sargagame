@@ -112,7 +112,7 @@
     },
     "gp-pt-chateaux": {
       "statusHitRate": 84,
-      "afaiMAE": 0.032,
+      "afaiMAE": 0.033,
       "pairs": 75
     },
     "gp-gosier": {
@@ -150,7 +150,7 @@
     "statusHitRate": 81,
     "afaiMAE": 0.045
   },
-  "computed": "2026-04-21T07:51:40.378Z",
+  "computed": "2026-04-21T13:28:21.290Z",
   "pairs": [
     {
       "snapshotDate": "2026-04-18",
@@ -520,11 +520,11 @@
         "confidence": 27
       },
       "actual": {
-        "afai": 0.05,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-04-18",
@@ -1302,11 +1302,11 @@
         "confidence": 33
       },
       "actual": {
-        "afai": 0.05,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-04-19",
@@ -1744,11 +1744,11 @@
         "confidence": 46
       },
       "actual": {
-        "afai": 0.05,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-04-20",
