@@ -1,49 +1,6 @@
 {
   "runs": [
     {
-      "timestamp": "2026-04-13T06:04:20.061Z",
-      "dryRun": false,
-      "script": "auto-copywriting",
-      "action": "copywriting-optimized",
-      "results": {
-        "beachMetaOverrides": 136,
-        "h1Suggestions": 6,
-        "topQueriesAnalyzed": 298,
-        "highValueKeywords": {
-          "en temps réel": {
-            "totalClicks": 787,
-            "totalImpressions": 1627,
-            "matchingQueries": 4
-          },
-          "aujourd'hui": {
-            "totalClicks": 368,
-            "totalImpressions": 1772,
-            "matchingQueries": 5
-          },
-          "carte": {
-            "totalClicks": 116,
-            "totalImpressions": 1343,
-            "matchingQueries": 40
-          },
-          "prévisions": {
-            "totalClicks": 6,
-            "totalImpressions": 87,
-            "matchingQueries": 5
-          },
-          "alertes": {
-            "totalClicks": 0,
-            "totalImpressions": 3,
-            "matchingQueries": 1
-          },
-          "plage propre": {
-            "totalClicks": 0,
-            "totalImpressions": 0,
-            "matchingQueries": 0
-          }
-        }
-      }
-    },
-    {
       "timestamp": "2026-04-13T06:04:20.158Z",
       "dryRun": false,
       "script": "seo-fix-404",
@@ -1196,6 +1153,13 @@
         "https://sargasses-martinique.com/plages/baie-coco/",
         "https://sargasses-martinique.com/plages/pointe-faula/"
       ]
+    },
+    {
+      "timestamp": "2026-04-22T09:19:55.924Z",
+      "dryRun": false,
+      "script": "auto-web-content",
+      "action": "generation-failed",
+      "island": "mq"
     }
   ]
 }
