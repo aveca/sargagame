@@ -117,7 +117,7 @@
     },
     "gp-gosier": {
       "statusHitRate": 71,
-      "afaiMAE": 0.053,
+      "afaiMAE": 0.052,
       "pairs": 87
     },
     "gp-caravelle": {
@@ -148,9 +148,9 @@
   },
   "overall": {
     "statusHitRate": 82,
-    "afaiMAE": 0.044
+    "afaiMAE": 0.043
   },
-  "computed": "2026-04-23T02:39:30.380Z",
+  "computed": "2026-04-23T07:54:51.567Z",
   "pairs": [
     {
       "snapshotDate": "2026-04-20",
@@ -571,11 +571,11 @@
         "confidence": 37
       },
       "actual": {
-        "afai": 0.09,
+        "afai": 0.1,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.12
+      "afaiError": 0.11
     },
     {
       "snapshotDate": "2026-04-20",
@@ -673,11 +673,11 @@
         "confidence": 37
       },
       "actual": {
-        "afai": 0.09,
+        "afai": 0.1,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.11
+      "afaiError": 0.1
     },
     {
       "snapshotDate": "2026-04-20",
@@ -1336,11 +1336,11 @@
         "confidence": 43
       },
       "actual": {
-        "afai": 0.09,
+        "afai": 0.1,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.11
+      "afaiError": 0.1
     },
     {
       "snapshotDate": "2026-04-21",
@@ -1404,11 +1404,11 @@
         "confidence": 43
       },
       "actual": {
-        "afai": 0.09,
+        "afai": 0.1,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.1
+      "afaiError": 0.09
     },
     {
       "snapshotDate": "2026-04-21",
@@ -1761,11 +1761,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.09,
+        "afai": 0.1,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.08
+      "afaiError": 0.07
     },
     {
       "snapshotDate": "2026-04-22",
@@ -1795,11 +1795,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.09,
+        "afai": 0.1,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.07
+      "afaiError": 0.06
     },
     {
       "snapshotDate": "2026-04-22",
