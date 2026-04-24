@@ -1,39 +1,6 @@
 {
   "runs": [
     {
-      "timestamp": "2026-04-13T06:04:20.158Z",
-      "dryRun": false,
-      "script": "seo-fix-404",
-      "action": "redirects-added",
-      "redirectsAdded": 4,
-      "rules": [
-        {
-          "path": "/plages/anse-laborde/",
-          "target": "/plages/anse-laborde/",
-          "method": "exact",
-          "score": 1
-        },
-        {
-          "path": "/plages/plage-des-amandiers/",
-          "target": "/plages/plage-des-amandiers/",
-          "method": "exact",
-          "score": 1
-        },
-        {
-          "path": "/plages/plage-de-sainte-claire/",
-          "target": "/plages/plage-de-sainte-claire/",
-          "method": "exact",
-          "score": 1
-        },
-        {
-          "path": "/plages/plage-de-la-desirade-sud/",
-          "target": "/plages/plage-de-la-desirade-sud/",
-          "method": "exact",
-          "score": 1
-        }
-      ]
-    },
-    {
       "timestamp": "2026-04-13T06:04:20.219Z",
       "dryRun": false,
       "script": "seo-optimize-meta",
@@ -1156,6 +1123,13 @@
     },
     {
       "timestamp": "2026-04-22T09:19:55.924Z",
+      "dryRun": false,
+      "script": "auto-web-content",
+      "action": "generation-failed",
+      "island": "mq"
+    },
+    {
+      "timestamp": "2026-04-24T09:44:29.051Z",
       "dryRun": false,
       "script": "auto-web-content",
       "action": "generation-failed",
