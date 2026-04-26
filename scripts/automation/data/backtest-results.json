@@ -39,7 +39,7 @@
     },
     "day6": {
       "statusHitRate": 93,
-      "afaiMAE": 0.029,
+      "afaiMAE": 0.028,
       "avgConfidence": 8,
       "pairs": 300
     }
@@ -150,7 +150,7 @@
     "statusHitRate": 81,
     "afaiMAE": 0.043
   },
-  "computed": "2026-04-26T07:40:39.399Z",
+  "computed": "2026-04-26T13:07:54.001Z",
   "pairs": [
     {
       "snapshotDate": "2026-04-23",
@@ -367,11 +367,11 @@
         "confidence": 27
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
       "snapshotDate": "2026-04-23",
@@ -418,11 +418,11 @@
         "confidence": 27
       },
       "actual": {
-        "afai": 0.14,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.05
+      "afaiError": 0.03
     },
     {
       "snapshotDate": "2026-04-23",
@@ -1200,11 +1200,11 @@
         "confidence": 33
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.04
+      "afaiError": 0.05
     },
     {
       "snapshotDate": "2026-04-24",
@@ -1234,11 +1234,11 @@
         "confidence": 33
       },
       "actual": {
-        "afai": 0.14,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.01
+      "afaiError": 0.09
     },
     {
       "snapshotDate": "2026-04-24",
@@ -1693,11 +1693,11 @@
         "confidence": 46
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.06
+      "afaiError": 0.07
     },
     {
       "snapshotDate": "2026-04-25",
@@ -1710,11 +1710,11 @@
         "confidence": 46
       },
       "actual": {
-        "afai": 0.14,
+        "afai": 0.06,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.03
+      "afaiError": 0.11
     },
     {
       "snapshotDate": "2026-04-25",
