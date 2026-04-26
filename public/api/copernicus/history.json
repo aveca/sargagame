@@ -2890,8 +2890,8 @@
         },
         {
           "id": "gp-grande-anse",
-          "afai": 0.15,
-          "status": "moderate"
+          "afai": 0.07,
+          "status": "clean"
         },
         {
           "id": "gp-malendure",
@@ -3088,6 +3088,13 @@
       "from": "clean",
       "to": "moderate",
       "afai": 0.15
+    },
+    {
+      "date": "2026-04-26",
+      "beach": "gp-grande-anse",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.07
     }
   ]
 }

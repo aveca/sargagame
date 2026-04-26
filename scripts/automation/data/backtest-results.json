@@ -8,8 +8,8 @@
   },
   "byHorizon": {
     "day1": {
-      "statusHitRate": 77,
-      "afaiMAE": 0.048,
+      "statusHitRate": 78,
+      "afaiMAE": 0.049,
       "avgConfidence": 50,
       "pairs": 400
     },
@@ -20,7 +20,7 @@
       "pairs": 380
     },
     "day3": {
-      "statusHitRate": 74,
+      "statusHitRate": 75,
       "afaiMAE": 0.051,
       "avgConfidence": 30,
       "pairs": 360
@@ -32,8 +32,8 @@
       "pairs": 340
     },
     "day5": {
-      "statusHitRate": 89,
-      "afaiMAE": 0.032,
+      "statusHitRate": 90,
+      "afaiMAE": 0.031,
       "avgConfidence": 11,
       "pairs": 320
     },
@@ -96,8 +96,8 @@
       "pairs": 105
     },
     "gp-grande-anse": {
-      "statusHitRate": 89,
-      "afaiMAE": 0.037,
+      "statusHitRate": 94,
+      "afaiMAE": 0.035,
       "pairs": 105
     },
     "gp-malendure": {
@@ -150,7 +150,7 @@
     "statusHitRate": 81,
     "afaiMAE": 0.043
   },
-  "computed": "2026-04-26T02:45:28.165Z",
+  "computed": "2026-04-26T07:40:39.399Z",
   "pairs": [
     {
       "snapshotDate": "2026-04-23",
@@ -367,11 +367,11 @@
         "confidence": 27
       },
       "actual": {
-        "afai": 0.15,
-        "status": "moderate"
+        "afai": 0.07,
+        "status": "clean"
       },
-      "statusHit": 0,
-      "afaiError": 0.09
+      "statusHit": 1,
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-04-23",
@@ -1200,10 +1200,10 @@
         "confidence": 33
       },
       "actual": {
-        "afai": 0.15,
-        "status": "moderate"
+        "afai": 0.07,
+        "status": "clean"
       },
-      "statusHit": 0,
+      "statusHit": 1,
       "afaiError": 0.04
     },
     {
@@ -1693,11 +1693,11 @@
         "confidence": 46
       },
       "actual": {
-        "afai": 0.15,
-        "status": "moderate"
+        "afai": 0.07,
+        "status": "clean"
       },
-      "statusHit": 0,
-      "afaiError": 0.02
+      "statusHit": 1,
+      "afaiError": 0.06
     },
     {
       "snapshotDate": "2026-04-25",
