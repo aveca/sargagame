@@ -1,13 +1,6 @@
 {
   "runs": [
     {
-      "timestamp": "2026-04-13T06:04:20.219Z",
-      "dryRun": false,
-      "script": "seo-optimize-meta",
-      "action": "no-changes",
-      "changesCount": 0
-    },
-    {
       "timestamp": "2026-04-13T06:04:20.311Z",
       "dryRun": false,
       "script": "seo-enrich-content",
@@ -1130,6 +1123,13 @@
     },
     {
       "timestamp": "2026-04-24T09:44:29.051Z",
+      "dryRun": false,
+      "script": "auto-web-content",
+      "action": "generation-failed",
+      "island": "mq"
+    },
+    {
+      "timestamp": "2026-04-27T10:14:03.203Z",
       "dryRun": false,
       "script": "auto-web-content",
       "action": "generation-failed",
