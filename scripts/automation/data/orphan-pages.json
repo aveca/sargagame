@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-20T12:19:28.439Z",
+  "generatedAt": "2026-04-27T12:27:21.211Z",
   "sites": {
     "mq": {
       "sitemapSize": 15,
@@ -12,8 +12,8 @@
       "linkDonors": [
         {
           "url": "https://sargasses-martinique.com/",
-          "impressions": 7674,
-          "clicks": 1392
+          "impressions": 7782,
+          "clicks": 1479
         }
       ],
       "orphans": [
@@ -120,100 +120,103 @@
     },
     "gp": {
       "sitemapSize": 15,
-      "orphanCount": 9,
+      "orphanCount": 15,
       "orphansByKind": {
-        "editorial": 4,
+        "editorial": 7,
         "beach": 0,
-        "other": 5
+        "other": 8
       },
-      "linkDonors": [
-        {
-          "url": "https://sargasses-guadeloupe.com/",
-          "impressions": 3729,
-          "clicks": 861
-        }
-      ],
+      "linkDonors": [],
       "orphans": [
         {
           "url": "https://sargasses-guadeloupe.com/alertes/",
           "impressions": 0,
           "clicks": 0,
-          "kind": "editorial",
-          "recommendedLinkSources": [
-            "https://sargasses-guadeloupe.com/"
-          ]
+          "kind": "editorial"
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial"
         },
         {
           "url": "https://sargasses-guadeloupe.com/danger-sargasses-h2s/",
           "impressions": 0,
           "clicks": 0,
-          "kind": "editorial",
-          "recommendedLinkSources": [
-            "https://sargasses-guadeloupe.com/"
-          ]
+          "kind": "editorial"
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages-sans-sargasses/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial"
         },
         {
           "url": "https://sargasses-guadeloupe.com/previsions/",
-          "impressions": 3,
+          "impressions": 0,
           "clicks": 0,
-          "kind": "editorial",
-          "recommendedLinkSources": [
-            "https://sargasses-guadeloupe.com/"
-          ]
+          "kind": "editorial"
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/saison-sargasses-guadeloupe/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial"
         },
         {
           "url": "https://sargasses-guadeloupe.com/saison-sargasses-martinique/",
           "impressions": 0,
           "clicks": 0,
-          "kind": "editorial",
-          "recommendedLinkSources": [
-            "https://sargasses-guadeloupe.com/"
-          ]
+          "kind": "editorial"
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other"
         },
         {
           "url": "https://sargasses-guadeloupe.com/confidentialite.html",
           "impressions": 0,
           "clicks": 0,
-          "kind": "other",
-          "recommendedLinkSources": [
-            "https://sargasses-guadeloupe.com/"
-          ]
+          "kind": "other"
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/en/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other"
         },
         {
           "url": "https://sargasses-guadeloupe.com/en/best-beaches-no-sargassum/",
           "impressions": 0,
           "clicks": 0,
-          "kind": "other",
-          "recommendedLinkSources": [
-            "https://sargasses-guadeloupe.com/"
-          ]
+          "kind": "other"
         },
         {
           "url": "https://sargasses-guadeloupe.com/en/sargassum-alerts/",
           "impressions": 0,
           "clicks": 0,
-          "kind": "other",
-          "recommendedLinkSources": [
-            "https://sargasses-guadeloupe.com/"
-          ]
+          "kind": "other"
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/en/sargassum-map/",
+          "impressions": 0,
+          "clicks": 0,
+          "kind": "other"
         },
         {
           "url": "https://sargasses-guadeloupe.com/en/sargassum-season/",
           "impressions": 0,
           "clicks": 0,
-          "kind": "other",
-          "recommendedLinkSources": [
-            "https://sargasses-guadeloupe.com/"
-          ]
+          "kind": "other"
         },
         {
           "url": "https://sargasses-guadeloupe.com/mentions-legales.html",
           "impressions": 0,
           "clicks": 0,
-          "kind": "other",
-          "recommendedLinkSources": [
-            "https://sargasses-guadeloupe.com/"
-          ]
+          "kind": "other"
         }
       ]
     }

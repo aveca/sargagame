@@ -1,19 +1,67 @@
 {
-  "generatedAt": "2026-04-20T12:19:28.394Z",
-  "comparedTo": "2026-04-18",
+  "generatedAt": "2026-04-27T12:27:21.169Z",
+  "comparedTo": "2026-04-20",
   "alerts": {
     "drops": [],
     "gains": [],
-    "appeared": [
+    "appeared": [],
+    "vanished": [
       {
-        "site": "mq",
-        "page": "https://sargasses-martinique.com/sargasses-record-2026/",
-        "avgPos": 5.7,
-        "clicks": 3,
-        "impressions": 46
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/",
+        "prevImpressions": 3729
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/carte-temps-reel/",
+        "prevImpressions": 225
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/plages/plage-bois-jolan/",
+        "prevImpressions": 71
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/saison-sargasses-guadeloupe/",
+        "prevImpressions": 44
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/previsions-sargasses-guadeloupe/",
+        "prevImpressions": 159
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/carte-sargasses/",
+        "prevImpressions": 98
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/plages/de-bois-jolan/",
+        "prevImpressions": 43
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/communes/saint-francois/",
+        "prevImpressions": 75
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/plages-sans-sargasses-guadeloupe/",
+        "prevImpressions": 171
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/faq/",
+        "prevImpressions": 50
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/quand-sargasses-guadeloupe/",
+        "prevImpressions": 263
       }
     ],
-    "vanished": [],
     "queryDrops": [],
     "queryGains": []
   }
