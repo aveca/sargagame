@@ -1,51 +1,51 @@
 {
-  "generatedAt": "2026-04-20T12:00:46.489Z",
+  "generatedAt": "2026-04-27T12:18:55.470Z",
   "sites": {
     "mq": {
       "domain": "sargasses-martinique.com",
-      "indexedCount": 11,
+      "indexedCount": 13,
       "totalUrls": 74,
       "findings": {
         "notIndexed": [],
         "softErrors": [],
         "lowCtrPages": [
           {
-            "page": "https://sargasses-martinique.com/plages/anse-letang/",
-            "avgPosition": 10,
+            "page": "https://sargasses-martinique.com/plages/anse-des-galets/",
+            "avgPosition": 7,
             "actualCtr": 0,
-            "expectedCtr": 2,
-            "impressions": 25,
+            "expectedCtr": 4,
+            "impressions": 36,
             "clicks": 0,
             "topQueries": [
               {
-                "query": "plage tartane martinique sargasse",
+                "query": "anse des galets martinique",
+                "impressions": 14,
+                "clicks": 0,
+                "position": 7.714285714285714
+              },
+              {
+                "query": "anse galet martinique",
+                "impressions": 8,
+                "clicks": 0,
+                "position": 8
+              },
+              {
+                "query": "anse des galets martinique",
+                "impressions": 7,
+                "clicks": 0,
+                "position": 6.142857142857143
+              },
+              {
+                "query": "anse galet martinique",
                 "impressions": 3,
                 "clicks": 0,
-                "position": 7
-              },
-              {
-                "query": "anse de l'étang",
-                "impressions": 2,
-                "clicks": 0,
-                "position": 10
-              },
-              {
-                "query": "plage de l'anse l'etang",
-                "impressions": 2,
-                "clicks": 0,
-                "position": 12.5
-              },
-              {
-                "query": "anse l etang",
-                "impressions": 1,
-                "clicks": 0,
-                "position": 32
-              },
-              {
-                "query": "anse l'etang martinique",
-                "impressions": 1,
-                "clicks": 0,
                 "position": 9
+              },
+              {
+                "query": "anse des galets martinique",
+                "impressions": 1,
+                "clicks": 0,
+                "position": 6
               }
             ]
           }
@@ -57,23 +57,29 @@
             "event": "clarity_rage_click",
             "page": "/",
             "target": "",
-            "count": 97
+            "count": 129
           },
           {
             "event": "clarity_rage_click",
             "page": "/en/sargassum-map/",
             "target": "",
-            "count": 3
+            "count": 4
           },
           {
             "event": "clarity_rage_click",
             "page": "/carte-sargasses/",
             "target": "",
-            "count": 2
+            "count": 3
           },
           {
             "event": "clarity_rage_click",
             "page": "/plages/pointe-fort-caravelle/",
+            "target": "",
+            "count": 1
+          },
+          {
+            "event": "clarity_rage_click",
+            "page": "/saison-sargasses-guadeloupe/",
             "target": "",
             "count": 1
           },
@@ -89,37 +95,55 @@
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 1203
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/en/sargassum-map/",
-            "target": "",
-            "count": 13
+            "count": 1506
           },
           {
             "event": "clarity_dead_click",
             "page": "/saison-sargasses-guadeloupe/",
             "target": "",
-            "count": 11
+            "count": 23
           },
           {
             "event": "clarity_dead_click",
             "page": "/en/",
             "target": "",
-            "count": 9
+            "count": 17
           },
           {
             "event": "clarity_dead_click",
-            "page": "/detection-satellite-sargasses/",
+            "page": "/en/sargassum-map/",
             "target": "",
-            "count": 2
+            "count": 17
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/carte-sargasses/",
+            "target": "",
+            "count": 7
           },
           {
             "event": "clarity_dead_click",
             "page": "/plages/anse-dufour/",
             "target": "",
-            "count": 2
+            "count": 6
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/sargasses-record-2026/",
+            "target": "",
+            "count": 5
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/detection-satellite-sargasses/",
+            "target": "",
+            "count": 3
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages-sans-sargasses/",
+            "target": "",
+            "count": 3
           },
           {
             "event": "clarity_dead_click",
@@ -129,19 +153,37 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/carte-sargasses/",
+            "page": "/conditions/baignade-ideale/",
             "target": "",
             "count": 1
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages-sans-sargasses/",
+            "page": "/conditions/uv-fort/",
+            "target": "",
+            "count": 1
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/en/best-beaches-martinique/",
+            "target": "",
+            "count": 1
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/meilleures-plages-guadeloupe-sargasses/",
             "target": "",
             "count": 1
           },
           {
             "event": "clarity_dead_click",
             "page": "/plages/anse-figuier/",
+            "target": "",
+            "count": 1
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/previsions/",
             "target": "",
             "count": 1
           }
@@ -153,7 +195,7 @@
         {
           "path": "https://sargasses-martinique.com/sitemap.xml",
           "lastSubmitted": "2026-02-18T16:45:01.910Z",
-          "lastDownloaded": "2026-04-17T02:37:46.619Z",
+          "lastDownloaded": "2026-04-26T16:11:57.485Z",
           "isPending": false,
           "warnings": "1",
           "errors": "0"
@@ -162,274 +204,12 @@
     },
     "gp": {
       "domain": "sargasses-guadeloupe.com",
-      "indexedCount": 20,
+      "indexedCount": 0,
       "totalUrls": 100,
       "findings": {
         "notIndexed": [],
-        "softErrors": [
-          {
-            "url": "https://sargasses-guadeloupe.com/plages/anse-laborde/",
-            "verdict": "NEUTRAL",
-            "pageFetchState": "NOT_FOUND",
-            "robotsTxtState": "ALLOWED",
-            "lastCrawlTime": "2026-03-11T23:51:46Z",
-            "coverageState": "Not found (404)"
-          },
-          {
-            "url": "https://sargasses-guadeloupe.com/plages/plage-des-amandiers/",
-            "verdict": "NEUTRAL",
-            "pageFetchState": "NOT_FOUND",
-            "robotsTxtState": "ALLOWED",
-            "lastCrawlTime": "2026-02-27T12:52:17Z",
-            "coverageState": "Not found (404)"
-          },
-          {
-            "url": "https://sargasses-guadeloupe.com/plages/plage-de-sainte-claire/",
-            "verdict": "NEUTRAL",
-            "pageFetchState": "NOT_FOUND",
-            "robotsTxtState": "ALLOWED",
-            "lastCrawlTime": "2026-03-11T15:43:27Z",
-            "coverageState": "Not found (404)"
-          },
-          {
-            "url": "https://sargasses-guadeloupe.com/plages/plage-de-la-desirade-sud/",
-            "verdict": "NEUTRAL",
-            "pageFetchState": "NOT_FOUND",
-            "robotsTxtState": "ALLOWED",
-            "lastCrawlTime": "2026-03-12T11:23:38Z",
-            "coverageState": "Not found (404)"
-          }
-        ],
-        "lowCtrPages": [
-          {
-            "page": "https://sargasses-guadeloupe.com/previsions-sargasses-guadeloupe/",
-            "avgPosition": 7,
-            "actualCtr": 1.89,
-            "expectedCtr": 4,
-            "impressions": 159,
-            "clicks": 3,
-            "topQueries": [
-              {
-                "query": "bulletin sargasses guadeloupe",
-                "impressions": 32,
-                "clicks": 0,
-                "position": 7.3125
-              },
-              {
-                "query": "sargasse guadeloupe 2026",
-                "impressions": 12,
-                "clicks": 1,
-                "position": 1
-              },
-              {
-                "query": "bulletin sargasse guadeloupe",
-                "impressions": 9,
-                "clicks": 0,
-                "position": 6.555555555555555
-              },
-              {
-                "query": "prevision sargasse guadeloupe",
-                "impressions": 7,
-                "clicks": 0,
-                "position": 9.571428571428571
-              },
-              {
-                "query": "bulletin sargasses guadeloupe",
-                "impressions": 6,
-                "clicks": 1,
-                "position": 6.833333333333333
-              }
-            ]
-          },
-          {
-            "page": "https://sargasses-guadeloupe.com/plages-sans-sargasses-guadeloupe/",
-            "avgPosition": 6,
-            "actualCtr": 2.34,
-            "expectedCtr": 5,
-            "impressions": 171,
-            "clicks": 4,
-            "topQueries": [
-              {
-                "query": "plage sans sargasse guadeloupe",
-                "impressions": 29,
-                "clicks": 0,
-                "position": 9.379310344827585
-              },
-              {
-                "query": "plage sans sargasse guadeloupe",
-                "impressions": 16,
-                "clicks": 1,
-                "position": 10.3125
-              },
-              {
-                "query": "sargasse guadeloupe",
-                "impressions": 13,
-                "clicks": 0,
-                "position": 2.8461538461538463
-              },
-              {
-                "query": "plage guadeloupe sans sargasse",
-                "impressions": 9,
-                "clicks": 0,
-                "position": 1
-              },
-              {
-                "query": "plage sans sargasse guadeloupe",
-                "impressions": 8,
-                "clicks": 0,
-                "position": 2.875
-              }
-            ]
-          },
-          {
-            "page": "https://sargasses-guadeloupe.com/faq/",
-            "avgPosition": 3,
-            "actualCtr": 2,
-            "expectedCtr": 11,
-            "impressions": 50,
-            "clicks": 1,
-            "topQueries": [
-              {
-                "query": "sargasse guadeloupe",
-                "impressions": 15,
-                "clicks": 1,
-                "position": 2.9333333333333336
-              },
-              {
-                "query": "saison des sargasses guadeloupe",
-                "impressions": 3,
-                "clicks": 0,
-                "position": 1
-              },
-              {
-                "query": "sargasse guadeloupe",
-                "impressions": 3,
-                "clicks": 0,
-                "position": 2.333333333333333
-              },
-              {
-                "query": "guadeloupe et sargasses",
-                "impressions": 2,
-                "clicks": 0,
-                "position": 3.5
-              },
-              {
-                "query": "guadeloupe sargasse",
-                "impressions": 2,
-                "clicks": 0,
-                "position": 4
-              }
-            ]
-          },
-          {
-            "page": "https://sargasses-guadeloupe.com/quand-sargasses-guadeloupe/",
-            "avgPosition": 8,
-            "actualCtr": 0.38,
-            "expectedCtr": 3,
-            "impressions": 263,
-            "clicks": 1,
-            "topQueries": [
-              {
-                "query": "sargasse guadeloupe 2026",
-                "impressions": 83,
-                "clicks": 0,
-                "position": 10.325301204819278
-              },
-              {
-                "query": "sargasse guadeloupe 2026",
-                "impressions": 30,
-                "clicks": 1,
-                "position": 1.3333333333333333
-              },
-              {
-                "query": "sargasse guadeloupe",
-                "impressions": 18,
-                "clicks": 0,
-                "position": 2.9444444444444446
-              },
-              {
-                "query": "sargasse guadeloupe 2026",
-                "impressions": 17,
-                "clicks": 0,
-                "position": 9.411764705882353
-              },
-              {
-                "query": "guadeloupe sargasse 2026",
-                "impressions": 10,
-                "clicks": 0,
-                "position": 2
-              }
-            ]
-          },
-          {
-            "page": "https://sargasses-guadeloupe.com/plages/anse-rodrigue/",
-            "avgPosition": 8,
-            "actualCtr": 0,
-            "expectedCtr": 3,
-            "impressions": 21,
-            "clicks": 0,
-            "topQueries": [
-              {
-                "query": "anse rodrigue",
-                "impressions": 14,
-                "clicks": 0,
-                "position": 9.571428571428571
-              },
-              {
-                "query": "anse rodrigue",
-                "impressions": 4,
-                "clicks": 0,
-                "position": 7.5
-              },
-              {
-                "query": "anse rodrigue",
-                "impressions": 3,
-                "clicks": 0,
-                "position": 8.333333333333332
-              }
-            ]
-          },
-          {
-            "page": "https://sargasses-guadeloupe.com/plages/paul-thomas/",
-            "avgPosition": 8,
-            "actualCtr": 0,
-            "expectedCtr": 3,
-            "impressions": 26,
-            "clicks": 0,
-            "topQueries": [
-              {
-                "query": "plage paul thomas guadeloupe",
-                "impressions": 8,
-                "clicks": 0,
-                "position": 10.125
-              },
-              {
-                "query": "plage paul thomas guadeloupe",
-                "impressions": 5,
-                "clicks": 0,
-                "position": 10.4
-              },
-              {
-                "query": "plage paul thomas",
-                "impressions": 3,
-                "clicks": 0,
-                "position": 9
-              },
-              {
-                "query": "plage paul thomas",
-                "impressions": 3,
-                "clicks": 0,
-                "position": 10.666666666666666
-              },
-              {
-                "query": "plage paul thomas",
-                "impressions": 2,
-                "clicks": 0,
-                "position": 4
-              }
-            ]
-          }
-        ],
+        "softErrors": [],
+        "lowCtrPages": [],
         "highBouncePages": [],
         "cwvIssues": [],
         "rageClicks": [
@@ -437,17 +217,29 @@
             "event": "clarity_rage_click",
             "page": "/",
             "target": "",
-            "count": 382
+            "count": 543
           },
           {
             "event": "clarity_rage_click",
             "page": "/en/",
             "target": "",
-            "count": 4
+            "count": 5
+          },
+          {
+            "event": "clarity_rage_click",
+            "page": "/plages/la-grande-anse-deshaies/",
+            "target": "",
+            "count": 2
           },
           {
             "event": "clarity_rage_click",
             "page": "/plages/plage-caravelle/",
+            "target": "",
+            "count": 2
+          },
+          {
+            "event": "clarity_rage_click",
+            "page": "/plages/plage-de-la-caravelle/",
             "target": "",
             "count": 2
           },
@@ -465,13 +257,19 @@
           },
           {
             "event": "clarity_rage_click",
-            "page": "/plages/le-gosier/",
+            "page": "/en/sargassum-map/",
             "target": "",
             "count": 1
           },
           {
             "event": "clarity_rage_click",
-            "page": "/plages/plage-de-la-caravelle/",
+            "page": "/plages/anse-a-la-gourde/",
+            "target": "",
+            "count": 1
+          },
+          {
+            "event": "clarity_rage_click",
+            "page": "/plages/le-gosier/",
             "target": "",
             "count": 1
           }
@@ -481,7 +279,13 @@
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 4509
+            "count": 5475
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/en/",
+            "target": "",
+            "count": 37
           },
           {
             "event": "clarity_dead_click",
@@ -491,9 +295,21 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/en/",
+            "page": "/plages/plage-de-malendure/",
+            "target": "",
+            "count": 24
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/plage-bois-jolan/",
             "target": "",
             "count": 23
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/plage-de-la-caravelle/",
+            "target": "",
+            "count": 21
           },
           {
             "event": "clarity_dead_click",
@@ -509,19 +325,37 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/plage-bois-jolan/",
+            "page": "/plages/pointe-des-chateaux/",
             "target": "",
-            "count": 9
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/plage-de-malendure/",
-            "target": "",
-            "count": 9
+            "count": 13
           },
           {
             "event": "clarity_dead_click",
             "page": "/en/sargassum-map/",
+            "target": "",
+            "count": 10
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/anse-a-la-gourde/",
+            "target": "",
+            "count": 10
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/plage-de-petit-bourg/",
+            "target": "",
+            "count": 10
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/plage-du-gosier/",
+            "target": "",
+            "count": 10
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/la-grande-anse-deshaies/",
             "target": "",
             "count": 8
           },
@@ -530,6 +364,12 @@
             "page": "/previsions/",
             "target": "",
             "count": 8
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/anse-champagne/",
+            "target": "",
+            "count": 4
           },
           {
             "event": "clarity_dead_click",
@@ -545,13 +385,13 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/plage-souffleur/",
+            "page": "/plages/plage-de-sainte-anne/",
             "target": "",
             "count": 4
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/pointe-des-chateaux/",
+            "page": "/plages/plage-souffleur/",
             "target": "",
             "count": 4
           },
@@ -581,25 +421,13 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/anse-champagne/",
-            "target": "",
-            "count": 2
-          },
-          {
-            "event": "clarity_dead_click",
             "page": "/plages/de-petit-havre/",
             "target": "",
             "count": 2
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/plage-de-petit-bourg/",
-            "target": "",
-            "count": 2
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/plage-de-sainte-anne/",
+            "page": "/plages/plage-de-grande-anse/",
             "target": "",
             "count": 2
           },
@@ -626,39 +454,12 @@
             "page": "/plages/ilet-caret/",
             "target": "",
             "count": 1
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/plage-de-grande-anse/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/plage-de-la-caravelle/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/plage-du-gosier/",
-            "target": "",
-            "count": 1
           }
         ],
         "quickBounces": []
       },
       "crux": null,
-      "sitemapStatus": [
-        {
-          "path": "https://sargasses-guadeloupe.com/sitemap.xml",
-          "lastSubmitted": "2026-02-23T06:03:02.704Z",
-          "lastDownloaded": "2026-04-20T00:32:22.980Z",
-          "isPending": false,
-          "warnings": "0",
-          "errors": "0"
-        }
-      ]
+      "sitemapStatus": []
     }
   }
 }

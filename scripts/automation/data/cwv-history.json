@@ -32,6 +32,17 @@
           "combined": null
         }
       }
+    },
+    {
+      "date": "2026-04-27",
+      "sites": {
+        "mq": {
+          "combined": null
+        },
+        "gp": {
+          "combined": null
+        }
+      }
     }
   ]
 }

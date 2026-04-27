@@ -1,140 +1,15 @@
 {
-  "generatedAt": "2026-04-20T12:19:28.535Z",
+  "generatedAt": "2026-04-27T12:27:21.301Z",
   "sites": {
     "mq": {
-      "queryCount": 125,
+      "queryCount": 144,
       "cannibalizedCount": 0,
       "cannibalized": []
     },
     "gp": {
-      "queryCount": 211,
-      "cannibalizedCount": 5,
-      "cannibalized": [
-        {
-          "query": "sargasse guadeloupe 2026",
-          "totalImpressions": 254,
-          "totalClicks": 7,
-          "competitorCount": 2,
-          "competitors": [
-            {
-              "url": "https://sargasses-guadeloupe.com/quand-sargasses-guadeloupe/",
-              "impressions": 161,
-              "clicks": 1,
-              "share": 0.6338582677165354
-            },
-            {
-              "url": "https://sargasses-guadeloupe.com/",
-              "impressions": 47,
-              "clicks": 3,
-              "share": 0.18503937007874016
-            }
-          ]
-        },
-        {
-          "query": "carte des sargasses",
-          "totalImpressions": 118,
-          "totalClicks": 0,
-          "competitorCount": 3,
-          "competitors": [
-            {
-              "url": "https://sargasses-guadeloupe.com/",
-              "impressions": 76,
-              "clicks": 0,
-              "share": 0.6440677966101694
-            },
-            {
-              "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
-              "impressions": 26,
-              "clicks": 0,
-              "share": 0.22033898305084745
-            },
-            {
-              "url": "https://sargasses-guadeloupe.com/carte-temps-reel/",
-              "impressions": 13,
-              "clicks": 0,
-              "share": 0.11016949152542373
-            }
-          ]
-        },
-        {
-          "query": "sargasse guadeloupe",
-          "totalImpressions": 105,
-          "totalClicks": 4,
-          "competitorCount": 4,
-          "competitors": [
-            {
-              "url": "https://sargasses-guadeloupe.com/",
-              "impressions": 31,
-              "clicks": 3,
-              "share": 0.29523809523809524
-            },
-            {
-              "url": "https://sargasses-guadeloupe.com/quand-sargasses-guadeloupe/",
-              "impressions": 27,
-              "clicks": 0,
-              "share": 0.2571428571428571
-            },
-            {
-              "url": "https://sargasses-guadeloupe.com/faq/",
-              "impressions": 21,
-              "clicks": 1,
-              "share": 0.2
-            },
-            {
-              "url": "https://sargasses-guadeloupe.com/plages-sans-sargasses-guadeloupe/",
-              "impressions": 17,
-              "clicks": 0,
-              "share": 0.1619047619047619
-            }
-          ]
-        },
-        {
-          "query": "meteo sargasse guadeloupe",
-          "totalImpressions": 90,
-          "totalClicks": 2,
-          "competitorCount": 3,
-          "competitors": [
-            {
-              "url": "https://sargasses-guadeloupe.com/carte-temps-reel/",
-              "impressions": 54,
-              "clicks": 2,
-              "share": 0.6
-            },
-            {
-              "url": "https://sargasses-guadeloupe.com/previsions-sargasses-guadeloupe/",
-              "impressions": 26,
-              "clicks": 0,
-              "share": 0.28888888888888886
-            },
-            {
-              "url": "https://sargasses-guadeloupe.com/",
-              "impressions": 9,
-              "clicks": 0,
-              "share": 0.1
-            }
-          ]
-        },
-        {
-          "query": "sargasse en temps réel",
-          "totalImpressions": 57,
-          "totalClicks": 0,
-          "competitorCount": 2,
-          "competitors": [
-            {
-              "url": "https://sargasses-guadeloupe.com/carte-temps-reel/",
-              "impressions": 42,
-              "clicks": 0,
-              "share": 0.7368421052631579
-            },
-            {
-              "url": "https://sargasses-guadeloupe.com/",
-              "impressions": 12,
-              "clicks": 0,
-              "share": 0.21052631578947367
-            }
-          ]
-        }
-      ]
+      "queryCount": 0,
+      "cannibalizedCount": 0,
+      "cannibalized": []
     }
   }
 }
