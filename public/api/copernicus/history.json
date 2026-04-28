@@ -3065,7 +3065,7 @@
         },
         {
           "id": "tartane",
-          "afai": 0.08,
+          "afai": 0.09,
           "status": "clean"
         },
         {
@@ -3100,17 +3100,17 @@
         },
         {
           "id": "gp-grande-anse",
-          "afai": 0.14,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp-malendure",
-          "afai": 0.13,
+          "afai": 0.07,
           "status": "clean"
         },
         {
           "id": "gp-sainte-anne",
-          "afai": 0.12,
+          "afai": 0.13,
           "status": "clean"
         },
         {
@@ -3120,8 +3120,8 @@
         },
         {
           "id": "gp-gosier",
-          "afai": 0.14,
-          "status": "clean"
+          "afai": 0.15,
+          "status": "moderate"
         },
         {
           "id": "gp-caravelle",
@@ -3130,8 +3130,8 @@
         },
         {
           "id": "gp-bas-du-fort",
-          "afai": 0.14,
-          "status": "clean"
+          "afai": 0.15,
+          "status": "moderate"
         },
         {
           "id": "gp-deshaies",
@@ -3145,7 +3145,7 @@
         },
         {
           "id": "gp-vieux-fort",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         }
       ]
@@ -3325,7 +3325,21 @@
       "beach": "gp-grande-anse",
       "from": "moderate",
       "to": "clean",
-      "afai": 0.14
+      "afai": 0.06
+    },
+    {
+      "date": "2026-04-28",
+      "beach": "gp-gosier",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.15
+    },
+    {
+      "date": "2026-04-28",
+      "beach": "gp-bas-du-fort",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.15
     }
   ]
 }
