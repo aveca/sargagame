@@ -592,5 +592,23 @@
     "email": "***RGPD-PURGE***",
     "island": "MQ",
     "source": "weekend-landing"
+  },
+  {
+    "date": "2026-04-29T11:12:18.233Z",
+    "email": "***RGPD-PURGE***",
+    "island": "MQ",
+    "source": "inline-beach"
+  },
+  {
+    "date": "2026-04-29T11:14:19.688Z",
+    "email": "***RGPD-PURGE***",
+    "island": "GP",
+    "source": "inline-beach"
+  },
+  {
+    "date": "2026-04-29T12:19:07.217Z",
+    "email": "***RGPD-PURGE***",
+    "island": "GP",
+    "source": "inline-beach"
   }
 ]
