@@ -1,22 +1,6 @@
 {
   "runs": [
     {
-      "timestamp": "2026-04-13T06:48:52.917Z",
-      "dryRun": false,
-      "script": "seo-cannibalization",
-      "action": "detect",
-      "sites": 2,
-      "totalCanni": 8
-    },
-    {
-      "timestamp": "2026-04-13T06:48:52.983Z",
-      "dryRun": false,
-      "script": "seo-cwv-tracker",
-      "action": "snapshot",
-      "historyCount": 1,
-      "deltaCount": 0
-    },
-    {
       "timestamp": "2026-04-13T06:48:56.411Z",
       "dryRun": false,
       "script": "seo-broken-links",
@@ -1200,6 +1184,41 @@
       "script": "auto-web-content",
       "action": "generation-failed",
       "island": "mq"
+    },
+    {
+      "timestamp": "2026-05-01T12:08:16.872Z",
+      "dryRun": false,
+      "script": "seo-audit",
+      "action": "data-collection",
+      "results": {
+        "mq": {
+          "indexed": 14,
+          "total": 74,
+          "notIndexed": 0,
+          "lowCtr": 1,
+          "highBounce": 0,
+          "cwvIssues": 0
+        },
+        "gp": {
+          "indexed": 0,
+          "total": 100,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 0,
+          "cwvIssues": 0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-05-01T12:08:16.918Z",
+      "dryRun": false,
+      "script": "ux-audit",
+      "action": "report-generated",
+      "issues": {
+        "totalIssues": 30,
+        "critical": 18,
+        "warnings": 12
+      }
     }
   ]
 }
