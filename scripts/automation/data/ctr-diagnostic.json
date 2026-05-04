@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-27T12:27:21.259Z",
+  "generatedAt": "2026-05-04T12:27:44.206Z",
   "sites": {
     "mq": {
       "opportunityCount": 0,
@@ -9,21 +9,21 @@
       "wins": [
         {
           "url": "https://sargasses-martinique.com/",
-          "impressions": 7782,
-          "clicks": 1479,
-          "position": 6,
-          "actualCtr": 19.01,
-          "expectedCtr": 4.03,
-          "ctrLift": 14.98
+          "impressions": 5891,
+          "clicks": 1521,
+          "position": 5.5,
+          "actualCtr": 25.82,
+          "expectedCtr": 4.92,
+          "ctrLift": 20.89
         },
         {
           "url": "https://sargasses-martinique.com/en/",
-          "impressions": 81,
-          "clicks": 12,
-          "position": 6.8,
-          "actualCtr": 14.81,
-          "expectedCtr": 3.15,
-          "ctrLift": 11.66
+          "impressions": 98,
+          "clicks": 14,
+          "position": 7,
+          "actualCtr": 14.29,
+          "expectedCtr": 2.99,
+          "ctrLift": 11.3
         }
       ]
     },
