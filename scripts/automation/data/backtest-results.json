@@ -87,7 +87,7 @@
     },
     "les-salines": {
       "statusHitRate": 83,
-      "afaiMAE": 0.056,
+      "afaiMAE": 0.057,
       "pairs": 159
     },
     "vauclin": {
@@ -150,7 +150,7 @@
     "statusHitRate": 79,
     "afaiMAE": 0.043
   },
-  "computed": "2026-05-05T02:45:00.393Z",
+  "computed": "2026-05-05T08:10:39.183Z",
   "pairs": [
     {
       "snapshotDate": "2026-05-02",
@@ -265,11 +265,11 @@
         "confidence": 27
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.07,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0.02
     },
     {
       "snapshotDate": "2026-05-02",
@@ -316,11 +316,11 @@
         "confidence": 37
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.08,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.1
+      "afaiError": 0.09
     },
     {
       "snapshotDate": "2026-05-02",
@@ -1132,11 +1132,11 @@
         "confidence": 33
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.07,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0.02
     },
     {
       "snapshotDate": "2026-05-03",
@@ -1166,11 +1166,11 @@
         "confidence": 43
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.08,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.12
+      "afaiError": 0.11
     },
     {
       "snapshotDate": "2026-05-03",
@@ -1659,11 +1659,11 @@
         "confidence": 46
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.07,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0.02
     },
     {
       "snapshotDate": "2026-05-04",
@@ -1676,11 +1676,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.08,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.09
+      "afaiError": 0.08
     },
     {
       "snapshotDate": "2026-05-04",
