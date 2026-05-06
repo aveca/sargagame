@@ -150,7 +150,7 @@
     "statusHitRate": 80,
     "afaiMAE": 0.04
   },
-  "computed": "2026-05-06T02:51:20.362Z",
+  "computed": "2026-05-06T08:27:22.651Z",
   "pairs": [
     {
       "snapshotDate": "2026-05-03",
@@ -673,11 +673,11 @@
         "confidence": 37
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.08,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.24
+      "afaiError": 0.23
     },
     {
       "snapshotDate": "2026-05-03",
@@ -1404,11 +1404,11 @@
         "confidence": 43
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.08,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.13
+      "afaiError": 0.12
     },
     {
       "snapshotDate": "2026-05-04",
@@ -1795,11 +1795,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.08,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.09
+      "afaiError": 0.08
     },
     {
       "snapshotDate": "2026-05-05",
