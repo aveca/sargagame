@@ -1,19 +1,6 @@
 {
   "runs": [
     {
-      "timestamp": "2026-04-18T23:14:05.431Z",
-      "dryRun": false,
-      "script": "seo-position-tracker",
-      "action": "snapshot",
-      "snapshots": 2,
-      "drops": 0,
-      "gains": 0,
-      "queryDrops": 0,
-      "queryGains": 0,
-      "appeared": 0,
-      "vanished": 1
-    },
-    {
       "timestamp": "2026-04-18T23:14:05.489Z",
       "dryRun": false,
       "script": "seo-orphan-detector",
@@ -1320,6 +1307,13 @@
     },
     {
       "timestamp": "2026-05-06T10:17:07.334Z",
+      "dryRun": false,
+      "script": "auto-web-content",
+      "action": "generation-failed",
+      "island": "mq"
+    },
+    {
+      "timestamp": "2026-05-08T09:19:42.720Z",
       "dryRun": false,
       "script": "auto-web-content",
       "action": "generation-failed",
