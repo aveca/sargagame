@@ -1,22 +1,6 @@
 {
   "runs": [
     {
-      "timestamp": "2026-04-18T23:14:05.489Z",
-      "dryRun": false,
-      "script": "seo-orphan-detector",
-      "action": "scan",
-      "sites": 2,
-      "totalOrphans": 20
-    },
-    {
-      "timestamp": "2026-04-18T23:14:05.531Z",
-      "dryRun": false,
-      "script": "seo-ctr-diagnostic",
-      "action": "diagnose",
-      "sites": 2,
-      "totalLost": 0
-    },
-    {
       "timestamp": "2026-04-18T23:14:05.574Z",
       "dryRun": false,
       "script": "seo-cannibalization",
@@ -1318,6 +1302,41 @@
       "script": "auto-web-content",
       "action": "generation-failed",
       "island": "mq"
+    },
+    {
+      "timestamp": "2026-05-08T12:17:08.454Z",
+      "dryRun": false,
+      "script": "seo-audit",
+      "action": "data-collection",
+      "results": {
+        "mq": {
+          "indexed": 16,
+          "total": 74,
+          "notIndexed": 0,
+          "lowCtr": 1,
+          "highBounce": 0,
+          "cwvIssues": 0
+        },
+        "gp": {
+          "indexed": 0,
+          "total": 100,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 0,
+          "cwvIssues": 0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-05-08T12:17:08.502Z",
+      "dryRun": false,
+      "script": "ux-audit",
+      "action": "report-generated",
+      "issues": {
+        "totalIssues": 33,
+        "critical": 18,
+        "warnings": 15
+      }
     }
   ]
 }
