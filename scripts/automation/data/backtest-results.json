@@ -92,7 +92,7 @@
     },
     "vauclin": {
       "statusHitRate": 77,
-      "afaiMAE": 0.035,
+      "afaiMAE": 0.034,
       "pairs": 159
     },
     "gp-grande-anse": {
@@ -102,7 +102,7 @@
     },
     "gp-malendure": {
       "statusHitRate": 97,
-      "afaiMAE": 0.025,
+      "afaiMAE": 0.026,
       "pairs": 159
     },
     "gp-sainte-anne": {
@@ -150,7 +150,7 @@
     "statusHitRate": 78,
     "afaiMAE": 0.04
   },
-  "computed": "2026-05-09T02:50:59.079Z",
+  "computed": "2026-05-09T07:57:14.091Z",
   "pairs": [
     {
       "snapshotDate": "2026-05-06",
@@ -316,11 +316,11 @@
         "confidence": 37
       },
       "actual": {
-        "afai": 0.1,
+        "afai": 0.11,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.12
+      "afaiError": 0.11
     },
     {
       "snapshotDate": "2026-05-06",
@@ -418,11 +418,11 @@
         "confidence": 27
       },
       "actual": {
-        "afai": 0.08,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-05-06",
@@ -1166,11 +1166,11 @@
         "confidence": 43
       },
       "actual": {
-        "afai": 0.1,
+        "afai": 0.11,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.15
+      "afaiError": 0.14
     },
     {
       "snapshotDate": "2026-05-07",
@@ -1234,11 +1234,11 @@
         "confidence": 33
       },
       "actual": {
-        "afai": 0.08,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.02
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-05-07",
@@ -1676,11 +1676,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.1,
+        "afai": 0.11,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.09
+      "afaiError": 0.08
     },
     {
       "snapshotDate": "2026-05-08",
@@ -1710,11 +1710,11 @@
         "confidence": 46
       },
       "actual": {
-        "afai": 0.08,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.04
+      "afaiError": 0.03
     },
     {
       "snapshotDate": "2026-05-08",
