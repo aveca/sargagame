@@ -1,10 +1,31 @@
 {
-  "generatedAt": "2026-05-04T12:27:44.253Z",
+  "generatedAt": "2026-05-11T13:53:01.643Z",
   "sites": {
     "mq": {
-      "queryCount": 153,
-      "cannibalizedCount": 0,
-      "cannibalized": []
+      "queryCount": 186,
+      "cannibalizedCount": 1,
+      "cannibalized": [
+        {
+          "query": "martinique sargasses 2026",
+          "totalImpressions": 53,
+          "totalClicks": 8,
+          "competitorCount": 2,
+          "competitors": [
+            {
+              "url": "https://sargasses-martinique.com/",
+              "impressions": 44,
+              "clicks": 7,
+              "share": 0.8301886792452831
+            },
+            {
+              "url": "https://sargasses-martinique.com/sargasses-record-2026/",
+              "impressions": 9,
+              "clicks": 1,
+              "share": 0.16981132075471697
+            }
+          ]
+        }
+      ]
     },
     "gp": {
       "queryCount": 0,

@@ -913,6 +913,166 @@
         },
         "gp": {}
       }
+    },
+    {
+      "date": "2026-05-11",
+      "sites": {
+        "mq": {
+          "https://sargasses-martinique.com/": {
+            "avgPos": 5.5,
+            "clicks": 1452,
+            "impressions": 6068,
+            "queries": {
+              "sargasse martinique en temps réel": {
+                "pos": 1.8,
+                "impressions": 802,
+                "clicks": 435
+              },
+              "sargasse martinique aujourd'hui": {
+                "pos": 2,
+                "impressions": 971,
+                "clicks": 433
+              },
+              "sargasse martinique": {
+                "pos": 4.4,
+                "impressions": 1086,
+                "clicks": 164
+              },
+              "meteo sargasse martinique": {
+                "pos": 4.6,
+                "impressions": 376,
+                "clicks": 63
+              },
+              "carte sargasse martinique": {
+                "pos": 2.9,
+                "impressions": 279,
+                "clicks": 47
+              },
+              "sargasse martinique en direct": {
+                "pos": 2,
+                "impressions": 93,
+                "clicks": 36
+              },
+              "sargasse martinique 2026": {
+                "pos": 7.5,
+                "impressions": 480,
+                "clicks": 27
+              },
+              "carte sargasses martinique": {
+                "pos": 2.9,
+                "impressions": 97,
+                "clicks": 20
+              },
+              "carte des sargasses martinique": {
+                "pos": 2.8,
+                "impressions": 78,
+                "clicks": 19
+              },
+              "meteo sargasses martinique": {
+                "pos": 3.9,
+                "impressions": 84,
+                "clicks": 15
+              },
+              "carte sargasse martinique 2026": {
+                "pos": 4.7,
+                "impressions": 272,
+                "clicks": 10
+              },
+              "meteo des sargasses martinique": {
+                "pos": 3.6,
+                "impressions": 65,
+                "clicks": 8
+              },
+              "sargasses martinique carte": {
+                "pos": 2.9,
+                "impressions": 52,
+                "clicks": 10
+              },
+              "martinique sargasses carte": {
+                "pos": 4.3,
+                "impressions": 59,
+                "clicks": 7
+              },
+              "sargasses martinique": {
+                "pos": 4.9,
+                "impressions": 256,
+                "clicks": 19
+              },
+              "y a t il des sargasses en martinique en ce moment": {
+                "pos": 4.3,
+                "impressions": 52,
+                "clicks": 2
+              }
+            }
+          },
+          "https://sargasses-martinique.com/sargasses-record-2026/": {
+            "avgPos": 6.1,
+            "clicks": 29,
+            "impressions": 487,
+            "queries": {
+              "sargasse en temps réel 2026": {
+                "pos": 6.4,
+                "impressions": 336,
+                "clicks": 22
+              },
+              "carte des sargasses 2026": {
+                "pos": 9.5,
+                "impressions": 68,
+                "clicks": 1
+              }
+            }
+          },
+          "https://sargasses-martinique.com/en/": {
+            "avgPos": 7.1,
+            "clicks": 16,
+            "impressions": 114,
+            "queries": {}
+          },
+          "https://sargasses-martinique.com/plages/anse-des-galets/": {
+            "avgPos": 6.6,
+            "clicks": 1,
+            "impressions": 103,
+            "queries": {
+              "anse des galets martinique": {
+                "pos": 7.3,
+                "impressions": 79,
+                "clicks": 1
+              }
+            }
+          },
+          "https://sargasses-martinique.com/previsions/": {
+            "avgPos": 22.9,
+            "clicks": 1,
+            "impressions": 22,
+            "queries": {}
+          },
+          "https://sargasses-martinique.com/meilleures-plages-martinique-sargasses/": {
+            "avgPos": 12.8,
+            "clicks": 1,
+            "impressions": 48,
+            "queries": {}
+          },
+          "https://sargasses-martinique.com/en/sargassum-map/": {
+            "avgPos": 15.7,
+            "clicks": 3,
+            "impressions": 82,
+            "queries": {}
+          },
+          "https://sargasses-martinique.com/en/best-beaches-martinique/": {
+            "avgPos": 49.7,
+            "clicks": 0,
+            "impressions": 43,
+            "queries": {}
+          },
+          "https://sargasses-martinique.com/plages/plage-du-diamant/": {
+            "avgPos": 5.8,
+            "clicks": 0,
+            "impressions": 21,
+            "queries": {}
+          }
+        },
+        "gp": {}
+      }
     }
   ]
 }

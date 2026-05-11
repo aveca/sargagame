@@ -1,8 +1,25 @@
 {
-  "generatedAt": "2026-05-04T12:27:44.110Z",
-  "comparedTo": "2026-04-27",
+  "generatedAt": "2026-05-11T13:53:01.510Z",
+  "comparedTo": "2026-05-04",
   "alerts": {
-    "drops": [],
+    "drops": [
+      {
+        "site": "mq",
+        "page": "https://sargasses-martinique.com/en/best-beaches-martinique/",
+        "prevPos": 44.2,
+        "currPos": 49.7,
+        "delta": 5.5,
+        "impressions": 43
+      },
+      {
+        "site": "mq",
+        "page": "https://sargasses-martinique.com/previsions/",
+        "prevPos": 18.9,
+        "currPos": 22.9,
+        "delta": 4,
+        "impressions": 22
+      }
+    ],
     "gains": [],
     "appeared": [],
     "vanished": [],
