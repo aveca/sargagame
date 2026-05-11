@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-08T12:08:49.212Z",
+  "generatedAt": "2026-05-11T13:44:49.983Z",
   "sites": {
     "mq": {
       "domain": "sargasses-martinique.com",
@@ -12,28 +12,28 @@
           {
             "page": "https://sargasses-martinique.com/plages/anse-des-galets/",
             "avgPosition": 7,
-            "actualCtr": 1.23,
+            "actualCtr": 0.97,
             "expectedCtr": 4,
-            "impressions": 81,
+            "impressions": 103,
             "clicks": 1,
             "topQueries": [
               {
                 "query": "anse des galets martinique",
-                "impressions": 38,
+                "impressions": 52,
                 "clicks": 0,
-                "position": 7.368421052631579
+                "position": 7.576923076923077
               },
               {
                 "query": "anse des galets martinique",
-                "impressions": 17,
+                "impressions": 22,
                 "clicks": 1,
-                "position": 6.764705882352941
+                "position": 6.909090909090909
               },
               {
                 "query": "anse galet martinique",
-                "impressions": 11,
+                "impressions": 14,
                 "clicks": 0,
-                "position": 8.181818181818182
+                "position": 8.285714285714285
               },
               {
                 "query": "anse galet martinique",
@@ -48,6 +48,46 @@
                 "position": 5
               }
             ]
+          },
+          {
+            "page": "https://sargasses-martinique.com/plages/plage-du-diamant/",
+            "avgPosition": 6,
+            "actualCtr": 0,
+            "expectedCtr": 5,
+            "impressions": 21,
+            "clicks": 0,
+            "topQueries": [
+              {
+                "query": "diamant sargasse martinique",
+                "impressions": 3,
+                "clicks": 0,
+                "position": 7
+              },
+              {
+                "query": "plage diamant martinique sargasse",
+                "impressions": 3,
+                "clicks": 0,
+                "position": 6
+              },
+              {
+                "query": "plage du diamant sargasse",
+                "impressions": 3,
+                "clicks": 0,
+                "position": 5.333333333333333
+              },
+              {
+                "query": "sargasse martinique diamant",
+                "impressions": 3,
+                "clicks": 0,
+                "position": 8
+              },
+              {
+                "query": "plage du diamant sargasse",
+                "impressions": 2,
+                "clicks": 0,
+                "position": 6
+              }
+            ]
           }
         ],
         "highBouncePages": [],
@@ -57,13 +97,13 @@
             "event": "clarity_rage_click",
             "page": "/",
             "target": "",
-            "count": 165
+            "count": 153
           },
           {
             "event": "clarity_rage_click",
             "page": "/carte-sargasses/",
             "target": "",
-            "count": 5
+            "count": 6
           },
           {
             "event": "clarity_rage_click",
@@ -106,12 +146,6 @@
             "page": "/plages/pointe-fort-caravelle/",
             "target": "",
             "count": 1
-          },
-          {
-            "event": "clarity_rage_click",
-            "page": "/widget/embed/anse-mitan/",
-            "target": "",
-            "count": 1
           }
         ],
         "deadClicks": [
@@ -119,13 +153,13 @@
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 1901
+            "count": 1647
           },
           {
             "event": "clarity_dead_click",
             "page": "/carte-sargasses/",
             "target": "",
-            "count": 58
+            "count": 85
           },
           {
             "event": "clarity_dead_click",
@@ -137,6 +171,18 @@
             "event": "clarity_dead_click",
             "page": "/en/sargassum-map/",
             "target": "",
+            "count": 24
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/sargasses-record-2026/",
+            "target": "",
+            "count": 24
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/en/",
+            "target": "",
             "count": 23
           },
           {
@@ -147,27 +193,21 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/en/",
+            "page": "/meilleures-plages-guadeloupe-sargasses/",
             "target": "",
-            "count": 22
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/sargasses-record-2026/",
-            "target": "",
-            "count": 22
+            "count": 10
           },
           {
             "event": "clarity_dead_click",
             "page": "/plages/plage-du-diamant/",
             "target": "",
-            "count": 9
+            "count": 10
           },
           {
             "event": "clarity_dead_click",
             "page": "/en/best-beaches-martinique/",
             "target": "",
-            "count": 7
+            "count": 8
           },
           {
             "event": "clarity_dead_click",
@@ -183,13 +223,13 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/meilleures-plages-guadeloupe-sargasses/",
+            "page": "/detection-satellite-sargasses/",
             "target": "",
-            "count": 4
+            "count": 3
           },
           {
             "event": "clarity_dead_click",
-            "page": "/detection-satellite-sargasses/",
+            "page": "/plages/pointe-fort-caravelle/",
             "target": "",
             "count": 3
           },
@@ -207,7 +247,7 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/pointe-fort-caravelle/",
+            "page": "/previsions-methode/",
             "target": "",
             "count": 2
           },
@@ -264,14 +304,22 @@
         "notIndexed": [],
         "softErrors": [],
         "lowCtrPages": [],
-        "highBouncePages": [],
+        "highBouncePages": [
+          {
+            "pagePath": "/plages/plage-de-la-caravelle/",
+            "device": "tablet",
+            "sessions": 17,
+            "bounceRate": 76,
+            "avgDuration": 42
+          }
+        ],
         "cwvIssues": [],
         "rageClicks": [
           {
             "event": "clarity_rage_click",
             "page": "/",
             "target": "",
-            "count": 744
+            "count": 799
           },
           {
             "event": "clarity_rage_click",
@@ -283,7 +331,13 @@
             "event": "clarity_rage_click",
             "page": "/en/sargassum-map/",
             "target": "",
-            "count": 2
+            "count": 3
+          },
+          {
+            "event": "clarity_rage_click",
+            "page": "/plages/plage-du-gosier/",
+            "target": "",
+            "count": 3
           },
           {
             "event": "clarity_rage_click",
@@ -294,18 +348,6 @@
           {
             "event": "clarity_rage_click",
             "page": "/plages/plage-de-la-caravelle/",
-            "target": "",
-            "count": 2
-          },
-          {
-            "event": "clarity_rage_click",
-            "page": "/plages/plage-du-gosier/",
-            "target": "",
-            "count": 2
-          },
-          {
-            "event": "clarity_rage_click",
-            "page": "/plages/plage-souffleur/",
             "target": "",
             "count": 2
           },
@@ -339,31 +381,31 @@
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 5478
+            "count": 5008
           },
           {
             "event": "clarity_dead_click",
             "page": "/en/",
             "target": "",
-            "count": 90
+            "count": 88
           },
           {
             "event": "clarity_dead_click",
             "page": "/plages/plage-bois-jolan/",
             "target": "",
-            "count": 60
+            "count": 70
           },
           {
             "event": "clarity_dead_click",
             "page": "/plages/plage-de-la-caravelle/",
             "target": "",
-            "count": 48
+            "count": 54
           },
           {
             "event": "clarity_dead_click",
             "page": "/plages/plage-du-gosier/",
             "target": "",
-            "count": 34
+            "count": 41
           },
           {
             "event": "clarity_dead_click",
@@ -373,9 +415,21 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/plage-de-petit-bourg/",
+            "page": "/en/sargassum-map/",
             "target": "",
-            "count": 17
+            "count": 21
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/plage-de-grande-anse/",
+            "target": "",
+            "count": 20
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/plage-de-sainte-anne/",
+            "target": "",
+            "count": 18
           },
           {
             "event": "clarity_dead_click",
@@ -385,27 +439,9 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/plage-de-sainte-anne/",
+            "page": "/plages/plage-de-petit-bourg/",
             "target": "",
             "count": 15
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/en/sargassum-map/",
-            "target": "",
-            "count": 14
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/plage-de-grande-anse/",
-            "target": "",
-            "count": 14
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/le-gosier/",
-            "target": "",
-            "count": 13
           },
           {
             "event": "clarity_dead_click",
@@ -427,33 +463,15 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/plage-caravelle/",
-            "target": "",
-            "count": 6
-          },
-          {
-            "event": "clarity_dead_click",
             "page": "/plages/plage-de-bas-du-fort/",
             "target": "",
             "count": 6
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/plage-souffleur/",
+            "page": "/plages/grand-baie-sud/",
             "target": "",
-            "count": 4
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/bas-du-fort/",
-            "target": "",
-            "count": 3
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/grande-anse-terre-de-bas-les-saintes/",
-            "target": "",
-            "count": 3
+            "count": 5
           },
           {
             "event": "clarity_dead_click",
@@ -469,37 +487,13 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/grande-anse-bouillante/",
+            "page": "/plages/plage-du-souffleur/",
             "target": "",
             "count": 2
           },
           {
             "event": "clarity_dead_click",
-            "page": "/carte-sargasses/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/du-bourg/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/ilet-caret/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/malendure/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/plage-du-souffleur/",
+            "page": "/plages/plage-de-pompierre/",
             "target": "",
             "count": 1
           }

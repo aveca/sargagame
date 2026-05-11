@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-04T12:27:44.155Z",
+  "generatedAt": "2026-05-11T13:53:01.550Z",
   "sites": {
     "mq": {
       "sitemapSize": 15,
@@ -12,8 +12,8 @@
       "linkDonors": [
         {
           "url": "https://sargasses-martinique.com/",
-          "impressions": 5891,
-          "clicks": 1521
+          "impressions": 6068,
+          "clicks": 1452
         }
       ],
       "orphans": [
