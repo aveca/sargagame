@@ -15,13 +15,13 @@
     },
     "day2": {
       "statusHitRate": 68,
-      "afaiMAE": 0.051,
+      "afaiMAE": 0.05,
       "avgConfidence": 37,
       "pairs": 560
     },
     "day3": {
       "statusHitRate": 70,
-      "afaiMAE": 0.051,
+      "afaiMAE": 0.05,
       "avgConfidence": 30,
       "pairs": 540
     },
@@ -150,7 +150,7 @@
     "statusHitRate": 77,
     "afaiMAE": 0.042
   },
-  "computed": "2026-05-13T03:27:40.677Z",
+  "computed": "2026-05-13T08:45:01.074Z",
   "pairs": [
     {
       "snapshotDate": "2026-05-10",
@@ -673,11 +673,11 @@
         "confidence": 37
       },
       "actual": {
-        "afai": 0.11,
+        "afai": 0.12,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.06
+      "afaiError": 0.05
     },
     {
       "snapshotDate": "2026-05-10",
@@ -724,11 +724,11 @@
         "confidence": 27
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.08,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
       "snapshotDate": "2026-05-10",
@@ -1404,11 +1404,11 @@
         "confidence": 43
       },
       "actual": {
-        "afai": 0.11,
+        "afai": 0.12,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.08
+      "afaiError": 0.07
     },
     {
       "snapshotDate": "2026-05-11",
@@ -1438,11 +1438,11 @@
         "confidence": 33
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.08,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
       "snapshotDate": "2026-05-11",
@@ -1795,11 +1795,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.11,
+        "afai": 0.12,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.05
+      "afaiError": 0.04
     },
     {
       "snapshotDate": "2026-05-12",
@@ -1812,11 +1812,11 @@
         "confidence": 46
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.08,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-05-12",
