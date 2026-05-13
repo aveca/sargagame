@@ -1,14 +1,6 @@
 {
   "runs": [
     {
-      "timestamp": "2026-04-20T12:19:28.540Z",
-      "dryRun": false,
-      "script": "seo-cannibalization",
-      "action": "detect",
-      "sites": 2,
-      "totalCanni": 5
-    },
-    {
       "timestamp": "2026-04-20T12:19:28.585Z",
       "dryRun": false,
       "script": "seo-cwv-tracker",
@@ -1341,6 +1333,13 @@
         "https://sargasses-martinique.com/plages/plage-de-sinai/",
         "https://sargasses-martinique.com/plages/plage-de-grand-riviere/"
       ]
+    },
+    {
+      "timestamp": "2026-05-13T10:26:57.806Z",
+      "dryRun": false,
+      "script": "auto-web-content",
+      "action": "generation-failed",
+      "island": "mq"
     }
   ]
 }
