@@ -1,65 +1,6 @@
 {
   "runs": [
     {
-      "timestamp": "2026-04-20T12:19:28.629Z",
-      "dryRun": false,
-      "script": "auto-optimize",
-      "action": "optimizations-applied",
-      "results": {
-        "lowCtr": 0,
-        "highBounce": 0,
-        "deadClicks": 13,
-        "conversion": 0,
-        "gpSeoGap": 0
-      },
-      "totalActions": 13,
-      "metaOverridesCount": 0,
-      "decisionsCount": 14
-    },
-    {
-      "timestamp": "2026-04-20T12:19:28.692Z",
-      "dryRun": false,
-      "script": "auto-copywriting",
-      "action": "copywriting-optimized",
-      "results": {
-        "beachMetaOverrides": 136,
-        "h1Suggestions": 6,
-        "topQueriesAnalyzed": 316,
-        "highValueKeywords": {
-          "en temps réel": {
-            "totalClicks": 831,
-            "totalImpressions": 1480,
-            "matchingQueries": 4
-          },
-          "aujourd'hui": {
-            "totalClicks": 510,
-            "totalImpressions": 2107,
-            "matchingQueries": 5
-          },
-          "carte": {
-            "totalClicks": 138,
-            "totalImpressions": 1437,
-            "matchingQueries": 44
-          },
-          "prévisions": {
-            "totalClicks": 4,
-            "totalImpressions": 76,
-            "matchingQueries": 5
-          },
-          "alertes": {
-            "totalClicks": 0,
-            "totalImpressions": 10,
-            "matchingQueries": 1
-          },
-          "plage propre": {
-            "totalClicks": 0,
-            "totalImpressions": 0,
-            "matchingQueries": 0
-          }
-        }
-      }
-    },
-    {
       "timestamp": "2026-04-20T12:19:28.737Z",
       "dryRun": false,
       "script": "seo-fix-404",
@@ -1339,6 +1280,41 @@
       "script": "auto-web-content",
       "action": "generation-failed",
       "island": "mq"
+    },
+    {
+      "timestamp": "2026-05-15T13:02:09.466Z",
+      "dryRun": false,
+      "script": "seo-audit",
+      "action": "data-collection",
+      "results": {
+        "mq": {
+          "indexed": 16,
+          "total": 74,
+          "notIndexed": 0,
+          "lowCtr": 2,
+          "highBounce": 0,
+          "cwvIssues": 0
+        },
+        "gp": {
+          "indexed": 0,
+          "total": 100,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 1,
+          "cwvIssues": 0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-05-15T13:02:09.523Z",
+      "dryRun": false,
+      "script": "ux-audit",
+      "action": "report-generated",
+      "issues": {
+        "totalIssues": 35,
+        "critical": 18,
+        "warnings": 17
+      }
     }
   ]
 }
