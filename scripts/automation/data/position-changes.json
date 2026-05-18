@@ -1,23 +1,15 @@
 {
-  "generatedAt": "2026-05-11T13:53:01.510Z",
-  "comparedTo": "2026-05-04",
+  "generatedAt": "2026-05-18T14:36:16.567Z",
+  "comparedTo": "2026-05-11",
   "alerts": {
     "drops": [
       {
         "site": "mq",
-        "page": "https://sargasses-martinique.com/en/best-beaches-martinique/",
-        "prevPos": 44.2,
-        "currPos": 49.7,
-        "delta": 5.5,
-        "impressions": 43
-      },
-      {
-        "site": "mq",
-        "page": "https://sargasses-martinique.com/previsions/",
-        "prevPos": 18.9,
-        "currPos": 22.9,
-        "delta": 4,
-        "impressions": 22
+        "page": "https://sargasses-martinique.com/en/sargassum-map/",
+        "prevPos": 15.7,
+        "currPos": 18.8,
+        "delta": 3.1,
+        "impressions": 101
       }
     ],
     "gains": [],

@@ -1,27 +1,47 @@
 {
-  "generatedAt": "2026-05-11T13:53:01.643Z",
+  "generatedAt": "2026-05-18T14:36:16.696Z",
   "sites": {
     "mq": {
-      "queryCount": 186,
-      "cannibalizedCount": 1,
+      "queryCount": 196,
+      "cannibalizedCount": 2,
       "cannibalized": [
         {
-          "query": "martinique sargasses 2026",
-          "totalImpressions": 53,
-          "totalClicks": 8,
+          "query": "sargasse en temps réel",
+          "totalImpressions": 54,
+          "totalClicks": 0,
           "competitorCount": 2,
           "competitors": [
             {
               "url": "https://sargasses-martinique.com/",
-              "impressions": 44,
-              "clicks": 7,
-              "share": 0.8301886792452831
+              "impressions": 46,
+              "clicks": 0,
+              "share": 0.8518518518518519
+            },
+            {
+              "url": "https://sargasses-martinique.com/en/sargassum-map/",
+              "impressions": 6,
+              "clicks": 0,
+              "share": 0.1111111111111111
+            }
+          ]
+        },
+        {
+          "query": "martinique sargasses 2026",
+          "totalImpressions": 52,
+          "totalClicks": 6,
+          "competitorCount": 2,
+          "competitors": [
+            {
+              "url": "https://sargasses-martinique.com/",
+              "impressions": 40,
+              "clicks": 5,
+              "share": 0.7692307692307693
             },
             {
               "url": "https://sargasses-martinique.com/sargasses-record-2026/",
-              "impressions": 9,
+              "impressions": 12,
               "clicks": 1,
-              "share": 0.16981132075471697
+              "share": 0.23076923076923078
             }
           ]
         }
