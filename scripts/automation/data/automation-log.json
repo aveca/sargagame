@@ -1,49 +1,6 @@
 {
   "runs": [
     {
-      "timestamp": "2026-04-27T12:27:21.442Z",
-      "dryRun": false,
-      "script": "auto-copywriting",
-      "action": "copywriting-optimized",
-      "results": {
-        "beachMetaOverrides": 136,
-        "h1Suggestions": 6,
-        "topQueriesAnalyzed": 144,
-        "highValueKeywords": {
-          "en temps réel": {
-            "totalClicks": 742,
-            "totalImpressions": 1128,
-            "matchingQueries": 4
-          },
-          "aujourd'hui": {
-            "totalClicks": 402,
-            "totalImpressions": 1114,
-            "matchingQueries": 1
-          },
-          "carte": {
-            "totalClicks": 108,
-            "totalImpressions": 876,
-            "matchingQueries": 32
-          },
-          "prévisions": {
-            "totalClicks": 5,
-            "totalImpressions": 48,
-            "matchingQueries": 2
-          },
-          "alertes": {
-            "totalClicks": 0,
-            "totalImpressions": 18,
-            "matchingQueries": 1
-          },
-          "plage propre": {
-            "totalClicks": 0,
-            "totalImpressions": 0,
-            "matchingQueries": 0
-          }
-        }
-      }
-    },
-    {
       "timestamp": "2026-04-27T12:27:21.485Z",
       "dryRun": false,
       "script": "seo-fix-404",
@@ -1348,6 +1305,13 @@
     },
     {
       "timestamp": "2026-05-20T10:49:07.246Z",
+      "dryRun": false,
+      "script": "auto-web-content",
+      "action": "generation-failed",
+      "island": "mq"
+    },
+    {
+      "timestamp": "2026-05-22T10:49:49.956Z",
       "dryRun": false,
       "script": "auto-web-content",
       "action": "generation-failed",
