@@ -411,12 +411,12 @@
   },
   {
     "date": "2026-05-23",
-    "time": "2026-05-23T13:29:38.593Z",
-    "payments": 9,
-    "revenue": 44.91,
-    "emails": 155,
-    "feedbacks": 1,
-    "avgRating": 4,
+    "time": "2026-05-23T19:14:45.749Z",
+    "payments": null,
+    "revenue": null,
+    "emails": null,
+    "feedbacks": null,
+    "avgRating": null,
     "pipelineOk": true
   }
 ]
