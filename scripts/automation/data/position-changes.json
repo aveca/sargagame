@@ -1,17 +1,8 @@
 {
-  "generatedAt": "2026-05-18T14:36:16.567Z",
-  "comparedTo": "2026-05-11",
+  "generatedAt": "2026-05-25T14:05:47.994Z",
+  "comparedTo": "2026-05-18",
   "alerts": {
-    "drops": [
-      {
-        "site": "mq",
-        "page": "https://sargasses-martinique.com/en/sargassum-map/",
-        "prevPos": 15.7,
-        "currPos": 18.8,
-        "delta": 3.1,
-        "impressions": 101
-      }
-    ],
+    "drops": [],
     "gains": [],
     "appeared": [],
     "vanished": [],

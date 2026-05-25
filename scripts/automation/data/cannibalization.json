@@ -1,47 +1,47 @@
 {
-  "generatedAt": "2026-05-18T14:36:16.696Z",
+  "generatedAt": "2026-05-25T14:05:48.142Z",
   "sites": {
     "mq": {
-      "queryCount": 196,
+      "queryCount": 199,
       "cannibalizedCount": 2,
       "cannibalized": [
         {
+          "query": "carte sargasse martinique 2026",
+          "totalImpressions": 254,
+          "totalClicks": 10,
+          "competitorCount": 2,
+          "competitors": [
+            {
+              "url": "https://sargasses-martinique.com/",
+              "impressions": 224,
+              "clicks": 8,
+              "share": 0.8818897637795275
+            },
+            {
+              "url": "https://sargasses-martinique.com/sargasses-record-2026/",
+              "impressions": 30,
+              "clicks": 2,
+              "share": 0.11811023622047244
+            }
+          ]
+        },
+        {
           "query": "sargasse en temps réel",
-          "totalImpressions": 54,
+          "totalImpressions": 53,
           "totalClicks": 0,
           "competitorCount": 2,
           "competitors": [
             {
               "url": "https://sargasses-martinique.com/",
-              "impressions": 46,
+              "impressions": 45,
               "clicks": 0,
-              "share": 0.8518518518518519
+              "share": 0.8490566037735849
             },
             {
               "url": "https://sargasses-martinique.com/en/sargassum-map/",
               "impressions": 6,
               "clicks": 0,
-              "share": 0.1111111111111111
-            }
-          ]
-        },
-        {
-          "query": "martinique sargasses 2026",
-          "totalImpressions": 52,
-          "totalClicks": 6,
-          "competitorCount": 2,
-          "competitors": [
-            {
-              "url": "https://sargasses-martinique.com/",
-              "impressions": 40,
-              "clicks": 5,
-              "share": 0.7692307692307693
-            },
-            {
-              "url": "https://sargasses-martinique.com/sargasses-record-2026/",
-              "impressions": 12,
-              "clicks": 1,
-              "share": 0.23076923076923078
+              "share": 0.11320754716981132
             }
           ]
         }

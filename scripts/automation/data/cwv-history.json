@@ -76,6 +76,17 @@
           "combined": null
         }
       }
+    },
+    {
+      "date": "2026-05-25",
+      "sites": {
+        "mq": {
+          "combined": null
+        },
+        "gp": {
+          "combined": null
+        }
+      }
     }
   ]
 }

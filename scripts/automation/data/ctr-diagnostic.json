@@ -1,38 +1,29 @@
 {
-  "generatedAt": "2026-05-18T14:36:16.657Z",
+  "generatedAt": "2026-05-25T14:05:48.095Z",
   "sites": {
     "mq": {
       "opportunityCount": 0,
-      "winCount": 3,
+      "winCount": 2,
       "totalLostClicks": 0,
       "opportunities": [],
       "wins": [
         {
           "url": "https://sargasses-martinique.com/",
-          "impressions": 5667,
-          "clicks": 1414,
-          "position": 5.5,
-          "actualCtr": 24.95,
-          "expectedCtr": 5.01,
-          "ctrLift": 19.95
+          "impressions": 5288,
+          "clicks": 1324,
+          "position": 5.2,
+          "actualCtr": 25.04,
+          "expectedCtr": 5.53,
+          "ctrLift": 19.51
         },
         {
           "url": "https://sargasses-martinique.com/en/",
-          "impressions": 111,
+          "impressions": 103,
           "clicks": 13,
-          "position": 9,
-          "actualCtr": 11.71,
-          "expectedCtr": 1.99,
-          "ctrLift": 9.73
-        },
-        {
-          "url": "https://sargasses-martinique.com/en/sargassum-map/",
-          "impressions": 101,
-          "clicks": 4,
-          "position": 18.8,
-          "actualCtr": 3.96,
-          "expectedCtr": 0.5,
-          "ctrLift": 3.46
+          "position": 9.1,
+          "actualCtr": 12.62,
+          "expectedCtr": 1.96,
+          "ctrLift": 10.66
         }
       ]
     },
