@@ -1,13 +1,6 @@
 {
   "runs": [
     {
-      "timestamp": "2026-04-27T12:27:21.588Z",
-      "dryRun": false,
-      "script": "seo-enrich-content",
-      "action": "enriched",
-      "beachCount": 136
-    },
-    {
       "timestamp": "2026-04-27T12:27:21.635Z",
       "dryRun": false,
       "script": "generate-seo-pages",
@@ -1334,6 +1327,13 @@
         "critical": 19,
         "warnings": 17
       }
+    },
+    {
+      "timestamp": "2026-05-25T11:52:30.467Z",
+      "dryRun": false,
+      "script": "auto-web-content",
+      "action": "generation-failed",
+      "island": "mq"
     }
   ]
 }
