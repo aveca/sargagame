@@ -441,12 +441,12 @@
   },
   {
     "date": "2026-05-26",
-    "time": "2026-05-26T15:33:28.862Z",
-    "payments": null,
-    "revenue": null,
-    "emails": null,
-    "feedbacks": null,
-    "avgRating": null,
+    "time": "2026-05-26T20:12:56.853Z",
+    "payments": 9,
+    "revenue": 44.91,
+    "emails": 158,
+    "feedbacks": 1,
+    "avgRating": 4,
     "pipelineOk": true
   }
 ]
