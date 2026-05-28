@@ -92,7 +92,7 @@
     },
     "vauclin": {
       "statusHitRate": 52,
-      "afaiMAE": 0.058,
+      "afaiMAE": 0.057,
       "pairs": 159
     },
     "gp-grande-anse": {
@@ -150,7 +150,7 @@
     "statusHitRate": 74,
     "afaiMAE": 0.045
   },
-  "computed": "2026-05-28T10:01:54.192Z",
+  "computed": "2026-05-28T15:54:01.721Z",
   "pairs": [
     {
       "snapshotDate": "2026-05-25",
@@ -316,11 +316,11 @@
         "confidence": 27
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
       "snapshotDate": "2026-05-25",
@@ -1166,11 +1166,11 @@
         "confidence": 33
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
       "snapshotDate": "2026-05-26",
@@ -1676,11 +1676,11 @@
         "confidence": 46
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
       "snapshotDate": "2026-05-27",
