@@ -478,5 +478,15 @@
     "feedbacks": 1,
     "avgRating": 4,
     "pipelineOk": true
+  },
+  {
+    "date": "2026-05-30",
+    "time": "2026-05-30T03:29:44.361Z",
+    "payments": 9,
+    "revenue": 44.91,
+    "emails": 161,
+    "feedbacks": 1,
+    "avgRating": 4,
+    "pipelineOk": true
   }
 ]
