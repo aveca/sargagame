@@ -62,7 +62,7 @@
     },
     "tartane": {
       "statusHitRate": 78,
-      "afaiMAE": 0.041,
+      "afaiMAE": 0.04,
       "pairs": 159
     },
     "anse-madame": {
@@ -150,7 +150,7 @@
     "statusHitRate": 76,
     "afaiMAE": 0.042
   },
-  "computed": "2026-05-31T03:53:24.317Z",
+  "computed": "2026-05-31T08:45:16.290Z",
   "pairs": [
     {
       "snapshotDate": "2026-05-28",
@@ -962,11 +962,11 @@
         "confidence": 33
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
       "snapshotDate": "2026-05-29",
@@ -1574,11 +1574,11 @@
         "confidence": 46
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.05,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
       "snapshotDate": "2026-05-30",
