@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-05-25T14:05:48.039Z",
+  "generatedAt": "2026-06-01T16:43:12.712Z",
   "sites": {
     "mq": {
       "sitemapSize": 15,
-      "orphanCount": 11,
+      "orphanCount": 12,
       "orphansByKind": {
-        "editorial": 6,
+        "editorial": 7,
         "beach": 0,
         "other": 5
       },
       "linkDonors": [
         {
           "url": "https://sargasses-martinique.com/",
-          "impressions": 5288,
-          "clicks": 1324
+          "impressions": 4627,
+          "clicks": 1112
         }
       ],
       "orphans": [
@@ -47,6 +47,15 @@
         {
           "url": "https://sargasses-martinique.com/plages-sans-sargasses/",
           "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/previsions/",
+          "impressions": 3,
           "clicks": 0,
           "kind": "editorial",
           "recommendedLinkSources": [
