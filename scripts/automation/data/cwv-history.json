@@ -98,6 +98,17 @@
           "combined": null
         }
       }
+    },
+    {
+      "date": "2026-06-08",
+      "sites": {
+        "mq": {
+          "combined": null
+        },
+        "gp": {
+          "combined": null
+        }
+      }
     }
   ]
 }

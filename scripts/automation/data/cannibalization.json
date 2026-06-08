@@ -1,47 +1,67 @@
 {
-  "generatedAt": "2026-06-01T16:43:12.803Z",
+  "generatedAt": "2026-06-08T14:54:01.586Z",
   "sites": {
     "mq": {
-      "queryCount": 191,
-      "cannibalizedCount": 2,
+      "queryCount": 181,
+      "cannibalizedCount": 3,
       "cannibalized": [
         {
           "query": "sargasse martinique 2026",
-          "totalImpressions": 298,
-          "totalClicks": 30,
+          "totalImpressions": 235,
+          "totalClicks": 25,
           "competitorCount": 2,
           "competitors": [
             {
               "url": "https://sargasses-martinique.com/",
-              "impressions": 259,
-              "clicks": 27,
-              "share": 0.8691275167785235
+              "impressions": 195,
+              "clicks": 23,
+              "share": 0.8297872340425532
             },
             {
               "url": "https://sargasses-martinique.com/sargasses-record-2026/",
-              "impressions": 39,
-              "clicks": 3,
-              "share": 0.13087248322147652
+              "impressions": 40,
+              "clicks": 2,
+              "share": 0.1702127659574468
             }
           ]
         },
         {
           "query": "carte sargasse martinique 2026",
-          "totalImpressions": 206,
-          "totalClicks": 8,
+          "totalImpressions": 167,
+          "totalClicks": 5,
           "competitorCount": 2,
           "competitors": [
             {
               "url": "https://sargasses-martinique.com/",
-              "impressions": 174,
-              "clicks": 6,
-              "share": 0.8446601941747572
+              "impressions": 141,
+              "clicks": 4,
+              "share": 0.844311377245509
             },
             {
               "url": "https://sargasses-martinique.com/sargasses-record-2026/",
-              "impressions": 32,
-              "clicks": 2,
-              "share": 0.1553398058252427
+              "impressions": 26,
+              "clicks": 1,
+              "share": 0.15568862275449102
+            }
+          ]
+        },
+        {
+          "query": "martinique sargasses 2026",
+          "totalImpressions": 55,
+          "totalClicks": 4,
+          "competitorCount": 2,
+          "competitors": [
+            {
+              "url": "https://sargasses-martinique.com/",
+              "impressions": 38,
+              "clicks": 3,
+              "share": 0.6909090909090909
+            },
+            {
+              "url": "https://sargasses-martinique.com/sargasses-record-2026/",
+              "impressions": 17,
+              "clicks": 1,
+              "share": 0.3090909090909091
             }
           ]
         }

@@ -1,9 +1,18 @@
 {
-  "generatedAt": "2026-06-01T16:43:12.670Z",
-  "comparedTo": "2026-05-25",
+  "generatedAt": "2026-06-08T14:54:01.448Z",
+  "comparedTo": "2026-06-01",
   "alerts": {
     "drops": [],
-    "gains": [],
+    "gains": [
+      {
+        "site": "mq",
+        "page": "https://sargasses-martinique.com/en/best-beaches-martinique/",
+        "prevPos": 46,
+        "currPos": 39.7,
+        "delta": -6.3,
+        "impressions": 86
+      }
+    ],
     "appeared": [],
     "vanished": [],
     "queryDrops": [],

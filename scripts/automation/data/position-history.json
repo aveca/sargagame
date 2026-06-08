@@ -1500,6 +1500,140 @@
         },
         "gp": {}
       }
+    },
+    {
+      "date": "2026-06-08",
+      "sites": {
+        "mq": {
+          "https://sargasses-martinique.com/": {
+            "avgPos": 4.7,
+            "clicks": 965,
+            "impressions": 4187,
+            "queries": {
+              "sargasse martinique en temps réel": {
+                "pos": 1.6,
+                "impressions": 494,
+                "clicks": 270
+              },
+              "sargasse martinique aujourd'hui": {
+                "pos": 2,
+                "impressions": 469,
+                "clicks": 218
+              },
+              "sargasse martinique": {
+                "pos": 3.5,
+                "impressions": 740,
+                "clicks": 101
+              },
+              "meteo sargasse martinique": {
+                "pos": 2.2,
+                "impressions": 220,
+                "clicks": 55
+              },
+              "sargasses martinique": {
+                "pos": 4.2,
+                "impressions": 642,
+                "clicks": 61
+              },
+              "meteo des sargasses martinique": {
+                "pos": 2.4,
+                "impressions": 61,
+                "clicks": 19
+              },
+              "carte sargasse martinique": {
+                "pos": 2.9,
+                "impressions": 175,
+                "clicks": 33
+              },
+              "sargasse martinique 2026": {
+                "pos": 6.5,
+                "impressions": 195,
+                "clicks": 23
+              },
+              "carte des sargasses martinique": {
+                "pos": 3.1,
+                "impressions": 55,
+                "clicks": 12
+              },
+              "bulletin sargasses martinique": {
+                "pos": 4.1,
+                "impressions": 62,
+                "clicks": 11
+              },
+              "carte sargasses martinique": {
+                "pos": 2.8,
+                "impressions": 65,
+                "clicks": 14
+              },
+              "carte sargasse martinique 2026": {
+                "pos": 5.7,
+                "impressions": 141,
+                "clicks": 4
+              }
+            }
+          },
+          "https://sargasses-martinique.com/sargasses-record-2026/": {
+            "avgPos": 6.3,
+            "clicks": 25,
+            "impressions": 630,
+            "queries": {
+              "sargasse en temps réel 2026": {
+                "pos": 7,
+                "impressions": 463,
+                "clicks": 18
+              },
+              "carte des sargasses 2026": {
+                "pos": 9.5,
+                "impressions": 53,
+                "clicks": 0
+              }
+            }
+          },
+          "https://sargasses-martinique.com/en/": {
+            "avgPos": 8.7,
+            "clicks": 11,
+            "impressions": 73,
+            "queries": {}
+          },
+          "https://sargasses-martinique.com/plages/plage-du-diamant/": {
+            "avgPos": 6.2,
+            "clicks": 2,
+            "impressions": 34,
+            "queries": {}
+          },
+          "https://sargasses-martinique.com/meilleures-plages-martinique-sargasses/": {
+            "avgPos": 13.4,
+            "clicks": 2,
+            "impressions": 33,
+            "queries": {}
+          },
+          "https://sargasses-martinique.com/en/sargassum-map/": {
+            "avgPos": 20.2,
+            "clicks": 2,
+            "impressions": 83,
+            "queries": {}
+          },
+          "https://sargasses-martinique.com/en/best-beaches-martinique/": {
+            "avgPos": 39.7,
+            "clicks": 2,
+            "impressions": 86,
+            "queries": {}
+          },
+          "https://sargasses-martinique.com/plages/anse-des-galets/": {
+            "avgPos": 8.5,
+            "clicks": 0,
+            "impressions": 94,
+            "queries": {
+              "anse des galets martinique": {
+                "pos": 8.4,
+                "impressions": 71,
+                "clicks": 0
+              }
+            }
+          }
+        },
+        "gp": {}
+      }
     }
   ]
 }

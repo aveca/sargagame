@@ -28,7 +28,7 @@
       "data": {
         "page": "/",
         "target": "",
-        "metric": "752 dead clicks on ? (/)",
+        "metric": "670 dead clicks on ? (/)",
         "severity": "critical"
       },
       "result": {
@@ -39,8 +39,8 @@
           "CRITICAL: High volume of dead clicks - prioritize fix"
         ]
       },
-      "reason": "Dead click detected: 752 dead clicks on ? (/). Users expect \"\" to be interactive.",
-      "timestamp": "2026-06-01T16:43:12.895Z"
+      "reason": "Dead click detected: 670 dead clicks on ? (/). Users expect \"\" to be interactive.",
+      "timestamp": "2026-06-08T14:54:01.677Z"
     },
     {
       "rule": "dead-clicks",
@@ -49,7 +49,7 @@
       "data": {
         "page": "/",
         "target": "",
-        "metric": "3098 dead clicks on ? (/)",
+        "metric": "2439 dead clicks on ? (/)",
         "severity": "critical"
       },
       "result": {
@@ -60,8 +60,8 @@
           "CRITICAL: High volume of dead clicks - prioritize fix"
         ]
       },
-      "reason": "Dead click detected: 3098 dead clicks on ? (/). Users expect \"\" to be interactive.",
-      "timestamp": "2026-06-01T16:43:12.895Z"
+      "reason": "Dead click detected: 2439 dead clicks on ? (/). Users expect \"\" to be interactive.",
+      "timestamp": "2026-06-08T14:54:01.677Z"
     },
     {
       "rule": "dead-clicks",
@@ -132,7 +132,7 @@
       "data": {
         "page": "/en/",
         "target": "",
-        "metric": "106 dead clicks on ? (/en/)",
+        "metric": "88 dead clicks on ? (/en/)",
         "severity": "critical"
       },
       "result": {
@@ -143,8 +143,8 @@
           "CRITICAL: High volume of dead clicks - prioritize fix"
         ]
       },
-      "reason": "Dead click detected: 106 dead clicks on ? (/en/). Users expect \"\" to be interactive.",
-      "timestamp": "2026-06-01T16:43:12.895Z"
+      "reason": "Dead click detected: 88 dead clicks on ? (/en/). Users expect \"\" to be interactive.",
+      "timestamp": "2026-06-08T14:54:01.677Z"
     },
     {
       "rule": "dead-clicks",
@@ -173,7 +173,7 @@
       "data": {
         "page": "/en/sargassum-map/",
         "target": "",
-        "metric": "27 dead clicks on ? (/en/sargassum-map/)",
+        "metric": "30 dead clicks on ? (/en/sargassum-map/)",
         "severity": "critical"
       },
       "result": {
@@ -184,8 +184,8 @@
           "CRITICAL: High volume of dead clicks - prioritize fix"
         ]
       },
-      "reason": "Dead click detected: 27 dead clicks on ? (/en/sargassum-map/). Users expect \"\" to be interactive.",
-      "timestamp": "2026-06-01T16:43:12.896Z"
+      "reason": "Dead click detected: 30 dead clicks on ? (/en/sargassum-map/). Users expect \"\" to be interactive.",
+      "timestamp": "2026-06-08T14:54:01.677Z"
     },
     {
       "rule": "dead-clicks",
@@ -194,7 +194,7 @@
       "data": {
         "page": "/plages/plage-bois-jolan/",
         "target": "",
-        "metric": "104 dead clicks on ? (/plages/plage-bois-jolan/)",
+        "metric": "77 dead clicks on ? (/plages/plage-bois-jolan/)",
         "severity": "critical"
       },
       "result": {
@@ -205,8 +205,8 @@
           "CRITICAL: High volume of dead clicks - prioritize fix"
         ]
       },
-      "reason": "Dead click detected: 104 dead clicks on ? (/plages/plage-bois-jolan/). Users expect \"\" to be interactive.",
-      "timestamp": "2026-06-01T16:43:12.895Z"
+      "reason": "Dead click detected: 77 dead clicks on ? (/plages/plage-bois-jolan/). Users expect \"\" to be interactive.",
+      "timestamp": "2026-06-08T14:54:01.677Z"
     },
     {
       "rule": "dead-clicks",
@@ -246,7 +246,7 @@
         ]
       },
       "reason": "Dead click detected: 7 dead clicks on ? (/saison-sargasses-guadeloupe/). Users expect \"\" to be interactive.",
-      "timestamp": "2026-06-01T16:43:12.895Z"
+      "timestamp": "2026-06-08T14:54:01.677Z"
     },
     {
       "rule": "dead-clicks",
@@ -267,7 +267,7 @@
         ]
       },
       "reason": "Dead click detected: 29 dead clicks on ? (/en/). Users expect \"\" to be interactive.",
-      "timestamp": "2026-06-01T16:43:12.895Z"
+      "timestamp": "2026-06-08T14:54:01.677Z"
     },
     {
       "rule": "dead-clicks",
@@ -276,7 +276,7 @@
       "data": {
         "page": "/plages/plage-de-malendure/",
         "target": "",
-        "metric": "10 dead clicks on ? (/plages/plage-de-malendure/)",
+        "metric": "6 dead clicks on ? (/plages/plage-de-malendure/)",
         "severity": "warning"
       },
       "result": {
@@ -286,8 +286,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 10 dead clicks on ? (/plages/plage-de-malendure/). Users expect \"\" to be interactive.",
-      "timestamp": "2026-05-25T14:05:48.243Z"
+      "reason": "Dead click detected: 6 dead clicks on ? (/plages/plage-de-malendure/). Users expect \"\" to be interactive.",
+      "timestamp": "2026-06-08T14:54:01.677Z"
     },
     {
       "rule": "dead-clicks",
@@ -296,7 +296,7 @@
       "data": {
         "page": "/carte-sargasses/",
         "target": "",
-        "metric": "135 dead clicks on ? (/carte-sargasses/)",
+        "metric": "129 dead clicks on ? (/carte-sargasses/)",
         "severity": "critical"
       },
       "result": {
@@ -307,8 +307,8 @@
           "CRITICAL: High volume of dead clicks - prioritize fix"
         ]
       },
-      "reason": "Dead click detected: 135 dead clicks on ? (/carte-sargasses/). Users expect \"\" to be interactive.",
-      "timestamp": "2026-06-01T16:43:12.895Z"
+      "reason": "Dead click detected: 129 dead clicks on ? (/carte-sargasses/). Users expect \"\" to be interactive.",
+      "timestamp": "2026-06-08T14:54:01.677Z"
     },
     {
       "rule": "dead-clicks",
@@ -337,19 +337,18 @@
       "data": {
         "page": "/sargasses-record-2026/",
         "target": "",
-        "metric": "24 dead clicks on ? (/sargasses-record-2026/)",
-        "severity": "critical"
+        "metric": "10 dead clicks on ? (/sargasses-record-2026/)",
+        "severity": "warning"
       },
       "result": {
         "recommendations": [
           "Element \"\" receives clicks but is not interactive",
           "Add cursor:pointer and hover state if it should be clickable",
-          "Or change visual style (remove underline/blue color) if it should NOT be clickable",
-          "CRITICAL: High volume of dead clicks - prioritize fix"
+          "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 24 dead clicks on ? (/sargasses-record-2026/). Users expect \"\" to be interactive.",
-      "timestamp": "2026-06-01T16:43:12.895Z"
+      "reason": "Dead click detected: 10 dead clicks on ? (/sargasses-record-2026/). Users expect \"\" to be interactive.",
+      "timestamp": "2026-06-08T14:54:01.677Z"
     },
     {
       "rule": "dead-clicks",
@@ -358,7 +357,7 @@
       "data": {
         "page": "/plages/plage-de-la-caravelle/",
         "target": "",
-        "metric": "40 dead clicks on ? (/plages/plage-de-la-caravelle/)",
+        "metric": "37 dead clicks on ? (/plages/plage-de-la-caravelle/)",
         "severity": "critical"
       },
       "result": {
@@ -369,8 +368,8 @@
           "CRITICAL: High volume of dead clicks - prioritize fix"
         ]
       },
-      "reason": "Dead click detected: 40 dead clicks on ? (/plages/plage-de-la-caravelle/). Users expect \"\" to be interactive.",
-      "timestamp": "2026-06-01T16:43:12.895Z"
+      "reason": "Dead click detected: 37 dead clicks on ? (/plages/plage-de-la-caravelle/). Users expect \"\" to be interactive.",
+      "timestamp": "2026-06-08T14:54:01.677Z"
     },
     {
       "rule": "dead-clicks",
@@ -439,7 +438,7 @@
       "data": {
         "page": "/plages/plage-du-gosier/",
         "target": "",
-        "metric": "30 dead clicks on ? (/plages/plage-du-gosier/)",
+        "metric": "32 dead clicks on ? (/plages/plage-du-gosier/)",
         "severity": "critical"
       },
       "result": {
@@ -450,8 +449,8 @@
           "CRITICAL: High volume of dead clicks - prioritize fix"
         ]
       },
-      "reason": "Dead click detected: 30 dead clicks on ? (/plages/plage-du-gosier/). Users expect \"\" to be interactive.",
-      "timestamp": "2026-06-01T16:43:12.896Z"
+      "reason": "Dead click detected: 32 dead clicks on ? (/plages/plage-du-gosier/). Users expect \"\" to be interactive.",
+      "timestamp": "2026-06-08T14:54:01.677Z"
     },
     {
       "rule": "dead-clicks",
@@ -480,7 +479,7 @@
       "data": {
         "page": "/plages-sans-sargasses/",
         "target": "",
-        "metric": "11 dead clicks on ? (/plages-sans-sargasses/)",
+        "metric": "10 dead clicks on ? (/plages-sans-sargasses/)",
         "severity": "warning"
       },
       "result": {
@@ -490,8 +489,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 11 dead clicks on ? (/plages-sans-sargasses/). Users expect \"\" to be interactive.",
-      "timestamp": "2026-06-01T16:43:12.895Z"
+      "reason": "Dead click detected: 10 dead clicks on ? (/plages-sans-sargasses/). Users expect \"\" to be interactive.",
+      "timestamp": "2026-06-08T14:54:01.677Z"
     },
     {
       "rule": "dead-clicks",
@@ -511,7 +510,7 @@
         ]
       },
       "reason": "Dead click detected: 6 dead clicks on ? (/plages/plage-du-diamant/). Users expect \"\" to be interactive.",
-      "timestamp": "2026-06-01T16:43:12.895Z"
+      "timestamp": "2026-06-08T14:54:01.677Z"
     },
     {
       "rule": "dead-clicks",
@@ -540,7 +539,7 @@
       "data": {
         "page": "/plages/plage-de-sainte-anne/",
         "target": "",
-        "metric": "21 dead clicks on ? (/plages/plage-de-sainte-anne/)",
+        "metric": "24 dead clicks on ? (/plages/plage-de-sainte-anne/)",
         "severity": "critical"
       },
       "result": {
@@ -551,8 +550,8 @@
           "CRITICAL: High volume of dead clicks - prioritize fix"
         ]
       },
-      "reason": "Dead click detected: 21 dead clicks on ? (/plages/plage-de-sainte-anne/). Users expect \"\" to be interactive.",
-      "timestamp": "2026-06-01T16:43:12.896Z"
+      "reason": "Dead click detected: 24 dead clicks on ? (/plages/plage-de-sainte-anne/). Users expect \"\" to be interactive.",
+      "timestamp": "2026-06-08T14:54:01.677Z"
     },
     {
       "rule": "dead-clicks",
@@ -643,7 +642,7 @@
       "data": {
         "page": "/meilleures-plages-guadeloupe-sargasses/",
         "target": "",
-        "metric": "19 dead clicks on ? (/meilleures-plages-guadeloupe-sargasses/)",
+        "metric": "15 dead clicks on ? (/meilleures-plages-guadeloupe-sargasses/)",
         "severity": "critical"
       },
       "result": {
@@ -654,8 +653,8 @@
           "CRITICAL: High volume of dead clicks - prioritize fix"
         ]
       },
-      "reason": "Dead click detected: 19 dead clicks on ? (/meilleures-plages-guadeloupe-sargasses/). Users expect \"\" to be interactive.",
-      "timestamp": "2026-06-01T16:43:12.895Z"
+      "reason": "Dead click detected: 15 dead clicks on ? (/meilleures-plages-guadeloupe-sargasses/). Users expect \"\" to be interactive.",
+      "timestamp": "2026-06-08T14:54:01.677Z"
     },
     {
       "rule": "dead-clicks",
@@ -664,7 +663,7 @@
       "data": {
         "page": "/meilleures-plages-martinique-sargasses/",
         "target": "",
-        "metric": "7 dead clicks on ? (/meilleures-plages-martinique-sargasses/)",
+        "metric": "6 dead clicks on ? (/meilleures-plages-martinique-sargasses/)",
         "severity": "warning"
       },
       "result": {
@@ -674,8 +673,8 @@
           "Or change visual style (remove underline/blue color) if it should NOT be clickable"
         ]
       },
-      "reason": "Dead click detected: 7 dead clicks on ? (/meilleures-plages-martinique-sargasses/). Users expect \"\" to be interactive.",
-      "timestamp": "2026-06-01T16:43:12.895Z"
+      "reason": "Dead click detected: 6 dead clicks on ? (/meilleures-plages-martinique-sargasses/). Users expect \"\" to be interactive.",
+      "timestamp": "2026-06-08T14:54:01.677Z"
     },
     {
       "rule": "dead-clicks",
@@ -735,7 +734,7 @@
         ]
       },
       "reason": "Dead click detected: 5 dead clicks on ? (/plages/l-autre-bord/). Users expect \"\" to be interactive.",
-      "timestamp": "2026-06-01T16:43:12.896Z"
+      "timestamp": "2026-06-08T14:54:01.677Z"
     },
     {
       "rule": "dead-clicks",
@@ -755,8 +754,68 @@
         ]
       },
       "reason": "Dead click detected: 5 dead clicks on ? (/plages/plage-de-pompierre/). Users expect \"\" to be interactive.",
-      "timestamp": "2026-06-01T16:43:12.896Z"
+      "timestamp": "2026-06-08T14:54:01.677Z"
+    },
+    {
+      "rule": "dead-clicks",
+      "key": "mq:/plages/bourg-de-tartane/:",
+      "action": "fix-affordance",
+      "data": {
+        "page": "/plages/bourg-de-tartane/",
+        "target": "",
+        "metric": "7 dead clicks on ? (/plages/bourg-de-tartane/)",
+        "severity": "warning"
+      },
+      "result": {
+        "recommendations": [
+          "Element \"\" receives clicks but is not interactive",
+          "Add cursor:pointer and hover state if it should be clickable",
+          "Or change visual style (remove underline/blue color) if it should NOT be clickable"
+        ]
+      },
+      "reason": "Dead click detected: 7 dead clicks on ? (/plages/bourg-de-tartane/). Users expect \"\" to be interactive.",
+      "timestamp": "2026-06-08T14:54:01.677Z"
+    },
+    {
+      "rule": "dead-clicks",
+      "key": "gp:/plages/plage-de-capesterre-belle-eau/:",
+      "action": "fix-affordance",
+      "data": {
+        "page": "/plages/plage-de-capesterre-belle-eau/",
+        "target": "",
+        "metric": "11 dead clicks on ? (/plages/plage-de-capesterre-belle-eau/)",
+        "severity": "warning"
+      },
+      "result": {
+        "recommendations": [
+          "Element \"\" receives clicks but is not interactive",
+          "Add cursor:pointer and hover state if it should be clickable",
+          "Or change visual style (remove underline/blue color) if it should NOT be clickable"
+        ]
+      },
+      "reason": "Dead click detected: 11 dead clicks on ? (/plages/plage-de-capesterre-belle-eau/). Users expect \"\" to be interactive.",
+      "timestamp": "2026-06-08T14:54:01.677Z"
+    },
+    {
+      "rule": "dead-clicks",
+      "key": "gp:/plages/la-datcha/:",
+      "action": "fix-affordance",
+      "data": {
+        "page": "/plages/la-datcha/",
+        "target": "",
+        "metric": "5 dead clicks on ? (/plages/la-datcha/)",
+        "severity": "warning"
+      },
+      "result": {
+        "recommendations": [
+          "Element \"\" receives clicks but is not interactive",
+          "Add cursor:pointer and hover state if it should be clickable",
+          "Or change visual style (remove underline/blue color) if it should NOT be clickable"
+        ]
+      },
+      "reason": "Dead click detected: 5 dead clicks on ? (/plages/la-datcha/). Users expect \"\" to be interactive.",
+      "timestamp": "2026-06-08T14:54:01.677Z"
     }
   ],
-  "lastRun": "2026-06-01T16:43:12.894Z"
+  "lastRun": "2026-06-08T14:54:01.676Z"
 }
