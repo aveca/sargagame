@@ -4080,37 +4080,9 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
               </div>
             </button>
           )
-          const sampleCTA = sampleAvailable ? (
-            <button key="sample" onClick={()=>{
-              const until=Date.now()+24*3600*1000
-              try{
-                localStorage.setItem("sg_sample_until",String(until))
-                localStorage.setItem("sg_sample_used","1")
-              }catch{}
-              track("sg_sample_start",{source:source||"unknown"})
-              onActivated?.()
-              onClose()
-            }} style={{
-              width:"100%",
-              padding: ctaOrder==="sample_first"?"14px 16px":"12px 16px",
-              marginTop: ctaOrder==="sample_first"?0:10,
-              // Promote visually when shown first (Design v1 style — gold border + 4px halo)
-              background: ctaOrder==="sample_first"?"rgba(255,199,44,.06)":"rgba(255,255,255,.05)",
-              border: ctaOrder==="sample_first"?"1.5px solid #FFC72C":"1px solid rgba(255,255,255,.18)",
-              borderRadius:14,
-              color: ctaOrder==="sample_first"?"#FFC72C":"#fff",
-              fontSize: ctaOrder==="sample_first"?15:13,
-              fontWeight:800,cursor:"pointer",fontFamily:"inherit",
-              boxShadow: ctaOrder==="sample_first"?"0 0 0 4px rgba(255,199,44,.08)":"none",
-              display:"flex",alignItems:"center",justifyContent:"center",gap:6,
-              lineHeight:1.15,whiteSpace:"nowrap"}}>
-              <span style={{fontSize:15}}>⚡</span>
-              {lang==="en"?"Try free 24h — no card":"Essayer 24h · sans carte"}
-            </button>
-          ) : null
-          return ctaOrder==="sample_first"
-            ? <>{sampleCTA}{paidCTA}</>
-            : <>{paidCTA}{sampleCTA}</>
+          // "Essayer 24h · sans carte" RETIRÉ avant expansion : sg_sample_start = 0
+          // sur 10 738 sessions (~7 sem) — feature morte + clutter. On garde le CTA payant seul.
+          return paidCTA
         })()}
 
         {/* Trust foot — Design v1 spec: 2 lines, first is a tagline with
