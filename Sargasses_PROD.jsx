@@ -3646,12 +3646,15 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
     :(plan==="annual"&&hasAnnual)?"annual"
     :"monthly"
   const stripeLinkFor={monthly:STRIPE_LINK_MONTHLY,annual:STRIPE_LINK_ANNUAL,pro:STRIPE_LINK_PRO}
-  // A/B test pw_cta_order: control shows paid-first+sample-below,
-  // sample_first shows sample-above+paid-below. Hypothesis: 85% dismiss
-  // on paywall is driven by card-friction signal — leading with a
-  // zero-friction "try free 24h" may convert more of those before the
-  // paid decision. Metric: sg_premium_modal_cta AND sg_sample_start.
-  const ctaOrder=abVariant("pw_cta_order",["control","sample_first"],[.5,.5])
+  // A/B test pw_cta_order KILLED 2026-06-09 (scheduled ab-evaluate run).
+  // Hypothesis (sample-first reduces the 85% paywall dismiss) was falsified:
+  // sg_sample_start fired 0 times across 10,738 sessions over ~7 weeks, with
+  // sampleAvailable=true for every fresh visitor. The sample CTA was shown and
+  // ignored. Hardcoded to control (paid-first, original) — removes the unused
+  // sample button (clutter) and stops fragmenting traffic. sample_first JSX
+  // branches below now render nothing; dead-code cleanup deferred to a session
+  // where the paywall modal can be visually verified.
+  const ctaOrder="control"
   const sampleAvailable=!localStorage.getItem("sg_sample_used")&&!localStorage.getItem("sg_sample_until")
   // Stripe Prelude A/B (pw_prelude): control=direct redirect (v1), prelude=2-step
   // micro-interstitial inside modal. Design v2 bet #2 — addresses the 50% drop
@@ -3676,7 +3679,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
     :(lang==="en"?"Sargassum season is here":"La saison des sargasses est là")
   return(
     <>
-      <div className="backdrop" onClick={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts});onClose()}}/>
+      <div className="backdrop" onClick={(e)=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts});const x=e.clientX,y=e.clientY;onClose();/* pass-through : si le clic tombe pile sur un pin de la carte (sous le backdrop), ouvrir cette plage au lieu de juste fermer — sinon le clic paraît "mort" */requestAnimationFrame(()=>{try{const el=document.elementFromPoint(x,y);const pin=el&&el.closest&&el.closest(".leaflet-marker-icon");if(pin)pin.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true,view:window,clientX:x,clientY:y}))}catch(_){}})}}/>
       <div ref={panelRef} className="sg-modal-panel" onTouchStart={onTouchStartModal} onTouchMove={onTouchMoveModal} onTouchEnd={onTouchEndModal} style={{
         position:"fixed",bottom:0,left:0,right:0,zIndex:1100,
         background:"linear-gradient(145deg,#0D1E1C,#0A1714)",
