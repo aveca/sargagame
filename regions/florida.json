@@ -1,0 +1,64 @@
+{
+  "id": "florida",
+  "name": "Florida",
+  "country": "United States",
+  "domain": "sargassum-florida.com",
+  "ftpDir": "florida-ftp",
+  "primaryLang": "en",
+  "secondaryLangs": ["es"],
+  "currency": "USD",
+  "stripeProducts": {
+    "monthly": "price_TBD_USD_mo_999",
+    "yearly": "price_TBD_USD_yr_7900"
+  },
+  "timezone": "America/New_York",
+  "bbox": [-83.0, 24.4, -79.8, 28.5],
+  "center": { "lat": 26.5, "lng": -80.5 },
+  "zoom": 7,
+  "brand": {
+    "primary": "#0EA5E9",
+    "accent": "#FBBF24"
+  },
+  "onesignalAppId": "TBD_CREATE_ONESIGNAL_APP",
+  "emails": {
+    "alerts": "alerts@sargassum-florida.com",
+    "support": "support@sargassum-florida.com"
+  },
+  "beachFilter": { "island": "fl" },
+  "routes": {
+    "season": "sargassum-season-florida",
+    "best": "best-beaches-no-sargassum-florida",
+    "weekly": "sargassum-florida-this-week"
+  },
+  "geoDetect": {
+    "latMin": 24.4,
+    "latMax": 28.5,
+    "lngMin": -83.0,
+    "lngMax": -79.8
+  },
+  "competitors": [
+    "NOAA SIR (institutional only)",
+    "USF Sargassum Watch System",
+    "BestBeachReviews.com (blog only)"
+  ],
+  "differentiators": [
+    "First consumer tourist app (NOAA is institutional)",
+    "Per-beach forecast (not regional)",
+    "Personal alerts + community reports",
+    "Year-round Beach Score (UV, wave, sargassum integrated)"
+  ],
+  "beaches": [
+    { "id": "fl001", "island": "fl", "name": "Miami Beach", "commune": "Miami Beach", "lat": 25.7907, "lng": -80.1300, "status": "avoid", "kids": true, "snorkel": false, "parking": true },
+    { "id": "fl002", "island": "fl", "name": "South Beach", "commune": "Miami Beach", "lat": 25.7826, "lng": -80.1340, "status": "avoid", "kids": true, "snorkel": false, "parking": true },
+    { "id": "fl003", "island": "fl", "name": "Fort Lauderdale Beach", "commune": "Fort Lauderdale", "lat": 26.1224, "lng": -80.1057, "status": "avoid", "kids": true, "snorkel": false, "parking": true },
+    { "id": "fl004", "island": "fl", "name": "Palm Beach", "commune": "Palm Beach", "lat": 26.7056, "lng": -80.0364, "status": "moderate", "kids": true, "snorkel": false, "parking": true },
+    { "id": "fl005", "island": "fl", "name": "Jupiter Beach", "commune": "Jupiter", "lat": 26.9342, "lng": -80.0728, "status": "moderate", "kids": true, "snorkel": false, "parking": true },
+    { "id": "fl006", "island": "fl", "name": "Key West (Smathers)", "commune": "Key West", "lat": 24.5489, "lng": -81.7677, "status": "avoid", "kids": true, "snorkel": false, "parking": true },
+    { "id": "fl007", "island": "fl", "name": "Key Largo", "commune": "Key Largo", "lat": 25.0865, "lng": -80.4473, "status": "avoid", "kids": true, "snorkel": true, "parking": true },
+    { "id": "fl008", "island": "fl", "name": "Islamorada", "commune": "Islamorada", "lat": 24.9243, "lng": -80.6273, "status": "moderate", "kids": true, "snorkel": true, "parking": true },
+    { "id": "fl009", "island": "fl", "name": "Marathon (Sombrero)", "commune": "Marathon", "lat": 24.6915, "lng": -81.0954, "status": "moderate", "kids": true, "snorkel": true, "parking": true },
+    { "id": "fl010", "island": "fl", "name": "Cocoa Beach", "commune": "Cocoa Beach", "lat": 28.3200, "lng": -80.6076, "status": "moderate", "kids": true, "snorkel": false, "parking": true },
+    { "id": "fl011", "island": "fl", "name": "Daytona Beach", "commune": "Daytona Beach", "lat": 29.2108, "lng": -81.0228, "status": "clean", "kids": true, "snorkel": false, "parking": true },
+    { "id": "fl012", "island": "fl", "name": "Clearwater Beach", "commune": "Clearwater", "lat": 27.9776, "lng": -82.8270, "status": "clean", "kids": true, "snorkel": false, "parking": true }
+  ]
+}

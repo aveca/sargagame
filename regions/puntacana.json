@@ -1,0 +1,65 @@
+{
+  "id": "puntacana",
+  "name": "Punta Cana",
+  "country": "Dominican Republic",
+  "domain": "sargassumpuntacana.com",
+  "ftpDir": "puntacana-ftp",
+  "primaryLang": "en",
+  "secondaryLangs": ["es"],
+  "currency": "USD",
+  "stripeProducts": {
+    "monthly": "price_TBD_USD_mo_999",
+    "yearly": "price_TBD_USD_yr_7900"
+  },
+  "timezone": "America/Santo_Domingo",
+  "bbox": [-68.62, 18.45, -68.30, 18.88],
+  "center": { "lat": 18.68, "lng": -68.43 },
+  "zoom": 11,
+  "brand": {
+    "primary": "#0EA5E9",
+    "accent": "#FBBF24"
+  },
+  "onesignalAppId": "TBD_CREATE_ONESIGNAL_APP",
+  "emails": {
+    "alerts": "alerts@sargassumpuntacana.com",
+    "support": "support@sargassumpuntacana.com"
+  },
+  "beachFilter": { "island": "puntacana" },
+  "routes": {
+    "season": "sargassum-season-punta-cana",
+    "best": "best-beaches-no-sargassum-punta-cana",
+    "weekly": "sargassum-punta-cana-this-week"
+  },
+  "geoDetect": {
+    "latMin": 18.45,
+    "latMax": 18.88,
+    "lngMin": -68.62,
+    "lngMax": -68.30
+  },
+  "competitors": [
+    "howisthesargassum.com (Mexico-focused, no PC pages)",
+    "Resort-posted daily signs (offline, not searchable)",
+    "No branded daily-status consumer tool for Punta Cana"
+  ],
+  "differentiators": [
+    "First branded daily sargassum status for Punta Cana / Bavaro",
+    "Per-beach forecast (Bavaro vs Cap Cana vs Macao differ daily)",
+    "Pre-travel intent: which resort beach stays clean this week",
+    "Personal push alerts + on-site community reports",
+    "English-first + Spanish (sargazo punta cana hoy)"
+  ],
+  "beaches": [
+    { "id": "pc001", "island": "puntacana", "name": "Bavaro Beach", "commune": "Bavaro", "lat": 18.6850, "lng": -68.4280, "status": "avoid", "kids": true, "snorkel": false, "parking": true },
+    { "id": "pc002", "island": "puntacana", "name": "Playa Los Corales", "commune": "Bavaro", "lat": 18.7010, "lng": -68.4120, "status": "avoid", "kids": true, "snorkel": false, "parking": true },
+    { "id": "pc003", "island": "puntacana", "name": "El Cortecito", "commune": "Bavaro", "lat": 18.6950, "lng": -68.4150, "status": "avoid", "kids": true, "snorkel": false, "parking": true },
+    { "id": "pc004", "island": "puntacana", "name": "Arena Gorda", "commune": "Bavaro", "lat": 18.7150, "lng": -68.4300, "status": "avoid", "kids": true, "snorkel": false, "parking": true },
+    { "id": "pc005", "island": "puntacana", "name": "Cabeza de Toro", "commune": "Punta Cana", "lat": 18.7350, "lng": -68.4500, "status": "moderate", "kids": true, "snorkel": true, "parking": true },
+    { "id": "pc006", "island": "puntacana", "name": "Macao Beach", "commune": "Macao", "lat": 18.7620, "lng": -68.5080, "status": "avoid", "kids": false, "snorkel": false, "parking": true },
+    { "id": "pc007", "island": "puntacana", "name": "Uvero Alto", "commune": "Uvero Alto", "lat": 18.8300, "lng": -68.5550, "status": "avoid", "kids": true, "snorkel": false, "parking": true },
+    { "id": "pc008", "island": "puntacana", "name": "Juanillo Beach (Cap Cana)", "commune": "Cap Cana", "lat": 18.5050, "lng": -68.3580, "status": "moderate", "kids": true, "snorkel": true, "parking": true },
+    { "id": "pc009", "island": "puntacana", "name": "Playa Blanca (Cap Cana)", "commune": "Cap Cana", "lat": 18.6250, "lng": -68.3720, "status": "moderate", "kids": true, "snorkel": false, "parking": true },
+    { "id": "pc010", "island": "puntacana", "name": "Punta Cana Beach", "commune": "Punta Cana", "lat": 18.6200, "lng": -68.3680, "status": "moderate", "kids": true, "snorkel": true, "parking": true },
+    { "id": "pc011", "island": "puntacana", "name": "Playa Cortecito Sur", "commune": "Bavaro", "lat": 18.6880, "lng": -68.4180, "status": "avoid", "kids": true, "snorkel": false, "parking": true },
+    { "id": "pc012", "island": "puntacana", "name": "Playa Bibijagua", "commune": "Bavaro", "lat": 18.6790, "lng": -68.4250, "status": "moderate", "kids": true, "snorkel": false, "parking": false }
+  ]
+}

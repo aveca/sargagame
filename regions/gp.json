@@ -1,0 +1,37 @@
+{
+  "id": "gp",
+  "name": "Guadeloupe",
+  "country": "France (DROM)",
+  "domain": "sargasses-guadeloupe.com",
+  "ftpDir": "guadeloupe-ftp",
+  "primaryLang": "fr",
+  "secondaryLangs": ["en", "es"],
+  "currency": "EUR",
+  "stripeProducts": {
+    "monthly": "price_existing_EUR_mo",
+    "yearly": "price_existing_EUR_yr"
+  },
+  "timezone": "America/Guadeloupe",
+  "bbox": [-61.85, 15.85, -61.0, 16.55],
+  "center": { "lat": 16.25, "lng": -61.55 },
+  "zoom": 10,
+  "brand": {
+    "primary": "#0EA5E9",
+    "accent": "#FBBF24"
+  },
+  "onesignalAppId": "f9adee80-8909-48d3-8517-95f9f311d164",
+  "emails": {
+    "alerts": "alerte@sargasses-guadeloupe.com",
+    "support": "support@sargasses-guadeloupe.com"
+  },
+  "beachFilter": { "island": "gp" },
+  "routes": {
+    "season": "saison-sargasses-guadeloupe",
+    "best": "meilleures-plages-guadeloupe-sargasses",
+    "weekly": "sargasses-guadeloupe-cette-semaine"
+  },
+  "geoDetect": {
+    "latMin": 15.85,
+    "latMax": 16.55
+  }
+}

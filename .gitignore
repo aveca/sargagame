@@ -25,7 +25,12 @@ guadeloupe-ftp
 SECRETS-GITHUB.txt
 
 # Stripe + Resend live keys — deployed via FTP manually, never in git
-public/api/stripe-config.php
+# Pattern large : couvre TOUTES les copies (public/api/, *-ftp/api/, etc.) — sk_live/resend
+**/stripe-config.php
+
+# Build outputs FTP (martinique-ftp/, guadeloupe-ftp/, puntacana-ftp/...) — contiennent
+# des copies de stripe-config.php avec secrets. NE JAMAIS committer.
+*-ftp/
 
 # SEO Automation (log + overrides + reports are committed)
 

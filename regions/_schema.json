@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RegionConfig",
+  "description": "Per-region config consumed by vite.config.js, prepare-ftp.cjs, and Sargasses_PROD.jsx (via __REGION__ build-time injection). One file per region under regions/. Each region maps to one domain and one FTP target.",
+  "type": "object",
+  "required": ["id", "name", "country", "domain", "ftpDir", "primaryLang", "currency", "timezone", "bbox", "center", "emails", "beachFilter", "routes"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z]{2,12}$", "description": "Short region code used as island/region key in beaches data and Apps Script funnel.gs" },
+    "name": { "type": "string", "description": "Display name e.g. 'Riviera Maya'" },
+    "country": { "type": "string" },
+    "domain": { "type": "string", "description": "Production domain without protocol" },
+    "ftpDir": { "type": "string", "description": "Local FTP staging folder under repo root" },
+    "primaryLang": { "type": "string", "enum": ["fr", "en", "es"] },
+    "secondaryLangs": { "type": "array", "items": { "type": "string", "enum": ["fr", "en", "es"] } },
+    "currency": { "type": "string", "enum": ["EUR", "USD"] },
+    "stripeProducts": {
+      "type": "object",
+      "properties": {
+        "monthly": { "type": "string" },
+        "yearly": { "type": "string" }
+      }
+    },
+    "timezone": { "type": "string", "description": "IANA TZ used for daily forecast labels (America/Cancun, America/Martinique, America/New_York...)" },
+    "bbox": { "type": "array", "items": { "type": "number" }, "minItems": 4, "maxItems": 4, "description": "[lngMin, latMin, lngMax, latMax] for map default view + ERDDAP/Copernicus tile bbox" },
+    "center": { "type": "object", "properties": { "lat": { "type": "number" }, "lng": { "type": "number" } } },
+    "zoom": { "type": "integer", "minimum": 5, "maximum": 14 },
+    "brand": { "type": "object", "properties": { "primary": { "type": "string" }, "accent": { "type": "string" } } },
+    "onesignalAppId": { "type": "string" },
+    "emails": {
+      "type": "object",
+      "required": ["alerts", "support"],
+      "properties": {
+        "alerts": { "type": "string", "format": "email" },
+        "support": { "type": "string", "format": "email" }
+      }
+    },
+    "beachFilter": { "type": "object", "description": "Filter applied to beaches-list.json — e.g. { island: 'mq' }" },
+    "routes": {
+      "type": "object",
+      "required": ["season", "best", "weekly"],
+      "properties": {
+        "season": { "type": "string" },
+        "best": { "type": "string" },
+        "weekly": { "type": "string" }
+      }
+    },
+    "geoDetect": { "type": "object", "description": "Bbox used by client-side GPS auto-detect to assign region from user coords" },
+    "competitors": { "type": "array", "items": { "type": "string" } },
+    "differentiators": { "type": "array", "items": { "type": "string" } },
+    "beaches": { "type": "array", "description": "Optional inline beach list for new regions before beaches-list.json migration" }
+  }
+}

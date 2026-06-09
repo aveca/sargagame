@@ -1,0 +1,37 @@
+{
+  "id": "mq",
+  "name": "Martinique",
+  "country": "France (DROM)",
+  "domain": "sargasses-martinique.com",
+  "ftpDir": "martinique-ftp",
+  "primaryLang": "fr",
+  "secondaryLangs": ["en", "es"],
+  "currency": "EUR",
+  "stripeProducts": {
+    "monthly": "price_existing_EUR_mo",
+    "yearly": "price_existing_EUR_yr"
+  },
+  "timezone": "America/Martinique",
+  "bbox": [-61.3, 14.3, -60.7, 14.9],
+  "center": { "lat": 14.6, "lng": -61.0 },
+  "zoom": 10,
+  "brand": {
+    "primary": "#0EA5E9",
+    "accent": "#FBBF24"
+  },
+  "onesignalAppId": "d628363e-efc7-4d27-8d1b-fa25fe3bacc9",
+  "emails": {
+    "alerts": "alerte@sargasses-martinique.com",
+    "support": "support@sargasses-martinique.com"
+  },
+  "beachFilter": { "island": "mq" },
+  "routes": {
+    "season": "saison-sargasses-martinique",
+    "best": "meilleures-plages-martinique-sargasses",
+    "weekly": "sargasses-martinique-cette-semaine"
+  },
+  "geoDetect": {
+    "latMin": 14.3,
+    "latMax": 14.95
+  }
+}
