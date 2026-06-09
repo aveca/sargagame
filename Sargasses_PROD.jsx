@@ -5361,8 +5361,13 @@ export default function App(){
         openPremium("engagement_50s")
       },50000)
     }
+    // Arm ONLY after a real value moment (user opened a beach). Arming on mount
+    // turned the modal into a parked-tab interrupt for zero-intent sessions —
+    // funnel 2026-06-09: modal opens hit 21% of sessions but modal→CTA = 1%
+    // (36 of 3694). Gating on engagement makes the soft upsell land right after
+    // the user got value instead of on a cold map stare. Cold-open CTA rate ≈ 0%,
+    // so this trims dead opens, not conversions. (feedback_ux_popups.)
     const reset=()=>arm()
-    arm()
     window.addEventListener("sg:value_moment",reset)
     return()=>{if(t)clearTimeout(t);window.removeEventListener("sg:value_moment",reset)}
   },[])
