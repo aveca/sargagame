@@ -13,12 +13,20 @@ self.addEventListener('install', (e) => {
 })
 
 self.addEventListener('activate', (e) => {
-  e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    )
-  )
-  self.clients.claim()
+  e.waitUntil((async () => {
+    // 1) Purge tous les anciens caches
+    const keys = await caches.keys()
+    await Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+    // 2) Prend le controle immediatement
+    await self.clients.claim()
+    // 3) Force-reload les onglets ouverts -> les visiteurs coinces sur l'ancien bundle
+    //    cache recoivent la version fraiche SANS avoir a vider leur cache.
+    //    Ne se declenche que quand un NOUVEAU sw.js s'active (= deploy de code, pas data).
+    const clients = await self.clients.matchAll({ type: 'window' })
+    for (const client of clients) {
+      try { if ('navigate' in client) await client.navigate(client.url) } catch (e) {}
+    }
+  })())
 })
 
 self.addEventListener('fetch', (e) => {
