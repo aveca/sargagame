@@ -18,11 +18,21 @@ class ErrBound extends Component{
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   RÉGION ACTIVE (injectée au build via __REGION__)
+   Build dédié à une NOUVELLE région (id != mq/gp) → __REGION__ fait foi.
+   MQ/GP = build partagé déployé sur 2 domaines → détection hostname historique
+   (REGION reste null → toutes les branches MQ/GP sont strictement inchangées).
+   ═══════════════════════════════════════════════════════════════════════════ */
+const __R = (typeof __REGION__ !== "undefined" && __REGION__) || null
+const IS_NEW_REGION = !!(__R && __R.id !== "mq" && __R.id !== "gp")
+const REGION = IS_NEW_REGION ? __R : null
+
+/* ═══════════════════════════════════════════════════════════════════════════
    CONTEXT
    ═══════════════════════════════════════════════════════════════════════════ */
 const LangCtx=createContext("fr")
 export function useLang(){return useContext(LangCtx)||"fr"}
-function getLang(){try{if(typeof window==="undefined")return"fr";const p=window.location.pathname;if(p.startsWith("/es"))return"es";if(p.startsWith("/en"))return"en";return"fr"}catch{return"fr"}}
+function getLang(){try{const _d=IS_NEW_REGION?REGION.primaryLang:"fr";if(typeof window==="undefined")return _d;const p=window.location.pathname;if(p.startsWith("/es"))return"es";if(p.startsWith("/en"))return"en";return _d}catch{return IS_NEW_REGION?REGION.primaryLang:"fr"}}
 /* i18n inline helper — returns fr/en/es string based on current lang */
 function _t(lang,fr,en,es){return lang==="es"?es:lang==="en"?en:fr}
 
@@ -4182,8 +4192,8 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
   const RAIL_BORDER="1px solid var(--sg-border,rgba(0,0,0,.07))"
   return(
     <div className="sg-header-row" style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,flexWrap:"wrap",rowGap:8}}>
-      {/* Island toggle — sliding pill indicator, 40px tall, Anton on MQ/GP */}
-      <div style={{display:"flex",height:RAIL_H,borderRadius:14,overflow:"hidden",position:"relative",flexShrink:0,
+      {/* Island toggle MQ/GP — masqué pour les nouvelles régions (build mono-région) */}
+      {!IS_NEW_REGION && (<div style={{display:"flex",height:RAIL_H,borderRadius:14,overflow:"hidden",position:"relative",flexShrink:0,
         border:RAIL_BORDER,
         background:"var(--sg-card,#fff)",boxShadow:RAIL_SHADOW}}>
         <div style={{position:"absolute",top:3,bottom:3,width:"calc(50% - 3px)",borderRadius:12,
@@ -4203,7 +4213,7 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
             display:"flex",alignItems:"center",
           }}>{id==="mq"?"MQ":"GP"}</button>
         ))}
-      </div>
+      </div>)}
 
       {/* Live indicator — shows LIVE or Estimation based on data source.
           Halo pulse derived from srcColor, editorial feel. */}
@@ -4703,6 +4713,7 @@ export default function App(){
   const[lang,setLang]=useState(getLang)
   const[theme,setTheme]=useState(()=>g("sg_theme","light"))
   const[island,setIsland]=useState(()=>{
+    if(IS_NEW_REGION)return REGION.id   // build dédié : la région est fixe
     // Domain detection takes priority over saved preference
     try{
       if(window.location.hostname.includes("guadeloupe"))return"gp"
@@ -5031,11 +5042,13 @@ export default function App(){
     ]).then(([beachData,sargResult,beachWx])=>{
       const perBeachWx=beachWx?.beaches||{}
       // 1. Build full beach list (strip stale status/afai from JSON)
-      let beaches=Array.isArray(beachData)&&beachData.length>0
+      let beaches=IS_NEW_REGION
+        ?REGION.beaches.map(b=>({...b}))   // plages inline de la région (status placeholder jusqu'à la pipeline dédiée)
+        :Array.isArray(beachData)&&beachData.length>0
         ?beachData.map(b=>{const{status,afai,...rest}=b;return rest})
         :[...BEACHES_FALLBACK]
       // 2. Merge sargassum data if available
-      if(sargResult){
+      if(sargResult&&!IS_NEW_REGION){
         setSargData(sargResult)
         setDataSource(sargResult?.source||"reference")
         if(sargResult?.levels){
