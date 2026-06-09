@@ -220,20 +220,19 @@ RewriteRule ^(?!api/|assets/|en/|beaches/|config/|plages/)(.*)$ /index.html [L]
 ErrorDocument 404 /404.html
 
 # Cache-Control pour les assets statiques (SEO : vitesse de chargement)
-# sw.js + version.json JAMAIS cachés — sinon les users restent bloqués sur l'ancienne version
 <IfModule mod_headers.c>
+# Hashed assets (JS/CSS fingerprintes) — immutable 1 an.
+# IMPORTANT : exclure sw.js du lookahead, SINON le service worker est cache 1 an et les
+# users restent coinces sur l'ancien bundle (= bug "clic plages" juin 2026, cause racine).
+<FilesMatch "^(?!sw\.js$).+\.(js|css)$">
+Header set Cache-Control "public, max-age=31536000, immutable"
+</FilesMatch>
+# sw.js + version.json JAMAIS caches. Place EN DERNIER pour ecraser toute regle ci-dessus
+# (Header set = le dernier qui matche gagne). Double securite avec le lookahead ci-dessus.
 <FilesMatch "(sw\.js|version\.json)$">
 Header set Cache-Control "no-cache, no-store, must-revalidate"
 Header set Pragma "no-cache"
 Header set Expires "0"
-</FilesMatch>
-</IfModule>
-
-# Hashed assets (JS/CSS in /assets/) — immutable, cache 1 year
-# The "immutable" directive tells browsers AND Cloudflare to never revalidate
-<IfModule mod_headers.c>
-<FilesMatch "\.(js|css)$">
-Header set Cache-Control "public, max-age=31536000, immutable"
 </FilesMatch>
 </IfModule>
 
