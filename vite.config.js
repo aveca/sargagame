@@ -27,6 +27,18 @@ try {
   console.warn('vite.config.js: Could not load beaches-list.json:', e.message)
 }
 
+// Région active du build (env VITE_REGION), défaut 'mq' = comportement historique inchangé.
+// Injectée dans le runtime via `define __REGION__` (inclut les plages inline des nouvelles régions).
+let REGION = null
+try {
+  const _rid = process.env.VITE_REGION || process.env.REGION || 'mq'
+  REGION = JSON.parse(readFileSync(resolve(__dirname, `regions/${_rid}.json`), 'utf-8'))
+} catch (e) {
+  console.warn('vite.config.js: région non chargée:', e.message)
+}
+// Nouvelle région (≠ mq/gp) → build dédié mono-région (SPA + meta), sans la génération SEO MQ/GP historique.
+const IS_NEW_REGION = !!(REGION && REGION.id !== 'mq' && REGION.id !== 'gp')
+
 // Données de référence sargasses par plage (fallback si API Copernicus indisponible) — sync avec beaches-list.json
 const SARGASSUM_REF = ALL_BEACHES.map(b => ({
   id: b.id,
@@ -72,6 +84,26 @@ function buildWeeklyBatch(levels) {
 export default defineConfig({
   plugins: [
     react(),
+    // ── Meta région-aware de l'index.html (nouvelles régions EN/ES) ──
+    // MQ/GP strictement inchangés (REGION null ou id mq/gp → html retourné tel quel).
+    {
+      name: 'region-index-html',
+      transformIndexHtml(html) {
+        if (!REGION || REGION.id === 'mq' || REGION.id === 'gp') return html
+        const name = REGION.name, domain = REGION.domain, lang = REGION.primaryLang
+        const title = `${name} Sargassum Today — Live Beach Map & 7-Day Forecast 2026`
+        const desc = `Which ${name} beach is sargassum-free today? Live per-beach seaweed map, Beach Score 0-100 and 7-day forecast. Updated daily from satellite data.`
+        return html
+          .replace(/<html lang="[^"]*"/, `<html lang="${lang}"`)
+          .replace(/<title>[\s\S]*?<\/title>/, `<title>${title}</title>`)
+          .replace(/(<meta name="description" content=)"[^"]*"/, `$1"${desc}"`)
+          .replace(/(<meta property="og:title" content=)"[^"]*"/, `$1"${title}"`)
+          .replace(/(<meta property="og:description" content=)"[^"]*"/, `$1"${desc}"`)
+          .replace(/(<meta property="og:site_name" content=)"[^"]*"/, `$1"Sargassum ${name}"`)
+          .replace(/(<meta property="og:locale" content=)"[^"]*"/, `$1"${lang === 'es' ? 'es_MX' : 'en_US'}"`)
+          .replace(/https:\/\/sargasses-martinique\.com/g, `https://${domain}`)
+      },
+    },
     // Proxy Copernicus Marine : vérification des identifiants (copernicustxt.txt)
     copernicusCreds && {
       name: 'copernicus-check',
@@ -166,6 +198,8 @@ export default defineConfig({
     {
       name: 'seo-pages',
       closeBundle() {
+        // Nouvelles régions : pas de génération des pages SEO MQ/GP (contenu EN/ES dédié ajouté ensuite).
+        if (IS_NEW_REGION) return
         const outDir = resolve(__dirname, 'dist')
         const indexPath = resolve(outDir, 'index.html')
         try {
@@ -1094,6 +1128,11 @@ export default defineConfig({
     },
   ].filter(Boolean),
   root: '.',
+  define: {
+    // Config région injectée au build (id/domain/lang/currency/center/bbox/emails/beaches…).
+    // No-op pour MQ/GP tant que le runtime ne lit pas __REGION__ (consommé en phase runtime).
+    __REGION__: JSON.stringify(REGION),
+  },
   build: {
     rollupOptions: {
       output: {
