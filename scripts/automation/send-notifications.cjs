@@ -43,6 +43,10 @@ const BEACH_NAMES = {
   'gp-vieux-fort':  'Vieux-Fort',
 }
 
+// Map id satellite (détection MQ/GP) → id de plage front (tags fav_<id>).
+// Doit rester synchro avec SARG_TO_BEACH de Sargasses_PROD.jsx:323.
+const SARG_TO_BEACH = { 'grande-anse': 'mq014', 'anse-mitan': 'mq011', 'anse-noire': 'mq012', 'tartane': 'mq034', 'anse-madame': 'mq024', 'diamant': 'mq016', 'pt-marin': 'mq008', 'sainte-anne': 'mq004', 'les-salines': 'mq001', 'vauclin': 'mq044', 'gp-grande-anse': 'gp021', 'gp-malendure': 'gp031', 'gp-sainte-anne': 'gp010', 'gp-pt-chateaux': 'gp005', 'gp-gosier': 'gp012', 'gp-caravelle': 'gp009', 'gp-bas-du-fort': 'gp014', 'gp-deshaies': 'gp024', 'gp-moule': 'gp080', 'gp-vieux-fort': 'gp042' }
+
 // ── OneSignal config ─────────────────────────────────────────
 const ONESIGNAL_APPS = {
   mq: {
@@ -569,17 +573,27 @@ async function sendFavoriteAlert(beachChange, type, opts = {}) {
     ? T.favHeadingTest
     : (type === 'alert' ? T.favHeadingAlert : T.favHeadingGood)
 
+  // MISMATCH D'IDS (fix 2026-06-10) : la détection MQ/GP tourne sur les ids
+  // SATELLITE (grande-anse, gp-gosier…) mais le front tague avec les ids de
+  // plage (fav_mq014, fav_gp021 — SARG_TO_BEACH). Sans mapping, recipients=0
+  // depuis toujours sur MQ/GP. On cible les DEUX tags en OR (transition).
+  const frontId = SARG_TO_BEACH[beachChange.id]
+  const favKeys = [...new Set([beachChange.id, frontId].filter(Boolean))]
+  const filters = []
+  favKeys.forEach((k, i) => {
+    if (i > 0) filters.push({ operator: 'OR' })
+    filters.push({ field: 'tag', key: 'fav_' + k, relation: '=', value: '1' })
+  })
+
   const payload = {
     app_id: config.appId,
-    filters: [
-      { field: 'tag', key: 'fav_' + beachChange.id, relation: '=', value: '1' },
-    ],
+    filters,
     contents: { en: msg, fr: msg },
     headings: { en: heading, fr: heading },
     url: config.url,
   }
 
-  console.log(`[FAV-ALERT] ${beachChange.island.toUpperCase()} ${type} fav_${beachChange.id}: ${msg}`)
+  console.log(`[FAV-ALERT] ${beachChange.island.toUpperCase()} ${type} ${favKeys.map(k => 'fav_' + k).join('|')}: ${msg}`)
   const result = await httpsPost(
     'https://onesignal.com/api/v1/notifications',
     payload,
@@ -1005,15 +1019,45 @@ async function main() {
     goodNews.push(...rChanges.goodNews)
   }
 
-  console.log(`[INFO] Changes detected: ${alerts.length} alerts, ${goodNews.length} good news`)
+  console.log(`[INFO] Changes detected (avant dédup): ${alerts.length} alerts, ${goodNews.length} good news`)
+
+  // DÉDUP INTER-RUNS (fix 2026-06-10) : le workflow tourne 4×/j (0/6/12/18) +
+  // à chaque push main, et la baseline de comparaison = "hier" toute la
+  // journée → la MÊME alerte clean→moderate était rebroadcastée 4-6×/jour
+  // (spam = désabonnements). On garde une trace par jour UTC et on skippe ce
+  // qui a déjà été envoyé. notifications-sent.json est commité par le workflow.
+  const SENT_PATH = path.join(__dirname, 'data', 'notifications-sent.json')
+  const sentLog = readJSON(SENT_PATH) || {}
+  const todayKey = new Date().toISOString().slice(0, 10)
+  const sentToday = new Set(sentLog[todayKey] || [])
+  const changeKey = c => `${c.island}:${c.id}:${c.from}>${c.to}`
+  const dedupedAlerts = alerts.filter(a => !sentToday.has(changeKey(a)))
+  const dedupedGood = goodNews.filter(g => !sentToday.has(changeKey(g)))
+  const skipped = (alerts.length - dedupedAlerts.length) + (goodNews.length - dedupedGood.length)
+  if (skipped) console.log(`[INFO] Dédup : ${skipped} notification(s) déjà envoyée(s) aujourd'hui, skippées.`)
+  // Réassignation pour la suite (broadcast + favoris consomment ces listes).
+  alerts.length = 0; alerts.push(...dedupedAlerts)
+  goodNews.length = 0; goodNews.push(...dedupedGood)
+  const persistSent = () => {
+    for (const c of [...alerts, ...goodNews]) sentToday.add(changeKey(c))
+    sentLog[todayKey] = [...sentToday]
+    // Purge des jours > 7j pour borner le fichier.
+    for (const k of Object.keys(sentLog)) {
+      if ((Date.parse(todayKey) - Date.parse(k)) / 864e5 > 7) delete sentLog[k]
+    }
+    try { fs.mkdirSync(path.dirname(SENT_PATH), { recursive: true }); fs.writeFileSync(SENT_PATH, JSON.stringify(sentLog, null, 2)) } catch (e) { console.error('[WARN] notifications-sent.json non écrit:', e.message) }
+  }
+
+  console.log(`[INFO] À envoyer après dédup: ${alerts.length} alerts, ${goodNews.length} good news`)
 
   if (alerts.length === 0 && goodNews.length === 0) {
-    console.log('[INFO] No status changes — no push notifications to send.')
+    console.log('[INFO] No new status changes — no push notifications to send.')
     appendLog({
       script: 'send-notifications',
       action: 'no-changes',
       alertCount: 0,
       goodNewsCount: 0,
+      dedupSkipped: skipped,
     })
   } else {
     // 3. Send push notifications
@@ -1052,11 +1096,14 @@ async function main() {
       pushFailed: failedCount,
       favPushDispatched: favSent,
       favRecipientsTotal,
+      dedupSkipped: skipped,
       changes: [
         ...alerts.map(a => ({ type: 'alert', beach: a.id, from: a.from, to: a.to })),
         ...goodNews.map(g => ({ type: 'good-news', beach: g.id, from: g.from, to: g.to })),
       ],
     })
+    // Marque ces changements comme envoyés AUJOURD'HUI (anti-spam inter-runs).
+    persistSent()
   }
 
   // 4. Proactive forecast push (clean tomorrow, weekend outlook, degradation warning)

@@ -278,6 +278,8 @@ jobs:
           [ -f scripts/automation/data/bounced-emails.json ] && git add scripts/automation/data/bounced-emails.json
           [ -f scripts/automation/data/backtest-results.json ] && git add scripts/automation/data/backtest-results.json
           [ -f scripts/automation/data/weekend-sent.json ] && git add scripts/automation/data/weekend-sent.json
+          # Dédup notifs inter-runs : sans persistance, la même alerte repart 4-6×/j.
+          [ -f scripts/automation/data/notifications-sent.json ] && git add scripts/automation/data/notifications-sent.json
           [ -f public/api/copernicus/forecast-archive.json ] && git add public/api/copernicus/forecast-archive.json
           # Météo per-beach (Beach Scores) + bancs (arrival signal) : frais à
           # chaque run — leur absence du commit gelait les scores (bug 2 mois).
