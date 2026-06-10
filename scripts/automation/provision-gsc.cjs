@@ -38,8 +38,29 @@ function getAuth() {
     scopes: [
       'https://www.googleapis.com/auth/siteverification',
       'https://www.googleapis.com/auth/webmasters',
+      'https://www.googleapis.com/auth/cloud-platform',
     ],
   })
+}
+
+// Active la Site Verification API dans le projet du SA si possible (SA Editor).
+// Échec non-fatal : on logge l'URL 1-clic et on tente quand même la suite.
+async function ensureApiEnabled(auth) {
+  const projectId = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON).project_id
+  const su = google.serviceusage({ version: 'v1', auth })
+  const name = `projects/${projectId}/services/siteverification.googleapis.com`
+  try {
+    const cur = await su.services.get({ name })
+    if (cur.data.state === 'ENABLED') { log('Site Verification API: déjà activée'); return }
+    log('Site Verification API: activation…')
+    await su.services.enable({ name })
+    // propagation
+    await new Promise(r => setTimeout(r, 30_000))
+    log('Site Verification API: activée ✅')
+  } catch (e) {
+    log(`⚠️ activation API impossible via SA (${e?.errors?.[0]?.message || e.message})`)
+    log(`   → activer à la main (1 clic) : https://console.developers.google.com/apis/api/siteverification.googleapis.com/overview?project=${projectId}`)
+  }
 }
 
 async function ftpUploadRoot(regionId, localFile, remoteName) {
@@ -59,6 +80,7 @@ async function ftpUploadRoot(regionId, localFile, remoteName) {
 
 async function main() {
   const auth = getAuth()
+  await ensureApiEnabled(auth)
   const sv = google.siteVerification({ version: 'v1', auth })
   const sc = google.searchconsole({ version: 'v1', auth })
 
