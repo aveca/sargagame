@@ -3155,17 +3155,17 @@
       "levels": [
         {
           "id": "grande-anse",
-          "afai": 0.08,
+          "afai": 0.09,
           "status": "clean"
         },
         {
           "id": "anse-mitan",
-          "afai": 0.08,
+          "afai": 0.09,
           "status": "clean"
         },
         {
           "id": "anse-noire",
-          "afai": 0.08,
+          "afai": 0.09,
           "status": "clean"
         },
         {
@@ -3175,12 +3175,12 @@
         },
         {
           "id": "anse-madame",
-          "afai": 0.08,
+          "afai": 0.09,
           "status": "clean"
         },
         {
           "id": "diamant",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
@@ -3200,7 +3200,7 @@
         },
         {
           "id": "vauclin",
-          "afai": 0.1,
+          "afai": 0.11,
           "status": "clean"
         },
         {

@@ -47,7 +47,7 @@
   "byBeach": {
     "grande-anse": {
       "statusHitRate": 82,
-      "afaiMAE": 0.031,
+      "afaiMAE": 0.03,
       "pairs": 159
     },
     "anse-mitan": {
@@ -150,7 +150,7 @@
     "statusHitRate": 82,
     "afaiMAE": 0.037
   },
-  "computed": "2026-06-10T21:42:25.746Z",
+  "computed": "2026-06-10T22:59:55.510Z",
   "pairs": [
     {
       "snapshotDate": "2026-06-07",
@@ -316,11 +316,11 @@
         "confidence": 37
       },
       "actual": {
-        "afai": 0.1,
+        "afai": 0.11,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.08
+      "afaiError": 0.07
     },
     {
       "snapshotDate": "2026-06-07",
@@ -860,11 +860,11 @@
         "confidence": 43
       },
       "actual": {
-        "afai": 0.08,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.18
+      "afaiError": 0.17
     },
     {
       "snapshotDate": "2026-06-08",
@@ -894,11 +894,11 @@
         "confidence": 33
       },
       "actual": {
-        "afai": 0.08,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0.02
     },
     {
       "snapshotDate": "2026-06-08",
@@ -928,11 +928,11 @@
         "confidence": 33
       },
       "actual": {
-        "afai": 0.08,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0.02
     },
     {
       "snapshotDate": "2026-06-08",
@@ -996,11 +996,11 @@
         "confidence": 33
       },
       "actual": {
-        "afai": 0.08,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0.02
     },
     {
       "snapshotDate": "2026-06-08",
@@ -1030,11 +1030,11 @@
         "confidence": 43
       },
       "actual": {
-        "afai": 0.09,
+        "afai": 0.1,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.16
+      "afaiError": 0.15
     },
     {
       "snapshotDate": "2026-06-08",
@@ -1166,11 +1166,11 @@
         "confidence": 43
       },
       "actual": {
-        "afai": 0.1,
+        "afai": 0.11,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.09
+      "afaiError": 0.08
     },
     {
       "snapshotDate": "2026-06-08",
@@ -1523,11 +1523,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.08,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.24
+      "afaiError": 0.23
     },
     {
       "snapshotDate": "2026-06-09",
@@ -1540,11 +1540,11 @@
         "confidence": 46
       },
       "actual": {
-        "afai": 0.08,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.13
+      "afaiError": 0.12
     },
     {
       "snapshotDate": "2026-06-09",
@@ -1557,11 +1557,11 @@
         "confidence": 46
       },
       "actual": {
-        "afai": 0.08,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.14
+      "afaiError": 0.13
     },
     {
       "snapshotDate": "2026-06-09",
@@ -1591,11 +1591,11 @@
         "confidence": 46
       },
       "actual": {
-        "afai": 0.08,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.14
+      "afaiError": 0.13
     },
     {
       "snapshotDate": "2026-06-09",
@@ -1608,11 +1608,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.09,
+        "afai": 0.1,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.22
+      "afaiError": 0.21
     },
     {
       "snapshotDate": "2026-06-09",
@@ -1676,11 +1676,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.1,
+        "afai": 0.11,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.29
+      "afaiError": 0.28
     },
     {
       "snapshotDate": "2026-06-09",
