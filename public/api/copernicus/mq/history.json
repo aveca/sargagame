@@ -1,0 +1,275 @@
+{
+  "history": [
+    {
+      "date": "2026-06-10",
+      "levels": [
+        {
+          "id": "mq001",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "mq002",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "mq003",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "mq004",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "mq005",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "mq006",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "mq007",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "mq008",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "mq009",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "mq010",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "mq011",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "mq012",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "mq013",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "mq014",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "mq015",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "mq016",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "mq017",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "mq019",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "mq020",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "mq021",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "mq022",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "mq023",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "mq024",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "mq025",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "mq026",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "mq027",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "mq028",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "mq029",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "mq030",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "mq032",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "mq033",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "mq034",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "mq035",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "mq036",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "mq037",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "mq038",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "mq039",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "mq041",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "mq042",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "mq044",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "mq046",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "mq047",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "mq049",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "mq050",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "mq051",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "mq053",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "mq055",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "mq057",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "mq060",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "mq062",
+          "afai": 0.19,
+          "status": "moderate"
+        },
+        {
+          "id": "mq063",
+          "afai": 0.2,
+          "status": "moderate"
+        },
+        {
+          "id": "mq066",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "mq067",
+          "afai": 0.07,
+          "status": "clean"
+        }
+      ]
+    }
+  ],
+  "changes": []
+}
