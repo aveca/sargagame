@@ -881,17 +881,19 @@ function cleanBouncedEmails() {
   var emailSheet = ss.getSheetByName('emails')
   if (!emailSheet) return { removed: 0, error: 'no emails sheet' }
 
-  // Known bounces (hardcoded + from email_events)
+  // Known bounces (RGPD : hashes SHA-256 tronqués 128 bits — même normalisation
+  // trim+lowercase que scripts/automation/lib/email-hash.cjs. Jamais d'email en
+  // clair dans ce fichier : il est versionné dans un repo public.)
   var bouncedSet = {}
-  var knownBounces = [
-    '***RGPD-PURGE***',
-    '***RGPD-PURGE***',
-    '***RGPD-PURGE***',
-    '***RGPD-PURGE***',
-    '***RGPD-PURGE***',
-    '***RGPD-PURGE***'
+  var knownBouncedHashes = [
+    '3f22dc88a9e9ef4414cfea7861679149',
+    'dfa7d2ff2124511a5b8363c2ea2809cc',
+    'a9bdfca326f8ec46cf546d060c288c7f',
+    '74a11ccafa01f9c99e5e02a6036ad325',
+    '6035b428c8ff3e48e16c99e93960f420',
+    'd971f3fdbd135ef4df1d7e90fd58602c'
   ]
-  for (var b = 0; b < knownBounces.length; b++) bouncedSet[knownBounces[b].toLowerCase()] = true
+  for (var b = 0; b < knownBouncedHashes.length; b++) bouncedSet[knownBouncedHashes[b]] = true
 
   // Also check email_events for bounced
   var evSheet = ss.getSheetByName('email_events')
@@ -899,7 +901,7 @@ function cleanBouncedEmails() {
     var evData = evSheet.getDataRange().getValues()
     for (var e = 1; e < evData.length; e++) {
       if ((evData[e][1] || '').indexOf('bounced') >= 0 && evData[e][3]) {
-        bouncedSet[evData[e][3].toString().toLowerCase()] = true
+        bouncedSet[emailHash_(evData[e][3])] = true
       }
     }
   }
@@ -909,11 +911,27 @@ function cleanBouncedEmails() {
   var removed = 0
   for (var i = data.length - 1; i >= 1; i--) {
     var email = (data[i][1] || '').toString().toLowerCase()
-    if (bouncedSet[email]) {
+    if (email && bouncedSet[emailHash_(email)]) {
       emailSheet.deleteRow(i + 1) // +1 because rows are 1-indexed
       removed++
     }
   }
 
   return { removed: removed, bounced_total: Object.keys(bouncedSet).length, date: new Date().toISOString() }
+}
+
+// RGPD : hash SHA-256 tronqué 128 bits d'un email (trim+lowercase), aligné sur
+// scripts/automation/lib/email-hash.cjs pour que les sets soient comparables.
+function emailHash_(email) {
+  var bytes = Utilities.computeDigest(
+    Utilities.DigestAlgorithm.SHA_256,
+    String(email).trim().toLowerCase(),
+    Utilities.Charset.UTF_8
+  )
+  var hex = ''
+  for (var i = 0; i < bytes.length; i++) {
+    var v = (bytes[i] + 256) % 256
+    hex += (v < 16 ? '0' : '') + v.toString(16)
+  }
+  return hex.slice(0, 32)
 }
