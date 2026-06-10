@@ -25,18 +25,21 @@
 - **IndexNow** 5 domaines (202), script généralisé. Sitemaps/robots vérifiés sur les 3 nouveaux sites.
 - **Communauté MQ relancée** : fb-scrape→analyze→to-reports → 3 plages, committé.
 
+## ✅ Provisioning outils — FAIT cette session (via le Chrome de l'user, MCP Claude in Chrome)
+
+- **GSC** : 3 propriétés URL-prefix vérifiées (token FILE uploadé FTPS + validation auto). Sitemaps soumis. `provision-gsc.yml` opérationnel (re-dispatchable).
+- **GA4** : SA `seo-automation` passé **Éditeur** au compte 276662454 → `provision-ga4.yml` a créé les 3 propriétés + streams : puntacana **G-ZSPG79DBQB**, florida **G-3LYNDLV1VH**, rivieramaya **G-YHCQGRPG8G**.
+- **Clarity** : 3 projets créés : puntacana **x4orv6qepl**, florida **x4ov7qlguf**, rivieramaya **x4ox737k79**.
+- IDs injectés dans `regions/*.json`, build PC vérifié (GA4/Clarity dédiés présents, zéro fuite MQ), MQ byte-identique (215 HTML hash-only, 0 diff contenu), SW v27, poussé (c4ceac4 → rebuild+redeploy auto des 3 régions avec analytics actifs).
+
 ## ⚠️ À FAIRE (ordre)
 
-1. **2 clics humains Google, puis tout est automatique** :
-   - Enable **Site Verification API** : https://console.developers.google.com/apis/api/siteverification.googleapis.com/overview?project=48071671409
-   - GA4 Admin → compte « comptegoogleanalytics » (276662454) → Account Access Management → passer le service account en **Editor**.
-   - Puis : `gh workflow run provision-gsc.yml` + `gh workflow run provision-ga4.yml` → GSC vérifié + sitemaps soumis + propriétés GA4 créées (le run imprime les G-XXXX). Reporter les G-XXXX dans `regions/*.json` (`ga4Id`), bump SW (v26→v27), push (= rebuild auto).
-2. ✅ FAIT — **carte MQ verte VÉRIFIÉE en prod** (10/10 clean, mémoire=0, run 27251426407 success). Demander à l'user un hard-refresh (SW **v26**) pour confirmer les fixes carte/clics.
-3. ✅ FAIT — AutoSSL émis sur cancun+miami (HTTPS propre vérifié ~04h UTC, tulum 301 OK). Head ES (« Sargazo en Riviera Maya Hoy ») shippé pour cancun — vérifier en prod après le run final.
-4. **Réconciliation webhook J+1** (2026-06-11).
-5. **FB quotidien** : re-run `fb-find-groups.cjs --dry` (voir approbations passées member), poster via `fb-post-groups.cjs` (lit le dernier `marketing/fb-posts-*.json` — en créer un frais avec les données du jour), 2e vague joins (`Monitoreo de sargazo Punta Cana` 26K, Hard Rock 22K, RIU Palace…). ⚠️ 1 seul Edge sur `.fb-session-edge/` à la fois.
-6. **OneSignal (3 apps) + Clarity (3 projets)** : pas d'API de création — login user dans la fenêtre Playwright (OneSignal accepte aussi une clé Org API si l'user la colle).
-7. Contenu région-aware (content-generation EN/ES) + i18n restant (~188 ternaires sans ES) + sales tax US (`automatic_tax` OFF partout).
+1. **Vérifier en prod après le run analytics** : GA4 G-ZSPG79DBQB + Clarity x4orv6qepl dans le HTML de sargassumpuntacana.com ; head ES sur sargassumcancun.com ; carte MQ verte (hard-refresh SW **v27**).
+2. **OneSignal (3 apps)** : seul outil restant — pas d'API de création, login user dans le Chrome piloté (remplacer `onesignalAppId: TBD` dans les 3 configs, rebuild). Resend : nouvelles régions routées via sender MQ (fait, plan free 1 domaine).
+3. **Réconciliation webhook J+1** (2026-06-11) — toujours 0 paiement USD.
+4. **SEO = le vrai moteur USD** : GSC vient de démarrer l'horloge (sitemaps soumis aujourd'hui). Suivre l'indexation sous 1-2 sem. C'est le canal scalable, vs FB qui ne fait que semer.
+5. **FB = canal d'amorçage léger, PAS la priorité** (cf. data : blitz avril = +4 payants/10j mais flat +1 sur 47j ensuite ; les groupes resort sont promo-hostiles, « composer not found » = modération). 2 membres (Punta Cana Travel 193K, Tips 2026), 1 post live, 8 joins en attente. Quand approuvés → `fb-post-groups.cjs` (Chrome maintenant, pas Edge — scripts switchés). 2e vague : Monitoreo sargazo PC 26K, Hard Rock 22K. ⚠️ **session FB Chrome à re-logger 1× : `.fb-session-chrome/` neuf** (scripts basculés d'Edge vers Chrome à ta demande).
+6. Contenu région-aware (content-generation EN/ES) + i18n restant (~188 ternaires sans ES) + sales tax US (`automatic_tax` OFF partout).
 
 ## Notes
 - ⚠️ Navigateur : le MCP Playwright pilote SA PROPRE fenêtre — le Chrome normal de l'user y est invisible. L'user tape ses creds dans la fenêtre pilotée (pattern validé : Stripe, Namecheap).
