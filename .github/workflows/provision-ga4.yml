@@ -1,0 +1,31 @@
+# Création GA4 (propriétés + web streams) des nouvelles régions via Admin API.
+# workflow_dispatch uniquement — one-shot outillage, pas de cron/notif/retry.
+name: Provision GA4 (new regions)
+
+on:
+  workflow_dispatch:
+    inputs:
+      regions:
+        description: "Régions séparées par des espaces (défaut: puntacana florida rivieramaya)"
+        required: false
+        default: "puntacana florida rivieramaya"
+
+permissions:
+  contents: read
+
+jobs:
+  provision:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm ci
+      - name: Provision GA4
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GA4_ACCOUNT: ${{ secrets.GA4_ACCOUNT }}
+        run: node scripts/automation/provision-ga4.cjs ${{ inputs.regions }}
