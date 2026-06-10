@@ -275,26 +275,43 @@ async function fetchErddapGrid1D(region) {
 function compute1DCorrection(beach, grid7D, grid1D) {
   if (!grid1D || !grid1D.points || grid1D.points.length === 0) return 0
   if (!grid7D || !grid7D.points || grid7D.points.length === 0) return 0
+  // Taille d'echantillon 1D minimale pour une correction a pleine force.
+  // Pourquoi : le 2026-06-09, la grille 1D MQ n'avait que 58 pixels valides
+  // sur toute la boite — chaque plage n'en attrapait que ~8 en zone nearby
+  // (30 km), dont 4 satures au plafond capteur (raw 4e-3). avg1D≈0.29 vs
+  // avg7D≈0.07 → correction +0.15 (le cap) appliquee partout : 9 plages ont
+  // flippe clean→moderate alors que la base 7D (500-600 pixels/plage) disait
+  // "propre". On pondere donc la correction par n1D/MIN_1D_SAMPLE : 8 pixels
+  // bruites ne peuvent plus basculer toute l'ile.
+  // NOTE : ce fix ne touche PAS aux seuils (0.15/0.40), ni a normalizeAfai,
+  // ni au blend 70/30 — et n'ajoute AUCUN floor (interdit, cf feedback
+  // forecast-floor-ban : ne JAMAIS re-ajouter de floor atlantic).
+  const MIN_1D_SAMPLE = 20
   // Extract AFAI from both grids using nearby zone only (0-30km)
+  // Retourne aussi n = nombre de pixels valides utilises (taille d'echantillon)
   function nearbyAvg(grid) {
-    let sumW = 0, sumV = 0
+    let sumW = 0, sumV = 0, n = 0
     for (const p of grid.points) {
       if (p.AFAI === null || p.AFAI === undefined) continue
       const dist = haversineKm(beach.lat, beach.lng, p.latitude, p.longitude)
       if (dist > NEARBY_RADIUS_KM) continue
       const w = 1 / (1 + dist)
-      sumW += w; sumV += w * normalizeAfai(p.AFAI)
+      sumW += w; sumV += w * normalizeAfai(p.AFAI); n++
     }
-    return sumW > 0 ? sumV / sumW : null
+    return { avg: sumW > 0 ? sumV / sumW : null, n }
   }
-  const avg7D = nearbyAvg(grid7D)
-  const avg1D = nearbyAvg(grid1D)
+  const { avg: avg7D } = nearbyAvg(grid7D)
+  const { avg: avg1D, n: n1D } = nearbyAvg(grid1D)
   if (avg7D === null || avg1D === null) return 0
   const diff = avg1D - avg7D
   // Only apply correction if the difference is significant (>0.10)
   if (Math.abs(diff) < 0.10) return 0
   // Cap correction to prevent wild swings: max ±0.15
-  return Math.max(-0.15, Math.min(0.15, diff * 0.7))
+  const cappedCorr = Math.max(-0.15, Math.min(0.15, diff * 0.7))
+  // Ponderation par taille d'echantillon, appliquee APRES le cap, symetrique
+  // (attenue aussi les corrections negatives) : peu de pixels = peu de confiance.
+  const factor = Math.min(1, n1D / MIN_1D_SAMPLE)
+  return cappedCorr * factor
 }
 
 /**
