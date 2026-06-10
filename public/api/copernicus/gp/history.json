@@ -55,12 +55,12 @@
         },
         {
           "id": "gp012",
-          "afai": 0.1,
+          "afai": 0.09,
           "status": "clean"
         },
         {
           "id": "gp013",
-          "afai": 0.1,
+          "afai": 0.09,
           "status": "clean"
         },
         {
@@ -275,7 +275,7 @@
         },
         {
           "id": "gp069",
-          "afai": 0.08,
+          "afai": 0.09,
           "status": "clean"
         },
         {
@@ -285,7 +285,7 @@
         },
         {
           "id": "gp072",
-          "afai": 0.09,
+          "afai": 0.07,
           "status": "clean"
         },
         {
