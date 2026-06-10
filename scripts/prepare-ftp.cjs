@@ -1,8 +1,17 @@
 /**
- * Copie dist/ vers martinique-ftp/ et guadeloupe-ftp/ avec README pour upload FTP
+ * Copie dist/ vers les dossiers FTP par région (moteur regions/).
+ *
+ * Deux modes selon la région de build (env VITE_REGION/REGION, défaut mq) :
+ * - mq/gp (build partagé historique) : produit martinique-ftp/ ET guadeloupe-ftp/
+ *   avec README pour upload FTP — sortie byte-identique à l'ancien script.
+ * - nouvelle région (ex: VITE_REGION=puntacana) : produit UNIQUEMENT
+ *   <region.ftpDir>/ depuis dist/, sans aucun artefact MQ/GP (sitemaps,
+ *   fichiers de vérification Google/Bing, images sociales, routes SEO des
+ *   autres domaines, api/stripe-config.php).
  */
 const fs = require('fs')
 const path = require('path')
+const { getAllRegions, getRegion, getBuildRegion } = require('../regions/index.cjs')
 
 const root = path.join(__dirname, '..')
 const dist = path.join(root, 'dist')
@@ -12,16 +21,26 @@ if (!fs.existsSync(dist)) {
   process.exit(1)
 }
 
-// Build per-island slug sets so each FTP folder only ships the beaches that
-// actually belong to its domain. Without this, both martinique-ftp and
-// guadeloupe-ftp end up with all 136 beach pages → cross-domain duplicate
-// content → Google flags ~90% of URLs as "Discovered, currently not indexed".
+// Build per-region slug sets so each FTP folder only ships the beaches that
+// actually belong to its domain. Without this, every FTP folder would ship
+// all the beach pages → cross-domain duplicate content → Google flags ~90%
+// of URLs as "Discovered, currently not indexed".
 const slugify = (n) => n.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 const BEACHES_LIST = JSON.parse(fs.readFileSync(path.join(root, 'public/data/beaches-list.json'), 'utf-8'))
-const ISLAND_SLUGS = {
-  'martinique-ftp': new Set(BEACHES_LIST.filter(b => b.island === 'mq').map(b => slugify(b.name))),
-  'guadeloupe-ftp': new Set(BEACHES_LIST.filter(b => b.island === 'gp').map(b => slugify(b.name))),
+
+// Slugs des plages d'une région : inline dans regions/<id>.json (nouvelles
+// régions) ou depuis public/data/beaches-list.json filtré par island (mq/gp).
+function beachSlugsFor(region) {
+  const island = (region.beachFilter && region.beachFilter.island) || region.id
+  const list = Array.isArray(region.beaches) && region.beaches.length
+    ? region.beaches
+    : BEACHES_LIST.filter(b => b.island === island)
+  return new Set(list.map(b => slugify(b.name)))
 }
+
+// Régions historiques produites ensemble par le build partagé (défaut) — leur
+// sortie doit rester byte-identique à l'ancien script mono-MQ/GP.
+const SHARED_LEGACY_IDS = ['mq', 'gp']
 
 // Names that must never be copied into either FTP folder. _gp/ holds the
 // GP-flavored mirror of pages whose vite generator runs in a GP→MQ loop
@@ -29,13 +48,16 @@ const ISLAND_SLUGS = {
 // so the GP build ends up with GP-correct beach lists, not MQ ones.
 const COPY_SKIP_TOP = new Set(['_gp'])
 
-function copyRecursive(src, dest, isTopLevel = false) {
+// skipRel = Set de chemins relatifs POSIX (fichiers ou dossiers) à ne pas
+// copier. Un nom simple ('_gp') ne matche qu'à la racine, comme avant.
+function copyRecursive(src, dest, skipRel = null, rel = '') {
   const stat = fs.statSync(src)
   if (stat.isDirectory()) {
     fs.mkdirSync(dest, { recursive: true })
     for (const name of fs.readdirSync(src)) {
-      if (isTopLevel && COPY_SKIP_TOP.has(name)) continue
-      copyRecursive(path.join(src, name), path.join(dest, name))
+      const childRel = rel ? `${rel}/${name}` : name
+      if (skipRel && skipRel.has(childRel)) continue
+      copyRecursive(path.join(src, name), path.join(dest, name), skipRel, childRel)
     }
   } else {
     fs.mkdirSync(path.dirname(dest), { recursive: true })
@@ -63,32 +85,28 @@ function overlayDir(srcDir, destDir) {
   return count
 }
 
-// OneSignal App IDs par site
-const ONESIGNAL_APP_IDS = {
-  martinique: 'd628363e-efc7-4d27-8d1b-fa25fe3bacc9',
-  guadeloupe: 'f9adee80-8909-48d3-8517-95f9f311d164',
-}
+// App ID OneSignal placeholder du build, remplacé par celui de chaque région
 const OLD_ONESIGNAL_APP_ID = '4280dcab-fc43-415d-a9cd-a3da8cf601f1'
 
-const readmes = [
-  {
-    dir: 'martinique-ftp',
-    title: 'Martinique',
-    domain: 'sargasses-martinique.com',
-    onesignalAppId: ONESIGNAL_APP_IDS.martinique,
-  },
-  {
-    dir: 'guadeloupe-ftp',
-    title: 'Guadeloupe',
-    domain: 'sargasses-guadeloupe.com',
-    onesignalAppId: ONESIGNAL_APP_IDS.guadeloupe,
-  },
-]
+// ── Dispatch selon la région de build ──────────────────────────────────────
+// VITE_REGION absent ou mq/gp → build partagé historique (les deux îles).
+// Autre région → build mono-région (prepareNewRegion, bas de fichier).
+const buildRegion = getBuildRegion()
+if (!SHARED_LEGACY_IDS.includes(buildRegion.id)) {
+  prepareNewRegion(buildRegion)
+  return // return top-niveau CJS : on ne touche pas aux dossiers MQ/GP
+}
 
-for (const { dir, title, domain, onesignalAppId } of readmes) {
+const legacyRegions = SHARED_LEGACY_IDS.map((id) => getRegion(id))
+
+for (const region of legacyRegions) {
+  const dir = region.ftpDir
+  const title = region.name
+  const domain = region.domain
+  const onesignalAppId = region.onesignalAppId
   const out = path.join(root, dir)
   if (fs.existsSync(out)) fs.rmSync(out, { recursive: true })
-  copyRecursive(dist, out, true)
+  copyRecursive(dist, out, COPY_SKIP_TOP)
 
   // GP-mirror overlay is deferred until the END of this iteration (after all
   // content patching) — see comment near the OK log. If we stamped here, the
@@ -101,7 +119,7 @@ for (const { dir, title, domain, onesignalAppId } of readmes) {
   // Keeping only the island's own articles also avoids duplicate-content risk.
   const articlesDir = path.join(out, 'articles')
   const articlesIndexPath = path.join(articlesDir, 'index.json')
-  const ownIsland = dir === 'martinique-ftp' ? 'mq' : 'gp'
+  const ownIsland = region.beachFilter.island
   if (fs.existsSync(articlesIndexPath)) {
     try {
       const idx = JSON.parse(fs.readFileSync(articlesIndexPath, 'utf-8'))
@@ -125,7 +143,7 @@ for (const { dir, title, domain, onesignalAppId } of readmes) {
   // folders ship the full set and Google sees the same beach page on both
   // domains → duplicate content → "Discovered, currently not indexed".
   const plagesDir = path.join(out, 'plages')
-  const islandSlugs = ISLAND_SLUGS[dir]
+  const islandSlugs = beachSlugsFor(region)
   if (islandSlugs && fs.existsSync(plagesDir)) {
     let removed = 0
     for (const entry of fs.readdirSync(plagesDir)) {
@@ -160,7 +178,7 @@ for (const { dir, title, domain, onesignalAppId } of readmes) {
   }
 
   // Sitemap + robots par domaine
-  const sitemapName = dir === 'martinique-ftp' ? 'sitemap-martinique.xml' : 'sitemap-guadeloupe.xml'
+  const sitemapName = `sitemap-${slugify(title)}.xml`
   const sitemapSrc = path.join(out, sitemapName)
   const sitemapDest = path.join(out, 'sitemap.xml')
   if (fs.existsSync(sitemapSrc)) {
@@ -180,7 +198,7 @@ Sitemap: https://${domain}/sitemap.xml
   // The index.html is fully rewritten below; this patches every OTHER html file
   // so that subpages (carte-sargasses, previsions, alertes, en/, editorial, plages/*)
   // all carry correct GP branding instead of Martinique leftovers.
-  if (dir === 'guadeloupe-ftp') {
+  if (region.id === 'gp') {
     function collectHtmlFiles(dirPath) {
       const results = []
       for (const entry of fs.readdirSync(dirPath)) {
@@ -273,23 +291,101 @@ Sitemap: https://${domain}/sitemap.xml
     console.log(`   → ${patchedCount} fichiers HTML patchés SEO/analytics/geo pour Guadeloupe`)
   }
 
-  // Index SEO spécifique Guadeloupe — parity complète avec MQ (PWA, fonts, lazy loaders, SW, perf)
-  if (dir === 'guadeloupe-ftp') {
-    const distIndex = path.join(dist, 'index.html')
-    let scriptSrc = '/assets/index.js'
-    let cssSrc = ''
-    let modulePreloads = ''
-    if (fs.existsSync(distIndex)) {
-      const html = fs.readFileSync(distIndex, 'utf-8')
-      const jsMatch = html.match(/type="module"[^>]+src="([^"]+\.js)"/)
-      if (jsMatch) scriptSrc = jsMatch[1]
-      const cssMatch = html.match(/href="([^"]+\.css)"/)
-      if (cssMatch) cssSrc = cssMatch[1]
-      // Extract modulepreload hints (React, Leaflet chunks)
-      const preloadMatches = html.matchAll(/<link rel="modulepreload"[^>]+>/g)
-      for (const m of preloadMatches) modulePreloads += '\n  ' + m[0]
-    }
-    const gpIndex = `<!DOCTYPE html>
+  // Index SEO spécifique : seul GP a un template bespoke — voir writeRegionIndex().
+  if (region.id === 'gp') writeRegionIndex(region, out)
+  const readme = `# Upload FTP ${title} — Sargasses
+
+Contenu prêt à envoyer sur le serveur FTP (hébergement ${title}).
+
+⚠️ IMPORTANT — Pour avoir la même version qu'en local :
+1. En local : lance "npm run build" puis "node scripts/prepare-ftp.cjs" (ou "npm run martinique").
+2. Envoie sur le FTP **tout le contenu** du dossier ${dir}/ (ce dossier), en remplaçant l'existant.
+3. N'envoie PAS une ancienne archive .zip : elle ne contient pas les derniers changements (liens, mentions légales, etc.). Régénère toujours le dossier avec "npm run martinique" puis envoie le dossier frais.
+
+## Upload
+
+1. Connecte-toi en FTP à ton hébergeur (ex. Namecheap, o2switch, etc.).
+2. Va à la racine du site (souvent public_html ou www).
+3. Envoie **tous les fichiers et dossiers** de ce dossier :
+   - index.html (à la racine)
+   - sitemap.xml, robots.txt, .htaccess (SEO et redirections)
+   - dossier assets/
+   - dossier en/ (version anglaise)
+   - dossier carte-sargasses/, previsions/
+   - dossier api/ (données sargasses + prévisions 7j)
+   - mentions-legales.html, confidentialite.html, 404.html
+   - neptunes_fury.html (si présent)
+   - BUILD.txt (optionnel, pour vérifier la date de build sur le serveur)
+
+Ne pas envoyer ce README (LISEZMOI-FTP.txt) si ton FTP n'accepte que les fichiers du site.
+
+## Contenu
+
+- App Sargasses (Martinique & Guadeloupe) : plages, prévisions 7 jours, dérive.
+- Données statiques : api/copernicus/sargassum.json (niveaux + batch hebdo).
+- Jeu Neptune's Fury : neptunes_fury.html.
+
+## Après mise en ligne
+
+Ouvre ton domaine (ex. ${domain}) : la page d'accueil doit s'afficher. Les données sargasses et prévisions sont chargées depuis le fichier JSON (pas de serveur Node nécessaire).
+`
+  fs.writeFileSync(path.join(out, 'LISEZMOI-FTP.txt'), readme.replace(/\n/g, '\r\n'), 'utf-8')
+  // Stamp GP-mirror files LAST — after the bulk URL swap and all per-island
+  // patching — so the cross-island absolute URLs in editorials survive.
+  if (region.id === 'gp') {
+    const gpMirror = path.join(dist, '_gp')
+    const overlaid = overlayDir(gpMirror, out)
+    if (overlaid > 0) console.log(`   → ${overlaid} fichiers GP-mirror overlaid sur guadeloupe-ftp/ (post-patch)`)
+  }
+  console.log(`OK: ${dir}/ créé (contenu de dist/ + LISEZMOI-FTP.txt)`)
+}
+
+// Fichier de build pour vérifier que le FTP contient bien cette version
+const buildInfo = `Build: ${new Date().toISOString()}
+Généré par: npm run build && node scripts/prepare-ftp.cjs
+À envoyer: tout le contenu de ce dossier sur le FTP (remplacer l'existant).
+Ne pas utiliser une ancienne .zip : régénérer avec "npm run martinique" ou "npm run daily" puis envoyer le dossier frais.
+`
+for (const region of legacyRegions) {
+  const out = path.join(root, region.ftpDir)
+  fs.writeFileSync(path.join(out, 'BUILD.txt'), buildInfo, 'utf-8')
+}
+
+console.log('')
+console.log('   → Martinique : envoie le contenu de martinique-ftp/ sur le FTP (pas une vieille zip).')
+console.log('   → Guadeloupe : envoie le contenu de guadeloupe-ftp/ sur le FTP (pas une vieille zip).')
+console.log('   → Si le site en ligne ne change pas : vérifie que tu envoies bien le dossier frais après "npm run martinique".')
+
+
+// ─────────────────────────────────────────────────────────────────────────
+// Fonctions par région (hoistées — utilisées par le dispatch plus haut)
+// ─────────────────────────────────────────────────────────────────────────
+
+/**
+ * Réécrit l'index.html SEO d'une région dans son dossier FTP.
+ * Extrait du bloc GP historique : le build partagé sort un index MQ, GP le
+ * réécrit entièrement (SEO + PWA + perf parity). Les autres régions gardent
+ * l'index.html région-aware produit par le build vite — n'ajouter un template
+ * ici que si une région a besoin d'un index bespoke.
+ */
+function writeRegionIndex(region, out) {
+  if (region.id !== 'gp') return false
+  const onesignalAppId = region.onesignalAppId
+  const distIndex = path.join(dist, 'index.html')
+  let scriptSrc = '/assets/index.js'
+  let cssSrc = ''
+  let modulePreloads = ''
+  if (fs.existsSync(distIndex)) {
+    const html = fs.readFileSync(distIndex, 'utf-8')
+    const jsMatch = html.match(/type="module"[^>]+src="([^"]+\.js)"/)
+    if (jsMatch) scriptSrc = jsMatch[1]
+    const cssMatch = html.match(/href="([^"]+\.css)"/)
+    if (cssMatch) cssSrc = cssMatch[1]
+    // Extract modulepreload hints (React, Leaflet chunks)
+    const preloadMatches = html.matchAll(/<link rel="modulepreload"[^>]+>/g)
+    for (const m of preloadMatches) modulePreloads += '\n  ' + m[0]
+  }
+  const gpIndex = `<!DOCTYPE html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
@@ -488,68 +584,212 @@ Sitemap: https://${domain}/sitemap.xml
   </body>
 </html>
 `
-    fs.writeFileSync(path.join(out, 'index.html'), gpIndex, 'utf-8')
-    console.log(`   → index.html Guadeloupe (SEO + PWA + perf parity) écrit avec script ${scriptSrc}`)
+  fs.writeFileSync(path.join(out, 'index.html'), gpIndex, 'utf-8')
+  console.log(`   → index.html Guadeloupe (SEO + PWA + perf parity) écrit avec script ${scriptSrc}`)
+  return true
+}
+
+/**
+ * Build mono-région (VITE_REGION hors mq/gp), ex: VITE_REGION=puntacana.
+ * Produit <region.ftpDir>/ depuis dist/ — région-aware : aucun artefact MQ/GP
+ * ne doit atterrir ici (sitemaps MQ/GP, vérifications Google/Bing de la
+ * propriété MQ, images sociales/îles mq-gp, routes SEO des autres domaines,
+ * _gp/, api/stripe-config.php). Le contenu HTML lui-même vient du build vite
+ * région-aware (Phase 1a) ; ici on ne gère que la tuyauterie fichiers.
+ */
+function prepareNewRegion(region) {
+  const dir = region.ftpDir
+  const title = region.name
+  const domain = region.domain
+  const out = path.join(root, dir)
+  if (fs.existsSync(out)) fs.rmSync(out, { recursive: true })
+
+  // Exclusions : fichiers régénérés plus bas + artefacts des autres régions.
+  const skip = new Set([
+    ...COPY_SKIP_TOP,
+    'robots.txt', // régénéré pour region.domain
+    'sitemap.xml', // régénéré minimal (racine seule)
+    '404.html', // régénéré région-aware (celui du build partagé est MQ/GP)
+    'manifest.json', // régénéré région-aware
+    'version.json', // régénéré
+    'api/stripe-config.php', // secrets Stripe — déployé à part (deploy-stripe-config.cjs)
+    '57a712687b6d02295a77188ff76da846.txt', // vérification Google de la propriété MQ
+    'BingSiteAuth.xml', // vérification Bing de la propriété MQ
+  ])
+  for (const other of getAllRegions()) {
+    if (other.id === region.id) continue
+    skip.add(`sitemap-${slugify(other.name)}.xml`)
+    skip.add(`social-facebook-${other.id}.png`)
+    skip.add(`island-${other.id}.svg`)
+    for (const route of Object.values(other.routes || {})) skip.add(route)
   }
-  const readme = `# Upload FTP ${title} — Sargasses
+  copyRecursive(dist, out, skip)
 
-Contenu prêt à envoyer sur le serveur FTP (hébergement ${title}).
+  // Articles éditoriaux : ne garder que ceux de la région (mêmes raisons que
+  // le filtre cross-island du build partagé : canonical + duplicate content).
+  const articlesDir = path.join(out, 'articles')
+  const articlesIndexPath = path.join(articlesDir, 'index.json')
+  const ownIsland = (region.beachFilter && region.beachFilter.island) || region.id
+  if (fs.existsSync(articlesIndexPath)) {
+    try {
+      const idx = JSON.parse(fs.readFileSync(articlesIndexPath, 'utf-8'))
+      let removed = 0
+      const kept = []
+      for (const art of idx.articles || []) {
+        if (art.island === ownIsland) { kept.push(art); continue }
+        const artDir = path.join(articlesDir, art.slug)
+        if (fs.existsSync(artDir)) {
+          fs.rmSync(artDir, { recursive: true })
+          removed++
+        }
+      }
+      fs.writeFileSync(articlesIndexPath, JSON.stringify({ ...idx, articles: kept }, null, 2))
+      if (removed > 0) console.log(`   → articles hors-région supprimés (${title}): ${removed}`)
+    } catch (e) { console.warn(`   → articles filter skipped (${title}):`, e.message) }
+  }
 
-⚠️ IMPORTANT — Pour avoir la même version qu'en local :
-1. En local : lance "npm run build" puis "node scripts/prepare-ftp.cjs" (ou "npm run martinique").
+  // Pages plages : ne garder que les plages de la région.
+  const plagesDir = path.join(out, 'plages')
+  const regionSlugs = beachSlugsFor(region)
+  if (fs.existsSync(plagesDir)) {
+    let removed = 0
+    for (const entry of fs.readdirSync(plagesDir)) {
+      const full = path.join(plagesDir, entry)
+      if (!fs.statSync(full).isDirectory()) continue // keep plages/index.html
+      if (!regionSlugs.has(entry)) {
+        fs.rmSync(full, { recursive: true })
+        removed++
+      }
+    }
+    const kept = fs.readdirSync(plagesDir).filter(e => fs.statSync(path.join(plagesDir, e)).isDirectory()).length
+    console.log(`   → plages filtrées (${title}): ${kept} gardées, ${removed} supprimées`)
+  }
+
+  // OneSignal : même patch que le build partagé, avec l'app ID de la région.
+  const onesignalAppId = region.onesignalAppId || ''
+  if (!onesignalAppId || onesignalAppId.startsWith('TBD')) {
+    console.warn(`   ⚠ onesignalAppId non provisionné pour ${region.id} — placeholder laissé tel quel`)
+  } else {
+    const filesToPatch = [
+      'index.html',
+      'sarg_carte_satellite_app.html',
+      'sarg_carte_satellite_standalone.html',
+      'config/push.js',
+    ]
+    for (const relPath of filesToPatch) {
+      const filePath = path.join(out, relPath)
+      if (fs.existsSync(filePath)) {
+        let content = fs.readFileSync(filePath, 'utf-8')
+        if (content.includes(OLD_ONESIGNAL_APP_ID)) {
+          content = content.replace(new RegExp(OLD_ONESIGNAL_APP_ID, 'g'), onesignalAppId)
+          fs.writeFileSync(filePath, content, 'utf-8')
+          console.log(`   → OneSignal appId patché dans ${relPath} (${title})`)
+        }
+      }
+    }
+  }
+
+  // robots.txt pour le domaine de la région
+  const robotsTxt = `User-agent: *
+Allow: /
+Disallow: /neptunes_fury.html
+
+Sitemap: https://${domain}/sitemap.xml
+`
+  fs.writeFileSync(path.join(out, 'robots.txt'), robotsTxt, 'utf-8')
+  console.log(`   → robots.txt (${domain})`)
+
+  // sitemap.xml minimal (racine seule) — les pages internes seront ajoutées
+  // quand le build vite générera les routes de la région (Phase 1a).
+  const today = new Date().toISOString().slice(0, 10)
+  const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://${domain}/</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>
+`
+  fs.writeFileSync(path.join(out, 'sitemap.xml'), sitemapXml, 'utf-8')
+  console.log(`   → sitemap.xml minimal (${domain})`)
+
+  // 404.html région-aware : celui du build partagé est bi-île MQ/GP → on
+  // adapte le nom de site (+ libellés EN si la région n'est pas francophone).
+  const distNotFound = path.join(dist, '404.html')
+  if (fs.existsSync(distNotFound)) {
+    let html = fs.readFileSync(distNotFound, 'utf-8')
+    html = html.replace(/Sargasses Martinique & Guadeloupe/g, `Sargassum ${title}`)
+    if (region.primaryLang !== 'fr') {
+      html = html
+        .replace('<html lang="fr">', `<html lang="${region.primaryLang}">`)
+        .replace(/Page introuvable/g, 'Page not found')
+        .replace('Cette page n’existe pas ou a été déplacée. Retournez à l’accueil pour consulter la carte des sargasses et les prévisions.', 'This page does not exist or has moved. Head back to the homepage for the live sargassum map and forecasts.')
+        .replace(">Retour à l'accueil<", '>Back to home<')
+        .replace('>Carte<', '>Map<')
+        .replace('>Prévisions<', '>Forecast<')
+        .replace('>Mentions légales<', '>Legal<')
+        .replace('>Confidentialité<', '>Privacy<')
+    }
+    fs.writeFileSync(path.join(out, '404.html'), html, 'utf-8')
+    console.log(`   → 404.html région-aware (${title})`)
+  }
+
+  // manifest.json région-aware (base = manifest du build, surcharge branding)
+  const distManifest = path.join(dist, 'manifest.json')
+  if (fs.existsSync(distManifest)) {
+    const base = JSON.parse(fs.readFileSync(distManifest, 'utf-8'))
+    const manifest = {
+      ...base,
+      name: `Sargassum ${title}`,
+      short_name: `Sargassum ${title}`,
+      description: region.primaryLang === 'fr'
+        ? `Carte des sargasses en temps réel. Où se baigner aujourd'hui à ${title}.`
+        : `Live sargassum map and daily beach status for ${title}.`,
+      lang: region.primaryLang || 'en',
+      theme_color: (region.brand && region.brand.primary) || base.theme_color,
+    }
+    fs.writeFileSync(path.join(out, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n', 'utf-8')
+    console.log(`   → manifest.json région-aware (${title})`)
+  }
+
+  // version.json proper (cache-bust client : bump à chaque génération).
+  // sw.js, lui, est copié tel quel depuis dist/ (pas dans le skip set).
+  fs.writeFileSync(path.join(out, 'version.json'), JSON.stringify({ v: `${today}-${region.id}` }) + '\n', 'utf-8')
+  console.log(`   → version.json (${today}-${region.id})`)
+
+  // api/ : mêmes endpoints PHP que MQ/GP, copiés depuis public/api/ —
+  // SAUF stripe-config.php (gitignoré, déployé à part via deploy-stripe-config.cjs).
+  const apiSrc = path.join(root, 'public', 'api')
+  if (fs.existsSync(apiSrc)) {
+    for (const name of fs.readdirSync(apiSrc)) {
+      if (!name.endsWith('.php') || name === 'stripe-config.php') continue
+      fs.mkdirSync(path.join(out, 'api'), { recursive: true })
+      fs.copyFileSync(path.join(apiSrc, name), path.join(out, 'api', name))
+    }
+  }
+  // Ceinture + bretelles : jamais de stripe-config.php dans un dossier FTP neuf.
+  const strayStripeConfig = path.join(out, 'api', 'stripe-config.php')
+  if (fs.existsSync(strayStripeConfig)) fs.rmSync(strayStripeConfig)
+
+  // README + BUILD.txt (mêmes repères que MQ/GP)
+  const readme = `# Upload FTP ${title} — Sargassum
+
+Contenu prêt à envoyer sur le serveur FTP (${domain}).
+
+1. En local : VITE_REGION=${region.id} npm run build puis VITE_REGION=${region.id} node scripts/prepare-ftp.cjs
 2. Envoie sur le FTP **tout le contenu** du dossier ${dir}/ (ce dossier), en remplaçant l'existant.
-3. N'envoie PAS une ancienne archive .zip : elle ne contient pas les derniers changements (liens, mentions légales, etc.). Régénère toujours le dossier avec "npm run martinique" puis envoie le dossier frais.
-
-## Upload
-
-1. Connecte-toi en FTP à ton hébergeur (ex. Namecheap, o2switch, etc.).
-2. Va à la racine du site (souvent public_html ou www).
-3. Envoie **tous les fichiers et dossiers** de ce dossier :
-   - index.html (à la racine)
-   - sitemap.xml, robots.txt, .htaccess (SEO et redirections)
-   - dossier assets/
-   - dossier en/ (version anglaise)
-   - dossier carte-sargasses/, previsions/
-   - dossier api/ (données sargasses + prévisions 7j)
-   - mentions-legales.html, confidentialite.html, 404.html
-   - neptunes_fury.html (si présent)
-   - BUILD.txt (optionnel, pour vérifier la date de build sur le serveur)
-
-Ne pas envoyer ce README (LISEZMOI-FTP.txt) si ton FTP n'accepte que les fichiers du site.
-
-## Contenu
-
-- App Sargasses (Martinique & Guadeloupe) : plages, prévisions 7 jours, dérive.
-- Données statiques : api/copernicus/sargassum.json (niveaux + batch hebdo).
-- Jeu Neptune's Fury : neptunes_fury.html.
-
-## Après mise en ligne
-
-Ouvre ton domaine (ex. ${domain}) : la page d'accueil doit s'afficher. Les données sargasses et prévisions sont chargées depuis le fichier JSON (pas de serveur Node nécessaire).
+3. Config Stripe à part : node scripts/deploy-stripe-config.cjs (jamais via ce dossier).
 `
   fs.writeFileSync(path.join(out, 'LISEZMOI-FTP.txt'), readme.replace(/\n/g, '\r\n'), 'utf-8')
-  // Stamp GP-mirror files LAST — after the bulk URL swap and all per-island
-  // patching — so the cross-island absolute URLs in editorials survive.
-  if (dir === 'guadeloupe-ftp') {
-    const gpMirror = path.join(dist, '_gp')
-    const overlaid = overlayDir(gpMirror, out)
-    if (overlaid > 0) console.log(`   → ${overlaid} fichiers GP-mirror overlaid sur guadeloupe-ftp/ (post-patch)`)
-  }
-  console.log(`OK: ${dir}/ créé (contenu de dist/ + LISEZMOI-FTP.txt)`)
-}
-
-// Fichier de build pour vérifier que le FTP contient bien cette version
-const buildInfo = `Build: ${new Date().toISOString()}
-Généré par: npm run build && node scripts/prepare-ftp.cjs
+  const buildInfo = `Build: ${new Date().toISOString()}
+Généré par: VITE_REGION=${region.id} npm run build && VITE_REGION=${region.id} node scripts/prepare-ftp.cjs
 À envoyer: tout le contenu de ce dossier sur le FTP (remplacer l'existant).
-Ne pas utiliser une ancienne .zip : régénérer avec "npm run martinique" ou "npm run daily" puis envoyer le dossier frais.
 `
-for (const { dir } of readmes) {
-  const out = path.join(root, dir)
   fs.writeFileSync(path.join(out, 'BUILD.txt'), buildInfo, 'utf-8')
-}
 
-console.log('')
-console.log('   → Martinique : envoie le contenu de martinique-ftp/ sur le FTP (pas une vieille zip).')
-console.log('   → Guadeloupe : envoie le contenu de guadeloupe-ftp/ sur le FTP (pas une vieille zip).')
-console.log('   → Si le site en ligne ne change pas : vérifie que tu envoies bien le dossier frais après "npm run martinique".')
+  console.log(`OK: ${dir}/ créé (contenu de dist/ + LISEZMOI-FTP.txt)`)
+  console.log('')
+  console.log(`   → ${title} : envoie le contenu de ${dir}/ sur le FTP (pas une vieille zip).`)
+}

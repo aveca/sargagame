@@ -2,21 +2,25 @@
 /**
  * Manual FTP deploy — emergency path when GH Actions quota is exhausted.
  *
- * Reads creds from env vars (never hardcoded). Uploads martinique-ftp/ then
- * guadeloupe-ftp/ via basic-ftp with secure FTPS.
+ * Reads creds from env vars (never hardcoded). Uploads chaque <region.ftpDir>/
+ * (cibles dérivées du moteur regions/) via basic-ftp with secure FTPS.
  *
  * Shared host drops the FTPS control socket after ~660 STOR commands. To work
  * around it, we upload in chunks: one fresh FTP session per top-level entry
  * (root files as one chunk, then each top-level subdir as its own chunk).
  * The biggest subdir (beaches/) is ~420 files, well under the reset threshold.
  *
- * Required env vars (aliases GitHub Actions acceptés) :
- *   FTP_HOST_MQ | FTP_SERVER_MQ, FTP_USER_MQ | FTP_USERNAME_MQ, FTP_PASS_MQ | FTP_PASSWORD_MQ
- *   idem _GP
+ * Required env vars (aliases GitHub Actions acceptés) — <ID> = id de région en
+ * MAJUSCULES depuis regions/<id>.json (MQ, GP, PUNTACANA, …) :
+ *   FTP_HOST_<ID> | FTP_SERVER_<ID>, FTP_USER_<ID> | FTP_USERNAME_<ID>,
+ *   FTP_PASS_<ID> | FTP_PASSWORD_<ID>
+ *   Host commun : FTP_HOST | FTP_SERVER, utilisé si la région n'a que user/pass.
  * Optional:
- *   FTP_REMOTE_MQ (default "/"), FTP_REMOTE_GP (default "/")
- *   ONLY=mq|gp (skip the other)
+ *   FTP_REMOTE_<ID> (default "/")
+ *   ONLY=<id> (ne déployer que cette région)
  *   SKIP_UNTIL=<name>  (resume: skip chunks alphabetically before this)
+ * Une région sans creds env (ou sans dossier <ftpDir>/) = skip avec warning ;
+ * échec seulement si rien n'est déployé ou si la région ONLY demandée échoue.
  *
  * Le fichier .env à la racine du dépôt est chargé automatiquement (mêmes clés
  * que les secrets GitHub : FTP_SERVER_MQ, FTP_USERNAME_MQ, FTP_PASSWORD_MQ, …).
@@ -26,29 +30,34 @@ const { Client } = require("basic-ftp")
 const path = require("path")
 const fs = require("fs")
 const { loadProjectEnv } = require("./lib/load-project-env.cjs")
+const { getAllRegions } = require("../regions/index.cjs")
 
 loadProjectEnv()
 
-const targets = [
-  {
-    key: "mq",
-    label: "Martinique",
-    host: process.env.FTP_HOST_MQ || process.env.FTP_SERVER_MQ,
-    user: process.env.FTP_USER_MQ || process.env.FTP_USERNAME_MQ,
-    pass: process.env.FTP_PASS_MQ || process.env.FTP_PASSWORD_MQ,
-    remote: process.env.FTP_REMOTE_MQ || "/",
-    local: path.join(__dirname, "..", "martinique-ftp"),
-  },
-  {
-    key: "gp",
-    label: "Guadeloupe",
-    host: process.env.FTP_HOST_GP || process.env.FTP_SERVER_GP,
-    user: process.env.FTP_USER_GP || process.env.FTP_USERNAME_GP,
-    pass: process.env.FTP_PASS_GP || process.env.FTP_PASSWORD_GP,
-    remote: process.env.FTP_REMOTE_GP || "/",
-    local: path.join(__dirname, "..", "guadeloupe-ftp"),
-  },
-]
+const env = (k) => process.env[k]
+
+// Cibles dérivées du moteur regions/ : une région = un dossier <ftpDir>/ → un
+// compte FTP. Conventions env rétro-compatibles MQ/GP (FTP_SERVER_MQ, …) ;
+// nouvelles régions : FTP_HOST_<ID>/FTP_USER_<ID>/FTP_PASS_<ID>, avec fallback
+// sur un host commun (FTP_HOST | FTP_SERVER) si seuls user/pass sont fournis.
+const targets = getAllRegions().map((r) => {
+  const ID = r.id.toUpperCase()
+  const user = env(`FTP_USER_${ID}`) || env(`FTP_USERNAME_${ID}`)
+  const pass = env(`FTP_PASS_${ID}`) || env(`FTP_PASSWORD_${ID}`)
+  const host =
+    env(`FTP_HOST_${ID}`) ||
+    env(`FTP_SERVER_${ID}`) ||
+    (user && pass ? env("FTP_HOST") || env("FTP_SERVER") : undefined)
+  return {
+    key: r.id,
+    label: r.name,
+    host,
+    user,
+    pass,
+    remote: env(`FTP_REMOTE_${ID}`) || "/",
+    local: path.join(__dirname, "..", r.ftpDir),
+  }
+})
 
 async function connect(t) {
   const client = new Client(undefined, 120000)
@@ -97,20 +106,21 @@ async function uploadChunk(t, chunkName, localPath, remotePath, isFile) {
 function ftpHelpLines() {
   return [
     "Définis dans .env (racine du repo) les mêmes noms que les secrets GitHub :",
-    "  FTP_SERVER_MQ, FTP_USERNAME_MQ, FTP_PASSWORD_MQ",
-    "  FTP_SERVER_GP, FTP_USERNAME_GP, FTP_PASSWORD_GP",
-    "(aliases acceptés : FTP_HOST_*, FTP_USER_*, FTP_PASS_*.)",
+    "  FTP_SERVER_<ID>, FTP_USERNAME_<ID>, FTP_PASSWORD_<ID>",
+    "  (<ID> = id de région en MAJUSCULES : MQ, GP, PUNTACANA, …)",
+    "(aliases acceptés : FTP_HOST_*, FTP_USER_*, FTP_PASS_* ; host commun : FTP_HOST.)",
   ].join("\n")
 }
 
 async function deployOne(t) {
   if (!t.host || !t.user || !t.pass) {
-    console.error(`[${t.key}] Identifiants FTP manquants — ignoré.\n${ftpHelpLines()}`)
-    return false
+    const ID = t.key.toUpperCase()
+    console.warn(`[${t.key}] Identifiants FTP manquants (FTP_HOST_${ID}/FTP_USER_${ID}/FTP_PASS_${ID}) — région ignorée.`)
+    return "skipped"
   }
   if (!fs.existsSync(t.local)) {
-    console.error(`[${t.key}] ${t.local} missing — run scripts/prepare-ftp.cjs first`)
-    return false
+    console.warn(`[${t.key}] ${t.local} absent — région ignorée (run scripts/prepare-ftp.cjs first)`)
+    return "skipped"
   }
   console.log(`\n[${t.label}] deploying ${t.local} → ${t.host}`)
   const t0 = Date.now()
@@ -207,20 +217,30 @@ async function main() {
   const only = process.env.ONLY
   const picked = only ? targets.filter(t => t.key === only) : targets
   if (!picked.length) {
-    console.error("No target matched ONLY=" + only)
+    console.error("No target matched ONLY=" + only + " (régions: " + targets.map(t => t.key).join(", ") + ")")
     process.exit(1)
   }
   let ok = true
+  let deployed = 0
   for (const t of picked) {
     try {
       const r = await deployOne(t)
-      if (!r) ok = false
+      if (r === true) deployed++
+      else if (r === "skipped") { if (only) ok = false } // skip toléré sauf région demandée explicitement
+      else ok = false
     } catch (err) {
       console.error(`[${t.label}] FATAL:`, err.message)
       ok = false
     }
   }
+  if (!deployed && ok) {
+    console.error(`Aucune région déployée — aucuns identifiants FTP trouvés.\n${ftpHelpLines()}`)
+    ok = false
+  }
   process.exit(ok ? 0 : 1)
 }
 
-main()
+if (require.main === module) main()
+
+// Export pour outillage/tests : mapping env → cibles sans déclencher d'upload.
+module.exports = { targets, deployOne }
