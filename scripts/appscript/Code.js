@@ -81,6 +81,11 @@ function doPost(e) {
     if (type === 'checkout.session.completed') {
       const session = payload.data ? payload.data.object : payload
       const sheet = getOrCreateSheet('payments', ['date', 'session_id', 'email', 'amount', 'currency', 'status', 'island'])
+      // Colonne 8 'ref' = client_reference_id ("<region>_<plan>_<source>" posé
+      // par stripeUrlWith côté front, forwardé par stripe-webhook.php) —
+      // l'attribution paiement par source/plan. Header posé à la volée car la
+      // sheet existe déjà avec 7 colonnes.
+      if (!sheet.getRange(1, 8).getValue()) sheet.getRange(1, 8).setValue('ref')
       // Deduplicate by session_id
       const data = sheet.getDataRange().getValues()
       const sid = session.id || ''
@@ -93,10 +98,39 @@ function doPost(e) {
           session.amount_total ? (session.amount_total / 100).toFixed(2) : '4.99',
           session.currency || 'eur',
           session.payment_status || 'paid',
-          session.metadata ? session.metadata.island : ''
+          session.metadata ? session.metadata.island : '',
+          session.client_reference_id || ''
         ])
       }
       return jsonResponse({ received: true })
+    }
+
+    // 3b. Cycle de vie abonnements (forwardés par stripe-webhook.php, jusqu'ici
+    // perdus en unknown_type) : renouvellements = vrai MRR, deleted = churn,
+    // failed = dunning. Sans ça, payments (fenêtre 28j) ne voit que les
+    // PREMIERS checkouts — 7 abonnés actifs apparaissent comme 0-1 paiement.
+    if (type === 'invoice.payment_succeeded' || type === 'customer.subscription.deleted' || type === 'invoice.payment_failed') {
+      const obj = payload.data ? payload.data.object : payload
+      const sheet = getOrCreateSheet('subscription_events', ['date', 'event_type', 'object_id', 'email', 'customer', 'subscription', 'amount', 'currency', 'island'])
+      // Dedup par (type, object_id) — Stripe peut retenter, le PHP dédupe par
+      // event.id mais un même invoice peut arriver via deux events distincts.
+      const oid = obj.id || ''
+      const data = sheet.getDataRange().getValues()
+      const exists = data.some(row => row[1] === type && row[2] === oid)
+      if (!exists) {
+        sheet.appendRow([
+          new Date().toISOString(),
+          type,
+          oid,
+          obj.customer_email || '',
+          obj.customer || '',
+          obj.subscription || '',
+          typeof obj.amount === 'number' ? (obj.amount / 100).toFixed(2) : '',
+          obj.currency || '',
+          obj.metadata ? (obj.metadata.island || '') : ''
+        ])
+      }
+      return jsonResponse({ received: true, logged: type })
     }
 
     // 4. Weekend email dispatch
