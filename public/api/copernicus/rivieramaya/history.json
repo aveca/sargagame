@@ -5,7 +5,7 @@
       "levels": [
         {
           "id": "rm001",
-          "afai": 0.1,
+          "afai": 0.11,
           "status": "clean"
         },
         {
@@ -20,7 +20,7 @@
         },
         {
           "id": "rm004",
-          "afai": 0.14,
+          "afai": 0.13,
           "status": "clean"
         },
         {
@@ -55,7 +55,7 @@
         },
         {
           "id": "rm011",
-          "afai": 0.15,
+          "afai": 0.17,
           "status": "moderate"
         },
         {
