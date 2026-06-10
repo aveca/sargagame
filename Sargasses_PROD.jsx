@@ -2888,9 +2888,11 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
       </button>
 
       {heroCollapsed?(
-        /* Peek mode — compact single row, ~70px tall. Everything else hidden
-           so the map gets ~240px back. Tap opens the beach sheet (same contract
-           as expanded main button). */
+        /* Peek mode — compact row + 1-ligne email. Le formulaire principal du
+           landing était dans la branche expanded (repliée par défaut) → invisible
+           pour 100% des sessions, capture à 0,2%. Ici : 1 ligne discrète,
+           dismissable une fois, alignée sur la promesse premium (alertes). */
+        <>
         <button
           onClick={()=>{
             track("sg_hero_reco_click",{beach_id:top.id,status:top.status,score:top.score,collapsed:1})
@@ -2973,6 +2975,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
             {_t(lang,"J'y vais →","Take me →","Vamos →")}
           </span>
         </button>
+        </>
       ):(<>
 
       {/* Top bar — greeting + score-variance badge */}
@@ -3675,8 +3678,10 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
     document.addEventListener("keydown",h)
     return()=>document.removeEventListener("keydown",h)
   },[onClose,source])
-  const[plan,setPlan]=useState("monthly")
-  const headline=_t(lang,"Ta reco chaque matin à 7h","Your daily pick every morning at 7am","Tu mejor playa cada mañana a las 7")
+  // Annuel par défaut (best practice SaaS : AOV +60%, churn plus bas, cash
+  // upfront) quand un lien annuel existe — sinon mensuel. Le badge -33% et le
+  // prix /mois équivalent vendent l'annuel sans forcer l'user à diviser.
+  const[plan,setPlan]=useState(hasAnnual?"annual":"monthly")
   // effectivePlan is what we ship to Stripe on CTA click. Fallback chain:
   //   pro → annual → monthly, only if Stripe Link is configured for that tier.
   const effectivePlan=
@@ -3879,10 +3884,15 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
         </div>
         <style>{`@keyframes pwDot{0%,100%{opacity:1}50%{opacity:.4}}`}</style>
 
+        {/* Repositionnement (audit funnel) : le titre vendait "ta reco du matin"
+            = exactement ce que le GRATUIT donne déjà (HeroReco) → cannibalisation,
+            modal→CTA à 1,1%. On vend ce que le free n'a PAS : l'alerte AVANT que
+            la plage tourne. La reco du matin reste listée dans les value-cards. */}
         <h2 className="anton" style={{fontSize:"clamp(22px,6vw,28px)",color:"#fff",marginBottom:18,lineHeight:1.1,letterSpacing:"-.015em"}}>
-          {lang==="es"?(<>Tu <span style={{background:"linear-gradient(135deg,#FFE47A,#FFC72C 55%,#E89400)",WebkitBackgroundClip:"text",backgroundClip:"text",WebkitTextFillColor:"transparent",color:"transparent"}}>mejor playa</span> cada mañana a las 7</>)
-                      :lang==="en"?(<>Your <span style={{background:"linear-gradient(135deg,#FFE47A,#FFC72C 55%,#E89400)",WebkitBackgroundClip:"text",backgroundClip:"text",WebkitTextFillColor:"transparent",color:"transparent"}}>daily pick</span> every morning at 7am</>)
-                      :(<>Ta <span style={{background:"linear-gradient(135deg,#FFE47A,#FFC72C 55%,#E89400)",WebkitBackgroundClip:"text",backgroundClip:"text",WebkitTextFillColor:"transparent",color:"transparent"}}>reco</span> chaque matin à 7h</>)}
+          {(()=>{const G={background:"linear-gradient(135deg,#FFE47A,#FFC72C 55%,#E89400)",WebkitBackgroundClip:"text",backgroundClip:"text",WebkitTextFillColor:"transparent",color:"transparent"};
+            return lang==="es"?(<><span style={G}>Entérate</span> antes de que tu playa cambie</>)
+              :lang==="en"?(<><span style={G}>Know</span> before your beach turns</>)
+              :(<>Sois <span style={G}>prévenu</span> avant que ta plage tourne</>)})()}
         </h2>
 
         {/* Sample-first variant swap: lean bullets in place of value cards.
@@ -4075,6 +4085,17 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
             </div>
             <div>{_t(lang,"Annuel","Annual","Anual")}</div>
             <div style={{fontSize:18,fontWeight:700,marginTop:2}}>{REGION_PAY?PRICE_YR:lang==="en"?"€39.99":"39,99 €"}<span style={{fontSize:11,fontWeight:400}}>/{_t(lang,"an","yr","año")}</span></div>
+            {(()=>{
+              // Prix /mois équivalent : l'user n'a plus à diviser (ancre l'annuel).
+              const raw=REGION_PAY?PRICE_YR:"39.99"
+              const sym=(raw.match(/[€$£]/)||["€"])[0]
+              const n=parseFloat(raw.replace(/[^0-9.,]/g,"").replace(",","."))
+              if(!n)return null
+              const eq=(n/12).toFixed(2).replace(".",lang==="en"?".":",")
+              return <div style={{fontSize:9.5,fontWeight:500,color:"rgba(255,255,255,.55)",marginTop:1}}>
+                {_t(lang,`soit ${sym}${eq}/mois`,`${sym}${eq}/mo billed yearly`,`${sym}${eq}/mes facturado al año`)}
+              </div>
+            })()}
           </button>
           {hasPro&&(
           <button onClick={()=>{setPlan("pro");track("sg_plan_toggle",{plan:"pro"})}} style={{
