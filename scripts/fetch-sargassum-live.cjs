@@ -1037,7 +1037,30 @@ async function buildSargassumBanks(gridPoints, dir, wind, marineData, regionCtx 
   }
 
   // 1. Cluster
-  const clusters = dbscan(gridPoints, 0.06, 3)
+  const clusters0 = dbscan(gridPoints, 0.06, 3)
+  // Décompose les clusters géants (bbox > 0.6°) en blocs de 0.3° — un hull
+  // convexe PAR BLOC. Sans ça, le hull d'un cluster qui s'étend de part et
+  // d'autre d'une île PONTE par-dessus la terre même avec tous ses sommets en
+  // eau (formes qui recouvraient la Martinique, hulls 1.5-2°). Mêmes points,
+  // même masse totale : décomposition purement géométrique, la détection
+  // (DBSCAN/seuils) ne change pas.
+  const SPLIT_BBOX = 0.6, SPLIT_CELL = 0.3
+  const clusters = []
+  for (const cluster of clusters0) {
+    const lats = cluster.map(p => p[0]), lngs = cluster.map(p => p[1])
+    if (Math.max(...lats) - Math.min(...lats) <= SPLIT_BBOX && Math.max(...lngs) - Math.min(...lngs) <= SPLIT_BBOX) {
+      clusters.push(cluster)
+      continue
+    }
+    const cells = new Map()
+    for (const p of cluster) {
+      const k = `${Math.floor(p[0] / SPLIT_CELL)}:${Math.floor(p[1] / SPLIT_CELL)}`
+      if (!cells.has(k)) cells.set(k, [])
+      cells.get(k).push(p)
+    }
+    for (const grp of cells.values()) if (grp.length >= 3) clusters.push(grp)
+  }
+  if (clusters.length !== clusters0.length) console.log(`  Split géants: ${clusters0.length} clusters → ${clusters.length} (blocs ${SPLIT_CELL}°)`)
   console.log(`  DBSCAN: ${clusters.length} banks from ${gridPoints.length} points`)
   const isWater = buildWaterMask(grids)
 
