@@ -48,6 +48,10 @@
     "best": "best-beaches-no-sargassum-florida",
     "weekly": "sargassum-florida-this-week"
   },
+  "seo": {
+    "freshTitles": true,
+    "dateModifiedFromPipeline": true
+  },
   "geoDetect": {
     "latMin": 24.4,
     "latMax": 29.3,

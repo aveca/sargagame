@@ -33,10 +33,105 @@ const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIH
 const FROM_MQ = 'Sargasses Martinique <alerte@sargasses-martinique.com>'
 const FROM_GP = 'Sargasses Guadeloupe <alerte@sargasses-martinique.com>'
 const STRIPE_BASE = 'https://buy.stripe.com/6oU3cxgg36J48Ox6ZZ0co0s'
-function stripeLink(step) { return `${STRIPE_BASE}?utm_source=email&utm_medium=drip_${step}&utm_campaign=sargasses` }
+function stripeLink(step, base) { return `${base || STRIPE_BASE}?utm_source=email&utm_medium=drip_${step}&utm_campaign=sargasses` }
 const STRIPE_LINK = STRIPE_BASE // compat
 const UNSUB_BASE = WEBHOOK_URL
 function unsubUrl(email, island) { return `${UNSUB_BASE}?action=unsubscribe&email=${encodeURIComponent(email)}&island=${island}` }
+
+// ── Régions du drip ──────────────────────────────────────────
+// MQ/GP : FR, données partagées (préfixe 'gp-' pour GP), séquence complète.
+// Nouvelles régions : EN/ES — SEULE l'étape j3 (brief réel localisé) est
+// active ; j7/j14 restent FR-only et sont skippées tant que non localisées.
+// From : domaine Resend vérifié unique (sargasses-martinique.com), le display
+// name porte la région.
+const REGIONS_DIR = path.join(__dirname, '../../regions')
+const COPERNICUS_DIR = path.join(__dirname, '../../public/api/copernicus')
+// Mapping sargassum.json ids → beaches-list.json ids (copie de Sargasses_PROD.jsx)
+const SARG_TO_BEACH = { 'grande-anse': 'mq014', 'anse-mitan': 'mq011', 'anse-noire': 'mq012', 'tartane': 'mq034', 'anse-madame': 'mq024', 'diamant': 'mq016', 'pt-marin': 'mq008', 'sainte-anne': 'mq004', 'les-salines': 'mq001', 'vauclin': 'mq044', 'gp-grande-anse': 'gp021', 'gp-malendure': 'gp031', 'gp-sainte-anne': 'gp010', 'gp-pt-chateaux': 'gp005', 'gp-gosier': 'gp012', 'gp-caravelle': 'gp009', 'gp-bas-du-fort': 'gp014', 'gp-deshaies': 'gp024', 'gp-moule': 'gp080', 'gp-vieux-fort': 'gp042' }
+const REGION_META = {
+  MQ: { lang: 'fr', name: 'Martinique', domain: 'sargasses-martinique.com', inRegion: 'en Martinique' },
+  GP: { lang: 'fr', name: 'Guadeloupe', domain: 'sargasses-guadeloupe.com', inRegion: 'en Guadeloupe' },
+  PUNTACANA: { lang: 'en', regionId: 'puntacana', place: 'Punta Cana', inRegion: 'at Punta Cana' },
+  FLORIDA: { lang: 'en', regionId: 'florida', place: 'Miami', inRegion: 'in Miami' },
+  RIVIERAMAYA: { lang: 'es', regionId: 'rivieramaya', place: 'Cancún', inRegion: 'en Cancún' },
+}
+// Statuts localisés cohérents avec l'app (T.fr/en/es + accord féminin ES)
+const STATUS_LOC = {
+  fr: { clean: 'Propre', moderate: 'Modéré', avoid: 'Alerte' },
+  en: { clean: 'Clean', moderate: 'Moderate', avoid: 'Avoid' },
+  es: { clean: 'Limpia', moderate: 'Moderada', avoid: 'Alerta' },
+}
+const DAYS_FULL = {
+  fr: ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'],
+  en: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+  es: ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'],
+}
+const STATUS_RANK = { clean: 0, moderate: 1, avoid: 2 }
+
+/**
+ * Brief réel du matin pour la région du lead — calculé UNIQUEMENT depuis
+ * public/api/copernicus[/<région>]/sargassum.json. Aucun chiffre inventé :
+ * si la donnée est absente, le brief est null et l'étape j3 est skippée.
+ */
+function getRegionBrief(islandKey) {
+  const meta = REGION_META[islandKey]
+  if (!meta) return null
+  const isNew = !!meta.regionId
+  const dataPath = isNew
+    ? path.join(COPERNICUS_DIR, meta.regionId, 'sargassum.json')
+    : SARG_PATH
+  const data = loadJSON(dataPath, null)
+  if (!data || !Array.isArray(data.levels) || !data.levels.length) return null
+  const regionCfg = isNew ? loadJSON(path.join(REGIONS_DIR, `${meta.regionId}.json`), {}) : null
+  const lvls = data.levels.filter(l => islandKey === 'GP' ? String(l.id).startsWith('gp-')
+    : islandKey === 'MQ' ? !String(l.id).startsWith('gp-') : true)
+  if (!lvls.length) return null
+  const beachesList = isNew ? (regionCfg.beaches || []) : loadJSON(BEACHES_PATH, [])
+  const beachInfo = lv => {
+    const b = isNew ? beachesList.find(x => x.id === lv.id)
+      : beachesList.find(x => x.id === SARG_TO_BEACH[lv.id])
+    return {
+      name: (b && b.name) || String(lv.id).replace(/^gp-/, '').split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+      commune: (b && b.commune) || '',
+    }
+  }
+  const fcOf = lv => (data.weekly && data.weekly[lv.id] && data.weekly[lv.id].forecast) || []
+  // Dégradations réelles J+1..J+3 : statut du jour J pire que celui d'aujourd'hui
+  let degraded = []
+  for (const lv of lvls) {
+    const fc = fcOf(lv)
+    const todayRank = STATUS_RANK[fc[0] && fc[0].status] ?? STATUS_RANK[lv.status] ?? 0
+    for (let i = 1; i <= 3 && i < fc.length; i++) {
+      const r = STATUS_RANK[fc[i] && fc[i].status]
+      if (r != null && r > todayRank) { degraded.push({ lv, dayIdx: i, date: fc[i].date }); break }
+    }
+  }
+  // Jour le plus fréquent parmi les premières dégradations
+  let degradeDay = null
+  if (degraded.length) {
+    const byDate = {}
+    for (const d of degraded) byDate[d.date] = (byDate[d.date] || 0) + 1
+    const top = Object.entries(byDate).sort((a, b) => b[1] - a[1])[0][0]
+    degradeDay = DAYS_FULL[meta.lang][new Date(top + 'T12:00:00Z').getUTCDay()]
+  }
+  // Meilleure plage du jour (score réel) + statut J+1
+  const sorted = [...lvls].sort((a, b) => (b.score || 0) - (a.score || 0))
+  const best = sorted[0]
+  const bestFc = fcOf(best)
+  const bestJ1 = (bestFc[1] && bestFc[1].status) || null
+  // Alternative propre du jour ET propre demain (pour la ligne "change pour…")
+  const alt = sorted.find(lv => lv.id !== best.id && lv.status === 'clean'
+    && (((fcOf(lv)[1] || {}).status || 'clean') === 'clean'))
+  return {
+    meta,
+    stripeBase: isNew ? (regionCfg.paymentLinks && regionCfg.paymentLinks.monthly) || null : STRIPE_BASE,
+    best: { ...beachInfo(best), score: best.score ?? null, status: best.status, j1: bestJ1 },
+    degradedCount: degraded.length,
+    degradeDay,
+    bestDegrades: !!(best.status === 'clean' && bestJ1 && bestJ1 !== 'clean'),
+    alt: alt ? beachInfo(alt).name : null,
+  }
+}
 
 // Drip steps: day threshold + email builder key
 const DRIP_STEPS = [
@@ -113,39 +208,71 @@ function ctaButton(text, url, size = 'normal') {
     box-shadow:0 4px 16px rgba(232,168,0,.3)">${text}</a>`
 }
 
-// J+3 — Pure value, no premium push
-function buildJ3(island, cleanCount, topBeaches, email) {
-  const name = island === 'MQ' ? 'Martinique' : 'Guadeloupe'
-  const domain = island === 'MQ' ? 'sargasses-martinique.com' : 'sargasses-guadeloupe.com'
+// J+3 — Le brief réel du matin (exactement ce qu'un abonné a reçu), généré
+// depuis le sargassum.json de la région du lead. ZERO MANUAL, zéro chiffre
+// inventé. UN seul CTA vers l'essai + réassurance alignée mot pour mot sur
+// le paywall.
+function buildJ3(island, brief, email) {
+  const { meta, best } = brief
+  const lang = meta.lang
+  const name = meta.name || meta.place
+  const domain = meta.domain || (loadJSON(path.join(REGIONS_DIR, `${meta.regionId}.json`), {}).domain) || ''
+  const sw = s => STATUS_LOC[lang][s] || s || ''
+  const t = (fr, en, es) => lang === 'es' ? es : lang === 'en' ? en : fr
 
-  const beachList = topBeaches.slice(0, 3).map(b =>
-    `<tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0">
-      <div style="font-size:14px;font-weight:700;color:#0D0D0D">${b.name}</div>
-      <div style="font-size:12px;color:#686868">${b.commune}</div>
-    </td><td style="text-align:right;padding:10px 0;border-bottom:1px solid #f0f0f0">
-      <span style="padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;background:rgba(34,197,94,.1);color:#16A34A">Propre</span>
-    </td></tr>`
-  ).join('')
-
-  const seasonBanner = IS_HIGH_SEASON
-    ? `<div style="background:rgba(232,82,42,.08);border:1px solid rgba(232,82,42,.2);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:12px;font-weight:700;color:#E8522A">
-        &#x1f534; Saison sargasses en cours — les plages changent chaque jour
-      </div>` : ''
+  // Encadré "ce que tu aurais reçu"
+  const frame = t('Voici ce que tu aurais reçu ce matin.',
+    "This is the brief you'd have woken up to this morning.",
+    'Esto es lo que habrías recibido esta mañana.')
+  // Ligne brief — statut réel du jour de la meilleure plage + statut J+1 réel
+  const communePart = best.commune ? ` (${best.commune})` : ''
+  const briefLine = t(
+    `Ta meilleure plage aujourd'hui : <strong>${best.name}</strong>${communePart} — ${best.score ?? '—'}/100, ${sw(best.status).toLowerCase()}.${best.j1 ? ` Demain : ${sw(best.j1)}.` : ''}`,
+    `Your best beach today: <strong>${best.name}</strong> — ${best.score ?? '—'}/100, ${sw(best.status).toLowerCase()}.${best.j1 ? ` Tomorrow: ${sw(best.j1)}.` : ''}`,
+    `Tu mejor playa hoy: <strong>${best.name}</strong> — ${best.score ?? '—'}/100, ${sw(best.status).toLowerCase()}.${best.j1 ? ` Mañana: ${sw(best.j1)}.` : ''}`)
+  // Ligne dégradation — UNIQUEMENT si la meilleure plage propre tourne demain
+  // (vraie dégradation du forecast) ET qu'une alternative propre existe.
+  const degradeLine = (brief.bestDegrades && brief.alt) ? `
+    <div style="background:rgba(232,82,42,.06);border:1px solid rgba(232,82,42,.15);border-radius:10px;padding:12px 14px;margin-top:10px;font-size:13px;color:#C0392B;line-height:1.5">
+      ${t(
+        `${best.name} passe Propre → ${sw(best.j1)} demain — change pour <strong>${brief.alt}</strong>.`,
+        `${best.name} goes Clean → ${sw(best.j1)} tomorrow — switch to <strong>${brief.alt}</strong>.`,
+        `${best.name} pasa de Limpia a ${sw(best.j1)} mañana — mejor ve a <strong>${brief.alt}</strong>.`)}
+    </div>` : ''
+  // Ligne monopole — le brief au-dessus EST la donnée (la claim se prouve
+  // d'elle-même). GARDE-FOU : aucun angle "institutionnels hebdo" (NOAA SIR
+  // est quotidien depuis v1.5).
+  const monopole = t(
+    `La seule prévision 7 jours, plage par plage, ${meta.inRegion} — fiable à 3 jours, tendance jusqu'à 7.`,
+    `The only beach-by-beach 7-day forecast ${meta.inRegion} — solid to day 3, trend through day 7.`,
+    `El único pronóstico a 7 días, playa por playa, ${meta.inRegion} — fiable a 3 días, tendencia hasta el día 7.`)
+  const ctaText = t('Recevoir ce brief chaque matin — 7 jours offerts',
+    'Get this brief every morning — 7 days free',
+    'Recibir este brief cada mañana — 7 días gratis')
+  const reassurance = t('Sans engagement · Annulation en 2 clics · Rappel avant facturation',
+    "No commitment · Cancel in 2 clicks · Reminder before you're billed",
+    'Sin permanencia · Cancela en 2 clics · Aviso antes del cobro')
+  const dateLong = new Date().toLocaleDateString(lang === 'es' ? 'es-MX' : lang === 'en' ? 'en-US' : 'fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
+  const ctaHref = brief.stripeBase ? stripeLink('j3_brief', brief.stripeBase) : `https://${domain}`
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
 <body style="margin:0;padding:0;background:#F7F5EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
 <div style="max-width:480px;margin:0 auto;padding:20px">
-  ${header(`${cleanCount} plages propres`, IS_HIGH_SEASON ? `Saison active en ${name}` : `Cette semaine en ${name}`)}
+  ${header(`${best.name} — ${best.score ?? '—'}/100`, dateLong)}
   <div style="background:#fff;padding:24px 20px">
-    ${seasonBanner}
-    <div style="font-size:15px;color:#333;line-height:1.5;margin-bottom:16px">
-      ${IS_HIGH_SEASON
-        ? `Salut\u00A0! La saison sargasses est l\u00E0. Voici les plages les plus propres aujourd'hui en ${name}. Donn\u00E9es satellite mises \u00E0 jour 4 fois par jour.`
-        : `Salut\u00A0! Voici les plages les plus propres cette semaine en ${name}. Donn\u00E9es satellite mises \u00E0 jour 4 fois par jour.`}
+    <div style="background:rgba(255,199,44,.08);border:1px solid rgba(255,199,44,.25);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:12px;font-weight:700;color:#B8860B">
+      ${frame}
     </div>
-    <table style="width:100%;border-collapse:collapse">${beachList}</table>
+    <div style="font-size:15px;color:#333;line-height:1.6">
+      ${briefLine}
+    </div>
+    ${degradeLine}
+    <div style="font-size:13px;color:#686868;line-height:1.5;margin-top:16px;padding-top:14px;border-top:1px solid #f0f0f0">
+      ${monopole}
+    </div>
     <div style="text-align:center;margin-top:20px">
-      ${ctaButton('Voir toutes les plages', `https://${domain}`)}
+      ${ctaButton(ctaText, ctaHref)}
+      <div style="font-size:11px;color:#999;margin-top:8px">${reassurance}</div>
     </div>
   </div>
   ${footer(name, domain, email, island)}
@@ -281,12 +408,27 @@ function buildJ14(island, cleanCount, email) {
 
 // ── Subjects ──────────────────────────────────────────────────
 
-function getSubject(step, island, cleanCount) {
-  const name = island === 'MQ' ? 'Martinique' : 'Guadeloupe'
+function getSubject(step, island, cleanCount, brief) {
+  // j3 \u2014 objet du brief r\u00E9el : urgence authentique UNIQUEMENT si le forecast
+  // contient de vraies d\u00E9gradations J+1..J+3 (jamais de compteur bidon),
+  // sinon la reco positive du jour. Localis\u00E9 selon la r\u00E9gion du lead.
+  if (step === 'j3' && brief) {
+    const { meta, best } = brief
+    const t = (fr, en, es) => meta.lang === 'es' ? es : meta.lang === 'en' ? en : fr
+    const place = meta.place || meta.name
+    if (brief.degradedCount > 0 && brief.degradeDay) {
+      const n = brief.degradedCount
+      return t(
+        `${n} plage${n > 1 ? 's' : ''} touch\u00E9e${n > 1 ? 's' : ''} ${brief.degradeDay} ${meta.inRegion}`,
+        `Sargassum reaches ${n} ${place} beach${n > 1 ? 'es' : ''} by ${brief.degradeDay}`,
+        `El sargazo llega a ${n} playa${n > 1 ? 's' : ''} de ${place} el ${brief.degradeDay}`)
+    }
+    return t(
+      `Ta plage de demain matin : ${best.name} \u2014 ${best.score ?? '\u2014'}/100`,
+      `Tomorrow morning's beach: ${best.name} \u2014 ${best.score ?? '\u2014'}/100`,
+      `Tu playa de ma\u00F1ana: ${best.name} \u2014 ${best.score ?? '\u2014'}/100`)
+  }
   switch (step) {
-    case 'j3':  return IS_HIGH_SEASON
-      ? `Saison sargasses : ${cleanCount} plages propres en ${name}`
-      : `${cleanCount} plages propres cette semaine en ${name}`
     case 'j7':  return IS_HIGH_SEASON
       ? `Tu v\u00E9rifies encore la carte tous les jours\u00A0?`
       : `Et si tu n'avais plus besoin d'ouvrir la carte\u00A0?`
@@ -296,9 +438,9 @@ function getSubject(step, island, cleanCount) {
   }
 }
 
-function getHTML(step, island, cleanCount, topBeaches, email) {
+function getHTML(step, island, cleanCount, topBeaches, email, brief) {
   switch (step) {
-    case 'j3':  return buildJ3(island, cleanCount, topBeaches, email)
+    case 'j3':  return brief ? buildJ3(island, brief, email) : null
     case 'j7':  return buildJ7(island, cleanCount, email)
     case 'j14': return buildJ14(island, cleanCount, email)
   }
@@ -353,15 +495,23 @@ async function main() {
   let totalSent = 0
   let wouldSend = 0
   let alreadyDripped = 0
+  // Brief j3 par région — calculé une fois par run depuis sargassum.json.
+  const briefCache = {}
+  const briefFor = isl => (isl in briefCache) ? briefCache[isl] : (briefCache[isl] = getRegionBrief(isl))
+  // Throttle nouvelles régions (protège le domaine Resend, bounces à 5,8 %) :
+  // max 25 envois j3 nouvelles-régions par run — le reste part aux runs suivants.
+  const NEW_REGION_J3_CAP = 25
+  let newRegionSent = 0
 
   for (const sub of subscribers) {
     const email = sub.email
     const key = emailHash(email)
     if (bouncedSet.has(key)) continue
     const island = (sub.island || 'MQ').toUpperCase()
-    // Nouvelles régions (PUNTACANA/FLORIDA/RIVIERAMAYA…) : pas de drip FR.
-    // Séquence région-aware EN/ES à écrire avant de retirer ce garde-fou.
-    if (island !== 'MQ' && island !== 'GP') continue
+    // Nouvelles régions (PUNTACANA/FLORIDA/RIVIERAMAYA) : SEULE l'étape j3
+    // (brief réel localisé EN/ES) est active — j7/j14 restent FR-only.
+    const isNewRegion = island !== 'MQ' && island !== 'GP'
+    if (isNewRegion && !REGION_META[island]) continue
     const age = daysSince(sub.date)
     const record = dripSent[key] || {}
     if (Object.keys(record).length) alreadyDripped++
@@ -370,6 +520,12 @@ async function main() {
       // Skip if already sent this step or not old enough
       if (record[step.key]) continue
       if (age < step.days && !FORCE) continue
+      if (isNewRegion && step.key !== 'j3') continue
+      // j3 = brief réel — si la donnée région est absente, on skippe SANS
+      // marquer l'étape (le lead la recevra au prochain run avec data).
+      const brief = step.key === 'j3' ? briefFor(island) : null
+      if (step.key === 'j3' && !brief) continue
+      if (isNewRegion && newRegionSent >= NEW_REGION_J3_CAP) continue
 
       if (!resend) {
         console.log(`  ~ ${email} [${step.key}] would send (no RESEND_API_KEY)`)
@@ -378,9 +534,12 @@ async function main() {
       }
 
       const { cleanCount, topBeaches } = beachData[island] || beachData['MQ']
-      const from = island === 'GP' ? FROM_GP : FROM_MQ
-      const subject = getSubject(step.key, island, cleanCount)
-      const html = getHTML(step.key, island, cleanCount, topBeaches, email)
+      // From : domaine Resend vérifié unique (MQ) — le display name porte la région.
+      const from = isNewRegion
+        ? `${REGION_META[island].lang === 'es' ? 'Sargazo' : 'Sargassum'} ${REGION_META[island].place} <alerte@sargasses-martinique.com>`
+        : (island === 'GP' ? FROM_GP : FROM_MQ)
+      const subject = getSubject(step.key, island, cleanCount, brief)
+      const html = getHTML(step.key, island, cleanCount, topBeaches, email, brief)
       const unsub = unsubUrl(email, island)
 
       try {
@@ -397,6 +556,7 @@ async function main() {
           console.log(`  + ${email} [${step.key}] (${island}, age=${age}d)`)
           record[step.key] = new Date().toISOString()
           totalSent++
+          if (isNewRegion) newRegionSent++
           await trackToSheet({
             resend_id: data?.id || '', to: email, subject,
             email_type: `drip_${step.key}`, island, status: 'sent',

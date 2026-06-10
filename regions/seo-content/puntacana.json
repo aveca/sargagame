@@ -14,7 +14,7 @@
     },
     {
       "q": "Can sargassum really be forecast 7 days ahead?",
-      "a": "Yes, within limits. Sargassum drifts with wind and ocean currents, so once satellites spot a mat offshore we can project its track toward each beach over the coming week. Seaweed already on a beach decays with a roughly 3.5-day half-life unless new material lands. Days 1–3 are the most accurate; days 4–7 show the trend. The forecast updates daily with each new satellite pass."
+      "a": "Yes, within limits. Sargassum drifts with wind and ocean currents, so once satellites spot a mat offshore we can project its track toward each beach over the coming week. Seaweed already on a beach decays with a roughly 3.5-day half-life unless new material lands. Days 1–3 are the most accurate; days 4–7 show the trend. The forecast is recalculated with every satellite refresh — four times a day — and it is the only beach-by-beach 7-day sargassum forecast published for Punta Cana. We publish its measured accuracy openly on our methodology page."
     },
     {
       "q": "Do Punta Cana resorts clean sargassum off their beaches?",
@@ -29,10 +29,10 @@
     "forecast": {
       "slug": "sargassum-forecast",
       "title": "Sargassum Forecast Punta Cana 2026 — 7-Day Beach Outlook",
-      "desc": "7-day sargassum forecast for Punta Cana, updated daily from Copernicus satellite data. See which beaches stay clean this week — Bávaro, Macao, Cap Cana.",
+      "desc": "7-day sargassum forecast for Punta Cana, recalculated 4× daily from Copernicus satellite data. See which beaches stay clean this week — Bávaro, Macao, Cap Cana.",
       "h1": "Punta Cana Sargassum Forecast — Next 7 Days, Beach by Beach",
       "intro": "Most sargassum forecasts for Punta Cana give you one verdict for the whole coast — usually based on government imagery that is days old by the time it is published. This page works differently. We run a dedicated forecast for each of the 12 beaches we track, from Uvero Alto down to Juanillo, because conditions genuinely diverge: a mat that buries Macao can miss Cap Cana entirely. Every morning the model ingests the latest Copernicus satellite pass, checks what is drifting offshore, and projects landings for the next seven days. You get a day-by-day outlook per beach, not a regional average. And because four satellite updates a day feed the model, what you read here reflects today's ocean, not last week's. Use it to pick your beach days before the seaweed picks them for you.",
-      "method": "We start with AFAI (Alternative Floating Algae Index), the spectral signature that lets Copernicus and NOAA satellites detect floating sargassum mats from orbit. Each detected mat is projected forward using wind and surface-current data — sargassum drifts at roughly 2.5% of wind speed plus the local current. For seaweed already on a beach, we apply exponential persistence with a 3.5-day half-life: it decays unless new material arrives. The model then scores each beach daily, from clean to avoid. Community reports from beachgoers correct the satellite view when clouds block a pass. Accuracy is highest for days 1–3, and the entire forecast is recalculated every day."
+      "method": "We start with AFAI (Alternative Floating Algae Index), the spectral signature that lets Copernicus and NOAA satellites detect floating sargassum mats from orbit. Each detected mat is projected forward using wind and surface-current data — sargassum drifts at roughly 2.5% of wind speed plus the local current. For seaweed already on a beach, we apply exponential persistence with a 3.5-day half-life: it decays unless new material arrives. The model then scores each beach daily, from clean to avoid. Community reports from beachgoers correct the satellite view when clouds block a pass. Accuracy is highest for days 1–3, and the entire forecast is recalculated with every satellite refresh — four times a day."
     },
     "today": {
       "slug": "beaches-without-sargassum-today",
@@ -99,5 +99,52 @@
   "resortPageTpl": {
     "titlePattern": "Sargassum at {resort} Today — Live Beach Status & Forecast",
     "introPattern": "Wondering whether the beach at {resort} is clear of sargassum right now? This page tracks {beach}, the stretch of sand fronting the resort, using Copernicus satellite imagery refreshed four times a day. Below you will find the current status, a 0–100 Beach Score, and a 7-day forecast so you can plan beach days — or a backup — before you check in. Conditions can change overnight in season, so bookmark this page and glance at it each morning of your stay."
+  },
+  "beachFaq": {
+    "_doc": "Per-beach FAQPage JSON-LD templates. Consumed by region-seo-pages.cjs (pending shared change). Tokens, all resolved from public/api/copernicus/puntacana/sargassum.json at build time — never invented: {beach}=b.name, {status}=STATUS_WORD[lang][b.lv.status], {score}=b.lv.score, {today}=fmtDate(lang), {forecastLine}=forecastLine(data.weekly,b.id,lang), {nextArrival}=nextArrivalRisk with {day}/{date} of the first J+1..J+7 forecast day whose status!=='clean', else nextArrivalNone. Emit no FAQPage if live data is missing for the beach.",
+    "questions": [
+      {
+        "q": "Is there sargassum at {beach} today?",
+        "a": "As of {today}, {beach} reads \"{status}\" on the latest satellite pass, with a Beach Score of {score}/100. The status is re-checked four times a day from Copernicus/NOAA AFAI (Alternative Floating Algae Index) imagery sampled directly offshore of this beach, so this answer reflects today's conditions — open the live map for the exact update time and a confidence level."
+      },
+      {
+        "q": "When is the next sargassum arrival expected at {beach}?",
+        "a": "{nextArrival} The full 7-day outlook for {beach}: {forecastLine}. Days 1–3 are the most reliable; days 4–7 show the trend. The forecast is recalculated with every satellite refresh, four times a day."
+      }
+    ],
+    "nextArrivalRisk": "The next landing risk at {beach} is {day} ({date}), based on sargassum mats currently tracked offshore.",
+    "nextArrivalNone": "No significant sargassum arrival is forecast at {beach} over the next 7 days."
+  },
+  "press": {
+    "_doc": "Press/media page rendered at /press/ by region-seo-pages.cjs (pending shared change). Tokens resolved at build time from real data — never invented: {beachCount}=region.beaches.length, {cleanToday}=count of levels with status==='clean', {updatedDate}=fmtDate(lang), {accuracyJ1Pct}/{accuracyJ3Pct}=forecast-accuracy.json horizons J+1/J+3 statusMatchPct, {contact}=region.emails.support, {citation}=this.citation. Add /press/ to sitemap (weekly) and to the prod-integrity 404 allowlist. Do NOT register 'press' in regions/*.json routes (prepare-ftp.cjs route-skip would drop the folder from every regional deploy).",
+    "slug": "press",
+    "title": "Punta Cana Sargassum — Press Kit & Data for Media",
+    "desc": "Press resources for sargassum coverage in Punta Cana: live per-beach satellite status refreshed 4× daily, 7-day forecasts and published accuracy. Free to cite.",
+    "h1": "Press & media — Punta Cana sargassum data",
+    "intro": "The Atlantic is having a widely reported record sargassum season — coverage puts the bloom near 28.9 million tonnes. What the headlines cannot tell your readers is the question they actually ask: is my beach swimmable today? We publish that answer for Punta Cana, beach by beach, from satellite data — and it is free to cite with attribution.",
+    "sections": [
+      {
+        "h2": "What we publish",
+        "text": "Live sargassum status for {beachCount} Punta Cana beaches, from Uvero Alto down to Juanillo in Cap Cana — each with a clean / moderate / avoid rating, a 0–100 Beach Score and a beach-specific 7-day forecast. Detection uses the AFAI (Alternative Floating Algae Index) from the Copernicus and NOAA satellite programs, sampled pixel by pixel directly offshore of each beach — not a regional average — and refreshed four times a day, with wind and swell data from Open-Meteo. As of {updatedDate}, {cleanToday} of {beachCount} tracked beaches read clean."
+      },
+      {
+        "h2": "Accuracy, published openly",
+        "text": "We backtest the forecast against what satellites later observed, and we publish the results: across our Caribbean network, next-day beach status verifies {accuracyJ1Pct}% of the time, and 3-day status {accuracyJ3Pct}%. Days 1–3 are the most reliable; days 4–7 show the trend — and we say so on every page. The data is never hand-edited, never filtered for resorts, never deleted."
+      },
+      {
+        "h2": "Free to use, with attribution",
+        "text": "Journalists, bloggers and broadcasters may quote any beach status, score or forecast with a link to the source page. Suggested citation: {citation}. For an embed of the live map, beach-level data for a story, or comment on current conditions, write to {contact} — we answer quickly."
+      },
+      {
+        "h2": "Story angles ready today",
+        "text": "Which Punta Cana beach is clean this week (live ranked list, updated 4× daily) · Why Bávaro, Macao and Cap Cana can differ dramatically on the same day · What a record Atlantic bloom means at beach level for Dominican tourism · How satellite AFAI detection works, with measured forecast accuracy published on our methodology page."
+      },
+      {
+        "h2": "About the network",
+        "text": "SargassumPuntaCana.com is part of a five-site Caribbean monitoring network: Martinique and Guadeloupe (French), Punta Cana (English), Cancún & Riviera Maya (Spanish), and Miami & Florida (English). All five sites run the same satellite pipeline and the same openly published methodology. The live map is free for everyone; a premium subscription adds daily beach recommendations, push alerts and a morning brief."
+      }
+    ],
+    "citation": "Source: sargassumpuntacana.com — Copernicus/NOAA satellite data, refreshed 4× daily",
+    "contact": "support@sargassumpuntacana.com"
   }
 }

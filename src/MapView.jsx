@@ -51,8 +51,8 @@ function getBeachAtStep(b,step,sargData){
 /* ── i18n subset for Caribbean view ─────────────────────────────── */
 const T_CARIB={
   fr:{
-    caribbeanView:"Vue Caraibe",localView:"Vue locale",
-    legendTitle:"Concentration AFAI",legendLow:"Faible",legendMod:"Modere",legendHigh:"Fort",
+    caribbeanView:"Vue Caraïbe",localView:"Vue locale",
+    legendTitle:"Concentration AFAI",legendLow:"Faible",legendMod:"Modéré",legendHigh:"Fort",
     source:"Source : NOAA ERDDAP",
     zoneSargasso:"Mer des Sargasses",zoneNERR:"NERR",
     zoneLesser:"Petites Antilles",zoneGreater:"Grandes Antilles",

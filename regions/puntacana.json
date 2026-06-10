@@ -49,6 +49,12 @@
     "best": "best-beaches-no-sargassum-punta-cana",
     "weekly": "sargassum-punta-cana-this-week"
   },
+  "seo": {
+    "homeTitle": "Punta Cana Sargassum Today — Live Beach Map & 7-Day Forecast",
+    "homeDesc": "Is there sargassum in Punta Cana today? Live map of 12 beaches — Bávaro, Macao, Cap Cana — updated 4× daily from satellite, with a 7-day forecast per beach.",
+    "freshTitles": true,
+    "dateModifiedFromPipeline": true
+  },
   "geoDetect": {
     "latMin": 18.45,
     "latMax": 18.88,

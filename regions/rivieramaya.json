@@ -217,6 +217,8 @@
   "countryCode": "MX",
   "seo": {
     "homeTitle": "Sargazo en Cancún HOY — Mapa Satelital en Vivo y Pronóstico 7 Días 2026",
-    "homeDesc": "¿Qué playa de Cancún y Riviera Maya está sin sargazo hoy? Mapa satelital en vivo playa por playa, semáforo y pronóstico de 7 días. Actualizado 4 veces al día."
+    "homeDesc": "¿Qué playa de Cancún y Riviera Maya está sin sargazo hoy? Mapa satelital en vivo playa por playa, semáforo y pronóstico de 7 días. Actualizado 4 veces al día.",
+    "freshTitles": true,
+    "dateModifiedFromPipeline": true
   }
 }

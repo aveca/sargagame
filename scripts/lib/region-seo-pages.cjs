@@ -27,7 +27,8 @@ const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').re
 
 const STATUS_WORD = {
   en: { clean: 'Clean', moderate: 'Moderate', avoid: 'Avoid' },
-  es: { clean: 'Limpia', moderate: 'Moderado', avoid: 'Evitar' },
+  // Accord féminin avec "playa" (Limpia/Moderada) — aligné avec T.es.moderate de l'app.
+  es: { clean: 'Limpia', moderate: 'Moderada', avoid: 'Evitar' },
 }
 const T = {
   en: {
@@ -41,6 +42,17 @@ const T = {
     methodH1: 'Methodology & measured forecast accuracy',
     methodDesc: r => `How the ${r} sargassum map works: Copernicus/NOAA AFAI satellite data 4×/day, per-beach sampling, and a 7-day forecast with published backtest accuracy.`,
     days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    daysFull: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+    // Fallback FAQPage par plage pour les régions sans content.beachFaq —
+    // mêmes tokens que le contrat de regions/seo-content/puntacana.json.
+    beachFaq: {
+      questions: [
+        { q: 'Is there sargassum at {beach} today?', a: 'As of {today}, {beach} reads "{status}" on the latest satellite pass, with a Beach Score of {score}/100. The status is re-checked four times a day from Copernicus/NOAA AFAI imagery sampled directly offshore of this beach — open the live map for the exact update time and a confidence level.' },
+        { q: 'When is the next sargassum arrival expected at {beach}?', a: '{nextArrival} The full 7-day outlook for {beach}: {forecastLine}. Days 1–3 are the most reliable; days 4–7 show the trend. The forecast is recalculated with every satellite refresh, four times a day.' },
+      ],
+      nextArrivalRisk: 'The next landing risk at {beach} is {day} ({date}), based on sargassum mats currently tracked offshore.',
+      nextArrivalNone: 'No significant sargassum arrival is forecast at {beach} over the next 7 days.',
+    },
   },
   es: {
     beachesDir: 'playas', resortsDir: 'hoteles',
@@ -53,15 +65,25 @@ const T = {
     methodH1: 'Metodología y precisión medida del pronóstico',
     methodDesc: r => `Cómo funciona el mapa de sargazo de ${r}: datos satelitales AFAI Copernicus/NOAA 4 veces al día, muestreo por playa y pronóstico de 7 días con precisión publicada.`,
     days: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
+    daysFull: ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'],
+    beachFaq: {
+      questions: [
+        { q: '¿Hay sargazo en {beach} hoy?', a: 'Hoy, {today}, {beach} está "{status}" según el último pase satelital, con un Beach Score de {score}/100. El estado se verifica cuatro veces al día con imágenes AFAI de Copernicus/NOAA muestreadas directamente frente a esta playa — abre el mapa en vivo para ver la hora exacta de actualización y el nivel de confianza.' },
+        { q: '¿Cuándo se espera la próxima llegada de sargazo a {beach}?', a: '{nextArrival} El pronóstico completo de 7 días para {beach}: {forecastLine}. Los días 1–3 son los más fiables; los días 4–7 muestran la tendencia. El pronóstico se recalcula con cada actualización satelital, cuatro veces al día.' },
+      ],
+      nextArrivalRisk: 'El próximo riesgo de recale en {beach} es el {day} ({date}), según los bancos de sargazo detectados mar adentro.',
+      nextArrivalNone: 'No se pronostica ninguna llegada significativa de sargazo a {beach} en los próximos 7 días.',
+    },
   },
 }
 
+// Noms localisés par langue de site (ES : "Martinica · Guadalupe · … y …").
 const NETWORK = [
-  { name: 'Martinique', url: 'https://sargasses-martinique.com/' },
-  { name: 'Guadeloupe', url: 'https://sargasses-guadeloupe.com/' },
-  { name: 'Punta Cana', url: 'https://sargassumpuntacana.com/' },
-  { name: 'Cancún & Riviera Maya', url: 'https://sargassumcancun.com/' },
-  { name: 'Miami & Florida', url: 'https://sargassummiami.com/' },
+  { name: { en: 'Martinique', es: 'Martinica' }, url: 'https://sargasses-martinique.com/' },
+  { name: { en: 'Guadeloupe', es: 'Guadalupe' }, url: 'https://sargasses-guadeloupe.com/' },
+  { name: { en: 'Punta Cana', es: 'Punta Cana' }, url: 'https://sargassumpuntacana.com/' },
+  { name: { en: 'Cancún & Riviera Maya', es: 'Cancún y Riviera Maya' }, url: 'https://sargassumcancun.com/' },
+  { name: { en: 'Miami & Florida', es: 'Miami y Florida' }, url: 'https://sargassummiami.com/' },
 ]
 
 function loadJSON(p, fallback) {
@@ -69,8 +91,9 @@ function loadJSON(p, fallback) {
 }
 
 function networkFooter(region, t) {
+  const lang = region.primaryLang === 'es' ? 'es' : 'en'
   const links = NETWORK.filter(n => !n.url.includes(region.domain))
-    .map(n => `<a href="${n.url}" rel="noopener">${esc(n.name)}</a>`).join(' · ')
+    .map(n => `<a href="${n.url}" rel="noopener">${esc(n.name[lang] || n.name.en)}</a>`).join(' · ')
   return `<p><strong>${t.network}:</strong> ${links}</p>`
 }
 
@@ -111,6 +134,9 @@ function smartTrim(s, max) {
   let cut = s.slice(0, max + 1)
   const sp = cut.lastIndexOf(' ')
   cut = sp > max * 0.55 ? cut.slice(0, sp) : cut.slice(0, max)
+  // Parenthèse ouvrante orpheline après la coupe ("… (Juanillo") → on retire
+  // tout le segment parenthésé incomplet AVANT le strip de ponctuation finale.
+  cut = cut.replace(/\s*\([^)]*$/, '')
   return cut.replace(/[\s—–·,;:&-]+$/, '')
 }
 
@@ -154,6 +180,8 @@ function generateRegionSeoPages(region, distDir) {
   const photos = loadJSON(path.join(ROOT, 'public', 'data', 'beaches-images.json'), {})
   const tpl = fs.readFileSync(path.join(distDir, 'index.html'), 'utf-8')
   const today = fmtDate(lang)
+  // Date courte pour les titles (jamais coupée : on trimme le reste AVANT de l'appender)
+  const dateShort = new Date().toLocaleDateString(lang === 'es' ? 'es-MX' : 'en-US', { month: 'short', day: 'numeric' })
   const isoToday = new Date().toISOString().slice(0, 10)
   const levelsById = Object.fromEntries((data.levels || []).map(l => [l.id, l]))
   const beaches = (region.beaches || []).map(b => ({ ...b, slug: slugify(b.name), lv: levelsById[b.id] || {} }))
@@ -185,10 +213,13 @@ function generateRegionSeoPages(region, distDir) {
 ${hubLinks('forecast')}${networkFooter(region, t)}</article>`,
   })
 
-  // today — liste ordonnée par score, format featured-snippet, datée
-  const todayTitle = p.today.title.replace(/\s*[—-]\s*\d{4}.*$|$/, '') + ` (${today})`
+  // today — liste ordonnée par score, format featured-snippet, datée.
+  // Le titre de base est trimé AVANT l'append de la date courte → la date
+  // n'est jamais coupée (l'ancien smartTrim(base+date) la tronquait).
+  const todayBase = p.today.title.replace(/\s*[—-]\s*\d{4}.*$|$/, '')
+  const todayTitle = `${smartTrim(todayBase, 70 - dateShort.length - 3)} (${dateShort})`
   hubs.push({
-    slug: p.today.slug, title: smartTrim(todayTitle, 70), desc: p.today.desc,
+    slug: p.today.slug, title: todayTitle, desc: p.today.desc,
     noscript: `<article><h1>${esc(p.today.h1)} — ${today}</h1><p><em>${t.updated(today)}</em></p><p>${esc(p.today.intro)}</p>
 <ol>${byScore.map(b => `<li><strong>${beachLink(b)}</strong> — ${sw(b.lv.status)}, ${t.score} ${b.lv.score ?? '—'}/100</li>`).join('')}</ol>
 ${hubLinks('today')}${networkFooter(region, t)}</article>`,
@@ -242,6 +273,32 @@ ${hubLinks(null)}${networkFooter(region, t)}</article>`,
     })
   }
 
+  // press — page presse/média rendue depuis content.press (tokens résolus
+  // depuis la donnée réelle, jamais inventés). Slug ajouté au sitemap via
+  // urls (weekly par défaut). NE PAS enregistrer 'press' dans regions/*.json
+  // routes (prepare-ftp.cjs skip les valeurs de routes des autres régions au
+  // deploy — un slug identique sur les 3 régions USD ferait sauter le dossier).
+  if (content.press && content.press.slug) {
+    const pr = content.press
+    const cleanToday = (data.levels || []).filter(l => l.status === 'clean').length
+    const accJ1 = accuracy?.horizons?.['J+1']?.statusMatchPct
+    const accJ3 = accuracy?.horizons?.['J+3']?.statusMatchPct
+    const tok = s => String(s ?? '')
+      .replace(/\{beachCount\}/g, beaches.length)
+      .replace(/\{cleanToday\}/g, cleanToday)
+      .replace(/\{updatedDate\}/g, today)
+      .replace(/\{accuracyJ1Pct\}/g, accJ1 ?? '—')
+      .replace(/\{accuracyJ3Pct\}/g, accJ3 ?? '—')
+      .replace(/\{contact\}/g, pr.contact || region.emails?.support || '')
+      .replace(/\{citation\}/g, pr.citation || '')
+    hubs.push({
+      slug: pr.slug, title: smartTrim(pr.title, 70), desc: trimDesc(pr.desc),
+      noscript: `<article><h1>${esc(pr.h1)}</h1><p><em>${t.updated(today)}</em></p><p>${esc(tok(pr.intro))}</p>
+${(pr.sections || []).map(s => `<h2>${esc(s.h2)}</h2><p>${esc(tok(s.text))}</p>`).join('')}
+${hubLinks(null)}${networkFooter(region, t)}</article>`,
+    })
+  }
+
   for (const h of hubs) {
     const pathname = `/${h.slug}/`
     writePage(distDir, pathname, pageShell(tpl, {
@@ -263,24 +320,64 @@ ${hubLinks(null)}${networkFooter(region, t)}</article>`,
       .sort((a, b2) => a.d - b2.d).slice(0, 4).map(({ x }) => x)
     const beachResorts = resortsByBeach[b.id] || []
     const photo = photos[b.id] ? `<img src="/beaches/${photos[b.id]}" alt="${esc(b.name)}" width="800" height="450" loading="lazy" />` : ''
-    const title = smartTrim(lang === 'es'
-      ? `Sargazo en ${b.name} HOY — Estado en vivo y pronóstico 7 días`
-      : `${b.name} Sargassum Today — Live Status & 7-Day Forecast`, 68)
+    // freshTitles (flag region.seo) : title daté statut+date courte, nom trimé
+    // AVANT l'append (UNE seule date par page). Fallback : template historique.
+    let title
+    if (region.seo && region.seo.freshTitles && b.lv.status) {
+      const suffix = lang === 'es' ? ` HOY: ${sw(b.lv.status)} — ${dateShort}` : ` Sargassum Today: ${sw(b.lv.status)} — ${dateShort}`
+      const prefix = lang === 'es' ? 'Sargazo en ' : ''
+      title = prefix + smartTrim(b.name, 70 - prefix.length - suffix.length) + suffix
+    } else {
+      title = smartTrim(lang === 'es'
+        ? `Sargazo en ${b.name} HOY — Estado en vivo y pronóstico 7 días`
+        : `${b.name} Sargassum Today — Live Status & 7-Day Forecast`, 68)
+    }
     const desc = trimDesc(lang === 'es'
       ? `¿Hay sargazo en ${b.name} hoy? Estado actualizado 4 veces al día por satélite, Beach Score ${b.lv.score ?? ''}/100 y pronóstico de 7 días. ${(b.commune || '')}, ${region.name}.`
       : `Is there sargassum at ${b.name} today? Satellite status updated 4× daily, Beach Score ${b.lv.score ?? ''}/100 and a 7-day forecast. ${(b.commune || '')}, ${region.name}.`)
+    // FAQPage par plage — templates de content.beachFaq (contrat tokens dans
+    // regions/seo-content/<id>.json), fallback T[lang].beachFaq. Tokens résolus
+    // depuis la donnée LIVE uniquement ; pas de FAQPage si donnée absente.
+    const bf = content.beachFaq || t.beachFaq
+    let beachFaqLd = null
+    let beachFaqHtml = ''
+    if (bf && Array.isArray(bf.questions) && b.lv.status && b.lv.score != null) {
+      const fLine = forecastLine(data.weekly, b.id, lang)
+      const fc = (data.weekly?.[b.id]?.forecast || []).slice(1, 8)
+      const hit = fc.find(f => f.status && f.status !== 'clean')
+      let nextArrival = String(bf.nextArrivalNone || '')
+      if (hit && hit.date) {
+        const d = new Date(hit.date + 'T12:00:00Z')
+        nextArrival = String(bf.nextArrivalRisk || '')
+          .replace(/\{day\}/g, t.daysFull[d.getUTCDay()])
+          .replace(/\{date\}/g, fmtDate(lang, d))
+      }
+      const tokB = s => String(s ?? '')
+        .replace(/\{beach\}/g, b.name).replace(/\{status\}/g, sw(b.lv.status))
+        .replace(/\{score\}/g, b.lv.score).replace(/\{today\}/g, today)
+        .replace(/\{forecastLine\}/g, fLine).replace(/\{nextArrival\}/g, nextArrival)
+      const qa = bf.questions.map(q => ({ q: tokB(q.q), a: tokB(q.a) }))
+      beachFaqLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: qa.map(x => ({ '@type': 'Question', name: x.q, acceptedAnswer: { '@type': 'Answer', text: x.a } })) }
+      beachFaqHtml = `<section><h2>FAQ</h2>${qa.map(x => `<h3>${esc(x.q)}</h3><p>${esc(x.a)}</p>`).join('')}</section>`
+    }
     const noscript = `<article><h1>${esc(title)}</h1><p><em>${t.updated(today)}</em></p>${photo}
 <p><strong>${t.status}: ${sw(b.lv.status)}</strong> · ${t.score} ${b.lv.score ?? '—'}/100</p>
 <p>${esc(blurb)}</p>
 <h2>${t.forecast7}</h2><p>${forecastLine(data.weekly, b.id, lang)}</p>
 ${beachResorts.length ? `<h2>${t.resortsAt}</h2><ul>${beachResorts.map(r => `<li><a href="/${t.resortsDir}/${r.slug}/">${esc(r.name)}</a></li>`).join('')}</ul>` : ''}
 <h2>${t.nearby}</h2><ul>${nearby.map(n => `<li>${beachLink(n)} — ${sw(n.lv.status)}</li>`).join('')}</ul>
+${beachFaqHtml}
 ${hubLinks(null)}${networkFooter(region, t)}</article>`
     writePage(distDir, pathname, pageShell(tpl, {
       title, desc, pathname, domain, lang, noscript,
       jsonLd: [
         breadcrumb(domain, [{ name: t.home, path: '/' }, { name: b.name, path: pathname }]),
         { '@context': 'https://schema.org', '@type': 'Beach', name: b.name, address: { '@type': 'PostalAddress', addressLocality: b.commune || region.name, addressCountry: region.countryCode || '' }, geo: { '@type': 'GeoCoordinates', latitude: b.lat, longitude: b.lng }, url: `https://${domain}${pathname}`, ...(photos[b.id] ? { image: `https://${domain}/beaches/${photos[b.id]}` } : {}) },
+        // dateModified réel du pipeline (flag region.seo) — PAS de datePublished
+        // en plus (published+updated ensemble = -22% CTR documenté).
+        ...(region.seo && region.seo.dateModifiedFromPipeline && data.updatedAt
+          ? [{ '@context': 'https://schema.org', '@type': 'WebPage', url: `https://${domain}${pathname}`, dateModified: data.updatedAt }] : []),
+        ...(beachFaqLd ? [beachFaqLd] : []),
       ],
     }))
     urls.push(pathname)
@@ -298,12 +395,19 @@ ${hubLinks(null)}${networkFooter(region, t)}</article>`
     if (title.length > 70) title = lang === 'es' ? `Sargazo en ${r.name} HOY` : `${r.name} Sargassum Today`
     if (title.length > 70) title = smartTrim(title, 70)
     const intro = (content.resortPageTpl?.introPattern || '').replace(/\{resort\}/g, r.name).replace(/\{beach\}/g, b.name)
+    // Même garde anti double-parenthésage que le noscript : certains noms de
+    // plages contiennent déjà des parenthèses ("Juanillo Beach (Cap Cana)").
+    const beachNameDesc = b.name.includes('(') ? `— ${b.name} —` : `(${b.name})`
     const desc = trimDesc(lang === 'es'
-      ? `¿Hay sargazo en ${r.name} hoy? La playa del hotel (${b.name}) está "${sw(b.lv.status)}" según el satélite de hoy. Score ${b.lv.score ?? ''}/100, pronóstico 7 días y alertas.`
-      : `Is there sargassum at ${r.name} today? The resort beach (${b.name}) reads "${sw(b.lv.status)}" on today's satellite pass. Score ${b.lv.score ?? ''}/100, 7-day forecast & alerts.`)
+      ? `¿Hay sargazo en ${r.name} hoy? La playa del hotel ${beachNameDesc} está "${sw(b.lv.status)}" según el satélite de hoy. Score ${b.lv.score ?? ''}/100, pronóstico 7 días y alertas.`
+      : `Is there sargassum at ${r.name} today? The resort beach ${beachNameDesc} reads "${sw(b.lv.status)}" on today's satellite pass. Score ${b.lv.score ?? ''}/100, 7-day forecast & alerts.`)
+    // Garde anti double-parenthésage : si la zone contient déjà '(', ne pas
+    // re-wrapper ("Cap Cana (Juanillo)" → "— Cap Cana (Juanillo)").
+    const areaTxt = r.area || b.commune || ''
+    const areaHtml = areaTxt ? (areaTxt.includes('(') ? ` — ${esc(areaTxt)}` : ` (${esc(areaTxt)})`) : ''
     const noscript = `<article><h1>${esc(title)}</h1><p><em>${t.updated(today)}</em></p>
 <p>${esc(intro)}</p>
-<p><strong>${t.beachOf(r.name)} — ${beachLink(b)}</strong>: ${sw(b.lv.status)} · ${t.score} ${b.lv.score ?? '—'}/100 (${esc(r.area || b.commune || '')})</p>
+<p><strong>${t.beachOf(r.name)} — ${beachLink(b)}</strong>: ${sw(b.lv.status)} · ${t.score} ${b.lv.score ?? '—'}/100${areaHtml}</p>
 <h2>${t.forecast7}</h2><p>${forecastLine(data.weekly, b.id, lang)}</p>
 ${hubLinks(null)}${networkFooter(region, t)}</article>`
     writePage(distDir, pathname, pageShell(tpl, {
