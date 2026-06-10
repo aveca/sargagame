@@ -5577,6 +5577,35 @@ export default function App(){
     return pick?{...pick,_heroImg:"/beaches/"+imageMap[pick.id]}:null
   },[showHero,allBeaches,imageMap,imageQ,island,userPos])
 
+  // SargaCatch toast — recycle le trafic en partance (validé user 2026-06-10).
+  // Donnée qui justifie (règle "pas de popup sans donnée") : 45 s d'inactivité
+  // totale = bounce statistique ; le toast ne coûte rien au funnel. Gates :
+  // vue carte, hero fermé, pas de fiche/paywall ouvert, pas premium, 1×/session.
+  const[showGameToast,setShowGameToast]=useState(false)
+  const gameGateRef=useRef({})
+  useEffect(()=>{gameGateRef.current={sheet:!!selectedBeach,premium:showPremium||isPremium,view,hero:showHero}})
+  useEffect(()=>{
+    let idleT=null
+    const fire=trigger=>{
+      const g=gameGateRef.current
+      if(g.sheet||g.premium||g.hero||g.view!=="map")return
+      try{
+        if(sessionStorage.getItem("sg_game_toast"))return
+        sessionStorage.setItem("sg_game_toast","1")
+      }catch(_){return}
+      setShowGameToast(true)
+      track("sg_game_toast_shown",{trigger})
+    }
+    const reset=()=>{clearTimeout(idleT);idleT=setTimeout(()=>fire("idle"),45000)}
+    const acts=["pointerdown","keydown","touchstart","wheel"]
+    acts.forEach(a=>window.addEventListener(a,reset,{passive:true}))
+    reset()
+    // Exit-intent desktop : souris qui sort par le haut de la fenêtre
+    const exitH=e=>{if(e.clientY<=0&&window.matchMedia("(min-width:900px)").matches)fire("exit")}
+    document.addEventListener("mouseleave",exitH)
+    return()=>{clearTimeout(idleT);acts.forEach(a=>window.removeEventListener(a,reset));document.removeEventListener("mouseleave",exitH)}
+  },[])
+
   // Deep-link: /plages/:slug → auto-open beach sheet
   useEffect(()=>{
     if(!allBeaches.length)return
@@ -6094,6 +6123,32 @@ export default function App(){
               track("sg_beach_open",{beach_id:heroPick.id,status:heroPick.status,source:"hero"})
             }}
             onShowMap={()=>dismissHero("map")}/>
+        )}
+
+        {/* SARGACATCH TOAST — petit, coin bas, jamais bloquant (z 1090 :
+            au-dessus des contrôles carte, sous le paywall z1100). */}
+        {showGameToast&&(
+          <div style={{position:"absolute",bottom:96,left:0,right:0,zIndex:1090,display:"flex",
+            justifyContent:"center",pointerEvents:"none",padding:"0 16px"}}>
+            <div style={{pointerEvents:"auto",display:"flex",alignItems:"center",gap:10,
+              background:"rgba(10,23,20,.94)",border:"1px solid rgba(255,199,44,.4)",borderRadius:16,
+              padding:"10px 14px",maxWidth:380,boxShadow:"0 8px 24px rgba(0,0,0,.45)"}}>
+              <span style={{fontSize:20}}>🌊</span>
+              <div style={{flex:1,fontSize:12.5,color:"#fff",lineHeight:1.35}}>
+                <b>{_t(lang,"30 secondes à tuer ?","Got 30 seconds?","¿Tienes 30 segundos?")}</b><br/>
+                {_t(lang,"Sauve la plage — bats le score du jour","Save the beach — beat today's score","Salva la playa — supera el récord de hoy")}
+              </div>
+              <a href="/jeu/?utm_source=app&utm_medium=toast" onClick={()=>track("sg_game_toast_click",{})}
+                style={{background:"#FFC72C",color:"#0A1714",fontWeight:800,fontSize:12.5,
+                  padding:"9px 13px",borderRadius:10,textDecoration:"none",whiteSpace:"nowrap"}}>
+                {_t(lang,"Jouer","Play","Jugar")}
+              </a>
+              <button onClick={()=>{setShowGameToast(false);track("sg_game_toast_dismiss",{})}}
+                aria-label={_t(lang,"Fermer","Close","Cerrar")}
+                style={{background:"none",border:"none",color:"rgba(255,255,255,.5)",
+                  fontSize:17,lineHeight:1,cursor:"pointer",padding:"0 2px"}}>×</button>
+            </div>
+          </div>
         )}
 
         {/* TOP FLOATING — Header pill only. Transparent over map so the full
