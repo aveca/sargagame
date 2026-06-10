@@ -3684,6 +3684,22 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
     :(plan==="annual"&&hasAnnual)?"annual"
     :"monthly"
   const stripeLinkFor={monthly:LINK_MONTHLY,annual:LINK_ANNUAL,pro:LINK_PRO}
+  // Enrichit le Payment Link Stripe : prefilled_email (friction checkout -10/30%
+  // selon Stripe, l'email est déjà en localStorage) + client_reference_id
+  // (débloque l'attribution paiement→source/plan/région, aujourd'hui aveugle —
+  // remonte dans le webhook + Stripe dashboard). buy.stripe.com = le processeur
+  // de paiement choisi par l'user, pas un tiers : prefill standard et attendu.
+  const stripeUrlWith=(link,plan)=>{
+    if(!link)return link
+    try{
+      const u=new URL(link)
+      const email=localStorage.getItem("sg_email")||""
+      if(email)u.searchParams.set("prefilled_email",email)
+      const ref=[IS_NEW_REGION?REGION.id:(island||"mq"),plan||effectivePlan,source||"unknown"].join("_").replace(/[^a-zA-Z0-9_-]/g,"").slice(0,200)
+      u.searchParams.set("client_reference_id",ref)
+      return u.toString()
+    }catch{return link}
+  }
   // A/B test pw_cta_order KILLED 2026-06-09 (scheduled ab-evaluate run).
   // Hypothesis (sample-first reduces the 85% paywall dismiss) was falsified:
   // sg_sample_start fired 0 times across 10,738 sessions over ~7 weeks, with
@@ -3836,7 +3852,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
 
           {/* Continue to Stripe CTA — THE actual redirect */}
           <button onClick={()=>{
-            const link=stripeLinkFor[effectivePlan]||LINK_MONTHLY
+            const link=stripeUrlWith(stripeLinkFor[effectivePlan]||LINK_MONTHLY,effectivePlan)
             track("sg_checkout_redirect",{plan:effectivePlan,source:source||"unknown",destination:"payment_link",via:"prelude"})
             setTimeout(()=>{window.location.href=link},0)
           }} className="gbtn" style={{width:"100%",padding:14,borderRadius:14,border:"none",
@@ -4112,7 +4128,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
                 setShowPrelude(true)
                 return
               }
-              const link=stripeLinkFor[effectivePlan]||LINK_MONTHLY
+              const link=stripeUrlWith(stripeLinkFor[effectivePlan]||LINK_MONTHLY,effectivePlan)
               track("sg_checkout_redirect",{plan:effectivePlan,source:source||"unknown",destination:"payment_link"})
               // Defer navigation by one macrotask so both sendBeacon calls above flush
               // before unload (see project_funnel_cta_redirect_leak.md).

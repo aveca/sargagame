@@ -144,6 +144,10 @@ if ($type === 'checkout.session.completed') {
             'amount_total'   => $obj['amount_total'] ?? null,
             'currency'       => $obj['currency'] ?? null,
             'customer_email' => $obj['customer_email'] ?? ($obj['customer_details']['email'] ?? ''),
+            // Attribution : client_reference_id = "<region>_<plan>_<source>"
+            // posé par le front (stripeUrlWith). Débloque le split paiement par
+            // source/plan, jusque-là aveugle (project_funnel_tracking_gap).
+            'client_reference_id' => $obj['client_reference_id'] ?? null,
             'metadata'       => ['island' => $island],
         ]],
     ];
