@@ -25,6 +25,26 @@ function loadAll() {
     }
     if (!cfg || !cfg.id) throw new Error(`[regions] ${f} sans champ "id"`);
     if (out[cfg.id]) throw new Error(`[regions] id en double: ${cfg.id} (${f})`);
+    // Invariants des plages inline (nouvelles régions). Le front filtre sur
+    // b.island===REGION.id : un island différent = ZÉRO plage rendue sur le
+    // site (bug Miami/Cancún 2026-06-10). La bbox doit couvrir chaque plage,
+    // sinon geoDetect la rate et la marge data (+0.8°) est le seul filet.
+    if (Array.isArray(cfg.beaches) && cfg.id !== 'mq' && cfg.id !== 'gp') {
+      for (const b of cfg.beaches) {
+        if (b.island !== cfg.id) {
+          throw new Error(`[regions] ${f}: plage ${b.id} a island="${b.island}" ≠ id région "${cfg.id}" — le front n'affichera AUCUNE plage`);
+        }
+        if (Array.isArray(cfg.bbox) && cfg.bbox.length === 4) {
+          const [lngMin, latMin, lngMax, latMax] = cfg.bbox;
+          if (b.lng < lngMin || b.lng > lngMax || b.lat < latMin || b.lat > latMax) {
+            throw new Error(`[regions] ${f}: plage ${b.id} (${b.lat},${b.lng}) hors bbox [${cfg.bbox}]`);
+          }
+        }
+      }
+      if (cfg.beachFilter && cfg.beachFilter.island && cfg.beachFilter.island !== cfg.id) {
+        throw new Error(`[regions] ${f}: beachFilter.island="${cfg.beachFilter.island}" ≠ id "${cfg.id}"`);
+      }
+    }
     cfg._file = f;
     out[cfg.id] = cfg;
   }
