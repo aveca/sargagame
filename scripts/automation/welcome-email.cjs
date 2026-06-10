@@ -25,6 +25,11 @@ const BEACHES_PATH = path.join(__dirname, '../../public/data/beaches-list.json')
 // From address — GP uses MQ verified domain (free plan = 1 domain)
 const FROM_MQ = 'Sargasses Martinique <alerte@sargasses-martinique.com>'
 const FROM_GP = 'Sargasses Guadeloupe <alerte@sargasses-martinique.com>'
+// Nouvelles régions : même domaine vérifié MQ (Resend free = 1 domaine), display name régional.
+const { getAllRegions } = require('../../regions/index.cjs')
+const NEW_REGIONS = Object.fromEntries(
+  getAllRegions().filter(r => r.id !== 'mq' && r.id !== 'gp').map(r => [r.id.toUpperCase(), r])
+)
 const UNSUB_BASE = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec'
 function unsubUrl(email, island) { return `${UNSUB_BASE}?action=unsubscribe&email=${encodeURIComponent(email)}&island=${island}` }
 
@@ -104,6 +109,112 @@ function buildWelcomeHTML(island, cleanCount, email) {
 </html>`
 }
 
+// Welcome HTML des nouvelles régions — même gabarit visuel, strings EN/ES.
+// Pas de promesse de bulletin hebdo (email-weekend est MQ/GP-only pour l'instant).
+function buildWelcomeHTMLRegion(region, cleanCount, email) {
+  const es = region.primaryLang === 'es'
+  const name = region.name
+  const domain = region.domain
+  const stripe = region.paymentLinks && region.paymentLinks.monthly
+  const monthly = (region.pricing && region.pricing.monthly) || '$9.99'
+  const t = es ? {
+    kicker: 'Bienvenido a bordo',
+    brand: `Sargazo ${name}`,
+    tagline: 'Se acabaron las sorpresas al llegar a la playa.',
+    cleanLabel: `playas sin sargazo ahora mismo en ${name}`,
+    intro: `Acabas de unirte a quienes verifican la playa antes de salir. Esto es lo que recibes:`,
+    f1t: 'Mapa en vivo', f1d: 'Verifica cualquier playa en 5 segundos antes de ir.',
+    f2t: 'Datos satelitales', f2d: 'Actualizados 4 veces al día con imágenes reales de satélite.',
+    f3t: 'Beach Score 0-100', f3d: 'Sargazo, oleaje, viento y sol combinados en una sola nota por playa.',
+    cta: 'Ver el mapa ahora',
+    upKicker: 'Para ir más lejos', upTitle: 'Sabe el sábado desde el lunes',
+    upDesc: 'Pronóstico de 7 días + alertas push.<br>Planifica tus días de playa sin estrés.',
+    upCta: 'Probar 7 días gratis',
+    upFoot: `${monthly}/mes · Sin permanencia · Cancela en 1 clic`,
+    unsub: 'Darse de baja',
+  } : {
+    kicker: 'Welcome aboard',
+    brand: `Sargassum ${name}`,
+    tagline: 'No more nasty surprises when you reach the beach.',
+    cleanLabel: `sargassum-free beaches right now in ${name}`,
+    intro: `You just joined the people who check the beach before heading out. Here's what you get:`,
+    f1t: 'Live map', f1d: 'Check any beach in 5 seconds before you go.',
+    f2t: 'Satellite data', f2d: 'Updated 4 times a day from real satellite imagery.',
+    f3t: 'Beach Score 0-100', f3d: 'Sargassum, swell, wind and sun blended into one score per beach.',
+    cta: 'See the map now',
+    upKicker: 'Go further', upTitle: 'Know Saturday by Monday',
+    upDesc: '7-day forecast + push alerts.<br>Plan your beach days stress-free.',
+    upCta: 'Try 7 days free',
+    upFoot: `${monthly}/month · No commitment · Cancel anytime`,
+    unsub: 'Unsubscribe',
+  }
+  const island = region.id.toUpperCase()
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
+<body style="margin:0;padding:0;background:#F7F5EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+<div style="max-width:480px;margin:0 auto;padding:20px">
+
+  <div style="background:linear-gradient(145deg,#0D1E1C,#0A1714);border-radius:16px 16px 0 0;padding:32px 24px;text-align:center">
+    <div style="font-size:11px;font-weight:700;color:#E8A800;text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px">${t.kicker}</div>
+    <div style="font-size:28px;font-weight:800;color:#fff;line-height:1.1">${t.brand}</div>
+    <div style="font-size:14px;color:rgba(255,255,255,.55);margin-top:8px;line-height:1.4">${t.tagline}</div>
+  </div>
+
+  <div style="background:#fff;padding:24px 20px">
+    ${cleanCount > 0 ? `<div style="text-align:center;margin-bottom:20px;padding:16px;background:rgba(34,197,94,.06);border-radius:12px">
+      <div style="font-size:32px;font-weight:800;color:#16A34A">${cleanCount}</div>
+      <div style="font-size:13px;color:#686868;margin-top:2px">${t.cleanLabel}</div>
+    </div>` : ''}
+
+    <div style="font-size:14px;color:#444;line-height:1.5;margin-bottom:18px">${t.intro}</div>
+
+    <table style="width:100%;border-collapse:collapse">
+      <tr><td style="padding:10px 0;vertical-align:top;width:30px;font-size:18px">\u{1F5FA}️</td>
+        <td style="padding:10px 0"><div style="font-size:13px;font-weight:700;color:#0D0D0D">${t.f1t}</div>
+        <div style="font-size:12px;color:#686868;line-height:1.4">${t.f1d}</div></td></tr>
+      <tr><td style="padding:10px 0;vertical-align:top;font-size:18px">\u{1F6F0}️</td>
+        <td style="padding:10px 0"><div style="font-size:13px;font-weight:700;color:#0D0D0D">${t.f2t}</div>
+        <div style="font-size:12px;color:#686868;line-height:1.4">${t.f2d}</div></td></tr>
+      <tr><td style="padding:10px 0;vertical-align:top;font-size:18px">\u{1F3C6}</td>
+        <td style="padding:10px 0"><div style="font-size:13px;font-weight:700;color:#0D0D0D">${t.f3t}</div>
+        <div style="font-size:12px;color:#686868;line-height:1.4">${t.f3d}</div></td></tr>
+    </table>
+
+    <div style="margin-top:22px;text-align:center">
+      <a href="https://${domain}" style="display:inline-block;padding:15px 36px;
+        background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);
+        color:#0D0D0D;text-decoration:none;border-radius:12px;font-size:15px;font-weight:700;
+        box-shadow:0 4px 16px rgba(232,168,0,.3)">${t.cta}</a>
+    </div>
+  </div>
+
+  ${stripe ? `<div style="background:linear-gradient(145deg,#0D1E1C,#0A1714);padding:22px 24px;text-align:center">
+    <div style="font-size:11px;font-weight:700;color:#E8A800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">${t.upKicker}</div>
+    <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:6px">${t.upTitle}</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.55);margin-bottom:14px;line-height:1.5">${t.upDesc}</div>
+    <a href="${stripe}" style="display:inline-block;padding:11px 26px;
+      background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);
+      color:#0D0D0D;text-decoration:none;border-radius:10px;font-size:13px;font-weight:700">${t.upCta}</a>
+    <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:8px">${t.upFoot}</div>
+  </div>` : ''}
+
+  <div style="background:#fff;border-radius:0 0 16px 16px;text-align:center;padding:16px;font-size:10px;color:#999">
+    ${t.brand} · ${domain}<br>
+    <a href="${unsubUrl(email, island)}" style="color:#999">${t.unsub}</a>
+  </div>
+</div>
+</body>
+</html>`
+}
+
+// Plages propres d'une nouvelle région (levels du sargassum.json régional).
+function regionCleanCount(region) {
+  const p = path.join(__dirname, `../../public/api/copernicus/${region.id}/sargassum.json`)
+  const d = loadJSON(p, {})
+  return Array.isArray(d.levels) ? d.levels.filter(l => l.status === 'clean').length : 0
+}
+
 async function main() {
   console.log('=== Welcome Email (Resend) ===')
 
@@ -136,19 +247,34 @@ async function main() {
 
   for (const sub of newSubs) {
     const island = (sub.island || 'MQ').toUpperCase()
-    const islandBeaches = beaches.filter(b => b.island === island.toLowerCase())
-    const cleanCount = islandBeaches.filter(b => b.status === 'clean').length
-    const from = island === 'GP' ? FROM_GP : FROM_MQ
-    const name = island === 'MQ' ? 'Martinique' : 'Guadeloupe'
+    const newRegion = NEW_REGIONS[island] || null
 
-    const subjectLine = cleanCount > 0 ? `${cleanCount} plages propres en ${name} \u2014 ta carte est pr\u00EAte` : `Bienvenue \u2014 ta carte sargasses ${name} est pr\u00EAte`
+    let from, subjectLine, htmlBody
+    if (newRegion) {
+      // Nouvelle r\u00E9gion : sender via domaine MQ v\u00E9rifi\u00E9, contenu EN/ES.
+      const cleanCount = regionCleanCount(newRegion)
+      const es = newRegion.primaryLang === 'es'
+      from = `${es ? 'Sargazo' : 'Sargassum'} ${newRegion.name} <alerte@sargasses-martinique.com>`
+      subjectLine = es
+        ? (cleanCount > 0 ? `${cleanCount} playas sin sargazo en ${newRegion.name} \u2014 tu mapa est\u00E1 listo` : `Bienvenido \u2014 tu mapa de sargazo de ${newRegion.name} est\u00E1 listo`)
+        : (cleanCount > 0 ? `${cleanCount} sargassum-free beaches in ${newRegion.name} \u2014 your map is ready` : `Welcome \u2014 your ${newRegion.name} sargassum map is ready`)
+      htmlBody = buildWelcomeHTMLRegion(newRegion, cleanCount, sub.email)
+    } else {
+      const islandBeaches = beaches.filter(b => b.island === island.toLowerCase())
+      const cleanCount = islandBeaches.filter(b => b.status === 'clean').length
+      from = island === 'GP' ? FROM_GP : FROM_MQ
+      const name = island === 'MQ' ? 'Martinique' : 'Guadeloupe'
+      subjectLine = cleanCount > 0 ? `${cleanCount} plages propres en ${name} \u2014 ta carte est pr\u00EAte` : `Bienvenue \u2014 ta carte sargasses ${name} est pr\u00EAte`
+      htmlBody = buildWelcomeHTML(island, cleanCount, sub.email)
+    }
+
     try {
       const unsub = unsubUrl(sub.email, island)
       const { data, error } = await resend.emails.send({
         from,
         to: sub.email,
         subject: subjectLine,
-        html: buildWelcomeHTML(island, cleanCount, sub.email),
+        html: htmlBody,
         headers: {
           'List-Unsubscribe': `<${unsub}>`,
           'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',

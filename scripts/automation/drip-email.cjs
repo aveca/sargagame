@@ -340,6 +340,9 @@ async function main() {
     const email = sub.email
     if (bouncedSet.has(email)) continue
     const island = (sub.island || 'MQ').toUpperCase()
+    // Nouvelles régions (PUNTACANA/FLORIDA/RIVIERAMAYA…) : pas de drip FR.
+    // Séquence région-aware EN/ES à écrire avant de retirer ce garde-fou.
+    if (island !== 'MQ' && island !== 'GP') continue
     const age = daysSince(sub.date)
     const record = dripSent[email] || {}
 
