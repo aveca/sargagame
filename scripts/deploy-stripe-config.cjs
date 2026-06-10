@@ -21,6 +21,7 @@ const API_DIR = path.join(__dirname, "..", "public", "api");
 const FILES = [
   { local: path.join(API_DIR, "stripe-config.php"), remote: "api/stripe-config.php", optional: true },
   { local: path.join(API_DIR, "stripe-webhook.php"), remote: "api/stripe-webhook.php" },
+  { local: path.join(API_DIR, "create-checkout.php"), remote: "api/create-checkout.php" },
   { local: path.join(API_DIR, "data", ".htaccess"), remote: "api/data/.htaccess" },
 ];
 
@@ -44,6 +45,20 @@ const targets = [
     host: process.env.FTP_HOST_PUNTACANA || process.env.FTP_SERVER_PUNTACANA,
     user: process.env.FTP_USER_PUNTACANA || process.env.FTP_USERNAME_PUNTACANA,
     pass: process.env.FTP_PASS_PUNTACANA || process.env.FTP_PASSWORD_PUNTACANA,
+    optional: true,
+  },
+  {
+    label: "Florida",
+    host: process.env.FTP_HOST_FLORIDA || process.env.FTP_SERVER_FLORIDA,
+    user: process.env.FTP_USER_FLORIDA || process.env.FTP_USERNAME_FLORIDA,
+    pass: process.env.FTP_PASS_FLORIDA || process.env.FTP_PASSWORD_FLORIDA,
+    optional: true,
+  },
+  {
+    label: "Riviera Maya",
+    host: process.env.FTP_HOST_RIVIERAMAYA || process.env.FTP_SERVER_RIVIERAMAYA,
+    user: process.env.FTP_USER_RIVIERAMAYA || process.env.FTP_USERNAME_RIVIERAMAYA,
+    pass: process.env.FTP_PASS_RIVIERAMAYA || process.env.FTP_PASSWORD_RIVIERAMAYA,
     optional: true,
   },
 ];

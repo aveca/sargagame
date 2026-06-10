@@ -5,7 +5,7 @@ $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 // SYNC MANUEL avec les domaines de regions/*.json (regions/index.cjs est du
 // CommonJS, non chargeable depuis PHP). Ajouter ici chaque nouvelle region
 // qui sert ce endpoint (scripts/test-stripe-webhook.cjs verifie la coherence).
-$allowed = ['https://sargasses-martinique.com','https://sargasses-guadeloupe.com','https://sargassumpuntacana.com'];
+$allowed = ['https://sargasses-martinique.com','https://sargasses-guadeloupe.com','https://sargassumpuntacana.com','https://sargassummiami.com','https://sargassumcancun.com'];
 if (in_array($origin, $allowed)) header("Access-Control-Allow-Origin: $origin");
 
 // Region du domaine appelant → metadata.island sur customer + subscription,
@@ -15,6 +15,8 @@ $ISLAND_BY_ORIGIN = [
     'https://sargasses-martinique.com' => 'mq',
     'https://sargasses-guadeloupe.com' => 'gp',
     'https://sargassumpuntacana.com'   => 'puntacana',
+    'https://sargassummiami.com'       => 'florida',
+    'https://sargassumcancun.com'      => 'rivieramaya',
 ];
 $island = $ISLAND_BY_ORIGIN[$origin] ?? '';
 
@@ -151,6 +153,51 @@ function buildWelcomeEmail($island, $trialEnd, $domain, $lang) {
 </table>
 </body></html>
 HTML;
+}
+
+// ── Action: embedded — Checkout Session ui_mode=embedded : le formulaire
+// Stripe complet (CB + Apple Pay + Google Pay + Link) monte DANS l'app, plus
+// de redirect plein-page vers buy.stripe.com. Memes conditions que les
+// Payment Links : essai 7 jours, prix par region (prices_by_region dans
+// stripe-config.php — fallback 'prices' plat EUR pour MQ/GP). Le retour
+// /?session_id={CHECKOUT_SESSION_ID} reutilise le handler historique du front
+// (deblocage premium + sg_conversion) et le webhook signe reste la verite.
+if ($action === 'embedded') {
+    $plan = (($input['plan'] ?? 'monthly') === 'annual') ? 'annual' : 'monthly';
+    $byRegion = $cfg['prices_by_region'] ?? [];
+    $regionPrices = ($island !== '' && isset($byRegion[$island])) ? $byRegion[$island] : null;
+    $price = $regionPrices[$plan] ?? ($cfg['prices'][$plan] ?? ($cfg['prices']['monthly'] ?? ''));
+    if (!$price) {
+        http_response_code(500);
+        echo json_encode(['error' => 'no price configured']);
+        exit;
+    }
+
+    $email = trim($input['email'] ?? '');
+    $source = preg_replace('/[^a-zA-Z0-9_-]/', '', $input['source'] ?? 'unknown');
+    // Meme format que stripeUrlWith cote front : attribution region_plan_source
+    $ref = substr(($island !== '' ? $island : 'mq') . '_' . $plan . '_' . $source, 0, 200);
+    $returnBase = in_array($origin, $allowed, true) ? $origin : 'https://sargasses-martinique.com';
+
+    $params = [
+        'ui_mode'                              => 'embedded',
+        'mode'                                 => 'subscription',
+        'line_items[0][price]'                 => $price,
+        'line_items[0][quantity]'              => 1,
+        'subscription_data[trial_period_days]' => 7,
+        'return_url'                           => $returnBase . '/?session_id={CHECKOUT_SESSION_ID}',
+        'client_reference_id'                  => $ref,
+    ];
+    if ($island !== '') {
+        $params['metadata[island]'] = $island;
+        $params['subscription_data[metadata][island]'] = $island;
+    }
+    if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $params['customer_email'] = $email;
+    }
+    $session = stripe('POST', '/checkout/sessions', $params);
+    echo json_encode(['clientSecret' => $session['client_secret'] ?? null]);
+    exit;
 }
 
 // ── Action: setup — cree un SetupIntent (collecte carte)

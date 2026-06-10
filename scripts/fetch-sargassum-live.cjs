@@ -971,10 +971,66 @@ function computeBankDrift(centroid, hull, windSpeed, windDir, island, hourlyWind
 /**
  * Build sargassum-banks.json: clustered banks with drift predictions.
  */
+// ── Masque eau/terre dérivé de la grille ERDDAP ─────────────────────
+// L'AFAI n'existe que sur l'eau : les pixels TERRE sont null dans le composite
+// 7D. Les cellules non-null forment donc un masque "eau" à la résolution de la
+// grille — utilisé pour clipper les hulls de bancs qui débordaient sur les îles
+// (inflation 1.2 + pont convexe autour des caps + dérive vers la côte).
+function buildWaterMask(grids) {
+  const masks = []
+  for (const grid of grids || []) {
+    if (!grid || !grid.points || !grid.latitudes || grid.latitudes.length < 2 || !grid.longitudes || grid.longitudes.length < 2) continue
+    const lat0 = grid.latitudes[0]
+    const dLat = grid.latitudes[1] - grid.latitudes[0]
+    const lng0 = grid.longitudes[0]
+    const dLng = grid.longitudes[1] - grid.longitudes[0]
+    const cells = new Set()
+    for (const p of grid.points) {
+      if (p.AFAI == null) continue
+      cells.add(`${Math.round((p.latitude - lat0) / dLat)}:${Math.round((p.longitude - lng0) / dLng)}`)
+    }
+    masks.push({
+      lat0, dLat, lng0, dLng, cells,
+      latMin: Math.min(grid.latitudes[0], grid.latitudes[grid.latitudes.length - 1]),
+      latMax: Math.max(grid.latitudes[0], grid.latitudes[grid.latitudes.length - 1]),
+      lngMin: Math.min(grid.longitudes[0], grid.longitudes[grid.longitudes.length - 1]),
+      lngMax: Math.max(grid.longitudes[0], grid.longitudes[grid.longitudes.length - 1]),
+    })
+  }
+  if (!masks.length) return null
+  return (lat, lng) => {
+    let covered = false
+    for (const m of masks) {
+      if (lat < m.latMin || lat > m.latMax || lng < m.lngMin || lng > m.lngMax) continue
+      covered = true
+      if (m.cells.has(`${Math.round((lat - m.lat0) / m.dLat)}:${Math.round((lng - m.lng0) / m.dLng)}`)) return true
+    }
+    // Hors de toute grille : indéterminé → on considère eau (ne pas clipper)
+    return covered ? false : true
+  }
+}
+
+// Ramène chaque sommet de hull tombé sur la terre vers refPoint (centroïde
+// ACTUEL du banc, toujours en eau — barycentre de pixels AFAI) par pas de 25%,
+// max 8 pas. Garde la forme côté large, colle la bordure à la côte.
+function clipHullToWater(hull, refPoint, isWater) {
+  if (!isWater || !Array.isArray(hull)) return hull
+  return hull.map(([lat, lng]) => {
+    if (isWater(lat, lng)) return [lat, lng]
+    let cur = [lat, lng]
+    for (let s = 0; s < 8; s++) {
+      cur = [cur[0] + (refPoint[0] - cur[0]) * 0.25, cur[1] + (refPoint[1] - cur[1]) * 0.25]
+      if (isWater(cur[0], cur[1])) break
+    }
+    return [Math.round(cur[0] * 1000) / 1000, Math.round(cur[1] * 1000) / 1000]
+  })
+}
+
 // regionCtx (optionnel) = { id, beaches } pour les nouvelles régions :
 // island/vent/plages menacées résolus par région au lieu du split lat MQ/GP.
 // regionCtx absent → comportement MQ/GP historique strictement inchangé.
-async function buildSargassumBanks(gridPoints, dir, wind, marineData, regionCtx = null) {
+// grids (optionnel) = grilles ERDDAP complètes pour le masque eau/terre.
+async function buildSargassumBanks(gridPoints, dir, wind, marineData, regionCtx = null, grids = null) {
   if (!gridPoints || gridPoints.length < 3) {
     console.log('  Skipping banks: not enough grid points')
     return
@@ -983,6 +1039,7 @@ async function buildSargassumBanks(gridPoints, dir, wind, marineData, regionCtx 
   // 1. Cluster
   const clusters = dbscan(gridPoints, 0.06, 3)
   console.log(`  DBSCAN: ${clusters.length} banks from ${gridPoints.length} points`)
+  const isWater = buildWaterMask(grids)
 
   // 2. Wind already fetched (passed in from main)
 
@@ -1000,14 +1057,24 @@ async function buildSargassumBanks(gridPoints, dir, wind, marineData, regionCtx 
     const mass = Math.round((sumW / cluster.length) * 100) / 100 // avg AFAI
     const island = regionCtx ? regionCtx.id : (centroid[0] >= 15.5 ? 'gp' : 'mq')
 
-    // Hull
+    // Hull — clippé au masque eau (l'inflation et le pont convexe pouvaient
+    // recouvrir la côte, ex: ouest Martinique)
     let hull = convexHull(cluster)
     hull = inflateHull(hull, centroid, 1.2)
+    hull = clipHullToWater(hull, centroid, isWater)
 
     // Drift (uses forecast wind when available)
     const w = wind[island] || { speed: 15, dir: 75 }
     const beachPool = regionCtx ? regionCtx.beaches : BEACHES
     const drift = computeBankDrift(centroid, hull, w.speed, w.dir, island, w.hourly || null, marineData, beachPool)
+    // Les hulls projetés (6h/12h/24h) dérivent vers la côte : même clip,
+    // référence = centroïde ACTUEL (eau sûre, même si la projection est beached)
+    if (isWater && drift && drift.predictions) {
+      for (const tk of Object.keys(drift.predictions)) {
+        const pr = drift.predictions[tk]
+        if (pr && Array.isArray(pr.hull)) pr.hull = clipHullToWater(pr.hull, centroid, isWater)
+      }
+    }
 
     // Threatened beaches at each time step
     const threatens = {}
@@ -1306,7 +1373,7 @@ async function runRegionPipeline(region, shared) {
       'utf-8'
     )
     console.log(`  [${region.id}] grid: ${gridPoints.length} points (AFAI > 0)`)
-    await buildSargassumBanks(gridPoints, regionDir, windForecast, marineData, { id: region.id, beaches })
+    await buildSargassumBanks(gridPoints, regionDir, windForecast, marineData, { id: region.id, beaches }, [grid])
   }
 
   const clean = levels.filter(l => l.status === 'clean').length
@@ -1557,7 +1624,7 @@ async function main() {
   // 5. Cluster AFAI grid points into sargassum BANKS + drift predictions
   console.log('')
   console.log('[5/6] Clustering sargassum banks + drift predictions...')
-  await buildSargassumBanks(gridPoints, dir, windForecast, marineData)
+  await buildSargassumBanks(gridPoints, dir, windForecast, marineData, null, [mqGrid, gpGrid])
 
   // History — store RAW satellite values (not accumulated) to prevent compounding
   const changes = updateHistory(dir, rawLevels)

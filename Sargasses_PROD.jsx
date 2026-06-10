@@ -3718,6 +3718,54 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
       return u.toString()
     }catch{return link}
   }
+  // ── Checkout in-app (Stripe Embedded Checkout) ────────────────────────────
+  // Formulaire Stripe complet (CB + Apple Pay + Google Pay + Link) monté DANS
+  // l'app — plus de redirect plein-page vers buy.stripe.com. Mêmes conditions
+  // que les Payment Links (essai 7j, prix région). Fallback intégral : si le
+  // endpoint PHP ou js.stripe.com échoue, redirect Payment Link historique —
+  // jamais d'impasse de paiement. Retour: /?session_id= → handler existant.
+  const[embeddedOpen,setEmbeddedOpen]=useState(false)
+  const embeddedRef=useRef(null)
+  const embeddedDivRef=useRef(null)
+  const closeEmbedded=useCallback(()=>{
+    try{embeddedRef.current?.destroy()}catch(_){}
+    embeddedRef.current=null
+    setEmbeddedOpen(false)
+  },[])
+  useEffect(()=>{
+    if(embeddedOpen&&embeddedRef.current&&embeddedDivRef.current){
+      try{embeddedRef.current.mount(embeddedDivRef.current)}catch(_){closeEmbedded()}
+    }
+  },[embeddedOpen,closeEmbedded])
+  useEffect(()=>()=>{try{embeddedRef.current?.destroy()}catch(_){}},[])
+  const startCheckout=useCallback(async(plan,via)=>{
+    const link=stripeUrlWith(stripeLinkFor[plan]||LINK_MONTHLY,plan)
+    try{
+      track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"embedded",via})
+      const r=await fetch("/api/create-checkout.php",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({action:"embedded",plan,source:source||"unknown",lang,email:localStorage.getItem("sg_email")||""}),
+      })
+      if(!r.ok)throw new Error("http "+r.status)
+      const{clientSecret}=await r.json()
+      if(!clientSecret)throw new Error("no clientSecret")
+      if(!window.Stripe){
+        await new Promise((res,rej)=>{
+          const sc=document.createElement("script")
+          sc.src="https://js.stripe.com/v3";sc.onload=res;sc.onerror=rej
+          document.head.appendChild(sc)
+        })
+      }
+      const checkout=await window.Stripe(STRIPE_PK).initEmbeddedCheckout({clientSecret})
+      embeddedRef.current=checkout
+      setEmbeddedOpen(true)
+      track("sg_embedded_open",{plan,via})
+    }catch(e){
+      // Chemin historique — le Payment Link reste la roue de secours
+      track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"payment_link",via:via+"_fallback"})
+      setTimeout(()=>{window.location.href=link},0)
+    }
+  },[source,lang])
   // A/B test pw_cta_order KILLED 2026-06-09 (scheduled ab-evaluate run).
   // Hypothesis (sample-first reduces the 85% paywall dismiss) was falsified:
   // sg_sample_start fired 0 times across 10,738 sessions over ~7 weeks, with
@@ -3868,11 +3916,9 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
             ))}
           </div>
 
-          {/* Continue to Stripe CTA — THE actual redirect */}
+          {/* Continue to Stripe CTA — checkout in-app (fallback Payment Link) */}
           <button onClick={()=>{
-            const link=stripeUrlWith(stripeLinkFor[effectivePlan]||LINK_MONTHLY,effectivePlan)
-            track("sg_checkout_redirect",{plan:effectivePlan,source:source||"unknown",destination:"payment_link",via:"prelude"})
-            setTimeout(()=>{window.location.href=link},0)
+            startCheckout(effectivePlan,"prelude")
           }} className="gbtn" style={{width:"100%",padding:14,borderRadius:14,border:"none",
             cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:15,lineHeight:1.15,
             display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
@@ -4162,11 +4208,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
                 setShowPrelude(true)
                 return
               }
-              const link=stripeUrlWith(stripeLinkFor[effectivePlan]||LINK_MONTHLY,effectivePlan)
-              track("sg_checkout_redirect",{plan:effectivePlan,source:source||"unknown",destination:"payment_link"})
-              // Defer navigation by one macrotask so both sendBeacon calls above flush
-              // before unload (see project_funnel_cta_redirect_leak.md).
-              setTimeout(()=>{window.location.href=link},0)
+              // Checkout in-app (Embedded) — fallback Payment Link géré dedans
+              startCheckout(effectivePlan,"direct")
             }}
             className="gbtn" style={{width:"100%",textAlign:"center",fontSize:17,
               padding:"16px 24px",display:"block",border:"none",cursor:"pointer",fontFamily:"inherit",lineHeight:1.2,
@@ -4247,6 +4290,24 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
         }}>{LL.close}</button>
         </div>{/* end sticky CTA section */}
       </div>
+      {/* Checkout in-app — overlay plein écran au-dessus du modal (z 1300).
+          Le formulaire Stripe (iframe) vit dans le conteneur blanc ; la croix
+          détruit l'instance (sinon double-mount au prochain clic). */}
+      {embeddedOpen&&(
+        <div style={{position:"fixed",inset:0,zIndex:1300,background:"rgba(8,15,14,.94)",
+          display:"flex",flexDirection:"column"}}>
+          <div style={{display:"flex",justifyContent:"flex-end",padding:"10px 14px"}}>
+            <button onClick={()=>{track("sg_embedded_close",{plan:effectivePlan,source:source||"unknown"});closeEmbedded()}}
+              aria-label={_t(lang,"Fermer","Close","Cerrar")}
+              style={{width:38,height:38,borderRadius:"50%",border:"1px solid rgba(255,255,255,.25)",
+                background:"rgba(255,255,255,.08)",color:"#fff",fontSize:17,cursor:"pointer",lineHeight:1}}>✕</button>
+          </div>
+          <div style={{flex:1,overflow:"auto",background:"#fff",
+            borderRadius:"16px 16px 0 0",maxWidth:560,width:"100%",margin:"0 auto"}}>
+            <div ref={embeddedDivRef} style={{minHeight:"100%"}}/>
+          </div>
+        </div>
+      )}
     </>
   )
 }

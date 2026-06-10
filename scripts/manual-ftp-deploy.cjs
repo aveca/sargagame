@@ -151,16 +151,13 @@ async function deployOne(t) {
     }
   }
 
-  // Chunk 0: root files in a single session
+  // Ordre anti fenêtre-cassée (2026-06-10) : assets/ EN PREMIER (bundles
+  // hashés = additifs, inoffensifs tant que rien ne les référence), puis les
+  // autres dossiers, et la racine (index.html, sw.js) en DERNIER — le flip
+  // vers le nouveau bundle est atomique une fois tout le contenu en place.
+  // Avant : racine d'abord → index.html pointait 10-25 min vers un bundle
+  // 404 pendant l'upload (site blanc, chargement infini).
   const rootFiles = entries.filter(e => fs.statSync(path.join(t.local, e)).isFile())
-  if (rootFiles.length && !skipUntil) {
-    const n = await withFreshClient("<root>", async client => {
-      for (const f of rootFiles) {
-        await client.uploadFrom(path.join(t.local, f), f)
-      }
-    })
-    console.log(`  [${t.label}] <root> ✓ (${rootFiles.length} files, tracked ${n})`)
-  }
 
   // Chunks 1..N: each top-level subdir in its own fresh session.
   // When a subdir exceeds BATCH_SIZE flat files, split into sub-chunks with a
@@ -172,7 +169,7 @@ async function deployOne(t) {
     if (skipUntil && e < skipUntil) return false
     if (exclude.has(e)) return false
     return fs.statSync(path.join(t.local, e)).isDirectory()
-  })
+  }).sort((a, b) => (a === 'assets' ? -1 : b === 'assets' ? 1 : a < b ? -1 : 1))
   for (const d of subdirs) {
     const localDir = path.join(t.local, d)
     const dirEntries = fs.readdirSync(localDir)
@@ -206,6 +203,16 @@ async function deployOne(t) {
       })
       console.log(`  [${t.label}] ${d}/${sd}/ ✓ (${n} files)`)
     }
+  }
+
+  // Racine en dernier (voir commentaire ordre anti fenêtre-cassée ci-dessus)
+  if (rootFiles.length && !skipUntil) {
+    const n = await withFreshClient("<root>", async client => {
+      for (const f of rootFiles) {
+        await client.uploadFrom(path.join(t.local, f), f)
+      }
+    })
+    console.log(`  [${t.label}] <root> ✓ (${rootFiles.length} files, tracked ${n})`)
   }
 
   const dt = ((Date.now() - t0) / 1000).toFixed(1)
