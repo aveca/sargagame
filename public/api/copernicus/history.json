@@ -3155,18 +3155,18 @@
       "levels": [
         {
           "id": "grande-anse",
-          "afai": 0.22,
-          "status": "moderate"
+          "afai": 0.13,
+          "status": "clean"
         },
         {
           "id": "anse-mitan",
-          "afai": 0.22,
-          "status": "moderate"
+          "afai": 0.13,
+          "status": "clean"
         },
         {
           "id": "anse-noire",
-          "afai": 0.23,
-          "status": "moderate"
+          "afai": 0.14,
+          "status": "clean"
         },
         {
           "id": "tartane",
@@ -3175,33 +3175,33 @@
         },
         {
           "id": "anse-madame",
-          "afai": 0.23,
-          "status": "moderate"
+          "afai": 0.14,
+          "status": "clean"
         },
         {
           "id": "diamant",
-          "afai": 0.22,
-          "status": "moderate"
+          "afai": 0.13,
+          "status": "clean"
         },
         {
           "id": "pt-marin",
-          "afai": 0.21,
-          "status": "moderate"
+          "afai": 0.12,
+          "status": "clean"
         },
         {
           "id": "sainte-anne",
-          "afai": 0.21,
-          "status": "moderate"
+          "afai": 0.12,
+          "status": "clean"
         },
         {
           "id": "les-salines",
-          "afai": 0.21,
-          "status": "moderate"
+          "afai": 0.12,
+          "status": "clean"
         },
         {
           "id": "vauclin",
-          "afai": 0.21,
-          "status": "moderate"
+          "afai": 0.11,
+          "status": "clean"
         },
         {
           "id": "gp-grande-anse",
@@ -3319,6 +3319,69 @@
       "from": "clean",
       "to": "moderate",
       "afai": 0.21
+    },
+    {
+      "date": "2026-06-10",
+      "beach": "grande-anse",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.13
+    },
+    {
+      "date": "2026-06-10",
+      "beach": "anse-mitan",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.13
+    },
+    {
+      "date": "2026-06-10",
+      "beach": "anse-noire",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.14
+    },
+    {
+      "date": "2026-06-10",
+      "beach": "anse-madame",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.14
+    },
+    {
+      "date": "2026-06-10",
+      "beach": "diamant",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.13
+    },
+    {
+      "date": "2026-06-10",
+      "beach": "pt-marin",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.12
+    },
+    {
+      "date": "2026-06-10",
+      "beach": "sainte-anne",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.12
+    },
+    {
+      "date": "2026-06-10",
+      "beach": "les-salines",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.12
+    },
+    {
+      "date": "2026-06-10",
+      "beach": "vauclin",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.11
     }
   ]
 }
