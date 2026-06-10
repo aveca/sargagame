@@ -90,13 +90,18 @@ const REASON_T = {
   es: { but: 'Pero', neutral: 'Condiciones promedio en todos los factores.' },
 }
 
-function weakness(factor, snap, lang = 'fr') {
+function weakness(factor, snap, lang = 'fr', imperial = false) {
   const L = {
     fr: { alert: a => `alerte sargasses (AFAI ${a})`, present: a => `sargasses présentes (AFAI ${a})`, trace: a => `trace de sargasses (AFAI ${a})`, wave: h => `houle ${h} m`, wind: w => `vent ${w} km/h`, sst: s => `eau fraîche ${s} °C`, cloud: 'ciel couvert', uvHigh: 'UV extrême', uvLow: 'UV faible' },
     en: { alert: a => `sargassum alert (AFAI ${a})`, present: a => `sargassum present (AFAI ${a})`, trace: a => `trace of sargassum (AFAI ${a})`, wave: h => `${h} m swell`, wind: w => `${w} km/h wind`, sst: s => `cool water ${s} °C`, cloud: 'overcast sky', uvHigh: 'extreme UV', uvLow: 'low UV' },
     es: { alert: a => `alerta de sargazo (AFAI ${a})`, present: a => `sargazo presente (AFAI ${a})`, trace: a => `rastro de sargazo (AFAI ${a})`, wave: h => `oleaje de ${h} m`, wind: w => `viento de ${w} km/h`, sst: s => `agua fresca ${s} °C`, cloud: 'cielo nublado', uvHigh: 'UV extremo', uvLow: 'UV bajo' },
   }[lang] || null
-  const l = L || { alert: a => `alerte sargasses (AFAI ${a})` }
+  let l = L || { alert: a => `alerte sargasses (AFAI ${a})` }
+  // Régions US (Floride) : unités impériales — mêmes conversions que score.cjs
+  if (imperial && lang === 'en') {
+    l = { ...l, wave: h => `${h} ft swell`, wind: w => `${w} mph wind`, sst: s => `cool water ${s} °F` }
+  }
+  const imp = imperial && lang === 'en'
   switch (factor) {
     case 'sargassum': {
       const a = snap.afai?.toFixed(2) ?? '?'
@@ -105,11 +110,11 @@ function weakness(factor, snap, lang = 'fr') {
       return l.trace(a)
     }
     case 'wave':
-      return l.wave(snap.wave_height?.toFixed(1) ?? '?')
+      return l.wave(snap.wave_height != null ? (imp ? (snap.wave_height * 3.28084).toFixed(1) : snap.wave_height.toFixed(1)) : '?')
     case 'wind':
-      return l.wind(Math.round(snap.wind_speed))
+      return l.wind(snap.wind_speed != null ? Math.round(imp ? snap.wind_speed * 0.621371 : snap.wind_speed) : '?')
     case 'sst':
-      return l.sst(snap.sst?.toFixed(1) ?? '?')
+      return l.sst(snap.sst != null ? (imp ? Math.round(snap.sst * 9 / 5 + 32) : snap.sst.toFixed(1)) : '?')
     case 'cloud':
       return l.cloud
     case 'uv':
@@ -129,7 +134,7 @@ export function labelFor(score) {
   return { label: 'NON', color: '#C93A1E' }
 }
 
-export function computeScore(snapshot = {}, lang = 'fr') {
+export function computeScore(snapshot = {}, lang = 'fr', imperial = false) {
   const breakdown = {
     sargassum: scoreSargassum(snapshot.afai),
     wave: scoreWave(snapshot.wave_height),
@@ -151,7 +156,7 @@ export function computeScore(snapshot = {}, lang = 'fr') {
     const ratio = pts / max
     if (ratio >= 0.9) strengths.push(SL[factor])
     else if (ratio <= 0.3) {
-      const w = weakness(factor, snapshot, lang)
+      const w = weakness(factor, snapshot, lang, imperial)
       if (w) weaknesses.push(w)
     }
   }

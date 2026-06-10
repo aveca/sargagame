@@ -1239,7 +1239,8 @@ async function runRegionPipeline(region, shared) {
       tide_ratio: null,
     }
     // Raisons dans la langue de la région (mq/gp = fr → inchangé byte-à-byte).
-    const result = computeScore(snap, region.primaryLang || 'fr')
+    // Régions US (Floride) : raisons en unités impériales (ft/mph/°F).
+    const result = computeScore(snap, region.primaryLang || 'fr', region.countryCode === 'US')
     level.score = result.score
     level.label = result.label
     level.color = result.color

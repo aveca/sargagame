@@ -28,6 +28,12 @@ const IS_NEW_REGION = !!(__R && __R.id !== "mq" && __R.id !== "gp")
 const REGION = IS_NEW_REGION ? __R : null
 // Email support région-aware (MQ/GP : littéral historique inchangé)
 const SUPPORT_EMAIL = IS_NEW_REGION ? (REGION.emails?.support || ("support@" + REGION.domain)) : "alerte@sargasses-martinique.com"
+// Unités impériales pour les régions US (Floride) — MQ/GP et régions métriques inchangées
+const US_UNITS = !!(IS_NEW_REGION && REGION.countryCode === "US")
+const fmtTemp=c=>US_UNITS?`${Math.round(c*9/5+32)}°F`:`${c}°C`
+const fmtWind=k=>US_UNITS?`${Math.round(k*0.621371)} mph`:`${k} km/h`
+const fmtHeight=m=>US_UNITS?`${(m*3.28084).toFixed(1)} ft`:`${m}m`
+const fmtRain=mm=>US_UNITS?`${(mm/25.4).toFixed(2)} in`:`${mm}mm`
 
 /* ═══════════════════════════════════════════════════════════════════════════
    CONTEXT
@@ -1971,16 +1977,16 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             <>
               <h3 style={{fontSize:15,fontWeight:700,margin:"20px 0 10px"}}>{LL.weather}</h3>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
-                <WeatherCard icon="🌡️" label={LL.temp} value={`${weather.temp}°C`}/>
-                <WeatherCard icon="💨" label={LL.wind} value={`${weather.wind} km/h`}/>
+                <WeatherCard icon="🌡️" label={LL.temp} value={fmtTemp(weather.temp)}/>
+                <WeatherCard icon="💨" label={LL.wind} value={fmtWind(weather.wind)}/>
                 <WeatherCard icon="☀️" label={LL.uv} value={weather.uv}/>
               </div>
               {/* Marine — only when significant */}
               {(()=>{
                 const cards=[]
-                if(weather.waveHeight!=null&&weather.waveHeight>=1.5)cards.push(<WeatherCard key="w" icon="🌊" label={LL.waves} value={`${weather.waveHeight}m`}/>)
-                if(weather.swellHeight!=null&&weather.swellHeight>=1.5)cards.push(<WeatherCard key="s" icon="🏄" label={LL.swell} value={`${weather.swellHeight}m`}/>)
-                if(weather.precipitation>0)cards.push(<WeatherCard key="r" icon="💧" label={LL.rain} value={`${weather.precipitation}mm`}/>)
+                if(weather.waveHeight!=null&&weather.waveHeight>=1.5)cards.push(<WeatherCard key="w" icon="🌊" label={LL.waves} value={fmtHeight(weather.waveHeight)}/>)
+                if(weather.swellHeight!=null&&weather.swellHeight>=1.5)cards.push(<WeatherCard key="s" icon="🏄" label={LL.swell} value={fmtHeight(weather.swellHeight)}/>)
+                if(weather.precipitation>0)cards.push(<WeatherCard key="r" icon="💧" label={LL.rain} value={fmtRain(weather.precipitation)}/>)
                 return cards.length>0?<div style={{display:"grid",gridTemplateColumns:`repeat(${cards.length},1fr)`,gap:10,marginTop:10}}>{cards}</div>:null
               })()}
             </>
@@ -5163,8 +5169,8 @@ export default function App(){
               }
               if(snap.wave_height==null&&snap.wind_speed==null)continue
               // Raisons dans la langue de la région (en/es) — pas de FR brut sur
-              // les sites EN/ES au point de conversion.
-              const r=_computeBeachScore(snap,lang)
+              // les sites EN/ES au point de conversion. US : unités impériales.
+              const r=_computeBeachScore(snap,lang,US_UNITS)
               beaches[i]={...beaches[i],score:r.score,scoreLabel:r.label,scoreColor:r.color,scoreReason:r.reason,scoreBreakdown:r.breakdown,scoreStrengths:r.strengths||[],scoreWeaknesses:r.weaknesses||[]}
             }
           }
