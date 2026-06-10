@@ -3639,8 +3639,16 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
   const _cleanCount=_islandLvls.filter(b=>b.score>=70).length
   const _totalCount=_islandLvls.length
   const _topBeach=[..._islandLvls].sort((a,b)=>b.score-a.score)[0]
-  const _topName=_topBeach?.id?.replace(/^gp-/,"").split("-").map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(" ")||null
+  // Nouvelles régions : ids opaques (pc001…) → nom réel depuis REGION.beaches.
+  // MQ/GP : derivation slug historique inchangée.
+  const _topName=(IS_NEW_REGION?REGION.beaches?.find(b=>b.id===_topBeach?.id)?.name:null)
+    ||_topBeach?.id?.replace(/^gp-/,"").split("-").map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(" ")||null
   const _topScore=_topBeach?.score||null
+  // Exemples des value cards : plages MQ en dur pour MQ/GP (copy historique),
+  // plages de la région pour les nouveaux domaines (crédibilité paywall).
+  const _exAlert=IS_NEW_REGION?(REGION.beaches?.[4]?.name||REGION.name):null
+  const _exSwitch=IS_NEW_REGION?(REGION.beaches?.[8]?.name||REGION.beaches?.[0]?.name||REGION.name):null
+  const _exWeekend=IS_NEW_REGION?(REGION.beaches?.[5]?.name||REGION.name):null
   const modalOpenedAt=useRef(Date.now())
   const panelRef=useRef(null)
   const startYRef=useRef(0)
@@ -3911,6 +3919,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
               <div style={{fontSize:14.5,fontWeight:700,color:"#fff",lineHeight:1.25}}>
                 {_topName
                   ?(lang==="en"?`Your best beach today: ${_topName}`:`Ta meilleure plage : ${_topName}`)
+                  :IS_NEW_REGION
+                  ?`Your best beach today: ${REGION.beaches?.[0]?.name||REGION.name}`
                   :(lang==="en"?"Your best beach today: Anse Dufour":"Ta meilleure plage : Anse Dufour")}
               </div>
               <div style={{fontSize:11.5,color:"rgba(255,255,255,.5)",marginTop:3}}>
@@ -3938,10 +3948,10 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
                 {lang==="en"?"INSTANT ALERT":"ALERTE INSTANTANÉE"}
               </div>
               <div style={{fontSize:14.5,fontWeight:700,color:"#fff",lineHeight:1.25}}>
-                {lang==="en"?"Sainte-Anne status changed":"Sainte-Anne a changé"}
+                {IS_NEW_REGION?`${_exAlert} status changed`:(lang==="en"?"Sainte-Anne status changed":"Sainte-Anne a changé")}
               </div>
               <div style={{fontSize:11.5,color:"rgba(255,255,255,.5)",marginTop:3}}>
-                {lang==="en"?"Clean → Moderate — switch to Les Salines":"Propre → Modéré — va aux Salines"}
+                {IS_NEW_REGION?`Clean → Moderate — switch to ${_exSwitch}`:(lang==="en"?"Clean → Moderate — switch to Les Salines":"Propre → Modéré — va aux Salines")}
               </div>
             </div>
           </div>
@@ -3963,7 +3973,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
                 {lang==="en"?"WEEKEND FORECAST":"LE WEEKEND"}
               </div>
               <div style={{fontSize:14.5,fontWeight:700,color:"#fff",lineHeight:1.25}}>
-                {lang==="en"?"Best for Saturday: Grande Anse":"Samedi : Grande Anse"}
+                {IS_NEW_REGION?`Best for Saturday: ${_exWeekend}`:(lang==="en"?"Best for Saturday: Grande Anse":"Samedi : Grande Anse")}
               </div>
               <div style={{fontSize:11.5,color:"rgba(255,255,255,.5)",marginTop:3}}>
                 {lang==="en"?"Clean all weekend · ideal for kids":"Propre tout le weekend · idéal enfants"}
