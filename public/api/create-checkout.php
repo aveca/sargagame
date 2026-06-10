@@ -80,7 +80,7 @@ function resend($to, $subject, $html) {
 
 function buildWelcomeEmail($island, $trialEnd, $domain, $lang) {
     $islandName = ($island === 'GP') ? 'Guadeloupe' : 'Martinique';
-    $dateEnd = date('j/m/Y', $trialEnd);
+    $dateEnd = $trialEnd ? date('j/m/Y', $trialEnd) : '';
     $manageUrl = "https://{$domain}/?manage=1";
     $mapUrl = "https://{$domain}/";
 
@@ -91,7 +91,9 @@ function buildWelcomeEmail($island, $trialEnd, $domain, $lang) {
         $feat2 = "Push alerts when conditions change";
         $feat3 = "Zero ads, clean experience";
         $ctaText = "Open the map";
-        $trialNote = "Your free trial ends on {$dateEnd}. You'll only be charged if you stay.";
+        $trialNote = $trialEnd
+            ? "Your free trial ends on {$dateEnd}. You'll only be charged if you stay."
+            : "Your subscription is active. Manage or cancel anytime — 2 clicks.";
         $manageText = "Manage my subscription";
     } else {
         $title = "C'est parti !";
@@ -100,7 +102,9 @@ function buildWelcomeEmail($island, $trialEnd, $domain, $lang) {
         $feat2 = "Alertes push quand les conditions changent";
         $feat3 = "Zero pub, experience propre";
         $ctaText = "Voir la carte";
-        $trialNote = "Ton essai gratuit se termine le {$dateEnd}. Tu ne seras debite que si tu restes.";
+        $trialNote = $trialEnd
+            ? "Ton essai gratuit se termine le {$dateEnd}. Tu ne seras debite que si tu restes."
+            : "Ton abonnement est actif. Gere ou annule a tout moment — 2 clics.";
         $manageText = "Gerer mon abonnement";
     }
 
@@ -162,6 +166,14 @@ HTML;
 // stripe-config.php — fallback 'prices' plat EUR pour MQ/GP). Le retour
 // /?session_id={CHECKOUT_SESSION_ID} reutilise le handler historique du front
 // (deblocage premium + sg_conversion) et le webhook signe reste la verite.
+// Régions SANS essai gratuit (décision 2026-06-10 : marchés touristes USD —
+// un trial 7j couvre la moitié du séjour gratuitement puis ils annulent en
+// partant ; prélèvement immédiat). MQ/GP (EUR) gardent le trial : rétention
+// post-trial mesurée 65% (15 actifs / 23 essais, réconciliation Stripe du
+// 2026-06-10) — ne pas casser ce qui convertit.
+$NO_TRIAL_ISLANDS = ['puntacana', 'florida', 'rivieramaya'];
+$noTrial = in_array($island, $NO_TRIAL_ISLANDS, true);
+
 if ($action === 'embedded') {
     $plan = (($input['plan'] ?? 'monthly') === 'annual') ? 'annual' : 'monthly';
     $byRegion = $cfg['prices_by_region'] ?? [];
@@ -184,10 +196,10 @@ if ($action === 'embedded') {
         'mode'                                 => 'subscription',
         'line_items[0][price]'                 => $price,
         'line_items[0][quantity]'              => 1,
-        'subscription_data[trial_period_days]' => 7,
         'return_url'                           => $returnBase . '/?session_id={CHECKOUT_SESSION_ID}',
         'client_reference_id'                  => $ref,
     ];
+    if (!$noTrial) $params['subscription_data[trial_period_days]'] = 7;
     if ($island !== '') {
         $params['metadata[island]'] = $island;
         $params['subscription_data[metadata][island]'] = $island;
@@ -250,11 +262,20 @@ if ($action === 'subscribe') {
     $subParams = [
         'customer'                    => $customer['id'],
         'items[0][price]'             => $price,
-        'trial_period_days'           => 7,
         'default_payment_method'      => $pm,
         'metadata[plan]'              => $plan,
         'metadata[source]'            => $source,
     ];
+    if (!$noTrial) {
+        $subParams['trial_period_days'] = 7;
+    } else {
+        // Prélèvement IMMÉDIAT (régions USD) : la 1re facture part tout de
+        // suite sur la carte du SetupIntent. allow_incomplete → si la banque
+        // exige une action (3DS), le sub est créé 'incomplete' et on renvoie
+        // le client_secret du PaymentIntent pour confirmation côté client.
+        $subParams['payment_behavior'] = 'allow_incomplete';
+        $subParams['expand'][] = 'latest_invoice.payment_intent';
+    }
     if ($island !== '') $subParams['metadata[island]'] = $island;
     $sub = stripe('POST', '/subscriptions', $subParams);
 
@@ -263,6 +284,17 @@ if ($action === 'subscribe') {
         'status'         => $sub['status'],
         'trialEnd'       => $sub['trial_end'],
     ];
+    if ($noTrial && ($sub['status'] ?? '') === 'incomplete') {
+        $pi = $sub['latest_invoice']['payment_intent'] ?? null;
+        $piStatus = is_array($pi) ? ($pi['status'] ?? '') : '';
+        if (in_array($piStatus, ['requires_action', 'requires_confirmation'], true)) {
+            $response['requiresAction'] = true;
+            $response['piClientSecret'] = $pi['client_secret'] ?? null;
+        } else {
+            // Échec de paiement net (carte refusée) — le front bascule fallback.
+            $response['paymentFailed'] = true;
+        }
+    }
     echo json_encode($response);
     // Repondre TOUT DE SUITE (le paywall attend) — logs + email partent en
     // arriere-plan, meme pattern que stripe-webhook.php.

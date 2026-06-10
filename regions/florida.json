@@ -219,5 +219,6 @@
     "monthly": "https://buy.stripe.com/6oU4gBaVJ2sO1m5gAz0co0D",
     "yearly": "https://buy.stripe.com/14A6oJ0h52sO1m58430co0E"
   },
-  "countryCode": "US"
+  "countryCode": "US",
+  "noTrial": true
 }

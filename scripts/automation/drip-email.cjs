@@ -51,9 +51,9 @@ const SARG_TO_BEACH = { 'grande-anse': 'mq014', 'anse-mitan': 'mq011', 'anse-noi
 const REGION_META = {
   MQ: { lang: 'fr', name: 'Martinique', domain: 'sargasses-martinique.com', inRegion: 'en Martinique' },
   GP: { lang: 'fr', name: 'Guadeloupe', domain: 'sargasses-guadeloupe.com', inRegion: 'en Guadeloupe' },
-  PUNTACANA: { lang: 'en', regionId: 'puntacana', place: 'Punta Cana', inRegion: 'at Punta Cana' },
-  FLORIDA: { lang: 'en', regionId: 'florida', place: 'Miami', inRegion: 'in Miami' },
-  RIVIERAMAYA: { lang: 'es', regionId: 'rivieramaya', place: 'Cancún', inRegion: 'en Cancún' },
+  PUNTACANA: { lang: 'en', regionId: 'puntacana', place: 'Punta Cana', inRegion: 'at Punta Cana', noTrial: true },
+  FLORIDA: { lang: 'en', regionId: 'florida', place: 'Miami', inRegion: 'in Miami', noTrial: true },
+  RIVIERAMAYA: { lang: 'es', regionId: 'rivieramaya', place: 'Cancún', inRegion: 'en Cancún', noTrial: true },
 }
 // Statuts localisés cohérents avec l'app (T.fr/en/es + accord féminin ES)
 const STATUS_LOC = {
@@ -246,12 +246,20 @@ function buildJ3(island, brief, email) {
     `La seule prévision 7 jours, plage par plage, ${meta.inRegion} — fiable à 3 jours, tendance jusqu'à 7.`,
     `The only beach-by-beach 7-day forecast ${meta.inRegion} — solid to day 3, trend through day 7.`,
     `El único pronóstico a 7 días, playa por playa, ${meta.inRegion} — fiable a 3 días, tendencia hasta el día 7.`)
-  const ctaText = t('Recevoir ce brief chaque matin — 7 jours offerts',
-    'Get this brief every morning — 7 days free',
-    'Recibir este brief cada mañana — 7 días gratis')
-  const reassurance = t('Sans engagement · Annulation en 2 clics · Rappel avant facturation',
-    "No commitment · Cancel in 2 clicks · Reminder before you're billed",
-    'Sin permanencia · Cancela en 2 clics · Aviso antes del cobro')
+  const ctaText = meta.noTrial
+    ? t('Recevoir ce brief chaque matin',
+      'Get this brief every morning',
+      'Recibir este brief cada mañana')
+    : t('Recevoir ce brief chaque matin — 7 jours offerts',
+      'Get this brief every morning — 7 days free',
+      'Recibir este brief cada mañana — 7 días gratis')
+  const reassurance = meta.noTrial
+    ? t('Sans engagement · Annulation en 2 clics',
+      'No commitment · Cancel in 2 clicks',
+      'Sin permanencia · Cancela en 2 clics')
+    : t('Sans engagement · Annulation en 2 clics · Rappel avant facturation',
+      "No commitment · Cancel in 2 clicks · Reminder before you're billed",
+      'Sin permanencia · Cancela en 2 clics · Aviso antes del cobro')
   const dateLong = new Date().toLocaleDateString(lang === 'es' ? 'es-MX' : lang === 'en' ? 'en-US' : 'fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
   const ctaHref = brief.stripeBase ? stripeLink('j3_brief', brief.stripeBase) : `https://${domain}`
 

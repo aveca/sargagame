@@ -402,6 +402,13 @@ const LINK_PRO=REGION_PAY?"":STRIPE_LINK_PRO
 const PAYWALL_READY=!REGION_PAY||!!LINK_MONTHLY
 const PRICE_MO=REGION_PAY?(REGION.pricing?.monthly||"$9.99"):null
 const PRICE_YR=REGION_PAY?(REGION.pricing?.yearly||"$79"):null
+// Régions SANS essai gratuit (regions/*.json noTrial:true — marchés touristes
+// USD, prélèvement immédiat, décision 2026-06-10). MQ/GP gardent le trial
+// (rétention post-trial 65% mesurée — réconciliation Stripe 2026-06-10) :
+// toute la copy EUR reste BYTE-IDENTIQUE, les variantes no-trial ne
+// s'activent que via ce flag. Le PHP (create-checkout.php) applique le même
+// switch côté serveur par Origin.
+const NO_TRIAL=IS_NEW_REGION&&!!REGION.noTrial
 
 /* ═══════════════════════════════════════════════════════════════════════════
    UTILITIES
@@ -1207,7 +1214,9 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
   // lock1 A/B test ended: control (simple CTA) 3.66% vs loss framing 2.35% — simple CTA wins.
   const inSeason=SARGASSES_SEASON==="high"
   const lockCTA=_t(lang,"Débloquer","Unlock forecast","Desbloquear")
-  const lockSub=_t(lang,"+ brief matin & alertes · 7j gratuit","+ morning brief & alerts · 7 days free","+ brief matutino y alertas · 7 días gratis")
+  const lockSub=NO_TRIAL
+    ?_t(lang,"+ brief matin & alertes","+ morning brief & alerts","+ brief matutino y alertas")
+    :_t(lang,"+ brief matin & alertes · 7j gratuit","+ morning brief & alerts · 7 days free","+ brief matutino y alertas · 7 días gratis")
   const firstConf=visible[1]?.confidence||40
   // Compute locked-day status colors for teaser strip
   const lockedDays=!isPremium&&lockedCount>0?visible.slice(freeThreshold):[]
@@ -1871,7 +1880,9 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
                     color:ST[forecast[1].status]?.c||"#999"}}>{lang==="es"?ST[forecast[1].status]?.les:lang==="en"?ST[forecast[1].status]?.le:ST[forecast[1].status]?.l||"?"}</span>
                 </div>
                 <div style={{fontSize:11,color:"rgba(255,255,255,.45)",marginTop:4}}>
-                  {_t(lang,"Débloquer · 7 jours gratuit","Unlock with free trial","Desbloquear · 7 días gratis")}
+                  {NO_TRIAL
+                    ?_t(lang,"Débloquer les 7 jours","Unlock the 7-day forecast","Desbloquear los 7 días")
+                    :_t(lang,"Débloquer · 7 jours gratuit","Unlock with free trial","Desbloquear · 7 días gratis")}
                 </div>
               </div>
               <div style={{width:44,height:44,borderRadius:12,
@@ -3878,6 +3889,17 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
         body:JSON.stringify({action:"subscribe",email,plan,setupIntentId:setupIntent.id,lang,source:source||"unknown"})})
       const d=await r.json().catch(()=>({}))
       if(!r.ok||d.error||!d.subscriptionId)throw new Error(d.error||"subscribe failed")
+      // NO_TRIAL (USD) : la 1re facture part immédiatement — si la banque
+      // exige une confirmation (3DS), on la joue ici, dans le même écran.
+      if(d.paymentFailed)throw new Error(_t(lang,"Carte refusée. Essaie une autre carte ou continue sur Stripe.","Card declined. Try another card or continue on Stripe.","Tarjeta rechazada. Prueba otra o continúa en Stripe."))
+      if(d.requiresAction&&d.piClientSecret){
+        const{error:payErr,paymentIntent}=await stripeRef.current.confirmCardPayment(d.piClientSecret)
+        if(payErr)throw payErr
+        if(paymentIntent&&paymentIntent.status!=="succeeded"&&paymentIntent.status!=="processing"){
+          throw new Error(_t(lang,"Paiement non confirmé. Réessaie ou continue sur Stripe.","Payment not confirmed. Retry or continue on Stripe.","Pago no confirmado. Reintenta o continúa en Stripe."))
+        }
+        track("sg_pay_onsite_3ds",{plan,status:paymentIntent?.status||"unknown"})
+      }
       // SUCCÈS — premium activé en place, zéro redirect
       localStorage.setItem("sg_email",email)
       localStorage.setItem("sg_premium","1")
@@ -4022,25 +4044,33 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
               paddingBottom:12,borderBottom:"1px solid rgba(255,255,255,.08)",marginBottom:12}}>
               <div>
                 <div style={{fontWeight:800,fontSize:15,color:"#fff"}}>
-                  {effectivePlan==="annual"?_t(lang,"Annuel · 7 jours offerts","Annual · 7 days free","Anual · 7 días gratis"):_t(lang,"Mensuel · 7 jours offerts","Monthly · 7 days free","Mensual · 7 días gratis")}
+                  {NO_TRIAL
+                    ?(effectivePlan==="annual"?_t(lang,"Annuel — accès immédiat","Annual — instant access","Anual — acceso inmediato"):_t(lang,"Mensuel — accès immédiat","Monthly — instant access","Mensual — acceso inmediato"))
+                    :(effectivePlan==="annual"?_t(lang,"Annuel · 7 jours offerts","Annual · 7 days free","Anual · 7 días gratis"):_t(lang,"Mensuel · 7 jours offerts","Monthly · 7 days free","Mensual · 7 días gratis"))}
                 </div>
                 <div style={{fontWeight:500,color:"rgba(255,255,255,.55)",fontSize:11,marginTop:2}}>
-                  {effectivePlan==="annual"?(REGION_PAY?_t(lang,`Puis ${PRICE_YR}/an · annule en 1 clic`,`Then ${PRICE_YR}/yr · cancel anytime`,`Luego ${PRICE_YR}/año · cancela en 1 clic`):_t(lang,"Puis 39,99 €/an · annule en 1 clic","Then €39.99/yr · cancel anytime","Luego 39,99 €/año · cancela en 1 clic")):(REGION_PAY?_t(lang,`Puis ${PRICE_MO}/mois · annule en 1 clic`,`Then ${PRICE_MO}/mo · cancel anytime`,`Luego ${PRICE_MO}/mes · cancela en 1 clic`):_t(lang,"Puis 4,99 €/mois · annule en 1 clic","Then €4.99/mo · cancel anytime","Luego 4,99 €/mes · cancela en 1 clic"))}
+                  {NO_TRIAL
+                    ?(effectivePlan==="annual"?_t(lang,`${PRICE_YR}/an · annule en 2 clics`,`${PRICE_YR}/yr · cancel in 2 clicks`,`${PRICE_YR}/año · cancela en 2 clics`):_t(lang,`${PRICE_MO}/mois · annule en 2 clics`,`${PRICE_MO}/mo · cancel in 2 clicks`,`${PRICE_MO}/mes · cancela en 2 clics`))
+                    :(effectivePlan==="annual"?(REGION_PAY?_t(lang,`Puis ${PRICE_YR}/an · annule en 1 clic`,`Then ${PRICE_YR}/yr · cancel anytime`,`Luego ${PRICE_YR}/año · cancela en 1 clic`):_t(lang,"Puis 39,99 €/an · annule en 1 clic","Then €39.99/yr · cancel anytime","Luego 39,99 €/año · cancela en 1 clic")):(REGION_PAY?_t(lang,`Puis ${PRICE_MO}/mois · annule en 1 clic`,`Then ${PRICE_MO}/mo · cancel anytime`,`Luego ${PRICE_MO}/mes · cancela en 1 clic`):_t(lang,"Puis 4,99 €/mois · annule en 1 clic","Then €4.99/mo · cancel anytime","Luego 4,99 €/mes · cancela en 1 clic")))}
                 </div>
               </div>
               <div style={{fontFamily:"'Anton',sans-serif",fontSize:22,color:"#FFC72C",letterSpacing:"-.01em",textAlign:"right"}}>
-                {REGION_PAY?"$0":"0 €"}
+                {NO_TRIAL?(effectivePlan==="annual"?PRICE_YR:PRICE_MO):(REGION_PAY?"$0":"0 €")}
                 <div style={{fontFamily:"inherit",fontWeight:500,fontSize:11,color:"rgba(255,199,44,.7)",marginTop:2,letterSpacing:0}}>
                   {_t(lang,"aujourd'hui","today","hoy")}
                 </div>
               </div>
             </div>
             <div style={{display:"flex",flexDirection:"column",gap:8,fontSize:12.5}}>
-              {[
+              {(NO_TRIAL?[
+                {k:_t(lang,"Aujourd'hui","Today","Hoy"),v:_t(lang,`${effectivePlan==="annual"?PRICE_YR:PRICE_MO} · accès complet immédiat`,`${effectivePlan==="annual"?PRICE_YR:PRICE_MO} · full access right away`,`${effectivePlan==="annual"?PRICE_YR:PRICE_MO} · acceso completo ya`)},
+                {k:_t(lang,"Chaque matin","Every morning","Cada mañana"),v:_t(lang,"Ta meilleure plage + alertes","Your best beach + alerts","Tu mejor playa + alertas")},
+                {k:_t(lang,"Quand tu veux","Anytime","Cuando quieras"),v:_t(lang,"Annule en 2 clics","Cancel in 2 clicks","Cancela en 2 clics")},
+              ]:[
                 {k:_t(lang,"Aujourd'hui","Today","Hoy"),v:REGION_PAY?_t(lang,"$0 · tu testes 7 jours","$0 · 7-day trial starts","$0 · empieza tu prueba de 7 días"):_t(lang,"0 € · tu testes 7 jours","€0 · 7-day trial starts","0 € · empieza tu prueba de 7 días")},
                 {k:_preludeDates.remind,v:_t(lang,"Rappel · 2 jours avant la 1re charge","Reminder · 2 days before first charge","Recordatorio · 2 días antes del primer cobro")},
                 {k:_preludeDates.charge,v:effectivePlan==="annual"?(REGION_PAY?_t(lang,`${PRICE_YR} · sauf si tu annules`,`${PRICE_YR} · unless you cancel`,`${PRICE_YR} · a menos que canceles`):_t(lang,"39,99 € · sauf si tu annules","€39.99 · unless you cancel","39,99 € · a menos que canceles")):(REGION_PAY?_t(lang,`${PRICE_MO} · sauf si tu annules`,`${PRICE_MO} · unless you cancel`,`${PRICE_MO} · a menos que canceles`):_t(lang,"4,99 € · sauf si tu annules","€4.99 · unless you cancel","4,99 € · a menos que canceles"))},
-              ].map((r,i)=>(
+              ]).map((r,i)=>(
                 <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                   <span style={{color:"rgba(255,255,255,.72)"}}>{r.k}</span>
                   <span style={{color:"#fff",fontWeight:600,textAlign:"right"}}>{r.v}</span>
@@ -4049,7 +4079,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",
                 paddingTop:8,borderTop:"1px dashed rgba(255,255,255,.12)",marginTop:2}}>
                 <span style={{color:"rgba(255,255,255,.72)"}}>{_t(lang,"À payer aujourd'hui","Due today","A pagar hoy")}</span>
-                <span style={{color:"#22C55E",fontFamily:"'Anton',sans-serif",fontSize:15,letterSpacing:"-.01em"}}>{REGION_PAY?"$0.00":"0,00 €"}</span>
+                <span style={{color:"#22C55E",fontFamily:"'Anton',sans-serif",fontSize:15,letterSpacing:"-.01em"}}>{NO_TRIAL?(effectivePlan==="annual"?PRICE_YR:PRICE_MO):(REGION_PAY?"$0.00":"0,00 €")}</span>
               </div>
             </div>
           </div>
@@ -4230,8 +4260,9 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
 
         {/* Timeline d'essai (pattern Blinkist, LOT 1 value-prop) — 3 étapes,
             montants liés au plan sélectionné. Commune aux 2 variantes
-            pw_prelude (ne touche ni au flow ni aux Payment Links). */}
-        {PAYWALL_READY&&(
+            pw_prelude (ne touche ni au flow ni aux Payment Links).
+            Masquée en NO_TRIAL (USD) : il n'y a pas d'essai à raconter. */}
+        {PAYWALL_READY&&!NO_TRIAL&&(
         <div style={{margin:"0 0 14px",padding:"12px 14px",borderRadius:14,
           background:"rgba(255,255,255,.03)",border:"1px solid rgba(255,255,255,.08)"}}>
           {[
@@ -4387,13 +4418,17 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
             }}
             className="gbtn" style={{width:"100%",textAlign:"center",fontSize:17,
               padding:"16px 24px",display:"block",border:"none",cursor:"pointer",fontFamily:"inherit",lineHeight:1.2}}>
-              <div>{_t(lang,"Activer ma reco — 7 jours offerts","Start my daily pick — 7 days free","Activar mi playa del día — 7 días gratis")}</div>
+              <div>{NO_TRIAL
+                ?_t(lang,"Activer ma reco maintenant","Get my daily pick — start now","Mi playa del día — empezar ya")
+                :_t(lang,"Activer ma reco — 7 jours offerts","Start my daily pick — 7 days free","Activar mi playa del día — 7 días gratis")}</div>
               {/* Sous-ligne dynamique sur effectivePlan dans LES DEUX branches
                   (le fallback MQ/GP affichait 4,99 €/mois même avec Annuel
                   sélectionné). L'idée d'annulation vit UNE fois à l'écran,
                   dans la ligne de réassurance sous le CTA (dédup mobile MQ). */}
               <div style={{fontSize:12,opacity:.8,fontWeight:400,marginTop:4}}>
-                {REGION_PAY?_t(lang,`Puis ${effectivePlan==="annual"?PRICE_YR+"/an":PRICE_MO+"/mois"}`,`Then ${effectivePlan==="annual"?PRICE_YR+"/yr":PRICE_MO+"/mo"}`,`Luego ${effectivePlan==="annual"?PRICE_YR+"/año":PRICE_MO+"/mes"}`):_t(lang,`Puis ${effectivePlan==="annual"?"39,99 €/an":"4,99 €/mois"}`,`Then ${effectivePlan==="annual"?"€39.99/yr":"€4.99/mo"}`,`Luego ${effectivePlan==="annual"?"39,99 €/año":"4,99 €/mes"}`)}
+                {NO_TRIAL
+                  ?_t(lang,`${effectivePlan==="annual"?PRICE_YR+"/an":PRICE_MO+"/mois"} · facturé aujourd'hui`,`${effectivePlan==="annual"?PRICE_YR+"/yr":PRICE_MO+"/mo"} · billed today`,`${effectivePlan==="annual"?PRICE_YR+"/año":PRICE_MO+"/mes"} · se cobra hoy`)
+                  :REGION_PAY?_t(lang,`Puis ${effectivePlan==="annual"?PRICE_YR+"/an":PRICE_MO+"/mois"}`,`Then ${effectivePlan==="annual"?PRICE_YR+"/yr":PRICE_MO+"/mo"}`,`Luego ${effectivePlan==="annual"?PRICE_YR+"/año":PRICE_MO+"/mes"}`):_t(lang,`Puis ${effectivePlan==="annual"?"39,99 €/an":"4,99 €/mois"}`,`Then ${effectivePlan==="annual"?"€39.99/yr":"€4.99/mo"}`,`Luego ${effectivePlan==="annual"?"39,99 €/año":"4,99 €/mes"}`)}
               </div>
             </button>
           )
@@ -4408,7 +4443,9 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
             sous le CTA (remplace l'ancien trust foot dupliqué). */}
         <div style={{textAlign:"center",marginTop:12,fontSize:10.5,
           color:"rgba(255,255,255,.48)",letterSpacing:".01em"}}>
-          {_t(lang,"Sans engagement · Annulation en 2 clics · Rappel avant facturation","No commitment · Cancel in 2 clicks · Reminder before you're billed","Sin permanencia · Cancela en 2 clics · Aviso antes del cobro")}
+          {NO_TRIAL
+            ?_t(lang,"Sans engagement · Annulation en 2 clics · Paiement sécurisé Stripe","No commitment · Cancel in 2 clicks · Secure Stripe payment","Sin permanencia · Cancela en 2 clics · Pago seguro Stripe")
+            :_t(lang,"Sans engagement · Annulation en 2 clics · Rappel avant facturation","No commitment · Cancel in 2 clicks · Reminder before you're billed","Sin permanencia · Cancela en 2 clics · Aviso antes del cobro")}
         </div>
         <div style={{display:"flex",justifyContent:"center",alignItems:"center",
           gap:8,marginTop:8}}>
@@ -4499,12 +4536,18 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
             </span>
           </div>
           <h3 className="anton" style={{fontSize:22,color:"#fff",margin:"0 0 4px",letterSpacing:"-.01em"}}>
-            {_t(lang,"Démarre ton essai gratuit","Start your free trial","Empieza tu prueba gratis")}
+            {NO_TRIAL
+              ?_t(lang,"Active ta reco du jour","Activate your daily pick","Activa tu playa del día")
+              :_t(lang,"Démarre ton essai gratuit","Start your free trial","Empieza tu prueba gratis")}
           </h3>
           <div style={{fontSize:13,color:"rgba(255,255,255,.6)",marginBottom:18}}>
-            {_t(lang,"0 € aujourd'hui","$0 today","$0 hoy")} · {payPlanRef.current==="annual"
-              ?_t(lang,`puis ${REGION_PAY?PRICE_YR:"39,99 €"}/an dans 7 jours`,`then ${PRICE_YR||"$79"}/yr in 7 days`,`luego ${PRICE_YR||"$79"}/año en 7 días`)
-              :_t(lang,`puis ${REGION_PAY?PRICE_MO:"4,99 €"}/mois dans 7 jours`,`then ${PRICE_MO||"$9.99"}/mo in 7 days`,`luego ${PRICE_MO||"$9.99"}/mes en 7 días`)} · {_t(lang,"annule en 1 clic","cancel in 1 click","cancela en 1 clic")}
+            {NO_TRIAL
+              ?<>{payPlanRef.current==="annual"
+                  ?_t(lang,`${PRICE_YR}/an · facturé aujourd'hui`,`${PRICE_YR}/yr · billed today`,`${PRICE_YR}/año · se cobra hoy`)
+                  :_t(lang,`${PRICE_MO}/mois · facturé aujourd'hui`,`${PRICE_MO}/mo · billed today`,`${PRICE_MO}/mes · se cobra hoy`)} · {_t(lang,"annule en 2 clics","cancel in 2 clicks","cancela en 2 clics")}</>
+              :<>{_t(lang,"0 € aujourd'hui","$0 today","$0 hoy")} · {payPlanRef.current==="annual"
+                  ?_t(lang,`puis ${REGION_PAY?PRICE_YR:"39,99 €"}/an dans 7 jours`,`then ${PRICE_YR||"$79"}/yr in 7 days`,`luego ${PRICE_YR||"$79"}/año en 7 días`)
+                  :_t(lang,`puis ${REGION_PAY?PRICE_MO:"4,99 €"}/mois dans 7 jours`,`then ${PRICE_MO||"$9.99"}/mo in 7 days`,`luego ${PRICE_MO||"$9.99"}/mes en 7 días`)} · {_t(lang,"annule en 1 clic","cancel in 1 click","cancela en 1 clic")}</>}
           </div>
           <input ref={payEmailRef} type="email" inputMode="email" autoComplete="email"
             defaultValue={typeof localStorage!=="undefined"?(localStorage.getItem("sg_email")||""):""}
@@ -4531,10 +4574,16 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
               opacity:payBusy?.7:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
             {payBusy
               ?_t(lang,"Activation…","Activating…","Activando…")
+              :NO_TRIAL
+              ?(payPlanRef.current==="annual"
+                ?_t(lang,`Payer ${PRICE_YR} — activer maintenant`,`Pay ${PRICE_YR} — activate now`,`Pagar ${PRICE_YR} — activar ya`)
+                :_t(lang,`Payer ${PRICE_MO} — activer maintenant`,`Pay ${PRICE_MO} — activate now`,`Pagar ${PRICE_MO} — activar ya`))
               :_t(lang,"Démarrer l'essai — 0 € aujourd'hui","Start trial — $0 today","Empezar prueba — $0 hoy")}
           </button>
           <div style={{textAlign:"center",marginTop:12,fontSize:10.5,color:"rgba(255,255,255,.4)"}}>
-            {_t(lang,"Sans engagement · Rappel 2 jours avant la 1re charge","No commitment · Reminder 2 days before first charge","Sin compromiso · Recordatorio 2 días antes del primer cobro")}
+            {NO_TRIAL
+              ?_t(lang,"Sans engagement · Annule en 2 clics · Stripe sécurisé","No commitment · Cancel in 2 clicks · Secured by Stripe","Sin compromiso · Cancela en 2 clics · Stripe seguro")
+              :_t(lang,"Sans engagement · Rappel 2 jours avant la 1re charge","No commitment · Reminder 2 days before first charge","Sin compromiso · Recordatorio 2 días antes del primer cobro")}
           </div>
           <button onClick={()=>{
             const link=stripeUrlWith(stripeLinkFor[payPlanRef.current]||LINK_MONTHLY,payPlanRef.current)

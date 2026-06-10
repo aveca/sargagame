@@ -222,5 +222,6 @@
   "paymentLinks": {
     "monthly": "https://buy.stripe.com/5kQbJ30h5d7s9SB6ZZ0co0B",
     "yearly": "https://buy.stripe.com/4gMaEZ8NB9Vgc0J9870co0C"
-  }
+  },
+  "noTrial": true
 }
