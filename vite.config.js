@@ -91,9 +91,15 @@ export default defineConfig({
       transformIndexHtml(html) {
         if (!REGION || REGION.id === 'mq' || REGION.id === 'gp') return html
         const name = REGION.name, domain = REGION.domain, lang = REGION.primaryLang
-        const title = `${name} Sargassum Today — Live Beach Map & 7-Day Forecast 2026`
-        const desc = `Which ${name} beach is sargassum-free today? Live per-beach seaweed map, Beach Score 0-100 and 7-day forecast. Updated daily from satellite data.`
-        const siteName = `Sargassum ${name}`
+        // ES first sur les marchés hispanophones : head/FAQ/noscript dans la langue primaire.
+        const es = lang === 'es'
+        const title = es
+          ? `Sargazo en ${name} Hoy — Mapa de Playas en Vivo y Pronóstico 7 Días 2026`
+          : `${name} Sargassum Today — Live Beach Map & 7-Day Forecast 2026`
+        const desc = es
+          ? `¿Qué playa de ${name} está sin sargazo hoy? Mapa en vivo playa por playa, Beach Score 0-100 y pronóstico de 7 días. Actualizado a diario con datos satelitales.`
+          : `Which ${name} beach is sargassum-free today? Live per-beach seaweed map, Beach Score 0-100 and 7-day forecast. Updated daily from satellite data.`
+        const siteName = es ? `Sargazo ${name}` : `Sargassum ${name}`
         const today = new Date().toISOString().slice(0, 10)
         const beaches = REGION.beaches || []
         const communes = [...new Set(beaches.map(b => b.commune).filter(Boolean))]
@@ -108,7 +114,7 @@ export default defineConfig({
           .replace(/(<meta property="og:description" content=)"[^"]*"/, `$1"${desc}"`)
           .replace(/(<meta property="og:site_name" content=)"[^"]*"/, `$1"${siteName}"`)
           .replace(/(<meta property="og:locale" content=)"[^"]*"/, `$1"${lang === 'es' ? 'es_MX' : 'en_US'}"`)
-          .replace(/(<meta property="og:image:alt" content=)"[^"]*"/, `$1"Beach Score 0-100 for every ${name} beach — sargassum, swell, wind, sun"`)
+          .replace(/(<meta property="og:image:alt" content=)"[^"]*"/, `$1"${es ? `Beach Score 0-100 para cada playa de ${name} — sargazo, oleaje, viento, sol` : `Beach Score 0-100 for every ${name} beach — sargassum, swell, wind, sun`}"`)
           .replace(/(<meta name="twitter:title" content=)"[^"]*"/, `$1"${title}"`)
           .replace(/(<meta name="twitter:description" content=)"[^"]*"/, `$1"${desc}"`)
           .replace(/(<meta name="geo.region" content=)"[^"]*"/, `$1"${REGION.countryCode || ''}"`)
@@ -149,21 +155,32 @@ export default defineConfig({
         // ── 5) JSON-LD : remplace les 4 blocs MQ par 3 blocs région (pas de
         //      SiteNavigationElement : aucune sous-page générée pour l'instant). ──
         const ldWebApp = JSON.stringify({ '@context': 'https://schema.org', '@type': 'WebApplication', name: `${siteName} · Daily Beach Status`, description: desc, url: `https://${domain}/`, applicationCategory: 'TravelApplication', operatingSystem: 'Web', inLanguage: [lang, ...(REGION.secondaryLangs || [])], dateModified: today, datePublished: today, publisher: { '@type': 'Organization', name: siteName, logo: `https://${domain}/icon-512.png` } })
-        const ldFaq = JSON.stringify({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: [
+        const ldFaq = JSON.stringify({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: es ? [
+          { '@type': 'Question', name: `¿Hay sargazo en ${name} ahora mismo?`, acceptedAnswer: { '@type': 'Answer', text: `Abre el mapa en vivo para ver el estado de hoy de cada playa de ${name}. Cada una de las ${beaches.length} playas monitoreadas recibe un Beach Score 0-100 que combina sargazo, oleaje, viento, temperatura del agua y sol — actualizado a diario con datos satelitales de la NOAA.` } },
+          { '@type': 'Question', name: `¿Qué playas de ${name} están sin sargazo hoy?`, acceptedAnswer: { '@type': 'Answer', text: `Las condiciones cambian playa por playa: ${communes.join(', ')} no reciben lo mismo el mismo día. El mapa clasifica todas las playas a diario para elegir la más limpia — normalmente las protegidas por bahías o a sotavento.` } },
+          { '@type': 'Question', name: `¿Cuándo es la temporada de sargazo en ${name}?`, acceptedAnswer: { '@type': 'Answer', text: 'La llegada de sargazo suele alcanzar su pico entre abril y septiembre, pero varía semana a semana con corrientes y viento. El monitoreo funciona todo el año con pronóstico de 7 días por playa.' } },
+          { '@type': 'Question', name: '¿Cómo se miden los datos de sargazo?', acceptedAnswer: { '@type': 'Answer', text: 'La detección usa el índice satelital AFAI de la NOAA (Alternative Floating Algae Index) muestreado frente a cada playa, combinado con viento y corrientes en un pronóstico de 7 días por playa. Los datos se actualizan varias veces al día.' } },
+        ] : [
           { '@type': 'Question', name: `Is there sargassum in ${name} right now?`, acceptedAnswer: { '@type': 'Answer', text: `Open the live map to see today's status for every ${name} beach. Each of the ${beaches.length} monitored beaches gets a Beach Score 0-100 combining sargassum, swell, wind, water temperature and sun — updated daily from NOAA satellite data.` } },
           { '@type': 'Question', name: `Which ${name} beaches are sargassum-free today?`, acceptedAnswer: { '@type': 'Answer', text: `Conditions differ beach by beach: ${communes.join(', ')} are not hit equally on the same day. The map ranks all beaches daily so you can pick the cleanest one — typically the leeward and bay-protected spots.` } },
           { '@type': 'Question', name: `When is sargassum season in ${name}?`, acceptedAnswer: { '@type': 'Answer', text: 'Sargassum influx usually peaks between April and September, but landings vary week to week with currents and wind. Monitoring runs year-round with a 7-day forecast for every beach.' } },
           { '@type': 'Question', name: 'How is the sargassum data measured?', acceptedAnswer: { '@type': 'Answer', text: 'Detection uses the NOAA AFAI satellite index (Alternative Floating Algae Index) sampled offshore of each beach, blended with wind and current data into a per-beach 7-day forecast. Data refreshes several times a day.' } },
         ] })
-        const ldOrg = JSON.stringify({ '@context': 'https://schema.org', '@type': 'Organization', name: siteName, url: `https://${domain}`, logo: `https://${domain}/icon-512.png`, description: `Daily sargassum status and Beach Score 0-100 for ${name} beaches`, areaServed: [name, REGION.country].filter(Boolean), knowsAbout: ['sargassum', 'beaches', name, REGION.country, 'seaweed forecast'].filter(Boolean) })
+        const ldOrg = JSON.stringify({ '@context': 'https://schema.org', '@type': 'Organization', name: siteName, url: `https://${domain}`, logo: `https://${domain}/icon-512.png`, description: es ? `Estado diario del sargazo y Beach Score 0-100 para las playas de ${name}` : `Daily sargassum status and Beach Score 0-100 for ${name} beaches`, areaServed: [name, REGION.country].filter(Boolean), knowsAbout: [es ? 'sargazo' : 'sargassum', es ? 'playas' : 'beaches', name, REGION.country].filter(Boolean) })
         html = html
           .replace(/\s*<script type="application\/ld\+json">[\s\S]*?<\/script>/g, '')
           .replace('<style>', `<script type="application/ld+json">\n    ${ldWebApp}\n    </script>\n    <script type="application/ld+json">\n    ${ldFaq}\n    </script>\n    <script type="application/ld+json">\n    ${ldOrg}\n    </script>\n  <style>`)
 
         // ── 6) noscript SEO : contenu région en langue primaire, SANS liens internes
         //      (aucune sous-page générée → zéro phantom href, cf. bug seo-link-graph). ──
-        const byCommune = communes.map(c => `<h2>${c} — beaches monitored daily</h2>\n        <p>${beaches.filter(b => b.commune === c).map(b => b.name).join(', ')}.</p>`).join('\n        ')
-        const noscriptRegion = `<noscript>
+        const byCommune = communes.map(c => `<h2>${c} — ${es ? 'playas monitoreadas a diario' : 'beaches monitored daily'}</h2>\n        <p>${beaches.filter(b => b.commune === c).map(b => b.name).join(', ')}.</p>`).join('\n        ')
+        const noscriptRegion = es ? `<noscript>
+        <h1>Sargazo en ${name} Hoy — estado en vivo de cada playa (2026)</h1>
+        <p>¿Qué playa de ${name} está sin sargazo hoy? Estado diario de ${beaches.length} playas (${beachNames.slice(0, 6).join(', ')}…) con datos satelitales de la NOAA, Beach Score 0-100 y pronóstico de 7 días por playa.</p>
+        ${byCommune}
+        <h2>Temporada de sargazo en ${name} ${today.slice(0, 4)}</h2>
+        <p>La llegada de sargazo suele alcanzar su pico de abril a septiembre, pero varía semana a semana con viento y corrientes. El mapa se actualiza a diario, todo el año, para elegir la playa correcta antes de salir.</p>
+      </noscript>` : `<noscript>
         <h1>${name} Sargassum Today — live status for every beach (2026)</h1>
         <p>Which ${name} beach is sargassum-free today? Daily status for ${beaches.length} beaches (${beachNames.slice(0, 6).join(', ')}…) from NOAA satellite data, with a Beach Score 0-100 and a 7-day forecast per beach.</p>
         ${byCommune}
