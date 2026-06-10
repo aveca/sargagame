@@ -108,12 +108,11 @@ jobs:
           RESULT=$(curl -sL "${{ secrets.APPS_SCRIPT_URL }}?action=clean_bounces")
           echo "Bounce cleanup: $RESULT"
 
-      - name: "[Tuesday] Drip check via Apps Script"
-        if: steps.day.outputs.task == 'tuesday'
-        continue-on-error: true
-        run: |
-          RESULT=$(curl -sL "${{ secrets.APPS_SCRIPT_URL }}?action=drip_check")
-          echo "Drip check: $RESULT"
+      # [Tuesday] Drip check Apps Script SUPPRIMÉ (2026-06-10) : runDripEmails()
+      # legacy n'a ni garde île (envoyait du FR "Sargasses Martinique" aux leads
+      # PUNTACANA/FLORIDA/RIVIERAMAYA) ni filtre unsubscribed/bounced, et
+      # dupliquait drip-email.cjs (Resend, daily-copernicus) qui tracke
+      # drip-sent.json. Le drip Resend est l'unique chemin désormais.
 
       - name: "[Tuesday] Email stats snapshot"
         if: steps.day.outputs.task == 'tuesday'

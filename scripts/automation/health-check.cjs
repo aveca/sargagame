@@ -8,13 +8,13 @@
  * Usage: node scripts/automation/health-check.cjs
  */
 const https = require('https')
+const { getAllRegions } = require('../../regions/index.cjs')
 
-const SITES = [
-  { name: 'Martinique', url: 'https://sargasses-martinique.com/' },
-  { name: 'Guadeloupe', url: 'https://sargasses-guadeloupe.com/' },
-  { name: 'MQ API', url: 'https://sargasses-martinique.com/api/copernicus/sargassum.json' },
-  { name: 'GP API', url: 'https://sargasses-guadeloupe.com/api/copernicus/sargassum.json' },
-]
+// Toutes les régions (MQ/GP + nouvelles) : home + API data de chaque domaine.
+const SITES = getAllRegions().flatMap(r => [
+  { name: r.name, url: `https://${r.domain}/` },
+  { name: `${r.name} API`, url: `https://${r.domain}/api/copernicus/sargassum.json` },
+])
 
 const MAX_RETRIES = 3
 const RETRY_DELAY = 5000 // 5s between retries
@@ -69,36 +69,38 @@ async function check(site) {
   }
 }
 
-// Data staleness check — alert if sargassum.json is too old
+// Data staleness check — alert if any region's sargassum.json is too old
 async function checkStaleness() {
   const issues = []
-  try {
-    const apiUrl = 'https://sargasses-martinique.com/api/copernicus/sargassum.json'
-    const body = await new Promise((resolve, reject) => {
-      https.get(apiUrl, { timeout: 10000 }, res => {
-        let d = ''
-        res.on('data', c => d += c)
-        res.on('end', () => resolve(d))
-      }).on('error', reject).on('timeout', function () { this.destroy(); reject(new Error('timeout')) })
-    })
-    const data = JSON.parse(body)
-    const ageH = (Date.now() - new Date(data.updatedAt)) / 3.6e6
-    if (ageH > 12) {
-      issues.push(`Data stale: sargassum.json is ${ageH.toFixed(1)}h old (threshold: 12h)`)
-      console.log(`⚠️  Data staleness: ${ageH.toFixed(1)}h since last update`)
-    } else {
-      console.log(`✅ Data freshness: ${ageH.toFixed(1)}h old`)
-    }
-    // Check ERDDAP timestamp age (satellite data itself)
-    if (data.erddapTimestamp) {
-      const satAge = (Date.now() - new Date(data.erddapTimestamp)) / 3.6e6
-      if (satAge > 48) {
-        issues.push(`Satellite data stale: ERDDAP timestamp is ${satAge.toFixed(0)}h old`)
-        console.log(`⚠️  Satellite staleness: ERDDAP data is ${satAge.toFixed(0)}h old`)
+  for (const region of getAllRegions()) {
+    try {
+      const apiUrl = `https://${region.domain}/api/copernicus/sargassum.json`
+      const body = await new Promise((resolve, reject) => {
+        https.get(apiUrl, { timeout: 10000 }, res => {
+          let d = ''
+          res.on('data', c => d += c)
+          res.on('end', () => resolve(d))
+        }).on('error', reject).on('timeout', function () { this.destroy(); reject(new Error('timeout')) })
+      })
+      const data = JSON.parse(body)
+      const ageH = (Date.now() - new Date(data.updatedAt)) / 3.6e6
+      if (ageH > 12) {
+        issues.push(`[${region.id}] Data stale: sargassum.json is ${ageH.toFixed(1)}h old (threshold: 12h)`)
+        console.log(`⚠️  [${region.id}] Data staleness: ${ageH.toFixed(1)}h since last update`)
+      } else {
+        console.log(`✅ [${region.id}] Data freshness: ${ageH.toFixed(1)}h old`)
       }
+      // Check ERDDAP timestamp age (satellite data itself)
+      if (data.erddapTimestamp) {
+        const satAge = (Date.now() - new Date(data.erddapTimestamp)) / 3.6e6
+        if (satAge > 48) {
+          issues.push(`[${region.id}] Satellite data stale: ERDDAP timestamp is ${satAge.toFixed(0)}h old`)
+          console.log(`⚠️  [${region.id}] Satellite staleness: ERDDAP data is ${satAge.toFixed(0)}h old`)
+        }
+      }
+    } catch (e) {
+      issues.push(`[${region.id}] Staleness check failed: ${e.message}`)
     }
-  } catch (e) {
-    issues.push(`Staleness check failed: ${e.message}`)
   }
   return issues
 }
