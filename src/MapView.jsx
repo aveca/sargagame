@@ -8,6 +8,9 @@ import"leaflet/dist/leaflet.css"
 
 /* ── Duplicated stable constants (small, avoids circular imports) ───────── */
 const ISLAND_CENTER={mq:[14.64,-61.02],gp:[16.22,-61.55]}
+/* Nouvelles régions : centre injecté au build via __REGION__ (MQ/GP inchangés). */
+const __R_MV=(typeof __REGION__!=="undefined"&&__REGION__)||null
+if(__R_MV&&__R_MV.id!=="mq"&&__R_MV.id!=="gp"&&__R_MV.center)ISLAND_CENTER[__R_MV.id]=[__R_MV.center.lat,__R_MV.center.lng]
 
 const SARG_TO_BEACH={"grande-anse":"mq014","anse-mitan":"mq011","anse-noire":"mq012","tartane":"mq034","anse-madame":"mq024","diamant":"mq016","pt-marin":"mq008","sainte-anne":"mq004","les-salines":"mq001","vauclin":"mq044","gp-grande-anse":"gp021","gp-malendure":"gp031","gp-sainte-anne":"gp010","gp-pt-chateaux":"gp005","gp-gosier":"gp012","gp-caravelle":"gp009","gp-bas-du-fort":"gp014","gp-deshaies":"gp024","gp-moule":"gp080","gp-vieux-fort":"gp042"}
 const BEACH_TO_SARG=Object.fromEntries(Object.entries(SARG_TO_BEACH).map(([k,v])=>[v,k]))

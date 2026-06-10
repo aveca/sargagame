@@ -311,6 +311,8 @@ const BEACHES_FALLBACK=[
 ]
 
 const ISLAND_CENTER={mq:[14.64,-61.02],gp:[16.22,-61.55]}
+/* Nouvelles régions : centre injecté au build via __REGION__ (MQ/GP inchangés). */
+if(IS_NEW_REGION&&REGION.center)ISLAND_CENTER[REGION.id]=[REGION.center.lat,REGION.center.lng]
 
 // Mapping: sargassum.json / history.json IDs → beaches-list.json IDs
 const SARG_TO_BEACH={"grande-anse":"mq014","anse-mitan":"mq011","anse-noire":"mq012","tartane":"mq034","anse-madame":"mq024","diamant":"mq016","pt-marin":"mq008","sainte-anne":"mq004","les-salines":"mq001","vauclin":"mq044","gp-grande-anse":"gp021","gp-malendure":"gp031","gp-sainte-anne":"gp010","gp-pt-chateaux":"gp005","gp-gosier":"gp012","gp-caravelle":"gp009","gp-bas-du-fort":"gp014","gp-deshaies":"gp024","gp-moule":"gp080","gp-vieux-fort":"gp042"}
@@ -356,6 +358,16 @@ const STRIPE_PK="pk_live_51PW2TGP9RK8Orx516Nx5mGUixrk2ozE8ppOcygq9Wkb1Tz5CkozRcR
 // Buy Button IDs — creer sur dashboard.stripe.com/buy-buttons puis coller ici
 const STRIPE_BUY_BTN_MONTHLY="buy_btn_1TJLdoP9RK8Orx514zzwL1B4" // 4.99€/mois + trial 7j + taxes
 const STRIPE_BUY_BTN_ANNUAL="buy_btn_1TJLcjP9RK8Orx51JDzUFge3"
+/* ── Paywall région-aware — nouvelles régions UNIQUEMENT (MQ/GP : constantes EUR
+   ci-dessus inchangées). REGION.paymentLinks={monthly,yearly} en devise locale.
+   Liens absents → CTA paywall masqué (waitlist), JAMAIS de fallback vers l'EUR. ── */
+const REGION_PAY=IS_NEW_REGION?(REGION.paymentLinks||{}):null
+const LINK_MONTHLY=REGION_PAY?(REGION_PAY.monthly||""):STRIPE_LINK_MONTHLY
+const LINK_ANNUAL=REGION_PAY?(REGION_PAY.yearly||""):STRIPE_LINK_ANNUAL
+const LINK_PRO=REGION_PAY?"":STRIPE_LINK_PRO
+const PAYWALL_READY=!REGION_PAY||!!LINK_MONTHLY
+const PRICE_MO=REGION_PAY?(REGION.pricing?.monthly||"$9.99"):null
+const PRICE_YR=REGION_PAY?(REGION.pricing?.yearly||"$79"):null
 
 /* ═══════════════════════════════════════════════════════════════════════════
    UTILITIES
@@ -384,7 +396,9 @@ function track(event,params={}){
   // Primary: GA4 (gtag.js — may 503 in EU/DMA regions)
   try{window.gtag("event",event,p)}catch(e){}
   // Measurement Protocol direct beacon — bypasses gtag.js DMA block
-  try{
+  // (MQ/GP uniquement : les nouvelles régions n'ont pas encore de propriété GA4 dédiée,
+  //  et beaconner ici polluerait les stats MQ/GP)
+  if(!IS_NEW_REGION)try{
     const isGP=window.location.hostname.includes("guadeloupe")
     const mid=isGP?"G-Q31VV3LLM9":"G-V8JGMDZZ2Y"
     const sec=isGP?"eWAv3vACT6uVzcrAi7JgYQ":"eFHMRr4tQ-2B-JYidixOSA"
@@ -399,7 +413,7 @@ function track(event,params={}){
     ||event==="sg_push_accept"||event==="sg_push_primer_accept"||event==="sg_push_primer_dismiss"
     ||event==="sg_referral_share"
   if(critical){
-    const entry={e:event,p,t:Date.now(),island:window.location.hostname.includes("guadeloupe")?"GP":"MQ"}
+    const entry={e:event,p,t:Date.now(),island:IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"}
     try{
       const q=JSON.parse(localStorage.getItem(TRACK_QUEUE_KEY)||"[]")
       q.push(entry)
@@ -2346,7 +2360,7 @@ function Onboarding({onDone,island="mq",lang="fr"}){
               animation:"dot-pulse 2s ease-in-out infinite"}}/>
             <span style={{fontSize:12,fontWeight:700,color:C.ink}}>
               <em style={{fontStyle:"normal",color:C.amber,fontWeight:700}}>
-                {isMQ?"53 plages":"82 plages"}
+                {IS_NEW_REGION?`${REGION.beaches.length} beaches`:isMQ?"53 plages":"82 plages"}
               </em> {lang==="en"?"monitored live":"surveillées en temps réel"}
             </span>
           </div>
@@ -2438,7 +2452,7 @@ function BeachPicker({island,allBeaches,onSelect,lang,userPos,onDismiss}){
           }}/>
           <span style={{fontSize:13,fontWeight:700,letterSpacing:".06em",color:"#fff",
             fontFamily:"'Anton',sans-serif",textTransform:"uppercase"}}>
-            SARGASSES.{isMQ?"MQ":"GP"}
+            {IS_NEW_REGION?`SARGASSUM ${REGION.name.toUpperCase()}`:`SARGASSES.${isMQ?"MQ":"GP"}`}
           </span>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:5}}>
@@ -3610,8 +3624,8 @@ function SeasonBanner({lang}){
    CTA) + dashboard-configured success_url that fires sg_conversion on return. */
 function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
   const LL=T[lang]||T.fr
-  const hasAnnual=!!STRIPE_LINK_ANNUAL
-  const hasPro=!!STRIPE_LINK_PRO
+  const hasAnnual=!!LINK_ANNUAL
+  const hasPro=!!LINK_PRO
   // isPro = user has paid for the Pro tier (9.99€, unlocks WhatsApp alerts,
   // 14-day forecast, priority email support). Separate flag from sg_premium
   // so existing €4.99 subs keep their current access; Pro is strictly additive.
@@ -3655,7 +3669,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
     (plan==="pro"&&hasPro)?"pro"
     :(plan==="annual"&&hasAnnual)?"annual"
     :"monthly"
-  const stripeLinkFor={monthly:STRIPE_LINK_MONTHLY,annual:STRIPE_LINK_ANNUAL,pro:STRIPE_LINK_PRO}
+  const stripeLinkFor={monthly:LINK_MONTHLY,annual:LINK_ANNUAL,pro:LINK_PRO}
   // A/B test pw_cta_order KILLED 2026-06-09 (scheduled ab-evaluate run).
   // Hypothesis (sample-first reduces the 85% paywall dismiss) was falsified:
   // sg_sample_start fired 0 times across 10,738 sessions over ~7 weeks, with
@@ -3760,11 +3774,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
                   {effectivePlan==="annual"?(lang==="en"?"Annual · 7 days free":"Annuel · 7 jours offerts"):(lang==="en"?"Monthly · 7 days free":"Mensuel · 7 jours offerts")}
                 </div>
                 <div style={{fontWeight:500,color:"rgba(255,255,255,.55)",fontSize:11,marginTop:2}}>
-                  {effectivePlan==="annual"?(lang==="en"?"Then €39.99/yr · cancel anytime":"Puis 39,99 €/an · annule en 1 clic"):(lang==="en"?"Then €4.99/mo · cancel anytime":"Puis 4,99 €/mois · annule en 1 clic")}
+                  {effectivePlan==="annual"?(REGION_PAY?`Then ${PRICE_YR}/yr · cancel anytime`:lang==="en"?"Then €39.99/yr · cancel anytime":"Puis 39,99 €/an · annule en 1 clic"):(REGION_PAY?`Then ${PRICE_MO}/mo · cancel anytime`:lang==="en"?"Then €4.99/mo · cancel anytime":"Puis 4,99 €/mois · annule en 1 clic")}
                 </div>
               </div>
               <div style={{fontFamily:"'Anton',sans-serif",fontSize:22,color:"#FFC72C",letterSpacing:"-.01em",textAlign:"right"}}>
-                0 €
+                {REGION_PAY?"$0":"0 €"}
                 <div style={{fontFamily:"inherit",fontWeight:500,fontSize:11,color:"rgba(255,199,44,.7)",marginTop:2,letterSpacing:0}}>
                   {lang==="en"?"today":"aujourd'hui"}
                 </div>
@@ -3772,9 +3786,9 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
             </div>
             <div style={{display:"flex",flexDirection:"column",gap:8,fontSize:12.5}}>
               {[
-                {k:lang==="en"?"Today":"Aujourd'hui",v:lang==="en"?"€0 · 7-day trial starts":"0 € · tu testes 7 jours"},
+                {k:lang==="en"?"Today":"Aujourd'hui",v:REGION_PAY?"$0 · 7-day trial starts":lang==="en"?"€0 · 7-day trial starts":"0 € · tu testes 7 jours"},
                 {k:_preludeDates.remind,v:lang==="en"?"Reminder · 2 days before first charge":"Rappel · 2 jours avant la 1re charge"},
-                {k:_preludeDates.charge,v:effectivePlan==="annual"?(lang==="en"?"€39.99 · unless you cancel":"39,99 € · sauf si tu annules"):(lang==="en"?"€4.99 · unless you cancel":"4,99 € · sauf si tu annules")},
+                {k:_preludeDates.charge,v:effectivePlan==="annual"?(REGION_PAY?`${PRICE_YR} · unless you cancel`:lang==="en"?"€39.99 · unless you cancel":"39,99 € · sauf si tu annules"):(REGION_PAY?`${PRICE_MO} · unless you cancel`:lang==="en"?"€4.99 · unless you cancel":"4,99 € · sauf si tu annules")},
               ].map((r,i)=>(
                 <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                   <span style={{color:"rgba(255,255,255,.72)"}}>{r.k}</span>
@@ -3784,7 +3798,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",
                 paddingTop:8,borderTop:"1px dashed rgba(255,255,255,.12)",marginTop:2}}>
                 <span style={{color:"rgba(255,255,255,.72)"}}>{lang==="en"?"Due today":"À payer aujourd'hui"}</span>
-                <span style={{color:"#22C55E",fontFamily:"'Anton',sans-serif",fontSize:15,letterSpacing:"-.01em"}}>0,00 €</span>
+                <span style={{color:"#22C55E",fontFamily:"'Anton',sans-serif",fontSize:15,letterSpacing:"-.01em"}}>{REGION_PAY?"$0.00":"0,00 €"}</span>
               </div>
             </div>
           </div>
@@ -3792,7 +3806,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
           {/* Trust row 3 columns */}
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,marginBottom:14}}>
             {[
-              {icon:"🛡",title:"Stripe",sub:lang==="en"?"EU secure payment":"Paiement sécurisé EU"},
+              {icon:"🛡",title:"Stripe",sub:REGION_PAY?"Secure payment":lang==="en"?"EU secure payment":"Paiement sécurisé EU"},
               {icon:"⏱",title:lang==="en"?"30 days":"30 jours",sub:lang==="en"?"Money-back":"Satisfait ou remboursé"},
               {icon:"✕",title:lang==="en"?"1 click":"1 clic",sub:lang==="en"?"Cancel anytime":"Annule quand tu veux"},
             ].map((t,i)=>(
@@ -3808,7 +3822,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
 
           {/* Continue to Stripe CTA — THE actual redirect */}
           <button onClick={()=>{
-            const link=stripeLinkFor[effectivePlan]||STRIPE_LINK_MONTHLY
+            const link=stripeLinkFor[effectivePlan]||LINK_MONTHLY
             track("sg_checkout_redirect",{plan:effectivePlan,source:source||"unknown",destination:"payment_link",via:"prelude"})
             setTimeout(()=>{window.location.href=link},0)
           }} className="gbtn" style={{width:"100%",padding:14,borderRadius:14,border:"none",
@@ -4014,7 +4028,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
             color:plan==="monthly"?"#fff":"rgba(255,255,255,.7)",fontSize:13,fontWeight:600,
             transition:"all .2s"}}>
             <div>{lang==="en"?"Monthly":"Mensuel"}</div>
-            <div style={{fontSize:18,fontWeight:700,marginTop:2}}>{lang==="en"?"€4.99":"4,99 €"}<span style={{fontSize:11,fontWeight:400}}>/{lang==="en"?"mo":"mois"}</span></div>
+            <div style={{fontSize:18,fontWeight:700,marginTop:2}}>{REGION_PAY?PRICE_MO:lang==="en"?"€4.99":"4,99 €"}<span style={{fontSize:11,fontWeight:400}}>/{lang==="en"?"mo":"mois"}</span></div>
           </button>
           <button onClick={()=>{setPlan("annual");track("sg_plan_toggle",{plan:"annual"})}} style={{
             flex:1,padding:"10px 8px",borderRadius:10,cursor:"pointer",fontFamily:"inherit",position:"relative",
@@ -4027,7 +4041,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
               -33%
             </div>
             <div>{lang==="en"?"Annual":"Annuel"}</div>
-            <div style={{fontSize:18,fontWeight:700,marginTop:2}}>{lang==="en"?"€39.99":"39,99 €"}<span style={{fontSize:11,fontWeight:400}}>/{lang==="en"?"yr":"an"}</span></div>
+            <div style={{fontSize:18,fontWeight:700,marginTop:2}}>{REGION_PAY?PRICE_YR:lang==="en"?"€39.99":"39,99 €"}<span style={{fontSize:11,fontWeight:400}}>/{lang==="en"?"yr":"an"}</span></div>
           </button>
           {hasPro&&(
           <button onClick={()=>{setPlan("pro");track("sg_plan_toggle",{plan:"pro"})}} style={{
@@ -4064,6 +4078,13 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
         {/* Paid CTA + zero-friction sample. Order depends on ctaOrder A/B variant.
             control: paid first (original), sample_first: sample first (new variant). */}
         {(() => {
+          // Nouvelle région sans Payment Links → pas de CTA payant (jamais de redirect EUR).
+          if(!PAYWALL_READY)return(
+            <div key="paid" style={{width:"100%",textAlign:"center",fontSize:13,padding:"16px 24px",
+              borderRadius:14,border:"1px dashed rgba(255,255,255,.25)",color:"rgba(255,255,255,.7)"}}>
+              Premium launches here soon — beach alerts &amp; morning brief.
+            </div>
+          )
           const paidCTA = (
             <button key="paid" onClick={()=>{
               track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown",prelude_variant:preludeVariant})
@@ -4074,7 +4095,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
                 setShowPrelude(true)
                 return
               }
-              const link=stripeLinkFor[effectivePlan]||STRIPE_LINK_MONTHLY
+              const link=stripeLinkFor[effectivePlan]||LINK_MONTHLY
               track("sg_checkout_redirect",{plan:effectivePlan,source:source||"unknown",destination:"payment_link"})
               // Defer navigation by one macrotask so both sendBeacon calls above flush
               // before unload (see project_funnel_cta_redirect_leak.md).
@@ -4086,7 +4107,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
               ...(ctaOrder==="sample_first"&&sampleAvailable?{marginTop:10,opacity:.95}:null)}}>
               <div>{lang==="en"?"Start my daily pick — 7 days free":"Activer ma reco — 7 jours offerts"}</div>
               <div style={{fontSize:12,opacity:.8,fontWeight:400,marginTop:4}}>
-                {lang==="en"?"Then €4.99/mo · cancel in 1 click":"Puis 4,99 €/mois · annule en 1 clic"}
+                {REGION_PAY?`Then ${effectivePlan==="annual"?PRICE_YR+"/yr":PRICE_MO+"/mo"} · cancel in 1 click`:lang==="en"?"Then €4.99/mo · cancel in 1 click":"Puis 4,99 €/mois · annule en 1 clic"}
               </div>
             </button>
           )
@@ -4762,7 +4783,7 @@ export default function App(){
           try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
             method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
             body:JSON.stringify({type:"checkout.session.completed",data:{object:{id:sessionId,payment_status:"paid",
-              metadata:{island:window.location.hostname.includes("guadeloupe")?"GP":"MQ"}}}})
+              metadata:{island:IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"}}}})
           }).catch(()=>{})}catch(ex){}
         }
         window.history.replaceState({},"",window.location.pathname)
@@ -5047,7 +5068,46 @@ export default function App(){
         :Array.isArray(beachData)&&beachData.length>0
         ?beachData.map(b=>{const{status,afai,...rest}=b;return rest})
         :[...BEACHES_FALLBACK]
-      // 2. Merge sargassum data if available
+      // 2a. Merge sargassum data — nouvelles régions : levels keyés par id de plage
+      // (échantillonnage direct par plage par la pipeline multi-régions, pas de
+      // mapping SARG_TO_BEACH ni d'interpolation inter-îles MQ/GP). Si le domaine
+      // ne sert pas encore de sargassum.json région, sargResult est null → les
+      // statuts inline du JSON région restent (placeholder assumé).
+      if(sargResult&&IS_NEW_REGION&&Array.isArray(sargResult.levels)){
+        const _byId={}
+        for(const lvl of sargResult.levels)_byId[lvl.id]=lvl
+        const _hasMatch=beaches.some(b=>_byId[b.id])
+        if(_hasMatch){ // garde anti-données-étrangères (ex: vieux sargassum.json MQ servi par erreur)
+          setSargData(sargResult)
+          setDataSource(sargResult?.source||"reference")
+          beaches=beaches.map(b=>{
+            const lvl=_byId[b.id]
+            if(!lvl)return b
+            return{...b,afai:lvl.afai,status:statusFromAfai(lvl.afai),_src:"live",beachMemory:lvl.beachMemory||false,afaiSat:lvl.afaiSat}
+          })
+          // Beach Score 0-100 : météo niveau région (sargResult.weather[<region.id>]) +
+          // per-beach weather si le fichier existe pour cette région
+          if(sargResult.weather||Object.keys(perBeachWx).length){
+            for(let i=0;i<beaches.length;i++){
+              const islandW=sargResult.weather?.[beaches[i].island]||{}
+              const bw=perBeachWx[beaches[i].id]
+              const snap={
+                afai:beaches[i].afai,
+                wind_speed:bw?.windSpeed??islandW.wind_speed,
+                cloud_cover:islandW.cloud_cover,
+                uv_index:bw?.uvMax??islandW.uv_index,
+                sst:bw?.sst??islandW.sst,
+                wave_height:bw?.waveHeight??islandW.wave_height,
+                tide_ratio:null,
+              }
+              if(snap.wave_height==null&&snap.wind_speed==null)continue
+              const r=_computeBeachScore(snap)
+              beaches[i]={...beaches[i],score:r.score,scoreLabel:r.label,scoreColor:r.color,scoreReason:r.reason,scoreBreakdown:r.breakdown,scoreStrengths:r.strengths||[],scoreWeaknesses:r.weaknesses||[]}
+            }
+          }
+        }
+      }
+      // 2b. Merge sargassum data MQ/GP (chemin historique strictement inchangé)
       if(sargResult&&!IS_NEW_REGION){
         setSargData(sargResult)
         setDataSource(sargResult?.source||"reference")
@@ -5389,7 +5449,7 @@ export default function App(){
     <LangCtx.Provider value={lang}>
       <StyleInjector/>
       <AbDebug/>
-      <h1 style={{position:"absolute",width:"1px",height:"1px",overflow:"hidden",clip:"rect(0,0,0,0)",whiteSpace:"nowrap"}}>{island==="mq"?"Sargasses Martinique en temps réel — carte et plages aujourd'hui":"Sargasses Guadeloupe en temps réel — carte et plages aujourd'hui"}</h1>
+      <h1 style={{position:"absolute",width:"1px",height:"1px",overflow:"hidden",clip:"rect(0,0,0,0)",whiteSpace:"nowrap"}}>{IS_NEW_REGION?`${REGION.name} sargassum live — beach map today`:island==="mq"?"Sargasses Martinique en temps réel — carte et plages aujourd'hui":"Sargasses Guadeloupe en temps réel — carte et plages aujourd'hui"}</h1>
       <div style={{position:"relative",width:"100%",height:"100%",overflow:"hidden"}}>
 
         {/* CHECKOUT RECOVERY BANNER */}
