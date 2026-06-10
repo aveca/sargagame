@@ -625,6 +625,30 @@ function prepareNewRegion(region) {
   }
   copyRecursive(dist, out, skip)
 
+  // og:image région-aware : remplace og-image.png (visuel FR "Martinique &
+  // Guadeloupe") par le visuel de la région généré par generate-og-images.cjs.
+  // URL stable /og-image.png — pas d'invalidation des caches FB/WhatsApp.
+  const regionOg = path.join(root, 'regions', 'og', `og-image-${region.id}.png`)
+  if (fs.existsSync(regionOg)) {
+    fs.copyFileSync(regionOg, path.join(out, 'og-image.png'))
+    console.log(`   → og-image.png région-aware (${region.id})`)
+  }
+
+  // Photos plages : ne garder que celles de la région — public/beaches pèse
+  // ~55MB toutes régions confondues, inutile d'uploader les photos MQ/GP ici.
+  const beachesImgDir = path.join(out, 'beaches')
+  if (fs.existsSync(beachesImgDir)) {
+    const ownIds = new Set((region.beaches || []).map(b => b.id))
+    let removedImgs = 0
+    for (const f of fs.readdirSync(beachesImgDir)) {
+      const m = f.match(/^gplace-([a-z]{2}\d+)\.jpg$/)
+      if (m && ownIds.has(m[1])) continue
+      fs.rmSync(path.join(beachesImgDir, f))
+      removedImgs++
+    }
+    if (removedImgs) console.log(`   → photos plages hors-région supprimées (${title}): ${removedImgs}`)
+  }
+
   // Articles éditoriaux : ne garder que ceux de la région (mêmes raisons que
   // le filtre cross-island du build partagé : canonical + duplicate content).
   const articlesDir = path.join(out, 'articles')
