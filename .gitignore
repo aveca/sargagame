@@ -63,3 +63,8 @@ scripts/automation/data/fb-reply-log.jsonl
 
 # RGPD : liste d'abonnés (emails en clair) — re-fetchée à chaque run, JAMAIS commitée
 scripts/automation/data/subscribers.json
+
+# Pipeline video (artefacts de rendu)
+scripts/video/out/
+scripts/video/cache/
+video-remotion/public/cache/
