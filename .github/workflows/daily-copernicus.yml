@@ -87,6 +87,9 @@ jobs:
         env:
           ONESIGNAL_API_KEY_MQ: ${{ secrets.ONESIGNAL_API_KEY_MQ }}
           ONESIGNAL_API_KEY_GP: ${{ secrets.ONESIGNAL_API_KEY_GP }}
+          ONESIGNAL_API_KEY_PUNTACANA: ${{ secrets.ONESIGNAL_API_KEY_PUNTACANA }}
+          ONESIGNAL_API_KEY_FLORIDA: ${{ secrets.ONESIGNAL_API_KEY_FLORIDA }}
+          ONESIGNAL_API_KEY_RIVIERAMAYA: ${{ secrets.ONESIGNAL_API_KEY_RIVIERAMAYA }}
         run: node scripts/automation/send-notifications.cjs
 
       # ── Email pipeline: clean bounces → fetch → send ──
@@ -107,8 +110,11 @@ jobs:
       # NEVER on workflow_dispatch — retry-on-failure re-triggers via workflow_dispatch
       # and manual reruns would duplicate sends. To force-send, run email-weekend.cjs
       # locally with --force, or delete weekend-sent.json and dispatch manually.
-      - name: Send weekend email bulletin (Friday 12h UTC = 8h MQ only)
-        if: github.event_name == 'schedule' && steps.check_day.outputs.dow == '5' && steps.check_day.outputs.hour == '12'
+      # Fenêtre 12-13h : les crons GH à :00 subissent régulièrement 20-50 min de
+      # délai de queue — à 12h strict un vendredi chargé sautait le bulletin.
+      # Anti-doublon server-side (Apps Script weekend_email) rend le 13h sûr.
+      - name: Send weekend email bulletin (Friday 12-13h UTC = 8-9h MQ only)
+        if: github.event_name == 'schedule' && steps.check_day.outputs.dow == '5' && (steps.check_day.outputs.hour == '12' || steps.check_day.outputs.hour == '13')
         continue-on-error: true
         run: node scripts/automation/email-weekend.cjs
 
@@ -148,7 +154,11 @@ jobs:
         run: |
           HOUR=$(date -u +%H)
           FULL=false
-          if [ "$HOUR" = "09" ] || [ "$HOUR" = "21" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          # Heures alignées sur le cron réel (0/6/12/18 UTC) : l'ancien gate 09/21
+          # ne matchait JAMAIS une run schedulée → les nouvelles régions n'étaient
+          # jamais rebuildées automatiquement (full build sur push humain seulement).
+          # Tolérance +1h (07/19) pour les délais de queue GitHub à :00.
+          if [ "$HOUR" = "06" ] || [ "$HOUR" = "07" ] || [ "$HOUR" = "18" ] || [ "$HOUR" = "19" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             FULL=true
           elif [ "${{ github.event_name }}" = "push" ]; then
             # Push events from GITHUB_TOKEN (chore bot commits) don't re-trigger this
@@ -325,14 +335,18 @@ jobs:
       - name: Health check after deploy
         run: |
           sleep 10
-          MQ_STATUS=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 https://sargasses-martinique.com || echo 000)
-          GP_STATUS=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 https://sargasses-guadeloupe.com || echo 000)
-          echo "MQ: $MQ_STATUS | GP: $GP_STATUS"
-          MQ_DATA=$(curl -sL --max-time 15 https://sargasses-martinique.com/api/copernicus/sargassum.json | node -e "let d=''; process.stdin.on('data',c=>d+=c); process.stdin.on('end',()=>{try{const j=JSON.parse(d);const h=(Date.now()-new Date(j.updatedAt))/3.6e6;console.log(h.toFixed(1))}catch{console.log('NaN')}})" || echo NaN)
-          GP_DATA=$(curl -sL --max-time 15 https://sargasses-guadeloupe.com/api/copernicus/sargassum.json | node -e "let d=''; process.stdin.on('data',c=>d+=c); process.stdin.on('end',()=>{try{const j=JSON.parse(d);const h=(Date.now()-new Date(j.updatedAt))/3.6e6;console.log(h.toFixed(1))}catch{console.log('NaN')}})" || echo NaN)
-          echo "MQ data age: ${MQ_DATA}h | GP data age: ${GP_DATA}h"
-          if [ "$MQ_STATUS" != "200" ] || [ "$GP_STATUS" != "200" ]; then
-            echo "::error::One or both sites are down — FTP deploys failed and sites not serving"
+          # Toutes les régions (MQ/GP + nouvelles) : un site down/stale doit
+          # faire échouer le workflow — plus de monitoring MQ/GP-only.
+          DOMAINS=$(node -e "console.log(require('./regions/index.cjs').getAllRegions().map(r => r.domain).join(' '))")
+          DOWN=""
+          for D in $DOMAINS; do
+            STATUS=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 "https://$D" || echo 000)
+            AGE=$(curl -sL --max-time 15 "https://$D/api/copernicus/sargassum.json" | node -e "let d=''; process.stdin.on('data',c=>d+=c); process.stdin.on('end',()=>{try{const j=JSON.parse(d);const h=(Date.now()-new Date(j.updatedAt))/3.6e6;console.log(h.toFixed(1))}catch{console.log('NaN')}})" || echo NaN)
+            echo "$D: HTTP $STATUS | data age ${AGE}h"
+            if [ "$STATUS" != "200" ]; then DOWN="$DOWN $D"; fi
+          done
+          if [ -n "$DOWN" ]; then
+            echo "::error::Sites down:$DOWN — FTP deploys failed and sites not serving"
             exit 1
           fi
           # If FTP attempt 2 also failed AND data is stale (>6h), alert

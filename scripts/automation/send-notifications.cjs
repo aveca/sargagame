@@ -59,6 +59,76 @@ const ONESIGNAL_APPS = {
   },
 }
 
+// ── Multi-régions (regions/index.cjs) ────────────────────────
+// mq/gp restent hardcodés ci-dessus (comportement legacy intact).
+// Les autres régions sont chargées dynamiquement : appId depuis regions/<id>.json,
+// apiKey depuis le secret ONESIGNAL_API_KEY_<ID_UPPER>.
+let REGIONS = []
+try {
+  REGIONS = require(path.join(ROOT, 'regions', 'index.cjs')).getAllRegions()
+} catch (e) {
+  console.warn(`[WARN] regions/index.cjs illisible (${e.message}) — fallback mq/gp uniquement.`)
+}
+
+const REGION_NAMES = { mq: 'Martinique', gp: 'Guadeloupe' }
+const REGION_LANGS = { mq: 'fr', gp: 'fr' }
+const BEACH_PREFIX_TO_REGION = {} // ex: pc → puntacana (déduit de beaches[].id, jamais hardcodé)
+
+for (const region of REGIONS) {
+  if (region.id === 'mq' || region.id === 'gp') continue
+  REGION_NAMES[region.id] = region.name
+  REGION_LANGS[region.id] = region.primaryLang || 'en'
+  for (const b of region.beaches || []) {
+    if (!BEACH_NAMES[b.id]) BEACH_NAMES[b.id] = b.name
+    const m = /^([a-z]+)(?=\d)/i.exec(b.id) // préfixe lettres suivi d'un chiffre: pc001 → pc
+    if (m) BEACH_PREFIX_TO_REGION[m[1].toLowerCase()] = region.id
+  }
+  if (!region.onesignalAppId) continue
+  ONESIGNAL_APPS[region.id] = {
+    appId: region.onesignalAppId,
+    apiKey: process.env[`ONESIGNAL_API_KEY_${region.id.toUpperCase()}`] || '',
+    heading: (region.primaryLang === 'es' ? `Sargazo ${region.name}` : `Sargassum ${region.name}`),
+    url: `https://${region.domain}/`,
+  }
+}
+
+/** Langue des messages pour une région (mq/gp = fr, comportement actuel). */
+function regionLang(islandId) {
+  return REGION_LANGS[islandId] || 'fr'
+}
+
+let _notifiableRegions = null
+/**
+ * Régions à notifier : mq/gp TOUJOURS incluses (comportement legacy inchangé,
+ * le no-key est géré dans sendPushNotification comme avant). Les autres régions
+ * ne sont incluses que si leur API key est présente — sinon skip loggé une fois.
+ */
+function getNotifiableRegions() {
+  if (_notifiableRegions) return _notifiableRegions
+  const ids = ['mq', 'gp']
+  for (const id of Object.keys(ONESIGNAL_APPS)) {
+    if (id === 'mq' || id === 'gp') continue
+    if (ONESIGNAL_APPS[id].apiKey) {
+      ids.push(id)
+    } else {
+      console.log(`[skip] ${id}: pas de ONESIGNAL_API_KEY_${id.toUpperCase()}`)
+    }
+  }
+  _notifiableRegions = ids
+  return ids
+}
+
+/** Données sargassum d'une région. mq/gp = fichier racine legacy (inchangé). */
+function readRegionSargassum(regionId, rootSargassum) {
+  if (regionId === 'mq' || regionId === 'gp') return rootSargassum
+  return readJSON(path.join(ROOT, 'public', 'api', 'copernicus', regionId, 'sargassum.json'))
+}
+
+/** History d'une nouvelle région (mq/gp utilisent HISTORY_PATH racine). */
+function readRegionHistory(regionId) {
+  return readJSON(path.join(ROOT, 'public', 'api', 'copernicus', regionId, 'history.json'))
+}
+
 // ── Google Sheets webhook ────────────────────────────────────
 const SHEETS_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec'
 
@@ -83,17 +153,121 @@ function appendLog(entry) {
   }
 }
 
-/** Determine island from beach id: gp- prefix = GP, otherwise MQ */
+/**
+ * Determine region from beach id:
+ *   gp- prefix = GP (legacy), préfixe lettres+chiffre connu (pc001/fl001/rm001…)
+ *   = région correspondante (déduit des regions/<id>.json), sinon MQ (legacy).
+ */
 function getIsland(beachId) {
-  return beachId.startsWith('gp-') ? 'gp' : 'mq'
+  if (beachId.startsWith('gp-')) return 'gp'
+  const m = /^([a-z]+)(?=\d)/i.exec(beachId)
+  if (m) {
+    const regionId = BEACH_PREFIX_TO_REGION[m[1].toLowerCase()]
+    if (regionId) return regionId
+  }
+  return 'mq'
 }
 
-/** Human-readable status label in French */
-function statusLabel(status) {
-  if (status === 'clean') return 'propre'
-  if (status === 'moderate') return 'modere'
-  if (status === 'avoid') return 'a eviter'
-  return status
+// ── i18n — messages par langue de région ─────────────────────
+// fr = strings legacy mq/gp à l'identique (NE PAS modifier).
+const I18N = {
+  fr: {
+    status: { clean: 'propre', moderate: 'modere', avoid: 'a eviter' },
+    alertHeading: (brand) => `${brand} — Alerte`,
+    alertMsg: (name, label) => `⚠️ ${name} passe en ${label}. Vois les alternatives sur la carte.`,
+    goodNewsHeading: (name) => `${name} est propre ✅`,
+    goodNewsMsg: (name) => `✅ ${name} est propre ! Parfait pour ce weekend.`,
+    favAlertMsg: (prefix, name, label) => `${prefix}💔 Ta plage preférée ${name} vient de passer en ${label}. Vois les alternatives sur la carte.`,
+    favGoodMsg: (prefix, name, label) => `${prefix}💚 ${name} est redevenue ${label} ! Ta plage préférée est OK.`,
+    favHeadingTest: `[TEST] Ta plage préférée change`,
+    favHeadingAlert: `Ta plage préférée change`,
+    favHeadingGood: `Bonne nouvelle pour toi`,
+    fcImproveOne: (name) => `☀️ ${name} sera propre demain ! Previsions satellite.`,
+    fcImproveMany: (count, names, more) => `☀️ ${count} plages propres demain : ${names}${more}. Vois la carte.`,
+    fcImproveHeading: 'Bonne nouvelle demain',
+    fcDegradeOne: (name) => `⚠️ ${name} risque de se degrader demain. Verifie avant d'y aller.`,
+    fcDegradeMany: (count, names, more) => `⚠️ ${count} plages a surveiller demain : ${names}${more}. Vois les alternatives.`,
+    fcDegradeHeading: 'Prevision sargasses',
+    weekendMsg: (count, islandName) => `🏖️ Ce weekend : ${count} plages propres en ${islandName}. Planifie ta sortie !`,
+    weekendHeading: (islandName) => `Weekend en ${islandName}`,
+    briefHeading: `Ton brief plages ☀️`,
+    briefNoClean: (islandName) => `⚠️ Aujourd'hui en ${islandName}, aucune plage propre parmi les plus populaires. Verifie la carte avant de partir.`,
+    // NB: reason vient du pipeline (texte FR) — inclus uniquement en fr.
+    briefUnified: (name, islandName, score, label, reason, drive) => `☀️ ${name} ${islandName} — ${score}/100 ${label}. ${reason}.${typeof drive === 'number' ? ` (${drive} min)` : ''}`,
+    briefWarnTomorrow: (label) => ` Attention : ${label} demain.`,
+    briefDriftUp: ` Sargasses en approche.`,
+    briefLegacyClean: (name, islandName, drive) => `☀️ Ta meilleure plage ${islandName} aujourd'hui : ${name}${typeof drive === 'number' ? ` (${drive} min)` : ''}. Propre.`,
+    briefLegacyOther: (name, islandName, drive, label) => `☀️ ${name} reste le meilleur choix ${islandName} aujourd'hui (${typeof drive === 'number' ? `${drive} min, ` : ''}${label}).`,
+    briefLegacyWarn: (label) => ` Attention : ${label} prevu demain.`,
+    briefLegacyDrift: ` Sargasses en approche ces prochains jours.`,
+    briefAlts: (n) => ` +${n} alternative(s) proche(s).`,
+  },
+  en: {
+    status: { clean: 'clean', moderate: 'moderate', avoid: 'avoid' },
+    alertHeading: (brand) => `${brand} — Alert`,
+    alertMsg: (name, label) => `⚠️ ${name} is now ${label}. See alternatives on the map.`,
+    goodNewsHeading: (name) => `${name} is clean ✅`,
+    goodNewsMsg: (name) => `✅ ${name} is clean! Perfect for this weekend.`,
+    favAlertMsg: (prefix, name, label) => `${prefix}💔 Your favorite beach ${name} just turned ${label}. See alternatives on the map.`,
+    favGoodMsg: (prefix, name, label) => `${prefix}💚 ${name} is back to ${label}! Your favorite beach is OK.`,
+    favHeadingTest: `[TEST] Your favorite beach changed`,
+    favHeadingAlert: `Your favorite beach changed`,
+    favHeadingGood: `Good news for you`,
+    fcImproveOne: (name) => `☀️ ${name} will be clean tomorrow! Satellite forecast.`,
+    fcImproveMany: (count, names, more) => `☀️ ${count} clean beaches tomorrow: ${names}${more}. See the map.`,
+    fcImproveHeading: 'Good news tomorrow',
+    fcDegradeOne: (name) => `⚠️ ${name} may worsen tomorrow. Check before you go.`,
+    fcDegradeMany: (count, names, more) => `⚠️ ${count} beaches to watch tomorrow: ${names}${more}. See alternatives.`,
+    fcDegradeHeading: 'Sargassum forecast',
+    weekendMsg: (count, islandName) => `🏖️ This weekend: ${count} clean beaches in ${islandName}. Plan your trip!`,
+    weekendHeading: (islandName) => `Weekend in ${islandName}`,
+    briefHeading: `Your beach brief ☀️`,
+    briefNoClean: (islandName) => `⚠️ Today in ${islandName}, none of the most popular beaches are clean. Check the map before heading out.`,
+    briefUnified: (name, islandName, score, label, reason, drive) => `☀️ ${name} ${islandName} — ${score}/100 ${label}.${typeof drive === 'number' ? ` (${drive} min)` : ''}`,
+    briefWarnTomorrow: (label) => ` Heads up: ${label} tomorrow.`,
+    briefDriftUp: ` Sargassum approaching.`,
+    briefLegacyClean: (name, islandName, drive) => `☀️ Your best ${islandName} beach today: ${name}${typeof drive === 'number' ? ` (${drive} min)` : ''}. Clean.`,
+    briefLegacyOther: (name, islandName, drive, label) => `☀️ ${name} is still the best ${islandName} pick today (${typeof drive === 'number' ? `${drive} min, ` : ''}${label}).`,
+    briefLegacyWarn: (label) => ` Heads up: ${label} expected tomorrow.`,
+    briefLegacyDrift: ` Sargassum approaching in the coming days.`,
+    briefAlts: (n) => ` +${n} nearby alternative(s).`,
+  },
+  es: {
+    status: { clean: 'limpia', moderate: 'moderado', avoid: 'evitar' },
+    alertHeading: (brand) => `${brand} — Alerta`,
+    alertMsg: (name, label) => `⚠️ ${name} pasa a ${label}. Mira las alternativas en el mapa.`,
+    goodNewsHeading: (name) => `${name} está limpia ✅`,
+    goodNewsMsg: (name) => `✅ ${name} está limpia! Perfecta para este fin de semana.`,
+    favAlertMsg: (prefix, name, label) => `${prefix}💔 Tu playa favorita ${name} acaba de pasar a ${label}. Mira las alternativas en el mapa.`,
+    favGoodMsg: (prefix, name, label) => `${prefix}💚 ${name} vuelve a estar ${label}! Tu playa favorita está OK.`,
+    favHeadingTest: `[TEST] Tu playa favorita cambia`,
+    favHeadingAlert: `Tu playa favorita cambia`,
+    favHeadingGood: `Buena noticia para ti`,
+    fcImproveOne: (name) => `☀️ ${name} estará limpia mañana! Pronóstico satelital.`,
+    fcImproveMany: (count, names, more) => `☀️ ${count} playas limpias mañana: ${names}${more}. Mira el mapa.`,
+    fcImproveHeading: 'Buena noticia mañana',
+    fcDegradeOne: (name) => `⚠️ ${name} podría empeorar mañana. Verifica antes de ir.`,
+    fcDegradeMany: (count, names, more) => `⚠️ ${count} playas a vigilar mañana: ${names}${more}. Mira las alternativas.`,
+    fcDegradeHeading: 'Pronóstico de sargazo',
+    weekendMsg: (count, islandName) => `🏖️ Este fin de semana: ${count} playas limpias en ${islandName}. Planifica tu salida!`,
+    weekendHeading: (islandName) => `Fin de semana en ${islandName}`,
+    briefHeading: `Tu resumen de playas ☀️`,
+    briefNoClean: (islandName) => `⚠️ Hoy en ${islandName}, ninguna playa limpia entre las más populares. Revisa el mapa antes de salir.`,
+    briefUnified: (name, islandName, score, label, reason, drive) => `☀️ ${name} ${islandName} — ${score}/100 ${label}.${typeof drive === 'number' ? ` (${drive} min)` : ''}`,
+    briefWarnTomorrow: (label) => ` Atención: ${label} mañana.`,
+    briefDriftUp: ` Sargazo acercándose.`,
+    briefLegacyClean: (name, islandName, drive) => `☀️ Tu mejor playa de ${islandName} hoy: ${name}${typeof drive === 'number' ? ` (${drive} min)` : ''}. Limpia.`,
+    briefLegacyOther: (name, islandName, drive, label) => `☀️ ${name} sigue siendo la mejor opción en ${islandName} hoy (${typeof drive === 'number' ? `${drive} min, ` : ''}${label}).`,
+    briefLegacyWarn: (label) => ` Atención: ${label} previsto mañana.`,
+    briefLegacyDrift: ` Sargazo acercándose en los próximos días.`,
+    briefAlts: (n) => ` +${n} alternativa(s) cercana(s).`,
+  },
+}
+
+/** Human-readable status label, dans la langue de la région (défaut fr = legacy). */
+function statusLabel(status, lang = 'fr') {
+  const map = (I18N[lang] || I18N.fr).status
+  return map[status] || status
 }
 
 /**
@@ -235,14 +409,17 @@ async function sendAllPushNotifications(alerts, goodNews) {
   const results = []
 
   for (const a of alerts) {
-    const msg = `\u26a0\ufe0f ${a.name} passe en ${statusLabel(a.to)}. Vois les alternatives sur la carte.`
-    const res = await sendPushNotification(a.island, msg, `Sargasses ${a.island === 'gp' ? 'Guadeloupe' : 'Martinique'} \u2014 Alerte`)
+    const T = I18N[regionLang(a.island)] || I18N.fr
+    const brand = (ONESIGNAL_APPS[a.island] && ONESIGNAL_APPS[a.island].heading) || ''
+    const msg = T.alertMsg(a.name, statusLabel(a.to, regionLang(a.island)))
+    const res = await sendPushNotification(a.island, msg, T.alertHeading(brand))
     results.push({ type: 'alert', beach: a.id, island: a.island, message: msg, ...res })
   }
 
   for (const g of goodNews) {
-    const msg = `\u2705 ${g.name} est propre ! Parfait pour ce weekend.`
-    const res = await sendPushNotification(g.island, msg, `${g.name} est propre \u2705`)
+    const T = I18N[regionLang(g.island)] || I18N.fr
+    const msg = T.goodNewsMsg(g.name)
+    const res = await sendPushNotification(g.island, msg, T.goodNewsHeading(g.name))
     results.push({ type: 'good-news', beach: g.id, island: g.island, message: msg, ...res })
   }
 
@@ -258,56 +435,69 @@ async function sendAllPushNotifications(alerts, goodNews) {
  *   3. "Degradation incoming" — today clean, tomorrow moderate/avoid (conf > 40%)
  */
 async function sendProactiveForecastPush(sargassum) {
-  if (!sargassum.weekly) {
-    console.log('[FORECAST-PUSH] No weekly forecast data — skipping.')
-    return []
-  }
-
   const results = []
   const now = new Date()
   const dayOfWeek = now.getDay() // 0=Sun, 5=Fri
   const MIN_CONFIDENCE = 40
 
-  // Group forecast improvements/degradations by island
-  const improvements = { mq: [], gp: [] }
-  const degradations = { mq: [], gp: [] }
-
-  for (const [beachId, data] of Object.entries(sargassum.weekly)) {
-    if (!data.forecast || data.forecast.length < 2) continue
-
-    const today = data.forecast[0]
-    const tomorrow = data.forecast[1]
-    if (!today || !tomorrow || tomorrow.confidence < MIN_CONFIDENCE) continue
-
-    const island = beachId.startsWith('gp-') ? 'gp' : 'mq'
-    const name = BEACH_NAMES[beachId] || beachId
-
-    // Clean tomorrow (improvement)
-    if (
-      (today.status === 'moderate' || today.status === 'avoid') &&
-      tomorrow.status === 'clean'
-    ) {
-      improvements[island].push(name)
+  // Weekly data par région : mq/gp = fichier racine (legacy), autres = fichier région
+  const regionWeekly = {}
+  for (const island of getNotifiableRegions()) {
+    const data = readRegionSargassum(island, sargassum)
+    if (!data || !data.weekly) {
+      console.log(`[FORECAST-PUSH] No weekly forecast data (${island}) — skipping.`)
+      continue
     }
+    regionWeekly[island] = data.weekly
+  }
 
-    // Degradation incoming
-    if (
-      today.status === 'clean' &&
-      (tomorrow.status === 'moderate' || tomorrow.status === 'avoid')
-    ) {
-      degradations[island].push(name)
+  // Group forecast improvements/degradations by region
+  const improvements = {}
+  const degradations = {}
+
+  for (const [island, weekly] of Object.entries(regionWeekly)) {
+    improvements[island] = []
+    degradations[island] = []
+
+    for (const [beachId, data] of Object.entries(weekly)) {
+      if (getIsland(beachId) !== island) continue
+      if (!data.forecast || data.forecast.length < 2) continue
+
+      const today = data.forecast[0]
+      const tomorrow = data.forecast[1]
+      if (!today || !tomorrow || tomorrow.confidence < MIN_CONFIDENCE) continue
+
+      const name = BEACH_NAMES[beachId] || beachId
+
+      // Clean tomorrow (improvement)
+      if (
+        (today.status === 'moderate' || today.status === 'avoid') &&
+        tomorrow.status === 'clean'
+      ) {
+        improvements[island].push(name)
+      }
+
+      // Degradation incoming
+      if (
+        today.status === 'clean' &&
+        (tomorrow.status === 'moderate' || tomorrow.status === 'avoid')
+      ) {
+        degradations[island].push(name)
+      }
     }
   }
 
-  // Send "clean tomorrow" push (max 1 per island)
-  for (const island of ['mq', 'gp']) {
+  // Send "clean tomorrow" push (max 1 per region)
+  for (const island of Object.keys(regionWeekly)) {
+    const T = I18N[regionLang(island)] || I18N.fr
+
     if (improvements[island].length > 0) {
       const count = improvements[island].length
       const names = improvements[island].slice(0, 3).join(', ')
       const msg = count === 1
-        ? `\u2600\ufe0f ${names} sera propre demain ! Previsions satellite.`
-        : `\u2600\ufe0f ${count} plages propres demain : ${names}${count > 3 ? '...' : ''}. Vois la carte.`
-      const res = await sendPushNotification(island, msg, 'Bonne nouvelle demain')
+        ? T.fcImproveOne(names)
+        : T.fcImproveMany(count, names, count > 3 ? '...' : '')
+      const res = await sendPushNotification(island, msg, T.fcImproveHeading)
       results.push({ type: 'forecast-improvement', island, count, ...res })
     }
 
@@ -315,21 +505,22 @@ async function sendProactiveForecastPush(sargassum) {
       const count = degradations[island].length
       const names = degradations[island].slice(0, 3).join(', ')
       const msg = count === 1
-        ? `\u26a0\ufe0f ${names} risque de se degrader demain. Verifie avant d'y aller.`
-        : `\u26a0\ufe0f ${count} plages a surveiller demain : ${names}${count > 3 ? '...' : ''}. Vois les alternatives.`
-      const res = await sendPushNotification(island, msg, 'Prevision sargasses')
+        ? T.fcDegradeOne(names)
+        : T.fcDegradeMany(count, names, count > 3 ? '...' : '')
+      const res = await sendPushNotification(island, msg, T.fcDegradeHeading)
       results.push({ type: 'forecast-degradation', island, count, ...res })
     }
   }
 
   // Friday: Weekend outlook push
   if (dayOfWeek === 5) {
-    for (const island of ['mq', 'gp']) {
-      const islandName = island === 'gp' ? 'Guadeloupe' : 'Martinique'
+    for (const [island, weekly] of Object.entries(regionWeekly)) {
+      const T = I18N[regionLang(island)] || I18N.fr
+      const islandName = REGION_NAMES[island] || island
       let cleanWeekend = 0
 
-      for (const [beachId, data] of Object.entries(sargassum.weekly)) {
-        if ((beachId.startsWith('gp-') ? 'gp' : 'mq') !== island) continue
+      for (const [beachId, data] of Object.entries(weekly)) {
+        if (getIsland(beachId) !== island) continue
         if (!data.forecast || data.forecast.length < 3) continue
 
         // Check Saturday (index 1) and Sunday (index 2) — relative to Friday
@@ -341,8 +532,8 @@ async function sendProactiveForecastPush(sargassum) {
       }
 
       if (cleanWeekend > 0) {
-        const msg = `\ud83c\udfd6\ufe0f Ce weekend : ${cleanWeekend} plages propres en ${islandName}. Planifie ta sortie !`
-        const res = await sendPushNotification(island, msg, `Weekend en ${islandName}`)
+        const msg = T.weekendMsg(cleanWeekend, islandName)
+        const res = await sendPushNotification(island, msg, T.weekendHeading(islandName))
         results.push({ type: 'weekend-outlook', island, cleanWeekend, ...res })
       }
     }
@@ -367,14 +558,16 @@ async function sendFavoriteAlert(beachChange, type, opts = {}) {
   if (!config || !config.apiKey) {
     return { sent: false, reason: 'no-api-key' }
   }
-  const label = statusLabel(beachChange.to)
+  const lang = regionLang(beachChange.island)
+  const T = I18N[lang] || I18N.fr
+  const label = statusLabel(beachChange.to, lang)
   const prefix = isTest ? '[TEST] ' : ''
   const msg = type === 'alert'
-    ? `${prefix}\ud83d\udc94 Ta plage pref\u00e9r\u00e9e ${beachChange.name} vient de passer en ${label}. Vois les alternatives sur la carte.`
-    : `${prefix}\ud83d\udc9a ${beachChange.name} est redevenue ${label} ! Ta plage pr\u00e9f\u00e9r\u00e9e est OK.`
+    ? T.favAlertMsg(prefix, beachChange.name, label)
+    : T.favGoodMsg(prefix, beachChange.name, label)
   const heading = isTest
-    ? `[TEST] Ta plage pr\u00e9f\u00e9r\u00e9e change`
-    : (type === 'alert' ? `Ta plage pr\u00e9f\u00e9r\u00e9e change` : `Bonne nouvelle pour toi`)
+    ? T.favHeadingTest
+    : (type === 'alert' ? T.favHeadingAlert : T.favHeadingGood)
 
   const payload = {
     app_id: config.appId,
@@ -451,6 +644,19 @@ const FEATURED_BEACHES = {
   ],
 }
 
+// Régions dynamiques : featured = toutes les plages du regions/<id>.json
+// (drive inconnu → null, ignoré dans le scoring et omis du message).
+for (const region of REGIONS) {
+  if (FEATURED_BEACHES[region.id]) continue
+  if (!region.beaches || region.beaches.length === 0) continue
+  FEATURED_BEACHES[region.id] = region.beaches.map(b => ({
+    id: b.id,
+    name: b.name,
+    drive: null,
+    kids: !!b.kids,
+  }))
+}
+
 /**
  * Pick the top beach for morning brief on a given island.
  * Signals used (v2, 2026-04-10 — parity with DailyRecoStrip client):
@@ -499,8 +705,8 @@ function pickTopForBrief(sargassum, island) {
     score = score * (0.6 + Math.min(conf, 100) / 250)
     // 6. Beach memory
     if (lv?.beachMemory) score -= 200
-    // 7. Drive time from hub
-    score -= b.drive * 1.5
+    // 7. Drive time from hub (régions dynamiques: drive=null → pas de pénalité)
+    if (typeof b.drive === 'number') score -= b.drive * 1.5
     // 8. Amenities tie-breaker
     if (b.kids) score += 10
     return {
@@ -533,36 +739,40 @@ function pickTopForBrief(sargassum, island) {
  * Pattern: DayStart / Brella — short, actionable, one reco + context.
  * v2: includes forecast-tomorrow warning and drift-approaching flag.
  */
-function buildBriefMessage(pick, islandName) {
+function buildBriefMessage(pick, islandName, lang = 'fr') {
+  const T = I18N[lang] || I18N.fr
   if (!pick || !pick.top) return null
   const t = pick.top
   if (!pick.anyClean && typeof t.unifiedScore !== 'number') {
-    return `\u26a0\ufe0f Aujourd'hui en ${islandName}, aucune plage propre parmi les plus populaires. Verifie la carte avant de partir.`
+    return T.briefNoClean(islandName)
   }
   // v3.1: prefer unified 0-100 score + reason (year-round, works when all beaches clean)
   if (typeof t.unifiedScore === 'number' && t.unifiedScore >= 40) {
     // Strip trailing period if present — we add our own sentence structure
     const reason = (t.unifiedReason || '').replace(/\.\s*$/, '')
-    let msg = `\u2600\ufe0f ${t.name} ${islandName} \u2014 ${t.unifiedScore}/100 ${t.unifiedLabel || ''}. ${reason}. (${t.drive} min)`
+    let msg = T.briefUnified(t.name, islandName, t.unifiedScore, t.unifiedLabel || '', reason, t.drive)
     if (t.forecastJ1 && t.forecastJ1 !== 'clean') {
-      msg += ` Attention : ${statusLabel(t.forecastJ1)} demain.`
+      msg += T.briefWarnTomorrow(statusLabel(t.forecastJ1, lang))
     } else if (t.drift === 'up') {
-      msg += ` Sargasses en approche.`
+      msg += T.briefDriftUp
     }
     return msg
   }
   // Legacy fallback (score < 40 or missing)
+  let hasWarning = false
   let msg = t.status === 'clean'
-    ? `\u2600\ufe0f Ta meilleure plage ${islandName} aujourd'hui : ${t.name} (${t.drive} min). Propre.`
-    : `\u2600\ufe0f ${t.name} reste le meilleur choix ${islandName} aujourd'hui (${t.drive} min, ${statusLabel(t.status)}).`
+    ? T.briefLegacyClean(t.name, islandName, t.drive)
+    : T.briefLegacyOther(t.name, islandName, t.drive, statusLabel(t.status, lang))
   if (t.forecastJ1 && t.forecastJ1 !== 'clean') {
-    msg += ` Attention : ${statusLabel(t.forecastJ1)} prevu demain.`
+    msg += T.briefLegacyWarn(statusLabel(t.forecastJ1, lang))
+    hasWarning = true
   } else if (t.drift === 'up') {
-    msg += ` Sargasses en approche ces prochains jours.`
+    msg += T.briefLegacyDrift
+    hasWarning = true
   }
   const cleanAlts = pick.alternatives.filter(a => a.status === 'clean').length
-  if (cleanAlts > 0 && !msg.includes('Attention') && !msg.includes('approche')) {
-    msg += ` +${cleanAlts} alternative(s) proche(s).`
+  if (cleanAlts > 0 && !hasWarning) {
+    msg += T.briefAlts(cleanAlts)
   }
   return msg
 }
@@ -573,16 +783,22 @@ function buildBriefMessage(pick, islandName) {
  */
 async function sendMorningBriefPush(sargassum) {
   const results = []
-  for (const island of ['mq', 'gp']) {
-    const islandName = island === 'gp' ? 'Guadeloupe' : 'Martinique'
-    const pick = pickTopForBrief(sargassum, island)
+  for (const island of getNotifiableRegions()) {
+    const lang = regionLang(island)
+    const islandName = REGION_NAMES[island] || island
+    const data = readRegionSargassum(island, sargassum)
+    if (!data || !data.levels) {
+      console.log(`[MORNING-BRIEF] No data for ${island} — skipping.`)
+      continue
+    }
+    const pick = pickTopForBrief(data, island)
     if (!pick || !pick.top) {
       console.log(`[MORNING-BRIEF] No pick for ${island} — skipping.`)
       continue
     }
-    const msg = buildBriefMessage(pick, islandName)
+    const msg = buildBriefMessage(pick, islandName, lang)
     if (!msg) continue
-    const heading = `Ton brief plages \u2600\ufe0f`
+    const heading = (I18N[lang] || I18N.fr).briefHeading
     console.log(`[MORNING-BRIEF] ${island.toUpperCase()}: ${msg}`)
     const res = await sendPushNotification(island, msg, heading)
     results.push({
@@ -678,7 +894,7 @@ async function main() {
   // --count-subscribers: query OneSignal for messageable player counts per island.
   // Used to diagnose "is anybody actually subscribed to push?" without touching data.
   if (MODE_COUNT_SUBS) {
-    for (const island of ['mq', 'gp']) {
+    for (const island of getNotifiableRegions()) {
       const cfg = ONESIGNAL_APPS[island]
       if (!cfg || !cfg.apiKey) {
         console.log(`[COUNT-SUBS] ${island.toUpperCase()}: no API key — skipping`)
@@ -771,8 +987,23 @@ async function main() {
 
   const currentLevels = sargassum.levels
 
-  // 2. Detect changes
+  // 2. Detect changes (mq/gp = fichiers racine, comportement legacy inchangé)
   const { alerts, goodNews } = detectChanges(currentLevels, history)
+
+  // 2b. Multi-régions : mêmes détections sur public/api/copernicus/<id>/
+  // pour chaque nouvelle région avec API key (les autres sont [skip]).
+  for (const regionId of getNotifiableRegions()) {
+    if (regionId === 'mq' || regionId === 'gp') continue
+    const rSarg = readRegionSargassum(regionId)
+    if (!rSarg || !rSarg.levels) {
+      console.warn(`[WARN] ${regionId}: sargassum.json manquant — change detection skip.`)
+      continue
+    }
+    const rHistory = readRegionHistory(regionId)
+    const rChanges = detectChanges(rSarg.levels, rHistory)
+    alerts.push(...rChanges.alerts)
+    goodNews.push(...rChanges.goodNews)
+  }
 
   console.log(`[INFO] Changes detected: ${alerts.length} alerts, ${goodNews.length} good news`)
 
@@ -845,9 +1076,12 @@ async function main() {
     console.error(`[ERROR] Forecast push failed: ${e.message}`)
   }
 
-  // 5. Weekly email digest (only on Mondays)
+  // 5. Weekly email digest (only on Mondays) — legacy MQ/GP uniquement :
+  // on filtre les alertes des nouvelles régions pour ne pas polluer le digest.
   try {
-    const digestResult = await sendWeeklyDigest(currentLevels, alerts, goodNews)
+    const legacyAlerts = alerts.filter(a => a.island === 'mq' || a.island === 'gp')
+    const legacyGoodNews = goodNews.filter(g => g.island === 'mq' || g.island === 'gp')
+    const digestResult = await sendWeeklyDigest(currentLevels, legacyAlerts, legacyGoodNews)
     if (digestResult.sent) {
       appendLog({
         script: 'send-notifications',

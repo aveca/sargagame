@@ -39,6 +39,9 @@ jobs:
         env:
           ONESIGNAL_API_KEY_MQ: ${{ secrets.ONESIGNAL_API_KEY_MQ }}
           ONESIGNAL_API_KEY_GP: ${{ secrets.ONESIGNAL_API_KEY_GP }}
+          ONESIGNAL_API_KEY_PUNTACANA: ${{ secrets.ONESIGNAL_API_KEY_PUNTACANA }}
+          ONESIGNAL_API_KEY_FLORIDA: ${{ secrets.ONESIGNAL_API_KEY_FLORIDA }}
+          ONESIGNAL_API_KEY_RIVIERAMAYA: ${{ secrets.ONESIGNAL_API_KEY_RIVIERAMAYA }}
         run: node scripts/automation/send-notifications.cjs --morning-brief
 
       - name: Upload log artifact (on failure)
