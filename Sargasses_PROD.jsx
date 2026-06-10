@@ -5193,20 +5193,48 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap}){
           {beach.score!=null&&<span style={{fontFamily:"'Anton',sans-serif",fontSize:17,letterSpacing:".03em"}}>{beach.score}/100</span>}
         </div>
         {sub&&<div style={{fontSize:13,color:"rgba(255,255,255,.62)",marginBottom:18}}>{sub}</div>}
-        <button onClick={onOpen} className="gbtn" style={{display:"block",width:"100%",textAlign:"center",
-          background:"#FFC72C",color:"#0A1714",border:"none",cursor:"pointer",fontFamily:"inherit",
-          fontWeight:800,fontSize:17,padding:"16px 24px",borderRadius:18,boxShadow:"0 8px 28px rgba(255,199,44,.32)"}}>
-          {_t(lang,"Voir cette plage","See this beach","Ver esta playa")}
-          <span style={{display:"block",fontWeight:500,fontSize:11.5,opacity:.75,marginTop:3}}>
-            {_t(lang,"état complet · météo · prévisions 7 jours","full status · weather · 7-day forecast","estado completo · clima · pronóstico 7 días")}
-          </span>
-        </button>
-        <button onClick={onShowMap} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:7,width:"100%",
-          background:"none",border:"none",color:"rgba(255,255,255,.66)",fontFamily:"inherit",fontSize:13,
-          fontWeight:600,padding:"14px 0 0",cursor:"pointer"}}>
-          <span className="sg-hero-chev" style={{display:"inline-block",animation:"sgHeroBob 1.8s ease-in-out infinite"}}>⌄</span>
-          {_t(lang,"Toutes les plages sur la carte","All beaches on the map","Todas las playas en el mapa")}
-        </button>
+        {/* Desktop (≥900px) : la carte est un bouton de PREMIER rang à côté du
+            CTA — GSC 2026-06 : intent "carte" = 7% (MQ) / 2% (GP) des clics
+            home vs 72-98% "état maintenant", mais sur grand écran les
+            map-seekers doivent voir leur sortie sans chercher. Mobile : lien
+            discret sous le CTA (écran étroit, status-first). */}
+        {(typeof window!=="undefined"&&window.matchMedia&&window.matchMedia("(min-width:900px)").matches)?(
+          <div style={{display:"flex",gap:10}}>
+            <button onClick={onOpen} className="gbtn" style={{flex:1.5,textAlign:"center",
+              background:"#FFC72C",color:"#0A1714",border:"none",cursor:"pointer",fontFamily:"inherit",
+              fontWeight:800,fontSize:17,padding:"16px 24px",borderRadius:18,boxShadow:"0 8px 28px rgba(255,199,44,.32)"}}>
+              {_t(lang,"Voir cette plage","See this beach","Ver esta playa")}
+              <span style={{display:"block",fontWeight:500,fontSize:11.5,opacity:.75,marginTop:3}}>
+                {_t(lang,"état complet · météo · prévisions 7 jours","full status · weather · 7-day forecast","estado completo · clima · pronóstico 7 días")}
+              </span>
+            </button>
+            <button onClick={onShowMap} style={{flex:1,textAlign:"center",cursor:"pointer",fontFamily:"inherit",
+              background:"rgba(10,23,20,.45)",color:"#fff",border:"1.5px solid rgba(255,255,255,.35)",
+              fontWeight:700,fontSize:15,padding:"16px 18px",borderRadius:18,backdropFilter:"blur(6px)"}}>
+              🗺 {_t(lang,"Ouvrir la carte live","Open the live map","Abrir el mapa en vivo")}
+              <span style={{display:"block",fontWeight:500,fontSize:11.5,opacity:.7,marginTop:3}}>
+                {_t(lang,"toutes les plages, en direct","every beach, real time","todas las playas, en directo")}
+              </span>
+            </button>
+          </div>
+        ):(
+          <>
+            <button onClick={onOpen} className="gbtn" style={{display:"block",width:"100%",textAlign:"center",
+              background:"#FFC72C",color:"#0A1714",border:"none",cursor:"pointer",fontFamily:"inherit",
+              fontWeight:800,fontSize:17,padding:"16px 24px",borderRadius:18,boxShadow:"0 8px 28px rgba(255,199,44,.32)"}}>
+              {_t(lang,"Voir cette plage","See this beach","Ver esta playa")}
+              <span style={{display:"block",fontWeight:500,fontSize:11.5,opacity:.75,marginTop:3}}>
+                {_t(lang,"état complet · météo · prévisions 7 jours","full status · weather · 7-day forecast","estado completo · clima · pronóstico 7 días")}
+              </span>
+            </button>
+            <button onClick={onShowMap} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:7,width:"100%",
+              background:"none",border:"none",color:"rgba(255,255,255,.66)",fontFamily:"inherit",fontSize:13,
+              fontWeight:600,padding:"14px 0 0",cursor:"pointer"}}>
+              <span className="sg-hero-chev" style={{display:"inline-block",animation:"sgHeroBob 1.8s ease-in-out infinite"}}>⌄</span>
+              {_t(lang,"Toutes les plages sur la carte","All beaches on the map","Todas las playas en el mapa")}
+            </button>
+          </>
+        )}
       </div>
     </div>
   )
