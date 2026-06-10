@@ -1,6 +1,6 @@
 # NEXT_SESSION — sargagame
 
-*Session 2026-06-10 (suite « 0→1 » + tour site-par-site). Audit live 6 agents (1/domaine + cross-site) + verify adversarial : **0 critical/high** — sites sains. 13 mediums → tous les actionnables corrigés + funnel/notifs/°F/banks shippés. ~4 commits poussés (dernier : 2eb55c8).*
+*Session 2026-06-10 (tour site-par-site + demandes UX/paiement). Audit live 6 agents (1/domaine + cross-site) + verify adversarial : **0 critical/high** — sites sains. 13 mediums → tous les actionnables corrigés + funnel/notifs/°F/banks shippés. ~4 commits poussés (dernier : 2eb55c8).*
 
 ## 🎯 État cash USD
 | Région | Domaine | Site | Payment Links | GSC sitemap |
@@ -25,7 +25,6 @@
 - **Diag sans fix (légitime)** : scores PC quasi uniformes = géographie (25km homogènes), pas un bug. SW v34.
 
 ## ⚠️ À FAIRE (ordre)
-1. **Vérifier deploy 27270122674 en prod** (watcher armé en fin de session) : `curl https://sargassumpuntacana.com/api/copernicus/sargassum-banks.json` (200 attendu), `/plages/` MQ → 200 hub « Toutes les plages », GP `/conditions/mer-calme/` og:site_name Guadeloupe, titles resorts Miami propres, °F dans la sheet Miami.
 2. **Réconciliation webhook J+1 (2026-06-11)** : Stripe (subscriptions actives par région) vs Sheets payments+subscription_events. Établir le VRAI MRR (7 EUR d'avril : actifs ? churnés ?). `scripts/audit-stripe-duplicates.cjs` a le pattern d'auth Stripe.
 3. **Chip user Cloudflare** : token API → `gh secret set CLOUDFLARE_API_TOKEN` puis `node scripts/automation/cloudflare-provision.cjs --only=sargazotulum.com` (canari) puis les 3 sites.
 4. **Indexation** : sitemaps USD soumis aujourd'hui (04:44, provision-gsc) — suivre impressions GSC sous 7j. MQ : la fin du 301 /plages/ devrait résoudre le « Duplicate, submitted URL not selected ».
@@ -36,3 +35,11 @@
 - A/B MQ/GP : pw_prelude seul vivant. Ne pas toucher.
 - `scripts/ux-clicktest.cjs` désormais committé (Playwright 5 domaines). Les « CRITICAL » mq/gp qu'il sort sur le clic marqueur = artefacts harnais (navigation SW pendant evaluate), pas des bugs site.
 - FB groupes PC : 8 join requests en attente d'approbation → dès approbation, `fb-post-groups.cjs` (Edge).
+
+## 🟢 Après-midi 2026-06-10 — 4 demandes utilisateur traitées + VÉRIFIÉES LIVE
+1. **Bancs sur les territoires** : clip masque eau (sommets terre 4→0) + **split des hulls géants** en blocs 0,3° (max hull 2,07°→0,65°). Vérifié live : aucun polygone sur l'île, hulls ≤289px à l'écran.
+2. **MQ chargement infini** = fenêtre deploy (racine uploadée avant assets → bundle 404 ~15 min). Fix : manual-ftp-deploy uploade assets/ d'abord, racine en DERNIER. MQ revérifié 200.
+3. **Paiement in-app** : Stripe Embedded Checkout (CB+Apple Pay+Google Pay+Link) dans le modal, essai 7j, prix région, fallback Payment Link intégral. PHP `action=embedded` + `prices_by_region` (stripe-config déployé à chaud 5 domaines). **payment_method_domains : apple_pay/google_pay/link ACTIVE sur les 5 domaines.** Testé E2E local (formulaire complet) + live PC (iframe inner montée). `sg_checkout_redirect destination:embedded` + retour `?session_id=` → sg_conversion fire enfin.
+4. **Tout pushé/publié** : 3 runs deploy success (27268980954 °F, 27270122674 audit-fixes, 27271550420 final). SW v35 live. Bundles 5/5 avec initEmbeddedCheckout. Hub /plages/ 200, GP og+GA4 propres, titles resorts propres, banks/grid USD 200, .well-known 200 ×5.
+
+⚠️ À surveiller demain : premiers `sg_embedded_open` vs `_fallback` dans le funnel (santé du nouveau flow), et réconciliation webhook (#6) doit maintenant inclure subscription_events.
