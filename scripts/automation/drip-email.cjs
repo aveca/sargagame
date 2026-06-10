@@ -18,6 +18,7 @@
 const fs = require('fs')
 const path = require('path')
 const { Resend } = require('resend')
+const { emailHash } = require('./lib/email-hash.cjs')
 
 const API_KEY = process.env.RESEND_API_KEY
 const FORCE = process.argv.includes('--force')
@@ -50,6 +51,21 @@ function loadJSON(p, fallback) {
 function saveJSON(p, data) {
   fs.mkdirSync(path.dirname(p), { recursive: true })
   fs.writeFileSync(p, JSON.stringify(data, null, 2))
+}
+
+// RGPD : l'état persisté ne contient que des hashes. Les entrées legacy
+// (clés/valeurs contenant '@') sont hashées en mémoire à la lecture ;
+// le fichier est réécrit hashé à la prochaine sauvegarde.
+function hashedSet(arr) {
+  return new Set((Array.isArray(arr) ? arr : []).map(e => String(e).includes('@') ? emailHash(e) : e))
+}
+function hashedKeys(obj) {
+  const out = {}
+  for (const [k, v] of Object.entries(obj || {})) {
+    const key = k.includes('@') ? emailHash(k) : k
+    out[key] = Object.assign({}, out[key], v)
+  }
+  return out
 }
 
 function daysSince(dateStr) {
@@ -306,15 +322,15 @@ async function main() {
   console.log('=== Drip Email Sequence (Resend) ===')
 
   if (!API_KEY) {
-    console.log('RESEND_API_KEY not set — skipping.')
-    return
+    console.log('RESEND_API_KEY not set — skipping sends (dry-run).')
   }
 
-  const resend = new Resend(API_KEY)
+  const resend = API_KEY ? new Resend(API_KEY) : null
   const subscribers = loadJSON(SUBSCRIBERS_PATH, [])
-  const dripSent = loadJSON(DRIP_SENT_PATH, {})
+  // State files store email hashes (RGPD) — legacy plaintext entries hashed in memory
+  const dripSent = hashedKeys(loadJSON(DRIP_SENT_PATH, {}))
   const beaches = loadJSON(BEACHES_PATH, [])
-  const bouncedSet = new Set(loadJSON(BOUNCED_PATH, []))
+  const bouncedSet = hashedSet(loadJSON(BOUNCED_PATH, []))
 
   if (!subscribers.length) {
     console.log('No subscribers.')
@@ -335,21 +351,31 @@ async function main() {
   }
 
   let totalSent = 0
+  let wouldSend = 0
+  let alreadyDripped = 0
 
   for (const sub of subscribers) {
     const email = sub.email
-    if (bouncedSet.has(email)) continue
+    const key = emailHash(email)
+    if (bouncedSet.has(key)) continue
     const island = (sub.island || 'MQ').toUpperCase()
     // Nouvelles régions (PUNTACANA/FLORIDA/RIVIERAMAYA…) : pas de drip FR.
     // Séquence région-aware EN/ES à écrire avant de retirer ce garde-fou.
     if (island !== 'MQ' && island !== 'GP') continue
     const age = daysSince(sub.date)
-    const record = dripSent[email] || {}
+    const record = dripSent[key] || {}
+    if (Object.keys(record).length) alreadyDripped++
 
     for (const step of DRIP_STEPS) {
       // Skip if already sent this step or not old enough
       if (record[step.key]) continue
       if (age < step.days && !FORCE) continue
+
+      if (!resend) {
+        console.log(`  ~ ${email} [${step.key}] would send (no RESEND_API_KEY)`)
+        wouldSend++
+        break
+      }
 
       const { cleanCount, topBeaches } = beachData[island] || beachData['MQ']
       const from = island === 'GP' ? FROM_GP : FROM_MQ
@@ -385,7 +411,12 @@ async function main() {
       break
     }
 
-    dripSent[email] = record
+    dripSent[key] = record
+  }
+
+  if (!API_KEY) {
+    console.log(`\nDry-run: ${alreadyDripped} subscriber(s) recognized as already in drip, ${wouldSend} email(s) would be sent. Nothing saved.`)
+    return
   }
 
   saveJSON(DRIP_SENT_PATH, dripSent)

@@ -85,7 +85,20 @@ async function main() {
   console.log('=== Beach Weather Fetch (Open-Meteo) ===')
   console.log(`Date: ${new Date().toISOString()}\n`)
 
+  // MQ/GP (beaches-list.json) + plages inline des nouvelles régions : sans
+  // elles, wxBeaches[pc001…] est undefined → météo du centre régional pour
+  // tout le monde → Beach Scores identiques sur les 12 plages (bug audit
+  // 2026-06-10 : 85/85/85… sur Punta Cana).
   const beaches = JSON.parse(fs.readFileSync(BEACHES_PATH, 'utf-8'))
+  try {
+    const { getAllRegions } = require('../regions/index.cjs')
+    for (const region of getAllRegions()) {
+      if (region.id === 'mq' || region.id === 'gp') continue
+      for (const b of region.beaches || []) {
+        if (!beaches.some(x => x.id === b.id)) beaches.push({ id: b.id, name: b.name, lat: b.lat, lng: b.lng, island: region.id })
+      }
+    }
+  } catch (e) { console.warn('  régions inline non chargées:', e.message) }
   console.log(`${beaches.length} beaches to enrich\n`)
 
   const marineResults = {}

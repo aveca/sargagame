@@ -5125,7 +5125,9 @@ export default function App(){
                 tide_ratio:null,
               }
               if(snap.wave_height==null&&snap.wind_speed==null)continue
-              const r=_computeBeachScore(snap)
+              // Raisons dans la langue de la région (en/es) — pas de FR brut sur
+              // les sites EN/ES au point de conversion.
+              const r=_computeBeachScore(snap,lang)
               beaches[i]={...beaches[i],score:r.score,scoreLabel:r.label,scoreColor:r.color,scoreReason:r.reason,scoreBreakdown:r.breakdown,scoreStrengths:r.strengths||[],scoreWeaknesses:r.weaknesses||[]}
             }
           }

@@ -14,6 +14,7 @@
 const fs = require('fs')
 const path = require('path')
 const { google } = require('googleapis')
+const { emailHash } = require('./lib/email-hash.cjs')
 
 const SHEET_ID = '1LrpJeILNGIccCVn7AzZrEiLPr8ALTp20F5b1ihHC9FQ'
 const SHEET_RANGE = 'emails!A:E' // date, email, island, source, unsubscribed
@@ -65,11 +66,15 @@ async function main() {
         source: r[3] || 'unknown',
       }))
 
-    // Filter out bounced emails
+    // Filter out bounced emails (bounced-emails.json stores hashes — RGPD;
+    // legacy plaintext entries are hashed in memory)
     const BOUNCED_PATH = path.join(__dirname, 'data', 'bounced-emails.json')
     let bounced = new Set()
-    try { bounced = new Set(JSON.parse(fs.readFileSync(BOUNCED_PATH, 'utf-8'))) } catch {}
-    const filtered = subscribers.filter(s => !bounced.has(s.email))
+    try {
+      bounced = new Set(JSON.parse(fs.readFileSync(BOUNCED_PATH, 'utf-8'))
+        .map(e => String(e).includes('@') ? emailHash(e) : e))
+    } catch {}
+    const filtered = subscribers.filter(s => !bounced.has(emailHash(s.email)))
     if (bounced.size) console.log(`Filtered ${subscribers.length - filtered.length} bounced emails`)
 
     // Deduplicate by email (keep latest)

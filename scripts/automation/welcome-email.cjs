@@ -14,6 +14,7 @@
 const fs = require('fs')
 const path = require('path')
 const { Resend } = require('resend')
+const { emailHash } = require('./lib/email-hash.cjs')
 
 const API_KEY = process.env.RESEND_API_KEY
 const SUBSCRIBERS_PATH = path.join(__dirname, 'data', 'subscribers.json')
@@ -39,6 +40,11 @@ function loadJSON(p, fallback) {
 function saveJSON(p, data) {
   fs.mkdirSync(path.dirname(p), { recursive: true })
   fs.writeFileSync(p, JSON.stringify(data, null, 2))
+}
+// RGPD : l'état persisté ne contient que des hashes. Toute entrée legacy
+// contenant '@' est hashée en mémoire (le fichier sera réécrit hashé au prochain save).
+function hashedSet(arr) {
+  return new Set((Array.isArray(arr) ? arr : []).map(e => String(e).includes('@') ? emailHash(e) : e))
 }
 
 function buildWelcomeHTML(island, cleanCount, email) {
@@ -218,24 +224,25 @@ function regionCleanCount(region) {
 async function main() {
   console.log('=== Welcome Email (Resend) ===')
 
-  if (!API_KEY) {
-    console.log('RESEND_API_KEY not set — skipping.')
-    return
-  }
+  const resend = API_KEY ? new Resend(API_KEY) : null
 
-  const resend = new Resend(API_KEY)
-
-  // Load subscriber list and already-sent list
+  // Load subscriber list and already-sent list (state files store email hashes — RGPD)
   const subscribers = loadJSON(SUBSCRIBERS_PATH, [])
-  const sent = loadJSON(SENT_PATH, [])
-  const sentSet = new Set(sent)
-  const bouncedSet = new Set(loadJSON(BOUNCED_PATH, []))
+  const sentSet = hashedSet(loadJSON(SENT_PATH, []))
+  const bouncedSet = hashedSet(loadJSON(BOUNCED_PATH, []))
 
-  // Find new subscribers not yet welcomed (skip bounced)
-  const newSubs = subscribers.filter(s => s.email && !sentSet.has(s.email) && !bouncedSet.has(s.email))
+  // Find new subscribers not yet welcomed (skip bounced) — compare by hash
+  const newSubs = subscribers.filter(s => s.email && !sentSet.has(emailHash(s.email)) && !bouncedSet.has(emailHash(s.email)))
+  const alreadySent = subscribers.filter(s => s.email && sentSet.has(emailHash(s.email))).length
+  console.log(`Subscribers: ${subscribers.length} | already welcomed: ${alreadySent} | new: ${newSubs.length}`)
 
   if (!newSubs.length) {
     console.log('No new subscribers to welcome.')
+    return
+  }
+
+  if (!API_KEY) {
+    console.log(`RESEND_API_KEY not set — skipping sends (would send ${newSubs.length}).`)
     return
   }
 
@@ -285,7 +292,7 @@ async function main() {
         console.log(`  ❌ ${sub.email}: ${error.message}`)
       } else {
         console.log(`  ✅ ${sub.email} (${island})`)
-        sentSet.add(sub.email)
+        sentSet.add(emailHash(sub.email))
         // Track to Google Sheet
         try {
           await fetch('https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec', {

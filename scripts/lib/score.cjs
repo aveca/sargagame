@@ -95,32 +95,42 @@ function scoreTide(tideRatio) {
 
 // ---- Reasoning strings (per factor, FR first — EN/ES later) ----
 
-const STRENGTH_FR = {
-  sargassum: "zéro sargasses",
-  wave: "mer plate",
-  wind: "vent calme",
-  sst: "eau chaude",
-  cloud: "ciel dégagé",
-  uv: "soleil parfait",
-  tide: "marée idéale",
+// i18n des raisons : fr (MQ/GP), en (puntacana/florida), es (rivieramaya).
+const STRENGTHS = {
+  fr: { sargassum: "zéro sargasses", wave: "mer plate", wind: "vent calme", sst: "eau chaude", cloud: "ciel dégagé", uv: "soleil parfait", tide: "marée idéale" },
+  en: { sargassum: "zero sargassum", wave: "flat sea", wind: "calm wind", sst: "warm water", cloud: "clear sky", uv: "perfect sun", tide: "ideal tide" },
+  es: { sargassum: "cero sargazo", wave: "mar plano", wind: "viento en calma", sst: "agua cálida", cloud: "cielo despejado", uv: "sol perfecto", tide: "marea ideal" },
+}
+const REASON_T = {
+  fr: { but: "Mais", neutral: "Conditions moyennes sur tous les facteurs." },
+  en: { but: "But", neutral: "Average conditions across all factors." },
+  es: { but: "Pero", neutral: "Condiciones promedio en todos los factores." },
 }
 
-function weakness(factor, snapshot) {
+function weakness(factor, snapshot, lang = "fr") {
+  const L = {
+    fr: { alert: a => `alerte sargasses (AFAI ${a})`, present: a => `sargasses présentes (AFAI ${a})`, trace: a => `trace de sargasses (AFAI ${a})`, wave: h => `houle ${h} m`, wind: w => `vent ${w} km/h`, sst: s => `eau fraîche ${s} °C`, cloud: "ciel couvert", uvHigh: "UV extrême", uvLow: "UV faible" },
+    en: { alert: a => `sargassum alert (AFAI ${a})`, present: a => `sargassum present (AFAI ${a})`, trace: a => `trace of sargassum (AFAI ${a})`, wave: h => `${h} m swell`, wind: w => `${w} km/h wind`, sst: s => `cool water ${s} °C`, cloud: "overcast sky", uvHigh: "extreme UV", uvLow: "low UV" },
+    es: { alert: a => `alerta de sargazo (AFAI ${a})`, present: a => `sargazo presente (AFAI ${a})`, trace: a => `rastro de sargazo (AFAI ${a})`, wave: h => `oleaje de ${h} m`, wind: w => `viento de ${w} km/h`, sst: s => `agua fresca ${s} °C`, cloud: "cielo nublado", uvHigh: "UV extremo", uvLow: "UV bajo" },
+  }[lang] || null
+  const l = L || { alert: a => `alerte sargasses (AFAI ${a})`, present: a => `sargasses présentes (AFAI ${a})`, trace: a => `trace de sargasses (AFAI ${a})`, wave: h => `houle ${h} m`, wind: w => `vent ${w} km/h`, sst: s => `eau fraîche ${s} °C`, cloud: "ciel couvert", uvHigh: "UV extrême", uvLow: "UV faible" }
   switch (factor) {
-    case "sargassum":
-      if (snapshot.afai >= 0.60) return `alerte sargasses (AFAI ${snapshot.afai.toFixed(2)})`
-      if (snapshot.afai >= 0.40) return `sargasses présentes (AFAI ${snapshot.afai.toFixed(2)})`
-      return `trace de sargasses (AFAI ${snapshot.afai.toFixed(2)})`
+    case "sargassum": {
+      const a = snapshot.afai?.toFixed(2) ?? "?"
+      if (snapshot.afai >= 0.60) return l.alert(a)
+      if (snapshot.afai >= 0.40) return l.present(a)
+      return l.trace(a)
+    }
     case "wave":
-      return `houle ${snapshot.wave_height?.toFixed(1) ?? "?"} m`
+      return l.wave(snapshot.wave_height?.toFixed(1) ?? "?")
     case "wind":
-      return `vent ${Math.round(snapshot.wind_speed)} km/h`
+      return l.wind(Math.round(snapshot.wind_speed))
     case "sst":
-      return `eau fraîche ${snapshot.sst?.toFixed(1) ?? "?"} °C`
+      return l.sst(snapshot.sst?.toFixed(1) ?? "?")
     case "cloud":
-      return `ciel couvert`
+      return l.cloud
     case "uv":
-      return snapshot.uv_index >= 11 ? `UV extrême` : `UV faible`
+      return snapshot.uv_index >= 11 ? l.uvHigh : l.uvLow
     default:
       return null
   }
@@ -153,7 +163,7 @@ function labelFor(score) {
  *   - tide_ratio    number | null — 0..1 (0 = low, 0.5 = mid, 1 = high)
  * @returns {object} { score, breakdown, label, color, reason, strengths, weaknesses }
  */
-function computeScore(snapshot = {}) {
+function computeScore(snapshot = {}, lang = "fr") {
   const breakdown = {
     sargassum: scoreSargassum(snapshot.afai),
     wave: scoreWave(snapshot.wave_height),
@@ -166,6 +176,8 @@ function computeScore(snapshot = {}) {
 
   const score = Object.values(breakdown).reduce((a, b) => a + b, 0)
   const { label, color } = labelFor(score)
+  const SL = STRENGTHS[lang] || STRENGTHS.fr
+  const RT = REASON_T[lang] || REASON_T.fr
 
   // Classify each factor by ratio score/max
   const strengths = []
@@ -173,22 +185,22 @@ function computeScore(snapshot = {}) {
   for (const [factor, pts] of Object.entries(breakdown)) {
     const max = WEIGHTS[factor]
     const ratio = pts / max
-    if (ratio >= 0.9) strengths.push(STRENGTH_FR[factor])
+    if (ratio >= 0.9) strengths.push(SL[factor])
     else if (ratio <= 0.3) {
-      const w = weakness(factor, snapshot)
+      const w = weakness(factor, snapshot, lang)
       if (w) weaknesses.push(w)
     }
   }
 
   let reason
   if (strengths.length && weaknesses.length) {
-    reason = `${strengths.slice(0, 2).join(", ")}. Mais ${weaknesses.slice(0, 2).join(", ")}.`
+    reason = `${strengths.slice(0, 2).join(", ")}. ${RT.but} ${weaknesses.slice(0, 2).join(", ")}.`
   } else if (strengths.length) {
     reason = `${strengths.slice(0, 3).join(", ")}.`
   } else if (weaknesses.length) {
     reason = `${weaknesses.slice(0, 2).join(", ")}.`
   } else {
-    reason = "Conditions moyennes sur tous les facteurs."
+    reason = RT.neutral
   }
   reason = reason.charAt(0).toUpperCase() + reason.slice(1)
 

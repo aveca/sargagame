@@ -330,6 +330,18 @@ function extractBeachAfai(beach, grid) {
   }
   const dataAgeHours = grid.dataAgeHours || 24
 
+  // Bande "shore" 0-10km — NOUVELLES RÉGIONS UNIQUEMENT (mq/gp gardent leur
+  // calibration backtestée 86% J+1 inchangée, byte-identique).
+  // Pourquoi : pour 12 plages espacées de 3-8 km (Bávaro…), les disques de
+  // 30 km se recouvrent à >85% et le signal CÔTIER se dilue dans ~2 800 km²
+  // d'océan → toutes à 0.12 "clean" le 2026-06-09 alors qu'à 8 km Macao
+  // lisait 0.178 et Uvero Alto 0.201 (= moderate). Diagnostic au pixel fait
+  // (feedback_forecast_floor_ban) : on resserre l'ÉCHANTILLONNAGE, on ne
+  // touche ni seuils ni normalizeAfai ni floors.
+  const useShoreBand = !!(beach.island && beach.island !== 'mq' && beach.island !== 'gp')
+  const SHORE_RADIUS_KM = 10
+
+  const shoreValues = []   // 0-10km — l'échouage réel (nouvelles régions)
   const nearbyValues = []  // within 30km — direct threat
   const offshoreValues = [] // 30-100km east/NE — incoming threat
 
@@ -342,6 +354,11 @@ function extractBeachAfai(beach, grid) {
 
     const normalized = normalizeAfai(p.AFAI)
 
+    if (useShoreBand && dist <= SHORE_RADIUS_KM) {
+      // Pondération quadratique : les pixels collés à la plage dominent.
+      shoreValues.push({ value: normalized, weight: 1 / ((1 + dist) * (1 + dist)), dist })
+      continue
+    }
     if (dist <= NEARBY_RADIUS_KM) {
       // Nearby zone: weight by inverse distance (closer = more relevant)
       const weight = 1 / (1 + dist)
@@ -380,13 +397,21 @@ function extractBeachAfai(beach, grid) {
     return sumV / sumW
   }
 
+  const shoreAvg = useShoreBand ? weightedAvg(shoreValues) : null
   const nearbyAvg = weightedAvg(nearbyValues)
   const offshoreAvg = weightedAvg(offshoreValues)
 
   let afai
   let method
 
-  if (nearbyAvg !== null && offshoreAvg !== null) {
+  if (shoreAvg !== null) {
+    // Nouvelles régions : la bande côtière domine (50%), le large complète.
+    // Bandes manquantes → renormalisation sur les bandes disponibles.
+    const parts = [[shoreAvg, 0.5], [nearbyAvg, 0.25], [offshoreAvg, 0.25]].filter(([v]) => v !== null)
+    const wSum = parts.reduce((s, [, w]) => s + w, 0)
+    afai = parts.reduce((s, [v, w]) => s + v * w, 0) / wSum
+    method = `shore-${shoreValues.length}sh-${nearbyValues.length}near-${offshoreValues.length}off`
+  } else if (nearbyAvg !== null && offshoreAvg !== null) {
     // Combine: 70% nearby direct threat, 30% offshore incoming
     afai = nearbyAvg * 0.7 + offshoreAvg * 0.3
     method = `combined-${nearbyValues.length}near-${offshoreValues.length}off`
@@ -405,8 +430,10 @@ function extractBeachAfai(beach, grid) {
 
   afai = Math.max(0, Math.min(1, Math.round(afai * 100) / 100))
 
-  const confidence = satelliteConfidence(method, nearbyValues.length, offshoreValues.length, dataAgeHours)
-  return { afai, method, nearbyPts: nearbyValues.length, offshorePts: offshoreValues.length, confidence }
+  // Les pixels shore comptent dans la confiance comme du nearby (plus proches = plus fiables).
+  const nearLikePts = shoreValues.length + nearbyValues.length
+  const confidence = satelliteConfidence(method, nearLikePts, offshoreValues.length, dataAgeHours)
+  return { afai, method, nearbyPts: nearLikePts, offshorePts: offshoreValues.length, confidence }
 }
 
 // ── Weekly forecast: uses lib/forecast.cjs (honest model) ──
@@ -1211,7 +1238,8 @@ async function runRegionPipeline(region, shared) {
       wave_height: bw?.waveHeight ?? isl.wave_height,
       tide_ratio: null,
     }
-    const result = computeScore(snap)
+    // Raisons dans la langue de la région (mq/gp = fr → inchangé byte-à-byte).
+    const result = computeScore(snap, region.primaryLang || 'fr')
     level.score = result.score
     level.label = result.label
     level.color = result.color

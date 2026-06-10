@@ -60,3 +60,6 @@ responsive-*.png
 .fb-session-chrome/
 scripts/automation/data/fb-reply-log.jsonl
 .secrets-to-redact.txt
+
+# RGPD : liste d'abonnés (emails en clair) — re-fetchée à chaque run, JAMAIS commitée
+scripts/automation/data/subscribers.json

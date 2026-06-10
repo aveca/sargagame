@@ -21,6 +21,7 @@
 const { readFileSync, writeFileSync, existsSync, mkdirSync } = require('fs')
 const { resolve } = require('path')
 const { Resend } = require('resend')
+const { emailHash } = require('./lib/email-hash.cjs')
 
 const DRY_RUN = process.env.DRY_RUN === '1'
 const RESEND_API_KEY = process.env.RESEND_API_KEY
@@ -68,6 +69,26 @@ function writeJSON(p, data) {
 
 function extractDomain(url) {
   try { return new URL(url).hostname.replace(/^www\./, '') } catch { return '' }
+}
+
+function emailDomain(email) {
+  const at = String(email).lastIndexOf('@')
+  return at > -1 ? String(email).slice(at + 1).trim().toLowerCase() : ''
+}
+
+// RGPD : outreach-log.json ne stocke plus d'email en clair — uniquement
+// emailHash (+ emailDomain pour le reporting B2B). Les entrées legacy
+// (champ `email` contenant '@') sont converties en mémoire à la lecture ;
+// le fichier est réécrit hashé à la prochaine sauvegarde.
+function sanitizeContacted(contacted) {
+  for (const rec of Object.values(contacted || {})) {
+    if (rec && typeof rec.email === 'string' && rec.email.includes('@')) {
+      rec.emailHash = emailHash(rec.email)
+      rec.emailDomain = emailDomain(rec.email)
+      delete rec.email
+    }
+  }
+  return contacted || {}
 }
 
 // ── Step 1: Find new targets from Google ──────────────────────
@@ -261,9 +282,9 @@ async function main() {
 
   const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null
 
-  // Load outreach log (tracks contacted domains)
+  // Load outreach log (tracks contacted domains) — emails stored as hashes (RGPD)
   const log = readJSON(OUTREACH_LOG) || { contacted: {}, lastRun: null }
-  const contacted = log.contacted || {}
+  const contacted = sanitizeContacted(log.contacted)
 
   // Step 1: Gather targets
   console.log('--- Step 1: Gathering targets ---')
@@ -307,7 +328,8 @@ async function main() {
 
     contacted[target.domain] = {
       date: new Date().toISOString(),
-      email,
+      emailHash: emailHash(email),
+      emailDomain: emailDomain(email),
       status: result.sent ? 'sent' : 'failed',
       error: result.error || null,
       url: target.url,

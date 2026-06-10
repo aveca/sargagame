@@ -49,6 +49,14 @@ jobs:
           echo "dow=$(date -u +%u)" >> $GITHUB_OUTPUT
           echo "hour=$(date -u +%H)" >> $GITHUB_OUTPUT
 
+      # Year-round beach weather (Open-Meteo) — AVANT le pipeline sargasses :
+      # fetch-sargassum-live lit beaches-weather.json pour les Beach Scores.
+      # (Bug 2 mois : le step tournait APRÈS le pipeline ET le fichier n'était
+      # jamais commité → scores calculés avec la houle/UV du 12 avril.)
+      - name: Fetch beach weather (Open-Meteo)
+        continue-on-error: true
+        run: node scripts/fetch-beach-weather.cjs
+
       # ── 1. Fetch LIVE sargassum data (ERDDAP + fallback) ──
       - name: Fetch LIVE sargassum data from ERDDAP
         id: erddap
@@ -74,13 +82,6 @@ jobs:
           echo "${{ secrets.COPERNICUS_PASSWORD }}" >> copernicustxt.txt
           node scripts/scrape-copernicus.cjs
           rm -f copernicustxt.txt
-
-      # Year-round beach weather (Open-Meteo) — refreshes daily so the build-time
-      # SEO meta + noscript "Conditions du jour" blocks stay current. Free API,
-      # no key, ~4s for 136 beaches via batched coords.
-      - name: Fetch beach weather (Open-Meteo)
-        continue-on-error: true
-        run: node scripts/fetch-beach-weather.cjs
 
       - name: Send notifications (push + email)
         continue-on-error: true
@@ -269,13 +270,19 @@ jobs:
           # Sorties par région du pipeline multi-régions (mq/, gp/, puntacana/, …)
           git add 'public/api/copernicus/*/sargassum.json' 'public/api/copernicus/*/history.json' 2>/dev/null || true
           [ -f scripts/automation/data/daily-metrics.json ] && git add scripts/automation/data/daily-metrics.json
-          [ -f scripts/automation/data/subscribers.json ] && git add scripts/automation/data/subscribers.json
+          # RGPD : subscribers.json (emails en clair) n'est PLUS JAMAIS commité —
+          # re-fetché à chaque run depuis Apps Script. Les fichiers d'état
+          # welcome-sent/drip-sent/bounced sont désormais des hashes SHA-256.
           [ -f scripts/automation/data/welcome-sent.json ] && git add scripts/automation/data/welcome-sent.json
           [ -f scripts/automation/data/drip-sent.json ] && git add scripts/automation/data/drip-sent.json
           [ -f scripts/automation/data/bounced-emails.json ] && git add scripts/automation/data/bounced-emails.json
           [ -f scripts/automation/data/backtest-results.json ] && git add scripts/automation/data/backtest-results.json
           [ -f scripts/automation/data/weekend-sent.json ] && git add scripts/automation/data/weekend-sent.json
           [ -f public/api/copernicus/forecast-archive.json ] && git add public/api/copernicus/forecast-archive.json
+          # Météo per-beach (Beach Scores) + bancs (arrival signal) : frais à
+          # chaque run — leur absence du commit gelait les scores (bug 2 mois).
+          [ -f public/api/weather/beaches-weather.json ] && git add public/api/weather/beaches-weather.json
+          [ -f public/api/copernicus/sargassum-banks.json ] && git add public/api/copernicus/sargassum-banks.json
           if git diff --cached --quiet; then
             echo "No data file changes to commit"
           else

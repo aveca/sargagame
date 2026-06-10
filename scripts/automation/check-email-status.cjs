@@ -13,6 +13,7 @@
 const fs = require('fs')
 const path = require('path')
 const https = require('https')
+const { emailHash } = require('./lib/email-hash.cjs')
 
 const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec'
 const BOUNCED_PATH = path.join(__dirname, 'data', 'bounced-emails.json')
@@ -66,18 +67,22 @@ async function main() {
     if (counts.complained) console.log(`  Complained: ${counts.complained}`)
 
     // Auto-update bounced-emails.json with new bounces
+    // RGPD : le fichier ne stocke que des hashes — entrées legacy ('@') hashées à la lecture
     if (bounced_emails && bounced_emails.length > 0) {
-      const existing = new Set(loadJSON(BOUNCED_PATH, []))
+      const raw = loadJSON(BOUNCED_PATH, [])
+      const existing = new Set(raw.map(e => String(e).includes('@') ? emailHash(e) : e))
+      const wasLegacy = existing.size !== new Set(raw).size || raw.some(e => String(e).includes('@'))
       let added = 0
       for (const email of bounced_emails) {
-        if (email && !existing.has(email)) {
-          existing.add(email)
+        const h = email && emailHash(email)
+        if (h && !existing.has(h)) {
+          existing.add(h)
           added++
         }
       }
-      if (added > 0) {
+      if (added > 0 || wasLegacy) {
         saveJSON(BOUNCED_PATH, [...existing])
-        console.log(`\n+ ${added} new bounced email(s) added to blocklist`)
+        if (added > 0) console.log(`\n+ ${added} new bounced email(s) added to blocklist`)
       }
     }
 
