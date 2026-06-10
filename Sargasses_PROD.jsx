@@ -5112,6 +5112,107 @@ function InstallPrompt(){
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   HERO VERDICT — premier écran "1 photo, 1 verdict, 1 bouton"
+   Remplace le premier paint carte (tuiles tierces lentes/cassées — audits
+   2026-06-10 : critical sur les 5 sites) par la réponse instantanée à
+   l'intent n°1 ("j'y vais aujourd'hui ?"). La carte reste à un geste
+   (25 % des clics Clarity). S'affiche : home "/" uniquement, 1×/session,
+   jamais sur les deep-links/landings SEO. Photo locale (~50-200 ko).
+   ═══════════════════════════════════════════════════════════════════════════ */
+function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap}){
+  useEffect(()=>{track("sg_hero_shown",{beach_id:beach.id,status:beach.status,geoloc:!!userPos})},[])
+  useEffect(()=>{
+    const h=e=>{if(e.key==="Escape")onShowMap()}
+    window.addEventListener("keydown",h);return()=>window.removeEventListener("keydown",h)
+  },[onShowMap])
+  const clean=beach.status==="clean"
+  const verdictTxt=clean?_t(lang,"PROPRE AUJOURD'HUI","CLEAN TODAY","SIN SARGAZO HOY")
+    :beach.status==="moderate"?_t(lang,"MODÉRÉ AUJOURD'HUI","MODERATE TODAY","MODERADA HOY")
+    :_t(lang,"À ÉVITER AUJOURD'HUI","AVOID TODAY","EVITAR HOY")
+  const verdictBg=clean?"#FFC72C":beach.status==="moderate"?"#F59E0B":"#E8522A"
+  // J+1 réel quand résolvable (weekly keyé par id sarg pour MQ/GP, id direct
+  // pour les nouvelles régions) — sinon pas de promesse.
+  const wkId=IS_NEW_REGION?beach.id:BEACH_TO_SARG[beach.id]
+  const j1=sargData?.weekly?.[wkId]?.forecast?.[1]?.status||null
+  const sub=(()=>{
+    const parts=[]
+    if(clean&&j1&&j1!=="clean")parts.push(_t(lang,"⚠️ Banc prévu demain — on te dira où aller","⚠️ Mat forecast tomorrow — we'll tell you where to go","⚠️ Banco previsto mañana — te diremos adónde ir"))
+    else if(clean&&j1==="clean")parts.push(_t(lang,"Propre aussi demain","Clean tomorrow too","Limpia también mañana"))
+    if(beach.commune)parts.push(beach.commune)
+    if(userPos&&beach.lat){
+      const km=haversine(userPos.lat,userPos.lng,beach.lat,beach.lng)
+      parts.push(US_UNITS?`${Math.max(1,Math.round(km*0.621))} mi`:`${Math.max(1,Math.round(km))} km`)
+    }
+    return parts.join(" · ")
+  })()
+  const upd=(()=>{try{
+    const ts=sargData?.updatedAt||sargData?.erddapTimestamp
+    return ts?new Date(ts).toLocaleTimeString(lang==="fr"?"fr-FR":lang==="es"?"es-MX":"en-US",{hour:"2-digit",minute:"2-digit"}):""
+  }catch(_){return""}})()
+  const dateLong=new Date().toLocaleDateString(lang==="es"?"es-MX":lang==="en"?"en-US":"fr-FR",{weekday:"long",day:"numeric",month:"long"})
+  const wordmark=IS_NEW_REGION
+    ?((lang==="es"?"SARGAZO ":"SARGASSUM ")+String(REGION.name||"").toUpperCase())
+    :(island==="gp"?"SARGASSES GUADELOUPE":"SARGASSES MARTINIQUE")
+  return(
+    <div role="dialog" aria-label={beach.name} style={{position:"absolute",inset:0,zIndex:1050,background:"#0A1714",overflow:"hidden"}}>
+      <style>{`@keyframes sgHeroBob{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
+@media (prefers-reduced-motion:reduce){.sg-hero-chev{animation:none!important}}`}</style>
+      <img src={beach._heroImg} alt={beach.name} fetchpriority="high"
+        style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 38%"}}/>
+      <div aria-hidden style={{position:"absolute",inset:0,
+        background:"linear-gradient(180deg,rgba(10,23,20,.55) 0%,rgba(10,23,20,0) 26%,rgba(10,23,20,0) 42%,rgba(10,23,20,.88) 78%,#0A1714 100%)"}}/>
+      <div style={{position:"absolute",top:0,left:0,right:0,display:"flex",justifyContent:"space-between",alignItems:"center",
+        padding:"calc(14px + env(safe-area-inset-top)) 18px 0",maxWidth:560,margin:"0 auto"}}>
+        <span style={{fontFamily:"'Anton',sans-serif",fontSize:13,letterSpacing:".14em",color:"#fff",opacity:.92}}>{wordmark}</span>
+        <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,letterSpacing:".06em",
+          background:"rgba(10,23,20,.5)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",
+          padding:"5px 10px",borderRadius:999}}>
+          <span style={{width:7,height:7,borderRadius:"50%",background:"#22C55E",boxShadow:"0 0 8px #22C55E"}}/>
+          LIVE{upd?` · ${upd}`:""}
+        </span>
+      </div>
+      <div style={{position:"absolute",left:0,right:0,bottom:0,padding:"0 20px calc(22px + env(safe-area-inset-bottom))",
+        maxWidth:560,margin:"0 auto"}}>
+        {userPos&&(
+          <div style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:11,fontWeight:700,letterSpacing:".05em",
+            color:"#FFC72C",marginBottom:8}}>
+            📍 {_t(lang,"LA PLUS PROCHE DE TOI","CLOSEST TO YOU","LA MÁS CERCA DE TI")}
+          </div>
+        )}
+        <div style={{fontSize:11,fontWeight:600,letterSpacing:".14em",color:"rgba(255,255,255,.62)",marginBottom:6,textTransform:"uppercase"}}>
+          {dateLong} · {_t(lang,"SATELLITE COPERNICUS","COPERNICUS SATELLITE","SATÉLITE COPERNICUS")}
+        </div>
+        <h1 style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:"clamp(44px,12vw,72px)",lineHeight:.96,
+          letterSpacing:".01em",textTransform:"uppercase",margin:"0 0 14px",color:"#fff",
+          textShadow:"0 2px 24px rgba(0,0,0,.35)"}}>
+          {beach.name}
+        </h1>
+        <div style={{display:"inline-flex",alignItems:"center",gap:10,background:verdictBg,color:"#0A1714",
+          fontWeight:800,fontSize:15,letterSpacing:".02em",padding:"9px 16px",borderRadius:999,marginBottom:8}}>
+          {verdictTxt}
+          {beach.score!=null&&<span style={{fontFamily:"'Anton',sans-serif",fontSize:17,letterSpacing:".03em"}}>{beach.score}/100</span>}
+        </div>
+        {sub&&<div style={{fontSize:13,color:"rgba(255,255,255,.62)",marginBottom:18}}>{sub}</div>}
+        <button onClick={onOpen} className="gbtn" style={{display:"block",width:"100%",textAlign:"center",
+          background:"#FFC72C",color:"#0A1714",border:"none",cursor:"pointer",fontFamily:"inherit",
+          fontWeight:800,fontSize:17,padding:"16px 24px",borderRadius:18,boxShadow:"0 8px 28px rgba(255,199,44,.32)"}}>
+          {_t(lang,"Voir cette plage","See this beach","Ver esta playa")}
+          <span style={{display:"block",fontWeight:500,fontSize:11.5,opacity:.75,marginTop:3}}>
+            {_t(lang,"état complet · météo · prévisions 7 jours","full status · weather · 7-day forecast","estado completo · clima · pronóstico 7 días")}
+          </span>
+        </button>
+        <button onClick={onShowMap} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:7,width:"100%",
+          background:"none",border:"none",color:"rgba(255,255,255,.66)",fontFamily:"inherit",fontSize:13,
+          fontWeight:600,padding:"14px 0 0",cursor:"pointer"}}>
+          <span className="sg-hero-chev" style={{display:"inline-block",animation:"sgHeroBob 1.8s ease-in-out infinite"}}>⌄</span>
+          {_t(lang,"Toutes les plages sur la carte","All beaches on the map","Todas las playas en el mapa")}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    APP PRINCIPAL
    ═══════════════════════════════════════════════════════════════════════════ */
 export default function App(){
@@ -5399,6 +5500,7 @@ export default function App(){
   // Runtime data sources
   const[allBeaches,setAllBeaches]=useState(BEACHES_FALLBACK)
   const[imageMap,setImageMap]=useState(null)
+  const[imageQ,setImageQ]=useState(null) // score qualité photo 0-100 (hero)
   const[sargData,setSargData]=useState(null)
   const[historyData,setHistoryData]=useState(null)
   const[dataSource,setDataSource]=useState("loading")
@@ -5406,6 +5508,46 @@ export default function App(){
   const[communityReports,setCommunityReports]=useState({})
   const[fbPosts,setFbPosts]=useState({})
   const[hasActiveThreat,setHasActiveThreat]=useState(false)
+
+  // Hero Verdict — home "/" uniquement (jamais les deep-links/landings SEO),
+  // 1×/session (sessionStorage), jamais pendant une activation premium.
+  const[showHero,setShowHero]=useState(()=>{
+    try{
+      return window.location.pathname==="/"
+        &&!window.location.search.includes("premium")
+        &&!sessionStorage.getItem("sg_hero_seen")
+    }catch(_){return false}
+  })
+  const dismissHero=useCallback(action=>{
+    try{sessionStorage.setItem("sg_hero_seen","1")}catch(_){}
+    setShowHero(false)
+    track("sg_hero_dismiss",{action})
+  },[])
+  // Plage du hero : la plus proche PROPRE si géoloc déjà accordée, sinon le
+  // meilleur score du jour. Jamais sans photo réelle (imageMap) ni sans
+  // statut live — pas de candidat → pas de hero (la carte reste le 1er écran).
+  const heroPick=useMemo(()=>{
+    if(!showHero||!allBeaches?.length||!imageMap)return null
+    const cands=allBeaches.filter(b=>(IS_NEW_REGION||b.island===island)&&b.status&&b.lat&&b.lng
+      &&imageMap[b.id]&&!String(imageMap[b.id]).startsWith("sat-"))
+    if(!cands.length)return null
+    const cleans=cands.filter(b=>b.status==="clean")
+    let pick
+    if(userPos&&cleans.length){
+      pick=cleans.map(b=>({...b,_d:haversine(userPos.lat,userPos.lng,b.lat,b.lng)})).sort((a,b)=>a._d-b._d)[0]
+    }else{
+      const pool=cleans.length?cleans:cands
+      const sorted=[...pool].sort((a,b)=>(b.score||0)-(a.score||0))
+      // Départage « Beau » : à ≤8 pts du meilleur score, prendre la meilleure
+      // photo (une photo crépuscule/grise au top score ruine le hero — vu
+      // Grande Anse du Carbet 83/100 photo 60/100 le 2026-06-10).
+      if(imageQ){
+        const near=sorted.filter(b=>(sorted[0].score||0)-(b.score||0)<=8)
+        pick=near.sort((a,b)=>(imageQ[b.id]||0)-(imageQ[a.id]||0))[0]
+      }else pick=sorted[0]
+    }
+    return pick?{...pick,_heroImg:"/beaches/"+imageMap[pick.id]}:null
+  },[showHero,allBeaches,imageMap,imageQ,island,userPos])
 
   // Deep-link: /plages/:slug → auto-open beach sheet
   useEffect(()=>{
@@ -5618,7 +5760,9 @@ export default function App(){
     return()=>clearTimeout(t)
   },[])
 
-  // Fetch beaches-images.json — deferred (only needed when opening beach sheet)
+  // Fetch beaches-images.json — immédiat quand le Hero Verdict va s'afficher
+  // (il a besoin de la photo), sinon différé (seulement utile à l'ouverture
+  // d'une fiche).
   useEffect(()=>{
     const t=setTimeout(()=>{
       fetch("/data/beaches-images.json")
@@ -5627,7 +5771,15 @@ export default function App(){
           if(data&&typeof data==="object")setImageMap(data)
         })
         .catch(()=>{})
-    },1500)
+      // Score qualité photo (compute-photo-quality.cjs) — optionnel : le hero
+      // fonctionne sans, il perd juste le départage « Beau ».
+      fetch("/data/beaches-images-quality.json")
+        .then(r=>r.json())
+        .then(data=>{
+          if(data&&typeof data==="object")setImageQ(data)
+        })
+        .catch(()=>{})
+    },showHero?0:1500)
     return()=>clearTimeout(t)
   },[])
 
@@ -5901,6 +6053,20 @@ export default function App(){
           <BeachListView beaches={filtered} onBeachClick={onBeachClick}
             favorites={favorites} lang={lang} imageMap={imageMap}/>
         </div>
+
+        {/* HERO VERDICT — premier écran au-dessus de la carte (z 1050 : couvre
+            header z700 + contrôles MapView z1000 ["Toute l'île"/Caraïbe],
+            sous paywall z1100+). La carte charge derrière pendant la
+            lecture → plus de "vide bleu nuit" au premier paint. */}
+        {showHero&&heroPick&&(
+          <HeroVerdict beach={heroPick} lang={lang} island={island} sargData={sargData} userPos={userPos}
+            onOpen={()=>{
+              dismissHero("cta")
+              setSelectedBeach(heroPick)
+              track("sg_beach_open",{beach_id:heroPick.id,status:heroPick.status,source:"hero"})
+            }}
+            onShowMap={()=>dismissHero("map")}/>
+        )}
 
         {/* TOP FLOATING — Header pill only. Transparent over map so the full
             viewport reads as the map. Chrome is capped at 600px centered. */}
