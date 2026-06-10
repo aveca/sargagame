@@ -3720,52 +3720,71 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
   }
   // ── Checkout in-app (Stripe Embedded Checkout) ────────────────────────────
   // Formulaire Stripe complet (CB + Apple Pay + Google Pay + Link) monté DANS
-  // l'app — plus de redirect plein-page vers buy.stripe.com. Mêmes conditions
-  // que les Payment Links (essai 7j, prix région). Fallback intégral : si le
-  // endpoint PHP ou js.stripe.com échoue, redirect Payment Link historique —
+  // l'app. Mesure 2026-06-10 : init+iframe Stripe = 12-27s — inacceptable au
+  // clic. Stratégie : PRÉCHAUFFAGE dès l'ouverture du modal (session + js
+  // stripe + mount dans l'overlay caché pendant que l'user lit le paywall) ;
+  // au clic l'overlay se révèle instantanément (spinner si pas encore prêt,
+  // budget 12s puis fallback Payment Link). Toute erreur → Payment Link —
   // jamais d'impasse de paiement. Retour: /?session_id= → handler existant.
   const[embeddedOpen,setEmbeddedOpen]=useState(false)
+  const[embeddedReady,setEmbeddedReady]=useState(false)
   const embeddedRef=useRef(null)
+  const embeddedPlanRef=useRef(null)
+  const embeddedErrorRef=useRef(false)
   const embeddedDivRef=useRef(null)
-  const closeEmbedded=useCallback(()=>{
+  const loadStripeJs=()=>window.Stripe?Promise.resolve():new Promise((res,rej)=>{
+    const sc=document.createElement("script")
+    sc.src="https://js.stripe.com/v3";sc.onload=res;sc.onerror=rej
+    document.head.appendChild(sc)
+  })
+  const prewarm=useCallback(async(plan)=>{
+    if(!PAYWALL_READY)return
+    if(embeddedPlanRef.current===plan&&(embeddedRef.current||!embeddedErrorRef.current))return
     try{embeddedRef.current?.destroy()}catch(_){}
-    embeddedRef.current=null
-    setEmbeddedOpen(false)
-  },[])
-  useEffect(()=>{
-    if(embeddedOpen&&embeddedRef.current&&embeddedDivRef.current){
-      try{embeddedRef.current.mount(embeddedDivRef.current)}catch(_){closeEmbedded()}
-    }
-  },[embeddedOpen,closeEmbedded])
-  useEffect(()=>()=>{try{embeddedRef.current?.destroy()}catch(_){}},[])
-  const startCheckout=useCallback(async(plan,via)=>{
-    const link=stripeUrlWith(stripeLinkFor[plan]||LINK_MONTHLY,plan)
+    embeddedRef.current=null;embeddedPlanRef.current=plan;embeddedErrorRef.current=false
+    setEmbeddedReady(false)
     try{
-      track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"embedded",via})
-      const r=await fetch("/api/create-checkout.php",{
-        method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({action:"embedded",plan,source:source||"unknown",lang,email:localStorage.getItem("sg_email")||""}),
-      })
+      const[r]=await Promise.all([
+        fetch("/api/create-checkout.php",{method:"POST",headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({action:"embedded",plan,source:source||"unknown",lang,email:localStorage.getItem("sg_email")||""})}),
+        loadStripeJs(),
+      ])
       if(!r.ok)throw new Error("http "+r.status)
       const{clientSecret}=await r.json()
       if(!clientSecret)throw new Error("no clientSecret")
-      if(!window.Stripe){
-        await new Promise((res,rej)=>{
-          const sc=document.createElement("script")
-          sc.src="https://js.stripe.com/v3";sc.onload=res;sc.onerror=rej
-          document.head.appendChild(sc)
-        })
-      }
+      if(embeddedPlanRef.current!==plan)return // plan changé entre-temps
       const checkout=await window.Stripe(STRIPE_PK).initEmbeddedCheckout({clientSecret})
+      if(embeddedPlanRef.current!==plan){try{checkout.destroy()}catch(_){}
+        return}
       embeddedRef.current=checkout
-      setEmbeddedOpen(true)
-      track("sg_embedded_open",{plan,via})
-    }catch(e){
-      // Chemin historique — le Payment Link reste la roue de secours
-      track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"payment_link",via:via+"_fallback"})
+      // Mount immédiat dans le conteneur (overlay caché) : le formulaire se
+      // rend pendant la lecture du paywall → ouverture quasi instantanée.
+      if(embeddedDivRef.current){checkout.mount(embeddedDivRef.current);setEmbeddedReady(true)}
+    }catch(_){embeddedErrorRef.current=true}
+  },[source,lang])
+  useEffect(()=>{prewarm(effectivePlan)},[effectivePlan,prewarm])
+  useEffect(()=>()=>{try{embeddedRef.current?.destroy()}catch(_){}},[])
+  const startCheckout=useCallback(async(plan,via)=>{
+    const link=stripeUrlWith(stripeLinkFor[plan]||LINK_MONTHLY,plan)
+    const goFallback=(why)=>{
+      setEmbeddedOpen(false)
+      track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"payment_link",via:via+"_"+why})
       setTimeout(()=>{window.location.href=link},0)
     }
-  },[source,lang])
+    track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"embedded",via})
+    setEmbeddedOpen(true) // overlay + spinner IMMÉDIATS — zéro temps mort visuel
+    const t0=Date.now()
+    if(embeddedPlanRef.current!==plan)prewarm(plan)
+    for(let i=0;i<48;i++){
+      if(embeddedRef.current&&embeddedPlanRef.current===plan){
+        track("sg_embedded_open",{plan,via,ms:Date.now()-t0})
+        return
+      }
+      if(embeddedErrorRef.current)return goFallback("fallback")
+      await new Promise(r=>setTimeout(r,250))
+    }
+    return goFallback("timeout") // 12s sans instance → Payment Link
+  },[source,lang,prewarm])
   // A/B test pw_cta_order KILLED 2026-06-09 (scheduled ab-evaluate run).
   // Hypothesis (sample-first reduces the 85% paywall dismiss) was falsified:
   // sg_sample_start fired 0 times across 10,738 sessions over ~7 weeks, with
@@ -4291,23 +4310,36 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
         </div>{/* end sticky CTA section */}
       </div>
       {/* Checkout in-app — overlay plein écran au-dessus du modal (z 1300).
-          Le formulaire Stripe (iframe) vit dans le conteneur blanc ; la croix
-          détruit l'instance (sinon double-mount au prochain clic). */}
-      {embeddedOpen&&(
-        <div style={{position:"fixed",inset:0,zIndex:1300,background:"rgba(8,15,14,.94)",
-          display:"flex",flexDirection:"column"}}>
-          <div style={{display:"flex",justifyContent:"flex-end",padding:"10px 14px"}}>
-            <button onClick={()=>{track("sg_embedded_close",{plan:effectivePlan,source:source||"unknown"});closeEmbedded()}}
-              aria-label={_t(lang,"Fermer","Close","Cerrar")}
-              style={{width:38,height:38,borderRadius:"50%",border:"1px solid rgba(255,255,255,.25)",
-                background:"rgba(255,255,255,.08)",color:"#fff",fontSize:17,cursor:"pointer",lineHeight:1}}>✕</button>
-          </div>
-          <div style={{flex:1,overflow:"auto",background:"#fff",
-            borderRadius:"16px 16px 0 0",maxWidth:560,width:"100%",margin:"0 auto"}}>
-            <div ref={embeddedDivRef} style={{minHeight:"100%"}}/>
-          </div>
+          TOUJOURS rendu (caché via visibility) : le préchauffage monte le
+          formulaire Stripe dedans pendant la lecture du paywall, et la
+          révélation au clic est instantanée. La croix CACHE seulement
+          (l'instance reste montée → réouverture immédiate). */}
+      <div style={{position:"fixed",inset:0,zIndex:1300,background:"rgba(8,15,14,.94)",
+        display:"flex",flexDirection:"column",
+        visibility:embeddedOpen?"visible":"hidden",
+        pointerEvents:embeddedOpen?"auto":"none"}}>
+        <div style={{display:"flex",justifyContent:"flex-end",padding:"10px 14px"}}>
+          <button onClick={()=>{track("sg_embedded_close",{plan:effectivePlan,source:source||"unknown"});setEmbeddedOpen(false)}}
+            aria-label={_t(lang,"Fermer","Close","Cerrar")}
+            style={{width:38,height:38,borderRadius:"50%",border:"1px solid rgba(255,255,255,.25)",
+              background:"rgba(255,255,255,.08)",color:"#fff",fontSize:17,cursor:"pointer",lineHeight:1}}>✕</button>
         </div>
-      )}
+        <div style={{flex:1,overflow:"auto",background:"#fff",
+          borderRadius:"16px 16px 0 0",maxWidth:560,width:"100%",margin:"0 auto",position:"relative"}}>
+          <div ref={embeddedDivRef} style={{minHeight:"100%"}}/>
+          {!embeddedReady&&(
+            <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",
+              alignItems:"center",justifyContent:"center",gap:14,background:"#fff"}}>
+              <div style={{width:34,height:34,borderRadius:"50%",border:"3px solid #e5e5e5",
+                borderTopColor:"#635BFF",animation:"sgSpin .8s linear infinite"}}/>
+              <div style={{fontSize:13,color:"#687385",fontWeight:500}}>
+                {_t(lang,"Paiement sécurisé Stripe…","Secure Stripe checkout…","Pago seguro Stripe…")}
+              </div>
+              <style>{`@keyframes sgSpin{to{transform:rotate(360deg)}}`}</style>
+            </div>
+          )}
+        </div>
+      </div>
     </>
   )
 }
