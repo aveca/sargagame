@@ -591,12 +591,12 @@
   },
   {
     "date": "2026-06-10",
-    "time": "2026-06-10T11:13:54.520Z",
-    "payments": null,
-    "revenue": null,
-    "emails": null,
-    "feedbacks": null,
-    "avgRating": null,
+    "time": "2026-06-10T13:35:43.464Z",
+    "payments": 10,
+    "revenue": 49.9,
+    "emails": 173,
+    "feedbacks": 1,
+    "avgRating": 4,
     "pipelineOk": true
   }
 ]
