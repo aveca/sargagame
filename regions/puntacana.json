@@ -15,8 +15,8 @@
     "yearly": "$79"
   },
   "stripeProducts": {
-    "monthly": "price_TBD_USD_mo_999",
-    "yearly": "price_TBD_USD_yr_7900"
+    "monthly": "price_1TgafPP9RK8Orx51o5YrMcgd",
+    "yearly": "price_1TgafPP9RK8Orx51lGuQvBUQ"
   },
   "timezone": "America/Santo_Domingo",
   "bbox": [
@@ -210,5 +210,9 @@
       "snorkel": false,
       "parking": false
     }
-  ]
+  ],
+  "paymentLinks": {
+    "monthly": "https://buy.stripe.com/5kQbJ30h5d7s9SB6ZZ0co0B",
+    "yearly": "https://buy.stripe.com/4gMaEZ8NB9Vgc0J9870co0C"
+  }
 }
