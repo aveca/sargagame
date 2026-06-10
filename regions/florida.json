@@ -22,7 +22,7 @@
     -83,
     24.4,
     -79.8,
-    28.5
+    29.3
   ],
   "center": {
     "lat": 26.5,
@@ -41,7 +41,7 @@
     "support": "support@sargassummiami.com"
   },
   "beachFilter": {
-    "island": "fl"
+    "island": "florida"
   },
   "routes": {
     "season": "sargassum-season-florida",
@@ -50,7 +50,7 @@
   },
   "geoDetect": {
     "latMin": 24.4,
-    "latMax": 28.5,
+    "latMax": 29.3,
     "lngMin": -83,
     "lngMax": -79.8
   },
@@ -68,7 +68,7 @@
   "beaches": [
     {
       "id": "fl001",
-      "island": "fl",
+      "island": "florida",
       "name": "Miami Beach",
       "commune": "Miami Beach",
       "lat": 25.7907,
@@ -80,7 +80,7 @@
     },
     {
       "id": "fl002",
-      "island": "fl",
+      "island": "florida",
       "name": "South Beach",
       "commune": "Miami Beach",
       "lat": 25.7826,
@@ -92,7 +92,7 @@
     },
     {
       "id": "fl003",
-      "island": "fl",
+      "island": "florida",
       "name": "Fort Lauderdale Beach",
       "commune": "Fort Lauderdale",
       "lat": 26.1224,
@@ -104,7 +104,7 @@
     },
     {
       "id": "fl004",
-      "island": "fl",
+      "island": "florida",
       "name": "Palm Beach",
       "commune": "Palm Beach",
       "lat": 26.7056,
@@ -116,7 +116,7 @@
     },
     {
       "id": "fl005",
-      "island": "fl",
+      "island": "florida",
       "name": "Jupiter Beach",
       "commune": "Jupiter",
       "lat": 26.9342,
@@ -128,7 +128,7 @@
     },
     {
       "id": "fl006",
-      "island": "fl",
+      "island": "florida",
       "name": "Key West (Smathers)",
       "commune": "Key West",
       "lat": 24.5489,
@@ -140,7 +140,7 @@
     },
     {
       "id": "fl007",
-      "island": "fl",
+      "island": "florida",
       "name": "Key Largo",
       "commune": "Key Largo",
       "lat": 25.0865,
@@ -152,7 +152,7 @@
     },
     {
       "id": "fl008",
-      "island": "fl",
+      "island": "florida",
       "name": "Islamorada",
       "commune": "Islamorada",
       "lat": 24.9243,
@@ -164,7 +164,7 @@
     },
     {
       "id": "fl009",
-      "island": "fl",
+      "island": "florida",
       "name": "Marathon (Sombrero)",
       "commune": "Marathon",
       "lat": 24.6915,
@@ -176,7 +176,7 @@
     },
     {
       "id": "fl010",
-      "island": "fl",
+      "island": "florida",
       "name": "Cocoa Beach",
       "commune": "Cocoa Beach",
       "lat": 28.32,
@@ -188,7 +188,7 @@
     },
     {
       "id": "fl011",
-      "island": "fl",
+      "island": "florida",
       "name": "Daytona Beach",
       "commune": "Daytona Beach",
       "lat": 29.2108,
@@ -200,7 +200,7 @@
     },
     {
       "id": "fl012",
-      "island": "fl",
+      "island": "florida",
       "name": "Clearwater Beach",
       "commune": "Clearwater",
       "lat": 27.9776,
@@ -214,5 +214,6 @@
   "paymentLinks": {
     "monthly": "https://buy.stripe.com/6oU4gBaVJ2sO1m5gAz0co0D",
     "yearly": "https://buy.stripe.com/14A6oJ0h52sO1m58430co0E"
-  }
+  },
+  "countryCode": "US"
 }

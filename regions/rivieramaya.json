@@ -41,7 +41,7 @@
     "support": "support@sargassumcancun.com"
   },
   "beachFilter": {
-    "island": "rm"
+    "island": "rivieramaya"
   },
   "routes": {
     "season": "temporada-sargazo-rivieramaya",
@@ -67,7 +67,7 @@
   "beaches": [
     {
       "id": "rm001",
-      "island": "rm",
+      "island": "rivieramaya",
       "name": "Playa Delfines",
       "commune": "Cancún",
       "lat": 21.0844,
@@ -79,7 +79,7 @@
     },
     {
       "id": "rm002",
-      "island": "rm",
+      "island": "rivieramaya",
       "name": "Playa Tortugas",
       "commune": "Cancún",
       "lat": 21.1156,
@@ -91,7 +91,7 @@
     },
     {
       "id": "rm003",
-      "island": "rm",
+      "island": "rivieramaya",
       "name": "Playa del Carmen Centro",
       "commune": "Playa del Carmen",
       "lat": 20.6296,
@@ -103,7 +103,7 @@
     },
     {
       "id": "rm004",
-      "island": "rm",
+      "island": "rivieramaya",
       "name": "Playa Paraíso",
       "commune": "Tulum",
       "lat": 20.2114,
@@ -115,7 +115,7 @@
     },
     {
       "id": "rm005",
-      "island": "rm",
+      "island": "rivieramaya",
       "name": "Akumal Bay",
       "commune": "Akumal",
       "lat": 20.3957,
@@ -127,7 +127,7 @@
     },
     {
       "id": "rm006",
-      "island": "rm",
+      "island": "rivieramaya",
       "name": "Playa Palancar",
       "commune": "Cozumel",
       "lat": 20.3658,
@@ -139,7 +139,7 @@
     },
     {
       "id": "rm007",
-      "island": "rm",
+      "island": "rivieramaya",
       "name": "Playa Norte",
       "commune": "Isla Mujeres",
       "lat": 21.2522,
@@ -151,7 +151,7 @@
     },
     {
       "id": "rm008",
-      "island": "rm",
+      "island": "rivieramaya",
       "name": "Puerto Morelos",
       "commune": "Puerto Morelos",
       "lat": 20.8473,
@@ -163,7 +163,7 @@
     },
     {
       "id": "rm009",
-      "island": "rm",
+      "island": "rivieramaya",
       "name": "Playa Mahahual",
       "commune": "Mahahual",
       "lat": 18.7176,
@@ -175,7 +175,7 @@
     },
     {
       "id": "rm010",
-      "island": "rm",
+      "island": "rivieramaya",
       "name": "Playa Holbox",
       "commune": "Holbox",
       "lat": 21.5269,
@@ -187,7 +187,7 @@
     },
     {
       "id": "rm011",
-      "island": "rm",
+      "island": "rivieramaya",
       "name": "Xpu-Ha",
       "commune": "Xpu-Ha",
       "lat": 20.4953,
@@ -199,19 +199,20 @@
     },
     {
       "id": "rm012",
-      "island": "rm",
-      "name": "Bacalar Laguna",
-      "commune": "Bacalar",
-      "lat": 18.681,
-      "lng": -88.3949,
+      "island": "rivieramaya",
+      "name": "Playa Maroma",
+      "commune": "Punta Maroma",
+      "lat": 20.7262,
+      "lng": -86.9882,
       "status": "clean",
       "kids": true,
-      "snorkel": false,
+      "snorkel": true,
       "parking": true
     }
   ],
   "paymentLinks": {
     "monthly": "https://buy.stripe.com/00w00l9RF2sO3udgAz0co0F",
     "yearly": "https://buy.stripe.com/3cI6oJgg3aZk5Clacb0co0G"
-  }
+  },
+  "countryCode": "MX"
 }
