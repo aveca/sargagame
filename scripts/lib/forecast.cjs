@@ -288,7 +288,8 @@ function windDriftEffect(beach, hourlyWind, dayIndex, marineData) {
  */
 function buildHonestForecast(levels, windForecast, history, beaches, banks, communityReports, marineData) {
   const weekly = {}
-  const hasWind = !!(windForecast && (windForecast.mq?.hourly?.length || windForecast.gp?.hourly?.length))
+  // Generique multi-regions: windForecast est cle par island/region (mq, gp, puntacana, ...)
+  const hasWind = !!(windForecast && Object.values(windForecast).some(w => w?.hourly?.length))
   const hasBanks = Array.isArray(banks) && banks.length > 0
   const reports = communityReports || {}
 

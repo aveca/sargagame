@@ -12,8 +12,15 @@
  *   5. Build a 7-day forecast from drift trends
  *
  * Outputs:
- *   public/api/copernicus/sargassum.json  (source: "erddap-live")
- *   public/api/copernicus/history.json    (appended)
+ *   public/api/copernicus/sargassum.json       (source: "erddap-live") — contrat MQ/GP, INCHANGE
+ *   public/api/copernicus/history.json         (appended)
+ *   public/api/copernicus/<regionId>/sargassum.json + history.json (multi-regions, regions/*.json)
+ *
+ * Env:
+ *   SARG_OUT_DIR  (mode test) redirige TOUTES les ecritures ET l'etat lu (history,
+ *                 banks, archive) vers <dir>/api/copernicus/ au lieu de public/api/copernicus/.
+ *                 Les INPUTS produits par d'autres scripts (beaches-list.json,
+ *                 beaches-weather.json) restent lus depuis public/ dans tous les cas.
  *
  * Usage:
  *   node scripts/fetch-sargassum-live.cjs
@@ -23,6 +30,13 @@ const path = require('path')
 const { satelliteConfidence, memoryConfidence } = require('./lib/confidence.cjs')
 const { buildHonestForecast, statusFromAfai: statusFromAfaiForecast, DAYS: FDAYS } = require('./lib/forecast.cjs')
 const { computeScore } = require('./lib/score.cjs')
+const { getAllRegions } = require('../regions/index.cjs')
+
+// ── Dossier de sortie ──────────────────────────────────────────────
+// Defaut: public/ du repo (comportement historique). SARG_OUT_DIR = sandbox de test.
+const OUT_PUBLIC = process.env.SARG_OUT_DIR
+  ? path.resolve(process.env.SARG_OUT_DIR)
+  : path.join(__dirname, '..', 'public')
 
 // ── Beach coordinates + coast exposure ────────────────────────────
 // coast: 'atlantic'  = cote exposee aux alizes (sargasses arrivent par l'est)
@@ -657,20 +671,24 @@ function inflateHull(hull, centroid, factor = 1.2) {
   ])
 }
 
+// Centres meteo legacy (racine MQ/GP). Les regions passent leur propre centre.
+const DEFAULT_METEO_CENTERS = { mq: [14.6, -61.0], gp: [16.2, -61.5] }
+
 /**
  * Fetch regional wind data from Open-Meteo for drift estimation.
- * Returns { speed (km/h), dir (degrees, "from" convention) } for each island.
+ * Returns { speed (km/h), dir (degrees, "from" convention) } for each island/region.
+ * @param {object} [centers] - { islandOrRegionId: [lat, lng] } (defaut: MQ+GP legacy)
+ * @param {string} [timezone] - timezone Open-Meteo (defaut: legacy America/Martinique)
  */
-async function fetchRegionalWind() {
+async function fetchRegionalWind(centers = DEFAULT_METEO_CENTERS, timezone = 'America/Martinique') {
   const wind = {}
-  const centers = { mq: [14.6, -61.0], gp: [16.2, -61.5] }
   for (const [island, [lat, lng]] of Object.entries(centers)) {
     // Fetch current + 7-day hourly forecast (168 hours)
     // v3.1: extended for Beach Score engine — now also fetches cloud_cover, uv_index, temperature_2m, precipitation_probability
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}`
       + `&current=wind_speed_10m,wind_direction_10m,cloud_cover,temperature_2m,precipitation,uv_index`
       + `&hourly=wind_speed_10m,wind_direction_10m,cloud_cover,uv_index,temperature_2m,precipitation_probability`
-      + `&forecast_days=7&timezone=America/Martinique`
+      + `&forecast_days=7&timezone=${timezone}`
     const data = await safeFetch(url, 15000)
     if (data?.current) {
       wind[island] = {
@@ -727,11 +745,11 @@ function avgWindForHours(hourlyWind, startH, endH) {
 /**
  * Fetch real ocean current + wave data from Open-Meteo Marine API.
  * Returns { current: {speed (m/s), dir (degrees)}, waves: {height (m), dir, period (s)}, hourly: [...] }
- * per island. Falls back to hardcoded constants on failure.
+ * per island/region. Falls back to hardcoded constants on failure.
+ * @param {object} [centers] - { islandOrRegionId: [lat, lng] } (defaut: MQ+GP legacy)
  */
-async function fetchMarineData() {
+async function fetchMarineData(centers = DEFAULT_METEO_CENTERS) {
   const marine = {}
-  const centers = { mq: [14.6, -61.0], gp: [16.2, -61.5] }
   for (const [island, [lat, lng]] of Object.entries(centers)) {
     const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lng}&current=ocean_current_velocity,ocean_current_direction,sea_surface_temperature&hourly=ocean_current_velocity,ocean_current_direction,wave_height,wave_direction,wave_period,sea_surface_temperature&forecast_days=3`
     const data = await safeFetch(url, 15000)
@@ -1000,6 +1018,220 @@ async function buildSargassumBanks(gridPoints, dir, wind, marineData) {
   }
 }
 
+// ── Niveaux par plage (partage racine MQ/GP + regions) ────────────
+
+/**
+ * Calcule les niveaux AFAI pour une liste de plages (echantillonnage grille
+ * 7D + correction 1D). gridOf/grid1DOf resolvent la grille par plage: la
+ * racine MQ+GP a deux grilles (une par ile), une region n'en a qu'une.
+ */
+function computeBeachLevels(beaches, gridOf, grid1DOf) {
+  const levels = []
+  for (const beach of beaches) {
+    const grid = gridOf(beach)
+    const grid1D = grid1DOf(beach)
+    const result = extractBeachAfai(beach, grid)
+    // Apply 1D rapid-change correction (detects recent arrivals/clearances ~24h before 7D)
+    const correction1D = compute1DCorrection(beach, grid, grid1D)
+    const afaiRaw = result.afai + correction1D
+    const afai = Math.round(Math.max(0, Math.min(1, afaiRaw)) * 100) / 100
+    const status = statusFromAfai(afai)
+    levels.push({
+      id: beach.id, afai, status,
+      confidence: result.confidence + (correction1D !== 0 ? 5 : 0), // multi-source boost
+      source: 'erddap-satellite',
+      sourceDetail: result.method + (correction1D !== 0 ? '+1D' : ''),
+    })
+    console.log(`  ${beach.id}: AFAI=${afai.toFixed(2)} (${status}) [${result.method}${correction1D ? ' 1D:' + (correction1D > 0 ? '+' : '') + correction1D.toFixed(2) : ''}] conf=${result.confidence}%`)
+  }
+  return levels
+}
+
+// ── MULTI-REGIONS ──────────────────────────────────────────────────
+// Sorties par region: <out>/api/copernicus/<id>/sargassum.json (meme structure
+// que la racine) + history.json (etat memoire NAMESPACE par region).
+// - MQ/GP: reutilisent grilles/vent/marine/bancs deja fetches par la racine
+//   (zero requete en plus). La sortie RACINE reste le contrat consomme par les
+//   fronts MQ/GP — inchangee.
+// - Nouvelles regions: grille ERDDAP propre sur une bbox de donnees elargie
+//   vers le large + vent/marine sur region.center. Pas de clustering bancs en
+//   v1 (forecast = persistance + vent, sans signal d'arrivee).
+
+/**
+ * Bbox de DONNEES pour une region: bbox d'affichage (region.bbox =
+ * [lngMin, latMin, lngMax, latMax]) elargie vers le large, calquee sur les
+ * boites legacy MQ/GP (~0.8 deg lat, 0.7 deg ouest, 1.2 deg est — zone
+ * d'approche atlantique des sargasses).
+ */
+function dataBboxFor(region) {
+  const [lngMin, latMin, lngMax, latMax] = region.bbox
+  const r = v => Math.round(v * 100) / 100
+  return {
+    latMin: r(latMin - 0.8),
+    latMax: r(latMax + 0.8),
+    lngMin: r(lngMin - 0.7),
+    lngMax: r(lngMax + 1.2),
+  }
+}
+
+/**
+ * Plages d'une region pour le pipeline:
+ * - mq/gp: beaches-list.json filtre par island (ids mq###/gp###)
+ * - nouvelles regions: region.beaches inline du JSON regional (ids pc001, ...)
+ * Les statuts inline des JSON regionaux sont des PLACEHOLDERS — seuls
+ * id/lat/lng (+ coast/coastNormal si presents) alimentent le calcul AFAI.
+ */
+function beachesForRegion(region) {
+  let raw = []
+  if (region.id === 'mq' || region.id === 'gp') {
+    const listPath = path.join(__dirname, '..', 'public', 'data', 'beaches-list.json')
+    try {
+      raw = JSON.parse(fs.readFileSync(listPath, 'utf-8')).filter(b => b.island === region.id)
+    } catch (e) {
+      console.warn(`  [${region.id}] beaches-list.json illisible: ${e.message}`)
+    }
+  } else if (Array.isArray(region.beaches)) {
+    raw = region.beaches
+  }
+  return raw
+    .filter(b => b && b.id && typeof b.lat === 'number' && typeof b.lng === 'number')
+    .map(b => ({
+      id: b.id,
+      lat: b.lat,
+      lng: b.lng,
+      island: region.id,
+      coast: b.coast || 'atlantic',     // defaut: exposee (ne cache pas un risque)
+      coastNormal: b.coastNormal || 90, // defaut: face a l'est (alizes)
+    }))
+}
+
+/**
+ * Pipeline complet pour UNE region → <out>/api/copernicus/<id>/sargassum.json.
+ * Meme structure que la sortie racine: { source, updatedAt, erddapTimestamp,
+ * dataAgeMinutes, pipelineVersion, levels[], weekly{}, weather{}, scores{} }.
+ */
+async function runRegionPipeline(region, shared) {
+  const regionDir = path.join(OUT_PUBLIC, 'api', 'copernicus', region.id)
+  const beaches = beachesForRegion(region)
+  if (!beaches.length) {
+    console.log(`  [${region.id}] aucune plage definie — skip`)
+    return
+  }
+  fs.mkdirSync(regionDir, { recursive: true })
+
+  // 1. Grille + meteo: mq/gp reutilisent les fetches racine, les autres fetchent
+  let grid, grid1D, windForecast, marineData, banks
+  if (region.id === 'mq' || region.id === 'gp') {
+    grid = region.id === 'mq' ? shared.mqGrid : shared.gpGrid
+    grid1D = region.id === 'mq' ? shared.mqGrid1D : shared.gpGrid1D
+    windForecast = shared.windForecast
+    marineData = shared.marineData
+    // Bancs fraichement recalcules par la racine (signal d'arrivee du forecast)
+    try {
+      const banksData = JSON.parse(fs.readFileSync(path.join(OUT_PUBLIC, 'api', 'copernicus', 'sargassum-banks.json'), 'utf-8'))
+      banks = Array.isArray(banksData.banks) ? banksData.banks : []
+    } catch (_) { banks = [] }
+  } else {
+    const bbox = dataBboxFor(region)
+    const center = { [region.id]: [region.center.lat, region.center.lng] }
+    console.log(`  [${region.id}] grille ERDDAP: lat [${bbox.latMin}, ${bbox.latMax}], lng [${bbox.lngMin}, ${bbox.lngMax}]`)
+    ;[grid, grid1D, windForecast, marineData] = await Promise.all([
+      fetchErddapGrid(bbox),
+      fetchErddapGrid1D(bbox).catch(() => null),
+      fetchRegionalWind(center, region.timezone || 'America/Martinique'),
+      fetchMarineData(center),
+    ])
+    banks = [] // v1: pas de bancs hors MQ/GP — forecast persistance + vent
+  }
+
+  // 2. Niveaux AFAI par plage (meme echantillonnage grille que la racine)
+  const levels = computeBeachLevels(beaches, () => grid, () => grid1D)
+  const rawLevels = levels.map(l => ({ id: l.id, afai: l.afai, status: l.status }))
+
+  // 3. Beach memory — etat namespace par region (<regionDir>/history.json).
+  // La racine MQ/GP garde son history.json historique (retro-compat).
+  applyBeachAccumulation(levels, regionDir)
+
+  // 4. Forecast 7j (community reports: ids racine MQ/GP seulement)
+  let historyEntries = []
+  try {
+    historyEntries = JSON.parse(fs.readFileSync(path.join(regionDir, 'history.json'), 'utf-8')).history || []
+  } catch (_) {}
+  const communityReports = (region.id === 'mq' || region.id === 'gp') ? (shared.communityReports || {}) : {}
+  const weekly = buildHonestForecast(levels, windForecast, historyEntries, beaches, banks, communityReports, marineData)
+
+  // 5. Weather snapshot + Beach Score (per-beach weather si dispo — ids mq###/gp###)
+  const w = windForecast?.[region.id] || {}
+  const m = marineData?.[region.id] || {}
+  const weather = {
+    [region.id]: {
+      wind_speed: w.speed ?? null,
+      cloud_cover: w.cloud_cover ?? null,
+      uv_index: w.uv_index ?? null,
+      air_temperature: w.temperature ?? null,
+      precipitation: w.precipitation ?? null,
+      sst: m.sst ?? null,
+      wave_height: m.wave_height ?? null,
+    },
+  }
+  let wxBeaches = {}
+  try {
+    const wxPath = path.join(__dirname, '..', 'public', 'api', 'weather', 'beaches-weather.json')
+    wxBeaches = JSON.parse(fs.readFileSync(wxPath, 'utf-8')).beaches || {}
+  } catch (_) {}
+  const scores = {}
+  const isl = weather[region.id]
+  for (const beach of beaches) {
+    const level = levels.find(l => l.id === beach.id)
+    if (!level) continue
+    const bw = wxBeaches[beach.id] || null
+    const snap = {
+      afai: level.afai,
+      wind_speed: bw?.windSpeed ?? isl.wind_speed,
+      cloud_cover: isl.cloud_cover,
+      uv_index: bw?.uvMax ?? isl.uv_index,
+      sst: bw?.sst ?? isl.sst,
+      wave_height: bw?.waveHeight ?? isl.wave_height,
+      tide_ratio: null,
+    }
+    const result = computeScore(snap)
+    level.score = result.score
+    level.label = result.label
+    level.color = result.color
+    level.reason = result.reason
+    level.breakdown = result.breakdown
+    scores[beach.id] = result
+  }
+
+  // 6. Payload — MEME structure que la racine
+  const updatedAt = new Date().toISOString()
+  const erddapTimestamp = grid?.erddapTimestamp || null
+  const dataAgeMinutes = erddapTimestamp
+    ? Math.round((Date.now() - new Date(erddapTimestamp).getTime()) / 60000)
+    : null
+  const payload = {
+    source: grid ? 'erddap-live' : 'erddap-fallback',
+    updatedAt,
+    erddapTimestamp,
+    dataAgeMinutes,
+    pipelineVersion: '3.1',
+    levels,
+    weekly,
+    weather,
+    scores,
+  }
+  if (!grid) payload.fallbackReason = 'erddap-unreachable' // mode degrade documente
+  fs.writeFileSync(path.join(regionDir, 'sargassum.json'), JSON.stringify(payload), 'utf-8')
+
+  // 7. History regional (valeurs satellite BRUTES, comme la racine)
+  updateHistory(regionDir, rawLevels)
+
+  const clean = levels.filter(l => l.status === 'clean').length
+  const moderate = levels.filter(l => l.status === 'moderate').length
+  const avoid = levels.filter(l => l.status === 'avoid').length
+  console.log(`  [${region.id}] ${path.join(regionDir, 'sargassum.json')} | ${levels.length} plages | ${clean} clean / ${moderate} moderate / ${avoid} avoid | source: ${payload.source}`)
+}
+
 // ── MAIN ───────────────────────────────────────────────────────────
 
 async function main() {
@@ -1038,31 +1270,17 @@ async function main() {
   // 2. Extract AFAI for each beach
   console.log('')
   console.log('[2/3] Extracting beach AFAI values...')
-  const levels = []
-
-  for (const beach of BEACHES) {
-    const grid = beach.island === 'mq' ? mqGrid : gpGrid
-    const grid1D = beach.island === 'mq' ? mqGrid1D : gpGrid1D
-    const result = extractBeachAfai(beach, grid)
-    // Apply 1D rapid-change correction (detects recent arrivals/clearances ~24h before 7D)
-    const correction1D = compute1DCorrection(beach, grid, grid1D)
-    const afaiRaw = result.afai + correction1D
-    const afai = Math.round(Math.max(0, Math.min(1, afaiRaw)) * 100) / 100
-    const status = statusFromAfai(afai)
-    levels.push({
-      id: beach.id, afai, status,
-      confidence: result.confidence + (correction1D !== 0 ? 5 : 0), // multi-source boost
-      source: 'erddap-satellite',
-      sourceDetail: result.method + (correction1D !== 0 ? '+1D' : ''),
-    })
-    console.log(`  ${beach.id}: AFAI=${afai.toFixed(2)} (${status}) [${result.method}${correction1D ? ' 1D:' + (correction1D > 0 ? '+' : '') + correction1D.toFixed(2) : ''}] conf=${result.confidence}%`)
-  }
+  const levels = computeBeachLevels(
+    BEACHES,
+    beach => (beach.island === 'mq' ? mqGrid : gpGrid),
+    beach => (beach.island === 'mq' ? mqGrid1D : gpGrid1D),
+  )
 
   // 2b. Apply beach memory (accumulation decay from recent history)
   // IMPORTANT: save raw satellite levels BEFORE accumulation for history tracking
   const rawLevels = levels.map(l => ({ id: l.id, afai: l.afai, status: l.status }))
 
-  const dir = path.join(__dirname, '..', 'public', 'api', 'copernicus')
+  const dir = path.join(OUT_PUBLIC, 'api', 'copernicus')
   fs.mkdirSync(dir, { recursive: true })
 
   console.log('')
@@ -1273,6 +1491,26 @@ async function main() {
   const avoid = levels.filter(l => l.status === 'avoid').length
   console.log('')
   console.log(`Summary: ${clean} clean, ${moderate} moderate, ${avoid} avoid (${levels.length} beaches)`)
+
+  // 6. Multi-regions: sorties par region (<out>/api/copernicus/<id>/sargassum.json)
+  console.log('')
+  console.log('[6/6] Pipelines par region (regions/*.json)...')
+  const shared = { mqGrid, gpGrid, mqGrid1D, gpGrid1D, windForecast, marineData, communityReports }
+  // getAllRegions() dans un try : un regions/*.json malforme ne doit pas faire
+  // exit(1) apres l'ecriture des fichiers racine (le workflow declencherait le
+  // scraper fallback et ecraserait la racine avec des donnees degradees).
+  let _regions = []
+  try { _regions = getAllRegions() } catch (err) {
+    console.warn(`  regions/ illisible — sorties regionales sautees (racine deja ecrite): ${err.message}`)
+  }
+  for (const region of _regions) {
+    try {
+      await runRegionPipeline(region, shared)
+    } catch (err) {
+      // Une region en echec ne bloque ni la racine ni les autres regions
+      console.warn(`  [${region.id}] pipeline regional en echec (non bloquant): ${err.message}`)
+    }
+  }
   console.log('Done.')
 }
 
