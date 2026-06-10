@@ -6,7 +6,7 @@
     "commit": "09ed250"
   },
   "abTests": {
-    "lastEvaluated": "2026-04-18T22:56:29.123Z",
+    "lastEvaluated": "2026-06-09T22:04:17.607Z",
     "results": [
       {
         "id": "em1",
@@ -16,16 +16,16 @@
           "curiosity"
         ],
         "rates": [
-          "0.79%",
-          "0.79%"
+          "0.21%",
+          "0.21%"
         ],
-        "lift": "0.6%",
-        "z": -0.02,
-        "p": 0.507,
+        "lift": "-0.4%",
+        "z": 0.01,
+        "p": 0.495,
         "significant": false,
         "winner": null,
         "status": "not-significant",
-        "recommendation": "Keep running. Need more data (3790 sessions, need ~1500+)."
+        "recommendation": "Keep running. Need more data (16489 sessions, need ~1500+)."
       },
       {
         "id": "pw_cta_order",
@@ -43,8 +43,8 @@
         "p": 1,
         "significant": false,
         "winner": null,
-        "status": "too-early",
-        "recommendation": "Keep running. Need more data (129 sessions, need ~1500+)."
+        "status": "not-significant",
+        "recommendation": "Keep running. Need more data (10541 sessions, need ~1500+)."
       },
       {
         "id": "pw_prelude",
@@ -54,16 +54,16 @@
           "prelude"
         ],
         "rates": [
-          "15.09%",
-          "15.09%"
+          "0.24%",
+          "0.23%"
         ],
-        "lift": "0.0%",
-        "z": 0,
-        "p": 0.5,
+        "lift": "-6.2%",
+        "z": 0.16,
+        "p": 0.437,
         "significant": false,
         "winner": null,
-        "status": "too-early",
-        "recommendation": "Keep running. Need more data (106 sessions, need ~1500+)."
+        "status": "not-significant",
+        "recommendation": "Keep running. Need more data (10603 sessions, need ~1500+)."
       }
     ]
   },

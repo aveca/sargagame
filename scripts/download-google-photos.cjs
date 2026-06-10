@@ -14,7 +14,10 @@ const path = require('path')
 const https = require('https')
 
 const API_KEY = process.env.GOOGLE_PLACES_KEY || 'REDACTED_GOOGLE_KEY'
-const BEACHES = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../public/data/beaches-list.json'), 'utf8'))
+// --region=<id> : récupère les photos pour les plages inline d'une région (sinon beaches-list.json MQ/GP)
+const REGION_ARG = (process.argv.slice(2).find(a => a.startsWith('--region=')) || '').replace('--region=', '')
+const REGION = REGION_ARG ? JSON.parse(fs.readFileSync(path.resolve(__dirname, `../regions/${REGION_ARG}.json`), 'utf8')) : null
+const BEACHES = REGION ? (REGION.beaches || []) : JSON.parse(fs.readFileSync(path.resolve(__dirname, '../public/data/beaches-list.json'), 'utf8'))
 const OUT_DIR = path.resolve(__dirname, '../public/beaches')
 
 const ARGS = process.argv.slice(2)
@@ -48,26 +51,28 @@ function downloadFile(url, dest) {
 }
 
 async function getPlacePhoto(beach) {
-  const islandName = beach.island === 'mq' ? 'Martinique' : 'Guadeloupe'
+  const islandName = REGION ? `${REGION.name}, ${REGION.country}` : (beach.island === 'mq' ? 'Martinique' : 'Guadeloupe')
+  const placeWord = REGION ? (REGION.primaryLang === 'es' ? 'playa' : 'beach') : 'plage'
+  const queryLang = REGION ? REGION.primaryLang : 'fr'
 
   // Primary: nearbysearch with hard 300m radius — prevents collision for clustered
   // beaches like the Schoelcher trio (mq024/mq025/mq026 within 1km). Textsearch's
   // locationbias is only a hint and returns same POI for all 3.
-  const nearbyUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${beach.lat},${beach.lng}&radius=300&keyword=${encodeURIComponent(beach.name)}&key=${API_KEY}&language=fr`
+  const nearbyUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${beach.lat},${beach.lng}&radius=300&keyword=${encodeURIComponent(beach.name)}&key=${API_KEY}&language=${queryLang}`
   let result = await fetchJSON(nearbyUrl)
   let withPhotos = (result.results || []).filter(r => r.photos && r.photos.length)
 
   // Fallback: textsearch with 5km locationbias — for beaches where Google's POI is
   // outside the 300m radius (e.g. POI registered inland from the coast coords).
   if (withPhotos.length === 0) {
-    const query = encodeURIComponent(`${beach.name} ${beach.commune} ${islandName} plage`)
+    const query = encodeURIComponent(`${beach.name} ${beach.commune} ${islandName} ${placeWord}`)
     const bias = `circle:5000@${beach.lat},${beach.lng}`
-    const searchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${query}&locationbias=${encodeURIComponent(bias)}&key=${API_KEY}&language=fr`
+    const searchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${query}&locationbias=${encodeURIComponent(bias)}&key=${API_KEY}&language=${queryLang}`
     result = await fetchJSON(searchUrl)
     withPhotos = (result.results || []).filter(r => r.photos && r.photos.length)
   }
 
-  if (withPhotos.length === 0) return null
+  if (withPhotos.length === 0) { if(process.env.DBG) console.error('  [api]', beach.id, 'status=', result.status, '|', result.error_message||''); return null }
 
   const photoRef = withPhotos[0].photos[0].photo_reference
   return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=1600&photo_reference=${photoRef}&key=${API_KEY}`
