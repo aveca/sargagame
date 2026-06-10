@@ -26,6 +26,8 @@ class ErrBound extends Component{
 const __R = (typeof __REGION__ !== "undefined" && __REGION__) || null
 const IS_NEW_REGION = !!(__R && __R.id !== "mq" && __R.id !== "gp")
 const REGION = IS_NEW_REGION ? __R : null
+// Email support région-aware (MQ/GP : littéral historique inchangé)
+const SUPPORT_EMAIL = IS_NEW_REGION ? (REGION.emails?.support || ("support@" + REGION.domain)) : "alerte@sargasses-martinique.com"
 
 /* ═══════════════════════════════════════════════════════════════════════════
    CONTEXT
@@ -4143,7 +4145,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
             This button lets them re-validate their sub from INSIDE the PWA. */}
         <button onClick={()=>{
           track("sg_premium_already_click",{source:source||"unknown"})
-          const em=prompt(lang==="en"?"Enter the email used for your subscription:":"Entre l'email utilise pour ton abonnement :")
+          const em=prompt(_t(lang,"Entre l'email utilise pour ton abonnement :","Enter the email used for your subscription:","Introduce el email usado para tu suscripción:"))
           if(!em||!em.includes("@"))return
           fetch("/api/create-checkout.php",{
             method:"POST",headers:{"Content-Type":"application/json"},
@@ -4158,19 +4160,20 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
               onClose()
             }else{
               track("sg_premium_already_failed",{reason:d.reason||d.error||"inactive"})
-              alert(lang==="en"
-                ?"No active subscription found for this email. Check the address or contact alerte@sargasses-martinique.com."
-                :"Aucun abonnement actif trouvé pour cet email. Vérifie l'adresse ou contacte alerte@sargasses-martinique.com.")
+              alert(_t(lang,
+                "Aucun abonnement actif trouvé pour cet email. Vérifie l'adresse ou contacte "+SUPPORT_EMAIL+".",
+                "No active subscription found for this email. Check the address or contact "+SUPPORT_EMAIL+".",
+                "No se encontró ninguna suscripción activa para este email. Verifica la dirección o contacta "+SUPPORT_EMAIL+"."))
             }
           }).catch(e=>{
             track("sg_premium_already_failed",{reason:e?.message||"network"})
-            alert(lang==="en"?"Connection issue. Try again in a moment.":"Connexion impossible. Reessaie dans un instant.")
+            alert(_t(lang,"Connexion impossible. Reessaie dans un instant.","Connection issue. Try again in a moment.","Conexión imposible. Inténtalo de nuevo en un momento."))
           })
         }} style={{
           width:"100%",padding:"10px",marginTop:10,background:"none",
           border:"1px dashed rgba(255,255,255,.2)",borderRadius:14,
           color:"rgba(255,255,255,.55)",fontSize:12,cursor:"pointer",fontFamily:"inherit",
-        }}>{lang==="en"?"I already have a subscription":"J'ai deja un abonnement"}</button>
+        }}>{_t(lang,"J'ai deja un abonnement","I already have a subscription","Ya tengo una suscripción")}</button>
 
         <button onClick={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts});onClose()}} style={{
           width:"100%",padding:"12px",marginTop:8,background:"none",
@@ -4443,6 +4446,7 @@ function InlineEmailCapture({lang}){
    FEEDBACK WIDGET — appears after 3 visits, once only
    ═══════════════════════════════════════════════════════════════════════════ */
 function FeedbackWidget(){
+  const lang=getLang()
   const[visible,setVisible]=useState(false)
   const[step,setStep]=useState(0) // 0=rating, 1=text, 2=done
   const[rating,setRating]=useState(0)
@@ -4481,7 +4485,7 @@ function FeedbackWidget(){
       {step===0&&(
         <div>
           <div style={{fontSize:13,fontWeight:700,color:"var(--sg-ink)",marginBottom:10}}>
-            Cette app t'est utile ?
+            {_t(lang,"Cette app t'est utile ?","Is this app useful to you?","¿Te resulta útil esta app?")}
           </div>
           <div style={{display:"flex",gap:6,justifyContent:"center"}}>
             {[1,2,3,4,5].map(n=>(
@@ -4495,30 +4499,30 @@ function FeedbackWidget(){
             ))}
           </div>
           <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:"var(--sg-mid)",marginTop:4,padding:"0 4px"}}>
-            <span>Pas du tout</span><span>Indispensable</span>
+            <span>{_t(lang,"Pas du tout","Not at all","Para nada")}</span><span>{_t(lang,"Indispensable","Essential","Imprescindible")}</span>
           </div>
         </div>
       )}
       {step===1&&(
         <div>
           <div style={{fontSize:13,fontWeight:700,color:"var(--sg-ink)",marginBottom:8}}>
-            {rating>=4?"Super ! Qu'est-ce qui te plait le plus ?":"Qu'est-ce qui manque ?"}
+            {rating>=4?_t(lang,"Super ! Qu'est-ce qui te plait le plus ?","Great! What do you like the most?","¡Genial! ¿Qué es lo que más te gusta?"):_t(lang,"Qu'est-ce qui manque ?","What's missing?","¿Qué falta?")}
           </div>
           <textarea value={text} onChange={e=>setText(e.target.value)}
-            placeholder={rating>=4?"Ce que j'utilise le plus...":"Ce qui me manque..."}
+            placeholder={rating>=4?_t(lang,"Ce que j'utilise le plus...","What I use the most...","Lo que más uso..."):_t(lang,"Ce qui me manque...","What I'm missing...","Lo que me falta...")}
             style={{width:"100%",height:60,borderRadius:10,border:"1.5px solid var(--sg-border)",
               padding:"8px 10px",fontSize:13,fontFamily:"inherit",resize:"none",
               background:"var(--sg-bgD)",color:"var(--sg-ink)"}}/>
           <button onClick={submit} style={{width:"100%",marginTop:8,padding:"10px",
             borderRadius:10,border:"none",cursor:"pointer",fontFamily:"inherit",
             background:"linear-gradient(158deg,#FFE47A,#FFC72C,#E89400)",
-            fontSize:13,fontWeight:700,color:C.ink}}>Envoyer</button>
+            fontSize:13,fontWeight:700,color:C.ink}}>{_t(lang,"Envoyer","Send","Enviar")}</button>
         </div>
       )}
       {step===2&&(
         <div style={{textAlign:"center",padding:"8px 0"}}>
           <span style={{fontSize:24}}>🙏</span>
-          <div style={{fontSize:13,fontWeight:600,color:"var(--sg-ink)",marginTop:4}}>Merci pour ton retour !</div>
+          <div style={{fontSize:13,fontWeight:600,color:"var(--sg-ink)",marginTop:4}}>{_t(lang,"Merci pour ton retour !","Thanks for your feedback!","¡Gracias por tu opinión!")}</div>
         </div>
       )}
     </div>
@@ -4573,6 +4577,9 @@ function FavToast({show,lang,onPremiumClick,isPremium}){
    Best practice: show after 2nd beach view (value demonstrated), not on timer
    ═══════════════════════════════════════════════════════════════════════════ */
 function InstallPrompt(){
+  // lang était référencé plus bas sans être défini (ReferenceError au premier
+  // render du prompt — crash furtif : le flag localStorage est posé avant).
+  const lang=getLang()
   const[deferredPrompt,setDeferredPrompt]=useState(null)
   const[visible,setVisible]=useState(false)
   const[showIosTutorial,setShowIosTutorial]=useState(false)
@@ -4635,15 +4642,15 @@ function InstallPrompt(){
           display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>📱</div>
         <div style={{flex:1,minWidth:0}}>
           <div style={{fontSize:13,fontWeight:700,color:"#fff"}}>
-            {isIos?"Ajoute l'app sur ton iPhone":"Installer l'app"}
+            {isIos?_t(lang,"Ajoute l'app sur ton iPhone","Add the app to your iPhone","Añade la app a tu iPhone"):_t(lang,"Installer l'app","Install the app","Instalar la app")}
           </div>
           <div style={{fontSize:11,color:"rgba(255,255,255,.7)",marginTop:1}}>
-            {isIos?"Accès direct + alertes sargasses":"Accès direct, alertes push, hors-ligne"}
+            {isIos?_t(lang,"Accès direct + alertes sargasses","Quick access + sargassum alerts","Acceso directo + alertas de sargazo"):_t(lang,"Accès direct, alertes push, hors-ligne","Quick access, push alerts, offline","Acceso directo, alertas push, sin conexión")}
           </div>
         </div>
         <button onClick={handleInstall} style={{background:"#fff",color:C.teal,border:"none",
           borderRadius:12,padding:"8px 14px",fontWeight:700,fontSize:12,cursor:"pointer",
-          fontFamily:"inherit",flexShrink:0}}>{isIos?"Voir comment":"Installer"}</button>
+          fontFamily:"inherit",flexShrink:0}}>{isIos?_t(lang,"Voir comment","See how","Ver cómo"):_t(lang,"Installer","Install","Instalar")}</button>
         <button onClick={dismiss} aria-label={lang==="en"?"Close":"Fermer"}
           style={{position:"absolute",top:2,right:2,background:"none",border:"none",
             color:"rgba(255,255,255,.5)",cursor:"pointer",fontSize:16,
@@ -4664,10 +4671,10 @@ function InstallPrompt(){
           }}>
             <div className="sheet-handle"/>
             <h3 className="anton" style={{fontSize:22,marginBottom:4,color:"var(--sg-ink)"}}>
-              Ajoute Sargasses sur ton iPhone
+              {_t(lang,"Ajoute Sargasses sur ton iPhone","Add the app to your iPhone","Añade la app a tu iPhone")}
             </h3>
             <p style={{fontSize:12,color:"var(--sg-mid)",marginBottom:16,lineHeight:1.5}}>
-              En 3 secondes, tu auras l'app sur ton ecran d'accueil avec les alertes sargasses.
+              {_t(lang,"En 3 secondes, tu auras l'app sur ton ecran d'accueil avec les alertes sargasses.","In 3 seconds you'll have the app on your home screen with sargassum alerts.","En 3 segundos tendrás la app en tu pantalla de inicio con alertas de sargazo.")}
             </p>
 
             {/* Step 1 */}
@@ -4677,11 +4684,11 @@ function InstallPrompt(){
                 fontWeight:800,color:C.teal,flexShrink:0}}>1</div>
               <div>
                 <div style={{fontSize:14,fontWeight:700,color:"var(--sg-ink)"}}>
-                  Appuie sur <span style={{display:"inline-flex",alignItems:"center",
+                  {_t(lang,"Appuie sur","Tap","Pulsa")} <span style={{display:"inline-flex",alignItems:"center",
                     padding:"2px 8px",background:"rgba(0,122,255,.1)",borderRadius:6,
-                    fontSize:18,verticalAlign:"middle"}}>⬆️</span> en bas de Safari
+                    fontSize:18,verticalAlign:"middle"}}>⬆️</span> {_t(lang,"en bas de Safari","at the bottom of Safari","abajo en Safari")}
                 </div>
-                <div style={{fontSize:11,color:"var(--sg-mid)",marginTop:2}}>Le bouton partager (carre avec fleche)</div>
+                <div style={{fontSize:11,color:"var(--sg-mid)",marginTop:2}}>{_t(lang,"Le bouton partager (carre avec fleche)","The share button (square with arrow)","El botón compartir (cuadrado con flecha)")}</div>
               </div>
             </div>
 
@@ -4692,9 +4699,9 @@ function InstallPrompt(){
                 fontWeight:800,color:C.teal,flexShrink:0}}>2</div>
               <div>
                 <div style={{fontSize:14,fontWeight:700,color:"var(--sg-ink)"}}>
-                  Scroll et appuie sur <strong>"Sur l'ecran d'accueil"</strong>
+                  {_t(lang,"Scroll et appuie sur","Scroll and tap","Desliza y pulsa")} <strong>{_t(lang,'"Sur l\'ecran d\'accueil"','"Add to Home Screen"','"Añadir a pantalla de inicio"')}</strong>
                 </div>
-                <div style={{fontSize:11,color:"var(--sg-mid)",marginTop:2}}>Icone + avec un carre</div>
+                <div style={{fontSize:11,color:"var(--sg-mid)",marginTop:2}}>{_t(lang,"Icone + avec un carre","The + icon with a square","Icono + con un cuadrado")}</div>
               </div>
             </div>
 
@@ -4705,15 +4712,15 @@ function InstallPrompt(){
                 fontWeight:800,color:C.teal,flexShrink:0}}>3</div>
               <div>
                 <div style={{fontSize:14,fontWeight:700,color:"var(--sg-ink)"}}>
-                  Appuie <strong>"Ajouter"</strong> en haut a droite
+                  {_t(lang,"Appuie","Tap","Pulsa")} <strong>{_t(lang,'"Ajouter"','"Add"','"Añadir"')}</strong> {_t(lang,"en haut a droite","top right","arriba a la derecha")}
                 </div>
-                <div style={{fontSize:11,color:"var(--sg-mid)",marginTop:2}}>L'app apparait sur ton ecran d'accueil</div>
+                <div style={{fontSize:11,color:"var(--sg-mid)",marginTop:2}}>{_t(lang,"L'app apparait sur ton ecran d'accueil","The app appears on your home screen","La app aparece en tu pantalla de inicio")}</div>
               </div>
             </div>
 
             <button onClick={()=>{setShowIosTutorial(false);dismiss();track("sg_pwa_ios_tutorial_done")}}
               className="gbtn" style={{width:"100%",textAlign:"center",fontSize:15,padding:"14px 24px"}}>
-              J'ai compris
+              {_t(lang,"J'ai compris","Got it","Entendido")}
             </button>
 
             {/* Arrow pointing down to Safari bar */}
@@ -4819,13 +4826,13 @@ export default function App(){
         }).then(r=>r.json()).then(d=>{
           if(d.url){window.location.href=d.url;return}
           track("sg_manage_portal_error",{error:d.error||"no_url"})
-          alert((d.error||"Erreur Stripe")+"\n\nContacte alerte@sargasses-martinique.com si le probleme persiste.")
+          alert((d.error||_t(lang,"Erreur Stripe","Stripe error","Error de Stripe"))+"\n\n"+_t(lang,"Contacte "+SUPPORT_EMAIL+" si le probleme persiste.","Contact "+SUPPORT_EMAIL+" if the issue persists.","Contacta "+SUPPORT_EMAIL+" si el problema persiste."))
         }).catch(e=>{
           track("sg_manage_portal_error",{error:e?.message||"network"})
-          alert("Connexion impossible au portail Stripe. Reessaie dans un instant ou contacte alerte@sargasses-martinique.com.")
+          alert(_t(lang,"Connexion impossible au portail Stripe. Reessaie dans un instant ou contacte "+SUPPORT_EMAIL+".","Could not reach the Stripe portal. Try again in a moment or contact "+SUPPORT_EMAIL+".","No se pudo conectar al portal de Stripe. Inténtalo de nuevo o contacta "+SUPPORT_EMAIL+"."))
         })
       }else{
-        const promptEmail=prompt("Entre ton email pour gerer ton abonnement :")
+        const promptEmail=prompt(_t(lang,"Entre ton email pour gerer ton abonnement :","Enter your email to manage your subscription:","Introduce tu email para gestionar tu suscripción:"))
         if(promptEmail&&promptEmail.includes("@")){
           localStorage.setItem("sg_premium_email",promptEmail)
           fetch("/api/create-checkout.php",{
@@ -4833,8 +4840,8 @@ export default function App(){
             body:JSON.stringify({action:"portal",email:promptEmail})
           }).then(r=>r.json()).then(d=>{
             if(d.url){window.location.href=d.url;return}
-            alert(d.error||"Email introuvable chez Stripe")
-          }).catch(()=>alert("Connexion impossible"))
+            alert(d.error||_t(lang,"Email introuvable chez Stripe","Email not found in Stripe","Email no encontrado en Stripe"))
+          }).catch(()=>alert(_t(lang,"Connexion impossible","Connection failed","Conexión imposible")))
         }
       }
       params.delete("manage")
@@ -5711,9 +5718,9 @@ export default function App(){
             animation:"slideUp .4s ease"}}>
             <span style={{fontSize:22}}>🎉</span>
             <div>
-              <div>Premium activé !</div>
-              <div style={{fontSize:11,fontWeight:400,opacity:.85,marginTop:2}}>Brief matin + alertes + reco du jour.</div>
-              <a href="?manage=1" onClick={e=>{e.stopPropagation();track("sg_manage_click")}} style={{fontSize:10,color:"rgba(255,255,255,.6)",marginTop:3,display:"inline-block"}}>Gérer mon abonnement</a>
+              <div>{_t(lang,"Premium activé !","Premium activated!","¡Premium activado!")}</div>
+              <div style={{fontSize:11,fontWeight:400,opacity:.85,marginTop:2}}>{_t(lang,"Brief matin + alertes + reco du jour.","Morning brief + alerts + daily pick.","Brief matinal + alertas + pick del día.")}</div>
+              <a href="?manage=1" onClick={e=>{e.stopPropagation();track("sg_manage_click")}} style={{fontSize:10,color:"rgba(255,255,255,.6)",marginTop:3,display:"inline-block"}}>{_t(lang,"Gérer mon abonnement","Manage my subscription","Gestionar mi suscripción")}</a>
             </div>
             <button aria-label="Close" onClick={()=>setShowWelcome(false)} style={{
               background:"rgba(255,255,255,.2)",border:"none",color:"#fff",
