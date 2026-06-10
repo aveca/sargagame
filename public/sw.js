@@ -2,7 +2,7 @@
 // Cache-first for static assets, network-first for HTML/API data.
 // IMPORTANT : bumper CACHE_NAME a CHAQUE deploy de code -> purge l'ancien cache (sinon
 // les users restent coinces sur l'ancien index.html/bundle, cf. bug clic plages juin 2026).
-const CACHE_NAME = 'sargasses-v28'
+const CACHE_NAME = 'sargasses-v29'
 const STATIC_ASSETS = ['/', '/index.html', '/manifest.json', '/favicon.svg', '/icon-192.png', '/data/beaches-list.json', '/data/beaches-images.json']
 
 self.addEventListener('install', (e) => {
@@ -78,12 +78,15 @@ self.addEventListener('fetch', (e) => {
     return
   }
 
-  // Cache-first for static assets
+  // Cache-first for static assets — ne JAMAIS mettre en cache une erreur (un 404
+  // d'image resterait servi jusqu'au prochain bump CACHE_NAME).
   if (url.pathname.match(/\.(js|css|png|jpg|webp|svg|woff2?)$/)) {
     e.respondWith(
       caches.match(e.request).then(cached => cached || fetch(e.request).then(res => {
-        const clone = res.clone()
-        caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone))
+        if (res.ok) {
+          const clone = res.clone()
+          caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone))
+        }
         return res
       }))
     )

@@ -395,7 +395,7 @@ function writeRegionIndex(region, out) {
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="apple-touch-icon" href="/og-image.png" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
     <title>Plages Guadeloupe aujourd'hui · Score 0-100 (sargasses, mer, soleil) 2026</title>
     <meta name="description" content="Quelle plage de Guadeloupe aujourd'hui ? Score 0-100 par plage combinant sargasses, houle, vent, soleil et température de l'eau. 82 plages notées en direct, toute l'année." />
     <link rel="canonical" href="https://sargasses-guadeloupe.com/" />
@@ -615,6 +615,13 @@ function prepareNewRegion(region) {
     'api/stripe-config.php', // secrets Stripe — déployé à part (deploy-stripe-config.cjs)
     '57a712687b6d02295a77188ff76da846.txt', // vérification Google de la propriété MQ
     'BingSiteAuth.xml', // vérification Bing de la propriété MQ
+    // Statiques hérités MQ/GP (FR, branding Martinique) — orphelins sur les
+    // domaines EN/ES : confusion de marque + duplicate FR crawlable en 200.
+    'weekend.html', 'onboarding.html', 'neptunes_fury.html', 'og-weekend.png',
+    'og-image.svg', 'islands.svg', 'social-share.png',
+    'mentions-legales.html', 'confidentialite.html',
+    'en', // landing /en/ « Sargassum Monitoring Martinique »
+    'a-propos', // page confiance 100% FR
   ])
   for (const other of getAllRegions()) {
     if (other.id === region.id) continue
@@ -764,16 +771,22 @@ Sitemap: https://${domain}/sitemap.xml
   const distManifest = path.join(dist, 'manifest.json')
   if (fs.existsSync(distManifest)) {
     const base = JSON.parse(fs.readFileSync(distManifest, 'utf-8'))
+    const es = region.primaryLang === 'es'
     const manifest = {
       ...base,
-      name: `Sargassum ${title}`,
-      short_name: `Sargassum ${title}`,
+      name: es ? `Sargazo ${title}` : `Sargassum ${title}`,
+      short_name: es ? `Sargazo ${title}` : `Sargassum ${title}`,
       description: region.primaryLang === 'fr'
         ? `Carte des sargasses en temps réel. Où se baigner aujourd'hui à ${title}.`
-        : `Live sargassum map and daily beach status for ${title}.`,
+        : es
+          ? `Mapa de sargazo en vivo y estado diario de las playas de ${title}.`
+          : `Live sargassum map and daily beach status for ${title}.`,
       lang: region.primaryLang || 'en',
       theme_color: (region.brand && region.brand.primary) || base.theme_color,
     }
+    // Shortcuts hérités MQ/GP : libellés FR vers /carte-sargasses/ et /previsions/
+    // qui n'existent pas sur les nouvelles régions (SPA mono-page) → 404 PWA.
+    delete manifest.shortcuts
     fs.writeFileSync(path.join(out, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n', 'utf-8')
     console.log(`   → manifest.json région-aware (${title})`)
   }
