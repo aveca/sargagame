@@ -1,34 +1,38 @@
 # NEXT_SESSION — sargagame
 
-*Session 2026-06-10 « 0→1, rank-1, 50k ». Audit multi-agents (4 workflows : sweep repo 19 ag., concurrents 10 ag., data/funnel 5 ag.) + click-test Playwright live → **~18 commits poussés**. Tous les bugs critical/high trouvés sont corrigés. Docs créées (`docs/`). RGPD assaini. SEO des 3 sites USD shippé.*
+*Session 2026-06-10 (suite « 0→1 » + tour site-par-site). Audit live 6 agents (1/domaine + cross-site) + verify adversarial : **0 critical/high** — sites sains. 13 mediums → tous les actionnables corrigés + funnel/notifs/°F/banks shippés. ~4 commits poussés (dernier : 2eb55c8).*
 
 ## 🎯 État cash USD
-| Région | Domaine | Site | Payment Links | Analytics + Push |
+| Région | Domaine | Site | Payment Links | GSC sitemap |
 |---|---|---|---|---|
-| Punta Cana | sargassumpuntacana.com | ✅ LIVE | ✅ $9.99/$79 | ✅ GA4+Clarity+OneSignal(clé REST) |
-| Riviera Maya | sargassumcancun.com | ✅ LIVE (ES) | ✅ | ✅ |
-| Florida | sargassummiami.com | ✅ LIVE | ✅ | ✅ |
+| Punta Cana | sargassumpuntacana.com | ✅ LIVE | ✅ $9.99/$79 + prefill+attribution | ✅ soumis 06-10 |
+| Riviera Maya | sargassumcancun.com | ✅ LIVE (ES) | ✅ | ✅ soumis |
+| Florida | sargassummiami.com | ✅ LIVE (°F/mph dès deploy) | ✅ | ✅ soumis |
 
-- **0 paiement USD encore** — réconciliation webhook J+1 (demain) toujours à faire.
-- MRR €34,93 (7 EUR) + 1 paiement détecté hier.
+- MRR funnel affiche €4,99/1 payant = **fenêtre 28j** (les 7 paiements d'avril sont sortis de la fenêtre) — PAS une régression. Vrai MRR à établir demain via réconciliation.
 
 ## 🟢 Shippé cette session (tout poussé)
-- **SEO** : 52-53 pages/site USD (`scripts/lib/region-seo-pages.cjs`) régénérées 4×/j — hubs forecast/today/map/saison/méthodo(backtests)/semáforo + 12 plages + 35 resorts long-tail/région. Contenu EN/ES natif (`regions/seo-content/`, `regions/resorts/`). FAQPage schema, sitemaps complets, maillage réseau inter-sites, IndexNow post-deploy. Home Cancún = "Sargazo en Cancún HOY".
-- **Data** : bande shore 0-10km (fini PC tout-clean dilué ; MQ/GP byte-identique), météo per-beach 5 régions (fini scores 85/85/85), météo dégelée (était figée 2 mois), raisons Beach Score i18n fr/en/es.
-- **UX** : clic cluster ne meurt plus (zoom→ouvre la plage visée), 36/36 photos plages, SW v31 ne cache plus les 404.
-- **RGPD** : 171 emails → subscribers.json gitignoré + état hashé SHA-256 (idempotence prouvée). **Historique git PURGÉ** (2026-06-10 08:46 UTC) : `git filter-repo --replace-text` sur clone frais, 195 adresses (abonnés + outreach B2B + bounce hardcodées Code.js) remplacées par `***RGPD-PURGE***` dans toutes les versions passées, force-push-with-lease, scan exhaustif 5 442 blobs = 0 survivante. Tip bit-identique (même tree). Code.js bounce list passée en hashes + Apps Script redéployé @41. ⚠️ **Tous les SHA antérieurs au 2026-06-10 08:46 UTC sont caduques** — les références de commit des vieux handoffs/mémoires ne résolvent plus. Backup pré-réécriture : `C:\Users\user\Desktop\Backup\sargagame-pre-rewrite-2026-06-10.bundle` (local only, contient les emails — ne jamais pousser).
-- **Infra** : docs/ (ARCHITECTURE/OPERATIONS/DATA-PIPELINE/README), 3 clés OneSignal + GA4_ACCOUNT en secrets, FB scripts re-bascule Edge, nettoyage 29 fichiers.
+- **Funnel** (vérifié live sur les bundles) : Payment Links avec `prefilled_email` + `client_reference_id=<region>_<plan>_<source>` ; paywall repositionné alertes (« Sois prévenu avant que ta plage tourne » EN/ES aussi) ; annuel par défaut + équivalent €/mois. MQ intact (pw_prelude/EUR prouvés au bundle).
+- **Apps Script @42** (clasp) : sheet `subscription_events` (invoice.payment_succeeded / subscription.deleted / payment_failed — étaient PERDUS en unknown_type → renouvellements+churn enfin enregistrés) + colonne `ref` (attribution) dans payments. Testé live.
+- **Bancs+grille par région** : pipeline étape 8 (regionCtx), prepare-ftp les sert (fin des 2×404 console USD), workflow les committe. Banc à 20km de Bávaro au 1er run.
+- **GP** : miroirs _gp/ assainis à la source (toGpMirror : og:site_name/SearchAction/GA4/Clarity/geo/FAQPage hérité) — l'overlay écrasait le patcher. « 82→83 plages ».
+- **MQ** : `/plages/` hub enfin servi (la règle .htaccess `^plages/?$→/` legacy l'enterrait, d'où « Duplicate not selected » GSC) ; « 134→53 plages » ; /a-propos/ au sitemap.
+- **SERP resorts PC+MIA** : fini les titles coupés en plein mot (templates de repli + smartTrim).
+- **Forecast chips EN/ES** : remap des jours FR du JSON au rendu (fcDay).
+- **Floride** : °F/mph/ft/in (WeatherCards + raisons score, gate countryCode US).
+- **Push primer** : fallback 30/60s ne tire plus le prompt natif à froid (cooldown 7j respecté).
+- **Notifs** (run précédent, confirmé déployé) : alertes favoris MQ/GP livrées (mismatch ids) + dédup inter-runs.
+- **Diag sans fix (légitime)** : scores PC quasi uniformes = géographie (25km homogènes), pas un bug. SW v34.
 
 ## ⚠️ À FAIRE (ordre)
-1. **Vérifier le deploy en prod** (run 27264628512 — push `fix(notifs)` post-réécriture ; les runs 27264041916/27264260836 ont été annulés pendant le gel Actions de la purge RGPD) : pages SEO indexables (curl `/sargassum-forecast/`, `/beaches/bavaro-beach/`, `/resorts/hard-rock-punta-cana/`), spread data PC (pc007 moderate), raisons EN/ES, sitemaps. `node scripts/ux-clicktest.cjs` + `node scripts/sweep-live-ui.cjs`.
-2. **Réconciliation webhook J+1** (2026-06-11).
-3. **Chip utilisateur en attente** (Chrome co-loggé) : **token API Cloudflare** → `gh secret set CLOUDFLARE_API_TOKEN` puis `node scripts/automation/cloudflare-provision.cjs --only=sargazotulum.com` (canari) puis les 3 sites — CDN+SSL+cache, règle le throttle perf. *(La purge historique git est FAITE — voir section RGPD ci-dessus. Reste éventuel : ticket support GitHub pour GC des commits orphelins encore accessibles par ancien SHA.)*
-4. **Indexation** : soumettre les 3 sitemaps dans GSC (propriétés déjà vérifiées), suivre impressions sous 7j. Le produit est déjà supérieur au top 5 — gap = indexation+autorité.
-5. **Tunnel (audit funnel)** : prefill `?prefilled_email=`+`?client_reference_id=` sur les Payment Links (débloque l'attribution), email capture visible en peek (0,21%→~1%), repositionner free=bilan / premium=reco 7h. Bulletin weekend mort depuis 17 avril (fix horaire poussé, à confirmer vendredi).
-6. **Backlog** : stripe-webhook `$KNOWN_REGIONS` hardcodé, °F/mph Floride, alertes favoris MQ/GP (mismatch ids fav_mq014 vs fav_grande-anse = 0 destinataire), dédup notifs (spam 4-6×/j).
+1. **Vérifier deploy 27270122674 en prod** (watcher armé en fin de session) : `curl https://sargassumpuntacana.com/api/copernicus/sargassum-banks.json` (200 attendu), `/plages/` MQ → 200 hub « Toutes les plages », GP `/conditions/mer-calme/` og:site_name Guadeloupe, titles resorts Miami propres, °F dans la sheet Miami.
+2. **Réconciliation webhook J+1 (2026-06-11)** : Stripe (subscriptions actives par région) vs Sheets payments+subscription_events. Établir le VRAI MRR (7 EUR d'avril : actifs ? churnés ?). `scripts/audit-stripe-duplicates.cjs` a le pattern d'auth Stripe.
+3. **Chip user Cloudflare** : token API → `gh secret set CLOUDFLARE_API_TOKEN` puis `node scripts/automation/cloudflare-provision.cjs --only=sargazotulum.com` (canari) puis les 3 sites.
+4. **Indexation** : sitemaps USD soumis aujourd'hui (04:44, provision-gsc) — suivre impressions GSC sous 7j. MQ : la fin du 301 /plages/ devrait résoudre le « Duplicate, submitted URL not selected ».
+5. **Backlog** : stripe-webhook $KNOWN_REGIONS hardcodé (région 6) ; Resend 1 domaine/100 mails-jour (plafond ~100 subs) ; FTP uploader assets/ avant racine ; Apps Script digest FR pour non-GP ; bulletin weekend à confirmer vendredi ; capture email landing (vrai gap — HeroReco/DailyRecoStrip sont du code MORT, brief UX requis avant de coder, cf feedback_no_code_before_ux).
 
 ## Notes
-- Outils locaux non committés : `scripts/sweep-live-ui.cjs`, `scripts/ux-clicktest.cjs` (Playwright 5 domaines).
-- Throttle/522 transitoires pendant un sweep = hôte mutualisé, pas un site down. Cloudflare réglera.
-- Rôles navigateurs (FERME, [[browser-roles]]) : Chrome=provisioning user (Claude in Chrome), Edge=automation FB. Doc dans docs/OPERATIONS.md.
+- Rôles navigateurs (FERME) : Chrome=provisioning user, Edge=automation FB. docs/OPERATIONS.md.
 - A/B MQ/GP : pw_prelude seul vivant. Ne pas toucher.
+- `scripts/ux-clicktest.cjs` désormais committé (Playwright 5 domaines). Les « CRITICAL » mq/gp qu'il sort sur le clic marqueur = artefacts harnais (navigation SW pendant evaluate), pas des bugs site.
+- FB groupes PC : 8 join requests en attente d'approbation → dès approbation, `fb-post-groups.cjs` (Edge).
