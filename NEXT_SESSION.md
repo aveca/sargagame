@@ -1,91 +1,77 @@
 # NEXT_SESSION — sargagame
 
-*Session précédente : 2026-04-17 fin ~18h local (Shabbat entrée).*
-*Historique Design complet : archives dans `C:\Users\user\design-output*\`*
+*Session précédente : 2026-06-10 (~02h local). Multi-region engine branché de bout en bout sur Punta Cana.*
 
-## 🟢 Shipped aujourd'hui (10 commits)
+## 🎯 État Punta Cana (premier cash USD)
 
-### Funnel fixes
-- `cb403f0` **CTA defer** — setTimeout autour de `window.location.href` pour flush beacons (50% leak ciblé)
-- `59f7c66` **A/B pw_cta_order** — control (paid-first) vs sample_first
+| Jalon | État |
+|---|---|
+| Contenu region-aware (head + body + JSON-LD + noscript EN) | ✅ build `VITE_REGION=puntacana` propre, zéro fuite Martinique |
+| Paywall USD ($9.99/mo · $79/yr) câblé dans le JSX | ✅ s'affiche, zéro €, fallback EUR impossible |
+| Payment Links Stripe USD créés | ❌ **PAS encore** — CTA en mode waitlist tant qu'absents |
+| `puntacana-ftp/` régénéré (coquille MQ purgée) | ✅ data PC servie à la racine, overlays MQ purgés |
+| Données live PC (`erddap-live`, 12 plages) | ✅ pipeline multi-régions tourne, pc001-pc012 |
+| HTTPS / AutoSSL | ✅ `https://sargassumpuntacana.com` → 200, HTTP→301 |
+| Déploiement du `puntacana-ftp/` régénéré | ❌ **À FAIRE** — coquille MQ encore en ligne (last-mod 2026-06-09 21h) |
+| Paiement testé end-to-end | ❌ bloqué sur Payment Links USD |
 
-### Paywall Design v1 porté (5 commits)
-- `ea3b20d` Bugs (card #3 z-index, close X, sample wrap)
-- `16c0ebc` Social proof block + season eyebrow gold
-- `29f1f17` Plan toggle container groupé
-- `0538480` Foot trust row Stripe badge
-- `291ea29` Lean bullets variant B (swap value cards)
+**Prochaine action cash (ordre)** :
+1. **Créer les Payment Links USD** : `node scripts/create-region-payment-links.cjs puntacana` (mode TEST d'abord : `STRIPE_KEY=sk_test_… node …`). Écrit `paymentLinks{}` dans `regions/puntacana.json` (LIVE only). ⚠️ Le classifier auto-mode **bloque** la création LIVE depuis le terminal → soit ajouter une règle de permission Bash, soit créer les 2 Payment Links à la main (produit `metadata.island=puntacana`, trial 7j, `after_completion.redirect` = `https://sargassumpuntacana.com/?session_id={CHECKOUT_SESSION_ID}&premium=1&plan=…`) et coller les URLs dans `regions/puntacana.json` → `paymentLinks.monthly`/`.yearly`.
+2. **Rebuild + redeploy PC** : `VITE_REGION=puntacana npm run build && VITE_REGION=puntacana node scripts/prepare-ftp.cjs` puis push FTPS de `puntacana-ftp/` (voir « Déploiement »).
+3. **Tester le checkout** en mode Stripe TEST (carte 4242) avant de passer LIVE.
+4. **Webhook Stripe** : créer l'endpoint dashboard + déployer le secret (voir « Webhook »).
 
-### Paywall Design v2 porté
-- `322334c` **Stripe Prelude** (A/B pw_prelude) — interstitial avant redirect, adresse 50% Stripe leak
+## 🟢 Shipped cette session (10 commits, `59044da`..`e10b66e`)
 
-### Map
-- `f3e35e6` **Today's-pick hero banner** — score + beach + Itinéraire Google Maps (Design v2 Map Hero minimal port)
+1. `59044da` **gate `IS_NEW_REGION`** committé (était non-tracké dans le working-tree).
+2. `3edacc8` **`transformIndexHtml` region-aware complet** : head + noscript EN + 3 JSON-LD région + strip GA4/Clarity/OneSignal partagés + hreflang/geo/theme. MQ/GP early-return inchangés.
+3. `b6ed1f5` **paywall + merge data region-aware** : `LINK_*`/`PRICE_*` dérivés de `REGION.paymentLinks`/`pricing` (CTA waitlist si absents, jamais de fallback EUR) ; `track()` île=region.id + skip beacon GA4 MQ/GP ; merge sargassum dédié nouvelles régions (garde anti-données-étrangères) ; `ISLAND_CENTER`/wordmark/h1 region-aware.
+4. `f3dbb60` **pricing USD + `countryCode` DO + `scripts/create-region-payment-links.cjs`** (idempotent TEST/LIVE).
+5. `467c5f7` **photos plages PC** (11/12 Google Places) + `download-google-photos --region`.
+6. `51bc8a9` **`prepare-ftp` + `manual-ftp-deploy` généralisés** sur `getAllRegions()`. **MQ/GP byte-identique prouvé** (diff -r = 0, Date figée).
+7. `7372973` **`fetch-sargassum-live` multi-régions** : racine MQ/GP byte-identique (prouvé hermétiquement), `public/api/copernicus/<id>/sargassum.json` par région.
+8. `abca478` **webhook Stripe signé** (`public/api/stripe-webhook.php`) + CORS PC + `metadata[island]` sur customer/subscription dans `create-checkout.php`.
+9. `df1400f` **fix data PC à la racine** : `prepareNewRegion` sert `<id>/sargassum.json` à `/api/copernicus/` + purge overlays MQ (banks/grid).
+10. `e10b66e` **1ère sortie data multi-régions** committée.
 
-### Pro tier
-- `5ce0ea2` Pro tier 9.99€ scaffold (inactif, manque STRIPE_LINK_PRO)
+### Preuve de non-régression MQ/GP (contrainte absolue)
+`VITE_REGION=mq npm run build` → diff HTML vs baseline session = **0 diff comportemental** après normalisation de (a) hash du bundle JS — change à chaque build car j'ai ajouté du code *gated* inerte, et (b) date du jour — change à chaque build quotidien. Dans le bundle MQ : `__REGION__` → `null` (define), `REGION_PAY` éliminé par tree-shaking → **branches nouvelles régions mortes pour MQ/GP**. `prepare-ftp` MQ/GP prouvé `diff -r = 0` (Date figée) par sous-agent puis re-vérifié.
 
-### CI
-- `4c05d47` Concurrency + rebase -X theirs sur 4 workflows
-- `266c4e5` npm cache + retention 14j sur 9 workflows
-- `034e6f0` Revert content-gen weekend bump (API payant)
+## ⚠️ RESTE À FAIRE / actions humaines
 
-## 📊 A/B tests en cours de mesure
+### Déploiement PC (creds FTP)
+- Le `puntacana-ftp/` régénéré n'est **pas** déployé (la coquille MQ d'origine est encore servie).
+- **Creds FTP PC introuvables dans le workspace** (`.env` n'a aucune var FTP ; `reference_ftp_creds.md` ne couvre que MQ/GP). La coquille a été déployée par quelqu'un → des creds existent hors workspace. (Tentative de deviner les creds = bloquée à raison.)
+- Une fois connus : `FTP_HOST_PUNTACANA`/`FTP_USER_PUNTACANA`/`FTP_PASS_PUNTACANA` dans `.env` (ou host commun + user/pass) puis `ONLY=puntacana node scripts/manual-ftp-deploy.cjs`. ⚠️ bump `CACHE_NAME` dans `public/sw.js` si du code change.
 
-| A/B | Variants | Target |
-|---|---|---|
-| `pw_cta_order` | control · sample_first | Réduire modal_dismiss 85% |
-| `pw_prelude` | direct · prelude | Réduire Stripe leak 50% |
+### Webhook Stripe (à finir, haut ROI)
+- `public/api/stripe-webhook.php` livré + testé : `node scripts/test-stripe-webhook.cjs` = 26 checks statiques + **14 scénarios HTTP réels via `php -S`, tous PASS** (php 8.4 installé cette session par un sous-agent).
+- **Action dashboard** : créer l'endpoint Webhooks → `https://sargasses-martinique.com/api/stripe-webhook.php` (+ GP + PC), events `checkout.session.completed`, `invoice.payment_succeeded`, `customer.subscription.deleted`, `invoice.payment_failed`.
+- **Action secret** : ajouter `'webhook_secret' => 'whsec_…'` au `stripe-config.php` déployé (jamais en git) puis `node scripts/deploy-stripe-config.cjs` (pousse webhook + `data/.htaccess` + config vers mq/gp/puntacana).
+- Transition non destructive : le POST client (`Sargasses_PROD.jsx:~4762`) coexiste. Réconcilier J+1 1-2 sem (count+sum par région vs tab payments) **avant** de retirer le POST.
 
-Besoin **4-8 semaines** pour stat sig (184 modal opens / 28j actuels).
-**Ne pas ajouter de nouveaux variants** d'ici là — fragmenterait le traffic.
+### Provisioning nouvelles régions (avant lancement)
+- **GA4 + Clarity dédiés** PC (le build strip volontairement les propriétés partagées MQ/GP).
+- **OneSignal app** PC → remplacer `TBD_CREATE_ONESIGNAL_APP` dans `regions/puntacana.json` (sinon push désactivé, stub no-op).
+- **Resend** : vérifier domaine d'envoi `sargassumpuntacana.com` (SPF/DKIM) pour `alerts@`/`support@`.
+- **GSC + sitemap** : ajouter `sargassumpuntacana.com` à Search Console.
+- **Cloudflare** (si PC passe derrière) : Cache Rule "Bypass" sur `/sw.js`+`/version.json` dès le départ.
 
-## 🔴 Design v3 — NE PAS porter
+### US sales tax
+- Payment Links USD : `automatic_tax` **OFF** par défaut dans le script (pas de cadre Stripe Tax). Cadrer Stripe Tax (seuils nexus US) avant volume.
 
-`Map Hero v2` = redesign dark + saturated color fields. Casse brand cream/gold.
-Dire à Design : stop rebrand, iterate on v1 mechanics only.
+## 🧱 Architecture multi-région (état)
+- `regions/` = source de vérité (mq, gp, puntacana, florida, rivieramaya). `getAllRegions()`/`getRegion()`/`getBuildRegion()`.
+- **Branché** : build front (`vite.config.js`), runtime (`Sargasses_PROD.jsx` gate `IS_NEW_REGION`), `prepare-ftp`, `manual-ftp-deploy`, `fetch-sargassum-live`, `create-checkout` (island), webhook.
+- **Pas encore branché** : 9 workflows GitHub Actions (toujours MQ/GP-only — `daily-copernicus.yml` ne build/déploie pas les nouvelles régions). Prochaine généralisation : étendre `daily-copernicus.yml` (data-deploy par `ftpDir`, secrets `FTP_*_<ID>`).
+- **florida + rivieramaya** : JSON région prêts, data pipeline tourne, mais pas de build/deploy/Payment Links (même chemin que PC quand on y arrive).
 
-## 📋 Premier check au retour
+## 📊 A/B tests en cours (MQ/GP — ne pas toucher)
+- `pw_cta_order` (control · sample_first), `pw_prelude` (direct · prelude). 4-8 sem pour stat sig. Ne pas ajouter de variants. Funnel : `curl -sL "https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec?action=funnel"`.
 
-```bash
-# 1. Funnel ratios (post-3j)
-curl -sL "https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec?action=funnel"
-# target: cta_to_redirect >= 95% (up from 50%)
+## 🐛 Bug connu carte MQ/GP (pré-existant)
+Superpositions + pins pas tous cliquables sur `/`. Hypothèses : cluster overlap zone dense, z-index Header pill, zones hazard interceptant les clics. Non lié à cette session.
 
-# 2. A/B splits
-curl -sL "...?action=funnel" | python -c "import json,sys; d=json.load(sys.stdin); [print(k,v) for k,v in d.get('ab_variants',{}).items() if 'pw_' in k]"
-
-# 3. GH Actions green
-gh run list --limit 10 --json conclusion,workflowName
-```
-
-## 🎯 Décisions qui attendent
-
-- **Activer Pro tier** : créer Stripe Payment Link 9.99€/mo + paste URL dans `STRIPE_LINK_PRO` constante ligne 341 → tier apparaît
-- **GP SEO push** : position 70 → cible 20 (5x traffic). Le workflow `weekly-seo-automation` lundi matin s'en occupe automatiquement.
-- **Modal_dismiss** : attendre data 4-8 semaines avant prochain iteration
-
-## 🐛 Bug connu carte (pré-existant, à fixer)
-
-**Superpositions + pins pas tous cliquables** sur `/` (carte) — utilisateur a confirmé le 2026-04-17 que ce bug existait AVANT mes commits. Pas causé par le hero banner (commit `f3e35e6` reverted quand même via `1d2b48d` pour pas cumuler le bruit).
-
-Hypothèses à investiguer au retour :
-- Leaflet cluster overlap en zone dense (Sainte-Marie NE, Diamant sud)
-- Z-index conflit entre le Header top pill et un element flottant
-- La carte des zones hazard orange/rouge pourrait intercepter des clics sur les pins
-- Potentiellement lié aux `417 dead clicks` que Clarity a tracké sur `/` dans audit-summary.json
-
-Pour diagnostic : screenshot + DevTools elements tab sur un pin non-cliquable → identifier quel element overlappe.
-
-## 🚫 Ce qui reste bloqué côté Design
-
-- Map Hero V2 dark = à rejeter
-- Paywall v3 = pas demandé (attendre les data)
-- Ui_kits/app/* = mocks preview, PAS prod — ignorer
-
-## Assets locaux
-
-- `C:\Users\user\design-output\` = v1 archive (Paywall AB Iteration 1)
-- `C:\Users\user\design-output-v2\` = v2 archive (Paywall v2 + Map Hero v1)
-- `C:\Users\user\design-v3\` = v3 archive (Map Hero v2 — NE PAS PORTER)
-- `C:\Users\user\design-screenshots\` = 7 screenshots prod (pour partager à Design)
+## Notes sécurité
+- 0 secret live dans les 10 commits (vérifié `git diff`). `pk_live` dans le JSX = public, normal.
+- `puntacana-ftp/api/stripe-config.php` (sk_live + resend en clair sur disque, untracked) : `.htaccess` PC le bloque déjà (`Require all denied`) ; le `prepare-ftp` régénéré ne le copie jamais. Rotation à faire seulement si exposition HTTP confirmée.
