@@ -759,6 +759,39 @@ Sitemap: https://${domain}/sitemap.xml
   fs.writeFileSync(path.join(out, 'version.json'), JSON.stringify({ v: `${today}-${region.id}` }) + '\n', 'utf-8')
   console.log(`   → version.json (${today}-${region.id})`)
 
+  // Données sargasses : le front fetche /api/copernicus/sargassum.json (chemin
+  // racine, codé en dur). Le dist/ partagé y met les plages MQ/GP → on écrase
+  // ce fichier par les données de la région (public/api/copernicus/<id>/) pour
+  // que la racine du domaine serve les bonnes plages. Sans ça, le garde
+  // anti-données-étrangères du front (ids non concordants) retombe sur les
+  // statuts placeholder du JSON région. history.json idem.
+  const regionDataDir = path.join(root, 'public', 'api', 'copernicus', region.id)
+  const outCopernicus = path.join(out, 'api', 'copernicus')
+  if (fs.existsSync(path.join(regionDataDir, 'sargassum.json'))) {
+    fs.mkdirSync(outCopernicus, { recursive: true })
+    for (const f of ['sargassum.json', 'history.json']) {
+      const src = path.join(regionDataDir, f)
+      if (fs.existsSync(src)) fs.copyFileSync(src, path.join(outCopernicus, f))
+    }
+    // Purge les sous-dossiers d'AUTRES régions + les overlays carte spécifiques
+    // MQ/GP (banks/grid) que MapView fetche : sans données régionales propres,
+    // ils afficheraient les bancs/grille de Martinique sur la carte PC.
+    // caribbean-afai.json est conservé : couche AFAI à l'échelle du bassin,
+    // pertinente partout. MapView gère l'absence de banks/grid (catch → pas
+    // d'overlay) sans casser la carte.
+    const REGION_SPECIFIC_OVERLAYS = ['sargassum-banks.json', 'sargassum-grid.json', 'forecast-archive.json', 'forecast-accuracy.json']
+    if (fs.existsSync(outCopernicus)) {
+      for (const entry of fs.readdirSync(outCopernicus)) {
+        const full = path.join(outCopernicus, entry)
+        if (fs.statSync(full).isDirectory()) { fs.rmSync(full, { recursive: true }); continue }
+        if (REGION_SPECIFIC_OVERLAYS.includes(entry)) fs.rmSync(full)
+      }
+    }
+    console.log(`   → data sargasses région servie à la racine (${region.id}/sargassum.json → api/copernicus/, overlays MQ purgés)`)
+  } else {
+    console.warn(`   ⚠ pas de public/api/copernicus/${region.id}/sargassum.json — lance d'abord node scripts/fetch-sargassum-live.cjs`)
+  }
+
   // api/ : mêmes endpoints PHP que MQ/GP, copiés depuis public/api/ —
   // SAUF stripe-config.php (gitignoré, déployé à part via deploy-stripe-config.cjs).
   const apiSrc = path.join(root, 'public', 'api')
