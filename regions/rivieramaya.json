@@ -2,18 +2,28 @@
   "id": "rivieramaya",
   "name": "Riviera Maya",
   "country": "Mexico",
-  "domain": "sargassum-rivieramaya.com",
+  "domain": "sargassumcancun.com",
   "ftpDir": "rivieramaya-ftp",
   "primaryLang": "es",
-  "secondaryLangs": ["en"],
+  "secondaryLangs": [
+    "en"
+  ],
   "currency": "USD",
   "stripeProducts": {
-    "monthly": "price_TBD_USD_mo_999",
-    "yearly": "price_TBD_USD_yr_7900"
+    "monthly": "price_1Tgc8UP9RK8Orx51RYjh5Qpy",
+    "yearly": "price_1Tgc8VP9RK8Orx515ZK16pl4"
   },
   "timezone": "America/Cancun",
-  "bbox": [-87.85, 18.5, -86.4, 21.7],
-  "center": { "lat": 20.5, "lng": -87.0 },
+  "bbox": [
+    -87.85,
+    18.5,
+    -86.4,
+    21.7
+  ],
+  "center": {
+    "lat": 20.5,
+    "lng": -87
+  },
   "zoom": 9,
   "brand": {
     "primary": "#0EA5E9",
@@ -21,10 +31,12 @@
   },
   "onesignalAppId": "TBD_CREATE_ONESIGNAL_APP",
   "emails": {
-    "alerts": "alerts@sargassum-rivieramaya.com",
-    "support": "support@sargassum-rivieramaya.com"
+    "alerts": "alerts@sargassumcancun.com",
+    "support": "support@sargassumcancun.com"
   },
-  "beachFilter": { "island": "rm" },
+  "beachFilter": {
+    "island": "rm"
+  },
   "routes": {
     "season": "temporada-sargazo-rivieramaya",
     "best": "mejores-playas-sin-sargazo-rivieramaya",
@@ -47,17 +59,153 @@
     "Year-round Beach Score (not just sargassum)"
   ],
   "beaches": [
-    { "id": "rm001", "island": "rm", "name": "Playa Delfines", "commune": "Cancún", "lat": 21.0844, "lng": -86.7639, "status": "moderate", "kids": true, "snorkel": false, "parking": true },
-    { "id": "rm002", "island": "rm", "name": "Playa Tortugas", "commune": "Cancún", "lat": 21.1156, "lng": -86.7565, "status": "moderate", "kids": true, "snorkel": true, "parking": true },
-    { "id": "rm003", "island": "rm", "name": "Playa del Carmen Centro", "commune": "Playa del Carmen", "lat": 20.6296, "lng": -87.0739, "status": "moderate", "kids": true, "snorkel": false, "parking": true },
-    { "id": "rm004", "island": "rm", "name": "Playa Paraíso", "commune": "Tulum", "lat": 20.2114, "lng": -87.4654, "status": "moderate", "kids": true, "snorkel": false, "parking": true },
-    { "id": "rm005", "island": "rm", "name": "Akumal Bay", "commune": "Akumal", "lat": 20.3957, "lng": -87.3157, "status": "moderate", "kids": true, "snorkel": true, "parking": true },
-    { "id": "rm006", "island": "rm", "name": "Playa Palancar", "commune": "Cozumel", "lat": 20.3658, "lng": -87.0210, "status": "clean", "kids": true, "snorkel": true, "parking": true },
-    { "id": "rm007", "island": "rm", "name": "Playa Norte", "commune": "Isla Mujeres", "lat": 21.2522, "lng": -86.7402, "status": "clean", "kids": true, "snorkel": true, "parking": true },
-    { "id": "rm008", "island": "rm", "name": "Puerto Morelos", "commune": "Puerto Morelos", "lat": 20.8473, "lng": -86.8754, "status": "moderate", "kids": true, "snorkel": true, "parking": true },
-    { "id": "rm009", "island": "rm", "name": "Playa Mahahual", "commune": "Mahahual", "lat": 18.7176, "lng": -87.7100, "status": "clean", "kids": true, "snorkel": true, "parking": true },
-    { "id": "rm010", "island": "rm", "name": "Playa Holbox", "commune": "Holbox", "lat": 21.5269, "lng": -87.3826, "status": "clean", "kids": true, "snorkel": true, "parking": true },
-    { "id": "rm011", "island": "rm", "name": "Xpu-Ha", "commune": "Xpu-Ha", "lat": 20.4953, "lng": -87.2358, "status": "moderate", "kids": true, "snorkel": true, "parking": false },
-    { "id": "rm012", "island": "rm", "name": "Bacalar Laguna", "commune": "Bacalar", "lat": 18.6810, "lng": -88.3949, "status": "clean", "kids": true, "snorkel": false, "parking": true }
-  ]
+    {
+      "id": "rm001",
+      "island": "rm",
+      "name": "Playa Delfines",
+      "commune": "Cancún",
+      "lat": 21.0844,
+      "lng": -86.7639,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": false,
+      "parking": true
+    },
+    {
+      "id": "rm002",
+      "island": "rm",
+      "name": "Playa Tortugas",
+      "commune": "Cancún",
+      "lat": 21.1156,
+      "lng": -86.7565,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": true,
+      "parking": true
+    },
+    {
+      "id": "rm003",
+      "island": "rm",
+      "name": "Playa del Carmen Centro",
+      "commune": "Playa del Carmen",
+      "lat": 20.6296,
+      "lng": -87.0739,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": false,
+      "parking": true
+    },
+    {
+      "id": "rm004",
+      "island": "rm",
+      "name": "Playa Paraíso",
+      "commune": "Tulum",
+      "lat": 20.2114,
+      "lng": -87.4654,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": false,
+      "parking": true
+    },
+    {
+      "id": "rm005",
+      "island": "rm",
+      "name": "Akumal Bay",
+      "commune": "Akumal",
+      "lat": 20.3957,
+      "lng": -87.3157,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": true,
+      "parking": true
+    },
+    {
+      "id": "rm006",
+      "island": "rm",
+      "name": "Playa Palancar",
+      "commune": "Cozumel",
+      "lat": 20.3658,
+      "lng": -87.021,
+      "status": "clean",
+      "kids": true,
+      "snorkel": true,
+      "parking": true
+    },
+    {
+      "id": "rm007",
+      "island": "rm",
+      "name": "Playa Norte",
+      "commune": "Isla Mujeres",
+      "lat": 21.2522,
+      "lng": -86.7402,
+      "status": "clean",
+      "kids": true,
+      "snorkel": true,
+      "parking": true
+    },
+    {
+      "id": "rm008",
+      "island": "rm",
+      "name": "Puerto Morelos",
+      "commune": "Puerto Morelos",
+      "lat": 20.8473,
+      "lng": -86.8754,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": true,
+      "parking": true
+    },
+    {
+      "id": "rm009",
+      "island": "rm",
+      "name": "Playa Mahahual",
+      "commune": "Mahahual",
+      "lat": 18.7176,
+      "lng": -87.71,
+      "status": "clean",
+      "kids": true,
+      "snorkel": true,
+      "parking": true
+    },
+    {
+      "id": "rm010",
+      "island": "rm",
+      "name": "Playa Holbox",
+      "commune": "Holbox",
+      "lat": 21.5269,
+      "lng": -87.3826,
+      "status": "clean",
+      "kids": true,
+      "snorkel": true,
+      "parking": true
+    },
+    {
+      "id": "rm011",
+      "island": "rm",
+      "name": "Xpu-Ha",
+      "commune": "Xpu-Ha",
+      "lat": 20.4953,
+      "lng": -87.2358,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": true,
+      "parking": false
+    },
+    {
+      "id": "rm012",
+      "island": "rm",
+      "name": "Bacalar Laguna",
+      "commune": "Bacalar",
+      "lat": 18.681,
+      "lng": -88.3949,
+      "status": "clean",
+      "kids": true,
+      "snorkel": false,
+      "parking": true
+    }
+  ],
+  "paymentLinks": {
+    "monthly": "https://buy.stripe.com/00w00l9RF2sO3udgAz0co0F",
+    "yearly": "https://buy.stripe.com/3cI6oJgg3aZk5Clacb0co0G"
+  }
 }
