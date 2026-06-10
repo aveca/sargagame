@@ -37,6 +37,9 @@ export function useLang(){return useContext(LangCtx)||"fr"}
 function getLang(){try{const _d=IS_NEW_REGION?REGION.primaryLang:"fr";if(typeof window==="undefined")return _d;const p=window.location.pathname;if(p.startsWith("/es"))return"es";if(p.startsWith("/en"))return"en";return _d}catch{return IS_NEW_REGION?REGION.primaryLang:"fr"}}
 /* i18n inline helper — returns fr/en/es string based on current lang */
 function _t(lang,fr,en,es){return lang==="es"?es:lang==="en"?en:fr}
+/* Beach Score labels arrive in FRENCH from src/lib/score.js — map to en/es at render */
+const SCORE_LABEL_I18N={EXCEPTIONNEL:{en:"EXCEPTIONAL",es:"EXCEPCIONAL"},SUPER:{en:"GREAT",es:"GENIAL"},BON:{en:"GOOD",es:"BUENO"},MOYEN:{en:"AVERAGE",es:"REGULAR"},PASSABLE:{en:"FAIR",es:"PASABLE"},"ÉVITER":{en:"AVOID",es:"EVITAR"},NON:{en:"NO",es:"NO"}}
+const scoreLabelFor=(label,lang)=>lang==="fr"?label:(SCORE_LABEL_I18N[label]?.[lang==="es"?"es":"en"]||label)
 
 /* ═══════════════════════════════════════════════════════════════════════════
    DESIGN TOKENS
@@ -919,7 +922,7 @@ function ForecastCredibility({weeklyData,lang,sargData}){
   const levelColor=level==="high"?C.green:level==="medium"?C.amber:C.red
   const barPct=Math.min(100,Math.max(8,avgConf))
   const updatedAt=sargData?.erddapTimestamp||sargData?.updatedAt||null
-  const dateStr=updatedAt?new Date(updatedAt).toLocaleDateString(lang==="en"?"en-GB":"fr-FR",{day:"numeric",month:"short"}):null
+  const dateStr=updatedAt?new Date(updatedAt).toLocaleDateString(lang==="es"?"es-MX":lang==="en"?"en-US":"fr-FR",{day:"numeric",month:"short"}):null
   const method=weeklyData?.forecastMethod||"persistence"
   const methodLabel=method==="arrival-banks"?"AFAI + Banks":method==="banks-persistence"?"AFAI + Persistence":method==="memory-decay"?"Memory decay":method==="interpolated"?"IDW":"Persistence + wind"
   return(
@@ -945,7 +948,7 @@ function ForecastCredibility({weeklyData,lang,sargData}){
           padding:"8px 10px",borderRadius:8,background:"var(--sg-card,#fff)",
           animation:"slideUp .25s cubic-bezier(.22,1,.36,1)"}}>
           {levelDesc}
-          <div style={{marginTop:4,opacity:.7,fontSize:10}}>{lang==="en"?"Method":"Méthode"} · {methodLabel}</div>
+          <div style={{marginTop:4,opacity:.7,fontSize:10}}>{_t(lang,"Méthode","Method","Método")} · {methodLabel}</div>
         </div>
       )}
       <div style={{fontSize:9.5,color:"var(--sg-mid,#999)",display:"flex",alignItems:"center",gap:5,flexWrap:"wrap"}}>
@@ -1172,8 +1175,8 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
   const lockedCount=visibleDays-freeThreshold
   // lock1 A/B test ended: control (simple CTA) 3.66% vs loss framing 2.35% — simple CTA wins.
   const inSeason=SARGASSES_SEASON==="high"
-  const lockCTA=lang==="en"?"Unlock forecast":"Débloquer"
-  const lockSub=lang==="en"?"+ morning brief & alerts · 7 days free":"+ brief matin & alertes · 7j gratuit"
+  const lockCTA=_t(lang,"Débloquer","Unlock forecast","Desbloquear")
+  const lockSub=_t(lang,"+ brief matin & alertes · 7j gratuit","+ morning brief & alerts · 7 days free","+ brief matutino y alertas · 7 días gratis")
   const firstConf=visible[1]?.confidence||40
   // Compute locked-day status colors for teaser strip
   const lockedDays=!isPremium&&lockedCount>0?visible.slice(freeThreshold):[]
@@ -1219,9 +1222,10 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
         })}
       </div>
       <div style={{fontSize:9,color:"var(--sg-mid,#999)",textAlign:"center",padding:"4px 0 0",lineHeight:1.3}}>
-        {lang==="en"
-          ?`Reliable up to 4 days. ${Math.round(firstConf)}% confidence tomorrow.`
-          :`Fiable jusqu'a 4 jours. Fiabilite ${Math.round(firstConf)}% demain.`}
+        {_t(lang,
+          `Fiable jusqu'a 4 jours. Fiabilite ${Math.round(firstConf)}% demain.`,
+          `Reliable up to 4 days. ${Math.round(firstConf)}% confidence tomorrow.`,
+          `Confiable hasta 4 días. ${Math.round(firstConf)}% de confianza mañana.`)}
       </div>
       {!isPremium&&lockedCount>0&&<div onClick={()=>{track("sg_forecast_lock_click",{variant:"control"});onPremiumClick("forecast")}}
         style={{position:"absolute",top:0,right:0,bottom:0,width:`${(lockedCount/visibleDays*100).toFixed(1)}%`,
@@ -1248,7 +1252,7 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
         style={{display:"flex",alignItems:"center",gap:8,marginTop:8,padding:"9px 12px",
         background:"rgba(0,0,0,.04)",borderRadius:10,cursor:"pointer",border:"1px solid rgba(0,0,0,.06)"}}>
         <span style={{fontSize:10,color:"var(--sg-mid,#999)",fontWeight:600,flexShrink:0}}>
-          {lang==="en"?"Next days:":"Jours suivants :"}
+          {_t(lang,"Jours suivants :","Next days:","Próximos días:")}
         </span>
         <div style={{display:"flex",gap:6,flex:1}}>
           {lockedDays.map((d,i)=>{
@@ -1262,7 +1266,7 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
           })}
         </div>
         <span style={{fontSize:10,fontWeight:700,color:"var(--sg-mid,#686868)",flexShrink:0}}>
-          {lang==="en"?"Unlock →":"Voir →"}
+          {_t(lang,"Voir →","Unlock →","Ver →")}
         </span>
       </div>
     )}
@@ -1320,8 +1324,9 @@ function useWeather(beach){
   useEffect(()=>{
     if(!beach)return setData(null)
     let cancel=false
-    const weatherUrl=`https://api.open-meteo.com/v1/forecast?latitude=${beach.lat}&longitude=${beach.lng}&current=temperature_2m,wind_speed_10m,wind_direction_10m,uv_index,precipitation&daily=temperature_2m_max,precipitation_sum,cloud_cover_mean,wind_speed_10m_max&timezone=America/Martinique`
-    const marineUrl=`https://marine-api.open-meteo.com/v1/marine?latitude=${beach.lat}&longitude=${beach.lng}&current=wave_height,wave_direction,swell_wave_height&timezone=America/Martinique`
+    const tz=IS_NEW_REGION?(REGION.timezone||"America/Martinique"):"America/Martinique"
+    const weatherUrl=`https://api.open-meteo.com/v1/forecast?latitude=${beach.lat}&longitude=${beach.lng}&current=temperature_2m,wind_speed_10m,wind_direction_10m,uv_index,precipitation&daily=temperature_2m_max,precipitation_sum,cloud_cover_mean,wind_speed_10m_max&timezone=${tz}`
+    const marineUrl=`https://marine-api.open-meteo.com/v1/marine?latitude=${beach.lat}&longitude=${beach.lng}&current=wave_height,wave_direction,swell_wave_height&timezone=${tz}`
     const wKey=`sg_wx_${beach.id}`,mKey=`sg_mx_${beach.id}`
     Promise.allSettled([
       cachedFetch(weatherUrl,wKey),
@@ -1367,9 +1372,9 @@ function BeachReport({beach,lang,communityReports}){
   const counts=communityReports[beach.id]||communityReports[BEACH_TO_SARG[beach.id]]||{clean:0,moderate:0,avoid:0,total:0}
   const total=counts.total||0
   const LEVELS=[
-    {id:"clean",e:"✅",l:"Propre",le:"Clean",c:C.green,bg:C.greenBg},
-    {id:"moderate",e:"⚠️",l:"Modéré",le:"Moderate",c:C.amber,bg:C.amberBg},
-    {id:"avoid",e:"🚫",l:"Beaucoup",le:"Heavy",c:C.red,bg:C.redBg},
+    {id:"clean",e:"✅",l:"Propre",le:"Clean",les:"Limpia",c:C.green,bg:C.greenBg},
+    {id:"moderate",e:"⚠️",l:"Modéré",le:"Moderate",les:"Moderado",c:C.amber,bg:C.amberBg},
+    {id:"avoid",e:"🚫",l:"Beaucoup",le:"Heavy",les:"Mucho",c:C.red,bg:C.redBg},
   ]
   const submit=(level)=>{
     if(voted)return
@@ -1387,7 +1392,7 @@ function BeachReport({beach,lang,communityReports}){
       background:"var(--sg-bgD,#F7F5EF)",border:"1px solid var(--sg-border,rgba(0,0,0,.04))"}}>
       <div style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)",marginBottom:8,display:"flex",alignItems:"center",gap:6}}>
         <span>📍</span>
-        {lang==="en"?"On the beach? Report sargassum level":"Sur place ? Signale le niveau de sargasses"}
+        {_t(lang,"Sur place ? Signale le niveau de sargasses","On the beach? Report sargassum level","¿Estás en la playa? Reporta el nivel de sargazo")}
       </div>
       <div style={{display:"flex",gap:8}}>
         {LEVELS.map(lv=>(
@@ -1399,7 +1404,7 @@ function BeachReport({beach,lang,communityReports}){
             boxShadow:voted===lv.id?"inset 0 0 0 1.5px "+lv.c:"0 1px 4px rgba(0,0,0,.04)",
             animation:voted===lv.id?"confirmPop .3s ease":"none",
             opacity:voted&&voted!==lv.id?.4:1,
-          }}>{lv.e} {lang==="en"?lv.le:lv.l}</button>
+          }}>{lv.e} {lang==="es"?lv.les:lang==="en"?lv.le:lv.l}</button>
         ))}
       </div>
       {total>0&&(
@@ -1410,15 +1415,15 @@ function BeachReport({beach,lang,communityReports}){
             {counts.avoid>0&&<div style={{flex:counts.avoid,background:C.red}}/>}
           </div>
           <div style={{marginTop:4,fontSize:11,color:"var(--sg-mid)",textAlign:"center"}}>
-            {counts.rawTotal||Math.round(total)} {lang==="en"?"report"+((counts.rawTotal||total)>1?"s":""):"signalement"+((counts.rawTotal||total)>1?"s":"")}
+            {counts.rawTotal||Math.round(total)} {lang==="es"?"reporte"+((counts.rawTotal||total)>1?"s":""):lang==="en"?"report"+((counts.rawTotal||total)>1?"s":""):"signalement"+((counts.rawTotal||total)>1?"s":"")}
             {counts.trend&&counts.trend!=="stable"&&<span style={{marginLeft:4,color:counts.trend==="worsening"?C.red:C.green}}>
               {counts.trend==="worsening"?"↗":"↘"}</span>}
-            {consensus&&<> · {lang==="en"?"Consensus: ":"Consensus : "}<span style={{fontWeight:700,color:ST[consensus].c}}>{ST[consensus].e} {lang==="en"?ST[consensus].le:ST[consensus].l}</span></>}
+            {consensus&&<> · {_t(lang,"Consensus : ","Consensus: ","Consenso: ")}<span style={{fontWeight:700,color:ST[consensus].c}}>{ST[consensus].e} {lang==="es"?ST[consensus].les:lang==="en"?ST[consensus].le:ST[consensus].l}</span></>}
           </div>
         </div>
       )}
       {voted&&<div style={{marginTop:6,fontSize:11,color:C.green,textAlign:"center",fontWeight:500}}>
-        {lang==="en"?"Thanks for your report!":"Merci pour ton signalement !"}
+        {_t(lang,"Merci pour ton signalement !","Thanks for your report!","¡Gracias por tu reporte!")}
       </div>}
     </div>
   )
@@ -1437,10 +1442,10 @@ function FbPostsStrip({beach,fbPosts,lang}){
     try{
       const d=Math.max(0,Date.now()-new Date(iso).getTime())
       const h=Math.round(d/3600000)
-      if(h<1)return lang==="en"?"just now":"à l'instant"
-      if(h<24)return (lang==="en"?`${h}h ago`:`il y a ${h}h`)
+      if(h<1)return _t(lang,"à l'instant","just now","ahora")
+      if(h<24)return _t(lang,`il y a ${h}h`,`${h}h ago`,`hace ${h}h`)
       const days=Math.round(h/24)
-      return lang==="en"?`${days}d ago`:`il y a ${days}j`
+      return _t(lang,`il y a ${days}j`,`${days}d ago`,`hace ${days}d`)
     }catch{return""}
   }
   return(
@@ -1448,7 +1453,7 @@ function FbPostsStrip({beach,fbPosts,lang}){
       background:"var(--sg-bgD,#F7F5EF)",border:"1px solid var(--sg-border,rgba(0,0,0,.04))"}}>
       <div style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)",marginBottom:10,display:"flex",alignItems:"center",gap:6}}>
         <span>📷</span>
-        {lang==="en"?`${posts.length} recent visitor ${posts.length>1?"reports":"report"} (Facebook)`:`${posts.length} retour${posts.length>1?"s":""} visiteur${posts.length>1?"s":""} récent${posts.length>1?"s":""} (Facebook)`}
+        {lang==="es"?`${posts.length} reporte${posts.length>1?"s":""} reciente${posts.length>1?"s":""} de visitantes (Facebook)`:lang==="en"?`${posts.length} recent visitor ${posts.length>1?"reports":"report"} (Facebook)`:`${posts.length} retour${posts.length>1?"s":""} visiteur${posts.length>1?"s":""} récent${posts.length>1?"s":""} (Facebook)`}
       </div>
       {posts.map((p,i)=>(
         <div key={i} style={{marginBottom:i<posts.length-1?14:0,paddingBottom:i<posts.length-1?14:0,
@@ -1478,13 +1483,13 @@ function FbPostsStrip({beach,fbPosts,lang}){
           )}
           {p.commentSample&&(
             <div style={{fontSize:11,color:"var(--sg-mid)",lineHeight:1.4,paddingLeft:10,borderLeft:"2px solid rgba(0,0,0,.08)"}}>
-              💬 {p.commentSample}{p.commentCount>1?` · +${p.commentCount-1} ${lang==="en"?"more":"autres"}`:""}
+              💬 {p.commentSample}{p.commentCount>1?` · +${p.commentCount-1} ${_t(lang,"autres","more","más")}`:""}
             </div>
           )}
           <a href={p.sourceUrl} target="_blank" rel="noopener nofollow" style={{
             display:"inline-block",marginTop:6,fontSize:10,color:"var(--sg-mid)",textDecoration:"none",
             borderBottom:"1px dashed rgba(0,0,0,.15)"}}>
-            {lang==="en"?"view on Facebook →":"voir sur Facebook →"}
+            {_t(lang,"voir sur Facebook →","view on Facebook →","ver en Facebook →")}
           </a>
         </div>
       ))}
@@ -1504,7 +1509,7 @@ function ReliabilityScore({beachId,historyData,lang}){
     if(!Array.isArray(entries)||entries.length<3)return null
     const clean=entries.filter(e=>e.afai<0.15).length
     const pct=Math.round(clean/entries.length*100)
-    const month=new Date().toLocaleString(lang==="en"?"en":"fr",{month:"long"})
+    const month=new Date().toLocaleString(lang==="es"?"es-MX":lang==="en"?"en-US":"fr-FR",{month:"long"})
     return{pct,total:entries.length,month}
   },[beachId,historyData,lang])
   if(!stats)return null
@@ -1526,10 +1531,10 @@ function ReliabilityScore({beachId,historyData,lang}){
       </div>
       <div>
         <div style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)"}}>
-          {lang==="en"?`Clean ${stats.pct}% of the time`:`Propre ${stats.pct}% du temps`}
+          {_t(lang,`Propre ${stats.pct}% du temps`,`Clean ${stats.pct}% of the time`,`Limpia el ${stats.pct}% del tiempo`)}
         </div>
         <div style={{fontSize:10,color:"var(--sg-mid)"}}>
-          {lang==="en"?`Based on ${stats.total} readings in ${stats.month}`:`${stats.total} mesures en ${stats.month}`}
+          {_t(lang,`${stats.total} mesures en ${stats.month}`,`Based on ${stats.total} readings in ${stats.month}`,`${stats.total} mediciones en ${stats.month}`)}
         </div>
       </div>
     </div>
@@ -1546,7 +1551,9 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
   // If community reports override status, blend into forecast
   const weeklyData=useMemo(()=>{
     if(!beach||!sargData)return null
-    const sargId=BEACH_TO_SARG[beach.id]
+    // Nouvelles régions : weekly{} de la pipeline est keyé par l'id de plage
+    // (pc001…) directement — BEACH_TO_SARG ne couvre que les 20 slugs MQ/GP.
+    const sargId=IS_NEW_REGION?beach.id:BEACH_TO_SARG[beach.id]
     let w=null
     if(sargId&&sargData.weekly?.[sargId])w=sargData.weekly[sargId]
     else{
@@ -1649,14 +1656,14 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             background:`radial-gradient(ellipse at 50% 100%, ${(ST[beach.status]||ST._loading).c}22 0%, transparent 70%)`,
             pointerEvents:"none"}}/>
           {/* Close button */}
-          <button onClick={onClose} aria-label={lang==="en"?"Close":"Fermer"} style={{position:"absolute",top:12,right:12,
+          <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"absolute",top:12,right:12,
             width:44,height:44,borderRadius:22,
             background:"rgba(0,0,0,.3)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",
             border:"1px solid rgba(255,255,255,.15)",color:"#fff",fontSize:16,cursor:"pointer",
             display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
           {/* Fav button on photo */}
           <button onClick={e=>{onToggleFav(beach.id);e.currentTarget.classList.remove("heart-pop");void e.currentTarget.offsetWidth;e.currentTarget.classList.add("heart-pop")}}
-            aria-label={isFav?(lang==="en"?"Remove from favourites":"Retirer des favoris"):(lang==="en"?"Add to favourites":"Ajouter aux favoris")}
+            aria-label={isFav?_t(lang,"Retirer des favoris","Remove from favourites","Quitar de favoritos"):_t(lang,"Ajouter aux favoris","Add to favourites","Agregar a favoritos")}
             style={{position:"absolute",top:12,left:12,
               width:44,height:44,borderRadius:22,
               background:isFav?"rgba(232,82,42,.2)":"rgba(0,0,0,.3)",
@@ -1677,7 +1684,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               boxShadow:`0 0 8px ${(ST[beach.status]||ST._loading).c}`,
               animation:beach.status==="clean"?"none":"pulse 2s ease-in-out infinite"}}/>
             <span style={{fontSize:13,fontWeight:700,color:"#fff",letterSpacing:".01em"}}>
-              {lang==="en"?(ST[beach.status]||ST._loading).le:(ST[beach.status]||ST._loading).l}
+              {lang==="es"?(ST[beach.status]||ST._loading).les:lang==="en"?(ST[beach.status]||ST._loading).le:(ST[beach.status]||ST._loading).l}
             </span>
           </div>
         </div>
@@ -1689,8 +1696,10 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
           <p style={{fontSize:13,color:"var(--sg-mid,#686868)",margin:"0 0 12px",
             display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
             <span>{beach.commune}</span>
-            <span style={{width:3,height:3,borderRadius:2,background:"var(--sg-mid,#999)",opacity:.5}}/>
-            <span>{beach.drive} {LL.drive}</span>
+            {typeof beach.drive==="number"&&<>
+              <span style={{width:3,height:3,borderRadius:2,background:"var(--sg-mid,#999)",opacity:.5}}/>
+              <span>{beach.drive} {LL.drive}</span>
+            </>}
             {userPos&&beach.lat&&<>
               <span style={{width:3,height:3,borderRadius:2,background:"var(--sg-mid,#999)",opacity:.5}}/>
               <span>{Math.round(haversine(userPos.lat,userPos.lng,beach.lat,beach.lng))} km</span>
@@ -1733,7 +1742,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
                 <div style={{flex:1,minWidth:0}}>
                   <div className="anton" style={{fontSize:21,lineHeight:1.05,color:beach.scoreColor,
                     letterSpacing:"-.015em",textTransform:"uppercase"}}>
-                    {beach.scoreLabel}
+                    {scoreLabelFor(beach.scoreLabel,lang)}
                   </div>
                   <div style={{fontSize:12,color:"var(--sg-mid,#686868)",marginTop:5,lineHeight:1.4}}>
                     {beach.scoreReason}
@@ -1779,14 +1788,16 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             <p style={{fontSize:12,color:beach._communityOverride?C.gold:beach.beachMemory?C.sarg:ST[beach.status].c,fontWeight:500,margin:"0 0 12px",lineHeight:1.5,
               padding:"6px 10px",background:beach._communityOverride?C.goldBg:beach.beachMemory?C.sargBg:ST[beach.status].bg,borderRadius:8}}>
               {beach._communityOverride
-                ?(lang==="en"
-                  ?`${beach._communityTotal} visitors report this level on site. Community reports take priority over satellite data.`
-                  :`${beach._communityTotal} visiteurs signalent ce niveau sur place. Les signalements terrain priment sur les données satellite.`)
+                ?_t(lang,
+                  `${beach._communityTotal} visiteurs signalent ce niveau sur place. Les signalements terrain priment sur les données satellite.`,
+                  `${beach._communityTotal} visitors report this level on site. Community reports take priority over satellite data.`,
+                  `${beach._communityTotal} visitantes reportan este nivel en el lugar. Los reportes en sitio tienen prioridad sobre los datos satelitales.`)
                 :beach.beachMemory
-                ?(lang==="en"
-                  ?"Satellite no longer detects sargassum offshore, but beaching occurred in recent days. Algae can persist on the beach for 7 to 14 days without cleanup."
-                  :"Le satellite ne détecte plus de sargasses au large, mais des échouages ont eu lieu ces derniers jours. Les algues peuvent persister sur la plage 7 à 14 jours sans ramassage.")
-                :(lang==="en"?ST[beach.status].descEn:ST[beach.status].desc)}
+                ?_t(lang,
+                  "Le satellite ne détecte plus de sargasses au large, mais des échouages ont eu lieu ces derniers jours. Les algues peuvent persister sur la plage 7 à 14 jours sans ramassage.",
+                  "Satellite no longer detects sargassum offshore, but beaching occurred in recent days. Algae can persist on the beach for 7 to 14 days without cleanup.",
+                  "El satélite ya no detecta sargazo en alta mar, pero hubo llegadas en los últimos días. Las algas pueden permanecer en la playa de 7 a 14 días sin limpieza.")
+                :lang==="es"?ST[beach.status].descEs:lang==="en"?ST[beach.status].descEn:ST[beach.status].desc}
             </p>
           )}
 
@@ -1819,17 +1830,17 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               <div style={{flex:1,position:"relative"}}>
                 <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,.4)",
                   textTransform:"uppercase",letterSpacing:".08em",marginBottom:6}}>
-                  {lang==="en"?"Tomorrow forecast":"Prévision demain"}
+                  {_t(lang,"Prévision demain","Tomorrow forecast","Pronóstico de mañana")}
                 </div>
                 <div style={{display:"flex",alignItems:"center",gap:8}}>
                   <span style={{fontSize:14,fontWeight:700,color:"#fff"}}>
                     {beach.name}
                   </span>
                   <span style={{filter:"blur(6px)",userSelect:"none",fontSize:13,fontWeight:700,
-                    color:ST[forecast[1].status]?.c||"#999"}}>{lang==="en"?ST[forecast[1].status]?.le:ST[forecast[1].status]?.l||"?"}</span>
+                    color:ST[forecast[1].status]?.c||"#999"}}>{lang==="es"?ST[forecast[1].status]?.les:lang==="en"?ST[forecast[1].status]?.le:ST[forecast[1].status]?.l||"?"}</span>
                 </div>
                 <div style={{fontSize:11,color:"rgba(255,255,255,.45)",marginTop:4}}>
-                  {lang==="en"?"Unlock with free trial":"Débloquer · 7 jours gratuit"}
+                  {_t(lang,"Débloquer · 7 jours gratuit","Unlock with free trial","Desbloquear · 7 días gratis")}
                 </div>
               </div>
               <div style={{width:44,height:44,borderRadius:12,
@@ -1887,7 +1898,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               <h3 style={{fontSize:14,fontWeight:700,marginBottom:8,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                 {LL.nearby}
                 <span style={{fontSize:11,fontWeight:500,color:"var(--sg-mid,#686868)"}}>
-                  {lang==="en"?"Tap to compare":"Compare"}
+                  {_t(lang,"Compare","Tap to compare","Toca para comparar")}
                 </span>
               </h3>
               <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:4,
@@ -1907,7 +1918,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
                         position:"relative"}}>
                         <span style={{position:"absolute",top:6,right:6,fontSize:9,fontWeight:700,
                           padding:"2px 6px",borderRadius:100,background:nst.bg,color:nst.c,
-                          backdropFilter:"blur(4px)"}}>{nst.e} {lang==="en"?nst.le:nst.l}</span>
+                          backdropFilter:"blur(4px)"}}>{nst.e} {lang==="es"?nst.les:lang==="en"?nst.le:nst.l}</span>
                       </div>
                       <div style={{padding:"8px 10px"}}>
                         <div style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)",
@@ -1936,12 +1947,10 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               <span style={{fontSize:20}}>⚠</span>
               <div style={{flex:1}}>
                 <div style={{fontSize:13,fontWeight:700,color:"#b35818"}}>
-                  {lang==="en"?"Sargassum bank approaching":"Banc de sargasses en approche"}
+                  {_t(lang,"Banc de sargasses en approche","Sargassum bank approaching","Banco de sargazo en camino")}
                 </div>
                 <div style={{fontSize:11,color:"var(--sg-mid,#686868)",marginTop:2}}>
-                  {lang==="en"
-                    ?"Satellite detects a bank drifting toward this beach (1–3 days)."
-                    :"Le satellite detecte un banc derivant vers cette plage (1–3 jours)."}
+                  {_t(lang,"Le satellite detecte un banc derivant vers cette plage (1–3 jours).","Satellite detects a bank drifting toward this beach (1–3 days).","El satélite detecta un banco derivando hacia esta playa (1–3 días).")}
                 </div>
               </div>
             </div>
@@ -2108,7 +2117,7 @@ function HistoryChart({beachId,historyData,lang}){
   const LL=T[lang]||T.fr
   const points=useMemo(()=>{
     if(!historyData||!beachId)return[]
-    const sargId=BEACH_TO_SARG[beachId]
+    const sargId=IS_NEW_REGION?beachId:BEACH_TO_SARG[beachId]
     if(!sargId)return[]
     return historyData.map(day=>{
       const entry=day.levels.find(l=>l.id===sargId)
@@ -2243,17 +2252,17 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
         </span>
         <span style={{fontSize:11,fontWeight:800,letterSpacing:".08em",textTransform:"uppercase",
           color:"var(--sg-mid,#686868)"}}>
-          {lang==="en"?`beaches · ${nClean} clean`:`plages · ${nClean} propres`}
+          {_t(lang,`plages · ${nClean} propres`,`beaches · ${nClean} clean`,`playas · ${nClean} limpias`)}
         </span>
       </div>
       {beaches.length===0?(
         <div style={{padding:"60px 32px",textAlign:"center",animation:"fadeIn .3s ease"}}>
           <div style={{fontSize:48,marginBottom:12}}>🏖️</div>
           <div style={{fontSize:16,fontWeight:700,color:"var(--sg-ink)",marginBottom:6}}>
-            {lang==="en"?"No beaches match":"Aucune plage trouvée"}
+            {_t(lang,"Aucune plage trouvée","No beaches match","No se encontraron playas")}
           </div>
           <div style={{fontSize:13,color:"var(--sg-mid,#686868)",lineHeight:1.5}}>
-            {lang==="en"?"Try a different filter or search.":"Essaie un autre filtre ou une autre recherche."}
+            {_t(lang,"Essaie un autre filtre ou une autre recherche.","Try a different filter or search.","Prueba otro filtro u otra búsqueda.")}
           </div>
         </div>
       ):(
@@ -2296,11 +2305,11 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
                 </div>
                 <div style={{fontSize:11,color:"var(--sg-mid,#686868)",marginTop:3,fontWeight:500,
                   whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
-                  {b.commune} · {b.drive} {LL.drive}
+                  {b.commune}{typeof b.drive==="number"?` · ${b.drive} ${LL.drive}`:""}
                 </div>
                 <div style={{fontSize:10,fontWeight:800,marginTop:4,letterSpacing:".03em",
                   textTransform:"uppercase",color:scoreColor}}>
-                  {hasScore?(b.scoreLabel||(lang==="en"?st.le:st.l)):(lang==="en"?st.le:st.l)}
+                  {hasScore?(scoreLabelFor(b.scoreLabel,lang)||(lang==="es"?st.les:lang==="en"?st.le:st.l)):(lang==="es"?st.les:lang==="en"?st.le:st.l)}
                 </div>
               </div>
               {/* Score badge — Anton numeral, status-colored */}
@@ -2362,19 +2371,17 @@ function Onboarding({onDone,island="mq",lang="fr"}){
               animation:"dot-pulse 2s ease-in-out infinite"}}/>
             <span style={{fontSize:12,fontWeight:700,color:C.ink}}>
               <em style={{fontStyle:"normal",color:C.amber,fontWeight:700}}>
-                {IS_NEW_REGION?`${REGION.beaches.length} beaches`:isMQ?"53 plages":"82 plages"}
-              </em> {lang==="en"?"monitored live":"surveillées en temps réel"}
+                {IS_NEW_REGION?(REGION.primaryLang==="es"?`${REGION.beaches.length} playas`:`${REGION.beaches.length} beaches`):isMQ?"53 plages":"83 plages"}
+              </em> {_t(lang,"surveillées en temps réel","monitored live","monitoreadas en vivo")}
             </span>
           </div>
           <div style={{fontFamily:"'Anton',sans-serif",fontSize:"clamp(20px,5.5vw,26px)",lineHeight:1,
             textTransform:"uppercase",color:C.ink,marginBottom:8}}>
-            <span style={{color:C.teal}}>{lang==="en"?"Green":"Vert"}</span> = {lang==="en"?"clean":"propre"}.{" "}
-            <span style={{color:C.red}}>{lang==="en"?"Red":"Rouge"}</span> = sargasses.
+            <span style={{color:C.teal}}>{_t(lang,"Vert","Green","Verde")}</span> = {_t(lang,"propre","clean","limpia")}.{" "}
+            <span style={{color:C.red}}>{_t(lang,"Rouge","Red","Rojo")}</span> = {_t(lang,"sargasses","sargassum","sargazo")}.
           </div>
           <p style={{fontSize:13,color:C.mid,margin:"0 0 12px",lineHeight:1.5}}>
-            {lang==="en"
-              ?"Tap a beach on the map to see real-time conditions."
-              :"Touche une plage sur la carte pour voir son état en temps réel."}
+            {_t(lang,"Touche une plage sur la carte pour voir son état en temps réel.","Tap a beach on the map to see real-time conditions.","Toca una playa en el mapa para ver su estado en tiempo real.")}
           </p>
           <div style={{display:"flex",gap:8}}>
             <button onClick={()=>setStep(1)} style={{
@@ -2382,7 +2389,7 @@ function Onboarding({onDone,island="mq",lang="fr"}){
               background:"linear-gradient(158deg,#FFE47A,#FFC72C,#E89400)",
               fontFamily:"inherit",fontSize:13,fontWeight:700,color:C.ink,
               boxShadow:"0 4px 16px rgba(232,168,0,.3)"}}>
-              {lang==="en"?"Got it":"Compris"}
+              {_t(lang,"Compris","Got it","Entendido")}
             </button>
           </div>
         </div>
@@ -2397,11 +2404,11 @@ function Onboarding({onDone,island="mq",lang="fr"}){
           animation:"slideUp .3s cubic-bezier(.22,1,.36,1)"}}>
           <span style={{fontSize:18}}>👆</span>
           <span style={{fontSize:12,fontWeight:600,color:C.ink}}>
-            {lang==="en"?"Tap a ":"Touche un "}{" "}
+            {_t(lang,"Touche un ","Tap a ","Toca un ")}{" "}
             <span style={{color:C.green}}>●</span>{" "}
             <span style={{color:C.amber}}>●</span>{" "}
             <span style={{color:C.red}}>●</span>{" "}
-            {lang==="en"?"to see details":"pour voir les détails"}
+            {_t(lang,"pour voir les détails","to see details","para ver los detalles")}
           </span>
           <button onClick={dismiss} style={{
             background:"none",border:"none",color:C.mid,cursor:"pointer",
@@ -2460,24 +2467,23 @@ function BeachPicker({island,allBeaches,onSelect,lang,userPos,onDismiss}){
         <div style={{display:"flex",alignItems:"center",gap:5}}>
           <div style={{width:6,height:6,borderRadius:"50%",background:"#22C55E",
             animation:"dot-pulse 2s ease-in-out infinite"}}/>
-          <span style={{fontSize:10.5,fontWeight:600,color:"rgba(255,255,255,.5)"}}>{lang==="en"?"Live":"En direct"}</span>
+          <span style={{fontSize:10.5,fontWeight:600,color:"rgba(255,255,255,.5)"}}>{_t(lang,"En direct","Live","En vivo")}</span>
         </div>
       </div>
 
       {/* Headline */}
       <div style={{padding:"28px 22px 0"}}>
         <div style={{fontSize:12,fontStyle:"italic",color:"rgba(255,255,255,.4)",marginBottom:6}}>
-          {lang==="en"?"Sargassum or not — know before you go.":"Sargasses ou pas — sache avant de partir."}
+          {_t(lang,"Sargasses ou pas — sache avant de partir.","Sargassum or not — know before you go.","Sargazo o no — entérate antes de ir.")}
         </div>
         <div style={{fontFamily:"'Anton',sans-serif",fontSize:42,lineHeight:.9,
           textTransform:"uppercase",color:"#fff",letterSpacing:"-.02em"}}>
-          {lang==="en"?<>What's <span style={{color:C.tealL}}>your</span><br/>beach?</>
+          {lang==="es"?<>¿Cuál es<br/><span style={{color:C.tealL}}>tu</span> playa?</>
+            :lang==="en"?<>What's <span style={{color:C.tealL}}>your</span><br/>beach?</>
             :<>Quelle est<br/><span style={{color:C.tealL}}>ta</span> plage ?</>}
         </div>
         <p style={{fontSize:13.5,color:"rgba(255,255,255,.5)",margin:"8px 0 0",lineHeight:1.5}}>
-          {lang==="en"
-            ?"We'll tell you every day if it's clear."
-            :"On te dit chaque jour si tu peux y aller."}
+          {_t(lang,"On te dit chaque jour si tu peux y aller.","We'll tell you every day if it's clear.","Te decimos cada día si puedes ir.")}
         </p>
       </div>
 
@@ -2491,7 +2497,7 @@ function BeachPicker({island,allBeaches,onSelect,lang,userPos,onDismiss}){
             animation:"satellite-scan 3s ease-in-out infinite"}}/>
           <span style={{fontSize:9.5,fontWeight:700,color:C.tealL,position:"relative"}}>COPERNICUS MARINE</span>
           <span style={{fontSize:9,color:"rgba(255,255,255,.35)",fontWeight:500,position:"relative"}}>
-            {lang==="en"?"Updated today":"Mis à jour aujourd'hui"}
+            {_t(lang,"Mis à jour aujourd'hui","Updated today","Actualizado hoy")}
           </span>
         </div>
       </div>
@@ -2531,7 +2537,7 @@ function BeachPicker({island,allBeaches,onSelect,lang,userPos,onDismiss}){
               </div>
               <span style={{fontSize:10,fontWeight:700,padding:"4px 10px",borderRadius:100,
                 background:badgeBg,color:badgeColor}}>
-                {st.l}
+                {lang==="es"?st.les:lang==="en"?st.le:st.l}
               </span>
             </button>
           )
@@ -2542,11 +2548,11 @@ function BeachPicker({island,allBeaches,onSelect,lang,userPos,onDismiss}){
       <div style={{padding:"16px 22px max(20px,calc(env(safe-area-inset-bottom,12px) + 12px))",
         textAlign:"center",fontSize:10.5,color:"rgba(255,255,255,.25)",
         display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
-        {lang==="en"?"Free":"Gratuit"}
+        {_t(lang,"Gratuit","Free","Gratis")}
         <span style={{width:3,height:3,borderRadius:"50%",background:"rgba(255,255,255,.15)"}}/>
-        {lang==="en"?"No signup":"Sans inscription"}
+        {_t(lang,"Sans inscription","No signup","Sin registro")}
         <span style={{width:3,height:3,borderRadius:"50%",background:"rgba(255,255,255,.15)"}}/>
-        {lang==="en"?"Updated daily":"Mis à jour chaque jour"}
+        {_t(lang,"Mis à jour chaque jour","Updated daily","Actualizado a diario")}
       </div>
     </div>
   )
@@ -2580,9 +2586,7 @@ function PushPrimer({lang,onAccept,onDismiss}){
         <div style={{fontSize:22,flexShrink:0}}>{"\ud83d\udd14"}</div>
         <div style={{flex:1,minWidth:0,fontSize:13,fontWeight:600,
           color:"var(--sg-ink,#0D0D0D)",lineHeight:1.3}}>
-          {lang==="en"
-            ?"Get notified when your favorite beaches change."
-            :"Sois pr\u00e9venu si tes plages favorites changent."}
+          {_t(lang,"Sois pr\u00e9venu si tes plages favorites changent.","Get notified when your favorite beaches change.","Ent\u00e9rate si tus playas favoritas cambian.")}
         </div>
         <button onClick={onAccept} style={{
           background:"#16a34a",color:"#fff",border:"none",
@@ -2590,9 +2594,9 @@ function PushPrimer({lang,onAccept,onDismiss}){
           cursor:"pointer",flexShrink:0,whiteSpace:"nowrap",
           minHeight:36,
         }}>
-          {lang==="en"?"Activate":"Activer"}
+          {_t(lang,"Activer","Activate","Activar")}
         </button>
-        <button onClick={onDismiss} aria-label={lang==="en"?"Dismiss":"Plus tard"}
+        <button onClick={onDismiss} aria-label={_t(lang,"Plus tard","Dismiss","Ahora no")}
           style={{
             background:"transparent",border:"none",padding:"8px 4px",
             fontSize:18,color:"var(--sg-mid,#686868)",cursor:"pointer",
@@ -2632,7 +2636,7 @@ function rankBeaches(allBeaches,island,userPos,sargData,communityReports){
   if(!islandBeaches.length)return[]
   const scored=islandBeaches.map(b=>{
     const dist=userPos?haversine(userPos.lat,userPos.lng,b.lat,b.lng):null
-    const sargId=BEACH_TO_SARG[b.id]
+    const sargId=IS_NEW_REGION?b.id:BEACH_TO_SARG[b.id]
     const weekly=sargId&&sargData?.weekly?.[sargId]
     const enriched=sargData?._enrichedWeekly?.[`_interp_${b.id}`]
     const activeWeekly=weekly||enriched
@@ -2767,14 +2771,14 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
 
   // Short verdict — clear & punchy (fuller text lives in beach sheet)
   const verdict=(()=>{
-    if(top._arrivalDetected&&top.status==="clean")return lang==="en"?"Clean · bank approaching":"Propre · banc en approche"
+    if(top._arrivalDetected&&top.status==="clean")return _t(lang,"Propre · banc en approche","Clean · bank approaching","Limpia · banco en camino")
     if(top._fc1&&top._fc1.status&&top._fc1.status!=="clean"&&top.status==="clean"){
-      return lang==="en"?`Clean today, ${top._fc1.status} tomorrow`:`Propre aujourd'hui, ${top._fc1.status==="moderate"?"modéré":"alerte"} demain`
+      return _t(lang,`Propre aujourd'hui, ${top._fc1.status==="moderate"?"modéré":"alerte"} demain`,`Clean today, ${top._fc1.status} tomorrow`,`Limpia hoy, ${top._fc1.status==="moderate"?"moderado":"alerta"} mañana`)
     }
-    if(top.beachMemory)return lang==="en"?"Recent beaching — verify":"Mémoire échouage — vérifie"
-    if(top.status==="clean")return lang==="en"?"Clean & stable":"Propre et stable"
-    if(top.status==="moderate")return lang==="en"?"Moderate — best option today":"Modéré — meilleure option du jour"
-    return lang==="en"?"Best compromise today":"Meilleur compromis aujourd'hui"
+    if(top.beachMemory)return _t(lang,"Mémoire échouage — vérifie","Recent beaching — verify","Llegada reciente — verifica")
+    if(top.status==="clean")return _t(lang,"Propre et stable","Clean & stable","Limpia y estable")
+    if(top.status==="moderate")return _t(lang,"Modéré — meilleure option du jour","Moderate — best option today","Moderado — la mejor opción hoy")
+    return _t(lang,"Meilleur compromis aujourd'hui","Best compromise today","El mejor compromiso hoy")
   })()
 
   // Distance & drive labels
@@ -2785,9 +2789,9 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
 
   const greet=(()=>{
     const h=new Date().getHours()
-    if(h<12)return lang==="en"?"This morning":"Ce matin"
-    if(h<18)return lang==="en"?"Right now":"Maintenant"
-    return lang==="en"?"Tonight":"Ce soir"
+    if(h<12)return _t(lang,"Ce matin","This morning","Esta mañana")
+    if(h<18)return _t(lang,"Maintenant","Right now","Ahora mismo")
+    return _t(lang,"Ce soir","Tonight","Esta noche")
   })()
   // First-person pre-chewed decision — shifts the user from "browsing the map"
   // to "accepting a recommendation". Copy is ephemeral per hour-of-day.
@@ -2805,13 +2809,13 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
   const freshLbl=(()=>{
     if(!dataUpdatedAt)return null
     const diffMin=Math.max(0,Math.round((Date.now()-new Date(dataUpdatedAt).getTime())/60000))
-    if(diffMin<60)return lang==="en"?`${diffMin} min ago`:`il y a ${diffMin} min`
+    if(diffMin<60)return _t(lang,`il y a ${diffMin} min`,`${diffMin} min ago`,`hace ${diffMin} min`)
     const h=Math.round(diffMin/60)
-    if(h<24)return lang==="en"?`${h}h ago`:`il y a ${h}h`
-    return lang==="en"?"today":"aujourd'hui"
+    if(h<24)return _t(lang,`il y a ${h}h`,`${h}h ago`,`hace ${h}h`)
+    return _t(lang,"aujourd'hui","today","hoy")
   })()
   const coverageLbl=withScore.length>0
-    ?(lang==="en"?`${withScore.length} beaches`:`${withScore.length} plages`)
+    ?_t(lang,`${withScore.length} plages`,`${withScore.length} beaches`,`${withScore.length} playas`)
     :null
 
   return(
@@ -2854,7 +2858,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
         <span style={{fontWeight:800,color:"#005A9E",letterSpacing:".02em"}}>Copernicus ESA</span>
         {freshLbl&&(<>
           <span aria-hidden style={{width:3,height:3,borderRadius:"50%",background:"currentColor",opacity:.4}}/>
-          <span>{lang==="en"?`Updated ${freshLbl}`:`MAJ ${freshLbl}`}</span>
+          <span>{_t(lang,`MAJ ${freshLbl}`,`Updated ${freshLbl}`,`Act. ${freshLbl}`)}</span>
         </>)}
         {coverageLbl&&(<>
           <span aria-hidden style={{width:3,height:3,borderRadius:"50%",background:"currentColor",opacity:.4}}/>
@@ -2866,7 +2870,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
           map gets its full vertical space back. */}
       <button
         onClick={toggleCollapse}
-        aria-label={heroCollapsed?(lang==="en"?"Expand":"Déplier"):(lang==="en"?"Collapse":"Réduire")}
+        aria-label={heroCollapsed?_t(lang,"Déplier","Expand","Expandir"):_t(lang,"Réduire","Collapse","Reducir")}
         aria-expanded={!heroCollapsed}
         style={{
           position:"relative",
@@ -2966,7 +2970,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
             boxShadow:"0 6px 18px rgba(0,158,142,.45), inset 0 1px 0 rgba(255,255,255,.35)",
             letterSpacing:".03em",
           }}>
-            {lang==="en"?"Take me →":"J'y vais →"}
+            {_t(lang,"J'y vais →","Take me →","Vamos →")}
           </span>
         </button>
       ):(<>
@@ -2994,7 +2998,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
             color:"var(--sg-mid,#686868)",
             letterSpacing:".02em",whiteSpace:"nowrap",
           }}>
-            {withScore.length} {lang==="en"?"analyzed":"analysées"} · Δ{variance}
+            {withScore.length} {_t(lang,"analysées","analyzed","analizadas")} · Δ{variance}
           </div>
         )}
       </div>
@@ -3108,7 +3112,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
           boxShadow:`0 2px 8px ${topSt.c}44`,
           letterSpacing:".02em",
         }}>
-          {lang==="en"?"Go →":"Voir →"}
+          {_t(lang,"Voir →","Go →","Ver →")}
         </span>
       </button>
 
@@ -3138,7 +3142,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
             fontSize:10,fontWeight:800,color:"#B45309",letterSpacing:".08em",
             textTransform:"uppercase",flexShrink:0,
           }}>
-            {lang==="en"?"Skip":"Évite"}
+            {_t(lang,"Évite","Skip","Evita")}
           </span>
           <span style={{
             fontSize:12,fontWeight:700,color:"#7C3E03",
@@ -3228,7 +3232,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
           <span style={{fontSize:14,flexShrink:0}}>📬</span>
           <input
             type="email" inputMode="email" autoComplete="email"
-            placeholder={lang==="en"?"email — daily pick at 7am":"ton@email — ma reco à 7h"}
+            placeholder={_t(lang,"ton@email — ma reco à 7h","email — daily pick at 7am","tu@email — tu playa del día a las 7")}
             value={heroEmail}
             onChange={e=>setHeroEmail(e.target.value)}
             onKeyDown={e=>{if(e.key==="Enter")submitHeroEmail()}}
@@ -3277,7 +3281,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
           background:"rgba(34,197,94,.09)",
         }}>
           <div style={{fontSize:12,fontWeight:700,color:"#16A34A"}}>
-            ✓ {lang==="en"?"You're in! First pick tomorrow 7am.":"C'est fait ! Ta reco demain à 7h."}
+            ✓ {_t(lang,"C'est fait ! Ta reco demain à 7h.","You're in! First pick tomorrow 7am.","¡Listo! Tu playa del día mañana a las 7.")}
           </div>
           {onPremiumClick&&(
             <button
@@ -3289,7 +3293,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
                 textDecorationColor:"rgba(0,0,0,.2)",textUnderlineOffset:2,
               }}
             >
-              {lang==="en"?"Want live alerts too? See Premium →":"Alertes en direct aussi ? Voir Premium →"}
+              {_t(lang,"Alertes en direct aussi ? Voir Premium →","Want live alerts too? See Premium →","¿Quieres alertas en vivo también? Ver Premium →")}
             </button>
           )}
         </div>
@@ -3318,7 +3322,7 @@ function DailyRecoStrip({allBeaches,sargData,island,lang,isPremium,onBeachClick,
     if(!islandBeaches.length)return[]
     const scored=islandBeaches.map(b=>{
       const dist=userPos?haversine(userPos.lat,userPos.lng,b.lat,b.lng):null
-      const sargId=BEACH_TO_SARG[b.id]
+      const sargId=IS_NEW_REGION?b.id:BEACH_TO_SARG[b.id]
       const weekly=sargId&&sargData?.weekly?.[sargId]
       const enriched=sargData?._enrichedWeekly?.[`_interp_${b.id}`]
       const activeWeekly=weekly||enriched
@@ -3389,36 +3393,36 @@ function DailyRecoStrip({allBeaches,sargData,island,lang,isPremium,onBeachClick,
     const fc1=top._fc1,fc3=top._fc3,drift=top._drift
     // v3.1: arrival ALWAYS wins over scoreReason (actionable threat)
     if(top._arrivalDetected&&top.status==="clean"){
-      return lang==="en"?"Clean now — sargassum bank approaching":"Propre mais banc en approche"
+      return _t(lang,"Propre mais banc en approche","Clean now — sargassum bank approaching","Limpia pero con banco de sargazo en camino")
     }
     // v3.1: if we have a unified score reason (FR only for now), use it
     if(top.scoreReason&&lang==="fr"&&!top.beachMemory&&top.status==="clean"){
       return top.scoreReason
     }
     if(top._communityReports&&top._communityReports.total>=3){
-      return lang==="en"?`${top._communityReports.total} visitor reports on site`:`${top._communityReports.total} signalements visiteurs sur place`
+      return _t(lang,`${top._communityReports.total} signalements visiteurs sur place`,`${top._communityReports.total} visitor reports on site`,`${top._communityReports.total} reportes de visitantes en el lugar`)
     }
-    if(top.beachMemory)return lang==="en"?"Recent beaching — check on site":"Mémoire échouage — vérifie sur place"
-    if(top.status==="avoid")return lang==="en"?"Difficult conditions island-wide":"Conditions difficiles partout"
-    if(top.status==="moderate")return lang==="en"?"Moderate — verify on site":"Modéré — vérifie sur place"
+    if(top.beachMemory)return _t(lang,"Mémoire échouage — vérifie sur place","Recent beaching — check on site","Llegada reciente — verifica en el lugar")
+    if(top.status==="avoid")return _t(lang,"Conditions difficiles partout","Difficult conditions island-wide","Condiciones difíciles en toda la zona")
+    if(top.status==="moderate")return _t(lang,"Modéré — vérifie sur place","Moderate — verify on site","Moderado — verifica en el lugar")
     // Top is clean — look ahead
     if(fc1&&fc1.status&&fc1.status!=="clean"){
-      return lang==="en"?`Clean today but ${fc1.status} tomorrow`:`Propre aujourd'hui, ${statusFromAfai(fc1.afai)==="moderate"?"modéré":"alerte"} demain`
+      return _t(lang,`Propre aujourd'hui, ${statusFromAfai(fc1.afai)==="moderate"?"modéré":"alerte"} demain`,`Clean today but ${fc1.status} tomorrow`,`Limpia hoy, ${statusFromAfai(fc1.afai)==="moderate"?"moderado":"alerta"} mañana`)
     }
     if(fc3&&fc3.status&&fc3.status!=="clean"){
-      return lang==="en"?`Clean now — ${fc3.status} in 3 days`:`Propre — ${statusFromAfai(fc3.afai)==="moderate"?"modéré":"alerte"} dans 3 jours`
+      return _t(lang,`Propre — ${statusFromAfai(fc3.afai)==="moderate"?"modéré":"alerte"} dans 3 jours`,`Clean now — ${fc3.status} in 3 days`,`Limpia — ${statusFromAfai(fc3.afai)==="moderate"?"moderado":"alerta"} en 3 días`)
     }
     if(drift==="up"){
-      return lang==="en"?"Clean now but sargassum drifting in":"Propre mais sargasses en approche"
+      return _t(lang,"Propre mais sargasses en approche","Clean now but sargassum drifting in","Limpia pero con sargazo acercándose")
     }
     if(weather?.precipitation>5){
-      return lang==="en"?`Clean but rain ${Math.round(weather.precipitation)}mm today`:`Propre mais pluie ${Math.round(weather.precipitation)}mm aujourd'hui`
+      return _t(lang,`Propre mais pluie ${Math.round(weather.precipitation)}mm aujourd'hui`,`Clean but rain ${Math.round(weather.precipitation)}mm today`,`Limpia pero con lluvia ${Math.round(weather.precipitation)}mm hoy`)
     }
     if(weather?.wind!=null&&weather.windDir!=null){
       const wd=windCompass(weather.windDir,lang)
-      return lang==="en"?`Wind ${wd} ${weather.wind}km/h · clean & stable`:`Vent ${wd} ${weather.wind}km/h · propre et stable`
+      return _t(lang,`Vent ${wd} ${weather.wind}km/h · propre et stable`,`Wind ${wd} ${weather.wind}km/h · clean & stable`,`Viento ${wd} ${weather.wind}km/h · limpia y estable`)
     }
-    return lang==="en"?"Stable conditions":"Conditions stables"
+    return _t(lang,"Conditions stables","Stable conditions","Condiciones estables")
   })()
 
   const distLabel=top._dist!=null?`${Math.round(top._dist)} km`:""
@@ -3490,8 +3494,8 @@ function DailyRecoStrip({allBeaches,sargData,island,lang,isPremium,onBeachClick,
           <div style={{fontSize:9.5,fontWeight:700,color:"var(--sg-mid,#686868)",letterSpacing:".05em",
             textTransform:"uppercase",marginBottom:2}}>
             {typeof top.score==="number"
-              ?(lang==="en"?`Best beach today · ${top.scoreLabel||""}`:`Meilleure plage aujourd'hui · ${top.scoreLabel||""}`)
-              :(lang==="en"?"Best beach now":"Ta meilleure plage maintenant")}
+              ?_t(lang,`Meilleure plage aujourd'hui · ${scoreLabelFor(top.scoreLabel,lang)||""}`,`Best beach today · ${scoreLabelFor(top.scoreLabel,lang)||""}`,`Mejor playa hoy · ${scoreLabelFor(top.scoreLabel,lang)||""}`)
+              :_t(lang,"Ta meilleure plage maintenant","Best beach now","Tu mejor playa ahora")}
           </div>
           <div style={{fontSize:15,fontWeight:700,color:"var(--sg-ink,#0D0D0D)",lineHeight:1.2,
             whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
@@ -3519,7 +3523,7 @@ function DailyRecoStrip({allBeaches,sargData,island,lang,isPremium,onBeachClick,
             fontSize:13,fontWeight:700,fontFamily:"inherit",
             whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
           }}>
-          {lang==="en"?"Go there":"Y aller"}
+          {_t(lang,"Y aller","Go there","Cómo llegar")}
         </a>
         {picks.length>1&&(
           <button onClick={handleAltClick} style={{
@@ -3534,7 +3538,7 @@ function DailyRecoStrip({allBeaches,sargData,island,lang,isPremium,onBeachClick,
           }}>
             {isPremium
               ?(expanded
-                ?(lang==="en"?"Less ▲":"Moins ▲")
+                ?_t(lang,"Moins ▲","Less ▲","Menos ▲")
                 :(lang==="en"?`+${picks.length-1} options`:`+${picks.length-1} options`))
               :<>🔒 {lang==="en"?`+${picks.length-1} options`:`+${picks.length-1} options`}</>}
           </button>
@@ -3574,7 +3578,7 @@ function DailyRecoStrip({allBeaches,sargData,island,lang,isPremium,onBeachClick,
                 </div>
                 <span style={{fontSize:9.5,fontWeight:700,padding:"3px 8px",borderRadius:100,
                   background:altSt.bg,color:altSt.c,flexShrink:0}}>
-                  {lang==="en"?altSt.le:altSt.l}
+                  {lang==="es"?altSt.les:lang==="en"?altSt.le:altSt.l}
                 </span>
               </button>
             )
@@ -3672,7 +3676,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
     return()=>document.removeEventListener("keydown",h)
   },[onClose,source])
   const[plan,setPlan]=useState("monthly")
-  const headline=lang==="en"?"Your daily pick every morning at 7am":"Ta reco chaque matin à 7h"
+  const headline=_t(lang,"Ta reco chaque matin à 7h","Your daily pick every morning at 7am","Tu mejor playa cada mañana a las 7")
   // effectivePlan is what we ship to Stripe on CTA click. Fallback chain:
   //   pro → annual → monthly, only if Stripe Link is configured for that tier.
   const effectivePlan=
@@ -3701,7 +3705,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
     const today=new Date()
     const remindDate=new Date(today.getTime()+5*24*3600*1000)
     const chargeDate=new Date(today.getTime()+7*24*3600*1000)
-    const fmt=d=>d.toLocaleDateString(lang==="en"?"en-GB":"fr-FR",{day:"numeric",month:"long"})
+    const fmt=d=>d.toLocaleDateString(lang==="es"?"es-MX":lang==="en"?"en-US":"fr-FR",{day:"numeric",month:"long"})
     return{remind:fmt(remindDate),charge:fmt(chargeDate)}
   })()
   // Seasonal urgency — sargassum season is April-September
@@ -3709,8 +3713,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
   const seasonStart=new Date(now.getFullYear(),3,20) // ~20 April
   const daysToSeason=Math.max(0,Math.ceil((seasonStart-now)/(1000*60*60*24)))
   const seasonMsg=daysToSeason>0
-    ?(lang==="en"?`Season starts in ${daysToSeason} days`:`La saison commence dans ${daysToSeason} jours`)
-    :(lang==="en"?"Sargassum season is here":"La saison des sargasses est là")
+    ?_t(lang,`La saison commence dans ${daysToSeason} jours`,`Season starts in ${daysToSeason} days`,`La temporada empieza en ${daysToSeason} días`)
+    :_t(lang,"La saison des sargasses est là","Sargassum season is here","La temporada de sargazo ya está aquí")
   return(
     <>
       <div className="backdrop" onClick={(e)=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts});const x=e.clientX,y=e.clientY;onClose();/* pass-through : si le clic tombe pile sur un pin de la carte (sous le backdrop), ouvrir cette plage au lieu de juste fermer — sinon le clic paraît "mort" */requestAnimationFrame(()=>{try{const el=document.elementFromPoint(x,y);const pin=el&&el.closest&&el.closest(".leaflet-marker-icon");if(pin)pin.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true,view:window,clientX:x,clientY:y}))}catch(_){}})}}/>
@@ -3725,7 +3729,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
             visible, users dismiss by backdrop tap". Sticky so always reachable
             even when modal is scrolled. */}
         <button
-          aria-label={lang==="en"?"Close":"Fermer"}
+          aria-label={_t(lang,"Fermer","Close","Cerrar")}
           onClick={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"close_x"});onClose()}}
           style={{position:"absolute",top:14,right:14,width:30,height:30,
             borderRadius:"50%",background:"rgba(255,255,255,.08)",border:"none",
@@ -3748,7 +3752,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
           display:"flex",flexDirection:"column"}}>
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
             <button
-              aria-label={lang==="en"?"Back":"Retour"}
+              aria-label={_t(lang,"Retour","Back","Atrás")}
               onClick={()=>{track("sg_prelude_back",{source:source||"unknown"});setShowPrelude(false)}}
               style={{width:32,height:32,borderRadius:"50%",background:"rgba(255,255,255,.08)",
                 border:"none",color:"rgba(255,255,255,.85)",fontSize:18,cursor:"pointer",
@@ -3759,7 +3763,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
               <span style={{flex:1,height:3,borderRadius:2,background:"rgba(255,255,255,.12)"}}/>
             </div>
             <button
-              aria-label={lang==="en"?"Close":"Fermer"}
+              aria-label={_t(lang,"Fermer","Close","Cerrar")}
               onClick={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"prelude_close"});onClose()}}
               style={{width:32,height:32,borderRadius:"50%",background:"rgba(255,255,255,.08)",
                 border:"none",color:"rgba(255,255,255,.85)",fontSize:18,cursor:"pointer",
@@ -3768,10 +3772,10 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
 
           <div style={{fontFamily:"'Anton',sans-serif",fontSize:10.5,color:"#14C4B0",
             letterSpacing:".18em",textTransform:"uppercase",marginBottom:8}}>
-            {lang==="en"?"Before we redirect you":"Avant de te rediriger"}
+            {_t(lang,"Avant de te rediriger","Before we redirect you","Antes de redirigirte")}
           </div>
           <h2 style={{fontFamily:"'Anton',sans-serif",fontSize:26,lineHeight:1.05,letterSpacing:"-.01em",color:"#fff",margin:"0 0 14px"}}>
-            {lang==="en"?<>Here's exactly<br/>what happens.</>:<>Voilà exactement<br/>ce qui se passe.</>}
+            {lang==="es"?<>Esto es exactamente<br/>lo que pasa.</>:lang==="en"?<>Here's exactly<br/>what happens.</>:<>Voilà exactement<br/>ce qui se passe.</>}
           </h2>
 
           {/* Plan summary card */}
@@ -3781,24 +3785,24 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
               paddingBottom:12,borderBottom:"1px solid rgba(255,255,255,.08)",marginBottom:12}}>
               <div>
                 <div style={{fontWeight:800,fontSize:15,color:"#fff"}}>
-                  {effectivePlan==="annual"?(lang==="en"?"Annual · 7 days free":"Annuel · 7 jours offerts"):(lang==="en"?"Monthly · 7 days free":"Mensuel · 7 jours offerts")}
+                  {effectivePlan==="annual"?_t(lang,"Annuel · 7 jours offerts","Annual · 7 days free","Anual · 7 días gratis"):_t(lang,"Mensuel · 7 jours offerts","Monthly · 7 days free","Mensual · 7 días gratis")}
                 </div>
                 <div style={{fontWeight:500,color:"rgba(255,255,255,.55)",fontSize:11,marginTop:2}}>
-                  {effectivePlan==="annual"?(REGION_PAY?`Then ${PRICE_YR}/yr · cancel anytime`:lang==="en"?"Then €39.99/yr · cancel anytime":"Puis 39,99 €/an · annule en 1 clic"):(REGION_PAY?`Then ${PRICE_MO}/mo · cancel anytime`:lang==="en"?"Then €4.99/mo · cancel anytime":"Puis 4,99 €/mois · annule en 1 clic")}
+                  {effectivePlan==="annual"?(REGION_PAY?_t(lang,`Puis ${PRICE_YR}/an · annule en 1 clic`,`Then ${PRICE_YR}/yr · cancel anytime`,`Luego ${PRICE_YR}/año · cancela en 1 clic`):_t(lang,"Puis 39,99 €/an · annule en 1 clic","Then €39.99/yr · cancel anytime","Luego 39,99 €/año · cancela en 1 clic")):(REGION_PAY?_t(lang,`Puis ${PRICE_MO}/mois · annule en 1 clic`,`Then ${PRICE_MO}/mo · cancel anytime`,`Luego ${PRICE_MO}/mes · cancela en 1 clic`):_t(lang,"Puis 4,99 €/mois · annule en 1 clic","Then €4.99/mo · cancel anytime","Luego 4,99 €/mes · cancela en 1 clic"))}
                 </div>
               </div>
               <div style={{fontFamily:"'Anton',sans-serif",fontSize:22,color:"#FFC72C",letterSpacing:"-.01em",textAlign:"right"}}>
                 {REGION_PAY?"$0":"0 €"}
                 <div style={{fontFamily:"inherit",fontWeight:500,fontSize:11,color:"rgba(255,199,44,.7)",marginTop:2,letterSpacing:0}}>
-                  {lang==="en"?"today":"aujourd'hui"}
+                  {_t(lang,"aujourd'hui","today","hoy")}
                 </div>
               </div>
             </div>
             <div style={{display:"flex",flexDirection:"column",gap:8,fontSize:12.5}}>
               {[
-                {k:lang==="en"?"Today":"Aujourd'hui",v:REGION_PAY?"$0 · 7-day trial starts":lang==="en"?"€0 · 7-day trial starts":"0 € · tu testes 7 jours"},
-                {k:_preludeDates.remind,v:lang==="en"?"Reminder · 2 days before first charge":"Rappel · 2 jours avant la 1re charge"},
-                {k:_preludeDates.charge,v:effectivePlan==="annual"?(REGION_PAY?`${PRICE_YR} · unless you cancel`:lang==="en"?"€39.99 · unless you cancel":"39,99 € · sauf si tu annules"):(REGION_PAY?`${PRICE_MO} · unless you cancel`:lang==="en"?"€4.99 · unless you cancel":"4,99 € · sauf si tu annules")},
+                {k:_t(lang,"Aujourd'hui","Today","Hoy"),v:REGION_PAY?_t(lang,"$0 · tu testes 7 jours","$0 · 7-day trial starts","$0 · empieza tu prueba de 7 días"):_t(lang,"0 € · tu testes 7 jours","€0 · 7-day trial starts","0 € · empieza tu prueba de 7 días")},
+                {k:_preludeDates.remind,v:_t(lang,"Rappel · 2 jours avant la 1re charge","Reminder · 2 days before first charge","Recordatorio · 2 días antes del primer cobro")},
+                {k:_preludeDates.charge,v:effectivePlan==="annual"?(REGION_PAY?_t(lang,`${PRICE_YR} · sauf si tu annules`,`${PRICE_YR} · unless you cancel`,`${PRICE_YR} · a menos que canceles`):_t(lang,"39,99 € · sauf si tu annules","€39.99 · unless you cancel","39,99 € · a menos que canceles")):(REGION_PAY?_t(lang,`${PRICE_MO} · sauf si tu annules`,`${PRICE_MO} · unless you cancel`,`${PRICE_MO} · a menos que canceles`):_t(lang,"4,99 € · sauf si tu annules","€4.99 · unless you cancel","4,99 € · a menos que canceles"))},
               ].map((r,i)=>(
                 <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                   <span style={{color:"rgba(255,255,255,.72)"}}>{r.k}</span>
@@ -3807,7 +3811,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
               ))}
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",
                 paddingTop:8,borderTop:"1px dashed rgba(255,255,255,.12)",marginTop:2}}>
-                <span style={{color:"rgba(255,255,255,.72)"}}>{lang==="en"?"Due today":"À payer aujourd'hui"}</span>
+                <span style={{color:"rgba(255,255,255,.72)"}}>{_t(lang,"À payer aujourd'hui","Due today","A pagar hoy")}</span>
                 <span style={{color:"#22C55E",fontFamily:"'Anton',sans-serif",fontSize:15,letterSpacing:"-.01em"}}>{REGION_PAY?"$0.00":"0,00 €"}</span>
               </div>
             </div>
@@ -3816,9 +3820,9 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
           {/* Trust row 3 columns */}
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,marginBottom:14}}>
             {[
-              {icon:"🛡",title:"Stripe",sub:REGION_PAY?"Secure payment":lang==="en"?"EU secure payment":"Paiement sécurisé EU"},
-              {icon:"⏱",title:lang==="en"?"30 days":"30 jours",sub:lang==="en"?"Money-back":"Satisfait ou remboursé"},
-              {icon:"✕",title:lang==="en"?"1 click":"1 clic",sub:lang==="en"?"Cancel anytime":"Annule quand tu veux"},
+              {icon:"🛡",title:"Stripe",sub:REGION_PAY?_t(lang,"Paiement sécurisé","Secure payment","Pago seguro"):_t(lang,"Paiement sécurisé EU","EU secure payment","Pago seguro UE")},
+              {icon:"⏱",title:_t(lang,"30 jours","30 days","30 días"),sub:_t(lang,"Satisfait ou remboursé","Money-back","Reembolso garantizado")},
+              {icon:"✕",title:_t(lang,"1 clic","1 click","1 clic"),sub:_t(lang,"Annule quand tu veux","Cancel anytime","Cancela cuando quieras")},
             ].map((t,i)=>(
               <div key={i} style={{padding:"10px 8px",borderRadius:10,
                 background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",
@@ -3838,10 +3842,10 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
           }} className="gbtn" style={{width:"100%",padding:14,borderRadius:14,border:"none",
             cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:15,lineHeight:1.15,
             display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-            {lang==="en"?"Continue to Stripe":"Continuer vers Stripe"} →
+            {_t(lang,"Continuer vers Stripe","Continue to Stripe","Continuar a Stripe")} →
           </button>
           <div style={{textAlign:"center",fontSize:10.5,color:"rgba(255,255,255,.48)",marginTop:10}}>
-            {lang==="en"?"You can always come back.":"Tu pourras toujours revenir en arrière."}
+            {_t(lang,"Tu pourras toujours revenir en arrière.","You can always come back.","Siempre puedes volver atrás.")}
           </div>
         </div>
         )}
@@ -3860,7 +3864,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
         <style>{`@keyframes pwDot{0%,100%{opacity:1}50%{opacity:.4}}`}</style>
 
         <h2 className="anton" style={{fontSize:"clamp(22px,6vw,28px)",color:"#fff",marginBottom:18,lineHeight:1.1,letterSpacing:"-.015em"}}>
-          {lang==="en"?(<>Your <span style={{background:"linear-gradient(135deg,#FFE47A,#FFC72C 55%,#E89400)",WebkitBackgroundClip:"text",backgroundClip:"text",WebkitTextFillColor:"transparent",color:"transparent"}}>daily pick</span> every morning at 7am</>)
+          {lang==="es"?(<>Tu <span style={{background:"linear-gradient(135deg,#FFE47A,#FFC72C 55%,#E89400)",WebkitBackgroundClip:"text",backgroundClip:"text",WebkitTextFillColor:"transparent",color:"transparent"}}>mejor playa</span> cada mañana a las 7</>)
+                      :lang==="en"?(<>Your <span style={{background:"linear-gradient(135deg,#FFE47A,#FFC72C 55%,#E89400)",WebkitBackgroundClip:"text",backgroundClip:"text",WebkitTextFillColor:"transparent",color:"transparent"}}>daily pick</span> every morning at 7am</>)
                       :(<>Ta <span style={{background:"linear-gradient(135deg,#FFE47A,#FFC72C 55%,#E89400)",WebkitBackgroundClip:"text",backgroundClip:"text",WebkitTextFillColor:"transparent",color:"transparent"}}>reco</span> chaque matin à 7h</>)}
         </h2>
 
@@ -3914,19 +3919,19 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
             }}>01</div>
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontSize:9.5,color:"rgba(255,199,44,.75)",marginBottom:4,fontWeight:800,letterSpacing:".08em"}}>
-                {lang==="en"?"EVERY MORNING · 7AM":"CHAQUE MATIN · 7H"}
+                {_t(lang,"CHAQUE MATIN · 7H","EVERY MORNING · 7AM","CADA MAÑANA · 7AM")}
               </div>
               <div style={{fontSize:14.5,fontWeight:700,color:"#fff",lineHeight:1.25}}>
                 {_topName
-                  ?(lang==="en"?`Your best beach today: ${_topName}`:`Ta meilleure plage : ${_topName}`)
+                  ?_t(lang,`Ta meilleure plage : ${_topName}`,`Your best beach today: ${_topName}`,`Tu mejor playa hoy: ${_topName}`)
                   :IS_NEW_REGION
-                  ?`Your best beach today: ${REGION.beaches?.[0]?.name||REGION.name}`
-                  :(lang==="en"?"Your best beach today: Anse Dufour":"Ta meilleure plage : Anse Dufour")}
+                  ?_t(lang,`Ta meilleure plage : ${REGION.beaches?.[0]?.name||REGION.name}`,`Your best beach today: ${REGION.beaches?.[0]?.name||REGION.name}`,`Tu mejor playa hoy: ${REGION.beaches?.[0]?.name||REGION.name}`)
+                  :_t(lang,"Ta meilleure plage : Anse Dufour","Your best beach today: Anse Dufour","Tu mejor playa hoy: Anse Dufour")}
               </div>
               <div style={{fontSize:11.5,color:"rgba(255,255,255,.5)",marginTop:3}}>
                 {_topScore
-                  ?(lang==="en"?`Score ${_topScore}/100 · satellite-verified`:`Score ${_topScore}/100 · satellite`)
-                  :(lang==="en"?"Clean · 12 min drive · calm sea":"Propre · 12 min · mer calme")}
+                  ?_t(lang,`Score ${_topScore}/100 · satellite`,`Score ${_topScore}/100 · satellite-verified`,`Score ${_topScore}/100 · verificado por satélite`)
+                  :_t(lang,"Propre · 12 min · mer calme","Clean · 12 min drive · calm sea","Limpia · a 12 min · mar tranquilo")}
               </div>
             </div>
           </div>
@@ -3945,13 +3950,13 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
             }}>02</div>
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontSize:9.5,color:"rgba(255,255,255,.42)",marginBottom:4,fontWeight:800,letterSpacing:".08em"}}>
-                {lang==="en"?"INSTANT ALERT":"ALERTE INSTANTANÉE"}
+                {_t(lang,"ALERTE INSTANTANÉE","INSTANT ALERT","ALERTA INSTANTÁNEA")}
               </div>
               <div style={{fontSize:14.5,fontWeight:700,color:"#fff",lineHeight:1.25}}>
-                {IS_NEW_REGION?`${_exAlert} status changed`:(lang==="en"?"Sainte-Anne status changed":"Sainte-Anne a changé")}
+                {IS_NEW_REGION?_t(lang,`${_exAlert} a changé`,`${_exAlert} status changed`,`${_exAlert} cambió de estado`):_t(lang,"Sainte-Anne a changé","Sainte-Anne status changed","Sainte-Anne cambió de estado")}
               </div>
               <div style={{fontSize:11.5,color:"rgba(255,255,255,.5)",marginTop:3}}>
-                {IS_NEW_REGION?`Clean → Moderate — switch to ${_exSwitch}`:(lang==="en"?"Clean → Moderate — switch to Les Salines":"Propre → Modéré — va aux Salines")}
+                {IS_NEW_REGION?_t(lang,`Propre → Modéré — va à ${_exSwitch}`,`Clean → Moderate — switch to ${_exSwitch}`,`Limpia → Moderado — mejor ve a ${_exSwitch}`):_t(lang,"Propre → Modéré — va aux Salines","Clean → Moderate — switch to Les Salines","Limpia → Moderado — mejor ve a Les Salines")}
               </div>
             </div>
           </div>
@@ -3970,13 +3975,13 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
             }}>03</div>
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontSize:9.5,color:"rgba(255,255,255,.42)",marginBottom:4,fontWeight:800,letterSpacing:".08em"}}>
-                {lang==="en"?"WEEKEND FORECAST":"LE WEEKEND"}
+                {_t(lang,"LE WEEKEND","WEEKEND FORECAST","EL FIN DE SEMANA")}
               </div>
               <div style={{fontSize:14.5,fontWeight:700,color:"#fff",lineHeight:1.25}}>
-                {IS_NEW_REGION?`Best for Saturday: ${_exWeekend}`:(lang==="en"?"Best for Saturday: Grande Anse":"Samedi : Grande Anse")}
+                {IS_NEW_REGION?_t(lang,`Samedi : ${_exWeekend}`,`Best for Saturday: ${_exWeekend}`,`El sábado: ${_exWeekend}`):_t(lang,"Samedi : Grande Anse","Best for Saturday: Grande Anse","El sábado: Grande Anse")}
               </div>
               <div style={{fontSize:11.5,color:"rgba(255,255,255,.5)",marginTop:3}}>
-                {lang==="en"?"Clean all weekend · ideal for kids":"Propre tout le weekend · idéal enfants"}
+                {_t(lang,"Propre tout le weekend · idéal enfants","Clean all weekend · ideal for kids","Limpia todo el fin de semana · ideal con niños")}
               </div>
             </div>
           </div>
@@ -4014,8 +4019,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
         {(ctaOrder!=="sample_first"||!sampleAvailable)&&(
         <div style={{textAlign:"center",fontSize:12,color:"rgba(255,255,255,.4)",marginBottom:16}}>
           {_cleanCount>0
-            ?(lang==="en"?`${_cleanCount}/${_totalCount} beaches clean right now · satellite 24/7`:`${_cleanCount}/${_totalCount} plages propres en ce moment · satellite 24/7`)
-            :(lang==="en"?"135 beaches monitored · 24/7 satellite data":"135 plages surveillées · données satellite 24/7")}
+            ?_t(lang,`${_cleanCount}/${_totalCount} plages propres en ce moment · satellite 24/7`,`${_cleanCount}/${_totalCount} beaches clean right now · satellite 24/7`,`${_cleanCount}/${_totalCount} playas limpias ahora mismo · satélite 24/7`)
+            :_t(lang,"135 plages surveillées · données satellite 24/7","135 beaches monitored · 24/7 satellite data","135 playas monitoreadas · datos satelitales 24/7")}
         </div>
         )}
 
@@ -4039,8 +4044,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
             border:plan==="monthly"?"1.5px solid rgba(255,199,44,.4)":"1.5px solid transparent",
             color:plan==="monthly"?"#fff":"rgba(255,255,255,.7)",fontSize:13,fontWeight:600,
             transition:"all .2s"}}>
-            <div>{lang==="en"?"Monthly":"Mensuel"}</div>
-            <div style={{fontSize:18,fontWeight:700,marginTop:2}}>{REGION_PAY?PRICE_MO:lang==="en"?"€4.99":"4,99 €"}<span style={{fontSize:11,fontWeight:400}}>/{lang==="en"?"mo":"mois"}</span></div>
+            <div>{_t(lang,"Mensuel","Monthly","Mensual")}</div>
+            <div style={{fontSize:18,fontWeight:700,marginTop:2}}>{REGION_PAY?PRICE_MO:lang==="en"?"€4.99":"4,99 €"}<span style={{fontSize:11,fontWeight:400}}>/{_t(lang,"mois","mo","mes")}</span></div>
           </button>
           <button onClick={()=>{setPlan("annual");track("sg_plan_toggle",{plan:"annual"})}} style={{
             flex:1,padding:"10px 8px",borderRadius:10,cursor:"pointer",fontFamily:"inherit",position:"relative",
@@ -4052,8 +4057,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
               fontSize:9,fontWeight:800,padding:"2px 7px",borderRadius:100,letterSpacing:".02em"}}>
               -33%
             </div>
-            <div>{lang==="en"?"Annual":"Annuel"}</div>
-            <div style={{fontSize:18,fontWeight:700,marginTop:2}}>{REGION_PAY?PRICE_YR:lang==="en"?"€39.99":"39,99 €"}<span style={{fontSize:11,fontWeight:400}}>/{lang==="en"?"yr":"an"}</span></div>
+            <div>{_t(lang,"Annuel","Annual","Anual")}</div>
+            <div style={{fontSize:18,fontWeight:700,marginTop:2}}>{REGION_PAY?PRICE_YR:lang==="en"?"€39.99":"39,99 €"}<span style={{fontSize:11,fontWeight:400}}>/{_t(lang,"an","yr","año")}</span></div>
           </button>
           {hasPro&&(
           <button onClick={()=>{setPlan("pro");track("sg_plan_toggle",{plan:"pro"})}} style={{
@@ -4066,8 +4071,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
               fontSize:9,fontWeight:800,padding:"2px 7px",borderRadius:100,letterSpacing:".02em"}}>
               PRO
             </div>
-            <div>{lang==="en"?"Pro":"Pro"}</div>
-            <div style={{fontSize:18,fontWeight:700,marginTop:2}}>{lang==="en"?"€9.99":"9,99 €"}<span style={{fontSize:11,fontWeight:400}}>/{lang==="en"?"mo":"mois"}</span></div>
+            <div>Pro</div>
+            <div style={{fontSize:18,fontWeight:700,marginTop:2}}>{lang==="en"?"€9.99":"9,99 €"}<span style={{fontSize:11,fontWeight:400}}>/{_t(lang,"mois","mo","mes")}</span></div>
           </button>
           )}
         </div>
@@ -4079,11 +4084,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
         <div style={{background:"rgba(255,100,100,.05)",border:"1px solid rgba(255,100,100,.15)",
           borderRadius:12,padding:"10px 14px",marginBottom:14,fontSize:12,color:"rgba(255,255,255,.75)"}}>
           <div style={{fontWeight:700,color:"#ff8a8a",marginBottom:4}}>
-            {lang==="en"?"What's in Pro":"Dans Pro"}
+            {_t(lang,"Dans Pro","What's in Pro","Qué incluye Pro")}
           </div>
-          <div>• {lang==="en"?"Instant WhatsApp alerts when a beach flips":"Alertes WhatsApp instantanées dès qu'une plage change"}</div>
-          <div>• {lang==="en"?"14-day forecast (vs 7-day standard)":"Prévisions 14 jours (vs 7 standard)"}</div>
-          <div>• {lang==="en"?"90-day history + full API access":"Historique 90 jours + accès API complet"}</div>
+          <div>• {_t(lang,"Alertes WhatsApp instantanées dès qu'une plage change","Instant WhatsApp alerts when a beach flips","Alertas instantáneas por WhatsApp cuando una playa cambia")}</div>
+          <div>• {_t(lang,"Prévisions 14 jours (vs 7 standard)","14-day forecast (vs 7-day standard)","Pronóstico a 14 días (vs 7 estándar)")}</div>
+          <div>• {_t(lang,"Historique 90 jours + accès API complet","90-day history + full API access","Historial de 90 días + acceso API completo")}</div>
         </div>
         )}
 
@@ -4094,7 +4099,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
           if(!PAYWALL_READY)return(
             <div key="paid" style={{width:"100%",textAlign:"center",fontSize:13,padding:"16px 24px",
               borderRadius:14,border:"1px dashed rgba(255,255,255,.25)",color:"rgba(255,255,255,.7)"}}>
-              Premium launches here soon — beach alerts &amp; morning brief.
+              {_t(lang,"Premium arrive bientôt ici — alertes plages & brief matin.","Premium launches here soon — beach alerts & morning brief.","Premium llega pronto aquí — alertas de playas y brief matutino.")}
             </div>
           )
           const paidCTA = (
@@ -4117,9 +4122,9 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
               padding:"16px 24px",display:"block",border:"none",cursor:"pointer",fontFamily:"inherit",lineHeight:1.2,
               // When sample is the primary above, de-emphasise the paid CTA visually
               ...(ctaOrder==="sample_first"&&sampleAvailable?{marginTop:10,opacity:.95}:null)}}>
-              <div>{lang==="en"?"Start my daily pick — 7 days free":"Activer ma reco — 7 jours offerts"}</div>
+              <div>{_t(lang,"Activer ma reco — 7 jours offerts","Start my daily pick — 7 days free","Activar mi playa del día — 7 días gratis")}</div>
               <div style={{fontSize:12,opacity:.8,fontWeight:400,marginTop:4}}>
-                {REGION_PAY?`Then ${effectivePlan==="annual"?PRICE_YR+"/yr":PRICE_MO+"/mo"} · cancel in 1 click`:lang==="en"?"Then €4.99/mo · cancel in 1 click":"Puis 4,99 €/mois · annule en 1 clic"}
+                {REGION_PAY?_t(lang,`Puis ${effectivePlan==="annual"?PRICE_YR+"/an":PRICE_MO+"/mois"} · annule en 1 clic`,`Then ${effectivePlan==="annual"?PRICE_YR+"/yr":PRICE_MO+"/mo"} · cancel in 1 click`,`Luego ${effectivePlan==="annual"?PRICE_YR+"/año":PRICE_MO+"/mes"} · cancela en 1 clic`):_t(lang,"Puis 4,99 €/mois · annule en 1 clic","Then €4.99/mo · cancel in 1 click","Luego 4,99 €/mes · cancela en 1 clic")}
               </div>
             </button>
           )
@@ -4134,13 +4139,13 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
             leak by signaling WHERE the money goes BEFORE the tab redirect. */}
         <div style={{textAlign:"center",marginTop:12,fontSize:10.5,
           color:"rgba(255,255,255,.48)",letterSpacing:".01em"}}>
-          {lang==="en"?"No ads · No commitment · Cancel in 1 click":"Sans pub · Sans engagement · Annule en 1 clic"}
+          {_t(lang,"Sans pub · Sans engagement · Annule en 1 clic","No ads · No commitment · Cancel in 1 click","Sin anuncios · Sin compromiso · Cancela en 1 clic")}
         </div>
         <div style={{display:"flex",justifyContent:"center",alignItems:"center",
           gap:8,marginTop:8}}>
           <span style={{display:"inline-flex",alignItems:"center",gap:4,
             fontSize:10,color:"rgba(255,255,255,.7)",fontWeight:500}}>
-            <span>🛡</span>{lang==="en"?"30-day money-back":"Satisfait ou remboursé 30 j"}
+            <span>🛡</span>{_t(lang,"Satisfait ou remboursé 30 j","30-day money-back","Reembolso garantizado 30 días")}
           </span>
           <span style={{color:"rgba(255,255,255,.4)"}}>·</span>
           <span style={{display:"inline-flex",alignItems:"center",gap:4,
@@ -4214,7 +4219,7 @@ function formatFreshness(updatedAt,lang){
 function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,beachCount,dataSource,updatedAt}){
   const LL=T[lang]||T.fr
   const isLive=dataSource==="erddap-live"
-  const srcLabel=isLive?"LIVE":(lang==="en"?"Estimation":"Estimation")
+  const srcLabel=isLive?"LIVE":(lang==="es"?"Estimación":"Estimation")
   const srcColor=isLive?C.green:C.amber
   const fresh=formatFreshness(updatedAt,lang)
   // Unified 40px-tall control rail. Three segments share the same shadow,
@@ -4280,13 +4285,15 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
           background:"transparent",cursor:"pointer",fontSize:16,
           display:"flex",alignItems:"center",justifyContent:"center",
         }}>{theme==="dark"?"☀️":"🌙"}</button>
-        <button onClick={onLangToggle} aria-label={lang==="fr"?"Switch to English":lang==="en"?"Cambiar a español":"Passer en français"} style={{
+        {(()=>{/* Label = langue CIBLE. Nouvelles régions : bascule 2 langues primary↔secondary. MQ/GP : cycle fr→en→es inchangé. */
+        const langTarget=IS_NEW_REGION?(lang===REGION.primaryLang?(REGION.secondaryLangs?.[0]||"en"):REGION.primaryLang):(lang==="fr"?"en":lang==="en"?"es":"fr")
+        return(<button onClick={onLangToggle} aria-label={langTarget==="en"?"Switch to English":langTarget==="es"?"Cambiar a español":"Passer en français"} style={{
           width:40,height:"100%",border:"none",
           background:"transparent",cursor:"pointer",
           fontFamily:"'Anton',sans-serif",fontSize:13,fontWeight:400,
           letterSpacing:".03em",color:"var(--sg-ink)",
           display:"flex",alignItems:"center",justifyContent:"center",
-        }}>{lang==="fr"?"EN":lang==="en"?"ES":"FR"}</button>
+        }}>{langTarget.toUpperCase()}</button>)})()}
       </div>
     </div>
   )
@@ -4330,7 +4337,7 @@ function InlinePushCTA({lang,beachId}){
   if(accepted)return(
     <div style={{margin:"12px 0",padding:"12px 14px",borderRadius:12,
       background:C.greenBg,textAlign:"center",fontSize:13,fontWeight:600,color:C.green}}>
-      {lang==="en"?"Alerts activated! You'll be notified.":"Alertes activées ! Tu seras notifié."}
+      {_t(lang,"Alertes activées ! Tu seras notifié.","Alerts activated! You'll be notified.","¡Alertas activadas! Te avisaremos.")}
     </div>
   )
 
@@ -4341,10 +4348,10 @@ function InlinePushCTA({lang,beachId}){
         <span style={{fontSize:18,flexShrink:0}}>🔔</span>
         <div style={{flex:1,minWidth:0}}>
           <div style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)"}}>
-            {lang==="en"?"Know before you go":"Sois prévenu avant d'aller à la plage"}
+            {_t(lang,"Sois prévenu avant d'aller à la plage","Know before you go","Entérate antes de ir a la playa")}
           </div>
           <div style={{fontSize:11,color:"var(--sg-mid)",marginTop:1}}>
-            {lang==="en"?"We'll alert you if this beach changes status. Free.":"On te prévient si ta plage change de statut. Gratuit."}
+            {_t(lang,"On te prévient si ta plage change de statut. Gratuit.","We'll alert you if this beach changes status. Free.","Te avisamos si tu playa cambia de estado. Gratis.")}
           </div>
         </div>
         <button onClick={handleActivate} style={{
@@ -4352,13 +4359,13 @@ function InlinePushCTA({lang,beachId}){
           background:C.gold,color:"#fff",fontSize:12,fontWeight:700,
           fontFamily:"inherit",flexShrink:0,
           boxShadow:"0 2px 8px rgba(232,168,0,.25)"}}>
-          {lang==="en"?"Activate":"Activer"}
+          {_t(lang,"Activer","Activate","Activar")}
         </button>
       </div>
       <button onClick={()=>{setDismissed(true);track("sg_push_dismiss",{beach_id:beachId||"unknown"})}} style={{
         display:"block",margin:"6px auto 0",background:"none",border:"none",
         cursor:"pointer",color:"var(--sg-mid)",fontSize:11,padding:0}}>
-        {lang==="en"?"Not now":"Plus tard"}
+        {_t(lang,"Plus tard","Not now","Ahora no")}
       </button>
     </div>
   )
@@ -4397,7 +4404,7 @@ function InlineEmailCapture({lang}){
       background:"linear-gradient(135deg,#0D1E1C,#142824)",
       textAlign:"center",fontSize:13,fontWeight:600,color:C.green}}>
       <span style={{fontSize:20,display:"block",marginBottom:4}}>✅</span>
-      {lang==="en"?"You're in! First email in 3 days.":"C'est fait ! Premier email dans 3 jours."}
+      {_t(lang,"C'est fait ! Premier email dans 3 jours.","You're in! First email in 3 days.","¡Listo! Primer email en 3 días.")}
     </div>
   )
 
@@ -4411,24 +4418,24 @@ function InlineEmailCapture({lang}){
       <div style={{position:"relative"}}>
         <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,.4)",
           textTransform:"uppercase",letterSpacing:".08em",marginBottom:6}}>
-          {lang==="en"?"FREE":"GRATUIT"}
+          {_t(lang,"GRATUIT","FREE","GRATIS")}
         </div>
         <div style={{fontSize:14,fontWeight:700,color:"#fff",marginBottom:4}}>
           {em1V==="curiosity"
-            ?(lang==="en"?"Where's the cleanest beach today?":"Où est la plus belle plage aujourd'hui ?")
+            ?_t(lang,"Où est la plus belle plage aujourd'hui ?","Where's the cleanest beach today?","¿Dónde está la mejor playa hoy?")
             :SARGASSES_SEASON==="high"
-              ?(lang==="en"?"Beaches are changing fast":"Les plages changent tous les jours")
-              :(lang==="en"?"Know before you go":"Sois prévenu avant de partir")}
+              ?_t(lang,"Les plages changent tous les jours","Beaches are changing fast","Las playas cambian todos los días")
+              :_t(lang,"Sois prévenu avant de partir","Know before you go","Entérate antes de salir")}
         </div>
         <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginBottom:12,lineHeight:1.4}}>
           {em1V==="curiosity"
-            ?(lang==="en"?"We tell you every morning. Free.":"On te le dit chaque matin. Gratuit.")
+            ?_t(lang,"On te le dit chaque matin. Gratuit.","We tell you every morning. Free.","Te lo decimos cada mañana. Gratis.")
             :SARGASSES_SEASON==="high"
-              ?(lang==="en"?"Get alerted when your beach status changes. Free.":"Reçois une alerte quand ta plage change de statut. Gratuit.")
-              :(lang==="en"?"Weekly beach status + alerts if things change. Free.":"Bilan hebdo + alerte si ça change. Gratuit.")}
+              ?_t(lang,"Reçois une alerte quand ta plage change de statut. Gratuit.","Get alerted when your beach status changes. Free.","Recibe una alerta cuando tu playa cambie de estado. Gratis.")
+              :_t(lang,"Bilan hebdo + alerte si ça change. Gratuit.","Weekly beach status + alerts if things change. Free.","Resumen semanal + alerta si algo cambia. Gratis.")}
         </div>
         <form onSubmit={handleSubmit} style={{display:"flex",gap:8,alignItems:"center"}}>
-          <input type="email" inputMode="email" autoComplete="email" placeholder={lang==="en"?"your@email.com":"ton@email.com"}
+          <input type="email" inputMode="email" autoComplete="email" placeholder={_t(lang,"ton@email.com","your@email.com","tu@email.com")}
             value={email} onChange={e=>setEmail(e.target.value)}
             style={{flex:1,padding:"10px 14px",borderRadius:12,
               border:"1px solid rgba(255,255,255,.12)",
@@ -4439,13 +4446,13 @@ function InlineEmailCapture({lang}){
             background:"linear-gradient(158deg,#FFE47A,#FFC72C,#E89400)",
             color:C.ink,fontSize:13,fontWeight:700,whiteSpace:"nowrap",fontFamily:"inherit",
             boxShadow:"0 2px 12px rgba(232,168,0,.3)"}}>
-            {lang==="en"?"Go":"OK"}
+            {_t(lang,"OK","Go","OK")}
           </button>
         </form>
         <button onClick={()=>{setDismissed(true);s("sg_email_prompt",true);track("sg_email_dismiss")}} style={{
           display:"block",margin:"8px auto 0",background:"none",border:"none",
           cursor:"pointer",color:"rgba(255,255,255,.3)",fontSize:11,padding:0}}>
-          {lang==="en"?"Not now":"Plus tard"}
+          {_t(lang,"Plus tard","Not now","Ahora no")}
         </button>
       </div>
     </div>
@@ -4488,7 +4495,7 @@ function FeedbackWidget(){
       background:"var(--sg-card,#fff)",borderRadius:18,padding:"16px 18px",
       boxShadow:"0 8px 32px rgba(0,0,0,.15),0 0 0 1px var(--sg-border)",
       animation:"slideUp .4s cubic-bezier(.22,1,.36,1)"}}>
-      <button onClick={()=>{setVisible(false);s("sg_feedback_done",true)}} aria-label="Fermer"
+      <button onClick={()=>{setVisible(false);s("sg_feedback_done",true)}} aria-label={_t(lang,"Fermer","Close","Cerrar")}
         style={{position:"absolute",top:4,right:4,background:"none",border:"none",
           color:"var(--sg-mid)",cursor:"pointer",fontSize:16,
           width:44,height:44,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
@@ -4562,11 +4569,11 @@ function FavToast({show,lang,onPremiumClick,isPremium}){
       <span style={{color:C.green,fontSize:16}}>✓</span>
       <div style={{flex:1,minWidth:0}}>
         <div style={{fontSize:13,fontWeight:600,whiteSpace:"nowrap"}}>
-          {lang==="en"?"Added to favorites":"Ajouté aux favoris"}
+          {_t(lang,"Ajouté aux favoris","Added to favorites","Agregada a favoritos")}
         </div>
         {!isPremium&&(
           <div style={{fontSize:11,color:"var(--sg-mid,#686868)",marginTop:2}}>
-            {lang==="en"?"Get alerts when conditions change":"Reçois une alerte quand ça change"}
+            {_t(lang,"Reçois une alerte quand ça change","Get alerts when conditions change","Recibe una alerta cuando cambie")}
           </div>
         )}
       </div>
@@ -4575,7 +4582,7 @@ function FavToast({show,lang,onPremiumClick,isPremium}){
           style={{flexShrink:0,background:C.gold,color:C.ink,border:"none",borderRadius:8,
             padding:"6px 12px",fontSize:11,fontWeight:700,fontFamily:"inherit",cursor:"pointer",
             whiteSpace:"nowrap"}}>
-          {lang==="en"?"Alerts":"Alertes"}
+          {_t(lang,"Alertes","Alerts","Alertas")}
         </button>
       )}
     </div>
@@ -4661,7 +4668,7 @@ function InstallPrompt(){
         <button onClick={handleInstall} style={{background:"#fff",color:C.teal,border:"none",
           borderRadius:12,padding:"8px 14px",fontWeight:700,fontSize:12,cursor:"pointer",
           fontFamily:"inherit",flexShrink:0}}>{isIos?_t(lang,"Voir comment","See how","Ver cómo"):_t(lang,"Installer","Install","Instalar")}</button>
-        <button onClick={dismiss} aria-label={lang==="en"?"Close":"Fermer"}
+        <button onClick={dismiss} aria-label={_t(lang,"Fermer","Close","Cerrar")}
           style={{position:"absolute",top:2,right:2,background:"none",border:"none",
             color:"rgba(255,255,255,.5)",cursor:"pointer",fontSize:16,
             width:44,height:44,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
@@ -5358,7 +5365,7 @@ export default function App(){
   },[])
 
   const toggleTheme=useCallback(()=>setTheme(t=>t==="dark"?"light":"dark"),[])
-  const toggleLang=useCallback(()=>setLang(l=>l==="fr"?"en":l==="en"?"es":"fr"),[])
+  const toggleLang=useCallback(()=>setLang(l=>IS_NEW_REGION?(l===REGION.primaryLang?(REGION.secondaryLangs?.[0]||"en"):REGION.primaryLang):(l==="fr"?"en":l==="en"?"es":"fr")),[])
   // Sync document.documentElement.lang when lang changes (SEO + a11y)
   useEffect(()=>{try{if(typeof document!=="undefined")document.documentElement.lang=lang}catch{}},[lang])
 
@@ -5466,7 +5473,7 @@ export default function App(){
     <LangCtx.Provider value={lang}>
       <StyleInjector/>
       <AbDebug/>
-      <h1 style={{position:"absolute",width:"1px",height:"1px",overflow:"hidden",clip:"rect(0,0,0,0)",whiteSpace:"nowrap"}}>{IS_NEW_REGION?`${REGION.name} sargassum live — beach map today`:island==="mq"?"Sargasses Martinique en temps réel — carte et plages aujourd'hui":"Sargasses Guadeloupe en temps réel — carte et plages aujourd'hui"}</h1>
+      <h1 style={{position:"absolute",width:"1px",height:"1px",overflow:"hidden",clip:"rect(0,0,0,0)",whiteSpace:"nowrap"}}>{IS_NEW_REGION?(REGION.primaryLang==="es"?`Sargazo en ${REGION.name} en vivo — mapa de playas hoy`:`${REGION.name} sargassum live — beach map today`):island==="mq"?"Sargasses Martinique en temps réel — carte et plages aujourd'hui":"Sargasses Guadeloupe en temps réel — carte et plages aujourd'hui"}</h1>
       <div style={{position:"relative",width:"100%",height:"100%",overflow:"hidden"}}>
 
         {/* CHECKOUT RECOVERY BANNER */}
@@ -5480,8 +5487,8 @@ export default function App(){
             flexWrap:"wrap",
             fontSize:13,color:"#e6edf3",fontFamily:"inherit"}}>
             <span style={{opacity:.9,flex:"1 1 180px",minWidth:0,textAlign:"center"}}>{SARGASSES_SEASON==="high"
-              ?(lang==="en"?"Beaches are changing fast. You almost had Premium — finish now.":"Les plages bougent vite. Tu étais presque Premium — termine maintenant.")
-              :(lang==="en"?"You were almost Premium! Pick up where you left off.":"Tu étais presque Premium\u00a0! Reprends où tu en étais.")}</span>
+              ?_t(lang,"Les plages bougent vite. Tu étais presque Premium — termine maintenant.","Beaches are changing fast. You almost had Premium — finish now.","Las playas cambian rápido. Casi tenías Premium — termina ahora.")
+              :_t(lang,"Tu étais presque Premium ! Reprends où tu en étais.","You were almost Premium! Pick up where you left off.","¡Casi tenías Premium! Retoma donde te quedaste.")}</span>
             <button onClick={()=>{
               track("sg_checkout_recovery_click",{island})
               setShowRecoveryBanner(false)
@@ -5489,7 +5496,7 @@ export default function App(){
             }} style={{background:"#E8A800",color:"#0A1714",border:"none",borderRadius:8,
               padding:"6px 14px",fontSize:12,fontWeight:700,fontFamily:"inherit",cursor:"pointer",
               whiteSpace:"nowrap",flexShrink:0}}>
-              {lang==="en"?"Go Premium":"Passer Premium"}
+              {_t(lang,"Passer Premium","Go Premium","Hazte Premium")}
             </button>
             <button onClick={()=>{
               track("sg_checkout_recovery_dismiss",{island})
@@ -5497,7 +5504,7 @@ export default function App(){
               localStorage.removeItem("sg_checkout_abandoned")
             }} style={{background:"none",border:"none",color:"rgba(255,255,255,.5)",
               cursor:"pointer",fontSize:18,lineHeight:1,padding:"0 4px",flexShrink:0}}
-              aria-label="Fermer">&times;</button>
+              aria-label={_t(lang,"Fermer","Close","Cerrar")}>&times;</button>
           </div>
         )}
 
@@ -5636,15 +5643,15 @@ export default function App(){
                   whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
                   {nextSuggestion.beach.name}
                   <span style={{fontWeight:500,color:C.green,marginLeft:6}}>
-                    {lang==="en"?"is clean":"est propre"}
+                    {_t(lang,"est propre","is clean","está limpia")}
                   </span>
                 </div>
                 <div style={{fontSize:11,color:"var(--sg-mid,#686868)",marginTop:1}}>
-                  {nextSuggestion.dist} km {lang==="en"?"away":"d'ici"}
+                  {nextSuggestion.dist} km {_t(lang,"d'ici","away","de aquí")}
                 </div>
               </div>
               <span style={{fontSize:12,fontWeight:700,color:C.green,flexShrink:0}}>
-                {lang==="en"?"View":"Voir"}
+                {_t(lang,"Voir","View","Ver")}
               </span>
             </button>
             <button onClick={()=>setNextSuggestion(null)} style={{
@@ -5706,9 +5713,9 @@ export default function App(){
             animation:"slideUp .4s ease"}}>
             <span style={{fontSize:20}}>🎁</span>
             <div>
-              <div>{lang==="en"?"Recommended by a friend":"Recommandé par un ami"}</div>
+              <div>{_t(lang,"Recommandé par un ami","Recommended by a friend","Recomendado por un amigo")}</div>
               <div style={{fontSize:10,fontWeight:400,opacity:.85,marginTop:2}}>
-                {lang==="en"?"Tap to start your free premium trial":"Appuie pour essayer premium gratuitement"}
+                {_t(lang,"Appuie pour essayer premium gratuitement","Tap to start your free premium trial","Toca para probar premium gratis")}
               </div>
             </div>
             <button aria-label="Close" onClick={e=>{e.stopPropagation();setShowReferralBanner(false)}} style={{

@@ -66,6 +66,14 @@ const T_CARIB={
     zoneLesser:"Lesser Antilles",zoneGreater:"Greater Antilles",
     zoneGulf:"Gulf of Mexico",zoneAfrica:"West Africa Coast",
   },
+  es:{
+    caribbeanView:"Vista Caribe",localView:"Vista local",
+    legendTitle:"Concentración AFAI",legendLow:"Baja",legendMod:"Moderada",legendHigh:"Alta",
+    source:"Fuente: NOAA ERDDAP",
+    zoneSargasso:"Mar de los Sargazos",zoneNERR:"NERR",
+    zoneLesser:"Antillas Menores",zoneGreater:"Antillas Mayores",
+    zoneGulf:"Golfo de México",zoneAfrica:"Costa de África Occidental",
+  },
 }
 
 /* ── Caribbean zone labels ────────────────────────────────────── */
@@ -477,7 +485,7 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
       const icon=L.divIcon({className:"",html,iconSize:[size,size],iconAnchor:[size/2,size/2]})
       const marker=L.marker([b.lat,b.lng],{icon,riseOnHover:true,zIndexOffset:isSelected?1000:(isEmph?500:200)})
       marker._sgBeach=b
-      if(!("ontouchstart" in window))marker.bindTooltip(b.name+(hasScore?` · ${b.score}/100`:"")+(isNearest?(lang==="en"?" · Nearest clean":" · La plus proche propre"):""),{direction:"top",offset:[0,-size/2-4],className:"",permanent:false})
+      if(!("ontouchstart" in window))marker.bindTooltip(b.name+(hasScore?` · ${b.score}/100`:"")+(isNearest?(lang==="es"?" · La más cercana limpia":lang==="en"?" · Nearest clean":" · La plus proche propre"):""),{direction:"top",offset:[0,-size/2-4],className:"",permanent:false})
       marker.on("click",(e)=>handlePinClick(e,b))
       marker.addTo(markerGroup)
       markersRef.current.push(marker)
