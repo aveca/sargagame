@@ -118,13 +118,15 @@ async function main() {
       else throw new Error(`verification failed: ${msg}`)
     }
 
-    // 4. Co-owner humain (best effort)
+    // 4. Co-owner humain (best effort) — l'id de la ressource vient de list(),
+    //    pas de l'identifier encodé (l'API rejette ce dernier).
     if (HUMAN_OWNER) {
       try {
-        const resId = encodeURIComponent(site.identifier)
-        const cur = await sv.webResource.get({ id: resId })
-        const owners = new Set([...(cur.data.owners || []), HUMAN_OWNER])
-        await sv.webResource.update({ id: resId, requestBody: { id: cur.data.id, site, owners: [...owners] } })
+        const lst = await sv.webResource.list({})
+        const item = (lst.data.items || []).find(w => w.site && w.site.identifier === site.identifier)
+        if (!item) throw new Error('ressource introuvable dans webResource.list')
+        const owners = new Set([...(item.owners || []), HUMAN_OWNER])
+        await sv.webResource.update({ id: item.id, requestBody: { id: item.id, site: item.site, owners: [...owners] } })
         log(`  ✅ co-owner ajouté: ${HUMAN_OWNER}`)
       } catch (e) {
         log(`  ⚠️ co-owner non ajouté (${e?.errors?.[0]?.message || e.message}) — la propriété reste accessible via le SA`)
