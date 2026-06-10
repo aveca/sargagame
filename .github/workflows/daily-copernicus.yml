@@ -22,7 +22,9 @@ concurrency:
 jobs:
   update-and-deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    # 25 → 60 : les full builds enchaînent désormais 4 builds Vite (3 nouvelles
+    # régions + build partagé MQ/GP) + 5 deploys FTPS. Repo public = minutes illimitées.
+    timeout-minutes: 60
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -158,6 +160,24 @@ jobs:
           echo "full=$FULL" >> $GITHUB_OUTPUT
           echo "Hour: $HOUR, event: ${{ github.event_name }}, Full build: $FULL"
 
+      # ── 2-pre. Builds des nouvelles régions (puntacana, florida, rivieramaya…)
+      # Séquentiels : chaque build VITE_REGION=<id> écrase dist/. Le build
+      # partagé MQ/GP (étapes suivantes, sans VITE_REGION) reste le DERNIER pour
+      # que martinique-ftp/ et guadeloupe-ftp/ soient générés depuis un dist/ MQ
+      # propre, jamais pollué par une autre région.
+      # Une région sans secrets FTP est quand même construite, puis ignorée
+      # silencieusement par manual-ftp-deploy.cjs (skip sans creds, pas d'échec).
+      - name: Build new regions (séquentiel, avant le build MQ/GP)
+        if: steps.check_build.outputs.full == 'true'
+        run: |
+          set -e
+          NEW_REGIONS=$(node -e "console.log(require('./regions/index.cjs').getAllRegions().map(r => r.id).filter(id => !['mq','gp'].includes(id)).join(' '))")
+          for RID in $NEW_REGIONS; do
+            echo "── Build région $RID ──"
+            VITE_REGION=$RID npm run build
+            VITE_REGION=$RID node scripts/prepare-ftp.cjs
+          done
+
       - name: Build site (Vite)
         if: steps.check_build.outputs.full == 'true'
         run: npm run build
@@ -195,6 +215,33 @@ jobs:
             echo "First run — did full build"
           fi
 
+      # ── 2c. Data-only nouvelles régions : copie les JSON frais de chaque
+      # région (public/api/copernicus/<id>/) vers <ftpDir>/api/copernicus/ —
+      # mêmes fichiers que prepareNewRegion() dans scripts/prepare-ftp.cjs
+      # (sargassum.json + history.json, servis à la racine du domaine).
+      # Pas de grid/banks/forecast-archive : ces overlays MQ/GP sont purgés des
+      # nouvelles régions. Le deploy FTPS plus bas n'upload que ce mini-dossier
+      # (manual-ftp-deploy.cjs upload le contenu de <ftpDir>/ tel quel).
+      - name: Quick data deploy nouvelles régions (no full build)
+        if: steps.check_build.outputs.full == 'false'
+        run: |
+          node -e "
+            const fs = require('fs'), path = require('path');
+            const { getAllRegions } = require('./regions/index.cjs');
+            for (const r of getAllRegions()) {
+              if (['mq', 'gp'].includes(r.id)) continue;
+              const src = path.join('public', 'api', 'copernicus', r.id);
+              if (!fs.existsSync(path.join(src, 'sargassum.json'))) { console.log('skip ' + r.id + ' (pas de data fraiche)'); continue; }
+              const dest = path.join(r.ftpDir, 'api', 'copernicus');
+              fs.mkdirSync(dest, { recursive: true });
+              for (const f of ['sargassum.json', 'history.json']) {
+                const s = path.join(src, f);
+                if (fs.existsSync(s)) fs.copyFileSync(s, path.join(dest, f));
+              }
+              console.log('Updated data in ' + dest);
+            }
+          "
+
       # ── 3. Commit updated data to repo ────────────────────
       - name: Commit updated sargassum.json
         run: |
@@ -202,6 +249,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add public/api/copernicus/sargassum.json public/api/copernicus/history.json public/api/copernicus/sargassum-grid.json
+          # Sorties par région du pipeline multi-régions (mq/, gp/, puntacana/, …)
+          git add 'public/api/copernicus/*/sargassum.json' 'public/api/copernicus/*/history.json' 2>/dev/null || true
           [ -f scripts/automation/data/daily-metrics.json ] && git add scripts/automation/data/daily-metrics.json
           [ -f scripts/automation/data/subscribers.json ] && git add scripts/automation/data/subscribers.json
           [ -f scripts/automation/data/welcome-sent.json ] && git add scripts/automation/data/welcome-sent.json
@@ -245,7 +294,10 @@ jobs:
 
       # ── 4–5. FTPS déployé en sessions fragmentées (basic-ftp) — évite
       # "Timeout (control socket)" de l'hébergeur (~660 STOR / session).
-      - name: Deploy FTPS Martinique + Guadeloupe (sessions fragmentées)
+      # manual-ftp-deploy.cjs itère TOUTES les régions (regions/index.cjs) :
+      # une région sans secrets FTP ou sans dossier <ftpDir>/ local = skip
+      # silencieux (le workflow n'échoue pas).
+      - name: Deploy FTPS toutes régions (sessions fragmentées)
         id: ftp_deploy
         continue-on-error: true
         env:
@@ -255,6 +307,15 @@ jobs:
           FTP_SERVER_GP: ${{ secrets.FTP_SERVER_GP }}
           FTP_USERNAME_GP: ${{ secrets.FTP_USERNAME_GP }}
           FTP_PASSWORD_GP: ${{ secrets.FTP_PASSWORD_GP }}
+          FTP_SERVER_PUNTACANA: ${{ secrets.FTP_SERVER_PUNTACANA }}
+          FTP_USERNAME_PUNTACANA: ${{ secrets.FTP_USERNAME_PUNTACANA }}
+          FTP_PASSWORD_PUNTACANA: ${{ secrets.FTP_PASSWORD_PUNTACANA }}
+          FTP_SERVER_FLORIDA: ${{ secrets.FTP_SERVER_FLORIDA }}
+          FTP_USERNAME_FLORIDA: ${{ secrets.FTP_USERNAME_FLORIDA }}
+          FTP_PASSWORD_FLORIDA: ${{ secrets.FTP_PASSWORD_FLORIDA }}
+          FTP_SERVER_RIVIERAMAYA: ${{ secrets.FTP_SERVER_RIVIERAMAYA }}
+          FTP_USERNAME_RIVIERAMAYA: ${{ secrets.FTP_USERNAME_RIVIERAMAYA }}
+          FTP_PASSWORD_RIVIERAMAYA: ${{ secrets.FTP_PASSWORD_RIVIERAMAYA }}
         run: node scripts/manual-ftp-deploy.cjs
 
       # ── 6. Final health check — fail workflow only if sites actually down ──
