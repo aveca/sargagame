@@ -201,20 +201,26 @@ if ($action === 'embedded') {
 }
 
 // ── Action: setup — cree un SetupIntent (collecte carte)
+// card + link uniquement : Apple/Google Pay passent par 'card', et aucun
+// moyen de paiement a redirect → confirmSetup reste 100% in-app (3DS=iframe).
 if ($action === 'setup') {
     $si = stripe('POST', '/setup_intents', [
-        'automatic_payment_methods[enabled]' => 'true',
+        'payment_method_types[0]' => 'card',
+        'payment_method_types[1]' => 'link',
     ]);
     echo json_encode(['clientSecret' => $si['client_secret']]);
     exit;
 }
 
-// ── Action: subscribe — cree Customer + Subscription avec trial
+// ── Action: subscribe — cree Customer + Subscription avec trial.
+// Flow checkout ON-SITE (Payment Element dans le modal, 2026-06-10) :
+// setup → confirmSetup côté client → subscribe. AUCUN redirect.
 if ($action === 'subscribe') {
     $email = $input['email'] ?? '';
-    $plan = $input['plan'] ?? 'monthly';
+    $plan = (($input['plan'] ?? 'monthly') === 'annual') ? 'annual' : 'monthly';
     $setupIntentId = $input['setupIntentId'] ?? '';
     $lang = $input['lang'] ?? 'fr';
+    $source = preg_replace('/[^a-zA-Z0-9_-]/', '', $input['source'] ?? 'unknown');
 
     if (!$email || !$setupIntentId) {
         http_response_code(400);
@@ -235,14 +241,19 @@ if ($action === 'subscribe') {
     if ($island !== '') $customerParams['metadata[island]'] = $island;
     $customer = stripe('POST', '/customers', $customerParams);
 
-    // Creer l'abonnement avec essai 7j
-    $price = $cfg['prices'][$plan] ?? $cfg['prices']['monthly'];
+    // Creer l'abonnement avec essai 7j — prix PAR REGION (memes prices que les
+    // Payment Links), metadata plan/source = attribution. automatic_tax retire
+    // (les Payment Links ne l'activent pas ; l'activer 400 si Stripe Tax off).
+    $byRegion = $cfg['prices_by_region'] ?? [];
+    $regionPrices = ($island !== '' && isset($byRegion[$island])) ? $byRegion[$island] : null;
+    $price = $regionPrices[$plan] ?? ($cfg['prices'][$plan] ?? $cfg['prices']['monthly']);
     $subParams = [
         'customer'                    => $customer['id'],
         'items[0][price]'             => $price,
         'trial_period_days'           => 7,
-        'automatic_tax[enabled]'      => 'true',
         'default_payment_method'      => $pm,
+        'metadata[plan]'              => $plan,
+        'metadata[source]'            => $source,
     ];
     if ($island !== '') $subParams['metadata[island]'] = $island;
     $sub = stripe('POST', '/subscriptions', $subParams);
@@ -253,11 +264,38 @@ if ($action === 'subscribe') {
         'trialEnd'       => $sub['trial_end'],
     ];
     echo json_encode($response);
+    // Repondre TOUT DE SUITE (le paywall attend) — logs + email partent en
+    // arriere-plan, meme pattern que stripe-webhook.php.
+    ignore_user_abort(true);
+    if (function_exists('fastcgi_finish_request')) { @fastcgi_finish_request(); }
+
+    // Log paiement vers la sheet 'payments' (Apps Script) : ce flow ne passe
+    // PAS par Checkout → checkout.session.completed ne tire jamais. Sans ce
+    // forward, payments_real (funnel) serait aveugle aux abonnements on-site.
+    // Dedup cote Apps Script par id (= sub id).
+    try {
+        $payLog = json_encode([
+            'type' => 'checkout.session.completed',
+            'verified' => true,
+            'webhook_source' => 'subscribe_onsite',
+            'data' => ['object' => [
+                'id' => $sub['id'],
+                'payment_status' => $sub['status'],
+                'customer_email' => $email,
+                'client_reference_id' => substr(($island !== '' ? $island : 'mq') . '_' . $plan . '_' . $source, 0, 200),
+                'metadata' => ['island' => ($island !== '' ? $island : 'mq')],
+            ]],
+        ]);
+        $chP = curl_init($cfg['appsscript_url'] ?? 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec');
+        curl_setopt_array($chP, [CURLOPT_POST => true, CURLOPT_POSTFIELDS => $payLog, CURLOPT_HTTPHEADER => ['Content-Type: application/json'], CURLOPT_RETURNTRANSFER => true, CURLOPT_FOLLOWLOCATION => true, CURLOPT_MAXREDIRS => 5, CURLOPT_TIMEOUT => 8]);
+        curl_exec($chP);
+        curl_close($chP);
+    } catch (Exception $e) {}
 
     // Email de bienvenue (fire-and-forget)
     try {
         $island = (strpos($origin, 'guadeloupe') !== false) ? 'GP' : 'MQ';
-        $domain = ($island === 'GP') ? 'sargasses-guadeloupe.com' : 'sargasses-martinique.com';
+        $domain = parse_url($origin, PHP_URL_HOST) ?: 'sargasses-martinique.com';
         $subject = ($lang === 'en')
             ? "You're in - your 7-day forecast is live"
             : "C'est parti - tes previsions 7 jours sont actives";

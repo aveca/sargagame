@@ -43,6 +43,22 @@ export function useLang(){return useContext(LangCtx)||"fr"}
 function getLang(){try{const _d=IS_NEW_REGION?REGION.primaryLang:"fr";if(typeof window==="undefined")return _d;const p=window.location.pathname;if(p.startsWith("/es"))return"es";if(p.startsWith("/en"))return"en";return _d}catch{return IS_NEW_REGION?REGION.primaryLang:"fr"}}
 /* i18n inline helper — returns fr/en/es string based on current lang */
 function _t(lang,fr,en,es){return lang==="es"?es:lang==="en"?en:fr}
+/* stripe.js partagé — chargé à l'idle de l'app (recommandation Stripe : inclure
+   Stripe.js sur toutes les pages) car ce réseau (Caraïbe → CDN Stripe) le charge
+   en ~15s : au moment du paywall il doit déjà être en cache. */
+let _stripeJsPromise=null
+function loadStripeJs(){
+  if(typeof window!=="undefined"&&window.Stripe)return Promise.resolve()
+  if(_stripeJsPromise)return _stripeJsPromise
+  _stripeJsPromise=new Promise((res,rej)=>{
+    const sc=document.createElement("script")
+    sc.src="https://js.stripe.com/v3"
+    sc.onload=res
+    sc.onerror=(e)=>{_stripeJsPromise=null;rej(e)}
+    document.head.appendChild(sc)
+  })
+  return _stripeJsPromise
+}
 /* Labels jours du forecast : le pipeline émet du FR ('Auj.','Dem.','Ven'…) dans
    le JSON — remap au rendu pour en/es (MQ/GP fr : passthrough inchangé). */
 const FC_DAY_MAP={
@@ -3718,73 +3734,145 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
       return u.toString()
     }catch{return link}
   }
-  // ── Checkout in-app (Stripe Embedded Checkout) ────────────────────────────
-  // Formulaire Stripe complet (CB + Apple Pay + Google Pay + Link) monté DANS
-  // l'app. Mesure 2026-06-10 : init+iframe Stripe = 12-27s — inacceptable au
-  // clic. Stratégie : PRÉCHAUFFAGE dès l'ouverture du modal (session + js
-  // stripe + mount dans l'overlay caché pendant que l'user lit le paywall) ;
-  // au clic l'overlay se révèle instantanément (spinner si pas encore prêt,
-  // budget 12s puis fallback Payment Link). Toute erreur → Payment Link —
-  // jamais d'impasse de paiement. Retour: /?session_id= → handler existant.
-  const[embeddedOpen,setEmbeddedOpen]=useState(false)
-  const[embeddedReady,setEmbeddedReady]=useState(false)
-  const embeddedRef=useRef(null)
-  const embeddedPlanRef=useRef(null)
-  const embeddedErrorRef=useRef(false)
-  const embeddedDivRef=useRef(null)
-  const loadStripeJs=()=>window.Stripe?Promise.resolve():new Promise((res,rej)=>{
-    const sc=document.createElement("script")
-    sc.src="https://js.stripe.com/v3";sc.onload=res;sc.onerror=rej
-    document.head.appendChild(sc)
-  })
-  const prewarm=useCallback(async(plan)=>{
+  // ── Checkout ON-SITE (Stripe Payment Element, design maison) ──────────────
+  // Formulaire de paiement DANS le modal, aux couleurs de l'app : Payment
+  // Element (carte+Link) + Express Checkout (Apple/Google Pay), thème sombre.
+  // AUCUN redirect, AUCUNE iframe Checkout (l'embedded mesuré 12-27s le
+  // 2026-06-10 a été retiré sur feedback utilisateur). Le SetupIntent +
+  // js.stripe.com sont préchauffés à l'ouverture du paywall (~1s) ; au clic,
+  // les Elements montent en <1s. confirmSetup (3DS en iframe, jamais de
+  // redirect: types card+link only) → action subscribe (essai 7j, prix
+  // région) → premium activé EN PLACE. Fallback intégral : Payment Link.
+  const[payStep,_setPayStep]=useState(false)
+  const payStepRef=useRef(false)
+  const setPayStep=useCallback(v=>{payStepRef.current=v;_setPayStep(v)},[])
+  const[payReady,setPayReady]=useState(false)
+  const[payBusy,setPayBusy]=useState(false)
+  const[payError,setPayError]=useState("")
+  const stripeRef=useRef(null)
+  const elementsRef=useRef(null)
+  const setupSecretRef=useRef(null)
+  const payPrewarmPromiseRef=useRef(null)
+  const payMountedRef=useRef(false)
+  const payPlanRef=useRef("monthly")
+  const payReadyRef=useRef(false)
+  const payEmailRef=useRef(null)
+  const payDivRef=useRef(null)
+  const expressDivRef=useRef(null)
+  // Préchauffage COMPLET dès l'ouverture du paywall : SetupIntent + stripe.js
+  // + Elements + MOUNT du Payment Element dans l'overlay caché. Mesuré
+  // 2026-06-10 : stripe.js ~15s + boot de l'élément ~12s sur ce réseau — tout
+  // doit booter PENDANT la lecture du paywall, pas au clic. Un SetupIntent
+  // n'est pas lié au plan → un seul prewarm pour tout le modal.
+  useEffect(()=>{
     if(!PAYWALL_READY)return
-    if(embeddedPlanRef.current===plan&&(embeddedRef.current||!embeddedErrorRef.current))return
-    try{embeddedRef.current?.destroy()}catch(_){}
-    embeddedRef.current=null;embeddedPlanRef.current=plan;embeddedErrorRef.current=false
-    setEmbeddedReady(false)
-    try{
+    payPrewarmPromiseRef.current=(async()=>{
       const[r]=await Promise.all([
         fetch("/api/create-checkout.php",{method:"POST",headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({action:"embedded",plan,source:source||"unknown",lang,email:localStorage.getItem("sg_email")||""})}),
+          body:JSON.stringify({action:"setup"})}),
         loadStripeJs(),
       ])
       if(!r.ok)throw new Error("http "+r.status)
       const{clientSecret}=await r.json()
       if(!clientSecret)throw new Error("no clientSecret")
-      if(embeddedPlanRef.current!==plan)return // plan changé entre-temps
-      const checkout=await window.Stripe(STRIPE_PK).initEmbeddedCheckout({clientSecret})
-      if(embeddedPlanRef.current!==plan){try{checkout.destroy()}catch(_){}
-        return}
-      embeddedRef.current=checkout
-      // Mount immédiat dans le conteneur (overlay caché) : le formulaire se
-      // rend pendant la lecture du paywall → ouverture quasi instantanée.
-      if(embeddedDivRef.current){checkout.mount(embeddedDivRef.current);setEmbeddedReady(true)}
-    }catch(_){embeddedErrorRef.current=true}
-  },[source,lang])
-  useEffect(()=>{prewarm(effectivePlan)},[effectivePlan,prewarm])
-  useEffect(()=>()=>{try{embeddedRef.current?.destroy()}catch(_){}},[])
+      setupSecretRef.current=clientSecret
+      stripeRef.current=window.Stripe(STRIPE_PK)
+      elementsRef.current=stripeRef.current.elements({
+        clientSecret,
+        appearance:{theme:"night",variables:{
+          colorPrimary:"#FFC72C",colorBackground:"#13261F",colorText:"#e6edf3",
+          colorDanger:"#E8522A",borderRadius:"12px",fontSizeBase:"15px",
+        }},
+      })
+      // Pré-mount dans l'overlay caché (toujours rendu) — ready pendant la lecture
+      if(!payMountedRef.current&&payDivRef.current){
+        const pe=elementsRef.current.create("payment",{layout:"tabs"})
+        pe.mount(payDivRef.current)
+        pe.on("ready",()=>{payReadyRef.current=true;setPayReady(true)})
+        try{
+          const ece=elementsRef.current.create("expressCheckout")
+          ece.mount(expressDivRef.current)
+          ece.on("confirm",(ev)=>{
+            try{const em=ev?.billingDetails?.email;if(em&&payEmailRef.current&&!payEmailRef.current.value)payEmailRef.current.value=em}catch(_){}
+            doSubscribeRef.current()
+          })
+        }catch(_){/* wallets indisponibles : la carte suffit */}
+        payMountedRef.current=true
+      }
+    })()
+    payPrewarmPromiseRef.current.catch(()=>{}) // l'échec est géré au clic (fallback)
+  },[])
+  const doSubscribe=useCallback(async()=>{
+    const plan=payPlanRef.current
+    if(payBusy)return
+    const email=(payEmailRef.current?.value||"").trim()
+    if(!email||!email.includes("@")||!email.includes(".")){
+      setPayError(_t(lang,"Entre ton email pour recevoir ton accès.","Enter your email to receive your access.","Introduce tu email para recibir tu acceso."))
+      return
+    }
+    setPayBusy(true);setPayError("")
+    try{
+      const{error:subErr}=await elementsRef.current.submit()
+      if(subErr)throw subErr
+      const{error,setupIntent}=await stripeRef.current.confirmSetup({
+        elements:elementsRef.current,clientSecret:setupSecretRef.current,
+        redirect:"if_required",
+        confirmParams:{return_url:window.location.origin+"/?setup_return=1",payment_method_data:{billing_details:{email}}},
+      })
+      if(error)throw error
+      const r=await fetch("/api/create-checkout.php",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({action:"subscribe",email,plan,setupIntentId:setupIntent.id,lang,source:source||"unknown"})})
+      const d=await r.json().catch(()=>({}))
+      if(!r.ok||d.error||!d.subscriptionId)throw new Error(d.error||"subscribe failed")
+      // SUCCÈS — premium activé en place, zéro redirect
+      localStorage.setItem("sg_email",email)
+      localStorage.setItem("sg_premium","1")
+      localStorage.setItem("sg_premium_email",email)
+      if(d.trialEnd)localStorage.setItem("sg_premium_trial_end",String(d.trialEnd))
+      track("sg_conversion",{session_id:d.subscriptionId,method:"onsite",plan})
+      setPayBusy(false)
+      onActivated?.()
+      onClose()
+    }catch(e){
+      setPayBusy(false)
+      const msg=(e&&e.message)?String(e.message):""
+      setPayError(msg||_t(lang,"Paiement impossible. Réessaie ou continue sur Stripe.","Payment failed. Retry or continue on Stripe.","Pago imposible. Reintenta o continúa en Stripe."))
+      track("sg_pay_onsite_error",{plan,message:msg.slice(0,90)})
+    }
+  },[lang,source,payBusy,onActivated,onClose])
+  const doSubscribeRef=useRef(doSubscribe)
+  useEffect(()=>{doSubscribeRef.current=doSubscribe},[doSubscribe])
   const startCheckout=useCallback(async(plan,via)=>{
     const link=stripeUrlWith(stripeLinkFor[plan]||LINK_MONTHLY,plan)
     const goFallback=(why)=>{
-      setEmbeddedOpen(false)
+      setPayStep(false)
       track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"payment_link",via:via+"_"+why})
       setTimeout(()=>{window.location.href=link},0)
     }
-    track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"embedded",via})
-    setEmbeddedOpen(true) // overlay + spinner IMMÉDIATS — zéro temps mort visuel
+    payPlanRef.current=plan
+    track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"onsite",via})
+    setPayStep(true) // révèle l'étape (le formulaire pré-monté est déjà prêt ou boote)
     const t0=Date.now()
-    if(embeddedPlanRef.current!==plan)prewarm(plan)
-    for(let i=0;i<48;i++){
-      if(embeddedRef.current&&embeddedPlanRef.current===plan){
-        track("sg_embedded_open",{plan,via,ms:Date.now()-t0})
-        return
-      }
-      if(embeddedErrorRef.current)return goFallback("fallback")
-      await new Promise(r=>setTimeout(r,250))
+    try{
+      // Le prewarm a déjà tout lancé à l'ouverture du modal. Budget large :
+      // l'étape est visible avec spinner + bouton d'échappe vers Stripe.
+      await Promise.race([
+        payPrewarmPromiseRef.current||Promise.reject(new Error("no prewarm")),
+        new Promise((_,rej)=>setTimeout(()=>rej(new Error("prewarm timeout")),20000)),
+      ])
+      track("sg_pay_onsite_open",{plan,via,ms:Date.now()-t0,ready:payReadyRef.current})
+      // L'élément monte (ou est monté) ; si jamais ready n'arrive pas, on bascule.
+      setTimeout(()=>{
+        if(payStepRef.current&&!payReadyRef.current&&payPlanRef.current===plan){
+          try{console.error("sg_onsite_slow_element")}catch(_){}
+          goFallback("slow")
+        }
+      },20000)
+    }catch(e){
+      try{console.error("sg_onsite_mount_fail",e)}catch(_){}
+      goFallback("fallback")
     }
-    return goFallback("timeout") // 12s sans instance → Payment Link
-  },[source,lang,prewarm])
+  },[source,lang])
   // A/B test pw_cta_order KILLED 2026-06-09 (scheduled ab-evaluate run).
   // Hypothesis (sample-first reduces the 85% paywall dismiss) was falsified:
   // sg_sample_start fired 0 times across 10,738 sessions over ~7 weeks, with
@@ -4309,35 +4397,72 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
         }}>{LL.close}</button>
         </div>{/* end sticky CTA section */}
       </div>
-      {/* Checkout in-app — overlay plein écran au-dessus du modal (z 1300).
-          TOUJOURS rendu (caché via visibility) : le préchauffage monte le
-          formulaire Stripe dedans pendant la lecture du paywall, et la
-          révélation au clic est instantanée. La croix CACHE seulement
-          (l'instance reste montée → réouverture immédiate). */}
-      <div style={{position:"fixed",inset:0,zIndex:1300,background:"rgba(8,15,14,.94)",
-        display:"flex",flexDirection:"column",
-        visibility:embeddedOpen?"visible":"hidden",
-        pointerEvents:embeddedOpen?"auto":"none"}}>
-        <div style={{display:"flex",justifyContent:"flex-end",padding:"10px 14px"}}>
-          <button onClick={()=>{track("sg_embedded_close",{plan:effectivePlan,source:source||"unknown"});setEmbeddedOpen(false)}}
-            aria-label={_t(lang,"Fermer","Close","Cerrar")}
-            style={{width:38,height:38,borderRadius:"50%",border:"1px solid rgba(255,255,255,.25)",
-              background:"rgba(255,255,255,.08)",color:"#fff",fontSize:17,cursor:"pointer",lineHeight:1}}>✕</button>
-        </div>
-        <div style={{flex:1,overflow:"auto",background:"#fff",
-          borderRadius:"16px 16px 0 0",maxWidth:560,width:"100%",margin:"0 auto",position:"relative"}}>
-          <div ref={embeddedDivRef} style={{minHeight:"100%"}}/>
-          {!embeddedReady&&(
-            <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",
-              alignItems:"center",justifyContent:"center",gap:14,background:"#fff"}}>
-              <div style={{width:34,height:34,borderRadius:"50%",border:"3px solid #e5e5e5",
-                borderTopColor:"#635BFF",animation:"sgSpin .8s linear infinite"}}/>
-              <div style={{fontSize:13,color:"#687385",fontWeight:500}}>
-                {_t(lang,"Paiement sécurisé Stripe…","Secure Stripe checkout…","Pago seguro Stripe…")}
-              </div>
+      {/* Étape paiement ON-SITE — overlay sombre au-dessus du modal (z 1300),
+          design maison : email + Apple/Google Pay + Payment Element (carte).
+          TOUJOURS rendu (caché) pour que les Elements montés persistent. */}
+      <div style={{position:"fixed",inset:0,zIndex:1300,background:"linear-gradient(145deg,#0D1E1C,#0A1714)",
+        display:"flex",flexDirection:"column",overflow:"auto",
+        // hors-écran (PAS visibility:hidden : les iframes Stripe ne bootent pas
+        // dans un conteneur hidden — le pré-mount resterait gelé)
+        transform:payStep?"none":"translateX(-200vw)",
+        pointerEvents:payStep?"auto":"none"}}>
+        <div style={{maxWidth:480,width:"100%",margin:"0 auto",padding:"16px 20px 28px",flex:1,display:"flex",flexDirection:"column"}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+            <button onClick={()=>{track("sg_pay_onsite_back",{plan:payPlanRef.current});setPayStep(false)}}
+              style={{background:"none",border:"none",color:"rgba(255,255,255,.65)",fontSize:14,cursor:"pointer",
+                fontFamily:"inherit",display:"flex",alignItems:"center",gap:6,padding:"8px 0"}}>
+              ← {_t(lang,"Retour","Back","Atrás")}
+            </button>
+            <span style={{fontSize:11,color:"rgba(255,255,255,.45)",display:"flex",alignItems:"center",gap:5}}>
+              🔒 Stripe
+            </span>
+          </div>
+          <h3 className="anton" style={{fontSize:22,color:"#fff",margin:"0 0 4px",letterSpacing:"-.01em"}}>
+            {_t(lang,"Démarre ton essai gratuit","Start your free trial","Empieza tu prueba gratis")}
+          </h3>
+          <div style={{fontSize:13,color:"rgba(255,255,255,.6)",marginBottom:18}}>
+            {_t(lang,"0 € aujourd'hui","$0 today","0 $ hoy")} · {payPlanRef.current==="annual"
+              ?_t(lang,`puis ${REGION_PAY?PRICE_YR:"39,99 €"}/an dans 7 jours`,`then ${PRICE_YR||"$79"}/yr in 7 days`,`luego ${PRICE_YR||"$79"}/año en 7 días`)
+              :_t(lang,`puis ${REGION_PAY?PRICE_MO:"4,99 €"}/mois dans 7 jours`,`then ${PRICE_MO||"$9.99"}/mo in 7 days`,`luego ${PRICE_MO||"$9.99"}/mes en 7 días`)} · {_t(lang,"annule en 1 clic","cancel in 1 click","cancela en 1 clic")}
+          </div>
+          <input ref={payEmailRef} type="email" inputMode="email" autoComplete="email"
+            defaultValue={typeof localStorage!=="undefined"?(localStorage.getItem("sg_email")||""):""}
+            placeholder={_t(lang,"ton@email.com","you@email.com","tu@email.com")}
+            style={{width:"100%",boxSizing:"border-box",padding:"13px 14px",borderRadius:12,marginBottom:12,
+              border:"1px solid rgba(255,255,255,.18)",background:"#13261F",color:"#e6edf3",
+              fontSize:15,fontFamily:"inherit",outline:"none"}}/>
+          <div ref={expressDivRef} style={{marginBottom:10}}/>
+          <div ref={payDivRef} style={{minHeight:120}}/>
+          {!payReady&&payStep&&(
+            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"26px 0"}}>
+              <div style={{width:22,height:22,borderRadius:"50%",border:"2.5px solid rgba(255,255,255,.15)",
+                borderTopColor:"#FFC72C",animation:"sgSpin .8s linear infinite"}}/>
+              <span style={{fontSize:12.5,color:"rgba(255,255,255,.55)"}}>
+                {_t(lang,"Paiement sécurisé…","Secure checkout…","Pago seguro…")}
+              </span>
               <style>{`@keyframes sgSpin{to{transform:rotate(360deg)}}`}</style>
             </div>
           )}
+          {payError&&<div style={{color:"#FF8A65",fontSize:12.5,marginTop:10,lineHeight:1.4}}>{payError}</div>}
+          <button onClick={()=>doSubscribe()} disabled={payBusy} className="gbtn"
+            style={{width:"100%",padding:15,borderRadius:14,border:"none",marginTop:16,
+              cursor:payBusy?"wait":"pointer",fontFamily:"inherit",fontWeight:800,fontSize:15.5,
+              opacity:payBusy?.7:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+            {payBusy
+              ?_t(lang,"Activation…","Activating…","Activando…")
+              :_t(lang,"Démarrer l'essai — 0 € aujourd'hui","Start trial — $0 today","Empezar prueba — 0 $ hoy")}
+          </button>
+          <div style={{textAlign:"center",marginTop:12,fontSize:10.5,color:"rgba(255,255,255,.4)"}}>
+            {_t(lang,"Sans engagement · Rappel 2 jours avant la 1re charge","No commitment · Reminder 2 days before first charge","Sin compromiso · Recordatorio 2 días antes del primer cobro")}
+          </div>
+          <button onClick={()=>{
+            const link=stripeUrlWith(stripeLinkFor[payPlanRef.current]||LINK_MONTHLY,payPlanRef.current)
+            track("sg_checkout_redirect",{plan:payPlanRef.current,source:source||"unknown",destination:"payment_link",via:"onsite_escape"})
+            setTimeout(()=>{window.location.href=link},0)
+          }} style={{background:"none",border:"none",color:"rgba(255,255,255,.4)",fontSize:11.5,
+            cursor:"pointer",fontFamily:"inherit",marginTop:14,textDecoration:"underline"}}>
+            {_t(lang,"Ou continuer sur la page Stripe →","Or continue on the Stripe page →","O continuar en la página de Stripe →")}
+          </button>
         </div>
       </div>
     </>
@@ -5042,6 +5167,14 @@ export default function App(){
 
   // Analytics: session start
   useEffect(()=>{track("sg_session_start",{island,is_premium:isPremium,is_returning:!!g("sg_seen",0)});s("sg_seen",1)},[])
+
+  // stripe.js à l'idle (3s post-load) : la 1re connexion js.stripe.com mesurée
+  // 15-22s à froid (TLS 9s) sur réseau Caraïbe — preconnect (index.html) + charge
+  // tôt pour qu'il soit en cache AVANT que l'utilisateur ouvre le paywall.
+  useEffect(()=>{
+    const t=setTimeout(()=>{loadStripeJs().catch(()=>{})},3000)
+    return()=>clearTimeout(t)
+  },[])
 
   // Push opt-in: contextual primer + native OneSignal prompt at a VALUE moment.
   // Old timing (1.5s PWA / 12s browser, no primer) gave 6% opt-in on 376 sessions.
