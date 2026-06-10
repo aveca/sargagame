@@ -93,15 +93,79 @@ export default defineConfig({
         const name = REGION.name, domain = REGION.domain, lang = REGION.primaryLang
         const title = `${name} Sargassum Today — Live Beach Map & 7-Day Forecast 2026`
         const desc = `Which ${name} beach is sargassum-free today? Live per-beach seaweed map, Beach Score 0-100 and 7-day forecast. Updated daily from satellite data.`
-        return html
+        const siteName = `Sargassum ${name}`
+        const today = new Date().toISOString().slice(0, 10)
+        const beaches = REGION.beaches || []
+        const communes = [...new Set(beaches.map(b => b.commune).filter(Boolean))]
+        const beachNames = beaches.map(b => b.name)
+
+        // ── 1) Head meta (titre/desc/og/locale/domain) ──
+        html = html
           .replace(/<html lang="[^"]*"/, `<html lang="${lang}"`)
           .replace(/<title>[\s\S]*?<\/title>/, `<title>${title}</title>`)
           .replace(/(<meta name="description" content=)"[^"]*"/, `$1"${desc}"`)
           .replace(/(<meta property="og:title" content=)"[^"]*"/, `$1"${title}"`)
           .replace(/(<meta property="og:description" content=)"[^"]*"/, `$1"${desc}"`)
-          .replace(/(<meta property="og:site_name" content=)"[^"]*"/, `$1"Sargassum ${name}"`)
+          .replace(/(<meta property="og:site_name" content=)"[^"]*"/, `$1"${siteName}"`)
           .replace(/(<meta property="og:locale" content=)"[^"]*"/, `$1"${lang === 'es' ? 'es_MX' : 'en_US'}"`)
+          .replace(/(<meta property="og:image:alt" content=)"[^"]*"/, `$1"Beach Score 0-100 for every ${name} beach — sargassum, swell, wind, sun"`)
+          .replace(/(<meta name="twitter:title" content=)"[^"]*"/, `$1"${title}"`)
+          .replace(/(<meta name="twitter:description" content=)"[^"]*"/, `$1"${desc}"`)
+          .replace(/(<meta name="geo.region" content=)"[^"]*"/, `$1"${REGION.countryCode || ''}"`)
+          .replace(/(<meta name="geo.placename" content=)"[^"]*"/, `$1"${name}"`)
+          .replace(/(<meta name="theme-color" content=)"[^"]*"/, `$1"${REGION.brand?.primary || '#0EA5E9'}"`)
+          .replace(/<meta property="og:locale:alternate" content="[^"]*" \/>\s*/g, '')
           .replace(/https:\/\/sargasses-martinique\.com/g, `https://${domain}`)
+
+        // ── 2) hreflang : langue primaire à la racine + x-default. Pas de /es/ tant que
+        //      la page n'existe pas (build mono-SPA, pas de sous-pages générées). ──
+        html = html.replace(
+          /<link rel="alternate" hreflang="fr"[^>]*\/>\s*<link rel="alternate" hreflang="en"[^>]*\/>\s*<link rel="alternate" hreflang="es"[^>]*\/>\s*<link rel="alternate" hreflang="x-default"[^>]*\/>/,
+          `<link rel="alternate" hreflang="${lang}" href="https://${domain}/" />\n    <link rel="alternate" hreflang="x-default" href="https://${domain}/" />`
+        )
+
+        // ── 3) Analytics partagés MQ/GP : JAMAIS sur une nouvelle région (séparation des
+        //      propriétés GA4/Clarity avant tout lancement — voir handoff sécurité). ──
+        html = html
+          .replace(/<!-- Google Analytics 4 -->\s*<script async src="https:\/\/www\.googletagmanager\.com[^"]*"><\/script>\s*<script>[\s\S]*?<\/script>/, '<!-- GA4 : propriété dédiée à créer pour cette région (pas de tracking partagé MQ/GP) -->')
+          .replace(/<!-- Microsoft Clarity \+ bridge[\s\S]*?<\/script>/, '<!-- Clarity : projet dédié à créer pour cette région -->')
+          .replace(/<link rel="preconnect" href="https:\/\/www\.clarity\.ms" \/>\s*/, '')
+
+        // ── 4) OneSignal : appId de la région, sinon stub no-op (pas d'app partagée). ──
+        const osId = REGION.onesignalAppId && !String(REGION.onesignalAppId).startsWith('TBD') ? REGION.onesignalAppId : ''
+        if (osId) {
+          html = html.replace(/window\.ONESIGNAL_APP_ID="[^"]*"/, `window.ONESIGNAL_APP_ID="${osId}"`)
+        } else {
+          html = html.replace(/<!-- OneSignal Push[\s\S]*?<\/script>/, '<script>window.ONESIGNAL_APP_ID="";window.loadOneSignal=function(){};</script>')
+        }
+
+        // ── 5) JSON-LD : remplace les 4 blocs MQ par 3 blocs région (pas de
+        //      SiteNavigationElement : aucune sous-page générée pour l'instant). ──
+        const ldWebApp = JSON.stringify({ '@context': 'https://schema.org', '@type': 'WebApplication', name: `${siteName} · Daily Beach Status`, description: desc, url: `https://${domain}/`, applicationCategory: 'TravelApplication', operatingSystem: 'Web', inLanguage: [lang, ...(REGION.secondaryLangs || [])], dateModified: today, datePublished: today, publisher: { '@type': 'Organization', name: siteName, logo: `https://${domain}/icon-512.png` } })
+        const ldFaq = JSON.stringify({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: [
+          { '@type': 'Question', name: `Is there sargassum in ${name} right now?`, acceptedAnswer: { '@type': 'Answer', text: `Open the live map to see today's status for every ${name} beach. Each of the ${beaches.length} monitored beaches gets a Beach Score 0-100 combining sargassum, swell, wind, water temperature and sun — updated daily from NOAA satellite data.` } },
+          { '@type': 'Question', name: `Which ${name} beaches are sargassum-free today?`, acceptedAnswer: { '@type': 'Answer', text: `Conditions differ beach by beach: ${communes.join(', ')} are not hit equally on the same day. The map ranks all beaches daily so you can pick the cleanest one — typically the leeward and bay-protected spots.` } },
+          { '@type': 'Question', name: `When is sargassum season in ${name}?`, acceptedAnswer: { '@type': 'Answer', text: 'Sargassum influx usually peaks between April and September, but landings vary week to week with currents and wind. Monitoring runs year-round with a 7-day forecast for every beach.' } },
+          { '@type': 'Question', name: 'How is the sargassum data measured?', acceptedAnswer: { '@type': 'Answer', text: 'Detection uses the NOAA AFAI satellite index (Alternative Floating Algae Index) sampled offshore of each beach, blended with wind and current data into a per-beach 7-day forecast. Data refreshes several times a day.' } },
+        ] })
+        const ldOrg = JSON.stringify({ '@context': 'https://schema.org', '@type': 'Organization', name: siteName, url: `https://${domain}`, logo: `https://${domain}/icon-512.png`, description: `Daily sargassum status and Beach Score 0-100 for ${name} beaches`, areaServed: [name, REGION.country].filter(Boolean), knowsAbout: ['sargassum', 'beaches', name, REGION.country, 'seaweed forecast'].filter(Boolean) })
+        html = html
+          .replace(/\s*<script type="application\/ld\+json">[\s\S]*?<\/script>/g, '')
+          .replace('<style>', `<script type="application/ld+json">\n    ${ldWebApp}\n    </script>\n    <script type="application/ld+json">\n    ${ldFaq}\n    </script>\n    <script type="application/ld+json">\n    ${ldOrg}\n    </script>\n  <style>`)
+
+        // ── 6) noscript SEO : contenu région en langue primaire, SANS liens internes
+        //      (aucune sous-page générée → zéro phantom href, cf. bug seo-link-graph). ──
+        const byCommune = communes.map(c => `<h2>${c} — beaches monitored daily</h2>\n        <p>${beaches.filter(b => b.commune === c).map(b => b.name).join(', ')}.</p>`).join('\n        ')
+        const noscriptRegion = `<noscript>
+        <h1>${name} Sargassum Today — live status for every beach (2026)</h1>
+        <p>Which ${name} beach is sargassum-free today? Daily status for ${beaches.length} beaches (${beachNames.slice(0, 6).join(', ')}…) from NOAA satellite data, with a Beach Score 0-100 and a 7-day forecast per beach.</p>
+        ${byCommune}
+        <h2>Sargassum season in ${name} ${today.slice(0, 4)}</h2>
+        <p>Sargassum arrivals usually peak from April to September, but vary week to week with wind and currents. The map is updated daily, year-round, so you can pick the right beach before you go.</p>
+      </noscript>`
+        html = html.replace(/<noscript>\s*<h1>[\s\S]*?<\/noscript>/, noscriptRegion)
+
+        return html
       },
     },
     // Proxy Copernicus Marine : vérification des identifiants (copernicustxt.txt)
