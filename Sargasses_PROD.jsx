@@ -2740,7 +2740,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
     track("sg_hero_email_submit",{beach_id:top?.id,score:top?.score})
     try{localStorage.setItem("sg_email",heroEmail)}catch{}
     try{
-      const isl=window.location.hostname.includes("guadeloupe")?"GP":"MQ"
+      const isl=IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"
       fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
         method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
         body:JSON.stringify({email:heroEmail,island:isl,source:"hero_inline",date:new Date().toISOString()})
@@ -4385,7 +4385,7 @@ function InlineEmailCapture({lang}){
     s("sg_email",email)
     s("sg_email_prompt",true)
     setSubmitted(true)
-    const island=window.location.hostname.includes("guadeloupe")?"GP":"MQ"
+    const island=IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"
     try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
       method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
       body:JSON.stringify({email,island,source:"inline-beach",date:new Date().toISOString()})
@@ -4473,7 +4473,7 @@ function FeedbackWidget(){
 
   const submit=()=>{
     track("sg_feedback",{rating,text:text.slice(0,200)})
-    const island=window.location.hostname.includes("guadeloupe")?"GP":"MQ"
+    const island=IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"
     try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
       method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
       body:JSON.stringify({type:"feedback",rating,text:text.slice(0,500),island,date:new Date().toISOString()})
