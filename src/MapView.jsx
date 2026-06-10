@@ -123,6 +123,13 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
   const caribLayerRef=useRef(null)
   const caribLabelsRef=useRef(null)
   const prevViewRef=useRef(null) // store zoom/center before switching
+  // Vue avant un clic pastille : restaurée à la fermeture de la fiche. Sans ça,
+  // le zoom de désambiguïsation (+2 par clic ambigu) enfonce la vue à chaque
+  // ouverture et 47/53 pastilles finissent hors-champ (mesuré 2026-06-10) —
+  // perçu utilisateur : « les pastilles ne sont plus cliquables ».
+  const prePinViewRef=useRef(null)
+  const prevSelectedIdRef=useRef(null)
+  const[showRecenter,setShowRecenter]=useState(false)
   const autoPlayTimersRef=useRef([])
   const autoZoomDoneRef=useRef(false)
   const[threatDismissed,setThreatDismissed]=useState(()=>sessionStorage.getItem("sg_threat_dismissed")==="1")
@@ -165,9 +172,18 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
   // Fly to island — fitBounds on the visible beaches so EVERY pin is on screen & clickable.
   // The old fixed zoom-11 center cut off MQ east coast (La Trinité, Caravelle, Le François)
   // on 390px viewports, which is why users couldn't click ~21 of 53 pins.
+  // FIT UNE FOIS PAR ÎLE : l'identité de `beaches` change à chaque refresh data
+  // (~2-8s post-load) et re-fittait la vue île EN PLEINE interaction — le zoom/tap
+  // utilisateur était annulé 1-3s plus tard (trace forensic 2026-06-10), perçu
+  // comme « clic mort ». userPos n'élargit les bounds qu'au premier fix GPS.
+  const didFitRef=useRef("")
   useEffect(()=>{
     if(!mapRef.current)return
     const islandBeaches=(beaches||[]).filter(b=>b.island===island)
+    if(!islandBeaches.length)return
+    const fitKey=island+"|"+(userPos?"gps":"")
+    if(didFitRef.current===fitKey||(didFitRef.current.startsWith(island+"|")&&didFitRef.current.includes("gps")))return
+    didFitRef.current=fitKey
     const fallbackCenter=ISLAND_CENTER[island]||ISLAND_CENTER.mq
     // Toujours inclure TOUTES les plages dans les bounds. Ne jamais flyTo(user) seul au z12 :
     // ça recoupait l'est MQ / pins hors écran → clics "qui ne font rien" visuellement.
@@ -412,6 +428,11 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
     }
     const handlePinClick=(e,b)=>{
       const pt=realClickPoint(e)
+      // Sauve la vue AVANT toute action (zoom désambig ou ouverture) — restaurée
+      // quand la fiche se ferme, pour que les autres pastilles restent atteignables.
+      if(!selectedBeach&&mapRef.current){
+        try{prePinViewRef.current={center:mapRef.current.getCenter(),zoom:mapRef.current.getZoom()}}catch(_){}
+      }
       if(pt&&mapRef.current&&mapRef.current.getZoom()<MAX_DISAMBIG_ZOOM&&countAmbig(pt)>=2){
         // Zoom de désambiguïsation — mais un clic ne doit JAMAIS être mort :
         // après le zoom, si le point visé est devenu non-ambigu, on ouvre la
@@ -524,6 +545,51 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
     },800)
     return()=>{if(driftRef.current)clearInterval(driftRef.current)}
   },[beaches,onBeachClick,selectedBeach,sargData,userPos,lang,timeStep,zoomTick])
+
+  // Fiche fermée → restaure la vue d'avant le clic pastille (1 tap = 1 aller-retour).
+  // Ne joue pas en mode Caraïbe ni pour les ouvertures venant de la liste.
+  useEffect(()=>{
+    const wasOpen=!!prevSelectedIdRef.current
+    prevSelectedIdRef.current=selectedBeach?.id||null
+    if(!selectedBeach&&wasOpen&&prePinViewRef.current&&mapRef.current&&!caribbeanMode){
+      const v=prePinViewRef.current
+      prePinViewRef.current=null
+      try{mapRef.current.flyTo(v.center,v.zoom,{duration:.55})}catch(_){}
+    }
+  },[selectedBeach,caribbeanMode])
+
+  // Bouton « Toute l'île » : visible dès que ≥3 plages sortent du champ (zoom
+  // profond, pan…) — mobile n'a AUCUN contrôle de zoom, pinch seulement.
+  useEffect(()=>{
+    if(!mapRef.current)return
+    const map=mapRef.current
+    const check=()=>{
+      try{
+        if(caribbeanMode){setShowRecenter(false);return}
+        const bounds=map.getBounds()
+        let out=0
+        for(const b of(beaches||[])){
+          if(b.island!==island)continue
+          if(!bounds.contains([b.lat,b.lng])&&++out>=3){setShowRecenter(true);return}
+        }
+        setShowRecenter(false)
+      }catch(_){}
+    }
+    map.on("moveend zoomend",check)
+    check()
+    return()=>{try{map.off("moveend zoomend",check)}catch(_){}}
+  },[beaches,island,caribbeanMode])
+
+  const recenterMap=useCallback(()=>{
+    if(!mapRef.current)return
+    const latlngs=(beaches||[]).filter(b=>b.island===island).map(b=>[b.lat,b.lng])
+    if(!latlngs.length)return
+    prePinViewRef.current=null
+    try{
+      mapRef.current.fitBounds(latlngs,{paddingTopLeft:[20,110],paddingBottomRight:[20,190],maxZoom:12,animate:true,duration:.7})
+      track("sg_map_recenter",{})
+    }catch(_){}
+  },[beaches,island,track])
 
   // Fetch Caribbean AFAI data (lazy — only when first toggled)
   useEffect(()=>{
@@ -706,6 +772,27 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
       <span style={{fontSize:15}}>{caribbeanMode?"🏝":"🌎"}</span>
       <span className="sg-carib-label">{caribbeanMode?tl.localView:tl.caribbeanView}</span>
     </button>
+
+    {/* Recentrage « toute l'île » — apparaît dès que des pastilles sortent du champ */}
+    {showRecenter&&!caribbeanMode&&(()=>{
+      const lbl=lang==="es"?"Toda la isla":lang==="en"?"Whole island":"Toute l'île"
+      return(
+      <button onClick={recenterMap} title={lbl} aria-label={lbl} style={{
+        position:"absolute",top:"calc(56px + env(safe-area-inset-top, 0px))",right:"calc(12px + env(safe-area-inset-right, 0px))",zIndex:1000,
+        display:"flex",alignItems:"center",gap:6,
+        padding:"8px 14px",
+        background:"rgba(13,30,28,.75)",
+        color:"#fff",border:"1px solid rgba(255,255,255,.15)",
+        borderRadius:20,fontSize:12,fontWeight:600,
+        fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",
+        cursor:"pointer",backdropFilter:"blur(8px)",
+        boxShadow:"0 2px 12px rgba(0,0,0,.3)",
+        letterSpacing:"0.3px",
+      }}>
+        <span style={{fontSize:15}}>🗺</span>
+        <span>{lbl}</span>
+      </button>)
+    })()}
 
     {/* Caribbean Legend */}
     {caribbeanMode&&<div style={{

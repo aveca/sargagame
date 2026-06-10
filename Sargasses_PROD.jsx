@@ -4903,6 +4903,17 @@ function InstallPrompt(){
     return()=>{window.removeEventListener("beforeinstallprompt",handler);clearInterval(interval);clearTimeout(fallback)}
   },[dismissed,isStandalone])
 
+  // Auto-hide 15s : la bannière flotte SUR la carte et rendait les pastilles
+  // dessous incliquables tant qu'on ne la fermait pas (prouvé par test clic
+  // exhaustif 2026-06-10). 15s suffisent pour agir ; elle ne s'affiche de
+  // toute façon qu'une fois par appareil (flag posé au moment du show).
+  // HOOK AVANT le early-return ci-dessous (sinon React #310 — ordre des hooks).
+  useEffect(()=>{
+    if(!visible||showIosTutorial)return
+    const t=setTimeout(()=>{setVisible(false);setDismissed(true);track("sg_pwa_autohide",{platform:isIos?"ios":"android"})},15000)
+    return()=>clearTimeout(t)
+  },[visible,showIosTutorial])
+
   if(!visible||isStandalone)return null
 
   const handleInstall=async()=>{
