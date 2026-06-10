@@ -3050,18 +3050,18 @@
       "levels": [
         {
           "id": "grande-anse",
-          "afai": 0.22,
-          "status": "moderate"
+          "afai": 0.1,
+          "status": "clean"
         },
         {
           "id": "anse-mitan",
-          "afai": 0.22,
-          "status": "moderate"
+          "afai": 0.1,
+          "status": "clean"
         },
         {
           "id": "anse-noire",
-          "afai": 0.23,
-          "status": "moderate"
+          "afai": 0.11,
+          "status": "clean"
         },
         {
           "id": "tartane",
@@ -3070,33 +3070,33 @@
         },
         {
           "id": "anse-madame",
-          "afai": 0.23,
-          "status": "moderate"
+          "afai": 0.11,
+          "status": "clean"
         },
         {
           "id": "diamant",
-          "afai": 0.22,
-          "status": "moderate"
+          "afai": 0.1,
+          "status": "clean"
         },
         {
           "id": "pt-marin",
-          "afai": 0.21,
-          "status": "moderate"
+          "afai": 0.1,
+          "status": "clean"
         },
         {
           "id": "sainte-anne",
-          "afai": 0.21,
-          "status": "moderate"
+          "afai": 0.1,
+          "status": "clean"
         },
         {
           "id": "les-salines",
-          "afai": 0.21,
-          "status": "moderate"
+          "afai": 0.09,
+          "status": "clean"
         },
         {
           "id": "vauclin",
-          "afai": 0.21,
-          "status": "moderate"
+          "afai": 0.09,
+          "status": "clean"
         },
         {
           "id": "gp-grande-anse",
