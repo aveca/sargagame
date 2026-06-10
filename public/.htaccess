@@ -105,12 +105,15 @@ RewriteRule ^communes/?$ / [R=301,L]
 RewriteRule ^carte-temps-reel/?$ /carte-sargasses/ [R=301,L]
 RewriteRule ^methode-carte/?$ /carte-sargasses/ [R=301,L]
 RewriteRule ^previsions-sargasses-guadeloupe/?$ /previsions/ [R=301,L]
-RewriteRule ^faq/?$ / [R=301,L]
+# /faq/ et /a-propos/ sont des VRAIES pages (build + public/) — les 301
+# legacy (f60141a, posés quand elles n'existaient pas) les masquaient : le
+# lien trust du paywall vers /a-propos/ redirigeait vers la home (découvert
+# 2026-06-10). Règle : ne JAMAIS 301 un chemin sans vérifier qu'il n'est
+# pas servi (health-check.cjs le surveille désormais).
 RewriteRule ^cgu/?$ /mentions-legales.html [R=301,L]
 RewriteRule ^mentions-legales/?$ /mentions-legales.html [R=301,L]
 RewriteRule ^politique-de-confidentialite/?$ /confidentialite.html [R=301,L]
 RewriteRule ^contact/?$ / [R=301,L]
-RewriteRule ^a-propos/?$ / [R=301,L]
 RewriteRule ^premium/?$ / [R=301,L]
 RewriteRule ^quand-sargasses-guadeloupe/?$ /saison-sargasses-guadeloupe/ [R=301,L]
 RewriteRule ^plages-deshaies-guadeloupe/?$ /plages/la-grande-anse-deshaies/ [R=301,L]

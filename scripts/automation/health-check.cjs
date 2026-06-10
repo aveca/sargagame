@@ -105,6 +105,43 @@ async function checkStaleness() {
   return issues
 }
 
+// Pages réelles qui DOIVENT être servies (pas redirigées, pas la home).
+// Leçon 2026-06-10 : un 301 legacy dans .htaccess masquait /a-propos/ et
+// /faq/ pendant que le paywall pointait dessus — un deploy FTP ne suffit
+// pas à le voir, seul un GET sans follow-redirect le révèle (https.get ne
+// suit pas les 301 → statusCode 301 = échec ici, c'est voulu).
+const PAGE_CHECKS = [
+  { path: '/a-propos/', mustMatch: /confiance/i, domains: ['mq', 'gp'] },
+  { path: '/faq/', mustMatch: /FAQ/i, domains: ['mq', 'gp'] },
+]
+async function checkRealPages() {
+  const issues = []
+  for (const region of getAllRegions()) {
+    for (const pc of PAGE_CHECKS) {
+      if (!pc.domains.includes(region.id)) continue
+      const url = `https://${region.domain}${pc.path}`
+      try {
+        const { status, body } = await new Promise((resolve, reject) => {
+          https.get(url, { timeout: 10000 }, res => {
+            let d = ''
+            res.on('data', c => d += c)
+            res.on('end', () => resolve({ status: res.statusCode, body: d }))
+          }).on('error', reject).on('timeout', function () { this.destroy(); reject(new Error('timeout')) })
+        })
+        if (status !== 200 || !pc.mustMatch.test(body)) {
+          issues.push(`[${region.id}] ${pc.path} cassée: HTTP ${status}${status === 301 || status === 302 ? ' (REDIRIGÉE — .htaccess ?)' : ''}, contenu attendu ${pc.mustMatch} absent`)
+          console.log(`❌ [${region.id}] ${pc.path} — ${status}, page réelle non servie`)
+        } else {
+          console.log(`✅ [${region.id}] ${pc.path} servie (200, contenu ok)`)
+        }
+      } catch (e) {
+        issues.push(`[${region.id}] ${pc.path} check failed: ${e.message}`)
+      }
+    }
+  }
+  return issues
+}
+
 // Send staleness/downtime alert via Resend
 function sendAlert(subject, issues) {
   const apiKey = process.env.RESEND_API_KEY
@@ -149,6 +186,11 @@ async function main() {
   // Check data staleness
   console.log('')
   const stalenessIssues = await checkStaleness()
+
+  // Check real pages are actually served (not shadowed by redirects)
+  console.log('')
+  const pageIssues = await checkRealPages()
+  stalenessIssues.push(...pageIssues)
 
   // Collect all issues for alerting
   const allIssues = []
