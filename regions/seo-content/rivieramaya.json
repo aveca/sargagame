@@ -1,0 +1,103 @@
+{
+  "faq": [
+    {
+      "q": "¿Cuándo es la temporada de sargazo en Cancún y la Riviera Maya?",
+      "a": "La temporada va de abril a septiembre, con el pico entre mayo y julio. De noviembre a marzo las playas suelen estar limpias, aunque pueden llegar manchones aislados en cualquier momento. Como cada año varía — y mucho —, seguimos cada playa con imágenes satelitales de Copernicus actualizadas cuatro veces al día, para que veas lo que hay en la arena hoy y no un promedio histórico."
+    },
+    {
+      "q": "¿Qué playas tienen menos sargazo en la Riviera Maya?",
+      "a": "Las que no miran al este: Playa Norte en Isla Mujeres, Holbox al norte de la península y la costa oeste de Cozumel (Palancar) casi nunca reciben sargazo. En el corredor Cancún–Tulum, las playas protegidas por bahía o arrecife — Akumal, Puerto Morelos — acumulan menos que las abiertas. Revisa el mapa en vivo: los datos satelitales diarios muestran cuáles están limpias hoy mismo."
+    },
+    {
+      "q": "¿Qué tan confiables son los datos de este sitio?",
+      "a": "Usamos el índice AFAI, el mismo estándar con el que la NOAA detecta sargazo flotante desde satélite, con imágenes de Copernicus actualizadas cuatro veces al día. Los reportes de bañistas en la playa corrigen lo que las nubes alcanzan a tapar. Cada playa muestra la hora exacta de su última actualización y un nivel de confianza, para que sepas qué tan fresca es la lectura que estás viendo."
+    },
+    {
+      "q": "¿Se puede pronosticar el sargazo con una semana de anticipación?",
+      "a": "Sí, con límites razonables. El sargazo deriva con el viento y las corrientes, así que cuando el satélite detecta una mancha mar adentro podemos proyectar su trayectoria hacia cada playa durante los siguientes siete días. Los días 1 a 3 son los más certeros; del 4 al 7 marcan la tendencia. El pronóstico se recalcula todos los días con cada nueva pasada satelital."
+    },
+    {
+      "q": "¿Los hoteles limpian el sargazo de sus playas?",
+      "a": "Los grandes resorts de Cancún, Playa del Carmen y Tulum rastrillan su frente de playa cada mañana, y muchos instalan barreras antisargazo mar adentro; los municipios y la Marina también recogen toneladas en temporada. Aun así, en días de arribazón fuerte el alga regresa en horas. Por eso conviene ver el flujo real por satélite: si no viene nada nuevo, la playa rastrillada aguanta limpia todo el día."
+    },
+    {
+      "q": "¿Qué hago si mi playa amaneció llena de sargazo?",
+      "a": "Muévete — la geografía te da opciones. Si la zona hotelera de Cancún amaneció mal, Playa Norte en Isla Mujeres suele estar limpia; desde Playa del Carmen, el ferry te deja a media hora de Palancar, en Cozumel. El sargazo fresco no es peligroso, pero los montones en descomposición huelen a azufre y es mejor evitarlos. Con las alertas premium te avisamos en cuanto tu playa cambie de estado."
+    }
+  ],
+  "pages": {
+    "forecast": {
+      "slug": "pronostico-sargazo",
+      "title": "Pronóstico de Sargazo Riviera Maya 2026 — 7 Días por Playa",
+      "desc": "Pronóstico de sargazo a 7 días para Cancún, Playa del Carmen y Tulum, actualizado a diario con datos satelitales. Mira qué playas estarán limpias esta semana.",
+      "h1": "Pronóstico de Sargazo en Cancún y la Riviera Maya — Próximos 7 Días",
+      "intro": "Casi todos los pronósticos de sargazo te dan un solo veredicto para todo Quintana Roo, basado en imágenes oficiales que ya tienen días de retraso cuando se publican. Aquí funciona distinto: corremos un pronóstico independiente para cada una de las 12 playas que monitoreamos, de Holbox a Mahahual, porque la realidad cambia de una bahía a otra — la misma mancha que tapa Playa Delfines puede pasar de largo frente a Puerto Morelos. Cada mañana el modelo procesa la pasada más reciente del satélite Copernicus, ubica las manchas que vienen en camino y proyecta los arribos de los próximos siete días, playa por playa. El resultado se actualiza a diario — cuatro lecturas satelitales al día lo alimentan — para que decidas tu día de playa antes de que el sargazo lo decida por ti.",
+      "method": "Partimos del índice AFAI (Alternative Floating Algae Index), la firma espectral con la que los satélites de Copernicus y la NOAA detectan sargazo flotante desde órbita. Cada mancha detectada se proyecta hacia adelante con datos de viento y corriente superficial — el sargazo deriva a un 2.5% de la velocidad del viento más la corriente local. Para el alga que ya está en la arena aplicamos persistencia exponencial con vida media de 3.5 días: se degrada salvo que llegue material nuevo. Los reportes de la comunidad corrigen al satélite cuando hay nubes. La mayor precisión está en los días 1 a 3, y todo se recalcula a diario."
+    },
+    "today": {
+      "slug": "playas-sin-sargazo-hoy",
+      "title": "Playas sin Sargazo Hoy en Riviera Maya (Lista en Vivo)",
+      "desc": "Lista en vivo de las playas sin sargazo hoy en Cancún y la Riviera Maya. Verificada por satélite 4 veces al día — encuentra hoy agua turquesa de verdad.",
+      "h1": "Playas sin Sargazo Hoy en Cancún y la Riviera Maya",
+      "intro": "¿Buscas una playa limpia hoy mismo? Abajo está la lista del día, ordenada de la más limpia a la más afectada, con las playas que ahora mismo están libres de sargazo según la última pasada satelital — se actualiza cuatro veces al día. Como regla general, Playa Norte, Holbox y el lado oeste de Cozumel casi siempre encabezan la lista, mientras que el corredor Cancún–Tulum sube y baja según el viento de la semana. Pero la regla general no es lo que importa cuando ya empacaste la hielera: importa el dato de hoy. Revisa el número junto a tu playa y lánzate."
+    },
+    "map": {
+      "slug": "mapa-sargazo",
+      "title": "Mapa del Sargazo Riviera Maya (En Vivo) — Playa por Playa",
+      "desc": "Mapa interactivo del sargazo en Cancún y la Riviera Maya, actualizado 4 veces al día con imágenes satelitales. Revisa cada playa antes de salir de casa.",
+      "h1": "Mapa del Sargazo en Vivo — Cancún y Riviera Maya",
+      "intro": "Este es un mapa interactivo y en vivo del sargazo en el Caribe mexicano: cada playa, de Holbox a Mahahual, aparece con su estado en colores — limpia, moderada o evitar. Lo alimentan imágenes satelitales de Copernicus actualizadas cuatro veces al día, más los reportes de gente que está parada en la arena en este momento. Toca cualquier playa para ver su estado actual, su calificación de 0 a 100 y el pronóstico a 7 días. A diferencia de las guías de temporada, este mapa cambia cuando cambia el mar: un giro de viento en la noche puede limpiar Cancún y cargar Tulum antes del mediodía. Revísalo la mañana que vayas."
+    },
+    "season": {
+      "slug": "temporada-sargazo-rivieramaya",
+      "title": "Temporada de Sargazo Riviera Maya 2026 — Mes por Mes",
+      "desc": "¿Cuándo hay sargazo en Cancún y la Riviera Maya? De abril a septiembre, con pico de mayo a julio. Calendario mes a mes y seguimiento satelital diario.",
+      "h1": "Temporada de Sargazo en Cancún y la Riviera Maya — Guía 2026",
+      "months": [
+        {
+          "period": "Noviembre – Febrero",
+          "text": "La ventana confiable. Los arribos son raros y ligeros, el Atlántico está en su mínimo anual y prácticamente toda la costa — de Cancún a Tulum — se mantiene limpia semanas enteras. Si evitar el sargazo es tu prioridad, viaja en estos meses."
+        },
+        {
+          "period": "Marzo",
+          "text": "El mes de aviso. Los satélites empiezan a detectar las primeras manchas de la nueva floración cruzando el Atlántico. Las playas siguen limpias en general, pero pueden caer manchones sueltos en la costa abierta. Vale la pena un vistazo al mapa antes de reservar tours."
+        },
+        {
+          "period": "Abril",
+          "text": "Arranca la temporada. Los arribos se vuelven regulares en las playas que miran al este — Playa del Carmen, Tulum, Xpu-Ha — aunque todavía con volúmenes moderados que las cuadrillas controlan por la mañana. Isla Mujeres, Holbox y el oeste de Cozumel siguen tranquilos."
+        },
+        {
+          "period": "Mayo – Julio",
+          "text": "El pico. El cinturón de sargazo del Atlántico entrega volumen constante y la costa abierta puede amanecer cargada varias veces por semana. Las diferencias entre playas se vuelven enormes: el mismo día, Delfines puede estar café y Palancar transparente. Aquí el pronóstico por playa vale oro."
+        },
+        {
+          "period": "Agosto – Septiembre",
+          "text": "Sigue fuerte pero ya en descenso. Los arribos se vuelven episódicos: una playa puede estar tapada el martes y rastrillada el viernes. Los hoteles mantienen el ritmo de limpieza y las playas protegidas se recuperan rápido. El radar de 7 días te ayuda a esquivar los pulsos."
+        },
+        {
+          "period": "Octubre",
+          "text": "La cola de la temporada. Los volúmenes caen semana a semana y para finales de mes la mayoría de las playas vuelve a estar limpia de forma estable. Puede colarse un pulso tardío tras un norte, así que los precavidos siguen checando el mapa — pero las probabilidades ya están de tu lado."
+        }
+      ],
+      "tips": "Si tus fechas son flexibles, reserva de noviembre a marzo y olvídate del tema. ¿Viajas en pico de temporada? Prefiere hospedarte en Isla Mujeres, Holbox o el lado oeste de Cozumel — o, en el corredor, elige un resort con limpieza diaria y barrera antisargazo. Revisa nuestro mapa la semana previa al vuelo (lo que digan los foros de hace un mes ya no sirve) y, ya aquí, planea las mañanas de playa y deja un cenote o Cozumel como plan B para los días cargados."
+    }
+  },
+  "beachBlurbs": {
+    "rm001": "La playa pública más famosa de Cancún, con el mirador del letrero y sin hoteles que tapen la vista. Mira de frente al este y tiene oleaje fuerte, así que en temporada recibe sargazo de los primeros — y al ser pública, la limpieza depende del municipio. Ve temprano y con bandera verde; la postal lo vale.",
+    "rm002": "Playa de ambiente familiar en la parte norte de la zona hotelera, con agua calmada gracias a la protección de Isla Mujeres y el muelle del ferry a un paso. Su orientación al norte la libra de buena parte del sargazo que castiga al resto de Cancún. Ideal con niños y para combinar con un brinco a la isla.",
+    "rm003": "La playa urbana por excelencia: bajas del camión, cruzas la Quinta Avenida y ya estás en la arena, con el ferry a Cozumel al lado. Mira al este y recibe sargazo moderado en temporada, aunque la limpieza municipal y de los clubes es constante. Perfecta si quieres playa sin renunciar a restaurantes y vida nocturna.",
+    "rm004": "La postal de Tulum: cocoteros inclinados, arena blanca y los clubes de playa más fotografiados de México. Está expuesta de lleno al este, así que en pico de temporada puede amanecer cargada — cada club rastrilla su tramo a diario. Llega temprano: te toca la arena más limpia y el mejor lugar bajo la palapa.",
+    "rm005": "La bahía de las tortugas: agua bajita, arrecife que rompe el oleaje y snorkel con tortugas a unos metros de la orilla. La forma de la bahía retiene menos sargazo que las playas abiertas, aunque en arribazones fuertes algo se cuela. De las apuestas más seguras del corredor para familias y esnorquelistas.",
+    "rm006": "El lado bueno de Cozumel: costa oeste, a sotavento, donde el sargazo prácticamente no llega ni en pico de temporada. Agua transparente, club de playa relajado y el arrecife Palancar para esnorquelear a unos minutos en lancha. El plan B perfecto cuando el corredor amanece café — y un planazo por sí solo.",
+    "rm007": "La joya de Isla Mujeres y una de las pocas playas del Caribe mexicano que casi nunca ve sargazo, gracias a su orientación al norte. Agua a la cintura por cientos de metros, atardeceres de calendario y ambiente de pueblo. Cuando todo lo demás falla en temporada, Playa Norte responde.",
+    "rm008": "Pueblo de pescadores a medio camino entre Cancún y Playa del Carmen, con el arrecife del parque nacional a 500 metros de la orilla. El arrecife frena parte del sargazo y el ambiente sigue siendo de malecón y lancha, no de antro. Para quien busca snorkel de primera y un ritmo más mexicano.",
+    "rm009": "El sur profundo de la Costa Maya: malecón de pueblo, agua bajita y precios todavía amables. Recibe sargazo variable según el viento, pero el tramo del malecón se limpia a diario y, fuera de días de crucero, la playa es casi privada. Para viajeros que quieren Caribe sin la escala del corredor.",
+    "rm010": "Al norte de la península, ya en aguas del Golfo, el sargazo sencillamente casi no llega: esa es la mitad de su magia. La otra mitad: calles de arena, flamencos, bioluminiscencia en verano y bancos de arena infinitos. La escapada antisargazo por excelencia — sin coches y sin prisa.",
+    "rm011": "Una bahía amplia y todavía relajada entre Playa del Carmen y Tulum, con arena blanca, palapas de pescado frito y mucho menos ruido que sus vecinas. Está expuesta al este, así que en temporada conviene checarla en el mapa antes de manejar hasta allá. En día limpio compite con cualquier playa del corredor.",
+    "rm012": "Considerada durante años entre las playas más bonitas del mundo, hoy es territorio de resorts de lujo con arena de talco y agua turquesa. Los hoteles invierten fuerte en barreras y limpieza diaria, así que suele amanecer mejor que la costa abierta en temporada. Para lunas de miel y días de spa frente al mar."
+  },
+  "resortPageTpl": {
+    "titlePattern": "Sargazo en {resort} Hoy — Estado en Vivo y Pronóstico",
+    "introPattern": "¿Quieres saber si la playa de {resort} amaneció limpia? Esta página monitorea {beach}, el tramo de arena frente al hotel, con imágenes satelitales de Copernicus actualizadas cuatro veces al día. Aquí ves el estado actual, una calificación de playa de 0 a 100 y el pronóstico a 7 días, para planear tus días de mar — o de alberca — antes del check-in. En temporada las condiciones cambian de la noche a la mañana: guarda esta página y revísala cada mañana."
+  }
+}

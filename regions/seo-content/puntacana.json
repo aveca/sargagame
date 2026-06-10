@@ -1,0 +1,103 @@
+{
+  "faq": [
+    {
+      "q": "When is sargassum season in Punta Cana?",
+      "a": "Sargassum season in Punta Cana runs from April through October, with the heaviest landings between May and August. Outside those months the beaches are mostly clear, though stray patches can arrive any time. Because conditions shift week to week, we track every beach with Copernicus satellite imagery updated four times a day — so you see what is actually on the sand today, not a seasonal average."
+    },
+    {
+      "q": "Which Punta Cana beaches have the least sargassum?",
+      "a": "No beach is immune, but Playa Blanca and Juanillo in Cap Cana, plus Cabeza de Toro, tend to fare better thanks to reef protection and intensive resort cleaning. The open Bávaro–Macao–Uvero Alto strip faces the Atlantic head-on and collects more seaweed in peak months. Check our live map before choosing: daily satellite updates show which beaches are clean right now, not last month."
+    },
+    {
+      "q": "How reliable is the sargassum data on this site?",
+      "a": "Our data comes from the Copernicus and NOAA satellite programs, which detect floating sargassum using the AFAI spectral index. We refresh it four times a day and blend in on-the-ground reports from beachgoers. Cloud cover can occasionally delay a reading, which is why every beach shows its exact update time and a confidence level — you always know how fresh the information is."
+    },
+    {
+      "q": "Can sargassum really be forecast 7 days ahead?",
+      "a": "Yes, within limits. Sargassum drifts with wind and ocean currents, so once satellites spot a mat offshore we can project its track toward each beach over the coming week. Seaweed already on a beach decays with a roughly 3.5-day half-life unless new material lands. Days 1–3 are the most accurate; days 4–7 show the trend. The forecast updates daily with each new satellite pass."
+    },
+    {
+      "q": "Do Punta Cana resorts clean sargassum off their beaches?",
+      "a": "Most large resorts in Bávaro, Cap Cana and Uvero Alto rake their beachfront every morning, and some deploy offshore barriers. Cleaning helps, but during heavy landings seaweed can return within hours. That is why we track the actual offshore flow by satellite, updated daily: if nothing new is inbound, a raked beach stays clean all day; if a large mat is approaching, even the best crews fall behind."
+    },
+    {
+      "q": "What should I do if my beach has sargassum today?",
+      "a": "Check the live map for the nearest clean beach — conditions often differ dramatically a short drive away, and Cap Cana or Cabeza de Toro may be fine while Bávaro is covered. Swimming near small amounts is harmless, though decomposing piles smell of sulfur and are best avoided. Premium users get push alerts the moment a saved beach changes status, plus the 7-day outlook to plan around heavy days."
+    }
+  ],
+  "pages": {
+    "forecast": {
+      "slug": "sargassum-forecast",
+      "title": "Sargassum Forecast Punta Cana 2026 — 7-Day Beach Outlook",
+      "desc": "7-day sargassum forecast for Punta Cana, updated daily from Copernicus satellite data. See which beaches stay clean this week — Bávaro, Macao, Cap Cana.",
+      "h1": "Punta Cana Sargassum Forecast — Next 7 Days, Beach by Beach",
+      "intro": "Most sargassum forecasts for Punta Cana give you one verdict for the whole coast — usually based on government imagery that is days old by the time it is published. This page works differently. We run a dedicated forecast for each of the 12 beaches we track, from Uvero Alto down to Juanillo, because conditions genuinely diverge: a mat that buries Macao can miss Cap Cana entirely. Every morning the model ingests the latest Copernicus satellite pass, checks what is drifting offshore, and projects landings for the next seven days. You get a day-by-day outlook per beach, not a regional average. And because four satellite updates a day feed the model, what you read here reflects today's ocean, not last week's. Use it to pick your beach days before the seaweed picks them for you.",
+      "method": "We start with AFAI (Alternative Floating Algae Index), the spectral signature that lets Copernicus and NOAA satellites detect floating sargassum mats from orbit. Each detected mat is projected forward using wind and surface-current data — sargassum drifts at roughly 2.5% of wind speed plus the local current. For seaweed already on a beach, we apply exponential persistence with a 3.5-day half-life: it decays unless new material arrives. The model then scores each beach daily, from clean to avoid. Community reports from beachgoers correct the satellite view when clouds block a pass. Accuracy is highest for days 1–3, and the entire forecast is recalculated every day."
+    },
+    "today": {
+      "slug": "beaches-without-sargassum-today",
+      "title": "Beaches Without Sargassum in Punta Cana Today (Live List)",
+      "desc": "Live list of Punta Cana beaches with no sargassum right now. Satellite-checked 4 times a day — find clean sand in Bávaro, Cap Cana or Uvero Alto today.",
+      "h1": "Punta Cana Beaches Without Sargassum Today",
+      "intro": "Looking for a clean beach in Punta Cana right now? Below is today's ranked list of the beaches currently free of sargassum, ordered from cleanest to most affected. It is built from the latest Copernicus satellite pass and refreshed four times a day, so it reflects this morning's conditions — not a stock photo or last month's review. As a rule of thumb, Cap Cana and Cabeza de Toro recover fastest, while the open Bávaro-to-Uvero-Alto strip catches the most seaweed in season. But the ocean rewrites that ranking weekly, which is exactly why this list exists. Check the number next to your beach, then go."
+    },
+    "map": {
+      "slug": "seaweed-map",
+      "title": "Punta Cana Seaweed Map (Live) — Sargassum Beach Tracker",
+      "desc": "Interactive sargassum map of Punta Cana, updated 4 times a day from satellite imagery. Check live seaweed conditions at every beach before you head out.",
+      "h1": "Live Sargassum Map of Punta Cana",
+      "intro": "This is a live, interactive seaweed map of Punta Cana — every beach from Uvero Alto to Juanillo gets its own color-coded status: clean, moderate, or avoid. The map runs on Copernicus satellite imagery refreshed four times a day, combined with reports from people actually standing on the sand. Tap any beach to see its current state, a 0–100 Beach Score, and the 7-day sargassum outlook. Unlike static seasonal guides, this map changes when the ocean does: a wind shift overnight can clear Bávaro and load Macao by lunchtime. Check it the morning you go — that is when it earns its keep."
+    },
+    "season": {
+      "slug": "sargassum-season-punta-cana",
+      "title": "Punta Cana Sargassum Season 2026 — Month-by-Month Guide",
+      "desc": "When is sargassum season in Punta Cana? April to October, peaking May–August. Month-by-month calendar, best travel windows and daily satellite tracking.",
+      "h1": "Sargassum Season in Punta Cana — 2026 Month-by-Month",
+      "months": [
+        {
+          "period": "November – February",
+          "text": "The reliable window. Sargassum landings are rare and light, the Atlantic bloom is at its annual minimum, and almost every beach from Uvero Alto to Cap Cana stays clean for weeks at a stretch. If avoiding seaweed is your top priority, this is when to come."
+        },
+        {
+          "period": "March",
+          "text": "The early-warning month. Satellites usually begin spotting the first mats of the new bloom drifting west across the Atlantic. Beaches typically remain clean, but stray patches can land, especially on the exposed Bávaro strip. Worth a glance at the map before booking excursions."
+        },
+        {
+          "period": "April",
+          "text": "Season opens. Landings become regular on east-facing beaches — Bávaro, Arena Gorda, Macao — though volumes are still moderate and resort crews keep up with morning raking. Cap Cana and Cabeza de Toro usually stay comfortable. Daily map checks start paying off."
+        },
+        {
+          "period": "May – June",
+          "text": "The first peak. The Great Atlantic Sargassum Belt now delivers steady volume, and the open coast can see heavy mornings several times a week. Differences between beaches widen dramatically — this is when a per-beach forecast matters most."
+        },
+        {
+          "period": "July – August",
+          "text": "Peak of the season, coinciding with peak tourist demand. Heaviest landings of the year hit Macao, Uvero Alto and Bávaro; reef-sheltered Cap Cana fares best. Resorts rake aggressively but can fall behind on big-arrival days. Use the 7-day forecast to time beach days between pulses."
+        },
+        {
+          "period": "September – October",
+          "text": "The slow fade. Volumes decline week by week, but the tail is unpredictable — a single late pulse can blanket a beach for two or three days. By late October most beaches are reliably clean again. Forecasts are decisive here, because averages mislead."
+        }
+      ],
+      "tips": "If your dates are flexible, book November through early March and skip the question entirely. Traveling in peak season? Favor Cap Cana or Cabeza de Toro over the open Bávaro strip, choose a resort with daily beach cleaning, and check our live map the week before you fly — conditions a month out tell you almost nothing. Once here, plan beach mornings (cleanest right after raking) and keep one backup excursion, like Saona Island, in your pocket for heavy days."
+    }
+  },
+  "beachBlurbs": {
+    "pc001": "Punta Cana's flagship strip: miles of white sand, calm reef-tamed water and the big all-inclusives right behind it — ideal for families. It faces the open Atlantic, so it catches sargassum in season, though resort crews rake every morning. Go early for the cleanest sand of the day.",
+    "pc002": "A relaxed condo-and-beach-club stretch at Bávaro's north end, popular with longer-stay visitors and walkable to restaurants. It shares Bávaro's eastward exposure, so check conditions in season. The right pick if you want beach bars and a younger crowd without the all-inclusive bubble.",
+    "pc003": "The closest thing Bávaro has to a beach town — fishing boats, souvenir stalls, water-sports vendors and seafood shacks on the sand. Fully exposed to the east, it collects seaweed on arrival days, and public sections get raked less than resort frontage. Come for the local flavor as much as the swimming.",
+    "pc004": "A wide, quieter ribbon of sand north of Bávaro fronted by large resorts. The northeast exposure means it shares Bávaro's sargassum pattern, but the sheer width of the beach keeps the raked zones pleasant. Best for guests who want space and calm over action.",
+    "pc005": "A curved, more sheltered bay between Punta Cana and Bávaro, known for fishing charters and noticeably calmer water. Its orientation spares it the worst arrivals, making it one of the safer bets in peak season. A solid family choice, with decent snorkeling on calm days.",
+    "pc006": "The wild one — a public, undeveloped golden-sand beach with real surf and a well-known surf school, beloved by locals on weekends. It is fully exposed and nobody rakes it systematically, so in season it can disappear under seaweed fast. On a clean winter day, it is arguably the most beautiful beach on this coast.",
+    "pc007": "The remote northern outpost: darker gold sand, livelier waves and secluded resorts about 40 minutes from the airport. Its open northeast exposure brings regular sargassum in season, which resorts fight with barriers and daily raking. Choose it for seclusion and surf — and watch the forecast in summer.",
+    "pc008": "Cap Cana's showpiece — powder sand, swimmable turquoise water and a polished beach-club scene. Sitting near the coast's southern tip with reef protection, it often stays cleaner than Bávaro when seaweed arrives, and cleanup is meticulous. The upscale day-trip pick when the open coast is having a bad week.",
+    "pc009": "A boutique, reef-protected beach inside Cap Cana with shallow, calm water and a well-known beachfront restaurant. Its sheltered position and small size make it easy to keep clean, so it punches above its weight in season. Great for couples and anyone after a quieter, groomed setting.",
+    "pc010": "The quiet beach by Puntacana Resort & Club at the coast's eastern point — golf greens behind, reef-calmed water in front. Less foot traffic than Bávaro and conditions often a notch better. Good for snorkeling mornings and unhurried days away from the main strip.",
+    "pc011": "A calmer stretch just south of El Cortecito's bustle, tucked between hotel zones — same sand, fewer vendors. It follows Bávaro's sargassum rhythm, so a quick map check in season is smart. Pick it when you want the location without the crowd.",
+    "pc012": "A genuinely local corner of Bávaro with craft stalls, dominoes and Dominican families on weekends — no resort polish and no parking lot. It is exposed and cleaned irregularly, so check the map in season. Worth it for the atmosphere and a plate of fresh fish as much as the swim."
+  },
+  "resortPageTpl": {
+    "titlePattern": "Sargassum at {resort} Today — Live Beach Status & Forecast",
+    "introPattern": "Wondering whether the beach at {resort} is clear of sargassum right now? This page tracks {beach}, the stretch of sand fronting the resort, using Copernicus satellite imagery refreshed four times a day. Below you will find the current status, a 0–100 Beach Score, and a 7-day forecast so you can plan beach days — or a backup — before you check in. Conditions can change overnight in season, so bookmark this page and glance at it each morning of your stay."
+  }
+}

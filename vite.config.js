@@ -2,6 +2,10 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs'
 import { resolve } from 'path'
+import { createRequire } from 'module'
+// Chargé en lazy via createRequire : un import statique fait bundler le module
+// CJS dans la config ESM ("Dynamic require of fs is not supported").
+const _require = createRequire(import.meta.url)
 
 // Identifiants Copernicus Marine (copernicustxt.txt : ligne 1 = username, ligne 2 = password)
 const copernicusCreds = (() => {
@@ -286,8 +290,16 @@ export default defineConfig({
     {
       name: 'seo-pages',
       closeBundle() {
-        // Nouvelles régions : pas de génération des pages SEO MQ/GP (contenu EN/ES dédié ajouté ensuite).
-        if (IS_NEW_REGION) return
+        // Nouvelles régions : générateur SEO dédié EN/ES (hubs forecast/today/map/
+        // saison/méthodo/semáforo + pages plages + pages resorts long-tail +
+        // sitemap + FAQ schema). Contenu : regions/seo-content/<id>.json.
+        if (IS_NEW_REGION) {
+          try {
+            const { generateRegionSeoPages } = _require('./scripts/lib/region-seo-pages.cjs')
+            generateRegionSeoPages(REGION, resolve(__dirname, 'dist'))
+          } catch (e) { console.warn('   ⚠ seo-pages région:', e.message) }
+          return
+        }
         const outDir = resolve(__dirname, 'dist')
         const indexPath = resolve(outDir, 'index.html')
         try {

@@ -400,19 +400,32 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
     // the next tap is unambiguous. At high zoom we fall through to pickClosest.
     const AMBIG_PX=18
     const MAX_DISAMBIG_ZOOM=15
+    const countAmbig=pt=>{
+      let n=0
+      for(const m of markersRef.current){
+        if(!m._sgBeach)continue
+        const mp=mapRef.current.latLngToContainerPoint(m.getLatLng())
+        const dx=mp.x-pt.x,dy=mp.y-pt.y
+        if(dx*dx+dy*dy<=AMBIG_PX*AMBIG_PX&&++n>=2)return n
+      }
+      return n
+    }
     const handlePinClick=(e,b)=>{
       const pt=realClickPoint(e)
-      if(pt&&mapRef.current&&mapRef.current.getZoom()<MAX_DISAMBIG_ZOOM){
-        let n=0
-        for(const m of markersRef.current){
-          if(!m._sgBeach)continue
-          const mp=mapRef.current.latLngToContainerPoint(m.getLatLng())
-          const dx=mp.x-pt.x,dy=mp.y-pt.y
-          if(dx*dx+dy*dy<=AMBIG_PX*AMBIG_PX&&++n>=2){
-            mapRef.current.setView(mapRef.current.containerPointToLatLng(pt),mapRef.current.getZoom()+2,{animate:true})
-            return
-          }
-        }
+      if(pt&&mapRef.current&&mapRef.current.getZoom()<MAX_DISAMBIG_ZOOM&&countAmbig(pt)>=2){
+        // Zoom de désambiguïsation — mais un clic ne doit JAMAIS être mort :
+        // après le zoom, si le point visé est devenu non-ambigu, on ouvre la
+        // plage que l'utilisateur visait (1 clic = 1 action perçue).
+        const aimLatLng=mapRef.current.containerPointToLatLng(pt)
+        mapRef.current.once("moveend",()=>{
+          try{
+            if(!mapRef.current)return
+            const pt2=mapRef.current.latLngToContainerPoint(aimLatLng)
+            if(countAmbig(pt2)<2)onBeachClick(pickClosest(pt2,b))
+          }catch(_){/* carte démontée pendant l'anim */}
+        })
+        mapRef.current.setView(aimLatLng,mapRef.current.getZoom()+2,{animate:true})
+        return
       }
       onBeachClick(pickClosest(pt,b))
     }

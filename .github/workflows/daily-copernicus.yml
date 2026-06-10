@@ -203,6 +203,13 @@ jobs:
         run: node scripts/automation/seo-submit-urls.cjs
         continue-on-error: true
 
+      # IndexNow (Bing/Yandex/Seznam) — lit les sitemaps des <region>-ftp/ générés
+      # juste avant. Gratuit, clé publique servie par chaque domaine.
+      - name: Submit URLs to IndexNow (Bing)
+        if: steps.check_build.outputs.full == 'true'
+        run: node scripts/automation/submit-indexnow.cjs
+        continue-on-error: true
+
       # ── 2b. Data-only deploy (3x/day — just copy fresh JSON to FTP folders) ──
       - name: Quick data deploy (no full build)
         if: steps.check_build.outputs.full == 'false'

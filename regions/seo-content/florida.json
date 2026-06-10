@@ -1,0 +1,103 @@
+{
+  "faq": [
+    {
+      "q": "When does sargassum season hit Florida?",
+      "a": "Florida's sargassum window runs roughly May through August, peaking in June and July. The Keys and the southeast Atlantic coast — Miami up to Jupiter — see the most; winter months are essentially seaweed-free statewide. The amount varies hugely year to year depending on the Atlantic bloom, which is why we track conditions with satellite data updated four times a day instead of quoting seasonal averages."
+    },
+    {
+      "q": "Which Florida beaches get the least sargassum?",
+      "a": "Gulf coast beaches like Clearwater almost never see meaningful sargassum — the currents rarely deliver it there. On the Atlantic side, Daytona and the central coast get far less than the Keys or Miami. Within South Florida, conditions can flip beach to beach in a single day, so check the live map: our satellite data, refreshed daily, shows exactly which beaches are clean right now."
+    },
+    {
+      "q": "How accurate is this sargassum tracker?",
+      "a": "We use the same AFAI satellite index NOAA relies on, sourced from Copernicus and NOAA imagery and refreshed four times a day. Floating mats have a distinct spectral signature that satellites detect reliably in clear weather; clouds can delay readings, so every beach displays its data age and a confidence level. Beachgoer reports fill the gaps. It is the difference between a measurement and a guess."
+    },
+    {
+      "q": "Can you really forecast sargassum a week out?",
+      "a": "To a useful degree, yes. Once satellites detect mats offshore, their drift is largely set by wind and the Gulf Stream, which we model daily for each beach. Days 1–3 are the most reliable; days 4–7 show the direction of travel. Seaweed already beached decays on a 3.5-day half-life unless resupplied. The forecast re-runs every day as fresh satellite passes arrive."
+    },
+    {
+      "q": "Do Florida beaches get cleaned of sargassum?",
+      "a": "Most tourist beaches do. Miami Beach runs daily mechanical raking, and resort and municipal crews work the main Keys beaches each morning. Smaller and natural beaches are cleaned rarely or never. Cleaning resets the sand, but if satellites show fresh mats inbound, seaweed returns within hours — which is why pairing the cleaning schedule with our daily satellite forecast tells you more than either alone."
+    },
+    {
+      "q": "What should I do if my beach is covered in sargassum?",
+      "a": "Drive — Florida gives you options. If Miami Beach is buried, Daytona or the Gulf side at Clearwater almost certainly is not, and our live map shows the nearest clean sand instantly. Small amounts are harmless to swimmers; large rotting piles smell of sulfur and are worth avoiding. Premium alerts notify you the moment a saved beach changes status, so you stop guessing and start rerouting."
+    }
+  ],
+  "pages": {
+    "forecast": {
+      "slug": "sargassum-forecast",
+      "title": "Sargassum Forecast Florida 2026 — 7-Day Beach Outlook",
+      "desc": "7-day sargassum forecast for Florida beaches, updated daily from satellite data. Beach-level outlooks for Miami, the Keys, Fort Lauderdale and Daytona.",
+      "h1": "Florida Sargassum Forecast — Next 7 Days, Beach by Beach",
+      "intro": "Most sargassum information for Florida comes as a statewide bulletin or a monthly outlook — accurate in broad strokes, useless for deciding where to swim on Saturday. This forecast works at the level that actually matters: the individual beach. We track 12 of them, from Key West up to Daytona and across to Clearwater, and run a separate 7-day projection for each, because their realities diverge wildly — the Keys can be knee-deep in seaweed while Clearwater stays spotless. The model ingests fresh Copernicus satellite imagery daily, locates the mats drifting offshore, and projects what reaches which sand and when. You get a day-by-day outlook per beach, updated every morning. Check it before you commit to a beach weekend; the ocean does not read monthly bulletins.",
+      "method": "Satellites detect floating sargassum through the AFAI spectral index — mats reflect near-infrared light in a way open water does not. We pull this imagery from Copernicus and NOAA four times a day, then project each detected mat forward along wind and current vectors; in Florida, the Gulf Stream does most of the steering. Beached seaweed decays on an exponential curve with a 3.5-day half-life unless new material lands. Each beach gets a daily score from clean to avoid, corrected by community reports when clouds block the view. Days 1–3 carry the most confidence, and the whole forecast recomputes daily."
+    },
+    "today": {
+      "slug": "beaches-without-sargassum-today",
+      "title": "Florida Beaches Without Sargassum Today (Live List)",
+      "desc": "Live list of Florida beaches with no sargassum right now. Satellite-checked daily — clean options from Miami and the Keys to Clearwater and Daytona Beach.",
+      "h1": "Florida Beaches Without Sargassum Today",
+      "intro": "Need a seaweed-free beach in Florida today? The ranked list below shows which of the beaches we track are currently clean, ordered best to worst, straight from the latest satellite pass — refreshed four times a day. The pattern usually favors the Gulf coast (Clearwater is almost always clear) and the central Atlantic (Daytona, Cocoa Beach), while the Keys and the Miami–Palm Beach corridor swing week to week in season. But \"usually\" is not \"today\", and that is the point of this page: live data, beach by beach, so you pick a winner on the first try."
+    },
+    "map": {
+      "slug": "seaweed-map",
+      "title": "Florida Seaweed Map (Live) — Sargassum Beach Tracker",
+      "desc": "Interactive seaweed map of Florida, updated 4 times a day from satellite imagery. Live sargassum status for Miami, the Keys, Palm Beach and the Gulf coast.",
+      "h1": "Live Sargassum Map of Florida",
+      "intro": "An interactive, live seaweed map covering Florida's sargassum-prone coast — from Key West through Miami and Palm Beach up to Daytona, plus Clearwater on the Gulf. Each beach carries a color-coded status (clean, moderate, avoid), a 0–100 Beach Score, and a 7-day outlook. Behind it sits Copernicus satellite imagery updated four times a day, cross-checked against reports from people on the sand. Government maps show you the regional picture days late; this one shows your beach, today. An east wind or a Gulf Stream wobble can rewrite the coast overnight — check the map the morning you go."
+    },
+    "season": {
+      "slug": "sargassum-season-florida",
+      "title": "Florida Sargassum Season 2026 — Month-by-Month Guide",
+      "desc": "When does sargassum hit Florida? May through August, heaviest in the Keys and Southeast Florida. Month-by-month 2026 guide with daily satellite tracking.",
+      "h1": "Sargassum Season in Florida — 2026 Month-by-Month",
+      "months": [
+        {
+          "period": "November – February",
+          "text": "Effectively sargassum-free statewide. The Atlantic bloom is at its annual minimum and what little exists stays far offshore. Every coast — the Keys, the southeast, Daytona, the Gulf — runs clean, and winter visitors can ignore seaweed entirely."
+        },
+        {
+          "period": "March – April",
+          "text": "First stirrings. The new bloom organizes in the tropical Atlantic and the earliest strands begin reaching the Keys, usually light and patchy. The mainland Atlantic coast stays mostly clear. A map check before a Keys trip starts being worthwhile."
+        },
+        {
+          "period": "May – June",
+          "text": "The season arrives in force. The Keys — Key West, Marathon, Islamorada — take the heaviest landings as currents deliver the bloom, and Miami through Jupiter sees regular pulses. June is often the peak month. Gulf beaches remain reliably clean."
+        },
+        {
+          "period": "July – August",
+          "text": "Peak continues, with heavy but episodic landings: a beach can be buried on Tuesday and raked clean by Friday. Southeast Florida and the Keys carry the burden; Cocoa and Daytona get occasional brushes. This is where the 7-day forecast earns its keep."
+        },
+        {
+          "period": "September",
+          "text": "The fade begins. Volumes drop noticeably as the Atlantic bloom dies back, though warm-water stragglers still land in the Keys after sustained east winds. Most mainland beaches return to normal, and late-summer trips get dramatically easier to plan."
+        },
+        {
+          "period": "October",
+          "text": "Tail of the season. Landings become rare and light everywhere, and by Halloween Florida is essentially clear again. Stray patches after storms are possible, so the cautious still glance at the map — but the odds are firmly in your favor."
+        }
+      ],
+      "tips": "Booking flexibility is everything. November through April is effectively seaweed-proof anywhere in the state. For summer trips, the Gulf coast is the safe harbor — Clearwater rarely sees sargassum even in peak weeks — while Keys and Miami plans deserve a look at the 7-day forecast before you lock anything in. If you are set on the Atlantic in June or July, pick lodging near a beach with daily raking and keep one Gulf-side day in reserve."
+    }
+  },
+  "beachBlurbs": {
+    "fl001": "The full Miami experience — wide raked sand, pastel lifeguard towers, and an ocean that warms to bath temperature by June. East-facing, it takes sargassum pulses in summer, but the city's daily mechanical cleaning is among the best anywhere. Families do well at the quieter mid-beach sections.",
+    "fl002": "Art Deco backdrop, world-class people-watching, and the most famous sand in Florida. It shares the rest of Miami Beach's summer sargassum exposure, with intensive morning cleaning to match. Come for the scene; if seaweed is a dealbreaker, check the map first in June and July.",
+    "fl003": "A long, easygoing beach with a palm-lined promenade — calmer than Miami and friendlier to families. It faces the open Atlantic, so it follows the regional summer seaweed pattern: moderate, episodic, regularly raked. Restaurants within walking distance make a bad-beach morning easy to salvage.",
+    "fl004": "Quiet, manicured and uncrowded, fronting one of America's most exclusive towns. The Gulf Stream runs close here, which both delivers sargassum and sweeps it away quickly — conditions reset fast. A refined pick for couples; parking takes patience.",
+    "fl005": "Natural dunes, surfable peaks and a famously dog-friendly stretch make Jupiter the unpolished gem of the southeast coast. It sees moderate, wind-dependent seaweed in season and lighter crowds year-round. Best for active beachgoers who prefer nature over beach bars.",
+    "fl006": "Key West's biggest beach: imported sand, shallow water and a sociable crowd near the airport. Like all ocean-side Keys beaches it sits on the front line for sargassum, with wrack lines a regular feature May to August despite cleanup efforts. Winter visits are a different, cleaner world.",
+    "fl007": "The diving capital — John Pennekamp's reefs are the real draw, with small man-made beaches as a bonus rather than the main event. Ocean-side spots collect seaweed in season; the protected snorkeling lagoons matter more here than sand quality. Pair a map check with your dive booking.",
+    "fl008": "Sport-fishing royalty with a laid-back resort scene and the famous offshore sandbar. The beaches are small and intimate, with moderate seasonal sargassum that resorts clear each morning. Choose it for time on the water — boats, flats, snorkeling — more than for long beach walks.",
+    "fl009": "A palm-lined local favorite in the middle Keys, free to enter and genuinely pretty. Atlantic-facing, it catches seasonal seaweed, and the county rakes on a schedule rather than daily — so timing matters in summer. Off-season, it is one of the nicest free beaches in the Keys.",
+    "fl010": "The Space Coast classic — surf culture, the pier, and rocket launches over the water. Sargassum reaches this latitude only in occasional summer pulses, far lighter than South Florida. A dependable family pick most of the year, with a launch as a bonus if you time it right.",
+    "fl011": "Twenty-three miles of hard-packed sand famous enough to drive on, with a boardwalk and amusements behind it. It sits north of the main sargassum highway and stays mostly clear even in peak season. One of Florida's safest Atlantic bets for seaweed-averse travelers.",
+    "fl012": "Powder-white quartz sand, gentle Gulf water and postcard sunsets — routinely ranked among America's best beaches. Critically for readers of this site: sargassum almost never reaches the Gulf coast, making Clearwater the fallback when the Atlantic misbehaves. Busy in spring, gorgeous year-round."
+  },
+  "resortPageTpl": {
+    "titlePattern": "Sargassum at {resort} Today — Live Beach Status & Forecast",
+    "introPattern": "Checking conditions before a stay at {resort}? This page monitors {beach} — the sand directly in front — with Copernicus satellite imagery refreshed four times a day. You will find the live sargassum status, a 0–100 Beach Score that also weighs surf and weather, and a 7-day forecast covering the days of your trip. In season, conditions can flip overnight, so check back the morning you pack the beach bag."
+  }
+}

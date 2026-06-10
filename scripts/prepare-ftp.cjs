@@ -559,6 +559,7 @@ function writeRegionIndex(region, out) {
         <p>Marie-Galante, Les Saintes (Terre-de-Haut, Terre-de-Bas) et La Désirade sont également suivies : ces îles proches de la Guadeloupe ont souvent des conditions sargasses différentes du continent. Consultez les prévisions par plage pour préparer votre excursion en bateau.</p>
         <h2>Données satellite — pourquoi notre carte sargasses est fiable</h2>
         <p>Notre carte sargasses Guadeloupe utilise les données satellite Copernicus Marine Service (Sentinel-3 OLCI) avec l'indice AFAI (Alternative Floating Algae Index) développé par Wang &amp; Hu 2016. Seuils NOAA SIR v1.4 : AFAI &lt; 0.15 = plage propre (verte), 0.15 à 0.40 = présence modérée (orange), ≥ 0.40 = alerte rouge. Les prévisions combinent vent, courants et persistance des bancs observés au large.</p>
+        <p>Notre réseau de surveillance sargasses dans la Caraïbe : <a href="https://sargasses-martinique.com/" rel="noopener">Martinique</a> · <a href="https://sargassumpuntacana.com/" rel="noopener">Punta Cana</a> · <a href="https://sargassumcancun.com/" rel="noopener">Cancún &amp; Riviera Maya</a> · <a href="https://sargassummiami.com/" rel="noopener">Miami &amp; Florida</a>.</p>
       </noscript>
     </div>
     <script>
@@ -648,9 +649,13 @@ function prepareNewRegion(region) {
     const ownIds = new Set((region.beaches || []).map(b => b.id))
     let removedImgs = 0
     for (const f of fs.readdirSync(beachesImgDir)) {
+      const full = path.join(beachesImgDir, f)
+      // Les sous-dossiers sont les PAGES /beaches/<slug>/ du générateur SEO
+      // région — ne purger que les fichiers images hors-région.
+      if (fs.statSync(full).isDirectory()) continue
       const m = f.match(/^gplace-([a-z]{2}\d+)\.jpg$/)
       if (m && ownIds.has(m[1])) continue
-      fs.rmSync(path.join(beachesImgDir, f))
+      fs.rmSync(full)
       removedImgs++
     }
     if (removedImgs) console.log(`   → photos plages hors-région supprimées (${title}): ${removedImgs}`)
@@ -730,10 +735,23 @@ Sitemap: https://${domain}/sitemap.xml
   fs.writeFileSync(path.join(out, 'robots.txt'), robotsTxt, 'utf-8')
   console.log(`   → robots.txt (${domain})`)
 
-  // sitemap.xml minimal (racine seule) — les pages internes seront ajoutées
-  // quand le build vite générera les routes de la région (Phase 1a).
+  // sitemap.xml : le générateur SEO région (region-seo-pages.cjs, closeBundle
+  // vite) écrit un sitemap complet dans dist/ avec le bon domaine — on le
+  // reprend tel quel. Fallback minimal (racine seule) si absent.
   const today = new Date().toISOString().slice(0, 10)
-  const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
+  const distSitemap = path.join(dist, 'sitemap.xml')
+  let sitemapDone = false
+  if (fs.existsSync(distSitemap)) {
+    const sm = fs.readFileSync(distSitemap, 'utf-8')
+    if (sm.includes(`https://${domain}/`)) {
+      fs.copyFileSync(distSitemap, path.join(out, 'sitemap.xml'))
+      const n = (sm.match(/<loc>/g) || []).length
+      console.log(`   → sitemap.xml complet (${domain}, ${n} URLs)`)
+      sitemapDone = true
+    }
+  }
+  if (!sitemapDone) {
+    const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://${domain}/</loc>
@@ -743,8 +761,9 @@ Sitemap: https://${domain}/sitemap.xml
   </url>
 </urlset>
 `
-  fs.writeFileSync(path.join(out, 'sitemap.xml'), sitemapXml, 'utf-8')
-  console.log(`   → sitemap.xml minimal (${domain})`)
+    fs.writeFileSync(path.join(out, 'sitemap.xml'), sitemapXml, 'utf-8')
+    console.log(`   → sitemap.xml minimal (${domain})`)
+  }
 
   // 404.html région-aware : celui du build partagé est bi-île MQ/GP → on
   // adapte le nom de site (+ libellés EN si la région n'est pas francophone).
