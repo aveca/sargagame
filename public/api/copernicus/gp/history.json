@@ -15,7 +15,7 @@
         },
         {
           "id": "gp003",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
@@ -55,12 +55,12 @@
         },
         {
           "id": "gp012",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
           "id": "gp013",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
@@ -80,7 +80,7 @@
         },
         {
           "id": "gp017",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
@@ -105,7 +105,7 @@
         },
         {
           "id": "gp023",
-          "afai": 0.07,
+          "afai": 0.08,
           "status": "clean"
         },
         {
@@ -120,7 +120,7 @@
         },
         {
           "id": "gp026",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
@@ -170,7 +170,7 @@
         },
         {
           "id": "gp041",
-          "afai": 0.07,
+          "afai": 0.08,
           "status": "clean"
         },
         {
@@ -225,7 +225,7 @@
         },
         {
           "id": "gp052",
-          "afai": 0.07,
+          "afai": 0.08,
           "status": "clean"
         },
         {
@@ -250,7 +250,7 @@
         },
         {
           "id": "gp061",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
@@ -305,7 +305,7 @@
         },
         {
           "id": "gp080",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
@@ -345,7 +345,7 @@
         },
         {
           "id": "gp096",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
@@ -385,7 +385,7 @@
         },
         {
           "id": "gp110",
-          "afai": 0.07,
+          "afai": 0.08,
           "status": "clean"
         },
         {
@@ -400,7 +400,7 @@
         },
         {
           "id": "gp116",
-          "afai": 0.07,
+          "afai": 0.08,
           "status": "clean"
         },
         {
