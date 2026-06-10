@@ -268,7 +268,8 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add public/api/copernicus/sargassum.json public/api/copernicus/history.json public/api/copernicus/sargassum-grid.json
           # Sorties par région du pipeline multi-régions (mq/, gp/, puntacana/, …)
-          git add 'public/api/copernicus/*/sargassum.json' 'public/api/copernicus/*/history.json' 2>/dev/null || true
+          # banks/grid régionaux inclus : persistance inter-runs = signal d'arrivée forecast
+          git add 'public/api/copernicus/*/sargassum.json' 'public/api/copernicus/*/history.json' 'public/api/copernicus/*/sargassum-banks.json' 'public/api/copernicus/*/sargassum-grid.json' 2>/dev/null || true
           [ -f scripts/automation/data/daily-metrics.json ] && git add scripts/automation/data/daily-metrics.json
           # RGPD : subscribers.json (emails en clair) n'est PLUS JAMAIS commité —
           # re-fetché à chaque run depuis Apps Script. Les fichiers d'état

@@ -848,7 +848,7 @@ function stokesDriftFromWaves(waveH, waveDir, wavePeriod) {
  * Model: wave Stokes drift + real ocean current (Open-Meteo Marine).
  * Fallback: wind-based Stokes (2.5%) + hardcoded current if Marine API unavailable.
  */
-function computeBankDrift(centroid, hull, windSpeed, windDir, island, hourlyWind, marineData) {
+function computeBankDrift(centroid, hull, windSpeed, windDir, island, hourlyWind, marineData, beachPool = BEACHES) {
   const toRad = d => d * Math.PI / 180
   const marine = marineData?.[island]
 
@@ -898,7 +898,7 @@ function computeBankDrift(centroid, hull, windSpeed, windDir, island, hourlyWind
 
   // Coast capping: compute max hours before hitting nearest coast
   // Project drift vector onto direction-to-nearest-beach, cap at 85%
-  const coastBeaches = BEACHES.filter(b => b.island === island)
+  const coastBeaches = beachPool.filter(b => b.island === island)
   const nearest = coastBeaches
     .map(b => ({ lat: b.lat, lng: b.lng, dist: haversineKm(centroid[0], centroid[1], b.lat, b.lng) }))
     .sort((a, b) => a.dist - b.dist)[0]
@@ -971,7 +971,10 @@ function computeBankDrift(centroid, hull, windSpeed, windDir, island, hourlyWind
 /**
  * Build sargassum-banks.json: clustered banks with drift predictions.
  */
-async function buildSargassumBanks(gridPoints, dir, wind, marineData) {
+// regionCtx (optionnel) = { id, beaches } pour les nouvelles régions :
+// island/vent/plages menacées résolus par région au lieu du split lat MQ/GP.
+// regionCtx absent → comportement MQ/GP historique strictement inchangé.
+async function buildSargassumBanks(gridPoints, dir, wind, marineData, regionCtx = null) {
   if (!gridPoints || gridPoints.length < 3) {
     console.log('  Skipping banks: not enough grid points')
     return
@@ -995,7 +998,7 @@ async function buildSargassumBanks(gridPoints, dir, wind, marineData) {
       Math.round((sumLng / sumW) * 1000) / 1000,
     ]
     const mass = Math.round((sumW / cluster.length) * 100) / 100 // avg AFAI
-    const island = centroid[0] >= 15.5 ? 'gp' : 'mq'
+    const island = regionCtx ? regionCtx.id : (centroid[0] >= 15.5 ? 'gp' : 'mq')
 
     // Hull
     let hull = convexHull(cluster)
@@ -1003,13 +1006,14 @@ async function buildSargassumBanks(gridPoints, dir, wind, marineData) {
 
     // Drift (uses forecast wind when available)
     const w = wind[island] || { speed: 15, dir: 75 }
-    const drift = computeBankDrift(centroid, hull, w.speed, w.dir, island, w.hourly || null, marineData)
+    const beachPool = regionCtx ? regionCtx.beaches : BEACHES
+    const drift = computeBankDrift(centroid, hull, w.speed, w.dir, island, w.hourly || null, marineData, beachPool)
 
     // Threatened beaches at each time step
     const threatens = {}
     for (const timeKey of ['now', '6h', '12h', '24h']) {
       const c = timeKey === 'now' ? centroid : drift.predictions[timeKey].centroid
-      const threatened = BEACHES
+      const threatened = beachPool
         .filter(b => b.island === island)
         .map(b => ({ id: b.id, km: Math.round(haversineKm(c[0], c[1], b.lat, b.lng)) }))
         .filter(t => t.km <= 30)
@@ -1035,7 +1039,7 @@ async function buildSargassumBanks(gridPoints, dir, wind, marineData) {
   significant.sort((a, b) => b.mass - a.mass || b.count - a.count)
   const mqBanks = significant.filter(b => b.island === 'mq').slice(0, 15)
   const gpBanks = significant.filter(b => b.island === 'gp').slice(0, 15)
-  const banks2 = [...mqBanks, ...gpBanks]
+  const banks2 = regionCtx ? significant.slice(0, 15) : [...mqBanks, ...gpBanks]
   banks2.forEach((b, i) => { b.id = i + 1 }) // re-index
 
   console.log(`  Filtered: ${banks.length} raw → ${banks2.length} significant banks`)
@@ -1185,7 +1189,13 @@ async function runRegionPipeline(region, shared) {
       fetchRegionalWind(center, region.timezone || 'America/Martinique'),
       fetchMarineData(center),
     ])
-    banks = [] // v1: pas de bancs hors MQ/GP — forecast persistance + vent
+    // Bancs du run précédent (max ~3-6h) pour le signal d'arrivée du forecast —
+    // même approche que la racine MQ/GP; recalculés en fin de pipeline région.
+    try {
+      const banksData = JSON.parse(fs.readFileSync(path.join(regionDir, 'sargassum-banks.json'), 'utf-8'))
+      banks = Array.isArray(banksData.banks) ? banksData.banks : []
+      if (banks.length) console.log(`  [${region.id}] ${banks.length} bancs du run précédent (signal d'arrivée)`)
+    } catch (_) { banks = [] }
   }
 
   // 2. Niveaux AFAI par plage (meme echantillonnage grille que la racine)
@@ -1271,6 +1281,33 @@ async function runRegionPipeline(region, shared) {
 
   // 7. History regional (valeurs satellite BRUTES, comme la racine)
   updateHistory(regionDir, rawLevels)
+
+  // 8. Grille heatmap + bancs régionaux (couche carte) — nouvelles régions
+  // uniquement (MQ/GP : fichiers racine historiques). Même downsample et même
+  // floor que la racine. prepare-ftp copie ces fichiers à la racine du domaine.
+  if (region.id !== 'mq' && region.id !== 'gp' && grid && grid.points) {
+    const gridPoints = []
+    for (const p of grid.points) {
+      if (p.AFAI == null || p.AFAI <= 0) continue
+      const latIdx = grid.latitudes.indexOf(p.latitude)
+      const lngIdx = grid.longitudes.indexOf(p.longitude)
+      if (latIdx % 2 !== 0 || lngIdx % 2 !== 0) continue
+      const norm = normalizeAfai(p.AFAI)
+      if (norm < 0.06) continue
+      gridPoints.push([
+        Math.round(p.latitude * 1000) / 1000,
+        Math.round(p.longitude * 1000) / 1000,
+        Math.round(norm * 100) / 100,
+      ])
+    }
+    fs.writeFileSync(
+      path.join(regionDir, 'sargassum-grid.json'),
+      JSON.stringify({ updatedAt, count: gridPoints.length, points: gridPoints }),
+      'utf-8'
+    )
+    console.log(`  [${region.id}] grid: ${gridPoints.length} points (AFAI > 0)`)
+    await buildSargassumBanks(gridPoints, regionDir, windForecast, marineData, { id: region.id, beaches })
+  }
 
   const clean = levels.filter(l => l.status === 'clean').length
   const moderate = levels.filter(l => l.status === 'moderate').length

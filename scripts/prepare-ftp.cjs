@@ -397,7 +397,7 @@ function writeRegionIndex(region, out) {
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/icon-192.png" />
     <title>Plages Guadeloupe aujourd'hui · Score 0-100 (sargasses, mer, soleil) 2026</title>
-    <meta name="description" content="Quelle plage de Guadeloupe aujourd'hui ? Score 0-100 par plage combinant sargasses, houle, vent, soleil et température de l'eau. 82 plages notées en direct, toute l'année." />
+    <meta name="description" content="Quelle plage de Guadeloupe aujourd'hui ? Score 0-100 par plage combinant sargasses, houle, vent, soleil et température de l'eau. 83 plages notées en direct, toute l'année." />
     <link rel="canonical" href="https://sargasses-guadeloupe.com/" />
     <link rel="alternate" hreflang="fr" href="https://sargasses-guadeloupe.com/" />
     <link rel="alternate" hreflang="en" href="https://sargasses-guadeloupe.com/en/" />
@@ -406,7 +406,7 @@ function writeRegionIndex(region, out) {
     <meta name="geo.placename" content="Guadeloupe" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Plages Guadeloupe aujourd'hui · Score 0-100 par plage (2026)" />
-    <meta property="og:description" content="Quelle plage de Guadeloupe aujourd'hui ? Score 0-100 combinant sargasses, houle, vent, soleil et température eau. 82 plages notées en direct, toute l'année." />
+    <meta property="og:description" content="Quelle plage de Guadeloupe aujourd'hui ? Score 0-100 combinant sargasses, houle, vent, soleil et température eau. 83 plages notées en direct, toute l'année." />
     <meta property="og:url" content="https://sargasses-guadeloupe.com/" />
     <meta property="og:locale" content="fr_FR" />
     <meta property="og:locale:alternate" content="en_US" />
@@ -417,16 +417,16 @@ function writeRegionIndex(region, out) {
     <meta property="og:image:alt" content="Score 0-100 par plage en Guadeloupe - sargasses, houle, vent, soleil, eau" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Plages Guadeloupe aujourd'hui · Score 0-100 par plage (2026)" />
-    <meta name="twitter:description" content="Score 0-100 par plage : sargasses, mer, vent, soleil, température eau. 82 plages en direct, toute l'année." />
+    <meta name="twitter:description" content="Score 0-100 par plage : sargasses, mer, vent, soleil, température eau. 83 plages en direct, toute l'année." />
     <meta name="twitter:image" content="https://sargasses-guadeloupe.com/og-image.png" />
     <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"WebApplication","name":"Plages Guadeloupe · Score 0-100","description":"Score 0-100 par plage en Guadeloupe : sargasses, houle, vent, soleil, température de l'eau. 82 plages notées en direct, toute l'année.","url":"https://sargasses-guadeloupe.com/","applicationCategory":"TravelApplication","operatingSystem":"Web","inLanguage":["fr","en"],"dateModified":"${new Date().toISOString().slice(0,10)}","datePublished":"2026-02-21","publisher":{"@type":"Organization","name":"Sargasses Guadeloupe","logo":"https://sargasses-guadeloupe.com/icon-512.png"},"potentialAction":{"@type":"SearchAction","target":"https://sargasses-guadeloupe.com/plages/{search_term_string}/","query-input":"required name=search_term_string"}}
+    {"@context":"https://schema.org","@type":"WebApplication","name":"Plages Guadeloupe · Score 0-100","description":"Score 0-100 par plage en Guadeloupe : sargasses, houle, vent, soleil, température de l'eau. 83 plages notées en direct, toute l'année.","url":"https://sargasses-guadeloupe.com/","applicationCategory":"TravelApplication","operatingSystem":"Web","inLanguage":["fr","en"],"dateModified":"${new Date().toISOString().slice(0,10)}","datePublished":"2026-02-21","publisher":{"@type":"Organization","name":"Sargasses Guadeloupe","logo":"https://sargasses-guadeloupe.com/icon-512.png"},"potentialAction":{"@type":"SearchAction","target":"https://sargasses-guadeloupe.com/plages/{search_term_string}/","query-input":"required name=search_term_string"}}
     </script>
     <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Quelle plage de Guadeloupe aujourd'hui ?","acceptedAnswer":{"@type":"Answer","text":"Chaque plage reçoit un score 0-100 qui combine 7 facteurs : sargasses, houle, vent, température de l'eau, nuages, UV et marée. Le top 3 est recalculé chaque jour — ouvrez la carte pour voir les meilleures plages du jour en Grande-Terre et Basse-Terre."}},{"@type":"Question","name":"Comment est calculé le score 0-100 ?","acceptedAnswer":{"@type":"Answer","text":"Le score combine 7 facteurs pondérés : sargasses (30%), houle (20%), vent (15%), température eau (10%), nuages (10%), UV (10%), marée (5%). 90+ c'est exceptionnel, 70+ bon, en dessous de 40 mieux vaut éviter."}},{"@type":"Question","name":"Quand arrivent les sargasses en Guadeloupe en 2026 ?","acceptedAnswer":{"@type":"Answer","text":"Les pics sargasses en Guadeloupe sont observés entre avril et septembre, avec un maximum en juin-août. Les côtes sud et est de Grande-Terre (Sainte-Anne, Le Gosier, Saint-François) sont les plus touchées. Les plages sous le vent de Basse-Terre (Malendure, Deshaies) sont généralement épargnées. L'application fonctionne toute l'année et intègre les sargasses dans le score 0-100."}},{"@type":"Question","name":"Quelles plages de Guadeloupe sont sans sargasses ?","acceptedAnswer":{"@type":"Answer","text":"Les plages de la côte sous le vent de Basse-Terre (Malendure, Grande Anse Deshaies, Bouillante) sont rarement touchées. Sur Grande-Terre, vérifiez la carte en temps réel car la situation change quotidiennement."}},{"@type":"Question","name":"Comment fonctionnent les prévisions sargasses ?","acceptedAnswer":{"@type":"Answer","text":"Nos prévisions combinent les données satellite Copernicus (indice AFAI), les courants marins et les vents. Fiabilité : 80% à J+1, décroissante ensuite. Prévisions disponibles pour 82 plages en Guadeloupe."}},{"@type":"Question","name":"Les sargasses sont-elles dangereuses pour la santé ?","acceptedAnswer":{"@type":"Answer","text":"Les sargasses en décomposition libèrent du H2S (sulfure d'hydrogène), un gaz toxique. À forte concentration, il irrite les yeux et les voies respiratoires. Évitez les plages marquées en rouge sur notre carte, surtout avec des enfants."}},{"@type":"Question","name":"Où se baigner à Sainte-Anne en Guadeloupe sans sargasses ?","acceptedAnswer":{"@type":"Answer","text":"À Sainte-Anne (Grande-Terre), la plage de Bois Jolan et la plage du Bourg sont les plus surveillées. L'état change selon les vents et courants — consultez notre carte en temps réel avant de partir. Les plages protégées par la barrière de corail sont généralement plus propres."}},{"@type":"Question","name":"Le Gosier est-il touché par les sargasses ?","acceptedAnswer":{"@type":"Answer","text":"La plage du Gosier (Guadeloupe) est exposée aux sargasses en haute saison (juin-août). Elle est située sur la côte sud de Grande-Terre, face à l'îlet du Gosier. Consultez l'état en temps réel pour la journée."}},{"@type":"Question","name":"Quelles plages de Basse-Terre sont épargnées des sargasses ?","acceptedAnswer":{"@type":"Answer","text":"La côte sous-le-vent de Basse-Terre (Malendure, Plage de la Perle à Deshaies, Grande Anse Deshaies, Bouillante) est structurellement protégée des sargasses par le relief de l'île et les courants. Ces plages sont recommandées pendant les pics de saison."}},{"@type":"Question","name":"Comment recevoir une alerte sargasses en Guadeloupe ?","acceptedAnswer":{"@type":"Answer","text":"Activez les notifications push gratuites sur sargasses-guadeloupe.com : vous recevez une alerte quand l'état d'une plage favorite change (arrivée de sargasses, retour à propre). Disponible pour les 82 plages de Guadeloupe."}}]}
+    {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Quelle plage de Guadeloupe aujourd'hui ?","acceptedAnswer":{"@type":"Answer","text":"Chaque plage reçoit un score 0-100 qui combine 7 facteurs : sargasses, houle, vent, température de l'eau, nuages, UV et marée. Le top 3 est recalculé chaque jour — ouvrez la carte pour voir les meilleures plages du jour en Grande-Terre et Basse-Terre."}},{"@type":"Question","name":"Comment est calculé le score 0-100 ?","acceptedAnswer":{"@type":"Answer","text":"Le score combine 7 facteurs pondérés : sargasses (30%), houle (20%), vent (15%), température eau (10%), nuages (10%), UV (10%), marée (5%). 90+ c'est exceptionnel, 70+ bon, en dessous de 40 mieux vaut éviter."}},{"@type":"Question","name":"Quand arrivent les sargasses en Guadeloupe en 2026 ?","acceptedAnswer":{"@type":"Answer","text":"Les pics sargasses en Guadeloupe sont observés entre avril et septembre, avec un maximum en juin-août. Les côtes sud et est de Grande-Terre (Sainte-Anne, Le Gosier, Saint-François) sont les plus touchées. Les plages sous le vent de Basse-Terre (Malendure, Deshaies) sont généralement épargnées. L'application fonctionne toute l'année et intègre les sargasses dans le score 0-100."}},{"@type":"Question","name":"Quelles plages de Guadeloupe sont sans sargasses ?","acceptedAnswer":{"@type":"Answer","text":"Les plages de la côte sous le vent de Basse-Terre (Malendure, Grande Anse Deshaies, Bouillante) sont rarement touchées. Sur Grande-Terre, vérifiez la carte en temps réel car la situation change quotidiennement."}},{"@type":"Question","name":"Comment fonctionnent les prévisions sargasses ?","acceptedAnswer":{"@type":"Answer","text":"Nos prévisions combinent les données satellite Copernicus (indice AFAI), les courants marins et les vents. Fiabilité : 80% à J+1, décroissante ensuite. Prévisions disponibles pour 83 plages en Guadeloupe."}},{"@type":"Question","name":"Les sargasses sont-elles dangereuses pour la santé ?","acceptedAnswer":{"@type":"Answer","text":"Les sargasses en décomposition libèrent du H2S (sulfure d'hydrogène), un gaz toxique. À forte concentration, il irrite les yeux et les voies respiratoires. Évitez les plages marquées en rouge sur notre carte, surtout avec des enfants."}},{"@type":"Question","name":"Où se baigner à Sainte-Anne en Guadeloupe sans sargasses ?","acceptedAnswer":{"@type":"Answer","text":"À Sainte-Anne (Grande-Terre), la plage de Bois Jolan et la plage du Bourg sont les plus surveillées. L'état change selon les vents et courants — consultez notre carte en temps réel avant de partir. Les plages protégées par la barrière de corail sont généralement plus propres."}},{"@type":"Question","name":"Le Gosier est-il touché par les sargasses ?","acceptedAnswer":{"@type":"Answer","text":"La plage du Gosier (Guadeloupe) est exposée aux sargasses en haute saison (juin-août). Elle est située sur la côte sud de Grande-Terre, face à l'îlet du Gosier. Consultez l'état en temps réel pour la journée."}},{"@type":"Question","name":"Quelles plages de Basse-Terre sont épargnées des sargasses ?","acceptedAnswer":{"@type":"Answer","text":"La côte sous-le-vent de Basse-Terre (Malendure, Plage de la Perle à Deshaies, Grande Anse Deshaies, Bouillante) est structurellement protégée des sargasses par le relief de l'île et les courants. Ces plages sont recommandées pendant les pics de saison."}},{"@type":"Question","name":"Comment recevoir une alerte sargasses en Guadeloupe ?","acceptedAnswer":{"@type":"Answer","text":"Activez les notifications push gratuites sur sargasses-guadeloupe.com : vous recevez une alerte quand l'état d'une plage favorite change (arrivée de sargasses, retour à propre). Disponible pour les 83 plages de Guadeloupe."}}]}
     </script>
     <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"Organization","name":"Sargasses Guadeloupe","url":"https://sargasses-guadeloupe.com","logo":"https://sargasses-guadeloupe.com/icon-512.png","description":"Compagnon plage Guadeloupe — score 0-100 par plage combinant sargasses, mer, vent, soleil et température de l'eau. 82 plages suivies en direct toute l'année.","areaServed":{"@type":"AdministrativeArea","name":"Guadeloupe"},"knowsAbout":["plages Guadeloupe","sargasses","baignade","Grande-Terre","Basse-Terre","Sainte-Anne","Le Gosier","Deshaies","météo marine","AFAI"],"sameAs":["https://sargasses-martinique.com"]}
+    {"@context":"https://schema.org","@type":"Organization","name":"Sargasses Guadeloupe","url":"https://sargasses-guadeloupe.com","logo":"https://sargasses-guadeloupe.com/icon-512.png","description":"Compagnon plage Guadeloupe — score 0-100 par plage combinant sargasses, mer, vent, soleil et température de l'eau. 83 plages suivies en direct toute l'année.","areaServed":{"@type":"AdministrativeArea","name":"Guadeloupe"},"knowsAbout":["plages Guadeloupe","sargasses","baignade","Grande-Terre","Basse-Terre","Sainte-Anne","Le Gosier","Deshaies","météo marine","AFAI"],"sameAs":["https://sargasses-martinique.com"]}
     </script>
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"SiteNavigationElement","name":["Carte","Plages","Prévisions","Alertes"],"url":["https://sargasses-guadeloupe.com/carte-sargasses/","https://sargasses-guadeloupe.com/plages/","https://sargasses-guadeloupe.com/previsions/","https://sargasses-guadeloupe.com/alertes/"]}
@@ -540,7 +540,7 @@ function writeRegionIndex(region, out) {
     <div id="root">
       <noscript>
         <h1>Sargasses Guadeloupe en temps réel — carte et plages aujourd'hui (2026)</h1>
-        <p>Carte des sargasses en Guadeloupe en temps réel. Où se baigner aujourd'hui en Guadeloupe ? État de 82 plages mis à jour quotidiennement grâce aux données satellite Copernicus Marine. Prévisions sargasses 7 jours et alertes push gratuites.</p>
+        <p>Carte des sargasses en Guadeloupe en temps réel. Où se baigner aujourd'hui en Guadeloupe ? État de 83 plages mis à jour quotidiennement grâce aux données satellite Copernicus Marine. Prévisions sargasses 7 jours et alertes push gratuites.</p>
         <h2>Carte sargasses Guadeloupe — état des plages en direct</h2>
         <p>Notre carte interactive affiche en temps réel la concentration de sargasses au large de chaque plage de Guadeloupe. Les données proviennent du satellite Copernicus Marine (indice AFAI) et sont rafraîchies 4 fois par jour. Chaque plage est classée : propre, modéré ou alerte.</p>
         <h2>Grande-Terre — plages les plus surveillées</h2>
@@ -825,25 +825,24 @@ Sitemap: https://${domain}/sitemap.xml
   const outCopernicus = path.join(out, 'api', 'copernicus')
   if (fs.existsSync(path.join(regionDataDir, 'sargassum.json'))) {
     fs.mkdirSync(outCopernicus, { recursive: true })
-    for (const f of ['sargassum.json', 'history.json']) {
+    // Purge d'abord les sous-dossiers d'AUTRES régions + les overlays carte
+    // MQ/GP copiés depuis dist/ : sans remplacement régional, ils afficheraient
+    // les bancs/grille de Martinique sur la carte PC. caribbean-afai.json est
+    // conservé : couche AFAI à l'échelle du bassin, pertinente partout.
+    const REGION_SPECIFIC_OVERLAYS = ['sargassum-banks.json', 'sargassum-grid.json', 'forecast-archive.json', 'forecast-accuracy.json']
+    for (const entry of fs.readdirSync(outCopernicus)) {
+      const full = path.join(outCopernicus, entry)
+      if (fs.statSync(full).isDirectory()) { fs.rmSync(full, { recursive: true }); continue }
+      if (REGION_SPECIFIC_OVERLAYS.includes(entry)) fs.rmSync(full)
+    }
+    // Puis sert les fichiers RÉGIONAUX à la racine du domaine — y compris les
+    // bancs/grille régionaux (pipeline étape 8) quand ils existent. MapView
+    // gère toujours leur absence (catch → pas d'overlay) sans casser la carte.
+    for (const f of ['sargassum.json', 'history.json', 'sargassum-banks.json', 'sargassum-grid.json']) {
       const src = path.join(regionDataDir, f)
       if (fs.existsSync(src)) fs.copyFileSync(src, path.join(outCopernicus, f))
     }
-    // Purge les sous-dossiers d'AUTRES régions + les overlays carte spécifiques
-    // MQ/GP (banks/grid) que MapView fetche : sans données régionales propres,
-    // ils afficheraient les bancs/grille de Martinique sur la carte PC.
-    // caribbean-afai.json est conservé : couche AFAI à l'échelle du bassin,
-    // pertinente partout. MapView gère l'absence de banks/grid (catch → pas
-    // d'overlay) sans casser la carte.
-    const REGION_SPECIFIC_OVERLAYS = ['sargassum-banks.json', 'sargassum-grid.json', 'forecast-archive.json', 'forecast-accuracy.json']
-    if (fs.existsSync(outCopernicus)) {
-      for (const entry of fs.readdirSync(outCopernicus)) {
-        const full = path.join(outCopernicus, entry)
-        if (fs.statSync(full).isDirectory()) { fs.rmSync(full, { recursive: true }); continue }
-        if (REGION_SPECIFIC_OVERLAYS.includes(entry)) fs.rmSync(full)
-      }
-    }
-    console.log(`   → data sargasses région servie à la racine (${region.id}/sargassum.json → api/copernicus/, overlays MQ purgés)`)
+    console.log(`   → data sargasses région servie à la racine (${region.id}/ → api/copernicus/, overlays MQ purgés, banks/grid régionaux si présents)`)
   } else {
     console.warn(`   ⚠ pas de public/api/copernicus/${region.id}/sargassum.json — lance d'abord node scripts/fetch-sargassum-live.cjs`)
   }

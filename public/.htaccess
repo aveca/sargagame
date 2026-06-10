@@ -193,8 +193,10 @@ RewriteRule ^plages/plage-de-la-desirade-sud/?$ /plages/plage-de-la-desirade-sud
 RewriteRule ^plage/(.+)/?$ / [R=301,L]
 RewriteRule ^plage/?$ / [R=301,L]
 
-# /plages/ sans slug → accueil (les /plages/{slug}/ sont gérées par les fichiers statiques)
-RewriteRule ^plages/?$ / [R=301,L]
+# /plages/ a désormais sa vraie page hub (générée par vite.config — "Toutes les
+# plages") : plus de redirect accueil. Le sitemap la déclare, Google la voyait
+# en "Duplicate, submitted URL not selected as canonical" à cause de l'ancien 301.
+RewriteRule ^plages/?$ /plages/index.html [L]
 
 # Anciennes pages plages-guadeloupe sans correspondance → accueil
 RewriteRule ^plages-guadeloupe/(.+)/?$ / [R=301,L]

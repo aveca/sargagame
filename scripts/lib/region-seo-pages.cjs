@@ -104,6 +104,22 @@ function writePage(outDir, urlPath, html) {
   fs.writeFileSync(path.join(dir, 'index.html'), html, 'utf-8')
 }
 
+// Coupe au dernier espace ≤ max — jamais en plein mot ni avec un '&'/tiret
+// pendouillant (audit 2026-06-10 : titles resorts coupés "…Live Beach St").
+function smartTrim(s, max) {
+  if (!s || s.length <= max) return s
+  let cut = s.slice(0, max + 1)
+  const sp = cut.lastIndexOf(' ')
+  cut = sp > max * 0.55 ? cut.slice(0, sp) : cut.slice(0, max)
+  return cut.replace(/[\s—–·,;:&-]+$/, '')
+}
+
+// Meta description : coupe propre + ellipse si dépassement.
+function trimDesc(s, max = 160) {
+  if (!s || s.length <= max) return s
+  return smartTrim(s, max - 1) + '…'
+}
+
 function breadcrumb(domain, items) {
   return {
     '@context': 'https://schema.org', '@type': 'BreadcrumbList',
@@ -172,7 +188,7 @@ ${hubLinks('forecast')}${networkFooter(region, t)}</article>`,
   // today — liste ordonnée par score, format featured-snippet, datée
   const todayTitle = p.today.title.replace(/\s*[—-]\s*\d{4}.*$|$/, '') + ` (${today})`
   hubs.push({
-    slug: p.today.slug, title: todayTitle.slice(0, 70), desc: p.today.desc,
+    slug: p.today.slug, title: smartTrim(todayTitle, 70), desc: p.today.desc,
     noscript: `<article><h1>${esc(p.today.h1)} — ${today}</h1><p><em>${t.updated(today)}</em></p><p>${esc(p.today.intro)}</p>
 <ol>${byScore.map(b => `<li><strong>${beachLink(b)}</strong> — ${sw(b.lv.status)}, ${t.score} ${b.lv.score ?? '—'}/100</li>`).join('')}</ol>
 ${hubLinks('today')}${networkFooter(region, t)}</article>`,
@@ -207,7 +223,7 @@ ${hubLinks('season')}${networkFooter(region, t)}</article>`,
       ? `<p>Muestreamos el índice AFAI (algas flotantes) de los satélites Copernicus/NOAA 4 veces al día, píxel por píxel frente a cada playa — no un promedio regional. Una corrección diaria ponderada y una memoria de playa (vida media de varios días) convierten la señal satelital en el estado que ves en el mapa. El pronóstico de 7 días combina persistencia, viento y detección de bancos en el mar.</p><p>Nuestros datos nunca se editan a mano, nunca se filtran por hoteles y nunca se borran. Fuentes: Copernicus Marine, NOAA ERDDAP (AFAI), Open-Meteo.</p>`
       : `<p>We sample the AFAI (floating algae) index from Copernicus/NOAA satellites 4 times a day, pixel by pixel in front of each beach — not a regional average. A weighted daily correction and a beach memory (multi-day half-life) turn the satellite signal into the status you see on the map. The 7-day forecast combines persistence, wind and offshore sargassum-bank detection.</p><p>Our data is never hand-edited, never filtered for resorts, never deleted. Sources: Copernicus Marine, NOAA ERDDAP (AFAI), Open-Meteo.</p>`
     hubs.push({
-      slug: methodSlug, title: t.methodTitle(region.name).slice(0, 65), desc: t.methodDesc(region.name),
+      slug: methodSlug, title: smartTrim(t.methodTitle(region.name), 65), desc: t.methodDesc(region.name),
       noscript: `<article><h1>${t.methodH1}</h1><p><em>${t.updated(today)}</em></p>${body}<p><strong>${accLine}</strong></p>${hubLinks(null)}${networkFooter(region, t)}</article>`,
     })
   }
@@ -217,7 +233,7 @@ ${hubLinks('season')}${networkFooter(region, t)}</article>`,
     const sem = { clean: '🟢 Verde — sin sargazo', moderate: '🟡 Amarillo — recale moderado', avoid: '🔴 Rojo — recale abundante' }
     hubs.push({
       slug: 'semaforo-del-sargazo',
-      title: `Semáforo del Sargazo HOY (${today}) — ${region.name}`.slice(0, 68),
+      title: smartTrim(`Semáforo del Sargazo HOY (${today}) — ${region.name}`, 68),
       desc: `Semáforo del sargazo actualizado 4 veces al día con datos satelitales: estado playa por playa en ${region.name}, pronóstico de 7 días y alertas. Independiente: nunca borrado, nunca filtrado.`,
       noscript: `<article><h1>Semáforo del sargazo — ${today}</h1><p><em>${t.updated(today)}</em></p>
 <p>El semáforo independiente del sargazo: datos satelitales, no reportes editados. Estado de cada playa ahora mismo:</p>
@@ -247,12 +263,12 @@ ${hubLinks(null)}${networkFooter(region, t)}</article>`,
       .sort((a, b2) => a.d - b2.d).slice(0, 4).map(({ x }) => x)
     const beachResorts = resortsByBeach[b.id] || []
     const photo = photos[b.id] ? `<img src="/beaches/${photos[b.id]}" alt="${esc(b.name)}" width="800" height="450" loading="lazy" />` : ''
-    const title = lang === 'es'
-      ? `Sargazo en ${b.name} HOY — Estado en vivo y pronóstico 7 días`.slice(0, 68)
-      : `${b.name} Sargassum Today — Live Status & 7-Day Forecast`.slice(0, 68)
-    const desc = lang === 'es'
-      ? `¿Hay sargazo en ${b.name} hoy? Estado actualizado 4 veces al día por satélite, Beach Score ${b.lv.score ?? ''}/100 y pronóstico de 7 días. ${(b.commune || '')}, ${region.name}.`.slice(0, 160)
-      : `Is there sargassum at ${b.name} today? Satellite status updated 4× daily, Beach Score ${b.lv.score ?? ''}/100 and a 7-day forecast. ${(b.commune || '')}, ${region.name}.`.slice(0, 160)
+    const title = smartTrim(lang === 'es'
+      ? `Sargazo en ${b.name} HOY — Estado en vivo y pronóstico 7 días`
+      : `${b.name} Sargassum Today — Live Status & 7-Day Forecast`, 68)
+    const desc = trimDesc(lang === 'es'
+      ? `¿Hay sargazo en ${b.name} hoy? Estado actualizado 4 veces al día por satélite, Beach Score ${b.lv.score ?? ''}/100 y pronóstico de 7 días. ${(b.commune || '')}, ${region.name}.`
+      : `Is there sargassum at ${b.name} today? Satellite status updated 4× daily, Beach Score ${b.lv.score ?? ''}/100 and a 7-day forecast. ${(b.commune || '')}, ${region.name}.`)
     const noscript = `<article><h1>${esc(title)}</h1><p><em>${t.updated(today)}</em></p>${photo}
 <p><strong>${t.status}: ${sw(b.lv.status)}</strong> · ${t.score} ${b.lv.score ?? '—'}/100</p>
 <p>${esc(blurb)}</p>
@@ -275,11 +291,16 @@ ${hubLinks(null)}${networkFooter(region, t)}</article>`
     const b = beaches.find(x => x.id === r.beachId)
     if (!b) continue
     const pathname = `/${t.resortsDir}/${r.slug}/`
-    const title = (content.resortPageTpl?.titlePattern || (lang === 'es' ? 'Sargazo en {resort} HOY — estado y pronóstico' : 'Sargassum at {resort} Today — Live Status & Forecast')).replace('{resort}', r.name).slice(0, 70)
+    // Noms d'hôtels longs : templates de repli de plus en plus courts plutôt
+    // qu'une coupe en plein mot (SERP "…Live Beach St" sur 35 pages).
+    let title = (content.resortPageTpl?.titlePattern || (lang === 'es' ? 'Sargazo en {resort} HOY — estado y pronóstico' : 'Sargassum at {resort} Today — Live Status & Forecast')).replace('{resort}', r.name)
+    if (title.length > 70) title = lang === 'es' ? `Sargazo en ${r.name} HOY — pronóstico` : `Sargassum at ${r.name} Today — Forecast`
+    if (title.length > 70) title = lang === 'es' ? `Sargazo en ${r.name} HOY` : `${r.name} Sargassum Today`
+    if (title.length > 70) title = smartTrim(title, 70)
     const intro = (content.resortPageTpl?.introPattern || '').replace(/\{resort\}/g, r.name).replace(/\{beach\}/g, b.name)
-    const desc = (lang === 'es'
+    const desc = trimDesc(lang === 'es'
       ? `¿Hay sargazo en ${r.name} hoy? La playa del hotel (${b.name}) está "${sw(b.lv.status)}" según el satélite de hoy. Score ${b.lv.score ?? ''}/100, pronóstico 7 días y alertas.`
-      : `Is there sargassum at ${r.name} today? The resort beach (${b.name}) reads "${sw(b.lv.status)}" on today's satellite pass. Score ${b.lv.score ?? ''}/100, 7-day forecast & alerts.`).slice(0, 160)
+      : `Is there sargassum at ${r.name} today? The resort beach (${b.name}) reads "${sw(b.lv.status)}" on today's satellite pass. Score ${b.lv.score ?? ''}/100, 7-day forecast & alerts.`)
     const noscript = `<article><h1>${esc(title)}</h1><p><em>${t.updated(today)}</em></p>
 <p>${esc(intro)}</p>
 <p><strong>${t.beachOf(r.name)} — ${beachLink(b)}</strong>: ${sw(b.lv.status)} · ${t.score} ${b.lv.score ?? '—'}/100 (${esc(r.area || b.commune || '')})</p>

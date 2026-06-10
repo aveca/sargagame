@@ -43,6 +43,13 @@ export function useLang(){return useContext(LangCtx)||"fr"}
 function getLang(){try{const _d=IS_NEW_REGION?REGION.primaryLang:"fr";if(typeof window==="undefined")return _d;const p=window.location.pathname;if(p.startsWith("/es"))return"es";if(p.startsWith("/en"))return"en";return _d}catch{return IS_NEW_REGION?REGION.primaryLang:"fr"}}
 /* i18n inline helper — returns fr/en/es string based on current lang */
 function _t(lang,fr,en,es){return lang==="es"?es:lang==="en"?en:fr}
+/* Labels jours du forecast : le pipeline émet du FR ('Auj.','Dem.','Ven'…) dans
+   le JSON — remap au rendu pour en/es (MQ/GP fr : passthrough inchangé). */
+const FC_DAY_MAP={
+  en:{"Auj.":"Today","Dem.":"Tmrw",Dim:"Sun",Lun:"Mon",Mar:"Tue",Mer:"Wed",Jeu:"Thu",Ven:"Fri",Sam:"Sat"},
+  es:{"Auj.":"Hoy","Dem.":"Mañ.",Dim:"Dom",Lun:"Lun",Mar:"Mar",Mer:"Mié",Jeu:"Jue",Ven:"Vie",Sam:"Sáb"},
+}
+const fcDay=(d,lang)=>lang==="fr"?d.day:((FC_DAY_MAP[lang]||{})[d.day]||d.day)
 /* Beach Score labels arrive in FRENCH from src/lib/score.js — map to en/es at render */
 const SCORE_LABEL_I18N={EXCEPTIONNEL:{en:"EXCEPTIONAL",es:"EXCEPCIONAL"},SUPER:{en:"GREAT",es:"GENIAL"},BON:{en:"GOOD",es:"BUENO"},MOYEN:{en:"AVERAGE",es:"REGULAR"},PASSABLE:{en:"FAIR",es:"PASABLE"},"ÉVITER":{en:"AVOID",es:"EVITAR"},NON:{en:"NO",es:"NO"}}
 const scoreLabelFor=(label,lang)=>lang==="fr"?label:(SCORE_LABEL_I18N[label]?.[lang==="es"?"es":"en"]||label)
@@ -1220,7 +1227,7 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
                 boxShadow:`0 -4px 14px -6px ${st.c}88, inset 0 1px 0 rgba(255,255,255,.3)`}}/>
               <span className="anton" style={{fontSize:11,lineHeight:1,letterSpacing:".02em",
                 color:"var(--sg-mid,#686868)",textTransform:"uppercase",marginTop:2}}>
-                {d.day}
+                {fcDay(d,lang)}
               </span>
               {fConf!=null&&!isLocked&&<span style={{fontSize:8,color:"var(--sg-mid,#999)",fontWeight:600}}>{fConf}%</span>}
             </div>
@@ -1266,7 +1273,7 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
             return(
               <div key={i} style={{display:"flex",alignItems:"center",gap:3,filter:"blur(3px)",opacity:.65,pointerEvents:"none"}}>
                 <div style={{width:7,height:7,borderRadius:2,background:st.c,flexShrink:0}}/>
-                <span style={{fontSize:9,fontWeight:700,color:st.c}}>{d.day}</span>
+                <span style={{fontSize:9,fontWeight:700,color:st.c}}>{fcDay(d,lang)}</span>
               </div>
             )
           })}
@@ -4994,8 +5001,15 @@ export default function App(){
     }
     window.addEventListener("sg:value_moment",onValueMoment)
 
+    // Fallback sans moment de valeur : soft-ask (primer) UNIQUEMENT — jamais le
+    // prompt natif à froid (refus natif = blocage permanent du domaine côté
+    // navigateur) et respect du cooldown 7j post-dismiss.
     const FALLBACK_MS=isStandalone?30000:60000
-    const t=setTimeout(()=>loadPushNow("fallback_timer"),FALLBACK_MS)
+    const t=setTimeout(()=>{
+      if(pushLoadedRef.current||recentlyDismissed)return
+      setShowPushPrimer(true)
+      track("sg_push_primer_shown",{trigger:"fallback_timer"})
+    },FALLBACK_MS)
 
     return()=>{
       clearTimeout(t)
