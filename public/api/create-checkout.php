@@ -201,12 +201,12 @@ if ($action === 'embedded') {
 }
 
 // ── Action: setup — cree un SetupIntent (collecte carte)
-// card + link uniquement : Apple/Google Pay passent par 'card', et aucun
-// moyen de paiement a redirect → confirmSetup reste 100% in-app (3DS=iframe).
+// card UNIQUEMENT : Apple/Google Pay passent par 'card', aucun moyen a
+// redirect → confirmSetup reste 100% in-app (3DS=iframe). Link retire
+// 2026-06-10 : son enrolement ajoutait un champ telephone (friction).
 if ($action === 'setup') {
     $si = stripe('POST', '/setup_intents', [
         'payment_method_types[0]' => 'card',
-        'payment_method_types[1]' => 'link',
     ]);
     echo json_encode(['clientSecret' => $si['client_secret']]);
     exit;

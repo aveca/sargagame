@@ -3786,6 +3786,10 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
       })
       // Pré-mount dans l'overlay caché (toujours rendu) — ready pendant la lecture
       if(!payMountedRef.current&&payDivRef.current){
+        // Friction minimale : le champ telephone venait de l'enrolement Link —
+        // Link retire du SetupIntent (card only) = plus de telephone. NE PAS
+        // ajouter fields.billingDetails.phone:never ici : teste 2026-06-10, le
+        // Payment Element ne boote plus (ready ne fire jamais) avec cette option.
         const pe=elementsRef.current.create("payment",{layout:"tabs"})
         pe.mount(payDivRef.current)
         pe.on("ready",()=>{payReadyRef.current=true;setPayReady(true)})
