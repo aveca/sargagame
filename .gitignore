@@ -47,7 +47,16 @@ memory
 session*-*.png
 responsive-*.png
 
+# Debug screenshots à la racine (artefacts locaux de sessions debug/Playwright).
+# Les images shippées vivent dans public/ et regions/og/, jamais à la racine.
+/*.png
+
+# Aider (outil local — historique + cache, jamais committés)
+.aider*
+
 # FB scraper persistent session (cookies — NEVER commit)
 .fb-session/
+.fb-session-edge/
+.fb-session-chrome/
 scripts/automation/data/fb-reply-log.jsonl
 .secrets-to-redact.txt
