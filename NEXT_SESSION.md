@@ -32,14 +32,17 @@
 - **Clarity** : 3 projets créés : puntacana **x4orv6qepl**, florida **x4ov7qlguf**, rivieramaya **x4ox737k79**.
 - IDs injectés dans `regions/*.json`, build PC vérifié (GA4/Clarity dédiés présents, zéro fuite MQ), MQ byte-identique (215 HTML hash-only, 0 diff contenu), SW v27, poussé (c4ceac4 → rebuild+redeploy auto des 3 régions avec analytics actifs).
 
+## ✅ OneSignal — FAIT aussi (provisioning outils 100 % COMPLET)
+
+3 apps web créées via le Chrome user (org Sarga, Typical Site) : puntacana `10f16c2e-4350-4477-b51d-cc9357629fb7`, florida `0f362117-903e-4338-9ce3-d666f47eb1d9`, rivieramaya `02cdb926-71a8-4f1a-8ccf-12ed292252d0`. Injectées dans configs, SW v28. Tokens GSC déplacés dans `public/` (persistent à chaque deploy). Astuce dashboards Ember : seul `document.execCommand('insertText')` met à jour le state des formulaires.
+
 ## ⚠️ À FAIRE (ordre)
 
-1. **Vérifier en prod après le run analytics** : GA4 G-ZSPG79DBQB + Clarity x4orv6qepl dans le HTML de sargassumpuntacana.com ; head ES sur sargassumcancun.com ; carte MQ verte (hard-refresh SW **v27**).
-2. **OneSignal (3 apps)** : seul outil restant — pas d'API de création, login user dans le Chrome piloté (remplacer `onesignalAppId: TBD` dans les 3 configs, rebuild). Resend : nouvelles régions routées via sender MQ (fait, plan free 1 domaine).
-3. **Réconciliation webhook J+1** (2026-06-11) — toujours 0 paiement USD.
-4. **SEO = le vrai moteur USD** : GSC vient de démarrer l'horloge (sitemaps soumis aujourd'hui). Suivre l'indexation sous 1-2 sem. C'est le canal scalable, vs FB qui ne fait que semer.
-5. **FB = canal d'amorçage léger, PAS la priorité** (cf. data : blitz avril = +4 payants/10j mais flat +1 sur 47j ensuite ; les groupes resort sont promo-hostiles, « composer not found » = modération). 2 membres (Punta Cana Travel 193K, Tips 2026), 1 post live, 8 joins en attente. Quand approuvés → `fb-post-groups.cjs` (Chrome maintenant, pas Edge — scripts switchés). 2e vague : Monitoreo sargazo PC 26K, Hard Rock 22K. ⚠️ **session FB Chrome à re-logger 1× : `.fb-session-chrome/` neuf** (scripts basculés d'Edge vers Chrome à ta demande).
-6. Contenu région-aware (content-generation EN/ES) + i18n restant (~188 ternaires sans ES) + sales tax US (`automatic_tax` OFF partout).
+1. **Vérifier en prod après le run définitif 27255789180** : GA4/Clarity/OneSignal dédiés sur les 3 nouveaux sites, head ES cancun, carte MQ verte, SW v28 (hard-refresh).
+2. **Réconciliation webhook J+1** (2026-06-11) — toujours 0 paiement USD. Endpoints sains (webhook 400 sur signature invalide, checkout 405 sur GET).
+3. **SEO = le vrai moteur USD** : GSC actif depuis aujourd'hui (3 propriétés vérifiées + sitemaps). Suivre l'indexation 1-2 sem (l'audit GSC quotidien voit les nouvelles propriétés via le SA).
+4. **FB = amorçage léger, pas la priorité** (data : blitz avril +4 payants/10j puis flat +1/47j). 2 membres (193K + Tips 2026), 1 post live, 8 joins en attente d'approbation. Quand approuvés → `fb-post-groups.cjs`. ⚠️ scripts basculés Edge→Chrome : **re-login FB 1× dans `.fb-session-chrome/`** au prochain run.
+5. Contenu région-aware (content-generation EN/ES) + i18n (~188 ternaires sans ES) + sales tax US (`automatic_tax` OFF).
 
 ## Notes
 - ⚠️ Navigateur : le MCP Playwright pilote SA PROPRE fenêtre — le Chrome normal de l'user y est invisible. L'user tape ses creds dans la fenêtre pilotée (pattern validé : Stripe, Namecheap).
