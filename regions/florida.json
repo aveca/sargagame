@@ -9,6 +9,10 @@
     "es"
   ],
   "currency": "USD",
+  "pricing": {
+    "monthly": "$9.99",
+    "yearly": "$79"
+  },
   "stripeProducts": {
     "monthly": "price_1Tgc8SP9RK8Orx51I3pK41W7",
     "yearly": "price_1Tgc8SP9RK8Orx515NtJzugN"
@@ -30,6 +34,8 @@
     "accent": "#FBBF24"
   },
   "onesignalAppId": "TBD_CREATE_ONESIGNAL_APP",
+  "ga4Id": "TBD_CREATE_GA4_PROPERTY",
+  "clarityProjectId": "TBD_CREATE_CLARITY_PROJECT",
   "emails": {
     "alerts": "alerts@sargassummiami.com",
     "support": "support@sargassummiami.com"

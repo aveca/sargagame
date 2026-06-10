@@ -124,12 +124,19 @@ export default defineConfig({
           `<link rel="alternate" hreflang="${lang}" href="https://${domain}/" />\n    <link rel="alternate" hreflang="x-default" href="https://${domain}/" />`
         )
 
-        // ── 3) Analytics partagés MQ/GP : JAMAIS sur une nouvelle région (séparation des
-        //      propriétés GA4/Clarity avant tout lancement — voir handoff sécurité). ──
-        html = html
-          .replace(/<!-- Google Analytics 4 -->\s*<script async src="https:\/\/www\.googletagmanager\.com[^"]*"><\/script>\s*<script>[\s\S]*?<\/script>/, '<!-- GA4 : propriété dédiée à créer pour cette région (pas de tracking partagé MQ/GP) -->')
-          .replace(/<!-- Microsoft Clarity \+ bridge[\s\S]*?<\/script>/, '<!-- Clarity : projet dédié à créer pour cette région -->')
-          .replace(/<link rel="preconnect" href="https:\/\/www\.clarity\.ms" \/>\s*/, '')
+        // ── 3) Analytics : JAMAIS les IDs partagés MQ/GP sur une nouvelle région.
+        //      Si la région a ses propres propriétés (ga4Id / clarityProjectId non-TBD),
+        //      mêmes snippets avec ses IDs ; sinon blocs retirés (séparation stricte). ──
+        const ga4Id = REGION.ga4Id && !String(REGION.ga4Id).startsWith('TBD') ? REGION.ga4Id : ''
+        const clarityId = REGION.clarityProjectId && !String(REGION.clarityProjectId).startsWith('TBD') ? REGION.clarityProjectId : ''
+        html = ga4Id
+          ? html.replace(/G-V8JGMDZZ2Y/g, ga4Id)
+          : html.replace(/<!-- Google Analytics 4 -->\s*<script async src="https:\/\/www\.googletagmanager\.com[^"]*"><\/script>\s*<script>[\s\S]*?<\/script>/, '<!-- GA4 : propriété dédiée à créer pour cette région (pas de tracking partagé MQ/GP) -->')
+        html = clarityId
+          ? html.replace(/w4o6w9aenv/g, clarityId)
+          : html
+              .replace(/<!-- Microsoft Clarity \+ bridge[\s\S]*?<\/script>/, '<!-- Clarity : projet dédié à créer pour cette région -->')
+              .replace(/<link rel="preconnect" href="https:\/\/www\.clarity\.ms" \/>\s*/, '')
 
         // ── 4) OneSignal : appId de la région, sinon stub no-op (pas d'app partagée). ──
         const osId = REGION.onesignalAppId && !String(REGION.onesignalAppId).startsWith('TBD') ? REGION.onesignalAppId : ''
