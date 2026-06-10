@@ -447,6 +447,12 @@ function writeRegionIndex(region, out) {
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://www.clarity.ms" />
+  <!-- Stripe : TLS cold-start mesuré à 9-22s sur réseau Caraïbe — préchauffer les
+       connexions pendant le chargement de l'app rend le checkout on-site instantané.
+       (Template GP figé : garder en phase avec index.html racine.) -->
+  <link rel="preconnect" href="https://js.stripe.com" />
+  <link rel="preconnect" href="https://m.stripe.network" />
+  <link rel="preconnect" href="https://api.stripe.com" />
   <link rel="dns-prefetch" href="https://api.open-meteo.com" />
   <link rel="dns-prefetch" href="https://marine-api.open-meteo.com" />
   <link rel="dns-prefetch" href="https://server.arcgisonline.com" />
