@@ -2,7 +2,7 @@
 // Cache-first for static assets, network-first for HTML/API data.
 // IMPORTANT : bumper CACHE_NAME a CHAQUE deploy de code -> purge l'ancien cache (sinon
 // les users restent coinces sur l'ancien index.html/bundle, cf. bug clic plages juin 2026).
-const CACHE_NAME = 'sargasses-v37'
+const CACHE_NAME = 'sargasses-v38'
 const STATIC_ASSETS = ['/', '/index.html', '/manifest.json', '/favicon.svg', '/icon-192.png', '/data/beaches-list.json', '/data/beaches-images.json']
 
 self.addEventListener('install', (e) => {
@@ -16,12 +16,16 @@ self.addEventListener('activate', (e) => {
   e.waitUntil((async () => {
     // 1) Purge tous les anciens caches
     const keys = await caches.keys()
+    const hadOldCache = keys.some(k => k !== CACHE_NAME)
     await Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
     // 2) Prend le controle immediatement
     await self.clients.claim()
     // 3) Force-reload les onglets ouverts -> les visiteurs coinces sur l'ancien bundle
     //    cache recoivent la version fraiche SANS avoir a vider leur cache.
-    //    Ne se declenche que quand un NOUVEAU sw.js s'active (= deploy de code, pas data).
+    //    UNIQUEMENT en upgrade (ancien cache present) : a la PREMIERE visite le
+    //    bundle est deja frais, et le reload ~10-25s apres l'arrivee fermait le
+    //    paywall/formulaire de paiement en pleine saisie (mesure 2026-06-10).
+    if (!hadOldCache) return
     const clients = await self.clients.matchAll({ type: 'window' })
     for (const client of clients) {
       try { if ('navigate' in client) await client.navigate(client.url) } catch (e) {}
