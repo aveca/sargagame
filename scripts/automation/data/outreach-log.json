@@ -1,0 +1,158 @@
+{
+  "contacted": {
+    "jumbocar-martinique.com": {
+      "date": "2026-04-12T18:23:12.984Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.jumbocar-martinique.com/blog-voyage/informations-pratiques/sargasses-martinique",
+      "emailHash": "fcea962b6b34682ef0b723e547e16979",
+      "emailDomain": "gbh.fr"
+    },
+    "jumbocar-guadeloupe.com": {
+      "date": "2026-04-12T18:23:15.772Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.jumbocar-guadeloupe.com/visitez-la-guadeloupe/informations-pratiques/sargasses",
+      "emailHash": "8c5f20f917c49f4fc1374dd20c02b036",
+      "emailDomain": "gbh.fr"
+    },
+    "chrissandvoyage.com": {
+      "date": "2026-04-12T18:23:20.521Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.chrissandvoyage.com/sargasses",
+      "emailHash": "b716e666fa2c564f82cc0f9206755d0a",
+      "emailDomain": "chrissandvoyage.com"
+    },
+    "lagons-plages.com": {
+      "date": "2026-04-12T18:23:21.090Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.lagons-plages.com/sargasses-caraibes.php",
+      "emailHash": "242e321a754d9b0eabcd5d0440d72451",
+      "emailDomain": "lagons-plages.com"
+    },
+    "chouetteworld.com": {
+      "date": "2026-04-12T18:23:34.240Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://chouetteworld.com/plus-belles-plages-de-martinique/",
+      "emailHash": "288b51ee439869c8865f733835097ab5",
+      "emailDomain": "chouetteworld.com"
+    },
+    "zotcar.com": {
+      "date": "2026-04-14T11:02:48.745Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.zotcar.com/blog/plus-belle-plage-martinique/",
+      "emailHash": "dc2eaf4f545134d2bbe8ebde4cbb8e5d",
+      "emailDomain": "zotcar.com"
+    },
+    "voyage-martinique.fr": {
+      "date": "2026-04-14T11:02:52.579Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.voyage-martinique.fr/sargasse.html",
+      "emailHash": "54bbf99d077d00fc8f25307e1d4c6be2",
+      "emailDomain": "voyage-martinique.fr"
+    },
+    "couleurvoyage.com": {
+      "date": "2026-04-14T11:03:02.249Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.couleurvoyage.com/martinique-avis-complet-dun-voyageur-ce-quil-faut-vraiment-savoir/",
+      "emailHash": "3a207bbe4b6d5c6f430a274ae90fb1db",
+      "emailDomain": "couleurvoyage.com"
+    },
+    "evazeo.com": {
+      "date": "2026-04-14T11:03:03.932Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.evazeo.com/blog/top-10-des-plus-belles-plages-de-martinique/",
+      "emailHash": "326f781974cc170533ea04572bf32793",
+      "emailDomain": "evazeo.com"
+    },
+    "generationvoyage.fr": {
+      "date": "2026-04-14T11:03:05.138Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://generationvoyage.fr/plus-belles-plages-guadeloupe/",
+      "emailHash": "4f7dcc5026f09caf86f52d238edc5e41",
+      "emailDomain": "generationvoyage.fr"
+    },
+    "toploc.com": {
+      "date": "2026-04-17T21:58:19.119Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://toploc.com/blog/amerique/plages-guadeloupe",
+      "emailHash": "34c98b88d81b978ede7a7078b5055f82",
+      "emailDomain": "email.com"
+    },
+    "antilleslocation.com": {
+      "date": "2026-04-17T21:58:25.000Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.antilleslocation.com/blog-voyage/les-plus-belles-plages-de-la-guadeloupe.html",
+      "emailHash": "6ed159a6a862e48b237ab35becbe49d7",
+      "emailDomain": "antilleslocation.com"
+    },
+    "espaces.ca": {
+      "date": "2026-04-17T21:58:27.843Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.espaces.ca/articles/destinations/25273-les-7-plus-belles-plages-de-la-martinique",
+      "emailHash": "fd912039505b3ba6e0fdb3a1326e8a2e",
+      "emailDomain": "espaces.ca"
+    },
+    "airvacances.fr": {
+      "date": "2026-04-17T21:58:37.395Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.airvacances.fr/sargasses-guadeloupe-martinique-periodes-eviter/",
+      "emailHash": "edabba51811db86d72c2a7f4a7053371",
+      "emailDomain": "airvacances.fr"
+    },
+    "lesilesdeguadeloupe.com": {
+      "date": "2026-04-17T21:58:39.116Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.lesilesdeguadeloupe.com/",
+      "emailHash": "bff2321dbf484ccbb27a160ee19ad823",
+      "emailDomain": "lesilesdeguadeloupe.com"
+    },
+    "karukera-guadeloupe.com": {
+      "date": "2026-04-21T11:06:23.746Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.karukera-guadeloupe.com/guadeloupe/plages.html",
+      "emailHash": "d37f5c3e36b8a4ef5960eae0fa3900d7",
+      "emailDomain": "karukera-guadeloupe.com"
+    },
+    "guadeloupe-fr.com": {
+      "date": "2026-04-21T11:06:26.479Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.guadeloupe-fr.com/plages-de-guadeloupe/",
+      "emailHash": "188d6b07c29dfc2e11145c55c2cbb6dd",
+      "emailDomain": "guadeloupe-fr.com"
+    },
+    "tourisme-guadeloupe.fr": {
+      "date": "2026-04-21T11:06:26.991Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.tourisme-guadeloupe.fr/",
+      "emailHash": "efaa21bdbbc8a4c528b6c1341c69d6f4",
+      "emailDomain": "tourisme-guadeloupe.fr"
+    },
+    "guideguadeloupe.com": {
+      "date": "2026-04-21T11:06:27.594Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.guideguadeloupe.com/plages-guadeloupe.html",
+      "emailHash": "2c59305379dfa961d3d5c5a5dd170219",
+      "emailDomain": "guideguadeloupe.com"
+    }
+  },
+  "lastRun": "2026-06-09T12:36:21.973Z",
+  "totalSent": 19
+}
