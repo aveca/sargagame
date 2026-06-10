@@ -7,8 +7,8 @@
 | Région | Domaine | Site | Payment Links LIVE | SSL |
 |---|---|---|---|---|
 | **Punta Cana** | sargassumpuntacana.com | ✅ LIVE complet | ✅ $9.99/$79 | ✅ |
-| **Riviera Maya** | sargassumcancun.com | ✅ déployé | ✅ | ⏳ AutoSSL (cert partagé encore servi à 04h UTC — si >12h, cPanel SSL/TLS Status) |
-| **Florida** | sargassummiami.com | ✅ déployé | ✅ | ⏳ idem |
+| **Riviera Maya** | sargassumcancun.com | ✅ déployé | ✅ | ✅ (émis ~04h UTC) |
+| **Florida** | sargassummiami.com | ✅ déployé | ✅ | ✅ |
 
 - **Aucun paiement USD encore** — réconciliation webhook J+1 à faire (count+sum par région vs tab payments Apps Script). Ne PAS retirer le POST client avant 1-2 sem de parité.
 - Webhook LIVE `we_1TgacyP9RK8Orx51i2avowKp` → MQ, filtre metadata.island, déployé MQ+GP+PC.
@@ -30,9 +30,9 @@
 1. **2 clics humains Google, puis tout est automatique** :
    - Enable **Site Verification API** : https://console.developers.google.com/apis/api/siteverification.googleapis.com/overview?project=48071671409
    - GA4 Admin → compte « comptegoogleanalytics » (276662454) → Account Access Management → passer le service account en **Editor**.
-   - Puis : `gh workflow run provision-gsc.yml` + `gh workflow run provision-ga4.yml` → GSC vérifié + sitemaps soumis + propriétés GA4 créées (le run imprime les G-XXXX). Reporter les G-XXXX dans `regions/*.json` (`ga4Id`), bump SW (v25→v26), push (= rebuild auto).
-2. **Vérifier la carte MQ verte en prod** après le run en cours + demander à l'user un hard-refresh (SW v25) pour confirmer les fixes carte/clics.
-3. **AutoSSL cancun/miami** : `curl -sI https://…` sans `-k`. Si toujours cert partagé >12h après création (≈14h UTC), cPanel SSL/TLS Status (session SSO Namecheap, user se logge dans la fenêtre Playwright).
+   - Puis : `gh workflow run provision-gsc.yml` + `gh workflow run provision-ga4.yml` → GSC vérifié + sitemaps soumis + propriétés GA4 créées (le run imprime les G-XXXX). Reporter les G-XXXX dans `regions/*.json` (`ga4Id`), bump SW (v26→v27), push (= rebuild auto).
+2. ✅ FAIT — **carte MQ verte VÉRIFIÉE en prod** (10/10 clean, mémoire=0, run 27251426407 success). Demander à l'user un hard-refresh (SW **v26**) pour confirmer les fixes carte/clics.
+3. ✅ FAIT — AutoSSL émis sur cancun+miami (HTTPS propre vérifié ~04h UTC, tulum 301 OK). Head ES (« Sargazo en Riviera Maya Hoy ») shippé pour cancun — vérifier en prod après le run final.
 4. **Réconciliation webhook J+1** (2026-06-11).
 5. **FB quotidien** : re-run `fb-find-groups.cjs --dry` (voir approbations passées member), poster via `fb-post-groups.cjs` (lit le dernier `marketing/fb-posts-*.json` — en créer un frais avec les données du jour), 2e vague joins (`Monitoreo de sargazo Punta Cana` 26K, Hard Rock 22K, RIU Palace…). ⚠️ 1 seul Edge sur `.fb-session-edge/` à la fois.
 6. **OneSignal (3 apps) + Clarity (3 projets)** : pas d'API de création — login user dans la fenêtre Playwright (OneSignal accepte aussi une clé Org API si l'user la colle).
