@@ -1,0 +1,3 @@
+# Marqueurs d'idempotence du webhook Stripe (fichiers <event_id> vides)
+# + webhook-errors.log. Jamais servi par HTTP — acces filesystem PHP uniquement.
+Require all denied

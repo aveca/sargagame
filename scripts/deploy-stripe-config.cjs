@@ -1,19 +1,31 @@
 #!/usr/bin/env node
 /**
- * One-shot FTP uploader for public/api/stripe-config.php → both sites.
- * Used during the "go public" migration to push rotated Stripe/Resend keys
- * without rebuilding the whole site. Reads creds from env or racine/.env
- * (mêmes noms que les secrets GitHub).
+ * One-shot FTP uploader pour les fichiers Stripe de public/api/ → les sites.
+ * Historique : poussait uniquement stripe-config.php (rotation de clés "go
+ * public"). Étendu (Phase 4 webhook) : pousse aussi stripe-webhook.php et
+ * api/data/.htaccess (marqueurs d'idempotence + logs non servis par HTTP)
+ * vers Martinique, Guadeloupe et Punta Cana, sans rebuilder le site.
+ * Reads creds from env or racine/.env (mêmes noms que les secrets GitHub).
  */
 const { Client } = require("basic-ftp");
+const fs = require("fs");
 const path = require("path");
 const { loadProjectEnv } = require("./lib/load-project-env.cjs");
 
 loadProjectEnv();
 
-const LOCAL_FILE = path.join(__dirname, "..", "public", "api", "stripe-config.php");
-const REMOTE_PATH = "api/stripe-config.php";
+const API_DIR = path.join(__dirname, "..", "public", "api");
 
+// optional: true → absent en local = on saute (stripe-config.php est gitignoré,
+// présent uniquement sur les postes qui détiennent les clés).
+const FILES = [
+  { local: path.join(API_DIR, "stripe-config.php"), remote: "api/stripe-config.php", optional: true },
+  { local: path.join(API_DIR, "stripe-webhook.php"), remote: "api/stripe-webhook.php" },
+  { local: path.join(API_DIR, "data", ".htaccess"), remote: "api/data/.htaccess" },
+];
+
+// optional: true → creds absents = skip sans erreur (hébergement pas encore
+// provisionné). MQ/GP restent obligatoires (prod live).
 const targets = [
   {
     label: "Martinique",
@@ -26,6 +38,13 @@ const targets = [
     host: process.env.FTP_HOST_GP || process.env.FTP_SERVER_GP,
     user: process.env.FTP_USER_GP || process.env.FTP_USERNAME_GP,
     pass: process.env.FTP_PASS_GP || process.env.FTP_PASSWORD_GP,
+  },
+  {
+    label: "Punta Cana",
+    host: process.env.FTP_HOST_PUNTACANA || process.env.FTP_SERVER_PUNTACANA,
+    user: process.env.FTP_USER_PUNTACANA || process.env.FTP_USERNAME_PUNTACANA,
+    pass: process.env.FTP_PASS_PUNTACANA || process.env.FTP_PASSWORD_PUNTACANA,
+    optional: true,
   },
 ];
 
@@ -40,10 +59,19 @@ async function uploadOne(t) {
       secure: true,
       secureOptions: { rejectUnauthorized: false },
     });
-    await client.ensureDir("api");
-    await client.cd("/");
-    await client.uploadFrom(LOCAL_FILE, REMOTE_PATH);
-    console.log(`[${t.label}] ✓ stripe-config.php uploaded`);
+    for (const f of FILES) {
+      if (!fs.existsSync(f.local)) {
+        if (f.optional) {
+          console.log(`[${t.label}] ~ ${path.basename(f.local)} absent en local, sauté`);
+          continue;
+        }
+        throw new Error(`fichier local manquant: ${f.local}`);
+      }
+      await client.ensureDir(path.posix.dirname(f.remote));
+      await client.cd("/");
+      await client.uploadFrom(f.local, f.remote);
+      console.log(`[${t.label}] ✓ ${f.remote} uploaded`);
+    }
   } finally {
     client.close();
   }
@@ -52,6 +80,10 @@ async function uploadOne(t) {
 (async () => {
   for (const t of targets) {
     if (!t.host || !t.user || !t.pass) {
+      if (t.optional) {
+        console.log(`[${t.label}] ~ pas de creds FTP (FTP_HOST_PUNTACANA…), cible sautée`);
+        continue;
+      }
       console.error(`[${t.label}] missing env vars, skipping`);
       process.exitCode = 1;
       continue;

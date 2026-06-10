@@ -6,6 +6,13 @@
 return [
     'sk'         => 'sk_live_REPLACE_ME',
     'resend_key' => 're_REPLACE_ME',
+    // Signing secret du webhook Stripe (dashboard → Developers → Webhooks →
+    // endpoint /api/stripe-webhook.php). Si un stripe-config.php est DEJA
+    // deploye, ajouter simplement cette ligne dedans :
+    'webhook_secret' => 'whsec_REPLACE_ME',
+    // Optionnel (tests/staging) : override de l'URL Apps Script du forward
+    // webhook. Defaut = deployment canonique (voir stripe-webhook.php).
+    // 'appsscript_url' => 'https://script.google.com/macros/s/DEPLOYMENT_ID/exec',
     'prices' => [
         'monthly' => 'price_REPLACE_ME',
         'annual'  => 'price_REPLACE_ME',

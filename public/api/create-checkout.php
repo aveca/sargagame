@@ -2,8 +2,21 @@
 header('Content-Type: application/json');
 
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-$allowed = ['https://sargasses-martinique.com','https://sargasses-guadeloupe.com'];
+// SYNC MANUEL avec les domaines de regions/*.json (regions/index.cjs est du
+// CommonJS, non chargeable depuis PHP). Ajouter ici chaque nouvelle region
+// qui sert ce endpoint (scripts/test-stripe-webhook.cjs verifie la coherence).
+$allowed = ['https://sargasses-martinique.com','https://sargasses-guadeloupe.com','https://sargassumpuntacana.com'];
 if (in_array($origin, $allowed)) header("Access-Control-Allow-Origin: $origin");
+
+// Region du domaine appelant → metadata.island sur customer + subscription,
+// pour que stripe-webhook.php puisse attribuer les events de lifecycle
+// (invoice.*, customer.subscription.*) sur ce compte Stripe partage.
+$ISLAND_BY_ORIGIN = [
+    'https://sargasses-martinique.com' => 'mq',
+    'https://sargasses-guadeloupe.com' => 'gp',
+    'https://sargassumpuntacana.com'   => 'puntacana',
+];
+$island = $ISLAND_BY_ORIGIN[$origin] ?? '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); exit; }
@@ -167,21 +180,25 @@ if ($action === 'subscribe') {
     $pm = $si['payment_method'];
 
     // Creer le client Stripe
-    $customer = stripe('POST', '/customers', [
+    $customerParams = [
         'email' => $email,
         'payment_method' => $pm,
         'invoice_settings[default_payment_method]' => $pm,
-    ]);
+    ];
+    if ($island !== '') $customerParams['metadata[island]'] = $island;
+    $customer = stripe('POST', '/customers', $customerParams);
 
     // Creer l'abonnement avec essai 7j
     $price = $cfg['prices'][$plan] ?? $cfg['prices']['monthly'];
-    $sub = stripe('POST', '/subscriptions', [
+    $subParams = [
         'customer'                    => $customer['id'],
         'items[0][price]'             => $price,
         'trial_period_days'           => 7,
         'automatic_tax[enabled]'      => 'true',
         'default_payment_method'      => $pm,
-    ]);
+    ];
+    if ($island !== '') $subParams['metadata[island]'] = $island;
+    $sub = stripe('POST', '/subscriptions', $subParams);
 
     $response = [
         'subscriptionId' => $sub['id'],
