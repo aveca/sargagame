@@ -385,6 +385,29 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
       if(bestD>MAX_PICK_PX*MAX_PICK_PX&&fallbackBeach)return fallbackBeach
       return bestBeach
     }
+    // Ambiguous tap (≥2 pin centers within AMBIG_PX of the finger): closest-center
+    // routing can only ever pick the same front pin, so the beach underneath is
+    // unselectable — users read that as "click is broken". Zoom in one step instead
+    // of guessing (Google Maps cluster behavior); pins separate geographically and
+    // the next tap is unambiguous. At high zoom we fall through to pickClosest.
+    const AMBIG_PX=18
+    const MAX_DISAMBIG_ZOOM=15
+    const handlePinClick=(e,b)=>{
+      const pt=realClickPoint(e)
+      if(pt&&mapRef.current&&mapRef.current.getZoom()<MAX_DISAMBIG_ZOOM){
+        let n=0
+        for(const m of markersRef.current){
+          if(!m._sgBeach)continue
+          const mp=mapRef.current.latLngToContainerPoint(m.getLatLng())
+          const dx=mp.x-pt.x,dy=mp.y-pt.y
+          if(dx*dx+dy*dy<=AMBIG_PX*AMBIG_PX&&++n>=2){
+            mapRef.current.setView(mapRef.current.containerPointToLatLng(pt),mapRef.current.getZoom()+2,{animate:true})
+            return
+          }
+        }
+      }
+      onBeachClick(pickClosest(pt,b))
+    }
 
     beaches.forEach((b,bi)=>{
       // Radar: at step>0 we use the forecast status, not the live one.
@@ -430,7 +453,7 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
         const dotMarker=L.marker([b.lat,b.lng],{icon:dotIcon,riseOnHover:true,zIndexOffset:0})
         dotMarker._sgBeach=b
         if(!("ontouchstart" in window))dotMarker.bindTooltip(b.name+(hasScore?` · ${b.score}/100`:""),{direction:"top",offset:[0,-12],className:"",permanent:false})
-        dotMarker.on("click",(e)=>onBeachClick(pickClosest(realClickPoint(e),b)))
+        dotMarker.on("click",(e)=>handlePinClick(e,b))
         dotMarker.addTo(markerGroup)
         markersRef.current.push(dotMarker)
         return
@@ -455,7 +478,7 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
       const marker=L.marker([b.lat,b.lng],{icon,riseOnHover:true,zIndexOffset:isSelected?1000:(isEmph?500:200)})
       marker._sgBeach=b
       if(!("ontouchstart" in window))marker.bindTooltip(b.name+(hasScore?` · ${b.score}/100`:"")+(isNearest?(lang==="en"?" · Nearest clean":" · La plus proche propre"):""),{direction:"top",offset:[0,-size/2-4],className:"",permanent:false})
-      marker.on("click",(e)=>onBeachClick(pickClosest(realClickPoint(e),b)))
+      marker.on("click",(e)=>handlePinClick(e,b))
       marker.addTo(markerGroup)
       markersRef.current.push(marker)
     })
