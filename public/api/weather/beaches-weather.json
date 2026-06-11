@@ -1,6 +1,6 @@
 {
   "_comment": "Year-round beach conditions (Open-Meteo Marine+Forecast). Refreshed daily.",
-  "updatedAt": "2026-06-11T10:03:35.525Z",
+  "updatedAt": "2026-06-11T10:48:22.252Z",
   "source": "open-meteo",
   "count": 172,
   "beaches": {
@@ -16,7 +16,7 @@
       "condition": "rough"
     },
     "mq002": {
-      "waveHeight": 1.4,
+      "waveHeight": 1.5,
       "wavePeriod": 6.5,
       "sst": 28.1,
       "airTemp": null,
@@ -38,7 +38,7 @@
       "condition": "rough"
     },
     "mq004": {
-      "waveHeight": 1.4,
+      "waveHeight": 1.5,
       "wavePeriod": 6.5,
       "sst": 28.1,
       "airTemp": null,
@@ -82,7 +82,7 @@
       "condition": "rough"
     },
     "mq008": {
-      "waveHeight": 1.4,
+      "waveHeight": 1.5,
       "wavePeriod": 6.5,
       "sst": 28.1,
       "airTemp": null,
@@ -93,7 +93,7 @@
       "condition": "moderate"
     },
     "mq009": {
-      "waveHeight": 1.4,
+      "waveHeight": 1.5,
       "wavePeriod": 6.5,
       "sst": 28.1,
       "airTemp": null,
@@ -225,7 +225,7 @@
       "condition": "moderate"
     },
     "mq022": {
-      "waveHeight": 1.4,
+      "waveHeight": 1.5,
       "wavePeriod": 6.5,
       "sst": 28.1,
       "airTemp": null,
@@ -324,7 +324,7 @@
       "condition": "calm"
     },
     "mq032": {
-      "waveHeight": 0.9,
+      "waveHeight": 1,
       "wavePeriod": 6.1,
       "sst": 28.2,
       "airTemp": null,
@@ -335,7 +335,7 @@
       "condition": "moderate"
     },
     "mq033": {
-      "waveHeight": 0.9,
+      "waveHeight": 1,
       "wavePeriod": 6.1,
       "sst": 28.2,
       "airTemp": null,
@@ -467,7 +467,7 @@
       "condition": "rough"
     },
     "mq049": {
-      "waveHeight": 0.9,
+      "waveHeight": 1,
       "wavePeriod": 6.1,
       "sst": 28.2,
       "airTemp": null,
@@ -478,7 +478,7 @@
       "condition": "moderate"
     },
     "mq050": {
-      "waveHeight": 0.9,
+      "waveHeight": 1,
       "wavePeriod": 6.1,
       "sst": 28.2,
       "airTemp": null,
@@ -522,7 +522,7 @@
       "condition": "moderate"
     },
     "mq057": {
-      "waveHeight": 1.4,
+      "waveHeight": 1.5,
       "wavePeriod": 6.5,
       "sst": 28.1,
       "airTemp": null,
@@ -721,7 +721,7 @@
     },
     "gp015": {
       "waveHeight": 0.5,
-      "wavePeriod": 5.5,
+      "wavePeriod": 5.4,
       "sst": 27.9,
       "airTemp": null,
       "windSpeed": null,
@@ -731,8 +731,8 @@
       "condition": "calm"
     },
     "gp016": {
-      "waveHeight": 0.6,
-      "wavePeriod": 5.4,
+      "waveHeight": 0.7,
+      "wavePeriod": 5.3,
       "sst": 28.1,
       "airTemp": null,
       "windSpeed": null,
@@ -742,8 +742,8 @@
       "condition": "calm"
     },
     "gp017": {
-      "waveHeight": 0.6,
-      "wavePeriod": 5.4,
+      "waveHeight": 0.7,
+      "wavePeriod": 5.3,
       "sst": 28.1,
       "airTemp": null,
       "windSpeed": null,
@@ -765,7 +765,7 @@
     },
     "gp019": {
       "waveHeight": 1.5,
-      "wavePeriod": 6.1,
+      "wavePeriod": 6.2,
       "sst": 28,
       "airTemp": null,
       "windSpeed": null,
@@ -776,7 +776,7 @@
     },
     "gp020": {
       "waveHeight": 0.5,
-      "wavePeriod": 5.5,
+      "wavePeriod": 5.4,
       "sst": 28.1,
       "airTemp": null,
       "windSpeed": null,
@@ -820,7 +820,7 @@
     },
     "gp025": {
       "waveHeight": 1.3,
-      "wavePeriod": 5.6,
+      "wavePeriod": 5.7,
       "sst": 27.9,
       "airTemp": null,
       "windSpeed": null,
@@ -886,7 +886,7 @@
     },
     "gp032": {
       "waveHeight": 0.5,
-      "wavePeriod": 5.2,
+      "wavePeriod": 5.3,
       "sst": 28.1,
       "airTemp": null,
       "windSpeed": null,
@@ -929,7 +929,7 @@
       "condition": "moderate"
     },
     "gp040": {
-      "waveHeight": 1.5,
+      "waveHeight": 1.6,
       "wavePeriod": 6.2,
       "sst": 27.9,
       "airTemp": null,
@@ -940,8 +940,8 @@
       "condition": "rough"
     },
     "gp041": {
-      "waveHeight": 1.4,
-      "wavePeriod": 6,
+      "waveHeight": 1.5,
+      "wavePeriod": 6.1,
       "sst": 27.9,
       "airTemp": null,
       "windSpeed": null,
@@ -974,7 +974,7 @@
     },
     "gp044": {
       "waveHeight": 1.3,
-      "wavePeriod": 5.6,
+      "wavePeriod": 5.7,
       "sst": 27.9,
       "airTemp": null,
       "windSpeed": null,
@@ -996,7 +996,7 @@
     },
     "gp046": {
       "waveHeight": 1.3,
-      "wavePeriod": 5.6,
+      "wavePeriod": 5.7,
       "sst": 27.9,
       "airTemp": null,
       "windSpeed": null,
@@ -1051,7 +1051,7 @@
     },
     "gp051": {
       "waveHeight": 1,
-      "wavePeriod": 6,
+      "wavePeriod": 5.9,
       "sst": 27.9,
       "airTemp": null,
       "windSpeed": null,
@@ -1226,8 +1226,8 @@
       "condition": "moderate"
     },
     "gp078": {
-      "waveHeight": 0.6,
-      "wavePeriod": 5.4,
+      "waveHeight": 0.7,
+      "wavePeriod": 5.3,
       "sst": 28.1,
       "airTemp": null,
       "windSpeed": null,
@@ -1237,8 +1237,8 @@
       "condition": "calm"
     },
     "gp080": {
-      "waveHeight": 0.6,
-      "wavePeriod": 5.4,
+      "waveHeight": 0.7,
+      "wavePeriod": 5.3,
       "sst": 28.3,
       "airTemp": null,
       "windSpeed": null,
@@ -1293,7 +1293,7 @@
     },
     "gp088": {
       "waveHeight": 1.3,
-      "wavePeriod": 5.6,
+      "wavePeriod": 5.7,
       "sst": 27.9,
       "airTemp": null,
       "windSpeed": null,
@@ -1392,7 +1392,7 @@
     },
     "gp104": {
       "waveHeight": 1.3,
-      "wavePeriod": 5.6,
+      "wavePeriod": 5.7,
       "sst": 27.9,
       "airTemp": null,
       "windSpeed": null,
@@ -1446,8 +1446,8 @@
       "condition": "moderate"
     },
     "gp116": {
-      "waveHeight": 0.6,
-      "wavePeriod": 5.4,
+      "waveHeight": 0.7,
+      "wavePeriod": 5.3,
       "sst": 28.3,
       "airTemp": null,
       "windSpeed": null,
@@ -1457,7 +1457,7 @@
       "condition": "calm"
     },
     "gp118": {
-      "waveHeight": 1.5,
+      "waveHeight": 1.6,
       "wavePeriod": 6.2,
       "sst": 27.9,
       "airTemp": null,
@@ -1502,7 +1502,7 @@
     },
     "fl001": {
       "waveHeight": 0.4,
-      "wavePeriod": 3.5,
+      "wavePeriod": 3.6,
       "sst": 29.5,
       "airTemp": null,
       "windSpeed": null,
@@ -1513,7 +1513,7 @@
     },
     "fl002": {
       "waveHeight": 0.4,
-      "wavePeriod": 3.5,
+      "wavePeriod": 3.6,
       "sst": 29.5,
       "airTemp": null,
       "windSpeed": null,
@@ -1524,7 +1524,7 @@
     },
     "fl003": {
       "waveHeight": 0.4,
-      "wavePeriod": 4.4,
+      "wavePeriod": 4.5,
       "sst": 28.8,
       "airTemp": null,
       "windSpeed": null,
@@ -1535,7 +1535,7 @@
     },
     "fl004": {
       "waveHeight": 0.6,
-      "wavePeriod": 5.8,
+      "wavePeriod": 5.9,
       "sst": 28.8,
       "airTemp": null,
       "windSpeed": null,
@@ -1546,7 +1546,7 @@
     },
     "fl005": {
       "waveHeight": 0.6,
-      "wavePeriod": 6,
+      "wavePeriod": 6.1,
       "sst": 28.2,
       "airTemp": null,
       "windSpeed": null,
@@ -1601,7 +1601,7 @@
     },
     "fl010": {
       "waveHeight": 0.4,
-      "wavePeriod": 5.2,
+      "wavePeriod": 5.3,
       "sst": 27.7,
       "airTemp": null,
       "windSpeed": null,
@@ -1622,8 +1622,8 @@
       "condition": "unknown"
     },
     "fl012": {
-      "waveHeight": 0.4,
-      "wavePeriod": 3.7,
+      "waveHeight": 0.3,
+      "wavePeriod": 3.8,
       "sst": 29.6,
       "airTemp": null,
       "windSpeed": null,
@@ -1634,7 +1634,7 @@
     },
     "pc001": {
       "waveHeight": 0.8,
-      "wavePeriod": 6.5,
+      "wavePeriod": 6.4,
       "sst": 27.9,
       "airTemp": null,
       "windSpeed": null,
@@ -1645,7 +1645,7 @@
     },
     "pc002": {
       "waveHeight": 0.8,
-      "wavePeriod": 6.5,
+      "wavePeriod": 6.4,
       "sst": 27.9,
       "airTemp": null,
       "windSpeed": null,
@@ -1656,7 +1656,7 @@
     },
     "pc003": {
       "waveHeight": 0.8,
-      "wavePeriod": 6.5,
+      "wavePeriod": 6.4,
       "sst": 27.9,
       "airTemp": null,
       "windSpeed": null,
@@ -1667,7 +1667,7 @@
     },
     "pc004": {
       "waveHeight": 0.8,
-      "wavePeriod": 6.5,
+      "wavePeriod": 6.4,
       "sst": 27.9,
       "airTemp": null,
       "windSpeed": null,
@@ -1689,7 +1689,7 @@
     },
     "pc006": {
       "waveHeight": 0.8,
-      "wavePeriod": 6.9,
+      "wavePeriod": 6.7,
       "sst": 27.9,
       "airTemp": null,
       "windSpeed": null,
@@ -1700,7 +1700,7 @@
     },
     "pc007": {
       "waveHeight": 0.8,
-      "wavePeriod": 6.9,
+      "wavePeriod": 6.7,
       "sst": 28.1,
       "airTemp": null,
       "windSpeed": null,
@@ -1711,7 +1711,7 @@
     },
     "pc008": {
       "waveHeight": 0.7,
-      "wavePeriod": 6,
+      "wavePeriod": 5.8,
       "sst": 28.5,
       "airTemp": null,
       "windSpeed": null,
@@ -1722,7 +1722,7 @@
     },
     "pc009": {
       "waveHeight": 0.8,
-      "wavePeriod": 6.1,
+      "wavePeriod": 6,
       "sst": 28.3,
       "airTemp": null,
       "windSpeed": null,
@@ -1733,7 +1733,7 @@
     },
     "pc010": {
       "waveHeight": 0.7,
-      "wavePeriod": 6,
+      "wavePeriod": 5.8,
       "sst": 28.5,
       "airTemp": null,
       "windSpeed": null,
@@ -1744,7 +1744,7 @@
     },
     "pc011": {
       "waveHeight": 0.8,
-      "wavePeriod": 6.5,
+      "wavePeriod": 6.4,
       "sst": 27.9,
       "airTemp": null,
       "windSpeed": null,
@@ -1755,7 +1755,7 @@
     },
     "pc012": {
       "waveHeight": 0.8,
-      "wavePeriod": 6.3,
+      "wavePeriod": 6.2,
       "sst": 28.1,
       "airTemp": null,
       "windSpeed": null,
@@ -1777,7 +1777,7 @@
     },
     "rm002": {
       "waveHeight": 1.6,
-      "wavePeriod": 6.2,
+      "wavePeriod": 6.1,
       "sst": 27.9,
       "airTemp": null,
       "windSpeed": null,
@@ -1788,8 +1788,8 @@
     },
     "rm003": {
       "waveHeight": 1.1,
-      "wavePeriod": 5.7,
-      "sst": 29,
+      "wavePeriod": 5.8,
+      "sst": 28.9,
       "airTemp": null,
       "windSpeed": null,
       "windDir": null,
@@ -1800,7 +1800,7 @@
     "rm004": {
       "waveHeight": 1.9,
       "wavePeriod": 6.6,
-      "sst": 29.2,
+      "sst": 29.1,
       "airTemp": null,
       "windSpeed": null,
       "windDir": null,
@@ -1809,7 +1809,7 @@
       "condition": "rough"
     },
     "rm005": {
-      "waveHeight": 1.9,
+      "waveHeight": 1.8,
       "wavePeriod": 6.5,
       "sst": 28.7,
       "airTemp": null,
@@ -1853,8 +1853,8 @@
       "condition": "moderate"
     },
     "rm009": {
-      "waveHeight": 1.8,
-      "wavePeriod": 6.1,
+      "waveHeight": 1.7,
+      "wavePeriod": 6.2,
       "sst": 28.9,
       "airTemp": null,
       "windSpeed": null,
@@ -1865,7 +1865,7 @@
     },
     "rm010": {
       "waveHeight": 0.3,
-      "wavePeriod": 2.6,
+      "wavePeriod": 2.7,
       "sst": 27.5,
       "airTemp": null,
       "windSpeed": null,
@@ -1875,9 +1875,9 @@
       "condition": "calm"
     },
     "rm011": {
-      "waveHeight": 1.9,
+      "waveHeight": 1.8,
       "wavePeriod": 6.5,
-      "sst": 29,
+      "sst": 28.9,
       "airTemp": null,
       "windSpeed": null,
       "windDir": null,
