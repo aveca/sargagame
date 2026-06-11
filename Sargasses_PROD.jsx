@@ -697,16 +697,21 @@ button:active,a:active,[role="button"]:active{transform:scale(.96)!important;opa
 }
 .gbtn:active{transform:scale(.95);box-shadow:0 1px 6px rgba(232,168,0,.2)}
 .gbtn::after{
-  content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
+  content:'';position:absolute;top:0;left:0;width:100%;height:100%;
   background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);
   animation:shine 4.5s infinite;
-  will-change:left;
+  /* transform-only (GPU) : la version left:-100%→100% layoutait à chaque frame
+     et pesait l'essentiel du CLS mobile mesuré (0,065 → ~0,02, audit 2026-06-11) */
+  will-change:transform;
 }
-@keyframes shine{0%,70%{left:-100%}100%{left:100%}}
+@keyframes shine{0%,70%{transform:translateX(-100%)}100%{transform:translateX(300%)}}
 
 /* Bottom sheet */
 .sheet{
-  position:fixed;bottom:0;left:0;right:0;z-index:900;
+  /* z 900→1010 : passe AU-DESSUS du chrome carte (radar z900, recenter z1000)
+     qui flottait sur le backdrop pendant la lecture d'une fiche (audit 2026-06-11).
+     Reste sous hero 1050 / toast 1090 / paywall 1100. */
+  position:fixed;bottom:0;left:0;right:0;z-index:1010;
   max-width:520px;margin:0 auto;
   background:var(--sg-card,#fff);border-radius:20px 20px 0 0;
   box-shadow:0 -4px 30px rgba(0,0,0,.12);
@@ -717,10 +722,17 @@ button:active,a:active,[role="button"]:active{transform:scale(.96)!important;opa
   will-change:transform;
 }
 @keyframes sheetSlideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+/* Sortie symétrique de l'entrée (audit 2026-06-11 : « les entrées sont animées,
+   les sorties sont des démontages bruts » — le cœur du ressenti pas fluide) */
+@keyframes sheetSlideDown{to{transform:translateY(100%)}}
+.sheet-exit{animation:sheetSlideDown .28s cubic-bezier(.32,.72,0,1) forwards}
+@keyframes sgFadeOut{to{opacity:0}}
+.backdrop-exit{animation:sgFadeOut .25s ease forwards}
+@media (prefers-reduced-motion:reduce){.sheet-exit,.backdrop-exit{animation-duration:.01s}}
 .sheet-handle{width:48px;height:5px;border-radius:3px;background:var(--sg-handle,rgba(0,0,0,.2));margin:10px auto 6px;cursor:grab}
 
 /* Backdrop */
-.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:899;animation:fadeIn .25s ease-out;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);will-change:opacity}
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:1005;animation:fadeIn .25s ease-out;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);will-change:opacity}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 
 /* ── ONBOARDING (removed full-screen overlay, now inline coachmark) ── */
@@ -1684,13 +1696,28 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
   const onTouchEnd=e=>{
     if(sheetRef.current&&sheetRef.current.scrollTop>5){sheetRef.current.style.transform="";return}
     const dy=(e.changedTouches[0]?.clientY||0)-startY.current
-    if(dy>60)onClose()
+    if(dy>60)requestClose()
     else if(sheetRef.current){sheetRef.current.style.transition="transform .3s cubic-bezier(.32,.72,0,1)";sheetRef.current.style.transform="";setTimeout(()=>{if(sheetRef.current)sheetRef.current.style.transition=""},300)}
+  }
+
+  // Fermeture SYMÉTRIQUE de l'ouverture (audit fluidité 2026-06-11) : la sheet
+  // glisse vers le bas + le backdrop fond, PUIS on démonte. L'animation .sheet-exit
+  // (to{translateY(100%)}) part de l'état courant — y compris mi-swipe.
+  const backdropRef=useRef(null)
+  const closingRef=useRef(false)
+  const requestClose=()=>{
+    if(closingRef.current)return
+    closingRef.current=true
+    try{
+      sheetRef.current&&sheetRef.current.classList.add("sheet-exit")
+      backdropRef.current&&backdropRef.current.classList.add("backdrop-exit")
+    }catch(_){}
+    setTimeout(()=>{closingRef.current=false;onClose()},260)
   }
 
   // Escape key to close
   useEffect(()=>{
-    const h=e=>{if(e.key==="Escape")onClose()}
+    const h=e=>{if(e.key==="Escape")requestClose()}
     document.addEventListener("keydown",h)
     return()=>document.removeEventListener("keydown",h)
   },[onClose])
@@ -1699,7 +1726,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
 
   return(
     <>
-      <div className="backdrop" onClick={onClose}/>
+      <div className="backdrop" ref={backdropRef} onClick={requestClose}/>
       <div className="sheet" ref={sheetRef}
         onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
         <div className="sheet-handle"/>
@@ -1715,7 +1742,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             background:`radial-gradient(ellipse at 50% 100%, ${(ST[beach.status]||ST._loading).c}22 0%, transparent 70%)`,
             pointerEvents:"none"}}/>
           {/* Close button */}
-          <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"absolute",top:12,right:12,
+          <button onClick={requestClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"absolute",top:12,right:12,
             width:44,height:44,borderRadius:22,
             background:"rgba(0,0,0,.3)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",
             border:"1px solid rgba(255,255,255,.15)",color:"#fff",fontSize:16,cursor:"pointer",
@@ -4514,18 +4541,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
             <span>🔒</span>Stripe
           </span>
         </div>
-        {/* Lien trust discret (même registre que "J'ai déjà un abonnement").
-            MQ/GP only : /a-propos/ existe (shipped 2026-04-17). Sur PC/Miami/
-            Cancún, attendre la restauration de la page (action prod-integrity)
-            — ne jamais pointer vers un 404. */}
-        {!IS_NEW_REGION&&(
-        <div style={{textAlign:"center",marginTop:8}}>
-          <a href="/a-propos/" style={{color:"rgba(255,255,255,.45)",fontSize:11,
-            textDecoration:"underline",textUnderlineOffset:2}}>
-            {_t(lang,"Qui est derrière ce site ? → À propos","Who's behind this site? → About","¿Quién hay detrás de este sitio? → Acerca de")}
-          </a>
-        </div>
-        )}
+        {/* Lien "À propos" retiré du paywall (demande user 2026-06-11 — épuré).
+            La page /a-propos/ reste accessible via le chat (branche fiabilité). */}
 
         {/* Already subscribed — for users who installed the PWA after paying.
             iOS PWA and Safari have separate localStorage, so the ?premium_email=
@@ -5354,11 +5371,13 @@ function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,onPremium,onClos
   )
 }
 
-function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap}){
+function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPremium,onOpenBeach,topBeaches,exiting}){
   useEffect(()=>{track("sg_hero_shown",{beach_id:beach.id,status:beach.status,geoloc:!!userPos})},[])
   // Boucle vidéo "drone hover" (plage animée façon SpaceX) : la photo reste le
-  // poster instantané ; la vidéo (~2MB, palindrome 8s) se fond par-dessus une
-  // fois jouable. Jamais chargée si reduced-motion, saveData ou connexion 2G.
+  // poster instantané ; la vidéo (palindrome 8s) se fond par-dessus une fois
+  // jouable. Manifest v2 : variante -w 1920×1080 servie aux viewports larges
+  // (un 1080² étiré sur desktop bave — feedback user 2026-06-11). Jamais
+  // chargée si reduced-motion, saveData ou connexion 2G.
   const [vidSrc,setVidSrc]=useState(null)
   const [vidOn,setVidOn]=useState(false)
   useEffect(()=>{
@@ -5370,7 +5389,12 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap}){
     }catch(_){}
     const t=setTimeout(()=>{
       fetch("/videos/hero/manifest.json").then(r=>r.ok?r.json():null).then(m=>{
-        if(!dead&&m&&Array.isArray(m.ids)&&m.ids.includes(beach.id))setVidSrc("/videos/hero/"+beach.id+".mp4")
+        if(dead||!m||!Array.isArray(m.ids)||!m.ids.includes(beach.id))return
+        let wantWide=false
+        try{wantWide=window.matchMedia("(min-width:900px)").matches
+          ||(window.matchMedia("(orientation:landscape)").matches&&window.innerWidth>=640)}catch(_){}
+        const wide=wantWide&&Array.isArray(m.wide)&&m.wide.includes(beach.id)
+        setVidSrc("/videos/hero/"+beach.id+(wide?"-w":"")+".mp4")
       }).catch(()=>{})
     },900)
     return()=>{dead=true;clearTimeout(t);setVidSrc(null);setVidOn(false)}
@@ -5379,6 +5403,28 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap}){
     const h=e=>{if(e.key==="Escape")onShowMap()}
     window.addEventListener("keydown",h);return()=>window.removeEventListener("keydown",h)
   },[onShowMap])
+  // Landing scrollable (modèle SpaceX, demande user 2026-06-11) : hero 100svh
+  // puis sections — verdict du jour, méthode, premium — en scroll naturel.
+  // Reveals à l'IntersectionObserver (root = ce conteneur), sticky bar quand
+  // le hero sort du viewport, tout neutralisé par prefers-reduced-motion.
+  const wrapRef=useRef(null)
+  const heroRef=useRef(null)
+  const [stuck,setStuck]=useState(false)
+  useEffect(()=>{
+    const root=wrapRef.current;if(!root)return
+    const hero=heroRef.current
+    const io1=hero?new IntersectionObserver(es=>setStuck(!es[0].isIntersecting),{root,threshold:.06}):null
+    if(io1)io1.observe(hero)
+    const seen={}
+    const io2=new IntersectionObserver(es=>{for(const e of es){if(!e.isIntersecting)continue
+      e.target.classList.add("in")
+      const s=e.target.getAttribute("data-s")
+      if(s&&!seen[s]){seen[s]=1;track("sg_landing_view",{s})}
+      io2.unobserve(e.target)}},{root,threshold:.18})
+    root.querySelectorAll(".sg-rv").forEach(n=>io2.observe(n))
+    return()=>{io1&&io1.disconnect();io2.disconnect()}
+  },[])
+  const scrollNext=()=>{try{wrapRef.current?.querySelector("#sg-s2")?.scrollIntoView({behavior:"smooth",block:"start"})}catch(_){}}
   const clean=beach.status==="clean"
   const verdictTxt=clean?_t(lang,"PROPRE AUJOURD'HUI","CLEAN TODAY","SIN SARGAZO HOY")
     :beach.status==="moderate"?_t(lang,"MODÉRÉ AUJOURD'HUI","MODERATE TODAY","MODERADA HOY")
@@ -5407,10 +5453,53 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap}){
   const wordmark=IS_NEW_REGION
     ?((lang==="es"?"SARGAZO ":"SARGASSUM ")+String(REGION.name||"").toUpperCase())
     :(island==="gp"?"SARGASSES GUADELOUPE":"SARGASSES MARTINIQUE")
+  const statusShort=b=>b.status==="clean"?_t(lang,"Propre","Clean","Limpia")
+    :b.status==="moderate"?_t(lang,"Modéré","Moderate","Moderada"):_t(lang,"À éviter","Avoid","Evitar")
+  const statusCol=b=>b.status==="clean"?"#FFC72C":b.status==="moderate"?"#F59E0B":"#E8522A"
+  const ovl={fontSize:11,fontWeight:700,letterSpacing:".16em",color:"#FFC72C",textTransform:"uppercase",marginBottom:10}
+  const h2s={fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:"clamp(28px,6.5vw,40px)",lineHeight:1.02,
+    letterSpacing:".01em",textTransform:"uppercase",margin:"0 0 10px",color:"#fff"}
+  const secPad={padding:"68px 22px 8px",maxWidth:560,margin:"0 auto"}
   return(
-    <div role="dialog" aria-label={beach.name} style={{position:"absolute",inset:0,zIndex:1050,background:"#0A1714",overflow:"hidden"}}>
-      <style>{`@keyframes sgHeroBob{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
-@media (prefers-reduced-motion:reduce){.sg-hero-chev{animation:none!important}}`}</style>
+    <div ref={wrapRef} role="dialog" aria-label={beach.name} style={{position:"absolute",inset:0,zIndex:1050,
+      background:"#0A1714",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch",
+      /* PAS de fill-mode sur l'entrée : avec "both" l'animation épinglerait
+         opacity:1 pour toujours et écraserait le fondu de sortie (inline) */
+      animation:"fadeIn .35s ease-out",
+      opacity:exiting?0:1,transform:exiting?"scale(1.04)":"none",
+      transition:"opacity .3s ease,transform .3s cubic-bezier(.22,1,.36,1)"}}>
+      <style>{`@keyframes sgHeroBob{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+.sg-heroSec{position:relative;min-height:100vh}
+@supports(min-height:100svh){.sg-heroSec{min-height:100svh}}
+.sg-rv{opacity:0;transform:translateY(26px);transition:opacity .65s cubic-bezier(.22,.61,.36,1),transform .65s cubic-bezier(.22,.61,.36,1)}
+.sg-rv.in{opacity:1;transform:none}
+.sg-stick{position:fixed;top:0;left:0;right:0;z-index:30;transform:translateY(-105%);transition:transform .32s cubic-bezier(.32,.72,.33,1)}
+.sg-stick.on{transform:translateY(0)}
+.sg-l-cards{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 14px;scrollbar-width:none}
+.sg-l-cards::-webkit-scrollbar{display:none}
+.sg-l-card{scroll-snap-align:start;flex:0 0 200px;border-radius:18px;overflow:hidden;background:#10231E;
+  border:1px solid rgba(255,255,255,.1);cursor:pointer;text-align:left;padding:0;font-family:inherit;
+  transition:transform .25s ease,border-color .25s ease}
+.sg-l-card:hover{transform:translateY(-3px);border-color:rgba(255,199,44,.45)}
+@media (prefers-reduced-motion:reduce){.sg-hero-chev{animation:none!important}
+.sg-rv{transition:none;opacity:1;transform:none}.sg-stick{transition:none}.sg-l-card{transition:none}}`}</style>
+
+      {/* STICKY BAR — apparaît quand le hero sort de l'écran (modèle SpaceX) */}
+      <div className={"sg-stick"+(stuck?" on":"")} aria-hidden={!stuck}>
+        <div style={{display:"flex",alignItems:"center",gap:10,justifyContent:"space-between",
+          padding:"calc(8px + env(safe-area-inset-top)) 16px 8px",background:"rgba(10,23,20,.88)",
+          backdropFilter:"blur(12px)",borderBottom:"1px solid rgba(255,255,255,.08)"}}>
+          <span style={{fontFamily:"'Anton',sans-serif",fontSize:11.5,letterSpacing:".12em",color:"#fff",opacity:.92,
+            whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{wordmark}</span>
+          <button onClick={onShowMap} style={{flexShrink:0,background:"#FFC72C",color:"#0A1714",border:"none",
+            cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:13,padding:"9px 16px",borderRadius:999}}>
+            🗺 {_t(lang,"Ouvrir la carte","Open the map","Abrir el mapa")}
+          </button>
+        </div>
+      </div>
+
+      {/* ── ÉCRAN 1 : le verdict plein cadre (vidéo) ── */}
+      <section ref={heroRef} className="sg-heroSec">
       <img src={beach._heroImg} alt={beach.name} fetchpriority="high"
         style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 38%"}}/>
       {vidSrc&&<video src={vidSrc} autoPlay muted loop playsInline preload="auto" aria-hidden
@@ -5429,7 +5518,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap}){
           LIVE{upd?` · ${upd}`:""}
         </span>
       </div>
-      <div style={{position:"absolute",left:0,right:0,bottom:0,padding:"0 20px calc(22px + env(safe-area-inset-bottom))",
+      <div style={{position:"absolute",left:0,right:0,bottom:0,padding:"0 20px calc(10px + env(safe-area-inset-bottom))",
         maxWidth:560,margin:"0 auto"}}>
         {userPos&&(
           <div style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:11,fontWeight:700,letterSpacing:".05em",
@@ -5488,12 +5577,117 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap}){
             <button onClick={onShowMap} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:7,width:"100%",
               background:"none",border:"none",color:"rgba(255,255,255,.66)",fontFamily:"inherit",fontSize:13,
               fontWeight:600,padding:"14px 0 0",cursor:"pointer"}}>
-              <span className="sg-hero-chev" style={{display:"inline-block",animation:"sgHeroBob 1.8s ease-in-out infinite"}}>⌄</span>
-              {_t(lang,"Toutes les plages sur la carte","All beaches on the map","Todas las playas en el mapa")}
+              🗺 {_t(lang,"Toutes les plages sur la carte","All beaches on the map","Todas las playas en el mapa")}
             </button>
           </>
         )}
+        {/* Invitation au scroll (un seul chevron, modèle SpaceX) */}
+        <button onClick={scrollNext} aria-label={_t(lang,"Découvrir","Discover","Descubrir")}
+          style={{display:"block",margin:"6px auto 0",background:"none",border:"none",cursor:"pointer",
+            color:"rgba(255,255,255,.55)",fontSize:22,lineHeight:1,padding:6}}>
+          <span className="sg-hero-chev" style={{display:"inline-block",animation:"sgHeroBob 1.8s ease-in-out infinite"}}>⌄</span>
+        </button>
       </div>
+      </section>
+
+      {/* ── ÉCRAN 2 : le verdict du jour, plage par plage ── */}
+      <section id="sg-s2" style={{...secPad,scrollMarginTop:54}}>
+        <div className="sg-rv" data-s="verdict">
+          <div style={ovl}>{_t(lang,"Aujourd'hui","Today","Hoy")}</div>
+          <h2 style={h2s}>{_t(lang,"Le verdict, plage par plage","The verdict, beach by beach","El veredicto, playa por playa")}</h2>
+          <p style={{fontSize:14,lineHeight:1.55,color:"rgba(255,255,255,.62)",margin:"0 0 18px"}}>
+            {_t(lang,"Pas d'avis, pas de promesses : la mesure satellite du matin.","No opinions, no promises: this morning's satellite measurement.","Sin opiniones ni promesas: la medición satelital de esta mañana.")}
+            {upd?` · LIVE ${upd}`:""}
+          </p>
+        </div>
+        {!!(topBeaches&&topBeaches.length)&&(
+          <div className="sg-l-cards sg-rv">
+            {topBeaches.map(b=>(
+              <button key={b.id} className="sg-l-card" onClick={()=>onOpenBeach&&onOpenBeach(b)}>
+                <div style={{position:"relative",height:124,overflow:"hidden"}}>
+                  <img src={b._img} alt={b.name} loading="lazy" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+                  <span style={{position:"absolute",top:8,left:8,background:statusCol(b),color:"#0A1714",
+                    fontWeight:800,fontSize:11,padding:"4px 9px",borderRadius:999}}>
+                    {statusShort(b)}{b.score!=null?` · ${b.score}`:""}
+                  </span>
+                </div>
+                <div style={{padding:"10px 12px 12px"}}>
+                  <div style={{fontWeight:800,fontSize:14,color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.name}</div>
+                  {b.commune&&<div style={{fontSize:11.5,color:"rgba(255,255,255,.5)",marginTop:2}}>{b.commune}</div>}
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+        <button onClick={onShowMap} className="sg-rv" style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,
+          width:"100%",background:"rgba(10,23,20,.45)",color:"#fff",border:"1.5px solid rgba(255,255,255,.3)",
+          cursor:"pointer",fontFamily:"inherit",fontWeight:700,fontSize:15,padding:"15px 18px",borderRadius:18,marginTop:6}}>
+          🗺 {_t(lang,"Ouvrir la carte live","Open the live map","Abrir el mapa en vivo")}
+        </button>
+      </section>
+
+      {/* ── ÉCRAN 3 : la méthode (preuve, ton humain) ── */}
+      <section style={secPad}>
+        <div className="sg-rv" data-s="methode">
+          <div style={ovl}>{_t(lang,"La méthode","The method","El método")}</div>
+          <h2 style={h2s}>{_t(lang,"On regarde la mer pour vous","We watch the sea for you","Miramos el mar por ti")}</h2>
+        </div>
+        <div className="sg-rv" style={{display:"flex",flexDirection:"column",gap:14,margin:"18px 0 20px"}}>
+          {[
+            ["🛰",_t(lang,"Satellite Copernicus — 4 passages par jour, chaque plage","Copernicus satellite — 4 passes a day, every beach","Satélite Copernicus — 4 pasadas al día, cada playa")],
+            ["📊",_t(lang,"Un score 0-100 recalculé à chaque passage","A 0-100 score recomputed on every pass","Un score 0-100 recalculado en cada pasada")],
+            ["📅",_t(lang,"Prévisions 7 jours, plage par plage","7-day forecast, beach by beach","Pronóstico de 7 días, playa por playa")],
+          ].map(([ic,txt],i)=>(
+            <div key={i} style={{display:"flex",alignItems:"flex-start",gap:12,background:"#10231E",
+              border:"1px solid rgba(255,255,255,.08)",borderRadius:16,padding:"14px 16px"}}>
+              <span style={{fontSize:20,lineHeight:1.2}}>{ic}</span>
+              <span style={{fontSize:14,lineHeight:1.5,color:"rgba(255,255,255,.85)",fontWeight:600}}>{txt}</span>
+            </div>
+          ))}
+        </div>
+        <button onClick={onOpen} className="sg-rv" style={{display:"block",background:"none",border:"none",cursor:"pointer",
+          fontFamily:"inherit",color:"#FFC72C",fontWeight:800,fontSize:15,padding:0}}>
+          {_t(lang,`Voir ${beach.name} en détail →`,`See ${beach.name} in detail →`,`Ver ${beach.name} en detalle →`)}
+        </button>
+      </section>
+
+      {/* ── ÉCRAN 4 : premium (le prix vit dans le paywall, source unique) ── */}
+      <section style={{...secPad,paddingBottom:24}}>
+        <div className="sg-rv" data-s="premium">
+          <div style={ovl}>Premium</div>
+          <h2 style={h2s}>{_t(lang,"Soyez prévenu avant tout le monde","Be the first to know","Entérate antes que nadie")}</h2>
+        </div>
+        <div className="sg-rv" style={{display:"flex",flexDirection:"column",gap:10,margin:"16px 0 20px"}}>
+          {[
+            ["🔔",_t(lang,"Une alerte quand VOTRE plage change d'état","An alert when YOUR beach changes","Una alerta cuando TU playa cambia")],
+            ["🌅",_t(lang,"Le brief du matin dans votre boîte mail","The morning brief in your inbox","El brief de la mañana en tu correo")],
+            ["📅",_t(lang,"Les 7 jours de prévisions, toutes les plages","The full 7-day forecast, every beach","Los 7 días de pronóstico, todas las playas")],
+          ].map(([ic,txt],i)=>(
+            <div key={i} style={{display:"flex",alignItems:"center",gap:11,fontSize:14,fontWeight:600,
+              color:"rgba(255,255,255,.85)"}}>
+              <span style={{fontSize:17}}>{ic}</span>{txt}
+            </div>
+          ))}
+        </div>
+        {onPremium&&(
+          <button onClick={onPremium} className="sg-rv gbtn" style={{display:"block",width:"100%",textAlign:"center",
+            background:"#FFC72C",color:"#0A1714",border:"none",cursor:"pointer",fontFamily:"inherit",
+            fontWeight:800,fontSize:16,padding:"16px 24px",borderRadius:18,boxShadow:"0 8px 28px rgba(255,199,44,.25)"}}>
+            {_t(lang,"Découvrir Premium","Discover Premium","Descubrir Premium")}
+          </button>
+        )}
+        <div className="sg-rv" style={{textAlign:"center",fontSize:11.5,color:"rgba(255,255,255,.45)",marginTop:10}}>
+          {_t(lang,"Sans engagement — annulable en 1 clic","No commitment — cancel anytime","Sin compromiso — cancela cuando quieras")}
+        </div>
+      </section>
+
+      <footer style={{padding:"44px 22px calc(30px + env(safe-area-inset-bottom))",maxWidth:560,margin:"0 auto",
+        textAlign:"center",borderTop:"1px solid rgba(255,255,255,.07)",marginTop:36}}>
+        <div style={{fontFamily:"'Anton',sans-serif",fontSize:12,letterSpacing:".14em",color:"rgba(255,255,255,.6)",marginBottom:6}}>{wordmark}</div>
+        <div style={{fontSize:11,color:"rgba(255,255,255,.38)"}}>
+          🛰 {_t(lang,"Données : Copernicus Marine","Data: Copernicus Marine","Datos: Copernicus Marine")}{upd?` · LIVE ${upd}`:""}
+        </div>
+      </footer>
     </div>
   )
 }
@@ -5806,9 +6000,13 @@ export default function App(){
         &&!sessionStorage.getItem("sg_hero_seen")
     }catch(_){return false}
   })
+  // Sortie ANIMÉE du hero (audit fluidité 2026-06-11 : le cut brut en 20ms était
+  // LE moment « pas fluide » de la 1re impression) : fondu+scale 300ms puis démontage.
+  const[heroExiting,setHeroExiting]=useState(false)
   const dismissHero=useCallback(action=>{
     try{sessionStorage.setItem("sg_hero_seen","1")}catch(_){}
-    setShowHero(false)
+    setHeroExiting(true)
+    setTimeout(()=>{setShowHero(false);setHeroExiting(false)},300)
     track("sg_hero_dismiss",{action})
   },[])
   // Plage du hero : la plus proche PROPRE si géoloc déjà accordée, sinon le
@@ -6393,22 +6591,34 @@ export default function App(){
             lecture → plus de "vide bleu nuit" au premier paint. */}
         {showHero&&heroPick&&(
           <HeroVerdict beach={heroPick} lang={lang} island={island} sargData={sargData} userPos={userPos}
+            topBeaches={(allBeaches||[]).filter(b=>(IS_NEW_REGION||b.island===island)&&b.status&&b.score!=null
+                &&imageMap?.[b.id]&&!String(imageMap[b.id]).startsWith("sat-"))
+              .sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,3)
+              .map(b=>({...b,_img:"/beaches/"+imageMap[b.id]}))}
             onOpen={()=>{
               dismissHero("cta")
               setSelectedBeach(heroPick)
               track("sg_beach_open",{beach_id:heroPick.id,status:heroPick.status,source:"hero"})
             }}
-            onShowMap={()=>dismissHero("map")}/>
+            onOpenBeach={b=>{
+              dismissHero("landing_card")
+              setSelectedBeach(b)
+              track("sg_beach_open",{beach_id:b.id,status:b.status,source:"landing_top3"})
+            }}
+            onPremium={()=>{dismissHero("premium");openPremium("landing")}}
+            onShowMap={()=>dismissHero("map")}
+            exiting={heroExiting}/>
         )}
 
         {/* SARGACATCH TOAST — petit, coin bas, jamais bloquant (z 1090 :
             au-dessus des contrôles carte, sous le paywall z1100). */}
         {showGameToast&&(
-          <div style={{position:"absolute",bottom:96,left:0,right:0,zIndex:1090,display:"flex",
+          <div style={{position:"absolute",bottom:"calc(170px + env(safe-area-inset-bottom, 0px))",left:0,right:0,zIndex:1090,display:"flex",
             justifyContent:"center",pointerEvents:"none",padding:"0 16px"}}>
             <div style={{pointerEvents:"auto",display:"flex",alignItems:"center",gap:10,
               background:"rgba(10,23,20,.94)",border:"1px solid rgba(255,199,44,.4)",borderRadius:16,
-              padding:"10px 14px",maxWidth:380,boxShadow:"0 8px 24px rgba(0,0,0,.45)"}}>
+              padding:"10px 14px",maxWidth:380,boxShadow:"0 8px 24px rgba(0,0,0,.45)",
+              animation:"slideUp .35s cubic-bezier(.22,1,.36,1)"}}>
               <span style={{fontSize:20}}>🌊</span>
               <div style={{flex:1,fontSize:12.5,color:"#fff",lineHeight:1.35}}>
                 <b>{_t(lang,"30 secondes à tuer ?","Got 30 seconds?","¿Tienes 30 segundos?")}</b><br/>
@@ -6431,7 +6641,7 @@ export default function App(){
             viewport reads as the map. Chrome is capped at 600px centered. */}
         <div style={{
           position:"absolute",top:0,left:0,right:0,zIndex:700,
-          padding:`calc(max(12px, env(safe-area-inset-top)) + ${showRecoveryBanner?64:0}px) 16px 0`,
+          padding:`calc(max(12px, env(safe-area-inset-top)) + ${showRecoveryBanner?64:(showPushPrimer?58:0)}px) 16px 0`,
           pointerEvents:"none",
           transition:"padding-top .25s ease",
         }}>
@@ -6608,10 +6818,11 @@ export default function App(){
         {/* SARGACHAT — assistant guidé statique (réponses = donnée live, arbre fermé) */}
         {!showHero&&!showPremium&&!showChat&&(
           <button onClick={()=>{setShowChat(true);track("sg_chat_open",{})}} aria-label={_t(lang,"Assistant","Assistant","Asistente")}
-            style={{position:"fixed",right:14,bottom:"calc(88px + env(safe-area-inset-bottom))",zIndex:960,
+            style={{position:"fixed",right:14,bottom:"calc(166px + env(safe-area-inset-bottom))",zIndex:960,
               width:46,height:46,borderRadius:"50%",background:"#0D1E1C",border:"1.5px solid rgba(255,199,44,.55)",
               fontSize:19,cursor:"pointer",boxShadow:"0 6px 20px rgba(0,0,0,.4)",display:"flex",
-              alignItems:"center",justifyContent:"center"}}>💬</button>
+              alignItems:"center",justifyContent:"center",
+              animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>💬</button>
         )}
         {showChat&&<SargaChat lang={lang} allBeaches={allBeaches} island={island} sargData={sargData}
           onOpenBeach={onBeachClick} onPremium={()=>openPremium("chat")} onClose={()=>setShowChat(false)}/>}

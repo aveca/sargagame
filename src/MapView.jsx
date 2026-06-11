@@ -783,7 +783,9 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
       const lbl=lang==="es"?"Toda la isla":lang==="en"?"Whole island":"Toute l'île"
       return(
       <button onClick={recenterMap} title={lbl} aria-label={lbl} style={{
-        position:"absolute",top:"calc(56px + env(safe-area-inset-top, 0px))",right:"calc(12px + env(safe-area-inset-right, 0px))",zIndex:1000,
+        // top 56→124px : à 56 le pill recouvrait les chips DIM/LUN de la barre
+        // radar (top 70, hauteur 46) et volait leurs taps (audit cadrage 2026-06-11)
+        position:"absolute",top:"calc(124px + env(safe-area-inset-top, 0px))",right:"calc(12px + env(safe-area-inset-right, 0px))",zIndex:1000,
         display:"flex",alignItems:"center",gap:6,
         padding:"8px 14px",
         background:"rgba(13,30,28,.75)",

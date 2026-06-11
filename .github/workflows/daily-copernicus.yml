@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     # 25 → 60 : les full builds enchaînent désormais 4 builds Vite (3 nouvelles
     # régions + build partagé MQ/GP) + 5 deploys FTPS. Repo public = minutes illimitées.
-    timeout-minutes: 60
+    timeout-minutes: 75  # loops vidéo ×2 résolutions (~+10 min ffmpeg) + FTP 5 domaines
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 

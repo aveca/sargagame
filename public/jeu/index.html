@@ -63,6 +63,29 @@
   .mailRow .btn{ width:auto; padding:13px 16px; font-size:14px; border-radius:14px; box-shadow:none; }
   .panel p.mailOk{ background:rgba(46,204,113,.13); border:1px solid rgba(46,204,113,.4); border-radius:12px;
     padding:10px 13px; font-size:13px; font-weight:700; color:#7ee2a8; margin-bottom:10px; }
+  /* ── Coach (chat guidé, même pattern que SargaChat app : statique, chips, donnée réelle) ── */
+  .coachLink{ display:block; width:100%; background:none; border:none; cursor:pointer; font-family:inherit;
+    color:rgba(255,255,255,.55); font-size:13px; padding:12px 0 2px; text-align:center; }
+  .coachLink b{ color:rgba(255,255,255,.8); font-weight:700; }
+  #coach{ position:absolute; left:0; right:0; bottom:0; z-index:200; background:#10231e;
+    border-radius:22px 22px 0 0; border:1px solid rgba(255,255,255,.12); border-bottom:none;
+    padding:18px 18px calc(18px + env(safe-area-inset-bottom)); transform:translateY(102%);
+    transition:transform .28s cubic-bezier(.32,.72,.33,1); box-shadow:0 -12px 40px rgba(0,0,0,.45); }
+  #coach.open{ transform:translateY(0); }
+  @media (prefers-reduced-motion:reduce){ #coach{ transition:none } }
+  #coachHead{ display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  #coachHead .av{ width:34px; height:34px; border-radius:50%; background:rgba(255,199,44,.16);
+    border:1px solid rgba(255,199,44,.4); display:flex; align-items:center; justify-content:center; font-size:17px; }
+  #coachHead b{ font-size:14px; }
+  #coachClose{ margin-left:auto; background:rgba(255,255,255,.08); border:none; color:rgba(255,255,255,.7);
+    width:30px; height:30px; border-radius:50%; font-size:15px; cursor:pointer; font-family:inherit; }
+  #coachMsg{ font-size:14px; line-height:1.5; color:rgba(255,255,255,.88); min-height:42px; margin-bottom:12px; }
+  #coachMsg .dots::after{ content:'…'; animation:dots 1s steps(3) infinite; }
+  @keyframes dots{ 0%{content:'.'} 33%{content:'..'} 66%{content:'...'} }
+  #coachChips{ display:flex; flex-wrap:wrap; gap:8px; }
+  .cchip{ background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.22); color:#fff; cursor:pointer;
+    font-family:inherit; font-size:13px; font-weight:600; padding:9px 13px; border-radius:999px; }
+  .cchip.gold{ background:rgba(255,199,44,.14); border-color:rgba(255,199,44,.45); color:var(--gold); }
 </style>
 </head>
 <body>
@@ -85,6 +108,7 @@
     <h1 id="startTitle"></h1>
     <p id="startMsg"></p>
     <button class="btn" id="btnStart"></button>
+    <button class="coachLink" id="coachLink1"></button>
   </div>
 
   <div class="panel" id="endPanel">
@@ -96,6 +120,14 @@
     <button class="btn" id="btnSite"></button>
     <button class="btn ghost" id="btnShare"></button>
     <button class="btn ghost" id="btnReplay"></button>
+    <button class="coachLink" id="coachLink2"></button>
+  </div>
+
+  <div id="coach" aria-hidden="true">
+    <div id="coachHead"><span class="av">🧑‍🏫</span><b id="coachName"></b>
+      <button id="coachClose" aria-label="close">✕</button></div>
+    <div id="coachMsg"></div>
+    <div id="coachChips"></div>
   </div>
 </div>
 <div class="wordmark" id="wordmark">SARGACATCH</div>
@@ -119,7 +151,14 @@ const T={
     verdict:(b,s)=>b?b.toUpperCase()+' — PROPRE AUJOURD’HUI'+(s?' · '+s+'/100':''):'LA PLAGE PROPRE DU JOUR T’ATTEND',
     shareTxt:(d,n,c)=>'SargaCatch #'+d+' 🌊 '+n+' pts'+(c>=3?' · 🔥 combo ×'+c:'')+' — bats-moi ici :',copied:'Lien de défi copié !',
     day:n=>'Défi du jour #'+n+' — mêmes vagues pour tous',record:'🏆 Nouveau record perso !',
-    mailPh:'Ton email — le verdict de demain matin',mailBtn:'💾 Sauver',mailOk:'Score sauvegardé ! Le verdict arrive demain matin 🌅'},
+    mailPh:'Ton email — le verdict de demain matin',mailBtn:'💾 Sauver',mailOk:'Score sauvegardé ! Le verdict arrive demain matin 🌅',
+    coachLink:'💬 Une question ? ',coachLinkB:'Le coach répond',coachName:'Le coach',
+    coachHi:'Salut ! Je suis là pour ça. Tu veux savoir quoi ?',
+    cTips:'Des points, vite !',cData:'C’est quoi la vraie donnée ?',cDefi:'Le défi du jour ?',
+    aTips:'Les combos, tout est là : 3 prises d’affilée = points ×2. Vise d’abord les paquets les plus proches du sable, et garde le rythme — le combo retombe au bout d’1,6 s.',
+    aData:(b,s)=>b?'Pendant que tu ratisses, le satellite bosse : '+b+' est propre aujourd’hui'+(s?' ('+s+'/100)':'')+'. Vérifié 4 fois par jour, plage par plage.':'Le satellite vérifie chaque plage 4 fois par jour. Le verdict du jour t’attend sur la carte.',
+    aDefi:n=>'C’est le défi #'+n+' : tout le monde a exactement les mêmes vagues aujourd’hui. Fais ton score, envoie le lien à un pote — mêmes conditions, zéro excuse.',
+    cMap:'Voir la carte →',cShare:'Défier un ami 🏆',cBack:'← Autre question'},
   en:{title1:'Save',title2:'the beach',start:'Play 🌊',
     msg:'Sargassum is drifting toward the sand. Tap it before it reaches the beach. 3 clumps on the sand = beach lost. 45 seconds. ×2 combos!',
     defi:n=>'Your friend scored '+n+' pts — beat it!',
@@ -130,7 +169,14 @@ const T={
     verdict:(b,s)=>b?b.toUpperCase()+' — CLEAN TODAY'+(s?' · '+s+'/100':''):'TODAY’S CLEAN BEACH IS WAITING',
     shareTxt:(d,n,c)=>'SargaCatch #'+d+' 🌊 '+n+' pts'+(c>=3?' · 🔥 combo ×'+c:'')+' — beat me here:',copied:'Challenge link copied!',
     day:n=>'Daily challenge #'+n+' — same waves for everyone',record:'🏆 New personal best!',
-    mailPh:'Your email — tomorrow’s verdict',mailBtn:'💾 Save',mailOk:'Score saved! Tomorrow’s verdict hits your inbox 🌅'},
+    mailPh:'Your email — tomorrow’s verdict',mailBtn:'💾 Save',mailOk:'Score saved! Tomorrow’s verdict hits your inbox 🌅',
+    coachLink:'💬 Got a question? ',coachLinkB:'Ask the coach',coachName:'The coach',
+    coachHi:'Hey! That’s what I’m here for. What do you want to know?',
+    cTips:'Points, fast!',cData:'What’s the real data?',cDefi:'Today’s challenge?',
+    aTips:'It’s all about combos: 3 catches in a row = ×2 points. Go for the clumps closest to the sand first, and keep the rhythm — the combo resets after 1.6s.',
+    aData:(b,s)=>b?'While you’re raking, the satellite is working: '+b+' is clean today'+(s?' ('+s+'/100)':'')+'. Checked 4× a day, beach by beach.':'The satellite checks every beach 4 times a day. Today’s verdict is waiting on the map.',
+    aDefi:n=>'This is challenge #'+n+': everyone gets exactly the same waves today. Set your score, send the link to a friend — same conditions, no excuses.',
+    cMap:'See the map →',cShare:'Challenge a friend 🏆',cBack:'← Another question'},
   es:{title1:'Salva',title2:'la playa',start:'Jugar 🌊',
     msg:'El sargazo deriva hacia la arena. Tócalo antes de que llegue a la playa. 3 montones en la arena = playa perdida. 45 segundos. ¡Combos ×2!',
     defi:n=>'Tu amigo hizo '+n+' pts — ¡supéralo!',
@@ -141,7 +187,14 @@ const T={
     verdict:(b,s)=>b?b.toUpperCase()+' — SIN SARGAZO HOY'+(s?' · '+s+'/100':''):'TU PLAYA LIMPIA DE HOY TE ESPERA',
     shareTxt:(d,n,c)=>'SargaCatch #'+d+' 🌊 '+n+' pts'+(c>=3?' · 🔥 combo ×'+c:'')+' — ¡supérame aquí!:',copied:'¡Enlace de reto copiado!',
     day:n=>'Reto del día #'+n+' — mismas olas para todos',record:'🏆 ¡Nuevo récord personal!',
-    mailPh:'Tu email — el veredicto de mañana',mailBtn:'💾 Guardar',mailOk:'¡Score guardado! El veredicto llega mañana 🌅'},
+    mailPh:'Tu email — el veredicto de mañana',mailBtn:'💾 Guardar',mailOk:'¡Score guardado! El veredicto llega mañana 🌅',
+    coachLink:'💬 ¿Una duda? ',coachLinkB:'El coach responde',coachName:'El coach',
+    coachHi:'¡Hola! Para eso estoy. ¿Qué quieres saber?',
+    cTips:'¡Puntos, rápido!',cData:'¿Qué es el dato real?',cDefi:'¿El reto de hoy?',
+    aTips:'Todo está en los combos: 3 capturas seguidas = puntos ×2. Ve primero a los montones más cerca de la arena y mantén el ritmo — el combo se corta a los 1,6 s.',
+    aData:(b,s)=>b?'Mientras rastrillas, el satélite trabaja: '+b+' está limpia hoy'+(s?' ('+s+'/100)':'')+'. Verificado 4 veces al día, playa por playa.':'El satélite verifica cada playa 4 veces al día. El veredicto de hoy te espera en el mapa.',
+    aDefi:n=>'Es el reto #'+n+': hoy todos tienen exactamente las mismas olas. Haz tu score y mándale el enlace a un amigo — mismas condiciones, cero excusas.',
+    cMap:'Ver el mapa →',cShare:'Retar a un amigo 🏆',cBack:'← Otra pregunta'},
 }[LANG]
 
 // Mapping ids sargassum.json MQ/GP → beaches-list (noms) — copie de l'app
@@ -287,6 +340,47 @@ $('btnStart').addEventListener('click',start)
 $('btnReplay').addEventListener('click',start)
 $('btnShare').addEventListener('click',share)
 $('btnSite').addEventListener('click',()=>{location.href=location.origin+'/?utm_source=game&utm_medium=sargacatch'})
+
+// ── Coach : chat guidé statique (pattern SargaChat — chips, donnée réelle TODAY, zéro LLM).
+// Déclencheur inline dans les panneaux (pas de FAB sur le jeu : pas de mis-taps).
+// DOM pur partout (pas d'innerHTML), textes 100 % statiques de T.
+const coach=$('coach')
+$('coachName').textContent=T.coachName
+for(const id of ['coachLink1','coachLink2']){
+  const l=$(id);l.textContent=''
+  l.appendChild(document.createTextNode(T.coachLink))
+  const b=document.createElement('b');b.textContent=T.coachLinkB;l.appendChild(b)
+}
+let coachTimer=null
+const back=()=>({t:T.cBack,fn:coachRoot})
+function coachSay(txt,chips){
+  clearTimeout(coachTimer)
+  const m=$('coachMsg');m.textContent=''
+  const d=document.createElement('span');d.className='dots';m.appendChild(d)
+  $('coachChips').textContent=''
+  coachTimer=setTimeout(()=>{
+    m.textContent=txt
+    const c=$('coachChips')
+    for(const ch of chips){
+      const b=document.createElement('button');b.className='cchip'+(ch.gold?' gold':'')
+      b.textContent=ch.t;b.addEventListener('click',ch.fn);c.appendChild(b)
+    }
+  },450)
+}
+function coachRoot(){
+  coachSay(T.coachHi,[
+    {t:T.cTips,fn:()=>coachSay(T.aTips,[back()])},
+    {t:T.cData,fn:()=>coachSay(T.aData(TODAY.beach,TODAY.score),[
+      {t:T.cMap,gold:1,fn:()=>{location.href=location.origin+'/?utm_source=game&utm_medium=coach'}},back()])},
+    {t:T.cDefi,fn:()=>coachSay(T.aDefi(DAYN),[
+      {t:T.cShare,gold:1,fn:share},back()])},
+  ])
+}
+function coachOpen(){coach.classList.add('open');coach.setAttribute('aria-hidden','false');coachRoot()}
+function coachShut(){coach.classList.remove('open');coach.setAttribute('aria-hidden','true');clearTimeout(coachTimer)}
+$('coachLink1').addEventListener('click',coachOpen)
+$('coachLink2').addEventListener('click',coachOpen)
+$('coachClose').addEventListener('click',coachShut)
 </script>
 </body>
 </html>

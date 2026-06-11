@@ -59,15 +59,18 @@ function filterHeroLoops(out, keepPrefixes, title) {
   let removed = 0
   for (const f of fs.readdirSync(dir)) {
     if (!f.endsWith('.mp4')) continue
-    const pfx = (f.match(/^([a-z]+)\d+\.mp4$/) || [])[1]
+    // (?:-w)? : variante desktop 1920×1080 (manifest v2) — même région que sa carrée
+    const pfx = (f.match(/^([a-z]+)\d+(?:-w)?\.mp4$/) || [])[1]
     if (pfx && keepPrefixes.has(pfx)) continue
     fs.rmSync(path.join(dir, f))
     removed++
   }
   const manifestPath = path.join(dir, 'manifest.json')
-  const ids = fs.readdirSync(dir).filter(f => f.endsWith('.mp4')).map(f => f.replace('.mp4', ''))
-  fs.writeFileSync(manifestPath, JSON.stringify({ v: 1, ids }))
-  if (removed) console.log(`   → hero loops hors-région supprimées (${title}): ${removed}, gardées: ${ids.length}`)
+  const all = fs.readdirSync(dir).filter(f => f.endsWith('.mp4')).map(f => f.replace('.mp4', ''))
+  const ids = all.filter(x => !x.endsWith('-w'))
+  const wide = all.filter(x => x.endsWith('-w')).map(x => x.slice(0, -2))
+  fs.writeFileSync(manifestPath, JSON.stringify({ v: 2, ids, wide }))
+  if (removed) console.log(`   → hero loops hors-région supprimées (${title}): ${removed}, gardées: ${ids.length} (+${wide.length} wide)`)
 }
 
 function copyRecursive(src, dest, skipRel = null, rel = '') {
