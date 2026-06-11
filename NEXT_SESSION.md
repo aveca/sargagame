@@ -1,45 +1,32 @@
 # NEXT_SESSION — sargagame
 
-*Session 2026-06-10 (tour site-par-site + demandes UX/paiement). Audit live 6 agents (1/domaine + cross-site) + verify adversarial : **0 critical/high** — sites sains. 13 mediums → tous les actionnables corrigés + funnel/notifs/°F/banks shippés. ~4 commits poussés (dernier : 2eb55c8).*
+*Session 40 (nuit+matin 2026-06-10→11). Détail complet : memory `project_session40_done.md` + task list (38 tâches). Dernier commit local : 275d1fe.*
 
-## 🎯 État cash USD
-| Région | Domaine | Site | Payment Links | GSC sitemap |
-|---|---|---|---|---|
-| Punta Cana | sargassumpuntacana.com | ✅ LIVE | ✅ $9.99/$79 + prefill+attribution | ✅ soumis 06-10 |
-| Riviera Maya | sargassumcancun.com | ✅ LIVE (ES) | ✅ | ✅ soumis |
-| Florida | sargassummiami.com | ✅ LIVE (°F/mph dès deploy) | ✅ | ✅ soumis |
+## 🔴 Incident CI traité (à connaître)
+ffmpeg n'a jamais existé sur ubuntu-latest → 18 runs en boucle (retry-on-failure non gaté re-dispatchait à l'infini) → prod gelée 3h30 + **drips dupliqués ~17×/~8× à 2 abonnées** (état email commité en fin de run seulement). Fixes : apt install + continue-on-error, retry schedule-only, **commit des états email immédiatement après envoi**, excuses automatisées (`incidents.json` + `incident-apology.cjs`, fenêtre 10-20 UTC → parties au cron 12:00). Vérifier dans le commit « chore: email state » de ~12h que les 2 hashes sont marqués `sent`.
 
-- MRR funnel affiche €4,99/1 payant = **fenêtre 28j** (les 7 paiements d'avril sont sortis de la fenêtre) — PAS une régression. Vrai MRR à établir demain via réconciliation.
+## 🟢 Shippé session 40 (5 pushes verts + 5 commits locaux en attente de push)
+- **Landing scrollable SpaceX** : hero 100svh vidéo → verdict top-3 cards → méthode → premium → footer ; sticky bar ; reveals IO ; chevron. « À propos » retiré du paywall.
+- **2 clips SVG sur mesure** (MethodScene satellite/bateau/ramasseur + AlertScene 06:00/⚠️/itinéraire qui bascule) + **scène WebGL** hero (eau qui ondule + parallaxe pointeur, natif-résolution).
+- **10 fixes fluidité** (audit 4 agents : « entrées animées, sorties = démontages bruts ») : hero exit fondu, sheet-exit symétrique, Toute-l'île/FAB décollisionnés, shine GPU (CLS 0,065→0,02), z-index fiche.
+- **Clics : 56/56 PASS** sur les 5 domaines (le « bug » user = prod gelée pré-deploy).
+- **Coach chat sur /jeu/** (3 langues, donnée TODAY live) + **🔔 click-triggered** fiche plage (leads beach_alert → email verdict quotidien).
+- **Checkout USD** (audit live + teardown Starlink) : mandat Stripe nommé (était « PAY »), country par région (était Martinique), **Mensuel par défaut USD**, prelude véridique, wordmark écran paiement. EUR byte-intact (smokes). Wallets : déjà ACTIFS depuis 06-10 — vérifier sur device réel (#14).
+- **5 photos FL re-sourcées** (licences propres, crédits) + **/about/ EN-ES** sur USD (+ fix href chat qui 404ait sur USD).
+- Loops vidéo **double résolution** (1080² + 1920×1080 desktop, manifest v2).
 
-## 🟢 Shippé cette session (tout poussé)
-- **Funnel** (vérifié live sur les bundles) : Payment Links avec `prefilled_email` + `client_reference_id=<region>_<plan>_<source>` ; paywall repositionné alertes (« Sois prévenu avant que ta plage tourne » EN/ES aussi) ; annuel par défaut + équivalent €/mois. MQ intact (pw_prelude/EUR prouvés au bundle).
-- **Apps Script @42** (clasp) : sheet `subscription_events` (invoice.payment_succeeded / subscription.deleted / payment_failed — étaient PERDUS en unknown_type → renouvellements+churn enfin enregistrés) + colonne `ref` (attribution) dans payments. Testé live.
-- **Bancs+grille par région** : pipeline étape 8 (regionCtx), prepare-ftp les sert (fin des 2×404 console USD), workflow les committe. Banc à 20km de Bávaro au 1er run.
-- **GP** : miroirs _gp/ assainis à la source (toGpMirror : og:site_name/SearchAction/GA4/Clarity/geo/FAQPage hérité) — l'overlay écrasait le patcher. « 82→83 plages ».
-- **MQ** : `/plages/` hub enfin servi (la règle .htaccess `^plages/?$→/` legacy l'enterrait, d'où « Duplicate not selected » GSC) ; « 134→53 plages » ; /a-propos/ au sitemap.
-- **SERP resorts PC+MIA** : fini les titles coupés en plein mot (templates de repli + smartTrim).
-- **Forecast chips EN/ES** : remap des jours FR du JSON au rendu (fcDay).
-- **Floride** : °F/mph/ft/in (WeatherCards + raisons score, gate countryCode US).
-- **Push primer** : fallback 30/60s ne tire plus le prompt natif à froid (cooldown 7j respecté).
-- **Notifs** (run précédent, confirmé déployé) : alertes favoris MQ/GP livrées (mismatch ids) + dédup inter-runs.
-- **Diag sans fix (légitime)** : scores PC quasi uniformes = géographie (25km homogènes), pas un bug. SW v34.
+## ⚠️ REPRISE IMMÉDIATE
+1. **Si pas encore fait : push des commits locaux** (026dad7→275d1fe) après le vert du run consolidé, puis vérifier live : sw v54+, manifest v2 wide, landing+scènes dans le bundle, /about/ sur les 3 USD (et absent de MQ/GP).
+2. **Réconciliation Stripe** (reporté d'hier, J+1 = aujourd'hui) : vrai MRR via clé locale (`scripts/audit-stripe-duplicates.cjs` a le pattern d'auth) + tâche #28 (funnel payments_real menteur).
+3. **Excuses 12:00 UTC** : vérifier l'envoi (2 hashes sent dans incidents.json commité par le CI).
+4. **Plafond Resend** (#37) : daily_verdict + beach_alert grossissent vers les ~100/jour du plan free — surveiller les erreurs d'envoi.
 
-## ⚠️ À FAIRE (ordre)
-2. **Réconciliation webhook J+1 (2026-06-11)** : Stripe (subscriptions actives par région) vs Sheets payments+subscription_events. Établir le VRAI MRR (7 EUR d'avril : actifs ? churnés ?). `scripts/audit-stripe-duplicates.cjs` a le pattern d'auth Stripe.
-3. **Chip user Cloudflare** : token API → `gh secret set CLOUDFLARE_API_TOKEN` puis `node scripts/automation/cloudflare-provision.cjs --only=sargazotulum.com` (canari) puis les 3 sites.
-4. **Indexation** : sitemaps USD soumis aujourd'hui (04:44, provision-gsc) — suivre impressions GSC sous 7j. MQ : la fin du 301 /plages/ devrait résoudre le « Duplicate, submitted URL not selected ».
-5. **Backlog** : stripe-webhook $KNOWN_REGIONS hardcodé (région 6) ; Resend 1 domaine/100 mails-jour (plafond ~100 subs) ; FTP uploader assets/ avant racine ; Apps Script digest FR pour non-GP ; bulletin weekend à confirmer vendredi ; capture email landing (vrai gap — HeroReco/DailyRecoStrip sont du code MORT, brief UX requis avant de coder, cf feedback_no_code_before_ux).
+## ⚖️ 6 décisions user en attente (tasks #15-16, 24, 31-32, 34)
+Cloudflare (token API → `cloudflare-provision.cjs` existe déjà !) · Share-promo coupon USD · Veo 3.1 (compte) · ESA BIC Sud (SASU) · Publication FB (GO) · Promesse fairness.
 
-## Notes
-- Rôles navigateurs (FERME) : Chrome=provisioning user, Edge=automation FB. docs/OPERATIONS.md.
-- A/B MQ/GP : pw_prelude seul vivant. Ne pas toucher.
-- `scripts/ux-clicktest.cjs` désormais committé (Playwright 5 domaines). Les « CRITICAL » mq/gp qu'il sort sur le clic marqueur = artefacts harnais (navigation SW pendant evaluate), pas des bugs site.
-- FB groupes PC : 8 join requests en attente d'approbation → dès approbation, `fb-post-groups.cjs` (Edge).
+## 📋 Backlog priorisé (task list, autonome)
+#36 scène SVG « 7 jours » paywall USD (post-éval A/B) → #22 épuré carte (18-21 → ~10 éléments) → #17-20 hubs SEO (Fiabilité/côtes/santé/mois) → #26-27 KPI jeu+GA4 série → #38 webhook régions hardcodées (AVANT région 6) → #29 drip EN/ES → #21 pages EN → #25 région suivante (MX/DR) → #23 scène 3D three.js → #30 re-engagement → #35 DepthFlow (évaluer).
+Différés post-éval A/B pw_* : réordonnancement preuve modal, titre nominatif plage, guarantee-as-feature.
 
-## 🟢 Après-midi 2026-06-10 — 4 demandes utilisateur traitées + VÉRIFIÉES LIVE
-1. **Bancs sur les territoires** : clip masque eau (sommets terre 4→0) + **split des hulls géants** en blocs 0,3° (max hull 2,07°→0,65°). Vérifié live : aucun polygone sur l'île, hulls ≤289px à l'écran.
-2. **MQ chargement infini** = fenêtre deploy (racine uploadée avant assets → bundle 404 ~15 min). Fix : manual-ftp-deploy uploade assets/ d'abord, racine en DERNIER. MQ revérifié 200.
-3. **Paiement in-app** : Stripe Embedded Checkout (CB+Apple Pay+Google Pay+Link) dans le modal, essai 7j, prix région, fallback Payment Link intégral. PHP `action=embedded` + `prices_by_region` (stripe-config déployé à chaud 5 domaines). **payment_method_domains : apple_pay/google_pay/link ACTIVE sur les 5 domaines.** Testé E2E local (formulaire complet) + live PC (iframe inner montée). `sg_checkout_redirect destination:embedded` + retour `?session_id=` → sg_conversion fire enfin.
-4. **Tout pushé/publié** : 3 runs deploy success (27268980954 °F, 27270122674 audit-fixes, 27271550420 final). SW v35 live. Bundles 5/5 avec initEmbeddedCheckout. Hub /plages/ 200, GP og+GA4 propres, titles resorts propres, banks/grid USD 200, .well-known 200 ×5.
-
-⚠️ À surveiller demain : premiers `sg_embedded_open` vs `_fallback` dans le funnel (santé du nouveau flow), et réconciliation webhook (#6) doit maintenant inclure subscription_events.
+## Garde-fous inchangés
+EUR/MQ-GP intouchables (Payment Links, A/B pw_*, trial copy byte-identique — smoke à chaque touche de Sargasses_PROD.jsx) · seuils pipeline interdits · SW bump à chaque deploy code (prochain : v55) · grouper les pushes (1 run CI = ~50-70 min avec les loops ×2) · jamais de step CI nouveau sans preuve EN CI · état email commité immédiatement · rôles navigateurs : Chrome=user, Edge=automation FB.
