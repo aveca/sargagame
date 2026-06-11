@@ -5479,6 +5479,116 @@ void main(){
   return <canvas ref={ref} aria-hidden style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block"}}/>
 }
 
+/* ── CLIP SUR MESURE (SVG animé) — demande user 2026-06-11 : « création de
+   clip pour mon produit, pas de l'édition vidéo ». Scène signature 100 %
+   vectorielle (nette à toute résolution, ~8 Ko, zéro réseau) qui raconte le
+   produit en une boucle : satellite qui scanne → radeaux de sargasses qui
+   dérivent → bateau qui relève le filet → ramasseur au râteau → verdict ✓
+   qui ping. Palette maison (encre/or/teal). Boucle CSS pure, stoppée par
+   prefers-reduced-motion (frame statique lisible). */
+function MethodScene(){
+  return(
+    <div aria-hidden style={{borderRadius:20,overflow:"hidden",border:"1px solid rgba(255,255,255,.09)",
+      background:"linear-gradient(180deg,#0C1D21 0%,#0A1714 100%)"}}>
+      <svg viewBox="0 0 560 300" style={{display:"block",width:"100%",height:"auto"}}>
+        <style>{`
+.sgms-sat{animation:sgmsOrbit 26s linear infinite}
+@keyframes sgmsOrbit{from{transform:translateX(-90px)}to{transform:translateX(650px)}}
+.sgms-beam{animation:sgmsBeam 3.2s ease-in-out infinite}
+@keyframes sgmsBeam{0%,100%{opacity:.07}50%{opacity:.2}}
+.sgms-w1{animation:sgmsDrift 13s linear infinite}
+.sgms-w2{animation:sgmsDrift 21s linear infinite reverse}
+@keyframes sgmsDrift{from{transform:translateX(0)}to{transform:translateX(-560px)}}
+.sgms-raft1{animation:sgmsRaft 38s linear infinite}
+.sgms-raft2{animation:sgmsRaft 52s linear infinite;animation-delay:-26s}
+@keyframes sgmsRaft{from{transform:translateX(620px)}to{transform:translateX(-160px)}}
+.sgms-boat{animation:sgmsBob 4.2s ease-in-out infinite}
+@keyframes sgmsBob{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(3.5px) rotate(-1.2deg)}}
+.sgms-palm{animation:sgmsSway 5.5s ease-in-out infinite;transform-origin:468px 218px}
+@keyframes sgmsSway{0%,100%{transform:rotate(-1.6deg)}50%{transform:rotate(1.8deg)}}
+.sgms-rake{animation:sgmsRake 1.9s ease-in-out infinite;transform-origin:402px 232px}
+@keyframes sgmsRake{0%,100%{transform:rotate(-9deg)}50%{transform:rotate(7deg)}}
+.sgms-ping{animation:sgmsPing 2.6s ease-out infinite;transform-origin:497px 96px}
+@keyframes sgmsPing{0%{transform:scale(.4);opacity:.8}70%,100%{transform:scale(1.8);opacity:0}}
+.sgms-link{stroke-dasharray:3 5;animation:sgmsFlow 1.4s linear infinite}
+@keyframes sgmsFlow{from{stroke-dashoffset:16}to{stroke-dashoffset:0}}
+@media (prefers-reduced-motion:reduce){.sgms-sat,.sgms-beam,.sgms-w1,.sgms-w2,.sgms-raft1,.sgms-raft2,.sgms-boat,.sgms-palm,.sgms-rake,.sgms-ping,.sgms-link{animation:none}}
+        `}</style>
+        <defs>
+          <linearGradient id="sgmsBeamG" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#FFC72C" stopOpacity=".55"/><stop offset="1" stopColor="#FFC72C" stopOpacity="0"/>
+          </linearGradient>
+          <path id="sgmsWave" d="M0 200 Q35 192 70 200 T140 200 T210 200 T280 200 T350 200 T420 200 T490 200 T560 200 T630 200 T700 200 T770 200 T840 200 T910 200 T980 200 T1050 200 T1120 200 V260 H0 Z"/>
+          <g id="sgmsSarg">
+            <ellipse cx="0" cy="0" rx="16" ry="6" fill="#8a6a1a"/>
+            <ellipse cx="-9" cy="-3" rx="8" ry="4" fill="#9a7a22"/>
+            <ellipse cx="9" cy="-2" rx="9" ry="4" fill="#6b4a12"/>
+            <circle cx="-12" cy="-6" r="2.2" fill="#b8962e"/><circle cx="-2" cy="-7" r="2" fill="#b8962e"/><circle cx="8" cy="-6" r="2.2" fill="#b8962e"/>
+          </g>
+        </defs>
+        {/* ciel : soleil + étoile satellite */}
+        <circle cx="78" cy="64" r="22" fill="#FFC72C" opacity=".85"/>
+        <circle cx="78" cy="64" r="34" fill="#FFC72C" opacity=".12"/>
+        {/* satellite + faisceau de scan (il balaie toute la mer) */}
+        <g className="sgms-sat">
+          <g transform="translate(0,34)">
+            <rect x="-9" y="-5" width="18" height="10" rx="2" fill="#E8EDF2"/>
+            <rect x="-26" y="-3" width="14" height="6" rx="1" fill="#3BA7A0"/>
+            <rect x="12" y="-3" width="14" height="6" rx="1" fill="#3BA7A0"/>
+            <polygon className="sgms-beam" points="-6,6 6,6 26,166 -26,166" fill="url(#sgmsBeamG)"/>
+          </g>
+        </g>
+        {/* mer : 2 nappes de houle qui glissent (motif 560px répété ×2 = boucle parfaite) */}
+        <g className="sgms-w2" opacity=".5"><use href="#sgmsWave" fill="#103833" transform="translate(0,-7)"/><use href="#sgmsWave" fill="#103833" transform="translate(560,-7)"/></g>
+        <g className="sgms-w1"><use href="#sgmsWave" fill="#0E2E2A"/><use href="#sgmsWave" fill="#0E2E2A" transform="translate(560,0)"/></g>
+        {/* radeaux de sargasses qui dérivent vers la plage */}
+        <g className="sgms-raft1" transform="translate(0,206)"><use href="#sgmsSarg"/></g>
+        <g className="sgms-raft2" transform="translate(0,196)"><use href="#sgmsSarg" transform="scale(.75)"/></g>
+        {/* bateau de collecte + filet vers un radeau fixe */}
+        <g className="sgms-boat">
+          <g transform="translate(225,196)">
+            <path d="M-34 0 L34 0 L24 14 L-26 14 Z" fill="#16282C" stroke="#FFC72C" strokeWidth="1.2"/>
+            <line x1="0" y1="0" x2="0" y2="-26" stroke="#E8EDF2" strokeWidth="2"/>
+            <polygon points="0,-26 16,-20 0,-14" fill="#FFC72C"/>
+            <path className="sgms-link" d="M30 6 Q58 26 86 16" stroke="#FFC72C" strokeWidth="1.6" fill="none"/>
+          </g>
+        </g>
+        <g transform="translate(316,214)"><use href="#sgmsSarg" transform="scale(.85)"/></g>
+        {/* plage : langue de sable + palmier + ramasseur au râteau */}
+        <path d="M318 262 Q420 218 560 212 L560 300 L318 300 Z" fill="#1A2A23"/>
+        <path d="M340 262 Q430 226 560 220" stroke="#FFC72C" strokeWidth="1.4" fill="none" opacity=".5"/>
+        <g className="sgms-palm">
+          <path d="M468 218 Q462 184 470 158" stroke="#2E4A3C" strokeWidth="5" fill="none" strokeLinecap="round"/>
+          <g fill="none" stroke="#3F6B52" strokeWidth="4" strokeLinecap="round">
+            <path d="M470 158 Q488 146 506 150"/><path d="M470 158 Q452 144 434 150"/>
+            <path d="M470 158 Q484 138 498 132"/><path d="M470 158 Q456 136 444 130"/>
+            <path d="M470 158 Q470 138 472 128"/>
+          </g>
+        </g>
+        {/* ramasseur (silhouette or — le héros de la scène) */}
+        <g fill="none" stroke="#FFC72C" strokeWidth="3" strokeLinecap="round">
+          <circle cx="396" cy="206" r="5.5" fill="#FFC72C" stroke="none"/>
+          <path d="M396 212 L396 232"/>
+          <path d="M396 232 L388 248"/><path d="M396 232 L404 247"/>
+        </g>
+        <g className="sgms-rake">
+          <line x1="402" y1="218" x2="424" y2="244" stroke="#FFC72C" strokeWidth="2.6" strokeLinecap="round"/>
+          <path d="M418 246 L432 240 M421 249 L433 245 M424 251 L434 250" stroke="#FFC72C" strokeWidth="2" strokeLinecap="round"/>
+        </g>
+        {/* tas ramassé */}
+        <g transform="translate(440,250)"><use href="#sgmsSarg" transform="scale(.7)"/></g>
+        {/* verdict : pill ✓ qui ping, reliée au ciel (la donnée descend) */}
+        <line className="sgms-link" x1="497" y1="40" x2="497" y2="82" stroke="#FFC72C" strokeWidth="1.6"/>
+        <circle className="sgms-ping" cx="497" cy="96" r="16" fill="none" stroke="#FFC72C" strokeWidth="2"/>
+        <g>
+          <rect x="473" y="84" width="48" height="24" rx="12" fill="#FFC72C"/>
+          <path d="M487 96 L494 102 L508 89" stroke="#0A1714" strokeWidth="3.2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+        </g>
+      </svg>
+    </div>
+  )
+}
+
 function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPremium,onOpenBeach,topBeaches,exiting}){
   useEffect(()=>{track("sg_hero_shown",{beach_id:beach.id,status:beach.status,geoloc:!!userPos})},[])
   // Boucle vidéo "drone hover" (plage animée façon SpaceX) : la photo reste le
@@ -5755,7 +5865,8 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
           <div style={ovl}>{_t(lang,"La méthode","The method","El método")}</div>
           <h2 style={h2s}>{_t(lang,"On regarde la mer pour vous","We watch the sea for you","Miramos el mar por ti")}</h2>
         </div>
-        <div className="sg-rv" style={{display:"flex",flexDirection:"column",gap:14,margin:"18px 0 20px"}}>
+        <div className="sg-rv" style={{margin:"16px 0 6px"}}><MethodScene/></div>
+        <div className="sg-rv" style={{display:"flex",flexDirection:"column",gap:14,margin:"14px 0 20px"}}>
           {[
             ["🛰",_t(lang,"Satellite Copernicus — 4 passages par jour, chaque plage","Copernicus satellite — 4 passes a day, every beach","Satélite Copernicus — 4 pasadas al día, cada playa")],
             ["📊",_t(lang,"Un score 0-100 recalculé à chaque passage","A 0-100 score recomputed on every pass","Un score 0-100 recalculado en cada pasada")],
