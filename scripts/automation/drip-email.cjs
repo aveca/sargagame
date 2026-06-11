@@ -40,8 +40,8 @@ function unsubUrl(email, island) { return `${UNSUB_BASE}?action=unsubscribe&emai
 
 // ── Régions du drip ──────────────────────────────────────────
 // MQ/GP : FR, données partagées (préfixe 'gp-' pour GP), séquence complète.
-// Nouvelles régions : EN/ES — SEULE l'étape j3 (brief réel localisé) est
-// active ; j7/j14 restent FR-only et sont skippées tant que non localisées.
+// Nouvelles régions : EN/ES — séquence complète j3/j7/j14 (localisée 2026-06-11,
+// builders *Region : no-trial, prix région, vraies plages du brief du jour).
 // From : domaine Resend vérifié unique (sargasses-martinique.com), le display
 // name porte la région.
 const REGIONS_DIR = path.join(__dirname, '../../regions')
@@ -129,6 +129,9 @@ function getRegionBrief(islandKey) {
     degradedCount: degraded.length,
     degradeDay,
     bestDegrades: !!(best.status === 'clean' && bestJ1 && bestJ1 !== 'clean'),
+    cleanCount: lvls.filter(l => l.status === 'clean').length,
+    totalCount: lvls.length,
+    pricing: isNew ? (regionCfg.pricing || null) : null,
     alt: alt ? beachInfo(alt).name : null,
   }
 }
@@ -162,7 +165,7 @@ function buildDaily(island, brief, email) {
   const title = lang === 'fr' ? `Ton verdict plage — ${dayName}` : lang === 'es' ? `Tu veredicto de playa — ${dayName}` : `Your beach verdict — ${dayName}`
   const sub2 = lang === 'fr' ? 'Satellite Copernicus, ce matin' : lang === 'es' ? 'Satélite Copernicus, esta mañana' : 'Copernicus satellite, this morning'
   const ctaTxt = lang === 'fr' ? 'Voir la carte live →' : lang === 'es' ? 'Ver el mapa en vivo →' : 'See the live map →'
-  const html = `${header(title, sub2)}
+  const html = `${header(title, sub2, lang)}
   <div style="background:#fff;padding:22px 24px">
     <div style="font-size:13px;color:#666;margin-bottom:6px">${lang === 'fr' ? 'La plage du jour' : lang === 'es' ? 'La playa del día' : "Today's pick"}</div>
     <div style="font-size:22px;font-weight:800;color:#0A1714">${brief.best.name}</div>
@@ -172,7 +175,7 @@ function buildDaily(island, brief, email) {
     ${brief.degradedCount ? `<div style="font-size:12.5px;color:#666;margin-top:10px">${lang === 'fr' ? `${brief.degradedCount} plage(s) se dégradent d'ici 3 jours${brief.degradeDay ? ` (surtout ${brief.degradeDay})` : ''}.` : lang === 'es' ? `${brief.degradedCount} playa(s) empeoran en 3 días${brief.degradeDay ? ` (sobre todo el ${brief.degradeDay})` : ''}.` : `${brief.degradedCount} beach(es) turn worse within 3 days${brief.degradeDay ? ` (mostly ${brief.degradeDay})` : ''}.`}</div>` : ''}
     ${ctaButton(ctaTxt, `https://${domain}/?utm_source=email&utm_medium=daily_verdict`)}
   </div>
-  ${footer(name, domain, email, island)}`
+  ${footer(name, domain, email, island, lang)}`
   return { subject, html }
 }
 
@@ -227,18 +230,22 @@ const IS_HIGH_SEASON = MONTH >= 3 && MONTH <= 8 // April-September
 
 // ── Email templates ──────────────────────────────────────────
 
-function header(title, subtitle) {
+// Marque + désabonnement localisés par langue (fuite détectée 2026-06-11 :
+// « SARGASSES » + « Se désabonner » partaient sur les emails EN/ES des régions).
+function brandWord(lang) { return lang === 'es' ? 'Sargazo' : lang === 'en' ? 'Sargassum' : 'Sargasses' }
+function header(title, subtitle, lang = 'fr') {
   return `<div style="background:#0D1E1C;border-radius:16px 16px 0 0;padding:28px 24px;text-align:center">
-    <div style="font-size:11px;font-weight:700;color:#E8A800;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Sargasses</div>
+    <div style="font-size:11px;font-weight:700;color:#E8A800;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">${brandWord(lang)}</div>
     <div style="font-size:24px;font-weight:800;color:#fff;line-height:1.1">${title}</div>
     <div style="font-size:13px;color:rgba(255,255,255,.5);margin-top:6px">${subtitle}</div>
   </div>`
 }
 
-function footer(islandName, domain, email, island) {
+function footer(islandName, domain, email, island, lang = 'fr') {
+  const unsubWord = lang === 'es' ? 'Darse de baja' : lang === 'en' ? 'Unsubscribe' : 'Se désabonner'
   return `<div style="background:#fff;border-radius:0 0 16px 16px;text-align:center;padding:16px;font-size:10px;color:#999">
-    Sargasses ${islandName} · ${domain}<br>
-    <a href="${unsubUrl(email, island)}" style="color:#999">Se d\u00E9sabonner</a>
+    ${brandWord(lang)} ${islandName} · ${domain}<br>
+    <a href="${unsubUrl(email, island)}" style="color:#999">${unsubWord}</a>
   </div>`
 }
 
@@ -309,7 +316,7 @@ function buildJ3(island, brief, email) {
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
 <body style="margin:0;padding:0;background:#F7F5EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
 <div style="max-width:480px;margin:0 auto;padding:20px">
-  ${header(`${best.name} — ${best.score ?? '—'}/100`, dateLong)}
+  ${header(`${best.name} — ${best.score ?? '—'}/100`, dateLong, lang)}
   <div style="background:#fff;padding:24px 20px">
     <div style="background:rgba(255,199,44,.08);border:1px solid rgba(255,199,44,.25);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:12px;font-weight:700;color:#B8860B">
       ${frame}
@@ -326,7 +333,7 @@ function buildJ3(island, brief, email) {
       <div style="font-size:11px;color:#999;margin-top:8px">${reassurance}</div>
     </div>
   </div>
-  ${footer(name, domain, email, island)}
+  ${footer(name, domain, email, island, lang)}
 </div></body></html>`
 }
 
@@ -457,6 +464,143 @@ function buildJ14(island, cleanCount, email) {
 </div></body></html>`
 }
 
+// ── J+7 / J+14 nouvelles régions (EN/ES, no-trial, données réelles) ─────────
+// Mêmes leviers que les versions FR (veilleur / aversion à la perte) mais :
+// plages RÉELLES du brief du jour (jamais d'exemples inventés), copy no-trial
+// (USD sans essai depuis 9172bbf), prix depuis regions/<id>.json, CTA vers le
+// Payment Link régional. FR (EUR, A/B en cours) strictement intouché.
+
+function buildJ7Region(island, brief, email) {
+  const { meta, best } = brief
+  const lang = meta.lang
+  const t = (en, es) => lang === 'es' ? es : en
+  const domain = (loadJSON(path.join(REGIONS_DIR, `${meta.regionId}.json`), {}).domain) || ''
+  const price = (brief.pricing && brief.pricing.monthly) || '$9.99'
+  const altName = brief.alt || best.name
+  const sw = s => STATUS_LOC[lang][s] || s || ''
+
+  const watchedLine = t(
+    `You've been checking the map for a week. Sargassum moves fast right now. What if we warned you <strong>before</strong> you head out?`,
+    `Llevas una semana revisando el mapa. El sargazo se mueve rápido ahora. ¿Y si te avisáramos <strong>antes</strong> de salir?`)
+
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
+<body style="margin:0;padding:0;background:#F7F5EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+<div style="max-width:480px;margin:0 auto;padding:20px">
+  ${header(t('Stop checking', 'Deja de revisar'), t(`We watch ${brief.totalCount} beaches for you`, `Vigilamos ${brief.totalCount} playas por ti`), lang)}
+  <div style="background:#fff;padding:24px 20px">
+    <div style="font-size:15px;color:#333;line-height:1.6;margin-bottom:20px">${watchedLine}</div>
+
+    <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px">${t("Here's what you'd get", 'Esto es lo que recibirías')}</div>
+
+    <div style="background:#0D1E1C;border-radius:12px;padding:16px;margin-bottom:10px">
+      <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.4);letter-spacing:.05em;margin-bottom:8px">${t('EVERY MORNING, 7AM', 'CADA MAÑANA, 7AM')}</div>
+      <div style="display:flex;align-items:center">
+        <span style="font-size:22px;margin-right:10px">&#x1F4F2;</span>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#fff">${t(`Your best beach: ${best.name}`, `Tu mejor playa: ${best.name}`)}</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.5)">${sw(best.status)} · ${best.score ?? '—'}/100 ${t('· this is today’s real data', '· dato real de hoy')}</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:rgba(255,199,44,.06);border:1px solid rgba(255,199,44,.15);border-radius:12px;padding:16px;margin-bottom:10px">
+      <div style="font-size:10px;font-weight:700;color:rgba(200,160,0,.7);letter-spacing:.05em;margin-bottom:8px">${t('INSTANT ALERT', 'ALERTA INSTANTÁNEA')}</div>
+      <div style="display:flex;align-items:center">
+        <span style="font-size:22px;margin-right:10px">&#x1F514;</span>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#333">${t(`${best.name} just changed`, `${best.name} acaba de cambiar`)}</div>
+          <div style="font-size:12px;color:#666">${t(`Clean → Moderate — go to ${altName} instead`, `Limpia → Moderada — mejor ve a ${altName}`)}</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.15);border-radius:12px;padding:16px;margin-bottom:20px">
+      <div style="font-size:10px;font-weight:700;color:rgba(22,163,74,.7);letter-spacing:.05em;margin-bottom:8px">${t('DAILY PICK', 'RECO DEL DÍA')}</div>
+      <div style="display:flex;align-items:center">
+        <span style="font-size:22px;margin-right:10px">&#x1F3D6;&#xFE0F;</span>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#333">${t(`Saturday: ${altName}`, `Sábado: ${altName}`)}</div>
+          <div style="font-size:12px;color:#666">${t('Clean all weekend · sorted by 7-day forecast', 'Limpia todo el finde · según el pronóstico 7 días')}</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center">
+      ${ctaButton(t('Become the watcher', 'Activar el vigía'), brief.stripeBase ? stripeLink('j7', brief.stripeBase) : `https://${domain}`)}
+      <div style="font-size:11px;color:#999;margin-top:8px">${price}${t('/mo · No commitment · Cancel in 2 clicks', '/mes · Sin permanencia · Cancela en 2 clics')}</div>
+    </div>
+  </div>
+
+  <div style="background:#fff;padding:16px 20px;border-top:1px solid #f0f0f0;text-align:center">
+    <a href="https://${domain}" style="color:#E89400;font-size:13px;font-weight:600;text-decoration:none">${t('See the live map', 'Ver el mapa en vivo')}</a>
+  </div>
+  ${footer(meta.place, domain, email, island, lang)}
+</div></body></html>`
+}
+
+function buildJ14Region(island, brief, email) {
+  const { meta, best } = brief
+  const lang = meta.lang
+  const t = (en, es) => lang === 'es' ? es : en
+  const domain = (loadJSON(path.join(REGIONS_DIR, `${meta.regionId}.json`), {}).domain) || ''
+  const price = (brief.pricing && brief.pricing.monthly) || '$9.99'
+  const altName = brief.alt || best.name
+  const urgencyLine = IS_HIGH_SEASON
+    ? t('Sargassum season is on. Beaches change <strong>every day</strong>.', 'La temporada de sargazo está activa. Las playas cambian <strong>cada día</strong>.')
+    : t('Sargassum can land overnight. Beaches change <strong>without warning</strong>.', 'El sargazo puede llegar de un día a otro. Las playas cambian <strong>sin aviso</strong>.')
+
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
+<body style="margin:0;padding:0;background:#F7F5EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+<div style="max-width:480px;margin:0 auto;padding:20px">
+  ${header(t("Don't find out on the beach", 'No lo descubras en la playa'), t(`${brief.cleanCount} clean beaches — for now`, `${brief.cleanCount} playas limpias — por ahora`), lang)}
+  <div style="background:#fff;padding:24px 20px">
+
+    <div style="background:rgba(232,82,42,.06);border:1px solid rgba(232,82,42,.15);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:#C0392B;line-height:1.5">
+      ${urgencyLine}
+    </div>
+
+    <div style="font-size:15px;color:#333;line-height:1.6;margin-bottom:20px">
+      ${t(`Picture it: you get to ${best.name} on Saturday, towels and kids in tow. Sargassum everywhere. Day ruined.`,
+          `Imagínalo: llegas a ${best.name} el sábado con toallas y niños. Sargazo por todas partes. Día arruinado.`)}
+    </div>
+    <div style="font-size:15px;color:#333;line-height:1.6;margin-bottom:20px">
+      ${t(`With the <strong>sargassum watcher</strong>, you'd have known Friday night — and switched to ${altName}. Day saved.`,
+          `Con el <strong>vigía del sargazo</strong>, lo habrías sabido el viernes por la noche — y habrías ido a ${altName}. Día salvado.`)}
+    </div>
+
+    <div style="background:#0D1E1C;border-radius:12px;padding:16px;margin-bottom:10px">
+      <div style="display:flex;align-items:center">
+        <span style="font-size:22px;margin-right:10px">&#x1F4F2;</span>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#fff">${t('Friday 7pm — push alert', 'Viernes 7pm — notificación')}</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.5)">« ${t(`${best.name} → moderate. Go to ${altName} (clean)`, `${best.name} → moderada. Ve a ${altName} (limpia)`)} »</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.15);border-radius:12px;padding:16px;margin-bottom:20px">
+      <div style="display:flex;align-items:center">
+        <span style="font-size:22px;margin-right:10px">&#x2705;</span>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#333">${t('Saturday 7am — morning brief', 'Sábado 7am — brief matinal')}</div>
+          <div style="font-size:12px;color:#666">« ${t(`Your best beach: ${altName} · clean`, `Tu mejor playa: ${altName} · limpia`)} »</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-bottom:16px">
+      ${ctaButton(t('Get the watcher', 'Activar el vigía'), brief.stripeBase ? stripeLink('j14', brief.stripeBase) : `https://${domain}`)}
+      <div style="font-size:11px;color:#999;margin-top:8px">${price}${t('/mo · cancel anytime · less than one beach chair', '/mes · cancela cuando quieras · menos que una silla de playa')}</div>
+    </div>
+
+    <div style="text-align:center;padding-top:12px;border-top:1px solid #f0f0f0">
+      <a href="https://${domain}" style="color:#E89400;font-size:13px;font-weight:600;text-decoration:none">${t('Or keep using the free map', 'O sigue con el mapa gratis')}</a>
+    </div>
+  </div>
+  ${footer(meta.place, domain, email, island, lang)}
+</div></body></html>`
+}
+
 // ── Subjects ──────────────────────────────────────────────────
 
 function getSubject(step, island, cleanCount, brief) {
@@ -479,6 +623,17 @@ function getSubject(step, island, cleanCount, brief) {
       `Tomorrow morning's beach: ${best.name} \u2014 ${best.score ?? '\u2014'}/100`,
       `Tu playa de ma\u00F1ana: ${best.name} \u2014 ${best.score ?? '\u2014'}/100`)
   }
+  // Nouvelles r\u00E9gions : objets localis\u00E9s (le brief porte la langue + le lieu)
+  const rMeta = REGION_META[island]
+  if (rMeta && rMeta.regionId && brief) {
+    const t = (en, es) => rMeta.lang === 'es' ? es : en
+    if (step === 'j7') return IS_HIGH_SEASON
+      ? t('Still checking the map every day?', '\u00BFSigues revisando el mapa cada d\u00EDa?')
+      : t('What if you never had to open the map?', '\u00BFY si no tuvieras que abrir el mapa?')
+    if (step === 'j14') return IS_HIGH_SEASON
+      ? t(`Saturday sargassum at ${brief.best.name}. Would you have known?`, `Sargazo el s\u00E1bado en ${brief.best.name}. \u00BFLo habr\u00EDas sabido?`)
+      : t("Don't find out on the beach", 'No lo descubras en la playa')
+  }
   switch (step) {
     case 'j7':  return IS_HIGH_SEASON
       ? `Tu v\u00E9rifies encore la carte tous les jours\u00A0?`
@@ -490,10 +645,11 @@ function getSubject(step, island, cleanCount, brief) {
 }
 
 function getHTML(step, island, cleanCount, topBeaches, email, brief) {
+  const isNewRegion = !!(REGION_META[island] && REGION_META[island].regionId)
   switch (step) {
     case 'j3':  return brief ? buildJ3(island, brief, email) : null
-    case 'j7':  return buildJ7(island, cleanCount, email)
-    case 'j14': return buildJ14(island, cleanCount, email)
+    case 'j7':  return isNewRegion ? (brief ? buildJ7Region(island, brief, email) : null) : buildJ7(island, cleanCount, email)
+    case 'j14': return isNewRegion ? (brief ? buildJ14Region(island, brief, email) : null) : buildJ14(island, cleanCount, email)
   }
 }
 
@@ -571,11 +727,13 @@ async function main() {
       // Skip if already sent this step or not old enough
       if (record[step.key]) continue
       if (age < step.days && !FORCE) continue
-      if (isNewRegion && step.key !== 'j3') continue
-      // j3 = brief réel — si la donnée région est absente, on skippe SANS
-      // marquer l'étape (le lead la recevra au prochain run avec data).
-      const brief = step.key === 'j3' ? briefFor(island) : null
-      if (step.key === 'j3' && !brief) continue
+      // Brief réel requis : j3 partout, et TOUTES les étapes des nouvelles
+      // régions (les builders EN/ES J7/J14 citent les vraies plages du jour).
+      // Si la donnée région est absente, on skippe SANS marquer l'étape
+      // (le lead la recevra au prochain run avec data).
+      const needsBrief = step.key === 'j3' || isNewRegion
+      const brief = needsBrief ? briefFor(island) : null
+      if (needsBrief && !brief) continue
       if (isNewRegion && newRegionSent >= NEW_REGION_J3_CAP) continue
 
       if (!resend) {
