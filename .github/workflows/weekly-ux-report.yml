@@ -45,12 +45,22 @@ jobs:
         if: steps.seo-audit.outcome == 'success'
         run: node scripts/automation/ux-audit.cjs
 
+      # ── 2b. Capture intelligence audit (checklist géants — Playwright live) ──
+      # 13 checks mesurables sur les 5 domaines (reference_capture_intelligence) :
+      # LCP, verdict visible, fraîcheur, fausse rareté (bloquant), prix transparent
+      # (bloquant), CTA fold, etc. → scripts/automation/data/capture-audit.json
+      - name: Capture audit (5 domaines live)
+        continue-on-error: true
+        run: |
+          npx playwright install chromium --with-deps
+          node scripts/audit-capture.cjs
+
       # ── 3. Commit report ─────────────────────────────────
       - name: Commit UX report
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in scripts/automation/data/automation-log.json scripts/automation/data/ux-report.json scripts/automation/data/audit-summary.json scripts/automation/data/audit-full.json; do
+          for f in scripts/automation/data/automation-log.json scripts/automation/data/ux-report.json scripts/automation/data/audit-summary.json scripts/automation/data/audit-full.json scripts/automation/data/capture-audit.json; do
             [ -f "$f" ] && git add -f "$f"
           done
           git diff --cached --quiet || git commit -m "ux: weekly report $(date -u +'%Y-%m-%d')"
