@@ -28,6 +28,7 @@
   @keyframes pop{ 40%{transform:scale(1.45) rotate(8deg);opacity:1} 100%{transform:scale(.1) rotate(-20deg);opacity:0} }
   .pts{ position:absolute; font-family:'Anton',sans-serif; font-size:22px; color:var(--gold); z-index:40;
     pointer-events:none; animation:rise .7s ease-out forwards; text-shadow:0 2px 8px rgba(0,0,0,.5); }
+  .pts.heal{ color:#7ee2a8; font-size:19px; animation:rise 1s ease-out forwards; }
   @keyframes rise{ to{ transform:translateY(-46px); opacity:0 } }
   .splat{ position:absolute; bottom:0; width:90px; height:26px; background:radial-gradient(ellipse at center,#6b4a12 0%,#523808 60%,transparent 75%); opacity:.92; z-index:5; pointer-events:none; }
   .panel{ position:absolute; inset:0; z-index:100; display:flex; flex-direction:column; justify-content:flex-end;
@@ -155,7 +156,8 @@ const T={
     coachLink:'💬 Une question ? ',coachLinkB:'Le coach répond',coachName:'Le coach',
     coachHi:'Salut ! Je suis là pour ça. Tu veux savoir quoi ?',
     cTips:'Des points, vite !',cData:'C’est quoi la vraie donnée ?',cDefi:'Le défi du jour ?',
-    aTips:'Les combos, tout est là : 3 prises d’affilée = points ×2. Vise d’abord les paquets les plus proches du sable, et garde le rythme — le combo retombe au bout d’1,6 s.',
+    aTips:'Les combos, tout est là : 3 prises d’affilée = points ×2. Et tous les 8 d’affilée, siphon de vie : tu récupères une plage perdue. Vise les paquets proches du sable et garde le rythme — le combo retombe au bout d’1,6 s.',
+    siphon:'Siphon de vie !',
     aData:(b,s)=>b?'Pendant que tu ratisses, le satellite bosse : '+b+' est propre aujourd’hui'+(s?' ('+s+'/100)':'')+'. Vérifié 4 fois par jour, plage par plage.':'Le satellite vérifie chaque plage 4 fois par jour. Le verdict du jour t’attend sur la carte.',
     aDefi:n=>'C’est le défi #'+n+' : tout le monde a exactement les mêmes vagues aujourd’hui. Fais ton score, envoie le lien à un pote — mêmes conditions, zéro excuse.',
     cMap:'Voir la carte →',cShare:'Défier un ami 🏆',cBack:'← Autre question'},
@@ -173,7 +175,8 @@ const T={
     coachLink:'💬 Got a question? ',coachLinkB:'Ask the coach',coachName:'The coach',
     coachHi:'Hey! That’s what I’m here for. What do you want to know?',
     cTips:'Points, fast!',cData:'What’s the real data?',cDefi:'Today’s challenge?',
-    aTips:'It’s all about combos: 3 catches in a row = ×2 points. Go for the clumps closest to the sand first, and keep the rhythm — the combo resets after 1.6s.',
+    aTips:'It’s all about combos: 3 catches in a row = ×2 points. And every 8 in a row, life siphon: you win a lost beach back. Go for the clumps closest to the sand and keep the rhythm — the combo resets after 1.6s.',
+    siphon:'Life siphon!',
     aData:(b,s)=>b?'While you’re raking, the satellite is working: '+b+' is clean today'+(s?' ('+s+'/100)':'')+'. Checked 4× a day, beach by beach.':'The satellite checks every beach 4 times a day. Today’s verdict is waiting on the map.',
     aDefi:n=>'This is challenge #'+n+': everyone gets exactly the same waves today. Set your score, send the link to a friend — same conditions, no excuses.',
     cMap:'See the map →',cShare:'Challenge a friend 🏆',cBack:'← Another question'},
@@ -191,7 +194,8 @@ const T={
     coachLink:'💬 ¿Una duda? ',coachLinkB:'El coach responde',coachName:'El coach',
     coachHi:'¡Hola! Para eso estoy. ¿Qué quieres saber?',
     cTips:'¡Puntos, rápido!',cData:'¿Qué es el dato real?',cDefi:'¿El reto de hoy?',
-    aTips:'Todo está en los combos: 3 capturas seguidas = puntos ×2. Ve primero a los montones más cerca de la arena y mantén el ritmo — el combo se corta a los 1,6 s.',
+    aTips:'Todo está en los combos: 3 capturas seguidas = puntos ×2. Y cada 8 seguidas, sifón de vida: recuperas una playa perdida. Ve a los montones más cerca de la arena y mantén el ritmo — el combo se corta a los 1,6 s.',
+    siphon:'¡Sifón de vida!',
     aData:(b,s)=>b?'Mientras rastrillas, el satélite trabaja: '+b+' está limpia hoy'+(s?' ('+s+'/100)':'')+'. Verificado 4 veces al día, playa por playa.':'El satélite verifica cada playa 4 veces al día. El veredicto de hoy te espera en el mapa.',
     aDefi:n=>'Es el reto #'+n+': hoy todos tienen exactamente las mismas olas. Haz tu score y mándale el enlace a un amigo — mismas condiciones, cero excusas.',
     cMap:'Ver el mapa →',cShare:'Retar a un amigo 🏆',cBack:'← Otra pregunta'},
@@ -263,6 +267,11 @@ function spawn(){
   el.style.transform='translate('+b.x+'px,'+b.y+'px)'
   el.addEventListener('pointerdown',e=>{e.preventDefault();if(!b.alive||!running)return;b.alive=false
     combo=(comboT>0)?combo+1:1;comboT=1.6;if(combo>maxCombo)maxCombo=combo
+    // Siphon de vie : 8 prises d'affilée = 1 plage récupérée (cap 3) —
+    // récompense la maîtrise, allonge les parties des bons joueurs
+    if(combo>0&&combo%8===0&&lives<3){lives++
+      const hp=document.createElement('div');hp.className='pts heal';hp.textContent='+🏖️ '+T.siphon
+      hp.style.left=Math.max(8,b.x-26)+'px';hp.style.top=(b.y-30)+'px';stage.appendChild(hp);setTimeout(()=>hp.remove(),1000)}
     const cp=$('comboPill');if(combo>=2){cp.style.display='block';cp.textContent='🔥 ×'+combo}
     const pts=10*(combo>=3?2:1);score+=pts
     const p=document.createElement('div');p.className='pts';p.textContent='+'+pts+(combo>=3?' ×2':'')
