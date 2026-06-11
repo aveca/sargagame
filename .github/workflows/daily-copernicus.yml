@@ -149,6 +149,23 @@ jobs:
         continue-on-error: true
         run: node scripts/automation/daily-stats-check.cjs
 
+      # ── 1b. Commit IMMÉDIAT des états email (anti-doublon). Leçon 2026-06-11 :
+      # le commit de fin de workflow arrive APRÈS build/deploy — un step qui
+      # plante entre les envois et ce commit = drip-sent.json jamais persisté
+      # → chaque retry renvoyait les mêmes emails (17× le même J+3 à 1 abonnée).
+      # Un side-effect doit committer son état AVANT tout step faillible.
+      - name: Commit email state (immédiat, anti-doublon)
+        continue-on-error: true
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json; do
+            [ -f "$f" ] && git add "$f"
+          done
+          if git diff --cached --quiet; then echo "Email state unchanged."; exit 0; fi
+          git commit -m "chore: email state $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push || (git pull --rebase -X theirs && git push)
+
       # ── 2. Build (full rebuild 1x/day at 9h UTC = 5h MQ, or manual, or on human push) ──
       - name: Check if full build needed
         id: check_build
@@ -179,8 +196,8 @@ jobs:
       # Une région sans secrets FTP est quand même construite, puis ignorée
       # silencieusement par manual-ftp-deploy.cjs (skip sans creds, pas d'échec).
       # ── 2-pre-a. Boucles vidéo hero (photos ≥85 → mp4 palindrome). ffmpeg
-      # n'est PLUS garanti sur ubuntu-latest (image runner roulante : 6 runs
-      # ENOENT d'affilée le 2026-06-11) → install apt explicite si absent.
+      # n'est PAS présent sur ubuntu-latest (jamais — postulat « préinstallé »
+      # faux, 18 runs ENOENT le 2026-06-11) → install apt explicite si absent.
       # continue-on-error OBLIGATOIRE : les loops sont du progressive enhancement
       # (fallback photo-poster côté client) — leur échec ne doit jamais bloquer
       # le deploy data. Générées ici plutôt que commitées : ~80MB régénérables.
