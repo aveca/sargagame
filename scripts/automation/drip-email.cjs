@@ -134,10 +134,13 @@ function getRegionBrief(islandKey) {
 }
 
 /**
- * Email quotidien « verdict du matin » — leads SargaCatch (source=sargacatch).
- * Le jeu promet « le verdict arrive demain matin » : cet email EST la promesse.
+ * Email quotidien « verdict du matin » — leads SargaCatch (source=sargacatch)
+ * + leads 🔔 fiche plage (source=beach_alert, 2026-06-11). Le jeu promet « le
+ * verdict arrive demain matin » et le bouton 🔔 promet « être prévenu si ça
+ * change » : cet email EST les deux promesses.
  * 100 % donnée réelle (getRegionBrief) ; brief absent = pas d'envoi du jour.
  */
+const DAILY_SOURCES = new Set(['sargacatch', 'beach_alert'])
 function buildDaily(island, brief, email) {
   const meta = brief.meta
   const lang = meta.lang
@@ -635,7 +638,7 @@ async function main() {
   let dailySent = 0, dailyWould = 0
   for (const sub of subscribers) {
     if (!inMorningWindow) break
-    if ((sub.source || '') !== 'sargacatch') continue
+    if (!DAILY_SOURCES.has(sub.source || '')) continue
     const email = sub.email
     const key = emailHash(email)
     if (bouncedSet.has(key)) continue
@@ -676,7 +679,7 @@ async function main() {
         dailySent++
         await trackToSheet({
           resend_id: data?.id || '', to: email, subject,
-          email_type: 'daily_verdict', island, status: 'sent', source: 'sargacatch',
+          email_type: 'daily_verdict', island, status: 'sent', source: sub.source || 'sargacatch',
         })
       }
     } catch (e) { console.log(`  x ${email} [daily]: ${e.message}`) }

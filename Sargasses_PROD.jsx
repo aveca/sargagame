@@ -1875,15 +1875,17 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               (anti-pattern Booking, engagements UE 2020 — capture_intelligence). */}
           {!isPremium&&(()=>{
             const fc=weeklyData?.forecast
-            if(!fc||fc.length<2)return null
             const RANK={clean:0,moderate:1,avoid:2}
-            const today=RANK[fc[0]?.status]??RANK[beach.status]??0
             let hit=null
-            for(let i=1;i<=3&&i<fc.length;i++){const r=RANK[fc[i]?.status];if(r!=null&&r>today){hit={i,d:fc[i]};break}}
-            if(!hit)return null
-            const when=hit.i===1?_t(lang,"demain","tomorrow","mañana")
-              :(()=>{try{return new Date((hit.d.date||"")+"T12:00:00Z").toLocaleDateString(lang==="es"?"es-MX":lang==="en"?"en-US":"fr-FR",{weekday:"long"})}catch(_){return null}})()
-            if(!when)return null
+            if(fc&&fc.length>=2){
+              const today=RANK[fc[0]?.status]??RANK[beach.status]??0
+              for(let i=1;i<=3&&i<fc.length;i++){const r=RANK[fc[i]?.status];if(r!=null&&r>today){hit={i,d:fc[i]};break}}
+            }
+            const when=hit?(hit.i===1?_t(lang,"demain","tomorrow","mañana")
+              :(()=>{try{return new Date((hit.d.date||"")+"T12:00:00Z").toLocaleDateString(lang==="es"?"es-MX":lang==="en"?"en-US":"fr-FR",{weekday:"long"})}catch(_){return null}})()):null
+            // Pas de dégradation prévue → capture email click-triggered (jamais
+            // les deux bandeaux empilés : un seul message sous le verdict).
+            if(!hit||!when)return <AlertCapture beach={beach} lang={lang}/>
             const worse=hit.d.status==="avoid"
             return(
               <button onClick={()=>{track("sg_urgency_banner_cta",{beach_id:beach.id,day:hit.i,to:hit.d.status});onPremiumClick("urgency_banner")}}
@@ -5477,6 +5479,61 @@ void main(){
       try{tex&&gl.deleteTexture(tex);prog&&gl.deleteProgram(prog)}catch(_){}}
   },[src,focalY])
   return <canvas ref={ref} aria-hidden style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block"}}/>
+}
+
+/* ── Capture click-triggered « 🔔 Être prévenu si ça change » — recherche
+   orchestration 2026-06 : déclenchée PAR le clic utilisateur ≈ 54 % CVR vs
+   ~3-4 % pour les popups. Sous le verdict de la fiche, non-premium, masquée
+   si email déjà capturé. Promesse VRAIE par construction : ces leads entrent
+   dans l'email verdict du matin (drip-email.cjs accepte source beach_alert). */
+function AlertCapture({beach,lang}){
+  const[open,setOpen]=useState(false)
+  const[email,setEmail]=useState("")
+  const[done,setDone]=useState(false)
+  const[hidden]=useState(()=>{try{return !!localStorage.getItem("sg_email")}catch(_){return false}})
+  if(hidden)return null
+  const submit=e=>{
+    e.preventDefault()
+    if(!email||!email.includes("@"))return
+    track("sg_email_submit",{source:"beach_alert",beach_id:beach.id})
+    try{localStorage.setItem("sg_email",email)}catch(_){}
+    const island=IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"
+    try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
+      method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
+      body:JSON.stringify({email,island,source:"beach_alert",beach_id:beach.id,date:new Date().toISOString()})
+    }).catch(()=>{})}catch(_){}
+    setDone(true)
+  }
+  if(done)return(
+    <div style={{display:"flex",alignItems:"center",gap:9,background:"rgba(46,204,113,.10)",
+      border:"1px solid rgba(46,204,113,.35)",borderRadius:14,padding:"11px 13px",margin:"0 0 14px",
+      fontSize:12.5,fontWeight:700,color:"#1F8A4C"}}>
+      ✓ {_t(lang,"C'est noté — le verdict du matin arrive dans ta boîte. Désinscription en 1 clic.","Done — the morning verdict lands in your inbox. 1-click unsubscribe.","Listo — el veredicto de la mañana llega a tu correo. Baja en 1 clic.")}
+    </div>
+  )
+  if(!open)return(
+    <button onClick={()=>{setOpen(true);track("sg_alert_capture_open",{beach_id:beach.id})}}
+      style={{display:"flex",alignItems:"center",gap:10,width:"100%",textAlign:"left",cursor:"pointer",
+        background:"var(--sg-soft,rgba(0,0,0,.04))",border:"1px solid var(--sg-line,rgba(0,0,0,.10))",
+        borderRadius:14,padding:"11px 13px",margin:"0 0 14px",fontFamily:"inherit"}}>
+      <span style={{fontSize:16,flexShrink:0}}>🔔</span>
+      <span style={{flex:1,fontSize:12.5,fontWeight:600,color:"var(--sg-ink,#1A2B26)"}}>
+        {_t(lang,"Être prévenu si ça change","Get notified if this changes","Avísame si cambia")}
+      </span>
+      <span aria-hidden style={{fontSize:14,fontWeight:800,color:"var(--sg-dim,#7A8A85)"}}>+</span>
+    </button>
+  )
+  return(
+    <form onSubmit={submit} style={{display:"flex",gap:8,margin:"0 0 14px"}}>
+      <input type="email" inputMode="email" autoComplete="email" required autoFocus
+        placeholder={_t(lang,"Ton email — verdict chaque matin","Your email — verdict every morning","Tu email — veredicto cada mañana")}
+        value={email} onChange={e=>setEmail(e.target.value)}
+        style={{flex:1,minWidth:0,padding:"11px 13px",borderRadius:14,fontSize:13,fontFamily:"inherit",
+          border:"1px solid var(--sg-line,rgba(0,0,0,.15))",background:"var(--sg-card,#fff)",color:"var(--sg-ink,#1A2B26)"}}/>
+      <button type="submit" style={{flexShrink:0,background:"#FFC72C",color:"#0A1714",border:"none",cursor:"pointer",
+        fontFamily:"inherit",fontWeight:800,fontSize:13,padding:"11px 14px",borderRadius:14}}>OK</button>
+    </form>
+  )
 }
 
 /* ── CLIP SUR MESURE (SVG animé) — demande user 2026-06-11 : « création de
