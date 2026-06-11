@@ -31,6 +31,7 @@
   ul.credits a{color:var(--teal);text-decoration:none}
   .foot{margin-top:54px;padding-top:24px;border-top:1px solid var(--line);text-align:center;font-size:11px;color:rgba(255,255,255,.38)}
   .cta{display:inline-block;margin-top:18px;background:var(--gold);color:var(--ink);font-weight:800;font-size:14px;padding:13px 22px;border-radius:16px;text-decoration:none}
+  .vlink{display:inline-block;margin-top:14px;color:var(--teal);text-decoration:none;font-size:13px;font-weight:600}
 </style>
 </head>
 <body>
@@ -49,6 +50,7 @@
       <div class="row"><span class="ic">📅</span><div><b data-i="m3t"></b><span data-i="m3s"></span></div></div>
       <div class="row"><span class="ic">🤝</span><div><b data-i="m4t"></b><span data-i="m4s"></span></div></div>
     </div>
+    <a class="vlink" id="vlink" href="/reliability/" data-i="vlink"></a>
   </section>
 
   <section>
@@ -91,6 +93,7 @@ m1t:'Copernicus satellite, 4 passes a day',m1s:'European space program ocean dat
 m2t:'A 0-100 score per beach',m2s:'Sargassum presence, drift and persistence are recomputed at each pass. No score is ever typed by hand.',
 m3t:'7-day forecast, beach by beach',m3s:'Wind, currents and historical persistence. When the data is missing, we show nothing rather than guess.',
 m4t:'On-the-ground reports',m4s:'Visitor reports can override the satellite when they disagree — the beach is the truth, not the pixel.',
+vlink:'Our forecasts, verified →',
 l2:'Our guarantees',h2g:'Simple, written, kept',
 g1t:'30-day money-back',g1s:'Not satisfied? Full refund. One email is enough.',
 g2t:'No commitment',g2s:'Cancel anytime in 2 clicks from the Stripe portal.',
@@ -104,6 +107,7 @@ m1t:'Satélite Copernicus, 4 pasadas al día',m1s:'Datos oceánicos del programa
 m2t:'Un score 0-100 por playa',m2s:'Presencia, deriva y persistencia del sargazo se recalculan en cada pasada. Ningún score se escribe a mano.',
 m3t:'Pronóstico de 7 días, playa por playa',m3s:'Viento, corrientes y persistencia histórica. Si falta el dato, no mostramos nada antes que inventar.',
 m4t:'Reportes desde la playa',m4s:'Los reportes de visitantes pueden corregir al satélite — la verdad es la playa, no el píxel.',
+vlink:'Nuestros pronósticos, verificados →',
 l2:'Nuestras garantías',h2g:'Simples, escritas, cumplidas',
 g1t:'Reembolso 30 días',g1s:'¿No convencido? Reembolso completo. Basta un correo.',
 g2t:'Sin compromiso',g2s:'Cancela cuando quieras en 2 clics desde el portal de Stripe.',
@@ -115,6 +119,8 @@ cmore:'Otras fotos: Google Places y fuentes turísticas oficiales.',fdata:'Datos
 document.documentElement.lang=LANG
 document.getElementById('wm').textContent=SITE
 document.getElementById('wm2').textContent=SITE
+// Page fiabilité : slug localisé par domaine (FR /fiabilite/, ES /fiabilidad/, EN /reliability/)
+document.getElementById('vlink').href=/sargasses-/.test(HOST)?'/fiabilite/':LANG==='es'?'/fiabilidad/':'/reliability/'
 document.querySelectorAll('[data-i]').forEach(n=>{
   const v=T[n.getAttribute('data-i')]
   if(v!=null)n.textContent=v

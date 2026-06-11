@@ -298,6 +298,13 @@ export default defineConfig({
             const { generateRegionSeoPages } = _require('./scripts/lib/region-seo-pages.cjs')
             generateRegionSeoPages(REGION, resolve(__dirname, 'dist'))
           } catch (e) { console.warn('   ⚠ seo-pages région:', e.message) }
+          // Page fiabilité (/reliability/ EN, /fiabilidad/ ES) — méthode + précision
+          // backtest réelle + fraîcheur. Ajoutée au sitemap.xml régional (d'où
+          // l'appel APRÈS generateRegionSeoPages qui l'écrit).
+          try {
+            const { generateReliabilityPages } = _require('./scripts/lib/reliability-page.cjs')
+            generateReliabilityPages(REGION, resolve(__dirname, 'dist'))
+          } catch (e) { console.warn('   ⚠ page fiabilité région:', e.message) }
           return
         }
         const outDir = resolve(__dirname, 'dist')
@@ -568,6 +575,14 @@ export default defineConfig({
           }
           console.log(`   → ${esPages.length} pages ES supplémentaires générées`)
 
+          // ── Page Fiabilité /fiabilite/ — méthode + précision backtest réelle +
+          //    fraîcheur. dist/fiabilite/ (canonical MQ) + dist/_gp/fiabilite/
+          //    (miroir GP, overlay prepare-ftp comme les éditoriaux). ──
+          try {
+            const { generateReliabilityPages } = _require('./scripts/lib/reliability-page.cjs')
+            generateReliabilityPages(null, outDir)
+          } catch (e) { console.warn('   ⚠ page fiabilité:', e.message) }
+
           // Sitemaps dynamiques avec lastmod = date du build
           const today = new Date().toISOString().slice(0, 10)
           // Sitemap helper — generates domain-specific XML with correct priorities
@@ -582,6 +597,7 @@ export default defineConfig({
   <url><loc>${d}/carte-sargasses/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>${d}/previsions/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>${d}/alertes/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>${d}/fiabilite/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
 ${isGP ? '' : `  <url><loc>${d}/a-propos/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
 `}  <url><loc>${d}/en/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>${d}/en/sargassum-map/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
