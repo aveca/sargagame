@@ -331,6 +331,25 @@ if(d.updatedAt){ts.setAttribute('data-iso',d.updatedAt);show(d.updatedAt)}}).cat
 
   // ── CTA carte + preuve fiabilité ──
   const others = (otherMonths || []).filter(o => o.slug !== slug)
+  // Cross-links réseau : la MÊME page mois sur les autres destinations — utile
+  // aux voyageurs qui comparent (« sargasses en juin : Cancún ou Punta Cana ? »),
+  // unique sur le marché. UNIQUEMENT le mois courant (la page « en cours » existe
+  // sur tous les domaines par construction ; les mois passés n'existent pas sur
+  // les jeunes régions → zéro risque de 404).
+  const SIBLINGS = [
+    { domain: 'sargasses-martinique.com', lang: 'fr', label: { fr: 'Martinique', en: 'Martinique', es: 'Martinica' } },
+    { domain: 'sargasses-guadeloupe.com', lang: 'fr', label: { fr: 'Guadeloupe', en: 'Guadeloupe', es: 'Guadalupe' } },
+    { domain: 'sargassumcancun.com', lang: 'es', label: { fr: 'Cancún & Riviera Maya', en: 'Cancún & Riviera Maya', es: 'Cancún y Riviera Maya' } },
+    { domain: 'sargassumpuntacana.com', lang: 'en', label: { fr: 'Punta Cana', en: 'Punta Cana', es: 'Punta Cana' } },
+    { domain: 'sargassummiami.com', lang: 'en', label: { fr: 'Floride', en: 'Florida', es: 'Florida' } },
+  ]
+  const netIntro = lang === 'es' ? `Sargazo en ${monthLabel(lang, ym)} en otros destinos`
+    : lang === 'en' ? `Sargassum in ${monthLabel(lang, ym)} elsewhere`
+    : `Sargasses en ${monthLabel(lang, ym)} ailleurs`
+  const networkSection = isCurrent ? `<p class="note">${esc(netIntro)} : ${SIBLINGS
+    .filter(s => s.domain !== domain)
+    .map(s => `<a class="rel" href="https://${s.domain}/${monthSlug(s.lang, ym)}/" rel="noopener">${esc(s.label[lang] || s.label.en)}</a>`)
+    .join(' · ')}</p>` : ''
   const ctaSection = `<section>
     <div class="lbl">${esc(t.l4)}</div>
     <h2>${esc(t.h2n)}</h2>
@@ -338,6 +357,7 @@ if(d.updatedAt){ts.setAttribute('data-iso',d.updatedAt);show(d.updatedAt)}}).cat
     <a class="cta" href="/?utm_source=${esc(slug)}">${esc(t.ctaMap)}</a>
     <p class="note"><a class="rel" href="/${esc(relSlug)}/">${esc(t.ctaRel)}</a></p>
     ${others.length ? `<p class="note">${esc(t.otherMonths)} : ${others.map(o => `<a class="rel" href="/${esc(o.slug)}/">${esc(o.label)}</a>`).join(' · ')}</p>` : ''}
+    ${networkSection}
   </section>`
 
   return `<!doctype html>

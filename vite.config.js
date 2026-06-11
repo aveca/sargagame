@@ -859,6 +859,43 @@ ${isGP ? '' : `  <url><loc>${d}/a-propos/</loc><lastmod>${today}</lastmod><chang
           } catch (e) {
             console.warn('   → articles index skipped:', e.message)
           }
+          // ── Zones côtières — vérité géographique par COMMUNE (jamais par lng brut).
+          // Sert (a) au lien remontant plage→zone, (b) aux hubs /plages/<zone>/.
+          // Garde-fou feedback_beach_geography : le Sud n'est PAS abrité — les gros
+          // épisodes contournent l'île par le sud ; seul l'ouest (Caraïbe) l'est.
+          const COAST_ZONES = {
+            mq: [
+              { slug: 'plages-sud-martinique', name: 'Sud de la Martinique', shortName: 'le Sud',
+                communes: ['Sainte-Anne', 'Le Marin', 'Rivière-Pilote', 'Sainte-Luce', 'Le Diamant'],
+                intro: `Les plages les plus célèbres de l'île — Salines, Pointe Marin, Diamant. Attention : le sud n'est pas abrité des sargasses, les arrivages contournent l'île par le sud lors des gros épisodes. Vérifiez l'état du jour.` },
+              { slug: 'plages-cote-caraibe-martinique', name: 'Côte Caraïbe (ouest)', shortName: 'la côte Caraïbe',
+                communes: ['Les Trois-Îlets', "Les Anses-d'Arlet", 'Fort-de-France', 'Schoelcher', 'Schœlcher', 'Case-Pilote', 'Le Carbet', 'Saint-Pierre', 'Le Prêcheur'],
+                intro: `La façade ouest, mer des Caraïbes : la plus protégée des sargasses — les alizés ne contournent pas le relief. Anses-d'Arlet, Carbet, Saint-Pierre : le refuge fiable en cas d'épisode à l'est.` },
+              { slug: 'plages-cote-atlantique-martinique', name: 'Côte Atlantique (est)', shortName: "la côte Atlantique",
+                communes: ['La Trinité', 'Le Robert', 'Le Vauclin', 'Sainte-Marie', 'Grand’Rivière'],
+                intro: `La façade est, face à l'Atlantique : première ligne des arrivages portés par les alizés. Tartane, la Caravelle, le Vauclin — vérifiez l'état du jour avant de prendre la route.` },
+            ],
+            gp: [
+              { slug: 'plages-sud-grande-terre', name: 'Sud Grande-Terre', shortName: 'le sud Grande-Terre',
+                communes: ['Le Gosier', 'Sainte-Anne', 'Saint-François', 'Pointe-à-Pitre'],
+                intro: `La riviera de la Guadeloupe — Gosier, Sainte-Anne, Saint-François. Les plages les plus touristiques mais aussi les plus exposées aux arrivages portés par les alizés. À vérifier avant de partir.` },
+              { slug: 'plages-nord-grande-terre', name: 'Nord et Est Grande-Terre', shortName: 'le nord Grande-Terre',
+                communes: ['Le Moule', 'Anse-Bertrand', 'Port-Louis', 'Petit-Canal'],
+                intro: `Du Moule à Anse-Bertrand : façade au vent au sud-est (Le Moule, première ligne), plages du nord-ouest plus épargnées (Souffleur, Anse Laborde).` },
+              { slug: 'plages-basse-terre-cote-caraibe', name: 'Basse-Terre — côte sous-le-vent', shortName: 'la côte sous-le-vent',
+                communes: ['Deshaies', 'Sainte-Rose', 'Pointe-Noire', 'Bouillante', 'Vieux-Habitants', 'Basse-Terre', 'Trois-Rivières', 'Capesterre-Belle-Eau', 'Petit-Bourg'],
+                intro: `La côte ouest de Basse-Terre, protégée par le relief de la Soufrière : Malendure, Deshaies, Grande Anse — le refuge le plus fiable de l'archipel quand l'est est touché.` },
+              { slug: 'plages-iles-guadeloupe', name: 'Les îles — Marie-Galante, Les Saintes, La Désirade', titleName: 'des îles de Guadeloupe', shortName: 'les îles',
+                communes: ['La Désirade', 'Capesterre-de-Marie-Galante', 'Grand-Bourg', 'Saint-Louis', 'Terre-de-Haut (Les Saintes)', 'Terre-de-Bas (Les Saintes)'],
+                intro: `Les dépendances : Marie-Galante et La Désirade, plein est, sont souvent en première ligne ; Les Saintes restent plus souvent épargnées. L'état varie d'une traversée à l'autre.` },
+            ],
+          }
+          const zoneOf = b => (COAST_ZONES[b.island] || []).find(z => z.communes.includes(b.commune)) || null
+          {
+            // Couverture : chaque plage doit avoir une zone (sinon le maillage fuit)
+            const orphans = beaches.filter(b => !zoneOf(b))
+            if (orphans.length) console.warn(`   ⚠ ${orphans.length} plage(s) sans zone côtière:`, orphans.slice(0, 5).map(b => b.commune).join(', '))
+          }
           for (const b of beaches) {
             const isMQ = b.island === 'mq'
             const domain = isMQ ? domainMQ : domainGP
@@ -1025,18 +1062,22 @@ ${isGP ? '' : `  <url><loc>${d}/a-propos/</loc><lastmod>${today}</lastmod><chang
             // asymétrique avec les pages USD qui linkent MQ/GP partout (2026-06-11).
             // Aucun mot « Martinique » ici : le text-swap GP ne doit pas le toucher.
             const networkLine = `<p>Même méthode satellite sur nos autres destinations : <a href="https://sargassumcancun.com/" rel="noopener">sargazo à Cancún</a> · <a href="https://sargassumpuntacana.com/" rel="noopener">sargassum Punta Cana</a> · <a href="https://sargassummiami.com/" rel="noopener">sargassum Floride</a>.</p>`
+            // Lien remontant plage → hub de zone (maillage hiérarchique : la page
+            // plage déclare sa zone, le hub liste ses plages — GSC indexation).
+            const _zone = zoneOf(b)
+            const zoneLine = _zone ? `<p>Toutes les plages de ${_zone.shortName} : <a href="/plages/${_zone.slug}/">${_zone.name}</a>.</p>` : ''
             let noscriptBlock
             if (_enrichments[b.slug]) {
               // Keep existing enrichment noscript but prepend image and append extra sections
               const enrichedWithImg = _enrichments[b.slug].noscript.replace('<article>', `<article>${beachImgTag}`)
-              noscriptBlock = enrichedWithImg.replace('</article>', `${extraSections}${networkLine}</article>`)
+              noscriptBlock = enrichedWithImg.replace('</article>', `${extraSections}${zoneLine}${networkLine}</article>`)
             } else {
               const sameCommune = beaches.filter(o => o.commune === b.commune && o.slug !== b.slug)
               const sameIsland = beaches.filter(o => o.island === b.island && o.commune !== b.commune && o.slug !== b.slug)
               const nearby = sameCommune.slice(0, 4)
               if (nearby.length < 4) nearby.push(...sameIsland.slice(0, 4 - nearby.length))
               const nearbyLi = nearby.map(o => `<li><a href="/plages/${o.slug}/">${o.name}</a> — ${o.commune}</li>`).join('')
-              noscriptBlock = `\n    <noscript>\n      <article>\n        <h1>Sargasses à ${b.name} (${b.commune}, ${island})</h1>\n        ${beachImgTag}\n        <p>État des sargasses à ${b.name} en temps réel. Cette plage de ${b.commune} en ${island} est surveillée quotidiennement par satellite.</p>\n        ${extraSections}\n        <h3>Plages à proximité</h3>\n        <ul>${nearbyLi}</ul>\n        <p><a href="/carte-sargasses/">Voir la carte des sargasses</a> · <a href="/alertes/">Alertes sargasses</a> · <a href="/">Accueil Sargasses ${island}</a></p>\n        ${networkLine}\n      </article>\n    </noscript>`
+              noscriptBlock = `\n    <noscript>\n      <article>\n        <h1>Sargasses à ${b.name} (${b.commune}, ${island})</h1>\n        ${beachImgTag}\n        <p>État des sargasses à ${b.name} en temps réel. Cette plage de ${b.commune} en ${island} est surveillée quotidiennement par satellite.</p>\n        ${extraSections}\n        <h3>Plages à proximité</h3>\n        <ul>${nearbyLi}</ul>\n        <p><a href="/carte-sargasses/">Voir la carte des sargasses</a> · <a href="/alertes/">Alertes sargasses</a> · <a href="/">Accueil Sargasses ${island}</a></p>\n        ${zoneLine}${networkLine}\n      </article>\n    </noscript>`
             }
             const finalHtml = beachHtml.replace('</body>', noscriptBlock + '\n</body>')
             writeFileSync(resolve(beachDir, 'index.html'), finalHtml)
@@ -1109,6 +1150,50 @@ ${isGP ? '' : `  <url><loc>${d}/a-propos/</loc><lastmod>${today}</lastmod><chang
             const plagesSitemapEntry = `  <url><loc>${plagesUrl}</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>\n`
             if (isMQ) sitemapMQBeaches += plagesSitemapEntry
             else sitemapGPBeaches += plagesSitemapEntry
+
+            // ── Hubs zones côtières /plages/<zone>/ — couche home → zone → plages ──
+            // Liste les plages de la zone avec statut LIVE + géographie d'exposition
+            // (intro factuelle), liens croisés vers les autres zones. Le lien
+            // remontant est posé sur chaque page plage (zoneLine).
+            for (const z of (COAST_ZONES[islandCode] || [])) {
+              const zBeaches = islandBeaches.filter(b => z.communes.includes(b.commune))
+              if (!zBeaches.length) continue
+              const zClean = zBeaches.filter(b => (statusById[b.id] || 'clean') === 'clean').length
+              const zList = zBeaches
+                .slice().sort((a, b2) => a.commune === b2.commune ? a.name.localeCompare(b2.name) : a.commune.localeCompare(b2.commune))
+                .map(b => `<li style="padding:6px 0"><a href="/plages/${b.slug}/" style="color:#0D0D0D;text-decoration:none;font-weight:500">${b.name}</a> — ${b.commune} ${statusBadge(statusById[b.id] || 'clean')}</li>`).join('')
+              const others = (COAST_ZONES[islandCode] || []).filter(o => o.slug !== z.slug)
+                .map(o => `<a href="/plages/${o.slug}/" style="color:#E8A800;font-weight:600;margin-right:14px">${o.name}</a>`).join('')
+              const zTitle = `Plages ${z.titleName || z.name} — sargasses en temps réel`
+              const zDesc = `${zBeaches.length} plages surveillées par satellite ${islandCode === 'mq' ? 'en Martinique' : 'en Guadeloupe'} (${z.name}) : ${zClean} propre${zClean > 1 ? 's' : ''} aujourd'hui. État en temps réel et prévisions 7 jours.`
+              const zUrl = `https://${domain}/plages/${z.slug}/`
+              const zNoscript = `<article style="max-width:700px;margin:0 auto;padding:24px 16px;font-family:system-ui,sans-serif"><h1 style="font-size:26px;margin-bottom:8px">Plages — ${z.name}</h1><p style="color:#686868;margin-bottom:12px">${zBeaches.length} plages surveillées · ${zClean} propre${zClean > 1 ? 's' : ''} aujourd'hui (satellite Copernicus, ${today})</p><p style="color:#333;line-height:1.6;margin-bottom:20px">${z.intro}</p><ul style="list-style:none;padding:0">${zList}</ul><nav style="margin-top:32px;padding-top:16px;border-top:1px solid #eee"><div style="margin-bottom:10px;font-size:13px;color:#999">Autres zones :</div>${others}<div style="margin-top:14px"><a href="/plages/" style="color:#E8A800;font-weight:600;margin-right:14px">Toutes les plages</a><a href="/carte-sargasses/" style="color:#E8A800;font-weight:600">Carte en temps réel</a></div></nav></article>`
+              const zSchema = JSON.stringify({ "@context": "https://schema.org", "@type": "CollectionPage", "name": zTitle, "description": zDesc, "url": zUrl, "isPartOf": { "@type": "WebApplication", "name": `Sargasses ${island}`, "url": `https://${domain}/` }, "dateModified": today })
+              const zBreadcrumb = JSON.stringify({ "@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{ "@type": "ListItem", "position": 1, "name": "Accueil", "item": `https://${domain}/` }, { "@type": "ListItem", "position": 2, "name": "Plages", "item": plagesUrl }, { "@type": "ListItem", "position": 3, "name": z.name, "item": zUrl }] })
+              const zHtml = htmlSubpage
+                .replace(/<title>[^<]*<\/title>/, `<title>${zTitle}</title>`)
+                .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${zDesc}" />`)
+                .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${zUrl}" />`)
+                .replace(/<meta property="og:title"[^>]*>/, `<meta property="og:title" content="${zTitle}" />`)
+                .replace(/<meta property="og:description"[^>]*>/, `<meta property="og:description" content="${zDesc}" />`)
+                .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="${zUrl}" />`)
+                .replace(/<meta name="twitter:title"[^>]*>/, `<meta name="twitter:title" content="${zTitle}" />`)
+                .replace(/<meta name="twitter:description"[^>]*>/, `<meta name="twitter:description" content="${zDesc}" />`)
+                .replace('</head>', `\n    <script type="application/ld+json">\n    ${zSchema}\n    </script>\n    <script type="application/ld+json">\n    ${zBreadcrumb}\n    </script>\n</head>`)
+                .replace('</body>', `\n    <noscript>${zNoscript}</noscript>\n</body>`)
+              const zDir = resolve(outDir, 'plages', z.slug)
+              mkdirSync(zDir, { recursive: true })
+              writeFileSync(resolve(zDir, 'index.html'), zHtml)
+              if (!isMQ) {
+                const gpZDir = resolve(outDir, '_gp', 'plages', z.slug)
+                mkdirSync(gpZDir, { recursive: true })
+                writeFileSync(resolve(gpZDir, 'index.html'), toGpMirror(zHtml))
+              }
+              const zEntry = `  <url><loc>${zUrl}</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.75</priority></url>\n`
+              if (isMQ) sitemapMQBeaches += zEntry
+              else sitemapGPBeaches += zEntry
+            }
+            console.log(`   → ${(COAST_ZONES[islandCode] || []).length} hubs zones côtières ${islandCode.toUpperCase()}`)
           }
           console.log('   \u2192 /plages/ index page g\u00e9n\u00e9r\u00e9e (MQ + GP)')
 
