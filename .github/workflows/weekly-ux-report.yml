@@ -13,7 +13,9 @@ permissions:
 jobs:
   ux-report:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # 25 min : l'install Chromium du capture audit peut dépasser 10 min à froid
+    # (run 27381454264 annulé par timeout en plein download, 2026-06-11)
+    timeout-minutes: 25
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
