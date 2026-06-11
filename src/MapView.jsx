@@ -323,8 +323,21 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
   },[banksData,island,zoomTick])
 
   // Update markers + heatmap
+  const markerSigRef=useRef("")
   useEffect(()=>{
     if(!mapRef.current)return
+    // Rebuild UNIQUEMENT sur changement MATÉRIEL. Chaque rebuild détruit/recrée
+    // tous les markers : un tap qui tombe dans la fenêtre meurt (pointerdown sur
+    // l'ancien node, pointerup sur le nouveau → pas de click). Les refreshs des
+    // premières secondes (data + overlay communautaire) changeaient l'identité de
+    // beaches/sargData/onBeachClick SANS changer le rendu → 3-4 rebuilds gratuits
+    // = la fenêtre « clics cassés » mesurée le 2026-06-11. GPS arrondi à ~100 m
+    // pour ne pas rebuilder sur le jitter du capteur.
+    const sig=island+"|"+timeStep+"|"+zoomTick+"|"+lang+"|"+(selectedBeach?.id||"")
+      +"|"+(userPos?userPos.lat.toFixed(3)+","+userPos.lng.toFixed(3):"")
+      +"|"+beaches.map(b=>b.id+":"+(b.status||"")+":"+(b.score??"")).join(",")
+    if(markerSigRef.current===sig)return
+    markerSigRef.current=sig
     markersRef.current.forEach(m=>m.remove())
     markersRef.current=[]
     heatRef.current.forEach(m=>m.remove())
