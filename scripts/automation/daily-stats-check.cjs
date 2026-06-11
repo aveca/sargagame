@@ -33,6 +33,38 @@ function fetchJSON(url) {
   })
 }
 
+// Vérité Stripe (lecture seule) — payments_real du funnel est connu MENTEUR
+// (réconciliations 2026-06-10/11 : 15 réels vs 1 affiché). La clé NE VA PAS
+// en CI (secret à pouvoirs d'écriture) : ce bloc ne s'exécute que là où .env
+// existe (sessions locales + crons command center) → points de vérité
+// périodiques dans la série, null sur les runs CI.
+async function stripeTruth() {
+  try {
+    const env = fs.readFileSync(path.join(__dirname, '../../.env'), 'utf8')
+    const key = (env.match(/STRIPE_SECRET_KEY=([^\r\n]+)/) || [])[1]
+    if (!key) return null
+    const get = p => new Promise((res, rej) => {
+      https.get({ host: 'api.stripe.com', path: p, headers: { Authorization: 'Bearer ' + key } }, r => {
+        let b = ''; r.on('data', c => b += c); r.on('end', () => { try { res(JSON.parse(b)) } catch (e) { rej(e) } })
+      }).on('error', rej)
+    })
+    const act = await get('/v1/subscriptions?status=active&limit=100')
+    const pd = await get('/v1/subscriptions?status=past_due&limit=100')
+    const mrr = {}
+    for (const s of act.data || []) {
+      const pl = s.plan || s.items?.data?.[0]?.plan || {}
+      const m = (pl.interval === 'year' ? (pl.amount || 0) / 12 : (pl.amount || 0)) / 100
+      mrr[s.currency] = Math.round(((mrr[s.currency] || 0) + m) * 100) / 100
+    }
+    return {
+      active: (act.data || []).length,
+      mrr,
+      pastDue: (pd.data || []).length,
+      cancelScheduled: (act.data || []).filter(s => s.cancel_at_period_end).length,
+    }
+  } catch { return null }
+}
+
 async function main() {
   console.log('=== Daily Stats Check ===')
   const now = new Date()
@@ -78,6 +110,9 @@ async function main() {
   try { metrics = JSON.parse(fs.readFileSync(METRICS_PATH, 'utf-8')) } catch {}
 
   const today = now.toISOString().slice(0, 10)
+  // Le point de vérité Stripe vient des runs LOCAUX (clé absente en CI) : si la
+  // row du jour en a déjà un, le run CI suivant ne doit pas l'écraser par null.
+  const prevToday = metrics.find(r => r.date === today)
   // Upsert by date: drop any prior same-day rows so the last write of the day wins.
   // Without this, 4x/day crons + local runs bloat the file (90-day cap = ~15 real days)
   // and trend detection below would compare same-day dups instead of day-over-day.
@@ -105,6 +140,8 @@ async function main() {
       revenueReal: funnel.revenue_real ?? null,
       rates: funnel.rates || null,
     } : null,
+    // Vérité Stripe (runs locaux seulement — préservée si le run courant n'a pas la clé)
+    stripe: (await stripeTruth()) || prevToday?.stripe || null,
   })
 
   // Keep last 90 days
