@@ -1,15 +1,15 @@
 {
   "_doc": "Curation manuelle mergée par compute-photo-quality.cjs APRÈS l'heuristique. L'heuristique (lum/sat/résolution) ne sait pas distinguer 'belle photo' de 'belle photo DE PLAGE' — audit visuel 2026-06-10 : le hero Florida montrait une mare de mangrove (fl007) et Palm Beach avait un carrefour routier (fl004). score = remplace la valeur heuristique. why = trace pour la prochaine curation.",
-  "fl001": { "score": 25, "why": "marina au crépuscule, skyline — pas une plage" },
-  "fl002": { "score": 25, "why": "kayaks dans un port — pas une plage" },
+  "fl001": { "score": 80, "why": "re-sourced 2026-06-11 Wikimedia Commons (CC BY-SA 4.0 P. Hughes) — sable large + parasols + skyline + océan, matin lumineux. Crédits: scripts/data/photo-credits-fl.json" },
+  "fl002": { "score": 90, "why": "re-sourced 2026-06-11 Wikimedia Commons (CC BY-SA 4.0 Radomianin) — tour art-déco violette South Beach + mer turquoise — hero-grade" },
   "fl003": { "score": 92, "why": "Fort Lauderdale : palmiers + sable blanc + mer turquoise — hero-grade" },
-  "fl004": { "score": 5, "why": "carrefour routier photographié depuis une voiture — à re-sourcer" },
+  "fl004": { "score": 85, "why": "re-sourced 2026-06-11 Wikimedia Commons (CC BY-SA 3.0 Michael Kagdis) — aérienne Town of Palm Beach, plage + eau turquoise plein cadre" },
   "fl005": { "score": 88, "why": "Jupiter : plage propre, eau turquoise" },
   "fl006": { "score": 70, "why": "resort palmiers + catamarans — correct sans plus" },
-  "fl007": { "score": 10, "why": "mare de mangrove Key Largo — était le hero, à re-sourcer" },
+  "fl007": { "score": 76, "why": "re-sourced 2026-06-11 Wikimedia Commons (PD Yinan Chen) — vraie plage de sable + palmiers, Key Largo (Pennekamp). Cadrage presque carré, pas de personnes" },
   "fl008": { "score": 55, "why": "piscine d'hôtel face mer — pas une plage mais vendeur" },
   "fl009": { "score": 86, "why": "chemin d'accès plage, eau turquoise — très vendeur" },
-  "fl010": { "score": 10, "why": "lagune marron, poteaux électriques — à re-sourcer" },
+  "fl010": { "score": 85, "why": "re-sourced 2026-06-11 Wikimedia Commons (CC BY-SA 3.0 L. DeFrancisci) — Cocoa Beach Pier + vagues + sable humide, ciel bleu éclatant, surfeurs lointains" },
   "fl011": { "score": 96, "why": "Daytona aérienne : pier + vagues + skyline — spectaculaire" },
   "fl012": { "score": 94, "why": "Clearwater aérienne : pier + eau émeraude — spectaculaire" }
 }
