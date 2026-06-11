@@ -207,6 +207,17 @@ const T={
 const SARG_TO_BEACH={'grande-anse':'mq014','anse-mitan':'mq011','anse-noire':'mq012','tartane':'mq034','anse-madame':'mq024','diamant':'mq016','pt-marin':'mq008','sainte-anne':'mq004','les-salines':'mq001','vauclin':'mq044','gp-grande-anse':'gp021','gp-malendure':'gp031','gp-sainte-anne':'gp010','gp-pt-chateaux':'gp005','gp-gosier':'gp012','gp-caravelle':'gp009','gp-bas-du-fort':'gp014','gp-deshaies':'gp024','gp-moule':'gp080','gp-vieux-fort':'gp042'}
 const IS_GP=/guadeloupe/.test(HOST)
 const IS_MQGP=/martinique|guadeloupe/.test(HOST)||IS_LOCAL
+const ISLAND=/guadeloupe/.test(HOST)?'GP':/puntacana/.test(HOST)?'PUNTACANA':/miami/.test(HOST)?'FLORIDA':/cancun/.test(HOST)?'RIVIERAMAYA':'MQ'
+
+// ── KPI série : beacons Apps Script, même enveloppe analytics_event que l'app.
+// Fire-and-forget — la série jeu (parties, scores, partages, clics carte) se lit
+// dans la sheet events, indépendamment de GA4.
+const TRACK_URL='https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec'
+function gtrack(e,p){try{
+  const b=JSON.stringify({type:'analytics_event',e,p:p||{},t:Date.now(),island:ISLAND})
+  if(navigator.sendBeacon)navigator.sendBeacon(TRACK_URL,b)
+  else fetch(TRACK_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:b}).catch(()=>{})
+}catch{}}
 
 // ── Donnée LIVE : meilleure plage propre + plus belle photo ──
 const TODAY={beach:null,score:null}
@@ -322,9 +333,11 @@ function start(){
   clearInterval(timerIv);timerIv=setInterval(()=>{t--;hud();if(t<=0)end(true)},1000)
   raf=requestAnimationFrame(loop)
   spawn()
+  gtrack('sg_game_start',{day:DAYN})
 }
 function end(won){
   running=false;clearInterval(timerIv);cancelAnimationFrame(raf)
+  gtrack('sg_game_end',{score,day:DAYN,combo:maxCombo,win:won?1:0})
   $('hud').style.display='none';$('comboPill').style.display='none';$('endPanel').style.display='flex'
   $('endVerdict').textContent=T.verdict(TODAY.beach,TODAY.score)
   const h=$('endTitle');h.textContent=''
@@ -343,19 +356,19 @@ function end(won){
   $('mailRow').style.display=has?'none':'flex';$('mailOk').style.display='none'
 }
 function share(){
+  gtrack('sg_game_share',{score,day:DAYN})
   const url=location.origin+'/jeu/?defi='+score+'&utm_source=share&utm_medium=sargacatch'
   const txt=T.shareTxt(DAYN,score,maxCombo)
   if(navigator.share)navigator.share({title:'SargaCatch',text:txt,url}).catch(()=>{})
-  else if(navigator.clipboard){navigator.clipboard.writeText(txt+' '+url);alert(T.copied)}
+  else if(navigator.clipboard)try{navigator.clipboard.writeText(txt+' '+url).then(()=>alert(T.copied)).catch(()=>{})}catch{}
 }
 $('mailRow').addEventListener('submit',e=>{
   e.preventDefault()
   const em=$('mailIn').value.trim()
   if(!em||!em.includes('@'))return
-  const island=/guadeloupe/.test(HOST)?'GP':/puntacana/.test(HOST)?'PUNTACANA':/miami/.test(HOST)?'FLORIDA':/cancun/.test(HOST)?'RIVIERAMAYA':'MQ'
-  try{fetch('https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec',{
+  try{fetch(TRACK_URL,{
     method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
-    body:JSON.stringify({email:em,island,source:'sargacatch',date:new Date().toISOString(),score,day:DAYN})
+    body:JSON.stringify({email:em,island:ISLAND,source:'sargacatch',date:new Date().toISOString(),score,day:DAYN})
   }).catch(()=>{})}catch{}
   try{localStorage.setItem('sg_email',em)}catch{}
   $('mailRow').style.display='none';const ok=$('mailOk');ok.textContent=T.mailOk;ok.style.display='block'
@@ -363,7 +376,7 @@ $('mailRow').addEventListener('submit',e=>{
 $('btnStart').addEventListener('click',start)
 $('btnReplay').addEventListener('click',start)
 $('btnShare').addEventListener('click',share)
-$('btnSite').addEventListener('click',()=>{location.href=location.origin+'/?utm_source=game&utm_medium=sargacatch'})
+$('btnSite').addEventListener('click',()=>{gtrack('sg_game_cta',{score});location.href=location.origin+'/?utm_source=game&utm_medium=sargacatch'})
 
 // ── Coach : chat guidé statique (pattern SargaChat — chips, donnée réelle TODAY, zéro LLM).
 // Déclencheur inline dans les panneaux (pas de FAB sur le jeu : pas de mis-taps).
