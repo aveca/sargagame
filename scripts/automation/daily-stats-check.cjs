@@ -11,6 +11,7 @@ const path = require('path')
 const https = require('https')
 
 const STATS_URL = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec?action=stats'
+const FUNNEL_URL = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec?action=funnel'
 const METRICS_PATH = path.join(__dirname, 'data', 'daily-metrics.json')
 const SARG_PATH = path.join(__dirname, '../../public/api/copernicus/sargassum.json')
 
@@ -50,6 +51,16 @@ async function main() {
     console.log(`Emails sent: ${stats.emailsSent}`)
   }
 
+  // 1b. Série funnel complète (KPI « en série » — user 2026-06-11). Source :
+  // endpoint funnel (mêmes compteurs que la session-startup). ⚠️ payments_real
+  // est connu TROMPEUR (réconciliation Stripe 2026-06-10 : 15 réels vs 1 affiché)
+  // — stocké pour l'historique, la vérité paiements reste Stripe (clé locale).
+  console.log('Fetching funnel from Apps Script...')
+  const funnel = await fetchJSON(FUNNEL_URL)
+  if (funnel && !funnel.error) {
+    console.log(`Funnel: ${funnel.session_start} sessions | ${funnel.premium_modal_open} modals | ${funnel.premium_modal_cta} CTA | ${funnel.checkout_redirect} redirects | ${funnel.email_submit} emails`)
+  }
+
   // 2. Check pipeline freshness
   let pipelineOk = false
   try {
@@ -80,6 +91,20 @@ async function main() {
     feedbacks: stats?.feedbacks || null,
     avgRating: stats?.avgRating || null,
     pipelineOk,
+    // Série funnel (cumuls Apps Script — les DELTAS jour-à-jour font la série)
+    funnel: funnel && !funnel.error ? {
+      sessions: funnel.session_start ?? null,
+      lockClicks: funnel.forecast_lock_click ?? null,
+      modalOpens: funnel.premium_modal_open ?? null,
+      modalCta: funnel.premium_modal_cta ?? null,
+      sampleStarts: funnel.sample_start ?? null,
+      emailSubmits: funnel.email_submit ?? null,
+      checkoutRedirects: funnel.checkout_redirect ?? null,
+      conversions: funnel.conversion ?? null,
+      paymentsReal: funnel.payments_real ?? null, // ⚠️ trompeur, cf. memory
+      revenueReal: funnel.revenue_real ?? null,
+      rates: funnel.rates || null,
+    } : null,
   })
 
   // Keep last 90 days

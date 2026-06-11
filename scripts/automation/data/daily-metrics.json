@@ -601,12 +601,33 @@
   },
   {
     "date": "2026-06-11",
-    "time": "2026-06-11T00:33:54.034Z",
+    "time": "2026-06-11T02:45:28.223Z",
     "payments": 10,
     "revenue": 49.9,
     "emails": 173,
     "feedbacks": 1,
     "avgRating": 4,
-    "pipelineOk": true
+    "pipelineOk": true,
+    "funnel": {
+      "sessions": 18356,
+      "lockClicks": 88,
+      "modalOpens": 3580,
+      "modalCta": 67,
+      "sampleStarts": 0,
+      "emailSubmits": 35,
+      "checkoutRedirects": 63,
+      "conversions": 4,
+      "paymentsReal": 1,
+      "revenueReal": 4.99,
+      "rates": {
+        "session_to_lock": 0.5,
+        "lock_to_modal": 4068,
+        "modal_to_cta": 2,
+        "modal_to_sample": 0,
+        "modal_to_any_action": 2,
+        "cta_to_redirect": 94,
+        "redirect_to_payment": 2
+      }
+    }
   }
 ]
