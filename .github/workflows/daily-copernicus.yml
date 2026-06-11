@@ -412,6 +412,25 @@ jobs:
           if [ "${{ steps.ftp_deploy.outcome }}" = "failure" ]; then
             echo "::warning::FTP deploy failed — sites may be up but files stale. Next run or manual-ftp-deploy.cjs peut corriger."
           fi
+          # ── Le deploy a-t-il PRIS ? (leçon 2026-06-11 : prod gelée 3h30 avec
+          # sites 200 + vieux bundle — invisible pour le check up/fraîcheur).
+          # Après un FULL build, le sw.js live doit porter la version du repo.
+          if [ "${{ steps.check_build.outputs.full }}" = "true" ]; then
+            WANT=$(grep -o "sargasses-v[0-9]*" public/sw.js | head -1)
+            MISMATCH=""
+            for D in $DOMAINS; do
+              GOT=$(curl -sL --max-time 15 "https://$D/sw.js" | grep -o "sargasses-v[0-9]*" | head -1)
+              if [ "$GOT" != "$WANT" ]; then MISMATCH="$MISMATCH $D($GOT)"; fi
+            done
+            if [ -n "$MISMATCH" ]; then
+              echo "::error::SW version mismatch (attendu $WANT):$MISMATCH — le deploy n'a pas pris"
+              exit 1
+            fi
+            echo "SW version OK sur toutes les régions: $WANT"
+          fi
+          # ── Gardes email : incident d'excuses bloqué >24h + plafond Resend ──
+          node -e "try{const i=require('./scripts/automation/data/incidents.json');const stuck=i.filter(x=>(x.recipients||[]).some(h=>!(x.sent||{})[h])&&Date.now()-new Date(x.created)>864e5);if(stuck.length)console.log('::warning::Incident(s) excuse en attente >24h: '+stuck.map(x=>x.id).join(','))}catch(e){}"
+          node -e "try{const s=require('./scripts/automation/data/subscribers.json');const n=s.filter(x=>['sargacatch','beach_alert'].includes(x.source||'')).length;if(n>85)console.log('::warning::Audience daily_verdict '+n+' — proche du plafond Resend 100/jour (tache 37: upgrade ou throttle)')}catch(e){}"
 
       # ── ADR-B ops bus event: pipeline_success ──
       # Writes event to ops-events.jsonl, uploaded as artifact; drained locally
