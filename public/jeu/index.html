@@ -100,46 +100,101 @@
   <svg id="bg" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <defs>
       <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#1B2E54"/><stop offset=".45" stop-color="#7A4A6E"/><stop offset=".78" stop-color="#E8845C"/><stop offset="1" stop-color="#FFC97A"/>
+        <stop offset="0" stop-color="#0E1638"/><stop offset=".3" stop-color="#3A2C66"/><stop offset=".58" stop-color="#8C4A74"/><stop offset=".8" stop-color="#E0705C"/><stop offset=".93" stop-color="#FFA45E"/><stop offset="1" stop-color="#FFD884"/>
       </linearGradient>
       <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#D98A5B"/><stop offset=".18" stop-color="#3E6E78"/><stop offset="1" stop-color="#16323E"/>
+        <stop offset="0" stop-color="#E8935C"/><stop offset=".12" stop-color="#7A5670"/><stop offset=".4" stop-color="#2E4A66"/><stop offset="1" stop-color="#121F36"/>
       </linearGradient>
       <linearGradient id="sand" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#8A6B4E"/><stop offset="1" stop-color="#5C4332"/>
+        <stop offset="0" stop-color="#6E4E3C"/><stop offset=".25" stop-color="#4E3630"/><stop offset="1" stop-color="#2A1D20"/>
       </linearGradient>
       <radialGradient id="sunglow" cx=".5" cy=".5" r=".5">
-        <stop offset="0" stop-color="#FFE9A8" stop-opacity=".9"/><stop offset="1" stop-color="#FFE9A8" stop-opacity="0"/>
+        <stop offset="0" stop-color="#FFE9A8" stop-opacity=".7"/><stop offset=".45" stop-color="#FFB870" stop-opacity=".22"/><stop offset="1" stop-color="#FFB870" stop-opacity="0"/>
       </radialGradient>
+      <linearGradient id="wet" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#FFB87A" stop-opacity=".55"/><stop offset="1" stop-color="#FFB87A" stop-opacity="0"/>
+      </linearGradient>
     </defs>
-    <rect width="390" height="470" fill="url(#sky)"/>
-    <circle cx="195" cy="392" r="120" fill="url(#sunglow)"/>
-    <circle cx="195" cy="378" r="42" fill="#FFE9A8"/>
-    <g fill="#2A2144">
-      <path d="M28 132q14-24 44-20q10-17 34-13q26 3 28 22q18 2 16 17q-2 13-22 13H44q-18 0-16-19z" opacity=".55"/>
-      <path d="M238 86q10-18 33-15q8-12 26-9q20 2 21 17q14 2 12 12q-2 10-17 10h-62q-14 0-13-15z" opacity=".45"/>
-      <path d="M96 226q8-14 26-12q6-9 20-7q16 2 17 13q11 1 10 10q-2 8-14 8H106q-11 0-10-12z" opacity=".4"/>
+    <rect width="390" height="395" fill="url(#sky)"/>
+    <g fill="#FFFFFF">
+      <circle cx="38" cy="44" r="1.3" opacity=".9"/><circle cx="92" cy="84" r="1" opacity=".6"/><circle cx="146" cy="38" r="1.5" opacity=".8"/>
+      <circle cx="208" cy="66" r="1" opacity=".55"/><circle cx="262" cy="34" r="1.2" opacity=".75"/><circle cx="318" cy="78" r="1" opacity=".5"/>
+      <circle cx="356" cy="40" r="1.4" opacity=".85"/><circle cx="178" cy="112" r="1" opacity=".4"/><circle cx="66" cy="128" r="1" opacity=".45"/>
+      <circle cx="298" cy="124" r="1.1" opacity=".4"/>
     </g>
-    <path d="M0 338q58-40 126-28q48 9 78 28v54H0z" fill="#23403A"/>
-    <path d="M0 364q48-26 106-18q58 9 96 26v36H0z" fill="#182E2A"/>
-    <rect y="392" width="390" height="270" fill="url(#sea)"/>
-    <path d="M168 392h54q8 60 2 130q-5 60-18 96h-26q-14-36-18-96q-4-70 6-130z" fill="#F4B36A" opacity=".3"/>
-    <path d="M0 426q98 10 195 0t195 0v8q-98 10-195 0t-195 0z" fill="#F4C98A" opacity=".4"/>
-    <path d="M0 498q98 10 195 0t195 0v7q-98 10-195 0t-195 0z" fill="#E8A86A" opacity=".25"/>
-    <path d="M0 578q98 12 195 2t195 2v7q-98 10-195 0t-195 0z" fill="#FFD9A0" opacity=".3"/>
-    <path d="M0 640q120-26 240-11q90 11 150 28v187H0z" fill="url(#sand)"/>
-    <path d="M0 648q120-24 240-10q88 10 150 27v6q-62-17-150-27q-120-14-240 10z" fill="#FFD9A0" opacity=".5"/>
-    <g fill="#101D14">
-      <path d="M352 690q-44-8-66 18l8 6q20-20 56-16z"/>
-      <path d="M350 690q-10-34-44-42l-2 9q28 7 38 36z"/>
-      <path d="M352 692q24-26 38-24l2 9q-14 0-32 22z"/>
-      <path d="M351 688q4-30 26-44l5 8q-18 12-23 38z"/>
-      <path d="M348 688l10-2q16 78 10 158h-14q6-78-6-156z"/>
+    <circle cx="128" cy="382" r="108" fill="url(#sunglow)"/>
+    <circle cx="128" cy="372" r="34" fill="#FFF3C4"/>
+    <!-- bancs de brume horizontale devant le soleil (signature anime) -->
+    <g fill="#FF9E62" opacity=".35">
+      <rect x="70" y="356" width="120" height="3" rx="2"/>
+      <rect x="92" y="368" width="96" height="2.5" rx="2"/>
     </g>
-    <g fill="#3A2E14" opacity=".55">
-      <ellipse cx="60" cy="700" rx="22" ry="5"/>
-      <ellipse cx="150" cy="730" rx="14" ry="4"/>
-      <ellipse cx="265" cy="712" rx="18" ry="4"/>
+    <!-- cumulus droit — chou-fleur à base plate, 3 tons (ombre, corps, lisière) -->
+    <g>
+      <g fill="#2E2150">
+        <circle cx="270" cy="226" r="34"/><circle cx="304" cy="206" r="42"/><circle cx="344" cy="220" r="36"/>
+        <circle cx="378" cy="238" r="28"/><circle cx="322" cy="244" r="34"/><circle cx="282" cy="250" r="26"/>
+        <rect x="236" y="244" width="170" height="32" rx="14"/>
+      </g>
+      <g fill="#5A3A6E">
+        <circle cx="276" cy="230" r="25"/><circle cx="308" cy="212" r="31"/><circle cx="344" cy="226" r="26"/>
+        <circle cx="320" cy="246" r="24"/><rect x="252" y="248" width="140" height="22" rx="11"/>
+      </g>
+      <path d="M238 268q40 8 84 7t82-7q4 1 4 4q-40 9-86 9t-88-9q0-3 4-4z" fill="#C7706E" opacity=".85"/>
+      <path d="M242 273q82 10 158 0v3q-78 10-158 0z" fill="#FFB98A" opacity=".75"/>
+    </g>
+    <!-- petit cumulus gauche haut, contre-point froid -->
+    <g>
+      <g fill="#2A1E4A"><circle cx="44" cy="186" r="20"/><circle cx="70" cy="176" r="24"/><circle cx="96" cy="188" r="18"/><rect x="26" y="188" width="88" height="16" rx="8"/></g>
+      <g fill="#4E3468"><circle cx="48" cy="188" r="13"/><circle cx="72" cy="180" r="16"/><circle cx="94" cy="190" r="11"/></g>
+      <path d="M28 202q44 7 86 0v3q-42 7-86 0z" fill="#A86878" opacity=".7"/>
+    </g>
+    <!-- oiseaux -->
+    <g stroke="#1A1430" stroke-width="2" fill="none" stroke-linecap="round">
+      <path d="M210 142q5-6 10 0q5-6 10 0"/>
+      <path d="M244 158q4-5 8 0q4-5 8 0"/>
+      <path d="M188 170q3-4 6 0q3-4 6 0"/>
+    </g>
+    <!-- voilier silhouette -->
+    <g fill="#1A1430">
+      <path d="M262 380l3-22l9 22z"/><rect x="258" y="380" width="16" height="3" rx="1.5"/>
+    </g>
+    <rect y="392" width="390" height="262" fill="url(#sea)"/>
+    <path d="M0 392h390v2.5H0z" fill="#FFD9A0" opacity=".7"/>
+    <!-- colonne de soleil sur l'eau + glitter en tirets brisés -->
+    <path d="M104 394h48q10 70 4 140q-5 60-16 92h-24q-12-32-16-92q-6-70 4-140z" fill="#F4A26A" opacity=".28"/>
+    <g stroke="#FFD9A0" stroke-linecap="round">
+      <path d="M112 412h32" stroke-width="3" opacity=".75"/>
+      <path d="M100 436h22M132 436h20" stroke-width="2.5" opacity=".6"/>
+      <path d="M108 466h36" stroke-width="2.5" opacity=".5"/>
+      <path d="M96 502h18M126 504h26" stroke-width="2" opacity=".4"/>
+      <path d="M110 548h30" stroke-width="2" opacity=".3"/>
+      <path d="M118 596h22" stroke-width="2" opacity=".22"/>
+    </g>
+    <!-- houle douce -->
+    <path d="M0 444q98 9 195 0t195 0v6q-98 9-195 0t-195 0z" fill="#C97A8A" opacity=".22"/>
+    <path d="M0 516q98 9 195 0t195 0v6q-98 9-195 0t-195 0z" fill="#8A5A7A" opacity=".18"/>
+    <path d="M0 588q98 10 195 1t195 1v6q-98 9-195 0t-195 0z" fill="#FFD9A0" opacity=".16"/>
+    <!-- plage : sable sombre + ligne d'écume + sable mouillé réfléchissant -->
+    <path d="M0 636q120-24 238-10q92 10 152 26v192H0z" fill="url(#sand)"/>
+    <path d="M0 642q120-23 238-9q90 9 152 25v5q-62-16-152-25q-118-13-238 9z" fill="#FFE3B8" opacity=".75"/>
+    <path d="M0 648q120-22 238-9q90 9 152 24v26q-62-15-152-24q-118-12-238 9z" fill="url(#wet)"/>
+    <!-- palmier : tronc courbe + 5 palmes effilées -->
+    <g fill="#0C1410">
+      <path d="M344 700q-46-10-70 16l7 7q22-21 60-15z"/>
+      <path d="M343 698q-14-34-50-40l-1 10q30 5 42 34z"/>
+      <path d="M346 700q22-30 42-28l3 9q-17 0-36 25z"/>
+      <path d="M345 696q2-32 24-48l6 8q-18 13-21 42z"/>
+      <path d="M346 700q34-12 50 2l-2 9q-15-11-44-3z"/>
+      <path d="M341 696l11-2q18 80 11 162h-15q7-80-7-160z"/>
+      <ellipse cx="352" cy="714" rx="5" ry="4"/><ellipse cx="342" cy="710" rx="4.5" ry="3.5"/>
+    </g>
+    <!-- sargasses échouées, discrètes -->
+    <g fill="#4A3618" opacity=".6">
+      <ellipse cx="58" cy="702" rx="24" ry="5"/>
+      <ellipse cx="148" cy="734" rx="15" ry="4"/>
+      <ellipse cx="262" cy="714" rx="19" ry="4"/>
+      <ellipse cx="96" cy="772" rx="13" ry="3.5"/>
     </g>
   </svg>
   <div class="scrim"></div>
