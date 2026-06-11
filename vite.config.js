@@ -305,6 +305,13 @@ export default defineConfig({
             const { generateReliabilityPages } = _require('./scripts/lib/reliability-page.cjs')
             generateReliabilityPages(REGION, resolve(__dirname, 'dist'))
           } catch (e) { console.warn('   ⚠ page fiabilité région:', e.message) }
+          // Pages mois (/sargassum-june-2026/ EN, /sargazo-junio-2026/ ES) —
+          // bilan mensuel calculé depuis history.json régional réel (mois passés
+          // ≥ 15 jours de données + mois courant « en cours »). Sitemap patché.
+          try {
+            const { generateMonthPages } = _require('./scripts/lib/month-pages.cjs')
+            generateMonthPages(REGION, resolve(__dirname, 'dist'))
+          } catch (e) { console.warn('   ⚠ pages mois région:', e.message) }
           return
         }
         const outDir = resolve(__dirname, 'dist')
@@ -1245,6 +1252,15 @@ ${isGP ? '' : `  <url><loc>${d}/a-propos/</loc><lastmod>${today}</lastmod><chang
           writeFileSync(resolve(outDir, 'sitemap-guadeloupe.xml'), sitemapGPFull)
           console.log(`   → ${beaches.length} pages plages générées (${beaches.filter(b=>b.island==='mq').length} MQ + ${beaches.filter(b=>b.island==='gp').length} GP)`)
           console.log('   → Sitemaps enrichis avec URLs plages')
+
+          // ── Pages mois /sargasses-juin-2026/ etc. — bilan mensuel calculé
+          //    depuis history.json réel (MQ canonical + miroir _gp/, mois passés
+          //    ≥ 15 jours + mois courant « en cours »). Appelé APRÈS la réécriture
+          //    finale des sitemaps : le générateur les patche sur disque. ──
+          try {
+            const { generateMonthPages } = _require('./scripts/lib/month-pages.cjs')
+            generateMonthPages(null, outDir)
+          } catch (e) { console.warn('   ⚠ pages mois:', e.message) }
         } catch (e) {
           console.warn('SEO pages:', e.message)
         }
