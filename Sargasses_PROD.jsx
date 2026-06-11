@@ -5170,6 +5170,25 @@ function InstallPrompt(){
    ═══════════════════════════════════════════════════════════════════════════ */
 function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap}){
   useEffect(()=>{track("sg_hero_shown",{beach_id:beach.id,status:beach.status,geoloc:!!userPos})},[])
+  // Boucle vidéo "drone hover" (plage animée façon SpaceX) : la photo reste le
+  // poster instantané ; la vidéo (~2MB, palindrome 8s) se fond par-dessus une
+  // fois jouable. Jamais chargée si reduced-motion, saveData ou connexion 2G.
+  const [vidSrc,setVidSrc]=useState(null)
+  const [vidOn,setVidOn]=useState(false)
+  useEffect(()=>{
+    let dead=false
+    try{
+      if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return
+      const c=navigator.connection
+      if(c&&(c.saveData||/(^|-)2g/.test(c.effectiveType||"")))return
+    }catch(_){}
+    const t=setTimeout(()=>{
+      fetch("/videos/hero/manifest.json").then(r=>r.ok?r.json():null).then(m=>{
+        if(!dead&&m&&Array.isArray(m.ids)&&m.ids.includes(beach.id))setVidSrc("/videos/hero/"+beach.id+".mp4")
+      }).catch(()=>{})
+    },900)
+    return()=>{dead=true;clearTimeout(t);setVidSrc(null);setVidOn(false)}
+  },[beach.id])
   useEffect(()=>{
     const h=e=>{if(e.key==="Escape")onShowMap()}
     window.addEventListener("keydown",h);return()=>window.removeEventListener("keydown",h)
@@ -5208,6 +5227,10 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap}){
 @media (prefers-reduced-motion:reduce){.sg-hero-chev{animation:none!important}}`}</style>
       <img src={beach._heroImg} alt={beach.name} fetchpriority="high"
         style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 38%"}}/>
+      {vidSrc&&<video src={vidSrc} autoPlay muted loop playsInline preload="auto" aria-hidden
+        onPlaying={()=>setVidOn(true)}
+        style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 38%",
+          opacity:vidOn?1:0,transition:"opacity .9s ease"}}/>}
       <div aria-hidden style={{position:"absolute",inset:0,
         background:"linear-gradient(180deg,rgba(10,23,20,.55) 0%,rgba(10,23,20,0) 26%,rgba(10,23,20,0) 42%,rgba(10,23,20,.88) 78%,#0A1714 100%)"}}/>
       <div style={{position:"absolute",top:0,left:0,right:0,display:"flex",justifyContent:"space-between",alignItems:"center",
@@ -5578,6 +5601,7 @@ export default function App(){
   const[allBeaches,setAllBeaches]=useState(BEACHES_FALLBACK)
   const[imageMap,setImageMap]=useState(null)
   const[imageQ,setImageQ]=useState(null) // score qualité photo 0-100 (hero)
+  const[heroVids,setHeroVids]=useState(null) // ids des boucles vidéo hero dispo
   const[sargData,setSargData]=useState(null)
   const[historyData,setHistoryData]=useState(null)
   const[dataSource,setDataSource]=useState("loading")
@@ -5615,16 +5639,25 @@ export default function App(){
     }else{
       const pool=cleans.length?cleans:cands
       const sorted=[...pool].sort((a,b)=>(b.score||0)-(a.score||0))
-      // Départage « Beau » : à ≤8 pts du meilleur score, prendre la meilleure
-      // photo (une photo crépuscule/grise au top score ruine le hero — vu
-      // Grande Anse du Carbet 83/100 photo 60/100 le 2026-06-10).
+      // Départage « Beau » : à ≤8 pts du meilleur score, ROTATION QUOTIDIENNE
+      // uniquement parmi les photos hero-grade (≥85) du peloton — un revenant
+      // ne revoit pas le même fond, sans jamais montrer une photo médiocre
+      // (vu fl006 resort q70 servi par la v1 de cette rotation). Sinon :
+      // meilleure photo dispo, pas de rotation.
       if(imageQ){
         const near=sorted.filter(b=>(sorted[0].score||0)-(b.score||0)<=8)
-        pick=near.sort((a,b)=>(imageQ[b.id]||0)-(imageQ[a.id]||0))[0]
+        const byQ=[...near].sort((a,b)=>(imageQ[b.id]||0)-(imageQ[a.id]||0))
+        const heroGrade=byQ.filter(b=>(imageQ[b.id]||0)>=85)
+        // Privilégie les plages qui ONT une boucle vidéo (couverture garantie
+        // par construction, sans générer 73 loops) ; fallback photo sinon.
+        const withVid=heroVids?heroGrade.filter(b=>heroVids.includes(b.id)):[]
+        const pool2=(withVid.length?withVid:heroGrade).slice(0,4)
+        if(pool2.length>1){const day=Math.floor(Date.now()/864e5);pick=pool2[day%pool2.length]}
+        else pick=pool2[0]||byQ[0]
       }else pick=sorted[0]
     }
     return pick?{...pick,_heroImg:"/beaches/"+imageMap[pick.id]}:null
-  },[showHero,allBeaches,imageMap,imageQ,island,userPos])
+  },[showHero,allBeaches,imageMap,imageQ,heroVids,island,userPos])
 
   // SargaCatch toast — recycle le trafic en partance (validé user 2026-06-10).
   // Donnée qui justifie (règle "pas de popup sans donnée") : 45 s d'inactivité
@@ -5883,6 +5916,13 @@ export default function App(){
         .then(r=>r.json())
         .then(data=>{
           if(data&&typeof data==="object")setImageQ(data)
+        })
+        .catch(()=>{})
+      // Manifest des boucles vidéo hero — optionnel : sans lui, hero photo.
+      fetch("/videos/hero/manifest.json")
+        .then(r=>r.ok?r.json():null)
+        .then(m=>{
+          if(m&&Array.isArray(m.ids))setHeroVids(m.ids)
         })
         .catch(()=>{})
     },showHero?0:1500)

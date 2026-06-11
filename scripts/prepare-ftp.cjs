@@ -50,6 +50,26 @@ const COPY_SKIP_TOP = new Set(['_gp'])
 
 // skipRel = Set de chemins relatifs POSIX (fichiers ou dossiers) à ne pas
 // copier. Un nom simple ('_gp') ne matche qu'à la racine, comme avant.
+// Boucles vidéo hero : ne garder que celles de la région (fichiers <beachId>.mp4,
+// ~2MB pièce — inutile d'uploader les loops MQ sur le FTP Cancún). Réécrit le
+// manifest pour ne lister que les survivantes (le hero ne tente que ce qui existe).
+function filterHeroLoops(out, keepPrefixes, title) {
+  const dir = path.join(out, 'videos', 'hero')
+  if (!fs.existsSync(dir)) return
+  let removed = 0
+  for (const f of fs.readdirSync(dir)) {
+    if (!f.endsWith('.mp4')) continue
+    const pfx = (f.match(/^([a-z]+)\d+\.mp4$/) || [])[1]
+    if (pfx && keepPrefixes.has(pfx)) continue
+    fs.rmSync(path.join(dir, f))
+    removed++
+  }
+  const manifestPath = path.join(dir, 'manifest.json')
+  const ids = fs.readdirSync(dir).filter(f => f.endsWith('.mp4')).map(f => f.replace('.mp4', ''))
+  fs.writeFileSync(manifestPath, JSON.stringify({ v: 1, ids }))
+  if (removed) console.log(`   → hero loops hors-région supprimées (${title}): ${removed}, gardées: ${ids.length}`)
+}
+
 function copyRecursive(src, dest, skipRel = null, rel = '') {
   const stat = fs.statSync(src)
   if (stat.isDirectory()) {
@@ -157,6 +177,8 @@ for (const region of legacyRegions) {
     const kept = fs.readdirSync(plagesDir).filter(e => fs.statSync(path.join(plagesDir, e)).isDirectory()).length
     console.log(`   → plages filtrées (${title}): ${kept} gardées, ${removed} supprimées`)
   }
+
+  filterHeroLoops(out, new Set([ownIsland]), title)
 
   // Remplacer l'ancien OneSignal App ID par le bon pour ce site
   const filesToPatch = [
@@ -666,6 +688,8 @@ function prepareNewRegion(region) {
     }
     if (removedImgs) console.log(`   → photos plages hors-région supprimées (${title}): ${removedImgs}`)
   }
+
+  filterHeroLoops(out, new Set((region.beaches || []).map(b => (b.id.match(/^[a-z]+/) || [])[0]).filter(Boolean)), title)
 
   // Articles éditoriaux : ne garder que ceux de la région (mêmes raisons que
   // le filtre cross-island du build partagé : canonical + duplicate content).

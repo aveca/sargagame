@@ -69,3 +69,4 @@ scripts/video/out/
 scripts/video/cache/
 video-remotion/public/cache/
 .realesrgan/
+public/videos/hero/

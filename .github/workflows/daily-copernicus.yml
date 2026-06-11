@@ -178,6 +178,14 @@ jobs:
       # propre, jamais pollué par une autre région.
       # Une région sans secrets FTP est quand même construite, puis ignorée
       # silencieusement par manual-ftp-deploy.cjs (skip sans creds, pas d'échec).
+      # ── 2-pre-a. Boucles vidéo hero (photos ≥85 → mp4 palindrome, ffmpeg
+      # préinstallé sur ubuntu-latest). Générées ici plutôt que commitées :
+      # ~80MB de binaires régénérables = poids repo inutile. public/videos/hero/
+      # est gitignoré ; Vite les copie dans dist/ à chaque build régional.
+      - name: Hero loops vidéo (ffmpeg)
+        if: steps.check_build.outputs.full == 'true'
+        run: node scripts/make-hero-loops.cjs
+
       - name: Build new regions (séquentiel, avant le build MQ/GP)
         if: steps.check_build.outputs.full == 'true'
         run: |
