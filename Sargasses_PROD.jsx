@@ -1842,6 +1842,42 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             )
           })()}
 
+          {/* Urgence-donnée : arrivage RÉEL prévu (weeklyData.forecast pipeline,
+              JAMAIS le fallback generateForecast) → CTA alerte. L'urgence vraie
+              est notre droit : c'est de l'info satellite, pas de la pression
+              (anti-pattern Booking, engagements UE 2020 — capture_intelligence). */}
+          {!isPremium&&(()=>{
+            const fc=weeklyData?.forecast
+            if(!fc||fc.length<2)return null
+            const RANK={clean:0,moderate:1,avoid:2}
+            const today=RANK[fc[0]?.status]??RANK[beach.status]??0
+            let hit=null
+            for(let i=1;i<=3&&i<fc.length;i++){const r=RANK[fc[i]?.status];if(r!=null&&r>today){hit={i,d:fc[i]};break}}
+            if(!hit)return null
+            const when=hit.i===1?_t(lang,"demain","tomorrow","mañana")
+              :(()=>{try{return new Date((hit.d.date||"")+"T12:00:00Z").toLocaleDateString(lang==="es"?"es-MX":lang==="en"?"en-US":"fr-FR",{weekday:"long"})}catch(_){return null}})()
+            if(!when)return null
+            const worse=hit.d.status==="avoid"
+            return(
+              <button onClick={()=>{track("sg_urgency_banner_cta",{beach_id:beach.id,day:hit.i,to:hit.d.status});onPremiumClick("urgency_banner")}}
+                style={{display:"flex",alignItems:"center",gap:10,width:"100%",textAlign:"left",cursor:"pointer",
+                  background:worse?"rgba(232,82,42,.10)":"rgba(224,120,0,.10)",
+                  border:`1px solid ${worse?"rgba(232,82,42,.35)":"rgba(224,120,0,.35)"}`,
+                  borderRadius:14,padding:"11px 13px",margin:"0 0 14px",fontFamily:"inherit"}}>
+                <span style={{fontSize:18,flexShrink:0}}>⚠️</span>
+                <span style={{flex:1,minWidth:0,fontSize:12.5,lineHeight:1.45,color:"var(--sg-ink,#1A2B26)",fontWeight:600}}>
+                  {_t(lang,
+                    `Arrivage prévu ${when} sur cette plage (satellite). Sois prévenu si ça change.`,
+                    `Sargassum forecast to arrive ${when} at this beach (satellite). Get notified if it changes.`,
+                    `Llegada prevista ${when} en esta playa (satélite). Recibe el aviso si cambia.`)}
+                </span>
+                <span style={{flexShrink:0,fontSize:12,fontWeight:800,color:worse?"#E8522A":"#E07800"}}>
+                  {_t(lang,"Activer l'alerte →","Set the alert →","Activar alerta →")}
+                </span>
+              </button>
+            )
+          })()}
+
           {/* Status description */}
           {ST[beach.status]&&(
             <p style={{fontSize:12,color:beach._communityOverride?C.gold:beach.beachMemory?C.sarg:ST[beach.status].c,fontWeight:500,margin:"0 0 12px",lineHeight:1.5,
