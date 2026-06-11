@@ -243,8 +243,12 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
     if(!mapRef.current)return
     if(gridLayerRef.current){gridLayerRef.current.remove();gridLayerRef.current=null}
     if(!afaiGrid||!afaiGrid.points.length)return
-    const isGP=island==="gp"
-    const pts=afaiGrid.points.filter(p=>isGP?p[0]>=15.5:p[0]<15.5)
+    // Le split lat 15.5 n'existe que parce que MQ et GP partagent la même grille
+    // Caraïbe. Les nouvelles régions livrent une grille déjà cadrée sur leur bbox :
+    // la filtrer ici la vide entièrement (Cancún 17.7-22.5°N → 0/1398 points,
+    // « aucune sargasse visible », 2026-06-11).
+    const isMQGP=island==="mq"||island==="gp"
+    const pts=isMQGP?afaiGrid.points.filter(p=>island==="gp"?p[0]>=15.5:p[0]<15.5):afaiGrid.points
     if(!pts.length)return
     const renderer=L.canvas({padding:0.5})
     const group=L.layerGroup()
@@ -283,8 +287,9 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
     if(!mapRef.current)return
     if(banksLayerRef.current){banksLayerRef.current.remove();banksLayerRef.current=null}
     if(!banksData?.banks?.length)return
-    const isGP=island==="gp"
-    const banks=banksData.banks.filter(b=>b.island===(isGP?"gp":"mq"))
+    // b.island porte "mq"/"gp"/<region.id> — le mapping direct couvre les 5 régions
+    // (l'ancien isGP?"gp":"mq" jetait tous les bancs des nouvelles régions).
+    const banks=banksData.banks.filter(b=>b.island===island)
     if(!banks.length)return
     const zoom=mapRef.current.getZoom?.()||9
     if(zoom<9)return // national view: banks too dominant visually
