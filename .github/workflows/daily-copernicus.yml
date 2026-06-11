@@ -178,13 +178,19 @@ jobs:
       # propre, jamais pollué par une autre région.
       # Une région sans secrets FTP est quand même construite, puis ignorée
       # silencieusement par manual-ftp-deploy.cjs (skip sans creds, pas d'échec).
-      # ── 2-pre-a. Boucles vidéo hero (photos ≥85 → mp4 palindrome, ffmpeg
-      # préinstallé sur ubuntu-latest). Générées ici plutôt que commitées :
-      # ~80MB de binaires régénérables = poids repo inutile. public/videos/hero/
-      # est gitignoré ; Vite les copie dans dist/ à chaque build régional.
+      # ── 2-pre-a. Boucles vidéo hero (photos ≥85 → mp4 palindrome). ffmpeg
+      # n'est PLUS garanti sur ubuntu-latest (image runner roulante : 6 runs
+      # ENOENT d'affilée le 2026-06-11) → install apt explicite si absent.
+      # continue-on-error OBLIGATOIRE : les loops sont du progressive enhancement
+      # (fallback photo-poster côté client) — leur échec ne doit jamais bloquer
+      # le deploy data. Générées ici plutôt que commitées : ~80MB régénérables.
+      # public/videos/hero/ est gitignoré ; Vite les copie dans dist/.
       - name: Hero loops vidéo (ffmpeg)
         if: steps.check_build.outputs.full == 'true'
-        run: node scripts/make-hero-loops.cjs
+        continue-on-error: true
+        run: |
+          command -v ffmpeg >/dev/null 2>&1 || { sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg; }
+          node scripts/make-hero-loops.cjs
 
       - name: Build new regions (séquentiel, avant le build MQ/GP)
         if: steps.check_build.outputs.full == 'true'
@@ -428,9 +434,14 @@ jobs:
           retention-days: 14
 
   # ── Auto-retry on failure (once, after 5 min) ─────────
+  # schedule-only : un retry dispatché est un NOUVEAU run (run_attempt repart à 1),
+  # donc sans ce gate un échec PERSISTANT boucle à l'infini — vécu 2026-06-11 :
+  # ffmpeg ENOENT → 6 runs/h pendant 1h, et les steps email (avant le commit
+  # d'état) ont renvoyé 6× le même drip J+3. schedule-only = exactement 1 retry
+  # par échec de cron, jamais de chaîne dispatch→fail→dispatch.
   retry-on-failure:
     needs: update-and-deploy
-    if: failure() && github.run_attempt == '1'
+    if: failure() && github.run_attempt == '1' && github.event_name == 'schedule'
     runs-on: ubuntu-latest
     permissions:
       actions: write
