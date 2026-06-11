@@ -5371,6 +5371,114 @@ function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,onPremium,onClos
   )
 }
 
+/* ── SCÈNE VIVANTE (WebGL) — demande user 2026-06-11 « une vraie scène, pas
+   juste animer la photo ». Shader temps réel sur la photo réelle de la plage :
+   l'eau ondule (déplacement sinusoïdal masqué sur le bas de l'image), reflets
+   qui scintillent, parallaxe douce qui suit le pointeur (gaming/interactif).
+   Rend à la résolution NATIVE de l'écran (cap DPR 2) → net en 4K, zéro mp4.
+   Honnête par construction : c'est la photo réelle, animée — rien d'inventé.
+   Fallbacks : pas de WebGL / reduced-motion / saveData → vidéo loop → photo. */
+function SceneCanvas({src,focalY=0.38,onReady}){
+  const ref=useRef(null)
+  useEffect(()=>{
+    const cv=ref.current;if(!cv)return
+    let gl=null
+    try{gl=cv.getContext("webgl",{antialias:false,alpha:false,powerPreference:"low-power"})}catch(_){}
+    if(!gl)return
+    let dead=false,raf=0,tex=null,prog=null,t0=performance.now()
+    const parCur=[0,0],parTgt=[0,0]
+    const VS="attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}"
+    const FS=`precision mediump float;
+uniform sampler2D u_tex;uniform float u_t;uniform vec2 u_res;uniform vec2 u_img;uniform vec2 u_par;uniform float u_fy;
+void main(){
+  vec2 frag=gl_FragCoord.xy/u_res;          /* 0..1, y vers le haut */
+  vec2 uv=vec2(frag.x,1.0-frag.y);          /* y vers le bas, comme l'image */
+  /* cover-fit avec point focal vertical (équivalent object-fit:cover + position center u_fy) */
+  float sc=max(u_res.x/u_img.x,u_res.y/u_img.y);
+  vec2 vis=u_res/(u_img*sc);                /* fraction visible de l'image */
+  vec2 off=vec2((1.0-vis.x)*0.5,(1.0-vis.y)*u_fy);
+  vec2 iuv=off+uv*vis;
+  /* masque eau en coordonnées ÉCRAN : avec le cadrage focal 38%, le bas du
+     viewport = avant-plan mer/sable sur nos photos plage (un masque en coord
+     image tombait sous le bloc texte mobile et figeait la scène visible) */
+  float wm=smoothstep(0.42,0.72,uv.y);
+  /* houle : 3 sinusoïdes lentes, subtiles mais visibles */
+  float wy=sin(iuv.x*42.0+u_t*1.15)*0.0030+sin(iuv.x*19.0-u_t*0.85)*0.0022;
+  float wx=sin(iuv.y*55.0+u_t*1.55)*0.0014;
+  vec2 duv=iuv+vec2(wx,wy)*wm+u_par*vec2(0.010,0.007);
+  vec3 c=texture2D(u_tex,duv).rgb;
+  /* scintillement spéculaire discret sur l'eau */
+  float sp=pow(max(0.0,sin(iuv.x*110.0+u_t*1.9)*sin(iuv.y*75.0-u_t*1.3)),24.0)*wm*0.10;
+  /* vignette douce */
+  float vg=1.0-0.16*length(frag-vec2(0.5,0.45));
+  gl_FragColor=vec4((c+sp)*vg,1.0);
+}`
+    const mk=(ty,s)=>{const sh=gl.createShader(ty);gl.shaderSource(sh,s);gl.compileShader(sh);return sh}
+    try{
+      prog=gl.createProgram()
+      gl.attachShader(prog,mk(gl.VERTEX_SHADER,VS));gl.attachShader(prog,mk(gl.FRAGMENT_SHADER,FS))
+      gl.linkProgram(prog)
+      if(!gl.getProgramParameter(prog,gl.LINK_STATUS))return
+      gl.useProgram(prog)
+      const buf=gl.createBuffer()
+      gl.bindBuffer(gl.ARRAY_BUFFER,buf)
+      gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW)
+      const loc=gl.getAttribLocation(prog,"p")
+      gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0)
+    }catch(_){return}
+    const uT=gl.getUniformLocation(prog,"u_t"),uRes=gl.getUniformLocation(prog,"u_res"),
+      uImg=gl.getUniformLocation(prog,"u_img"),uPar=gl.getUniformLocation(prog,"u_par"),
+      uFy=gl.getUniformLocation(prog,"u_fy")
+    const img=new Image()
+    img.crossOrigin="anonymous"
+    img.onload=()=>{
+      if(dead)return
+      tex=gl.createTexture()
+      gl.bindTexture(gl.TEXTURE_2D,tex)
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE)
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE)
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR)
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR)
+      gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,gl.RGB,gl.UNSIGNED_BYTE,img)
+      gl.uniform2f(uImg,img.naturalWidth,img.naturalHeight)
+      gl.uniform1f(uFy,focalY)
+      onReady&&onReady()
+      const size=()=>{
+        const dpr=Math.min(2,window.devicePixelRatio||1)
+        const w=Math.round(cv.clientWidth*dpr),h=Math.round(cv.clientHeight*dpr)
+        if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;gl.viewport(0,0,w,h)}
+        gl.uniform2f(uRes,cv.width,cv.height)
+      }
+      let last=0
+      const loop=ts=>{
+        if(dead)return
+        raf=requestAnimationFrame(loop)
+        if(document.hidden)return
+        if(ts-last<33)return            /* cap ~30fps : fluide et sobre en batterie */
+        last=ts
+        size()
+        parCur[0]+=(parTgt[0]-parCur[0])*0.06
+        parCur[1]+=(parTgt[1]-parCur[1])*0.06
+        gl.uniform1f(uT,(ts-t0)/1000)
+        gl.uniform2f(uPar,parCur[0],parCur[1])
+        gl.drawArrays(gl.TRIANGLES,0,3)
+      }
+      raf=requestAnimationFrame(loop)
+    }
+    img.src=src
+    const onMove=e=>{
+      const x=(e.touches?e.touches[0]:e).clientX,y=(e.touches?e.touches[0]:e).clientY
+      parTgt[0]=(x/window.innerWidth-0.5)*2
+      parTgt[1]=(y/window.innerHeight-0.5)*2
+    }
+    window.addEventListener("pointermove",onMove,{passive:true})
+    return()=>{dead=true;cancelAnimationFrame(raf)
+      window.removeEventListener("pointermove",onMove)
+      try{tex&&gl.deleteTexture(tex);prog&&gl.deleteProgram(prog)}catch(_){}}
+  },[src,focalY])
+  return <canvas ref={ref} aria-hidden style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block"}}/>
+}
+
 function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPremium,onOpenBeach,topBeaches,exiting}){
   useEffect(()=>{track("sg_hero_shown",{beach_id:beach.id,status:beach.status,geoloc:!!userPos})},[])
   // Boucle vidéo "drone hover" (plage animée façon SpaceX) : la photo reste le
@@ -5380,13 +5488,23 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
   // chargée si reduced-motion, saveData ou connexion 2G.
   const [vidSrc,setVidSrc]=useState(null)
   const [vidOn,setVidOn]=useState(false)
+  // Motion autorisé ? (reduced-motion / saveData / 2G → poster photo statique)
+  const allowMotion=(()=>{try{
+    if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return false
+    const c=navigator.connection
+    if(c&&(c.saveData||/(^|-)2g/.test(c.effectiveType||"")))return false
+    return true
+  }catch(_){return true}})()
+  // Scène vivante WebGL prioritaire ; la vidéo loop n'est chargée QUE si pas
+  // de WebGL (jamais les deux — pas de double coût réseau/GPU).
+  const sceneWanted=allowMotion&&(()=>{try{
+    const c=document.createElement("canvas")
+    return !!(c.getContext("webgl")||c.getContext("experimental-webgl"))
+  }catch(_){return false}})()
+  const [sceneOn,setSceneOn]=useState(false)
   useEffect(()=>{
     let dead=false
-    try{
-      if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return
-      const c=navigator.connection
-      if(c&&(c.saveData||/(^|-)2g/.test(c.effectiveType||"")))return
-    }catch(_){}
+    if(!allowMotion||sceneWanted)return
     const t=setTimeout(()=>{
       fetch("/videos/hero/manifest.json").then(r=>r.ok?r.json():null).then(m=>{
         if(dead||!m||!Array.isArray(m.ids)||!m.ids.includes(beach.id))return
@@ -5502,6 +5620,11 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
       <section ref={heroRef} className="sg-heroSec">
       <img src={beach._heroImg} alt={beach.name} fetchpriority="high"
         style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 38%"}}/>
+      {sceneWanted&&!exiting&&(
+        <div aria-hidden style={{position:"absolute",inset:0,opacity:sceneOn?1:0,transition:"opacity .9s ease"}}>
+          <SceneCanvas src={beach._heroImg} focalY={0.38} onReady={()=>setSceneOn(true)}/>
+        </div>
+      )}
       {vidSrc&&<video src={vidSrc} autoPlay muted loop playsInline preload="auto" aria-hidden
         onPlaying={()=>setVidOn(true)}
         style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 38%",
