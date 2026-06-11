@@ -3855,7 +3855,10 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
   // Annuel par défaut (best practice SaaS : AOV +60%, churn plus bas, cash
   // upfront) quand un lien annuel existe — sinon mensuel. Le badge -33% et le
   // prix /mois équivalent vendent l'annuel sans forcer l'user à diviser.
-  const[plan,setPlan]=useState(hasAnnual?"annual":"monthly")
+  // USD (no-trial) : Mensuel par défaut — audit Starlink 2026-06-11 : leur 1er
+  // contact prix est TOUJOURS mensuel ; un « $79 billed today » présélectionné
+  // 60s après la découverte = le point de rupture probable. EUR inchangé (A/B).
+  const[plan,setPlan]=useState(hasAnnual&&!NO_TRIAL?"annual":"monthly")
   // effectivePlan is what we ship to Stripe on CTA click. Fallback chain:
   //   pro → annual → monthly, only if Stripe Link is configured for that tier.
   const effectivePlan=
@@ -3935,7 +3938,18 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
         // Link retire du SetupIntent (card only) = plus de telephone. NE PAS
         // ajouter fields.billingDetails.phone:never ici : teste 2026-06-10, le
         // Payment Element ne boote plus (ready ne fire jamais) avec cette option.
-        const pe=elementsRef.current.create("payment",{layout:"tabs"})
+        // business.name : sans lui le mandat Stripe affiche « you allow PAY to
+        // charge your card » — entité sans nom à l'instant exact de la décision
+        // (audit checkout 2026-06-11). defaultValues.country : le fallback était
+        // « Martinique » (pays du compte) sur les sites USD — chaque visiteur US
+        // devait corriger + signal site étranger. EUR : comportement inchangé.
+        const brandName=IS_NEW_REGION
+          ?((lang==="es"?"Sargazo ":"Sargassum ")+String(REGION.name||""))
+          :"Sargasses Martinique"
+        const pe=elementsRef.current.create("payment",{layout:"tabs",
+          business:{name:brandName},
+          ...(IS_NEW_REGION?{defaultValues:{billingDetails:{address:{country:REGION.countryCode||"US"}}}}:{}),
+        })
         pe.mount(payDivRef.current)
         pe.on("ready",()=>{payReadyRef.current=true;setPayReady(true)})
         try{
@@ -4115,7 +4129,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
 
           <div style={{fontFamily:"'Anton',sans-serif",fontSize:10.5,color:"#14C4B0",
             letterSpacing:".18em",textTransform:"uppercase",marginBottom:8}}>
-            {_t(lang,"Avant de te rediriger","Before we redirect you","Antes de redirigirte")}
+            {/* USD : paiement on-site — « rediriger » serait faux (audit 2026-06-11).
+                EUR : Payment Link = vraie redirection, copy d'origine (A/B intouchable). */}
+            {NO_TRIAL
+              ?_t(lang,"Avant de payer","Before you pay","Antes de pagar")
+              :_t(lang,"Avant de te rediriger","Before we redirect you","Antes de redirigirte")}
           </div>
           <h2 style={{fontFamily:"'Anton',sans-serif",fontSize:26,lineHeight:1.05,letterSpacing:"-.01em",color:"#fff",margin:"0 0 14px"}}>
             {lang==="es"?<>Esto es exactamente<br/>lo que pasa.</>:lang==="en"?<>Here's exactly<br/>what happens.</>:<>Voilà exactement<br/>ce qui se passe.</>}
@@ -4173,7 +4191,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
             {[
               {icon:"🛡",title:"Stripe",sub:REGION_PAY?_t(lang,"Paiement sécurisé","Secure payment","Pago seguro"):_t(lang,"Paiement sécurisé EU","EU secure payment","Pago seguro UE")},
               {icon:"⏱",title:_t(lang,"30 jours","30 days","30 días"),sub:_t(lang,"Satisfait ou remboursé","Money-back","Reembolso garantizado")},
-              {icon:"✕",title:_t(lang,"1 clic","1 click","1 clic"),sub:_t(lang,"Annule quand tu veux","Cancel anytime","Cancela cuando quieras")},
+              {icon:"✕",title:NO_TRIAL?_t(lang,"2 clics","2 clicks","2 clics"):_t(lang,"1 clic","1 click","1 clic"),sub:_t(lang,"Annule quand tu veux","Cancel anytime","Cancela cuando quieras")},
             ].map((t,i)=>(
               <div key={i} style={{padding:"10px 8px",borderRadius:10,
                 background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.08)",
@@ -4191,7 +4209,9 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
           }} className="gbtn" style={{width:"100%",padding:14,borderRadius:14,border:"none",
             cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:15,lineHeight:1.15,
             display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-            {_t(lang,"Continuer vers Stripe","Continue to Stripe","Continuar a Stripe")} →
+            {NO_TRIAL
+              ?_t(lang,"Continuer — paiement sécurisé","Continue to secure payment","Continuar — pago seguro")
+              :_t(lang,"Continuer vers Stripe","Continue to Stripe","Continuar a Stripe")} →
           </button>
           <div style={{textAlign:"center",fontSize:10.5,color:"rgba(255,255,255,.48)",marginTop:10}}>
             {_t(lang,"Tu pourras toujours revenir en arrière.","You can always come back.","Siempre puedes volver atrás.")}
@@ -4605,7 +4625,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
                 fontFamily:"inherit",display:"flex",alignItems:"center",gap:6,padding:"8px 0"}}>
               ← {_t(lang,"Retour","Back","Atrás")}
             </button>
-            <span style={{fontSize:11,color:"rgba(255,255,255,.45)",display:"flex",alignItems:"center",gap:5}}>
+            <span style={{fontSize:11,color:"rgba(255,255,255,.45)",display:"flex",alignItems:"center",gap:8}}>
+              {/* Marque sur l'écran paiement (audit : full-screen sans aucun nom de site) */}
+              {IS_NEW_REGION&&<span style={{fontFamily:"'Anton',sans-serif",fontSize:10.5,letterSpacing:".12em",color:"rgba(255,255,255,.8)"}}>
+                {((lang==="es"?"SARGAZO ":"SARGASSUM ")+String(REGION.name||"")).toUpperCase()}
+              </span>}
               🔒 Stripe
             </span>
           </div>
