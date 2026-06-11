@@ -442,7 +442,12 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
           try{
             if(!mapRef.current)return
             const pt2=mapRef.current.latLngToContainerPoint(aimLatLng)
-            if(countAmbig(pt2)<2)onBeachClick(pickClosest(pt2,b))
+            // Ouvre TOUJOURS la plage visée après le zoom, même si l'ambiguïté
+            // persiste (régions continentales : vue très large, pins voisins à
+            // 2-3 km restent <18px après un seul cran). L'ancien garde
+            // countAmbig(pt2)<2 rendait le clic muet — audit Miami 2026-06-10 :
+            // 0/12 pins ouvraient une fiche à zoom 6-8.
+            onBeachClick(pickClosest(pt2,b))
           }catch(_){/* carte démontée pendant l'anim */}
         })
         mapRef.current.setView(aimLatLng,mapRef.current.getZoom()+2,{animate:true})

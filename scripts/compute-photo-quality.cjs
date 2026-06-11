@@ -54,6 +54,17 @@ const OUT = path.join(ROOT, 'public/data/beaches-images-quality.json')
     } catch (e) { /* photo illisible → pas de score → jamais préférée */ }
   }
   await browser.close()
+  // Curation manuelle : l'heuristique ne distingue pas "belle photo" de "belle
+  // photo DE PLAGE" (mangrove fl007 scorait 60+). Overrides documentés, mergés ici
+  // pour rester relançable sans perdre la curation.
+  const ovPath = path.join(__dirname, 'data/photo-quality-overrides.json')
+  if (fs.existsSync(ovPath)) {
+    const ov = JSON.parse(fs.readFileSync(ovPath, 'utf8'))
+    for (const [id, o] of Object.entries(ov)) {
+      if (id.startsWith('_') || typeof (o && o.score) !== 'number') continue
+      if (id in result) result[id] = o.score
+    }
+  }
   fs.writeFileSync(OUT, JSON.stringify(result))
   const vals = Object.values(result)
   console.log(`scored ${vals.length} photos | min ${Math.min(...vals)} max ${Math.max(...vals)} | moy ${Math.round(vals.reduce((a, b) => a + b, 0) / vals.length)}`)
