@@ -64,6 +64,12 @@
     }
   </style>
   <link rel="preload" href="/api/copernicus/sargassum.json" as="fetch" crossorigin />
+  <!-- Data du premier écran : sans preload, ces fetches partaient APRÈS l'exécution
+       du bundle (mesuré t+4,8s sur sargassumcancun.com, TTFB hébergeur 0,5-2,6s) —
+       la carte mettait 8-12s à montrer ses pins (audit map-loading 2026-06-11). -->
+  <link rel="preload" href="/data/beaches-list.json" as="fetch" crossorigin />
+  <link rel="preload" href="/data/beaches-images.json" as="fetch" crossorigin />
+  <link rel="preload" href="/data/beaches-images-quality.json" as="fetch" crossorigin />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://www.clarity.ms" />

@@ -8,7 +8,26 @@
 import React,{useState,useEffect,useRef,useMemo,useCallback,createContext,useContext,Component,Suspense,lazy}from"react"
 import {computeScore as _computeBeachScore} from "./src/lib/score.js"
 
-const LazyMapView=lazy(()=>import("./src/MapView"))
+// Import résilient : pendant la fenêtre FTP d'un deploy (~25 min), un index.html
+// frais peut référencer un chunk pas encore uploadé → import() rejette et le
+// Suspense affichait un spinner ÉTERNEL (« les sites loadent indéfiniment au
+// moment de l'apparition de la map », user 2026-06-11). Récupération : retry à
+// 1,5 s (l'upload du chunk peut aboutir entre-temps), puis UN reload de resync
+// index↔chunks (garde sessionStorage anti-boucle), puis erreur réelle.
+const lazyWithRetry=imp=>lazy(()=>imp()
+  .then(m=>{try{sessionStorage.removeItem("sg_chunk_reload")}catch(_){}return m})
+  .catch(()=>new Promise(r=>setTimeout(r,1500)).then(imp))
+  .catch(err=>{
+    try{
+      if(!sessionStorage.getItem("sg_chunk_reload")){
+        sessionStorage.setItem("sg_chunk_reload","1")
+        window.location.reload()
+        return new Promise(()=>{}) // reload en cours — ne pas rendre d'erreur
+      }
+    }catch(_){}
+    throw err
+  }))
+const LazyMapView=lazyWithRetry(()=>import("./src/MapView"))
 
 class ErrBound extends Component{
   constructor(p){super(p);this.state={err:null}}
