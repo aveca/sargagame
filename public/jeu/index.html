@@ -48,6 +48,21 @@
   @keyframes fl{ from{opacity:1} to{opacity:0} }
   .wordmark{ position:absolute; top:calc(14px + env(safe-area-inset-top)); left:0; right:0; text-align:center;
     font-family:'Anton',sans-serif; font-size:11px; letter-spacing:.16em; opacity:.8; z-index:45; pointer-events:none; }
+  #comboPill{ display:none; position:absolute; top:calc(56px + env(safe-area-inset-top)); left:50%; transform:translateX(-50%);
+    z-index:55; background:rgba(255,120,30,.16); border:1px solid rgba(255,160,60,.45); border-radius:999px; padding:5px 13px;
+    font-family:'Anton',sans-serif; font-size:15px; letter-spacing:.05em; color:#FFB347; pointer-events:none; }
+  #stage.shake{ animation:shake .3s linear; }
+  @keyframes shake{ 20%{transform:translate(-8px,4px)} 40%{transform:translate(7px,-5px)} 60%{transform:translate(-5px,3px)} 80%{transform:translate(4px,-2px)} }
+  .btn.pulse{ animation:pulse 1.1s ease-in-out infinite; }
+  .btn.ghost.pulse{ border-color:var(--gold); color:var(--gold); }
+  @keyframes pulse{ 50%{ transform:scale(1.035); box-shadow:0 8px 30px rgba(255,199,44,.4) } }
+  .mailRow{ display:none; gap:8px; margin-bottom:10px; }
+  .mailRow input{ flex:1; min-width:0; user-select:text; -webkit-user-select:text; background:rgba(255,255,255,.09);
+    border:1px solid rgba(255,255,255,.28); border-radius:14px; padding:13px 14px; color:#fff; font-size:14px; font-family:inherit; }
+  .mailRow input::placeholder{ color:rgba(255,255,255,.45); }
+  .mailRow .btn{ width:auto; padding:13px 16px; font-size:14px; border-radius:14px; box-shadow:none; }
+  .panel p.mailOk{ background:rgba(46,204,113,.13); border:1px solid rgba(46,204,113,.4); border-radius:12px;
+    padding:10px 13px; font-size:13px; font-weight:700; color:#7ee2a8; margin-bottom:10px; }
 </style>
 </head>
 <body>
@@ -63,6 +78,7 @@
     <span class="pill" id="lives">🏖️🏖️🏖️</span>
   </div>
   <div id="flash"></div>
+  <div id="comboPill"></div>
 
   <div class="panel" id="startPanel">
     <div class="defi" id="defiBox">🏆 <span id="defiTxt"></span></div>
@@ -75,6 +91,8 @@
     <div><span class="verdict" id="endVerdict"></span></div>
     <h1 id="endTitle"></h1>
     <p id="endMsg"></p>
+    <form class="mailRow" id="mailRow"><input id="mailIn" type="email" inputmode="email" autocomplete="email" required><button class="btn" id="mailBtn" type="submit"></button></form>
+    <p class="mailOk" id="mailOk" style="display:none"></p>
     <button class="btn" id="btnSite"></button>
     <button class="btn ghost" id="btnShare"></button>
     <button class="btn ghost" id="btnReplay"></button>
@@ -99,7 +117,9 @@ const T={
     loseMsg:b=>'C’est exactement ça, une vraie plage touchée : on ne gagne pas au râteau. Le secret, c’est de savoir OÙ aller'+(b?' — '+b+' est propre aujourd’hui.':'.'),
     cta:'Voir la plage propre du jour →',share:'Défier un ami 🏆',replay:'Rejouer',
     verdict:(b,s)=>b?b.toUpperCase()+' — PROPRE AUJOURD’HUI'+(s?' · '+s+'/100':''):'LA PLAGE PROPRE DU JOUR T’ATTEND',
-    shareTxt:n=>'J’ai ramassé '+n+' pts de sargasses sur SargaCatch 🌊 Bats-moi ici :',copied:'Lien de défi copié !'},
+    shareTxt:(d,n,c)=>'SargaCatch #'+d+' 🌊 '+n+' pts'+(c>=3?' · 🔥 combo ×'+c:'')+' — bats-moi ici :',copied:'Lien de défi copié !',
+    day:n=>'Défi du jour #'+n+' — mêmes vagues pour tous',record:'🏆 Nouveau record perso !',
+    mailPh:'Ton email — le verdict de demain matin',mailBtn:'💾 Sauver',mailOk:'Score sauvegardé ! Le verdict arrive demain matin 🌅'},
   en:{title1:'Save',title2:'the beach',start:'Play 🌊',
     msg:'Sargassum is drifting toward the sand. Tap it before it reaches the beach. 3 clumps on the sand = beach lost. 45 seconds. ×2 combos!',
     defi:n=>'Your friend scored '+n+' pts — beat it!',
@@ -108,7 +128,9 @@ const T={
     loseMsg:b=>'That’s exactly what a hit beach is like: you can’t win with a rake. The trick is knowing WHERE to go'+(b?' — '+b+' is clean today.':'.'),
     cta:'See today’s clean beach →',share:'Challenge a friend 🏆',replay:'Play again',
     verdict:(b,s)=>b?b.toUpperCase()+' — CLEAN TODAY'+(s?' · '+s+'/100':''):'TODAY’S CLEAN BEACH IS WAITING',
-    shareTxt:n=>'I scooped '+n+' pts of sargassum on SargaCatch 🌊 Beat me here:',copied:'Challenge link copied!'},
+    shareTxt:(d,n,c)=>'SargaCatch #'+d+' 🌊 '+n+' pts'+(c>=3?' · 🔥 combo ×'+c:'')+' — beat me here:',copied:'Challenge link copied!',
+    day:n=>'Daily challenge #'+n+' — same waves for everyone',record:'🏆 New personal best!',
+    mailPh:'Your email — tomorrow’s verdict',mailBtn:'💾 Save',mailOk:'Score saved! Tomorrow’s verdict hits your inbox 🌅'},
   es:{title1:'Salva',title2:'la playa',start:'Jugar 🌊',
     msg:'El sargazo deriva hacia la arena. Tócalo antes de que llegue a la playa. 3 montones en la arena = playa perdida. 45 segundos. ¡Combos ×2!',
     defi:n=>'Tu amigo hizo '+n+' pts — ¡supéralo!',
@@ -117,7 +139,9 @@ const T={
     loseMsg:b=>'Así es una playa afectada de verdad: no se gana con rastrillo. El secreto es saber ADÓNDE ir'+(b?' — '+b+' está limpia hoy.':'.'),
     cta:'Ver la playa limpia de hoy →',share:'Retar a un amigo 🏆',replay:'Jugar otra vez',
     verdict:(b,s)=>b?b.toUpperCase()+' — SIN SARGAZO HOY'+(s?' · '+s+'/100':''):'TU PLAYA LIMPIA DE HOY TE ESPERA',
-    shareTxt:n=>'Recogí '+n+' pts de sargazo en SargaCatch 🌊 Supérame aquí:',copied:'¡Enlace de reto copiado!'},
+    shareTxt:(d,n,c)=>'SargaCatch #'+d+' 🌊 '+n+' pts'+(c>=3?' · 🔥 combo ×'+c:'')+' — ¡supérame aquí!:',copied:'¡Enlace de reto copiado!',
+    day:n=>'Reto del día #'+n+' — mismas olas para todos',record:'🏆 ¡Nuevo récord personal!',
+    mailPh:'Tu email — el veredicto de mañana',mailBtn:'💾 Guardar',mailOk:'¡Score guardado! El veredicto llega mañana 🌅'},
 }[LANG]
 
 // Mapping ids sargassum.json MQ/GP → beaches-list (noms) — copie de l'app
@@ -153,29 +177,40 @@ Promise.all([
 // ── Défi par URL (?defi=N) — viral sans backend ──
 const DEFI=(()=>{const m=location.search.match(/[?&]defi=(\d{1,5})/);return m?parseInt(m[1]):null})()
 
+// ── Défi du jour (pattern Wordle) : numéro public + seed quotidien → mêmes vagues pour tous ──
+const EPOCH=Date.parse('2026-06-01T00:00:00Z')
+const DAYN=Math.max(1,Math.floor((Date.now()-EPOCH)/864e5)+1)
+const _d=new Date()
+const SEED=_d.getUTCFullYear()*1e4+(_d.getUTCMonth()+1)*100+_d.getUTCDate()
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+let rng=mulberry32(SEED)
+
 // ── UI strings ──
 const $=id=>document.getElementById(id)
-$('wordmark').textContent='SARGACATCH · '+SITE
+$('wordmark').textContent='SARGACATCH #'+DAYN+' · '+SITE
 const h1s=$('startTitle');h1s.textContent=''
 h1s.appendChild(document.createTextNode(T.title1));h1s.appendChild(document.createElement('br'))
 const gs=document.createElement('span');gs.className='g';gs.textContent=T.title2;h1s.appendChild(gs)
 $('startMsg').textContent=T.msg;$('btnStart').textContent=T.start
 $('btnSite').textContent=T.cta;$('btnShare').textContent=T.share;$('btnReplay').textContent=T.replay
-if(DEFI){$('defiBox').style.display='flex';$('defiTxt').textContent=T.defi(DEFI)}
+$('defiBox').style.display='flex'
+$('defiTxt').textContent=DEFI?T.defi(DEFI):T.day(DAYN)
+$('mailIn').placeholder=T.mailPh;$('mailBtn').textContent=T.mailBtn
 
 // ── Jeu ──
 const stage=$('stage'),tpl=$('sgTpl')
-let blobs=[],score=0,lives=3,t=45,combo=0,comboT=0,running=false,raf=null,spawnAcc=0,last=0,timerIv=null
+let blobs=[],score=0,lives=3,t=45,combo=0,maxCombo=0,comboT=0,running=false,raf=null,spawnAcc=0,last=0,timerIv=null
 function hud(){$('score').textContent=score;$('timer').textContent=Math.ceil(t)+'s'
   $('lives').textContent='🏖️'.repeat(lives)+'💀'.repeat(3-lives)}
 function spawn(){
   const el=document.createElement('div');el.className='sg'
   el.appendChild(tpl.content.firstElementChild.cloneNode(true))
   const W=stage.clientWidth
-  const b={el,x:20+Math.random()*(W-100),y:-60,vy:34+Math.random()*30+(45-t)*1.1,wob:Math.random()*6.28,alive:true}
+  const b={el,x:20+rng()*(W-100),y:-60,vy:42+rng()*34+(45-t)*1.25,wob:rng()*6.28,alive:true}
   el.style.transform='translate('+b.x+'px,'+b.y+'px)'
   el.addEventListener('pointerdown',e=>{e.preventDefault();if(!b.alive||!running)return;b.alive=false
-    combo=(comboT>0)?combo+1:1;comboT=1.6
+    combo=(comboT>0)?combo+1:1;comboT=1.6;if(combo>maxCombo)maxCombo=combo
+    const cp=$('comboPill');if(combo>=2){cp.style.display='block';cp.textContent='🔥 ×'+combo}
     const pts=10*(combo>=3?2:1);score+=pts
     const p=document.createElement('div');p.className='pts';p.textContent='+'+pts+(combo>=3?' ×2':'')
     p.style.left=(b.x+8)+'px';p.style.top=(b.y-6)+'px';stage.appendChild(p);setTimeout(()=>p.remove(),700)
@@ -185,9 +220,9 @@ function spawn(){
 function loop(ts){
   if(!running)return
   const dt=Math.min(.05,(ts-last)/1000)||0;last=ts
-  comboT-=dt;if(comboT<=0)combo=0
+  comboT-=dt;if(comboT<=0){combo=0;$('comboPill').style.display='none'}
   spawnAcc+=dt
-  if(spawnAcc>Math.max(.42,1.05-(45-t)*.013)){spawnAcc=0;spawn()}
+  if(spawnAcc>Math.max(.36,.70-(45-t)*.010)){spawnAcc=0;spawn()}
   const H=stage.clientHeight
   for(const b of blobs){
     if(!b.alive)continue
@@ -196,6 +231,7 @@ function loop(ts){
     if(b.y>H-66){b.alive=false;b.el.remove();lives--
       const s=document.createElement('div');s.className='splat';s.style.left=(b.x-12)+'px';stage.appendChild(s)
       const f=$('flash');f.style.display='block';f.style.animation='none';void f.offsetWidth;f.style.animation='fl .3s ease-out'
+      stage.classList.remove('shake');void stage.offsetWidth;stage.classList.add('shake')
       hud();if(lives<=0)return end(false)}
   }
   blobs=blobs.filter(x=>x.alive)
@@ -204,27 +240,49 @@ function loop(ts){
 function start(){
   $('startPanel').style.display='none';$('endPanel').style.display='none';$('hud').style.display='flex'
   document.querySelectorAll('.sg,.splat,.pts').forEach(e=>e.remove())
-  blobs=[];score=0;lives=3;t=45;combo=0;spawnAcc=0;last=performance.now();running=true;hud()
+  blobs=[];score=0;lives=3;t=45;combo=0;maxCombo=0;spawnAcc=.5;last=performance.now();running=true
+  rng=mulberry32(SEED);$('comboPill').style.display='none';hud()
   clearInterval(timerIv);timerIv=setInterval(()=>{t--;hud();if(t<=0)end(true)},1000)
   raf=requestAnimationFrame(loop)
+  spawn()
 }
 function end(won){
   running=false;clearInterval(timerIv);cancelAnimationFrame(raf)
-  $('hud').style.display='none';$('endPanel').style.display='flex'
+  $('hud').style.display='none';$('comboPill').style.display='none';$('endPanel').style.display='flex'
   $('endVerdict').textContent=T.verdict(TODAY.beach,TODAY.score)
   const h=$('endTitle');h.textContent=''
   const g=document.createElement('span');g.className='g';g.textContent=score
   if(won){h.appendChild(g);h.appendChild(document.createTextNode(' '+T.win))}
   else{h.appendChild(document.createTextNode(T.lose+' '));h.appendChild(g);h.appendChild(document.createTextNode(' '+T.pts))}
   const beat=DEFI!=null&&score>DEFI
-  $('endMsg').textContent=(beat?'🏆 ':'')+(won?T.winMsg:T.loseMsg(TODAY.beach))
+  // Record perso → jalon de partage (pattern Duolingo : prompt sur milestone, pas en continu)
+  let best=0;try{best=parseInt(localStorage.getItem('sg_best')||'0')}catch{}
+  const rec=score>0&&score>best
+  if(rec)try{localStorage.setItem('sg_best',String(score))}catch{}
+  $('endMsg').textContent=(beat?'🏆 ':'')+(rec?T.record+' ':'')+(won?T.winMsg:T.loseMsg(TODAY.beach))
+  $('btnShare').classList.toggle('pulse',rec||beat)
+  // Capture email post-score (play-first) : 1 champ, masqué si déjà capturé
+  let has=false;try{has=!!localStorage.getItem('sg_email')}catch{}
+  $('mailRow').style.display=has?'none':'flex';$('mailOk').style.display='none'
 }
 function share(){
   const url=location.origin+'/jeu/?defi='+score+'&utm_source=share&utm_medium=sargacatch'
-  const txt=T.shareTxt(score)
+  const txt=T.shareTxt(DAYN,score,maxCombo)
   if(navigator.share)navigator.share({title:'SargaCatch',text:txt,url}).catch(()=>{})
   else if(navigator.clipboard){navigator.clipboard.writeText(txt+' '+url);alert(T.copied)}
 }
+$('mailRow').addEventListener('submit',e=>{
+  e.preventDefault()
+  const em=$('mailIn').value.trim()
+  if(!em||!em.includes('@'))return
+  const island=/guadeloupe/.test(HOST)?'GP':/puntacana/.test(HOST)?'PUNTACANA':/miami/.test(HOST)?'FLORIDA':/cancun/.test(HOST)?'RIVIERAMAYA':'MQ'
+  try{fetch('https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec',{
+    method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
+    body:JSON.stringify({email:em,island,source:'sargacatch',date:new Date().toISOString(),score,day:DAYN})
+  }).catch(()=>{})}catch{}
+  try{localStorage.setItem('sg_email',em)}catch{}
+  $('mailRow').style.display='none';const ok=$('mailOk');ok.textContent=T.mailOk;ok.style.display='block'
+})
 $('btnStart').addEventListener('click',start)
 $('btnReplay').addEventListener('click',start)
 $('btnShare').addEventListener('click',share)
