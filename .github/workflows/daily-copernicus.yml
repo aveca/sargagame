@@ -131,6 +131,16 @@ jobs:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         run: node scripts/automation/drip-email.cjs
 
+      # Support automatisé : excuses d'incident depuis data/incidents.json
+      # (hashes RGPD, idempotent par destinataire, fenêtre 10-20 UTC interne
+      # au script — jamais d'excuse à 2h du matin). Pour tout incident futur :
+      # ajouter une entrée à incidents.json, le prochain run en fenêtre envoie.
+      - name: Send incident apologies (if any pending)
+        continue-on-error: true
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: node scripts/automation/incident-apology.cjs
+
       - name: Health check (uptime monitoring + staleness alerts)
         continue-on-error: true
         env:
@@ -159,7 +169,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json; do
+          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json; do
             [ -f "$f" ] && git add "$f"
           done
           if git diff --cached --quiet; then echo "Email state unchanged."; exit 0; fi
@@ -308,6 +318,7 @@ jobs:
           [ -f scripts/automation/data/welcome-sent.json ] && git add scripts/automation/data/welcome-sent.json
           [ -f scripts/automation/data/drip-sent.json ] && git add scripts/automation/data/drip-sent.json
           [ -f scripts/automation/data/bounced-emails.json ] && git add scripts/automation/data/bounced-emails.json
+          [ -f scripts/automation/data/incidents.json ] && git add scripts/automation/data/incidents.json
           [ -f scripts/automation/data/backtest-results.json ] && git add scripts/automation/data/backtest-results.json
           [ -f scripts/automation/data/weekend-sent.json ] && git add scripts/automation/data/weekend-sent.json
           # Dédup notifs inter-runs : sans persistance, la même alerte repart 4-6×/j.

@@ -1,0 +1,13 @@
+[
+  {
+    "id": "2026-06-11-drip-duplicates",
+    "type": "apology_duplicate_emails",
+    "created": "2026-06-11T04:40:00Z",
+    "note": "Boucle retry CI 00:48-04:00 UTC (ffmpeg ENOENT × retry-on-failure non gaté) : drip J+3 envoyé ~17×, J+7 ~8×. Fixes 6b070b6 + 0a484d9.",
+    "recipients": [
+      "82e0ff7011e7d534dc08accf37ce724e",
+      "2281a5e850fdbe30d1f808abfde8aa75"
+    ],
+    "sent": {}
+  }
+]
