@@ -1020,18 +1020,23 @@ ${isGP ? '' : `  <url><loc>${d}/a-propos/</loc><lastmod>${today}</lastmod><chang
             const beachImgTag = _beachImages[b.id]
               ? `<img src="/beaches/${_beachImages[b.id]}" alt="${b.name} — plage ${b.commune}, ${island}" width="800" height="450" loading="lazy" />`
               : ''
+            // Footer réseau USD : MQ/GP (domaines forts, pos 3-8) irriguent les
+            // jeunes domaines — jusqu'ici seule la homepage linkait le réseau,
+            // asymétrique avec les pages USD qui linkent MQ/GP partout (2026-06-11).
+            // Aucun mot « Martinique » ici : le text-swap GP ne doit pas le toucher.
+            const networkLine = `<p>Même méthode satellite sur nos autres destinations : <a href="https://sargassumcancun.com/" rel="noopener">sargazo à Cancún</a> · <a href="https://sargassumpuntacana.com/" rel="noopener">sargassum Punta Cana</a> · <a href="https://sargassummiami.com/" rel="noopener">sargassum Floride</a>.</p>`
             let noscriptBlock
             if (_enrichments[b.slug]) {
               // Keep existing enrichment noscript but prepend image and append extra sections
               const enrichedWithImg = _enrichments[b.slug].noscript.replace('<article>', `<article>${beachImgTag}`)
-              noscriptBlock = enrichedWithImg.replace('</article>', `${extraSections}</article>`)
+              noscriptBlock = enrichedWithImg.replace('</article>', `${extraSections}${networkLine}</article>`)
             } else {
               const sameCommune = beaches.filter(o => o.commune === b.commune && o.slug !== b.slug)
               const sameIsland = beaches.filter(o => o.island === b.island && o.commune !== b.commune && o.slug !== b.slug)
               const nearby = sameCommune.slice(0, 4)
               if (nearby.length < 4) nearby.push(...sameIsland.slice(0, 4 - nearby.length))
               const nearbyLi = nearby.map(o => `<li><a href="/plages/${o.slug}/">${o.name}</a> — ${o.commune}</li>`).join('')
-              noscriptBlock = `\n    <noscript>\n      <article>\n        <h1>Sargasses à ${b.name} (${b.commune}, ${island})</h1>\n        ${beachImgTag}\n        <p>État des sargasses à ${b.name} en temps réel. Cette plage de ${b.commune} en ${island} est surveillée quotidiennement par satellite.</p>\n        ${extraSections}\n        <h3>Plages à proximité</h3>\n        <ul>${nearbyLi}</ul>\n        <p><a href="/carte-sargasses/">Voir la carte des sargasses</a> · <a href="/alertes/">Alertes sargasses</a> · <a href="/">Accueil Sargasses ${island}</a></p>\n      </article>\n    </noscript>`
+              noscriptBlock = `\n    <noscript>\n      <article>\n        <h1>Sargasses à ${b.name} (${b.commune}, ${island})</h1>\n        ${beachImgTag}\n        <p>État des sargasses à ${b.name} en temps réel. Cette plage de ${b.commune} en ${island} est surveillée quotidiennement par satellite.</p>\n        ${extraSections}\n        <h3>Plages à proximité</h3>\n        <ul>${nearbyLi}</ul>\n        <p><a href="/carte-sargasses/">Voir la carte des sargasses</a> · <a href="/alertes/">Alertes sargasses</a> · <a href="/">Accueil Sargasses ${island}</a></p>\n        ${networkLine}\n      </article>\n    </noscript>`
             }
             const finalHtml = beachHtml.replace('</body>', noscriptBlock + '\n</body>')
             writeFileSync(resolve(beachDir, 'index.html'), finalHtml)
