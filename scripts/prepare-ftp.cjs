@@ -183,6 +183,10 @@ for (const region of legacyRegions) {
 
   filterHeroLoops(out, new Set([ownIsland]), title)
 
+  // /about/ (EN/ES) = page confiance des domaines USD. Sur MQ/GP (/a-propos/
+  // existe) ce serait un orphelin EN crawlable — miroir du skip 'a-propos' USD.
+  try { fs.rmSync(path.join(out, 'about'), { recursive: true, force: true }) } catch (_) {}
+
   // Remplacer l'ancien OneSignal App ID par le bon pour ce site
   const filesToPatch = [
     'index.html',

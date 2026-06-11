@@ -5342,7 +5342,9 @@ function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,onPremium,onClos
     const lbl=c.label.replace(/^← /,"")
     if(c.k==="root"){setMsgs(m=>[...m,{who:"me",text:lbl},hello]);return}
     if(c.k==="cta"){track("sg_chat_cta",{});onClose();onPremium();return}
-    if(c.k==="about"){track("sg_chat_branch",{branch:"about_page"});window.location.href="/a-propos/";return}
+    // USD : /about/ (EN/ES, shipped 2026-06-11) — /a-propos/ n'existe que MQ/GP
+    // (pointer /a-propos/ sur USD = 404 avalé par le fallback SPA).
+    if(c.k==="about"){track("sg_chat_branch",{branch:"about_page"});window.location.href=IS_NEW_REGION?"/about/":"/a-propos/";return}
     if(c.k.startsWith("open:")){
       const b=cands.find(x=>x.id===c.k.slice(5))
       if(b){track("sg_chat_branch",{branch:"open_beach"});onClose();onOpenBeach(b)}
@@ -6070,6 +6072,10 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
         <div style={{fontFamily:"'Anton',sans-serif",fontSize:12,letterSpacing:".14em",color:"rgba(255,255,255,.6)",marginBottom:6}}>{wordmark}</div>
         <div style={{fontSize:11,color:"rgba(255,255,255,.38)"}}>
           🛰 {_t(lang,"Données : Copernicus Marine","Data: Copernicus Marine","Datos: Copernicus Marine")}{upd?` · LIVE ${upd}`:""}
+          {" · "}
+          <a href={IS_NEW_REGION?"/about/":"/a-propos/"} style={{color:"rgba(255,255,255,.38)"}}>
+            {_t(lang,"À propos","About","Acerca de")}
+          </a>
         </div>
       </footer>
     </div>
