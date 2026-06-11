@@ -14,7 +14,7 @@
   *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
   body{ background:var(--ink); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; color:#fff; overflow:hidden; }
   #stage{ position:fixed; inset:0; max-width:560px; margin:0 auto; overflow:hidden; touch-action:manipulation; background:#0d2230; }
-  #bg{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 38%; opacity:0; transition:opacity .5s; }
+  #bg{ position:absolute; inset:0; width:100%; height:100%; display:block; }
   .scrim{ position:absolute; inset:0; background:linear-gradient(180deg,rgba(10,23,20,.62) 0%,rgba(10,23,20,.1) 22%,rgba(10,23,20,0) 45%,rgba(10,23,20,.25) 100%); pointer-events:none; }
   #hud{ position:absolute; top:0; left:0; right:0; display:flex; justify-content:space-between; align-items:center;
     padding:calc(12px + env(safe-area-inset-top)) 16px 0; z-index:50; pointer-events:none; }
@@ -94,7 +94,54 @@
   <svg viewBox="0 0 64 48"><g fill="#7a5a14"><ellipse cx="32" cy="26" rx="26" ry="13" fill="#8a6a1a"/><ellipse cx="18" cy="20" rx="12" ry="8" fill="#9a7a22"/><ellipse cx="44" cy="20" rx="13" ry="8" fill="#6b4a12"/><circle cx="14" cy="14" r="3.5" fill="#b8962e"/><circle cx="26" cy="10" r="3" fill="#b8962e"/><circle cx="40" cy="12" r="3.5" fill="#b8962e"/><circle cx="50" cy="16" r="3" fill="#b8962e"/></g></svg>
 </template>
 <div id="stage">
-  <img id="bg" alt="">
+  <!-- Fond SVG illustré style anime (statique — décision user : pas d'animation,
+       pas de photo). Plage tropicale stylisée : ciel dégradé, cumulus, mer
+       turquoise en bandes plates, sable, morne vert, palmier silhouette. -->
+  <svg id="bg" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#1B2E54"/><stop offset=".45" stop-color="#7A4A6E"/><stop offset=".78" stop-color="#E8845C"/><stop offset="1" stop-color="#FFC97A"/>
+      </linearGradient>
+      <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#D98A5B"/><stop offset=".18" stop-color="#3E6E78"/><stop offset="1" stop-color="#16323E"/>
+      </linearGradient>
+      <linearGradient id="sand" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#8A6B4E"/><stop offset="1" stop-color="#5C4332"/>
+      </linearGradient>
+      <radialGradient id="sunglow" cx=".5" cy=".5" r=".5">
+        <stop offset="0" stop-color="#FFE9A8" stop-opacity=".9"/><stop offset="1" stop-color="#FFE9A8" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <rect width="390" height="470" fill="url(#sky)"/>
+    <circle cx="195" cy="392" r="120" fill="url(#sunglow)"/>
+    <circle cx="195" cy="378" r="42" fill="#FFE9A8"/>
+    <g fill="#2A2144">
+      <path d="M28 132q14-24 44-20q10-17 34-13q26 3 28 22q18 2 16 17q-2 13-22 13H44q-18 0-16-19z" opacity=".55"/>
+      <path d="M238 86q10-18 33-15q8-12 26-9q20 2 21 17q14 2 12 12q-2 10-17 10h-62q-14 0-13-15z" opacity=".45"/>
+      <path d="M96 226q8-14 26-12q6-9 20-7q16 2 17 13q11 1 10 10q-2 8-14 8H106q-11 0-10-12z" opacity=".4"/>
+    </g>
+    <path d="M0 338q58-40 126-28q48 9 78 28v54H0z" fill="#23403A"/>
+    <path d="M0 364q48-26 106-18q58 9 96 26v36H0z" fill="#182E2A"/>
+    <rect y="392" width="390" height="270" fill="url(#sea)"/>
+    <path d="M168 392h54q8 60 2 130q-5 60-18 96h-26q-14-36-18-96q-4-70 6-130z" fill="#F4B36A" opacity=".3"/>
+    <path d="M0 426q98 10 195 0t195 0v8q-98 10-195 0t-195 0z" fill="#F4C98A" opacity=".4"/>
+    <path d="M0 498q98 10 195 0t195 0v7q-98 10-195 0t-195 0z" fill="#E8A86A" opacity=".25"/>
+    <path d="M0 578q98 12 195 2t195 2v7q-98 10-195 0t-195 0z" fill="#FFD9A0" opacity=".3"/>
+    <path d="M0 640q120-26 240-11q90 11 150 28v187H0z" fill="url(#sand)"/>
+    <path d="M0 648q120-24 240-10q88 10 150 27v6q-62-17-150-27q-120-14-240 10z" fill="#FFD9A0" opacity=".5"/>
+    <g fill="#101D14">
+      <path d="M352 690q-44-8-66 18l8 6q20-20 56-16z"/>
+      <path d="M350 690q-10-34-44-42l-2 9q28 7 38 36z"/>
+      <path d="M352 692q24-26 38-24l2 9q-14 0-32 22z"/>
+      <path d="M351 688q4-30 26-44l5 8q-18 12-23 38z"/>
+      <path d="M348 688l10-2q16 78 10 158h-14q6-78-6-156z"/>
+    </g>
+    <g fill="#3A2E14" opacity=".55">
+      <ellipse cx="60" cy="700" rx="22" ry="5"/>
+      <ellipse cx="150" cy="730" rx="14" ry="4"/>
+      <ellipse cx="265" cy="712" rx="18" ry="4"/>
+    </g>
+  </svg>
   <div class="scrim"></div>
   <div id="hud" style="display:none">
     <span class="pill" id="score">0</span>
@@ -238,10 +285,9 @@ Promise.all([
   if(pool.length){
     const best=[...pool].sort((a,b)=>((b.l.score||0)+(b.qs||0)*.6)-((a.l.score||0)+(a.qs||0)*.6))[0]
     TODAY.beach=nameOf(best.l.id);TODAY.score=best.l.score||null
-    // Fond STATIQUE photo HQ — décision user 2026-06-11 : la boucle vidéo
-    // « donne mal à la tête » pendant le jeu (cible mouvante + fond mouvant).
-    // Ne pas re-proposer d'animation de fond ici.
-    const bg=document.getElementById('bg');bg.src='/beaches/'+best.img;bg.onload=()=>{bg.style.opacity=1}
+    // Fond = SVG illustré statique dans le HTML (décisions user 2026-06-11 :
+    // pas d'animation — mal de tête — et pas de photo — pas assez HD).
+    // best ne sert plus qu'à TODAY (verdict fin de partie + coach).
   }
 }).catch(()=>{})
 
