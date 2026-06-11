@@ -107,7 +107,7 @@
     },
     "gp-sainte-anne": {
       "statusHitRate": 50,
-      "afaiMAE": 0.074,
+      "afaiMAE": 0.073,
       "pairs": 159
     },
     "gp-pt-chateaux": {
@@ -150,7 +150,7 @@
     "statusHitRate": 82,
     "afaiMAE": 0.037
   },
-  "computed": "2026-06-11T00:29:52.741Z",
+  "computed": "2026-06-11T04:02:15.568Z",
   "pairs": [
     {
       "snapshotDate": "2026-06-08",
@@ -469,11 +469,11 @@
         "confidence": 37
       },
       "actual": {
-        "afai": 0.08,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.09
+      "afaiError": 0.08
     },
     {
       "snapshotDate": "2026-06-08",
@@ -622,11 +622,11 @@
         "confidence": 37
       },
       "actual": {
-        "afai": 0.08,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.2
+      "afaiError": 0.19
     },
     {
       "snapshotDate": "2026-06-08",
@@ -1268,11 +1268,11 @@
         "confidence": 43
       },
       "actual": {
-        "afai": 0.08,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.11
+      "afaiError": 0.1
     },
     {
       "snapshotDate": "2026-06-09",
@@ -1370,11 +1370,11 @@
         "confidence": 43
       },
       "actual": {
-        "afai": 0.08,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.22
+      "afaiError": 0.21
     },
     {
       "snapshotDate": "2026-06-09",
@@ -1727,11 +1727,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.08,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.1
+      "afaiError": 0.09
     },
     {
       "snapshotDate": "2026-06-10",
@@ -1778,11 +1778,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.08,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.25
+      "afaiError": 0.24
     },
     {
       "snapshotDate": "2026-06-10",
