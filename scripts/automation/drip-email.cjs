@@ -133,6 +133,46 @@ function getRegionBrief(islandKey) {
   }
 }
 
+/**
+ * Email quotidien « verdict du matin » — leads SargaCatch (source=sargacatch).
+ * Le jeu promet « le verdict arrive demain matin » : cet email EST la promesse.
+ * 100 % donnée réelle (getRegionBrief) ; brief absent = pas d'envoi du jour.
+ */
+function buildDaily(island, brief, email) {
+  const meta = brief.meta
+  const lang = meta.lang
+  const name = meta.name || meta.place
+  const domain = meta.domain || (loadJSON(path.join(REGIONS_DIR, `${meta.regionId}.json`), {}).domain) || ''
+  const st = STATUS_LOC[lang][brief.best.status] || brief.best.status
+  const score = brief.best.score != null ? ` — ${brief.best.score}/100` : ''
+  const dayName = DAYS_FULL[lang][new Date().getDay()]
+  const subject = lang === 'fr' ? `🌅 ${brief.best.name} : ${st.toLowerCase()} aujourd'hui${score}`
+    : lang === 'es' ? `🌅 ${brief.best.name}: ${st.toLowerCase()} hoy${score}`
+    : `🌅 ${brief.best.name}: ${st.toLowerCase()} today${score}`
+  const holdLine = brief.best.j1
+    ? (brief.best.j1 === 'clean'
+      ? (lang === 'fr' ? 'Prévision : propre aussi demain ✅' : lang === 'es' ? 'Pronóstico: limpia también mañana ✅' : 'Forecast: clean tomorrow too ✅')
+      : (lang === 'fr' ? `⚠️ Prévision : se dégrade demain${brief.alt ? ` — repli : ${brief.alt}` : ''}`
+        : lang === 'es' ? `⚠️ Pronóstico: empeora mañana${brief.alt ? ` — alternativa: ${brief.alt}` : ''}`
+        : `⚠️ Forecast: turns worse tomorrow${brief.alt ? ` — fallback: ${brief.alt}` : ''}`))
+    : ''
+  const title = lang === 'fr' ? `Ton verdict plage — ${dayName}` : lang === 'es' ? `Tu veredicto de playa — ${dayName}` : `Your beach verdict — ${dayName}`
+  const sub2 = lang === 'fr' ? 'Satellite Copernicus, ce matin' : lang === 'es' ? 'Satélite Copernicus, esta mañana' : 'Copernicus satellite, this morning'
+  const ctaTxt = lang === 'fr' ? 'Voir la carte live →' : lang === 'es' ? 'Ver el mapa en vivo →' : 'See the live map →'
+  const html = `${header(title, sub2)}
+  <div style="background:#fff;padding:22px 24px">
+    <div style="font-size:13px;color:#666;margin-bottom:6px">${lang === 'fr' ? 'La plage du jour' : lang === 'es' ? 'La playa del día' : "Today's pick"}</div>
+    <div style="font-size:22px;font-weight:800;color:#0A1714">${brief.best.name}</div>
+    ${brief.best.commune ? `<div style="font-size:12px;color:#888">${brief.best.commune}</div>` : ''}
+    <div style="display:inline-block;background:${brief.best.status === 'clean' ? '#FFC72C' : brief.best.status === 'moderate' ? '#F59E0B' : '#E8522A'};color:#0A1714;font-weight:800;font-size:14px;padding:7px 14px;border-radius:999px;margin:10px 0">${st}${score}</div>
+    ${holdLine ? `<div style="font-size:13px;color:#444;margin:6px 0 0">${holdLine}</div>` : ''}
+    ${brief.degradedCount ? `<div style="font-size:12.5px;color:#666;margin-top:10px">${lang === 'fr' ? `${brief.degradedCount} plage(s) se dégradent d'ici 3 jours${brief.degradeDay ? ` (surtout ${brief.degradeDay})` : ''}.` : lang === 'es' ? `${brief.degradedCount} playa(s) empeoran en 3 días${brief.degradeDay ? ` (sobre todo el ${brief.degradeDay})` : ''}.` : `${brief.degradedCount} beach(es) turn worse within 3 days${brief.degradeDay ? ` (mostly ${brief.degradeDay})` : ''}.`}</div>` : ''}
+    ${ctaButton(ctaTxt, `https://${domain}/?utm_source=email&utm_medium=daily_verdict`)}
+  </div>
+  ${footer(name, domain, email, island)}`
+  return { subject, html }
+}
+
 // Drip steps: day threshold + email builder key
 const DRIP_STEPS = [
   { key: 'j3',  days: 3  },
@@ -581,6 +621,67 @@ async function main() {
 
     dripSent[key] = record
   }
+
+  // ── Verdict quotidien — leads SargaCatch (promesse du jeu : « demain matin ») ──
+  // Idempotent par jour (record.daily_last), cap par run (protège le domaine
+  // Resend), bounced filtrés, brief absent = skip SANS marquer (jamais inventer).
+  // Fenêtre 10-20 UTC : les crons tournent à 0/6/12/18 UTC — sans gate, le run
+  // de 00 UTC enverrait le « matin » à 20h la veille (MQ = UTC-4). Nominal =
+  // 12 UTC (8h MQ/Miami/PC, 7h Cancún), 18 UTC = secours si le run de midi a raté.
+  const utcH = new Date().getUTCHours()
+  const inMorningWindow = (utcH >= 10 && utcH <= 20) || FORCE
+  const todayKey = new Date().toISOString().slice(0, 10)
+  const DAILY_CAP = 150
+  let dailySent = 0, dailyWould = 0
+  for (const sub of subscribers) {
+    if (!inMorningWindow) break
+    if ((sub.source || '') !== 'sargacatch') continue
+    const email = sub.email
+    const key = emailHash(email)
+    if (bouncedSet.has(key)) continue
+    const island = (sub.island || 'MQ').toUpperCase()
+    if (!REGION_META[island]) continue
+    const record = dripSent[key] || {}
+    if (record.daily_last === todayKey) continue
+    const brief = briefFor(island)
+    if (!brief) continue
+    if (dailySent >= DAILY_CAP) break
+    if (!resend) {
+      // Dry-run : on rend quand même l'email (atteste que le builder marche) +
+      // dump du premier HTML pour inspection visuelle.
+      const p = buildDaily(island, brief, email)
+      console.log(`  ~ ${email} [daily] would send: "${p.subject}"`)
+      if (!dailyWould) try { fs.writeFileSync(path.join(__dirname, 'data', 'daily-preview.html'), p.html) } catch {}
+      dailyWould++
+      continue
+    }
+    const meta = REGION_META[island]
+    const from = meta.regionId
+      ? `${meta.lang === 'es' ? 'Sargazo' : 'Sargassum'} ${meta.place} <alerte@sargasses-martinique.com>`
+      : (island === 'GP' ? FROM_GP : FROM_MQ)
+    const { subject, html } = buildDaily(island, brief, email)
+    try {
+      const { data, error } = await resend.emails.send({
+        from, to: email, subject, html,
+        headers: {
+          'List-Unsubscribe': `<${unsubUrl(email, island)}>`,
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        },
+      })
+      if (error) { console.log(`  x ${email} [daily]: ${error.message}`) }
+      else {
+        console.log(`  + ${email} [daily] (${island})`)
+        record.daily_last = todayKey
+        dripSent[key] = record
+        dailySent++
+        await trackToSheet({
+          resend_id: data?.id || '', to: email, subject,
+          email_type: 'daily_verdict', island, status: 'sent', source: 'sargacatch',
+        })
+      }
+    } catch (e) { console.log(`  x ${email} [daily]: ${e.message}`) }
+  }
+  if (dailySent || dailyWould) console.log(`Daily verdict: ${dailySent} sent, ${dailyWould} dry-run.`)
 
   if (!API_KEY) {
     console.log(`\nDry-run: ${alreadyDripped} subscriber(s) recognized as already in drip, ${wouldSend} email(s) would be sent. Nothing saved.`)
