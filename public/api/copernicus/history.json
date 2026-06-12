@@ -3155,7 +3155,7 @@
       "levels": [
         {
           "id": "grande-anse",
-          "afai": 0.1,
+          "afai": 0.09,
           "status": "clean"
         },
         {
@@ -3205,7 +3205,7 @@
         },
         {
           "id": "gp-grande-anse",
-          "afai": 0.08,
+          "afai": 0.07,
           "status": "clean"
         },
         {
