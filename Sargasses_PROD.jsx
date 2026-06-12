@@ -5865,6 +5865,36 @@ function SatelliteFilm({lang}){
   )
 }
 
+/* ── SceneWipe — transition phasée entre l'accueil et l'écran suivant
+   (directive user 12/06 nuit : « des phases précises en série entre chaque
+   élément, interactif, instructif »). Trois temps en 720 ms : le faisceau
+   satellite balaie l'écran, un voile s'estompe, la légende ENSEIGNE la
+   grammaire de la destination (« chaque pastille = la mesure du matin »).
+   pointer-events none (ne bloque jamais), jamais montée si reduced-motion. ── */
+function SceneWipe({label,onDone}){
+  useEffect(()=>{const t=setTimeout(onDone,780);return()=>clearTimeout(t)},[])
+  return(
+    <div aria-hidden style={{position:"absolute",inset:0,zIndex:1095,pointerEvents:"none",overflow:"hidden"}}>
+      <style>{`
+@keyframes sgwBeam{0%{transform:translateX(-14vw)}100%{transform:translateX(114vw)}}
+@keyframes sgwVeil{0%{opacity:0}26%{opacity:.5}100%{opacity:0}}
+@keyframes sgwLab{0%,16%{opacity:0;transform:translateY(8px)}34%,76%{opacity:1;transform:none}100%{opacity:0}}
+      `}</style>
+      <div style={{position:"absolute",inset:0,background:"#0A1714",animation:"sgwVeil .74s ease-out forwards"}}/>
+      <div style={{position:"absolute",top:0,bottom:0,left:0,width:"13vw",
+        animation:"sgwBeam .56s cubic-bezier(.55,.06,.35,1) forwards",
+        background:"linear-gradient(90deg,rgba(255,199,44,0) 0%,rgba(255,199,44,.13) 55%,rgba(255,199,44,.8) 97%,#FFC72C 100%)"}}/>
+      <div style={{position:"absolute",left:16,right:16,bottom:"18%",textAlign:"center",animation:"sgwLab .74s ease-out forwards"}}>
+        <span style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(10,23,20,.8)",
+          border:"1px solid rgba(255,199,44,.4)",color:"#fff",fontSize:12.5,fontWeight:700,
+          letterSpacing:".04em",padding:"8px 14px",borderRadius:999,maxWidth:"100%"}}>
+          <BrandIcon name="satellite" size={15} style={{flex:"none"}}/>{label}
+        </span>
+      </div>
+    </div>
+  )
+}
+
 /* Override QA de phase (?ph=dawn|day|golden|night) — capturé au chargement du
    module car les effets de l'app nettoient la query string avant le mount. */
 const HERO_PH_OVERRIDE=(()=>{try{
@@ -6087,9 +6117,12 @@ function HeroScene(){
 function ScrollStory({lang,onShowMap}){
   const boxRef=useRef(null)
   const vidRef=useRef(null)
+  const vid2Ref=useRef(null)
   const srcSetRef=useRef(false)
+  const srcSet2Ref=useRef(false)
   const beatRef=useRef(-1)
   const [vidSrc,setVidSrc]=useState(null)
+  const [vidSrc2,setVidSrc2]=useState(null)
   const [beat,setBeat]=useState(0)
   const [rm]=useState(()=>{try{return window.matchMedia("(prefers-reduced-motion: reduce)").matches}catch(_){return false}})
   const allowVid=(()=>{try{
@@ -6130,13 +6163,20 @@ function ScrollStory({lang,onShowMap}){
       st.setProperty("--b5o",SEG(p,.80,.88).toFixed(3))
       st.setProperty("--b4s",(.4+.6*BACK(SEG(p,.68,.78))).toFixed(4))
       const b=p<.18?0:p<.42?1:p<.64?2:p<.82?3:4
-      if(b!==beatRef.current){
+      // tout (tracking, chargement médaillons, lecture) est conditionné à la
+      // visibilité réelle de la section — sinon le mount du landing chargeait
+      // les clips et trackait beat 1 pour tout le monde
+      const vis=r.top<vh&&r.bottom>0
+      if(vis&&b!==beatRef.current){
         beatRef.current=b;setBeat(b)
         track("sg_story_beat",{b:b+1})
+        if(b===0&&allowVid&&!srcSet2Ref.current){srcSet2Ref.current=true;setVidSrc2("/videos/sentinel6-orbit.mp4")}
         if(b===1&&allowVid&&!srcSetRef.current){srcSetRef.current=true;setVidSrc("/videos/sentinel6.mp4")}
       }
       const v=vidRef.current
-      if(v){if(b===1){if(v.paused)v.play().catch(()=>{})}else if(!v.paused)v.pause()}
+      if(v){if(vis&&b===1){if(v.paused)v.play().catch(()=>{})}else if(!v.paused)v.pause()}
+      const v2=vid2Ref.current
+      if(v2){if(vis&&b===0){if(v2.paused)v2.play().catch(()=>{})}else if(!v2.paused)v2.pause()}
     }
     const onScroll=()=>{if(!raf)raf=requestAnimationFrame(upd)}
     const tgt=scroller||window
@@ -6340,6 +6380,25 @@ function ScrollStory({lang,onShowMap}){
             <circle r="7" fill="#FFC72C" style={{offsetPath:"path('M310 354 Q400 222 498 260')",offsetDistance:"calc(var(--b5)*100%)"}}/>
           </g>
         </svg>
+
+        {/* médaillon orbite (B1) : la glisse réelle dans l'espace — NASA */}
+        <div aria-hidden style={{position:"absolute",top:"max(60px,8%)",left:"5%",width:"min(36vw,300px)",
+          borderRadius:18,overflow:"hidden",border:"1px solid rgba(255,255,255,.16)",
+          boxShadow:"0 18px 50px rgba(0,0,0,.5)",opacity:"var(--b1o)",
+          transform:"translateY(calc((1 - var(--b1))*40px))",pointerEvents:"none"}}>
+          <div style={{position:"relative",aspectRatio:"16/9",background:"#04090B"}}>
+            <img src="/videos/sentinel6-orbit-poster.jpg" alt="" loading="lazy"
+              style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
+            {vidSrc2&&<video ref={vid2Ref} src={vidSrc2} autoPlay muted loop playsInline preload="auto" aria-hidden
+              style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>}
+            <span style={{position:"absolute",top:8,left:10,display:"inline-flex",alignItems:"center",gap:5,
+              fontSize:8.5,fontWeight:700,letterSpacing:".09em",color:"#fff",background:"rgba(10,23,20,.55)",
+              border:"1px solid rgba(255,255,255,.18)",padding:"3px 8px",borderRadius:999}}>
+              <span style={{width:5,height:5,borderRadius:"50%",background:"#FFC72C",boxShadow:"0 0 6px #FFC72C"}}/>
+              {T("EN ORBITE — NASA/JPL","IN ORBIT — NASA/JPL","EN ÓRBITA — NASA/JPL")}
+            </span>
+          </div>
+        </div>
 
         {/* médaillon preuve (B2) : le vrai Sentinel-6, footage NASA */}
         <div aria-hidden style={{position:"absolute",top:"max(60px,8%)",right:"5%",width:"min(36vw,300px)",
@@ -7019,6 +7078,12 @@ export default function App(){
         &&!sessionStorage.getItem("sg_hero_seen")
     }catch(_){return false}
   })
+  // Transition phasée accueil → carte/plage (SceneWipe). Jamais si reduced-motion.
+  const[wipe,setWipe]=useState(null)
+  const fireWipe=useCallback(label=>{
+    try{if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return}catch(_){}
+    setWipe(label)
+  },[])
   // Sortie ANIMÉE du hero (audit fluidité 2026-06-11 : le cut brut en 20ms était
   // LE moment « pas fluide » de la 1re impression) : fondu+scale 300ms puis démontage.
   const[heroExiting,setHeroExiting]=useState(false)
@@ -7617,17 +7682,25 @@ export default function App(){
             onOpen={()=>{
               dismissHero("cta")
               setSelectedBeach(heroPick)
+              fireWipe(_t(lang,"Score 0-100 · mis à jour 4×/jour","0-100 score · updated 4×/day","Score 0-100 · actualizado 4×/día"))
               track("sg_beach_open",{beach_id:heroPick.id,status:heroPick.status,source:"hero"})
             }}
             onOpenBeach={b=>{
               dismissHero("landing_card")
               setSelectedBeach(b)
+              fireWipe(_t(lang,"Score 0-100 · mis à jour 4×/jour","0-100 score · updated 4×/day","Score 0-100 · actualizado 4×/día"))
               track("sg_beach_open",{beach_id:b.id,status:b.status,source:"landing_top3"})
             }}
             onPremium={()=>{dismissHero("premium");openPremium("landing")}}
-            onShowMap={()=>dismissHero("map")}
+            onShowMap={()=>{
+              dismissHero("map")
+              fireWipe(_t(lang,"Chaque pastille = la mesure du matin","Every dot = this morning's measurement","Cada punto = la medición de la mañana"))
+            }}
             exiting={heroExiting}/>
         )}
+
+        {/* TRANSITION PHASÉE accueil → écran suivant (z 1095 : au-dessus du hero, sous paywall) */}
+        {wipe&&<SceneWipe label={wipe} onDone={()=>setWipe(null)}/>}
 
         {/* SARGACATCH TOAST — petit, coin bas, jamais bloquant (z 1090 :
             au-dessus des contrôles carte, sous le paywall z1100). */}
