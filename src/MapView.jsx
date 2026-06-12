@@ -252,8 +252,13 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
     if(!pts.length)return
     const renderer=L.canvas({padding:0.5})
     const group=L.layerGroup()
+    // Rayon minimal proportionné à l'échelle de la carte : 800 m est calibré
+    // pour une île (MQ/GP, zoom ~10). Les nouvelles régions s'affichent au
+    // zoom 6-8 (côtes de 300-500 km) où 800 m ≈ 2 px → couche invisible
+    // (suite du bug « aucune sargasse » Cancún, 2026-06-12). MQ/GP inchangés.
+    const minR=isMQGP?800:3000
     for(const[lat,lng,afai]of pts){
-      const r=Math.max(800,afai*5000)
+      const r=Math.max(minR,afai*5000)
       const opacity=Math.min(0.55,afai*0.8)
       const color=afai<.15?"rgba(34,197,94,.6)":afai<.40?"rgba(232,168,0,.7)":"rgba(232,82,42,.8)"
       const c=L.circle([lat,lng],{radius:r,fillColor:color,color:"transparent",weight:0,
