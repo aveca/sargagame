@@ -430,7 +430,7 @@ if(d.updatedAt){ts.setAttribute('data-iso',d.updatedAt);show(d.updatedAt)}}).cat
 
   ${ctaSection}
 
-  <div class="foot">${esc(siteName.toUpperCase())} · 🛰 ${esc(t.fdata)}</div>
+  <div class="foot">${esc(siteName.toUpperCase())} · ${esc(t.fdata)}</div>
 </div>
 ${js ? `<script>${js}</script>` : ''}
 </body>

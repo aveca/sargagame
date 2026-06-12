@@ -14,6 +14,7 @@
  * Design aligné sur public/about/index.html (encre #0A1714, or #FFC72C, cards #10231E).
  */
 const fs = require('fs')
+const { icon: brandIcon } = require('./brand-icons.cjs')
 const path = require('path')
 
 const ROOT = path.resolve(__dirname, '..', '..')
@@ -357,9 +358,9 @@ fetch('/api/copernicus/sargassum.json',{cache:'no-store'}).then(function(r){retu
     <div class="lbl">${esc(t.l1)}</div>
     <h2>${esc(t.h2m)}</h2>
     <div class="rows">
-      <div class="row"><span class="ic">🛰</span><div><b>${esc(t.m1t)}</b><span>${esc(t.m1s)}</span></div></div>
-      <div class="row"><span class="ic">🌊</span><div><b>${esc(t.m2t)}</b><span>${esc(t.m2s)}</span></div></div>
-      <div class="row"><span class="ic">📏</span><div><b>${esc(t.m3t)}</b><span>${esc(t.m3s)}</span></div></div>
+      <div class="row"><span class="ic">${brandIcon('satellite',22,'#E8F2EF')}</span><div><b>${esc(t.m1t)}</b><span>${esc(t.m1s)}</span></div></div>
+      <div class="row"><span class="ic">${brandIcon('wave',22,'#E8F2EF')}</span><div><b>${esc(t.m2t)}</b><span>${esc(t.m2s)}</span></div></div>
+      <div class="row"><span class="ic">${brandIcon('ruler',22,'#E8F2EF')}</span><div><b>${esc(t.m3t)}</b><span>${esc(t.m3s)}</span></div></div>
       <div class="row"><span class="ic">∅</span><div><b>${esc(t.m4t)}</b><span>${esc(t.m4s)}</span></div></div>
     </div>
   </section>
@@ -368,7 +369,7 @@ fetch('/api/copernicus/sargassum.json',{cache:'no-store'}).then(function(r){retu
 
   ${freshnessSection(lang, data, slug)}
 
-  <div class="foot">${esc(siteName.toUpperCase())} · 🛰 ${esc(t.fdata)}</div>
+  <div class="foot">${esc(siteName.toUpperCase())} · ${esc(t.fdata)}</div>
 </div>
 <script>${js}</script>
 </body>

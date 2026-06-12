@@ -1047,7 +1047,7 @@ function SciFooter({lang}){
       textAlign:"center",
       fontSize:9,color:"var(--sg-mid,#686868)",letterSpacing:".02em",lineHeight:1.5,
     }}>
-      <span>🛰️ {LL.sciFooter}</span>
+      <span style={{display:"inline-flex",alignItems:"center",gap:6}}><BrandIcon name="satellite" size={14}/>{LL.sciFooter}</span>
     </div>
   )
 }
@@ -5768,6 +5768,23 @@ function AlertScene(){
   )
 }
 
+/* ── BrandIcon — kit iconographique maison (MIROIR de scripts/lib/brand-icons.cjs,
+   garder les paths synchronisés). Remplace les emojis OS sur les surfaces de
+   marque : un emoji rend différemment par device et casse la cohérence avec
+   les scènes SVG (audit design 2026-06-12). ── */
+function BrandIcon({name,size=22,accent="#FFC72C",style}){
+  const A={stroke:accent}
+  const P={
+    satellite:<><rect x="9.2" y="9.2" width="5.6" height="5.6" rx="1.2"/><path d="M7.5 9.5L5 7M16.5 14.5l2.5 2.5"/><rect x="1.6" y="2.6" width="5.2" height="3.6" rx="0.8" transform="rotate(45 4.2 4.4)"/><rect x="17.2" y="17.2" width="5.2" height="3.6" rx="0.8" transform="rotate(45 19.8 19)"/><path d="M14.5 7.5c1.6-1.6 4.6-1.4 6 0" {...A}/></>,
+    score:<><path d="M5 19V12M10 19V7M15 19v-4"/><path d="M16.5 8.5l2 2L22 7" {...A}/></>,
+    cal7:<><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 9.5h17M8 3.2v3.4M16 3.2v3.4"/><text x="12" y="17.4" textAnchor="middle" fontSize="7.5" fontWeight="800" stroke="none" fill="currentColor">7</text></>,
+    bell:<><path d="M6 16.5v-5a6 6 0 0 1 12 0v5l1.6 2.2H4.4z"/><path d="M10 21a2.2 2.2 0 0 0 4 0" {...A}/></>,
+    brief:<><rect x="3" y="8.5" width="14" height="11" rx="2"/><path d="M3.6 9.5L10 14.5l6.4-5"/><circle cx="19.5" cy="5.5" r="2.4" fill={accent} stroke="none"/><path d="M19.5 1.4v1M22.8 5.5h1M16.2 5.5h1" {...A}/></>,
+    map:<><path d="M9 4.5L4 6.5v13l5-2 6 2 5-2v-13l-5 2z"/><path d="M9 4.5v13M15 6.5v13"/></>,
+  }
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flex:"none",...style}}>{P[name]||null}</svg>
+}
+
 function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPremium,onOpenBeach,topBeaches,exiting}){
   useEffect(()=>{track("sg_hero_shown",{beach_id:beach.id,status:beach.status,geoloc:!!userPos})},[])
   // Boucle vidéo "drone hover" (plage animée façon SpaceX) : la photo reste le
@@ -5900,7 +5917,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
             whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{wordmark}</span>
           <button onClick={onShowMap} style={{flexShrink:0,background:"#FFC72C",color:"#0A1714",border:"none",
             cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:13,padding:"9px 16px",borderRadius:999}}>
-            🗺 {_t(lang,"Ouvrir la carte","Open the map","Abrir el mapa")}
+            <BrandIcon name="map" size={15} accent="#0A1714" style={{verticalAlign:"-2px",marginRight:6,display:"inline-block"}}/>{_t(lang,"Ouvrir la carte","Open the map","Abrir el mapa")}
           </button>
         </div>
       </div>
@@ -5975,7 +5992,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
             <button onClick={onShowMap} style={{flex:1,textAlign:"center",cursor:"pointer",fontFamily:"inherit",
               background:"rgba(10,23,20,.45)",color:"#fff",border:"1.5px solid rgba(255,255,255,.35)",
               fontWeight:700,fontSize:15,padding:"16px 18px",borderRadius:18,backdropFilter:"blur(6px)"}}>
-              🗺 {_t(lang,"Ouvrir la carte live","Open the live map","Abrir el mapa en vivo")}
+              <BrandIcon name="map" size={15} accent="#0A1714" style={{verticalAlign:"-2px",marginRight:6,display:"inline-block"}}/>{_t(lang,"Ouvrir la carte live","Open the live map","Abrir el mapa en vivo")}
               <span style={{display:"block",fontWeight:500,fontSize:11.5,opacity:.7,marginTop:3}}>
                 {_t(lang,"toutes les plages, en direct","every beach, real time","todas las playas, en directo")}
               </span>
@@ -6039,7 +6056,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
         <button onClick={onShowMap} className="sg-rv" style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,
           width:"100%",background:"rgba(10,23,20,.45)",color:"#fff",border:"1.5px solid rgba(255,255,255,.3)",
           cursor:"pointer",fontFamily:"inherit",fontWeight:700,fontSize:15,padding:"15px 18px",borderRadius:18,marginTop:6}}>
-          🗺 {_t(lang,"Ouvrir la carte live","Open the live map","Abrir el mapa en vivo")}
+          <BrandIcon name="map" size={15} accent="#0A1714" style={{verticalAlign:"-2px",marginRight:6,display:"inline-block"}}/>{_t(lang,"Ouvrir la carte live","Open the live map","Abrir el mapa en vivo")}
         </button>
       </section>
 
@@ -6052,13 +6069,13 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
         <div className="sg-rv" style={{margin:"16px 0 6px"}}><MethodScene/></div>
         <div className="sg-rv" style={{display:"flex",flexDirection:"column",gap:14,margin:"14px 0 20px"}}>
           {[
-            ["🛰",_t(lang,"Satellite Copernicus — 4 passages par jour, chaque plage","Copernicus satellite — 4 passes a day, every beach","Satélite Copernicus — 4 pasadas al día, cada playa")],
-            ["📊",_t(lang,"Un score 0-100 recalculé à chaque passage","A 0-100 score recomputed on every pass","Un score 0-100 recalculado en cada pasada")],
-            ["📅",_t(lang,"Prévisions 7 jours, plage par plage","7-day forecast, beach by beach","Pronóstico de 7 días, playa por playa")],
+            ["satellite",_t(lang,"Satellite Copernicus — 4 passages par jour, chaque plage","Copernicus satellite — 4 passes a day, every beach","Satélite Copernicus — 4 pasadas al día, cada playa")],
+            ["score",_t(lang,"Un score 0-100 recalculé à chaque passage","A 0-100 score recomputed on every pass","Un score 0-100 recalculado en cada pasada")],
+            ["cal7",_t(lang,"Prévisions 7 jours, plage par plage","7-day forecast, beach by beach","Pronóstico de 7 días, playa por playa")],
           ].map(([ic,txt],i)=>(
             <div key={i} style={{display:"flex",alignItems:"flex-start",gap:12,background:"#10231E",
               border:"1px solid rgba(255,255,255,.08)",borderRadius:16,padding:"14px 16px"}}>
-              <span style={{fontSize:20,lineHeight:1.2}}>{ic}</span>
+              <BrandIcon name={ic} size={22} style={{marginTop:1,color:"rgba(255,255,255,.92)"}}/>
               <span style={{fontSize:14,lineHeight:1.5,color:"rgba(255,255,255,.85)",fontWeight:600}}>{txt}</span>
             </div>
           ))}
@@ -6078,13 +6095,13 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
         <div className="sg-rv" style={{margin:"16px 0 6px"}}><AlertScene/></div>
         <div className="sg-rv" style={{display:"flex",flexDirection:"column",gap:10,margin:"14px 0 20px"}}>
           {[
-            ["🔔",_t(lang,"Une alerte quand VOTRE plage change d'état","An alert when YOUR beach changes","Una alerta cuando TU playa cambia")],
-            ["🌅",_t(lang,"Le brief du matin dans votre boîte mail","The morning brief in your inbox","El brief de la mañana en tu correo")],
-            ["📅",_t(lang,"Les 7 jours de prévisions, toutes les plages","The full 7-day forecast, every beach","Los 7 días de pronóstico, todas las playas")],
+            ["bell",_t(lang,"Une alerte quand VOTRE plage change d'état","An alert when YOUR beach changes","Una alerta cuando TU playa cambia")],
+            ["brief",_t(lang,"Le brief du matin dans votre boîte mail","The morning brief in your inbox","El brief de la mañana en tu correo")],
+            ["cal7",_t(lang,"Les 7 jours de prévisions, toutes les plages","The full 7-day forecast, every beach","Los 7 días de pronóstico, todas las playas")],
           ].map(([ic,txt],i)=>(
             <div key={i} style={{display:"flex",alignItems:"center",gap:11,fontSize:14,fontWeight:600,
               color:"rgba(255,255,255,.85)"}}>
-              <span style={{fontSize:17}}>{ic}</span>{txt}
+              <BrandIcon name={ic} size={19} style={{color:"rgba(255,255,255,.92)"}}/>{txt}
             </div>
           ))}
         </div>
