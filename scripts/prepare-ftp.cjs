@@ -268,7 +268,10 @@ Sitemap: https://${domain}/sitemap.xml
       // mécanique : composite protégé d'abord, puis swap global.
       content = content.replace(/Martinica y Guadalupe/g, '##GP_Y_MQ_ES##')
       content = content.replace(/Martinica/g, 'Guadalupe')
-      content = content.replace(/##GP_Y_MQ_ES##/g, 'Martinica y Guadalupe')
+      // Côté GP, le composite passe GP-first : différencie les titles /es/ des
+      // deux domaines (sinon 5 pages byte-identiques cross-domain, classe
+      // cannibalisation session 38) tout en gardant les deux îles.
+      content = content.replace(/##GP_Y_MQ_ES##/g, 'Guadalupe y Martinica')
 
       // 1. Domain: sargasses-martinique.com → sargasses-guadeloupe.com (canonicals, OG urls, hreflang, JSON-LD, breadcrumbs, sitemaps)
       content = content.replace(/sargasses-martinique\.com/g, 'sargasses-guadeloupe.com')
