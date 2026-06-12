@@ -12,6 +12,7 @@
 const fs = require('fs')
 const path = require('path')
 const { getAllRegions, getRegion, getBuildRegion } = require('../regions/index.cjs')
+const { zoneSlugsFor } = require('./lib/coast-zones.cjs')
 
 const root = path.join(__dirname, '..')
 const dist = path.join(root, 'dist')
@@ -165,20 +166,25 @@ for (const region of legacyRegions) {
   // dist/plages/<slug>/ for ALL 136 beaches; without this filter both FTP
   // folders ship the full set and Google sees the same beach page on both
   // domains → duplicate content → "Discovered, currently not indexed".
+  // Les HUBS de zones côtières (/plages/plages-<zone>/) de l'île passent AUSSI :
+  // sans ça la garde les supprimait au packaging (404 MQ du 2026-06-12 — les GP
+  // ne survivaient que via le miroir _gp/). Source unique : scripts/lib/coast-zones.cjs.
   const plagesDir = path.join(out, 'plages')
   const islandSlugs = beachSlugsFor(region)
+  const ownIslandForZones = (region.beachFilter && region.beachFilter.island) || region.id
+  const zoneSlugs = zoneSlugsFor(ownIslandForZones)
   if (islandSlugs && fs.existsSync(plagesDir)) {
     let removed = 0
     for (const entry of fs.readdirSync(plagesDir)) {
       const full = path.join(plagesDir, entry)
       if (!fs.statSync(full).isDirectory()) continue // keep plages/index.html
-      if (!islandSlugs.has(entry)) {
+      if (!islandSlugs.has(entry) && !zoneSlugs.has(entry)) {
         fs.rmSync(full, { recursive: true })
         removed++
       }
     }
     const kept = fs.readdirSync(plagesDir).filter(e => fs.statSync(path.join(plagesDir, e)).isDirectory()).length
-    console.log(`   → plages filtrées (${title}): ${kept} gardées, ${removed} supprimées`)
+    console.log(`   → plages filtrées (${title}): ${kept} gardées (dont ${[...zoneSlugs].filter(z => fs.existsSync(path.join(plagesDir, z))).length} hubs zones), ${removed} supprimées`)
   }
 
   filterHeroLoops(out, new Set([ownIsland]), title)
