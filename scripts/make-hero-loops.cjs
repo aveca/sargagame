@@ -73,6 +73,21 @@ for (const p of picked) {
   console.log(`  ${p.id}.mp4 + -w  (photo q${p.q})`)
 }
 
+// Overlay DepthFlow — clips parallaxe 2.5D rendus en LOCAL (GPU RTX, palindrome
+// = boucle parfaite, couture vérifiée >33dB PSNR) et commités dans
+// assets/hero-depthflow/. Remplacent le zoompan pour les ids présents : copie
+// APRÈS la génération, AVANT le manifest (qui scanne le disque). 2026-06-11.
+try {
+  const DF_DIR = path.join(ROOT, 'assets/hero-depthflow')
+  if (fs.existsSync(DF_DIR)) {
+    let n = 0
+    for (const f of fs.readdirSync(DF_DIR).filter(f => /^[a-z]+\d+(?:-w)?\.mp4$/.test(f))) {
+      fs.copyFileSync(path.join(DF_DIR, f), path.join(OUT, f)); n++
+    }
+    if (n) console.log(`  overlay DepthFlow : ${n} clip(s) (assets/hero-depthflow/)`)
+  }
+} catch (e) { console.warn('  overlay DepthFlow ignoré:', e.message) }
+
 // Manifest = uniquement les loops réellement présents sur disque.
 // v2 : ids = loops carrées, wide = ids ayant aussi la variante 1920×1080.
 const all = fs.readdirSync(OUT).filter(f => f.endsWith('.mp4')).map(f => f.replace('.mp4', ''))
