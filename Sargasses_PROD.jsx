@@ -5623,7 +5623,10 @@ function MethodScene(){
 @keyframes sgmsPing{0%{transform:scale(.4);opacity:.8}70%,100%{transform:scale(1.8);opacity:0}}
 .sgms-link{stroke-dasharray:3 5;animation:sgmsFlow 1.4s linear infinite}
 @keyframes sgmsFlow{from{stroke-dashoffset:16}to{stroke-dashoffset:0}}
-@media (prefers-reduced-motion:reduce){.sgms-sat,.sgms-beam,.sgms-w1,.sgms-w2,.sgms-raft1,.sgms-raft2,.sgms-boat,.sgms-palm,.sgms-rake,.sgms-ping,.sgms-link{animation:none}}
+.sgms-echo1{animation:sgmsEcho 2.4s ease-out infinite;transform-origin:316px 214px}
+.sgms-echo2{animation:sgmsEcho 2.4s ease-out infinite;animation-delay:1.2s;transform-origin:316px 214px}
+@keyframes sgmsEcho{0%{transform:scale(.35);opacity:.9}75%,100%{transform:scale(2.1);opacity:0}}
+@media (prefers-reduced-motion:reduce){.sgms-sat,.sgms-beam,.sgms-w1,.sgms-w2,.sgms-raft1,.sgms-raft2,.sgms-boat,.sgms-palm,.sgms-rake,.sgms-ping,.sgms-link,.sgms-echo1,.sgms-echo2{animation:none}}
         `}</style>
         <defs>
           <linearGradient id="sgmsBeamG" x1="0" y1="0" x2="0" y2="1">
@@ -5665,6 +5668,14 @@ function MethodScene(){
           </g>
         </g>
         <g transform="translate(316,214)"><use href="#sgmsSarg" transform="scale(.85)"/></g>
+        {/* écho radar sur le radeau détecté (continuité avec le film Sentinel-6)
+            + l'étiquette de mesure — la détection rendue visible */}
+        <circle className="sgms-echo1" cx="316" cy="214" r="9" fill="none" stroke="#3BA7A0" strokeWidth="1.6"/>
+        <circle className="sgms-echo2" cx="316" cy="214" r="9" fill="none" stroke="#3BA7A0" strokeWidth="1.3"/>
+        <g transform="translate(316,182)">
+          <rect x="-29" y="-10" width="58" height="17" rx="8.5" fill="rgba(10,23,20,.88)" stroke="#3BA7A0" strokeWidth="1"/>
+          <text x="0" y="3" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="9.5" fontWeight="700" fill="#5FD3C9">AFAI 0.42</text>
+        </g>
         {/* plage : langue de sable + palmier + ramasseur au râteau */}
         <path d="M318 262 Q420 218 560 212 L560 300 L318 300 Z" fill="#1A2A23"/>
         <path d="M340 262 Q430 226 560 220" stroke="#FFC72C" strokeWidth="1.4" fill="none" opacity=".5"/>
@@ -5783,6 +5794,65 @@ function BrandIcon({name,size=22,accent="#FFC72C",style}){
     map:<><path d="M9 4.5L4 6.5v13l5-2 6 2 5-2v-13l-5 2z"/><path d="M9 4.5v13M15 6.5v13"/></>,
   }
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flex:"none",...style}}>{P[name]||null}</svg>
+}
+
+/* ── SatelliteFilm — le film d'ouverture de la méthode (modèle SpaceX).
+   Footage réel NASA/JPL-Caltech (domaine public) : Sentinel-6, mission
+   Copernicus d'altimétrie, glisse au-dessus de l'océan en émettant ses
+   impulsions radar — le geste exact que MethodScene traduit ensuite en
+   verdict plage par plage (l'écho teal sur le radeau = la continuité).
+   Poster JPEG seul tant que la bande n'approche pas ; la vidéo (16 s,
+   ~4,5 Mo) ne se charge qu'à 200 px du viewport, se pause hors champ,
+   jamais chargée si reduced-motion / saveData / 2G (même règle que le héros). ── */
+function SatelliteFilm({lang}){
+  const boxRef=useRef(null)
+  const vRef=useRef(null)
+  const seenRef=useRef(false)
+  const [src,setSrc]=useState(null)
+  const [on,setOn]=useState(false)
+  useEffect(()=>{
+    const el=boxRef.current;if(!el)return
+    let allow=true
+    try{
+      if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)allow=false
+      const c=navigator.connection
+      if(c&&(c.saveData||/(^|-)2g/.test(c.effectiveType||"")))allow=false
+    }catch(_){}
+    if(!allow)return
+    const io=new IntersectionObserver(es=>{for(const e of es){
+      const v=vRef.current
+      if(e.isIntersecting){setSrc(s=>s||"/videos/sentinel6.mp4");if(v&&v.paused)v.play().catch(()=>{})}
+      else if(v&&!v.paused)v.pause()
+    }},{rootMargin:"200px 0px"})
+    io.observe(el)
+    return()=>io.disconnect()
+  },[])
+  return(
+    <figure ref={boxRef} aria-label="Sentinel-6 — Copernicus" style={{margin:"18px calc(50% - 50vw) 0",position:"relative",
+      overflow:"hidden",background:"#04090B",height:"clamp(230px,56vw,520px)"}}>
+      <img src="/videos/sentinel6-poster.jpg" alt="" loading="lazy"
+        style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 40%"}}/>
+      {src&&<video ref={vRef} src={src} autoPlay muted loop playsInline preload="auto" aria-hidden
+        onPlaying={()=>{setOn(true);if(!seenRef.current){seenRef.current=true;track("sg_film_view",{})}}}
+        style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 40%",
+          opacity:on?1:0,transition:"opacity .8s ease"}}/>}
+      <div aria-hidden style={{position:"absolute",inset:0,pointerEvents:"none",
+        background:"linear-gradient(180deg,rgba(10,23,20,.45) 0%,rgba(10,23,20,0) 30%,rgba(10,23,20,0) 62%,rgba(10,23,20,.78) 100%)"}}/>
+      <span style={{position:"absolute",top:12,left:14,display:"inline-flex",alignItems:"center",gap:6,
+        fontSize:10,fontWeight:700,letterSpacing:".1em",color:"#fff",background:"rgba(10,23,20,.5)",
+        border:"1px solid rgba(255,255,255,.18)",padding:"4px 10px",borderRadius:999}}>
+        <span style={{width:6,height:6,borderRadius:"50%",background:"#3BA7A0",boxShadow:"0 0 7px #3BA7A0"}}/>
+        SENTINEL-6 · COPERNICUS
+      </span>
+      <div style={{position:"absolute",left:14,right:14,bottom:10,display:"flex",alignItems:"flex-end",
+        justifyContent:"space-between",gap:10}}>
+        <span style={{fontSize:12.5,fontWeight:600,color:"rgba(255,255,255,.88)",textShadow:"0 1px 8px rgba(0,0,0,.5)",maxWidth:380}}>
+          {_t(lang,"Il scanne l'océan en continu, impulsion par impulsion.","It scans the ocean nonstop, pulse by pulse.","Escanea el océano sin parar, pulso a pulso.")}
+        </span>
+        <span style={{fontSize:9.5,color:"rgba(255,255,255,.42)",whiteSpace:"nowrap"}}>NASA/JPL-Caltech</span>
+      </div>
+    </figure>
+  )
 }
 
 function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPremium,onOpenBeach,topBeaches,exiting}){
@@ -5905,8 +5975,10 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
   border:1px solid rgba(255,255,255,.1);cursor:pointer;text-align:left;padding:0;font-family:inherit;
   transition:transform .25s ease,border-color .25s ease}
 .sg-l-card:hover{transform:translateY(-3px);border-color:rgba(255,199,44,.45)}
+.sg-flow{stroke-dasharray:4 6;animation:sgFlowY 1.2s linear infinite}
+@keyframes sgFlowY{from{stroke-dashoffset:20}to{stroke-dashoffset:0}}
 @media (prefers-reduced-motion:reduce){.sg-hero-chev{animation:none!important}
-.sg-rv{transition:none;opacity:1;transform:none}.sg-stick{transition:none}.sg-l-card{transition:none}}`}</style>
+.sg-rv{transition:none;opacity:1;transform:none}.sg-stick{transition:none}.sg-l-card{transition:none}.sg-flow{animation:none}}`}</style>
 
       {/* STICKY BAR — apparaît quand le hero sort de l'écran (modèle SpaceX) */}
       <div className={"sg-stick"+(stuck?" on":"")} aria-hidden={!stuck}>
@@ -6066,7 +6138,19 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
           <div style={ovl}>{_t(lang,"La méthode","The method","El método")}</div>
           <h2 style={h2s}>{_t(lang,"On regarde la mer pour vous","We watch the sea for you","Miramos el mar por ti")}</h2>
         </div>
-        <div className="sg-rv" style={{margin:"16px 0 6px"}}><MethodScene/></div>
+        {/* Le film : Sentinel-6 scanne l'océan (footage NASA/JPL réel, plein cadre) */}
+        <div className="sg-rv" data-s="film"><SatelliteFilm lang={lang}/></div>
+        {/* Le fil de la donnée : du satellite vers la scène de détection */}
+        <div className="sg-rv" aria-hidden style={{textAlign:"center",padding:"12px 0 14px"}}>
+          <svg width="14" height="46" viewBox="0 0 14 46" style={{display:"block",margin:"0 auto"}}>
+            <line className="sg-flow" x1="7" y1="0" x2="7" y2="34" stroke="#FFC72C" strokeWidth="2"/>
+            <path d="M2 34 L7 42 L12 34" fill="none" stroke="#FFC72C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          <div style={{fontFamily:"ui-monospace,monospace",fontSize:11,fontWeight:700,letterSpacing:".08em",color:"#3BA7A0",marginTop:6}}>
+            {_t(lang,"SON SIGNAL → TRADUIT PLAGE PAR PLAGE","ITS SIGNAL → TRANSLATED BEACH BY BEACH","SU SEÑAL → TRADUCIDA PLAYA POR PLAYA")}
+          </div>
+        </div>
+        <div className="sg-rv" style={{margin:"0 0 6px"}}><MethodScene/></div>
         <div className="sg-rv" style={{display:"flex",flexDirection:"column",gap:14,margin:"14px 0 20px"}}>
           {[
             ["satellite",_t(lang,"Satellite Copernicus — 4 passages par jour, chaque plage","Copernicus satellite — 4 passes a day, every beach","Satélite Copernicus — 4 pasadas al día, cada playa")],

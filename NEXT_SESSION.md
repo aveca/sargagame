@@ -16,6 +16,7 @@
 - **DepthFlow v2** : flotte 76 plages re-rendue haute fidélité (ssaa 1.5, crf 22/23, release 451 Mo). RAPPEL ARCHITECTURE : la scène WebGL est PRIORITAIRE sur le landing — les loops ne servent que les devices sans WebGL.
 - **Audit hebdo étendu aux 3 domaines USD** (SITES 5 entrées, résolution GA4 property-id dynamique via Admin API, zéro secret en plus) — le prochain run Weekly UX/SEO inclura miami/puntacana/cancun.
 - **Pages santé USD** (#19) + **GA4 quotidien dans la série KPI** (#27, premier point : MQ 303 sessions, GP 213 le 11/06) + parité webhook en CI (#38).
+- **Film satellite (directive user 12/06 « site comme SpaceX »)** : section méthode des 5 domaines = vidéo réelle NASA/JPL **Sentinel-6** (mission Copernicus, domaine public, 16 s, 4,5 Mo, `public/videos/sentinel6.mp4`) en bande full-bleed → fil doré « son signal → traduit plage par plage » → MethodScene enrichie d'un écho radar teal + étiquette AFAI 0.42 sur le radeau détecté. Lazy (IO 200 px, pause hors champ, autoPlay muted), jamais chargée si reduced-motion/saveData/2G. Vérifié preview desktop+mobile. Alternatives sourcées (workflow 12 candidats) : reel KSC 4K (launch-to-orbit), reel Sentinel-6B nov 2025 (~5:30 océan), TRACERS SVS 30 s plan continu. SW v63.
 
 ## ⚠️ REPRISE (lundi ou +)
 1. **Éval A/B pw_cta_order + pw_prelude** : le cron local lundi 09h35 ne tourne que si CE poste est allumé — sinon la lancer à la main (z-test, n≥100/bras, RECOMMEND-only, vérité Stripe pas payments_real). PREMIÈRE éval après 8 semaines — décision importante.

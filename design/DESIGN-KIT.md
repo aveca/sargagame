@@ -32,6 +32,7 @@
 | Illustrations animées | MethodScene (satellite/barque/ramasseur), AlertScene (06:00→alerte→itinéraire), scène golden-hour du jeu | JSX + `public/jeu/index.html` |
 | Photo | étalonnage héros saturate(1.12) contrast(1.04) brightness(1.01) ; qualité par plage dans `beaches-images-quality.json` | JSX (3 couches média) |
 | 2.5D | SceneCanvas WebGL (eau + parallaxe pointeur, natif-résolution, PRIORITAIRE sur les loops) ; loops DepthFlow (fallback no-WebGL, release `depthflow-heroes`) | JSX / release GitHub |
+| Film | SatelliteFilm (section méthode, modèle SpaceX) : footage réel NASA/JPL Sentinel-6 (mission Copernicus, domaine public, crédit courtoisie) — 16 s, 1600×900 crf24, fade-noir en boucle, lazy IO + pause hors champ, jamais si reduced-motion/saveData/2G. Relié à MethodScene par le fil doré + écho radar teal sur le radeau (AFAI 0.42). Le footage spatial réel est OK (≠ plages : photos réelles only) tant que domaine public/licence libre + crédit. | JSX + `public/videos/sentinel6.mp4` |
 | Motion | reveals IO (.18), sticky (.06), shine gbtn 4.5s, sheet 260ms cubic-bezier(.32,.72,.33,1) | JSX CSS |
 
 ## Phase 2 (backlog kit — dans l'ordre)
