@@ -262,6 +262,13 @@ Sitemap: https://${domain}/sitemap.xml
       content = content.replace(/Martinique &amp; Guadeloupe/g, '##GP_AMP_MQ##')
       content = content.replace(/Martinique & Guadeloupe/g, '##GP_AMPRAW_MQ##')
       content = content.replace(/Martinique and Guadeloupe/g, '##GP_AND_MQ##')
+      // 0-es. ESPAGNOL — la graphie « Martinica » ne matchait AUCUNE règle FR/EN :
+      // les pages /es/ de GP gardaient title/description/JSON-LD « Martinica »
+      // (audit 2026-06-12 : 7 occurrences, 0 « Guadalupe » sur GP /es/). Même
+      // mécanique : composite protégé d'abord, puis swap global.
+      content = content.replace(/Martinica y Guadalupe/g, '##GP_Y_MQ_ES##')
+      content = content.replace(/Martinica/g, 'Guadalupe')
+      content = content.replace(/##GP_Y_MQ_ES##/g, 'Martinica y Guadalupe')
 
       // 1. Domain: sargasses-martinique.com → sargasses-guadeloupe.com (canonicals, OG urls, hreflang, JSON-LD, breadcrumbs, sitemaps)
       content = content.replace(/sargasses-martinique\.com/g, 'sargasses-guadeloupe.com')

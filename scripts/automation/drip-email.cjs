@@ -715,8 +715,8 @@ async function main() {
     const key = emailHash(email)
     if (bouncedSet.has(key)) continue
     const island = (sub.island || 'MQ').toUpperCase()
-    // Nouvelles régions (PUNTACANA/FLORIDA/RIVIERAMAYA) : SEULE l'étape j3
-    // (brief réel localisé EN/ES) est active — j7/j14 restent FR-only.
+    // Nouvelles régions (PUNTACANA/FLORIDA/RIVIERAMAYA) : séquence complète
+    // j3/j7/j14 via les builders *Region (EN/ES, no-trial) depuis 2026-06-11.
     const isNewRegion = island !== 'MQ' && island !== 'GP'
     if (isNewRegion && !REGION_META[island]) continue
     const age = daysSince(sub.date)

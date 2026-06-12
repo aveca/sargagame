@@ -176,7 +176,19 @@ function generateRegionSeoPages(region, distDir) {
   if (!content) { console.warn(`   ⚠ seo-pages région: pas de regions/seo-content/${region.id}.json — pages non générées`); return }
   const resorts = loadJSON(path.join(ROOT, 'regions', 'resorts', `${region.id}.json`), [])
   const data = loadJSON(path.join(ROOT, 'public', 'api', 'copernicus', region.id, 'sargassum.json'), { levels: [], weekly: {} })
-  const accuracy = loadJSON(path.join(ROOT, 'public', 'api', 'copernicus', 'forecast-accuracy.json'), null)
+  // Précision réelle : backtest-results.json (régénéré CHAQUE JOUR par
+  // backtest-forecast.cjs avant les builds) — PLUS l'ancien forecast-accuracy.json
+  // qui était figé au 2026-04-10 (audit 2026-06-12 : les pages méthodologie
+  // publiaient « 86 % » d'avril comme du présent). Adapté au format horizons
+  // attendu plus bas ; fallback sur l'ancien fichier si le backtest manque.
+  const _bt = loadJSON(path.join(ROOT, 'scripts', 'automation', 'data', 'backtest-results.json'), null)
+  const accuracy = (_bt && _bt.byHorizon && _bt.byHorizon.day1) ? {
+    computedAt: _bt.computed || null,
+    horizons: {
+      'J+1': { statusMatchPct: _bt.byHorizon.day1.statusHitRate, meanAbsErr: _bt.byHorizon.day1.afaiMAE },
+      'J+3': _bt.byHorizon.day3 ? { statusMatchPct: _bt.byHorizon.day3.statusHitRate, meanAbsErr: _bt.byHorizon.day3.afaiMAE } : undefined,
+    },
+  } : loadJSON(path.join(ROOT, 'public', 'api', 'copernicus', 'forecast-accuracy.json'), null)
   const photos = loadJSON(path.join(ROOT, 'public', 'data', 'beaches-images.json'), {})
   const tpl = fs.readFileSync(path.join(distDir, 'index.html'), 'utf-8')
   const today = fmtDate(lang)
