@@ -22,6 +22,7 @@
 1. **Film satellite Sentinel-6** (d37cddd) : footage réel NASA/JPL (mission Copernicus, domaine public, crédit courtoisie affiché), 16 s / 4,5 Mo, `public/videos/sentinel6.mp4` + poster. Désormais en **médaillon « LE VRAI — NASA/JPL »** dans le beat 2 de la ScrollStory. Alternatives 4K vérifiées : memory `reference_satellite_footage.md`.
 2. **ScrollStory** (0f42f91) : la méthode = scrollytelling plein cadre, scène vectorielle sticky ~430vh, scroll natif piloté par vars CSS `--b1..--b5` + fenêtres `--bNo` recalculées en rAF (transforms/opacity only). 5 temps : orbite → scan (médaillon NASA) → dérive J+1→J+3 → verdict 06:00 (pastille PROPRE tamponne le brief) → choix + CTA carte. Tracking `sg_story_beat` 1-5.
 3. **HeroScene** (3bffffe) : le hero home = scène vectorielle golden-hour (gabarit Shinkai du jeu) — sargasses qui dérivent à l'horizon, repérées depuis l'espace (satellite, faisceau, échos teal), oiseaux, glitter, écume. **Dolly-in au scroll** (var `--hs`, couches ciel<mer<plage) : on « avance dans la baie ». Verdict/CTAs inchangés (cœur de conversion). LCP sans fetch média. SW v65.
+4. **Landing personnalisée par l'heure locale + retour accueil** (dernier push, SW v66) : HeroScene en **4 phases horaires** (aube 5-8 / jour 8-17 : ciel bleu, baigneurs, parasol+serviette, bateau de collecte au travail / golden 17-20 / nuit : lune+cratères, ciel étoilé dense, glitter argent-teal, faisceau satellite renforcé) — palette+vie par tokens, override QA `?ph=dawn|day|golden|night` (capturé au chargement du module : les effets de l'app NETTOIENT la query string avant le mount). **Bouton logo (disque or) dans le rail header = rejouer l'atterrissage** (clear sg_hero_seen + setShowHero, track sg_landing_replay). L'heure device ≈ heure plage (PC users locaux).
 - QA : 5/5 beats capturés desktop + B2/B4/B5 mobile, hero mobile+desktop+dolly vérifiés, SMOKE EUR OK ×4 (un par build).
 
 ## ⚙️ Règles techniques apprises (scrollytelling — à respecter dans toute itération)
@@ -39,6 +40,10 @@
 5. **GSC GP** : ajouter le service account propriétaire sur la propriété GP. Procédure Chrome actée : Claude ouvre GSC → propriété MQ → Paramètres → Utilisateurs (l'email du SA y est visible — la clé n'existe qu'en secret GH) → même page côté GP → le **user clique « Ajouter »** (modification de permissions = action user). Débloque les requêtes GP dans l'audit.
 6. **Phase 2 du kit** (DESIGN-KIT.md) : icônes paywall (⚠ smoke EUR : ne toucher QUE les emojis), chips chat, harmonisation des deux ors, variantes HeroScene par état (à éviter/modéré : ciel + densité de nappes) et par région (silhouette de côte).
 7. Idée notée (user, 12/06) : décliner la ScrollStory en vraie vidéo verticale (capture Playwright des beats + pipeline video-brief) pour FB/social.
+8. **ROADMAP « le produit s'enflamme » (directive user 12/06 nuit — à dérouler sur les prochaines sessions)** :
+   - chaque ZONE sa représentation cinématographique (HeroScene paramétrée par région : silhouette de côte, flore, landmarks — un objet tokens par région comme les phases) ;
+   - chaque PHOTO du produit double d'une scène profonde (tap photo card/fiche → variante vidéo/SVG vivante : bateaux qui ramassent, vie en journée/soirée — DepthFlow loops déjà en release pour les fiches, Higgsfield si crédits un jour) ;
+   - remplacer progressivement chaque image statique par vidéo/SVG/animation — continuer à publier de nouvelles versions/pages à chaque session.
 
 ## ⚖️ Décisions user en attente
 GO/NO-GO Bahamas (conditionné ventes USD) · crédits Higgsfield (ignorer sauf besoin humains/pub) · Cloudflare token · GO publication FB briefs · share-promo USD · Apple Pay device réel · GSC GP (2 min, point 5).
