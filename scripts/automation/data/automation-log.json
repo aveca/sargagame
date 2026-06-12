@@ -1,34 +1,6 @@
 {
   "runs": [
     {
-      "timestamp": "2026-05-18T14:36:16.967Z",
-      "dryRun": false,
-      "script": "seo-enrich-content",
-      "action": "enriched",
-      "beachCount": 136
-    },
-    {
-      "timestamp": "2026-05-18T14:36:17.006Z",
-      "dryRun": false,
-      "script": "generate-seo-pages",
-      "action": "pages-created",
-      "pagesCount": 3,
-      "pages": [
-        {
-          "type": "commune",
-          "path": "communes/trois-ilets"
-        },
-        {
-          "type": "commune",
-          "path": "communes/sainte-luce"
-        },
-        {
-          "type": "commune",
-          "path": "communes/trinite"
-        }
-      ]
-    },
-    {
       "timestamp": "2026-05-18T14:36:19.268Z",
       "dryRun": false,
       "script": "seo-link-graph",
@@ -1334,6 +1306,65 @@
       "script": "auto-web-content",
       "action": "generation-failed",
       "island": "mq"
+    },
+    {
+      "timestamp": "2026-06-12T14:23:45.049Z",
+      "dryRun": false,
+      "script": "seo-audit",
+      "action": "data-collection",
+      "results": {
+        "mq": {
+          "indexed": 18,
+          "total": 74,
+          "notIndexed": 0,
+          "lowCtr": 1,
+          "highBounce": 0,
+          "cwvIssues": 0
+        },
+        "gp": {
+          "indexed": 0,
+          "total": 100,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 0,
+          "cwvIssues": 0
+        },
+        "florida": {
+          "indexed": 1,
+          "total": 16,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 2,
+          "cwvIssues": 0
+        },
+        "puntacana": {
+          "indexed": 1,
+          "total": 16,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 0,
+          "cwvIssues": 0
+        },
+        "rivieramaya": {
+          "indexed": 2,
+          "total": 16,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 2,
+          "cwvIssues": 0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-06-12T14:23:45.108Z",
+      "dryRun": false,
+      "script": "ux-audit",
+      "action": "report-generated",
+      "issues": {
+        "totalIssues": 34,
+        "critical": 15,
+        "warnings": 19
+      }
     }
   ]
 }

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-11T23:52:53.994Z",
+  "generatedAt": "2026-06-12T14:10:02.461Z",
   "sites": {
     "mq": {
       "domain": "sargasses-martinique.com",
@@ -14,26 +14,26 @@
             "avgPosition": 9,
             "actualCtr": 0,
             "expectedCtr": 3,
-            "impressions": 81,
+            "impressions": 76,
             "clicks": 0,
             "topQueries": [
               {
                 "query": "anse des galets martinique",
-                "impressions": 36,
+                "impressions": 34,
                 "clicks": 0,
-                "position": 8.583333333333332
+                "position": 8.617647058823529
               },
               {
                 "query": "anse des galets martinique",
-                "impressions": 20,
+                "impressions": 19,
                 "clicks": 0,
-                "position": 8.4
+                "position": 8.421052631578949
               },
               {
                 "query": "anse galet martinique",
-                "impressions": 13,
+                "impressions": 12,
                 "clicks": 0,
-                "position": 9.23076923076923
+                "position": 9.333333333333334
               },
               {
                 "query": "anse galet martinique",
@@ -45,7 +45,7 @@
                 "query": "anse des galets martinique",
                 "impressions": 1,
                 "clicks": 0,
-                "position": 2
+                "position": 9
               }
             ]
           }
@@ -57,7 +57,7 @@
             "event": "clarity_rage_click",
             "page": "/",
             "target": "",
-            "count": 54
+            "count": 57
           },
           {
             "event": "clarity_rage_click",
@@ -82,6 +82,12 @@
             "page": "/meilleures-plages-guadeloupe-sargasses/",
             "target": "",
             "count": 1
+          },
+          {
+            "event": "clarity_rage_click",
+            "page": "/meilleures-plages-martinique-sargasses/",
+            "target": "",
+            "count": 1
           }
         ],
         "deadClicks": [
@@ -89,25 +95,25 @@
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 746
+            "count": 801
           },
           {
             "event": "clarity_dead_click",
             "page": "/carte-sargasses/",
             "target": "",
-            "count": 122
+            "count": 128
           },
           {
             "event": "clarity_dead_click",
             "page": "/en/",
             "target": "",
-            "count": 32
+            "count": 30
           },
           {
             "event": "clarity_dead_click",
             "page": "/plages/plage-du-diamant/",
             "target": "",
-            "count": 22
+            "count": 18
           },
           {
             "event": "clarity_dead_click",
@@ -117,15 +123,15 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages-sans-sargasses/",
+            "page": "/saison-sargasses-guadeloupe/",
             "target": "",
-            "count": 10
+            "count": 11
           },
           {
             "event": "clarity_dead_click",
-            "page": "/saison-sargasses-guadeloupe/",
+            "page": "/plages-sans-sargasses/",
             "target": "",
-            "count": 9
+            "count": 10
           },
           {
             "event": "clarity_dead_click",
@@ -149,7 +155,13 @@
             "event": "clarity_dead_click",
             "page": "/sargasses-record-2026/",
             "target": "",
-            "count": 5
+            "count": 6
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/anse-trabaud/",
+            "target": "",
+            "count": 4
           },
           {
             "event": "clarity_dead_click",
@@ -166,12 +178,6 @@
           {
             "event": "clarity_dead_click",
             "page": "/en/sargassum-map/",
-            "target": "",
-            "count": 2
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/anse-trabaud/",
             "target": "",
             "count": 2
           },
@@ -219,7 +225,7 @@
         {
           "path": "https://sargasses-martinique.com/sitemap.xml",
           "lastSubmitted": "2026-02-18T16:45:01.910Z",
-          "lastDownloaded": "2026-06-03T13:06:08.089Z",
+          "lastDownloaded": "2026-06-12T03:26:00.713Z",
           "isPending": false,
           "warnings": "1",
           "errors": "0"
@@ -241,7 +247,7 @@
             "event": "clarity_rage_click",
             "page": "/",
             "target": "",
-            "count": 347
+            "count": 359
           },
           {
             "event": "clarity_rage_click",
@@ -279,7 +285,7 @@
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 2225
+            "count": 2286
           },
           {
             "event": "clarity_dead_click",
@@ -309,7 +315,7 @@
             "event": "clarity_dead_click",
             "page": "/plages/plage-du-gosier/",
             "target": "",
-            "count": 26
+            "count": 27
           },
           {
             "event": "clarity_dead_click",
@@ -327,7 +333,7 @@
             "event": "clarity_dead_click",
             "page": "/plages/la-datcha/",
             "target": "",
-            "count": 7
+            "count": 9
           },
           {
             "event": "clarity_dead_click",
@@ -466,6 +472,142 @@
       },
       "crux": null,
       "sitemapStatus": []
+    },
+    "florida": {
+      "domain": "sargassummiami.com",
+      "indexedCount": 1,
+      "totalUrls": 16,
+      "findings": {
+        "notIndexed": [],
+        "softErrors": [],
+        "lowCtrPages": [],
+        "highBouncePages": [
+          {
+            "pagePath": "/",
+            "device": "desktop",
+            "sessions": 26,
+            "bounceRate": 77,
+            "avgDuration": 83
+          },
+          {
+            "pagePath": "/",
+            "device": "mobile",
+            "sessions": 15,
+            "bounceRate": 93,
+            "avgDuration": 11
+          }
+        ],
+        "cwvIssues": [],
+        "rageClicks": [
+          {
+            "event": "clarity_rage_click",
+            "page": "/",
+            "target": "",
+            "count": 1
+          }
+        ],
+        "deadClicks": [
+          {
+            "event": "clarity_dead_click",
+            "page": "/",
+            "target": "",
+            "count": 5
+          }
+        ],
+        "quickBounces": []
+      },
+      "crux": null,
+      "sitemapStatus": [
+        {
+          "path": "https://sargassummiami.com/sitemap.xml",
+          "lastSubmitted": "2026-06-10T10:02:40.612Z",
+          "lastDownloaded": "2026-06-12T07:49:43.108Z",
+          "isPending": false,
+          "warnings": "0",
+          "errors": "0"
+        }
+      ]
+    },
+    "puntacana": {
+      "domain": "sargassumpuntacana.com",
+      "indexedCount": 1,
+      "totalUrls": 16,
+      "findings": {
+        "notIndexed": [],
+        "softErrors": [],
+        "lowCtrPages": [],
+        "highBouncePages": [],
+        "cwvIssues": [],
+        "rageClicks": [],
+        "deadClicks": [
+          {
+            "event": "clarity_dead_click",
+            "page": "/",
+            "target": "",
+            "count": 3
+          }
+        ],
+        "quickBounces": []
+      },
+      "crux": null,
+      "sitemapStatus": [
+        {
+          "path": "https://sargassumpuntacana.com/sitemap.xml",
+          "lastSubmitted": "2026-06-10T10:02:38.049Z",
+          "lastDownloaded": "2026-06-12T11:41:28.867Z",
+          "isPending": false,
+          "warnings": "0",
+          "errors": "0"
+        }
+      ]
+    },
+    "rivieramaya": {
+      "domain": "sargassumcancun.com",
+      "indexedCount": 2,
+      "totalUrls": 16,
+      "findings": {
+        "notIndexed": [],
+        "softErrors": [],
+        "lowCtrPages": [],
+        "highBouncePages": [
+          {
+            "pagePath": "/",
+            "device": "desktop",
+            "sessions": 50,
+            "bounceRate": 80,
+            "avgDuration": 34
+          },
+          {
+            "pagePath": "/",
+            "device": "mobile",
+            "sessions": 14,
+            "bounceRate": 93,
+            "avgDuration": 2
+          }
+        ],
+        "cwvIssues": [],
+        "rageClicks": [],
+        "deadClicks": [
+          {
+            "event": "clarity_dead_click",
+            "page": "/",
+            "target": "",
+            "count": 9
+          }
+        ],
+        "quickBounces": []
+      },
+      "crux": null,
+      "sitemapStatus": [
+        {
+          "path": "https://sargassumcancun.com/sitemap.xml",
+          "lastSubmitted": "2026-06-10T10:02:43.565Z",
+          "lastDownloaded": "2026-06-12T05:26:52.266Z",
+          "isPending": false,
+          "warnings": "0",
+          "errors": "0"
+        }
+      ]
     }
   }
 }
