@@ -742,6 +742,7 @@ button:active,a:active,[role="button"]:active{transform:scale(.96)!important;opa
 @keyframes float-b{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 @keyframes dot-pulse{0%,100%{box-shadow:0 0 0 2px rgba(34,197,94,.2)}50%{box-shadow:0 0 0 5px rgba(34,197,94,.07)}}
 @keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+@keyframes sgReveal{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 @keyframes sg-threat-slide{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
 @keyframes sg-threat-glow{0%,100%{box-shadow:0 4px 20px rgba(232,82,42,.3)}50%{box-shadow:0 4px 30px rgba(232,82,42,.55)}}
 @keyframes sg-dash-flow{from{stroke-dashoffset:20}to{stroke-dashoffset:0}}
@@ -1662,6 +1663,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
     return fc
   },[beach?.id,beach?.status,beach?._communityOverride,lang,weeklyData])
   const isFav=favorites.includes(beach?.id)
+  const [scoreOpen,setScoreOpen]=useState(false)
   const startY=useRef(0)
   const sheetRef=useRef(null)
 
@@ -1832,7 +1834,9 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
                 backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",
                 border:`1px solid ${beach.scoreColor}22`,
                 boxShadow:`0 14px 34px -16px ${beach.scoreColor}3a, inset 0 1px 0 rgba(255,255,255,.5)`}}>
-                <div style={{position:"relative",width:80,height:80,flexShrink:0}}>
+                <div role="button" aria-label={_t(lang,"Comprendre ce score","Understand this score","Entender este puntaje")}
+                  onClick={()=>{setScoreOpen(v=>!v);track("sg_score_learn",{beach_id:beach.id,open:!scoreOpen})}}
+                  style={{position:"relative",width:80,height:80,flexShrink:0,cursor:"pointer"}}>
                   <div aria-hidden="true" style={{position:"absolute",inset:-8,borderRadius:"50%",
                     background:`radial-gradient(closest-side, ${beach.scoreColor}2b, transparent 72%)`,
                     filter:"blur(2px)",pointerEvents:"none"}}/>
@@ -1852,6 +1856,10 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
                         letterSpacing:".08em",marginTop:1}}>/100</span>
                     </div>
                   </div>
+                  <div style={{position:"absolute",top:-2,right:-2,width:18,height:18,borderRadius:"50%",
+                    background:beach.scoreColor,color:"#fff",fontSize:10,fontWeight:800,
+                    display:"flex",alignItems:"center",justifyContent:"center",
+                    boxShadow:"0 1px 4px rgba(0,0,0,.2)"}}>{scoreOpen?"×":"?"}</div>
                 </div>
                 <div style={{flex:1,minWidth:0}}>
                   <div className="anton" style={{fontSize:21,lineHeight:1.05,color:beach.scoreColor,
@@ -1882,6 +1890,8 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             </div>
           )}
 
+          {scoreOpen&&<ScoreReveal beach={beach} lang={lang}/>}
+
           {/* Verdict line — glanceable "can I go today?" answer (design-scout 2026-04-12) */}
           {ST[beach.status]&&(() => {
             const verdictKey = beach.status==="clean"?"verdictGo":beach.status==="moderate"?"verdictModerate":beach.status==="avoid"?"verdictAvoid":"verdictUnknown"
@@ -1896,6 +1906,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               </div>
             )
           })()}
+          <AfaiChip beach={beach} lang={lang}/>
 
           {/* Urgence-donnée : arrivage RÉEL prévu (weeklyData.forecast pipeline,
               JAMAIS le fallback generateForecast) → CTA alerte. L'urgence vraie
@@ -1965,7 +1976,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
           )}
 
           {/* Email capture — above the fold, before forecast teaser */}
-          <InlineEmailCapture lang={lang}/>
+          <InlineEmailCapture lang={lang} beachName={beach.name}/>
 
           {/* Forecast teaser — above the fold, every user sees it */}
           {!isPremium&&forecast&&forecast[1]&&(
@@ -4908,7 +4919,101 @@ function InlinePushCTA({lang,beachId}){
 /* ═══════════════════════════════════════════════════════════════════════════
    INLINE EMAIL CAPTURE — Smart visit-based trigger (visit 3+)
    ═══════════════════════════════════════════════════════════════════════════ */
-function InlineEmailCapture({lang}){
+/* ── SCORE REVEAL — tap le score pour apprendre d'où il vient */
+function ScoreReveal({beach,lang}){
+  const T3=(fr,en,es)=>lang==="en"?en:lang==="es"?es:fr
+  const afai=beach.afai||0
+  const pct=Math.min(100,afai/0.8*100)
+  const zone=afai<0.15?"clean":afai<0.40?"moderate":"avoid"
+  const zoneColor={clean:"#16A34A",moderate:"#E07800",avoid:"#E8522A"}[zone]
+  return(
+    <div style={{animation:"sgReveal .22s ease",background:"var(--sg-bgD,#F7F5EF)",
+      borderRadius:14,padding:"14px 16px",marginBottom:14,marginTop:-8,
+      border:"1px solid var(--sg-border,rgba(0,0,0,.06))"}}>
+      <div style={{fontSize:10,fontWeight:700,color:"var(--sg-mid,#686868)",
+        textTransform:"uppercase",letterSpacing:".07em",marginBottom:10}}>
+        {T3("Mesure satellite Copernicus","Copernicus satellite reading","Medición satélite Copernicus")}
+      </div>
+      {/* AFAI bar */}
+      <div style={{marginBottom:10}}>
+        <div style={{display:"flex",justifyContent:"space-between",fontSize:10,
+          color:"var(--sg-mid,#686868)",marginBottom:4}}>
+          <span>{T3("Propre","Clean","Limpia")} ← AFAI</span>
+          <span style={{fontWeight:700,color:zoneColor}}>
+            {T3("Mesuré :","Read:","Medido:")} {afai.toFixed(3)}
+          </span>
+          <span>→ {T3("Alerte","Alert","Alerta")}</span>
+        </div>
+        <div style={{height:8,borderRadius:99,overflow:"hidden",position:"relative",
+          background:"linear-gradient(90deg,#16A34A 0%,#16A34A 18.75%,#E07800 18.75%,#E07800 50%,#E8522A 50%)"}}>
+          <div style={{position:"absolute",top:-2,bottom:-2,width:3,borderRadius:2,
+            background:"#0A1714",left:`calc(${pct.toFixed(1)}% - 1px)`,
+            boxShadow:"0 0 0 2px #fff"}}/>
+        </div>
+        <div style={{display:"flex",justifyContent:"space-between",fontSize:9,
+          color:"var(--sg-mid,#999)",marginTop:3}}>
+          <span>0</span><span>0.15</span><span>0.40</span><span>0.8+</span>
+        </div>
+      </div>
+      {/* Factors */}
+      <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:8}}>
+        {[
+          {l:T3("Sargasses","Sargassum","Sargazo"),w:"40%"},
+          {l:T3("Vent","Wind","Viento"),w:"20%"},
+          {l:"UV",w:"20%"},
+          {l:T3("Mer","Waves","Mar"),w:"20%"},
+        ].map(f=>(
+          <span key={f.l} style={{fontSize:10,fontWeight:600,padding:"3px 9px",borderRadius:100,
+            background:"rgba(0,0,0,.06)",color:"var(--sg-ink,#1A2B26)"}}>
+            {f.l} <span style={{opacity:.6}}>{f.w}</span>
+          </span>
+        ))}
+      </div>
+      <div style={{fontSize:10,color:"var(--sg-mid,#999)",fontStyle:"italic"}}>
+        {T3("Mis à jour 4×/jour · MODIS NASA + Copernicus ESA","Updated 4×/day · MODIS NASA + Copernicus ESA","Actualizado 4×/día · MODIS NASA + Copernicus ESA")}
+      </div>
+    </div>
+  )
+}
+
+/* ── AFAI CHIP — tap le verdict pour voir l'indice satellite brut */
+function AfaiChip({beach,lang}){
+  const [open,setOpen]=useState(false)
+  const T3=(fr,en,es)=>lang==="en"?en:lang==="es"?es:fr
+  const afai=beach.afai
+  if(afai==null)return null
+  const zone=afai<0.15?"clean":afai<0.40?"moderate":"avoid"
+  const color={clean:"#16A34A",moderate:"#E07800",avoid:"#E8522A"}[zone]
+  return(
+    <div style={{marginBottom:14}}>
+      <button onClick={()=>{setOpen(v=>!v);track("sg_afai_learn",{beach_id:beach.id})}}
+        style={{background:"none",border:"none",cursor:"pointer",
+          display:"inline-flex",alignItems:"center",gap:6,padding:"4px 0",fontFamily:"inherit"}}>
+        <span style={{width:8,height:8,borderRadius:"50%",background:color,
+          boxShadow:`0 0 6px ${color}88`,display:"inline-block",flexShrink:0}}/>
+        <span style={{fontSize:11,fontWeight:700,color:"var(--sg-mid,#686868)",
+          textTransform:"uppercase",letterSpacing:".05em"}}>
+          AFAI {afai.toFixed(3)}
+        </span>
+        <span style={{fontSize:11,color:"var(--sg-dim,#aaa)"}}>{open?"▲":"▾"}</span>
+      </button>
+      {open&&(
+        <div style={{animation:"sgReveal .2s ease",
+          background:"var(--sg-bgD,#F7F5EF)",borderRadius:12,padding:"10px 12px",
+          fontSize:11,color:"var(--sg-ink,#1A2B26)",lineHeight:1.6,
+          border:"1px solid var(--sg-border,rgba(0,0,0,.06))"}}>
+          <strong>AFAI</strong> {T3(
+            "= Floating Algae Index — signature spectrale mesurée par satellite. En-dessous de 0.15 = propre, 0.15–0.40 = modéré, au-delà = à éviter.",
+            "= Floating Algae Index — spectral signature measured by satellite. Below 0.15 = clean, 0.15–0.40 = moderate, above = avoid.",
+            "= Floating Algae Index — firma espectral medida por satélite. Menos de 0.15 = limpia, 0.15–0.40 = moderado, encima = evitar."
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function InlineEmailCapture({lang,beachName}){
   const[email,setEmail]=useState("")
   const[submitted,setSubmitted]=useState(false)
   const[dismissed,setDismissed]=useState(false)
@@ -4955,11 +5060,13 @@ function InlineEmailCapture({lang}){
           {_t(lang,"GRATUIT","FREE","GRATIS")}
         </div>
         <div style={{fontSize:14,fontWeight:700,color:"#fff",marginBottom:4}}>
-          {em1V==="curiosity"
-            ?_t(lang,"Où est la plus belle plage aujourd'hui ?","Where's the cleanest beach today?","¿Dónde está la mejor playa hoy?")
-            :SARGASSES_SEASON==="high"
-              ?_t(lang,"Les plages changent tous les jours","Beaches are changing fast","Las playas cambian todos los días")
-              :_t(lang,"Sois prévenu avant de partir","Know before you go","Entérate antes de salir")}
+          {beachName
+            ?_t(lang,`Verdict de ${beachName} — chaque matin`,`${beachName} — daily verdict`,`${beachName} — veredicto diario`)
+            :em1V==="curiosity"
+              ?_t(lang,"Où est la plus belle plage aujourd'hui ?","Where's the cleanest beach today?","¿Dónde está la mejor playa hoy?")
+              :SARGASSES_SEASON==="high"
+                ?_t(lang,"Les plages changent tous les jours","Beaches are changing fast","Las playas cambian todos los días")
+                :_t(lang,"Sois prévenu avant de partir","Know before you go","Entérate antes de salir")}
         </div>
         <div style={{fontSize:12,color:"rgba(255,255,255,.5)",marginBottom:12,lineHeight:1.4}}>
           {em1V==="curiosity"
