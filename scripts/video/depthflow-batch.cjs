@@ -45,8 +45,8 @@ for (const [id, q] of Object.entries(Q)) {
 console.log(`DepthFlow batch : ${picked.length} plages`)
 
 const CROPS = [
-  { suffix: '', vf: 'scale=1080:1080:force_original_aspect_ratio=increase,crop=1080:1080', preset: 'slow', crf: '26' },
-  { suffix: '-w', vf: 'scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080', preset: 'fast', crf: '27' },
+  { suffix: '', vf: 'scale=1080:1080:force_original_aspect_ratio=increase,crop=1080:1080', preset: 'slow', crf: '22' },
+  { suffix: '-w', vf: 'scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080', preset: 'slow', crf: '23' },
 ]
 
 let done = 0, skipped = 0, failed = []
@@ -56,8 +56,11 @@ for (const p of picked) {
   if (!FORCE && targets.every(t => fs.existsSync(t) && fs.statSync(t).size > 100000)) { skipped++; continue }
   const src = path.join(TMP, `${p.id}-src.mp4`)
   try {
+    // v2 qualité (2026-06-12, « c'est devenu flou ») : ssaa 1.5 + quality max au
+    // rendu, et crf 22/23 preset slow aux crops (au lieu de 26/27) — la perte
+    // venait surtout du double encodage intermédiaire crf20 -> crops crf26.
     execFileSync(DF, ['input', '-i', path.join(ROOT, 'public/beaches', p.file), 'dolly',
-      'main', '-o', src, '--time', '6', '--fps', '30', '--width', '2048'],
+      'main', '-o', src, '--time', '6', '--fps', '30', '--width', '2048', '--ssaa', '1.5', '--quality', '80'],
       { stdio: ['ignore', 'ignore', 'ignore'], env: { ...process.env, PYTHONIOENCODING: 'utf-8' }, timeout: 120000 })
     for (const c of CROPS) {
       execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', src,
