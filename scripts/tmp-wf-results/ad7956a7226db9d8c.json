@@ -1,0 +1,89 @@
+﻿{
+    "site":  "https://sargassummiami.com",
+    "findings":  [
+                     {
+                         "page":  "beach sheet (fiche plage, toutes plages)",
+                         "severity":  "critical",
+                         "issue":  "French text rendered on the EN site: the forecast method disclaimer in the beach sheet displays raw French from the data pipeline â€” \u0027Persistance + bancs satellite + vent. Fiabilite decroit apres J+3.\u0027 It sits directly under the premium forecast teaser (\u0027Next days: Tmrw Fri Sat â€” Unlock\u0027), i.e. at the exact point of conversion.",
+                         "evidence":  "Mobile sheet text dump line 157 (scripts/tmp-audit-fl/mobile-2-beach-sheet.txt). Source: scripts/lib/forecast.cjs:399-412 â€” all 5 forecastDisclaimer variants are French-only and get baked into public/api/copernicus/florida/sargassum.json served to EN/ES sites. Rendered raw by Sargasses_PROD.jsx:1989-1991 ({weeklyData.forecastDisclaimer}). The app-side interpolation fallbacks are also FR-only (Sargasses_PROD.jsx:612, 619-621: \u0027Banc detecte pres des plages voisines â€” risque de derive.\u0027, \u0027DÃ©rive possible vers la cÃ´te\u0027).",
+                         "suggestion":  "Make forecastDisclaimer/driftLabel locale-aware: emit a method key (e.g. forecastMethod already exists: \u0027banks-persistence\u0027) in the JSON and translate it client-side via the existing _t(lang, fr, en, es) helper, instead of shipping prose in the data. Fixes all 3 EN/ES domains at once without touching pipeline thresholds."
+                     },
+                     {
+                         "page":  "beach SEO pages + hub pages (/beaches/miami-beach/, /sargassum-season-florida/, etc.)",
+                         "severity":  "high",
+                         "issue":  "All 18+ indexed static URLs serve their content inside \u003cnoscript\u003e only; a real visitor from Google gets the generic statewide map â€” the promised content never appears. Landing on /beaches/miami-beach/ (\u0027Miami Beach Sargassum Today â€” Live Status\u0027) does NOT auto-open the Miami Beach sheet, even 9s after load. The SERP promise is broken and the visitor must re-find their beach manually; same for the season guide and forecast pages whose rich editorial content is crawler-only.",
+                         "evidence":  "scripts/tmp-audit-fl/mobile-4-deeplink-miamibeach.png (generic map, no sheet, 9s after domcontentloaded, final URL unchanged). Body of /beaches/miami-beach/ is \u003cnoscript\u003e\u003carticle\u003eâ€¦\u003c/article\u003e\u003c/noscript\u003e + \u003cdiv id=root\u003e (scripts/tmp-audit-fl/beaches_miami-beach_.html). Content quality itself is excellent native English.",
+                         "suggestion":  "On SPA boot, parse location.pathname: /beaches/\u003cslug\u003e/ â†’ auto-open that beach\u0027s sheet (and center map); hub paths (/sargassum-season-florida/ â€¦) â†’ open the Beaches list or scrollable content panel matching the page intent. This converts SEO landings into the decision moment instead of a cold start, and reduces soft-404/content-parity risk."
+                     },
+                     {
+                         "page":  "Premium paywall modal",
+                         "severity":  "high",
+                         "issue":  "The paywall\u0027s proof line contradicts the map the user just saw: modal says \u00274/12 beaches clean right now Â· satellite 24/7\u0027 while the header banner behind it says \u0027BEACHES Â· 12 CLEAN\u0027 and every pin is green/Clean. Two different definitions of \u0027clean\u0027 (Beach Score â‰¥70 vs sargassum status) shown simultaneously at the moment of payment â€” looks like the product can\u0027t agree with itself.",
+                         "evidence":  "scripts/tmp-audit-fl/mobile-3-paywall.txt: \u00274/12 beaches clean right now\u0027 vs body \u0027BEACHES Â· 12 CLEAN\u0027. Code: Sargasses_PROD.jsx:3675 _cleanCount=_islandLvls.filter(b=\u003eb.score\u003e=70).length (score-based) vs the status-based count in the header.",
+                         "suggestion":  "Use the sargassum-status clean count in the paywall line (same as header), or reword to what it actually measures: \u00274/12 beaches scoring 70+ today\u0027. One definition of \u0027clean\u0027 per screen."
+                     },
+                     {
+                         "page":  "home/carte (mobile + desktop)",
+                         "severity":  "high",
+                         "issue":  "Map basemap paints very late: at 8s after load on desktop the screen is a pure dark void with floating green dots (no land, no labels); on mobile at 6s large rectangular tile holes remain; full basemap only at ~9-15s. The map is the hero product â€” first impression is \u0027broken\u0027. 25 of 33 tile requests were aborted (zoom/fitBounds thrash re-requesting tiles at intermediate zooms).",
+                         "evidence":  "scripts/tmp-audit-fl/desktop-1-home.png (8s, zero tiles), mobile-1-home.png (6s, tile holes), mobile-home-15s.png (fully loaded), tiles-check output: \u0027tiles ok: 8 fail: 25, FAILED net::ERR_ABORTED https://a.basemaps.cartocdn.com/rastertiles/voyager/11/565/867.png\u0027 â€” tiles requested at z11 then aborted while initial view is z7.",
+                         "suggestion":  "Set the initial Leaflet view directly to the region\u0027s center/zoom from regions/florida.json before the tile layer mounts (avoid post-load fitBounds animation that aborts a full tile set), add a land-toned map background color matching the basemap so unloaded areas don\u0027t read as black, and consider keepBuffer/updateWhenZooming:false on the tile layer."
+                     },
+                     {
+                         "page":  "Premium paywall modal (variant sample_first du test pw_cta_order)",
+                         "severity":  "high",
+                         "issue":  "Fabricated social proof on a brand-new market: the sample_first paywall variant shows \u0027\u003cN\u003e people got their morning pick today\u0027 where N = max(7, cleanCount*3), with a hardcoded \u0027127 people\u0027 fallback â€” invented numbers presented as real usage, on a site with ~0 subscribers. If a Floridian spots it (or an FTC-minded competitor), trust is gone.",
+                         "evidence":  "Sargasses_PROD.jsx:4207: {_cleanCount\u003e0?`${Math.max(7,_cleanCount*3)} ${lang===\"en\"?\"people\":â€¦}`:(lang===\"en\"?\"127 people\":â€¦)} + \u0027got their morning pick today. Try 24h â€” no card.\u0027",
+                         "suggestion":  "Replace with a true number (morning-brief emails actually sent across the network: \u0027X briefs sent across 5 regions this morning\u0027) or drop the line on regions below a real threshold. Never synthesize counts â€” this also violates the project\u0027s own \u0027pas de donnÃ©es inventÃ©es\u0027 principle."
+                     },
+                     {
+                         "page":  "beach sheet (fiche plage)",
+                         "severity":  "medium",
+                         "issue":  "The sheet\u0027s first screenful is mostly dead space: the beach photo renders as a thin ~90px sliver (showing only building tops/sky) followed by ~200px of blank white before the \u0027Clean\u0027 chip and the beach name; the score card and \u0027GO FOR IT\u0027 verdict land below the fold on mobile. Weak hierarchy at the most-visited surface of the app.",
+                         "evidence":  "scripts/tmp-audit-fl/desktop-2b-sheet.png and mobile-2-beach-sheet.png â€” Palm Beach sheet: photo strip at top, large empty white block, name at ~55% of viewport height.",
+                         "suggestion":  "Give the hero photo a proper height (160-200px, object-fit:cover, gradient into the card) and pull status chip + name + score into the first 350px so the verdict (\u0027GOOD 72 â€” GO FOR IT\u0027) is visible without scrolling. That verdict is the product."
+                     },
+                     {
+                         "page":  "beach sheet â†” /methodology/",
+                         "severity":  "medium",
+                         "issue":  "Contradictory accuracy claims visible to the same user: the sheet\u0027s forecast block says \u0027Reliable up to 4 days. 46% confidence tomorrow.\u0027 immediately above the \u0027ðŸ”’ UNLOCK FORECAST\u0027 CTA, while /methodology/ advertises \u0027next-day status is correct 86% of the time\u0027. 46% reads as a coin flip â€” it undercuts the exact thing being sold, and the two numbers side-by-side look inconsistent.",
+                         "evidence":  "mobile-2-beach-sheet.txt lines 149-151 (\u0027Reliable up to 4 days. 46% confidence tomorrow.\u0027 / \u0027ðŸ”’ UNLOCK FORECAST\u0027) vs methodology_.html (\u0027next-day status is correct 86% of the time (mean AFAI error 0.036)\u0027).",
+                         "suggestion":  "Show the published accuracy framing at the point of sale (\u0027Next-day forecasts verified 86% accurate â€” see methodology\u0027) and keep the per-day confidence as a small reliability bar without a sub-50% headline number next to the paywall CTA. If 46% is the honest pixel-level confidence, express it as the day-4+ horizon caveat instead of \u0027tomorrow\u0027."
+                     },
+                     {
+                         "page":  "Premium paywall modal (Ã©tape checkout)",
+                         "severity":  "medium",
+                         "issue":  "Plan messaging mismatch inside the modal: step 1 defaults to Annual (\u0027Start my daily pick â€” 7 days free\u0027 / \u0027Then $79/yr Â· cancel in 1 click\u0027), but the embedded checkout step in the same modal says \u0027START YOUR FREE TRIAL â€” $0 today Â· then $9.99/mo in 7 days\u0027. If the annual selection doesn\u0027t propagate to the checkout step copy, users see two different prices for the same commitment.",
+                         "evidence":  "scripts/tmp-audit-fl/mobile-3-paywall.txt: \u0027Annual $79/yr -33% â€¦ Then $79/yr Â· cancel in 1 click\u0027 followed by \u0027â† Back / START YOUR FREE TRIAL / $0 today Â· then $9.99/mo in 7 days Â· cancel in 1 click\u0027. (Captured from pre-rendered DOM â€” verify which copy shows when Annual is selected.)",
+                         "suggestion":  "Bind the checkout-step subtitle to the selected plan (\u0027then $79/yr in 7 days\u0027 when Annual is selected). A price flip between click and card entry is a classic checkout-abandon trigger."
+                     },
+                     {
+                         "page":  "beach sheet â€” forecast strip",
+                         "severity":  "low",
+                         "issue":  "Forecast bars show bare percentages (\u00277% TODAY Â· 5% TMRW Â· 5% FRI\u0027) with no unit or label â€” a tourist can\u0027t tell if 7% is risk, coverage, or confidence. Meaningless numbers dilute an otherwise strong free teaser.",
+                         "evidence":  "mobile-2-beach-sheet.txt lines 139-148: \u00277% TODAY 5% 5% TMRW 5% FRI 5% SAT\u0027.",
+                         "suggestion":  "Label the metric once (\u0027sargassum risk\u0027) or map to the existing Clean/Moderate/Avoid vocabulary instead of raw percentages."
+                     },
+                     {
+                         "page":  "home/carte (desktop 1440x900)",
+                         "severity":  "low",
+                         "issue":  "A hairline rectangle (region bbox border) is visible around the Florida map area on desktop â€” reads as an unfinished debug artifact on an otherwise clean app-feel layout (which correctly keeps the mobile-style centered dock/search, per the design charter).",
+                         "evidence":  "scripts/tmp-audit-fl/desktop-1b-home-12s.png â€” faint rectangle outline around the state.",
+                         "suggestion":  "Remove the stroke from the maxBounds/bbox rectangle layer (fill/stroke opacity 0) or clip it outside the viewport."
+                     },
+                     {
+                         "page":  "navigation globale / notifications",
+                         "severity":  "low",
+                         "issue":  "A push pre-prompt banner (\u0027Get notified when your favorite beaches change. â€” Activate\u0027) slides over the header during an early session without a user-intent trigger (appeared while a beach sheet was open, overlapping the timeline pill).",
+                         "evidence":  "scripts/tmp-audit-fl/desktop-3b-after-unlock.png â€” banner overlapping header area.",
+                         "suggestion":  "Gate the push pre-prompt on an intent signal already in the app (favoriting a beach, submitting the email capture, or 2nd visit), per the project\u0027s own \u0027no popup without data\u0027 rule."
+                     },
+                     {
+                         "page":  "site-wide SEO (langue ES)",
+                         "severity":  "low",
+                         "issue":  "regions/florida.json declares secondaryLangs:[\u0027es\u0027] and the app header has an ES toggle, but the domain exposes zero indexable Spanish pages and hreflang only lists en + x-default â€” for a Miami market where Spanish is the home language of ~half the metro, the ES experience is invisible to search.",
+                         "evidence":  "home.html head: only \u003clink rel=alternate hreflang=en\u003e + x-default; sitemap has no /es/ URLs; regions/florida.json secondaryLangs [\u0027es\u0027].",
+                         "suggestion":  "Generate the existing hub pages in Spanish under /es/ (the region-seo-pages.cjs ES translation table already exists for CancÃºn) with proper hreflang pairs â€” cheap reuse, large untapped audience."
+                     }
+                 ]
+}

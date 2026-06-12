@@ -1,0 +1,12 @@
+const { chromium } = require('playwright')
+const path = require('path')
+const url = f => 'file:///' + path.resolve(f).split(path.sep).join('/')
+;(async () => {
+  const b = await chromium.launch()
+  const pg = await (await b.newContext({ viewport: { width: 520, height: 1100 }, deviceScaleFactor: 2 })).newPage()
+  await pg.goto(url('scripts/tmp-drip-previews/florida-j7.html'))
+  await pg.screenshot({ path: 'scripts/tmp-drip-previews/fl-j7.png', fullPage: true })
+  await pg.goto(url('scripts/tmp-drip-previews/rivieramaya-j14.html'))
+  await pg.screenshot({ path: 'scripts/tmp-drip-previews/rm-j14.png', fullPage: true })
+  await b.close()
+})()

@@ -1,0 +1,141 @@
+{
+ "site": "cancun",
+ "url": "https://sargassumcancun.com",
+ "region": "rivieramaya",
+ "tested": 12,
+ "pass": 12,
+ "results": [
+  {
+   "idx": 0,
+   "ok": true,
+   "name": "Playa Delfines",
+   "expected": "Playa Delfines",
+   "route": "exact",
+   "events": [
+    "zoom=8 click@(263,229) topEl=div.sg-pin > div > div.leaflet-marker-icon.leaflet-zoom-animated"
+   ],
+   "id": "rm001"
+  },
+  {
+   "idx": 1,
+   "ok": true,
+   "name": "Playa Tortugas",
+   "expected": "Playa Tortugas",
+   "route": "exact",
+   "events": [
+    "zoom=8 click@(265,216) topEl=div.sg-pin > div > div.leaflet-marker-icon.leaflet-zoom-animated"
+   ],
+   "id": "rm002"
+  },
+  {
+   "idx": 2,
+   "ok": true,
+   "name": "Playa del Carmen Centro",
+   "expected": "Playa del Carmen Centro",
+   "route": "exact",
+   "events": [
+    "zoom=8 click@(218,300) topEl=div.sg-pin > div > div.leaflet-marker-icon.leaflet-zoom-animated"
+   ],
+   "id": "rm003"
+  },
+  {
+   "idx": 3,
+   "ok": true,
+   "name": "Playa Paraíso",
+   "expected": "Playa Paraíso",
+   "route": "exact",
+   "events": [
+    "zoom=8 click@(163,370) topEl=div.sg-pin > div > div.leaflet-marker-icon.leaflet-zoom-animated"
+   ],
+   "id": "rm004"
+  },
+  {
+   "idx": 4,
+   "ok": true,
+   "name": "Akumal Bay",
+   "expected": "Akumal Bay",
+   "route": "exact",
+   "events": [
+    "zoom=8 click@(181,338) topEl=div > div > div.leaflet-marker-icon.leaflet-zoom-animated"
+   ],
+   "id": "rm005"
+  },
+  {
+   "idx": 5,
+   "ok": true,
+   "name": "Playa Palancar",
+   "expected": "Playa Palancar",
+   "route": "exact",
+   "events": [
+    "zoom=8 click@(226,345) topEl=div > div > div.leaflet-marker-icon.leaflet-zoom-animated"
+   ],
+   "id": "rm006"
+  },
+  {
+   "idx": 6,
+   "ok": true,
+   "name": "Playa Norte",
+   "expected": "Playa Norte",
+   "route": "exact",
+   "events": [
+    "zoom=8 click@(269,198) topEl=div > div.leaflet-marker-icon.leaflet-zoom-animated > div"
+   ],
+   "id": "rm007"
+  },
+  {
+   "idx": 7,
+   "ok": true,
+   "name": "Puerto Morelos",
+   "expected": "Puerto Morelos",
+   "route": "exact",
+   "events": [
+    "zoom=8 click@(249,264) topEl=div > div.leaflet-marker-icon.leaflet-zoom-animated > div"
+   ],
+   "id": "rm008"
+  },
+  {
+   "idx": 8,
+   "ok": true,
+   "name": "Playa Mahahual",
+   "expected": "Playa Mahahual",
+   "route": "exact",
+   "events": [
+    "zoom=8 click@(121,611) topEl=div.sg-pin > div > div.leaflet-marker-icon.leaflet-zoom-animated"
+   ],
+   "id": "rm009"
+  },
+  {
+   "idx": 9,
+   "ok": true,
+   "name": "Playa Holbox",
+   "expected": "Playa Holbox",
+   "route": "exact",
+   "events": [
+    "zoom=8 click@(171,153) topEl=div.sg-pin > div > div.leaflet-marker-icon.leaflet-zoom-animated"
+   ],
+   "id": "rm010"
+  },
+  {
+   "idx": 10,
+   "ok": true,
+   "name": "Xpu-Ha",
+   "expected": "Xpu-Ha",
+   "route": "exact",
+   "events": [
+    "zoom=8 click@(190,326) topEl=div > div.leaflet-marker-icon.leaflet-zoom-animated > div"
+   ],
+   "id": "rm011"
+  },
+  {
+   "idx": 11,
+   "ok": true,
+   "name": "Playa Maroma",
+   "expected": "Playa Maroma",
+   "route": "exact",
+   "events": [
+    "zoom=8 click@(235,282) topEl=div > div.leaflet-marker-icon.leaflet-zoom-animated > div"
+   ],
+   "id": "rm012"
+  }
+ ]
+}

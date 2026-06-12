@@ -1,0 +1,141 @@
+{
+ "site": "puntacana",
+ "url": "https://sargassumpuntacana.com",
+ "region": "puntacana",
+ "tested": 12,
+ "pass": 12,
+ "results": [
+  {
+   "idx": 0,
+   "ok": true,
+   "name": "Bavaro Beach",
+   "expected": "Bavaro Beach",
+   "route": "exact",
+   "events": [
+    "zoom=11 click@(270,341) topEl=div.sg-pin > div > div.leaflet-marker-icon.leaflet-zoom-animated"
+   ],
+   "id": "pc001"
+  },
+  {
+   "idx": 1,
+   "ok": true,
+   "name": "Playa Los Corales",
+   "expected": "Playa Los Corales",
+   "route": "exact",
+   "events": [
+    "zoom=11 click@(276,345) topEl=div.sg-pin > div > div.leaflet-marker-icon.leaflet-zoom-animated"
+   ],
+   "id": "pc002"
+  },
+  {
+   "idx": 2,
+   "ok": true,
+   "name": "El Cortecito",
+   "expected": "El Cortecito",
+   "route": "exact",
+   "events": [
+    "zoom=11 click@(256,328) topEl=div > div.leaflet-marker-icon.leaflet-zoom-animated > div"
+   ],
+   "id": "pc003"
+  },
+  {
+   "idx": 3,
+   "ok": true,
+   "name": "Arena Gorda",
+   "expected": "Arena Gorda",
+   "route": "exact",
+   "events": [
+    "zoom=11 click@(238,307) topEl=div > div > div.leaflet-marker-icon.leaflet-zoom-animated"
+   ],
+   "id": "pc004"
+  },
+  {
+   "idx": 4,
+   "ok": true,
+   "name": "Cabeza de Toro",
+   "expected": "Cabeza de Toro",
+   "route": "exact",
+   "events": [
+    "zoom=11 click@(338,386) topEl=div.sg-pin > div > div.leaflet-marker-icon.leaflet-zoom-animated"
+   ],
+   "id": "pc005"
+  },
+  {
+   "idx": 5,
+   "ok": true,
+   "name": "Macao Beach",
+   "expected": "Macao Beach",
+   "route": "exact",
+   "events": [
+    "zoom=11 click@(124,228) topEl=div.sg-pin > div > div.leaflet-marker-icon.leaflet-zoom-animated"
+   ],
+   "id": "pc006"
+  },
+  {
+   "idx": 6,
+   "ok": true,
+   "name": "Uvero Alto",
+   "expected": "Uvero Alto",
+   "route": "exact",
+   "events": [
+    "zoom=11 click@(42,155) topEl=div.sg-pin > div > div.leaflet-marker-icon.leaflet-zoom-animated"
+   ],
+   "id": "pc007"
+  },
+  {
+   "idx": 7,
+   "ok": true,
+   "name": "Juanillo Beach (Cap Cana)",
+   "expected": "Juanillo Beach (Cap Cana)",
+   "route": "exact",
+   "events": [
+    "zoom=11 click@(297,609) topEl=div.sg-pin > div > div.leaflet-marker-icon.leaflet-zoom-animated"
+   ],
+   "id": "pc008"
+  },
+  {
+   "idx": 8,
+   "ok": true,
+   "name": "Playa Blanca (Cap Cana)",
+   "expected": "Playa Blanca (Cap Cana)",
+   "route": "exact",
+   "events": [
+    "zoom=11 click@(348,530) topEl=div > div > div.leaflet-marker-icon.leaflet-zoom-animated"
+   ],
+   "id": "pc009"
+  },
+  {
+   "idx": 9,
+   "ok": true,
+   "name": "Punta Cana Beach",
+   "expected": "Punta Cana Beach",
+   "route": "exact",
+   "events": [
+    "zoom=11 click@(330,560) topEl=div.sg-pin > div > div.leaflet-marker-icon.leaflet-zoom-animated"
+   ],
+   "id": "pc010"
+  },
+  {
+   "idx": 10,
+   "ok": true,
+   "name": "Playa Cortecito Sur",
+   "expected": "Playa Cortecito Sur",
+   "route": "exact",
+   "events": [
+    "zoom=11 click@(262,336) topEl=div.sg-pin > div > div.leaflet-marker-icon.leaflet-zoom-animated"
+   ],
+   "id": "pc011"
+  },
+  {
+   "idx": 11,
+   "ok": true,
+   "name": "Playa Bibijagua",
+   "expected": "Playa Bibijagua",
+   "route": "exact",
+   "events": [
+    "zoom=11 click@(291,361) topEl=div > div > div.leaflet-marker-icon.leaflet-zoom-animated"
+   ],
+   "id": "pc012"
+  }
+ ]
+}

@@ -1,0 +1,117 @@
+﻿{
+    "site":  "https://sargassumpuntacana.com (Punta Cana, EN, USD)",
+    "findings":  [
+                     {
+                         "page":  "beach sheet (all beaches) â€” forecast section, mobile + desktop",
+                         "severity":  "critical",
+                         "issue":  "Raw French sentence rendered on the EN site (and ES too), directly above the \u0027UNLOCK FORECAST\u0027 premium CTA: \u0027Banc de sargasses detecte a proximite â€” arrivee possible dans 1-3 jours.\u0027 A second French variant (\u0027Persistance + vent Open-Meteo. Pas de banc detecte a proximite.\u0027) ships on no-bank days. Wrong language in the exact conversion zone destroys credibility for an English-speaking tourist about to pay $9.99.",
+                         "evidence":  "Rendered text dumps scripts/tmp-audit-pc/text-mobile-sheet.txt and text-desktop-sheet.txt (both viewports). Source: pipeline emits French in JSON at scripts/lib/forecast.cjs:402 and :408 (plus client-side fallback Sargasses_PROD.jsx:619-621 \u0027Banc detecte pres des plages voisines â€” risque de derive.\u0027); rendered raw with no i18n at Sargasses_PROD.jsx:1991 ({weeklyData.forecastDisclaimer}).",
+                         "suggestion":  "Stop rendering pipeline French verbatim. The JSON already carries a machine key (forecastMethod: \u0027arrival-banks\u0027 | \u0027interpolated\u0027 | persistence) â€” map it to localized strings at render with the existing _t()/FC_DAY_MAP pattern (same defensive approach already used for day labels and score labels). Keep FR passthrough for MQ/GP untouched."
+                     },
+                     {
+                         "page":  "premium paywall modal",
+                         "severity":  "high",
+                         "issue":  "Paywall claims \u002712/12 beaches clean right now Â· satellite 24/7\u0027 while the map header the user just saw says \u002712 BEACHES Â· 10 CLEAN\u0027 and Macao + Uvero Alto show orange Moderate markers visible behind the modal. Self-contradiction at the payment moment â€” violates the \u0027predictions must be convincing before selling\u0027 rule.",
+                         "evidence":  "text-mobile-paywall.txt: \u002712/12 beaches clean right now\u0027 vs home dump \u0027BEACHES Â· 10 CLEAN\u0027. Root cause: Sargasses_PROD.jsx:3675 _cleanCount = score\u003e=70 (Macao/Uvero score 75 pass) while map status uses AFAI thresholds (both are \u0027moderate\u0027 in /api/copernicus/sargassum.json).",
+                         "suggestion":  "Use the same definition as the map: count status===\u0027clean\u0027 from levels (â†’ \u002710/12 beaches clean right now\u0027). One source of truth for \u0027clean\u0027 across map, list and paywall."
+                     },
+                     {
+                         "page":  "premium paywall modal",
+                         "severity":  "high",
+                         "issue":  "The three feature-preview cards use real beach names with fabricated data that contradicts the live map: card 03 \u0027WEEKEND FORECAST â€” Best for Saturday: Macao Beach â€” Clean all weekend Â· ideal for kids\u0027 while Macao is today\u0027s WORST beach (Moderate 75, forecast Moderate all 7 days on /sargassum-forecast/) and has kids:false in config. Card 02 invents \u0027Cabeza de Toro status changed Clean â†’ Moderate\u0027 (it is Clean 78 right now). A visitor who just studied the map will catch the lie at the exact moment of purchase.",
+                         "evidence":  "Screenshot scripts/tmp-audit-pc/desktop-3-paywall.png + mobile-3-paywall.png. Examples picked by fixed array index, not by data: Sargasses_PROD.jsx:3685-3687 (_exAlert=beaches[4], _exSwitch=beaches[8], _exWeekend=beaches[5]=pc006 Macao) with canned copy at :4152-4177. regions/puntacana.json pc006: status moderate-prone, kids:false.",
+                         "suggestion":  "Derive the examples from live weekly data: real best-Saturday beach from weekly forecast, real most-recent status change from history, and only attach \u0027ideal for kids\u0027 if kids:true. Cheap fix, large credibility win â€” the cards become live proof instead of mockups."
+                     },
+                     {
+                         "page":  "/beaches-without-sargassum-today/ (top money page SEO)",
+                         "severity":  "high",
+                         "issue":  "Malformed \u003ctitle\u003e, og:title and twitter:title: \u0027Beaches Without Sargassum in Punta Cana Today (Live List) (June 10\u0027 â€” cut mid-date with a dangling open parenthesis. Looks broken in Google SERP and social shares on the single highest purchase-intent query of the site.",
+                         "evidence":  "curl of live page head; same string in og:title/twitter:title. Root cause: smartTrim() in scripts/lib/region-seo-pages.cjs:109-115 cuts at last space â‰¤ max and strips trailing dashes/ampersands but not unbalanced \u0027(â€¦\u0027.",
+                         "suggestion":  "Two-line fix in smartTrim: after cutting, strip a trailing unbalanced parenthetical (cut.replace(/\\s*\\([^)]*$/,\u0027\u0027)) â€” or drop \u0027(Live List)\u0027 from the template when the date suffix is appended so the title fits 60 chars whole. Rebuild + redeploy regenerates all 5 regions."
+                     },
+                     {
+                         "page":  "home/map â€” first screen, mobile + desktop",
+                         "severity":  "high",
+                         "issue":  "Base map tiles intermittently fail to load, leaving large dark holes across the first screen (the product IS this map); page reached networkidle only after ~32s in both viewports. Single tile provider with zero error handling or fallback â€” when CARTO hiccups, a first-time visitor from Google sees a broken map and bounces before ever meeting the paywall.",
+                         "evidence":  "Screenshots scripts/tmp-audit-pc/mobile-1-home.png and desktop-1-home.png (checkerboard of missing tiles after 9s wait, reproduced across 3 separate sessions); console: 4x \u0027net::ERR_CONNECTION_RESET\u0027; direct curl to a.basemaps.cartocdn.com: 3 consecutive connection failures (000, 21-25s timeout) then 200s at 1.6-3.5s/tile. Tile layer: src/MapView.jsx:153, no \u0027tileerror\u0027 handler. Caveat: partially network-dependent â€” verify from a second network, but resilience is missing regardless.",
+                         "suggestion":  "Add a tileerror handler that retries once then swaps to a fallback provider (e.g. OSM standard or a second CARTO endpoint), set keepBuffer, and add \u003clink rel=preconnect\u003e for basemaps.cartocdn.com in the HTML head. Also consider showing a flat ocean-colored background under tiles so failures degrade gracefully instead of to near-black."
+                     },
+                     {
+                         "page":  "home/map + list view (Beaches)",
+                         "severity":  "medium",
+                         "issue":  "8 of 12 beaches show the identical score 83/100 \u0027GREAT\u0027 with byte-identical factor breakdowns, and near-identical 7-day forecasts; AFAI spans only 0.12-0.15 across all 12. The list reads 83-83-83-83 â€” the per-beach differentiation that the site itself sells (\u0027a mat that buries Macao can miss Cap Cana entirely\u0027 on /sargassum-forecast/) is invisible, weakening the premium argument (\u0027which beach should I pick?\u0027 answer looks trivial).",
+                         "evidence":  "/api/copernicus/sargassum.json: pc001-pc004, pc008-pc011 all score 83 with identical breakdown {sargassum:30,wave:17,wind:13,sst:10,cloud:5,uv:5,tide:3}; screenshots mobile-4-list.png/desktop-4-list.png.",
+                         "suggestion":  "Audit the PC per-beach AFAI sampling boxes (likely overlapping for the Bavaro cluster) and the wave/wind sampling resolution for the region â€” possibly related to the 1D-weighting fix of 2026-06-09. Even genuine 1-2 point spreads between neighbors restore the \u0027every beach differs\u0027 story. Off-season, also surface non-sargassum differentiators (swell, crowds) more aggressively in the breakdown."
+                     },
+                     {
+                         "page":  "global â€” routing/SEO",
+                         "severity":  "medium",
+                         "issue":  "Soft-404: every nonexistent URL (tested /zzz-not-a-page/) returns HTTP 200 with the home SPA shell. With 56 sitemap pages plus 5 cross-linked sister domains, this invites duplicate-content and soft-404 flags in GSC and wastes crawl budget â€” relevant given the documented MQ/GP indexation gap.",
+                         "evidence":  "curl -w %{http_code} https://sargassumpuntacana.com/zzz-not-a-page/ â†’ 200 (SPA fallback rewrite).",
+                         "suggestion":  "At hosting level, restrict the SPA rewrite to known prefixes (/, /es, /beaches/, /resorts/, hub slugs) and return real 404 + minimal 404.html elsewhere; alternatively render a noindex meta into the fallback shell for unknown paths via JS as a stopgap."
+                     },
+                     {
+                         "page":  "/es/ â€” Spanish layer",
+                         "severity":  "medium",
+                         "issue":  "Spanish is promised in config (secondaryLangs, differentiator \u0027sargazo punta cana hoy\u0027) and the SPA has a complete ES dictionary + working ES toggle, but the SEO layer is EN-only: zero /es/ pages in the sitemap, no hreflang es anywhere, and /es/ serves html lang=\"en\". The DR is a Spanish-speaking country and Latino travel queries go entirely uncaptured â€” Google cannot discover the ES experience at all.",
+                         "evidence":  "sitemap.xml has 56 EN URLs, 0 ES; home head: only hreflang en + x-default; curl /es/ â†’ same EN shell (lang=\"en\"). region-seo-pages.cjs already contains the full ES template strings (T.es, playas/, hoteles/ dirs) â€” wired but unused for this region.",
+                         "suggestion":  "Generate the ES hub + beach pages for puntacana via the existing T.es path in region-seo-pages.cjs (the code is already there), add reciprocal hreflang en/es/x-default to both versions, and set lang=es on ES documents. Low effort, opens the second language market the config already commits to."
+                     },
+                     {
+                         "page":  "/beaches/juanillo-beach-cap-cana/ and other long-name beach pages",
+                         "severity":  "medium",
+                         "issue":  "Title truncation pattern leaves dangling fragments in SERP: \u0027Juanillo Beach (Cap Cana) Sargassum Today â€” Live Status \u0026 7-Day\u0027 and \u0027Playa Blanca (Cap Cana) Sargassum Today â€” Live Status \u0026 7-Day\u0027 (missing \u0027Forecast\u0027). Less broken than the date case but the same root cause, and these are commercial landing pages.",
+                         "evidence":  "Live \u003ctitle\u003e tags via curl; smartTrim max in scripts/lib/region-seo-pages.cjs against template \u0027X Sargassum Today â€” Live Status \u0026 7-Day Forecast\u0027.",
+                         "suggestion":  "When the full template exceeds the title budget, fall back to a shorter template (\u0027X Sargassum Today â€” Live Status \u0026 Forecast\u0027, then \u0027X Sargassum Today \u0026 Forecast\u0027) instead of character-trimming a fixed string. Also drop the parenthetical \u0027(Cap Cana)\u0027 from titles where space is tight â€” it survives in the H1 and description."
+                     },
+                     {
+                         "page":  "beach sheet â€” email capture placement",
+                         "severity":  "medium",
+                         "issue":  "The free email-capture card (\u0027FREE â€” Where\u0027s the cleanest beach today? We tell you every morning. Free.\u0027) sits ABOVE the tomorrow-forecast teaser and the premium forecast lock. On mobile the sheet opens to photo + score + email box, with the forecast (the premium hook) below the fold â€” a competing free CTA intercepts attention before the paid value proposition is even seen.",
+                         "evidence":  "Screenshot mobile-2-sheet.png (email box is the last visible element at sheet open; TOMORROW FORECAST and the lock require scroll); order in BeachSheet, Sargasses_PROD.jsx ~1848+.",
+                         "suggestion":  "A/B the order: forecast teaser + lock first, email capture below (or after first scroll). The email list is a real asset (drip â†’ premium), but at the moment of maximum intent (\u0027what about tomorrow?\u0027) the premium teaser should win the first viewport."
+                     },
+                     {
+                         "page":  "list view (Beaches tab) + map",
+                         "severity":  "medium",
+                         "issue":  "Contradictory status signals for the same beach: Macao and Uvero Alto display green-tinted \u002775/100 GOOD\u0027 in the list while their map markers are orange and their API status is \u0027moderate\u0027 (and the header count \u002710 CLEAN\u0027 excludes them). A tourist comparing list and map gets three different verdicts for one beach.",
+                         "evidence":  "Screenshots mobile-4-list.png (green 75 GOOD, orange photo dot) vs mobile-1-home.png (orange 75 badges); /api/copernicus/sargassum.json status \u0027moderate\u0027 for pc006/pc007.",
+                         "suggestion":  "Make the score chip inherit the status color (orange for moderate) and reconsider the label band: 75 = \u0027GOOD\u0027 while status = Moderate is the jarring case â€” either lower the GOOD threshold band or display \u0027FAIR\u0027 when sargassum status is moderate, so color + word + number tell one story."
+                     },
+                     {
+                         "page":  "premium paywall modal â€” plan default",
+                         "severity":  "low",
+                         "issue":  "Annual ($79/yr, -33%) is preselected and the main CTA subtext reads \u0027Then $79/yr Â· cancel in 1 click\u0027. The PC audience is overwhelmingly 1-2 week vacationers; an annual-first ask can feel oversized for a one-trip need and add hesitation at the decision point.",
+                         "evidence":  "Screenshots mobile-3-paywall.png / desktop-3-paywall.png: Annual card highlighted, CTA subtext \u0027Then $79/yr\u0027.",
+                         "suggestion":  "A/B default plan for USD vacation regions: monthly preselected (matches the trip mental model, $9.99 reads as trivial vs a $5k vacation), annual as visible upsell. Measure with the existing sg_premium_modal_cta plan tracking."
+                     },
+                     {
+                         "page":  "beach sheet â€” locked forecast",
+                         "severity":  "low",
+                         "issue":  "The \u0027locked\u0027 days 2-7 forecast values are present in the DOM in clear text (15% TMRW, 15% FRI, 14% SAT readable via copy/inspect) â€” the lock is blur-only. Negligible for tourists, but the premium data is scrapeable and selectable text can leak through the blur on some renderers.",
+                         "evidence":  "text-mobile-sheet.txt contains all locked-day percentages and statuses while UI shows ðŸ”’ UNLOCK FORECAST.",
+                         "suggestion":  "Render placeholder values (e.g. \u0027Â·Â·%\u0027) for locked days for non-premium users and swap in real values only when isPremium â€” same visual, no leak."
+                     },
+                     {
+                         "page":  "home/map â€” branding",
+                         "severity":  "low",
+                         "issue":  "No brand wordmark is visible anywhere on the home map screen (mobile header: LIVE chip, moon, ES; desktop adds only \u0027Caribbean View\u0027). A first-time SEO visitor is later asked for $9.99/mo by a product whose name they have never seen on screen â€” weak trust anchor, and zero brand recall for the return visit (\u0027that map siteâ€¦\u0027).",
+                         "evidence":  "Screenshots mobile-1-home.png / desktop-1-home.png; the \u0027SARGASSUM PUNTA CANA\u0027 wordmark (Sargasses_PROD.jsx:2493) does not appear on the map view.",
+                         "suggestion":  "Add a small wordmark to the existing header chrome (e.g. left of the LIVE chip, 11px caps, same pill style â€” no clutter). It also anchors the paywall: the modal can then reference the named product."
+                     },
+                     {
+                         "page":  "list view â€” beach thumbnails",
+                         "severity":  "low",
+                         "issue":  "Several list thumbnails crop to mostly sky/clouds (Bavaro, Playa Los Corales, Arena Gorda) rather than sand/water; on desktop the thumbnails compress into thin slivers showing almost no beach. The photos are doing none of their persuasion work.",
+                         "evidence":  "Screenshots mobile-4-list.png and desktop-4-list.png.",
+                         "suggestion":  "Set object-position to favor the lower 2/3 of each photo (sand/water) or curate crop offsets in beaches-images.json; give desktop list rows a slightly taller thumbnail."
+                     },
+                     {
+                         "page":  "global â€” push primer banner (desktop observed)",
+                         "severity":  "low",
+                         "issue":  "First-visit banner says \u0027Get notified when your favorite beaches change.\u0027 to a visitor who has zero favorites yet â€” the copy references state that does not exist. The primer pattern itself is fine (data-justified: 6% opt-in measured, 7-day cooldown, dismissible).",
+                         "evidence":  "desktop-2-sheet.png top banner; copy at Sargasses_PROD.jsx:2618; rationale comment :2594-2601.",
+                         "suggestion":  "Either gate the primer on â‰¥1 favorite (then the copy is true and the ask is contextual) or use favorites-neutral copy for first-timers: \u0027Get notified when Punta Cana beaches change.\u0027"
+                     }
+                 ]
+}

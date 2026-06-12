@@ -1,0 +1,104 @@
+﻿{
+    "competitors":  [
+                        {
+                            "name":  "sargassummonitoring.com (+ SargApp)",
+                            "url":  "https://sargassummonitoring.com/en/",
+                            "strengths":  "Brand authority #1 mondiale : \u0027NÂ°1 citizen science network\u0027, 43 pays, archives cartes 2018-2026, trilingue FR/EN/ES. C\u0027est EUX que la presse et les blogs recommandent par nom (Jumbocar MQ, espaces.ca, silo57.ca renvoient vers eux, pas vers nous). Forecasts par rÃ©gion (Floride, Riviera Maya, RD/HaÃ¯ti, PR, USVI, Belize, JamaÃ¯que) basÃ©s HYCOM/NCEP + USF. Lancement app mobile SargApp iOS/Android. RÃ©seau de soumission photos massif via FB/TikTok/IG/X.",
+                            "weaknesses":  "ModÃ¨le 100% donations â€” GoFundMe \u0027urgent\u0027 pour payer les serveurs = fragilitÃ© financiÃ¨re, zÃ©ro budget produit. Pas de pages dÃ©diÃ©es Martinique/Guadeloupe/Punta Cana/Miami, pas de prÃ©visions PAR PLAGE, pas de score/reco quotidienne, pas d\u0027alertes personnalisÃ©es, pas de premium. UX datÃ©e (WordPress, cartes embarquÃ©es). SargApp quasi sans reviews â€” traction app faible."
+                        },
+                        {
+                            "name":  "USF Sargassum Watch System (SaWS) â€” la vraie \u0027Sargassum Watch\u0027 (saws.tamu.edu est mort, connexion refusÃ©e)",
+                            "url":  "https://optics.marine.usf.edu/projects/saws.html",
+                            "strengths":  "RÃ©fÃ©rence scientifique absolue : imagerie satellite FAI/CI quotidienne, bulletins mensuels qui font la presse mondiale (\u0027record mai 2026, ~28.9M tonnes\u0027). Source de donnÃ©es de quasi TOUS les autres acteurs (howisthesargassum, sargassumreport, NOAA, nous indirectement). CrÃ©dibilitÃ© E-E-A-T maximale, citÃ© partout.",
+                            "weaknesses":  "DÃ©clare explicitement que \u0027prÃ©dire les Ã©chouages pour des plages individuelles est difficile ou impossible\u0027 â€” abandonne notre terrain de jeu. Audience chercheurs/agences, pas touristes. Pas de carte cliquable grand public, pas de mobile, pas d\u0027alertes. Concurrent de SERP EN (\u0027sargassum forecast\u0027) mais pas de produit. Ã€ utiliser comme source corroborante citÃ©e, pas Ã  combattre."
+                        },
+                        {
+                            "name":  "MÃ©tÃ©o France Antilles (meteofrance.mq/fr/sargasses + meteofrance.gp/fr/sargasses)",
+                            "url":  "https://meteofrance.mq/fr/sargasses",
+                            "strengths":  "AutoritÃ© institutionnelle : #1 SERP FR sur la plupart des requÃªtes \u0027sargasses martinique/guadeloupe\u0027. Bulletins de prÃ©vision d\u0027Ã©chouement officiels bi-hebdo repris par prÃ©fectures (martinique.gouv.fr, DEAL) et toute la presse locale. Couvre aussi ÃŽles du Nord. Confiance publique maximale, gratuit, pÃ©renne.",
+                            "weaknesses":  "Bulletins texte/PDF par faÃ§ade cÃ´tiÃ¨re, pas par plage. ZÃ©ro carte interactive, zÃ©ro mobile-first, zÃ©ro alertes push, zÃ©ro reco \u0027oÃ¹ aller aujourd\u0027hui\u0027. FrÃ©quence 2x/semaine vs notre 4x/jour. Ne nommera jamais une plage \u0027propre\u0027 (responsabilitÃ© d\u0027Ã‰tat). Menace seulement s\u0027ils shippent une carte interactive â€” Ã  surveiller, pas Ã  attaquer frontalement en SEO (les doubler sur l\u0027intent transactionnel \u0027quelle plage aujourd\u0027hui\u0027)."
+                        },
+                        {
+                            "name":  "shorewatch.net â€” ESCALADE CONFIRMÃ‰E (couvre dÃ©sormais la Guadeloupe)",
+                            "url":  "https://shorewatch.net/",
+                            "strengths":  "Attaque directe sur notre territoire : Martinique 18 spots + GUADELOUPE 16 spots (nouveau â€” trigger d\u0027escalade de notre veille), Mexique 22, Porto Rico 15, Barbade 15 â€” 46 pays / 1 196 locations. Rapports communautaires photo horodatÃ©s (\u002744 reports today\u0027, timestamps 8-10 juin), tendance stable/worsening/improving par plage, page Punta Cana qui ranke dÃ©jÃ  sur \u0027Punta Cana sargassum update\u0027. Concept fort : \u0027every traveler is a sensor\u0027. Comptes utilisateurs = base freemium possible.",
+                            "weaknesses":  "ZÃ©ro donnÃ©e satellite, zÃ©ro prÃ©vision, anglais uniquement, pas de carte interactive riche, pas de score composite, monÃ©tisation inexistante. DÃ©pend de la densitÃ© de reporters : 16-18 spots avec quelques reports/jour = couverture en gruyÃ¨re vs nos 80+ plages systÃ©matiques 4x/j. Pas de FR = invisible sur le marchÃ© local MQ/GP."
+                        },
+                        {
+                            "name":  "howisthesargassum.com",
+                            "url":  "https://www.howisthesargassum.com/",
+                            "strengths":  "Le concurrent produit le plus proche de nous, en mieux marketÃ© sur le Mexique : satellite USF actualisÃ© toutes les heures, prÃ©visions 7 jours avec honnÃªtetÃ© affichÃ©e (J1-3 fiables, J4-7 tendance), pages par plage avec webcams, hÃ´tels, infos nettoyage et \u0027what locals know\u0027. Blog data-driven (\u0027Is 2026 worse? What the data says\u0027) qui construit l\u0027autoritÃ© EN. Calendriers saisonniers mois par mois. SEO agressif : pages \u0027CancÃºn today\u0027, \u0027Cancun South\u0027, etc. Site bloque le scraping (403) = conscient de sa valeur data.",
+                            "weaknesses":  "Couverture limitÃ©e Ã  ~10 plages du Quintana Roo â€” pas de Punta Cana, Miami, ni Antilles (leur page \u0027all Caribbean beaches\u0027 ignore MQ/GP). Pas de premium visible (probablement ads/affiliation), pas d\u0027alertes personnalisÃ©es ni morning brief. Anglais seulement = absent du marchÃ© ES local de CancÃºn. S\u0027ils s\u0027Ã©tendent Ã  Punta Cana, collision frontale avec sargassumpuntacana.com."
+                        },
+                        {
+                            "name":  "sargazo.info (ex \u0027Red de Monitoreo\u0027 web)",
+                            "url":  "https://sargazo.info/",
+                            "strengths":  "Incumbent ES du marchÃ© CancÃºn : \u0027SemÃ¡foro del Sargazo\u0027 5 niveaux, 67+ plages sur 6+ municipios (CancÃºn 18, Cozumel 18, PDC 13, Tulum 10...), reports communautaires temps rÃ©el + sources officielles, gamification badges, news quotidiennes, historique consultable. Ranke #1-3 sur tout le cluster \u0027sargazo cancun hoy mapa\u0027 â€” exactement les requÃªtes cibles de sargassumcancun.com. Marque locale connue, espagnol natif.",
+                            "weaknesses":  "Pas de satellite, pas de prÃ©visions multi-jours, pas de webcams ni d\u0027app, pas d\u0027alertes push visibles, monÃ©tisation opaque (pas de premium). Espagnol uniquement = rate les touristes US/CA qui cherchent en anglais. Pas de score composite ni de reco \u0027meilleure plage demain\u0027."
+                        },
+                        {
+                            "name":  "sargazo.today",
+                            "url":  "https://sargazo.today/",
+                            "strengths":  "74 plages Quintana Roo avec 5 niveaux, 4 webcams live, agrÃ©gation de donnÃ©es institutionnelles (gouvernement QR, SEMAR, SAMMO, NOAA, USF), mise Ã  jour quotidienne datÃ©e, toggle ES/EN. DeuxiÃ¨me incumbent sur \u0027sargazo hoy\u0027.",
+                            "weaknesses":  "Aucune prÃ©vision (\u0027current/historical only\u0027), non-commercial sans modÃ¨le de revenu, UX directory plus que produit, pas d\u0027alertes ni de compte utilisateur. VulnÃ©rable Ã  un produit avec forecast 7j + alertes â€” notre angle exact."
+                        },
+                        {
+                            "name":  "sargassumreport.com",
+                            "url":  "https://www.sargassumreport.com/",
+                            "strengths":  "Nouvel entrant EN pan-CaraÃ¯bes le plus structurÃ© : pages \u0027report today\u0027 par destination (Punta Cana, CancÃºn, Tulum, Barbade, JamaÃ¯que, PR, Aruba, CuraÃ§ao, Bahamas), index de risque AU NIVEAU RESORT avec outil de recherche d\u0027hÃ´tel, alertes email hebdo par destination (mÃªme mÃ©canique de capture de leads que nous), sources satellite multiples (USF, NOAA, CLS, CARICOOS, CERMES) + 10 ans d\u0027historique. Frais (data 10 juin 2026). Cible l\u0027intent voyageur prÃ©-rÃ©servation â€” le plus monÃ©tisable.",
+                            "weaknesses":  "Pas de Miami ni Martinique/Guadeloupe dÃ©diÃ©s. Pas de prÃ©visions 7j dÃ©taillÃ©es ni de calendriers mensuels aboutis, pas de communautÃ© photo, pas de premium payant encore, granularitÃ© rÃ©elle des donnÃ©es douteuse (risk index probablement statique derriÃ¨re le vernis). Marque jeune sans backlinks presse."
+                        },
+                        {
+                            "name":  "puntacanatravelblog.com (guide seaweed) + everythingpuntacana / godominicantravel",
+                            "url":  "https://www.puntacanatravelblog.com/general-information-faq/seaweed-punta-cana-sargassum/",
+                            "strengths":  "Incumbent SEO du marchÃ© Punta Cana : guide resort-par-resort avec probabilitÃ©s (\u0027Bayahibe 97-99% seaweed-free\u0027), calendrier historique 2011-2026, carte de risque custom, 6+ ans d\u0027expertise auteur = E-E-A-T fort, ranke top 3 sur quasi toutes les requÃªtes \u0027Punta Cana seaweed/sargassum\u0027. MonÃ©tisation affiliation hÃ´tels/tours rodÃ©e.",
+                            "weaknesses":  "AUCUNE donnÃ©e temps rÃ©el â€” maj janvier 2026, admet que \u0027le sargasse au quotidien est imprÃ©visible\u0027 et renvoie ses lecteurs vers des groupes FB et TripAdvisor pour l\u0027Ã©tat du jour. Pas d\u0027alertes, pas de satellite embarquÃ©, pas de per-beach live. C\u0027est littÃ©ralement le trou que sargassumpuntacana.com doit remplir â€” et un partenaire d\u0027affiliation/backlink potentiel plus qu\u0027un ennemi."
+                        },
+                        {
+                            "name":  "Groupes Facebook : Red de Monitoreo del Sargazo Q.Roo (357k likes) + SOS Sargasses Martinique",
+                            "url":  "https://www.facebook.com/RedSargazo/",
+                            "strengths":  "La \u0027source de vÃ©ritÃ©\u0027 sociale : Red de Monitoreo = 356 863 likes, carte semÃ¡foro quotidienne relayÃ©e par toute la presse mexicaine (Azteca, YucatÃ¡n) ; SOS Sargasses Martinique = communautÃ© locale active. Photos du jour authentiques, confiance communautaire, rÃ©activitÃ© inÃ©galable sur Ã©vÃ©nements soudains. CoÃ»t zÃ©ro, effet rÃ©seau massif. C\u0027est lÃ  que puntacanatravelblog renvoie ses lecteurs.",
+                            "weaknesses":  "Format feed FB : aucune structure par plage, pas d\u0027historique requÃªtable, pas de prÃ©vision, introuvable en SEO Google, signal noyÃ© dans le bruit, dÃ©pendance totale Ã  la plateforme. Inutilisable pour planifier (\u0027quelle plage demain ?\u0027). StratÃ©gie : pas concurrencer mais INFILTRER â€” notre toolkit FB automation y rÃ©pond dÃ©jÃ  avec liens par plage."
+                        },
+                        {
+                            "name":  "Beachday (app, beachday.com)",
+                            "url":  "https://beachday.com/",
+                            "strengths":  "Nouvel entrant mobile-first : 220 000 plages mondiales, alertes sargasses temps rÃ©el, water clarity + crowds + pet-friendly, reviews photo-vÃ©rifiÃ©es, notifications sur plages favorites. Croissance organique (500 dl/18j en beta), positionnement \u0027the beach app\u0027 plus large que le sargasse seul â€” peut nous englober.",
+                            "weaknesses":  "Beta, traction minuscule (500 downloads), couverture 220k plages = profondeur zÃ©ro par plage (pas de satellite par plage, pas de forecast), monÃ©tisation floue (merch maillots de bain !), dÃ©pend du crowdsourcing sur des plages sans utilisateurs. Menace Ã  12-24 mois, pas aujourd\u0027hui."
+                        },
+                        {
+                            "name":  "NOAA SIR v1.5 + CARICOOS + City of Miami Beach (institutionnels US/Floride)",
+                            "url":  "https://cwcgom.aoml.noaa.gov/SIR/",
+                            "strengths":  "ATTENTION : le SIR NOAA est passÃ© de hebdo (v1.4) Ã  QUOTIDIEN (v1.5 \u0027Daily Sargassum Inundation Risk\u0027) â€” Ã©rode notre argument \u0027eux hebdo, nous quotidien\u0027. CARICOOS = tracker satellite + forecast gratuit qui domine le SERP EN \u0027sargassum forecast\u0027. City of Miami Beach publie les conditions de plage officielles. Gratuits, crÃ©dibles, pÃ©rennes.",
+                            "weaknesses":  "Risque par maille rÃ©gionale, pas par plage nommÃ©e ; cartes brutes illisibles pour un touriste ; zÃ©ro UX mobile, zÃ©ro alertes, zÃ©ro reco. Pour sargassummiami.com le terrain consumer reste vide : personne ne traduit le SIR en \u0027va Ã  Crandon Park plutÃ´t que South Beach aujourd\u0027hui\u0027."
+                        },
+                        {
+                            "name":  "Jumbocar MQ/GP + cluster blogs FR (piedsdanslesable, airvacances, wlaps, lastminute)",
+                            "url":  "https://www.jumbocar-martinique.com/",
+                            "strengths":  "Jumbocar : #1-2 SERP FR sur les requÃªtes sargasses MQ/GP avec contenu statique excellent, maj 2026. piedsdanslesable #5 sur l\u0027intent \u0027cette semaine\u0027 GP. Fort DA, captent le trafic informationnel en amont de nous.",
+                            "weaknesses":  "ZÃ©ro carte, zÃ©ro temps rÃ©el, zÃ©ro prÃ©vision par plage â€” du contenu, pas un produit. PIRE POUR NOUS : Jumbocar recommande explicitement sargassummonitoring.com dans son article #1 (\u0027vÃ©rifiez via des cartes en temps rÃ©el comme Sargasses Monitoring\u0027) â€” backlink critique toujours non rÃ©cupÃ©rÃ©. Ce sont des cibles de partenariat, pas des concurrents produit."
+                        }
+                    ],
+    "gaps":  [
+                 "PrÃ©vision 7j PAR PLAGE : USF dÃ©clare la prÃ©diction par plage \u0027difficile ou impossible\u0027, MÃ©tÃ©o France fait par faÃ§ade, sargazo.info/today n\u0027ont AUCUN forecast, shorewatch non plus. Seul howisthesargassum le fait (10 plages Mexique). Notre pipeline persistance+confidence par plage sur 5 marchÃ©s est un monopole technique de fait â€” le marteler dans le copy et le SEO (\u00277-day forecast for THIS beach\u0027).",
+                 "Punta Cana temps rÃ©el : l\u0027incumbent SEO (puntacanatravelblog) est statique (maj janv 2026) et RENVOIE SES LECTEURS VERS FACEBOOK pour l\u0027Ã©tat du jour ; sargassumreport est frais mais sans forecast ni granularitÃ© rÃ©elle. Personne ne fait per-beach live + 7j + alertes en RD. sargassumpuntacana.com peut prendre \u0027punta cana sargassum today\u0027 avec des pages par plage/resort (BÃ¡varo, Macao, Cap Cana, Bayahibe) + cibler le besoin resort-level que puntacanatravelblog a validÃ© (97-99% Bayahibe).",
+                 "Miami/Floride consumer : il n\u0027existe AUCUN produit grand public par plage â€” seulement NOAA SIR (cartes brutes), City of Miami Beach (drapeau du jour) et des articles floridarambler. sargassummiami.com est quasi seul sur le crÃ©neau \u0027translate NOAA into which beach to go today\u0027 (Key Biscayne vs South Beach vs Crandon).",
+                 "MonÃ©tisation premium : AUCUN concurrent ne fait payer (donations sargassummonitoring, affiliation puntacanatravelblog, ads/rien ailleurs). Le crÃ©neau \u0027veilleur personnel payant\u0027 (reco quotidienne + alertes + morning brief) est totalement incontestÃ© â€” personne n\u0027a de war chest rÃ©currente pour nous attaquer, mais cela impose de prouver la valeur vs gratuit : vendre la PRÃ‰VISION et l\u0027ALERTE (ce que le gratuit n\u0027a pas), pas la carte (commoditisÃ©e).",
+                 "Resort-level data : les utilisateurs Punta Cana/CancÃºn raisonnent par HÃ”TEL, pas par plage (validÃ© par puntacanatravelblog et sargassumreport qui indexent par resort). Ajouter un mapping plageâ†’resorts proches sur les sites EN/ES = capture des requÃªtes \u0027[hotel name] seaweed\u0027 Ã  trÃ¨s fort intent prÃ©-rÃ©servation, zÃ©ro concurrent sÃ©rieux dessus.",
+                 "Statut de nettoyage + webcams : demande utilisateur rÃ©currente (\u0027la plage a-t-elle Ã©tÃ© nettoyÃ©e ?\u0027) ; sargazo.today n\u0027a que 4 webcams, personne ne le fait aux Antilles ni en RD. AgrÃ©ger webcams publiques + signal nettoyage par plage = diffÃ©renciateur dÃ©fendable.",
+                 "Backlink hijack : Jumbocar (#1 SERP MQ) et espaces.ca/silo57 (presse CA) recommandent sargassummonitoring.com. RÃ©cupÃ©rer ces mentions vers nos sites = l\u0027action SEO au meilleur ROI du portefeuille, toujours non exÃ©cutÃ©e depuis avril.",
+                 "Saison record 2026 = vide Ã©ditorial EN monÃ©tisable : la presse (CBS Miami, travelpirates, Cancun Sun) Ã©crit \u0027record year, 28.9M tonnes\u0027 sans outil par plage Ã  linker. Pitcher nos 5 sites comme source de donnÃ©es par marchÃ© (MQ/GP en FR, PC/Miami en EN, CancÃºn en ES) pendant le pic juin-aoÃ»t.",
+                 "H2S/santÃ© : madininair (MQ) publie le H2S mais personne ne l\u0027intÃ¨gre Ã  une carte plage. DiffÃ©renciateur Antilles Ã  coÃ»t faible, validÃ© par les questions forums (\u0027ok pour les enfants ?\u0027).",
+                 "EN SERP Antilles : toujours aucun acteur fort sur \u0027sargassum martinique/guadeloupe\u0027 en anglais â€” shorewatch (community-only) est le seul occupant. Nos pages /en/ doivent y prendre le terrain avant que howisthesargassum ou sargassumreport ne s\u0027Ã©tendent."
+             ],
+    "threats":  [
+                    "shorewatch.net a dÃ©clenchÃ© notre trigger d\u0027escalade : couverture Guadeloupe ajoutÃ©e (16 spots) en plus de Martinique (18), 1 196 locations / 46 pays, reports photo quotidiens horodatÃ©s et comptes utilisateurs. S\u0027ils ajoutent satellite ou forecast, ils deviennent un nous anglophone avec effet rÃ©seau communautaire que nous n\u0027avons pas. Surveillance mensuelle â†’ bimensuelle recommandÃ©e.",
+                    "howisthesargassum.com est DEVANT nous en produit sur le Mexique : refresh horaire (vs nos 4x/j), forecast 7j dÃ©jÃ  shippÃ©, pages plage avec webcams + hÃ´tels + cleanup info, et un blog data qui construit l\u0027autoritÃ© EN. Toute extension de leur part vers Punta Cana ou les Antilles frappe directement sargassumpuntacana.com et nos pages /en/.",
+                    "Le marchÃ© ES de CancÃºn est dÃ©jÃ  saturÃ© de gratuit local et trustÃ© : sargazo.info (67+ plages, marque connue, semÃ¡foro), sargazo.today (74 plages, webcams, donnÃ©es SEMAR/gouvernement), Red de Monitoreo FB (357k likes, relais presse Azteca/YucatÃ¡n). sargassumcancun.com part de zÃ©ro brand contre des incumbents gratuits â€” la seule brÃ¨che est forecast 7j + alertes + EN/ES bilingue, pas la carte du jour.",
+                    "sargassumreport.com copie notre funnel : alertes email hebdo par destination = mÃªme mÃ©canique de capture de leads, sur 9 destinations EN, avec angle resort-level plus transactionnel que le nÃ´tre. S\u0027ils passent premium avant que nos sites USD aient de la traction, ils prennent le crÃ©neau payant pan-CaraÃ¯bes.",
+                    "NOAA SIR passÃ© en QUOTIDIEN (v1.5) : notre argument \u0027les institutionnels sont hebdo, nous quotidien\u0027 est mort pour la Floride/CaraÃ¯bes US. Le diffÃ©renciateur restant = par plage nommÃ©e + UX + alertes, pas la frÃ©quence.",
+                    "sargassummonitoring.com capte les recommandations mÃ©dias Ã  notre place (Jumbocar #1 MQ, espaces.ca, silo57.ca) et lance SargApp : si l\u0027app prend sur iOS/Android pendant la saison record, ils verrouillent le mobile grand public trilingue alors que nous n\u0027avons pas d\u0027app native.",
+                    "MÃ©tÃ©o France reste indÃ©logeable en #1 FR institutionnel et la saison record augmente sa visibilitÃ© presse ; tout passage de leurs bulletins Ã  une carte interactive Ã©craserait notre SERP FR du jour au lendemain (probabilitÃ© faible, impact maximal).",
+                    "La saison record 2026 attire les nouveaux entrants en rafale (sargassumreport, beachday, villamargarita, bestbeachreviews apparus en quelques mois) : la fenÃªtre oÃ¹ le forecast par plage reste un monopole se referme â€” chaque mois sans traction USD sur PC/Miami/CancÃºn est un mois offert Ã  la concurrence naissante."
+                ]
+}

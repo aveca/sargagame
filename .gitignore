@@ -71,3 +71,4 @@ video-remotion/public/cache/
 .realesrgan/
 public/videos/hero/
 .venv-depthflow/
+assets/hero-depthflow/

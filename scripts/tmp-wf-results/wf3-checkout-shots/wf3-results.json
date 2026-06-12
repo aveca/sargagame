@@ -1,0 +1,1366 @@
+{
+  "mobile": {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "variant": "direct",
+    "clicks": [
+      {
+        "n": "landing→map",
+        "label": "⌄ All beaches on the map"
+      },
+      {
+        "n": "map→beach-sheet (pin #6)",
+        "label": "pin"
+      },
+      {
+        "n": "sheet→paywall",
+        "label": "🔒 UNLOCK FORECAST"
+      },
+      {
+        "n": "paywall→payment",
+        "label": "Get my daily pick — start now $79/yr · billed today"
+      }
+    ],
+    "timings": {
+      "landing": {
+        "ttfb": 419,
+        "dcl": 1008,
+        "load": 1009
+      },
+      "modalOpenToCtaMs": 10966,
+      "ctaToPaymentReadyMs": 2,
+      "paymentReadyOnsite": true
+    },
+    "notes": [],
+    "landingText": "Florida sargassum live — beach map today\n78\n74\n77\n81\n81\n78\n73\n81\n🌎\n▶\nTODAY\nFRI\nSAT\nSUN\nMON\n12\nBEACHES · 12 CLEAN\nMIAMI BEACH\nMiami Beach\nGOOD\n78\n/100\nSOUTH BEACH\nMiami Beach\nGOOD\n78\n/100\nFORT LAUDERDALE BEACH\nFort Lauderdale\nGOOD\n78\n/100\nPALM BEACH\nPalm Beach\nGOOD\n74\n/100\nJUPITER BEACH\nJupiter\nGOOD\n74\n/100\nKEY WEST (SMATHERS)\nKey West\nGOOD\n77\n/100\nKEY LARGO\nKey Largo\nGREAT\n81\n/100\nISLAMORADA\nIslamorada\nGOOD\n78\n/100\nMARATHON (SOMBRERO)\nMarathon\nGREAT\n81\n/100\nCOCOA BEACH\nCocoa Beach\nGOOD\n78\n/100\nDAYTONA BEACH\nDaytona Beach\nGOOD\n73\n/100\nCLEARWATER BEACH\nClearwater\nGREAT\n81\n/100\nSARGASSUM FLORIDA\nLIVE · 01:06 AM\nTHURSDAY, JUNE 11 · COPERNICUS SATELLITE\nJUPITER BEACH\nCLEAN TODAY\n74/100\nClean tomorrow too · Jupiter\nSee this beach\nfull status · weather · 7-day forecast\n⌄\nAll beaches on the map\nLIVE\n· 42m ago\n🌙\nES\n🗺️\nMap\n📋\nBeaches\n⭐\nPremium",
+    "landingButtons": [
+      "78",
+      "74",
+      "77",
+      "81",
+      "81",
+      "78",
+      "73",
+      "81",
+      "🌎",
+      "▶",
+      "TODAY",
+      "FRI",
+      "SAT",
+      "SUN",
+      "MON",
+      "MIAMI BEACH Miami Beach GOOD 78 /100",
+      "SOUTH BEACH Miami Beach GOOD 78 /100",
+      "FORT LAUDERDALE BEACH Fort Lauderdale GOOD 78 /100",
+      "PALM BEACH Palm Beach GOOD 74 /100",
+      "JUPITER BEACH Jupiter GOOD 74 /100",
+      "KEY WEST (SMATHERS) Key West GOOD 77 /100",
+      "KEY LARGO Key Largo GREAT 81 /100",
+      "ISLAMORADA Islamorada GOOD 78 /100",
+      "MARATHON (SOMBRERO) Marathon GREAT 81 /100",
+      "See this beach full status · weather · 7-day forecast",
+      "⌄ All beaches on the map",
+      "LIVE · 42m ago",
+      "🌙",
+      "ES",
+      "🗺️ Map",
+      "📋 Beaches",
+      "⭐ Premium"
+    ],
+    "mapChrome": [
+      "78",
+      "74",
+      "77",
+      "81",
+      "81",
+      "78",
+      "73",
+      "81",
+      "🌎",
+      "▶",
+      "TODAY",
+      "FRI",
+      "SAT",
+      "SUN",
+      "MON",
+      "MIAMI BEACH Miami Beach GOOD 78 /100",
+      "SOUTH BEACH Miami Beach GOOD 78 /100",
+      "FORT LAUDERDALE BEACH Fort Lauderdale GOOD 78 /100",
+      "PALM BEACH Palm Beach GOOD 74 /100",
+      "JUPITER BEACH Jupiter GOOD 74 /100",
+      "KEY WEST (SMATHERS) Key West GOOD 77 /100",
+      "KEY LARGO Key Largo GREAT 81 /100",
+      "ISLAMORADA Islamorada GOOD 78 /100",
+      "MARATHON (SOMBRERO) Marathon GREAT 81 /100",
+      "LIVE · 42m ago",
+      "🌙",
+      "ES",
+      "🗺️ Map",
+      "📋 Beaches",
+      "⭐ Premium",
+      "💬"
+    ],
+    "sheetText": "Florida sargassum live — beach map today\n78\n74\n77\n81\n81\n78\n73\n81\n🌎\n▶\nTODAY\nFRI\nSAT\nSUN\nMON\n12\nBEACHES · 12 CLEAN\nMIAMI BEACH\nMiami Beach\nGOOD\n78\n/100\nSOUTH BEACH\nMiami Beach\nGOOD\n78\n/100\nFORT LAUDERDALE BEACH\nFort Lauderdale\nGOOD\n78\n/100\nPALM BEACH\nPalm Beach\nGOOD\n74\n/100\nJUPITER BEACH\nJupiter\nGOOD\n74\n/100\nKEY WEST (SMATHERS)\nKey West\nGOOD\n77\n/100\nKEY LARGO\nKey Largo\nGREAT\n81\n/100\nISLAMORADA\nIslamorada\nGOOD\n78\n/100\nMARATHON (SOMBRERO)\nMarathon\nGREAT\n81\n/100\nCOCOA BEACH\nCocoa Beach\nGOOD\n78\n/100\nDAYTONA BEACH\nDaytona Beach\nGOOD\n73\n/100\nCLEARWATER BEACH\nClearwater\nGREAT\n81\n/100\nLIVE\n· 42m ago\n🌙\nES\n🔔\nGet notified when your favorite beaches change.\nActivate\n✕\n🗺️\nMap\n📋\nBeaches\n⭐\nPremium\n✕\n🤍\nClean\nKEY LARGO\n\nKey Largo\n\n81\n/100\nGREAT\nZero sargassum, warm water. But overcast sky.\n✓ zero sargassum\n✓ warm water\n⚠ overcast sky\nGO FOR IT\n\nLittle to no sargassum detected by satellite offshore.\n\nFREE\nWhere's the cleanest beach today?\nWe tell you every morning. Free.\nGo\nNot now\nTOMORROW FORECAST\nKey Largo\nClean\nUnlock the 7-day forecast\n🔓\n📍\nOn the beach? Report sargassum level\n✅ Clean\n⚠️ Moderate\n🚫 Heavy\n👶 Kids\n🤿 Snorkeling\n🅿️ Parking\n🚗\nDirections\n📤\nNearby beaches\nTap to compare\n✅ Clean\nIslamorada\n26 km\n✅ Clean\nMarathon (Sombrero)\n79 km\n✅ Clean\nSouth Beach\n84 km\nForecast\n🌤️\n29°\n5%\nTODAY\n5%\n🌧️\n30°\n5%\nTMRW\n☀️\n30°\n5%\nSAT\n☀️\n30°\n5%\nSUN\nReliable up to 4 days. 46% confidence tomorrow.\n🔒 UNLOCK FORECAST\n+ morning brief & alerts\nNext days:\nTmrw\nSat\nSun\nUnlock →\nPersistence + satellite mats + wind. Reliability drops after day 3.\nRELIABILITY\nLow\nⓘ\n🛰️\nCopernicus OLCI\n·\nJun 10\n·\nAFAI",
+    "paywallText": "Florida sargassum live — beach map today\n78\n74\n77\n81\n81\n78\n73\n81\n🌎\n▶\nTODAY\nFRI\nSAT\nSUN\nMON\n12\nBEACHES · 12 CLEAN\nMIAMI BEACH\nMiami Beach\nGOOD\n78\n/100\nSOUTH BEACH\nMiami Beach\nGOOD\n78\n/100\nFORT LAUDERDALE BEACH\nFort Lauderdale\nGOOD\n78\n/100\nPALM BEACH\nPalm Beach\nGOOD\n74\n/100\nJUPITER BEACH\nJupiter\nGOOD\n74\n/100\nKEY WEST (SMATHERS)\nKey West\nGOOD\n77\n/100\nKEY LARGO\nKey Largo\nGREAT\n81\n/100\nISLAMORADA\nIslamorada\nGOOD\n78\n/100\nMARATHON (SOMBRERO)\nMarathon\nGREAT\n81\n/100\nCOCOA BEACH\nCocoa Beach\nGOOD\n78\n/100\nDAYTONA BEACH\nDaytona Beach\nGOOD\n73\n/100\nCLEARWATER BEACH\nClearwater\nGREAT\n81\n/100\nLIVE\n· 42m ago\n🌙\nES\n🔔\nGet notified when your favorite beaches change.\nActivate\n✕\n🗺️\nMap\n📋\nBeaches\n⭐\nPremium\n✕\n🤍\nClean\nKEY LARGO\n\nKey Largo\n\n81\n/100\nGREAT\nZero sargassum, warm water. But overcast sky.\n✓ zero sargassum\n✓ warm water\n⚠ overcast sky\nGO FOR IT\n\nLittle to no sargassum detected by satellite offshore.\n\nFREE\nWhere's the cleanest beach today?\nWe tell you every morning. Free.\nGo\nNot now\nTOMORROW FORECAST\nKey Largo\nClean\nUnlock the 7-day forecast\n🔓\n📍\nOn the beach? Report sargassum level\n✅ Clean\n⚠️ Moderate\n🚫 Heavy\n👶 Kids\n🤿 Snorkeling\n🅿️ Parking\n🚗\nDirections\n📤\nNearby beaches\nTap to compare\n✅ Clean\nIslamorada\n26 km\n✅ Clean\nMarathon (Sombrero)\n79 km\n✅ Clean\nSouth Beach\n84 km\nForecast\n🌤️\n29°\n5%\nTODAY\n5%\n🌧️\n30°\n5%\nTMRW\n☀️\n30°\n5%\nSAT\n☀️\n30°\n5%\nSUN\nReliable up to 4 days. 46% confidence tomorrow.\n🔒 UNLOCK FORECAST\n+ morning brief & alerts\nNext days:\nTmrw\nSat\nSun\nUnlock →\nPersistence + satellite mats + wind. Reliability drops after day 3.\nRELIABILITY\nLow\nⓘ\n🛰️\nCopernicus OLCI\n·\nJun 10\n·\nAFAI + Persistence\nWeather\n🌡️\n79°F\nTEMPERATURE\n💨\n6 mph\nWIND\n☀️\n0\nUV\n×\nSARGASSUM SEASON IS HERE\nKNOW BEFORE YOUR BEACH TURNS\n01\nEVERY MORNING · 7AM\nYour best beach today: Key Largo\nScore 81/100 · satellite-verified\n02\nINSTANT ALERT\nYour saved beach just changed\nClean → Moderate — switch to Key Largo\n03\nWEEKEND FORECAST\nBest for Saturday: Key Largo\nClean all weekend · great for kids\n12/12 beaches clean right now · satellite 24/7\nMonthly\n$9.99/mo\n-33%\nAnnual\n$79/yr\n$6.58/mo billed yearly\nabout $0.22/day\nGet my daily pick — start now\n$79/yr · billed today\nNo commitment · Cancel in 2 clicks · Secure Stripe payment\n🛡\n30-day money-back\n·\n🔒\nStripe\nI already have a subscriptionClose\n← Back\n🔒 Stripe\nACTIVATE YOUR DAILY PICK\n$9.99/mo · billed today · cancel in 2 clicks\nPay $9.99 — activate now\nNo commitment · Cancel in 2 clicks · Secured by Stripe\nOr continue on the Stripe page →",
+    "priceVisibleOnOpen": [
+      {
+        "txt": "$6.58/mo billed yearly",
+        "inViewport": true
+      },
+      {
+        "txt": "about $0.22/day",
+        "inViewport": true
+      },
+      {
+        "txt": "$79/yr · billed today",
+        "inViewport": true
+      },
+      {
+        "txt": "$9.99/mo · billed today · cancel in 2 clicks",
+        "inViewport": true
+      },
+      {
+        "txt": "Pay $9.99 — activate now",
+        "inViewport": true
+      }
+    ],
+    "stripeNavFallback": false,
+    "paymentOverlay": {
+      "text": "Florida sargassum live — beach map today\n78\n74\n77\n81\n81\n78\n73\n81\n🌎\n▶\nTODAY\nFRI\nSAT\nSUN\nMON\n12\nBEACHES · 12 CLEAN\nMIAMI BEACH\nMiami Beach\nGOOD\n78\n/100\nSOUTH BEACH\nMiami Beach\nGOOD\n78\n/100\nFORT LAUDERDALE BEACH\nFort Lauderdale\nGOOD\n78\n/100\nPALM BEACH\nPalm Beach\nGOOD\n74\n/100\nJUPITER BEACH\nJupiter\nGOOD\n74\n/100\nKEY WEST (SMATHERS)\nKey West\nGOOD\n77\n/100\nKEY LARGO\nKey Largo\nGREAT\n81\n/100\nISLAMORADA\nIslamorada\nGOOD\n78\n/100\nMARATHON (SOMBRERO)\nMarathon\nGREAT\n81\n/100\nCOCOA BEACH\nCocoa Beach\nGOOD\n78\n/100\nDAYTONA BEACH\nDaytona Beach\nGOOD\n73\n/100\nCLEARWATER BEACH\nClearwater\nGREAT\n81\n/100\nLIVE\n· 42m ago\n🌙\nES\n🔔\nGet notified when your favorite beaches change.\nActivate\n✕\n🗺️\nMap\n📋\nBeaches\n⭐\nPremium\n✕\n🤍\nClean\nKEY LARGO\n\nKey Largo\n\n81\n/100\nGREAT\nZero sargassum, warm water. But overcast sky.\n✓ zero sargassum\n✓ warm water\n⚠ overcast sky\nGO FOR IT\n\nLittle to no sargassum detected by satellite offshore.\n\nFREE\nWhere's the cleanest beach today?\nWe tell you every morning. Free.\nGo\nNot now\nTOMORROW FORECAST\nKey Largo\nClean\nUnlock the 7-day forecast\n🔓\n📍\nOn the beach? Report sargassum level\n✅ Clean\n⚠️ Moderate\n🚫 Heavy\n👶 Kids\n🤿 Snorkeling\n🅿️ Parking\n🚗\nDirections\n📤\nNearby beaches\nTap to compare\n✅ Clean\nIslamorada\n26 km\n✅ Clean\nMarathon (Sombrero)\n79 km\n✅ Clean\nSouth Beach\n84 km\nForecast\n🌤️\n29°\n5%\nTODAY\n5%\n🌧️\n30°\n5%\nTMRW\n☀️\n30°\n5%\nSAT\n☀️\n30°\n5%\nSUN\nReliable up to 4 days. 46% confidence tomorrow.\n🔒 UNLOCK FORECAST\n+ morning brief & alerts\nNext days:\nTmrw\nSat\nSun\nUnlock →\nPersistence + satellite mats + wind. Reliability drops after day 3.\nRELIABILITY\nLow\nⓘ\n🛰️\nCopernicus OLCI\n·\nJun 10\n·\nAFAI + Persistence\nWeather\n🌡️\n79°F\nTEMPERATURE\n💨\n6 mph\nWIND\n☀️\n0\nUV\n×\nSARGASSUM SEASON IS HERE\nKNOW BEFORE YOUR BEACH TURNS\n01\nEVERY MORNING · 7AM\nYour best beach today: Key Largo\nScore 81/100 · satellite-verified\n02\nINSTANT ALERT\nYour saved beach just changed\nClean → Moderate — switch to Key Largo\n03\nWEEKEND FORECAST\nBest for Saturday: Key Largo\nClean all weekend · great for kids\n12/12 beaches clean right now · satellite 24/7\nMonthly\n$9.99/mo\n-33%\nAnnual\n$79/yr\n$6.58/mo billed yearly\nabout $0.22/day\nGet my daily pick — start now\n$79/yr · billed today\nNo commitment · Cancel in 2 clicks · Secure Stripe payment\n🛡\n30-day money-back\n·\n🔒\nStripe\nI already have a subscriptionClose\n← Back\n🔒 Stripe\nACTIVATE YOUR DAILY PICK\n$79/yr · billed today · cancel in 2 clicks\nPay $79 — activate now\nNo commitment · Cancel in 2 clicks · Secured by Stripe\nOr continue on the Stripe page →",
+      "iframes": [
+        {
+          "name": "__privateStripeFrame2637",
+          "src": "js.stripe.com/v3/elements-inner-accessory-target-214384d1d7c402361552347246a13859.html#__s",
+          "h": 8,
+          "w": 358
+        },
+        {
+          "name": "__privateStripeFrame2634",
+          "src": "js.stripe.com/v3/elements-inner-accessory-target-214384d1d7c402361552347246a13859.html#__s",
+          "h": 295,
+          "w": 358
+        }
+      ]
+    },
+    "stripeFrames": [
+      {
+        "kind": "other",
+        "url": "js.stripe.com/v3/m-outer-3437aaddcdf6922d623e172c2d6f9278.html#url=https%3A%2F%2",
+        "inputs": [],
+        "tabs": [],
+        "labels": [],
+        "bodyText": ""
+      },
+      {
+        "kind": "other",
+        "url": "m.stripe.network/inner.html#url=https%3A%2F%2Fsargassummiami.com%2F&title=Florid",
+        "inputs": [],
+        "tabs": [],
+        "labels": [],
+        "bodyText": ""
+      },
+      {
+        "kind": "other",
+        "url": "js.stripe.com/v3/controller-with-preconnect-e6364dd9423c480d220e8bff403cf5f4.htm",
+        "inputs": [],
+        "tabs": [],
+        "labels": [],
+        "bodyText": ""
+      },
+      {
+        "kind": "other",
+        "url": "js.stripe.com/v3/elements-inner-loader-ui-8442ca3a5225bf2df82ba5b9b392b6b8.html#",
+        "inputs": [],
+        "tabs": [],
+        "labels": [],
+        "bodyText": ""
+      },
+      {
+        "kind": "payment-element",
+        "url": "js.stripe.com/v3/payment-request-inner-google-pay-06da15c58e8832367bc3cbf9f35326",
+        "inputs": [],
+        "tabs": [],
+        "labels": [],
+        "bodyText": ""
+      },
+      {
+        "kind": "payment-element",
+        "url": "js.stripe.com/v3/elements-inner-accessory-target-214384d1d7c402361552347246a1385",
+        "inputs": [
+          {
+            "tag": "input",
+            "name": "number",
+            "placeholder": "1234 1234 1234 1234",
+            "label": "",
+            "autocomplete": "cc-number"
+          },
+          {
+            "tag": "select",
+            "name": "network",
+            "placeholder": "",
+            "label": "Card network",
+            "autocomplete": ""
+          },
+          {
+            "tag": "input",
+            "name": "expiry",
+            "placeholder": "MM / YY",
+            "label": "",
+            "autocomplete": "cc-exp"
+          },
+          {
+            "tag": "input",
+            "name": "cvc",
+            "placeholder": "CVC",
+            "label": "",
+            "autocomplete": "cc-csc"
+          },
+          {
+            "tag": "select",
+            "name": "country",
+            "placeholder": "",
+            "label": "",
+            "autocomplete": "billing country"
+          },
+          {
+            "tag": "input",
+            "name": "",
+            "placeholder": "",
+            "label": "",
+            "autocomplete": ""
+          },
+          {
+            "tag": "input",
+            "name": "",
+            "placeholder": "",
+            "label": "",
+            "autocomplete": ""
+          },
+          {
+            "tag": "input",
+            "name": "",
+            "placeholder": "",
+            "label": "",
+            "autocomplete": ""
+          },
+          {
+            "tag": "input",
+            "name": "",
+            "placeholder": "",
+            "label": "",
+            "autocomplete": ""
+          }
+        ],
+        "tabs": [],
+        "labels": [
+          "Card number",
+          "Expiration date MM / YY",
+          "Security code",
+          "Country"
+        ],
+        "bodyText": "Card number Supported cards include Visa, Mastercard, American Express, UnionPay, and Discover. Expiration date MM / YY Security code 3-digit code on back of card Country Select Afghanistan Åland Islands Albania Algeria Andorra Angola Anguilla Antarctica Antigua & Barbuda Argentina Armenia Aruba Ascension Island Australia Austria Azerbaijan Bahamas Bahrain Bangladesh Barbados Belarus Belgium Belize Benin Bermuda Bhutan Bolivia Bosnia & Herzegovina Botswana Bouvet Island Brazil British Indian Ocean Territory British Virgin Islands Brunei Bulgaria Burkina Faso Burundi Cambodia Cameroon Canada Ca"
+      },
+      {
+        "kind": "express-checkout",
+        "url": "js.stripe.com/v3/elements-inner-accessory-target-214384d1d7c402361552347246a1385",
+        "inputs": [],
+        "tabs": [],
+        "labels": [],
+        "bodyText": ""
+      },
+      {
+        "kind": "other",
+        "url": "pay.google.com/gp/p/ui/payframe?origin=https%3A%2F%2Fjs.stripe.com&mid=",
+        "inputs": [],
+        "tabs": [],
+        "labels": [],
+        "bodyText": "window.wiz_progress&&window.wiz_progress();window.wiz_tick&&window.wiz_tick('qpNYXe');(function(){'use strict';var c=window,d=[];c.aft_counter=d;var e=[],f=0;function _recordIsAboveFold(a){if(!c._isLazyImage(a)&&!a.hasAttribute(\"data-noaft\")&&a.src){var b=(c._isVisible||function(){})(c.document,a);a.setAttribute(\"data-atf\",b);b&&(e.indexOf(a)!==-1||d.indexOf(a)!==-1||a.complete||d.push(a),a.hasAttribute(\"data-iml\")&&(a=Number(a.getAttribute(\"data-iml\")),a>f&&(f=a)))}} c.initAft=function(){f=0;e=Array.prototype.slice.call(document.getElementsByTagName(\"img\")).filter(function(a){return!!a.getAtt"
+      },
+      {
+        "kind": "other",
+        "url": "js.stripe.com/v3/hcaptcha-invisible-8a780bdbc728a24970037c3ec5940798.html#debugM",
+        "inputs": [],
+        "tabs": [],
+        "labels": [],
+        "bodyText": ""
+      },
+      {
+        "kind": "other",
+        "url": "b.stripecdn.com/stripethirdparty-srv/assets/v32.18/HCaptchaInvisible.html?id=e33",
+        "inputs": [],
+        "tabs": [],
+        "labels": [],
+        "bodyText": ""
+      }
+    ],
+    "paymentReassurance": [
+      {
+        "txt": "$79/yr · billed today",
+        "inViewport": true
+      },
+      {
+        "txt": "No commitment · Cancel in 2 clicks · Secure Stripe payment",
+        "inViewport": true
+      },
+      {
+        "txt": "🔒 Stripe",
+        "inViewport": true
+      },
+      {
+        "txt": "$79/yr · billed today · cancel in 2 clicks",
+        "inViewport": true
+      },
+      {
+        "txt": "No commitment · Cancel in 2 clicks · Secured by Stripe",
+        "inViewport": true
+      },
+      {
+        "txt": "Or continue on the Stripe page →",
+        "inViewport": true
+      }
+    ],
+    "payButton": {
+      "label": "Pay $79 — activate now",
+      "inViewport": true
+    },
+    "networkTimeline": [
+      {
+        "tFromModalOpenMs": -9008,
+        "u": "js.stripe.com/v3"
+      },
+      {
+        "tFromModalOpenMs": -7928,
+        "u": "js.stripe.com/v3/m-outer-3437aaddcdf6922d623e172c2d6f9278.html"
+      },
+      {
+        "tFromModalOpenMs": -7839,
+        "u": "js.stripe.com/v3/fingerprinted/js/m-outer-15a2b40a058ddff1cffdb63779fe3de1.js"
+      },
+      {
+        "tFromModalOpenMs": 3489,
+        "u": "sargassummiami.com/api/create-checkout.php"
+      },
+      {
+        "tFromModalOpenMs": 3493,
+        "u": "js.stripe.com/v3/controller-with-preconnect-e6364dd9423c480d220e8bff403cf5f4.html"
+      },
+      {
+        "tFromModalOpenMs": 3501,
+        "u": "js.stripe.com/v3/elements-inner-loader-ui-8442ca3a5225bf2df82ba5b9b392b6b8.html"
+      },
+      {
+        "tFromModalOpenMs": 3509,
+        "u": "js.stripe.com/v3/payment-request-inner-google-pay-06da15c58e8832367bc3cbf9f3532622.html"
+      },
+      {
+        "tFromModalOpenMs": 3512,
+        "u": "js.stripe.com/v3/elements-inner-accessory-target-214384d1d7c402361552347246a13859.html"
+      },
+      {
+        "tFromModalOpenMs": 3515,
+        "u": "js.stripe.com/v3/elements-inner-accessory-target-214384d1d7c402361552347246a13859.html"
+      },
+      {
+        "tFromModalOpenMs": 3550,
+        "u": "js.stripe.com/v3/fingerprinted/js/shared-8c20f01b8c259cf908faa54c93248a79.js"
+      },
+      {
+        "tFromModalOpenMs": 3552,
+        "u": "js.stripe.com/v3/fingerprinted/js/controller-with-preconnect-a4f4e64e749ce4b7d44e280cc8801"
+      },
+      {
+        "tFromModalOpenMs": 3557,
+        "u": "js.stripe.com/v3/fingerprinted/js/shared-8c20f01b8c259cf908faa54c93248a79.js"
+      },
+      {
+        "tFromModalOpenMs": 3557,
+        "u": "js.stripe.com/v3/fingerprinted/js/elements-inner-loader-ui-3045cabeb406a0181512c6f256891e2"
+      },
+      {
+        "tFromModalOpenMs": 3558,
+        "u": "js.stripe.com/v3/fingerprinted/css/elements-inner-loader-ui-80ab262aada7f4b0b45162f47adbdb"
+      },
+      {
+        "tFromModalOpenMs": 3571,
+        "u": "js.stripe.com/v3/fingerprinted/js/shared-8c20f01b8c259cf908faa54c93248a79.js"
+      },
+      {
+        "tFromModalOpenMs": 3582,
+        "u": "js.stripe.com/v3/fingerprinted/css/elements-inner-payment-d3217fb13db960c84d2b84c8d08a4395"
+      },
+      {
+        "tFromModalOpenMs": 3586,
+        "u": "js.stripe.com/v3/fingerprinted/css/elements-inner-express-checkout-1241bfb1569dd5dbd8edfa8"
+      },
+      {
+        "tFromModalOpenMs": 3791,
+        "u": "js.stripe.com/v3/fingerprinted/js/payment-request-inner-google-pay-5c09fcd8aa646bfc55b4e93"
+      },
+      {
+        "tFromModalOpenMs": 3921,
+        "u": "js.stripe.com/v3/.deploy_status_henson.json"
+      },
+      {
+        "tFromModalOpenMs": 3922,
+        "u": "js.stripe.com/v3/.deploy_status_henson.json"
+      },
+      {
+        "tFromModalOpenMs": 3923,
+        "u": "js.stripe.com/v3/.deploy_status_henson.json"
+      },
+      {
+        "tFromModalOpenMs": 3924,
+        "u": "js.stripe.com/v3/fingerprinted/js/stripe-cookies-99315d136700f132b072c563090f72a7.js"
+      },
+      {
+        "tFromModalOpenMs": 3924,
+        "u": "js.stripe.com/v3/fingerprinted/js/consumerSchema-3419449d1b8db5892c4dd0c20e2a2652.js"
+      },
+      {
+        "tFromModalOpenMs": 3930,
+        "u": "js.stripe.com/v3/fingerprinted/js/elements-inner-accessory-render-7c542f8780fb47de8caff649"
+      },
+      {
+        "tFromModalOpenMs": 3936,
+        "u": "api.stripe.com/v1/elements/sessions?client_secret=seti_1Th1UvP9RK8Orx51wqsdnXbX_secret_UgO"
+      },
+      {
+        "tFromModalOpenMs": 3937,
+        "u": "merchant-ui-api.stripe.com/link/get-cookie?referrer_host=sargassummiami.com"
+      },
+      {
+        "tFromModalOpenMs": 4478,
+        "u": "js.stripe.com/v3/.deploy_status_henson.json"
+      },
+      {
+        "tFromModalOpenMs": 4479,
+        "u": "js.stripe.com/v3/hcaptcha-invisible-8a780bdbc728a24970037c3ec5940798.html"
+      },
+      {
+        "tFromModalOpenMs": 8975,
+        "u": "js.stripe.com/v3/fingerprinted/js/trusted-types-checker-a86dcafd042e60cf7585cbabd57b0cdb.j"
+      }
+    ],
+    "clicksMapToPayment": 3,
+    "blockedRequests": 8
+  },
+  "desktop": {
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "variant": "direct",
+    "clicks": [
+      {
+        "n": "landing→map",
+        "label": "🗺 Open the live map every beach, real time"
+      },
+      {
+        "n": "map→beach-sheet (pin #6)",
+        "label": "pin"
+      },
+      {
+        "n": "sheet→paywall",
+        "label": "🔒 UNLOCK FORECAST"
+      },
+      {
+        "n": "paywall→payment",
+        "label": "Get my daily pick — start now $79/yr · billed today"
+      }
+    ],
+    "timings": {
+      "landing": {
+        "ttfb": 1062,
+        "dcl": 3727,
+        "load": 3728
+      },
+      "modalOpenToCtaMs": 12098,
+      "ctaToPaymentReadyMs": 2,
+      "paymentReadyOnsite": true
+    },
+    "notes": [],
+    "landingText": "Florida sargassum live — beach map today\n78\n74\n77\n81\n81\n78\n73\n81\n🌎\nCaribbean View\n▶\nTODAY\nFRI\nSAT\nSUN\nMON\n12\nBEACHES · 12 CLEAN\nMIAMI BEACH\nMiami Beach\nGOOD\n78\n/100\nSOUTH BEACH\nMiami Beach\nGOOD\n78\n/100\nFORT LAUDERDALE BEACH\nFort Lauderdale\nGOOD\n78\n/100\nPALM BEACH\nPalm Beach\nGOOD\n74\n/100\nJUPITER BEACH\nJupiter\nGOOD\n74\n/100\nKEY WEST (SMATHERS)\nKey West\nGOOD\n77\n/100\nKEY LARGO\nKey Largo\nGREAT\n81\n/100\nISLAMORADA\nIslamorada\nGOOD\n78\n/100\nMARATHON (SOMBRERO)\nMarathon\nGREAT\n81\n/100\nCOCOA BEACH\nCocoa Beach\nGOOD\n78\n/100\nDAYTONA BEACH\nDaytona Beach\nGOOD\n73\n/100\nCLEARWATER BEACH\nClearwater\nGREAT\n81\n/100\nSARGASSUM FLORIDA\nLIVE · 01:06 AM\nTHURSDAY, JUNE 11 · COPERNICUS SATELLITE\nJUPITER BEACH\nCLEAN TODAY\n74/100\nClean tomorrow too · Jupiter\nSee this beach\nfull status · weather · 7-day forecast\n🗺 Open the live map\nevery beach, real time\nLIVE\n· 43m ago\n🌙\nES\n🗺️\nMap\n📋\nBeaches\n⭐\nPremium",
+    "landingButtons": [
+      "78",
+      "74",
+      "77",
+      "81",
+      "81",
+      "78",
+      "73",
+      "81",
+      "🌎 Caribbean View",
+      "▶",
+      "TODAY",
+      "FRI",
+      "SAT",
+      "SUN",
+      "MON",
+      "MIAMI BEACH Miami Beach GOOD 78 /100",
+      "SOUTH BEACH Miami Beach GOOD 78 /100",
+      "FORT LAUDERDALE BEACH Fort Lauderdale GOOD 78 /100",
+      "PALM BEACH Palm Beach GOOD 74 /100",
+      "JUPITER BEACH Jupiter GOOD 74 /100",
+      "KEY WEST (SMATHERS) Key West GOOD 77 /100",
+      "KEY LARGO Key Largo GREAT 81 /100",
+      "ISLAMORADA Islamorada GOOD 78 /100",
+      "See this beach full status · weather · 7-day forecast",
+      "🗺 Open the live map every beach, real time",
+      "LIVE · 43m ago",
+      "🌙",
+      "ES",
+      "🗺️ Map",
+      "📋 Beaches",
+      "⭐ Premium"
+    ],
+    "mapChrome": [
+      "78",
+      "74",
+      "77",
+      "81",
+      "81",
+      "78",
+      "73",
+      "81",
+      "🌎 Caribbean View",
+      "▶",
+      "TODAY",
+      "FRI",
+      "SAT",
+      "SUN",
+      "MON",
+      "MIAMI BEACH Miami Beach GOOD 78 /100",
+      "SOUTH BEACH Miami Beach GOOD 78 /100",
+      "FORT LAUDERDALE BEACH Fort Lauderdale GOOD 78 /100",
+      "PALM BEACH Palm Beach GOOD 74 /100",
+      "JUPITER BEACH Jupiter GOOD 74 /100",
+      "KEY WEST (SMATHERS) Key West GOOD 77 /100",
+      "KEY LARGO Key Largo GREAT 81 /100",
+      "ISLAMORADA Islamorada GOOD 78 /100",
+      "LIVE · 43m ago",
+      "🌙",
+      "ES",
+      "🗺️ Map",
+      "📋 Beaches",
+      "⭐ Premium",
+      "💬"
+    ],
+    "sheetText": "Florida sargassum live — beach map today\n78\n74\n77\n81\n81\n78\n73\n81\n🌎\nCaribbean View\n▶\nTODAY\nFRI\nSAT\nSUN\nMON\n12\nBEACHES · 12 CLEAN\nMIAMI BEACH\nMiami Beach\nGOOD\n78\n/100\nSOUTH BEACH\nMiami Beach\nGOOD\n78\n/100\nFORT LAUDERDALE BEACH\nFort Lauderdale\nGOOD\n78\n/100\nPALM BEACH\nPalm Beach\nGOOD\n74\n/100\nJUPITER BEACH\nJupiter\nGOOD\n74\n/100\nKEY WEST (SMATHERS)\nKey West\nGOOD\n77\n/100\nKEY LARGO\nKey Largo\nGREAT\n81\n/100\nISLAMORADA\nIslamorada\nGOOD\n78\n/100\nMARATHON (SOMBRERO)\nMarathon\nGREAT\n81\n/100\nCOCOA BEACH\nCocoa Beach\nGOOD\n78\n/100\nDAYTONA BEACH\nDaytona Beach\nGOOD\n73\n/100\nCLEARWATER BEACH\nClearwater\nGREAT\n81\n/100\nLIVE\n· 43m ago\n🌙\nES\n🔔\nGet notified when your favorite beaches change.\nActivate\n✕\n🗺️\nMap\n📋\nBeaches\n⭐\nPremium\n✕\n🤍\nClean\nKEY LARGO\n\nKey Largo\n\n81\n/100\nGREAT\nZero sargassum, warm water. But overcast sky.\n✓ zero sargassum\n✓ warm water\n⚠ overcast sky\nGO FOR IT\n\nLittle to no sargassum detected by satellite offshore.\n\nFREE\nBeaches are changing fast\nGet alerted when your beach status changes. Free.\nGo\nNot now\nTOMORROW FORECAST\nKey Largo\nClean\nUnlock the 7-day forecast\n🔓\n📍\nOn the beach? Report sargassum level\n✅ Clean\n⚠️ Moderate\n🚫 Heavy\n👶 Kids\n🤿 Snorkeling\n🅿️ Parking\n🚗\nDirections\n📤\nNearby beaches\nTap to compare\n✅ Clean\nIslamorada\n26 km\n✅ Clean\nMarathon (Sombrero)\n79 km\n✅ Clean\nSouth Beach\n84 km\nForecast\n🌤️\n29°\n5%\nTODAY\n5%\n🌧️\n30°\n5%\nTMRW\n☀️\n30°\n5%\nSAT\n☀️\n30°\n5%\nSUN\nReliable up to 4 days. 46% confidence tomorrow.\n🔒 UNLOCK FORECAST\n+ morning brief & alerts\nNext days:\nTmrw\nSat\nSun\nUnlock →\nPersistence + satellite mats + wind. Reliability drops after day 3.\nRELIABILITY\nLow\nⓘ\n🛰️\nCoperni",
+    "paywallText": "Florida sargassum live — beach map today\n78\n74\n77\n81\n81\n78\n73\n81\n🌎\nCaribbean View\n▶\nTODAY\nFRI\nSAT\nSUN\nMON\n12\nBEACHES · 12 CLEAN\nMIAMI BEACH\nMiami Beach\nGOOD\n78\n/100\nSOUTH BEACH\nMiami Beach\nGOOD\n78\n/100\nFORT LAUDERDALE BEACH\nFort Lauderdale\nGOOD\n78\n/100\nPALM BEACH\nPalm Beach\nGOOD\n74\n/100\nJUPITER BEACH\nJupiter\nGOOD\n74\n/100\nKEY WEST (SMATHERS)\nKey West\nGOOD\n77\n/100\nKEY LARGO\nKey Largo\nGREAT\n81\n/100\nISLAMORADA\nIslamorada\nGOOD\n78\n/100\nMARATHON (SOMBRERO)\nMarathon\nGREAT\n81\n/100\nCOCOA BEACH\nCocoa Beach\nGOOD\n78\n/100\nDAYTONA BEACH\nDaytona Beach\nGOOD\n73\n/100\nCLEARWATER BEACH\nClearwater\nGREAT\n81\n/100\nLIVE\n· 43m ago\n🌙\nES\n🔔\nGet notified when your favorite beaches change.\nActivate\n✕\n🗺️\nMap\n📋\nBeaches\n⭐\nPremium\n✕\n🤍\nClean\nKEY LARGO\n\nKey Largo\n\n81\n/100\nGREAT\nZero sargassum, warm water. But overcast sky.\n✓ zero sargassum\n✓ warm water\n⚠ overcast sky\nGO FOR IT\n\nLittle to no sargassum detected by satellite offshore.\n\nFREE\nBeaches are changing fast\nGet alerted when your beach status changes. Free.\nGo\nNot now\nTOMORROW FORECAST\nKey Largo\nClean\nUnlock the 7-day forecast\n🔓\n📍\nOn the beach? Report sargassum level\n✅ Clean\n⚠️ Moderate\n🚫 Heavy\n👶 Kids\n🤿 Snorkeling\n🅿️ Parking\n🚗\nDirections\n📤\nNearby beaches\nTap to compare\n✅ Clean\nIslamorada\n26 km\n✅ Clean\nMarathon (Sombrero)\n79 km\n✅ Clean\nSouth Beach\n84 km\nForecast\n🌤️\n29°\n5%\nTODAY\n5%\n🌧️\n30°\n5%\nTMRW\n☀️\n30°\n5%\nSAT\n☀️\n30°\n5%\nSUN\nReliable up to 4 days. 46% confidence tomorrow.\n🔒 UNLOCK FORECAST\n+ morning brief & alerts\nNext days:\nTmrw\nSat\nSun\nUnlock →\nPersistence + satellite mats + wind. Reliability drops after day 3.\nRELIABILITY\nLow\nⓘ\n🛰️\nCopernicus OLCI\n·\nJun 10\n·\nAFAI + Persistence\nWeather\n🌡️\n79°F\nTEMPERATURE\n💨\n6 mph\nWIND\n☀️\n0\nUV\n×\nSARGASSUM SEASON IS HERE\nKNOW BEFORE YOUR BEACH TURNS\n01\nEVERY MORNING · 7AM\nYour best beach today: Key Largo\nScore 81/100 · satellite-verified\n02\nINSTANT ALERT\nYour saved beach just changed\nClean → Moderate — switch to Key Largo\n03\nWEEKEND FORECAST\nBest for Saturday: Key Largo\nClean all weekend · great for kids\n12/12 beaches clean right now · satellite 24/7\nMonthly\n$9.99/mo\n-33%\nAnnual\n$79/yr\n$6.58/mo billed yearly\nabout $0.22/day\nGet my daily pick — start now\n$79/yr · billed today\nNo commitment · Cancel in 2 clicks · Secure Stripe payment\n🛡\n30-day money-back\n·\n🔒\nStripe\nI already have a subscriptionClose\n← Back\n🔒 Stripe\nACTIVATE YOUR DAILY PICK\n$9.99/mo · billed today · cancel in 2 clicks\nPay $9.99 — activate now\nNo commitment · Cancel in 2 clicks · Secured by Stripe\nOr continue on the Stripe page →",
+    "priceVisibleOnOpen": [
+      {
+        "txt": "$6.58/mo billed yearly",
+        "inViewport": true
+      },
+      {
+        "txt": "about $0.22/day",
+        "inViewport": true
+      },
+      {
+        "txt": "$79/yr · billed today",
+        "inViewport": true
+      },
+      {
+        "txt": "$9.99/mo · billed today · cancel in 2 clicks",
+        "inViewport": true
+      },
+      {
+        "txt": "Pay $9.99 — activate now",
+        "inViewport": true
+      }
+    ],
+    "stripeNavFallback": false,
+    "paymentOverlay": {
+      "text": "Florida sargassum live — beach map today\n78\n74\n77\n81\n81\n78\n73\n81\n🌎\nCaribbean View\n▶\nTODAY\nFRI\nSAT\nSUN\nMON\n12\nBEACHES · 12 CLEAN\nMIAMI BEACH\nMiami Beach\nGOOD\n78\n/100\nSOUTH BEACH\nMiami Beach\nGOOD\n78\n/100\nFORT LAUDERDALE BEACH\nFort Lauderdale\nGOOD\n78\n/100\nPALM BEACH\nPalm Beach\nGOOD\n74\n/100\nJUPITER BEACH\nJupiter\nGOOD\n74\n/100\nKEY WEST (SMATHERS)\nKey West\nGOOD\n77\n/100\nKEY LARGO\nKey Largo\nGREAT\n81\n/100\nISLAMORADA\nIslamorada\nGOOD\n78\n/100\nMARATHON (SOMBRERO)\nMarathon\nGREAT\n81\n/100\nCOCOA BEACH\nCocoa Beach\nGOOD\n78\n/100\nDAYTONA BEACH\nDaytona Beach\nGOOD\n73\n/100\nCLEARWATER BEACH\nClearwater\nGREAT\n81\n/100\nLIVE\n· 43m ago\n🌙\nES\n🔔\nGet notified when your favorite beaches change.\nActivate\n✕\n🗺️\nMap\n📋\nBeaches\n⭐\nPremium\n✕\n🤍\nClean\nKEY LARGO\n\nKey Largo\n\n81\n/100\nGREAT\nZero sargassum, warm water. But overcast sky.\n✓ zero sargassum\n✓ warm water\n⚠ overcast sky\nGO FOR IT\n\nLittle to no sargassum detected by satellite offshore.\n\nFREE\nBeaches are changing fast\nGet alerted when your beach status changes. Free.\nGo\nNot now\nTOMORROW FORECAST\nKey Largo\nClean\nUnlock the 7-day forecast\n🔓\n📍\nOn the beach? Report sargassum level\n✅ Clean\n⚠️ Moderate\n🚫 Heavy\n👶 Kids\n🤿 Snorkeling\n🅿️ Parking\n🚗\nDirections\n📤\nNearby beaches\nTap to compare\n✅ Clean\nIslamorada\n26 km\n✅ Clean\nMarathon (Sombrero)\n79 km\n✅ Clean\nSouth Beach\n84 km\nForecast\n🌤️\n29°\n5%\nTODAY\n5%\n🌧️\n30°\n5%\nTMRW\n☀️\n30°\n5%\nSAT\n☀️\n30°\n5%\nSUN\nReliable up to 4 days. 46% confidence tomorrow.\n🔒 UNLOCK FORECAST\n+ morning brief & alerts\nNext days:\nTmrw\nSat\nSun\nUnlock →\nPersistence + satellite mats + wind. Reliability drops after day 3.\nRELIABILITY\nLow\nⓘ\n🛰️\nCopernicus OLCI\n·\nJun 10\n·\nAFAI + Persistence\nWeather\n🌡️\n79°F\nTEMPERATURE\n💨\n6 mph\nWIND\n☀️\n0\nUV\n×\nSARGASSUM SEASON IS HERE\nKNOW BEFORE YOUR BEACH TURNS\n01\nEVERY MORNING · 7AM\nYour best beach today: Key Largo\nScore 81/100 · satellite-verified\n02\nINSTANT ALERT\nYour saved beach just changed\nClean → Moderate — switch to Key Largo\n03\nWEEKEND FORECAST\nBest for Saturday: Key Largo\nClean all weekend · great for kids\n12/12 beaches clean right now · satellite 24/7\nMonthly\n$9.99/mo\n-33%\nAnnual\n$79/yr\n$6.58/mo billed yearly\nabout $0.22/day\nGet my daily pick — start now\n$79/yr · billed today\nNo commitment · Cancel in 2 clicks · Secure Stripe payment\n🛡\n30-day money-back\n·\n🔒\nStripe\nI already have a subscriptionClose\n← Back\n🔒 Stripe\nACTIVATE YOUR DAILY PICK\n$79/yr · billed today · cancel in 2 clicks\nPay $79 — activate now\nNo commitment · Cancel in 2 clicks · Secured by Stripe\nOr continue on the Stripe page →",
+      "iframes": [
+        {
+          "name": "__privateStripeFrame7747",
+          "src": "js.stripe.com/v3/elements-inner-accessory-target-214384d1d7c402361552347246a13859.html#__s",
+          "h": 8,
+          "w": 448
+        },
+        {
+          "name": "__privateStripeFrame7744",
+          "src": "js.stripe.com/v3/elements-inner-accessory-target-214384d1d7c402361552347246a13859.html#__s",
+          "h": 274,
+          "w": 448
+        }
+      ]
+    },
+    "stripeFrames": [
+      {
+        "kind": "other",
+        "url": "js.stripe.com/v3/m-outer-3437aaddcdf6922d623e172c2d6f9278.html#url=https%3A%2F%2",
+        "inputs": [],
+        "tabs": [],
+        "labels": [],
+        "bodyText": ""
+      },
+      {
+        "kind": "other",
+        "url": "m.stripe.network/inner.html#url=https%3A%2F%2Fsargassummiami.com%2F&title=Florid",
+        "inputs": [],
+        "tabs": [],
+        "labels": [],
+        "bodyText": ""
+      },
+      {
+        "kind": "other",
+        "url": "js.stripe.com/v3/controller-with-preconnect-e6364dd9423c480d220e8bff403cf5f4.htm",
+        "inputs": [],
+        "tabs": [],
+        "labels": [],
+        "bodyText": ""
+      },
+      {
+        "kind": "other",
+        "url": "js.stripe.com/v3/elements-inner-loader-ui-8442ca3a5225bf2df82ba5b9b392b6b8.html#",
+        "inputs": [],
+        "tabs": [],
+        "labels": [],
+        "bodyText": ""
+      },
+      {
+        "kind": "payment-element",
+        "url": "js.stripe.com/v3/payment-request-inner-google-pay-06da15c58e8832367bc3cbf9f35326",
+        "inputs": [],
+        "tabs": [],
+        "labels": [],
+        "bodyText": ""
+      },
+      {
+        "kind": "payment-element",
+        "url": "js.stripe.com/v3/elements-inner-accessory-target-214384d1d7c402361552347246a1385",
+        "inputs": [
+          {
+            "tag": "input",
+            "name": "number",
+            "placeholder": "1234 1234 1234 1234",
+            "label": "",
+            "autocomplete": "cc-number"
+          },
+          {
+            "tag": "select",
+            "name": "network",
+            "placeholder": "",
+            "label": "Card network",
+            "autocomplete": ""
+          },
+          {
+            "tag": "input",
+            "name": "expiry",
+            "placeholder": "MM / YY",
+            "label": "",
+            "autocomplete": "cc-exp"
+          },
+          {
+            "tag": "input",
+            "name": "cvc",
+            "placeholder": "CVC",
+            "label": "",
+            "autocomplete": "cc-csc"
+          },
+          {
+            "tag": "select",
+            "name": "country",
+            "placeholder": "",
+            "label": "",
+            "autocomplete": "billing country"
+          },
+          {
+            "tag": "input",
+            "name": "",
+            "placeholder": "",
+            "label": "",
+            "autocomplete": ""
+          },
+          {
+            "tag": "input",
+            "name": "",
+            "placeholder": "",
+            "label": "",
+            "autocomplete": ""
+          },
+          {
+            "tag": "input",
+            "name": "",
+            "placeholder": "",
+            "label": "",
+            "autocomplete": ""
+          },
+          {
+            "tag": "input",
+            "name": "",
+            "placeholder": "",
+            "label": "",
+            "autocomplete": ""
+          }
+        ],
+        "tabs": [],
+        "labels": [
+          "Card number",
+          "Expiration date MM / YY",
+          "Security code",
+          "Country"
+        ],
+        "bodyText": "Card number Supported cards include Visa, Mastercard, American Express, UnionPay, and Discover. Expiration date MM / YY Security code 3-digit code on back of card Country Select Afghanistan Åland Islands Albania Algeria Andorra Angola Anguilla Antarctica Antigua & Barbuda Argentina Armenia Aruba Ascension Island Australia Austria Azerbaijan Bahamas Bahrain Bangladesh Barbados Belarus Belgium Belize Benin Bermuda Bhutan Bolivia Bosnia & Herzegovina Botswana Bouvet Island Brazil British Indian Ocean Territory British Virgin Islands Brunei Bulgaria Burkina Faso Burundi Cambodia Cameroon Canada Ca"
+      },
+      {
+        "kind": "express-checkout",
+        "url": "js.stripe.com/v3/elements-inner-accessory-target-214384d1d7c402361552347246a1385",
+        "inputs": [],
+        "tabs": [],
+        "labels": [],
+        "bodyText": ""
+      },
+      {
+        "kind": "other",
+        "url": "pay.google.com/gp/p/ui/payframe?origin=https%3A%2F%2Fjs.stripe.com&mid=",
+        "inputs": [],
+        "tabs": [],
+        "labels": [],
+        "bodyText": ""
+      },
+      {
+        "kind": "other",
+        "url": "js.stripe.com/v3/hcaptcha-invisible-8a780bdbc728a24970037c3ec5940798.html#debugM",
+        "inputs": [],
+        "tabs": [],
+        "labels": [],
+        "bodyText": ""
+      },
+      {
+        "kind": "other",
+        "url": "b.stripecdn.com/stripethirdparty-srv/assets/v32.18/HCaptchaInvisible.html?id=12d",
+        "inputs": [],
+        "tabs": [],
+        "labels": [],
+        "bodyText": ""
+      }
+    ],
+    "paymentReassurance": [
+      {
+        "txt": "$79/yr · billed today",
+        "inViewport": true
+      },
+      {
+        "txt": "No commitment · Cancel in 2 clicks · Secure Stripe payment",
+        "inViewport": true
+      },
+      {
+        "txt": "🔒 Stripe",
+        "inViewport": true
+      },
+      {
+        "txt": "$79/yr · billed today · cancel in 2 clicks",
+        "inViewport": true
+      },
+      {
+        "txt": "No commitment · Cancel in 2 clicks · Secured by Stripe",
+        "inViewport": true
+      },
+      {
+        "txt": "Or continue on the Stripe page →",
+        "inViewport": true
+      }
+    ],
+    "payButton": {
+      "label": "Pay $79 — activate now",
+      "inViewport": true
+    },
+    "networkTimeline": [
+      {
+        "tFromModalOpenMs": -10439,
+        "u": "js.stripe.com/v3"
+      },
+      {
+        "tFromModalOpenMs": -8503,
+        "u": "js.stripe.com/v3/m-outer-3437aaddcdf6922d623e172c2d6f9278.html"
+      },
+      {
+        "tFromModalOpenMs": -8342,
+        "u": "js.stripe.com/v3/fingerprinted/js/m-outer-15a2b40a058ddff1cffdb63779fe3de1.js"
+      },
+      {
+        "tFromModalOpenMs": 2680,
+        "u": "sargassummiami.com/api/create-checkout.php"
+      },
+      {
+        "tFromModalOpenMs": 2684,
+        "u": "js.stripe.com/v3/controller-with-preconnect-e6364dd9423c480d220e8bff403cf5f4.html"
+      },
+      {
+        "tFromModalOpenMs": 2690,
+        "u": "js.stripe.com/v3/elements-inner-loader-ui-8442ca3a5225bf2df82ba5b9b392b6b8.html"
+      },
+      {
+        "tFromModalOpenMs": 2696,
+        "u": "js.stripe.com/v3/payment-request-inner-google-pay-06da15c58e8832367bc3cbf9f3532622.html"
+      },
+      {
+        "tFromModalOpenMs": 2697,
+        "u": "js.stripe.com/v3/elements-inner-accessory-target-214384d1d7c402361552347246a13859.html"
+      },
+      {
+        "tFromModalOpenMs": 2706,
+        "u": "js.stripe.com/v3/elements-inner-accessory-target-214384d1d7c402361552347246a13859.html"
+      },
+      {
+        "tFromModalOpenMs": 2841,
+        "u": "js.stripe.com/v3/fingerprinted/js/shared-8c20f01b8c259cf908faa54c93248a79.js"
+      },
+      {
+        "tFromModalOpenMs": 2841,
+        "u": "js.stripe.com/v3/fingerprinted/js/controller-with-preconnect-a4f4e64e749ce4b7d44e280cc8801"
+      },
+      {
+        "tFromModalOpenMs": 2846,
+        "u": "js.stripe.com/v3/fingerprinted/js/shared-8c20f01b8c259cf908faa54c93248a79.js"
+      },
+      {
+        "tFromModalOpenMs": 2846,
+        "u": "js.stripe.com/v3/fingerprinted/js/elements-inner-loader-ui-3045cabeb406a0181512c6f256891e2"
+      },
+      {
+        "tFromModalOpenMs": 2847,
+        "u": "js.stripe.com/v3/fingerprinted/css/elements-inner-loader-ui-80ab262aada7f4b0b45162f47adbdb"
+      },
+      {
+        "tFromModalOpenMs": 2856,
+        "u": "js.stripe.com/v3/fingerprinted/js/shared-8c20f01b8c259cf908faa54c93248a79.js"
+      },
+      {
+        "tFromModalOpenMs": 2862,
+        "u": "js.stripe.com/v3/fingerprinted/css/elements-inner-payment-d3217fb13db960c84d2b84c8d08a4395"
+      },
+      {
+        "tFromModalOpenMs": 2868,
+        "u": "js.stripe.com/v3/fingerprinted/css/elements-inner-express-checkout-1241bfb1569dd5dbd8edfa8"
+      },
+      {
+        "tFromModalOpenMs": 3161,
+        "u": "js.stripe.com/v3/fingerprinted/js/payment-request-inner-google-pay-5c09fcd8aa646bfc55b4e93"
+      },
+      {
+        "tFromModalOpenMs": 3459,
+        "u": "js.stripe.com/v3/.deploy_status_henson.json"
+      },
+      {
+        "tFromModalOpenMs": 3460,
+        "u": "js.stripe.com/v3/.deploy_status_henson.json"
+      },
+      {
+        "tFromModalOpenMs": 3460,
+        "u": "js.stripe.com/v3/fingerprinted/js/stripe-cookies-99315d136700f132b072c563090f72a7.js"
+      },
+      {
+        "tFromModalOpenMs": 3461,
+        "u": "js.stripe.com/v3/.deploy_status_henson.json"
+      },
+      {
+        "tFromModalOpenMs": 3491,
+        "u": "js.stripe.com/v3/fingerprinted/js/elements-inner-accessory-render-7c542f8780fb47de8caff649"
+      },
+      {
+        "tFromModalOpenMs": 3496,
+        "u": "api.stripe.com/v1/elements/sessions?client_secret=seti_1Th1VRP9RK8Orx513vJhgP3B_secret_UgO"
+      },
+      {
+        "tFromModalOpenMs": 3497,
+        "u": "merchant-ui-api.stripe.com/link/get-cookie?referrer_host=sargassummiami.com"
+      },
+      {
+        "tFromModalOpenMs": 3598,
+        "u": "js.stripe.com/v3/fingerprinted/js/consumerSchema-3419449d1b8db5892c4dd0c20e2a2652.js"
+      },
+      {
+        "tFromModalOpenMs": 4352,
+        "u": "js.stripe.com/v3/hcaptcha-invisible-8a780bdbc728a24970037c3ec5940798.html"
+      },
+      {
+        "tFromModalOpenMs": 4355,
+        "u": "js.stripe.com/v3/.deploy_status_henson.json"
+      },
+      {
+        "tFromModalOpenMs": 8658,
+        "u": "js.stripe.com/v3/fingerprinted/js/trusted-types-checker-a86dcafd042e60cf7585cbabd57b0cdb.j"
+      }
+    ],
+    "clicksMapToPayment": 3,
+    "blockedRequests": 8
+  },
+  "mobile-prelude": {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "variant": "prelude",
+    "clicks": [
+      {
+        "n": "landing→map",
+        "label": "⌄ All beaches on the map"
+      },
+      {
+        "n": "map→beach-sheet (pin #6)",
+        "label": "pin"
+      },
+      {
+        "n": "sheet→paywall",
+        "label": "🔒 UNLOCK FORECAST"
+      },
+      {
+        "n": "paywall→payment",
+        "label": "Get my daily pick — start now $79/yr · billed today"
+      },
+      {
+        "n": "prelude→payment",
+        "label": "Continue to Stripe →"
+      }
+    ],
+    "timings": {
+      "landing": {
+        "ttfb": 452,
+        "dcl": 2061,
+        "load": 2062
+      },
+      "modalOpenToCtaMs": 10853,
+      "ctaToPaymentReadyMs": 2,
+      "paymentReadyOnsite": true
+    },
+    "notes": [],
+    "landingText": "Florida sargassum live — beach map today\n78\n74\n77\n81\n81\n78\n73\n81\n🌎\n▶\nTODAY\nFRI\nSAT\nSUN\nMON\n12\nBEACHES · 12 CLEAN\nMIAMI BEACH\nMiami Beach\nGOOD\n78\n/100\nSOUTH BEACH\nMiami Beach\nGOOD\n78\n/100\nFORT LAUDERDALE BEACH\nFort Lauderdale\nGOOD\n78\n/100\nPALM BEACH\nPalm Beach\nGOOD\n74\n/100\nJUPITER BEACH\nJupiter\nGOOD\n74\n/100\nKEY WEST (SMATHERS)\nKey West\nGOOD\n77\n/100\nKEY LARGO\nKey Largo\nGREAT\n81\n/100\nISLAMORADA\nIslamorada\nGOOD\n78\n/100\nMARATHON (SOMBRERO)\nMarathon\nGREAT\n81\n/100\nCOCOA BEACH\nCocoa Beach\nGOOD\n78\n/100\nDAYTONA BEACH\nDaytona Beach\nGOOD\n73\n/100\nCLEARWATER BEACH\nClearwater\nGREAT\n81\n/100\nSARGASSUM FLORIDA\nLIVE · 01:06 AM\nTHURSDAY, JUNE 11 · COPERNICUS SATELLITE\nJUPITER BEACH\nCLEAN TODAY\n74/100\nClean tomorrow too · Jupiter\nSee this beach\nfull status · weather · 7-day forecast\n⌄\nAll beaches on the map\nLIVE\n· 43m ago\n🌙\nES\n🗺️\nMap\n📋\nBeaches\n⭐\nPremium",
+    "landingButtons": [
+      "78",
+      "74",
+      "77",
+      "81",
+      "81",
+      "78",
+      "73",
+      "81",
+      "🌎",
+      "▶",
+      "TODAY",
+      "FRI",
+      "SAT",
+      "SUN",
+      "MON",
+      "MIAMI BEACH Miami Beach GOOD 78 /100",
+      "SOUTH BEACH Miami Beach GOOD 78 /100",
+      "FORT LAUDERDALE BEACH Fort Lauderdale GOOD 78 /100",
+      "PALM BEACH Palm Beach GOOD 74 /100",
+      "JUPITER BEACH Jupiter GOOD 74 /100",
+      "KEY WEST (SMATHERS) Key West GOOD 77 /100",
+      "KEY LARGO Key Largo GREAT 81 /100",
+      "ISLAMORADA Islamorada GOOD 78 /100",
+      "MARATHON (SOMBRERO) Marathon GREAT 81 /100",
+      "See this beach full status · weather · 7-day forecast",
+      "⌄ All beaches on the map",
+      "LIVE · 43m ago",
+      "🌙",
+      "ES",
+      "🗺️ Map",
+      "📋 Beaches",
+      "⭐ Premium"
+    ],
+    "mapChrome": [
+      "78",
+      "74",
+      "77",
+      "81",
+      "81",
+      "78",
+      "73",
+      "81",
+      "🌎",
+      "▶",
+      "TODAY",
+      "FRI",
+      "SAT",
+      "SUN",
+      "MON",
+      "MIAMI BEACH Miami Beach GOOD 78 /100",
+      "SOUTH BEACH Miami Beach GOOD 78 /100",
+      "FORT LAUDERDALE BEACH Fort Lauderdale GOOD 78 /100",
+      "PALM BEACH Palm Beach GOOD 74 /100",
+      "JUPITER BEACH Jupiter GOOD 74 /100",
+      "KEY WEST (SMATHERS) Key West GOOD 77 /100",
+      "KEY LARGO Key Largo GREAT 81 /100",
+      "ISLAMORADA Islamorada GOOD 78 /100",
+      "MARATHON (SOMBRERO) Marathon GREAT 81 /100",
+      "LIVE · 43m ago",
+      "🌙",
+      "ES",
+      "🗺️ Map",
+      "📋 Beaches",
+      "⭐ Premium",
+      "💬"
+    ],
+    "sheetText": "Florida sargassum live — beach map today\n78\n74\n77\n81\n81\n78\n73\n81\n🌎\n▶\nTODAY\nFRI\nSAT\nSUN\nMON\n12\nBEACHES · 12 CLEAN\nMIAMI BEACH\nMiami Beach\nGOOD\n78\n/100\nSOUTH BEACH\nMiami Beach\nGOOD\n78\n/100\nFORT LAUDERDALE BEACH\nFort Lauderdale\nGOOD\n78\n/100\nPALM BEACH\nPalm Beach\nGOOD\n74\n/100\nJUPITER BEACH\nJupiter\nGOOD\n74\n/100\nKEY WEST (SMATHERS)\nKey West\nGOOD\n77\n/100\nKEY LARGO\nKey Largo\nGREAT\n81\n/100\nISLAMORADA\nIslamorada\nGOOD\n78\n/100\nMARATHON (SOMBRERO)\nMarathon\nGREAT\n81\n/100\nCOCOA BEACH\nCocoa Beach\nGOOD\n78\n/100\nDAYTONA BEACH\nDaytona Beach\nGOOD\n73\n/100\nCLEARWATER BEACH\nClearwater\nGREAT\n81\n/100\nLIVE\n· 43m ago\n🌙\nES\n🔔\nGet notified when your favorite beaches change.\nActivate\n✕\n🗺️\nMap\n📋\nBeaches\n⭐\nPremium\n✕\n🤍\nClean\nKEY LARGO\n\nKey Largo\n\n81\n/100\nGREAT\nZero sargassum, warm water. But overcast sky.\n✓ zero sargassum\n✓ warm water\n⚠ overcast sky\nGO FOR IT\n\nLittle to no sargassum detected by satellite offshore.\n\nFREE\nWhere's the cleanest beach today?\nWe tell you every morning. Free.\nGo\nNot now\nTOMORROW FORECAST\nKey Largo\nClean\nUnlock the 7-day forecast\n🔓\n📍\nOn the beach? Report sargassum level\n✅ Clean\n⚠️ Moderate\n🚫 Heavy\n👶 Kids\n🤿 Snorkeling\n🅿️ Parking\n🚗\nDirections\n📤\nNearby beaches\nTap to compare\n✅ Clean\nIslamorada\n26 km\n✅ Clean\nMarathon (Sombrero)\n79 km\n✅ Clean\nSouth Beach\n84 km\nForecast\n🌤️\n29°\n5%\nTODAY\n5%\n🌧️\n30°\n5%\nTMRW\n☀️\n30°\n5%\nSAT\n☀️\n30°\n5%\nSUN\nReliable up to 4 days. 46% confidence tomorrow.\n🔒 UNLOCK FORECAST\n+ morning brief & alerts\nNext days:\nTmrw\nSat\nSun\nUnlock →\nPersistence + satellite mats + wind. Reliability drops after day 3.\nRELIABILITY\nLow\nⓘ\n🛰️\nCopernicus OLCI\n·\nJun 10\n·\nAFAI",
+    "paywallText": "Florida sargassum live — beach map today\n78\n74\n77\n81\n81\n78\n73\n81\n🌎\n▶\nTODAY\nFRI\nSAT\nSUN\nMON\n12\nBEACHES · 12 CLEAN\nMIAMI BEACH\nMiami Beach\nGOOD\n78\n/100\nSOUTH BEACH\nMiami Beach\nGOOD\n78\n/100\nFORT LAUDERDALE BEACH\nFort Lauderdale\nGOOD\n78\n/100\nPALM BEACH\nPalm Beach\nGOOD\n74\n/100\nJUPITER BEACH\nJupiter\nGOOD\n74\n/100\nKEY WEST (SMATHERS)\nKey West\nGOOD\n77\n/100\nKEY LARGO\nKey Largo\nGREAT\n81\n/100\nISLAMORADA\nIslamorada\nGOOD\n78\n/100\nMARATHON (SOMBRERO)\nMarathon\nGREAT\n81\n/100\nCOCOA BEACH\nCocoa Beach\nGOOD\n78\n/100\nDAYTONA BEACH\nDaytona Beach\nGOOD\n73\n/100\nCLEARWATER BEACH\nClearwater\nGREAT\n81\n/100\nLIVE\n· 43m ago\n🌙\nES\n🔔\nGet notified when your favorite beaches change.\nActivate\n✕\n🗺️\nMap\n📋\nBeaches\n⭐\nPremium\n✕\n🤍\nClean\nKEY LARGO\n\nKey Largo\n\n81\n/100\nGREAT\nZero sargassum, warm water. But overcast sky.\n✓ zero sargassum\n✓ warm water\n⚠ overcast sky\nGO FOR IT\n\nLittle to no sargassum detected by satellite offshore.\n\nFREE\nWhere's the cleanest beach today?\nWe tell you every morning. Free.\nGo\nNot now\nTOMORROW FORECAST\nKey Largo\nClean\nUnlock the 7-day forecast\n🔓\n📍\nOn the beach? Report sargassum level\n✅ Clean\n⚠️ Moderate\n🚫 Heavy\n👶 Kids\n🤿 Snorkeling\n🅿️ Parking\n🚗\nDirections\n📤\nNearby beaches\nTap to compare\n✅ Clean\nIslamorada\n26 km\n✅ Clean\nMarathon (Sombrero)\n79 km\n✅ Clean\nSouth Beach\n84 km\nForecast\n🌤️\n29°\n5%\nTODAY\n5%\n🌧️\n30°\n5%\nTMRW\n☀️\n30°\n5%\nSAT\n☀️\n30°\n5%\nSUN\nReliable up to 4 days. 46% confidence tomorrow.\n🔒 UNLOCK FORECAST\n+ morning brief & alerts\nNext days:\nTmrw\nSat\nSun\nUnlock →\nPersistence + satellite mats + wind. Reliability drops after day 3.\nRELIABILITY\nLow\nⓘ\n🛰️\nCopernicus OLCI\n·\nJun 10\n·\nAFAI + Persistence\nWeather\n🌡️\n79°F\nTEMPERATURE\n💨\n6 mph\nWIND\n☀️\n0\nUV\n×\nSARGASSUM SEASON IS HERE\nKNOW BEFORE YOUR BEACH TURNS\n01\nEVERY MORNING · 7AM\nYour best beach today: Key Largo\nScore 81/100 · satellite-verified\n02\nINSTANT ALERT\nYour saved beach just changed\nClean → Moderate — switch to Key Largo\n03\nWEEKEND FORECAST\nBest for Saturday: Key Largo\nClean all weekend · great for kids\n12/12 beaches clean right now · satellite 24/7\nMonthly\n$9.99/mo\n-33%\nAnnual\n$79/yr\n$6.58/mo billed yearly\nabout $0.22/day\nGet my daily pick — start now\n$79/yr · billed today\nNo commitment · Cancel in 2 clicks · Secure Stripe payment\n🛡\n30-day money-back\n·\n🔒\nStripe\nI already have a subscriptionClose\n← Back\n🔒 Stripe\nACTIVATE YOUR DAILY PICK\n$9.99/mo · billed today · cancel in 2 clicks\nPay $9.99 — activate now\nNo commitment · Cancel in 2 clicks · Secured by Stripe\nOr continue on the Stripe page →",
+    "priceVisibleOnOpen": [
+      {
+        "txt": "$6.58/mo billed yearly",
+        "inViewport": true
+      },
+      {
+        "txt": "about $0.22/day",
+        "inViewport": true
+      },
+      {
+        "txt": "$79/yr · billed today",
+        "inViewport": true
+      },
+      {
+        "txt": "$9.99/mo · billed today · cancel in 2 clicks",
+        "inViewport": true
+      },
+      {
+        "txt": "Pay $9.99 — activate now",
+        "inViewport": true
+      }
+    ],
+    "preludeText": "Florida sargassum live — beach map today\n78\n74\n77\n81\n81\n78\n73\n81\n🌎\n▶\nTODAY\nFRI\nSAT\nSUN\nMON\n12\nBEACHES · 12 CLEAN\nMIAMI BEACH\nMiami Beach\nGOOD\n78\n/100\nSOUTH BEACH\nMiami Beach\nGOOD\n78\n/100\nFORT LAUDERDALE BEACH\nFort Lauderdale\nGOOD\n78\n/100\nPALM BEACH\nPalm Beach\nGOOD\n74\n/100\nJUPITER BEACH\nJupiter\nGOOD\n74\n/100\nKEY WEST (SMATHERS)\nKey West\nGOOD\n77\n/100\nKEY LARGO\nKey Largo\nGREAT\n81\n/100\nISLAMORADA\nIslamorada\nGOOD\n78\n/100\nMARATHON (SOMBRERO)\nMarathon\nGREAT\n81\n/100\nCOCOA BEACH\nCocoa Beach\nGOOD\n78\n/100\nDAYTONA BEACH\nDaytona Beach\nGOOD\n73\n/100\nCLEARWATER BEACH\nClearwater\nGREAT\n81\n/100\nLIVE\n· 43m ago\n🌙\nES\n🔔\nGet notified when your favorite beaches change.\nActivate\n✕\n🗺️\nMap\n📋\nBeaches\n⭐\nPremium\n✕\n🤍\nClean\nKEY LARGO\n\nKey Largo\n\n81\n/100\nGREAT\nZero sargassum, warm water. But overcast sky.\n✓ zero sargassum\n✓ warm water\n⚠ overcast sky\nGO FOR IT\n\nLittle to no sargassum detected by satellite offshore.\n\nFREE\nWhere's the cleanest beach today?\nWe tell you every morning. Free.\nGo\nNot now\nTOMORROW FORECAST\nKey Largo\nClean\nUnlock the 7-day forecast\n🔓\n📍\nOn the beach? Report sargassum level\n✅ Clean\n⚠️ Moderate\n🚫 Heavy\n👶 Kids\n🤿 Snorkeling\n🅿️ Parking\n🚗\nDirections\n📤\nNearby beaches\nTap to compare\n✅ Clean\nIslamorada\n26 km\n✅ Clean\nMarathon (Sombrero)\n79 km\n✅ Clean\nSouth Beach\n84 km\nForecast\n🌤️\n29°\n5%\nTODAY\n5%\n🌧️\n30°\n5%\nTMRW\n☀️\n30°\n5%\nSAT\n☀️\n30°\n5%\nSUN\nReliable up to 4 days. 46% confidence tomorrow.\n🔒 UNLOCK FORECAST\n+ morning brief & alerts\nNext days:\nTmrw\nSat\nSun\nUnlock →\nPersistence + satellite mats + wind. Reliability drops after day 3.\nRELIABILITY\nLow\nⓘ\n🛰️\nCopernicus OLCI\n·\nJun 10\n·\nAFAI + Persistence\nWeather\n🌡️\n79°F\nTEMPERATURE\n💨\n6 mph\nWIND\n☀️\n0\nUV\n×\n‹\n×\nBEFORE WE REDIRECT YOU\nHere's exactly\nwhat happens.\nAnnual — instant access\n$79/yr · cancel in 2 clicks\n$79\ntoday\nToday\n$79 · full access right away\nEvery morning\nYour best beach + alerts\nAnytime\nCancel in 2 clicks\nDue today\n$79\n🛡\nStripe\nSecure payment\n⏱\n30 days\nMoney-back\n✕\n1 click\nCancel anytime\nContinue to Stripe →\nYou can always come back.\nSARGASSUM SEASON IS HERE\nKNOW BEFORE YOUR BEACH TURNS\n01\nEVERY MORNING · 7AM\nYour best beach today: Key Largo\nScore 81/100 · satellite-verified\n02\nINSTANT ALERT\nYour saved beach just changed\nClean → Moderate — switch to Key Largo\n03\nWEEKEND FORECAST\nBest for Saturday: Key Largo\nClean all weekend · great for kids\n12/12 beaches clean right now · satellite 24/7\nMonthly\n$9.99/mo\n-33%\nAnnual\n$79/yr\n$6.58/mo billed yearly\nabout $0.22/day\nGet my daily pick — start now\n$79/yr · billed today\nNo commitment · Cancel in 2 clicks · Secure Stripe payment\n🛡\n30-day money-back\n·\n🔒\nStripe\nI already have a subscriptionClose\n← Back\n🔒 Stripe\nACTIVATE YOUR DAILY PICK\n$9.99/mo · billed today · cancel in 2 clicks\nPay $9.99 — activate now\nNo commitment · Cancel in 2 clicks · Secured by Stripe\nOr continue on the Stripe page →",
+    "stripeNavFallback": false,
+    "paymentOverlay": {
+      "text": "Florida sargassum live — beach map today\n78\n74\n77\n81\n81\n78\n73\n81\n🌎\n▶\nTODAY\nFRI\nSAT\nSUN\nMON\n12\nBEACHES · 12 CLEAN\nMIAMI BEACH\nMiami Beach\nGOOD\n78\n/100\nSOUTH BEACH\nMiami Beach\nGOOD\n78\n/100\nFORT LAUDERDALE BEACH\nFort Lauderdale\nGOOD\n78\n/100\nPALM BEACH\nPalm Beach\nGOOD\n74\n/100\nJUPITER BEACH\nJupiter\nGOOD\n74\n/100\nKEY WEST (SMATHERS)\nKey West\nGOOD\n77\n/100\nKEY LARGO\nKey Largo\nGREAT\n81\n/100\nISLAMORADA\nIslamorada\nGOOD\n78\n/100\nMARATHON (SOMBRERO)\nMarathon\nGREAT\n81\n/100\nCOCOA BEACH\nCocoa Beach\nGOOD\n78\n/100\nDAYTONA BEACH\nDaytona Beach\nGOOD\n73\n/100\nCLEARWATER BEACH\nClearwater\nGREAT\n81\n/100\nLIVE\n· 43m ago\n🌙\nES\n🔔\nGet notified when your favorite beaches change.\nActivate\n✕\n🗺️\nMap\n📋\nBeaches\n⭐\nPremium\n✕\n🤍\nClean\nKEY LARGO\n\nKey Largo\n\n81\n/100\nGREAT\nZero sargassum, warm water. But overcast sky.\n✓ zero sargassum\n✓ warm water\n⚠ overcast sky\nGO FOR IT\n\nLittle to no sargassum detected by satellite offshore.\n\nFREE\nWhere's the cleanest beach today?\nWe tell you every morning. Free.\nGo\nNot now\nTOMORROW FORECAST\nKey Largo\nClean\nUnlock the 7-day forecast\n🔓\n📍\nOn the beach? Report sargassum level\n✅ Clean\n⚠️ Moderate\n🚫 Heavy\n👶 Kids\n🤿 Snorkeling\n🅿️ Parking\n🚗\nDirections\n📤\nNearby beaches\nTap to compare\n✅ Clean\nIslamorada\n26 km\n✅ Clean\nMarathon (Sombrero)\n79 km\n✅ Clean\nSouth Beach\n84 km\nForecast\n🌤️\n29°\n5%\nTODAY\n5%\n🌧️\n30°\n5%\nTMRW\n☀️\n30°\n5%\nSAT\n☀️\n30°\n5%\nSUN\nReliable up to 4 days. 46% confidence tomorrow.\n🔒 UNLOCK FORECAST\n+ morning brief & alerts\nNext days:\nTmrw\nSat\nSun\nUnlock →\nPersistence + satellite mats + wind. Reliability drops after day 3.\nRELIABILITY\nLow\nⓘ\n🛰️\nCopernicus OLCI\n·\nJun 10\n·\nAFAI + Persistence\nWeather\n🌡️\n79°F\nTEMPERATURE\n💨\n6 mph\nWIND\n☀️\n0\nUV\n×\n‹\n×\nBEFORE WE REDIRECT YOU\nHere's exactly\nwhat happens.\nAnnual — instant access\n$79/yr · cancel in 2 clicks\n$79\ntoday\nToday\n$79 · full access right away\nEvery morning\nYour best beach + alerts\nAnytime\nCancel in 2 clicks\nDue today\n$79\n🛡\nStripe\nSecure payment\n⏱\n30 days\nMoney-back\n✕\n1 click\nCancel anytime\nContinue to Stripe →\nYou can always come back.\nSARGASSUM SEASON IS HERE\nKNOW BEFORE YOUR BEACH TURNS\n01\nEVERY MORNING · 7AM\nYour best beach today: Key Largo\nScore 81/100 · satellite-verified\n02\nINSTANT ALERT\nYour saved beach just changed\nClean → Moderate — switch to Key Largo\n03\nWEEKEND FORECAST\nBest for Saturday: Key Largo\nClean all weekend · great for kids\n12/12 beaches clean right now · satellite 24/7\nMonthly\n$9.99/mo\n-33%\nAnnual\n$79/yr\n$6.58/mo billed yearly\nabout $0.22/day\nGet my daily pick — start now\n$79/yr · billed today\nNo commitment · Cancel in 2 clicks · Secure Stripe payment\n🛡\n30-day money-back\n·\n🔒\nStripe\nI already have a subscriptionClose\n← Back\n🔒 Stripe\nACTIVATE YOUR DAILY PICK\n$79/yr · billed today · cancel in 2 clicks\nPay $79 — activate now\nNo commitment · Cancel in 2 clicks · Secured by Stripe\nOr continue on the Stripe page →",
+      "iframes": [
+        {
+          "name": "__privateStripeFrame2177",
+          "src": "js.stripe.com/v3/elements-inner-accessory-target-214384d1d7c402361552347246a13859.html#__s",
+          "h": 8,
+          "w": 358
+        },
+        {
+          "name": "__privateStripeFrame2174",
+          "src": "js.stripe.com/v3/elements-inner-accessory-target-214384d1d7c402361552347246a13859.html#__s",
+          "h": 295,
+          "w": 358
+        }
+      ]
+    },
+    "stripeFrames": [
+      {
+        "kind": "other",
+        "url": "js.stripe.com/v3/m-outer-3437aaddcdf6922d623e172c2d6f9278.html#url=https%3A%2F%2",
+        "inputs": [],
+        "tabs": [],
+        "labels": [],
+        "bodyText": ""
+      },
+      {
+        "kind": "other",
+        "url": "m.stripe.network/inner.html#url=https%3A%2F%2Fsargassummiami.com%2F&title=Florid",
+        "inputs": [],
+        "tabs": [],
+        "labels": [],
+        "bodyText": ""
+      },
+      {
+        "kind": "other",
+        "url": "js.stripe.com/v3/controller-with-preconnect-e6364dd9423c480d220e8bff403cf5f4.htm",
+        "inputs": [],
+        "tabs": [],
+        "labels": [],
+        "bodyText": ""
+      },
+      {
+        "kind": "other",
+        "url": "js.stripe.com/v3/elements-inner-loader-ui-8442ca3a5225bf2df82ba5b9b392b6b8.html#",
+        "inputs": [],
+        "tabs": [],
+        "labels": [],
+        "bodyText": ""
+      },
+      {
+        "kind": "payment-element",
+        "url": "js.stripe.com/v3/payment-request-inner-google-pay-06da15c58e8832367bc3cbf9f35326",
+        "inputs": [],
+        "tabs": [],
+        "labels": [],
+        "bodyText": ""
+      },
+      {
+        "kind": "payment-element",
+        "url": "js.stripe.com/v3/elements-inner-accessory-target-214384d1d7c402361552347246a1385",
+        "inputs": [
+          {
+            "tag": "input",
+            "name": "number",
+            "placeholder": "1234 1234 1234 1234",
+            "label": "",
+            "autocomplete": "cc-number"
+          },
+          {
+            "tag": "select",
+            "name": "network",
+            "placeholder": "",
+            "label": "Card network",
+            "autocomplete": ""
+          },
+          {
+            "tag": "input",
+            "name": "expiry",
+            "placeholder": "MM / YY",
+            "label": "",
+            "autocomplete": "cc-exp"
+          },
+          {
+            "tag": "input",
+            "name": "cvc",
+            "placeholder": "CVC",
+            "label": "",
+            "autocomplete": "cc-csc"
+          },
+          {
+            "tag": "select",
+            "name": "country",
+            "placeholder": "",
+            "label": "",
+            "autocomplete": "billing country"
+          },
+          {
+            "tag": "input",
+            "name": "",
+            "placeholder": "",
+            "label": "",
+            "autocomplete": ""
+          },
+          {
+            "tag": "input",
+            "name": "",
+            "placeholder": "",
+            "label": "",
+            "autocomplete": ""
+          },
+          {
+            "tag": "input",
+            "name": "",
+            "placeholder": "",
+            "label": "",
+            "autocomplete": ""
+          },
+          {
+            "tag": "input",
+            "name": "",
+            "placeholder": "",
+            "label": "",
+            "autocomplete": ""
+          }
+        ],
+        "tabs": [],
+        "labels": [
+          "Card number",
+          "Expiration date MM / YY",
+          "Security code",
+          "Country"
+        ],
+        "bodyText": "Card number Supported cards include Visa, Mastercard, American Express, UnionPay, and Discover. Expiration date MM / YY Security code 3-digit code on back of card Country Select Afghanistan Åland Islands Albania Algeria Andorra Angola Anguilla Antarctica Antigua & Barbuda Argentina Armenia Aruba Ascension Island Australia Austria Azerbaijan Bahamas Bahrain Bangladesh Barbados Belarus Belgium Belize Benin Bermuda Bhutan Bolivia Bosnia & Herzegovina Botswana Bouvet Island Brazil British Indian Ocean Territory British Virgin Islands Brunei Bulgaria Burkina Faso Burundi Cambodia Cameroon Canada Ca"
+      },
+      {
+        "kind": "express-checkout",
+        "url": "js.stripe.com/v3/elements-inner-accessory-target-214384d1d7c402361552347246a1385",
+        "inputs": [],
+        "tabs": [],
+        "labels": [],
+        "bodyText": ""
+      },
+      {
+        "kind": "other",
+        "url": "pay.google.com/gp/p/ui/payframe?origin=https%3A%2F%2Fjs.stripe.com&mid=",
+        "inputs": [],
+        "tabs": [],
+        "labels": [],
+        "bodyText": "window.wiz_progress&&window.wiz_progress();window.wiz_tick&&window.wiz_tick('qpNYXe');(function(){'use strict';var c=window,d=[];c.aft_counter=d;var e=[],f=0;function _recordIsAboveFold(a){if(!c._isLazyImage(a)&&!a.hasAttribute(\"data-noaft\")&&a.src){var b=(c._isVisible||function(){})(c.document,a);a.setAttribute(\"data-atf\",b);b&&(e.indexOf(a)!==-1||d.indexOf(a)!==-1||a.complete||d.push(a),a.hasAttribute(\"data-iml\")&&(a=Number(a.getAttribute(\"data-iml\")),a>f&&(f=a)))}} c.initAft=function(){f=0;e=Array.prototype.slice.call(document.getElementsByTagName(\"img\")).filter(function(a){return!!a.getAtt"
+      },
+      {
+        "kind": "other",
+        "url": "js.stripe.com/v3/hcaptcha-invisible-8a780bdbc728a24970037c3ec5940798.html#debugM",
+        "inputs": [],
+        "tabs": [],
+        "labels": [],
+        "bodyText": ""
+      },
+      {
+        "kind": "other",
+        "url": "b.stripecdn.com/stripethirdparty-srv/assets/v32.18/HCaptchaInvisible.html?id=e27",
+        "inputs": [],
+        "tabs": [],
+        "labels": [],
+        "bodyText": ""
+      }
+    ],
+    "paymentReassurance": [
+      {
+        "txt": "$79/yr · cancel in 2 clicks",
+        "inViewport": true
+      },
+      {
+        "txt": "Cancel in 2 clicks",
+        "inViewport": true
+      },
+      {
+        "txt": "Money-back",
+        "inViewport": true
+      },
+      {
+        "txt": "Cancel anytime",
+        "inViewport": true
+      },
+      {
+        "txt": "Continue to Stripe →",
+        "inViewport": true
+      },
+      {
+        "txt": "$79/yr · billed today",
+        "inViewport": true
+      },
+      {
+        "txt": "No commitment · Cancel in 2 clicks · Secure Stripe payment",
+        "inViewport": true
+      },
+      {
+        "txt": "🔒 Stripe",
+        "inViewport": true
+      },
+      {
+        "txt": "$79/yr · billed today · cancel in 2 clicks",
+        "inViewport": true
+      },
+      {
+        "txt": "No commitment · Cancel in 2 clicks · Secured by Stripe",
+        "inViewport": true
+      },
+      {
+        "txt": "Or continue on the Stripe page →",
+        "inViewport": true
+      }
+    ],
+    "payButton": {
+      "label": "Pay $79 — activate now",
+      "inViewport": true
+    },
+    "networkTimeline": [
+      {
+        "tFromModalOpenMs": -9024,
+        "u": "js.stripe.com/v3"
+      },
+      {
+        "tFromModalOpenMs": -7675,
+        "u": "js.stripe.com/v3/m-outer-3437aaddcdf6922d623e172c2d6f9278.html"
+      },
+      {
+        "tFromModalOpenMs": -7590,
+        "u": "js.stripe.com/v3/fingerprinted/js/m-outer-15a2b40a058ddff1cffdb63779fe3de1.js"
+      },
+      {
+        "tFromModalOpenMs": 6425,
+        "u": "sargassummiami.com/api/create-checkout.php"
+      },
+      {
+        "tFromModalOpenMs": 6429,
+        "u": "js.stripe.com/v3/controller-with-preconnect-e6364dd9423c480d220e8bff403cf5f4.html"
+      },
+      {
+        "tFromModalOpenMs": 6435,
+        "u": "js.stripe.com/v3/elements-inner-loader-ui-8442ca3a5225bf2df82ba5b9b392b6b8.html"
+      },
+      {
+        "tFromModalOpenMs": 6442,
+        "u": "js.stripe.com/v3/payment-request-inner-google-pay-06da15c58e8832367bc3cbf9f3532622.html"
+      },
+      {
+        "tFromModalOpenMs": 6443,
+        "u": "js.stripe.com/v3/elements-inner-accessory-target-214384d1d7c402361552347246a13859.html"
+      },
+      {
+        "tFromModalOpenMs": 6447,
+        "u": "js.stripe.com/v3/elements-inner-accessory-target-214384d1d7c402361552347246a13859.html"
+      },
+      {
+        "tFromModalOpenMs": 6483,
+        "u": "js.stripe.com/v3/fingerprinted/js/shared-8c20f01b8c259cf908faa54c93248a79.js"
+      },
+      {
+        "tFromModalOpenMs": 6483,
+        "u": "js.stripe.com/v3/fingerprinted/js/controller-with-preconnect-a4f4e64e749ce4b7d44e280cc8801"
+      },
+      {
+        "tFromModalOpenMs": 6490,
+        "u": "js.stripe.com/v3/fingerprinted/js/shared-8c20f01b8c259cf908faa54c93248a79.js"
+      },
+      {
+        "tFromModalOpenMs": 6490,
+        "u": "js.stripe.com/v3/fingerprinted/js/elements-inner-loader-ui-3045cabeb406a0181512c6f256891e2"
+      },
+      {
+        "tFromModalOpenMs": 6490,
+        "u": "js.stripe.com/v3/fingerprinted/css/elements-inner-loader-ui-80ab262aada7f4b0b45162f47adbdb"
+      },
+      {
+        "tFromModalOpenMs": 6495,
+        "u": "js.stripe.com/v3/fingerprinted/js/shared-8c20f01b8c259cf908faa54c93248a79.js"
+      },
+      {
+        "tFromModalOpenMs": 6503,
+        "u": "js.stripe.com/v3/fingerprinted/css/elements-inner-payment-d3217fb13db960c84d2b84c8d08a4395"
+      },
+      {
+        "tFromModalOpenMs": 6506,
+        "u": "js.stripe.com/v3/fingerprinted/css/elements-inner-express-checkout-1241bfb1569dd5dbd8edfa8"
+      },
+      {
+        "tFromModalOpenMs": 6716,
+        "u": "js.stripe.com/v3/fingerprinted/js/payment-request-inner-google-pay-5c09fcd8aa646bfc55b4e93"
+      },
+      {
+        "tFromModalOpenMs": 6840,
+        "u": "js.stripe.com/v3/.deploy_status_henson.json"
+      },
+      {
+        "tFromModalOpenMs": 6841,
+        "u": "js.stripe.com/v3/.deploy_status_henson.json"
+      },
+      {
+        "tFromModalOpenMs": 6842,
+        "u": "js.stripe.com/v3/fingerprinted/js/stripe-cookies-99315d136700f132b072c563090f72a7.js"
+      },
+      {
+        "tFromModalOpenMs": 6842,
+        "u": "js.stripe.com/v3/.deploy_status_henson.json"
+      },
+      {
+        "tFromModalOpenMs": 6850,
+        "u": "js.stripe.com/v3/fingerprinted/js/elements-inner-accessory-render-7c542f8780fb47de8caff649"
+      },
+      {
+        "tFromModalOpenMs": 6854,
+        "u": "api.stripe.com/v1/elements/sessions?client_secret=seti_1Th1VvP9RK8Orx51g0pnA48q_secret_UgO"
+      },
+      {
+        "tFromModalOpenMs": 6854,
+        "u": "merchant-ui-api.stripe.com/link/get-cookie?referrer_host=sargassummiami.com"
+      },
+      {
+        "tFromModalOpenMs": 6886,
+        "u": "js.stripe.com/v3/fingerprinted/js/consumerSchema-3419449d1b8db5892c4dd0c20e2a2652.js"
+      },
+      {
+        "tFromModalOpenMs": 7431,
+        "u": "js.stripe.com/v3/.deploy_status_henson.json"
+      },
+      {
+        "tFromModalOpenMs": 7432,
+        "u": "js.stripe.com/v3/hcaptcha-invisible-8a780bdbc728a24970037c3ec5940798.html"
+      },
+      {
+        "tFromModalOpenMs": 11902,
+        "u": "js.stripe.com/v3/fingerprinted/js/trusted-types-checker-a86dcafd042e60cf7585cbabd57b0cdb.j"
+      }
+    ],
+    "clicksMapToPayment": 4,
+    "blockedRequests": 8
+  }
+}

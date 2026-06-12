@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
+<title>SargaCatch — Sauve la plage !</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+<style>
+  :root{ --gold:#FFC72C; --ink:#0A1714; }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
+  body{ background:var(--ink); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; color:#fff; overflow:hidden; }
+  #stage{ position:fixed; inset:0; max-width:560px; margin:0 auto; overflow:hidden; touch-action:manipulation; }
+  #stage img.bg{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 38%; }
+  .scrim{ position:absolute; inset:0; background:linear-gradient(180deg,rgba(10,23,20,.62) 0%,rgba(10,23,20,.1) 22%,rgba(10,23,20,0) 45%,rgba(10,23,20,.25) 100%); pointer-events:none; }
+
+  #hud{ position:absolute; top:0; left:0; right:0; display:flex; justify-content:space-between; align-items:center;
+    padding:calc(12px + env(safe-area-inset-top)) 16px 0; z-index:50; pointer-events:none; }
+  .pill{ background:rgba(10,23,20,.55); border:1px solid rgba(255,255,255,.2); border-radius:999px;
+    padding:7px 13px; font-size:13px; font-weight:800; backdrop-filter:blur(6px); }
+  #score{ color:var(--gold); font-family:'Anton',sans-serif; font-size:17px; letter-spacing:.04em; }
+  #lives{ letter-spacing:2px; }
+
+  .sg{ position:absolute; width:64px; height:48px; cursor:pointer; z-index:10; filter:drop-shadow(0 3px 6px rgba(0,0,0,.35)); }
+  .sg svg{ width:100%; height:100%; pointer-events:none; }
+  .sg.pop{ animation:pop .32s ease-out forwards; pointer-events:none; }
+  @keyframes pop{ 40%{transform:scale(1.45) rotate(8deg);opacity:1} 100%{transform:scale(.1) rotate(-20deg);opacity:0} }
+  .pts{ position:absolute; font-family:'Anton',sans-serif; font-size:22px; color:var(--gold); z-index:40;
+    pointer-events:none; animation:rise .7s ease-out forwards; text-shadow:0 2px 8px rgba(0,0,0,.5); }
+  @keyframes rise{ to{ transform:translateY(-46px); opacity:0 } }
+  .splat{ position:absolute; bottom:0; width:90px; height:26px; background:radial-gradient(ellipse at center,#6b4a12 0%,#523808 60%,transparent 75%); opacity:.92; z-index:5; pointer-events:none; }
+
+  .panel{ position:absolute; inset:0; z-index:100; display:flex; flex-direction:column; justify-content:flex-end;
+    padding:0 22px calc(26px + env(safe-area-inset-bottom)); background:linear-gradient(180deg,rgba(10,23,20,.35),rgba(10,23,20,.92) 70%); }
+  .panel h1{ font-family:'Anton',sans-serif; font-weight:400; font-size:clamp(40px,11vw,64px); line-height:.95; text-transform:uppercase; margin-bottom:10px; }
+  .panel h1 .g{ color:var(--gold); }
+  .panel p{ font-size:14px; color:rgba(255,255,255,.75); line-height:1.45; margin-bottom:16px; }
+  .btn{ display:block; width:100%; text-align:center; background:var(--gold); color:var(--ink); border:none; cursor:pointer;
+    font-family:inherit; font-weight:800; font-size:17px; padding:16px 24px; border-radius:18px; box-shadow:0 8px 28px rgba(255,199,44,.32); }
+  .btn.ghost{ background:rgba(10,23,20,.45); color:#fff; border:1.5px solid rgba(255,255,255,.35); box-shadow:none; margin-top:10px; font-size:14px; padding:13px; }
+  .verdict{ display:inline-flex; align-items:center; gap:8px; background:var(--gold); color:var(--ink); font-weight:800;
+    font-size:13px; padding:7px 13px; border-radius:999px; margin-bottom:10px; }
+  #endPanel,#flash{ display:none; }
+  #flash{ position:absolute; inset:0; background:rgba(232,82,42,.25); z-index:60; pointer-events:none; animation:fl .3s ease-out; }
+  @keyframes fl{ from{opacity:1} to{opacity:0} }
+  .wordmark{ position:absolute; top:calc(14px + env(safe-area-inset-top)); left:0; right:0; text-align:center;
+    font-family:'Anton',sans-serif; font-size:11px; letter-spacing:.16em; opacity:.8; z-index:45; pointer-events:none; }
+</style>
+</head>
+<body>
+<template id="sgTpl">
+  <svg viewBox="0 0 64 48"><g fill="#7a5a14"><ellipse cx="32" cy="26" rx="26" ry="13" fill="#8a6a1a"/><ellipse cx="18" cy="20" rx="12" ry="8" fill="#9a7a22"/><ellipse cx="44" cy="20" rx="13" ry="8" fill="#6b4a12"/><circle cx="14" cy="14" r="3.5" fill="#b8962e"/><circle cx="26" cy="10" r="3" fill="#b8962e"/><circle cx="40" cy="12" r="3.5" fill="#b8962e"/><circle cx="50" cy="16" r="3" fill="#b8962e"/></g></svg>
+</template>
+<div id="stage">
+  <img class="bg" src="gplace-mq014.jpg" alt="">
+  <div class="scrim"></div>
+  <div id="hud" style="display:none">
+    <span class="pill" id="score">0</span>
+    <span class="pill" id="timer">45s</span>
+    <span class="pill" id="lives">🏖️🏖️🏖️</span>
+  </div>
+  <div id="flash"></div>
+
+  <div class="panel" id="startPanel">
+    <h1>Sauve<br>la <span class="g">plage</span></h1>
+    <p>Les sargasses dérivent vers le sable. <b>Tape dessus</b> pour les ramasser avant qu'elles touchent la plage. 3 paquets au sol = plage perdue. 45 secondes. Combos ×2 si tu enchaînes !</p>
+    <button class="btn" id="btnStart">Jouer 🌊</button>
+  </div>
+
+  <div class="panel" id="endPanel">
+    <div><span class="verdict" id="endVerdict">…</span></div>
+    <h1 id="endTitle"></h1>
+    <p id="endMsg"></p>
+    <button class="btn" id="btnSite">Voir la plage propre du jour →</button>
+    <button class="btn ghost" id="btnShare">Défier un ami 🏆</button>
+    <button class="btn ghost" id="btnReplay">Rejouer</button>
+  </div>
+</div>
+
+<script>
+// Données RÉELLES du jour (bakées au build dans la vraie version)
+const TODAY={beach:"Anse Collat",score:79,commune:"Schoelcher"}
+const stage=document.getElementById('stage')
+const tpl=document.getElementById('sgTpl')
+let blobs=[],score=0,lives=3,t=45,combo=0,comboT=0,running=false,raf=null,spawnAcc=0,last=0,timerIv=null
+
+function hud(){document.getElementById('score').textContent=score
+  document.getElementById('timer').textContent=Math.ceil(t)+'s'
+  document.getElementById('lives').textContent='🏖️'.repeat(lives)+'💀'.repeat(3-lives)}
+
+function spawn(){
+  const el=document.createElement('div');el.className='sg'
+  el.appendChild(tpl.content.firstElementChild.cloneNode(true))
+  const W=stage.clientWidth
+  const b={el,x:20+Math.random()*(W-100),y:-60,vy:34+Math.random()*30+(45-t)*1.1,wob:Math.random()*6.28,alive:true}
+  el.style.transform='translate('+b.x+'px,'+b.y+'px)'
+  el.addEventListener('pointerdown',e=>{e.preventDefault();if(!b.alive||!running)return;b.alive=false
+    combo=(comboT>0)?combo+1:1;comboT=1.6
+    const pts=10*(combo>=3?2:1);score+=pts
+    const p=document.createElement('div');p.className='pts';p.textContent='+'+pts+(combo>=3?' ×2':'')
+    p.style.left=(b.x+8)+'px';p.style.top=(b.y-6)+'px';stage.appendChild(p);setTimeout(()=>p.remove(),700)
+    el.classList.add('pop');setTimeout(()=>el.remove(),330);hud()})
+  stage.appendChild(el);blobs.push(b)
+}
+function loop(ts){
+  if(!running)return
+  const dt=Math.min(.05,(ts-last)/1000)||0;last=ts
+  comboT-=dt;if(comboT<=0)combo=0
+  spawnAcc+=dt
+  const interval=Math.max(.42,1.05-(45-t)*.013)
+  if(spawnAcc>interval){spawnAcc=0;spawn()}
+  const H=stage.clientHeight
+  for(const b of blobs){
+    if(!b.alive)continue
+    b.y+=b.vy*dt;b.wob+=dt*2.2
+    b.el.style.transform='translate('+(b.x+Math.sin(b.wob)*9)+'px,'+b.y+'px) rotate('+(Math.sin(b.wob)*9)+'deg)'
+    if(b.y>H-66){b.alive=false;b.el.remove();lives--
+      const s=document.createElement('div');s.className='splat';s.style.left=(b.x-12)+'px';stage.appendChild(s)
+      const f=document.getElementById('flash');f.style.display='block';f.style.animation='none';void f.offsetWidth;f.style.animation='fl .3s ease-out'
+      hud();if(lives<=0)return end(false)}
+  }
+  blobs=blobs.filter(x=>x.alive)
+  raf=requestAnimationFrame(loop)
+}
+function start(){
+  document.getElementById('startPanel').style.display='none'
+  document.getElementById('endPanel').style.display='none'
+  document.getElementById('hud').style.display='flex'
+  document.querySelectorAll('.sg,.splat,.pts').forEach(e=>e.remove())
+  blobs=[];score=0;lives=3;t=45;combo=0;spawnAcc=0;last=performance.now();running=true;hud()
+  clearInterval(timerIv)
+  timerIv=setInterval(()=>{t--;hud();if(t<=0)end(true)},1000)
+  raf=requestAnimationFrame(loop)
+}
+function end(won){
+  running=false;clearInterval(timerIv);cancelAnimationFrame(raf)
+  document.getElementById('hud').style.display='none'
+  document.getElementById('endPanel').style.display='flex'
+  document.getElementById('endVerdict').textContent=TODAY.beach.toUpperCase()+" — PROPRE AUJOURD'HUI · "+TODAY.score+"/100"
+  const h=document.getElementById('endTitle');h.textContent=''
+  const g=document.createElement('span');g.className='g';g.textContent=score
+  if(won){h.appendChild(g);h.appendChild(document.createTextNode(' points !'))}
+  else{h.appendChild(document.createTextNode('Submergé… '));h.appendChild(g);h.appendChild(document.createTextNode(' pts'))}
+  document.getElementById('endMsg').textContent=won
+    ?"Pas mal ! Dans la vraie vie, pas besoin de ratisser : on te dit chaque matin quelle plage est propre — satellite, 4×/jour, plage par plage."
+    :"C'est exactement ça, une vraie plage touchée : on ne gagne pas au râteau. Le secret, c'est de savoir OÙ aller — "+TODAY.beach+" est propre aujourd'hui."
+}
+function share(){
+  const txt="J'ai ramassé "+score+" pts de sargasses sur SargaCatch 🌊 Tu fais mieux ?"
+  if(navigator.share)navigator.share({title:'SargaCatch',text:txt,url:'https://sargasses-martinique.com/jeu/'}).catch(()=>{})
+  else{navigator.clipboard&&navigator.clipboard.writeText(txt+' https://sargasses-martinique.com/jeu/');alert('Lien copié !')}
+}
+document.getElementById('btnStart').addEventListener('click',start)
+document.getElementById('btnReplay').addEventListener('click',start)
+document.getElementById('btnShare').addEventListener('click',share)
+document.getElementById('btnSite').addEventListener('click',()=>window.open('https://sargasses-martinique.com/?utm_source=game&utm_medium=sargacatch','_blank'))
+</script>
+<div class="wordmark">SARGACATCH · SARGASSES MARTINIQUE</div>
+</body>
+</html>

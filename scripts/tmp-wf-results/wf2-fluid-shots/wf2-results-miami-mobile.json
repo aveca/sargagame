@@ -1,0 +1,544 @@
+{
+ "site": "miami",
+ "url": "https://sargassummiami.com",
+ "viewport": {
+  "width": 390,
+  "height": 844
+ },
+ "phases": {
+  "arrival": {
+   "heroShown": true,
+   "videoElementAt_ms": 2392,
+   "videoFadeStart_ms": 2658,
+   "videoFadeFull_ms": 3453,
+   "videoTransition": "0.9s",
+   "timelineSample": [
+    {
+     "ms": 1088,
+     "hero": false,
+     "img": null,
+     "video": null,
+     "cls": 0
+    },
+    {
+     "ms": 2135,
+     "hero": true,
+     "img": {
+      "loaded": true
+     },
+     "video": null,
+     "cls": 0.0242
+    },
+    {
+     "ms": 3188,
+     "hero": true,
+     "img": {
+      "loaded": true
+     },
+     "video": {
+      "op": "0.950101",
+      "t": 0.66,
+      "paused": false,
+      "trans": "0.9s"
+     },
+     "cls": 0.0242
+    },
+    {
+     "ms": 4239,
+     "hero": true,
+     "img": {
+      "loaded": true
+     },
+     "video": {
+      "op": "1",
+      "t": 1.72,
+      "paused": false,
+      "trans": "0.9s"
+     },
+     "cls": 0.0242
+    },
+    {
+     "ms": 5292,
+     "hero": true,
+     "img": {
+      "loaded": true
+     },
+     "video": {
+      "op": "1",
+      "t": 2.77,
+      "paused": false,
+      "trans": "0.9s"
+     },
+     "cls": 0.0556
+    },
+    {
+     "ms": 6346,
+     "hero": true,
+     "img": {
+      "loaded": true
+     },
+     "video": {
+      "op": "1",
+      "t": 3.82,
+      "paused": false,
+      "trans": "0.9s"
+     },
+     "cls": 0.0562
+    }
+   ],
+   "cls_at_load": {
+    "total": 0.0562,
+    "entries": [
+     {
+      "t": 1338,
+      "v": 0.02079,
+      "srcs": [
+       "div"
+      ]
+     },
+     {
+      "t": 1384,
+      "v": 0.00343,
+      "srcs": [
+       "div",
+       "button",
+       "?"
+      ]
+     },
+     {
+      "t": 4465,
+      "v": 0.00001,
+      "srcs": [
+       "::after"
+      ]
+     },
+     {
+      "t": 4483,
+      "v": 0.00002,
+      "srcs": [
+       "::after"
+      ]
+     },
+     {
+      "t": 4498,
+      "v": 0.00005,
+      "srcs": [
+       "::after"
+      ]
+     },
+     {
+      "t": 4516,
+      "v": 0.00006,
+      "srcs": [
+       "::after"
+      ]
+     },
+     {
+      "t": 4533,
+      "v": 0.0001,
+      "srcs": [
+       "::after"
+      ]
+     },
+     {
+      "t": 4549,
+      "v": 0.00014,
+      "srcs": [
+       "::after"
+      ]
+     },
+     {
+      "t": 4566,
+      "v": 0.00021,
+      "srcs": [
+       "::after"
+      ]
+     },
+     {
+      "t": 4584,
+      "v": 0.00028,
+      "srcs": [
+       "::after"
+      ]
+     },
+     {
+      "t": 4599,
+      "v": 0.00036,
+      "srcs": [
+       "::after"
+      ]
+     },
+     {
+      "t": 4616,
+      "v": 0.00044,
+      "srcs": [
+       "::after"
+      ]
+     }
+    ]
+   }
+  },
+  "heroDismiss": {
+   "clicked": true,
+   "frames": 100,
+   "heroExit": {
+    "frameIdx": 2,
+    "lastHeroOpacity": "1",
+    "lastHeroAnim": "none",
+    "lastHeroTransition": "0s",
+    "gapToPrev_ms": 19.1
+   },
+   "fabAppear": {
+    "frameIdx": 2,
+    "firstOpacity": "1",
+    "anim": "none",
+    "transition": "0.12s, 0.12s"
+   },
+   "chromeMotion": [
+    {
+     "name": "fab_chat",
+     "animationName": "none",
+     "animationDuration": "0s",
+     "transitionProperty": "transform, opacity",
+     "transitionDuration": "0.12s, 0.12s"
+    },
+    {
+     "name": "search_card",
+     "animationName": "none",
+     "animationDuration": "0s",
+     "transitionProperty": "all",
+     "transitionDuration": "0s"
+    },
+    {
+     "name": "bottom_nav",
+     "animationName": "none",
+     "animationDuration": "0s",
+     "transitionProperty": "all",
+     "transitionDuration": "0s"
+    },
+    {
+     "name": "header",
+     "animationName": "none",
+     "animationDuration": "0s",
+     "transitionProperty": "all",
+     "transitionDuration": "0s"
+    },
+    {
+     "name": "carib_btn",
+     "animationName": "none",
+     "animationDuration": "0s",
+     "transitionProperty": "all",
+     "transitionDuration": "0.2s"
+    },
+    {
+     "name": "map",
+     "animationName": "none",
+     "animationDuration": "0s",
+     "transitionProperty": "all",
+     "transitionDuration": "0s"
+    }
+   ]
+  },
+  "framing": {
+   "boxes": {
+    "fab_chat": {
+     "x": 330,
+     "y": 710,
+     "w": 46,
+     "h": 46,
+     "z": "960"
+    },
+    "search_input": {
+     "x": 16,
+     "y": 688,
+     "w": 358,
+     "h": 46,
+     "z": "auto"
+    },
+    "search_card": {
+     "x": 16,
+     "y": 688,
+     "w": 358,
+     "h": 46,
+     "z": "auto"
+    },
+    "bottom_nav": {
+     "x": 0,
+     "y": 769,
+     "w": 390,
+     "h": 75,
+     "z": "800"
+    },
+    "header_row": null,
+    "carib_btn": {
+     "x": 335.1,
+     "y": 12,
+     "w": 42.9,
+     "h": 38,
+     "z": "1000"
+    },
+    "recenter_btn": null,
+    "radar_bar": {
+     "x": 27.4,
+     "y": 70,
+     "w": 335.2,
+     "h": 46,
+     "z": "auto"
+    },
+    "game_toast": null,
+    "sheet": null,
+    "insight": null,
+    "viewport": {
+     "w": 390,
+     "h": 844
+    }
+   },
+   "overlaps": [
+    {
+     "a": "fab_chat",
+     "b": "search_input",
+     "overlap": {
+      "w": 44,
+      "h": 24,
+      "area": 1056
+     },
+     "hitTestTop": [
+      "button",
+      "input",
+      "div"
+     ]
+    },
+    {
+     "a": "fab_chat",
+     "b": "search_card",
+     "overlap": {
+      "w": 44,
+      "h": 24,
+      "area": 1056
+     },
+     "hitTestTop": [
+      "button",
+      "input",
+      "div"
+     ]
+    }
+   ],
+   "overflow": []
+  },
+  "motion": {
+   "combos": [
+    {
+     "kind": "inline-transition",
+     "duration": "0.25s cubic-bezier(0.22, 1, 0.36, 1)",
+     "easing": "",
+     "name": "",
+     "count": 13,
+     "sample": "BUTTON"
+    },
+    {
+     "kind": "inline-animation",
+     "duration": "0.3s cubic-bezier(0.22, 1, 0.36, 1) 0ms 1 normal backwards running slideUp",
+     "easing": "",
+     "name": "",
+     "count": 12,
+     "sample": "BUTTON"
+    },
+    {
+     "kind": "inline-transition",
+     "duration": "transform 0.15s",
+     "easing": "",
+     "name": "",
+     "count": 8,
+     "sample": "DIV.sg-pin"
+    },
+    {
+     "kind": "inline-transition",
+     "duration": "0.2s",
+     "easing": "",
+     "name": "",
+     "count": 5,
+     "sample": "BUTTON.sg-carib-btn"
+    },
+    {
+     "kind": "inline-transition",
+     "duration": "0.22s cubic-bezier(0.22, 1, 0.36, 1)",
+     "easing": "",
+     "name": "",
+     "count": 5,
+     "sample": "BUTTON"
+    },
+    {
+     "kind": "inline-transition",
+     "duration": "transform 0.2s",
+     "easing": "",
+     "name": "",
+     "count": 3,
+     "sample": "SPAN"
+    },
+    {
+     "kind": "inline-transition",
+     "duration": "opacity 0.25s",
+     "easing": "",
+     "name": "",
+     "count": 2,
+     "sample": "DIV"
+    },
+    {
+     "kind": "inline-transition",
+     "duration": "padding-top 0.25s",
+     "easing": "",
+     "name": "",
+     "count": 1,
+     "sample": "DIV"
+    },
+    {
+     "kind": "inline-animation",
+     "duration": "2.2s ease-in-out 0s infinite normal none running sg-live-halo",
+     "easing": "",
+     "name": "",
+     "count": 1,
+     "sample": "SPAN"
+    },
+    {
+     "kind": "inline-transition",
+     "duration": "background 0.3s",
+     "easing": "",
+     "name": "",
+     "count": 1,
+     "sample": "DIV"
+    },
+    {
+     "kind": "inline-transition",
+     "duration": "color 0.2s",
+     "easing": "",
+     "name": "",
+     "count": 1,
+     "sample": "svg"
+    },
+    {
+     "kind": "inline-transition",
+     "duration": "width 0.2s",
+     "easing": "",
+     "name": "",
+     "count": 1,
+     "sample": "DIV"
+    }
+   ],
+   "inlineCount": 40
+  },
+  "sheet": {
+   "opened": true,
+   "beach": "Fort Lauderdale Beach",
+   "attempts": 1,
+   "clickToSheet_ms": 0,
+   "entranceAnim": {
+    "name": "sheetSlideUp",
+    "duration": "0.4s",
+    "easing": "cubic-bezier(0.32, 0.72, 0, 1)"
+   },
+   "entranceFirstTop": 844,
+   "entranceAnimatedFrames": 22,
+   "entranceObserved_ms": 348,
+   "backdropAnim": {
+    "op": 0,
+    "anim": "fadeIn",
+    "animDur": "0.25s"
+   },
+   "trajSample": [
+    {
+     "dt": 0,
+     "top": 844,
+     "op": "1"
+    },
+    {
+     "dt": 21,
+     "top": 772,
+     "op": "1"
+    },
+    {
+     "dt": 71,
+     "top": 465.3,
+     "op": "1"
+    },
+    {
+     "dt": 128,
+     "top": 242.7,
+     "op": "1"
+    },
+    {
+     "dt": 183,
+     "top": 179.7,
+     "op": "1"
+    },
+    {
+     "dt": 238,
+     "top": 146,
+     "op": "1"
+    },
+    {
+     "dt": 291,
+     "top": 134.5,
+     "op": "1"
+    },
+    {
+     "dt": 348,
+     "top": 128.8,
+     "op": "1"
+    },
+    {
+     "dt": 404,
+     "top": 126.6,
+     "op": "1"
+    },
+    {
+     "dt": 457,
+     "top": 126.6,
+     "op": "1"
+    },
+    {
+     "dt": 512,
+     "top": 126.6,
+     "op": "1"
+    },
+    {
+     "dt": 564,
+     "top": 126.6,
+     "op": "1"
+    }
+   ],
+   "cls_sheetOpen": 0,
+   "close": {
+    "sheetGone": false,
+    "lastTopBeforeGone": null,
+    "exitAnimated": false,
+    "framesBeforeGone": -1
+   }
+  },
+  "cls_final": {
+   "total": 0,
+   "entries": [
+    {
+     "t": 2137,
+     "v": 0.00004,
+     "srcs": [
+      "?",
+      "?",
+      "?"
+     ]
+    }
+   ]
+  },
+  "reducedMotion": {
+   "matchMediaReduce": true,
+   "heroPresent": true,
+   "videoLoaded": false,
+   "chevAnim": "none 0s",
+   "gbtnShineAfter": {
+    "anim": "none",
+    "dur": "0s"
+   },
+   "stillInfiniteAnimated": []
+  }
+ },
+ "pageErrors": []
+}

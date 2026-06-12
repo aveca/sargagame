@@ -312,6 +312,13 @@ export default defineConfig({
             const { generateMonthPages } = _require('./scripts/lib/month-pages.cjs')
             generateMonthPages(REGION, resolve(__dirname, 'dist'))
           } catch (e) { console.warn('   ⚠ pages mois région:', e.message) }
+          // Page santé Q&A (/sargassum-health-risks/ EN, /sargazo-salud-riesgos/ ES) —
+          // FAQ médicalement conservatrice (H2S, baignade, enfants, peau, animaux) +
+          // FAQPage/Breadcrumb JSON-LD. Sitemap patché (d'où l'appel APRÈS region-seo-pages).
+          try {
+            const { generateHealthPages } = _require('./scripts/lib/health-page.cjs')
+            generateHealthPages(REGION, resolve(__dirname, 'dist'))
+          } catch (e) { console.warn('   ⚠ page santé région:', e.message) }
           return
         }
         const outDir = resolve(__dirname, 'dist')

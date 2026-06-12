@@ -1,0 +1,326 @@
+[
+  {
+    "sargId": "grande-anse",
+    "beach": {
+      "id": "mq014",
+      "island": "mq",
+      "name": "Grande Anse d'Arlet",
+      "commune": "Les Anses-d'Arlet",
+      "lat": 14.5027854,
+      "lng": -61.0856311,
+      "status": "clean",
+      "afai": 0.12,
+      "kids": true,
+      "snorkel": true,
+      "parking": true,
+      "drive": 25
+    },
+    "ok": true,
+    "name": "Grande Anse d'Arlet",
+    "dist": 0,
+    "exact": true,
+    "attempt": 1,
+    "zoom": 11,
+    "near18": 1,
+    "events": [
+      "hero dismissed",
+      "a1@(100,629) z=11 near18=1 near40=3 top=div.sg-pin>div>div.leaflet-marker-icon"
+    ]
+  },
+  {
+    "sargId": "anse-mitan",
+    "beach": {
+      "id": "mq011",
+      "island": "mq",
+      "name": "Anse Mitan",
+      "commune": "Les Trois-Îlets",
+      "lat": 14.5522593,
+      "lng": -61.0552056,
+      "status": "clean",
+      "afai": 0.17,
+      "kids": true,
+      "snorkel": false,
+      "parking": true,
+      "drive": 18
+    },
+    "ok": true,
+    "name": "Anse Mitan",
+    "dist": 0,
+    "exact": true,
+    "attempt": 1,
+    "zoom": 11,
+    "near18": 2,
+    "events": [
+      "hero dismissed",
+      "a1@(144,554) z=11 near18=2 near40=3 top=div>div.leaflet-marker-icon>div"
+    ]
+  },
+  {
+    "sargId": "anse-noire",
+    "beach": {
+      "id": "mq012",
+      "island": "mq",
+      "name": "Anse Noire",
+      "commune": "Les Anses-d'Arlet",
+      "lat": 14.5277232,
+      "lng": -61.0873771,
+      "status": "clean",
+      "afai": 0.08,
+      "kids": true,
+      "snorkel": true,
+      "parking": false,
+      "drive": 28
+    },
+    "ok": true,
+    "name": "Anse Noire",
+    "dist": 0,
+    "exact": true,
+    "attempt": 1,
+    "zoom": 11,
+    "near18": 2,
+    "events": [
+      "hero dismissed",
+      "a1@(97,591) z=11 near18=2 near40=4 top=div>div>div.leaflet-marker-icon"
+    ]
+  },
+  {
+    "sargId": "tartane",
+    "beach": {
+      "id": "mq034",
+      "island": "mq",
+      "name": "Bourg de Tartane",
+      "commune": "La Trinité",
+      "lat": 14.7507215,
+      "lng": -60.9256857,
+      "status": "clean",
+      "afai": 0.2,
+      "kids": true,
+      "snorkel": false,
+      "parking": false,
+      "drive": 30
+    },
+    "ok": true,
+    "name": "Bourg de Tartane",
+    "dist": 0,
+    "exact": true,
+    "attempt": 1,
+    "zoom": 11,
+    "near18": 1,
+    "events": [
+      "hero dismissed",
+      "a1@(333,255) z=11 near18=1 near40=6 top=div.sg-pin>div>div.leaflet-marker-icon"
+    ]
+  },
+  {
+    "sargId": "anse-madame",
+    "beach": {
+      "id": "mq024",
+      "island": "mq",
+      "name": "Anse Madame",
+      "commune": "Schoelcher",
+      "lat": 14.6177983,
+      "lng": -61.1036302,
+      "status": "clean",
+      "afai": 0.14,
+      "kids": true,
+      "snorkel": false,
+      "parking": true,
+      "drive": 12
+    },
+    "ok": true,
+    "name": "Anse Madame",
+    "dist": 0,
+    "exact": true,
+    "attempt": 1,
+    "zoom": 11,
+    "near18": 3,
+    "events": [
+      "hero dismissed",
+      "a1@(73,456) z=11 near18=3 near40=3 top=div.sg-pin>div>div.leaflet-marker-icon"
+    ]
+  },
+  {
+    "sargId": "diamant",
+    "beach": {
+      "id": "mq016",
+      "island": "mq",
+      "name": "Plage du Diamant",
+      "commune": "Le Diamant",
+      "lat": 14.4758027,
+      "lng": -61.0314046,
+      "status": "moderate",
+      "afai": 0.42,
+      "kids": false,
+      "snorkel": false,
+      "parking": true,
+      "drive": 32
+    },
+    "ok": true,
+    "name": "Plage du Diamant",
+    "dist": 0,
+    "exact": true,
+    "attempt": 1,
+    "zoom": 11,
+    "near18": 1,
+    "events": [
+      "hero dismissed",
+      "a1@(179,669) z=11 near18=1 near40=2 top=div.sg-pin>div>div.leaflet-marker-icon"
+    ]
+  },
+  {
+    "sargId": "pt-marin",
+    "beach": {
+      "id": "mq008",
+      "island": "mq",
+      "name": "Plage du Marin",
+      "commune": "Le Marin",
+      "lat": 14.4511181,
+      "lng": -60.8835717,
+      "status": "clean",
+      "afai": 0.18,
+      "kids": true,
+      "snorkel": false,
+      "parking": true,
+      "drive": 42
+    },
+    "ok": false,
+    "name": null,
+    "last": {
+      "proj": {
+        "x": 393.87211264000507,
+        "y": 706.2793404750992,
+        "zoom": 11,
+        "tiles": 8
+      },
+      "sheet": null,
+      "zoomAnim": false,
+      "markers": 53,
+      "near18": 1,
+      "near40": 5,
+      "pinInnerPx": 36,
+      "topEls": []
+    },
+    "events": [
+      "hero dismissed",
+      "a1@(394,706) z=11 near18=1 near40=5 top=",
+      "a1: point hors zone sûre (394,706)"
+    ]
+  },
+  {
+    "sargId": "sainte-anne",
+    "beach": {
+      "id": "mq004",
+      "island": "mq",
+      "name": "Plage du Bourg (Sainte-Anne)",
+      "commune": "Sainte-Anne",
+      "lat": 14.4304809,
+      "lng": -60.8849519,
+      "status": "moderate",
+      "afai": 0.38,
+      "kids": true,
+      "snorkel": false,
+      "parking": true,
+      "drive": 48
+    },
+    "ok": false,
+    "name": null,
+    "last": {
+      "proj": {
+        "x": 391.8620507022133,
+        "y": 737.3149871167261,
+        "zoom": 11,
+        "tiles": 8
+      },
+      "sheet": null,
+      "zoomAnim": false,
+      "markers": 53,
+      "near18": 3,
+      "near40": 5,
+      "pinInnerPx": 36,
+      "topEls": []
+    },
+    "events": [
+      "hero dismissed",
+      "a1@(392,737) z=11 near18=3 near40=5 top=",
+      "a1: point hors zone sûre (392,737)"
+    ]
+  },
+  {
+    "sargId": "les-salines",
+    "beach": {
+      "id": "mq001",
+      "island": "mq",
+      "name": "Plage des Salines",
+      "commune": "Sainte-Anne",
+      "lat": 14.3958521,
+      "lng": -60.8689802,
+      "status": "moderate",
+      "afai": 0.42,
+      "kids": true,
+      "snorkel": false,
+      "parking": true,
+      "drive": 52
+    },
+    "ok": false,
+    "name": null,
+    "last": {
+      "proj": {
+        "x": 415.1225247288821,
+        "y": 789.3857077913417,
+        "zoom": 11,
+        "tiles": 8
+      },
+      "sheet": null,
+      "zoomAnim": false,
+      "markers": 53,
+      "near18": 1,
+      "near40": 3,
+      "pinInnerPx": 38,
+      "topEls": []
+    },
+    "events": [
+      "hero dismissed",
+      "a1@(415,789) z=11 near18=1 near40=3 top=",
+      "a1: point hors zone sûre (415,789)"
+    ]
+  },
+  {
+    "sargId": "vauclin",
+    "beach": {
+      "id": "mq044",
+      "island": "mq",
+      "name": "Pointe Faula",
+      "commune": "Le Vauclin",
+      "lat": 14.5413754,
+      "lng": -60.8291578,
+      "status": "clean",
+      "afai": 0.2,
+      "kids": true,
+      "snorkel": false,
+      "parking": false,
+      "drive": 30
+    },
+    "ok": false,
+    "name": null,
+    "last": {
+      "proj": {
+        "x": 473.1180982044607,
+        "y": 570.5102659338154,
+        "zoom": 11,
+        "tiles": 8
+      },
+      "sheet": null,
+      "zoomAnim": false,
+      "markers": 53,
+      "near18": 2,
+      "near40": 2,
+      "pinInnerPx": 38,
+      "topEls": []
+    },
+    "events": [
+      "hero dismissed",
+      "a1@(473,571) z=11 near18=2 near40=2 top=",
+      "a1: point hors zone sûre (473,571)"
+    ]
+  }
+]

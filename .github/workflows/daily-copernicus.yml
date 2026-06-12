@@ -227,8 +227,18 @@ jobs:
       - name: Hero loops vidéo (ffmpeg)
         if: steps.check_build.outputs.full == 'true'
         continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           command -v ffmpeg >/dev/null 2>&1 || { sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg; }
+          # Clips DepthFlow (parallaxe 2.5D, rendus locaux GPU) : distribués via
+          # GitHub Release — ~200 Mo, trop lourds pour le repo. Best-effort : sans
+          # release, le zoompan couvre tout. make-hero-loops les copie par-dessus
+          # le zoompan via l'overlay assets/hero-depthflow/ (scan avant manifest).
+          mkdir -p assets/hero-depthflow
+          gh release download depthflow-heroes -p "*.mp4" -D assets/hero-depthflow --clobber \
+            && echo "DepthFlow release: $(ls assets/hero-depthflow/*.mp4 | wc -l) clips" \
+            || echo "release depthflow-heroes absente — zoompan seul"
           node scripts/make-hero-loops.cjs
 
       - name: Build new regions (séquentiel, avant le build MQ/GP)

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Proto — Hero Verdict (refonte UX)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+<style>
+  :root{ --gold:#FFC72C; --ink:#0A1714; --mid:rgba(255,255,255,.62); }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  body{ background:var(--ink); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; color:#fff; }
+
+  /* ── ÉCRAN 1 : HERO VERDICT ─────────────────────────────── */
+  .hero{ position:relative; height:100vh; height:100dvh; overflow:hidden; }
+  .hero img.bg{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 38%; }
+  .hero .scrim{ position:absolute; inset:0;
+    background:linear-gradient(180deg, rgba(10,23,20,.55) 0%, rgba(10,23,20,0) 26%, rgba(10,23,20,0) 42%, rgba(10,23,20,.88) 78%, #0A1714 100%); }
+  .chrome{ position:absolute; top:0; left:0; right:0; display:flex; justify-content:space-between; align-items:center;
+    padding:calc(14px + env(safe-area-inset-top)) 18px 0; z-index:3; max-width:560px; margin:0 auto; }
+  .wordmark{ font-family:'Anton',sans-serif; font-size:13px; letter-spacing:.14em; color:#fff; opacity:.92; }
+  .live{ display:inline-flex; align-items:center; gap:6px; font-size:10.5px; font-weight:700; letter-spacing:.06em;
+    background:rgba(10,23,20,.5); border:1px solid rgba(255,255,255,.18); backdrop-filter:blur(6px);
+    padding:5px 10px; border-radius:999px; }
+  .live .dot{ width:7px; height:7px; border-radius:50%; background:#22C55E; box-shadow:0 0 8px #22C55E; }
+  .stack{ position:absolute; left:0; right:0; bottom:0; z-index:3; padding:0 20px calc(22px + env(safe-area-inset-bottom));
+    max-width:560px; margin:0 auto; }
+  .nearyou{ display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:700; letter-spacing:.05em;
+    color:var(--gold); margin-bottom:8px; }
+  .overline{ font-size:11px; font-weight:600; letter-spacing:.14em; color:var(--mid); margin-bottom:6px; }
+  h1{ font-family:'Anton',sans-serif; font-weight:400; font-size:clamp(44px,13vw,76px); line-height:.96;
+    letter-spacing:.01em; text-transform:uppercase; margin-bottom:14px; text-shadow:0 2px 24px rgba(0,0,0,.35); }
+  .verdict{ display:inline-flex; align-items:center; gap:10px; background:var(--gold); color:var(--ink);
+    font-weight:800; font-size:15px; letter-spacing:.02em; padding:9px 16px; border-radius:999px; margin-bottom:8px; }
+  .verdict .score{ font-family:'Anton',sans-serif; font-size:17px; letter-spacing:.03em; }
+  .sub{ font-size:13px; color:var(--mid); margin-bottom:18px; }
+  .cta{ display:block; width:100%; text-align:center; background:var(--gold); color:var(--ink); border:none; cursor:pointer;
+    font-family:inherit; font-weight:800; font-size:17px; padding:16px 24px; border-radius:18px;
+    box-shadow:0 8px 28px rgba(255,199,44,.32); }
+  .cta small{ display:block; font-weight:500; font-size:11.5px; opacity:.75; margin-top:3px; }
+  .ghost{ display:flex; align-items:center; justify-content:center; gap:7px; width:100%; background:none; border:none;
+    color:rgba(255,255,255,.66); font-family:inherit; font-size:13px; font-weight:600; padding:14px 0 0; cursor:pointer; }
+  .ghost .chev{ animation:bob 1.8s ease-in-out infinite; display:inline-block; }
+  @keyframes bob{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(3px)} }
+
+  /* ── ÉCRAN 2 : FICHE / FUNNEL (après clic CTA) ──────────── */
+  .sheet{ display:none; min-height:100vh; background:var(--ink); max-width:560px; margin:0 auto; }
+  body.s2 .hero{ display:none; } body.s2 .sheet{ display:block; }
+  .sheet .head{ position:relative; height:34vh; overflow:hidden; border-radius:0 0 22px 22px; }
+  .sheet .head img{ width:100%; height:100%; object-fit:cover; object-position:center 38%; }
+  .sheet .head .scrim2{ position:absolute; inset:0; background:linear-gradient(180deg,rgba(10,23,20,.45),rgba(10,23,20,0) 35%,rgba(10,23,20,.82)); }
+  .back{ position:absolute; top:14px; left:14px; background:rgba(10,23,20,.55); border:1px solid rgba(255,255,255,.2);
+    color:#fff; border-radius:999px; width:36px; height:36px; font-size:17px; cursor:pointer; }
+  .sheet .title{ position:absolute; bottom:14px; left:18px; right:18px; }
+  .sheet .title h2{ font-family:'Anton',sans-serif; font-weight:400; font-size:30px; text-transform:uppercase; }
+  .badge{ display:inline-block; background:#22C55E; color:#06270F; font-size:11px; font-weight:800; padding:3px 10px;
+    border-radius:999px; margin-bottom:6px; }
+  .body{ padding:18px; }
+  .factrow{ display:flex; gap:8px; margin-bottom:18px; }
+  .fact{ flex:1; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.09); border-radius:14px;
+    padding:10px 8px; text-align:center; }
+  .fact b{ display:block; font-size:15px; } .fact span{ font-size:10px; color:var(--mid); }
+  .fc{ background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:14px; }
+  .fc .lbl{ font-size:11px; font-weight:700; letter-spacing:.1em; color:var(--mid); margin-bottom:10px; }
+  .bars{ display:flex; gap:6px; align-items:flex-end; }
+  .bar{ flex:1; text-align:center; font-size:9.5px; color:var(--mid); }
+  .bar .col{ border-radius:6px; background:#22C55E; margin-bottom:5px; }
+  .bar.locked .col{ background:rgba(255,255,255,.14); position:relative; }
+  .bar.locked{ filter:none; }
+  .locknote{ display:flex; align-items:center; gap:8px; margin-top:12px; padding-top:12px;
+    border-top:1px dashed rgba(255,255,255,.14); font-size:12px; color:var(--mid); }
+  .locknote .pill{ margin-left:auto; background:var(--gold); color:var(--ink); font-weight:800; font-size:11px;
+    padding:5px 11px; border-radius:999px; white-space:nowrap; }
+  .cta2{ margin-top:18px; }
+  .reassure{ text-align:center; font-size:10.5px; color:rgba(255,255,255,.48); margin-top:10px; }
+
+  /* Desktop : app-feel conservé — contenu capé, photo full-bleed */
+  @media (min-width:900px){
+    .stack,.chrome{ max-width:560px; }
+    h1{ font-size:84px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ÉCRAN 1 — le SpaceX-style "Verdict Hero" : 1 photo, 1 verdict, 1 bouton -->
+<section class="hero">
+  <img class="bg" src="gplace-mq014.jpg" alt="Grande Anse, Les Anses-d'Arlet — aujourd'hui">
+  <div class="scrim"></div>
+  <div class="chrome">
+    <span class="wordmark">SARGASSES MARTINIQUE</span>
+    <span class="live"><span class="dot"></span>LIVE · 20:31</span>
+  </div>
+  <div class="stack">
+    <div class="nearyou">📍 LA PLUS PROCHE DE TOI</div>
+    <div class="overline">MERCREDI 10 JUIN · SATELLITE COPERNICUS</div>
+    <h1>Grande<br>Anse</h1>
+    <div class="verdict">PROPRE AUJOURD'HUI <span class="score">74/100</span></div>
+    <div class="sub">⚠️ Banc prévu demain — on te dira où aller · Les Anses-d'Arlet</div>
+    <button class="cta" onclick="document.body.classList.add('s2');scrollTo(0,0)">
+      Voir cette plage
+      <small>état complet · météo · prévisions 7 jours</small>
+    </button>
+    <button class="ghost" onclick="alert('→ scroll vers la carte actuelle (53 plages) — elle reste l\'écran 2')">
+      <span class="chev">⌄</span> Toutes les plages sur la carte
+    </button>
+  </div>
+</section>
+
+<!-- ÉCRAN 2 — après le clic : la fiche, et le funnel s'enchaîne (teaser verrouillé → paywall) -->
+<section class="sheet">
+  <div class="head">
+    <img src="gplace-mq014.jpg" alt="">
+    <div class="scrim2"></div>
+    <button class="back" onclick="document.body.classList.remove('s2')">←</button>
+    <div class="title">
+      <span class="badge">PROPRE · 74/100</span>
+      <h2>Grande Anse</h2>
+    </div>
+  </div>
+  <div class="body">
+    <div class="factrow">
+      <div class="fact"><b>28°C</b><span>eau</span></div>
+      <div class="fact"><b>0,4 m</b><span>houle</span></div>
+      <div class="fact"><b>14 km/h</b><span>vent</span></div>
+      <div class="fact"><b>☀️</b><span>dégagé</span></div>
+    </div>
+    <div class="fc">
+      <div class="lbl">PRÉVISIONS 7 JOURS — CETTE PLAGE</div>
+      <div class="bars">
+        <div class="bar"><div class="col" style="height:46px"></div>Auj.</div>
+        <div class="bar"><div class="col" style="height:34px;background:#F59E0B"></div>Dem.</div>
+        <div class="bar"><div class="col" style="height:32px;background:#F59E0B"></div>Ven</div>
+        <div class="bar locked"><div class="col" style="height:30px"></div>Sam</div>
+        <div class="bar locked"><div class="col" style="height:28px"></div>Dim</div>
+        <div class="bar locked"><div class="col" style="height:26px"></div>Lun</div>
+        <div class="bar locked"><div class="col" style="height:24px"></div>Mar</div>
+      </div>
+      <div class="locknote">🔒 Le weekend se prévoit maintenant <span class="pill">Débloquer</span></div>
+    </div>
+    <div class="cta2">
+      <button class="cta" onclick="alert('→ PremiumModal (paywall) — le funnel actuel, alimenté plus tôt')">
+        Activer ma reco — 7 jours offerts
+        <small>Puis 4,99 €/mois</small>
+      </button>
+      <div class="reassure">Sans engagement · Annulation en 2 clics · Rappel avant facturation</div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

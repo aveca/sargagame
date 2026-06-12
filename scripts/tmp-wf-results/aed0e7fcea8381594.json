@@ -1,0 +1,94 @@
+﻿{
+    "facts":  [
+                  {
+                      "fact":  "Paiements figÃ©s Ã  9 clients / â‚¬44,91 MRR pendant 54 jours consÃ©cutifs (2026-04-17 â†’ 2026-06-09, zÃ©ro nouveau paiement), 10e paiement le 2026-06-10 (â‚¬49,90). Sur la mÃªme pÃ©riode les leads sont passÃ©s de 62 Ã  173 emails (+179%).",
+                      "source":  "C:/Users/user/Desktop/Backup/sargagame/scripts/automation/data/daily-metrics.json (60 entrÃ©es quotidiennes 2026-04-12 â†’ 2026-06-10)",
+                      "implication":  "Le top-funnel (SEO, leads) est sain et NE doit PAS Ãªtre la cible du travail UX/copy. Le bottleneck est exclusivement bottom-funnel : paywall â†’ paiement. Toute dÃ©cision doit viser cette Ã©tape."
+                  },
+                  {
+                      "fact":  "Conversion emailâ†’payant divisÃ©e par ~3 : 14,5% (9/62 au 2026-04-17) â†’ 5,2% (9/173 au 2026-06-09). 111 nouveaux leads nurturÃ©s, 0 conversion sur 7+ semaines. La dÃ©livrabilitÃ© n\u0027est pas en cause : drip Resend actif, couverture J+3 = 98% et J+7 = 95% (168-164/172), bounces 5,8% (\u003cseuil 10%).",
+                      "source":  "memory/project_metrics.md (MAJ 2026-06-08 et 2026-06-09) + daily-metrics.json",
+                      "implication":  "Le problÃ¨me est le CONTENU de l\u0027offre/drip/landing, pas la mÃ©canique d\u0027envoi. Revoir copy drip + proposition de valeur Premium, pas l\u0027infrastructure email."
+                  },
+                  {
+                      "fact":  "Funnel live cumulÃ© (fetch 2026-06-10) : 17 714 sessions â†’ 3 617 premium_modal_open (20,4% des sessions) â†’ 64 premium_modal_cta. modal_to_cta = 2% : 98% des ouvertures du paywall se terminent sans AUCUNE action.",
+                      "source":  "Apps Script endpoint ?action=funnel (live, 2026-06-10)",
+                      "implication":  "Le problÃ¨me est la proposition de valeur affichÃ©e dans le paywall, pas le bouton ni son style. 98% des gens qui VOIENT l\u0027offre la rejettent â€” c\u0027est le levier #1 de tout travail copy."
+                  },
+                  {
+                      "fact":  "DÃ©gradation massive du taux CTA du paywall entre avril et juin : au 2026-04-17 le modal ouvrait sur 2,1% des sessions et convertissait 15% en CTA (28/184) ; au 2026-06-10 il ouvre sur 20,4% des sessions et convertit 2% (64/3617). Le taux marginal sur le delta (+3 433 opens, +36 CTA) â‰ˆ 1%.",
+                      "source":  "Comparaison memory/project_decisions.md (funnel 2026-04-17) vs endpoint funnel live 2026-06-10",
+                      "implication":  "Multiplier l\u0027exposition du paywall par 10 a diluÃ© l\u0027intent par 14. Les ouvertures forcÃ©es/non sollicitÃ©es ne produisent quasi aucun CTA. Confirme par la donnÃ©e le feedback ferme Â« pas de popup sans donnÃ©e Â» : le paywall doit s\u0027ouvrir sur intent utilisateur, pas en auto."
+                  },
+                  {
+                      "fact":  "sample_start = 0 sur TOUTE l\u0027histoire (17 714 sessions, 0 clic jamais). A/B pw_cta_order tuÃ© le 2026-06-09 aprÃ¨s 10 738 sessions avec 0 event dans les deux bras â€” le bouton Â« essai 24h sans carte Â» Ã©tait affichÃ© Ã  5 232 sessions sample_first et ignorÃ© par 100%. ctaOrder hardcodÃ© Ã  \u0027control\u0027 (Sargasses_PROD.jsx:3654), branches sample_first mortes en attente de cleanup.",
+                      "source":  "memory/reference_ab_tests.md (kill 2026-06-09) + endpoint funnel (sample_start: 0, modal_to_sample: 0)",
+                      "implication":  "Le canal Â« Ã©chantillon gratuit sans carte Â» est mort par falsification, pas par manque de data. Ne construire AUCUNE UX/copy autour de ce mÃ©canisme ; le code mort sample_first dans le paywall est Ã  nettoyer."
+                  },
+                  {
+                      "fact":  "Les A/B tests conversion sont structurellement non concluables Ã  ce trafic : base ~0,2%, dÃ©tecter +20% relatif demande ~150 000 sessions/bras, le site reÃ§oit 5-8k/bras en plusieurs semaines (Ã©cart de 1-2 ordres de grandeur). em1 (19 vs 18, p=0.505) et pw_prelude (13 vs 12, p=0.432) sont des nulls plats stables. DÃ©cision actÃ©e 2026-06-09 : ne PAS lancer de nouveau A/B sur mÃ©trique conversion.",
+                      "source":  "memory/reference_ab_tests.md (Ã©valuation 2026-06-09)",
+                      "implication":  "Les dÃ©cisions UX/copy ne peuvent PAS Ãªtre arbitrÃ©es par A/B testing Ã  ce stade. DÃ©cider sur jugement + donnÃ©es upstream haute frÃ©quence (premium_modal_open = 3 617) + best practices, et mesurer en before/after sur les paiements rÃ©els."
+                  },
+                  {
+                      "fact":  "pw_prelude (INTOUCHABLE par consigne) est un null plat : 0,24% control vs 0,22% variant aprÃ¨s 10 738 sessions â€” il ne conclura jamais Ã  ce trafic.",
+                      "source":  "memory/reference_ab_tests.md (2026-06-09)",
+                      "implication":  "Le laisser tourner (consigne) mais ne RIEN attendre de lui : aucune dÃ©cision ne doit Ãªtre suspendue Â« en attendant le rÃ©sultat pw_prelude Â»."
+                  },
+                  {
+                      "fact":  "Le leak CTAâ†’redirect est fermÃ© : cta_to_redirect = 92% au 2026-06-10 (vs 50% dÃ©couvert le 2026-04-17, cause = beacon race pendant navigation).",
+                      "source":  "endpoint funnel live (rates.cta_to_redirect: 92) vs memory/project_funnel_cta_redirect_leak.md",
+                      "implication":  "Ne PAS re-travailler la mÃ©canique du redirect Stripe â€” ce maillon fonctionne. L\u0027effort doit porter en amont (contenu du paywall) et en aval (abandon sur la page Stripe)."
+                  },
+                  {
+                      "fact":  "Abandon massif sur la page Stripe elle-mÃªme : 59 checkout_redirect cumulÃ©s pour ~7 paiements rÃ©els depuis mi-avril (3â†’10 clients) â‰ˆ 12% de closing une fois sur Stripe. Attention : funnel.payments_real (1) et conversion (5) sont connus non fiables â€” la source de vÃ©ritÃ© paiements est stats.payments / daily-metrics (10).",
+                      "source":  "endpoint funnel live + daily-metrics.json + memory/project_metrics.md (dÃ©saccord des 3 endpoints documentÃ©)",
+                      "implication":  "~88% des gens qui arrivent sur Stripe ferment. Le prix/la confiance doivent Ãªtre prÃ©-vendus AVANT le redirect (pas de surprise prix sur Stripe). Et ne jamais citer funnel.payments_real dans une analyse â€” il sous-compte."
+                  },
+                  {
+                      "fact":  "forecast_lock_click = 81 sur 17 714 sessions (0,5%). Le verrou Â« prÃ©visions J+2-7 premium Â» ne gÃ©nÃ¨re quasi aucun engagement vers le paywall.",
+                      "source":  "endpoint funnel live (2026-06-10) + rates.session_to_lock: 0.5",
+                      "implication":  "Le forecast verrouillÃ© n\u0027est PAS le dÃ©clencheur d\u0027intent premium. CohÃ©rent avec GSC : les requÃªtes dominantes sont Â« en temps rÃ©el Â» / Â« aujourd\u0027hui Â» â€” les visiteurs veulent l\u0027Ã©tat DU JOUR, pas J+7. Le pitch premium doit s\u0027ancrer sur la valeur quotidienne (reco du jour, alertes), pas sur le futur lointain."
+                  },
+                  {
+                      "fact":  "Search intent GSC : top query MQ = Â« sargasse martinique en temps rÃ©el Â» (162 clics, 27% CTR, pos 3.86), puis Â« aujourd\u0027hui Â» (30 clics) et Â« carte Â» (multiples queries). MQ pos moyenne 3,8 (~1 200 clics/sem), GP peak 119 clics/j post-fix cannibalization.",
+                      "source":  "memory/project_gsc_queries.md + memory/reference_seo_strategy.md (snapshot avril, trafic x4 depuis)",
+                      "implication":  "Les visiteurs arrivent pour Â« temps rÃ©el / aujourd\u0027hui / carte Â». Tout copy hero et paywall doit parler de la dÃ©cision plage d\u0027AUJOURD\u0027HUI. Ne pas toucher aux titles contenant Â« en temps rÃ©el Â» (moteur SEO principal)."
+                  },
+                  {
+                      "fact":  "Comportement Clarity : ~25% de TOUS les clics sont sur la carte ; 1,3-1,6 pages/session ; scroll depth 93-96% ; 0 rage clicks. Dead clicks 22,9% post-reboot causÃ©s par Ã©lÃ©ments Ã  l\u0027air cliquable mais inertes (popup OneSignal cancel = 48 clics, badge LIVE = 10+ clics).",
+                      "source":  "memory/project_clarity_data.md (snapshot avril 2026) + memory/project_decisions.md",
+                      "implication":  "C\u0027est une app mono-Ã©cran centrÃ©e carte : la dÃ©cision plage ET le dÃ©clencheur premium doivent vivre sur l\u0027Ã©cran carte. Ne jamais ajouter d\u0027Ã©lÃ©ment visuellement cliquable sans action (source documentÃ©e de dead clicks)."
+                  },
+                  {
+                      "fact":  "Les 2 seuls jours avec nouveaux paiements depuis avril coÃ¯ncident avec des signaux de confiance : +2 paiements le 2026-04-17 (jour du ship de la trust page /a-propos/), +1 le 2026-06-10. Or le lien paywall â†’ page trust n\u0027a jamais Ã©tÃ© ajoutÃ© (action item ouvert depuis avril).",
+                      "source":  "memory/project_metrics.md (Â« +2 NOUVEAUX PAIEMENTS le 2026-04-17... le mÃªme jour que le ship de la trust page Â») + memory/reference_seo_strategy.md (action Â« link depuis paywall pas encore ajoutÃ© Â») + daily-metrics.json",
+                      "implication":  "CorrÃ©lation (n=2, pas causalitÃ© prouvÃ©e) mais cohÃ©rente avec l\u0027abandon de 88% sur Stripe : le trust est le dÃ©ficit probable au moment de payer. Relier le paywall Ã  /a-propos/ est un quick win documentÃ© et jamais exÃ©cutÃ©."
+                  },
+                  {
+                      "fact":  "email_submit = 36 events trackÃ©s cumulÃ©s alors que la base est passÃ©e de 62 Ã  173 subscribers (+111) sur la pÃ©riode â€” la majoritÃ© des leads n\u0027arrivent pas par le formulaire web trackÃ© (autres canaux : FB, pages SEO, ou gap de tracking).",
+                      "source":  "endpoint funnel live (email_submit: 36) vs daily-metrics.json (croissance emails)",
+                      "implication":  "Le formulaire email on-site est un canal minoritaire. Optimiser sa copy a un plafond bas ; le levier leadâ†’paid est dans le drip et le paywall, pas dans la capture."
+                  },
+                  {
+                      "fact":  "Feedback qualitatif quasi inexistant : 1 seul feedback utilisateur lifetime (note 4/5), inchangÃ© depuis avril.",
+                      "source":  "daily-metrics.json (feedbacks: 1, avgRating: 4 sur toutes les entrÃ©es)",
+                      "implication":  "Aucune revendication type Â« les utilisateurs adorent Â» n\u0027est dÃ©fendable en copy. Et toute hypothÃ¨se sur POURQUOI les 98% dismissent le paywall reste non vÃ©rifiÃ©e par du qualitatif â€” la copy doit s\u0027appuyer sur l\u0027intent GSC (donnÃ©e rÃ©elle), pas sur des personas inventÃ©s."
+                  },
+                  {
+                      "fact":  "Inline checkout supprimÃ© en session 36 (207 lignes, 0 conversion en 28j) au profit du redirect same-tab vers Payment Link ; dÃ©cision documentÃ©e Â« ne pas re-introduire inline checkout Â».",
+                      "source":  "memory/project_metrics.md + memory/project_decisions.md",
+                      "implication":  "Toute proposition UX de Â« checkout embarquÃ© Â» ou multi-step on-site est dÃ©jÃ  falsifiÃ©e par la donnÃ©e â€” interdite. Le flow reste : paywall â†’ same-tab redirect â†’ Payment Link Stripe."
+                  },
+                  {
+                      "fact":  "Trafic : ~17,7k sessions cumulÃ©es depuis mi-avril (~300/jour), MRR â‚¬49,90. Ã€ ce volume, +1 paiement = +11% de revenu, et un point de conversion modalâ†’CTA en plus â‰ˆ +36 CTA/8 semaines.",
+                      "source":  "endpoint funnel live + daily-metrics.json",
+                      "implication":  "Les gains viennent d\u0027amÃ©liorations de TAUX, pas de volume. Chaque Ã©cran doit converger vers la conversion (NORTH STAR) ; toute feature qui n\u0027aide pas Ã  Â« dÃ©cider d\u0027aller Ã  la plage Â» ou Ã  convertir est du clutter mesurable en opportunitÃ© perdue."
+                  },
+                  {
+                      "fact":  "Le paiement du 2026-06-10 est le premier en 54 jours â€” un event unique, pas une tendance.",
+                      "source":  "daily-metrics.json (sÃ©rie complÃ¨te)",
+                      "implication":  "Ne pas dÃ©clarer de victoire ni attribuer ce paiement Ã  un changement rÃ©cent sans plus de donnÃ©es. La baseline reste : bottom-funnel cassÃ©, n=1 ne change pas le diagnostic."
+                  }
+              ]
+}

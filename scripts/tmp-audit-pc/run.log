@@ -1,0 +1,69 @@
+shot fail C:\Users\user\Desktop\Backup\sargagame\scripts\tmp-audit-pc\mobile-1-home.png TimeoutError: page.screenshot: Timeout 15000ms exceeded.
+Call log:
+[2m  - taking page screenshot[2
+shot fail C:\Users\user\Desktop\Backup\sargagame\scripts\tmp-audit-pc\desktop-1-home.png TimeoutError: page.screenshot: Timeout 15000ms exceeded.
+Call log:
+[2m  - taking page screenshot[2
+{
+  "mobile": {
+    "label": "mobile",
+    "consoleErrors": [
+      "Failed to load resource: net::ERR_CONNECTION_RESET",
+      "Failed to load resource: net::ERR_CONNECTION_RESET",
+      "Failed to load resource: net::ERR_CONNECTION_RESET",
+      "Failed to load resource: net::ERR_CONNECTION_RESET"
+    ],
+    "loadMs": 31813,
+    "mobile-home": {
+      "frHits": [],
+      "eur": false,
+      "usd": false
+    },
+    "markerCount": 12,
+    "sheetOpened": true,
+    "mobile-sheet": {
+      "frHits": [
+        "Banc de sargasses detecte a proximite — arrivee possible dans 1-3 jours."
+      ],
+      "eur": false,
+      "usd": false
+    },
+    "paywallVia": "sheet-lock",
+    "mobile-paywall": {
+      "frHits": [
+        "Banc de sargasses detecte a proximite — arrivee possible dans 1-3 jours."
+      ],
+      "eur": false,
+      "usd": true
+    },
+    "listView": "FAILED: TimeoutError: locator.click: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('text=/^(Beaches|List)$/').f"
+  },
+  "desktop": {
+    "label": "desktop",
+    "consoleErrors": [],
+    "loadMs": 32113,
+    "desktop-home": {
+      "frHits": [],
+      "eur": false,
+      "usd": false
+    },
+    "markerCount": 12,
+    "sheetOpened": true,
+    "desktop-sheet": {
+      "frHits": [
+        "Banc de sargasses detecte a proximite — arrivee possible dans 1-3 jours."
+      ],
+      "eur": false,
+      "usd": false
+    },
+    "paywallVia": "sheet-lock",
+    "desktop-paywall": {
+      "frHits": [
+        "Banc de sargasses detecte a proximite — arrivee possible dans 1-3 jours."
+      ],
+      "eur": false,
+      "usd": true
+    },
+    "listView": "FAILED: TimeoutError: locator.click: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('text=/^(Beaches|List)$/').f"
+  }
+}

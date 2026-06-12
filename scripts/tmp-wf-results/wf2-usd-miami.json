@@ -1,0 +1,141 @@
+{
+ "site": "miami",
+ "url": "https://sargassummiami.com",
+ "region": "florida",
+ "tested": 12,
+ "pass": 12,
+ "results": [
+  {
+   "idx": 0,
+   "ok": true,
+   "name": "Miami Beach",
+   "expected": "Miami Beach",
+   "route": "exact",
+   "events": [
+    "zoom=7 click@(313,495) topEl=div.sg-pin > div > div.leaflet-marker-icon.leaflet-zoom-animated"
+   ],
+   "id": "fl001"
+  },
+  {
+   "idx": 1,
+   "ok": true,
+   "name": "South Beach",
+   "expected": "South Beach",
+   "route": "exact",
+   "events": [
+    "zoom=7 click@(313,496) topEl=div.sg-pin > div > div.leaflet-marker-icon.leaflet-zoom-animated"
+   ],
+   "id": "fl002"
+  },
+  {
+   "idx": 2,
+   "ok": true,
+   "name": "Fort Lauderdale Beach",
+   "expected": "Fort Lauderdale Beach",
+   "route": "exact",
+   "events": [
+    "zoom=7 click@(316,461) topEl=div > div > div.leaflet-marker-icon.leaflet-zoom-animated"
+   ],
+   "id": "fl003"
+  },
+  {
+   "idx": 3,
+   "ok": true,
+   "name": "Palm Beach",
+   "expected": "Palm Beach",
+   "route": "exact",
+   "events": [
+    "zoom=7 click@(322,402) topEl=div.sg-pin > div > div.leaflet-marker-icon.leaflet-zoom-animated"
+   ],
+   "id": "fl004"
+  },
+  {
+   "idx": 4,
+   "ok": true,
+   "name": "Jupiter Beach",
+   "expected": "Jupiter Beach",
+   "route": "exact",
+   "events": [
+    "zoom=7 click@(319,381) topEl=div > div > div.leaflet-marker-icon.leaflet-zoom-animated"
+   ],
+   "id": "fl005"
+  },
+  {
+   "idx": 5,
+   "ok": true,
+   "name": "Key West (Smathers)",
+   "expected": "Key West (Smathers)",
+   "route": "exact",
+   "events": [
+    "zoom=7 click@(164,620) topEl=div.sg-pin > div > div.leaflet-marker-icon.leaflet-zoom-animated"
+   ],
+   "id": "fl006"
+  },
+  {
+   "idx": 6,
+   "ok": true,
+   "name": "Key Largo",
+   "expected": "Key Largo",
+   "route": "exact",
+   "events": [
+    "zoom=7 click@(285,566) topEl=div.sg-pin > div > div.leaflet-marker-icon.leaflet-zoom-animated"
+   ],
+   "id": "fl007"
+  },
+  {
+   "idx": 7,
+   "ok": true,
+   "name": "Islamorada",
+   "expected": "Islamorada",
+   "route": "exact",
+   "events": [
+    "zoom=7 click@(268,582) topEl=div > div.leaflet-marker-icon.leaflet-zoom-animated > div"
+   ],
+   "id": "fl008"
+  },
+  {
+   "idx": 8,
+   "ok": true,
+   "name": "Marathon (Sombrero)",
+   "expected": "Marathon (Sombrero)",
+   "route": "exact",
+   "events": [
+    "zoom=7 click@(226,606) topEl=div.sg-pin > div > div.leaflet-marker-icon.leaflet-zoom-animated"
+   ],
+   "id": "fl009"
+  },
+  {
+   "idx": 9,
+   "ok": true,
+   "name": "Cocoa Beach",
+   "expected": "Cocoa Beach",
+   "route": "exact",
+   "events": [
+    "zoom=7 click@(270,236) topEl=div.sg-pin > div > div.leaflet-marker-icon.leaflet-zoom-animated"
+   ],
+   "id": "fl010"
+  },
+  {
+   "idx": 10,
+   "ok": true,
+   "name": "Daytona Beach",
+   "expected": "Daytona Beach",
+   "route": "exact",
+   "events": [
+    "zoom=7 click@(232,144) topEl=div.sg-pin > div > div.leaflet-marker-icon.leaflet-zoom-animated"
+   ],
+   "id": "fl011"
+  },
+  {
+   "idx": 11,
+   "ok": true,
+   "name": "Clearwater Beach",
+   "expected": "Clearwater Beach",
+   "route": "exact",
+   "events": [
+    "zoom=7 click@(68,272) topEl=div.sg-pin > div > div.leaflet-marker-icon.leaflet-zoom-animated"
+   ],
+   "id": "fl012"
+  }
+ ]
+}
