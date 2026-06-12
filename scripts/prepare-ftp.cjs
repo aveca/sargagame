@@ -446,6 +446,7 @@ function writeRegionIndex(region, out) {
     <link rel="canonical" href="https://sargasses-guadeloupe.com/" />
     <link rel="alternate" hreflang="fr" href="https://sargasses-guadeloupe.com/" />
     <link rel="alternate" hreflang="en" href="https://sargasses-guadeloupe.com/en/" />
+    <link rel="alternate" hreflang="es" href="https://sargasses-guadeloupe.com/es/" />
     <link rel="alternate" hreflang="x-default" href="https://sargasses-guadeloupe.com/" />
     <meta name="geo.region" content="GP" />
     <meta name="geo.placename" content="Guadeloupe" />

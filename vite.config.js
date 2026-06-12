@@ -357,13 +357,13 @@ export default defineConfig({
           const scriptMatch = html.match(/src="([^"]+\.js)"/)
           const scriptSrc = scriptMatch ? (scriptMatch[1].startsWith('/') ? scriptMatch[1] : '/' + scriptMatch[1]) : '/assets/index.js'
           const pages = [
-            { path: 'carte-sargasses', enPath: 'en/sargassum-map', title: 'Carte des sargasses Martinique en temps réel (2026)', desc: 'Carte interactive des sargasses en Martinique. Où se baigner aujourd\'hui, plages propres, état en direct. Données satellite Copernicus.' },
+            { path: 'carte-sargasses', enPath: 'en/sargassum-map', esPath: 'es/mapa-sargazo', title: 'Carte des sargasses Martinique en temps réel (2026)', desc: 'Carte interactive des sargasses en Martinique. Où se baigner aujourd\'hui, plages propres, état en direct. Données satellite Copernicus.' },
             { path: 'previsions', enPath: null, title: 'Prévisions sargasses Martinique 7 jours (2026)', desc: 'Prévisions sargasses Martinique J+1 à J+7. Où aller à la plage cette semaine. Courants, vent, satellite.' },
-            { path: 'alertes', enPath: 'en/sargassum-alerts', title: 'Alertes sargasses Martinique et Guadeloupe — Notifications en temps réel', desc: 'Recevez des alertes sargasses pour vos plages en Martinique et Guadeloupe. Notifications en temps réel quand l\'état change. Planifiez vos sorties plage sereinement.' },
+            { path: 'alertes', enPath: 'en/sargassum-alerts', esPath: 'es/alertas-sargazo', title: 'Alertes sargasses Martinique et Guadeloupe — Notifications en temps réel', desc: 'Recevez des alertes sargasses pour vos plages en Martinique et Guadeloupe. Notifications en temps réel quand l\'état change. Planifiez vos sorties plage sereinement.' },
             // SEO editorial pages
-            { path: 'saison-sargasses-martinique', enPath: 'en/sargassum-season', title: 'Saison des sargasses en Martinique 2026 — Quand et où ?', desc: 'Quand arrivent les sargasses en Martinique en 2026 ? Pic de saison avril-septembre, mois à éviter, plages les plus touchées. Prévisions en temps réel.' },
+            { path: 'saison-sargasses-martinique', enPath: 'en/sargassum-season', esPath: 'es/temporada-sargazo', title: 'Saison des sargasses en Martinique 2026 — Quand et où ?', desc: 'Quand arrivent les sargasses en Martinique en 2026 ? Pic de saison avril-septembre, mois à éviter, plages les plus touchées. Prévisions en temps réel.' },
             { path: 'saison-sargasses-guadeloupe', enPath: null, title: 'Saison des sargasses en Guadeloupe 2026 — Quand et où ?', desc: 'Quand arrivent les sargasses en Guadeloupe en 2026 ? Pic de saison avril-septembre, mois à éviter, plages les plus touchées. Prévisions en temps réel.' },
-            { path: 'plages-sans-sargasses', enPath: 'en/best-beaches-no-sargassum', title: 'Plages sans sargasses en Martinique et Guadeloupe (2026)', desc: 'Anses d\'Arlet, Les Salines, Malendure... Quelles plages sont propres aujourd\'hui ? Suivi en temps réel par satellite pour Martinique et Guadeloupe.' },
+            { path: 'plages-sans-sargasses', enPath: 'en/best-beaches-no-sargassum', esPath: 'es/mejores-playas-sin-sargazo', title: 'Plages sans sargasses en Martinique et Guadeloupe (2026)', desc: 'Anses d\'Arlet, Les Salines, Malendure... Quelles plages sont propres aujourd\'hui ? Suivi en temps réel par satellite pour Martinique et Guadeloupe.' },
             { path: 'meilleures-plages-martinique-sargasses', enPath: 'en/best-beaches-martinique', title: 'Meilleures plages de Martinique sans sargasses — Carte en temps réel 2026', desc: 'Anses d\'Arlet, Anse Dufour, Anse Mitan, Grande Anse... Classement des plages de Martinique propres aujourd\'hui. Données satellite Copernicus, prévisions 7 jours.' },
             { path: 'meilleures-plages-guadeloupe-sargasses', enPath: 'en/best-beaches-guadeloupe', title: 'Meilleures plages de Guadeloupe sans sargasses — Carte en temps réel 2026', desc: 'Malendure, Grande Anse Deshaies, Plage du Souffleur, Plage de la Perle... Classement des plages de Guadeloupe propres aujourd\'hui. Données satellite Copernicus, prévisions 7 jours.' },
             { path: 'danger-sargasses-h2s', enPath: null, title: 'Sargasses et H2S : dangers pour la santé, précautions', desc: 'Le H2S dégagé par les sargasses en décomposition peut irriter les yeux et les voies respiratoires. Risques, seuils, précautions pour enfants et personnes fragiles.' },
@@ -435,17 +435,21 @@ export default defineConfig({
               return text
             })
           }
-          for (const { path: p, title, desc, enPath } of pages) {
+          for (const { path: p, title, desc, enPath, esPath } of pages) {
             const dir = resolve(outDir, p)
             mkdirSync(dir, { recursive: true })
             const pageUrl = `https://sargasses-martinique.com/${p}/`
             const enUrl = enPath ? `https://sargasses-martinique.com/${enPath}/` : null
+            const esUrl = esPath ? `https://sargasses-martinique.com/${esPath}/` : null
             let pageHtml = htmlSubpage
               .replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`)
               .replace(/<meta name="description"[^>]*>/, () => `<meta name="description" content="${desc}" />`)
               .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${pageUrl}" />`)
               .replace(/<link rel="alternate" hreflang="fr"[^>]*>/, `<link rel="alternate" hreflang="fr" href="${pageUrl}" />`)
               .replace(/<link rel="alternate" hreflang="en"[^>]*>/, enUrl ? `<link rel="alternate" hreflang="en" href="${enUrl}" />` : '')
+              // es : pointe vers l'équivalent ES s'il existe (esPath), sinon AUCUN tag es
+              // (pas de fallback homepage — le tag hérité du template pointait /es/).
+              .replace(/<link rel="alternate" hreflang="es"[^>]*>/, esUrl ? `<link rel="alternate" hreflang="es" href="${esUrl}" />` : '')
               .replace(/<link rel="alternate" hreflang="x-default"[^>]*>/, `<link rel="alternate" hreflang="x-default" href="${pageUrl}" />`)
               .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="${pageUrl}" />`)
               .replace(/<meta property="og:title"[^>]*>/, `<meta property="og:title" content="${title}" />`)
@@ -474,6 +478,7 @@ export default defineConfig({
             // overlays this onto guadeloupe-ftp/ post-copy.
             const gpPageUrl = `https://sargasses-guadeloupe.com/${p}/`
             const gpEnUrl = enPath ? `https://sargasses-guadeloupe.com/${enPath}/` : null
+            const gpEsUrl = esPath ? `https://sargasses-guadeloupe.com/${esPath}/` : null
             let gpPageHtml = pageHtml
               .replace(/https:\/\/sargasses-martinique\.com/g, 'https://sargasses-guadeloupe.com')
             // hreflang/canonical re-anchor (idempotent — replace already swapped them above)
@@ -481,6 +486,7 @@ export default defineConfig({
               .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${gpPageUrl}" />`)
               .replace(/<link rel="alternate" hreflang="fr"[^>]*>/, `<link rel="alternate" hreflang="fr" href="${gpPageUrl}" />`)
               .replace(/<link rel="alternate" hreflang="en"[^>]*>/, gpEnUrl ? `<link rel="alternate" hreflang="en" href="${gpEnUrl}" />` : '')
+              .replace(/<link rel="alternate" hreflang="es"[^>]*>/, gpEsUrl ? `<link rel="alternate" hreflang="es" href="${gpEsUrl}" />` : '')
               .replace(/<link rel="alternate" hreflang="x-default"[^>]*>/, `<link rel="alternate" hreflang="x-default" href="${gpPageUrl}" />`)
               .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="${gpPageUrl}" />`)
             gpPageHtml = rewriteCrossIsland(gpPageHtml, false)
@@ -527,6 +533,22 @@ export default defineConfig({
           const enJsonLd = '<script type="application/ld+json">\n    {"@context":"https://schema.org","@type":"WebApplication","name":"Sargassum Martinique real-time","description":"Real-time sargassum map and beach status in Martinique. Clean or avoid, 7-day outlook.","url":"https://sargasses-martinique.com/en/","applicationCategory":"EnvironmentApplication","operatingSystem":"Web","inLanguage":"en","dateModified":"' + new Date().toISOString().slice(0, 10) + '","publisher":{"@type":"Organization","name":"Sargasses Martinique"}}\n    </script>'
           writeFileSync(resolve(enDir, 'index.html'), enIndex.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/, enJsonLd))
 
+          // Mappings inverses fr↔en↔es — source unique : pages[].enPath/esPath.
+          // Servent à reconstruire le cluster hreflang complet (self-reference +
+          // réciprocité) des sous-pages EN/ES, qui héritaient sinon du cluster
+          // homepage (canonical corrigé mais hreflang homepage → return tags cassés).
+          const frPathByEn = Object.fromEntries(pages.filter(pg => pg.enPath).map(pg => [pg.enPath, pg.path]))
+          const frPathByEs = Object.fromEntries(pages.filter(pg => pg.esPath).map(pg => [pg.esPath, pg.path]))
+          const enPathByFr = Object.fromEntries(pages.filter(pg => pg.enPath).map(pg => [pg.path, pg.enPath]))
+          const esPathByFr = Object.fromEntries(pages.filter(pg => pg.esPath).map(pg => [pg.path, pg.esPath]))
+          // Cluster hreflang d'une sous-page EN/ES : fr → équivalent FR (= x-default),
+          // en/es → leurs équivalents s'ils existent (dont self), sinon pas de tag.
+          const setAltCluster = (h, { fr, en, es }) => h
+            .replace(/<link rel="alternate" hreflang="fr"[^>]*>/, fr ? `<link rel="alternate" hreflang="fr" href="${fr}" />` : '')
+            .replace(/<link rel="alternate" hreflang="en"[^>]*>/, en ? `<link rel="alternate" hreflang="en" href="${en}" />` : '')
+            .replace(/<link rel="alternate" hreflang="es"[^>]*>/, es ? `<link rel="alternate" hreflang="es" href="${es}" />` : '')
+            .replace(/<link rel="alternate" hreflang="x-default"[^>]*>/, fr ? `<link rel="alternate" hreflang="x-default" href="${fr}" />` : '')
+
           // EN subpages for international SEO
           const enPages = [
             { path: 'en/sargassum-map', title: 'Sargassum Map Martinique &amp; Guadeloupe — Real-time satellite', desc: 'Interactive sargassum map for Martinique and Guadeloupe. Real-time satellite data, 7-day forecast. Find clean beaches today.' },
@@ -541,12 +563,19 @@ export default defineConfig({
           for (const ep of enPages) {
             const epDir = resolve(outDir, ep.path)
             mkdirSync(epDir, { recursive: true })
-            const epHtml = enIndex
+            const epFr = frPathByEn[ep.path]
+            const epEs = epFr ? esPathByFr[epFr] : null
+            let epHtml = enIndex
               .replace(/<title>[^<]*<\/title>/, `<title>${ep.title}</title>`)
               .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${ep.desc}" />`)
               .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="https://sargasses-martinique.com/${ep.path}/" />`)
               .replace(/<meta property="og:title"[^>]*>/, `<meta property="og:title" content="${ep.title}" />`)
               .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="https://sargasses-martinique.com/${ep.path}/" />`)
+            epHtml = setAltCluster(epHtml, {
+              fr: epFr ? `https://sargasses-martinique.com/${epFr}/` : null,
+              en: `https://sargasses-martinique.com/${ep.path}/`,
+              es: epEs ? `https://sargasses-martinique.com/${epEs}/` : null,
+            })
             writeFileSync(resolve(epDir, 'index.html'), epHtml.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/, enJsonLd))
           }
           console.log(`   → ${enPages.length} pages EN supplémentaires générées`)
@@ -579,12 +608,19 @@ export default defineConfig({
           for (const ep of esPages) {
             const epDir = resolve(outDir, ep.path)
             mkdirSync(epDir, { recursive: true })
-            const epHtml = esIndex
+            const epFr = frPathByEs[ep.path]
+            const epEn = epFr ? enPathByFr[epFr] : null
+            let epHtml = esIndex
               .replace(/<title>[^<]*<\/title>/, `<title>${ep.title}</title>`)
               .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${ep.desc}" />`)
               .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="https://sargasses-martinique.com/${ep.path}/" />`)
               .replace(/<meta property="og:title"[^>]*>/, `<meta property="og:title" content="${ep.title}" />`)
               .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="https://sargasses-martinique.com/${ep.path}/" />`)
+            epHtml = setAltCluster(epHtml, {
+              fr: epFr ? `https://sargasses-martinique.com/${epFr}/` : null,
+              en: epEn ? `https://sargasses-martinique.com/${epEn}/` : null,
+              es: `https://sargasses-martinique.com/${ep.path}/`,
+            })
             writeFileSync(resolve(epDir, 'index.html'), epHtml.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/, esJsonLd))
           }
           console.log(`   → ${esPages.length} pages ES supplémentaires générées`)
@@ -962,8 +998,12 @@ ${isGP ? '' : `  <url><loc>${d}/a-propos/</loc><lastmod>${today}</lastmod><chang
               .replace(/<title>[^<]*<\/title>/, `<title>${beachTitle}</title>`)
               .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${beachDesc}" />`)
               .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${beachUrl}" />`)
-              // Fix hreflang: point to actual page URL, not homepage
+              // Fix hreflang: point to actual page URL, not homepage. Pas de
+              // variante EN/ES par plage → on retire les tags en/es hérités du
+              // template (qui pointaient /en/ et /es/ homepage = cluster cassé).
               .replace(/<link rel="alternate" hreflang="fr"[^>]*>/, `<link rel="alternate" hreflang="fr" href="${beachUrl}" />`)
+              .replace(/<link rel="alternate" hreflang="en"[^>]*>/, '')
+              .replace(/<link rel="alternate" hreflang="es"[^>]*>/, '')
               .replace(/<link rel="alternate" hreflang="x-default"[^>]*>/, `<link rel="alternate" hreflang="x-default" href="${beachUrl}" />`)
               .replace(/<meta property="og:title"[^>]*>/, `<meta property="og:title" content="${beachTitle}" />`)
               .replace(/<meta property="og:description"[^>]*>/, `<meta property="og:description" content="${beachDesc}" />`)
@@ -1113,6 +1153,11 @@ ${isGP ? '' : `  <url><loc>${d}/a-propos/</loc><lastmod>${today}</lastmod><chang
               .replace(/<title>[^<]*<\/title>/, `<title>${plagesTitle}</title>`)
               .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${plagesDesc}" />`)
               .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${plagesUrl}" />`)
+              // hreflang : pas de variante EN/ES du hub → fr + x-default self, tags en/es retirés
+              .replace(/<link rel="alternate" hreflang="fr"[^>]*>/, `<link rel="alternate" hreflang="fr" href="${plagesUrl}" />`)
+              .replace(/<link rel="alternate" hreflang="en"[^>]*>/, '')
+              .replace(/<link rel="alternate" hreflang="es"[^>]*>/, '')
+              .replace(/<link rel="alternate" hreflang="x-default"[^>]*>/, `<link rel="alternate" hreflang="x-default" href="${plagesUrl}" />`)
               .replace(/<meta property="og:title"[^>]*>/, `<meta property="og:title" content="${plagesTitle}" />`)
               .replace(/<meta property="og:description"[^>]*>/, `<meta property="og:description" content="${plagesDesc}" />`)
               .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="${plagesUrl}" />`)
@@ -1157,6 +1202,11 @@ ${isGP ? '' : `  <url><loc>${d}/a-propos/</loc><lastmod>${today}</lastmod><chang
                 .replace(/<title>[^<]*<\/title>/, `<title>${zTitle}</title>`)
                 .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${zDesc}" />`)
                 .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${zUrl}" />`)
+                // hreflang : pas de variante EN/ES des hubs zones → fr + x-default self
+                .replace(/<link rel="alternate" hreflang="fr"[^>]*>/, `<link rel="alternate" hreflang="fr" href="${zUrl}" />`)
+                .replace(/<link rel="alternate" hreflang="en"[^>]*>/, '')
+                .replace(/<link rel="alternate" hreflang="es"[^>]*>/, '')
+                .replace(/<link rel="alternate" hreflang="x-default"[^>]*>/, `<link rel="alternate" hreflang="x-default" href="${zUrl}" />`)
                 .replace(/<meta property="og:title"[^>]*>/, `<meta property="og:title" content="${zTitle}" />`)
                 .replace(/<meta property="og:description"[^>]*>/, `<meta property="og:description" content="${zDesc}" />`)
                 .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="${zUrl}" />`)
@@ -1270,6 +1320,11 @@ ${isGP ? '' : `  <url><loc>${d}/a-propos/</loc><lastmod>${today}</lastmod><chang
                   .replace(/<title>[^<]*<\/title>/, `<title>${pageTitle}</title>`)
                   .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${pageDesc}" />`)
                   .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${pageUrl}" />`)
+                  // hreflang : pas de variante EN/ES des pages conditions → fr + x-default self
+                  .replace(/<link rel="alternate" hreflang="fr"[^>]*>/, `<link rel="alternate" hreflang="fr" href="${pageUrl}" />`)
+                  .replace(/<link rel="alternate" hreflang="en"[^>]*>/, '')
+                  .replace(/<link rel="alternate" hreflang="es"[^>]*>/, '')
+                  .replace(/<link rel="alternate" hreflang="x-default"[^>]*>/, `<link rel="alternate" hreflang="x-default" href="${pageUrl}" />`)
                   .replace(/<meta property="og:title"[^>]*>/, `<meta property="og:title" content="${pageTitle}" />`)
                   .replace(/<meta property="og:description"[^>]*>/, `<meta property="og:description" content="${pageDesc}" />`)
                   .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="${pageUrl}" />`)
@@ -1300,6 +1355,11 @@ ${isGP ? '' : `  <url><loc>${d}/a-propos/</loc><lastmod>${today}</lastmod><chang
                 .replace(/<title>[^<]*<\/title>/, `<title>${hubTitle}</title>`)
                 .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${hubDesc}" />`)
                 .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${hubUrl}" />`)
+                // hreflang : pas de variante EN/ES du hub conditions → fr + x-default self
+                .replace(/<link rel="alternate" hreflang="fr"[^>]*>/, `<link rel="alternate" hreflang="fr" href="${hubUrl}" />`)
+                .replace(/<link rel="alternate" hreflang="en"[^>]*>/, '')
+                .replace(/<link rel="alternate" hreflang="es"[^>]*>/, '')
+                .replace(/<link rel="alternate" hreflang="x-default"[^>]*>/, `<link rel="alternate" hreflang="x-default" href="${hubUrl}" />`)
                 .replace(/<meta property="og:title"[^>]*>/, `<meta property="og:title" content="${hubTitle}" />`)
                 .replace(/<meta property="og:description"[^>]*>/, `<meta property="og:description" content="${hubDesc}" />`)
                 .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="${hubUrl}" />`)
