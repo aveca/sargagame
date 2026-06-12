@@ -107,11 +107,27 @@ async function auditDomain(browser, D) {
   return { checks, note }
 }
 
+// Watchdogs anti-pendaison (runs CI 27381454264/27382005088 : 16 min sans
+// output — domaine en fenêtre FTP ? — le job timeout tuait tout AVANT le
+// rapport). 2 niveaux : 120 s par domaine (continue avec erreur), 8 min global
+// (écrit le rapport partiel et sort code 2).
+const withTimeout = (p, ms, label) => Promise.race([
+  p, new Promise((_, rej) => setTimeout(() => rej(new Error(`WATCHDOG ${label} ${ms}ms`)), ms)),
+])
+
 ;(async () => {
-  const browser = await chromium.launch()
+  const out = path.join(__dirname, 'automation/data/capture-audit.json')
   const report = { date: new Date().toISOString(), domains: {} }
+  const globalKiller = setTimeout(() => {
+    try { fs.mkdirSync(path.dirname(out), { recursive: true }); fs.writeFileSync(out, JSON.stringify(report, null, 1)) } catch (e) {}
+    console.error('WATCHDOG global 8 min — rapport partiel écrit, sortie forcée')
+    process.exit(2)
+  }, 8 * 60e3)
+  if (globalKiller.unref) globalKiller.unref()
+  const browser = await chromium.launch()
   for (const D of DOMAINS) {
-    const r = await auditDomain(browser, D)
+    const r = await withTimeout(auditDomain(browser, D), 120000, D)
+      .catch(e => ({ error: String(e.message || e), checks: {}, note: {} }))
     report.domains[D] = r
     if (r.error) { console.log(`\n=== ${D} === ERREUR: ${r.error}`); continue }
     const entries = Object.entries(r.checks)
@@ -122,7 +138,6 @@ async function auditDomain(browser, D) {
   }
   console.log('\nChecks manuels / par design (non automatisés) :')
   MANUAL.forEach(m => console.log('  • ' + m))
-  const out = path.join(__dirname, 'automation/data/capture-audit.json')
   fs.mkdirSync(path.dirname(out), { recursive: true })
   fs.writeFileSync(out, JSON.stringify(report, null, 1))
   console.log('\nRapport: scripts/automation/data/capture-audit.json')
