@@ -1,32 +1,28 @@
 # NEXT_SESSION — sargagame
 
-*Session 40 (nuit+matin 2026-06-10→11). Détail complet : memory `project_session40_done.md` + task list (38 tâches). Dernier commit local : 275d1fe.*
+*Session 41 (soirée 2026-06-11, large partie en autonomie). Détail : memory `project_session41_done.md`. Dernier commit : b4546e2.*
 
-## 🔴 Incident CI traité (à connaître)
-ffmpeg n'a jamais existé sur ubuntu-latest → 18 runs en boucle (retry-on-failure non gaté re-dispatchait à l'infini) → prod gelée 3h30 + **drips dupliqués ~17×/~8× à 2 abonnées** (état email commité en fin de run seulement). Fixes : apt install + continue-on-error, retry schedule-only, **commit des états email immédiatement après envoi**, excuses automatisées (`incidents.json` + `incident-apology.cjs`, fenêtre 10-20 UTC → parties au cron 12:00). Vérifier dans le commit « chore: email state » de ~12h que les 2 hashes sont marqués `sent`.
-
-## 🟢 Shippé session 40 (5 pushes verts + 5 commits locaux en attente de push)
-- **Landing scrollable SpaceX** : hero 100svh vidéo → verdict top-3 cards → méthode → premium → footer ; sticky bar ; reveals IO ; chevron. « À propos » retiré du paywall.
-- **2 clips SVG sur mesure** (MethodScene satellite/bateau/ramasseur + AlertScene 06:00/⚠️/itinéraire qui bascule) + **scène WebGL** hero (eau qui ondule + parallaxe pointeur, natif-résolution).
-- **10 fixes fluidité** (audit 4 agents : « entrées animées, sorties = démontages bruts ») : hero exit fondu, sheet-exit symétrique, Toute-l'île/FAB décollisionnés, shine GPU (CLS 0,065→0,02), z-index fiche.
-- **Clics : 56/56 PASS** sur les 5 domaines (le « bug » user = prod gelée pré-deploy).
-- **Coach chat sur /jeu/** (3 langues, donnée TODAY live) + **🔔 click-triggered** fiche plage (leads beach_alert → email verdict quotidien).
-- **Checkout USD** (audit live + teardown Starlink) : mandat Stripe nommé (était « PAY »), country par région (était Martinique), **Mensuel par défaut USD**, prelude véridique, wordmark écran paiement. EUR byte-intact (smokes). Wallets : déjà ACTIFS depuis 06-10 — vérifier sur device réel (#14).
-- **5 photos FL re-sourcées** (licences propres, crédits) + **/about/ EN-ES** sur USD (+ fix href chat qui 404ait sur USD).
-- Loops vidéo **double résolution** (1080² + 1920×1080 desktop, manifest v2).
+## 🟢 Shippé session 41 (10+ pushes)
+- **Processus du jour** : health-check post-deploy vérifie que le deploy a PRIS (version SW live = repo, 5 domaines) + gardes incidents/Resend ; crons command-center réactivés (daily-sargasses-check 09h01 → vérité Stripe commitée chaque matin ; éval A/B lundi 09h35, RECOMMEND-only).
+- **Bug Cancún** (report user) : heatmap AFAI + bancs étaient filtrés À VIDE sur les 3 régions USD (filtres lat/island hérités MQ/GP) — 1 398 points + 15 bancs invisibles. Fixé (MapView), MQ prouvé inchangé.
+- **Clics** (report user) : pins sains une fois la carte posée (53/53 MQ, 25/25 GP, 12/12 Cancún live) ; vraie cause = rebuild des markers à chaque refresh data sans changement matériel → fenêtres de clics morts. Fixé (garde par signature). + Hero : tap photo/nom/verdict = fiche plage (716 rage+dead clicks Clarity éteints).
+- **Jeu** : fond = SVG illustré golden-hour STATIQUE (2 décisions user : pas d'animation — mal de tête — pas de photo — pas assez HD). KPI série : beacons analytics_event (start/end/share/cta). SW v59.
+- **Drip EN/ES J+7/J+14** : séquence complète régions USD, vraies plages du jour, no-trial, prix/liens régionaux. Fuite marque corrigée (« SARGASSES/Se désabonner » partait en FR sur les emails EN/ES).
+- **SEO maillage** : footer réseau USD sur les 136 pages plages MQ/GP ; **7 hubs zones côtières** (/plages/<zone>/, classement par commune, 136/136 mappées) + lien remontant ; **cross-links mois** entre les 5 destinations (mois courant, slugs localisés).
+- **Héros DepthFlow** : pipeline vidéo 2.5D local GRATUIT (RTX 4060 Ti, .venv-depthflow, ~3 s/clip) — 5 clips palindrome (1 par domaine) commités `assets/hero-depthflow/`, overlay dans make-hero-loops avant manifest. Higgsfield : MCP installé + audité (.mcp.json), clés user OK, **manque les crédits Cloud API** (achat user).
+- **CI ux-report** : 2 runs ont perdu le rapport GA4 réussi (audit-capture pendait > timeout job) → commit du rapport AVANT le step fragile + timeout step 9 min. Run #3 relancé.
 
 ## ⚠️ REPRISE IMMÉDIATE
-1. **Si pas encore fait : push des commits locaux** (026dad7→275d1fe) après le vert du run consolidé, puis vérifier live : sw v54+, manifest v2 wide, landing+scènes dans le bundle, /about/ sur les 3 USD (et absent de MQ/GP).
-2. **Réconciliation Stripe** (reporté d'hier, J+1 = aujourd'hui) : vrai MRR via clé locale (`scripts/audit-stripe-duplicates.cjs` a le pattern d'auth) + tâche #28 (funnel payments_real menteur).
-3. **Excuses 12:00 UTC** : vérifier l'envoi (2 hashes sent dans incidents.json commité par le CI).
-4. **Plafond Resend** (#37) : daily_verdict + beach_alert grossissent vers les ~100/jour du plan free — surveiller les erreurs d'envoi.
+1. **Vérifier le train final** (run de b4546e2) : SW v59 sur 5 domaines (health-check le fait), puis QA live : 7 hubs `/plages/<zone>/`, cross-links mois, tap hero→fiche, scène SVG jeu, couches sargasses Cancún ENFIN visibles, héros DepthFlow (mq014/gp024/fl011/pc007/rm011).
+2. **Rapport UX run #3** (27384974783) : si vert → chiffres GA4/Clarity frais à analyser (le commit arrive AVANT capture désormais). Si capture-audit pend encore : root-cause dans scripts/audit-capture.cjs (timeout interne par domaine manquant).
+3. **KPI jeu** : vérifier les premiers sg_game_* dans la sheet events (J+1).
+4. **Éval A/B lundi** (cron) — premier rapport pw_cta_order + pw_prelude.
 
-## ⚖️ 6 décisions user en attente (tasks #15-16, 24, 31-32, 34)
-Cloudflare (token API → `cloudflare-provision.cjs` existe déjà !) · Share-promo coupon USD · Veo 3.1 (compte) · ESA BIC Sud (SASU) · Publication FB (GO) · Promesse fairness.
+## ⚖️ Décisions user en attente
+Crédits Higgsfield Cloud API (pack min ~100-150 crédits → 5 héros « vraies vagues » + pub Nettoyeur) · Cloudflare token · GO publication FB briefs vidéo · Share-promo USD · Apple Pay sur device réel · ESA BIC Sud (SASU).
 
-## 📋 Backlog priorisé (task list, autonome)
-#36 scène SVG « 7 jours » paywall USD (post-éval A/B) → #22 épuré carte (18-21 → ~10 éléments) → #17-20 hubs SEO (Fiabilité/côtes/santé/mois) → #26-27 KPI jeu+GA4 série → #38 webhook régions hardcodées (AVANT région 6) → #29 drip EN/ES → #21 pages EN → #25 région suivante (MX/DR) → #23 scène 3D three.js → #30 re-engagement → #35 DepthFlow (évaluer).
-Différés post-éval A/B pw_* : réordonnancement preuve modal, titre nominatif plage, guarantee-as-feature.
+## 📋 Backlog (autonome)
+#19 pages santé Q&A → #21 pages EN (enPath:null) → #22 épuré carte → #38 webhook régions hardcodées (AVANT région 6) → #27 GA4 dans la série → #30 re-engagement + webhook Resend bounces → #23 scène three.js → #25 région suivante (DR/BS). DepthFlow : étendre aux 73 photos si le rendu plaît (batch ~20 min local). Différés post-éval A/B pw_* : réordonnancement preuve modal, titre nominatif plage, guarantee-as-feature.
 
 ## Garde-fous inchangés
-EUR/MQ-GP intouchables (Payment Links, A/B pw_*, trial copy byte-identique — smoke à chaque touche de Sargasses_PROD.jsx) · seuils pipeline interdits · SW bump à chaque deploy code (prochain : v55) · grouper les pushes (1 run CI = ~50-70 min avec les loops ×2) · jamais de step CI nouveau sans preuve EN CI · état email commité immédiatement · rôles navigateurs : Chrome=user, Edge=automation FB.
+EUR/MQ-GP intouchables (Payment Links, A/B pw_*, trial copy byte-identique — smoke à chaque touche de Sargasses_PROD.jsx) · seuils pipeline interdits · SW bump à chaque deploy code (prochain : v60) · grouper les pushes · jamais de step CI nouveau sans preuve EN CI · **jamais un step fragile entre une donnée et son commit** · état email commité immédiatement · **jamais d'animation de fond dans le jeu** · Chrome=user, Edge=automation FB.
