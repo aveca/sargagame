@@ -640,7 +640,7 @@
   },
   {
     "date": "2026-06-12",
-    "time": "2026-06-12T21:36:32.231Z",
+    "time": "2026-06-12T22:26:33.470Z",
     "payments": 10,
     "revenue": 49.9,
     "emails": 185,
@@ -659,12 +659,12 @@
     "ga4": {
       "date": "2026-06-11",
       "mq": {
-        "sessions": 303,
-        "users": 799
+        "sessions": 352,
+        "users": 722
       },
       "gp": {
-        "sessions": 213,
-        "users": 518
+        "sessions": 209,
+        "users": 618
       }
     }
   }
