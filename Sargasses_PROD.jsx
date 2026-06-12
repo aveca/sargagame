@@ -5855,6 +5855,148 @@ function SatelliteFilm({lang}){
   )
 }
 
+/* ── HeroScene — le hero en scène vectorielle (directive user 12/06 : plus de
+   photo en hero home, « une expérience bluffante de bout en bout » — les
+   photos réelles restent la matière des cards/fiches/SEO). Golden-hour
+   Shinkai (gabarit approuvé du jeu) + le récit de marque : les sargasses
+   dérivent à l'horizon, repérées depuis l'espace (satellite, faisceau,
+   échos). Le scroll fait AVANCER dans la baie : dolly-in par couches
+   (ciel < mer < plage) via la var CSS --hs recalculée en rAF. Time-anims
+   douces (nuages, glitter, écume, oiseaux) ; reduced-motion = statique.
+   Composition calée sur la bande visible du crop mobile (x 262-538). ── */
+function HeroScene(){
+  const boxRef=useRef(null)
+  useEffect(()=>{
+    const box=boxRef.current;if(!box)return
+    try{if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return}catch(_){}
+    const scroller=box.closest('[role="dialog"]')
+    if(!scroller)return
+    let raf=0
+    const upd=()=>{
+      raf=0
+      const vh=window.innerHeight||1
+      const p=Math.max(0,Math.min(1,scroller.scrollTop/(vh*.92)))
+      box.style.setProperty("--hs",(p*(2-p)).toFixed(4))
+    }
+    const onScroll=()=>{if(!raf)raf=requestAnimationFrame(upd)}
+    scroller.addEventListener("scroll",onScroll,{passive:true})
+    upd()
+    return()=>{scroller.removeEventListener("scroll",onScroll);if(raf)cancelAnimationFrame(raf)}
+  },[])
+  return(
+    <div ref={boxRef} aria-hidden style={{position:"absolute",inset:0,"--hs":0,background:"#0B2230"}}>
+      <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice"
+        style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block"}}>
+        <style>{`
+.sgh-cloud1{animation:sghDrift 64s ease-in-out infinite alternate}
+.sgh-cloud2{animation:sghDrift 90s ease-in-out infinite alternate-reverse}
+@keyframes sghDrift{from{transform:translateX(0)}to{transform:translateX(-70px)}}
+.sgh-glit{animation:sghGlit 7s linear infinite}
+@keyframes sghGlit{to{stroke-dashoffset:-64}}
+.sgh-foam{animation:sghFoam 16s linear infinite}
+@keyframes sghFoam{to{stroke-dashoffset:96}}
+.sgh-mat{animation:sghMat 14s ease-in-out infinite alternate}
+@keyframes sghMat{from{transform:translateX(0)}to{transform:translateX(14px)}}
+.sgh-bird{animation:sghBird 56s linear infinite}
+@keyframes sghBird{from{transform:translateX(0)}to{transform:translateX(-900px)}}
+@media (prefers-reduced-motion:reduce){.sgh-cloud1,.sgh-cloud2,.sgh-glit,.sgh-foam,.sgh-mat,.sgh-bird{animation:none}}
+        `}</style>
+        <defs>
+          <linearGradient id="sghSky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#0B2230"/><stop offset=".52" stopColor="#155A5A"/>
+            <stop offset=".84" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/>
+          </linearGradient>
+          <linearGradient id="sghSea" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#1A5852"/><stop offset="1" stopColor="#08251F"/>
+          </linearGradient>
+          <linearGradient id="sghCol" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#FFD884" stopOpacity=".5"/><stop offset="1" stopColor="#FFD884" stopOpacity="0"/>
+          </linearGradient>
+          <g id="sghSarg">
+            <ellipse cx="0" cy="0" rx="14" ry="5" fill="#7a5c14"/>
+            <ellipse cx="-8" cy="-2" rx="7" ry="3.5" fill="#8a6c1c"/>
+            <ellipse cx="8" cy="-2" rx="8" ry="3.5" fill="#5d400e"/>
+            <circle cx="-10" cy="-4" r="1.8" fill="#a8862a"/><circle cx="6" cy="-5" r="1.8" fill="#a8862a"/>
+          </g>
+        </defs>
+
+        {/* ciel + soleil + satellite (couche lente) */}
+        <g style={{transform:"translateY(calc(var(--hs)*26px))"}}>
+          <rect width="800" height="340" fill="url(#sghSky)"/>
+          {[[96,46,1.1,.4],[238,84,.8,.28],[388,38,1.2,.4],[542,72,.9,.3],[692,52,1,.35]].map((s,i)=>(
+            <circle key={i} cx={s[0]} cy={s[1]} r={s[2]} fill="#fff" opacity={s[3]}/>
+          ))}
+          {/* soleil semi-couché + halo */}
+          <circle cx="400" cy="318" r="150" fill="#FFD884" opacity=".07"/>
+          <circle cx="400" cy="318" r="88" fill="#FFD884" opacity=".12"/>
+          <path d="M354 312 a46 46 0 0 1 92 0 Z" fill="#FFD884"/>
+          {/* nuages plats Shinkai (2 tons + liseré or) */}
+          <g className="sgh-cloud1">
+            <path d="M120 120 q14 -26 48 -26 q18 -18 46 -12 q30 -8 44 12 q26 2 30 26 Z" fill="#10333E"/>
+            <path d="M122 121 h162" stroke="#FFD884" strokeWidth="2" opacity=".4"/>
+          </g>
+          <g className="sgh-cloud2">
+            <path d="M520 86 q12 -22 42 -22 q16 -14 40 -9 q26 -7 38 11 q22 2 26 20 Z" fill="#0F2A36"/>
+            <path d="M522 87 h140" stroke="#FFD884" strokeWidth="1.8" opacity=".35"/>
+          </g>
+          {/* oiseaux */}
+          <g className="sgh-bird" opacity=".5" stroke="#0B1B22" strokeWidth="2.2" fill="none" strokeLinecap="round">
+            <path d="M714 142 q5 -6 10 0 q5 -6 10 0"/>
+            <path d="M752 128 q4 -5 8 0 q4 -5 8 0"/>
+          </g>
+          {/* le satellite veille (continuité ScrollStory) */}
+          <g transform="translate(474,78) scale(.62)">
+            <rect x="-26" y="-3" width="15" height="7" rx="1.5" fill="#3BA7A0"/>
+            <rect x="11" y="-3" width="15" height="7" rx="1.5" fill="#3BA7A0"/>
+            <rect x="-10" y="-9" width="20" height="17" rx="2.5" fill="#C9971F"/>
+            <rect x="-10" y="-9" width="20" height="6" rx="2.5" fill="#FFC72C"/>
+          </g>
+          <polygon points="470,90 478,90 452,318 420,318" fill="url(#sghCol)" opacity=".3"/>
+        </g>
+
+        {/* mer + sargasses à l'horizon (couche moyenne) */}
+        <g style={{transformOrigin:"400px 600px",transform:"scale(calc(1 + var(--hs)*.1))"}}>
+          <rect x="-40" y="312" width="880" height="170" fill="url(#sghSea)"/>
+          {/* colonne de lumière du soleil sur l'eau */}
+          <rect x="376" y="312" width="48" height="150" fill="url(#sghCol)" opacity=".4"/>
+          {/* glitter */}
+          <line className="sgh-glit" x1="-40" y1="334" x2="840" y2="334" stroke="#FFD884" strokeWidth="2.2" strokeDasharray="3 13" opacity=".5"/>
+          <line className="sgh-glit" x1="-40" y1="362" x2="840" y2="362" stroke="#FFD884" strokeWidth="1.8" strokeDasharray="2 17" opacity=".3" style={{animationDelay:"-3s"}}/>
+          <line className="sgh-glit" x1="-40" y1="402" x2="840" y2="402" stroke="#FFD884" strokeWidth="1.6" strokeDasharray="2 23" opacity=".18" style={{animationDelay:"-5s"}}/>
+          {/* les nappes arrivent — celle de droite est repérée (échos teal) */}
+          <g className="sgh-mat"><g transform="translate(318,338) scale(.5)" opacity=".85"><use href="#sghSarg"/></g></g>
+          <g className="sgh-mat" style={{animationDelay:"-7s"}}><g transform="translate(372,330) scale(.38)" opacity=".7"><use href="#sghSarg"/></g></g>
+          <g className="sgh-mat" style={{animationDelay:"-3.5s"}}>
+            <g transform="translate(452,334) scale(.55)" opacity=".9"><use href="#sghSarg"/></g>
+            <g className="sgst-ring" style={{transformBox:"fill-box",transformOrigin:"center"}}>
+              <circle cx="452" cy="334" r="11" fill="none" stroke="#3BA7A0" strokeWidth="1.5"/>
+            </g>
+            <g className="sgst-ring2" style={{transformBox:"fill-box",transformOrigin:"center"}}>
+              <circle cx="452" cy="334" r="11" fill="none" stroke="#3BA7A0" strokeWidth="1.2"/>
+            </g>
+          </g>
+        </g>
+
+        {/* plage + palmier + écume (couche avant, la plus rapide) */}
+        <g style={{transformOrigin:"400px 640px",transform:"scale(calc(1 + var(--hs)*.22)) translateY(calc(var(--hs)*10px))"}}>
+          <path d="M-40 470 Q200 432 430 446 Q640 458 840 500 L840 620 L-40 620 Z" fill="#1C1712"/>
+          <path d="M-40 470 Q200 432 430 446 Q640 458 840 500" fill="none" stroke="#F2B05E" strokeWidth="2.4" opacity=".3"/>
+          <path className="sgh-foam" d="M-40 478 Q200 440 430 454 Q640 466 840 508" fill="none" stroke="#FDFCF7" strokeWidth="2.6" strokeDasharray="12 16" opacity=".4"/>
+          {/* palmier silhouette (droite, penché dans la baie) */}
+          <path d="M586 612 Q570 520 538 470 Q524 448 502 436" stroke="#120F0A" strokeWidth="13" fill="none" strokeLinecap="round"/>
+          <g fill="none" stroke="#16120C" strokeWidth="9" strokeLinecap="round">
+            <path d="M502 436 Q466 416 428 422"/><path d="M502 436 Q472 400 440 392"/>
+            <path d="M502 436 Q506 396 522 372"/><path d="M502 436 Q538 404 576 402"/>
+            <path d="M502 436 Q540 432 570 448"/>
+          </g>
+          {/* échouage du jour : une nappe sur le sable (honnêteté du produit) */}
+          <g transform="translate(252,486) scale(.62)" opacity=".55"><use href="#sghSarg"/></g>
+        </g>
+      </svg>
+    </div>
+  )
+}
+
 /* ── ScrollStory — la méthode en scrollytelling (directive user 12/06 :
    « interface entièrement construite, branding focus, bluffant au scroll »,
    référence Zenly). Une seule scène vectorielle épinglée (sticky) pendant
@@ -6177,42 +6319,10 @@ function ScrollStory({lang,onShowMap}){
 
 function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPremium,onOpenBeach,topBeaches,exiting}){
   useEffect(()=>{track("sg_hero_shown",{beach_id:beach.id,status:beach.status,geoloc:!!userPos})},[])
-  // Boucle vidéo "drone hover" (plage animée façon SpaceX) : la photo reste le
-  // poster instantané ; la vidéo (palindrome 8s) se fond par-dessus une fois
-  // jouable. Manifest v2 : variante -w 1920×1080 servie aux viewports larges
-  // (un 1080² étiré sur desktop bave — feedback user 2026-06-11). Jamais
-  // chargée si reduced-motion, saveData ou connexion 2G.
-  const [vidSrc,setVidSrc]=useState(null)
-  const [vidOn,setVidOn]=useState(false)
-  // Motion autorisé ? (reduced-motion / saveData / 2G → poster photo statique)
-  const allowMotion=(()=>{try{
-    if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)return false
-    const c=navigator.connection
-    if(c&&(c.saveData||/(^|-)2g/.test(c.effectiveType||"")))return false
-    return true
-  }catch(_){return true}})()
-  // Scène vivante WebGL prioritaire ; la vidéo loop n'est chargée QUE si pas
-  // de WebGL (jamais les deux — pas de double coût réseau/GPU).
-  const sceneWanted=allowMotion&&(()=>{try{
-    const c=document.createElement("canvas")
-    return !!(c.getContext("webgl")||c.getContext("experimental-webgl"))
-  }catch(_){return false}})()
-  const [sceneOn,setSceneOn]=useState(false)
-  useEffect(()=>{
-    let dead=false
-    if(!allowMotion||sceneWanted)return
-    const t=setTimeout(()=>{
-      fetch("/videos/hero/manifest.json").then(r=>r.ok?r.json():null).then(m=>{
-        if(dead||!m||!Array.isArray(m.ids)||!m.ids.includes(beach.id))return
-        let wantWide=false
-        try{wantWide=window.matchMedia("(min-width:900px)").matches
-          ||(window.matchMedia("(orientation:landscape)").matches&&window.innerWidth>=640)}catch(_){}
-        const wide=wantWide&&Array.isArray(m.wide)&&m.wide.includes(beach.id)
-        setVidSrc("/videos/hero/"+beach.id+(wide?"-w":"")+".mp4")
-      }).catch(()=>{})
-    },900)
-    return()=>{dead=true;clearTimeout(t);setVidSrc(null);setVidOn(false)}
-  },[beach.id])
+  // Hero média = HeroScene (scène vectorielle, directive user 12/06). L'ancien
+  // empilement photo/WebGL/loops DepthFlow est démonté du hero — SceneCanvas et
+  // les loops (/videos/hero/, release depthflow-heroes) restent disponibles
+  // pour un réemploi (fiches, about). LCP = plus aucun fetch média en hero.
   useEffect(()=>{
     const h=e=>{if(e.key==="Escape")onShowMap()}
     window.addEventListener("keydown",h);return()=>window.removeEventListener("keydown",h)
@@ -6324,19 +6434,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
 
       {/* ── ÉCRAN 1 : le verdict plein cadre (vidéo) ── */}
       <section ref={heroRef} className="sg-heroSec">
-      <img src={beach._heroImg} alt={beach.name} fetchpriority="high"
-        style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 38%",
-          /* etalonnage leger : les photos ternes (ciel couvert) remontent, les belles bougent a peine */
-          filter:"saturate(1.12) contrast(1.04) brightness(1.01)",}}/>
-      {sceneWanted&&!exiting&&(
-        <div aria-hidden style={{position:"absolute",inset:0,opacity:sceneOn?1:0,transition:"opacity .9s ease",filter:"saturate(1.12) contrast(1.04) brightness(1.01)",}}>
-          <SceneCanvas src={beach._heroImg} focalY={0.38} onReady={()=>setSceneOn(true)}/>
-        </div>
-      )}
-      {vidSrc&&<video src={vidSrc} autoPlay muted loop playsInline preload="auto" aria-hidden
-        onPlaying={()=>setVidOn(true)}
-        style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 38%",
-          opacity:vidOn?1:0,transition:"opacity .9s ease",filter:"saturate(1.12) contrast(1.04) brightness(1.01)",}}/>}
+      <HeroScene/>
       {/* Le voile média couvre la photo : c'est LUI qui reçoit les taps sur
           l'image. Clarity 2026-06 : 46 rage + 670 dead clicks home — les
           visiteurs tapent la photo/le nom en attendant la fiche. 1 tap = fiche. */}
