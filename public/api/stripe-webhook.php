@@ -113,7 +113,10 @@ $KNOWN_REGIONS = ['mq', 'gp', 'puntacana', 'florida', 'rivieramaya'];
 $obj = (isset($event['data']['object']) && is_array($event['data']['object'])) ? $event['data']['object'] : [];
 $island = extract_island($type, $obj);
 if ($island === '' || !in_array(strtolower($island), $KNOWN_REGIONS, true)) {
-    // Event d'un autre business (BOT-WOW) ou sans island → 200 + ignore, pas de retry
+    // Event d'un autre business (BOT-WOW) ou sans island → 200 + ignore, pas de retry.
+    // Une island NON-VIDE inconnue = très probablement une nouvelle région oubliée
+    // dans $KNOWN_REGIONS → trace observable (cPanel error log) au lieu d'un drop muet.
+    if ($island !== '') error_log('[stripe-webhook] island inconnue ignoree: ' . substr($island, 0, 32));
     http_response_code(200);
     echo json_encode(['received' => true, 'ignored' => 'island']);
     exit;

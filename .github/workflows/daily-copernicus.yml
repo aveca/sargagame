@@ -43,6 +43,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Parité regions/*.json ↔ $KNOWN_REGIONS du webhook PHP : une région N+1
+      # absente de la liste perdrait ses PAIEMENTS en silence (filtre → 200 ignore).
+      # Le test existait (scripts/test-stripe-webhook.cjs) mais ne tournait nulle
+      # part — branché en CI 2026-06-12, échoue le build en cas de divergence.
+      - name: Webhook ↔ régions (parité paiements)
+        run: node scripts/test-stripe-webhook.cjs
+
       - name: Determine day of week and hour
         id: check_day
         run: |
