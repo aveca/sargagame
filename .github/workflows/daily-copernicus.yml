@@ -426,9 +426,13 @@ jobs:
           fi
           # ── Le deploy a-t-il PRIS ? (leçon 2026-06-11 : prod gelée 3h30 avec
           # sites 200 + vieux bundle — invisible pour le check up/fraîcheur).
-          # Après un FULL build, le sw.js live doit porter la version du repo.
+          # Référence = le sw.js du dossier FTP réellement uploadé, JAMAIS
+          # public/sw.js : les git pull mid-run (commits data/email) peuvent y
+          # amener le SW d'un push POSTÉRIEUR au build → faux positif (run
+          # 27388423022 : déployé v59, tree pullé v60, alerte à tort 2026-06-12).
           if [ "${{ steps.check_build.outputs.full }}" = "true" ]; then
-            WANT=$(grep -o "sargasses-v[0-9]*" public/sw.js | head -1)
+            WANT=$(grep -o "sargasses-v[0-9]*" martinique-ftp/sw.js 2>/dev/null | head -1)
+            [ -z "$WANT" ] && WANT=$(grep -o "sargasses-v[0-9]*" public/sw.js | head -1)
             MISMATCH=""
             for D in $DOMAINS; do
               GOT=$(curl -sL --max-time 15 "https://$D/sw.js" | grep -o "sargasses-v[0-9]*" | head -1)
