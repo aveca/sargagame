@@ -48,4 +48,12 @@ function getIndexing() {
   return google.indexing({ version: 'v3', auth })
 }
 
-module.exports = { getAuth, getSearchConsole, getAnalyticsData, getIndexing }
+// GA4 Admin API (read-only avec le scope analytics.readonly déjà inclus).
+// Sert à résoudre les property ids des sites USD au runtime (seo-audit.cjs).
+function getAnalyticsAdmin() {
+  const auth = getAuth()
+  if (!auth) return null
+  return google.analyticsadmin({ version: 'v1beta', auth })
+}
+
+module.exports = { getAuth, getSearchConsole, getAnalyticsData, getIndexing, getAnalyticsAdmin }

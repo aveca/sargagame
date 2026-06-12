@@ -5908,16 +5908,18 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
       {/* ── ÉCRAN 1 : le verdict plein cadre (vidéo) ── */}
       <section ref={heroRef} className="sg-heroSec">
       <img src={beach._heroImg} alt={beach.name} fetchpriority="high"
-        style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 38%"}}/>
+        style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 38%",
+          /* etalonnage leger : les photos ternes (ciel couvert) remontent, les belles bougent a peine */
+          filter:"saturate(1.12) contrast(1.04) brightness(1.01)",}}/>
       {sceneWanted&&!exiting&&(
-        <div aria-hidden style={{position:"absolute",inset:0,opacity:sceneOn?1:0,transition:"opacity .9s ease"}}>
+        <div aria-hidden style={{position:"absolute",inset:0,opacity:sceneOn?1:0,transition:"opacity .9s ease",filter:"saturate(1.12) contrast(1.04) brightness(1.01)",}}>
           <SceneCanvas src={beach._heroImg} focalY={0.38} onReady={()=>setSceneOn(true)}/>
         </div>
       )}
       {vidSrc&&<video src={vidSrc} autoPlay muted loop playsInline preload="auto" aria-hidden
         onPlaying={()=>setVidOn(true)}
         style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 38%",
-          opacity:vidOn?1:0,transition:"opacity .9s ease"}}/>}
+          opacity:vidOn?1:0,transition:"opacity .9s ease",filter:"saturate(1.12) contrast(1.04) brightness(1.01)",}}/>}
       {/* Le voile média couvre la photo : c'est LUI qui reçoit les taps sur
           l'image. Clarity 2026-06 : 46 rage + 670 dead clicks home — les
           visiteurs tapent la photo/le nom en attendant la fiche. 1 tap = fiche. */}

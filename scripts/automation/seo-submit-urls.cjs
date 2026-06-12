@@ -80,6 +80,9 @@ async function main() {
   const sc = getSearchConsole()
   if (sc) {
     for (const [key, site] of Object.entries(SITES)) {
+      // Sites USD : sitemap déjà soumis par provision-gsc.cjs sur la propriété
+      // URL-prefix (`https://<domain>/`) — le format siteUrl ci-dessous ne matche pas.
+      if (site.regionConfig) continue
       try {
         await sc.sitemaps.submit({
           siteUrl: `https://${site.domain}`,
@@ -124,6 +127,10 @@ async function main() {
   ]
 
   for (const [key, site] of Object.entries(SITES)) {
+    // Sites USD : pas de sitemap-<region>.xml dans ce dist/ (builds séparés par
+    // région) — sans ce skip, le mapping mq/gp ci-dessous relirait le sitemap GP
+    // et resoumettrait ses URLs en double (gaspillage du quota Indexing API).
+    if (site.regionConfig) continue
     const sitemapPath = resolve(DIST_DIR, `sitemap-${key === 'mq' ? 'martinique' : 'guadeloupe'}.xml`)
     if (!existsSync(sitemapPath)) {
       console.warn(`  Sitemap not found: ${sitemapPath}`)

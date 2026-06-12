@@ -5,10 +5,13 @@
  *
  * Usage:
  *   GOOGLE_SERVICE_ACCOUNT_JSON='...' GA4_PROPERTY_ID_MQ=123 GA4_PROPERTY_ID_GP=456 node seo-audit.cjs
+ *
+ * Sites USD (florida/puntacana/rivieramaya) : pas de GA4_PROPERTY_ID_* — le
+ * property id est résolu au runtime via la GA4 Admin API (measurementId match).
  */
 const { writeFileSync } = require('fs')
 const { resolve } = require('path')
-const { getSearchConsole, getAnalyticsData } = require('./lib/google-auth.cjs')
+const { getSearchConsole, getAnalyticsData, getAnalyticsAdmin } = require('./lib/google-auth.cjs')
 const { SITES, getKnownUrls } = require('./lib/config.cjs')
 const { appendLog } = require('./lib/safety.cjs')
 
@@ -82,6 +85,62 @@ async function fetchGSCSitemaps(searchconsole, siteUrl) {
     console.error(`[GSC sitemaps] ${siteUrl}:`, e.message)
     return []
   }
+}
+
+// ── GA4 property id — résolution runtime (sites USD) ─────────
+// MQ/GP : property id via env (GA4_PROPERTY_ID_MQ/GP) — chemin historique inchangé.
+// Sites USD : le property id numérique n'est stocké nulle part. On le résout via
+// la GA4 Admin API : accounts.list → properties.list (filter parent:accounts/N)
+// → dataStreams.list, match webStreamData.measurementId === ga4MeasurementId.
+// La map measurementId→propertyId est construite UNE fois par run (cache mémoire).
+// Échec de résolution = warning + GA4 skippé pour ce site (le GSC tourne quand même).
+let _measurementIdMap = null // Map<measurementId, propertyId> | null = pas encore construit
+
+async function buildMeasurementIdMap(admin) {
+  const map = new Map()
+  let accountsPageToken
+  do {
+    const accRes = await admin.accounts.list({ pageToken: accountsPageToken })
+    for (const account of accRes.data.accounts || []) {
+      let propsPageToken
+      do {
+        const propRes = await admin.properties.list({ filter: `parent:${account.name}`, pageToken: propsPageToken })
+        for (const prop of propRes.data.properties || []) {
+          let streamsPageToken
+          do {
+            const streamRes = await admin.properties.dataStreams.list({ parent: prop.name, pageToken: streamsPageToken })
+            for (const stream of streamRes.data.dataStreams || []) {
+              const mid = stream.webStreamData && stream.webStreamData.measurementId
+              if (mid) map.set(mid, prop.name.replace('properties/', ''))
+            }
+            streamsPageToken = streamRes.data.nextPageToken
+          } while (streamsPageToken)
+        }
+        propsPageToken = propRes.data.nextPageToken
+      } while (propsPageToken)
+    }
+    accountsPageToken = accRes.data.nextPageToken
+  } while (accountsPageToken)
+  return map
+}
+
+async function resolveGa4PropertyId(site) {
+  if (site.ga4PropertyId) return site.ga4PropertyId // env (MQ/GP) — pas d'appel Admin API
+  if (!site.ga4MeasurementId) return ''
+  if (_measurementIdMap === null) {
+    try {
+      const admin = getAnalyticsAdmin()
+      _measurementIdMap = admin ? await buildMeasurementIdMap(admin) : new Map()
+    } catch (e) {
+      console.warn(`  [GA4 admin] property id resolution failed: ${e.message}`)
+      _measurementIdMap = new Map()
+    }
+  }
+  const propertyId = _measurementIdMap.get(site.ga4MeasurementId) || ''
+  if (!propertyId) {
+    console.warn(`  [GA4] no property matches ${site.ga4MeasurementId} (${site.domain}) — skipping GA4, GSC still runs`)
+  }
+  return propertyId
 }
 
 async function fetchGA4Report(analyticsdata, propertyId) {
@@ -221,14 +280,15 @@ async function main() {
     const sitemaps = await fetchGSCSitemaps(searchconsole, site.siteUrl)
     console.log(`  → ${sitemaps.length} sitemaps found`)
 
-    // GA4
+    // GA4 — property id depuis l'env (MQ/GP) ou résolu via l'Admin API (sites USD)
+    const ga4PropertyId = await resolveGa4PropertyId(site)
     console.log('  Fetching GA4 report...')
-    const ga4 = await fetchGA4Report(analyticsdata, site.ga4PropertyId)
+    const ga4 = await fetchGA4Report(analyticsdata, ga4PropertyId)
     console.log(`  → ${ga4.length} rows`)
 
     // Clarity events (rage clicks, dead clicks, quick bounces)
     console.log('  Fetching Clarity events from GA4...')
-    const clarityEvents = await fetchClarityEvents(analyticsdata, site.ga4PropertyId)
+    const clarityEvents = await fetchClarityEvents(analyticsdata, ga4PropertyId)
     console.log(`  → ${clarityEvents.length} Clarity events`)
 
     // CrUX

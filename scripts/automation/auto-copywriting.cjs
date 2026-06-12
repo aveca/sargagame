@@ -275,6 +275,9 @@ function generateH1Suggestions(topQueries, copyLog) {
 
   // For each island, generate H1s for the 3 key pages
   for (const [siteKey, site] of Object.entries(SITES)) {
+    // Sites USD (EN/ES) : les H1 français Martinique/Guadeloupe n'ont pas de sens —
+    // leur copy vient de regions/seo-content/<id>.json, pas de ce générateur.
+    if (site.regionConfig) continue
     const islandName = siteKey === 'mq' ? 'Martinique' : 'Guadeloupe'
 
     // Homepage H1
