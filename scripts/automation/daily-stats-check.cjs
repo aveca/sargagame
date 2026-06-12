@@ -65,6 +65,32 @@ async function stripeTruth() {
   } catch { return null }
 }
 
+// GA4 (sessions/users de la VEILLE — journée complète, stable) — uniquement là
+// où GOOGLE_SERVICE_ACCOUNT_JSON existe (runs CI). Champ préservé sur les runs
+// sans credentials, même mécanique que le point Stripe (#27 série KPI).
+async function ga4Yesterday() {
+  if (!process.env.GOOGLE_SERVICE_ACCOUNT_JSON) return null
+  try {
+    const { getAnalyticsData } = require('./lib/google-auth.cjs')
+    const analyticsdata = getAnalyticsData()
+    if (!analyticsdata) return null
+    const out = { date: new Date(Date.now() - 864e5).toISOString().slice(0, 10) }
+    for (const [k, pid] of [['mq', process.env.GA4_PROPERTY_ID_MQ], ['gp', process.env.GA4_PROPERTY_ID_GP]]) {
+      if (!pid) continue
+      const res = await analyticsdata.properties.runReport({
+        property: `properties/${pid}`,
+        requestBody: {
+          dateRanges: [{ startDate: 'yesterday', endDate: 'yesterday' }],
+          metrics: [{ name: 'sessions' }, { name: 'totalUsers' }],
+        },
+      })
+      const row = res.data.rows && res.data.rows[0]
+      out[k] = row ? { sessions: Number(row.metricValues[0].value), users: Number(row.metricValues[1].value) } : { sessions: 0, users: 0 }
+    }
+    return (out.mq || out.gp) ? out : null
+  } catch (e) { console.log('GA4 series skip:', String(e.message).slice(0, 80)); return null }
+}
+
 async function main() {
   console.log('=== Daily Stats Check ===')
   const now = new Date()
@@ -142,6 +168,8 @@ async function main() {
     } : null,
     // Vérité Stripe (runs locaux seulement — préservée si le run courant n'a pas la clé)
     stripe: (await stripeTruth()) || prevToday?.stripe || null,
+    // GA4 veille (runs CI seulement — préservé comme le point Stripe)
+    ga4: (await ga4Yesterday()) || prevToday?.ga4 || null,
   })
 
   // Keep last 90 days
