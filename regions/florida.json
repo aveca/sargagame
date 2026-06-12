@@ -216,8 +216,8 @@
     }
   ],
   "paymentLinks": {
-    "monthly": "https://buy.stripe.com/6oU4gBaVJ2sO1m5gAz0co0D",
-    "yearly": "https://buy.stripe.com/14A6oJ0h52sO1m58430co0E"
+    "monthly": "https://buy.stripe.com/7sY4gB5Bp4AW8Oxfwv0co0H",
+    "yearly": "https://buy.stripe.com/bJe3cxe7VgjE6Gp2JJ0co0I"
   },
   "countryCode": "US",
   "noTrial": true

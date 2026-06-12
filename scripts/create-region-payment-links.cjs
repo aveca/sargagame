@@ -36,7 +36,10 @@ const PLANS = {
   monthly: { amount: 999, interval: 'month', label: `Sargassum ${region.name} — Premium Monthly` },
   yearly: { amount: 7900, interval: 'year', label: `Sargassum ${region.name} — Premium Yearly` },
 }
-const TRIAL_DAYS = 7
+// no-trial depuis 9172bbf : les sites USD promettent un prelevement immediat —
+// un lien avec essai 7j contredit le copy (audit 2026-06-12). Pilote par la
+// config region (noTrial), jamais en dur.
+const TRIAL_DAYS = region.noTrial ? 0 : 7
 
 async function stripe(pathname, params) {
   const body = params ? new URLSearchParams(params).toString() : undefined
@@ -88,18 +91,30 @@ async function main() {
     } else console.log(`Prix ${plan} existant: ${price.id}`)
     priceIds[plan] = price.id
 
-    let link = existingLinks.data.find((l) => l.active && l.metadata?.island === region.id && l.metadata?.plan === plan)
+    let link = existingLinks.data.find((l) => l.active && l.metadata?.island === region.id && l.metadata?.plan === plan
+      && String(l.metadata?.trial_days ?? '7') === String(TRIAL_DAYS))
+    // Un lien actif avec le MAUVAIS reglage d'essai est desactive puis remplace
+    // (les anciens liens deja distribues continuent de fonctionner cote payeur
+    // jusqu'a desactivation — ici on les coupe pour stopper l'essai non voulu).
+    const stale = existingLinks.data.find((l) => l.active && l.metadata?.island === region.id && l.metadata?.plan === plan
+      && String(l.metadata?.trial_days ?? '7') !== String(TRIAL_DAYS))
+    if (stale) {
+      await stripe(`payment_links/${stale.id}`, { active: 'false' })
+      console.log(`Payment Link ${plan} obsolete desactive (trial ${stale.metadata?.trial_days ?? '7'}j): ${stale.id}`)
+    }
     if (!link) {
-      link = await stripe('payment_links', {
+      const params = {
         'line_items[0][price]': price.id,
         'line_items[0][quantity]': '1',
-        'subscription_data[trial_period_days]': String(TRIAL_DAYS),
         'subscription_data[metadata][island]': region.id,
         'metadata[island]': region.id,
         'metadata[plan]': plan,
+        'metadata[trial_days]': String(TRIAL_DAYS),
         'after_completion[type]': 'redirect',
         'after_completion[redirect][url]': `https://${region.domain}/?session_id={CHECKOUT_SESSION_ID}&premium=1&plan=${plan === 'yearly' ? 'annual' : 'monthly'}`,
-      })
+      }
+      if (TRIAL_DAYS > 0) params['subscription_data[trial_period_days]'] = String(TRIAL_DAYS)
+      link = await stripe('payment_links', params)
       console.log(`Payment Link ${plan} créé: ${link.url}`)
     } else console.log(`Payment Link ${plan} existant: ${link.url}`)
     links[plan] = link.url

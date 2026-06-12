@@ -220,8 +220,8 @@
     }
   ],
   "paymentLinks": {
-    "monthly": "https://buy.stripe.com/5kQbJ30h5d7s9SB6ZZ0co0B",
-    "yearly": "https://buy.stripe.com/4gMaEZ8NB9Vgc0J9870co0C"
+    "monthly": "https://buy.stripe.com/00waEZaVJgjE8Oxacb0co0J",
+    "yearly": "https://buy.stripe.com/4gM8wRfbZ1oK7Kt1FF0co0K"
   },
   "noTrial": true
 }
