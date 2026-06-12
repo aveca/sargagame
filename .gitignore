@@ -72,3 +72,9 @@ video-remotion/public/cache/
 public/videos/hero/
 .venv-depthflow/
 assets/hero-depthflow/
+
+# junk de session (harnais tmp, captures d'audit) — jamais dans le repo public
+scripts/tmp-*
+audit-mq-screens/
+.archive-screenshots/
+scripts/video/out/
