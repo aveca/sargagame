@@ -1,28 +1,32 @@
 # NEXT_SESSION — sargagame
 
-*Session 41 (soirée 2026-06-11, large partie en autonomie). Détail : memory `project_session41_done.md`. Dernier commit : b4546e2.*
+*Session 42 (vendredi 2026-06-12, journée autonome — reprise SEMAINE PROCHAINE). Détail : memory `project_session42_done.md`. Dernier commit : af6e3d1.*
 
-## 🟢 Shippé session 41 (10+ pushes)
-- **Processus du jour** : health-check post-deploy vérifie que le deploy a PRIS (version SW live = repo, 5 domaines) + gardes incidents/Resend ; crons command-center réactivés (daily-sargasses-check 09h01 → vérité Stripe commitée chaque matin ; éval A/B lundi 09h35, RECOMMEND-only).
-- **Bug Cancún** (report user) : heatmap AFAI + bancs étaient filtrés À VIDE sur les 3 régions USD (filtres lat/island hérités MQ/GP) — 1 398 points + 15 bancs invisibles. Fixé (MapView), MQ prouvé inchangé.
-- **Clics** (report user) : pins sains une fois la carte posée (53/53 MQ, 25/25 GP, 12/12 Cancún live) ; vraie cause = rebuild des markers à chaque refresh data sans changement matériel → fenêtres de clics morts. Fixé (garde par signature). + Hero : tap photo/nom/verdict = fiche plage (716 rage+dead clicks Clarity éteints).
-- **Jeu** : fond = SVG illustré golden-hour STATIQUE (2 décisions user : pas d'animation — mal de tête — pas de photo — pas assez HD). KPI série : beacons analytics_event (start/end/share/cta). SW v59.
-- **Drip EN/ES J+7/J+14** : séquence complète régions USD, vraies plages du jour, no-trial, prix/liens régionaux. Fuite marque corrigée (« SARGASSES/Se désabonner » partait en FR sur les emails EN/ES).
-- **SEO maillage** : footer réseau USD sur les 136 pages plages MQ/GP ; **7 hubs zones côtières** (/plages/<zone>/, classement par commune, 136/136 mappées) + lien remontant ; **cross-links mois** entre les 5 destinations (mois courant, slugs localisés).
-- **Héros DepthFlow** : pipeline vidéo 2.5D local GRATUIT (RTX 4060 Ti, .venv-depthflow, ~3 s/clip) — 5 clips palindrome (1 par domaine) commités `assets/hero-depthflow/`, overlay dans make-hero-loops avant manifest. Higgsfield : MCP installé + audité (.mcp.json), clés user OK, **manque les crédits Cloud API** (achat user).
-- **CI ux-report** : 2 runs ont perdu le rapport GA4 réussi (audit-capture pendait > timeout job) → commit du rapport AVANT le step fragile + timeout step 9 min. Run #3 relancé.
+## 🧭 DIRECTION ACTÉE PAR LE USER (à relire avant toute décision produit)
+1. **Qualité et cohérence avant expansion** — la région 6 (Bahamas) est GELÉE (dossier prêt dans `regions/_staging/`, ne pas lancer sans GO explicite).
+2. **Photos réelles = la marque** (« c'est les photos qui plaisaient »). Jamais d'assets vidéo IA poor-quality. L'entre-deux choisi : **kit design multidimensionnel intégré** → `design/DESIGN-KIT.md` (doctrine, inventaire, phase 2, garde-fous) = SOURCE DE VÉRITÉ.
+3. Le produit en une phrase (recadrage user du 12/06) : *« est-ce que ma plage est propre aujourd'hui — et demain ? »* Gratuit = carte ; Payant = veilleur (prévision 7j + brief matin + alertes). Tout chantier doit servir ces 3 lignes.
 
-## ⚠️ REPRISE IMMÉDIATE
-1. **Vérifier le train final** (run de b4546e2) : SW v59 sur 5 domaines (health-check le fait), puis QA live : 7 hubs `/plages/<zone>/`, cross-links mois, tap hero→fiche, scène SVG jeu, couches sargasses Cancún ENFIN visibles, héros DepthFlow (mq014/gp024/fl011/pc007/rm011).
-2. **Rapport UX run #3** (27384974783) : si vert → chiffres GA4/Clarity frais à analyser (le commit arrive AVANT capture désormais). Si capture-audit pend encore : root-cause dans scripts/audit-capture.cjs (timeout interne par domaine manquant).
-3. **KPI jeu** : vérifier les premiers sg_game_* dans la sheet events (J+1).
-4. **Éval A/B lundi** (cron) — premier rapport pw_cta_order + pw_prelude.
+## 🟢 Shippé session 42
+- **Audit « tout ce qui cloche »** (17 agents, 10 findings, 0 réfuté) — TOUT traité :
+  - 🔴 RGPD : emails en clair dans les logs Actions publics → logId(hash8) partout + **510 logs de runs purgés** (vérifier les deletions via `gh api .../logs` → 404, PAS `gh run view` qui a un cache).
+  - 🔴 Méthodo USD publiait les chiffres d'avril → branchée sur backtest-results.json quotidien (78 % réels).
+  - Payment Links USD : essai 7j supprimé (6 liens recréés no-trial, vérité API), GP /es/ « Sargazo Guadalupe » + composite GP-first, hreflang reconstruits (47/47 asserts), fb-posts purgés.
+- **Design (pivot user)** : étalonnage léger du héros (3 couches média) ; **brand-icons.cjs + BrandIcon** (14 icônes maison, fin des emojis OS sur landing/CTA/reliability/about/month) ; DESIGN-KIT.md. SW v62.
+- **DepthFlow v2** : flotte 76 plages re-rendue haute fidélité (ssaa 1.5, crf 22/23, release 451 Mo). RAPPEL ARCHITECTURE : la scène WebGL est PRIORITAIRE sur le landing — les loops ne servent que les devices sans WebGL.
+- **Audit hebdo étendu aux 3 domaines USD** (SITES 5 entrées, résolution GA4 property-id dynamique via Admin API, zéro secret en plus) — le prochain run Weekly UX/SEO inclura miami/puntacana/cancun.
+- **Pages santé USD** (#19) + **GA4 quotidien dans la série KPI** (#27, premier point : MQ 303 sessions, GP 213 le 11/06) + parité webhook en CI (#38).
+
+## ⚠️ REPRISE (lundi ou +)
+1. **Éval A/B pw_cta_order + pw_prelude** : le cron local lundi 09h35 ne tourne que si CE poste est allumé — sinon la lancer à la main (z-test, n≥100/bras, RECOMMEND-only, vérité Stripe pas payments_real). PREMIÈRE éval après 8 semaines — décision importante.
+2. **Vérifier le train final du 12/06** (af6e3d1) live : icônes sur le landing 5 domaines, étalonnage, GP /es/, hreflang, SW v62, et que le CI a bien servi les clips v2 (logs « DepthFlow release: 152 clips »).
+3. **Clarity J+3-7** : re-mesure post-fixes clics (baseline 11/06 : MQ 54 rage/746 dead, GP 347/2225). Si GP ne s'effondre pas → creuser encore.
+4. **GSC GP** : le user doit ajouter le service account (même email que MQ) en propriétaire sur la propriété GP — 2 min dans l'UI GSC, débloque les requêtes GP dans l'audit.
+5. **Phase 2 du kit design** (DESIGN-KIT.md §Phase 2) : icônes paywall (⚠ smoke EUR : ne toucher QUE les emojis), chips chat, harmonisation des deux ors.
+6. Bahamas : dossier _staging complet (config+seo-content+resorts+LAUNCH-BAHAMAS.md) — UNIQUEMENT sur GO user.
 
 ## ⚖️ Décisions user en attente
-Crédits Higgsfield Cloud API (pack min ~100-150 crédits → 5 héros « vraies vagues » + pub Nettoyeur) · Cloudflare token · GO publication FB briefs vidéo · Share-promo USD · Apple Pay sur device réel · ESA BIC Sud (SASU).
+GO/NO-GO Bahamas · crédits Higgsfield (si humains/pub un jour — sinon ignorer) · Cloudflare token · GO publication FB briefs · share-promo USD · Apple Pay device réel · GSC GP (2 min, point 4).
 
-## 📋 Backlog (autonome)
-#19 pages santé Q&A → #21 pages EN (enPath:null) → #22 épuré carte → #38 webhook régions hardcodées (AVANT région 6) → #27 GA4 dans la série → #30 re-engagement + webhook Resend bounces → #23 scène three.js → #25 région suivante (DR/BS). DepthFlow : étendre aux 73 photos si le rendu plaît (batch ~20 min local). Différés post-éval A/B pw_* : réordonnancement preuve modal, titre nominatif plage, guarantee-as-feature.
-
-## Garde-fous inchangés
-EUR/MQ-GP intouchables (Payment Links, A/B pw_*, trial copy byte-identique — smoke à chaque touche de Sargasses_PROD.jsx) · seuils pipeline interdits · SW bump à chaque deploy code (prochain : v60) · grouper les pushes · jamais de step CI nouveau sans preuve EN CI · **jamais un step fragile entre une donnée et son commit** · état email commité immédiatement · **jamais d'animation de fond dans le jeu** · Chrome=user, Edge=automation FB.
+## Garde-fous (mis à jour 12/06)
+EUR/MQ-GP intouchables (smoke EUR : **rebuild MQ d'abord** — un dist région = 3 FAIL à tort) · seuils pipeline interdits · SW bump à chaque deploy code (prochain : v63) · grouper les pushes (chaque push remplace le train pending !) · JAMAIS `git add -A` (incident junk+secrets 12/06 — gitignore durci depuis) · jamais d'email en clair dans les logs (logId) · jamais un step fragile entre une donnée et son commit · jamais d'animation de fond dans le jeu · jamais d'emoji OS sur les surfaces de marque · photos réelles only · Chrome=user, Edge=automation FB.
