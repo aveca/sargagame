@@ -1,34 +1,47 @@
 # NEXT_SESSION — sargagame
 
-*Session 42 (vendredi 2026-06-12, journée autonome — reprise SEMAINE PROCHAINE). Détail : memory `project_session42_done.md`. Dernier commit : af6e3d1.*
+*Session 42 (vendredi 2026-06-12, journée + soirée — reprise SEMAINE PROCHAINE, suite en Sonnet jusqu'à mardi pour préserver le quota Fable 5). Détail narratif : memory `project_session42_done.md`. Dernier commit : 3bffffe.*
 
 ## 🧭 DIRECTION ACTÉE PAR LE USER (à relire avant toute décision produit)
-1. **Qualité et cohérence avant expansion** — la région 6 (Bahamas) est GELÉE (dossier prêt dans `regions/_staging/`, ne pas lancer sans GO explicite).
-2. **Photos réelles = la marque** (« c'est les photos qui plaisaient »). Jamais d'assets vidéo IA poor-quality. L'entre-deux choisi : **kit design multidimensionnel intégré** → `design/DESIGN-KIT.md` (doctrine, inventaire, phase 2, garde-fous) = SOURCE DE VÉRITÉ.
-3. Le produit en une phrase (recadrage user du 12/06) : *« est-ce que ma plage est propre aujourd'hui — et demain ? »* Gratuit = carte ; Payant = veilleur (prévision 7j + brief matin + alertes). Tout chantier doit servir ces 3 lignes.
+1. **Qualité et cohérence avant expansion** — Bahamas GELÉ en `regions/_staging/`. GO conditionnel acté 12/06 : *« on lancera la semaine pro si on a des ventes »* → vérifier les ventes USD (vérité Stripe, PAS le funnel) avant de dérouler LAUNCH-BAHAMAS.md.
+2. **« Une expérience bluffante de bout en bout, un produit rendu fini »** (12/06 soir, réf Zenly) : l'interface se CONSTRUIT en vectoriel — le hero photo a été REMPLACÉ par une scène SVG (HeroScene), la méthode est un scrollytelling (ScrollStory). **Les photos réelles restent la matière des cards / fiches plage / SEO** — plus du hero. Jamais d'assets IA pour représenter les plages ; le footage spatial réel domaine public (NASA) est OK avec crédit.
+3. Le produit en une phrase : *« est-ce que ma plage est propre aujourd'hui — et demain ? »* Gratuit = carte ; Payant = veilleur (prévision 7j + brief matin + alertes). Tout chantier sert ces 3 lignes.
+4. `design/DESIGN-KIT.md` = SOURCE DE VÉRITÉ design (doctrine, inventaire, phase 2, garde-fous).
 
-## 🟢 Shippé session 42
+## 🟢 Shippé session 42 — vague 1 (journée : audit + kit)
 - **Audit « tout ce qui cloche »** (17 agents, 10 findings, 0 réfuté) — TOUT traité :
-  - 🔴 RGPD : emails en clair dans les logs Actions publics → logId(hash8) partout + **510 logs de runs purgés** (vérifier les deletions via `gh api .../logs` → 404, PAS `gh run view` qui a un cache).
-  - 🔴 Méthodo USD publiait les chiffres d'avril → branchée sur backtest-results.json quotidien (78 % réels).
-  - Payment Links USD : essai 7j supprimé (6 liens recréés no-trial, vérité API), GP /es/ « Sargazo Guadalupe » + composite GP-first, hreflang reconstruits (47/47 asserts), fb-posts purgés.
-- **Design (pivot user)** : étalonnage léger du héros (3 couches média) ; **brand-icons.cjs + BrandIcon** (14 icônes maison, fin des emojis OS sur landing/CTA/reliability/about/month) ; DESIGN-KIT.md. SW v62.
-- **DepthFlow v2** : flotte 76 plages re-rendue haute fidélité (ssaa 1.5, crf 22/23, release 451 Mo). RAPPEL ARCHITECTURE : la scène WebGL est PRIORITAIRE sur le landing — les loops ne servent que les devices sans WebGL.
-- **Audit hebdo étendu aux 3 domaines USD** (SITES 5 entrées, résolution GA4 property-id dynamique via Admin API, zéro secret en plus) — le prochain run Weekly UX/SEO inclura miami/puntacana/cancun.
-- **Pages santé USD** (#19) + **GA4 quotidien dans la série KPI** (#27, premier point : MQ 303 sessions, GP 213 le 11/06) + parité webhook en CI (#38).
-- **ScrollStory (directive user 12/06 « premium comme Zenly, bluffant au scroll »)** : la section méthode des 5 domaines est un scrollytelling plein cadre (0f42f91) — scène vectorielle sticky ~430vh pilotée au scroll (vars CSS --b1..--b5 + rAF, transforms/opacity only, scroll natif jamais hijacké), 5 temps : orbite → scan (médaillon footage NASA réel) → dérive J+1→J+3 → verdict 06:00 (pastille PROPRE qui tamponne le brief) → choix + CTA carte. Composition calée sur la zone visible du crop mobile (x 262-538 du viewBox). Tracking sg_story_beat 1-5. Reduced-motion = frame finale statique. SW v64. ⚠ piège payé : le play() déclenché par l'IO rate le mount du <video> — autoPlay muted obligatoire.
-- **Film satellite (directive user 12/06 « site comme SpaceX »)** : section méthode des 5 domaines = vidéo réelle NASA/JPL **Sentinel-6** (mission Copernicus, domaine public, 16 s, 4,5 Mo, `public/videos/sentinel6.mp4`) en bande full-bleed → fil doré « son signal → traduit plage par plage » → MethodScene enrichie d'un écho radar teal + étiquette AFAI 0.42 sur le radeau détecté. Lazy (IO 200 px, pause hors champ, autoPlay muted), jamais chargée si reduced-motion/saveData/2G. Vérifié preview desktop+mobile. Alternatives sourcées (workflow 12 candidats) : reel KSC 4K (launch-to-orbit), reel Sentinel-6B nov 2025 (~5:30 océan), TRACERS SVS 30 s plan continu. SW v63.
+  - 🔴 RGPD : emails en clair dans les logs Actions publics → logId(hash8) partout + **510 logs purgés** (vérifier via `gh api .../logs` → 404, PAS `gh run view` qui a un cache local).
+  - 🔴 Méthodo USD publiait les chiffres d'avril → branchée sur backtest-results.json quotidien (78 % réels, vérifié live).
+  - Payment Links USD no-trial (6 liens recréés, vérité API) · GP /es/ « Sargazo Guadalupe » + composite GP-first · hreflang 47/47 · fb-posts purgés · parité webhook en CI.
+- **brand-icons.cjs + BrandIcon** (14 icônes maison, MIROIR à synchroniser) — fin des emojis OS sur landing/CTA/reliability/about/month. Étalonnage héros (devenu sans objet sur le hero, reste sur les cards si besoin).
+- **DepthFlow v2** (release 451 Mo, 76 plages) — ⚠ les loops ne servent PLUS le hero (démonté 12/06 soir) ; réemploi possible fiches/about.
+- **Audit hebdo étendu aux 5 domaines** (GA4 property-id via Admin API, zéro secret en plus) + pages santé USD + GA4 dans la série KPI quotidienne.
+
+## 🟢 Shippé session 42 — vague 2 (soirée : l'expérience de bout en bout)
+*Trois paliers poussés dans l'ordre, le train CI final `27442671225` (commit 3bffffe) livre l'état complet — health check SW intégré au workflow.*
+1. **Film satellite Sentinel-6** (d37cddd) : footage réel NASA/JPL (mission Copernicus, domaine public, crédit courtoisie affiché), 16 s / 4,5 Mo, `public/videos/sentinel6.mp4` + poster. Désormais en **médaillon « LE VRAI — NASA/JPL »** dans le beat 2 de la ScrollStory. Alternatives 4K vérifiées : memory `reference_satellite_footage.md`.
+2. **ScrollStory** (0f42f91) : la méthode = scrollytelling plein cadre, scène vectorielle sticky ~430vh, scroll natif piloté par vars CSS `--b1..--b5` + fenêtres `--bNo` recalculées en rAF (transforms/opacity only). 5 temps : orbite → scan (médaillon NASA) → dérive J+1→J+3 → verdict 06:00 (pastille PROPRE tamponne le brief) → choix + CTA carte. Tracking `sg_story_beat` 1-5.
+3. **HeroScene** (3bffffe) : le hero home = scène vectorielle golden-hour (gabarit Shinkai du jeu) — sargasses qui dérivent à l'horizon, repérées depuis l'espace (satellite, faisceau, échos teal), oiseaux, glitter, écume. **Dolly-in au scroll** (var `--hs`, couches ciel<mer<plage) : on « avance dans la baie ». Verdict/CTAs inchangés (cœur de conversion). LCP sans fetch média. SW v65.
+- QA : 5/5 beats capturés desktop + B2/B4/B5 mobile, hero mobile+desktop+dolly vérifiés, SMOKE EUR OK ×4 (un par build).
+
+## ⚙️ Règles techniques apprises (scrollytelling — à respecter dans toute itération)
+- **Composer dans x 262-538 du viewBox 800** : le crop `slice` portrait mobile ne montre que la bande centrale. Tout élément narratif essentiel doit y vivre.
+- **`autoPlay muted playsInline` obligatoire** sur les `<video>` montés dynamiquement : un `play()` déclenché par l'IO rate le mount (l'élément n'existe pas encore).
+- **`preview_screenshot` scrolle la page lui-même** : tous les « resets de scroll » mystérieux venaient de l'outil. QA scroll = scrub + lecture des vars CSS dans le MÊME eval, capture dos-à-dos.
+- Scroll-driven = vars CSS sur le conteneur + `calc()` dans les transforms enfants ; JAMAIS de setState par frame ; scroller = `closest('[role="dialog"]')` (le wrapper du landing scrolle, pas window).
+- `transformBox:"fill-box" + transformOrigin:"center"` pour animer un élément SVG dans un groupe translaté.
 
 ## ⚠️ REPRISE (lundi ou +)
-1. **Éval A/B pw_cta_order + pw_prelude** : le cron local lundi 09h35 ne tourne que si CE poste est allumé — sinon la lancer à la main (z-test, n≥100/bras, RECOMMEND-only, vérité Stripe pas payments_real). PREMIÈRE éval après 8 semaines — décision importante.
-2. ~~Vérifier le train final du 12/06~~ ✅ FAIT le 12/06 18h : run 27417358227 success (52m40s), QA live 4/4 PASS — SW v62, méthodo USD 78 %, GP /es/ « Sargazo Guadalupe », hreflang es→/es/mapa-sargazo/. Reste optionnel : spot-check visuel icônes landing + clips v2 servis (taille fichiers hero-depthflow).
-3. **Clarity J+3-7** : re-mesure post-fixes clics (baseline 11/06 : MQ 54 rage/746 dead, GP 347/2225). Si GP ne s'effondre pas → creuser encore.
-4. **GSC GP** : ajouter le service account en propriétaire sur la propriété GP. User OK pour le faire via Chrome (12/06). Procédure : Claude ouvre via Chrome MCP la page GSC → propriété MQ → Paramètres → Utilisateurs (l'email du service account y est visible — la clé n'existe qu'en secret GH, pas en local) → puis même page côté GP → le **user clique « Ajouter un utilisateur »** (modification de permissions = action user, règle sécurité) → coller l'email, rôle Propriétaire. Débloque les requêtes GP dans l'audit.
-5. **Phase 2 du kit design** (DESIGN-KIT.md §Phase 2) : icônes paywall (⚠ smoke EUR : ne toucher QUE les emojis), chips chat, harmonisation des deux ors.
-6. Bahamas : dossier _staging complet (config+seo-content+resorts+LAUNCH-BAHAMAS.md). **GO conditionnel acté par le user le 12/06 : « on lancera la semaine pro si on a des ventes »** → lundi, vérifier les ventes USD (Stripe truth, pas funnel) AVANT de dérouler LAUNCH-BAHAMAS.md. Pas de vente USD = pas de lancement.
+1. **Éval A/B pw_cta_order + pw_prelude** : cron local lundi 09h35 — si poste éteint, lancer à la main (z-test, n≥100/bras, RECOMMEND-only, vérité Stripe). PREMIÈRE éval après 8 semaines — décision importante.
+2. **Vérifier le train final** `27442671225` (3bffffe) live sur les 5 domaines : SW v65, hero vectoriel, ScrollStory (scroller la home !), médaillon NASA. Le health check CI a déjà validé le SW si le run est vert.
+3. **Ventes USD → GO/NO-GO Bahamas** (point Direction 1).
+4. **Clarity J+3-7** : re-mesure post-fixes clics (baseline 11/06 : MQ 54 rage/746 dead, GP 347/2225) + **impact ScrollStory/HeroScene** (sg_story_beat funnel, hero CTA rate, scroll depth). Si la story fait fuir avant le premium → raccourcir à 3 temps.
+5. **GSC GP** : ajouter le service account propriétaire sur la propriété GP. Procédure Chrome actée : Claude ouvre GSC → propriété MQ → Paramètres → Utilisateurs (l'email du SA y est visible — la clé n'existe qu'en secret GH) → même page côté GP → le **user clique « Ajouter »** (modification de permissions = action user). Débloque les requêtes GP dans l'audit.
+6. **Phase 2 du kit** (DESIGN-KIT.md) : icônes paywall (⚠ smoke EUR : ne toucher QUE les emojis), chips chat, harmonisation des deux ors, variantes HeroScene par état (à éviter/modéré : ciel + densité de nappes) et par région (silhouette de côte).
+7. Idée notée (user, 12/06) : décliner la ScrollStory en vraie vidéo verticale (capture Playwright des beats + pipeline video-brief) pour FB/social.
 
 ## ⚖️ Décisions user en attente
-GO/NO-GO Bahamas · crédits Higgsfield (si humains/pub un jour — sinon ignorer) · Cloudflare token · GO publication FB briefs · share-promo USD · Apple Pay device réel · GSC GP (2 min, point 4).
+GO/NO-GO Bahamas (conditionné ventes USD) · crédits Higgsfield (ignorer sauf besoin humains/pub) · Cloudflare token · GO publication FB briefs · share-promo USD · Apple Pay device réel · GSC GP (2 min, point 5).
 
-## Garde-fous (mis à jour 12/06)
-EUR/MQ-GP intouchables (smoke EUR : **rebuild MQ d'abord** — un dist région = 3 FAIL à tort) · seuils pipeline interdits · SW bump à chaque deploy code (prochain : v63) · grouper les pushes (chaque push remplace le train pending !) · JAMAIS `git add -A` (incident junk+secrets 12/06 — gitignore durci depuis) · jamais d'email en clair dans les logs (logId) · jamais un step fragile entre une donnée et son commit · jamais d'animation de fond dans le jeu · jamais d'emoji OS sur les surfaces de marque · photos réelles only · Chrome=user, Edge=automation FB.
+## Garde-fous (mis à jour 12/06 soir)
+EUR/MQ-GP intouchables (smoke EUR : **rebuild MQ d'abord** — un dist région = 3 FAIL à tort) · seuils pipeline interdits · SW bump à chaque deploy code (**prochain : v66**) · grouper les pushes (chaque push remplace le train pending !) · JAMAIS `git add -A` · jamais d'email en clair dans les logs (logId) · jamais un step fragile entre une donnée et son commit · jamais d'animation de fond dans le jeu · jamais d'emoji OS sur les surfaces de marque · photos réelles = cards/fiches/SEO (le hero est vectoriel désormais) · footage spatial = domaine public + crédit only · scroll natif, jamais hijacké · composer mobile-safe (x 262-538) · Chrome=user, Edge=automation FB.

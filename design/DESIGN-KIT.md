@@ -5,9 +5,12 @@
 
 ## Les 4 principes
 
-1. **Les vraies photos sont la matière première de la marque.** Jamais d'images IA pour
-   représenter les plages. Une photo terne se traite (étalonnage), ne se remplace pas par
-   du synthétique. C'est ce que les visiteurs aiment et c'est notre crédibilité satellite.
+1. **Les vraies photos sont la matière des cards, fiches plage et pages SEO.** Jamais
+   d'images IA pour représenter les plages. *Amendement 12/06 soir (directive user
+   « expérience bluffante de bout en bout, réf Zenly ») : le hero home et la section
+   méthode sont désormais des scènes VECTORIELLES construites (HeroScene, ScrollStory)
+   — la photo réelle reste la preuve produit partout ailleurs.* Le footage spatial réel
+   domaine public (NASA) est OK avec crédit courtoisie.
 2. **Deux contextes, une seule marque.**
    - *Surfaces cinématiques* (landing, fiabilité, about, mois, santé, jeu) : encre `#0A1714`,
      cards `#10231E`, or `#FFC72C`, teal `#3BA7A0`, Anton uppercase + Bricolage.
@@ -32,7 +35,9 @@
 | Illustrations animées | MethodScene (satellite/barque/ramasseur), AlertScene (06:00→alerte→itinéraire), scène golden-hour du jeu | JSX + `public/jeu/index.html` |
 | Photo | étalonnage héros saturate(1.12) contrast(1.04) brightness(1.01) ; qualité par plage dans `beaches-images-quality.json` | JSX (3 couches média) |
 | 2.5D | SceneCanvas WebGL (eau + parallaxe pointeur, natif-résolution, PRIORITAIRE sur les loops) ; loops DepthFlow (fallback no-WebGL, release `depthflow-heroes`) | JSX / release GitHub |
-| Film | SatelliteFilm (section méthode, modèle SpaceX) : footage réel NASA/JPL Sentinel-6 (mission Copernicus, domaine public, crédit courtoisie) — 16 s, 1600×900 crf24, fade-noir en boucle, lazy IO + pause hors champ, jamais si reduced-motion/saveData/2G. Relié à MethodScene par le fil doré + écho radar teal sur le radeau (AFAI 0.42). Le footage spatial réel est OK (≠ plages : photos réelles only) tant que domaine public/licence libre + crédit. | JSX + `public/videos/sentinel6.mp4` |
+| Hero | **HeroScene** : scène vectorielle golden-hour plein écran (sargasses à l'horizon repérées depuis l'espace, satellite+faisceau+échos, oiseaux, glitter, écume, palmier silhouette). Dolly-in au scroll (var `--hs` en rAF, couches ciel<mer<plage). Remplace la photo hero depuis 3bffffe. | JSX (`HeroScene`) |
+| Scrollytelling | **ScrollStory** : la méthode en 5 temps, scène sticky ~430vh pilotée au scroll (vars `--b1..--b5` + fenêtres `--bNo`, transforms/opacity only, scroll natif). Beat 2 = médaillon footage NASA réel. Tracking `sg_story_beat`. | JSX (`ScrollStory`) |
+| Film | Footage réel NASA/JPL Sentinel-6 (mission Copernicus, domaine public, crédit courtoisie) — 16 s, 1600×900 crf24, fade-noir en boucle. Sert le médaillon « LE VRAI — NASA/JPL » du beat 2. Alternatives 4K : memory `reference_satellite_footage.md`. | `public/videos/sentinel6.mp4` |
 | Motion | reveals IO (.18), sticky (.06), shine gbtn 4.5s, sheet 260ms cubic-bezier(.32,.72,.33,1) | JSX CSS |
 
 ## Phase 2 (backlog kit — dans l'ordre)
@@ -48,6 +53,14 @@
 
 ## Garde-fous
 
+- **Composer dans x 262-538 du viewBox 800** (scènes plein écran) : le crop `slice`
+  portrait mobile ne montre que cette bande centrale — tout élément narratif essentiel
+  doit y vivre (payé sur ScrollStory : pastille/pins hors cadre au premier jet).
+- **Scroll-driven** : vars CSS sur le conteneur + `calc()` enfants, recalcul en rAF,
+  transforms/opacity only, scroll NATIF (jamais de hijack). Scroller du landing =
+  `closest('[role="dialog"]')`, pas window.
+- **`autoPlay muted playsInline`** sur tout `<video>` monté dynamiquement (un `play()`
+  IO rate le mount). `transformBox:fill-box` pour animer dans un groupe translaté.
 - Toute nouvelle surface DOIT consommer `brand-icons.cjs` (générateurs) ou `BrandIcon` (app).
 - Tester sur dist MQ avant tout smoke EUR (`npx vite build` sans VITE_REGION — un dist
   région fait échouer le smoke à tort, vécu 2026-06-12).
