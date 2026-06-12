@@ -1,146 +1,164 @@
 {
-  "generatedAt": "2026-06-08T14:45:36.550Z",
+  "generatedAt": "2026-06-11T23:52:53.994Z",
   "sites": {
     "mq": {
       "domain": "sargasses-martinique.com",
       "performance": {
         "https://sargasses-martinique.com/": {
-          "clicks": 965,
-          "impressions": 4187,
-          "position": 2419.4772314877437,
-          "count": 510,
+          "clicks": 991,
+          "impressions": 4381,
+          "position": 2362.0683937559184,
+          "count": 523,
           "topQueries": [
             {
               "query": "sargasse martinique en temps réel",
-              "impressions": 211,
-              "clicks": 137,
-              "position": 1.5924170616113744
+              "impressions": 221,
+              "clicks": 135,
+              "position": 1.5972850678733033
             },
             {
               "query": "sargasse martinique en temps réel",
-              "impressions": 206,
-              "clicks": 98,
-              "position": 1.6310679611650487
+              "impressions": 210,
+              "clicks": 97,
+              "position": 1.6523809523809523
             },
             {
               "query": "sargasse martinique aujourd'hui",
-              "impressions": 173,
-              "clicks": 95,
-              "position": 2.005780346820809
+              "impressions": 184,
+              "clicks": 93,
+              "position": 1.9945652173913042
             },
             {
               "query": "sargasse martinique aujourd'hui",
-              "impressions": 212,
-              "clicks": 83,
-              "position": 1.9622641509433962
-            },
-            {
-              "query": "sargasse martinique",
-              "impressions": 173,
-              "clicks": 39,
-              "position": 2.7572254335260116
+              "impressions": 234,
+              "clicks": 85,
+              "position": 1.9700854700854702
             },
             {
               "query": "meteo sargasse martinique",
-              "impressions": 109,
-              "clicks": 34,
-              "position": 2.1926605504587156
+              "impressions": 120,
+              "clicks": 39,
+              "position": 2.1916666666666664
+            },
+            {
+              "query": "sargasse martinique",
+              "impressions": 181,
+              "clicks": 35,
+              "position": 2.7845303867403315
             },
             {
               "query": "sargasses martinique",
-              "impressions": 123,
-              "clicks": 23,
-              "position": 4.560975609756097
+              "impressions": 127,
+              "clicks": 27,
+              "position": 4.645669291338583
             },
             {
               "query": "sargasse martinique",
-              "impressions": 222,
+              "impressions": 219,
               "clicks": 18,
-              "position": 3.873873873873874
+              "position": 3.867579908675799
+            },
+            {
+              "query": "sargasse martinique en temps réel",
+              "impressions": 25,
+              "clicks": 17,
+              "position": 1.52
+            },
+            {
+              "query": "sargasse martinique",
+              "impressions": 75,
+              "clicks": 16,
+              "position": 3.2133333333333334
             },
             {
               "query": "meteo sargasse martinique",
-              "impressions": 71,
+              "impressions": 91,
               "clicks": 15,
-              "position": 2.211267605633803
-            },
-            {
-              "query": "meteo des sargasses martinique",
-              "impressions": 45,
-              "clicks": 14,
-              "position": 2.4
-            },
-            {
-              "query": "sargasse martinique",
-              "impressions": 76,
-              "clicks": 12,
-              "position": 3.3947368421052633
-            },
-            {
-              "query": "sargasse martinique",
-              "impressions": 76,
-              "clicks": 12,
-              "position": 4.078947368421053
+              "position": 2.230769230769231
             },
             {
               "query": "sargasse martinique aujourd'hui",
-              "impressions": 30,
-              "clicks": 12,
+              "impressions": 29,
+              "clicks": 15,
               "position": 2
             },
             {
               "query": "carte sargasse martinique",
               "impressions": 67,
-              "clicks": 11,
+              "clicks": 14,
               "position": 2.9402985074626864
             },
             {
-              "query": "carte sargasse martinique",
-              "impressions": 60,
-              "clicks": 11,
-              "position": 2.95
-            },
-            {
-              "query": "sargasse martinique 2026",
-              "impressions": 36,
-              "clicks": 11,
-              "position": 3.8333333333333335
-            },
-            {
-              "query": "sargasse martinique en temps réel",
-              "impressions": 16,
-              "clicks": 11,
-              "position": 1.6875
-            },
-            {
-              "query": "sargasses martinique",
-              "impressions": 307,
-              "clicks": 11,
-              "position": 4.504885993485342
+              "query": "meteo des sargasses martinique",
+              "impressions": 41,
+              "clicks": 12,
+              "position": 2.2926829268292686
             },
             {
               "query": "sargasse martinique",
-              "impressions": 88,
-              "clicks": 9,
-              "position": 3.784090909090909
+              "impressions": 76,
+              "clicks": 12,
+              "position": 4
             },
             {
-              "query": "sargasse martinique aujourd'hui",
-              "impressions": 17,
-              "clicks": 9,
-              "position": 2
+              "query": "sargasse martinique 2026",
+              "impressions": 41,
+              "clicks": 11,
+              "position": 4.121951219512195
+            },
+            {
+              "query": "carte sargasse martinique",
+              "impressions": 66,
+              "clicks": 10,
+              "position": 2.984848484848485
+            },
+            {
+              "query": "sargasse martinique",
+              "impressions": 94,
+              "clicks": 10,
+              "position": 3.734042553191489
             },
             {
               "query": "sargasses martinique",
-              "impressions": 31,
-              "clicks": 9,
-              "position": 2.032258064516129
+              "impressions": 299,
+              "clicks": 10,
+              "position": 4.558528428093645
             },
             {
               "query": "carte des sargasses martinique",
               "impressions": 24,
+              "clicks": 9,
+              "position": 2.875
+            },
+            {
+              "query": "sargasses martinique",
+              "impressions": 33,
+              "clicks": 9,
+              "position": 1.9090909090909092
+            },
+            {
+              "query": "sargasse martinique 2026",
+              "impressions": 33,
+              "clicks": 8,
+              "position": 6.666666666666667
+            },
+            {
+              "query": "sargasse martinique en direct",
+              "impressions": 16,
+              "clicks": 8,
+              "position": 1.875
+            },
+            {
+              "query": "sargasse martinique aujourd'hui",
+              "impressions": 15,
               "clicks": 7,
-              "position": 2.958333333333333
+              "position": 2
+            },
+            {
+              "query": "sargasse martinique en direct",
+              "impressions": 8,
+              "clicks": 7,
+              "position": 1.5
             },
             {
               "query": "sargasse martinique en direct",
@@ -149,52 +167,40 @@
               "position": 1.8461538461538463
             },
             {
-              "query": "meteo sargasses martinique",
-              "impressions": 10,
-              "clicks": 6,
-              "position": 2.4
-            },
-            {
-              "query": "sargasse martinique 2026",
-              "impressions": 30,
-              "clicks": 6,
-              "position": 6.8
-            },
-            {
-              "query": "sargasse martinique en direct",
-              "impressions": 7,
-              "clicks": 6,
-              "position": 1.5714285714285714
-            },
-            {
-              "query": "sargasse martinique en direct",
-              "impressions": 12,
-              "clicks": 6,
-              "position": 1.8333333333333335
-            },
-            {
-              "query": "sargasse martinique en temps réel",
-              "impressions": 23,
-              "clicks": 6,
-              "position": 1.7826086956521738
-            },
-            {
               "query": "sargasse martinique en temps réel",
               "impressions": 15,
-              "clicks": 6,
+              "clicks": 7,
               "position": 1.6
             },
             {
-              "query": "bulletin sargasses martinique",
-              "impressions": 29,
-              "clicks": 5,
-              "position": 4.241379310344827
+              "query": "carte sargasses martinique",
+              "impressions": 12,
+              "clicks": 6,
+              "position": 2.333333333333333
             },
             {
-              "query": "carte sargasse martinique",
-              "impressions": 19,
+              "query": "meteo sargasses martinique",
+              "impressions": 11,
+              "clicks": 6,
+              "position": 2.3636363636363633
+            },
+            {
+              "query": "sargasse martinique aujourd'hui",
+              "impressions": 11,
+              "clicks": 6,
+              "position": 1.9090909090909092
+            },
+            {
+              "query": "bulletin sargasses martinique",
+              "impressions": 25,
               "clicks": 5,
-              "position": 2.1578947368421053
+              "position": 2.92
+            },
+            {
+              "query": "meteo des sargasses martinique",
+              "impressions": 8,
+              "clicks": 5,
+              "position": 2.125
             },
             {
               "query": "meteo sargasses martinique",
@@ -209,10 +215,10 @@
               "position": 1.7272727272727273
             },
             {
-              "query": "sargasses martinique",
-              "impressions": 69,
+              "query": "sargasse martinique en temps réel",
+              "impressions": 21,
               "clicks": 5,
-              "position": 4.63768115942029
+              "position": 1.8571428571428572
             },
             {
               "query": "sargasses martinique aujourd hui",
@@ -222,99 +228,81 @@
             },
             {
               "query": "bulletin sargasses martinique",
-              "impressions": 21,
+              "impressions": 30,
               "clicks": 4,
-              "position": 3.238095238095238
+              "position": 3.933333333333333
             },
             {
-              "query": "martinique sargasse",
-              "impressions": 31,
+              "query": "carte sargasses martinique",
+              "impressions": 13,
               "clicks": 4,
-              "position": 3.5483870967741935
+              "position": 2.6923076923076925
             },
             {
-              "query": "meteo des sargasses martinique",
-              "impressions": 8,
+              "query": "info sargasse martinique",
+              "impressions": 5,
               "clicks": 4,
-              "position": 2.125
+              "position": 2.2
             },
             {
-              "query": "sargasse en martinique carte",
+              "query": "info sargasses martinique",
               "impressions": 4,
-              "clicks": 4,
-              "position": 3
-            },
-            {
-              "query": "sargasse martinique 2026",
-              "impressions": 90,
-              "clicks": 4,
-              "position": 7.977777777777778
-            },
-            {
-              "query": "sargasse martinique aujourd'hui",
-              "impressions": 8,
               "clicks": 4,
               "position": 2
             },
             {
-              "query": "sargasse martinique en direct",
-              "impressions": 4,
+              "query": "sargasse martinique aujourd'hui",
+              "impressions": 5,
               "clicks": 4,
               "position": 2
             },
             {
               "query": "sargasses martinique",
-              "impressions": 16,
+              "impressions": 67,
               "clicks": 4,
-              "position": 1.8125
-            },
-            {
-              "query": "alerte sargasse martinique",
-              "impressions": 6,
-              "clicks": 3,
-              "position": 4
+              "position": 4.746268656716418
             },
             {
               "query": "carte sargasse martinique",
-              "impressions": 6,
+              "impressions": 14,
               "clicks": 3,
-              "position": 2.333333333333333
+              "position": 2.071428571428571
             },
             {
-              "query": "carte sargasses martinique",
-              "impressions": 9,
+              "query": "carte sargasse martinique",
+              "impressions": 7,
               "clicks": 3,
-              "position": 2.111111111111111
+              "position": 2.142857142857143
             },
             {
-              "query": "carte sargasses martinique",
-              "impressions": 13,
-              "clicks": 3,
-              "position": 2.769230769230769
-            },
-            {
-              "query": "carte sargasses martinique 2026",
+              "query": "carte sargasse martinique",
               "impressions": 4,
               "clicks": 3,
-              "position": 2
+              "position": 3.25
             },
             {
-              "query": "info sargasse martinique",
-              "impressions": 4,
+              "query": "martinique sargasse",
+              "impressions": 27,
               "clicks": 3,
-              "position": 2.25
+              "position": 3.7037037037037037
+            },
+            {
+              "query": "martinique sargasses 2026",
+              "impressions": 17,
+              "clicks": 3,
+              "position": 6.117647058823529
             },
             {
               "query": "météo sargasses martinique",
               "impressions": 8,
               "clicks": 3,
-              "position": 2.375
+              "position": 2.25
             },
             {
-              "query": "sargasse martinique",
-              "impressions": 8,
+              "query": "sargasse en martinique",
+              "impressions": 14,
               "clicks": 3,
-              "position": 2.625
+              "position": 1.8571428571428572
             },
             {
               "query": "sargasse martinique aujourd'hui",
@@ -323,22 +311,22 @@
               "position": 2
             },
             {
-              "query": "sargasse martinique aujourd'hui",
-              "impressions": 4,
+              "query": "sargasse martinique en direct",
+              "impressions": 3,
               "clicks": 3,
               "position": 2
             },
             {
               "query": "sargasse martinique en temps réel",
-              "impressions": 5,
+              "impressions": 3,
               "clicks": 3,
-              "position": 1.4
+              "position": 1
             },
             {
-              "query": "sargasse martinique en temps réel",
-              "impressions": 4,
-              "clicks": 3,
-              "position": 1.5
+              "query": "alerte sargasse martinique",
+              "impressions": 2,
+              "clicks": 2,
+              "position": 3
             },
             {
               "query": "alerte sargasse martinique",
@@ -347,46 +335,40 @@
               "position": 2.25
             },
             {
-              "query": "bulletin sargasse martinique",
-              "impressions": 6,
+              "query": "carte des sargasses martinique",
+              "impressions": 9,
               "clicks": 2,
-              "position": 3.8333333333333335
+              "position": 3.7777777777777777
             },
             {
               "query": "carte des sargasses martinique",
-              "impressions": 8,
-              "clicks": 2,
-              "position": 3.625
-            },
-            {
-              "query": "carte des sargasses martinique",
-              "impressions": 12,
+              "impressions": 15,
               "clicks": 2,
               "position": 3
-            },
-            {
-              "query": "carte sargasse martinique",
-              "impressions": 3,
-              "clicks": 2,
-              "position": 2.333333333333333
             },
             {
               "query": "carte sargasse martinique 2026",
-              "impressions": 41,
+              "impressions": 48,
               "clicks": 2,
-              "position": 5.2926829268292686
+              "position": 5.416666666666667
             },
             {
               "query": "carte sargasses martinique",
-              "impressions": 33,
+              "impressions": 31,
               "clicks": 2,
-              "position": 2.909090909090909
+              "position": 2.838709677419355
             },
             {
               "query": "carte sargasses martinique 2026",
-              "impressions": 6,
+              "impressions": 7,
               "clicks": 2,
-              "position": 3
+              "position": 2.857142857142857
+            },
+            {
+              "query": "info sargasse martinique",
+              "impressions": 5,
+              "clicks": 2,
+              "position": 2.2
             },
             {
               "query": "les sargasses en martinique",
@@ -395,16 +377,16 @@
               "position": 2
             },
             {
-              "query": "martinique sargasses 2026",
-              "impressions": 16,
+              "query": "meteo martinique sargasse",
+              "impressions": 11,
               "clicks": 2,
-              "position": 5.8125
+              "position": 2.1818181818181817
             },
             {
               "query": "meteo sargasse martinique",
-              "impressions": 3,
+              "impressions": 6,
               "clicks": 2,
-              "position": 3
+              "position": 2.5
             },
             {
               "query": "meteo sargasse martinique",
@@ -416,25 +398,13 @@
               "query": "météo sargasses martinique",
               "impressions": 5,
               "clicks": 2,
-              "position": 2.6
+              "position": 2.4
             },
             {
               "query": "plage des salines sargasses",
-              "impressions": 12,
+              "impressions": 11,
               "clicks": 2,
-              "position": 7.166666666666667
-            },
-            {
-              "query": "prevision sargasse martinique",
-              "impressions": 5,
-              "clicks": 2,
-              "position": 3
-            },
-            {
-              "query": "sargasse en martinique",
-              "impressions": 13,
-              "clicks": 2,
-              "position": 1.9230769230769231
+              "position": 6.909090909090909
             },
             {
               "query": "sargasse en martinique",
@@ -443,16 +413,40 @@
               "position": 2.571428571428571
             },
             {
+              "query": "sargasse en martinique carte",
+              "impressions": 2,
+              "clicks": 2,
+              "position": 3
+            },
+            {
+              "query": "sargasse martinique",
+              "impressions": 17,
+              "clicks": 2,
+              "position": 3.6470588235294117
+            },
+            {
+              "query": "sargasse martinique",
+              "impressions": 8,
+              "clicks": 2,
+              "position": 2.625
+            },
+            {
+              "query": "sargasse martinique 2026",
+              "impressions": 94,
+              "clicks": 2,
+              "position": 8.170212765957448
+            },
+            {
               "query": "sargasse martinique actuellement",
               "impressions": 4,
               "clicks": 2,
               "position": 2.25
             },
             {
-              "query": "sargasse martinique aujourd hui",
-              "impressions": 5,
+              "query": "sargasse martinique actuellement",
+              "impressions": 3,
               "clicks": 2,
-              "position": 2
+              "position": 2.333333333333333
             },
             {
               "query": "sargasse martinique aujourd'hui",
@@ -461,22 +455,10 @@
               "position": 2
             },
             {
-              "query": "sargasse martinique aujourd'hui",
-              "impressions": 4,
+              "query": "sargasses martinique",
+              "impressions": 14,
               "clicks": 2,
-              "position": 2
-            },
-            {
-              "query": "sargasse martinique en direct",
-              "impressions": 2,
-              "clicks": 2,
-              "position": 2
-            },
-            {
-              "query": "sargasse martinique en temps réel",
-              "impressions": 2,
-              "clicks": 2,
-              "position": 1
+              "position": 1.5714285714285714
             },
             {
               "query": "sargasses martinique",
@@ -492,15 +474,21 @@
             },
             {
               "query": "sargasses martinique 2026",
-              "impressions": 8,
+              "impressions": 4,
               "clicks": 2,
-              "position": 3.75
+              "position": 5
+            },
+            {
+              "query": "sargasses martinique 2026",
+              "impressions": 9,
+              "clicks": 2,
+              "position": 4
             },
             {
               "query": "sargasses martinique carte",
-              "impressions": 9,
+              "impressions": 8,
               "clicks": 2,
-              "position": 2.7777777777777777
+              "position": 2.75
             },
             {
               "query": "sargasses salines martinique",
@@ -521,6 +509,12 @@
               "position": 2
             },
             {
+              "query": "algues en martinique",
+              "impressions": 2,
+              "clicks": 1,
+              "position": 1
+            },
+            {
               "query": "algues sargasses en martinique",
               "impressions": 1,
               "clicks": 1,
@@ -534,13 +528,19 @@
             },
             {
               "query": "anse michel sargasse",
-              "impressions": 8,
+              "impressions": 7,
               "clicks": 1,
-              "position": 7.375
+              "position": 7.571428571428571
             },
             {
               "query": "bulletin sargasse martinique",
               "impressions": 3,
+              "clicks": 1,
+              "position": 3
+            },
+            {
+              "query": "bulletin sargasse martinique",
+              "impressions": 6,
               "clicks": 1,
               "position": 3
             },
@@ -552,9 +552,15 @@
             },
             {
               "query": "bulletin sargasses martinique",
+              "impressions": 3,
+              "clicks": 1,
+              "position": 3.3333333333333335
+            },
+            {
+              "query": "carte des sargasses en martinique",
               "impressions": 5,
               "clicks": 1,
-              "position": 5.2
+              "position": 3
             },
             {
               "query": "carte des sargasses martinique",
@@ -570,15 +576,9 @@
             },
             {
               "query": "carte sargasse martinique 2026",
-              "impressions": 8,
+              "impressions": 70,
               "clicks": 1,
-              "position": 8.25
-            },
-            {
-              "query": "carte sargasse martinique 2026",
-              "impressions": 69,
-              "clicks": 1,
-              "position": 5.550724637681159
+              "position": 5.7
             },
             {
               "query": "carte sargasses martinique",
@@ -611,10 +611,10 @@
               "position": 2
             },
             {
-              "query": "carte sargasses martinique",
+              "query": "carte sargasses martinique 2026",
               "impressions": 2,
               "clicks": 1,
-              "position": 3
+              "position": 2
             },
             {
               "query": "carte satellite sargasse martinique",
@@ -624,15 +624,15 @@
             },
             {
               "query": "info sargasse martinique",
-              "impressions": 2,
-              "clicks": 1,
-              "position": 2.5
-            },
-            {
-              "query": "info sargasses martinique",
               "impressions": 1,
               "clicks": 1,
               "position": 2
+            },
+            {
+              "query": "info sargasse martinique",
+              "impressions": 5,
+              "clicks": 1,
+              "position": 2.8
             },
             {
               "query": "info sargasses martinique",
@@ -648,9 +648,15 @@
             },
             {
               "query": "les sargasses en martinique",
-              "impressions": 4,
+              "impressions": 3,
               "clicks": 1,
-              "position": 3.25
+              "position": 1
+            },
+            {
+              "query": "les sargasses en martinique",
+              "impressions": 3,
+              "clicks": 1,
+              "position": 2.666666666666667
             },
             {
               "query": "les sargasses en martinique",
@@ -677,6 +683,12 @@
               "position": 2
             },
             {
+              "query": "martinique sargasse",
+              "impressions": 4,
+              "clicks": 1,
+              "position": 2.5
+            },
+            {
               "query": "martinique sargasses",
               "impressions": 2,
               "clicks": 1,
@@ -684,13 +696,25 @@
             },
             {
               "query": "martinique sargasses 2026",
-              "impressions": 5,
+              "impressions": 6,
               "clicks": 1,
-              "position": 4.4
+              "position": 5.166666666666667
+            },
+            {
+              "query": "martinique sargasses 2026",
+              "impressions": 1,
+              "clicks": 1,
+              "position": 1
+            },
+            {
+              "query": "martinique sargasses 2026",
+              "impressions": 6,
+              "clicks": 1,
+              "position": 10
             },
             {
               "query": "martinique sargasses carte",
-              "impressions": 12,
+              "impressions": 13,
               "clicks": 1,
               "position": 4
             },
@@ -701,12 +725,6 @@
               "position": 2
             },
             {
-              "query": "meteo martinique sargasse",
-              "impressions": 10,
-              "clicks": 1,
-              "position": 2.3
-            },
-            {
               "query": "meteo sargasse",
               "impressions": 3,
               "clicks": 1,
@@ -714,19 +732,13 @@
             },
             {
               "query": "meteo sargasse martinique",
-              "impressions": 16,
-              "clicks": 1,
-              "position": 2.25
-            },
-            {
-              "query": "meteo sargasse martinique",
-              "impressions": 5,
+              "impressions": 7,
               "clicks": 1,
               "position": 2
             },
             {
               "query": "météo sargasse martinique",
-              "impressions": 2,
+              "impressions": 1,
               "clicks": 1,
               "position": 2
             },
@@ -743,10 +755,22 @@
               "position": 2
             },
             {
-              "query": "pointe faula sargasses",
-              "impressions": 6,
+              "query": "plage des salines sargasses",
+              "impressions": 2,
               "clicks": 1,
-              "position": 10
+              "position": 2
+            },
+            {
+              "query": "pointe faula sargasses",
+              "impressions": 7,
+              "clicks": 1,
+              "position": 10.285714285714286
+            },
+            {
+              "query": "pointe faula sargasses",
+              "impressions": 3,
+              "clicks": 1,
+              "position": 10.666666666666666
             },
             {
               "query": "prevision sargasse martinique",
@@ -756,7 +780,7 @@
             },
             {
               "query": "prevision sargasse martinique",
-              "impressions": 1,
+              "impressions": 4,
               "clicks": 1,
               "position": 3
             },
@@ -770,7 +794,13 @@
               "query": "sargasse en martinique",
               "impressions": 7,
               "clicks": 1,
-              "position": 5.285714285714286
+              "position": 2.428571428571429
+            },
+            {
+              "query": "sargasse en martinique",
+              "impressions": 6,
+              "clicks": 1,
+              "position": 5
             },
             {
               "query": "sargasse en martinique aujourd hui",
@@ -788,7 +818,7 @@
               "query": "sargasse martinique",
               "impressions": 1,
               "clicks": 1,
-              "position": 3
+              "position": 4
             },
             {
               "query": "sargasse martinique",
@@ -798,15 +828,15 @@
             },
             {
               "query": "sargasse martinique",
-              "impressions": 15,
+              "impressions": 1,
               "clicks": 1,
-              "position": 3.6
+              "position": 2
             },
             {
               "query": "sargasse martinique",
               "impressions": 1,
               "clicks": 1,
-              "position": 2
+              "position": 10
             },
             {
               "query": "sargasse martinique",
@@ -816,27 +846,15 @@
             },
             {
               "query": "sargasse martinique",
-              "impressions": 9,
+              "impressions": 13,
               "clicks": 1,
-              "position": 4
-            },
-            {
-              "query": "sargasse martinique",
-              "impressions": 3,
-              "clicks": 1,
-              "position": 2.333333333333333
+              "position": 3.769230769230769
             },
             {
               "query": "sargasse martinique 2026",
-              "impressions": 12,
+              "impressions": 20,
               "clicks": 1,
-              "position": 2.5
-            },
-            {
-              "query": "sargasse martinique 2026",
-              "impressions": 16,
-              "clicks": 1,
-              "position": 7
+              "position": 7.05
             },
             {
               "query": "sargasse martinique actuellement",
@@ -845,10 +863,22 @@
               "position": 1.6666666666666665
             },
             {
-              "query": "sargasse martinique actuellement",
-              "impressions": 2,
+              "query": "sargasse martinique aujourd hui",
+              "impressions": 3,
               "clicks": 1,
-              "position": 2.5
+              "position": 2
+            },
+            {
+              "query": "sargasse martinique aujourd'hui",
+              "impressions": 5,
+              "clicks": 1,
+              "position": 2
+            },
+            {
+              "query": "sargasse martinique aujourd'hui",
+              "impressions": 1,
+              "clicks": 1,
+              "position": 2
             },
             {
               "query": "sargasse martinique aujourd'hui",
@@ -864,33 +894,27 @@
             },
             {
               "query": "sargasse martinique aujourd'hui",
-              "impressions": 2,
+              "impressions": 3,
               "clicks": 1,
               "position": 2
             },
             {
-              "query": "sargasse martinique aujourd'hui",
+              "query": "sargasse martinique carte",
+              "impressions": 5,
+              "clicks": 1,
+              "position": 3.2
+            },
+            {
+              "query": "sargasse martinique carte",
+              "impressions": 3,
+              "clicks": 1,
+              "position": 3
+            },
+            {
+              "query": "sargasse martinique en direct",
               "impressions": 1,
               "clicks": 1,
               "position": 2
-            },
-            {
-              "query": "sargasse martinique aujourd'hui",
-              "impressions": 2,
-              "clicks": 1,
-              "position": 2
-            },
-            {
-              "query": "sargasse martinique carte",
-              "impressions": 5,
-              "clicks": 1,
-              "position": 3
-            },
-            {
-              "query": "sargasse martinique carte",
-              "impressions": 5,
-              "clicks": 1,
-              "position": 3
             },
             {
               "query": "sargasse martinique en direct",
@@ -903,6 +927,30 @@
               "impressions": 1,
               "clicks": 1,
               "position": 2
+            },
+            {
+              "query": "sargasse martinique en temps réel",
+              "impressions": 3,
+              "clicks": 1,
+              "position": 1.3333333333333333
+            },
+            {
+              "query": "sargasse martinique en temps réel",
+              "impressions": 1,
+              "clicks": 1,
+              "position": 2
+            },
+            {
+              "query": "sargasse martinique en temps réel",
+              "impressions": 2,
+              "clicks": 1,
+              "position": 1
+            },
+            {
+              "query": "sargasse martinique en temps réel",
+              "impressions": 1,
+              "clicks": 1,
+              "position": 1
             },
             {
               "query": "sargasse martinique en temps réel",
@@ -933,6 +981,12 @@
               "impressions": 4,
               "clicks": 1,
               "position": 4
+            },
+            {
+              "query": "sargasse tartane martinique",
+              "impressions": 1,
+              "clicks": 1,
+              "position": 2
             },
             {
               "query": "sargasses en martinique",
@@ -966,33 +1020,39 @@
             },
             {
               "query": "sargasses martinique",
-              "impressions": 1,
+              "impressions": 5,
               "clicks": 1,
               "position": 2
-            },
-            {
-              "query": "sargasses martinique",
-              "impressions": 4,
-              "clicks": 1,
-              "position": 1.25
             },
             {
               "query": "sargasses martinique",
               "impressions": 10,
               "clicks": 1,
-              "position": 4.8
+              "position": 4.9
             },
             {
-              "query": "sargasses martinique 2026",
-              "impressions": 3,
+              "query": "sargasses martinique",
+              "impressions": 1,
               "clicks": 1,
-              "position": 4.666666666666666
+              "position": 4
             },
             {
               "query": "sargasses martinique aujourd hui",
-              "impressions": 2,
+              "impressions": 1,
               "clicks": 1,
               "position": 2
+            },
+            {
+              "query": "sargasses martinique aujourd hui",
+              "impressions": 1,
+              "clicks": 1,
+              "position": 2
+            },
+            {
+              "query": "sargasses martinique plage",
+              "impressions": 1,
+              "clicks": 1,
+              "position": 4
             },
             {
               "query": "sargassum martinique",
@@ -1002,15 +1062,9 @@
             },
             {
               "query": "sargassum martinique",
-              "impressions": 4,
+              "impressions": 3,
               "clicks": 1,
-              "position": 1.75
-            },
-            {
-              "query": "sargassum monitoring martinique",
-              "impressions": 1,
-              "clicks": 1,
-              "position": 10
+              "position": 2
             },
             {
               "query": "y a t il des sargasses en martinique",
@@ -1020,9 +1074,9 @@
             },
             {
               "query": "y a t il des sargasses en martinique en ce moment",
-              "impressions": 1,
+              "impressions": 2,
               "clicks": 1,
-              "position": 1
+              "position": 2.5
             },
             {
               "query": "état actuel",
@@ -1032,7 +1086,7 @@
             },
             {
               "query": "alerte sargasse martinique",
-              "impressions": 1,
+              "impressions": 2,
               "clicks": 0,
               "position": 2
             },
@@ -1047,12 +1101,6 @@
               "impressions": 2,
               "clicks": 0,
               "position": 3
-            },
-            {
-              "query": "alerte sargasse martinique",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 5
             },
             {
               "query": "algue sargasse martinique",
@@ -1085,12 +1133,6 @@
               "position": 1
             },
             {
-              "query": "algues sargasses en martinique",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 28
-            },
-            {
               "query": "algues sargasses martinique",
               "impressions": 1,
               "clicks": 0,
@@ -1109,10 +1151,16 @@
               "position": 7
             },
             {
-              "query": "anse michel martinique sargasse",
+              "query": "anse figuier sargasse",
               "impressions": 1,
               "clicks": 0,
-              "position": 7
+              "position": 8
+            },
+            {
+              "query": "anse figuier sargasse",
+              "impressions": 2,
+              "clicks": 0,
+              "position": 9
             },
             {
               "query": "anse michel martinique sargasse",
@@ -1148,6 +1196,12 @@
               "query": "anse trabaud sargasses",
               "impressions": 1,
               "clicks": 0,
+              "position": 2
+            },
+            {
+              "query": "anse trabaud sargasses",
+              "impressions": 1,
+              "clicks": 0,
               "position": 9
             },
             {
@@ -1158,9 +1212,9 @@
             },
             {
               "query": "bulletin sargasse martinique",
-              "impressions": 1,
+              "impressions": 2,
               "clicks": 0,
-              "position": 3
+              "position": 2.5
             },
             {
               "query": "bulletin sargasse martinique",
@@ -1178,19 +1232,13 @@
               "query": "bulletin sargasse martinique",
               "impressions": 5,
               "clicks": 0,
-              "position": 5
+              "position": 4
             },
             {
               "query": "bulletin sargasses martinique",
-              "impressions": 1,
+              "impressions": 2,
               "clicks": 0,
               "position": 3
-            },
-            {
-              "query": "bulletin sargasses martinique",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 8
             },
             {
               "query": "bulletin sargasses martinique",
@@ -1200,9 +1248,9 @@
             },
             {
               "query": "cap macré sargasse",
-              "impressions": 1,
+              "impressions": 2,
               "clicks": 0,
-              "position": 14
+              "position": 13.5
             },
             {
               "query": "carte des sargasses",
@@ -1212,9 +1260,15 @@
             },
             {
               "query": "carte des sargasses",
-              "impressions": 2,
+              "impressions": 1,
               "clicks": 0,
-              "position": 17
+              "position": 12
+            },
+            {
+              "query": "carte des sargasses",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 9
             },
             {
               "query": "carte des sargasses en martinique",
@@ -1230,27 +1284,27 @@
             },
             {
               "query": "carte des sargasses en martinique",
-              "impressions": 5,
+              "impressions": 6,
               "clicks": 0,
-              "position": 4.6
+              "position": 4.666666666666666
             },
             {
               "query": "carte des sargasses en martinique",
-              "impressions": 5,
-              "clicks": 0,
-              "position": 3
-            },
-            {
-              "query": "carte des sargasses en martinique",
-              "impressions": 9,
+              "impressions": 6,
               "clicks": 0,
               "position": 3
             },
             {
               "query": "carte des sargasses martinique",
-              "impressions": 3,
+              "impressions": 2,
               "clicks": 0,
               "position": 5
+            },
+            {
+              "query": "carte des sargasses martinique",
+              "impressions": 2,
+              "clicks": 0,
+              "position": 3
             },
             {
               "query": "carte des sargasses martinique",
@@ -1289,10 +1343,16 @@
               "position": 9
             },
             {
-              "query": "carte sargasse martinique",
-              "impressions": 4,
+              "query": "carte sargasse en direct",
+              "impressions": 1,
               "clicks": 0,
-              "position": 4.5
+              "position": 12
+            },
+            {
+              "query": "carte sargasse martinique",
+              "impressions": 3,
+              "clicks": 0,
+              "position": 5
             },
             {
               "query": "carte sargasse martinique",
@@ -1320,9 +1380,21 @@
             },
             {
               "query": "carte sargasse martinique",
-              "impressions": 3,
+              "impressions": 1,
               "clicks": 0,
-              "position": 2.666666666666667
+              "position": 3
+            },
+            {
+              "query": "carte sargasse martinique",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 3
+            },
+            {
+              "query": "carte sargasse martinique",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 3
             },
             {
               "query": "carte sargasse martinique",
@@ -1346,7 +1418,13 @@
               "query": "carte sargasse martinique 2025",
               "impressions": 1,
               "clicks": 0,
-              "position": 11
+              "position": 7
+            },
+            {
+              "query": "carte sargasse martinique 2025",
+              "impressions": 2,
+              "clicks": 0,
+              "position": 10.5
             },
             {
               "query": "carte sargasse martinique 2026",
@@ -1356,7 +1434,19 @@
             },
             {
               "query": "carte sargasse martinique 2026",
-              "impressions": 7,
+              "impressions": 9,
+              "clicks": 0,
+              "position": 5.333333333333333
+            },
+            {
+              "query": "carte sargasse martinique 2026",
+              "impressions": 9,
+              "clicks": 0,
+              "position": 8.555555555555555
+            },
+            {
+              "query": "carte sargasse martinique 2026",
+              "impressions": 2,
               "clicks": 0,
               "position": 6
             },
@@ -1364,37 +1454,37 @@
               "query": "carte sargasse martinique 2026",
               "impressions": 1,
               "clicks": 0,
-              "position": 5
-            },
-            {
-              "query": "carte sargasse martinique 2026",
-              "impressions": 3,
-              "clicks": 0,
               "position": 6
             },
             {
               "query": "carte sargasse martinique 2026",
-              "impressions": 1,
+              "impressions": 5,
               "clicks": 0,
-              "position": 6
+              "position": 5.4
             },
             {
               "query": "carte sargasse martinique 2026",
-              "impressions": 3,
+              "impressions": 5,
               "clicks": 0,
-              "position": 5
+              "position": 5.6
             },
             {
-              "query": "carte sargasse martinique 2026",
-              "impressions": 4,
+              "query": "carte sargasses martinique",
+              "impressions": 2,
               "clicks": 0,
-              "position": 5.5
+              "position": 2
             },
             {
               "query": "carte sargasses martinique",
               "impressions": 1,
               "clicks": 0,
               "position": 5
+            },
+            {
+              "query": "carte sargasses martinique",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 3
             },
             {
               "query": "carte sargasses martinique 2026",
@@ -1428,9 +1518,9 @@
             },
             {
               "query": "echouage sargasses martinique",
-              "impressions": 3,
+              "impressions": 4,
               "clicks": 0,
-              "position": 8.666666666666668
+              "position": 8.5
             },
             {
               "query": "echouage sargasses martinique",
@@ -1440,9 +1530,9 @@
             },
             {
               "query": "echouage sargasses martinique",
-              "impressions": 4,
+              "impressions": 5,
               "clicks": 0,
-              "position": 9.25
+              "position": 9
             },
             {
               "query": "gip sargasses martinique",
@@ -1455,12 +1545,6 @@
               "impressions": 1,
               "clicks": 0,
               "position": 2
-            },
-            {
-              "query": "info sargasse martinique",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 3
             },
             {
               "query": "info sargasse martinique",
@@ -1500,12 +1584,6 @@
             },
             {
               "query": "les sargasses en martinique",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 1
-            },
-            {
-              "query": "les sargasses en martinique",
               "impressions": 2,
               "clicks": 0,
               "position": 2
@@ -1524,15 +1602,9 @@
             },
             {
               "query": "les sargasses martinique",
-              "impressions": 2,
-              "clicks": 0,
-              "position": 9.5
-            },
-            {
-              "query": "martinique algues",
               "impressions": 1,
               "clicks": 0,
-              "position": 72
+              "position": 10
             },
             {
               "query": "martinique algues sargasses",
@@ -1560,15 +1632,9 @@
             },
             {
               "query": "martinique et sargasses",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 1
-            },
-            {
-              "query": "martinique sargasse",
               "impressions": 2,
               "clicks": 0,
-              "position": 3
+              "position": 1
             },
             {
               "query": "martinique sargasse",
@@ -1578,9 +1644,9 @@
             },
             {
               "query": "martinique sargasse",
-              "impressions": 2,
+              "impressions": 3,
               "clicks": 0,
-              "position": 6.5
+              "position": 6.666666666666667
             },
             {
               "query": "martinique sargasse",
@@ -1590,9 +1656,9 @@
             },
             {
               "query": "martinique sargasse",
-              "impressions": 2,
+              "impressions": 1,
               "clicks": 0,
-              "position": 6
+              "position": 7
             },
             {
               "query": "martinique sargasse",
@@ -1607,34 +1673,22 @@
               "position": 3.5
             },
             {
-              "query": "martinique sargasse 2026",
-              "impressions": 1,
+              "query": "martinique sargasses",
+              "impressions": 6,
               "clicks": 0,
-              "position": 11
+              "position": 1.6666666666666665
+            },
+            {
+              "query": "martinique sargasses",
+              "impressions": 5,
+              "clicks": 0,
+              "position": 5.8
             },
             {
               "query": "martinique sargasses",
               "impressions": 4,
               "clicks": 0,
-              "position": 2
-            },
-            {
-              "query": "martinique sargasses",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 3
-            },
-            {
-              "query": "martinique sargasses",
-              "impressions": 4,
-              "clicks": 0,
-              "position": 6
-            },
-            {
-              "query": "martinique sargasses",
-              "impressions": 3,
-              "clicks": 0,
-              "position": 1
+              "position": 1.5
             },
             {
               "query": "martinique sargasses",
@@ -1662,9 +1716,9 @@
             },
             {
               "query": "martinique sargasses 2026",
-              "impressions": 2,
+              "impressions": 3,
               "clicks": 0,
-              "position": 9
+              "position": 9.333333333333334
             },
             {
               "query": "martinique sargasses 2026",
@@ -1674,9 +1728,9 @@
             },
             {
               "query": "martinique sargasses 2026",
-              "impressions": 2,
+              "impressions": 1,
               "clicks": 0,
-              "position": 8
+              "position": 9
             },
             {
               "query": "martinique sargasses 2026",
@@ -1686,7 +1740,7 @@
             },
             {
               "query": "martinique sargasses carte",
-              "impressions": 3,
+              "impressions": 2,
               "clicks": 0,
               "position": 5
             },
@@ -1716,7 +1770,7 @@
             },
             {
               "query": "martinique sargasses carte",
-              "impressions": 3,
+              "impressions": 2,
               "clicks": 0,
               "position": 4
             },
@@ -1770,9 +1824,9 @@
             },
             {
               "query": "meteo des sargasses martinique",
-              "impressions": 2,
+              "impressions": 1,
               "clicks": 0,
-              "position": 2.5
+              "position": 2
             },
             {
               "query": "meteo des sargasses martinique",
@@ -1787,10 +1841,16 @@
               "position": 2
             },
             {
-              "query": "meteo martinique sargasse",
-              "impressions": 10,
+              "query": "meteo france martinique sargasse",
+              "impressions": 1,
               "clicks": 0,
-              "position": 2.6
+              "position": 7
+            },
+            {
+              "query": "meteo martinique sargasse",
+              "impressions": 11,
+              "clicks": 0,
+              "position": 2.5454545454545454
             },
             {
               "query": "meteo martinique sargasse",
@@ -1803,12 +1863,6 @@
               "impressions": 1,
               "clicks": 0,
               "position": 10
-            },
-            {
-              "query": "meteo sargasse",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 4
             },
             {
               "query": "meteo sargasse",
@@ -1830,9 +1884,15 @@
             },
             {
               "query": "meteo sargasse martinique",
-              "impressions": 2,
+              "impressions": 1,
               "clicks": 0,
               "position": 2
+            },
+            {
+              "query": "meteo sargasse martinique",
+              "impressions": 15,
+              "clicks": 0,
+              "position": 2.2666666666666666
             },
             {
               "query": "meteo sargasse martinique",
@@ -1842,7 +1902,13 @@
             },
             {
               "query": "meteo sargasse martinique",
-              "impressions": 6,
+              "impressions": 2,
+              "clicks": 0,
+              "position": 2
+            },
+            {
+              "query": "meteo sargasse martinique",
+              "impressions": 7,
               "clicks": 0,
               "position": 2
             },
@@ -1872,7 +1938,7 @@
             },
             {
               "query": "meteo sargasses martinique",
-              "impressions": 1,
+              "impressions": 2,
               "clicks": 0,
               "position": 2
             },
@@ -1913,6 +1979,24 @@
               "position": 2
             },
             {
+              "query": "météo sargasses martinique",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 2
+            },
+            {
+              "query": "où sont les sargasses en martinique",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 7
+            },
+            {
+              "query": "où sont les sargasses en martinique",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 1
+            },
+            {
               "query": "où sont les sargasses en martinique",
               "impressions": 1,
               "clicks": 0,
@@ -1932,15 +2016,9 @@
             },
             {
               "query": "plage des salines martinique sargasse",
-              "impressions": 3,
-              "clicks": 0,
-              "position": 7
-            },
-            {
-              "query": "plage des salines sargasses",
               "impressions": 1,
               "clicks": 0,
-              "position": 3
+              "position": 6
             },
             {
               "query": "plage des salines sargasses",
@@ -1956,9 +2034,9 @@
             },
             {
               "query": "plage des salines sargasses",
-              "impressions": 8,
+              "impressions": 6,
               "clicks": 0,
-              "position": 8.375
+              "position": 8.166666666666668
             },
             {
               "query": "plage des salines sargasses",
@@ -1979,10 +2057,16 @@
               "position": 1
             },
             {
-              "query": "plage martinique sargasse",
-              "impressions": 2,
+              "query": "plage le diamant martinique",
+              "impressions": 1,
               "clicks": 0,
-              "position": 5.5
+              "position": 12
+            },
+            {
+              "query": "plage martinique sargasse",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 8
             },
             {
               "query": "plage martinique sargasse",
@@ -2001,6 +2085,12 @@
               "impressions": 1,
               "clicks": 0,
               "position": 1
+            },
+            {
+              "query": "plage martinique sargasse",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 5
             },
             {
               "query": "plage martinique sargasse",
@@ -2034,9 +2124,9 @@
             },
             {
               "query": "plage sargasse martinique",
-              "impressions": 1,
+              "impressions": 2,
               "clicks": 0,
-              "position": 10
+              "position": 9
             },
             {
               "query": "plage sargasse martinique",
@@ -2051,14 +2141,8 @@
               "position": 5
             },
             {
-              "query": "plage tartane martinique sargasse",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 6
-            },
-            {
               "query": "pointe faula sargasses",
-              "impressions": 1,
+              "impressions": 2,
               "clicks": 0,
               "position": 12
             },
@@ -2088,21 +2172,21 @@
             },
             {
               "query": "prevision sargasse martinique",
-              "impressions": 9,
+              "impressions": 1,
               "clicks": 0,
-              "position": 2.888888888888889
+              "position": 3
+            },
+            {
+              "query": "prevision sargasse martinique",
+              "impressions": 8,
+              "clicks": 0,
+              "position": 2.875
             },
             {
               "query": "prevision sargasse martinique",
               "impressions": 1,
               "clicks": 0,
               "position": 2
-            },
-            {
-              "query": "previsions sargasses martinique",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 3
             },
             {
               "query": "previsions sargasses martinique",
@@ -2141,24 +2225,6 @@
               "position": 12
             },
             {
-              "query": "sargasse diamant martinique",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 6
-            },
-            {
-              "query": "sargasse en martinique",
-              "impressions": 6,
-              "clicks": 0,
-              "position": 2.666666666666667
-            },
-            {
-              "query": "sargasse en martinique",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 6
-            },
-            {
               "query": "sargasse en martinique",
               "impressions": 1,
               "clicks": 0,
@@ -2178,9 +2244,9 @@
             },
             {
               "query": "sargasse en martinique carte",
-              "impressions": 6,
+              "impressions": 4,
               "clicks": 0,
-              "position": 3.3333333333333335
+              "position": 3.25
             },
             {
               "query": "sargasse en martinique carte",
@@ -2198,13 +2264,19 @@
               "query": "sargasse en temps réel",
               "impressions": 3,
               "clicks": 0,
-              "position": 9.666666666666666
+              "position": 9.333333333333334
             },
             {
               "query": "sargasse en temps réel",
-              "impressions": 3,
+              "impressions": 4,
               "clicks": 0,
-              "position": 1
+              "position": 3.75
+            },
+            {
+              "query": "sargasse en temps réel",
+              "impressions": 2,
+              "clicks": 0,
+              "position": 6
             },
             {
               "query": "sargasse en temps réel",
@@ -2214,15 +2286,15 @@
             },
             {
               "query": "sargasse en temps réel",
-              "impressions": 17,
+              "impressions": 20,
               "clicks": 0,
-              "position": 10.470588235294118
+              "position": 10.65
             },
             {
               "query": "sargasse en temps réel",
               "impressions": 2,
               "clicks": 0,
-              "position": 10
+              "position": 9.5
             },
             {
               "query": "sargasse en temps réel",
@@ -2232,9 +2304,9 @@
             },
             {
               "query": "sargasse en temps réel",
-              "impressions": 2,
+              "impressions": 6,
               "clicks": 0,
-              "position": 7
+              "position": 5.666666666666667
             },
             {
               "query": "sargasse en temps réel",
@@ -2243,16 +2315,10 @@
               "position": 10
             },
             {
-              "query": "sargasse live",
+              "query": "sargasse en temps réel",
               "impressions": 1,
               "clicks": 0,
-              "position": 3
-            },
-            {
-              "query": "sargasse live",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 10
+              "position": 9
             },
             {
               "query": "sargasse martinique",
@@ -2268,9 +2334,9 @@
             },
             {
               "query": "sargasse martinique",
-              "impressions": 8,
+              "impressions": 9,
               "clicks": 0,
-              "position": 3.375
+              "position": 3.3333333333333335
             },
             {
               "query": "sargasse martinique",
@@ -2304,9 +2370,9 @@
             },
             {
               "query": "sargasse martinique",
-              "impressions": 14,
+              "impressions": 15,
               "clicks": 0,
-              "position": 3.2142857142857144
+              "position": 3.2
             },
             {
               "query": "sargasse martinique",
@@ -2318,13 +2384,31 @@
               "query": "sargasse martinique",
               "impressions": 1,
               "clicks": 0,
+              "position": 10
+            },
+            {
+              "query": "sargasse martinique",
+              "impressions": 1,
+              "clicks": 0,
               "position": 2
             },
             {
               "query": "sargasse martinique",
-              "impressions": 3,
+              "impressions": 4,
               "clicks": 0,
-              "position": 2.333333333333333
+              "position": 2.25
+            },
+            {
+              "query": "sargasse martinique",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 3
+            },
+            {
+              "query": "sargasse martinique",
+              "impressions": 2,
+              "clicks": 0,
+              "position": 2.5
             },
             {
               "query": "sargasse martinique",
@@ -2346,12 +2430,6 @@
             },
             {
               "query": "sargasse martinique",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 2
-            },
-            {
-              "query": "sargasse martinique",
               "impressions": 2,
               "clicks": 0,
               "position": 5
@@ -2370,7 +2448,7 @@
             },
             {
               "query": "sargasse martinique",
-              "impressions": 1,
+              "impressions": 3,
               "clicks": 0,
               "position": 4
             },
@@ -2382,9 +2460,15 @@
             },
             {
               "query": "sargasse martinique 2026",
-              "impressions": 1,
+              "impressions": 14,
               "clicks": 0,
-              "position": 9
+              "position": 2.7857142857142856
+            },
+            {
+              "query": "sargasse martinique 2026",
+              "impressions": 2,
+              "clicks": 0,
+              "position": 10
             },
             {
               "query": "sargasse martinique 2026",
@@ -2402,13 +2486,13 @@
               "query": "sargasse martinique 2026",
               "impressions": 6,
               "clicks": 0,
-              "position": 3.5
+              "position": 2.666666666666667
             },
             {
               "query": "sargasse martinique 2026",
-              "impressions": 1,
+              "impressions": 2,
               "clicks": 0,
-              "position": 11
+              "position": 7
             },
             {
               "query": "sargasse martinique actuellement",
@@ -2424,6 +2508,12 @@
             },
             {
               "query": "sargasse martinique aujourd hui",
+              "impressions": 3,
+              "clicks": 0,
+              "position": 2
+            },
+            {
+              "query": "sargasse martinique aujourd hui",
               "impressions": 2,
               "clicks": 0,
               "position": 2
@@ -2437,6 +2527,12 @@
             {
               "query": "sargasse martinique aujourd'hui",
               "impressions": 1,
+              "clicks": 0,
+              "position": 2
+            },
+            {
+              "query": "sargasse martinique aujourd'hui",
+              "impressions": 3,
               "clicks": 0,
               "position": 2
             },
@@ -2466,21 +2562,27 @@
             },
             {
               "query": "sargasse martinique carte",
-              "impressions": 6,
+              "impressions": 5,
               "clicks": 0,
-              "position": 2.166666666666667
+              "position": 2.2
             },
             {
               "query": "sargasse martinique carte",
-              "impressions": 1,
+              "impressions": 2,
               "clicks": 0,
               "position": 5
             },
             {
               "query": "sargasse martinique diamant",
-              "impressions": 3,
+              "impressions": 1,
               "clicks": 0,
-              "position": 4
+              "position": 1
+            },
+            {
+              "query": "sargasse martinique diamant",
+              "impressions": 4,
+              "clicks": 0,
+              "position": 3.25
             },
             {
               "query": "sargasse martinique diamant",
@@ -2508,7 +2610,7 @@
             },
             {
               "query": "sargasse martinique en temps réel",
-              "impressions": 2,
+              "impressions": 1,
               "clicks": 0,
               "position": 1
             },
@@ -2532,9 +2634,9 @@
             },
             {
               "query": "sargasse martinique sainte luce",
-              "impressions": 11,
+              "impressions": 12,
               "clicks": 0,
-              "position": 8.545454545454547
+              "position": 8.916666666666668
             },
             {
               "query": "sargasse martinique sainte luce",
@@ -2544,9 +2646,15 @@
             },
             {
               "query": "sargasse martinique sainte luce",
-              "impressions": 2,
+              "impressions": 4,
               "clicks": 0,
-              "position": 10
+              "position": 9.25
+            },
+            {
+              "query": "sargasse martinique sainte luce",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 5
             },
             {
               "query": "sargasse martinique sainte luce",
@@ -2558,23 +2666,11 @@
               "query": "sargasse plage des salines martinique",
               "impressions": 1,
               "clicks": 0,
-              "position": 5
-            },
-            {
-              "query": "sargasse plage des salines martinique",
-              "impressions": 1,
-              "clicks": 0,
               "position": 7
             },
             {
               "query": "sargasse plage des salines martinique",
               "impressions": 3,
-              "clicks": 0,
-              "position": 3
-            },
-            {
-              "query": "sargasse sainte anne martinique",
-              "impressions": 1,
               "clicks": 0,
               "position": 3
             },
@@ -2622,19 +2718,13 @@
             },
             {
               "query": "sargasse tartane martinique",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 5
-            },
-            {
-              "query": "sargasse tartane martinique",
               "impressions": 3,
               "clicks": 0,
               "position": 7
             },
             {
               "query": "sargasse tartane martinique",
-              "impressions": 2,
+              "impressions": 3,
               "clicks": 0,
               "position": 7
             },
@@ -2655,18 +2745,6 @@
               "impressions": 1,
               "clicks": 0,
               "position": 2
-            },
-            {
-              "query": "sargasses anse michel martinique aujourd'hui 2026",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 7
-            },
-            {
-              "query": "sargasses anse michel martinique aujourd'hui 2026",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 7
             },
             {
               "query": "sargasses carte",
@@ -2700,9 +2778,9 @@
             },
             {
               "query": "sargasses en martinique",
-              "impressions": 5,
+              "impressions": 3,
               "clicks": 0,
-              "position": 3.4
+              "position": 5
             },
             {
               "query": "sargasses en martinique",
@@ -2712,7 +2790,7 @@
             },
             {
               "query": "sargasses en martinique",
-              "impressions": 4,
+              "impressions": 3,
               "clicks": 0,
               "position": 1
             },
@@ -2790,9 +2868,9 @@
             },
             {
               "query": "sargasses martinique",
-              "impressions": 3,
+              "impressions": 2,
               "clicks": 0,
-              "position": 2
+              "position": 2.5
             },
             {
               "query": "sargasses martinique",
@@ -2856,6 +2934,12 @@
             },
             {
               "query": "sargasses martinique",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 4
+            },
+            {
+              "query": "sargasses martinique",
               "impressions": 2,
               "clicks": 0,
               "position": 2
@@ -2868,9 +2952,9 @@
             },
             {
               "query": "sargasses martinique",
-              "impressions": 11,
+              "impressions": 10,
               "clicks": 0,
-              "position": 4.363636363636363
+              "position": 4.3
             },
             {
               "query": "sargasses martinique",
@@ -2898,15 +2982,21 @@
             },
             {
               "query": "sargasses martinique 2026",
-              "impressions": 6,
+              "impressions": 8,
+              "clicks": 0,
+              "position": 7.375
+            },
+            {
+              "query": "sargasses martinique 2026",
+              "impressions": 2,
               "clicks": 0,
               "position": 8
             },
             {
-              "query": "sargasses martinique 2026",
+              "query": "sargasses martinique aujourd hui",
               "impressions": 1,
               "clicks": 0,
-              "position": 7
+              "position": 2
             },
             {
               "query": "sargasses martinique aujourd hui",
@@ -2922,27 +3012,15 @@
             },
             {
               "query": "sargasses martinique carte",
-              "impressions": 1,
+              "impressions": 3,
               "clicks": 0,
-              "position": 5
+              "position": 2.666666666666667
             },
             {
               "query": "sargasses martinique carte",
               "impressions": 1,
               "clicks": 0,
               "position": 3
-            },
-            {
-              "query": "sargasses martinique carte",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 3
-            },
-            {
-              "query": "sargasses martinique carte",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 4
             },
             {
               "query": "sargasses martinique carte",
@@ -2970,9 +3048,9 @@
             },
             {
               "query": "sargasses salines martinique",
-              "impressions": 3,
+              "impressions": 2,
               "clicks": 0,
-              "position": 3
+              "position": 3.5
             },
             {
               "query": "sargassum martinique",
@@ -3008,13 +3086,7 @@
               "query": "sargassum monitoring martinique",
               "impressions": 1,
               "clicks": 0,
-              "position": 11
-            },
-            {
-              "query": "sargassum monitoring martinique",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 9
+              "position": 7
             },
             {
               "query": "y a t il des sargasses en martinique",
@@ -3036,9 +3108,9 @@
             },
             {
               "query": "y a t il des sargasses en martinique en ce moment",
-              "impressions": 1,
+              "impressions": 2,
               "clicks": 0,
-              "position": 1
+              "position": 2.5
             },
             {
               "query": "y a t il des sargasses en martinique en ce moment",
@@ -3048,15 +3120,21 @@
             },
             {
               "query": "y a t il des sargasses en martinique en ce moment",
-              "impressions": 1,
+              "impressions": 4,
               "clicks": 0,
               "position": 1
             },
             {
               "query": "y a t il des sargasses en martinique en ce moment",
-              "impressions": 22,
+              "impressions": 24,
               "clicks": 0,
-              "position": 3.8181818181818183
+              "position": 3.75
+            },
+            {
+              "query": "y a t il des sargasses en martinique en ce moment",
+              "impressions": 2,
+              "clicks": 0,
+              "position": 4
             },
             {
               "query": "y a t il des sargasses en martinique en ce moment",
@@ -3073,40 +3151,40 @@
           ]
         },
         "https://sargasses-martinique.com/sargasses-record-2026/": {
-          "clicks": 25,
-          "impressions": 630,
-          "position": 571.8128526764838,
-          "count": 91,
+          "clicks": 26,
+          "impressions": 587,
+          "position": 611.4028824324475,
+          "count": 87,
           "topQueries": [
             {
               "query": "sargasse en temps réel 2026",
-              "impressions": 102,
+              "impressions": 103,
               "clicks": 8,
-              "position": 3.843137254901961
+              "position": 3.5728155339805827
             },
             {
               "query": "sargasse en temps réel 2026",
-              "impressions": 194,
-              "clicks": 2,
-              "position": 9.190721649484535
-            },
-            {
-              "query": "sargasse en temps réel 2026",
-              "impressions": 29,
-              "clicks": 2,
-              "position": 4.275862068965518
-            },
-            {
-              "query": "sargasse en temps réel 2026",
-              "impressions": 7,
-              "clicks": 2,
-              "position": 2.7142857142857144
-            },
-            {
-              "query": "carte sargasse martinique 2026",
               "impressions": 9,
-              "clicks": 1,
-              "position": 6.888888888888889
+              "clicks": 4,
+              "position": 1.7777777777777777
+            },
+            {
+              "query": "martinique sargasses 2026",
+              "impressions": 5,
+              "clicks": 3,
+              "position": 5.2
+            },
+            {
+              "query": "sargasse en temps réel 2026",
+              "impressions": 176,
+              "clicks": 2,
+              "position": 10.0625
+            },
+            {
+              "query": "sargasse en temps réel 2026",
+              "impressions": 26,
+              "clicks": 2,
+              "position": 3.8461538461538463
             },
             {
               "query": "martinique sargasses 2026",
@@ -3115,34 +3193,16 @@
               "position": 1
             },
             {
-              "query": "sargasse antilles 2026",
-              "impressions": 3,
-              "clicks": 1,
-              "position": 6.333333333333333
-            },
-            {
               "query": "sargasse en temps réel 2026",
-              "impressions": 37,
+              "impressions": 29,
               "clicks": 1,
-              "position": 7.972972972972973
-            },
-            {
-              "query": "sargasse en temps réel 2026",
-              "impressions": 7,
-              "clicks": 1,
-              "position": 3.2857142857142856
+              "position": 9.551724137931034
             },
             {
               "query": "sargasse en temps réel 2026",
               "impressions": 3,
               "clicks": 1,
               "position": 2
-            },
-            {
-              "query": "sargasse en temps réel 2026",
-              "impressions": 1,
-              "clicks": 1,
-              "position": 4
             },
             {
               "query": "sargasse martinique 2026",
@@ -3152,9 +3212,9 @@
             },
             {
               "query": "sargasse martinique 2026",
-              "impressions": 4,
+              "impressions": 3,
               "clicks": 1,
-              "position": 9.5
+              "position": 9.666666666666666
             },
             {
               "query": "sargasse martinique mars 2026",
@@ -3182,27 +3242,27 @@
             },
             {
               "query": "carte des sargasses 2026",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 11
+            },
+            {
+              "query": "carte des sargasses 2026",
               "impressions": 2,
               "clicks": 0,
-              "position": 10
+              "position": 11
             },
             {
               "query": "carte des sargasses 2026",
-              "impressions": 6,
+              "impressions": 3,
               "clicks": 0,
-              "position": 9.333333333333334
+              "position": 8.666666666666668
             },
             {
               "query": "carte des sargasses 2026",
-              "impressions": 4,
+              "impressions": 17,
               "clicks": 0,
-              "position": 8.5
-            },
-            {
-              "query": "carte des sargasses 2026",
-              "impressions": 21,
-              "clicks": 0,
-              "position": 10.095238095238095
+              "position": 9.882352941176471
             },
             {
               "query": "carte des sargasses 2026",
@@ -3230,21 +3290,21 @@
             },
             {
               "query": "carte des sargasses 2026",
-              "impressions": 1,
+              "impressions": 6,
               "clicks": 0,
-              "position": 10
-            },
-            {
-              "query": "carte des sargasses 2026",
-              "impressions": 2,
-              "clicks": 0,
-              "position": 8
+              "position": 9.666666666666666
             },
             {
               "query": "carte des sargasses 2026",
               "impressions": 3,
               "clicks": 0,
               "position": 7.666666666666667
+            },
+            {
+              "query": "carte sargasse martinique 2026",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 20
             },
             {
               "query": "carte sargasse martinique 2026",
@@ -3260,9 +3320,15 @@
             },
             {
               "query": "carte sargasse martinique 2026",
-              "impressions": 7,
+              "impressions": 9,
               "clicks": 0,
-              "position": 7.142857142857143
+              "position": 8.11111111111111
+            },
+            {
+              "query": "carte sargasse martinique 2026",
+              "impressions": 8,
+              "clicks": 0,
+              "position": 7.375
             },
             {
               "query": "carte sargasse martinique 2026",
@@ -3284,9 +3350,9 @@
             },
             {
               "query": "martinique sargasse 2026",
-              "impressions": 2,
+              "impressions": 1,
               "clicks": 0,
-              "position": 9
+              "position": 11
             },
             {
               "query": "martinique sargasse 2026",
@@ -3302,9 +3368,9 @@
             },
             {
               "query": "martinique sargasses 2026",
-              "impressions": 1,
+              "impressions": 2,
               "clicks": 0,
-              "position": 1
+              "position": 8.5
             },
             {
               "query": "martinique sargasses 2026",
@@ -3320,21 +3386,21 @@
             },
             {
               "query": "martinique sargasses 2026",
-              "impressions": 2,
+              "impressions": 1,
               "clicks": 0,
               "position": 9
             },
             {
               "query": "martinique sargasses 2026",
-              "impressions": 1,
+              "impressions": 2,
               "clicks": 0,
-              "position": 6
+              "position": 7
             },
             {
               "query": "martinique sargasses 2026",
-              "impressions": 3,
+              "impressions": 4,
               "clicks": 0,
-              "position": 6.666666666666667
+              "position": 7.25
             },
             {
               "query": "martinique sargasses 2026",
@@ -3361,10 +3427,10 @@
               "position": 6
             },
             {
-              "query": "martinique sargasses 2026",
+              "query": "plage le diamant martinique",
               "impressions": 1,
               "clicks": 0,
-              "position": 6
+              "position": 16
             },
             {
               "query": "sargasse antilles 2026",
@@ -3374,9 +3440,21 @@
             },
             {
               "query": "sargasse antilles 2026",
+              "impressions": 2,
+              "clicks": 0,
+              "position": 7.5
+            },
+            {
+              "query": "sargasse antilles 2026",
               "impressions": 1,
               "clicks": 0,
               "position": 7
+            },
+            {
+              "query": "sargasse en temps réel 2026",
+              "impressions": 7,
+              "clicks": 0,
+              "position": 3.7142857142857144
             },
             {
               "query": "sargasse en temps réel 2026",
@@ -3400,25 +3478,13 @@
               "query": "sargasse en temps réel 2026",
               "impressions": 1,
               "clicks": 0,
-              "position": 6
-            },
-            {
-              "query": "sargasse en temps réel 2026",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 3
-            },
-            {
-              "query": "sargasse en temps réel 2026",
-              "impressions": 1,
-              "clicks": 0,
               "position": 4
             },
             {
               "query": "sargasse en temps réel 2026",
-              "impressions": 6,
+              "impressions": 3,
               "clicks": 0,
-              "position": 3
+              "position": 1.6666666666666665
             },
             {
               "query": "sargasse en temps réel 2026",
@@ -3430,7 +3496,19 @@
               "query": "sargasse en temps réel 2026",
               "impressions": 1,
               "clicks": 0,
-              "position": 1
+              "position": 3
+            },
+            {
+              "query": "sargasse en temps réel 2026",
+              "impressions": 12,
+              "clicks": 0,
+              "position": 8.833333333333332
+            },
+            {
+              "query": "sargasse en temps réel 2026",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 8
             },
             {
               "query": "sargasse en temps réel 2026",
@@ -3440,33 +3518,27 @@
             },
             {
               "query": "sargasse en temps réel 2026",
-              "impressions": 14,
+              "impressions": 13,
               "clicks": 0,
-              "position": 8.357142857142858
+              "position": 4.923076923076923
             },
             {
               "query": "sargasse en temps réel 2026",
-              "impressions": 1,
+              "impressions": 23,
               "clicks": 0,
-              "position": 3
-            },
-            {
-              "query": "sargasse en temps réel 2026",
-              "impressions": 14,
-              "clicks": 0,
-              "position": 4.857142857142858
-            },
-            {
-              "query": "sargasse en temps réel 2026",
-              "impressions": 28,
-              "clicks": 0,
-              "position": 9.75
+              "position": 10.652173913043478
             },
             {
               "query": "sargasse en temps réel 2026",
               "impressions": 3,
               "clicks": 0,
               "position": 5
+            },
+            {
+              "query": "sargasse en temps réel 2026",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 6
             },
             {
               "query": "sargasse martinique 2026",
@@ -3494,9 +3566,9 @@
             },
             {
               "query": "sargasse martinique 2026",
-              "impressions": 2,
+              "impressions": 1,
               "clicks": 0,
-              "position": 6
+              "position": 4
             },
             {
               "query": "sargasse martinique 2026",
@@ -3506,21 +3578,9 @@
             },
             {
               "query": "sargasse martinique 2026",
-              "impressions": 1,
+              "impressions": 11,
               "clicks": 0,
-              "position": 6
-            },
-            {
-              "query": "sargasse martinique 2026",
-              "impressions": 10,
-              "clicks": 0,
-              "position": 7.1
-            },
-            {
-              "query": "sargasse martinique 2026",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 6
+              "position": 8.454545454545453
             },
             {
               "query": "sargasse martinique 2026",
@@ -3530,15 +3590,21 @@
             },
             {
               "query": "sargasse martinique 2026",
-              "impressions": 6,
+              "impressions": 1,
               "clicks": 0,
-              "position": 8.833333333333332
+              "position": 6
             },
             {
               "query": "sargasse martinique 2026",
-              "impressions": 2,
+              "impressions": 7,
               "clicks": 0,
-              "position": 5.5
+              "position": 8.857142857142858
+            },
+            {
+              "query": "sargasse martinique 2026",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 6
             },
             {
               "query": "sargasse martinique 2026",
@@ -3577,28 +3643,16 @@
               "position": 9
             },
             {
-              "query": "sargasses anse michel martinique aujourd'hui 2026",
+              "query": "sargasses martinique 2026",
               "impressions": 1,
               "clicks": 0,
-              "position": 1
-            },
-            {
-              "query": "sargasses anse michel martinique aujourd'hui 2026",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 1
+              "position": 10
             },
             {
               "query": "sargasses martinique 2026",
               "impressions": 1,
               "clicks": 0,
               "position": 3
-            },
-            {
-              "query": "sargasses martinique 2026",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 7
             },
             {
               "query": "sargasses martinique 2026",
@@ -3627,28 +3681,28 @@
           ]
         },
         "https://sargasses-martinique.com/en/": {
-          "clicks": 11,
+          "clicks": 13,
           "impressions": 73,
-          "position": 373.197619047619,
-          "count": 43,
+          "position": 301.98809523809524,
+          "count": 39,
           "topQueries": [
-            {
-              "query": "martinique sargassum",
-              "impressions": 5,
-              "clicks": 2,
-              "position": 4.4
-            },
             {
               "query": "sargassum martinique",
               "impressions": 7,
-              "clicks": 2,
-              "position": 4.714285714285714
+              "clicks": 3,
+              "position": 4.571428571428571
             },
             {
               "query": "sargassum martinique",
-              "impressions": 5,
+              "impressions": 6,
+              "clicks": 3,
+              "position": 1.8333333333333335
+            },
+            {
+              "query": "martinique sargassum",
+              "impressions": 6,
               "clicks": 2,
-              "position": 2
+              "position": 5.5
             },
             {
               "query": "sargassum martinique",
@@ -3681,16 +3735,10 @@
               "position": 7
             },
             {
-              "query": "martinique sargasses",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 9
-            },
-            {
               "query": "martinique sargassum",
-              "impressions": 1,
+              "impressions": 2,
               "clicks": 0,
-              "position": 8
+              "position": 3.5
             },
             {
               "query": "martinique sargassum",
@@ -3712,9 +3760,9 @@
             },
             {
               "query": "martinique sargassum",
-              "impressions": 1,
+              "impressions": 3,
               "clicks": 0,
-              "position": 5
+              "position": 2.333333333333333
             },
             {
               "query": "martinique sargassum",
@@ -3747,16 +3795,10 @@
               "position": 1
             },
             {
-              "query": "sargasse en temps réel",
+              "query": "sargasse martinique",
               "impressions": 1,
               "clicks": 0,
-              "position": 54
-            },
-            {
-              "query": "sargasse martinique",
-              "impressions": 2,
-              "clicks": 0,
-              "position": 47
+              "position": 51
             },
             {
               "query": "sargasse martinique aujourd'hui",
@@ -3768,19 +3810,13 @@
               "query": "sargasse martinique aujourd'hui",
               "impressions": 1,
               "clicks": 0,
-              "position": 7
-            },
-            {
-              "query": "sargasse martinique aujourd'hui",
-              "impressions": 2,
-              "clicks": 0,
-              "position": 8.5
+              "position": 6
             },
             {
               "query": "sargasse martinique en direct",
-              "impressions": 2,
+              "impressions": 3,
               "clicks": 0,
-              "position": 10.5
+              "position": 10.666666666666666
             },
             {
               "query": "sargasse martinique en temps réel",
@@ -3790,15 +3826,9 @@
             },
             {
               "query": "sargasse martinique en temps réel",
-              "impressions": 2,
+              "impressions": 3,
               "clicks": 0,
               "position": 9
-            },
-            {
-              "query": "sargasse martinique en temps réel",
-              "impressions": 2,
-              "clicks": 0,
-              "position": 7
             },
             {
               "query": "sargasse martinique en temps réel",
@@ -3813,6 +3843,12 @@
               "position": 4
             },
             {
+              "query": "sargasses map",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 11
+            },
+            {
               "query": "sargasses martinique",
               "impressions": 1,
               "clicks": 0,
@@ -3820,19 +3856,13 @@
             },
             {
               "query": "sargasses martinique",
-              "impressions": 2,
+              "impressions": 1,
               "clicks": 0,
-              "position": 46.5
+              "position": 48
             },
             {
               "query": "sargasses martinique",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 2
-            },
-            {
-              "query": "sargassum martinique",
-              "impressions": 1,
+              "impressions": 2,
               "clicks": 0,
               "position": 3
             },
@@ -3893,22 +3923,28 @@
           ]
         },
         "https://sargasses-martinique.com/plages/plage-du-diamant/": {
-          "clicks": 2,
-          "impressions": 34,
-          "position": 80.44444444444444,
-          "count": 13,
+          "clicks": 3,
+          "impressions": 43,
+          "position": 114.66666666666666,
+          "count": 18,
           "topQueries": [
             {
               "query": "sargasse martinique diamant",
-              "impressions": 9,
+              "impressions": 10,
               "clicks": 2,
-              "position": 5.777777777777778
+              "position": 6.2
+            },
+            {
+              "query": "sargasse martinique diamant",
+              "impressions": 1,
+              "clicks": 1,
+              "position": 1
             },
             {
               "query": "diamant sargasse martinique",
-              "impressions": 1,
+              "impressions": 2,
               "clicks": 0,
-              "position": 6
+              "position": 7.5
             },
             {
               "query": "diamant sargasse martinique",
@@ -3918,27 +3954,33 @@
             },
             {
               "query": "diamant sargasse martinique",
-              "impressions": 2,
+              "impressions": 3,
               "clicks": 0,
-              "position": 10
+              "position": 9.666666666666666
             },
             {
-              "query": "plage diamant martinique sargasse",
-              "impressions": 2,
-              "clicks": 0,
-              "position": 5
-            },
-            {
-              "query": "plage diamant martinique sargasse",
-              "impressions": 4,
-              "clicks": 0,
-              "position": 2
-            },
-            {
-              "query": "plage diamant martinique sargasse",
+              "query": "diamants",
               "impressions": 1,
               "clicks": 0,
-              "position": 7
+              "position": 3
+            },
+            {
+              "query": "plage diamant martinique sargasse",
+              "impressions": 3,
+              "clicks": 0,
+              "position": 4.666666666666666
+            },
+            {
+              "query": "plage diamant martinique sargasse",
+              "impressions": 3,
+              "clicks": 0,
+              "position": 2.333333333333333
+            },
+            {
+              "query": "plage diamant martinique sargasse",
+              "impressions": 2,
+              "clicks": 0,
+              "position": 8
             },
             {
               "query": "plage du diamant",
@@ -3948,9 +3990,15 @@
             },
             {
               "query": "plage du diamant sargasse",
-              "impressions": 6,
+              "impressions": 5,
               "clicks": 0,
-              "position": 5.666666666666667
+              "position": 5.8
+            },
+            {
+              "query": "plage le diamant martinique",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 3
             },
             {
               "query": "sargasse diamant martinique",
@@ -3972,17 +4020,29 @@
             },
             {
               "query": "sargasse martinique diamant",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 7
+            },
+            {
+              "query": "sargasse martinique diamant",
               "impressions": 2,
               "clicks": 0,
               "position": 7.5
+            },
+            {
+              "query": "sargasses",
+              "impressions": 2,
+              "clicks": 0,
+              "position": 17.5
             }
           ]
         },
         "https://sargasses-martinique.com/meilleures-plages-martinique-sargasses/": {
           "clicks": 2,
-          "impressions": 33,
-          "position": 255.23333333333332,
-          "count": 19,
+          "impressions": 36,
+          "position": 285.0833333333333,
+          "count": 20,
           "topQueries": [
             {
               "query": "carte des plages martinique",
@@ -3992,9 +4052,9 @@
             },
             {
               "query": "carte des plus belles plages de martinique",
-              "impressions": 5,
+              "impressions": 4,
               "clicks": 1,
-              "position": 9.4
+              "position": 9.25
             },
             {
               "query": "carte des plages martinique",
@@ -4010,27 +4070,33 @@
             },
             {
               "query": "carte des plus belles plages de martinique",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 14
+            },
+            {
+              "query": "carte des plus belles plages de martinique",
               "impressions": 2,
               "clicks": 0,
               "position": 11
             },
             {
               "query": "carte martinique plages",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 11
-            },
-            {
-              "query": "carte martinique plages",
-              "impressions": 1,
+              "impressions": 2,
               "clicks": 0,
               "position": 16
             },
             {
               "query": "carte plage martinique",
+              "impressions": 2,
+              "clicks": 0,
+              "position": 15.5
+            },
+            {
+              "query": "carte plage martinique",
               "impressions": 1,
               "clicks": 0,
-              "position": 18
+              "position": 19
             },
             {
               "query": "carte plages martinique",
@@ -4045,10 +4111,10 @@
               "position": 10
             },
             {
-              "query": "les plus belles plages de martinique carte",
+              "query": "carte sargasse martinique",
               "impressions": 1,
               "clicks": 0,
-              "position": 8
+              "position": 28
             },
             {
               "query": "martinique carte des plages",
@@ -4070,9 +4136,9 @@
             },
             {
               "query": "plage martinique carte",
-              "impressions": 2,
+              "impressions": 3,
               "clicks": 0,
-              "position": 13
+              "position": 13.666666666666666
             },
             {
               "query": "plage sans sargasse martinique",
@@ -4081,14 +4147,14 @@
               "position": 8
             },
             {
-              "query": "plages martinique carte",
-              "impressions": 3,
+              "query": "plage sans sargasse martinique",
+              "impressions": 2,
               "clicks": 0,
-              "position": 16.666666666666664
+              "position": 6.5
             },
             {
               "query": "plages martinique carte",
-              "impressions": 1,
+              "impressions": 2,
               "clicks": 0,
               "position": 17
             },
@@ -4102,15 +4168,15 @@
         },
         "https://sargasses-martinique.com/en/sargassum-map/": {
           "clicks": 2,
-          "impressions": 83,
-          "position": 1191.0000000000002,
-          "count": 59,
+          "impressions": 86,
+          "position": 1213.1666666666667,
+          "count": 63,
           "topQueries": [
             {
               "query": "image satellite sargasse",
               "impressions": 2,
               "clicks": 1,
-              "position": 16
+              "position": 6.5
             },
             {
               "query": "sargassum map today",
@@ -4132,6 +4198,12 @@
             },
             {
               "query": "carte des sargasses guadeloupe",
+              "impressions": 3,
+              "clicks": 0,
+              "position": 8
+            },
+            {
+              "query": "carte des sargasses guadeloupe",
               "impressions": 1,
               "clicks": 0,
               "position": 11
@@ -4150,15 +4222,9 @@
             },
             {
               "query": "carte sargasse guadeloupe",
-              "impressions": 2,
-              "clicks": 0,
-              "position": 21
-            },
-            {
-              "query": "carte sargasse guadeloupe",
               "impressions": 1,
               "clicks": 0,
-              "position": 9
+              "position": 19
             },
             {
               "query": "carte sargasse guadeloupe",
@@ -4245,10 +4311,10 @@
               "position": 41
             },
             {
-              "query": "image satellite sargasse",
+              "query": "info sargasse martinique",
               "impressions": 1,
               "clicks": 0,
-              "position": 9
+              "position": 3
             },
             {
               "query": "mer des sargasses carte",
@@ -4264,9 +4330,9 @@
             },
             {
               "query": "sargasse en temps réel",
-              "impressions": 3,
+              "impressions": 2,
               "clicks": 0,
-              "position": 34
+              "position": 33.5
             },
             {
               "query": "sargasse en temps réel",
@@ -4291,6 +4357,18 @@
               "impressions": 1,
               "clicks": 0,
               "position": 11
+            },
+            {
+              "query": "sargasse guadeloupe en direct",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 28
+            },
+            {
+              "query": "sargasse guadeloupe en direct",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 7
             },
             {
               "query": "sargasse guadeloupe en direct",
@@ -4324,9 +4402,9 @@
             },
             {
               "query": "sargasse martinique",
-              "impressions": 2,
+              "impressions": 1,
               "clicks": 0,
-              "position": 78.5
+              "position": 80
             },
             {
               "query": "sargasse martinique carte",
@@ -4342,9 +4420,9 @@
             },
             {
               "query": "sargasse martinique en temps réel",
-              "impressions": 3,
+              "impressions": 2,
               "clicks": 0,
-              "position": 32.33333333333333
+              "position": 18
             },
             {
               "query": "sargasse martinique en temps réel",
@@ -4359,10 +4437,22 @@
               "position": 28
             },
             {
+              "query": "sargasse vue satellite",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 10
+            },
+            {
               "query": "sargasses carte",
               "impressions": 1,
               "clicks": 0,
               "position": 55
+            },
+            {
+              "query": "sargasses carte satellite",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 11
             },
             {
               "query": "sargasses carte satellite",
@@ -4378,9 +4468,9 @@
             },
             {
               "query": "sargasses carte satellite",
-              "impressions": 1,
+              "impressions": 2,
               "clicks": 0,
-              "position": 5
+              "position": 7
             },
             {
               "query": "sargasses carte satellite",
@@ -4407,28 +4497,22 @@
               "position": 28
             },
             {
-              "query": "sargasses guadeloupe carte",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 25
-            },
-            {
               "query": "sargasses map",
-              "impressions": 1,
+              "impressions": 2,
               "clicks": 0,
-              "position": 11
+              "position": 10.5
             },
             {
               "query": "sargasses martinique",
-              "impressions": 2,
+              "impressions": 1,
               "clicks": 0,
-              "position": 81.5
+              "position": 85
             },
             {
               "query": "sargasses martinique carte",
               "impressions": 1,
               "clicks": 0,
-              "position": 11
+              "position": 25
             },
             {
               "query": "sargasses satellite",
@@ -4452,6 +4536,12 @@
               "query": "sargassum martinique",
               "impressions": 1,
               "clicks": 0,
+              "position": 4
+            },
+            {
+              "query": "sargassum martinique",
+              "impressions": 1,
+              "clicks": 0,
               "position": 9
             },
             {
@@ -4464,9 +4554,9 @@
         },
         "https://sargasses-martinique.com/en/best-beaches-martinique/": {
           "clicks": 2,
-          "impressions": 86,
-          "position": 1110.463141025641,
-          "count": 28,
+          "impressions": 88,
+          "position": 994.9877819548872,
+          "count": 27,
           "topQueries": [
             {
               "query": "ja",
@@ -4500,9 +4590,9 @@
             },
             {
               "query": "best beach martinique",
-              "impressions": 8,
+              "impressions": 7,
               "clicks": 0,
-              "position": 22.875
+              "position": 22.428571428571427
             },
             {
               "query": "best beach martinique",
@@ -4524,15 +4614,15 @@
             },
             {
               "query": "best beaches in martinique",
-              "impressions": 13,
+              "impressions": 1,
               "clicks": 0,
-              "position": 17.692307692307693
+              "position": 18
             },
             {
-              "query": "best beaches martinique",
-              "impressions": 2,
+              "query": "best beaches in martinique",
+              "impressions": 15,
               "clicks": 0,
-              "position": 70
+              "position": 17.666666666666668
             },
             {
               "query": "best beaches martinique",
@@ -4548,15 +4638,15 @@
             },
             {
               "query": "best beaches martinique",
-              "impressions": 16,
+              "impressions": 19,
               "clicks": 0,
-              "position": 18.6875
+              "position": 18.68421052631579
             },
             {
               "query": "best beaches on martinique",
-              "impressions": 2,
+              "impressions": 3,
               "clicks": 0,
-              "position": 16
+              "position": 16.666666666666664
             },
             {
               "query": "best martinique beaches",
@@ -4572,9 +4662,9 @@
             },
             {
               "query": "martinique beaches",
-              "impressions": 3,
+              "impressions": 2,
               "clicks": 0,
-              "position": 51.666666666666664
+              "position": 52
             },
             {
               "query": "martinique beaches",
@@ -4599,12 +4689,6 @@
               "impressions": 1,
               "clicks": 0,
               "position": 66
-            },
-            {
-              "query": "martinique best beaches",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 64
             },
             {
               "query": "martinique best beaches",
@@ -4640,27 +4724,27 @@
         },
         "https://sargasses-martinique.com/plages/anse-des-galets/": {
           "clicks": 0,
-          "impressions": 94,
-          "position": 85.17202657807309,
+          "impressions": 81,
+          "position": 85.21410256410256,
           "count": 10,
           "topQueries": [
             {
               "query": "anse des galets martinique",
-              "impressions": 43,
+              "impressions": 36,
               "clicks": 0,
-              "position": 8.534883720930232
+              "position": 8.583333333333332
             },
             {
               "query": "anse des galets martinique",
-              "impressions": 25,
+              "impressions": 20,
               "clicks": 0,
-              "position": 8.280000000000001
+              "position": 8.4
             },
             {
               "query": "anse galet martinique",
-              "impressions": 14,
+              "impressions": 13,
               "clicks": 0,
-              "position": 9.357142857142858
+              "position": 9.23076923076923
             },
             {
               "query": "anse galet martinique",
@@ -4734,15 +4818,21 @@
         },
         "https://sargasses-martinique.com/plages/anse-trabaud/": {
           "clicks": 0,
-          "impressions": 8,
-          "position": 52,
-          "count": 5,
+          "impressions": 9,
+          "position": 55,
+          "count": 6,
           "topQueries": [
             {
               "query": "anse trabaud sargasses",
               "impressions": 1,
               "clicks": 0,
               "position": 4
+            },
+            {
+              "query": "anse trabaud sargasses",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 3
             },
             {
               "query": "anse trabaud sargasses",
@@ -4772,10 +4862,22 @@
         },
         "https://sargasses-martinique.com/en/best-beaches-guadeloupe/": {
           "clicks": 0,
-          "impressions": 7,
-          "position": 151,
-          "count": 5,
+          "impressions": 9,
+          "position": 186,
+          "count": 7,
           "topQueries": [
+            {
+              "query": "best beach guadeloupe",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 17
+            },
+            {
+              "query": "best beaches in guadeloupe",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 18
+            },
             {
               "query": "best beaches in guadeloupe",
               "impressions": 2,
@@ -4810,27 +4912,27 @@
         },
         "https://sargasses-martinique.com/detection-satellite-sargasses/": {
           "clicks": 0,
-          "impressions": 6,
-          "position": 94,
-          "count": 6,
+          "impressions": 14,
+          "position": 162.25,
+          "count": 10,
           "topQueries": [
+            {
+              "query": "carte sargasse martinique",
+              "impressions": 2,
+              "clicks": 0,
+              "position": 20.5
+            },
             {
               "query": "carte sargasse martinique",
               "impressions": 1,
               "clicks": 0,
-              "position": 20
+              "position": 24
             },
             {
               "query": "carte sargasses martinique",
               "impressions": 1,
               "clicks": 0,
               "position": 28
-            },
-            {
-              "query": "mer des sargasses vue satellite",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 4
             },
             {
               "query": "sargasse martinique carte",
@@ -4849,20 +4951,90 @@
               "impressions": 1,
               "clicks": 0,
               "position": 4
+            },
+            {
+              "query": "sargasse martinique en temps réel",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 10
+            },
+            {
+              "query": "sargasse vue satellite",
+              "impressions": 4,
+              "clicks": 0,
+              "position": 9.75
+            },
+            {
+              "query": "sargasses carte satellite",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 8
+            },
+            {
+              "query": "sargasses martinique carte",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 20
+            }
+          ]
+        },
+        "https://sargasses-martinique.com/bilan-sargasses-2025/": {
+          "clicks": 0,
+          "impressions": 3,
+          "position": 132,
+          "count": 3,
+          "topQueries": [
+            {
+              "query": "carte sargasse martinique 2025",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 24
+            },
+            {
+              "query": "sargasse guadeloupe 2025",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 50
+            },
+            {
+              "query": "sargasse martinique 2025",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 58
+            }
+          ]
+        },
+        "https://sargasses-martinique.com/articles/point-semaine-avril-2026-mq-2026-04-09/": {
+          "clicks": 0,
+          "impressions": 1,
+          "position": 30,
+          "count": 1,
+          "topQueries": [
+            {
+              "query": "carte sargasse martinique 2026",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 30
             }
           ]
         },
         "https://sargasses-martinique.com/es/": {
           "clicks": 0,
-          "impressions": 2,
-          "position": 16,
-          "count": 2,
+          "impressions": 3,
+          "position": 24,
+          "count": 3,
           "topQueries": [
             {
               "query": "martinica?",
               "impressions": 1,
               "clicks": 0,
               "position": 5
+            },
+            {
+              "query": "sargasses martinique",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 8
             },
             {
               "query": "sargazo en tiempo real",
@@ -4872,31 +5044,11 @@
             }
           ]
         },
-        "https://sargasses-martinique.com/previsions/": {
-          "clicks": 0,
-          "impressions": 3,
-          "position": 88.5,
-          "count": 2,
-          "topQueries": [
-            {
-              "query": "meteo sargasse martinique",
-              "impressions": 1,
-              "clicks": 0,
-              "position": 47
-            },
-            {
-              "query": "sargasse martinique en temps réel",
-              "impressions": 2,
-              "clicks": 0,
-              "position": 41.5
-            }
-          ]
-        },
         "https://sargasses-martinique.com/plages/pointe-fort-caravelle/": {
           "clicks": 0,
-          "impressions": 4,
-          "position": 24.5,
-          "count": 3,
+          "impressions": 2,
+          "position": 19,
+          "count": 2,
           "topQueries": [
             {
               "query": "plage de la caravelle sargasse",
@@ -4908,40 +5060,28 @@
               "query": "sargasses",
               "impressions": 1,
               "clicks": 0,
-              "position": 6
-            },
-            {
-              "query": "sargasses",
-              "impressions": 2,
-              "clicks": 0,
-              "position": 7.5
+              "position": 8
             }
           ]
         },
-        "https://sargasses-martinique.com/bilan-sargasses-2025/": {
+        "https://sargasses-martinique.com/comprendre-sargasses/": {
           "clicks": 0,
-          "impressions": 3,
-          "position": 115,
-          "count": 2,
+          "impressions": 1,
+          "position": 46,
+          "count": 1,
           "topQueries": [
             {
-              "query": "sargasse guadeloupe 2025",
-              "impressions": 2,
-              "clicks": 0,
-              "position": 57
-            },
-            {
-              "query": "sargasse martinique 2025",
+              "query": "saragasse",
               "impressions": 1,
               "clicks": 0,
-              "position": 58
+              "position": 46
             }
           ]
         },
         "https://sargasses-martinique.com/villes/la-trinite/": {
           "clicks": 0,
-          "impressions": 12,
-          "position": 62,
+          "impressions": 11,
+          "position": 61.5,
           "count": 5,
           "topQueries": [
             {
@@ -4952,9 +5092,9 @@
             },
             {
               "query": "sargasse martinique aujourd'hui",
-              "impressions": 2,
+              "impressions": 1,
               "clicks": 0,
-              "position": 21.5
+              "position": 21
             },
             {
               "query": "sargasse martinique aujourd'hui",
@@ -4973,6 +5113,34 @@
               "impressions": 2,
               "clicks": 0,
               "position": 8.5
+            }
+          ]
+        },
+        "https://sargasses-martinique.com/previsions/": {
+          "clicks": 0,
+          "impressions": 1,
+          "position": 24,
+          "count": 1,
+          "topQueries": [
+            {
+              "query": "sargasse martinique en temps réel",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 24
+            }
+          ]
+        },
+        "https://sargasses-martinique.com/plages/sainte-anne-guadeloupe/": {
+          "clicks": 0,
+          "impressions": 1,
+          "position": 21,
+          "count": 1,
+          "topQueries": [
+            {
+              "query": "sargasse sainte anne guadeloupe",
+              "impressions": 1,
+              "clicks": 0,
+              "position": 21
             }
           ]
         },
@@ -5025,7 +5193,7 @@
           "verdict": "PASS",
           "pageFetchState": "SUCCESSFUL",
           "robotsTxtState": "ALLOWED",
-          "lastCrawlTime": "2026-06-08T07:41:46Z",
+          "lastCrawlTime": "2026-06-11T20:21:56Z",
           "coverageState": "Submitted and indexed"
         },
         {
@@ -5041,7 +5209,7 @@
           "verdict": "PASS",
           "pageFetchState": "SUCCESSFUL",
           "robotsTxtState": "ALLOWED",
-          "lastCrawlTime": "2026-06-07T19:40:43Z",
+          "lastCrawlTime": "2026-06-11T09:58:16Z",
           "coverageState": "Submitted and indexed"
         },
         {
@@ -5057,7 +5225,7 @@
           "verdict": "PASS",
           "pageFetchState": "SUCCESSFUL",
           "robotsTxtState": "ALLOWED",
-          "lastCrawlTime": "2026-06-08T08:35:46Z",
+          "lastCrawlTime": "2026-06-11T11:13:16Z",
           "coverageState": "Submitted and indexed"
         },
         {
@@ -5065,7 +5233,7 @@
           "verdict": "PASS",
           "pageFetchState": "SUCCESSFUL",
           "robotsTxtState": "ALLOWED",
-          "lastCrawlTime": "2026-05-29T12:08:18Z",
+          "lastCrawlTime": "2026-06-11T16:38:17Z",
           "coverageState": "Submitted and indexed"
         },
         {
@@ -5081,7 +5249,7 @@
           "verdict": "PASS",
           "pageFetchState": "SUCCESSFUL",
           "robotsTxtState": "ALLOWED",
-          "lastCrawlTime": "2026-06-07T20:58:12Z",
+          "lastCrawlTime": "2026-06-11T14:58:17Z",
           "coverageState": "Submitted and indexed"
         },
         {
@@ -5089,7 +5257,7 @@
           "verdict": "PASS",
           "pageFetchState": "SUCCESSFUL",
           "robotsTxtState": "ALLOWED",
-          "lastCrawlTime": "2026-05-25T12:52:35Z",
+          "lastCrawlTime": "2026-06-10T23:05:06Z",
           "coverageState": "Submitted and indexed"
         },
         {
@@ -5098,14 +5266,14 @@
           "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
           "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
           "lastCrawlTime": null,
-          "coverageState": "Discovered - currently not indexed"
+          "coverageState": "URL is unknown to Google"
         },
         {
           "url": "https://sargasses-martinique.com/sargasses-record-2026/",
           "verdict": "PASS",
           "pageFetchState": "SUCCESSFUL",
           "robotsTxtState": "ALLOWED",
-          "lastCrawlTime": "2026-06-08T13:35:24Z",
+          "lastCrawlTime": "2026-06-11T06:38:14Z",
           "coverageState": "Submitted and indexed"
         },
         {
@@ -5137,7 +5305,7 @@
           "verdict": "PASS",
           "pageFetchState": "SUCCESSFUL",
           "robotsTxtState": "ALLOWED",
-          "lastCrawlTime": "2026-06-04T21:30:41Z",
+          "lastCrawlTime": "2026-06-09T18:21:00Z",
           "coverageState": "Submitted and indexed"
         },
         {
@@ -5154,7 +5322,7 @@
           "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
           "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
           "lastCrawlTime": null,
-          "coverageState": "URL is unknown to Google"
+          "coverageState": "Discovered - currently not indexed"
         },
         {
           "url": "https://sargasses-martinique.com/faq/",
@@ -5186,7 +5354,7 @@
           "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
           "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
           "lastCrawlTime": null,
-          "coverageState": "URL is unknown to Google"
+          "coverageState": "Discovered - currently not indexed"
         },
         {
           "url": "https://sargasses-martinique.com/plages/anse-meunier/",
@@ -5209,7 +5377,7 @@
           "verdict": "PASS",
           "pageFetchState": "SUCCESSFUL",
           "robotsTxtState": "ALLOWED",
-          "lastCrawlTime": "2026-06-07T02:50:39Z",
+          "lastCrawlTime": "2026-06-10T21:50:06Z",
           "coverageState": "Submitted and indexed"
         },
         {
@@ -5265,7 +5433,7 @@
           "verdict": "PASS",
           "pageFetchState": "SUCCESSFUL",
           "robotsTxtState": "ALLOWED",
-          "lastCrawlTime": "2026-06-07T01:56:38Z",
+          "lastCrawlTime": "2026-06-10T20:10:06Z",
           "coverageState": "Submitted and indexed"
         },
         {
@@ -5273,7 +5441,7 @@
           "verdict": "PASS",
           "pageFetchState": "SUCCESSFUL",
           "robotsTxtState": "ALLOWED",
-          "lastCrawlTime": "2026-06-08T11:25:54Z",
+          "lastCrawlTime": "2026-06-11T15:48:17Z",
           "coverageState": "Submitted and indexed"
         },
         {
@@ -5297,7 +5465,7 @@
           "verdict": "PASS",
           "pageFetchState": "SUCCESSFUL",
           "robotsTxtState": "ALLOWED",
-          "lastCrawlTime": "2026-06-07T16:54:43Z",
+          "lastCrawlTime": "2026-06-11T00:55:12Z",
           "coverageState": "Submitted and indexed"
         },
         {
@@ -5334,11 +5502,11 @@
         },
         {
           "url": "https://sargasses-martinique.com/plages/pointe-borgnesse/",
-          "verdict": "NEUTRAL",
-          "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
-          "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
-          "lastCrawlTime": null,
-          "coverageState": "Discovered - currently not indexed"
+          "verdict": "PASS",
+          "pageFetchState": "SUCCESSFUL",
+          "robotsTxtState": "ALLOWED",
+          "lastCrawlTime": "2026-06-11T23:51:20Z",
+          "coverageState": "Submitted and indexed"
         },
         {
           "url": "https://sargasses-martinique.com/plages/plage-de-la-francaise/",
@@ -5402,7 +5570,7 @@
           "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
           "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
           "lastCrawlTime": null,
-          "coverageState": "URL is unknown to Google"
+          "coverageState": "Discovered - currently not indexed"
         },
         {
           "url": "https://sargasses-martinique.com/plages/anse-couleuvre/",
@@ -5473,7 +5641,7 @@
           "verdict": "PASS",
           "pageFetchState": "SUCCESSFUL",
           "robotsTxtState": "ALLOWED",
-          "lastCrawlTime": "2026-06-01T11:37:54Z",
+          "lastCrawlTime": "2026-06-11T19:04:20Z",
           "coverageState": "Submitted and indexed"
         },
         {
@@ -5570,7 +5738,7 @@
           "pageFetchState": "PAGE_FETCH_STATE_UNSPECIFIED",
           "robotsTxtState": "ROBOTS_TXT_STATE_UNSPECIFIED",
           "lastCrawlTime": null,
-          "coverageState": "URL is unknown to Google"
+          "coverageState": "Discovered - currently not indexed"
         },
         {
           "url": "https://sargasses-martinique.com/plages/plage-du-vetiver/",
@@ -5593,7 +5761,7 @@
           "verdict": "PASS",
           "pageFetchState": "SUCCESSFUL",
           "robotsTxtState": "ALLOWED",
-          "lastCrawlTime": "2026-06-06T22:23:52Z",
+          "lastCrawlTime": "2026-06-11T14:04:17Z",
           "coverageState": "Submitted and indexed"
         },
         {
@@ -5627,182 +5795,209 @@
         {
           "pagePath": "/",
           "device": "mobile",
-          "sessions": 1910,
-          "bounceRate": 0.2518324607329843,
-          "avgDuration": 208.48989646020942,
-          "pageViews": 3308,
-          "engagedSessions": 1429
+          "sessions": 1964,
+          "bounceRate": 0.3268839103869654,
+          "avgDuration": 248.03945864816703,
+          "pageViews": 3392,
+          "engagedSessions": 1322
         },
         {
           "pagePath": "/carte-sargasses/",
           "device": "mobile",
-          "sessions": 407,
-          "bounceRate": 0.23832923832923833,
-          "avgDuration": 252.5417801203931,
-          "pageViews": 677,
-          "engagedSessions": 310
+          "sessions": 408,
+          "bounceRate": 0.2696078431372549,
+          "avgDuration": 275.5090574558824,
+          "pageViews": 678,
+          "engagedSessions": 298
         },
         {
           "pagePath": "/",
           "device": "desktop",
-          "sessions": 314,
-          "bounceRate": 0.21337579617834396,
-          "avgDuration": 183.1323726369427,
-          "pageViews": 454,
-          "engagedSessions": 247
+          "sessions": 358,
+          "bounceRate": 0.2849162011173184,
+          "avgDuration": 557.9075680921787,
+          "pageViews": 611,
+          "engagedSessions": 256
         },
         {
           "pagePath": "/en/",
           "device": "mobile",
-          "sessions": 63,
-          "bounceRate": 0.2698412698412698,
-          "avgDuration": 266.7072203809523,
-          "pageViews": 98,
+          "sessions": 70,
+          "bounceRate": 0.34285714285714286,
+          "avgDuration": 385.46358904285717,
+          "pageViews": 110,
           "engagedSessions": 46
         },
         {
           "pagePath": "/",
           "device": "tablet",
-          "sessions": 60,
-          "bounceRate": 0.16666666666666666,
-          "avgDuration": 259.51856105,
-          "pageViews": 115,
-          "engagedSessions": 50
-        },
-        {
-          "pagePath": "/sargasses-record-2026/",
-          "device": "mobile",
-          "sessions": 42,
-          "bounceRate": 0.16666666666666666,
-          "avgDuration": 113.52402733333334,
-          "pageViews": 74,
-          "engagedSessions": 35
+          "sessions": 62,
+          "bounceRate": 0.16129032258064516,
+          "avgDuration": 260.0591835322581,
+          "pageViews": 117,
+          "engagedSessions": 52
         },
         {
           "pagePath": "/carte-sargasses/",
           "device": "desktop",
+          "sessions": 46,
+          "bounceRate": 0.2826086956521739,
+          "avgDuration": 148.23223247826087,
+          "pageViews": 54,
+          "engagedSessions": 33
+        },
+        {
+          "pagePath": "/sargasses-record-2026/",
+          "device": "mobile",
           "sessions": 39,
           "bounceRate": 0.28205128205128205,
-          "avgDuration": 174.52132276923078,
-          "pageViews": 48,
+          "avgDuration": 127.01833871794871,
+          "pageViews": 64,
           "engagedSessions": 28
         },
         {
           "pagePath": "/saison-sargasses-guadeloupe/",
           "device": "mobile",
-          "sessions": 33,
-          "bounceRate": 0.24242424242424243,
-          "avgDuration": 126.53914454545453,
-          "pageViews": 52,
-          "engagedSessions": 25
+          "sessions": 31,
+          "bounceRate": 0.3870967741935484,
+          "avgDuration": 86.86282716129031,
+          "pageViews": 45,
+          "engagedSessions": 19
         },
         {
           "pagePath": "/en/",
           "device": "desktop",
-          "sessions": 22,
-          "bounceRate": 0.09090909090909091,
-          "avgDuration": 225.01764659090912,
-          "pageViews": 28,
-          "engagedSessions": 20
-        },
-        {
-          "pagePath": "/plages-sans-sargasses/",
-          "device": "mobile",
-          "sessions": 21,
-          "bounceRate": 0.23809523809523808,
-          "avgDuration": 348.3553037619048,
-          "pageViews": 35,
-          "engagedSessions": 16
+          "sessions": 26,
+          "bounceRate": 0.15384615384615385,
+          "avgDuration": 278.9253018846154,
+          "pageViews": 32,
+          "engagedSessions": 22
         },
         {
           "pagePath": "/saison-sargasses-guadeloupe/",
           "device": "desktop",
+          "sessions": 21,
+          "bounceRate": 0.42857142857142855,
+          "avgDuration": 144.9900870952381,
+          "pageViews": 19,
+          "engagedSessions": 12
+        },
+        {
+          "pagePath": "/plages-sans-sargasses/",
+          "device": "mobile",
           "sessions": 19,
-          "bounceRate": 0.3157894736842105,
-          "avgDuration": 116.35785684210528,
-          "pageViews": 21,
-          "engagedSessions": 13
+          "bounceRate": 0.21052631578947367,
+          "avgDuration": 383.9833896842105,
+          "pageViews": 33,
+          "engagedSessions": 15
+        },
+        {
+          "pagePath": "/plages/plage-du-diamant/",
+          "device": "mobile",
+          "sessions": 18,
+          "bounceRate": 0.6111111111111112,
+          "avgDuration": 578.9452641111111,
+          "pageViews": 26,
+          "engagedSessions": 7
         },
         {
           "pagePath": "/sargasses-record-2026/",
           "device": "desktop",
           "sessions": 18,
-          "bounceRate": 0.2777777777777778,
-          "avgDuration": 59.72495527777778,
-          "pageViews": 22,
-          "engagedSessions": 13
-        },
-        {
-          "pagePath": "/meilleures-plages-guadeloupe-sargasses/",
-          "device": "mobile",
-          "sessions": 15,
-          "bounceRate": 0.2,
-          "avgDuration": 341.1451007333334,
-          "pageViews": 32,
-          "engagedSessions": 12
-        },
-        {
-          "pagePath": "/carte-sargasses/",
-          "device": "tablet",
-          "sessions": 13,
-          "bounceRate": 0.07692307692307693,
-          "avgDuration": 90.02690407692307,
-          "pageViews": 22,
+          "bounceRate": 0.3333333333333333,
+          "avgDuration": 133.95891161111112,
+          "pageViews": 21,
           "engagedSessions": 12
         },
         {
           "pagePath": "/en/sargassum-map/",
           "device": "mobile",
-          "sessions": 12,
-          "bounceRate": 0.08333333333333333,
-          "avgDuration": 88.07048841666666,
-          "pageViews": 21,
+          "sessions": 15,
+          "bounceRate": 0.26666666666666666,
+          "avgDuration": 183.95314019999998,
+          "pageViews": 23,
           "engagedSessions": 11
+        },
+        {
+          "pagePath": "/meilleures-plages-guadeloupe-sargasses/",
+          "device": "mobile",
+          "sessions": 14,
+          "bounceRate": 0.21428571428571427,
+          "avgDuration": 338.83457400000003,
+          "pageViews": 29,
+          "engagedSessions": 11
+        },
+        {
+          "pagePath": "/saison-sargasses-martinique/",
+          "device": "mobile",
+          "sessions": 14,
+          "bounceRate": 0.5,
+          "avgDuration": 342.1290600714286,
+          "pageViews": 23,
+          "engagedSessions": 7
         },
         {
           "pagePath": "/meilleures-plages-martinique-sargasses/",
           "device": "mobile",
-          "sessions": 10,
-          "bounceRate": 0.3,
-          "avgDuration": 257.6511614,
-          "pageViews": 25,
-          "engagedSessions": 7
+          "sessions": 12,
+          "bounceRate": 0.25,
+          "avgDuration": 271.66987366666666,
+          "pageViews": 28,
+          "engagedSessions": 9
+        },
+        {
+          "pagePath": "/carte-sargasses/",
+          "device": "tablet",
+          "sessions": 11,
+          "bounceRate": 0.18181818181818182,
+          "avgDuration": 78.07869054545455,
+          "pageViews": 15,
+          "engagedSessions": 9
+        },
+        {
+          "pagePath": "/plages/plage-du-diamant/",
+          "device": "desktop",
+          "sessions": 9,
+          "bounceRate": 0.4444444444444444,
+          "avgDuration": 164.10550688888887,
+          "pageViews": 12,
+          "engagedSessions": 5
         },
         {
           "pagePath": "/plages/anse-dufour/",
           "device": "mobile",
           "sessions": 8,
-          "bounceRate": 0.5,
-          "avgDuration": 31.51665225,
-          "pageViews": 10,
+          "bounceRate": 0.75,
+          "avgDuration": 71.95760324999999,
+          "pageViews": 8,
+          "engagedSessions": 2
+        },
+        {
+          "pagePath": "/detection-satellite-sargasses/",
+          "device": "mobile",
+          "sessions": 7,
+          "bounceRate": 0.42857142857142855,
+          "avgDuration": 275.32790242857146,
+          "pageViews": 11,
           "engagedSessions": 4
         },
         {
-          "pagePath": "/plages/plage-du-diamant/",
+          "pagePath": "/es/",
           "device": "mobile",
-          "sessions": 7,
-          "bounceRate": 0.14285714285714285,
-          "avgDuration": 310.3429978571429,
-          "pageViews": 13,
-          "engagedSessions": 6
-        },
-        {
-          "pagePath": "/saison-sargasses-martinique/",
-          "device": "mobile",
-          "sessions": 7,
-          "bounceRate": 0.5714285714285714,
-          "avgDuration": 62.01366814285715,
-          "pageViews": 10,
+          "sessions": 5,
+          "bounceRate": 0.4,
+          "avgDuration": 62.2094242,
+          "pageViews": 7,
           "engagedSessions": 3
         },
         {
           "pagePath": "/plages-sans-sargasses/",
           "device": "desktop",
           "sessions": 5,
-          "bounceRate": 0.4,
-          "avgDuration": 126.9169842,
-          "pageViews": 6,
-          "engagedSessions": 3
+          "bounceRate": 0.2,
+          "avgDuration": 141.1943564,
+          "pageViews": 7,
+          "engagedSessions": 4
         },
         {
           "pagePath": "/comprendre-sargasses/",
@@ -5811,6 +6006,15 @@
           "bounceRate": 0.25,
           "avgDuration": 1343.8785285,
           "pageViews": 4,
+          "engagedSessions": 3
+        },
+        {
+          "pagePath": "/conditions/",
+          "device": "mobile",
+          "sessions": 4,
+          "bounceRate": 0.25,
+          "avgDuration": 114.92022850000001,
+          "pageViews": 6,
           "engagedSessions": 3
         },
         {
@@ -5823,30 +6027,21 @@
           "engagedSessions": 3
         },
         {
-          "pagePath": "/en/best-beaches-martinique/",
-          "device": "mobile",
+          "pagePath": "/meilleures-plages-martinique-sargasses/",
+          "device": "desktop",
           "sessions": 4,
           "bounceRate": 0.25,
-          "avgDuration": 48.33219575,
-          "pageViews": 9,
+          "avgDuration": 139.879982,
+          "pageViews": 4,
           "engagedSessions": 3
         },
         {
-          "pagePath": "/es/",
+          "pagePath": "/plages/anse-trabaud/",
           "device": "mobile",
           "sessions": 4,
-          "bounceRate": 0.5,
-          "avgDuration": 47.02046300000001,
-          "pageViews": 5,
-          "engagedSessions": 2
-        },
-        {
-          "pagePath": "/plages/plage-du-diamant/",
-          "device": "desktop",
-          "sessions": 4,
           "bounceRate": 0,
-          "avgDuration": 100.074463,
-          "pageViews": 8,
+          "avgDuration": 170.33292525,
+          "pageViews": 5,
           "engagedSessions": 4
         },
         {
@@ -5854,63 +6049,54 @@
           "device": "desktop",
           "sessions": 4,
           "bounceRate": 0,
-          "avgDuration": 69.16502675,
-          "pageViews": 8,
+          "avgDuration": 115.69521225,
+          "pageViews": 7,
           "engagedSessions": 4
         },
         {
-          "pagePath": "/bilan-sargasses-2025/",
+          "pagePath": "/comprendre-sargasses/",
           "device": "desktop",
           "sessions": 3,
-          "bounceRate": 0.6666666666666666,
-          "avgDuration": 12.334347666666666,
-          "pageViews": 4,
-          "engagedSessions": 1
+          "bounceRate": 0.3333333333333333,
+          "avgDuration": 25.481119000000003,
+          "pageViews": 5,
+          "engagedSessions": 2
         },
         {
           "pagePath": "/detection-satellite-sargasses/",
           "device": "desktop",
           "sessions": 3,
           "bounceRate": 0,
-          "avgDuration": 38.652578999999996,
+          "avgDuration": 40.139992,
           "pageViews": 3,
-          "engagedSessions": 3
-        },
-        {
-          "pagePath": "/detection-satellite-sargasses/",
-          "device": "mobile",
-          "sessions": 3,
-          "bounceRate": 0,
-          "avgDuration": 74.62074333333334,
-          "pageViews": 6,
           "engagedSessions": 3
         },
         {
           "pagePath": "/en/best-beaches-martinique/",
           "device": "desktop",
           "sessions": 3,
-          "bounceRate": 0.3333333333333333,
-          "avgDuration": 294.87553533333335,
-          "pageViews": 4,
-          "engagedSessions": 2
-        },
-        {
-          "pagePath": "/plages/anse-riviere-trinite/",
-          "device": "mobile",
-          "sessions": 3,
           "bounceRate": 0,
-          "avgDuration": 38.621007999999996,
+          "avgDuration": 136.79106733333333,
           "pageViews": 4,
           "engagedSessions": 3
         },
         {
-          "pagePath": "/plages/anse-trabaud/",
+          "pagePath": "/en/best-beaches-martinique/",
           "device": "mobile",
           "sessions": 3,
           "bounceRate": 0,
-          "avgDuration": 215.30148133333333,
-          "pageViews": 4,
+          "avgDuration": 61.40592733333333,
+          "pageViews": 8,
           "engagedSessions": 3
+        },
+        {
+          "pagePath": "/plages/les-raisiniers/",
+          "device": "mobile",
+          "sessions": 3,
+          "bounceRate": 0.6666666666666666,
+          "avgDuration": 82.56616666666666,
+          "pageViews": 5,
+          "engagedSessions": 1
         },
         {
           "pagePath": "/plages/pointe-faula/",
@@ -5922,22 +6108,13 @@
           "engagedSessions": 1
         },
         {
-          "pagePath": "/comprendre-sargasses/",
-          "device": "desktop",
-          "sessions": 2,
-          "bounceRate": 0,
-          "avgDuration": 38.2216785,
-          "pageViews": 4,
-          "engagedSessions": 2
-        },
-        {
-          "pagePath": "/conditions/",
+          "pagePath": "/alertes/",
           "device": "mobile",
           "sessions": 2,
-          "bounceRate": 0.5,
-          "avgDuration": 220.4807825,
-          "pageViews": 4,
-          "engagedSessions": 1
+          "bounceRate": 1,
+          "avgDuration": 7.3478650000000005,
+          "pageViews": 2,
+          "engagedSessions": 0
         },
         {
           "pagePath": "/conditions/baignade-ideale/",
@@ -5949,12 +6126,21 @@
           "engagedSessions": 1
         },
         {
-          "pagePath": "/meilleures-plages-martinique-sargasses/",
-          "device": "desktop",
+          "pagePath": "/plages/anse-noire/",
+          "device": "mobile",
+          "sessions": 2,
+          "bounceRate": 0.5,
+          "avgDuration": 45.855849,
+          "pageViews": 3,
+          "engagedSessions": 1
+        },
+        {
+          "pagePath": "/plages/anse-riviere-trinite/",
+          "device": "mobile",
           "sessions": 2,
           "bounceRate": 0,
-          "avgDuration": 89.5325145,
-          "pageViews": 2,
+          "avgDuration": 39.804971,
+          "pageViews": 3,
           "engagedSessions": 2
         },
         {
@@ -5962,27 +6148,9 @@
           "device": "desktop",
           "sessions": 2,
           "bounceRate": 0.5,
-          "avgDuration": 262.914624,
-          "pageViews": 7,
+          "avgDuration": 264.90447950000004,
+          "pageViews": 8,
           "engagedSessions": 1
-        },
-        {
-          "pagePath": "/plages/les-raisiniers/",
-          "device": "mobile",
-          "sessions": 2,
-          "bounceRate": 0.5,
-          "avgDuration": 123.077514,
-          "pageViews": 4,
-          "engagedSessions": 1
-        },
-        {
-          "pagePath": "/plages/pointe-fort-caravelle/",
-          "device": "mobile",
-          "sessions": 2,
-          "bounceRate": 1,
-          "avgDuration": 0.115594,
-          "pageViews": 2,
-          "engagedSessions": 0
         },
         {
           "pagePath": "/previsions-methode/",
@@ -5994,12 +6162,30 @@
           "engagedSessions": 2
         },
         {
-          "pagePath": "/alertes/",
+          "pagePath": "/previsions/",
+          "device": "mobile",
+          "sessions": 2,
+          "bounceRate": 0.5,
+          "avgDuration": 142.3614095,
+          "pageViews": 2,
+          "engagedSessions": 1
+        },
+        {
+          "pagePath": "/bilan-sargasses-2025/",
+          "device": "desktop",
+          "sessions": 1,
+          "bounceRate": 0,
+          "avgDuration": 21.223309,
+          "pageViews": 2,
+          "engagedSessions": 1
+        },
+        {
+          "pagePath": "/bilan-sargasses-2025/",
           "device": "mobile",
           "sessions": 1,
           "bounceRate": 1,
-          "avgDuration": 3.865166,
-          "pageViews": 1,
+          "avgDuration": 5.012549,
+          "pageViews": 2,
           "engagedSessions": 0
         },
         {
@@ -6017,6 +6203,15 @@
           "sessions": 1,
           "bounceRate": 1,
           "avgDuration": 7.568049,
+          "pageViews": 1,
+          "engagedSessions": 0
+        },
+        {
+          "pagePath": "/conditions/uv-fort/",
+          "device": "mobile",
+          "sessions": 1,
+          "bounceRate": 1,
+          "avgDuration": 3.474404,
           "pageViews": 1,
           "engagedSessions": 0
         },
@@ -6039,12 +6234,21 @@
           "engagedSessions": 0
         },
         {
-          "pagePath": "/en/sargassum-map/",
-          "device": "tablet",
+          "pagePath": "/en/sargassum-season/",
+          "device": "desktop",
           "sessions": 1,
           "bounceRate": 1,
-          "avgDuration": 5.911913,
+          "avgDuration": 6.154904,
           "pageViews": 1,
+          "engagedSessions": 0
+        },
+        {
+          "pagePath": "/jeu/",
+          "device": "desktop",
+          "sessions": 1,
+          "bounceRate": 1,
+          "avgDuration": 136.115773,
+          "pageViews": 2,
           "engagedSessions": 0
         },
         {
@@ -6057,21 +6261,21 @@
           "engagedSessions": 1
         },
         {
-          "pagePath": "/plages/anse-michel/",
-          "device": "mobile",
+          "pagePath": "/plages/",
+          "device": "desktop",
           "sessions": 1,
           "bounceRate": 0,
-          "avgDuration": 142.436733,
-          "pageViews": 2,
+          "avgDuration": 2.902053,
+          "pageViews": 1,
           "engagedSessions": 1
         },
         {
-          "pagePath": "/plages/anse-noire/",
+          "pagePath": "/plages/",
           "device": "mobile",
           "sessions": 1,
           "bounceRate": 0,
-          "avgDuration": 85.568052,
-          "pageViews": 2,
+          "avgDuration": 3.217403,
+          "pageViews": 1,
           "engagedSessions": 1
         },
         {
@@ -6093,6 +6297,33 @@
           "engagedSessions": 1
         },
         {
+          "pagePath": "/plages/grande-anse-d-arlet/",
+          "device": "desktop",
+          "sessions": 1,
+          "bounceRate": 1,
+          "avgDuration": 0,
+          "pageViews": 0,
+          "engagedSessions": 0
+        },
+        {
+          "pagePath": "/plages/plage-des-salines/",
+          "device": "desktop",
+          "sessions": 1,
+          "bounceRate": 0,
+          "avgDuration": 0.716591,
+          "pageViews": 1,
+          "engagedSessions": 1
+        },
+        {
+          "pagePath": "/plages/plage-des-salines/",
+          "device": "mobile",
+          "sessions": 1,
+          "bounceRate": 0,
+          "avgDuration": 3.703954,
+          "pageViews": 1,
+          "engagedSessions": 1
+        },
+        {
           "pagePath": "/plages/pointe-faula/",
           "device": "desktop",
           "sessions": 1,
@@ -6102,13 +6333,40 @@
           "engagedSessions": 1
         },
         {
+          "pagePath": "/previsions-methode/",
+          "device": "desktop",
+          "sessions": 1,
+          "bounceRate": 1,
+          "avgDuration": 245.537554,
+          "pageViews": 0,
+          "engagedSessions": 0
+        },
+        {
           "pagePath": "/previsions/",
+          "device": "desktop",
+          "sessions": 1,
+          "bounceRate": 1,
+          "avgDuration": 0.474484,
+          "pageViews": 1,
+          "engagedSessions": 0
+        },
+        {
+          "pagePath": "/sargasses-martinique-cette-semaine/",
           "device": "mobile",
           "sessions": 1,
-          "bounceRate": 0,
-          "avgDuration": 57.80636,
-          "pageViews": 2,
-          "engagedSessions": 1
+          "bounceRate": 1,
+          "avgDuration": 33.353015,
+          "pageViews": 1,
+          "engagedSessions": 0
+        },
+        {
+          "pagePath": "/sargasses-record-2026/",
+          "device": "tablet",
+          "sessions": 1,
+          "bounceRate": 1,
+          "avgDuration": 170.580489,
+          "pageViews": 0,
+          "engagedSessions": 0
         },
         {
           "pagePath": "/weekend.htmlEn",
@@ -6130,26 +6388,26 @@
             "avgPosition": 9,
             "actualCtr": 0,
             "expectedCtr": 3,
-            "impressions": 94,
+            "impressions": 81,
             "clicks": 0,
             "topQueries": [
               {
                 "query": "anse des galets martinique",
-                "impressions": 43,
+                "impressions": 36,
                 "clicks": 0,
-                "position": 8.534883720930232
+                "position": 8.583333333333332
               },
               {
                 "query": "anse des galets martinique",
-                "impressions": 25,
+                "impressions": 20,
                 "clicks": 0,
-                "position": 8.280000000000001
+                "position": 8.4
               },
               {
                 "query": "anse galet martinique",
-                "impressions": 14,
+                "impressions": 13,
                 "clicks": 0,
-                "position": 9.357142857142858
+                "position": 9.23076923076923
               },
               {
                 "query": "anse galet martinique",
@@ -6173,13 +6431,13 @@
             "event": "clarity_rage_click",
             "page": "/",
             "target": "",
-            "count": 46
+            "count": 54
           },
           {
             "event": "clarity_rage_click",
             "page": "/carte-sargasses/",
             "target": "",
-            "count": 5
+            "count": 8
           },
           {
             "event": "clarity_rage_click",
@@ -6189,13 +6447,13 @@
           },
           {
             "event": "clarity_rage_click",
-            "page": "/meilleures-plages-guadeloupe-sargasses/",
+            "page": "/saison-sargasses-guadeloupe/",
             "target": "",
-            "count": 1
+            "count": 2
           },
           {
             "event": "clarity_rage_click",
-            "page": "/saison-sargasses-guadeloupe/",
+            "page": "/meilleures-plages-guadeloupe-sargasses/",
             "target": "",
             "count": 1
           }
@@ -6205,25 +6463,31 @@
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 670
+            "count": 746
           },
           {
             "event": "clarity_dead_click",
             "page": "/carte-sargasses/",
             "target": "",
-            "count": 129
+            "count": 122
           },
           {
             "event": "clarity_dead_click",
             "page": "/en/",
             "target": "",
-            "count": 29
+            "count": 32
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/plage-du-diamant/",
+            "target": "",
+            "count": 22
           },
           {
             "event": "clarity_dead_click",
             "page": "/meilleures-plages-guadeloupe-sargasses/",
             "target": "",
-            "count": 15
+            "count": 14
           },
           {
             "event": "clarity_dead_click",
@@ -6233,19 +6497,19 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/sargasses-record-2026/",
+            "page": "/saison-sargasses-guadeloupe/",
             "target": "",
-            "count": 10
+            "count": 9
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/saison-sargasses-martinique/",
+            "target": "",
+            "count": 8
           },
           {
             "event": "clarity_dead_click",
             "page": "/plages/bourg-de-tartane/",
-            "target": "",
-            "count": 7
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/saison-sargasses-guadeloupe/",
             "target": "",
             "count": 7
           },
@@ -6257,9 +6521,9 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/plage-du-diamant/",
+            "page": "/sargasses-record-2026/",
             "target": "",
-            "count": 6
+            "count": 5
           },
           {
             "event": "clarity_dead_click",
@@ -6275,13 +6539,19 @@
           },
           {
             "event": "clarity_dead_click",
+            "page": "/en/sargassum-map/",
+            "target": "",
+            "count": 2
+          },
+          {
+            "event": "clarity_dead_click",
             "page": "/plages/anse-trabaud/",
             "target": "",
             "count": 2
           },
           {
             "event": "clarity_dead_click",
-            "page": "/saison-sargasses-martinique/",
+            "page": "/previsions-methode/",
             "target": "",
             "count": 2
           },
@@ -6299,19 +6569,7 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/en/sargassum-map/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_dead_click",
             "page": "/es/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/anse-dufour/",
             "target": "",
             "count": 1
           },
@@ -6841,181 +7099,181 @@
         {
           "pagePath": "/",
           "device": "mobile",
-          "sessions": 5079,
-          "bounceRate": 0.26855680252018116,
-          "avgDuration": 240.39854002854892,
-          "pageViews": 8497,
-          "engagedSessions": 3715
+          "sessions": 4503,
+          "bounceRate": 0.28336664445924936,
+          "avgDuration": 243.59779695114366,
+          "pageViews": 7462,
+          "engagedSessions": 3227
         },
         {
           "pagePath": "/",
           "device": "desktop",
-          "sessions": 599,
-          "bounceRate": 0.27712854757929883,
-          "avgDuration": 193.7843449899833,
-          "pageViews": 776,
-          "engagedSessions": 433
+          "sessions": 560,
+          "bounceRate": 0.2892857142857143,
+          "avgDuration": 188.56897606785714,
+          "pageViews": 691,
+          "engagedSessions": 398
         },
         {
           "pagePath": "/plages/plage-bois-jolan/",
           "device": "mobile",
-          "sessions": 176,
-          "bounceRate": 0.2159090909090909,
-          "avgDuration": 259.76437435227274,
-          "pageViews": 320,
-          "engagedSessions": 138
+          "sessions": 171,
+          "bounceRate": 0.26900584795321636,
+          "avgDuration": 266.9807373391813,
+          "pageViews": 302,
+          "engagedSessions": 125
         },
         {
           "pagePath": "/en/",
           "device": "mobile",
-          "sessions": 145,
-          "bounceRate": 0.16551724137931034,
-          "avgDuration": 245.04882557241376,
-          "pageViews": 253,
-          "engagedSessions": 121
+          "sessions": 144,
+          "bounceRate": 0.20833333333333334,
+          "avgDuration": 260.0719211805556,
+          "pageViews": 242,
+          "engagedSessions": 114
         },
         {
           "pagePath": "/",
           "device": "tablet",
-          "sessions": 102,
-          "bounceRate": 0.16666666666666666,
-          "avgDuration": 123.53386080392157,
-          "pageViews": 179,
-          "engagedSessions": 85
+          "sessions": 82,
+          "bounceRate": 0.18292682926829268,
+          "avgDuration": 133.30938774390245,
+          "pageViews": 151,
+          "engagedSessions": 67
         },
         {
           "pagePath": "/plages/plage-de-la-caravelle/",
           "device": "mobile",
-          "sessions": 86,
-          "bounceRate": 0.3953488372093023,
-          "avgDuration": 73.75204280232559,
-          "pageViews": 112,
-          "engagedSessions": 52
+          "sessions": 69,
+          "bounceRate": 0.36231884057971014,
+          "avgDuration": 86.17278476811595,
+          "pageViews": 89,
+          "engagedSessions": 44
         },
         {
           "pagePath": "/plages/plage-du-gosier/",
           "device": "mobile",
-          "sessions": 58,
-          "bounceRate": 0.1896551724137931,
-          "avgDuration": 126.05794162068966,
-          "pageViews": 89,
-          "engagedSessions": 47
+          "sessions": 60,
+          "bounceRate": 0.23333333333333334,
+          "avgDuration": 144.6078699,
+          "pageViews": 85,
+          "engagedSessions": 46
+        },
+        {
+          "pagePath": "/en/sargassum-map/",
+          "device": "mobile",
+          "sessions": 53,
+          "bounceRate": 0.16981132075471697,
+          "avgDuration": 296.7960548867925,
+          "pageViews": 93,
+          "engagedSessions": 44
         },
         {
           "pagePath": "/plages/plage-de-sainte-anne/",
           "device": "mobile",
-          "sessions": 56,
-          "bounceRate": 0.25,
-          "avgDuration": 170.81646230357143,
-          "pageViews": 82,
-          "engagedSessions": 42
-        },
-        {
-          "pagePath": "/en/sargassum-map/",
-          "device": "mobile",
-          "sessions": 50,
-          "bounceRate": 0.12,
-          "avgDuration": 310.66037114,
-          "pageViews": 90,
-          "engagedSessions": 44
+          "sessions": 51,
+          "bounceRate": 0.29411764705882354,
+          "avgDuration": 166.4049946862745,
+          "pageViews": 73,
+          "engagedSessions": 36
         },
         {
           "pagePath": "/plages/plage-du-souffleur/",
           "device": "mobile",
-          "sessions": 22,
-          "bounceRate": 0.45454545454545453,
-          "avgDuration": 146.96243,
-          "pageViews": 23,
-          "engagedSessions": 12
-        },
-        {
-          "pagePath": "/en/",
-          "device": "desktop",
-          "sessions": 21,
-          "bounceRate": 0.19047619047619047,
-          "avgDuration": 206.94654038095237,
-          "pageViews": 26,
-          "engagedSessions": 17
-        },
-        {
-          "pagePath": "/plages/plage-de-malendure/",
-          "device": "mobile",
-          "sessions": 20,
-          "bounceRate": 0.3,
-          "avgDuration": 97.4858732,
-          "pageViews": 22,
-          "engagedSessions": 14
-        },
-        {
-          "pagePath": "/plages/plage-de-la-caravelle/",
-          "device": "tablet",
-          "sessions": 16,
-          "bounceRate": 0.6875,
-          "avgDuration": 20.2654194375,
-          "pageViews": 16,
-          "engagedSessions": 5
-        },
-        {
-          "pagePath": "/plages/pointe-des-chateaux/",
-          "device": "mobile",
-          "sessions": 16,
-          "bounceRate": 0.3125,
-          "avgDuration": 74.96673025,
-          "pageViews": 15,
+          "sessions": 23,
+          "bounceRate": 0.5217391304347826,
+          "avgDuration": 131.31041834782607,
+          "pageViews": 24,
           "engagedSessions": 11
-        },
-        {
-          "pagePath": "/plages/plage-de-bas-du-fort/",
-          "device": "mobile",
-          "sessions": 12,
-          "bounceRate": 0.25,
-          "avgDuration": 76.40025058333333,
-          "pageViews": 17,
-          "engagedSessions": 9
-        },
-        {
-          "pagePath": "/plages/la-grande-anse-deshaies/",
-          "device": "mobile",
-          "sessions": 11,
-          "bounceRate": 0.18181818181818182,
-          "avgDuration": 333.51196072727276,
-          "pageViews": 18,
-          "engagedSessions": 9
-        },
-        {
-          "pagePath": "/en/sargassum-map/",
-          "device": "desktop",
-          "sessions": 10,
-          "bounceRate": 0.2,
-          "avgDuration": 135.6435692,
-          "pageViews": 14,
-          "engagedSessions": 8
-        },
-        {
-          "pagePath": "/plages/l-autre-bord/",
-          "device": "mobile",
-          "sessions": 10,
-          "bounceRate": 0.4,
-          "avgDuration": 242.0587627,
-          "pageViews": 17,
-          "engagedSessions": 6
         },
         {
           "pagePath": "/plages/la-datcha/",
           "device": "mobile",
-          "sessions": 9,
-          "bounceRate": 0.3333333333333333,
-          "avgDuration": 155.18341922222223,
-          "pageViews": 15,
-          "engagedSessions": 6
+          "sessions": 19,
+          "bounceRate": 0.47368421052631576,
+          "avgDuration": 127.77154426315789,
+          "pageViews": 24,
+          "engagedSessions": 10
         },
         {
-          "pagePath": "/plages/plage-du-gosier/",
+          "pagePath": "/en/",
           "device": "desktop",
+          "sessions": 18,
+          "bounceRate": 0.3333333333333333,
+          "avgDuration": 102.39695133333333,
+          "pageViews": 19,
+          "engagedSessions": 12
+        },
+        {
+          "pagePath": "/plages/plage-de-malendure/",
+          "device": "mobile",
+          "sessions": 18,
+          "bounceRate": 0.2777777777777778,
+          "avgDuration": 101.17803994444445,
+          "pageViews": 20,
+          "engagedSessions": 13
+        },
+        {
+          "pagePath": "/plages/pointe-des-chateaux/",
+          "device": "mobile",
+          "sessions": 13,
+          "bounceRate": 0.38461538461538464,
+          "avgDuration": 64.73761461538462,
+          "pageViews": 11,
+          "engagedSessions": 8
+        },
+        {
+          "pagePath": "/plages/la-grande-anse-deshaies/",
+          "device": "mobile",
+          "sessions": 12,
+          "bounceRate": 0.25,
+          "avgDuration": 305.98091116666666,
+          "pageViews": 19,
+          "engagedSessions": 9
+        },
+        {
+          "pagePath": "/plages/plage-de-grande-anse/",
+          "device": "mobile",
+          "sessions": 12,
+          "bounceRate": 0.3333333333333333,
+          "avgDuration": 334.0185186666667,
+          "pageViews": 17,
+          "engagedSessions": 8
+        },
+        {
+          "pagePath": "/plages/plage-de-la-caravelle/",
+          "device": "tablet",
+          "sessions": 12,
+          "bounceRate": 0.6666666666666666,
+          "avgDuration": 23.697745083333334,
+          "pageViews": 12,
+          "engagedSessions": 4
+        },
+        {
+          "pagePath": "/en/sargassum-map/",
+          "device": "desktop",
+          "sessions": 11,
+          "bounceRate": 0.36363636363636365,
+          "avgDuration": 83.28620554545455,
+          "pageViews": 13,
+          "engagedSessions": 7
+        },
+        {
+          "pagePath": "/plages/l-autre-bord/",
+          "device": "mobile",
+          "sessions": 11,
+          "bounceRate": 0.36363636363636365,
+          "avgDuration": 224.32356663636364,
+          "pageViews": 18,
+          "engagedSessions": 7
+        },
+        {
+          "pagePath": "/plages/plage-de-bas-du-fort/",
+          "device": "mobile",
           "sessions": 9,
           "bounceRate": 0.3333333333333333,
-          "avgDuration": 294.6783018888889,
-          "pageViews": 13,
+          "avgDuration": 68.92243411111112,
+          "pageViews": 12,
           "engagedSessions": 6
         },
         {
@@ -7028,40 +7286,40 @@
           "engagedSessions": 8
         },
         {
+          "pagePath": "/plages/plage-du-gosier/",
+          "device": "desktop",
+          "sessions": 8,
+          "bounceRate": 0.375,
+          "avgDuration": 151.499815625,
+          "pageViews": 11,
+          "engagedSessions": 5
+        },
+        {
           "pagePath": "/plages/anse-a-la-gourde/",
           "device": "mobile",
           "sessions": 7,
-          "bounceRate": 0.42857142857142855,
-          "avgDuration": 56.26747328571429,
-          "pageViews": 10,
-          "engagedSessions": 4
-        },
-        {
-          "pagePath": "/plages/plage-de-grande-anse/",
-          "device": "mobile",
-          "sessions": 7,
-          "bounceRate": 0.14285714285714285,
-          "avgDuration": 133.64662757142858,
-          "pageViews": 11,
-          "engagedSessions": 6
+          "bounceRate": 0.5714285714285714,
+          "avgDuration": 277.89929614285717,
+          "pageViews": 9,
+          "engagedSessions": 3
         },
         {
           "pagePath": "/plages/ile-de-la-petite-terre/",
           "device": "mobile",
-          "sessions": 6,
+          "sessions": 7,
           "bounceRate": 0,
-          "avgDuration": 217.11271633333334,
-          "pageViews": 10,
-          "engagedSessions": 6
+          "avgDuration": 196.79234985714285,
+          "pageViews": 11,
+          "engagedSessions": 7
         },
         {
-          "pagePath": "/plages/plage-de-pompierre/",
-          "device": "mobile",
+          "pagePath": "/plages/plage-de-sainte-anne/",
+          "device": "desktop",
           "sessions": 6,
-          "bounceRate": 0.3333333333333333,
-          "avgDuration": 334.83537033333334,
+          "bounceRate": 0.16666666666666666,
+          "avgDuration": 87.04280949999999,
           "pageViews": 7,
-          "engagedSessions": 4
+          "engagedSessions": 5
         },
         {
           "pagePath": "/plages/plage-du-manganao/",
@@ -7082,15 +7340,6 @@
           "engagedSessions": 2
         },
         {
-          "pagePath": "/plages/plage-de-sainte-anne/",
-          "device": "desktop",
-          "sessions": 5,
-          "bounceRate": 0,
-          "avgDuration": 107.25631739999999,
-          "pageViews": 6,
-          "engagedSessions": 5
-        },
-        {
           "pagePath": "/plages/plage-des-raisins-clairs/",
           "device": "mobile",
           "sessions": 5,
@@ -7109,6 +7358,24 @@
           "engagedSessions": 2
         },
         {
+          "pagePath": "/plages/plage-de-la-caravelle/",
+          "device": "desktop",
+          "sessions": 4,
+          "bounceRate": 0.25,
+          "avgDuration": 188.2848045,
+          "pageViews": 5,
+          "engagedSessions": 3
+        },
+        {
+          "pagePath": "/plages/plage-de-pompierre/",
+          "device": "mobile",
+          "sessions": 4,
+          "bounceRate": 0.25,
+          "avgDuration": 50.774259,
+          "pageViews": 4,
+          "engagedSessions": 3
+        },
+        {
           "pagePath": "/plages/plage-de-sainte-anne/",
           "device": "tablet",
           "sessions": 4,
@@ -7116,6 +7383,15 @@
           "avgDuration": 106.40942825,
           "pageViews": 7,
           "engagedSessions": 4
+        },
+        {
+          "pagePath": "/en/",
+          "device": "tablet",
+          "sessions": 3,
+          "bounceRate": 0.6666666666666666,
+          "avgDuration": 62.312089333333326,
+          "pageViews": 3,
+          "engagedSessions": 1
         },
         {
           "pagePath": "/es/mapa-sargazo/",
@@ -7136,30 +7412,21 @@
           "engagedSessions": 1
         },
         {
-          "pagePath": "/plages/grand-baie-sud/",
-          "device": "mobile",
-          "sessions": 3,
-          "bounceRate": 0.6666666666666666,
-          "avgDuration": 4.736947,
-          "pageViews": 3,
-          "engagedSessions": 1
-        },
-        {
-          "pagePath": "/plages/plage-de-grande-anse/",
-          "device": "desktop",
-          "sessions": 3,
-          "bounceRate": 0.3333333333333333,
-          "avgDuration": 76.104488,
-          "pageViews": 4,
-          "engagedSessions": 2
-        },
-        {
-          "pagePath": "/plages/plage-de-la-caravelle/",
+          "pagePath": "/plages/plage-de-bas-du-fort/",
           "device": "desktop",
           "sessions": 3,
           "bounceRate": 0,
-          "avgDuration": 147.62097233333333,
-          "pageViews": 4,
+          "avgDuration": 91.60250233333333,
+          "pageViews": 3,
+          "engagedSessions": 3
+        },
+        {
+          "pagePath": "/plages/plage-de-malendure/",
+          "device": "desktop",
+          "sessions": 3,
+          "bounceRate": 0,
+          "avgDuration": 127.45061700000001,
+          "pageViews": 6,
           "engagedSessions": 3
         },
         {
@@ -7172,13 +7439,40 @@
           "engagedSessions": 2
         },
         {
-          "pagePath": "/en/",
-          "device": "tablet",
+          "pagePath": "/plages/plage-du-souffleur/",
+          "device": "desktop",
+          "sessions": 3,
+          "bounceRate": 0.3333333333333333,
+          "avgDuration": 153.03585733333333,
+          "pageViews": 4,
+          "engagedSessions": 2
+        },
+        {
+          "pagePath": "/en/best-beaches-no-sargassum/",
+          "device": "mobile",
           "sessions": 2,
-          "bounceRate": 0.5,
-          "avgDuration": 52.3373705,
+          "bounceRate": 0,
+          "avgDuration": 80.534584,
           "pageViews": 2,
-          "engagedSessions": 1
+          "engagedSessions": 2
+        },
+        {
+          "pagePath": "/es/",
+          "device": "desktop",
+          "sessions": 2,
+          "bounceRate": 1,
+          "avgDuration": 38.128660999999994,
+          "pageViews": 1,
+          "engagedSessions": 0
+        },
+        {
+          "pagePath": "/plages/anse-canot-marie-galante/",
+          "device": "mobile",
+          "sessions": 2,
+          "bounceRate": 0,
+          "avgDuration": 60.9230165,
+          "pageViews": 2,
+          "engagedSessions": 2
         },
         {
           "pagePath": "/plages/anse-champagne/",
@@ -7208,12 +7502,21 @@
           "engagedSessions": 1
         },
         {
-          "pagePath": "/plages/plage-de-bas-du-fort/",
+          "pagePath": "/plages/petit-havre-sud/",
           "device": "desktop",
           "sessions": 2,
           "bounceRate": 0,
-          "avgDuration": 53.845392,
+          "avgDuration": 70.612286,
           "pageViews": 2,
+          "engagedSessions": 2
+        },
+        {
+          "pagePath": "/plages/plage-de-bananier/",
+          "device": "mobile",
+          "sessions": 2,
+          "bounceRate": 0,
+          "avgDuration": 338.925667,
+          "pageViews": 4,
           "engagedSessions": 2
         },
         {
@@ -7235,22 +7538,31 @@
           "engagedSessions": 1
         },
         {
-          "pagePath": "/plages/plage-de-malendure/",
-          "device": "desktop",
+          "pagePath": "/plages/plage-de-grand-bourg/",
+          "device": "mobile",
           "sessions": 2,
-          "bounceRate": 0,
-          "avgDuration": 160.427083,
+          "bounceRate": 0.5,
+          "avgDuration": 131.9349775,
           "pageViews": 3,
-          "engagedSessions": 2
+          "engagedSessions": 1
         },
         {
-          "pagePath": "/plages/plage-de-pompierre/",
+          "pagePath": "/plages/plage-de-grande-anse/",
           "device": "desktop",
           "sessions": 2,
-          "bounceRate": 0,
-          "avgDuration": 226.495206,
-          "pageViews": 4,
-          "engagedSessions": 2
+          "bounceRate": 0.5,
+          "avgDuration": 48.9044435,
+          "pageViews": 2,
+          "engagedSessions": 1
+        },
+        {
+          "pagePath": "/plages/plage-du-gosier/",
+          "device": "tablet",
+          "sessions": 2,
+          "bounceRate": 0.5,
+          "avgDuration": 275.145403,
+          "pageViews": 2,
+          "engagedSessions": 1
         },
         {
           "pagePath": "/plages/plage-du-moule/",
@@ -7262,13 +7574,40 @@
           "engagedSessions": 1
         },
         {
-          "pagePath": "/plages/plage-du-souffleur/",
+          "pagePath": "/plages/pointe-de-la-verdure/",
           "device": "desktop",
           "sessions": 2,
           "bounceRate": 0.5,
-          "avgDuration": 32.992036999999996,
-          "pageViews": 2,
+          "avgDuration": 163.2243085,
+          "pageViews": 3,
           "engagedSessions": 1
+        },
+        {
+          "pagePath": "/plages/pointe-des-chateaux/",
+          "device": "desktop",
+          "sessions": 2,
+          "bounceRate": 0,
+          "avgDuration": 179.524423,
+          "pageViews": 3,
+          "engagedSessions": 2
+        },
+        {
+          "pagePath": "/plages/saint-felix-sud/",
+          "device": "mobile",
+          "sessions": 2,
+          "bounceRate": 0.5,
+          "avgDuration": 199.72309,
+          "pageViews": 4,
+          "engagedSessions": 1
+        },
+        {
+          "pagePath": "/conditions/uv-fort/",
+          "device": "mobile",
+          "sessions": 1,
+          "bounceRate": 1,
+          "avgDuration": 16.633097,
+          "pageViews": 1,
+          "engagedSessions": 0
         },
         {
           "pagePath": "/en/best-beaches-guadeloupe/",
@@ -7280,22 +7619,13 @@
           "engagedSessions": 1
         },
         {
-          "pagePath": "/en/best-beaches-no-sargassum/",
-          "device": "desktop",
-          "sessions": 1,
-          "bounceRate": 1,
-          "avgDuration": 6.580883,
-          "pageViews": 1,
-          "engagedSessions": 0
-        },
-        {
-          "pagePath": "/en/best-beaches-no-sargassum/",
+          "pagePath": "/en/sargassum-alerts/",
           "device": "mobile",
           "sessions": 1,
-          "bounceRate": 0,
-          "avgDuration": 111.342283,
+          "bounceRate": 1,
+          "avgDuration": 115.097454,
           "pageViews": 1,
-          "engagedSessions": 1
+          "engagedSessions": 0
         },
         {
           "pagePath": "/en/sargassum-map/",
@@ -7303,6 +7633,15 @@
           "sessions": 1,
           "bounceRate": 0,
           "avgDuration": 10.885005,
+          "pageViews": 1,
+          "engagedSessions": 1
+        },
+        {
+          "pagePath": "/en/sargassum-season/",
+          "device": "desktop",
+          "sessions": 1,
+          "bounceRate": 0,
+          "avgDuration": 99.045564,
           "pageViews": 1,
           "engagedSessions": 1
         },
@@ -7316,13 +7655,13 @@
           "engagedSessions": 1
         },
         {
-          "pagePath": "/es/",
+          "pagePath": "/es/alertas-sargazo/",
           "device": "desktop",
           "sessions": 1,
-          "bounceRate": 1,
-          "avgDuration": 9.372025,
+          "bounceRate": 0,
+          "avgDuration": 173.394472,
           "pageViews": 1,
-          "engagedSessions": 0
+          "engagedSessions": 1
         },
         {
           "pagePath": "/es/alertas-sargazo/",
@@ -7361,20 +7700,20 @@
           "engagedSessions": 1
         },
         {
+          "pagePath": "/plages/anse-a-la-gourde/",
+          "device": "tablet",
+          "sessions": 1,
+          "bounceRate": 0,
+          "avgDuration": 30.044286,
+          "pageViews": 1,
+          "engagedSessions": 1
+        },
+        {
           "pagePath": "/plages/anse-bertrand-nord/",
           "device": "mobile",
           "sessions": 1,
           "bounceRate": 0,
           "avgDuration": 178.098793,
-          "pageViews": 1,
-          "engagedSessions": 1
-        },
-        {
-          "pagePath": "/plages/anse-champagne/",
-          "device": "desktop",
-          "sessions": 1,
-          "bounceRate": 0,
-          "avgDuration": 51.984322,
           "pageViews": 1,
           "engagedSessions": 1
         },
@@ -7424,20 +7763,11 @@
           "engagedSessions": 1
         },
         {
-          "pagePath": "/plages/petit-havre-sud/",
-          "device": "desktop",
-          "sessions": 1,
-          "bounceRate": 0,
-          "avgDuration": 87.264679,
-          "pageViews": 1,
-          "engagedSessions": 1
-        },
-        {
           "pagePath": "/plages/plage-bois-jolan/",
           "device": "desktop",
           "sessions": 1,
           "bounceRate": 0,
-          "avgDuration": 0.113652,
+          "avgDuration": 89.051271,
           "pageViews": 1,
           "engagedSessions": 1
         },
@@ -7445,28 +7775,19 @@
           "pagePath": "/plages/plage-de-babin/",
           "device": "desktop",
           "sessions": 1,
-          "bounceRate": 1,
-          "avgDuration": 0,
+          "bounceRate": 0,
+          "avgDuration": 7.472622,
           "pageViews": 1,
-          "engagedSessions": 0
-        },
-        {
-          "pagePath": "/plages/plage-de-grand-bourg/",
-          "device": "mobile",
-          "sessions": 1,
-          "bounceRate": 1,
-          "avgDuration": 5.424103,
-          "pageViews": 1,
-          "engagedSessions": 0
+          "engagedSessions": 1
         },
         {
           "pagePath": "/plages/plage-de-la-desirade/",
           "device": "desktop",
           "sessions": 1,
-          "bounceRate": 1,
-          "avgDuration": 306.384786,
+          "bounceRate": 0,
+          "avgDuration": 106.338125,
           "pageViews": 3,
-          "engagedSessions": 0
+          "engagedSessions": 1
         },
         {
           "pagePath": "/plages/plage-de-la-perle/",
@@ -7505,48 +7826,12 @@
           "engagedSessions": 1
         },
         {
-          "pagePath": "/plages/plage-du-gosier/",
-          "device": "tablet",
-          "sessions": 1,
-          "bounceRate": 0,
-          "avgDuration": 541.688595,
-          "pageViews": 1,
-          "engagedSessions": 1
-        },
-        {
           "pagePath": "/plages/plage-du-moule/",
           "device": "desktop",
           "sessions": 1,
           "bounceRate": 0,
           "avgDuration": 38.580043,
           "pageViews": 1,
-          "engagedSessions": 1
-        },
-        {
-          "pagePath": "/plages/pointe-de-la-verdure/",
-          "device": "desktop",
-          "sessions": 1,
-          "bounceRate": 1,
-          "avgDuration": 873.459715,
-          "pageViews": 3,
-          "engagedSessions": 0
-        },
-        {
-          "pagePath": "/plages/pointe-des-chateaux/",
-          "device": "desktop",
-          "sessions": 1,
-          "bounceRate": 0,
-          "avgDuration": 348.407406,
-          "pageViews": 2,
-          "engagedSessions": 1
-        },
-        {
-          "pagePath": "/plages/saint-felix-sud/",
-          "device": "mobile",
-          "sessions": 1,
-          "bounceRate": 0,
-          "avgDuration": 236.178032,
-          "pageViews": 3,
           "engagedSessions": 1
         }
       ],
@@ -7562,19 +7847,19 @@
             "event": "clarity_rage_click",
             "page": "/",
             "target": "",
-            "count": 375
+            "count": 347
           },
           {
             "event": "clarity_rage_click",
             "page": "/en/",
             "target": "",
-            "count": 8
+            "count": 3
           },
           {
             "event": "clarity_rage_click",
             "page": "/en/sargassum-map/",
             "target": "",
-            "count": 1
+            "count": 2
           },
           {
             "event": "clarity_rage_click",
@@ -7590,13 +7875,7 @@
           },
           {
             "event": "clarity_rage_click",
-            "page": "/plages/plage-de-sainte-anne/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_rage_click",
-            "page": "/plages/plage-du-gosier/",
+            "page": "/plages/plage-de-malendure/",
             "target": "",
             "count": 1
           }
@@ -7606,37 +7885,37 @@
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 2439
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/en/",
-            "target": "",
-            "count": 88
+            "count": 2225
           },
           {
             "event": "clarity_dead_click",
             "page": "/plages/plage-bois-jolan/",
             "target": "",
-            "count": 77
+            "count": 75
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/plage-de-la-caravelle/",
+            "page": "/en/",
             "target": "",
-            "count": 37
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/plage-du-gosier/",
-            "target": "",
-            "count": 32
+            "count": 68
           },
           {
             "event": "clarity_dead_click",
             "page": "/en/sargassum-map/",
             "target": "",
-            "count": 30
+            "count": 32
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/plage-de-la-caravelle/",
+            "target": "",
+            "count": 32
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/plage-du-gosier/",
+            "target": "",
+            "count": 26
           },
           {
             "event": "clarity_dead_click",
@@ -7652,43 +7931,31 @@
           },
           {
             "event": "clarity_dead_click",
+            "page": "/plages/la-datcha/",
+            "target": "",
+            "count": 7
+          },
+          {
+            "event": "clarity_dead_click",
             "page": "/plages/plage-de-malendure/",
             "target": "",
-            "count": 6
+            "count": 7
           },
           {
             "event": "clarity_dead_click",
             "page": "/plages/l-autre-bord/",
             "target": "",
-            "count": 5
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/la-datcha/",
-            "target": "",
-            "count": 5
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/plage-de-pompierre/",
-            "target": "",
-            "count": 5
+            "count": 6
           },
           {
             "event": "clarity_dead_click",
             "page": "/plages/plage-de-grande-anse/",
             "target": "",
-            "count": 4
+            "count": 6
           },
           {
             "event": "clarity_dead_click",
             "page": "/plages/petit-havre-sud/",
-            "target": "",
-            "count": 3
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/plage-de-bas-du-fort/",
             "target": "",
             "count": 3
           },
@@ -7700,7 +7967,19 @@
           },
           {
             "event": "clarity_dead_click",
+            "page": "/plages/plage-du-souffleur/",
+            "target": "",
+            "count": 3
+          },
+          {
+            "event": "clarity_dead_click",
             "page": "/plages/la-grande-anse-deshaies/",
+            "target": "",
+            "count": 2
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/plage-de-grand-bourg/",
             "target": "",
             "count": 2
           },
@@ -7712,15 +7991,21 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/plage-du-souffleur/",
+            "page": "/plages/saint-felix-sud/",
             "target": "",
             "count": 2
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/saint-felix-sud/",
+            "page": "/en/sargassum-season/",
             "target": "",
-            "count": 2
+            "count": 1
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/es/alertas-sargazo/",
+            "target": "",
+            "count": 1
           },
           {
             "event": "clarity_dead_click",
@@ -7742,6 +8027,18 @@
           },
           {
             "event": "clarity_dead_click",
+            "page": "/plages/plage-de-bananier/",
+            "target": "",
+            "count": 1
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/plage-de-bas-du-fort/",
+            "target": "",
+            "count": 1
+          },
+          {
+            "event": "clarity_dead_click",
             "page": "/plages/plage-de-la-perle/",
             "target": "",
             "count": 1
@@ -7749,6 +8046,12 @@
           {
             "event": "clarity_dead_click",
             "page": "/plages/plage-de-petit-bourg/",
+            "target": "",
+            "count": 1
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/plages/plage-de-pompierre/",
             "target": "",
             "count": 1
           },

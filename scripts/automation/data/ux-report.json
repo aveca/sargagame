@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-08T14:54:01.394Z",
+  "generatedAt": "2026-06-12T00:01:07.402Z",
   "sites": {
     "mq": {
       "domain": "sargasses-martinique.com",
@@ -9,7 +9,7 @@
           "severity": "critical",
           "page": "/",
           "target": "",
-          "metric": "46 rage clicks on ? (/)",
+          "metric": "54 rage clicks on ? (/)",
           "recommendation": "Element receives frustrated repeated clicks. Check if it looks interactive but is not, or if it responds too slowly."
         },
         {
@@ -17,7 +17,7 @@
           "severity": "warning",
           "page": "/carte-sargasses/",
           "target": "",
-          "metric": "5 rage clicks on ? (/carte-sargasses/)",
+          "metric": "8 rage clicks on ? (/carte-sargasses/)",
           "recommendation": "Element receives frustrated repeated clicks. Check if it looks interactive but is not, or if it responds too slowly."
         },
         {
@@ -25,7 +25,7 @@
           "severity": "critical",
           "page": "/",
           "target": "",
-          "metric": "670 dead clicks on ? (/)",
+          "metric": "746 dead clicks on ? (/)",
           "recommendation": "Non-interactive element receives clicks. Either make it clickable or change its visual style to not look interactive."
         },
         {
@@ -33,7 +33,7 @@
           "severity": "critical",
           "page": "/carte-sargasses/",
           "target": "",
-          "metric": "129 dead clicks on ? (/carte-sargasses/)",
+          "metric": "122 dead clicks on ? (/carte-sargasses/)",
           "recommendation": "Non-interactive element receives clicks. Either make it clickable or change its visual style to not look interactive."
         },
         {
@@ -41,15 +41,23 @@
           "severity": "critical",
           "page": "/en/",
           "target": "",
-          "metric": "29 dead clicks on ? (/en/)",
+          "metric": "32 dead clicks on ? (/en/)",
           "recommendation": "Non-interactive element receives clicks. Either make it clickable or change its visual style to not look interactive."
         },
         {
           "type": "dead-click",
           "severity": "critical",
+          "page": "/plages/plage-du-diamant/",
+          "target": "",
+          "metric": "22 dead clicks on ? (/plages/plage-du-diamant/)",
+          "recommendation": "Non-interactive element receives clicks. Either make it clickable or change its visual style to not look interactive."
+        },
+        {
+          "type": "dead-click",
+          "severity": "warning",
           "page": "/meilleures-plages-guadeloupe-sargasses/",
           "target": "",
-          "metric": "15 dead clicks on ? (/meilleures-plages-guadeloupe-sargasses/)",
+          "metric": "14 dead clicks on ? (/meilleures-plages-guadeloupe-sargasses/)",
           "recommendation": "Non-interactive element receives clicks. Either make it clickable or change its visual style to not look interactive."
         },
         {
@@ -63,9 +71,17 @@
         {
           "type": "dead-click",
           "severity": "warning",
-          "page": "/sargasses-record-2026/",
+          "page": "/saison-sargasses-guadeloupe/",
           "target": "",
-          "metric": "10 dead clicks on ? (/sargasses-record-2026/)",
+          "metric": "9 dead clicks on ? (/saison-sargasses-guadeloupe/)",
+          "recommendation": "Non-interactive element receives clicks. Either make it clickable or change its visual style to not look interactive."
+        },
+        {
+          "type": "dead-click",
+          "severity": "warning",
+          "page": "/saison-sargasses-martinique/",
+          "target": "",
+          "metric": "8 dead clicks on ? (/saison-sargasses-martinique/)",
           "recommendation": "Non-interactive element receives clicks. Either make it clickable or change its visual style to not look interactive."
         },
         {
@@ -79,14 +95,6 @@
         {
           "type": "dead-click",
           "severity": "warning",
-          "page": "/saison-sargasses-guadeloupe/",
-          "target": "",
-          "metric": "7 dead clicks on ? (/saison-sargasses-guadeloupe/)",
-          "recommendation": "Non-interactive element receives clicks. Either make it clickable or change its visual style to not look interactive."
-        },
-        {
-          "type": "dead-click",
-          "severity": "warning",
           "page": "/meilleures-plages-martinique-sargasses/",
           "target": "",
           "metric": "6 dead clicks on ? (/meilleures-plages-martinique-sargasses/)",
@@ -95,17 +103,17 @@
         {
           "type": "dead-click",
           "severity": "warning",
-          "page": "/plages/plage-du-diamant/",
+          "page": "/sargasses-record-2026/",
           "target": "",
-          "metric": "6 dead clicks on ? (/plages/plage-du-diamant/)",
+          "metric": "5 dead clicks on ? (/sargasses-record-2026/)",
           "recommendation": "Non-interactive element receives clicks. Either make it clickable or change its visual style to not look interactive."
         }
       ],
       "crux": null,
       "stats": {
-        "total": 12,
+        "total": 13,
         "critical": 5,
-        "warnings": 7
+        "warnings": 8
       }
     },
     "gp": {
@@ -116,7 +124,7 @@
           "severity": "critical",
           "page": "/",
           "target": "",
-          "metric": "375 rage clicks on ? (/)",
+          "metric": "347 rage clicks on ? (/)",
           "recommendation": "Element receives frustrated repeated clicks. Check if it looks interactive but is not, or if it responds too slowly."
         },
         {
@@ -124,7 +132,7 @@
           "severity": "warning",
           "page": "/en/",
           "target": "",
-          "metric": "8 rage clicks on ? (/en/)",
+          "metric": "3 rage clicks on ? (/en/)",
           "recommendation": "Element receives frustrated repeated clicks. Check if it looks interactive but is not, or if it responds too slowly."
         },
         {
@@ -132,15 +140,7 @@
           "severity": "critical",
           "page": "/",
           "target": "",
-          "metric": "2439 dead clicks on ? (/)",
-          "recommendation": "Non-interactive element receives clicks. Either make it clickable or change its visual style to not look interactive."
-        },
-        {
-          "type": "dead-click",
-          "severity": "critical",
-          "page": "/en/",
-          "target": "",
-          "metric": "88 dead clicks on ? (/en/)",
+          "metric": "2225 dead clicks on ? (/)",
           "recommendation": "Non-interactive element receives clicks. Either make it clickable or change its visual style to not look interactive."
         },
         {
@@ -148,23 +148,15 @@
           "severity": "critical",
           "page": "/plages/plage-bois-jolan/",
           "target": "",
-          "metric": "77 dead clicks on ? (/plages/plage-bois-jolan/)",
+          "metric": "75 dead clicks on ? (/plages/plage-bois-jolan/)",
           "recommendation": "Non-interactive element receives clicks. Either make it clickable or change its visual style to not look interactive."
         },
         {
           "type": "dead-click",
           "severity": "critical",
-          "page": "/plages/plage-de-la-caravelle/",
+          "page": "/en/",
           "target": "",
-          "metric": "37 dead clicks on ? (/plages/plage-de-la-caravelle/)",
-          "recommendation": "Non-interactive element receives clicks. Either make it clickable or change its visual style to not look interactive."
-        },
-        {
-          "type": "dead-click",
-          "severity": "critical",
-          "page": "/plages/plage-du-gosier/",
-          "target": "",
-          "metric": "32 dead clicks on ? (/plages/plage-du-gosier/)",
+          "metric": "68 dead clicks on ? (/en/)",
           "recommendation": "Non-interactive element receives clicks. Either make it clickable or change its visual style to not look interactive."
         },
         {
@@ -172,7 +164,23 @@
           "severity": "critical",
           "page": "/en/sargassum-map/",
           "target": "",
-          "metric": "30 dead clicks on ? (/en/sargassum-map/)",
+          "metric": "32 dead clicks on ? (/en/sargassum-map/)",
+          "recommendation": "Non-interactive element receives clicks. Either make it clickable or change its visual style to not look interactive."
+        },
+        {
+          "type": "dead-click",
+          "severity": "critical",
+          "page": "/plages/plage-de-la-caravelle/",
+          "target": "",
+          "metric": "32 dead clicks on ? (/plages/plage-de-la-caravelle/)",
+          "recommendation": "Non-interactive element receives clicks. Either make it clickable or change its visual style to not look interactive."
+        },
+        {
+          "type": "dead-click",
+          "severity": "critical",
+          "page": "/plages/plage-du-gosier/",
+          "target": "",
+          "metric": "26 dead clicks on ? (/plages/plage-du-gosier/)",
           "recommendation": "Non-interactive element receives clicks. Either make it clickable or change its visual style to not look interactive."
         },
         {
@@ -194,9 +202,17 @@
         {
           "type": "dead-click",
           "severity": "warning",
+          "page": "/plages/la-datcha/",
+          "target": "",
+          "metric": "7 dead clicks on ? (/plages/la-datcha/)",
+          "recommendation": "Non-interactive element receives clicks. Either make it clickable or change its visual style to not look interactive."
+        },
+        {
+          "type": "dead-click",
+          "severity": "warning",
           "page": "/plages/plage-de-malendure/",
           "target": "",
-          "metric": "6 dead clicks on ? (/plages/plage-de-malendure/)",
+          "metric": "7 dead clicks on ? (/plages/plage-de-malendure/)",
           "recommendation": "Non-interactive element receives clicks. Either make it clickable or change its visual style to not look interactive."
         },
         {
@@ -204,23 +220,15 @@
           "severity": "warning",
           "page": "/plages/l-autre-bord/",
           "target": "",
-          "metric": "5 dead clicks on ? (/plages/l-autre-bord/)",
+          "metric": "6 dead clicks on ? (/plages/l-autre-bord/)",
           "recommendation": "Non-interactive element receives clicks. Either make it clickable or change its visual style to not look interactive."
         },
         {
           "type": "dead-click",
           "severity": "warning",
-          "page": "/plages/la-datcha/",
+          "page": "/plages/plage-de-grande-anse/",
           "target": "",
-          "metric": "5 dead clicks on ? (/plages/la-datcha/)",
-          "recommendation": "Non-interactive element receives clicks. Either make it clickable or change its visual style to not look interactive."
-        },
-        {
-          "type": "dead-click",
-          "severity": "warning",
-          "page": "/plages/plage-de-pompierre/",
-          "target": "",
-          "metric": "5 dead clicks on ? (/plages/plage-de-pompierre/)",
+          "metric": "6 dead clicks on ? (/plages/plage-de-grande-anse/)",
           "recommendation": "Non-interactive element receives clicks. Either make it clickable or change its visual style to not look interactive."
         }
       ],
@@ -233,8 +241,8 @@
     }
   },
   "summary": {
-    "totalIssues": 26,
+    "totalIssues": 27,
     "critical": 13,
-    "warnings": 13
+    "warnings": 14
   }
 }
