@@ -19,11 +19,11 @@
 
 ## ⚠️ REPRISE (lundi ou +)
 1. **Éval A/B pw_cta_order + pw_prelude** : le cron local lundi 09h35 ne tourne que si CE poste est allumé — sinon la lancer à la main (z-test, n≥100/bras, RECOMMEND-only, vérité Stripe pas payments_real). PREMIÈRE éval après 8 semaines — décision importante.
-2. **Vérifier le train final du 12/06** (af6e3d1) live : icônes sur le landing 5 domaines, étalonnage, GP /es/, hreflang, SW v62, et que le CI a bien servi les clips v2 (logs « DepthFlow release: 152 clips »).
+2. ~~Vérifier le train final du 12/06~~ ✅ FAIT le 12/06 18h : run 27417358227 success (52m40s), QA live 4/4 PASS — SW v62, méthodo USD 78 %, GP /es/ « Sargazo Guadalupe », hreflang es→/es/mapa-sargazo/. Reste optionnel : spot-check visuel icônes landing + clips v2 servis (taille fichiers hero-depthflow).
 3. **Clarity J+3-7** : re-mesure post-fixes clics (baseline 11/06 : MQ 54 rage/746 dead, GP 347/2225). Si GP ne s'effondre pas → creuser encore.
-4. **GSC GP** : le user doit ajouter le service account (même email que MQ) en propriétaire sur la propriété GP — 2 min dans l'UI GSC, débloque les requêtes GP dans l'audit.
+4. **GSC GP** : ajouter le service account en propriétaire sur la propriété GP. User OK pour le faire via Chrome (12/06). Procédure : Claude ouvre via Chrome MCP la page GSC → propriété MQ → Paramètres → Utilisateurs (l'email du service account y est visible — la clé n'existe qu'en secret GH, pas en local) → puis même page côté GP → le **user clique « Ajouter un utilisateur »** (modification de permissions = action user, règle sécurité) → coller l'email, rôle Propriétaire. Débloque les requêtes GP dans l'audit.
 5. **Phase 2 du kit design** (DESIGN-KIT.md §Phase 2) : icônes paywall (⚠ smoke EUR : ne toucher QUE les emojis), chips chat, harmonisation des deux ors.
-6. Bahamas : dossier _staging complet (config+seo-content+resorts+LAUNCH-BAHAMAS.md) — UNIQUEMENT sur GO user.
+6. Bahamas : dossier _staging complet (config+seo-content+resorts+LAUNCH-BAHAMAS.md). **GO conditionnel acté par le user le 12/06 : « on lancera la semaine pro si on a des ventes »** → lundi, vérifier les ventes USD (Stripe truth, pas funnel) AVANT de dérouler LAUNCH-BAHAMAS.md. Pas de vente USD = pas de lancement.
 
 ## ⚖️ Décisions user en attente
 GO/NO-GO Bahamas · crédits Higgsfield (si humains/pub un jour — sinon ignorer) · Cloudflare token · GO publication FB briefs · share-promo USD · Apple Pay device réel · GSC GP (2 min, point 4).
