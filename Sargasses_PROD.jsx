@@ -1726,7 +1726,35 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
 
   return(
     <>
-      <div className="backdrop" ref={backdropRef} onClick={requestClose}/>
+      {/* Pass-through pin : si le tap tombe pile sur une pastille visible dans la
+          bande de carte au-dessus de la fiche, on SWITCHE de plage au lieu de
+          fermer — sinon le clic paraît « mort » (rapport user 2026-06-12).
+          elementsFromPoint AVANT fermeture (voit sous le backdrop) ; fermeture
+          sèche via onClose (le requestClose animé garderait un timer 260 ms qui
+          refermerait la NOUVELLE fiche). */}
+      <div className="backdrop" ref={backdropRef} onClick={(e)=>{
+        const x=e.clientX,y=e.clientY
+        let pin=null
+        try{pin=document.elementsFromPoint(x,y).find(el=>el.classList&&el.classList.contains("leaflet-marker-icon"))}catch(_){}
+        if(pin){
+          track("sg_sheet_pin_switch",{})
+          onClose()
+          // Re-localiser le pin AU MOMENT du dispatch : la fermeture change
+          // selectedBeach → les markers sont RECONSTRUITS (garde par signature)
+          // → le nœud capturé ci-dessus est détaché. Boucle de frames le temps
+          // que le backdrop démonte + que les markers réapparaissent.
+          let tries=0
+          const fire=()=>{try{
+            const el=document.elementFromPoint(x,y)
+            const p2=el&&el.closest&&el.closest(".leaflet-marker-icon")
+            if(p2){p2.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true,view:window,clientX:x,clientY:y}));return}
+            if(++tries<8)requestAnimationFrame(fire)
+          }catch(_){}}
+          requestAnimationFrame(fire)
+          return
+        }
+        requestClose()
+      }}/>
       <div className="sheet" ref={sheetRef}
         onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
         <div className="sheet-handle"/>

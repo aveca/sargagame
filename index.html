@@ -203,10 +203,18 @@
         }
       }).catch(function(){});
     })();
-    // Service Worker registration — no auto-reload on controller change
+    // Service Worker registration — no auto-reload on controller change.
+    // reg.update() toutes les 15 min + au retour d'onglet : sans ça le
+    // navigateur ne re-vérifie sw.js qu'à la navigation (parfois 24 h) et les
+    // utilisateurs voient les vieux bugs longtemps après le fix (rapports
+    // « clics cassés » 2026-06-11/12 = bundles d'avant les correctifs).
     if('serviceWorker' in navigator){
       window.addEventListener('load',function(){
-        navigator.serviceWorker.register('/sw.js').catch(function(){})
+        navigator.serviceWorker.register('/sw.js').then(function(reg){
+          var upd=function(){try{reg.update()}catch(e){}}
+          setInterval(upd,15*60*1000)
+          document.addEventListener('visibilitychange',function(){if(!document.hidden)upd()})
+        }).catch(function(){})
       })
     }
     </script>
