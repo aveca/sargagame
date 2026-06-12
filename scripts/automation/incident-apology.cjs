@@ -21,7 +21,7 @@
 const fs = require('fs')
 const path = require('path')
 const { Resend } = require('resend')
-const { emailHash } = require('./lib/email-hash.cjs')
+const { emailHash, logId } = require('./lib/email-hash.cjs')
 
 const API_KEY = process.env.RESEND_API_KEY
 const FORCE = process.argv.includes('--force')
@@ -132,7 +132,7 @@ async function main() {
       const from = `${meta.display} <alerte@sargasses-martinique.com>`
       const html = wrapHTML(t.body(meta), sub.email, island, meta)
       if (!resend) {
-        console.log(`  ~ [${DRY ? 'dry' : 'no key'}] ${sub.email} (${island}, ${meta.lang}) « ${t.subject} »`)
+        console.log(`  ~ [${DRY ? 'dry' : 'no key'}] ${logId(sub.email)} (${island}, ${meta.lang}) « ${t.subject} »`)
         continue
       }
       try {
@@ -143,12 +143,12 @@ async function main() {
             'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
           },
         })
-        if (error) { console.log(`  x ${sub.email}: ${error.message}`); continue }
+        if (error) { console.log(`  x ${logId(sub.email)}: ${error.message}`); continue }
         inc.sent[h] = new Date().toISOString()
         sent++
-        console.log(`  + ${sub.email} (${island}) — incident ${inc.id}`)
+        console.log(`  + ${logId(sub.email)} (${island}) — incident ${inc.id}`)
         await trackToSheet({ resend_id: data?.id || '', to: sub.email, subject: t.subject, email_type: 'incident_apology', island, status: 'sent', source: inc.id })
-      } catch (e) { console.log(`  x ${sub.email}: ${e.message}`) }
+      } catch (e) { console.log(`  x ${logId(sub.email)}: ${e.message}`) }
     }
   }
 

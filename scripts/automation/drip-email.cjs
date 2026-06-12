@@ -18,7 +18,7 @@
 const fs = require('fs')
 const path = require('path')
 const { Resend } = require('resend')
-const { emailHash } = require('./lib/email-hash.cjs')
+const { emailHash, logId } = require('./lib/email-hash.cjs')
 
 const API_KEY = process.env.RESEND_API_KEY
 const FORCE = process.argv.includes('--force')
@@ -737,7 +737,7 @@ async function main() {
       if (isNewRegion && newRegionSent >= NEW_REGION_J3_CAP) continue
 
       if (!resend) {
-        console.log(`  ~ ${email} [${step.key}] would send (no RESEND_API_KEY)`)
+        console.log(`  ~ ${logId(email)} [${step.key}] would send (no RESEND_API_KEY)`)
         wouldSend++
         break
       }
@@ -760,9 +760,9 @@ async function main() {
           },
         })
         if (error) {
-          console.log(`  x ${email} [${step.key}]: ${error.message}`)
+          console.log(`  x ${logId(email)} [${step.key}]: ${error.message}`)
         } else {
-          console.log(`  + ${email} [${step.key}] (${island}, age=${age}d)`)
+          console.log(`  + ${logId(email)} [${step.key}] (${island}, age=${age}d)`)
           record[step.key] = new Date().toISOString()
           totalSent++
           if (isNewRegion) newRegionSent++
@@ -773,7 +773,7 @@ async function main() {
           })
         }
       } catch (e) {
-        console.log(`  x ${email} [${step.key}]: ${e.message}`)
+        console.log(`  x ${logId(email)} [${step.key}]: ${e.message}`)
       }
 
       // Only send one drip per subscriber per run (don't blast all at once)
@@ -811,7 +811,7 @@ async function main() {
       // Dry-run : on rend quand même l'email (atteste que le builder marche) +
       // dump du premier HTML pour inspection visuelle.
       const p = buildDaily(island, brief, email)
-      console.log(`  ~ ${email} [daily] would send: "${p.subject}"`)
+      console.log(`  ~ ${logId(email)} [daily] would send: "${p.subject}"`)
       if (!dailyWould) try { fs.writeFileSync(path.join(__dirname, 'data', 'daily-preview.html'), p.html) } catch {}
       dailyWould++
       continue
@@ -829,9 +829,9 @@ async function main() {
           'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
         },
       })
-      if (error) { console.log(`  x ${email} [daily]: ${error.message}`) }
+      if (error) { console.log(`  x ${logId(email)} [daily]: ${error.message}`) }
       else {
-        console.log(`  + ${email} [daily] (${island})`)
+        console.log(`  + ${logId(email)} [daily] (${island})`)
         record.daily_last = todayKey
         dripSent[key] = record
         dailySent++
@@ -840,7 +840,7 @@ async function main() {
           email_type: 'daily_verdict', island, status: 'sent', source: sub.source || 'sargacatch',
         })
       }
-    } catch (e) { console.log(`  x ${email} [daily]: ${e.message}`) }
+    } catch (e) { console.log(`  x ${logId(email)} [daily]: ${e.message}`) }
   }
   if (dailySent || dailyWould) console.log(`Daily verdict: ${dailySent} sent, ${dailyWould} dry-run.`)
 

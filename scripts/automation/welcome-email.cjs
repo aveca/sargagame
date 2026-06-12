@@ -14,7 +14,7 @@
 const fs = require('fs')
 const path = require('path')
 const { Resend } = require('resend')
-const { emailHash } = require('./lib/email-hash.cjs')
+const { emailHash, logId } = require('./lib/email-hash.cjs')
 
 const API_KEY = process.env.RESEND_API_KEY
 const SUBSCRIBERS_PATH = path.join(__dirname, 'data', 'subscribers.json')
@@ -289,9 +289,9 @@ async function main() {
       })
 
       if (error) {
-        console.log(`  ❌ ${sub.email}: ${error.message}`)
+        console.log(`  ❌ ${logId(sub.email)}: ${error.message}`)
       } else {
-        console.log(`  ✅ ${sub.email} (${island})`)
+        console.log(`  ✅ ${logId(sub.email)} (${island})`)
         sentSet.add(emailHash(sub.email))
         // Track to Google Sheet
         try {
@@ -306,7 +306,7 @@ async function main() {
         } catch {}
       }
     } catch (e) {
-      console.log(`  ❌ ${sub.email}: ${e.message}`)
+      console.log(`  ❌ ${logId(sub.email)}: ${e.message}`)
     }
   }
 

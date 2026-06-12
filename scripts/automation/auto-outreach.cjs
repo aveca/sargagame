@@ -21,7 +21,7 @@
 const { readFileSync, writeFileSync, existsSync, mkdirSync } = require('fs')
 const { resolve } = require('path')
 const { Resend } = require('resend')
-const { emailHash } = require('./lib/email-hash.cjs')
+const { emailHash, logId } = require('./lib/email-hash.cjs')
 
 const DRY_RUN = process.env.DRY_RUN === '1'
 const RESEND_API_KEY = process.env.RESEND_API_KEY
@@ -244,7 +244,7 @@ async function sendOutreachEmail(resend, to, target) {
   const html = buildEmailHTML(target)
 
   if (DRY_RUN) {
-    console.log(`  [DRY RUN] Would send to: ${to}`)
+    console.log(`  [DRY RUN] Would send to: ${logId(to)}`)
     console.log(`  Subject: ${subject}`)
     return { sent: true, dry: true }
   }
@@ -261,7 +261,7 @@ async function sendOutreachEmail(resend, to, target) {
       console.error(`  Failed: ${error.message}`)
       return { sent: false, error: error.message }
     }
-    console.log(`  Sent to ${to} (id: ${data?.id})`)
+    console.log(`  Sent to ${logId(to)} (id: ${data?.id})`)
     return { sent: true, id: data?.id }
   } catch (e) {
     console.error(`  Error: ${e.message}`)
@@ -315,7 +315,7 @@ async function main() {
 
     // Find email
     const email = await findContactEmail(target.url)
-    console.log(`  Email: ${email}`)
+    console.log(`  Email: ${logId(email)}`)
 
     if (!email) {
       console.log('  Skipped: no email found')
