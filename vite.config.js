@@ -881,6 +881,21 @@ ${isGP ? '' : `  <url><loc>${d}/a-propos/</loc><lastmod>${today}</lastmod><chang
               clean: 'Anse Trabaud à Sainte-Anne (Martinique) — plage propre en temps réel. Plage sauvage de l\'extrême sud, côte Atlantique, accès par sentier. Carte sargasses Martinique et prévisions 7 jours.',
               moderate: 'Sargasses à Anse Trabaud (Sainte-Anne, Martinique) — présence modérée détectée en temps réel. Plage sauvage côte Atlantique. Carte et prévisions 7 jours.',
               avoid: 'Alerte sargasses à Anse Trabaud (Sainte-Anne, Martinique) — forte concentration côte Atlantique. Plage sauvage souvent touchée. Voir les plages propres à proximité.'
+            },
+            'Anse des Galets': {
+              clean: 'Anse des Galets au Prêcheur (Martinique) — plage propre en temps réel. Côte Caraïbe, sable volcanique près de Saint-Pierre, idéal familles. Généralement épargnée des sargasses. Carte et prévisions 7 jours.',
+              moderate: 'Sargasses à l\'Anse des Galets (Le Prêcheur, Martinique) — présence modérée détectée en temps réel. Côte Caraïbe, nord-ouest de l\'île. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à l\'Anse des Galets (Le Prêcheur, Martinique) — forte concentration côte Caraïbe. Voir les plages propres à proximité de Saint-Pierre sur la carte en temps réel.'
+            },
+            'Anse du Figuier (Saintes)': {
+              clean: 'Anse du Figuier à Terre-de-Haut (Les Saintes, Guadeloupe) — plage propre en temps réel. Crique abritée de l\'archipel des Saintes, côte sous-le-vent, idéal familles. Généralement épargnée des sargasses. Prévisions 7 jours.',
+              moderate: 'Sargasses à l\'Anse du Figuier (Les Saintes, Guadeloupe) — présence modérée détectée en temps réel. Archipel des Saintes, côte sous-le-vent. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à l\'Anse du Figuier (Terre-de-Haut, Les Saintes, Guadeloupe) — forte concentration détectée en temps réel. Voir les criques propres des Saintes à proximité.'
+            },
+            'Anse Rodrigue': {
+              clean: 'Anse Rodrigue à Terre-de-Haut (Les Saintes, Guadeloupe) — plage propre en temps réel. Crique sauvage abritée de l\'archipel des Saintes, eaux calmes, idéal familles. Généralement épargnée des sargasses. Prévisions 7 jours.',
+              moderate: 'Sargasses à l\'Anse Rodrigue (Les Saintes, Guadeloupe) — présence modérée détectée en temps réel. Crique de l\'archipel des Saintes. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à l\'Anse Rodrigue (Terre-de-Haut, Les Saintes, Guadeloupe) — forte concentration détectée en temps réel. Voir les criques propres des Saintes à proximité.'
             }
           }
           let sitemapMQBeaches = ''
