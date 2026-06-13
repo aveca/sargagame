@@ -231,9 +231,24 @@ async function main() {
     console.log(`Top 5: ${topBeaches.map(b => `${b.name}${typeof b.unifiedScore === 'number' ? ` (${b.unifiedScore})` : ''}`).join(', ')}`)
 
     // Send to Apps Script which will dispatch to all subscribers
-    const subject = typeof bestScore === 'number'
-      ? `Ce weekend en ${islandName} : ${topBeaches[0].name} ${bestScore}/100 ${bestLabel || ''}`
-      : `Ce weekend : ${stats.clean} plages propres en ${islandName}`
+    // Subject framing (open-rate optimization, growth-actions log 2026-04-17 ×3,
+    // re-confirmed 2026-06-13): lead with the score ONLY when it's genuinely good
+    // (>=70 = BON/EXCELLENT). Below that the unified label reads "MOYEN" and a
+    // subject like "Anse Madame 66/100 MOYEN" buries the real story — e.g. 41 clean
+    // beaches the same weekend. Sub-70 → abundance framing + the named top pick.
+    const STRONG_SCORE = 70
+    const clean = stats.clean
+    let subject
+    if (typeof bestScore === 'number' && bestScore >= STRONG_SCORE) {
+      subject = `Ce weekend en ${islandName} : ${topBeaches[0].name} ${bestScore}/100 ${bestLabel || ''}`.trim()
+    } else if (clean > 0) {
+      const lead = topBeaches[0] ? `, ${topBeaches[0].name} en tête` : ''
+      subject = `Ce weekend : ${clean} plage${clean > 1 ? 's' : ''} propre${clean > 1 ? 's' : ''} en ${islandName}${lead}`
+    } else {
+      subject = topBeaches[0]
+        ? `Ce weekend en ${islandName} : ${topBeaches[0].name}, ta meilleure option`
+        : `Ce weekend en ${islandName} : la carte des plages en direct`
+    }
     const res = await post(WEBHOOK_URL, {
       type: 'weekend_email',
       island: island.toUpperCase(),
