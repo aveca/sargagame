@@ -746,6 +746,7 @@ button:active,a:active,[role="button"]:active{transform:scale(.96)!important;opa
 @keyframes sg-threat-slide{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
 @keyframes sg-threat-glow{0%,100%{box-shadow:0 4px 20px rgba(232,82,42,.3)}50%{box-shadow:0 4px 30px rgba(232,82,42,.55)}}
 @keyframes sg-dash-flow{from{stroke-dashoffset:20}to{stroke-dashoffset:0}}
+@keyframes beachScanLine{0%{top:0;opacity:1}85%{top:100%;opacity:.8}100%{top:100%;opacity:0}}
 .sg-drift-path{animation:sg-dash-flow 1.5s linear infinite}
 @keyframes goldGlow{0%,100%{box-shadow:0 4px 20px rgba(232,168,0,.25)}50%{box-shadow:0 4px 30px rgba(232,168,0,.5)}}
 @keyframes confirmPop{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
@@ -1664,6 +1665,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
   },[beach?.id,beach?.status,beach?._communityOverride,lang,weeklyData])
   const isFav=favorites.includes(beach?.id)
   const [scoreOpen,setScoreOpen]=useState(false)
+  const [photoScanOpen,setPhotoScanOpen]=useState(false)
   const startY=useRef(0)
   const sheetRef=useRef(null)
 
@@ -1761,9 +1763,10 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
         onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
         <div className="sheet-handle"/>
 
-        {/* Photo hero — immersive */}
-        <div style={{height:"min(300px, 38vh)",background:`url(${bgImage}) center 40%/cover`,
-          borderRadius:"0",position:"relative",overflow:"hidden"}}>
+        {/* Photo hero — immersive, tap to scan */}
+        <div onClick={e=>{if(!e.target.closest("button")){setPhotoScanOpen(v=>!v);track("sg_photo_scan",{beach_id:beach.id,open:!photoScanOpen})}}}
+          style={{height:"min(300px, 38vh)",background:`url(${bgImage}) center 40%/cover`,
+          borderRadius:"0",position:"relative",overflow:"hidden",cursor:"pointer"}}>
           {/* Cinematic gradient overlay */}
           <div style={{position:"absolute",inset:0,
             background:"linear-gradient(180deg, rgba(0,0,0,.15) 0%, transparent 30%, transparent 50%, var(--sg-card,#fff) 100%)"}}/>
@@ -1803,6 +1806,22 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               {lang==="es"?(ST[beach.status]||ST._loading).les:lang==="en"?(ST[beach.status]||ST._loading).le:(ST[beach.status]||ST._loading).l}
             </span>
           </div>
+          {/* Tap-to-scan HUD overlay */}
+          {photoScanOpen&&<BeachPhotoScan beach={beach} lang={lang}/>}
+          {/* Scan hint (when overlay closed) */}
+          {!photoScanOpen&&<div style={{position:"absolute",bottom:14,right:14,
+            display:"flex",alignItems:"center",gap:4,opacity:.55,pointerEvents:"none"}}>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="6" cy="6" r="4.5" stroke="#4ECDC4" strokeWidth="1"/>
+              <line x1="6" y1="1.5" x2="6" y2="3" stroke="#4ECDC4" strokeWidth="1" strokeLinecap="round"/>
+              <line x1="6" y1="9" x2="6" y2="10.5" stroke="#4ECDC4" strokeWidth="1" strokeLinecap="round"/>
+              <line x1="1.5" y1="6" x2="3" y2="6" stroke="#4ECDC4" strokeWidth="1" strokeLinecap="round"/>
+              <line x1="9" y1="6" x2="10.5" y2="6" stroke="#4ECDC4" strokeWidth="1" strokeLinecap="round"/>
+            </svg>
+            <span style={{fontSize:9,color:"#4ECDC4",fontWeight:700,letterSpacing:".08em"}}>
+              {lang==="en"?"SCAN":lang==="es"?"ESCANEAR":"ANALYSER"}
+            </span>
+          </div>}
         </div>
 
         <div style={{padding:"0 20px calc(70px + env(safe-area-inset-bottom,12px))"}}>
@@ -4919,6 +4938,88 @@ function InlinePushCTA({lang,beachId}){
 /* ═══════════════════════════════════════════════════════════════════════════
    INLINE EMAIL CAPTURE — Smart visit-based trigger (visit 3+)
    ═══════════════════════════════════════════════════════════════════════════ */
+/* ── BEACH PHOTO SCAN — tap la photo → HUD satellite cinématique */
+function BeachPhotoScan({beach,lang}){
+  const T3=(fr,en,es)=>lang==="en"?en:lang==="es"?es:fr
+  const afai=beach.afai
+  const zone=afai==null?"_":afai<0.15?"clean":afai<0.40?"moderate":"avoid"
+  const zoneColor={clean:"#16A34A",moderate:"#E07800",avoid:"#E8522A","_":"#4ECDC4"}[zone]
+  const lat=beach.lat,lng=beach.lng
+  const latStr=lat!=null?`${Math.abs(lat).toFixed(4)}°${lat>=0?"N":"S"}`:null
+  const lngStr=lng!=null?`${Math.abs(lng).toFixed(4)}°${lng>=0?"E":"O"}`:null
+  return(
+    <div style={{position:"absolute",inset:0,background:"rgba(0,6,15,.76)",
+      backdropFilter:"blur(2px)",WebkitBackdropFilter:"blur(2px)",
+      animation:"sgReveal .22s ease",overflow:"hidden"}}>
+      {/* Grid */}
+      <svg style={{position:"absolute",inset:0,width:"100%",height:"100%",opacity:.14}} xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="bpGrid" x="0" y="0" width="36" height="36" patternUnits="userSpaceOnUse">
+            <path d="M 36 0 L 0 0 0 36" fill="none" stroke="#4ECDC4" strokeWidth=".6"/>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#bpGrid)"/>
+      </svg>
+      {/* Scan line */}
+      <div style={{position:"absolute",left:0,right:0,height:2,
+        background:"linear-gradient(90deg,transparent,#4ECDC4 20%,#4ECDC4 80%,transparent)",
+        boxShadow:"0 0 12px #4ECDC4, 0 0 4px #4ECDC4",
+        animation:"beachScanLine 1.6s ease-out forwards"}}/>
+      {/* HUD corners */}
+      {[[{top:10,left:10},{borderTop:"2px solid #4ECDC4",borderLeft:"2px solid #4ECDC4"}],
+        [{top:10,right:10},{borderTop:"2px solid #4ECDC4",borderRight:"2px solid #4ECDC4"}],
+        [{bottom:10,left:10},{borderBottom:"2px solid #4ECDC4",borderLeft:"2px solid #4ECDC4"}],
+        [{bottom:10,right:10},{borderBottom:"2px solid #4ECDC4",borderRight:"2px solid #4ECDC4"}]
+      ].map(([pos,border],i)=>(
+        <div key={i} style={{position:"absolute",width:18,height:18,...pos,...border,opacity:.7}}/>
+      ))}
+      {/* Central data */}
+      <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",
+        alignItems:"center",justifyContent:"center",gap:9}}>
+        <div style={{fontSize:9,fontWeight:800,letterSpacing:".2em",color:"#4ECDC4",opacity:.8,
+          animation:"sgReveal .3s ease .45s both"}}>
+          {T3("ANALYSE SATELLITE","SATELLITE SCAN","ANÁLISIS SATELITAL")}
+        </div>
+        <div style={{fontFamily:"'Anton',sans-serif",fontSize:19,color:"#fff",letterSpacing:"-.01em",
+          textAlign:"center",padding:"0 24px",lineHeight:1.1,
+          animation:"sgReveal .3s ease .6s both"}}>
+          {beach.name.toUpperCase()}
+        </div>
+        {latStr&&lngStr&&(
+          <div style={{fontSize:11,color:"rgba(255,255,255,.65)",fontFamily:"monospace",
+            background:"rgba(78,205,196,.1)",border:"1px solid rgba(78,205,196,.25)",
+            borderRadius:6,padding:"3px 10px",
+            animation:"sgReveal .3s ease .75s both"}}>
+            {latStr} · {lngStr}
+          </div>
+        )}
+        {afai!=null&&(
+          <div style={{display:"flex",alignItems:"center",gap:7,
+            animation:"sgReveal .3s ease .9s both"}}>
+            <span style={{fontSize:10,color:"rgba(255,255,255,.45)",letterSpacing:".04em"}}>AFAI</span>
+            <div style={{width:72,height:4,borderRadius:2,background:"rgba(255,255,255,.12)",overflow:"hidden"}}>
+              <div style={{width:`${Math.min(100,afai/0.8*100)}%`,height:"100%",
+                background:zoneColor,borderRadius:2,boxShadow:`0 0 6px ${zoneColor}`}}/>
+            </div>
+            <span style={{fontSize:11,fontWeight:700,color:zoneColor,fontFamily:"monospace"}}>
+              {afai.toFixed(3)}
+            </span>
+          </div>
+        )}
+        <div style={{fontSize:9,color:"rgba(255,255,255,.3)",letterSpacing:".06em",marginTop:2,
+          animation:"sgReveal .3s ease 1.05s both"}}>
+          MODIS NASA · COPERNICUS ESA
+        </div>
+      </div>
+      <div style={{position:"absolute",bottom:12,right:14,fontSize:9,
+        color:"rgba(255,255,255,.3)",letterSpacing:".05em",
+        animation:"sgReveal .3s ease 1.2s both"}}>
+        {T3("toucher pour fermer","tap to close","toca para cerrar")}
+      </div>
+    </div>
+  )
+}
+
 /* ── SCORE REVEAL — tap le score pour apprendre d'où il vient */
 function ScoreReveal({beach,lang}){
   const T3=(fr,en,es)=>lang==="en"?en:lang==="es"?es:fr
