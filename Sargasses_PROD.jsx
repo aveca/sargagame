@@ -6581,6 +6581,16 @@ function ScrollStory({lang,onShowMap}){
   return(
     <section ref={boxRef} aria-label={T("La méthode","The method","El método")} style={{position:"relative",
       height:rm?"auto":"430vh",...baseVars}}>
+      {/* CSS embarquée : ScrollStory est monté dans 2 bras A/B (control ET game).
+          La hauteur .sg-storyvp ne vivait QUE dans le <style> du bras control →
+          dans le bras game le viewport sticky avait height:0 → scène vide
+          (screenshots user 14/06). On rapatrie ici TOUT le CSS requis. */}
+      <style>{`.sg-storyvp{height:100vh}@supports(height:100svh){.sg-storyvp{height:100svh}}
+.sgst-ring{animation:sgstRing 2.6s ease-out infinite}.sgst-ring2{animation:sgstRing 2.6s ease-out infinite;animation-delay:1.3s}
+@keyframes sgstRing{0%{transform:scale(.3);opacity:.85}78%,100%{transform:scale(2.3);opacity:0}}
+.sgst-bob{animation:sgstBob 3.4s ease-in-out infinite}@keyframes sgstBob{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
+.sg-flow{stroke-dasharray:4 6;animation:sgFlowY 1.2s linear infinite}@keyframes sgFlowY{from{stroke-dashoffset:20}to{stroke-dashoffset:0}}
+@media(prefers-reduced-motion:reduce){.sgst-ring,.sgst-ring2,.sgst-bob,.sg-flow{animation:none}}`}</style>
       <div className="sg-storyvp" style={{position:rm?"relative":"sticky",top:0,overflow:"hidden",background:"#0A1714",
         height:rm?"min(72vh,560px)":undefined}}>
         <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice"
