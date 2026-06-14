@@ -1859,13 +1859,18 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
         {/* Hero — photo le jour, scène vectorielle golden-hour personnalisée par
             l'heure sinon (cf. useVectorHero). Immersif, tap pour scanner. */}
         <div onClick={e=>{if(!e.target.closest("button")){setPhotoScanOpen(v=>!v);track("sg_photo_scan",{beach_id:beach.id,open:!photoScanOpen,hero:useVectorHero?"vector":"photo",ph:heroPh})}}}
-          style={{height:"min(300px, 38vh)",background:useVectorHero?"#0B2230":`url(${bgImage}) center 40%/cover`,
+          style={{height:"min(600px, 70svh)",background:useVectorHero?"#0B2230":`url(${bgImage}) center 40%/cover`,
           borderRadius:"0",position:"relative",overflow:"hidden",cursor:"pointer"}}>
           {/* Scène vectorielle golden-hour (auto-phase) en fond quand pas de photo de jour */}
           {useVectorHero&&<HeroScene/>}
           {/* Cinematic gradient overlay */}
           <div style={{position:"absolute",inset:0,
             background:"linear-gradient(180deg, rgba(0,0,0,.15) 0%, transparent 30%, transparent 50%, var(--sg-card,#fff) 100%)"}}/>
+          {/* Le Veilleur veille sur CETTE plage — humeur = état RÉEL du jour : le
+              « veilleur personnel » incarné dès le hero (pas juste une image). */}
+          <div aria-hidden="true" style={{position:"absolute",top:"43%",left:0,right:0,display:"flex",justifyContent:"center",pointerEvents:"none"}}>
+            <Veilleur mood={moodFromScore(beach.score)} size={82}/>
+          </div>
           {/* Status glow — colored ambient light based on beach status */}
           <div style={{position:"absolute",bottom:0,left:0,right:0,height:"40%",
             background:`radial-gradient(ellipse at 50% 100%, ${(ST[beach.status]||ST._loading).c}22 0%, transparent 70%)`,
