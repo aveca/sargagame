@@ -270,6 +270,10 @@ function buildBeachScene(beach){
   const galets=arch==="VOLCANIC_BLACK"?Array.from({length:intR(r,3,5)},()=>({x:Math.round(rangeR(r,180,640)),y:Math.round(rangeR(r,500,540)),rx:+rangeR(r,5,11).toFixed(1)})):[]
   return {arch,fromLeft,relief,palms,galets}
 }
+// teinte d'eau pilotée par l'AFAI RÉEL (vire vers vert-brun seulement si l'algue est là).
+// afai=0.2 placeholder → ~0 changement (eau turquoise honnête sur les plages clean). INCRÉMENT 4.
+function _mixHex(a,b,k){a=a.replace("#","");b=b.replace("#","");const p=(s,i)=>parseInt(s.slice(i,i+2),16),m=x=>("0"+Math.round(x).toString(16)).slice(-2);return "#"+m(p(a,0)+(p(b,0)-p(a,0))*k)+m(p(a,2)+(p(b,2)-p(a,2))*k)+m(p(a,4)+(p(b,4)-p(a,4))*k)}
+function waterTint(seaT,afai){const a=typeof afai==="number"?afai:0.2,inten=Math.max(0,Math.min(1,(a-0.15)/0.63));return inten<=0.03?seaT:_mixHex(seaT,"#6E5A1E",inten*0.55)}
 
 // ── BeachScene — CHAQUE plage a SA scène SVG (directive 14/06 : « notre valeur
 //    est sur le svg » + « représente le diamant en svg, chaque plage avec sa
@@ -313,7 +317,7 @@ function BeachScene({beach}){
         <style>{`.bsc-cloud{animation:bscCloud 80s ease-in-out infinite alternate}@keyframes bscCloud{to{transform:translateX(-46px)}}.bsc-cloud2{animation:bscCloud2 110s ease-in-out infinite alternate-reverse}@keyframes bscCloud2{to{transform:translateX(40px)}}.bsc-beam{opacity:.1}.bsc-shim{opacity:.5}.bsc-moonp{opacity:.34}@media(prefers-reduced-motion:reduce){.bsc-cloud,.bsc-cloud2{animation:none}}`}</style>
         <defs>
           <linearGradient id="bscSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={t.sky[0]}/><stop offset=".52" stopColor={t.sky[1]}/><stop offset=".84" stopColor={t.sky[2]}/><stop offset="1" stopColor={t.sky[3]}/></linearGradient>
-          <linearGradient id="bscSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={t.seaT}/><stop offset="1" stopColor={t.seaB}/></linearGradient>
+          <linearGradient id="bscSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={waterTint(t.seaT,beach&&beach.afai)}/><stop offset="1" stopColor={t.seaB}/></linearGradient>
         </defs>
         <rect width="800" height="360" fill="url(#bscSky)"/>
         {t.sun==="set"&&<><circle cx="400" cy="330" r="120" fill={t.glit} opacity=".08"/><circle cx="400" cy="330" r="64" fill={t.glit} opacity=".12"/><path d="M340 332 a60 60 0 0 1 120 0 Z" fill={t.glit} opacity=".9"/></>}
