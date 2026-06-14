@@ -6895,38 +6895,18 @@ function HeroScene(){
     <div ref={boxRef} aria-hidden style={{position:"absolute",inset:0,"--hs":0,background:"#0B2230"}}>
       <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice"
         style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block"}}>
+        {/* TABLEAU CALME (mandat fondateur) : au repos rien ne clignote. On garde UNIQUEMENT
+            la dérive très lente des nuages (mouvement naturel qui repose les yeux). Tout le reste
+            (râteau, respiration, poisson, scintillements, vagues-traits, avion, marche) est figé.
+            Le poisson et l'élément "arrivée" n'existaient que pendant leur anim → masqués. */}
         <style>{`
-.sgh-cloud1{animation:sghDrift 64s ease-in-out infinite alternate}
-.sgh-cloud2{animation:sghDrift 90s ease-in-out infinite alternate-reverse}
-@keyframes sghDrift{from{transform:translateX(0)}to{transform:translateX(-70px)}}
-.sgh-glit{animation:sghGlit 7s linear infinite}
-@keyframes sghGlit{to{stroke-dashoffset:-64}}
-.sgh-foam{animation:sghFoam 16s linear infinite}
-@keyframes sghFoam{to{stroke-dashoffset:96}}
-.sgh-mat{animation:sghMat 14s ease-in-out infinite alternate}
-@keyframes sghMat{from{transform:translateX(0)}to{transform:translateX(14px)}}
-.sgh-bird{animation:sghBird 56s linear infinite}
-@keyframes sghBird{from{transform:translateX(0)}to{transform:translateX(-900px)}}
-.sgh-rake{animation:sghRake 2.4s ease-in-out infinite;transform-box:fill-box;transform-origin:2px -19px}
-.sgh-rake2{animation:sghRake 2.4s ease-in-out infinite .9s;transform-box:fill-box;transform-origin:2px -19px}
-@keyframes sghRake{0%,100%{transform:rotate(-8deg)}45%{transform:rotate(13deg)}}
-.sgh-breathe{animation:sghBreathe 5s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
-@keyframes sghBreathe{0%,100%{transform:scale(1) translateY(0)}50%{transform:scale(1.05) translateY(-1.5px)}}
-.sgh-walk{animation:sghWalk 9s linear infinite}
-@keyframes sghWalk{0%{transform:translateX(0)}100%{transform:translateX(20px)}}
-.sgh-fish{animation:sghFish 4.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
-@keyframes sghFish{0%,68%{opacity:0;transform:translateY(9px) rotate(8deg)}74%{opacity:1;transform:translateY(-6px) rotate(-16deg)}82%{transform:translateY(-17px) rotate(-32deg)}90%{opacity:1;transform:translateY(-3px) rotate(-52deg)}96%{opacity:0;transform:translateY(11px) rotate(-66deg)}100%{opacity:0}}
-.sgh-net{animation:sghNet 7s ease-in-out infinite alternate}
-@keyframes sghNet{from{transform:translateX(0)}to{transform:translateX(7px)}}
-.sgh-shim{animation:sghShim 3.2s ease-in-out infinite}
-@keyframes sghShim{0%,100%{opacity:.15}50%{opacity:.95}}
-.sgh-star{animation:sghStar 3.6s ease-in-out infinite}
-@keyframes sghStar{0%,100%{opacity:.25}50%{opacity:.9}}
-.sgh-plane{animation:sghPlane 24s linear infinite}
-@keyframes sghPlane{0%{transform:translate(770px,60px)}100%{transform:translate(-140px,188px)}}
-.sgh-arrive{animation:sghArrive 16s ease-in-out infinite}
-@keyframes sghArrive{0%{transform:translate(40px,-8px);opacity:0}12%{opacity:.6}85%{transform:translate(-28px,54px);opacity:.85}100%{transform:translate(-34px,62px);opacity:0}}
-@media (prefers-reduced-motion:reduce){.sgh-cloud1,.sgh-cloud2,.sgh-glit,.sgh-foam,.sgh-mat,.sgh-bird,.sgh-rake,.sgh-rake2,.sgh-breathe,.sgh-walk,.sgh-fish,.sgh-net,.sgh-shim,.sgh-star,.sgh-plane,.sgh-arrive{animation:none}}
+.sgh-cloud1{animation:sghDrift 110s ease-in-out infinite alternate}
+.sgh-cloud2{animation:sghDrift 150s ease-in-out infinite alternate-reverse}
+@keyframes sghDrift{from{transform:translateX(0)}to{transform:translateX(-44px)}}
+.sgh-shim{opacity:.5}
+.sgh-star{opacity:.5}
+.sgh-fish,.sgh-arrive{opacity:0}
+@media (prefers-reduced-motion:reduce){.sgh-cloud1,.sgh-cloud2{animation:none}}
         `}</style>
         <defs>
           <linearGradient id="sghSky" x1="0" y1="0" x2="0" y2="1">
