@@ -896,6 +896,21 @@ ${isGP ? '' : `  <url><loc>${d}/a-propos/</loc><lastmod>${today}</lastmod><chang
               clean: 'Anse Rodrigue à Terre-de-Haut (Les Saintes, Guadeloupe) — plage propre en temps réel. Crique sauvage abritée de l\'archipel des Saintes, eaux calmes, idéal familles. Généralement épargnée des sargasses. Prévisions 7 jours.',
               moderate: 'Sargasses à l\'Anse Rodrigue (Les Saintes, Guadeloupe) — présence modérée détectée en temps réel. Crique de l\'archipel des Saintes. Carte et prévisions 7 jours.',
               avoid: 'Alerte sargasses à l\'Anse Rodrigue (Terre-de-Haut, Les Saintes, Guadeloupe) — forte concentration détectée en temps réel. Voir les criques propres des Saintes à proximité.'
+            },
+            'Grande Anse du Carbet': {
+              clean: 'Grande Anse du Carbet (Martinique) — plage propre en temps réel. Longue plage de sable de la côte Caraïbe, snorkeling, idéal familles. Généralement protégée des sargasses. Prévisions 7 jours.',
+              moderate: 'Sargasses à Grande Anse du Carbet (Le Carbet, Martinique) — présence modérée détectée en temps réel. Côte Caraïbe, snorkeling. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à Grande Anse du Carbet (Le Carbet, Martinique) — forte concentration détectée côte Caraïbe. Voir les plages propres à proximité de Saint-Pierre.'
+            },
+            'Anse Couleuvre': {
+              clean: 'Anse Couleuvre au Prêcheur (Martinique) — plage propre en temps réel. Plage sauvage de sable noir, extrême nord-ouest, côte Caraïbe. Généralement épargnée des sargasses. Prévisions 7 jours.',
+              moderate: 'Sargasses à l\'Anse Couleuvre (Le Prêcheur, Martinique) — présence modérée détectée en temps réel. Plage de sable noir, côte Caraïbe. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à l\'Anse Couleuvre (Le Prêcheur, Martinique) — forte concentration côte Caraïbe. Voir les plages propres à proximité de Saint-Pierre.'
+            },
+            'Plage de Pompierre': {
+              clean: 'Plage de Pompierre à Terre-de-Haut (Les Saintes, Guadeloupe) — propre en temps réel. Baie en croissant de l\'archipel des Saintes, snorkeling, idéal familles. Carte sargasses et prévisions 7 jours.',
+              moderate: 'Sargasses à la Plage de Pompierre (Les Saintes, Guadeloupe) — présence modérée détectée en temps réel. Archipel des Saintes, snorkeling. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à la Plage de Pompierre (Terre-de-Haut, Les Saintes, Guadeloupe) — forte concentration détectée en temps réel. Voir les criques propres des Saintes à proximité.'
             }
           }
           let sitemapMQBeaches = ''
