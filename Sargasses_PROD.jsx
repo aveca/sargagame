@@ -6730,8 +6730,9 @@ function ScrollStory({lang,onShowMap}){
    only, 2 ressorts CSS nommés, reduced-motion = panneaux en fondu, complétable. ── */
 function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,onShowMap,exiting}){
   const T=(fr,en,es)=>_t(lang,fr,en,es)
-  const [stage,setStage]=useState("vibe") // vibe → coast (sélection)
+  const [stage,setStage]=useState("vibe") // vibe → coast (sélection) → scan (LE SCAN, beat 2)
   const [vibe,setVibe]=useState(null)
+  const [chosenBeach,setChosenBeach]=useState(null)
   const [rm]=useState(()=>{try{return window.matchMedia("(prefers-reduced-motion: reduce)").matches}catch(_){return false}})
   useEffect(()=>{track("sg_hero_shown",{beach_id:beach.id,status:beach.status,geoloc:!!userPos,funnel:"game"})},[])
   // Jeton-preuve : la plus PROPRE maintenant (donnée réelle, score qui monte 0→N)
@@ -6745,6 +6746,9 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
     raf=requestAnimationFrame(step)
     return()=>cancelAnimationFrame(raf)
   },[proof&&proof.id])
+  // Beat 2 LE SCAN : animations CSS pures (keyframes) déclenchées au montage de
+  // la scène — JAMAIS de rAF/var pilotée (un rAF throttlé rendrait la scène
+  // invisible). reduced-motion = état final statique (cf. <style>).
   const upd=(()=>{try{
     const ts=sargData?.updatedAt||sargData?.erddapTimestamp
     return ts?new Date(ts).toLocaleTimeString(lang==="fr"?"fr-FR":lang==="es"?"es-MX":"en-US",{hour:"2-digit",minute:"2-digit"}):""
@@ -6782,6 +6786,10 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
   },[pickBeaches,vibe])
   const pickVibe=v=>{setVibe(v.k);track("sg_funnel_vibe",{vibe:v.k});setStage("coast")}
   const openBeach=b=>{track("sg_funnel_pick",{beach_id:b.id,vibe:vibe||"_",score:b.score});onOpenBeach&&onOpenBeach(b)}
+  // Beat 2 LE SCAN : taper une plage classée n'ouvre plus la fiche d'un coup —
+  // on entre d'abord dans le scan (le satellite analyse CETTE plage), puis « Voir
+  // le résultat » ouvre la vraie fiche. Garde tout le parcours actuel intact.
+  const goScan=b=>{setChosenBeach(b);track("sg_funnel_scan_view",{beach_id:b.id,vibe:vibe||"_"});setStage("scan")}
   const distTxt=b=>{if(!userPos||!b.lat)return b.drive!=null?`${b.drive} min`:"";const km=haversine(userPos.lat,userPos.lng,b.lat,b.lng);return US_UNITS?`${Math.max(1,Math.round(km*0.621))} mi`:`${Math.max(1,Math.round(km))} km`}
   return(
     <div role="dialog" aria-label={T("Trouve ta plage","Find your beach","Encuentra tu playa")} style={{position:"absolute",inset:0,zIndex:1050,
@@ -6799,17 +6807,74 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
 .gf-panel{animation:gfRise .5s cubic-bezier(.22,.61,.36,1) both}
 @keyframes gfRise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
 @keyframes gfIgnite{from{opacity:0;transform:translateY(14px) scale(.86)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion:reduce){.gf-cam{transition:none}.gf-panel,.gf-chip,.gf-card{animation:none!important}.gf-pulse{animation:none}}
+@keyframes gfPx{from{opacity:0;transform:scale(.5)}to{opacity:.9;transform:none}}
+.gf-px{animation:gfPx .55s cubic-bezier(.34,1.56,.64,1) both;animation-delay:var(--d,0ms);transform-box:fill-box;transform-origin:center}
+@keyframes gfScanGlow{0%,100%{opacity:.3}50%{opacity:.75}}
+@keyframes gfSweep{from{transform:translateY(140px)}to{transform:translateY(452px)}}
+.gf-scanline{animation:gfScanGlow 1.4s ease-in-out infinite,gfSweep 2.4s ease-in-out both}
+@keyframes gfSatDrop{from{transform:translate(400px,24px)}to{transform:translate(400px,142px)}}
+.gf-sat{animation:gfSatDrop 2.4s cubic-bezier(.4,0,.2,1) both}
+@keyframes gfFade{from{opacity:0}to{opacity:1}}
+.gf-scanfx{animation:gfFade .45s ease-out both}
+.gf-medal{animation:gfFade .5s ease-out .9s both}
+@media (prefers-reduced-motion:reduce){.gf-cam{transition:none}.gf-panel,.gf-chip,.gf-card{animation:none!important}.gf-pulse,.gf-scanline,.gf-sat,.gf-medal,.gf-scanfx{animation:none!important}.gf-px{animation:none!important;opacity:.9}.gf-medal,.gf-scanfx{opacity:1}.gf-sat{transform:translate(400px,142px)}.gf-scanline{transform:translateY(300px)}}
       `}</style>
       {/* LE MONDE — dolly-in : il grossit quand on entre dans la sélection */}
       <div className="gf-cam" aria-hidden style={{position:"absolute",inset:0,transformOrigin:"50% 64%",
-        transform:stage==="coast"?"scale(1.16) translateY(-2%)":"scale(1)"}}>
+        transform:stage==="scan"?"scale(1.22) translateY(-4%)":stage==="coast"?"scale(1.16) translateY(-2%)":"scale(1)"}}>
         <HeroScene/>
       </div>
       <div aria-hidden style={{position:"absolute",inset:0,pointerEvents:"none",transition:"background .5s ease",
-        background:stage==="coast"
+        background:stage==="scan"
+          ?"linear-gradient(180deg,rgba(5,18,24,.72) 0%,rgba(8,30,40,.4) 36%,rgba(10,23,20,.86) 70%,#0A1714 100%)"
+          :stage==="coast"
           ?"linear-gradient(180deg,rgba(10,23,20,.5) 0%,rgba(10,23,20,.22) 24%,rgba(10,23,20,.86) 62%,#0A1714 100%)"
           :"linear-gradient(180deg,rgba(10,23,20,.55) 0%,rgba(10,23,20,0) 30%,rgba(10,23,20,.8) 74%,#0A1714 100%)"}}/>
+      {/* BEAT 2 — LE SCAN : scène SVG (le satellite descend, faisceau, pixels de
+          la côte qui s'allument, médaillon-preuve Sentinel-6). opacity pilotée
+          par --gfs2 (rAF). Continuité du monde : même satellite/faisceau/teal
+          que HeroScene + ScrollStory. */}
+      {stage==="scan"&&(
+        <svg aria-hidden viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice"
+          style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none"}}>
+          <defs>
+            <linearGradient id="gfBeam" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#FFD884" stopOpacity=".5"/>
+              <stop offset="1" stopColor="#FFD884" stopOpacity="0"/>
+            </linearGradient>
+          </defs>
+          {/* le satellite Sentinel-6 descend de l'orbite, faisceau vers la baie */}
+          <g className="gf-sat">
+            <polygon points="-8,16 8,16 44,330 -44,330" fill="url(#gfBeam)" opacity=".5"/>
+            <rect x="-30" y="-4" width="19" height="8" rx="1.5" fill="#3BA7A0"/>
+            <rect x="11" y="-4" width="19" height="8" rx="1.5" fill="#3BA7A0"/>
+            <rect x="-12" y="-11" width="24" height="21" rx="3" fill="#C9971F"/>
+            <rect x="-12" y="-11" width="24" height="7" rx="3" fill="#FFC72C"/>
+          </g>
+          {/* la ligne de scan balaie la baie */}
+          <rect className="gf-scanline" x="-40" width="880" height="3" rx="1.5" fill="#5FD3C9"/>
+          {/* les pixels de la côte s'allument en cascade (teinte vers le statut) */}
+          <g>
+            {[...Array(15)].map((_,i)=>{
+              const col=i%5,row=Math.floor(i/5)
+              const c=["#3BA7A0","#3BA7A0","#FFC72C","#FFC72C","#F59E0B"][col]
+              return <rect key={i} className="gf-px" x={326+col*30} y={272+row*30} width="22" height="22" rx="5" fill={c}
+                style={{"--d":`${(row*5+col)*55}ms`}}/>
+            })}
+          </g>
+          {/* médaillon-preuve : Sentinel-6 / NASA-JPL / Copernicus */}
+          <g className="gf-medal" transform="translate(400,408)">
+            <circle r="34" fill="#08251F" stroke="#FFC72C" strokeWidth="2"/>
+            <circle r="34" fill="none" stroke="#3BA7A0" strokeWidth="1" strokeDasharray="3 6" opacity=".65"/>
+            <g transform="scale(.7)">
+              <rect x="-26" y="-3" width="15" height="6" rx="1.2" fill="#3BA7A0"/>
+              <rect x="11" y="-3" width="15" height="6" rx="1.2" fill="#3BA7A0"/>
+              <rect x="-9" y="-8" width="18" height="15" rx="2" fill="#C9971F"/>
+              <rect x="-9" y="-8" width="18" height="5" rx="2" fill="#FFC72C"/>
+            </g>
+          </g>
+        </svg>
+      )}
       {/* barre haute */}
       <div style={{position:"absolute",top:0,left:0,right:0,display:"flex",justifyContent:"space-between",alignItems:"center",
         padding:"calc(14px + env(safe-area-inset-top)) 18px 0",maxWidth:560,margin:"0 auto"}}>
@@ -6878,7 +6943,7 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
             </h1>
             <div style={{display:"flex",flexDirection:"column",gap:8}}>
               {ranked.map((b,i)=>(
-                <button key={b.id} className="gf-card" onClick={()=>openBeach(b)}
+                <button key={b.id} className="gf-card" onClick={()=>goScan(b)}
                   style={{animation:rm?"none":"gfIgnite .5s cubic-bezier(.34,1.56,.64,1) both",animationDelay:rm?undefined:`${i*70}ms`,
                     display:"flex",alignItems:"center",gap:12,width:"100%",textAlign:"left",
                     background:"rgba(16,35,30,.92)",border:"1px solid rgba(255,255,255,.09)",borderRadius:15,
@@ -6898,6 +6963,37 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
             <button onClick={onShowMap} style={{display:"block",margin:"14px auto 0",background:"none",border:"none",
               color:"rgba(255,255,255,.6)",fontFamily:"inherit",fontSize:13,fontWeight:600,cursor:"pointer"}}>
               {T("Voir toutes les plages sur la carte","See every beach on the map","Ver todas las playas en el mapa")}
+            </button>
+          </div>
+        )}
+        {stage==="scan"&&chosenBeach&&(
+          <div key="scan" className="gf-panel">
+            <button onClick={()=>setStage("coast")} style={{display:"inline-flex",alignItems:"center",gap:5,
+              background:"rgba(10,23,20,.5)",border:"1px solid rgba(255,255,255,.16)",borderRadius:999,
+              color:"#fff",fontFamily:"inherit",fontSize:12.5,fontWeight:700,padding:"7px 13px",cursor:"pointer",marginBottom:12}}>
+              ‹ {T("Retour","Back","Volver")}
+            </button>
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+              <span className="gf-pulse" style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#5FD3C9",boxShadow:"0 0 10px #5FD3C9",flexShrink:0}}/>
+              <span style={{fontSize:11,fontWeight:700,letterSpacing:".1em",color:"#5FD3C9",textTransform:"uppercase"}}>
+                {T("Le satellite scanne","Satellite scanning","El satélite escanea")}
+              </span>
+            </div>
+            <h1 style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:"clamp(28px,7vw,42px)",lineHeight:1,
+              letterSpacing:".01em",textTransform:"uppercase",margin:"0 0 8px",color:"#fff",textShadow:"0 2px 24px rgba(0,0,0,.4)"}}>
+              {chosenBeach.name}
+            </h1>
+            <div style={{fontSize:12,color:"rgba(255,255,255,.6)",fontFamily:"ui-monospace,SFMono-Regular,monospace",marginBottom:16}}>
+              {T("Sentinel-6 analyse les nappes","Sentinel-6 reads the rafts","Sentinel-6 analiza las manchas")} · NASA/JPL · Copernicus
+            </div>
+            <button onClick={()=>openBeach(chosenBeach)} className="gf-chip" style={{display:"block",width:"100%",textAlign:"center",
+              cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:16,color:"#0A1714",border:"none",borderRadius:16,
+              padding:"15px 20px",background:"linear-gradient(135deg,#FFE08A,#FFC72C)",boxShadow:"0 8px 24px rgba(255,199,44,.32)"}}>
+              {T("Voir le résultat →","See the result →","Ver el resultado →")}
+            </button>
+            <button onClick={onShowMap} style={{display:"block",margin:"12px auto 0",background:"none",border:"none",
+              color:"rgba(255,255,255,.55)",fontFamily:"inherit",fontSize:12.5,fontWeight:600,cursor:"pointer"}}>
+              {T("Passer — montre-moi la carte","Skip — show me the map","Saltar — muéstrame el mapa")}
             </button>
           </div>
         )}
