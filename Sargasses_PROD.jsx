@@ -2403,6 +2403,16 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
           )}
           <AfaiChip beach={beach} lang={lang}/>
 
+          {/* GRATUIT — valorise le moat : on affiche notre crédibilité (backtest
+              80% sur 3180 paires). Trust → conversion, additif, zéro nav. */}
+          <div style={{display:"flex",alignItems:"center",gap:9,margin:"10px 0 2px",padding:"9px 12px",borderRadius:12,
+            background:"rgba(34,197,94,.10)",border:"1px solid rgba(34,197,94,.26)"}}>
+            <span aria-hidden="true" style={{fontSize:15,lineHeight:1}}>✅</span>
+            <span style={{fontSize:12.5,fontWeight:700,color:"var(--sg-ink,#13241F)",lineHeight:1.3}}>
+              {_t(lang,"Nos prévisions : vérifiées 80% justes","Our forecasts: verified 80% accurate","Nuestros pronósticos: 80% exactos")}
+            </span>
+          </div>
+
           {/* La vraie photo « calée en cool » plus bas (directive 14/06 : pas en
               premier, le SVG d'abord). On la garde car elle est individuelle. */}
           {photo&&<div style={{margin:"14px 0 2px",borderRadius:16,overflow:"hidden",position:"relative",height:158,
