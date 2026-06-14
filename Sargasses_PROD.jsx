@@ -6227,7 +6227,13 @@ function HeroScene(){
 @keyframes sghNet{from{transform:translateX(0)}to{transform:translateX(7px)}}
 .sgh-shim{animation:sghShim 3.2s ease-in-out infinite}
 @keyframes sghShim{0%,100%{opacity:.15}50%{opacity:.95}}
-@media (prefers-reduced-motion:reduce){.sgh-cloud1,.sgh-cloud2,.sgh-glit,.sgh-foam,.sgh-mat,.sgh-bird,.sgh-rake,.sgh-rake2,.sgh-breathe,.sgh-walk,.sgh-fish,.sgh-net,.sgh-shim{animation:none}}
+.sgh-star{animation:sghStar 3.6s ease-in-out infinite}
+@keyframes sghStar{0%,100%{opacity:.25}50%{opacity:.9}}
+.sgh-plane{animation:sghPlane 24s linear infinite}
+@keyframes sghPlane{0%{transform:translate(770px,60px)}100%{transform:translate(-140px,188px)}}
+.sgh-arrive{animation:sghArrive 16s ease-in-out infinite}
+@keyframes sghArrive{0%{transform:translate(40px,-8px);opacity:0}12%{opacity:.6}85%{transform:translate(-28px,54px);opacity:.85}100%{transform:translate(-34px,62px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.sgh-cloud1,.sgh-cloud2,.sgh-glit,.sgh-foam,.sgh-mat,.sgh-bird,.sgh-rake,.sgh-rake2,.sgh-breathe,.sgh-walk,.sgh-fish,.sgh-net,.sgh-shim,.sgh-star,.sgh-plane,.sgh-arrive{animation:none}}
         `}</style>
         <defs>
           <linearGradient id="sghSky" x1="0" y1="0" x2="0" y2="1">
@@ -6252,10 +6258,10 @@ function HeroScene(){
         <g style={{transform:"translateY(calc(var(--hs)*26px))"}}>
           <rect width="800" height="340" fill="url(#sghSky)"/>
           {t.stars>0&&[[96,46,1.1,.4],[238,84,.8,.28],[388,38,1.2,.4],[542,72,.9,.3],[692,52,1,.35]].map((s,i)=>(
-            <circle key={i} cx={s[0]} cy={s[1]} r={s[2]} fill="#fff" opacity={Math.min(1,s[3]*t.stars)}/>
+            <circle key={i} className="sgh-star" cx={s[0]} cy={s[1]} r={s[2]} fill="#fff" opacity={Math.min(1,s[3]*t.stars)} style={{animationDelay:`${i*.6}s`}}/>
           ))}
           {t.stars>1.5&&[[150,140,.9,.5],[320,170,.8,.4],[470,150,1,.55],[600,180,.8,.4],[700,120,1.1,.5],[60,200,.8,.35]].map((s,i)=>(
-            <circle key={"n"+i} cx={s[0]} cy={s[1]} r={s[2]} fill="#fff" opacity={s[3]}/>
+            <circle key={"n"+i} className="sgh-star" cx={s[0]} cy={s[1]} r={s[2]} fill="#fff" opacity={s[3]} style={{animationDelay:`${.3+i*.5}s`}}/>
           ))}
           {/* l'astre de la phase : soleil couché/levant, plein jour, ou lune */}
           {t.sun==="set"&&<>
@@ -6292,6 +6298,16 @@ function HeroScene(){
             <path d="M612 128 q4 -5 8 0 q4 -5 8 0"/>
             <path d="M488 138 q3 -4 6 0 q3 -4 6 0"/>
           </g>}
+          {/* un avion en approche d'atterrissage traverse le ciel (jour + golden) */}
+          {t.sun!=="moon"&&<g className="sgh-plane">
+            <g transform="rotate(13)">
+              <line x1="-7" y1="3" x2="-66" y2="2" stroke="#FDFCF7" strokeWidth="1.6" strokeDasharray="2 6" opacity=".35"/>
+              <path d="M0 0 L30 0 L41 3 L30 6 L0 6 L-7 3 Z" fill="#EAF0F4"/>
+              <path d="M9 1 L1 -9 L6 -9 L17 1 Z" fill="#C4D0D8"/>
+              <path d="M9 5 L2 14 L7 14 L17 5 Z" fill="#AEBBC4"/>
+              <path d="M-3 0 L-9 -7 L-5 -7 L0 0 Z" fill="#C4D0D8"/>
+            </g>
+          </g>}
           {/* le satellite veille (continuité ScrollStory) */}
           <g transform="translate(474,78) scale(.62)">
             <rect x="-26" y="-3" width="15" height="7" rx="1.5" fill="#3BA7A0"/>
@@ -6323,6 +6339,12 @@ function HeroScene(){
               <circle cx="452" cy="334" r="11" fill="none" stroke="#3BA7A0" strokeWidth="1.2"/>
             </g>
           </g>
+          {/* un banc de sargasse arrive du large — repéré par le satellite (jour + golden) */}
+          {t.boat&&<g className="sgh-arrive">
+            <g transform="translate(498,328) scale(.62)" opacity=".9"><use href="#sghSarg"/></g>
+            <g transform="translate(536,320) scale(.44)" opacity=".7"><use href="#sghSarg"/></g>
+            <g className="sgst-ring" style={{transformBox:"fill-box",transformOrigin:"center"}}><circle cx="498" cy="328" r="13" fill="none" stroke="#3BA7A0" strokeWidth="1.4"/></g>
+          </g>}
           {/* le bateau de collecte travaille (jour + golden) */}
           {t.boat&&<g className="sgst-bob">
             <g transform="translate(300,354) scale(.8)">
