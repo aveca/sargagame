@@ -2193,18 +2193,12 @@ function FbPostsStrip({beach,fbPosts,lang}){
               "{p.text}"{p.textTruncated?"…":""}
             </div>
           )}
+          {/* Photos communauté retirées (vision 100% SVG / nos assets) — le TÉMOIGNAGE
+              texte reste comme preuve "vérifié au sol". Lien source conservé si besoin. */}
           {p.photos&&p.photos.length>0&&(
-            <div style={{display:"flex",gap:6,marginBottom:p.commentSample?8:4,overflowX:"auto",scrollbarWidth:"thin"}}>
-              {p.photos.slice(0,6).map((url,j)=>(
-                <a key={j} href={p.sourceUrl} target="_blank" rel="noopener nofollow" style={{flexShrink:0,lineHeight:0}}>
-                  <img src={url} alt={`Photo ${j+1}`} loading="lazy" referrerPolicy="no-referrer"
-                    style={{width:96,height:72,objectFit:"cover",borderRadius:8,
-                      border:"1px solid var(--sg-border,rgba(0,0,0,.06))",
-                      cursor:"pointer",transition:"transform .15s"}}
-                    onError={(e)=>{e.target.parentNode.style.display="none"}}/>
-                </a>
-              ))}
-            </div>
+            <a href={p.sourceUrl} target="_blank" rel="noopener nofollow" style={{display:"inline-block",marginBottom:p.commentSample?8:4,fontSize:11,fontWeight:700,color:"var(--sg-mid)"}}>
+              📷 {p.photos.length} {_t(lang,"photo(s) au sol","on-site photo(s)","foto(s) in situ")} →
+            </a>
           )}
           {p.commentSample&&(
             <div style={{fontSize:11,color:"var(--sg-mid)",lineHeight:1.4,paddingLeft:10,borderLeft:"2px solid rgba(0,0,0,.08)"}}>
@@ -8248,8 +8242,8 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
             {topBeaches.map(b=>(
               <button key={b.id} className="sg-l-card" onClick={()=>onOpenBeach&&onOpenBeach(b)}>
                 <div style={{position:"relative",height:124,overflow:"hidden"}}>
-                  <img src={b._img} alt={b.name} loading="lazy" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
-                  <span style={{position:"absolute",top:8,left:8,background:statusCol(b),color:"#0A1714",
+                  <BeachScene beach={b}/>
+                  <span style={{position:"absolute",top:8,left:8,zIndex:2,background:statusCol(b),color:"#0A1714",
                     fontWeight:800,fontSize:11,padding:"4px 9px",borderRadius:999}}>
                     {statusShort(b)}{b.score!=null?` · ${b.score}`:""}
                   </span>
