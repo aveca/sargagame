@@ -1805,13 +1805,6 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
           <div style={{position:"absolute",bottom:0,left:0,right:0,height:"40%",
             background:`radial-gradient(ellipse at 50% 100%, ${(ST[beach.status]||ST._loading).c}22 0%, transparent 70%)`,
             pointerEvents:"none"}}/>
-          {/* voile golden-hour sur la photo — rai de soleil + éclats (1er pas vers
-              la fiche refaite "comme l'accueil" ; additif, mix-blend screen) */}
-          <svg aria-hidden viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none",mixBlendMode:"screen",opacity:.42}}>
-            <defs><linearGradient id={`bsray-${beach.id}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#FFE6A0" stopOpacity=".55"/><stop offset="1" stopColor="#FFE6A0" stopOpacity="0"/></linearGradient></defs>
-            <polygon points="296,-30 342,-30 248,300 172,300" fill={`url(#bsray-${beach.id})`}/>
-            <g stroke="#FFD884" strokeLinecap="round"><line x1="0" y1="196" x2="400" y2="196" strokeWidth="1.6" strokeDasharray="3 17" opacity=".4"/><line x1="0" y1="226" x2="400" y2="226" strokeWidth="1.3" strokeDasharray="2 22" opacity=".28"/></g>
-          </svg>
           {/* Close button */}
           <button onClick={requestClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"absolute",top:12,right:12,
             width:44,height:44,borderRadius:22,
@@ -1862,12 +1855,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
           </div>}
         </div>
 
-        <style>{`@keyframes bsRise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-.bs-reveal>*{animation:bsRise .5s cubic-bezier(.22,.61,.36,1) both}
-.bs-reveal>*:nth-child(1){animation-delay:.02s}.bs-reveal>*:nth-child(2){animation-delay:.09s}.bs-reveal>*:nth-child(3){animation-delay:.16s}.bs-reveal>*:nth-child(4){animation-delay:.23s}.bs-reveal>*:nth-child(5){animation-delay:.3s}.bs-reveal>*:nth-child(6){animation-delay:.37s}.bs-reveal>*:nth-child(n+7){animation-delay:.44s}
-.bs-glint{animation:bsGlint 5.5s linear infinite}@keyframes bsGlint{to{transform:rotate(360deg)}}
-@media (prefers-reduced-motion:reduce){.bs-reveal>*,.bs-glint{animation:none}}`}</style>
-        <div className="bs-reveal" style={{padding:"0 20px calc(70px + env(safe-area-inset-bottom,12px))"}}>
+        <div style={{padding:"0 20px calc(70px + env(safe-area-inset-bottom,12px))"}}>
           {/* Name — large, no duplicate status badge (already on photo) */}
           <h2 className="anton" style={{fontSize:"clamp(24px,6vw,30px)",margin:"0 0 4px",lineHeight:1.15,
             color:"var(--sg-ink)"}}>{beach.name}</h2>
@@ -1917,9 +1905,6 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
                       <span style={{fontSize:8,fontWeight:800,color:"var(--sg-mid,#686868)",
                         letterSpacing:".08em",marginTop:1}}>/100</span>
                     </div>
-                  </div>
-                  <div aria-hidden className="bs-glint" style={{position:"absolute",inset:4,borderRadius:"50%",pointerEvents:"none"}}>
-                    <span style={{position:"absolute",top:-2,left:"50%",width:7,height:7,marginLeft:-3.5,borderRadius:"50%",background:"#fff",boxShadow:`0 0 7px 1px ${beach.scoreColor}`,opacity:.85}}/>
                   </div>
                   <div style={{position:"absolute",top:-2,right:-2,width:18,height:18,borderRadius:"50%",
                     background:beach.scoreColor,color:"#fff",fontSize:10,fontWeight:800,
