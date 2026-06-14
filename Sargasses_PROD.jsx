@@ -6110,6 +6110,14 @@ const HERO_PH_OVERRIDE=(()=>{try{
   return ["dawn","day","golden","night"].includes(o)?o:null
 }catch(_){return null}})()
 
+/* Override QA du bras de landing (?lf=game|control) — capturé au chargement du
+   module (l'app nettoie la query string avant le mount, cf. ?ph). Permet de
+   forcer le funnel-jeu en preview/QA sans dépendre du tirage A/B. */
+const LF_OVERRIDE=(()=>{try{
+  const o=new URLSearchParams(window.location.search).get("lf")
+  return o==="game"||o==="control"?o:null
+}catch(_){return null}})()
+
 /* ── HeroScene — le hero en scène vectorielle (directive user 12/06 : plus de
    photo en hero home, « une expérience bluffante de bout en bout » — les
    photos réelles restent la matière des cards/fiches/SEO). Golden-hour
@@ -6175,7 +6183,14 @@ function HeroScene(){
 @keyframes sghMat{from{transform:translateX(0)}to{transform:translateX(14px)}}
 .sgh-bird{animation:sghBird 56s linear infinite}
 @keyframes sghBird{from{transform:translateX(0)}to{transform:translateX(-900px)}}
-@media (prefers-reduced-motion:reduce){.sgh-cloud1,.sgh-cloud2,.sgh-glit,.sgh-foam,.sgh-mat,.sgh-bird{animation:none}}
+.sgh-rake{animation:sghRake 2.4s ease-in-out infinite;transform-box:fill-box;transform-origin:2px -19px}
+.sgh-rake2{animation:sghRake 2.4s ease-in-out infinite .9s;transform-box:fill-box;transform-origin:2px -19px}
+@keyframes sghRake{0%,100%{transform:rotate(-8deg)}45%{transform:rotate(13deg)}}
+.sgh-breathe{animation:sghBreathe 5s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes sghBreathe{0%,100%{transform:scale(1) translateY(0)}50%{transform:scale(1.05) translateY(-1.5px)}}
+.sgh-walk{animation:sghWalk 9s linear infinite}
+@keyframes sghWalk{0%{transform:translateX(0)}100%{transform:translateX(20px)}}
+@media (prefers-reduced-motion:reduce){.sgh-cloud1,.sgh-cloud2,.sgh-glit,.sgh-foam,.sgh-mat,.sgh-bird,.sgh-rake,.sgh-rake2,.sgh-breathe,.sgh-walk{animation:none}}
         `}</style>
         <defs>
           <linearGradient id="sghSky" x1="0" y1="0" x2="0" y2="1">
@@ -6364,7 +6379,10 @@ function ScrollStory({lang,onShowMap}){
       st.setProperty("--b3",SEG(p,.42,.66).toFixed(4))
       st.setProperty("--b4",SEG(p,.64,.84).toFixed(4))
       st.setProperty("--b5",SEG(p,.82,1).toFixed(4))
-      st.setProperty("--b1o",WIN(p,0,.03,.17,.23).toFixed(3))
+      // beat 1 reste plein pendant l'ENTREE de la section (p clampe a 0 tant que
+      // la sticky n'est pas epinglee) — sinon le storyvp affiche son fond #0A1714
+      // SANS contenu = "fond vert avec rien" signale par le user. b1o=1 a p=0.
+      st.setProperty("--b1o",(1-SEG(p,.17,.23)).toFixed(3))
       st.setProperty("--b2o",WIN(p,.17,.23,.39,.45).toFixed(3))
       st.setProperty("--b3o",WIN(p,.39,.45,.62,.68).toFixed(3))
       st.setProperty("--b4o",WIN(p,.62,.68,.80,.86).toFixed(3))
@@ -6493,9 +6511,44 @@ function ScrollStory({lang,onShowMap}){
           {/* ════ B3 — LA DÉRIVE : coupe mer→plage, le banc avance sur la prévision ════ */}
           <g style={{opacity:"var(--b3o)"}}>
             <rect width="800" height="600" fill="url(#sgstDawn)"/>
+            {/* ── ciel vivant : lueur d'aube, nuages dérivants, oiseaux ── */}
+            <circle cx="140" cy="128" r="160" fill="#FFC72C" opacity=".05"/>
+            <circle cx="140" cy="128" r="76" fill="#FFC72C" opacity=".06"/>
+            <g style={{transform:"translateX(calc(var(--b3)*-28px))"}} opacity=".5">
+              <path d="M178 96 q12 -22 42 -22 q16 -14 40 -9 q26 -7 38 11 q22 2 26 20 Z" fill="#16322B"/>
+              <path d="M180 97 h138" stroke="#3BA7A0" strokeWidth="1.6" opacity=".3"/>
+            </g>
+            <g style={{transform:"translateX(calc(var(--b3)*-50px))"}} opacity=".4">
+              <path d="M486 66 q10 -18 34 -18 q14 -11 32 -7 q21 -6 30 9 q18 2 21 16 Z" fill="#16322B"/>
+            </g>
+            <g opacity=".4" stroke="#5FD3C9" strokeWidth="1.8" fill="none" strokeLinecap="round">
+              <path d="M250 168 q6 -7 12 0 q6 -7 12 0"/><path d="M298 156 q5 -6 10 0 q5 -6 10 0"/>
+            </g>
+            {/* le satellite plane au-dessus du banc et le garde dans son faisceau (continuité B1/B2) */}
+            <g style={{transform:"translate(calc(96px + var(--b3)*424px),88px)"}}>
+              <polygon points="-7,12 7,12 26,232 -26,232" fill="url(#sgstBeam)" opacity=".4"/>
+              <g className="sgst-ring" style={fb}><circle r="20" fill="none" stroke="#3BA7A0" strokeWidth="1.4"/></g>
+              <rect x="-22" y="-3" width="13" height="7" rx="1.5" fill="#3BA7A0"/>
+              <rect x="9" y="-3" width="13" height="7" rx="1.5" fill="#3BA7A0"/>
+              <rect x="-10" y="-8" width="20" height="16" rx="2.5" fill="#C9971F"/>
+              <rect x="-10" y="-8" width="20" height="5" rx="2.5" fill="#FFC72C"/>
+            </g>
             {/* mer en coupe */}
             <rect x="0" y="330" width="800" height="270" fill="#0E2E2A"/>
             <path d="M0 330 q50 -8 100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0" fill="none" stroke="#3BA7A0" strokeWidth="2" opacity=".5"/>
+            {/* courant marin : la dérive (flèches → vers la côte, le « comment ça arrive ») */}
+            <g opacity=".28" stroke="#5FD3C9" strokeWidth="1.6" fill="none" strokeLinecap="round">
+              <path d="M60 384 h58 M110 378 l10 6 -10 6"/>
+              <path d="M36 426 h66 M94 420 l10 6 -10 6"/>
+              <path d="M168 406 h52 M212 400 l10 6 -10 6"/>
+            </g>
+            {/* d'autres bancs au large, suivis aussi (parallaxe + bob) */}
+            <g style={{transform:"translateX(calc(var(--b3)*-58px))"}} opacity=".55">
+              <g className="sgst-bob"><g transform="translate(286,356) scale(.6)"><use href="#sgstSarg"/></g></g>
+            </g>
+            <g style={{transform:"translateX(calc(var(--b3)*-88px))"}} opacity=".4">
+              <g className="sgst-bob"><g transform="translate(636,378) scale(.5)"><use href="#sgstSarg"/></g></g>
+            </g>
             {/* la plage à droite (bord visible dès le crop mobile : x≥500) */}
             <path d="M500 600 L572 388 Q610 358 800 346 L800 600 Z" fill="#1A2A23"/>
             <path d="M560 402 Q620 370 790 358" stroke="#FFC72C" strokeWidth="1.4" fill="none" opacity=".5"/>
@@ -6662,7 +6715,198 @@ function ScrollStory({lang,onShowMap}){
   )
 }
 
-function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPremium,onOpenBeach,topBeaches,exiting}){
+/* ── GameFunnel — la « page de départ » jeu-funnel (directive user 13/06 :
+   « UX SVG 3D immersive de bout en bout, impliquer l'user comme un JV avec
+   des choix graphiques », réf Zenly pré-2022 candy/vivant). Couche ADDITIVE
+   posée DEVANT la machinerie existante (HeroScene / paywall / trial / A-B) :
+   bras A/B `landing_funnel=game` mesuré contre HeroVerdict (control), zéro
+   refonte de la conversion. Tranche verticale shippée : Beat 0 (monde
+   golden-hour + jeton-preuve donnée réelle <5s + question + chips d'envie) →
+   choix tactile (squish ressort) → DOLLY-IN (le monde grossit, on entre dans
+   la baie) → Beat 1 (la sélection RÉELLE classée pour l'envie, pins qui
+   s'allument en cascade) → tap = fiche réelle (AHA + déclencheurs premium
+   existants). Tout est skippable (« montre-moi la carte »). transforms/opacity
+   only, 2 ressorts CSS nommés, reduced-motion = panneaux en fondu, complétable. ── */
+function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,onShowMap,exiting}){
+  const T=(fr,en,es)=>_t(lang,fr,en,es)
+  const [stage,setStage]=useState("vibe") // vibe → coast (sélection)
+  const [vibe,setVibe]=useState(null)
+  const [rm]=useState(()=>{try{return window.matchMedia("(prefers-reduced-motion: reduce)").matches}catch(_){return false}})
+  useEffect(()=>{track("sg_hero_shown",{beach_id:beach.id,status:beach.status,geoloc:!!userPos,funnel:"game"})},[])
+  // Jeton-preuve : la plus PROPRE maintenant (donnée réelle, score qui monte 0→N)
+  const proof=(pickBeaches&&pickBeaches[0])||beach
+  const [cnt,setCnt]=useState(()=>rm?(proof?.score??0):0)
+  useEffect(()=>{
+    if(rm)return
+    const target=proof?.score??0
+    let raf=0,start=0
+    const step=ts=>{if(!start)start=ts;const k=Math.min(1,(ts-start)/900);setCnt(Math.round(target*(1-Math.pow(1-k,3))));if(k<1)raf=requestAnimationFrame(step)}
+    raf=requestAnimationFrame(step)
+    return()=>cancelAnimationFrame(raf)
+  },[proof&&proof.id])
+  const upd=(()=>{try{
+    const ts=sargData?.updatedAt||sargData?.erddapTimestamp
+    return ts?new Date(ts).toLocaleTimeString(lang==="fr"?"fr-FR":lang==="es"?"es-MX":"en-US",{hour:"2-digit",minute:"2-digit"}):""
+  }catch(_){return""}})()
+  const dateLong=new Date().toLocaleDateString(lang==="es"?"es-MX":lang==="en"?"en-US":"fr-FR",{weekday:"long",day:"numeric",month:"long"})
+  const wordmark=IS_NEW_REGION
+    ?((lang==="es"?"SARGAZO ":"SARGASSUM ")+String(REGION.name||"").toUpperCase())
+    :(island==="gp"?"SARGASSES GUADELOUPE":"SARGASSES MARTINIQUE")
+  const VIBES=[
+    {k:"swim",label:T("Nager","Swim","Nadar"),g:["#2BB7C4","#0E6E78"]},
+    {k:"photo",label:T("Photos & Reels","Photos & Reels","Fotos & Reels"),g:["#F2B860","#C97E3A"]},
+    {k:"meet",label:T("Rencontrer","Meet up","Conocer"),g:["#F2A968","#D9646E"]},
+    {k:"family",label:T("Famille","Family","Familia"),g:["#7FC3A6","#2E8B6B"]},
+    {k:"escape",label:T("S'évader","Escape","Evadir"),g:["#9B8BE0","#5B4B9E"]},
+  ]
+  const vibeLabel=(VIBES.find(v=>v.k===vibe)||{}).label||""
+  const statusCol=b=>b.status==="clean"?"#FFC72C":b.status==="moderate"?"#F59E0B":"#E8522A"
+  const statusShort=b=>b.status==="clean"?T("Propre","Clean","Limpia"):b.status==="moderate"?T("Modéré","Moderate","Moderada"):T("À éviter","Avoid","Evitar")
+  // Sélection RÉELLE pondérée par l'envie (champs réels : score, snorkel, kids,
+  // parking, drive, côte) — chaque envie donne un gagnant genuinement différent
+  // (jamais de fausse personnalisation, garde-fou du concept).
+  const ranked=useMemo(()=>{
+    const list=(pickBeaches||[]).filter(b=>b.status&&b.score!=null&&b.lat)
+    const sh=b=>{try{return classifyBeachCoast(b.lat,b.lng,b.island)==="sheltered"}catch(_){return false}}
+    const w=b=>{
+      let s=(b.score||0)
+      if(vibe==="swim")s+=(b.snorkel?6:0)+(sh(b)?8:0)
+      else if(vibe==="photo")s+=(sh(b)?4:0)+((b.score||0)>=80?6:0)
+      else if(vibe==="meet")s+=(b.parking?6:0)+((b.drive!=null&&b.drive<25)?9:0)
+      else if(vibe==="family")s+=(b.kids?12:0)+(b.parking?5:0)+(sh(b)?6:0)
+      else if(vibe==="escape")s+=((b.drive!=null&&b.drive>35)?10:0)+(b.snorkel?4:0)
+      return s
+    }
+    return [...list].sort((a,b)=>w(b)-w(a)).slice(0,5)
+  },[pickBeaches,vibe])
+  const pickVibe=v=>{setVibe(v.k);track("sg_funnel_vibe",{vibe:v.k});setStage("coast")}
+  const openBeach=b=>{track("sg_funnel_pick",{beach_id:b.id,vibe:vibe||"_",score:b.score});onOpenBeach&&onOpenBeach(b)}
+  const distTxt=b=>{if(!userPos||!b.lat)return b.drive!=null?`${b.drive} min`:"";const km=haversine(userPos.lat,userPos.lng,b.lat,b.lng);return US_UNITS?`${Math.max(1,Math.round(km*0.621))} mi`:`${Math.max(1,Math.round(km))} km`}
+  return(
+    <div role="dialog" aria-label={T("Trouve ta plage","Find your beach","Encuentra tu playa")} style={{position:"absolute",inset:0,zIndex:1050,
+      background:"#0A1714",overflow:"hidden",animation:"fadeIn .35s ease-out",
+      opacity:exiting?0:1,transform:exiting?"scale(1.04)":"none",
+      transition:"opacity .3s ease,transform .3s cubic-bezier(.22,1,.36,1)"}}>
+      <style>{`
+.gf-cam{transition:transform .64s cubic-bezier(.34,1.56,.64,1)}
+.gf-chip{transition:transform .18s cubic-bezier(.175,.885,.32,1.275),box-shadow .2s ease}
+.gf-chip:active{transform:scale(.94)}
+.gf-card{transition:transform .18s cubic-bezier(.175,.885,.32,1.275),border-color .2s ease}
+.gf-card:active{transform:scale(.975)}
+.gf-pulse{animation:gfPulse 2.6s ease-in-out infinite}
+@keyframes gfPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.18);opacity:.7}}
+.gf-panel{animation:gfRise .5s cubic-bezier(.22,.61,.36,1) both}
+@keyframes gfRise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+@keyframes gfIgnite{from{opacity:0;transform:translateY(14px) scale(.86)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.gf-cam{transition:none}.gf-panel,.gf-chip,.gf-card{animation:none!important}.gf-pulse{animation:none}}
+      `}</style>
+      {/* LE MONDE — dolly-in : il grossit quand on entre dans la sélection */}
+      <div className="gf-cam" aria-hidden style={{position:"absolute",inset:0,transformOrigin:"50% 64%",
+        transform:stage==="coast"?"scale(1.16) translateY(-2%)":"scale(1)"}}>
+        <HeroScene/>
+      </div>
+      <div aria-hidden style={{position:"absolute",inset:0,pointerEvents:"none",transition:"background .5s ease",
+        background:stage==="coast"
+          ?"linear-gradient(180deg,rgba(10,23,20,.5) 0%,rgba(10,23,20,.22) 24%,rgba(10,23,20,.86) 62%,#0A1714 100%)"
+          :"linear-gradient(180deg,rgba(10,23,20,.55) 0%,rgba(10,23,20,0) 30%,rgba(10,23,20,.8) 74%,#0A1714 100%)"}}/>
+      {/* barre haute */}
+      <div style={{position:"absolute",top:0,left:0,right:0,display:"flex",justifyContent:"space-between",alignItems:"center",
+        padding:"calc(14px + env(safe-area-inset-top)) 18px 0",maxWidth:560,margin:"0 auto"}}>
+        <span style={{fontFamily:"'Anton',sans-serif",fontSize:13,letterSpacing:".14em",color:"#fff",opacity:.92}}>{wordmark}</span>
+        <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,letterSpacing:".06em",
+          background:"rgba(10,23,20,.5)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",padding:"5px 10px",borderRadius:999}}>
+          <span style={{width:7,height:7,borderRadius:"50%",background:"#22C55E",boxShadow:"0 0 8px #22C55E"}}/>
+          LIVE{upd?` · ${upd}`:""}
+        </span>
+      </div>
+      {/* contenu bas */}
+      <div style={{position:"absolute",left:0,right:0,bottom:0,padding:"0 20px calc(16px + env(safe-area-inset-bottom))",maxWidth:560,margin:"0 auto"}}>
+        {stage==="vibe"&&(
+          <div key="vibe" className="gf-panel">
+            {proof&&(
+              <div style={{display:"inline-flex",alignItems:"baseline",gap:8,marginBottom:14,
+                background:"rgba(10,23,20,.42)",border:"1px solid rgba(255,199,44,.3)",borderRadius:999,padding:"7px 13px"}}>
+                <span style={{fontSize:10,fontWeight:700,letterSpacing:".07em",color:"#FFC72C",textTransform:"uppercase"}}>{T("Plus propre maintenant","Cleanest now","Más limpia ahora")}</span>
+                <span style={{fontSize:12.5,fontWeight:700,color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:130}}>{proof.name}</span>
+                <span style={{fontFamily:"'Anton',sans-serif",fontSize:18,color:"#FFC72C",letterSpacing:".02em"}}>{cnt}<span style={{fontSize:11,opacity:.7}}>/100</span></span>
+              </div>
+            )}
+            <div style={{fontSize:11,fontWeight:600,letterSpacing:".14em",color:"rgba(255,255,255,.6)",marginBottom:8,textTransform:"uppercase"}}>
+              {dateLong} · {T("SATELLITE COPERNICUS","COPERNICUS SATELLITE","SATÉLITE COPERNICUS")}
+            </div>
+            <h1 style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:"clamp(34px,9vw,52px)",lineHeight:.98,
+              letterSpacing:".01em",textTransform:"uppercase",margin:"0 0 10px",color:"#fff",textShadow:"0 2px 24px rgba(0,0,0,.35)"}}>
+              {T("Pourquoi la plage aujourd'hui ?","Why the beach today?","¿Por qué la playa hoy?")}
+            </h1>
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16}}>
+              <span className="gf-pulse" style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#3BA7A0",boxShadow:"0 0 10px #3BA7A0",flexShrink:0}}/>
+              <span style={{fontSize:13,color:"rgba(255,255,255,.74)",fontWeight:600}}>
+                {T("J'ai scanné tes côtes ce matin. Dis-moi ton envie.","I scanned your coast this morning. Tell me your mood.","Escaneé tu costa esta mañana. Dime tu plan.")}
+              </span>
+            </div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:9}}>
+              {VIBES.map(v=>(
+                <button key={v.k} className="gf-chip" onClick={()=>pickVibe(v)}
+                  style={{cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:15,color:"#0A1714",
+                    border:"none",borderRadius:999,padding:"13px 18px",
+                    background:`linear-gradient(135deg,${v.g[0]},${v.g[1]})`,
+                    boxShadow:`0 6px 18px ${v.g[1]}55,inset 0 1px 0 rgba(255,255,255,.4)`}}>
+                  {v.label}
+                </button>
+              ))}
+            </div>
+            <button onClick={onShowMap} style={{display:"block",margin:"16px auto 0",background:"none",border:"none",
+              color:"rgba(255,255,255,.6)",fontFamily:"inherit",fontSize:13,fontWeight:600,cursor:"pointer"}}>
+              {T("Passer — montre-moi la carte","Skip — show me the map","Saltar — muéstrame el mapa")}
+            </button>
+          </div>
+        )}
+        {stage==="coast"&&(
+          <div key="coast" className="gf-panel">
+            <button onClick={()=>{setStage("vibe");setVibe(null)}} style={{display:"inline-flex",alignItems:"center",gap:5,
+              background:"rgba(10,23,20,.5)",border:"1px solid rgba(255,255,255,.16)",borderRadius:999,
+              color:"#fff",fontFamily:"inherit",fontSize:12.5,fontWeight:700,padding:"7px 13px",cursor:"pointer",marginBottom:12}}>
+              ‹ {T("Changer d'envie","Change mood","Cambiar plan")}
+            </button>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:".1em",color:"#FFC72C",marginBottom:8,textTransform:"uppercase"}}>
+              {T("Pour","For","Para")} {vibeLabel} · {T("aujourd'hui","today","hoy")}
+            </div>
+            <h1 style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:"clamp(28px,7vw,42px)",lineHeight:1,
+              letterSpacing:".01em",textTransform:"uppercase",margin:"0 0 14px",color:"#fff",textShadow:"0 2px 24px rgba(0,0,0,.4)"}}>
+              {T("Tes plages, classées pour toi","Your beaches, ranked for you","Tus playas, en tu orden")}
+            </h1>
+            <div style={{display:"flex",flexDirection:"column",gap:8}}>
+              {ranked.map((b,i)=>(
+                <button key={b.id} className="gf-card" onClick={()=>openBeach(b)}
+                  style={{animation:rm?"none":"gfIgnite .5s cubic-bezier(.34,1.56,.64,1) both",animationDelay:rm?undefined:`${i*70}ms`,
+                    display:"flex",alignItems:"center",gap:12,width:"100%",textAlign:"left",
+                    background:"rgba(16,35,30,.92)",border:"1px solid rgba(255,255,255,.09)",borderRadius:15,
+                    padding:"13px 15px",cursor:"pointer",fontFamily:"inherit"}}>
+                  <span style={{width:12,height:12,flexShrink:0,borderRadius:6,background:statusCol(b),boxShadow:`0 0 10px ${statusCol(b)}`}}/>
+                  <span style={{flex:1,minWidth:0}}>
+                    <span style={{display:"block",fontWeight:800,fontSize:15,color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.name}</span>
+                    <span style={{display:"block",fontSize:11.5,color:"rgba(255,255,255,.52)",marginTop:1,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+                      {statusShort(b)}{b.commune?` · ${b.commune}`:""}{distTxt(b)?` · ${distTxt(b)}`:""}
+                    </span>
+                  </span>
+                  <span style={{fontFamily:"'Anton',sans-serif",fontSize:22,color:statusCol(b),letterSpacing:".02em",lineHeight:1}}>{b.score}</span>
+                  <span style={{color:"rgba(255,255,255,.32)",fontSize:19,lineHeight:1}}>›</span>
+                </button>
+              ))}
+            </div>
+            <button onClick={onShowMap} style={{display:"block",margin:"14px auto 0",background:"none",border:"none",
+              color:"rgba(255,255,255,.6)",fontFamily:"inherit",fontSize:13,fontWeight:600,cursor:"pointer"}}>
+              {T("Voir toutes les plages sur la carte","See every beach on the map","Ver todas las playas en el mapa")}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPremium,onOpenBeach,topBeaches,pickBeaches,exiting}){
+  const [pickQ,setPickQ]=useState("")
   useEffect(()=>{track("sg_hero_shown",{beach_id:beach.id,status:beach.status,geoloc:!!userPos})},[])
   // Hero média = HeroScene (scène vectorielle, directive user 12/06). L'ancien
   // empilement photo/WebGL/loops DepthFlow est démonté du hero — SceneCanvas et
@@ -6896,9 +7140,55 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
             ))}
           </div>
         )}
+        {/* SÉLECTEUR — choisis ta plage directement depuis l'accueil (recherche
+            + liste live de toutes les plages, tap = fiche). Demande user 13/06. */}
+        {!!(pickBeaches&&pickBeaches.length>3)&&(()=>{
+          const norm=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")
+          const nq=norm(pickQ)
+          const list=pickBeaches.filter(b=>!nq||norm(b.name).includes(nq)||norm(b.commune).includes(nq)).slice(0,60)
+          return(
+            <div className="sg-rv" style={{marginTop:24}}>
+              <div style={{...ovl,marginBottom:8}}>{_t(lang,"Ta plage","Your beach","Tu playa")}</div>
+              <h3 style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:21,letterSpacing:".01em",
+                textTransform:"uppercase",color:"#fff",margin:"0 0 12px"}}>
+                {_t(lang,"Choisis ta plage","Pick your beach","Elige tu playa")}
+              </h3>
+              <input value={pickQ} onChange={e=>{setPickQ(e.target.value)}}
+                onFocus={()=>track("sg_landing_pick_search",{})}
+                placeholder={_t(lang,`Rechercher parmi ${pickBeaches.length} plages…`,`Search ${pickBeaches.length} beaches…`,`Buscar entre ${pickBeaches.length} playas…`)}
+                style={{width:"100%",boxSizing:"border-box",background:"#10231E",border:"1px solid rgba(255,255,255,.12)",
+                  borderRadius:14,padding:"13px 16px",color:"#fff",fontSize:14,fontFamily:"inherit",outline:"none",marginBottom:10}}/>
+              <div style={{maxHeight:312,overflowY:"auto",display:"flex",flexDirection:"column",gap:6,
+                WebkitOverflowScrolling:"touch",paddingRight:2}}>
+                {list.map(b=>(
+                  <button key={b.id} onClick={()=>onOpenBeach&&onOpenBeach(b)}
+                    style={{display:"flex",alignItems:"center",gap:12,width:"100%",textAlign:"left",
+                      background:"#10231E",border:"1px solid rgba(255,255,255,.07)",borderRadius:12,
+                      padding:"11px 14px",cursor:"pointer",fontFamily:"inherit"}}>
+                    <span style={{width:10,height:10,borderRadius:5,flexShrink:0,background:statusCol(b),
+                      boxShadow:`0 0 8px ${statusCol(b)}`}}/>
+                    <span style={{flex:1,minWidth:0}}>
+                      <span style={{display:"block",fontWeight:700,fontSize:14,color:"#fff",whiteSpace:"nowrap",
+                        overflow:"hidden",textOverflow:"ellipsis"}}>{b.name}</span>
+                      {b.commune&&<span style={{display:"block",fontSize:11.5,color:"rgba(255,255,255,.5)",
+                        whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.commune}{typeof b.drive==="number"?` · ${b.drive} min`:""}</span>}
+                    </span>
+                    <span style={{fontFamily:"'Anton',sans-serif",fontSize:17,color:statusCol(b),letterSpacing:".02em"}}>{b.score}</span>
+                    <span style={{color:"rgba(255,255,255,.3)",fontSize:18,lineHeight:1}}>›</span>
+                  </button>
+                ))}
+                {!list.length&&(
+                  <div style={{textAlign:"center",fontSize:13,color:"rgba(255,255,255,.45)",padding:"18px 0"}}>
+                    {_t(lang,"Aucune plage trouvée","No beach found","Ninguna playa encontrada")}
+                  </div>
+                )}
+              </div>
+            </div>
+          )
+        })()}
         <button onClick={onShowMap} className="sg-rv" style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,
           width:"100%",background:"rgba(10,23,20,.45)",color:"#fff",border:"1.5px solid rgba(255,255,255,.3)",
-          cursor:"pointer",fontFamily:"inherit",fontWeight:700,fontSize:15,padding:"15px 18px",borderRadius:18,marginTop:6}}>
+          cursor:"pointer",fontFamily:"inherit",fontWeight:700,fontSize:15,padding:"15px 18px",borderRadius:18,marginTop:14}}>
           <BrandIcon name="map" size={15} accent="#0A1714" style={{verticalAlign:"-2px",marginRight:6,display:"inline-block"}}/>{_t(lang,"Ouvrir la carte live","Open the live map","Abrir el mapa en vivo")}
         </button>
       </section>
@@ -7286,6 +7576,11 @@ export default function App(){
         &&!sessionStorage.getItem("sg_hero_seen")
     }catch(_){return false}
   })
+  // Bras A/B du landing : control = HeroVerdict (éprouvé), game = GameFunnel
+  // (funnel-jeu immersif, tranche verticale 13/06). Mesuré contre le landing
+  // prouvé, jamais imposé ; ?lf=game force en QA. La conversion (paywall/trial/
+  // A-B pw_prelude) reste strictement intacte — GameFunnel ne fait que la nourrir.
+  const[landingFunnel]=useState(()=>LF_OVERRIDE||abVariant("landing_funnel",["control","game"],[.7,.3]))
   // Transition phasée accueil → carte/plage (SceneWipe). Jamais si reduced-motion.
   const[wipe,setWipe]=useState(null)
   const fireWipe=useCallback(label=>{
@@ -7881,12 +8176,29 @@ export default function App(){
             header z700 + contrôles MapView z1000 ["Toute l'île"/Caraïbe],
             sous paywall z1100+). La carte charge derrière pendant la
             lecture → plus de "vide bleu nuit" au premier paint. */}
-        {showHero&&heroPick&&(
+        {showHero&&heroPick&&(landingFunnel==="game"?(
+          <GameFunnel beach={heroPick} lang={lang} island={island} sargData={sargData} userPos={userPos}
+            pickBeaches={(allBeaches||[]).filter(b=>(IS_NEW_REGION||b.island===island)&&b.status&&b.score!=null)
+              .sort((a,b)=>(b.score||0)-(a.score||0))}
+            onOpenBeach={b=>{
+              dismissHero("funnel_pick")
+              setSelectedBeach(b)
+              fireWipe(_t(lang,"Score 0-100 · mis à jour 4×/jour","0-100 score · updated 4×/day","Score 0-100 · actualizado 4×/día"))
+              track("sg_beach_open",{beach_id:b.id,status:b.status,source:"funnel"})
+            }}
+            onShowMap={()=>{
+              dismissHero("funnel_skip")
+              fireWipe(_t(lang,"Chaque pastille = la mesure du matin","Every dot = this morning's measurement","Cada punto = la medición de la mañana"))
+            }}
+            exiting={heroExiting}/>
+        ):(
           <HeroVerdict beach={heroPick} lang={lang} island={island} sargData={sargData} userPos={userPos}
             topBeaches={(allBeaches||[]).filter(b=>(IS_NEW_REGION||b.island===island)&&b.status&&b.score!=null
                 &&imageMap?.[b.id]&&!String(imageMap[b.id]).startsWith("sat-"))
               .sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,3)
               .map(b=>({...b,_img:"/beaches/"+imageMap[b.id]}))}
+            pickBeaches={(allBeaches||[]).filter(b=>(IS_NEW_REGION||b.island===island)&&b.status&&b.score!=null)
+              .sort((a,b)=>(b.score||0)-(a.score||0))}
             onOpen={()=>{
               dismissHero("cta")
               setSelectedBeach(heroPick)
@@ -7905,14 +8217,14 @@ export default function App(){
               fireWipe(_t(lang,"Chaque pastille = la mesure du matin","Every dot = this morning's measurement","Cada punto = la medición de la mañana"))
             }}
             exiting={heroExiting}/>
-        )}
+        ))}
 
         {/* TRANSITION PHASÉE accueil → écran suivant (z 1095 : au-dessus du hero, sous paywall) */}
         {wipe&&<SceneWipe label={wipe} onDone={()=>setWipe(null)}/>}
 
         {/* SARGACATCH TOAST — petit, coin bas, jamais bloquant (z 1090 :
             au-dessus des contrôles carte, sous le paywall z1100). */}
-        {showGameToast&&(
+        {showGameToast&&!showHero&&!selectedBeach&&!showPremium&&view==="map"&&(
           <div style={{position:"absolute",bottom:"calc(170px + env(safe-area-inset-bottom, 0px))",left:0,right:0,zIndex:1090,display:"flex",
             justifyContent:"center",pointerEvents:"none",padding:"0 16px"}}>
             <div style={{pointerEvents:"auto",display:"flex",alignItems:"center",gap:10,
