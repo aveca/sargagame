@@ -2392,10 +2392,13 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
           {/* La fiche EST le ScrollStory (bras story) : verdict → demain → vas-y.
               Moteur panel-scroll (lit sheetRef.scrollTop). CTA premium INCHANGÉ. */}
           {beachStory&&forecast&&forecast.length>=2&&(
-            <div style={{margin:"6px -20px 16px"}}>
+            <div style={{margin:"6px -20px 0"}}>
               <PanelStoryEngine beats={beachStoryBeats(beach,forecast,lang)} scrollRef={sheetRef} lang={lang}
                 accent={verdictMeta(beach.status,lang).color} ev="sg_beach_beat"
                 onCTA={()=>{track("sg_beach_story_cta",{beach_id:beach.id,status:beach.status});onPremiumClick&&onPremiumClick("beach_story")}}/>
+              {/* PONT golden-hour : on FOND le monde immersif (gold du dernier beat)
+                  dans le détail clair — zéro couture dark→light, un seul flux continu. */}
+              <div aria-hidden style={{height:56,marginTop:-1,background:"linear-gradient(180deg,#11463E 0%,#C97E3A 42%,#FFE08A 74%,var(--sg-card,#fff) 100%)"}}/>
             </div>
           )}
           <AfaiChip beach={beach} lang={lang}/>
