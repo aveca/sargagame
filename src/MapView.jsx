@@ -783,9 +783,31 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
   return(<div style={{position:"relative",width:"100%",height:"100%"}}>
     <div ref={containerRef} style={{width:"100%",height:"100%"}}/>
     {/* Branding golden-hour : tuiles Voyager réchauffées (conservateur, reste
-        lisible) + gloss candy sur les pins (statut/couleur conservés). */}
+        lisible) + gloss candy sur les pins (statut/couleur conservés) +
+        couche ambiante : lumière chaude en haut + satellite veilleur qui
+        traverse et scanne la côte (continuité accueil/ScrollStory « le
+        satellite veille »). Décoratif : pointerEvents none → ne vole jamais
+        un tap pin ; masquée en vue Caraïbe ; OFF en reduced-motion. */}
     <style>{`.sg-warm-tiles{filter:sepia(.16) saturate(1.18) hue-rotate(-7deg) brightness(1.03)}
-.sg-pin{background-image:radial-gradient(circle at 36% 28%,rgba(255,255,255,.5),rgba(255,255,255,0) 62%)}`}</style>
+.sg-pin{background-image:radial-gradient(circle at 36% 28%,rgba(255,255,255,.5),rgba(255,255,255,0) 62%)}
+.sg-map-sat{animation:sgmSat 40s linear infinite;will-change:transform}
+@keyframes sgmSat{0%{transform:translateX(-60px)}100%{transform:translateX(100vw)}}
+.sg-map-beam{animation:sgmBeam 40s ease-in-out infinite;transform-box:fill-box;transform-origin:top center}
+@keyframes sgmBeam{0%,8%{opacity:0}50%{opacity:.55}92%,100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.sg-map-sat{animation:none;transform:translateX(38vw)}.sg-map-beam{animation:none;opacity:0}}`}</style>
+    {!caribbeanMode&&<div className="sg-map-sky" aria-hidden style={{position:"absolute",top:0,left:0,right:0,height:"38%",maxHeight:260,pointerEvents:"none",zIndex:640,
+      background:"linear-gradient(180deg,rgba(255,199,44,.17),rgba(255,184,112,.06) 46%,rgba(255,184,112,0) 100%)"}}>
+      <svg className="sg-map-sat" viewBox="0 0 60 172" width="60" height="172" style={{position:"absolute",top:"6%",left:0,overflow:"visible"}}>
+        <defs><linearGradient id="sgmBeam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#FFE08A" stopOpacity=".5"/><stop offset="1" stopColor="#FFE08A" stopOpacity="0"/></linearGradient></defs>
+        <polygon className="sg-map-beam" points="22,10 40,10 52,170 6,170" fill="url(#sgmBeam)"/>
+        <g transform="translate(30,10) scale(.92)">
+          <rect x="-22" y="-3" width="13" height="6" rx="1.5" fill="#3BA7A0"/>
+          <rect x="9" y="-3" width="13" height="6" rx="1.5" fill="#3BA7A0"/>
+          <rect x="-8" y="-8" width="17" height="15" rx="2.2" fill="#C9971F"/>
+          <rect x="-8" y="-8" width="17" height="5" rx="2.2" fill="#FFC72C"/>
+        </g>
+      </svg>
+    </div>}
 
     {/* Caribbean View Toggle Button */}
     <button onClick={toggleCaribbean} className="sg-carib-btn" title={caribbeanMode?tl.localView:tl.caribbeanView} aria-label={caribbeanMode?tl.localView:tl.caribbeanView} style={{
