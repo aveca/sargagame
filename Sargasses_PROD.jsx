@@ -6824,7 +6824,7 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
   const distTxt=b=>{if(!userPos||!b.lat)return b.drive!=null?`${b.drive} min`:"";const km=haversine(userPos.lat,userPos.lng,b.lat,b.lng);return US_UNITS?`${Math.max(1,Math.round(km*0.621))} mi`:`${Math.max(1,Math.round(km))} km`}
   return(
     <div role="dialog" aria-label={T("Trouve ta plage","Find your beach","Encuentra tu playa")} style={{position:"absolute",inset:0,zIndex:1050,
-      background:"#0A1714",overflow:"hidden",animation:"fadeIn .35s ease-out",
+      background:"#0A1714",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch",animation:"fadeIn .35s ease-out",
       opacity:exiting?0:1,transform:exiting?"scale(1.04)":"none",
       transition:"opacity .3s ease,transform .3s cubic-bezier(.22,1,.36,1)"}}>
       <style>{`
@@ -6862,6 +6862,9 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
 .gf-alertpulse{animation:gfAlertPulse 2.2s ease-out infinite}
 @media (prefers-reduced-motion:reduce){.gf-cam{transition:none}.gf-panel,.gf-chip,.gf-card{animation:none!important}.gf-pulse,.gf-scanline,.gf-sat,.gf-medal,.gf-scanfx,.gf-blob,.gf-dot,.gf-ring,.gf-arrive,.gf-arrow,.gf-alertpulse{animation:none!important}.gf-px{animation:none!important;opacity:.9}.gf-medal,.gf-scanfx{opacity:1}.gf-sat{transform:translate(400px,142px)}.gf-scanline{transform:translateY(300px)}.gf-blob,.gf-dot{transform:scale(1)}}
       `}</style>
+      {/* PREMIER ÉCRAN (100svh) : le funnel-jeu. On peut ensuite SCROLLER dans le
+          même monde (méthode + veilleur) — le scroll-SVG est rebranché. */}
+      <section style={{position:"relative",height:"100svh",overflow:"hidden"}}>
       {/* LE MONDE — dolly-in : il grossit quand on entre dans la sélection */}
       <div className="gf-cam" aria-hidden style={{position:"absolute",inset:0,transformOrigin:"50% 64%",
         transform:stage==="scan"?"scale(1.22) translateY(-4%)":stage==="verdict"?"scale(1.2) translateY(-3%)":stage==="coast"?"scale(1.16) translateY(-2%)":"scale(1)"}}>
@@ -7191,6 +7194,32 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
           </div>
         )}
       </div>
+      </section>
+      {/* INTÉGRATION fil rouge : le scroll-SVG revient — sous le funnel, on
+          CONTINUE dans le même monde (méthode scrollytelling + veilleur) au lieu
+          de s'arrêter au tap-funnel. Mobile retrouve son scroll ; le bras control
+          (HeroVerdict) reste inchangé. */}
+      <section style={{padding:"58px 22px 6px",maxWidth:560,margin:"0 auto"}}>
+        <div style={{fontSize:11,fontWeight:700,letterSpacing:".16em",color:"#FFC72C",textTransform:"uppercase",marginBottom:10}}>
+          {T("La méthode","The method","El método")}
+        </div>
+        <h2 style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:"clamp(28px,6.5vw,40px)",lineHeight:1.02,letterSpacing:".01em",textTransform:"uppercase",margin:0,color:"#fff"}}>
+          {T("On regarde la mer pour toi","We watch the sea for you","Miramos el mar por ti")}
+        </h2>
+      </section>
+      <ScrollStory lang={lang} onShowMap={onShowMap}/>
+      <section style={{padding:"28px 22px calc(40px + env(safe-area-inset-bottom))",maxWidth:560,margin:"0 auto"}}>
+        <div style={{background:"linear-gradient(145deg,#10231E,#0A1714)",border:"1px solid rgba(255,199,44,.25)",borderRadius:20,padding:"24px 20px",textAlign:"center"}}>
+          <div style={{fontFamily:"'Anton',sans-serif",fontSize:23,color:"#fff",letterSpacing:".02em",textTransform:"uppercase",marginBottom:6}}>{T("Ton veilleur personnel","Your personal watcher","Tu vigía personal")}</div>
+          <div style={{fontSize:13.5,color:"rgba(255,255,255,.66)",marginBottom:16,lineHeight:1.45}}>{T("Je surveille ta plage et je te préviens la veille où elle se trouble.","I watch your beach and warn you the day before it turns.","Vigilo tu playa y te aviso la víspera de que cambie.")}</div>
+          <button onClick={()=>onPremium&&onPremium("funnel_scroll")} className="gf-chip" style={{display:"block",width:"100%",cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:16,color:"#0A1714",border:"none",borderRadius:16,padding:"15px 20px",background:"linear-gradient(135deg,#FFE08A,#FFC72C)",boxShadow:"0 8px 24px rgba(255,199,44,.32)"}}>
+            {T("Découvrir le veilleur →","Meet the watcher →","Descubrir el vigía →")}
+          </button>
+          <button onClick={onShowMap} style={{display:"block",width:"100%",marginTop:10,background:"none",border:"none",color:"rgba(255,255,255,.6)",fontFamily:"inherit",fontSize:13,fontWeight:600,cursor:"pointer"}}>
+            {T("Ou ouvrir la carte gratuite","Or open the free map","O abrir el mapa gratis")}
+          </button>
+        </div>
+      </section>
     </div>
   )
 }
