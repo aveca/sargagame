@@ -190,6 +190,66 @@ function ScoreBlob({score,color,size=84}){
   )
 }
 
+// ── BeachScene — CHAQUE plage a SA scène SVG (directive 14/06 : « notre valeur
+//    est sur le svg » + « représente le diamant en svg, chaque plage avec sa
+//    particularité »). Landmark réel + sable + statut + phase de l'heure locale.
+//    Auto-contenue (sa propre CSS) : ne dépend d'aucun <style> externe. ────────
+const BEACH_PHASE={
+  dawn:{sky:["#141B33","#3A4A6B","#B86E7E","#F2A968"],seaT:"#235862",seaB:"#0A2630",glit:"#F2A968",sun:"set",rim:"#F2A968",cloud:"#1A2440",rock:"#1b2a33",rockLit:"#F2A968",trunk:"#14100C",frond:"#1a2e26"},
+  day:{sky:["#1A6FA8","#3E9BC4","#7BC8D8","#AEE0E6"],seaT:"#15706A",seaB:"#0B3A34",glit:"#FDFCF7",sun:"high",rim:"#FFFFFF",cloud:"#EAF6F6",rock:"#5d6f62",rockLit:"#A8C6AE",trunk:"#3A2E1A",frond:"#3F6B52"},
+  golden:{sky:["#0B2230","#155A5A","#C97E3A","#F2B05E"],seaT:"#1A5852",seaB:"#08251F",glit:"#FFD884",sun:"set",rim:"#FFD884",cloud:"#10333E",rock:"#16242A",rockLit:"#FFD884",trunk:"#120F0A",frond:"#16120C"},
+  night:{sky:["#040B16","#0A1B2E","#10303B","#16424A"],seaT:"#0A2E2E",seaB:"#04140F",glit:"#9ADCD4",sun:"moon",rim:"#9ADCD4",cloud:"#0A1622",rock:"#0c171b",rockLit:"#9ADCD4",trunk:"#0A0806",frond:"#0C0A06"},
+}
+function beachLandmark(beach){
+  const k=((beach&&beach.id||"")+" "+(beach&&beach.name||"")+" "+(beach&&beach.slug||"")).toLowerCase()
+  if(/diamant/.test(k))return "diamondRock"          // le Rocher du Diamant
+  if(/caravelle|tartane|presqu|tombolo|chateaux|château/.test(k))return "cliff"  // falaise/presqu'île
+  if(/salines|saline|grande anse|bourg/.test(k))return "open"  // longue plage ouverte
+  return "morne"                                      // baie + morne vert (défaut antillais)
+}
+function BeachScene({beach}){
+  const ph=(()=>{try{if(HERO_PH_OVERRIDE)return HERO_PH_OVERRIDE;const h=new Date().getHours();return h<5?"night":h<8?"dawn":h<17?"day":h<20?"golden":"night"}catch(_){return "golden"}})()
+  const t=BEACH_PHASE[ph]||BEACH_PHASE.golden
+  const lm=beachLandmark(beach)
+  const black=/noire|dufour|c[ée]ron|couleuvre|grand.?rivi|anse l[ae]vau/.test(((beach&&beach.id||"")+" "+(beach&&beach.name||"")).toLowerCase())
+  const sand=black?(ph==="day"?"#3A352F":"#0F0D0B"):(ph==="day"?"#C9A86A":t.rock==="#16242A"?"#1C1712":"#15110D")
+  const showRafts=beach&&(beach.status==="moderate"||beach.status==="avoid")
+  return(
+    <div aria-hidden="true" style={{position:"absolute",inset:0}}>
+      <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block"}}>
+        <style>{`.bsc-glit{animation:bscGlit 7s linear infinite}@keyframes bscGlit{to{stroke-dashoffset:-64}}.bsc-cloud{animation:bscCloud 80s ease-in-out infinite alternate}@keyframes bscCloud{to{transform:translateX(-46px)}}.bsc-raft{animation:bscRaft 13s ease-in-out infinite alternate}@keyframes bscRaft{to{transform:translateX(13px)}}@media(prefers-reduced-motion:reduce){.bsc-glit,.bsc-cloud,.bsc-raft{animation:none}}`}</style>
+        <defs>
+          <linearGradient id="bscSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={t.sky[0]}/><stop offset=".52" stopColor={t.sky[1]}/><stop offset=".84" stopColor={t.sky[2]}/><stop offset="1" stopColor={t.sky[3]}/></linearGradient>
+          <linearGradient id="bscSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={t.seaT}/><stop offset="1" stopColor={t.seaB}/></linearGradient>
+        </defs>
+        <rect width="800" height="360" fill="url(#bscSky)"/>
+        {t.sun==="set"&&<><circle cx="400" cy="330" r="120" fill={t.glit} opacity=".08"/><circle cx="400" cy="330" r="64" fill={t.glit} opacity=".12"/><path d="M340 332 a60 60 0 0 1 120 0 Z" fill={t.glit} opacity=".9"/></>}
+        {t.sun==="high"&&<><circle cx="300" cy="98" r="52" fill="#FDFCF7" opacity=".2"/><circle cx="300" cy="98" r="30" fill="#FFF4D6"/></>}
+        {t.sun==="moon"&&<><circle cx="320" cy="96" r="40" fill="#9ADCD4" opacity=".08"/><circle cx="320" cy="96" r="20" fill="#E6F2EF"/><circle cx="313" cy="90" r="3.6" fill="#C2D8D2" opacity=".7"/></>}
+        {ph==="night"&&[[90,60],[220,90],[380,50],[540,82],[680,56],[150,150],[470,140],[620,120]].map((s,i)=>(<circle key={i} cx={s[0]} cy={s[1]} r="1.1" fill="#fff" opacity=".5"/>))}
+        <g className="bsc-cloud"><path d="M120 128 q14 -26 48 -26 q18 -18 46 -12 q30 -8 44 12 q26 2 30 26 Z" fill={t.cloud} opacity=".9"/><path d="M122 129 h162" stroke={t.rim} strokeWidth="2" opacity=".32"/></g>
+        <rect x="-40" y="330" width="880" height="200" fill="url(#bscSea)"/>
+        {lm==="diamondRock"&&<g>
+          <path d="M468 340 Q481 284 509 252 Q525 234 534 253 Q560 292 570 340 Z" fill={t.rock}/>
+          <path d="M509 252 Q525 234 534 253 Q560 292 570 340 L534 340 Z" fill="#000" opacity=".22"/>
+          <path d="M509 252 Q481 284 468 340 L509 340 Z" fill={t.rockLit} opacity=".26"/>
+          <path d="M468 340 Q519 351 570 340 L570 349 Q519 360 468 349 Z" fill={t.rock} opacity=".45"/>
+        </g>}
+        {lm==="cliff"&&<g><path d="M-40 338 L-40 244 Q120 206 236 250 L266 338 Z" fill={t.rock}/><path d="M-40 244 Q120 206 236 250" fill="none" stroke={t.rockLit} strokeWidth="3" opacity=".25"/></g>}
+        {lm==="morne"&&<g><path d="M-40 338 Q70 274 196 296 Q278 310 320 338 Z" fill={t.rock} opacity=".95"/><path d="M-40 338 Q70 274 196 296" fill="none" stroke={t.rockLit} strokeWidth="2.5" opacity=".22"/></g>}
+        <line className="bsc-glit" x1="-40" y1="356" x2="840" y2="356" stroke={t.glit} strokeWidth="2.2" strokeDasharray="3 13" opacity=".5"/>
+        <line className="bsc-glit" x1="-40" y1="386" x2="840" y2="386" stroke={t.glit} strokeWidth="1.8" strokeDasharray="2 17" opacity=".3" style={{animationDelay:"-3s"}}/>
+        <line className="bsc-glit" x1="-40" y1="420" x2="840" y2="420" stroke={t.glit} strokeWidth="1.6" strokeDasharray="2 23" opacity=".18" style={{animationDelay:"-5s"}}/>
+        {showRafts&&<g className="bsc-raft"><g transform="translate(300,372)"><ellipse rx="22" ry="7" fill="#7a5c14"/><ellipse cx="-10" cy="-3" rx="9" ry="4" fill="#8a6c1c"/><ellipse cx="10" cy="-2" rx="10" ry="4" fill="#5d400e"/></g><g transform="translate(470,388) scale(.8)"><ellipse rx="22" ry="7" fill="#7a5c14"/><ellipse cx="8" cy="-3" rx="9" ry="4" fill="#8a6c1c"/></g></g>}
+        <path d="M-40 472 Q200 434 430 448 Q640 460 840 502 L840 620 L-40 620 Z" fill={sand}/>
+        <path d="M-40 472 Q200 434 430 448 Q640 460 840 502" fill="none" stroke={t.rim} strokeWidth="2.4" opacity=".3"/>
+        <path d="M586 612 Q570 520 538 472 Q524 450 502 438" stroke={t.trunk} strokeWidth="13" fill="none" strokeLinecap="round"/>
+        <g fill="none" stroke={t.frond} strokeWidth="9" strokeLinecap="round"><path d="M502 438 Q466 418 428 424"/><path d="M502 438 Q472 402 440 394"/><path d="M502 438 Q506 398 522 374"/><path d="M502 438 Q538 406 576 404"/><path d="M502 438 Q540 434 570 450"/></g>
+      </svg>
+    </div>
+  )
+}
+
 const ST={
   _loading:{c:"#666",bg:"rgba(100,100,100,.1)",l:"Chargement…",le:"Loading…",les:"Cargando…",e:"⏳",h2s:false,
     desc:"Données en cours de chargement…",descEn:"Loading data…",descEs:"Cargando datos…"},
@@ -1859,10 +1919,12 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
         {/* Hero — photo le jour, scène vectorielle golden-hour personnalisée par
             l'heure sinon (cf. useVectorHero). Immersif, tap pour scanner. */}
         <div onClick={e=>{if(!e.target.closest("button")){setPhotoScanOpen(v=>!v);track("sg_photo_scan",{beach_id:beach.id,open:!photoScanOpen,hero:useVectorHero?"vector":"photo",ph:heroPh})}}}
-          style={{height:"min(600px, 70svh)",background:useVectorHero?"#0B2230":`url(${bgImage}) center 40%/cover`,
+          style={{height:"min(600px, 70svh)",background:"#0B2230",
           borderRadius:"0",position:"relative",overflow:"hidden",cursor:"pointer"}}>
-          {/* Scène vectorielle golden-hour (auto-phase) en fond quand pas de photo de jour */}
-          {useVectorHero&&<HeroScene/>}
+          {/* Scène SVG PROPRE À CETTE PLAGE — landmark réel (Rocher du Diamant,
+              falaise, morne, plage ouverte), sable (noir volcanique détecté),
+              statut (bancs) + golden-hour auto-phasé. « Notre valeur = le SVG ». */}
+          <BeachScene beach={beach}/>
           {/* Cinematic gradient overlay */}
           <div style={{position:"absolute",inset:0,
             background:"linear-gradient(180deg, rgba(0,0,0,.15) 0%, transparent 30%, transparent 50%, var(--sg-card,#fff) 100%)"}}/>
