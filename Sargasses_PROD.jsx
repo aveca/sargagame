@@ -8344,6 +8344,38 @@ function WorldChallengeCard({beach,lang,active,phaseGrad,onGuess,streak}){
     </section>
   )
 }
+// BONUS débloqué par la série (jeu -> conversion) : célébration + une vraie reco
+// premium OFFERTE (la plage la plus propre maintenant = la "reco du jour" payante),
+// puis CTA Premium. Le jeu nourrit le funnel : data -> jeu -> vente. In-world.
+function WorldBonus({level,topBeach,lang,onPremium,onClose}){
+  const vm=topBeach?verdictMeta(topBeach.status||"clean",lang):null
+  return(
+    <div role="dialog" aria-label={_t(lang,"Bonus débloqué","Bonus unlocked","Bono")} style={{position:"absolute",inset:0,zIndex:25,display:"flex",alignItems:"center",justifyContent:"center",padding:26,
+      background:"radial-gradient(120% 90% at 50% 28%,rgba(17,70,62,.96),rgba(4,9,11,.97))",animation:"wfBonusIn .4s cubic-bezier(.22,1,.36,1) both"}}>
+      <div className="wf-pop" style={{maxWidth:360,width:"100%",textAlign:"center",color:"#fff"}}>
+        <div style={{fontSize:48,lineHeight:1}}>🎁</div>
+        <div style={{marginTop:6,fontSize:12,fontWeight:800,letterSpacing:".08em",color:"#FFD884"}}>🔥 {_t(lang,"SÉRIE DE","STREAK OF","RACHA DE")} {level} · {_t(lang,"BONUS DÉBLOQUÉ","BONUS UNLOCKED","BONO DESBLOQUEADO")}</div>
+        <h2 style={{margin:"8px 0 0",fontFamily:"'Anton',system-ui,sans-serif",fontSize:30,lineHeight:1.06}}>{_t(lang,"Tu as l'œil du Veilleur","You've got the Watchman's eye","Tienes el ojo del Vigía")}</h2>
+        {topBeach&&<div style={{margin:"16px 0 0",padding:"14px 16px",borderRadius:16,background:"rgba(255,255,255,.07)",border:"1px solid rgba(95,211,201,.35)",textAlign:"left"}}>
+          <div style={{fontSize:11,fontWeight:800,letterSpacing:".06em",color:"#5FD3C9",textTransform:"uppercase"}}>🎁 {_t(lang,"Offert : ta reco du moment","Free: your pick right now","Gratis: tu recomendación")}</div>
+          <div style={{display:"flex",alignItems:"center",gap:12,marginTop:8}}>
+            {typeof topBeach.score==="number"&&<ScoreBlob score={topBeach.score} color={topBeach.scoreColor||vm.color} size={52}/>}
+            <div style={{flex:1,minWidth:0}}><div style={{fontSize:16,fontWeight:800}}>{topBeach.name}</div><div style={{fontSize:12.5,color:"rgba(255,255,255,.82)"}}>{topBeach.commune?topBeach.commune+" · ":""}{vm.emoji} {vm.verb}</div></div>
+          </div>
+        </div>}
+        <button onClick={()=>{try{track("sg_world_bonus_premium",{level})}catch(_){}; onPremium&&onPremium("world_bonus")}}
+          style={{display:"block",width:"100%",marginTop:16,padding:"15px",borderRadius:16,border:"none",cursor:"pointer",
+          fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",fontSize:15.5,fontWeight:800,color:"#07201E",
+          background:"linear-gradient(180deg,#FFD884,#F2B05E)",boxShadow:"0 8px 28px rgba(0,0,0,.4)"}}>
+          {_t(lang,"Le Veilleur veille pour toi chaque jour →","The Watchman watches for you daily →","El Vigía vigila para ti cada día →")}
+        </button>
+        <button onClick={onClose} style={{marginTop:14,background:"none",border:"none",cursor:"pointer",color:"rgba(255,255,255,.7)",fontSize:13,fontWeight:700}}>
+          {_t(lang,"Continuer à jouer","Keep playing","Seguir jugando")}
+        </button>
+      </div>
+    </div>
+  )
+}
 // Le CARNET in-world (remplace le popup du bas) : data profonde + nudge premium, immersif.
 function WorldCarnet({beach,lang,onClose,onPremium}){
   const status=beach.status||"clean"
@@ -8413,13 +8445,16 @@ function WorldFeed({beaches,lang,onPremium,onClose,island}){
   // Série 🔥 — passe-temps + raison de revenir (persistée, easter egg returning).
   const[streak,setStreak]=useState(()=>{try{return parseInt(localStorage.getItem("sg_world_streak")||"0")||0}catch(_){return 0}})
   const[best,setBest]=useState(()=>{try{return parseInt(localStorage.getItem("sg_world_best")||"0")||0}catch(_){return 0}})
-  const onGuess=correct=>{setStreak(s=>{const ns=correct?s+1:0;try{localStorage.setItem("sg_world_streak",String(ns))}catch(_){};setBest(b=>{const nb=ns>b?ns:b;try{localStorage.setItem("sg_world_best",String(nb))}catch(_){}return nb});return ns});try{track("sg_world_guess_result",{correct})}catch(_){}}
+  const[bonus,setBonus]=useState(null) // palier de série atteint -> bonus débloqué (jeu -> conversion)
+  const onGuess=correct=>{const ns=correct?streak+1:0;setStreak(ns);try{localStorage.setItem("sg_world_streak",String(ns))}catch(_){};if(ns>best){setBest(ns);try{localStorage.setItem("sg_world_best",String(ns))}catch(_){}};if(correct&&(ns===3||ns===7||ns===14||ns===30))setBonus(ns);try{track("sg_world_guess_result",{correct,streak:ns})}catch(_){}}
   const phaseGrad=useMemo(()=>{
     let ph="golden";try{if(typeof HERO_PH_OVERRIDE!=="undefined"&&HERO_PH_OVERRIDE)ph=HERO_PH_OVERRIDE;else{const h=new Date().getHours();ph=h<5?"night":h<8?"dawn":h<17?"day":h<20?"golden":"night"}}catch(_){}
     const t=BEACH_PHASE[ph]||BEACH_PHASE.golden
     return "linear-gradient(180deg,"+t.sky[0]+","+t.sky[2]+" 60%,"+t.seaB+")"
   },[])
   const list=useMemo(()=>(beaches||[]).filter(b=>b&&b.id&&b.name&&(!island||b.island===island)).slice(0,16),[beaches,island])
+  // La meilleure plage maintenant (data réelle) = la reco premium offerte par le bonus.
+  const topBeach=useMemo(()=>{const c=list.filter(b=>b.status==="clean"&&typeof b.score==="number").sort((a,b)=>b.score-a.score);return c[0]||list.slice().sort((a,b)=>(b.score||0)-(a.score||0))[0]||null},[list])
   // Items intercalés : 1 carte science toutes les 4 plages (info entre les plages).
   const items=useMemo(()=>{
     const out=[];let fi=0
@@ -8442,7 +8477,7 @@ function WorldFeed({beaches,lang,onPremium,onClose,island}){
   const restart=()=>{try{scrollRef.current&&scrollRef.current.scrollTo({top:0,behavior:"smooth"})}catch(_){}}
   return(
     <div role="region" aria-label="Monde Sargasses" style={{position:"fixed",inset:0,zIndex:1005,background:"#04090B"}}>
-      <style>{`@keyframes wfHint{0%,100%{transform:translateY(0);opacity:.72}50%{transform:translateY(5px);opacity:1}}.wf-hint{animation:wfHint 1.8s ease-in-out infinite}@keyframes wfMark{0%,100%{transform:scale(1)}50%{transform:scale(1.35)}}.wf-mark{animation:wfMark 2.4s ease-in-out infinite}@keyframes wfHot{0%{box-shadow:0 0 0 0 rgba(95,211,201,.5),0 2px 8px rgba(0,0,0,.5)}70%{box-shadow:0 0 0 14px rgba(95,211,201,0),0 2px 8px rgba(0,0,0,.5)}100%{box-shadow:0 0 0 0 rgba(95,211,201,0),0 2px 8px rgba(0,0,0,.5)}}.wf-hot{animation:wfHot 2.2s ease-out infinite}@keyframes wfPop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}.wf-pop{animation:wfPop .24s cubic-bezier(.34,1.56,.64,1) both}@keyframes wfFact{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}.wf-fact{animation:wfFact .5s ease both}@keyframes wfCarnetIn{from{transform:translateY(100%)}to{transform:translateY(0)}}@media(prefers-reduced-motion:reduce){.wf-hint,.wf-mark,.wf-hot,.wf-pop,.wf-fact{animation:none}}`}</style>
+      <style>{`@keyframes wfHint{0%,100%{transform:translateY(0);opacity:.72}50%{transform:translateY(5px);opacity:1}}.wf-hint{animation:wfHint 1.8s ease-in-out infinite}@keyframes wfMark{0%,100%{transform:scale(1)}50%{transform:scale(1.35)}}.wf-mark{animation:wfMark 2.4s ease-in-out infinite}@keyframes wfHot{0%{box-shadow:0 0 0 0 rgba(95,211,201,.5),0 2px 8px rgba(0,0,0,.5)}70%{box-shadow:0 0 0 14px rgba(95,211,201,0),0 2px 8px rgba(0,0,0,.5)}100%{box-shadow:0 0 0 0 rgba(95,211,201,0),0 2px 8px rgba(0,0,0,.5)}}.wf-hot{animation:wfHot 2.2s ease-out infinite}@keyframes wfPop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}.wf-pop{animation:wfPop .24s cubic-bezier(.34,1.56,.64,1) both}@keyframes wfFact{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}.wf-fact{animation:wfFact .5s ease both}@keyframes wfCarnetIn{from{transform:translateY(100%)}to{transform:translateY(0)}}@keyframes wfBonusIn{from{opacity:0}to{opacity:1}}@media(prefers-reduced-motion:reduce){.wf-hint,.wf-mark,.wf-hot,.wf-pop,.wf-fact{animation:none}}`}</style>
       <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")}
         style={{position:"absolute",top:"calc(12px + env(safe-area-inset-top))",right:14,zIndex:30,width:40,height:40,borderRadius:"50%",
         background:"rgba(4,9,11,.55)",border:"1px solid rgba(255,255,255,.25)",color:"#fff",fontSize:17,cursor:"pointer",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)"}}>✕</button>
@@ -8459,6 +8494,7 @@ function WorldFeed({beaches,lang,onPremium,onClose,island}){
         ))}
       </div>
       {carnet&&<WorldCarnet beach={carnet} lang={lang} onClose={()=>setCarnet(null)} onPremium={onPremium}/>}
+      {bonus&&<WorldBonus level={bonus} topBeach={topBeach} lang={lang} onPremium={onPremium} onClose={()=>setBonus(null)}/>}
     </div>
   )
 }
