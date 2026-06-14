@@ -505,6 +505,50 @@ function SolSortScene({lang}){
       : <g><rect x="140" y="96" width="520" height="58" rx="14" fill="rgba(7,32,30,.94)" stroke="#FFD884" strokeWidth="1.4"/><text x="400" y="120" fontFamily="system-ui,sans-serif" fontSize="15" fontWeight="800" fill="#fff" textAnchor="middle">{bins[sel].e+"  "+bins[sel].l}</text><text x="400" y="140" fontFamily="system-ui,sans-serif" fontSize="12.5" fill="rgba(255,255,255,.85)" textAnchor="middle">{bins[sel].f}</text></g>}
   </g>)
 }
+// LE DÉBAT (main d'œuvre / aides / argent) — 5 voix sur LA MÊME anse + vote diégétique
+// « où va l'argent ». Non-clivant : pas "qui a raison" mais "que finance-t-on". Click-driven,
+// mobile-safe (bande centrale). La donnée satellite = le point commun qui réconcilie tous.
+function SolDebateScene({lang}){
+  const T=(fr,en,es)=>_t(lang,fr,en,es)
+  const[vi,setVi]=useState(0)
+  const[votes,setVotes]=useState(()=>{try{return JSON.parse(localStorage.getItem("sg_debate_votes")||"[3,5,2,4]")}catch(_){return[3,5,2,4]}})
+  const[voted,setVoted]=useState(false)
+  const V=[
+    {e:"🏠",n:T("Habitant","Resident","Vecino"),s:T("Ramassée vite, l'algue ne sent pas le H₂S près de l'école.","Collected fast, no H₂S smell near the school.","Recogida rápido, sin H₂S junto a la escuela.")},
+    {e:"🏖️",n:T("Tourisme","Tourism","Turismo"),s:T("Mes clients réservent si je promets une plage propre.","Guests book if I can promise a clean beach.","Reservan si prometo playa limpia.")},
+    {e:"🏛️",n:T("Collectivité","Public","Municipio"),s:T("La donnée dit OÙ ramasser : j'emploie là où c'est utile.","Data says WHERE to collect: I hire where it counts.","El dato dice DÓNDE recoger.")},
+    {e:"♻️",n:T("Recycleur","Recycler","Reciclador"),s:T("Captée fraîche et triée, l'algue vaut de l'or (engrais, biogaz).","Fresh & sorted, the algae is gold (fertilizer, biogas).","Fresca y clasificada, vale oro.")},
+    {e:"💶",n:T("Financier","Funder","Financiero"),s:T("Je finance ce qui se MESURE : la précision satellite horodatée.","I fund what's MEASURED: timestamped accuracy.","Financio lo que se MIDE.")},
+  ]
+  const O=[T("Collecte quartier","Local collect","Recogida"),T("Alerte H₂S","H₂S alert","Alerta H₂S"),T("Dashboard hôtels","Hotel dashboard","Panel hoteles"),T("Recyclage","Recycling","Reciclaje")]
+  const vote=i=>{if(voted)return;setVotes(v=>{const n=v.slice();n[i]=(n[i]||0)+1;try{localStorage.setItem("sg_debate_votes",JSON.stringify(n))}catch(_){}return n});setVoted(true);try{track("sg_debate_vote",{choice:i})}catch(_){}}
+  const tot=Math.max(1,votes.reduce((a,b)=>a+b,0)),v=V[vi]
+  return(<g><defs><linearGradient id="solDeb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0B2230"/><stop offset=".5" stopColor="#155A5A"/><stop offset=".84" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/></linearGradient></defs>
+    <rect width="800" height="600" fill="url(#solDeb)"/>
+    <circle cx="400" cy="250" r="58" fill="#FFD884" opacity=".5"/>
+    <rect y="372" width="800" height="228" fill="#10403A"/>
+    <path d="M120 466 Q400 440 680 466 L680 600 L120 600 Z" fill="#C9A86A"/>
+    <g opacity={vi===0?1:.45}><rect x="300" y="420" width="34" height="40" fill="#13302A"/><path d="M296 420 l21 -16 l21 16 Z" fill="#0E2A26"/><rect x="344" y="428" width="28" height="32" fill="#13302A"/></g>
+    <g opacity={vi===0?1:.45}><rect x="440" y="416" width="46" height="44" fill="#0E2A26"/><line x1="463" y1="416" x2="463" y2="398" stroke="#FFD884" strokeWidth="2"/><path d="M463 398 l14 5 l-14 5 Z" fill="#E8522A"/></g>
+    <g opacity={vi===1||vi===3?1:.35} transform="translate(520,452)"><path d="M-24 0 l48 0 l-8 14 l-32 0 Z" fill="#13302A"/></g>
+    {vi===0&&<g><ellipse cx="317" cy="404" rx="34" ry="11" fill="#9AA08A" opacity=".4"/><text x="317" y="384" fontSize="13" textAnchor="middle">💨</text></g>}
+    {vi===4&&<g stroke="#FFD884" strokeWidth="2" fill="none" opacity=".7"><path d="M250 200 Q330 330 400 430"/><path d="M400 190 Q400 310 400 430"/><path d="M550 200 Q470 330 400 430"/></g>}
+    {miVeil(400,150,"#3BA7A0","#5FD3C9")}
+    {/* sélecteur de voix (bande centrale, mobile-safe) */}
+    <g role="button" tabIndex={0} aria-label="prev" onClick={()=>setVi((vi+4)%5)} style={{cursor:"pointer"}}><circle cx="272" cy="232" r="17" fill="rgba(7,32,30,.7)" stroke="rgba(95,211,201,.4)"/><text x="272" y="238" fontSize="16" fill="#fff" textAnchor="middle">‹</text></g>
+    <g role="button" tabIndex={0} aria-label="next" onClick={()=>setVi((vi+1)%5)} style={{cursor:"pointer"}}><circle cx="528" cy="232" r="17" fill="rgba(7,32,30,.7)" stroke="rgba(95,211,201,.4)"/><text x="528" y="238" fontSize="16" fill="#fff" textAnchor="middle">›</text></g>
+    <g><rect x="298" y="206" width="204" height="56" rx="14" fill="rgba(7,32,30,.92)" stroke="#FFD884" strokeWidth="1.3"/><text x="400" y="228" fontSize="13.5" fontWeight="800" fill="#FFD884" textAnchor="middle">{v.e+" "+v.n}</text><text x="400" y="248" fontSize="10.5" fill="rgba(255,255,255,.85)" textAnchor="middle">{v.s.length>52?v.s.slice(0,50)+"…":v.s}</text></g>
+    <text x="400" y="288" fontSize="10" fill="rgba(255,255,255,.5)" textAnchor="middle">{(vi+1)+"/5 · "+T("‹ › les 5 regards","‹ › the 5 views","‹ › las 5 miradas")}</text>
+    {/* vote 2×2 (safe band) ou résultat */}
+    {!voted
+      ? <g><text x="400" y="430" fontSize="13.5" fontWeight="800" fill="#fff" textAnchor="middle">{T("Toi, où doit aller l'argent ?","You — where should the money go?","¿A dónde va el dinero?")}</text>
+          {O.map((o,i)=>{const cx=i%2===0?336:464,cy=i<2?458:494;return(<g key={i} transform={"translate("+cx+","+cy+")"} role="button" tabIndex={0} aria-label={o} onClick={()=>vote(i)} style={{cursor:"pointer"}}><rect x="-62" y="-13" width="124" height="28" rx="9" fill="rgba(255,255,255,.08)" stroke="#5FD3C9" strokeWidth="1.1"/><text x="0" y="5" fontSize="10.5" fontWeight="700" fill="#fff" textAnchor="middle">{o}</text></g>)})}
+        </g>
+      : <g><text x="400" y="426" fontSize="12.5" fontWeight="800" fill="#FFD884" textAnchor="middle">{T("Le quartier a voté — l'argent suit la donnée :","The community voted — money follows data:","La comunidad votó:")}</text>
+          {O.map((o,i)=>{const pct=Math.round(100*(votes[i]||0)/tot),y=444+i*19;return(<g key={i} transform={"translate(290,"+y+")"}><text x="0" y="9" fontSize="10" fill="rgba(255,255,255,.85)" textAnchor="end">{o}</text><rect x="8" y="0" width="170" height="11" rx="5.5" fill="rgba(255,255,255,.1)"/><rect x="8" y="0" width={Math.max(5,170*pct/100)} height="11" rx="5.5" fill="#5FD3C9"/><text x="186" y="9" fontSize="10" fontWeight="700" fill="#5FD3C9">{pct+"%"}</text></g>)})}
+        </g>}
+  </g>)
+}
 function solutionsBeats(lang){
   const T=(fr,en,es)=>_t(lang,fr,en,es)
   const SKY=id=>(<linearGradient id={id} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0A1714"/><stop offset=".5" stopColor="#155A5A"/><stop offset=".84" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/></linearGradient>)
@@ -563,17 +607,21 @@ function solutionsBeats(lang){
     {eyebrow:T("ON TRANSFORME","WE TRANSFORM","TRANSFORMAMOS"),heading:T("Le problème devient ressource","The problem becomes a resource","El problema se vuelve recurso"),
       sub:T("Engrais, briques, biochar, bioplastique, papier — et de l'énergie (biogaz). Captée fraîche, elle évite aussi le méthane qu'elle dégage en pourrissant (28× plus réchauffant que le CO₂).","Fertilizer, bricks, biochar, bioplastic, paper — and energy (biogas). Caught fresh, it also avoids the methane it releases when rotting (28× worse than CO₂).","Abono, ladrillos, biochar, bioplástico, papel — y energía (biogás). Recogida fresca evita el metano (28× peor que el CO₂)."),
       scene:<SolTransformScene lang={lang}/>},
-    // 5 — ESPOIR + SORTIE (escapable, jamais infernal)
+    // 6 — LE DÉBAT : main d'œuvre / aides / argent (5 voix + vote)
+    {eyebrow:T("LE DÉBAT","THE DEBATE","EL DEBATE"),heading:T("Qui ramasse ? Où va l'argent ?","Who collects? Where's the money?","¿Quién recoge? ¿A dónde va el dinero?"),
+      sub:T("Habitant, tourisme, collectivité, recycleur, financier : 5 regards sur la même plage. Pas « qui a raison » mais « que finance-t-on ? ». La donnée satellite dit où ramasser — touche les 5 voix, puis vote.","Resident, tourism, public, recycler, funder: 5 views on the same beach. Not who's right but what we fund. Tap the 5 voices, then vote.","Vecino, turismo, municipio, reciclador, financiero: 5 miradas. Toca las 5 voces y vota."),
+      scene:<SolDebateScene lang={lang}/>},
+    // 7 — ESPOIR + SORTIE (escapable, jamais infernal)
     {eyebrow:T("MAINTENANT","NOW","AHORA"),heading:T("Vue, arrêtée, transformée","Seen, stopped, transformed","Vista, detenida, transformada"),
       sub:T("Vue de l'espace, arrêtée en mer, ramassée à temps, transformée en ressource. Le Veilleur garde un œil — toi, va profiter de la plage.","Seen from space, stopped at sea, collected in time, turned into a resource. The Watchman keeps an eye — you, go enjoy the beach.","Vista desde el espacio, detenida, transformada. El Vigía vigila — tú, ve a la playa."),
       cta:T("Sortir & voir les plages →","Exit & see the beaches →","Salir y ver las playas →"),
       scene:<g><defs>{SKY("sol5s")}{SEA("sol5")}</defs><rect width="800" height="360" fill="url(#sol5s)"/>
         <path d="M340 230 a60 60 0 0 1 120 0 Z" fill="#FFD884"/>
-        <g style={{opacity:"calc(.5 + var(--p6)*.5)"}}>{[-52,-26,0,26,52].map((a,i)=>(<path key={i} d="M400 230 L391 90 L409 90 Z" fill="#FFD884" opacity=".1" transform={"rotate("+a+" 400 230)"}/>))}</g>
+        <g style={{opacity:"calc(.5 + var(--p7)*.5)"}}>{[-52,-26,0,26,52].map((a,i)=>(<path key={i} d="M400 230 L391 90 L409 90 Z" fill="#FFD884" opacity=".1" transform={"rotate("+a+" 400 230)"}/>))}</g>
         <rect y="360" width="800" height="240" fill="url(#sol5)"/>
         <line x1="-40" y1="392" x2="840" y2="392" stroke="#FFD884" strokeWidth="2.2" strokeDasharray="3 13" opacity=".5"/>
         <path d="M250 500 Q400 478 560 498 L820 492 L820 620 L250 620 Z" fill="#C9A86A"/>
-        <g style={{transform:"translateY(calc(var(--p6)*-10px))"}}>{miVeil(400,150,"#3BA7A0","#5FD3C9")}</g>
+        <g style={{transform:"translateY(calc(var(--p7)*-10px))"}}>{miVeil(400,150,"#3BA7A0","#5FD3C9")}</g>
       </g>},
   ]
 }
