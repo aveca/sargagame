@@ -106,6 +106,35 @@ const C={
   night:"#0D1E1C",night2:"#0A1714",ocean:"#014F86",
 }
 
+/* ═══ SOCLE DESIGN (LOT 0 consolidation 14/06) — source de vérité golden-hour.
+   Additif : étend C + tokens partagés. Aucun consommateur au LOT 0 (0 risque
+   visuel) ; les écrans s'y branchent aux LOTs suivants. NB: clé 'inkD' (PAS
+   'ink' — C.ink='#0D0D0D' déjà utilisé sur surfaces claires) ; 'RAD' (PAS 'R' —
+   shadow du rayon haversine). Voir memory reference_refonte_screens.md. ═══ */
+Object.assign(C,{
+  inkD:"#0A1714",card2:"#10231E",
+  orCTA:"#FFC72C",orLink:"#E8A800",orPale:"#FFE08A",orGlit:"#FFD884",
+  tealS:"#3BA7A0",tealL2:"#5FD3C9",
+  seaD:"#08251F",seaM:"#1A5852",skyInk:"#0B2230",
+  sargD:"#5d400e",sargM:"#7a5c14",sargL2:"#8a6c1c",sargV:"#a8862a",
+  stClean:"#22C55E",stMod:"#F59E0B",stAvoid:"#E8522A",stAvoidL:"#F4845F",
+  gradClean:["#22C55E","#16A34A"],gradMod:["#F59E0B","#B87A00"],gradAvoid:["#E8522A","#B83A1A"],
+  satBody:"#C9971F",satTop:"#FFC72C",satWing:"#3BA7A0",moonCol:"#9ADCD4",
+})
+const TY={
+  title:{fontFamily:"'Anton',sans-serif",fontWeight:400,letterSpacing:".01em",textTransform:"uppercase"},
+  ui:{fontFamily:"'Bricolage Grotesque',system-ui,sans-serif"},
+  mono:{fontFamily:"ui-monospace,SFMono-Regular,'JetBrains Mono',monospace"},
+  wordmark:{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:13,letterSpacing:".14em",textTransform:"uppercase"},
+}
+const RAD={sm:10,md:14,lg:16,xl:18,pill:999}
+const SPRING={pop:"cubic-bezier(.34,1.56,.64,1)",snap:"cubic-bezier(.175,.885,.32,1.275)",sheet:"cubic-bezier(.32,.72,.33,1)"}
+// Score-blob squircle (viewBox 800×600, centré 400,306) — partagé GameFunnel/fiche/share-card
+const SG_BLOB_OUTER="M400 216 C442 216 494 268 494 306 C494 348 442 396 400 396 C358 396 306 348 306 306 C306 268 358 216 400 216 Z"
+const SG_BLOB_INNER="M400 232 C436 232 478 270 478 306 C478 344 436 380 400 380 C364 380 322 344 322 306 C322 270 364 232 400 232 Z"
+const SG_BLOB_SCORE_Y=318
+const SG_BLOB_LEGEND_Y=346
+
 const ST={
   _loading:{c:"#666",bg:"rgba(100,100,100,.1)",l:"Chargement…",le:"Loading…",les:"Cargando…",e:"⏳",h2s:false,
     desc:"Données en cours de chargement…",descEn:"Loading data…",descEs:"Cargando datos…"},
