@@ -479,7 +479,7 @@ function solutionsBeats(lang){
   return[
     // 0 — LE PROBLÈME : la ceinture atlantique qui dérive
     {eyebrow:T("LE PROBLÈME","THE PROBLEM","EL PROBLEMA"),heading:T("Une ceinture de 8 000 km","An 8,000 km belt","Un cinturón de 8.000 km"),
-      sub:T("Depuis 2011, une marée d'algues traverse l'Atlantique, de l'Afrique aux Caraïbes — des millions de tonnes chaque année.","Since 2011 a tide of algae crosses the Atlantic, from Africa to the Caribbean — millions of tonnes every year.","Desde 2011 una marea de algas cruza el Atlántico — millones de toneladas al año."),
+      sub:T("Depuis 2011, une marée d'algues traverse l'Atlantique, de l'Afrique aux Caraïbes. En 2025, un record : 38 millions de tonnes — le double de 2022.","Since 2011 a tide of algae crosses the Atlantic, Africa to the Caribbean. In 2025 a record: 38 million tonnes — double 2022.","Desde 2011 una marea cruza el Atlántico. En 2025 un récord: 38 millones de toneladas — el doble que 2022."),
       scene:<g><defs>{SKY("sol0")}</defs><rect width="800" height="600" fill="url(#sol0)"/>
         <ellipse cx="400" cy="320" rx="320" ry="170" fill="#0E2A26" opacity=".55"/>
         <g style={{transform:"translateX(calc(var(--p0)*70px - 35px))"}}>{[200,258,316,374,432,490,548,606].map((x,i)=>(<ellipse key={i} cx={x} cy={310+Math.sin(i*1.3)*16} rx="24" ry="8.5" fill="#8a6c1c" opacity=".82"/>))}</g>
@@ -489,7 +489,7 @@ function solutionsBeats(lang){
       </g>},
     // 1 — ON VOIT TOUT : le satellite scanne (notre moat)
     {eyebrow:T("ON VOIT TOUT","WE SEE IT ALL","LO VEMOS TODO"),heading:T("Lue depuis l'espace","Read from space","Leída desde el espacio"),
-      sub:T("Le Veilleur lit l'indice AFAI des satellites et prévoit l'échouage à la plage — vérifié 80% juste sur 30 jours.","The Watchman reads the satellites' AFAI index and forecasts beaching — verified 80% accurate over 30 days.","El Vigía lee el índice AFAI y predice la varazón — 80% exacto en 30 días."),
+      sub:T("Le Veilleur lit l'indice AFAI des satellites (NASA/Copernicus) et prévient ta plage 2 à 5 jours avant l'arrivée — vérifié 80% juste sur 30 jours.","The Watchman reads the satellites' AFAI index (NASA/Copernicus) and warns your beach 2-5 days ahead — verified 80% accurate over 30 days.","El Vigía lee el índice AFAI (NASA/Copernicus) y avisa tu playa 2-5 días antes — 80% exacto en 30 días."),
       scene:<g><defs>{SEA("sol1")}</defs><rect width="800" height="600" fill="#06121A"/>
         {[[120,90],[300,70],[520,110],[680,80],[420,150],[600,180]].map((s,i)=>(<circle key={i} cx={s[0]} cy={s[1]} r="1.3" fill="#fff" opacity=".5"/>))}
         <rect y="360" width="800" height="240" fill="url(#sol1)"/>
@@ -500,7 +500,7 @@ function solutionsBeats(lang){
       </g>},
     // 2 — ON ARRÊTE EN MER : barrages flottants + bateau collecteur
     {eyebrow:T("ON AGIT EN MER","WE ACT AT SEA","ACTUAMOS EN EL MAR"),heading:T("Stopper avant la plage","Stop it before the beach","Detenerla antes de la playa"),
-      sub:T("Des barrages flottants dévient l'algue, des bateaux la collectent au large — avant qu'elle touche le sable et libère son odeur.","Floating booms divert the algae, boats collect it offshore — before it hits the sand and releases its smell.","Barreras flotantes desvían el alga y barcos la recogen mar adentro."),
+      sub:T("Des barrages flottants dévient l'algue, des bateaux la collectent au large. En 2025, le Mexique a posé 9 630 m de barrages et collecté 92 783 tonnes — avant le sable, avant l'odeur.","Floating booms divert the algae, boats collect it offshore. In 2025 Mexico laid 9,630 m of booms and collected 92,783 tonnes — before the sand, before the smell.","Barreras flotantes desvían el alga; barcos la recogen mar adentro. México: 9.630 m de barreras y 92.783 t en 2025."),
       scene:<g><defs>{SKY("sol2s")}{SEA("sol2")}</defs><rect width="800" height="360" fill="url(#sol2s)"/>
         <path d="M348 250 a52 52 0 0 1 104 0 Z" fill="#FFD884" opacity=".85"/>
         <rect y="360" width="800" height="240" fill="url(#sol2)"/>
@@ -524,7 +524,7 @@ function solutionsBeats(lang){
       </g>},
     // 4 — LE PROBLÈME DEVIENT RESSOURCE : recyclage + carburant
     {eyebrow:T("ON TRANSFORME","WE TRANSFORM","TRANSFORMAMOS"),heading:T("Le problème devient ressource","The problem becomes a resource","El problema se vuelve recurso"),
-      sub:T("Engrais, briques de construction, bioplastique, papier — et même de l'énergie : la méthanisation transforme l'algue en biogaz.","Fertilizer, building blocks, bioplastic, paper — and even energy: anaerobic digestion turns the algae into biogas.","Fertilizante, ladrillos, bioplástico, papel — y energía: el sargazo se vuelve biogás."),
+      sub:T("Engrais, briques, biochar, bioplastique, papier — et de l'énergie (biogaz). Captée fraîche, elle évite aussi le méthane qu'elle dégage en pourrissant (28× plus réchauffant que le CO₂).","Fertilizer, bricks, biochar, bioplastic, paper — and energy (biogas). Caught fresh, it also avoids the methane it releases when rotting (28× worse than CO₂).","Abono, ladrillos, biochar, bioplástico, papel — y energía (biogás). Recogida fresca evita el metano (28× peor que el CO₂)."),
       scene:<SolTransformScene lang={lang}/>},
     // 5 — ESPOIR + SORTIE (escapable, jamais infernal)
     {eyebrow:T("MAINTENANT","NOW","AHORA"),heading:T("Vue, arrêtée, transformée","Seen, stopped, transformed","Vista, detenida, transformada"),
