@@ -158,7 +158,7 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
     // Voyager base (free, no key) — turquoise sea + verdant land, "vacation feel"
     // vs the old satellite which read as "Google Maps dark" and killed the tropical mood.
     L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",{
-      maxZoom:19,subdomains:"abcd",
+      maxZoom:19,subdomains:"abcd",className:"sg-warm-tiles",
       attribution:"© OpenStreetMap © CARTO",
     }).addTo(map)
     // Bump zoomTick on zoomend only (not moveend: pixel-spacing is zoom-invariant under pan).
@@ -542,7 +542,7 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
       const opacity=isEmph?1:.9
       const hit=Math.max(inner,38) // ≥38px tappable hit zone
       const cls=`sg-pin${isNearest?" sg-pin-nearest":""}${isSelected?" sg-pin-selected":""}`
-      const html=`<div style="width:${hit}px;height:${hit}px;display:flex;align-items:center;justify-content:center;cursor:pointer"><div class="${cls}" style="width:${inner}px;height:${inner}px;border-radius:50%;background:${bg};color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:${fontSize}px;font-weight:800;letter-spacing:-.3px;border:${border};${ring}transform:${scale};transition:transform .15s ease;opacity:${opacity}">${label}</div></div>`
+      const html=`<div style="width:${hit}px;height:${hit}px;display:flex;align-items:center;justify-content:center;cursor:pointer"><div class="${cls}" style="width:${inner}px;height:${inner}px;border-radius:50%;background-color:${bg};color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:${fontSize}px;font-weight:800;letter-spacing:-.3px;border:${border};${ring}transform:${scale};transition:transform .15s ease;opacity:${opacity}">${label}</div></div>`
       const size=hit
       const icon=L.divIcon({className:"",html,iconSize:[size,size],iconAnchor:[size/2,size/2]})
       const marker=L.marker([b.lat,b.lng],{icon,riseOnHover:true,zIndexOffset:isSelected?1000:(isEmph?500:200)})
@@ -782,6 +782,10 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
   if(mapError)return <div style={{padding:40,color:"red"}}>{mapError}</div>
   return(<div style={{position:"relative",width:"100%",height:"100%"}}>
     <div ref={containerRef} style={{width:"100%",height:"100%"}}/>
+    {/* Branding golden-hour : tuiles Voyager réchauffées (conservateur, reste
+        lisible) + gloss candy sur les pins (statut/couleur conservés). */}
+    <style>{`.sg-warm-tiles{filter:sepia(.16) saturate(1.18) hue-rotate(-7deg) brightness(1.03)}
+.sg-pin{background-image:radial-gradient(circle at 36% 28%,rgba(255,255,255,.5),rgba(255,255,255,0) 62%)}`}</style>
 
     {/* Caribbean View Toggle Button */}
     <button onClick={toggleCaribbean} className="sg-carib-btn" title={caribbeanMode?tl.localView:tl.caribbeanView} aria-label={caribbeanMode?tl.localView:tl.caribbeanView} style={{
