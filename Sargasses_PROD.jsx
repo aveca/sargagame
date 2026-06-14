@@ -289,11 +289,15 @@ function StoryEngine({beats,lang,accent="#FFC72C",ev="sg_engine_beat",onCTA}){
       const vh=window.innerHeight||1
       const total=Math.max(1,r.height-vh)
       const p=Math.max(0,Math.min(1,-r.top/total))
+      st.setProperty("--gp",p.toFixed(4))
       const span=N>1?1/(N-1):1
       for(let i=0;i<N;i++){
         const c=N>1?i/(N-1):.5
         const o=Math.max(0,Math.min(1,1-Math.abs(p-c)/(span*.85)))
         st.setProperty(`--e${i}`,o.toFixed(3))
+        // progression INTERNE du beat i (0→1 quand on le traverse) → anime la
+        // scène pendant le scroll (l'« enchaînement des animations » de l'accueil).
+        st.setProperty(`--p${i}`,Math.max(0,Math.min(1,p*(N-1)-(i-.5))).toFixed(3))
       }
       const b=Math.max(0,Math.min(N-1,Math.round(p*(N-1))))
       const vis=r.top<vh&&r.bottom>0
@@ -305,8 +309,8 @@ function StoryEngine({beats,lang,accent="#FFC72C",ev="sg_engine_beat",onCTA}){
     upd()
     return()=>{document.removeEventListener("scroll",onScroll,{capture:true});window.removeEventListener("resize",onScroll);if(raf)cancelAnimationFrame(raf)}
   },[N,rm])
-  const baseVars={}
-  for(let i=0;i<N;i++)baseVars[`--e${i}`]=(beat===i?1:0)
+  const baseVars={"--gp":(N>1?beat/(N-1):0)}
+  for(let i=0;i<N;i++){baseVars[`--e${i}`]=(beat===i?1:0);baseVars[`--p${i}`]=(i<beat?1:i===beat?.5:0)}
   const last=beats[N-1]
   return(
     <section ref={boxRef} aria-label={beats[0]&&beats[0].heading} style={{position:"relative",height:rm?"auto":`${Math.max(2,N)*100}vh`,background:"#0A1714",...baseVars}}>
