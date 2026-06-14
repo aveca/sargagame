@@ -250,6 +250,95 @@ function BeachScene({beach}){
   )
 }
 
+// ── StoryEngine — LE MOTEUR (directive 14/06 : « un moteur landing/page/scroll/
+//    explication/jeu/découverte à travers l'UI pour scaler la home partout »).
+//    Mécanique scrollytelling éprouvée (issue de ScrollStory : sticky golden-hour,
+//    scroll→opacités de beats pilotées par l'ÉTAT (jamais vide), CSS auto-contenue,
+//    capture sur document, analytics par beat). GÉNÉRIQUE sur une config `beats` :
+//    chaque surface = une config, plus de recodage. ────────────────────────────
+function StoryEngine({beats,lang,accent="#FFC72C",ev="sg_engine_beat",onCTA}){
+  const boxRef=useRef(null)
+  const [beat,setBeat]=useState(0)
+  const beatRef=useRef(-1)
+  const [rm]=useState(()=>{try{return window.matchMedia("(prefers-reduced-motion: reduce)").matches}catch(_){return false}})
+  const N=Math.max(1,beats.length)
+  useEffect(()=>{
+    const box=boxRef.current;if(!box)return
+    const st=box.style
+    if(rm){for(let i=0;i<N;i++)st.setProperty(`--e${i}`,i===N-1?"1":"0");setBeat(N-1);return}
+    let raf=0
+    const upd=()=>{
+      raf=0
+      const r=box.getBoundingClientRect()
+      const vh=window.innerHeight||1
+      const total=Math.max(1,r.height-vh)
+      const p=Math.max(0,Math.min(1,-r.top/total))
+      const span=N>1?1/(N-1):1
+      for(let i=0;i<N;i++){
+        const c=N>1?i/(N-1):.5
+        const o=Math.max(0,Math.min(1,1-Math.abs(p-c)/(span*.85)))
+        st.setProperty(`--e${i}`,o.toFixed(3))
+      }
+      const b=Math.max(0,Math.min(N-1,Math.round(p*(N-1))))
+      const vis=r.top<vh&&r.bottom>0
+      if(vis&&b!==beatRef.current){beatRef.current=b;setBeat(b);try{track(ev,{b:b+1,n:N})}catch(_){}}
+    }
+    const onScroll=()=>{if(!raf)raf=requestAnimationFrame(upd)}
+    document.addEventListener("scroll",onScroll,{passive:true,capture:true})
+    window.addEventListener("resize",onScroll)
+    upd()
+    return()=>{document.removeEventListener("scroll",onScroll,{capture:true});window.removeEventListener("resize",onScroll);if(raf)cancelAnimationFrame(raf)}
+  },[N,rm])
+  const baseVars={}
+  for(let i=0;i<N;i++)baseVars[`--e${i}`]=(beat===i?1:0)
+  const last=beats[N-1]
+  return(
+    <section ref={boxRef} aria-label={beats[0]&&beats[0].heading} style={{position:"relative",height:rm?"auto":`${Math.max(2,N)*100}vh`,background:"#0A1714",...baseVars}}>
+      <style>{`.se-vp{height:100vh}@supports(height:100svh){.se-vp{height:100svh}}`}</style>
+      <div className="se-vp" style={{position:rm?"relative":"sticky",top:0,overflow:"hidden",background:"#0A1714",height:rm?"min(82vh,640px)":undefined}}>
+        <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block"}}>
+          {beats.map((bt,i)=>(<g key={i} style={{opacity:`var(--e${i})`}}>{bt.scene}</g>))}
+        </svg>
+        <div style={{position:"absolute",left:0,right:0,bottom:0,top:0,pointerEvents:"none"}}>
+          {beats.map((bt,i)=>(
+            <div key={i} style={{position:"absolute",left:0,right:0,bottom:0,padding:"0 22px calc(36px + env(safe-area-inset-bottom))",opacity:`var(--e${i})`}}>
+              <div style={{maxWidth:560,margin:"0 auto"}}>
+                {bt.eyebrow&&<div style={{fontSize:11,fontWeight:700,letterSpacing:".16em",color:accent,textTransform:"uppercase",marginBottom:8}}>{bt.eyebrow}</div>}
+                <h2 className="anton" style={{fontWeight:400,fontSize:"clamp(26px,6.6vw,42px)",lineHeight:1.02,textTransform:"uppercase",margin:0,color:"#fff"}}>{bt.heading}</h2>
+                {bt.sub&&<p style={{fontSize:14,color:"rgba(255,255,255,.74)",marginTop:10,lineHeight:1.5,maxWidth:440}}>{bt.sub}</p>}
+                {i===N-1&&onCTA&&last&&last.cta&&<button onClick={onCTA} style={{pointerEvents:"auto",marginTop:18,cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:16,color:"#0A1714",border:"none",borderRadius:16,padding:"15px 26px",background:"linear-gradient(135deg,#FFE08A,#FFC72C)",boxShadow:"0 8px 24px rgba(255,199,44,.32)"}}>{last.cta}</button>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+// Config DÉCOUVERTE (éducatif SVG, « svg simple propriétaire instructif » :
+// la grande ceinture → la dérive → l'échouage/H2S → les solutions recyclage/tri).
+function discoveryBeats(lang){
+  const T=(fr,en,es)=>_t(lang,fr,en,es)
+  return[
+    {eyebrow:T("LA SOURCE","THE SOURCE","EL ORIGEN"),heading:T("Une ceinture de 8000 km","An 8,000 km belt","Un cinturón de 8000 km"),sub:T("Chaque année, une nappe d'algues traverse l'Atlantique, de l'Afrique aux Caraïbes.","Every year a raft of seaweed crosses the Atlantic, from Africa to the Caribbean.","Cada año una masa de algas cruza el Atlántico, de África al Caribe."),
+      scene:<><rect width="800" height="600" fill="#06211E"/><circle cx="400" cy="300" r="240" fill="#0A2E2A"/><circle cx="400" cy="300" r="240" fill="none" stroke="#1A5852" strokeWidth="2"/><path d="M170 380 Q400 300 630 360" fill="none" stroke="#7a5c14" strokeWidth="22" strokeLinecap="round" opacity=".85"/><path d="M170 380 Q400 300 630 360" fill="none" stroke="#a8862a" strokeWidth="8" strokeLinecap="round" strokeDasharray="4 14" opacity=".7"/><text x="246" y="372" fontFamily="ui-monospace,monospace" fontSize="12" fill="#9FE1CB">Afrique</text><text x="560" y="348" fontFamily="ui-monospace,monospace" fontSize="12" fill="#9FE1CB">Caraïbes</text></>},
+    {eyebrow:T("LA DÉRIVE","THE DRIFT","LA DERIVA"),heading:T("Le vent décide","The wind decides","El viento decide"),sub:T("Courants et alizés poussent les bancs vers certaines plages — pas toutes, pas en même temps.","Currents and trade winds push the rafts onto some beaches — not all, not at once.","Las corrientes y los vientos empujan los bancos a ciertas playas."),
+      scene:<><rect width="800" height="600" fill="url(#bscSea)"/><rect width="800" height="600" fill="#0A2E2A"/>{[160,260,360].map((y,i)=>(<path key={i} d={`M-40 ${y} q60 -16 120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0`} fill="none" stroke="#3BA7A0" strokeWidth="2" opacity=".4"/>))}<g><path d="M120 250 L520 250" stroke="#FFC72C" strokeWidth="2" strokeDasharray="6 8" opacity=".7"/><path d="M520 250 l-16 -8 0 16 Z" fill="#FFC72C"/></g><g transform="translate(150,250)"><ellipse rx="26" ry="9" fill="#7a5c14"/><ellipse cx="-12" cy="-4" rx="11" ry="5" fill="#8a6c1c"/></g><g transform="translate(560,420)"><path d="M-40 0 Q200 -30 430 0 L430 180 L-40 180 Z" fill="#1C1712"/></g></>},
+    {eyebrow:T("LE RISQUE","THE RISK","EL RIESGO"),heading:T("En décomposition, ça pique","Rotting, it stings","Al descomponerse, irrita"),sub:T("Les algues échouées libèrent du H2S (odeur d'œuf). On surveille pour t'éviter ça.","Stranded seaweed releases H2S (egg smell). We watch so you avoid it.","Las algas varadas liberan H2S (olor a huevo). Vigilamos para evitártelo."),
+      scene:<><rect width="800" height="600" fill="#0B2230"/><rect y="300" width="800" height="300" fill="#1C1712"/><g transform="translate(400,330)"><ellipse rx="180" ry="34" fill="#5d400e"/><ellipse cx="-90" cy="-12" rx="60" ry="20" fill="#7a5c14"/><ellipse cx="80" cy="-10" rx="70" ry="22" fill="#6b4a12"/></g><g fill="#CC28FF" opacity=".55"><circle cx="330" cy="280" r="4"/><circle cx="360" cy="250" r="3"/><circle cx="430" cy="262" r="3.5"/><circle cx="470" cy="238" r="2.6"/></g><text x="400" y="250" textAnchor="middle" fontFamily="'Anton',sans-serif" fontSize="20" fill="#CC28FF">H₂S</text></>},
+    {eyebrow:T("LES SOLUTIONS","THE SOLUTIONS","LAS SOLUCIONES"),heading:T("Barrer, récolter, recycler","Block, collect, recycle","Frenar, recoger, reciclar"),sub:T("Barrages flottants, ramassage rapide, et valorisation : engrais, bioplastique, énergie.","Floating booms, fast collection, and reuse: fertiliser, bioplastic, energy.","Barreras, recogida rápida y reciclaje: abono, bioplástico, energía."),cta:T("Voir ma plage du jour →","See my beach today →","Ver mi playa de hoy →"),
+      scene:<><rect width="800" height="600" fill="#06211E"/><rect y="320" width="800" height="280" fill="#1A5852" opacity=".5"/><g><circle cx="170" cy="320" r="10" fill="#FFC72C"/><circle cx="230" cy="320" r="10" fill="#FFC72C"/><circle cx="290" cy="320" r="10" fill="#FFC72C"/><circle cx="350" cy="320" r="10" fill="#FFC72C"/><line x1="160" y1="332" x2="360" y2="332" stroke="#E8A800" strokeWidth="3"/></g><g transform="translate(470,300)"><path d="M-30 20 L30 20 L22 36 L-22 36 Z" fill="#16282C" stroke="#FFC72C" strokeWidth="1.5"/><rect x="-8" y="-6" width="16" height="26" rx="2" fill="#3BA7A0"/></g><g transform="translate(620,360)"><path d="M0 -26 A26 26 0 1 1 -18 44" fill="none" stroke="#22C55E" strokeWidth="6"/><path d="M-18 30 l0 16 l16 -4 Z" fill="#22C55E"/></g><text x="620" y="368" textAnchor="middle" fontFamily="'Anton',sans-serif" fontSize="13" fill="#9FE1CB">RE</text></>},
+  ]
+}
+function DiscoveryStory({lang,onClose,onShowMap}){
+  return(
+    <div role="dialog" aria-label={_t(lang,"Comprendre les sargasses","Understand sargassum","Entender el sargazo")} style={{position:"absolute",inset:0,zIndex:1060,background:"#0A1714",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
+      <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"fixed",top:"calc(12px + env(safe-area-inset-top))",right:12,zIndex:30,width:42,height:42,borderRadius:21,background:"rgba(10,23,20,.55)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:16,cursor:"pointer"}}>✕</button>
+      <StoryEngine beats={discoveryBeats(lang)} lang={lang} ev="sg_discovery_beat" onCTA={onShowMap}/>
+    </div>
+  )
+}
+
 const ST={
   _loading:{c:"#666",bg:"rgba(100,100,100,.1)",l:"Chargement…",le:"Loading…",les:"Cargando…",e:"⏳",h2s:false,
     desc:"Données en cours de chargement…",descEn:"Loading data…",descEs:"Cargando datos…"},
@@ -8137,6 +8226,8 @@ export default function App(){
         &&!sessionStorage.getItem("sg_hero_seen")
     }catch(_){return false}
   })
+  // Découverte éducative (StoryEngine). Gate URL ?decouverte=1 pour QA ; entrée UI dédiée.
+  const[showDiscovery,setShowDiscovery]=useState(()=>{try{return /[?&]decouverte=1/.test(window.location.search)}catch(_){return false}})
   // Bras A/B du landing : control = HeroVerdict (éprouvé), game = GameFunnel
   // (funnel-jeu immersif, tranche verticale 13/06). Mesuré contre le landing
   // prouvé, jamais imposé ; ?lf=game force en QA. La conversion (paywall/trial/
@@ -9006,6 +9097,16 @@ export default function App(){
         )}
         {showChat&&<SargaChat lang={lang} allBeaches={allBeaches} island={island} sargData={sargData}
           onOpenBeach={onBeachClick} onPremium={()=>openPremium("chat")} onClose={()=>setShowChat(false)}/>}
+
+        {/* DÉCOUVERTE — moteur StoryEngine (éducatif SVG). Entrée chip + overlay. */}
+        {!showHero&&!showPremium&&!showChat&&!showDiscovery&&!selectedBeach&&view==="map"&&(
+          <button onClick={()=>{setShowDiscovery(true);track("sg_discovery_open",{})}} aria-label={_t(lang,"Comprendre les sargasses","Understand sargassum","Entender el sargazo")}
+            style={{position:"fixed",right:14,bottom:"calc(220px + env(safe-area-inset-bottom))",zIndex:960,
+              width:46,height:46,borderRadius:"50%",background:"#0D1E1C",border:"1.5px solid rgba(63,167,160,.6)",
+              fontSize:18,cursor:"pointer",boxShadow:"0 6px 20px rgba(0,0,0,.4)",display:"flex",alignItems:"center",justifyContent:"center",
+              animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>🛰️</button>
+        )}
+        {showDiscovery&&<DiscoveryStory lang={lang} onClose={()=>setShowDiscovery(false)} onShowMap={()=>setShowDiscovery(false)}/>}
 
         {/* REFERRAL LANDING BANNER — hidden if Welcome toast is showing to avoid overlap */}
         {showReferralBanner&&!showWelcome&&(
