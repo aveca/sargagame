@@ -449,6 +449,29 @@ function DiscoveryStory({lang,onClose,onShowMap}){
 //    problème global → on voit (satellite) → on agit (barrages+ramassage) → on
 //    transforme (recyclage+carburant) → on sort (escapable, jamais infernal).
 //    Scrollytelling via StoryEngine. Faits sûrs en v1, enrichis par recherche.
+// Scène INTERACTIVE (clic) du beat transformation : touche une ressource -> un fait.
+function SolTransformScene({lang}){
+  const T=(fr,en,es)=>_t(lang,fr,en,es)
+  const[sel,setSel]=useState(null)
+  const items=[
+    {e:"🌱",x:230,y:210,l:T("Engrais","Fertilizer","Abono"),f:T("Riche en potassium : il nourrit les sols agricoles.","Potassium-rich: it feeds farm soils.","Rico en potasio: nutre los suelos.")},
+    {e:"🧱",x:400,y:182,l:T("Briques","Bricks","Ladrillos"),f:T("Sargablock : de vraies maisons bâties au Mexique.","Sargablock: real houses built in Mexico.","Sargablock: casas reales en México.")},
+    {e:"⚡",x:570,y:210,l:T("Biogaz","Biogas","Biogás"),f:T("Méthanisation : l'algue devient électricité.","Anaerobic digestion: the algae becomes electricity.","Digestión: el alga se vuelve electricidad.")},
+    {e:"📄",x:312,y:392,l:T("Papier","Paper","Papel"),f:T("Ses fibres font papier et carton.","Its fibres make paper and card.","Sus fibras hacen papel y cartón.")},
+    {e:"🧴",x:488,y:392,l:T("Bioplastique","Bioplastic","Bioplástico"),f:T("Des emballages compostables.","Compostable packaging.","Envases compostables.")},
+  ]
+  return(<g><defs><linearGradient id="sol4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0A1714"/><stop offset=".5" stopColor="#155A5A"/><stop offset=".84" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/></linearGradient></defs>
+    <rect width="800" height="600" fill="url(#sol4)"/>
+    <g transform="translate(400,300)"><ellipse rx="46" ry="16" fill="#6b7a1c" style={{opacity:"calc(1 - var(--p4)*.7)"}}/></g>
+    {items.map((o,i)=>(
+      <g key={i} transform={"translate("+o.x+","+o.y+")"} role="button" tabIndex={0} aria-label={o.l} onClick={()=>setSel(sel===i?null:i)} style={{cursor:"pointer",opacity:"calc(var(--p4)*1.4 - "+(i*0.16)+")",transformBox:"fill-box",transformOrigin:"center"}}>
+        <circle r="34" fill="#0E2A26" stroke={sel===i?"#FFD884":"#5FD3C9"} strokeWidth={sel===i?2.6:1.4}/><text y="10" fontSize="30" textAnchor="middle">{o.e}</text><text y="56" fontFamily="ui-monospace,monospace" fontSize="12" fill="#9FE1CB" textAnchor="middle">{o.l}</text>
+      </g>))}
+    {sel==null
+      ? <text x="400" y="104" fontFamily="ui-monospace,monospace" fontSize="13" fill="#5FD3C9" textAnchor="middle" style={{opacity:"var(--p4)"}}>👆 {T("touche une ressource","tap a resource","toca un recurso")}</text>
+      : <g><rect x="120" y="70" width="560" height="62" rx="14" fill="rgba(7,32,30,.94)" stroke="#FFD884" strokeWidth="1.4"/><text x="400" y="97" fontFamily="system-ui,sans-serif" fontSize="15" fontWeight="800" fill="#fff" textAnchor="middle">{items[sel].e+"  "+items[sel].l}</text><text x="400" y="119" fontFamily="system-ui,sans-serif" fontSize="12.5" fill="rgba(255,255,255,.85)" textAnchor="middle">{items[sel].f}</text></g>}
+  </g>)
+}
 function solutionsBeats(lang){
   const T=(fr,en,es)=>_t(lang,fr,en,es)
   const SKY=id=>(<linearGradient id={id} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0A1714"/><stop offset=".5" stopColor="#155A5A"/><stop offset=".84" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/></linearGradient>)
@@ -502,13 +525,7 @@ function solutionsBeats(lang){
     // 4 — LE PROBLÈME DEVIENT RESSOURCE : recyclage + carburant
     {eyebrow:T("ON TRANSFORME","WE TRANSFORM","TRANSFORMAMOS"),heading:T("Le problème devient ressource","The problem becomes a resource","El problema se vuelve recurso"),
       sub:T("Engrais, briques de construction, bioplastique, papier — et même de l'énergie : la méthanisation transforme l'algue en biogaz.","Fertilizer, building blocks, bioplastic, paper — and even energy: anaerobic digestion turns the algae into biogas.","Fertilizante, ladrillos, bioplástico, papel — y energía: el sargazo se vuelve biogás."),
-      scene:<g><defs>{SKY("sol4")}</defs><rect width="800" height="600" fill="url(#sol4)"/>
-        <g transform="translate(400,300)"><ellipse rx="46" ry="16" fill="#6b7a1c" style={{opacity:"calc(1 - var(--p4)*.7)"}}/></g>
-        {[{e:"🌱",x:230,y:200,l:T("Engrais","Fertilizer","Abono")},{e:"🧱",x:400,y:170,l:T("Briques","Bricks","Ladrillos")},{e:"⚡",x:570,y:200,l:T("Biogaz","Biogas","Biogás")},{e:"📄",x:300,y:400,l:T("Papier","Paper","Papel")},{e:"🧴",x:500,y:400,l:T("Bioplastique","Bioplastic","Bioplástico")}].map((o,i)=>(
-          <g key={i} transform={"translate("+o.x+","+o.y+")"} style={{opacity:"calc(var(--p4)*1.4 - "+(i*0.18)+")",transformBox:"fill-box",transformOrigin:"center"}}>
-            <circle r="34" fill="#0E2A26" stroke="#5FD3C9" strokeWidth="1.4"/><text y="10" fontSize="30" textAnchor="middle">{o.e}</text><text y="56" fontFamily="ui-monospace,monospace" fontSize="12" fill="#9FE1CB" textAnchor="middle">{o.l}</text>
-          </g>))}
-      </g>},
+      scene:<SolTransformScene lang={lang}/>},
     // 5 — ESPOIR + SORTIE (escapable, jamais infernal)
     {eyebrow:T("MAINTENANT","NOW","AHORA"),heading:T("Vue, arrêtée, transformée","Seen, stopped, transformed","Vista, detenida, transformada"),
       sub:T("Vue de l'espace, arrêtée en mer, ramassée à temps, transformée en ressource. Le Veilleur garde un œil — toi, va profiter de la plage.","Seen from space, stopped at sea, collected in time, turned into a resource. The Watchman keeps an eye — you, go enjoy the beach.","Vista desde el espacio, detenida, transformada. El Vigía vigila — tú, ve a la playa."),
