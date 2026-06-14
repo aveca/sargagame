@@ -116,7 +116,12 @@ function pageShell(tpl, { title, desc, pathname, domain, lang, noscript, jsonLd 
   // noscript racine → noscript de la page
   html = html.replace(/<noscript>\s*<h1>[\s\S]*?<\/noscript>/, '')
   const ld = (jsonLd || []).map(o => `<script type="application/ld+json">${JSON.stringify(o)}</script>`).join('\n')
-  html = html.replace('</head>', `${ld}\n</head>`)
+  // Toute sous-page DOIT porter un hreflang self + x-default (sinon Google n'a
+  // aucun signal de langue stable). Les pages home régionales ont déjà leur
+  // cluster ; ici on rétablit au minimum self+x-default retirés au strip L113
+  // (audit SEO multilang 13/06 : 55/56 sous-pages USD partaient sans hreflang).
+  const selfAlt = `<link rel="alternate" hreflang="${lang}" href="${canonical}" />\n<link rel="alternate" hreflang="x-default" href="${canonical}" />`
+  html = html.replace('</head>', `${selfAlt}\n${ld}\n</head>`)
   html = html.replace('<div id="root">', `<noscript>${noscript}</noscript>\n<div id="root">`)
   return html
 }

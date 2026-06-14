@@ -764,6 +764,8 @@ async function main() {
         } else {
           console.log(`  + ${logId(email)} [${step.key}] (${island}, age=${age}d)`)
           record[step.key] = new Date().toISOString()
+          dripSent[key] = record
+          saveJSON(DRIP_SENT_PATH, dripSent) // flush incrémental : un crash/retry mid-run ne resend JAMAIS (root cause incident 17× du 2026-06-11)
           totalSent++
           if (isNewRegion) newRegionSent++
           await trackToSheet({
@@ -806,6 +808,17 @@ async function main() {
     if (record.daily_last === todayKey) continue
     const brief = briefFor(island)
     if (!brief) continue
+    // Anti-spam « même mail » (directive user 13/06 : « pas spam que les mêmes
+    // mails, le contenu doit se mettre à jour avec l'état actuel avant de
+    // publier »). Signature = l'état RÉEL publié (plage/statut/score/J+1/
+    // dégradations). Identique ET déjà envoyé il y a <7j → on NE renvoie pas.
+    // Sinon (l'état a changé, ou heartbeat 7j) → on publie l'état actuel.
+    // Pas de PII (nom de plage = donnée publique).
+    const dailySig = [brief.best.name, brief.best.status, brief.best.score, brief.best.j1, brief.degradedCount, brief.degradeDay].join('|')
+    if (record.daily_sig === dailySig && record.daily_last) {
+      const ageDays = Math.floor((new Date(todayKey) - new Date(record.daily_last)) / 864e5)
+      if (ageDays < 7) continue
+    }
     if (dailySent >= DAILY_CAP) break
     if (!resend) {
       // Dry-run : on rend quand même l'email (atteste que le builder marche) +
@@ -833,7 +846,9 @@ async function main() {
       else {
         console.log(`  + ${logId(email)} [daily] (${island})`)
         record.daily_last = todayKey
+        record.daily_sig = dailySig
         dripSent[key] = record
+        saveJSON(DRIP_SENT_PATH, dripSent) // flush incrémental anti-resend
         dailySent++
         await trackToSheet({
           resend_id: data?.id || '', to: email, subject,

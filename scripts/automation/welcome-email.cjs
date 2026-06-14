@@ -293,6 +293,7 @@ async function main() {
       } else {
         console.log(`  ✅ ${logId(sub.email)} (${island})`)
         sentSet.add(emailHash(sub.email))
+        saveJSON(SENT_PATH, [...sentSet]) // flush incrémental : un crash/retry mid-run ne re-welcome JAMAIS un lead déjà servi
         // Track to Google Sheet
         try {
           await fetch('https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec', {

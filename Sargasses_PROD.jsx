@@ -1193,6 +1193,7 @@ function BottomNav({view,onChangeView,lang}){
   const tabs=[
     {id:"map",label:LL.navMap,icon:"🗺️"},
     {id:"list",label:LL.navList,icon:"📋"},
+    {id:"game",label:LL.navGame,icon:"🎮"},
     {id:"premium",label:LL.navPremium,icon:"⭐"},
   ]
   return(
@@ -1207,7 +1208,7 @@ function BottomNav({view,onChangeView,lang}){
       {tabs.map(t=>{
         const active=view===t.id||(t.id==="premium"&&false)
         return(
-        <button key={t.id} onClick={()=>onChangeView(t.id)} style={{
+        <button key={t.id} onClick={()=>{if(t.id==="game"){track("sg_game_open",{from:"nav"});try{location.href="/jeu/?utm_source=app&utm_medium=nav"}catch(_){}}else onChangeView(t.id)}} style={{
           display:"flex",flexDirection:"column",alignItems:"center",gap:2,
           background:"none",border:"none",cursor:"pointer",
           color:active?C.gold:"var(--sg-mid,#686868)",
