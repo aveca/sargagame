@@ -1695,7 +1695,7 @@
         },
         {
           "id": "gp003",
-          "afai": 0.12,
+          "afai": 0.13,
           "status": "clean"
         },
         {
@@ -1720,12 +1720,12 @@
         },
         {
           "id": "gp009",
-          "afai": 0.11,
+          "afai": 0.12,
           "status": "clean"
         },
         {
           "id": "gp010",
-          "afai": 0.11,
+          "afai": 0.12,
           "status": "clean"
         },
         {
@@ -1735,17 +1735,17 @@
         },
         {
           "id": "gp012",
-          "afai": 0.11,
+          "afai": 0.12,
           "status": "clean"
         },
         {
           "id": "gp013",
-          "afai": 0.11,
+          "afai": 0.12,
           "status": "clean"
         },
         {
           "id": "gp014",
-          "afai": 0.12,
+          "afai": 0.13,
           "status": "clean"
         },
         {
@@ -1755,17 +1755,17 @@
         },
         {
           "id": "gp016",
-          "afai": 0.07,
+          "afai": 0.08,
           "status": "clean"
         },
         {
           "id": "gp017",
-          "afai": 0.07,
+          "afai": 0.08,
           "status": "clean"
         },
         {
           "id": "gp018",
-          "afai": 0.12,
+          "afai": 0.13,
           "status": "clean"
         },
         {
@@ -1775,32 +1775,32 @@
         },
         {
           "id": "gp020",
-          "afai": 0.07,
+          "afai": 0.08,
           "status": "clean"
         },
         {
           "id": "gp021",
-          "afai": 0.09,
-          "status": "clean"
-        },
-        {
-          "id": "gp023",
           "afai": 0.1,
           "status": "clean"
         },
         {
+          "id": "gp023",
+          "afai": 0.11,
+          "status": "clean"
+        },
+        {
           "id": "gp024",
-          "afai": 0.07,
+          "afai": 0.08,
           "status": "clean"
         },
         {
           "id": "gp025",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
           "id": "gp026",
-          "afai": 0.12,
+          "afai": 0.13,
           "status": "clean"
         },
         {
@@ -1825,7 +1825,7 @@
         },
         {
           "id": "gp032",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
@@ -1840,7 +1840,7 @@
         },
         {
           "id": "gp038",
-          "afai": 0.13,
+          "afai": 0.14,
           "status": "clean"
         },
         {
@@ -1860,12 +1860,12 @@
         },
         {
           "id": "gp043",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
           "id": "gp044",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
@@ -1875,7 +1875,7 @@
         },
         {
           "id": "gp046",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
@@ -1920,7 +1920,7 @@
         },
         {
           "id": "gp059",
-          "afai": 0.1,
+          "afai": 0.11,
           "status": "clean"
         },
         {
@@ -1930,7 +1930,7 @@
         },
         {
           "id": "gp061",
-          "afai": 0.12,
+          "afai": 0.13,
           "status": "clean"
         },
         {
@@ -1940,12 +1940,12 @@
         },
         {
           "id": "gp064",
-          "afai": 0.12,
+          "afai": 0.13,
           "status": "clean"
         },
         {
           "id": "gp066",
-          "afai": 0.12,
+          "afai": 0.13,
           "status": "clean"
         },
         {
@@ -1955,7 +1955,7 @@
         },
         {
           "id": "gp069",
-          "afai": 0.11,
+          "afai": 0.12,
           "status": "clean"
         },
         {
@@ -1980,7 +1980,7 @@
         },
         {
           "id": "gp078",
-          "afai": 0.07,
+          "afai": 0.08,
           "status": "clean"
         },
         {
@@ -2010,12 +2010,12 @@
         },
         {
           "id": "gp088",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
           "id": "gp093",
-          "afai": 0.07,
+          "afai": 0.08,
           "status": "clean"
         },
         {
@@ -2025,17 +2025,17 @@
         },
         {
           "id": "gp096",
-          "afai": 0.12,
+          "afai": 0.13,
           "status": "clean"
         },
         {
           "id": "gp097",
-          "afai": 0.12,
+          "afai": 0.13,
           "status": "clean"
         },
         {
           "id": "gp099",
-          "afai": 0.12,
+          "afai": 0.13,
           "status": "clean"
         },
         {
@@ -2065,7 +2065,7 @@
         },
         {
           "id": "gp110",
-          "afai": 0.1,
+          "afai": 0.11,
           "status": "clean"
         },
         {
@@ -2075,12 +2075,12 @@
         },
         {
           "id": "gp115",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
           "id": "gp116",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
