@@ -217,7 +217,7 @@ function BeachScene({beach}){
   return(
     <div aria-hidden="true" style={{position:"absolute",inset:0}}>
       <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block"}}>
-        <style>{`.bsc-glit{animation:bscGlit 7s linear infinite}@keyframes bscGlit{to{stroke-dashoffset:-64}}.bsc-cloud{animation:bscCloud 80s ease-in-out infinite alternate}@keyframes bscCloud{to{transform:translateX(-46px)}}.bsc-raft{animation:bscRaft 13s ease-in-out infinite alternate}@keyframes bscRaft{to{transform:translateX(13px)}}@media(prefers-reduced-motion:reduce){.bsc-glit,.bsc-cloud,.bsc-raft{animation:none}}`}</style>
+        <style>{`.bsc-glit{animation:bscGlit 7s linear infinite}@keyframes bscGlit{to{stroke-dashoffset:-64}}.bsc-cloud{animation:bscCloud 80s ease-in-out infinite alternate}@keyframes bscCloud{to{transform:translateX(-46px)}}.bsc-raft{animation:bscRaft 13s ease-in-out infinite alternate}@keyframes bscRaft{to{transform:translateX(13px)}}.bsc-rake{animation:bscRake 2.4s ease-in-out infinite;transform-box:fill-box;transform-origin:2px -19px}@keyframes bscRake{0%,100%{transform:rotate(-9deg)}45%{transform:rotate(13deg)}}.bsc-net{animation:bscNet 7s ease-in-out infinite alternate}@keyframes bscNet{to{transform:translateX(8px)}}.bsc-swim{animation:bscSwim 4.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}@keyframes bscSwim{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}@media(prefers-reduced-motion:reduce){.bsc-glit,.bsc-cloud,.bsc-raft,.bsc-rake,.bsc-net,.bsc-swim{animation:none}}`}</style>
         <defs>
           <linearGradient id="bscSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={t.sky[0]}/><stop offset=".52" stopColor={t.sky[1]}/><stop offset=".84" stopColor={t.sky[2]}/><stop offset="1" stopColor={t.sky[3]}/></linearGradient>
           <linearGradient id="bscSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={t.seaT}/><stop offset="1" stopColor={t.seaB}/></linearGradient>
@@ -240,7 +240,23 @@ function BeachScene({beach}){
         <line className="bsc-glit" x1="-40" y1="356" x2="840" y2="356" stroke={t.glit} strokeWidth="2.2" strokeDasharray="3 13" opacity=".5"/>
         <line className="bsc-glit" x1="-40" y1="386" x2="840" y2="386" stroke={t.glit} strokeWidth="1.8" strokeDasharray="2 17" opacity=".3" style={{animationDelay:"-3s"}}/>
         <line className="bsc-glit" x1="-40" y1="420" x2="840" y2="420" stroke={t.glit} strokeWidth="1.6" strokeDasharray="2 23" opacity=".18" style={{animationDelay:"-5s"}}/>
-        {showRafts&&<g className="bsc-raft"><g transform="translate(300,372)"><ellipse rx="22" ry="7" fill="#7a5c14"/><ellipse cx="-10" cy="-3" rx="9" ry="4" fill="#8a6c1c"/><ellipse cx="10" cy="-2" rx="10" ry="4" fill="#5d400e"/></g><g transform="translate(470,388) scale(.8)"><ellipse rx="22" ry="7" fill="#7a5c14"/><ellipse cx="8" cy="-3" rx="9" ry="4" fill="#8a6c1c"/></g></g>}
+        {beach&&beach.status==="clean"&&<g>
+          {/* NICKEL : des baigneurs dans une eau claire */}
+          <g className="bsc-swim"><circle cx="372" cy="392" r="6" fill="#0D2B26"/><path d="M360 398 q12 -8 24 0" stroke="#0D2B26" strokeWidth="3.4" fill="none" strokeLinecap="round"/></g>
+          <g className="bsc-swim" style={{animationDelay:"-2.1s"}}><circle cx="452" cy="404" r="5" fill="#0D2B26"/><path d="M442 409 q10 -7 20 0" stroke="#0D2B26" strokeWidth="3" fill="none" strokeLinecap="round"/></g>
+          <path d="M348 396 h8 M396 398 h7 M462 410 h8" stroke={t.rim} strokeWidth="1.6" opacity=".5" strokeLinecap="round"/>
+        </g>}
+        {beach&&beach.status==="moderate"&&<g>
+          {/* EN COLLECTE : un filet posé (bouées dorées) + un ramasseur qui râtelle */}
+          <g className="bsc-net"><path d="M286 372 Q360 382 434 374" fill="none" stroke="#CDEBE6" strokeWidth="1.2" strokeDasharray="1.5 4" opacity=".6"/><circle cx="300" cy="374" r="3" fill="#FFC72C"/><circle cx="344" cy="378" r="2.6" fill="#FFC72C"/><circle cx="388" cy="375" r="2.6" fill="#FFC72C"/><circle cx="432" cy="374" r="3" fill="#FFC72C"/></g>
+          <g className="bsc-raft" transform="translate(330,388) scale(.62)" opacity=".8"><ellipse rx="22" ry="7" fill="#7a5c14"/><ellipse cx="-10" cy="-3" rx="9" ry="4" fill="#8a6c1c"/></g>
+          <g transform="translate(458,502)"><g transform="translate(-20,12) scale(.5)" opacity=".7"><ellipse rx="22" ry="7" fill="#7a5c14"/></g><g fill="#0E1F1A"><circle cx="0" cy="-27" r="5"/><path d="M-5 -22 q5 -4 10 0 l-1.5 19 h-7 Z"/><path d="M-4 -4 l-3 12 M4 -4 l3 12" stroke="#0E1F1A" strokeWidth="2.4" strokeLinecap="round" fill="none"/></g><g className="bsc-rake" stroke="#3A2A14" strokeWidth="2.2" fill="none" strokeLinecap="round"><line x1="2" y1="-19" x2="20" y2="8"/><path d="M13 6 h13 M15 3 v7 M19 2 v8.5 M23 2 v8"/></g></g>
+        </g>}
+        {beach&&beach.status==="avoid"&&<g>
+          {/* PLEINE : nappes en mer (qui dérivent) + amas échoués sur le sable */}
+          <g className="bsc-raft"><g transform="translate(300,372)"><ellipse rx="24" ry="8" fill="#7a5c14"/><ellipse cx="-12" cy="-4" rx="10" ry="5" fill="#8a6c1c"/><ellipse cx="12" cy="-3" rx="11" ry="5" fill="#5d400e"/></g><g transform="translate(470,390) scale(.9)"><ellipse rx="22" ry="7" fill="#7a5c14"/><ellipse cx="8" cy="-3" rx="9" ry="4" fill="#8a6c1c"/></g><g transform="translate(386,360) scale(.55)"><ellipse rx="22" ry="7" fill="#6b4a12"/></g></g>
+          <g><ellipse cx="318" cy="502" rx="72" ry="14" fill="#5d400e"/><ellipse cx="288" cy="496" rx="34" ry="10" fill="#7a5c14"/><ellipse cx="472" cy="514" rx="60" ry="12" fill="#6b4a12"/><ellipse cx="492" cy="508" rx="28" ry="8" fill="#8a6c1c"/></g>
+        </g>}
         <path d="M-40 472 Q200 434 430 448 Q640 460 840 502 L840 620 L-40 620 Z" fill={sand}/>
         <path d="M-40 472 Q200 434 430 448 Q640 460 840 502" fill="none" stroke={t.rim} strokeWidth="2.4" opacity=".3"/>
         <path d="M586 612 Q570 520 538 472 Q524 450 502 438" stroke={t.trunk} strokeWidth="13" fill="none" strokeLinecap="round"/>
@@ -2015,16 +2031,15 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
 
         {/* Hero — photo le jour, scène vectorielle golden-hour personnalisée par
             l'heure sinon (cf. useVectorHero). Immersif, tap pour scanner. */}
-        <div onClick={e=>{if(!e.target.closest("button")){setPhotoScanOpen(v=>!v);track("sg_photo_scan",{beach_id:beach.id,open:!photoScanOpen,hero:photo?"photo":"vector",ph:heroPh})}}}
-          style={{height:"min(600px, 70svh)",background:photo?`url(${photo}) center 38%/cover`:"#0B2230",
+        <div onClick={e=>{if(!e.target.closest("button")){setPhotoScanOpen(v=>!v);track("sg_photo_scan",{beach_id:beach.id,open:!photoScanOpen,hero:"vector",ph:heroPh,status:beach.status})}}}
+          style={{height:"min(600px, 70svh)",background:"#0B2230",
           borderRadius:"0",position:"relative",overflow:"hidden",cursor:"pointer"}}>
-          {/* « Garde la photo mais intègre-la smart » (directive 14/06) : la VRAIE
-              photo (individuelle, on a l'info) reste le fond + un GRADE de phase
-              forgé dessus → la plage de jour devient cohérente la nuit (jamais un
-              plein soleil à minuit). Sans photo → BeachScene SVG (Diamant…). */}
-          {photo
-            ?<div aria-hidden="true" style={{position:"absolute",inset:0,background:heroGrade,pointerEvents:"none"}}/>
-            :<BeachScene beach={beach}/>}
+          {/* SVG D'ABORD (directive 14/06 : « les images dépendent du jour,
+              remplace par du svg perso par heure/lieu, pas ce qu'on voit en
+              premier »). Scène vectorielle propre à la plage + personnalisée par
+              l'heure ET l'ÉTAT (nickel / en collecte / pleine, animé). La vraie
+              photo est reléguée « en cool » plus bas. */}
+          <BeachScene beach={beach}/>
           {/* Cinematic gradient overlay */}
           <div style={{position:"absolute",inset:0,
             background:"linear-gradient(180deg, rgba(0,0,0,.15) 0%, transparent 30%, transparent 50%, var(--sg-card,#fff) 100%)"}}/>
@@ -2177,6 +2192,16 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             )
           })()}
           <AfaiChip beach={beach} lang={lang}/>
+
+          {/* La vraie photo « calée en cool » plus bas (directive 14/06 : pas en
+              premier, le SVG d'abord). On la garde car elle est individuelle. */}
+          {photo&&<div style={{margin:"14px 0 2px",borderRadius:16,overflow:"hidden",position:"relative",height:158,
+            background:`url(${photo}) center 42%/cover`,border:"1px solid rgba(0,0,0,.07)"}}>
+            <div aria-hidden="true" style={{position:"absolute",inset:0,background:"linear-gradient(180deg,transparent 55%,rgba(0,0,0,.45))"}}/>
+            <div style={{position:"absolute",left:12,bottom:9,fontSize:11,fontWeight:700,color:"#fff",letterSpacing:".05em",textTransform:"uppercase"}}>
+              {_t(lang,"La vraie plage","The real beach","La playa real")}
+            </div>
+          </div>}
 
           {/* Urgence-donnée : arrivage RÉEL prévu (weeklyData.forecast pipeline,
               JAMAIS le fallback generateForecast) → CTA alerte. L'urgence vraie
