@@ -8649,14 +8649,26 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose}){
   const centerOn=(i,cz)=>{const el=wrapRef.current;if(!el||!proj[i])return;const z=clampZ(cz||camRef.current.cz),W=el.clientWidth,H=el.clientHeight;camRef.current={cz:z,cx:W/2-proj[i].x*z,cy:H/2-proj[i].y*z};schedule()}
   const zoomAt=(f,px,py)=>{const c=camRef.current,nz=clampZ(c.cz*f),wx=(px-c.cx)/c.cz,wy=(py-c.cy)/c.cz;c.cz=nz;c.cx=px-wx*nz;c.cy=py-wy*nz;schedule()}
   useEffect(()=>{centerOn(myIdx,MID);setReady(true);try{track("sg_archipel_open",{beaches:count})}catch(_){}},[])// eslint-disable-line
-  useEffect(()=>{const el=wrapRef.current;if(!el)return;const onWheel=e=>{e.preventDefault();const r=el.getBoundingClientRect();zoomAt(e.deltaY<0?1.12:0.89,e.clientX-r.left,e.clientY-r.top)};el.addEventListener("wheel",onWheel,{passive:false});return()=>el.removeEventListener("wheel",onWheel)},[])// eslint-disable-line
+  useEffect(()=>{const el=wrapRef.current;if(!el)return;let wl=0;const onWheel=e=>{e.preventDefault();if(tourRef.current!=null){const now=Date.now();if(now-wl<420)return;wl=now;tourGo(tourRef.current+(e.deltaY>0?1:-1));return}const r=el.getBoundingClientRect();zoomAt(e.deltaY<0?1.12:0.89,e.clientX-r.left,e.clientY-r.top)};el.addEventListener("wheel",onWheel,{passive:false});return()=>el.removeEventListener("wheel",onWheel)},[])// eslint-disable-line
   const rel=e=>{const r=wrapRef.current.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
-  const onDown=e=>{movedRef.current=false;ptrs.current.set(e.pointerId,rel(e));try{e.currentTarget.setPointerCapture(e.pointerId)}catch(_){};if(ptrs.current.size===2){const[a,b]=[...ptrs.current.values()];pinchRef.current={d:Math.hypot(a.x-b.x,a.y-b.y),mx:(a.x+b.x)/2,my:(a.y+b.y)/2}}}
+  const onDown=e=>{movedRef.current=false;ptrs.current.set(e.pointerId,rel(e));swipeY.current=rel(e).y;try{e.currentTarget.setPointerCapture(e.pointerId)}catch(_){};if(ptrs.current.size===2){const[a,b]=[...ptrs.current.values()];pinchRef.current={d:Math.hypot(a.x-b.x,a.y-b.y),mx:(a.x+b.x)/2,my:(a.y+b.y)/2}}}
   const onMove=e=>{if(!ptrs.current.has(e.pointerId))return;const prev=ptrs.current.get(e.pointerId),p=rel(e);ptrs.current.set(e.pointerId,p)
     if(ptrs.current.size>=2&&pinchRef.current){const[a,b]=[...ptrs.current.values()];const d=Math.hypot(a.x-b.x,a.y-b.y),mx=(a.x+b.x)/2,my=(a.y+b.y)/2;const c=camRef.current;if(pinchRef.current.d>0){const f=d/pinchRef.current.d;const nz=clampZ(c.cz*f),wx=(mx-c.cx)/c.cz,wy=(my-c.cy)/c.cz;c.cz=nz;c.cx=mx-wx*nz;c.cy=my-wy*nz}c.cx+=mx-pinchRef.current.mx;c.cy+=my-pinchRef.current.my;pinchRef.current={d,mx,my};movedRef.current=true;schedule();return}
+    if(tourRef.current!=null){const dx2=p.x-prev.x,dy2=p.y-prev.y;if(Math.abs(dx2)+Math.abs(dy2)>2)movedRef.current=true;return}
     const dx=p.x-prev.x,dy=p.y-prev.y;if(Math.abs(dx)+Math.abs(dy)>2)movedRef.current=true;camRef.current.cx+=dx;camRef.current.cy+=dy;schedule()}
-  const onUp=e=>{ptrs.current.delete(e.pointerId);if(ptrs.current.size<2)pinchRef.current=null}
-  const onTap=e=>{const now=Date.now();if(now-lastTap.current<300&&!movedRef.current){const r=wrapRef.current.getBoundingClientRect();zoomAt(camRef.current.cz<1.4?2.0:0.45,e.clientX-r.left,e.clientY-r.top)}lastTap.current=now}
+  const onUp=e=>{if(tourRef.current!=null&&swipeY.current!=null&&ptrs.current.size===1){const dy=rel(e).y-swipeY.current;if(dy<-44)tourGo(tourRef.current+1);else if(dy>44)tourGo(tourRef.current-1)}ptrs.current.delete(e.pointerId);if(ptrs.current.size<2)pinchRef.current=null;swipeY.current=null}
+  const onTap=e=>{if(tourRef.current!=null)return;const now=Date.now();if(now-lastTap.current<300&&!movedRef.current){const r=wrapRef.current.getBoundingClientRect();zoomAt(camRef.current.cz<1.4?2.0:0.45,e.clientX-r.left,e.clientY-r.top)}lastTap.current=now}
+  // ── MODE VISITE : scroll/swipe de plage en plage, la caméra glisse, une fiche-info
+  //    par plage (« quand on scroll down ça passe de plage en plage avec des infos »).
+  const[tour,setTour]=useState(null) // null=exploration libre ; sinon position dans l'ordre
+  const tourRef=useRef(null),twRaf=useRef(0),twTarget=useRef(null),swipeY=useRef(null)
+  const FOCUS=1.6
+  const tourOrder=useMemo(()=>{if(!proj.length)return[];const m=proj[myIdx];return proj.map((_,i)=>i).sort((a,b)=>((proj[a].x-m.x)**2+(proj[a].y-m.y)**2)-((proj[b].x-m.x)**2+(proj[b].y-m.y)**2))},[proj,myIdx])
+  const runTween=()=>{if(twRaf.current)return;const step=()=>{const t=twTarget.current,c=camRef.current;if(!t){twRaf.current=0;return}c.cx+=(t.cx-c.cx)*0.2;c.cy+=(t.cy-c.cy)*0.2;c.cz+=(t.cz-c.cz)*0.2;writeCam();if(Math.hypot(t.cx-c.cx,t.cy-c.cy)<0.6&&Math.abs(t.cz-c.cz)<0.003){c.cx=t.cx;c.cy=t.cy;c.cz=t.cz;writeCam();twTarget.current=null;twRaf.current=0;return}twRaf.current=requestAnimationFrame(step)};twRaf.current=requestAnimationFrame(step)}
+  const focusBeach=i=>{const el=wrapRef.current;if(!el||!proj[i])return;const z=FOCUS,W=el.clientWidth,H=el.clientHeight;twTarget.current={cz:z,cx:W/2-proj[i].x*z,cy:H/2-proj[i].y*z-H*0.16};runTween()}
+  const tourGo=pos=>{if(!tourOrder.length)return;const p=Math.max(0,Math.min(tourOrder.length-1,pos));tourRef.current=p;setTour(p);focusBeach(tourOrder[p]);try{track("sg_archipel_tour",{pos:p,beach_id:proj[tourOrder[p]].b.id})}catch(_){}}
+  const startTour=()=>tourGo(0)
+  const exitTour=()=>{tourRef.current=null;setTour(null);twTarget.current=null;centerOn(myIdx,MID)}
   const my=proj[myIdx]&&proj[myIdx].b,myVm=my&&verdictMeta(my.status,lang)
   return(
     <div ref={wrapRef} role="region" aria-label="Archipel du Veilleur" onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} onClick={onTap}
@@ -8673,11 +8685,38 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose}){
         </g>
       </svg>
       <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"absolute",top:"calc(12px + env(safe-area-inset-top))",right:14,zIndex:5,width:40,height:40,borderRadius:"50%",background:"rgba(4,9,11,.55)",border:"1px solid rgba(255,255,255,.25)",color:"#fff",fontSize:17,cursor:"pointer",backdropFilter:"blur(8px)"}}>✕</button>
-      {ready&&my&&<div style={{position:"absolute",top:"calc(13px + env(safe-area-inset-top))",left:14,right:64,zIndex:5,display:"flex",alignItems:"center",gap:9,padding:"8px 12px",borderRadius:14,background:"rgba(4,9,11,.5)",border:"1px solid rgba(255,255,255,.14)",backdropFilter:"blur(8px)",color:"#fff"}}>
+      {ready&&my&&tour==null&&<div style={{position:"absolute",top:"calc(13px + env(safe-area-inset-top))",left:14,right:64,zIndex:5,display:"flex",alignItems:"center",gap:9,padding:"8px 12px",borderRadius:14,background:"rgba(4,9,11,.5)",border:"1px solid rgba(255,255,255,.14)",backdropFilter:"blur(8px)",color:"#fff"}}>
         <Veilleur mood={moodFromStatus(my.status)} size={26}/>
         <div style={{flex:1,minWidth:0,overflow:"hidden"}}><div style={{fontSize:10,fontWeight:700,letterSpacing:".05em",color:"rgba(255,255,255,.6)",textTransform:"uppercase"}}>{_t(lang,"Ta côte aujourd'hui","Your coast today","Tu costa hoy")}</div><div style={{fontSize:13.5,fontWeight:800,whiteSpace:"nowrap",textOverflow:"ellipsis",overflow:"hidden"}}><span style={{color:myVm.color}}>{myVm.emoji} {myVm.verb}</span> · {my.name}</div></div>
       </div>}
-      <button onClick={e=>{e.stopPropagation();centerOn(myIdx,MID)}} style={{position:"absolute",bottom:"calc(26px + env(safe-area-inset-bottom))",left:"50%",transform:"translateX(-50%)",zIndex:5,padding:"11px 18px",borderRadius:999,background:"linear-gradient(180deg,#FFD884,#F2B05E)",border:"none",color:"#07201E",fontSize:13.5,fontWeight:800,cursor:"pointer",boxShadow:"0 6px 20px rgba(0,0,0,.4)"}}>⌖ {_t(lang,"Ma côte","My coast","Mi costa")}</button>
+      {tour==null
+        ?<div style={{position:"absolute",bottom:"calc(24px + env(safe-area-inset-bottom))",left:0,right:0,zIndex:5,display:"flex",justifyContent:"center",gap:10}}>
+          <button onClick={e=>{e.stopPropagation();centerOn(myIdx,MID)}} style={{padding:"11px 16px",borderRadius:999,background:"rgba(4,9,11,.6)",border:"1px solid rgba(255,255,255,.25)",color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer",backdropFilter:"blur(8px)"}}>⌖ {_t(lang,"Ma côte","My coast","Mi costa")}</button>
+          <button onClick={e=>{e.stopPropagation();startTour()}} style={{padding:"11px 18px",borderRadius:999,background:"linear-gradient(180deg,#FFD884,#F2B05E)",border:"none",color:"#07201E",fontSize:13,fontWeight:800,cursor:"pointer",boxShadow:"0 6px 20px rgba(0,0,0,.4)"}}>📜 {_t(lang,"Visiter les plages","Tour the beaches","Recorrer playas")}</button>
+        </div>
+        :(()=>{const i=tourOrder[tour],b=proj[i]&&proj[i].b;if(!b)return null;const vm=verdictMeta(b.status,lang),sc=typeof b.score==="number"?b.score:null,afai=typeof b.afai==="number"?b.afai:null
+          return(<div onClick={e=>e.stopPropagation()} style={{position:"absolute",left:0,right:0,bottom:0,zIndex:7,padding:"0 12px calc(14px + env(safe-area-inset-bottom))"}}>
+            <div style={{maxWidth:520,margin:"0 auto",background:"rgba(7,32,30,.94)",border:"1px solid rgba(95,211,201,.32)",borderRadius:18,padding:"14px 16px",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",color:"#fff",boxShadow:"0 -6px 34px rgba(0,0,0,.5)"}}>
+              <div style={{display:"flex",alignItems:"center",gap:11}}>
+                {sc!=null&&<ScoreBlob score={sc} color={b.scoreColor||vm.color} size={50}/>}
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:10.5,fontWeight:800,letterSpacing:".06em",color:"rgba(255,255,255,.5)"}}>{(tour+1)+" / "+tourOrder.length} · {_t(lang,"VISITE","TOUR","VISITA")}</div>
+                  <div style={{fontSize:17,fontWeight:800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.name}</div>
+                  <div style={{fontSize:13,fontWeight:700,color:vm.color}}>{vm.emoji} {vm.verb}{b.commune?" · "+b.commune:""}</div>
+                </div>
+                <Veilleur mood={moodFromStatus(b.status)} size={34}/>
+              </div>
+              <div style={{margin:"9px 0 0",fontSize:12.5,lineHeight:1.45,color:"rgba(255,255,255,.82)"}}>🛰️ {afai!=null?"AFAI "+afai.toFixed(2)+" — ":""}{b.status==="clean"?_t(lang,"le satellite voit une eau claire aujourd'hui.","satellite sees clear water today.","el satélite ve agua clara hoy."):b.status==="moderate"?_t(lang,"présence d'algues modérée repérée par satellite.","moderate algae seen by satellite.","presencia moderada vista por satélite."):_t(lang,"échouage repéré par satellite — évite aujourd'hui.","beaching seen by satellite — avoid today.","varazón vista por satélite — evita hoy.")}</div>
+              <WorldAfaiGauge afai={b.afai} lang={lang}/>
+              <div style={{display:"flex",gap:8,marginTop:11,alignItems:"center"}}>
+                <button onClick={()=>tourGo(tour-1)} aria-label={_t(lang,"Précédente","Previous","Anterior")} style={{width:44,height:44,borderRadius:14,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:18,cursor:tour===0?"default":"pointer",opacity:tour===0?.4:1}}>↑</button>
+                <button onClick={()=>{try{track("sg_archipel_tour_open",{beach_id:b.id})}catch(_){}; onOpenBeach&&onOpenBeach(b)}} style={{flex:1,padding:"13px",borderRadius:14,border:"none",cursor:"pointer",fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",fontSize:14.5,fontWeight:800,color:"#07201E",background:"linear-gradient(180deg,#FFD884,#F2B05E)"}}>{_t(lang,"Découvrir cette plage →","Explore this beach →","Descubrir esta playa →")}</button>
+                <button onClick={()=>tourGo(tour+1)} aria-label={_t(lang,"Suivante","Next","Siguiente")} style={{width:44,height:44,borderRadius:14,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:18,cursor:tour>=tourOrder.length-1?"default":"pointer",opacity:tour>=tourOrder.length-1?.4:1}}>↓</button>
+              </div>
+              <div style={{textAlign:"center",marginTop:8,fontSize:11,color:"rgba(255,255,255,.45)"}}>{_t(lang,"↕ scrolle ou swipe pour changer de plage","↕ scroll or swipe to change beach","↕ desliza para cambiar")}</div>
+              <button onClick={exitTour} style={{display:"block",margin:"8px auto 0",background:"none",border:"none",color:"rgba(255,255,255,.6)",fontSize:12.5,fontWeight:700,cursor:"pointer"}}>← {_t(lang,"Explorer librement","Explore freely","Explorar libre")}</button>
+            </div>
+          </div>)})()}
     </div>
   )
 }
