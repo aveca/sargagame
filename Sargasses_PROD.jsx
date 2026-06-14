@@ -6469,7 +6469,6 @@ function ScrollStory({lang,onShowMap}){
       st.setProperty("--b4s","1");setBeat(4)
       return
     }
-    const scroller=box.closest('[role="dialog"]')
     let raf=0
     const upd=()=>{
       raf=0
@@ -6508,11 +6507,13 @@ function ScrollStory({lang,onShowMap}){
       if(v2){if(vis&&b===0){if(v2.paused)v2.play().catch(()=>{})}else if(!v2.paused)v2.pause()}
     }
     const onScroll=()=>{if(!raf)raf=requestAnimationFrame(upd)}
-    const tgt=scroller||window
-    tgt.addEventListener("scroll",onScroll,{passive:true})
+    // capture sur document : on attrape le scroll quel que soit l'élément qui
+    // défile (dialog, wrapper interne, window) — sinon sur iOS le listener sur le
+    // seul dialog ne se déclenchait pas → upd() jamais rappelé → storyvp vide.
+    document.addEventListener("scroll",onScroll,{passive:true,capture:true})
     window.addEventListener("resize",onScroll)
     upd()
-    return()=>{tgt.removeEventListener("scroll",onScroll);window.removeEventListener("resize",onScroll);if(raf)cancelAnimationFrame(raf)}
+    return()=>{document.removeEventListener("scroll",onScroll,{capture:true});window.removeEventListener("resize",onScroll);if(raf)cancelAnimationFrame(raf)}
   },[])
   const T=(fr,en,es)=>_t(lang,fr,en,es)
   const beats=[
@@ -6524,10 +6525,19 @@ function ScrollStory({lang,onShowMap}){
   ]
   const fb={transformBox:"fill-box",transformOrigin:"center"}
   const mono="ui-monospace,SFMono-Regular,monospace"
+  // Variables d'animation pilotées par l'ÉTAT `beat` (pas des littéraux figés) :
+  // au repos / après re-render / si le listener de scroll ne se rattache pas
+  // (iOS), l'inline style affiche TOUJOURS le bon temps — jamais le fond #0A1714
+  // nu (bug "scroll mobile vide", screenshot user 14/06). Le rAF lisse les fondus
+  // PENDANT le scroll par-dessus (DOM setProperty, hors du style React).
+  const sv=on=>on?1:0
+  const baseVars=rm
+    ?{"--b1":1,"--b2":1,"--b3":1,"--b4":1,"--b5":1,"--b1o":0,"--b2o":0,"--b3o":0,"--b4o":0,"--b5o":1,"--b4s":1}
+    :{"--b1":sv(beat>=1),"--b2":sv(beat>=2),"--b3":sv(beat>=3),"--b4":sv(beat>=4),"--b5":sv(beat>=4),
+      "--b1o":sv(beat===0),"--b2o":sv(beat===1),"--b3o":sv(beat===2),"--b4o":sv(beat===3),"--b5o":sv(beat>=4),"--b4s":beat>=4?1:.4}
   return(
     <section ref={boxRef} aria-label={T("La méthode","The method","El método")} style={{position:"relative",
-      height:rm?"auto":"430vh",
-      "--b1":0,"--b2":0,"--b3":0,"--b4":0,"--b5":0,"--b1o":0,"--b2o":0,"--b3o":0,"--b4o":0,"--b5o":0,"--b4s":.4}}>
+      height:rm?"auto":"430vh",...baseVars}}>
       <div className="sg-storyvp" style={{position:rm?"relative":"sticky",top:0,overflow:"hidden",background:"#0A1714",
         height:rm?"min(72vh,560px)":undefined}}>
         <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice"
