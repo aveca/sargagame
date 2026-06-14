@@ -127,54 +127,56 @@ function arrivalSignalFromBanks(beach, banks, dayIndex) {
   // RULE: sheltered beaches (baie FDF + Basse-Terre west) are always protected
   if (beach.coast === 'sheltered') return 0
 
-  // Search radius: banks within 40km are potentially threatening
-  const THREAT_RADIUS = 40
+  // v3.2 (2026-06-14): the arrival model was crying wolf. Backtest showed
+  // ~13/20 beaches flagged 'arrival-banks' EVERY day while history.json had
+  // ~0 actual beaching (calm season) — precision near 0%, the dominant source
+  // of the moderate/avoid over-prediction (cf. project-calm-season-overprediction).
+  // Tightened: radius 40→28km, mass floor 0.05→0.10, cap 0.20→0.15, and the key
+  // fix — REQUIRE NET APPROACH: a bank only counts if its 24h-predicted position
+  // is meaningfully closer (≥3km) than its current position. A bank merely
+  // sitting offshore within radius, or drifting away, no longer triggers.
+  // Result on live banks: 12→4 false dirty predictions, genuine south-exposed
+  // approaching beaches preserved. Do NOT widen back without a fresh backtest.
+  const THREAT_RADIUS = 28
   let maxSignal = 0
 
   for (const bank of banks) {
     const mass = bank.mass || 0.10
-    if (mass < 0.05) continue // ignore tiny banks
+    if (mass < 0.10) continue // ignore thin/scattered patches
 
-    // Scan all positions: current + 6h + 12h + 24h predictions
-    const positions = [
-      { centroid: bank.centroid, when: 0 },
-    ]
+    // Current position vs where it'll be in 24h (12h fallback, else stationary)
+    const cur = bank.centroid
     const preds = bank.drift?.predictions || {}
-    if (preds['6h']?.centroid) positions.push({ centroid: preds['6h'].centroid, when: 6 })
-    if (preds['12h']?.centroid) positions.push({ centroid: preds['12h'].centroid, when: 12 })
-    if (preds['24h']?.centroid) positions.push({ centroid: preds['24h'].centroid, when: 24 })
+    const fut = preds['24h']?.centroid || preds['12h']?.centroid || cur
 
-    // Find minimum distance the bank comes to the beach within day 1
-    let minDist = Infinity
-    let bestPos = null
-    for (const pos of positions) {
-      const d = distKm(beach.lat, beach.lng, pos.centroid[0], pos.centroid[1])
-      if (d < minDist) { minDist = d; bestPos = pos.centroid }
-    }
-
+    const dCur = distKm(beach.lat, beach.lng, cur[0], cur[1])
+    const dFut = distKm(beach.lat, beach.lng, fut[0], fut[1])
+    const minDist = Math.min(dCur, dFut)
     if (minDist > THREAT_RADIUS) continue
-    if (!bestPos) continue
 
-    // GEOGRAPHIC ORIENTATION: bank must be in the "incoming" direction for this beach.
-    // Uses coastNormal (direction the coast faces) to define a 140° acceptance cone.
-    // A bank outside this cone is drifting away from the beach, not toward it.
-    const cn = beach.coastNormal || 90 // default: faces east (old behavior)
-    const bankBearing = Math.round((Math.atan2(bestPos[1] - beach.lng, bestPos[0] - beach.lat) * 180 / Math.PI + 360) % 360)
-    // Accept banks within 70° of coastNormal (symmetric cone)
+    // NET APPROACH: bank must be getting closer by ≥3km over 24h. A bank that is
+    // stationary offshore or drifting away is not an arrival threat (was the #1
+    // false-alarm source: the Atlantic belt always has banks within 40km).
+    if (dFut > dCur - 3) continue
+
+    // GEOGRAPHIC ORIENTATION: bank must be in the "incoming" direction, inside a
+    // 140° cone centered on coastNormal. No proximity escape (also a false source).
+    const cn = beach.coastNormal || 90 // default: faces east
+    const bankBearing = Math.round((Math.atan2(fut[1] - beach.lng, fut[0] - beach.lat) * 180 / Math.PI + 360) % 360)
     let diff = Math.abs(bankBearing - cn)
     if (diff > 180) diff = 360 - diff
-    if (diff > 70 && minDist > 15) continue // reject if outside cone AND not very close
+    if (diff > 70) continue
 
     // Signal strength: proximity × mass, degraded for far-out days
     const proximity = Math.max(0, 1 - minDist / THREAT_RADIUS)
-    const dayDecay = dayIndex === 1 ? 1.0 : dayIndex === 2 ? 0.7 : 0.4
+    const dayDecay = dayIndex === 1 ? 1.0 : dayIndex === 2 ? 0.65 : 0.35
     const signal = mass * proximity * dayDecay
 
     if (signal > maxSignal) maxSignal = signal
   }
 
-  // Cap at 0.20 — arrival alone can't push a clean beach to avoid in 1 day
-  return Math.min(0.20, Math.round(maxSignal * 1000) / 1000)
+  // Cap at 0.15 — arrival alone can't push a clean beach past moderate in 1 day
+  return Math.min(0.15, Math.round(maxSignal * 1000) / 1000)
 }
 
 /**
@@ -351,7 +353,9 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
         // Persist + add arrival + wind + trend
         let raw = prevAfai * dayDecay + arrivalContribution + windEffect + trendEffect
 
-        // Coast-aware floor: atlantic beaches never go cleaner than 0.15
+        // Clean baseline floor (0.05) — never go below a quiet-beach reading.
+        // (NB: NOT a 0.15 floor — that pinned south beaches at clean/moderate =
+        // 100% false alarms, banned in feedback_forecast_floor_ban.)
         afai = clamp01(Math.max(cleanFloorFor(beach), raw))
 
         sources = []
