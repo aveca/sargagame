@@ -1842,6 +1842,14 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
   // photo. Plein jour + vraie photo = on garde la photo (cinégénique, ça vend).
   const heroPh=(()=>{try{if(HERO_PH_OVERRIDE)return HERO_PH_OVERRIDE;const h=new Date().getHours();return h<5?"night":h<8?"dawn":h<17?"day":h<20?"golden":"night"}catch(_){return "day"}})()
   const useVectorHero=heroPh!=="day"||!photo
+  // Grade de phase forgé SUR la photo réelle → cohérence avec l'heure locale
+  // (la plage de jour devient nuit/golden, jamais un plein soleil à minuit).
+  const heroGrade={
+    dawn:"linear-gradient(180deg,rgba(20,27,51,.48),rgba(184,110,126,.22) 46%,rgba(242,169,104,.12) 82%,rgba(0,0,0,0))",
+    day:"linear-gradient(180deg,rgba(26,111,168,.16),rgba(0,0,0,0) 42%)",
+    golden:"linear-gradient(180deg,rgba(11,34,48,.5),rgba(201,126,58,.26) 56%,rgba(255,216,132,.14) 86%,rgba(0,0,0,0))",
+    night:"linear-gradient(180deg,rgba(4,11,22,.74),rgba(10,27,46,.5) 50%,rgba(16,48,58,.34) 100%)",
+  }[heroPh]||"rgba(0,0,0,0)"
 
   const onTouchStart=e=>{startY.current=e.touches[0].clientY}
   const onTouchMove=e=>{
@@ -1918,13 +1926,16 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
 
         {/* Hero — photo le jour, scène vectorielle golden-hour personnalisée par
             l'heure sinon (cf. useVectorHero). Immersif, tap pour scanner. */}
-        <div onClick={e=>{if(!e.target.closest("button")){setPhotoScanOpen(v=>!v);track("sg_photo_scan",{beach_id:beach.id,open:!photoScanOpen,hero:useVectorHero?"vector":"photo",ph:heroPh})}}}
-          style={{height:"min(600px, 70svh)",background:"#0B2230",
+        <div onClick={e=>{if(!e.target.closest("button")){setPhotoScanOpen(v=>!v);track("sg_photo_scan",{beach_id:beach.id,open:!photoScanOpen,hero:photo?"photo":"vector",ph:heroPh})}}}
+          style={{height:"min(600px, 70svh)",background:photo?`url(${photo}) center 38%/cover`:"#0B2230",
           borderRadius:"0",position:"relative",overflow:"hidden",cursor:"pointer"}}>
-          {/* Scène SVG PROPRE À CETTE PLAGE — landmark réel (Rocher du Diamant,
-              falaise, morne, plage ouverte), sable (noir volcanique détecté),
-              statut (bancs) + golden-hour auto-phasé. « Notre valeur = le SVG ». */}
-          <BeachScene beach={beach}/>
+          {/* « Garde la photo mais intègre-la smart » (directive 14/06) : la VRAIE
+              photo (individuelle, on a l'info) reste le fond + un GRADE de phase
+              forgé dessus → la plage de jour devient cohérente la nuit (jamais un
+              plein soleil à minuit). Sans photo → BeachScene SVG (Diamant…). */}
+          {photo
+            ?<div aria-hidden="true" style={{position:"absolute",inset:0,background:heroGrade,pointerEvents:"none"}}/>
+            :<BeachScene beach={beach}/>}
           {/* Cinematic gradient overlay */}
           <div style={{position:"absolute",inset:0,
             background:"linear-gradient(180deg, rgba(0,0,0,.15) 0%, transparent 30%, transparent 50%, var(--sg-card,#fff) 100%)"}}/>
