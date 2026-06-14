@@ -8706,6 +8706,9 @@ function WorldFeed({beaches,lang,onPremium,onClose,island}){
 function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutions,onPremium}){
   const wrapRef=useRef(null),gRef=useRef(null),camRef=useRef({cx:0,cy:0,cz:0.8}),rafRef=useRef(0)
   const ptrs=useRef(new Map()),movedRef=useRef(false),pinchRef=useRef(null),lastTap=useRef(0)
+  // Drag rigolo du Veilleur : on l'attrape, son radar/faisceau suivent, il rebondit au lâcher.
+  const satGRef=useRef(null),satHitRef=useRef(null),satDragRef=useRef(false),satOffRef=useRef({x:0,y:0}),satVRef=useRef({x:0,y:0}),satSprRaf=useRef(0)
+  const[satGrab,setSatGrab]=useState(false)
   const[ready,setReady]=useState(false)
   const SPAN_PX=1000,MID=0.82,FAR=0.32,NEAR=2.6
   const{proj,count}=useMemo(()=>{
@@ -8723,6 +8726,10 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
     let bi=0,bd=9e9;proj.forEach((p,i)=>{const d=(p.x-SPAN_PX/2)**2+(p.y-SPAN_PX/2)**2;if(d<bd){bd=d;bi=i}});return bi
   },[proj,userPos])
   const writeCam=()=>{const g=gRef.current;if(!g)return;const c=camRef.current;g.setAttribute("transform","translate("+c.cx.toFixed(1)+" "+c.cy.toFixed(1)+") scale("+c.cz.toFixed(4)+")")}
+  // Veilleur drag : viewBox 800x600 slice -> échelle écran ; transform = offset, ressort de retour (rebond rigolo).
+  const satScale=()=>{const el=wrapRef.current;return el?Math.max(el.clientWidth/800,el.clientHeight/600):1}
+  const satWrite=()=>{const g=satGRef.current;if(g)g.setAttribute("transform","translate("+satOffRef.current.x.toFixed(1)+" "+satOffRef.current.y.toFixed(1)+")")}
+  const satSpringHome=()=>{if(satSprRaf.current)return;const step=()=>{const o=satOffRef.current,v=satVRef.current;v.x+=(-o.x*0.22-v.x*0.5);v.y+=(-o.y*0.22-v.y*0.5);o.x+=v.x;o.y+=v.y;satWrite();if(Math.abs(o.x)<0.4&&Math.abs(o.y)<0.4&&Math.abs(v.x)<0.4&&Math.abs(v.y)<0.4){o.x=0;o.y=0;v.x=0;v.y=0;satWrite();satSprRaf.current=0;return}satSprRaf.current=requestAnimationFrame(step)};satSprRaf.current=requestAnimationFrame(step)}
   const schedule=()=>{if(rafRef.current)return;rafRef.current=requestAnimationFrame(()=>{rafRef.current=0;writeCam()})}
   const clampZ=z=>Math.max(FAR*0.75,Math.min(NEAR*1.25,z))
   const centerOn=(i,cz)=>{const el=wrapRef.current;if(!el||!proj[i])return;const z=clampZ(cz||camRef.current.cz),W=el.clientWidth,H=el.clientHeight;camRef.current={cz:z,cx:W/2-proj[i].x*z,cy:H/2-proj[i].y*z};schedule()}
@@ -8733,12 +8740,17 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
   // Le zoom reste un bonus (pincer / double-tap).
   useEffect(()=>{const el=wrapRef.current;if(!el)return;let wl=0;const onWheel=e=>{e.preventDefault();const now=Date.now();if(now-wl<400)return;wl=now;if(tourRef.current!=null){if(tourRef.current>=tourOrder.length-1&&e.deltaY>0){onSolutions&&onSolutions();return}tourGo(tourRef.current+(e.deltaY>0?1:-1));return}if(e.deltaY>0)startTour();else centerOn(myIdx,FAR)};el.addEventListener("wheel",onWheel,{passive:false});return()=>el.removeEventListener("wheel",onWheel)},[])// eslint-disable-line
   const rel=e=>{const r=wrapRef.current.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
-  const onDown=e=>{movedRef.current=false;ptrs.current.set(e.pointerId,rel(e));swipeY.current=rel(e).y;try{e.currentTarget.setPointerCapture(e.pointerId)}catch(_){};if(ptrs.current.size===2){const[a,b]=[...ptrs.current.values()];pinchRef.current={d:Math.hypot(a.x-b.x,a.y-b.y),mx:(a.x+b.x)/2,my:(a.y+b.y)/2}}}
+  const onDown=e=>{movedRef.current=false
+    // attrape le Veilleur (drag rigolo) si le doigt tombe dessus
+    if(!satDragRef.current&&satHitRef.current){const r=satHitRef.current.getBoundingClientRect(),pad=16;if(e.clientX>=r.left-pad&&e.clientX<=r.right+pad&&e.clientY>=r.top-pad&&e.clientY<=r.bottom+pad){satDragRef.current=true;if(satSprRaf.current){cancelAnimationFrame(satSprRaf.current);satSprRaf.current=0}satVRef.current={x:0,y:0};setSatGrab(true);try{e.currentTarget.setPointerCapture(e.pointerId)}catch(_){}ptrs.current.set(e.pointerId,rel(e));try{track("sg_archipel_sat_grab",{})}catch(_){};return}}
+    ptrs.current.set(e.pointerId,rel(e));swipeY.current=rel(e).y;try{e.currentTarget.setPointerCapture(e.pointerId)}catch(_){};if(ptrs.current.size===2){const[a,b]=[...ptrs.current.values()];pinchRef.current={d:Math.hypot(a.x-b.x,a.y-b.y),mx:(a.x+b.x)/2,my:(a.y+b.y)/2}}}
   const onMove=e=>{if(!ptrs.current.has(e.pointerId))return;const prev=ptrs.current.get(e.pointerId),p=rel(e);ptrs.current.set(e.pointerId,p)
+    if(satDragRef.current){const sc=satScale();satOffRef.current.x+=(p.x-prev.x)/sc;satOffRef.current.y+=(p.y-prev.y)/sc;satWrite();movedRef.current=true;return}
     if(ptrs.current.size>=2&&pinchRef.current){const[a,b]=[...ptrs.current.values()];const d=Math.hypot(a.x-b.x,a.y-b.y),mx=(a.x+b.x)/2,my=(a.y+b.y)/2;const c=camRef.current;if(pinchRef.current.d>0){const f=d/pinchRef.current.d;const nz=clampZ(c.cz*f),wx=(mx-c.cx)/c.cz,wy=(my-c.cy)/c.cz;c.cz=nz;c.cx=mx-wx*nz;c.cy=my-wy*nz}c.cx+=mx-pinchRef.current.mx;c.cy+=my-pinchRef.current.my;pinchRef.current={d,mx,my};movedRef.current=true;schedule();return}
     if(tourRef.current!=null){const dx2=p.x-prev.x,dy2=p.y-prev.y;if(Math.abs(dx2)+Math.abs(dy2)>2)movedRef.current=true;return}
     const dx=p.x-prev.x,dy=p.y-prev.y;if(Math.abs(dx)+Math.abs(dy)>2)movedRef.current=true;camRef.current.cx+=dx;camRef.current.cy+=dy;schedule()}
-  const onUp=e=>{if(tourRef.current!=null&&swipeY.current!=null&&ptrs.current.size===1){const dy=rel(e).y-swipeY.current;if(dy<-44){if(tourRef.current>=tourOrder.length-1){onSolutions&&onSolutions()}else tourGo(tourRef.current+1)}else if(dy>44)tourGo(tourRef.current-1)}ptrs.current.delete(e.pointerId);if(ptrs.current.size<2)pinchRef.current=null;swipeY.current=null}
+  const onUp=e=>{if(satDragRef.current){satDragRef.current=false;setSatGrab(false);satSpringHome();ptrs.current.delete(e.pointerId);try{e.currentTarget.releasePointerCapture(e.pointerId)}catch(_){}try{track("sg_archipel_sat_drop",{})}catch(_){};return}
+    if(tourRef.current!=null&&swipeY.current!=null&&ptrs.current.size===1){const dy=rel(e).y-swipeY.current;if(dy<-44){if(tourRef.current>=tourOrder.length-1){onSolutions&&onSolutions()}else tourGo(tourRef.current+1)}else if(dy>44)tourGo(tourRef.current-1)}ptrs.current.delete(e.pointerId);if(ptrs.current.size<2)pinchRef.current=null;swipeY.current=null}
   const onTap=e=>{if(tourRef.current!=null)return;const now=Date.now();if(now-lastTap.current<300&&!movedRef.current){const r=wrapRef.current.getBoundingClientRect();zoomAt(camRef.current.cz<1.4?2.0:0.45,e.clientX-r.left,e.clientY-r.top)}lastTap.current=now}
   // ── MODE VISITE : scroll/swipe de plage en plage, la caméra glisse, une fiche-info
   //    par plage (« quand on scroll down ça passe de plage en plage avec des infos »).
@@ -8756,7 +8768,7 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
   const sky=BEACH_PHASE[ph]||BEACH_PHASE.golden
   return(
     <div ref={wrapRef} role="region" aria-label={_t(lang,"Archipel du Veilleur","The Watcher's Archipelago","Archipiélago del Vigía")} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} onClick={onTap}
-      style={{position:"fixed",inset:0,zIndex:1006,background:"#04090B",touchAction:"none",overflow:"hidden",cursor:"grab"}}>
+      style={{position:"fixed",inset:0,zIndex:1006,background:"#04090B",touchAction:"none",overflow:"hidden",cursor:satGrab?"grabbing":"grab"}}>
       {/* CIEL-MONDE immersif (golden-hour vivant) derriere la constellation — le "fond" qui manquait */}
       <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block",pointerEvents:"none"}} aria-hidden="true">
         <style>{`@keyframes awcl{to{transform:translateX(46px)}}.aw-cl{animation:awcl 95s ease-in-out infinite alternate}@keyframes awsat{to{transform:translateX(-280px)}}.aw-sat{animation:awsat 64s ease-in-out infinite alternate}@keyframes awbeam{0%,100%{opacity:.05}50%{opacity:.17}}.aw-beam{animation:awbeam 5s ease-in-out infinite}@keyframes awglit{to{stroke-dashoffset:-60}}.aw-glit{animation:awglit 8s linear infinite}@keyframes awPing{0%{transform:scale(.05);opacity:.55}100%{transform:scale(1);opacity:0}}.aw-ping{animation:awPing 5s ease-out infinite;transform-box:fill-box;transform-origin:center}@keyframes awRay{0%,100%{opacity:.14}50%{opacity:.4}}.aw-ray{animation:awRay 6s ease-in-out infinite}@keyframes awSweep{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}.aw-sweep{animation:awSweep 9s ease-in-out infinite;transform-box:fill-box;transform-origin:560px 92px}@media(prefers-reduced-motion:reduce){.aw-cl,.aw-sat,.aw-beam,.aw-glit,.aw-ping,.aw-ray,.aw-sweep{animation:none}}`}</style>
@@ -8768,14 +8780,22 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
         {ph==="night"&&[[80,70],[180,120],[320,60],[470,100],[600,70],[700,140],[150,200],[540,170],[660,210],[400,150]].map((s,i)=>(<circle key={i} cx={s[0]} cy={s[1]} r="1.2" fill="#fff" opacity=".45"/>))}
         <g className="aw-cl"><path d="M90 150 q16 -30 54 -28 q20 -20 50 -12 q34 -8 48 14 q28 4 30 28 Z" fill={sky.cloud} opacity=".55"/></g>
         <g className="aw-cl" style={{animationDelay:"-40s"}}><path d="M540 110 q12 -22 40 -20 q16 -14 38 -8 q26 -6 36 12 Z" fill={sky.cloud} opacity=".45"/></g>
-        <g className="aw-sat">
-          {/* ONDES RADAR — le Veilleur scanne tout l'archipel (pings qui balaient) */}
-          {[0,1,2].map(i=>(<circle key={i} className="aw-ping" cx="560" cy="92" r="560" fill="none" stroke={sky.glit} strokeWidth="2" style={{animationDelay:(-i*1.7)+"s"}}/>))}
-          {/* rayons de lumière du Veilleur */}
-          <g className="aw-ray">{[-10,-4,2,8,14].map((a,i)=>(<path key={i} d="M560 92 L548 470 L572 470 Z" fill={sky.glit} opacity=".12" transform={"rotate("+a+" 560 92)"}/>))}</g>
-          {/* faisceau qui SWEEP + le Veilleur */}
-          <g className="aw-sweep"><path className="aw-beam" d="M560 92 L500 380 L640 380 Z" fill={sky.glit}/></g>
-          {miVeil(560,90,ph==="day"?"#2A6B66":"#3BA7A0","#5FD3C9")}
+        {/* satGRef = offset de DRAG (rigolo : on attrape le Veilleur, son radar suit, il rebondit) */}
+        <g ref={satGRef}>
+          {/* aw-sat = dérive idle, FIGÉE pendant qu'on le tient pour un drag net */}
+          <g className={satGrab?"":"aw-sat"} style={satGrab?{transition:"none"}:undefined}>
+            {/* ONDES RADAR — le Veilleur scanne tout l'archipel (pings qui balaient) */}
+            {[0,1,2].map(i=>(<circle key={i} className="aw-ping" cx="560" cy="92" r="560" fill="none" stroke={sky.glit} strokeWidth="2" style={{animationDelay:(-i*1.7)+"s"}}/>))}
+            {/* rayons de lumière du Veilleur */}
+            <g className="aw-ray">{[-10,-4,2,8,14].map((a,i)=>(<path key={i} d="M560 92 L548 470 L572 470 Z" fill={sky.glit} opacity=".12" transform={"rotate("+a+" 560 92)"}/>))}</g>
+            {/* faisceau qui SWEEP + le Veilleur */}
+            <g className="aw-sweep"><path className="aw-beam" d="M560 92 L500 380 L640 380 Z" fill={sky.glit}/></g>
+            {/* halo « attrapé » + le Veilleur lui-même */}
+            {satGrab&&<circle cx="560" cy="90" r="58" fill={sky.glit} opacity=".16"/>}
+            {miVeil(560,90,ph==="day"?"#2A6B66":"#3BA7A0","#5FD3C9")}
+            {/* cercle invisible : repère de hit pour le drag (suit dérive + offset) */}
+            <circle ref={satHitRef} cx="560" cy="90" r="46" fill="none" pointerEvents="none"/>
+          </g>
         </g>
         <line className="aw-glit" x1="-40" y1="470" x2="840" y2="470" stroke={sky.glit} strokeWidth="2" strokeDasharray="3 16" opacity=".22"/>
         <line className="aw-glit" x1="-40" y1="520" x2="840" y2="520" stroke={sky.glit} strokeWidth="1.6" strokeDasharray="2 22" opacity=".14" style={{animationDelay:"-4s"}}/>
