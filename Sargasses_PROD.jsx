@@ -6570,19 +6570,34 @@ function SatelliteFilm({lang}){
    grammaire de la destination (« chaque pastille = la mesure du matin »).
    pointer-events none (ne bloque jamais), jamais montée si reduced-motion. ── */
 function SceneWipe({label,onDone}){
-  useEffect(()=>{const t=setTimeout(onDone,780);return()=>clearTimeout(t)},[])
+  useEffect(()=>{const t=setTimeout(onDone,860);return()=>clearTimeout(t)},[])
   return(
     <div aria-hidden style={{position:"absolute",inset:0,zIndex:1095,pointerEvents:"none",overflow:"hidden"}}>
       <style>{`
-@keyframes sgwBeam{0%{transform:translateX(-14vw)}100%{transform:translateX(114vw)}}
-@keyframes sgwVeil{0%{opacity:0}26%{opacity:.5}100%{opacity:0}}
-@keyframes sgwLab{0%,16%{opacity:0;transform:translateY(8px)}34%,76%{opacity:1;transform:none}100%{opacity:0}}
+@keyframes sgwScene{0%{opacity:0}18%{opacity:1}80%{opacity:1}100%{opacity:0}}
+@keyframes sgwBeam{0%{transform:translateX(-16vw)}100%{transform:translateX(116vw)}}
+@keyframes sgwSat{0%{transform:translateY(-22vh) scale(.65);opacity:0}22%{opacity:1}100%{transform:translateY(82vh) scale(1.35);opacity:0}}
+@keyframes sgwLab{0%,20%{opacity:0;transform:translateY(8px)}38%,80%{opacity:1;transform:none}100%{opacity:0}}
       `}</style>
-      <div style={{position:"absolute",inset:0,background:"#0A1714",animation:"sgwVeil .74s ease-out forwards"}}/>
+      {/* LE PLAN : descente orbite → golden-hour (le monde se révèle, pas un cut sec) */}
+      <div style={{position:"absolute",inset:0,animation:"sgwScene .86s ease-out forwards",
+        background:"linear-gradient(180deg,#04090B 0%,#0A1714 24%,#155A5A 56%,#C97E3A 84%,#F2B05E 100%)"}}>
+        <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" style={{position:"absolute",inset:0,width:"100%",height:"100%"}}>
+          {[[80,60],[220,92],[360,50],[540,80],[680,56],[150,150],[470,120],[620,100],[300,180]].map((s,i)=>(<circle key={i} cx={s[0]} cy={s[1]} r="1.4" fill="#fff" opacity=".5"/>))}
+          <line x1="-40" y1="438" x2="840" y2="438" stroke="#FFD884" strokeWidth="2" strokeDasharray="3 13" opacity=".4"/>
+          <line x1="-40" y1="470" x2="840" y2="470" stroke="#FFD884" strokeWidth="1.5" strokeDasharray="2 18" opacity=".25"/>
+        </svg>
+      </div>
+      {/* LE VEILLEUR DESCEND (du satellite à l'eau) — le mouvement de caméra */}
+      <div style={{position:"absolute",left:"50%",top:0,marginLeft:-30,animation:"sgwSat .86s cubic-bezier(.4,0,.3,1) forwards"}}>
+        <svg width="60" height="60" viewBox="0 0 64 64" style={{display:"block",overflow:"visible"}}>{miVeil(32,32,"#3BA7A0","#5FD3C9")}</svg>
+      </div>
+      {/* faisceau qui balaie */}
       <div style={{position:"absolute",top:0,bottom:0,left:0,width:"13vw",
-        animation:"sgwBeam .56s cubic-bezier(.55,.06,.35,1) forwards",
+        animation:"sgwBeam .58s cubic-bezier(.55,.06,.35,1) forwards",
         background:"linear-gradient(90deg,rgba(255,199,44,0) 0%,rgba(255,199,44,.13) 55%,rgba(255,199,44,.8) 97%,#FFC72C 100%)"}}/>
-      <div style={{position:"absolute",left:16,right:16,bottom:"18%",textAlign:"center",animation:"sgwLab .74s ease-out forwards"}}>
+      {/* la légende ENSEIGNE la destination */}
+      <div style={{position:"absolute",left:16,right:16,bottom:"16%",textAlign:"center",animation:"sgwLab .86s ease-out forwards"}}>
         <span style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(10,23,20,.8)",
           border:"1px solid rgba(255,199,44,.4)",color:"#fff",fontSize:12.5,fontWeight:700,
           letterSpacing:".04em",padding:"8px 14px",borderRadius:999,maxWidth:"100%"}}>
