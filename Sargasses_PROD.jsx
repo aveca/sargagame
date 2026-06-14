@@ -2112,8 +2112,15 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               const refCode=isPremium?localStorage.getItem("sg_referral_code"):""
               const url=window.location.origin+"/plages/"+slug+(refCode?"?ref="+refCode:"")
               const isRef=!!refCode
-              if(navigator.share){track("sg_share",{beach_id:beach.id,method:"native",has_referral:isRef});navigator.share({title:beach.name+" — Sargasses",text:(ST[beach.status]||ST._loading).l+" aujourd'hui",url}).catch(()=>{})}
-              else{navigator.clipboard?.writeText(url);track("sg_share",{beach_id:beach.id,has_referral:isRef})}
+              const _st=ST[beach.status]||ST._loading
+              const _stl=lang==="es"?_st.les:lang==="en"?_st.le:_st.l
+              const _sc=typeof beach.score==="number"?` ${beach.score}/100`:""
+              const _txt=_t(lang,
+                `☀️ ${beach.name} — ${_stl}${_sc} aujourd'hui. La plage du jour !`,
+                `☀️ ${beach.name} — ${_stl}${_sc} today. Beach of the day!`,
+                `☀️ ${beach.name} — ${_stl}${_sc} hoy. ¡La playa del día!`)
+              if(navigator.share){track("sg_share",{beach_id:beach.id,method:"native",has_referral:isRef});navigator.share({title:beach.name+" — Sargasses",text:_txt,url}).catch(()=>{})}
+              else{navigator.clipboard?.writeText(`${_txt} ${url}`);track("sg_share",{beach_id:beach.id,has_referral:isRef})}
             }} style={{flex:0,padding:"14px 20px",borderRadius:16,
               border:"1.5px solid var(--sg-border)",
               background:"var(--sg-card)",cursor:"pointer",fontSize:18,fontFamily:"inherit",
