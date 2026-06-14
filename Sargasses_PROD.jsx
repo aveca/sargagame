@@ -190,6 +190,46 @@ function ScoreBlob({score,color,size=84}){
   )
 }
 
+// ── PRNG DÉTERMINISTE (BeachScene v2, spec wdiiae0wd) — une plage = TOUJOURS la même
+//    scène (seed depuis beach.id). FNV-1a 32-bit + mulberry32. JAMAIS Math.random/Date.now
+//    (sinon la scène se re-randomise à chaque render + casse SSR). Tirages dans un ordre fixe.
+function hashSeed(str){let h=2166136261>>>0;str=String(str==null?"":str);for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)>>>0}return h>>>0}
+function rng(seed){let a=seed>>>0;return function(){a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function pick(rnd,arr){return arr[Math.floor(rnd()*arr.length)]}
+function rangeR(rnd,a,b){return a+(b-a)*rnd()}
+function intR(rnd,a,b){return Math.floor(a+(b-a+1)*rnd())}
+function chance(rnd,p){return rnd()<p}
+
+// ── archetypeOf — choisit l'archétype visuel d'une plage depuis ses données (spec wdiiae0wd).
+//    Ordre : du plus spécifique au défaut. READ-ONLY (jamais renommer une plage, slug=SEO).
+//    Élargit beachLandmark (gardé en fallback). USD (fl/pc/rm) dégradent vers OPEN_SHORE.
+const _ARCH_BLACK=/noire|dufour|c[ée]ron|couleuvre|grand.?rivi|anse l[ae]vau/i
+const _ARCH_CLIFF=/caravelle|tartane|presqu|tombolo|ch[aâ]teaux|pointe|\bcap\b/i
+const _ARCH_REEF=/[iî]let|petite[ -]?terre|caret|fajou|gosier/i
+const _ARCH_RIVER=/rivi[èe]re|embouchure|gal[io]n|figuier|mangrove/i
+const _ARCH_MARINA=/bourg|marina|ponton|fran[çc]aise/i
+const _ARCH_OPEN=/salines?|grande[ -]anse/i
+const _MARINA_COMMUNES=["sainte-anne","le gosier","le marin","fort-de-france","saint-françois","saint-francois"]
+function archetypeOf(beach){
+  if(!beach)return "MORNE_COAST"
+  const k=((beach.id||"")+" "+(beach.name||"")+" "+(beach.commune||"")).toLowerCase()
+  const isl=beach.island
+  if(/diamant/.test(k))return "ICONIC_ROCK"
+  if(_ARCH_BLACK.test(k))return "VOLCANIC_BLACK"
+  // CLIFF & RIVER : tester le NOM seul (pas la commune) — sinon Pointe-à-Pitre→CLIFF
+  // et Grande Anse @ Rivière-Pilote→RIVER (faux positifs vus au dump des 136).
+  if(_ARCH_CLIFF.test(beach.name||""))return "CLIFF_HEADLAND"
+  if(isl==="gp"&&_ARCH_REEF.test(k))return "REEF_ISLET"
+  if(_ARCH_RIVER.test(beach.name||""))return "RIVER_MANGROVE"
+  let coast=beach.coast
+  try{if(!coast&&typeof classifyBeachCoast==="function")coast=classifyBeachCoast(beach.lat,beach.lng,isl)}catch(_){}
+  if(coast==="sheltered"&&beach.parking===true&&(_ARCH_MARINA.test(k)||_MARINA_COMMUNES.includes((beach.commune||"").toLowerCase())))return "MARINA_URBAN"
+  if(_ARCH_OPEN.test(k)||isl==="fl"||isl==="pc"||isl==="rm"||(coast==="atlantic"&&(beach.drive||0)>=40))return "OPEN_SHORE"
+  if(coast==="sheltered")return "SHELTERED_BAY"
+  return "MORNE_COAST"
+}
+try{if(typeof window!=="undefined")window.sgArchetypeOf=archetypeOf}catch(_){}
+
 // ── BeachScene — CHAQUE plage a SA scène SVG (directive 14/06 : « notre valeur
 //    est sur le svg » + « représente le diamant en svg, chaque plage avec sa
 //    particularité »). Landmark réel + sable + statut + phase de l'heure locale.
