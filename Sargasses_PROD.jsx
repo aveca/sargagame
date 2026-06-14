@@ -8211,16 +8211,34 @@ function WorldAfaiGauge({afai,lang}){
     </div>
   )
 }
-function WorldCard({beach,lang,active,index,onOpen,phaseGrad}){
+// Hotspot jouable « clic ici » posé sur la scène SVG.
+function WorldHotspot({x,y,label,onClick,delay}){
+  return(
+    <button onClick={onClick} aria-label={label} style={{position:"absolute",left:x,top:y,transform:"translate(-50%,-50%)",zIndex:3,width:38,height:38,borderRadius:"50%",border:"none",background:"none",cursor:"pointer",padding:0}}>
+      <span className="wf-hot" style={{display:"block",width:14,height:14,margin:"0 auto",borderRadius:"50%",background:"rgba(255,255,255,.95)",animationDelay:(delay||0)+"s"}}/>
+    </button>
+  )
+}
+function WorldCard({beach,lang,active,index,onCarnet,phaseGrad}){
   const status=beach.status||"clean"
   const vm=verdictMeta(status,lang)
   const hasScore=typeof beach.score==="number"
   const mood=hasScore?moodFromScore(beach.score):moodFromStatus(status)
+  const afai=typeof beach.afai==="number"?beach.afai:null
+  const[tip,setTip]=useState(null)
+  const TIPS={
+    sky:{t:_t(lang,"☀️ Le saviez-vous ?","☀️ Did you know?","☀️ ¿Sabías?"),b:_t(lang,"La ceinture de sargasses traverse l'Atlantique sur près de 8 000 km — visible depuis l'espace.","The sargassum belt crosses the Atlantic for nearly 8,000 km — visible from space.","El cinturón de sargazo cruza el Atlántico casi 8.000 km — visible desde el espacio.")},
+    sea:{t:_t(lang,"🛰️ Les algues, vues du ciel","🛰️ Algae from space","🛰️ Algas desde el cielo"),b:(afai!=null?"AFAI "+afai.toFixed(2)+" — ":"")+(status==="clean"?_t(lang,"signal faible : eau claire aujourd'hui.","low signal: clear water today.","señal baja: agua clara hoy."):status==="moderate"?_t(lang,"signal modéré : présence éparse, prudence.","moderate signal: scattered presence.","señal moderada: presencia dispersa."):_t(lang,"signal fort : échouage probable, évite.","strong signal: likely beaching.","señal fuerte: varazón probable."))},
+    veilleur:{t:_t(lang,"Le verdict du Veilleur","The Watchman's verdict","El veredicto del Vigía"),b:vm.verb+" — "+(hasScore?_t(lang,"score "+beach.score+"/100, ","score "+beach.score+"/100, ","puntuación "+beach.score+"/100, "):"")+_t(lang,"d'après le scan satellite du jour, recoupé sur 30 jours.","from today's satellite scan, cross-checked over 30 days.","según el escaneo de hoy, contrastado 30 días.")},
+  }
+  const show=k=>{setTip(TIPS[k]);try{track("sg_world_hotspot",{zone:k,beach_id:beach.id})}catch(_){}}
   return(
     <section style={{position:"relative",height:"100svh",minHeight:"100svh",scrollSnapAlign:"start",scrollSnapStop:"always",overflow:"hidden",background:phaseGrad}}>
       {active?<BeachScene beach={beach}/>:<div aria-hidden="true" style={{position:"absolute",inset:0,background:phaseGrad}}/>}
       <div aria-hidden="true" style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(4,9,11,0) 36%,rgba(4,9,11,.34) 64%,rgba(4,9,11,.84) 100%)"}}/>
-      <div style={{position:"absolute",left:0,right:0,bottom:0,padding:"0 22px calc(118px + env(safe-area-inset-bottom)) 22px",color:"#fff",maxWidth:560,margin:"0 auto"}}>
+      {/* HOTSPOTS jouables — touche la scène, la data se révèle in-world (pas un popup) */}
+      {active&&<><WorldHotspot x="24%" y="19%" label={TIPS.sky.t} onClick={()=>show("sky")} delay={0}/><WorldHotspot x="66%" y="49%" label={TIPS.sea.t} onClick={()=>show("sea")} delay={.9}/></>}
+      <div style={{position:"absolute",left:0,right:0,bottom:0,zIndex:4,padding:"0 22px calc(118px + env(safe-area-inset-bottom)) 22px",color:"#fff",maxWidth:560,margin:"0 auto"}}>
         <div style={{display:"flex",alignItems:"flex-end",gap:12,marginBottom:4}}>
           {hasScore&&<ScoreBlob score={beach.score} color={beach.scoreColor||vm.color} size={64}/>}
           <div style={{flex:1,minWidth:0}}>
@@ -8228,24 +8246,90 @@ function WorldCard({beach,lang,active,index,onOpen,phaseGrad}){
             <h2 style={{margin:"2px 0 0",fontFamily:"'Anton',system-ui,sans-serif",fontSize:30,lineHeight:1.02,letterSpacing:".01em",textShadow:"0 2px 14px rgba(0,0,0,.5)"}}>{beach.name}</h2>
             {beach.commune&&<div style={{fontSize:12.5,fontWeight:600,color:"rgba(255,255,255,.8)"}}>{beach.commune}</div>}
           </div>
-          <Veilleur mood={mood} size={42}/>
+          <button onClick={()=>show("veilleur")} aria-label={TIPS.veilleur.t} style={{background:"none",border:"none",padding:0,cursor:"pointer"}}><Veilleur mood={mood} size={42}/></button>
         </div>
         <WorldAfaiGauge afai={beach.afai} lang={lang}/>
         <a href="/fiabilite/" onClick={e=>{e.stopPropagation();try{track("sg_reliability_open",{from:"world_card"})}catch(_){}}}
           style={{display:"inline-flex",alignItems:"center",gap:7,marginTop:10,fontSize:11.5,fontWeight:700,color:"rgba(255,255,255,.92)",textDecoration:"none"}}>
           🛰️ <span>{_t(lang,"Scan satellite • 80% justes sur 30j","Satellite scan • 80% accurate over 30d","Escaneo satélite • 80% exacto 30d")}</span> <span style={{color:"#5FD3C9"}}>→</span>
         </a>
-        <button onClick={()=>{try{track("sg_world_open_beach",{beach_id:beach.id,status})}catch(_){}; onOpen&&onOpen(beach)}}
+        <button onClick={()=>{try{track("sg_world_carnet",{beach_id:beach.id,status})}catch(_){}; onCarnet&&onCarnet(beach)}}
           style={{display:"block",width:"100%",marginTop:14,padding:"14px",borderRadius:16,border:"none",cursor:"pointer",
           fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",fontSize:15,fontWeight:800,color:"#07201E",
           background:"linear-gradient(180deg,#FFD884,#F2B05E)",boxShadow:"0 8px 24px rgba(0,0,0,.35)"}}>
-          {_t(lang,"Découvrir cette plage →","Explore this beach →","Descubrir esta playa →")}
+          {_t(lang,"Le carnet du Veilleur →","The Watchman's log →","El cuaderno del Vigía →")}
         </button>
       </div>
-      {index===0&&<div className="wf-hint" aria-hidden="true" style={{position:"absolute",left:0,right:0,bottom:"calc(94px + env(safe-area-inset-bottom))",textAlign:"center",color:"rgba(255,255,255,.82)",fontSize:12,fontWeight:800,letterSpacing:".08em"}}>
-        {_t(lang,"SCROLLEZ ↓","SCROLL ↓","DESLIZA ↓")}
+      {index===0&&!tip&&<div className="wf-hint" aria-hidden="true" style={{position:"absolute",left:0,right:0,bottom:"calc(94px + env(safe-area-inset-bottom))",zIndex:4,textAlign:"center",color:"rgba(255,255,255,.85)",fontSize:12,fontWeight:800,letterSpacing:".07em"}}>
+        👆 {_t(lang,"TOUCHE LA SCÈNE · SCROLLE ↓","TAP THE SCENE · SCROLL ↓","TOCA LA ESCENA · DESLIZA ↓")}
       </div>}
+      {tip&&<button onClick={()=>setTip(null)} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"absolute",inset:0,zIndex:8,display:"flex",alignItems:"center",justifyContent:"center",padding:24,background:"rgba(4,9,11,.42)",border:"none",cursor:"pointer"}}>
+        <div className="wf-pop" style={{maxWidth:332,background:"rgba(7,32,30,.95)",border:"1px solid rgba(95,211,201,.42)",borderRadius:18,padding:"18px 20px",textAlign:"left",boxShadow:"0 14px 44px rgba(0,0,0,.55)"}}>
+          <div style={{fontSize:13,fontWeight:800,color:"#5FD3C9",marginBottom:7}}>{tip.t}</div>
+          <div style={{fontSize:14.5,lineHeight:1.5,color:"#fff"}}>{tip.b}</div>
+          <div style={{marginTop:12,fontSize:11,color:"rgba(255,255,255,.5)"}}>{_t(lang,"Touche pour fermer","Tap to close","Toca para cerrar")}</div>
+        </div>
+      </button>}
     </section>
+  )
+}
+// Infos SVG INTERCALÉES entre les plages (la découverte, pas que du scroll).
+const WORLD_FACTS=[
+  {emoji:"🌊",t:l=>_t(l,"8 000 km d'algues","8,000 km of algae","8.000 km de algas"),b:l=>_t(l,"La grande ceinture atlantique relie l'Afrique au Brésil. On la suit par satellite, chaque jour.","The great Atlantic belt links Africa to Brazil. We track it by satellite, every day.","El gran cinturón atlántico une África y Brasil. Lo seguimos por satélite, cada día.")},
+  {emoji:"🛰️",t:l=>_t(l,"L'œil dans l'espace","The eye in space","El ojo en el espacio"),b:l=>_t(l,"Le Veilleur lit l'indice AFAI des satellites et le recoupe sur 30 jours : 80% de prévisions justes.","The Watchman reads the satellites' AFAI index, cross-checked over 30 days: 80% accurate.","El Vigía lee el índice AFAI, contrastado 30 días: 80% exacto.")},
+  {emoji:"💨",t:l=>_t(l,"Le H₂S, c'est quoi ?","What is H₂S?","¿Qué es el H₂S?"),b:l=>_t(l,"En se décomposant, les sargasses dégagent du sulfure d'hydrogène — l'odeur d'œuf. On te prévient avant.","Decomposing sargassum releases hydrogen sulfide — the egg smell. We warn you first.","Al descomponerse libera sulfuro de hidrógeno — olor a huevo. Te avisamos antes.")},
+  {emoji:"♻️",t:l=>_t(l,"Une ressource ?","A resource?","¿Un recurso?"),b:l=>_t(l,"Ramassées tôt, les sargasses deviennent engrais, bioplastique ou énergie. Le timing change tout.","Collected early, sargassum becomes fertilizer, bioplastic or energy. Timing is everything.","Recogido a tiempo, el sargazo se vuelve fertilizante o energía. El tiempo lo es todo.")},
+]
+function WorldInfoCard({fact,lang}){
+  return(
+    <section style={{position:"relative",height:"100svh",minHeight:"100svh",scrollSnapAlign:"start",overflow:"hidden",
+      background:"radial-gradient(120% 80% at 50% 20%,#11463E 0%,#0B2230 55%,#04090B 100%)",color:"#fff"}}>
+      <div className="wf-fact" style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"0 30px calc(120px + env(safe-area-inset-bottom))",maxWidth:540,margin:"0 auto",textAlign:"center"}}>
+        <div style={{fontSize:54,lineHeight:1}}>{fact.emoji}</div>
+        <h2 style={{margin:"16px 0 0",fontFamily:"'Anton',system-ui,sans-serif",fontSize:32,lineHeight:1.05}}>{fact.t(lang)}</h2>
+        <p style={{margin:"12px 0 0",fontSize:15,lineHeight:1.55,color:"rgba(255,255,255,.88)"}}>{fact.b(lang)}</p>
+        <div style={{marginTop:22,fontSize:11.5,fontWeight:700,letterSpacing:".08em",color:"rgba(255,255,255,.55)"}}>{_t(lang,"CONTINUE ↓","CONTINUE ↓","SIGUE ↓")}</div>
+      </div>
+    </section>
+  )
+}
+// Le CARNET in-world (remplace le popup du bas) : data profonde + nudge premium, immersif.
+function WorldCarnet({beach,lang,onClose,onPremium}){
+  const status=beach.status||"clean"
+  const vm=verdictMeta(status,lang)
+  const hasScore=typeof beach.score==="number"
+  const mood=hasScore?moodFromScore(beach.score):moodFromStatus(status)
+  return(
+    <div role="dialog" aria-label={beach.name} style={{position:"absolute",inset:0,zIndex:20,overflowY:"auto",WebkitOverflowScrolling:"touch",
+      background:"linear-gradient(180deg,#04090B 0%,#0B2230 50%,#11463E 100%)",animation:"wfCarnetIn .32s cubic-bezier(.22,1,.36,1) both"}}>
+      <button onClick={onClose} style={{position:"sticky",top:"calc(12px + env(safe-area-inset-top))",marginLeft:14,zIndex:3,padding:"8px 14px",borderRadius:999,
+        background:"rgba(4,9,11,.5)",border:"1px solid rgba(255,255,255,.25)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",backdropFilter:"blur(8px)"}}>← {_t(lang,"Retour","Back","Volver")}</button>
+      <div style={{padding:"8px 22px calc(60px + env(safe-area-inset-bottom))",maxWidth:560,margin:"0 auto",color:"#fff"}}>
+        <div style={{display:"flex",alignItems:"center",gap:12,marginTop:6}}>
+          <Veilleur mood={mood} size={58}/>
+          <div style={{flex:1,minWidth:0}}>
+            <h2 style={{margin:0,fontFamily:"'Anton',system-ui,sans-serif",fontSize:28,lineHeight:1.04}}>{beach.name}</h2>
+            {beach.commune&&<div style={{fontSize:12.5,fontWeight:600,color:"rgba(255,255,255,.78)"}}>{beach.commune}</div>}
+          </div>
+          {hasScore&&<ScoreBlob score={beach.score} color={beach.scoreColor||vm.color} size={58}/>}
+        </div>
+        <div style={{marginTop:14,padding:"14px 16px",borderRadius:16,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.12)"}}>
+          <div style={{fontSize:12,fontWeight:800,letterSpacing:".06em",color:vm.color,textTransform:"uppercase"}}>{_t(lang,"Aujourd'hui · gratuit","Today · free","Hoy · gratis")}</div>
+          <div style={{marginTop:6,fontSize:16,fontWeight:800}}>{vm.emoji} {vm.verb}</div>
+          <WorldAfaiGauge afai={beach.afai} lang={lang}/>
+        </div>
+        <button onClick={()=>{try{track("sg_world_carnet_premium",{beach_id:beach.id})}catch(_){}; onPremium&&onPremium("world_carnet")}}
+          style={{display:"block",width:"100%",marginTop:14,padding:"16px",borderRadius:16,border:"1px solid rgba(255,216,132,.4)",cursor:"pointer",textAlign:"left",
+          background:"linear-gradient(135deg,rgba(255,216,132,.14),rgba(242,176,94,.08))",color:"#fff"}}>
+          <div style={{fontSize:12,fontWeight:800,letterSpacing:".06em",color:"#FFD884"}}>🔒 {_t(lang,"AVEC LE VEILLEUR","WITH THE WATCHMAN","CON EL VIGÍA")}</div>
+          <div style={{marginTop:6,fontSize:15,fontWeight:700,lineHeight:1.4}}>{_t(lang,"Prévision 14 jours, historique, brief matin & alertes sur cette plage →","14-day forecast, history, morning brief & alerts for this beach →","Pronóstico 14 días, historial, resumen y alertas →")}</div>
+        </button>
+        <a href="/fiabilite/" onClick={()=>{try{track("sg_reliability_open",{from:"world_carnet"})}catch(_){}}}
+          style={{display:"inline-flex",alignItems:"center",gap:7,marginTop:16,fontSize:12,fontWeight:700,color:"rgba(255,255,255,.82)",textDecoration:"none"}}>
+          🛰️ {_t(lang,"Comment on prévoit : 80% justes sur 30 jours →","How we forecast: 80% accurate over 30 days →","Cómo pronosticamos: 80% exacto →")}
+        </a>
+      </div>
+    </div>
   )
 }
 function WorldPremiumCard({lang,onPremium,onRestart}){
@@ -8271,15 +8355,23 @@ function WorldPremiumCard({lang,onPremium,onRestart}){
     </section>
   )
 }
-function WorldFeed({beaches,lang,onOpenBeach,onPremium,onClose,island}){
+function WorldFeed({beaches,lang,onPremium,onClose,island}){
   const scrollRef=useRef(null)
   const[active,setActive]=useState(0)
+  const[carnet,setCarnet]=useState(null)
   const phaseGrad=useMemo(()=>{
     let ph="golden";try{if(typeof HERO_PH_OVERRIDE!=="undefined"&&HERO_PH_OVERRIDE)ph=HERO_PH_OVERRIDE;else{const h=new Date().getHours();ph=h<5?"night":h<8?"dawn":h<17?"day":h<20?"golden":"night"}}catch(_){}
     const t=BEACH_PHASE[ph]||BEACH_PHASE.golden
     return "linear-gradient(180deg,"+t.sky[0]+","+t.sky[2]+" 60%,"+t.seaB+")"
   },[])
   const list=useMemo(()=>(beaches||[]).filter(b=>b&&b.id&&b.name&&(!island||b.island===island)).slice(0,16),[beaches,island])
+  // Items intercalés : 1 carte science toutes les 4 plages (info entre les plages).
+  const items=useMemo(()=>{
+    const out=[];let fi=0
+    list.forEach((b,i)=>{out.push({type:"beach",beach:b,bi:i});if((i+1)%4===0&&i<list.length-1){out.push({type:"info",fact:WORLD_FACTS[fi%WORLD_FACTS.length]});fi++}})
+    out.push({type:"premium"})
+    return out
+  },[list])
   useEffect(()=>{
     const root=scrollRef.current;if(!root)return
     const io=new IntersectionObserver(es=>{
@@ -8287,19 +8379,25 @@ function WorldFeed({beaches,lang,onOpenBeach,onPremium,onClose,island}){
     },{root,threshold:0.55})
     root.querySelectorAll("[data-wf-card]").forEach(c=>io.observe(c))
     return()=>io.disconnect()
-  },[list.length])
+  },[items.length])
   useEffect(()=>{try{track("sg_world_open",{count:list.length})}catch(_){}},[])// eslint-disable-line
   const restart=()=>{try{scrollRef.current&&scrollRef.current.scrollTo({top:0,behavior:"smooth"})}catch(_){}}
   return(
     <div role="region" aria-label="Monde Sargasses" style={{position:"fixed",inset:0,zIndex:1005,background:"#04090B"}}>
-      <style>{`@keyframes wfHint{0%,100%{transform:translateY(0);opacity:.72}50%{transform:translateY(5px);opacity:1}}.wf-hint{animation:wfHint 1.8s ease-in-out infinite}@keyframes wfMark{0%,100%{transform:scale(1)}50%{transform:scale(1.35)}}.wf-mark{animation:wfMark 2.4s ease-in-out infinite}@media(prefers-reduced-motion:reduce){.wf-hint,.wf-mark{animation:none}}`}</style>
+      <style>{`@keyframes wfHint{0%,100%{transform:translateY(0);opacity:.72}50%{transform:translateY(5px);opacity:1}}.wf-hint{animation:wfHint 1.8s ease-in-out infinite}@keyframes wfMark{0%,100%{transform:scale(1)}50%{transform:scale(1.35)}}.wf-mark{animation:wfMark 2.4s ease-in-out infinite}@keyframes wfHot{0%{box-shadow:0 0 0 0 rgba(95,211,201,.5),0 2px 8px rgba(0,0,0,.5)}70%{box-shadow:0 0 0 14px rgba(95,211,201,0),0 2px 8px rgba(0,0,0,.5)}100%{box-shadow:0 0 0 0 rgba(95,211,201,0),0 2px 8px rgba(0,0,0,.5)}}.wf-hot{animation:wfHot 2.2s ease-out infinite}@keyframes wfPop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}.wf-pop{animation:wfPop .24s cubic-bezier(.34,1.56,.64,1) both}@keyframes wfFact{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}.wf-fact{animation:wfFact .5s ease both}@keyframes wfCarnetIn{from{transform:translateY(100%)}to{transform:translateY(0)}}@media(prefers-reduced-motion:reduce){.wf-hint,.wf-mark,.wf-hot,.wf-pop,.wf-fact{animation:none}}`}</style>
       <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")}
-        style={{position:"absolute",top:"calc(12px + env(safe-area-inset-top))",right:14,zIndex:5,width:40,height:40,borderRadius:"50%",
+        style={{position:"absolute",top:"calc(12px + env(safe-area-inset-top))",right:14,zIndex:30,width:40,height:40,borderRadius:"50%",
         background:"rgba(4,9,11,.55)",border:"1px solid rgba(255,255,255,.25)",color:"#fff",fontSize:17,cursor:"pointer",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)"}}>✕</button>
       <div ref={scrollRef} style={{position:"absolute",inset:0,overflowY:"auto",scrollSnapType:"y mandatory",WebkitOverflowScrolling:"touch"}}>
-        {list.map((b,i)=>(<div key={b.id} data-wf-card={i}><WorldCard beach={b} index={i} active={Math.abs(i-active)<=1} lang={lang} onOpen={onOpenBeach} phaseGrad={phaseGrad}/></div>))}
-        <div data-wf-card={list.length}><WorldPremiumCard lang={lang} onPremium={onPremium} onRestart={restart}/></div>
+        {items.map((it,idx)=>(
+          <div key={idx} data-wf-card={idx}>
+            {it.type==="beach"&&<WorldCard beach={it.beach} index={it.bi} active={Math.abs(idx-active)<=1} lang={lang} onCarnet={setCarnet} phaseGrad={phaseGrad}/>}
+            {it.type==="info"&&<WorldInfoCard fact={it.fact} lang={lang}/>}
+            {it.type==="premium"&&<WorldPremiumCard lang={lang} onPremium={onPremium} onRestart={restart}/>}
+          </div>
+        ))}
       </div>
+      {carnet&&<WorldCarnet beach={carnet} lang={lang} onClose={()=>setCarnet(null)} onPremium={onPremium}/>}
     </div>
   )
 }
@@ -9508,7 +9606,7 @@ export default function App(){
         {/* MONDE SVG — la fondation : feed vertical des plages, zéro photo, data en
             scène, cliquable, loopé. Additif (z1005) ; fiche+paywall s'ouvrent au-dessus. */}
         {showWorld&&<WorldFeed beaches={allBeaches} island={island} lang={lang}
-          onOpenBeach={onBeachClick} onPremium={openPremium} onClose={()=>{setShowWorld(false);track("sg_world_close",{})}}/>}
+          onPremium={openPremium} onClose={()=>{setShowWorld(false);track("sg_world_close",{})}}/>}
         {/* Entrée MONDE — bouton flottant (devient la nav par défaut après A-B). */}
         {!showHero&&!showPremium&&!showChat&&!showDiscovery&&!showWorld&&!selectedBeach&&view==="map"&&(
           <button onClick={()=>{setShowWorld(true);track("sg_world_open",{from:"fab"})}} aria-label={_t(lang,"Explorer le monde Sargasses","Explore the Sargassum world","Explorar el mundo Sargazo")}
