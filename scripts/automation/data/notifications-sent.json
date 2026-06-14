@@ -5,5 +5,10 @@
   ],
   "2026-06-13": [
     "florida:fl012:clean>moderate"
+  ],
+  "2026-06-14": [
+    "rivieramaya:rm004:clean>moderate",
+    "rivieramaya:rm005:clean>moderate",
+    "florida:fl012:moderate>clean"
   ]
 }
