@@ -6728,7 +6728,7 @@ function ScrollStory({lang,onShowMap}){
    s'allument en cascade) → tap = fiche réelle (AHA + déclencheurs premium
    existants). Tout est skippable (« montre-moi la carte »). transforms/opacity
    only, 2 ressorts CSS nommés, reduced-motion = panneaux en fondu, complétable. ── */
-function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,onShowMap,exiting}){
+function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,onShowMap,onFav,exiting}){
   const T=(fr,en,es)=>_t(lang,fr,en,es)
   const [stage,setStage]=useState("vibe") // vibe → coast (sélection) → scan (LE SCAN, beat 2)
   const [vibe,setVibe]=useState(null)
@@ -6790,6 +6790,17 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
   // on entre d'abord dans le scan (le satellite analyse CETTE plage), puis « Voir
   // le résultat » ouvre la vraie fiche. Garde tout le parcours actuel intact.
   const goScan=b=>{setChosenBeach(b);track("sg_funnel_scan_view",{beach_id:b.id,vibe:vibe||"_"});setStage("scan")}
+  // Beat 3 LE VERDICT : actions de capture photogéniques (partage social) +
+  // appropriation (favori = pont vers le veilleur). Partage = donnée publique.
+  const [faved,setFaved]=useState(false)
+  const shareBeach=b=>{
+    const txt=`${b.name} ${b.score}/100 · ${statusShort(b)} ${T("aujourd'hui","today","hoy")} ☀️`
+    const url=(typeof window!=="undefined"&&window.location&&window.location.origin)||""
+    track("sg_share",{beach_id:b.id,method:"funnel"})
+    try{if(navigator.share){navigator.share({title:b.name,text:txt,url}).catch(()=>{});return}}catch(_){}
+    try{navigator.clipboard&&navigator.clipboard.writeText(`${txt} ${url}`.trim())}catch(_){}
+  }
+  const favBeach=b=>{setFaved(v=>!v);track("sg_fav_add",{beach_id:b.id,source:"funnel"});onFav&&onFav(b)}
   const distTxt=b=>{if(!userPos||!b.lat)return b.drive!=null?`${b.drive} min`:"";const km=haversine(userPos.lat,userPos.lng,b.lat,b.lng);return US_UNITS?`${Math.max(1,Math.round(km*0.621))} mi`:`${Math.max(1,Math.round(km))} km`}
   return(
     <div role="dialog" aria-label={T("Trouve ta plage","Find your beach","Encuentra tu playa")} style={{position:"absolute",inset:0,zIndex:1050,
@@ -6817,16 +6828,24 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
 @keyframes gfFade{from{opacity:0}to{opacity:1}}
 .gf-scanfx{animation:gfFade .45s ease-out both}
 .gf-medal{animation:gfFade .5s ease-out .9s both}
-@media (prefers-reduced-motion:reduce){.gf-cam{transition:none}.gf-panel,.gf-chip,.gf-card{animation:none!important}.gf-pulse,.gf-scanline,.gf-sat,.gf-medal,.gf-scanfx{animation:none!important}.gf-px{animation:none!important;opacity:.9}.gf-medal,.gf-scanfx{opacity:1}.gf-sat{transform:translate(400px,142px)}.gf-scanline{transform:translateY(300px)}}
+@keyframes gfBlobIn{from{transform:scale(.55)}to{transform:scale(1)}}
+.gf-blob{animation:gfBlobIn .6s cubic-bezier(.34,1.56,.64,1) both;transform-box:fill-box;transform-origin:center}
+@keyframes gfDotIn{from{transform:scale(.3)}to{transform:scale(1)}}
+.gf-dot{animation:gfDotIn .5s cubic-bezier(.34,1.56,.64,1) both;animation-delay:var(--dd,0ms);transform-box:fill-box;transform-origin:center}
+@keyframes gfRing{to{stroke-dashoffset:-48}}
+.gf-ring{animation:gfRing 6s linear infinite}
+@media (prefers-reduced-motion:reduce){.gf-cam{transition:none}.gf-panel,.gf-chip,.gf-card{animation:none!important}.gf-pulse,.gf-scanline,.gf-sat,.gf-medal,.gf-scanfx,.gf-blob,.gf-dot,.gf-ring{animation:none!important}.gf-px{animation:none!important;opacity:.9}.gf-medal,.gf-scanfx{opacity:1}.gf-sat{transform:translate(400px,142px)}.gf-scanline{transform:translateY(300px)}.gf-blob,.gf-dot{transform:scale(1)}}
       `}</style>
       {/* LE MONDE — dolly-in : il grossit quand on entre dans la sélection */}
       <div className="gf-cam" aria-hidden style={{position:"absolute",inset:0,transformOrigin:"50% 64%",
-        transform:stage==="scan"?"scale(1.22) translateY(-4%)":stage==="coast"?"scale(1.16) translateY(-2%)":"scale(1)"}}>
+        transform:stage==="scan"?"scale(1.22) translateY(-4%)":stage==="verdict"?"scale(1.2) translateY(-3%)":stage==="coast"?"scale(1.16) translateY(-2%)":"scale(1)"}}>
         <HeroScene/>
       </div>
       <div aria-hidden style={{position:"absolute",inset:0,pointerEvents:"none",transition:"background .5s ease",
         background:stage==="scan"
           ?"linear-gradient(180deg,rgba(5,18,24,.72) 0%,rgba(8,30,40,.4) 36%,rgba(10,23,20,.86) 70%,#0A1714 100%)"
+          :stage==="verdict"
+          ?"linear-gradient(180deg,rgba(10,23,20,.45) 0%,rgba(10,23,20,.1) 28%,rgba(10,23,20,.5) 50%,rgba(10,23,20,.9) 76%,#0A1714 100%)"
           :stage==="coast"
           ?"linear-gradient(180deg,rgba(10,23,20,.5) 0%,rgba(10,23,20,.22) 24%,rgba(10,23,20,.86) 62%,#0A1714 100%)"
           :"linear-gradient(180deg,rgba(10,23,20,.55) 0%,rgba(10,23,20,0) 30%,rgba(10,23,20,.8) 74%,#0A1714 100%)"}}/>
@@ -6875,6 +6894,33 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
           </g>
         </svg>
       )}
+      {/* BEAT 3 — LE VERDICT : score-blob (squircle candy) de la plage choisie +
+          les plages alternatives en orbite + glitter. SVG base-visible (jamais
+          gated sur une anim) ; les anims = pop d'entrée (scale) + ring rotatif. */}
+      {stage==="verdict"&&chosenBeach&&(()=>{
+        const bc=statusCol(chosenBeach)
+        const alts=ranked.filter(b=>b.id!==chosenBeach.id).slice(0,3)
+        const POS=[[400,182],[532,388],[268,388]],RR=[20,18,16]
+        return(
+        <svg aria-hidden viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice"
+          style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none"}}>
+          <circle cx="400" cy="306" r="106" fill="none" stroke="#3BA7A0" strokeWidth="1.2" strokeDasharray="3 9" opacity=".32" className="gf-ring"/>
+          {alts.map((b,i)=>(
+            <g key={b.id} transform={`translate(${POS[i][0]},${POS[i][1]})`}>
+              <g className="gf-dot" style={{"--dd":`${320+i*90}ms`}}>
+                <circle r={RR[i]} fill="#10231E" stroke="rgba(255,255,255,.14)" strokeWidth="1.5"/>
+                <text x="0" y={RR[i]*.34} textAnchor="middle" fontFamily="'Anton',sans-serif" fontSize={RR[i]*.95} fill={statusCol(b)}>{b.score}</text>
+              </g>
+            </g>
+          ))}
+          <g className="gf-blob">
+            <path d="M400 216 C442 216 494 268 494 306 C494 348 442 396 400 396 C358 396 306 348 306 306 C306 268 358 216 400 216 Z" fill={bc} opacity=".16"/>
+            <path d="M400 232 C436 232 478 270 478 306 C478 344 436 380 400 380 C364 380 322 344 322 306 C322 270 364 232 400 232 Z" fill="none" stroke={bc} strokeWidth="2.5" opacity=".7"/>
+            <text x="400" y="318" textAnchor="middle" fontFamily="'Anton',sans-serif" fontSize="78" fill={bc} letterSpacing=".02em">{chosenBeach.score}</text>
+            <text x="400" y="346" textAnchor="middle" fontSize="12.5" fill="rgba(255,255,255,.5)" fontWeight="700" letterSpacing=".14em">/100</text>
+          </g>
+        </svg>
+        )})()}
       {/* barre haute */}
       <div style={{position:"absolute",top:0,left:0,right:0,display:"flex",justifyContent:"space-between",alignItems:"center",
         padding:"calc(14px + env(safe-area-inset-top)) 18px 0",maxWidth:560,margin:"0 auto"}}>
@@ -6986,7 +7032,7 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
             <div style={{fontSize:12,color:"rgba(255,255,255,.6)",fontFamily:"ui-monospace,SFMono-Regular,monospace",marginBottom:16}}>
               {T("Sentinel-6 analyse les nappes","Sentinel-6 reads the rafts","Sentinel-6 analiza las manchas")} · NASA/JPL · Copernicus
             </div>
-            <button onClick={()=>openBeach(chosenBeach)} className="gf-chip" style={{display:"block",width:"100%",textAlign:"center",
+            <button onClick={()=>setStage("verdict")} className="gf-chip" style={{display:"block",width:"100%",textAlign:"center",
               cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:16,color:"#0A1714",border:"none",borderRadius:16,
               padding:"15px 20px",background:"linear-gradient(135deg,#FFE08A,#FFC72C)",boxShadow:"0 8px 24px rgba(255,199,44,.32)"}}>
               {T("Voir le résultat →","See the result →","Ver el resultado →")}
@@ -6994,6 +7040,44 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
             <button onClick={onShowMap} style={{display:"block",margin:"12px auto 0",background:"none",border:"none",
               color:"rgba(255,255,255,.55)",fontFamily:"inherit",fontSize:12.5,fontWeight:600,cursor:"pointer"}}>
               {T("Passer — montre-moi la carte","Skip — show me the map","Saltar — muéstrame el mapa")}
+            </button>
+          </div>
+        )}
+        {stage==="verdict"&&chosenBeach&&(
+          <div key="verdict" className="gf-panel">
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:".12em",color:"#FFC72C",marginBottom:8,textTransform:"uppercase"}}>
+              {T("Ta journée de plage","Your beach day","Tu día de playa")}
+            </div>
+            <h1 style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:"clamp(30px,8vw,46px)",lineHeight:1,
+              letterSpacing:".01em",textTransform:"uppercase",margin:"0 0 6px",color:"#fff",textShadow:"0 2px 24px rgba(0,0,0,.4)"}}>
+              {chosenBeach.name}
+            </h1>
+            <div style={{fontSize:13.5,color:"rgba(255,255,255,.72)",fontWeight:600,marginBottom:16,lineHeight:1.4}}>
+              {chosenBeach.status==="clean"?T("Eau claire, sable propre — c'est le bon jour.","Clear water, clean sand — today's the day.","Agua clara, arena limpia — es el día.")
+               :chosenBeach.status==="moderate"?T("Correct aujourd'hui — surveille demain.","Okay today — keep an eye on tomorrow.","Bien hoy — ojo con mañana.")
+               :T("Sargasses présentes — regarde les alternatives autour.","Sargassum present — check the alternatives around.","Sargazo presente — mira las alternativas.")}
+            </div>
+            <button onClick={()=>openBeach(chosenBeach)} className="gf-chip" style={{display:"block",width:"100%",textAlign:"center",
+              cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:16,color:"#0A1714",border:"none",borderRadius:16,
+              padding:"15px 20px",background:"linear-gradient(135deg,#FFE08A,#FFC72C)",boxShadow:"0 8px 24px rgba(255,199,44,.32)"}}>
+              {T("Voir la fiche complète →","See the full report →","Ver la ficha completa →")}
+            </button>
+            <div style={{display:"flex",gap:10,marginTop:10}}>
+              <button onClick={()=>shareBeach(chosenBeach)} className="gf-chip" style={{flex:1,display:"inline-flex",alignItems:"center",justifyContent:"center",gap:7,
+                cursor:"pointer",fontFamily:"inherit",fontWeight:700,fontSize:14,color:"#fff",borderRadius:14,padding:"12px 14px",
+                background:"rgba(16,35,30,.92)",border:"1px solid rgba(255,255,255,.14)"}}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFC72C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
+                {T("Partager","Share","Compartir")}
+              </button>
+              <button onClick={()=>favBeach(chosenBeach)} aria-pressed={faved} aria-label={T("Épingler","Pin","Fijar")} className="gf-chip" style={{flex:"none",width:52,display:"inline-flex",alignItems:"center",justifyContent:"center",
+                cursor:"pointer",borderRadius:14,padding:"12px",background:faved?"rgba(255,199,44,.16)":"rgba(16,35,30,.92)",
+                border:`1px solid ${faved?"rgba(255,199,44,.5)":"rgba(255,255,255,.14)"}`}}>
+                <svg width="19" height="19" viewBox="0 0 24 24" fill={faved?"#FFC72C":"none"} stroke={faved?"#FFC72C":"rgba(255,255,255,.7)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+              </button>
+            </div>
+            <button onClick={onShowMap} style={{display:"block",margin:"12px auto 0",background:"none",border:"none",
+              color:"rgba(255,255,255,.55)",fontFamily:"inherit",fontSize:12.5,fontWeight:600,cursor:"pointer"}}>
+              {T("Passer — toutes les plages","Skip — all beaches","Saltar — todas las playas")}
             </button>
           </div>
         )}
@@ -8287,6 +8371,7 @@ export default function App(){
               dismissHero("funnel_skip")
               fireWipe(_t(lang,"Chaque pastille = la mesure du matin","Every dot = this morning's measurement","Cada punto = la medición de la mañana"))
             }}
+            onFav={b=>toggleFav(b.id)}
             exiting={heroExiting}/>
         ):(
           <HeroVerdict beach={heroPick} lang={lang} island={island} sargData={sargData} userPos={userPos}
