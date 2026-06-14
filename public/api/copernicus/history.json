@@ -3170,7 +3170,7 @@
         },
         {
           "id": "tartane",
-          "afai": 0.08,
+          "afai": 0.09,
           "status": "clean"
         },
         {
@@ -3220,7 +3220,7 @@
         },
         {
           "id": "gp-pt-chateaux",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
@@ -3235,7 +3235,7 @@
         },
         {
           "id": "gp-bas-du-fort",
-          "afai": 0.11,
+          "afai": 0.12,
           "status": "clean"
         },
         {

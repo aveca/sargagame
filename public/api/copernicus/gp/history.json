@@ -1700,22 +1700,22 @@
         },
         {
           "id": "gp004",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
           "id": "gp005",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
           "id": "gp006",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
           "id": "gp008",
-          "afai": 0.1,
+          "afai": 0.11,
           "status": "clean"
         },
         {
@@ -1730,7 +1730,7 @@
         },
         {
           "id": "gp011",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
@@ -1905,7 +1905,7 @@
         },
         {
           "id": "gp052",
-          "afai": 0.1,
+          "afai": 0.11,
           "status": "clean"
         },
         {
@@ -1960,12 +1960,12 @@
         },
         {
           "id": "gp071",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
           "id": "gp072",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {

@@ -320,8 +320,8 @@
         },
         {
           "id": "fl012",
-          "afai": 0.15,
-          "status": "moderate"
+          "afai": 0.08,
+          "status": "clean"
         }
       ]
     }
@@ -333,6 +333,13 @@
       "from": "clean",
       "to": "moderate",
       "afai": 0.15
+    },
+    {
+      "date": "2026-06-14",
+      "beach": "fl012",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.08
     }
   ]
 }
