@@ -335,7 +335,7 @@ function StoryEngine({beats,lang,accent="#FFC72C",ev="sg_engine_beat",onCTA}){
       <style>{`.se-vp{height:100vh}@supports(height:100svh){.se-vp{height:100svh}}`}</style>
       <div className="se-vp" style={{position:rm?"relative":"sticky",top:0,overflow:"hidden",background:"#0A1714",height:rm?"min(82vh,640px)":undefined}}>
         <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block"}}>
-          {beats.map((bt,i)=>(<g key={i} style={{opacity:`var(--e${i})`}}>{bt.scene}</g>))}
+          {beats.map((bt,i)=>(<g key={i} style={{opacity:`var(--e${i})`,"--p":`var(--p${i})`}}>{bt.scene}</g>))}
         </svg>
         <div style={{position:"absolute",left:0,right:0,bottom:0,top:0,pointerEvents:"none"}}>
           {beats.map((bt,i)=>(
@@ -402,7 +402,7 @@ function PanelStoryEngine({beats,lang,accent="#FFC72C",ev="sg_panel_beat",onCTA,
     <section ref={boxRef} style={{position:"relative",background:"#0A1714",...baseVars}}>
       <div ref={vpRef} style={{position:rm?"relative":"sticky",top:0,overflow:"hidden",background:"#0A1714"}}>
         <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block"}}>
-          {beats.map((bt,i)=>(<g key={i} style={{opacity:`var(--e${i})`}}>{bt.scene}</g>))}
+          {beats.map((bt,i)=>(<g key={i} style={{opacity:`var(--e${i})`,"--p":`var(--p${i})`}}>{bt.scene}</g>))}
         </svg>
         <div style={{position:"absolute",inset:0,pointerEvents:"none"}}>
           {beats.map((bt,i)=>(
