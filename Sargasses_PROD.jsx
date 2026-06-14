@@ -1805,6 +1805,13 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
           <div style={{position:"absolute",bottom:0,left:0,right:0,height:"40%",
             background:`radial-gradient(ellipse at 50% 100%, ${(ST[beach.status]||ST._loading).c}22 0%, transparent 70%)`,
             pointerEvents:"none"}}/>
+          {/* voile golden-hour sur la photo — rai de soleil + éclats (1er pas vers
+              la fiche refaite "comme l'accueil" ; additif, mix-blend screen) */}
+          <svg aria-hidden viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none",mixBlendMode:"screen",opacity:.42}}>
+            <defs><linearGradient id={`bsray-${beach.id}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#FFE6A0" stopOpacity=".55"/><stop offset="1" stopColor="#FFE6A0" stopOpacity="0"/></linearGradient></defs>
+            <polygon points="296,-30 342,-30 248,300 172,300" fill={`url(#bsray-${beach.id})`}/>
+            <g stroke="#FFD884" strokeLinecap="round"><line x1="0" y1="196" x2="400" y2="196" strokeWidth="1.6" strokeDasharray="3 17" opacity=".4"/><line x1="0" y1="226" x2="400" y2="226" strokeWidth="1.3" strokeDasharray="2 22" opacity=".28"/></g>
+          </svg>
           {/* Close button */}
           <button onClick={requestClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"absolute",top:12,right:12,
             width:44,height:44,borderRadius:22,
