@@ -865,7 +865,8 @@
   },
   "579476888eb0d4415798b2a4770151ed": {
     "daily_last": "2026-06-14",
-    "daily_sig": "Cocoa Beach|clean|96|clean|0|"
+    "daily_sig": "Cocoa Beach|clean|96|clean|0|",
+    "j3": "2026-06-14T20:59:33.636Z"
   },
   "d90c0fff335b3cc0d2f12b24a97a9631": {},
   "4833563c98f9376c68a8ac3b725e84a8": {},
@@ -916,5 +917,10 @@
   "303f49dc2fb533905b2fa5012c33211e": {
     "daily_last": "2026-06-14",
     "daily_sig": "Plage de Grande Anse|clean|78|clean|0|"
-  }
+  },
+  "08866bdaf041731969ca396f9fd2991a": {
+    "daily_last": "2026-06-14",
+    "daily_sig": "Plage de Grande Anse|clean|78|clean|3|lundi"
+  },
+  "a834cb4133d4a707846673399dd1c1e7": {}
 }
