@@ -230,6 +230,47 @@ function archetypeOf(beach){
 }
 try{if(typeof window!=="undefined")window.sgArchetypeOf=archetypeOf}catch(_){}
 
+// ── Relief & palmiers PROCÉDURAUX seedés (BeachScene v2, INCRÉMENT 3 spec wdiiae0wd).
+//    Géométrie SEULE (déterministe, sans couleur) ; le thème (phase) s'applique au rendu.
+//    Horizon à y=340. Tirages r() dans un ORDRE FIXE → scène stable par beach.id.
+function mornePath(r,n,h0,h1,fromLeft){
+  const baseY=340,x0=fromLeft?-40:840,dir=fromLeft?1:-1,span=380
+  let d="M"+x0+" "+baseY
+  for(let i=0;i<n;i++){
+    const px=Math.round(x0+dir*span*(i+0.5)/n)
+    const py=Math.round(baseY-rangeR(r,h0,h1))
+    const ex=Math.round(x0+dir*span*(i+1)/n)
+    const ey=Math.round(baseY-rangeR(r,2,14))
+    d+=" Q"+px+" "+py+" "+ex+" "+ey
+  }
+  d+=" L"+Math.round(x0+dir*span)+" "+baseY+" Z"
+  return d
+}
+const _PALM_N={OPEN_SHORE:[2,4],SHELTERED_BAY:[2,3],VOLCANIC_BLACK:[2,3],MORNE_COAST:[1,3],MARINA_URBAN:[0,1],REEF_ISLET:[1,2],RIVER_MANGROVE:[0,1],CLIFF_HEADLAND:[0,2],ICONIC_ROCK:[1,1]}
+function palmPlan(r,arch){
+  const c=_PALM_N[arch]||[1,2],k=intR(r,c[0],c[1]),palms=[]
+  for(let i=0;i<k;i++)palms.push({x:Math.round(rangeR(r,120,680)),s:+rangeR(r,0.72,1.12).toFixed(2),tilt:+rangeR(r,-7,7).toFixed(1),fr:intR(r,4,6)})
+  return palms
+}
+function buildBeachScene(beach){
+  const arch=archetypeOf(beach)
+  const r=rng(hashSeed((beach&&beach.id)||"x"))
+  const fromLeft=r()<0.5
+  let relief
+  if(arch==="ICONIC_ROCK")relief={type:"diamond"}
+  else if(arch==="CLIFF_HEADLAND")relief={type:"cliff",cut:Math.round(rangeR(r,232,262)),second:r()<0.5,fromLeft}
+  else if(arch==="REEF_ISLET")relief={type:"islet",x:Math.round(rangeR(r,160,640))}
+  else if(arch==="MARINA_URBAN")relief={type:"marina",boats:intR(r,1,2),fromLeft}
+  else if(arch==="VOLCANIC_BLACK")relief={type:"morne",d:mornePath(r,intR(r,2,3),84,126,fromLeft),tall:true}
+  else if(arch==="RIVER_MANGROVE")relief={type:"morne",d:mornePath(r,2,30,56,fromLeft)}
+  else if(arch==="SHELTERED_BAY")relief={type:"morne",d:mornePath(r,intR(r,1,2),28,56,fromLeft)}
+  else if(arch==="OPEN_SHORE")relief={type:"morne",d:mornePath(r,1,12,30,fromLeft),flat:true}
+  else relief={type:"morne",d:mornePath(r,intR(r,3,6),44,90,fromLeft)}
+  const palms=palmPlan(r,arch)
+  const galets=arch==="VOLCANIC_BLACK"?Array.from({length:intR(r,3,5)},()=>({x:Math.round(rangeR(r,180,640)),y:Math.round(rangeR(r,500,540)),rx:+rangeR(r,5,11).toFixed(1)})):[]
+  return {arch,fromLeft,relief,palms,galets}
+}
+
 // ── BeachScene — CHAQUE plage a SA scène SVG (directive 14/06 : « notre valeur
 //    est sur le svg » + « représente le diamant en svg, chaque plage avec sa
 //    particularité »). Landmark réel + sable + statut + phase de l'heure locale.
@@ -250,10 +291,19 @@ function beachLandmark(beach){
 function BeachScene({beach}){
   const ph=(()=>{try{if(HERO_PH_OVERRIDE)return HERO_PH_OVERRIDE;const h=new Date().getHours();return h<5?"night":h<8?"dawn":h<17?"day":h<20?"golden":"night"}catch(_){return "golden"}})()
   const t=BEACH_PHASE[ph]||BEACH_PHASE.golden
-  const lm=beachLandmark(beach)
-  const black=/noire|dufour|c[ée]ron|couleuvre|grand.?rivi|anse l[ae]vau/.test(((beach&&beach.id||"")+" "+(beach&&beach.name||"")).toLowerCase())
+  const scene=useMemo(()=>buildBeachScene(beach),[beach&&beach.id])
+  const black=scene.arch==="VOLCANIC_BLACK"
   const sand=black?(ph==="day"?"#3A352F":"#0F0D0B"):(ph==="day"?"#C9A86A":t.rock==="#16242A"?"#1C1712":"#15110D")
   const showRafts=beach&&(beach.status==="moderate"||beach.status==="avoid")
+  // palmier paramétrique seedé : tronc courbe + couronne de frondes en éventail
+  const palm=(p,i)=>{const bx=p.x,by=556,h=118*p.s,tx=bx+p.tilt*3.2,ty=by-h
+    const trunk="M"+bx+" "+by+" Q"+Math.round(bx+(tx-bx)*0.45)+" "+Math.round(by-h*0.55)+" "+Math.round(tx)+" "+Math.round(ty)
+    const fr=[],n=p.fr
+    for(let f=0;f<n;f++){const a=(-150+120*(n>1?f/(n-1):0.5))*Math.PI/180
+      const ex=Math.round(tx+Math.cos(a)*48*p.s),ey=Math.round(ty+Math.sin(a)*42*p.s)
+      const mx=Math.round(tx+Math.cos(a)*26*p.s),my=Math.round(ty+Math.sin(a)*22*p.s-5)
+      fr.push("M"+Math.round(tx)+" "+Math.round(ty)+" Q"+mx+" "+my+" "+ex+" "+ey)}
+    return(<g key={i}><path d={trunk} stroke={t.trunk} strokeWidth={Math.max(5,12*p.s)} fill="none" strokeLinecap="round"/><g fill="none" stroke={t.frond} strokeWidth={Math.max(4,8*p.s)} strokeLinecap="round">{fr.map((d,j)=>(<path key={j} d={d}/>))}</g></g>)}
   return(
     <div aria-hidden="true" style={{position:"absolute",inset:0}}>
       <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block"}}>
@@ -278,14 +328,21 @@ function BeachScene({beach}){
         {ph!=="night"&&<g className="bsc-bird" opacity=".55" stroke={ph==="day"?"#2A5566":t.rim} strokeWidth="2.4" fill="none" strokeLinecap="round"><path d="M712 138 q5.5 -6.5 11 0 q5.5 -6.5 11 0"/><path d="M754 124 q4.5 -5 9 0 q4.5 -5 9 0"/><path d="M648 156 q5 -6 10 0 q5 -6 10 0"/><path d="M576 128 q4 -5 8 0 q4 -5 8 0"/><path d="M620 122 q4.5 -5.5 9 0 q4.5 -5.5 9 0"/></g>}
         <rect x="-40" y="330" width="880" height="200" fill="url(#bscSea)"/>
         {t.sun==="moon"&&<path className="bsc-moonp" d="M302 332 L338 332 L356 474 Q320 486 284 474 Z" fill="#9ADCD4"/>}
-        {lm==="diamondRock"&&<g>
+        {scene.relief.type==="diamond"&&<g>
           <path d="M468 340 Q481 284 509 252 Q525 234 534 253 Q560 292 570 340 Z" fill={t.rock}/>
           <path d="M509 252 Q525 234 534 253 Q560 292 570 340 L534 340 Z" fill="#000" opacity=".22"/>
           <path d="M509 252 Q481 284 468 340 L509 340 Z" fill={t.rockLit} opacity=".26"/>
           <path d="M468 340 Q519 351 570 340 L570 349 Q519 360 468 349 Z" fill={t.rock} opacity=".45"/>
         </g>}
-        {lm==="cliff"&&<g><path d="M-40 338 L-40 244 Q120 206 236 250 L266 338 Z" fill={t.rock}/><path d="M-40 244 Q120 206 236 250" fill="none" stroke={t.rockLit} strokeWidth="3" opacity=".25"/></g>}
-        {lm==="morne"&&<g><path d="M-40 338 Q70 274 196 296 Q278 310 320 338 Z" fill={t.rock} opacity=".95"/><path d="M-40 338 Q70 274 196 296" fill="none" stroke={t.rockLit} strokeWidth="2.5" opacity=".22"/></g>}
+        {scene.relief.type==="cliff"&&(()=>{const cut=scene.relief.cut,fl=scene.relief.fromLeft
+          const main=fl?("M-40 340 L-40 "+cut+" Q120 "+(cut-38)+" 236 "+(cut+8)+" L266 340 Z"):("M840 340 L840 "+cut+" Q680 "+(cut-38)+" 564 "+(cut+8)+" L534 340 Z")
+          const edge=fl?("M-40 "+cut+" Q120 "+(cut-38)+" 236 "+(cut+8)):("M840 "+cut+" Q680 "+(cut-38)+" 564 "+(cut+8))
+          return(<g><path d={main} fill={t.rock}/><path d={edge} fill="none" stroke={t.rockLit} strokeWidth="3" opacity=".25"/>{scene.relief.second&&<path d={fl?"M840 340 L840 288 Q772 272 714 302 L692 340 Z":"M-40 340 L-40 288 Q28 272 86 302 L108 340 Z"} fill={t.rock} opacity=".8"/>}</g>)})()}
+        {scene.relief.type==="islet"&&(()=>{const x=scene.relief.x
+          return(<g><path d="M-40 366 Q400 358 840 368" fill="none" stroke={t.rim} strokeWidth="2" strokeDasharray="5 9" opacity=".38"/><path d={"M"+(x-46)+" 340 Q"+x+" 300 "+(x+46)+" 340 Z"} fill={t.rock} opacity=".9"/><path d={"M"+(x-46)+" 340 Q"+x+" 300 "+(x+46)+" 340"} fill="none" stroke={t.rockLit} strokeWidth="2" opacity=".22"/></g>)})()}
+        {scene.relief.type==="marina"&&(()=>{const fl=scene.relief.fromLeft
+          return(<g><rect x={fl?40:524} y="334" width="172" height="6" fill={t.trunk} opacity=".8"/><g stroke={t.trunk} strokeWidth="4.5" opacity=".7" strokeLinecap="round">{[0,1,2,3,4].map(i=>{const px=(fl?64:548)+i*30;return(<line key={i} x1={px} y1="338" x2={px+8} y2="372"/>)})}</g>{Array.from({length:scene.relief.boats}).map((_,i)=>{const bx=372+i*84;return(<g key={i} transform={"translate("+bx+",348)"}><ellipse rx="22" ry="6.5" fill={t.rock}/><line x1="-2" y1="-3" x2="-2" y2="-28" stroke={t.rock} strokeWidth="2.4"/><path d="M-2 -26 L16 -7 L-2 -7 Z" fill={t.rockLit} opacity=".55"/></g>)})}</g>)})()}
+        {scene.relief.type==="morne"&&<g><path d={scene.relief.d} fill={t.rock} opacity={scene.relief.flat?".72":".95"}/><path d={scene.relief.d} fill="none" stroke={t.rockLit} strokeWidth="2.4" opacity=".2"/></g>}
         <line className="bsc-glit" x1="-40" y1="356" x2="840" y2="356" stroke={t.glit} strokeWidth="2.2" strokeDasharray="3 13" opacity=".5"/>
         <line className="bsc-glit" x1="-40" y1="386" x2="840" y2="386" stroke={t.glit} strokeWidth="1.8" strokeDasharray="2 17" opacity=".3" style={{animationDelay:"-3s"}}/>
         <line className="bsc-glit" x1="-40" y1="420" x2="840" y2="420" stroke={t.glit} strokeWidth="1.6" strokeDasharray="2 23" opacity=".18" style={{animationDelay:"-5s"}}/>
@@ -320,8 +377,8 @@ function BeachScene({beach}){
         </g>}
         <path d="M-40 472 Q200 434 430 448 Q640 460 840 502 L840 620 L-40 620 Z" fill={sand}/>
         <path d="M-40 472 Q200 434 430 448 Q640 460 840 502" fill="none" stroke={t.rim} strokeWidth="2.4" opacity=".3"/>
-        <path d="M586 612 Q570 520 538 472 Q524 450 502 438" stroke={t.trunk} strokeWidth="13" fill="none" strokeLinecap="round"/>
-        <g fill="none" stroke={t.frond} strokeWidth="9" strokeLinecap="round"><path d="M502 438 Q466 418 428 424"/><path d="M502 438 Q472 402 440 394"/><path d="M502 438 Q506 398 522 374"/><path d="M502 438 Q538 406 576 404"/><path d="M502 438 Q540 434 570 450"/></g>
+        {scene.galets.map((gp,i)=>(<ellipse key={"g"+i} cx={gp.x} cy={gp.y} rx={gp.rx} ry={gp.rx*0.5} fill="#1a1714" opacity=".7"/>))}
+        {scene.palms.map(palm)}
       </svg>
     </div>
   )
