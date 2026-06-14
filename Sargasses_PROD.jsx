@@ -1147,6 +1147,38 @@ function flushTrackQueue(){
 }
 try{if(typeof window!=="undefined")setTimeout(flushTrackQueue,5000)}catch{}
 
+// ── ENGAGEMENT CONTINU — le produit "se voit penser" : on mesure l'ENNUI/le BLOCAGE, pas
+//    seulement les clics. Par écran : temps passé, nb d'actions, plus longue inactivité, scroll,
+//    flag `bored` (entré, rien fait, resté / longue inactivité). Émis vers GA4 via track() à
+//    chaque changement d'écran + quand l'onglet se cache. C'est la donnée pour adapter ("réfléchir").
+const _eng={screen:null,t0:0,acts:0,last:0,idleMax:0,maxScroll:0,inited:false,dirty:false}
+function engFlush(reason){
+  if(!_eng.screen||!_eng.t0||!_eng.dirty)return // dirty = activité/visite non encore remontée (anti-doublon hide)
+  const now=Date.now(),dwell=now-_eng.t0
+  if(dwell<400)return
+  const idleMax=Math.max(_eng.idleMax,_eng.last?now-_eng.last:0)
+  const bored=(_eng.acts===0&&dwell>6000)||idleMax>20000
+  _eng.dirty=false
+  try{track("sg_engagement",{screen:_eng.screen,dwell_ms:Math.round(dwell),actions:_eng.acts,idle_max_ms:Math.round(idleMax),max_scroll:_eng.maxScroll,bored:bored?1:0,reason})}catch(e){}
+}
+function engScreen(screen){
+  if(!screen||_eng.screen===screen)return
+  engFlush("switch")
+  const now=Date.now();_eng.screen=screen;_eng.t0=now;_eng.acts=0;_eng.last=now;_eng.idleMax=0;_eng.maxScroll=0;_eng.dirty=true
+}
+function engInit(){
+  if(_eng.inited||typeof window==="undefined")return;_eng.inited=true
+  const act=()=>{const n=Date.now();if(_eng.last)_eng.idleMax=Math.max(_eng.idleMax,n-_eng.last);_eng.last=n;_eng.acts++;_eng.dirty=true}
+  try{
+    window.addEventListener("pointerdown",act,{passive:true})
+    window.addEventListener("keydown",act,{passive:true})
+    window.addEventListener("wheel",act,{passive:true})
+    window.addEventListener("scroll",()=>{const h=document.documentElement,sc=h.scrollHeight-h.clientHeight;if(sc>0){const p=Math.round(h.scrollTop/sc*100);if(p>_eng.maxScroll)_eng.maxScroll=p}},{passive:true})
+    document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")engFlush("hide")})
+    window.addEventListener("pagehide",()=>engFlush("pagehide"))
+  }catch(e){}
+}
+
 function AbDebug(){
   const[show,setShow]=useState(false)
   useEffect(()=>{try{if(new URLSearchParams(window.location.search).get("ab_debug")==="1")setShow(true)}catch{}},[])
@@ -9184,6 +9216,14 @@ export default function App(){
     if(view!=="map"||!(allBeaches&&allBeaches.length>=3))return
     archAutoRef.current=true;setShowArchipel(true);try{track("sg_archipel_open",{from:"nav_world_default"})}catch(_){}
   },[navWorld,showHero,showMapIntro,view,allBeaches,selectedBeach,showPremium,showSolutions,showWorld,showArchipel])
+  // ENGAGEMENT CONTINU : à chaque changement d'écran, on clôt la mesure du précédent
+  // (temps/actions/inactivité/scroll/ennui) → GA4. C'est la donnée qui fait "réfléchir" le produit
+  // (où ça bloque, où ça s'ennuie), à chaque étape. Voir engInit/engScreen/engFlush.
+  useEffect(()=>{
+    engInit()
+    const screen=showPremium?"premium":selectedBeach?"beach":showSolutions?"solutions":showArchipel?"world":showMapIntro?"mapintro":showHero?"hero":showWorld?"worldfeed":("map_"+(view||"map"))
+    engScreen(screen)
+  },[showPremium,selectedBeach,showSolutions,showArchipel,showMapIntro,showHero,showWorld,view])
   // Bras A/B du landing : control = HeroVerdict (éprouvé), game = GameFunnel
   // (funnel-jeu immersif, tranche verticale 13/06). Mesuré contre le landing
   // prouvé, jamais imposé ; ?lf=game force en QA. La conversion (paywall/trial/
