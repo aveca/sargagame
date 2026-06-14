@@ -8759,7 +8759,7 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
       style={{position:"fixed",inset:0,zIndex:1006,background:"#04090B",touchAction:"none",overflow:"hidden",cursor:"grab"}}>
       {/* CIEL-MONDE immersif (golden-hour vivant) derriere la constellation — le "fond" qui manquait */}
       <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block",pointerEvents:"none"}} aria-hidden="true">
-        <style>{`@keyframes awcl{to{transform:translateX(46px)}}.aw-cl{animation:awcl 95s ease-in-out infinite alternate}@keyframes awsat{to{transform:translateX(-280px)}}.aw-sat{animation:awsat 64s ease-in-out infinite alternate}@keyframes awbeam{0%,100%{opacity:.05}50%{opacity:.17}}.aw-beam{animation:awbeam 5s ease-in-out infinite}@keyframes awglit{to{stroke-dashoffset:-60}}.aw-glit{animation:awglit 8s linear infinite}@media(prefers-reduced-motion:reduce){.aw-cl,.aw-sat,.aw-beam,.aw-glit{animation:none}}`}</style>
+        <style>{`@keyframes awcl{to{transform:translateX(46px)}}.aw-cl{animation:awcl 95s ease-in-out infinite alternate}@keyframes awsat{to{transform:translateX(-280px)}}.aw-sat{animation:awsat 64s ease-in-out infinite alternate}@keyframes awbeam{0%,100%{opacity:.05}50%{opacity:.17}}.aw-beam{animation:awbeam 5s ease-in-out infinite}@keyframes awglit{to{stroke-dashoffset:-60}}.aw-glit{animation:awglit 8s linear infinite}@keyframes awPing{0%{transform:scale(.05);opacity:.55}100%{transform:scale(1);opacity:0}}.aw-ping{animation:awPing 5s ease-out infinite;transform-box:fill-box;transform-origin:center}@keyframes awRay{0%,100%{opacity:.14}50%{opacity:.4}}.aw-ray{animation:awRay 6s ease-in-out infinite}@keyframes awSweep{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}.aw-sweep{animation:awSweep 9s ease-in-out infinite;transform-box:fill-box;transform-origin:560px 92px}@media(prefers-reduced-motion:reduce){.aw-cl,.aw-sat,.aw-beam,.aw-glit,.aw-ping,.aw-ray,.aw-sweep{animation:none}}`}</style>
         <defs><linearGradient id="awSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={sky.sky[0]}/><stop offset=".5" stopColor={sky.sky[1]}/><stop offset=".82" stopColor={sky.sky[2]}/><stop offset="1" stopColor={sky.sky[3]}/></linearGradient></defs>
         <rect width="800" height="600" fill="url(#awSky)"/>
         {sky.sun==="set"&&<><circle cx="400" cy="250" r="150" fill={sky.glit} opacity=".06"/><circle cx="400" cy="250" r="78" fill={sky.glit} opacity=".10"/><circle cx="400" cy="250" r="46" fill={sky.glit} opacity=".5"/></>}
@@ -8768,7 +8768,15 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
         {ph==="night"&&[[80,70],[180,120],[320,60],[470,100],[600,70],[700,140],[150,200],[540,170],[660,210],[400,150]].map((s,i)=>(<circle key={i} cx={s[0]} cy={s[1]} r="1.2" fill="#fff" opacity=".45"/>))}
         <g className="aw-cl"><path d="M90 150 q16 -30 54 -28 q20 -20 50 -12 q34 -8 48 14 q28 4 30 28 Z" fill={sky.cloud} opacity=".55"/></g>
         <g className="aw-cl" style={{animationDelay:"-40s"}}><path d="M540 110 q12 -22 40 -20 q16 -14 38 -8 q26 -6 36 12 Z" fill={sky.cloud} opacity=".45"/></g>
-        <g className="aw-sat"><path className="aw-beam" d="M560 92 L500 380 L640 380 Z" fill={sky.glit}/>{miVeil(560,90,ph==="day"?"#2A6B66":"#3BA7A0","#5FD3C9")}</g>
+        <g className="aw-sat">
+          {/* ONDES RADAR — le Veilleur scanne tout l'archipel (pings qui balaient) */}
+          {[0,1,2].map(i=>(<circle key={i} className="aw-ping" cx="560" cy="92" r="560" fill="none" stroke={sky.glit} strokeWidth="2" style={{animationDelay:(-i*1.7)+"s"}}/>))}
+          {/* rayons de lumière du Veilleur */}
+          <g className="aw-ray">{[-10,-4,2,8,14].map((a,i)=>(<path key={i} d="M560 92 L548 470 L572 470 Z" fill={sky.glit} opacity=".12" transform={"rotate("+a+" 560 92)"}/>))}</g>
+          {/* faisceau qui SWEEP + le Veilleur */}
+          <g className="aw-sweep"><path className="aw-beam" d="M560 92 L500 380 L640 380 Z" fill={sky.glit}/></g>
+          {miVeil(560,90,ph==="day"?"#2A6B66":"#3BA7A0","#5FD3C9")}
+        </g>
         <line className="aw-glit" x1="-40" y1="470" x2="840" y2="470" stroke={sky.glit} strokeWidth="2" strokeDasharray="3 16" opacity=".22"/>
         <line className="aw-glit" x1="-40" y1="520" x2="840" y2="520" stroke={sky.glit} strokeWidth="1.6" strokeDasharray="2 22" opacity=".14" style={{animationDelay:"-4s"}}/>
       </svg>
