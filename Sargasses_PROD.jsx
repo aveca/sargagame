@@ -335,6 +335,74 @@ function StoryEngine({beats,lang,accent="#FFC72C",ev="sg_engine_beat",onCTA}){
     </section>
   )
 }
+// ── PanelStoryEngine — JUMEAU du StoryEngine pour les PANNEAUX CLIPPÉS (.sheet,
+//    .sg-modal-panel : position:fixed;overflow:auto;max-height:85vh). Le moteur
+//    prod lit la géométrie FENÊTRE (faux ici) ; celui-ci lit le scroll du
+//    CONTENEUR (scrollRef.scrollTop) → scrub correct. Tailles posées en JS
+//    (vp = hauteur visible du conteneur ; section = N×). Catch cohérence 14/06.
+function PanelStoryEngine({beats,lang,accent="#FFC72C",ev="sg_panel_beat",onCTA,scrollRef}){
+  const boxRef=useRef(null)
+  const vpRef=useRef(null)
+  const [beat,setBeat]=useState(0)
+  const beatRef=useRef(-1)
+  const [rm]=useState(()=>{try{return window.matchMedia("(prefers-reduced-motion: reduce)").matches}catch(_){return false}})
+  const N=Math.max(1,beats.length)
+  useEffect(()=>{
+    const box=boxRef.current,vp=vpRef.current,cont=scrollRef&&scrollRef.current
+    if(!box||!vp||!cont)return
+    const st=box.style
+    if(rm){box.style.height="auto";vp.style.height="min(72vh,560px)";for(let i=0;i<N;i++){st.setProperty(`--e${i}`,i===N-1?"1":"0");st.setProperty(`--p${i}`,"1")}setBeat(N-1);return}
+    const setSizes=()=>{const ch=cont.clientHeight||1;vp.style.height=ch+"px";box.style.height=(N*ch)+"px"}
+    setSizes()
+    let raf=0
+    const upd=()=>{
+      raf=0
+      const ch=cont.clientHeight||1
+      const total=Math.max(1,(N-1)*ch)
+      const p=Math.max(0,Math.min(1,(cont.scrollTop-box.offsetTop)/total))
+      st.setProperty("--gp",p.toFixed(4))
+      const span=N>1?1/(N-1):1
+      for(let i=0;i<N;i++){
+        const c=N>1?i/(N-1):.5
+        st.setProperty(`--e${i}`,Math.max(0,Math.min(1,1-Math.abs(p-c)/(span*.85))).toFixed(3))
+        st.setProperty(`--p${i}`,Math.max(0,Math.min(1,p*(N-1)-(i-.5))).toFixed(3))
+      }
+      const b=Math.max(0,Math.min(N-1,Math.round(p*(N-1))))
+      if(b!==beatRef.current){beatRef.current=b;setBeat(b);try{track(ev,{b:b+1,n:N})}catch(_){}}
+    }
+    const onScroll=()=>{if(!raf)raf=requestAnimationFrame(upd)}
+    const onResize=()=>{setSizes();onScroll()}
+    cont.addEventListener("scroll",onScroll,{passive:true})
+    window.addEventListener("resize",onResize)
+    upd()
+    return()=>{cont.removeEventListener("scroll",onScroll);window.removeEventListener("resize",onResize);if(raf)cancelAnimationFrame(raf)}
+  },[N,rm,scrollRef])
+  const baseVars={"--gp":(N>1?beat/(N-1):0)}
+  for(let i=0;i<N;i++){baseVars[`--e${i}`]=(beat===i?1:0);baseVars[`--p${i}`]=(i<beat?1:i===beat?.5:0)}
+  const last=beats[N-1]
+  return(
+    <section ref={boxRef} style={{position:"relative",background:"#0A1714",...baseVars}}>
+      <div ref={vpRef} style={{position:rm?"relative":"sticky",top:0,overflow:"hidden",background:"#0A1714"}}>
+        <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block"}}>
+          {beats.map((bt,i)=>(<g key={i} style={{opacity:`var(--e${i})`}}>{bt.scene}</g>))}
+        </svg>
+        <div style={{position:"absolute",inset:0,pointerEvents:"none"}}>
+          {beats.map((bt,i)=>(
+            <div key={i} style={{position:"absolute",left:0,right:0,bottom:0,padding:"0 22px calc(26px + env(safe-area-inset-bottom))",opacity:`var(--e${i})`}}>
+              <div style={{maxWidth:560,margin:"0 auto"}}>
+                {bt.eyebrow&&<div style={{fontSize:11,fontWeight:700,letterSpacing:".16em",color:accent,textTransform:"uppercase",marginBottom:8}}>{bt.eyebrow}</div>}
+                <h2 className="anton" style={{fontWeight:400,fontSize:"clamp(24px,6.2vw,38px)",lineHeight:1.04,textTransform:"uppercase",margin:0,color:"#fff"}}>{bt.heading}</h2>
+                {bt.sub&&<p style={{fontSize:14,color:"rgba(255,255,255,.74)",marginTop:9,lineHeight:1.5,maxWidth:440}}>{bt.sub}</p>}
+                {i===N-1&&onCTA&&last&&last.cta&&<button onClick={onCTA} style={{pointerEvents:"auto",marginTop:16,cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:16,color:"#0A1714",border:"none",borderRadius:16,padding:"15px 26px",background:"linear-gradient(135deg,#FFE08A,#FFC72C)",boxShadow:"0 8px 24px rgba(255,199,44,.32)"}}>{last.cta}</button>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
 // Config DÉCOUVERTE (éducatif SVG, « svg simple propriétaire instructif » :
 // la grande ceinture → la dérive → l'échouage/H2S → les solutions recyclage/tri).
 function discoveryBeats(lang){
@@ -428,6 +496,55 @@ function MapIntroStory({lang,counts,onEnterMap}){
       <StoryEngine beats={mapIntroBeats(lang,counts)} lang={lang} ev="sg_map_beat" onCTA={()=>{track("sg_map_intro_enter",{});onEnterMap()}}/>
     </div>
   )
+}
+
+// ── beachStoryBeats — LA FICHE qui EST le ScrollStory (directive « toute l'UX
+//    scrolling, le contenu = le scroll »). 3 temps data-driven : ① VERDICT du
+//    jour (le Veilleur dérive, le score se révèle, scène par statut) ② DEMAIN
+//    (5 points de prévision réelle s'allument) ③ TON VEILLEUR (CTA). Anim en
+//    transform/opacity. Monté via PanelStoryEngine (scroll du conteneur sheet). ─
+function beachStoryBeats(beach,forecast,lang){
+  const T=(fr,en,es)=>_t(lang,fr,en,es)
+  const vm=verdictMeta(beach.status,lang)
+  const mood=moodFromScore(beach.score)
+  const mwing=mood==="serein"?"#3BA7A0":mood==="vigilant"?"#F59E0B":"#E8522A"
+  const mlens=mood==="serein"?"#5FD3C9":mood==="vigilant"?"#FFD27A":"#F4845F"
+  const fc=forecast||[]
+  const RANK={clean:0,moderate:1,avoid:2}
+  let turn=null
+  for(let i=1;i<=3&&i<fc.length;i++){if((RANK[fc[i]&&fc[i].status]||0)>(RANK[fc[0]&&fc[0].status]||0)){turn=fc[i];break}}
+  const dotColor=s=>s==="clean"?"#22C55E":s==="moderate"?"#F59E0B":s==="avoid"?"#E8522A":"#3D6880"
+  return[
+    {eyebrow:`${T("AUJOURD'HUI","TODAY","HOY")} · ${beach.name}`,heading:`${vm.verb} ${vm.emoji}`,sub:beach.scoreReason||"",
+      scene:<g>
+        <defs><linearGradient id="bsv0s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0B2230"/><stop offset=".5" stopColor="#155A5A"/><stop offset=".84" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/></linearGradient><linearGradient id="bsv0e" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1A5852"/><stop offset="1" stopColor="#08251F"/></linearGradient></defs>
+        <rect width="800" height="600" fill="url(#bsv0s)"/>
+        <path d="M348 300 a57 57 0 0 1 114 0 Z" fill="#FFD884" opacity=".85"/>
+        <rect y="360" width="800" height="240" fill="url(#bsv0e)"/>
+        <line x1="-40" y1="388" x2="840" y2="388" stroke="#FFD884" strokeWidth="2.2" strokeDasharray="3 13" opacity=".5"/>
+        <path d="M250 472 Q390 444 530 468 Q630 484 820 460 L820 620 L250 620 Z" fill="#13302A"/>
+        {beach.status==="clean"&&<g style={{transform:"translateY(calc(var(--p0)*-3px))"}}><circle cx="372" cy="404" r="6" fill="#0D2B26"/><path d="M360 410 q12 -8 24 0" stroke="#0D2B26" strokeWidth="3.2" fill="none" strokeLinecap="round"/><circle cx="446" cy="412" r="5" fill="#0D2B26"/></g>}
+        {beach.status==="moderate"&&<g style={{transform:"translateX(calc(var(--p0)*8px))"}}><circle cx="300" cy="378" r="3" fill="#FFC72C"/><circle cx="344" cy="380" r="2.6" fill="#FFC72C"/><circle cx="388" cy="378" r="2.6" fill="#FFC72C"/><circle cx="432" cy="379" r="3" fill="#FFC72C"/></g>}
+        {beach.status==="avoid"&&<g style={{transform:"translateX(calc(var(--p0)*10px))"}}><ellipse cx="320" cy="384" rx="24" ry="8" fill="#7a5c14"/><ellipse cx="470" cy="396" rx="20" ry="7" fill="#6b4a12"/></g>}
+        <g style={{transform:"translateX(calc(var(--p0)*104px - 16px))"}}>{miVeil(298,248,mwing,mlens)}</g>
+        {typeof beach.score==="number"&&<g style={{opacity:"var(--p0)",transformBox:"fill-box",transformOrigin:"center",transform:"scale(calc(.72 + var(--p0)*.28))"}}><path d="M500 206 C526 206 544 224 544 250 C544 276 526 294 500 294 C474 294 456 276 456 250 C456 224 474 206 500 206 Z" fill={beach.scoreColor||vm.color}/><text x="500" y="263" fontFamily="'Anton',sans-serif" fontSize="38" fill="#fff" textAnchor="middle">{beach.score}</text></g>}
+      </g>},
+    {eyebrow:T("LA SUITE","WHAT'S NEXT","LO QUE VIENE"),heading:`${turn?T("Ça se dégrade","It's turning","Empeora"):T("Demain, ça tient","Tomorrow holds","Mañana aguanta")} ${turn?"⚠️":"☀️"}`,sub:T("5 jours d'avance, plage par plage. Le satellite a déjà regardé.","5 days ahead, beach by beach. The satellite already looked.","5 días por delante."),
+      scene:<g>
+        <rect width="800" height="600" fill="#06211E"/><circle cx="400" cy="206" r="132" fill="#0A2E2A"/>
+        <g style={{transform:"translateX(calc(var(--p1)*70px - 35px))"}}><line x1="250" y1="206" x2="560" y2="206" stroke="#FFC72C" strokeWidth="2" strokeDasharray="5 8" opacity=".55"/></g>
+        {miVeil(405,206,"#3BA7A0","#5FD3C9")}
+        {[0,1,2,3,4].map(i=>(<g key={i} style={{opacity:`calc(var(--p1)*1.5 - ${i*0.2})`}}><circle cx={300+i*50} cy="372" r="11" fill={dotColor((fc[i]&&fc[i].status)||beach.status)}/></g>))}
+        <text x="400" y="424" fontFamily="ui-monospace,monospace" fontSize="12" fill="#7AADC4" textAnchor="middle" opacity=".7">{T("auj","now","hoy")} → +5j</text>
+      </g>},
+    {eyebrow:T("TON VEILLEUR","YOUR WATCHER","TU VIGÍA"),heading:beach.status==="avoid"?T("On trouve mieux","Let's find better","Buscamos mejor"):T("C'est ta journée","It's your day","Es tu día"),sub:T("Je surveille ta plage et je te préviens la veille où elle se trouble.","I watch your beach and warn you the day before it turns.","Vigilo tu playa y te aviso la víspera."),cta:T("Mon veilleur →","My watcher →","Mi vigía →"),
+      scene:<g>
+        <defs><linearGradient id="bsv2s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0B2230"/><stop offset=".55" stopColor="#11463E"/><stop offset="1" stopColor="#FFC72C"/></linearGradient></defs>
+        <rect width="800" height="600" fill="url(#bsv2s)"/>
+        <g style={{opacity:"var(--p2)"}}><circle cx="405" cy="250" r="62" fill="none" stroke="#FFE08A" strokeWidth="2" opacity=".4"/></g>
+        <g style={{transformBox:"fill-box",transformOrigin:"405px 250px",transform:"scale(calc(.9 + var(--p2)*.18))"}}>{miVeil(405,250,mwing,mlens)}</g>
+      </g>},
+  ]
 }
 
 const ST={
@@ -1994,6 +2111,10 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
   const [photoScanOpen,setPhotoScanOpen]=useState(false)
   const startY=useRef(0)
   const sheetRef=useRef(null)
+  // A/B « la fiche EST le ScrollStory » (pw_beach_story) : story = PanelStoryEngine
+  // (verdict→demain→vas-y) sous le hero À LA PLACE du bloc score/verdict ; control =
+  // liste actuelle intacte. ?beachstory=1/0 force en QA. CTA premium inchangé.
+  const beachStory=(()=>{try{const s=window.location.search;if(/[?&]beachstory=1/.test(s))return true;if(/[?&]beachstory=0/.test(s))return false;return abVariant("pw_beach_story",["control","story"],[.5,.5])==="story"}catch(_){return false}})()
 
   // Scroll to top when beach changes
   useEffect(()=>{
@@ -2194,8 +2315,9 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             </>}
           </p>
 
-          {/* v3.1 Beach Score 0-100 — editorial aurora card echoing the home hero */}
-          {typeof beach.score==="number"&&(
+          {/* v3.1 Beach Score 0-100 — editorial aurora card echoing the home hero.
+              Masqué dans le bras story (absorbé par le beat ① VERDICT du ScrollStory). */}
+          {!beachStory&&typeof beach.score==="number"&&(
             <div style={{position:"relative",margin:"4px 0 14px"}}>
               <div aria-hidden="true" style={{position:"absolute",inset:-4,borderRadius:22,
                 background:`radial-gradient(120% 100% at 0% 0%, ${beach.scoreColor}1f 0%, transparent 60%)`,
@@ -2251,8 +2373,9 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
 
           {scoreOpen&&<ScoreReveal beach={beach} lang={lang}/>}
 
-          {/* Verdict line — glanceable "can I go today?" answer (design-scout 2026-04-12) */}
-          {ST[beach.status]&&(() => {
+          {/* Verdict line — glanceable "can I go today?" answer (design-scout 2026-04-12).
+              Masquée dans le bras story (absorbée par le beat ① du ScrollStory). */}
+          {!beachStory&&ST[beach.status]&&(() => {
             const verdictKey = beach.status==="clean"?"verdictGo":beach.status==="moderate"?"verdictModerate":beach.status==="avoid"?"verdictAvoid":"verdictUnknown"
             const verdictText = LL[verdictKey]||LL.verdictUnknown
             const verdictColor = ST[beach.status].c
@@ -2266,6 +2389,15 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               </div>
             )
           })()}
+          {/* La fiche EST le ScrollStory (bras story) : verdict → demain → vas-y.
+              Moteur panel-scroll (lit sheetRef.scrollTop). CTA premium INCHANGÉ. */}
+          {beachStory&&forecast&&forecast.length>=2&&(
+            <div style={{margin:"6px -20px 16px"}}>
+              <PanelStoryEngine beats={beachStoryBeats(beach,forecast,lang)} scrollRef={sheetRef} lang={lang}
+                accent={verdictMeta(beach.status,lang).color} ev="sg_beach_beat"
+                onCTA={()=>{track("sg_beach_story_cta",{beach_id:beach.id,status:beach.status});onPremiumClick&&onPremiumClick("beach_story")}}/>
+            </div>
+          )}
           <AfaiChip beach={beach} lang={lang}/>
 
           {/* La vraie photo « calée en cool » plus bas (directive 14/06 : pas en
