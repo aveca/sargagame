@@ -1720,6 +1720,13 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
 
   const photo=getBeachPhoto(beach)
   const bgImage=photo||satImg(beach.lat,beach.lng,560)
+  // Hero personnalisé par l'HEURE (directive user 14/06) : la photo de plage est
+  // diurne et JURE pour un visiteur de nuit — et on n'a aucune photo de nuit.
+  // → scène vectorielle golden-hour (HeroScene, auto-phase sur l'heure locale,
+  // déjà validée sur l'accueil) dès qu'on n'est pas en plein jour OU sans vraie
+  // photo. Plein jour + vraie photo = on garde la photo (cinégénique, ça vend).
+  const heroPh=(()=>{try{if(HERO_PH_OVERRIDE)return HERO_PH_OVERRIDE;const h=new Date().getHours();return h<5?"night":h<8?"dawn":h<17?"day":h<20?"golden":"night"}catch(_){return "day"}})()
+  const useVectorHero=heroPh!=="day"||!photo
 
   const onTouchStart=e=>{startY.current=e.touches[0].clientY}
   const onTouchMove=e=>{
@@ -1794,10 +1801,13 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
         onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
         <div className="sheet-handle"/>
 
-        {/* Photo hero — immersive, tap to scan */}
-        <div onClick={e=>{if(!e.target.closest("button")){setPhotoScanOpen(v=>!v);track("sg_photo_scan",{beach_id:beach.id,open:!photoScanOpen})}}}
-          style={{height:"min(300px, 38vh)",background:`url(${bgImage}) center 40%/cover`,
+        {/* Hero — photo le jour, scène vectorielle golden-hour personnalisée par
+            l'heure sinon (cf. useVectorHero). Immersif, tap pour scanner. */}
+        <div onClick={e=>{if(!e.target.closest("button")){setPhotoScanOpen(v=>!v);track("sg_photo_scan",{beach_id:beach.id,open:!photoScanOpen,hero:useVectorHero?"vector":"photo",ph:heroPh})}}}
+          style={{height:"min(300px, 38vh)",background:useVectorHero?"#0B2230":`url(${bgImage}) center 40%/cover`,
           borderRadius:"0",position:"relative",overflow:"hidden",cursor:"pointer"}}>
+          {/* Scène vectorielle golden-hour (auto-phase) en fond quand pas de photo de jour */}
+          {useVectorHero&&<HeroScene/>}
           {/* Cinematic gradient overlay */}
           <div style={{position:"absolute",inset:0,
             background:"linear-gradient(180deg, rgba(0,0,0,.15) 0%, transparent 30%, transparent 50%, var(--sg-card,#fff) 100%)"}}/>
