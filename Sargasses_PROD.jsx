@@ -135,6 +135,61 @@ const SG_BLOB_INNER="M400 232 C436 232 478 270 478 306 C478 344 436 380 400 380 
 const SG_BLOB_SCORE_Y=318
 const SG_BLOB_LEGEND_Y=346
 
+// ── Primitives « Le Veilleur » (direction 14/06, workflow 11 agents) ──────────
+// Le satellite de HeroScene promu MASCOTTE : 3 humeurs pilotées par la donnée
+// réelle. Sobre/premium (satellite-caméra à 1 œil-objectif), JAMAIS visage
+// cartoon (= antidote au rejet « Adibou enfantin »). Réutilisable trans-écran.
+const VEILLEUR_MOOD={
+  serein:{wing:"#3BA7A0",halo:"#3BA7A0",lens:"#5FD3C9",ant:"#5FD3C9",tilt:0,ring:null},
+  vigilant:{wing:"#F59E0B",halo:"#F59E0B",lens:"#FFD27A",ant:"#FFD27A",tilt:0,ring:null},
+  alerte:{wing:"#E8522A",halo:"#E8522A",lens:"#F4845F",ant:"#F4845F",tilt:-8,ring:"#E8522A"},
+  scan:{wing:"#3BA7A0",halo:"#3BA7A0",lens:"#5FD3C9",ant:"#5FD3C9",tilt:0,ring:null},
+}
+function moodFromScore(score){return typeof score!=="number"?"scan":score>=70?"serein":score>=40?"vigilant":"alerte"}
+function moodFromStatus(s){return s==="clean"?"serein":s==="moderate"?"vigilant":s==="avoid"?"alerte":"scan"}
+// Verdict doublé texte+couleur+forme+emoji (jamais couleur seule — a11y). FR/EN/ES.
+function verdictMeta(status,lang){
+  const M={
+    clean:{color:"#22C55E",emoji:"😎",verb:_t(lang,"Vas-y","Go","Adelante")},
+    moderate:{color:"#F59E0B",emoji:"😐",verb:_t(lang,"Prudence","Careful","Cuidado")},
+    avoid:{color:"#E8522A",emoji:"🚫",verb:_t(lang,"Pas aujourd'hui","Not today","Hoy no")},
+  }
+  return M[status]||{color:"#3BA7A0",emoji:"🛰️",verb:_t(lang,"Le veilleur scanne","Scanning","Escaneando")}
+}
+function Veilleur({mood="serein",size=44}){
+  const m=VEILLEUR_MOOD[mood]||VEILLEUR_MOOD.serein
+  return(
+    <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true" style={{display:"block",overflow:"visible"}}>
+      <style>{`@keyframes sgvBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.6px)}}.sgv-bob{animation:sgvBob 5s ease-in-out infinite}@media(prefers-reduced-motion:reduce){.sgv-bob{animation:none}}`}</style>
+      <g transform="translate(32,33)"><g className="sgv-bob"><g transform={`rotate(${m.tilt})`}>
+        <circle r="22" fill={m.halo} opacity=".15"/>
+        <circle r="14" fill={m.lens} opacity=".12"/>
+        <rect x="-27" y="-5" width="13" height="11" rx="2.5" fill={m.wing}/>
+        <rect x="14" y="-5" width="13" height="11" rx="2.5" fill={m.wing}/>
+        <rect x="-11" y="-11" width="22" height="22" rx="6" fill="#C9971F"/>
+        <rect x="-11" y="-11" width="22" height="7" rx="6" fill="#FFC72C"/>
+        <line x1="0" y1="-11" x2="0" y2="-19" stroke={m.ant} strokeWidth="1.6" strokeLinecap="round"/>
+        <circle cx="0" cy="-20" r="1.9" fill={m.lens}/>
+        {m.ring&&<circle cx="0" cy="2" r="6.6" fill="none" stroke={m.ring} strokeWidth="1"/>}
+        <circle cx="0" cy="2" r="5.4" fill="#07201E"/>
+        <circle cx="0" cy="2" r="4" fill={m.lens}/>
+        <circle cx="-1.4" cy=".5" r="1.4" fill="#EAFBF8"/>
+      </g></g></g>
+    </svg>
+  )
+}
+// Squircle candy du score 0-100 — réutilise l'esprit SG_BLOB du funnel.
+function ScoreBlob({score,color,size=84}){
+  return(
+    <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden="true" style={{display:"block"}}>
+      <path d="M50 7 C79 7 93 21 93 50 C93 79 79 93 50 93 C21 93 7 79 7 50 C7 21 21 7 50 7 Z" fill={color}/>
+      <ellipse cx="37" cy="29" rx="25" ry="15" fill="#fff" opacity=".16"/>
+      <text x="50" y="59" fontFamily="'Anton',sans-serif" fontSize="40" fill="#fff" textAnchor="middle">{score}</text>
+      <text x="50" y="75" fontFamily="'Bricolage Grotesque',system-ui,sans-serif" fontSize="11" fontWeight="800" fill="#fff" textAnchor="middle" opacity=".82">/100</text>
+    </svg>
+  )
+}
+
 const ST={
   _loading:{c:"#666",bg:"rgba(100,100,100,.1)",l:"Chargement…",le:"Loading…",les:"Cargando…",e:"⏳",h2s:false,
     desc:"Données en cours de chargement…",descEn:"Loading data…",descEs:"Cargando datos…"},
@@ -1894,27 +1949,14 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
                 backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",
                 border:`1px solid ${beach.scoreColor}22`,
                 boxShadow:`0 14px 34px -16px ${beach.scoreColor}3a, inset 0 1px 0 rgba(255,255,255,.5)`}}>
-                <div role="button" aria-label={_t(lang,"Comprendre ce score","Understand this score","Entender este puntaje")}
+                <div role="button" aria-label={`${beach.score}/100, ${scoreLabelFor(beach.scoreLabel,lang)}. ${_t(lang,"Comprendre ce score","Understand this score","Entender este puntaje")}`}
                   onClick={()=>{setScoreOpen(v=>!v);track("sg_score_learn",{beach_id:beach.id,open:!scoreOpen})}}
-                  style={{position:"relative",width:80,height:80,flexShrink:0,cursor:"pointer"}}>
-                  <div aria-hidden="true" style={{position:"absolute",inset:-8,borderRadius:"50%",
-                    background:`radial-gradient(closest-side, ${beach.scoreColor}2b, transparent 72%)`,
-                    filter:"blur(2px)",pointerEvents:"none"}}/>
-                  <div style={{position:"absolute",inset:4,borderRadius:"50%",
-                    background:`conic-gradient(${beach.scoreColor} ${beach.score*3.6}deg, rgba(15,42,58,.06) ${beach.score*3.6}deg)`,
-                    boxShadow:`inset 0 0 0 1px ${beach.scoreColor}22`,
-                    display:"flex",alignItems:"center",justifyContent:"center"}}>
-                    <div style={{width:60,height:60,borderRadius:"50%",
-                      background:"linear-gradient(180deg,#fff,#FDFCF7)",
-                      display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
-                      boxShadow:"inset 0 1px 0 rgba(255,255,255,.9), 0 1px 4px rgba(15,42,58,.08)"}}>
-                      <span style={{fontFamily:"'Anton',sans-serif",fontSize:30,lineHeight:.95,
-                        letterSpacing:"-.02em",color:beach.scoreColor}}>
-                        {beach.score}
-                      </span>
-                      <span style={{fontSize:8,fontWeight:800,color:"var(--sg-mid,#686868)",
-                        letterSpacing:".08em",marginTop:1}}>/100</span>
-                    </div>
+                  style={{position:"relative",width:84,height:84,flexShrink:0,cursor:"pointer"}}>
+                  <ScoreBlob score={beach.score} color={beach.scoreColor} size={84}/>
+                  {/* Le Veilleur perché, humeur = score RÉEL : le « veilleur personnel »
+                      rendu tangible AVANT le paywall (data pilote le visuel). */}
+                  <div style={{position:"absolute",top:-14,left:-13,pointerEvents:"none"}}>
+                    <Veilleur mood={moodFromScore(beach.score)} size={36}/>
                   </div>
                   <div style={{position:"absolute",top:-2,right:-2,width:18,height:18,borderRadius:"50%",
                     background:beach.scoreColor,color:"#fff",fontSize:10,fontWeight:800,
@@ -1963,6 +2005,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
                 <span className="anton" style={{fontSize:"clamp(18px,4.6vw,22px)",lineHeight:1.1,color:verdictColor,letterSpacing:"-.01em",textTransform:"uppercase"}}>
                   {verdictText}
                 </span>
+                <span aria-hidden="true" style={{fontSize:20,lineHeight:1,flexShrink:0}}>{verdictMeta(beach.status,lang).emoji}</span>
               </div>
             )
           })()}
