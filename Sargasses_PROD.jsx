@@ -8232,6 +8232,8 @@ function WorldCard({beach,lang,active,index,onCarnet,phaseGrad}){
     veilleur:{t:_t(lang,"Le verdict du Veilleur","The Watchman's verdict","El veredicto del Vigía"),b:vm.verb+" — "+(hasScore?_t(lang,"score "+beach.score+"/100, ","score "+beach.score+"/100, ","puntuación "+beach.score+"/100, "):"")+_t(lang,"d'après le scan satellite du jour, recoupé sur 30 jours.","from today's satellite scan, cross-checked over 30 days.","según el escaneo de hoy, contrastado 30 días.")},
   }
   const show=k=>{setTip(TIPS[k]);try{track("sg_world_hotspot",{zone:k,beach_id:beach.id})}catch(_){}}
+  const vtRef=useRef(0)
+  const tapVeilleur=()=>{vtRef.current+=1;if(vtRef.current>=5){vtRef.current=0;setTip({t:_t(lang,"🛰️✨ Tu as réveillé le Veilleur !","🛰️✨ You woke the Watchman!","🛰️✨ ¡Despertaste al Vigía!"),b:_t(lang,"Il te fait un clin d'œil. Reviens chaque jour : la mer change, et lui aussi.","He winks at you. Come back each day: the sea changes, and so does he.","Te guiña. Vuelve cada día: el mar cambia, y él también.")});try{track("sg_world_easter",{egg:"veilleur5",beach_id:beach.id})}catch(_){}}else show("veilleur")}
   return(
     <section style={{position:"relative",height:"100svh",minHeight:"100svh",scrollSnapAlign:"start",scrollSnapStop:"always",overflow:"hidden",background:phaseGrad}}>
       {active?<BeachScene beach={beach}/>:<div aria-hidden="true" style={{position:"absolute",inset:0,background:phaseGrad}}/>}
@@ -8246,7 +8248,7 @@ function WorldCard({beach,lang,active,index,onCarnet,phaseGrad}){
             <h2 style={{margin:"2px 0 0",fontFamily:"'Anton',system-ui,sans-serif",fontSize:30,lineHeight:1.02,letterSpacing:".01em",textShadow:"0 2px 14px rgba(0,0,0,.5)"}}>{beach.name}</h2>
             {beach.commune&&<div style={{fontSize:12.5,fontWeight:600,color:"rgba(255,255,255,.8)"}}>{beach.commune}</div>}
           </div>
-          <button onClick={()=>show("veilleur")} aria-label={TIPS.veilleur.t} style={{background:"none",border:"none",padding:0,cursor:"pointer"}}><Veilleur mood={mood} size={42}/></button>
+          <button onClick={tapVeilleur} aria-label={TIPS.veilleur.t} style={{background:"none",border:"none",padding:0,cursor:"pointer"}}><Veilleur mood={mood} size={42}/></button>
         </div>
         <WorldAfaiGauge afai={beach.afai} lang={lang}/>
         <a href="/fiabilite/" onClick={e=>{e.stopPropagation();try{track("sg_reliability_open",{from:"world_card"})}catch(_){}}}
@@ -8289,6 +8291,53 @@ function WorldInfoCard({fact,lang}){
         <h2 style={{margin:"16px 0 0",fontFamily:"'Anton',system-ui,sans-serif",fontSize:32,lineHeight:1.05}}>{fact.t(lang)}</h2>
         <p style={{margin:"12px 0 0",fontSize:15,lineHeight:1.55,color:"rgba(255,255,255,.88)"}}>{fact.b(lang)}</p>
         <div style={{marginTop:22,fontSize:11.5,fontWeight:700,letterSpacing:".08em",color:"rgba(255,255,255,.55)"}}>{_t(lang,"CONTINUE ↓","CONTINUE ↓","SIGUE ↓")}</div>
+      </div>
+    </section>
+  )
+}
+// LE DÉFI DU VEILLEUR — mini-jeu intercalé (blueprint « Place Your Bets ») : devine
+// le verdict AVANT le reveal, sur de la data réelle. Récompense + teach-back en boucle,
+// rejouable = passe-temps, nourrit la série 🔥 (raison de revenir / easter egg returning).
+function WorldChallengeCard({beach,lang,active,phaseGrad,onGuess,streak}){
+  const real=beach.status||"clean"
+  const vm=verdictMeta(real,lang)
+  const hasScore=typeof beach.score==="number"
+  const afai=typeof beach.afai==="number"?beach.afai:null
+  const[guess,setGuess]=useState(null)
+  const correct=guess===real
+  const opts=[
+    {s:"clean",e:"😎",l:_t(lang,"Propre","Clean","Limpia"),c:"#22C55E"},
+    {s:"moderate",e:"😐",l:_t(lang,"Prudence","Careful","Cuidado"),c:"#F59E0B"},
+    {s:"avoid",e:"🚫",l:_t(lang,"Évite","Avoid","Evita"),c:"#E8522A"},
+  ]
+  const pick=s=>{if(guess)return;setGuess(s);try{track("sg_world_guess",{beach_id:beach.id,guess:s,correct:s===real})}catch(_){}; onGuess&&onGuess(s===real)}
+  const why=(afai!=null?"AFAI "+afai.toFixed(2)+" — ":"")+(real==="clean"?_t(lang,"signal satellite faible, eau claire.","low satellite signal, clear water.","señal baja, agua clara."):real==="moderate"?_t(lang,"signal modéré, présence éparse.","moderate signal, scattered.","señal moderada."):_t(lang,"signal fort, échouage probable.","strong signal, likely beaching.","señal fuerte."))
+  return(
+    <section style={{position:"relative",height:"100svh",minHeight:"100svh",scrollSnapAlign:"start",scrollSnapStop:"always",overflow:"hidden",background:phaseGrad}}>
+      {active?<BeachScene beach={beach}/>:<div aria-hidden="true" style={{position:"absolute",inset:0,background:phaseGrad}}/>}
+      <div aria-hidden="true" style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(4,9,11,.15) 0%,rgba(4,9,11,.2) 40%,rgba(4,9,11,.86) 100%)"}}/>
+      <div style={{position:"absolute",left:0,right:0,bottom:0,zIndex:4,padding:"0 22px calc(120px + env(safe-area-inset-bottom)) 22px",color:"#fff",maxWidth:560,margin:"0 auto"}}>
+        <div style={{fontSize:12,fontWeight:800,letterSpacing:".08em",color:"#FFD884"}}>🎯 {_t(lang,"DÉFI DU VEILLEUR","WATCHMAN'S CHALLENGE","DESAFÍO DEL VIGÍA")}{streak>0?" · 🔥 "+streak:""}</div>
+        <h2 style={{margin:"4px 0 0",fontFamily:"'Anton',system-ui,sans-serif",fontSize:28,lineHeight:1.04,textShadow:"0 2px 14px rgba(0,0,0,.5)"}}>{beach.name}</h2>
+        {beach.commune&&<div style={{fontSize:12.5,fontWeight:600,color:"rgba(255,255,255,.8)"}}>{beach.commune}</div>}
+        {!guess?(
+          <div className="wf-pop">
+            <p style={{margin:"14px 0 10px",fontSize:15,fontWeight:700}}>{_t(lang,"À ton avis, c'est comment aujourd'hui ?","Your call for today?","¿Cómo está hoy?")}</p>
+            <div style={{display:"flex",gap:8}}>
+              {opts.map(o=>(<button key={o.s} onClick={()=>pick(o.s)} style={{flex:1,padding:"13px 6px",borderRadius:14,border:"1px solid "+o.c+"66",cursor:"pointer",background:"rgba(255,255,255,.08)",color:"#fff",fontWeight:800,fontSize:12.5,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                <span style={{fontSize:24}}>{o.e}</span>{o.l}</button>))}
+            </div>
+          </div>
+        ):(
+          <div className="wf-pop">
+            <div style={{fontSize:16,fontWeight:800,color:correct?"#22C55E":"#FFD884",margin:"14px 0 10px"}}>{correct?_t(lang,"Bravo ! 🎉 +1 série","Nailed it! 🎉 +1 streak","¡Bien! 🎉 +1 racha"):_t(lang,"Raté ! Le vrai verdict :","Missed! The real verdict:","¡Fallaste! El veredicto:")}</div>
+            <div style={{display:"flex",alignItems:"center",gap:12}}>
+              {hasScore&&<ScoreBlob score={beach.score} color={beach.scoreColor||vm.color} size={58}/>}
+              <div style={{flex:1,minWidth:0}}><div style={{fontSize:16,fontWeight:800,color:vm.color}}>{vm.emoji} {vm.verb}</div><div style={{fontSize:12.5,lineHeight:1.4,color:"rgba(255,255,255,.84)"}}>{why}</div></div>
+            </div>
+            <div style={{marginTop:14,fontSize:12,fontWeight:700,letterSpacing:".06em",color:"rgba(255,255,255,.6)"}}>↓ {_t(lang,"PLAGE SUIVANTE","NEXT BEACH","SIGUIENTE")}</div>
+          </div>
+        )}
       </div>
     </section>
   )
@@ -8359,6 +8408,10 @@ function WorldFeed({beaches,lang,onPremium,onClose,island}){
   const scrollRef=useRef(null)
   const[active,setActive]=useState(0)
   const[carnet,setCarnet]=useState(null)
+  // Série 🔥 — passe-temps + raison de revenir (persistée, easter egg returning).
+  const[streak,setStreak]=useState(()=>{try{return parseInt(localStorage.getItem("sg_world_streak")||"0")||0}catch(_){return 0}})
+  const[best,setBest]=useState(()=>{try{return parseInt(localStorage.getItem("sg_world_best")||"0")||0}catch(_){return 0}})
+  const onGuess=correct=>{setStreak(s=>{const ns=correct?s+1:0;try{localStorage.setItem("sg_world_streak",String(ns))}catch(_){};setBest(b=>{const nb=ns>b?ns:b;try{localStorage.setItem("sg_world_best",String(nb))}catch(_){}return nb});return ns});try{track("sg_world_guess_result",{correct})}catch(_){}}
   const phaseGrad=useMemo(()=>{
     let ph="golden";try{if(typeof HERO_PH_OVERRIDE!=="undefined"&&HERO_PH_OVERRIDE)ph=HERO_PH_OVERRIDE;else{const h=new Date().getHours();ph=h<5?"night":h<8?"dawn":h<17?"day":h<20?"golden":"night"}}catch(_){}
     const t=BEACH_PHASE[ph]||BEACH_PHASE.golden
@@ -8368,7 +8421,10 @@ function WorldFeed({beaches,lang,onPremium,onClose,island}){
   // Items intercalés : 1 carte science toutes les 4 plages (info entre les plages).
   const items=useMemo(()=>{
     const out=[];let fi=0
-    list.forEach((b,i)=>{out.push({type:"beach",beach:b,bi:i});if((i+1)%4===0&&i<list.length-1){out.push({type:"info",fact:WORLD_FACTS[fi%WORLD_FACTS.length]});fi++}})
+    list.forEach((b,i)=>{out.push({type:"beach",beach:b,bi:i})
+      if((i+1)%4===0&&i<list.length-1){out.push({type:"info",fact:WORLD_FACTS[fi%WORLD_FACTS.length]});fi++}
+      if((i+1)%5===0&&list.length>3){out.push({type:"challenge",beach:list[(i+3)%list.length]})}
+    })
     out.push({type:"premium"})
     return out
   },[list])
@@ -8388,11 +8444,14 @@ function WorldFeed({beaches,lang,onPremium,onClose,island}){
       <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")}
         style={{position:"absolute",top:"calc(12px + env(safe-area-inset-top))",right:14,zIndex:30,width:40,height:40,borderRadius:"50%",
         background:"rgba(4,9,11,.55)",border:"1px solid rgba(255,255,255,.25)",color:"#fff",fontSize:17,cursor:"pointer",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)"}}>✕</button>
+      {streak>0&&<div aria-label={_t(lang,"Série","Streak","Racha")} style={{position:"absolute",top:"calc(15px + env(safe-area-inset-top))",left:14,zIndex:30,padding:"6px 12px",borderRadius:999,
+        background:"rgba(4,9,11,.55)",border:"1px solid rgba(255,216,132,.45)",color:"#FFD884",fontSize:12.5,fontWeight:800,backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)"}}>🔥 {streak}{best>streak?" · ⭐"+best:""}</div>}
       <div ref={scrollRef} style={{position:"absolute",inset:0,overflowY:"auto",scrollSnapType:"y mandatory",WebkitOverflowScrolling:"touch"}}>
         {items.map((it,idx)=>(
           <div key={idx} data-wf-card={idx}>
             {it.type==="beach"&&<WorldCard beach={it.beach} index={it.bi} active={Math.abs(idx-active)<=1} lang={lang} onCarnet={setCarnet} phaseGrad={phaseGrad}/>}
             {it.type==="info"&&<WorldInfoCard fact={it.fact} lang={lang}/>}
+            {it.type==="challenge"&&<WorldChallengeCard beach={it.beach} active={Math.abs(idx-active)<=1} lang={lang} phaseGrad={phaseGrad} onGuess={onGuess} streak={streak}/>}
             {it.type==="premium"&&<WorldPremiumCard lang={lang} onPremium={onPremium} onRestart={restart}/>}
           </div>
         ))}
