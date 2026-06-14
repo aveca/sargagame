@@ -359,6 +359,77 @@ function DiscoveryStory({lang,onClose,onShowMap}){
   )
 }
 
+// ── MapIntroStory — landing SVG d'intro de la CARTE (design workflow 14/06).
+//    Overlay plein écran (le seul contexte où le moteur prod scrub bien) : le
+//    Veilleur présente la côte → compteurs RÉELS → comment lire un pin → ouvre
+//    la carte. Show-once + skippable, zéro route Stripe. Anim en transform/
+//    opacity uniquement (calc sur attrs SVG géométriques = instable iOS). ─────
+function miVeil(cx,cy,wing,lens){
+  return(<g transform={`translate(${cx},${cy})`}>
+    <circle r="30" fill={wing} opacity=".14"/>
+    <rect x="-30" y="-7" width="16" height="14" rx="3" fill={wing}/><rect x="14" y="-7" width="16" height="14" rx="3" fill={wing}/>
+    <rect x="-14" y="-14" width="28" height="28" rx="8" fill="#C9971F"/><rect x="-14" y="-14" width="28" height="9" rx="8" fill="#FFC72C"/>
+    <circle cx="0" cy="3" r="8" fill="#07201E"/><circle cx="0" cy="3" r="5.5" fill={lens}/><circle cx="-2" cy="1" r="2" fill="#EAFBF8"/>
+  </g>)
+}
+function mapIntroBeats(lang,counts){
+  const T=(fr,en,es)=>_t(lang,fr,en,es)
+  const c=counts||{clean:0,watch:0,avoid:0,total:1}
+  const serene=c.avoid===0
+  return[
+    {eyebrow:T("LE VEILLEUR SCANNE","THE WATCHER SCANS","EL VIGÍA ESCANEA"),heading:T("Ta côte, vue du ciel","Your coast, from above","Tu costa, desde el cielo"),
+      sub:T("Chaque jour, le satellite balaie le littoral. Le Veilleur lit l'eau pour toi.","Every day the satellite sweeps the coast. The Watcher reads the water for you.","Cada día el satélite barre la costa."),
+      scene:<g>
+        <defs><linearGradient id="mi0sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0A1714"/><stop offset=".5" stopColor="#155A5A"/><stop offset=".84" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/></linearGradient><linearGradient id="mi0sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1A5852"/><stop offset="1" stopColor="#08251F"/></linearGradient></defs>
+        <rect width="800" height="600" fill="url(#mi0sky)"/>
+        <path d="M348 300 a57 57 0 0 1 114 0 Z" fill="#FFD884" opacity=".85"/>
+        <rect y="360" width="800" height="240" fill="url(#mi0sea)"/>
+        <line x1="-40" y1="388" x2="840" y2="388" stroke="#FFD884" strokeWidth="2.2" strokeDasharray="3 13" opacity=".5"/><line x1="-40" y1="420" x2="840" y2="420" stroke="#5FD3C9" strokeWidth="1.6" strokeDasharray="2 17" opacity=".3"/>
+        <path d="M250 472 Q390 444 530 468 Q630 484 820 460 L820 620 L250 620 Z" fill="#13302A"/>
+        <g style={{transform:"translateX(calc(var(--p0)*170px - 30px))"}}>{miVeil(330,250,"#3BA7A0","#5FD3C9")}</g>
+      </g>},
+    {eyebrow:T("TON LITTORAL AUJOURD'HUI","YOUR COAST TODAY","TU COSTA HOY"),heading:`${c.clean} ${T("propres","clean","limpias")} · ${c.avoid} ${T("à éviter","to avoid","a evitar")}`,
+      sub:T("L'état du jour, plage par plage. Le vert respire, le corail prévient.","Today's status, beach by beach. Green breathes, coral warns.","El estado de hoy, playa por playa."),
+      scene:<g>
+        <rect width="800" height="600" fill="#0A1714"/><rect width="800" height="600" fill="#0E2A26" opacity=".55"/>
+        <g style={{opacity:"calc(.3 + var(--p1)*.7)",transformBox:"fill-box",transformOrigin:"center",transform:"scale(calc(.92 + var(--p1)*.08))"}}>
+          <g transform="translate(300,296)"><rect x="-60" y="-42" width="120" height="84" rx="16" fill="#0E2A26" stroke="#22C55E" strokeWidth="1.6"/><circle cx="-32" cy="-9" r="9" fill="#22C55E"/><text x="6" y="3" fontFamily="'Anton',sans-serif" fontSize="36" fill="#fff" textAnchor="middle">{c.clean}</text><text x="0" y="27" fontFamily="ui-monospace,monospace" fontSize="12" fill="#9FE1CB" textAnchor="middle">{T("PROPRES","CLEAN","LIMPIAS")}</text></g>
+          <g transform="translate(500,296)"><rect x="-60" y="-42" width="120" height="84" rx="16" fill="#0E2A26" stroke="#E8522A" strokeWidth="1.6"/><circle cx="-32" cy="-9" r="9" fill="#E8522A"/><text x="6" y="3" fontFamily="'Anton',sans-serif" fontSize="36" fill="#fff" textAnchor="middle">{c.avoid}</text><text x="0" y="27" fontFamily="ui-monospace,monospace" fontSize="12" fill="#F4845F" textAnchor="middle">{T("À ÉVITER","AVOID","EVITAR")}</text></g>
+        </g>
+        <text x="400" y="420" fontFamily="ui-monospace,monospace" fontSize="13" fill="#7AADC4" textAnchor="middle" opacity=".8">{c.watch} {T("à surveiller","to watch","a vigilar")}</text>
+      </g>},
+    {eyebrow:T("COMMENT LIRE LA CARTE","HOW TO READ THE MAP","CÓMO LEER EL MAPA"),heading:T("Appuie sur une plage","Tap a beach","Toca una playa"),
+      sub:T("Vert : vas-y. Ambre : vérifie. Corail : reporte. Touche un point pour le verdict.","Green: go. Amber: check. Coral: skip. Tap a dot for the verdict.","Verde: ve. Ámbar: revisa. Coral: evita."),
+      scene:<g>
+        <rect width="800" height="600" fill="#08201C"/>
+        <g opacity=".2" stroke="#1E4640" strokeWidth="1"><path d="M250 170 L560 170 M250 290 L560 290 M250 410 L560 410 M320 110 L320 470 M405 110 L405 470 M490 110 L490 470"/></g>
+        <circle cx="344" cy="220" r="11" fill="#22C55E"/><circle cx="476" cy="180" r="11" fill="#F59E0B"/><circle cx="510" cy="320" r="11" fill="#E8522A"/><circle cx="386" cy="372" r="11" fill="#22C55E"/>
+        <g style={{transformBox:"fill-box",transformOrigin:"405px 250px",transform:"scale(calc(1 + var(--p2)*.9))",opacity:"calc(1 - var(--p2)*.6)"}}><circle cx="405" cy="250" r="16" fill="none" stroke="#FFE08A" strokeWidth="2"/></g>
+        <circle cx="405" cy="250" r="13" fill="#22C55E"/><circle cx="405" cy="250" r="13" fill="none" stroke="#0A1714" strokeWidth="2"/>
+        <g style={{opacity:"var(--p2)"}}><g transform="translate(430,232)"><rect width="150" height="56" rx="12" fill="#0E2A26" stroke="#22C55E" strokeWidth="1.5"/><circle cx="24" cy="20" r="8" fill="#22C55E"/><text x="42" y="26" fontFamily="'Anton',sans-serif" fontSize="17" fill="#fff">VAS-Y</text><text x="16" y="44" fontFamily="ui-monospace,monospace" fontSize="11" fill="#9FE1CB">verdict du jour →</text></g></g>
+        <g transform="translate(414,300)" style={{transform:"translate(414px,300px) translateY(calc(var(--p2)*-12px))"}}><path d="M0 0 q-7 -22 6 -30 q14 -8 13 8 l-2 26 Z" fill="#FFE08A"/><circle cx="2" cy="2" r="4" fill="#FFC72C"/></g>
+      </g>},
+    {eyebrow:T("LA CARTE EST PRÊTE","THE MAP IS READY","EL MAPA ESTÁ LISTO"),heading:T("Ouvre ta carte live","Open your live map","Abre tu mapa en vivo"),
+      sub:T("Touche, zoome, compare. Le Veilleur reste serein tant que ton eau l'est.","Tap, zoom, compare. The Watcher stays calm while your water is.","Toca, acerca, compara."),
+      cta:T("Ouvrir la carte live →","Open the live map →","Abrir el mapa →"),
+      scene:<g>
+        <defs><linearGradient id="mi3sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0A1714"/><stop offset=".55" stopColor="#11463E"/><stop offset="1" stopColor="#FFC72C"/></linearGradient></defs>
+        <rect width="800" height="600" fill="url(#mi3sky)"/>
+        <g style={{opacity:"calc(.25 + var(--p3)*.55)"}} stroke="#3BA7A0" strokeWidth="1"><path d="M250 160 L560 160 M250 260 L560 260 M250 360 L560 360 M320 110 L320 420 M405 110 L405 420 M490 110 L490 420"/></g>
+        <g style={{opacity:"var(--p3)"}}><circle cx="340" cy="220" r="8" fill="#22C55E"/><circle cx="470" cy="300" r="8" fill="#22C55E"/><circle cx="420" cy="380" r="8" fill={serene?"#22C55E":"#F59E0B"}/></g>
+        {miVeil(405,260,serene?"#5FD3C9":"#F59E0B",serene?"#5FD3C9":"#FFD27A")}
+      </g>},
+  ]
+}
+function MapIntroStory({lang,counts,onEnterMap}){
+  return(
+    <div role="dialog" aria-label={_t(lang,"Présentation de la carte","Map intro","Intro del mapa")} style={{position:"absolute",inset:0,zIndex:1050,background:"#0A1714",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
+      <button onClick={()=>{track("sg_map_intro_skip",{});onEnterMap()}} style={{position:"fixed",top:"calc(12px + env(safe-area-inset-top))",right:12,zIndex:30,padding:"8px 14px",borderRadius:20,background:"rgba(10,23,20,.6)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",color:"rgba(255,255,255,.85)",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{_t(lang,"Passer","Skip","Saltar")} →</button>
+      <StoryEngine beats={mapIntroBeats(lang,counts)} lang={lang} ev="sg_map_beat" onCTA={()=>{track("sg_map_intro_enter",{});onEnterMap()}}/>
+    </div>
+  )
+}
+
 const ST={
   _loading:{c:"#666",bg:"rgba(100,100,100,.1)",l:"Chargement…",le:"Loading…",les:"Cargando…",e:"⏳",h2s:false,
     desc:"Données en cours de chargement…",descEn:"Loading data…",descEs:"Cargando datos…"},
@@ -8257,6 +8328,8 @@ export default function App(){
   })
   // Découverte éducative (StoryEngine). Gate URL ?decouverte=1 pour QA ; entrée UI dédiée.
   const[showDiscovery,setShowDiscovery]=useState(()=>{try{return /[?&]decouverte=1/.test(window.location.search)}catch(_){return false}})
+  // Intro carte (MapIntroStory) — landing SVG, show-once par device, skippable.
+  const[showMapIntro,setShowMapIntro]=useState(()=>{try{return /[?&]mapintro=1/.test(window.location.search)||!localStorage.getItem("sg_map_intro_v1")}catch(_){return false}})
   // Bras A/B du landing : control = HeroVerdict (éprouvé), game = GameFunnel
   // (funnel-jeu immersif, tranche verticale 13/06). Mesuré contre le landing
   // prouvé, jamais imposé ; ?lf=game force en QA. La conversion (paywall/trial/
@@ -8839,6 +8912,14 @@ export default function App(){
         {/* MAP, LIST or GAME — both rendered, visibility toggled for instant switch */}
         <div style={{position:"absolute",inset:0,opacity:view==="map"?1:0,
           pointerEvents:view==="map"?"auto":"none",transition:"opacity .25s ease"}}>
+          {/* Intro carte SVG (MapIntroStory) — landing show-once, skippable, par-dessus
+              la map. Démontée à l'entrée → ne vole jamais un clic pin. Jamais pendant
+              hero/découverte/fiche/paywall ; bypass si <3 plages (jamais d'écran vide). */}
+          {showMapIntro&&view==="map"&&!showHero&&!showDiscovery&&!selectedBeach&&!showPremium&&filtered.length>=3&&(
+            <MapIntroStory lang={lang}
+              counts={{clean:filtered.filter(b=>b.status==="clean").length,watch:filtered.filter(b=>b.status==="moderate").length,avoid:filtered.filter(b=>b.status==="avoid").length,total:filtered.length}}
+              onEnterMap={()=>{setShowMapIntro(false);try{localStorage.setItem("sg_map_intro_v1","1")}catch(_){}}}/>
+          )}
           <ErrBound><Suspense fallback={<div style={{width:"100%",height:"100%",background:"#0A1714"}}/>}>
             <LazyMapView beaches={filtered} island={island} lang={lang}
             onBeachClick={onBeachClick} selectedBeach={selectedBeach} sargData={sargData} userPos={userPos}
