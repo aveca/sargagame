@@ -6221,7 +6221,13 @@ function HeroScene(){
 @keyframes sghBreathe{0%,100%{transform:scale(1) translateY(0)}50%{transform:scale(1.05) translateY(-1.5px)}}
 .sgh-walk{animation:sghWalk 9s linear infinite}
 @keyframes sghWalk{0%{transform:translateX(0)}100%{transform:translateX(20px)}}
-@media (prefers-reduced-motion:reduce){.sgh-cloud1,.sgh-cloud2,.sgh-glit,.sgh-foam,.sgh-mat,.sgh-bird,.sgh-rake,.sgh-rake2,.sgh-breathe,.sgh-walk{animation:none}}
+.sgh-fish{animation:sghFish 4.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes sghFish{0%,68%{opacity:0;transform:translateY(9px) rotate(8deg)}74%{opacity:1;transform:translateY(-6px) rotate(-16deg)}82%{transform:translateY(-17px) rotate(-32deg)}90%{opacity:1;transform:translateY(-3px) rotate(-52deg)}96%{opacity:0;transform:translateY(11px) rotate(-66deg)}100%{opacity:0}}
+.sgh-net{animation:sghNet 7s ease-in-out infinite alternate}
+@keyframes sghNet{from{transform:translateX(0)}to{transform:translateX(7px)}}
+.sgh-shim{animation:sghShim 3.2s ease-in-out infinite}
+@keyframes sghShim{0%,100%{opacity:.15}50%{opacity:.95}}
+@media (prefers-reduced-motion:reduce){.sgh-cloud1,.sgh-cloud2,.sgh-glit,.sgh-foam,.sgh-mat,.sgh-bird,.sgh-rake,.sgh-rake2,.sgh-breathe,.sgh-walk,.sgh-fish,.sgh-net,.sgh-shim{animation:none}}
         `}</style>
         <defs>
           <linearGradient id="sghSky" x1="0" y1="0" x2="0" y2="1">
@@ -6281,6 +6287,10 @@ function HeroScene(){
           {t.sun!=="moon"&&<g className="sgh-bird" opacity=".5" stroke={ph==="day"?"#1A4A5E":"#0B1B22"} strokeWidth="2.2" fill="none" strokeLinecap="round">
             <path d="M714 142 q5 -6 10 0 q5 -6 10 0"/>
             <path d="M752 128 q4 -5 8 0 q4 -5 8 0"/>
+            <path d="M520 116 q4.5 -5.5 9 0 q4.5 -5.5 9 0"/>
+            <path d="M566 102 q3.5 -4.5 7 0 q3.5 -4.5 7 0"/>
+            <path d="M612 128 q4 -5 8 0 q4 -5 8 0"/>
+            <path d="M488 138 q3 -4 6 0 q3 -4 6 0"/>
           </g>}
           {/* le satellite veille (continuité ScrollStory) */}
           <g transform="translate(474,78) scale(.62)">
@@ -6330,6 +6340,20 @@ function HeroScene(){
             <path d="M529 410 q7 -5 14 0" stroke="#0D2B26" strokeWidth="2.4" fill="none" strokeLinecap="round"/>
             <path d="M462 404 h6 M492 405 h5 M524 412 h5 M552 410 h6" stroke="#FDFCF7" strokeWidth="1.6" opacity=".5" strokeLinecap="round"/>
           </g>}
+          {/* le bateau pose son filet — maille + bouées dorées qui dérivent (jour + golden) */}
+          {t.boat&&<g className="sgh-net">
+            <path d="M286 358 Q330 367 372 360 Q410 354 444 363" fill="none" stroke="#CDEBE6" strokeWidth="1" strokeDasharray="1.5 4" opacity=".5"/>
+            <circle cx="300" cy="360" r="2.2" fill="#FFC72C" opacity=".85"/><circle cx="344" cy="364" r="2" fill="#FFC72C" opacity=".7"/><circle cx="388" cy="358" r="2" fill="#FFC72C" opacity=".7"/><circle cx="432" cy="362" r="2.2" fill="#FFC72C" opacity=".85"/>
+          </g>}
+          {/* reflet du soleil renforcé — éclats qui scintillent sous l'astre */}
+          <g className="sgh-shim" fill={t.glit}>
+            <circle cx="392" cy="348" r="1.7"/><circle cx="410" cy="374" r="1.4"/><circle cx="384" cy="396" r="1.5"/><circle cx="416" cy="410" r="1.3"/>
+          </g>
+          {/* poissons qui sautent hors de l'eau (jour + golden) */}
+          {t.boat&&<>
+            <g transform="translate(414,340)"><g className="sgh-fish"><path d="M-8 0 Q0 -5 8 0 Q0 5 -8 0 Z" fill="#6FD8CC"/><path d="M8 0 l5 -4 0 8 Z" fill="#3BA7A0"/><circle cx="3" cy="-1.4" r=".9" fill="#0A1714"/></g></g>
+            <g transform="translate(356,350) scale(.82)"><g className="sgh-fish" style={{animationDelay:"-2.4s"}}><path d="M-8 0 Q0 -5 8 0 Q0 5 -8 0 Z" fill="#8AE4D8"/><path d="M8 0 l5 -4 0 8 Z" fill="#3BA7A0"/></g></g>
+          </>}
         </g>
 
         {/* plage + palmier + écume (couche avant, la plus rapide) */}
@@ -6353,6 +6377,15 @@ function HeroScene(){
           </g>
           {/* échouage du jour : une nappe sur le sable (honnêteté du produit) */}
           <g transform="translate(252,486) scale(.62)" opacity=".55"><use href="#sghSarg"/></g>
+          {/* le ramasseur nettoie le sable — il râtelle la nappe échouée (jour + golden) */}
+          {t.boat&&<g transform="translate(360,484)">
+            <g transform="translate(-21,11) scale(.46)" opacity=".68"><use href="#sghSarg"/></g>
+            <g fill="#0E1F1A"><circle cx="0" cy="-27" r="5"/><path d="M-5 -22 q5 -4 10 0 l-1.5 19 h-7 Z"/><path d="M-4 -4 l-3 12 M4 -4 l3 12" stroke="#0E1F1A" strokeWidth="2.4" strokeLinecap="round" fill="none"/></g>
+            <g className="sgh-rake" stroke="#3A2A14" strokeWidth="2.2" fill="none" strokeLinecap="round">
+              <line x1="2" y1="-19" x2="20" y2="8"/>
+              <path d="M13 6 h13 M15 3 v7 M19 2 v8.5 M23 2 v8"/>
+            </g>
+          </g>}
         </g>
       </svg>
     </div>
