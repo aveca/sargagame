@@ -6728,7 +6728,7 @@ function ScrollStory({lang,onShowMap}){
    s'allument en cascade) → tap = fiche réelle (AHA + déclencheurs premium
    existants). Tout est skippable (« montre-moi la carte »). transforms/opacity
    only, 2 ressorts CSS nommés, reduced-motion = panneaux en fondu, complétable. ── */
-function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,onShowMap,onFav,exiting}){
+function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,onShowMap,onFav,onPremium,exiting}){
   const T=(fr,en,es)=>_t(lang,fr,en,es)
   const [stage,setStage]=useState("vibe") // vibe → coast (sélection) → scan (LE SCAN, beat 2)
   const [vibe,setVibe]=useState(null)
@@ -6801,6 +6801,23 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
     try{navigator.clipboard&&navigator.clipboard.writeText(`${txt} ${url}`.trim())}catch(_){}
   }
   const favBeach=b=>{setFaved(v=>!v);track("sg_fav_add",{beach_id:b.id,source:"funnel"});onFav&&onFav(b)}
+  // Beat 4 — honnêteté FTC/DSA : l'alerte n'existe QUE si le forecast J+1..J+2 de
+  // la plage choisie se dégrade VRAIMENT (jamais de fausse urgence). Sinon null →
+  // pas de pitch d'alerte, le verdict mène direct à la fiche.
+  const j2info=useMemo(()=>{
+    if(!chosenBeach)return null
+    const wkId=IS_NEW_REGION?chosenBeach.id:BEACH_TO_SARG[chosenBeach.id]
+    const fc=sargData&&sargData.weekly&&sargData.weekly[wkId]&&sargData.weekly[wkId].forecast
+    if(!fc||!fc.length)return null
+    const RANK={clean:0,moderate:1,avoid:2}
+    const today=(RANK[fc[0]&&fc[0].status]!=null?RANK[fc[0].status]:RANK[chosenBeach.status])||0
+    for(let i=1;i<=2&&i<fc.length;i++){
+      const r=RANK[fc[i]&&fc[i].status]
+      if(r!=null&&r>today)return{day:i,date:fc[i].date,status:fc[i].status}
+    }
+    return null
+  },[chosenBeach,sargData])
+  const dayName=j2info?(()=>{try{return new Date(j2info.date+"T12:00:00Z").toLocaleDateString(lang==="es"?"es-MX":lang==="en"?"en-US":"fr-FR",{weekday:"long"})}catch(_){return""}})():""
   const distTxt=b=>{if(!userPos||!b.lat)return b.drive!=null?`${b.drive} min`:"";const km=haversine(userPos.lat,userPos.lng,b.lat,b.lng);return US_UNITS?`${Math.max(1,Math.round(km*0.621))} mi`:`${Math.max(1,Math.round(km))} km`}
   return(
     <div role="dialog" aria-label={T("Trouve ta plage","Find your beach","Encuentra tu playa")} style={{position:"absolute",inset:0,zIndex:1050,
@@ -6834,7 +6851,13 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
 .gf-dot{animation:gfDotIn .5s cubic-bezier(.34,1.56,.64,1) both;animation-delay:var(--dd,0ms);transform-box:fill-box;transform-origin:center}
 @keyframes gfRing{to{stroke-dashoffset:-48}}
 .gf-ring{animation:gfRing 6s linear infinite}
-@media (prefers-reduced-motion:reduce){.gf-cam{transition:none}.gf-panel,.gf-chip,.gf-card{animation:none!important}.gf-pulse,.gf-scanline,.gf-sat,.gf-medal,.gf-scanfx,.gf-blob,.gf-dot,.gf-ring{animation:none!important}.gf-px{animation:none!important;opacity:.9}.gf-medal,.gf-scanfx{opacity:1}.gf-sat{transform:translate(400px,142px)}.gf-scanline{transform:translateY(300px)}.gf-blob,.gf-dot{transform:scale(1)}}
+@keyframes gfArrive{0%{transform:translateX(36px)}100%{transform:translateX(-8px)}}
+.gf-arrive{animation:gfArrive 5s ease-in-out infinite alternate}
+@keyframes gfArrowDash{to{stroke-dashoffset:-24}}
+.gf-arrow{animation:gfArrowDash 1.8s linear infinite}
+@keyframes gfAlertPulse{0%{transform:scale(.5);opacity:.7}100%{transform:scale(2.1);opacity:0}}
+.gf-alertpulse{animation:gfAlertPulse 2.2s ease-out infinite}
+@media (prefers-reduced-motion:reduce){.gf-cam{transition:none}.gf-panel,.gf-chip,.gf-card{animation:none!important}.gf-pulse,.gf-scanline,.gf-sat,.gf-medal,.gf-scanfx,.gf-blob,.gf-dot,.gf-ring,.gf-arrive,.gf-arrow,.gf-alertpulse{animation:none!important}.gf-px{animation:none!important;opacity:.9}.gf-medal,.gf-scanfx{opacity:1}.gf-sat{transform:translate(400px,142px)}.gf-scanline{transform:translateY(300px)}.gf-blob,.gf-dot{transform:scale(1)}}
       `}</style>
       {/* LE MONDE — dolly-in : il grossit quand on entre dans la sélection */}
       <div className="gf-cam" aria-hidden style={{position:"absolute",inset:0,transformOrigin:"50% 64%",
@@ -6846,6 +6869,8 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
           ?"linear-gradient(180deg,rgba(5,18,24,.72) 0%,rgba(8,30,40,.4) 36%,rgba(10,23,20,.86) 70%,#0A1714 100%)"
           :stage==="verdict"
           ?"linear-gradient(180deg,rgba(10,23,20,.45) 0%,rgba(10,23,20,.1) 28%,rgba(10,23,20,.5) 50%,rgba(10,23,20,.9) 76%,#0A1714 100%)"
+          :stage==="alert"
+          ?"linear-gradient(180deg,rgba(4,11,22,.86) 0%,rgba(4,11,22,.62) 38%,rgba(6,16,18,.9) 72%,#0A1714 100%)"
           :stage==="coast"
           ?"linear-gradient(180deg,rgba(10,23,20,.5) 0%,rgba(10,23,20,.22) 24%,rgba(10,23,20,.86) 62%,#0A1714 100%)"
           :"linear-gradient(180deg,rgba(10,23,20,.55) 0%,rgba(10,23,20,0) 30%,rgba(10,23,20,.8) 74%,#0A1714 100%)"}}/>
@@ -6921,6 +6946,34 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
           </g>
         </svg>
         )})()}
+      {/* BEAT 4 — L'ALERTE J+2 : scène de nuit, le banc qui dérive vers la côte,
+          flèche d'arrivée, notif téléphone. Honnête (seulement si vraie
+          dégradation). SVG base-visible. */}
+      {stage==="alert"&&chosenBeach&&(
+        <svg aria-hidden viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice"
+          style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none"}}>
+          <g opacity=".6">
+            <circle cx="96" cy="60" r="1.1" fill="#fff" opacity=".5"/><circle cx="238" cy="100" r=".9" fill="#fff" opacity=".4"/>
+            <circle cx="560" cy="84" r="1" fill="#fff" opacity=".45"/><circle cx="700" cy="120" r="1.1" fill="#fff" opacity=".5"/>
+            <circle cx="430" cy="150" r=".8" fill="#9ADCD4" opacity=".4"/>
+          </g>
+          <path d="M-40 432 Q200 412 430 422 Q640 430 840 450 L840 600 L-40 600Z" fill="#0A1A16"/>
+          <path d="M-40 432 Q200 412 430 422 Q640 430 840 450" fill="none" stroke="#1A4A44" strokeWidth="2" opacity=".55"/>
+          <g className="gf-arrive">
+            <g transform="translate(560,392) scale(.85)"><ellipse rx="14" ry="5" fill="#5a4410"/><ellipse cx="-8" cy="-2" rx="7" ry="3.5" fill="#6a5418"/><ellipse cx="8" cy="-2" rx="8" ry="3.5" fill="#3d2c08"/></g>
+            <g transform="translate(636,376) scale(.6)"><ellipse rx="14" ry="5" fill="#5a4410"/><ellipse cx="-8" cy="-2" rx="7" ry="3.5" fill="#6a5418"/></g>
+          </g>
+          <path className="gf-arrow" d="M694 296 Q612 338 548 388" fill="none" stroke="#E8522A" strokeWidth="2.5" strokeDasharray="5 7" opacity=".75"/>
+          <g transform="translate(300,248)">
+            <circle className="gf-alertpulse" r="46" fill="none" stroke="#E8522A" strokeWidth="1.5" opacity=".5" style={{transformBox:"fill-box",transformOrigin:"center"}}/>
+            <rect x="-30" y="-54" width="60" height="108" rx="11" fill="#10231E" stroke="rgba(255,255,255,.22)" strokeWidth="1.5"/>
+            <rect x="-23" y="-30" width="46" height="42" rx="7" fill="#1A3A2E"/>
+            <path d="M0 -22 l9 16 h-18 z" fill="none" stroke="#FFC72C" strokeWidth="2" strokeLinejoin="round"/>
+            <rect x="-.9" y="-12" width="1.8" height="6" rx=".9" fill="#FFC72C"/><circle cx="0" cy="-3.5" r="1.1" fill="#FFC72C"/>
+            <text x="0" y="24" textAnchor="middle" fontSize="7.5" fill="#FFC72C" fontWeight="700" letterSpacing=".04em">BANC J+{j2info?j2info.day:2}</text>
+          </g>
+        </svg>
+      )}
       {/* barre haute */}
       <div style={{position:"absolute",top:0,left:0,right:0,display:"flex",justifyContent:"space-between",alignItems:"center",
         padding:"calc(14px + env(safe-area-inset-top)) 18px 0",maxWidth:560,margin:"0 auto"}}>
@@ -7045,6 +7098,11 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
         )}
         {stage==="verdict"&&chosenBeach&&(
           <div key="verdict" className="gf-panel">
+            <button onClick={()=>setStage("coast")} style={{display:"inline-flex",alignItems:"center",gap:5,
+              background:"rgba(10,23,20,.5)",border:"1px solid rgba(255,255,255,.16)",borderRadius:999,
+              color:"#fff",fontFamily:"inherit",fontSize:12.5,fontWeight:700,padding:"7px 13px",cursor:"pointer",marginBottom:12}}>
+              ‹ {T("Autres plages","Other beaches","Otras playas")}
+            </button>
             <div style={{fontSize:11,fontWeight:700,letterSpacing:".12em",color:"#FFC72C",marginBottom:8,textTransform:"uppercase"}}>
               {T("Ta journée de plage","Your beach day","Tu día de playa")}
             </div>
@@ -7057,6 +7115,18 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
                :chosenBeach.status==="moderate"?T("Correct aujourd'hui — surveille demain.","Okay today — keep an eye on tomorrow.","Bien hoy — ojo con mañana.")
                :T("Sargasses présentes — regarde les alternatives autour.","Sargassum present — check the alternatives around.","Sargazo presente — mira las alternativas.")}
             </div>
+            {j2info&&(
+              <button onClick={()=>{track("sg_funnel_alert_view",{beach_id:chosenBeach.id,day:j2info.day});setStage("alert")}}
+                className="gf-chip" style={{display:"flex",alignItems:"center",gap:9,width:"100%",textAlign:"left",cursor:"pointer",
+                fontFamily:"inherit",borderRadius:14,padding:"12px 14px",marginBottom:10,
+                background:"rgba(232,82,42,.12)",border:"1px solid rgba(232,82,42,.4)"}}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F4845F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}><path d="M12 3L2 20h20L12 3z"/><path d="M12 10v4M12 17.5v.5"/></svg>
+                <span style={{flex:1,minWidth:0}}>
+                  <span style={{display:"block",fontWeight:800,fontSize:13.5,color:"#F4845F"}}>{T(`Sargasses prévues ${dayName}`,`Sargassum forecast ${dayName}`,`Sargazo previsto ${dayName}`)}</span>
+                  <span style={{display:"block",fontSize:12,color:"rgba(255,255,255,.6)"}}>{T("Sois prévenu la veille →","Get warned the day before →","Te aviso la víspera →")}</span>
+                </span>
+              </button>
+            )}
             <button onClick={()=>openBeach(chosenBeach)} className="gf-chip" style={{display:"block",width:"100%",textAlign:"center",
               cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:16,color:"#0A1714",border:"none",borderRadius:16,
               padding:"15px 20px",background:"linear-gradient(135deg,#FFE08A,#FFC72C)",boxShadow:"0 8px 24px rgba(255,199,44,.32)"}}>
@@ -7075,6 +7145,42 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
                 <svg width="19" height="19" viewBox="0 0 24 24" fill={faved?"#FFC72C":"none"} stroke={faved?"#FFC72C":"rgba(255,255,255,.7)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
               </button>
             </div>
+            <button onClick={onShowMap} style={{display:"block",margin:"12px auto 0",background:"none",border:"none",
+              color:"rgba(255,255,255,.55)",fontFamily:"inherit",fontSize:12.5,fontWeight:600,cursor:"pointer"}}>
+              {T("Passer — toutes les plages","Skip — all beaches","Saltar — todas las playas")}
+            </button>
+          </div>
+        )}
+        {stage==="alert"&&chosenBeach&&(
+          <div key="alert" className="gf-panel">
+            <button onClick={()=>setStage("verdict")} style={{display:"inline-flex",alignItems:"center",gap:5,
+              background:"rgba(10,23,20,.5)",border:"1px solid rgba(255,255,255,.16)",borderRadius:999,
+              color:"#fff",fontFamily:"inherit",fontSize:12.5,fontWeight:700,padding:"7px 13px",cursor:"pointer",marginBottom:12}}>
+              ‹ {T("Retour","Back","Volver")}
+            </button>
+            <div style={{display:"inline-flex",alignItems:"center",gap:7,fontSize:11,fontWeight:700,letterSpacing:".1em",color:"#F4845F",marginBottom:8,textTransform:"uppercase"}}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F4845F" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3L2 20h20L12 3z"/><path d="M12 10v4M12 17.5v.5"/></svg>
+              {T("Prévision satellite","Satellite forecast","Pronóstico satelital")}
+            </div>
+            <h1 style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:"clamp(28px,7.5vw,44px)",lineHeight:1,
+              letterSpacing:".01em",textTransform:"uppercase",margin:"0 0 8px",color:"#fff",textShadow:"0 2px 24px rgba(0,0,0,.5)"}}>
+              {T(`Un banc arrive ${dayName}`,`A raft lands ${dayName}`,`Llega un banco el ${dayName}`)}
+            </h1>
+            <div style={{fontSize:13.5,color:"rgba(255,255,255,.74)",fontWeight:600,marginBottom:18,lineHeight:1.45}}>
+              {T(`Sur ${chosenBeach.name}, l'eau se trouble ${dayName}. Je te préviens la veille — à temps pour changer de plan.`,
+                 `At ${chosenBeach.name}, the water turns ${dayName}. I warn you the day before — in time to change plans.`,
+                 `En ${chosenBeach.name}, el agua empeora el ${dayName}. Te aviso la víspera — a tiempo para cambiar de plan.`)}
+            </div>
+            <button onClick={()=>onPremium&&onPremium("funnel_alert")} className="gf-chip" style={{display:"block",width:"100%",textAlign:"center",
+              cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:16,color:"#0A1714",border:"none",borderRadius:16,
+              padding:"15px 20px",background:"linear-gradient(135deg,#FFE08A,#FFC72C)",boxShadow:"0 8px 24px rgba(255,199,44,.32)"}}>
+              {T("Sois prévenu la veille →","Get warned the day before →","Te aviso la víspera →")}
+            </button>
+            <button onClick={()=>openBeach(chosenBeach)} style={{display:"block",width:"100%",textAlign:"center",marginTop:10,
+              cursor:"pointer",fontFamily:"inherit",fontWeight:700,fontSize:14,color:"#fff",borderRadius:14,padding:"12px 16px",
+              background:"rgba(16,35,30,.92)",border:"1px solid rgba(255,255,255,.14)"}}>
+              {T("Voir la fiche d'abord","See the report first","Ver la ficha primero")}
+            </button>
             <button onClick={onShowMap} style={{display:"block",margin:"12px auto 0",background:"none",border:"none",
               color:"rgba(255,255,255,.55)",fontFamily:"inherit",fontSize:12.5,fontWeight:600,cursor:"pointer"}}>
               {T("Passer — toutes les plages","Skip — all beaches","Saltar — todas las playas")}
@@ -8372,6 +8478,7 @@ export default function App(){
               fireWipe(_t(lang,"Chaque pastille = la mesure du matin","Every dot = this morning's measurement","Cada punto = la medición de la mañana"))
             }}
             onFav={b=>toggleFav(b.id)}
+            onPremium={src=>{dismissHero("funnel");openPremium(src||"funnel_alert")}}
             exiting={heroExiting}/>
         ):(
           <HeroVerdict beach={heroPick} lang={lang} island={island} sargData={sargData} userPos={userPos}
