@@ -97,7 +97,7 @@
     },
     "gp-grande-anse": {
       "statusHitRate": 100,
-      "afaiMAE": 0.016,
+      "afaiMAE": 0.017,
       "pairs": 159
     },
     "gp-malendure": {
@@ -107,7 +107,7 @@
     },
     "gp-sainte-anne": {
       "statusHitRate": 51,
-      "afaiMAE": 0.074,
+      "afaiMAE": 0.073,
       "pairs": 159
     },
     "gp-pt-chateaux": {
@@ -117,12 +117,12 @@
     },
     "gp-gosier": {
       "statusHitRate": 69,
-      "afaiMAE": 0.055,
+      "afaiMAE": 0.054,
       "pairs": 159
     },
     "gp-caravelle": {
       "statusHitRate": 26,
-      "afaiMAE": 0.136,
+      "afaiMAE": 0.135,
       "pairs": 159
     },
     "gp-bas-du-fort": {
@@ -137,7 +137,7 @@
     },
     "gp-moule": {
       "statusHitRate": 64,
-      "afaiMAE": 0.054,
+      "afaiMAE": 0.053,
       "pairs": 159
     },
     "gp-vieux-fort": {
@@ -150,7 +150,7 @@
     "statusHitRate": 82,
     "afaiMAE": 0.038
   },
-  "computed": "2026-06-13T23:09:40.331Z",
+  "computed": "2026-06-13T23:50:23.300Z",
   "pairs": [
     {
       "snapshotDate": "2026-06-10",
@@ -367,11 +367,11 @@
         "confidence": 27
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.08,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0.02
     },
     {
       "snapshotDate": "2026-06-10",
@@ -469,11 +469,11 @@
         "confidence": 37
       },
       "actual": {
-        "afai": 0.08,
+        "afai": 0.11,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.17
+      "afaiError": 0.14
     },
     {
       "snapshotDate": "2026-06-10",
@@ -520,11 +520,11 @@
         "confidence": 37
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.16
+      "afaiError": 0.14
     },
     {
       "snapshotDate": "2026-06-10",
@@ -571,11 +571,11 @@
         "confidence": 37
       },
       "actual": {
-        "afai": 0.1,
+        "afai": 0.11,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.13
+      "afaiError": 0.12
     },
     {
       "snapshotDate": "2026-06-10",
@@ -622,11 +622,11 @@
         "confidence": 37
       },
       "actual": {
-        "afai": 0.09,
+        "afai": 0.11,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.28
+      "afaiError": 0.26
     },
     {
       "snapshotDate": "2026-06-10",
@@ -673,11 +673,11 @@
         "confidence": 37
       },
       "actual": {
-        "afai": 0.1,
+        "afai": 0.11,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.11
+      "afaiError": 0.1
     },
     {
       "snapshotDate": "2026-06-10",
@@ -775,11 +775,11 @@
         "confidence": 37
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.07,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.09
+      "afaiError": 0.08
     },
     {
       "snapshotDate": "2026-06-10",
@@ -826,11 +826,11 @@
         "confidence": 37
       },
       "actual": {
-        "afai": 0.08,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.1
+      "afaiError": 0.09
     },
     {
       "snapshotDate": "2026-06-11",
@@ -996,11 +996,11 @@
         "confidence": 33
       },
       "actual": {
-        "afai": 0.08,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
       "snapshotDate": "2026-06-11",
@@ -1200,11 +1200,11 @@
         "confidence": 33
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.08,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.02
+      "afaiError": 0.03
     },
     {
       "snapshotDate": "2026-06-11",
@@ -1268,11 +1268,11 @@
         "confidence": 43
       },
       "actual": {
-        "afai": 0.08,
+        "afai": 0.11,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.14
+      "afaiError": 0.11
     },
     {
       "snapshotDate": "2026-06-11",
@@ -1302,11 +1302,11 @@
         "confidence": 43
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.19
+      "afaiError": 0.17
     },
     {
       "snapshotDate": "2026-06-11",
@@ -1336,11 +1336,11 @@
         "confidence": 43
       },
       "actual": {
-        "afai": 0.1,
+        "afai": 0.11,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.09
+      "afaiError": 0.08
     },
     {
       "snapshotDate": "2026-06-11",
@@ -1370,11 +1370,11 @@
         "confidence": 43
       },
       "actual": {
-        "afai": 0.09,
+        "afai": 0.11,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.25
+      "afaiError": 0.23
     },
     {
       "snapshotDate": "2026-06-11",
@@ -1404,11 +1404,11 @@
         "confidence": 43
       },
       "actual": {
-        "afai": 0.1,
+        "afai": 0.11,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.07
+      "afaiError": 0.06
     },
     {
       "snapshotDate": "2026-06-11",
@@ -1472,11 +1472,11 @@
         "confidence": 33
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.07,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.03
+      "afaiError": 0.02
     },
     {
       "snapshotDate": "2026-06-11",
@@ -1506,11 +1506,11 @@
         "confidence": 43
       },
       "actual": {
-        "afai": 0.08,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.1
+      "afaiError": 0.09
     },
     {
       "snapshotDate": "2026-06-12",
@@ -1591,11 +1591,11 @@
         "confidence": 46
       },
       "actual": {
-        "afai": 0.08,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-06-12",
@@ -1693,11 +1693,11 @@
         "confidence": 46
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.08,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.02
+      "afaiError": 0.03
     },
     {
       "snapshotDate": "2026-06-12",
@@ -1727,11 +1727,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.08,
+        "afai": 0.11,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.12
+      "afaiError": 0.09
     },
     {
       "snapshotDate": "2026-06-12",
@@ -1744,11 +1744,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.07,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.13
+      "afaiError": 0.11
     },
     {
       "snapshotDate": "2026-06-12",
@@ -1761,11 +1761,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.1,
+        "afai": 0.11,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.06
+      "afaiError": 0.05
     },
     {
       "snapshotDate": "2026-06-12",
@@ -1778,11 +1778,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.09,
+        "afai": 0.11,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.22
+      "afaiError": 0.2
     },
     {
       "snapshotDate": "2026-06-12",
@@ -1795,11 +1795,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.1,
+        "afai": 0.11,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.05
+      "afaiError": 0.06
     },
     {
       "snapshotDate": "2026-06-12",
@@ -1829,11 +1829,11 @@
         "confidence": 46
       },
       "actual": {
-        "afai": 0.06,
+        "afai": 0.07,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.03
+      "afaiError": 0.02
     },
     {
       "snapshotDate": "2026-06-12",
@@ -1846,11 +1846,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.08,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.08
+      "afaiError": 0.07
     }
   ]
 }
