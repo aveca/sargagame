@@ -3195,7 +3195,7 @@
         },
         {
           "id": "les-salines",
-          "afai": 0.12,
+          "afai": 0.11,
           "status": "clean"
         },
         {
@@ -3210,7 +3210,7 @@
         },
         {
           "id": "gp-malendure",
-          "afai": 0.07,
+          "afai": 0.08,
           "status": "clean"
         },
         {
@@ -3225,7 +3225,7 @@
         },
         {
           "id": "gp-gosier",
-          "afai": 0.11,
+          "afai": 0.12,
           "status": "clean"
         },
         {

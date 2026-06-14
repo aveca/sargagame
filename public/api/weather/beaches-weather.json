@@ -1,6 +1,6 @@
 {
   "_comment": "Year-round beach conditions (Open-Meteo Marine+Forecast). Refreshed daily.",
-  "updatedAt": "2026-06-14T03:50:47.275Z",
+  "updatedAt": "2026-06-14T04:28:20.468Z",
   "source": "open-meteo",
   "count": 172,
   "beaches": {
@@ -12,40 +12,40 @@
       "windSpeed": 34,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.4,
+      "precip": 1.4,
       "condition": "rough"
     },
     "mq002": {
       "waveHeight": 1.7,
       "wavePeriod": 6.7,
       "sst": 28.1,
-      "airTemp": 27,
+      "airTemp": 26,
       "windSpeed": 22,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.6,
+      "precip": 5.3,
       "condition": "rough"
     },
     "mq003": {
       "waveHeight": 2,
       "wavePeriod": 6.7,
       "sst": 28.1,
-      "airTemp": 27,
+      "airTemp": 26,
       "windSpeed": 22,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.6,
+      "precip": 5.3,
       "condition": "rough"
     },
     "mq004": {
       "waveHeight": 1.7,
       "wavePeriod": 6.7,
       "sst": 28.1,
-      "airTemp": 27,
+      "airTemp": 26,
       "windSpeed": 22,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.6,
+      "precip": 5.3,
       "condition": "rough"
     },
     "mq005": {
@@ -56,7 +56,7 @@
       "windSpeed": 34,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.4,
+      "precip": 1.4,
       "condition": "rough"
     },
     "mq006": {
@@ -67,7 +67,7 @@
       "windSpeed": 22,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.6,
+      "precip": 5.3,
       "condition": "rough"
     },
     "mq007": {
@@ -78,18 +78,18 @@
       "windSpeed": 22,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.6,
+      "precip": 5.3,
       "condition": "rough"
     },
     "mq008": {
       "waveHeight": 1.7,
       "wavePeriod": 6.7,
       "sst": 28.1,
-      "airTemp": 27,
+      "airTemp": 26,
       "windSpeed": 22,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.6,
+      "precip": 5.3,
       "condition": "rough"
     },
     "mq009": {
@@ -97,65 +97,65 @@
       "wavePeriod": 6.7,
       "sst": 28.1,
       "airTemp": 26,
-      "windSpeed": 18,
+      "windSpeed": 17,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.4,
+      "precip": 3.4,
       "condition": "rough"
     },
     "mq010": {
-      "waveHeight": 1.2,
+      "waveHeight": 1.1,
       "wavePeriod": 6.2,
       "sst": 28.2,
       "airTemp": 26,
-      "windSpeed": 20,
+      "windSpeed": 19,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.2,
+      "precip": 1.4,
       "condition": "moderate"
     },
     "mq011": {
-      "waveHeight": 1.2,
+      "waveHeight": 1.1,
       "wavePeriod": 6.2,
       "sst": 28.2,
       "airTemp": 26,
-      "windSpeed": 20,
+      "windSpeed": 19,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.2,
+      "precip": 1.4,
       "condition": "moderate"
     },
     "mq012": {
-      "waveHeight": 1.2,
+      "waveHeight": 1.1,
       "wavePeriod": 6.2,
       "sst": 28.1,
       "airTemp": 26,
-      "windSpeed": 20,
+      "windSpeed": 19,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.2,
+      "precip": 1.4,
       "condition": "moderate"
     },
     "mq013": {
-      "waveHeight": 1.2,
+      "waveHeight": 1.1,
       "wavePeriod": 6.2,
       "sst": 28.1,
       "airTemp": 26,
-      "windSpeed": 20,
+      "windSpeed": 19,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.2,
+      "precip": 1.4,
       "condition": "moderate"
     },
     "mq014": {
-      "waveHeight": 1.2,
+      "waveHeight": 1.1,
       "wavePeriod": 6.2,
       "sst": 28.1,
       "airTemp": 26,
-      "windSpeed": 20,
+      "windSpeed": 19,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.2,
+      "precip": 1.4,
       "condition": "moderate"
     },
     "mq015": {
@@ -163,10 +163,10 @@
       "wavePeriod": 6.4,
       "sst": 28.1,
       "airTemp": 26,
-      "windSpeed": 20,
+      "windSpeed": 19,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.2,
+      "precip": 1.4,
       "condition": "rough"
     },
     "mq016": {
@@ -174,10 +174,10 @@
       "wavePeriod": 6.4,
       "sst": 28.1,
       "airTemp": 26,
-      "windSpeed": 20,
+      "windSpeed": 19,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.2,
+      "precip": 1.4,
       "condition": "rough"
     },
     "mq017": {
@@ -185,10 +185,10 @@
       "wavePeriod": 6.4,
       "sst": 28.1,
       "airTemp": 26,
-      "windSpeed": 20,
+      "windSpeed": 19,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.2,
+      "precip": 1.4,
       "condition": "rough"
     },
     "mq019": {
@@ -196,10 +196,10 @@
       "wavePeriod": 6.6,
       "sst": 28.2,
       "airTemp": 26,
-      "windSpeed": 18,
+      "windSpeed": 17,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.4,
+      "precip": 3.4,
       "condition": "rough"
     },
     "mq020": {
@@ -207,10 +207,10 @@
       "wavePeriod": 6.6,
       "sst": 28.2,
       "airTemp": 26,
-      "windSpeed": 18,
+      "windSpeed": 17,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.4,
+      "precip": 3.4,
       "condition": "rough"
     },
     "mq021": {
@@ -218,10 +218,10 @@
       "wavePeriod": 6.6,
       "sst": 28.2,
       "airTemp": 26,
-      "windSpeed": 18,
+      "windSpeed": 17,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.4,
+      "precip": 3.4,
       "condition": "rough"
     },
     "mq022": {
@@ -232,7 +232,7 @@
       "windSpeed": 22,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.6,
+      "precip": 5.3,
       "condition": "rough"
     },
     "mq023": {
@@ -240,10 +240,10 @@
       "wavePeriod": 5.8,
       "sst": 28.2,
       "airTemp": 26,
-      "windSpeed": 16,
+      "windSpeed": 17,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.7,
+      "precip": 3.8,
       "condition": "moderate"
     },
     "mq024": {
@@ -254,7 +254,7 @@
       "windSpeed": 13,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 1.6,
+      "precip": 5.3,
       "condition": "moderate"
     },
     "mq025": {
@@ -265,7 +265,7 @@
       "windSpeed": 13,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 1.6,
+      "precip": 5.3,
       "condition": "moderate"
     },
     "mq026": {
@@ -276,7 +276,7 @@
       "windSpeed": 13,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 1.6,
+      "precip": 5.3,
       "condition": "moderate"
     },
     "mq027": {
@@ -287,7 +287,7 @@
       "windSpeed": 7,
       "windDir": "NE",
       "uvMax": 9,
-      "precip": 2.3,
+      "precip": 3.9,
       "condition": "moderate"
     },
     "mq028": {
@@ -298,7 +298,7 @@
       "windSpeed": 10,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 1.4,
+      "precip": 2.6,
       "condition": "moderate"
     },
     "mq029": {
@@ -309,18 +309,18 @@
       "windSpeed": 10,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 1.4,
+      "precip": 2.6,
       "condition": "moderate"
     },
     "mq030": {
       "waveHeight": 1,
-      "wavePeriod": 6.2,
-      "sst": 28.3,
+      "wavePeriod": 6.3,
+      "sst": 28.2,
       "airTemp": 24,
       "windSpeed": 10,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 1.4,
+      "precip": 2.6,
       "condition": "moderate"
     },
     "mq032": {
@@ -331,7 +331,7 @@
       "windSpeed": 22,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 2.6,
+      "precip": 3.7,
       "condition": "moderate"
     },
     "mq033": {
@@ -342,7 +342,7 @@
       "windSpeed": 10,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 1.4,
+      "precip": 2.6,
       "condition": "moderate"
     },
     "mq034": {
@@ -353,7 +353,7 @@
       "windSpeed": 20,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 3.1,
+      "precip": 12.9,
       "condition": "rough"
     },
     "mq035": {
@@ -364,7 +364,7 @@
       "windSpeed": 20,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 3.1,
+      "precip": 12.9,
       "condition": "rough"
     },
     "mq036": {
@@ -375,7 +375,7 @@
       "windSpeed": 20,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 3.1,
+      "precip": 12.9,
       "condition": "rough"
     },
     "mq037": {
@@ -386,7 +386,7 @@
       "windSpeed": 20,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 3.1,
+      "precip": 12.9,
       "condition": "rough"
     },
     "mq038": {
@@ -397,7 +397,7 @@
       "windSpeed": 20,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 3.1,
+      "precip": 12.9,
       "condition": "rough"
     },
     "mq039": {
@@ -408,7 +408,7 @@
       "windSpeed": 20,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 3.1,
+      "precip": 12.9,
       "condition": "rough"
     },
     "mq041": {
@@ -419,7 +419,7 @@
       "windSpeed": 20,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 3.1,
+      "precip": 12.9,
       "condition": "rough"
     },
     "mq042": {
@@ -427,10 +427,10 @@
       "wavePeriod": 6.4,
       "sst": 28.5,
       "airTemp": 26,
-      "windSpeed": 20,
+      "windSpeed": 19,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.9,
+      "precip": 5.5,
       "condition": "rough"
     },
     "mq044": {
@@ -441,7 +441,7 @@
       "windSpeed": 22,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.6,
+      "precip": 5.3,
       "condition": "rough"
     },
     "mq046": {
@@ -452,18 +452,18 @@
       "windSpeed": 22,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.6,
+      "precip": 5.3,
       "condition": "rough"
     },
     "mq047": {
       "waveHeight": 2,
       "wavePeriod": 6.8,
       "sst": 28.1,
-      "airTemp": 27,
+      "airTemp": 26,
       "windSpeed": 22,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.6,
+      "precip": 5.3,
       "condition": "rough"
     },
     "mq049": {
@@ -474,7 +474,7 @@
       "windSpeed": 22,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 2.6,
+      "precip": 3.7,
       "condition": "moderate"
     },
     "mq050": {
@@ -485,7 +485,7 @@
       "windSpeed": 22,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 2.6,
+      "precip": 3.7,
       "condition": "moderate"
     },
     "mq051": {
@@ -496,7 +496,7 @@
       "windSpeed": 18,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 4.5,
+      "precip": 11.5,
       "condition": "calm"
     },
     "mq053": {
@@ -507,7 +507,7 @@
       "windSpeed": 18,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 4.5,
+      "precip": 11.5,
       "condition": "rough"
     },
     "mq055": {
@@ -515,32 +515,32 @@
       "wavePeriod": 6.6,
       "sst": 28.2,
       "airTemp": 26,
-      "windSpeed": 18,
+      "windSpeed": 17,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.4,
+      "precip": 3.4,
       "condition": "rough"
     },
     "mq057": {
       "waveHeight": 1.7,
       "wavePeriod": 6.7,
       "sst": 28.1,
-      "airTemp": 27,
+      "airTemp": 26,
       "windSpeed": 22,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.6,
+      "precip": 5.3,
       "condition": "rough"
     },
     "mq060": {
-      "waveHeight": 1.2,
+      "waveHeight": 1.1,
       "wavePeriod": 6.2,
       "sst": 28.2,
       "airTemp": 26,
-      "windSpeed": 20,
+      "windSpeed": 19,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.2,
+      "precip": 1.4,
       "condition": "moderate"
     },
     "mq062": {
@@ -551,7 +551,7 @@
       "windSpeed": 13,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 1.6,
+      "precip": 5.3,
       "condition": "moderate"
     },
     "mq063": {
@@ -562,18 +562,18 @@
       "windSpeed": 13,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 1.6,
+      "precip": 5.3,
       "condition": "moderate"
     },
     "mq066": {
       "waveHeight": 1,
-      "wavePeriod": 6.2,
-      "sst": 28.3,
+      "wavePeriod": 6.3,
+      "sst": 28.2,
       "airTemp": 24,
       "windSpeed": 10,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 1.4,
+      "precip": 2.6,
       "condition": "moderate"
     },
     "gp001": {
@@ -583,8 +583,8 @@
       "airTemp": 26,
       "windSpeed": 28,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 1.2,
+      "uvMax": 9,
+      "precip": 1.3,
       "condition": "rough"
     },
     "gp002": {
@@ -594,8 +594,8 @@
       "airTemp": 26,
       "windSpeed": 28,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 1.2,
+      "uvMax": 9,
+      "precip": 1.3,
       "condition": "rough"
     },
     "gp003": {
@@ -603,10 +603,10 @@
       "wavePeriod": 6.4,
       "sst": 28.3,
       "airTemp": 26,
-      "windSpeed": 18,
+      "windSpeed": 17,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.1,
+      "uvMax": 9,
+      "precip": 0.5,
       "condition": "rough"
     },
     "gp004": {
@@ -616,8 +616,8 @@
       "airTemp": 26,
       "windSpeed": 28,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 1.2,
+      "uvMax": 9,
+      "precip": 1.3,
       "condition": "rough"
     },
     "gp005": {
@@ -627,8 +627,8 @@
       "airTemp": 26,
       "windSpeed": 28,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 1.2,
+      "uvMax": 9,
+      "precip": 1.3,
       "condition": "rough"
     },
     "gp006": {
@@ -638,8 +638,8 @@
       "airTemp": 26,
       "windSpeed": 28,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 1.2,
+      "uvMax": 9,
+      "precip": 1.3,
       "condition": "rough"
     },
     "gp008": {
@@ -649,8 +649,8 @@
       "airTemp": 26,
       "windSpeed": 23,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.4,
+      "uvMax": 9,
+      "precip": 1,
       "condition": "rough"
     },
     "gp009": {
@@ -660,8 +660,8 @@
       "airTemp": 26,
       "windSpeed": 23,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.4,
+      "uvMax": 9,
+      "precip": 1,
       "condition": "rough"
     },
     "gp010": {
@@ -671,8 +671,8 @@
       "airTemp": 26,
       "windSpeed": 23,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.4,
+      "uvMax": 9,
+      "precip": 1,
       "condition": "rough"
     },
     "gp011": {
@@ -682,8 +682,8 @@
       "airTemp": 26,
       "windSpeed": 28,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 1.2,
+      "uvMax": 9,
+      "precip": 1.3,
       "condition": "rough"
     },
     "gp012": {
@@ -691,10 +691,10 @@
       "wavePeriod": 6.5,
       "sst": 28.3,
       "airTemp": 26,
-      "windSpeed": 18,
+      "windSpeed": 17,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.1,
+      "uvMax": 9,
+      "precip": 0.5,
       "condition": "rough"
     },
     "gp013": {
@@ -702,10 +702,10 @@
       "wavePeriod": 6.5,
       "sst": 28.3,
       "airTemp": 26,
-      "windSpeed": 18,
+      "windSpeed": 17,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.1,
+      "uvMax": 9,
+      "precip": 0.5,
       "condition": "rough"
     },
     "gp014": {
@@ -715,8 +715,8 @@
       "airTemp": 26,
       "windSpeed": 16,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.3,
+      "uvMax": 9,
+      "precip": 0.7,
       "condition": "rough"
     },
     "gp015": {
@@ -726,7 +726,7 @@
       "airTemp": 27,
       "windSpeed": 27,
       "windDir": "E",
-      "uvMax": 8,
+      "uvMax": 9,
       "precip": 1.4,
       "condition": "moderate"
     },
@@ -737,7 +737,7 @@
       "airTemp": 27,
       "windSpeed": 27,
       "windDir": "E",
-      "uvMax": 8,
+      "uvMax": 9,
       "precip": 1.4,
       "condition": "moderate"
     },
@@ -748,19 +748,19 @@
       "airTemp": 26,
       "windSpeed": 21,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.6,
+      "uvMax": 9,
+      "precip": 1,
       "condition": "moderate"
     },
     "gp018": {
       "waveHeight": 1.6,
       "wavePeriod": 6.3,
-      "sst": 28.1,
+      "sst": 28,
       "airTemp": 24,
-      "windSpeed": 15,
+      "windSpeed": 14,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 5.1,
+      "uvMax": 9,
+      "precip": 17.6,
       "condition": "rough"
     },
     "gp019": {
@@ -768,10 +768,10 @@
       "wavePeriod": 6.6,
       "sst": 28.1,
       "airTemp": 27,
-      "windSpeed": 36,
+      "windSpeed": 37,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.1,
+      "precip": 0.8,
       "condition": "rough"
     },
     "gp020": {
@@ -781,7 +781,7 @@
       "airTemp": 27,
       "windSpeed": 27,
       "windDir": "E",
-      "uvMax": 8,
+      "uvMax": 9,
       "precip": 1.4,
       "condition": "moderate"
     },
@@ -792,8 +792,8 @@
       "airTemp": 24,
       "windSpeed": 20,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 3.5,
+      "uvMax": 7,
+      "precip": 5.8,
       "condition": "moderate"
     },
     "gp023": {
@@ -803,8 +803,8 @@
       "airTemp": 26,
       "windSpeed": 28,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 1.2,
+      "uvMax": 9,
+      "precip": 1.3,
       "condition": "rough"
     },
     "gp024": {
@@ -814,19 +814,19 @@
       "airTemp": 26,
       "windSpeed": 19,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.2,
+      "uvMax": 9,
+      "precip": 0.9,
       "condition": "calm"
     },
     "gp025": {
       "waveHeight": 1.8,
-      "wavePeriod": 5.8,
+      "wavePeriod": 5.9,
       "sst": 28.1,
       "airTemp": 27,
       "windSpeed": 37,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.1,
+      "precip": 1.3,
       "condition": "rough"
     },
     "gp026": {
@@ -836,8 +836,8 @@
       "airTemp": 26,
       "windSpeed": 16,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.3,
+      "uvMax": 9,
+      "precip": 0.7,
       "condition": "rough"
     },
     "gp027": {
@@ -847,41 +847,41 @@
       "airTemp": 26,
       "windSpeed": 27,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.1,
+      "uvMax": 9,
+      "precip": 1.1,
       "condition": "moderate"
     },
     "gp028": {
       "waveHeight": 1,
       "wavePeriod": 5.2,
       "sst": 28.4,
-      "airTemp": 27,
+      "airTemp": 26,
       "windSpeed": 25,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.2,
+      "uvMax": 9,
+      "precip": 0.7,
       "condition": "moderate"
     },
     "gp029": {
       "waveHeight": 0.7,
       "wavePeriod": 5.5,
-      "sst": 28.5,
+      "sst": 28.4,
       "airTemp": 26,
       "windSpeed": 19,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.2,
+      "uvMax": 9,
+      "precip": 0.9,
       "condition": "calm"
     },
     "gp031": {
       "waveHeight": 0.7,
       "wavePeriod": 5.5,
-      "sst": 28.5,
+      "sst": 28.4,
       "airTemp": 24,
       "windSpeed": 2,
       "windDir": "NW",
-      "uvMax": 8,
-      "precip": 1.2,
+      "uvMax": 9,
+      "precip": 2.8,
       "condition": "calm"
     },
     "gp032": {
@@ -891,52 +891,52 @@
       "airTemp": 24,
       "windSpeed": 2,
       "windDir": "NW",
-      "uvMax": 8,
-      "precip": 1.2,
+      "uvMax": 9,
+      "precip": 2.8,
       "condition": "calm"
     },
     "gp033": {
       "waveHeight": 0.7,
       "wavePeriod": 5.5,
-      "sst": 28.5,
+      "sst": 28.4,
       "airTemp": 26,
       "windSpeed": 19,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.2,
+      "uvMax": 9,
+      "precip": 0.9,
       "condition": "calm"
     },
     "gp036": {
       "waveHeight": 1,
       "wavePeriod": 5.2,
       "sst": 28.4,
-      "airTemp": 27,
+      "airTemp": 26,
       "windSpeed": 25,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.2,
+      "uvMax": 9,
+      "precip": 0.7,
       "condition": "moderate"
     },
     "gp038": {
       "waveHeight": 1.6,
       "wavePeriod": 6.3,
-      "sst": 28.1,
+      "sst": 28,
       "airTemp": 24,
-      "windSpeed": 15,
+      "windSpeed": 14,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 5.1,
+      "uvMax": 9,
+      "precip": 17.6,
       "condition": "rough"
     },
     "gp040": {
       "waveHeight": 2,
       "wavePeriod": 6.4,
       "sst": 28.1,
-      "airTemp": 26,
+      "airTemp": 25,
       "windSpeed": 28,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.7,
+      "precip": 1.7,
       "condition": "rough"
     },
     "gp041": {
@@ -947,7 +947,7 @@
       "windSpeed": 28,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.7,
+      "precip": 1.7,
       "condition": "rough"
     },
     "gp042": {
@@ -957,8 +957,8 @@
       "airTemp": 26,
       "windSpeed": 27,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.1,
+      "uvMax": 9,
+      "precip": 1.1,
       "condition": "moderate"
     },
     "gp043": {
@@ -969,18 +969,18 @@
       "windSpeed": 28,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.7,
+      "precip": 1.7,
       "condition": "rough"
     },
     "gp044": {
       "waveHeight": 1.8,
-      "wavePeriod": 5.8,
+      "wavePeriod": 5.9,
       "sst": 28.1,
       "airTemp": 27,
       "windSpeed": 36,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0,
+      "precip": 0.9,
       "condition": "rough"
     },
     "gp045": {
@@ -990,19 +990,19 @@
       "airTemp": 27,
       "windSpeed": 37,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.1,
+      "uvMax": 9,
+      "precip": 1.3,
       "condition": "rough"
     },
     "gp046": {
       "waveHeight": 1.8,
-      "wavePeriod": 5.8,
+      "wavePeriod": 5.9,
       "sst": 28.1,
       "airTemp": 27,
       "windSpeed": 37,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.1,
+      "precip": 1.3,
       "condition": "rough"
     },
     "gp047": {
@@ -1012,30 +1012,30 @@
       "airTemp": 27,
       "windSpeed": 37,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.1,
+      "uvMax": 9,
+      "precip": 1.3,
       "condition": "rough"
     },
     "gp048": {
-      "waveHeight": 2.2,
-      "wavePeriod": 6.7,
+      "waveHeight": 2.3,
+      "wavePeriod": 6.6,
       "sst": 28.1,
       "airTemp": 27,
       "windSpeed": 38,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.5,
+      "precip": 0.8,
       "condition": "rough"
     },
     "gp049": {
-      "waveHeight": 2.2,
-      "wavePeriod": 6.7,
+      "waveHeight": 2.3,
+      "wavePeriod": 6.6,
       "sst": 28.1,
       "airTemp": 26,
       "windSpeed": 38,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.4,
+      "precip": 1.1,
       "condition": "rough"
     },
     "gp050": {
@@ -1045,8 +1045,8 @@
       "airTemp": 26,
       "windSpeed": 25,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.8,
+      "uvMax": 9,
+      "precip": 1.1,
       "condition": "rough"
     },
     "gp051": {
@@ -1056,8 +1056,8 @@
       "airTemp": 26,
       "windSpeed": 25,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.8,
+      "uvMax": 9,
+      "precip": 1.1,
       "condition": "moderate"
     },
     "gp052": {
@@ -1067,8 +1067,8 @@
       "airTemp": 26,
       "windSpeed": 23,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.4,
+      "uvMax": 9,
+      "precip": 1,
       "condition": "rough"
     },
     "gp054": {
@@ -1078,8 +1078,8 @@
       "airTemp": 26,
       "windSpeed": 28,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 1.2,
+      "uvMax": 9,
+      "precip": 1.3,
       "condition": "rough"
     },
     "gp057": {
@@ -1089,8 +1089,8 @@
       "airTemp": 26,
       "windSpeed": 19,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.2,
+      "uvMax": 9,
+      "precip": 0.9,
       "condition": "calm"
     },
     "gp059": {
@@ -1100,8 +1100,8 @@
       "airTemp": 26,
       "windSpeed": 28,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 1.2,
+      "uvMax": 9,
+      "precip": 1.3,
       "condition": "rough"
     },
     "gp060": {
@@ -1111,8 +1111,8 @@
       "airTemp": 26,
       "windSpeed": 27,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.1,
+      "uvMax": 9,
+      "precip": 1.1,
       "condition": "moderate"
     },
     "gp061": {
@@ -1120,10 +1120,10 @@
       "wavePeriod": 6.4,
       "sst": 28.3,
       "airTemp": 26,
-      "windSpeed": 18,
+      "windSpeed": 17,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.1,
+      "uvMax": 9,
+      "precip": 0.5,
       "condition": "rough"
     },
     "gp062": {
@@ -1134,7 +1134,7 @@
       "windSpeed": 28,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.7,
+      "precip": 1.7,
       "condition": "rough"
     },
     "gp064": {
@@ -1142,10 +1142,10 @@
       "wavePeriod": 6.4,
       "sst": 28.3,
       "airTemp": 26,
-      "windSpeed": 18,
+      "windSpeed": 17,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.1,
+      "uvMax": 9,
+      "precip": 0.5,
       "condition": "rough"
     },
     "gp066": {
@@ -1155,8 +1155,8 @@
       "airTemp": 26,
       "windSpeed": 16,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.3,
+      "uvMax": 9,
+      "precip": 0.7,
       "condition": "rough"
     },
     "gp068": {
@@ -1166,8 +1166,8 @@
       "airTemp": 26,
       "windSpeed": 23,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.4,
+      "uvMax": 9,
+      "precip": 1,
       "condition": "rough"
     },
     "gp069": {
@@ -1175,10 +1175,10 @@
       "wavePeriod": 6.5,
       "sst": 28.3,
       "airTemp": 26,
-      "windSpeed": 18,
+      "windSpeed": 17,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.1,
+      "uvMax": 9,
+      "precip": 0.5,
       "condition": "rough"
     },
     "gp071": {
@@ -1188,8 +1188,8 @@
       "airTemp": 26,
       "windSpeed": 28,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 1.2,
+      "uvMax": 9,
+      "precip": 1.3,
       "condition": "rough"
     },
     "gp072": {
@@ -1199,8 +1199,8 @@
       "airTemp": 26,
       "windSpeed": 28,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 1.2,
+      "uvMax": 9,
+      "precip": 1.3,
       "condition": "rough"
     },
     "gp073": {
@@ -1210,8 +1210,8 @@
       "airTemp": 26,
       "windSpeed": 28,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 1.2,
+      "uvMax": 9,
+      "precip": 1.3,
       "condition": "rough"
     },
     "gp074": {
@@ -1221,8 +1221,8 @@
       "airTemp": 27,
       "windSpeed": 37,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.1,
+      "uvMax": 9,
+      "precip": 1.3,
       "condition": "rough"
     },
     "gp078": {
@@ -1232,7 +1232,7 @@
       "airTemp": 27,
       "windSpeed": 27,
       "windDir": "E",
-      "uvMax": 8,
+      "uvMax": 9,
       "precip": 1.4,
       "condition": "moderate"
     },
@@ -1243,8 +1243,8 @@
       "airTemp": 26,
       "windSpeed": 21,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.6,
+      "uvMax": 9,
+      "precip": 1,
       "condition": "moderate"
     },
     "gp081": {
@@ -1254,19 +1254,19 @@
       "airTemp": 27,
       "windSpeed": 37,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.1,
+      "uvMax": 9,
+      "precip": 1.3,
       "condition": "rough"
     },
     "gp083": {
       "waveHeight": 1,
-      "wavePeriod": 5.5,
+      "wavePeriod": 5.6,
       "sst": 28.1,
       "airTemp": 24,
       "windSpeed": 5,
       "windDir": "NE",
-      "uvMax": 8,
-      "precip": 3.7,
+      "uvMax": 9,
+      "precip": 5.1,
       "condition": "moderate"
     },
     "gp084": {
@@ -1276,30 +1276,30 @@
       "airTemp": 24,
       "windSpeed": 20,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 3.5,
+      "uvMax": 9,
+      "precip": 5.8,
       "condition": "moderate"
     },
     "gp087": {
       "waveHeight": 1,
-      "wavePeriod": 5.5,
+      "wavePeriod": 5.6,
       "sst": 28,
       "airTemp": 24,
       "windSpeed": 5,
       "windDir": "NE",
-      "uvMax": 8,
-      "precip": 3.7,
+      "uvMax": 9,
+      "precip": 5.1,
       "condition": "moderate"
     },
     "gp088": {
       "waveHeight": 1.8,
-      "wavePeriod": 5.8,
+      "wavePeriod": 5.9,
       "sst": 28.1,
       "airTemp": 27,
       "windSpeed": 37,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.1,
+      "precip": 1.3,
       "condition": "rough"
     },
     "gp093": {
@@ -1309,8 +1309,8 @@
       "airTemp": 26,
       "windSpeed": 19,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.2,
+      "uvMax": 9,
+      "precip": 0.9,
       "condition": "calm"
     },
     "gp094": {
@@ -1320,8 +1320,8 @@
       "airTemp": 26,
       "windSpeed": 27,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.1,
+      "uvMax": 9,
+      "precip": 1.1,
       "condition": "calm"
     },
     "gp096": {
@@ -1331,8 +1331,8 @@
       "airTemp": 26,
       "windSpeed": 16,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.3,
+      "uvMax": 9,
+      "precip": 0.7,
       "condition": "rough"
     },
     "gp097": {
@@ -1342,8 +1342,8 @@
       "airTemp": 26,
       "windSpeed": 16,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.3,
+      "uvMax": 9,
+      "precip": 0.7,
       "condition": "rough"
     },
     "gp099": {
@@ -1353,8 +1353,8 @@
       "airTemp": 26,
       "windSpeed": 16,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.3,
+      "uvMax": 9,
+      "precip": 0.7,
       "condition": "rough"
     },
     "gp100": {
@@ -1365,7 +1365,7 @@
       "windSpeed": 28,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.7,
+      "precip": 1.7,
       "condition": "rough"
     },
     "gp101": {
@@ -1375,8 +1375,8 @@
       "airTemp": 27,
       "windSpeed": 37,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.1,
+      "uvMax": 9,
+      "precip": 1.3,
       "condition": "rough"
     },
     "gp103": {
@@ -1386,19 +1386,19 @@
       "airTemp": 26,
       "windSpeed": 27,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.1,
+      "uvMax": 9,
+      "precip": 1.1,
       "condition": "moderate"
     },
     "gp104": {
       "waveHeight": 1.8,
-      "wavePeriod": 5.8,
+      "wavePeriod": 5.9,
       "sst": 28.1,
       "airTemp": 27,
       "windSpeed": 37,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.1,
+      "precip": 1.3,
       "condition": "rough"
     },
     "gp108": {
@@ -1408,8 +1408,8 @@
       "airTemp": 26,
       "windSpeed": 28,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 1.2,
+      "uvMax": 9,
+      "precip": 1.3,
       "condition": "rough"
     },
     "gp110": {
@@ -1419,8 +1419,8 @@
       "airTemp": 26,
       "windSpeed": 23,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.4,
+      "uvMax": 9,
+      "precip": 1,
       "condition": "rough"
     },
     "gp113": {
@@ -1430,8 +1430,8 @@
       "airTemp": 26,
       "windSpeed": 19,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.2,
+      "uvMax": 9,
+      "precip": 0.9,
       "condition": "calm"
     },
     "gp115": {
@@ -1442,7 +1442,7 @@
       "windSpeed": 28,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.7,
+      "precip": 1.7,
       "condition": "rough"
     },
     "gp116": {
@@ -1452,8 +1452,8 @@
       "airTemp": 26,
       "windSpeed": 17,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.8,
+      "uvMax": 9,
+      "precip": 0.6,
       "condition": "moderate"
     },
     "gp118": {
@@ -1464,7 +1464,7 @@
       "windSpeed": 28,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.7,
+      "precip": 1.7,
       "condition": "rough"
     },
     "gp119": {
@@ -1475,7 +1475,7 @@
       "windSpeed": 28,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.7,
+      "precip": 1.7,
       "condition": "rough"
     },
     "gp120": {
@@ -1483,10 +1483,10 @@
       "wavePeriod": 6.7,
       "sst": 28.1,
       "airTemp": 27,
-      "windSpeed": 37,
+      "windSpeed": 38,
       "windDir": "E",
-      "uvMax": 8,
-      "precip": 0.2,
+      "uvMax": 9,
+      "precip": 1.5,
       "condition": "rough"
     },
     "mq067": {
@@ -1497,17 +1497,17 @@
       "windSpeed": 20,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 3.1,
+      "precip": 12.9,
       "condition": "rough"
     },
     "fl001": {
       "waveHeight": 0.1,
       "wavePeriod": 4.7,
       "sst": 30.1,
-      "airTemp": 27,
-      "windSpeed": 4,
-      "windDir": "SW",
-      "uvMax": 8,
+      "airTemp": 26,
+      "windSpeed": 7,
+      "windDir": "W",
+      "uvMax": 9,
       "precip": 0,
       "condition": "calm"
     },
@@ -1516,9 +1516,9 @@
       "wavePeriod": 4.7,
       "sst": 30.1,
       "airTemp": 27,
-      "windSpeed": 4,
-      "windDir": "SW",
-      "uvMax": 8,
+      "windSpeed": 7,
+      "windDir": "W",
+      "uvMax": 9,
       "precip": 0,
       "condition": "calm"
     },
@@ -1526,10 +1526,10 @@
       "waveHeight": 0.1,
       "wavePeriod": 6.1,
       "sst": 29.4,
-      "airTemp": 27,
-      "windSpeed": 5,
+      "airTemp": 26,
+      "windSpeed": 4,
       "windDir": "W",
-      "uvMax": 8,
+      "uvMax": 9,
       "precip": 0,
       "condition": "calm"
     },
@@ -1538,26 +1538,26 @@
       "wavePeriod": 7.3,
       "sst": 29.3,
       "airTemp": 26,
-      "windSpeed": 10,
-      "windDir": "S",
+      "windSpeed": 8,
+      "windDir": "SW",
       "uvMax": 8,
-      "precip": 0,
+      "precip": 1.2,
       "condition": "calm"
     },
     "fl005": {
       "waveHeight": 0.3,
       "wavePeriod": 7.4,
-      "sst": 28.7,
+      "sst": 28.6,
       "airTemp": 27,
-      "windSpeed": 12,
+      "windSpeed": 10,
       "windDir": "S",
       "uvMax": 9,
-      "precip": 0,
+      "precip": 1.2,
       "condition": "calm"
     },
     "fl006": {
       "waveHeight": 0.2,
-      "wavePeriod": 4.3,
+      "wavePeriod": 4.1,
       "sst": 29.9,
       "airTemp": 27,
       "windSpeed": 7,
@@ -1571,18 +1571,18 @@
       "wavePeriod": 3.8,
       "sst": 30.1,
       "airTemp": 28,
-      "windSpeed": 12,
+      "windSpeed": 15,
       "windDir": "SE",
-      "uvMax": 9,
+      "uvMax": 8,
       "precip": 0,
       "condition": "calm"
     },
     "fl008": {
       "waveHeight": 0.1,
       "wavePeriod": 4,
-      "sst": 30.1,
+      "sst": 30,
       "airTemp": 29,
-      "windSpeed": 15,
+      "windSpeed": 19,
       "windDir": "SE",
       "uvMax": 9,
       "precip": 0,
@@ -1590,35 +1590,35 @@
     },
     "fl009": {
       "waveHeight": 0.2,
-      "wavePeriod": 3.9,
+      "wavePeriod": 3.8,
       "sst": 30.1,
       "airTemp": 28,
-      "windSpeed": 7,
-      "windDir": "E",
+      "windSpeed": 10,
+      "windDir": "SE",
       "uvMax": 9,
-      "precip": 0,
+      "precip": 0.8,
       "condition": "calm"
     },
     "fl010": {
       "waveHeight": 0.2,
-      "wavePeriod": 7,
+      "wavePeriod": 7.2,
       "sst": 28.1,
-      "airTemp": 28,
-      "windSpeed": 14,
+      "airTemp": 27,
+      "windSpeed": 18,
       "windDir": "SW",
       "uvMax": 8,
-      "precip": 0,
+      "precip": 5.7,
       "condition": "calm"
     },
     "fl011": {
       "waveHeight": null,
       "wavePeriod": null,
       "sst": 28.3,
-      "airTemp": 25,
-      "windSpeed": 18,
-      "windDir": "S",
-      "uvMax": 9,
-      "precip": 0.1,
+      "airTemp": 24,
+      "windSpeed": 26,
+      "windDir": "SW",
+      "uvMax": 8,
+      "precip": 10.8,
       "condition": "calm"
     },
     "fl012": {
@@ -1626,54 +1626,54 @@
       "wavePeriod": 4.9,
       "sst": 30.4,
       "airTemp": 27,
-      "windSpeed": 14,
+      "windSpeed": 11,
       "windDir": "W",
-      "uvMax": 9,
+      "uvMax": 8,
       "precip": 0,
       "condition": "calm"
     },
     "pc001": {
-      "waveHeight": 1.5,
+      "waveHeight": 1.6,
       "wavePeriod": 6,
       "sst": 28.3,
       "airTemp": 26,
-      "windSpeed": 17,
+      "windSpeed": 14,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.3,
+      "precip": 6.4,
       "condition": "rough"
     },
     "pc002": {
-      "waveHeight": 1.5,
+      "waveHeight": 1.6,
       "wavePeriod": 6,
       "sst": 28.1,
       "airTemp": 26,
-      "windSpeed": 17,
+      "windSpeed": 14,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.3,
+      "precip": 6.4,
       "condition": "rough"
     },
     "pc003": {
-      "waveHeight": 1.5,
+      "waveHeight": 1.6,
       "wavePeriod": 6,
       "sst": 28.3,
       "airTemp": 26,
-      "windSpeed": 17,
+      "windSpeed": 14,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.3,
+      "precip": 6.4,
       "condition": "rough"
     },
     "pc004": {
-      "waveHeight": 1.5,
+      "waveHeight": 1.6,
       "wavePeriod": 6,
       "sst": 28.3,
-      "airTemp": 27,
-      "windSpeed": 17,
+      "airTemp": 26,
+      "windSpeed": 14,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.3,
+      "precip": 6.4,
       "condition": "rough"
     },
     "pc005": {
@@ -1681,10 +1681,10 @@
       "wavePeriod": 6.2,
       "sst": 28.3,
       "airTemp": 27,
-      "windSpeed": 13,
-      "windDir": "E",
+      "windSpeed": 12,
+      "windDir": "SE",
       "uvMax": 9,
-      "precip": 0.4,
+      "precip": 5.5,
       "condition": "rough"
     },
     "pc006": {
@@ -1692,10 +1692,10 @@
       "wavePeriod": 6.1,
       "sst": 28.3,
       "airTemp": 27,
-      "windSpeed": 19,
+      "windSpeed": 17,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.2,
+      "precip": 3.2,
       "condition": "moderate"
     },
     "pc007": {
@@ -1706,7 +1706,7 @@
       "windSpeed": 18,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.1,
+      "precip": 3.4,
       "condition": "moderate"
     },
     "pc008": {
@@ -1715,9 +1715,9 @@
       "sst": 28.6,
       "airTemp": 26,
       "windSpeed": 9,
-      "windDir": "E",
+      "windDir": "SE",
       "uvMax": 9,
-      "precip": 0.3,
+      "precip": 3.2,
       "condition": "moderate"
     },
     "pc009": {
@@ -1726,9 +1726,9 @@
       "sst": 28.4,
       "airTemp": 26,
       "windSpeed": 9,
-      "windDir": "E",
+      "windDir": "SE",
       "uvMax": 9,
-      "precip": 0.3,
+      "precip": 3.2,
       "condition": "rough"
     },
     "pc010": {
@@ -1737,31 +1737,31 @@
       "sst": 28.6,
       "airTemp": 26,
       "windSpeed": 9,
-      "windDir": "E",
+      "windDir": "SE",
       "uvMax": 9,
-      "precip": 0.3,
+      "precip": 3.2,
       "condition": "moderate"
     },
     "pc011": {
-      "waveHeight": 1.5,
+      "waveHeight": 1.6,
       "wavePeriod": 6,
       "sst": 28.3,
       "airTemp": 26,
-      "windSpeed": 17,
+      "windSpeed": 14,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.3,
+      "precip": 6.4,
       "condition": "rough"
     },
     "pc012": {
       "waveHeight": 1.7,
       "wavePeriod": 6.1,
-      "sst": 28.4,
-      "airTemp": 27,
-      "windSpeed": 17,
+      "sst": 28.3,
+      "airTemp": 26,
+      "windSpeed": 14,
       "windDir": "E",
       "uvMax": 9,
-      "precip": 0.3,
+      "precip": 6.4,
       "condition": "rough"
     },
     "rm001": {
@@ -1777,7 +1777,7 @@
     },
     "rm002": {
       "waveHeight": 0.9,
-      "wavePeriod": 5.4,
+      "wavePeriod": 5.3,
       "sst": 28.2,
       "airTemp": 28,
       "windSpeed": 10,
@@ -1787,7 +1787,7 @@
       "condition": "moderate"
     },
     "rm003": {
-      "waveHeight": 0.6,
+      "waveHeight": 0.5,
       "wavePeriod": 5,
       "sst": 29,
       "airTemp": 28,
@@ -1832,10 +1832,10 @@
     },
     "rm007": {
       "waveHeight": 0.9,
-      "wavePeriod": 5.1,
+      "wavePeriod": 5,
       "sst": 28.6,
       "airTemp": 29,
-      "windSpeed": 22,
+      "windSpeed": 21,
       "windDir": "E",
       "uvMax": 9,
       "precip": 1.7,
@@ -1857,7 +1857,7 @@
       "wavePeriod": 4.9,
       "sst": 28.8,
       "airTemp": 28,
-      "windSpeed": 18,
+      "windSpeed": 19,
       "windDir": "E",
       "uvMax": 8,
       "precip": 0.1,
@@ -1866,7 +1866,7 @@
     "rm010": {
       "waveHeight": 0.3,
       "wavePeriod": 2.8,
-      "sst": 27.8,
+      "sst": 27.7,
       "airTemp": 27,
       "windSpeed": 12,
       "windDir": "SE",
@@ -1888,7 +1888,7 @@
     "rm012": {
       "waveHeight": 0.7,
       "wavePeriod": 5.5,
-      "sst": 29.2,
+      "sst": 29.1,
       "airTemp": 28,
       "windSpeed": 11,
       "windDir": "E",
