@@ -1686,7 +1686,8 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
   const reliableHorizon=weeklyData?.reliableHorizon||3
   const visibleDays=Math.min(forecast.length,Math.max(4,reliableHorizon+1))
   const visible=forecast.slice(0,visibleDays)
-  const max=Math.max(...visible.map(d=>d.afai),.1)
+  // Guard: a single NaN/undefined afai would poison max → NaN heights (React warning)
+  const max=Math.max(...visible.map(d=>d.afai).filter(Number.isFinite),.1)
   // free1 A/B test ended: control (1 free day) 3.29% vs two_free 2.99% — 1 free day wins.
   const freeThreshold=1
   const lockedCount=visibleDays-freeThreshold
@@ -1704,7 +1705,8 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
     <div style={{position:"relative"}}>
       <div style={{display:"flex",gap:8,alignItems:"flex-end",height:152,padding:"10px 0 4px"}}>
         {visible.map((d,i)=>{
-          const h=Math.max(10,(d.afai/max)*74)
+          const afai=Number.isFinite(d.afai)?d.afai:0
+          const h=Math.max(10,(afai/max)*74)
           const st=ST[d.status]||ST._loading
           const isLocked=!isPremium&&i>=freeThreshold
           const hasDaily=weatherDaily&&weatherDaily.tempMax&&i<weatherDaily.tempMax.length
@@ -1725,7 +1727,7 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
                 letterSpacing:".01em"}}>{dayTemp}°</span>}
               <span style={{fontFamily:"'Anton',sans-serif",fontSize:13,lineHeight:1,
                 letterSpacing:"-.01em",color:st.c}}>
-                {Math.round(d.afai*100)}%
+                {Math.round(afai*100)}%
               </span>
               <div className="fc-bar" style={{width:"100%",height:h,
                 background:`linear-gradient(180deg, ${st.c}, ${st.c}cc)`,
