@@ -1175,6 +1175,8 @@ function track(event,params={}){
     try{navigator.sendBeacon&&navigator.sendBeacon(APPS_SCRIPT_URL,
       JSON.stringify({type:"analytics_event",...entry}))}catch{}
   }
+  // Tracking FIRST-PARTY indépendant (sans GA/Sheets) : capture l'event dans le résumé de session.
+  try{sgCollectEvent(event,p)}catch(e){}
 }
 // Flush queued events on next session if GA4 is available
 function flushTrackQueue(){
@@ -1220,6 +1222,56 @@ function engInit(){
     document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")engFlush("hide")})
     window.addEventListener("pagehide",()=>engFlush("pagehide"))
   }catch(e){}
+}
+
+// ── TRACKING FIRST-PARTY INDÉPENDANT (sans GA / sans Sheets / sans tiers) ──────────────
+//    L'app POST en SAME-ORIGIN un RÉSUMÉ DE SESSION (events + engagement par écran) vers
+//    /collect.php sur NOTRE hébergeur. Bufferisé en localStorage, beaconé au masquage de
+//    l'onglet. Si l'endpoint n'existe pas (404, dev) → tout reste en local, rien ne casse.
+//    Aucune PII (sid/cid anonymes). C'est notre source de vérité, on ne dépend de personne.
+const SG_COLLECT_URL="/collect.php"
+const _sgc={sid:null,buf:null,dirty:false,started:false,lastSend:0}
+function _sgcRand(n){try{return Date.now().toString(36)+Math.random().toString(36).slice(2,2+n)}catch(_){return "x"+n}}
+function _sgcSid(){try{let s=sessionStorage.getItem("sg_sid");if(!s){s=_sgcRand(6);sessionStorage.setItem("sg_sid",s)}return s}catch(_){return "x"}}
+function _sgcCid(){try{let c=localStorage.getItem("sg_cid");if(!c){c=_sgcRand(8);localStorage.setItem("sg_cid",c)}return c}catch(_){return "x"}}
+function sgCollectEvent(event,params){
+  try{
+    if(!_sgc.buf){
+      const region=(typeof IS_NEW_REGION!=="undefined"&&IS_NEW_REGION&&typeof REGION!=="undefined")?REGION.id:(location.hostname.includes("guadeloupe")?"gp":"mq")
+      let lang="fr";try{if(typeof getLang==="function")lang=getLang()}catch(_){}
+      _sgc.buf={v:1,sid:_sgcSid(),cid:_sgcCid(),region,lang,ts:Date.now(),ref:(document.referrer||"").slice(0,180),ab:g("sg_ab",{}),ev:[],scr:{}}
+    }
+    if(event==="sg_engagement"){
+      const s=(params&&params.screen)||"?"
+      const o=_sgc.buf.scr[s]||(_sgc.buf.scr[s]={dwell:0,acts:0,bored:0,maxScroll:0,n:0})
+      o.dwell+=(params&&params.dwell_ms)||0;o.acts+=(params&&params.actions)||0;o.bored+=(params&&params.bored)?1:0
+      o.maxScroll=Math.max(o.maxScroll,(params&&params.max_scroll)||0);o.n++
+    }else if(_sgc.buf.ev.length<120){
+      _sgc.buf.ev.push({e:event,t:Date.now()-_sgc.buf.ts})
+    }
+    _sgc.dirty=true
+  }catch(_){}
+}
+function _sgcStash(body){try{const q=JSON.parse(localStorage.getItem("sg_collect_q")||"[]");q.push(body);if(q.length>30)q.splice(0,q.length-30);localStorage.setItem("sg_collect_q",JSON.stringify(q))}catch(_){}}
+function sgCollectFlush(reason){
+  try{
+    if(!_sgc.buf||!_sgc.dirty)return
+    _sgc.dirty=false;_sgc.lastSend=Date.now()
+    const body=JSON.stringify({..._sgc.buf,dur:Date.now()-_sgc.buf.ts,reason})
+    let ok=false
+    try{ok=navigator.sendBeacon&&navigator.sendBeacon(SG_COLLECT_URL,new Blob([body],{type:"application/json"}))}catch(_){}
+    if(!ok){try{fetch(SG_COLLECT_URL,{method:"POST",body,headers:{"Content-Type":"application/json"},keepalive:true}).then(r=>{if(!r.ok)_sgcStash(body)}).catch(()=>_sgcStash(body))}catch(_){_sgcStash(body)}}
+  }catch(_){}
+}
+function sgCollectInit(){
+  if(_sgc.started||typeof window==="undefined")return;_sgc.started=true
+  // rejoue la file d'une session précédente (best-effort, beacon)
+  try{const q=JSON.parse(localStorage.getItem("sg_collect_q")||"[]");if(q.length){localStorage.removeItem("sg_collect_q");q.forEach(b=>{try{navigator.sendBeacon&&navigator.sendBeacon(SG_COLLECT_URL,new Blob([b],{type:"application/json"}))}catch(_){}})}}catch(_){}
+  try{
+    document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")sgCollectFlush("hide")})
+    window.addEventListener("pagehide",()=>sgCollectFlush("pagehide"))
+    setInterval(()=>{if(_sgc.dirty&&Date.now()-_sgc.lastSend>25000)sgCollectFlush("interval")},25000)
+  }catch(_){}
 }
 
 function AbDebug(){
@@ -9263,7 +9315,7 @@ export default function App(){
   // (temps/actions/inactivité/scroll/ennui) → GA4. C'est la donnée qui fait "réfléchir" le produit
   // (où ça bloque, où ça s'ennuie), à chaque étape. Voir engInit/engScreen/engFlush.
   useEffect(()=>{
-    engInit()
+    engInit();sgCollectInit()
     const screen=showPremium?"premium":selectedBeach?"beach":showSolutions?"solutions":showArchipel?"world":showMapIntro?"mapintro":showHero?"hero":showWorld?"worldfeed":("map_"+(view||"map"))
     engScreen(screen)
   },[showPremium,selectedBeach,showSolutions,showArchipel,showMapIntro,showHero,showWorld,view])
