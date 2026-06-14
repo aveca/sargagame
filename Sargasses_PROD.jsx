@@ -217,7 +217,7 @@ function BeachScene({beach}){
   return(
     <div aria-hidden="true" style={{position:"absolute",inset:0}}>
       <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block"}}>
-        <style>{`.bsc-glit{animation:bscGlit 7s linear infinite}@keyframes bscGlit{to{stroke-dashoffset:-64}}.bsc-cloud{animation:bscCloud 80s ease-in-out infinite alternate}@keyframes bscCloud{to{transform:translateX(-46px)}}.bsc-raft{animation:bscRaft 13s ease-in-out infinite alternate}@keyframes bscRaft{to{transform:translateX(13px)}}.bsc-rake{animation:bscRake 2.4s ease-in-out infinite;transform-box:fill-box;transform-origin:2px -19px}@keyframes bscRake{0%,100%{transform:rotate(-9deg)}45%{transform:rotate(13deg)}}.bsc-net{animation:bscNet 7s ease-in-out infinite alternate}@keyframes bscNet{to{transform:translateX(8px)}}.bsc-swim{animation:bscSwim 4.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}@keyframes bscSwim{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}.bsc-cloud2{animation:bscCloud2 110s ease-in-out infinite alternate-reverse}@keyframes bscCloud2{to{transform:translateX(40px)}}.bsc-bird{animation:bscBird 64s linear infinite}@keyframes bscBird{from{transform:translateX(0)}to{transform:translateX(-900px)}}.bsc-shim{animation:bscShim 3.2s ease-in-out infinite}@keyframes bscShim{0%,100%{opacity:.15}50%{opacity:.95}}@media(prefers-reduced-motion:reduce){.bsc-glit,.bsc-cloud,.bsc-cloud2,.bsc-bird,.bsc-shim,.bsc-raft,.bsc-rake,.bsc-net,.bsc-swim{animation:none}}`}</style>
+        <style>{`.bsc-glit{animation:bscGlit 7s linear infinite}@keyframes bscGlit{to{stroke-dashoffset:-64}}.bsc-cloud{animation:bscCloud 80s ease-in-out infinite alternate}@keyframes bscCloud{to{transform:translateX(-46px)}}.bsc-raft{animation:bscRaft 13s ease-in-out infinite alternate}@keyframes bscRaft{to{transform:translateX(13px)}}.bsc-rake{animation:bscRake 2.4s ease-in-out infinite;transform-box:fill-box;transform-origin:2px -19px}@keyframes bscRake{0%,100%{transform:rotate(-9deg)}45%{transform:rotate(13deg)}}.bsc-net{animation:bscNet 7s ease-in-out infinite alternate}@keyframes bscNet{to{transform:translateX(8px)}}.bsc-swim{animation:bscSwim 4.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}@keyframes bscSwim{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}.bsc-cloud2{animation:bscCloud2 110s ease-in-out infinite alternate-reverse}@keyframes bscCloud2{to{transform:translateX(40px)}}.bsc-bird{animation:bscBird 64s linear infinite}@keyframes bscBird{from{transform:translateX(0)}to{transform:translateX(-900px)}}.bsc-shim{animation:bscShim 3.2s ease-in-out infinite}@keyframes bscShim{0%,100%{opacity:.15}50%{opacity:.95}}.bsc-sat{animation:bscSat 54s ease-in-out infinite alternate}@keyframes bscSat{to{transform:translateX(-360px)}}.bsc-beam{animation:bscBeam 5s ease-in-out infinite}@keyframes bscBeam{0%,100%{opacity:.05}50%{opacity:.17}}.bsc-rays{animation:bscRays 8s ease-in-out infinite;transform-box:fill-box;transform-origin:center}@keyframes bscRays{0%,100%{opacity:.35}50%{opacity:.72}}.bsc-moonp{animation:bscMoonp 6s ease-in-out infinite}@keyframes bscMoonp{0%,100%{opacity:.2}50%{opacity:.52}}@media(prefers-reduced-motion:reduce){.bsc-glit,.bsc-cloud,.bsc-cloud2,.bsc-bird,.bsc-shim,.bsc-sat,.bsc-beam,.bsc-rays,.bsc-moonp,.bsc-raft,.bsc-rake,.bsc-net,.bsc-swim{animation:none}}`}</style>
         <defs>
           <linearGradient id="bscSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={t.sky[0]}/><stop offset=".52" stopColor={t.sky[1]}/><stop offset=".84" stopColor={t.sky[2]}/><stop offset="1" stopColor={t.sky[3]}/></linearGradient>
           <linearGradient id="bscSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={t.seaT}/><stop offset="1" stopColor={t.seaB}/></linearGradient>
@@ -225,12 +225,16 @@ function BeachScene({beach}){
         <rect width="800" height="360" fill="url(#bscSky)"/>
         {t.sun==="set"&&<><circle cx="400" cy="330" r="120" fill={t.glit} opacity=".08"/><circle cx="400" cy="330" r="64" fill={t.glit} opacity=".12"/><path d="M340 332 a60 60 0 0 1 120 0 Z" fill={t.glit} opacity=".9"/></>}
         {t.sun==="high"&&<><circle cx="300" cy="98" r="52" fill="#FDFCF7" opacity=".2"/><circle cx="300" cy="98" r="30" fill="#FFF4D6"/></>}
+        {/* Rayons de soleil — la lumière cinématique de la home, sur chaque plage */}
+        {t.sun==="set"&&<g className="bsc-rays">{[-52,-26,0,26,52].map((a,i)=>(<path key={i} d="M400 330 L390 150 L410 150 Z" fill={t.glit} opacity=".1" transform={"rotate("+a+" 400 330)"}/>))}</g>}
+        {t.sun==="high"&&<g className="bsc-rays">{[-46,-22,2,26,50].map((a,i)=>(<path key={i} d="M300 98 L291 300 L309 300 Z" fill="#FFF4D6" opacity=".09" transform={"rotate("+a+" 300 98)"}/>))}</g>}
         {t.sun==="moon"&&<><circle cx="320" cy="96" r="40" fill="#9ADCD4" opacity=".08"/><circle cx="320" cy="96" r="20" fill="#E6F2EF"/><circle cx="313" cy="90" r="3.6" fill="#C2D8D2" opacity=".7"/></>}
         {ph==="night"&&[[90,60],[220,90],[380,50],[540,82],[680,56],[150,150],[470,140],[620,120]].map((s,i)=>(<circle key={i} cx={s[0]} cy={s[1]} r="1.1" fill="#fff" opacity=".5"/>))}
         <g className="bsc-cloud"><path d="M120 128 q14 -26 48 -26 q18 -18 46 -12 q30 -8 44 12 q26 2 30 26 Z" fill={t.cloud} opacity=".9"/><path d="M122 129 h162" stroke={t.rim} strokeWidth="2" opacity=".32"/></g>
         <g className="bsc-cloud2"><path d="M512 92 q12 -22 42 -22 q16 -13 40 -9 q26 -7 38 11 q22 2 26 20 Z" fill={t.cloud} opacity=".78"/><path d="M514 93 h140" stroke={t.rim} strokeWidth="1.7" opacity=".26"/></g>
         {ph!=="night"&&<g className="bsc-bird" opacity=".55" stroke={ph==="day"?"#2A5566":t.rim} strokeWidth="2.4" fill="none" strokeLinecap="round"><path d="M712 138 q5.5 -6.5 11 0 q5.5 -6.5 11 0"/><path d="M754 124 q4.5 -5 9 0 q4.5 -5 9 0"/><path d="M648 156 q5 -6 10 0 q5 -6 10 0"/><path d="M576 128 q4 -5 8 0 q4 -5 8 0"/><path d="M620 122 q4.5 -5.5 9 0 q4.5 -5.5 9 0"/></g>}
         <rect x="-40" y="330" width="880" height="200" fill="url(#bscSea)"/>
+        {t.sun==="moon"&&<path className="bsc-moonp" d="M302 332 L338 332 L356 474 Q320 486 284 474 Z" fill="#9ADCD4"/>}
         {lm==="diamondRock"&&<g>
           <path d="M468 340 Q481 284 509 252 Q525 234 534 253 Q560 292 570 340 Z" fill={t.rock}/>
           <path d="M509 252 Q525 234 534 253 Q560 292 570 340 L534 340 Z" fill="#000" opacity=".22"/>
@@ -243,6 +247,17 @@ function BeachScene({beach}){
         <line className="bsc-glit" x1="-40" y1="386" x2="840" y2="386" stroke={t.glit} strokeWidth="1.8" strokeDasharray="2 17" opacity=".3" style={{animationDelay:"-3s"}}/>
         <line className="bsc-glit" x1="-40" y1="420" x2="840" y2="420" stroke={t.glit} strokeWidth="1.6" strokeDasharray="2 23" opacity=".18" style={{animationDelay:"-5s"}}/>
         <g fill={t.glit}><circle className="bsc-shim" cx="372" cy="372" r="1.9"/><circle className="bsc-shim" cx="392" cy="398" r="1.5" style={{animationDelay:"-1s"}}/><circle className="bsc-shim" cx="356" cy="410" r="1.6" style={{animationDelay:"-2s"}}/><circle className="bsc-shim" cx="412" cy="384" r="1.4" style={{animationDelay:"-1.6s"}}/></g>
+        {/* « Le Veilleur veille » — satellite qui scanne, faisceau qui balaie la mer (signature home, sur chaque plage) */}
+        <g className="bsc-sat">
+          <path className="bsc-beam" d="M482 82 L424 372 L548 372 Z" fill={t.glit}/>
+          <g transform="translate(482,80)">
+            <rect x="-17" y="-3" width="9" height="6.5" rx="1.5" fill={t.rim} opacity=".85"/>
+            <rect x="8" y="-3" width="9" height="6.5" rx="1.5" fill={t.rim} opacity=".85"/>
+            <rect x="-6.5" y="-6.5" width="13" height="13" rx="3.2" fill="#C9971F"/>
+            <rect x="-6.5" y="-6.5" width="13" height="4.2" rx="3.2" fill="#FFC72C"/>
+            <circle cx="0" cy="1.4" r="3.2" fill="#07201E"/><circle cx="0" cy="1.4" r="2.2" fill={t.glit}/>
+          </g>
+        </g>
         {beach&&beach.status==="clean"&&<g>
           {/* NICKEL : des baigneurs dans une eau claire */}
           <g className="bsc-swim"><circle cx="372" cy="392" r="6" fill="#0D2B26"/><path d="M360 398 q12 -8 24 0" stroke="#0D2B26" strokeWidth="3.4" fill="none" strokeLinecap="round"/></g>
