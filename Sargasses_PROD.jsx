@@ -8618,6 +8618,70 @@ function WorldFeed({beaches,lang,onPremium,onClose,island}){
   )
 }
 
+// ── L'ARCHIPEL DU VEILLEUR — le monde SVG LIBRE pan/zoom (tournoi gagnant 14/06).
+// Plan unique : chaque plage placee a sa VRAIE lat/lng, camera translate+scale en
+// rAF (transforms-only, pattern --gp). PRINCIPE : la decision est gratuite et
+// immediate (on atterrit MID-zoom sur SA cote, verdict <1s), l'exploration est un
+// bonus libre par-dessus. v0 = pan + zoom (wheel/pinch/double-tap) + atterrissage +
+// tap->BeachSheet existante (funnel INTACT). Pas de dive/momentum/LOD (slices 2-4).
+function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose}){
+  const wrapRef=useRef(null),gRef=useRef(null),camRef=useRef({cx:0,cy:0,cz:0.8}),rafRef=useRef(0)
+  const ptrs=useRef(new Map()),movedRef=useRef(false),pinchRef=useRef(null),lastTap=useRef(0)
+  const[ready,setReady]=useState(false)
+  const SPAN_PX=1000,MID=0.82,FAR=0.32,NEAR=2.6
+  const{proj,count}=useMemo(()=>{
+    const list=(beaches||[]).filter(b=>b&&b.lat!=null&&b.lng!=null&&(!island||b.island===island))
+    if(!list.length)return{proj:[],count:0}
+    let mLa=9e9,xLa=-9e9,mLn=9e9,xLn=-9e9
+    for(const b of list){mLa=Math.min(mLa,b.lat);xLa=Math.max(xLa,b.lat);mLn=Math.min(mLn,b.lng);xLn=Math.max(xLn,b.lng)}
+    const cLat=(mLa+xLa)/2,cLng=(mLn+xLn)/2,span=(Math.max(xLa-mLa,xLn-mLn)*1.3)||0.5
+    const proj=list.map(b=>({b,x:((b.lng-cLng)/span+0.5)*SPAN_PX,y:((cLat-b.lat)/span+0.5)*SPAN_PX}))
+    return{proj,count:list.length}
+  },[beaches,island])
+  const myIdx=useMemo(()=>{
+    if(!proj.length)return 0
+    if(userPos){let bi=0,bd=9e9;proj.forEach((p,i)=>{const d=haversine(userPos.lat,userPos.lng,p.b.lat,p.b.lng);if(d<bd){bd=d;bi=i}});return bi}
+    let bi=0,bd=9e9;proj.forEach((p,i)=>{const d=(p.x-SPAN_PX/2)**2+(p.y-SPAN_PX/2)**2;if(d<bd){bd=d;bi=i}});return bi
+  },[proj,userPos])
+  const writeCam=()=>{const g=gRef.current;if(!g)return;const c=camRef.current;g.setAttribute("transform","translate("+c.cx.toFixed(1)+" "+c.cy.toFixed(1)+") scale("+c.cz.toFixed(4)+")")}
+  const schedule=()=>{if(rafRef.current)return;rafRef.current=requestAnimationFrame(()=>{rafRef.current=0;writeCam()})}
+  const clampZ=z=>Math.max(FAR*0.75,Math.min(NEAR*1.25,z))
+  const centerOn=(i,cz)=>{const el=wrapRef.current;if(!el||!proj[i])return;const z=clampZ(cz||camRef.current.cz),W=el.clientWidth,H=el.clientHeight;camRef.current={cz:z,cx:W/2-proj[i].x*z,cy:H/2-proj[i].y*z};schedule()}
+  const zoomAt=(f,px,py)=>{const c=camRef.current,nz=clampZ(c.cz*f),wx=(px-c.cx)/c.cz,wy=(py-c.cy)/c.cz;c.cz=nz;c.cx=px-wx*nz;c.cy=py-wy*nz;schedule()}
+  useEffect(()=>{centerOn(myIdx,MID);setReady(true);try{track("sg_archipel_open",{beaches:count})}catch(_){}},[])// eslint-disable-line
+  useEffect(()=>{const el=wrapRef.current;if(!el)return;const onWheel=e=>{e.preventDefault();const r=el.getBoundingClientRect();zoomAt(e.deltaY<0?1.12:0.89,e.clientX-r.left,e.clientY-r.top)};el.addEventListener("wheel",onWheel,{passive:false});return()=>el.removeEventListener("wheel",onWheel)},[])// eslint-disable-line
+  const rel=e=>{const r=wrapRef.current.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
+  const onDown=e=>{movedRef.current=false;ptrs.current.set(e.pointerId,rel(e));try{e.currentTarget.setPointerCapture(e.pointerId)}catch(_){};if(ptrs.current.size===2){const[a,b]=[...ptrs.current.values()];pinchRef.current={d:Math.hypot(a.x-b.x,a.y-b.y),mx:(a.x+b.x)/2,my:(a.y+b.y)/2}}}
+  const onMove=e=>{if(!ptrs.current.has(e.pointerId))return;const prev=ptrs.current.get(e.pointerId),p=rel(e);ptrs.current.set(e.pointerId,p)
+    if(ptrs.current.size>=2&&pinchRef.current){const[a,b]=[...ptrs.current.values()];const d=Math.hypot(a.x-b.x,a.y-b.y),mx=(a.x+b.x)/2,my=(a.y+b.y)/2;const c=camRef.current;if(pinchRef.current.d>0){const f=d/pinchRef.current.d;const nz=clampZ(c.cz*f),wx=(mx-c.cx)/c.cz,wy=(my-c.cy)/c.cz;c.cz=nz;c.cx=mx-wx*nz;c.cy=my-wy*nz}c.cx+=mx-pinchRef.current.mx;c.cy+=my-pinchRef.current.my;pinchRef.current={d,mx,my};movedRef.current=true;schedule();return}
+    const dx=p.x-prev.x,dy=p.y-prev.y;if(Math.abs(dx)+Math.abs(dy)>2)movedRef.current=true;camRef.current.cx+=dx;camRef.current.cy+=dy;schedule()}
+  const onUp=e=>{ptrs.current.delete(e.pointerId);if(ptrs.current.size<2)pinchRef.current=null}
+  const onTap=e=>{const now=Date.now();if(now-lastTap.current<300&&!movedRef.current){const r=wrapRef.current.getBoundingClientRect();zoomAt(camRef.current.cz<1.4?2.0:0.45,e.clientX-r.left,e.clientY-r.top)}lastTap.current=now}
+  const my=proj[myIdx]&&proj[myIdx].b,myVm=my&&verdictMeta(my.status,lang)
+  return(
+    <div ref={wrapRef} role="region" aria-label="Archipel du Veilleur" onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} onClick={onTap}
+      style={{position:"fixed",inset:0,zIndex:1006,background:"radial-gradient(130% 100% at 50% 18%,#155A5A 0%,#0B2230 52%,#04090B 100%)",touchAction:"none",overflow:"hidden",cursor:"grab"}}>
+      <svg width="100%" height="100%" style={{position:"absolute",inset:0,display:"block"}} aria-hidden="true">
+        <g ref={gRef}>
+          {proj.map((p,i)=>{const b=p.b,col=b.scoreColor||verdictMeta(b.status,lang).color,sc=typeof b.score==="number"?b.score:null,me=i===myIdx
+            return(<g key={b.id} transform={"translate("+p.x.toFixed(1)+" "+p.y.toFixed(1)+")"} style={{cursor:"pointer"}}
+              onClick={ev=>{ev.stopPropagation();if(movedRef.current)return;try{track("sg_archipel_tap",{beach_id:b.id,status:b.status})}catch(_){}; onOpenBeach&&onOpenBeach(b)}}>
+              {me
+                ?<g><circle r="40" fill={col} opacity=".16"><animate attributeName="r" values="34;44;34" dur="3.4s" repeatCount="indefinite"/></circle><circle r="23" fill="#0E2A26" stroke={col} strokeWidth="2.4"/>{sc!=null&&<text y="7" fontFamily="'Anton',sans-serif" fontSize="20" fill="#fff" textAnchor="middle">{sc}</text>}<text y="46" fontFamily="ui-monospace,monospace" fontSize="11" fontWeight="700" fill="#FFD884" textAnchor="middle">{b.name}</text></g>
+                :<><circle r={sc!=null?5+sc/15:6} fill={col} opacity=".92"/><circle r={sc!=null?5+sc/15:6} fill="none" stroke="#06121A" strokeWidth="1.2"/></>}
+            </g>)})}
+        </g>
+      </svg>
+      <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"absolute",top:"calc(12px + env(safe-area-inset-top))",right:14,zIndex:5,width:40,height:40,borderRadius:"50%",background:"rgba(4,9,11,.55)",border:"1px solid rgba(255,255,255,.25)",color:"#fff",fontSize:17,cursor:"pointer",backdropFilter:"blur(8px)"}}>✕</button>
+      {ready&&my&&<div style={{position:"absolute",top:"calc(13px + env(safe-area-inset-top))",left:14,right:64,zIndex:5,display:"flex",alignItems:"center",gap:9,padding:"8px 12px",borderRadius:14,background:"rgba(4,9,11,.5)",border:"1px solid rgba(255,255,255,.14)",backdropFilter:"blur(8px)",color:"#fff"}}>
+        <Veilleur mood={moodFromStatus(my.status)} size={26}/>
+        <div style={{flex:1,minWidth:0,overflow:"hidden"}}><div style={{fontSize:10,fontWeight:700,letterSpacing:".05em",color:"rgba(255,255,255,.6)",textTransform:"uppercase"}}>{_t(lang,"Ta côte aujourd'hui","Your coast today","Tu costa hoy")}</div><div style={{fontSize:13.5,fontWeight:800,whiteSpace:"nowrap",textOverflow:"ellipsis",overflow:"hidden"}}><span style={{color:myVm.color}}>{myVm.emoji} {myVm.verb}</span> · {my.name}</div></div>
+      </div>}
+      <button onClick={e=>{e.stopPropagation();centerOn(myIdx,MID)}} style={{position:"absolute",bottom:"calc(26px + env(safe-area-inset-bottom))",left:"50%",transform:"translateX(-50%)",zIndex:5,padding:"11px 18px",borderRadius:999,background:"linear-gradient(180deg,#FFD884,#F2B05E)",border:"none",color:"#07201E",fontSize:13.5,fontWeight:800,cursor:"pointer",boxShadow:"0 6px 20px rgba(0,0,0,.4)"}}>⌖ {_t(lang,"Ma côte","My coast","Mi costa")}</button>
+    </div>
+  )
+}
+
 export default function App(){
   const[lang,setLang]=useState(getLang)
   const[theme,setTheme]=useState(()=>g("sg_theme","light"))
@@ -8931,6 +8995,8 @@ export default function App(){
   const[showWorld,setShowWorld]=useState(()=>{try{return /[?&]world=1/.test(window.location.search)}catch(_){return false}})
   // Solutions sargasses (SVG scrollytelling éducatif, escapable). ?solutions=1 QA + entrée chip.
   const[showSolutions,setShowSolutions]=useState(()=>{try{return /[?&]solutions=1/.test(window.location.search)}catch(_){return false}})
+  // L'Archipel du Veilleur (monde SVG libre pan/zoom, tournoi gagnant). QA ?archipel=1.
+  const[showArchipel,setShowArchipel]=useState(()=>{try{return /[?&]archipel=1/.test(window.location.search)}catch(_){return false}})
   // Intro carte (MapIntroStory) — landing SVG, show-once par device, skippable.
   const[showMapIntro,setShowMapIntro]=useState(()=>{try{return /[?&]mapintro=1/.test(window.location.search)||!localStorage.getItem("sg_map_intro_v1")}catch(_){return false}})
   // Bras A/B du landing : control = HeroVerdict (éprouvé), game = GameFunnel
@@ -9830,6 +9896,16 @@ export default function App(){
               animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>💡</button>
         )}
         {showSolutions&&<SolutionsStory lang={lang} onClose={()=>{setShowSolutions(false);track("sg_solutions_close",{})}}/>}
+
+        {/* L'ARCHIPEL DU VEILLEUR — monde SVG libre pan/zoom (tournoi gagnant). v0 QA. */}
+        {!showHero&&!showPremium&&!showChat&&!showDiscovery&&!showSolutions&&!showWorld&&!showArchipel&&!selectedBeach&&view==="map"&&(
+          <button onClick={()=>{setShowArchipel(true);track("sg_archipel_open",{from:"fab"})}} aria-label={_t(lang,"L'archipel du Veilleur","The Watcher's archipelago","El archipiélago")}
+            style={{position:"fixed",right:14,bottom:"calc(382px + env(safe-area-inset-bottom))",zIndex:960,
+              width:46,height:46,borderRadius:"50%",background:"#0D1E1C",border:"1.5px solid rgba(255,216,132,.7)",
+              fontSize:19,cursor:"pointer",boxShadow:"0 6px 20px rgba(0,0,0,.4)",display:"flex",alignItems:"center",justifyContent:"center",
+              animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>🧭</button>
+        )}
+        {showArchipel&&<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onBeachClick} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}}/>}
 
         {/* MONDE SVG — la fondation : feed vertical des plages, zéro photo, data en
             scène, cliquable, loopé. Additif (z1005) ; fiche+paywall s'ouvrent au-dessus. */}
