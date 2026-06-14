@@ -462,14 +462,47 @@ function SolTransformScene({lang}){
   ]
   return(<g><defs><linearGradient id="sol4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0A1714"/><stop offset=".5" stopColor="#155A5A"/><stop offset=".84" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/></linearGradient></defs>
     <rect width="800" height="600" fill="url(#sol4)"/>
-    <g transform="translate(400,300)"><ellipse rx="46" ry="16" fill="#6b7a1c" style={{opacity:"calc(1 - var(--p4)*.7)"}}/></g>
+    <g transform="translate(400,300)"><ellipse rx="46" ry="16" fill="#6b7a1c" style={{opacity:"calc(1 - var(--p5)*.7)"}}/></g>
     {items.map((o,i)=>(
-      <g key={i} transform={"translate("+o.x+","+o.y+")"} role="button" tabIndex={0} aria-label={o.l} onClick={()=>setSel(sel===i?null:i)} style={{cursor:"pointer",opacity:"calc(var(--p4)*1.4 - "+(i*0.16)+")",transformBox:"fill-box",transformOrigin:"center"}}>
+      <g key={i} transform={"translate("+o.x+","+o.y+")"} role="button" tabIndex={0} aria-label={o.l} onClick={()=>setSel(sel===i?null:i)} style={{cursor:"pointer",opacity:"calc(var(--p5)*1.4 - "+(i*0.16)+")",transformBox:"fill-box",transformOrigin:"center"}}>
         <circle r="34" fill="#0E2A26" stroke={sel===i?"#FFD884":"#5FD3C9"} strokeWidth={sel===i?2.6:1.4}/><text y="10" fontSize="30" textAnchor="middle">{o.e}</text><text y="56" fontFamily="ui-monospace,monospace" fontSize="12" fill="#9FE1CB" textAnchor="middle">{o.l}</text>
       </g>))}
     {sel==null
-      ? <text x="400" y="104" fontFamily="ui-monospace,monospace" fontSize="13" fill="#5FD3C9" textAnchor="middle" style={{opacity:"var(--p4)"}}>👆 {T("touche une ressource","tap a resource","toca un recurso")}</text>
+      ? <text x="400" y="104" fontFamily="ui-monospace,monospace" fontSize="13" fill="#5FD3C9" textAnchor="middle" style={{opacity:"var(--p5)"}}>👆 {T("touche une ressource","tap a resource","toca un recurso")}</text>
       : <g><rect x="120" y="70" width="560" height="62" rx="14" fill="rgba(7,32,30,.94)" stroke="#FFD884" strokeWidth="1.4"/><text x="400" y="97" fontFamily="system-ui,sans-serif" fontSize="15" fontWeight="800" fill="#fff" textAnchor="middle">{items[sel].e+"  "+items[sel].l}</text><text x="400" y="119" fontFamily="system-ui,sans-serif" fontSize="12.5" fill="rgba(255,255,255,.85)" textAnchor="middle">{items[sel].f}</text></g>}
+  </g>)
+}
+// Scène INTERACTIVE « ON TRIE » : un convoyeur amène l'algue vers 3 bacs triés (engin
+// de chantier qui trie, demande fondateur). Tap un bac -> un fait. --p4 = remplissage.
+function SolSortScene({lang}){
+  const T=(fr,en,es)=>_t(lang,fr,en,es)
+  const[sel,setSel]=useState(null)
+  const bins=[
+    {e:"♻️",x:300,c:"#5FD3C9",l:T("Valorisable","Reusable","Útil"),f:T("L'algue propre : engrais, biogaz, biochar.","Clean algae: fertilizer, biogas, biochar.","Alga limpia: abono, biogás, biochar.")},
+    {e:"🌊",x:400,c:"#3E9BC4",l:T("Eau & sel","Water & salt","Agua y sal"),f:T("Pressée, l'eau salée repart à la mer.","Pressed out, the brine returns to the sea.","Prensada, el agua vuelve al mar.")},
+    {e:"🪨",x:500,c:"#9AA08A",l:T("Sable & résidus","Sand & residue","Arena y residuo"),f:T("Le sable rendu à la plage, les déchets écartés.","Sand returned to the beach, waste removed.","La arena vuelve a la playa.")},
+  ]
+  return(<g><defs><linearGradient id="solSort" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0A1714"/><stop offset=".5" stopColor="#155A5A"/><stop offset=".84" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/></linearGradient>
+    <style>{`@keyframes solBelt{to{stroke-dashoffset:-40}}.sol-belt{animation:solBelt 1.5s linear infinite}@media(prefers-reduced-motion:reduce){.sol-belt{animation:none}}`}</style></defs>
+    <rect width="800" height="600" fill="url(#solSort)"/>
+    {/* convoyeur incliné */}
+    <path d="M110 220 L460 330" stroke="#0E2A26" strokeWidth="26" strokeLinecap="round"/>
+    <path className="sol-belt" d="M110 220 L460 330" stroke="#5FD3C9" strokeWidth="3" strokeDasharray="6 16" opacity=".55"/>
+    {[150,232,314,396].map((x,i)=>{const y=220+(x-110)*(110/350);return <ellipse key={i} cx={x} cy={y-16} rx="13" ry="6" fill="#8a6c1c" style={{opacity:"calc(var(--p4)*1.3 - "+(i*0.18)+")"}}/>})}
+    {/* tête de tri (l'engin) */}
+    <g transform="translate(470,300)"><rect x="-20" y="-24" width="48" height="32" rx="6" fill="#155A5A"/><rect x="-10" y="-36" width="22" height="14" rx="3" fill="#0E2A26"/><circle cx="1" cy="-42" r="3.6" fill="#5FD3C9"/></g>
+    {/* 3 bacs triés, cliquables, remplis par --p4 */}
+    {bins.map((b,i)=>(
+      <g key={i} transform={"translate("+b.x+",430)"} role="button" tabIndex={0} aria-label={b.l} onClick={()=>setSel(sel===i?null:i)} style={{cursor:"pointer"}}>
+        <clipPath id={"binc"+i}><path d="M-32 2 L32 2 L27 66 L-27 66 Z"/></clipPath>
+        <rect x="-32" y="6" width="64" height="60" fill={b.c} opacity=".4" clipPath={"url(#binc"+i+")"} style={{transform:"scaleY(var(--p4))",transformBox:"fill-box",transformOrigin:"center bottom"}}/>
+        <path d="M-32 2 L32 2 L27 66 L-27 66 Z" fill="none" stroke={sel===i?"#FFD884":b.c} strokeWidth={sel===i?2.6:1.6}/>
+        <text y="42" fontSize="24" textAnchor="middle">{b.e}</text>
+        <text y="88" fontFamily="ui-monospace,monospace" fontSize="11" fill="#9FE1CB" textAnchor="middle">{b.l}</text>
+      </g>))}
+    {sel==null
+      ? <text x="400" y="120" fontFamily="ui-monospace,monospace" fontSize="13" fill="#5FD3C9" textAnchor="middle" style={{opacity:"var(--p4)"}}>👆 {T("touche un bac de tri","tap a sort bin","toca un contenedor")}</text>
+      : <g><rect x="140" y="96" width="520" height="58" rx="14" fill="rgba(7,32,30,.94)" stroke="#FFD884" strokeWidth="1.4"/><text x="400" y="120" fontFamily="system-ui,sans-serif" fontSize="15" fontWeight="800" fill="#fff" textAnchor="middle">{bins[sel].e+"  "+bins[sel].l}</text><text x="400" y="140" fontFamily="system-ui,sans-serif" fontSize="12.5" fill="rgba(255,255,255,.85)" textAnchor="middle">{bins[sel].f}</text></g>}
   </g>)
 }
 function solutionsBeats(lang){
@@ -522,7 +555,11 @@ function solutionsBeats(lang){
         {/* horloge / compte a rebours */}
         <g transform="translate(620,150)" style={{opacity:"calc(.5 + var(--p3)*.5)"}}><circle r="40" fill="none" stroke="#FFD884" strokeWidth="4"/><line x1="0" y1="0" x2="0" y2="-26" stroke="#FFD884" strokeWidth="4" strokeLinecap="round" style={{transformBox:"fill-box",transformOrigin:"0px 0px",transform:"rotate(calc(var(--p3)*300deg))"}}/><text x="0" y="64" fontFamily="ui-monospace,monospace" fontSize="13" fill="#FFD884" textAnchor="middle">48h</text></g>
       </g>},
-    // 4 — LE PROBLÈME DEVIENT RESSOURCE : recyclage + carburant
+    // 4 — ON TRIE : convoyeur + 3 bacs (l'engin de chantier qui trie, demande fondateur)
+    {eyebrow:T("ON TRIE","WE SORT","SE CLASIFICA"),heading:T("Chaque chose à sa place","Everything in its place","Cada cosa en su sitio"),
+      sub:T("Avant d'être valorisée, l'algue passe au tri : la matière propre d'un côté, l'eau salée et le sable de l'autre. Touche un bac pour voir ce qu'il devient.","Before being reused, the algae is sorted: clean matter on one side, brine and sand on the other. Tap a bin to see what it becomes.","Antes de valorizarla, el sargazo se clasifica. Toca un contenedor."),
+      scene:<SolSortScene lang={lang}/>},
+    // 5 — LE PROBLÈME DEVIENT RESSOURCE : recyclage + carburant
     {eyebrow:T("ON TRANSFORME","WE TRANSFORM","TRANSFORMAMOS"),heading:T("Le problème devient ressource","The problem becomes a resource","El problema se vuelve recurso"),
       sub:T("Engrais, briques, biochar, bioplastique, papier — et de l'énergie (biogaz). Captée fraîche, elle évite aussi le méthane qu'elle dégage en pourrissant (28× plus réchauffant que le CO₂).","Fertilizer, bricks, biochar, bioplastic, paper — and energy (biogas). Caught fresh, it also avoids the methane it releases when rotting (28× worse than CO₂).","Abono, ladrillos, biochar, bioplástico, papel — y energía (biogás). Recogida fresca evita el metano (28× peor que el CO₂)."),
       scene:<SolTransformScene lang={lang}/>},
@@ -532,11 +569,11 @@ function solutionsBeats(lang){
       cta:T("Sortir & voir les plages →","Exit & see the beaches →","Salir y ver las playas →"),
       scene:<g><defs>{SKY("sol5s")}{SEA("sol5")}</defs><rect width="800" height="360" fill="url(#sol5s)"/>
         <path d="M340 230 a60 60 0 0 1 120 0 Z" fill="#FFD884"/>
-        <g style={{opacity:"calc(.5 + var(--p5)*.5)"}}>{[-52,-26,0,26,52].map((a,i)=>(<path key={i} d="M400 230 L391 90 L409 90 Z" fill="#FFD884" opacity=".1" transform={"rotate("+a+" 400 230)"}/>))}</g>
+        <g style={{opacity:"calc(.5 + var(--p6)*.5)"}}>{[-52,-26,0,26,52].map((a,i)=>(<path key={i} d="M400 230 L391 90 L409 90 Z" fill="#FFD884" opacity=".1" transform={"rotate("+a+" 400 230)"}/>))}</g>
         <rect y="360" width="800" height="240" fill="url(#sol5)"/>
         <line x1="-40" y1="392" x2="840" y2="392" stroke="#FFD884" strokeWidth="2.2" strokeDasharray="3 13" opacity=".5"/>
         <path d="M250 500 Q400 478 560 498 L820 492 L820 620 L250 620 Z" fill="#C9A86A"/>
-        <g style={{transform:"translateY(calc(var(--p5)*-10px))"}}>{miVeil(400,150,"#3BA7A0","#5FD3C9")}</g>
+        <g style={{transform:"translateY(calc(var(--p6)*-10px))"}}>{miVeil(400,150,"#3BA7A0","#5FD3C9")}</g>
       </g>},
   ]
 }
