@@ -445,6 +445,93 @@ function DiscoveryStory({lang,onClose,onShowMap}){
   )
 }
 
+// ── SolutionsStory — pages SVG sur les SOLUTIONS sargasses (mandat nuit 14/06) :
+//    problème global → on voit (satellite) → on agit (barrages+ramassage) → on
+//    transforme (recyclage+carburant) → on sort (escapable, jamais infernal).
+//    Scrollytelling via StoryEngine. Faits sûrs en v1, enrichis par recherche.
+function solutionsBeats(lang){
+  const T=(fr,en,es)=>_t(lang,fr,en,es)
+  const SKY=id=>(<linearGradient id={id} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0A1714"/><stop offset=".5" stopColor="#155A5A"/><stop offset=".84" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/></linearGradient>)
+  const SEA=id=>(<linearGradient id={id} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1A5852"/><stop offset="1" stopColor="#08251F"/></linearGradient>)
+  return[
+    // 0 — LE PROBLÈME : la ceinture atlantique qui dérive
+    {eyebrow:T("LE PROBLÈME","THE PROBLEM","EL PROBLEMA"),heading:T("Une ceinture de 8 000 km","An 8,000 km belt","Un cinturón de 8.000 km"),
+      sub:T("Depuis 2011, une marée d'algues traverse l'Atlantique, de l'Afrique aux Caraïbes — des millions de tonnes chaque année.","Since 2011 a tide of algae crosses the Atlantic, from Africa to the Caribbean — millions of tonnes every year.","Desde 2011 una marea de algas cruza el Atlántico — millones de toneladas al año."),
+      scene:<g><defs>{SKY("sol0")}</defs><rect width="800" height="600" fill="url(#sol0)"/>
+        <ellipse cx="400" cy="320" rx="320" ry="170" fill="#0E2A26" opacity=".55"/>
+        <g style={{transform:"translateX(calc(var(--p0)*70px - 35px))"}}>{[200,258,316,374,432,490,548,606].map((x,i)=>(<ellipse key={i} cx={x} cy={310+Math.sin(i*1.3)*16} rx="24" ry="8.5" fill="#8a6c1c" opacity=".82"/>))}</g>
+        <circle cx="170" cy="312" r="9" fill="#5FD3C9"/><text x="170" y="346" fontFamily="ui-monospace,monospace" fontSize="12" fill="#9FE1CB" textAnchor="middle">{T("Afrique","Africa","África")}</text>
+        <circle cx="636" cy="312" r="9" fill="#FFD884"/><text x="636" y="346" fontFamily="ui-monospace,monospace" fontSize="12" fill="#FFD884" textAnchor="middle">{T("Caraïbes","Caribbean","Caribe")}</text>
+        <text x="400" y="150" fontFamily="'Anton',sans-serif" fontSize="40" fill="#fff" textAnchor="middle" opacity=".9">2011 →</text>
+      </g>},
+    // 1 — ON VOIT TOUT : le satellite scanne (notre moat)
+    {eyebrow:T("ON VOIT TOUT","WE SEE IT ALL","LO VEMOS TODO"),heading:T("Lue depuis l'espace","Read from space","Leída desde el espacio"),
+      sub:T("Le Veilleur lit l'indice AFAI des satellites et prévoit l'échouage à la plage — vérifié 80% juste sur 30 jours.","The Watchman reads the satellites' AFAI index and forecasts beaching — verified 80% accurate over 30 days.","El Vigía lee el índice AFAI y predice la varazón — 80% exacto en 30 días."),
+      scene:<g><defs>{SEA("sol1")}</defs><rect width="800" height="600" fill="#06121A"/>
+        {[[120,90],[300,70],[520,110],[680,80],[420,150],[600,180]].map((s,i)=>(<circle key={i} cx={s[0]} cy={s[1]} r="1.3" fill="#fff" opacity=".5"/>))}
+        <rect y="360" width="800" height="240" fill="url(#sol1)"/>
+        <path className="bsc-beam" d="M400 150 L300 360 L500 360 Z" fill="#5FD3C9" opacity={"calc(.08 + var(--p1)*.16)"}/>
+        <g style={{transform:"translateX(calc(var(--p1)*120px - 60px))"}}>{miVeil(400,140,"#3BA7A0","#5FD3C9")}</g>
+        {[330,400,470].map((x,i)=>(<circle key={i} cx={x} cy="400" r="7" fill="#FFD884" style={{opacity:"calc(var(--p1) - "+(i*0.18)+")"}}/>))}
+        <text x="400" y="470" fontFamily="ui-monospace,monospace" fontSize="13" fill="#5FD3C9" textAnchor="middle" style={{opacity:"var(--p1)"}}>AFAI · scan</text>
+      </g>},
+    // 2 — ON ARRÊTE EN MER : barrages flottants + bateau collecteur
+    {eyebrow:T("ON AGIT EN MER","WE ACT AT SEA","ACTUAMOS EN EL MAR"),heading:T("Stopper avant la plage","Stop it before the beach","Detenerla antes de la playa"),
+      sub:T("Des barrages flottants dévient l'algue, des bateaux la collectent au large — avant qu'elle touche le sable et libère son odeur.","Floating booms divert the algae, boats collect it offshore — before it hits the sand and releases its smell.","Barreras flotantes desvían el alga y barcos la recogen mar adentro."),
+      scene:<g><defs>{SKY("sol2s")}{SEA("sol2")}</defs><rect width="800" height="360" fill="url(#sol2s)"/>
+        <path d="M348 250 a52 52 0 0 1 104 0 Z" fill="#FFD884" opacity=".85"/>
+        <rect y="360" width="800" height="240" fill="url(#sol2)"/>
+        <path d="M250 520 Q400 500 560 518 L820 512 L820 620 L250 620 Z" fill="#C9A86A"/>
+        {/* barrage flottant (boom) — se remplit avec --p2 */}
+        <g><line x1="200" y1="408" x2="600" y2="408" stroke="#FFC72C" strokeWidth="4" strokeDasharray="10 6"/>{[230,290,350,410,470,530].map((x,i)=>(<circle key={i} cx={x} cy="408" r="6" fill="#FFC72C"/>))}</g>
+        <g style={{opacity:"var(--p2)"}}>{[260,330,400,470,540].map((x,i)=>(<ellipse key={i} cx={x} cy="392" rx="18" ry="6" fill="#7a5c14"/>))}</g>
+        {/* bateau collecteur arrive avec --p2 */}
+        <g style={{transform:"translateX(calc(var(--p2)*180px - 40px))"}}><path d="M120 388 l70 0 l-12 22 l-46 0 Z" fill="#13302A"/><rect x="142" y="368" width="26" height="20" fill="#0E2A26"/><circle cx="155" cy="360" r="4" fill="#5FD3C9"/></g>
+      </g>},
+    // 3 — ON RAMASSE VITE : fenêtre 24-48h avant le H2S
+    {eyebrow:T("ON RAMASSE VITE","WE COLLECT FAST","RECOGEMOS RÁPIDO"),heading:T("48 heures, pas plus","48 hours, no more","48 horas, no más"),
+      sub:T("Ramassée dans les 24-48 h, l'algue reste une ressource propre. Trop tard, elle pourrit et dégage le H₂S — l'odeur d'œuf. Le timing change tout.","Collected within 24-48 h it stays a clean resource. Too late, it rots and releases H₂S — the egg smell. Timing is everything.","Recogida en 24-48 h sigue siendo limpia. Tarde, se pudre y libera H₂S."),
+      scene:<g><defs>{SKY("sol3")}</defs><rect width="800" height="360" fill="url(#sol3)"/>
+        <rect y="360" width="800" height="240" fill="#C9A86A"/>
+        {/* tas d'algues fraiches -> machine qui ramasse avec --p3 */}
+        <g style={{opacity:"calc(1 - var(--p3)*.85)"}}>{[300,360,420,480].map((x,i)=>(<ellipse key={i} cx={x} cy="430" rx="40" ry="14" fill="#6b7a1c"/>))}</g>
+        <g style={{transform:"translateX(calc(var(--p3)*260px - 120px))"}}><rect x="120" y="396" width="60" height="36" rx="6" fill="#155A5A"/><circle cx="138" cy="436" r="12" fill="#0A1714"/><circle cx="168" cy="436" r="12" fill="#0A1714"/><path d="M180 412 l40 -10 l0 22 l-40 6 Z" fill="#FFC72C"/></g>
+        {/* horloge / compte a rebours */}
+        <g transform="translate(620,150)" style={{opacity:"calc(.5 + var(--p3)*.5)"}}><circle r="40" fill="none" stroke="#FFD884" strokeWidth="4"/><line x1="0" y1="0" x2="0" y2="-26" stroke="#FFD884" strokeWidth="4" strokeLinecap="round" style={{transformBox:"fill-box",transformOrigin:"0px 0px",transform:"rotate(calc(var(--p3)*300deg))"}}/><text x="0" y="64" fontFamily="ui-monospace,monospace" fontSize="13" fill="#FFD884" textAnchor="middle">48h</text></g>
+      </g>},
+    // 4 — LE PROBLÈME DEVIENT RESSOURCE : recyclage + carburant
+    {eyebrow:T("ON TRANSFORME","WE TRANSFORM","TRANSFORMAMOS"),heading:T("Le problème devient ressource","The problem becomes a resource","El problema se vuelve recurso"),
+      sub:T("Engrais, briques de construction, bioplastique, papier — et même de l'énergie : la méthanisation transforme l'algue en biogaz.","Fertilizer, building blocks, bioplastic, paper — and even energy: anaerobic digestion turns the algae into biogas.","Fertilizante, ladrillos, bioplástico, papel — y energía: el sargazo se vuelve biogás."),
+      scene:<g><defs>{SKY("sol4")}</defs><rect width="800" height="600" fill="url(#sol4)"/>
+        <g transform="translate(400,300)"><ellipse rx="46" ry="16" fill="#6b7a1c" style={{opacity:"calc(1 - var(--p4)*.7)"}}/></g>
+        {[{e:"🌱",x:230,y:200,l:T("Engrais","Fertilizer","Abono")},{e:"🧱",x:400,y:170,l:T("Briques","Bricks","Ladrillos")},{e:"⚡",x:570,y:200,l:T("Biogaz","Biogas","Biogás")},{e:"📄",x:300,y:400,l:T("Papier","Paper","Papel")},{e:"🧴",x:500,y:400,l:T("Bioplastique","Bioplastic","Bioplástico")}].map((o,i)=>(
+          <g key={i} transform={"translate("+o.x+","+o.y+")"} style={{opacity:"calc(var(--p4)*1.4 - "+(i*0.18)+")",transformBox:"fill-box",transformOrigin:"center"}}>
+            <circle r="34" fill="#0E2A26" stroke="#5FD3C9" strokeWidth="1.4"/><text y="10" fontSize="30" textAnchor="middle">{o.e}</text><text y="56" fontFamily="ui-monospace,monospace" fontSize="12" fill="#9FE1CB" textAnchor="middle">{o.l}</text>
+          </g>))}
+      </g>},
+    // 5 — ESPOIR + SORTIE (escapable, jamais infernal)
+    {eyebrow:T("MAINTENANT","NOW","AHORA"),heading:T("Vue, arrêtée, transformée","Seen, stopped, transformed","Vista, detenida, transformada"),
+      sub:T("Vue de l'espace, arrêtée en mer, ramassée à temps, transformée en ressource. Le Veilleur garde un œil — toi, va profiter de la plage.","Seen from space, stopped at sea, collected in time, turned into a resource. The Watchman keeps an eye — you, go enjoy the beach.","Vista desde el espacio, detenida, transformada. El Vigía vigila — tú, ve a la playa."),
+      cta:T("Sortir & voir les plages →","Exit & see the beaches →","Salir y ver las playas →"),
+      scene:<g><defs>{SKY("sol5s")}{SEA("sol5")}</defs><rect width="800" height="360" fill="url(#sol5s)"/>
+        <path d="M340 230 a60 60 0 0 1 120 0 Z" fill="#FFD884"/>
+        <g style={{opacity:"calc(.5 + var(--p5)*.5)"}}>{[-52,-26,0,26,52].map((a,i)=>(<path key={i} d="M400 230 L391 90 L409 90 Z" fill="#FFD884" opacity=".1" transform={"rotate("+a+" 400 230)"}/>))}</g>
+        <rect y="360" width="800" height="240" fill="url(#sol5)"/>
+        <line x1="-40" y1="392" x2="840" y2="392" stroke="#FFD884" strokeWidth="2.2" strokeDasharray="3 13" opacity=".5"/>
+        <path d="M250 500 Q400 478 560 498 L820 492 L820 620 L250 620 Z" fill="#C9A86A"/>
+        <g style={{transform:"translateY(calc(var(--p5)*-10px))"}}>{miVeil(400,150,"#3BA7A0","#5FD3C9")}</g>
+      </g>},
+  ]
+}
+function SolutionsStory({lang,onClose}){
+  return(
+    <div role="dialog" aria-label={_t(lang,"Les solutions sargasses","Sargassum solutions","Soluciones al sargazo")} style={{position:"absolute",inset:0,zIndex:1065,background:"#0A1714",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
+      <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"fixed",top:"calc(12px + env(safe-area-inset-top))",right:12,zIndex:30,width:42,height:42,borderRadius:21,background:"rgba(10,23,20,.55)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:16,cursor:"pointer"}}>✕</button>
+      <StoryEngine beats={solutionsBeats(lang)} lang={lang} accent="#5FD3C9" ev="sg_solutions_beat" onCTA={onClose}/>
+    </div>
+  )
+}
+
 // ── MapIntroStory — landing SVG d'intro de la CARTE (design workflow 14/06).
 //    Overlay plein écran (le seul contexte où le moteur prod scrub bien) : le
 //    Veilleur présente la côte → compteurs RÉELS → comment lire un pin → ouvre
@@ -8825,6 +8912,8 @@ export default function App(){
   // photo : chaque plage = un plein-écran SVG qui met NOTRE data en scène, cliquable,
   // snap, loopé, jamais bloqué. Additif derrière ?world=1 ; A-B nav à venir.
   const[showWorld,setShowWorld]=useState(()=>{try{return /[?&]world=1/.test(window.location.search)}catch(_){return false}})
+  // Solutions sargasses (SVG scrollytelling éducatif, escapable). ?solutions=1 QA + entrée chip.
+  const[showSolutions,setShowSolutions]=useState(()=>{try{return /[?&]solutions=1/.test(window.location.search)}catch(_){return false}})
   // Intro carte (MapIntroStory) — landing SVG, show-once par device, skippable.
   const[showMapIntro,setShowMapIntro]=useState(()=>{try{return /[?&]mapintro=1/.test(window.location.search)||!localStorage.getItem("sg_map_intro_v1")}catch(_){return false}})
   // Bras A/B du landing : control = HeroVerdict (éprouvé), game = GameFunnel
@@ -9714,6 +9803,16 @@ export default function App(){
               animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>🛰️</button>
         )}
         {showDiscovery&&<DiscoveryStory lang={lang} onClose={()=>setShowDiscovery(false)} onShowMap={()=>setShowDiscovery(false)}/>}
+
+        {/* SOLUTIONS — pages SVG (problème→on voit→on agit→on transforme→on sort). Escapable. */}
+        {!showHero&&!showPremium&&!showChat&&!showDiscovery&&!showSolutions&&!showWorld&&!selectedBeach&&view==="map"&&(
+          <button onClick={()=>{setShowSolutions(true);track("sg_solutions_open",{})}} aria-label={_t(lang,"Les solutions sargasses","Sargassum solutions","Soluciones al sargazo")}
+            style={{position:"fixed",right:14,bottom:"calc(328px + env(safe-area-inset-bottom))",zIndex:960,
+              width:46,height:46,borderRadius:"50%",background:"#0D1E1C",border:"1.5px solid rgba(95,211,201,.6)",
+              fontSize:19,cursor:"pointer",boxShadow:"0 6px 20px rgba(0,0,0,.4)",display:"flex",alignItems:"center",justifyContent:"center",
+              animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>💡</button>
+        )}
+        {showSolutions&&<SolutionsStory lang={lang} onClose={()=>{setShowSolutions(false);track("sg_solutions_close",{})}}/>}
 
         {/* MONDE SVG — la fondation : feed vertical des plages, zéro photo, data en
             scène, cliquable, loopé. Additif (z1005) ; fiche+paywall s'ouvrent au-dessus. */}
