@@ -1190,10 +1190,11 @@ function LearnView({lang,onBack,onGoMap}){
 
 function BottomNav({view,onChangeView,lang}){
   const LL=T[lang]||T.fr
+  // Le jeu reste un EASTER EGG (toast d'inactivité), jamais un onglet de menu
+  // (directive user 14/06 : « j'aimais bien le jeu en petit easter egg pas en menu »).
   const tabs=[
     {id:"map",label:LL.navMap,icon:"🗺️"},
     {id:"list",label:LL.navList,icon:"📋"},
-    {id:"game",label:LL.navGame,icon:"🎮"},
     {id:"premium",label:LL.navPremium,icon:"⭐"},
   ]
   return(
@@ -1208,7 +1209,7 @@ function BottomNav({view,onChangeView,lang}){
       {tabs.map(t=>{
         const active=view===t.id||(t.id==="premium"&&false)
         return(
-        <button key={t.id} onClick={()=>{if(t.id==="game"){track("sg_game_open",{from:"nav"});try{location.href="/jeu/?utm_source=app&utm_medium=nav"}catch(_){}}else onChangeView(t.id)}} style={{
+        <button key={t.id} onClick={()=>onChangeView(t.id)} style={{
           display:"flex",flexDirection:"column",alignItems:"center",gap:2,
           background:"none",border:"none",cursor:"pointer",
           color:active?C.gold:"var(--sg-mid,#686868)",
@@ -6789,7 +6790,7 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
   // Beat 2 LE SCAN : taper une plage classée n'ouvre plus la fiche d'un coup —
   // on entre d'abord dans le scan (le satellite analyse CETTE plage), puis « Voir
   // le résultat » ouvre la vraie fiche. Garde tout le parcours actuel intact.
-  const goScan=b=>{setChosenBeach(b);track("sg_funnel_scan_view",{beach_id:b.id,vibe:vibe||"_"});setStage("scan")}
+  const goScan=b=>{setChosenBeach(b);setFaved(false);track("sg_funnel_scan_view",{beach_id:b.id,vibe:vibe||"_"});setStage("scan")}
   // Beat 3 LE VERDICT : actions de capture photogéniques (partage social) +
   // appropriation (favori = pont vers le veilleur). Partage = donnée publique.
   const [faved,setFaved]=useState(false)
@@ -6800,7 +6801,9 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
     try{if(navigator.share){navigator.share({title:b.name,text:txt,url}).catch(()=>{});return}}catch(_){}
     try{navigator.clipboard&&navigator.clipboard.writeText(`${txt} ${url}`.trim())}catch(_){}
   }
-  const favBeach=b=>{setFaved(v=>!v);track("sg_fav_add",{beach_id:b.id,source:"funnel"});onFav&&onFav(b)}
+  // toggleFav (onFav) gère DÉJÀ sg_fav_add/sg_fav_remove — ici un event funnel
+  // distinct pour l'attribution, sans double-fire ni event contradictoire.
+  const favBeach=b=>{setFaved(v=>!v);track("sg_funnel_fav",{beach_id:b.id});onFav&&onFav(b)}
   // Beat 4 — honnêteté FTC/DSA : l'alerte n'existe QUE si le forecast J+1..J+2 de
   // la plage choisie se dégrade VRAIMENT (jamais de fausse urgence). Sinon null →
   // pas de pitch d'alerte, le verdict mène direct à la fiche.
@@ -6925,7 +6928,7 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
       {stage==="verdict"&&chosenBeach&&(()=>{
         const bc=statusCol(chosenBeach)
         const alts=ranked.filter(b=>b.id!==chosenBeach.id).slice(0,3)
-        const POS=[[400,182],[532,388],[268,388]],RR=[20,18,16]
+        const POS=[[400,182],[520,388],[280,388]],RR=[20,16,14]
         return(
         <svg aria-hidden viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice"
           style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none"}}>
@@ -6960,10 +6963,10 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
           <path d="M-40 432 Q200 412 430 422 Q640 430 840 450 L840 600 L-40 600Z" fill="#0A1A16"/>
           <path d="M-40 432 Q200 412 430 422 Q640 430 840 450" fill="none" stroke="#1A4A44" strokeWidth="2" opacity=".55"/>
           <g className="gf-arrive">
-            <g transform="translate(560,392) scale(.85)"><ellipse rx="14" ry="5" fill="#5a4410"/><ellipse cx="-8" cy="-2" rx="7" ry="3.5" fill="#6a5418"/><ellipse cx="8" cy="-2" rx="8" ry="3.5" fill="#3d2c08"/></g>
-            <g transform="translate(636,376) scale(.6)"><ellipse rx="14" ry="5" fill="#5a4410"/><ellipse cx="-8" cy="-2" rx="7" ry="3.5" fill="#6a5418"/></g>
+            <g transform="translate(438,394) scale(.85)"><ellipse rx="14" ry="5" fill="#5a4410"/><ellipse cx="-8" cy="-2" rx="7" ry="3.5" fill="#6a5418"/><ellipse cx="8" cy="-2" rx="8" ry="3.5" fill="#3d2c08"/></g>
+            <g transform="translate(486,378) scale(.6)"><ellipse rx="14" ry="5" fill="#5a4410"/><ellipse cx="-8" cy="-2" rx="7" ry="3.5" fill="#6a5418"/></g>
           </g>
-          <path className="gf-arrow" d="M694 296 Q612 338 548 388" fill="none" stroke="#E8522A" strokeWidth="2.5" strokeDasharray="5 7" opacity=".75"/>
+          <path className="gf-arrow" d="M520 296 Q488 342 455 386" fill="none" stroke="#E8522A" strokeWidth="2.5" strokeDasharray="5 7" opacity=".75"/>
           <g transform="translate(300,248)">
             <circle className="gf-alertpulse" r="46" fill="none" stroke="#E8522A" strokeWidth="1.5" opacity=".5" style={{transformBox:"fill-box",transformOrigin:"center"}}/>
             <rect x="-30" y="-54" width="60" height="108" rx="11" fill="#10231E" stroke="rgba(255,255,255,.22)" strokeWidth="1.5"/>
