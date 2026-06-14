@@ -9147,8 +9147,21 @@ export default function App(){
   const[showSolutions,setShowSolutions]=useState(()=>{try{return /[?&]solutions=1/.test(window.location.search)}catch(_){return false}})
   // L'Archipel du Veilleur (monde SVG libre pan/zoom, tournoi gagnant). QA ?archipel=1.
   const[showArchipel,setShowArchipel]=useState(()=>{try{return /[?&]archipel=1/.test(window.location.search)}catch(_){return false}})
+  // A/B nav_world : le cohort "world" ATTERRIT dans l'Archipel par defaut (le monde
+  // DEVIENT le produit principal, plus un flag cache). 50/50, control = carte actuelle.
+  // ?nav=world / ?nav=map en QA. Funnel intact (fiche+premium inchanges sous le monde).
+  const[navWorld]=useState(()=>{try{const o=window.location.search;if(/[?&]nav=world/.test(o))return true;if(/[?&]nav=map/.test(o))return false;return abVariant("nav_world",["map","world"],[.5,.5])==="world"}catch(_){return false}})
+  const archAutoRef=useRef(false)
   // Intro carte (MapIntroStory) — landing SVG, show-once par device, skippable.
   const[showMapIntro,setShowMapIntro]=useState(()=>{try{return /[?&]mapintro=1/.test(window.location.search)||!localStorage.getItem("sg_map_intro_v1")}catch(_){return false}})
+  // Cohort world : ouvre l'Archipel par defaut quand la landing se pose (hero+mapintro
+  // dismisses, beaches pretes), UNE fois. Escapable (la croix renvoie a la carte control).
+  useEffect(()=>{
+    if(!navWorld||archAutoRef.current)return
+    if(showHero||showMapIntro||selectedBeach||showPremium||showSolutions||showWorld||showArchipel)return
+    if(view!=="map"||!(allBeaches&&allBeaches.length>=3))return
+    archAutoRef.current=true;setShowArchipel(true);try{track("sg_archipel_open",{from:"nav_world_default"})}catch(_){}
+  },[navWorld,showHero,showMapIntro,view,allBeaches,selectedBeach,showPremium,showSolutions,showWorld,showArchipel])
   // Bras A/B du landing : control = HeroVerdict (éprouvé), game = GameFunnel
   // (funnel-jeu immersif, tranche verticale 13/06). Mesuré contre le landing
   // prouvé, jamais imposé ; ?lf=game force en QA. La conversion (paywall/trial/
