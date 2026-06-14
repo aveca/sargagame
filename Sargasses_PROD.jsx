@@ -8624,7 +8624,7 @@ function WorldFeed({beaches,lang,onPremium,onClose,island}){
 // immediate (on atterrit MID-zoom sur SA cote, verdict <1s), l'exploration est un
 // bonus libre par-dessus. v0 = pan + zoom (wheel/pinch/double-tap) + atterrissage +
 // tap->BeachSheet existante (funnel INTACT). Pas de dive/momentum/LOD (slices 2-4).
-function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose}){
+function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutions}){
   const wrapRef=useRef(null),gRef=useRef(null),camRef=useRef({cx:0,cy:0,cz:0.8}),rafRef=useRef(0)
   const ptrs=useRef(new Map()),movedRef=useRef(false),pinchRef=useRef(null),lastTap=useRef(0)
   const[ready,setReady]=useState(false)
@@ -8693,6 +8693,7 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose}){
         ?<div style={{position:"absolute",bottom:"calc(24px + env(safe-area-inset-bottom))",left:0,right:0,zIndex:5,display:"flex",justifyContent:"center",gap:10}}>
           <button onClick={e=>{e.stopPropagation();centerOn(myIdx,MID)}} style={{padding:"11px 16px",borderRadius:999,background:"rgba(4,9,11,.6)",border:"1px solid rgba(255,255,255,.25)",color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer",backdropFilter:"blur(8px)"}}>⌖ {_t(lang,"Ma côte","My coast","Mi costa")}</button>
           <button onClick={e=>{e.stopPropagation();startTour()}} style={{padding:"11px 18px",borderRadius:999,background:"linear-gradient(180deg,#FFD884,#F2B05E)",border:"none",color:"#07201E",fontSize:13,fontWeight:800,cursor:"pointer",boxShadow:"0 6px 20px rgba(0,0,0,.4)"}}>📜 {_t(lang,"Visiter les plages","Tour the beaches","Recorrer playas")}</button>
+          {onSolutions&&<button onClick={e=>{e.stopPropagation();onSolutions()}} style={{padding:"11px 16px",borderRadius:999,background:"rgba(4,9,11,.6)",border:"1px solid rgba(95,211,201,.45)",color:"#5FD3C9",fontSize:13,fontWeight:800,cursor:"pointer",backdropFilter:"blur(8px)"}}>💡 {_t(lang,"Solutions","Solutions","Soluciones")}</button>}
         </div>
         :(()=>{const i=tourOrder[tour],b=proj[i]&&proj[i].b;if(!b)return null;const vm=verdictMeta(b.status,lang),sc=typeof b.score==="number"?b.score:null,afai=typeof b.afai==="number"?b.afai:null
           return(<div onClick={e=>e.stopPropagation()} style={{position:"absolute",left:0,right:0,bottom:0,zIndex:7,padding:"0 12px calc(14px + env(safe-area-inset-bottom))"}}>
@@ -8713,8 +8714,12 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose}){
                 <button onClick={()=>{try{track("sg_archipel_tour_open",{beach_id:b.id})}catch(_){}; onOpenBeach&&onOpenBeach(b)}} style={{flex:1,padding:"13px",borderRadius:14,border:"none",cursor:"pointer",fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",fontSize:14.5,fontWeight:800,color:"#07201E",background:"linear-gradient(180deg,#FFD884,#F2B05E)"}}>{_t(lang,"Découvrir cette plage →","Explore this beach →","Descubrir esta playa →")}</button>
                 <button onClick={()=>tourGo(tour+1)} aria-label={_t(lang,"Suivante","Next","Siguiente")} style={{width:44,height:44,borderRadius:14,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:18,cursor:tour>=tourOrder.length-1?"default":"pointer",opacity:tour>=tourOrder.length-1?.4:1}}>↓</button>
               </div>
+              {onSolutions&&tour>=tourOrder.length-1&&<button onClick={onSolutions} style={{display:"block",width:"100%",marginTop:9,padding:"12px",borderRadius:14,border:"1px solid rgba(95,211,201,.5)",cursor:"pointer",background:"rgba(95,211,201,.12)",color:"#5FD3C9",fontSize:13.5,fontWeight:800}}>🌍 {_t(lang,"Continuer : le monde des solutions →","Continue: the solutions world →","Sigue: el mundo de soluciones →")}</button>}
               <div style={{textAlign:"center",marginTop:8,fontSize:11,color:"rgba(255,255,255,.45)"}}>{_t(lang,"↕ scrolle ou swipe pour changer de plage","↕ scroll or swipe to change beach","↕ desliza para cambiar")}</div>
-              <button onClick={exitTour} style={{display:"block",margin:"8px auto 0",background:"none",border:"none",color:"rgba(255,255,255,.6)",fontSize:12.5,fontWeight:700,cursor:"pointer"}}>← {_t(lang,"Explorer librement","Explore freely","Explorar libre")}</button>
+              <div style={{display:"flex",justifyContent:"center",gap:18,marginTop:8}}>
+                <button onClick={exitTour} style={{background:"none",border:"none",color:"rgba(255,255,255,.6)",fontSize:12.5,fontWeight:700,cursor:"pointer"}}>← {_t(lang,"Explorer librement","Explore freely","Explorar libre")}</button>
+                {onSolutions&&<button onClick={onSolutions} style={{background:"none",border:"none",color:"rgba(255,255,255,.6)",fontSize:12.5,fontWeight:700,cursor:"pointer"}}>💡 {_t(lang,"Les solutions →","Solutions →","Soluciones →")}</button>}
+              </div>
             </div>
           </div>)})()}
     </div>
@@ -9944,20 +9949,14 @@ export default function App(){
               fontSize:19,cursor:"pointer",boxShadow:"0 6px 20px rgba(0,0,0,.4)",display:"flex",alignItems:"center",justifyContent:"center",
               animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>🧭</button>
         )}
-        {showArchipel&&<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onBeachClick} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}}/>}
+        {showArchipel&&<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onBeachClick} onSolutions={()=>{setShowSolutions(true);track("sg_archipel_to_solutions",{})}} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}}/>}
 
         {/* MONDE SVG — la fondation : feed vertical des plages, zéro photo, data en
             scène, cliquable, loopé. Additif (z1005) ; fiche+paywall s'ouvrent au-dessus. */}
         {showWorld&&<WorldFeed beaches={allBeaches} island={island} lang={lang}
           onPremium={openPremium} onClose={()=>{setShowWorld(false);track("sg_world_close",{})}}/>}
-        {/* Entrée MONDE — bouton flottant (devient la nav par défaut après A-B). */}
-        {!showHero&&!showPremium&&!showChat&&!showDiscovery&&!showWorld&&!selectedBeach&&view==="map"&&(
-          <button onClick={()=>{setShowWorld(true);track("sg_world_open",{from:"fab"})}} aria-label={_t(lang,"Explorer le monde Sargasses","Explore the Sargassum world","Explorar el mundo Sargazo")}
-            style={{position:"fixed",right:14,bottom:"calc(274px + env(safe-area-inset-bottom))",zIndex:960,
-              width:46,height:46,borderRadius:"50%",background:"#0D1E1C",border:"1.5px solid rgba(255,216,132,.65)",
-              fontSize:19,cursor:"pointer",boxShadow:"0 6px 20px rgba(0,0,0,.4)",display:"flex",alignItems:"center",justifyContent:"center",
-              animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>🌊</button>
-        )}
+        {/* FAB 🌊 World-feed RETIRÉ (IA unifiée 14/06) : l'Archipel 🧭 le supersède
+            (carte + visite scroll). WorldFeed reste accessible en QA via ?world=1. */}
 
         {/* REFERRAL LANDING BANNER — hidden if Welcome toast is showing to avoid overlap */}
         {showReferralBanner&&!showWelcome&&(
