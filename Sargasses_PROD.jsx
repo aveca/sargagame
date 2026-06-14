@@ -8187,6 +8187,123 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
 /* ═══════════════════════════════════════════════════════════════════════════
    APP PRINCIPAL
    ═══════════════════════════════════════════════════════════════════════════ */
+// ── LE MONDE SVG : le feed vertical des plages (LA FONDATION, direction 14/06) ──
+// « app B2C style TikTok scrolling avec du SVG sur les plages ». ZÉRO photo —
+// chaque plage = BeachScene (notre monde golden-hour) + NOTRE data en scène
+// (Veilleur-score, verdict, jauge AFAI satellite, précision cliquable). Snap,
+// loopé, JAMAIS bloqué. Réutilise BeachScene/Veilleur/ScoreBlob/verdictMeta (le
+// 90% existant). Perf : BeachScene rendu seulement pour la carte active±1.
+// Additif (z 1005) : la fiche (1010) et le paywall (1100+) s'ouvrent AU-DESSUS.
+function WorldAfaiGauge({afai,lang}){
+  // La science, simplement : l'échelle AFAI satellite avec un marqueur à la valeur réelle.
+  const v=Math.max(0,Math.min(0.5,typeof afai==="number"?afai:0.1))
+  const pct=Math.round((v/0.5)*100)
+  return(
+    <div style={{margin:"12px 0 2px"}}>
+      <div aria-hidden="true" style={{height:8,borderRadius:999,background:"linear-gradient(90deg,#22C55E 0%,#22C55E 30%,#F59E0B 30%,#F59E0B 80%,#E8522A 80%)"}}/>
+      <div style={{position:"relative",height:0}}>
+        <div className="wf-mark" style={{position:"absolute",top:-13,left:"calc("+pct+"% - 6px)",width:12,height:12,borderRadius:"50%",background:"#fff",border:"2px solid #07201E",boxShadow:"0 1px 6px rgba(0,0,0,.5)"}}/>
+      </div>
+      <div style={{display:"flex",justifyContent:"space-between",marginTop:9,fontSize:10,fontWeight:700,color:"rgba(255,255,255,.72)",letterSpacing:".04em"}}>
+        <span>{_t(lang,"Propre","Clean","Limpia")}</span>
+        <span>{_t(lang,"Algues fortes","Heavy algae","Algas fuertes")}</span>
+      </div>
+    </div>
+  )
+}
+function WorldCard({beach,lang,active,index,onOpen,phaseGrad}){
+  const status=beach.status||"clean"
+  const vm=verdictMeta(status,lang)
+  const hasScore=typeof beach.score==="number"
+  const mood=hasScore?moodFromScore(beach.score):moodFromStatus(status)
+  return(
+    <section style={{position:"relative",height:"100svh",minHeight:"100svh",scrollSnapAlign:"start",scrollSnapStop:"always",overflow:"hidden",background:phaseGrad}}>
+      {active?<BeachScene beach={beach}/>:<div aria-hidden="true" style={{position:"absolute",inset:0,background:phaseGrad}}/>}
+      <div aria-hidden="true" style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(4,9,11,0) 36%,rgba(4,9,11,.34) 64%,rgba(4,9,11,.84) 100%)"}}/>
+      <div style={{position:"absolute",left:0,right:0,bottom:0,padding:"0 22px calc(118px + env(safe-area-inset-bottom)) 22px",color:"#fff",maxWidth:560,margin:"0 auto"}}>
+        <div style={{display:"flex",alignItems:"flex-end",gap:12,marginBottom:4}}>
+          {hasScore&&<ScoreBlob score={beach.score} color={beach.scoreColor||vm.color} size={64}/>}
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{display:"flex",alignItems:"center",gap:7,fontSize:13,fontWeight:800,color:vm.color}}><span>{vm.emoji}</span><span>{vm.verb}</span></div>
+            <h2 style={{margin:"2px 0 0",fontFamily:"'Anton',system-ui,sans-serif",fontSize:30,lineHeight:1.02,letterSpacing:".01em",textShadow:"0 2px 14px rgba(0,0,0,.5)"}}>{beach.name}</h2>
+            {beach.commune&&<div style={{fontSize:12.5,fontWeight:600,color:"rgba(255,255,255,.8)"}}>{beach.commune}</div>}
+          </div>
+          <Veilleur mood={mood} size={42}/>
+        </div>
+        <WorldAfaiGauge afai={beach.afai} lang={lang}/>
+        <a href="/fiabilite/" onClick={e=>{e.stopPropagation();try{track("sg_reliability_open",{from:"world_card"})}catch(_){}}}
+          style={{display:"inline-flex",alignItems:"center",gap:7,marginTop:10,fontSize:11.5,fontWeight:700,color:"rgba(255,255,255,.92)",textDecoration:"none"}}>
+          🛰️ <span>{_t(lang,"Scan satellite • 80% justes sur 30j","Satellite scan • 80% accurate over 30d","Escaneo satélite • 80% exacto 30d")}</span> <span style={{color:"#5FD3C9"}}>→</span>
+        </a>
+        <button onClick={()=>{try{track("sg_world_open_beach",{beach_id:beach.id,status})}catch(_){}; onOpen&&onOpen(beach)}}
+          style={{display:"block",width:"100%",marginTop:14,padding:"14px",borderRadius:16,border:"none",cursor:"pointer",
+          fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",fontSize:15,fontWeight:800,color:"#07201E",
+          background:"linear-gradient(180deg,#FFD884,#F2B05E)",boxShadow:"0 8px 24px rgba(0,0,0,.35)"}}>
+          {_t(lang,"Découvrir cette plage →","Explore this beach →","Descubrir esta playa →")}
+        </button>
+      </div>
+      {index===0&&<div className="wf-hint" aria-hidden="true" style={{position:"absolute",left:0,right:0,bottom:"calc(94px + env(safe-area-inset-bottom))",textAlign:"center",color:"rgba(255,255,255,.82)",fontSize:12,fontWeight:800,letterSpacing:".08em"}}>
+        {_t(lang,"SCROLLEZ ↓","SCROLL ↓","DESLIZA ↓")}
+      </div>}
+    </section>
+  )
+}
+function WorldPremiumCard({lang,onPremium,onRestart}){
+  return(
+    <section style={{position:"relative",height:"100svh",minHeight:"100svh",scrollSnapAlign:"start",overflow:"hidden",
+      background:"linear-gradient(180deg,#04090B 0%,#0B2230 46%,#155A5A 100%)",color:"#fff"}}>
+      <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"0 28px calc(110px + env(safe-area-inset-bottom))",maxWidth:560,margin:"0 auto",textAlign:"center"}}>
+        <Veilleur mood="serein" size={74}/>
+        <h2 style={{margin:"16px 0 0",fontFamily:"'Anton',system-ui,sans-serif",fontSize:34,lineHeight:1.05}}>{_t(lang,"Va plus loin que le verdict","Beyond the verdict","Más allá del veredicto")}</h2>
+        <p style={{margin:"10px 0 0",fontSize:14.5,lineHeight:1.5,color:"rgba(255,255,255,.86)"}}>
+          {_t(lang,"Prévision 14 jours, historique, brief matin et alertes sur tes plages favorites — toute notre science, pour toi.","14-day forecast, history, morning brief and alerts on your favourite beaches — all our science, for you.","Pronóstico 14 días, historial, resumen matutino y alertas en tus playas favoritas — toda nuestra ciencia, para ti.")}
+        </p>
+        <button onClick={()=>{try{track("sg_world_premium",{})}catch(_){}; onPremium&&onPremium("world")}}
+          style={{marginTop:20,padding:"14px 26px",borderRadius:16,border:"none",cursor:"pointer",
+          fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",fontSize:16,fontWeight:800,color:"#07201E",
+          background:"linear-gradient(180deg,#FFD884,#F2B05E)",boxShadow:"0 8px 28px rgba(0,0,0,.4)"}}>
+          {_t(lang,"Activer le Veilleur →","Activate the Watchman →","Activar el Vigía →")}
+        </button>
+        <button onClick={onRestart} style={{marginTop:16,background:"none",border:"none",cursor:"pointer",color:"rgba(255,255,255,.72)",fontSize:13,fontWeight:700}}>
+          ↻ {_t(lang,"Revoir les plages","See beaches again","Ver playas otra vez")}
+        </button>
+      </div>
+    </section>
+  )
+}
+function WorldFeed({beaches,lang,onOpenBeach,onPremium,onClose,island}){
+  const scrollRef=useRef(null)
+  const[active,setActive]=useState(0)
+  const phaseGrad=useMemo(()=>{
+    let ph="golden";try{if(typeof HERO_PH_OVERRIDE!=="undefined"&&HERO_PH_OVERRIDE)ph=HERO_PH_OVERRIDE;else{const h=new Date().getHours();ph=h<5?"night":h<8?"dawn":h<17?"day":h<20?"golden":"night"}}catch(_){}
+    const t=BEACH_PHASE[ph]||BEACH_PHASE.golden
+    return "linear-gradient(180deg,"+t.sky[0]+","+t.sky[2]+" 60%,"+t.seaB+")"
+  },[])
+  const list=useMemo(()=>(beaches||[]).filter(b=>b&&b.id&&b.name&&(!island||b.island===island)).slice(0,16),[beaches,island])
+  useEffect(()=>{
+    const root=scrollRef.current;if(!root)return
+    const io=new IntersectionObserver(es=>{
+      es.forEach(e=>{if(e.isIntersecting){const i=parseInt(e.target.getAttribute("data-wf-card"));if(!isNaN(i))setActive(i)}})
+    },{root,threshold:0.55})
+    root.querySelectorAll("[data-wf-card]").forEach(c=>io.observe(c))
+    return()=>io.disconnect()
+  },[list.length])
+  useEffect(()=>{try{track("sg_world_open",{count:list.length})}catch(_){}},[])// eslint-disable-line
+  const restart=()=>{try{scrollRef.current&&scrollRef.current.scrollTo({top:0,behavior:"smooth"})}catch(_){}}
+  return(
+    <div role="region" aria-label="Monde Sargasses" style={{position:"fixed",inset:0,zIndex:1005,background:"#04090B"}}>
+      <style>{`@keyframes wfHint{0%,100%{transform:translateY(0);opacity:.72}50%{transform:translateY(5px);opacity:1}}.wf-hint{animation:wfHint 1.8s ease-in-out infinite}@keyframes wfMark{0%,100%{transform:scale(1)}50%{transform:scale(1.35)}}.wf-mark{animation:wfMark 2.4s ease-in-out infinite}@media(prefers-reduced-motion:reduce){.wf-hint,.wf-mark{animation:none}}`}</style>
+      <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")}
+        style={{position:"absolute",top:"calc(12px + env(safe-area-inset-top))",right:14,zIndex:5,width:40,height:40,borderRadius:"50%",
+        background:"rgba(4,9,11,.55)",border:"1px solid rgba(255,255,255,.25)",color:"#fff",fontSize:17,cursor:"pointer",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)"}}>✕</button>
+      <div ref={scrollRef} style={{position:"absolute",inset:0,overflowY:"auto",scrollSnapType:"y mandatory",WebkitOverflowScrolling:"touch"}}>
+        {list.map((b,i)=>(<div key={b.id} data-wf-card={i}><WorldCard beach={b} index={i} active={Math.abs(i-active)<=1} lang={lang} onOpen={onOpenBeach} phaseGrad={phaseGrad}/></div>))}
+        <div data-wf-card={list.length}><WorldPremiumCard lang={lang} onPremium={onPremium} onRestart={restart}/></div>
+      </div>
+    </div>
+  )
+}
+
 export default function App(){
   const[lang,setLang]=useState(getLang)
   const[theme,setTheme]=useState(()=>g("sg_theme","light"))
@@ -8494,6 +8611,10 @@ export default function App(){
   })
   // Découverte éducative (StoryEngine). Gate URL ?decouverte=1 pour QA ; entrée UI dédiée.
   const[showDiscovery,setShowDiscovery]=useState(()=>{try{return /[?&]decouverte=1/.test(window.location.search)}catch(_){return false}})
+  // MONDE SVG — feed vertical infini des plages (fondation, direction 14/06). Zéro
+  // photo : chaque plage = un plein-écran SVG qui met NOTRE data en scène, cliquable,
+  // snap, loopé, jamais bloqué. Additif derrière ?world=1 ; A-B nav à venir.
+  const[showWorld,setShowWorld]=useState(()=>{try{return /[?&]world=1/.test(window.location.search)}catch(_){return false}})
   // Intro carte (MapIntroStory) — landing SVG, show-once par device, skippable.
   const[showMapIntro,setShowMapIntro]=useState(()=>{try{return /[?&]mapintro=1/.test(window.location.search)||!localStorage.getItem("sg_map_intro_v1")}catch(_){return false}})
   // Bras A/B du landing : control = HeroVerdict (éprouvé), game = GameFunnel
@@ -9081,7 +9202,7 @@ export default function App(){
           {/* Intro carte SVG (MapIntroStory) — landing show-once, skippable, par-dessus
               la map. Démontée à l'entrée → ne vole jamais un clic pin. Jamais pendant
               hero/découverte/fiche/paywall ; bypass si <3 plages (jamais d'écran vide). */}
-          {showMapIntro&&view==="map"&&!showHero&&!showDiscovery&&!selectedBeach&&!showPremium&&filtered.length>=3&&(
+          {showMapIntro&&view==="map"&&!showHero&&!showDiscovery&&!selectedBeach&&!showPremium&&!showWorld&&filtered.length>=3&&(
             <MapIntroStory lang={lang}
               counts={{clean:filtered.filter(b=>b.status==="clean").length,watch:filtered.filter(b=>b.status==="moderate").length,avoid:filtered.filter(b=>b.status==="avoid").length,total:filtered.length}}
               onEnterMap={()=>{setShowMapIntro(false);try{localStorage.setItem("sg_map_intro_v1","1")}catch(_){}}}/>
@@ -9383,6 +9504,19 @@ export default function App(){
               animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>🛰️</button>
         )}
         {showDiscovery&&<DiscoveryStory lang={lang} onClose={()=>setShowDiscovery(false)} onShowMap={()=>setShowDiscovery(false)}/>}
+
+        {/* MONDE SVG — la fondation : feed vertical des plages, zéro photo, data en
+            scène, cliquable, loopé. Additif (z1005) ; fiche+paywall s'ouvrent au-dessus. */}
+        {showWorld&&<WorldFeed beaches={allBeaches} island={island} lang={lang}
+          onOpenBeach={onBeachClick} onPremium={openPremium} onClose={()=>{setShowWorld(false);track("sg_world_close",{})}}/>}
+        {/* Entrée MONDE — bouton flottant (devient la nav par défaut après A-B). */}
+        {!showHero&&!showPremium&&!showChat&&!showDiscovery&&!showWorld&&!selectedBeach&&view==="map"&&(
+          <button onClick={()=>{setShowWorld(true);track("sg_world_open",{from:"fab"})}} aria-label={_t(lang,"Explorer le monde Sargasses","Explore the Sargassum world","Explorar el mundo Sargazo")}
+            style={{position:"fixed",right:14,bottom:"calc(274px + env(safe-area-inset-bottom))",zIndex:960,
+              width:46,height:46,borderRadius:"50%",background:"#0D1E1C",border:"1.5px solid rgba(255,216,132,.65)",
+              fontSize:19,cursor:"pointer",boxShadow:"0 6px 20px rgba(0,0,0,.4)",display:"flex",alignItems:"center",justifyContent:"center",
+              animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>🌊</button>
+        )}
 
         {/* REFERRAL LANDING BANNER — hidden if Welcome toast is showing to avoid overlap */}
         {showReferralBanner&&!showWelcome&&(
