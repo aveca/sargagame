@@ -8703,7 +8703,7 @@ function WorldFeed({beaches,lang,onPremium,onClose,island}){
 // immediate (on atterrit MID-zoom sur SA cote, verdict <1s), l'exploration est un
 // bonus libre par-dessus. v0 = pan + zoom (wheel/pinch/double-tap) + atterrissage +
 // tap->BeachSheet existante (funnel INTACT). Pas de dive/momentum/LOD (slices 2-4).
-function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutions}){
+function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutions,onPremium}){
   const wrapRef=useRef(null),gRef=useRef(null),camRef=useRef({cx:0,cy:0,cz:0.8}),rafRef=useRef(0)
   const ptrs=useRef(new Map()),movedRef=useRef(false),pinchRef=useRef(null),lastTap=useRef(0)
   const[ready,setReady]=useState(false)
@@ -8794,6 +8794,7 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
           <button onClick={e=>{e.stopPropagation();centerOn(myIdx,MID)}} style={{padding:"11px 16px",borderRadius:999,background:"rgba(4,9,11,.6)",border:"1px solid rgba(255,255,255,.25)",color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer",backdropFilter:"blur(8px)"}}>⌖ {_t(lang,"Ma côte","My coast","Mi costa")}</button>
           <button onClick={e=>{e.stopPropagation();startTour()}} style={{padding:"11px 18px",borderRadius:999,background:"linear-gradient(180deg,#FFD884,#F2B05E)",border:"none",color:"#07201E",fontSize:13,fontWeight:800,cursor:"pointer",boxShadow:"0 6px 20px rgba(0,0,0,.4)"}}>📜 {_t(lang,"Visiter les plages","Tour the beaches","Recorrer playas")}</button>
           {onSolutions&&<button onClick={e=>{e.stopPropagation();onSolutions()}} style={{padding:"11px 16px",borderRadius:999,background:"rgba(4,9,11,.6)",border:"1px solid rgba(95,211,201,.45)",color:"#5FD3C9",fontSize:13,fontWeight:800,cursor:"pointer",backdropFilter:"blur(8px)"}}>💡 {_t(lang,"Solutions","Solutions","Soluciones")}</button>}
+          {onPremium&&<button onClick={e=>{e.stopPropagation();onPremium()}} style={{padding:"11px 16px",borderRadius:999,background:"rgba(4,9,11,.6)",border:"1px solid rgba(255,216,132,.5)",color:"#FFD884",fontSize:13,fontWeight:800,cursor:"pointer",backdropFilter:"blur(8px)"}}>✦ {_t(lang,"Veilleur","Watchman","Vigía")}</button>}
         </div>
         :(()=>{const i=tourOrder[tour],b=proj[i]&&proj[i].b;if(!b)return null;const vm=verdictMeta(b.status,lang),sc=typeof b.score==="number"?b.score:null,afai=typeof b.afai==="number"?b.afai:null
           return(<div onClick={e=>e.stopPropagation()} style={{position:"absolute",left:0,right:0,bottom:0,zIndex:7,padding:"0 12px calc(14px + env(safe-area-inset-bottom))"}}>
@@ -9144,7 +9145,9 @@ export default function App(){
   // A/B nav_world : le cohort "world" ATTERRIT dans l'Archipel par defaut (le monde
   // DEVIENT le produit principal, plus un flag cache). 50/50, control = carte actuelle.
   // ?nav=world / ?nav=map en QA. Funnel intact (fiche+premium inchanges sous le monde).
-  const[navWorld]=useState(()=>{try{const o=window.location.search;if(/[?&]nav=world/.test(o))return true;if(/[?&]nav=map/.test(o))return false;return abVariant("nav_world",["map","world"],[.5,.5])==="world"}catch(_){return false}})
+  // Vision fondateur : le MONDE remplace Leaflet pour TOUS. navWorld=true par defaut ;
+  // Leaflet reste un fallback de secours via ?nav=map (QA / si jamais besoin).
+  const[navWorld]=useState(()=>{try{return !/[?&]nav=map/.test(window.location.search)}catch(_){return true}})
   const archAutoRef=useRef(false)
   // Intro carte (MapIntroStory) — landing SVG, show-once par device, skippable.
   const[showMapIntro,setShowMapIntro]=useState(()=>{try{return /[?&]mapintro=1/.test(window.location.search)||!localStorage.getItem("sg_map_intro_v1")}catch(_){return false}})
@@ -10062,7 +10065,7 @@ export default function App(){
               fontSize:19,cursor:"pointer",boxShadow:"0 6px 20px rgba(0,0,0,.4)",display:"flex",alignItems:"center",justifyContent:"center",
               animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>🧭</button>
         )}
-        {showArchipel&&<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onBeachClick} onSolutions={()=>{setShowSolutions(true);track("sg_archipel_to_solutions",{})}} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}}/>}
+        {showArchipel&&<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onBeachClick} onSolutions={()=>{setShowSolutions(true);track("sg_archipel_to_solutions",{})}} onPremium={()=>openPremium("archipel")} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}}/>}
 
         {/* MONDE SVG — la fondation : feed vertical des plages, zéro photo, data en
             scène, cliquable, loopé. Additif (z1005) ; fiche+paywall s'ouvrent au-dessus. */}
