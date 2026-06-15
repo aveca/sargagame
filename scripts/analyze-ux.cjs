@@ -35,7 +35,7 @@ function regionsList() {
   ]
   try {
     const { getAllRegions } = require('../regions/index.cjs')
-    for (const r of getAllRegions()) if (r && r.domain) sites.push({ id: r.id, domain: r.domain })
+    for (const r of getAllRegions()) if (r && r.domain && !sites.some(s => s.id === r.id)) sites.push({ id: r.id, domain: r.domain })
   } catch (e) { /* moteur regions absent → MQ/GP seulement */ }
   return sites
 }

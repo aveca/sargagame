@@ -82,3 +82,7 @@ scripts/video/out/
 
 # UX alert tool runtime output
 scripts/automation/data/ux-alerts.json
+
+# Clés stats live (FTP) — JAMAIS dans le repo public
+scripts/automation/data/stats-keys.json
+scripts/tmp-wf-results/_statskey_*.txt
