@@ -3663,87 +3663,92 @@ function SearchBar({value,onChange,lang}){
 function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
   const LL=T[lang]||T.fr
   const nClean=beaches.filter(b=>b.status==="clean").length
+  // MÊME MONDE : la liste vit dans la scène golden-hour, plus sur du blanc générique.
+  // Statut doublé (emoji + couleur + rail) ; cartes verre-sombre ; badge Anton.
+  const EMO={clean:"😎",moderate:"😐",avoid:"🚫"}
   return(
     <div style={{height:"100%",overflowY:"auto",
       paddingTop:"calc(var(--sg-header-offset,108px) + env(safe-area-inset-top,0px))",paddingBottom:"calc(70px + env(safe-area-inset-bottom,12px))",
-      background:"var(--sg-bg,#FDFCF7)",maxWidth:600,margin:"0 auto"}}>
+      background:"radial-gradient(120% 78% at 72% 0%, rgba(201,126,58,.28), rgba(242,176,94,.08) 42%, transparent 66%), linear-gradient(180deg,#0B2230 0%,#103029 40%,#0A1714 100%)",
+      color:"#fff",maxWidth:600,margin:"0 auto"}}>
       {/* Editorial kicker — Anton count echoes the hero variance pill */}
-      <div style={{padding:"10px 18px 6px",display:"flex",alignItems:"baseline",gap:8}}>
-        <span style={{fontFamily:"'Anton',sans-serif",fontSize:20,lineHeight:1,
-          letterSpacing:"-.02em",color:"var(--sg-ink)"}}>
+      <div style={{padding:"10px 20px 8px",display:"flex",alignItems:"baseline",gap:8}}>
+        <span style={{fontFamily:"'Anton',sans-serif",fontSize:26,lineHeight:1,
+          letterSpacing:"-.02em",color:"#fff"}}>
           {beaches.length}
         </span>
-        <span style={{fontSize:11,fontWeight:800,letterSpacing:".08em",textTransform:"uppercase",
-          color:"var(--sg-mid,#686868)"}}>
+        <span style={{fontSize:11,fontWeight:800,letterSpacing:".1em",textTransform:"uppercase",
+          color:"rgba(255,255,255,.6)"}}>
           {_t(lang,`plages · ${nClean} propres`,`beaches · ${nClean} clean`,`playas · ${nClean} limpias`)}
         </span>
       </div>
       {beaches.length===0?(
         <div style={{padding:"60px 32px",textAlign:"center",animation:"fadeIn .3s ease"}}>
-          <div style={{fontSize:48,marginBottom:12}}>🏖️</div>
-          <div style={{fontSize:16,fontWeight:700,color:"var(--sg-ink)",marginBottom:6}}>
+          <div style={{fontSize:48,marginBottom:12,opacity:.92}}>🏖️</div>
+          <div style={{fontSize:16,fontWeight:800,color:"#fff",marginBottom:6}}>
             {_t(lang,"Aucune plage trouvée","No beaches match","No se encontraron playas")}
           </div>
-          <div style={{fontSize:13,color:"var(--sg-mid,#686868)",lineHeight:1.5}}>
+          <div style={{fontSize:13,color:"rgba(255,255,255,.6)",lineHeight:1.5}}>
             {_t(lang,"Essaie un autre filtre ou une autre recherche.","Try a different filter or search.","Prueba otro filtro u otra búsqueda.")}
           </div>
         </div>
       ):(
-      <div style={{padding:"6px 16px",display:"flex",flexDirection:"column",gap:10}}>
+      <div style={{padding:"6px 16px",display:"flex",flexDirection:"column",gap:11}}>
         {beaches.map(b=>{
           const photo=getBeachPhoto(b)
           const st=ST[b.status]||ST._loading
           const hasScore=typeof b.score==="number"
           const scoreColor=b.scoreColor||st.c
+          const emo=EMO[b.status]||""
           return(
             <button key={b.id} onClick={()=>onBeachClick(b)} style={{
               position:"relative",
-              display:"flex",alignItems:"center",gap:12,padding:0,
-              borderRadius:16,border:`1px solid ${scoreColor}22`,
-              background:"linear-gradient(180deg,rgba(255,255,255,.9),rgba(255,255,255,.72))",
-              backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",
-              cursor:"pointer",textAlign:"left",fontFamily:"inherit",width:"100%",
-              boxShadow:`0 6px 18px -10px ${scoreColor}40, inset 0 1px 0 rgba(255,255,255,.55)`,
+              display:"flex",alignItems:"center",gap:13,padding:0,
+              borderRadius:18,border:"1px solid rgba(255,255,255,.08)",
+              background:"linear-gradient(180deg,rgba(22,46,40,.82),rgba(12,26,22,.86))",
+              cursor:"pointer",textAlign:"left",fontFamily:"inherit",width:"100%",color:"#fff",
+              boxShadow:`0 10px 26px -14px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.06)`,
               transition:"all .25s cubic-bezier(.22,1,.36,1)",
               animation:"slideUp .3s cubic-bezier(.22,1,.36,1) backwards",
               animationDelay:`${Math.min(b._dist||0,10)*20}ms`,
               overflow:"hidden",
             }}>
-              {/* Score-colored left rail — wider + gradient */}
+              {/* Score-colored left rail — glowing */}
               <div aria-hidden="true" style={{position:"absolute",left:0,top:0,bottom:0,width:4,
                 background:`linear-gradient(180deg, ${scoreColor}, ${scoreColor}aa)`,
-                boxShadow:`0 0 12px ${scoreColor}55`}}/>
+                boxShadow:`0 0 14px ${scoreColor}66`}}/>
               {/* Photo thumbnail */}
-              <div style={{width:72,height:72,flexShrink:0,position:"relative",marginLeft:4,
-                background:`url(${photo||satImg(b.lat,b.lng,144)}) center 40%/cover`}}>
-                <span aria-hidden="true" style={{position:"absolute",bottom:5,right:5,width:10,height:10,borderRadius:5,
-                  background:st.c,border:"2px solid #fff",
-                  boxShadow:`0 0 6px ${st.c}66`}}/>
+              <div style={{width:74,height:74,flexShrink:0,position:"relative",marginLeft:5,borderRadius:13,
+                background:`url(${photo||satImg(b.lat,b.lng,148)}) center 42%/cover`}}>
+                <span aria-hidden="true" style={{position:"absolute",bottom:5,right:5,width:11,height:11,borderRadius:6,
+                  background:st.c,border:"2px solid #0E1F1A",
+                  boxShadow:`0 0 8px ${st.c}88`}}/>
               </div>
-              <div style={{flex:1,minWidth:0,padding:"12px 6px 12px 0"}}>
-                <div className="anton" style={{fontSize:15,lineHeight:1.1,letterSpacing:"-.005em",
-                  textTransform:"uppercase",color:"var(--sg-ink)",
+              <div style={{flex:1,minWidth:0,padding:"13px 4px 13px 0"}}>
+                <div className="anton" style={{fontSize:16,lineHeight:1.05,letterSpacing:".005em",
+                  textTransform:"uppercase",color:"#fff",
                   whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
                   {favorites.includes(b.id)?"♥ ":""}{b.name}
                 </div>
-                <div style={{fontSize:11,color:"var(--sg-mid,#686868)",marginTop:3,fontWeight:500,
+                <div style={{fontSize:11.5,color:"rgba(255,255,255,.56)",marginTop:3,fontWeight:500,
                   whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
                   {b.commune}{typeof b.drive==="number"?` · ${b.drive} ${LL.drive}`:""}
                 </div>
-                <div style={{fontSize:10,fontWeight:800,marginTop:4,letterSpacing:".03em",
-                  textTransform:"uppercase",color:scoreColor}}>
+                <div style={{fontSize:10,fontWeight:800,marginTop:5,letterSpacing:".04em",
+                  textTransform:"uppercase",color:scoreColor,display:"flex",alignItems:"center",gap:5}}>
+                  {emo&&<span style={{fontSize:12}} aria-hidden="true">{emo}</span>}
                   {hasScore?(scoreLabelFor(b.scoreLabel,lang)||(lang==="es"?st.les:lang==="en"?st.le:st.l)):(lang==="es"?st.les:lang==="en"?st.le:st.l)}
                 </div>
               </div>
               {/* Score badge — Anton numeral, status-colored */}
               {hasScore&&(
-                <div style={{flexShrink:0,padding:"0 14px 0 0",display:"flex",flexDirection:"column",
+                <div style={{flexShrink:0,padding:"0 16px 0 0",display:"flex",flexDirection:"column",
                   alignItems:"flex-end",justifyContent:"center"}}>
-                  <span style={{fontFamily:"'Anton',sans-serif",fontSize:26,lineHeight:.95,
+                  <span style={{fontFamily:"'Anton',sans-serif",fontSize:28,lineHeight:.95,
                     letterSpacing:"-.02em",color:scoreColor}}>
                     {b.score}
                   </span>
-                  <span style={{fontSize:8,fontWeight:800,color:"var(--sg-mid,#686868)",
+                  <span style={{fontSize:8,fontWeight:800,color:"rgba(255,255,255,.5)",
                     letterSpacing:".08em",marginTop:1}}>/100</span>
                 </div>
               )}
