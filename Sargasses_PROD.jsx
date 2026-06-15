@@ -289,7 +289,7 @@ async function _scTopCard(opts,lang){
     const words=(beach.name||"").toUpperCase().split(" ");let line="";const lines=[]
     for(const w of words){const t=line?line+" "+w:w;if(x.measureText(t).width>W-150&&line){lines.push(line);line=w}else line=t}
     if(line)lines.push(line);const L=lines.slice(0,3)
-    let ny=560;for(const l of L){x.fillText(l,W/2,ny);ny+=104}
+    let ny=560-(L.length-1)*52;for(const l of L){x.fillText(l,W/2,ny);ny+=104}
     const vm=verdictMeta(beach.status,lang);x.fillStyle=vm.color;x.font="800 56px 'Bricolage Grotesque',system-ui,sans-serif"
     const sc=typeof beach.score==="number"?"  "+beach.score+"/100":""
     x.fillText(vm.verb.toUpperCase()+sc,W/2,ny+24)
@@ -7182,17 +7182,17 @@ function AlertScene(){
       <svg viewBox="0 0 560 240" style={{display:"block",width:"100%",height:"auto"}}>
         <style>{`
 .sgas-notif{animation:sgasNotif 9s cubic-bezier(.22,1,.36,1) 1 both}
-@keyframes sgasNotif{0%,6%{opacity:0;transform:translateY(14px)}12%,88%{opacity:1;transform:translateY(0)}96%,100%{opacity:0;transform:translateY(14px)}}
+@keyframes sgasNotif{0%,6%{opacity:0;transform:translateY(14px)}12%,100%{opacity:1;transform:translateY(0)}}
 .sgas-raft{animation:sgasRaft 9s linear 1 both}
 @keyframes sgasRaft{0%{transform:translateX(46px)}100%{transform:translateX(-30px)}}
 .sgas-route{stroke-dasharray:4 6;animation:sgasRoute 9s linear 1 both}
-@keyframes sgasRoute{0%,18%{opacity:0}26%,90%{opacity:1}100%{opacity:0}}
+@keyframes sgasRoute{0%,18%{opacity:0}26%,100%{opacity:1}}
 .sgas-dot{animation:sgasDot 9s cubic-bezier(.45,.05,.4,1) 1 both}
-@keyframes sgasDot{0%,24%{offset-distance:0%;opacity:0}30%{opacity:1}62%,88%{offset-distance:100%;opacity:1}96%,100%{offset-distance:100%;opacity:0}}
+@keyframes sgasDot{0%,24%{offset-distance:0%;opacity:0}30%{opacity:1}62%,100%{offset-distance:100%;opacity:1}}
 .sgas-ok{animation:sgasOk 9s ease-out 1 both;transform-origin:468px 96px}
-@keyframes sgasOk{0%,60%{transform:scale(.4);opacity:0}68%{transform:scale(1.25);opacity:1}74%,88%{transform:scale(1);opacity:1}96%,100%{opacity:0}}
+@keyframes sgasOk{0%,60%{transform:scale(.4);opacity:0}68%{transform:scale(1.25);opacity:1}74%,100%{transform:scale(1);opacity:1}}
 .sgas-sun{animation:sgasSun 9s ease-in-out 1 both}
-@keyframes sgasSun{0%,8%{transform:translateY(16px);opacity:.4}30%,90%{transform:translateY(0);opacity:.9}100%{transform:translateY(16px);opacity:.4}}
+@keyframes sgasSun{0%,8%{transform:translateY(16px);opacity:.4}30%,100%{transform:translateY(0);opacity:.9}}
 @media (prefers-reduced-motion:reduce){.sgas-notif,.sgas-raft,.sgas-route,.sgas-dot,.sgas-ok,.sgas-sun{animation:none}}
         `}</style>
         {/* aube : soleil qui se lève + heure */}
@@ -9345,7 +9345,13 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
   // (overscroll borné pendant le drag, ressort de retour au relâché). Le monde
   // ne peut JAMAIS être lancé hors écran (anti « bloqué »/cul-de-sac visuel).
   // prefers-reduced-motion : vélocité=0 → pas de coast, juste recentrage des bords.
-  const panBounds=()=>{const el=wrapRef.current;if(!el)return null;const W=el.clientWidth,H=el.clientHeight,z=camRef.current.cz,M=Math.min(W,H)*0.38;return{minX:M-SPAN_PX*z,maxX:W-M,minY:M-SPAN_PX*z,maxY:H-M}}
+  const panBounds=()=>{const el=wrapRef.current;if(!el)return null;const W=el.clientWidth,H=el.clientHeight,z=camRef.current.cz,M=Math.min(W,H)*0.38;
+    // normalise min<=max : si le monde (SPAN_PX*z) tient dans le viewport utile,
+    // l'intervalle s'inverserait → on le collapse au centre (sinon l'inertie ne
+    // settle jamais sur aspect ratio extrême au zoom min → boucle rAF perpétuelle).
+    let minX=M-SPAN_PX*z,maxX=W-M,minY=M-SPAN_PX*z,maxY=H-M
+    if(minX>maxX){minX=maxX=(minX+maxX)/2}if(minY>maxY){minY=maxY=(minY+maxY)/2}
+    return{minX,maxX,minY,maxY}}
   const panClampDrag=c=>{const b=panBounds();if(!b)return;const el=wrapRef.current,ov=(el?Math.min(el.clientWidth,el.clientHeight):360)*0.22;c.cx=Math.max(b.minX-ov,Math.min(b.maxX+ov,c.cx));c.cy=Math.max(b.minY-ov,Math.min(b.maxY+ov,c.cy))}
   const stopInertia=()=>{if(inertRaf.current){cancelAnimationFrame(inertRaf.current);inertRaf.current=0}}
   const startInertia=()=>{stopInertia();let reduce=false;try{reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches}catch(_){}if(reduce){velRef.current.x=0;velRef.current.y=0}
