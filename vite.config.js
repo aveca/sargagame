@@ -930,6 +930,21 @@ ${isGP ? '' : `  <url><loc>${d}/a-propos/</loc><lastmod>${today}</lastmod><chang
               clean: 'Plage de Pompierre à Terre-de-Haut (Les Saintes, Guadeloupe) — propre en temps réel. Baie en croissant de l\'archipel des Saintes, snorkeling, idéal familles. Carte sargasses et prévisions 7 jours.',
               moderate: 'Sargasses à la Plage de Pompierre (Les Saintes, Guadeloupe) — présence modérée détectée en temps réel. Archipel des Saintes, snorkeling. Carte et prévisions 7 jours.',
               avoid: 'Alerte sargasses à la Plage de Pompierre (Terre-de-Haut, Les Saintes, Guadeloupe) — forte concentration détectée en temps réel. Voir les criques propres des Saintes à proximité.'
+            },
+            'Plage de Deshaies': {
+              clean: 'Plage de Deshaies (Guadeloupe) — propre en temps réel. Bourg de pêcheurs du nord Basse-Terre, côte sous-le-vent, décor de "Meurtres au Paradis". Généralement protégée des sargasses. Snorkeling. Prévisions 7 jours.',
+              moderate: 'Sargasses à la Plage de Deshaies (Guadeloupe) — présence modérée détectée en temps réel. Côte sous-le-vent, nord Basse-Terre. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à la Plage de Deshaies (Guadeloupe) — forte concentration détectée en temps réel. Côte sous-le-vent. Voir les plages propres à proximité.'
+            },
+            'Plage de Grande Anse': {
+              clean: 'Plage de Grande Anse à Trois-Rivières (Guadeloupe) — propre en temps réel. Grande plage de sable doré du sud de Basse-Terre, snorkeling, idéal familles. Carte sargasses Guadeloupe et prévisions 7 jours.',
+              moderate: 'Sargasses à la Plage de Grande Anse (Trois-Rivières, Guadeloupe) — présence modérée détectée en temps réel. Côte sud de Basse-Terre. Snorkeling. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à la Plage de Grande Anse (Trois-Rivières, Guadeloupe) — forte concentration détectée au large du sud de Basse-Terre. Voir les plages propres à proximité sur la carte en temps réel.'
+            },
+            'Pointe du Bout': {
+              clean: 'Pointe du Bout aux Trois-Îlets (Martinique) — plage propre en temps réel. Station balnéaire et marina face à Fort-de-France, côte centrale, idéal familles. Généralement protégée des sargasses. Prévisions 7 jours.',
+              moderate: 'Sargasses à Pointe du Bout (Les Trois-Îlets, Martinique) — présence modérée détectée en temps réel. Côte centrale, baie de Fort-de-France. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à Pointe du Bout (Les Trois-Îlets, Martinique) — forte concentration détectée en temps réel. Carte des plages propres proches de Fort-de-France.'
             }
           }
           let sitemapMQBeaches = ''
