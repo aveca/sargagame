@@ -909,7 +909,7 @@ const ST={
     desc:"Peu ou pas de sargasses détectées par satellite au large.",
     descEn:"Little to no sargassum detected by satellite offshore.",
     descEs:"Poco o nada de sargazo detectado por satélite en alta mar."},
-  moderate:{c:C.amber,bg:C.amberBg,l:"Modéré",le:"Moderate",les:"Moderado",e:"⚠️",h2s:false,
+  moderate:{c:C.stMod,bg:C.amberBg,l:"Modéré",le:"Moderate",les:"Moderado",e:"⚠️",h2s:false,
     desc:"Présence modérée de sargasses détectée au large. Vérifiez sur place avant de vous baigner.",
     descEn:"Moderate sargassum detected offshore. Check conditions on site before swimming.",
     descEs:"Presencia moderada de sargazo detectada en alta mar. Verifique en el lugar antes de nadar."},
@@ -2330,7 +2330,7 @@ function BeachReport({beach,lang,communityReports}){
   const total=counts.total||0
   const LEVELS=[
     {id:"clean",e:"✅",l:"Propre",le:"Clean",les:"Limpia",c:C.green,bg:C.greenBg},
-    {id:"moderate",e:"⚠️",l:"Modéré",le:"Moderate",les:"Moderado",c:C.amber,bg:C.amberBg},
+    {id:"moderate",e:"⚠️",l:"Modéré",le:"Moderate",les:"Moderado",c:C.stMod,bg:C.amberBg},
     {id:"avoid",e:"🚫",l:"Beaucoup",le:"Heavy",les:"Mucho",c:C.red,bg:C.redBg},
   ]
   const submit=(level)=>{
@@ -2368,7 +2368,7 @@ function BeachReport({beach,lang,communityReports}){
         <div style={{marginTop:8}}>
           <div style={{display:"flex",height:4,borderRadius:2,overflow:"hidden",background:"var(--sg-border,rgba(0,0,0,.06))"}}>
             {counts.clean>0&&<div style={{flex:counts.clean,background:C.green}}/>}
-            {counts.moderate>0&&<div style={{flex:counts.moderate,background:C.amber}}/>}
+            {counts.moderate>0&&<div style={{flex:counts.moderate,background:C.stMod}}/>}
             {counts.avoid>0&&<div style={{flex:counts.avoid,background:C.red}}/>}
           </div>
           <div style={{marginTop:4,fontSize:11,color:"var(--sg-mid)",textAlign:"center"}}>
@@ -3294,7 +3294,7 @@ function HistoryChart({beachId,historyData,lang}){
   // Status color for last point
   const last=coords[coords.length-1]
   const first=coords[0]
-  const lineColor=last.status==="avoid"?C.red:last.status==="moderate"?C.amber:C.teal
+  const lineColor=last.status==="avoid"?C.red:last.status==="moderate"?C.stMod:C.stClean
 
   // Trend arrow
   const delta=points[points.length-1].afai-points[0].afai
@@ -3328,7 +3328,7 @@ function HistoryChart({beachId,historyData,lang}){
           <path d={pathD} fill="none" stroke={lineColor} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
           {/* Dots */}
           {coords.map((c,i)=>{
-            const dotColor=c.status==="avoid"?C.red:c.status==="moderate"?C.amber:C.teal
+            const dotColor=c.status==="avoid"?C.red:c.status==="moderate"?C.stMod:C.stClean
             return <circle key={i} cx={c.x} cy={c.y} r={i===coords.length-1?3.5:2} fill={dotColor} stroke="#fff" strokeWidth={1}/>
           })}
         </svg>
@@ -3528,7 +3528,7 @@ function Onboarding({onDone,island="mq",lang="fr"}){
           </div>
           <div style={{fontFamily:"'Anton',sans-serif",fontSize:"clamp(20px,5.5vw,26px)",lineHeight:1,
             textTransform:"uppercase",color:C.ink,marginBottom:8}}>
-            <span style={{color:C.teal}}>{_t(lang,"Vert","Green","Verde")}</span> = {_t(lang,"propre","clean","limpia")}.{" "}
+            <span style={{color:C.stClean}}>{_t(lang,"Vert","Green","Verde")}</span> = {_t(lang,"propre","clean","limpia")}.{" "}
             <span style={{color:C.red}}>{_t(lang,"Rouge","Red","Rojo")}</span> = {_t(lang,"sargasses","sargassum","sargazo")}.
           </div>
           <p style={{fontSize:13,color:C.mid,margin:"0 0 12px",lineHeight:1.5}}>
@@ -3557,7 +3557,7 @@ function Onboarding({onDone,island="mq",lang="fr"}){
           <span style={{fontSize:12,fontWeight:600,color:C.ink}}>
             {_t(lang,"Touche un ","Tap a ","Toca un ")}{" "}
             <span style={{color:C.green}}>●</span>{" "}
-            <span style={{color:C.amber}}>●</span>{" "}
+            <span style={{color:C.stMod}}>●</span>{" "}
             <span style={{color:C.red}}>●</span>{" "}
             {_t(lang,"pour voir les détails","to see details","para ver los detalles")}
           </span>
