@@ -67,12 +67,18 @@ function buildEmailHTML(island, topBeaches, stats, domain) {
       ? `<div style="font-size:16px;font-weight:800;color:${color};line-height:1">${b.unifiedScore}<span style="font-size:10px;font-weight:600;opacity:.7">/100</span></div>
          <div style="font-size:9px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.04em;margin-top:2px">${label}</div>`
       : `<span style="display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;background:${color}1a;color:${color}">${label}</span>`
+    // Capture ground-truth : « j'y suis → confirme l'état » → page /confirme/ (POST
+    // au clic seulement). Transforme le bulletin en capteur terrain (le moat #2).
+    const confirmLink = b.id
+      ? `<a href="https://${domain}/confirme/?b=${encodeURIComponent(b.id)}&r=${island}&n=${encodeURIComponent(b.name)}&lang=fr" style="display:inline-block;margin-top:7px;font-size:11px;font-weight:700;color:#0E7C66;text-decoration:none">📍 J'y suis — confirme l'état</a>`
+      : ''
     return `
     <tr>
       <td style="padding:12px 16px;border-bottom:1px solid #f0f0f0;vertical-align:top">
         <div style="font-size:15px;font-weight:700;color:#0D0D0D">${b.name}</div>
         <div style="font-size:12px;color:#686868;margin-top:2px">${b.commune} · ${b.drive} min</div>
         ${reasonLine}
+        ${confirmLink}
       </td>
       <td style="padding:12px 16px;border-bottom:1px solid #f0f0f0;text-align:right;vertical-align:middle">
         ${badgeInner}
