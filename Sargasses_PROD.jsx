@@ -160,7 +160,7 @@ function Veilleur({mood="serein",size=44}){
   const m=VEILLEUR_MOOD[mood]||VEILLEUR_MOOD.serein
   return(
     <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true" style={{display:"block",overflow:"visible"}}>
-      <style>{`@keyframes sgvBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.6px)}}.sgv-bob{animation:sgvBob 5s ease-in-out infinite}@media(prefers-reduced-motion:reduce){.sgv-bob{animation:none}}`}</style>
+      {/* Veilleur FIGÉ au repos (doctrine calme) — la vie vient de l'interaction, pas d'un bob idle */}
       <g transform="translate(32,33)"><g className="sgv-bob"><g transform={`rotate(${m.tilt})`}>
         <circle r="22" fill={m.halo} opacity=".15"/>
         <circle r="14" fill={m.lens} opacity=".12"/>
@@ -791,6 +791,7 @@ function miVeil(cx,cy,wing,lens){
   return(<g transform={`translate(${cx},${cy})`}>
     <circle r="30" fill={wing} opacity=".14"/>
     <rect x="-30" y="-7" width="16" height="14" rx="3" fill={wing}/><rect x="14" y="-7" width="16" height="14" rx="3" fill={wing}/>
+    <line x1="0" y1="-14" x2="0" y2="-25" stroke={lens} strokeWidth="2" strokeLinecap="round"/><circle cx="0" cy="-27" r="2.4" fill={lens}/>
     <rect x="-14" y="-14" width="28" height="28" rx="8" fill="#C9971F"/><rect x="-14" y="-14" width="28" height="9" rx="8" fill="#FFC72C"/>
     <circle cx="0" cy="3" r="8" fill="#07201E"/><circle cx="0" cy="3" r="5.5" fill={lens}/><circle cx="-2" cy="1" r="2" fill="#EAFBF8"/>
   </g>)
