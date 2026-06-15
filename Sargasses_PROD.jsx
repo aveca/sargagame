@@ -2333,7 +2333,9 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
   // modal posé. Le CTA mène ENSUITE au checkout (onPremiumClick, inchangé). ?pwbeat=1/0.
   // control = comportement actuel (lock → modal direct). Additif, zéro contact paiement.
   // (hooks AVANT l'early-return ci-dessous = règle des hooks respectée.)
-  const pwBeat=(()=>{try{const q=window.location.search;if(/[?&]pwbeat=1/.test(q))return true;if(/[?&]pwbeat=0/.test(q))return false;return abVariant("pw_beat",["control","beat"],[.5,.5])==="beat"}catch(_){return false}})()
+  // PROMU EN DÉFAUT (verdict design fondateur : « paywall = un BEAT du scroll, PAS un
+  // modal posé ») → 85% révèlent le beat golden-hour inline, 15% holdout (modal direct).
+  const pwBeat=(()=>{try{const q=window.location.search;if(/[?&]pwbeat=1/.test(q))return true;if(/[?&]pwbeat=0/.test(q))return false;return abVariant("pw_beat",["control","beat"],[.15,.85])==="beat"}catch(_){return false}})()
   const[beatOpen,setBeatOpen]=useState(false)
   const openLock=via=>{try{track("sg_forecast_lock_click",{variant:via,beat:pwBeat?1:0})}catch(_){};if(pwBeat)setBeatOpen(true);else onPremiumClick("forecast")}
   if(!forecast||!forecast.length)return null
@@ -5362,9 +5364,10 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
   // shell, AUCUN changement à la logique de paiement. Mesurable (modal_open/cta identiques).
   const scenePay=(()=>{try{const s=window.location.search;if(/[?&]pwscene=1/.test(s))return true;if(/[?&]pwscene=0/.test(s))return false;return abVariant("pw_scene",["control","scene"],[.5,.5])==="scene"}catch(_){return false}})()
   // pw_constel : le paywall-constellation golden-hour (niveau home) remplace le hero
-  // scenePay. Démarrage prudent 15% (fuite #1 = test propre, montée 50/50 post-smoke).
-  // ?pwconstel=1/0 en QA. Control = modal actuel intact. Paiement INTOUCHÉ (visuel only).
-  const pwConstel=(()=>{try{const q=window.location.search;if(/[?&]pwconstel=1/.test(q))return true;if(/[?&]pwconstel=0/.test(q))return false;return abVariant("pw_constel",["control","constel"],[.85,.15])==="constel"}catch(_){return false}})()
+  // scenePay. PROMU EN DÉFAUT (verdict design fondateur : la premium DOIT être au niveau
+  // home, pas un mur sombre A/B-gaté à une minorité) → 85% voient la scène golden-hour,
+  // 15% holdout (mur sombre) = filet sécurité-revenu mesurable. ?pwconstel=0 force le holdout.
+  const pwConstel=(()=>{try{const q=window.location.search;if(/[?&]pwconstel=1/.test(q))return true;if(/[?&]pwconstel=0/.test(q))return false;return abVariant("pw_constel",["control","constel"],[.15,.85])==="constel"}catch(_){return false}})()
   // A/B pw_trippass (USD only) : propose un accès UNIQUE 7 jours (one-time,
   // aligné séjour, sans abonnement) EN PLUS de l'abo — répond au mismatch
   // abo-mensuel/touriste-5-jours (verdict chantier USA). Inerte si pas de
