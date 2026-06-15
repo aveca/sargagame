@@ -22,5 +22,10 @@
     "puntacana:pc011:clean>moderate",
     "puntacana:pc012:clean>moderate",
     "rivieramaya:rm011:moderate>clean"
+  ],
+  "2026-06-15": [
+    "puntacana:pc008:moderate>clean",
+    "puntacana:pc009:moderate>clean",
+    "puntacana:pc010:moderate>clean"
   ]
 }
