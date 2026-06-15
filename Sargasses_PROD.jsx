@@ -9232,9 +9232,16 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
         {/* CALME au repos : aucun clignotement. Seulement 2 mouvements TRÈS lents et naturels
             (nuages, Veilleur qui flotte en orbite). La vraie vie vient de l'interaction. */}
         <style>{`@keyframes awsettle{from{transform:translateY(-7px);opacity:.4}to{transform:translateY(0);opacity:1}}.aw-cl{animation:none}.aw-sat{animation:awsettle .8s ease-out 1}@media(prefers-reduced-motion:reduce){.aw-sat{animation:none}}`}</style>
-        <defs><linearGradient id="awSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={sky.sky[0]}/><stop offset=".5" stopColor={sky.sky[1]}/><stop offset=".82" stopColor={sky.sky[2]}/><stop offset="1" stopColor={sky.sky[3]}/></linearGradient></defs>
+        <defs><linearGradient id="awSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={sky.sky[0]}/><stop offset=".5" stopColor={sky.sky[1]}/><stop offset=".82" stopColor={sky.sky[2]}/><stop offset="1" stopColor={sky.sky[3]}/></linearGradient>
+        <linearGradient id="awSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={sky.seaT}/><stop offset="1" stopColor={sky.seaB}/></linearGradient></defs>
         <rect width="800" height="600" fill="url(#awSky)"/>
-        {sky.sun==="set"&&<><circle cx="400" cy="250" r="150" fill={sky.glit} opacity=".06"/><circle cx="400" cy="250" r="78" fill={sky.glit} opacity=".10"/><circle cx="400" cy="250" r="46" fill={sky.glit} opacity=".5"/></>}
+        {/* LA MER golden-hour : le monde N'EST PLUS des points abstraits — c'est la
+            scène satellite+mer (signature HeroScene) reproduite ICI, les plages =
+            des points qui scintillent sur l'eau. Horizon ~y360, reflet du soleil. */}
+        <rect y="360" width="800" height="240" fill="url(#awSea)"/>
+        <rect y="358" width="800" height="3" fill={sky.rim} opacity=".42"/>
+        {sky.sun==="set"&&<><circle cx="400" cy="250" r="150" fill={sky.glit} opacity=".06"/><circle cx="400" cy="250" r="78" fill={sky.glit} opacity=".10"/><circle cx="400" cy="250" r="46" fill={sky.glit} opacity=".5"/><path d="M376 360 L424 360 L462 600 L338 600 Z" fill={sky.glit} opacity=".09"/></>}
+        {sky.sun==="high"&&<path d="M232 360 L268 360 L300 600 L200 600 Z" fill={sky.glit} opacity=".06"/>}
         {sky.sun==="high"&&<><circle cx="250" cy="120" r="60" fill="#FDFCF7" opacity=".16"/><circle cx="250" cy="120" r="32" fill="#FFF4D6"/></>}
         {sky.sun==="moon"&&<><circle cx="280" cy="120" r="46" fill="#9ADCD4" opacity=".07"/><circle cx="280" cy="120" r="22" fill="#E6F2EF"/></>}
         {ph==="night"&&[[80,70],[180,120],[320,60],[470,100],[600,70],[700,140],[150,200],[540,170],[660,210],[400,150]].map((s,i)=>(<circle key={i} cx={s[0]} cy={s[1]} r="1.2" fill="#fff" opacity=".45"/>))}
