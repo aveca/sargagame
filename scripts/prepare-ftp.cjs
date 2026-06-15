@@ -666,8 +666,11 @@ function prepareNewRegion(region) {
     'manifest.json', // régénéré région-aware
     'version.json', // régénéré
     'api/stripe-config.php', // secrets Stripe — déployé à part (deploy-stripe-config.cjs)
-    '57a712687b6d02295a77188ff76da846.txt', // vérification Google de la propriété MQ
-    'BingSiteAuth.xml', // vérification Bing de la propriété MQ
+    // NB : 57a7…846.txt n'est PAS une vérif Google (Google n'utilise pas le format
+    // <hexkey>.txt = contenu hexkey) — c'est la CLÉ IndexNow, qui DOIT être servie à
+    // la racine de CHAQUE domaine sinon submit-indexnow 403 (cas vécu : cancun/miami
+    // renvoyaient le SPA HTML → soumissions rejetées). On la garde donc (pas de skip).
+    'BingSiteAuth.xml', // vérification Bing de la propriété MQ (réellement MQ-only)
     // Statiques hérités MQ/GP (FR, branding Martinique) — orphelins sur les
     // domaines EN/ES : confusion de marque + duplicate FR crawlable en 200.
     'weekend.html', 'onboarding.html', 'neptunes_fury.html', 'og-weekend.png',
