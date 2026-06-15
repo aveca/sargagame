@@ -2194,7 +2194,6 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
           <button className="gbtn" style={{
             padding:"10px 20px",fontSize:13,fontWeight:700,
             fontFamily:"'Anton',sans-serif",letterSpacing:".04em",textTransform:"uppercase",
-            animation:"pulse 2s ease-in-out infinite",
           }}>
             🔒 {lockCTA}
           </button>
