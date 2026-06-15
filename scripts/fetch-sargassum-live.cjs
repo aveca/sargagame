@@ -1595,13 +1595,20 @@ async function main() {
   console.log(`OK: ${outPath}`)
   console.log(`   source: erddap-live | updatedAt: ${updatedAt.slice(0, 19)}`)
 
-  // Archive today's forecasts for backtesting (1 snapshot per day, keep 30 days)
+  // ── ARCHIVE APPEND-ONLY STRICTE (PHASE 0, plan 90j) ──────────────────────────
+  // L'archive des prévisions DATÉES vs réalisé est le SEUL actif data NON-COPIABLE :
+  // un concurrent re-traite les archives Copernicus publiques, mais PAS notre
+  // track-record horodaté. Elle NE DOIT JAMAIS rouler — tout .slice()/cap ici = un
+  // jour d'actif perdu à jamais (c'était le bug : .slice(-30) jetait l'historique,
+  // d'où "le moat a 0 jour de capital accumulé"). 1 snapshot/jour, le dernier run
+  // du jour gagne, accumulation perpétuelle.
   const archivePath = path.join(dir, 'forecast-archive.json')
   const todayDate = updatedAt.slice(0, 10)
   let archive = { snapshots: [] }
   try { archive = JSON.parse(fs.readFileSync(archivePath, 'utf-8')) } catch {}
-  // Replace today's snapshot if it already exists (last run wins)
-  archive.snapshots = archive.snapshots.filter(s => s.date !== todayDate)
+  const _priorCount = (archive.snapshots || []).length
+  // Remplace le snapshot du jour s'il existe (dernier run gagne), GARDE tout le reste.
+  archive.snapshots = (archive.snapshots || []).filter(s => s.date !== todayDate)
   archive.snapshots.push({
     date: todayDate,
     updatedAt,
@@ -1612,12 +1619,15 @@ async function main() {
       }])
     ),
   })
-  // Keep only last 30 days
-  archive.snapshots = archive.snapshots
-    .sort((a, b) => a.date.localeCompare(b.date))
-    .slice(-30)
-  fs.writeFileSync(archivePath, JSON.stringify(archive), 'utf-8')
-  console.log(`Forecast archive: ${archive.snapshots.length} days saved`)
+  archive.snapshots.sort((a, b) => a.date.localeCompare(b.date))
+  // GARDE-FOU append-only : on n'écrit JAMAIS moins de jours qu'avant (anti-troncature
+  // accidentelle). Le merge ne peut que conserver (ou +1 jour neuf), jamais réduire.
+  if (archive.snapshots.length >= _priorCount) {
+    fs.writeFileSync(archivePath, JSON.stringify(archive), 'utf-8')
+    console.log(`Forecast archive (append-only): ${archive.snapshots.length} jours cumulés`)
+  } else {
+    console.warn(`⚠ Forecast archive: refus d'écrire ${archive.snapshots.length} < ${_priorCount} jours (garde append-only)`)
+  }
 
   // 4. Export AFAI grid for client-side heatmap
   // Only positive AFAI points (sargassum detected), downsampled for performance
