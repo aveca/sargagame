@@ -16,6 +16,19 @@ Nouveau backlog #0 (au-dessus de tout) : **Ground-Truth Snap** — micro-bouton 
 confirme l'état » (1 tap + photo géotaggée) sur fiche + widget → ground-truth n=1→n=100/j. À lancer
 APRÈS que le funnel convertisse (sinon il amplifie une fuite).
 
+## CONTRAT GROUND-TRUTH SNAP — backend PRÊT (lane architecte, à appeler par le widget A)
+Le backend de capture est shippé et testé live (`public/ground-truth.php`, déployé aux 5 hosts).
+C'est la 2e moitié du moat (avec PHASE 0 : prédictions datées vs réalisé observé). Le widget A
+n'a qu'à POSTer same-origin, fire-and-forget :
+```
+POST /ground-truth.php   (JSON, fire-and-forget, attend 204)
+{ "b": "<beachId>", "s": "clean"|"moderate"|"avoid", "r": "<region>", "sid": "<sessionId>" }
+```
+- `b` = beach.id (validé alphanum+dash côté serveur), `s` = l'état tapé par l'user, `r` = région, `sid` = la session (anti-doublon).
+- Stockage append-only STRICT (sg-data/gt-YYYY-MM.ndjson, jamais purgé), anonyme (hash quotidien salé, ZÉRO PII), pas de photo en v1.
+- Lecture (clé) : `GET /ground-truth.php?key=<.statskey>&days=N` → verdict communautaire par plage (clean/moderate/avoid counts + community + agreement), dédoublonné par (plage, visiteur, jour).
+- UX widget (côté A) : 3 boutons emoji (😎 propre / 😐 moyen / 🚫 sale), 1 tap → toast « merci, Veilleur certifié », jamais bloquant. Récompense sociale = « tu as confirmé, ta plage est surveillée ». Affiche le verdict communautaire SI total ≥ 3 (sinon n trop faible).
+
 ## LE BAR — "un cran au-dessus" = mesurable
 Ouvrir n'importe quel écran (et surtout une page SEO **sans JS**) doit donner la **même émotion que
 la home**. Si c'est distinguable d'un brouillon HTML, c'est SOUS le bar. 4 tests OUI/OUI/OUI/OUI :
