@@ -1,5 +1,10 @@
 # NIGHT LOG — build autonome (nuit du 14→15/06/2026)
 
+## ⏱️ SESSION 15/06 (loop CONVERSION — écrans React in-app) — worktree isolé `sargagame-mw`
+**Lane conversion (Sargasses_PROD.jsx/src//sw.js uniquement). ⚠️ 2 sessions loop partageaient le dir principal (social-share l'a basculé sur `loop/social-share-generators`) → je travaille désormais dans un WORKTREE ISOLÉ `C:/Users/user/Desktop/Backup/sargagame-mw` (node_modules symlinké, build OK), push `mw-deeplink:main` fast-forward. Ne touche jamais les fichiers des sessions parallèles (forecast: confidence/forecast.cjs ; social: scripts/automation/*share* ; architecte: region-seo-pages/scene-svg/UX_BUILD_BRIEF).**
+- **Deep-link `/beaches/` `/playas/`** (`c78b704d`) : l'auto-open fiche ne matchait que `/plages/` (FR) → trafic Google EN/ES (régions USD) atterrissait sur une fiche jamais ouverte. Regex étendu aux 3 préfixes + slug aligné sur slugify SEO (strip dash tête+queue). Vérifié unit-test (regex 3 préfixes + slug==slugify sur accents/apostrophes/parenthèses) + build + smoke. SW v167. Cherry-pické sur main via worktree (commit avait atterri par erreur sur la branche social partagée).
+- **BILAN backlog conversion (mien)** : paywall = 4 A/B déployés (pw_scene/pw_calm/pw_constel modal + pw_beat in-scène forecast-lock) → **mesure en cours, 0 signal (volume lent, deploy propage)** ; CTA→redirect 92% sain (track() utilise déjà sendBeacon+queue localStorage = pas de race) ; →pay réel = `payments_real` Stripe-truth (attribution par-variant bloquée par garde-fou « pas toucher stripeUrlWith ») ; Ground-Truth Snap = prématuré (brief : après funnel prouvé). → **ATTENTE EXTERNE** : re-mesurer modal→CTA par variant quand le signal s'accumule (J+1+), garder le meilleur via A/B.
+
 ## ⏱️ SESSION 15/06 (loop FIABILITÉ FORECAST) — fausses alertes saison calme ÷23,6, confiance PAR RÉGIME
 **Lane forecast (confidence.cjs / forecast.cjs / backtest-forecast.cjs uniquement — rien touché des autres sessions). Plan 90j #3 : réparer le défaut qui rend la donnée RÉFUTABLE. Tout vérifié en node, PAS de build complet.**
 
