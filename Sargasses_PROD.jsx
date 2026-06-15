@@ -9130,6 +9130,25 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
   const tourOrder=useMemo(()=>{if(!proj.length)return[];const m=proj[myIdx];return proj.map((_,i)=>i).sort((a,b)=>((proj[a].x-m.x)**2+(proj[a].y-m.y)**2)-((proj[b].x-m.x)**2+(proj[b].y-m.y)**2))},[proj,myIdx])
   const runTween=()=>{if(twRaf.current)return;const step=()=>{const t=twTarget.current,c=camRef.current;if(!t){twRaf.current=0;return}c.cx+=(t.cx-c.cx)*0.2;c.cy+=(t.cy-c.cy)*0.2;c.cz+=(t.cz-c.cz)*0.2;writeCam();if(Math.hypot(t.cx-c.cx,t.cy-c.cy)<0.6&&Math.abs(t.cz-c.cz)<0.003){c.cx=t.cx;c.cy=t.cy;c.cz=t.cz;writeCam();twTarget.current=null;twRaf.current=0;return}twRaf.current=requestAnimationFrame(step)};twRaf.current=requestAnimationFrame(step)}
   const focusBeach=i=>{const el=wrapRef.current;if(!el||!proj[i])return;const z=FOCUS,W=el.clientWidth,H=el.clientHeight;twTarget.current={cz:z,cx:W/2-proj[i].x*z,cy:H/2-proj[i].y*z-H*0.16};runTween()}
+  // ── LA MARÉE (incrément #1, gate de la thèse) — A/B nav_maree : taper un dot
+  //    = dolly-in CONTINU vers le RIVAGE (NEAR) pendant que la BeachScene de la
+  //    plage se fond plein écran sur le MÊME golden-hour → la fiche s'ouvre comme
+  //    la culmination, PAS une téléportation. reduced-motion + control = ouverture
+  //    directe (snap, zéro pop). Override QA : ?pwtide=1/0. Réutilise runTween.
+  const mareeOn=useMemo(()=>{try{const q=window.location.search;if(/[?&]pwtide=1/.test(q))return true;if(/[?&]pwtide=0/.test(q))return false;if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return false;return abVariant("nav_maree",["control","maree"],[.85,.15])==="maree"}catch(_){return false}},[])
+  const[diving,setDiving]=useState(null)
+  const diveTimers=useRef([])
+  const diveBeach=(i,b)=>{
+    try{track("sg_archipel_tap",{beach_id:b.id,status:b.status,maree:mareeOn?1:0})}catch(_){}
+    if(!mareeOn||!proj[i]){onOpenBeach&&onOpenBeach(b);return}
+    diveTimers.current.forEach(clearTimeout);diveTimers.current=[]
+    setDiving(b)
+    const el=wrapRef.current,W=el?el.clientWidth:0,H=el?el.clientHeight:0
+    twTarget.current={cz:NEAR,cx:W/2-proj[i].x*NEAR,cy:H/2-proj[i].y*NEAR};runTween()
+    diveTimers.current.push(setTimeout(()=>{onOpenBeach&&onOpenBeach(b)},520))
+    diveTimers.current.push(setTimeout(()=>{setDiving(null);try{centerOn(myIdx,MID)}catch(_){}},900))
+  }
+  useEffect(()=>()=>{diveTimers.current.forEach(clearTimeout)},[])
   const tourGo=pos=>{if(!tourOrder.length)return;const p=Math.max(0,Math.min(tourOrder.length-1,pos));tourRef.current=p;setTour(p);focusBeach(tourOrder[p]);try{track("sg_archipel_tour",{pos:p,beach_id:proj[tourOrder[p]].b.id})}catch(_){}}
   const startTour=()=>tourGo(0)
   const exitTour=()=>{tourRef.current=null;setTour(null);twTarget.current=null;centerOn(myIdx,MID)}
@@ -9139,6 +9158,15 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
   return(
     <div ref={wrapRef} role="region" aria-label={_t(lang,"Archipel du Veilleur","The Watcher's Archipelago","Archipiélago del Vigía")} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} onClick={onTap}
       style={{position:"fixed",inset:0,zIndex:1006,background:"#04090B",touchAction:"none",overflow:"hidden",cursor:satGrab?"grabbing":"grab"}}>
+      {/* LA MARÉE : couche de plongée — la BeachScene de la plage tapée se fond
+          plein écran (opacity 0→1) PENDANT que la caméra dolly-in, sur le même
+          golden-hour → dissolution continue monde→rivage, puis la fiche monte. */}
+      {diving&&(<>
+        <style>{`@keyframes mareeDive{from{opacity:0}to{opacity:1}}.maree-dive{animation:mareeDive .46s ease-out both}@media(prefers-reduced-motion:reduce){.maree-dive{animation:none}}`}</style>
+        <div className="maree-dive" aria-hidden="true" style={{position:"absolute",inset:0,zIndex:40,pointerEvents:"none"}}>
+          <BeachScene beach={diving}/>
+        </div>
+      </>)}
       {/* CIEL-MONDE immersif (golden-hour vivant) derriere la constellation — le "fond" qui manquait */}
       <svg ref={skyRef} viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" style={{position:"absolute",top:"-7%",left:"-7%",width:"114%",height:"114%",display:"block",pointerEvents:"none",willChange:"transform"}} aria-hidden="true">
         {/* CALME au repos : aucun clignotement. Seulement 2 mouvements TRÈS lents et naturels
@@ -9180,7 +9208,7 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
         <g ref={gRef}>
           {proj.map((p,i)=>{const b=p.b,col=b.scoreColor||verdictMeta(b.status,lang).color,sc=typeof b.score==="number"?b.score:null,me=i===myIdx
             return(<g key={b.id} data-beach={b.id} transform={"translate("+p.x.toFixed(1)+" "+p.y.toFixed(1)+")"} style={{cursor:"pointer"}}
-              onClick={ev=>{ev.stopPropagation();if(movedRef.current)return;try{track("sg_archipel_tap",{beach_id:b.id,status:b.status})}catch(_){}; onOpenBeach&&onOpenBeach(b)}}>
+              onClick={ev=>{ev.stopPropagation();if(movedRef.current)return;diveBeach(i,b)}}>
               {me
                 ?<g><circle r="40" fill={col} opacity=".14"/><circle r="29" fill={col} opacity=".10"/><circle r="23" fill="#0E2A26" stroke={col} strokeWidth="2.4"/>{sc!=null&&<text y="7" fontFamily="'Anton',sans-serif" fontSize="20" fill="#fff" textAnchor="middle">{sc}</text>}<text y="46" fontFamily="ui-monospace,monospace" fontSize="11" fontWeight="700" fill="#FFD884" textAnchor="middle">{b.name}</text></g>
                 :<><circle r={sc!=null?5+sc/15:6} fill={col} opacity=".92"/><circle r={sc!=null?5+sc/15:6} fill="none" stroke="#06121A" strokeWidth="1.2"/></>}
