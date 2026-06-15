@@ -10166,6 +10166,12 @@ export default function App(){
   // Show modal only to IDLE returning users (no beach-sheet interaction for 50s on visit 2+).
   // Was hijacking active explorers mid-flow, reading as "the app keeps bugging on my 3rd click".
   useEffect(()=>{
+    // DÉSACTIVÉ (audit widget-factory 2026-06-15) : même gated sur value_moment,
+    // l'auto-open ouvrait le paywall sur intention TIÈDE → ~0% CTA + gonflait le
+    // dénominateur modal_open (cause directe de la fuite modal→CTA 2,2%) + modal
+    // interruptif = anti-doctrine calme. Le mur ne s'ouvre PLUS que sur intention
+    // CHAUDE (forecast-lock, CTA, dock Veilleur). Réversible (retirer ce return).
+    return // eslint-disable-line
     if(isPremium)return
     if(g("sg_visit_count",0)<2)return
     try{if(sessionStorage.getItem("sg_eng_shown"))return}catch{}
