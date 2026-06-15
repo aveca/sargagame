@@ -93,3 +93,6 @@ scripts/automation/share-cards/out/
 scripts/automation/data/wordle-today.json
 scripts/automation/data/verdict-queue.json
 scripts/automation/data/verdict-sent.json
+
+# Pulse unifié (régénéré par chaque loop au cycle, transitoire)
+scripts/automation/data/pulse.json
