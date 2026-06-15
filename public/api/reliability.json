@@ -1,0 +1,65 @@
+{
+ "computed": "2026-06-15T20:09:01.249Z",
+ "window": {
+  "from": "2026-05-17",
+  "to": "2026-06-15",
+  "days": 30
+ },
+ "overallHitRate": 79,
+ "byRegime": [
+  {
+   "regime": "calm",
+   "label": {
+    "fr": "saison calme",
+    "en": "calm season",
+    "es": "temporada tranquila"
+   },
+   "hitRate": 79,
+   "samples": 3060
+  },
+  {
+   "regime": "unknown",
+   "label": {
+    "fr": "saison haute",
+    "en": "high season",
+    "es": "temporada alta"
+   },
+   "hitRate": 76,
+   "samples": 120
+  }
+ ],
+ "byHorizon": [
+  {
+   "horizon": 1,
+   "hitRate": 75,
+   "pairs": 580
+  },
+  {
+   "horizon": 2,
+   "hitRate": 73,
+   "pairs": 560
+  },
+  {
+   "horizon": 3,
+   "hitRate": 75,
+   "pairs": 540
+  },
+  {
+   "horizon": 4,
+   "hitRate": 79,
+   "pairs": 520
+  },
+  {
+   "horizon": 5,
+   "hitRate": 84,
+   "pairs": 500
+  },
+  {
+   "horizon": 6,
+   "hitRate": 90,
+   "pairs": 480
+  }
+ ],
+ "calmCalibrating": true,
+ "note": "Hit rate = statut prévu (propre/modéré/à éviter) confirmé par le satellite. Calibration saison calme en cours."
+}

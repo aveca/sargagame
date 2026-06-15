@@ -191,24 +191,17 @@
     <p class="sec-sub">Chaque semaine, nos prévisions J–1 à J–4 sont re-comparées aux observations satellite réelles. Voici le résultat brut.</p>
 
     <div class="bt-wrap">
-      <div class="bt-eyebrow">Backtest · 84 jours</div>
-      <h3 class="bt-head">Fiabilité par horizon</h3>
-      <div class="bt-stats">
+      <div class="bt-eyebrow" id="bt-window">Backtest · 30 jours</div>
+      <h3 class="bt-head">Fiabilité par régime de mer</h3>
+      <p class="bt-sub2" style="color:rgba(255,255,255,.62);font-size:14px;margin:6px 0 16px;line-height:1.55">Un pourcentage global noie deux mers très différentes. Voici la part de statuts corrects (propre / modéré / à éviter) confirmés par le satellite, régime par régime.</p>
+      <div class="bt-stats" id="bt-regimes">
         <div class="bt-stat">
-          <div class="bt-stat-big">78%</div>
-          <div class="bt-stat-lab">J+1 — demain</div>
+          <div class="bt-stat-big">79%</div>
+          <div class="bt-stat-lab">saison calme · 3 060 vérifs</div>
         </div>
         <div class="bt-stat">
-          <div class="bt-stat-big">74%</div>
-          <div class="bt-stat-lab">J+2 — après-demain</div>
-        </div>
-        <div class="bt-stat">
-          <div class="bt-stat-big">71%</div>
-          <div class="bt-stat-lab">J+3</div>
-        </div>
-        <div class="bt-stat">
-          <div class="bt-stat-big">74%</div>
-          <div class="bt-stat-lab">J+4 — horizon fiable</div>
+          <div class="bt-stat-big">76%</div>
+          <div class="bt-stat-lab">saison haute · 120 vérifs</div>
         </div>
       </div>
 
@@ -237,10 +230,11 @@
       <div class="bt-legend">
         <span>—— prévu</span>
         <span style="color:rgba(30,200,176,.9)">- - observé</span>
-        <span>84j · glissant</span>
+        <span id="bt-legend-window">30j · glissant</span>
       </div>
 
-      <p class="bt-note">Méthode : écart absolu entre catégorie prévue (propre / modéré / alerte) et catégorie observée sur 20 plages × 84 jours = 1 680 points. Données brutes disponibles sur demande.</p>
+      <p class="bt-note" id="bt-calib">La calibration de la saison calme est en cours : un correctif réduit les fausses alertes — le modèle sur-signale parfois une présence sur une mer propre — et se propage à l'archive. Ce chiffre s'améliore ; rien n'est masqué.</p>
+      <p class="bt-note">Méthode : comparaison entre la catégorie prévue (propre / modéré / à éviter) et la catégorie observée par satellite, sur 20 plages, recalculée chaque jour. Détail mesuré et daté sur la page <a href="/fiabilite/" style="color:#FFC72C">fiabilité</a>.</p>
     </div>
   </section>
 
@@ -353,5 +347,38 @@
 
   <div class="footer">© Sargasses Antilles · sargasses-martinique.com · sargasses-guadeloupe.com</div>
 </div>
+<!-- Fiabilité : consomme la source UNIQUE /api/reliability.json (générée au build depuis le
+     backtest). Les chiffres ci-dessus sont un fallback honnête si le fetch échoue. -->
+<script>
+(function(){
+  function nf(n){try{return Number(n).toLocaleString('fr-FR')}catch(e){return n}}
+  function statCard(pct,label){
+    var card=document.createElement('div');card.className='bt-stat';
+    var big=document.createElement('div');big.className='bt-stat-big';big.textContent=pct+'%';
+    var lab=document.createElement('div');lab.className='bt-stat-lab';lab.textContent=label;
+    card.appendChild(big);card.appendChild(lab);return card;
+  }
+  fetch('/api/reliability.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(d){
+    if(!d)return;
+    var days=d.window&&d.window.days;
+    if(days){
+      var bw=document.getElementById('bt-window');if(bw)bw.textContent='Backtest · '+days+' jours';
+      var lw=document.getElementById('bt-legend-window');if(lw)lw.textContent=days+'j · glissant';
+    }
+    if(Array.isArray(d.byRegime)&&d.byRegime.length){
+      var host=document.getElementById('bt-regimes');
+      if(host){
+        while(host.firstChild)host.removeChild(host.firstChild);
+        d.byRegime.forEach(function(r){
+          var lab=(r.label&&r.label.fr)||r.regime;
+          host.appendChild(statCard(r.hitRate,lab+' · '+nf(r.samples)+' vérifs'));
+        });
+      }
+    }
+    var cal=document.getElementById('bt-calib');
+    if(cal&&d.calmCalibrating===false)cal.style.display='none';
+  }).catch(function(){});
+})();
+</script>
 </body>
 </html>

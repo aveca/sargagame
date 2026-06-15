@@ -15,6 +15,7 @@
  */
 const fs = require('fs')
 const { icon: brandIcon } = require('./brand-icons.cjs')
+const { extractRegimeHitRates, buildReliabilityJson, REGIME_LABEL } = require('./reliability-data.cjs')
 const path = require('path')
 
 const ROOT = path.resolve(__dirname, '..', '..')
@@ -93,6 +94,11 @@ const I18N = {
     missT: "Ce qu'on rate",
     missIntro: (good, total) => `${good} plages sur ${total} dépassent 90 % de réussite. Les plus difficiles à prévoir — publiées quand même :`,
     missWhy: "Les plages exposées dont l'état oscille autour d'un seuil (propre / modéré) restent les plus dures à prévoir.",
+    regL: 'Lecture par régime', regH: 'La fiabilité, par régime de mer',
+    regDays: n => `les ${n} derniers jours`,
+    regIntro: window => `Un pourcentage global noie deux mers très différentes. Voici la part de statuts corrects, mesurée régime par régime (${window}).`,
+    regSamples: n => `${n} vérifications`,
+    regCalib: "La calibration de la saison calme est en cours : un correctif réduit les fausses alertes — le modèle sur-signale parfois une présence sur une mer propre — et se propage à l'archive. Ce chiffre s'améliore ; rien n'est masqué.",
     l3: 'Fraîcheur', h2f: 'La donnée que vous regardez',
     fUpd: 'Dernière mesure satellite',
     agoLt1: "il y a moins d'1 h", agoTpl: 'il y a {h} h',
@@ -124,6 +130,11 @@ const I18N = {
     missT: 'What we miss',
     missIntro: (good, total) => `${good} of ${total} beaches score above 90%. The hardest ones to predict — published anyway:`,
     missWhy: 'Exposed beaches whose state hovers around a threshold (clean / moderate) remain the hardest to predict.',
+    regL: 'By regime', regH: 'Accuracy, by sea regime',
+    regDays: n => `the last ${n} days`,
+    regIntro: window => `A single overall figure blends two very different seas. Here is the share of correct statuses, measured regime by regime (${window}).`,
+    regSamples: n => `${n} checks`,
+    regCalib: 'Calm-season calibration is under way: a fix reduces false alarms — the model sometimes over-flags a presence on clear water — and is propagating through the archive. This figure is improving; nothing is hidden.',
     l3: 'Freshness', h2f: 'The data you are looking at',
     fUpd: 'Latest satellite measurement',
     agoLt1: 'less than 1 h ago', agoTpl: '{h} h ago',
@@ -155,6 +166,11 @@ const I18N = {
     missT: 'Lo que fallamos',
     missIntro: (good, total) => `${good} de ${total} playas superan el 90% de acierto. Las más difíciles de predecir — publicadas igualmente:`,
     missWhy: 'Las playas expuestas cuyo estado oscila alrededor de un umbral (limpia / moderada) siguen siendo las más difíciles de predecir.',
+    regL: 'Por régimen', regH: 'La precisión, por régimen de mar',
+    regDays: n => `los últimos ${n} días`,
+    regIntro: window => `Una cifra global mezcla dos mares muy distintos. Esta es la proporción de estados correctos, medida régimen por régimen (${window}).`,
+    regSamples: n => `${n} verificaciones`,
+    regCalib: 'La calibración de la temporada tranquila está en curso: un ajuste reduce las falsas alarmas —el modelo a veces sobre-señala una presencia en agua limpia— y se propaga al archivo. Esta cifra mejora; nada se oculta.',
     l3: 'Frescura', h2f: 'El dato que estás viendo',
     fUpd: 'Última medición satelital',
     agoLt1: 'hace menos de 1 h', agoTpl: 'hace {h} h',
@@ -241,6 +257,34 @@ function precisionSection(lang, bt, regionName) {
     ${hitDef}
     ${table}
     ${miss}
+  </section>`
+}
+
+/**
+ * Section régime — désamorce le « % global » trompeur en publiant le HIT RATE PAR RÉGIME
+ * (statut prévu confirmé par satellite / total), depuis bt.byRegime via reliability-data.cjs
+ * (source unique). PAS l'accuracy par direction (calm|ALERT 0/638 = sur-signalement, en cours
+ * de correction) : honnête mais pas self-harm. Calibration saison calme annoncée EN COURS.
+ * Échantillon affiché par régime. Donnée absente → la section saute.
+ */
+function regimeSection(lang, bt) {
+  const r = extractRegimeHitRates(bt)
+  if (!r || !r.regimes.length) return ''
+  const t = I18N[lang]
+  const window = r.from && r.to
+    ? `${fmtDay(lang, r.from)} → ${fmtDay(lang, r.to, true)}`
+    : (r.days ? t.regDays(r.days) : '')
+  const cards = r.regimes.map(reg => {
+    const label = (REGIME_LABEL[reg.regime] || {})[lang] || reg.regime
+    return `<div class="stat"><div class="n">${fmtPct(lang, reg.hitRate)}</div><div class="l">${esc(label)} · ${esc(t.regSamples(fmtInt(lang, reg.samples)))}</div></div>`
+  }).join('')
+  const calib = r.calmCalibrating ? `<p class="note">${esc(t.regCalib)}</p>` : ''
+  return `<section>
+    <div class="lbl">${esc(t.regL)}</div>
+    <h2>${esc(t.regH)}</h2>
+    <p>${esc(t.regIntro(window))}</p>
+    <div class="stats">${cards}</div>
+    ${calib}
   </section>`
 }
 
@@ -367,6 +411,8 @@ fetch('/api/copernicus/sargassum.json',{cache:'no-store'}).then(function(r){retu
 
   ${precisionSection(lang, bt, regionName)}
 
+  ${regimeSection(lang, bt)}
+
   ${freshnessSection(lang, data, slug)}
 
   <div class="foot">${esc(siteName.toUpperCase())} · ${esc(t.fdata)}</div>
@@ -381,6 +427,20 @@ function writePage(distDir, slug, html) {
   const dir = path.join(distDir, slug)
   fs.mkdirSync(dir, { recursive: true })
   fs.writeFileSync(path.join(dir, 'index.html'), html, 'utf-8')
+}
+
+/**
+ * Écrit <baseDir>/api/reliability.json (servi) depuis la source de vérité — les pages
+ * PUREMENT statiques (public/a-propos/) le consomment côté client au lieu de re-hardcoder.
+ * No-op si backtest inexploitable (la page garde son fallback honnête).
+ */
+function writeReliabilityJson(baseDir, bt) {
+  const payload = buildReliabilityJson(bt)
+  if (!payload) return false
+  const dir = path.join(baseDir, 'api')
+  fs.mkdirSync(dir, { recursive: true })
+  fs.writeFileSync(path.join(dir, 'reliability.json'), JSON.stringify(payload), 'utf-8')
+  return true
 }
 
 /** Ajoute la page au sitemap.xml régional (écrit avant par region-seo-pages.cjs). */
@@ -448,7 +508,9 @@ function generateReliabilityPages(region, distDir) {
       lang: 'fr', domain: 'sargasses-guadeloupe.com', siteName: 'Sargasses Guadeloupe',
       slug: 'fiabilite', title: gpMeta.title, desc: gpMeta.desc, data, bt,
     }))
-    console.log(`   → /fiabilite/ générée (MQ + miroir GP)${bt ? ` — backtest ${bt.overall.statusHitRate}% global, ${bt.totalPairs} paires` : ' — SANS section précision (backtest indisponible)'}`)
+    // Source unique servie pour les pages statiques (a-propos) — MQ + miroir GP.
+    const jsonOk = writeReliabilityJson(distDir, bt) && writeReliabilityJson(path.join(distDir, '_gp'), bt)
+    console.log(`   → /fiabilite/ générée (MQ + miroir GP)${bt ? ` — backtest ${bt.overall.statusHitRate}% global, ${bt.totalPairs} paires` : ' — SANS section précision (backtest indisponible)'}${jsonOk ? ' + /api/reliability.json' : ''}`)
     return
   }
 
@@ -462,6 +524,7 @@ function generateReliabilityPages(region, distDir) {
     data, bt, regionName: region.name,
   }))
   const inSitemap = appendToRegionSitemap(distDir, region.domain, slug)
+  writeReliabilityJson(distDir, bt)
   console.log(`   → /${slug}/ générée (${region.id})${inSitemap ? ' + sitemap' : ' (sitemap absent)'}${bt ? ` — backtest ${bt.overall.statusHitRate}% global, ${bt.totalPairs} paires` : ' — SANS section précision (backtest indisponible)'}`)
 }
 
