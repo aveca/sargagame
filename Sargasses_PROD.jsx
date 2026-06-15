@@ -2328,6 +2328,14 @@ function BottomNav({view,onChangeView,lang}){
    Data: 1.57% conversion — show only today free to increase premium value
    ═══════════════════════════════════════════════════════════════════════════ */
 function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,weeklyData}){
+  // pw_beat (backlog #4) : l'intention CHAUDE forecast-lock = un BEAT du scroll IN-SCÈNE
+  // (golden-hour + Veilleur + 1 promesse positive + 1 preuve chiffrée + 1 CTA), PAS un
+  // modal posé. Le CTA mène ENSUITE au checkout (onPremiumClick, inchangé). ?pwbeat=1/0.
+  // control = comportement actuel (lock → modal direct). Additif, zéro contact paiement.
+  // (hooks AVANT l'early-return ci-dessous = règle des hooks respectée.)
+  const pwBeat=(()=>{try{const q=window.location.search;if(/[?&]pwbeat=1/.test(q))return true;if(/[?&]pwbeat=0/.test(q))return false;return abVariant("pw_beat",["control","beat"],[.5,.5])==="beat"}catch(_){return false}})()
+  const[beatOpen,setBeatOpen]=useState(false)
+  const openLock=via=>{try{track("sg_forecast_lock_click",{variant:via,beat:pwBeat?1:0})}catch(_){};if(pwBeat)setBeatOpen(true);else onPremiumClick("forecast")}
   if(!forecast||!forecast.length)return null
   const LL=T[lang]||T.fr
   // v3: cap visible days at J+3 (horizon beyond that is unreliable per backtest)
@@ -2397,7 +2405,7 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
           `Reliable up to 4 days. ${Math.round(firstConf)}% confidence tomorrow.`,
           `Confiable hasta 4 días. ${Math.round(firstConf)}% de confianza mañana.`)}
       </div>
-      {!isPremium&&lockedCount>0&&<div onClick={()=>{track("sg_forecast_lock_click",{variant:"control"});onPremiumClick("forecast")}}
+      {!isPremium&&lockedCount>0&&<div onClick={()=>openLock("control")}
         style={{position:"absolute",top:0,right:0,bottom:0,width:`${(lockedCount/visibleDays*100).toFixed(1)}%`,
         display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",
         background:"linear-gradient(90deg,transparent,var(--sg-bg,#FDFCF7) 25%)",
@@ -2417,7 +2425,7 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
     </div>
     {/* Locked-days teaser strip — outside the chart overlay so always visible */}
     {lockedDays.length>0&&(
-      <div onClick={()=>{track("sg_forecast_lock_click",{variant:"strip"});onPremiumClick("forecast")}}
+      <div onClick={()=>openLock("strip")}
         style={{display:"flex",alignItems:"center",gap:8,marginTop:8,padding:"9px 12px",
         background:"rgba(0,0,0,.04)",borderRadius:10,cursor:"pointer",border:"1px solid rgba(0,0,0,.06)"}}>
         <span style={{fontSize:10,color:"var(--sg-mid,#999)",fontWeight:600,flexShrink:0}}>
@@ -2439,6 +2447,44 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
         </span>
       </div>
     )}
+    {/* pw_beat — BEAT golden-hour in-scène (pas un modal). L'horizon prévu de CETTE
+        plage : 1 marque/jour, statut réel coloré, near-term net / lointain estompé
+        (honnête, jamais sur-vendu). Veilleur humeur data-driven. 1 promesse positive,
+        1 preuve chiffrée (confiance J+1), 1 CTA → checkout. Reveal one-shot, calme. */}
+    {pwBeat&&beatOpen&&(()=>{
+      const mood=VEILLEUR_MOOD[moodFromStatus(visible[0]?.status||"clean")]||VEILLEUR_MOOD.serein
+      const allClean=visible.every(d=>d.status==="clean")
+      const stCol=s=>s==="clean"?"#5FD3C9":s==="moderate"?"#FFD27A":"#F4845F"
+      const G={background:"linear-gradient(135deg,#FFE47A,#FFC72C 55%,#E89400)",WebkitBackgroundClip:"text",backgroundClip:"text",WebkitTextFillColor:"transparent",color:"transparent"}
+      const promiseEl=allClean
+        ?(lang==="es"?(<>Tu costa está limpia. <span style={G}>Mañana</span>, el Vigía ya lo ha visto.</>):lang==="en"?(<>Your coast is clear. <span style={G}>Tomorrow</span>, the Watchman has already seen it.</>):(<>Ta côte est propre. <span style={G}>Demain</span>, le Veilleur l'a déjà vu.</>))
+        :(lang==="es"?(<>El Vigía vigila tu costa <span style={G}>cada día</span>, antes que tú.</>):lang==="en"?(<>The Watchman watches your coast <span style={G}>every day</span>, before you.</>):(<>Le Veilleur garde ta côte <span style={G}>chaque jour</span>, avant toi.</>))
+      const proof=_t(lang,`Fiable à ${Math.round(firstConf)}% demain · vérifié satellite`,`${Math.round(firstConf)}% confidence tomorrow · satellite-verified`,`${Math.round(firstConf)}% de confianza mañana · verificado por satélite`)
+      return(
+        <div className="pw-beat-in" style={{marginTop:10,borderRadius:16,overflow:"hidden",border:"1px solid rgba(0,0,0,.06)",background:"#0D1E1C"}}>
+          <style>{`@keyframes pwBeatIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}.pw-beat-in{animation:pwBeatIn .34s cubic-bezier(.22,1,.36,1) both}@media(prefers-reduced-motion:reduce){.pw-beat-in{animation:none}}`}</style>
+          <svg viewBox="0 0 400 116" preserveAspectRatio="xMidYMid slice" style={{width:"100%",height:108,display:"block"}} aria-hidden="true">
+            <defs>
+              <linearGradient id="pbSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0B2230"/><stop offset=".5" stopColor="#155A5A"/><stop offset=".84" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/></linearGradient>
+              <linearGradient id="pbSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1A5852"/><stop offset="1" stopColor="#08251F"/></linearGradient>
+            </defs>
+            <rect width="400" height="116" fill="url(#pbSky)"/>
+            <circle cx="330" cy="84" r="40" fill="#FFD884" opacity=".2"/><circle cx="330" cy="84" r="22" fill="#FFD884" opacity=".4"/>
+            <rect y="84" width="400" height="32" fill="url(#pbSea)"/>
+            <line x1="0" y1="84" x2="400" y2="84" stroke="#FFD884" strokeWidth="1" opacity=".5"/>
+            {visible.map((d,i)=>{const x=44+i*(312/Math.max(1,visible.length-1));const op=i<=2?.95:.45;const h=d.status==="clean"?4:d.status==="moderate"?9:13;return(<g key={i} opacity={op}><path d={"M"+(x-9).toFixed(0)+" 84 Q"+x.toFixed(0)+" "+(84-h)+" "+(x+9).toFixed(0)+" 84"} fill="none" stroke={stCol(d.status)} strokeWidth="1.4" opacity=".75"/><circle cx={x.toFixed(0)} cy="84" r={i===0?4.5:3.2} fill={stCol(d.status)}/><text x={x.toFixed(0)} y="104" fontFamily="ui-monospace,monospace" fontSize="8" fill="rgba(255,255,255,.6)" textAnchor="middle">{fcDay(d,lang).slice(0,3)}</text></g>)})}
+            <g>{miVeil(92,40,mood.wing,mood.lens)}</g>
+          </svg>
+          <div style={{padding:"12px 16px 16px",textAlign:"center"}}>
+            <div style={{fontSize:15,fontWeight:800,color:"#fff",lineHeight:1.3}}>{promiseEl}</div>
+            <div style={{fontSize:11.5,color:"rgba(255,255,255,.55)",marginTop:5,fontFamily:"ui-monospace,monospace"}}>{proof}</div>
+            <button onClick={()=>{try{track("sg_beat_cta",{conf:Math.round(firstConf)})}catch(_){};onPremiumClick("forecast_beat")}} className="gbtn" style={{display:"block",width:"100%",marginTop:13,padding:"13px",borderRadius:13,border:"none",cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:15}}>
+              {_t(lang,"Voir la prévision de ma côte","See my coast's forecast","Ver el pronóstico de mi costa")}
+            </button>
+            <div style={{fontSize:10,color:"rgba(255,255,255,.4)",marginTop:9}}>{lockSub}</div>
+          </div>
+        </div>
+      )})()}
     </>
   )
 }
