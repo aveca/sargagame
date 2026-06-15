@@ -17,13 +17,110 @@
  */
 const fs = require('fs')
 const path = require('path')
+const { buildHonestForecast } = require('../lib/forecast.cjs')
+const { classifyRegime } = require('../lib/confidence.cjs')
 
 const ARCHIVE_PATH = path.join(__dirname, '../../public/api/copernicus/forecast-archive.json')
 const HISTORY_PATH = path.join(__dirname, '../../public/api/copernicus/history.json')
+const BANKS_PATH = path.join(__dirname, '../../public/api/copernicus/sargassum-banks.json')
 const OUT_PATH = path.join(__dirname, 'data/backtest-results.json')
+const REGIME_OUT_PATH = path.join(__dirname, 'data/backtest-regime.json')
 
 function loadJSON(p, fallback) {
   try { return JSON.parse(fs.readFileSync(p, 'utf-8')) } catch { return fallback }
+}
+
+function isAlertStatus(s) { return s === 'moderate' || s === 'avoid' }
+
+// Beach geo metadata — mirrors BEACHES in scripts/fetch-sargassum-live.cjs (kept
+// here so the re-forecast harness has no cross-module side effects). Only used by
+// the --reforecast mode. If you add/move a beach there, mirror it here.
+const BEACHES_META = [
+  { id: 'grande-anse',    lat: 14.5028, lng: -61.0856, island: 'mq', coast: 'atlantic',  coastNormal: 200 },
+  { id: 'anse-mitan',     lat: 14.5523, lng: -61.0552, island: 'mq', coast: 'sheltered', coastNormal: 270 },
+  { id: 'anse-noire',     lat: 14.5277, lng: -61.0874, island: 'mq', coast: 'sheltered', coastNormal: 270 },
+  { id: 'tartane',        lat: 14.7507, lng: -60.9257, island: 'mq', coast: 'atlantic',  coastNormal: 80 },
+  { id: 'anse-madame',    lat: 14.6178, lng: -61.1036, island: 'mq', coast: 'sheltered', coastNormal: 270 },
+  { id: 'diamant',        lat: 14.4758, lng: -61.0314, island: 'mq', coast: 'atlantic',  coastNormal: 210 },
+  { id: 'pt-marin',       lat: 14.4511, lng: -60.8836, island: 'mq', coast: 'atlantic',  coastNormal: 160 },
+  { id: 'sainte-anne',    lat: 14.4305, lng: -60.8850, island: 'mq', coast: 'atlantic',  coastNormal: 170 },
+  { id: 'les-salines',    lat: 14.3959, lng: -60.8690, island: 'mq', coast: 'atlantic',  coastNormal: 180 },
+  { id: 'vauclin',        lat: 14.5414, lng: -60.8292, island: 'mq', coast: 'atlantic',  coastNormal: 110 },
+  { id: 'gp-grande-anse', lat: 16.1312, lng: -61.7682, island: 'gp', coast: 'sheltered', coastNormal: 270 },
+  { id: 'gp-malendure',   lat: 16.1721, lng: -61.7767, island: 'gp', coast: 'sheltered', coastNormal: 270 },
+  { id: 'gp-sainte-anne', lat: 16.2226, lng: -61.3828, island: 'gp', coast: 'atlantic',  coastNormal: 170 },
+  { id: 'gp-pt-chateaux', lat: 16.2531, lng: -61.2307, island: 'gp', coast: 'atlantic',  coastNormal: 90 },
+  { id: 'gp-gosier',      lat: 16.2048, lng: -61.4948, island: 'gp', coast: 'atlantic',  coastNormal: 180 },
+  { id: 'gp-caravelle',   lat: 16.2181, lng: -61.3965, island: 'gp', coast: 'atlantic',  coastNormal: 170 },
+  { id: 'gp-bas-du-fort', lat: 16.2140, lng: -61.5237, island: 'gp', coast: 'atlantic',  coastNormal: 200 },
+  { id: 'gp-deshaies',    lat: 16.3054, lng: -61.7951, island: 'gp', coast: 'sheltered', coastNormal: 290 },
+  { id: 'gp-moule',       lat: 16.4222, lng: -61.5337, island: 'gp', coast: 'atlantic',  coastNormal: 60 },
+  { id: 'gp-vieux-fort',  lat: 16.2488, lng: -61.1428, island: 'gp', coast: 'atlantic',  coastNormal: 130 },
+]
+
+/**
+ * Index history.json into { beachId: [{date, afai}] } sorted ascending, for
+ * trailing-window regime classification.
+ */
+function indexObsByBeach(history) {
+  const obs = {}
+  for (const e of history) {
+    for (const l of (e.levels || [])) {
+      (obs[l.id] = obs[l.id] || []).push({ date: e.date, afai: l.afai })
+    }
+  }
+  for (const id in obs) obs[id].sort((a, b) => a.date.localeCompare(b.date))
+  return obs
+}
+
+/**
+ * Classify a beach's regime AS OF a date — trailing 7-day mean of actual
+ * observed AFAI (only info available when the forecast was issued). Mirrors the
+ * runtime regime definition in confidence.classifyRegime.
+ */
+function regimeAsOf(obsByBeach, beachId, asOfDate) {
+  const obs = (obsByBeach[beachId] || []).filter(o => o.date <= asOfDate).slice(-7)
+  if (obs.length < 3) return 'unknown'
+  const mean = obs.reduce((s, o) => s + o.afai, 0) / obs.length
+  const day0 = obs[obs.length - 1].afai
+  return classifyRegime(mean, day0)
+}
+
+/**
+ * Tally a (regime × predicted-status) reliability + false-alarm table from a
+ * flat list of prediction-observation pairs. This is the AUDIT-PROOF view: it
+ * NEVER collapses regimes into one number.
+ */
+function regimeTable(pairs) {
+  const cells = {}   // "regime|ALERT|clean" → { n, hit }
+  const byRegime = {} // regime → { n, hit, falseAlarm, actClean }
+  for (const p of pairs) {
+    const predAlert = isAlertStatus(p.predicted.status)
+    const actAlert = isAlertStatus(p.actual.status)
+    const dir = predAlert ? 'ALERT' : 'clean'
+    const key = `${p.regime}|${dir}`
+    const c = cells[key] = cells[key] || { n: 0, hit: 0 }
+    c.n++; if (p.statusHit) c.hit++
+    const r = byRegime[p.regime] = byRegime[p.regime] || { n: 0, hit: 0, falseAlarm: 0, actClean: 0 }
+    r.n++; if (p.statusHit) r.hit++
+    if (!actAlert) { r.actClean++; if (predAlert) r.falseAlarm++ }
+  }
+  return { cells, byRegime }
+}
+
+function printRegimeTable(label, pairs) {
+  const { cells, byRegime } = regimeTable(pairs)
+  console.log(`\n--- Per-Regime (${label}) — honest split, never a masking global ---`)
+  for (const [reg, d] of Object.entries(byRegime).sort()) {
+    const hit = Math.round(d.hit / d.n * 100)
+    const faRate = d.actClean ? Math.round(d.falseAlarm / d.actClean * 100) : 0
+    console.log(`  ${reg.padEnd(11)} n=${String(d.n).padStart(4)} | hit=${hit}% | false-alarm rate (alert|actual-clean)=${faRate}% (${d.falseAlarm}/${d.actClean})`)
+  }
+  console.log('  reliability by (regime × predicted-direction):')
+  for (const [key, c] of Object.entries(cells).sort()) {
+    console.log(`    ${key.padEnd(18)} n=${String(c.n).padStart(4)} reliability=${Math.round(c.hit / c.n * 100)}%`)
+  }
+  return { cells, byRegime }
 }
 
 function main() {
@@ -45,6 +142,8 @@ function main() {
       historyByDate[entry.date][l.id] = { afai: l.afai, status: l.status }
     }
   }
+  // Per-beach observation series for regime classification.
+  const obsByBeach = indexObsByBeach(historyData.history)
 
   // For each forecast snapshot, compare predictions to actual observations
   const results = {
@@ -95,6 +194,7 @@ function main() {
           targetDate: pred.date,
           beach: beachId,
           horizon,
+          regime: regimeAsOf(obsByBeach, beachId, snap.date),
           predicted: { afai: pred.afai, status: pred.status, confidence: conf },
           actual: { afai: actual.afai, status: actual.status },
           statusHit,
@@ -172,6 +272,12 @@ function main() {
   }
 
   console.log(`\nOverall: ${summary.overall.statusHitRate}% status accuracy | MAE=${summary.overall.afaiMAE}`)
+  console.log('  ^ NB: this global number BLENDS regimes. See the per-regime split below — it is the audit-proof view.')
+
+  // Per-regime split (the honest view — never report the global alone).
+  const { byRegime, cells } = printRegimeTable('archive — deployed forecasts', results.pairs)
+  summary.byRegime = byRegime
+  summary.byRegimeDirection = cells
 
   // Save results
   const output = { ...summary, computed: new Date().toISOString(), pairs: results.pairs.slice(-100) }
@@ -180,10 +286,96 @@ function main() {
   console.log(`\nResults saved to ${OUT_PATH}`)
 }
 
+/**
+ * --reforecast: the CONTROLLED instrument. The forecast-archive holds frozen
+ * OUTPUTS of whatever code shipped that day, so it can't measure a code change.
+ * This re-runs the CURRENT buildHonestForecast over historical inputs:
+ *   - day-0 input  = actual observed level on date D (history.json) — faithful
+ *   - trailing arg = actual history up to and including D            — faithful
+ *   - banks        = current sargassum-banks.json (proxy; no per-date archive
+ *                    exists). Held constant across before/after, so the FA
+ *                    delta is attributable to code, not to bank drift.
+ *   - wind/community/marine = null (removes confounders; isolates the
+ *                    persistence + arrival + trend chain we recalibrated).
+ * Then compares forecast horizon h to the actual observation on D+h.
+ */
+function reforecastBacktest() {
+  console.log('=== Forecast Backtest — RE-FORECAST mode (current code over historical inputs) ===')
+  const history = loadJSON(HISTORY_PATH, { history: [] }).history.slice().sort((a, b) => a.date.localeCompare(b.date))
+  const banks = (loadJSON(BANKS_PATH, { banks: [] }).banks) || []
+  if (history.length < 6) { console.log('Not enough history to re-forecast.'); return }
+
+  const byDate = {}
+  for (const e of history) { byDate[e.date] = {}; for (const l of e.levels) byDate[e.date][l.id] = { afai: l.afai, status: l.status } }
+  const obsByBeach = indexObsByBeach(history)
+  const dates = history.map(e => e.date)
+
+  const pairs = []
+  for (let di = 0; di < dates.length; di++) {
+    const D = dates[di]
+    const trailing = history.filter(e => e.date <= D)
+    if (trailing.length < 5) continue
+    const levels = history[di].levels.map(l => ({ id: l.id, afai: l.afai, status: l.status, confidence: 80 }))
+    const weekly = buildHonestForecast(levels, null, trailing, BEACHES_META, banks, null, null)
+    for (const b of BEACHES_META) {
+      const wf = weekly[b.id]; if (!wf) continue
+      const regime = regimeAsOf(obsByBeach, b.id, D)
+      for (let h = 1; h <= 6; h++) {
+        const tgt = dates[di + h]; if (!tgt) break
+        const actual = byDate[tgt]?.[b.id]; if (!actual) continue
+        const pred = wf.forecast[h]; if (!pred) continue
+        pairs.push({
+          beach: b.id, regime, horizon: h,
+          predicted: { afai: pred.afai, status: pred.status, confidence: pred.confidence },
+          actual: { afai: actual.afai, status: actual.status },
+          statusHit: pred.status === actual.status ? 1 : 0,
+        })
+      }
+    }
+  }
+
+  const total = pairs.length
+  const hits = pairs.filter(p => p.statusHit).length
+  const falseAlarms = pairs.filter(p => isAlertStatus(p.predicted.status) && !isAlertStatus(p.actual.status)).length
+  console.log(`\nRe-forecast pairs: ${total} | global hit=${(hits / total * 100).toFixed(1)}% | false alarms=${falseAlarms} (${(falseAlarms / total * 100).toFixed(1)}%)`)
+  console.log('  ^ NB: global blends regimes — the per-regime split is the honest view:')
+  const { byRegime, cells } = printRegimeTable('re-forecast — current code', pairs)
+
+  // Residual false alarms by beach + their max confidence (proves they are
+  // flagged low-confidence, not asserted as trustworthy).
+  const faByBeach = {}; let maxFAconf = 0
+  for (const p of pairs) {
+    if (isAlertStatus(p.predicted.status) && !isAlertStatus(p.actual.status)) {
+      faByBeach[p.beach] = (faByBeach[p.beach] || 0) + 1
+      maxFAconf = Math.max(maxFAconf, p.predicted.confidence)
+    }
+  }
+  console.log(`\nResidual false alarms by beach: ${JSON.stringify(faByBeach)}`)
+  console.log(`Max confidence among residual false alarms: ${maxFAconf}% (capped low = honest)`)
+
+  const out = {
+    mode: 'reforecast',
+    note: 'Current buildHonestForecast re-run over history.json inputs (banks = current field, held constant). Calm-season false-alarm calibration.',
+    computed: new Date().toISOString(),
+    totalPairs: total,
+    global: { statusHitRate: Math.round(hits / total * 100), falseAlarms, falseAlarmRate: Math.round(falseAlarms / total * 1000) / 10 },
+    byRegime, byRegimeDirection: cells,
+    residualFalseAlarmsByBeach: faByBeach,
+    maxConfidenceAmongFalseAlarms: maxFAconf,
+  }
+  fs.mkdirSync(path.dirname(REGIME_OUT_PATH), { recursive: true })
+  fs.writeFileSync(REGIME_OUT_PATH, JSON.stringify(out, null, 2))
+  console.log(`\nResults saved to ${REGIME_OUT_PATH}`)
+}
+
 function daysBetween(dateA, dateB) {
   const a = new Date(dateA)
   const b = new Date(dateB)
   return Math.round((b - a) / (1000 * 60 * 60 * 24))
 }
 
-main()
+if (process.argv.includes('--reforecast')) {
+  reforecastBacktest()
+} else {
+  main()
+}

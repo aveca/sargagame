@@ -23,10 +23,63 @@
  *   - Day 4+: persistence only + wider uncertainty (marked as horizon)
  */
 
-const { forecastConfidence, HALF_LIFE_DAYS, DECAY_LAMBDA } = require('./confidence.cjs')
+const {
+  forecastConfidence,
+  classifyRegime,
+  regimeAdjustedConfidence,
+  regimeConfidenceSummary,
+  HALF_LIFE_DAYS,
+  DECAY_LAMBDA,
+} = require('./confidence.cjs')
 
 const DAYS = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
 const CLEAN_BASELINE = 0.05 // AFAI baseline for a quiet beach
+
+// --- Regime-aware arrival gating (2026-06-15) ----------------------------
+// The re-forecast backtest proved that in the CALM regime the arrival-banks
+// signal cries wolf: 100% of calm-season alerts were false (the beach stayed
+// clean). Root cause: the Atlantic belt always has banks drifting within the
+// threat radius, so an offshore bank "approaching" a quiet, persistently-clean
+// beach injects enough AFAI to flip it to moderate — and that injection then
+// PERSISTS forward, echoing the false alarm across later days.
+//
+// Fix (NOT a floor — the opposite): when a beach has been quiet, DAMPEN the
+// arrival contribution and RAISE the bar to declare "arrivée imminente", so an
+// offshore bank alone can no longer push a calm beach into alert. Full physics
+// is preserved for transition/high regimes (and for any beach whose own reading
+// is already elevated, which lands it out of the calm regime anyway). This only
+// ever lowers values; it never pins a beach to a threshold.
+const REGIME_ARRIVAL_GAIN = { calm: 0.45, transition: 0.85, high: 1.0, unknown: 0.85 }
+const REGIME_ARRIVAL_DETECT = { calm: 0.12, transition: 0.05, high: 0.05, unknown: 0.07 }
+
+function regimeArrivalGain(regime) {
+  return REGIME_ARRIVAL_GAIN[regime] != null ? REGIME_ARRIVAL_GAIN[regime] : 0.85
+}
+function regimeArrivalDetectThreshold(regime) {
+  return REGIME_ARRIVAL_DETECT[regime] != null ? REGIME_ARRIVAL_DETECT[regime] : 0.07
+}
+
+/**
+ * Mean observed AFAI for a beach over its most recent satellite history.
+ * Used to classify the beach's conditions regime (calm vs active). Looks only
+ * at PAST observations — never the forecast — so it's an honest read of the
+ * stretch the beach has actually been in.
+ * @returns {number|null} null if fewer than 3 usable observations
+ */
+function recentObservedMean(beachId, history, windowDays = 7) {
+  if (!history || !history.length) return null
+  const sorted = history
+    .filter(h => h.levels)
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(-windowDays)
+  const vals = []
+  for (const entry of sorted) {
+    const bl = entry.levels.find(l => l.id === beachId)
+    if (bl && typeof bl.afai === 'number') vals.push(bl.afai)
+  }
+  if (vals.length < 3) return null
+  return vals.reduce((a, b) => a + b, 0) / vals.length
+}
 
 function cleanFloorFor() {
   return CLEAN_BASELINE
@@ -305,6 +358,12 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
     const bReports = reports[level.id] || null
     const cBias = communityBias(bReports)
 
+    // Conditions regime from this beach's OWN recent observations (not the
+    // calendar). Drives arrival gating + per-regime confidence below.
+    const recentMean = recentObservedMean(level.id, history)
+    const regime = classifyRegime(recentMean, level.afai)
+    const arrivalGain = regimeArrivalGain(regime)
+
     // Check if any bank threatens this beach
     const islandBanks = hasBanks ? banks.filter(b => b.island === island) : []
     const hasArrival = islandBanks.length > 0
@@ -320,7 +379,9 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
       d.setDate(d.getDate() + i)
 
       let afai, sources = []
-      const arrivalContribution = hasArrival ? arrivalSignalFromBanks(beach, islandBanks, i) : 0
+      // Raw physics signal, then regime-dampened (calm beaches resist arrival hype).
+      const rawArrival = hasArrival ? arrivalSignalFromBanks(beach, islandBanks, i) : 0
+      const arrivalContribution = rawArrival * arrivalGain
       let { confidence, type } = forecastConfidence(i, baseConf, hasWind, arrivalContribution > 0.02)
       // Memory beach forecasts must never be more confident than the memory observation itself
       if (isMemory && i > 0) confidence = Math.min(confidence, baseConf)
@@ -348,7 +409,13 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
 
         // Trend: only if r² passed gate (computeSatelliteTrend returns null otherwise)
         // Apply only for days 1-3 where short-term trend matters
-        const trendEffect = trend && i <= 3 ? trend.slope * 0.5 : 0
+        let trendEffect = trend && i <= 3 ? trend.slope * 0.5 : 0
+        // In a calm stretch, don't extrapolate a RISING trend from quiet-water
+        // noise — it was the co-driver of the residual calm false alarms. Falling
+        // trends (dispersion) pass through untouched: they only ever help. This is
+        // self-correcting — a genuinely rising day-0 lifts the beach out of the
+        // calm regime, restoring full-strength trend.
+        if (trendEffect > 0) trendEffect *= arrivalGain
 
         // Persist + add arrival + wind + trend
         let raw = prevAfai * dayDecay + arrivalContribution + windEffect + trendEffect
@@ -366,14 +433,20 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
       }
 
       afai = Math.round(afai * 100) / 100
+      const dayStatus = statusFromAfai(afai)
+      // Honest confidence: cap by regime reliability so a calm-season ALERT can
+      // never be displayed as trustworthy (empirically 0% right), while clean
+      // calls keep their conservative horizon-decayed confidence.
+      confidence = regimeAdjustedConfidence(confidence, regime, dayStatus, i)
 
       series.push({
         day: i === 0 ? 'Auj.' : i === 1 ? 'Dem.' : DAYS[d.getDay()],
         date: d.toISOString().slice(0, 10),
         afai,
-        status: statusFromAfai(afai),
+        status: dayStatus,
         confidence,
         type,
+        regime,
         sources,
       })
     }
@@ -394,7 +467,10 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
           arrivalSignalFromBanks(beach, islandBanks, 3),
         )
       : 0
-    const arrivalDetected = maxArrival >= 0.05 && level.afai < 0.20
+    // Higher bar in the calm regime (0.12) than in active stretches (0.05): only
+    // a strong, close, genuinely-approaching bank flags "imminent" on a quiet
+    // beach — killing the calm-season "arrival imminente" false banners.
+    const arrivalDetected = maxArrival >= regimeArrivalDetectThreshold(regime) && level.afai < 0.20
 
     // Forecast method label
     let forecastMethod, forecastDisclaimer
@@ -436,6 +512,11 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
       // Flag for UI alert banner "arrival detected"
       arrivalDetected,
       arrivalStrength: Math.round(maxArrival * 100) / 100,
+      // Conditions regime + per-regime reliability — lets the app/pages show an
+      // HONEST confidence ("saison calme : alertes peu fiables") instead of a
+      // single global % that masks the regime.
+      regime,
+      regimeConfidence: regimeConfidenceSummary(regime),
     }
   }
 
@@ -449,5 +530,8 @@ module.exports = {
   arrivalSignalFromBanks,
   communityBias,
   statusFromAfai,
+  recentObservedMean,
+  regimeArrivalGain,
+  regimeArrivalDetectThreshold,
   DAYS,
 }
