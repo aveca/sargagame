@@ -1,5 +1,16 @@
 # NIGHT LOG — build autonome (nuit du 14→15/06/2026)
 
+## ⏱️ SESSION 15/06 (reprise) — SUITE PRIORISÉE entièrement livrée (5/5)
+**Audit multi-agents `wt4xn78g8` (4 auditeurs + verify adversarial + synthèse) → backlog ancré → implémenté incrément par incrément (build exit 0 + smoke EUR + DOM à CHAQUE push). Funnel Stripe intouché partout.**
+- **#49 pan inertie + bords élastiques** (`bbcc8717`) — Archipel : le pan libre coast au relâché (décélération = continuation du geste, pas idle), bords résistent (overscroll borné drag + ressort retour). Monde jamais lançable hors écran. reduced-motion : vélocité=0. Vérifié DOM (séquence pointer, transform appliquée, 0 err).
+- **Verdict du Jour — Devine-puis-Révèle dans la fiche** (`1ea5648d`) — A/B `pw_verdict_guess`, l'user devine le statut AVANT la donnée → engagement+série (clés dédiées `sg_vdj_*`, ne clobbe pas le jeu scroll). 1×/plage/jour, reveal one-shot scoped `vdjPop`, calme. Boutons share `missed` sur raté.
+- **Design-system SCENE_TOKENS + `--sg-*`** (`ad27be9c`) — SCENE_TOKENS = source unique golden-hour ; BEACH_PHASE en DÉRIVE (byte-identique vérifié machine+DOM : day.sky rend exact) ; index.html émet golden en `--sg-*` → app + 136 pages SEO partagent la source ; REGION.sceneTheme = override marché prêt. Additif, 0 changement visuel défaut.
+- **Purge anim `infinite` (#34)** (`cf6b3198`) — 52 lignes / 55 idle-loops → `1 both` (joue 1× à l'apparition puis fige). Couvre map/onboarding/paywall/scènes signature (sgms/sgas/sgst+doublon/gf)/WorldFeed/particules/chevron. GARDÉ : nuages golden-hour (bscCloud/sghDrift), spinner checkout, gf-scanline (interaction), reduced-motion. Vérifié DOM (6 classes → iteration-count:1).
+- **Variantes share-card 'top' + 'missed'** (`8d48e572`) — chrome factorisé `_scChrome`/`_scShip`. 'top' = LA PLAGE DU JOUR (reco « vas-y », spoiler-free). 'missed' = défi raté « la mer m'a eu » (loss-aversion viral), SPOILER-FREE STRICT (dessine que le choix barré, jamais le vrai statut). Vérifié e2e DOM (raté→bouton→canvas→download, 0 err).
+
+**SUITE (reprendre frais) :** brancher des CONSOMMATEURS des `--sg-*` (pages SEO noscript + scènes SVG via `var(--sg-*)`) + wire REGION.sceneTheme dans vite.config.js (override marché) · trigger 'top' aussi sur HeroVerdict/strip plage-du-jour · purge #34 reste = scènes signature en play-on-scroll IntersectionObserver (au lieu de `1 both` on-mount, raffinement) · MESURER pw_verdict_guess + uptake share via stats.php quand la donnée s'accumule. ⚠️ Stats key absente en local → `analyze-ux.cjs` only `--mock`. Vérif visuelle finale = écran fondateur.
+
+
 ## ⏱️ SESSION 15/06 (jour+nuit) — scène-spine + funnel + alerte UX + grammaire
 **Tout déployé, build+smoke vert + vérifié DOM à chaque push.**
 - **Scène satellite+plage = colonne vertébrale** (réponse au feedback "t'as retiré le svg de l'accueil") : le HeroScene était intact mais enterré sous l'Archipel dots → ajout MER golden-hour + horizon + reflet dans le monde (palette BEACH_PHASE, phase-adaptive) → les plages scintillent sur l'eau (`6ad88adf`). + **Lecture du Jour** : le Veilleur narre la vraie data (counts live), saison calme = état désirable (`f6bc4eb4`).
