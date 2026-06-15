@@ -10,7 +10,11 @@
 
 **VÉRIF ADVERSARIALE finale** (`wsowe2wzx`, 5 reviewers + synthèse) : 3/5 dimensions clean (funnel-Stripe intouché, doctrine calme, pan-correctness). 3 findings traités (`70f2ef0e`) : [MED régression que j'avais introduite] AlertScene (storyboard 9s du pitch premium) figeait sur opacity:0 après la purge #34 → keyframes réécrites pour tenir l'état LIVRÉ visible (joue 1× puis fige visible) ; [LOW] panBounds normalisé min<=max (plus de boucle rAF sur aspect-ratio extrême) ; [LOW] nom centré dans la carte share 'top'. INFO : MethodScene = dead code (jamais rendue), même souci latent si un jour wirée.
 
-**SUITE (reprendre frais) :** brancher des CONSOMMATEURS des `--sg-*` (pages SEO noscript + scènes SVG via `var(--sg-*)`) + wire REGION.sceneTheme dans vite.config.js (override marché) · trigger 'top' aussi sur HeroVerdict/strip plage-du-jour · purge #34 reste = scènes signature en play-on-scroll IntersectionObserver (au lieu de `1 both` on-mount, raffinement) · MESURER pw_verdict_guess + uptake share via stats.php quand la donnée s'accumule. ⚠️ Stats key absente en local → `analyze-ux.cjs` only `--mock`. Vérif visuelle finale = écran fondateur.
+**LOOP autonome (reprise 15/06 soir) — items enchaînés :**
+- ✅ `REGION.sceneTheme` wiré (`43a20cf9`) : override `--sg-*` par marché dans vite.config.js (cascade après base, MQ/GP early-return). Arc design-token COMPLET (source→émission→override). Inerte tant qu'aucune région ne le définit (slot prêt). Vérifié unit-test + build MQ sans override + smoke.
+- ⏭️ PROCHAIN : polir les ÉCRANS du funnel (entrée→monde→plage→premium→checkout→retour), additif + A/B + calme, en enrichissant la scène golden-hour. Tokens CONSOMMÉS dans les scènes SVG = à faire via `style={{fill:var(--sg-*)}}` (PAS l'attribut `fill=`, var() n'y marche pas) là où le retint marché a du sens — non prioritaire vs polish visible.
+
+**SUITE (reprendre frais) :** brancher des CONSOMMATEURS des `--sg-*` (pages SEO noscript + scènes SVG via `style={{fill:var(--sg-*)}}`) · trigger 'top' aussi sur HeroVerdict/strip plage-du-jour · purge #34 reste = scènes signature en play-on-scroll IntersectionObserver (au lieu de `1 both` on-mount, raffinement) · MESURER pw_verdict_guess + uptake share via stats.php quand la donnée s'accumule. ⚠️ Stats key absente en local → `analyze-ux.cjs` only `--mock`. Vérif visuelle finale = écran fondateur.
 
 
 ## ⏱️ SESSION 15/06 (jour+nuit) — scène-spine + funnel + alerte UX + grammaire
