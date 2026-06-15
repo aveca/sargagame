@@ -478,7 +478,7 @@ function BeachScene({beach,reveal}){
 //    scroll→opacités de beats pilotées par l'ÉTAT (jamais vide), CSS auto-contenue,
 //    capture sur document, analytics par beat). GÉNÉRIQUE sur une config `beats` :
 //    chaque surface = une config, plus de recodage. ────────────────────────────
-function StoryEngine({beats,lang,accent="#FFC72C",ev="sg_engine_beat",onCTA}){
+function StoryEngine({beats,lang,accent="#FFC72C",ev="sg_engine_beat",onCTA,onBeat}){
   const boxRef=useRef(null)
   const [beat,setBeat]=useState(0)
   const beatRef=useRef(-1)
@@ -507,7 +507,7 @@ function StoryEngine({beats,lang,accent="#FFC72C",ev="sg_engine_beat",onCTA}){
       }
       const b=Math.max(0,Math.min(N-1,Math.round(p*(N-1))))
       const vis=r.top<vh&&r.bottom>0
-      if(vis&&b!==beatRef.current){beatRef.current=b;setBeat(b);try{track(ev,{b:b+1,n:N})}catch(_){}}
+      if(vis&&b!==beatRef.current){beatRef.current=b;setBeat(b);try{track(ev,{b:b+1,n:N})}catch(_){}try{onBeat&&onBeat(b,N)}catch(_){}}
     }
     const onScroll=()=>{if(!raf)raf=requestAnimationFrame(upd)}
     document.addEventListener("scroll",onScroll,{passive:true,capture:true})
@@ -814,10 +814,22 @@ function solutionsBeats(lang){
   ]
 }
 function SolutionsStory({lang,onClose}){
+  // JEU data-unlock (INC2) : avancer dans le cycle DÉVERROUILLE nos données, palier par palier.
+  // Niveau monotone (ne décroît JAMAIS — pré-révélé au retour), reduced-motion = tout d'office.
+  const beats=solutionsBeats(lang),N=beats.length
+  const rm=(()=>{try{return window.matchMedia("(prefers-reduced-motion: reduce)").matches}catch(_){return false}})()
+  const[unlocked,setUnlocked]=useState(()=>{try{return rm?N:Math.max(0,parseInt(g("sg_sol_lvl",0))||0)}catch(_){return 0}})
+  const onBeat=(b)=>{const lvl=Math.min(N,b+1);if(lvl>unlocked){setUnlocked(lvl);try{s("sg_sol_lvl",lvl)}catch(_){}try{sgUnlock("sol_p"+lvl)}catch(_){}}}
+  const pct=Math.round(100*Math.min(unlocked,N)/N)
   return(
     <div role="dialog" aria-label={_t(lang,"Les solutions sargasses","Sargassum solutions","Soluciones al sargazo")} style={{position:"absolute",inset:0,zIndex:1065,background:"#0A1714",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
-      <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"fixed",top:"calc(12px + env(safe-area-inset-top))",right:12,zIndex:30,width:42,height:42,borderRadius:21,background:"rgba(10,23,20,.55)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:16,cursor:"pointer"}}>✕</button>
-      <StoryEngine beats={solutionsBeats(lang)} lang={lang} accent="#5FD3C9" ev="sg_solutions_beat" onCTA={onClose}/>
+      <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"fixed",top:"calc(12px + env(safe-area-inset-top))",right:12,zIndex:31,width:42,height:42,borderRadius:21,background:"rgba(10,23,20,.55)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:16,cursor:"pointer"}}>✕</button>
+      {/* HUD : barre de déblocage de NOS données (jamais décroît). Pas un popup — fin bandeau chrome. */}
+      <div aria-hidden style={{position:"fixed",top:"calc(15px + env(safe-area-inset-top))",left:14,right:66,zIndex:30,pointerEvents:"none"}}>
+        <div style={{fontSize:10,fontWeight:800,letterSpacing:".04em",color:"#5FD3C9",textShadow:"0 1px 4px rgba(0,0,0,.6)"}}>{unlocked}/{N} · {_t(lang,"données débloquées","data unlocked","datos desbloqueados")}</div>
+        <div style={{height:5,borderRadius:3,background:"rgba(255,255,255,.13)",overflow:"hidden",marginTop:4}}><div style={{height:"100%",width:pct+"%",background:"linear-gradient(90deg,#3BA7A0,#5FD3C9)",borderRadius:3,transition:"width .55s cubic-bezier(.22,1,.36,1)"}}/></div>
+      </div>
+      <StoryEngine beats={beats} lang={lang} accent="#5FD3C9" ev="sg_solutions_beat" onCTA={onClose} onBeat={onBeat}/>
     </div>
   )
 }

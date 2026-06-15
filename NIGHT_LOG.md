@@ -84,7 +84,14 @@ Appliquer le pattern « jeu SVG + contenu (free+premium) + déblocage de NOS don
 - Tiers : FREE = état du jour toutes plages + jeu Solutions éducatif + carte partage + 1er palier méthode.
   PREMIUM = forecast J+1→J+6 + alertes + brief matin + data profonde des solutions + assets exclusifs.
 
-## ÉTAT (≈31 commits) — la transformation produit de base est COMPLÈTE & cohérente
+## NUIT 2 — commits
+- 4af92d23 — fondation déblocage + capture d'intention (sgUnlock/sgIntent, funnel-wide).
+- 0c990ef0 — jeu Solutions INC1 : instrumentation sg_sol_tap (transforme/tri/debat) = heat des solutions.
+- d3f32777 — SEO pages MÉTÉO MQ+GP (profil #1 data-mining : cluster "meteo" >110 clics/sem en hausse) + FAQ schema + sitemaps.
+- Specs nuit 2 : `reference_solutions_game_spec` (jeu data-unlock, buildOrder INC1✅..INC7) + `project_unexpected_profiles` (5 profils chiffrés).
+- RESTE nuit 2 : Solutions INC2 (unlock+HUD A/B sol_unlock) → INC3 cartes-données live → INC4 Sol*Scene→jeu → INC5 vidéo NASA → INC6 payoff+CTA → INC7 patch stats. Data-mining : freemium email tier (45% des actions modal = email), GP rage-bug (vérif post-refonte), B2B substrat (105 hôtels), bulletin/voix.
+
+## ÉTAT (≈31 commits NUIT 1) — la transformation produit de base est COMPLÈTE & cohérente
 Full-SVG (Leaflet out) · monde unifié 'même monde' · plages uniques (9 archétypes) · plan in-scène ·
 paywall-scène (A/B pw_scene) · tracking first-party (collect/stats.php, sans Google) · engagement continu ·
 unité visuelle (1 Veilleur, 1 statut, reveal) · calme · carte de partage virale.
