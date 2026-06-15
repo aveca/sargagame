@@ -9162,7 +9162,18 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
   // LA MARÉE : le scroll pilote la profondeur de la caméra (calme), PLUS de tour
   //   répétitif ni de cul-de-sac onSolutions. Scroll bas = la marée monte (on
   //   plonge / zoom in) ; scroll haut = on repose vers le large (zoom out).
-  useEffect(()=>{const el=wrapRef.current;if(!el)return;let wl=0;const onWheel=e=>{e.preventDefault();const now=Date.now();if(now-wl<110)return;wl=now;const r=el.getBoundingClientRect();zoomAt(e.deltaY>0?1.16:0.86,r.width/2,r.height/2)};el.addEventListener("wheel",onWheel,{passive:false});return()=>el.removeEventListener("wheel",onWheel)},[])// eslint-disable-line
+  // SCROLL = VISITE plage-à-plage (doctrine #24 "le scroll pilote la visite", PAS
+  //   le zoom — le zoom reste sur pincer/double-tap). La caméra GLISSE vers la
+  //   plage suivante/précédente (cinématique). Fin de liste = BOUCLE (jamais
+  //   bloqué, PAS de cul-de-sac Solutions). Scroll-haut au début = sortie vers le
+  //   monde libre (escapable). Régression #4a corrigée.
+  useEffect(()=>{const el=wrapRef.current;if(!el)return;let wl=0;const onWheel=e=>{e.preventDefault();const now=Date.now();if(now-wl<240)return;wl=now;
+    if(tourRef.current==null){if(e.deltaY>0)startTour();else centerOn(myIdx,MID);return}
+    const nx=tourRef.current+(e.deltaY>0?1:-1)
+    if(nx<0){exitTour();return}
+    if(nx>tourOrder.length-1){tourGo(0);return}
+    tourGo(nx)
+  };el.addEventListener("wheel",onWheel,{passive:false});return()=>el.removeEventListener("wheel",onWheel)},[])// eslint-disable-line
   const rel=e=>{const r=wrapRef.current.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
   const onDown=e=>{movedRef.current=false
     // attrape le Veilleur (drag rigolo) si le doigt tombe dessus
@@ -9177,7 +9188,7 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
     if(tourRef.current!=null){const dx2=p.x-prev.x,dy2=p.y-prev.y;if(Math.abs(dx2)+Math.abs(dy2)>2)movedRef.current=true;return}
     const dx=p.x-prev.x,dy=p.y-prev.y;if(Math.abs(dx)+Math.abs(dy)>2){if(!movedRef.current){try{e.currentTarget.setPointerCapture(e.pointerId)}catch(_){}}movedRef.current=true}camRef.current.cx+=dx;camRef.current.cy+=dy;schedule()}
   const onUp=e=>{if(satDragRef.current){satDragRef.current=false;setSatGrab(false);satSpringHome();ptrs.current.delete(e.pointerId);try{e.currentTarget.releasePointerCapture(e.pointerId)}catch(_){}if(sayTimerRef.current)clearTimeout(sayTimerRef.current);sayTimerRef.current=setTimeout(()=>setSatSay(null),1700);try{track("sg_archipel_sat_drop",{})}catch(_){};return}
-    if(tourRef.current!=null&&swipeY.current!=null&&ptrs.current.size===1){const dy=rel(e).y-swipeY.current;if(dy<-44){if(tourRef.current>=tourOrder.length-1){onSolutions&&onSolutions()}else tourGo(tourRef.current+1)}else if(dy>44)tourGo(tourRef.current-1)}ptrs.current.delete(e.pointerId);if(ptrs.current.size<2)pinchRef.current=null;swipeY.current=null}
+    if(tourRef.current!=null&&swipeY.current!=null&&ptrs.current.size===1){const dy=rel(e).y-swipeY.current;if(dy<-44){tourGo(tourRef.current>=tourOrder.length-1?0:tourRef.current+1)}else if(dy>44){if(tourRef.current<=0)exitTour();else tourGo(tourRef.current-1)}}ptrs.current.delete(e.pointerId);if(ptrs.current.size<2)pinchRef.current=null;swipeY.current=null}
   const onTap=e=>{if(tourRef.current!=null)return;const now=Date.now();if(now-lastTap.current<300&&!movedRef.current){const r=wrapRef.current.getBoundingClientRect();zoomAt(camRef.current.cz<1.4?2.0:0.45,e.clientX-r.left,e.clientY-r.top)}lastTap.current=now}
   // ── MODE VISITE : scroll/swipe de plage en plage, la caméra glisse, une fiche-info
   //    par plage (« quand on scroll down ça passe de plage en plage avec des infos »).
