@@ -4962,6 +4962,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
       const u=new URL(link)
       const email=localStorage.getItem("sg_email")||""
       if(email)u.searchParams.set("prefilled_email",email)
+      // ARMER le panier abandonné (audit widget-factory) : ce point est le
+      // chokepoint pré-checkout. La bannière de récupération (l.9564) LIT
+      // sg_checkout_abandoned mais rien ne l'écrivait → code mort. Effacé à la
+      // conversion (effet isPremium). Sans email la bannière ne s'affiche pas (OK).
+      try{localStorage.setItem("sg_checkout_abandoned",JSON.stringify({email,ts:Date.now()}))}catch(_){}
       const ref=[IS_NEW_REGION?REGION.id:(island||"mq"),plan||effectivePlan,source||"unknown"].join("_").replace(/[^a-zA-Z0-9_-]/g,"").slice(0,200)
       u.searchParams.set("client_reference_id",ref)
       return u.toString()
@@ -9577,6 +9582,15 @@ export default function App(){
       }
     }catch{localStorage.removeItem("sg_checkout_abandoned")}
   },[])
+  // Funnel mort réarmé (audit widget-factory) : à l'activation premium, (a) on
+  //   efface le panier abandonné (anti-stale), (b) on GÉNÈRE le code de parrainage
+  //   — il était LU (share l.3082) + détecté en landing (?ref=) mais JAMAIS écrit
+  //   → canal d'acquisition entier mort. Code stable par device (cid). Double-face.
+  useEffect(()=>{
+    if(!isPremium)return
+    try{localStorage.removeItem("sg_checkout_abandoned")}catch(_){}
+    try{if(!localStorage.getItem("sg_referral_code"))localStorage.setItem("sg_referral_code","REF-"+hashSeed(_sgcCid()+":ref").toString(36).toUpperCase().slice(0,6))}catch(_){}
+  },[isPremium])
 
   // Runtime data sources
   const[allBeaches,setAllBeaches]=useState(BEACHES_FALLBACK)

@@ -26,7 +26,7 @@ $sessions = array(); // sid -> dernier résumé (dédoublonnage)
 
 // Étapes du funnel conversion (ordre) — les rates par région se calculent dessus.
 // Source de vérité = noms d'events track() de l'app (audit 2026-06-14).
-$FUNNEL = array('sg_session_start','sg_premium_modal_open','sg_premium_modal_cta','sg_checkout_redirect','sg_email_submit');
+$FUNNEL = array('sg_session_start','sg_forecast_lock_click','sg_premium_modal_open','sg_premium_modal_cta','sg_checkout_redirect','sg_conversion','sg_email_submit');
 
 for ($i = 0; $i < $days; $i++) {
   $f = $dir . '/sg-' . gmdate('Y-m-d', time() - $i * 86400) . '.ndjson';
@@ -105,26 +105,35 @@ arsort($out['events']);
 foreach ($byR as $rg => $a) {
   $f = $a['funnel'];
   $start  = max(1, $a['sessions']);
+  $lock   = $f['sg_forecast_lock_click'] ?? 0;
   $modal  = $f['sg_premium_modal_open'] ?? 0;
   $cta    = $f['sg_premium_modal_cta'] ?? 0;
   $redir  = $f['sg_checkout_redirect'] ?? 0;
+  $conv   = $f['sg_conversion'] ?? 0;
   $email  = $f['sg_email_submit'] ?? 0;
   $sv     = max(1, $a['screens_visits']);
   arsort($a['events']);
   $out['byRegion'][$rg] = array(
     'sessions'  => $a['sessions'],
     'funnel'    => array(
+      'forecast_lock'    => $lock,
       'modal_open'       => $modal,
       'modal_cta'        => $cta,
       'checkout_redirect'=> $redir,
+      'conversion'       => $conv,
       'email_submit'     => $email,
     ),
     'rates' => array(
       // % de sessions atteignant chaque étape (lisible cross-région).
-      'session_to_modal' => round(100 * $modal / $start, 1),
-      'modal_to_cta'     => $modal ? round(100 * $cta / $modal, 1) : 0,
-      'cta_to_redirect'  => $cta ? round(100 * $redir / $cta, 1) : 0,
-      'session_to_email' => round(100 * $email / $start, 1),
+      'session_to_modal'     => round(100 * $modal / $start, 1),
+      'modal_to_cta'         => $modal ? round(100 * $cta / $modal, 1) : 0,
+      'cta_to_redirect'      => $cta ? round(100 * $redir / $cta, 1) : 0,
+      // La MARCHE REVENU — l'angle mort que le funnel ne voyait pas (surtout USD).
+      'redirect_to_conversion' => $redir ? round(100 * $conv / $redir, 1) : 0,
+      'session_to_conversion'  => round(100 * $conv / $start, 2),
+      // Intention payante la plus forte (lock 121 > cta 77) — mesurée isolée.
+      'lock_to_cta'          => $lock ? round(100 * $cta / $lock, 1) : 0,
+      'session_to_email'     => round(100 * $email / $start, 1),
     ),
     'bored_rate' => round($a['screens_bored'] / $sv, 3),
     'avg_dwell_ms' => round($a['screens_dwell'] / $sv),
