@@ -5035,6 +5035,16 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
     ||lv?.id?.replace(/^gp-/,"").split("-").map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(" ")||null
   const _topName=_nameOf(_topBeach)
   const _topScore=_topBeach?.score||null
+  // Paywall-constellation (A/B pw_constel) : tes plages = points lumineux sur la mer
+  // golden-hour. PRNG seedé (stable entre renders = calme, jamais Math.random/render),
+  // capé 14 (avoid d'abord puis top scores), couleur = statut. _topBeach = étoile-guide.
+  const _aggStatus=_islandLvls.some(b=>b.status==="avoid")?"avoid":_islandLvls.some(b=>b.status==="moderate")?"moderate":"clean"
+  const _constelMood=VEILLEUR_MOOD[moodFromStatus(_aggStatus)]||VEILLEUR_MOOD.serein
+  const _constel=useMemo(()=>{
+    const seed=n=>{const x=Math.sin(n*127.1+74.7)*43758.5453;return x-Math.floor(x)}
+    return [..._islandLvls].sort((a,b)=>((b.status==="avoid")-(a.status==="avoid"))||((b.score||0)-(a.score||0))).slice(0,14)
+      .map((b,i)=>{const row=i%3;const x=18+seed(i+1)*364;const y=111+row*10+seed(i+50.3)*5;const col=b.status==="clean"?"#5FD3C9":b.status==="moderate"?"#FFD27A":"#F4845F";return{x:+x.toFixed(1),y:+y.toFixed(1),col,top:!!(_topBeach&&b.id===_topBeach.id)}})
+  },[_islandLvls,_topBeach])
   // Value card 02 : destination = vraie plage propre du jour calculée du live —
   // plus aucun nom de plage inventé ni changement d'état fabriqué.
   const _cleanTop=_islandLvls.filter(b=>b.status==="clean").sort((a,b)=>(b.score||0)-(a.score||0))[0]
@@ -5305,6 +5315,10 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
   // promesse) au lieu d'un mur sombre plat — cible la fuite modal→CTA 2%. N'habille QUE le
   // shell, AUCUN changement à la logique de paiement. Mesurable (modal_open/cta identiques).
   const scenePay=(()=>{try{const s=window.location.search;if(/[?&]pwscene=1/.test(s))return true;if(/[?&]pwscene=0/.test(s))return false;return abVariant("pw_scene",["control","scene"],[.5,.5])==="scene"}catch(_){return false}})()
+  // pw_constel : le paywall-constellation golden-hour (niveau home) remplace le hero
+  // scenePay. Démarrage prudent 15% (fuite #1 = test propre, montée 50/50 post-smoke).
+  // ?pwconstel=1/0 en QA. Control = modal actuel intact. Paiement INTOUCHÉ (visuel only).
+  const pwConstel=(()=>{try{const q=window.location.search;if(/[?&]pwconstel=1/.test(q))return true;if(/[?&]pwconstel=0/.test(q))return false;return abVariant("pw_constel",["control","constel"],[.85,.15])==="constel"}catch(_){return false}})()
   // A/B pw_trippass (USD only) : propose un accès UNIQUE 7 jours (one-time,
   // aligné séjour, sans abonnement) EN PLUS de l'abo — répond au mismatch
   // abo-mensuel/touriste-5-jours (verdict chantier USA). Inerte si pas de
@@ -5357,7 +5371,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
           margin:"-8px -24px 20px",padding:0}}/>}
         {/* A/B pw_scene : le paywall = CONTINUATION du monde golden-hour (Veilleur + promesse),
             pas un mur sombre plat. Calme (statique). Logique de paiement INCHANGÉE en dessous. */}
-        {scenePay&&(<>
+        {scenePay&&!pwConstel&&(<>
           <div style={{margin:"-12px -24px 0",position:"relative",overflow:"hidden"}}>
             <svg viewBox="0 0 400 120" preserveAspectRatio="xMidYMid slice" style={{width:"100%",height:108,display:"block"}} aria-hidden="true">
               <defs><linearGradient id="pwSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0B2230"/><stop offset=".48" stopColor="#155A5A"/><stop offset=".82" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/></linearGradient></defs>
@@ -5373,6 +5387,52 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
             <div style={{fontSize:13,color:"rgba(255,255,255,.62)",marginTop:4}}>{_t(lang,"Chaque matin, tu sais — avant de charger la voiture.","Every morning you know — before you load the car.","Cada mañana lo sabes — antes de cargar el coche.")}</div>
           </div>
         </>)}
+
+        {/* pw_constel — PAYWALL-CONSTELLATION golden-hour (niveau home). La scène
+            d'accueil réincarnée : tes plages = points lumineux sur la mer, le Veilleur
+            (humeur data-driven) veille, le compte propre LIVE gravé dans l'écume, une
+            promesse calme-positive + une preuve du jour. Reveal one-shot à l'ouverture,
+            zéro idle, reduced-motion = tout visible. Paiement INTOUCHÉ (CTA en aval). */}
+        {pwConstel&&(()=>{
+          const m=_constelMood,propres=_t(lang,"propres","clean","limpias")
+          const fc=(()=>{try{return sargData?.weekly?.[_topBeach?.id]?.forecast}catch(_){return null}})()
+          const spark=(Array.isArray(fc)&&fc.length>=2)?fc.slice(0,4).map((d,i)=>({x:148+i*38,y:101-(d.status==="clean"?0:d.status==="moderate"?5:9)})):null
+          const sparkPath=spark?("M"+spark.map(p=>p.x.toFixed(0)+" "+p.y.toFixed(0)).join(" L")):null
+          const guide=_constel.find(p=>p.top)
+          const G={background:"linear-gradient(135deg,#FFE47A,#FFC72C 55%,#E89400)",WebkitBackgroundClip:"text",backgroundClip:"text",WebkitTextFillColor:"transparent",color:"transparent"}
+          const promiseEl=_allCalm
+            ?(lang==="es"?(<>Todo en calma. ¿Y <span style={G}>mañana</span>? Ya lo he visto.</>):lang==="en"?(<>All calm. And <span style={G}>tomorrow</span>? I've already seen it.</>):(<>Tout est calme. Et <span style={G}>demain</span> ? Je l'ai déjà vu.</>))
+            :(lang==="es"?(<>Sabe dónde estará el mar <span style={G}>mañana</span>, no solo hoy</>):lang==="en"?(<>Know where the sea will be <span style={G}>tomorrow</span>, not just today</>):(<>Sache où sera la mer <span style={G}>demain</span>, pas juste aujourd'hui</>))
+          const proof=(_topName&&_topScore)
+            ?_t(lang,`${_topName} · ${_topScore}/100 · vérifié satellite`,`${_topName} · ${_topScore}/100 · satellite-verified`,`${_topName} · ${_topScore}/100 · verificado por satélite`)
+            :_t(lang,"Toute ta côte · vérifiée 4×/jour · satellite","Your whole coast · checked 4×/day · satellite","Toda tu costa · 4×/día · satélite")
+          return(<>
+            <style>{`@keyframes pcDot{from{opacity:0;transform:translateY(2px)}to{opacity:1;transform:translateY(0)}}.pc-dot{animation:pcDot .42s ease-out both}@keyframes pcStar{0%{transform:scale(1)}45%{transform:scale(1.18)}100%{transform:scale(1)}}.pc-star{animation:pcStar .7s ease-out 1 both;transform-origin:center;transform-box:fill-box}@media(prefers-reduced-motion:reduce){.pc-dot,.pc-star{animation:none}}`}</style>
+            <div style={{margin:"-12px -24px 0",position:"relative",overflow:"hidden"}}>
+              <svg viewBox="0 0 400 150" preserveAspectRatio="xMidYMid slice" style={{width:"100%",height:142,display:"block"}} aria-hidden="true">
+                <defs>
+                  <linearGradient id="pcSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0B2230"/><stop offset=".48" stopColor="#155A5A"/><stop offset=".82" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/></linearGradient>
+                  <linearGradient id="pcSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1A5852"/><stop offset="1" stopColor="#08251F"/></linearGradient>
+                </defs>
+                <rect width="400" height="150" fill="url(#pcSky)"/>
+                <circle cx="200" cy="106" r="58" fill="#FFD884" opacity=".2"/><circle cx="200" cy="106" r="32" fill="#FFD884" opacity=".4"/>
+                <rect y="106" width="400" height="44" fill="url(#pcSea)"/>
+                <line x1="0" y1="106" x2="400" y2="106" stroke="#FFD884" strokeWidth="1" opacity=".5"/>
+                <line x1="200" y1="106" x2="186" y2="150" stroke="#FFD884" strokeWidth="3" strokeDasharray="2 7" opacity=".28"/>
+                <line x1="200" y1="106" x2="214" y2="150" stroke="#FFD884" strokeWidth="3" strokeDasharray="2 7" opacity=".28"/>
+                {sparkPath&&<path d={sparkPath} fill="none" stroke="#FFE08A" strokeWidth="1.6" opacity=".55" strokeLinecap="round"/>}
+                {guide&&<circle className="pc-star" cx={guide.x} cy={guide.y} r="9" fill={m.lens} opacity=".22"/>}
+                {_constel.map((p,i)=>(<circle key={i} className="pc-dot" style={{animationDelay:(i*38)+"ms"}} cx={p.x} cy={p.y} r={p.top?4:2.4} fill={p.col}/>))}
+                <g>{miVeil(200,48,m.wing,m.lens)}</g>
+                <g><rect x="128" y="120" width="144" height="18" rx="9" fill="#0A1714" opacity=".4"/><text x="200" y="133" fontFamily="ui-monospace,monospace" fontSize="11" fill="#9ADCD4" opacity=".92" textAnchor="middle">{_cleanCount}/{_totalCount} {propres}</text></g>
+              </svg>
+              <div aria-hidden style={{position:"absolute",left:0,right:0,bottom:0,height:42,background:"linear-gradient(180deg,transparent,#0D1E1C)"}}/>
+            </div>
+            <div style={{textAlign:"center",margin:"8px 0 16px"}}>
+              <div style={{fontSize:15.5,fontWeight:800,color:"#fff",lineHeight:1.32}}>{promiseEl}</div>
+              <div style={{fontSize:12,color:"rgba(255,255,255,.55)",marginTop:5}}>{proof}</div>
+            </div>
+          </>)})()}
 
         {/* ═══ STRIPE PRELUDE (Design v2 bet #2) ═══
             A/B variant "prelude": intercepts the paid CTA click and shows
