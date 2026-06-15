@@ -9162,24 +9162,23 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
   const centerOn=(i,cz)=>{const el=wrapRef.current;if(!el||!proj[i])return;const z=clampZ(cz||camRef.current.cz),W=el.clientWidth,H=el.clientHeight;camRef.current={cz:z,cx:W/2-proj[i].x*z,cy:H/2-proj[i].y*z};schedule()}
   const zoomAt=(f,px,py)=>{const c=camRef.current,nz=clampZ(c.cz*f),wx=(px-c.cx)/c.cz,wy=(py-c.cy)/c.cz;c.cz=nz;c.cx=px-wx*nz;c.cy=py-wy*nz;schedule()}
   useEffect(()=>{centerOn(myIdx,MID);setReady(true);try{track("sg_archipel_open",{beaches:count})}catch(_){}},[])// eslint-disable-line
-  // SCROLL = AVANCER dans le recit, plus zoomer (doctrine fondateur). En tour : molette
-  // = plage suivante/precedente. En libre : bas = entrer la visite, haut = vue d ensemble.
-  // Le zoom reste un bonus (pincer / double-tap).
-  // LA MARÉE : le scroll pilote la profondeur de la caméra (calme), PLUS de tour
-  //   répétitif ni de cul-de-sac onSolutions. Scroll bas = la marée monte (on
-  //   plonge / zoom in) ; scroll haut = on repose vers le large (zoom out).
-  // SCROLL = VISITE plage-à-plage (doctrine #24 "le scroll pilote la visite", PAS
-  //   le zoom — le zoom reste sur pincer/double-tap). La caméra GLISSE vers la
-  //   plage suivante/précédente (cinématique). Fin de liste = BOUCLE (jamais
-  //   bloqué, PAS de cul-de-sac Solutions). Scroll-haut au début = sortie vers le
-  //   monde libre (escapable). Régression #4a corrigée.
-  useEffect(()=>{const el=wrapRef.current;if(!el)return;let wl=0;const onWheel=e=>{e.preventDefault();const now=Date.now();if(now-wl<240)return;wl=now;
-    if(tourRef.current==null){if(e.deltaY>0)startTour();else centerOn(myIdx,MID);return}
-    const nx=tourRef.current+(e.deltaY>0?1:-1)
-    if(nx<0){exitTour();return}
-    if(nx>tourOrder.length-1){tourGo(0);return}
-    tourGo(nx)
-  };el.addEventListener("wheel",onWheel,{passive:false});return()=>el.removeEventListener("wheel",onWheel)},[])// eslint-disable-line
+  // SCROLL / molette / swipe / flèches = VISITE plage-à-plage (doctrine #24 : le
+  //   scroll pilote la VISITE, JAMAIS le zoom — zoom = pincer/double-tap). La caméra
+  //   glisse vers la plage suivante/précédente. Fin de liste = BOUCLE (jamais bloqué,
+  //   PAS de cul-de-sac Solutions). Début + haut = sortie (exitTour). Escapable
+  //   molette ET clavier (ArrowUp/Down/Escape), gardé contre la saisie de champ.
+  useEffect(()=>{const el=wrapRef.current;if(!el)return;let wl=0
+    const step=dir=>{const now=Date.now();if(now-wl<240)return;wl=now
+      if(tourRef.current==null){if(dir>0)startTour();else centerOn(myIdx,MID);return}
+      const nx=tourRef.current+dir
+      if(nx<0){exitTour();return}
+      if(nx>tourOrder.length-1){tourGo(0);return}
+      tourGo(nx)}
+    const onWheel=e=>{e.preventDefault();step(e.deltaY>0?1:-1)}
+    const onKey=e=>{const t=e.target;if(t&&(/^(input|textarea|select)$/i.test(t.tagName)||t.isContentEditable))return;if(document.querySelector('[role="dialog"]'))return;if(e.key==="ArrowDown"){e.preventDefault();step(1)}else if(e.key==="ArrowUp"){e.preventDefault();step(-1)}else if(e.key==="Escape"&&tourRef.current!=null)exitTour()}
+    el.addEventListener("wheel",onWheel,{passive:false});window.addEventListener("keydown",onKey)
+    return()=>{el.removeEventListener("wheel",onWheel);window.removeEventListener("keydown",onKey)}
+  },[])// eslint-disable-line
   const rel=e=>{const r=wrapRef.current.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
   const onDown=e=>{movedRef.current=false
     // attrape le Veilleur (drag rigolo) si le doigt tombe dessus
@@ -9195,7 +9194,9 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
     const dx=p.x-prev.x,dy=p.y-prev.y;if(Math.abs(dx)+Math.abs(dy)>2){if(!movedRef.current){try{e.currentTarget.setPointerCapture(e.pointerId)}catch(_){}}movedRef.current=true}camRef.current.cx+=dx;camRef.current.cy+=dy;schedule()}
   const onUp=e=>{if(satDragRef.current){satDragRef.current=false;setSatGrab(false);satSpringHome();ptrs.current.delete(e.pointerId);try{e.currentTarget.releasePointerCapture(e.pointerId)}catch(_){}if(sayTimerRef.current)clearTimeout(sayTimerRef.current);sayTimerRef.current=setTimeout(()=>setSatSay(null),1700);try{track("sg_archipel_sat_drop",{})}catch(_){};return}
     if(tourRef.current!=null&&swipeY.current!=null&&ptrs.current.size===1){const dy=rel(e).y-swipeY.current;if(dy<-44){tourGo(tourRef.current>=tourOrder.length-1?0:tourRef.current+1)}else if(dy>44){if(tourRef.current<=0)exitTour();else tourGo(tourRef.current-1)}}ptrs.current.delete(e.pointerId);if(ptrs.current.size<2)pinchRef.current=null;swipeY.current=null}
-  const onTap=e=>{if(tourRef.current!=null)return;const now=Date.now();if(now-lastTap.current<300&&!movedRef.current){const r=wrapRef.current.getBoundingClientRect();zoomAt(camRef.current.cz<1.4?2.0:0.45,e.clientX-r.left,e.clientY-r.top)}lastTap.current=now}
+  // Double-tap = bascule entre paliers NOMMÉS (vue côte MID ↔ rivage NEAR) au point
+  // tapé, au lieu de magic numbers. zoomAt borne via clampZ. (workflow step 3)
+  const onTap=e=>{if(tourRef.current!=null)return;const now=Date.now();if(now-lastTap.current<300&&!movedRef.current){const r=wrapRef.current.getBoundingClientRect(),c=camRef.current;zoomAt(c.cz<(MID+NEAR)/2?NEAR/c.cz:MID/c.cz,e.clientX-r.left,e.clientY-r.top)}lastTap.current=now}
   // ── MODE VISITE : scroll/swipe de plage en plage, la caméra glisse, une fiche-info
   //    par plage (« quand on scroll down ça passe de plage en plage avec des infos »).
   const[tour,setTour]=useState(null) // null=exploration libre ; sinon position dans l'ordre
