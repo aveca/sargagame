@@ -27,6 +27,7 @@
  * Usage :
  *   node scripts/automation/gen-verdict-veilleur.cjs --region=mq          # image + légende + file d'attente
  *   node scripts/automation/gen-verdict-veilleur.cjs --region=mq --publish # tente la publi (verrouillée par défaut)
+ *   node scripts/automation/gen-verdict-veilleur.cjs --region=mq --preview=avoid # aperçu layout ALERTE (mock)
  */
 const fs = require('fs')
 const path = require('path')
@@ -235,9 +236,36 @@ async function publishImage(imagePath, text, region) {
   } catch (e) { console.error('FAIL publish', e.message); await ctx.close().catch(() => {}); return false }
 }
 
+/**
+ * Aperçu du layout ALERTE (--preview=avoid). En saison calme tout est propre,
+ * donc le chemin « à éviter » ne s'exerce jamais sur la donnée live : ce mode
+ * force un verdict avoid (données MOCK, clairement étiqueté) pour vérifier le
+ * rendu rouge. N'écrit RIEN dans la file et ne publie jamais.
+ */
+async function previewAvoid(region) {
+  const bt = L.loadBacktest()
+  const rel = L.reliableBeaches(bt)
+  const lvls = L.levelsForRegion(L.loadSarg(), region)
+  const lvl = lvls.find(l => rel.has(l.id)) || lvls[0] // plage fiable si possible (teste aussi le bloc crédibilité)
+  const v = {
+    region, slug: lvl.id, name: L.beachName(lvl.id), type: 'avoid', score: 22, status: 'avoid',
+    reason: 'Banc de sargasses détecté au large, échouage en cours.',
+    isReliable: rel.has(lvl.id), hitRate: rel.has(lvl.id) ? bt.byBeach[lvl.id].statusHitRate : null,
+    streak: rel.has(lvl.id) ? L.currentStreak(bt, lvl.id) : 0,
+    archiveDays: bt && bt.archiveDays ? bt.archiveDays : null,
+  }
+  const out = path.join(L.OUT_DIR, `verdict-${region}-PREVIEW-avoid.png`)
+  const res = await L.renderSVG(buildCard(v), out)
+  console.log('⚠️ APERÇU layout ALERTE — données MOCK (vérif rendu uniquement, hors file/queue/publi)')
+  console.log(`  image → ${path.relative(L.ROOT, res.path)} (${res.width}×${res.height}, ${(res.bytes / 1024).toFixed(0)} Ko)`)
+}
+
 async function run() {
   const region = opt('region') || 'mq'
   if (!L.REGION[region]) { console.error('✗ région inconnue: ' + region); process.exit(1) }
+
+  if (opt('preview') === 'avoid') { await previewAvoid(region); return }
+
   const v = pickVerdict(region)
   if (!v) { console.error('✗ aucune plage notée — verdict annulé (jamais de fausse donnée).'); process.exit(2) }
 
