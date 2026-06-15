@@ -123,6 +123,55 @@ function printRegimeTable(label, pairs) {
   return { cells, byRegime }
 }
 
+/**
+ * Render-ready per-regime reliability block for the APP + SEO/methodology pages.
+ * This is the HONEST replacement for a single global "X% justes": it states
+ * reliability conditioned on each beach's own regime, split by predicted
+ * direction (clean vs alert). Consumed by region-seo-pages.cjs / the app; shaped
+ * so a page can render a one-liner without recomputing anything.
+ *
+ * @param {object} cells - from regimeTable: { "regime|ALERT"|"regime|clean": {n,hit} }
+ * @param {object} byRegime - from regimeTable: { regime: {n,hit,falseAlarm,actClean} }
+ * @param {string} method - 'archive' (real deployed forecasts) | 'reforecast' (current code, banks proxy)
+ */
+function buildRegimeReliabilitySummary(cells, byRegime, method) {
+  const regimes = {}
+  for (const [reg, d] of Object.entries(byRegime)) {
+    const cleanCell = cells[`${reg}|clean`]
+    const alertCell = cells[`${reg}|ALERT`]
+    regimes[reg] = {
+      samples: d.n,
+      cleanReliabilityPct: cleanCell ? Math.round(cleanCell.hit / cleanCell.n * 100) : null,
+      cleanSamples: cleanCell ? cleanCell.n : 0,
+      alertReliabilityPct: alertCell ? Math.round(alertCell.hit / alertCell.n * 100) : null,
+      alertSamples: alertCell ? alertCell.n : 0,
+      falseAlarmRatePct: d.actClean ? Math.round(d.falseAlarm / d.actClean * 100) : null,
+    }
+  }
+  // Headline keys off the calm regime (the dominant one in low season) and states
+  // the defensible, sellable, TRUE claim: clean-water calls are highly reliable.
+  // Framed PAST-TENSE with the sample size (auditable; not a forward guarantee) —
+  // and always paired with the honest alert caveat so it never reads as a
+  // one-sided marketing number.
+  const calm = regimes.calm
+  let headline = null
+  if (calm && calm.cleanReliabilityPct != null && calm.cleanSamples >= 20) {
+    const c = calm.cleanReliabilityPct
+    const n = calm.cleanSamples
+    headline = {
+      fr: `En saison calme, ${c}% de nos prévisions « mer propre » se sont vérifiées (sur ${n} vérifiées) ; les rares alertes restent signalées à faible confiance tant que la donnée ne les confirme pas.`,
+      en: `In calm season, ${c}% of our "clean water" forecasts proved correct (over ${n} verified); the rare alerts stay flagged low-confidence until the data confirms them.`,
+      es: `En temporada tranquila, el ${c}% de nuestros pronósticos de "agua limpia" resultaron correctos (sobre ${n} verificados); las raras alertas se marcan con baja confianza hasta que el dato las confirma.`,
+    }
+  }
+  return {
+    note: 'Reliability conditioned on each beach\'s OWN recent regime (calm/transition/high), split by predicted direction. Publish THIS, never a single global %, which blends regimes and hides that calm-season ALERTS are far less reliable than calm-season CLEAN calls.',
+    method,
+    regimes,
+    headline,
+  }
+}
+
 function main() {
   console.log('=== Forecast Backtest ===')
 
@@ -278,6 +327,11 @@ function main() {
   const { byRegime, cells } = printRegimeTable('archive — deployed forecasts', results.pairs)
   summary.byRegime = byRegime
   summary.byRegimeDirection = cells
+  // Render-ready block the app + SEO/methodology pages consume to publish honest
+  // per-regime reliability instead of a masking global. 'archive' = the real,
+  // fully-faithful deployed-forecast number (self-heals as fixed-code snapshots
+  // roll through the 30-day archive).
+  summary.regimeReliability = buildRegimeReliabilitySummary(cells, byRegime, 'archive')
 
   // Save results
   const output = { ...summary, computed: new Date().toISOString(), pairs: results.pairs.slice(-100) }
@@ -360,6 +414,7 @@ function reforecastBacktest() {
     totalPairs: total,
     global: { statusHitRate: Math.round(hits / total * 100), falseAlarms, falseAlarmRate: Math.round(falseAlarms / total * 1000) / 10 },
     byRegime, byRegimeDirection: cells,
+    regimeReliability: buildRegimeReliabilitySummary(cells, byRegime, 'reforecast'),
     residualFalseAlarmsByBeach: faByBeach,
     maxConfidenceAmongFalseAlarms: maxFAconf,
   }
