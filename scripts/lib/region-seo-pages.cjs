@@ -415,6 +415,31 @@ ${hubLinks(null)}${networkFooter(region, t)}</article>`,
     })
   }
 
+  // "Best beaches" — page HAUTE-INTENTION "meilleures plages sans sargasses
+  // aujourd'hui", data-driven (clean d'abord, puis score). La route existe
+  // (region.routes.best) mais n'était pas générée. Pré-voyage + sur place.
+  if (region.routes && region.routes.best && byScore.length) {
+    const rank = s => s === 'clean' ? 0 : s === 'moderate' ? 1 : 2
+    const ranked = [...byScore].sort((a, b2) => (rank(a.lv.status) - rank(b2.lv.status)) || ((b2.lv.score || 0) - (a.lv.score || 0)))
+    const cleanN = ranked.filter(x => x.lv.status === 'clean').length
+    const bestTitle = smartTrim(lang === 'es'
+      ? `Mejores playas sin sargazo en ${region.name} HOY (${dateShort})`
+      : `Best Beaches Without Sargassum in ${region.name} Today (${dateShort})`, 68)
+    const bestDesc = trimDesc(lang === 'es'
+      ? `Las ${cleanN} playas más limpias de ${region.name} ahora mismo, ordenadas por estado satelital (4 veces al día). Beach Score y pronóstico por playa.`
+      : `The ${cleanN} cleanest beaches in ${region.name} right now, ranked by live satellite status (updated 4× a day). Beach Score and forecast per beach.`)
+    const bestH1 = lang === 'es' ? `Mejores playas sin sargazo en ${region.name} — ${today}` : `Best beaches without sargassum in ${region.name} — ${today}`
+    const bestIntro = lang === 'es'
+      ? 'Estas son las playas más limpias en este momento según el satélite — empieza por arriba. El estado se actualiza 4 veces al día.'
+      : 'These are the cleanest beaches right now per satellite — start at the top. Status updates 4× a day.'
+    hubs.push({
+      slug: region.routes.best, title: bestTitle, desc: bestDesc,
+      noscript: `<article><h1>${esc(bestH1)}</h1><p><em>${t.updated(today)}</em></p><p>${esc(bestIntro)}</p>
+<ol>${ranked.map(x => `<li><strong>${beachLink(x)}</strong> — ${sw(x.lv.status)}, ${t.score} ${x.lv.score ?? '—'}/100${x.commune ? ' · ' + esc(x.commune) : ''}</li>`).join('')}</ol>
+${hubLinks(null)}${networkFooter(region, t)}</article>`,
+    })
+  }
+
   for (const h of hubs) {
     const pathname = `/${h.slug}/`
     writePage(distDir, pathname, pageShell(tpl, {
