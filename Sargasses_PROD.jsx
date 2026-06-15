@@ -9149,6 +9149,9 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
     diveTimers.current.push(setTimeout(()=>{setDiving(null);try{centerOn(myIdx,MID)}catch(_){}},900))
   }
   useEffect(()=>()=>{diveTimers.current.forEach(clearTimeout)},[])
+  // Dock "Toutes" = le monde dézoomé au FAR (la liste est une PROFONDEUR, pas un
+  // autre écran) — centre le centroïde de la projection (≈SPAN_PX/2).
+  const fitAll=()=>{const el=wrapRef.current;if(!el)return;const W=el.clientWidth,H=el.clientHeight,z=FAR;camRef.current={cz:z,cx:W/2-(SPAN_PX/2)*z,cy:H/2-(SPAN_PX/2)*z};schedule()}
   const tourGo=pos=>{if(!tourOrder.length)return;const p=Math.max(0,Math.min(tourOrder.length-1,pos));tourRef.current=p;setTour(p);focusBeach(tourOrder[p]);try{track("sg_archipel_tour",{pos:p,beach_id:proj[tourOrder[p]].b.id})}catch(_){}}
   const startTour=()=>tourGo(0)
   const exitTour=()=>{tourRef.current=null;setTour(null);twTarget.current=null;centerOn(myIdx,MID)}
@@ -9223,12 +9226,15 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
         <div style={{flex:1,minWidth:0,overflow:"hidden"}}><div style={{fontSize:10,fontWeight:700,letterSpacing:".05em",color:"rgba(255,255,255,.6)",textTransform:"uppercase"}}>{_t(lang,"Ta côte aujourd'hui","Your coast today","Tu costa hoy")}</div><div style={{fontSize:13.5,fontWeight:800,whiteSpace:"nowrap",textOverflow:"ellipsis",overflow:"hidden"}}><span style={{color:myVm.color}}>{myVm.emoji} {myVm.verb}</span> · {my.name}</div></div>
       </div>}
       {tour==null
-        ?<div style={{position:"absolute",bottom:"calc(24px + env(safe-area-inset-bottom))",left:0,right:0,zIndex:5,display:"flex",flexWrap:"wrap",justifyContent:"center",alignItems:"center",gap:10}}>
-          <div style={{flexBasis:"100%",textAlign:"center",marginBottom:2,fontSize:11,fontWeight:700,letterSpacing:".05em",color:"rgba(255,255,255,.55)"}}>{_t(lang,"↓ scrolle pour la visite guidée · pince pour zoomer","↓ scroll for the guided tour · pinch to zoom","↓ desliza para el recorrido · pellizca para zoom")}</div>
-          <button onClick={e=>{e.stopPropagation();centerOn(myIdx,MID)}} style={{padding:"11px 16px",borderRadius:999,background:"rgba(4,9,11,.6)",border:"1px solid rgba(255,255,255,.25)",color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer",backdropFilter:"blur(8px)"}}>⌖ {_t(lang,"Ma côte","My coast","Mi costa")}</button>
-          <button onClick={e=>{e.stopPropagation();startTour()}} style={{padding:"11px 18px",borderRadius:999,background:"linear-gradient(180deg,#FFD884,#F2B05E)",border:"none",color:"#07201E",fontSize:13,fontWeight:800,cursor:"pointer",boxShadow:"0 6px 20px rgba(0,0,0,.4)"}}>📜 {_t(lang,"Visiter les plages","Tour the beaches","Recorrer playas")}</button>
-          {onSolutions&&<button onClick={e=>{e.stopPropagation();onSolutions()}} style={{padding:"11px 16px",borderRadius:999,background:"rgba(4,9,11,.6)",border:"1px solid rgba(95,211,201,.45)",color:"#5FD3C9",fontSize:13,fontWeight:800,cursor:"pointer",backdropFilter:"blur(8px)"}}>💡 {_t(lang,"Solutions","Solutions","Soluciones")}</button>}
-          {onPremium&&<button onClick={e=>{e.stopPropagation();onPremium()}} style={{padding:"11px 16px",borderRadius:999,background:"rgba(4,9,11,.6)",border:"1px solid rgba(255,216,132,.5)",color:"#FFD884",fontSize:13,fontWeight:800,cursor:"pointer",backdropFilter:"blur(8px)"}}>✦ {_t(lang,"Veilleur","Watchman","Vigía")}</button>}
+        ?<div style={{position:"absolute",bottom:"calc(18px + env(safe-area-inset-bottom))",left:0,right:0,zIndex:30,display:"flex",justifyContent:"center",pointerEvents:"none"}}>
+          {/* DOCK IMMORTEL (#3) : nav toujours atteignable depuis le monde — tue le
+              cul-de-sac (BottomNav z800 enterrée sous le monde z1006). 3 entrées,
+              tout reste DANS le monde : "Toutes" = dézoom (la liste = une profondeur). */}
+          <div style={{display:"flex",alignItems:"center",gap:3,padding:"5px 6px",borderRadius:999,background:"rgba(4,9,11,.66)",border:"1px solid rgba(95,211,201,.22)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",boxShadow:"0 8px 28px rgba(0,0,0,.45)",pointerEvents:"auto"}}>
+            <button onClick={e=>{e.stopPropagation();try{track("sg_dock",{tab:"near"})}catch(_){}; centerOn(myIdx,MID)}} style={{padding:"9px 14px",borderRadius:999,background:"transparent",border:"none",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",whiteSpace:"nowrap"}}>⌖ {_t(lang,"Près de moi","Near me","Cerca")}</button>
+            <button onClick={e=>{e.stopPropagation();try{track("sg_dock",{tab:"all"})}catch(_){}; fitAll()}} style={{padding:"9px 14px",borderRadius:999,background:"transparent",border:"none",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",whiteSpace:"nowrap"}}>▦ {_t(lang,"Toutes","All","Todas")}</button>
+            {onPremium&&<button onClick={e=>{e.stopPropagation();try{track("sg_dock",{tab:"premium"})}catch(_){}; onPremium()}} style={{padding:"9px 16px",borderRadius:999,background:"linear-gradient(180deg,#FFD884,#F2B05E)",border:"none",color:"#07201E",fontSize:13,fontWeight:800,cursor:"pointer",whiteSpace:"nowrap"}}>✦ {_t(lang,"Veilleur","Watcher","Vigía")}</button>}
+          </div>
         </div>
         :(()=>{const i=tourOrder[tour],b=proj[i]&&proj[i].b;if(!b)return null;const vm=verdictMeta(b.status,lang),sc=typeof b.score==="number"?b.score:null,afai=typeof b.afai==="number"?b.afai:null
           return(<div onClick={e=>e.stopPropagation()} style={{position:"absolute",left:0,right:0,bottom:0,zIndex:7,padding:"0 12px calc(14px + env(safe-area-inset-bottom))"}}>
