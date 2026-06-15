@@ -9105,7 +9105,10 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
   // SCROLL = AVANCER dans le recit, plus zoomer (doctrine fondateur). En tour : molette
   // = plage suivante/precedente. En libre : bas = entrer la visite, haut = vue d ensemble.
   // Le zoom reste un bonus (pincer / double-tap).
-  useEffect(()=>{const el=wrapRef.current;if(!el)return;let wl=0;const onWheel=e=>{e.preventDefault();const now=Date.now();if(now-wl<400)return;wl=now;if(tourRef.current!=null){if(tourRef.current>=tourOrder.length-1&&e.deltaY>0){onSolutions&&onSolutions();return}tourGo(tourRef.current+(e.deltaY>0?1:-1));return}if(e.deltaY>0)startTour();else centerOn(myIdx,FAR)};el.addEventListener("wheel",onWheel,{passive:false});return()=>el.removeEventListener("wheel",onWheel)},[])// eslint-disable-line
+  // LA MARÉE : le scroll pilote la profondeur de la caméra (calme), PLUS de tour
+  //   répétitif ni de cul-de-sac onSolutions. Scroll bas = la marée monte (on
+  //   plonge / zoom in) ; scroll haut = on repose vers le large (zoom out).
+  useEffect(()=>{const el=wrapRef.current;if(!el)return;let wl=0;const onWheel=e=>{e.preventDefault();const now=Date.now();if(now-wl<110)return;wl=now;const r=el.getBoundingClientRect();zoomAt(e.deltaY>0?1.16:0.86,r.width/2,r.height/2)};el.addEventListener("wheel",onWheel,{passive:false});return()=>el.removeEventListener("wheel",onWheel)},[])// eslint-disable-line
   const rel=e=>{const r=wrapRef.current.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
   const onDown=e=>{movedRef.current=false
     // attrape le Veilleur (drag rigolo) si le doigt tombe dessus
