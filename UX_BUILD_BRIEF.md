@@ -4,6 +4,18 @@
 > cycle. La session architecte (SEO/landing + design-system) le maintient. Issu de l'audit
 > `ux-build-foundation` (wwlfrrp2r, 2026-06-15) ancré sur la data first-party réelle.
 
+## ⚠️ CADRAGE STRATÉGIQUE (override, verdict 2026-06-15 — lire EN PREMIER)
+Le SVG/UX **sert** : acquisition + **conversion** + **capture de ground-truth**. Il **NE sert PAS** la
+valorisation (un acheteur clone l'UI en un week-end). Donc **NE PAS** cadrer la loop comme « refonder
+l'app sur le SVG-scroll » — ça brûle la ressource la plus rare (le temps) sur l'axe qui ne valorise pas.
+**Cadre la loop = « réparer les 3 surfaces de CONVERSION + construire le widget-CAPTEUR (Ground-Truth
+Snap) »**. Le goulot prouvé n'est PAS le trafic (qui monte +20%) mais la conversion (4→2/j, MRR figé €74).
+Priorité ABSOLUE = le funnel qui convertit, puis le capteur qui fabrique l'actif non-copiable. 90% du
+moteur SVG existe déjà — on le POINTE, on ne le réécrit pas. Le détail : [[project_strategy_verdict_90d]].
+Nouveau backlog #0 (au-dessus de tout) : **Ground-Truth Snap** — micro-bouton « tu es sur cette plage ?
+confirme l'état » (1 tap + photo géotaggée) sur fiche + widget → ground-truth n=1→n=100/j. À lancer
+APRÈS que le funnel convertisse (sinon il amplifie une fuite).
+
 ## LE BAR — "un cran au-dessus" = mesurable
 Ouvrir n'importe quel écran (et surtout une page SEO **sans JS**) doit donner la **même émotion que
 la home**. Si c'est distinguable d'un brouillon HTML, c'est SOUS le bar. 4 tests OUI/OUI/OUI/OUI :
