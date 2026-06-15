@@ -20,6 +20,10 @@
  */
 const fs = require('fs')
 const path = require('path')
+// HERO SVG golden-hour (flagship mega-loop UX) — rend les pages SEO USD belles
+// sans JS. SSR pur, déterministe. Best-effort : si absent, noscript historique.
+let _heroLib = null
+try { _heroLib = require('./scene-svg.cjs') } catch (e) { /* hero optionnel */ }
 
 const ROOT = path.resolve(__dirname, '..', '..')
 const slugify = n => n.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
@@ -530,7 +534,7 @@ ${hubLinks('weekly')}${networkFooter(region, t)}</article>`,
       beachFaqLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: qa.map(x => ({ '@type': 'Question', name: x.q, acceptedAnswer: { '@type': 'Answer', text: x.a } })) }
       beachFaqHtml = `<section><h2>FAQ</h2>${qa.map(x => `<h3>${esc(x.q)}</h3><p>${esc(x.a)}</p>`).join('')}</section>`
     }
-    const noscript = `<article><h1>${esc(title)}</h1><p><em>${t.updated(today)}</em></p>${photo}
+    const articleHtml = `<article><h1>${esc(title)}</h1><p><em>${t.updated(today)}</em></p>${photo}
 <p><strong>${t.status}: ${sw(b.lv.status)}</strong> · ${t.score} ${b.lv.score ?? '—'}/100</p>
 <p>${esc(blurb)}</p>
 <h2>${t.forecast7}</h2><p>${forecastLine(data.weekly, b.id, lang)}</p>
@@ -538,6 +542,25 @@ ${beachResorts.length ? `<h2>${t.resortsAt}</h2><ul>${beachResorts.map(r => `<li
 <h2>${t.nearby}</h2><ul>${nearby.map(n => `<li>${beachLink(n)} — ${sw(n.lv.status)}</li>`).join('')}</ul>
 ${beachFaqHtml}
 ${hubLinks(null)}${networkFooter(region, t)}</article>`
+    // HERO golden-hour (additif) : préfixe l'article par scène SVG inline + bande
+    // verdict. b a coords/island/status/afai (REGION.beaches) + b.lv live. Robuste.
+    let noscript = articleHtml
+    if (_heroLib) {
+      try {
+        const lvH = { status: b.lv.status || 'clean', score: typeof b.lv.score === 'number' ? b.lv.score : undefined, afai: typeof b.lv.afai === 'number' ? b.lv.afai : (typeof b.afai === 'number' ? b.afai : 0.2) }
+        const heroSvg = _heroLib.buildHeroSvg(b, lvH, { updatedAt: data.updatedAt }, {})
+        const fline = forecastLine(data.weekly, b.id, lang)
+        const scoreTxt = typeof lvH.score === 'number' ? ` · <span class="sg-stat">${lvH.score}/100</span>` : ''
+        const liveHHMM = data.updatedAt ? (() => { try { const d = new Date(data.updatedAt); return String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0') } catch (_) { return '' } })() : ''
+        const liveTxt = liveHHMM ? `<div class="sg-live">LIVE · satellite ${liveHHMM} UTC</div>` : ''
+        const verdict = `<div class="sg-verdict"><h1>${esc(b.name)}</h1>`
+          + `<div class="sg-stat">${esc(t.status)}: ${esc(sw(b.lv.status))}${scoreTxt}</div>`
+          + (fline ? `<p class="sg-line">${esc(t.forecast7)} — ${esc(fline)}</p>` : '')
+          + liveTxt
+          + `</div>`
+        noscript = `${_heroLib.buildHeroCss()}<div class="sg-page"><div class="sg-hero">${heroSvg}${verdict}</div>${articleHtml}</div>`
+      } catch (e) { noscript = articleHtml }
+    }
     writePage(distDir, pathname, pageShell(tpl, {
       title, desc, pathname, domain, lang, noscript,
       jsonLd: [
