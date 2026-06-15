@@ -121,6 +121,21 @@ Object.assign(C,{
   gradClean:["#22C55E","#16A34A"],gradMod:["#F59E0B","#B87A00"],gradAvoid:["#E8522A","#B83A1A"],
   satBody:"#C9971F",satTop:"#FFC72C",satWing:"#3BA7A0",moonCol:"#9ADCD4",
 })
+/* ═══ SCENE_TOKENS — design-system golden-hour, SOURCE UNIQUE de la scène SVG
+   (notre valeur). Extrait de BEACH_PHASE (vérifié byte-identique) + sable inline +
+   C.sarg + C.sat. BEACH_PHASE en DÉRIVE (l.~410, zéro drift) ; index.html émet ces
+   valeurs en --sg-* → l'app ET les 136 pages SEO partagent la même source ;
+   REGION.sceneTheme peut surcharger par marché (scalable/réplicable). Additif. ═══ */
+const SCENE_TOKENS={
+  phases:{
+    dawn:  {sky:["#141B33","#3A4A6B","#B86E7E","#F2A968"],seaT:"#235862",seaB:"#0A2630",sand:"#C9A86A",sandNight:"#15110D",rim:"#F2A968",sun:"set", glit:"#F2A968"},
+    day:   {sky:["#1A6FA8","#3E9BC4","#7BC8D8","#AEE0E6"],seaT:"#15706A",seaB:"#0B3A34",sand:"#C9A86A",sandNight:"#15110D",rim:"#FFFFFF",sun:"high",glit:"#FDFCF7"},
+    golden:{sky:["#0B2230","#155A5A","#C97E3A","#F2B05E"],seaT:"#1A5852",seaB:"#08251F",sand:"#1C1712",sandNight:"#15110D",rim:"#FFD884",sun:"set", glit:"#FFD884"},
+    night: {sky:["#040B16","#0A1B2E","#10303B","#16424A"],seaT:"#0A2E2E",seaB:"#04140F",sand:"#15110D",sandNight:"#15110D",rim:"#9ADCD4",sun:"moon",glit:"#9ADCD4"},
+  },
+  sargasse:{base:"#7a5c14",dark:"#5d400e",light:"#8a6c1c",glint:"#a8862a",strand:"#6b4a12"},
+  sat:{body:"#C9971F",top:"#FFC72C",lens:"#07201E"},
+}
 const TY={
   title:{fontFamily:"'Anton',sans-serif",fontWeight:400,letterSpacing:".01em",textTransform:"uppercase"},
   ui:{fontFamily:"'Bricolage Grotesque',system-ui,sans-serif"},
@@ -405,12 +420,15 @@ function VisitPlan({beach,lang,allBeaches,weeklyData}){
 //    est sur le svg » + « représente le diamant en svg, chaque plage avec sa
 //    particularité »). Landmark réel + sable + statut + phase de l'heure locale.
 //    Auto-contenue (sa propre CSS) : ne dépend d'aucun <style> externe. ────────
-const BEACH_PHASE={
-  dawn:{sky:["#141B33","#3A4A6B","#B86E7E","#F2A968"],seaT:"#235862",seaB:"#0A2630",glit:"#F2A968",sun:"set",rim:"#F2A968",cloud:"#1A2440",rock:"#1b2a33",rockLit:"#F2A968",trunk:"#14100C",frond:"#1a2e26"},
-  day:{sky:["#1A6FA8","#3E9BC4","#7BC8D8","#AEE0E6"],seaT:"#15706A",seaB:"#0B3A34",glit:"#FDFCF7",sun:"high",rim:"#FFFFFF",cloud:"#EAF6F6",rock:"#5d6f62",rockLit:"#A8C6AE",trunk:"#3A2E1A",frond:"#3F6B52"},
-  golden:{sky:["#0B2230","#155A5A","#C97E3A","#F2B05E"],seaT:"#1A5852",seaB:"#08251F",glit:"#FFD884",sun:"set",rim:"#FFD884",cloud:"#10333E",rock:"#16242A",rockLit:"#FFD884",trunk:"#120F0A",frond:"#16120C"},
-  night:{sky:["#040B16","#0A1B2E","#10303B","#16424A"],seaT:"#0A2E2E",seaB:"#04140F",glit:"#9ADCD4",sun:"moon",rim:"#9ADCD4",cloud:"#0A1622",rock:"#0c171b",rockLit:"#9ADCD4",trunk:"#0A0806",frond:"#0C0A06"},
-}
+// BEACH_PHASE DÉRIVE de SCENE_TOKENS (clés scène sky/seaT/seaB/glit/sun/rim) +
+// clés non-scène inline (cloud/rock/rockLit/trunk/frond, propres à chaque phase).
+// Sortie byte-identique à l'ancien littéral (vérifié) — source unique, zéro drift.
+const BEACH_PHASE=Object.fromEntries(Object.entries({
+  dawn:  {cloud:"#1A2440",rock:"#1b2a33",rockLit:"#F2A968",trunk:"#14100C",frond:"#1a2e26"},
+  day:   {cloud:"#EAF6F6",rock:"#5d6f62",rockLit:"#A8C6AE",trunk:"#3A2E1A",frond:"#3F6B52"},
+  golden:{cloud:"#10333E",rock:"#16242A",rockLit:"#FFD884",trunk:"#120F0A",frond:"#16120C"},
+  night: {cloud:"#0A1622",rock:"#0c171b",rockLit:"#9ADCD4",trunk:"#0A0806",frond:"#0C0A06"},
+}).map(([k,ex])=>{const t=SCENE_TOKENS.phases[k];return[k,{sky:t.sky,seaT:t.seaT,seaB:t.seaB,glit:t.glit,sun:t.sun,rim:t.rim,...ex}]}))
 function beachLandmark(beach){
   const k=((beach&&beach.id||"")+" "+(beach&&beach.name||"")+" "+(beach&&beach.slug||"")).toLowerCase()
   if(/diamant/.test(k))return "diamondRock"          // le Rocher du Diamant
