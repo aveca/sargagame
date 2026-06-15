@@ -401,8 +401,72 @@ function buildHeroCss() {
 </style>`
 }
 
+/**
+ * buildCleanupSvg(beach, lv, data, opts) → scène « OÙ VA TON ARGENT » : le RAMASSAGE.
+ * Golden-hour + sargasses échouées (windrow) + pelle longue + benne rouge + Veilleur
+ * vigilant. Répond à l'objection #1 du payeur (« je paie 4,99€ pour quoi ? ») : l'effort
+ * est RÉEL, quelqu'un agit. Réutilise tout le moteur ; primitifs neufs = benne + pelle.
+ * Déterministe, ne throw jamais (fallback hero golden).
+ */
+function buildCleanupSvg(beach, lv, data, opts) {
+  try {
+    beach = beach || {}; lv = lv || {}; data = data || {}; opts = opts || {}
+    const t = BEACH_PHASE.golden
+    const scene = buildBeachScene({ id: beach.id || 'le-diamant', name: beach.name || 'Le Diamant', commune: beach.commune, island: beach.island })
+    const sky = t.sky
+    const seaTop = waterTint(t.seaT, 0.75) // eau chargée de sargasse → brunâtre
+    const defs = `<defs>`
+      + `<linearGradient id="cuSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sky[0]}"/><stop offset=".52" stop-color="${sky[1]}"/><stop offset=".84" stop-color="${sky[2]}"/><stop offset="1" stop-color="${sky[3]}"/></linearGradient>`
+      + `<linearGradient id="cuSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${seaTop}"/><stop offset="1" stop-color="${t.seaB}"/></linearGradient>`
+      + `</defs>`
+    const sun = `<circle cx="400" cy="330" r="120" fill="${t.glit}" opacity=".08"/><circle cx="400" cy="330" r="64" fill="${t.glit}" opacity=".12"/><path d="M340 332 a60 60 0 0 1 120 0 Z" fill="${t.glit}" opacity=".9"/>`
+    const sea = `<rect x="-40" y="330" width="880" height="120" fill="url(#cuSea)"/>`
+    const relief = _reliefMarkup(scene, t)
+    const sand = '#1C1712'
+    const beachland = `<path d="M-40 452 Q200 420 430 432 Q640 442 840 470 L840 620 L-40 620 Z" fill="${sand}"/>`
+      + `<path d="M-40 452 Q200 420 430 432 Q640 442 840 470" fill="none" stroke="${t.rim}" stroke-width="2" opacity=".22"/>`
+    // sargasse : long windrow le long du rivage (le tas À RAMASSER)
+    const sarg = `<g>`
+      + `<path d="M-20 472 Q150 454 330 468 Q470 478 610 470 Q710 466 820 480 L820 504 Q710 494 610 498 Q470 504 330 496 Q150 486 -20 504 Z" fill="#5d400e"/>`
+      + Array.from({ length: 7 }, (_, i) => { const x = 30 + i * 112; const y = 474 + (i % 2) * 4; return `<ellipse cx="${x}" cy="${y}" rx="36" ry="9" fill="#6b4a12"/><ellipse cx="${x - 11}" cy="${y - 4}" rx="15" ry="5" fill="#7a5c14"/><ellipse cx="${x + 13}" cy="${y - 2}" rx="11" ry="4" fill="#8a6c1c"/>` }).join('')
+      + `</g>`
+    // BENNE (camion rouge #C0392B) — benne basculante + cabine, chargée de sargasse
+    const benne = `<g transform="translate(132,402)">`
+      + `<rect x="-2" y="-30" width="76" height="34" rx="4" fill="#C0392B"/>`
+      + `<rect x="-2" y="-30" width="76" height="8" rx="3" fill="#A93226"/>`
+      + `<rect x="74" y="-23" width="34" height="27" rx="4" fill="#C0392B"/>`
+      + `<rect x="82" y="-19" width="20" height="13" rx="2" fill="#16323A"/>`
+      + `<g fill="#15110D"><circle cx="14" cy="11" r="10"/><circle cx="46" cy="11" r="10"/><circle cx="94" cy="11" r="9"/></g>`
+      + `<g fill="#3A3A3A"><circle cx="14" cy="11" r="4"/><circle cx="46" cy="11" r="4"/><circle cx="94" cy="11" r="3.5"/></g>`
+      + `<g><ellipse cx="36" cy="-34" rx="22" ry="7" fill="#5d400e"/><ellipse cx="26" cy="-37" rx="10" ry="4" fill="#6b4a12"/><ellipse cx="48" cy="-36" rx="8" ry="3.5" fill="#7a5c14"/></g>`
+      + `</g>`
+    // EXCAVATOR (pelle longue) — base chenillée + bras long qui plonge dans le tas
+    const exca = `<g transform="translate(556,398)">`
+      + `<rect x="-36" y="44" width="84" height="20" rx="6" fill="#23201C"/>`
+      + `<g fill="#3A352F"><circle cx="-24" cy="54" r="7"/><circle cx="36" cy="54" r="7"/></g>`
+      + `<rect x="-20" y="14" width="46" height="34" rx="5" fill="#E2DCCF"/>`
+      + `<rect x="-12" y="20" width="26" height="17" rx="2" fill="#16323A"/>`
+      + `<path d="M24 22 L98 -46 L110 -36 L36 40 Z" fill="#D2CBBC"/>`
+      + `<path d="M98 -46 L122 -30 L118 -10 L96 -24 Z" fill="#BFB8A8"/>`
+      + `<path d="M110 -18 q16 8 24 24" stroke="#5d400e" stroke-width="7" fill="none" stroke-linecap="round"/>`
+      + `</g>`
+    // 2 figures qui regardent (comme la photo)
+    const figs = `<g fill="#0E1F1A">`
+      + `<g transform="translate(300,468) scale(.6)"><circle cx="0" cy="-30" r="6"/><path d="M-6 -24 q6 -5 12 0 l-2 24 h-8 Z"/><path d="M-5 -2 l-3 16 M5 -2 l3 16" stroke="#0E1F1A" stroke-width="3" stroke-linecap="round" fill="none"/></g>`
+      + `<g transform="translate(332,470) scale(.58)"><circle cx="0" cy="-30" r="6"/><path d="M-6 -24 q6 -5 12 0 l-2 24 h-8 Z"/><path d="M-5 -2 l-3 16 M5 -2 l3 16" stroke="#0E1F1A" stroke-width="3" stroke-linecap="round" fill="none"/></g>`
+      + `</g>`
+    const veil = veilleurMarkup('vigilant', 482, 96, 1.4)
+    return `<svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${_attr('Ramassage des sargasses — ' + (beach.name || 'plage'))}" style="position:absolute;inset:0;width:100%;height:100%;display:block">`
+      + defs + `<rect width="800" height="360" fill="url(#cuSky)"/>` + sun + sea + relief + beachland + sarg + figs + benne + exca + veil
+      + `</svg>`
+  } catch (e) {
+    return buildHeroSvg(beach, lv, data, { phase: 'golden' })
+  }
+}
+
 module.exports = {
   buildHeroSvg,
+  buildCleanupSvg,
   buildHeroCss,
   // exports utilitaires (déterministes) — utiles aux injecteurs (forecast/score)
   archetypeOf,
