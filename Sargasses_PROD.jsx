@@ -2788,7 +2788,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             <span style={{width:10,height:10,borderRadius:5,
               background:(ST[beach.status]||ST._loading).c,
               boxShadow:`0 0 8px ${(ST[beach.status]||ST._loading).c}`,
-              animation:beach.status==="clean"?"none":"pulse 2s ease-in-out infinite"}}/>
+              animation:beach.status==="clean"?"none":"pulse 2s ease-in-out 2"}}/>
             <span style={{fontSize:13,fontWeight:700,color:"#fff",letterSpacing:".01em"}}>
               {lang==="es"?(ST[beach.status]||ST._loading).les:lang==="en"?(ST[beach.status]||ST._loading).le:(ST[beach.status]||ST._loading).l}
             </span>
@@ -9143,7 +9143,7 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
       <svg ref={skyRef} viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" style={{position:"absolute",top:"-7%",left:"-7%",width:"114%",height:"114%",display:"block",pointerEvents:"none",willChange:"transform"}} aria-hidden="true">
         {/* CALME au repos : aucun clignotement. Seulement 2 mouvements TRÈS lents et naturels
             (nuages, Veilleur qui flotte en orbite). La vraie vie vient de l'interaction. */}
-        <style>{`@keyframes awcl{to{transform:translateX(40px)}}.aw-cl{animation:awcl 120s ease-in-out infinite alternate}@keyframes awfloat{to{transform:translateY(6px)}}.aw-sat{animation:awfloat 13s ease-in-out infinite alternate}@media(prefers-reduced-motion:reduce){.aw-cl,.aw-sat{animation:none}}`}</style>
+        <style>{`@keyframes awsettle{from{transform:translateY(-7px);opacity:.4}to{transform:translateY(0);opacity:1}}.aw-cl{animation:none}.aw-sat{animation:awsettle .8s ease-out 1}@media(prefers-reduced-motion:reduce){.aw-sat{animation:none}}`}</style>
         <defs><linearGradient id="awSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={sky.sky[0]}/><stop offset=".5" stopColor={sky.sky[1]}/><stop offset=".82" stopColor={sky.sky[2]}/><stop offset="1" stopColor={sky.sky[3]}/></linearGradient></defs>
         <rect width="800" height="600" fill="url(#awSky)"/>
         {sky.sun==="set"&&<><circle cx="400" cy="250" r="150" fill={sky.glit} opacity=".06"/><circle cx="400" cy="250" r="78" fill={sky.glit} opacity=".10"/><circle cx="400" cy="250" r="46" fill={sky.glit} opacity=".5"/></>}
