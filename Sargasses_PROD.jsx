@@ -275,6 +275,50 @@ function buildBeachScene(beach){
 function _mixHex(a,b,k){a=a.replace("#","");b=b.replace("#","");const p=(s,i)=>parseInt(s.slice(i,i+2),16),m=x=>("0"+Math.round(x).toString(16)).slice(-2);return "#"+m(p(a,0)+(p(b,0)-p(a,0))*k)+m(p(a,2)+(p(b,2)-p(a,2))*k)+m(p(a,4)+(p(b,4)-p(a,4))*k)}
 function waterTint(seaT,afai){const a=typeof afai==="number"?afai:0.2,inten=Math.max(0,Math.min(1,(a-0.15)/0.63));return inten<=0.03?seaT:_mixHex(seaT,"#6E5A1E",inten*0.55)}
 
+// ── VisitPlan — le PLAN par plage (spec wdiiae0wd), ancré aux PROBLÈMES RÉELS des
+//    habitants/sociétés. Logique PURE data→conseil (i18n). Vit DANS la fiche (pas un popup
+//    flottant — feedback_no_ui_in_ui). H2S seulement si afai haut ET amas vieillissant (anti faux-loup).
+function nearestCleanAlt(beach,allBeaches){
+  if(!beach||!allBeaches||!allBeaches.length||beach.lat==null)return null
+  const cand=allBeaches.filter(b=>b.id!==beach.id&&b.island===beach.island&&b.lat!=null&&(b.coast==="sheltered"||b.status==="clean"))
+  let best=null,bd=1e9
+  for(const b of cand){const d=haversine(beach.lat,beach.lng,b.lat,b.lng)-(b.coast==="sheltered"?3:0)-(b.status==="clean"?2:0);if(d<bd){bd=d;best=b}}
+  return best
+}
+function buildBeachPlan(beach,lang,allBeaches,weeklyData){
+  if(!beach)return{sections:[]}
+  const _=(fr,en,es)=>_t(lang,fr,en,es)
+  const st=beach.status,afai=typeof beach.afai==="number"?beach.afai:0.2
+  const coast=beach.coast||(typeof classifyBeachCoast==="function"?classifyBeachCoast(beach.lat,beach.lng,beach.island):"atlantic")
+  const aging=!!(weeklyData&&weeklyData.arrivalDetected)||!!beach.beachMemory
+  const s=[]
+  if(st==="clean"&&afai<0.3)s.push({tone:"clean",title:_("Meilleur moment","Best time","Mejor momento"),body:_("Bon toute la journée — golden hour 17-19h pour la photo.","Good all day — golden hour 5-7pm for photos.","Bueno todo el día — hora dorada 17-19h para la foto.")})
+  else s.push({tone:"warn",title:_("Meilleur moment","Best time","Mejor momento"),body:_("Vas-y tôt le matin : l'odeur monte avec la chaleur de l'après-midi.","Go early morning: the smell rises with afternoon heat.","Ve temprano: el olor sube con el calor de la tarde.")})
+  if(st==="avoid"){const alt=nearestCleanAlt(beach,allBeaches);if(alt){const dr=alt.drive?" ("+alt.drive+" min)":"";s.push({tone:"alt",title:_("Plutôt ailleurs","Go elsewhere","Mejor en otro lugar"),body:_("Plutôt "+alt.name+dr+", côte abritée presque toujours propre.","Try "+alt.name+dr+" instead, sheltered coast almost always clear.","Mejor "+alt.name+dr+", costa protegida casi siempre limpia.")})}}
+  if(afai>=0.40&&aging)s.push({tone:"avoid",title:_("Santé & famille","Health & family","Salud y familia"),body:beach.kids
+    ?_("Algues en décomposition = gaz (H2S). Déconseillé aux enfants, asthmatiques, femmes enceintes. Reste à l'écart des tas bruns.","Rotting seaweed releases gas (H2S). Not advised for kids, asthma, pregnancy. Keep clear of the brown piles.","Algas en descomposición liberan gas (H2S). No recomendado a niños, asmáticos, embarazadas. Aléjate de los montones marrones.")
+    :_("Algues en décomposition = gaz (H2S). Si tu sens l'œuf pourri, éloigne-toi du tas et remonte au vent.","Rotting seaweed releases gas (H2S). If you smell rotten eggs, move away and upwind.","Algas en descomposición liberan gas (H2S). Si hueles a huevo podrido, aléjate y ponte a barlovento.")})
+  if(beach.snorkel&&st==="clean"&&afai<0.3)s.push({tone:"clean",title:_("Sur place","On site","En el lugar"),body:_("Masque-tuba recommandé ici.","Bring your snorkel mask.","Trae tu máscara de snorkel.")})
+  if(beach.parking===false)s.push({tone:"info",title:_("Stationnement","Parking","Estacionamiento"),body:_("Pas de parking aménagé : viens tôt ou en 2-roues.","No real parking: come early or on two wheels.","Sin estacionamiento: llega temprano o en moto.")})
+  const com=(beach.commune||"").toLowerCase()
+  const fishing=["saint-franç","saint-franc","le robert","le vauclin","sainte-anne","le marin"].some(c=>com.includes(c))
+  if(fishing&&afai>=0.30)s.push({tone:"info",title:_("Côté pêcheurs","For fishermen","Para pescadores"),body:_("Nappes en mer = moteurs et hélices menacés, sorties perturbées.","Offshore mats threaten motors and propellers.","Las manchas amenazan motores y hélices.")})
+  else if(coast==="sheltered"&&st==="clean")s.push({tone:"clean",title:_("Bon à savoir","Good to know","Bueno saber"),body:_("Côte abritée : reçoit rarement les sargasses, valeur sûre.","Sheltered coast: rarely gets sargassum, a safe bet.","Costa protegida: rara vez recibe sargazo, apuesta segura.")})
+  return{sections:s}
+}
+function VisitPlan({beach,lang,allBeaches,weeklyData}){
+  const plan=useMemo(()=>buildBeachPlan(beach,lang,allBeaches,weeklyData),[beach&&beach.id,beach&&beach.status,beach&&beach.afai,lang])
+  if(!plan.sections.length)return null
+  const tones={clean:"#22C55E",warn:"#F59E0B",avoid:"#E8522A",alt:"#3BA7A0",info:"#5FD3C9"}
+  return(<div style={{margin:"14px 0 6px"}}>
+    <div style={{fontSize:11,fontWeight:800,letterSpacing:".06em",textTransform:"uppercase",color:"var(--sg-mid,#8AA09B)",marginBottom:6}}>{_t(lang,"Le plan du Veilleur","The Watchman's plan","El plan del Vigía")}</div>
+    {plan.sections.map((sec,i)=>(<div key={i} style={{display:"flex",gap:10,padding:"9px 0",borderTop:i?"1px solid rgba(120,140,135,.16)":"none"}}>
+      <div style={{width:3,borderRadius:3,background:tones[sec.tone]||"#5FD3C9",flexShrink:0,alignSelf:"stretch"}}/>
+      <div><div style={{fontSize:13.5,fontWeight:800,color:tones[sec.tone]||"var(--sg-text,#1A2B27)"}}>{sec.title}</div><div style={{fontSize:13,lineHeight:1.42,color:"var(--sg-text,#33433F)",marginTop:1}}>{sec.body}</div></div>
+    </div>))}
+  </div>)
+}
+
 // ── BeachScene — CHAQUE plage a SA scène SVG (directive 14/06 : « notre valeur
 //    est sur le svg » + « représente le diamant en svg, chaque plage avec sa
 //    particularité »). Landmark réel + sable + statut + phase de l'heure locale.
@@ -3014,6 +3058,10 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               </div>
             </div>
           )}
+
+          {/* LE PLAN DU VEILLEUR — ce qu'il faut faire ICI (data→conseil ancré aux problèmes
+              réels). DANS la fiche, pas un popup (feedback_no_ui_in_ui). */}
+          <VisitPlan beach={beach} lang={lang} allBeaches={allBeaches} weeklyData={weeklyData}/>
 
           {/* Forecast (days 4-7 locked) */}
           <h3 style={{fontSize:15,fontWeight:700,marginBottom:8}}>{LL.forecast}</h3>
