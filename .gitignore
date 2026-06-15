@@ -86,3 +86,10 @@ scripts/automation/data/ux-alerts.json
 # Clés stats live (FTP) — JAMAIS dans le repo public
 scripts/automation/data/stats-keys.json
 scripts/tmp-wf-results/_statskey_*.txt
+
+# Générateurs de cartes de partage social — artefacts de rendu (régénérés
+# chaque jour). Le CODE des générateurs est commité, pas leurs sorties.
+scripts/automation/share-cards/out/
+scripts/automation/data/wordle-today.json
+scripts/automation/data/verdict-queue.json
+scripts/automation/data/verdict-sent.json
