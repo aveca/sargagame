@@ -100,6 +100,10 @@ function analyzeRegion(id, data) {
     if (f.checkout_redirect >= 5 && (r.redirect_to_conversion || 0) < T.redirectToConv)
       alerts.push({ region: id, type: 'funnel_conv', where: 'redirect→paiement', metric: `${r.redirect_to_conversion}%`, volume: f.checkout_redirect, severity: (T.redirectToConv - r.redirect_to_conversion) * f.checkout_redirect / 10, fix: FIX.funnel_conv })
   }
+  // 3) FRICTION — rage-clicks (sg_friction) = "ça marche pas / je suis bloqué".
+  const fric = (br && br.friction) || 0
+  if (fric >= 5)
+    alerts.push({ region: id, type: 'bloque', where: 'rage-clicks', metric: `${fric} évts`, volume: fric, severity: fric * 3, fix: FIX.bloque })
   return alerts
 }
 

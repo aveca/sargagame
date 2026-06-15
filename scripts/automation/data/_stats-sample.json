@@ -1,8 +1,52 @@
-{"days":7,"sessions":420,"regions":{"florida":420},
- "screens":{"world":{"visits":300,"avg_dwell_ms":9000,"bored_rate":0.42,"avg_acts":2},
-            "beach":{"visits":120,"avg_dwell_ms":2200,"bored_rate":0.1,"avg_acts":1},
-            "premium":{"visits":80,"avg_dwell_ms":15000,"bored_rate":0.05,"avg_acts":3}},
- "byRegion":{"florida":{"sessions":420,
-   "funnel":{"forecast_lock":60,"modal_open":140,"modal_cta":9,"checkout_redirect":7,"conversion":1,"email_submit":4},
-   "rates":{"session_to_modal":33.3,"modal_to_cta":6.4,"cta_to_redirect":77.8,"redirect_to_conversion":14.3,"session_to_conversion":0.24,"lock_to_cta":15,"session_to_email":1},
-   "bored_rate":0.3,"avg_dwell_ms":7000}}}
+{
+ "days": 7,
+ "sessions": 420,
+ "regions": {
+  "florida": 420
+ },
+ "screens": {
+  "world": {
+   "visits": 300,
+   "avg_dwell_ms": 9000,
+   "bored_rate": 0.42,
+   "avg_acts": 2
+  },
+  "beach": {
+   "visits": 120,
+   "avg_dwell_ms": 2200,
+   "bored_rate": 0.1,
+   "avg_acts": 1
+  },
+  "premium": {
+   "visits": 80,
+   "avg_dwell_ms": 15000,
+   "bored_rate": 0.05,
+   "avg_acts": 3
+  }
+ },
+ "byRegion": {
+  "florida": {
+   "sessions": 420,
+   "funnel": {
+    "forecast_lock": 60,
+    "modal_open": 140,
+    "modal_cta": 9,
+    "checkout_redirect": 7,
+    "conversion": 1,
+    "email_submit": 4
+   },
+   "rates": {
+    "session_to_modal": 33.3,
+    "modal_to_cta": 6.4,
+    "cta_to_redirect": 77.8,
+    "redirect_to_conversion": 14.3,
+    "session_to_conversion": 0.24,
+    "lock_to_cta": 15,
+    "session_to_email": 1
+   },
+   "bored_rate": 0.3,
+   "avg_dwell_ms": 7000,
+   "friction": 12
+  }
+ }
+}

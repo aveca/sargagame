@@ -1367,7 +1367,7 @@ function track(event,params={}){
   }catch{}
   // Backup: queue critical conversion events to localStorage + beacon to Apps Script
   const critical=event.startsWith("sg_checkout")||event.startsWith("sg_premium")||event==="sg_conversion"
-    ||event==="sg_email_submit"||event==="sg_forecast_lock_click"||event==="sg_session_start"
+    ||event==="sg_email_submit"||event==="sg_forecast_lock_click"||event==="sg_session_start"||event==="sg_friction"
     ||event==="sg_push_accept"||event==="sg_push_primer_accept"||event==="sg_push_primer_dismiss"
     ||event==="sg_referral_share"
   if(critical){
@@ -1428,6 +1428,12 @@ function engInit(){
     window.addEventListener("scroll",()=>{const h=document.documentElement,sc=h.scrollHeight-h.clientHeight;if(sc>0){const p=Math.round(h.scrollTop/sc*100);if(p>_eng.maxScroll)_eng.maxScroll=p}},{passive:true})
     document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")engFlush("hide")})
     window.addEventListener("pagehide",()=>engFlush("pagehide"))
+    // FRICTION temps réel : rage-click (≥3 clics rapprochés au même endroit) =
+    //   "ça marche pas / je suis bloqué". Émis first-party (sg_friction) → nourrit
+    //   l'alerte analyze-ux.cjs pour qu'on construise le fix (svg/marketing/code).
+    let _rc=[]
+    window.addEventListener("click",e=>{const n=Date.now();_rc=_rc.filter(c=>n-c.t<900);_rc.push({t:n,x:e.clientX,y:e.clientY})
+      if(_rc.length>=3){const a=_rc[0],b=_rc[_rc.length-1];if(Math.hypot(b.x-a.x,b.y-a.y)<44){_rc=[];try{track("sg_friction",{type:"rage",screen:_eng.screen||"?"})}catch(_){}}}},{passive:true})
   }catch(e){}
 }
 
@@ -9347,11 +9353,9 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
                 <button onClick={()=>{try{track("sg_archipel_tour_open",{beach_id:b.id})}catch(_){}; onOpenBeach&&onOpenBeach(b)}} style={{flex:1,padding:"13px",borderRadius:14,border:"none",cursor:"pointer",fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",fontSize:14.5,fontWeight:800,color:"#07201E",background:"linear-gradient(180deg,#FFD884,#F2B05E)"}}>{_t(lang,"Découvrir cette plage →","Explore this beach →","Descubrir esta playa →")}</button>
                 <button onClick={()=>tourGo(tour+1)} aria-label={_t(lang,"Suivante","Next","Siguiente")} style={{width:44,height:44,borderRadius:14,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:18,cursor:tour>=tourOrder.length-1?"default":"pointer",opacity:tour>=tourOrder.length-1?.4:1}}>↓</button>
               </div>
-              {onSolutions&&tour>=tourOrder.length-1&&<button onClick={onSolutions} style={{display:"block",width:"100%",marginTop:9,padding:"12px",borderRadius:14,border:"1px solid rgba(95,211,201,.5)",cursor:"pointer",background:"rgba(95,211,201,.12)",color:"#5FD3C9",fontSize:13.5,fontWeight:800}}>🌍 {_t(lang,"Continuer : le monde des solutions →","Continue: the solutions world →","Sigue: el mundo de soluciones →")}</button>}
               <div style={{textAlign:"center",marginTop:8,fontSize:11,color:"rgba(255,255,255,.45)"}}>{_t(lang,"↕ scrolle ou swipe pour changer de plage","↕ scroll or swipe to change beach","↕ desliza para cambiar")}</div>
               <div style={{display:"flex",justifyContent:"center",gap:18,marginTop:8}}>
                 <button onClick={exitTour} style={{background:"none",border:"none",color:"rgba(255,255,255,.6)",fontSize:12.5,fontWeight:700,cursor:"pointer"}}>← {_t(lang,"Explorer librement","Explore freely","Explorar libre")}</button>
-                {onSolutions&&<button onClick={onSolutions} style={{background:"none",border:"none",color:"rgba(255,255,255,.6)",fontSize:12.5,fontWeight:700,cursor:"pointer"}}>💡 {_t(lang,"Les solutions →","Solutions →","Soluciones →")}</button>}
               </div>
             </div>
           </div>)})()}

@@ -137,6 +137,8 @@ foreach ($byR as $rg => $a) {
     ),
     'bored_rate' => round($a['screens_bored'] / $sv, 3),
     'avg_dwell_ms' => round($a['screens_dwell'] / $sv),
+    // FRICTION : rage-clicks (sg_friction) = "ça marche pas / bloqué" — alerte UX.
+    'friction' => $a['events']['sg_friction'] ?? 0,
     'top_events' => array_slice($a['events'], 0, 8, true),
   );
 }
