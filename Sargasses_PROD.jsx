@@ -3699,7 +3699,8 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
           const st=ST[b.status]||ST._loading
           const hasScore=typeof b.score==="number"
           const scoreColor=b.scoreColor||st.c
-          const emo=EMO[b.status]||""
+          // emoji aligné sur le SCORE affiché (pas le status) → plus de « 😎 MOYEN 64 »
+          const emo=hasScore?(b.score>=70?"😎":b.score>=40?"😐":"🚫"):(EMO[b.status]||"")
           return(
             <button key={b.id} onClick={()=>onBeachClick(b)} style={{
               position:"relative",
