@@ -17,7 +17,8 @@
   },
   "stripeProducts": {
     "monthly": "price_1TgafPP9RK8Orx51o5YrMcgd",
-    "yearly": "price_1TgafPP9RK8Orx51lGuQvBUQ"
+    "yearly": "price_1TgafPP9RK8Orx51lGuQvBUQ",
+    "tripPass": "price_1TiiGQP9RK8Orx51nAhAchhB"
   },
   "timezone": "America/Santo_Domingo",
   "bbox": [
@@ -222,7 +223,8 @@
   ],
   "paymentLinks": {
     "monthly": "https://buy.stripe.com/00waEZaVJgjE8Oxacb0co0J",
-    "yearly": "https://buy.stripe.com/4gM8wRfbZ1oK7Kt1FF0co0K"
+    "yearly": "https://buy.stripe.com/4gM8wRfbZ1oK7Kt1FF0co0K",
+    "tripPass": "https://buy.stripe.com/3cIeVf1l93wSggZ9870co0N"
   },
   "noTrial": true
 }

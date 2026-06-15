@@ -16,7 +16,8 @@
   },
   "stripeProducts": {
     "monthly": "price_1Tgc8UP9RK8Orx51RYjh5Qpy",
-    "yearly": "price_1Tgc8VP9RK8Orx515ZK16pl4"
+    "yearly": "price_1Tgc8VP9RK8Orx515ZK16pl4",
+    "tripPass": "price_1TiiGbP9RK8Orx51ceTbpwpM"
   },
   "timezone": "America/Cancun",
   "bbox": [
@@ -213,7 +214,8 @@
   ],
   "paymentLinks": {
     "monthly": "https://buy.stripe.com/eVq6oJd3R7N83ud8430co0L",
-    "yearly": "https://buy.stripe.com/fZu6oJ2pd0kGd4Nacb0co0M"
+    "yearly": "https://buy.stripe.com/fZu6oJ2pd0kGd4Nacb0co0M",
+    "tripPass": "https://buy.stripe.com/9B64gB2pd2sO4yhacb0co0O"
   },
   "countryCode": "MX",
   "seo": {
