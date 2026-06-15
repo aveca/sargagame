@@ -134,6 +134,19 @@ export default defineConfig({
           `<link rel="alternate" hreflang="${lang}" href="https://${domain}/" />\n    <link rel="alternate" hreflang="x-default" href="https://${domain}/" />`
         )
 
+        // ── 2.5) REGION.sceneTheme : surcharge --sg-* (scène golden-hour) PAR MARCHÉ.
+        //      Partiel : seules les vars retunées sont émises (ex. mer plus turquoise
+        //      Caraïbe, sable plus pâle Floride) ; le reste retombe sur le défaut golden
+        //      de index.html. Injecté APRÈS le :root de base → la cascade gagne. MQ/GP
+        //      court-circuités plus haut (l.96) = aucun override sur les marchés FR.
+        const sceneTheme = REGION.sceneTheme
+        if (sceneTheme && typeof sceneTheme === 'object') {
+          const VMAP = { sky0: '--sg-sky-0', sky1: '--sg-sky-1', sky2: '--sg-sky-2', sky3: '--sg-sky-3', seaTop: '--sg-sea-top', seaBot: '--sg-sea-bot', sand: '--sg-sand', rim: '--sg-rim', glit: '--sg-glit', sarg: '--sg-sarg', sargD: '--sg-sarg-d', sargL: '--sg-sarg-l', sargGlint: '--sg-sarg-glint', sargStrand: '--sg-sarg-strand', satBody: '--sg-sat-body', satTop: '--sg-sat-top', satLens: '--sg-sat-lens' }
+          const okColor = v => typeof v === 'string' && /^(#[0-9a-fA-F]{3,8}|rgb|hsl)/.test(v.trim())
+          const decls = Object.keys(VMAP).filter(k => okColor(sceneTheme[k])).map(k => `${VMAP[k]}:${sceneTheme[k].trim()}`).join(';')
+          if (decls) html = html.replace('</head>', `  <style>:root{${decls};}</style>\n  </head>`)
+        }
+
         // ── 3) Analytics : JAMAIS les IDs partagés MQ/GP sur une nouvelle région.
         //      Si la région a ses propres propriétés (ga4Id / clarityProjectId non-TBD),
         //      mêmes snippets avec ses IDs ; sinon blocs retirés (séparation stricte). ──
