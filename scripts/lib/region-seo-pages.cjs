@@ -185,7 +185,8 @@ const _BRIEF_T = {
     guestAvoid: 'Sargassum expected — keep a backup activity ready for affected days.',
     cta: 'Hotel team? Get this brief in your inbox every morning',
     ctaSub: 'Free daily sargassum brief for your beach — reply and we set it up.',
-    foot: 'Independent Copernicus / NOAA satellite data · refreshed 4× a day' },
+    foot: 'Independent Copernicus / NOAA satellite data · refreshed 4× a day',
+    cleaner: n => `↪ Cleaner right now: ${n}`, cleanerNote: 'A good backup to point your guests to today.' },
   es: { brief: 'Boletín de sargazo', beachOf: 'Playa', today: 'Hoy', week: 'Pronóstico 7 días', clean: 'Limpia', moderate: 'Moderada', avoid: 'Evitar',
     cleanDays: n => `${n} día${n === 1 ? '' : 's'} de playa limpia esta semana.`,
     guestClean: 'Buena semana de playa — compártelo con tus huéspedes.',
@@ -193,9 +194,10 @@ const _BRIEF_T = {
     guestAvoid: 'Se espera sargazo — ten una actividad alternativa lista.',
     cta: '¿Equipo del hotel? Recibe este boletín cada mañana',
     ctaSub: 'Boletín diario de sargazo gratis para tu playa — responde y lo activamos.',
-    foot: 'Datos satelitales independientes Copernicus / NOAA · 4 veces al día' },
+    foot: 'Datos satelitales independientes Copernicus / NOAA · 4 veces al día',
+    cleaner: n => `↪ Más limpia ahora: ${n}`, cleanerNote: 'Un buen plan B para tus huéspedes hoy.' },
 }
-function buildResortBrief(region, r, b, data, lang, today, domain) {
+function buildResortBrief(region, r, b, data, lang, today, domain, beaches) {
   const L = _BRIEF_T[lang] || _BRIEF_T.en
   const C = { clean: '#16A34A', moderate: '#D97706', avoid: '#DC2626' }
   const W = { clean: L.clean, moderate: L.moderate, avoid: L.avoid }
@@ -203,6 +205,15 @@ function buildResortBrief(region, r, b, data, lang, today, domain) {
   const cleanDays = days.filter(d => d.status === 'clean').length
   const todayStatus = b.lv.status || (days[0] && days[0].status) || 'clean'
   const guest = todayStatus === 'avoid' ? L.guestAvoid : (cleanDays >= 5 ? L.guestClean : L.guestWatch)
+  // Plage de repli PROPRE la plus proche — la vraie valeur duty-manager : rediriger
+  // les clients quand la plage de l'hôtel n'est pas clean aujourd'hui.
+  let altHtml = ''
+  if (todayStatus !== 'clean' && Array.isArray(beaches) && b.lat != null) {
+    const km = (la1, lo1, la2, lo2) => { const R = 6371, toR = x => x * Math.PI / 180, dLa = toR(la2 - la1), dLo = toR(lo2 - lo1), a = Math.sin(dLa / 2) ** 2 + Math.cos(toR(la1)) * Math.cos(toR(la2)) * Math.sin(dLo / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(a)) }
+    const alt = beaches.filter(x => x.id !== b.id && x.lv && x.lv.status === 'clean' && x.lat != null)
+      .map(x => ({ x, d: km(b.lat, b.lng, x.lat, x.lng) })).sort((a, c) => a.d - c.d)[0]
+    if (alt) altHtml = `<div class="tip" style="background:#E8F6EC;border-color:#9FD9B0">${L.cleaner(esc(alt.x.name))}${alt.d ? ' · ~' + Math.round(alt.d) + ' km' : ''}<br><span style="color:#3a6b4a">${esc(L.cleanerNote)}</span></div>`
+  }
   const cells = days.map(d => {
     const dn = T[lang].days[new Date(d.date + 'T12:00:00Z').getUTCDay()]
     const col = C[d.status] || '#999'
@@ -219,7 +230,7 @@ function buildResortBrief(region, r, b, data, lang, today, domain) {
 <div><span class="pill" style="background:${C[todayStatus] || '#999'}">${L.today}: ${W[todayStatus] || todayStatus}${scoreTxt}</span></div>
 <h2 style="font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:#6b6b66;margin:18px 0 0;font-weight:700">${L.week}</h2>
 <div class="row">${cells}</div>
-<div class="tip">${L.cleanDays(cleanDays)} ${guest}</div>
+<div class="tip">${L.cleanDays(cleanDays)} ${guest}</div>${altHtml}
 <a class="cta" href="${mailto}"><b>${L.cta}</b><span>${L.ctaSub}</span></a>
 </div>
 <div class="ft">${L.foot} · ${esc(today)} · ${esc(domain)}</div>
@@ -486,7 +497,7 @@ ${hubLinks(null)}${networkFooter(region, t)}</article>`
     }))
     urls.push(pathname)
     // B2B brief standalone (lead-magnet envoyable, noindex, HORS sitemap)
-    try { writePage(distDir, `${pathname}brief/`, buildResortBrief(region, r, b, data, lang, today, domain)) } catch (e) { /* brief best-effort */ }
+    try { writePage(distDir, `${pathname}brief/`, buildResortBrief(region, r, b, data, lang, today, domain, beaches)) } catch (e) { /* brief best-effort */ }
   }
 
   // ── 4. Patch homepage : FAQPage JSON-LD + réseau inter-sites + title override ──
