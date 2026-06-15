@@ -185,6 +185,17 @@ const REGIME_RELIABILITY = {
   unknown:    { clean: 65, alert: 55 },
 }
 
+// Calm-season CLEAN confidence FLOOR by horizon. The backtest showed calm +
+// predicted-clean is empirically ~100% reliable at EVERY horizon (clean persists
+// in a quiet stretch), yet the raw horizon-decay collapses stated confidence to
+// 6–12% by J+4 — we were HIDING our own reliability (the worst thing for a
+// product whose pitch is "trust the data"). This lifts calm-clean confidence to a
+// conservative, still-horizon-decaying curve, deliberately well below the
+// measured 100% (one calm month is not proof of permanence). Applied ONLY to
+// calm+clean, never above the day-0 observation confidence, never for memory
+// beaches. The mirror of the calm+alert cap.
+const CALM_CLEAN_CONF_FLOOR = { 1: 68, 2: 62, 3: 56, 4: 50, 5: 44, 6: 40 }
+
 /**
  * The per-day confidence ceiling for a (regime, predicted-status) pair.
  * @param {string} regime - from classifyRegime
@@ -198,17 +209,31 @@ function regimeCeiling(regime, predictedStatus) {
 }
 
 /**
- * Cap a forecast day's confidence by its regime reliability. Day 0 (direct
- * observation) is never capped — it's measured, not predicted.
+ * Regime-calibrate a forecast day's confidence: CAP alerts and FLOOR clean calls
+ * to their measured reliability. Day 0 (direct observation) is untouched.
+ *   - calm + ALERT  → capped (≤30): a calm-season alert can't read as trustworthy.
+ *   - calm + CLEAN  → floored (horizon-decaying ~68→40): stop hiding that clean
+ *                     persists in a quiet stretch. Floor never exceeds the day-0
+ *                     base confidence, and is suppressed for memory beaches.
+ *   - other regimes → cap only (no data yet to justify raising them).
+ * Only ever moves confidence TOWARD the measured reliability; never invents it.
  * @param {number} dayConf - horizon-decayed confidence from forecastConfidence
  * @param {string} regime
  * @param {string} predictedStatus
  * @param {number} dayIndex
+ * @param {{ allowFloor?: boolean, baseConf?: number }} [opts] - allowFloor=false for memory beaches
  * @returns {number}
  */
-function regimeAdjustedConfidence(dayConf, regime, predictedStatus, dayIndex) {
+function regimeAdjustedConfidence(dayConf, regime, predictedStatus, dayIndex, opts) {
   if (dayIndex === 0) return dayConf
-  return Math.min(dayConf, regimeCeiling(regime, predictedStatus))
+  const isAlert = predictedStatus === 'moderate' || predictedStatus === 'avoid'
+  let conf = Math.min(dayConf, regimeCeiling(regime, predictedStatus))
+  if (!isAlert && regime === 'calm' && opts && opts.allowFloor) {
+    let floor = CALM_CLEAN_CONF_FLOOR[dayIndex] || 0
+    if (opts.baseConf != null) floor = Math.min(floor, opts.baseConf) // never claim more than the observation
+    conf = Math.max(conf, floor)
+  }
+  return Math.round(conf)
 }
 
 /**

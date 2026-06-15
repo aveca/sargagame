@@ -362,11 +362,28 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
     // calendar). Drives arrival gating + per-regime confidence below.
     const recentMean = recentObservedMean(level.id, history)
     const regime = classifyRegime(recentMean, level.afai)
-    const arrivalGain = regimeArrivalGain(regime)
 
     // Check if any bank threatens this beach
     const islandBanks = hasBanks ? banks.filter(b => b.island === island) : []
     const hasArrival = islandBanks.length > 0
+
+    // Strongest raw arrival signal over the short horizon. Coherence rule: in the
+    // calm regime a WEAK arrival (below the raised calm detect threshold) is
+    // damped to gain 0.45 and never banners; but a signal strong enough to CLEAR
+    // that bar is a credible arrival and runs at FULL strength — so the "arrivée
+    // imminente" banner (arrivalDetected, same threshold) and the forecast AFAI
+    // always agree. Without this, a supra-threshold-but-damped signal could fire
+    // the banner while the displayed AFAI stayed clean (number/banner mismatch).
+    // Outside calm, the regime gain (0.85 / 1.0) is unchanged.
+    const rawMaxArrival = (beach && hasArrival)
+      ? Math.max(
+          arrivalSignalFromBanks(beach, islandBanks, 1),
+          arrivalSignalFromBanks(beach, islandBanks, 2),
+          arrivalSignalFromBanks(beach, islandBanks, 3),
+        )
+      : 0
+    const calmArrivalCredible = regime === 'calm' && rawMaxArrival >= regimeArrivalDetectThreshold(regime)
+    const arrivalGain = calmArrivalCredible ? 1.0 : regimeArrivalGain(regime)
 
     const series = []
     const t = new Date()
@@ -434,10 +451,11 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
 
       afai = Math.round(afai * 100) / 100
       const dayStatus = statusFromAfai(afai)
-      // Honest confidence: cap by regime reliability so a calm-season ALERT can
-      // never be displayed as trustworthy (empirically 0% right), while clean
-      // calls keep their conservative horizon-decayed confidence.
-      confidence = regimeAdjustedConfidence(confidence, regime, dayStatus, i)
+      // Honest confidence: cap a calm-season ALERT (never trustworthy) AND floor a
+      // calm-season CLEAN call (empirically ~100% reliable — stop hiding it under
+      // the horizon-decay collapse). Floor suppressed for memory beaches and
+      // bounded by the day-0 observation confidence.
+      confidence = regimeAdjustedConfidence(confidence, regime, dayStatus, i, { allowFloor: !isMemory, baseConf })
 
       series.push({
         day: i === 0 ? 'Auj.' : i === 1 ? 'Dem.' : DAYS[d.getDay()],
@@ -460,16 +478,13 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
     // is the point at which the signal is strong enough to actually move the
     // displayed forecast numbers; weaker signals (0.03-0.04) produced flat
     // forecasts paired with "arrival imminent" messaging = false alarms.
-    const maxArrival = beach && islandBanks.length > 0
-      ? Math.max(
-          arrivalSignalFromBanks(beach, islandBanks, 1),
-          arrivalSignalFromBanks(beach, islandBanks, 2),
-          arrivalSignalFromBanks(beach, islandBanks, 3),
-        )
-      : 0
+    // Reuse the pre-loop raw max (same 3 horizons) — no recompute.
+    const maxArrival = rawMaxArrival
     // Higher bar in the calm regime (0.12) than in active stretches (0.05): only
     // a strong, close, genuinely-approaching bank flags "imminent" on a quiet
-    // beach — killing the calm-season "arrival imminente" false banners.
+    // beach — killing the calm-season "arrival imminente" false banners. When it
+    // DOES clear the bar, calmArrivalCredible above runs the forecast at full
+    // strength so the banner and the AFAI numbers stay coherent.
     const arrivalDetected = maxArrival >= regimeArrivalDetectThreshold(regime) && level.afai < 0.20
 
     // Forecast method label

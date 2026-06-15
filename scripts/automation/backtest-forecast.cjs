@@ -133,8 +133,10 @@ function printRegimeTable(label, pairs) {
  * @param {object} cells - from regimeTable: { "regime|ALERT"|"regime|clean": {n,hit} }
  * @param {object} byRegime - from regimeTable: { regime: {n,hit,falseAlarm,actClean} }
  * @param {string} method - 'archive' (real deployed forecasts) | 'reforecast' (current code, banks proxy)
+ * @param {{from?: string, to?: string}} [window] - observation window the numbers cover (binds the public claim to its period)
  */
-function buildRegimeReliabilitySummary(cells, byRegime, method) {
+function buildRegimeReliabilitySummary(cells, byRegime, method, window) {
+  const win = window && window.from && window.to ? `${window.from} → ${window.to}` : null
   const regimes = {}
   for (const [reg, d] of Object.entries(byRegime)) {
     const cleanCell = cells[`${reg}|clean`]
@@ -158,15 +160,19 @@ function buildRegimeReliabilitySummary(cells, byRegime, method) {
   if (calm && calm.cleanReliabilityPct != null && calm.cleanSamples >= 20) {
     const c = calm.cleanReliabilityPct
     const n = calm.cleanSamples
+    const frWin = win ? ` (saison calme, ${win})` : ' en saison calme'
+    const enWin = win ? ` (calm season, ${win})` : ' in calm season'
+    const esWin = win ? ` (temporada tranquila, ${win})` : ' en temporada tranquila'
     headline = {
-      fr: `En saison calme, ${c}% de nos prévisions « mer propre » se sont vérifiées (sur ${n} vérifiées) ; les rares alertes restent signalées à faible confiance tant que la donnée ne les confirme pas.`,
-      en: `In calm season, ${c}% of our "clean water" forecasts proved correct (over ${n} verified); the rare alerts stay flagged low-confidence until the data confirms them.`,
-      es: `En temporada tranquila, el ${c}% de nuestros pronósticos de "agua limpia" resultaron correctos (sobre ${n} verificados); las raras alertas se marcan con baja confianza hasta que el dato las confirma.`,
+      fr: `${c}% de nos prévisions « mer propre »${frWin} se sont vérifiées (sur ${n}) ; les rares alertes restent signalées à faible confiance tant que la donnée ne les confirme pas.`,
+      en: `${c}% of our "clean water" forecasts${enWin} proved correct (over ${n}); the rare alerts stay flagged low-confidence until the data confirms them.`,
+      es: `El ${c}% de nuestros pronósticos de "agua limpia"${esWin} resultaron correctos (sobre ${n}); las raras alertas se marcan con baja confianza hasta que el dato las confirma.`,
     }
   }
   return {
-    note: 'Reliability conditioned on each beach\'s OWN recent regime (calm/transition/high), split by predicted direction. Publish THIS, never a single global %, which blends regimes and hides that calm-season ALERTS are far less reliable than calm-season CLEAN calls.',
+    note: 'Reliability conditioned on each beach\'s OWN recent regime (calm/transition/high), split by predicted direction. Publish THIS, never a single global %, which blends regimes and hides that calm-season ALERTS are far less reliable than calm-season CLEAN calls. Always bind the figure to its window; for the freshest current-model number cite the reforecast output, not the archive blend.',
     method,
+    window: win,
     regimes,
     headline,
   }
@@ -331,7 +337,7 @@ function main() {
   // per-regime reliability instead of a masking global. 'archive' = the real,
   // fully-faithful deployed-forecast number (self-heals as fixed-code snapshots
   // roll through the 30-day archive).
-  summary.regimeReliability = buildRegimeReliabilitySummary(cells, byRegime, 'archive')
+  summary.regimeReliability = buildRegimeReliabilitySummary(cells, byRegime, 'archive', { from: summary.dateRange.archiveFrom, to: summary.dateRange.archiveTo })
 
   // Save results
   const output = { ...summary, computed: new Date().toISOString(), pairs: results.pairs.slice(-100) }
@@ -414,7 +420,7 @@ function reforecastBacktest() {
     totalPairs: total,
     global: { statusHitRate: Math.round(hits / total * 100), falseAlarms, falseAlarmRate: Math.round(falseAlarms / total * 1000) / 10 },
     byRegime, byRegimeDirection: cells,
-    regimeReliability: buildRegimeReliabilitySummary(cells, byRegime, 'reforecast'),
+    regimeReliability: buildRegimeReliabilitySummary(cells, byRegime, 'reforecast', { from: dates[0], to: dates[dates.length - 1] }),
     residualFalseAlarmsByBeach: faByBeach,
     maxConfidenceAmongFalseAlarms: maxFAconf,
   }
