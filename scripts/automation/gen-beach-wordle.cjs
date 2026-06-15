@@ -16,9 +16,17 @@
  * Sorties (scripts/automation/share-cards/out/, gitignoré) :
  *   wordle-<region>-<date>-q.png   carte énigme (à poster le matin)
  *   wordle-<region>-<date>-a.png   carte réponse (à poster le soir)
+ *   wordle-<region>-<date>-r.png   carte résultat partageable (si --result)
  *   ../data/wordle-today.json      définition du puzzle (le moteur)
  *
- * Usage : node scripts/automation/gen-beach-wordle.cjs --region=mq
+ * Usage :
+ *   node scripts/automation/gen-beach-wordle.cjs --region=mq
+ *   node scripts/automation/gen-beach-wordle.cjs --region=mq --result=B --streak=4
+ *
+ * --result=<A|B|C|D|slug> : carte RÉSULTAT à partager. SANS spoiler — on montre
+ *   seulement ✓/✗ et le streak, jamais la bonne réponse : le partageur se vante,
+ *   le spectateur reste curieux et vient jouer. C'est l'objet viral.
+ *   --streak=<N> : série de bonnes réponses (contrat first-party, optionnel).
  */
 const fs = require('fs')
 const path = require('path')
@@ -138,12 +146,68 @@ function buildAnswerCard(p) {
 </svg>`
 }
 
+/**
+ * Carte résultat partageable — SANS spoiler. Montre ✓/✗ + le streak, jamais la
+ * bonne réponse (sinon on divulgue le puzzle du jour à tout le monde).
+ */
+function buildResultCard(p, correct, streak) {
+  const reg = L.REGION[p.region]
+  const col = correct ? L.PALETTE.teal : L.STATUS.avoid.color
+  const verdict = correct ? 'BIEN VU' : 'PRESQUE'
+  const tagline = correct ? 'Le meilleur spot du jour, deviné au satellite.' : 'Le satellite avait un autre favori aujourd’hui.'
+  const cx = W / 2, by = 430, r = 142
+  // Badge ✓ / ✗
+  const glyph = correct
+    ? `<path d="M ${cx - 56} ${by + 4} l 34 38 l 72 -78" fill="none" stroke="${col}" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>`
+    : `<path d="M ${cx - 46} ${by - 46} l 92 92 M ${cx + 46} ${by - 46} l -92 92" fill="none" stroke="${col}" stroke-width="22" stroke-linecap="round"/>`
+
+  // Bandeau de série (squares verts) — uniquement si streak fourni
+  let streakBlock = ''
+  if (streak && streak > 0) {
+    const n = Math.min(streak, 7), sq = 58, g = 16
+    const totalW = n * sq + (n - 1) * g
+    const sx = (W - totalW) / 2, sy = 742
+    let cells = ''
+    for (let i = 0; i < n; i++) cells += `<rect x="${sx + i * (sq + g)}" y="${sy}" width="${sq}" height="${sq}" rx="14" fill="${L.PALETTE.teal}"/>`
+    streakBlock = `${cells}
+      <text x="${W / 2}" y="${sy + sq + 56}" text-anchor="middle" font-family="${L.FONT}" font-size="34" font-weight="800" fill="${L.PALETTE.white}">${streak} jours de suite</text>`
+  }
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+  ${L.commonDefs()}
+  <rect width="${W}" height="${H}" fill="url(#bg)"/>
+  <circle cx="${cx}" cy="${by}" r="${r + 60}" fill="${col}" opacity="0.06"/>
+  <rect width="${W}" height="${H}" fill="url(#vign)"/>
+  ${header(p.n, `${L.dateLongFR(p.date)} · ${reg.label}`, '')}
+  <circle cx="${cx}" cy="${by}" r="${r}" fill="none" stroke="${col}" stroke-width="14" opacity="0.9"/>
+  ${glyph}
+  <text x="${cx}" y="${by + r + 92}" text-anchor="middle" font-family="${L.FONT}" font-size="80" font-weight="900" letter-spacing="-1" fill="${col}">${verdict}</text>
+  <text x="${cx}" y="${by + r + 146}" text-anchor="middle" font-family="${L.FONT}" font-size="29" font-weight="600" fill="${L.PALETTE.mut}">${L.esc(tagline)}</text>
+  ${streakBlock}
+  ${L.domainWatermark(W, H, reg.domain)}
+</svg>`
+}
+
 async function run() {
   const region = opt('region') || 'mq'
   if (!L.REGION[region]) { console.error('✗ région inconnue: ' + region); process.exit(1) }
   const date = L.todayISO()
   const p = buildPuzzle(region, date)
   if (!p) { console.error('✗ pas assez de plages notées — puzzle annulé (jamais de fausse donnée).'); process.exit(2) }
+
+  // Mode résultat partageable : --result=<A|B|C|D|slug> (+ --streak=N)
+  const resultArg = opt('result')
+  if (resultArg) {
+    const idx = /^[A-Da-d]$/.test(resultArg) ? LETTERS.indexOf(resultArg.toUpperCase()) : p.options.findIndex(o => o.slug === resultArg)
+    if (idx < 0) { console.error('✗ --result invalide (A-D ou slug d’option): ' + resultArg); process.exit(1) }
+    const correct = p.options[idx].slug === p.answerSlug
+    const streak = parseInt(opt('streak'), 10) || 0
+    const rOut = path.join(L.OUT_DIR, `wordle-${region}-${date}-r.png`)
+    const rr = await L.renderSVG(buildResultCard(p, correct, streak), rOut)
+    console.log(`✓ Sargadle #${p.n} ${region} — résultat ${correct ? 'BIEN VU' : 'raté'} (choix ${LETTERS[idx]}${streak ? `, streak ${streak}j` : ''}, sans spoiler)`)
+    console.log(`  résultat → ${path.relative(L.ROOT, rr.path)} (${(rr.bytes / 1024).toFixed(0)} Ko)`)
+    return
+  }
 
   // Le moteur : définition du puzzle (consommable par l'app plus tard)
   const jsonOut = path.join(L.DATA_DIR, 'wordle-today.json')
