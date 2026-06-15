@@ -1,5 +1,18 @@
 # NIGHT LOG — build autonome (nuit du 14→15/06/2026)
 
+## ⏱️ SESSION 15/06 (jour+nuit) — scène-spine + funnel + alerte UX + grammaire
+**Tout déployé, build+smoke vert + vérifié DOM à chaque push.**
+- **Scène satellite+plage = colonne vertébrale** (réponse au feedback "t'as retiré le svg de l'accueil") : le HeroScene était intact mais enterré sous l'Archipel dots → ajout MER golden-hour + horizon + reflet dans le monde (palette BEACH_PHASE, phase-adaptive) → les plages scintillent sur l'eau (`6ad88adf`). + **Lecture du Jour** : le Veilleur narre la vraie data (counts live), saison calme = état désirable (`f6bc4eb4`).
+- **Funnel réarmé** (audit widget-factory wabg4gb8s) : sg_conversion+forecast_lock au tracking, panier abandonné réarmé, parrainage réarmé, engagement_50s tué (`a52c7519`, `95452d93`).
+- **Buzz** : buildShareCard(variant) + Veille-Card de Série (Wordle de la mer) sur WorldBonus (`719cec93`).
+- **Régression scroll corrigée** : scroll = visite plage-à-plage (pas zoom), boucle, escapable, cul-de-sac Solutions tué (`5f4b82fd`, `bfdf1212`). Grammaire affinée par workflow wwrqblnxu (escape clavier, double-tap nommé).
+- **ALERTE UX temps réel** (mandat "nous alerter quand bloqués/s'ennuient/funnel") : détection rage-click (`sg_friction`) + `analyze-ux.cjs` qui sort un backlog trié + angle de fix (svg/marketing/code) → [[reference-ux-alert-loop]] (`711aca4c`, `ea6230f3`).
+- **Trip Pass USD A/B** + funnel par-région + Florida SEO + La Marée #1-4a (plongée/calme/dock/scroll) — plus tôt dans la session.
+
+**SUITE PRIORISÉE (reprendre frais, tout additif+gated+vérifié) :** #49 pan inertie+rubber-band (med, anim) → Verdict du Jour interactif dans la fiche (Devine-puis-Révèle, buzz 80) → design system SCENE_TOKENS+CSS custom-props → purge anim infinite (#34) → top-reco/verdict-raté share variants. ⚠️ Vérif visuelle réelle = écran fondateur (preview headless gèle les anims + screenshot HS). Refs : [[reference-la-maree-du-veilleur]] [[reference-widget-factory-week]] [[reference-ux-alert-loop]].
+
+
+
 Mandat fondateur : autonomie totale. Construire une VRAIE UI/UX produit A→Z, SITE FINI.
 END-TO-END : refonte produit COMPLÈTE, CHAQUE ÉCRAN en SVG, du 1er clic au dernier, du 1er
 scroll au dernier — un parcours unifié et fini. Chaque plage = scène SVG unique/adaptative
