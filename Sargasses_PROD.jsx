@@ -220,6 +220,8 @@ function _scDomain(){try{if(typeof IS_NEW_REGION!=="undefined"&&IS_NEW_REGION&&t
 // (portée max). Canvas pur, fonts déjà chargées, domaine du region-config.
 async function buildShareCard(opts){
   opts=opts||{};const variant=opts.variant||"beach",lang=opts.lang||"fr"
+  if(variant==="top")return _scTopCard(opts,lang)
+  if(variant==="missed")return _scMissedCard(opts,lang)
   if(variant!=="streak")return shareBeachCard(opts.beach,lang,opts.forecast)
   try{
     const W=1080,H=1350,cv=document.createElement("canvas");cv.width=W;cv.height=H
@@ -251,6 +253,79 @@ async function buildShareCard(opts){
     const text=_t(lang,"Ma série de veille des plages 🛰️🔥 — tu fais mieux ?","My beach-watch streak 🛰️🔥 — beat it?","Mi racha de vigía 🛰️🔥 — ¿me superas?")
     try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text});return true}}catch(_){}
     const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="ma-serie.png";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);return true
+  }catch(e){return false}
+}
+// Chrome partagé des share-cards (gradient golden-hour + halos + wordmark + glyphe
+// Veilleur) — factorisé pour les variantes 'top'/'missed' (beach/streak gardent
+// leur chrome inline historique). Canvas pur, fonts déjà chargées.
+function _scChrome(x,W,H,RR,glyphY){
+  const g=x.createLinearGradient(0,0,0,H);[[0,"#0B2230"],[.5,"#155A5A"],[.82,"#C97E3A"],[1,"#F2B05E"]].forEach(s=>g.addColorStop(s[0],s[1]));x.fillStyle=g;x.fillRect(0,0,W,H)
+  x.fillStyle="rgba(255,216,132,.26)";x.beginPath();x.arc(W/2,820,320,0,7);x.fill()
+  x.fillStyle="rgba(255,216,132,.5)";x.beginPath();x.arc(W/2,820,150,0,7);x.fill()
+  x.textAlign="center"
+  x.fillStyle="rgba(255,255,255,.82)";x.font="400 36px 'Anton',system-ui,sans-serif";x.fillText("S A R G A S S E S",W/2,118)
+  x.save();x.translate(W/2,glyphY||258)
+  x.fillStyle="rgba(95,211,201,.16)";x.beginPath();x.arc(0,0,78,0,7);x.fill()
+  x.fillStyle="#3BA7A0";RR(-84,-18,44,36,8);x.fill();RR(40,-18,44,36,8);x.fill()
+  x.strokeStyle="#5FD3C9";x.lineWidth=6;x.lineCap="round";x.beginPath();x.moveTo(0,-42);x.lineTo(0,-68);x.stroke();x.fillStyle="#5FD3C9";x.beginPath();x.arc(0,-72,8,0,7);x.fill()
+  x.fillStyle="#C9971F";RR(-40,-40,80,80,20);x.fill();x.fillStyle="#FFC72C";RR(-40,-40,80,26,20);x.fill()
+  x.fillStyle="#07201E";x.beginPath();x.arc(0,8,24,0,7);x.fill();x.fillStyle="#5FD3C9";x.beginPath();x.arc(0,8,16,0,7);x.fill();x.fillStyle="#EAFBF8";x.beginPath();x.arc(-6,2,6,0,7);x.fill()
+  x.restore()
+}
+function _scFooter(x,W,H,lang){const ds=new Date().toLocaleDateString(lang==="en"?"en-GB":lang==="es"?"es-ES":"fr-FR",{day:"numeric",month:"long"});x.textAlign="center";x.fillStyle="rgba(255,255,255,.72)";x.font="500 32px 'Bricolage Grotesque',system-ui,sans-serif";x.fillText(ds+"  ·  "+_scDomain(),W/2,H-86)}
+async function _scShip(cv,filename,text){const blob=await new Promise(r=>cv.toBlob(r,"image/png",.92));if(!blob)return false;const file=new File([blob],filename,{type:"image/png"});try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text});return true}}catch(_){}const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);return true}
+// Variante 'top' — LA PLAGE DU JOUR : une reco positive « vas-y aujourd'hui »,
+// spoiler-free (une seule plage nommée + verdict + raison + 3 jours), zéro lien.
+async function _scTopCard(opts,lang){
+  try{
+    const beach=opts.beach;if(!beach)return false
+    const W=1080,H=1350,cv=document.createElement("canvas");cv.width=W;cv.height=H
+    const x=cv.getContext("2d");if(!x)return false
+    const RR=(xx,yy,w,h,r)=>{x.beginPath();if(x.roundRect)x.roundRect(xx,yy,w,h,r);else x.rect(xx,yy,w,h)}
+    _scChrome(x,W,H,RR,258);x.textAlign="center"
+    RR(W/2-210,360,420,64,32);x.fillStyle="rgba(255,216,132,.16)";x.fill();x.strokeStyle="#FFD884";x.lineWidth=2;x.stroke()
+    x.fillStyle="#FFD884";x.font="800 30px 'Bricolage Grotesque',system-ui,sans-serif";x.fillText(_t(lang,"★ LA PLAGE DU JOUR","★ BEACH OF THE DAY","★ LA PLAYA DEL DÍA"),W/2,403)
+    x.fillStyle="#fff";x.font="400 96px 'Anton',system-ui,sans-serif"
+    const words=(beach.name||"").toUpperCase().split(" ");let line="";const lines=[]
+    for(const w of words){const t=line?line+" "+w:w;if(x.measureText(t).width>W-150&&line){lines.push(line);line=w}else line=t}
+    if(line)lines.push(line);const L=lines.slice(0,3)
+    let ny=560;for(const l of L){x.fillText(l,W/2,ny);ny+=104}
+    const vm=verdictMeta(beach.status,lang);x.fillStyle=vm.color;x.font="800 56px 'Bricolage Grotesque',system-ui,sans-serif"
+    const sc=typeof beach.score==="number"?"  "+beach.score+"/100":""
+    x.fillText(vm.verb.toUpperCase()+sc,W/2,ny+24)
+    const why=beach.status==="clean"?_t(lang,"eau claire, signal satellite faible","clear water, low satellite signal","agua clara, señal baja"):beach.status==="moderate"?_t(lang,"présence éparse, à surveiller","scattered, keep an eye out","presencia dispersa, vigila"):_t(lang,"forte présence aujourd'hui","strong presence today","fuerte presencia hoy")
+    x.fillStyle="rgba(255,255,255,.82)";x.font="600 30px 'Bricolage Grotesque',system-ui,sans-serif";x.fillText(why,W/2,ny+78)
+    const days=(opts.forecast||beach.forecast||[]).slice(0,3)
+    if(days.length){const cw=150,sx=W/2-(days.length*cw)/2+cw/2,dy=H-330;days.forEach((d,i)=>{x.fillStyle=verdictMeta(d.status,lang).color;x.beginPath();x.arc(sx+i*cw,dy,30,0,7);x.fill();x.fillStyle="rgba(255,255,255,.72)";x.font="600 26px 'Bricolage Grotesque',system-ui,sans-serif";x.fillText((d.day||"").slice(0,5),sx+i*cw,dy+66)})}
+    x.fillStyle="rgba(255,255,255,.9)";x.font="700 30px 'Bricolage Grotesque',system-ui,sans-serif";x.fillText(beach.commune?("🚗 "+beach.commune):_t(lang,"Cap sur cette plage","Head here today","Vamos a esta playa"),W/2,H-180)
+    _scFooter(x,W,H,lang)
+    return await _scShip(cv,"plage-du-jour.png",_t(lang,"La plage du jour selon le Veilleur 🛰️☀️","Beach of the day per the Watchman 🛰️☀️","La playa del día según el Vigía 🛰️☀️"))
+  }catch(e){return false}
+}
+// Variante 'missed' — DÉFI DU VEILLEUR raté : carte ludique « la mer m'a eu »
+// (loss-aversion = viral). SPOILER-FREE STRICT : on dessine SEULEMENT le choix du
+// joueur (barré si faux), JAMAIS le vrai statut → ne gâche pas le défi du jour.
+async function _scMissedCard(opts,lang){
+  try{
+    const W=1080,H=1350,cv=document.createElement("canvas");cv.width=W;cv.height=H
+    const x=cv.getContext("2d");if(!x)return false
+    const RR=(xx,yy,w,h,r)=>{x.beginPath();if(x.roundRect)x.roundRect(xx,yy,w,h,r);else x.rect(xx,yy,w,h)}
+    _scChrome(x,W,H,RR,250);x.textAlign="center"
+    const correct=!!opts.correct
+    x.font="400 120px 'Anton',system-ui,sans-serif";x.fillText(correct?"🎯":"🌊🤷",W/2,470)
+    x.fillStyle="#fff";x.font="400 92px 'Anton',system-ui,sans-serif";x.fillText(correct?_t(lang,"J'AI EU L'ŒIL","NAILED THE CALL","TUVE OJO"):_t(lang,"LA MER M'A EU","THE SEA FOOLED ME","EL MAR ME ENGAÑÓ"),W/2,600)
+    x.fillStyle="#FFD884";x.font="800 46px 'Bricolage Grotesque',system-ui,sans-serif";x.fillText(correct?_t(lang,"J'ai deviné le verdict du jour","I called today's verdict","Adiviné el veredicto de hoy"):_t(lang,"J'ai mal deviné le verdict du jour","I misread today's verdict","Fallé el veredicto de hoy"),W/2,672)
+    const chips=[{s:"clean",e:"😎",c:"#22C55E"},{s:"moderate",e:"😐",c:"#F59E0B"},{s:"avoid",e:"🚫",c:"#E8522A"}]
+    const cw=210,gap=24,total=chips.length*cw+(chips.length-1)*gap,sx=W/2-total/2,cy=812
+    chips.forEach((ch,i)=>{const cx=sx+i*(cw+gap),picked=ch.s===opts.guess
+      RR(cx,cy,cw,96,20);x.fillStyle=picked?ch.c+"33":"rgba(255,255,255,.06)";x.fill();x.strokeStyle=picked?ch.c:"rgba(255,255,255,.18)";x.lineWidth=picked?4:2;x.stroke()
+      x.fillStyle=picked?"#fff":"rgba(255,255,255,.5)";x.font="400 52px 'Anton',system-ui,sans-serif";x.fillText(ch.e,cx+cw/2,cy+64)
+      if(picked&&!correct){x.strokeStyle="#fff";x.lineWidth=7;x.lineCap="round";x.beginPath();x.moveTo(cx+20,cy+20);x.lineTo(cx+cw-20,cy+96-20);x.stroke()}})
+    const streak=Math.max(0,opts.streak||0)
+    if(!correct&&streak>0){x.fillStyle="rgba(255,255,255,.7)";x.font="600 30px 'Bricolage Grotesque',system-ui,sans-serif";x.fillText("🔥 "+_t(lang,"série interrompue à "+streak,"streak broke at "+streak,"racha rota en "+streak),W/2,988)}
+    x.fillStyle="#fff";x.font="800 44px 'Bricolage Grotesque',system-ui,sans-serif";x.fillText(correct?_t(lang,"Tu lis la mer aussi bien ?","Read the sea as well?","¿Lees el mar igual?"):_t(lang,"Tu lis mieux la mer que moi ?","Read the sea better than me?","¿Lees mejor el mar?"),W/2,H-200)
+    _scFooter(x,W,H,lang)
+    return await _scShip(cv,"defi-veilleur.png",correct?_t(lang,"J'ai eu l'œil du Veilleur 🛰️🎯 — tu fais mieux ?","Got the Watchman's eye 🛰️🎯 — beat it?","Tuve el ojo del Vigía 🛰️🎯 — ¿me superas?"):_t(lang,"Le défi du Veilleur m'a eu 😅 — tu fais mieux ? 🛰️","The Watchman's Challenge fooled me 😅 — beat it? 🛰️","El Desafío del Vigía me engañó 😅 — ¿me superas? 🛰️"))
   }catch(e){return false}
 }
 function Veilleur({mood="serein",size=44}){
@@ -8997,6 +9072,9 @@ function VerdictDuJourCard({beach,lang}){
               <div style={{fontSize:12,lineHeight:1.4,color:"var(--sg-mid,#686868)"}}>{why}</div>
             </div>
           </div>
+          {!correct&&<button onClick={async()=>{try{track("sg_share",{variant:"missed",beach_id:beach.id,guess})}catch(_){};try{await buildShareCard({variant:"missed",guess,streak:g("sg_vdj_streak",0)||0,lang})}catch(_){}}}
+            style={{display:"block",width:"100%",marginTop:12,padding:"11px",borderRadius:12,border:"1px solid rgba(201,126,58,.4)",cursor:"pointer",background:"rgba(201,126,58,.08)",color:"#C97E3A",fontWeight:800,fontSize:13,fontFamily:"inherit"}}>
+            🌊 {_t(lang,"La mer m'a eu — tu ferais mieux ?","The sea fooled me — beat it?","El mar me engañó — ¿lo haces mejor?")}</button>}
           <div style={{marginTop:10,fontSize:11.5,fontWeight:700,color:"var(--sg-mid,#9a9a9a)"}}>↓ {_t(lang,"Le détail ci-dessous","Full data below","Detalle abajo")}</div>
         </div>
       )}
@@ -9040,6 +9118,9 @@ function WorldChallengeCard({beach,lang,active,phaseGrad,onGuess,streak}){
               {hasScore&&<ScoreBlob score={beach.score} color={beach.scoreColor||vm.color} size={58}/>}
               <div style={{flex:1,minWidth:0}}><div style={{fontSize:16,fontWeight:800,color:vm.color}}>{vm.emoji} {vm.verb}</div><div style={{fontSize:12.5,lineHeight:1.4,color:"rgba(255,255,255,.84)"}}>{why}</div></div>
             </div>
+            {!correct&&<button onClick={async()=>{try{track("sg_share",{variant:"missed",beach_id:beach.id,guess})}catch(_){};try{await buildShareCard({variant:"missed",guess,streak,lang})}catch(_){}}}
+              style={{display:"block",width:"100%",marginTop:12,padding:"12px",borderRadius:14,border:"1px solid rgba(255,216,132,.5)",cursor:"pointer",background:"rgba(255,216,132,.1)",color:"#FFD884",fontWeight:800,fontSize:13.5,fontFamily:"'Bricolage Grotesque',system-ui,sans-serif"}}>
+              🌊 {_t(lang,"La mer m'a eu — tu ferais mieux ?","The sea fooled me — beat it?","El mar me engañó — ¿lo haces mejor?")}</button>}
             <div style={{marginTop:14,fontSize:12,fontWeight:700,letterSpacing:".06em",color:"rgba(255,255,255,.6)"}}>↓ {_t(lang,"PLAGE SUIVANTE","NEXT BEACH","SIGUIENTE")}</div>
           </div>
         )}
@@ -9065,6 +9146,9 @@ function WorldBonus({level,topBeach,lang,onPremium,onClose}){
             {typeof topBeach.score==="number"&&<ScoreBlob score={topBeach.score} color={topBeach.scoreColor||vm.color} size={52}/>}
             <div style={{flex:1,minWidth:0}}><div style={{fontSize:16,fontWeight:800}}>{topBeach.name}</div><div style={{fontSize:12.5,color:"rgba(255,255,255,.82)"}}>{topBeach.commune?topBeach.commune+" · ":""}{vm.emoji} {vm.verb}</div></div>
           </div>
+          <button onClick={async()=>{try{track("sg_share",{variant:"top",beach_id:topBeach.id,score:topBeach.score})}catch(_){};try{await buildShareCard({variant:"top",beach:topBeach,forecast:topBeach.forecast,lang})}catch(_){}}}
+            style={{display:"block",width:"100%",marginTop:12,padding:"10px",borderRadius:12,border:"1px solid rgba(255,216,132,.5)",cursor:"pointer",background:"rgba(255,216,132,.1)",color:"#FFD884",fontWeight:800,fontSize:13,fontFamily:"'Bricolage Grotesque',system-ui,sans-serif"}}>
+            ☀️ {_t(lang,"Partager la plage du jour","Share beach of the day","Compartir la playa del día")}</button>
         </div>}
         {/* Veille-Card de Série AVANT le CTA premium : le partage frappe au pic
             émotionnel (le "Wordle de la mer", actif d'acquisition organique). */}
