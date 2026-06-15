@@ -310,10 +310,15 @@ function generateRegionSeoPages(region, distDir) {
   const hubLinks = (except) => {
     const p = content.pages
     const items = [
-      ['map', `/${p.map.slug}/`], ['forecast', `/${p.forecast.slug}/`],
-      ['today', `/${p.today.slug}/`], ['season', `/${p.season.slug}/`],
-    ].filter(([k]) => k !== except)
-    return `<p>${items.map(([k, href]) => `<a href="${href}">${esc(content.pages[k].h1)}</a>`).join(' · ')} · <a href="/">${t.home}</a></p>`
+      ['map', `/${p.map.slug}/`, p.map.h1], ['forecast', `/${p.forecast.slug}/`, p.forecast.h1],
+      ['today', `/${p.today.slug}/`, p.today.h1], ['season', `/${p.season.slug}/`, p.season.h1],
+    ]
+    // Maillage des pages générées HORS seo-content (étaient orphelines = crawl-starved) :
+    // best (transactionnel) + weekly (haute-intention) + méthodologie (E-E-A-T).
+    if (region.routes && region.routes.best) items.push(['best', `/${region.routes.best}/`, lang === 'es' ? 'Mejores playas sin sargazo' : 'Best beaches without sargassum'])
+    if (region.routes && region.routes.weekly) items.push(['weekly', `/${region.routes.weekly}/`, lang === 'es' ? 'Sargazo esta semana' : 'Sargassum this week'])
+    items.push(['method', `/${lang === 'es' ? 'metodologia' : 'methodology'}/`, lang === 'es' ? 'Metodología y precisión' : 'Methodology & accuracy'])
+    return `<p>${items.filter(([k]) => k !== except).map(([, href, label]) => `<a href="${href}">${esc(label)}</a>`).join(' · ')} · <a href="/">${t.home}</a></p>`
   }
 
   // ── 1. Pages hub (forecast, today, map, season) ──
@@ -439,6 +444,28 @@ ${hubLinks(null)}${networkFooter(region, t)}</article>`,
       noscript: `<article><h1>${esc(bestH1)}</h1><p><em>${t.updated(today)}</em></p><p>${esc(bestIntro)}</p>
 <ol>${ranked.map(x => `<li><strong>${beachLink(x)}</strong> — ${sw(x.lv.status)}, ${t.score} ${x.lv.score ?? '—'}/100${x.commune ? ' · ' + esc(x.commune) : ''}</li>`).join('')}</ol>
 ${hubLinks(null)}${networkFooter(region, t)}</article>`,
+    })
+  }
+
+  // "This week" — page HAUTE-INTENTION "sargassum [dest] this week". La route
+  // region.routes.weekly était DÉCLARÉE dans les 3 configs USD mais JAMAIS générée
+  // → 404 en GSC ("unknown to Google"). 1 fonction transforme le 404 en page.
+  if (region.routes && region.routes.weekly && byScore.length) {
+    const wk = data.weekly || {}
+    const withClean = byScore.map(x => { const fc = ((wk[x.id] || {}).forecast || []).slice(0, 7); return { x, clean: fc.filter(f => f.status === 'clean').length } }).sort((a, c) => c.clean - a.clean)
+    const wkTitle = smartTrim(lang === 'es' ? `Sargazo en ${region.name} esta semana — pronóstico 7 días` : `Sargassum in ${region.name} This Week — 7-Day Outlook`, 68)
+    const wkDesc = trimDesc(lang === 'es'
+      ? `Pronóstico de sargazo 7 días playa por playa para ${region.name}, actualizado 4 veces al día por satélite. Los mejores días de playa de la semana.`
+      : `7-day sargassum forecast beach by beach for ${region.name}, updated 4× a day from satellite — the best beach days this week.`)
+    const wkH1 = lang === 'es' ? `Sargazo en ${region.name} esta semana — ${today}` : `Sargassum in ${region.name} this week — ${today}`
+    const wkIntro = lang === 'es'
+      ? 'El pronóstico de 7 días playa por playa, según el satélite. Empieza por las playas con más días limpios esta semana.'
+      : 'The 7-day outlook beach by beach, from satellite. Start with the beaches that have the most clean days this week.'
+    hubs.push({
+      slug: region.routes.weekly, title: wkTitle, desc: wkDesc,
+      noscript: `<article><h1>${esc(wkH1)}</h1><p><em>${t.updated(today)}</em></p><p>${esc(wkIntro)}</p>
+<ul>${withClean.map(({ x, clean }) => `<li><strong>${beachLink(x)}</strong> — ${clean}/7 ${lang === 'es' ? 'días limpios' : 'clean days'} · ${forecastLine(data.weekly, x.id, lang)}</li>`).join('')}</ul>
+${hubLinks('weekly')}${networkFooter(region, t)}</article>`,
     })
   }
 
@@ -594,7 +621,16 @@ ${hubLinks(null)}${networkFooter(region, t)}</article>`
   // ── 5. Sitemap complet ──
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map(u => `  <url><loc>https://${domain}${u}</loc><lastmod>${isoToday}</lastmod><changefreq>${u === '/' || u.includes(p.today.slug) || u.includes(p.forecast.slug) ? 'daily' : 'weekly'}</changefreq></url>`).join('\n')}
+${urls.map(u => {
+    // Fraîcheur réelle : les fiches plage + hubs high-intent ont un title+statut
+    // qui change 4×/j → daily + priority (USD était weekly sans priority).
+    const hot = [p.today.slug, p.forecast.slug, region.routes && region.routes.best, region.routes && region.routes.weekly, 'semaforo-del-sargazo', 'metodologia', 'methodology'].filter(Boolean)
+    const isBeach = u.includes(`/${t.beachesDir}/`)
+    const isHot = hot.some(s => u.includes(s))
+    const daily = u === '/' || isHot || isBeach
+    const pr = u === '/' ? '1.0' : (u.includes(p.today.slug) || u.includes(p.forecast.slug) || (region.routes && (u.includes(region.routes.best || '\0') || u.includes(region.routes.weekly || '\0')))) ? '0.9' : isBeach ? '0.7' : '0.5'
+    return `  <url><loc>https://${domain}${u}</loc><lastmod>${isoToday}</lastmod><changefreq>${daily ? 'daily' : 'weekly'}</changefreq><priority>${pr}</priority></url>`
+  }).join('\n')}
 </urlset>
 `
   fs.writeFileSync(path.join(distDir, 'sitemap.xml'), sitemap, 'utf-8')
