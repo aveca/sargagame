@@ -3170,12 +3170,12 @@
         },
         {
           "id": "tartane",
-          "afai": 0.09,
+          "afai": 0.08,
           "status": "clean"
         },
         {
           "id": "anse-madame",
-          "afai": 0.09,
+          "afai": 0.08,
           "status": "clean"
         },
         {
@@ -3190,7 +3190,7 @@
         },
         {
           "id": "sainte-anne",
-          "afai": 0.12,
+          "afai": 0.11,
           "status": "clean"
         },
         {
@@ -3205,7 +3205,7 @@
         },
         {
           "id": "gp-grande-anse",
-          "afai": 0.1,
+          "afai": 0.09,
           "status": "clean"
         },
         {
@@ -3215,27 +3215,27 @@
         },
         {
           "id": "gp-sainte-anne",
-          "afai": 0.12,
+          "afai": 0.11,
           "status": "clean"
         },
         {
           "id": "gp-pt-chateaux",
-          "afai": 0.1,
+          "afai": 0.09,
           "status": "clean"
         },
         {
           "id": "gp-gosier",
-          "afai": 0.13,
-          "status": "clean"
-        },
-        {
-          "id": "gp-caravelle",
           "afai": 0.12,
           "status": "clean"
         },
         {
+          "id": "gp-caravelle",
+          "afai": 0.11,
+          "status": "clean"
+        },
+        {
           "id": "gp-bas-du-fort",
-          "afai": 0.14,
+          "afai": 0.12,
           "status": "clean"
         },
         {

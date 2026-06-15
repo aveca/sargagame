@@ -97,7 +97,7 @@
     },
     "gp-grande-anse": {
       "statusHitRate": 100,
-      "afaiMAE": 0.019,
+      "afaiMAE": 0.018,
       "pairs": 159
     },
     "gp-malendure": {
@@ -112,17 +112,17 @@
     },
     "gp-pt-chateaux": {
       "statusHitRate": 73,
-      "afaiMAE": 0.063,
+      "afaiMAE": 0.064,
       "pairs": 159
     },
     "gp-gosier": {
       "statusHitRate": 67,
-      "afaiMAE": 0.053,
+      "afaiMAE": 0.054,
       "pairs": 159
     },
     "gp-caravelle": {
       "statusHitRate": 25,
-      "afaiMAE": 0.138,
+      "afaiMAE": 0.139,
       "pairs": 159
     },
     "gp-bas-du-fort": {
@@ -150,7 +150,7 @@
     "statusHitRate": 79,
     "afaiMAE": 0.042
   },
-  "computed": "2026-06-15T12:14:49.875Z",
+  "computed": "2026-06-15T12:57:43.325Z",
   "pairs": [
     {
       "snapshotDate": "2026-06-12",
@@ -214,11 +214,11 @@
         "confidence": 37
       },
       "actual": {
-        "afai": 0.12,
+        "afai": 0.11,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.08
+      "afaiError": 0.09
     },
     {
       "snapshotDate": "2026-06-12",
@@ -367,11 +367,11 @@
         "confidence": 27
       },
       "actual": {
-        "afai": 0.1,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.05
+      "afaiError": 0.04
     },
     {
       "snapshotDate": "2026-06-12",
@@ -469,11 +469,11 @@
         "confidence": 37
       },
       "actual": {
-        "afai": 0.12,
+        "afai": 0.11,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.15
+      "afaiError": 0.16
     },
     {
       "snapshotDate": "2026-06-12",
@@ -520,11 +520,11 @@
         "confidence": 37
       },
       "actual": {
-        "afai": 0.1,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.19
+      "afaiError": 0.2
     },
     {
       "snapshotDate": "2026-06-12",
@@ -571,11 +571,11 @@
         "confidence": 37
       },
       "actual": {
-        "afai": 0.13,
+        "afai": 0.12,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.06
+      "afaiError": 0.07
     },
     {
       "snapshotDate": "2026-06-12",
@@ -622,11 +622,11 @@
         "confidence": 37
       },
       "actual": {
-        "afai": 0.12,
+        "afai": 0.11,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.23
+      "afaiError": 0.24
     },
     {
       "snapshotDate": "2026-06-12",
@@ -673,11 +673,11 @@
         "confidence": 27
       },
       "actual": {
-        "afai": 0.14,
+        "afai": 0.12,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.09
+      "afaiError": 0.07
     },
     {
       "snapshotDate": "2026-06-12",
@@ -962,11 +962,11 @@
         "confidence": 43
       },
       "actual": {
-        "afai": 0.09,
+        "afai": 0.08,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.02
+      "afaiError": 0.03
     },
     {
       "snapshotDate": "2026-06-13",
@@ -996,11 +996,11 @@
         "confidence": 33
       },
       "actual": {
-        "afai": 0.09,
+        "afai": 0.08,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-06-13",
@@ -1098,11 +1098,11 @@
         "confidence": 43
       },
       "actual": {
-        "afai": 0.12,
+        "afai": 0.11,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.12
+      "afaiError": 0.13
     },
     {
       "snapshotDate": "2026-06-13",
@@ -1200,11 +1200,11 @@
         "confidence": 33
       },
       "actual": {
-        "afai": 0.1,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.04
+      "afaiError": 0.03
     },
     {
       "snapshotDate": "2026-06-13",
@@ -1268,11 +1268,11 @@
         "confidence": 43
       },
       "actual": {
-        "afai": 0.12,
+        "afai": 0.11,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.18
+      "afaiError": 0.19
     },
     {
       "snapshotDate": "2026-06-13",
@@ -1302,11 +1302,11 @@
         "confidence": 43
       },
       "actual": {
-        "afai": 0.1,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.15
+      "afaiError": 0.16
     },
     {
       "snapshotDate": "2026-06-13",
@@ -1336,11 +1336,11 @@
         "confidence": 43
       },
       "actual": {
-        "afai": 0.13,
+        "afai": 0.12,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.11
+      "afaiError": 0.12
     },
     {
       "snapshotDate": "2026-06-13",
@@ -1370,11 +1370,11 @@
         "confidence": 43
       },
       "actual": {
-        "afai": 0.12,
+        "afai": 0.11,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.29
+      "afaiError": 0.3
     },
     {
       "snapshotDate": "2026-06-13",
@@ -1404,11 +1404,11 @@
         "confidence": 43
       },
       "actual": {
-        "afai": 0.14,
+        "afai": 0.12,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.09
+      "afaiError": 0.11
     },
     {
       "snapshotDate": "2026-06-13",
@@ -1574,11 +1574,11 @@
         "confidence": 46
       },
       "actual": {
-        "afai": 0.09,
+        "afai": 0.08,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
       "snapshotDate": "2026-06-14",
@@ -1591,11 +1591,11 @@
         "confidence": 46
       },
       "actual": {
-        "afai": 0.09,
+        "afai": 0.08,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
       "snapshotDate": "2026-06-14",
@@ -1642,11 +1642,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.12,
+        "afai": 0.11,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.1
+      "afaiError": 0.11
     },
     {
       "snapshotDate": "2026-06-14",
@@ -1693,11 +1693,11 @@
         "confidence": 46
       },
       "actual": {
-        "afai": 0.1,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.03
+      "afaiError": 0.02
     },
     {
       "snapshotDate": "2026-06-14",
@@ -1727,11 +1727,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.12,
+        "afai": 0.11,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.05
+      "afaiError": 0.06
     },
     {
       "snapshotDate": "2026-06-14",
@@ -1744,11 +1744,11 @@
         "confidence": 46
       },
       "actual": {
-        "afai": 0.1,
+        "afai": 0.09,
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-06-14",
@@ -1761,11 +1761,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.13,
+        "afai": 0.12,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.14
+      "afaiError": 0.15
     },
     {
       "snapshotDate": "2026-06-14",
@@ -1778,11 +1778,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.12,
+        "afai": 0.11,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.19
+      "afaiError": 0.2
     },
     {
       "snapshotDate": "2026-06-14",
@@ -1795,11 +1795,11 @@
         "confidence": 56
       },
       "actual": {
-        "afai": 0.14,
+        "afai": 0.12,
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.07
+      "afaiError": 0.09
     },
     {
       "snapshotDate": "2026-06-14",
