@@ -5066,6 +5066,10 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
   // measured at redirect→payment by showing "exactly what happens" (plan summary,
   // timeline, trust row) before the tab navigates to buy.stripe.com.
   const preludeVariant=abVariant("pw_prelude",["direct","prelude"],[.5,.5])
+  // A/B pw_scene : le paywall comme CONTINUATION du monde (en-tête golden-hour + Veilleur +
+  // promesse) au lieu d'un mur sombre plat — cible la fuite modal→CTA 2%. N'habille QUE le
+  // shell, AUCUN changement à la logique de paiement. Mesurable (modal_open/cta identiques).
+  const scenePay=(()=>{try{const s=window.location.search;if(/[?&]pwscene=1/.test(s))return true;if(/[?&]pwscene=0/.test(s))return false;return abVariant("pw_scene",["control","scene"],[.5,.5])==="scene"}catch(_){return false}})()
   const[showPrelude,setShowPrelude]=useState(false)
   // Compute upcoming dates for the Prelude ledger
   const _preludeDates=(()=>{
@@ -5102,8 +5106,26 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
             borderRadius:"50%",background:"rgba(255,255,255,.08)",border:"none",
             color:"rgba(255,255,255,.7)",fontSize:18,cursor:"pointer",lineHeight:1,
             zIndex:5,fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
-        <div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
-          margin:"-8px -24px 20px",padding:0}}/>
+        {!scenePay&&<div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
+          margin:"-8px -24px 20px",padding:0}}/>}
+        {/* A/B pw_scene : le paywall = CONTINUATION du monde golden-hour (Veilleur + promesse),
+            pas un mur sombre plat. Calme (statique). Logique de paiement INCHANGÉE en dessous. */}
+        {scenePay&&(<>
+          <div style={{margin:"-12px -24px 0",position:"relative",overflow:"hidden"}}>
+            <svg viewBox="0 0 400 120" preserveAspectRatio="xMidYMid slice" style={{width:"100%",height:108,display:"block"}} aria-hidden="true">
+              <defs><linearGradient id="pwSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0B2230"/><stop offset=".48" stopColor="#155A5A"/><stop offset=".82" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/></linearGradient></defs>
+              <rect width="400" height="120" fill="url(#pwSky)"/>
+              {[-40,-20,0,20,40].map((a,i)=>(<path key={i} d="M200 116 L192 28 L208 28 Z" fill="#FFD884" opacity=".08" transform={"rotate("+a+" 200 116)"}/>))}
+              <circle cx="200" cy="116" r="56" fill="#FFD884" opacity=".22"/><circle cx="200" cy="116" r="30" fill="#FFD884" opacity=".42"/>
+              {miVeil(200,52,"#2A6B66","#5FD3C9")}
+            </svg>
+            <div aria-hidden style={{position:"absolute",left:0,right:0,bottom:0,height:46,background:"linear-gradient(180deg,transparent,#0D1E1C)"}}/>
+          </div>
+          <div style={{textAlign:"center",margin:"6px 0 16px"}}>
+            <div style={{fontSize:16,fontWeight:800,color:"#fff",lineHeight:1.3}}>{_t(lang,"Le Veilleur garde ta côte à l'œil.","The Watchman keeps an eye on your coast.","El Vigía vigila tu costa.")}</div>
+            <div style={{fontSize:13,color:"rgba(255,255,255,.62)",marginTop:4}}>{_t(lang,"Chaque matin, tu sais — avant de charger la voiture.","Every morning you know — before you load the car.","Cada mañana lo sabes — antes de cargar el coche.")}</div>
+          </div>
+        </>)}
 
         {/* ═══ STRIPE PRELUDE (Design v2 bet #2) ═══
             A/B variant "prelude": intercepts the paid CTA click and shows
