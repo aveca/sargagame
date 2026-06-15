@@ -237,6 +237,40 @@ function buildResortBrief(region, r, b, data, lang, today, domain, beaches) {
 </div></body></html>`
 }
 
+// Annuaire B2B : page /resorts/ listant TOUS les hôtels d'une région + statut de
+// leur plage + lien brief. Asset de prospection (« état sargasses de tous les
+// hôtels de Bávaro ») ET hub SEO indexable (maille les pages resort).
+function buildResortDirectory(region, resorts, beaches, data, lang, t, today, domain) {
+  const L = _BRIEF_T[lang] || _BRIEF_T.en
+  const C = { clean: '#16A34A', moderate: '#D97706', avoid: '#DC2626' }
+  const W = { clean: L.clean, moderate: L.moderate, avoid: L.avoid }
+  const D = {
+    en: { h: 'resorts — sargassum status', sub: n => `Live beach status for ${n} resorts, refreshed 4× a day from satellite. Tap a resort for its daily brief.`, brief: 'Daily brief', cta: 'Hotel team? Get the daily brief for your property', map: 'Live map', title: r => `${r} Resorts — Sargassum Status Today (All Hotels)`, desc: r => `Live sargassum status for every resort in ${r}, beach by beach, updated 4× a day from satellite.` },
+    es: { h: 'hoteles — estado del sargazo', sub: n => `Estado en vivo de ${n} hoteles, 4 veces al día por satélite. Toca un hotel para su boletín diario.`, brief: 'Boletín diario', cta: '¿Equipo del hotel? Recibe el boletín diario de tu propiedad', map: 'Mapa en vivo', title: r => `Hoteles de ${r} — Estado del Sargazo Hoy`, desc: r => `Estado del sargazo en vivo para cada hotel de ${r}, playa por playa, 4 veces al día.` },
+  }[lang] || null
+  const T2 = D || { h: 'resorts', sub: () => '', brief: 'brief', cta: '', map: 'map', title: r => r, desc: r => r }
+  const byId = {}; for (const x of beaches) byId[x.id] = x
+  const groups = {}; for (const r of resorts) { const a = r.area || region.name; (groups[a] = groups[a] || []).push(r) }
+  const sections = Object.keys(groups).sort().map(area => {
+    const items = groups[area].map(r => {
+      const b = byId[r.beachId]; if (!b) return ''
+      const st = (b.lv && b.lv.status) || 'clean'
+      return `<li><span class="d" style="background:${C[st] || '#999'}"></span><span class="n"><b>${esc(r.name)}</b><br><small>${esc(b.name)} · ${W[st] || st}</small></span><a href="/${t.resortsDir}/${r.slug}/brief/">${esc(T2.brief)} →</a></li>`
+    }).join('')
+    return `<h2>${esc(area)}</h2><ul>${items}</ul>`
+  }).join('')
+  const mailto = `mailto:${(region.emails && region.emails.support) || 'hotels@' + domain}?subject=${encodeURIComponent('Daily sargassum briefs — ' + region.name)}`
+  return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${esc(T2.title(region.name))}</title><meta name="description" content="${esc(T2.desc(region.name))}"><link rel="canonical" href="https://${domain}/${t.resortsDir}/">
+<style>*{box-sizing:border-box;margin:0}body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#F7F5EF;color:#15110d;line-height:1.5;padding:16px 0}.wrap{max-width:620px;margin:0 auto;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.08)}.hd{background:linear-gradient(135deg,#0B2230,#155A5A 45%,#C97E3A 85%,#F2B05E);color:#fff;padding:24px 22px}.hd h1{font-size:22px;line-height:1.2}.hd p{font-size:13px;opacity:.92;margin-top:6px}.bd{padding:14px 22px}h2{font-size:13px;letter-spacing:.03em;text-transform:uppercase;color:#6b6b66;margin:18px 0 4px}ul{list-style:none}li{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #eee}.d{width:14px;height:14px;border-radius:50%;flex:none}.n{flex:1}.n small{font-size:12px;color:#7a756c}li a{font-size:12.5px;color:#155A5A;font-weight:700;white-space:nowrap;text-decoration:none}.cta{display:block;background:linear-gradient(135deg,#0B2230,#155A5A);color:#fff;text-decoration:none;border-radius:14px;padding:15px 18px;margin:20px 0 4px;font-weight:700;font-size:14.5px}.ft{font-size:11px;color:#8a857c;padding:8px 22px 20px}.ft a{color:#155A5A}</style></head>
+<body><div class="wrap">
+<div class="hd"><h1>${esc(region.name)} ${esc(T2.h)}</h1><p>${esc(T2.sub(resorts.length))} · ${esc(today)}</p></div>
+<div class="bd">${sections}
+<a class="cta" href="${mailto}">${esc(T2.cta)} →</a></div>
+<div class="ft">${esc(L.foot)} · <a href="https://${domain}/">${esc(T2.map)}</a> · ${esc(domain)}</div>
+</div></body></html>`
+}
+
 function generateRegionSeoPages(region, distDir) {
   const lang = region.primaryLang === 'es' ? 'es' : 'en'
   const t = T[lang]
@@ -499,6 +533,10 @@ ${hubLinks(null)}${networkFooter(region, t)}</article>`
     urls.push(pathname)
     // B2B brief standalone (lead-magnet envoyable, noindex, HORS sitemap)
     try { writePage(distDir, `${pathname}brief/`, buildResortBrief(region, r, b, data, lang, today, domain, beaches)) } catch (e) { /* brief best-effort */ }
+  }
+  // Annuaire B2B + hub SEO : 1 page /resorts/ listant tous les hôtels (statut + brief).
+  if (resorts.length) {
+    try { writePage(distDir, `/${t.resortsDir}/`, buildResortDirectory(region, resorts, beaches, data, lang, t, today, domain)); urls.push(`/${t.resortsDir}/`) } catch (e) { /* directory best-effort */ }
   }
 
   // ── 4. Patch homepage : FAQPage JSON-LD + réseau inter-sites + title override ──
