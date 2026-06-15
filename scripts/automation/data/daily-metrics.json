@@ -763,7 +763,7 @@
   },
   {
     "date": "2026-06-15",
-    "time": "2026-06-15T02:10:37.560Z",
+    "time": "2026-06-15T02:58:27.044Z",
     "payments": 10,
     "revenue": 49.9,
     "emails": 202,
@@ -771,7 +771,7 @@
     "avgRating": 4,
     "pipelineOk": true,
     "funnel": {
-      "sessions": 21653,
+      "sessions": 21670,
       "lockClicks": 121,
       "modalOpens": 3436,
       "modalCta": 76,
@@ -796,11 +796,11 @@
       "date": "2026-06-14",
       "mq": {
         "sessions": 511,
-        "users": 1697
+        "users": 1699
       },
       "gp": {
         "sessions": 308,
-        "users": 1000
+        "users": 1001
       }
     }
   }
