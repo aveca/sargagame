@@ -182,7 +182,35 @@
       "hit": 0
     }
   },
-  "computed": "2026-06-15T20:23:10.954Z",
+  "regimeReliability": {
+    "note": "Reliability conditioned on each beach's OWN recent regime (calm/transition/high), split by predicted direction. Publish THIS, never a single global %, which blends regimes and hides that calm-season ALERTS are far less reliable than calm-season CLEAN calls. Always bind the figure to its window; for the freshest current-model number cite the reforecast output, not the archive blend.",
+    "method": "archive",
+    "window": "2026-05-17 → 2026-06-15",
+    "regimes": {
+      "unknown": {
+        "samples": 120,
+        "cleanReliabilityPct": 100,
+        "cleanSamples": 91,
+        "alertReliabilityPct": 0,
+        "alertSamples": 29,
+        "falseAlarmRatePct": 24
+      },
+      "calm": {
+        "samples": 3060,
+        "cleanReliabilityPct": 100,
+        "cleanSamples": 2422,
+        "alertReliabilityPct": 0,
+        "alertSamples": 638,
+        "falseAlarmRatePct": 21
+      }
+    },
+    "headline": {
+      "fr": "100% de nos prévisions « mer propre » (saison calme, 2026-05-17 → 2026-06-15) se sont vérifiées (sur 2422) ; les rares alertes restent signalées à faible confiance tant que la donnée ne les confirme pas.",
+      "en": "100% of our \"clean water\" forecasts (calm season, 2026-05-17 → 2026-06-15) proved correct (over 2422); the rare alerts stay flagged low-confidence until the data confirms them.",
+      "es": "El 100% de nuestros pronósticos de \"agua limpia\" (temporada tranquila, 2026-05-17 → 2026-06-15) resultaron correctos (sobre 2422); las raras alertas se marcan con baja confianza hasta que el dato las confirma."
+    }
+  },
+  "computed": "2026-06-15T21:14:37.357Z",
   "pairs": [
     {
       "snapshotDate": "2026-06-12",
