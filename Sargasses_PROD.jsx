@@ -5403,7 +5403,10 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
       <div className="backdrop" onClick={(e)=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts});const x=e.clientX,y=e.clientY;onClose();/* pass-through : si le clic tombe pile sur un pin de la carte (sous le backdrop), ouvrir cette plage au lieu de juste fermer — sinon le clic paraît "mort" */requestAnimationFrame(()=>{try{const el=document.elementFromPoint(x,y);const pin=el&&el.closest&&el.closest(".leaflet-marker-icon");if(pin)pin.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true,view:window,clientX:x,clientY:y}))}catch(_){}})}}/>
       <div ref={panelRef} className="sg-modal-panel" onTouchStart={onTouchStartModal} onTouchMove={onTouchMoveModal} onTouchEnd={onTouchEndModal} style={{
         position:"fixed",bottom:0,left:0,right:0,zIndex:1100,
-        background:"linear-gradient(145deg,#0D1E1C,#0A1714)",
+        // Refonte CONTINUATION DE SCÈNE (arm constellation = défaut) : le golden-hour
+        // descend à travers tout le modal (ciel → mer profonde → nuit) → la premium
+        // est UNE scène continue, pas une feuille sombre. Holdout garde le sombre.
+        background:pwConstel?"linear-gradient(180deg,#0B2230 0%,#0E2A26 20%,#08251F 52%,#0A1714 100%)":"linear-gradient(145deg,#0D1E1C,#0A1714)",
         borderRadius:"24px 24px 0 0",padding:"28px 24px 20px",
         color:"#e6edf3",maxHeight:"85vh",overflow:"auto",
       }}>
