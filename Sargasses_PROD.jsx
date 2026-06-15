@@ -5022,6 +5022,12 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
   // score>=70 contredisait le compte "{x}/{y} plages propres" affiché ailleurs.
   const _cleanCount=_islandLvls.filter(b=>b.status==="clean").length
   const _totalCount=_islandLvls.length
+  // FIX modal→CTA (fuite #1, 2% sur 3416 modals) : en SAISON CALME (≥80% propres,
+  // 64% du temps) l'argument « alerte AVANT que ça tourne » tombe à plat — rien ne
+  // tourne. A/B pw_calm : pivot vers la valeur que le GRATUIT n'a PAS et qui convertit
+  // SANS peur = la prévision (« sache où sera la mer DEMAIN »). ?pwcalm=1/0 en QA.
+  const _allCalm=_totalCount>0&&(_cleanCount/_totalCount)>=0.8
+  const pwCalm=(()=>{try{const q=window.location.search;if(/[?&]pwcalm=1/.test(q))return true;if(/[?&]pwcalm=0/.test(q))return false;return abVariant("pw_calm",["control","calm"],[.5,.5])==="calm"}catch(_){return false}})()
   const _topBeach=[..._islandLvls].sort((a,b)=>b.score-a.score)[0]
   // Nouvelles régions : ids opaques (pc001…) → nom réel depuis REGION.beaches.
   // MQ/GP : derivation slug historique inchangée.
@@ -5511,6 +5517,10 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
             la plage tourne. La reco du matin reste listée dans les value-cards. */}
         <h2 className="anton" style={{fontSize:"clamp(22px,6vw,28px)",color:"#fff",marginBottom:18,lineHeight:1.1,letterSpacing:"-.015em"}}>
           {(()=>{const G={background:"linear-gradient(135deg,#FFE47A,#FFC72C 55%,#E89400)",WebkitBackgroundClip:"text",backgroundClip:"text",WebkitTextFillColor:"transparent",color:"transparent"};
+            if(pwCalm&&_allCalm)
+              return lang==="es"?(<>Sabe dónde estará el mar <span style={G}>mañana</span>, no solo hoy</>)
+                :lang==="en"?(<>Know where the sea will be <span style={G}>tomorrow</span>, not just today</>)
+                :(<>Sache où sera la mer <span style={G}>demain</span>, pas juste aujourd'hui</>)
             return lang==="es"?(<><span style={G}>Entérate</span> antes de que tu playa cambie</>)
               :lang==="en"?(<><span style={G}>Know</span> before your beach turns</>)
               :(<>Sois <span style={G}>prévenu</span> avant que ta plage tourne</>)})()}
