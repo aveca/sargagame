@@ -731,7 +731,7 @@ function SolSortScene({lang}){
     {e:"🪨",x:500,c:"#9AA08A",l:T("Sable & résidus","Sand & residue","Arena y residuo"),f:T("Le sable rendu à la plage, les déchets écartés.","Sand returned to the beach, waste removed.","La arena vuelve a la playa.")},
   ]
   return(<g><defs><linearGradient id="solSort" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0A1714"/><stop offset=".5" stopColor="#155A5A"/><stop offset=".84" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/></linearGradient>
-    <style>{`@keyframes solBelt{to{stroke-dashoffset:-40}}.sol-belt{animation:solBelt 1.5s linear infinite}@media(prefers-reduced-motion:reduce){.sol-belt{animation:none}}`}</style></defs>
+    <style>{`@keyframes solBelt{to{stroke-dashoffset:-40}}.sol-belt{animation:solBelt 1.5s linear 1 both}@media(prefers-reduced-motion:reduce){.sol-belt{animation:none}}`}</style></defs>
     <rect width="800" height="600" fill="url(#solSort)"/>
     {/* convoyeur incliné */}
     <path d="M110 220 L460 330" stroke="#0E2A26" strokeWidth="26" strokeLinecap="round"/>
@@ -1695,7 +1695,7 @@ button:active,a:active,[role="button"]:active{transform:scale(.96)!important;opa
 /* Pin score pills (divIcon) — nearest clean gets a soft gold halo that pulses */
 .sg-pin{backface-visibility:hidden;will-change:transform}
 .sg-pin:hover{transform:scale(1.12)!important}
-.sg-pin-nearest{animation:sgPinNearest 2.4s ease-in-out infinite}
+.sg-pin-nearest{animation:sgPinNearest 2.4s ease-in-out 1 both}
 @keyframes sgPinNearest{
   0%,100%{box-shadow:0 0 0 2px #E8A800,0 0 0 6px rgba(232,168,0,.25),0 4px 12px rgba(0,0,0,.35)}
   50%{box-shadow:0 0 0 2px #E8A800,0 0 0 12px rgba(232,168,0,0),0 4px 12px rgba(0,0,0,.35)}
@@ -1717,7 +1717,7 @@ button:active,a:active,[role="button"]:active{transform:scale(.96)!important;opa
 .gbtn::after{
   content:'';position:absolute;top:0;left:0;width:100%;height:100%;
   background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);
-  animation:shine 4.5s infinite;
+  animation:shine 4.5s 1 both;
   /* transform-only (GPU) : la version left:-100%→100% layoutait à chaque frame
      et pesait l'essentiel du CLS mobile mesuré (0,065 → ~0,02, audit 2026-06-11) */
   will-change:transform;
@@ -1765,7 +1765,7 @@ button:active,a:active,[role="button"]:active{transform:scale(.96)!important;opa
 @keyframes sg-threat-glow{0%,100%{box-shadow:0 4px 20px rgba(232,82,42,.3)}50%{box-shadow:0 4px 30px rgba(232,82,42,.55)}}
 @keyframes sg-dash-flow{from{stroke-dashoffset:20}to{stroke-dashoffset:0}}
 @keyframes beachScanLine{0%{top:0;opacity:1}85%{top:100%;opacity:.8}100%{top:100%;opacity:0}}
-.sg-drift-path{animation:sg-dash-flow 1.5s linear infinite}
+.sg-drift-path{animation:sg-dash-flow 1.5s linear 1 both}
 @keyframes goldGlow{0%,100%{box-shadow:0 4px 20px rgba(232,168,0,.25)}50%{box-shadow:0 4px 30px rgba(232,168,0,.5)}}
 @keyframes confirmPop{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
 @keyframes pin-pulse{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.8);opacity:0}}
@@ -1793,11 +1793,11 @@ button:active,a:active,[role="button"]:active{transform:scale(.96)!important;opa
 
 /* Glow badge pulse */
 @keyframes glowPulse{0%,100%{box-shadow:0 0 8px rgba(0,158,142,.3)}50%{box-shadow:0 0 20px rgba(0,158,142,.6)}}
-.glow-pulse{animation:glowPulse 2.5s ease-in-out infinite}
+.glow-pulse{animation:glowPulse 2.5s ease-in-out 1 both}
 
 /* Ocean wave ambient */
 @keyframes oceanWave{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-.ocean-gradient{background-size:200% 200%;animation:oceanWave 8s ease-in-out infinite}
+.ocean-gradient{background-size:200% 200%;animation:oceanWave 8s ease-in-out 1 both}
 
 /* Hero zoom in */
 @keyframes heroZoom{from{transform:scale(1.08);opacity:.7}to{transform:scale(1);opacity:1}}
@@ -1820,7 +1820,7 @@ button:active,a:active,[role="button"]:active{transform:scale(.96)!important;opa
 
 /* Status pulse */
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-.pulse{animation:pulse 2s infinite}
+.pulse{animation:pulse 2s 1 both}
 
 /* Header LIVE badge halo — soft breathing glow around the status dot */
 @keyframes sg-live-halo{0%,100%{opacity:.35;transform:scale(.9)}50%{opacity:.85;transform:scale(1.35)}}
@@ -1829,7 +1829,7 @@ button:active,a:active,[role="button"]:active{transform:scale(.96)!important;opa
 .sg-bank{transition:fill-opacity .6s ease}
 .sg-drift-dot{transition:all .6s ease}
 @keyframes sg-eta-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
-.sg-eta-badge{animation:sg-eta-pulse 2s ease-in-out infinite}
+.sg-eta-badge{animation:sg-eta-pulse 2s ease-in-out 1 both}
 
 /* Radar v2 — NAMED insight bubble entry */
 @keyframes sgRadarInsightIn{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
@@ -2128,9 +2128,9 @@ function LearnView({lang,onBack,onGoMap}){
         pointerEvents:"none",filter:"blur(20px)"}}/>
       {/* Floating particles */}
       <div style={{position:"absolute",top:60,left:"20%",fontSize:20,opacity:.15,
-        animation:"floatParticle 8s ease-in-out infinite",pointerEvents:"none"}}>🌊</div>
+        animation:"floatParticle 8s ease-in-out 1 both",pointerEvents:"none"}}>🌊</div>
       <div style={{position:"absolute",top:120,right:"15%",fontSize:16,opacity:.12,
-        animation:"floatParticle 10s ease-in-out infinite .5s",pointerEvents:"none"}}>🌿</div>
+        animation:"floatParticle 10s ease-in-out 1 both .5s",pointerEvents:"none"}}>🌿</div>
 
       <div style={{maxWidth:600,margin:"0 auto",position:"relative",
         padding:"max(16px,env(safe-area-inset-top)) 16px 110px"}}>
@@ -3668,7 +3668,7 @@ function Onboarding({onDone,island="mq",lang="fr"}){
           animation:"slideUp .4s cubic-bezier(.22,1,.36,1)"}}>
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
             <div style={{width:7,height:7,borderRadius:"50%",background:"#22C55E",flexShrink:0,
-              animation:"dot-pulse 2s ease-in-out infinite"}}/>
+              animation:"dot-pulse 2s ease-in-out 1 both"}}/>
             <span style={{fontSize:12,fontWeight:700,color:C.ink}}>
               <em style={{fontStyle:"normal",color:C.amber,fontWeight:700}}>
                 {IS_NEW_REGION?(REGION.primaryLang==="es"?`${REGION.beaches.length} playas`:`${REGION.beaches.length} beaches`):isMQ?"53 plages":"83 plages"}
@@ -3756,7 +3756,7 @@ function BeachPicker({island,allBeaches,onSelect,lang,userPos,onDismiss}){
         <div style={{display:"flex",alignItems:"center",gap:8}}>
           <div style={{width:22,height:22,borderRadius:"50%",flexShrink:0,
             background:"conic-gradient(from -10deg,#FFE898 0deg 25deg,#E8A800 25deg 65deg,#FFD040 65deg 110deg,#B87A00 110deg 155deg,#FFE07A 155deg 195deg,#E09000 195deg 240deg,#FFC72C 240deg 285deg,#B07000 285deg 325deg,#FFE898 325deg 360deg)",
-            animation:"spin 20s linear infinite",
+            animation:"spin 20s linear 1 both",
             boxShadow:"0 2px 10px rgba(232,168,0,.35)",
           }}/>
           <span style={{fontSize:13,fontWeight:700,letterSpacing:".06em",color:"#fff",
@@ -3766,7 +3766,7 @@ function BeachPicker({island,allBeaches,onSelect,lang,userPos,onDismiss}){
         </div>
         <div style={{display:"flex",alignItems:"center",gap:5}}>
           <div style={{width:6,height:6,borderRadius:"50%",background:"#22C55E",
-            animation:"dot-pulse 2s ease-in-out infinite"}}/>
+            animation:"dot-pulse 2s ease-in-out 1 both"}}/>
           <span style={{fontSize:10.5,fontWeight:600,color:"rgba(255,255,255,.5)"}}>{_t(lang,"En direct","Live","En vivo")}</span>
         </div>
       </div>
@@ -3794,7 +3794,7 @@ function BeachPicker({island,allBeaches,onSelect,lang,userPos,onDismiss}){
           borderRadius:100,padding:"5px 12px",position:"relative",overflow:"hidden"}}>
           <div style={{position:"absolute",top:0,bottom:0,left:0,width:60,
             background:"linear-gradient(90deg,transparent,rgba(0,158,142,.1),transparent)",
-            animation:"satellite-scan 3s ease-in-out infinite"}}/>
+            animation:"satellite-scan 3s ease-in-out 1 both"}}/>
           <span style={{fontSize:9.5,fontWeight:700,color:C.tealL,position:"relative"}}>COPERNICUS MARINE</span>
           <span style={{fontSize:9,color:"rgba(255,255,255,.35)",fontWeight:500,position:"relative"}}>
             {_t(lang,"Mis à jour aujourd'hui","Updated today","Actualizado hoy")}
@@ -3827,7 +3827,7 @@ function BeachPicker({island,allBeaches,onSelect,lang,userPos,onDismiss}){
                 <div style={{width:12,height:12,borderRadius:"50%",background:st.c,
                   border:"2px solid rgba(255,255,255,.8)",boxShadow:`0 1px 6px ${st.c}50`,position:"relative",zIndex:2}}/>
                 <div style={{position:"absolute",width:12,height:12,borderRadius:"50%",
-                  border:`2px solid ${st.c}30`,animation:"pin-pulse 2.5s ease-out infinite"}}/>
+                  border:`2px solid ${st.c}30`,animation:"pin-pulse 2.5s ease-out 1 both"}}/>
               </div>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontSize:14,fontWeight:700,color:"#fff"}}>{b.name}</div>
@@ -5425,7 +5425,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
           display:"flex",alignItems:"center",gap:8}}>
           <span style={{display:"inline-block",width:6,height:6,borderRadius:"50%",
             background:"#FFC72C",boxShadow:"0 0 8px rgba(255,199,44,.8)",
-            animation:"pwDot 1.6s ease-in-out infinite"}}/>
+            animation:"pwDot 1.6s ease-in-out 1 both"}}/>
           <span>{seasonMsg}</span>
         </div>
         <style>{`@keyframes pwDot{0%,100%{opacity:1}50%{opacity:.4}}`}</style>
@@ -5960,7 +5960,7 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
         display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>
         <span aria-hidden style={{width:20,height:20,borderRadius:"50%",display:"block",
           background:"conic-gradient(from -10deg,#FFE898 0deg 25deg,#E8A800 25deg 65deg,#FFD040 65deg 110deg,#B87A00 110deg 155deg,#FFE07A 155deg 195deg,#E09000 195deg 240deg,#FFC72C 240deg 285deg,#B07000 285deg 325deg,#FFE898 325deg 360deg)",
-          animation:"spin 20s linear infinite",boxShadow:"0 2px 8px rgba(232,168,0,.35)"}}/>
+          animation:"spin 20s linear 1 both",boxShadow:"0 2px 8px rgba(232,168,0,.35)"}}/>
       </button>}
       {/* Island toggle MQ/GP — masqué pour les nouvelles régions (build mono-région) */}
       {!IS_NEW_REGION && (<div style={{display:"flex",height:RAIL_H,borderRadius:14,overflow:"hidden",position:"relative",flexShrink:0,
@@ -6000,7 +6000,7 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
           <span style={{position:"relative",width:10,height:10,flexShrink:0,display:"inline-flex",alignItems:"center",justifyContent:"center"}}>
             <span aria-hidden style={{position:"absolute",inset:-4,borderRadius:"50%",
               background:`radial-gradient(closest-side, ${srcColor}55 0%, transparent 70%)`,
-              animation:isLive?"sg-live-halo 2.2s ease-in-out infinite":"none",pointerEvents:"none"}}/>
+              animation:isLive?"sg-live-halo 2.2s ease-in-out 1 both":"none",pointerEvents:"none"}}/>
             <span className={isLive?"pulse":""} style={{position:"relative",width:8,height:8,borderRadius:4,background:srcColor,
               boxShadow:`0 0 0 2px ${srcColor}22`,flexShrink:0}}/>
           </span>
@@ -6988,28 +6988,28 @@ function MethodScene(){
       background:"linear-gradient(180deg,#0C1D21 0%,#0A1714 100%)"}}>
       <svg viewBox="0 0 560 300" style={{display:"block",width:"100%",height:"auto"}}>
         <style>{`
-.sgms-sat{animation:sgmsOrbit 26s linear infinite}
+.sgms-sat{animation:sgmsOrbit 26s linear 1 both}
 @keyframes sgmsOrbit{from{transform:translateX(-90px)}to{transform:translateX(650px)}}
-.sgms-beam{animation:sgmsBeam 3.2s ease-in-out infinite}
+.sgms-beam{animation:sgmsBeam 3.2s ease-in-out 1 both}
 @keyframes sgmsBeam{0%,100%{opacity:.07}50%{opacity:.2}}
-.sgms-w1{animation:sgmsDrift 13s linear infinite}
-.sgms-w2{animation:sgmsDrift 21s linear infinite reverse}
+.sgms-w1{animation:sgmsDrift 13s linear 1 both}
+.sgms-w2{animation:sgmsDrift 21s linear 1 both reverse}
 @keyframes sgmsDrift{from{transform:translateX(0)}to{transform:translateX(-560px)}}
-.sgms-raft1{animation:sgmsRaft 38s linear infinite}
-.sgms-raft2{animation:sgmsRaft 52s linear infinite;animation-delay:-26s}
+.sgms-raft1{animation:sgmsRaft 38s linear 1 both}
+.sgms-raft2{animation:sgmsRaft 52s linear 1 both;animation-delay:-26s}
 @keyframes sgmsRaft{from{transform:translateX(620px)}to{transform:translateX(-160px)}}
-.sgms-boat{animation:sgmsBob 4.2s ease-in-out infinite}
+.sgms-boat{animation:sgmsBob 4.2s ease-in-out 1 both}
 @keyframes sgmsBob{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(3.5px) rotate(-1.2deg)}}
-.sgms-palm{animation:sgmsSway 5.5s ease-in-out infinite;transform-origin:468px 218px}
+.sgms-palm{animation:sgmsSway 5.5s ease-in-out 1 both;transform-origin:468px 218px}
 @keyframes sgmsSway{0%,100%{transform:rotate(-1.6deg)}50%{transform:rotate(1.8deg)}}
-.sgms-rake{animation:sgmsRake 1.9s ease-in-out infinite;transform-origin:402px 232px}
+.sgms-rake{animation:sgmsRake 1.9s ease-in-out 1 both;transform-origin:402px 232px}
 @keyframes sgmsRake{0%,100%{transform:rotate(-9deg)}50%{transform:rotate(7deg)}}
-.sgms-ping{animation:sgmsPing 2.6s ease-out infinite;transform-origin:497px 96px}
+.sgms-ping{animation:sgmsPing 2.6s ease-out 1 both;transform-origin:497px 96px}
 @keyframes sgmsPing{0%{transform:scale(.4);opacity:.8}70%,100%{transform:scale(1.8);opacity:0}}
-.sgms-link{stroke-dasharray:3 5;animation:sgmsFlow 1.4s linear infinite}
+.sgms-link{stroke-dasharray:3 5;animation:sgmsFlow 1.4s linear 1 both}
 @keyframes sgmsFlow{from{stroke-dashoffset:16}to{stroke-dashoffset:0}}
-.sgms-echo1{animation:sgmsEcho 2.4s ease-out infinite;transform-origin:316px 214px}
-.sgms-echo2{animation:sgmsEcho 2.4s ease-out infinite;animation-delay:1.2s;transform-origin:316px 214px}
+.sgms-echo1{animation:sgmsEcho 2.4s ease-out 1 both;transform-origin:316px 214px}
+.sgms-echo2{animation:sgmsEcho 2.4s ease-out 1 both;animation-delay:1.2s;transform-origin:316px 214px}
 @keyframes sgmsEcho{0%{transform:scale(.35);opacity:.9}75%,100%{transform:scale(2.1);opacity:0}}
 @media (prefers-reduced-motion:reduce){.sgms-sat,.sgms-beam,.sgms-w1,.sgms-w2,.sgms-raft1,.sgms-raft2,.sgms-boat,.sgms-palm,.sgms-rake,.sgms-ping,.sgms-link,.sgms-echo1,.sgms-echo2{animation:none}}
         `}</style>
@@ -7106,17 +7106,17 @@ function AlertScene(){
       background:"linear-gradient(180deg,#0C1D21 0%,#0A1714 100%)"}}>
       <svg viewBox="0 0 560 240" style={{display:"block",width:"100%",height:"auto"}}>
         <style>{`
-.sgas-notif{animation:sgasNotif 9s cubic-bezier(.22,1,.36,1) infinite}
+.sgas-notif{animation:sgasNotif 9s cubic-bezier(.22,1,.36,1) 1 both}
 @keyframes sgasNotif{0%,6%{opacity:0;transform:translateY(14px)}12%,88%{opacity:1;transform:translateY(0)}96%,100%{opacity:0;transform:translateY(14px)}}
-.sgas-raft{animation:sgasRaft 9s linear infinite}
+.sgas-raft{animation:sgasRaft 9s linear 1 both}
 @keyframes sgasRaft{0%{transform:translateX(46px)}100%{transform:translateX(-30px)}}
-.sgas-route{stroke-dasharray:4 6;animation:sgasRoute 9s linear infinite}
+.sgas-route{stroke-dasharray:4 6;animation:sgasRoute 9s linear 1 both}
 @keyframes sgasRoute{0%,18%{opacity:0}26%,90%{opacity:1}100%{opacity:0}}
-.sgas-dot{animation:sgasDot 9s cubic-bezier(.45,.05,.4,1) infinite}
+.sgas-dot{animation:sgasDot 9s cubic-bezier(.45,.05,.4,1) 1 both}
 @keyframes sgasDot{0%,24%{offset-distance:0%;opacity:0}30%{opacity:1}62%,88%{offset-distance:100%;opacity:1}96%,100%{offset-distance:100%;opacity:0}}
-.sgas-ok{animation:sgasOk 9s ease-out infinite;transform-origin:468px 96px}
+.sgas-ok{animation:sgasOk 9s ease-out 1 both;transform-origin:468px 96px}
 @keyframes sgasOk{0%,60%{transform:scale(.4);opacity:0}68%{transform:scale(1.25);opacity:1}74%,88%{transform:scale(1);opacity:1}96%,100%{opacity:0}}
-.sgas-sun{animation:sgasSun 9s ease-in-out infinite}
+.sgas-sun{animation:sgasSun 9s ease-in-out 1 both}
 @keyframes sgasSun{0%,8%{transform:translateY(16px);opacity:.4}30%,90%{transform:translateY(0);opacity:.9}100%{transform:translateY(16px);opacity:.4}}
 @media (prefers-reduced-motion:reduce){.sgas-notif,.sgas-raft,.sgas-route,.sgas-dot,.sgas-ok,.sgas-sun{animation:none}}
         `}</style>
@@ -7657,10 +7657,10 @@ function ScrollStory({lang,onShowMap}){
           dans le bras game le viewport sticky avait height:0 → scène vide
           (screenshots user 14/06). On rapatrie ici TOUT le CSS requis. */}
       <style>{`.sg-storyvp{height:100vh}@supports(height:100svh){.sg-storyvp{height:100svh}}
-.sgst-ring{animation:sgstRing 2.6s ease-out infinite}.sgst-ring2{animation:sgstRing 2.6s ease-out infinite;animation-delay:1.3s}
+.sgst-ring{animation:sgstRing 2.6s ease-out 1 both}.sgst-ring2{animation:sgstRing 2.6s ease-out 1 both;animation-delay:1.3s}
 @keyframes sgstRing{0%{transform:scale(.3);opacity:.85}78%,100%{transform:scale(2.3);opacity:0}}
-.sgst-bob{animation:sgstBob 3.4s ease-in-out infinite}@keyframes sgstBob{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
-.sg-flow{stroke-dasharray:4 6;animation:sgFlowY 1.2s linear infinite}@keyframes sgFlowY{from{stroke-dashoffset:20}to{stroke-dashoffset:0}}
+.sgst-bob{animation:sgstBob 3.4s ease-in-out 1 both}@keyframes sgstBob{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
+.sg-flow{stroke-dasharray:4 6;animation:sgFlowY 1.2s linear 1 both}@keyframes sgFlowY{from{stroke-dashoffset:20}to{stroke-dashoffset:0}}
 @media(prefers-reduced-motion:reduce){.sgst-ring,.sgst-ring2,.sgst-bob,.sg-flow{animation:none}}`}</style>
       <div className="sg-storyvp" style={{position:rm?"relative":"sticky",top:0,overflow:"hidden",background:"#0A1714",
         height:rm?"min(72vh,560px)":undefined}}>
@@ -8068,7 +8068,7 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
 .gf-chip:active{transform:scale(.94)}
 .gf-card{transition:transform .18s cubic-bezier(.175,.885,.32,1.275),border-color .2s ease}
 .gf-card:active{transform:scale(.975)}
-.gf-pulse{animation:gfPulse 2.6s ease-in-out infinite}
+.gf-pulse{animation:gfPulse 2.6s ease-in-out 1 both}
 @keyframes gfPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.18);opacity:.7}}
 .gf-panel{animation:gfRise .5s cubic-bezier(.22,.61,.36,1) both}
 @keyframes gfRise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
@@ -8088,13 +8088,13 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
 @keyframes gfDotIn{from{transform:scale(.3)}to{transform:scale(1)}}
 .gf-dot{animation:gfDotIn .5s cubic-bezier(.34,1.56,.64,1) both;animation-delay:var(--dd,0ms);transform-box:fill-box;transform-origin:center}
 @keyframes gfRing{to{stroke-dashoffset:-48}}
-.gf-ring{animation:gfRing 6s linear infinite}
+.gf-ring{animation:gfRing 6s linear 1 both}
 @keyframes gfArrive{0%{transform:translateX(36px)}100%{transform:translateX(-8px)}}
-.gf-arrive{animation:gfArrive 5s ease-in-out infinite alternate}
+.gf-arrive{animation:gfArrive 5s ease-in-out 1 both alternate}
 @keyframes gfArrowDash{to{stroke-dashoffset:-24}}
-.gf-arrow{animation:gfArrowDash 1.8s linear infinite}
+.gf-arrow{animation:gfArrowDash 1.8s linear 1 both}
 @keyframes gfAlertPulse{0%{transform:scale(.5);opacity:.7}100%{transform:scale(2.1);opacity:0}}
-.gf-alertpulse{animation:gfAlertPulse 2.2s ease-out infinite}
+.gf-alertpulse{animation:gfAlertPulse 2.2s ease-out 1 both}
 @media (prefers-reduced-motion:reduce){.gf-cam{transition:none}.gf-panel,.gf-chip,.gf-card{animation:none!important}.gf-pulse,.gf-scanline,.gf-sat,.gf-medal,.gf-scanfx,.gf-blob,.gf-dot,.gf-ring,.gf-arrive,.gf-arrow,.gf-alertpulse{animation:none!important}.gf-px{animation:none!important;opacity:.9}.gf-medal,.gf-scanfx{opacity:1}.gf-sat{transform:translate(400px,142px)}.gf-scanline{transform:translateY(300px)}.gf-blob,.gf-dot{transform:scale(1)}}
       `}</style>
       {/* PREMIER ÉCRAN (100svh) : le funnel-jeu. On peut ensuite SCROLLER dans le
@@ -8548,14 +8548,14 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
   border:1px solid rgba(255,255,255,.1);cursor:pointer;text-align:left;padding:0;font-family:inherit;
   transition:transform .25s ease,border-color .25s ease}
 .sg-l-card:hover{transform:translateY(-3px);border-color:rgba(255,199,44,.45)}
-.sg-flow{stroke-dasharray:4 6;animation:sgFlowY 1.2s linear infinite}
+.sg-flow{stroke-dasharray:4 6;animation:sgFlowY 1.2s linear 1 both}
 @keyframes sgFlowY{from{stroke-dashoffset:20}to{stroke-dashoffset:0}}
 .sg-storyvp{height:100vh}
 @supports(height:100svh){.sg-storyvp{height:100svh}}
-.sgst-ring{animation:sgstRing 2.6s ease-out infinite}
-.sgst-ring2{animation:sgstRing 2.6s ease-out infinite;animation-delay:1.3s}
+.sgst-ring{animation:sgstRing 2.6s ease-out 1 both}
+.sgst-ring2{animation:sgstRing 2.6s ease-out 1 both;animation-delay:1.3s}
 @keyframes sgstRing{0%{transform:scale(.3);opacity:.85}78%,100%{transform:scale(2.3);opacity:0}}
-.sgst-bob{animation:sgstBob 3.4s ease-in-out infinite}
+.sgst-bob{animation:sgstBob 3.4s ease-in-out 1 both}
 @keyframes sgstBob{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
 @media (prefers-reduced-motion:reduce){.sg-hero-chev{animation:none!important}
 .sg-rv{transition:none;opacity:1;transform:none}.sg-stick{transition:none}.sg-l-card{transition:none}.sg-flow{animation:none}
@@ -8660,7 +8660,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
         <button onClick={scrollNext} aria-label={_t(lang,"Découvrir","Discover","Descubrir")}
           style={{display:"block",margin:"6px auto 0",background:"none",border:"none",cursor:"pointer",
             color:"rgba(255,255,255,.55)",fontSize:22,lineHeight:1,padding:6}}>
-          <span className="sg-hero-chev" style={{display:"inline-block",animation:"sgHeroBob 1.8s ease-in-out infinite"}}>⌄</span>
+          <span className="sg-hero-chev" style={{display:"inline-block",animation:"sgHeroBob 1.8s ease-in-out 1 both"}}>⌄</span>
         </button>
       </div>
       </section>
@@ -9187,7 +9187,7 @@ function WorldFeed({beaches,lang,onPremium,onClose,island}){
   const restart=()=>{try{scrollRef.current&&scrollRef.current.scrollTo({top:0,behavior:"smooth"})}catch(_){}}
   return(
     <div role="region" aria-label={_t(lang,"Monde Sargasses","Sargassum World","Mundo Sargazo")} style={{position:"fixed",inset:0,zIndex:1005,background:"#04090B"}}>
-      <style>{`@keyframes wfHint{0%,100%{transform:translateY(0);opacity:.72}50%{transform:translateY(5px);opacity:1}}.wf-hint{animation:wfHint 1.8s ease-in-out infinite}@keyframes wfMark{0%,100%{transform:scale(1)}50%{transform:scale(1.35)}}.wf-mark{animation:wfMark 2.4s ease-in-out infinite}@keyframes wfHot{0%{box-shadow:0 0 0 0 rgba(95,211,201,.5),0 2px 8px rgba(0,0,0,.5)}70%{box-shadow:0 0 0 14px rgba(95,211,201,0),0 2px 8px rgba(0,0,0,.5)}100%{box-shadow:0 0 0 0 rgba(95,211,201,0),0 2px 8px rgba(0,0,0,.5)}}.wf-hot{animation:wfHot 2.2s ease-out infinite}@keyframes wfPop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}.wf-pop{animation:wfPop .24s cubic-bezier(.34,1.56,.64,1) both}@keyframes wfFact{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}.wf-fact{animation:wfFact .5s ease both}@keyframes wfCarnetIn{from{transform:translateY(100%)}to{transform:translateY(0)}}@keyframes wfBonusIn{from{opacity:0}to{opacity:1}}@media(prefers-reduced-motion:reduce){.wf-hint,.wf-mark,.wf-hot,.wf-pop,.wf-fact{animation:none}}`}</style>
+      <style>{`@keyframes wfHint{0%,100%{transform:translateY(0);opacity:.72}50%{transform:translateY(5px);opacity:1}}.wf-hint{animation:wfHint 1.8s ease-in-out 1 both}@keyframes wfMark{0%,100%{transform:scale(1)}50%{transform:scale(1.35)}}.wf-mark{animation:wfMark 2.4s ease-in-out 1 both}@keyframes wfHot{0%{box-shadow:0 0 0 0 rgba(95,211,201,.5),0 2px 8px rgba(0,0,0,.5)}70%{box-shadow:0 0 0 14px rgba(95,211,201,0),0 2px 8px rgba(0,0,0,.5)}100%{box-shadow:0 0 0 0 rgba(95,211,201,0),0 2px 8px rgba(0,0,0,.5)}}.wf-hot{animation:wfHot 2.2s ease-out 1 both}@keyframes wfPop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}.wf-pop{animation:wfPop .24s cubic-bezier(.34,1.56,.64,1) both}@keyframes wfFact{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}.wf-fact{animation:wfFact .5s ease both}@keyframes wfCarnetIn{from{transform:translateY(100%)}to{transform:translateY(0)}}@keyframes wfBonusIn{from{opacity:0}to{opacity:1}}@media(prefers-reduced-motion:reduce){.wf-hint,.wf-mark,.wf-hot,.wf-pop,.wf-fact{animation:none}}`}</style>
       <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")}
         style={{position:"absolute",top:"calc(12px + env(safe-area-inset-top))",right:14,zIndex:30,width:40,height:40,borderRadius:"50%",
         background:"rgba(4,9,11,.55)",border:"1px solid rgba(255,255,255,.25)",color:"#fff",fontSize:17,cursor:"pointer",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)"}}>✕</button>
@@ -10657,7 +10657,7 @@ export default function App(){
               boxShadow:"0 4px 20px rgba(0,0,0,.10)",fontFamily:"inherit",textAlign:"left",
             }}>
               <div style={{width:10,height:10,borderRadius:5,background:C.green,flexShrink:0,
-                animation:"dot-pulse 2s ease-in-out infinite"}}/>
+                animation:"dot-pulse 2s ease-in-out 1 both"}}/>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontSize:13,fontWeight:700,color:"var(--sg-ink)",
                   whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
