@@ -9125,6 +9125,7 @@ function WorldFeed({beaches,lang,onPremium,onClose,island}){
 function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutions,onPremium,rootMode}){
   const wrapRef=useRef(null),gRef=useRef(null),camRef=useRef({cx:0,cy:0,cz:0.8}),rafRef=useRef(0)
   const ptrs=useRef(new Map()),movedRef=useRef(false),pinchRef=useRef(null),lastTap=useRef(0)
+  const velRef=useRef({x:0,y:0}),inertRaf=useRef(0),pannedRef=useRef(false)
   // Drag rigolo du Veilleur : on l'attrape, son radar/faisceau suivent, il rebondit au lâcher.
   const satGRef=useRef(null),satHitRef=useRef(null),satDragRef=useRef(false),satOffRef=useRef({x:0,y:0}),satVRef=useRef({x:0,y:0}),satSprRaf=useRef(0)
   const[satGrab,setSatGrab]=useState(false)
@@ -9161,6 +9162,22 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
   const clampZ=z=>Math.max(FAR*0.75,Math.min(NEAR*1.25,z))
   const centerOn=(i,cz)=>{const el=wrapRef.current;if(!el||!proj[i])return;const z=clampZ(cz||camRef.current.cz),W=el.clientWidth,H=el.clientHeight;camRef.current={cz:z,cx:W/2-proj[i].x*z,cy:H/2-proj[i].y*z};schedule()}
   const zoomAt=(f,px,py)=>{const c=camRef.current,nz=clampZ(c.cz*f),wx=(px-c.cx)/c.cz,wy=(py-c.cy)/c.cz;c.cz=nz;c.cx=px-wx*nz;c.cy=py-wy*nz;schedule()}
+  // ── PAN INERTIE + BORDS ÉLASTIQUES (#49) ──────────────────────────────────
+  // Le pan libre coast après le relâché (déccélération = continuation du geste,
+  // pas une boucle idle → conforme à la doctrine calme) et les bords résistent
+  // (overscroll borné pendant le drag, ressort de retour au relâché). Le monde
+  // ne peut JAMAIS être lancé hors écran (anti « bloqué »/cul-de-sac visuel).
+  // prefers-reduced-motion : vélocité=0 → pas de coast, juste recentrage des bords.
+  const panBounds=()=>{const el=wrapRef.current;if(!el)return null;const W=el.clientWidth,H=el.clientHeight,z=camRef.current.cz,M=Math.min(W,H)*0.38;return{minX:M-SPAN_PX*z,maxX:W-M,minY:M-SPAN_PX*z,maxY:H-M}}
+  const panClampDrag=c=>{const b=panBounds();if(!b)return;const el=wrapRef.current,ov=(el?Math.min(el.clientWidth,el.clientHeight):360)*0.22;c.cx=Math.max(b.minX-ov,Math.min(b.maxX+ov,c.cx));c.cy=Math.max(b.minY-ov,Math.min(b.maxY+ov,c.cy))}
+  const stopInertia=()=>{if(inertRaf.current){cancelAnimationFrame(inertRaf.current);inertRaf.current=0}}
+  const startInertia=()=>{stopInertia();let reduce=false;try{reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches}catch(_){}if(reduce){velRef.current.x=0;velRef.current.y=0}
+    const step=()=>{const c=camRef.current,v=velRef.current,b=panBounds();c.cx+=v.x;c.cy+=v.y;v.x*=0.92;v.y*=0.92
+      if(b){if(c.cx<b.minX){c.cx+=(b.minX-c.cx)*0.2;v.x*=0.55}else if(c.cx>b.maxX){c.cx+=(b.maxX-c.cx)*0.2;v.x*=0.55}
+        if(c.cy<b.minY){c.cy+=(b.minY-c.cy)*0.2;v.y*=0.55}else if(c.cy>b.maxY){c.cy+=(b.maxY-c.cy)*0.2;v.y*=0.55}}
+      writeCam();const slow=Math.hypot(v.x,v.y)<0.12,inB=!b||(c.cx>=b.minX-0.5&&c.cx<=b.maxX+0.5&&c.cy>=b.minY-0.5&&c.cy<=b.maxY+0.5)
+      if(slow&&inB){inertRaf.current=0;return}inertRaf.current=requestAnimationFrame(step)}
+    inertRaf.current=requestAnimationFrame(step)}
   useEffect(()=>{centerOn(myIdx,MID);setReady(true);try{track("sg_archipel_open",{beaches:count})}catch(_){}},[])// eslint-disable-line
   // SCROLL / molette / swipe / flèches = VISITE plage-à-plage (doctrine #24 : le
   //   scroll pilote la VISITE, JAMAIS le zoom — zoom = pincer/double-tap). La caméra
@@ -9180,7 +9197,7 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
     return()=>{el.removeEventListener("wheel",onWheel);window.removeEventListener("keydown",onKey)}
   },[])// eslint-disable-line
   const rel=e=>{const r=wrapRef.current.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
-  const onDown=e=>{movedRef.current=false
+  const onDown=e=>{movedRef.current=false;stopInertia();velRef.current={x:0,y:0};pannedRef.current=false
     // attrape le Veilleur (drag rigolo) si le doigt tombe dessus
     if(!satDragRef.current&&satHitRef.current){const r=satHitRef.current.getBoundingClientRect(),pad=16;if(e.clientX>=r.left-pad&&e.clientX<=r.right+pad&&e.clientY>=r.top-pad&&e.clientY<=r.bottom+pad){satDragRef.current=true;if(satSprRaf.current){cancelAnimationFrame(satSprRaf.current);satSprRaf.current=0}satVRef.current={x:0,y:0};setSatGrab(true);veilleurSpeak();try{e.currentTarget.setPointerCapture(e.pointerId)}catch(_){}ptrs.current.set(e.pointerId,rel(e));try{track("sg_archipel_sat_grab",{})}catch(_){};return}}
     // PAS de setPointerCapture ici : sinon le `click` est re-routé vers le wrap et
@@ -9191,9 +9208,9 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
     if(satDragRef.current){const sc=satScale();satOffRef.current.x+=(p.x-prev.x)/sc;satOffRef.current.y+=(p.y-prev.y)/sc;satWrite();movedRef.current=true;return}
     if(ptrs.current.size>=2&&pinchRef.current){const[a,b]=[...ptrs.current.values()];const d=Math.hypot(a.x-b.x,a.y-b.y),mx=(a.x+b.x)/2,my=(a.y+b.y)/2;const c=camRef.current;if(pinchRef.current.d>0){const f=d/pinchRef.current.d;const nz=clampZ(c.cz*f),wx=(mx-c.cx)/c.cz,wy=(my-c.cy)/c.cz;c.cz=nz;c.cx=mx-wx*nz;c.cy=my-wy*nz}c.cx+=mx-pinchRef.current.mx;c.cy+=my-pinchRef.current.my;pinchRef.current={d,mx,my};movedRef.current=true;schedule();return}
     if(tourRef.current!=null){const dx2=p.x-prev.x,dy2=p.y-prev.y;if(Math.abs(dx2)+Math.abs(dy2)>2)movedRef.current=true;return}
-    const dx=p.x-prev.x,dy=p.y-prev.y;if(Math.abs(dx)+Math.abs(dy)>2){if(!movedRef.current){try{e.currentTarget.setPointerCapture(e.pointerId)}catch(_){}}movedRef.current=true}camRef.current.cx+=dx;camRef.current.cy+=dy;schedule()}
+    const dx=p.x-prev.x,dy=p.y-prev.y;if(Math.abs(dx)+Math.abs(dy)>2){if(!movedRef.current){try{e.currentTarget.setPointerCapture(e.pointerId)}catch(_){}}movedRef.current=true}const c=camRef.current;c.cx+=dx;c.cy+=dy;panClampDrag(c);velRef.current={x:dx*0.55+velRef.current.x*0.45,y:dy*0.55+velRef.current.y*0.45};pannedRef.current=true;schedule()}
   const onUp=e=>{if(satDragRef.current){satDragRef.current=false;setSatGrab(false);satSpringHome();ptrs.current.delete(e.pointerId);try{e.currentTarget.releasePointerCapture(e.pointerId)}catch(_){}if(sayTimerRef.current)clearTimeout(sayTimerRef.current);sayTimerRef.current=setTimeout(()=>setSatSay(null),1700);try{track("sg_archipel_sat_drop",{})}catch(_){};return}
-    if(tourRef.current!=null&&swipeY.current!=null&&ptrs.current.size===1){const dy=rel(e).y-swipeY.current;if(dy<-44){tourGo(tourRef.current>=tourOrder.length-1?0:tourRef.current+1)}else if(dy>44){if(tourRef.current<=0)exitTour();else tourGo(tourRef.current-1)}}ptrs.current.delete(e.pointerId);if(ptrs.current.size<2)pinchRef.current=null;swipeY.current=null}
+    if(tourRef.current!=null&&swipeY.current!=null&&ptrs.current.size===1){const dy=rel(e).y-swipeY.current;if(dy<-44){tourGo(tourRef.current>=tourOrder.length-1?0:tourRef.current+1)}else if(dy>44){if(tourRef.current<=0)exitTour();else tourGo(tourRef.current-1)}}else if(tourRef.current==null&&pannedRef.current&&ptrs.current.size===1&&!pinchRef.current){startInertia()}ptrs.current.delete(e.pointerId);if(ptrs.current.size<2)pinchRef.current=null;swipeY.current=null}
   // Double-tap = bascule entre paliers NOMMÉS (vue côte MID ↔ rivage NEAR) au point
   // tapé, au lieu de magic numbers. zoomAt borne via clampZ. (workflow step 3)
   const onTap=e=>{if(tourRef.current!=null)return;const now=Date.now();if(now-lastTap.current<300&&!movedRef.current){const r=wrapRef.current.getBoundingClientRect(),c=camRef.current;zoomAt(c.cz<(MID+NEAR)/2?NEAR/c.cz:MID/c.cz,e.clientX-r.left,e.clientY-r.top)}lastTap.current=now}
@@ -9223,7 +9240,7 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
     diveTimers.current.push(setTimeout(()=>{onOpenBeach&&onOpenBeach(b)},520))
     diveTimers.current.push(setTimeout(()=>{setDiving(null);try{centerOn(myIdx,MID)}catch(_){}},900))
   }
-  useEffect(()=>()=>{diveTimers.current.forEach(clearTimeout)},[])
+  useEffect(()=>()=>{diveTimers.current.forEach(clearTimeout);stopInertia()},[])
   // Dock "Toutes" = le monde dézoomé au FAR (la liste est une PROFONDEUR, pas un
   // autre écran) — centre le centroïde de la projection (≈SPAN_PX/2).
   const fitAll=()=>{const el=wrapRef.current;if(!el)return;const W=el.clientWidth,H=el.clientHeight,z=FAR;camRef.current={cz:z,cx:W/2-(SPAN_PX/2)*z,cy:H/2-(SPAN_PX/2)*z};schedule()}
