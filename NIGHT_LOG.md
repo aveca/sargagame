@@ -89,7 +89,21 @@ Appliquer le pattern « jeu SVG + contenu (free+premium) + déblocage de NOS don
 - 0c990ef0 — jeu Solutions INC1 : instrumentation sg_sol_tap (transforme/tri/debat) = heat des solutions.
 - d3f32777 — SEO pages MÉTÉO MQ+GP (profil #1 data-mining : cluster "meteo" >110 clics/sem en hausse) + FAQ schema + sitemaps.
 - Specs nuit 2 : `reference_solutions_game_spec` (jeu data-unlock, buildOrder INC1✅..INC7) + `project_unexpected_profiles` (5 profils chiffrés).
-- RESTE nuit 2 : Solutions INC2 (unlock+HUD A/B sol_unlock) → INC3 cartes-données live → INC4 Sol*Scene→jeu → INC5 vidéo NASA → INC6 payoff+CTA → INC7 patch stats. Data-mining : freemium email tier (45% des actions modal = email), GP rage-bug (vérif post-refonte), B2B substrat (105 hôtels), bulletin/voix.
+- 3ac0ec38 — jeu Solutions INC2 : déblocage progressif + barre HUD X/8 (StoryEngine onBeat + niveau monotone g/s, reveal one-shot). Vérifié 1/8→7/8 au scroll.
+- RESTE nuit 2 (bien speccé, reprendre frais) : Solutions INC3 cartes-données live (AFAI/confidence/breakdown du JSON) → INC4 Sol*Scene→jeu actif + faits réels + 6e voix → INC5 vidéo NASA médaillon → INC6 payoff+CTA double → INC7 patch collect/stats.php. Data-mining : freemium email tier (45% des actions modal = email), bulletin/voix SEO, B2B substrat (105 hôtels regions/resorts/*.json), GP rage-bug (re-vérifier post-refonte monde). Specs : [[reference-solutions-game-spec]] + [[project-unexpected-profiles]].
+
+## LUNDI — CHANTIER USA/USD (démarré, scope `wtubn4gfe`) (tâche #41)
+**Verdict honnête (21 640 sessions) :** l'argent USD n'est PAS dans le B2C actuel — le checkout USD MARCHE, 98% des gens qui VOIENT l'offre la refusent. 3 causes structurelles : (1) abo mensuel vs touriste 5j, (2) l'EUR convertit (15/15) grâce au « 0€ aujourd'hui / essai 7j » dont le USD est PRIVÉ (`noTrial:true`), (3) concurrent gratuit dominant au MX + tout-vert tue l'argument alerte. L'argent EST dans le **B2B Resort Dashboard** (105 hôtels mappés, substrat 90% là, 1 contrat = 20-60× un abo) MAIS bute sur la fiabilité saison calme + vente humaine.
+
+**Audit infra SEO USD = SAINE** (pas le goulot) : `scripts/lib/region-seo-pages.cjs` génère hubs (forecast/today/map/season/methodology/semáforo-ES/press) + pages plages (FAQPage) + resorts long-tail + maillage (hubLinks+nearby+network) + sitemap + hreflang self/x-default + accuracy backtest live. IndexNow (`submit-indexnow.cjs`) + GSC (`config.cjs`) couvrent TOUTES les régions. → générer + de sous-pages (#18) n'est PAS le levier.
+
+**Shippé ce commit (décision-free) :**
+- `regions/florida.json` : `seo.homeTitle`/`homeDesc` MANQUANTS (PC/RM les avaient) → ajoutés. Racine FL ne partait plus battue.
+- `public/stats.php` : **breakdown funnel PAR RÉGION** + filtre `?region=florida`. Avant : histogramme sessions/région seulement → aveugle. Maintenant par région : { sessions, funnel modal_open→cta→redirect→email, rates session_to_modal/modal_to_cta/cta_to_redirect/session_to_email, bored_rate, avg_dwell, top_events }. Le prérequis « piloter par région » du plan. Testé synthétiquement (FL modal-only vs RM funnel complet).
+
+**Décisions FONDATEUR (bloquent le commercial, pas le code) :** (1) « 0$ aujourd'hui » côté USD — Trip Pass one-time 4,99-6,99$/7j en A/B (cannibalise un MRR qui de toute façon ne convertit pas) ? (2) pricing B2B (badge gratuit → Resort Watch 99-149$/mo → marque 299-499$) + pilote brief gratuit 5-10 hôtels Bávaro. (3) ordre : reco **Punta Cana-EN d'abord** (marché vide) vs mémoire MX>DR.
+
+**RESTE chantier (décision-free, codable) :** repositionner value-prop USD sur planif-séjour/7j (survit au tout-vert, A/B-gate) · MVP technique Resort Dashboard depuis substrat · CTA « For hotels/Para hoteles » intent-only · audit perf/fit mobile USD · fix sur-prédiction saison calme PHASE 0bis (SANS floor 0.15 — [[feedback-forecast-floor-ban]]).
 
 ## ÉTAT (≈31 commits NUIT 1) — la transformation produit de base est COMPLÈTE & cohérente
 Full-SVG (Leaflet out) · monde unifié 'même monde' · plages uniques (9 archétypes) · plan in-scène ·
