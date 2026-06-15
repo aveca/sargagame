@@ -79,3 +79,6 @@ audit-mq-screens/
 .archive-screenshots/
 scripts/video/out/
 .venv-ltx/
+
+# UX alert tool runtime output
+scripts/automation/data/ux-alerts.json
