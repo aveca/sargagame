@@ -10095,11 +10095,11 @@ export default function App(){
   // Deep-link: /plages/:slug → auto-open beach sheet
   useEffect(()=>{
     if(!allBeaches.length)return
-    const m=window.location.pathname.match(/^\/plages\/([^/]+)/)
+    const m=window.location.pathname.match(/^\/(?:plages|beaches|playas)\/([^/]+)/)
     if(!m)return
     const slug=m[1]
     const match=allBeaches.find(b=>
-      b.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/-+$/,"")===slug)
+      b.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")===slug)
     if(match){setSelectedBeach(match);track("sg_beach_open",{beach_id:match.id,status:match.status,source:"deeplink"})}
   },[allBeaches])
 
