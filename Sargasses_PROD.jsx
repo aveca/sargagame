@@ -1420,6 +1420,18 @@ function sgCollectInit(){
   }catch(_){}
 }
 
+// ── DÉBLOCAGE PROGRESSIF + CAPTURE D'INTENTION (fondation funnel-wide, nuit 2) ──────────
+//    Générique, réutilisable par le jeu Solutions ET chaque étape du funnel : l'engagement
+//    déverrouille des clés d'accès à NOS données (persistées localStorage), et chaque interaction
+//    émet un event d'INTENTION via track() → /collect.php (first-party) → KPI. Anti-slop, mesurable.
+function sgUnlockState(){try{return JSON.parse(localStorage.getItem("sg_unlocks")||'{"keys":[],"v":1}')}catch(_){return{keys:[],v:1}}}
+function sgHasUnlock(k){try{return sgUnlockState().keys.indexOf(k)>=0}catch(_){return false}}
+function sgUnlock(k,meta){try{const s=sgUnlockState();if(s.keys.indexOf(k)<0){s.keys.push(k);localStorage.setItem("sg_unlocks",JSON.stringify(s));try{track("sg_unlock",{key:k,total:s.keys.length,...(meta||{})})}catch(e){}}return true}catch(_){return false}}
+function sgUnlockCount(){try{return sgUnlockState().keys.length}catch(_){return 0}}
+// Capture d'intention : QUEL problème/solution/plage intéresse l'user, où il s'attarde → KPI (stats.php).
+function sgIntent(name,params){try{track("sg_intent",{intent:name,...(params||{})})}catch(_){}}
+try{if(typeof window!=="undefined"){window.sgHasUnlock=sgHasUnlock;window.sgUnlockCount=sgUnlockCount}}catch(_){}
+
 function AbDebug(){
   const[show,setShow]=useState(false)
   useEffect(()=>{try{if(new URLSearchParams(window.location.search).get("ab_debug")==="1")setShow(true)}catch{}},[])

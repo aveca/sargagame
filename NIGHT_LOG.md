@@ -1,0 +1,109 @@
+# NIGHT LOG — build autonome (nuit du 14→15/06/2026)
+
+Mandat fondateur : autonomie totale. Construire une VRAIE UI/UX produit A→Z, SITE FINI.
+END-TO-END : refonte produit COMPLÈTE, CHAQUE ÉCRAN en SVG, du 1er clic au dernier, du 1er
+scroll au dernier — un parcours unifié et fini. Chaque plage = scène SVG unique/adaptative
+(image+data) + visite virtuelle & plan ancrés dans les problèmes réels des habitants/sociétés.
+Penser workflow/process/multi-agents/test.
+
+## Règles de sécurité (autonome, le fondateur dort)
+- Chaque incrément : `npm run build` (exit 0) + `node scripts/tmp-wf-results/notrial-smoke.cjs eur` (OK) AVANT tout commit.
+- Additif / non destructif. Ne jamais casser le funnel Stripe (le smoke le protège).
+- Doctrine CALME absolue ([[feedback-calm-no-idle-motion]]) : au repos = tableau, zéro boucle.
+- Zéro dépendance, SVG inline, instantané. Pas d'images/vidéo.
+- Push main = auto-deploy. Rebase `-X theirs` si race sur JSON générés.
+- FB groupe = source de RÉFÉRENCE seulement (ne pas reproduire posts/photos ; créer du SVG original).
+
+## Roadmap (incréments shippables) — OBJECTIF : SITE FINI END-TO-END
+0. [EN COURS] Spec per-beach via workflow `wdiiae0wd` (archétypes data→SVG + modèle plan).
+1. [ ] **Blueprint produit END-TO-END** (workflow à lancer APRÈS wdiiae0wd) : chaque écran en SVG,
+       chorégraphie parcours 1er→dernier clic/scroll, transitions, langage unifié, build order. (tâche #38)
+2. [ ] BeachScene v2 — scène unique/adaptative par plage (seed id + archétype + afai/status/coast). Calme. (#35)
+3. [ ] Visite virtuelle + plan d'action par plage, ancré problèmes réels, i18n. (#36)
+4. [ ] Implémenter écran par écran selon le blueprint : entrée → monde → plage → plan → solutions → premium → checkout → retour. Parcours unifié, scène v2 en hero. (#37)
+5. [ ] Purge ~60 anims `infinite` app-wide restantes. (#34)
+6. [ ] Mécaniques calmes addictives (recherche w0ey41mt0) : Lecture du Jour, pan-snap vélocité, Devine-puis-Révèle, carte-partage sans lien.
+7. [ ] (signalé, décision fondateur) retirer Leaflet ; repackaging pricing ; fiabilité saison calme.
+
+## Analytics — anti-bloqué / anti-ennui / anti-caché (piloter par la donnée)
+Sources demandées : Google Sheet "Sargasses Emails" (gid 737335470) + GA4 (a276662454p530818426).
+- ⚠️ La feuille contient des EMAILS (PII) → NE PAS aspirer/exposer ; n'utiliser que l'agrégat.
+- ⚠️ GA4 web UI non récupérable en headless (login) → utiliser le **funnel endpoint** (même backend, action=funnel) + Clarity (mémoire). Wirer la GA Data API plus tard si besoin.
+- Funnel live (14/06, snapshot) : sessions 21327 · premium_modal_open 3433 · premium_modal_cta 76 → **modal→CTA = 2 % (FUITE #1)** · forecast_lock_click 119 → **session→lock = 0,6 % (engagement faible = ennui)** · cta→redirect 89 % (bon). ⇒ Le blocage est AVANT le CTA : parcours pas assez engageant/clair.
+- OBJECTIF refonte : remonter modal→CTA et session→engagement. Chaque écran doit donner envie de cliquer/scroller (jamais bloqué, jamais caché, jamais ennuyeux).
+- Boucle nuit : re-curl funnel à chaque cycle, noter la dérive des taux ici.
+
+## Mécanisme d'orchestration
+- Chaînage par workflows background : à la complétion → je suis ré-invoqué → j'implémente+vérifie+ship → je lance le suivant.
+- État persistant ici + mémoire projet. Si la session s'arrête, reprendre = lire ce fichier + `git log`.
+
+## Journal des commits de la nuit
+- 7187fe62 — Veilleur draggable (drag rigolo, radar suit, rebond)
+- 43e10eb0 — FIX CLICS (pointer-capture) + monde calme + Veilleur parle + parallaxe fond
+- 74161ab7 — landing = tableau calme (fin du clignotement accueil)
+- 2f0c258a — engagement CONTINU par écran → GA4 (mesure l'ennui : dwell/actions/idle/scroll/bored)
+- 8064b631 — BeachScene INCRÉMENT 0 : scène fiche calme (11 boucles tuées)
+- 0de0cf36 — BeachScene fondation : PRNG seedé + archetypeOf 9 archétypes (dump 136 OK)
+- 8bd36563 — TRACKING FIRST-PARTY indépendant (sans GA/Sheets) : /collect.php + /stats.php
+  same-origin sur notre host + client SDK. ⏳ vérif PHP live en cours (bg bwshcuo3n) — si
+  PHP non exécuté sur l'origine → pivot Cloudflare Worker (site déjà derrière Cloudflare).
+  Clé stats = sg-data/.statskey (par FTP). Voir [[reference-first-party-analytics]].
+- 1b96aa08 — BeachScene v2 RENDU (INCRÉMENT 3) : chaque plage = scène SVG unique (relief +
+  palmiers procéduraux seedés par archétype). Validé : Diamant/Salines/La Datcha distincts.
+- e694590b — BeachScene INCRÉMENT 4 : eau teintée par l'AFAI réel (data-driven, honnête).
+- fb590591 — VisitPlan : le plan par plage DANS la fiche (ancré problèmes réels, i18n), pas un popup.
+- TRACKING PHP confirmé LIVE (collect.php 204 / stats.php 403). Plus de dépendance Google.
+- 7b5d3f56 — RETRAIT LEAFLET (full-SVG) : LazyMapView monté seulement si !navWorld ; switch de
+  plage recâblé sur [data-beach] ; ArchipelView rootMode (pas de ✕). Vérifié : 0 leaflet-container,
+  clic+switch OK. Reste : supprimer src/MapView.jsx + dep leaflet + CSS après mesure de ?nav=map.
+- e694590b — BeachScene INCRÉMENT 4 : eau teintée par l'AFAI réel (data-driven, honnête).
+- fb590591 — VisitPlan : le plan par plage DANS la fiche (ancré problèmes réels, i18n), pas un popup.
+- 09853046 — A/B pw_scene : paywall = continuation golden-hour (Veilleur + promesse en haut),
+  shell ONLY, checkout Stripe intouché. Cible la fuite modal→CTA 2%. ?pwscene=1/0 en QA.
+  → À MESURER via stats.php (modal→CTA pw_scene:1 vs :0) quand la data s'accumule.
+- 2bee456d — unité visuelle : 1 seule couleur de statut partout (7 stragglers alignés sur stMod/stClean).
+- bb419de2 — unité visuelle : 1 seul Veilleur (miVeil gagne l'antenne) + figé au repos (calme).
+- 52d8021e — reveal one-shot des scènes à l'ouverture (UNITÉ VISUELLE COMPLÈTE : statut+Veilleur+reveal).
+- 6bfc8a49 — calme : fige le pulse 'pub' du CTA forecast-lock (chemin conversion).
+- RESTE 🟢 : S2b seed premium dans le tour (engagement 0,6%) ; reste des boucles idle #34 (gf-*,
+  sol-belt, sg-eta-badge — surfaces secondaires) ; suppression définitive MapView.jsx + dep leaflet
+  après mesure ?nav=map ; MESURER pw_scene (modal→CTA) via stats.php.
+- f0e83fb9 — carte de partage spoiler-free SANS lien (canvas, effet Wordle, croissance virale).
+- 6bfc8a49 — fige le pulse 'pub' du forecast-lock.
+- FIABILITÉ : vérifiée SOLIDE en live (16/4/0, Diamant moderate = signalement communautaire légitime,
+  PAS une fausse alerte). NE PAS retoucher.
+
+## 🌙 NUIT 2 — MANDAT ÉLARGI (fondateur me laisse la nuit, 15/06)
+Appliquer le pattern « jeu SVG + contenu (free+premium) + déblocage de NOS données + capture d'intention/KPI »
+à **TOUTES les étapes du funnel** : chaque écran/panneau/display = SVG bien construit, plus détaillé.
+- Design en cours : `w2pty2tdy` (Solutions-game spec) → à exécuter dès réception.
+- Inputs déjà en main : blueprint end-to-end `w8zvw5wdo` (S0-S6 + chrome), spec BeachScene `wdiiae0wd`,
+  direction valeur `w0ey41mt0`.
+- Boucle nuit : workflow complète → j'implémente (panneaux + unlock + intent + contenu 2 tiers) → vérifie
+  (build+smoke+preview) → commit → suivant. Calme : anim à l'interaction, jamais idle. Funnel Stripe intact.
+- Tiers : FREE = état du jour toutes plages + jeu Solutions éducatif + carte partage + 1er palier méthode.
+  PREMIUM = forecast J+1→J+6 + alertes + brief matin + data profonde des solutions + assets exclusifs.
+
+## ÉTAT (≈31 commits) — la transformation produit de base est COMPLÈTE & cohérente
+Full-SVG (Leaflet out) · monde unifié 'même monde' · plages uniques (9 archétypes) · plan in-scène ·
+paywall-scène (A/B pw_scene) · tracking first-party (collect/stats.php, sans Google) · engagement continu ·
+unité visuelle (1 Veilleur, 1 statut, reveal) · calme · carte de partage virale.
+**Le prochain pas N'EST PLUS du code (ajouter des features = 'ajouter des briques' = l'anti-pattern).**
+C'est : (1) MESURER (pw_scene modal→CTA, uptake carte, fiabilité fresh-archive) via stats.php sous quelques
+jours ; (2) décisions BUSINESS du fondateur (pricing : pass voyage + annuel + B2B hôtel). Voir
+[[project-value-direction-research]]. Restes mineurs : #34 boucles idle écrans secondaires ; suppression
+définitive MapView.jsx après mesure ?nav=map.
+- … RESTE 🟢 (safe, validation multi-écrans requise) : BeachScene reveal one-shot ; token statut
+  unique + fusion des 2 Veilleur ; dégraisser les 5 FABs (après absorption Solutions/Découverte).
+  🔴 (sign-off fondateur — REVENU) : retrait Leaflet (recâbler pin-switch/suggestions d'abord),
+  refonte paywall en continuation de scène (fuite modal→CTA 2%), clôture A/B en cours.
+
+## Specs/recherches produites (à exécuter)
+- `tasks/wdiiae0wd.output` — spec BeachScene v2 + VisitPlan (buildOrder 8 incréments ; faits 0,1,2 ; reste 3-7). Mémoire [[reference-beachscene-v2-spec]].
+- `tasks/w0ey41mt0.output` — direction valeur + mécaniques calmes addictives. [[project-value-direction-research]].
+- workflow `w8zvw5wdo` — blueprint produit END-TO-END (en cours) : écrans + chorégraphie + build order. Au retour → exécuter.
+
+## Découvertes / décisions
+- Bug clic majeur résolu (pointer-capture re-route le click) — [[reference-pointer-capture-click-pitfall]].
+- Leaflet encore monté SOUS l'Archipel (soupe de calques) → à retirer.
+- Verdict valeur : le SVG = acquisition, pas le levier de paiement — [[project-value-direction-research]].
