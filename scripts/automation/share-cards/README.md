@@ -29,11 +29,13 @@ CI-friendly). Socle commun : [`../lib/share-card.cjs`](../lib/share-card.cjs).
 ## Les 3 générateurs
 
 ### 1. Beach Wrapped — `gen-beach-wrapped.cjs`
-« Mon été Sargasses », carte perso de fin de saison (façon Spotify Wrapped),
-1080×1350 (4:5).
+« Mon été Sargasses », carte perso de fin de saison (façon Spotify Wrapped).
+Deux formats : **1080×1350** (4:5 feed, défaut) et **1080×1920** (9:16 story/Reel)
+via `--format=story`.
 
 ```bash
 node scripts/automation/gen-beach-wrapped.cjs --region=mq
+node scripts/automation/gen-beach-wrapped.cjs --region=mq --format=story
 node scripts/automation/gen-beach-wrapped.cjs --profile=chemin/profil.json
 ```
 
@@ -57,11 +59,14 @@ Devine-puis-révèle quotidien : « Quelle plage est LE meilleur spot aujourd'hu
 
 ```bash
 node scripts/automation/gen-beach-wordle.cjs --region=mq
+node scripts/automation/gen-beach-wordle.cjs --region=mq --result=B --streak=4
 ```
 
 Sorties : carte énigme (`-q.png`, à poster le matin), carte réponse (`-a.png`,
 le soir) + `data/wordle-today.json` (le moteur, consommable par l'app au
-déploiement).
+déploiement). `--result=<A-D|slug>` (+ `--streak=N`) génère la **carte résultat
+partageable** (`-r.png`) : ✓/✗ + série, **sans révéler la réponse** — l'objet
+viral (le partageur se vante, le spectateur reste curieux).
 
 ### 3. Verdict du Veilleur — `gen-verdict-veilleur.cjs`
 Image carrée 1080×1080 du verdict le plus tranché du jour (meilleur spot propre,
@@ -69,13 +74,16 @@ ou alerte « à éviter » s'il y en a une). Ligne de crédibilité (taux backte
 streak) seulement sur les plages ≥ 85 %.
 
 ```bash
-node scripts/automation/gen-verdict-veilleur.cjs --region=mq            # image + légende + file d'attente
-node scripts/automation/gen-verdict-veilleur.cjs --region=mq --publish  # publication (verrouillée par défaut)
+node scripts/automation/gen-verdict-veilleur.cjs --region=mq                # image + légende + file d'attente
+node scripts/automation/gen-verdict-veilleur.cjs --region=mq --publish      # publication (verrouillée par défaut)
+node scripts/automation/gen-verdict-veilleur.cjs --region=mq --preview=avoid # aperçu layout ALERTE (mock)
 ```
 
 Écrit `data/verdict-queue.json` (contrat pour le branchement `fb-post-groups`
 au déploiement) et, à la publication réelle, `data/verdict-sent.json`
-(anti-spam : un post / région / jour).
+(anti-spam : un post / région / jour). `--preview=avoid` rend le layout
+« à éviter » (données mock, hors file/queue/publi) — utile hors saison sargasses
+où la donnée live est toujours « propre ».
 
 ## Sorties
 
