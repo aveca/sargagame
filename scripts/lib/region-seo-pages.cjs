@@ -318,6 +318,7 @@ ${hubLinks('map')}${networkFooter(region, t)}</article>`,
   hubs.push({
     slug: p.season.slug, title: p.season.title, desc: p.season.desc,
     noscript: `<article><h1>${esc(p.season.h1)}</h1><p>${t.updated(today)}</p>
+${p.season.intro ? `<p>${esc(p.season.intro)}</p>` : ''}
 ${(p.season.months || []).map(m => `<h2>${esc(m.period)}</h2><p>${esc(m.text)}</p>`).join('')}
 <h2>${lang === 'es' ? 'Consejos para reservar' : 'Booking tips'}</h2><p>${esc(p.season.tips || '')}</p>
 ${hubLinks('season')}${networkFooter(region, t)}</article>`,
