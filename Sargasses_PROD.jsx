@@ -2635,6 +2635,13 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
           refermerait la NOUVELLE fiche). */}
       <div className="backdrop" ref={backdropRef} onClick={(e)=>{
         const x=e.clientX,y=e.clientY
+        // ARCHIPEL (carte SVG par défaut) : pastille [data-beach] sous le backdrop → switch direct
+        // de plage (remplace la dépendance aux marqueurs Leaflet pour le cohort world).
+        try{
+          const g=document.elementsFromPoint(x,y).map(el=>el.closest&&el.closest("[data-beach]")).find(Boolean)
+          if(g){const nb=allBeaches&&allBeaches.find(b=>b.id===g.getAttribute("data-beach"))
+            if(nb&&nb.id!==beach.id){track("sg_sheet_pin_switch",{via:"archipel"});onClose();setTimeout(()=>onBeachClick&&onBeachClick(nb),50);return}}
+        }catch(_){}
         let pin=null
         try{pin=document.elementsFromPoint(x,y).find(el=>el.classList&&el.classList.contains("leaflet-marker-icon"))}catch(_){}
         if(pin){
@@ -8919,7 +8926,7 @@ function WorldFeed({beaches,lang,onPremium,onClose,island}){
 // immediate (on atterrit MID-zoom sur SA cote, verdict <1s), l'exploration est un
 // bonus libre par-dessus. v0 = pan + zoom (wheel/pinch/double-tap) + atterrissage +
 // tap->BeachSheet existante (funnel INTACT). Pas de dive/momentum/LOD (slices 2-4).
-function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutions,onPremium}){
+function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutions,onPremium,rootMode}){
   const wrapRef=useRef(null),gRef=useRef(null),camRef=useRef({cx:0,cy:0,cz:0.8}),rafRef=useRef(0)
   const ptrs=useRef(new Map()),movedRef=useRef(false),pinchRef=useRef(null),lastTap=useRef(0)
   // Drag rigolo du Veilleur : on l'attrape, son radar/faisceau suivent, il rebondit au lâcher.
@@ -9044,7 +9051,9 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
             </g>)})}
         </g>
       </svg>
-      <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"absolute",top:"calc(12px + env(safe-area-inset-top))",right:14,zIndex:5,width:40,height:40,borderRadius:"50%",background:"rgba(4,9,11,.55)",border:"1px solid rgba(255,255,255,.25)",color:"#fff",fontSize:17,cursor:"pointer",backdropFilter:"blur(8px)"}}>✕</button>
+      {/* rootMode (navWorld) : le monde EST l'app → pas de ✕ qui fermerait sur du vide
+          (Leaflet retiré). En fallback ?nav=map, le ✕ ferme vers la carte Leaflet. */}
+      {!rootMode&&<button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"absolute",top:"calc(12px + env(safe-area-inset-top))",right:14,zIndex:5,width:40,height:40,borderRadius:"50%",background:"rgba(4,9,11,.55)",border:"1px solid rgba(255,255,255,.25)",color:"#fff",fontSize:17,cursor:"pointer",backdropFilter:"blur(8px)"}}>✕</button>}
       {ready&&my&&tour==null&&<div style={{position:"absolute",top:"calc(13px + env(safe-area-inset-top))",left:14,right:64,zIndex:5,display:"flex",alignItems:"center",gap:9,padding:"8px 12px",borderRadius:14,background:"rgba(4,9,11,.5)",border:"1px solid rgba(255,255,255,.14)",backdropFilter:"blur(8px)",color:"#fff"}}>
         <Veilleur mood={moodFromStatus(my.status)} size={26}/>
         <div style={{flex:1,minWidth:0,overflow:"hidden"}}><div style={{fontSize:10,fontWeight:700,letterSpacing:".05em",color:"rgba(255,255,255,.6)",textTransform:"uppercase"}}>{_t(lang,"Ta côte aujourd'hui","Your coast today","Tu costa hoy")}</div><div style={{fontSize:13.5,fontWeight:800,whiteSpace:"nowrap",textOverflow:"ellipsis",overflow:"hidden"}}><span style={{color:myVm.color}}>{myVm.emoji} {myVm.verb}</span> · {my.name}</div></div>
@@ -10018,13 +10027,16 @@ export default function App(){
               counts={{clean:filtered.filter(b=>b.status==="clean").length,watch:filtered.filter(b=>b.status==="moderate").length,avoid:filtered.filter(b=>b.status==="avoid").length,total:filtered.length}}
               onEnterMap={()=>{setShowMapIntro(false);try{localStorage.setItem("sg_map_intro_v1","1")}catch(_){}}}/>
           )}
-          <ErrBound><Suspense fallback={<div style={{width:"100%",height:"100%",background:"#0A1714"}}/>}>
+          {/* LEAFLET retiré du chemin par défaut : monté UNIQUEMENT en fallback ?nav=map.
+              En navWorld (tous), l'Archipel SVG EST la carte → Leaflet jamais chargé
+              (~150KB économisés, fin de la « soupe de calques »). Vision full-SVG. */}
+          {!navWorld&&<ErrBound><Suspense fallback={<div style={{width:"100%",height:"100%",background:"#0A1714"}}/>}>
             <LazyMapView beaches={filtered} island={island} lang={lang}
             onBeachClick={onBeachClick} selectedBeach={selectedBeach} sargData={sargData} userPos={userPos}
             favorites={favorites} allBeaches={allBeaches} onThreatChange={setHasActiveThreat}
             onPremiumClick={openPremium} track={track}
             searchActive={search.trim().length>=2&&filtered.length>0}/>
-          </Suspense></ErrBound>
+          </Suspense></ErrBound>}
         </div>
         <div style={{position:"absolute",inset:0,opacity:view==="list"?1:0,
           pointerEvents:view==="list"?"auto":"none",transition:"opacity .25s ease"}}>
@@ -10334,7 +10346,7 @@ export default function App(){
               fontSize:19,cursor:"pointer",boxShadow:"0 6px 20px rgba(0,0,0,.4)",display:"flex",alignItems:"center",justifyContent:"center",
               animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>🧭</button>
         )}
-        {showArchipel&&<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onBeachClick} onSolutions={()=>{setShowSolutions(true);track("sg_archipel_to_solutions",{})}} onPremium={()=>openPremium("archipel")} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}}/>}
+        {showArchipel&&<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onBeachClick} onSolutions={()=>{setShowSolutions(true);track("sg_archipel_to_solutions",{})}} onPremium={()=>openPremium("archipel")} rootMode={navWorld} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}}/>}
 
         {/* MONDE SVG — la fondation : feed vertical des plages, zéro photo, data en
             scène, cliquable, loopé. Additif (z1005) ; fiche+paywall s'ouvrent au-dessus. */}
