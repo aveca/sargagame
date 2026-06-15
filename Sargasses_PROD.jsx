@@ -188,12 +188,54 @@ async function shareBeachCard(beach,lang,forecast){
     if(days.length){const cw=150,sx=W/2-(days.length*cw)/2+cw/2,dy=H-310
       days.forEach((d,i)=>{x.fillStyle=verdictMeta(d.status,lang).color;x.beginPath();x.arc(sx+i*cw,dy,32,0,7);x.fill();x.fillStyle="rgba(255,255,255,.72)";x.font="600 28px 'Bricolage Grotesque',system-ui,sans-serif";x.fillText((d.day||"").slice(0,5),sx+i*cw,dy+74)})}
     const ds=new Date().toLocaleDateString(lang==="en"?"en-GB":lang==="es"?"es-ES":"fr-FR",{day:"numeric",month:"long"})
-    x.fillStyle="rgba(255,255,255,.72)";x.font="500 32px 'Bricolage Grotesque',system-ui,sans-serif";x.fillText(ds+"  ·  sargasses-martinique.com",W/2,H-86)
+    x.fillStyle="rgba(255,255,255,.72)";x.font="500 32px 'Bricolage Grotesque',system-ui,sans-serif";x.fillText(ds+"  ·  "+_scDomain(),W/2,H-86)
     const blob=await new Promise(r=>cv.toBlob(r,"image/png",.92));if(!blob)return false
     const file=new File([blob],"ma-plage.png",{type:"image/png"})
     const text=_t(lang,beach.name+" aujourd'hui — vu par le Veilleur 🛰️",beach.name+" today — seen by the Watchman 🛰️",beach.name+" hoy — visto por el Vigía 🛰️")
     try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text});return true}}catch(_){}
     const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="ma-plage.png";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);return true
+  }catch(e){return false}
+}
+// Domaine de marque par région (share-card config-driven → scalable multi-marché).
+function _scDomain(){try{if(typeof IS_NEW_REGION!=="undefined"&&IS_NEW_REGION&&typeof REGION!=="undefined"&&REGION&&REGION.domain)return REGION.domain}catch(_){}
+  try{return (location.hostname||"").includes("guadeloupe")?"sargasses-guadeloupe.com":"sargasses-martinique.com"}catch(_){return "sargasses-martinique.com"}}
+// buildShareCard(opts) — générateur de cartes virales multi-variant. 'beach'
+// délègue à shareBeachCard (historique, intact). 'streak' = VEILLE-CARD DE SÉRIE :
+// le "Wordle de la mer" — la série du Veilleur en grille de pastilles, SANS lien
+// (portée max). Canvas pur, fonts déjà chargées, domaine du region-config.
+async function buildShareCard(opts){
+  opts=opts||{};const variant=opts.variant||"beach",lang=opts.lang||"fr"
+  if(variant!=="streak")return shareBeachCard(opts.beach,lang,opts.forecast)
+  try{
+    const W=1080,H=1350,cv=document.createElement("canvas");cv.width=W;cv.height=H
+    const x=cv.getContext("2d");if(!x)return false
+    const RR=(xx,yy,w,h,r)=>{x.beginPath();if(x.roundRect)x.roundRect(xx,yy,w,h,r);else x.rect(xx,yy,w,h)}
+    const g=x.createLinearGradient(0,0,0,H);[[0,"#0B2230"],[.5,"#155A5A"],[.82,"#C97E3A"],[1,"#F2B05E"]].forEach(s=>g.addColorStop(s[0],s[1]));x.fillStyle=g;x.fillRect(0,0,W,H)
+    x.fillStyle="rgba(255,216,132,.26)";x.beginPath();x.arc(W/2,820,320,0,7);x.fill()
+    x.fillStyle="rgba(255,216,132,.5)";x.beginPath();x.arc(W/2,820,150,0,7);x.fill()
+    x.textAlign="center"
+    x.fillStyle="rgba(255,255,255,.82)";x.font="400 36px 'Anton',system-ui,sans-serif";x.fillText("S A R G A S S E S",W/2,118)
+    x.save();x.translate(W/2,250)
+    x.fillStyle="rgba(95,211,201,.16)";x.beginPath();x.arc(0,0,78,0,7);x.fill()
+    x.fillStyle="#3BA7A0";RR(-84,-18,44,36,8);x.fill();RR(40,-18,44,36,8);x.fill()
+    x.strokeStyle="#5FD3C9";x.lineWidth=6;x.lineCap="round";x.beginPath();x.moveTo(0,-42);x.lineTo(0,-68);x.stroke();x.fillStyle="#5FD3C9";x.beginPath();x.arc(0,-72,8,0,7);x.fill()
+    x.fillStyle="#C9971F";RR(-40,-40,80,80,20);x.fill();x.fillStyle="#FFC72C";RR(-40,-40,80,26,20);x.fill()
+    x.fillStyle="#07201E";x.beginPath();x.arc(0,8,24,0,7);x.fill();x.fillStyle="#5FD3C9";x.beginPath();x.arc(0,8,16,0,7);x.fill();x.fillStyle="#EAFBF8";x.beginPath();x.arc(-6,2,6,0,7);x.fill()
+    x.restore()
+    const n=Math.max(0,opts.streak||0),best=opts.best||n,gap=96
+    x.fillStyle="#FFD884";x.font="400 130px 'Anton',system-ui,sans-serif";x.fillText("🔥 "+n,W/2,500)
+    x.fillStyle="#fff";x.font="400 58px 'Anton',system-ui,sans-serif";x.fillText(_t(lang,"JOURS DE VEILLE","DAYS ON WATCH","DÍAS DE VIGÍA"),W/2,584)
+    const dots=Math.min(n,21),per=7
+    for(let i=0;i<dots;i++){const row=Math.floor(i/per),col=i%per,cnt=Math.min(dots-row*per,per),sx=W/2-((cnt-1)*gap)/2;x.fillStyle="#22C55E";x.beginPath();x.arc(sx+col*gap,690+row*86,32,0,7);x.fill()}
+    x.fillStyle="rgba(255,255,255,.92)";x.font="800 44px 'Bricolage Grotesque',system-ui,sans-serif";x.fillText(_t(lang,"Tu fais mieux ?","Beat my streak?","¿Me superas?"),W/2,H-210)
+    if(best>n){x.fillStyle="rgba(255,255,255,.6)";x.font="600 30px 'Bricolage Grotesque',system-ui,sans-serif";x.fillText("⭐ "+_t(lang,"record "+best,"best "+best,"récord "+best),W/2,H-160)}
+    const ds=new Date().toLocaleDateString(lang==="en"?"en-GB":lang==="es"?"es-ES":"fr-FR",{day:"numeric",month:"long"})
+    x.fillStyle="rgba(255,255,255,.72)";x.font="500 32px 'Bricolage Grotesque',system-ui,sans-serif";x.fillText(ds+"  ·  "+_scDomain(),W/2,H-86)
+    const blob=await new Promise(r=>cv.toBlob(r,"image/png",.92));if(!blob)return false
+    const file=new File([blob],"ma-serie.png",{type:"image/png"})
+    const text=_t(lang,"Ma série de veille des plages 🛰️🔥 — tu fais mieux ?","My beach-watch streak 🛰️🔥 — beat it?","Mi racha de vigía 🛰️🔥 — ¿me superas?")
+    try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text});return true}}catch(_){}
+    const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="ma-serie.png";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);return true
   }catch(e){return false}
 }
 function Veilleur({mood="serein",size=44}){
@@ -8925,8 +8967,15 @@ function WorldBonus({level,topBeach,lang,onPremium,onClose}){
             <div style={{flex:1,minWidth:0}}><div style={{fontSize:16,fontWeight:800}}>{topBeach.name}</div><div style={{fontSize:12.5,color:"rgba(255,255,255,.82)"}}>{topBeach.commune?topBeach.commune+" · ":""}{vm.emoji} {vm.verb}</div></div>
           </div>
         </div>}
+        {/* Veille-Card de Série AVANT le CTA premium : le partage frappe au pic
+            émotionnel (le "Wordle de la mer", actif d'acquisition organique). */}
+        <button onClick={async()=>{try{track("sg_share",{variant:"streak",level})}catch(_){}; let best=level;try{best=parseInt(localStorage.getItem("sg_world_best")||String(level))||level}catch(_){}; try{await buildShareCard({variant:"streak",streak:level,best,lang})}catch(_){}}}
+          style={{display:"block",width:"100%",marginTop:16,padding:"14px",borderRadius:16,border:"1px solid rgba(95,211,201,.5)",cursor:"pointer",
+          fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",fontSize:14.5,fontWeight:800,color:"#5FD3C9",background:"rgba(95,211,201,.08)"}}>
+          🔥 {_t(lang,"Partager ma série","Share my streak","Compartir mi racha")}
+        </button>
         <button onClick={()=>{try{track("sg_world_bonus_premium",{level})}catch(_){}; onPremium&&onPremium("world_bonus")}}
-          style={{display:"block",width:"100%",marginTop:16,padding:"15px",borderRadius:16,border:"none",cursor:"pointer",
+          style={{display:"block",width:"100%",marginTop:10,padding:"15px",borderRadius:16,border:"none",cursor:"pointer",
           fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",fontSize:15.5,fontWeight:800,color:"#07201E",
           background:"linear-gradient(180deg,#FFD884,#F2B05E)",boxShadow:"0 8px 28px rgba(0,0,0,.4)"}}>
           {_t(lang,"Le Veilleur veille pour toi chaque jour →","The Watchman watches for you daily →","El Vigía vigila para ti cada día →")}
