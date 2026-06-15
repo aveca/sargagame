@@ -336,7 +336,7 @@ function beachLandmark(beach){
   if(/salines|saline|grande anse|bourg/.test(k))return "open"  // longue plage ouverte
   return "morne"                                      // baie + morne vert (défaut antillais)
 }
-function BeachScene({beach}){
+function BeachScene({beach,reveal}){
   const ph=(()=>{try{if(HERO_PH_OVERRIDE)return HERO_PH_OVERRIDE;const h=new Date().getHours();return h<5?"night":h<8?"dawn":h<17?"day":h<20?"golden":"night"}catch(_){return "golden"}})()
   const t=BEACH_PHASE[ph]||BEACH_PHASE.golden
   const scene=useMemo(()=>buildBeachScene(beach),[beach&&beach.id])
@@ -353,12 +353,12 @@ function BeachScene({beach}){
       fr.push("M"+Math.round(tx)+" "+Math.round(ty)+" Q"+mx+" "+my+" "+ex+" "+ey)}
     return(<g key={i}><path d={trunk} stroke={t.trunk} strokeWidth={Math.max(5,12*p.s)} fill="none" strokeLinecap="round"/><g fill="none" stroke={t.frond} strokeWidth={Math.max(4,8*p.s)} strokeLinecap="round">{fr.map((d,j)=>(<path key={j} d={d}/>))}</g></g>)}
   return(
-    <div aria-hidden="true" style={{position:"absolute",inset:0}}>
+    <div aria-hidden="true" className={reveal?"bsc-reveal":undefined} style={{position:"absolute",inset:0}}>
       <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block"}}>
         {/* CALME (INCRÉMENT 0 spec wdiiae0wd) : au repos la scène est un TABLEAU. On tue les 11
             boucles idle (glit/raft/rake/net/swim/bird/shim/sat/beam/rays/moonp) — éléments figés à
             leur opacité de repos. Seuls les 2 nuages très lents subsistent. La vie viendra de `reveal`. */}
-        <style>{`.bsc-cloud{animation:bscCloud 80s ease-in-out infinite alternate}@keyframes bscCloud{to{transform:translateX(-46px)}}.bsc-cloud2{animation:bscCloud2 110s ease-in-out infinite alternate-reverse}@keyframes bscCloud2{to{transform:translateX(40px)}}.bsc-beam{opacity:.1}.bsc-shim{opacity:.5}.bsc-moonp{opacity:.34}@media(prefers-reduced-motion:reduce){.bsc-cloud,.bsc-cloud2{animation:none}}`}</style>
+        <style>{`.bsc-cloud{animation:bscCloud 80s ease-in-out infinite alternate}@keyframes bscCloud{to{transform:translateX(-46px)}}.bsc-cloud2{animation:bscCloud2 110s ease-in-out infinite alternate-reverse}@keyframes bscCloud2{to{transform:translateX(40px)}}.bsc-beam{opacity:.1}.bsc-shim{opacity:.5}.bsc-moonp{opacity:.34}@keyframes bscReveal{from{opacity:0;transform:scale(1.04)}to{opacity:1;transform:none}}.bsc-reveal{animation:bscReveal .85s cubic-bezier(.22,1,.36,1) both;transform-origin:50% 60%}@media(prefers-reduced-motion:reduce){.bsc-cloud,.bsc-cloud2,.bsc-reveal{animation:none}}`}</style>
         <defs>
           <linearGradient id="bscSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={t.sky[0]}/><stop offset=".52" stopColor={t.sky[1]}/><stop offset=".84" stopColor={t.sky[2]}/><stop offset="1" stopColor={t.sky[3]}/></linearGradient>
           <linearGradient id="bscSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={waterTint(t.seaT,beach&&beach.afai)}/><stop offset="1" stopColor={t.seaB}/></linearGradient>
@@ -2678,7 +2678,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               premier »). Scène vectorielle propre à la plage + personnalisée par
               l'heure ET l'ÉTAT (nickel / en collecte / pleine, animé). La vraie
               photo est reléguée « en cool » plus bas. */}
-          <BeachScene beach={beach}/>
+          <BeachScene beach={beach} reveal/>
           {/* Cinematic gradient overlay */}
           <div style={{position:"absolute",inset:0,
             background:"linear-gradient(180deg, rgba(0,0,0,.15) 0%, transparent 30%, transparent 50%, var(--sg-card,#fff) 100%)"}}/>
