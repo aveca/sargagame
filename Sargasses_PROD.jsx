@@ -2669,6 +2669,11 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
   // (verdict→demain→vas-y) sous le hero À LA PLACE du bloc score/verdict ; control =
   // liste actuelle intacte. ?beachstory=1/0 force en QA. CTA premium inchangé.
   const beachStory=(()=>{try{const s=window.location.search;if(/[?&]beachstory=1/.test(s))return true;if(/[?&]beachstory=0/.test(s))return false;return abVariant("pw_beach_story",["control","story"],[.5,.5])==="story"}catch(_){return false}})()
+  // A/B « Verdict du Jour » (pw_verdict_guess) : Devine-puis-Révèle DANS la fiche —
+  // l'user devine le statut de CETTE plage avant de voir la donnée (engagement +
+  // série). Additif (control = fiche inchangée), une fois par plage par jour.
+  // ?verdictguess=1/0 force en QA. Funnel premium en aval segmentable par bras.
+  const verdictGuess=(()=>{try{const q=window.location.search;if(/[?&]verdictguess=1/.test(q))return true;if(/[?&]verdictguess=0/.test(q))return false;return abVariant("pw_verdict_guess",["control","guess"],[.5,.5])==="guess"}catch(_){return false}})()
 
   // Scroll to top when beach changes
   useEffect(()=>{
@@ -2950,6 +2955,9 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               </div>
             )
           })()}
+          {/* Verdict du Jour — Devine-puis-Révèle (A/B pw_verdict_guess). Rendu
+              dans LES DEUX bras (additif) quand le vrai statut est connu. */}
+          {verdictGuess&&ST[beach.status]&&<VerdictDuJourCard beach={beach} lang={lang}/>}
           {/* La fiche EST le ScrollStory (bras story) : verdict → demain → vas-y.
               Moteur panel-scroll (lit sheetRef.scrollTop). CTA premium INCHANGÉ. */}
           {beachStory&&forecast&&forecast.length>=2&&(
@@ -8910,6 +8918,73 @@ function WorldInfoCard({fact,lang}){
 // LE DÉFI DU VEILLEUR — mini-jeu intercalé (blueprint « Place Your Bets ») : devine
 // le verdict AVANT le reveal, sur de la data réelle. Récompense + teach-back en boucle,
 // rejouable = passe-temps, nourrit la série 🔥 (raison de revenir / easter egg returning).
+// ── Verdict du Jour (Devine-puis-Révèle DANS la fiche) ────────────────────────
+// L'user devine le statut de CETTE plage avant de voir la donnée → engagement +
+// série. CALME : au repos = tableau ; seule anim = un reveal one-shot (scale .96→1
+// + opacity, ≤240ms, transform/opacity = iOS-safe) ; reduced-motion = swap instant.
+// Sévérité par couleur statique + emoji + texte (jamais de clignotement, WCAG 2.3.1).
+// Une fois/plage/jour (lock localStorage). Série en clés DÉDIÉES (sg_vdj_*) pour ne
+// PAS clobber le jeu scroll (sg_world_streak). Réutilise verdictMeta/ScoreBlob/why.
+function VerdictDuJourCard({beach,lang}){
+  const real=beach.status||"clean"
+  const vm=verdictMeta(real,lang)
+  const hasScore=typeof beach.score==="number"
+  const afai=typeof beach.afai==="number"?beach.afai:null
+  const dayKey="sg_vdj_"+beach.id+"_"+new Date().toISOString().slice(0,10)
+  const prior=g(dayKey,null)
+  const[guess,setGuess]=useState(prior?prior.guess:null)
+  const[best]=useState(()=>g("sg_vdj_best",0)||0)
+  const cachedRef=useRef(!!prior)
+  useEffect(()=>{if(cachedRef.current){try{track("sg_verdict_cached_view",{beach_id:beach.id})}catch(_){}}},[])// eslint-disable-line
+  const correct=guess===real
+  const opts=[
+    {s:"clean",e:"😎",l:_t(lang,"Propre","Clean","Limpia"),c:"#22C55E"},
+    {s:"moderate",e:"😐",l:_t(lang,"Prudence","Careful","Cuidado"),c:"#F59E0B"},
+    {s:"avoid",e:"🚫",l:_t(lang,"Évite","Avoid","Evita"),c:"#E8522A"},
+  ]
+  const why=(afai!=null?"AFAI "+afai.toFixed(2)+" — ":"")+(real==="clean"
+    ?_t(lang,"signal satellite faible, eau claire.","low satellite signal, clear water.","señal baja, agua clara.")
+    :real==="moderate"?_t(lang,"signal modéré, présence éparse.","moderate signal, scattered.","señal moderada.")
+    :_t(lang,"signal fort, échouage probable.","strong signal, likely beaching.","señal fuerte."))
+  const pick=status=>{
+    if(guess)return
+    cachedRef.current=false
+    setGuess(status)
+    s(dayKey,{guess:status})
+    const ok=status===real
+    try{track("sg_verdict_guess",{beach_id:beach.id,guess:status,correct:ok})}catch(_){}
+    let ns=0
+    try{ns=ok?(g("sg_vdj_streak",0)||0)+1:0;s("sg_vdj_streak",ns);if(ns>(g("sg_vdj_best",0)||0))s("sg_vdj_best",ns)}catch(_){}
+    try{track("sg_verdict_reveal",{beach_id:beach.id,correct:ok,status:real,streak:ns})}catch(_){}
+  }
+  return(
+    <div style={{margin:"0 0 14px",padding:"14px 16px",borderRadius:16,background:"rgba(255,255,255,.62)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",border:"1px solid rgba(0,0,0,.06)"}}>
+      <style>{`@keyframes vdjPop{from{transform:scale(.96);opacity:0}to{transform:scale(1);opacity:1}}.vdj-pop{animation:vdjPop .22s cubic-bezier(.34,1.56,.64,1) both}@media(prefers-reduced-motion:reduce){.vdj-pop{animation:none}}`}</style>
+      <div style={{fontSize:11.5,fontWeight:800,letterSpacing:".06em",color:"#C97E3A"}}>🎯 {_t(lang,"VERDICT DU JOUR","TODAY'S VERDICT","VEREDICTO DE HOY")}{best>0?" · 🔥 "+best:""}</div>
+      {!guess?(
+        <div>
+          <p style={{margin:"8px 0 10px",fontSize:14,fontWeight:700,color:"var(--sg-ink,#13241F)"}}>{_t(lang,"À ton avis, c'est comment ici aujourd'hui ?","Your call for this beach today?","¿Cómo crees que está hoy aquí?")}</p>
+          <div style={{display:"flex",gap:8}}>
+            {opts.map(o=>(<button key={o.s} onClick={()=>pick(o.s)} aria-label={o.l} style={{flex:1,padding:"12px 6px",borderRadius:13,cursor:"pointer",border:"1px solid "+o.c+"55",background:o.c+"12",color:"var(--sg-ink,#13241F)",fontWeight:800,fontSize:12,display:"flex",flexDirection:"column",alignItems:"center",gap:4,fontFamily:"inherit"}}>
+              <span aria-hidden="true" style={{fontSize:22}}>{o.e}</span>{o.l}</button>))}
+          </div>
+        </div>
+      ):(
+        <div className={cachedRef.current?"":"vdj-pop"}>
+          <div style={{fontSize:15,fontWeight:800,margin:"8px 0 10px",color:correct?"#16A34A":"#C97E3A"}}>{correct?_t(lang,"Bravo ! 🎉","Nailed it! 🎉","¡Bien! 🎉"):_t(lang,"Le vrai verdict :","The real verdict:","El veredicto:")}</div>
+          <div style={{display:"flex",alignItems:"center",gap:12}}>
+            {hasScore&&<ScoreBlob score={beach.score} color={beach.scoreColor||vm.color} size={54}/>}
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:15,fontWeight:800,color:vm.color}}>{vm.emoji} {vm.verb}</div>
+              <div style={{fontSize:12,lineHeight:1.4,color:"var(--sg-mid,#686868)"}}>{why}</div>
+            </div>
+          </div>
+          <div style={{marginTop:10,fontSize:11.5,fontWeight:700,color:"var(--sg-mid,#9a9a9a)"}}>↓ {_t(lang,"Le détail ci-dessous","Full data below","Detalle abajo")}</div>
+        </div>
+      )}
+    </div>
+  )
+}
 function WorldChallengeCard({beach,lang,active,phaseGrad,onGuess,streak}){
   const real=beach.status||"clean"
   const vm=verdictMeta(real,lang)
