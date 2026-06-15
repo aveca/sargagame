@@ -1,33 +1,24 @@
 {
-  "generatedAt": "2026-06-08T14:54:01.494Z",
+  "generatedAt": "2026-06-15T16:27:41.455Z",
   "sites": {
     "mq": {
       "sitemapSize": 15,
-      "orphanCount": 12,
+      "orphanCount": 11,
       "orphansByKind": {
-        "editorial": 7,
+        "editorial": 6,
         "beach": 0,
         "other": 5
       },
       "linkDonors": [
         {
           "url": "https://sargasses-martinique.com/",
-          "impressions": 4187,
-          "clicks": 965
+          "impressions": 5827,
+          "clicks": 1265
         }
       ],
       "orphans": [
         {
           "url": "https://sargasses-martinique.com/alertes/",
-          "impressions": 0,
-          "clicks": 0,
-          "kind": "editorial",
-          "recommendedLinkSources": [
-            "https://sargasses-martinique.com/"
-          ]
-        },
-        {
-          "url": "https://sargasses-martinique.com/carte-sargasses/",
           "impressions": 0,
           "clicks": 0,
           "kind": "editorial",
@@ -55,7 +46,7 @@
         },
         {
           "url": "https://sargasses-martinique.com/previsions/",
-          "impressions": 3,
+          "impressions": 2,
           "clicks": 0,
           "kind": "editorial",
           "recommendedLinkSources": [

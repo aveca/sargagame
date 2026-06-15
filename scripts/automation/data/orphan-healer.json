@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-06-08T14:54:05.259Z",
+  "generatedAt": "2026-06-15T16:27:46.026Z",
   "sites": {
     "mq": {
       "donorCount": 5,
-      "targetCount": 20,
+      "targetCount": 18,
       "injections": [
         {
           "donor": "/",
@@ -28,18 +28,18 @@
       ],
       "targets": [
         "/alertes/",
-        "/carte-sargasses/",
         "/danger-sargasses-h2s/",
         "/plages-sans-sargasses/",
         "/previsions/",
         "/saison-sargasses-guadeloupe/",
         "/saison-sargasses-martinique/",
-        "/a-propos/"
+        "/a-propos/",
+        "/conditions/"
       ]
     },
     "gp": {
       "donorCount": 5,
-      "targetCount": 20,
+      "targetCount": 19,
       "injections": [
         {
           "donor": "/",

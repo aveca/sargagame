@@ -109,6 +109,26 @@
           "combined": null
         }
       }
+    },
+    {
+      "date": "2026-06-15",
+      "sites": {
+        "mq": {
+          "combined": null
+        },
+        "gp": {
+          "combined": null
+        },
+        "florida": {
+          "combined": null
+        },
+        "puntacana": {
+          "combined": null
+        },
+        "rivieramaya": {
+          "combined": null
+        }
+      }
     }
   ]
 }

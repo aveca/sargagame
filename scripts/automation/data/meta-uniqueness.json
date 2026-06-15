@@ -1,17 +1,17 @@
 {
-  "generatedAt": "2026-06-08T14:54:04.783Z",
+  "generatedAt": "2026-06-15T16:27:45.485Z",
   "sites": {
     "mq": {
-      "pageCount": 103,
-      "uniqueTitles": 102,
-      "uniqueDescs": 99,
+      "pageCount": 116,
+      "uniqueTitles": 113,
+      "uniqueDescs": 110,
       "duplicateTitleGroups": 0,
       "duplicateDescGroups": 0,
       "duplicateTitlePages": 0,
       "duplicateDescPages": 0,
       "duplicateTitles": [],
       "duplicateDescs": [],
-      "issueCount": 90,
+      "issueCount": 107,
       "issues": [
         {
           "file": "404.html",
@@ -47,7 +47,7 @@
         {
           "file": "conditions/baignade-ideale/index.html",
           "kind": "desc-length-warn",
-          "length": 170
+          "length": 166
         },
         {
           "file": "conditions/index.html",
@@ -68,7 +68,7 @@
         {
           "file": "conditions/mer-calme/index.html",
           "kind": "desc-length-warn",
-          "length": 170
+          "length": 166
         },
         {
           "file": "conditions/uv-fort/index.html",
@@ -167,25 +167,24 @@
           "value": "FAQ Sargasses Martinique — Réponses aux questions fréquentes (2026)"
         },
         {
-          "file": "index.html",
-          "kind": "title-too-long",
-          "length": 73,
-          "value": "Plages Martinique aujourd'hui · Score 0-100 (sargasses, mer, soleil) 2026"
+          "file": "fiabilite/index.html",
+          "kind": "title-length-warn",
+          "length": 67,
+          "value": "Fiabilité des prévisions sargasses — précision mesurée | Martinique"
         },
         {
-          "file": "index.html",
-          "kind": "desc-length-warn",
-          "length": 167
+          "file": "google22dbf19e7b743f5a.html",
+          "kind": "missing-title"
         }
       ]
     },
     "gp": {
-      "pageCount": 133,
-      "uniqueTitles": 129,
-      "uniqueDescs": 128,
-      "duplicateTitleGroups": 3,
+      "pageCount": 147,
+      "uniqueTitles": 139,
+      "uniqueDescs": 140,
+      "duplicateTitleGroups": 5,
       "duplicateDescGroups": 1,
-      "duplicateTitlePages": 6,
+      "duplicateTitlePages": 10,
       "duplicateDescPages": 2,
       "duplicateTitles": [
         {
@@ -205,11 +204,27 @@
           ]
         },
         {
+          "title": "Météo des sargasses Guadeloupe — état du jour et prévision 7 jours",
+          "count": 2,
+          "sample": [
+            "meteo-sargasses-guadeloupe/index.html",
+            "meteo-sargasses-martinique/index.html"
+          ]
+        },
+        {
           "title": "Saison des sargasses en Guadeloupe 2026 — Quand et où ?",
           "count": 2,
           "sample": [
             "saison-sargasses-guadeloupe/index.html",
             "saison-sargasses-martinique/index.html"
+          ]
+        },
+        {
+          "title": "Sargasses Guadeloupe cette semaine — Plages touchées et propres aujourd'hui",
+          "count": 2,
+          "sample": [
+            "sargasses-guadeloupe-cette-semaine/index.html",
+            "sargasses-martinique-cette-semaine/index.html"
           ]
         }
       ],
@@ -223,7 +238,7 @@
           ]
         }
       ],
-      "issueCount": 125,
+      "issueCount": 145,
       "issues": [
         {
           "file": "404.html",
@@ -359,7 +374,7 @@
           "file": "es/alertas-sargazo/index.html",
           "kind": "title-too-long",
           "length": 72,
-          "value": "Alertas de sargazo Martinica y Guadalupe — Notificaciones en tiempo real"
+          "value": "Alertas de sargazo Guadalupe y Martinica — Notificaciones en tiempo real"
         },
         {
           "file": "es/alertas-sargazo/index.html",
@@ -370,7 +385,7 @@
           "file": "es/mapa-sargazo/index.html",
           "kind": "title-length-warn",
           "length": 63,
-          "value": "Mapa de sargazo Martinica y Guadalupe — Satélite en tiempo real"
+          "value": "Mapa de sargazo Guadalupe y Martinica — Satélite en tiempo real"
         },
         {
           "file": "faq/index.html",
@@ -379,15 +394,14 @@
           "value": "FAQ Sargasses Guadeloupe — Réponses aux questions fréquentes (2026)"
         },
         {
-          "file": "index.html",
-          "kind": "title-too-long",
-          "length": 73,
-          "value": "Plages Guadeloupe aujourd'hui · Score 0-100 (sargasses, mer, soleil) 2026"
+          "file": "fiabilite/index.html",
+          "kind": "title-length-warn",
+          "length": 67,
+          "value": "Fiabilité des prévisions sargasses — précision mesurée | Guadeloupe"
         },
         {
-          "file": "index.html",
-          "kind": "desc-length-warn",
-          "length": 171
+          "file": "google22dbf19e7b743f5a.html",
+          "kind": "missing-title"
         }
       ]
     }

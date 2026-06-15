@@ -1,67 +1,167 @@
 {
-  "generatedAt": "2026-06-08T14:54:01.586Z",
+  "generatedAt": "2026-06-15T16:27:41.562Z",
   "sites": {
     "mq": {
-      "queryCount": 181,
-      "cannibalizedCount": 3,
+      "queryCount": 190,
+      "cannibalizedCount": 8,
       "cannibalized": [
         {
-          "query": "sargasse martinique 2026",
-          "totalImpressions": 235,
-          "totalClicks": 25,
+          "query": "sargasse martinique en temps réel",
+          "totalImpressions": 790,
+          "totalClicks": 348,
           "competitorCount": 2,
           "competitors": [
             {
               "url": "https://sargasses-martinique.com/",
-              "impressions": 195,
-              "clicks": 23,
-              "share": 0.8297872340425532
+              "impressions": 678,
+              "clicks": 344,
+              "share": 0.8582278481012658
+            },
+            {
+              "url": "https://sargasses-martinique.com/carte-sargasses/",
+              "impressions": 80,
+              "clicks": 3,
+              "share": 0.10126582278481013
+            }
+          ]
+        },
+        {
+          "query": "sargasse martinique 2026",
+          "totalImpressions": 354,
+          "totalClicks": 26,
+          "competitorCount": 2,
+          "competitors": [
+            {
+              "url": "https://sargasses-martinique.com/",
+              "impressions": 305,
+              "clicks": 24,
+              "share": 0.8615819209039548
             },
             {
               "url": "https://sargasses-martinique.com/sargasses-record-2026/",
-              "impressions": 40,
+              "impressions": 49,
               "clicks": 2,
-              "share": 0.1702127659574468
+              "share": 0.1384180790960452
             }
           ]
         },
         {
           "query": "carte sargasse martinique 2026",
-          "totalImpressions": 167,
-          "totalClicks": 5,
+          "totalImpressions": 267,
+          "totalClicks": 8,
           "competitorCount": 2,
           "competitors": [
             {
               "url": "https://sargasses-martinique.com/",
-              "impressions": 141,
-              "clicks": 4,
-              "share": 0.844311377245509
+              "impressions": 205,
+              "clicks": 3,
+              "share": 0.7677902621722846
             },
             {
               "url": "https://sargasses-martinique.com/sargasses-record-2026/",
-              "impressions": 26,
+              "impressions": 35,
               "clicks": 1,
-              "share": 0.15568862275449102
+              "share": 0.13108614232209737
+            }
+          ]
+        },
+        {
+          "query": "sargasse martinique en direct",
+          "totalImpressions": 105,
+          "totalClicks": 49,
+          "competitorCount": 2,
+          "competitors": [
+            {
+              "url": "https://sargasses-martinique.com/",
+              "impressions": 86,
+              "clicks": 48,
+              "share": 0.819047619047619
+            },
+            {
+              "url": "https://sargasses-martinique.com/carte-sargasses/",
+              "impressions": 17,
+              "clicks": 1,
+              "share": 0.1619047619047619
             }
           ]
         },
         {
           "query": "martinique sargasses 2026",
-          "totalImpressions": 55,
-          "totalClicks": 4,
+          "totalImpressions": 88,
+          "totalClicks": 18,
           "competitorCount": 2,
           "competitors": [
             {
               "url": "https://sargasses-martinique.com/",
-              "impressions": 38,
-              "clicks": 3,
-              "share": 0.6909090909090909
+              "impressions": 68,
+              "clicks": 14,
+              "share": 0.7727272727272727
             },
             {
               "url": "https://sargasses-martinique.com/sargasses-record-2026/",
-              "impressions": 17,
+              "impressions": 20,
+              "clicks": 4,
+              "share": 0.22727272727272727
+            }
+          ]
+        },
+        {
+          "query": "carte des sargasses 2026",
+          "totalImpressions": 65,
+          "totalClicks": 0,
+          "competitorCount": 2,
+          "competitors": [
+            {
+              "url": "https://sargasses-martinique.com/sargasses-record-2026/",
+              "impressions": 54,
+              "clicks": 0,
+              "share": 0.8307692307692308
+            },
+            {
+              "url": "https://sargasses-martinique.com/carte-sargasses/",
+              "impressions": 11,
+              "clicks": 0,
+              "share": 0.16923076923076924
+            }
+          ]
+        },
+        {
+          "query": "sargasse en temps réel",
+          "totalImpressions": 63,
+          "totalClicks": 1,
+          "competitorCount": 2,
+          "competitors": [
+            {
+              "url": "https://sargasses-martinique.com/",
+              "impressions": 53,
               "clicks": 1,
-              "share": 0.3090909090909091
+              "share": 0.8412698412698413
+            },
+            {
+              "url": "https://sargasses-martinique.com/en/sargassum-map/",
+              "impressions": 9,
+              "clicks": 0,
+              "share": 0.14285714285714285
+            }
+          ]
+        },
+        {
+          "query": "carte satellite sargasse martinique",
+          "totalImpressions": 53,
+          "totalClicks": 5,
+          "competitorCount": 2,
+          "competitors": [
+            {
+              "url": "https://sargasses-martinique.com/",
+              "impressions": 41,
+              "clicks": 4,
+              "share": 0.7735849056603774
+            },
+            {
+              "url": "https://sargasses-martinique.com/carte-sargasses/",
+              "impressions": 9,
+              "clicks": 1,
+              "share": 0.16981132075471697
             }
           ]
         }
@@ -69,6 +169,21 @@
     },
     "gp": {
       "queryCount": 0,
+      "cannibalizedCount": 0,
+      "cannibalized": []
+    },
+    "florida": {
+      "queryCount": 24,
+      "cannibalizedCount": 0,
+      "cannibalized": []
+    },
+    "puntacana": {
+      "queryCount": 22,
+      "cannibalizedCount": 0,
+      "cannibalized": []
+    },
+    "rivieramaya": {
+      "queryCount": 47,
       "cannibalizedCount": 0,
       "cannibalized": []
     }

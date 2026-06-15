@@ -1634,6 +1634,213 @@
         },
         "gp": {}
       }
+    },
+    {
+      "date": "2026-06-15",
+      "sites": {
+        "mq": {
+          "https://sargasses-martinique.com/": {
+            "avgPos": 4.7,
+            "clicks": 1265,
+            "impressions": 5827,
+            "queries": {
+              "sargasse martinique en temps réel": {
+                "pos": 1.7,
+                "impressions": 678,
+                "clicks": 344
+              },
+              "sargasse martinique aujourd'hui": {
+                "pos": 2.7,
+                "impressions": 781,
+                "clicks": 252
+              },
+              "sargasse martinique": {
+                "pos": 3.5,
+                "impressions": 946,
+                "clicks": 149
+              },
+              "meteo sargasse martinique": {
+                "pos": 2.7,
+                "impressions": 332,
+                "clicks": 61
+              },
+              "sargasses martinique": {
+                "pos": 4.5,
+                "impressions": 672,
+                "clicks": 59
+              },
+              "carte sargasse martinique": {
+                "pos": 2.9,
+                "impressions": 275,
+                "clicks": 60
+              },
+              "sargasse martinique en direct": {
+                "pos": 1.8,
+                "impressions": 86,
+                "clicks": 48
+              },
+              "meteo sargasses martinique": {
+                "pos": 2.2,
+                "impressions": 92,
+                "clicks": 27
+              },
+              "sargasse martinique 2026": {
+                "pos": 7.1,
+                "impressions": 305,
+                "clicks": 24
+              },
+              "martinique sargasses 2026": {
+                "pos": 6.5,
+                "impressions": 68,
+                "clicks": 14
+              },
+              "carte des sargasses martinique": {
+                "pos": 3.1,
+                "impressions": 90,
+                "clicks": 20
+              },
+              "carte sargasses martinique": {
+                "pos": 2.6,
+                "impressions": 104,
+                "clicks": 27
+              },
+              "meteo des sargasses martinique": {
+                "pos": 2.3,
+                "impressions": 70,
+                "clicks": 13
+              },
+              "bulletin sargasses martinique": {
+                "pos": 3.2,
+                "impressions": 77,
+                "clicks": 12
+              },
+              "martinique sargasse": {
+                "pos": 3.9,
+                "impressions": 58,
+                "clicks": 9
+              },
+              "carte sargasse martinique 2026": {
+                "pos": 6.3,
+                "impressions": 205,
+                "clicks": 3
+              },
+              "sargasse en temps réel": {
+                "pos": 8.8,
+                "impressions": 53,
+                "clicks": 1
+              }
+            }
+          },
+          "https://sargasses-martinique.com/sargasses-record-2026/": {
+            "avgPos": 7,
+            "clicks": 40,
+            "impressions": 657,
+            "queries": {
+              "sargasse en temps réel 2026": {
+                "pos": 6.9,
+                "impressions": 475,
+                "clicks": 31
+              },
+              "carte des sargasses 2026": {
+                "pos": 9.8,
+                "impressions": 54,
+                "clicks": 0
+              }
+            }
+          },
+          "https://sargasses-martinique.com/carte-sargasses/": {
+            "avgPos": 11.2,
+            "clicks": 16,
+            "impressions": 196,
+            "queries": {
+              "sargasse martinique en temps réel": {
+                "pos": 6.4,
+                "impressions": 80,
+                "clicks": 3
+              }
+            }
+          },
+          "https://sargasses-martinique.com/en/": {
+            "avgPos": 7.6,
+            "clicks": 14,
+            "impressions": 89,
+            "queries": {}
+          },
+          "https://sargasses-martinique.com/plages/plage-du-diamant/": {
+            "avgPos": 7.8,
+            "clicks": 5,
+            "impressions": 111,
+            "queries": {
+              "plage du diamant sargasse": {
+                "pos": 8.7,
+                "impressions": 50,
+                "clicks": 2
+              }
+            }
+          },
+          "https://sargasses-martinique.com/en/best-beaches-martinique/": {
+            "avgPos": 38.1,
+            "clicks": 4,
+            "impressions": 92,
+            "queries": {}
+          },
+          "https://sargasses-martinique.com/detection-satellite-sargasses/": {
+            "avgPos": 11.2,
+            "clicks": 4,
+            "impressions": 76,
+            "queries": {}
+          },
+          "https://sargasses-martinique.com/meilleures-plages-martinique-sargasses/": {
+            "avgPos": 13.4,
+            "clicks": 3,
+            "impressions": 56,
+            "queries": {}
+          },
+          "https://sargasses-martinique.com/en/sargassum-map/": {
+            "avgPos": 18.2,
+            "clicks": 3,
+            "impressions": 81,
+            "queries": {}
+          },
+          "https://sargasses-martinique.com/plages/anse-des-galets/": {
+            "avgPos": 9.3,
+            "clicks": 0,
+            "impressions": 56,
+            "queries": {}
+          }
+        },
+        "gp": {},
+        "florida": {
+          "https://sargassummiami.com/": {
+            "avgPos": 21.7,
+            "clicks": 3,
+            "impressions": 47,
+            "queries": {}
+          }
+        },
+        "puntacana": {
+          "https://sargassumpuntacana.com/": {
+            "avgPos": 13.4,
+            "clicks": 3,
+            "impressions": 133,
+            "queries": {}
+          }
+        },
+        "rivieramaya": {
+          "https://sargassumcancun.com/": {
+            "avgPos": 51.3,
+            "clicks": 0,
+            "impressions": 35,
+            "queries": {}
+          },
+          "https://sargassumcancun.com/sargazo-salud-riesgos/": {
+            "avgPos": 8.1,
+            "clicks": 0,
+            "impressions": 35,
+            "queries": {}
+          }
+        }
+      }
     }
   ]
 }

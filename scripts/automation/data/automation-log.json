@@ -1,327 +1,6 @@
 {
   "runs": [
     {
-      "timestamp": "2026-05-18T14:36:19.366Z",
-      "dryRun": false,
-      "script": "seo-broken-links",
-      "action": "check",
-      "sites": 2,
-      "totalBroken": 0
-    },
-    {
-      "timestamp": "2026-05-18T14:36:19.437Z",
-      "dryRun": false,
-      "script": "seo-schema-validator",
-      "action": "validate",
-      "sites": 2,
-      "totalErrors": 0
-    },
-    {
-      "timestamp": "2026-05-18T14:36:19.515Z",
-      "dryRun": false,
-      "script": "seo-meta-uniqueness",
-      "action": "check",
-      "sites": 2,
-      "totalDupTitles": 6,
-      "totalDupDescs": 2
-    },
-    {
-      "timestamp": "2026-05-18T14:36:19.601Z",
-      "dryRun": false,
-      "script": "seo-canonical-hreflang",
-      "action": "validate",
-      "sites": 2,
-      "totalIssues": 2
-    },
-    {
-      "timestamp": "2026-05-18T14:36:19.739Z",
-      "dryRun": false,
-      "script": "seo-content-depth",
-      "action": "score",
-      "sites": 2,
-      "totalThin": 60
-    },
-    {
-      "timestamp": "2026-05-18T14:36:19.825Z",
-      "dryRun": false,
-      "script": "seo-sitemap-check",
-      "action": "check",
-      "sites": 2,
-      "total404": 0,
-      "totalMissing": 2
-    },
-    {
-      "timestamp": "2026-05-18T14:36:19.900Z",
-      "dryRun": false,
-      "script": "seo-image-audit",
-      "action": "audit",
-      "sites": 2,
-      "totalIssues": 0
-    },
-    {
-      "timestamp": "2026-05-18T14:36:19.946Z",
-      "dryRun": false,
-      "script": "seo-orphan-healer",
-      "action": "inject",
-      "sites": 2,
-      "totalInjections": 10
-    },
-    {
-      "timestamp": "2026-05-18T14:37:20.819Z",
-      "dryRun": false,
-      "script": "seo-submit-urls",
-      "action": "urls-submitted",
-      "urlsSubmitted": 0,
-      "errors": 200,
-      "urls": [
-        "https://sargasses-martinique.com/alertes/",
-        "https://sargasses-martinique.com/saison-sargasses-martinique/",
-        "https://sargasses-martinique.com/saison-sargasses-guadeloupe/",
-        "https://sargasses-martinique.com/plages-sans-sargasses/",
-        "https://sargasses-martinique.com/danger-sargasses-h2s/",
-        "https://sargasses-martinique.com/nettoyer-sargasses/",
-        "https://sargasses-martinique.com/faq/",
-        "https://sargasses-martinique.com/lexique/",
-        "https://sargasses-martinique.com/methode-carte/",
-        "https://sargasses-martinique.com/mentions-legales.html",
-        "https://sargasses-martinique.com/confidentialite.html",
-        "https://sargasses-martinique.com/plages/plage-des-salines/",
-        "https://sargasses-martinique.com/plages/anse-caritan/",
-        "https://sargasses-martinique.com/plages/anse-meunier/",
-        "https://sargasses-martinique.com/plages/plage-du-bourg-sainte-anne/",
-        "https://sargasses-martinique.com/plages/anse-macabou/",
-        "https://sargasses-martinique.com/plages/anse-michel/",
-        "https://sargasses-martinique.com/plages/plage-du-marin/",
-        "https://sargasses-martinique.com/plages/anse-figuier/",
-        "https://sargasses-martinique.com/plages/anse-a-l-ane/",
-        "https://sargasses-martinique.com/plages/anse-mitan/",
-        "https://sargasses-martinique.com/plages/grande-anse-d-arlet/",
-        "https://sargasses-martinique.com/plages/petite-anse-d-arlet/",
-        "https://sargasses-martinique.com/plages/anse-cafard/",
-        "https://sargasses-martinique.com/plages/anse-gros-raisins/",
-        "https://sargasses-martinique.com/plages/plage-de-sainte-luce/",
-        "https://sargasses-martinique.com/plages/anse-corps-de-garde/",
-        "https://sargasses-martinique.com/plages/pointe-borgnesse/",
-        "https://sargasses-martinique.com/plages/plage-de-la-francaise/",
-        "https://sargasses-martinique.com/plages/anse-madame/",
-        "https://sargasses-martinique.com/plages/plage-de-sch-lcher/",
-        "https://sargasses-martinique.com/plages/anse-collat/",
-        "https://sargasses-martinique.com/plages/grande-anse-du-carbet/",
-        "https://sargasses-martinique.com/plages/anse-turin/",
-        "https://sargasses-martinique.com/plages/plage-de-saint-pierre/",
-        "https://sargasses-martinique.com/plages/anse-belleville/",
-        "https://sargasses-martinique.com/plages/anse-couleuvre/",
-        "https://sargasses-martinique.com/plages/anse-ceron/",
-        "https://sargasses-martinique.com/plages/bourg-de-tartane/",
-        "https://sargasses-martinique.com/plages/anse-bonneville/",
-        "https://sargasses-martinique.com/plages/anse-l-etang/",
-        "https://sargasses-martinique.com/plages/les-raisiniers/",
-        "https://sargasses-martinique.com/plages/l-autre-bord-trinite/",
-        "https://sargasses-martinique.com/plages/anse-cosmy/",
-        "https://sargasses-martinique.com/plages/baie-coco/",
-        "https://sargasses-martinique.com/plages/pointe-faula/",
-        "https://sargasses-martinique.com/plages/macabou-nord/",
-        "https://sargasses-martinique.com/plages/anse-grosse-roche/",
-        "https://sargasses-martinique.com/plages/plage-de-sinai/",
-        "https://sargasses-martinique.com/plages/plage-de-grand-riviere/"
-      ]
-    },
-    {
-      "timestamp": "2026-05-20T10:49:07.246Z",
-      "dryRun": false,
-      "script": "auto-web-content",
-      "action": "generation-failed",
-      "island": "mq"
-    },
-    {
-      "timestamp": "2026-05-22T10:49:49.956Z",
-      "dryRun": false,
-      "script": "auto-web-content",
-      "action": "generation-failed",
-      "island": "mq"
-    },
-    {
-      "timestamp": "2026-05-22T13:40:44.445Z",
-      "dryRun": false,
-      "script": "seo-audit",
-      "action": "data-collection",
-      "results": {
-        "mq": {
-          "indexed": 16,
-          "total": 74,
-          "notIndexed": 0,
-          "lowCtr": 2,
-          "highBounce": 0,
-          "cwvIssues": 0
-        },
-        "gp": {
-          "indexed": 0,
-          "total": 100,
-          "notIndexed": 0,
-          "lowCtr": 0,
-          "highBounce": 1,
-          "cwvIssues": 0
-        }
-      }
-    },
-    {
-      "timestamp": "2026-05-22T13:40:44.502Z",
-      "dryRun": false,
-      "script": "ux-audit",
-      "action": "report-generated",
-      "issues": {
-        "totalIssues": 36,
-        "critical": 19,
-        "warnings": 17
-      }
-    },
-    {
-      "timestamp": "2026-05-25T11:52:30.467Z",
-      "dryRun": false,
-      "script": "auto-web-content",
-      "action": "generation-failed",
-      "island": "mq"
-    },
-    {
-      "timestamp": "2026-05-25T14:05:47.876Z",
-      "dryRun": false,
-      "script": "seo-audit",
-      "action": "data-collection",
-      "results": {
-        "mq": {
-          "indexed": 16,
-          "total": 74,
-          "notIndexed": 0,
-          "lowCtr": 2,
-          "highBounce": 0,
-          "cwvIssues": 0
-        },
-        "gp": {
-          "indexed": 0,
-          "total": 100,
-          "notIndexed": 0,
-          "lowCtr": 0,
-          "highBounce": 1,
-          "cwvIssues": 0
-        }
-      }
-    },
-    {
-      "timestamp": "2026-05-25T14:05:47.935Z",
-      "dryRun": false,
-      "script": "ux-audit",
-      "action": "report-generated",
-      "issues": {
-        "totalIssues": 33,
-        "critical": 16,
-        "warnings": 17
-      }
-    },
-    {
-      "timestamp": "2026-05-25T14:05:47.995Z",
-      "dryRun": false,
-      "script": "seo-position-tracker",
-      "action": "snapshot",
-      "snapshots": 8,
-      "drops": 0,
-      "gains": 0,
-      "queryDrops": 0,
-      "queryGains": 0,
-      "appeared": 0,
-      "vanished": 0
-    },
-    {
-      "timestamp": "2026-05-25T14:05:48.049Z",
-      "dryRun": false,
-      "script": "seo-orphan-detector",
-      "action": "scan",
-      "sites": 2,
-      "totalOrphans": 26
-    },
-    {
-      "timestamp": "2026-05-25T14:05:48.096Z",
-      "dryRun": false,
-      "script": "seo-ctr-diagnostic",
-      "action": "diagnose",
-      "sites": 2,
-      "totalLost": 0
-    },
-    {
-      "timestamp": "2026-05-25T14:05:48.146Z",
-      "dryRun": false,
-      "script": "seo-cannibalization",
-      "action": "detect",
-      "sites": 2,
-      "totalCanni": 2
-    },
-    {
-      "timestamp": "2026-05-25T14:05:48.196Z",
-      "dryRun": false,
-      "script": "seo-cwv-tracker",
-      "action": "snapshot",
-      "historyCount": 8,
-      "deltaCount": 0
-    },
-    {
-      "timestamp": "2026-05-25T14:05:48.246Z",
-      "dryRun": false,
-      "script": "auto-optimize",
-      "action": "optimizations-applied",
-      "results": {
-        "lowCtr": 1,
-        "highBounce": 1,
-        "deadClicks": 26,
-        "conversion": 0,
-        "gpSeoGap": 0
-      },
-      "totalActions": 28,
-      "metaOverridesCount": 2,
-      "decisionsCount": 37
-    },
-    {
-      "timestamp": "2026-05-25T14:05:48.312Z",
-      "dryRun": false,
-      "script": "auto-copywriting",
-      "action": "copywriting-optimized",
-      "results": {
-        "beachMetaOverrides": 136,
-        "h1Suggestions": 6,
-        "topQueriesAnalyzed": 199,
-        "highValueKeywords": {
-          "en temps réel": {
-            "totalClicks": 569,
-            "totalImpressions": 1342,
-            "matchingQueries": 3
-          },
-          "aujourd'hui": {
-            "totalClicks": 396,
-            "totalImpressions": 790,
-            "matchingQueries": 4
-          },
-          "carte": {
-            "totalClicks": 118,
-            "totalImpressions": 1030,
-            "matchingQueries": 42
-          },
-          "prévisions": {
-            "totalClicks": 4,
-            "totalImpressions": 40,
-            "matchingQueries": 2
-          },
-          "alertes": {
-            "totalClicks": 3,
-            "totalImpressions": 23,
-            "matchingQueries": 1
-          },
-          "plage propre": {
-            "totalClicks": 0,
-            "totalImpressions": 0,
-            "matchingQueries": 0
-          }
-        }
-      }
-    },
-    {
       "timestamp": "2026-05-25T14:05:48.360Z",
       "dryRun": false,
       "script": "seo-fix-404",
@@ -1364,6 +1043,348 @@
       "script": "auto-web-content",
       "action": "generation-failed",
       "island": "mq"
+    },
+    {
+      "timestamp": "2026-06-15T16:27:41.287Z",
+      "dryRun": false,
+      "script": "seo-audit",
+      "action": "data-collection",
+      "results": {
+        "mq": {
+          "indexed": 19,
+          "total": 74,
+          "notIndexed": 0,
+          "lowCtr": 1,
+          "highBounce": 0,
+          "cwvIssues": 0
+        },
+        "gp": {
+          "indexed": 0,
+          "total": 100,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 0,
+          "cwvIssues": 0
+        },
+        "florida": {
+          "indexed": 1,
+          "total": 16,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 1,
+          "cwvIssues": 0
+        },
+        "puntacana": {
+          "indexed": 1,
+          "total": 16,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 0,
+          "cwvIssues": 0
+        },
+        "rivieramaya": {
+          "indexed": 2,
+          "total": 16,
+          "notIndexed": 0,
+          "lowCtr": 1,
+          "highBounce": 1,
+          "cwvIssues": 0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-06-15T16:27:41.347Z",
+      "dryRun": false,
+      "script": "ux-audit",
+      "action": "report-generated",
+      "issues": {
+        "totalIssues": 50,
+        "critical": 21,
+        "warnings": 29
+      }
+    },
+    {
+      "timestamp": "2026-06-15T16:27:41.405Z",
+      "dryRun": false,
+      "script": "seo-position-tracker",
+      "action": "snapshot",
+      "snapshots": 11,
+      "drops": 0,
+      "gains": 0,
+      "queryDrops": 0,
+      "queryGains": 0,
+      "appeared": 4,
+      "vanished": 0
+    },
+    {
+      "timestamp": "2026-06-15T16:27:41.466Z",
+      "dryRun": false,
+      "script": "seo-orphan-detector",
+      "action": "scan",
+      "sites": 2,
+      "totalOrphans": 26
+    },
+    {
+      "timestamp": "2026-06-15T16:27:41.514Z",
+      "dryRun": false,
+      "script": "seo-ctr-diagnostic",
+      "action": "diagnose",
+      "sites": 5,
+      "totalLost": 0
+    },
+    {
+      "timestamp": "2026-06-15T16:27:41.566Z",
+      "dryRun": false,
+      "script": "seo-cannibalization",
+      "action": "detect",
+      "sites": 5,
+      "totalCanni": 8
+    },
+    {
+      "timestamp": "2026-06-15T16:27:41.615Z",
+      "dryRun": false,
+      "script": "seo-cwv-tracker",
+      "action": "snapshot",
+      "historyCount": 11,
+      "deltaCount": 0
+    },
+    {
+      "timestamp": "2026-06-15T16:27:41.673Z",
+      "dryRun": false,
+      "script": "auto-optimize",
+      "action": "optimizations-applied",
+      "results": {
+        "lowCtr": 0,
+        "highBounce": 2,
+        "deadClicks": 39,
+        "conversion": 0,
+        "gpSeoGap": 0
+      },
+      "totalActions": 41,
+      "metaOverridesCount": 1,
+      "decisionsCount": 58
+    },
+    {
+      "timestamp": "2026-06-15T16:27:41.745Z",
+      "dryRun": false,
+      "script": "auto-copywriting",
+      "action": "copywriting-optimized",
+      "results": {
+        "beachMetaOverrides": 136,
+        "h1Suggestions": 6,
+        "topQueriesAnalyzed": 282,
+        "highValueKeywords": {
+          "en temps réel": {
+            "totalClicks": 542,
+            "totalImpressions": 1335,
+            "matchingQueries": 5
+          },
+          "aujourd'hui": {
+            "totalClicks": 283,
+            "totalImpressions": 804,
+            "matchingQueries": 2
+          },
+          "carte": {
+            "totalClicks": 151,
+            "totalImpressions": 1165,
+            "matchingQueries": 39
+          },
+          "prévisions": {
+            "totalClicks": 3,
+            "totalImpressions": 28,
+            "matchingQueries": 2
+          },
+          "alertes": {
+            "totalClicks": 8,
+            "totalImpressions": 35,
+            "matchingQueries": 1
+          },
+          "plage propre": {
+            "totalClicks": 0,
+            "totalImpressions": 0,
+            "matchingQueries": 0
+          }
+        }
+      }
+    },
+    {
+      "timestamp": "2026-06-15T16:27:41.793Z",
+      "dryRun": false,
+      "script": "seo-fix-404",
+      "action": "no-changes",
+      "redirectsAdded": 0
+    },
+    {
+      "timestamp": "2026-06-15T16:27:41.841Z",
+      "dryRun": false,
+      "script": "seo-optimize-meta",
+      "action": "meta-optimized",
+      "changesCount": 1,
+      "overrides": [
+        "anse-des-galets"
+      ]
+    },
+    {
+      "timestamp": "2026-06-15T16:27:41.914Z",
+      "dryRun": false,
+      "script": "seo-enrich-content",
+      "action": "enriched",
+      "beachCount": 136
+    },
+    {
+      "timestamp": "2026-06-15T16:27:41.964Z",
+      "dryRun": false,
+      "script": "generate-seo-pages",
+      "action": "pages-created",
+      "pagesCount": 3,
+      "pages": [
+        {
+          "type": "commune",
+          "path": "communes/trois-ilets"
+        },
+        {
+          "type": "commune",
+          "path": "communes/sainte-luce"
+        },
+        {
+          "type": "commune",
+          "path": "communes/trinite"
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-06-15T16:27:45.223Z",
+      "dryRun": false,
+      "script": "seo-link-graph",
+      "action": "analyze",
+      "sites": 2,
+      "structuralOrphans": 28
+    },
+    {
+      "timestamp": "2026-06-15T16:27:45.354Z",
+      "dryRun": false,
+      "script": "seo-broken-links",
+      "action": "check",
+      "sites": 2,
+      "totalBroken": 0
+    },
+    {
+      "timestamp": "2026-06-15T16:27:45.441Z",
+      "dryRun": false,
+      "script": "seo-schema-validator",
+      "action": "validate",
+      "sites": 2,
+      "totalErrors": 0
+    },
+    {
+      "timestamp": "2026-06-15T16:27:45.541Z",
+      "dryRun": false,
+      "script": "seo-meta-uniqueness",
+      "action": "check",
+      "sites": 2,
+      "totalDupTitles": 10,
+      "totalDupDescs": 2
+    },
+    {
+      "timestamp": "2026-06-15T16:27:45.640Z",
+      "dryRun": false,
+      "script": "seo-canonical-hreflang",
+      "action": "validate",
+      "sites": 2,
+      "totalIssues": 8
+    },
+    {
+      "timestamp": "2026-06-15T16:27:45.793Z",
+      "dryRun": false,
+      "script": "seo-content-depth",
+      "action": "score",
+      "sites": 2,
+      "totalThin": 75
+    },
+    {
+      "timestamp": "2026-06-15T16:27:45.890Z",
+      "dryRun": false,
+      "script": "seo-sitemap-check",
+      "action": "check",
+      "sites": 2,
+      "total404": 0,
+      "totalMissing": 7
+    },
+    {
+      "timestamp": "2026-06-15T16:27:45.981Z",
+      "dryRun": false,
+      "script": "seo-image-audit",
+      "action": "audit",
+      "sites": 2,
+      "totalIssues": 0
+    },
+    {
+      "timestamp": "2026-06-15T16:27:46.032Z",
+      "dryRun": false,
+      "script": "seo-orphan-healer",
+      "action": "inject",
+      "sites": 2,
+      "totalInjections": 10
+    },
+    {
+      "timestamp": "2026-06-15T16:28:31.669Z",
+      "dryRun": false,
+      "script": "seo-submit-urls",
+      "action": "urls-submitted",
+      "urlsSubmitted": 0,
+      "errors": 200,
+      "urls": [
+        "https://sargasses-martinique.com/alertes/",
+        "https://sargasses-martinique.com/saison-sargasses-martinique/",
+        "https://sargasses-martinique.com/saison-sargasses-guadeloupe/",
+        "https://sargasses-martinique.com/plages-sans-sargasses/",
+        "https://sargasses-martinique.com/danger-sargasses-h2s/",
+        "https://sargasses-martinique.com/nettoyer-sargasses/",
+        "https://sargasses-martinique.com/faq/",
+        "https://sargasses-martinique.com/lexique/",
+        "https://sargasses-martinique.com/methode-carte/",
+        "https://sargasses-martinique.com/mentions-legales.html",
+        "https://sargasses-martinique.com/confidentialite.html",
+        "https://sargasses-martinique.com/plages/plage-des-salines/",
+        "https://sargasses-martinique.com/plages/anse-caritan/",
+        "https://sargasses-martinique.com/plages/anse-meunier/",
+        "https://sargasses-martinique.com/plages/plage-du-bourg-sainte-anne/",
+        "https://sargasses-martinique.com/plages/anse-macabou/",
+        "https://sargasses-martinique.com/plages/anse-michel/",
+        "https://sargasses-martinique.com/plages/plage-du-marin/",
+        "https://sargasses-martinique.com/plages/anse-figuier/",
+        "https://sargasses-martinique.com/plages/anse-a-l-ane/",
+        "https://sargasses-martinique.com/plages/anse-mitan/",
+        "https://sargasses-martinique.com/plages/grande-anse-d-arlet/",
+        "https://sargasses-martinique.com/plages/petite-anse-d-arlet/",
+        "https://sargasses-martinique.com/plages/anse-cafard/",
+        "https://sargasses-martinique.com/plages/anse-gros-raisins/",
+        "https://sargasses-martinique.com/plages/plage-de-sainte-luce/",
+        "https://sargasses-martinique.com/plages/anse-corps-de-garde/",
+        "https://sargasses-martinique.com/plages/plage-de-la-francaise/",
+        "https://sargasses-martinique.com/plages/anse-madame/",
+        "https://sargasses-martinique.com/plages/plage-de-sch-lcher/",
+        "https://sargasses-martinique.com/plages/anse-collat/",
+        "https://sargasses-martinique.com/plages/grande-anse-du-carbet/",
+        "https://sargasses-martinique.com/plages/anse-turin/",
+        "https://sargasses-martinique.com/plages/plage-de-saint-pierre/",
+        "https://sargasses-martinique.com/plages/anse-belleville/",
+        "https://sargasses-martinique.com/plages/anse-couleuvre/",
+        "https://sargasses-martinique.com/plages/anse-ceron/",
+        "https://sargasses-martinique.com/plages/bourg-de-tartane/",
+        "https://sargasses-martinique.com/plages/anse-bonneville/",
+        "https://sargasses-martinique.com/plages/anse-l-etang/",
+        "https://sargasses-martinique.com/plages/l-autre-bord-trinite/",
+        "https://sargasses-martinique.com/plages/anse-cosmy/",
+        "https://sargasses-martinique.com/plages/baie-coco/",
+        "https://sargasses-martinique.com/plages/pointe-faula/",
+        "https://sargasses-martinique.com/plages/macabou-nord/",
+        "https://sargasses-martinique.com/plages/anse-grosse-roche/",
+        "https://sargasses-martinique.com/plages/plage-de-sinai/",
+        "https://sargasses-martinique.com/plages/plage-de-grand-riviere/",
+        "https://sargasses-martinique.com/plages/anse-charpentier/",
+        "https://sargasses-martinique.com/plages/bourg-sainte-marie/"
+      ]
     }
   ]
 }

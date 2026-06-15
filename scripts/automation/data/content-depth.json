@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-06-08T14:54:04.956Z",
+  "generatedAt": "2026-06-15T16:27:45.684Z",
   "sites": {
     "mq": {
-      "pageCount": 103,
-      "medianWords": 1508,
-      "thinCount": 31,
-      "richCount": 57,
+      "pageCount": 116,
+      "medianWords": 816,
+      "thinCount": 40,
+      "richCount": 58,
       "thinPages": [
         {
           "url": "/carte-sargasses/",
@@ -72,8 +72,20 @@
           "words": 0
         },
         {
+          "url": "/google22dbf19e7b743f5a.html",
+          "words": 2
+        },
+        {
+          "url": "/googlead132357ff9b38c4.html",
+          "words": 2
+        },
+        {
           "url": "/widget/embed/",
           "words": 2
+        },
+        {
+          "url": "/jeu/",
+          "words": 5
         },
         {
           "url": "/404.html",
@@ -92,6 +104,14 @@
           "words": 96
         },
         {
+          "url": "/conditions/baignade-ideale/",
+          "words": 138
+        },
+        {
+          "url": "/conditions/mer-calme/",
+          "words": 150
+        },
+        {
           "url": "/widget/",
           "words": 165
         },
@@ -104,78 +124,58 @@
           "words": 196
         },
         {
-          "url": "/mentions-legales.html",
-          "words": 221
-        },
-        {
-          "url": "/",
-          "words": 228
-        },
-        {
-          "url": "/onboarding.html",
-          "words": 253
-        },
-        {
-          "url": "/conditions/",
-          "words": 274
-        },
-        {
-          "url": "/bilan-sargasses-2025/",
-          "words": 280
-        },
-        {
-          "url": "/confidentialite.html",
-          "words": 281
+          "url": "/sargasses-mai-2026/",
+          "words": 202
         }
       ],
       "topPages": [
         {
           "url": "/plages/grande-anse-du-carbet/",
-          "words": 1606
+          "words": 1654
         },
         {
           "url": "/plages/anse-corps-de-garde/",
-          "words": 1588
+          "words": 1638
         },
         {
           "url": "/plages/plage-du-bourg-sainte-anne/",
-          "words": 1576
-        },
-        {
-          "url": "/plages/plage-de-saint-pierre/",
-          "words": 1574
+          "words": 1626
         },
         {
           "url": "/plages/plage-de-la-francaise/",
-          "words": 1574
+          "words": 1624
+        },
+        {
+          "url": "/plages/plage-de-saint-pierre/",
+          "words": 1622
         },
         {
           "url": "/plages/pointe-fort-caravelle/",
-          "words": 1572
+          "words": 1620
         },
         {
           "url": "/plages/grande-anse-d-arlet/",
-          "words": 1572
+          "words": 1620
         },
         {
           "url": "/plages/plage-du-marin/",
-          "words": 1564
+          "words": 1614
         },
         {
           "url": "/plages/petite-anse-d-arlet/",
-          "words": 1562
+          "words": 1612
         },
         {
           "url": "/plages/anse-gros-raisins/",
-          "words": 1562
+          "words": 1612
         }
       ]
     },
     "gp": {
-      "pageCount": 133,
-      "medianWords": 1520,
-      "thinCount": 29,
-      "richCount": 87,
+      "pageCount": 147,
+      "medianWords": 1564,
+      "thinCount": 35,
+      "richCount": 88,
       "thinPages": [
         {
           "url": "/carte-sargasses/",
@@ -242,8 +242,20 @@
           "words": 0
         },
         {
+          "url": "/google22dbf19e7b743f5a.html",
+          "words": 2
+        },
+        {
+          "url": "/googlead132357ff9b38c4.html",
+          "words": 2
+        },
+        {
           "url": "/widget/embed/",
           "words": 2
+        },
+        {
+          "url": "/jeu/",
+          "words": 5
         },
         {
           "url": "/404.html",
@@ -262,6 +274,10 @@
           "words": 96
         },
         {
+          "url": "/plages/plages-nord-grande-terre/",
+          "words": 142
+        },
+        {
           "url": "/widget/",
           "words": 165
         },
@@ -274,66 +290,54 @@
           "words": 196
         },
         {
+          "url": "/sargasses-mai-2026/",
+          "words": 202
+        },
+        {
           "url": "/mentions-legales.html",
           "words": 221
-        },
-        {
-          "url": "/onboarding.html",
-          "words": 253
-        },
-        {
-          "url": "/conditions/",
-          "words": 274
-        },
-        {
-          "url": "/bilan-sargasses-2025/",
-          "words": 280
-        },
-        {
-          "url": "/confidentialite.html",
-          "words": 281
         }
       ],
       "topPages": [
         {
           "url": "/plages/ile-de-la-petite-terre/",
-          "words": 1630
+          "words": 1684
         },
         {
           "url": "/plages/plage-de-la-desirade-sud/",
-          "words": 1624
+          "words": 1678
         },
         {
           "url": "/plages/plage-des-raisins-clairs/",
-          "words": 1618
+          "words": 1664
         },
         {
           "url": "/plages/anse-de-la-baie-olive/",
-          "words": 1612
+          "words": 1658
         },
         {
           "url": "/plages/pointe-de-la-verdure-sud/",
-          "words": 1610
+          "words": 1656
         },
         {
           "url": "/plages/plage-de-grande-anse/",
-          "words": 1608
-        },
-        {
-          "url": "/plages/plage-de-la-caravelle/",
-          "words": 1606
-        },
-        {
-          "url": "/plages/la-grande-anse-deshaies/",
-          "words": 1600
+          "words": 1656
         },
         {
           "url": "/plages/plage-pain-de-sucre/",
-          "words": 1598
+          "words": 1654
+        },
+        {
+          "url": "/plages/la-grande-anse-deshaies/",
+          "words": 1650
         },
         {
           "url": "/plages/plage-de-la-desirade/",
-          "words": 1592
+          "words": 1648
+        },
+        {
+          "url": "/plages/plage-de-baie-mahault-desirade/",
+          "words": 1648
         }
       ]
     }

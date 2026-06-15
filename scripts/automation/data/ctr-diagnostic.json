@@ -1,33 +1,108 @@
 {
-  "generatedAt": "2026-06-08T14:54:01.544Z",
+  "generatedAt": "2026-06-15T16:27:41.512Z",
   "sites": {
     "mq": {
       "opportunityCount": 0,
-      "winCount": 2,
+      "winCount": 8,
       "totalLostClicks": 0,
       "opportunities": [],
       "wins": [
         {
           "url": "https://sargasses-martinique.com/",
-          "impressions": 4187,
-          "clicks": 965,
+          "impressions": 5827,
+          "clicks": 1265,
           "position": 4.7,
-          "actualCtr": 23.05,
-          "expectedCtr": 6.51,
-          "ctrLift": 16.54
+          "actualCtr": 21.71,
+          "expectedCtr": 6.56,
+          "ctrLift": 15.15
         },
         {
           "url": "https://sargasses-martinique.com/en/",
-          "impressions": 73,
-          "clicks": 11,
-          "position": 8.7,
-          "actualCtr": 15.07,
-          "expectedCtr": 2.16,
-          "ctrLift": 12.91
+          "impressions": 89,
+          "clicks": 14,
+          "position": 7.6,
+          "actualCtr": 15.73,
+          "expectedCtr": 2.7,
+          "ctrLift": 13.03
+        },
+        {
+          "url": "https://sargasses-martinique.com/carte-sargasses/",
+          "impressions": 196,
+          "clicks": 16,
+          "position": 11.2,
+          "actualCtr": 8.16,
+          "expectedCtr": 0.5,
+          "ctrLift": 7.66
+        },
+        {
+          "url": "https://sargasses-martinique.com/meilleures-plages-martinique-sargasses/",
+          "impressions": 56,
+          "clicks": 3,
+          "position": 13.4,
+          "actualCtr": 5.36,
+          "expectedCtr": 0.5,
+          "ctrLift": 4.86
+        },
+        {
+          "url": "https://sargasses-martinique.com/detection-satellite-sargasses/",
+          "impressions": 76,
+          "clicks": 4,
+          "position": 11.2,
+          "actualCtr": 5.26,
+          "expectedCtr": 0.5,
+          "ctrLift": 4.76
+        },
+        {
+          "url": "https://sargasses-martinique.com/en/best-beaches-martinique/",
+          "impressions": 92,
+          "clicks": 4,
+          "position": 38.1,
+          "actualCtr": 4.35,
+          "expectedCtr": 0.5,
+          "ctrLift": 3.85
+        },
+        {
+          "url": "https://sargasses-martinique.com/en/sargassum-map/",
+          "impressions": 81,
+          "clicks": 3,
+          "position": 18.2,
+          "actualCtr": 3.7,
+          "expectedCtr": 0.5,
+          "ctrLift": 3.2
+        },
+        {
+          "url": "https://sargasses-martinique.com/sargasses-record-2026/",
+          "impressions": 657,
+          "clicks": 40,
+          "position": 7,
+          "actualCtr": 6.09,
+          "expectedCtr": 3.03,
+          "ctrLift": 3.06
         }
       ]
     },
     "gp": {
+      "opportunityCount": 0,
+      "winCount": 0,
+      "totalLostClicks": 0,
+      "opportunities": [],
+      "wins": []
+    },
+    "florida": {
+      "opportunityCount": 0,
+      "winCount": 0,
+      "totalLostClicks": 0,
+      "opportunities": [],
+      "wins": []
+    },
+    "puntacana": {
+      "opportunityCount": 0,
+      "winCount": 0,
+      "totalLostClicks": 0,
+      "opportunities": [],
+      "wins": []
+    },
+    "rivieramaya": {
       "opportunityCount": 0,
       "winCount": 0,
       "totalLostClicks": 0,

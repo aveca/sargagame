@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-06-08T14:54:04.707Z",
+  "generatedAt": "2026-06-15T16:27:45.397Z",
   "sites": {
     "mq": {
-      "pageCount": 103,
-      "pagesWithSchema": 93,
-      "totalBlocks": 347,
+      "pageCount": 116,
+      "pagesWithSchema": 103,
+      "totalBlocks": 393,
       "parseFailures": 0,
       "errorCount": 0,
-      "warningCount": 17,
+      "warningCount": 21,
       "errors": [],
       "warnings": [
         {
@@ -61,6 +61,16 @@
           "message": "missing recommended field \"image\""
         },
         {
+          "file": "martinique-ftp/meteo-sargasses-guadeloupe/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "martinique-ftp/meteo-sargasses-martinique/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
           "file": "martinique-ftp/methode-carte/index.html",
           "type": "Article",
           "message": "missing recommended field \"image\""
@@ -91,6 +101,16 @@
           "message": "missing recommended field \"image\""
         },
         {
+          "file": "martinique-ftp/sargasses-guadeloupe-cette-semaine/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "martinique-ftp/sargasses-martinique-cette-semaine/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
           "file": "martinique-ftp/sargasses-record-2026/index.html",
           "type": "Article",
           "message": "missing recommended field \"image\""
@@ -98,12 +118,12 @@
       ]
     },
     "gp": {
-      "pageCount": 133,
-      "pagesWithSchema": 123,
-      "totalBlocks": 436,
+      "pageCount": 147,
+      "pagesWithSchema": 134,
+      "totalBlocks": 478,
       "parseFailures": 0,
       "errorCount": 0,
-      "warningCount": 17,
+      "warningCount": 21,
       "errors": [],
       "warnings": [
         {
@@ -157,6 +177,16 @@
           "message": "missing recommended field \"image\""
         },
         {
+          "file": "guadeloupe-ftp/meteo-sargasses-guadeloupe/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "guadeloupe-ftp/meteo-sargasses-martinique/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
           "file": "guadeloupe-ftp/methode-carte/index.html",
           "type": "Article",
           "message": "missing recommended field \"image\""
@@ -183,6 +213,16 @@
         },
         {
           "file": "guadeloupe-ftp/saison-sargasses-martinique/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "guadeloupe-ftp/sargasses-guadeloupe-cette-semaine/index.html",
+          "type": "Article",
+          "message": "missing recommended field \"image\""
+        },
+        {
+          "file": "guadeloupe-ftp/sargasses-martinique-cette-semaine/index.html",
           "type": "Article",
           "message": "missing recommended field \"image\""
         },

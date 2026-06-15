@@ -1,34 +1,58 @@
 {
-  "generatedAt": "2026-06-08T14:54:04.869Z",
+  "generatedAt": "2026-06-15T16:27:45.591Z",
   "sites": {
     "mq": {
-      "pageCount": 103,
+      "pageCount": 116,
       "pagesSkippedNoindex": 4,
-      "pagesWithCanonical": 98,
-      "pagesWithHreflang": 92,
-      "issueCount": 1,
+      "pagesWithCanonical": 108,
+      "pagesWithHreflang": 99,
+      "issueCount": 4,
       "byKind": {
-        "missing-canonical": 1
+        "missing-canonical": 4
       },
       "issues": [
         {
           "file": "a-propos/index.html",
           "kind": "missing-canonical"
+        },
+        {
+          "file": "google22dbf19e7b743f5a.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "googlead132357ff9b38c4.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "jeu/index.html",
+          "kind": "missing-canonical"
         }
       ]
     },
     "gp": {
-      "pageCount": 133,
+      "pageCount": 147,
       "pagesSkippedNoindex": 4,
-      "pagesWithCanonical": 128,
-      "pagesWithHreflang": 122,
-      "issueCount": 1,
+      "pagesWithCanonical": 139,
+      "pagesWithHreflang": 130,
+      "issueCount": 4,
       "byKind": {
-        "missing-canonical": 1
+        "missing-canonical": 4
       },
       "issues": [
         {
           "file": "a-propos/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "google22dbf19e7b743f5a.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "googlead132357ff9b38c4.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "jeu/index.html",
           "kind": "missing-canonical"
         }
       ]
