@@ -173,6 +173,59 @@ function forecastLine(weekly, beachId, lang) {
   }).join(' · ')
 }
 
+// ── B2B RESORT BRIEF — page HTML STANDALONE (sans React) par hôtel : l'outlook
+// 7j de SA plage, propre et ENVOYABLE à un duty manager + capture d'intention
+// (mailto). noindex (actif commercial, pas SEO). Le lead-magnet du pilote B2B
+// (« briefs gratuits à 5-10 hôtels » → 1 contrat = 20-60× un abo consumer).
+const _BRIEF_T = {
+  en: { brief: 'Sargassum brief', beachOf: 'Beach', today: 'Today', week: '7-day outlook', clean: 'Clean', moderate: 'Moderate', avoid: 'Avoid',
+    cleanDays: n => `${n} clean beach day${n === 1 ? '' : 's'} expected this week.`,
+    guestClean: 'Good week for the beach — share it with your guests.',
+    guestWatch: 'Mixed week — point guests to the clear days above.',
+    guestAvoid: 'Sargassum expected — keep a backup activity ready for affected days.',
+    cta: 'Hotel team? Get this brief in your inbox every morning',
+    ctaSub: 'Free daily sargassum brief for your beach — reply and we set it up.',
+    foot: 'Independent Copernicus / NOAA satellite data · refreshed 4× a day' },
+  es: { brief: 'Boletín de sargazo', beachOf: 'Playa', today: 'Hoy', week: 'Pronóstico 7 días', clean: 'Limpia', moderate: 'Moderada', avoid: 'Evitar',
+    cleanDays: n => `${n} día${n === 1 ? '' : 's'} de playa limpia esta semana.`,
+    guestClean: 'Buena semana de playa — compártelo con tus huéspedes.',
+    guestWatch: 'Semana mixta — orienta a tus huéspedes a los días limpios.',
+    guestAvoid: 'Se espera sargazo — ten una actividad alternativa lista.',
+    cta: '¿Equipo del hotel? Recibe este boletín cada mañana',
+    ctaSub: 'Boletín diario de sargazo gratis para tu playa — responde y lo activamos.',
+    foot: 'Datos satelitales independientes Copernicus / NOAA · 4 veces al día' },
+}
+function buildResortBrief(region, r, b, data, lang, today, domain) {
+  const L = _BRIEF_T[lang] || _BRIEF_T.en
+  const C = { clean: '#16A34A', moderate: '#D97706', avoid: '#DC2626' }
+  const W = { clean: L.clean, moderate: L.moderate, avoid: L.avoid }
+  const days = (((data.weekly || {})[b.id] || {}).forecast || []).slice(0, 7)
+  const cleanDays = days.filter(d => d.status === 'clean').length
+  const todayStatus = b.lv.status || (days[0] && days[0].status) || 'clean'
+  const guest = todayStatus === 'avoid' ? L.guestAvoid : (cleanDays >= 5 ? L.guestClean : L.guestWatch)
+  const cells = days.map(d => {
+    const dn = T[lang].days[new Date(d.date + 'T12:00:00Z').getUTCDay()]
+    const col = C[d.status] || '#999'
+    return `<div style="flex:1;min-width:48px;text-align:center"><div style="font-size:11px;color:#6b6b66;font-weight:600">${dn}</div><div style="width:22px;height:22px;border-radius:50%;background:${col};margin:6px auto 4px"></div><div style="font-size:10px;color:${col};font-weight:700">${W[d.status] || d.status}</div></div>`
+  }).join('')
+  const mailto = `mailto:${(region.emails && region.emails.support) || 'hotels@' + domain}?subject=${encodeURIComponent('Daily sargassum brief — ' + r.name)}&body=${encodeURIComponent('Hi, we run ' + r.name + ' and would like the free daily sargassum brief for ' + b.name + '.')}`
+  const scoreTxt = b.lv.score != null ? ` · ${b.lv.score}/100` : ''
+  return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,follow">
+<title>${esc(r.name)} — ${L.brief}</title>
+<style>*{box-sizing:border-box;margin:0}body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#F7F5EF;color:#15110d;line-height:1.5;padding:16px 0}.wrap{max-width:560px;margin:0 auto;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.08)}.hd{background:linear-gradient(135deg,#0B2230,#155A5A 45%,#C97E3A 85%,#F2B05E);color:#fff;padding:26px 22px}.hd .k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.85}.hd h1{font-size:24px;margin:6px 0 2px;line-height:1.15}.hd .b{font-size:13px;opacity:.92}.bd{padding:22px}.pill{display:inline-block;padding:6px 14px;border-radius:999px;color:#fff;font-weight:700;font-size:14px}.row{display:flex;gap:6px;margin:14px 0}.tip{background:#FAF3E2;border:1px solid #E6D8B0;border-radius:12px;padding:12px 14px;font-size:14px;margin:14px 0}.cta{display:block;background:linear-gradient(135deg,#0B2230,#155A5A);color:#fff;text-decoration:none;border-radius:14px;padding:16px 18px;margin:18px 0 6px}.cta b{font-size:15px}.cta span{display:block;font-size:12.5px;opacity:.85;margin-top:3px}.ft{font-size:11px;color:#8a857c;padding:14px 22px 20px}</style></head>
+<body><div class="wrap">
+<div class="hd"><div class="k">${esc(region.name)} · ${L.brief}</div><h1>${esc(r.name)}</h1><div class="b">${L.beachOf}: ${esc(b.name)}${r.area ? ' · ' + esc(r.area) : ''}</div></div>
+<div class="bd">
+<div><span class="pill" style="background:${C[todayStatus] || '#999'}">${L.today}: ${W[todayStatus] || todayStatus}${scoreTxt}</span></div>
+<h2 style="font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:#6b6b66;margin:18px 0 0;font-weight:700">${L.week}</h2>
+<div class="row">${cells}</div>
+<div class="tip">${L.cleanDays(cleanDays)} ${guest}</div>
+<a class="cta" href="${mailto}"><b>${L.cta}</b><span>${L.ctaSub}</span></a>
+</div>
+<div class="ft">${L.foot} · ${esc(today)} · ${esc(domain)}</div>
+</div></body></html>`
+}
+
 function generateRegionSeoPages(region, distDir) {
   const lang = region.primaryLang === 'es' ? 'es' : 'en'
   const t = T[lang]
@@ -432,6 +485,8 @@ ${hubLinks(null)}${networkFooter(region, t)}</article>`
       jsonLd: [breadcrumb(domain, [{ name: t.home, path: '/' }, { name: b.name, path: `/${t.beachesDir}/${b.slug}/` }, { name: r.name, path: pathname }])],
     }))
     urls.push(pathname)
+    // B2B brief standalone (lead-magnet envoyable, noindex, HORS sitemap)
+    try { writePage(distDir, `${pathname}brief/`, buildResortBrief(region, r, b, data, lang, today, domain)) } catch (e) { /* brief best-effort */ }
   }
 
   // ── 4. Patch homepage : FAQPage JSON-LD + réseau inter-sites + title override ──
