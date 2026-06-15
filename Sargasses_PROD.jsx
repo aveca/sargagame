@@ -5075,7 +5075,9 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
   // tourne. A/B pw_calm : pivot vers la valeur que le GRATUIT n'a PAS et qui convertit
   // SANS peur = la prévision (« sache où sera la mer DEMAIN »). ?pwcalm=1/0 en QA.
   const _allCalm=_totalCount>0&&(_cleanCount/_totalCount)>=0.8
-  const pwCalm=(()=>{try{const q=window.location.search;if(/[?&]pwcalm=1/.test(q))return true;if(/[?&]pwcalm=0/.test(q))return false;return abVariant("pw_calm",["control","calm"],[.5,.5])==="calm"}catch(_){return false}})()
+  // PROMU EN DÉFAUT (cohérence élévation premium) : la value-prop POSITIVE en saison
+  // calme (« Sache où sera la mer demain ») est le défaut 85%, 15% holdout mesurable.
+  const pwCalm=(()=>{try{const q=window.location.search;if(/[?&]pwcalm=1/.test(q))return true;if(/[?&]pwcalm=0/.test(q))return false;return abVariant("pw_calm",["control","calm"],[.15,.85])==="calm"}catch(_){return false}})()
   const _topBeach=[..._islandLvls].sort((a,b)=>b.score-a.score)[0]
   // Nouvelles régions : ids opaques (pc001…) → nom réel depuis REGION.beaches.
   // MQ/GP : derivation slug historique inchangée.
