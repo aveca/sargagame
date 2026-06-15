@@ -9570,6 +9570,22 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
   },[beaches,island,lang])
   const ph=(()=>{try{if(typeof HERO_PH_OVERRIDE!=="undefined"&&HERO_PH_OVERRIDE)return HERO_PH_OVERRIDE;const h=new Date().getHours();return h<5?"night":h<8?"dawn":h<17?"day":h<20?"golden":"night"}catch(_){return "golden"}})()
   const sky=BEACH_PHASE[ph]||BEACH_PHASE.golden
+  // CARTE-FOG + STREAK DE VEILLE (brief #5, rétention « payer = habitude », Zenly).
+  // veille = série de jours consécutifs où l'user ouvre l'app (habitude). consultedRef
+  // = plages déjà ouvertes (fog sur les autres). Le fog NE voile JAMAIS la couleur de
+  // statut (mémoire) : juste un dim + anneau pointillé « à explorer ». Calme, first-party.
+  const veille=useMemo(()=>{try{
+    const today=new Date().toISOString().slice(0,10),last=localStorage.getItem("sg_veille_day")
+    let streak=parseInt(localStorage.getItem("sg_veille_streak")||"0")||0,best=parseInt(localStorage.getItem("sg_veille_best")||"0")||0
+    if(last!==today){const y=new Date(Date.now()-864e5).toISOString().slice(0,10);streak=last===y?streak+1:1;best=Math.max(best,streak)
+      try{localStorage.setItem("sg_veille_day",today);localStorage.setItem("sg_veille_streak",String(streak));localStorage.setItem("sg_veille_best",String(best))}catch(_){}
+      try{track("sg_veille",{streak,best})}catch(_){}}
+    return{streak,best}}catch(_){return{streak:0,best:0}}},[])
+  const consultedRef=useRef(null)
+  if(consultedRef.current===null){try{consultedRef.current=new Set(JSON.parse(localStorage.getItem("sg_consulted")||"[]"))}catch(_){consultedRef.current=new Set()}}
+  const[,setFogTick]=useState(0)
+  const fogOn=(()=>{try{return !/[?&]fog=0/.test(window.location.search)}catch(_){return true}})()
+  const markConsulted=id=>{if(id&&!consultedRef.current.has(id)){consultedRef.current.add(id);try{localStorage.setItem("sg_consulted",JSON.stringify([...consultedRef.current].slice(-400)))}catch(_){};setFogTick(v=>v+1)}}
   return(
     <div ref={wrapRef} role="region" aria-label={_t(lang,"Archipel du Veilleur","The Watcher's Archipelago","Archipiélago del Vigía")} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} onClick={onTap}
       style={{position:"fixed",inset:0,zIndex:1006,background:"#04090B",touchAction:"none",overflow:"hidden",cursor:satGrab?"grabbing":"grab"}}>
@@ -9628,12 +9644,12 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
       </svg>
       <svg width="100%" height="100%" style={{position:"absolute",inset:0,display:"block"}} aria-hidden="true">
         <g ref={gRef}>
-          {proj.map((p,i)=>{const b=p.b,col=b.scoreColor||verdictMeta(b.status,lang).color,sc=typeof b.score==="number"?b.score:null,me=i===myIdx
+          {proj.map((p,i)=>{const b=p.b,col=b.scoreColor||verdictMeta(b.status,lang).color,sc=typeof b.score==="number"?b.score:null,me=i===myIdx,r=sc!=null?5+sc/15:6,fog=fogOn&&!me&&!consultedRef.current.has(b.id)
             return(<g key={b.id} data-beach={b.id} transform={"translate("+p.x.toFixed(1)+" "+p.y.toFixed(1)+")"} style={{cursor:"pointer"}}
-              onClick={ev=>{ev.stopPropagation();if(movedRef.current)return;diveBeach(i,b)}}>
+              onClick={ev=>{ev.stopPropagation();if(movedRef.current)return;markConsulted(b.id);diveBeach(i,b)}}>
               {me
                 ?<g><circle r="40" fill={col} opacity=".14"/><circle r="29" fill={col} opacity=".10"/><circle r="23" fill="#0E2A26" stroke={col} strokeWidth="2.4"/>{sc!=null&&<text y="7" fontFamily="'Anton',sans-serif" fontSize="20" fill="#fff" textAnchor="middle">{sc}</text>}<text y="46" fontFamily="ui-monospace,monospace" fontSize="11" fontWeight="700" fill="#FFD884" textAnchor="middle">{b.name}</text></g>
-                :<><circle r={sc!=null?5+sc/15:6} fill={col} opacity=".92"/><circle r={sc!=null?5+sc/15:6} fill="none" stroke="#06121A" strokeWidth="1.2"/></>}
+                :<><circle r={r} fill={col} opacity={fog?.66:.92}/><circle r={r} fill="none" stroke="#06121A" strokeWidth="1.2"/>{fog&&<circle r={r+3.6} fill="none" stroke={col} strokeWidth="1" strokeDasharray="2 3.2" opacity=".4"/>}</>}
             </g>)})}
         </g>
       </svg>
@@ -9647,6 +9663,12 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
           <div style={{fontSize:13.5,fontWeight:800,whiteSpace:"nowrap",textOverflow:"ellipsis",overflow:"hidden"}}>{lecture?lecture.text:(<><span style={{color:myVm.color}}>{myVm.emoji} {myVm.verb}</span> · {my.name}</>)}</div>
           {lecture&&my&&<div style={{fontSize:11,fontWeight:600,color:"rgba(255,255,255,.72)",whiteSpace:"nowrap",textOverflow:"ellipsis",overflow:"hidden"}}>{_t(lang,"Ta côte","Your coast","Tu costa")} · <span style={{color:myVm.color}}>{myVm.verb}</span> · {my.name}</div>}
         </div>
+      </div>}
+      {/* STREAK DE VEILLE (habitude « payer = revenir ») + progression de découverte
+          (Carte-Fog). Calme, statique. rootMode = le monde EST l'app (place du ✕ libre). */}
+      {rootMode&&tour==null&&veille.streak>0&&<div aria-label={_t(lang,"Série de veille","Watch streak","Racha")} style={{position:"absolute",top:"calc(13px + env(safe-area-inset-top))",right:14,zIndex:6,display:"flex",alignItems:"center",gap:6,padding:"7px 11px",borderRadius:14,background:"rgba(4,9,11,.5)",border:"1px solid rgba(255,216,132,.34)",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)"}}>
+        <span style={{fontSize:13.5,fontWeight:800,color:"#FFD884",whiteSpace:"nowrap"}}>🔥 {veille.streak}</span>
+        {proj.length>0&&<span style={{fontSize:9.5,fontWeight:700,color:"rgba(255,255,255,.55)",whiteSpace:"nowrap"}}>{consultedRef.current.size}/{proj.length}</span>}
       </div>}
       {tour==null
         ?<div style={{position:"absolute",bottom:"calc(18px + env(safe-area-inset-bottom))",left:0,right:0,zIndex:30,display:"flex",justifyContent:"center",pointerEvents:"none"}}>
