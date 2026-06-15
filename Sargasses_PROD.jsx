@@ -156,6 +156,46 @@ function verdictMeta(status,lang){
   }
   return M[status]||{color:"#3BA7A0",emoji:"🛰️",verb:_t(lang,"Le veilleur scanne","Scanning","Escaneando")}
 }
+// Carte de partage SPOILER-FREE (recherche valeur) — image golden-hour SANS lien (effet Wordle
+// = portée max sur les réseaux). Canvas PUR (réutilise les fonts déjà chargées), zéro dépendance.
+// navigator.share({files}) sur mobile, download sinon. Identité virale : la plage + le verdict du jour.
+async function shareBeachCard(beach,lang,forecast){
+  try{
+    const W=1080,H=1350,cv=document.createElement("canvas");cv.width=W;cv.height=H
+    const x=cv.getContext("2d");if(!x)return false
+    const RR=(xx,yy,w,h,r)=>{x.beginPath();if(x.roundRect)x.roundRect(xx,yy,w,h,r);else x.rect(xx,yy,w,h)}
+    const g=x.createLinearGradient(0,0,0,H);[[0,"#0B2230"],[.5,"#155A5A"],[.82,"#C97E3A"],[1,"#F2B05E"]].forEach(s=>g.addColorStop(s[0],s[1]));x.fillStyle=g;x.fillRect(0,0,W,H)
+    x.fillStyle="rgba(255,216,132,.26)";x.beginPath();x.arc(W/2,820,320,0,7);x.fill()
+    x.fillStyle="rgba(255,216,132,.5)";x.beginPath();x.arc(W/2,820,150,0,7);x.fill()
+    x.textAlign="center"
+    x.fillStyle="rgba(255,255,255,.82)";x.font="400 36px 'Anton',system-ui,sans-serif";x.fillText("S A R G A S S E S",W/2,118)
+    x.save();x.translate(W/2,258)
+    x.fillStyle="rgba(95,211,201,.16)";x.beginPath();x.arc(0,0,78,0,7);x.fill()
+    x.fillStyle="#3BA7A0";RR(-84,-18,44,36,8);x.fill();RR(40,-18,44,36,8);x.fill()
+    x.strokeStyle="#5FD3C9";x.lineWidth=6;x.lineCap="round";x.beginPath();x.moveTo(0,-42);x.lineTo(0,-68);x.stroke();x.fillStyle="#5FD3C9";x.beginPath();x.arc(0,-72,8,0,7);x.fill()
+    x.fillStyle="#C9971F";RR(-40,-40,80,80,20);x.fill();x.fillStyle="#FFC72C";RR(-40,-40,80,26,20);x.fill()
+    x.fillStyle="#07201E";x.beginPath();x.arc(0,8,24,0,7);x.fill();x.fillStyle="#5FD3C9";x.beginPath();x.arc(0,8,16,0,7);x.fill();x.fillStyle="#EAFBF8";x.beginPath();x.arc(-6,2,6,0,7);x.fill()
+    x.restore()
+    x.fillStyle="#fff";x.font="400 96px 'Anton',system-ui,sans-serif"
+    const words=(beach.name||"").toUpperCase().split(" ");let line="";const lines=[]
+    for(const w of words){const t=line?line+" "+w:w;if(x.measureText(t).width>W-150&&line){lines.push(line);line=w}else line=t}
+    if(line)lines.push(line);const L=lines.slice(0,3)
+    let ny=560-(L.length-1)*52;for(const l of L){x.fillText(l,W/2,ny);ny+=104}
+    const vm=verdictMeta(beach.status,lang);x.fillStyle=vm.color;x.font="800 56px 'Bricolage Grotesque',system-ui,sans-serif"
+    const sc=typeof beach.score==="number"?"  "+beach.score+"/100":""
+    x.fillText(vm.verb.toUpperCase()+sc,W/2,ny+44)
+    const days=(forecast||[]).slice(0,3)
+    if(days.length){const cw=150,sx=W/2-(days.length*cw)/2+cw/2,dy=H-310
+      days.forEach((d,i)=>{x.fillStyle=verdictMeta(d.status,lang).color;x.beginPath();x.arc(sx+i*cw,dy,32,0,7);x.fill();x.fillStyle="rgba(255,255,255,.72)";x.font="600 28px 'Bricolage Grotesque',system-ui,sans-serif";x.fillText((d.day||"").slice(0,5),sx+i*cw,dy+74)})}
+    const ds=new Date().toLocaleDateString(lang==="en"?"en-GB":lang==="es"?"es-ES":"fr-FR",{day:"numeric",month:"long"})
+    x.fillStyle="rgba(255,255,255,.72)";x.font="500 32px 'Bricolage Grotesque',system-ui,sans-serif";x.fillText(ds+"  ·  sargasses-martinique.com",W/2,H-86)
+    const blob=await new Promise(r=>cv.toBlob(r,"image/png",.92));if(!blob)return false
+    const file=new File([blob],"ma-plage.png",{type:"image/png"})
+    const text=_t(lang,beach.name+" aujourd'hui — vu par le Veilleur 🛰️",beach.name+" today — seen by the Watchman 🛰️",beach.name+" hoy — visto por el Vigía 🛰️")
+    try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text});return true}}catch(_){}
+    const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="ma-plage.png";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);return true
+  }catch(e){return false}
+}
 function Veilleur({mood="serein",size=44}){
   const m=VEILLEUR_MOOD[mood]||VEILLEUR_MOOD.serein
   return(
@@ -3002,7 +3042,11 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
                 display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
               <span style={{fontSize:16}}>🚗</span> {LL.directions}
             </a>
-            <button onClick={()=>{
+            <button onClick={async()=>{
+              // PRIMAIRE : carte-image spoiler-free SANS lien (effet Wordle = port\u00e9e max). Recherche valeur.
+              track("sg_share",{beach_id:beach.id,method:"card",status:beach.status})
+              if(await shareBeachCard(beach,lang,forecast))return
+              // FALLBACK (partage de fichier indispo) : texte + lien (r\u00e9f\u00e9rral si premium).
               const slug=beach.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/-+$/,"")
               const refCode=isPremium?localStorage.getItem("sg_referral_code"):""
               const url=window.location.origin+"/plages/"+slug+(refCode?"?ref="+refCode:"")
