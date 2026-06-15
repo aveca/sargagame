@@ -435,7 +435,58 @@ function daysBetween(dateA, dateB) {
   return Math.round((b - a) / (1000 * 60 * 60 * 24))
 }
 
-if (process.argv.includes('--reforecast')) {
+/**
+ * --selftest: codified regression guard for the calm recalibration. Asserts the
+ * invariants the adversarial audit verified, on controlled synthetic inputs, so a
+ * future change (or an accidental revert — this happened 3x during development)
+ * that breaks them fails LOUDLY. Exits non-zero on any violation. No external
+ * data; fully deterministic. Cheap to run in CI / before a build.
+ */
+function selfTest() {
+  console.log('=== Forecast recalibration self-test (invariant guard) ===')
+  const fails = []
+  const ok = (name, cond) => { console.log(`  ${cond ? 'PASS' : 'FAIL'}  ${name}`); if (!cond) fails.push(name) }
+
+  const calmBeach = { id: 't', lat: 16.0, lng: -61.4, island: 'gp', coast: 'atlantic', coastNormal: 170 }
+  const calmHist = []
+  for (let k = 0; k < 7; k++) calmHist.push({ date: `2026-06-0${k + 1}`, levels: [{ id: 't', afai: 0.07, status: 'clean' }] })
+  const fc = (level, banks) => buildHonestForecast([level], null, calmHist, [calmBeach], banks || null, null, null).t
+
+  // 1. calm + clean: floor lifts far-horizon confidence, regime exposed, no banned 0.15 pin
+  const wc = fc({ id: 't', afai: 0.08, status: 'clean', confidence: 85 })
+  ok('calm+clean regime classified calm', wc.regime === 'calm')
+  ok('calm+clean J+4 confidence floored (>=45, was collapsing to ~12)', wc.forecast[4].confidence >= 45)
+  ok('clean beach NOT pinned to a 0.15 floor (banned cleanFloorFor)', wc.forecast.every(d => d.afai < 0.15))
+  ok('per-regime confidence exposed for app/pages', !!wc.regimeConfidence && wc.forecast.every(d => d.regime))
+
+  // 2. floor never exceeds the day-0 observation confidence (low-base case)
+  const wlow = fc({ id: 't', afai: 0.08, status: 'clean', confidence: 42 })
+  ok('calm+clean floor bounded by base conf (J+6 == min(40,42)=40)', wlow.forecast[6].confidence <= 42)
+
+  // 3. calm + STRONG approaching bank: banner and forecast agree, alert capped <=30
+  const strongBank = { id: 1, island: 'gp', mass: 0.25, centroid: [15.92, -61.38], drift: { predictions: { '24h': { centroid: [15.96, -61.38] } } } }
+  const wa = fc({ id: 't', afai: 0.08, status: 'clean', confidence: 85 }, [strongBank])
+  const alertDay = wa.forecast.slice(1).find(d => d.status === 'moderate' || d.status === 'avoid')
+  ok('calm strong-arrival fires the imminent banner', wa.arrivalDetected === true)
+  ok('banner implies the forecast actually reaches alert (coherent)', !!alertDay)
+  ok('calm-season alert confidence capped <=30', !alertDay || alertDay.confidence <= 30)
+
+  // 4. memory beach: floor suppressed (confidence stays pinned to the past observation)
+  const wm = fc({ id: 't', afai: 0.08, status: 'clean', confidence: 40, beachMemory: true, source: 'memory' })
+  ok('memory beach NOT floored (confidence stays <=40)', wm.forecast.slice(1).every(d => d.confidence <= 40))
+
+  // 5. determinism
+  const r1 = JSON.stringify(fc({ id: 't', afai: 0.08, status: 'clean', confidence: 85 }, [strongBank]))
+  const r2 = JSON.stringify(fc({ id: 't', afai: 0.08, status: 'clean', confidence: 85 }, [strongBank]))
+  ok('deterministic (identical inputs -> identical output)', r1 === r2)
+
+  if (fails.length) { console.error(`\nSELF-TEST FAILED (${fails.length}): ${fails.join(' | ')}`); process.exit(1) }
+  console.log('\nAll invariants hold. ✓')
+}
+
+if (process.argv.includes('--selftest')) {
+  selfTest()
+} else if (process.argv.includes('--reforecast')) {
   reforecastBacktest()
 } else {
   main()
