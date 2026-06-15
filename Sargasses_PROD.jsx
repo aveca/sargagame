@@ -9213,6 +9213,19 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
   const startTour=()=>tourGo(0)
   const exitTour=()=>{tourRef.current=null;setTour(null);twTarget.current=null;centerOn(myIdx,MID)}
   const my=proj[myIdx]&&proj[myIdx].b,myVm=my&&verdictMeta(my.status,lang)
+  // LECTURE DU JOUR — le Veilleur narre la situation RÉELLE du jour (counts live).
+  // Saison calme (tout propre) = état DÉSIRABLE, pas une absence (fix critic #1) :
+  // l'app ne s'éteint jamais, même quand 20/20 sont verts.
+  const lecture=useMemo(()=>{
+    const list=(beaches||[]).filter(b=>b&&b.status&&(!island||b.island===island))
+    const n=list.length;if(!n)return null
+    const clean=list.filter(b=>b.status==="clean").length
+    const avoid=list.filter(b=>b.status==="avoid").length
+    const mod=n-clean-avoid
+    if(avoid===0&&mod<=1)return{mood:"clean",text:_t(lang,`Tout est calme — ${clean}/${n} plages propres. Profite.`,`All calm — ${clean}/${n} beaches clean. Enjoy.`,`Todo en calma — ${clean}/${n} playas limpias. Disfruta.`)}
+    if(avoid>0)return{mood:"avoid",text:_t(lang,`${clean} propres · ${avoid} à éviter aujourd'hui.`,`${clean} clean · ${avoid} to avoid today.`,`${clean} limpias · ${avoid} a evitar hoy.`)}
+    return{mood:"moderate",text:_t(lang,`${clean}/${n} propres · ${mod} à surveiller.`,`${clean}/${n} clean · ${mod} to watch.`,`${clean}/${n} limpias · ${mod} a vigilar.`)}
+  },[beaches,island,lang])
   const ph=(()=>{try{if(typeof HERO_PH_OVERRIDE!=="undefined"&&HERO_PH_OVERRIDE)return HERO_PH_OVERRIDE;const h=new Date().getHours();return h<5?"night":h<8?"dawn":h<17?"day":h<20?"golden":"night"}catch(_){return "golden"}})()
   const sky=BEACH_PHASE[ph]||BEACH_PHASE.golden
   return(
@@ -9285,9 +9298,13 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
       {/* rootMode (navWorld) : le monde EST l'app → pas de ✕ qui fermerait sur du vide
           (Leaflet retiré). En fallback ?nav=map, le ✕ ferme vers la carte Leaflet. */}
       {!rootMode&&<button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"absolute",top:"calc(12px + env(safe-area-inset-top))",right:14,zIndex:5,width:40,height:40,borderRadius:"50%",background:"rgba(4,9,11,.55)",border:"1px solid rgba(255,255,255,.25)",color:"#fff",fontSize:17,cursor:"pointer",backdropFilter:"blur(8px)"}}>✕</button>}
-      {ready&&my&&tour==null&&<div style={{position:"absolute",top:"calc(13px + env(safe-area-inset-top))",left:14,right:64,zIndex:5,display:"flex",alignItems:"center",gap:9,padding:"8px 12px",borderRadius:14,background:"rgba(4,9,11,.5)",border:"1px solid rgba(255,255,255,.14)",backdropFilter:"blur(8px)",color:"#fff"}}>
-        <Veilleur mood={moodFromStatus(my.status)} size={26}/>
-        <div style={{flex:1,minWidth:0,overflow:"hidden"}}><div style={{fontSize:10,fontWeight:700,letterSpacing:".05em",color:"rgba(255,255,255,.6)",textTransform:"uppercase"}}>{_t(lang,"Ta côte aujourd'hui","Your coast today","Tu costa hoy")}</div><div style={{fontSize:13.5,fontWeight:800,whiteSpace:"nowrap",textOverflow:"ellipsis",overflow:"hidden"}}><span style={{color:myVm.color}}>{myVm.emoji} {myVm.verb}</span> · {my.name}</div></div>
+      {ready&&(lecture||my)&&tour==null&&<div style={{position:"absolute",top:"calc(13px + env(safe-area-inset-top))",left:14,right:64,zIndex:5,display:"flex",alignItems:"center",gap:9,padding:"8px 12px",borderRadius:14,background:"rgba(4,9,11,.5)",border:"1px solid rgba(255,255,255,.14)",backdropFilter:"blur(8px)",color:"#fff"}}>
+        <Veilleur mood={moodFromStatus((lecture&&lecture.mood)||(my&&my.status)||"clean")} size={26}/>
+        <div style={{flex:1,minWidth:0,overflow:"hidden"}}>
+          <div style={{fontSize:10,fontWeight:700,letterSpacing:".05em",color:"rgba(255,255,255,.6)",textTransform:"uppercase"}}>{_t(lang,"Le Veilleur · lecture du jour","The Watcher · today's reading","El Vigía · lectura del día")}</div>
+          <div style={{fontSize:13.5,fontWeight:800,whiteSpace:"nowrap",textOverflow:"ellipsis",overflow:"hidden"}}>{lecture?lecture.text:(<><span style={{color:myVm.color}}>{myVm.emoji} {myVm.verb}</span> · {my.name}</>)}</div>
+          {lecture&&my&&<div style={{fontSize:11,fontWeight:600,color:"rgba(255,255,255,.72)",whiteSpace:"nowrap",textOverflow:"ellipsis",overflow:"hidden"}}>{_t(lang,"Ta côte","Your coast","Tu costa")} · <span style={{color:myVm.color}}>{myVm.verb}</span> · {my.name}</div>}
+        </div>
       </div>}
       {tour==null
         ?<div style={{position:"absolute",bottom:"calc(18px + env(safe-area-inset-bottom))",left:0,right:0,zIndex:30,display:"flex",justifyContent:"center",pointerEvents:"none"}}>
