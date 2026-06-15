@@ -11,7 +11,8 @@
   "currency": "USD",
   "pricing": {
     "monthly": "$9.99",
-    "yearly": "$79"
+    "yearly": "$79",
+    "tripPass": "$5.99"
   },
   "stripeProducts": {
     "monthly": "price_1Tgc8UP9RK8Orx51RYjh5Qpy",

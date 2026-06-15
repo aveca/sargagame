@@ -12,7 +12,8 @@
   "countryCode": "DO",
   "pricing": {
     "monthly": "$9.99",
-    "yearly": "$79"
+    "yearly": "$79",
+    "tripPass": "$5.99"
   },
   "stripeProducts": {
     "monthly": "price_1TgafPP9RK8Orx51o5YrMcgd",

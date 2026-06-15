@@ -1270,6 +1270,13 @@ const LINK_PRO=REGION_PAY?"":STRIPE_LINK_PRO
 const PAYWALL_READY=!REGION_PAY||!!LINK_MONTHLY
 const PRICE_MO=REGION_PAY?(REGION.pricing?.monthly||"$9.99"):null
 const PRICE_YR=REGION_PAY?(REGION.pricing?.yearly||"$79"):null
+// Trip Pass (USD A/B pw_trippass) : accès UNIQUE 7 jours, paiement one-time —
+// aligné sur la durée d'un séjour, pas d'abonnement. Inerte tant que
+// REGION.paymentLinks.tripPass n'existe pas (le lien Stripe one-time est créé
+// par create-region-payment-links.cjs). Jamais branché sur effectivePlan /
+// stripeLinkFor (chemin funnel protégé) : chemin de checkout séparé.
+const LINK_TRIP=REGION_PAY?(REGION_PAY.tripPass||""):""
+const PRICE_TRIP=REGION_PAY?(REGION.pricing?.tripPass||"$5.99"):null
 // Régions SANS essai gratuit (regions/*.json noTrial:true — marchés touristes
 // USD, prélèvement immédiat, décision 2026-06-10). MQ/GP gardent le trial
 // (rétention post-trial 65% mesurée — réconciliation Stripe 2026-06-10) :
@@ -5138,6 +5145,18 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
   // promesse) au lieu d'un mur sombre plat — cible la fuite modal→CTA 2%. N'habille QUE le
   // shell, AUCUN changement à la logique de paiement. Mesurable (modal_open/cta identiques).
   const scenePay=(()=>{try{const s=window.location.search;if(/[?&]pwscene=1/.test(s))return true;if(/[?&]pwscene=0/.test(s))return false;return abVariant("pw_scene",["control","scene"],[.5,.5])==="scene"}catch(_){return false}})()
+  // A/B pw_trippass (USD only) : propose un accès UNIQUE 7 jours (one-time,
+  // aligné séjour, sans abonnement) EN PLUS de l'abo — répond au mismatch
+  // abo-mensuel/touriste-5-jours (verdict chantier USA). Inerte si pas de
+  // LINK_TRIP. Override URL ?pwtrip=1/0 pour QA. Le CTA Trip Pass a son PROPRE
+  // chemin (startTripPass) : ZÉRO contact avec effectivePlan/stripeLinkFor.
+  const tripAB=IS_NEW_REGION&&!!LINK_TRIP&&(()=>{try{const q=window.location.search;if(/[?&]pwtrip=1/.test(q))return true;if(/[?&]pwtrip=0/.test(q))return false;return abVariant("pw_trippass",["control","trip"],[.5,.5])==="trip"}catch(_){return false}})()
+  const startTripPass=useCallback(()=>{
+    track("sg_premium_modal_cta",{plan:"trip",source:source||"unknown"})
+    track("sg_checkout_redirect",{plan:"trip",source:source||"unknown",destination:"payment_link",via:"trippass"})
+    const link=stripeUrlWith(LINK_TRIP,"trip")
+    setTimeout(()=>{window.location.href=link},0)
+  },[source])
   const[showPrelude,setShowPrelude]=useState(false)
   // Compute upcoming dates for the Prelude ledger
   const _preludeDates=(()=>{
@@ -5640,6 +5659,33 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
           // sur 10 738 sessions (~7 sem) — feature morte + clutter. On garde le CTA payant seul.
           return paidCTA
         })()}
+
+        {/* Trip Pass (A/B pw_trippass, USD) : alternative one-time sous le CTA
+            abo. Chemin de checkout SÉPARÉ (startTripPass). Calme : zéro anim. */}
+        {tripAB&&(
+          <div style={{marginTop:14,padding:"14px 16px",borderRadius:14,
+            border:`1px solid ${C.gold}`,background:"rgba(245,158,11,.07)"}}>
+            <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",gap:10,marginBottom:2}}>
+              <span style={{fontSize:12.5,fontWeight:700,color:C.gold,letterSpacing:".01em"}}>
+                {_t(lang,"Juste pour ton séjour ?","Just here for your trip?","¿Solo por tu viaje?")}
+              </span>
+              <span style={{fontSize:11,color:"rgba(255,255,255,.55)"}}>
+                {_t(lang,"sans abonnement","no subscription","sin suscripción")}
+              </span>
+            </div>
+            <div style={{fontSize:13,color:"rgba(255,255,255,.82)",lineHeight:1.35,marginBottom:10}}>
+              {_t(lang,
+                `Pass 7 jours — ${PRICE_TRIP} une seule fois. Accès complet pendant ton voyage, rien à annuler.`,
+                `7-Day Trip Pass — ${PRICE_TRIP} once. Full access for your trip, nothing to cancel.`,
+                `Pase de 7 días — ${PRICE_TRIP} una sola vez. Acceso completo durante tu viaje, nada que cancelar.`)}
+            </div>
+            <button onClick={startTripPass} style={{width:"100%",textAlign:"center",
+              fontSize:14.5,fontWeight:700,padding:"12px 18px",borderRadius:11,cursor:"pointer",
+              fontFamily:"inherit",border:`1px solid ${C.gold}`,background:"transparent",color:C.gold}}>
+              {_t(lang,`Prendre le pass 7 jours · ${PRICE_TRIP}`,`Get the 7-day pass · ${PRICE_TRIP}`,`Obtener el pase de 7 días · ${PRICE_TRIP}`)}
+            </button>
+          </div>
+        )}
 
         {/* Micro-réassurance — répond à LA peur n°1 documentée ("je vais
             oublier d'annuler"). "2 clics" = le portail Stripe réel ("1 clic"
@@ -9228,10 +9274,35 @@ export default function App(){
       const sampleUntil=parseInt(localStorage.getItem("sg_sample_until")||"0")
       if(sampleUntil>Date.now())return true
     }catch{}
+    // Trip Pass (USD) : accès TIME-BOXÉ 7 jours, séparé du flag sg_premium
+    // permanent (un paiement one-time NE DOIT PAS donner un accès à vie).
+    try{
+      const passEnd=parseInt(localStorage.getItem("sg_premium_pass_end")||"0")
+      if(passEnd>Date.now())return true
+    }catch{}
     try{
       const params=new URLSearchParams(window.location.search)
       // Stripe redirect: ?premium=1 OR ?session_id=cs_xxx
       const sessionId=params.get("session_id")
+      // Trip Pass one-time : ?pass=trip → pose une expiration 7j AU LIEU du flag
+      // permanent. DOIT être testé AVANT le bloc générique (qui, lui, lit
+      // session_id et poserait sg_premium=1 à vie). Revenu loggé pareil (le
+      // webhook gère checkout.session.completed pour les sessions mode=payment).
+      if(params.get("pass")==="trip"){
+        const end=Date.now()+7*86400000
+        try{localStorage.setItem("sg_premium_pass_end",String(end))}catch{}
+        s("sg_premium_welcome",true)
+        track("sg_conversion",{session_id:sessionId||"trip",plan:"trip"})
+        if(sessionId){
+          try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
+            method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
+            body:JSON.stringify({type:"checkout.session.completed",data:{object:{id:sessionId,payment_status:"paid",
+              metadata:{island:IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ",plan:"trip"}}}})
+          }).catch(()=>{})}catch(ex){}
+        }
+        window.history.replaceState({},"",window.location.pathname)
+        return true
+      }
       if(params.get("premium")==="1"||params.get("success")==="1"||sessionId){
         s("sg_premium",true)
         s("sg_premium_welcome",true)

@@ -120,13 +120,47 @@ async function main() {
     links[plan] = link.url
   }
 
+  // 2bis. Trip Pass — prix ONE-TIME (mode=payment, PAS d'abonnement). Accès 7j
+  //   appliqué côté client (sg_premium_pass_end) ; Stripe ne prélève qu'une fois.
+  //   metadata.plan=trip → distinguable dans le webhook/revenu. Redirect
+  //   ?pass=trip (l'app pose l'expiration 7j au lieu du flag premium permanent).
+  //   Activé seulement si region.pricing.tripPass défini (sinon Trip Pass OFF).
+  if (region.pricing && (region.pricing.tripPass || region.pricing.tripPassCents)) {
+    const tripCents = region.pricing.tripPassCents || 599
+    const prices = await stripe(`prices?product=${product.id}&active=true&limit=100`)
+    let tprice = prices.data.find((p) => p.unit_amount === tripCents && p.currency === 'usd' && !p.recurring)
+    if (!tprice) {
+      tprice = await stripe('prices', {
+        product: product.id,
+        unit_amount: String(tripCents),
+        currency: 'usd',
+        nickname: `Sargassum ${region.name} — 7-Day Trip Pass`,
+      })
+      console.log(`Prix tripPass (one-time) créé: ${tprice.id}`)
+    } else console.log(`Prix tripPass existant: ${tprice.id}`)
+    priceIds.tripPass = tprice.id
+    let tlink = existingLinks.data.find((l) => l.active && l.metadata?.island === region.id && l.metadata?.plan === 'trip')
+    if (!tlink) {
+      tlink = await stripe('payment_links', {
+        'line_items[0][price]': tprice.id,
+        'line_items[0][quantity]': '1',
+        'metadata[island]': region.id,
+        'metadata[plan]': 'trip',
+        'after_completion[type]': 'redirect',
+        'after_completion[redirect][url]': `https://${region.domain}/?pass=trip&session_id={CHECKOUT_SESSION_ID}`,
+      })
+      console.log(`Payment Link tripPass créé: ${tlink.url}`)
+    } else console.log(`Payment Link tripPass existant: ${tlink.url}`)
+    links.tripPass = tlink.url
+  }
+
   // 3. Écrit dans regions/<id>.json (LIVE uniquement — un lien TEST ne doit jamais
   //    partir en prod ; en mode TEST on imprime sans écrire)
   if (MODE === 'LIVE') {
     const p = path.join(__dirname, '..', 'regions', `${region.id}.json`)
     const j = JSON.parse(fs.readFileSync(p, 'utf8'))
-    j.paymentLinks = { monthly: links.monthly, yearly: links.yearly }
-    j.stripeProducts = { monthly: priceIds.monthly, yearly: priceIds.yearly }
+    j.paymentLinks = { monthly: links.monthly, yearly: links.yearly, ...(links.tripPass ? { tripPass: links.tripPass } : {}) }
+    j.stripeProducts = { monthly: priceIds.monthly, yearly: priceIds.yearly, ...(priceIds.tripPass ? { tripPass: priceIds.tripPass } : {}) }
     fs.writeFileSync(p, JSON.stringify(j, null, 2) + '\n')
     console.log(`regions/${region.id}.json mis à jour (paymentLinks + stripeProducts)`)
   } else {

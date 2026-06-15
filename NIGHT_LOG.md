@@ -101,7 +101,13 @@ Appliquer le pattern « jeu SVG + contenu (free+premium) + déblocage de NOS don
 - `regions/florida.json` : `seo.homeTitle`/`homeDesc` MANQUANTS (PC/RM les avaient) → ajoutés. Racine FL ne partait plus battue.
 - `public/stats.php` : **breakdown funnel PAR RÉGION** + filtre `?region=florida`. Avant : histogramme sessions/région seulement → aveugle. Maintenant par région : { sessions, funnel modal_open→cta→redirect→email, rates session_to_modal/modal_to_cta/cta_to_redirect/session_to_email, bored_rate, avg_dwell, top_events }. Le prérequis « piloter par région » du plan. Testé synthétiquement (FL modal-only vs RM funnel complet).
 
-**Décisions FONDATEUR (bloquent le commercial, pas le code) :** (1) « 0$ aujourd'hui » côté USD — Trip Pass one-time 4,99-6,99$/7j en A/B (cannibalise un MRR qui de toute façon ne convertit pas) ? (2) pricing B2B (badge gratuit → Resort Watch 99-149$/mo → marque 299-499$) + pilote brief gratuit 5-10 hôtels Bávaro. (3) ordre : reco **Punta Cana-EN d'abord** (marché vide) vs mémoire MX>DR.
+**DÉCISIONS FONDATEUR PRISES (14/06) :** (1) chantier = **3 fronts en parallèle, je priorise**. (2) USD = **Trip Pass 7j en A/B** ✅ (vs essai gratuit / abo-seul). RESTE à décider : pricing B2B (badge gratuit → Resort Watch 99-149$/mo → marque 299-499$) + pilote brief gratuit 5-10 hôtels Bávaro ; ordre régions (reco PC-EN d'abord vs mémoire MX>DR).
+
+**Shippé commit 2 — Trip Pass 7j USD A/B (tâche #42) :**
+- App `Sargasses_PROD.jsx` : `LINK_TRIP`/`PRICE_TRIP` (depuis `REGION.paymentLinks.tripPass`/`pricing.tripPass`) · A/B `pw_trippass` (override `?pwtrip=1/0`) · carte Trip Pass calme sous le CTA abo dans PremiumModal · CTA `startTripPass` = **chemin séparé** (ZÉRO contact effectivePlan/stripeLinkFor — funnel protégé intact, smoke EUR vert) · persistance `sg_premium_pass_end` **time-boxée 7j** (un one-time ≠ accès à vie) · handler retour `?pass=trip` AVANT le bloc générique (sinon session_id poserait sg_premium permanent) · `isPremium` honore pass_end.
+- `regions/{puntacana,rivieramaya,florida}.json` : `pricing.tripPass:"$5.99"` (mid de la fourchette approuvée, ajustable).
+- `scripts/create-region-payment-links.cjs` : prix **one-time** (mode=payment) + Payment Link `metadata.plan=trip` redirect `?pass=trip`, écrit `paymentLinks.tripPass`. **PAS exécuté** (compte Stripe LIVE partagé).
+- État : **INERTE en prod** tant que `paymentLinks.tripPass` n'existe pas (gate sur le lien). GO-LIVE = `node scripts/create-region-payment-links.cjs <region>` (LIVE) → rebuild USD → screenshot réel via `?pwtrip=1`. **Go fondateur requis pour le run LIVE.** SW v144.
 
 **RESTE chantier (décision-free, codable) :** repositionner value-prop USD sur planif-séjour/7j (survit au tout-vert, A/B-gate) · MVP technique Resort Dashboard depuis substrat · CTA « For hotels/Para hoteles » intent-only · audit perf/fit mobile USD · fix sur-prédiction saison calme PHASE 0bis (SANS floor 0.15 — [[feedback-forecast-floor-ban]]).
 
