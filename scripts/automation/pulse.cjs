@@ -5,7 +5,7 @@
  *
  * Mandat fondateur 2026-06-15 : « tracker et améliorer en continu — ce que fait l'IA,
  * ce que fait le site, et ce que fait l'user ». Ce script est la boucle observe→oriente :
- * il agrège les 3 axes en UN rapport (scripts/automation/data/pulse.json) que chaque
+ * il agrège les axes en UN rapport (scripts/automation/data/pulse.json) que chaque
  * /loop lit au début de son cycle pour prioriser par la DATA, pas par le goût.
  *
  * Rapide, lecture seule, sûr à lancer n'importe quand (chaque session, chaque cycle).
@@ -37,7 +37,7 @@ function userAxis() {
   }
 }
 
-// ── 2. SITE — fraîcheur data, version déployée, dernier deploy ──
+// ── 2. SITE — fraîcheur data, version déployée, dernier deploy, santé CI ──
 function siteAxis() {
   const freshness = getRegions().map(r => {
     const d = rd(`public/api/copernicus/${r.sub}sargassum.json`, null)
@@ -47,16 +47,40 @@ function siteAxis() {
   let sw = null
   try { sw = (fs.readFileSync(path.join(ROOT, 'public/sw.js'), 'utf8').match(/sargasses-v\d+/) || [])[0] || null } catch {}
   const lastDeployRel = git(['log', '-1', '--format=%cr', '--grep=chore: update Copernicus']) || git(['log', '-1', '--format=%cr'])
-  return { freshness, sw, lastCommit: git(['log', '-1', '--format=%h %s']).slice(0, 80), lastDeployRel, staleRegions: freshness.filter(f => f.stale).map(f => f.id) }
+  // CI : santé des derniers runs GH Actions (« ce que fait le site » côté deploy).
+  let ci = null
+  try {
+    const raw = cp.execFileSync('gh', ['run', 'list', '--repo', 'aveca/sargagame', '--limit', '5', '--json', 'status,conclusion,workflowName'], { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 12000 })
+    ci = JSON.parse(raw).map(r => ({ wf: r.workflowName, status: r.status, concl: r.conclusion }))
+  } catch {}
+  return {
+    freshness, sw, ci, ciFails: ci ? ci.filter(r => r.concl === 'failure').length : null,
+    lastCommit: git(['log', '-1', '--format=%h %s']).slice(0, 80), lastDeployRel,
+    staleRegions: freshness.filter(f => f.stale).map(f => f.id),
+  }
 }
 
-// ── 3. IA — ce que les sessions ont shippé (git log catégorisé) ──
+// ── 3. GROUND-TRUTH — volume de confirmations terrain (le moat #2 qui se remplit) ──
+async function gtAxis() {
+  let key = ''
+  try { key = JSON.parse(fs.readFileSync(path.join(ROOT, 'scripts/automation/data/stats-keys.json'), 'utf8')).mq } catch {}
+  if (!key) return { ok: false, note: 'clé MQ absente' }
+  try {
+    const ctrl = new AbortController(); const to = setTimeout(() => ctrl.abort(), 8000)
+    const r = await fetch(`https://sargasses-martinique.com/ground-truth.php?key=${encodeURIComponent(key)}&days=30`, { signal: ctrl.signal })
+    clearTimeout(to)
+    const j = await r.json()
+    return { ok: true, confirmations: j.total_confirmations, beaches: j.beaches_confirmed }
+  } catch (e) { return { ok: false, note: 'fetch: ' + String(e.message || e).slice(0, 36) } }
+}
+
+// ── 4. IA — ce que les sessions ont shippé (git log catégorisé) ──
 const TOPIC = [
   [/conv\(|paywall|pw_/i, 'conversion'],
   [/design|scene|svg|beachscene|veilleur|golden|archipel|écran|hero/i, 'design'],
   [/feat\(social|wrapped|sargadle|verdict|share-card/i, 'social'],
   [/forecast|backtest|calm|fiabil|confidence|regime/i, 'fiabilité'],
-  [/moat|archive|ground-truth|confirme|append-only/i, 'moat'],
+  [/moat|archive|ground-truth|confirme|append-only|pulse/i, 'moat'],
   [/seo|sitemap|indexnow|weekly|hreflang|meta/i, 'seo'],
   [/chore|bot|update Copernicus|email state/i, 'auto'],
 ]
@@ -75,9 +99,10 @@ function aiAxis() {
   return { byTopic, recent, nightHead, totalRecent: lines.length }
 }
 
-// ── SYNTHÈSE — priorités dérivées des 3 axes (oriente les loops) ──
+// ── SYNTHÈSE — priorités dérivées des axes (oriente les loops) ──
 function priorities(user, site, ai) {
   const p = []
+  if (site.ciFails) p.push({ axis: 'site', urg: 'haut', what: `CI: ${site.ciFails} run(s) en échec → diagnostiquer les logs` })
   if (site.staleRegions.length) p.push({ axis: 'site', urg: 'haut', what: `Data STALE: ${site.staleRegions.join(', ')} → relancer le pipeline` })
   if (user.ok) for (const a of (user.top || []).slice(0, 3)) p.push({ axis: 'user', urg: a.type.startsWith('funnel') ? 'haut' : 'moyen', what: `[${a.region}] ${a.type} ${a.where}=${a.metric} → ${String(a.fix).split(':')[0]}` })
   if (!user.ok) p.push({ axis: 'user', urg: 'moyen', what: 'Pas de mesure UX fraîche → lancer analyze-ux (clés stats requises)' })
@@ -85,16 +110,18 @@ function priorities(user, site, ai) {
   return p
 }
 
-function main() {
+async function main() {
   const user = userAxis(), site = siteAxis(), ai = aiAxis()
-  const out = { generated: new Date().toISOString(), user, site, ai, priorities: priorities(user, site, ai) }
+  const gt = await gtAxis()
+  const out = { generated: new Date().toISOString(), user, site, groundTruth: gt, ai, priorities: priorities(user, site, ai) }
   try { fs.writeFileSync(path.join(ROOT, 'scripts/automation/data/pulse.json'), JSON.stringify(out, null, 2)) } catch {}
 
   console.log('\n═══ PULSE · ' + out.generated.slice(0, 16).replace('T', ' ') + ' UTC ═══')
   console.log('\n👤 USER  ' + (user.ok ? `${user.alertCount} alertes UX (${user.days}j, il y a ${user.generatedAgeH}h)` : user.note))
   if (user.ok) user.top.slice(0, 4).forEach(a => console.log(`   • [${a.region}] ${a.type} ${a.where}=${a.metric}`))
-  console.log('\n🌐 SITE  SW ' + (site.sw || '?') + ' · deploy ' + site.lastDeployRel)
+  console.log('\n🌐 SITE  SW ' + (site.sw || '?') + ' · deploy ' + site.lastDeployRel + (site.ciFails != null ? ` · CI échecs: ${site.ciFails}/5` : ''))
   site.freshness.forEach(f => console.log(`   • ${f.id.padEnd(12)} ${(f.source || '—')} ${f.ageH != null ? f.ageH + 'h' : '?'} ${f.stale ? '⚠ STALE' : 'OK'}`))
+  console.log('\n🛰️  GROUND-TRUTH  ' + (gt.ok ? `${gt.confirmations} confirmations · ${gt.beaches} plages (30j)` : gt.note))
   console.log('\n🤖 IA    ' + Object.entries(ai.byTopic).map(([k, v]) => `${k}:${v}`).join(' · '))
   if (ai.nightHead) console.log('   night-log: ' + ai.nightHead)
   console.log('\n🎯 PRIORITÉS')
