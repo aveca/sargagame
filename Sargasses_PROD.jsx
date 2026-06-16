@@ -957,7 +957,7 @@ function solutionsBeats(lang){
       </g>},
   ]
 }
-function SolutionsStory({lang,onClose}){
+function SolutionsStory({lang,onClose,onExit}){
   // JEU data-unlock (INC2) : avancer dans le cycle DÉVERROUILLE nos données, palier par palier.
   // Niveau monotone (ne décroît JAMAIS — pré-révélé au retour), reduced-motion = tout d'office.
   const beats=solutionsBeats(lang),N=beats.length
@@ -973,7 +973,8 @@ function SolutionsStory({lang,onClose}){
         <div style={{fontSize:10,fontWeight:800,letterSpacing:".04em",color:"#5FD3C9",textShadow:"0 1px 4px rgba(0,0,0,.6)"}}>{unlocked}/{N} · {_t(lang,"données débloquées","data unlocked","datos desbloqueados")}</div>
         <div style={{height:5,borderRadius:3,background:"rgba(255,255,255,.13)",overflow:"hidden",marginTop:4}}><div style={{height:"100%",width:pct+"%",background:"linear-gradient(90deg,#3BA7A0,#5FD3C9)",borderRadius:3,transition:"width .55s cubic-bezier(.22,1,.36,1)"}}/></div>
       </div>
-      <StoryEngine beats={beats} lang={lang} accent="#5FD3C9" ev="sg_solutions_beat" onCTA={onClose} onBeat={onBeat}/>
+      {/* sol_exit_cta : le dernier CTA ouvre le premium (intent chaud post-éducation) */}
+      <StoryEngine beats={beats} lang={lang} accent="#5FD3C9" ev="sg_solutions_beat" onCTA={onExit||onClose} onBeat={onBeat}/>
     </div>
   )
 }
@@ -11588,7 +11589,8 @@ export default function App(){
               fontSize:19,cursor:"pointer",boxShadow:"0 6px 20px rgba(0,0,0,.4)",display:"flex",alignItems:"center",justifyContent:"center",
               animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>💡</button>
         )}
-        {showSolutions&&<SolutionsStory lang={lang} onClose={()=>{setShowSolutions(false);track("sg_solutions_close",{})}}/>}
+        {showSolutions&&<SolutionsStory lang={lang} onClose={()=>{setShowSolutions(false);track("sg_solutions_close",{})}}
+          onExit={()=>{setShowSolutions(false);track("sg_solutions_exit_cta",{});openPremium("solutions_exit")}}/>}
 
         {/* L'ARCHIPEL DU VEILLEUR — monde SVG libre pan/zoom (tournoi gagnant). v0 QA. */}
         {!showHero&&!showPremium&&!showChat&&!showDiscovery&&!showSolutions&&!showWorld&&!showArchipel&&!selectedBeach&&view==="map"&&(
