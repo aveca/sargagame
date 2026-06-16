@@ -49,10 +49,17 @@ const STATS_KEYS_PATH = path.join(ROOT, 'scripts', 'automation', 'data', 'stats-
 const FUNNEL_URL =
   'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec?action=funnel'
 
-const GSC_PROPERTIES = [
-  'sc-domain:sargasses-martinique.com',
-  'sc-domain:sargasses-guadeloupe.com',
-]
+// Dérivé de regions/index.cjs → couvre AUTO toutes les régions (MQ/GP + USD
+// cancun/miami/puntacana + futures), pas de liste en dur à maintenir.
+const GSC_PROPERTIES = (() => {
+  try {
+    const R = require('../../regions/index.cjs')
+    const all = R.getAllRegions ? R.getAllRegions() : []
+    const props = all.filter(r => r && r.domain).map(r => 'sc-domain:' + r.domain)
+    if (props.length) return props
+  } catch (e) {}
+  return ['sc-domain:sargasses-martinique.com', 'sc-domain:sargasses-guadeloupe.com']
+})()
 
 // ── tiny GET helper (https, follows one redirect; Apps Script 302s to script.googleusercontent.com)
 function httpGetJSON(url, { headers = {}, redirects = 3 } = {}) {
