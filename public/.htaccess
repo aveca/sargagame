@@ -213,6 +213,37 @@ RewriteRule ^plages-martinique/?$ / [R=301,L]
 RewriteRule ^landing-v2\.html$ / [R=301,L]
 </IfModule>
 
+# =====================================================================
+# FILET DE SÉCURITÉ — page Fiabilité générée au build (reliability-page.cjs)
+# Slugs : /fiabilite/ (FR — MQ + miroir _gp GP), /reliability/ (EN régions),
+#         /fiabilidad/ (ES régions). Écrites dans dist/ à CHAQUE build, MAIS
+# generateReliabilityPages() tourne sous un try/catch qui n'avale l'erreur
+# qu'en console.warn (vite.config.js) : un throw du générateur = build vert
+# = déploiement SANS la page. Sans ce filet, le SPA catch-all ci-dessous sert
+# alors l'app shell (index.html) à la place — état CONSTATÉ en prod le
+# 2026-06-16 sur sargassumpuntacana.com/fiabilidad/ (HTTP 200 mais id="root").
+# Or /a-propos/ (paywall trust page) pointe 2× vers /fiabilite/ : sans filet,
+# ces liens tombent sur l'app, pas sur une page de confiance.
+#
+# !-f / !-d : la règle NE TIRE JAMAIS quand la page existe (le dossier généré
+# est servi tel quel) — elle ne masque donc jamais la vraie page. Quand elle
+# manque → /a-propos/, page de confiance committée dans public/ (donc toujours
+# déployée, jamais générée au build), vérifiée live HTTP 200 sur les 5 domaines
+# le 2026-06-16, et qui porte le même récit méthode/backtest.
+#
+# 302 (temporaire) et NON 301 : l'absence est TRANSITOIRE (glitch de build).
+# Un 301 serait caché par le navigateur ET désindexerait la vraie URL côté
+# Google en la consolidant vers /a-propos/ ; au retour de la page, les clients
+# resteraient coincés sur la redirection. Le 302 garde l'URL d'origine indexée
+# et force un re-check. (cf. règle projet : ne jamais 301 un chemin qui PEUT
+# être servi — leçon /a-propos/ masquée par un 301 legacy, 2026-06-10.)
+# =====================================================================
+<IfModule mod_rewrite.c>
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(fiabilite|reliability|fiabilidad)/?$ /a-propos/ [R=302,L]
+</IfModule>
+
 # SPA fallback : redirige les routes virtuelles vers index.html
 # (nécessaire pour que /carte-sargasses/, /previsions/ etc. fonctionnent en accès direct)
 <IfModule mod_rewrite.c>

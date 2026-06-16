@@ -270,9 +270,16 @@ function freshnessSection(lang, data, slug) {
   </section>`
 }
 
-function renderPage({ lang, domain, siteName, slug, title, desc, data, bt, regionName }) {
+function renderPage({ lang, domain, siteName, slug, title, desc, data, bt, regionName, alternates }) {
   const t = I18N[lang]
   const canonical = `https://${domain}/${slug}/`
+  // hreflang : régions bilingues — chaque variante de langue (/reliability/ EN,
+  // /fiabilidad/ ES) déclare ses sœurs + x-default = la langue primaire. MQ/GP :
+  // alternates absent → '' (page FR /fiabilite/ inchangée).
+  const altTags = Array.isArray(alternates) && alternates.length
+    ? '\n' + alternates.map(a => `<link rel="alternate" hreflang="${a.lang}" href="${a.href}"/>`).join('\n') +
+        `\n<link rel="alternate" hreflang="x-default" href="${(alternates.find(a => a.xDefault) || alternates[0]).href}"/>`
+    : ''
   const updatedISO = data && data.updatedAt ? data.updatedAt : new Date().toISOString()
   const ldPage = JSON.stringify({
     '@context': 'https://schema.org', '@type': 'WebPage', name: title, description: desc,
@@ -303,7 +310,7 @@ fetch('/api/copernicus/sargassum.json',{cache:'no-store'}).then(function(r){retu
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(desc)}"/>
-<link rel="canonical" href="${canonical}"/>
+<link rel="canonical" href="${canonical}"/>${altTags}
 <link rel="icon" href="/favicon.svg"/>
 <meta property="og:title" content="${esc(title)}"/>
 <meta property="og:description" content="${esc(desc)}"/>
@@ -461,17 +468,32 @@ function generateReliabilityPages(region, distDir) {
     return
   }
 
-  const lang = region.primaryLang === 'es' ? 'es' : 'en'
-  const slug = lang === 'es' ? 'fiabilidad' : 'reliability'
+  // Régions bilingues : la page est générée dans CHAQUE langue déclarée (primaire
+  // + secondaires), chacune à son slug (reliability=EN, fiabilidad=ES), les
+  // variantes cross-liées par hreflang. Avant : seule la langue primaire était
+  // émise — une région en-primary (puntacana) n'avait donc JAMAIS sa page ES
+  // /fiabilidad/, et le SPA catch-all servait l'app shell à la place (constaté en
+  // prod 2026-06-16 sur sargassumpuntacana.com/fiabilidad/ → HTTP 200 + id="root").
+  const SLUG = { en: 'reliability', es: 'fiabilidad' }
+  const norm = l => (l === 'es' ? 'es' : 'en')
+  const primary = norm(region.primaryLang)
+  const langs = [region.primaryLang, ...(region.secondaryLangs || [])]
+    .map(norm).filter((l, i, a) => a.indexOf(l) === i) // dédupe, primaire d'abord
   const data = loadJSON(path.join(ROOT, 'public', 'api', 'copernicus', region.id, 'sargassum.json'), null)
-  const siteName = lang === 'es' ? `Sargazo ${region.name}` : `Sargassum ${region.name}`
-  const meta = buildMeta(lang, bt, region.name)
-  writePage(distDir, slug, renderPage({
-    lang, domain: region.domain, siteName, slug, title: meta.title, desc: meta.desc,
-    data, bt, regionName: region.name,
-  }))
-  const inSitemap = appendToRegionSitemap(distDir, region.domain, slug)
-  console.log(`   → /${slug}/ générée (${region.id})${inSitemap ? ' + sitemap' : ' (sitemap absent)'}${bt ? ` — backtest ${bt.overall.statusHitRate}% global, ${bt.totalPairs} paires` : ' — SANS section précision (backtest indisponible)'}`)
+  const alternates = langs.map(l => ({ lang: l, href: `https://${region.domain}/${SLUG[l]}/`, xDefault: l === primary }))
+  const done = []
+  for (const l of langs) {
+    const slug = SLUG[l]
+    const siteName = l === 'es' ? `Sargazo ${region.name}` : `Sargassum ${region.name}`
+    const meta = buildMeta(l, bt, region.name)
+    writePage(distDir, slug, renderPage({
+      lang: l, domain: region.domain, siteName, slug, title: meta.title, desc: meta.desc,
+      data, bt, regionName: region.name, alternates,
+    }))
+    const inSitemap = appendToRegionSitemap(distDir, region.domain, slug)
+    done.push(`/${slug}/${inSitemap ? '' : ' (sitemap absent)'}`)
+  }
+  console.log(`   → ${done.join(' + ')} générée(s) (${region.id})${bt ? ` — backtest ${bt.overall.statusHitRate}% global, ${bt.totalPairs} paires` : ' — SANS section précision (backtest indisponible)'}`)
 }
 
 module.exports = { generateReliabilityPages }
