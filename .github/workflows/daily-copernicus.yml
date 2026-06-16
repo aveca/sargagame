@@ -138,6 +138,18 @@ jobs:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         run: node scripts/automation/drip-email.cjs
 
+      # Relance panier abandonné : carte refusée / 3DS non confirmé / abandon.
+      # schedule-only (jamais workflow_dispatch — règle retry-spam, cf. weekend).
+      # Lit Stripe (sessions non payées + motif d'échec) au runtime → aucun email
+      # dans le repo ; idempotent par hash (cart-recovery-sent.json committé plus bas).
+      - name: Send cart recovery emails (Resend)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+        run: node scripts/automation/recover-abandoned-cart.cjs --send --since-days=2
+
       # Support automatisé : excuses d'incident depuis data/incidents.json
       # (hashes RGPD, idempotent par destinataire, fenêtre 10-20 UTC interne
       # au script — jamais d'excuse à 2h du matin). Pour tout incident futur :
@@ -181,7 +193,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json; do
+          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json; do
             [ -f "$f" ] && git add "$f"
           done
           if git diff --cached --quiet; then echo "Email state unchanged."; exit 0; fi
