@@ -620,6 +620,44 @@ function applyBeachAccumulation(levels, dir) {
   }
 }
 
+// ── INDICE H2S (santé/air) : risque DÉRIVÉ de la sargasse accumulée en décomposition ──
+// Additif + try/catch : ne casse JAMAIS la donnée core. Source unique = scripts/lib/h2s.cjs.
+// ⚠️ risque dérivé, JAMAIS une mesure de gaz (aucun capteur terrain). REFONTE-MASTER §4A #4.
+function applyH2SIndex(levels, dir) {
+  try {
+    const { deriveH2S } = require('./lib/h2s.cjs')
+    let history = []
+    try { history = (JSON.parse(fs.readFileSync(path.join(dir, 'history.json'), 'utf-8')).history) || [] } catch (_) {}
+    let weather = {}
+    try { const w = JSON.parse(fs.readFileSync(path.join(dir, 'beaches-weather.json'), 'utf-8')); weather = w.beaches || w || {} } catch (_) {}
+    const recent = history
+      .filter(h => { const d = (new Date(today) - new Date(h.date)) / 86400000; return d > 0 && d <= WINDOW_DAYS })
+      .sort((a, b) => b.date.localeCompare(a.date))
+    let tagged = 0
+    for (const level of levels) {
+      // consecDays = jours consécutifs récents à AFAI >= 0,15 (degré de décomposition)
+      let consecDays = 0
+      for (const e of recent) {
+        const bl = (e.levels || []).find(l => l.id === level.id)
+        if (!bl || bl.afai < 0.15) break
+        consecDays++
+      }
+      if (consecDays === 0 && level.afai >= 0.15) consecDays = 1 // touchée aujourd'hui, historique muet
+      const w = weather[level.id] || {}
+      level.h2s = deriveH2S({
+        mass: level.afai,                              // afai effectif (post-accumulation)
+        consecDays,
+        sheltered: !!level.sheltered,                  // optionnel (sinon false)
+        windSpeed: (typeof w.windSpeed === 'number') ? w.windSpeed : null,
+      })
+      if (level.h2s.level !== 'low') tagged++
+    }
+    if (tagged > 0) console.log(`  H2S index: ${tagged} beach(es) at moderate/high air-risk`)
+  } catch (e) {
+    console.log('  [h2s] skipped (non-bloquant):', e.message)
+  }
+}
+
 // ── SARGASSUM BANKS: clustering + convex hull + drift predictions ──
 
 /**
@@ -1295,6 +1333,7 @@ async function runRegionPipeline(region, shared) {
   // 3. Beach memory — etat namespace par region (<regionDir>/history.json).
   // La racine MQ/GP garde son history.json historique (retro-compat).
   applyBeachAccumulation(levels, regionDir)
+  applyH2SIndex(levels, regionDir)
 
   // 4. Forecast 7j (community reports: ids racine MQ/GP seulement)
   let historyEntries = []
@@ -1459,6 +1498,7 @@ async function main() {
   console.log('')
   console.log('[2b] Applying beach memory (accumulation decay)...')
   applyBeachAccumulation(levels, dir)
+  applyH2SIndex(levels, dir)
 
   // 3. Build honest forecast + write output
   console.log('')
