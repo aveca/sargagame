@@ -1,0 +1,1689 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sargasses — Fiche plage en PLONGÉE (scène SVG plein écran, 6 stages) · Le Veilleur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:wght@600;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   FICHE PLAGE EN PLONGÉE — proto standalone validé.
+   Reprend le moteur de design/proto-home-az.html (Veilleur v2,
+   scroll sticky→opacités de beats, dolly spring, toVB cover-math,
+   plancher reduced-motion) et la scène BeachScene de Sargasses_PROD.jsx
+   (archétypes PRNG par beach.id, états clean/moderate/avoid, waterTint).
+   Palette golden-hour = source de vérité du repo.
+   ============================================================ */
+:root{
+  --sky0:#0B2230; --sky1:#155A5A; --sky2:#C97E3A; --sky3:#F2B05E;
+  --seaT:#1A5852; --seaB:#08251F; --glint:#FFD884; --sand:#1C1712;
+  --ink:#EAF7F4; --gold:#E8A800; --goldL:#FFC72C; --goldS:#FFE47A;
+  --teal:#009E8E; --tealL:#5FD3C9; --green:#22C55E; --amber:#B87A00; --coral:#E8522A;
+  --mid:#9DB4B0; --rim:#FFD884;
+  /* moteur scroll (comme home-az) */
+  --gp:0; --p0:0; --p1:0; --p2:0; --p3:0; --p4:0; --p5:0;
+  --e0:1; --e1:0; --e2:0; --e3:0; --e4:0; --e5:0;
+  --camS:1; --camY:0; --hs:0; --alert:0;
+  /* humeur du Veilleur (mutée par JS pour crossfade) */
+  --mood:#1FB6A6; --moodHalo:#1FB6A6; --moodDot:#22C55E;
+  /* teinte mer pilotée par le SCRUB de prévision (status réel, jamais cleanFloor) */
+  --seaTint:#1A5852;
+  /* micro-tween d'ouverture de la fiche (spring) */
+  --camOpenS:1; --camOpenY:0;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+html{scroll-behavior:auto}
+body{background:#02060A;color:var(--ink);
+  font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  overflow-x:hidden}
+.anton{font-family:'Anton',"Haettenschweiler","Arial Narrow Bold","Impact",system-ui,sans-serif;font-weight:400;letter-spacing:-.02em;text-transform:uppercase}
+.mono{font-family:'JetBrains Mono',monospace}
+
+/* ===================== STRUCTURE SCROLL ===================== */
+.scroller{position:relative;width:100%}
+.spans{position:absolute;inset:0;z-index:0;pointer-events:none}
+.span{width:100%}
+#sp0{height:120vh}  /* ARRIVÉE */
+#sp1{height:128vh}  /* VERDICT (preuve gratuite) */
+#sp2{height:178vh}  /* PREUVE-MESURE = le plus long (3 sous-beats) */
+#sp3{height:158vh}  /* PRÉVISION (timeline 7j scrub) */
+#sp4{height:140vh}  /* PLAN-B + SANTÉ */
+#sp5{height:118vh}  /* PREUVE SOCIALE + nearby + footer */
+
+.viewport{position:sticky;top:0;height:100svh;width:100%;overflow:hidden;z-index:1;background:var(--sky0)}
+
+/* caméra dolly (spring) + micro-tween d'ouverture combinés */
+.cam{position:absolute;inset:0;will-change:transform;
+  transform:translateY(calc(var(--camY) + var(--camOpenY))) scale(calc(var(--camS) * var(--camOpenS)));
+  transform-origin:50% 64%;
+  transition:transform .5s cubic-bezier(.34,1.4,.64,1)}
+
+svg.scene{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y}
+
+/* parallaxe (pilotée par --hs au scroll de l'arrivée) */
+.lyr-sky{transform:translateY(calc(var(--hs) * -24px))}
+.lyr-sea{transform:translateY(calc(var(--hs) * 8px)) scale(calc(1 + var(--hs)*0.08));transform-origin:50% 52%}
+.lyr-sand{transform:translateY(calc(var(--hs) * 16px)) scale(calc(1 + var(--hs)*0.18));transform-origin:50% 100%}
+
+/* voile de lisibilité bas d'écran + lavage alerte */
+.veil{position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:linear-gradient(180deg,
+    rgba(7,18,15,0) 0%,
+    rgba(7,18,15,calc(.10 + var(--gp)*.08)) 42%,
+    rgba(7,18,15,calc(.44 + var(--p1)*.14 + var(--p4)*.10)) 70%,
+    rgba(7,18,15,calc(.80 + var(--gp)*.10)) 100%)}
+.alertwash{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:var(--alert);
+  background:linear-gradient(180deg,rgba(232,82,42,.15) 0%,rgba(232,82,42,0) 34%)}
+
+/* ===================== CHROME persistant (fraîcheur + retour + langue) ===================== */
+.chrome{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;justify-content:space-between;
+  align-items:center;padding:12px 14px;max-width:560px;margin:0 auto;pointer-events:none;gap:8px}
+.backbtn{display:inline-flex;align-items:center;gap:6px;pointer-events:auto;cursor:pointer;
+  padding:7px 12px 7px 9px;border-radius:999px;background:rgba(8,18,16,.5);border:1px solid rgba(255,255,255,.14);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);color:var(--ink);
+  font:800 12px/1 "Bricolage Grotesque";letter-spacing:.01em}
+.backbtn .ar{color:var(--goldS);font-weight:800}
+.freshpill{display:inline-flex;align-items:center;gap:7px;pointer-events:auto;cursor:pointer;
+  padding:6px 12px 6px 10px;border-radius:999px;background:rgba(8,18,16,.5);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.14)}
+.freshpill .dot{width:8px;height:8px;border-radius:50%;background:var(--moodDot);
+  box-shadow:0 0 0 0 rgba(95,211,201,.5);animation:freshpulse 2.6s ease-out infinite}
+@keyframes freshpulse{0%{box-shadow:0 0 0 0 rgba(95,211,201,.5)}70%{box-shadow:0 0 0 8px rgba(95,211,201,0)}100%{box-shadow:0 0 0 0 rgba(95,211,201,0)}}
+.freshpill .t{font:700 11px/1 'JetBrains Mono';color:var(--tealL);white-space:nowrap}
+.langs{display:flex;gap:4px;pointer-events:auto}
+.langs button{border:1px solid rgba(255,255,255,.14);background:rgba(8,18,16,.5);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);color:var(--ink);
+  font:800 11px/1 "Bricolage Grotesque";letter-spacing:.04em;padding:7px 8px;border-radius:9px;cursor:pointer}
+.langs button[aria-pressed="true"]{background:var(--goldL);color:#1A2B26;border-color:transparent}
+
+/* ===================== OVERLAY DE COPY (6 beats, ancrée bas) ===================== */
+.copylayer{position:absolute;inset:0;z-index:6;pointer-events:none}
+.beatcopy{position:absolute;left:0;right:0;bottom:0;padding:0 20px 38px;
+  max-width:560px;margin:0 auto;will-change:opacity,transform;
+  opacity:0;transform:translateY(14px);transition:opacity .25s linear}
+#bc0{opacity:var(--e0)} #bc1{opacity:var(--e1)} #bc2{opacity:var(--e2)}
+#bc3{opacity:var(--e3)} #bc4{opacity:var(--e4)} #bc5{opacity:var(--e5)}
+.beatcopy.on{pointer-events:auto;transform:translateY(0)}
+
+.eyebrow{font:800 11px/1.3 "Bricolage Grotesque";letter-spacing:.18em;text-transform:uppercase;
+  color:var(--tealL);margin-bottom:9px;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.eyebrow .dt{color:var(--goldS)}
+/* VERDICT VERBAL géant Anton (stage ARRIVÉE) */
+.verdictverbal{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.015em;text-transform:uppercase;
+  font-size:clamp(34px,9.6vw,58px);line-height:.92;color:#fff;margin:0 0 12px;
+  text-shadow:0 2px 24px rgba(0,0,0,.55);max-width:13ch}
+.verdictverbal .hl{color:var(--green)}
+h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;text-transform:uppercase;
+  font-size:clamp(29px,7.6vw,46px);line-height:.98;color:#fff;margin:0 0 11px;
+  text-shadow:0 2px 22px rgba(0,0,0,.55);max-width:14ch}
+.head .b{color:var(--goldL)} .head .pl{color:var(--goldS)}
+.sub{font:600 14px/1.5 "Bricolage Grotesque";color:rgba(255,255,255,.82);
+  margin:0 0 16px;max-width:39ch;text-shadow:0 1px 10px rgba(0,0,0,.5)}
+
+/* CTA doré */
+.cta{display:block;width:100%;border:none;cursor:pointer;font-family:inherit;text-align:center;
+  border-radius:15px;padding:15px 18px;color:#1A2B26;
+  background:linear-gradient(135deg,var(--goldS),var(--goldL) 40%,var(--gold));
+  box-shadow:0 12px 34px rgba(232,168,0,.32),inset 0 1px 0 rgba(255,255,255,.5);transition:transform .12s ease}
+.cta:active{transform:scale(.985)}
+.cta .t{font:800 16px/1.1 "Bricolage Grotesque";letter-spacing:.005em}
+.cta .s{font:600 12px/1.3 "Bricolage Grotesque";opacity:.78;margin-top:3px}
+.linkcta{display:inline-flex;align-items:center;gap:6px;margin-top:12px;background:none;border:none;
+  cursor:pointer;font:800 13px/1 "Bricolage Grotesque";color:var(--ink);opacity:.78;padding:6px 0;text-decoration:none}
+.linkcta:hover{opacity:1}
+.linkcta .ar{color:var(--goldS)}
+.reassure{text-align:center;margin-top:11px;font:600 11px/1.4 "Bricolage Grotesque";
+  color:rgba(234,247,244,.55);letter-spacing:.015em}
+
+/* STATUS PILL (arrivée) */
+.statuspill{display:inline-flex;align-items:center;gap:9px;margin-bottom:14px;cursor:pointer;
+  padding:8px 14px 8px 11px;border-radius:13px;background:rgba(8,18,16,.42);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.13)}
+.statuspill .pd{width:9px;height:9px;border-radius:50%;background:var(--green)}
+.statuspill .pt{font:800 12px/1 "Bricolage Grotesque";letter-spacing:.05em;text-transform:uppercase;color:var(--green)}
+.statuspill .pf{font:700 11px/1 'JetBrains Mono';color:#fff;opacity:.9}
+
+/* SCOREBLOB (verdict / preuve gratuite) */
+.scorewrap{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.scoreblob{position:relative;flex:0 0 92px;width:92px;height:92px}
+.scoreblob svg{width:100%;height:100%;transform:rotate(-90deg)}
+.scoreblob .num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.scoreblob .num b{font-family:'Anton',sans-serif;font-size:31px;line-height:1;color:#fff}
+.scoreblob .num span{font:700 9px/1 'JetBrains Mono';color:var(--mid);margin-top:2px;letter-spacing:.04em}
+.chiprow{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:6px 10px;border-radius:999px;
+  font:700 11.5px/1 "Bricolage Grotesque";border:1px solid rgba(255,255,255,.12);background:rgba(8,18,16,.42);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.chip.good{color:#A8F0C8;border-color:rgba(34,197,94,.4)} .chip.good .i{color:var(--green)}
+.chip.bad{color:#FFC9B6;border-color:rgba(232,82,42,.4)} .chip.bad .i{color:var(--coral)}
+
+/* PREUVE-MESURE : 3 sous-beats sobres, switch par --p2 */
+.measureblock{margin-bottom:16px}
+.subdots{display:flex;gap:6px;margin-bottom:12px}
+.subdots i{width:22px;height:3px;border-radius:2px;background:rgba(255,255,255,.18);transition:background .3s,width .3s}
+.subdots i.on{background:var(--goldL);width:30px}
+.subpanel{display:none}
+.subpanel.show{display:block;animation:subin .4s cubic-bezier(.22,1,.36,1) both}
+@keyframes subin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+/* facteurs en barres */
+.factors{display:flex;flex-direction:column;gap:7px;margin:4px 0 4px}
+.fct{display:flex;align-items:center;gap:9px}
+.fct .fl{flex:0 0 88px;font:700 11px/1.2 "Bricolage Grotesque";color:rgba(234,247,244,.8)}
+.fct .ftrack{flex:1;height:8px;border-radius:5px;background:rgba(255,255,255,.08);overflow:hidden}
+.fct .ffill{height:100%;border-radius:5px;transform-origin:left;transform:scaleX(0);transition:transform .6s cubic-bezier(.34,1.3,.64,1)}
+.fct .fv{flex:0 0 30px;text-align:right;font:700 11px/1 'JetBrains Mono';color:#fff;opacity:.9}
+/* anneau régime + fiabilité par régime */
+.regimebox{display:flex;align-items:center;gap:14px;cursor:pointer;
+  padding:12px 14px;border-radius:14px;background:rgba(8,18,16,.46);border:1px solid rgba(255,255,255,.12);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.regimering{flex:0 0 70px;width:70px;height:70px;position:relative}
+.regimering svg{width:100%;height:100%;transform:rotate(-90deg)}
+.regimering .rn{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.regimering .rn b{font-family:'Anton',sans-serif;font-size:21px;color:#fff;line-height:1}
+.regimering .rn span{font:700 8px/1 'JetBrains Mono';color:var(--tealL)}
+.regimebox .rtxt b{display:block;font:800 13px/1.2 "Bricolage Grotesque";color:#fff;margin-bottom:3px}
+.regimebox .rtxt span{font:600 12px/1.4 "Bricolage Grotesque";color:rgba(234,247,244,.74)}
+.regimebox .rtxt .more{display:inline-block;margin-top:5px;font:800 11px/1 "Bricolage Grotesque";color:var(--goldS)}
+
+/* PRÉVISION : timeline 7j + scrub */
+.fcstrip{display:flex;gap:6px;align-items:flex-end;margin:2px 0 14px;height:96px}
+.fcday{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;position:relative}
+.fcday .fcbarbox{width:100%;display:flex;align-items:flex-end;justify-content:center;height:70px}
+.fcday .fbar{width:64%;max-width:30px;border-radius:5px 5px 0 0;transform-origin:bottom;transform:scaleY(.05);
+  transition:transform .5s cubic-bezier(.34,1.56,.64,1),opacity .3s}
+.fcday .fcl{font:700 9.5px/1 "Bricolage Grotesque";color:rgba(234,247,244,.7);letter-spacing:.02em}
+.fcday.locked .fbar{opacity:.42;filter:blur(1.2px)}
+.fcday.locked .fcl{opacity:.5}
+.fcday.cursor::after{content:"";position:absolute;left:50%;top:-6px;transform:translateX(-50%);
+  width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:7px solid var(--goldS)}
+.fclockhint{display:flex;align-items:center;gap:7px;margin:-4px 0 14px;font:700 11px/1.3 "Bricolage Grotesque";color:var(--goldS)}
+.fclockhint .lk{font-size:13px}
+
+/* PLAN-B + nearby */
+.planbrow{display:flex;gap:9px;overflow-x:auto;margin:0 -20px 14px;padding:2px 20px 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.planbrow::-webkit-scrollbar{display:none}
+.pbcard{scroll-snap-align:start;flex:0 0 150px;border-radius:14px;padding:11px 13px;cursor:pointer;
+  background:rgba(8,18,16,.5);border:1px solid rgba(255,255,255,.12);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);transition:transform .14s ease,border-color .14s}
+.pbcard:active{transform:scale(.97)}
+.pbthumb{height:54px;border-radius:9px;overflow:hidden;margin-bottom:8px;position:relative;background:#08251F}
+.pbthumb svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.pbcard .pn{font:800 13px/1.15 "Bricolage Grotesque";color:#fff;margin-bottom:4px}
+.pbcard .ps{display:inline-flex;align-items:center;gap:5px;font:800 10.5px/1 "Bricolage Grotesque";letter-spacing:.03em;text-transform:uppercase}
+.pbcard .ps .d{width:7px;height:7px;border-radius:50%}
+.pbcard .pf{font:700 10px/1 'JetBrains Mono';color:var(--mid);margin-top:5px}
+.st-clean{color:var(--green)} .st-clean .d{background:var(--green)}
+.st-mod{color:#E8B23A} .st-mod .d{background:#E8B23A}
+.st-avoid{color:var(--coral)} .st-avoid .d{background:var(--coral)}
+.h2sbadge{display:inline-flex;align-items:center;gap:8px;margin-bottom:13px;
+  padding:9px 13px;border-radius:12px;background:rgba(8,18,16,.46);border:1px solid rgba(255,255,255,.12);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.h2sbadge .lvl{font:800 11px/1 "Bricolage Grotesque";letter-spacing:.04em;text-transform:uppercase}
+.h2sbadge .lvltxt{font:600 11.5px/1.3 "Bricolage Grotesque";color:rgba(234,247,244,.78)}
+
+/* PREUVE SOCIALE + footer */
+.social{display:flex;align-items:center;gap:11px;margin-bottom:14px;
+  padding:12px 14px;border-radius:14px;background:rgba(8,18,16,.46);border:1px solid rgba(255,255,255,.12);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.social .stars{font-size:14px;color:var(--goldL);letter-spacing:1px}
+.social b{font:800 13px/1.2 "Bricolage Grotesque";color:#fff;display:block;margin-bottom:2px}
+.social span{font:600 11.5px/1.35 "Bricolage Grotesque";color:rgba(234,247,244,.72)}
+.zonelinks{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.zonelinks a{font:800 11.5px/1 "Bricolage Grotesque";color:var(--ink);opacity:.82;text-decoration:none;
+  padding:7px 11px;border-radius:9px;border:1px solid rgba(255,255,255,.12);background:rgba(8,18,16,.4)}
+.zonelinks a .ar{color:var(--goldS)}
+.breadcrumb{font:600 11px/1.4 "Bricolage Grotesque";color:rgba(234,247,244,.5);margin-bottom:14px}
+.breadcrumb a{color:rgba(234,247,244,.7);text-decoration:none}
+.breadcrumb .sep{opacity:.4;margin:0 5px}
+.footwrap{padding-top:4px}
+.wordmark{font-family:'Anton',sans-serif;font-size:34px;line-height:.9;color:#fff;text-transform:uppercase;letter-spacing:-.02em;margin-bottom:9px}
+.foot-credit{font:600 12px/1.5 "Bricolage Grotesque";color:rgba(234,247,244,.7);margin-bottom:12px}
+
+/* indicateur scroll */
+.scrollhint{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:7;
+  display:flex;flex-direction:column;align-items:center;gap:4px;pointer-events:none;
+  opacity:calc(1 - var(--gp)*9);transition:opacity .2s}
+.scrollhint .lab{font:800 9.5px/1 "Bricolage Grotesque";letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.7)}
+.scrollhint .chev{width:20px;height:20px;border-right:2px solid rgba(255,255,255,.8);border-bottom:2px solid rgba(255,255,255,.8);transform:rotate(45deg);animation:bob 1.8s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:rotate(45deg) translate(0,0)}50%{transform:rotate(45deg) translate(3px,3px)}}
+.touchhint{position:absolute;left:16px;bottom:16px;z-index:7;display:flex;align-items:center;gap:7px;pointer-events:none;opacity:0;transition:opacity .5s}
+.touchhint.on{opacity:.62}
+.touchhint .ring{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--tealL);animation:tap 2.6s ease-out infinite}
+@keyframes tap{0%{transform:scale(.6);opacity:1}60%{transform:scale(1.5);opacity:0}100%{opacity:0}}
+.touchhint span{font:700 10.5px/1 "Bricolage Grotesque";letter-spacing:.04em;color:var(--tealL);text-shadow:0 1px 4px #000}
+
+/* whisper in-scene (ancré, pas un popup flottant) */
+.whisper{position:absolute;z-index:8;max-width:240px;padding:11px 13px;border-radius:13px;cursor:pointer;
+  background:rgba(8,18,16,.8);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  border:1px solid rgba(255,216,132,.32);color:#fff;font:700 12px/1.4 "Bricolage Grotesque";
+  opacity:0;transform:translateY(8px) scale(.97);transition:opacity .35s ease,transform .35s ease;pointer-events:none}
+.whisper.on{opacity:1;transform:none;pointer-events:auto}
+.whisper .ar{color:var(--goldS);font-weight:800}
+.whisper small{display:block;margin-top:5px;font:700 11px/1.2 "Bricolage Grotesque";color:var(--goldS)}
+
+/* ===================== ELEMENTS SVG (doctrine calme : tableau au repos) ===================== */
+.sgh-cloud1{animation:cloud1 132s ease-in-out infinite alternate}
+.sgh-cloud2{animation:cloud2 168s ease-in-out infinite alternate}
+@keyframes cloud1{from{transform:translateX(0)}to{transform:translateX(56px)}}
+@keyframes cloud2{from{transform:translateX(0)}to{transform:translateX(-42px)}}
+#sunGlow{animation:sunBreath 11s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes sunBreath{0%,100%{opacity:.86;transform:scale(1)}50%{opacity:1;transform:scale(1.045)}}
+#yoleSails{animation:yoleLuff 9s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:left bottom}
+@keyframes yoleLuff{0%{transform:skewX(0deg)}100%{transform:skewX(-2deg)}}
+.ring{opacity:0}
+.ring.go{animation:ringgo 1.1s ease-out forwards}
+@keyframes ringgo{0%{opacity:.7;transform:scale(.3)}100%{opacity:0;transform:scale(1.8)}}
+.nearbyhalo .nh{opacity:0;transition:opacity .5s ease}
+.nearbyhalo.on .nh{opacity:1}
+.nearbyhalo .nhpulse{transform-origin:center}
+
+/* ===================== DESKTOP full-bleed ===================== */
+@media(min-width:680px){
+  .beatcopy{padding-bottom:52px}
+  h2.head{font-size:clamp(38px,4.8vw,54px)}
+  .verdictverbal{font-size:clamp(46px,5.6vw,66px)}
+  .sub{font-size:15.5px}
+}
+
+/* ===================== REDUCED-MOTION = PLANCHER DUR ===================== */
+@media(prefers-reduced-motion:reduce){
+  .sgh-cloud1,.sgh-cloud2,.freshpill .dot,.scrollhint .chev,.touchhint .ring,#sunGlow,#yoleSails{animation:none!important}
+  .ring{animation:none!important}
+  .scroller{position:static}
+  .spans{display:none}
+  .viewport{position:relative;height:auto;min-height:auto}
+  .cam{position:relative;transform:none!important;transition:none!important}
+  svg.scene{position:relative;height:80vh}
+  .veil,.alertwash{position:absolute}
+  .copylayer{position:static;pointer-events:auto}
+  .beatcopy{position:static;opacity:1!important;transform:none!important;max-width:620px;margin:0 auto;
+    padding:32px 20px;border-top:1px solid rgba(255,255,255,.08);pointer-events:auto}
+  .subpanel{display:block!important;animation:none!important;border-top:1px dashed rgba(255,255,255,.1);padding-top:12px;margin-top:12px}
+  .subpanel:first-of-type{border-top:none;padding-top:0;margin-top:0}
+  .fct .ffill{transform:scaleX(var(--rmw,1))!important;transition:none!important}
+  .fcday .fbar{transform:scaleY(var(--rmh,1))!important;transition:none!important}
+  .fcday.locked .fbar{filter:none}
+  .scrollhint,.touchhint{display:none}
+  .lyr-sky,.lyr-sea,.lyr-sand{transform:none!important}
+}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+</style>
+</head>
+<body>
+
+<h1 class="sr-only">Sargasses — fiche plage : faites défiler pour voir l'état mesuré au satellite, le score, la prévision 7 jours, et des plages propres à proximité.</h1>
+
+<!-- ============================ CHROME persistant ============================ -->
+<div class="chrome">
+  <div class="backbtn" id="backBtn" role="button" tabindex="0">
+    <span class="ar">←</span><span id="backTxt">Carte</span>
+  </div>
+  <div class="freshpill" id="freshPill" role="button" tabindex="0" aria-label="Fraîcheur de la donnée">
+    <span class="dot"></span><span class="t" id="freshTxt"></span>
+  </div>
+  <div class="langs" role="group" aria-label="Langue">
+    <button data-lang="fr" aria-pressed="true">FR</button>
+    <button data-lang="en" aria-pressed="false">EN</button>
+    <button data-lang="es" aria-pressed="false">ES</button>
+  </div>
+</div>
+
+<!-- ============================ SCROLLER ============================ -->
+<div class="scroller" id="scroller">
+
+  <div class="spans" id="spans">
+    <div class="span" id="sp0"></div>
+    <div class="span" id="sp1"></div>
+    <div class="span" id="sp2"></div>
+    <div class="span" id="sp3"></div>
+    <div class="span" id="sp4"></div>
+    <div class="span" id="sp5"></div>
+  </div>
+
+  <!-- VIEWPORT STICKY -->
+  <div class="viewport" id="viewport">
+    <div class="cam" id="cam">
+
+      <!-- ===================== SCÈNE BEACHSCENE PLEIN ÉCRAN (viewBox 800x600) ===================== -->
+      <svg class="scene" id="scene" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice"
+           xmlns="http://www.w3.org/2000/svg" role="img"
+           aria-label="Scène de la plage golden-hour mesurée au satellite : ciel, mer, sable, relief de la plage, une yole et Le Veilleur satellite qui veille la mer.">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#0B2230"/><stop offset=".42" stop-color="#155A5A"/>
+            <stop offset=".74" stop-color="#C97E3A"/><stop offset="1" stop-color="#F2B05E"/>
+          </linearGradient>
+          <linearGradient id="warmG" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#3a2a18" stop-opacity="0"/>
+            <stop offset=".6" stop-color="#C97E3A" stop-opacity=".20"/>
+            <stop offset="1" stop-color="#F2B05E" stop-opacity=".42"/>
+          </linearGradient>
+          <!-- mer : teinte du SOMMET pilotée par --seaTint (scrub prévision = status réel) -->
+          <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="var(--seaTint)"/><stop offset=".55" stop-color="#0f3b34"/>
+            <stop offset="1" stop-color="#08251F"/>
+          </linearGradient>
+          <radialGradient id="sun" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stop-color="#FFF6E0"/>
+            <stop offset=".46" stop-color="#FFD884" stop-opacity=".62"/>
+            <stop offset="1" stop-color="#F2B05E" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="land" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#241A12"/><stop offset="1" stop-color="#120D08"/>
+          </linearGradient>
+          <linearGradient id="rockG" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#1d2f33"/><stop offset="1" stop-color="#12222A"/>
+          </linearGradient>
+          <radialGradient id="anchorGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stop-color="#FFE6A8" stop-opacity=".5"/>
+            <stop offset="1" stop-color="#FFE6A8" stop-opacity="0"/>
+          </radialGradient>
+          <!-- halo "plan-B" pour plages proches (repris de map-grounding #shore) -->
+          <radialGradient id="shore" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stop-color="#FFE6A8" stop-opacity=".40"/>
+            <stop offset=".55" stop-color="#5FD3C9" stop-opacity=".10"/>
+            <stop offset="1" stop-color="#5FD3C9" stop-opacity="0"/>
+          </radialGradient>
+          <!-- voile yole -->
+          <linearGradient id="sailR" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF6A3D"/><stop offset="1" stop-color="#D8431F"/></linearGradient>
+          <linearGradient id="sailY" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFD45A"/><stop offset="1" stop-color="#F0A81E"/></linearGradient>
+          <linearGradient id="hullG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#13776B"/><stop offset="1" stop-color="#0A463F"/></linearGradient>
+          <!-- œil Veilleur -->
+          <radialGradient id="lens" cx="38%" cy="32%" r="72%"><stop offset="0" stop-color="#CFF4FF"/><stop offset=".34" stop-color="#16b9c9"/><stop offset="1" stop-color="#052b2b"/></radialGradient>
+          <radialGradient id="irisG" cx="42%" cy="38%" r="62%"><stop offset="0" stop-color="#0a3a39"/><stop offset="1" stop-color="#03100f"/></radialGradient>
+          <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1b4763"/><stop offset="1" stop-color="#0B2230"/></linearGradient>
+          <linearGradient id="bodyG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d3c38"/><stop offset=".55" stop-color="#102622"/><stop offset="1" stop-color="#0A1714"/></linearGradient>
+          <radialGradient id="haloG" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stop-color="var(--moodHalo)" stop-opacity=".55"/>
+            <stop offset=".5" stop-color="var(--moodHalo)" stop-opacity=".18"/>
+            <stop offset="1" stop-color="var(--moodHalo)" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="beamGrad" cx="50%" cy="0%" r="100%">
+            <stop offset="0" stop-color="var(--glint)" stop-opacity=".5"/>
+            <stop offset=".7" stop-color="var(--glint)" stop-opacity=".12"/>
+            <stop offset="1" stop-color="var(--glint)" stop-opacity="0"/>
+          </radialGradient>
+          <filter id="soft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="7"/></filter>
+          <filter id="softS" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3"/></filter>
+        </defs>
+
+        <!-- ===== CIEL ===== -->
+        <g class="lyr-sky">
+          <rect x="-40" y="-40" width="880" height="420" fill="url(#sky)"/>
+          <rect x="-40" y="-40" width="880" height="420" fill="url(#warmG)"/>
+          <!-- soleil : glisse J0→J6 au scrub (translateX via #sunGroup) + monte au scroll -->
+          <g id="sunGroup">
+            <circle id="sunGlow" cx="540" cy="300" r="150" fill="url(#sun)"/>
+            <circle cx="540" cy="300" r="40" fill="#FFF7E2"/>
+          </g>
+          <g class="sgh-cloud1" opacity=".46">
+            <ellipse cx="180" cy="118" rx="120" ry="13" fill="#10333E"/>
+            <ellipse cx="250" cy="128" rx="64" ry="8" fill="#10333E" opacity=".7"/>
+          </g>
+          <g class="sgh-cloud2" opacity=".34">
+            <ellipse cx="610" cy="92" rx="86" ry="9" fill="#0d2c36"/>
+            <ellipse cx="556" cy="100" rx="44" ry="7" fill="#0d2c36" opacity=".7"/>
+          </g>
+          <path d="M700 132 q7 -6 14 0 q7 -6 14 0" fill="none" stroke="#0B2230" stroke-width="2.4" stroke-linecap="round" opacity=".5"/>
+          <path d="M120 150 q5 -4 10 0 q5 -4 10 0" fill="none" stroke="#0B2230" stroke-width="2" stroke-linecap="round" opacity=".4"/>
+        </g>
+
+        <!-- ===== MER ===== -->
+        <g class="lyr-sea">
+          <rect x="-40" y="300" width="880" height="260" fill="url(#sea)"/>
+          <!-- grain raster satellite (révélé au sous-beat "satellite scanne") -->
+          <g id="rasterGrain" opacity="0">
+            <line x1="0" y1="320" x2="800" y2="320" stroke="#5FD3C9" stroke-width="1"/>
+            <line x1="0" y1="344" x2="800" y2="344" stroke="#5FD3C9" stroke-width="1"/>
+            <line x1="0" y1="368" x2="800" y2="368" stroke="#5FD3C9" stroke-width="1"/>
+            <line x1="0" y1="392" x2="800" y2="392" stroke="#5FD3C9" stroke-width="1"/>
+            <line x1="0" y1="416" x2="800" y2="416" stroke="#5FD3C9" stroke-width="1"/>
+            <line x1="0" y1="440" x2="800" y2="440" stroke="#5FD3C9" stroke-width="1"/>
+            <line x1="0" y1="464" x2="800" y2="464" stroke="#5FD3C9" stroke-width="1"/>
+          </g>
+          <!-- allée scintillante du soleil -->
+          <g id="sunPath" opacity=".92">
+            <ellipse cx="540" cy="330" rx="80" ry="6" fill="#FFD884" opacity=".42"/>
+            <ellipse cx="538" cy="350" rx="62" ry="5" fill="#FFD884" opacity=".34"/>
+            <ellipse cx="535" cy="372" rx="48" ry="5" fill="#FFD884" opacity=".26"/>
+            <ellipse cx="532" cy="396" rx="34" ry="4.5" fill="#FFD884" opacity=".19"/>
+          </g>
+          <!-- houle douce -->
+          <g stroke="#0c302b" stroke-width="2" stroke-linecap="round" opacity=".5">
+            <line x1="70" y1="392" x2="160" y2="392"/>
+            <line x1="232" y1="430" x2="320" y2="430"/>
+            <line x1="430" y1="468" x2="540" y2="468"/>
+            <line x1="110" y1="500" x2="220" y2="500"/>
+          </g>
+
+          <!-- RELIEF de plage (archétype PRNG injecté par JS dans #reliefG, repris de BeachScene) -->
+          <g id="reliefG"></g>
+
+          <!-- ÉTAT MER (clean/moderate/avoid) injecté par JS dans #seaStateG (baigneurs / filet / nappes) -->
+          <g id="seaStateG"></g>
+
+          <!-- YOLE RONDE Martinique (asset #yole de proto-home-az) -->
+          <g id="yole" transform="translate(642,352) scale(.62)" style="cursor:pointer">
+            <ellipse cx="0" cy="30" rx="60" ry="8" fill="#06201c" opacity=".55"/>
+            <ellipse cx="2" cy="40" rx="30" ry="4" fill="#FFD884" opacity=".18"/>
+            <g id="yoleSails">
+              <line x1="-2" y1="6" x2="-2" y2="-86" stroke="#241608" stroke-width="3.4" stroke-linecap="round"/>
+              <path d="M-2 -84 L-2 -6 L56 -6 Z" fill="url(#sailR)"/>
+              <path d="M-2 -58 L-2 -6 L38 -6 Z" fill="url(#sailY)"/>
+              <path d="M-2 -84 L-2 -6 L56 -6 Z" fill="none" stroke="#7a2a16" stroke-width="1.3" stroke-opacity=".55"/>
+              <path d="M-2 -78 Q12 -42 30 -8" fill="none" stroke="#9c2f17" stroke-width="1" stroke-opacity=".4"/>
+              <path d="M-4 -70 L-4 -8 L-44 -8 Z" fill="#1EC8B0" opacity=".94"/>
+              <path d="M-4 -70 L-4 -8 L-44 -8 Z" fill="none" stroke="#0b5147" stroke-width="1.1" stroke-opacity=".5"/>
+            </g>
+            <path d="M-62 4 Q0 30 62 4 Q56 16 46 18 L-46 18 Q-56 16 -62 4 Z" fill="url(#hullG)"/>
+            <path d="M-62 4 Q0 22 62 4" fill="none" stroke="#FFD884" stroke-width="2" stroke-opacity=".62"/>
+            <path d="M-46 18 L46 18 Q40 24 0 24 Q-40 24 -46 18 Z" fill="#08332e"/>
+            <circle cx="14" cy="-2" r="4.2" fill="#1a120b"/>
+            <rect x="11" y="2" width="7" height="13" rx="3" fill="#1a120b"/>
+          </g>
+
+          <!-- ===== PLAN-B : 3 plages propres proches en halo (stage 4) ===== -->
+          <g id="nearbyHalos"></g>
+        </g>
+
+        <!-- ===== SABLE ===== -->
+        <g class="lyr-sand">
+          <path d="M-40 482 Q300 450 840 500 L840 600 L-40 600 Z" fill="url(#land)"/>
+          <path d="M-40 482 Q300 450 840 500" fill="none" stroke="#FFD884" stroke-width="1.6" opacity=".24"/>
+          <!-- amas échoués sur le sable (state avoid/moderate) injecté par JS dans #shoreStateG -->
+          <g id="shoreStateG"></g>
+          <!-- badge H2S gradué ancré sur l'amas (stage 4) -->
+          <g id="h2sAnchor" opacity="0">
+            <g id="h2sMark" transform="translate(360,512)">
+              <circle cx="0" cy="0" r="15" fill="#08120E" fill-opacity=".88" stroke="#E8522A" stroke-width="1.6"/>
+              <text x="0" y="4.5" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" font-weight="700" fill="#E8522A">H₂S</text>
+            </g>
+          </g>
+        </g>
+
+        <!-- ===== LE VEILLEUR (satellite-mascotte v2) ===== -->
+        <circle id="halo" cx="400" cy="200" r="120" fill="url(#haloG)" filter="url(#soft)" opacity=".5"/>
+        <g id="beamG"><polygon id="beam" points="0,0 -70,210 70,210" fill="url(#beamGrad)" opacity="0"/></g>
+        <ellipse id="scanRing" cx="400" cy="362" rx="40" ry="8" fill="none" stroke="var(--glint)" stroke-width="2" opacity="0"/>
+
+        <g id="gPose" transform="translate(400 200)" style="cursor:pointer">
+         <g id="gLife">
+          <g id="gBody" transform="scale(1.30)">
+            <g>
+              <rect x="-86" y="-8" width="56" height="30" rx="3" fill="url(#panel)" transform="rotate(-7 -58 7)"/>
+              <rect x="30" y="-8" width="56" height="30" rx="3" fill="url(#panel)" transform="rotate(7 58 7)"/>
+              <g stroke="#2f7390" stroke-width="1" opacity=".65">
+                <line x1="-72" y1="-6" x2="-72" y2="24"/><line x1="-55" y1="-6" x2="-55" y2="24"/><line x1="-40" y1="-6" x2="-40" y2="24"/>
+                <line x1="44" y1="-6" x2="44" y2="24"/><line x1="61" y1="-6" x2="61" y2="24"/><line x1="76" y1="-6" x2="76" y2="24"/>
+              </g>
+            </g>
+            <rect x="-32" y="2" width="64" height="6" rx="3" fill="#0e2622"/>
+            <path d="M0 -30 C20 -30 32 -20 32 0 C32 24 22 42 0 42 C-22 42 -32 24 -32 0 C-32 -20 -20 -30 0 -30 Z"
+                  fill="url(#bodyG)" stroke="var(--rim)" stroke-width="1.3" stroke-opacity=".5"/>
+            <path d="M26 -16 C33 -10 33 22 22 32" fill="none" stroke="var(--rim)" stroke-width="2.4" stroke-opacity=".55" stroke-linecap="round"/>
+            <circle cx="0" cy="4" r="22" fill="url(#lens)"/>
+            <circle id="lensTint" cx="0" cy="4" r="22" fill="var(--mood)" opacity=".42"/>
+            <circle cx="0" cy="4" r="22" fill="none" stroke="var(--gold)" stroke-width="3"/>
+            <circle cx="0" cy="4" r="22" fill="none" stroke="#06201f" stroke-width="1" stroke-opacity=".8"/>
+            <circle cx="0" cy="4" r="16.5" fill="none" stroke="var(--gold)" stroke-width="1.1" stroke-opacity=".5"/>
+            <g id="gIris">
+              <circle id="iris" cx="0" cy="0" r="8" fill="url(#irisG)"/>
+              <circle id="irisTint" cx="0" cy="0" r="8" fill="var(--mood)" opacity=".55"/>
+              <circle id="pupil" cx="0" cy="0" r="3.4" fill="#02100f"/>
+              <circle id="catchA" cx="-3" cy="-3.4" r="2.8" fill="#fff7e2"/>
+              <circle id="catchB" cx="3.4" cy="2.6" r="1.3" fill="#dff6ff" opacity=".85"/>
+            </g>
+            <path id="lidTop" d="M-22 4 Q0 -20 22 4 L22 -20 L-22 -20 Z" fill="url(#bodyG)"/>
+            <path id="lidBot" d="M-22 4 Q0 28 22 4 L22 28 L-22 28 Z" fill="url(#bodyG)"/>
+            <circle cx="0" cy="4" r="22.2" fill="none" stroke="url(#bodyG)" stroke-width="6" opacity="1"/>
+            <circle cx="0" cy="4" r="22" fill="none" stroke="var(--gold)" stroke-width="3"/>
+            <path id="brow" d="M-15 -19 Q0 -25 15 -19" fill="none" stroke="#0a1f1c" stroke-width="3.4" stroke-linecap="round" opacity=".9"/>
+            <line x1="0" y1="-30" x2="0" y2="-46" stroke="#0e2622" stroke-width="3"/>
+            <circle id="antGlow" cx="0" cy="-49" r="10" fill="var(--moodDot)" opacity=".22" filter="url(#softS)"/>
+            <circle id="ant" cx="0" cy="-49" r="4.6" fill="var(--moodDot)"/>
+            <circle class="ring ringV" cx="0" cy="4" r="30" fill="none" stroke="var(--moodHalo)" stroke-width="2" style="transform-origin:0px 4px"/>
+          </g>
+         </g>
+        </g>
+      </svg>
+
+    </div><!-- /.cam -->
+
+    <div class="veil"></div>
+    <div class="alertwash"></div>
+
+    <!-- ===================== OVERLAY DE COPY (6 stages) ===================== -->
+    <div class="copylayer" id="copylayer">
+
+      <!-- STAGE 0 — ARRIVÉE : verdict verbal géant + status pill -->
+      <div class="beatcopy" id="bc0">
+        <div class="statuspill" id="statusPill" role="button" tabindex="0">
+          <span class="pd"></span><span class="pt" id="spStatus"></span><span class="pf" id="spFresh"></span>
+        </div>
+        <div class="eyebrow" id="eb0"></div>
+        <div class="verdictverbal anton" id="verdictVerbal"></div>
+        <p class="sub" id="s0"></p>
+        <button class="cta" id="ctaArrive" data-src="arrive">
+          <span class="t" id="ctaArriveT"></span>
+          <span class="s" id="ctaArriveS"></span>
+        </button>
+      </div>
+
+      <!-- STAGE 1 — VERDICT / preuve gratuite : ScoreBlob + chips -->
+      <div class="beatcopy" id="bc1">
+        <div class="eyebrow" id="eb1"></div>
+        <div class="scorewrap">
+          <div class="scoreblob" id="scoreBlob" role="button" tabindex="0">
+            <svg viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="9"/>
+              <circle id="scoreArc" cx="50" cy="50" r="42" fill="none" stroke="var(--green)" stroke-width="9"
+                      stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="264"/>
+            </svg>
+            <div class="num"><b id="scoreNum">0</b><span id="scoreLab"></span></div>
+          </div>
+          <div>
+            <h2 class="head anton" id="h1" style="margin-bottom:6px"></h2>
+            <p class="sub" id="s1" style="margin-bottom:0"></p>
+          </div>
+        </div>
+        <div class="chiprow" id="chipRow"></div>
+        <button class="cta" id="ctaVerdict" data-src="verdict"><span class="t" id="ctaVerdictT"></span></button>
+      </div>
+
+      <!-- STAGE 2 — PREUVE-MESURE : 3 sous-beats -->
+      <div class="beatcopy" id="bc2">
+        <div class="eyebrow" id="eb2"></div>
+        <div class="subdots" id="subDots"><i class="on"></i><i></i><i></i></div>
+        <div class="measureblock">
+          <!-- sous-beat A : satellite scanne -> AFAI -->
+          <div class="subpanel show" id="sub0">
+            <h2 class="head anton" id="m2aH"></h2>
+            <p class="sub" id="m2aS"></p>
+          </div>
+          <!-- sous-beat B : score = 7 facteurs en barres -->
+          <div class="subpanel" id="sub1">
+            <h2 class="head anton" id="m2bH"></h2>
+            <div class="factors" id="factors"></div>
+          </div>
+          <!-- sous-beat C : anneau régime + fiabilité PAR RÉGIME -->
+          <div class="subpanel" id="sub2">
+            <h2 class="head anton" id="m2cH"></h2>
+            <div class="regimebox" id="regimeBox" role="button" tabindex="0">
+              <div class="regimering">
+                <svg viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="8"/>
+                  <circle id="regimeArc" cx="50" cy="50" r="40" fill="none" stroke="var(--tealL)" stroke-width="8"
+                          stroke-linecap="round" stroke-dasharray="251" stroke-dashoffset="251"/>
+                </svg>
+                <div class="rn"><b id="regimePct">79%</b><span id="regimePctL"></span></div>
+              </div>
+              <div class="rtxt">
+                <b id="regimeT"></b><span id="regimeS"></span>
+                <span class="more" id="regimeMore"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="cta" id="ctaMethode" data-src="methode"><span class="t" id="ctaMethodeT"></span></button>
+      </div>
+
+      <!-- STAGE 3 — PRÉVISION : timeline 7 jours barres SVG + scrub -->
+      <div class="beatcopy" id="bc3">
+        <div class="eyebrow" id="eb3"></div>
+        <h2 class="head anton" id="h3"></h2>
+        <p class="sub" id="s3"></p>
+        <div class="fcstrip" id="fcStrip"></div>
+        <div class="fclockhint" id="fcLockHint"><span class="lk">🔒</span><span id="fcLockTxt"></span></div>
+        <button class="cta" id="ctaForecast" data-src="forecast"><span class="t" id="ctaForecastT"></span></button>
+      </div>
+
+      <!-- STAGE 4 — PLAN-B + SANTÉ -->
+      <div class="beatcopy" id="bc4">
+        <div class="eyebrow" id="eb4"></div>
+        <h2 class="head anton" id="h4"></h2>
+        <p class="sub" id="s4"></p>
+        <div class="h2sbadge" id="h2sBadge"><span class="lvl" id="h2sLvl"></span><span class="lvltxt" id="h2sTxt"></span></div>
+        <div class="planbrow" id="planbRow"></div>
+      </div>
+
+      <!-- STAGE 5 — PREUVE SOCIALE + nearby rail + liens + breadcrumb + footer -->
+      <div class="beatcopy" id="bc5">
+        <div class="eyebrow" id="eb5"></div>
+        <h2 class="head anton" id="h5"></h2>
+        <div class="social" id="socialBox" role="button" tabindex="0">
+          <div class="stars">★★★★★</div>
+          <div><b id="socialB"></b><span id="socialS"></span></div>
+        </div>
+        <div class="zonelinks" id="zoneLinks"></div>
+        <div class="breadcrumb" id="breadcrumb"></div>
+        <div class="footwrap">
+          <div class="wordmark">SARGASSES</div>
+          <div class="foot-credit" id="footCredit"></div>
+          <button class="cta" id="ctaFooter" data-src="footer"><span class="t" id="ctaFooterT"></span></button>
+          <div class="reassure" id="reassure"></div>
+        </div>
+      </div>
+    </div><!-- /.copylayer -->
+
+    <div class="scrollhint" id="scrollHint">
+      <span class="lab" id="scrollLab">DÉFILE</span><span class="chev"></span>
+    </div>
+    <div class="touchhint" id="touchHint"><span class="ring"></span><span id="touchHintTxt"></span></div>
+    <div class="whisper" id="whGeneric"></div>
+
+  </div><!-- /.viewport -->
+</div><!-- /.scroller -->
+
+<!-- toast de tracking (debug visuel du proto : prouve que la porte est câblée) -->
+<div id="trackToast" style="position:fixed;left:50%;bottom:14px;transform:translateX(-50%) translateY(20px);
+  z-index:60;background:#08120E;border:1px solid #1f5e58;color:#5FD3C9;
+  font:700 11px/1 'JetBrains Mono';padding:9px 14px;border-radius:10px;opacity:0;pointer-events:none;
+  transition:opacity .2s,transform .2s"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ====================================================================
+     DONNÉES MOCKÉES — MIME la vraie structure du repo.
+     EN PROD : viennent de public/api/copernicus/sargassum.json
+       (scores[id], weekly[id].forecast[].{afai,status,confidence,type,regime,sources},
+        updatedAt) + public/data/beaches-list.json {id,name,commune,lat,lng,status,score,afai}.
+     Ici on injecte l'objet __SG_BEACH__ exactement comme l'app le ferait, +
+     un fallback deep-link ?beach=...&status=...&score=... pour tester à froid.
+     ==================================================================== */
+
+  // EN PROD : sargassum.json.scores["mq016"] (Plage du Diamant)
+  var MOCK_SCORE = {
+    score: 69,
+    label: "MOYEN",
+    breakdown: { sargassum:30, wave:12, wind:9, sst:10, cloud:0, uv:5, tide:3 },
+    strengths: ["zéro sargasses","eau chaude","peu de vent"],
+    weaknesses: ["ciel couvert"]
+  };
+  // EN PROD : sargassum.json.weekly["mq016"].forecast (7 jours réels)
+  var MOCK_FORECAST = [
+    {day:"Auj.", date:"2026-06-16", afai:0.15, status:"moderate", confidence:60, type:"observation", regime:"calm", sources:["satellite","community"]},
+    {day:"Dem.", date:"2026-06-17", afai:0.12, status:"clean",    confidence:60, type:"tendance",    regime:"calm", sources:["satellite"]},
+    {day:"Jeu",  date:"2026-06-18", afai:0.10, status:"clean",    confidence:60, type:"tendance",    regime:"calm", sources:["satellite"]},
+    {day:"Ven",  date:"2026-06-19", afai:0.09, status:"clean",    confidence:56, type:"tendance",    regime:"calm", sources:["modèle"]},
+    {day:"Sam",  date:"2026-06-20", afai:0.08, status:"clean",    confidence:50, type:"horizon",     regime:"calm", sources:["modèle"]},
+    {day:"Dim",  date:"2026-06-21", afai:0.07, status:"clean",    confidence:44, type:"horizon",     regime:"calm", sources:["modèle"]},
+    {day:"Lun",  date:"2026-06-22", afai:0.06, status:"clean",    confidence:40, type:"horizon",     regime:"calm", sources:["modèle"]}
+  ];
+  // EN PROD : beaches-list.json — la plage courante + voisines réelles
+  var MOCK_BEACH = { id:"mq016", island:"mq", name:"Plage du Diamant", commune:"Le Diamant",
+                     lat:14.4758027, lng:-61.0314046, status:"moderate", score:69, afai:0.15, drive:32 };
+  var MOCK_NEARBY = [
+    { id:"mq012", name:"Anse Dufour",  commune:"Les Anses-d'Arlet", status:"clean",    score:84, afai:0.04, drive:18, lat:14.515, lng:-61.085 },
+    { id:"mq013", name:"Grande Anse",  commune:"Les Anses-d'Arlet", status:"clean",    score:80, afai:0.06, drive:22, lat:14.493, lng:-61.083 },
+    { id:"mq001", name:"Les Salines",  commune:"Sainte-Anne",       status:"moderate", score:58, afai:0.30, drive:46, lat:14.396, lng:-60.869 }
+  ];
+  // fiabilité PAR RÉGIME (source UNIQUE reliability-data.cjs : ne PAS inventer)
+  var MOCK_RELIABILITY = { calm:79, peak:76, sample:412 };
+
+  /* deep-link / injection app (test à froid) */
+  function qp(k){ try{ return new URLSearchParams(location.search).get(k); }catch(e){ return null; } }
+  var INJ = (window.__SG_BEACH__ && typeof window.__SG_BEACH__==="object") ? window.__SG_BEACH__ : {};
+
+  var DATA = {
+    beach:   INJ.beach   || MOCK_BEACH,
+    score:   INJ.score   || MOCK_SCORE,
+    forecast:INJ.forecast|| MOCK_FORECAST,
+    nearby:  INJ.nearby  || MOCK_NEARBY,
+    reliability: INJ.reliability || MOCK_RELIABILITY,
+    updatedAt: INJ.updatedAt || "2026-06-16T09:24:01.239Z"
+  };
+  // overrides deep-link sur la plage courante
+  if(qp("beach")) DATA.beach = Object.assign({}, DATA.beach, {name:qp("beach")});
+  if(qp("status")) DATA.beach.status = qp("status");
+  if(qp("score")!=null){ DATA.score.score = +qp("score"); DATA.beach.score = +qp("score"); }
+
+  var SCORE = (DATA.score.score!=null) ? DATA.score.score : (DATA.beach.score||0);
+
+  /* statut canonique : clean | moderate | avoid (mappe vers classes courtes) */
+  function stKey(s){ s=(s||"").toLowerCase(); if(s==="avoid"||s==="bad") return "avoid"; if(s==="moderate"||s==="mod") return "moderate"; return "clean"; }
+  var STATUS = stKey(DATA.beach.status);
+  var STCOL  = STATUS==="avoid" ? "var(--coral)" : STATUS==="moderate" ? "#E8B23A" : "var(--green)";
+  var STCLS  = STATUS==="avoid" ? "st-avoid" : STATUS==="moderate" ? "st-mod" : "st-clean";
+
+  /* ====================================================================
+     i18n
+     ==================================================================== */
+  var LANG = "fr";
+  function _t(fr,en,es){ return LANG==="en"?en : LANG==="es"?es : fr; }
+  var $ = function(id){ return document.getElementById(id); };
+
+  /* verdict VERBAL dérivé du STATUT réel (jamais inventé) */
+  function verbalVerdict(){
+    if(STATUS==="clean") return _t(["BAIGNADE OK","CE MATIN"],["GOOD TO SWIM","THIS MORNING"],["BAÑO OK","ESTA MAÑANA"]);
+    if(STATUS==="moderate") return _t(["ÇA SE TIENT,","SURVEILLE"],["IT HOLDS,","KEEP AN EYE"],["AGUANTA,","VIGILA"]);
+    return _t(["MER CHARGÉE,","ÉVITE"],["SEA LOADED,","SKIP IT"],["MAR CARGADO,","EVITA"]);
+  }
+  var STATUS_WORD = {
+    clean:    {fr:"Propre", en:"Clean", es:"Limpia"},
+    moderate: {fr:"Modéré", en:"Moderate", es:"Moderado"},
+    avoid:    {fr:"À éviter", en:"Avoid", es:"Evitar"}
+  };
+
+  /* beach name sans article pour EN/ES */
+  function beachNoArticle(n){ return (n||"").replace(/^l['’]\s*/i,"").replace(/^(le|la|les|plage du|plage de la|plage des|plage d['’])\s*/i,""); }
+  function beachName(){ return LANG==="fr" ? DATA.beach.name : beachNoArticle(DATA.beach.name); }
+
+  /* fraîcheur HONNÊTE : <12h => "il y a Xh", sinon "vérification en cours" (jamais faux chrono) */
+  function freshLabel(){
+    var age = (Date.now() - new Date(DATA.updatedAt).getTime())/60000;
+    if(isFinite(age) && age>=0 && age < 12*60){
+      if(age < 60) return _t("il y a "+Math.max(1,Math.round(age))+" min","· "+Math.max(1,Math.round(age))+" min ago","hace "+Math.max(1,Math.round(age))+" min");
+      var h=Math.round(age/60); return _t("il y a "+h+" h","· "+h+"h ago","hace "+h+" h");
+    }
+    return _t("vérification en cours","checking…","verificación en curso");
+  }
+
+  /* date du jour */
+  function dateLabel(){
+    var d=new Date();
+    var moFR=["JANV.","FÉVR.","MARS","AVR.","MAI","JUIN","JUIL.","AOÛT","SEPT.","OCT.","NOV.","DÉC."];
+    var moEN=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+    var moES=["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
+    var mo=LANG==="en"?moEN:LANG==="es"?moES:moFR;
+    return d.getDate()+" "+mo[d.getMonth()];
+  }
+
+  /* labels FR/EN/ES des 7 facteurs (clé = breakdown) */
+  var FACTOR_LABELS = {
+    sargassum:{fr:"Sargasses",en:"Sargassum",es:"Sargazo", max:35},
+    wave:{fr:"Houle",en:"Waves",es:"Oleaje", max:15},
+    wind:{fr:"Vent",en:"Wind",es:"Viento", max:12},
+    sst:{fr:"Eau",en:"Water",es:"Agua", max:12},
+    cloud:{fr:"Ciel",en:"Sky",es:"Cielo", max:10},
+    uv:{fr:"UV",en:"UV",es:"UV", max:8},
+    tide:{fr:"Marée",en:"Tide",es:"Tide", max:8}
+  };
+
+  var T = {
+    back:   {fr:"Carte", en:"Map", es:"Mapa"},
+    touchHint:{fr:"Touche la mer", en:"Touch the sea", es:"Toca el mar"},
+    scrollLab:{fr:"DÉFILE", en:"SCROLL", es:"DESLIZA"},
+
+    eb0:    {fr:["MESURÉ AU SATELLITE · "," · "], en:["SATELLITE-MEASURED · "," · "], es:["MEDIDO POR SATÉLITE · "," · "]},
+    s0:     {fr:"L'état réel de l'eau ce matin — mesuré au satellite, pas deviné.", en:"The real state of the water this morning — measured by satellite, not guessed.", es:"El estado real del agua esta mañana — medido por satélite, no adivinado."},
+    ctaArriveT:{fr:"Voir la preuve", en:"See the proof", es:"Ver la prueba"},
+    ctaArriveS:{fr:"score · 7 facteurs · prévision 7 jours", en:"score · 7 factors · 7-day forecast", es:"puntaje · 7 factores · pronóstico 7 días"},
+
+    eb1:    {fr:"LE VERDICT, EN CLAIR", en:"THE VERDICT, PLAINLY", es:"EL VEREDICTO, CLARO"},
+    h1:     {fr:[["SON SCORE"],["DU MATIN"]], en:[["ITS MORNING"],["SCORE"]], es:[["SU PUNTAJE"],["DE HOY"]]},
+    s1:     {fr:"Sur 100, recalculé à chaque passage satellite.", en:"Out of 100, recomputed on every satellite pass.", es:"Sobre 100, recalculado en cada pasada."},
+    ctaVerdictT:{fr:"D'où vient ce chiffre ?", en:"Where's this number from?", es:"¿De dónde sale?"},
+
+    eb2:    {fr:"LA PREUVE, MESURE PAR MESURE", en:"THE PROOF, STEP BY STEP", es:"LA PRUEBA, PASO A PASO"},
+    m2aH:   {fr:[["LE SATELLITE"],["SCANNE LA MER"]], en:[["THE SATELLITE"],["SCANS THE SEA"]], es:[["EL SATÉLITE"],["ESCANEA EL MAR"]]},
+    m2bH:   {fr:[["7 FACTEURS,"],["UN SEUL SCORE"]], en:[["7 FACTORS,"],["ONE SCORE"]], es:[["7 FACTORES,"],["UN PUNTAJE"]]},
+    m2cH:   {fr:[["ET ON SAIT"],["QUAND ON SE TROMPE"]], en:[["AND WE KNOW"],["WHEN WE'RE WRONG"]], es:[["Y SABEMOS"],["CUÁNDO FALLAMOS"]]},
+    regimeT:{fr:"Saison calme", en:"Calm season", es:"Temporada calma"},
+    regimeMore:{fr:"Voir notre fiabilité →", en:"See our reliability →", es:"Ver nuestra fiabilidad →"},
+    regimePctL:{fr:"justes", en:"right", es:"acierto"},
+    ctaMethodeT:{fr:"Et la semaine qui vient ?", en:"And the week ahead?", es:"¿Y la semana que viene?"},
+
+    eb3:    {fr:"7 JOURS DEVANT", en:"7 DAYS AHEAD", es:"7 DÍAS POR DELANTE"},
+    h3:     {fr:[["LA SEMAINE,"],["JOUR PAR JOUR"]], en:[["THE WEEK,"],["DAY BY DAY"]], es:[["LA SEMANA,"],["DÍA A DÍA"]]},
+    s3:     {fr:"Aujourd'hui et demain sont nets. Au-delà, c'est flouté — c'est l'honnêteté de la donnée.", en:"Today and tomorrow are sharp. Beyond that it's blurred — that's data honesty.", es:"Hoy y mañana son nítidos. Más allá, borroso — es honestidad de datos."},
+    fcLockTxt:{fr:"Au-delà de demain = réservé au Veilleur", en:"Beyond tomorrow = Veilleur only", es:"Más allá de mañana = solo Veilleur"},
+    ctaForecastT:{fr:"Débloquer les 7 jours", en:"Unlock the 7 days", es:"Desbloquear los 7 días"},
+
+    eb4:    {fr:"PLAN B, À CÔTÉ", en:"PLAN B, NEARBY", es:"PLAN B, CERCA"},
+    h4:     {fr:[["DES PLAGES PROPRES"],["TOUT PRÈS"]], en:[["CLEAN BEACHES"],["RIGHT NEAR"]], es:[["PLAYAS LIMPIAS"],["MUY CERCA"]]},
+    s4:     {fr:"Si ça ne le sent pas ici, voilà où aller — à quelques minutes.", en:"If it's not it here, here's where to go — minutes away.", es:"Si aquí no, aquí es dónde ir — a minutos."},
+
+    eb5:    {fr:"CE QU'ILS EN DISENT", en:"WHAT THEY SAY", es:"LO QUE DICEN"},
+    h5:     {fr:[["ON VEILLE"],["DÉJÀ POUR EUX"]], en:[["WE WATCH"],["FOR THEM ALREADY"]], es:[["YA VIGILAMOS"],["PARA ELLOS"]]},
+    socialB:{fr:"« Plus jamais une route pour rien. »", en:"“Never a wasted drive again.”", es:"“Nunca más un viaje en vano.”"},
+    socialS:{fr:"58 voisins suivent leurs plages chaque matin.", en:"58 locals follow their beaches each morning.", es:"58 vecinos siguen sus playas cada mañana."},
+    footCredit:{fr:"Données : Copernicus Marine · mesuré, pas deviné", en:"Data: Copernicus Marine · measured, not guessed", es:"Datos: Copernicus Marine · medido, no adivinado"},
+    ctaFooterT:{fr:"Activer mon veilleur", en:"Turn on my watcher", es:"Activar mi vigía"},
+    reassure:{fr:"Sans engagement — annulable en 1 clic.", en:"No commitment — cancel in one click.", es:"Sin compromiso — cancela en un clic."},
+
+    whYole: {fr:["Cette mer, on la lit chaque matin — pour cette plage.","Voir la fiabilité"],
+             en:["We read this sea every morning — for this beach.","See reliability"],
+             es:["Leemos este mar cada mañana — para esta playa.","Ver fiabilidad"]},
+    whVeil: {fr:["Je veille l'eau, pas toi. Calme = ≥70, vigilance = 40-69, alerte = <40.","Activer mon veilleur"],
+             en:["I watch the water, so you don't. Calm = ≥70, watch = 40-69, alert = <40.","Turn on my watcher"],
+             es:["Vigilo el agua por ti. Calma = ≥70, atención = 40-69, alerta = <40.","Activar mi vigía"]}
+  };
+
+  /* ====================================================================
+     TRACKING — porte de conversion unique (toast + console.log).
+     ==================================================================== */
+  var toast=$("trackToast"), toastTimer=null;
+  function track(name, props){
+    try{ console.log("[track]", name, props||{}); }catch(e){}
+    toast.textContent = "▸ " + name + (props? "  "+JSON.stringify(props):"");
+    toast.style.opacity="1"; toast.style.transform="translateX(-50%) translateY(0)";
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(function(){ toast.style.opacity="0"; toast.style.transform="translateX(-50%) translateY(20px)"; },2200);
+  }
+  /* PORTE DE CONVERSION UNIQUE */
+  function openPremium(source){ track("sg_premium_modal_open", {source:source, beach:DATA.beach.id}); }
+  function onOpenBeach(id, name){ track("sg_open_beach", {beach:id, name:name, src:"page_plage"}); }
+  function onShowMap(){ track("sg_show_map", {src:"page_plage_back"}); /* EN PROD : onShowMap() -> /carte-sargasses/ */ }
+
+  var REDUCE = window.matchMedia && window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+
+  /* ====================================================================
+     PRNG seedé (par beach.id) — reprend buildBeachScene de Sargasses_PROD.
+     ==================================================================== */
+  function seedFrom(str){ var h=2166136261; for(var i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); } return (h>>>0); }
+  function mulberry(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; var t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+  var rng = mulberry(seedFrom(DATA.beach.id||"mq016"));
+  function rr(a,b){ return a+(b-a)*rng(); }
+
+  /* archétype de relief (reprend beachLandmark) */
+  function archetype(){
+    var k=((DATA.beach.id||"")+" "+(DATA.beach.name||"")+" "+(DATA.beach.commune||"")).toLowerCase();
+    if(/diamant/.test(k)) return "diamondRock";
+    if(/caravelle|tartane|presqu|tombolo|chateaux|château|trinité/.test(k)) return "cliff";
+    if(/salines|saline|grande anse|bourg|sainte-anne/.test(k)) return "open";
+    return "morne";
+  }
+
+  function svgEl(tag,attrs){ var e=document.createElementNS("http://www.w3.org/2000/svg",tag); for(var k in attrs){ e.setAttribute(k,attrs[k]); } return e; }
+
+  /* injecte le RELIEF (archétype PRNG) dans #reliefG */
+  function buildRelief(){
+    var g=$("reliefG"); while(g.firstChild) g.removeChild(g.firstChild);
+    var a=archetype();
+    if(a==="diamondRock"){
+      g.appendChild(svgEl("path",{d:"M468 340 Q481 284 509 252 Q525 234 534 253 Q560 292 570 340 Z", fill:"url(#rockG)"}));
+      g.appendChild(svgEl("path",{d:"M509 252 Q525 234 534 253 Q560 292 570 340 L534 340 Z", fill:"#000", "fill-opacity":".22"}));
+      g.appendChild(svgEl("path",{d:"M509 252 Q481 284 468 340 L509 340 Z", fill:"#FFD884", "fill-opacity":".22"}));
+    } else if(a==="cliff"){
+      var cut=rr(238,268)|0;
+      g.appendChild(svgEl("path",{d:"M-40 340 L-40 "+cut+" Q120 "+(cut-38)+" 236 "+(cut+8)+" L266 340 Z", fill:"url(#rockG)"}));
+      g.appendChild(svgEl("path",{d:"M-40 "+cut+" Q120 "+(cut-38)+" 236 "+(cut+8), fill:"none", stroke:"#FFD884", "stroke-width":"3", "stroke-opacity":".22"}));
+    } else if(a==="open"){
+      // longue plage ouverte : îlot lointain + liseré de côte
+      g.appendChild(svgEl("path",{d:"M-40 366 Q400 358 840 368", fill:"none", stroke:"#FFD884", "stroke-width":"2", "stroke-dasharray":"5 9", "stroke-opacity":".34"}));
+      var ix=rr(150,260)|0;
+      g.appendChild(svgEl("path",{d:"M"+(ix-44)+" 340 Q"+ix+" 304 "+(ix+44)+" 340 Z", fill:"url(#rockG)", opacity:".85"}));
+    } else { // morne (baie + morne vert)
+      var mx=rr(560,640)|0;
+      g.appendChild(svgEl("path",{d:"M"+(mx-90)+" 340 Q"+mx+" 250 "+(mx+90)+" 340 Z", fill:"url(#rockG)", opacity:".92"}));
+      g.appendChild(svgEl("path",{d:"M"+(mx-90)+" 340 Q"+mx+" 250 "+(mx+90)+" 340", fill:"none", stroke:"#FFD884", "stroke-width":"2.2", "stroke-opacity":".2"}));
+    }
+  }
+
+  /* injecte l'ÉTAT (clean/moderate/avoid) en mer + sur le sable (reprend BeachScene states) */
+  function buildState(){
+    var sea=$("seaStateG"), shore=$("shoreStateG");
+    while(sea.firstChild) sea.removeChild(sea.firstChild);
+    while(shore.firstChild) shore.removeChild(shore.firstChild);
+    if(STATUS==="clean"){
+      // baigneurs dans une eau claire
+      [["372","392","6"],["452","404","5"]].forEach(function(s){
+        var grp=svgEl("g",{});
+        grp.appendChild(svgEl("circle",{cx:s[0],cy:s[1],r:s[2],fill:"#0D2B26"}));
+        grp.appendChild(svgEl("path",{d:"M"+(+s[0]-12)+" "+(+s[1]+6)+" q12 -8 24 0", stroke:"#0D2B26","stroke-width":"3.2",fill:"none","stroke-linecap":"round"}));
+        sea.appendChild(grp);
+      });
+      sea.appendChild(svgEl("path",{d:"M348 396 h8 M396 398 h7 M462 410 h8", stroke:"#FFD884","stroke-width":"1.6",opacity:".5","stroke-linecap":"round"}));
+    } else if(STATUS==="moderate"){
+      // filet posé (bouées dorées) + ramasseur (en collecte)
+      var net=svgEl("g",{});
+      net.appendChild(svgEl("path",{d:"M286 372 Q360 382 434 374", fill:"none", stroke:"#CDEBE6","stroke-width":"1.2","stroke-dasharray":"1.5 4",opacity:".6"}));
+      [[300,374,3],[344,378,2.6],[388,375,2.6],[432,374,3]].forEach(function(b){ net.appendChild(svgEl("circle",{cx:b[0],cy:b[1],r:b[2],fill:"#FFC72C"})); });
+      sea.appendChild(net);
+      sea.appendChild(svgEl("g",{transform:"translate(330,388) scale(.62)",opacity:".8",
+        html:""})); // raft placeholder filled below
+      var raft=svgEl("g",{transform:"translate(330,388) scale(.62)",opacity:".8"});
+      raft.appendChild(svgEl("ellipse",{rx:"22",ry:"7",fill:"#7a5c14"}));
+      raft.appendChild(svgEl("ellipse",{cx:"-10",cy:"-3",rx:"9",ry:"4",fill:"#8a6c1c"}));
+      sea.appendChild(raft);
+      // ramasseur sur le sable
+      var man=svgEl("g",{transform:"translate(458,508)"});
+      var fig=svgEl("g",{fill:"#0E1F1A"});
+      fig.appendChild(svgEl("circle",{cx:"0",cy:"-27",r:"5"}));
+      fig.appendChild(svgEl("path",{d:"M-5 -22 q5 -4 10 0 l-1.5 19 h-7 Z"}));
+      fig.appendChild(svgEl("path",{d:"M-4 -4 l-3 12 M4 -4 l3 12", stroke:"#0E1F1A","stroke-width":"2.4","stroke-linecap":"round",fill:"none"}));
+      man.appendChild(fig);
+      man.appendChild(svgEl("path",{d:"M2 -19 L20 8 M13 6 h13 M15 3 v7 M19 2 v8.5 M23 2 v8", stroke:"#3A2A14","stroke-width":"2.2",fill:"none","stroke-linecap":"round"}));
+      shore.appendChild(man);
+    } else { // avoid : nappes en mer + amas échoués sur le sable
+      var rafts=svgEl("g",{});
+      var r1=svgEl("g",{transform:"translate(300,372)"});
+      r1.appendChild(svgEl("ellipse",{rx:"24",ry:"8",fill:"#7a5c14"}));
+      r1.appendChild(svgEl("ellipse",{cx:"-12",cy:"-4",rx:"10",ry:"5",fill:"#8a6c1c"}));
+      r1.appendChild(svgEl("ellipse",{cx:"12",cy:"-3",rx:"11",ry:"5",fill:"#5d400e"}));
+      var r2=svgEl("g",{transform:"translate(470,390) scale(.9)"});
+      r2.appendChild(svgEl("ellipse",{rx:"22",ry:"7",fill:"#7a5c14"}));
+      r2.appendChild(svgEl("ellipse",{cx:"8",cy:"-3",rx:"9",ry:"4",fill:"#8a6c1c"}));
+      rafts.appendChild(r1); rafts.appendChild(r2);
+      sea.appendChild(rafts);
+      var amas=svgEl("g",{});
+      amas.appendChild(svgEl("ellipse",{cx:"318",cy:"512",rx:"72",ry:"14",fill:"#5d400e"}));
+      amas.appendChild(svgEl("ellipse",{cx:"288",cy:"506",rx:"34",ry:"10",fill:"#7a5c14"}));
+      amas.appendChild(svgEl("ellipse",{cx:"472",cy:"524",rx:"60",ry:"12",fill:"#6b4a12"}));
+      amas.appendChild(svgEl("ellipse",{cx:"492",cy:"518",rx:"28",ry:"8",fill:"#8a6c1c"}));
+      shore.appendChild(amas);
+    }
+  }
+
+  /* ====================================================================
+     PLAN-B : 3 plages propres proches en halo (stage 4), tap = flyTo
+     ==================================================================== */
+  var NEARBY_POS = [ {x:230,y:420}, {x:150,y:460}, {x:330,y:448} ]; // positions en mer (viewBox)
+  function buildNearbyHalos(){
+    var g=$("nearbyHalos"); while(g.firstChild) g.removeChild(g.firstChild);
+    g.setAttribute("class","nearbyhalo");
+    DATA.nearby.slice(0,3).forEach(function(b,i){
+      var p=NEARBY_POS[i]; var col = stKey(b.status)==="clean" ? "#22C55E" : stKey(b.status)==="moderate" ? "#E8A800" : "#E8522A";
+      var grp=svgEl("g",{class:"nh", "data-idx":i, style:"cursor:pointer"});
+      grp.appendChild(svgEl("circle",{cx:p.x,cy:p.y,r:"40",fill:"url(#shore)"}));
+      grp.appendChild(svgEl("circle",{cx:p.x,cy:p.y,r:"6.5",fill:col,stroke:"#06121A","stroke-width":"1.3"}));
+      var ring=svgEl("circle",{class:"ring nhpulse",cx:p.x,cy:p.y,r:"12",fill:"none",stroke:"#FFE6A8","stroke-width":"1.4",style:"transform-origin:"+p.x+"px "+p.y+"px"});
+      grp.appendChild(ring);
+      // libellé double-passe (lisible, comme map-grounding E)
+      var name=(LANG==="fr"?b.name:beachNoArticle(b.name));
+      grp.appendChild(svgEl("text",{x:p.x,y:p.y-16,"text-anchor":"middle","font-family":"Bricolage Grotesque,sans-serif","font-size":"12","font-weight":"800",fill:"#02100E","fill-opacity":".6",transform:"translate(0 1.2)"})).textContent=name;
+      var t=svgEl("text",{x:p.x,y:p.y-16,"text-anchor":"middle","font-family":"Bricolage Grotesque,sans-serif","font-size":"12","font-weight":"800",fill:"#fff"});
+      t.textContent=name; grp.appendChild(t);
+      g.appendChild(grp);
+    });
+  }
+
+  /* ====================================================================
+     APPLY COPY (i18n + données réelles)
+     ==================================================================== */
+  function setHeading(el, lines){
+    while(el.firstChild) el.removeChild(el.firstChild);
+    for(var i=0;i<lines.length;i++){
+      if(i>0) el.appendChild(document.createElement("br"));
+      el.appendChild(document.createTextNode(lines[i][0]!==undefined?lines[i][0]:lines[i]));
+    }
+  }
+  function setEyebrow0(){
+    var el=$("eb0"), parts=T.eb0[LANG];
+    while(el.firstChild) el.removeChild(el.firstChild);
+    el.appendChild(document.createTextNode(parts[0]));
+    var dt=document.createElement("span"); dt.className="dt"; dt.textContent=dateLabel(); el.appendChild(dt);
+    el.appendChild(document.createTextNode(parts[1]));
+    var bn=document.createElement("span"); bn.className="dt"; bn.textContent=beachName().toUpperCase(); el.appendChild(bn);
+  }
+  function setVerbalVerdict(){
+    var el=$("verdictVerbal"), v=verbalVerdict();
+    while(el.firstChild) el.removeChild(el.firstChild);
+    var hl=document.createElement("span"); hl.className="hl"; hl.style.color=STCOL;
+    hl.textContent=v[0]; el.appendChild(hl);
+    el.appendChild(document.createElement("br"));
+    el.appendChild(document.createTextNode(v[1]));
+  }
+  function buildChips(){
+    var row=$("chipRow"); while(row.firstChild) row.removeChild(row.firstChild);
+    (DATA.score.strengths||[]).slice(0,2).forEach(function(s){
+      var c=document.createElement("span"); c.className="chip good";
+      var i=document.createElement("span"); i.className="i"; i.textContent="✓"; c.appendChild(i);
+      c.appendChild(document.createTextNode(s)); row.appendChild(c);
+    });
+    (DATA.score.weaknesses||[]).slice(0,2).forEach(function(s){
+      var c=document.createElement("span"); c.className="chip bad";
+      var i=document.createElement("span"); i.className="i"; i.textContent="!"; c.appendChild(i);
+      c.appendChild(document.createTextNode(s)); row.appendChild(c);
+    });
+  }
+  function buildFactors(){
+    var box=$("factors"); while(box.firstChild) box.removeChild(box.firstChild);
+    var bd=DATA.score.breakdown||{};
+    Object.keys(FACTOR_LABELS).forEach(function(k){
+      var meta=FACTOR_LABELS[k]; var v=bd[k]!=null?bd[k]:0; var w=Math.max(0,Math.min(1,v/meta.max));
+      var row=document.createElement("div"); row.className="fct";
+      var l=document.createElement("div"); l.className="fl"; l.textContent=meta[LANG]; row.appendChild(l);
+      var tr=document.createElement("div"); tr.className="ftrack";
+      var fl=document.createElement("div"); fl.className="ffill";
+      // teinte facteur : sargasses = vert si faible apport négatif, sinon dégradé doré
+      fl.style.background = k==="sargassum" ? "linear-gradient(90deg,#22C55E,#5FD3C9)" : "linear-gradient(90deg,#FFC72C,#E8A800)";
+      fl.setAttribute("data-w", w.toFixed(3));
+      if(REDUCE) fl.style.setProperty("--rmw", w.toFixed(3));
+      tr.appendChild(fl); row.appendChild(tr);
+      var vv=document.createElement("div"); vv.className="fv"; vv.textContent="+"+v; row.appendChild(vv);
+      box.appendChild(row);
+    });
+  }
+  function buildForecast(){
+    var strip=$("fcStrip"); while(strip.firstChild) strip.removeChild(strip.firstChild);
+    var maxA = Math.max.apply(null, DATA.forecast.map(function(f){ return f.afai; }).concat([0.2]));
+    DATA.forecast.forEach(function(f,i){
+      var col = stKey(f.status)==="avoid" ? "#E8522A" : stKey(f.status)==="moderate" ? "#E8B23A" : "#22C55E";
+      var h = Math.max(0.08, Math.min(1, (f.afai/maxA)*0.6 + (stKey(f.status)==="clean"?0.18:stKey(f.status)==="moderate"?0.5:0.85)*0.4));
+      var day=document.createElement("div"); day.className="fcday"+(i>=2?" locked":"")+(i===0?" cursor":"");
+      day.setAttribute("data-idx",i);
+      var bb=document.createElement("div"); bb.className="fcbarbox";
+      var bar=document.createElement("div"); bar.className="fbar"; bar.style.background=col;
+      bar.setAttribute("data-h",h.toFixed(3));
+      if(REDUCE) bar.style.setProperty("--rmh", h.toFixed(3));
+      bb.appendChild(bar); day.appendChild(bb);
+      var lab=document.createElement("div"); lab.className="fcl"; lab.textContent=f.day; day.appendChild(lab);
+      strip.appendChild(day);
+    });
+  }
+  function buildPlanB(){
+    var row=$("planbRow"); while(row.firstChild) row.removeChild(row.firstChild);
+    DATA.nearby.slice(0,3).forEach(function(b,i){
+      var sk=stKey(b.status);
+      var card=document.createElement("div"); card.className="pbcard"; card.setAttribute("data-idx",i);
+      var th=document.createElement("div"); th.className="pbthumb";
+      th.appendChild(miniBeachScene(b)); card.appendChild(th);
+      var pn=document.createElement("div"); pn.className="pn"; pn.textContent=(LANG==="fr"?b.name:beachNoArticle(b.name)); card.appendChild(pn);
+      var ps=document.createElement("div"); ps.className="ps "+(sk==="avoid"?"st-avoid":sk==="moderate"?"st-mod":"st-clean");
+      var d=document.createElement("span"); d.className="d"; ps.appendChild(d);
+      ps.appendChild(document.createTextNode(STATUS_WORD[sk][LANG])); card.appendChild(ps);
+      var pf=document.createElement("div"); pf.className="pf"; pf.textContent="score "+b.score+" · "+b.drive+" min"; card.appendChild(pf);
+      row.appendChild(card);
+    });
+  }
+  /* mini-BeachScene seedée (pas de photo) pour le rail nearby */
+  function miniBeachScene(b){
+    var s=mulberry(seedFrom(b.id||b.name||"x"));
+    var sk=stKey(b.status);
+    var sea = sk==="avoid"?"#2c3b1a" : sk==="moderate"?"#19453d" : "#1A5852";
+    var svg=svgEl("svg",{viewBox:"0 0 200 64",preserveAspectRatio:"xMidYMid slice"});
+    svg.appendChild(svgEl("rect",{x:0,y:0,width:200,height:30,fill:"#155A5A"}));
+    svg.appendChild(svgEl("rect",{x:0,y:0,width:200,height:30,fill:"url(#warmG)"}));
+    svg.appendChild(svgEl("circle",{cx:130+ (s()*30)|0,cy:14,r:9,fill:"#FFD884",opacity:".7"}));
+    svg.appendChild(svgEl("rect",{x:0,y:28,width:200,height:24,fill:sea}));
+    // mini relief
+    var rx=(40+s()*120)|0;
+    svg.appendChild(svgEl("path",{d:"M"+(rx-22)+" 30 Q"+rx+" 14 "+(rx+22)+" 30 Z",fill:"#16242A",opacity:".8"}));
+    // état mer mini
+    if(sk==="clean"){ svg.appendChild(svgEl("circle",{cx:90,cy:40,r:3,fill:"#0D2B26"})); svg.appendChild(svgEl("circle",{cx:120,cy:44,r:2.4,fill:"#0D2B26"})); }
+    else if(sk==="moderate"){ svg.appendChild(svgEl("ellipse",{cx:96,cy:42,rx:12,ry:3.4,fill:"#7a5c14",opacity:".8"})); }
+    else { svg.appendChild(svgEl("ellipse",{cx:80,cy:42,rx:16,ry:4,fill:"#5d400e"})); svg.appendChild(svgEl("ellipse",{cx:130,cy:46,rx:13,ry:3.4,fill:"#6b4a12"})); }
+    svg.appendChild(svgEl("path",{d:"M0 50 Q100 44 200 52 L200 64 L0 64 Z",fill:"#1C1712"}));
+    return svg;
+  }
+  function buildZoneLinks(){
+    var z=$("zoneLinks"); while(z.firstChild) z.removeChild(z.firstChild);
+    var items=[
+      {fr:"Toute la commune : "+DATA.beach.commune, en:DATA.beach.commune+" beaches", es:"Playas de "+DATA.beach.commune},
+      {fr:"Toutes les plages du Sud", en:"All South beaches", es:"Todas las playas del Sur"}
+    ];
+    items.forEach(function(it){
+      var a=document.createElement("a"); a.href="#"; a.setAttribute("data-zone","1");
+      a.appendChild(document.createTextNode(it[LANG]+" "));
+      var ar=document.createElement("span"); ar.className="ar"; ar.textContent="→"; a.appendChild(ar);
+      z.appendChild(a);
+    });
+  }
+  function buildBreadcrumb(){
+    var b=$("breadcrumb"); while(b.firstChild) b.removeChild(b.firstChild);
+    var parts=[
+      {t:_t("Martinique","Martinique","Martinica"), href:"#"},
+      {t:DATA.beach.commune, href:"#"},
+      {t:beachName(), href:null}
+    ];
+    parts.forEach(function(p,i){
+      if(i>0){ var sep=document.createElement("span"); sep.className="sep"; sep.textContent="›"; b.appendChild(sep); }
+      if(p.href){ var a=document.createElement("a"); a.href=p.href; a.textContent=p.t; b.appendChild(a); }
+      else b.appendChild(document.createTextNode(p.t));
+    });
+  }
+
+  function applyCopy(){
+    $("backTxt").textContent=T.back[LANG];
+    $("freshTxt").textContent=freshLabel();
+    $("scrollLab").textContent=T.scrollLab[LANG];
+    $("touchHintTxt").textContent=T.touchHint[LANG];
+
+    // STAGE 0
+    setEyebrow0(); setVerbalVerdict();
+    $("s0").textContent=T.s0[LANG];
+    $("ctaArriveT").textContent=T.ctaArriveT[LANG]; $("ctaArriveS").textContent=T.ctaArriveS[LANG];
+    $("spStatus").textContent=STATUS_WORD[STATUS][LANG]; $("spStatus").style.color=STCOL;
+    $("statusPill").querySelector(".pd").style.background=STCOL;
+    $("spFresh").textContent="· "+freshLabel();
+
+    // STAGE 1
+    $("eb1").textContent=T.eb1[LANG]; setHeading($("h1"),T.h1[LANG]); $("s1").textContent=T.s1[LANG];
+    $("scoreLab").textContent="/100";
+    $("ctaVerdictT").textContent=T.ctaVerdictT[LANG];
+    buildChips();
+    // couleur de l'arc de score = humeur
+    $("scoreArc").style.stroke = SCORE>=70?"var(--green)":SCORE>=40?"var(--goldL)":"var(--coral)";
+
+    // STAGE 2
+    $("eb2").textContent=T.eb2[LANG];
+    setHeading($("m2aH"),T.m2aH[LANG]);
+    $("m2aS").textContent=_t(
+      "Copernicus passe 4 fois par jour. On lit l'indice AFAI ("+DATA.forecast[0].afai+") au large de "+beachName()+".",
+      "Copernicus passes 4 times a day. We read the AFAI index ("+DATA.forecast[0].afai+") off "+beachName()+".",
+      "Copernicus pasa 4 veces al día. Leemos el índice AFAI ("+DATA.forecast[0].afai+") frente a "+beachName()+".");
+    setHeading($("m2bH"),T.m2bH[LANG]);
+    buildFactors();
+    setHeading($("m2cH"),T.m2cH[LANG]);
+    $("regimeT").textContent=T.regimeT[LANG];
+    $("regimePct").textContent=DATA.reliability.calm+"%"; $("regimePctL").textContent=T.regimePctL[LANG];
+    $("regimeS").textContent=_t(
+      "En saison calme, nos verdicts sont justes "+DATA.reliability.calm+"% du temps ("+DATA.reliability.sample+" mesures vérifiées).",
+      "In calm season our verdicts are right "+DATA.reliability.calm+"% of the time ("+DATA.reliability.sample+" verified readings).",
+      "En temporada calma acertamos el "+DATA.reliability.calm+"% ("+DATA.reliability.sample+" mediciones verificadas).");
+    $("regimeMore").textContent=T.regimeMore[LANG];
+    $("ctaMethodeT").textContent=T.ctaMethodeT[LANG];
+
+    // STAGE 3
+    $("eb3").textContent=T.eb3[LANG]; setHeading($("h3"),T.h3[LANG]); $("s3").textContent=T.s3[LANG];
+    buildForecast();
+    $("fcLockTxt").textContent=T.fcLockTxt[LANG];
+    $("ctaForecastT").textContent=T.ctaForecastT[LANG];
+
+    // STAGE 4
+    $("eb4").textContent=T.eb4[LANG]; setHeading($("h4"),T.h4[LANG]); $("s4").textContent=T.s4[LANG];
+    buildPlanB();
+    // H2S gradué dérivé du statut (honnête : lié à la charge sargasses)
+    var h2s = STATUS==="avoid" ? {lvl:_t("H₂S MODÉRÉ","H₂S MODERATE","H₂S MODERADO"),col:"#E8522A",txt:_t("Amas en décomposition : évite si tu es sensible (asthme, nourrisson).","Decomposing piles: avoid if sensitive (asthma, infants).","Montones en descomposición: evita si eres sensible.")}
+              : STATUS==="moderate" ? {lvl:_t("H₂S FAIBLE","H₂S LOW","H₂S BAJO"),col:"#E8A800",txt:_t("Odeur possible en bord d'eau l'après-midi.","Possible smell at the shoreline in the afternoon.","Posible olor en la orilla por la tarde.")}
+              : {lvl:_t("H₂S NUL","H₂S NONE","H₂S NULO"),col:"#22C55E",txt:_t("Aucun amas en décomposition détecté.","No decomposing piles detected.","Ningún montón en descomposición.")};
+    $("h2sLvl").textContent=h2s.lvl; $("h2sLvl").style.color=h2s.col;
+    $("h2sBadge").style.borderColor=h2s.col.replace("#","rgba(")+""; // keep subtle
+    $("h2sBadge").style.borderColor="rgba(255,255,255,.12)";
+    $("h2sTxt").textContent=h2s.txt;
+    $("h2sMark").querySelector("circle").setAttribute("stroke",h2s.col);
+    $("h2sMark").querySelector("text").setAttribute("fill",h2s.col);
+
+    // STAGE 5
+    $("eb5").textContent=T.eb5[LANG]; setHeading($("h5"),T.h5[LANG]);
+    $("socialB").textContent=T.socialB[LANG]; $("socialS").textContent=T.socialS[LANG];
+    buildZoneLinks(); buildBreadcrumb();
+    $("footCredit").textContent=T.footCredit[LANG];
+    $("ctaFooterT").textContent=T.ctaFooterT[LANG]; $("reassure").textContent=T.reassure[LANG];
+
+    buildNearbyHalos();
+  }
+
+  /* ====================================================================
+     LE VEILLEUR v2 — moteur porté de proto-home-az / proto-veilleur-clip-v2.
+     ==================================================================== */
+  var gPose=$("gPose"), gLife=$("gLife"), gIris=$("gIris"),
+      iris=$("iris"), irisTint=$("irisTint"), pupil=$("pupil"),
+      catchB=$("catchB"), lidTop=$("lidTop"), lidBot=$("lidBot"),
+      brow=$("brow"), halo=$("halo"), beamG=$("beamG"), beam=$("beam"),
+      scanRing=$("scanRing"), ant=$("ant"), rootStyle=document.documentElement.style;
+  var WIDE = window.matchMedia && window.matchMedia("(min-width:680px)").matches;
+  var EYE_BASE = WIDE ? 172 : 198;
+  var EYE = {x:400, y:EYE_BASE+5.2};
+
+  function lerp(a,b,t){ return a+(b-a)*t; }
+  function clamp(v,a,b){ return v<a?a : v>b?b : v; }
+  function easeInOut(t){ return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2; }
+  function smooth(t){ return t*t*(3-2*t); }
+  function rand(a,b){ return a+Math.random()*(b-a); }
+  function hx(c){ c=c.replace('#',''); return [parseInt(c.substr(0,2),16),parseInt(c.substr(2,2),16),parseInt(c.substr(4,2),16)]; }
+  function mix(a,b,t){ var A=hx(a),B=hx(b); return 'rgb('+Math.round(lerp(A[0],B[0],t))+','+Math.round(lerp(A[1],B[1],t))+','+Math.round(lerp(A[2],B[2],t))+')'; }
+  function toVB(clientX,clientY){
+    var r=scene.getBoundingClientRect(), sc=Math.max(r.width/800,r.height/600);
+    var dw=800*sc,dh=600*sc, ox=(r.width-dw)/2, oy=(r.height-dh)/2;
+    return {x:(clientX-r.left-ox)/sc, y:(clientY-r.top-oy)/sc};
+  }
+  function getCss(name){ var v=getComputedStyle(document.documentElement).getPropertyValue(name).trim(); return v||'#1FB6A6'; }
+  function toHex(c){ c=c.trim(); if(c[0]==='#') return c.length===4?'#'+c[1]+c[1]+c[2]+c[2]+c[3]+c[3]:c;
+    var m=c.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/); if(m){ return '#'+([1,2,3].map(function(i){return ('0'+parseInt(m[i]).toString(16)).slice(-2);}).join('')); } return '#1FB6A6'; }
+  function mixCss(curr,target,t){ return mix(toHex(curr), toHex(target), t); }
+
+  var MOODS = {
+    calm:  { mood:'#1FB6A6', halo:'#1FB6A6', dot:'#22C55E', irisR:7.2,  pose:0,    lift:0,  browLift:-1, lidTop:0.08, lidBot:0.24, beam:0   },
+    scan:  { mood:'#FFC72C', halo:'#E8A800', dot:'#FFC72C', irisR:9.3,  pose:4.5,  lift:0,  browLift:1.5,  lidTop:.28, lidBot:0,   beam:1   },
+    alert: { mood:'#E8522A', halo:'#E8522A', dot:'#E8522A', irisR:10.2, pose:-3.5, lift:-6, browLift:3.2,  lidTop:-.18,lidBot:-.18,beam:.2  }
+  };
+  function clone(o){ var n={}; for(var k in o) n[k]=o[k]; return n; }
+  var M=clone(MOODS.calm), MT=clone(MOODS.calm), curMoodName='calm';
+  function setMoodTarget(name){ if(MOODS[name]){ MT=clone(MOODS[name]); curMoodName=name; } }
+  function setMoodFromScore(score){ if(score>=70) setMoodTarget('calm'); else if(score>=40) setMoodTarget('scan'); else setMoodTarget('alert'); }
+
+  function setLids(blink){
+    var cy=4;
+    var kT=clamp(M.lidTop+blink,-0.4,1), kB=clamp(M.lidBot+blink,-0.4,1);
+    var cpTop=lerp(-20,cy+1,kT), cpBot=lerp(28,cy-1,kB);
+    lidTop.setAttribute('d','M-22 '+cy+' Q0 '+cpTop+' 22 '+cy+' L22 -22 L-22 -22 Z');
+    lidBot.setAttribute('d','M-22 '+cy+' Q0 '+cpBot+' 22 '+cy+' L22 30 L-22 30 Z');
+  }
+
+  /* regard : défaut = la MER devant ; cible = pointeur ou élément tapé */
+  var SEA={x:EYE.x, y:430};
+  var gtx=EYE.x, gty=SEA.y, gcx=EYE.x, gcy=SEA.y;
+  var pointerActive=false, lastInput=-1, lookUntil=0, lastTap=-1e9;
+  var blinkStart=-1, blinkDur=180, nextBlink=performance.now()+rand(2600,4200);
+  function blinkNow(dur){ blinkStart=performance.now(); blinkDur=dur||180; wake(); }
+  function lookAtVB(x,y){ gtx=clamp(x,40,760); gty=clamp(y,330,560); lookUntil=performance.now()+1400; lastInput=performance.now(); wake(); }
+  function lookAt(el){ var rb=el.getBoundingClientRect(); var c=toVB(rb.left+rb.width/2, rb.top+rb.height/2); lookAtVB(c.x,c.y); }
+
+  /* ====================================================================
+     MOTEUR SCROLL — --gp, --p{i}, --e{i}, dolly, humeur du stage.
+     ==================================================================== */
+  var root=document.documentElement;
+  var spans=[$("sp0"),$("sp1"),$("sp2"),$("sp3"),$("sp4"),$("sp5")];
+  var copies=[$("bc0"),$("bc1"),$("bc2"),$("bc3"),$("bc4"),$("bc5")];
+  var cam=$("cam"), vp=$("viewport"), scene=$("scene");
+  var fired={}; var revealed={};
+
+  /* DOLLY par stage : PLONGÉE near = on entre dans la scène (pas dézoom). */
+  var DOLLY=[
+    {s:1.00, y:0,   oy:"60%"},  /* arrivée */
+    {s:1.10, y:-2,  oy:"58%"},  /* verdict : cadre le Veilleur perché */
+    {s:1.06, y:0,   oy:"50%"},  /* preuve-mesure : la mer scannée */
+    {s:1.04, y:0,   oy:"54%"},  /* prévision */
+    {s:1.12, y:-2,  oy:"62%"},  /* plan-B : la mer + halos voisins */
+    {s:1.00, y:0,   oy:"56%"}   /* social/footer : repos */
+  ];
+
+  function stageMood(active){
+    if(active===0) return STATUS==="avoid"?"alert" : STATUS==="moderate"?"scan" : "calm";
+    if(active===1) return SCORE>=70?"calm":SCORE>=40?"scan":"alert";
+    if(active===2) return "scan";   /* il scanne */
+    if(active===3) return "scan";   /* il regarde l'horizon prévision */
+    if(active===4) return STATUS==="avoid"?"alert":"calm"; /* plan-B */
+    return "calm";
+  }
+
+  /* SCRUB de prévision : index de jour visé par le scroll du stage 3 (0..6),
+     teinte la mer (status réel du jour) + glisse le soleil J0->J6.
+     Franchir J0->J+1 = porte premium. */
+  var fcCursor=0, fcCrossedFired=false;
+  var SEA_TINT = {clean:"#1A5852", moderate:"#19453d", avoid:"#2c3b1a"};
+  function applyForecastScrub(p){ /* p = progression du stage 3 (0..1) */
+    // on autorise le scrub J0..J1 librement ; au-delà = locked (premium)
+    var cont = p*2; // 0..2 sur la 1re moitié -> J0..J1
+    var idx = clamp(Math.round(cont),0,6);
+    // visuellement on laisse le scrub aller jusqu'à J6 mais on marque la barrière à J1
+    var visIdx = clamp(Math.floor(p*6+0.001),0,6);
+    if(visIdx!==fcCursor){
+      fcCursor=visIdx;
+      var days=document.querySelectorAll("#fcStrip .fcday");
+      for(var i=0;i<days.length;i++) days[i].classList.toggle("cursor", i===visIdx);
+      var f=DATA.forecast[visIdx];
+      // re-teinte la mer UNIQUEMENT sur status/regime réels (jamais cleanFloor atlantique)
+      rootStyle.setProperty("--seaTint", SEA_TINT[stKey(f.status)]);
+      // humeur du Veilleur suit le jour scruté
+      if(performance.now()-lastTap>2500) setMoodFromScore(stKey(f.status)==="avoid"?20:stKey(f.status)==="moderate"?55:85);
+      // glisse le soleil J0(droite haut)->J6(gauche bas) : "le temps qui passe"
+      var sunX = 540 - visIdx*64; // viewBox units
+      $("sunGroup").setAttribute("transform","translate("+(sunX-540).toFixed(1)+","+(-prog0*26).toFixed(1)+")");
+    }
+    // franchir au-delà de J1 dans le scrub = porte premium (1 seule fois)
+    if(p>0.30 && !fcCrossedFired){ fcCrossedFired=true; openPremium("forecast_scrub"); }
+  }
+
+  var prog0=0;
+  function sizeScroller(){
+    var total=0; for(var i=0;i<spans.length;i++){ total+=spans[i].offsetHeight; }
+    $("scroller").style.height=(total+window.innerHeight)+"px";
+  }
+
+  function computeScroll(){
+    var scrollY=window.pageYOffset||document.documentElement.scrollTop;
+    var scroller=$("scroller");
+    var base=scroller.getBoundingClientRect().top+scrollY;
+    var prog=[0,0,0,0,0,0], acc=base;
+    for(var i=0;i<spans.length;i++){ var h=spans[i].offsetHeight; prog[i]=clamp((scrollY-acc)/h,0,1); acc+=h; }
+    for(var j=0;j<6;j++){ root.style.setProperty("--p"+j, smooth(prog[j]).toFixed(4)); }
+    prog0=prog[0];
+
+    var active=0;
+    for(var k=0;k<6;k++){ if(prog[k]>0.001 && prog[k]<0.999){ active=k; } }
+    for(var m=0;m<5;m++){ if(prog[m]>=0.999 && prog[m+1]<=0.001){ active=m+1; } }
+    if(prog[5]>=0.999) active=5;
+
+    var pa=prog[active];
+    var hoStart=0.86;
+    var handoff=(active<5 && pa>hoStart)? smooth((pa-hoStart)/(1-hoStart)) : 0;
+    for(var n=0;n<6;n++){
+      var e=0; if(n===active){ e=1-handoff; } else if(n===active+1){ e=handoff; }
+      root.style.setProperty("--e"+n, e.toFixed(3));
+      copies[n].classList.toggle("on", e>0.15);
+    }
+
+    var gp=(active+prog[active])/5;
+    root.style.setProperty("--gp", clamp(gp,0,1).toFixed(4));
+    root.style.setProperty("--hs", prog[0].toFixed(4));
+
+    /* DOLLY */
+    var a=DOLLY[active], b=DOLLY[Math.min(active+1,5)], t=smooth(prog[active]);
+    var cs=a.s+(b.s-a.s)*t, cy2=a.y+(b.y-a.y)*t;
+    cam.style.transformOrigin="50% "+(t<0.5?a.oy:b.oy);
+    cam.style.transform="translateY(calc("+cy2.toFixed(3)+"% + var(--camOpenY))) scale(calc("+cs.toFixed(4)+" * var(--camOpenS)))";
+
+    /* soleil monte au scroll de l'arrivée (sauf si scrub stage 3 le pilote) */
+    if(active!==3) $("sunGroup").setAttribute("transform","translate(0,"+(-prog[0]*26).toFixed(1)+")");
+
+    /* stage 2 : raster satellite + barres facteurs + arc régime, par sous-beat */
+    handleMeasure(active, prog[2]);
+
+    /* stage 1 : ScoreBlob anim */
+    if(active===1 && prog[1]>0.12 && !revealed.score){ revealed.score=true; animScore(); }
+
+    /* stage 3 : barres prévision montent + SCRUB */
+    if(active===3){
+      if(!revealed.fc){ revealed.fc=true; raiseForecastBars(); }
+      applyForecastScrub(prog[3]);
+    }
+
+    /* stage 4 : halos nearby + badge H2S ancré */
+    var nh=$("nearbyHalos");
+    if(active>=4 && prog[4]>0.12){ nh.classList.add("on"); $("h2sAnchor").style.opacity=(STATUS==="clean"?0.55:1).toFixed(2); }
+    else { nh.classList.remove("on"); $("h2sAnchor").style.opacity="0"; }
+    if(active===4 && prog[4]>0.3 && !revealed.nhpulse){ revealed.nhpulse=true; pulseNearby(); }
+
+    /* alerte wash si la plage/forecast scruté est avoid */
+    root.style.setProperty("--alert", (STATUS==="avoid" && active===0)? clamp((prog[0]-0.1),0,0.6).toFixed(3) : "0");
+
+    $("touchHint").classList.toggle("on", active===0 && prog[0]>0.25 && prog[0]<0.85 && !pointerActive);
+
+    /* analytics par stage (1×) */
+    [["verdict",1],["measure",2],["forecast",3],["planb",4],["social",5]].forEach(function(s){
+      if(active===s[1] && prog[s[1]]>0.2 && !fired[s[0]]){ fired[s[0]]=true; track("sg_page_view",{s:s[0],beach:DATA.beach.id}); }
+    });
+
+    /* HUMEUR du Veilleur pilotée par le stage (sauf tap récent) */
+    var want=stageMood(active);
+    if(active!==3 && want!==curMoodName && (performance.now()-lastTap>2500)){ setMoodTarget(want); }
+  }
+
+  /* ---- STAGE 2 : 3 sous-beats sobres ---- */
+  function handleMeasure(active, p2){
+    if(active!==2){ return; }
+    var sub = p2<0.34?0 : p2<0.68?1 : 2;
+    var panels=[$("sub0"),$("sub1"),$("sub2")], dots=$("subDots").children;
+    for(var i=0;i<3;i++){ panels[i].classList.toggle("show", i===sub); dots[i].classList.toggle("on", i===sub); }
+    // sous-beat A : raster satellite scanne
+    $("rasterGrain").style.opacity = sub===0 ? (0.06+0.06*Math.min(1,(p2/0.34))).toFixed(3) : "0";
+    if(sub===0 && !revealed.scan){ revealed.scan=true; setMoodTarget("scan"); }
+    // sous-beat B : barres facteurs
+    if(sub===1 && !revealed.factors){ revealed.factors=true; raiseFactors(); }
+    // sous-beat C : arc régime
+    if(sub===2 && !revealed.regime){ revealed.regime=true; animRegime(); }
+  }
+  function raiseFactors(){
+    var fills=document.querySelectorAll("#factors .ffill");
+    for(var i=0;i<fills.length;i++){ (function(el,d){ setTimeout(function(){ el.style.transform="scaleX("+(el.getAttribute("data-w"))+")"; }, d); })(fills[i], i*70); }
+  }
+  function animRegime(){
+    var arc=$("regimeArc"), C=251, pct=DATA.reliability.calm/100;
+    var t0=performance.now();
+    (function step(){
+      var k=clamp((performance.now()-t0)/700,0,1), e=easeInOut(k);
+      arc.setAttribute("stroke-dashoffset", (C*(1-pct*e)).toFixed(1));
+      if(k<1) requestAnimationFrame(step);
+    })();
+  }
+  function animScore(){
+    var arc=$("scoreArc"), num=$("scoreNum"), C=264, pct=clamp(SCORE/100,0,1);
+    var t0=performance.now();
+    (function step(){
+      var k=clamp((performance.now()-t0)/800,0,1), e=easeInOut(k);
+      arc.setAttribute("stroke-dashoffset",(C*(1-pct*e)).toFixed(1));
+      num.textContent=Math.round(SCORE*e);
+      if(k<1) requestAnimationFrame(step);
+    })();
+  }
+  function raiseForecastBars(){
+    var bars=document.querySelectorAll("#fcStrip .fbar");
+    for(var i=0;i<bars.length;i++){ (function(el,d){ setTimeout(function(){ el.style.transform="scaleY("+(el.getAttribute("data-h"))+")"; }, d); })(bars[i], i*60); }
+  }
+  function pulseNearby(){
+    var rings=document.querySelectorAll("#nearbyHalos .nhpulse");
+    for(var i=0;i<rings.length;i++){ (function(el,d){ setTimeout(function(){ el.classList.remove("go"); void el.offsetWidth; el.classList.add("go"); }, d); })(rings[i], i*180); }
+  }
+
+  /* ====================================================================
+     INTERACTIONS — clics scène (PAS de setPointerCapture)
+     ==================================================================== */
+  function hit(target,sel){ return target.closest && target.closest(sel); }
+  function pulseRing(cls){ var els=document.querySelectorAll("."+cls); for(var i=0;i<els.length;i++){ (function(el){ el.classList.remove("go"); void el.offsetWidth; el.classList.add("go"); })(els[i]); } }
+
+  function tapVeilleur(){
+    pulseRing("ringV"); blinkNow(150);
+    var order=['calm','scan','alert']; var idx=(order.indexOf(curMoodName)+1)%3; setMoodTarget(order[idx]);
+    lastInput=performance.now(); lastTap=performance.now();
+    track("sg_scene_tap",{el:"veilleur"});
+    var bb=$("gPose").getBoundingClientRect();
+    showWhisper(T.whVeil[LANG], bb.left+bb.width/2, bb.top, function(){ openPremium("scene_veilleur"); });
+  }
+  function tapYole(){
+    track("sg_scene_tap",{el:"yole"}); lookAt($("yole"));
+    var bb=$("yole").getBoundingClientRect();
+    showWhisper(T.whYole[LANG], bb.left+bb.width/2, bb.top, function(){ openPremium("scene_yole"); });
+  }
+  function tapNearby(idx){
+    var b=DATA.nearby[idx]; if(!b) return;
+    var rings=document.querySelectorAll("#nearbyHalos .nhpulse");
+    if(rings[idx]){ rings[idx].classList.remove("go"); void rings[idx].offsetWidth; rings[idx].classList.add("go"); }
+    var p=NEARBY_POS[idx]; lookAtVB(p.x,p.y);
+    flyTo(b,idx);
+  }
+  /* flyTo : reprend le squelette de proto-planb-clean-nearby — ici on log + onOpenBeach
+     (EN PROD : recadre la caméra vers la plage voisine puis charge sa fiche). */
+  function flyTo(b,idx){
+    track("sg_fly_to",{from:DATA.beach.id, to:b.id});
+    onOpenBeach(b.id, b.name);
+  }
+
+  var scene=$("scene");
+  scene.addEventListener("click", function(evt){
+    if(hit(evt.target,"#gPose")){ tapVeilleur(); return; }
+    if(hit(evt.target,"#yole")){ tapYole(); return; }
+    var nh=hit(evt.target,".nh");
+    if(nh){ tapNearby(parseInt(nh.getAttribute("data-idx"),10)); return; }
+    // tap sur la mer = le Veilleur regarde l'endroit (calme, pas de barrage ici)
+    var c=toVB(evt.clientX, evt.clientY);
+    if(c.y>=320 && c.y<=476){ lookAtVB(c.x,c.y); blinkNow(150); }
+  }, {passive:true});
+
+  /* whisper in-scene */
+  function showWhisper(pair, px, py, onTap){
+    var w=$("whGeneric");
+    while(w.firstChild) w.removeChild(w.firstChild);
+    w.appendChild(document.createTextNode(pair[0]+" "));
+    if(pair[1]){ var ar=document.createElement("span"); ar.className="ar"; ar.textContent="→"; w.appendChild(ar);
+      var sm=document.createElement("small"); sm.textContent=pair[1]; w.appendChild(sm); }
+    var vpr=vp.getBoundingClientRect();
+    w.style.left=clamp(px-vpr.left-120,12,vpr.width-252)+"px";
+    w.style.top =clamp(py-vpr.top-90,70,vpr.height-130)+"px";
+    w.classList.add("on");
+    w.onclick=function(){ w.classList.remove("on"); if(onTap) onTap(); };
+    clearTimeout(w._t); w._t=setTimeout(function(){ w.classList.remove("on"); },5200);
+  }
+
+  /* ====================================================================
+     WIRING conversion (CTA + chrome + cards)
+     ==================================================================== */
+  function wire(){
+    $("backBtn").addEventListener("click", function(){ onShowMap(); });
+    $("freshPill").addEventListener("click", function(){ track("sg_scene_tap",{el:"fresh"}); });
+    $("statusPill").addEventListener("click", function(){ onOpenBeach(DATA.beach.id, DATA.beach.name); });
+    $("ctaArrive").addEventListener("click", function(){ track("sg_cta",{src:"arrive"}); /* scroll vers la preuve */ window.scrollBy({top:window.innerHeight*1.05, behavior:"smooth"}); });
+    $("scoreBlob").addEventListener("click", function(){ track("sg_scene_tap",{el:"scoreblob"}); });
+    $("ctaVerdict").addEventListener("click", function(){ window.scrollBy({top:window.innerHeight*1.1, behavior:"smooth"}); });
+    $("regimeBox").addEventListener("click", function(){ track("sg_nav",{to:"/fiabilite/"}); /* EN PROD : /fiabilite/ */ });
+    $("ctaMethode").addEventListener("click", function(){ window.scrollBy({top:window.innerHeight*1.1, behavior:"smooth"}); });
+    $("ctaForecast").addEventListener("click", function(){ openPremium("forecast_cta"); });
+    $("ctaFooter").addEventListener("click", function(){ openPremium("footer"); });
+    $("socialBox").addEventListener("click", function(){ openPremium("social_proof"); });
+    // plan-B cards
+    var cards=document.querySelectorAll("#planbRow .pbcard");
+    for(var i=0;i<cards.length;i++){ (function(c){
+      c.addEventListener("click", function(){ tapNearby(parseInt(c.getAttribute("data-idx"),10)); });
+    })(cards[i]); }
+    // zone links + breadcrumb
+    var zl=$("zoneLinks").querySelectorAll("a");
+    for(var z=0;z<zl.length;z++){ zl[z].addEventListener("click", function(e){ e.preventDefault(); track("sg_nav",{to:"zone"}); }); }
+    $("breadcrumb").addEventListener("click", function(e){ if(e.target.tagName==="A"){ e.preventDefault(); track("sg_nav",{to:"breadcrumb"}); } });
+  }
+
+  var langBtns=document.querySelectorAll(".langs button");
+  for(var li=0;li<langBtns.length;li++){ (function(btn){
+    btn.addEventListener("click", function(){
+      LANG=btn.getAttribute("data-lang");
+      for(var k=0;k<langBtns.length;k++){ langBtns[k].setAttribute("aria-pressed", langBtns[k]===btn?"true":"false"); }
+      applyCopy(); wire();
+      // ré-armer les reveals visibles
+      if(revealed.score){ $("scoreNum").textContent=SCORE; $("scoreArc").setAttribute("stroke-dashoffset",(264*(1-SCORE/100)).toFixed(1)); }
+      if(revealed.factors) raiseFactors();
+      if(revealed.fc) raiseForecastBars();
+    });
+  })(langBtns[li]); }
+
+  /* ====================================================================
+     POINTEUR — le Veilleur suit le regard (amplitude faible), retour MER.
+     ==================================================================== */
+  window.addEventListener("pointermove", function(e){
+    if(e.pointerType==="touch") return;
+    var p=toVB(e.clientX, e.clientY);
+    gtx=p.x; gty=p.y; pointerActive=true; lastInput=performance.now(); lookUntil=0; wake();
+  }, {passive:true});
+
+  /* ====================================================================
+     SETUP scène (relief + état + chips + factors + forecast + nearby)
+     ==================================================================== */
+  buildRelief(); buildState();
+  applyCopy(); wire();
+
+  /* ====================================================================
+     REDUCED-MOTION = PLANCHER DUR : tableau calme figé, tout cliquable.
+     ==================================================================== */
+  if(REDUCE){
+    root.style.setProperty("--p0","1");
+    $("sunGroup").setAttribute("transform","translate(0,-26)");
+    rootStyle.setProperty("--seaTint", SEA_TINT[STATUS]);
+    M=clone(MOODS.calm); MT=clone(MOODS.calm); curMoodName='calm';
+    setMoodFromScore(SCORE); M=clone(MOODS[curMoodName]);
+    rootStyle.setProperty('--mood',M.mood); rootStyle.setProperty('--moodHalo',M.halo); rootStyle.setProperty('--moodDot',M.dot);
+    iris.setAttribute('r',M.irisR); irisTint.setAttribute('r',M.irisR); pupil.setAttribute('r',(M.irisR*0.42).toFixed(2));
+    setLids(0);
+    brow.setAttribute('d','M-15 -19 Q0 '+(-25+M.browLift)+' 15 -19');
+    halo.setAttribute('opacity','.5'); beam.setAttribute('opacity','0'); scanRing.setAttribute('opacity','0');
+    gIris.setAttribute('transform','translate(0 1.5)');
+    gPose.setAttribute('transform','translate('+EYE.x+' '+(EYE_BASE+M.lift)+') rotate('+M.pose+')');
+    // reveals visibles d'emblée (le CSS RM fige scaleX/scaleY via --rmw/--rmh)
+    $("scoreNum").textContent=SCORE; $("scoreArc").setAttribute("stroke-dashoffset",(264*(1-SCORE/100)).toFixed(1));
+    $("regimeArc").setAttribute("stroke-dashoffset",(251*(1-DATA.reliability.calm/100)).toFixed(1));
+    $("rasterGrain").style.opacity=".08";
+    $("nearbyHalos").classList.add("on"); $("h2sAnchor").style.opacity=(STATUS==="clean"?0.55:1).toFixed(2);
+    return; /* pas de rAF */
+  }
+
+  /* ====================================================================
+     rAF UNIQUE — demand-driven, pause visibilitychange (batterie).
+     ==================================================================== */
+  var running=false, paused=false, needScroll=true;
+  var IDLE_MS=2600, t0=performance.now(), introDone=false;
+  function nowt(){ return performance.now(); }
+  function introProgress(){ return clamp((nowt()-t0)/3400,0,1); }
+  function wake(){ if(!running && !paused){ running=true; requestAnimationFrame(loop); } }
+
+  window.addEventListener("scroll", function(){ needScroll=true; lastInput=nowt(); wake(); }, {passive:true});
+  window.addEventListener("resize", function(){ sizeScroller(); needScroll=true; wake(); }, {passive:true});
+  document.addEventListener("visibilitychange", function(){ paused=document.hidden; if(!paused){ needScroll=true; lastInput=nowt(); wake(); } });
+
+  function loop(){
+    if(paused){ running=false; return; }
+    var t=nowt(), work=false;
+    var active=(t-lastInput<IDLE_MS) || !introDone;
+
+    if(needScroll){ computeScroll(); needScroll=false; work=true; }
+
+    /* humeur crossfade */
+    var ms=.045, moodConverged=Math.abs(M.irisR-MT.irisR)<0.06;
+    if(!moodConverged){
+      M.irisR=lerp(M.irisR,MT.irisR,ms); M.pose=lerp(M.pose,MT.pose,ms); M.lift=lerp(M.lift,MT.lift,ms);
+      M.browLift=lerp(M.browLift,MT.browLift,ms); M.lidTop=lerp(M.lidTop,MT.lidTop,ms);
+      M.lidBot=lerp(M.lidBot,MT.lidBot,ms); M.beam=lerp(M.beam,MT.beam,ms);
+      rootStyle.setProperty('--mood', mixCss(getCss('--mood'),MT.mood,ms));
+      rootStyle.setProperty('--moodHalo', mixCss(getCss('--moodHalo'),MT.halo,ms));
+      rootStyle.setProperty('--moodDot', mixCss(getCss('--moodDot'),MT.dot,ms));
+      work=true;
+    } else {
+      M.irisR=MT.irisR; M.pose=MT.pose; M.lift=MT.lift; M.browLift=MT.browLift;
+      M.lidTop=MT.lidTop; M.lidBot=MT.lidBot; M.beam=MT.beam;
+      rootStyle.setProperty('--mood',MT.mood); rootStyle.setProperty('--moodHalo',MT.halo); rootStyle.setProperty('--moodDot',MT.dot);
+    }
+    iris.setAttribute('r',M.irisR.toFixed(2)); irisTint.setAttribute('r',M.irisR.toFixed(2)); pupil.setAttribute('r',(M.irisR*0.42).toFixed(2));
+
+    /* regard */
+    if(pointerActive && t-lastInput<1100){ /* suit le curseur */ }
+    else if(t>lookUntil){ gtx=lerp(gtx,SEA.x,.02); gty=lerp(gty,SEA.y,.02); if(Math.abs(gtx-SEA.x)>0.4||Math.abs(gty-SEA.y)>0.4) work=true; }
+    else { work=true; }
+    gcx=lerp(gcx,gtx,.08); gcy=lerp(gcy,gty,.08);
+    if(Math.abs(gcx-gtx)>0.15||Math.abs(gcy-gty)>0.15) work=true;
+    var ex=clamp((gcx-EYE.x)/44,-4,4), ey=clamp((gcy-EYE.y)/58,-3,4);
+    gIris.setAttribute('transform','translate('+ex.toFixed(2)+' '+ey.toFixed(2)+')');
+    catchB.setAttribute('cx',(3.4+ex*.7).toFixed(2)); catchB.setAttribute('cy',(2.6+ey*.7).toFixed(2));
+
+    /* micro-vie SEULEMENT si actif (sinon tableau figé) */
+    var breathe, floatR;
+    if(active){ breathe=Math.sin(t/3300)*2.0; floatR=Math.sin(t/5500)*0.6; work=true; }
+    else { breathe=0; floatR=0; }
+    gLife.setAttribute('transform','translate(0 '+breathe.toFixed(2)+') rotate('+floatR.toFixed(3)+')');
+
+    /* posture (pivot correct : translate AVANT rotate) */
+    var poseAng=M.pose+floatR*0.3;
+    gPose.setAttribute('transform','translate('+EYE.x.toFixed(1)+' '+(EYE_BASE+M.lift).toFixed(1)+') rotate('+poseAng.toFixed(2)+')');
+
+    /* blink */
+    var blinkK=0;
+    if(blinkStart>0){ var bt=(t-blinkStart)/blinkDur; if(bt>=1){ blinkStart=-1; } else { blinkK=bt<.5?easeInOut(bt*2):easeInOut((1-bt)*2); } work=true; }
+    if(active && t>nextBlink && blinkStart<0){ blinkNow(180); nextBlink=t+rand(3200,6500); }
+    setLids(blinkK);
+
+    /* sourcil + halo */
+    var bl=M.browLift;
+    brow.setAttribute('d','M-15 '+(-19+bl*0.2).toFixed(2)+' Q0 '+(-25+bl).toFixed(2)+' 15 '+(-19+bl*0.2).toFixed(2));
+    halo.setAttribute('opacity', active?(0.42+0.12*Math.sin(t/3300)+0.05).toFixed(3):'0.50');
+
+    /* faisceau de scan (émis du VRAI œil, vers la cible/mer) + intro sweep */
+    var introT=introProgress(), beamOn=M.beam, sweep=0, sweepOp=0;
+    if(introT<1 && !introDone){ if(introT>0.32){ var s=clamp((introT-0.32)/0.68,0,1); sweep=(-14+26*easeInOut(s)); sweepOp=Math.sin(s*Math.PI)*0.9; } work=true; }
+    else { introDone=true; }
+    var ang=Math.atan2(gcy-EYE.y,gcx-EYE.x)*180/Math.PI-90; ang=clamp(ang,-26,26);
+    if(!introDone) ang=sweep;
+    beamG.setAttribute('transform','translate('+EYE.x+' '+EYE.y+') rotate('+ang.toFixed(2)+')');
+    var bOp=introDone?beamOn*0.85:Math.max(sweepOp,beamOn*0.85);
+    beam.setAttribute('opacity',bOp.toFixed(3));
+    var hitX=EYE.x+Math.tan(clamp(ang,-26,26)*Math.PI/180)*(362-EYE.y);
+    scanRing.setAttribute('cx',clamp(hitX,40,760));
+    scanRing.setAttribute('opacity',(bOp*0.6).toFixed(3));
+    scanRing.setAttribute('ry',(8+2*Math.abs(Math.sin(t/1700))*beamOn).toFixed(2));
+    if(beamOn>0.05 && active) work=true;
+    ant.setAttribute('opacity', beamOn>0.4?(0.8+0.2*Math.abs(Math.sin(t/1700))).toFixed(2):'1');
+
+    if(work && !paused){ requestAnimationFrame(loop); } else { running=false; }
+  }
+
+  /* ====================================================================
+     PREMIER PAINT + micro-tween d'ouverture de la fiche (spring --camOpen)
+     ==================================================================== */
+  setMoodFromScore(SCORE); M=clone(MOODS[curMoodName]);
+  rootStyle.setProperty('--mood',M.mood); rootStyle.setProperty('--moodHalo',M.halo); rootStyle.setProperty('--moodDot',M.dot);
+  iris.setAttribute('r',M.irisR); irisTint.setAttribute('r',M.irisR); pupil.setAttribute('r',(M.irisR*0.42).toFixed(2));
+  setLids(0);
+  rootStyle.setProperty("--seaTint", SEA_TINT[STATUS]);
+  gPose.setAttribute('transform','translate('+EYE.x+' '+EYE_BASE+') rotate(0)');
+  sizeScroller(); computeScroll(); needScroll=false; lastInput=nowt();
+
+  /* micro-tween d'ouverture : la fiche "plonge" (scale 1.06->1, slide léger) en 1s */
+  (function openTween(){
+    rootStyle.setProperty("--camOpenS","1.06");
+    rootStyle.setProperty("--camOpenY","-1.4%");
+    cam.style.transition="none";
+    requestAnimationFrame(function(){
+      cam.style.transition="transform 1.0s cubic-bezier(.34,1.4,.64,1)";
+      rootStyle.setProperty("--camOpenS","1");
+      rootStyle.setProperty("--camOpenY","0");
+      setTimeout(function(){ cam.style.transition="transform .5s cubic-bezier(.34,1.4,.64,1)"; }, 1050);
+    });
+  })();
+
+  track("sg_page_shown", {beach:DATA.beach.id, name:DATA.beach.name, score:SCORE, status:STATUS});
+  wake();
+
+})();
+</script>
+</body>
+</html>
