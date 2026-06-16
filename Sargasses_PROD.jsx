@@ -28,6 +28,8 @@ const lazyWithRetry=imp=>lazy(()=>imp()
     throw err
   }))
 const LazyMapView=lazyWithRetry(()=>import("./src/MapView"))
+// Accueil A→Z (bras A/B `home_az`) — design validé porté en Shadow DOM.
+const LazyHomeAZ=lazyWithRetry(()=>import("./src/HomeAZ"))
 
 class ErrBound extends Component{
   constructor(p){super(p);this.state={err:null}}
@@ -10186,6 +10188,13 @@ export default function App(){
   // prouvé, jamais imposé ; ?lf=game force en QA. La conversion (paywall/trial/
   // A-B pw_prelude) reste strictement intacte — GameFunnel ne fait que la nourrir.
   const[landingFunnel]=useState(()=>LF_OVERRIDE||abVariant("landing_funnel",["control","game"],[.7,.3]))
+  // Bras A/B `home_az` : accueil A→Z (funnel scroll 5 beats + Le Veilleur
+  // satellite v2 rassure≠surveille + yole + perso H1 daté EN DIRECT), porté du
+  // design VALIDÉ (src/HomeAZ.jsx, monté en Shadow DOM = isolation CSS totale).
+  // Prioritaire sur le hero quand actif ; ADDITIF, control (GameFunnel/Hero
+  // Verdict) intact. Override ?home_az=1/0. La conversion (openPremium/Stripe/
+  // pw_*) reste strictement la même porte. Reduced-motion : HomeAZ a son plancher.
+  const[homeAZ]=useState(()=>{try{const q=window.location.search;if(/[?&]home_az=1/.test(q))return true;if(/[?&]home_az=0/.test(q))return false;return abVariant("home_az",["control","az"],[.7,.3])==="az"}catch(_){return false}})
   // Transition phasée accueil → carte/plage (SceneWipe). Jamais si reduced-motion.
   const[wipe,setWipe]=useState(null)
   const fireWipe=useCallback(label=>{
@@ -10811,7 +10820,36 @@ export default function App(){
             header z700 + contrôles MapView z1000 ["Toute l'île"/Caraïbe],
             sous paywall z1100+). La carte charge derrière pendant la
             lecture → plus de "vide bleu nuit" au premier paint. */}
-        {showHero&&heroPick&&(landingFunnel==="game"?(
+        {showHero&&heroPick&&(homeAZ?(
+          /* BRAS A/B `home_az` — accueil A→Z (design validé, Shadow DOM).
+             Additif : control = GameFunnel/HeroVerdict, intact. ?home_az=1/0. */
+          <ErrBound><Suspense fallback={null}>
+          <LazyHomeAZ beach={heroPick} lang={lang} island={island} sargData={sargData} userPos={userPos}
+            topBeaches={(allBeaches||[]).filter(b=>(IS_NEW_REGION||b.island===island)&&b.status&&b.score!=null
+                &&imageMap?.[b.id]&&!String(imageMap[b.id]).startsWith("sat-"))
+              .sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,3)
+              .map(b=>({...b,_img:"/beaches/"+imageMap[b.id]}))}
+            track={track}
+            onOpen={()=>{
+              dismissHero("home_az_cta")
+              setSelectedBeach(heroPick)
+              fireWipe(_t(lang,"Score 0-100 · mis à jour 4×/jour","0-100 score · updated 4×/day","Score 0-100 · actualizado 4×/día"))
+              track("sg_beach_open",{beach_id:heroPick.id,status:heroPick.status,source:"home_az"})
+            }}
+            onOpenBeach={b=>{
+              dismissHero("home_az_card")
+              setSelectedBeach(b)
+              fireWipe(_t(lang,"Score 0-100 · mis à jour 4×/jour","0-100 score · updated 4×/day","Score 0-100 · actualizado 4×/día"))
+              track("sg_beach_open",{beach_id:b.id,status:b.status,source:"home_az_top3"})
+            }}
+            onPremium={src=>{dismissHero("home_az_premium");openPremium(src||"landing")}}
+            onShowMap={()=>{
+              dismissHero("home_az_map")
+              fireWipe(_t(lang,"Chaque pastille = la mesure du matin","Every dot = this morning's measurement","Cada punto = la medición de la mañana"))
+            }}
+            exiting={heroExiting}/>
+          </Suspense></ErrBound>
+        ):landingFunnel==="game"?(
           <GameFunnel beach={heroPick} lang={lang} island={island} sargData={sargData} userPos={userPos}
             pickBeaches={(allBeaches||[]).filter(b=>(IS_NEW_REGION||b.island===island)&&b.status&&b.score!=null)
               .sort((a,b)=>(b.score||0)-(a.score||0))}

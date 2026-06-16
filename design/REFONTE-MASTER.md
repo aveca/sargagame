@@ -104,7 +104,8 @@
 - [ ] Canonical/hreflang PASS (prérequis avant pageShell).
 
 **PHASE 1 — flyTo sur la porte NEAR (plus fort levier).** KPI : modal→CTA 2 %→≥5 %, verdict<1s, 0 perte SEO.
-- [x] **Accueil A→Z BUILT + VÉRIFIÉ navigateur** (`design/proto-home-az.html`, 87KB) : funnel scroll + satellite v2 (1 objet, rassure) + yole + perso H1 daté EN DIRECT ; sticky épinglé partout, 5 beats + footer (e4=1.0) joignables, satellite centré, calme, reduced-motion. → **RESTE : PORT dans le monolithe derrière A/B `home_az`** (remplace/augmente HeroVerdict ; piège : article FR « à Le Diamant »→« au Diamant »).
+- [x] **Accueil A→Z BUILT + VÉRIFIÉ navigateur** (`design/proto-home-az.html`, 87KB) : funnel scroll + satellite v2 (1 objet, rassure) + yole + perso H1 daté EN DIRECT ; sticky épinglé partout, 5 beats + footer (e4=1.0) joignables, satellite centré, calme, reduced-motion.
+- [x] **PORTÉ EN PROD derrière A/B `home_az` (30%)** — `src/HomeAZ.jsx` (moteur scroll porté ~1:1) + `src/home-az-assets.js` (CSS+markup byte-identiques au proto, généré par `scripts/build-homeaz.cjs`), monté en **Shadow DOM** (isolation CSS totale). Additif : control = GameFunnel/HeroVerdict intact, override `?home_az=1/0`. Câblé aux vraies portes (`openPremium`/`onOpen`/`onShowMap` + `track`) + sécurité (init KO → carte). **Fix FR « au Diamant » confirmé.** Vérif Playwright (vrai composant) : structure, gp 0→1, beats e0→e4, sticky shadow OK mobile+desktop, freshness honnête, conversion câblée, 0 erreur ; build vite OK (chunk HomeAZ 74.7KB). SW v172.
 - [ ] Façade `flyTo()` devant Archipel/StoryEngine/slug-match (A/B nav_maree/navWorld, fallback gardé).
 - [ ] pw_beat = surface paywall unique au NEAR, `openPremium('forecast_lock')` contextualisé plage.
 - [ ] Copy Premium = « le Veilleur surveille TA plage » (fiche + /alertes/).
