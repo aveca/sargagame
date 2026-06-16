@@ -739,9 +739,7 @@ ${isGP ? '' : `  <url><loc>${d}/a-propos/</loc><lastmod>${today}</lastmod><chang
   <url><loc>${d}/sargasses-guadeloupe-cette-semaine/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>${gpEditPrio}</priority></url>
   <url><loc>${d}/meteo-sargasses-martinique/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>${d}/meteo-sargasses-guadeloupe/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
-  <url><loc>${d}/weekend.html</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>${d}/widget/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>${d}/sarg_carte_satellite_app.html</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>${d}/mentions-legales.html</loc><lastmod>${today}</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>${d}/confidentialite.html</loc><lastmod>${today}</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
 </urlset>

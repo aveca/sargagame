@@ -103,7 +103,10 @@ RewriteRule ^communes/?$ / [R=301,L]
 # GUADELOUPE — Editorial pages redirects
 # =====================================================================
 RewriteRule ^carte-temps-reel/?$ /carte-sargasses/ [R=301,L]
-RewriteRule ^methode-carte/?$ /carte-sargasses/ [R=301,L]
+# /methode-carte/ EST une vraie page éditoriale générée (vite.config pages[],
+# « méthode et sources de la carte ») ET déclarée au sitemap. Le 301 legacy la
+# masquait (301 → /carte-sargasses/ constaté en prod le 2026-06-16) = page jamais
+# servie. Retiré : ne JAMAIS 301 un chemin servable (leçon /a-propos/ 2026-06-10).
 RewriteRule ^previsions-sargasses-guadeloupe/?$ /previsions/ [R=301,L]
 # /faq/ et /a-propos/ sont des VRAIES pages (build + public/) — les 301
 # legacy (f60141a, posés quand elles n'existaient pas) les masquaient : le
@@ -183,11 +186,11 @@ RewriteRule ^previsions-bulletin-direct/?$ /previsions/ [R=301,L]
 
 # =====================================================================
 
-# Auto-added 2026-04-13 by seo-fix-404
-RewriteRule ^plages/anse-laborde/?$ /plages/anse-laborde/ [R=301,L]
-RewriteRule ^plages/plage-des-amandiers/?$ /plages/plage-des-amandiers/ [R=301,L]
-RewriteRule ^plages/plage-de-sainte-claire/?$ /plages/plage-de-sainte-claire/ [R=301,L]
-RewriteRule ^plages/plage-de-la-desirade-sud/?$ /plages/plage-de-la-desirade-sud/ [R=301,L]
+# 2026-06-16 : 4 règles « ^plages/<slug>/ → /plages/<slug>/ » (auto-ajoutées par
+# seo-fix-404 le 2026-04-13) retirées. Ces slugs sont devenus de VRAIES plages GP
+# (anse-laborde, plage-des-amandiers, plage-de-sainte-claire, plage-de-la-desirade-sud :
+# servies 200 + au sitemap GP) → la règle les redirigeait vers elles-mêmes = no-op
+# au mieux, boucle 301 au pire. Aucune cible à « réparer » → supprimées.
 # CATCH-ALL — remaining old URLs that don't match specific rules → homepage
 # These MUST come AFTER all specific redirects above
 # =====================================================================
@@ -211,6 +214,10 @@ RewriteRule ^plages-martinique/?$ / [R=301,L]
 
 # Ancien landing
 RewriteRule ^landing-v2\.html$ / [R=301,L]
+# weekend.html : ancienne LP de capture email, orpheline (aucun lien app/email),
+# self-canonical + au sitemap = page fine indexable. Consolidée vers l'accueil
+# (capture email désormais in-app). Retirée du sitemap (vite.config). 2026-06-16.
+RewriteRule ^weekend\.html$ / [R=301,L]
 </IfModule>
 
 # =====================================================================

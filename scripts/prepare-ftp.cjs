@@ -674,6 +674,10 @@ function prepareNewRegion(region) {
     // Statiques hérités MQ/GP (FR, branding Martinique) — orphelins sur les
     // domaines EN/ES : confusion de marque + duplicate FR crawlable en 200.
     'weekend.html', 'onboarding.html', 'neptunes_fury.html', 'og-weekend.png',
+    // Cartes Leaflet legacy (FR « Martinique & Guadeloupe ») — orphelines crawlables
+    // sur les domaines EN/ES. Consolidées vers /carte-sargasses/ sur MQ/GP (canonical),
+    // jamais shippées sur les régions USD. 2026-06-16.
+    'sarg_carte_satellite_app.html', 'sarg_carte_satellite_standalone.html',
     'og-image.svg', 'islands.svg', 'social-share.png',
     'mentions-legales.html', 'confidentialite.html',
     'en', // landing /en/ « Sargassum Monitoring Martinique »
