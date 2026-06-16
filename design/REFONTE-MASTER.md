@@ -5,7 +5,7 @@
 
 ## 📊 TABLEAU DE BORD — COUVERTURE (maj à chaque tick · MONITOR FONDATEUR)
 > **C'est ICI qu'on suit l'avancement.** La boucle met ce bloc à jour à chaque action. « Fini » = tout en ✅.
-> Avancement global estimé : **~60 %** · maj 2026-06-16.
+> Avancement global estimé : **~65 %** · maj 2026-06-16.
 
 | Phase | Lot | État |
 |---|---|---|
@@ -13,8 +13,11 @@
 | A | Carte interactive **MULTI-SITES** (`WorldMapView` region-aware — vraie géo OSM 5 régions, pan/zoom/tap/scrub) — A/B `map_world` 50/50, `src/WorldMapView.jsx`, SW v174 | ✅ **LIVE prod** |
 | A | Fiche « plongée » — `pw_beach_dive` 50/50, `src/BeachDive.jsx`, beats=6, factors=7, Veilleur v2, scroll+scrub, SW v175 | ✅ **LIVE prod** |
 | B | Demo-gate email `capture_gate` 50/50 — intercept forecast intent → email gate → PremiumModal, SW v176 | ✅ **LIVE prod** |
-| B | Canonical/hreflang + indexation (MQ ~3/30 · GP ~2/30) | 🔴 à faire |
+| B | Canonical/hreflang — infra saine (fixes 067a0611 · 2026-06-16) ; gap résiduel = autorité/crawl-budget (pas infra) | ✅ **infra OK** |
 | B | Copie paywall contextualisée `pw_modal_ctx` — beach name + score injectés dans hero + preuve PremiumModal, SW v177 | ✅ **LIVE prod** |
+| B | pw_hot_intent 50/50 — paywall in-scene golden-hour ancré plage (forecast_* sources), SW v190 | ✅ **LIVE prod** |
+| B | /alertes/ auto-open paywall + copy Veilleur (a35a94ca, SW v192) | ✅ **LIVE prod** |
+| B | screen-space labels carte · BottomNav Premium fix · freshness kill-switch (SW v188–191) | ✅ **LIVE prod** |
 | C | Pages : prévisions · alertes · clean-list · zones · 5 stations · à-propos · fiabilité UI · conditions · widget | 🔴 à faire |
 | C | Les 136 fiches plages (contenu/SEO) | 🔴 à faire |
 | D | SEO requête par requête + nouvelles pages (`/près-de-moi`, `/aujourdhui`, zones) + OG + 301 legacy | 🔴 à faire |
@@ -122,11 +125,11 @@
 > Directives fondateur (dures) : **plus de SVG** (viser le monde SVG propriétaire, pas Leaflet-décoré ; Leaflet = substrat data seulement si perf l'exige, enveloppé SVG) · **plus d'interactions** (calmes, incidentes) · **liens + assets** (maillage interne riche + remplacer photos diurnes par scènes SVG golden-hour si ça sert) · **UNE expérience continue** home→carte→plage (même caméra, flyTo incassable) · **fluide + garder la VIBE d'ouverture du funnel** = l'accueil A→Z (src/HomeAZ.jsx) comme référence de grammaire visuelle.
 > Workflow specs `wrbyee2gi` (explore code+assets → 3 directions SVG-first/surface → juge → spec buildable + plan assets/liens) en cours → à la complétion : BUILD proto standalone par surface → vérif navigateur (harnais) → port A/B (`map_refonte` / `beach_refonte`). Baignade #5 + collecte #9 = **différées après** ces 2 refontes.
 **PHASE 0 — réparer le FIL de conversion (avant d'embellir).** KPI : leak<10 %, 0 fake freshness, 0 href cassé, indexation en hausse.
-- [ ] Vérifier le leak CTA→redirect post same-tab (mon pull : 92 % = ~OK) ; sinon corriger la race beacon.
-- [ ] Kill-switch fake freshness (grep « vérifié/maj/en direct » → `formatFreshness(updatedAt)`).
+- [x] Vérifier le leak CTA→redirect post same-tab (92 % = OK mesuré).
+- [x] Kill-switch fake freshness → `formatFreshness` kill >12h + chip "vérif. en cours" (f3f5e02f).
 - [ ] Slug canonique unique par plage/zone dans `beaches-list.json` + resolver partagé app+build (fin du regex drift).
-- [ ] `.htaccess` /fiabilite→/a-propos (fallback) + curl tous les hrefs (tâche htaccess).
-- [ ] Canonical/hreflang PASS (prérequis avant pageShell).
+- [x] `.htaccess` /fiabilite→/a-propos + cruft + weekend.html + sarg_carte 301 (067a0611).
+- [x] Canonical/hreflang PASS — infra saine (voir `project_gsc_indexation_gap.md`), gap résiduel = autorité/crawl-budget.
 
 **PHASE 1 — flyTo sur la porte NEAR (plus fort levier).** KPI : modal→CTA 2 %→≥5 %, verdict<1s, 0 perte SEO.
 - [x] **Accueil A→Z BUILT + VÉRIFIÉ navigateur** (`design/proto-home-az.html`, 87KB) : funnel scroll + satellite v2 (1 objet, rassure) + yole + perso H1 daté EN DIRECT ; sticky épinglé partout, 5 beats + footer (e4=1.0) joignables, satellite centré, calme, reduced-motion.
@@ -134,9 +137,9 @@
 - [ ] Façade `flyTo()` devant Archipel/StoryEngine/slug-match (A/B nav_maree/navWorld, fallback gardé).
 - [x] **Plan-B « où aller maintenant » (feature SARGASSES #2) SHIPPÉ au NEAR derrière A/B `pw_planb`** — `PlanBPanel` dans `BeachSheet` quand la plage est avoid/moderate : rail des plages PROPRES proches (data RÉELLE : status clean + haversine + score 0-100 ; 3 plus proches, best-first, ruban « le + sûr »), CTA « M'y emmener »→`onBeachClick`, event `sg_planb_pick`. Vignette SVG déterministe (zéro IA, zéro innerHTML), thème clair cohérent fiche. Additif, `?planb=1/0`. Vérif Playwright (ordre rang OK, clic câblé) + build vite OK. Réduit l'angoisse « journée gâchée ».
 - [x] **Badge Indice santé / H2S (feature SARGASSES #4, le standout) SHIPPÉ au NEAR derrière A/B `pw_h2s`** — `H2SBadge` dans `BeachSheet` : badge LIBRE toujours visible (dial gradué faible/modéré/élevé) + panneau dépliable (pourquoi : algues/jours/baie-vent ; conseils RIVERAINS/VISITEURS/SENSIBLES kids-asthme-grossesse-seniors) + CTA **alerte santé Premium** → `openPremium('h2s_health_alert')`. Niveau = `beach.h2s` (pipeline, même formule `h2s.cjs`) sinon repli statut (jamais sous-estimé santé). HONNÊTE : « indice dérivé, pas une mesure de gaz, aucun capteur ». Remplace le warning binaire (control). i18n FR/EN/ES. Vérif Playwright (3 états + dépliage + CTA câblé) + build vite OK. La donnée graduée réelle arrive au prochain run pipeline (calme = faible partout, rassurant).
-- [ ] pw_beat = surface paywall unique au NEAR, `openPremium('forecast_lock')` contextualisé plage.
-- [ ] Copy Premium = « le Veilleur surveille TA plage » (fiche + /alertes/).
-- [ ] Demo-gate email à l'aha-moment (répare 0,35 %).
+- [x] pw_beat = ForecastChart lock J2-7 in-scène, bras beat 85% (golden-hour + Veilleur, L2363-2521).
+- [x] Copy Premium « le Veilleur surveille TA plage » — fiche : pw_hot_intent (a35a94ca) ; /alertes/ : auto-open paywall + editorial Veilleur (a35a94ca).
+- [x] Demo-gate email à l'aha-moment — `capture_gate` 50/50 LIVE (SW v176, intercept forecast_* sources).
 
 **PHASE 2 — portes FAR/MID.** KPI : porte→NEAR +20 %, nouvelles pages indexées, 0 stale /conditions.
 - [ ] flyTo(région,FAR) sur /carte ; dock = sélecteur profondeur.
