@@ -10693,6 +10693,9 @@ export default function App(){
   },[])
 
   const openPremium=useCallback((src)=>{const s=src||"nav";setPremiumSource(s);setShowPremium(true);track("sg_premium_modal_open",{source:s})},[])
+  // Deep-link OUVRE le paywall (≠ ?premium=1 qui ACCORDE premium — piège). Utilisé par
+  // la page de confiance /a-propos/ dont les CTA étaient href="#" morts. source = utm_source.
+  useEffect(()=>{try{const p=new URLSearchParams(window.location.search);if(p.get("paywall")==="1"){const u=p.get("utm_source");openPremium(u?("deeplink_"+u).slice(0,40):"deeplink");window.history.replaceState({},"",window.location.pathname)}}catch(_){}},[openPremium])
 
   // Engagement trigger: modal open rate is 1.72% of sessions — most users never hit a paywall gate.
   // Show modal only to IDLE returning users (no beach-sheet interaction for 50s on visit 2+).
