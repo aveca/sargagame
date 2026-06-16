@@ -2781,6 +2781,107 @@ function ReliabilityScore({beachId,historyData,lang}){
 /* ═══════════════════════════════════════════════════════════════════════════
    BOTTOM SHEET — beach detail with photo, forecast, weather, nearby
    ═══════════════════════════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════════════════════
+   PLAN-B « OÙ ALLER MAINTENANT » (feature SARGASSES #2, levier revenu) —
+   porté du design validé design/proto-planb-clean-nearby.html. Surface : la
+   fiche NEAR (BeachSheet) quand CETTE plage est chargée (avoid/moderate). Montre
+   les plages PROPRES les plus proches (data RÉELLE : status clean + haversine +
+   score 0-100), CTA « M'y emmener » → onBeachClick. Réduit l'angoisse « journée
+   gâchée ». A/B `pw_planb`. Vignette SVG déterministe (zéro innerHTML, zéro IA).
+   ════════════════════════════════════════════════════════════════════════════ */
+function PlanBThumb({i}){
+  const palms=i%3===0?2:i%2===0?1:0
+  const pos=[{x:46,y:48},{x:120,y:46}]
+  return(
+    <svg viewBox="0 0 172 90" preserveAspectRatio="xMidYMid slice" aria-hidden="true"
+      style={{width:"100%",height:"100%",display:"block"}}>
+      <rect width="172" height="90" fill="#FFE9B0"/>
+      <circle cx="132" cy="22" r="13" fill="#FFF1C4"/>
+      <rect y="34" width="172" height="34" fill="#1EC8B0"/>
+      <rect y="33" width="172" height="2" fill="#fff" opacity=".5"/>
+      <path d="M0,62 Q86,56 172,62 L172,90 L0,90 Z" fill="#F2D9A0"/>
+      {Array.from({length:palms}).map((_,k)=>(
+        <g key={k} transform={`translate(${pos[k].x},${pos[k].y})`}>
+          <path d="M0,0 q-2,-14 -1,-26" stroke="#13514c" strokeWidth="3" fill="none"/>
+          <path d="M-1,-26 q-12,-2 -20,4 M-1,-26 q12,-2 20,4 M-1,-26 q-6,-9 -14,-12 M-1,-26 q6,-9 14,-12"
+            stroke="#1a6b5f" strokeWidth="2.4" fill="none" strokeLinecap="round"/>
+        </g>
+      ))}
+    </svg>
+  )
+}
+function PlanBPanel({beach,allBeaches,userPos,lang,sargData,onBeachClick,onClose}){
+  // plages PROPRES proches : on prend les 3 plus PROCHES (ou meilleur score sans
+  // géoloc), puis on met la meilleure note en carte #1 (ruban « le + sûr »).
+  const clean=useMemo(()=>{
+    if(!beach||!allBeaches)return[]
+    const geo=!!(userPos&&beach.lat)
+    let list=allBeaches
+      .filter(b=>b.id!==beach.id&&b.island===beach.island&&b.status==="clean"&&b.lat&&b.lng)
+      .map(b=>({...b,_dist:geo?haversine(userPos.lat,userPos.lng,b.lat,b.lng):null}))
+    list.sort((a,b)=> geo ? (a._dist-b._dist) : ((b.score||0)-(a.score||0)))
+    list=list.slice(0,3)
+    list.sort((a,b)=>(b.score||0)-(a.score||0)) // best-first dans le rail
+    return list
+  },[beach?.id,allBeaches,userPos])
+  if(!clean.length)return null
+  const fresh=(()=>{try{const ts=sargData?.updatedAt||sargData?.erddapTimestamp;if(!ts)return null;const h=(Date.now()-new Date(ts).getTime())/3.6e6;if(!(h>=0&&h<12))return null;return _t(lang,"EN DIRECT · il y a "+Math.max(1,Math.round(h))+" h","LIVE · "+Math.max(1,Math.round(h))+"h ago","EN VIVO · hace "+Math.max(1,Math.round(h))+" h")}catch(_){return null}})()
+  const card={scrollSnapAlign:"start",flex:"0 0 158px",borderRadius:14,overflow:"hidden",cursor:"pointer",
+    background:"var(--sg-card,#fff)",border:"1px solid var(--sg-border,rgba(13,13,13,.10))",
+    padding:0,textAlign:"left",fontFamily:"inherit",position:"relative",
+    boxShadow:"0 6px 18px -12px rgba(13,13,13,.4)"}
+  return(
+    <div style={{margin:"6px 0 16px",padding:"13px 13px 4px",borderRadius:18,
+      background:"linear-gradient(180deg,rgba(232,82,42,.07),rgba(232,82,42,.02))",
+      border:"1px solid rgba(232,82,42,.18)"}}>
+      <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:6,
+        fontSize:11,fontWeight:800,letterSpacing:".12em",textTransform:"uppercase",color:"#E8522A"}}>
+        <span style={{width:8,height:8,borderRadius:4,background:"#E8522A",animation:"pulse 2.6s ease-out infinite"}}/>
+        {_t(lang,"Sargasses sur ta plage aujourd'hui","Sargassum on your beach today","Sargazo en tu playa hoy")}
+      </div>
+      <h3 className="anton" style={{margin:"0 0 2px",fontSize:"clamp(19px,5vw,23px)",lineHeight:1.05,color:"var(--sg-ink)"}}>
+        {_t(lang,"Pas grave — ","It's ok — ","Tranquilo — ")}
+        <span style={{color:"#E8A800"}}>{_t(lang,clean.length+" plages propres",clean.length+" clean beaches",clean.length+" playas limpias")}</span>
+        {_t(lang," près de toi"," near you"," cerca de ti")}
+      </h3>
+      {fresh&&<div style={{fontSize:11.5,fontWeight:700,color:"var(--sg-mid,#686868)",margin:"0 0 10px"}}>{fresh}</div>}
+      <div style={{display:"flex",gap:11,overflowX:"auto",scrollSnapType:"x mandatory",
+        padding:"2px 0 10px",margin:"0 -2px",WebkitOverflowScrolling:"touch",scrollbarWidth:"none"}}>
+        {clean.map((b,i)=>(
+          <button key={b.id} style={{...card}} aria-label={`${b.name} ${b.commune||""}, ${_t(lang,"propre","clean","limpia")}, score ${b.score}/100`}
+            onClick={()=>{track("sg_planb_pick",{from:beach.id,to:b.id,rank:i,dist:b._dist!=null?Math.round(b._dist):null});onBeachClick(b)}}>
+            <div style={{position:"relative",height:74,background:"#FFE9B0"}}>
+              <PlanBThumb i={i}/>
+              <span style={{position:"absolute",top:7,left:7,fontSize:9,fontWeight:800,letterSpacing:".06em",
+                color:"#0A1714",background:"#22C55E",borderRadius:6,padding:"3px 6px"}}>{_t(lang,"PROPRE","CLEAN","LIMPIA")}</span>
+              {i===0&&<span style={{position:"absolute",top:7,right:7,fontSize:9,fontWeight:800,letterSpacing:".04em",
+                color:"#1A2B26",background:"#FFC72C",borderRadius:6,padding:"3px 6px"}}>{_t(lang,"le + sûr","best pick","mejor")}</span>}
+            </div>
+            <div style={{padding:"9px 11px 11px"}}>
+              <div style={{fontSize:13.5,fontWeight:800,color:"var(--sg-ink)",lineHeight:1.15}}>{b.name}</div>
+              {b.commune&&<div style={{fontSize:11,color:"var(--sg-mid,#686868)",marginTop:2}}>{b.commune}</div>}
+              <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",marginTop:8}}>
+                <span style={{fontSize:11,fontWeight:700,color:"var(--sg-mid,#686868)"}}>
+                  {b._dist!=null?_t(lang,"vers "+Math.round(b._dist)+" km","~"+Math.round(b._dist)+" km away","a "+Math.round(b._dist)+" km")
+                    :(typeof b.drive==="number"?_t(lang,"env. "+b.drive+" min","~"+b.drive+" min","~"+b.drive+" min"):"")}
+                </span>
+                {typeof b.score==="number"&&<span style={{fontWeight:800,color:"#22C55E",fontSize:13}}>{b.score}<span style={{fontSize:10,opacity:.7,fontWeight:700}}>/100</span></span>}
+              </div>
+              <div style={{marginTop:9,fontSize:12,fontWeight:800,color:"#009E8E"}}>{_t(lang,"M'y emmener","Take me there","Llévame")} →</div>
+            </div>
+          </button>
+        ))}
+        <button style={{...card,flex:"0 0 120px",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,
+          background:"transparent",border:"1px dashed rgba(13,13,13,.2)",boxShadow:"none",color:"var(--sg-mid,#686868)"}}
+          onClick={()=>{track("sg_planb_more",{from:beach.id});onClose&&onClose()}}>
+          <span style={{fontSize:22}}>🗺️</span>
+          <span style={{fontSize:11.5,fontWeight:700,textAlign:"center",padding:"0 8px"}}>{_t(lang,"Voir sur la carte","See on the map","Ver en el mapa")}</span>
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMap,onBeachClick,onPremiumClick,isPremium,historyData,sargData,dataSource,userPos,communityReports,fbPosts}){
   const LL=T[lang]||T.fr
   const weather=useWeather(beach)
@@ -2841,6 +2942,11 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
   // série). Additif (control = fiche inchangée), une fois par plage par jour.
   // ?verdictguess=1/0 force en QA. Funnel premium en aval segmentable par bras.
   const verdictGuess=(()=>{try{const q=window.location.search;if(/[?&]verdictguess=1/.test(q))return true;if(/[?&]verdictguess=0/.test(q))return false;return abVariant("pw_verdict_guess",["control","guess"],[.5,.5])==="guess"}catch(_){return false}})()
+  // A/B `pw_planb` : feature #2 « où aller maintenant » — quand CETTE plage est
+  // chargée (avoid/moderate), rail des plages PROPRES proches (data réelle).
+  // Additif (control = fiche inchangée), ?planb=1/0 force en QA. Réduit l'angoisse
+  // « journée gâchée » au moment vécu ; chaque pick = sg_planb_pick (segmentable).
+  const pwPlanb=(()=>{try{const q=window.location.search;if(/[?&]planb=1/.test(q))return true;if(/[?&]planb=0/.test(q))return false;return abVariant("pw_planb",["control","planb"],[.5,.5])==="planb"}catch(_){return false}})()
 
   // Scroll to top when beach changes
   useEffect(()=>{
@@ -3047,6 +3153,13 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               <span>{Math.round(haversine(userPos.lat,userPos.lng,beach.lat,beach.lng))} km</span>
             </>}
           </p>
+
+          {/* PLAN-B « où aller maintenant » — quand CETTE plage est chargée
+              (avoid/moderate), rail des plages propres proches. A/B pw_planb. */}
+          {pwPlanb&&(beach.status==="avoid"||beach.status==="moderate")&&(
+            <PlanBPanel beach={beach} allBeaches={allBeaches} userPos={userPos} lang={lang}
+              sargData={sargData} onBeachClick={onBeachClick} onClose={onClose}/>
+          )}
 
           {/* v3.1 Beach Score 0-100 — editorial aurora card echoing the home hero.
               Masqué dans le bras story (absorbé par le beat ① VERDICT du ScrollStory). */}
