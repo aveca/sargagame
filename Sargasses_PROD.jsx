@@ -9521,8 +9521,8 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
     if(satDragRef.current){const sc=satScale();satOffRef.current.x+=(p.x-prev.x)/sc;satOffRef.current.y+=(p.y-prev.y)/sc;satWrite();movedRef.current=true;return}
     if(ptrs.current.size>=2&&pinchRef.current){const[a,b]=[...ptrs.current.values()];const d=Math.hypot(a.x-b.x,a.y-b.y),mx=(a.x+b.x)/2,my=(a.y+b.y)/2;const c=camRef.current;if(pinchRef.current.d>0){const f=d/pinchRef.current.d;const nz=clampZ(c.cz*f),wx=(mx-c.cx)/c.cz,wy=(my-c.cy)/c.cz;c.cz=nz;c.cx=mx-wx*nz;c.cy=my-wy*nz}c.cx+=mx-pinchRef.current.mx;c.cy+=my-pinchRef.current.my;pinchRef.current={d,mx,my};movedRef.current=true;schedule();return}
     if(tourRef.current!=null){const dx2=p.x-prev.x,dy2=p.y-prev.y;if(Math.abs(dx2)+Math.abs(dy2)>2)movedRef.current=true;return}
-    const dx=p.x-prev.x,dy=p.y-prev.y;if(Math.abs(dx)+Math.abs(dy)>2){if(!movedRef.current){try{e.currentTarget.setPointerCapture(e.pointerId)}catch(_){}}movedRef.current=true}const c=camRef.current;c.cx+=dx;c.cy+=dy;panClampDrag(c);velRef.current={x:dx*0.55+velRef.current.x*0.45,y:dy*0.55+velRef.current.y*0.45};pannedRef.current=true;schedule()}
-  const onUp=e=>{if(satDragRef.current){satDragRef.current=false;setSatGrab(false);satSpringHome();ptrs.current.delete(e.pointerId);try{e.currentTarget.releasePointerCapture(e.pointerId)}catch(_){}if(sayTimerRef.current)clearTimeout(sayTimerRef.current);sayTimerRef.current=setTimeout(()=>setSatSay(null),1700);try{track("sg_archipel_sat_drop",{})}catch(_){};return}
+    const dx=p.x-prev.x,dy=p.y-prev.y;if(Math.abs(dx)+Math.abs(dy)>2){if(!movedRef.current){try{e.currentTarget.setPointerCapture(e.pointerId)}catch(_){}}movedRef.current=true;clearPress()}const c=camRef.current;c.cx+=dx;c.cy+=dy;panClampDrag(c);velRef.current={x:dx*0.55+velRef.current.x*0.45,y:dy*0.55+velRef.current.y*0.45};pannedRef.current=true;schedule()}
+  const onUp=e=>{clearPress();if(satDragRef.current){satDragRef.current=false;setSatGrab(false);satSpringHome();ptrs.current.delete(e.pointerId);try{e.currentTarget.releasePointerCapture(e.pointerId)}catch(_){}if(sayTimerRef.current)clearTimeout(sayTimerRef.current);sayTimerRef.current=setTimeout(()=>setSatSay(null),1700);try{track("sg_archipel_sat_drop",{})}catch(_){};return}
     if(tourRef.current!=null&&swipeY.current!=null&&ptrs.current.size===1){const dy=rel(e).y-swipeY.current;if(dy<-44){tourGo(tourRef.current>=tourOrder.length-1?0:tourRef.current+1)}else if(dy>44){if(tourRef.current<=0)exitTour();else tourGo(tourRef.current-1)}}
     else if(tourRef.current==null&&ptrs.current.size===1&&!pinchRef.current){
       // FLICK vertical vers le haut, hors visite = ENTRER dans la visite (parité molette,
@@ -9553,6 +9553,9 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
   const mareeOn=useMemo(()=>{try{const q=window.location.search;if(/[?&]pwtide=1/.test(q))return true;if(/[?&]pwtide=0/.test(q))return false;if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return false;return abVariant("nav_maree",["control","maree"],[.85,.15])==="maree"}catch(_){return false}},[])
   const[diving,setDiving]=useState(null)
   const diveTimers=useRef([])
+  const[pressed,setPressed]=useState(null) // verdict-au-toucher : id du SEUL point pressé vivant
+  const pressedRef=useRef(null),pressStartRef=useRef(0)
+  const clearPress=()=>{if(pressedRef.current!==null){pressedRef.current=null;setPressed(null)}}
   const diveBeach=(i,b)=>{
     try{track("sg_archipel_tap",{beach_id:b.id,status:b.status,maree:mareeOn?1:0})}catch(_){}
     if(!mareeOn||!proj[i]){onOpenBeach&&onOpenBeach(b);return}
@@ -9591,6 +9594,12 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
   //   AUCUNE fake-île — la lumière = exactement les plages surveillées). Statique = calme.
   //   A/B pw_mapground (override ?mapground=1/0). Filter-free → zéro re-raster au zoom.
   const groundOn=useMemo(()=>{try{const q=window.location.search;if(/[?&]mapground=1/.test(q))return true;if(/[?&]mapground=0/.test(q))return false;return abVariant("pw_mapground",["control","ground"],[.18,.82])==="ground"}catch(_){return true}},[])
+  // VERDICT AU TOUCHER (fix dead-clicks #1 : la carte = surface la + tapée-sans-réponse,
+  //   2021+2451 dead-clicks). pointerdown sur un point au repos = il fleurit son verdict
+  //   RÉEL (couleur scoreColor + nom + verbe) DANS la scène, 1 seul vivant. Tap court =
+  //   plongée ; appui maintenu (>280ms) = peek sans plonger. Zéro anim idle (one-shot).
+  //   A/B aw_press_verdict (override ?pv=1/0). PAS de setPointerCapture (piège click).
+  const pv=useMemo(()=>{try{const q=window.location.search;if(/[?&]pv=1/.test(q))return true;if(/[?&]pv=0/.test(q))return false;return abVariant("aw_press_verdict",["control","press"],[.5,.5])==="press"}catch(_){return false}},[])
   // CARTE-FOG + STREAK DE VEILLE (brief #5, rétention « payer = habitude », Zenly).
   // veille = série de jours consécutifs où l'user ouvre l'app (habitude). consultedRef
   // = plages déjà ouvertes (fog sur les autres). Le fog NE voile JAMAIS la couleur de
@@ -9664,6 +9673,7 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
         <line x1="-40" y1="520" x2="840" y2="520" stroke={sky.glit} strokeWidth="1.6" strokeDasharray="2 22" opacity=".12"/>
       </svg>
       <svg width="100%" height="100%" style={{position:"absolute",inset:0,display:"block"}} aria-hidden="true">
+        <style>{`.aw-pvb{animation:awPvb .14s ease-out both}@keyframes awPvb{from{opacity:0}to{opacity:1}}@media(prefers-reduced-motion:reduce){.aw-pvb{animation:none}}`}</style>
         <g ref={gRef}>
           {groundOn&&<g aria-hidden="true">
             <defs>
@@ -9677,10 +9687,21 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
           </g>}
           {proj.map((p,i)=>{const b=p.b,col=b.scoreColor||verdictMeta(b.status,lang).color,sc=typeof b.score==="number"?b.score:null,me=i===myIdx,r=sc!=null?5+sc/15:6,fog=fogOn&&!me&&!consultedRef.current.has(b.id)
             return(<g key={b.id} data-beach={b.id} transform={"translate("+p.x.toFixed(1)+" "+p.y.toFixed(1)+")"} style={{cursor:"pointer"}}
-              onClick={ev=>{ev.stopPropagation();if(movedRef.current)return;markConsulted(b.id);diveBeach(i,b)}}>
+              onPointerDown={pv?(()=>{pressStartRef.current=Date.now();pressedRef.current=b.id;setPressed(b.id)}):undefined}
+              onClick={ev=>{ev.stopPropagation();if(movedRef.current)return;if(pv&&pressStartRef.current&&Date.now()-pressStartRef.current>280)return;markConsulted(b.id);diveBeach(i,b)}}>
               {me
                 ?<g><circle r="40" fill={col} opacity=".14"/><circle r="29" fill={col} opacity=".10"/><circle r="23" fill="#0E2A26" stroke={col} strokeWidth="2.4"/>{sc!=null&&<text y="7" fontFamily="'Anton',sans-serif" fontSize="20" fill="#fff" textAnchor="middle">{sc}</text>}<text y="46" fontFamily="ui-monospace,monospace" fontSize="11" fontWeight="700" fill="#FFD884" textAnchor="middle">{b.name}</text></g>
-                :<><circle r={r} fill={col} opacity={fog?.66:.92}/><circle r={r} fill="none" stroke="#06121A" strokeWidth="1.2"/>{fog&&<circle r={r+3.6} fill="none" stroke={col} strokeWidth="1" strokeDasharray="2 3.2" opacity=".4"/>}</>}
+                :(pv&&pressed===b.id
+                  ?(()=>{const vm=verdictMeta(b.status,lang),vb=(vm.verb||"").toUpperCase();return(<g className="aw-pvb">
+                      <circle r={r*2.5} fill={col} opacity=".12"/>
+                      <circle r={r*2.5} fill="none" stroke={col} strokeWidth="1.6" opacity=".55"/>
+                      <circle r={r*1.45} fill={col} opacity=".96"/>
+                      <circle r={r*1.45} fill="none" stroke="#03110F" strokeWidth="1.4"/>
+                      <circle r={r*0.5} cy={-r*0.28} fill="#fff" opacity=".4"/>
+                      <text y={-(r*2.5+9)} textAnchor="middle" fontFamily="'Anton',sans-serif" fontSize="16" fill="#EAF7F4" paintOrder="stroke" stroke="#03110F" strokeWidth="3.4" strokeLinejoin="round">{b.name}</text>
+                      <text y={r*2.5+21} textAnchor="middle" fontFamily="'Anton',sans-serif" fontSize="17" fill={col} paintOrder="stroke" stroke="#03110F" strokeWidth="3.4" strokeLinejoin="round">{vb}</text>
+                    </g>)})()
+                  :<><circle r={r} fill={col} opacity={fog?.66:.92}/><circle r={r} fill="none" stroke="#06121A" strokeWidth="1.2"/>{fog&&<circle r={r+3.6} fill="none" stroke={col} strokeWidth="1" strokeDasharray="2 3.2" opacity=".4"/>}</>)}
             </g>)})}
         </g>
       </svg>

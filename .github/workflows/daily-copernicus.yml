@@ -391,6 +391,11 @@ jobs:
       - name: Deploy FTPS toutes régions (sessions fragmentées)
         id: ftp_deploy
         continue-on-error: true
+        # Garde-fou : une session FTPS morte peut faire griller le step indéfiniment
+        # (vu 2026-06-16 : 33 min bloqués, run suivant en queue derrière). Le step est
+        # déjà continue-on-error → un timeout n'échoue PAS le build, il laisse tourner
+        # le health-check (sites up = warning, down = error). Borne le blocage de queue.
+        timeout-minutes: 30
         env:
           FTP_SERVER_MQ: ${{ secrets.FTP_SERVER_MQ }}
           FTP_USERNAME_MQ: ${{ secrets.FTP_USERNAME_MQ }}
