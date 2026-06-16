@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Peut-on se baigner ? — Verdict Baignade (proto Sargasses)</title>
+<style>
+  :root{
+    --bg:#FDFCF7; --ink:#0D0D0D; --mid:#686868;
+    --gold:#E8A800; --goldL:#FFC72C; --goldLL:#FFE47A;
+    --teal:#009E8E; --tealL:#1EC8B0;
+    --green:#22C55E; --amber:#B87A00; --coral:#E8522A;
+    --sky0:#0B2230; --sky1:#155A5A; --sky2:#C97E3A; --sky3:#F2B05E;
+    --sea-top:#1A5852; --sea-bot:#08251F; --sun:#FFD884;
+    --card:#FFFFFF; --line:rgba(13,13,13,.08);
+    --shadow:0 18px 50px -20px rgba(11,34,48,.45);
+    --verdict:#22C55E;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Bricolage Grotesque",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;}
+  .anton{font-family:Anton,Impact,"Haettenschweiler","Arial Narrow",sans-serif;
+    font-weight:400;letter-spacing:-.02em;text-transform:uppercase;}
+  .stage{max-width:560px;margin:0 auto;padding:18px 16px 40px;}
+  .scene{position:relative;border-radius:22px 22px 0 0;overflow:hidden;
+    aspect-ratio:800/360;box-shadow:var(--shadow);}
+  .scene svg{position:absolute;inset:0;width:100%;height:100%;display:block;}
+  .card{position:relative;background:var(--card);border-radius:0 0 22px 22px;
+    box-shadow:var(--shadow);margin-top:-1px;padding:18px 18px 20px;
+    border:1px solid var(--line);border-top:none;}
+  .topline{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+  .live{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;
+    letter-spacing:.06em;text-transform:uppercase;color:var(--teal);}
+  .live i{width:7px;height:7px;border-radius:50%;background:var(--teal);
+    animation:pulse 2.4s ease-out infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(0,158,142,.45)}70%{box-shadow:0 0 0 8px rgba(0,158,142,0)}100%{box-shadow:0 0 0 0 rgba(0,158,142,0)}}
+  .fresh{font-size:11px;color:var(--mid);margin-left:auto;}
+  .q{font-size:13px;color:var(--mid);margin:2px 0 2px;font-weight:600;}
+  .beach{font-size:14px;color:var(--ink);font-weight:800;margin:0 0 10px;}
+  .verdict-row{display:flex;align-items:center;gap:14px;padding:14px 14px;border-radius:16px;
+    background:color-mix(in srgb,var(--verdict) 9%, white);
+    border:1px solid color-mix(in srgb,var(--verdict) 28%, white);}
+  .vdot{flex:0 0 auto;width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:var(--verdict);color:#fff;}
+  .vdot svg{width:26px;height:26px;}
+  .verdict-txt{min-width:0}
+  .verdict-txt .big{font-size:24px;line-height:1;color:var(--verdict);}
+  .verdict-txt .sub{font-size:12.5px;color:var(--mid);margin-top:5px;line-height:1.35;}
+  .signals{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;}
+  .sig{border:1px solid var(--line);border-radius:13px;padding:10px 10px 11px;background:#fff;}
+  .sig .lab{font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--mid);}
+  .sig .val{font-size:14px;font-weight:800;margin-top:6px;display:flex;align-items:center;gap:6px;line-height:1.1;}
+  .sig .val .ic{width:16px;height:16px;flex:0 0 auto;display:inline-flex}
+  .sig .val .ic svg{width:16px;height:16px}
+  .sig .meta{font-size:10.5px;color:var(--mid);margin-top:4px;}
+  .sig .val.ok{color:var(--green)} .sig .val.warn{color:var(--amber)} .sig .val.bad{color:var(--coral)}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+  .tag{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;
+    padding:7px 11px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--ink);}
+  .tag svg{width:15px;height:15px}
+  .tag.good{background:color-mix(in srgb,var(--green) 11%,white);border-color:color-mix(in srgb,var(--green) 30%,white);color:#177a3b}
+  .tag.note{background:#fff;color:var(--mid)}
+  .honest{margin-top:12px;font-size:11.5px;color:var(--mid);line-height:1.5;border-left:3px solid var(--line);padding-left:10px;}
+  .honest b{color:var(--ink)}
+  .cta{margin-top:14px;width:100%;border:none;cursor:pointer;font-weight:800;font-size:14.5px;color:#3a2600;
+    padding:14px 16px;border-radius:14px;background:linear-gradient(180deg,var(--goldL),var(--gold));
+    box-shadow:0 10px 24px -10px rgba(232,168,0,.7);display:flex;align-items:center;justify-content:center;gap:9px;}
+  .cta:active{transform:translateY(1px)}
+  .cta small{font-weight:700;opacity:.78}
+  .ctrls{max-width:560px;margin:18px auto 0;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;}
+  .ctrls button{font:inherit;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--ink);padding:8px 12px;border-radius:999px;}
+  .ctrls button:hover{border-color:var(--gold)}
+  .hint{max-width:560px;margin:10px auto 0;text-align:center;font-size:11px;color:var(--mid)}
+  @media (prefers-reduced-motion: reduce){
+    .live i{animation:none}
+    .scene .ambient{animation:none !important}
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="scene" id="scene">
+    <svg id="svg" viewBox="0 0 800 360" preserveAspectRatio="xMidYMid slice" aria-label="Plage au lever du jour, le Veilleur veille la mer">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="var(--sky0)"/><stop offset=".42" stop-color="var(--sky1)"/>
+          <stop offset=".74" stop-color="var(--sky2)"/><stop offset="1" stop-color="var(--sky3)"/>
+        </linearGradient>
+        <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="var(--sea-top)"/><stop offset="1" stop-color="var(--sea-bot)"/>
+        </linearGradient>
+        <radialGradient id="sunG" cx="50%" cy="50%" r="50%">
+          <stop offset="0" stop-color="#FFF3CF"/><stop offset=".5" stop-color="var(--sun)"/>
+          <stop offset="1" stop-color="var(--sun)" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="beam" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="var(--verdict)" stop-opacity=".55"/>
+          <stop offset="1" stop-color="var(--verdict)" stop-opacity="0"/>
+        </linearGradient>
+        <filter id="soft"><feGaussianBlur stdDeviation="3"/></filter>
+      </defs>
+      <rect x="0" y="0" width="800" height="232" fill="url(#sky)"/>
+      <g class="ambient" id="sunWrap">
+        <circle cx="568" cy="206" r="120" fill="url(#sunG)" opacity=".9"/>
+        <circle cx="568" cy="206" r="34" fill="#FFF1C8"/>
+      </g>
+      <g opacity=".22" fill="#FFE9C2" class="ambient" id="clouds">
+        <ellipse cx="180" cy="70" rx="70" ry="13"/><ellipse cx="250" cy="84" rx="48" ry="10"/><ellipse cx="640" cy="58" rx="60" ry="11"/>
+      </g>
+      <rect x="0" y="226" width="800" height="134" fill="url(#sea)"/>
+      <polygon points="568,232 590,360 546,360" fill="var(--sun)" opacity=".30"/>
+      <g id="swell" stroke="var(--sun)" stroke-opacity=".28" fill="none" stroke-width="2">
+        <path id="w1" d="M0,250 Q100,246 200,250 T400,250 T600,250 T800,250"/>
+        <path id="w2" d="M0,272 Q100,267 200,272 T400,272 T600,272 T800,272" stroke-opacity=".18"/>
+        <path id="w3" d="M0,296 Q100,290 200,296 T400,296 T600,296 T800,296" stroke-opacity=".12"/>
+      </g>
+      <g id="sarg" opacity="0">
+        <ellipse cx="250" cy="300" rx="120" ry="13" fill="#3A4A24"/>
+        <ellipse cx="250" cy="296" rx="120" ry="11" fill="#56602C" opacity=".85"/>
+        <ellipse cx="200" cy="298" rx="22" ry="6" fill="#2C3A1C"/>
+        <ellipse cx="300" cy="300" rx="26" ry="6" fill="#2C3A1C"/>
+      </g>
+      <g id="yole" transform="translate(150,288)">
+        <g class="ambient" id="yoleBob">
+          <path d="M-34,0 Q0,18 34,0 Q24,12 -24,12 Z" fill="#0E3A36"/>
+          <path d="M-34,0 Q0,15 34,0 L30,-3 Q0,10 -30,-3 Z" fill="#E8522A"/>
+          <rect x="-1.5" y="-30" width="3" height="30" fill="#0E3A36"/>
+          <path d="M2,-29 L20,-9 L2,-9 Z" fill="#FFE47A"/>
+        </g>
+      </g>
+      <g id="veilleurPos" transform="translate(648,120)">
+        <g id="veilleurAnim" class="ambient">
+          <rect x="-58" y="-7" width="34" height="14" rx="2" fill="#0E3A36"/>
+          <rect x="24" y="-7" width="34" height="14" rx="2" fill="#0E3A36"/>
+          <line x1="-24" y1="0" x2="-10" y2="0" stroke="#0E3A36" stroke-width="3"/>
+          <line x1="10" y1="0" x2="24" y2="0" stroke="#0E3A36" stroke-width="3"/>
+          <rect x="-12" y="-13" width="24" height="26" rx="7" fill="#10403B"/>
+          <rect x="-12" y="-13" width="24" height="26" rx="7" fill="none" stroke="var(--verdict)" stroke-opacity=".5" stroke-width="1.5"/>
+          <circle id="lens" cx="0" cy="2" r="8.5" fill="var(--verdict)"/>
+          <path id="lid" d="M-8.5,-1 Q0,-6 8.5,-1" fill="none" stroke="#0B2230" stroke-opacity=".35" stroke-width="2" stroke-linecap="round"/>
+          <line x1="0" y1="-13" x2="0" y2="-22" stroke="#10403B" stroke-width="2"/>
+          <circle cx="0" cy="-23" r="2.5" fill="var(--verdict)"/>
+        </g>
+        <path id="gaze" d="M-9,8 L9,8 L26,86 L-26,86 Z" fill="url(#beam)" opacity=".6" filter="url(#soft)"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="card">
+    <div class="topline">
+      <span class="live"><i></i>En direct</span>
+      <span class="fresh" id="fresh">vérifié il y a 1 h</span>
+    </div>
+    <div class="q">Peut-on se baigner aujourd'hui ?</div>
+    <div class="beach" id="beachName">Plage des Salines · Sainte-Anne</div>
+
+    <div class="verdict-row" id="verdictRow">
+      <div class="vdot" id="vdot"></div>
+      <div class="verdict-txt">
+        <div class="big anton" id="verdictBig">BAIGNADE OK</div>
+        <div class="sub" id="verdictSub">Eau dégagée et mer calme. Conditions favorables pour la famille.</div>
+      </div>
+    </div>
+
+    <div class="signals">
+      <div class="sig">
+        <div class="lab">Sargasse</div>
+        <div class="val ok" id="sigSarg"><span class="ic" id="icSarg"></span><span id="sargTxt">Propre</span></div>
+        <div class="meta" id="sargMeta">satellite · fiabilité 82 %</div>
+      </div>
+      <div class="sig">
+        <div class="lab">Mer</div>
+        <div class="val ok" id="sigSea"><span class="ic" id="icSea"></span><span id="seaTxt">Calme</span></div>
+        <div class="meta" id="seaMeta">vagues 0,4 m · vent 12 km/h</div>
+      </div>
+      <div class="sig">
+        <div class="lab">Soleil</div>
+        <div class="val warn" id="sigUv"><span class="ic" id="icUv"></span><span id="uvTxt">UV fort</span></div>
+        <div class="meta" id="uvMeta">indice 9 · crème + ombre</div>
+      </div>
+    </div>
+
+    <div class="tags" id="tags">
+      <span class="tag good" id="tagKids">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6" r="3"/><path d="M9 22v-6M15 22v-6M6 13l3-2h6l3 2"/></svg>
+        <span id="tagKidsTxt">Adaptée aux enfants</span>
+      </span>
+      <span class="tag note" id="tagDog">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5.2 8 3 5 4l1 4M14 5.2 16 3l3 1-1 4M6.5 9C4.5 11 4 15 4 17a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3c0-2-.5-6-2.5-8"/></svg>
+        Chien : selon zone &amp; arrêté local
+      </span>
+    </div>
+
+    <div class="honest" id="honest">
+      <b>Bon à savoir</b> · Le verdict croise les sargasses (satellite) et l'état de la mer (vagues + vent). Le soleil tape fort toute l'année ici : crème + ombre pour les petits.
+    </div>
+
+    <button class="cta" id="cta">
+      🔔 Être prévenu si ça change
+      <small>· 7 jours par plage</small>
+    </button>
+  </div>
+
+  <div class="ctrls">
+    <button data-st="ok">OK (Salines)</button>
+    <button data-st="prudence">Prudence (mer agitée)</button>
+    <button data-st="deconseille">Déconseillé (sargasse)</button>
+    <button data-st="nokids">Plage non-kids</button>
+  </div>
+  <div class="hint">Démo : ces boutons simulent la donnée live (sargassum.json + beaches-weather.json + beaches-list.kids). En prod, tout est dérivé, jamais saisi.</div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const root = document.documentElement;
+const NS = 'http://www.w3.org/2000/svg';
+
+// ── Icônes construites en DOM sûr (aucun innerHTML) ──────────────
+function svgIcon(paths, sw){
+  const svg = document.createElementNS(NS,'svg');
+  svg.setAttribute('viewBox','0 0 24 24'); svg.setAttribute('fill','none');
+  svg.setAttribute('stroke','currentColor'); svg.setAttribute('stroke-width', sw||2);
+  svg.setAttribute('stroke-linecap','round'); svg.setAttribute('stroke-linejoin','round');
+  paths.forEach(p=>{
+    const el = document.createElementNS(NS, p.t);
+    for(const k in p){ if(k!=='t') el.setAttribute(k, p[k]); }
+    svg.appendChild(el);
+  });
+  return svg;
+}
+const ICONS = {
+  smile: ()=>svgIcon([{t:'circle',cx:12,cy:12,r:9},{t:'path',d:'M8 14s1.5 2 4 2 4-2 4-2'},{t:'path',d:'M9 9h.01M15 9h.01'}],2.2),
+  alert: ()=>svgIcon([{t:'path',d:'M12 9v4M12 17h.01'},{t:'path',d:'M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z'}],2.2),
+  stop:  ()=>svgIcon([{t:'circle',cx:12,cy:12,r:9},{t:'path',d:'M15 9l-6 6M9 9l6 6'}],2.2),
+  leaf:  ()=>svgIcon([{t:'path',d:'M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z'},{t:'path',d:'M2 21c0-3 1.85-5.36 5.08-6'}],2),
+  wave:  ()=>svgIcon([{t:'path',d:'M2 8c2-2 4-2 6 0s4 2 6 0 4-2 6 0M2 14c2-2 4-2 6 0s4 2 6 0 4-2 6 0M2 20c2-2 4-2 6 0s4 2 6 0 4-2 6 0'}],2),
+  sun:   ()=>svgIcon([{t:'circle',cx:12,cy:12,r:4},{t:'path',d:'M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4'}],2),
+};
+function setIcon(slot, name){ slot.textContent=''; slot.appendChild(ICONS[name]()); }
+
+// ── States de démo (chacun = ce que la donnée live produirait) ───
+const STATES = {
+  ok:{beach:'Plage des Salines · Sainte-Anne',verdictKey:'green',vIcon:'smile',big:'BAIGNADE OK',
+    sub:"Eau dégagée et mer calme. Conditions favorables pour la famille.",
+    sarg:{cls:'ok',txt:'Propre',meta:'satellite · fiabilité 82 %'},
+    sea:{cls:'ok',txt:'Calme',meta:'vagues 0,4 m · vent 12 km/h'},
+    uv:{cls:'warn',txt:'UV fort',meta:'indice 9 · crème + ombre'},
+    kids:true,sarged:false,honest:'short'},
+  prudence:{beach:"Anse Dufour · Les Anses-d'Arlet",verdictKey:'amber',vIcon:'alert',big:'PRUDENCE',
+    sub:"Eau propre, mais mer agitée aujourd'hui. Surveillez les enfants de près.",
+    sarg:{cls:'ok',txt:'Propre',meta:'satellite · fiabilité 79 %'},
+    sea:{cls:'warn',txt:'Agitée',meta:'vagues 1,6 m · vent 31 km/h'},
+    uv:{cls:'warn',txt:'UV fort',meta:'indice 9 · crème + ombre'},
+    kids:true,sarged:false,honest:'sea'},
+  deconseille:{beach:'Plage du Diamant · Le Diamant',verdictKey:'coral',vIcon:'stop',big:'DÉCONSEILLÉE',
+    sub:'Sargasses échouées en quantité. Odeur possible — évitez avec de jeunes enfants.',
+    sarg:{cls:'bad',txt:'Envahie',meta:'satellite · échouage en cours'},
+    sea:{cls:'warn',txt:'Agitée',meta:'vagues 1,8 m · vent 28 km/h'},
+    uv:{cls:'warn',txt:'UV fort',meta:'indice 9'},
+    kids:true,sarged:true,honest:'h2s'},
+  nokids:{beach:'Anse Couleuvre · Le Prêcheur',verdictKey:'amber',vIcon:'alert',big:'PRUDENCE',
+    sub:'Eau propre mais plage profonde et rouleaux : peu adaptée aux tout-petits.',
+    sarg:{cls:'ok',txt:'Propre',meta:'satellite · fiabilité 80 %'},
+    sea:{cls:'warn',txt:'Agitée',meta:'vagues 1,3 m · vent 26 km/h'},
+    uv:{cls:'warn',txt:'UV fort',meta:'indice 8'},
+    kids:false,sarged:false,honest:'sea'}
+};
+const VERDICT_HEX = {green:'#22C55E', amber:'#B87A00', coral:'#E8522A'};
+
+const HONEST = {
+  h2s: [['Pourquoi déconseillée ? ', true], ["Des sargasses accumulées se décomposent et peuvent dégager une odeur d'œuf pourri (H2S) — gênante pour les jeunes enfants, les asthmatiques et les femmes enceintes. C'est un ", false], ['risque dérivé', true], [" de la quantité échouée, pas une mesure de l'air.", false]],
+  sea: [['État de la mer ', true], ["estimé à l'échelle de la zone (hauteur de vague + vent réels). Près du bord, le ressenti peut varier — gardez les enfants à portée de main.", false]],
+  short: [['Bon à savoir', true], [" · Le verdict croise les sargasses (satellite) et l'état de la mer (vagues + vent). Le soleil tape fort toute l'année ici : crème + ombre pour les petits.", false]],
+};
+function setHonest(key){
+  const el=$('#honest'); el.textContent='';
+  HONEST[key].forEach(([txt,bold])=>{
+    const n = bold ? document.createElement('b') : document.createTextNode(txt);
+    if(bold){ n.textContent=txt; el.appendChild(n); } else el.appendChild(n);
+  });
+}
+
+function setState(key){
+  const s = STATES[key]; if(!s) return;
+  root.style.setProperty('--verdict', VERDICT_HEX[s.verdictKey]); // SNAP couleur exacte marque
+  $('#beachName').textContent = s.beach;
+  $('#verdictBig').textContent = s.big;
+  $('#verdictSub').textContent = s.sub;
+  setIcon($('#vdot'), s.vIcon);
+
+  const sg=$('#sigSarg'); sg.className='val '+s.sarg.cls;
+  setIcon($('#icSarg'),'leaf'); $('#sargTxt').textContent=s.sarg.txt; $('#sargMeta').textContent=s.sarg.meta;
+  const se=$('#sigSea'); se.className='val '+s.sea.cls;
+  setIcon($('#icSea'),'wave'); $('#seaTxt').textContent=s.sea.txt; $('#seaMeta').textContent=s.sea.meta;
+  const uv=$('#sigUv'); uv.className='val '+s.uv.cls;
+  setIcon($('#icUv'),'sun'); $('#uvTxt').textContent=s.uv.txt; $('#uvMeta').textContent=s.uv.meta;
+
+  const tk=$('#tagKids'), tkt=$('#tagKidsTxt');
+  if(s.kids){ tk.className='tag good'; tkt.textContent='Adaptée aux enfants'; }
+  else { tk.className='tag note'; tkt.textContent='Peu adaptée aux tout-petits'; }
+
+  setHonest(s.honest);
+
+  $('#sarg').style.transition='opacity .6s ease';
+  $('#sarg').style.opacity = s.sarged ? '1' : '0';
+  setSwell(s.sea.cls!=='ok');
+  if(window.setVeilleurScore) window.setVeilleurScore(s.verdictKey==='green'?80:s.verdictKey==='amber'?55:25);
+}
+
+function setSwell(rough){
+  const amp = rough ? 9 : 3.5;
+  const mk = (y) => 'M0,'+y+' Q100,'+(y-amp)+' 200,'+y+' T400,'+y+' T600,'+y+' T800,'+y;
+  $('#w1').setAttribute('d', mk(250));
+  $('#w2').setAttribute('d', mk(272));
+  $('#w3').setAttribute('d', mk(296));
+}
+
+// ── Le Veilleur : regard vers la MER, amplitude faible, retour vite ──
+(function veilleur(){
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const anim = $('#veilleurAnim'), gaze = $('#gaze');
+  let raf=0, t0=performance.now(), targetGaze=0, curGaze=0;
+  window.setVeilleurScore = function(){};
+  function frame(now){
+    const t=(now-t0)/1000;
+    const breathe = reduce ? 0 : Math.sin(t*0.7)*0.6;
+    curGaze += (targetGaze-curGaze)*0.08;
+    targetGaze *= 0.94;
+    anim.setAttribute('transform', 'translate(0,'+breathe+')');
+    gaze.setAttribute('transform', 'rotate('+curGaze+' 0 8)');
+    if(reduce){ return; }
+    raf=requestAnimationFrame(frame);
+  }
+  $('#scene').addEventListener('pointermove', function(e){
+    if(reduce) return;
+    const r=$('#scene').getBoundingClientRect();
+    const nx=((e.clientX-r.left)/r.width-0.5);
+    targetGaze = Math.max(-7, Math.min(7, nx*9));
+  });
+  document.addEventListener('visibilitychange', function(){
+    if(document.hidden){ cancelAnimationFrame(raf); }
+    else if(!reduce){ t0=performance.now(); raf=requestAnimationFrame(frame); }
+  });
+  if(!reduce) raf=requestAnimationFrame(frame); else frame(performance.now());
+})();
+
+// ── Conversion : porte unique openPremium ────────────────────────
+$('#cta').addEventListener('click', function(){
+  console.log('sg_premium_modal_open', {source:'swim_alert'});
+  $('#cta').animate([{transform:'scale(1)'},{transform:'scale(.97)'},{transform:'scale(1)'}],{duration:180});
+});
+document.querySelectorAll('.ctrls button').forEach(b=>b.addEventListener('click',()=>setState(b.dataset.st)));
+
+$('#fresh').textContent = 'vérifié il y a 1 h';
+setSwell(false);
+setState('ok');
+</script>
+</body>
+</html>

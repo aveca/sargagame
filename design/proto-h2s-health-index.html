@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Indice Santé / H2S — badge fiche plage (proto)</title>
+<style>
+  /* ============================================================
+     TOKENS MARQUE (source: sg-design-system)
+     ============================================================ */
+  :root{
+    --bg:#FDFCF7; --gold:#E8A800; --goldL:#FFC72C; --goldLL:#FFE47A;
+    --teal:#009E8E; --tealL:#1EC8B0; --green:#22C55E; --amber:#B87A00; --coral:#E8522A;
+    --ink:#0D0D0D; --mid:#686868;
+    --sky0:#0B2230; --sky1:#155A5A; --sky2:#C97E3A; --sky3:#F2B05E;
+    --seaT:#1A5852; --seaB:#08251F; --glit:#FFD884; --sand:#1C1712; --rim:#FFD884;
+    --display:"Anton","Haettenschweiler","Arial Narrow Bold","Impact",system-ui,sans-serif;
+    --ui:"Bricolage Grotesque",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    /* couleur de risque courante (mutée par JS) */
+    --risk:#22C55E; --riskSoft:rgba(34,197,94,.16);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;background:#06140f;color:#fff;font-family:var(--ui);-webkit-font-smoothing:antialiased}
+  /* fond scène golden-hour discret (NEAR) pour situer la surface */
+  body{
+    background:
+      radial-gradient(120% 80% at 78% 8%, rgba(242,176,94,.20), transparent 52%),
+      linear-gradient(180deg,#0B2230 0%,#103e3c 46%,#0a2620 100%);
+    display:flex;justify-content:center;align-items:flex-start;
+    padding:26px 16px calc(64px + env(safe-area-inset-bottom));
+  }
+  .wrap{width:100%;max-width:440px}
+
+  /* contexte plage minimal (pour montrer OÙ vit le badge) */
+  .ctx{display:flex;align-items:baseline;gap:10px;margin:2px 4px 16px}
+  .ctx h1{font-family:var(--display);font-weight:400;text-transform:uppercase;letter-spacing:-.01em;font-size:30px;line-height:.92;margin:0}
+  .ctx .live{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.05em;color:rgba(255,255,255,.78);background:rgba(8,20,15,.45);border:1px solid rgba(255,216,132,.22);padding:5px 10px;border-radius:100px}
+  .ctx .live i{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(34,197,94,.55);animation:dot 2.8s ease-out infinite}
+  @keyframes dot{0%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}70%{box-shadow:0 0 0 8px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+
+  /* ============================================================
+     LE BADGE (toujours visible sur la fiche — free)
+     ============================================================ */
+  .badge{
+    display:flex;align-items:center;gap:14px;width:100%;cursor:pointer;text-align:left;
+    background:rgba(8,22,17,.62);border:1px solid var(--riskSoft);
+    border-left:4px solid var(--risk);
+    backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);
+    border-radius:18px;padding:14px 16px;color:#fff;font-family:var(--ui);
+    transition:border-color .3s ease,background .3s ease,transform .14s cubic-bezier(.175,.885,.32,1.275);
+  }
+  .badge:hover{background:rgba(8,22,17,.74)}
+  .badge:active{transform:scale(.985)}
+  .badge .dial{flex:0 0 auto}
+  .badge .txt{flex:1 1 auto;min-width:0}
+  .badge .lbl{display:block;font-size:10.5px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.6)}
+  .badge .lvl{display:block;font-family:var(--display);font-weight:400;text-transform:uppercase;letter-spacing:-.01em;font-size:22px;line-height:1.02;margin-top:2px;white-space:nowrap}
+  .badge .lvl b{color:var(--risk)}
+  .badge .one{display:block;font-size:12.5px;color:rgba(255,255,255,.74);line-height:1.35;margin-top:4px}
+  .badge .chev{flex:0 0 auto;align-self:center;color:rgba(255,255,255,.45);transition:transform .35s cubic-bezier(.22,1,.36,1)}
+  .badge[aria-expanded="true"] .chev{transform:rotate(180deg)}
+
+  /* ============================================================
+     PANNEAU DÉTAIL (déroulé in-place, pas de popup flottant)
+     ============================================================ */
+  .panel{overflow:hidden;max-height:0;transition:max-height .5s cubic-bezier(.22,1,.36,1)}
+  .panel-in{
+    margin-top:10px;background:rgba(8,22,17,.6);border:1px solid rgba(255,255,255,.08);
+    backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);
+    border-radius:18px;padding:18px 16px 16px;
+  }
+  .sect-lbl{font-size:10px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--goldLL);margin-bottom:9px}
+
+  /* "POURQUOI" — la dérivation honnête, lue par tous */
+  .why{display:flex;flex-direction:column;gap:8px}
+  .why .row{display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,.86)}
+  .why .ic{flex:0 0 26px;height:26px;border-radius:8px;display:grid;place-items:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
+  .why .ic svg{width:15px;height:15px;display:block}
+  .why .row b{color:#fff;font-weight:700}
+  .why .row .meta{display:block;font-size:11px;color:rgba(255,255,255,.52);margin-top:1px}
+
+  /* conseils */
+  .advice{margin-top:16px;border-top:1px solid rgba(255,255,255,.08);padding-top:14px}
+  .tips{display:flex;flex-direction:column;gap:9px;margin-top:8px}
+  .tip{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.4;color:rgba(255,255,255,.88)}
+  .tip .dot{flex:0 0 auto;margin-top:6px;width:7px;height:7px;border-radius:50%;background:var(--risk)}
+  .tip .who{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);background:var(--goldL);border-radius:6px;padding:1px 6px;margin-right:6px;vertical-align:1px}
+
+  /* CTA Premium (alerte santé) — porte de conversion unique */
+  .cta{
+    display:flex;align-items:center;gap:12px;width:100%;margin-top:16px;cursor:pointer;text-align:left;
+    border:0;font-family:var(--ui);color:#1a1300;
+    background:linear-gradient(158deg,#FFE47A 0%,#FFC72C 42%,#E89400 100%);
+    box-shadow:0 8px 24px rgba(232,148,0,.34),inset 0 1px 0 rgba(255,255,255,.55);
+    border-radius:16px;padding:13px 16px;
+    transition:transform .16s cubic-bezier(.175,.885,.32,1.275),box-shadow .25s ease}
+  .cta:hover{box-shadow:0 12px 30px rgba(232,148,0,.5),inset 0 1px 0 rgba(255,255,255,.6)}
+  .cta:active{transform:scale(.98)}
+  .cta .ct{flex:1 1 auto}
+  .cta .k{font-size:14.5px;font-weight:800;line-height:1.15}
+  .cta .p{font-size:11.5px;font-weight:600;opacity:.8;margin-top:1px}
+  .cta .arr{flex:0 0 auto;font-weight:800;font-size:18px}
+
+  /* note honnêteté — indice dérivé, pas une mesure de gaz */
+  .honest{margin-top:14px;font-size:11px;line-height:1.45;color:rgba(255,255,255,.5);
+    border-left:3px solid rgba(255,216,132,.4);padding:2px 0 2px 11px}
+  .honest b{color:rgba(255,255,255,.72);font-weight:700}
+
+  /* barre de démo (hors-app : pour tester les 3 états) */
+  .demo{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);display:flex;gap:6px;z-index:9;
+    background:rgba(6,16,11,.85);border:1px solid rgba(255,255,255,.12);border-radius:100px;padding:5px}
+  .demo button{font-family:var(--ui);font-size:11px;font-weight:700;color:#fff;background:transparent;border:0;
+    padding:6px 12px;border-radius:100px;cursor:pointer;opacity:.6}
+  .demo button.on{opacity:1;background:rgba(255,255,255,.14)}
+
+  /* ============================================================
+     PLANCHER DUR reduced-motion
+     ============================================================ */
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .panel{max-height:none!important}
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <!-- contexte plage (juste pour situer le badge dans une fiche NEAR) -->
+    <div class="ctx">
+      <h1 id="ctxName">Le Diamant</h1>
+      <span class="live"><i></i> EN DIRECT</span>
+    </div>
+
+    <!-- ====== LE BADGE (free, toujours visible sur la fiche) ====== -->
+    <button class="badge" id="badge" aria-expanded="false" aria-controls="panel">
+      <span class="dial">
+        <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true">
+          <!-- piste -->
+          <circle cx="28" cy="28" r="22" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="6"/>
+          <!-- arc de risque (animé via stroke-dashoffset) -->
+          <circle id="dialArc" cx="28" cy="28" r="22" fill="none" stroke="var(--risk)" stroke-width="6"
+                  stroke-linecap="round" transform="rotate(-90 28 28)"
+                  stroke-dasharray="138.2" stroke-dashoffset="138.2"/>
+          <!-- glyphe "souffle/odeur" (3 volutes) au centre, teinté risque -->
+          <g id="dialGlyph" transform="translate(28 28)" stroke="var(--risk)" stroke-width="2" stroke-linecap="round" fill="none" opacity=".95">
+            <path d="M -5 4 q -3 -3 0 -6 q 3 -3 0 -6"/>
+            <path d="M 0 5 q -3 -3.5 0 -7 q 3 -3.5 0 -7"/>
+            <path d="M 5 4 q -3 -3 0 -6 q 3 -3 0 -6"/>
+          </g>
+        </svg>
+      </span>
+      <span class="txt">
+        <span class="lbl">Indice santé · air</span>
+        <span class="lvl">Risque H2S&nbsp;<b id="lvlWord">faible</b></span>
+        <span class="one" id="oneLine">Plage propre — aucune odeur attendue aujourd'hui.</span>
+      </span>
+      <span class="chev" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+    </button>
+
+    <!-- ====== PANNEAU DÉTAIL (déroule sur place) ====== -->
+    <div class="panel" id="panel" role="region" aria-label="Détail indice santé H2S">
+      <div class="panel-in">
+
+        <div class="sect-lbl">Pourquoi ce niveau</div>
+        <div class="why" id="why"><!-- injecté (DOM) --></div>
+
+        <div class="advice">
+          <div class="sect-lbl" id="adviceLbl">Conseil riverains &amp; visiteurs</div>
+          <div class="tips" id="tips"><!-- injecté (DOM) --></div>
+        </div>
+
+        <button class="cta" id="cta" data-source="h2s_health_alert">
+          <span class="ct">
+            <span class="k" id="ctaK">Sois alerté quand l'air se dégrade</span>
+            <span class="p">Alerte santé Premium — la veille, sur TA plage</span>
+          </span>
+          <span class="arr">→</span>
+        </button>
+
+        <p class="honest">
+          Indice de <b>risque</b> calculé à partir de la sargasse accumulée et de sa
+          décomposition (demi-vie 3,5&nbsp;j) — <b>ce n'est pas une mesure de gaz</b>.
+          Aucun capteur H2S sur place&nbsp;; suis toujours les consignes des autorités sanitaires.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- barre de démo (n'existe PAS dans l'app — juste pour voir les 3 états) -->
+  <div class="demo" role="group" aria-label="Démo états">
+    <button data-state="low" class="on">Faible</button>
+    <button data-state="mod">Modéré</button>
+    <button data-state="high">Élevé</button>
+  </div>
+
+<script>
+/* =========================================================================
+   MODÈLE DE DONNÉES HONNÊTE — l'indice H2S est DÉRIVÉ, jamais mesuré.
+   Entrées RÉELLES du pipeline (par plage) :
+     afaiNow      : AFAI effectif du jour (sargasse présente, accumulation incluse)
+     decayedMass  : peakDecayed de la beach-memory (masse encore présente après
+                    décroissance demi-vie 3,5 j) — proxy du volume qui pourrit
+     consecDays   : jours consécutifs récents à AFAI ≥ 0,15 (history.json)
+                    → l'âge de l'amas = à quel point il est en décomposition
+     sheltered    : baie fermée / mal ventilée (le gaz stagne) vs côte ouverte
+     onshoreWind  : vent (km/h) ; faible = pas de dispersion (aggrave la stagnation)
+   Sortie : un SCORE 0..100 → 3 paliers FAIBLE / MODÉRÉ / ÉLEVÉ. PAS de ppm.
+   ========================================================================= */
+function deriveH2S(d){
+  // 1) Masse en décomposition (le moteur du H2S). Max de la lecture du jour et de
+  //    la masse "mémoire" décroissante : c'est ce qui reste à pourrir sur place.
+  var mass = Math.max(d.afaiNow||0, d.decayedMass||0);           // 0..~1 (AFAI)
+  // sous 0,15 = plage propre : pas de matière en quantité → risque plancher.
+  if (mass < 0.15) return pack(0, d, mass);
+
+  // 2) Composante volume : plus il y a d'algues, plus ça dégaze. 0,15→0 ; 0,55+→1.
+  var vol = clamp01((mass - 0.15) / 0.40);
+
+  // 3) Composante décomposition : le H2S monte avec l'âge de l'amas (dégage ~48 h+).
+  //    1 j ≈ frais (peu de gaz) ; 4-5 j+ = pleine putréfaction.
+  var rot = clamp01(((d.consecDays||1) - 1) / 4);                 // 1j→0 … 5j→1
+
+  // 4) Ventilation : une baie fermée + vent faible piège le gaz → il s'accumule.
+  var trap = (d.sheltered ? 0.20 : 0) + ((d.onshoreWind!=null && d.onshoreWind < 8) ? 0.12 : 0);
+
+  // Score : le volume PORTE, la décomposition AMPLIFIE, la stagnation MAJORE.
+  var base = vol*0.55 + rot*0.35;          // 0..0.9
+  var score = clamp01(base*(1 + trap)) * 100;
+  return pack(Math.round(score), d, mass);
+}
+function clamp01(v){return Math.max(0,Math.min(1,v));}
+function pack(score, d, mass){
+  var level = score < 25 ? 'low' : score < 60 ? 'mod' : 'high';
+  return {score:score, level:level, mass:mass, d:d};
+}
+
+/* ---- paliers d'affichage (couleur de marque par statut) ---- */
+var LEVELS = {
+  low:  {word:'faible',  color:'#22C55E', soft:'rgba(34,197,94,.16)'},
+  mod:  {word:'modéré',  color:'#E8A800', soft:'rgba(232,168,0,.18)'},
+  high: {word:'élevé',   color:'#E8522A', soft:'rgba(232,82,42,.20)'},
+};
+
+/* ---- copy FR (i18n via _t côté app) ---- */
+function oneLine(r){
+  if(r.level==='low')  return "Plage propre — aucune odeur attendue aujourd'hui.";
+  if(r.level==='mod')  return "Algues qui se décomposent — odeur possible par moments.";
+  return "Forte accumulation en décomposition — odeur d'œuf pourri probable.";
+}
+function whyRows(r){
+  var d=r.d, rows=[];
+  rows.push({ic:'algae',
+             main: r.mass>=0.40 ? "Forte accumulation d'algues" : r.mass>=0.15 ? "Algues présentes sur la plage" : "Très peu d'algues",
+             meta: r.mass>=0.15 ? ("indice de présence "+r.mass.toFixed(2)) : "rien à décomposer"});
+  if((d.consecDays||1) >= 2)
+    rows.push({ic:'clock', main:"Présentes depuis "+d.consecDays+" jours", meta:"décomposition avancée = plus de gaz"});
+  else
+    rows.push({ic:'clock', main:"Échouage récent / frais", meta:"peu de décomposition pour l'instant"});
+  if(d.sheltered)
+    rows.push({ic:'wind', main:"Baie peu ventilée", meta:"l'air se renouvelle mal, le gaz stagne"});
+  else
+    rows.push({ic:'wind', main:"Côte ouverte, bien ventilée", meta:"l'air disperse les odeurs"});
+  return rows;
+}
+function tips(r){
+  if(r.level==='low') return [
+    {who:'Tous', t:"Rien à signaler côté air. Bonne journée plage."},
+    {who:'Sensibles', t:"Asthme, bébés, femmes enceintes, seniors : conditions favorables aujourd'hui."},
+  ];
+  if(r.level==='mod') return [
+    {who:'Riverains', t:"Aère tôt le matin, garde les fenêtres fermées l'après-midi si l'odeur monte."},
+    {who:'Visiteurs', t:"Préfère une zone dégagée, à l'écart des amas bruns."},
+    {who:'Sensibles', t:"Asthme, bébés, femmes enceintes, seniors : limite le temps près des algues."},
+  ];
+  return [
+    {who:'Riverains', t:"Ferme les fenêtres côté mer, fais tourner la ventilation, évite l'effort dehors près du rivage."},
+    {who:'Visiteurs', t:"Reporte ou choisis une autre plage : l'odeur et l'irritation seront fortes près des amas."},
+    {who:'Sensibles', t:"Asthme, bébés, femmes enceintes, seniors : évite la plage aujourd'hui par prudence."},
+  ];
+}
+function adviceLabel(r){ return r.level==='high' ? "À faire aujourd'hui" : "Conseil riverains & visiteurs"; }
+function ctaCopy(r){
+  if(r.level==='high') return "Préviens-moi avant le prochain pic d'odeur";
+  return "Sois alerté quand l'air se dégrade";
+}
+
+/* ---- petits glyphes inline (SVG paths) ---- */
+var ICONS = {
+  algae:'M7 13c0-4 1.5-6 .5-9M7 13c2.5 0 4-2 3.5-5M7 13c-2.4 0-4-2-3.5-4.5',
+  clock:null, // dessiné en deux paths
+  wind:'M2 5.5h6.5a1.8 1.8 0 1 0-1.8-1.8M2 9h9a1.8 1.8 0 1 1-1.8 1.8',
+};
+/* construit l'icône en DOM (pas d'innerHTML) */
+function iconSvg(name){
+  var NS='http://www.w3.org/2000/svg';
+  var svg=document.createElementNS(NS,'svg'); svg.setAttribute('viewBox','0 0 14 14');
+  function path(d){var p=document.createElementNS(NS,'path');p.setAttribute('d',d);
+    p.setAttribute('fill','none');p.setAttribute('stroke','rgba(255,255,255,.8)');
+    p.setAttribute('stroke-width','1.4');p.setAttribute('stroke-linecap','round');return p;}
+  if(name==='clock'){
+    var c=document.createElementNS(NS,'circle');c.setAttribute('cx','7');c.setAttribute('cy','7');
+    c.setAttribute('r','5.4');c.setAttribute('fill','none');c.setAttribute('stroke','rgba(255,255,255,.8)');
+    c.setAttribute('stroke-width','1.4');svg.appendChild(c);
+    svg.appendChild(path('M7 4v3.2l2 1.2'));
+  } else {
+    svg.appendChild(path(ICONS[name]));
+  }
+  return svg;
+}
+
+/* =================== RENDU (DOM, sans innerHTML) =================== */
+var ARC_LEN = 2*Math.PI*22; // 138.2
+var badge=document.getElementById('badge'), panel=document.getElementById('panel');
+var rmReduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+function el(tag, cls, txt){var e=document.createElement(tag); if(cls)e.className=cls; if(txt!=null)e.textContent=txt; return e;}
+function clear(node){while(node.firstChild) node.removeChild(node.firstChild);}
+
+function render(r){
+  var L=LEVELS[r.level];
+  document.documentElement.style.setProperty('--risk', L.color);
+  document.documentElement.style.setProperty('--riskSoft', L.soft);
+  document.getElementById('lvlWord').textContent = L.word;
+  document.getElementById('oneLine').textContent = oneLine(r);
+
+  // arc : proportion du risque (plancher visuel 8 % pour qu'il soit toujours lisible)
+  var frac = Math.max(0.08, r.score/100);
+  var arc=document.getElementById('dialArc');
+  if(rmReduce) arc.style.transition='none';
+  arc.style.strokeDashoffset = ARC_LEN*(1-frac);
+
+  // pourquoi
+  var why=document.getElementById('why'); clear(why);
+  whyRows(r).forEach(function(w){
+    var row=el('div','row');
+    var ic=el('span','ic'); ic.appendChild(iconSvg(w.ic)); row.appendChild(ic);
+    var span=el('span'); span.appendChild(el('b',null,w.main)); span.appendChild(el('span','meta',w.meta));
+    row.appendChild(span); why.appendChild(row);
+  });
+
+  // conseils
+  document.getElementById('adviceLbl').textContent = adviceLabel(r);
+  var tipsEl=document.getElementById('tips'); clear(tipsEl);
+  tips(r).forEach(function(t){
+    var tip=el('div','tip'); tip.appendChild(el('span','dot'));
+    var s=el('span'); s.appendChild(el('span','who',t.who)); s.appendChild(document.createTextNode(t.t));
+    tip.appendChild(s); tipsEl.appendChild(tip);
+  });
+
+  // cta
+  document.getElementById('ctaK').textContent = ctaCopy(r);
+}
+
+/* déroulé in-place (mesure réelle pour transition propre) */
+function setOpen(open){
+  badge.setAttribute('aria-expanded', open?'true':'false');
+  if(rmReduce){ panel.style.maxHeight = open?'none':'0'; return; }
+  panel.style.maxHeight = open ? panel.scrollHeight+'px' : '0';
+}
+badge.addEventListener('click', function(){ setOpen(badge.getAttribute('aria-expanded')!=='true'); });
+
+/* CTA → porte de conversion unique (ici : log ; dans l'app = openPremium(source,ctx)) */
+document.getElementById('cta').addEventListener('click', function(e){
+  e.stopPropagation();
+  console.log('[event] sg_premium_modal_open', {source:this.getAttribute('data-source')});
+});
+
+/* =================== JEUX DE DONNÉES DÉMO (issus de vrais champs pipeline) ====
+   low  : plage propre (calme) — comme la donnée live actuelle (juin 2026)
+   mod  : algues présentes 3 j, côte ouverte (transition)
+   high : forte accumulation 5 j en baie peu ventilée (épisode de saison)
+   ============================================================================= */
+var DEMO = {
+  low:  {name:"Grande Anse",  afaiNow:0.09, decayedMass:0.00, consecDays:1, sheltered:false, onshoreWind:14},
+  mod:  {name:"Le Diamant",   afaiNow:0.34, decayedMass:0.31, consecDays:3, sheltered:false, onshoreWind:11},
+  high: {name:"Anse Trabaud", afaiNow:0.52, decayedMass:0.58, consecDays:5, sheltered:true,  onshoreWind:6},
+};
+function setState(k){
+  var d=DEMO[k]; document.getElementById('ctxName').textContent=d.name;
+  var r=deriveH2S(d); render(r);
+  if(badge.getAttribute('aria-expanded')==='true') setOpen(true); // re-mesure si ouvert
+  return r;
+}
+
+/* contrôle démo */
+var btns=document.querySelectorAll('.demo button');
+btns.forEach(function(b){ b.addEventListener('click', function(){
+  btns.forEach(function(x){x.classList.remove('on');}); b.classList.add('on');
+  setState(b.getAttribute('data-state'));
+});});
+
+/* API d'inspection (vérif navigateur) */
+window.setH2SState = setState;
+window.deriveH2S = deriveH2S;
+
+/* init — état modéré, ouvert, pour montrer le widget complet d'emblée */
+setState('mod');
+setOpen(true);
+</script>
+</body>
+</html>

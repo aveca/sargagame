@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Sargasses — Encart Communauté : collecte & signalement (proto)</title>
+<style>
+  /* ── Tokens marque (sg-design-system) ───────────────────────────────────── */
+  :root{
+    --bg:#FDFCF7; --gold:#E8A800; --goldL:#FFC72C; --goldLL:#FFE47A;
+    --teal:#009E8E; --tealL:#1EC8B0; --green:#22C55E; --amber:#B87A00;
+    --coral:#E8522A; --ink:#0D0D0D; --mid:#686868;
+    --card:#FFFFFF; --bgD:#F7F5EF; --border:rgba(13,13,13,.08);
+    --skyTop:#0B2230; --skyMid:#155A5A; --sun1:#C97E3A; --sun2:#F2B05E;
+    --seaTop:#1A5852; --seaBot:#08251F; --refl:#FFD884; --sand:#1C1712; --sarg:#3A4A2B;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#11100c;color:var(--ink);
+    font-family:"Bricolage Grotesque",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .anton{font-family:Anton,Impact,Haettenschweiler,"Arial Narrow",sans-serif;
+    text-transform:uppercase;letter-spacing:-.02em;font-weight:400}
+  .mono{font-family:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace}
+
+  /* ── Layout proto : la scène SVG en haut (slice) + l'encart card en dessous ─ */
+  .wrap{max-width:430px;margin:0 auto;min-height:100vh;background:var(--bg);
+    box-shadow:0 0 60px rgba(0,0,0,.5)}
+  .stage{position:relative;width:100%;aspect-ratio:4/3;overflow:hidden;background:#08251F}
+  .stage svg{position:absolute;inset:0;width:100%;height:100%}
+
+  /* live pill (freshness réelle — branché sur data.updatedAt) */
+  .live{position:absolute;top:10px;left:10px;display:flex;align-items:center;gap:6px;
+    background:rgba(8,37,31,.62);backdrop-filter:blur(6px);color:#EAF7F2;
+    border:1px solid rgba(255,216,132,.28);border-radius:999px;padding:5px 10px;
+    font-size:11px;font-weight:700;z-index:5}
+  .live i{width:7px;height:7px;border-radius:50%;background:var(--green);
+    box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:pulse 2.6s ease-out infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.55)}70%{box-shadow:0 0 0 7px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+
+  /* ── L'encart Communauté ────────────────────────────────────────────────── */
+  .panel{padding:16px 16px 28px}
+  .eyebrow{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--teal);margin:0 0 2px}
+  .h1{font-size:22px;line-height:1.05;margin:0 0 12px;color:var(--ink)}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:16px;
+    padding:14px;margin:0 0 12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+  .card .lbl{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:800;color:var(--ink);margin:0 0 9px;flex-wrap:wrap}
+
+  /* État collecte — bande d'inférence honnête (3 phases) */
+  .collTrack{display:flex;height:9px;border-radius:6px;overflow:hidden;background:var(--bgD);margin:2px 0 8px}
+  .phase{flex:1;text-align:center;font-size:10px;font-weight:700;color:var(--mid);padding-top:2px}
+  .phase.on{color:var(--ink)}
+  .phaseRow{display:flex}
+  .collMsg{font-size:12.5px;line-height:1.45;color:var(--ink);background:var(--bgD);
+    border-radius:10px;padding:9px 11px;margin-top:4px}
+  .collMsg b{color:var(--teal)}
+  .infer{display:inline-block;font-size:10px;font-weight:700;color:var(--mid);
+    border:1px dashed var(--border);border-radius:999px;padding:2px 7px;vertical-align:middle}
+
+  /* Indice H2S dérivé (jamais une mesure) */
+  .h2s{display:flex;align-items:center;gap:10px;margin-top:10px;padding:9px 11px;border-radius:10px}
+  .h2s.low{background:rgba(34,197,94,.10)}
+  .h2s.mid{background:rgba(184,122,0,.12)}
+  .h2s.high{background:rgba(232,82,42,.12)}
+  .h2sDot{width:10px;height:10px;border-radius:50%;flex:none}
+  .h2sTxt{font-size:11.5px;line-height:1.35;color:var(--ink)}
+  .h2sTxt b{font-weight:800}
+  .h2sNote{font-size:10px;color:var(--mid);margin-top:1px}
+
+  /* Signaler — 3 niveaux */
+  .lvls{display:flex;gap:8px;margin:4px 0 0}
+  .lvl{flex:1;padding:11px 6px;border-radius:12px;border:none;cursor:pointer;
+    background:var(--card);color:var(--ink);font:inherit;font-size:12px;font-weight:700;
+    box-shadow:0 1px 4px rgba(0,0,0,.05);transition:transform .12s,box-shadow .12s,background .12s;
+    display:flex;flex-direction:column;align-items:center;gap:4px}
+  .lvl .em{font-size:20px;line-height:1}
+  .lvl:hover{transform:translateY(-1px)}
+  .lvl[aria-pressed="true"]{box-shadow:inset 0 0 0 2px currentColor}
+  .lvl.c{color:var(--green)} .lvl.m{color:var(--amber)} .lvl.a{color:var(--coral)}
+  .lvl[disabled]{cursor:default;opacity:.45}
+  .lvl[aria-pressed="true"][disabled]{opacity:1}
+
+  /* consensus bar */
+  .cons{margin-top:10px}
+  .consBar{display:flex;height:5px;border-radius:3px;overflow:hidden;background:var(--bgD)}
+  .consMeta{margin-top:5px;font-size:11px;color:var(--mid);text-align:center}
+  .consMeta b{color:var(--ink)}
+
+  .thanks{margin-top:9px;font-size:11.5px;font-weight:700;color:var(--green);text-align:center;
+    display:none}
+  .thanks.show{display:block}
+
+  /* anonyme note */
+  .anon{font-size:10px;color:var(--mid);margin-top:8px;display:flex;align-items:center;gap:5px}
+
+  /* Share-card "j'ai vérifié" */
+  .shareBtn{width:100%;margin-top:4px;padding:12px;border:none;border-radius:12px;cursor:pointer;
+    background:linear-gradient(180deg,var(--goldL),var(--gold));color:#241a00;
+    font:inherit;font-size:14px;font-weight:800;box-shadow:0 4px 14px rgba(232,168,0,.30);
+    display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .12s,filter .12s}
+  .shareBtn:hover{transform:translateY(-1px);filter:brightness(1.03)}
+
+  /* la share-card preview (SVG) */
+  .scWrap{margin-top:12px;border-radius:14px;overflow:hidden;border:1px solid var(--border);display:none}
+  .scWrap.show{display:block;animation:fadeUp .3s ease}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .scWrap svg{display:block;width:100%;height:auto}
+  .scActions{display:flex;gap:8px;padding:10px;background:var(--bgD)}
+  .scActions button{flex:1;padding:9px;border:1px solid var(--border);border-radius:10px;background:var(--card);
+    cursor:pointer;font:inherit;font-size:12px;font-weight:700;color:var(--ink)}
+
+  .premium{margin-top:6px;font-size:11px;color:var(--mid);background:var(--bgD);border-radius:10px;padding:9px 11px;line-height:1.4}
+  .premium b{color:var(--gold)}
+
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ════ SCÈNE SVG (slice, golden-hour, calme) ════ -->
+  <div class="stage">
+    <div class="live"><i></i><span id="liveTxt">EN DIRECT</span></div>
+    <svg id="scene" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" aria-label="Le Veilleur regarde la mer où des radeaux de sargasses dérivent vers le rivage">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="var(--skyTop)"/>
+          <stop offset=".52" stop-color="var(--skyMid)"/>
+          <stop offset=".78" stop-color="var(--sun1)"/>
+          <stop offset="1" stop-color="var(--sun2)"/>
+        </linearGradient>
+        <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="var(--seaTop)"/>
+          <stop offset="1" stop-color="var(--seaBot)"/>
+        </linearGradient>
+        <radialGradient id="sun" cx="50%" cy="50%" r="50%">
+          <stop offset="0" stop-color="#FFE9B0"/>
+          <stop offset=".5" stop-color="var(--refl)"/>
+          <stop offset="1" stop-color="var(--refl)" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="hull" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#E8522A"/><stop offset="1" stop-color="#9E2E12"/>
+        </linearGradient>
+      </defs>
+
+      <!-- ciel + soleil bas -->
+      <rect x="0" y="0" width="800" height="360" fill="url(#sky)"/>
+      <circle cx="560" cy="300" r="120" fill="url(#sun)" opacity=".9"/>
+      <circle cx="560" cy="300" r="34" fill="#FFEBB6"/>
+
+      <!-- mer -->
+      <rect x="0" y="334" width="800" height="266" fill="url(#sea)"/>
+      <!-- traînée de soleil sur l'eau -->
+      <g id="refl" opacity=".55">
+        <ellipse cx="560" cy="360" rx="60" ry="4" fill="var(--refl)"/>
+        <ellipse cx="560" cy="386" rx="46" ry="4" fill="var(--refl)" opacity=".8"/>
+        <ellipse cx="560" cy="416" rx="70" ry="5" fill="var(--refl)" opacity=".6"/>
+        <ellipse cx="560" cy="452" rx="52" ry="5" fill="var(--refl)" opacity=".4"/>
+      </g>
+
+      <!-- yole ronde MQ (vie + échelle + âme) -->
+      <g id="yole" transform="translate(214,392)">
+        <g id="yoleBob">
+          <path d="M-44,0 Q0,26 44,0 L36,12 Q0,30 -36,12 Z" fill="url(#hull)"/>
+          <path d="M-44,0 Q0,8 44,0" fill="none" stroke="#FFD884" stroke-width="2.4"/>
+          <rect x="-1.6" y="-46" width="3.2" height="46" fill="#3a2a18"/>
+          <path d="M1.6,-44 L26,-8 L1.6,-8 Z" fill="#F4EDE0" opacity=".95"/>
+          <path d="M-1.6,-40 L-19,-9 L-1.6,-9 Z" fill="#E9DFCC" opacity=".9"/>
+        </g>
+      </g>
+
+      <!-- radeaux de sargasses qui dérivent (incidents, calmes) -->
+      <g id="rafts" fill="var(--sarg)">
+        <g class="raft"><ellipse cx="120" cy="498" rx="48" ry="11"/><ellipse cx="150" cy="506" rx="30" ry="7" opacity=".85"/></g>
+        <g class="raft"><ellipse cx="350" cy="540" rx="60" ry="13"/><ellipse cx="320" cy="550" rx="34" ry="8" opacity=".85"/></g>
+        <g class="raft"><ellipse cx="620" cy="520" rx="40" ry="9" opacity=".8"/></g>
+      </g>
+
+      <!-- LE VEILLEUR — un seul objet = le satellite, veille la MER -->
+      <g id="watcherPos" transform="translate(648,150)">
+        <g id="watcher">
+          <g id="watchBob">
+            <!-- panneaux solaires -->
+            <rect x="-78" y="-10" width="46" height="22" rx="3" fill="#16323a" stroke="#2b5560" stroke-width="1.4"/>
+            <rect x="32" y="-10" width="46" height="22" rx="3" fill="#16323a" stroke="#2b5560" stroke-width="1.4"/>
+            <line x1="-66" y1="-10" x2="-66" y2="12" stroke="#2b5560"/><line x1="-50" y1="-10" x2="-50" y2="12" stroke="#2b5560"/>
+            <line x1="46" y1="-10" x2="46" y2="12" stroke="#2b5560"/><line x1="62" y1="-10" x2="62" y2="12" stroke="#2b5560"/>
+            <!-- corps -->
+            <rect x="-30" y="-22" width="60" height="44" rx="11" fill="#1d3b42" stroke="#2f5d68" stroke-width="2"/>
+            <rect x="-30" y="-22" width="60" height="14" rx="11" fill="#27505a"/>
+            <!-- capteur / lentille (le plus gros élément coloré → porte l'humeur) -->
+            <circle id="lens" cx="0" cy="6" r="13" fill="var(--tealL)"/>
+            <circle id="iris" cx="0" cy="8" r="6.5" fill="#0c2a2a"/>
+            <circle cx="-2.4" cy="5.4" r="2" fill="#EAFBF6" opacity=".9"/>
+            <!-- faisceau de veille vers la MER (caring, pas un scan de la personne) -->
+            <path id="beam" d="M0,12 L-130,150 L-40,162 Z" fill="var(--tealL)" opacity=".12"/>
+          </g>
+        </g>
+      </g>
+    </svg>
+  </div>
+
+  <!-- ════ L'ENCART COMMUNAUTÉ ════ -->
+  <div class="panel">
+    <p class="eyebrow">Anse Dufour · Communauté</p>
+    <h1 class="anton h1">C'est ramassé&nbsp;? Tu y es&nbsp;? Dis-le.</h1>
+
+    <!-- ── État collecte (inférence honnête, pas une mesure) ── -->
+    <div class="card">
+      <div class="lbl">🧹 État de la plage <span class="infer">inféré · satellite + signalements</span></div>
+      <div class="phaseRow" id="phaseRow">
+        <div class="phase" data-p="0">Échouage</div>
+        <div class="phase" data-p="1">Sur le sable</div>
+        <div class="phase" data-p="2">Se dégage</div>
+      </div>
+      <div class="collTrack" id="collTrack"></div>
+      <div class="collMsg" id="collMsg"></div>
+
+      <!-- Indice H2S DÉRIVÉ (sargasse accumulée + en décompo = proxy) -->
+      <div class="h2s mid" id="h2sBox">
+        <span class="h2sDot" id="h2sDot"></span>
+        <div>
+          <div class="h2sTxt" id="h2sTxt"></div>
+          <div class="h2sNote">Indice de risque, pas une mesure de gaz. Dérivé de l'algue accumulée &amp; de son âge.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Signaler (ground-truth, anonyme) ── -->
+    <div class="card">
+      <div class="lbl">📍 Sur place&nbsp;? Signale le niveau aujourd'hui</div>
+      <div class="lvls" id="lvls">
+        <button class="lvl c" data-lv="clean"    aria-pressed="false"><span class="em">✅</span>Propre</button>
+        <button class="lvl m" data-lv="moderate" aria-pressed="false"><span class="em">⚠️</span>Modéré</button>
+        <button class="lvl a" data-lv="avoid"     aria-pressed="false"><span class="em">🚫</span>Beaucoup</button>
+      </div>
+      <div class="cons">
+        <div class="consBar" id="consBar"></div>
+        <div class="consMeta" id="consMeta"></div>
+      </div>
+      <div class="thanks" id="thanks">Merci&nbsp;! Ton signalement aide la prochaine personne — et affine la donnée.</div>
+      <div class="anon">🔒 Anonyme · aucun compte, aucune position précise stockée (plage + niveau + horodatage seulement).</div>
+    </div>
+
+    <!-- ── Share-card "j'ai vérifié" ── -->
+    <button class="shareBtn" id="shareBtn">✓ J'ai vérifié — partager la carte</button>
+    <div class="scWrap" id="scWrap"></div>
+
+    <div class="premium">
+      Gratuit&nbsp;: signaler, voir le consensus, partager. <b>Premium</b>&nbsp;: sois prévenu·e dès que ta plage change d'état — sans avoir à vérifier toi-même.
+    </div>
+  </div>
+</div>
+
+<script>
+/* ───────────────────────────────────────────────────────────────────────────
+   DATA MODEL — proto autonome. En prod ces entrées viennent de :
+   • beach     ← levels[] de sargassum.json (afai, status, beachMemory, score)
+   • memTrend  ← AFAI/memory d'hier vs aujourd'hui (history.json) → rising/sitting/clearing
+   • reports   ← communityReports[beach.id] (Apps Script, fenêtre 48h, consensus≥3)
+   • updatedAt ← sargassum.json.updatedAt (freshness RÉELLE, jamais hardcodée)
+   AUCUN signal "ramassé" n'existe en flux → la phase collecte est INFÉRÉE,
+   et étiquetée comme telle. Le H2S est un INDICE dérivé, jamais une mesure.
+─────────────────────────────────────────────────────────────────────────── */
+var DEMO = {
+  beachName:"Anse Dufour",
+  afai:0.34,            // signal satellite aujourd'hui (0–1)
+  beachMemory:0.46,     // algue accumulée au sol (demi-vie 3,5j, 0–1)
+  status:"moderate",
+  updatedAt: Date.now() - 1*3600*1000, // -1h
+  memYesterday:0.61,    // accumulation d'hier → on en déduit la tendance
+  reports:{clean:1, moderate:5, avoid:2} // 48h
+};
+
+/* ── Helpers DOM sûrs (pas d'innerHTML avec du contenu dynamique) ─────────── */
+function el(tag,props,kids){var n=document.createElement(tag);
+  if(props)for(var k in props){if(k==="style")for(var s in props.style)n.style[s]=props.style[s];
+    else if(k==="class")n.className=props[k]; else n.setAttribute(k,props[k]);}
+  if(kids)kids.forEach(function(c){n.appendChild(typeof c==="string"?document.createTextNode(c):c);});
+  return n;}
+function clear(n){while(n.firstChild)n.removeChild(n.firstChild);}
+function b(text,color){var e=document.createElement("b");e.textContent=text;if(color)e.style.color=color;return e;}
+
+/* ── Dérivation HONNÊTE de la phase collecte ──────────────────────────────
+   On ne connaît PAS la collecte. On lit la dynamique de l'accumulation :
+   - memory monte / stable haut + afai>seuil   → phase 0 "Échouage / frais"
+   - memory baisse fortement (>30% en 1j)       → phase 2 "Se dégage" (collecte OU dérive OU marée)
+   - memory haut & stagne                        → phase 1 "Sur le sable (peut sentir)"
+   La part "collecte" est une HYPOTHÈSE → tag "inféré", phrasé prudent. */
+function inferCollection(d){
+  var drop=d.memYesterday-d.beachMemory;
+  var rel=d.memYesterday>0?drop/d.memYesterday:0;
+  if(d.afai>0.25 && d.beachMemory>=d.memYesterday-0.02)
+    return {phase:0,parts:["Échouage en cours. ","L'algue est fraîche sur le sable. Ramassée vite (24–48 h), pas d'odeur."]};
+  if(rel>0.30)
+    return {phase:2,parts:["La plage se dégage. ","Le signal a fortement baissé depuis hier — collecte, dérive ou marée. La cause exacte n'est pas connue."]};
+  return {phase:1,parts:["Algue posée depuis ~2 jours. ","Toujours présente, pas encore dégagée. C'est la fenêtre où ça peut commencer à sentir."]};
+}
+
+/* ── Indice H2S DÉRIVÉ (proxy, jamais une mesure) ─────────────────────────
+   décompo ∝ accumulation × âge. Bébés/asthme/femmes enceintes/âgés = sensibles. */
+function deriveH2S(d){
+  var drop=d.memYesterday-d.beachMemory, sitting=drop<=0.05;
+  var idx=d.beachMemory*(sitting?1:0.4);
+  if(idx>=0.40)return{lvl:"élevé",cls:"high",dot:"var(--coral)",
+    parts:["Risque odeur / H₂S : élevé. ","Personnes sensibles (asthme, bébés, femmes enceintes, âgés) : évitez de stationner au vent."]};
+  if(idx>=0.18)return{lvl:"modéré",cls:"mid",dot:"var(--amber)",
+    parts:["Risque odeur / H₂S : modéré. ","Possible odeur d'œuf au vent. Aérez, limitez l'exposition prolongée."]};
+  return{lvl:"faible",cls:"low",dot:"var(--green)",
+    parts:["Risque odeur / H₂S : faible. ","Peu d'algue en décomposition aujourd'hui."]};
+}
+
+function timeAgo(ts){var h=Math.round((Date.now()-ts)/3600000);
+  if(h<1)return"il y a moins d'1h"; if(h<24)return"il y a "+h+"h"; return Math.round(h/24)+"j";}
+
+var COLL_COLORS=["var(--coral)","var(--amber)","var(--green)"]; // phase 0,1,2
+function render(){
+  var d=DEMO;
+  // freshness RÉELLE (kill-switch <12h)
+  var fresh=(Date.now()-d.updatedAt)/3600000<12;
+  document.getElementById('liveTxt').textContent = fresh
+    ? "EN DIRECT · vérifié "+timeAgo(d.updatedAt) : "Vérification en cours";
+
+  // phase collecte
+  var col=inferCollection(d);
+  var phEls=document.querySelectorAll('.phase');
+  for(var i=0;i<phEls.length;i++)phEls[i].classList.toggle('on',i===col.phase);
+  var track=document.getElementById('collTrack');clear(track);
+  [0,1,2].forEach(function(i){
+    track.appendChild(el('span',{style:{flex:'1',
+      background:i===col.phase?COLL_COLORS[i]:'var(--mid)',
+      opacity:i===col.phase?'1':'.18'}}));
+  });
+  var msg=document.getElementById('collMsg');clear(msg);
+  msg.appendChild(b(col.parts[0]));msg.appendChild(document.createTextNode(col.parts[1]));
+
+  // H2S indice
+  var h=deriveH2S(d);
+  document.getElementById('h2sBox').className='h2s '+h.cls;
+  document.getElementById('h2sDot').style.background=h.dot;
+  var ht=document.getElementById('h2sTxt');clear(ht);
+  ht.appendChild(b(h.parts[0]));ht.appendChild(document.createTextNode(h.parts[1]));
+
+  // consensus
+  var r=d.reports, tot=r.clean+r.moderate+r.avoid;
+  var bar=document.getElementById('consBar');clear(bar);
+  function seg(n,c){if(n>0)bar.appendChild(el('span',{style:{flex:String(n),background:c}}));}
+  seg(r.clean,'var(--green)');seg(r.moderate,'var(--amber)');seg(r.avoid,'var(--coral)');
+  var meta=document.getElementById('consMeta');clear(meta);
+  if(tot===0){meta.textContent="Sois le premier à signaler aujourd'hui.";}
+  else{
+    meta.appendChild(b(String(tot)));
+    meta.appendChild(document.createTextNode(" signalement"+(tot>1?'s':'')+" (48h)"));
+    if(tot>=3){
+      var cons=(r.avoid>=r.moderate&&r.avoid>=r.clean)?["🚫","Beaucoup","var(--coral)"]
+        :(r.moderate>=r.clean)?["⚠️","Modéré","var(--amber)"]:["✅","Propre","var(--green)"];
+      meta.appendChild(document.createTextNode(" · consensus "));
+      meta.appendChild(b(cons[0]+" "+cons[1],cons[2]));
+    }else meta.appendChild(document.createTextNode(" · besoin de 3 pour un consensus"));
+  }
+
+  setVeilleur(d.status==="clean"?80:d.status==="moderate"?55:30);
+}
+
+/* ── Signaler (anonyme, cooldown 12h en prod via localStorage) ─────────────── */
+var voted=null;
+document.getElementById('lvls').addEventListener('click',function(e){
+  var btn=e.target.closest('.lvl'); if(!btn||voted) return;
+  voted=btn.dataset.lv;
+  var all=document.querySelectorAll('.lvl');
+  for(var i=0;i<all.length;i++){all[i].setAttribute('aria-pressed', all[i]===btn?"true":"false");all[i].disabled=true;}
+  // En prod : track('sg_beach_report',{beach_id,level,satellite_status,island}) + POST Apps Script (anonyme)
+  DEMO.reports[voted]=(DEMO.reports[voted]||0)+1;
+  render();
+  document.getElementById('thanks').classList.add('show');
+});
+
+/* ── Share-card "j'ai vérifié [plage]" (SVG ; en prod SVG→PNG via sharp) ──── */
+var SC_LABEL={clean:["✅","PROPRE","#22C55E"],moderate:["⚠️","MODÉRÉ","#B87A00"],avoid:["🚫","BEAUCOUP","#E8522A"]};
+function buildShareSVG(d,st,whenStr){
+  // SVG construit en string PUIS parsé en DOM (pas d'innerHTML) — valeurs first-party only
+  var NS="http://www.w3.org/2000/svg";
+  var svg='<svg xmlns="'+NS+'" viewBox="0 0 800 600" role="img" aria-label="J\'ai vérifié '+d.beachName+'">'
+    +'<defs>'
+    +'<linearGradient id="scsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0B2230"/><stop offset=".55" stop-color="#155A5A"/><stop offset=".8" stop-color="#C97E3A"/><stop offset="1" stop-color="#F2B05E"/></linearGradient>'
+    +'<linearGradient id="scsea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1A5852"/><stop offset="1" stop-color="#08251F"/></linearGradient>'
+    +'<radialGradient id="scsun" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FFE9B0"/><stop offset=".5" stop-color="#FFD884"/><stop offset="1" stop-color="#FFD884" stop-opacity="0"/></radialGradient>'
+    +'</defs>'
+    +'<rect width="800" height="360" fill="url(#scsky)"/>'
+    +'<circle cx="600" cy="290" r="110" fill="url(#scsun)"/><circle cx="600" cy="290" r="30" fill="#FFEBB6"/>'
+    +'<rect y="334" width="800" height="266" fill="url(#scsea)"/>'
+    +'<ellipse cx="600" cy="372" rx="56" ry="4" fill="#FFD884" opacity=".5"/><ellipse cx="600" cy="410" rx="44" ry="4" fill="#FFD884" opacity=".35"/>'
+    +'<g transform="translate(150,150)">'
+    +'<rect x="-58" y="-7" width="34" height="16" rx="2" fill="#16323a"/><rect x="24" y="-7" width="34" height="16" rx="2" fill="#16323a"/>'
+    +'<rect x="-22" y="-16" width="44" height="32" rx="8" fill="#1d3b42" stroke="#2f5d68" stroke-width="2"/>'
+    +'<circle cx="0" cy="4" r="9" fill="'+st[2]+'"/><circle cx="0" cy="6" r="4.5" fill="#0c2a2a"/></g>'
+    +'<rect x="60" y="392" width="680" height="150" rx="22" fill="#FDFCF7"/>'
+    +'<text x="92" y="438" font-family="Anton,Impact,sans-serif" font-size="20" letter-spacing="2" fill="#686868">J\'AI VÉRIFIÉ</text>'
+    +'<text x="92" y="486" font-family="Anton,Impact,sans-serif" font-size="42" fill="#0D0D0D">'+d.beachName.toUpperCase()+'</text>'
+    +'<text x="92" y="520" font-family="Bricolage Grotesque,sans-serif" font-size="18" fill="#686868">le '+whenStr+' · sargasses-martinique.com</text>'
+    +'<g transform="translate(560,415)"><rect x="0" y="0" width="150" height="104" rx="16" fill="'+st[2]+'" opacity=".12"/>'
+    +'<text x="75" y="56" font-size="40" text-anchor="middle">'+st[0]+'</text>'
+    +'<text x="75" y="88" font-family="Anton,Impact,sans-serif" font-size="22" text-anchor="middle" fill="'+st[2]+'">'+st[1]+'</text></g>'
+    +'<text x="400" y="46" font-family="Anton,Impact,sans-serif" font-size="22" letter-spacing="2" text-anchor="middle" fill="#FFE47A">SARGASSES · EN DIRECT</text>'
+    +'</svg>';
+  return new DOMParser().parseFromString(svg,"image/svg+xml").documentElement;
+}
+document.getElementById('shareBtn').addEventListener('click',function(){
+  var d=DEMO, st=SC_LABEL[voted||d.status];
+  var whenStr=new Date(d.updatedAt).toLocaleDateString('fr-FR',{day:'numeric',month:'long'});
+  var wrap=document.getElementById('scWrap');clear(wrap);
+  wrap.appendChild(buildShareSVG(d,st,whenStr));
+  var actions=el('div',{class:'scActions'});
+  var share=el('button',null,["↗ Partager"]);
+  share.addEventListener('click',function(){if(window.sendPrompt)window.sendPrompt('partage '+d.beachName);});
+  var close=el('button',null,["Fermer"]);
+  close.addEventListener('click',function(){wrap.classList.remove('show');});
+  actions.appendChild(share);actions.appendChild(close);
+  wrap.appendChild(actions);
+  wrap.classList.add('show');
+  // En prod : track('sg_share_verified',{beach_id,status}) + génère PNG OG via sharp
+});
+
+/* ───────────────────────────── SCÈNE — moteur SVG ──────────────────────────
+   1 seul rAF, demand-driven, pause sur visibilitychange, reduced-motion floor.
+   Le Veilleur regarde la MER ; faisceau = veille de l'eau (amplitude faible). */
+var scene=document.getElementById('scene');
+var lens=document.getElementById('lens'), iris=document.getElementById('iris'), beam=document.getElementById('beam');
+var yoleBob=document.getElementById('yoleBob'), watchBob=document.getElementById('watchBob');
+var moodTarget={r:30,g:200,b:176}, moodCur={r:30,g:200,b:176}, score=55;
+function moodFor(s){return s>=70?'#1EC8B0':s>=40?'#FFC72C':'#E8522A';}
+function setVeilleur(s){score=s;var c=moodFor(s);
+  moodTarget={r:parseInt(c.slice(1,3),16),g:parseInt(c.slice(3,5),16),b:parseInt(c.slice(5,7),16)};wake();}
+window.setVeilleurScore=setVeilleur;
+
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+var look={x:560,y:440}, target={x:560,y:440}, lastInput=0, t0=performance.now(), running=false, raf=0;
+
+function toVB(cx,cy){var r=scene.getBoundingClientRect(),sc=Math.max(r.width/800,r.height/600);
+  var dw=800*sc,dh=600*sc,ox=(r.width-dw)/2,oy=(r.height-dh)/2;
+  return{x:(cx-r.left-ox)/sc,y:(cy-r.top-oy)/sc};}
+
+scene.addEventListener('pointermove',function(e){
+  var p=toVB(e.clientX,e.clientY);
+  // amplitude FAIBLE : le regard penche un peu vers où on pointe, mais reste sur la MER
+  target.x=Math.max(120,Math.min(700, 560 + (p.x-560)*0.16));
+  target.y=Math.max(400,Math.min(500, 440 + (p.y-440)*0.10));
+  lastInput=performance.now(); wake();
+},{passive:true});
+
+function frame(now){
+  var t=(now-t0)/1000;
+  if(!reduce){
+    watchBob.setAttribute('transform','translate(0,'+(Math.sin(t*0.5)*2.2).toFixed(2)+')');
+    yoleBob.setAttribute('transform','translate(0,'+(Math.sin(t*0.6+1)*1.6).toFixed(2)+')');
+  }
+  if(now-lastInput>1000){target.x=560;target.y=440;} // retour vite à la mer (~1s)
+  look.x+=(target.x-look.x)*0.08; look.y+=(target.y-look.y)*0.08;
+  var wx=648,wy=156;
+  var ang=Math.atan2(look.y-wy,look.x-wx);
+  iris.setAttribute('cx',(Math.cos(ang)*3).toFixed(2));
+  iris.setAttribute('cy',(8+Math.sin(ang)*3).toFixed(2));
+  var bx=Math.cos(ang)*150, by=Math.sin(ang)*150;
+  beam.setAttribute('d','M0,12 L'+(bx-45).toFixed(0)+','+by.toFixed(0)+' L'+(bx+10).toFixed(0)+','+(by+18).toFixed(0)+' Z');
+  // snap couleur d'humeur (skill : lerp n'atteint jamais la cible → snap quand proche)
+  ['r','g','b'].forEach(function(k){moodCur[k]+=(moodTarget[k]-moodCur[k])*0.10;});
+  var close=Math.abs(moodCur.r-moodTarget.r)<6&&Math.abs(moodCur.g-moodTarget.g)<6&&Math.abs(moodCur.b-moodTarget.b)<6;
+  if(close){moodCur={r:moodTarget.r,g:moodTarget.g,b:moodTarget.b};}
+  var col='rgb('+(moodCur.r|0)+','+(moodCur.g|0)+','+(moodCur.b|0)+')';
+  lens.setAttribute('fill',col); beam.setAttribute('fill',col);
+
+  var moving=Math.abs(target.x-look.x)>0.4||Math.abs(target.y-look.y)>0.4||!close||!reduce;
+  if(moving){raf=requestAnimationFrame(frame);} else {running=false;}
+}
+function wake(){if(reduce){frameOnce();return;} if(!running){running=true;raf=requestAnimationFrame(frame);}}
+function frameOnce(){ // reduced-motion : pose finale belle, figée, regard mer
+  var ang=Math.atan2(440-156,560-648);
+  iris.setAttribute('cx',(Math.cos(ang)*3).toFixed(2));iris.setAttribute('cy',(8+Math.sin(ang)*3).toFixed(2));
+  var bx=Math.cos(ang)*150,by=Math.sin(ang)*150;
+  beam.setAttribute('d','M0,12 L'+((bx-45)|0)+','+(by|0)+' L'+((bx+10)|0)+','+((by+18)|0)+' Z');
+  var c=moodFor(score);lens.setAttribute('fill',c);beam.setAttribute('fill',c);
+}
+document.addEventListener('visibilitychange',function(){if(document.hidden){cancelAnimationFrame(raf);running=false;}else wake();});
+
+render();
+if(reduce)frameOnce(); else wake();
+</script>
+</body>
+</html>

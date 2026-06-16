@@ -1,0 +1,1553 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sargasses — accueil A→Z (hero → verdict → méthode → premium → footer) · Le Veilleur satellite</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:wght@600;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   IDENTITE — golden-hour côte (palette du repo, source de vérité)
+   ============================================================ */
+:root{
+  --sky0:#0B2230; --sky1:#155A5A; --sky2:#C97E3A; --sky3:#F2B05E;
+  --seaT:#1A5852; --seaB:#08251F; --glint:#FFD884; --sand:#1C1712;
+  --ink:#EAF7F4; --gold:#E8A800; --goldL:#FFC72C; --goldS:#FFE47A;
+  --teal:#009E8E; --tealL:#5FD3C9; --green:#22C55E; --amber:#B87A00; --coral:#E8522A;
+  --mid:#9DB4B0; --rim:#FFD884;
+  /* CSS vars pilotées par le scroll (le moteur) */
+  --gp:0;        /* progression globale 0..1 */
+  --p0:0; --p1:0; --p2:0; --p3:0; --p4:0;  /* progression interne de chaque beat */
+  --e0:1; --e1:0; --e2:0; --e3:0; --e4:0;  /* opacité de chaque bloc de copy */
+  --camS:1;      /* dolly camera scale */
+  --camY:0;      /* dolly camera translateY (%) */
+  --hs:0;        /* parallaxe HeroScene 0..1 */
+  --alert:0;     /* teinte alerte (beat premium) 0..1 */
+  /* couleur d'humeur du Veilleur (mutées par JS pour crossfades doux) */
+  --mood:#1FB6A6; --moodHalo:#1FB6A6; --moodDot:#22C55E;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+html{scroll-behavior:auto}
+body{background:#02060A;color:var(--ink);
+  font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  overflow-x:hidden}
+.anton{font-family:'Anton',"Haettenschweiler","Arial Narrow Bold","Impact",system-ui,sans-serif;font-weight:400;letter-spacing:-.02em;text-transform:uppercase}
+.mono{font-family:'JetBrains Mono',monospace}
+
+/* ============================================================
+   STRUCTURE SCROLL — page haute + viewport STICKY
+   ============================================================ */
+.scroller{position:relative;width:100%}
+.spans{position:absolute;inset:0;z-index:0;pointer-events:none}
+.span{width:100%}
+#sp0{height:118vh}  /* hero */
+#sp1{height:130vh}  /* verdict */
+#sp2{height:165vh}  /* méthode = le plus long (la preuve) */
+#sp3{height:140vh}  /* premium */
+#sp4{height:112vh}  /* footer — allongé pour donner au CTA footer un vrai temps de lecture */
+
+.viewport{position:sticky;top:0;height:100svh;width:100%;overflow:hidden;z-index:1;
+  background:var(--sky0)}
+
+/* caméra dolly : avance dans l'univers (spring CSS, additif au scroll) */
+.cam{position:absolute;inset:0;will-change:transform;
+  transform:translateY(var(--camY)) scale(var(--camS));
+  transform-origin:50% 64%;
+  transition:transform .5s cubic-bezier(.34,1.4,.64,1)}
+
+svg.scene{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y}
+
+/* parallaxe des 3 couches (pilotée par --hs au scroll du hero) */
+.lyr-sky{transform:translateY(calc(var(--hs) * -26px))}
+.lyr-sea{transform:translateY(calc(var(--hs) * 8px)) scale(calc(1 + var(--hs)*0.10));transform-origin:50% 52%}
+.lyr-sand{transform:translateY(calc(var(--hs) * 18px)) scale(calc(1 + var(--hs)*0.22));transform-origin:50% 100%}
+
+/* voile de lisibilité bas d'écran */
+.veil{position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:linear-gradient(180deg,
+    rgba(7,18,15,0) 0%,
+    rgba(7,18,15,calc(.10 + var(--gp)*.10)) 42%,
+    rgba(7,18,15,calc(.46 + var(--p1)*.18 + var(--p3)*.10)) 70%,
+    rgba(7,18,15,calc(.80 + var(--gp)*.12)) 100%)}
+.alertwash{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:var(--alert);
+  background:linear-gradient(180deg,rgba(232,82,42,.16) 0%,rgba(232,82,42,0) 34%)}
+
+/* ============================================================
+   CHROME persistant (pill LIVE + langue)
+   ============================================================ */
+.chrome{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;justify-content:space-between;
+  align-items:center;padding:14px 16px;max-width:560px;margin:0 auto;pointer-events:none}
+.live{display:inline-flex;align-items:center;gap:7px;pointer-events:auto;
+  padding:6px 12px 6px 10px;border-radius:999px;background:rgba(8,18,16,.5);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.14)}
+.live .pulse{width:8px;height:8px;border-radius:50%;background:var(--coral);
+  box-shadow:0 0 0 0 rgba(232,82,42,.6);animation:livepulse 2.4s ease-out infinite}
+@keyframes livepulse{0%{box-shadow:0 0 0 0 rgba(232,82,42,.55)}70%{box-shadow:0 0 0 9px rgba(232,82,42,0)}100%{box-shadow:0 0 0 0 rgba(232,82,42,0)}}
+.live .t{font:800 11px/1 "Bricolage Grotesque";letter-spacing:.08em;text-transform:uppercase;color:#fff}
+.live .h{font:700 11px/1 'JetBrains Mono';color:var(--tealL);margin-left:2px}
+.langs{display:flex;gap:4px;pointer-events:auto}
+.langs button{border:1px solid rgba(255,255,255,.14);background:rgba(8,18,16,.5);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);color:var(--ink);
+  font:800 11px/1 "Bricolage Grotesque";letter-spacing:.04em;padding:7px 9px;border-radius:9px;cursor:pointer}
+.langs button[aria-pressed="true"]{background:var(--goldL);color:#1A2B26;border-color:transparent}
+
+/* ============================================================
+   OVERLAY DE COPY — 1 bloc par beat, épinglé bas, fade par --e{i}
+   ============================================================ */
+.copylayer{position:absolute;inset:0;z-index:6;pointer-events:none}
+.beatcopy{position:absolute;left:0;right:0;bottom:0;padding:0 20px 40px;
+  max-width:560px;margin:0 auto;will-change:opacity,transform;
+  opacity:0;transform:translateY(14px);transition:opacity .25s linear}
+#bc0{opacity:var(--e0)} #bc1{opacity:var(--e1)} #bc2{opacity:var(--e2)}
+#bc3{opacity:var(--e3)} #bc4{opacity:var(--e4)}
+.beatcopy.on{pointer-events:auto;transform:translateY(0)}
+
+.eyebrow{font:800 11px/1.3 "Bricolage Grotesque";letter-spacing:.18em;text-transform:uppercase;
+  color:var(--tealL);margin-bottom:9px;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.eyebrow .dt{color:var(--goldS)}
+h1.head,h2.head{font-size:clamp(31px,8.4vw,50px);line-height:.98;color:#fff;margin:0 0 12px;
+  text-shadow:0 2px 22px rgba(0,0,0,.55);max-width:13ch}
+.head .b{color:var(--goldL)}
+.head .pl{color:var(--goldS)}
+.sub{font:600 14.5px/1.5 "Bricolage Grotesque";color:rgba(255,255,255,.82);
+  margin:0 0 18px;max-width:38ch;text-shadow:0 1px 10px rgba(0,0,0,.5)}
+
+/* CTA doré principal */
+.cta{display:block;width:100%;border:none;cursor:pointer;font-family:inherit;text-align:center;
+  border-radius:15px;padding:16px 18px;color:#1A2B26;
+  background:linear-gradient(135deg,var(--goldS),var(--goldL) 40%,var(--gold));
+  box-shadow:0 12px 34px rgba(232,168,0,.32),inset 0 1px 0 rgba(255,255,255,.5);transition:transform .12s ease}
+.cta:active{transform:scale(.985)}
+.cta .t{font:800 16.5px/1.1 "Bricolage Grotesque";letter-spacing:.005em}
+.cta .s{font:600 12px/1.3 "Bricolage Grotesque";opacity:.78;margin-top:3px}
+.linkcta{display:inline-flex;align-items:center;gap:6px;margin-top:13px;background:none;border:none;
+  cursor:pointer;font:800 13px/1 "Bricolage Grotesque";color:var(--ink);opacity:.78;
+  letter-spacing:.01em;padding:6px 0;text-decoration:none}
+.linkcta:hover{opacity:1}
+.linkcta .ar{color:var(--goldS)}
+.reassure{text-align:center;margin-top:12px;font:600 11px/1.4 "Bricolage Grotesque";
+  color:rgba(234,247,244,.55);letter-spacing:.015em}
+
+/* badge VERDICT du jour (hero) */
+.verdictbadge{display:inline-flex;align-items:center;gap:11px;margin-bottom:16px;cursor:pointer;
+  padding:9px 15px 9px 11px;border-radius:14px;background:rgba(8,18,16,.42);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.13)}
+.verdictbadge .vbar{width:5px;height:34px;border-radius:3px;background:var(--green)}
+.verdictbadge .vtxt{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.01em;text-transform:uppercase;
+  font-size:18px;line-height:1;color:var(--green)}
+.verdictbadge .vsc{font:700 13px/1 'JetBrains Mono';color:#fff;opacity:.92}
+.verdictbadge .vsc b{color:var(--goldS)}
+
+/* top-3 cartes plage (verdict) */
+.top3{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;
+  margin:0 -20px 14px;padding:2px 20px 8px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.top3::-webkit-scrollbar{display:none}
+.pcard{scroll-snap-align:start;flex:0 0 158px;border-radius:14px;padding:13px 14px;cursor:pointer;
+  background:rgba(8,18,16,.46);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.12);transition:transform .14s ease,border-color .14s ease}
+.pcard:active{transform:scale(.97)}
+.pcard .pn{font:800 13.5px/1.15 "Bricolage Grotesque";color:#fff;margin-bottom:6px}
+.pcard .ps{display:inline-flex;align-items:center;gap:6px;font:800 11px/1 "Bricolage Grotesque";
+  letter-spacing:.04em;text-transform:uppercase}
+.pcard .ps .d{width:8px;height:8px;border-radius:50%}
+.pcard .pf{font:700 11px/1 'JetBrains Mono';color:var(--mid);margin-top:7px}
+.st-clean{color:var(--green)} .st-clean .d{background:var(--green)}
+.st-mod{color:#E8B23A} .st-mod .d{background:#E8B23A}
+.st-avoid{color:var(--coral)} .st-avoid .d{background:var(--coral)}
+
+/* puces (méthode / premium) */
+.bullets{display:flex;flex-direction:column;gap:9px;margin:2px 0 18px}
+.bul{display:flex;gap:11px;align-items:flex-start;opacity:0;transform:translateY(10px);
+  transition:opacity .5s ease,transform .5s ease}
+.bul.rv{opacity:1;transform:none}
+.bul .bi{flex:0 0 30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+  font-size:15px;background:rgba(0,158,142,.16);border:1px solid rgba(95,211,201,.3)}
+.bul .bt b{display:block;font:800 12.5px/1.25 "Bricolage Grotesque";color:#fff;letter-spacing:.01em;margin-bottom:2px}
+.bul .bt span{font:600 12px/1.4 "Bricolage Grotesque";color:rgba(234,247,244,.74)}
+
+/* footer */
+.footwrap{text-align:left}
+.wordmark{font-family:'Anton',sans-serif;font-size:40px;line-height:.9;color:#fff;text-transform:uppercase;letter-spacing:-.02em;margin-bottom:10px}
+.foot-credit{font:600 12.5px/1.5 "Bricolage Grotesque";color:rgba(234,247,244,.7);margin-bottom:14px}
+.foot-links{display:flex;gap:18px;align-items:center}
+.foot-links a{font:800 12.5px/1 "Bricolage Grotesque";color:var(--ink);opacity:.8;text-decoration:none}
+.foot-links a.prem{color:var(--goldS);text-decoration:underline;text-underline-offset:3px}
+
+/* indicateur de scroll (hero) */
+.scrollhint{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:7;
+  display:flex;flex-direction:column;align-items:center;gap:4px;pointer-events:none;
+  opacity:calc(1 - var(--gp)*7);transition:opacity .2s}
+.scrollhint .lab{font:800 9.5px/1 "Bricolage Grotesque";letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.7)}
+.scrollhint .chev{width:22px;height:22px;border-right:2px solid rgba(255,255,255,.8);
+  border-bottom:2px solid rgba(255,255,255,.8);transform:rotate(45deg);animation:bob 1.8s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:rotate(45deg) translate(0,0)}50%{transform:rotate(45deg) translate(3px,3px)}}
+
+/* micro-légende in-scene (ancrée, pas un popup) */
+.whisper{position:absolute;z-index:8;max-width:240px;padding:11px 13px;border-radius:13px;cursor:pointer;
+  background:rgba(8,18,16,.78);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  border:1px solid rgba(255,216,132,.32);color:#fff;
+  font:700 12px/1.4 "Bricolage Grotesque";opacity:0;transform:translateY(8px) scale(.97);
+  transition:opacity .35s ease,transform .35s ease;pointer-events:none}
+.whisper.on{opacity:1;transform:none;pointer-events:auto}
+.whisper .ar{color:var(--goldS);font-weight:800}
+.whisper small{display:block;margin-top:5px;font:700 11px/1.2 "Bricolage Grotesque";color:var(--goldS)}
+
+/* hint d'interaction discret bas-gauche */
+.touchhint{position:absolute;left:16px;bottom:16px;z-index:7;display:flex;align-items:center;gap:7px;
+  pointer-events:none;opacity:0;transition:opacity .5s}
+.touchhint.on{opacity:.62}
+.touchhint .ring{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--tealL);
+  animation:tap 2.6s ease-out infinite}
+@keyframes tap{0%{transform:scale(.6);opacity:1}60%{transform:scale(1.5);opacity:0}100%{opacity:0}}
+.touchhint span{font:700 10.5px/1 "Bricolage Grotesque";letter-spacing:.04em;color:var(--tealL);text-shadow:0 1px 4px #000}
+
+/* ============================================================
+   ELEMENTS SVG REACTIFS — au repos = TABLEAU (doctrine calme).
+   Seuls les nuages + respiration soleil bougent (ambient lent).
+   ============================================================ */
+.sgh-cloud1{animation:cloud1 132s ease-in-out infinite alternate}
+.sgh-cloud2{animation:cloud2 168s ease-in-out infinite alternate}
+@keyframes cloud1{from{transform:translateX(0)}to{transform:translateX(60px)}}
+@keyframes cloud2{from{transform:translateX(0)}to{transform:translateX(-46px)}}
+#sunGlow{animation:sunBreath 11s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes sunBreath{0%,100%{opacity:.86;transform:scale(1)}50%{opacity:1;transform:scale(1.045)}}
+
+.scanbeam{transition:opacity .4s ease}
+.ring{opacity:0}
+.ring.go{animation:ringgo 1.1s ease-out forwards}
+@keyframes ringgo{0%{opacity:.7;transform:scale(.3)}100%{opacity:0;transform:scale(1.8)}}
+
+.raft{transition:transform .8s ease,opacity .7s ease}
+.boomgrp{opacity:0;transition:opacity .5s ease}
+.boomgrp.on{opacity:1}
+.glint-flash{opacity:0}
+.glint-flash.go{animation:glintgo 1s ease-out forwards}
+@keyframes glintgo{0%{opacity:.5;transform:scale(.6)}100%{opacity:0;transform:scale(1.6)}}
+
+/* yole : voile qui prend doucement le vent (ambient lent, doctrine calme) */
+#yoleSails{animation:yoleLuff 9s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:left bottom}
+@keyframes yoleLuff{0%{transform:skewX(0deg)}100%{transform:skewX(-2deg)}}
+
+.buoylabel{opacity:0;transition:opacity .4s ease}
+.buoylabel.on{opacity:1}
+
+.alertnotif{opacity:0;transition:opacity .45s ease}
+.fcbar{transform:scaleY(0);transform-origin:bottom;transition:transform .5s cubic-bezier(.34,1.56,.64,1)}
+
+/* ============================================================
+   DESKTOP full-bleed : même UX, copy capée 560px centré
+   ============================================================ */
+@media(min-width:680px){
+  .beatcopy{padding-bottom:54px}
+  h1.head,h2.head{font-size:clamp(42px,5.2vw,60px)}
+  .sub{font-size:16px}
+}
+
+/* ============================================================
+   REDUCED-MOTION = PLANCHER DUR
+   ============================================================ */
+@media(prefers-reduced-motion:reduce){
+  .sgh-cloud1,.sgh-cloud2,.live .pulse,.scrollhint .chev,.touchhint .ring,#sunGlow,#yoleSails{animation:none!important}
+  .ring,.glint-flash{animation:none!important}
+  .scroller{position:static}
+  .spans{display:none}
+  .viewport{position:relative;height:auto;min-height:auto}
+  .cam{position:relative;transform:none!important;transition:none!important}
+  svg.scene{position:relative;height:78vh}
+  .veil,.alertwash{position:absolute}
+  .copylayer{position:static;pointer-events:auto}
+  .beatcopy{position:static;opacity:1!important;transform:none!important;max-width:620px;margin:0 auto;
+    padding:34px 20px;border-top:1px solid rgba(255,255,255,.08);pointer-events:auto}
+  .bul{opacity:1!important;transform:none!important}
+  .scrollhint,.touchhint{display:none}
+  .lyr-sky,.lyr-sea,.lyr-sand{transform:none!important}
+}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+</style>
+</head>
+<body>
+
+<h1 class="sr-only">Sargasses — accueil : faites défiler pour voir l'état de votre plage aujourd'hui, mesuré au satellite, puis activez le veilleur Premium.</h1>
+
+<!-- ============================ CHROME persistant ============================ -->
+<div class="chrome">
+  <div class="live" id="livePill" role="button" tabindex="0" aria-label="Données en direct">
+    <span class="pulse"></span>
+    <span class="t" id="liveTxt">EN DIRECT</span>
+    <span class="h" id="livePass"></span>
+  </div>
+  <div class="langs" role="group" aria-label="Langue">
+    <button data-lang="fr" aria-pressed="true">FR</button>
+    <button data-lang="en" aria-pressed="false">EN</button>
+    <button data-lang="es" aria-pressed="false">ES</button>
+  </div>
+</div>
+
+<!-- ============================ SCROLLER (page haute) ============================ -->
+<div class="scroller" id="scroller">
+
+  <div class="spans" id="spans">
+    <div class="span" id="sp0"></div>
+    <div class="span" id="sp1"></div>
+    <div class="span" id="sp2"></div>
+    <div class="span" id="sp3"></div>
+    <div class="span" id="sp4"></div>
+  </div>
+
+  <!-- VIEWPORT STICKY : tient la scène SVG plein écran -->
+  <div class="viewport" id="viewport">
+    <div class="cam" id="cam">
+
+      <!-- ===================== SCENE GOLDEN-HOUR (viewBox 800x600) ===================== -->
+      <svg class="scene" id="scene" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice"
+           xmlns="http://www.w3.org/2000/svg" role="img"
+           aria-label="Scène de plage golden-hour : ciel, mer, sable, une yole et Le Veilleur satellite qui veille la mer.">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#0B2230"/><stop offset=".42" stop-color="#155A5A"/>
+            <stop offset=".74" stop-color="#C97E3A"/><stop offset="1" stop-color="#F2B05E"/>
+          </linearGradient>
+          <linearGradient id="warmG" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#3a2a18" stop-opacity="0"/>
+            <stop offset=".6" stop-color="#C97E3A" stop-opacity=".20"/>
+            <stop offset="1" stop-color="#F2B05E" stop-opacity=".42"/>
+          </linearGradient>
+          <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#1A5852"/><stop offset=".55" stop-color="#0f3b34"/>
+            <stop offset="1" stop-color="#08251F"/>
+          </linearGradient>
+          <radialGradient id="sun" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stop-color="#FFF6E0"/>
+            <stop offset=".46" stop-color="#FFD884" stop-opacity=".62"/>
+            <stop offset="1" stop-color="#F2B05E" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="land" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#241A12"/><stop offset="1" stop-color="#120D08"/>
+          </linearGradient>
+          <radialGradient id="anchorGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stop-color="#FFE6A8" stop-opacity=".5"/>
+            <stop offset="1" stop-color="#FFE6A8" stop-opacity="0"/>
+          </radialGradient>
+          <!-- voile yole : dégradés chauds pour profondeur (pas un aplat « toc ») -->
+          <linearGradient id="sailR" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#FF6A3D"/><stop offset="1" stop-color="#D8431F"/>
+          </linearGradient>
+          <linearGradient id="sailY" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#FFD45A"/><stop offset="1" stop-color="#F0A81E"/>
+          </linearGradient>
+          <linearGradient id="hullG" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#13776B"/><stop offset="1" stop-color="#0A463F"/>
+          </linearGradient>
+          <!-- LENTILLE œil du Veilleur (dégradé marque) -->
+          <radialGradient id="lens" cx="38%" cy="32%" r="72%">
+            <stop offset="0" stop-color="#CFF4FF"/>
+            <stop offset=".34" stop-color="#16b9c9"/>
+            <stop offset="1" stop-color="#052b2b"/>
+          </radialGradient>
+          <radialGradient id="irisG" cx="42%" cy="38%" r="62%">
+            <stop offset="0" stop-color="#0a3a39"/><stop offset="1" stop-color="#03100f"/>
+          </radialGradient>
+          <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#1b4763"/><stop offset="1" stop-color="#0B2230"/>
+          </linearGradient>
+          <linearGradient id="bodyG" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#1d3c38"/><stop offset=".55" stop-color="#102622"/>
+            <stop offset="1" stop-color="#0A1714"/>
+          </linearGradient>
+          <radialGradient id="haloG" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stop-color="var(--moodHalo)" stop-opacity=".55"/>
+            <stop offset=".5" stop-color="var(--moodHalo)" stop-opacity=".18"/>
+            <stop offset="1" stop-color="var(--moodHalo)" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="beamGrad" cx="50%" cy="0%" r="100%">
+            <stop offset="0" stop-color="var(--glint)" stop-opacity=".5"/>
+            <stop offset=".7" stop-color="var(--glint)" stop-opacity=".12"/>
+            <stop offset="1" stop-color="var(--glint)" stop-opacity="0"/>
+          </radialGradient>
+          <filter id="soft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="7"/></filter>
+          <filter id="softS" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3"/></filter>
+        </defs>
+
+        <!-- ===== COUCHE CIEL (parallaxe lente) ===== -->
+        <g class="lyr-sky">
+          <rect x="-40" y="-40" width="880" height="420" fill="url(#sky)"/>
+          <rect x="-40" y="-40" width="880" height="420" fill="url(#warmG)"/>
+          <!-- soleil bas + halo qui respire (monte d'un cran avec --p0 via JS sur #sunGroup) -->
+          <g id="sunGroup">
+            <circle id="sunGlow" cx="540" cy="300" r="150" fill="url(#sun)"/>
+            <circle cx="540" cy="300" r="40" fill="#FFF7E2"/>
+          </g>
+          <!-- 2 nuages = SEUL ambient autorisé (doctrine calme) -->
+          <g class="sgh-cloud1" opacity=".46">
+            <ellipse cx="180" cy="118" rx="120" ry="13" fill="#10333E"/>
+            <ellipse cx="250" cy="128" rx="64" ry="8" fill="#10333E" opacity=".7"/>
+          </g>
+          <g class="sgh-cloud2" opacity=".34">
+            <ellipse cx="610" cy="92" rx="86" ry="9" fill="#0d2c36"/>
+            <ellipse cx="556" cy="100" rx="44" ry="7" fill="#0d2c36" opacity=".7"/>
+          </g>
+          <!-- oiseaux lointains -->
+          <path d="M700 132 q7 -6 14 0 q7 -6 14 0" fill="none" stroke="#0B2230" stroke-width="2.4" stroke-linecap="round" opacity=".5"/>
+          <path d="M120 150 q5 -4 10 0 q5 -4 10 0" fill="none" stroke="#0B2230" stroke-width="2" stroke-linecap="round" opacity=".4"/>
+          <!-- presqu'île au loin (Le Diamant), figée -->
+          <path d="M0 312 Q70 292 150 304 L210 312 Z" fill="#0E1F25" opacity=".75"/>
+          <path d="M600 300 q26 -64 56 -4 q14 38 6 40 l-78 0 q-4 -18 16 -36 Z" fill="#12262B" opacity=".9"/>
+        </g>
+
+        <!-- ===== COUCHE MER (parallaxe + dolly) ===== -->
+        <g class="lyr-sea">
+          <rect x="-40" y="300" width="880" height="260" fill="url(#sea)"/>
+          <!-- grain raster satellite (révélé par --p1) -->
+          <g id="rasterGrain" opacity="0">
+            <line x1="0" y1="320" x2="800" y2="320" stroke="#5FD3C9" stroke-width="1"/>
+            <line x1="0" y1="344" x2="800" y2="344" stroke="#5FD3C9" stroke-width="1"/>
+            <line x1="0" y1="368" x2="800" y2="368" stroke="#5FD3C9" stroke-width="1"/>
+            <line x1="0" y1="392" x2="800" y2="392" stroke="#5FD3C9" stroke-width="1"/>
+            <line x1="0" y1="416" x2="800" y2="416" stroke="#5FD3C9" stroke-width="1"/>
+            <line x1="0" y1="440" x2="800" y2="440" stroke="#5FD3C9" stroke-width="1"/>
+            <line x1="0" y1="464" x2="800" y2="464" stroke="#5FD3C9" stroke-width="1"/>
+          </g>
+          <!-- ALLÉE SCINTILLANTE du soleil (reflets riches décroissants, calmes) -->
+          <g id="sunPath" opacity=".92">
+            <ellipse cx="540" cy="330" rx="80" ry="6" fill="#FFD884" opacity=".42"/>
+            <ellipse cx="538" cy="350" rx="62" ry="5" fill="#FFD884" opacity=".34"/>
+            <ellipse cx="535" cy="372" rx="48" ry="5" fill="#FFD884" opacity=".26"/>
+            <ellipse cx="532" cy="396" rx="34" ry="4.5" fill="#FFD884" opacity=".19"/>
+            <ellipse cx="528" cy="422" rx="24" ry="4" fill="#FFD884" opacity=".13"/>
+          </g>
+          <!-- houle douce (traits horizontaux discrets) -->
+          <g stroke="#0c302b" stroke-width="2" stroke-linecap="round" opacity=".5">
+            <line x1="70" y1="392" x2="160" y2="392"/>
+            <line x1="232" y1="430" x2="320" y2="430"/>
+            <line x1="430" y1="468" x2="540" y2="468"/>
+            <line x1="110" y1="500" x2="220" y2="500"/>
+          </g>
+
+          <!-- ===== YOLE RONDE (Martinique) — vie + échelle + âme =====
+               FIX MAJEUR (occlusion), placement MESURÉ au navigateur :
+               la copy occupe la bande centrale viewBox ~[243..558] sur LES DEUX
+               viewports → la seule eau libre est sur les CÔTÉS. Côté droit (x=610)
+               = allée du soleil : pleinement visible et magnifique sur desktop
+               (la yole vogue au large, claire de la colonne centrée) ; sur mobile
+               portrait (bande [267..533]) elle est rognée en sliver propre au bord
+               droit, PAS d'éclats triangulaires par-dessus le badge. Compromis
+               retenu par la critique (« accepter côté droit comme sur desktop »). -->
+          <g id="yole" transform="translate(610,356) scale(.72)" style="cursor:pointer">
+            <!-- reflet sous la coque (sur l'eau) -->
+            <ellipse cx="0" cy="30" rx="60" ry="8" fill="#06201c" opacity=".55"/>
+            <ellipse cx="2" cy="40" rx="30" ry="4" fill="#FFD884" opacity=".18"/>
+            <!-- voiles (groupe luff doux) : mât + grand-voile bandes rouge/jaune + foc -->
+            <g id="yoleSails">
+              <line x1="-2" y1="6" x2="-2" y2="-86" stroke="#241608" stroke-width="3.4" stroke-linecap="round"/>
+              <path d="M-2 -84 L-2 -6 L56 -6 Z" fill="url(#sailR)"/>
+              <path d="M-2 -58 L-2 -6 L38 -6 Z" fill="url(#sailY)"/>
+              <path d="M-2 -84 L-2 -6 L56 -6 Z" fill="none" stroke="#7a2a16" stroke-width="1.3" stroke-opacity=".55"/>
+              <!-- pli d'ombre central : donne du galbe à la voile (pas un aplat) -->
+              <path d="M-2 -78 Q12 -42 30 -8" fill="none" stroke="#9c2f17" stroke-width="1" stroke-opacity=".4"/>
+              <!-- foc (petite voile avant) -->
+              <path d="M-4 -70 L-4 -8 L-44 -8 Z" fill="#1EC8B0" opacity=".94"/>
+              <path d="M-4 -70 L-4 -8 L-44 -8 Z" fill="none" stroke="#0b5147" stroke-width="1.1" stroke-opacity=".5"/>
+            </g>
+            <!-- coque ronde bicolore + liseré chaud -->
+            <path d="M-62 4 Q0 30 62 4 Q56 16 46 18 L-46 18 Q-56 16 -62 4 Z" fill="url(#hullG)"/>
+            <path d="M-62 4 Q0 22 62 4" fill="none" stroke="#FFD884" stroke-width="2" stroke-opacity=".62"/>
+            <path d="M-46 18 L46 18 Q40 24 0 24 Q-40 24 -46 18 Z" fill="#08332e"/>
+            <!-- pêcheur (silhouette, échelle humaine) -->
+            <circle cx="14" cy="-2" r="4.2" fill="#1a120b"/>
+            <rect x="11" y="2" width="7" height="13" rx="3" fill="#1a120b"/>
+          </g>
+
+          <!-- BARRAGE anti-sargasses (1 seul, posé au clic) -->
+          <g class="boomgrp" id="boom">
+            <line id="boomLine" x1="320" y1="400" x2="480" y2="400" stroke="#009E8E" stroke-width="3" stroke-linecap="round"/>
+            <g id="boomBuoys"></g>
+          </g>
+
+          <!-- RADEAUX de sargasse qui dérivent (cliquables = ramasser) -->
+          <g class="raft" id="raft1" data-x="-180" style="cursor:pointer">
+            <ellipse cx="120" cy="356" rx="34" ry="9" fill="#3a4a1e"/>
+            <ellipse cx="138" cy="352" rx="22" ry="6" fill="#4d6326"/>
+            <ellipse cx="104" cy="360" rx="16" ry="5" fill="#2f3d18"/>
+          </g>
+          <g class="raft" id="raft2" data-x="-120" style="cursor:pointer">
+            <ellipse cx="470" cy="346" rx="40" ry="10" fill="#3a4a1e"/>
+            <ellipse cx="452" cy="342" rx="24" ry="6" fill="#56702c"/>
+            <ellipse cx="492" cy="350" rx="18" ry="5" fill="#2f3d18"/>
+          </g>
+          <g class="raft" id="raft3" data-x="-90" style="cursor:pointer">
+            <ellipse cx="660" cy="372" rx="30" ry="8" fill="#3a4a1e"/>
+            <ellipse cx="676" cy="368" rx="18" ry="5" fill="#4d6326"/>
+          </g>
+
+          <!-- BOUEES-PLAGE (tap = révèle mini-verdict live) -->
+          <g class="buoy" id="buoyA" data-name-fr="Anse Dufour" data-name-en="Anse Dufour" data-name-es="Anse Dufour"
+             data-status="clean" style="cursor:pointer">
+            <circle cx="288" cy="420" r="34" fill="url(#anchorGlow)"/>
+            <circle cx="288" cy="420" r="6.5" fill="#F4845F" stroke="#06121A" stroke-width="1.3"/>
+            <circle class="ring ringA" cx="288" cy="420" r="12" fill="none" stroke="#FFE6A8" stroke-width="1.4" style="transform-origin:288px 420px"/>
+            <g class="buoylabel" id="lblA">
+              <rect x="304" y="404" width="124" height="34" rx="9" fill="#08120E" fill-opacity=".82" stroke="#22C55E" stroke-opacity=".45"/>
+              <text x="314" y="419" font-family="Bricolage Grotesque,sans-serif" font-size="11.5" font-weight="800" fill="#fff">Anse Dufour</text>
+              <text x="314" y="432" font-family="Bricolage Grotesque,sans-serif" font-size="10" font-weight="800" fill="#22C55E">● PROPRE · AUJOURD'HUI</text>
+            </g>
+          </g>
+          <g class="buoy" id="buoyB" data-name-fr="Grande Anse" data-name-en="Grande Anse" data-name-es="Grande Anse"
+             data-status="avoid" style="cursor:pointer">
+            <circle cx="448" cy="452" r="34" fill="url(#anchorGlow)"/>
+            <circle cx="448" cy="452" r="6.5" fill="#F4845F" stroke="#06121A" stroke-width="1.3"/>
+            <circle class="ring ringB" cx="448" cy="452" r="12" fill="none" stroke="#FFE6A8" stroke-width="1.4" style="transform-origin:448px 452px"/>
+            <g class="buoylabel" id="lblB">
+              <rect x="268" y="436" width="174" height="34" rx="9" fill="#08120E" fill-opacity=".82" stroke="#E8522A" stroke-opacity=".5"/>
+              <text x="278" y="451" font-family="Bricolage Grotesque,sans-serif" font-size="11.5" font-weight="800" fill="#fff">Grande Anse</text>
+              <text x="278" y="464" font-family="Bricolage Grotesque,sans-serif" font-size="10" font-weight="800" fill="#E8522A">● À ÉVITER · AUJOURD'HUI</text>
+            </g>
+          </g>
+        </g>
+
+        <!-- ===== COUCHE SABLE (parallaxe forte + dolly) ===== -->
+        <g class="lyr-sand">
+          <path d="M-40 482 Q300 450 840 500 L840 600 L-40 600 Z" fill="url(#land)"/>
+          <path d="M-40 482 Q300 450 840 500" fill="none" stroke="#FFD884" stroke-width="1.6" opacity=".24"/>
+          <!-- échouage du jour sur le sable (ramassable au beat méthode) -->
+          <g class="raft" id="shoreMat" style="cursor:pointer">
+            <ellipse cx="360" cy="524" rx="46" ry="9" fill="#3a3010"/>
+            <ellipse cx="338" cy="520" rx="26" ry="6" fill="#56441a"/>
+            <ellipse cx="384" cy="528" rx="20" ry="5" fill="#48390f"/>
+          </g>
+          <!-- ramasseur (rake) discret -->
+          <g id="rake" opacity=".5">
+            <line x1="300" y1="544" x2="300" y2="516" stroke="#2a2018" stroke-width="3" stroke-linecap="round"/>
+            <line x1="290" y1="516" x2="310" y2="516" stroke="#2a2018" stroke-width="3" stroke-linecap="round"/>
+          </g>
+        </g>
+
+        <!-- ============================================================
+             LE VEILLEUR (satellite-mascotte v2) — STAR de la scène.
+             halo (humeur) → gPose (posture: translate+rotate, pivot OK)
+               → gLife (respiration/flottaison) → gBody (corps + œil expressif)
+             Ancre EYE = (400, EYE_BASE+5.2). Faisceau émis du VRAI œil, vers la MER.
+             ============================================================ -->
+        <!-- halo veilleur DERRIÈRE le perso (couleur d'humeur, blur) -->
+        <circle id="halo" cx="400" cy="200" r="120" fill="url(#haloG)" filter="url(#soft)" opacity=".5"/>
+
+        <!-- faisceau de scan (pivote vers la cible, émis du VRAI œil) -->
+        <g id="beamG">
+          <polygon id="beam" points="0,0 -70,210 70,210" fill="url(#beamGrad)" opacity="0"/>
+        </g>
+        <ellipse id="scanRing" cx="400" cy="362" rx="40" ry="8" fill="none" stroke="var(--glint)" stroke-width="2" opacity="0"/>
+
+        <g id="gPose" transform="translate(400 200)" style="cursor:pointer">
+         <g id="gLife">
+          <g id="gBody" transform="scale(1.30)">
+            <!-- panneaux solaires -->
+            <g>
+              <rect x="-86" y="-8" width="56" height="30" rx="3" fill="url(#panel)" transform="rotate(-7 -58 7)"/>
+              <rect x="30" y="-8" width="56" height="30" rx="3" fill="url(#panel)" transform="rotate(7 58 7)"/>
+              <g stroke="#2f7390" stroke-width="1" opacity=".65">
+                <line x1="-72" y1="-6" x2="-72" y2="24"/><line x1="-55" y1="-6" x2="-55" y2="24"/><line x1="-40" y1="-6" x2="-40" y2="24"/>
+                <line x1="44" y1="-6" x2="44" y2="24"/><line x1="61" y1="-6" x2="61" y2="24"/><line x1="76" y1="-6" x2="76" y2="24"/>
+              </g>
+            </g>
+            <!-- bras -->
+            <rect x="-32" y="2" width="64" height="6" rx="3" fill="#0e2622"/>
+            <!-- CORPS squircle (superellipse, joues > sommet = baby-schema) -->
+            <path d="M0 -30 C20 -30 32 -20 32 0 C32 24 22 42 0 42 C-22 42 -32 24 -32 0 C-32 -20 -20 -30 0 -30 Z"
+                  fill="url(#bodyG)" stroke="var(--rim)" stroke-width="1.3" stroke-opacity=".5"/>
+            <path d="M26 -16 C33 -10 33 22 22 32" fill="none" stroke="var(--rim)" stroke-width="2.4" stroke-opacity=".55" stroke-linecap="round"/>
+            <!-- ===== ŒIL ===== -->
+            <circle cx="0" cy="4" r="22" fill="url(#lens)"/>
+            <circle id="lensTint" cx="0" cy="4" r="22" fill="var(--mood)" opacity=".42"/>
+            <circle cx="0" cy="4" r="22" fill="none" stroke="var(--gold)" stroke-width="3"/>
+            <circle cx="0" cy="4" r="22" fill="none" stroke="#06201f" stroke-width="1" stroke-opacity=".8"/>
+            <circle cx="0" cy="4" r="16.5" fill="none" stroke="var(--gold)" stroke-width="1.1" stroke-opacity=".5"/>
+            <g id="gIris">
+              <circle id="iris" cx="0" cy="0" r="8" fill="url(#irisG)"/>
+              <circle id="irisTint" cx="0" cy="0" r="8" fill="var(--mood)" opacity=".55"/>
+              <circle id="pupil" cx="0" cy="0" r="3.4" fill="#02100f"/>
+              <circle id="catchA" cx="-3" cy="-3.4" r="2.8" fill="#fff7e2"/>
+              <circle id="catchB" cx="3.4" cy="2.6" r="1.3" fill="#dff6ff" opacity=".85"/>
+            </g>
+            <!-- PAUPIÈRES expressives -->
+            <path id="lidTop" d="M-22 4 Q0 -20 22 4 L22 -20 L-22 -20 Z" fill="url(#bodyG)"/>
+            <path id="lidBot" d="M-22 4 Q0 28 22 4 L22 28 L-22 28 Z" fill="url(#bodyG)"/>
+            <circle cx="0" cy="4" r="22.2" fill="none" stroke="url(#bodyG)" stroke-width="6" opacity="1"/>
+            <circle cx="0" cy="4" r="22" fill="none" stroke="var(--gold)" stroke-width="3"/>
+            <!-- sourcil -->
+            <path id="brow" d="M-15 -19 Q0 -25 15 -19" fill="none" stroke="#0a1f1c" stroke-width="3.4" stroke-linecap="round" opacity=".9"/>
+            <!-- antenne -->
+            <line x1="0" y1="-30" x2="0" y2="-46" stroke="#0e2622" stroke-width="3"/>
+            <circle id="antGlow" cx="0" cy="-49" r="10" fill="var(--moodDot)" opacity=".22" filter="url(#softS)"/>
+            <circle id="ant" cx="0" cy="-49" r="4.6" fill="var(--moodDot)"/>
+            <!-- anneau echo (tap) -->
+            <circle class="ring ringV" cx="0" cy="4" r="30" fill="none" stroke="var(--moodHalo)" stroke-width="2" style="transform-origin:0px 4px"/>
+          </g>
+         </g>
+        </g>
+
+        <!-- ===== ALERTSCENE (beat premium) — montée par --p3 ===== -->
+        <g id="alertScene" opacity="0">
+          <!-- notif "TA plage change" qui éclot près du Veilleur (à gauche,
+               pour rester dans la bande visible mobile portrait [266..534]) -->
+          <g class="alertnotif" id="alertNotif" transform="translate(400,150)" style="cursor:pointer">
+            <g transform="translate(-78,-92)">
+              <rect x="0" y="0" width="156" height="44" rx="11" fill="#E8522A" fill-opacity=".94"/>
+              <circle cx="18" cy="22" r="9" fill="#fff" fill-opacity=".92"/>
+              <text x="18" y="26" text-anchor="middle" font-family="Bricolage Grotesque,sans-serif" font-size="12" font-weight="800" fill="#E8522A">!</text>
+              <text x="34" y="19" font-family="Bricolage Grotesque,sans-serif" font-size="10.5" font-weight="800" fill="#fff" id="notifT1">TA PLAGE CHANGE</text>
+              <text x="34" y="33" font-family="Bricolage Grotesque,sans-serif" font-size="9.5" font-weight="700" fill="#fff" fill-opacity=".85" id="notifT2">Sargasses prévues demain</text>
+            </g>
+          </g>
+          <!-- barres de prévision 7 jours qui se dressent (sur le sable) -->
+          <g id="fcBars" transform="translate(150,556)">
+            <g class="fcbar"><rect x="0"   y="-40" width="20" height="40" rx="4" fill="#22C55E"/></g>
+            <g class="fcbar"><rect x="30"  y="-52" width="20" height="52" rx="4" fill="#22C55E"/></g>
+            <g class="fcbar"><rect x="60"  y="-36" width="20" height="36" rx="4" fill="#E8B23A"/></g>
+            <g class="fcbar"><rect x="90"  y="-64" width="20" height="64" rx="4" fill="#E8522A"/></g>
+            <g class="fcbar"><rect x="120" y="-48" width="20" height="48" rx="4" fill="#E8B23A"/></g>
+            <g class="fcbar"><rect x="150" y="-30" width="20" height="30" rx="4" fill="#22C55E"/></g>
+            <g class="fcbar"><rect x="180" y="-44" width="20" height="44" rx="4" fill="#22C55E"/></g>
+          </g>
+        </g>
+      </svg>
+
+    </div><!-- /.cam -->
+
+    <div class="veil"></div>
+    <div class="alertwash"></div>
+
+    <!-- ===================== OVERLAY DE COPY (5 beats) ===================== -->
+    <div class="copylayer" id="copylayer">
+
+      <!-- BEAT 0 — HERO -->
+      <div class="beatcopy" id="bc0">
+        <div class="verdictbadge" id="verdictBadge" role="button" tabindex="0">
+          <span class="vbar"></span>
+          <span class="vtxt" id="vTxt">PROPRE AUJOURD'HUI</span>
+          <span class="vsc">SCORE <b id="vScore">82</b>/100</span>
+        </div>
+        <div class="eyebrow" id="eb0"></div>
+        <h1 class="head anton" id="h0"></h1>
+        <p class="sub" id="s0"></p>
+        <button class="cta" id="ctaHero" data-src="hero">
+          <span class="t" id="ctaHeroT"></span>
+          <span class="s" id="ctaHeroS"></span>
+        </button>
+        <a class="linkcta" id="mapLink"><span id="mapLinkT"></span> <span class="ar">→</span></a>
+      </div>
+
+      <!-- BEAT 1 — VERDICT -->
+      <div class="beatcopy" id="bc1">
+        <div class="eyebrow" id="eb1"></div>
+        <h2 class="head anton" id="h1"></h2>
+        <p class="sub" id="s1"></p>
+        <div class="top3" id="top3">
+          <div class="pcard" data-beach="Le Diamant" data-status="clean">
+            <div class="pn">Le Diamant</div>
+            <div class="ps st-clean"><span class="d"></span>Propre</div>
+            <div class="pf">score 82</div>
+          </div>
+          <div class="pcard" data-beach="Les Salines" data-status="mod">
+            <div class="pn">Les Salines</div>
+            <div class="ps st-mod"><span class="d"></span>Modéré</div>
+            <div class="pf">score 54</div>
+          </div>
+          <div class="pcard" data-beach="Grande Anse" data-status="avoid">
+            <div class="pn">Grande Anse</div>
+            <div class="ps st-avoid"><span class="d"></span>À éviter</div>
+            <div class="pf">score 21</div>
+          </div>
+        </div>
+        <button class="cta" id="ctaVerdict" data-src="verdict">
+          <span class="t" id="ctaVerdictT"></span>
+        </button>
+      </div>
+
+      <!-- BEAT 2 — METHODE -->
+      <div class="beatcopy" id="bc2">
+        <div class="eyebrow" id="eb2"></div>
+        <h2 class="head anton" id="h2"></h2>
+        <p class="sub" id="s2"></p>
+        <div class="bullets" id="bullets2">
+          <div class="bul"><span class="bi">🛰️</span><div class="bt"><b id="m2b1t"></b><span id="m2b1s"></span></div></div>
+          <div class="bul"><span class="bi">📊</span><div class="bt"><b id="m2b2t"></b><span id="m2b2s"></span></div></div>
+          <div class="bul"><span class="bi">📅</span><div class="bt"><b id="m2b3t"></b><span id="m2b3s"></span></div></div>
+        </div>
+        <button class="cta" id="ctaMethode" data-src="methode">
+          <span class="t" id="ctaMethodeT"></span>
+        </button>
+      </div>
+
+      <!-- BEAT 3 — PREMIUM (porte de conversion unique) -->
+      <div class="beatcopy" id="bc3">
+        <div class="eyebrow" id="eb3"></div>
+        <h2 class="head anton" id="h3"></h2>
+        <p class="sub" id="s3"></p>
+        <div class="bullets" id="bullets3">
+          <div class="bul"><span class="bi">🔔</span><div class="bt"><b id="p3b1t"></b><span id="p3b1s"></span></div></div>
+          <div class="bul"><span class="bi">🌅</span><div class="bt"><b id="p3b2t"></b><span id="p3b2s"></span></div></div>
+          <div class="bul"><span class="bi">📅</span><div class="bt"><b id="p3b3t"></b><span id="p3b3s"></span></div></div>
+        </div>
+        <button class="cta" id="ctaPremium" data-src="landing_premium">
+          <span class="t" id="ctaPremiumT"></span>
+        </button>
+        <div class="reassure" id="reassure"></div>
+      </div>
+
+      <!-- BEAT 4 — FOOTER -->
+      <div class="beatcopy" id="bc4">
+        <div class="footwrap">
+          <div class="eyebrow" id="eb4"></div>
+          <div class="wordmark">SARGASSES</div>
+          <div class="foot-credit" id="footCredit"></div>
+          <div class="foot-links">
+            <a href="#" id="aboutLink"></a>
+            <a href="#" class="prem" id="footPrem" data-src="footer"></a>
+          </div>
+        </div>
+      </div>
+    </div><!-- /.copylayer -->
+
+    <div class="scrollhint" id="scrollHint">
+      <span class="lab" id="scrollLab">DÉFILE</span>
+      <span class="chev"></span>
+    </div>
+
+    <div class="touchhint" id="touchHint"><span class="ring"></span><span id="touchHintTxt"></span></div>
+
+    <div class="whisper" id="whBoom"></div>
+    <div class="whisper" id="whRaft"></div>
+
+  </div><!-- /.viewport -->
+</div><!-- /.scroller -->
+
+<!-- bandeau d'événements track (debug visuel du proto : prouve que la porte est câblée) -->
+<div id="trackToast" style="position:fixed;left:50%;bottom:14px;transform:translateX(-50%) translateY(20px);
+  z-index:60;background:#08120E;border:1px solid #1f5e58;color:#5FD3C9;
+  font:700 11px/1 'JetBrains Mono';padding:9px 14px;border-radius:10px;opacity:0;pointer-events:none;
+  transition:opacity .2s,transform .2s"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ====================================================================
+     PERSONNALISATION 1er PAINT — branchée sur une DONNÉE, pas un timestamp.
+     Source (par ordre de priorité) :
+       1) window.__SG_HOME__ injecté par l'app (beach, beachDisplay, score,
+          status, updatedAt, freshLabel...)  -> personnalisation réelle
+       2) ?beach=Le%20Diamant&score=82&status=clean  (deep-link / test)
+       3) défaut HONNÊTE : plage repère + freshness "vérification en cours"
+          (JAMAIS de faux "06:42" gelé près de "EN DIRECT").
+     ==================================================================== */
+  function qp(k){ try{ return new URLSearchParams(location.search).get(k); }catch(e){ return null; } }
+  var INJ = (window.__SG_HOME__ && typeof window.__SG_HOME__==="object") ? window.__SG_HOME__ : {};
+
+  var HOME = {
+    beach:  INJ.beach  || qp("beach")  || "Le Diamant",
+    /* beachDisplay : variante sans article fournie par l'app (optionnel) ;
+       sinon dérivée (FIX i18n : évite "at Le Diamant" / "en Le Diamant"). */
+    beachDisplay: INJ.beachDisplay || qp("beachDisplay") || null,
+    score:  (INJ.score!=null ? +INJ.score : (qp("score")!=null ? +qp("score") : 82)),
+    status: INJ.status || qp("status") || "clean",   /* clean | mod | avoid */
+    region: INJ.region || qp("region") || "fr",      /* fr=MQ par défaut */
+    updatedAt: INJ.updatedAt || null                 /* ISO string si dispo */
+  };
+
+  /* nom de plage SANS article de tête pour EN/ES (FIX i18n) :
+     "Le Diamant" -> "Diamant" ; "Les Salines" -> "Salines" ; "L'Anse..." -> "Anse...".
+     FR garde le nom complet (article naturel). Override propre via beachDisplay. */
+  function beachNoArticle(name){
+    return name
+      .replace(/^l['’]\s*/i, "")
+      .replace(/^(le|la|les)\s+/i, "");
+  }
+  function beachName(){
+    if(LANG==="fr") return HOME.beach;
+    return HOME.beachDisplay || beachNoArticle(HOME.beach);
+  }
+
+  /* freshness HONNÊTE : si updatedAt fourni & < 12h -> "il y a Xh / Xmin",
+     sinon placeholder neutre (PAS un timestamp inventé). */
+  function freshLabel(){
+    if(INJ.freshLabel) return INJ.freshLabel[LANG] || INJ.freshLabel.fr || INJ.freshLabel;
+    if(HOME.updatedAt){
+      var age = (Date.now() - new Date(HOME.updatedAt).getTime())/60000; /* minutes */
+      if(isFinite(age) && age>=0 && age < 12*60){
+        if(age < 60) return _t("· il y a "+Math.max(1,Math.round(age))+" min","· "+Math.max(1,Math.round(age))+" min ago","· hace "+Math.max(1,Math.round(age))+" min");
+        var h=Math.round(age/60); return _t("· il y a "+h+" h","· "+h+"h ago","· hace "+h+" h");
+      }
+    }
+    /* pas de live fiable -> honnête, jamais de faux chrono */
+    return _t("· maj récente","· recently updated","· act. reciente");
+  }
+
+  /* ====================================================================
+     i18n
+     ==================================================================== */
+  var LANG = "fr";
+  function _t(fr,en,es){ return LANG==="en"?en : LANG==="es"?es : fr; }
+
+  var STATUS = {
+    clean: {fr:["PROPRE AUJOURD'HUI","CLEAN"], en:["CLEAN TODAY","CLEAN"], es:["LIMPIA HOY","CLEAN"], col:"var(--green)", cls:"st-clean"},
+    mod:   {fr:["MODÉRÉ AUJOURD'HUI","MOD"],   en:["MODERATE TODAY","MOD"], es:["MODERADA HOY","MOD"], col:"#E8B23A", cls:"st-mod"},
+    avoid: {fr:["À ÉVITER AUJOURD'HUI","AVOID"],en:["AVOID TODAY","AVOID"], es:["EVITAR HOY","AVOID"], col:"var(--coral)", cls:"st-avoid"}
+  };
+
+  var T = {
+    live:        {fr:"EN DIRECT", en:"LIVE", es:"EN DIRECTO"},
+    /* eb0 : préfixe + DATE dorée + suffixe (temps réel) */
+    eb0:         {fr:["EN DIRECT · "," · SATELLITE COPERNICUS"], en:["LIVE · "," · COPERNICUS SATELLITE"], es:["EN DIRECTO · "," · SATÉLITE COPERNICUS"]},
+    /* H1 PERSONNALISÉ daté : "SARGASSES À <Plage> AUJOURD'HUI" + "EN DIRECT" doré */
+    s0:          {fr:"Le verdict sargasses du matin, mesuré au satellite — pas une supposition.", en:"This morning's sargassum verdict, measured by satellite — not a guess.", es:"El veredicto de sargazo de esta mañana, medido por satélite — no una suposición."},
+    ctaHeroT:    {fr:"Voir l'état maintenant", en:"See it right now", es:"Ver el estado ahora"},
+    ctaHeroS:    {fr:"verdict du jour · météo · 7 jours de prévisions", en:"today's verdict · weather · 7-day forecast", es:"veredicto de hoy · clima · pronóstico 7 días"},
+    mapLinkT:    {fr:"Ouvrir la carte en direct", en:"Open the live map", es:"Abrir el mapa en directo"},
+
+    eb1:         {fr:"CE MATIN, EN DIRECT", en:"THIS MORNING, LIVE", es:"ESTA MAÑANA, EN DIRECTO"},
+    h1:          {fr:[["LE VERDICT,"],["PLAGE PAR PLAGE"]], en:[["THE VERDICT,"],["BEACH BY BEACH"]], es:[["EL VEREDICTO,"],["PLAYA POR PLAYA"]]},
+    s1:          {fr:"Pas d'avis, pas de promesses : la mesure satellite de ce matin, plage par plage.", en:"No opinions, no promises: this morning's satellite reading, beach by beach.", es:"Sin opiniones ni promesas: la medición satelital de esta mañana, playa por playa."},
+    ctaVerdictT: {fr:"Choisis ta plage", en:"Pick your beach", es:"Elige tu playa"},
+
+    eb2:         {fr:"COMMENT ON LE SAIT", en:"HOW WE KNOW", es:"CÓMO LO SABEMOS"},
+    h2:          {fr:[["ON VEILLE"],["LA MER POUR TOI"]], en:[["WE WATCH"],["THE SEA FOR YOU"]], es:[["VIGILAMOS"],["EL MAR POR TI"]]},
+    s2:          {fr:"Le satellite passe 4 fois par jour : on traduit chaque passage en un verdict clair, le jour même.", en:"The satellite passes 4 times a day: we turn every pass into a clear verdict, same day.", es:"El satélite pasa 4 veces al día: convertimos cada pasada en un veredicto claro, el mismo día."},
+    m2b1t:       {fr:"Satellite Copernicus", en:"Copernicus satellite", es:"Satélite Copernicus"},
+    m2b1s:       {fr:"4 passages par jour, chaque plage — la donnée du matin, pas d'hier.", en:"4 passes a day, every beach — this morning's data, not yesterday's.", es:"4 pasadas al día, cada playa — el dato de esta mañana, no el de ayer."},
+    m2b2t:       {fr:"Un score 0-100", en:"A 0-100 score", es:"Un puntaje 0-100"},
+    m2b2s:       {fr:"Recalculé à chaque passage : tu sais où ça en est, en temps réel.", en:"Recomputed on every pass: you know where it stands, in real time.", es:"Recalculado en cada pasada: sabes cómo está, en tiempo real."},
+    m2b3t:       {fr:"7 jours devant", en:"7 days ahead", es:"7 días por delante"},
+    m2b3s:       {fr:"Prévisions plage par plage : aujourd'hui propre, et la semaine qui vient.", en:"Forecast beach by beach: clean today, and the week ahead.", es:"Pronóstico playa por playa: limpia hoy, y la semana que viene."},
+
+    eb3:         {fr:"PREMIUM", en:"PREMIUM", es:"PREMIUM"},
+    h3:          {fr:[["SACHE-LE"],["LE JOUR MÊME"]], en:[["KNOW IT"],["THE SAME DAY"]], es:[["ENTÉRATE"],["EL MISMO DÍA"]]},
+    p3b1t:       {fr:"Alerte quand ta plage change", en:"Alert when your beach changes", es:"Alerta cuando tu playa cambia"},
+    p3b1s:       {fr:"Le jour où TA plage bascule, tu le sais avant d'avoir fait la route.", en:"The day YOUR beach flips, you know before you've made the drive.", es:"El día que TU playa cambia, lo sabes antes de hacer el viaje."},
+    p3b2t:       {fr:"Le brief du matin", en:"The morning brief", es:"El brief de la mañana"},
+    p3b2s:       {fr:"L'état du jour dans ta boîte mail, avant de partir à la plage.", en:"Today's status in your inbox, before you head out.", es:"El estado de hoy en tu correo, antes de salir."},
+    p3b3t:       {fr:"Les 7 jours, toutes les plages", en:"The 7 days, every beach", es:"Los 7 días, todas las playas"},
+    p3b3s:       {fr:"Choisis ton jour : la semaine de prévisions, sur toutes les plages.", en:"Pick your day: the week of forecasts, across every beach.", es:"Elige tu día: la semana de pronósticos, en todas las playas."},
+    ctaPremiumT: {fr:"Activer mon veilleur", en:"Turn on my watcher", es:"Activar mi vigía"},
+    reassure:    {fr:"Sans engagement — annulable en 1 clic.", en:"No commitment — cancel in one click.", es:"Sin compromiso — cancela en un clic."},
+
+    eb4:         {fr:"MESURÉ, PAS DEVINÉ", en:"MEASURED, NOT GUESSED", es:"MEDIDO, NO ADIVINADO"},
+    footCredit:  {fr:"Données : Copernicus Marine · mise à jour en direct", en:"Data: Copernicus Marine · updated live", es:"Datos: Copernicus Marine · actualizado en directo"},
+    aboutLink:   {fr:"À propos", en:"About", es:"Acerca de"},
+    footPrem:    {fr:"Activer mon veilleur", en:"Turn on my watcher", es:"Activar mi vigía"},
+
+    notifT1:     {fr:"TA PLAGE CHANGE", en:"YOUR BEACH CHANGES", es:"TU PLAYA CAMBIA"},
+    notifT2:     {fr:"Sargasses prévues demain", en:"Sargassum expected tomorrow", es:"Sargazo previsto mañana"},
+    scrollLab:   {fr:"DÉFILE", en:"SCROLL", es:"DESLIZA"},
+    touchHint:   {fr:"Touche la mer", en:"Touch the sea", es:"Toca el mar"},
+
+    whBoom:      {fr:["Tu viens de protéger un bout de mer. Le Veilleur le fait pour TA plage, tous les jours.","Activer le Veilleur"],
+                  en:["You just shielded a stretch of sea. The Veilleur does it for YOUR beach, every day.","Turn on the Veilleur"],
+                  es:["Acabas de proteger un trozo de mar. El Veilleur lo hace por TU playa, cada día.","Activar el Veilleur"]},
+    whRaft:      {fr:["Et TA plage, propre aujourd'hui ?","Voir ma plage"],
+                  en:["And YOUR beach, clean today?","See my beach"],
+                  es:["Y TU playa, ¿limpia hoy?","Ver mi playa"]},
+    whBuoyAvoid: {fr:["Le Veilleur t'aurait prévenu.","Activer l'alerte"],
+                  en:["The Veilleur would have warned you.","Turn on the alert"],
+                  es:["El Veilleur te habría avisado.","Activar la alerta"]},
+    whYole:      {fr:["Cette mer, on la lit chaque matin — pour TA plage.","Voir ma plage"],
+                  en:["We read this sea every morning — for YOUR beach.","See my beach"],
+                  es:["Leemos este mar cada mañana — para TU playa.","Ver mi playa"]}
+  };
+
+  var $ = function(id){ return document.getElementById(id); };
+
+  /* date du jour FR/EN/ES (eyebrow temps-réel) */
+  function dateLabel(){
+    var d = new Date();
+    var moFR=["JANV.","FÉVR.","MARS","AVR.","MAI","JUIN","JUIL.","AOÛT","SEPT.","OCT.","NOV.","DÉC."];
+    var moEN=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+    var moES=["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
+    var mo = LANG==="en"?moEN : LANG==="es"?moES : moFR;
+    return d.getDate()+" "+mo[d.getMonth()];
+  }
+
+  /* construit un titre Anton multi-lignes via DOM */
+  function setHeading(el, lines){
+    while(el.firstChild) el.removeChild(el.firstChild);
+    for(var i=0;i<lines.length;i++){
+      if(i>0) el.appendChild(document.createElement("br"));
+      var seg = lines[i];
+      var sp;
+      if(seg[1]==="b"){ sp=document.createElement("span"); sp.className="b"; sp.textContent=seg[0]; el.appendChild(sp); }
+      else if(seg[1]==="pl"){ sp=document.createElement("span"); sp.className="pl"; sp.textContent=seg[0]; el.appendChild(sp); }
+      else if(seg[1]===true){ sp=document.createElement("span"); sp.className="b"; sp.textContent=seg[0]; el.appendChild(sp); }
+      else { el.appendChild(document.createTextNode(seg[0])); }
+    }
+  }
+
+  /* H1 hero PERSONNALISÉ daté : "SARGASSES À <Plage>" / "AUJOURD'HUI — EN DIRECT".
+     FIX i18n : EN = "SARGASSUM AT", ES = "SARGAZO EN" sur un nom SANS article
+     (beachName()), donc "AT DIAMANT" / "EN DIAMANT" plutôt que "AT LE DIAMANT". */
+  function setHeroHeading(){
+    var l1 = _t("SARGASSES À","SARGASSUM AT","SARGAZO EN");
+    var l2word = _t("AUJOURD'HUI","TODAY","HOY");
+    var live = _t("EN DIRECT","LIVE","EN DIRECTO");
+    setHeading($("h0"), [
+      [l1+" "],
+      [beachName().toUpperCase(), "pl"],
+      [l2word+" — ", false]
+    ]);
+    /* 3e ligne : on ajoute "EN DIRECT" doré sur la même ligne que le mot du jour */
+    var el=$("h0"); /* dernière ligne contient texte "AUJOURD'HUI — " ; ajoute le span live */
+    var sp=document.createElement("span"); sp.className="b"; sp.textContent=live; el.appendChild(sp);
+  }
+
+  function setEyebrow0(){
+    var el = $("eb0"), parts = T.eb0[LANG];
+    while(el.firstChild) el.removeChild(el.firstChild);
+    el.appendChild(document.createTextNode(parts[0]));
+    var dt = document.createElement("span"); dt.className="dt"; dt.textContent = dateLabel(); el.appendChild(dt);
+    el.appendChild(document.createTextNode(parts[1]));
+  }
+
+  /* applique la copy + le verdict personnalisé selon LANG + HOME */
+  function applyCopy(){
+    var bn = beachName();
+    $("liveTxt").textContent = T.live[LANG];
+    /* freshness HONNÊTE dans la pill (jamais de faux chrono) */
+    $("livePass").textContent = " " + freshLabel();
+
+    setEyebrow0();
+    setHeroHeading();
+    $("s0").textContent = T.s0[LANG];
+    $("ctaHeroT").textContent = T.ctaHeroT[LANG]; $("ctaHeroS").textContent = T.ctaHeroS[LANG];
+    $("mapLinkT").textContent = T.mapLinkT[LANG];
+
+    /* badge verdict = statut + score RÉELS de HOME */
+    var st = STATUS[HOME.status] || STATUS.clean;
+    $("vTxt").textContent = st[LANG][0];
+    $("vTxt").style.color = st.col;
+    $("verdictBadge").querySelector(".vbar").style.background = st.col;
+    $("vScore").textContent = HOME.score;
+
+    $("eb1").textContent = T.eb1[LANG]; setHeading($("h1"), T.h1[LANG]); $("s1").textContent = T.s1[LANG];
+    $("ctaVerdictT").textContent = T.ctaVerdictT[LANG];
+    $("eb2").textContent = T.eb2[LANG]; setHeading($("h2"), T.h2[LANG]); $("s2").textContent = T.s2[LANG];
+    $("m2b1t").textContent=T.m2b1t[LANG]; $("m2b1s").textContent=T.m2b1s[LANG];
+    $("m2b2t").textContent=T.m2b2t[LANG]; $("m2b2s").textContent=T.m2b2s[LANG];
+    $("m2b3t").textContent=T.m2b3t[LANG]; $("m2b3s").textContent=T.m2b3s[LANG];
+    /* CTA méthode pointe sur LA plage de HOME (nom adapté à la langue) */
+    $("ctaMethodeT").textContent = _t("Voir "+bn+" en détail →","See "+bn+" in detail →","Ver "+bn+" en detalle →");
+    $("eb3").textContent = T.eb3[LANG]; setHeading($("h3"), T.h3[LANG]); $("s3").textContent =
+      _t("Ton veilleur personnel surveille "+bn+" et te prévient le matin où ça change.",
+         "Your personal watcher tracks "+bn+" and tells you the morning it changes.",
+         "Tu vigía personal cuida "+bn+" y te avisa la mañana en que cambia.");
+    $("p3b1t").textContent=T.p3b1t[LANG]; $("p3b1s").textContent=T.p3b1s[LANG];
+    $("p3b2t").textContent=T.p3b2t[LANG]; $("p3b2s").textContent=T.p3b2s[LANG];
+    $("p3b3t").textContent=T.p3b3t[LANG]; $("p3b3s").textContent=T.p3b3s[LANG];
+    $("ctaPremiumT").textContent = T.ctaPremiumT[LANG]; $("reassure").textContent = T.reassure[LANG];
+    $("eb4").textContent = T.eb4[LANG]; $("footCredit").textContent = T.footCredit[LANG];
+    $("aboutLink").textContent = T.aboutLink[LANG]; $("footPrem").textContent = T.footPrem[LANG];
+    $("notifT1").textContent = T.notifT1[LANG]; $("notifT2").textContent = T.notifT2[LANG];
+    $("scrollLab").textContent = T.scrollLab[LANG]; $("touchHintTxt").textContent = T.touchHint[LANG];
+  }
+
+  /* ====================================================================
+     TRACKING — porte de conversion unique. Ici on toast (proto).
+     En prod : track(...) + openPremium(source).
+     ==================================================================== */
+  var toast = $("trackToast"), toastTimer=null;
+  function track(name, props){
+    toast.textContent = "▸ " + name + (props? "  " + JSON.stringify(props) : "");
+    toast.style.opacity = "1"; toast.style.transform = "translateX(-50%) translateY(0)";
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toast.style.opacity="0"; toast.style.transform="translateX(-50%) translateY(20px)"; }, 2200);
+  }
+  /* PORTE DE CONVERSION UNIQUE */
+  function openPremium(source){ track("sg_premium_modal_open", {source:source}); }
+  function onOpenBeach(beach){ track("sg_open_beach", {beach:beach, src:"landing"}); }
+  function onShowMap(){ track("sg_show_map", {src:"hero"}); }
+
+  /* ====================================================================
+     REDUCED MOTION — plancher dur.
+     ==================================================================== */
+  var REDUCE = window.matchMedia && window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+
+  applyCopy();
+
+  function wireConversion(){
+    $("ctaHero").addEventListener("click", function(){ track("sg_hero_tap",{t:"title"}); onOpenBeach(HOME.beach); });
+    $("mapLink").addEventListener("click", function(e){ e.preventDefault(); onShowMap(); });
+    $("ctaVerdict").addEventListener("click", function(){ onOpenBeach(HOME.beach); });
+    $("ctaMethode").addEventListener("click", function(){ onOpenBeach(HOME.beach); });
+    $("ctaPremium").addEventListener("click", function(){ openPremium("landing_premium"); });
+    $("footPrem").addEventListener("click", function(e){ e.preventDefault(); openPremium("footer"); });
+    $("aboutLink").addEventListener("click", function(e){ e.preventDefault(); track("sg_nav",{to:"/a-propos/"}); });
+    $("verdictBadge").addEventListener("click", function(){ track("sg_hero_tap",{t:"verdict"}); onOpenBeach(HOME.beach); });
+    var cards = document.querySelectorAll("#top3 .pcard");
+    for(var i=0;i<cards.length;i++){ (function(c){
+      c.addEventListener("click", function(){
+        var b=c.getAttribute("data-beach");
+        if(c.getAttribute("data-status")==="avoid"){ openPremium("verdict_card_avoid"); }
+        else { onOpenBeach(b); }
+      });
+    })(cards[i]); }
+  }
+
+  var langBtns = document.querySelectorAll(".langs button");
+  for(var li=0; li<langBtns.length; li++){ (function(btn){
+    btn.addEventListener("click", function(){
+      LANG = btn.getAttribute("data-lang");
+      for(var k=0;k<langBtns.length;k++){ langBtns[k].setAttribute("aria-pressed", langBtns[k]===btn?"true":"false"); }
+      applyCopy();
+    });
+  })(langBtns[li]); }
+
+  wireConversion();
+  track("sg_hero_shown", {beach:HOME.beach, score:HOME.score, status:HOME.status, geoloc:false});
+
+  /* ====================================================================
+     LE VEILLEUR v2 — moteur (porté du proto-veilleur-clip-v2), branché
+     au beat (humeur data-driven) ET au pointeur (regard amplitude faible,
+     retour vers la MER). Géométrie pivot CORRECTE (pas de translate(-cx)).
+     ==================================================================== */
+  var gPose=$("gPose"), gLife=$("gLife"), gIris=$("gIris"),
+      iris=$("iris"), irisTint=$("irisTint"), pupil=$("pupil"),
+      catchB=$("catchB"), lidTop=$("lidTop"), lidBot=$("lidBot"),
+      brow=$("brow"), halo=$("halo"), beamG=$("beamG"), beam=$("beam"),
+      scanRing=$("scanRing"), ant=$("ant"), rootStyle=document.documentElement.style;
+  /* ancre œil en coords viewBox : gPose translate(400,EYE_BASE) + œil local (0,4)*1.30.
+     FIX desktop (crowding) : sur écran large on remonte le Veilleur (EYE_BASE plus
+     haut) pour que la colonne copy centrée ne crowde plus le bas du corps. */
+  var WIDE = window.matchMedia && window.matchMedia("(min-width:680px)").matches;
+  var EYE_BASE = WIDE ? 176 : 200;            /* y de l'ancre gPose */
+  var EYE = {x:400, y:EYE_BASE+5.2};          /* + offset œil local (×1.30) */
+
+  function lerp(a,b,t){ return a+(b-a)*t; }
+  function clamp(v,a,b){ return v<a?a : v>b?b : v; }
+  function easeInOut(t){ return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2; }
+  function smooth(t){ return t*t*(3-2*t); }
+  function hx(c){ c=c.replace('#',''); return [parseInt(c.substr(0,2),16),parseInt(c.substr(2,2),16),parseInt(c.substr(4,2),16)]; }
+  function mix(a,b,t){ var A=hx(a),B=hx(b); return 'rgb('+Math.round(lerp(A[0],B[0],t))+','+Math.round(lerp(A[1],B[1],t))+','+Math.round(lerp(A[2],B[2],t))+')'; }
+  function toVB(clientX,clientY){
+    var r=scene.getBoundingClientRect(), sc=Math.max(r.width/800,r.height/600);
+    var dw=800*sc,dh=600*sc, ox=(r.width-dw)/2, oy=(r.height-dh)/2;
+    return {x:(clientX-r.left-ox)/sc, y:(clientY-r.top-oy)/sc};
+  }
+  function getCss(name){ var v=getComputedStyle(document.documentElement).getPropertyValue(name).trim(); return v||'#1FB6A6'; }
+  function toHex(c){ c=c.trim(); if(c[0]==='#') return c.length===4?'#'+c[1]+c[1]+c[2]+c[2]+c[3]+c[3]:c;
+    var m=c.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/); if(m){ return '#'+([1,2,3].map(function(i){return ('0'+parseInt(m[i]).toString(16)).slice(-2);}).join('')); } return '#1FB6A6'; }
+  function mixCss(curr,target,t){ return mix(toHex(curr), toHex(target), t); }
+
+  /* PALETTES D'HUMEUR (couleur + forme + posture, jamais couleur seule) */
+  var MOODS = {
+    calm:  { mood:'#1FB6A6', halo:'#1FB6A6', dot:'#22C55E', irisR:7.2,  pose:0,    lift:0,  browLift:-1, lidTop:0.08, lidBot:0.24, beam:0   },
+    scan:  { mood:'#FFC72C', halo:'#E8A800', dot:'#FFC72C', irisR:9.3,  pose:4.5,  lift:0,  browLift:1.5,  lidTop:.28, lidBot:0,   beam:1   },
+    alert: { mood:'#E8522A', halo:'#E8522A', dot:'#E8522A', irisR:10.2, pose:-3.5, lift:-6, browLift:3.2,  lidTop:-.18,lidBot:-.18,beam:.2  }
+  };
+  function clone(o){ var n={}; for(var k in o) n[k]=o[k]; return n; }
+  var M = clone(MOODS.calm), MT = clone(MOODS.calm), curMoodName='calm';
+  function setMoodTarget(name){ if(MOODS[name]){ MT=clone(MOODS[name]); curMoodName=name; } }
+  /* hook data-driven public (honnêteté = pricing) : >=70 calme · 40-69 scan · <40 alerte */
+  function setMoodFromScore(score){ if(score>=70) setMoodTarget('calm'); else if(score>=40) setMoodTarget('scan'); else setMoodTarget('alert'); }
+  window.setVeilleurScore = setMoodFromScore;
+
+  /* PAUPIÈRES — 'd' réécrit selon mood + blink */
+  function setLids(blink){
+    var cy=4;
+    var kT = clamp(M.lidTop + blink, -0.4, 1);
+    var kB = clamp(M.lidBot + blink, -0.4, 1);
+    var cpTop = lerp(-20, cy+1, kT);
+    var cpBot = lerp(28,  cy-1, kB);
+    lidTop.setAttribute('d','M-22 '+cy+' Q0 '+cpTop+' 22 '+cy+' L22 -22 L-22 -22 Z');
+    lidBot.setAttribute('d','M-22 '+cy+' Q0 '+cpBot+' 22 '+cy+' L22 30 L-22 30 Z');
+  }
+
+  /* regard (viewBox) : cible = pointeur (amplitude faible), défaut = la MER devant */
+  var SEA = {x:EYE.x, y:430};
+  var gtx=EYE.x, gty=SEA.y, gcx=EYE.x, gcy=SEA.y;  /* cible & courant */
+  var pointerActive=false, lastInput=-1, lookUntil=0, lastTap=-1e9;
+
+  /* blink */
+  var blinkStart=-1, blinkDur=180, nextBlink=performance.now()+rand(2600,4200);
+  function rand(a,b){ return a+Math.random()*(b-a); }
+  function blinkNow(dur){ blinkStart=performance.now(); blinkDur=dur||180; wake(); }
+
+  /* ====================================================================
+     MOTEUR SCROLL — calcule --gp, --p{i}, --e{i}, dolly, + humeur du beat
+     ==================================================================== */
+  var root = document.documentElement;
+  var spans = [$("sp0"),$("sp1"),$("sp2"),$("sp3"),$("sp4")];
+  var copies = [$("bc0"),$("bc1"),$("bc2"),$("bc3"),$("bc4")];
+  var cam = $("cam");
+  var vp = $("viewport");
+  var fired = {verdict:false, methode:false, premium:false};
+  var bulletsShown = {2:false, 3:false};
+
+  var DOLLY = [
+    {s:1.00, y:0,   oy:"60%"},  /* hero  */
+    {s:1.14, y:-2,  oy:"62%"},  /* verdict */
+    {s:1.04, y:0,   oy:"48%"},  /* méthode */
+    {s:1.20, y:-3,  oy:"38%"},  /* premium : cadre le Veilleur */
+    {s:1.00, y:0,   oy:"56%"}   /* footer : dolly-out, repos */
+  ];
+
+  var needScroll = true;
+  /* FIX sticky : .scroller aussi haut que somme des spans + 1 viewport */
+  function sizeScroller(){
+    var total=0; for(var i=0;i<spans.length;i++){ total += spans[i].offsetHeight; }
+    $("scroller").style.height = (total + window.innerHeight) + "px";
+  }
+
+  var lastActive = -1;
+  var ringAuto = {A:false, B:false};
+  var autoBoomDone = false;
+
+  /* humeur cible PAR beat (data-driven du verdict du beat) :
+     hero (HOME.status) · verdict=scan(mixte) · méthode=calm(explication)
+     · premium=alert(la plage bascule) · footer=calm(repos) */
+  function beatMood(active){
+    if(active===0) return HOME.status==="avoid"?"alert" : HOME.status==="mod"?"scan" : "calm";
+    if(active===1) return "scan";
+    if(active===2) return "calm";
+    if(active===3) return "alert";
+    return "calm";
+  }
+
+  function computeScroll(){
+    var scrollY = window.pageYOffset || document.documentElement.scrollTop;
+    var scroller = $("scroller");
+    var base = scroller.getBoundingClientRect().top + scrollY;
+    var prog = [0,0,0,0,0];
+    var acc = base;
+    for(var i=0;i<spans.length;i++){
+      var h = spans[i].offsetHeight;
+      prog[i] = clamp((scrollY - acc) / h, 0, 1);
+      acc += h;
+    }
+    for(var j=0;j<5;j++){ root.style.setProperty("--p"+j, smooth(prog[j]).toFixed(4)); }
+
+    var active = 0;
+    for(var k=0;k<5;k++){ if(prog[k] > 0.001 && prog[k] < 0.999){ active = k; } }
+    for(var m=0;m<4;m++){ if(prog[m] >= 0.999 && prog[m+1] <= 0.001){ active = m+1; } }
+    if(prog[4] >= 0.999) active = 4;
+
+    /* cross-fade SANS trou. FIX footer pacing : handoff e3→e4 avancé
+       (pa>0.80 au lieu de 0.88) pour que le CTA footer respire plus tôt. */
+    var pa = prog[active];
+    var hoStart = (active===3) ? 0.80 : 0.88;
+    var handoff = (active < 4 && pa > hoStart) ? smooth((pa - hoStart) / (1 - hoStart)) : 0;
+    for(var n=0;n<5;n++){
+      var e = 0;
+      if(n === active){ e = 1 - handoff; }
+      else if(n === active + 1){ e = handoff; }
+      root.style.setProperty("--e"+n, e.toFixed(3));
+      copies[n].classList.toggle("on", e > 0.15);
+    }
+
+    var gp = (active + prog[active]) / 4;
+    root.style.setProperty("--gp", clamp(gp,0,1).toFixed(4));
+    root.style.setProperty("--hs", prog[0].toFixed(4));
+
+    /* DOLLY */
+    var a = DOLLY[active], b = DOLLY[Math.min(active+1,4)];
+    var t = smooth(prog[active]);
+    var cs = a.s + (b.s - a.s) * t;
+    var cy2 = a.y + (b.y - a.y) * t;
+    cam.style.transformOrigin = "50% " + (t<0.5? a.oy : b.oy);
+    cam.style.transform = "translateY("+cy2.toFixed(3)+"%) scale("+cs.toFixed(4)+")";
+
+    /* effets de scène pilotés par le scroll */
+    $("sunGroup").setAttribute("transform","translate(0,"+(-prog[0]*26).toFixed(1)+")");
+    $("rasterGrain").style.opacity = (prog[1]*0.10).toFixed(3);
+    driftRafts(prog[1]);
+    if(prog[1] > 0.55 && !ringAuto.A){ ringAuto.A=true; pulseRing("ringA"); }
+    if(prog[1] > 0.78 && !ringAuto.B){ ringAuto.B=true; pulseRing("ringB"); }
+
+    $("alertScene").style.opacity = prog[3].toFixed(3);
+    root.style.setProperty("--alert", clamp((prog[3]-0.1)/0.5,0,1).toFixed(3));
+    $("alertNotif").style.opacity = clamp((prog[3]-0.3)/0.3,0,1).toFixed(3);
+    var fcbars = document.querySelectorAll("#fcBars .fcbar");
+    for(var f=0; f<fcbars.length; f++){
+      fcbars[f].style.transform = prog[3] > (0.35 + f*0.08) ? "scaleY(1)" : "scaleY(0)";
+    }
+    if(prog[3] > 0.5 && !autoBoomDone){ autoBoomDone=true; placeBoom(360, 408, true); }
+
+    if(active===2 && prog[2] > 0.25 && !bulletsShown[2]){ bulletsShown[2]=true; revealBullets("bullets2"); }
+    if(active===3 && prog[3] > 0.25 && !bulletsShown[3]){ bulletsShown[3]=true; revealBullets("bullets3"); }
+
+    if(active===1 && prog[1] > 0.2 && !fired.verdict){ fired.verdict=true; track("sg_landing_view",{s:"verdict"}); }
+    if(active===2 && prog[2] > 0.2 && !fired.methode){ fired.methode=true; track("sg_landing_view",{s:"methode"}); }
+    if(active===3 && prog[3] > 0.2 && !fired.premium){ fired.premium=true; track("sg_landing_view",{s:"premium"}); }
+
+    $("touchHint").classList.toggle("on", active===0 && prog[0] > 0.25 && prog[0] < 0.85 && !pointerActive);
+
+    /* HUMEUR DU VEILLEUR pilotée par le beat (data-driven du verdict).
+       On (re)cible l'humeur du beat à CHAQUE frame de scroll si elle diffère,
+       SAUF si un TAP explicite récent (<2.5s) montre la démo d'humeur manuelle.
+       (le pointer-move qui fait suivre le regard ne doit PAS bloquer ça). */
+    var want = beatMood(active);
+    if(want !== curMoodName && (performance.now()-lastTap > 2500)){ setMoodTarget(want); }
+    lastActive = active;
+  }
+
+  function revealBullets(id){
+    var bs = $(id).querySelectorAll(".bul");
+    for(var i=0;i<bs.length;i++){ (function(el,d){ setTimeout(function(){ el.classList.add("rv"); }, d); })(bs[i], i*120); }
+  }
+
+  /* ====================================================================
+     RADEAUX qui dérivent (auto, fonction de --p1) + ramassage
+     ==================================================================== */
+  var rafts = [$("raft1"),$("raft2"),$("raft3")];
+  var raftState = [{picked:false,blocked:false},{picked:false,blocked:false},{picked:false,blocked:false}];
+  function driftRafts(p){
+    for(var i=0;i<rafts.length;i++){
+      var r=rafts[i];
+      if(raftState[i].picked) continue;
+      var baseX = parseFloat(r.getAttribute("data-x")) || 0;
+      var tx, ty;
+      if(raftState[i].blocked){ tx = baseX*(1-Math.min(p,0.5)); ty = Math.min(p,0.5)*8; }
+      else { tx = baseX*(1-p); ty = p*14*(i+1)*0.4; }
+      r.style.transform = "translate("+tx.toFixed(1)+"px,"+ty.toFixed(1)+"px)";
+      if(p > 0.92 && !raftState[i].blocked && !raftState[i].picked){
+        raftState[i].picked = true; r.style.opacity = "0"; r.style.transform += " scale(.6)";
+      }
+    }
+  }
+  function pickRaft(idx, isShore){
+    var r = isShore ? $("shoreMat") : rafts[idx];
+    if(!isShore && raftState[idx].picked) return;
+    if(isShore && r.dataset.picked) return;
+    if(isShore) r.dataset.picked="1"; else raftState[idx].picked = true;
+    r.style.transition = "transform .7s ease, opacity .7s ease";
+    r.style.opacity = "0";
+    track("sg_scene_tap",{el:"sargasse"});
+    if(isShore){ r.style.transform = "translate(-60px,18px) scale(.5)"; }
+    else {
+      r.style.transform = (r.style.transform||"") + " scale(.55)";
+      flashGlint(rafts[idx]);
+      lookAt(rafts[idx]); /* le Veilleur regarde le radeau ramassé */
+      var bb = rafts[idx].getBoundingClientRect();
+      showWhisper("whRaft", T.whRaft[LANG], bb, function(){ openPremium("scene_sargasse"); });
+    }
+  }
+  function flashGlint(el){
+    var b = el.querySelector("ellipse"); if(!b) return;
+    var g = document.createElementNS("http://www.w3.org/2000/svg","ellipse");
+    g.setAttribute("cx", b.getAttribute("cx")); g.setAttribute("cy", b.getAttribute("cy"));
+    g.setAttribute("rx", "20"); g.setAttribute("ry","6"); g.setAttribute("fill","#5FD3C9");
+    g.setAttribute("class","glint-flash"); g.style.transformOrigin = b.getAttribute("cx")+"px "+b.getAttribute("cy")+"px";
+    el.parentNode.appendChild(g); g.classList.add("go");
+    setTimeout(function(){ if(g.parentNode) g.parentNode.removeChild(g); }, 1000);
+  }
+
+  /* ====================================================================
+     INTERACTIONS INCIDENTES — clics simples (PAS de setPointerCapture).
+     ==================================================================== */
+  var scene = $("scene");
+  function vbCoords(evt){ return toVB(evt.clientX, evt.clientY); }
+
+  /* le Veilleur regarde un élément (coords viewBox dérivées du DOM rect) */
+  function lookAtVB(x,y){ gtx=clamp(x,40,760); gty=clamp(y,330,560); lookUntil=performance.now()+1400; lastInput=performance.now(); wake(); }
+  function lookAt(el){
+    var rb=el.getBoundingClientRect();
+    var c=toVB(rb.left+rb.width/2, rb.top+rb.height/2);
+    lookAtVB(c.x,c.y);
+  }
+
+  function placeBoom(vx, vy, silent){
+    var boom = $("boom"), buoys = $("boomBuoys"), line = $("boomLine");
+    boom.classList.remove("on");
+    while(buoys.firstChild) buoys.removeChild(buoys.firstChild);
+    var span = 80, n=4, x0 = vx - span/2;
+    line.setAttribute("x1", x0); line.setAttribute("y1", vy);
+    line.setAttribute("x2", vx + span/2); line.setAttribute("y2", vy);
+    for(var i=0;i<n;i++){
+      var c = document.createElementNS("http://www.w3.org/2000/svg","circle");
+      c.setAttribute("cx", x0 + (span/(n-1))*i); c.setAttribute("cy", vy); c.setAttribute("r","5");
+      c.setAttribute("fill","#009E8E"); c.setAttribute("stroke","#06121A"); c.setAttribute("stroke-width","1.2");
+      buoys.appendChild(c);
+    }
+    requestAnimationFrame(function(){ boom.classList.add("on"); });
+    for(var rr=0;rr<raftState.length;rr++){ if(!raftState[rr].picked){ raftState[rr].blocked = true; } }
+    if(!silent){
+      track("sg_scene_tap",{el:"barrage"});
+      lookAtVB(vx,vy); blinkNow(170);   /* il regarde le barrage + cligne complice */
+      setTimeout(function(){
+        var rect = scene.getBoundingClientRect();
+        var scale = Math.max(rect.width/800, rect.height/600);
+        var offX=(rect.width-800*scale)/2, offY=(rect.height-600*scale)/2;
+        showWhisperAt("whBoom", T.whBoom[LANG], rect.left+offX+vx*scale, rect.top+offY+vy*scale, function(){ openPremium("scene_barrage"); });
+      }, 1200);
+    }
+  }
+
+  function tapVeilleur(){
+    pulseRing("ringV");
+    blinkNow(150);
+    /* tap = cycle d'humeur démonstratif calm->scan->alert (puis re-sync au beat) */
+    var order=['calm','scan','alert'];
+    var idx=(order.indexOf(curMoodName)+1)%3;
+    setMoodTarget(order[idx]);
+    lastInput=performance.now(); lastTap=performance.now();
+    track("sg_scene_tap",{el:"veilleur"});
+  }
+
+  function tapBuoy(id){
+    var g = $(id), status = g.getAttribute("data-status");
+    var ringId = id==="buoyA" ? "ringA" : "ringB";
+    var lblId = id==="buoyA" ? "lblA" : "lblB";
+    pulseRing(ringId);
+    $(lblId).classList.add("on");
+    lookAt(g);
+    track("sg_scene_tap",{el:"bouee"});
+    var beach = g.getAttribute("data-name-"+LANG) || g.getAttribute("data-name-fr");
+    $(lblId).onclick = function(ev){
+      ev.stopPropagation();
+      if(status==="avoid"){ showWhisper("whRaft", T.whBuoyAvoid[LANG], g.getBoundingClientRect(), function(){ openPremium("scene_bouee"); }); }
+      else { onOpenBeach(beach); }
+    };
+  }
+
+  function tapYole(){
+    track("sg_scene_tap",{el:"yole"});
+    lookAt($("yole"));
+    var bb=$("yole").getBoundingClientRect();
+    showWhisper("whRaft", T.whYole[LANG], bb, function(){ onOpenBeach(HOME.beach); });
+  }
+
+  function pulseRing(cls){
+    var els = document.querySelectorAll("."+cls);
+    for(var i=0;i<els.length;i++){ (function(el){ el.classList.remove("go"); void el.offsetWidth; el.classList.add("go"); })(els[i]); }
+  }
+
+  /* ====================================================================
+     WHISPERS in-scene (ancrées, pas des popups) — DOM safe
+     ==================================================================== */
+  function buildWhisper(w, pair){
+    while(w.firstChild) w.removeChild(w.firstChild);
+    w.appendChild(document.createTextNode(pair[0] + " "));
+    if(pair[1]){
+      var ar=document.createElement("span"); ar.className="ar"; ar.textContent="→"; w.appendChild(ar);
+      var sm=document.createElement("small"); sm.textContent=pair[1]; w.appendChild(sm);
+    }
+  }
+  function showWhisper(id, pair, domRect, onTap){ showWhisperAt(id, pair, domRect.left + domRect.width/2, domRect.top, onTap); }
+  function showWhisperAt(id, pair, px, py, onTap){
+    var w = $(id);
+    buildWhisper(w, pair);
+    var vpr = vp.getBoundingClientRect();
+    w.style.left = clamp(px - vpr.left - 120, 12, vpr.width - 252)+"px";
+    w.style.top  = clamp(py - vpr.top - 86, 70, vpr.height - 120)+"px";
+    w.classList.add("on");
+    w.onclick = function(){ w.classList.remove("on"); if(onTap) onTap(); };
+    clearTimeout(w._t); w._t = setTimeout(function(){ w.classList.remove("on"); }, 5200);
+  }
+
+  /* ====================================================================
+     ROUTAGE des clics scène (1 listener, dispatch par cible/zone)
+     ==================================================================== */
+  function hit(target, sel){ return target.closest && target.closest(sel); }
+  scene.addEventListener("click", function(evt){
+    var c = vbCoords(evt);
+    if(hit(evt.target, "#gPose")){ tapVeilleur(); return; }
+    if(hit(evt.target, "#yole")){ tapYole(); return; }
+    if(hit(evt.target, "#buoyA")){ tapBuoy("buoyA"); return; }
+    if(hit(evt.target, "#buoyB")){ tapBuoy("buoyB"); return; }
+    if(hit(evt.target, "#shoreMat")){ pickRaft(-1, true); return; }
+    var rt = hit(evt.target, ".raft");
+    if(rt && rt.id && rt.id.indexOf("raft")===0){ pickRaft(parseInt(rt.id.replace("raft",""),10)-1, false); return; }
+    if(hit(evt.target, "#alertNotif")){ openPremium("scene_alert"); return; }
+    /* sinon : zone de mer (y 324..476) = poser un barrage */
+    if(c.y >= 324 && c.y <= 476 && c.x >= 0 && c.x <= 800){ placeBoom(c.x, c.y, false); }
+  }, {passive:true});
+
+  $("livePill").addEventListener("click", function(){ track("sg_scene_tap",{el:"live"}); });
+
+  /* ====================================================================
+     POINTEUR — le Veilleur suit le regard (amplitude FAIBLE), retour MER.
+     PAS de setPointerCapture (sinon tue les clics CTA).
+     ==================================================================== */
+  window.addEventListener("pointermove", function(e){
+    if(e.pointerType==="touch") return; /* sur tactile, l'œil suit au tap, pas au drag de scroll */
+    var p = toVB(e.clientX, e.clientY);
+    gtx = p.x; gty = p.y; pointerActive=true; lastInput=performance.now(); lookUntil=0;
+    wake();
+  }, {passive:true});
+
+  /* ====================================================================
+     REDUCED MOTION — plancher dur : tableau final lisible, tout cliquable.
+     Figer une belle pose CALME visible (pas opacity 0).
+     ==================================================================== */
+  if(REDUCE){
+    document.documentElement.style.setProperty("--p0","1");
+    var sg=$("sunGroup"); if(sg) sg.setAttribute("transform","translate(0,-26)");
+    /* pose Veilleur calme figée */
+    M=clone(MOODS.calm); MT=clone(MOODS.calm); curMoodName='calm';
+    rootStyle.setProperty('--mood', MOODS.calm.mood);
+    rootStyle.setProperty('--moodHalo', MOODS.calm.halo);
+    rootStyle.setProperty('--moodDot', MOODS.calm.dot);
+    iris.setAttribute('r', MOODS.calm.irisR); irisTint.setAttribute('r', MOODS.calm.irisR);
+    pupil.setAttribute('r', (MOODS.calm.irisR*0.42).toFixed(2));
+    setLids(0);
+    brow.setAttribute('d','M-15 -19 Q0 '+(-25+MOODS.calm.browLift)+' 15 -19');
+    halo.setAttribute('opacity','.5');
+    beam.setAttribute('opacity','0'); scanRing.setAttribute('opacity','0');
+    gIris.setAttribute('transform','translate(0 1.5)');
+    gPose.setAttribute('transform','translate('+EYE.x+' '+EYE_BASE+') rotate(0)');
+    return; /* pas de rAF */
+  }
+
+  /* ====================================================================
+     LE rAF UNIQUE — scroll + Veilleur (humeur/regard/blink/beam) + ambient.
+     Demand-driven : tourne tant qu'il y a du travail (scroll, humeur non
+     convergée, regard pas posé, blink en cours, alerte). Pause visibilitychange.
+     FIX idle-stop (doctrine calme) : après IDLE_MS sans input ET tout convergé,
+     la micro-vie (respiration/blink autonome) N'arme PLUS work=true → le rAF
+     S'ÉTEINT vraiment au repos (= tableau, batterie). wake() au scroll/pointer/
+     tap/visibilitychange le relance.
+     ==================================================================== */
+  var running=false, paused=false;
+  var IDLE_MS = 2600;        /* au-delà = repos : on cesse de garder la boucle vivante */
+  var t0=performance.now();
+  function nowt(){ return performance.now(); }
+  var introDone=false;
+  function introProgress(){ return clamp((nowt()-t0)/3600,0,1); }
+  var raftK=0;
+
+  function wake(){ if(!running && !paused){ running=true; requestAnimationFrame(loop); } }
+
+  window.addEventListener("scroll", function(){ needScroll = true; lastInput=nowt(); wake(); }, {passive:true});
+  window.addEventListener("resize", function(){ sizeScroller(); needScroll = true; wake(); }, {passive:true});
+  document.addEventListener("visibilitychange", function(){
+    paused = document.hidden;
+    if(!paused){ needScroll = true; lastInput=nowt(); wake(); }
+  });
+
+  function loop(){
+    if(paused){ running=false; return; }
+    var t = nowt();
+    var work = false;
+    /* "actif" = input récent OU intro pas finie : tant que c'est vrai, la
+       micro-vie (respiration) garde la boucle vivante. Au-delà = repos. */
+    var active = (t - lastInput < IDLE_MS) || !introDone;
+
+    if(needScroll){ computeScroll(); needScroll = false; work = true; }
+
+    /* ---------- HUMEUR : crossfade doux vers la cible (~0.8-1.2s à 60fps) ---------- */
+    var ms=.045;
+    var moodConverged = Math.abs(M.irisR-MT.irisR) < 0.06;
+    if(!moodConverged){
+      M.irisR=lerp(M.irisR,MT.irisR,ms); M.pose=lerp(M.pose,MT.pose,ms); M.lift=lerp(M.lift,MT.lift,ms);
+      M.browLift=lerp(M.browLift,MT.browLift,ms); M.lidTop=lerp(M.lidTop,MT.lidTop,ms);
+      M.lidBot=lerp(M.lidBot,MT.lidBot,ms); M.beam=lerp(M.beam,MT.beam,ms);
+      rootStyle.setProperty('--mood', mixCss(getCss('--mood'), MT.mood, ms));
+      rootStyle.setProperty('--moodHalo', mixCss(getCss('--moodHalo'), MT.halo, ms));
+      rootStyle.setProperty('--moodDot', mixCss(getCss('--moodDot'), MT.dot, ms));
+      work = true;
+    } else {
+      /* SNAP aux couleurs marque exactes (le lerp expo n'atteint jamais le corail exact) */
+      M.irisR=MT.irisR; M.pose=MT.pose; M.lift=MT.lift; M.browLift=MT.browLift;
+      M.lidTop=MT.lidTop; M.lidBot=MT.lidBot; M.beam=MT.beam;
+      rootStyle.setProperty('--mood',MT.mood); rootStyle.setProperty('--moodHalo',MT.halo); rootStyle.setProperty('--moodDot',MT.dot);
+    }
+    iris.setAttribute('r', M.irisR.toFixed(2));
+    irisTint.setAttribute('r', M.irisR.toFixed(2));
+    pupil.setAttribute('r', (M.irisR*0.42).toFixed(2));
+
+    /* ---------- REGARD : pointeur récent, sinon retour vers la MER ---------- */
+    if(pointerActive && t-lastInput<1100){
+      /* suit le curseur (amplitude faible appliquée plus bas via clamp) */
+    } else if(t > lookUntil){
+      gtx=lerp(gtx,SEA.x,.02); gty=lerp(gty,SEA.y,.02);  /* doucement vers la mer (il veille l'eau) */
+      if(Math.abs(gtx-SEA.x)>0.4 || Math.abs(gty-SEA.y)>0.4) work=true;
+    } else { work=true; }
+    gcx=lerp(gcx,gtx,.08); gcy=lerp(gcy,gty,.08);
+    if(Math.abs(gcx-gtx)>0.15 || Math.abs(gcy-gty)>0.15) work=true;
+    var ex=clamp((gcx-EYE.x)/44, -4, 4);
+    var ey=clamp((gcy-EYE.y)/58, -3, 4);
+    gIris.setAttribute('transform','translate('+ex.toFixed(2)+' '+ey.toFixed(2)+')');
+    catchB.setAttribute('cx',(3.4+ex*.7).toFixed(2));
+    catchB.setAttribute('cy',(2.6+ey*.7).toFixed(2));
+
+    /* ---------- micro-vie : respiration + flottaison (SEULEMENT si actif) ----------
+       FIX idle-stop : au repos on FIGE la micro-vie sur une pose neutre stable et
+       on ne réarme PLUS work → la boucle peut mourir → tableau (doctrine calme), batterie. */
+    var breathe, floatR;
+    if(active){
+      breathe = Math.sin(t/3300)*2.0;
+      floatR  = Math.sin(t/5500)*0.6;
+      work = true; /* tant qu'actif, la respiration garde la boucle vivante */
+    } else {
+      breathe = 0; floatR = 0; /* repos = tableau figé */
+    }
+    gLife.setAttribute('transform','translate(0 '+breathe.toFixed(2)+') rotate('+floatR.toFixed(3)+')');
+
+    /* ---------- posture émotionnelle : pivot CORRECT (pas de translate(-cx)) ---------- */
+    var poseAng = M.pose + floatR*0.3;
+    gPose.setAttribute('transform','translate('+EYE.x.toFixed(1)+' '+(EYE_BASE+M.lift).toFixed(1)+') rotate('+poseAng.toFixed(2)+')');
+
+    /* ---------- blink ---------- */
+    var blinkK=0;
+    if(blinkStart>0){
+      var bt=(t-blinkStart)/blinkDur;
+      if(bt>=1){ blinkStart=-1; } else { blinkK = bt<.5 ? easeInOut(bt*2) : easeInOut((1-bt)*2); }
+      work=true;
+    }
+    /* clignements autonomes SEULEMENT tant qu'actif (au repos = tableau, pas d'œil qui cligne tout seul) */
+    if(active && t>nextBlink && blinkStart<0){ blinkNow(180); nextBlink=t+rand(3200,6500); }
+    setLids(blinkK);
+
+    /* sourcil */
+    var bl=M.browLift;
+    brow.setAttribute('d','M-15 '+(-19+bl*0.2).toFixed(2)+' Q0 '+(-25+bl).toFixed(2)+' 15 '+(-19+bl*0.2).toFixed(2));
+
+    /* halo : suit la respiration tant qu'actif, sinon valeur calme stable */
+    halo.setAttribute('opacity', active ? (0.42+0.12*Math.sin(t/3300)+0.05).toFixed(3) : '0.50');
+
+    /* ---------- FAISCEAU de scan (émis du VRAI œil, vers la cible, vers la MER) ---------- */
+    var introT=introProgress();
+    var beamOn=M.beam;
+    var sweep=0, sweepOp=0;
+    if(introT<1 && !introDone){
+      if(introT>0.32){ var s=clamp((introT-0.32)/0.68,0,1); sweep=(-14+26*easeInOut(s)); sweepOp=Math.sin(s*Math.PI)*0.9; }
+      work=true;
+    } else { introDone=true; }
+    var ang=Math.atan2(gcy-EYE.y, gcx-EYE.x)*180/Math.PI-90;
+    ang=clamp(ang,-26,26);
+    if(!introDone) ang=sweep;
+    beamG.setAttribute('transform','translate('+EYE.x+' '+EYE.y+') rotate('+ang.toFixed(2)+')');
+    var bOp = introDone ? beamOn*0.85 : Math.max(sweepOp,beamOn*0.85);
+    beam.setAttribute('opacity',bOp.toFixed(3));
+    /* anneau de scan au niveau de l'eau */
+    var hitX=EYE.x+Math.tan(clamp(ang,-26,26)*Math.PI/180)*(362-EYE.y);
+    scanRing.setAttribute('cx',clamp(hitX,40,760));
+    scanRing.setAttribute('opacity',(bOp*0.6).toFixed(3));
+    scanRing.setAttribute('ry',(8+2*Math.abs(Math.sin(t/1700))*beamOn).toFixed(2));
+    if(beamOn>0.05 && active) work=true; /* le scan vivant maintient la boucle (sinon repos) */
+    /* antenne : pulse en scan */
+    ant.setAttribute('opacity', beamOn>0.4 ? (0.8+0.2*Math.abs(Math.sin(t/1700))).toFixed(2) : '1');
+
+    /* ---------- radeau premium : grossit en alerte (réutilise raft2 comme menace) ---------- */
+    var alertK = curMoodName==='alert' ? 1 : 0;
+    raftK = lerp(raftK, alertK, .015);
+    if(Math.abs(raftK-alertK)>0.01) work=true;
+
+    if(work && !paused){ requestAnimationFrame(loop); } else { running=false; }
+  }
+
+  /* PREMIER PAINT synchrone : scène + hero composés AVANT toute frame */
+  setMoodFromScore(HOME.score);   /* humeur initiale = vrai score plage */
+  M=clone(MOODS[curMoodName]);    /* part déjà sur la bonne pose (pas de ramp visible) */
+  rootStyle.setProperty('--mood',M.mood); rootStyle.setProperty('--moodHalo',M.halo); rootStyle.setProperty('--moodDot',M.dot);
+  iris.setAttribute('r',M.irisR); irisTint.setAttribute('r',M.irisR); pupil.setAttribute('r',(M.irisR*0.42).toFixed(2));
+  setLids(0);
+  /* pose initiale du Veilleur à la bonne ancre (EYE_BASE responsive) AVANT 1re frame */
+  gPose.setAttribute('transform','translate('+EYE.x+' '+EYE_BASE+') rotate(0)');
+  sizeScroller();
+  computeScroll();
+  needScroll = false;
+  lastInput = nowt();   /* fenêtre d'activité initiale (intro + premières frames) */
+  wake();
+
+})();
+</script>
+</body>
+</html>
