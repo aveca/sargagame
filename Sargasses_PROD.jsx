@@ -3408,10 +3408,10 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             <ForecastChart forecast={forecast} lang={lang} onPremiumClick={onPremiumClick} isPremium={isPremium} weatherDaily={weather?.daily||null} weeklyData={weeklyData}/>
           </>)}
 
-          {/* rel_hot_cta : badge fiabilité → openPremium depuis la fiche (hot intent).
-              Link /fiabilite/ serait une sortie de funnel ; ici l'user est sur une plage
-              et veut vérifier avant d'acheter → CTA premium direct. */}
-          <button onClick={()=>{track("sg_reliability_open",{from:"beach_badge",hot:true});onPremiumClick("rel_hot_cta")}}
+          {/* rel_hot_cta : badge fiabilité → openPremium (trust signal après ForecastChart en A/B).
+              Gating !isPremium && fcUp : n'empile PAS avec forecast_teaser dans le bras contrôle,
+              et n'affiche pas aux abonnés un bouton d'achat. */}
+          {!isPremium&&fcUp&&<button onClick={()=>{track("sg_reliability_open",{from:"beach_badge",hot:true});onPremiumClick("rel_hot_cta")}}
             style={{display:"flex",alignItems:"center",gap:9,margin:"10px 0 2px",padding:"9px 12px",borderRadius:12,
             background:"rgba(34,197,94,.10)",border:"1px solid rgba(34,197,94,.26)",textDecoration:"none",cursor:"pointer",
             width:"100%",fontFamily:"inherit",textAlign:"left"}}>
@@ -3438,7 +3438,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               })()}
             </span>
             <span aria-hidden="true" style={{fontSize:13,fontWeight:800,color:"#16A34A",flexShrink:0}}>→</span>
-          </button>
+          </button>}
 
           {/* La vraie photo « calée en cool » plus bas (directive 14/06 : pas en
               premier, le SVG d'abord). On la garde car elle est individuelle. */}
