@@ -218,6 +218,9 @@ RewriteRule ^landing-v2\.html$ / [R=301,L]
 # self-canonical + au sitemap = page fine indexable. Consolidée vers l'accueil
 # (capture email désormais in-app). Retirée du sitemap (vite.config). 2026-06-16.
 RewriteRule ^weekend\.html$ / [R=301,L]
+# /articles/* : 2 bilans hebdomadaires avril 2026 — contenu daté, consolidé vers
+# /previsions/ (le flux hebdomadaire vivant). Retirés sitemap (vide index.json). 2026-06-16.
+RewriteRule ^articles/(.*)$ /previsions/ [R=301,L]
 </IfModule>
 
 # =====================================================================
