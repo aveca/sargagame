@@ -137,8 +137,21 @@ async function pullGSC(sc, win) {
       ])
       out[siteUrl] = { pages, queries }
     } catch (e) {
-      console.error(`  [gsc] ${siteUrl}: ${e.message}`)
-      out[siteUrl] = { pages: [], queries: [], error: e.message }
+      // Fallback type de propriété : sur une erreur de permission pour le Domaine,
+      // réessaie en PRÉFIXE D'URL https://<domain>/ (certaines régions créées ainsi).
+      let recovered = false
+      if (/permission|insufficient/i.test(e.message) && siteUrl.startsWith('sc-domain:')) {
+        const alt = 'https://' + siteUrl.slice(10) + '/'
+        try {
+          const [pages, queries] = await Promise.all([queryDim(alt, 'page'), queryDim(alt, 'query')])
+          out[siteUrl] = { pages, queries, via: alt }
+          recovered = true
+        } catch (e2) {}
+      }
+      if (!recovered) {
+        console.error(`  [gsc] ${siteUrl}: ${e.message}`)
+        out[siteUrl] = { pages: [], queries: [], error: e.message }
+      }
     }
   }
   return { window: win, perProperty: out }
