@@ -3523,8 +3523,8 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
           {/* Email capture — above the fold, before forecast teaser */}
           <InlineEmailCapture lang={lang} beachName={beach.name}/>
 
-          {/* Forecast teaser — above the fold, every user sees it */}
-          {!isPremium&&forecast&&forecast[1]&&(
+          {/* Forecast teaser — masqué en fc_position=top (ForecastChart déjà visible) */}
+          {!isPremium&&!fcUp&&forecast&&forecast[1]&&(
             <div onClick={()=>{track("sg_forecast_teaser_click",{beach_id:beach.id,tomorrow:forecast[1].status});onPremiumClick("forecast_teaser")}}
               style={{padding:"14px 16px",borderRadius:16,marginBottom:12,cursor:"pointer",
                 background:"linear-gradient(135deg,#0D1E1C,#142824)",
