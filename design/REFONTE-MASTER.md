@@ -10,7 +10,7 @@
 | Phase | Lot | État |
 |---|---|---|
 | — | Accueil A→Z (`home_az`) · Plan-B (`pw_planb`) · H2S (`pw_h2s`) · fiabilité régime | ✅ **LIVE prod** |
-| A | Carte interactive (`design/proto-map-v2.html`) — pan/zoom/tap-plongée/scrub **proto vérifié navigateur** | 🟡 proto ✅ · **port `map_world` à faire** |
+| A | Carte interactive **MULTI-SITES** (`proto-map-v2.html?region=` : mq·gp·florida·puntacana·rivieramaya) — vraie géo OSM (`public/data/region-outlines/`, générée par `scripts/build-region-outlines.cjs`) + pan/zoom/tap-plongée/scrub, **5 sites vérifiés navigateur** | 🟡 proto ✅ · **port `map_world` (region-aware) à faire** |
 | A | Fiche « plongée » → port `pw_beach_dive` | 🟡 en cours |
 | B | Demo-gate email (capture 0,35 %) | 🔴 à faire |
 | B | Canonical/hreflang + indexation (MQ ~3/30 · GP ~2/30) | 🔴 à faire |

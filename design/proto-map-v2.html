@@ -137,7 +137,7 @@ svg.scene.drag{cursor:grabbing}
       <div class="langs"><button data-l="fr" aria-pressed="true">FR</button><button data-l="en">EN</button><button data-l="es">ES</button></div>
     </div>
     <div class="head">
-      <h1 class="anton">Martinique <span class="d" id="dayLbl">aujourd'hui</span></h1>
+      <h1 class="anton"><span id="regionName">Martinique</span> <span class="d" id="dayLbl">aujourd'hui</span></h1>
       <div class="gauge"><span class="bar"><i id="gbar"></i></span><span class="txt"><b id="gnum">—</b> plages propres</span></div>
     </div>
     <div class="legend">
@@ -195,22 +195,25 @@ svg.scene.drag{cursor:grabbing}
     anim=requestAnimationFrame(step);
   }
 
+  var REGION=(function(){try{var m=location.search.match(/[?&]region=([a-z]+)/);return m?m[1]:"mq";}catch(e){return "mq";}})();
+  var EUR={mq:1,gp:1};
   Promise.all([
-    fetch("/design/mq-outline.json").then(function(r){return r.json();}),
-    fetch("/public/data/beaches-list.json").then(function(r){return r.json();})
+    fetch("/public/data/region-outlines/"+REGION+".json").then(function(r){return r.json();}),
+    fetch(EUR[REGION]?"/public/data/beaches-list.json":"/regions/"+REGION+".json").then(function(r){return r.json();})
   ]).then(function(res){
     var O=res[0], raw=res[1];
     var arr=Array.isArray(raw)?raw:(raw.beaches||Object.values(raw).find(Array.isArray)||[]);
-    var beaches=arr.filter(function(b){return (b.island==="mq"||b.island==="martinique"||!b.island)&&b.lat&&b.lng;});
+    var beaches=arr.filter(function(b){return (EUR[REGION]?(b.island===REGION):true)&&b.lat&&b.lng;});
+    var rn=document.getElementById("regionName");if(rn&&O.name)rn.textContent=O.name;
     var bb=O.bbox, pj=O.proj;
     function toVB(la,lo){return [pj.offX+(lo-bb.minLng)*pj.kx*pj.sc, pj.offY+(bb.maxLat-la)*pj.sc];}
 
     ["shallowFar","shallowNear","islandShadow","islandRimGlow","island","islandWarm"].forEach(function(id){document.getElementById(id).setAttribute("d",O.path);});
     var relief=document.getElementById("relief"), ridge=document.getElementById("ridge");
-    [[14.79,-61.10,24],[14.74,-61.10,18],[14.70,-61.07,20],[14.52,-61.06,15],[14.47,-60.92,12]].forEach(function(m){
+    if(REGION==="mq"){[[14.79,-61.10,24],[14.74,-61.10,18],[14.70,-61.07,20],[14.52,-61.06,15],[14.47,-60.92,12]].forEach(function(m){
       var v=toVB(m[0],m[1]);var e=document.createElementNS(NS,"ellipse");e.setAttribute("cx",v[0]);e.setAttribute("cy",v[1]);e.setAttribute("rx",m[2]);e.setAttribute("ry",m[2]*0.66);relief.appendChild(e);
       var hl=document.createElementNS(NS,"path");hl.setAttribute("d","M"+(v[0]-m[2]*0.6)+" "+(v[1]-m[2]*0.2)+" Q"+v[0]+" "+(v[1]-m[2]*0.7)+" "+(v[0]+m[2]*0.6)+" "+(v[1]-m[2]*0.2));ridge.appendChild(hl);
-    });
+    });}
 
     // chaque plage : pos viewBox + état par jour (J0 réel, J1-5 mock déterministe honnête-proto)
     beaches.forEach(function(b){var v=toVB(b.lat,b.lng);b._vx=v[0];b._vy=v[1];
@@ -219,16 +222,18 @@ svg.scene.drag{cursor:grabbing}
     });
 
     var pins=document.getElementById("pins"), labels=document.getElementById("labels");
-    var pinEls={};
-    beaches.forEach(function(b){
+    var pinEls={}, labelStep=Math.max(1,Math.ceil(beaches.length/9));
+    beaches.forEach(function(b,i){
       var g=document.createElementNS(NS,"g");g.setAttribute("class","pin");g.setAttribute("transform","translate("+b._vx.toFixed(1)+" "+b._vy.toFixed(1)+")");
       var halo=document.createElementNS(NS,"circle");halo.setAttribute("class","pinhalo");halo.setAttribute("r","13");halo.setAttribute("fill","url(#phalo)");g.appendChild(halo);
       var core=document.createElementNS(NS,"circle");core.setAttribute("class","core");core.setAttribute("r","6");core.setAttribute("stroke","#06121A");core.setAttribute("stroke-width","1.3");g.appendChild(core);
       var ring=document.createElementNS(NS,"circle");ring.setAttribute("r","6");ring.setAttribute("fill","none");ring.setAttribute("stroke","#fff");ring.setAttribute("stroke-opacity",".55");ring.setAttribute("stroke-width","1");g.appendChild(ring);
       g.addEventListener("click",function(e){e.stopPropagation();selectBeach(b);});
       pins.appendChild(g);pinEls[b.id||b.name]={core:core,ring:ring,b:b};
-      var nm=NAMED.find(function(n){return (b.name||"").indexOf(n[0])>=0;});
-      if(nm){var t=document.createElementNS(NS,"text");t.setAttribute("class","plabel");t.setAttribute("x",(b._vx+nm[1]*11).toFixed(1));t.setAttribute("y",(b._vy+nm[2]*4-(nm[2]<0?6:-3)).toFixed(1));t.setAttribute("text-anchor",nm[1]<0?"end":"start");t.textContent=b.name;labels.appendChild(t);}
+      var side=1,voff=1,doLabel=false;
+      if(REGION==="mq"){var nm=NAMED.find(function(n){return (b.name||"").indexOf(n[0])>=0;});if(nm){doLabel=true;side=nm[1];voff=nm[2];}}
+      else if(i%labelStep===0){doLabel=true;side=(i%2?-1:1);}
+      if(doLabel){var t=document.createElementNS(NS,"text");t.setAttribute("class","plabel");t.setAttribute("x",(b._vx+side*11).toFixed(1));t.setAttribute("y",(b._vy+voff*4-(voff<0?6:-3)).toFixed(1));t.setAttribute("text-anchor",side<0?"end":"start");t.textContent=b.name;labels.appendChild(t);}
     });
 
     // ===== jour courant + re-teinte =====
