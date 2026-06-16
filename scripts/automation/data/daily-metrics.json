@@ -813,14 +813,34 @@
   },
   {
     "date": "2026-06-16",
-    "time": "2026-06-16T09:28:17.270Z",
+    "time": "2026-06-16T10:20:35.200Z",
     "payments": 10,
     "revenue": 49.9,
     "emails": 207,
     "feedbacks": 1,
     "avgRating": 4,
     "pipelineOk": true,
-    "funnel": null,
+    "funnel": {
+      "sessions": 22959,
+      "lockClicks": 128,
+      "modalOpens": 3427,
+      "modalCta": 72,
+      "sampleStarts": 0,
+      "emailSubmits": 65,
+      "checkoutRedirects": 66,
+      "conversions": 2,
+      "paymentsReal": 1,
+      "revenueReal": 4.99,
+      "rates": {
+        "session_to_lock": 0.6,
+        "lock_to_modal": 2677,
+        "modal_to_cta": 2,
+        "modal_to_sample": 0,
+        "modal_to_any_action": 2,
+        "cta_to_redirect": 92,
+        "redirect_to_payment": 2
+      }
+    },
     "stripe": null,
     "ga4": {
       "date": "2026-06-15",
@@ -829,8 +849,8 @@
         "users": 1512
       },
       "gp": {
-        "sessions": 309,
-        "users": 1303
+        "sessions": 308,
+        "users": 1411
       }
     }
   }
