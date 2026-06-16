@@ -3,6 +3,27 @@
 
 ---
 
+## 📊 TABLEAU DE BORD — COUVERTURE (maj à chaque tick · MONITOR FONDATEUR)
+> **C'est ICI qu'on suit l'avancement.** La boucle met ce bloc à jour à chaque action. « Fini » = tout en ✅.
+> Avancement global estimé : **~20 %** · maj 2026-06-16.
+
+| Phase | Lot | État |
+|---|---|---|
+| — | Accueil A→Z (`home_az`) · Plan-B (`pw_planb`) · H2S (`pw_h2s`) · fiabilité régime | ✅ **LIVE prod** |
+| A | Carte interactive (`design/proto-map-v2.html`) — pan/zoom/tap-plongée/scrub **proto vérifié navigateur** | 🟡 proto ✅ · **port `map_world` à faire** |
+| A | Fiche « plongée » → port `pw_beach_dive` | 🟡 en cours |
+| B | Demo-gate email (capture 0,35 %) | 🔴 à faire |
+| B | Canonical/hreflang + indexation (MQ ~3/30 · GP ~2/30) | 🔴 à faire |
+| B | Copie paywall contextualisée (modal→CTA 2 %) | 🔴 à faire |
+| C | Pages : prévisions · alertes · clean-list · zones · 5 stations · à-propos · fiabilité UI · conditions · widget | 🔴 à faire |
+| C | Les 136 fiches plages (contenu/SEO) | 🔴 à faire |
+| D | SEO requête par requête + nouvelles pages (`/près-de-moi`, `/aujourdhui`, zones) + OG + 301 legacy | 🔴 à faire |
+| E | Dock · share-cards · baignade #5 · collecte #9 | 🔴 à faire |
+
+**Comment monitorer :** ce tableau (avancement) · `git log` (chaque ship = 1 commit) · `/workflows` (workflows finis) · mes pings (concret live prod). **Fin = toutes les lignes ✅.**
+
+---
+
 ## 0 · STRUCTURE GLOBALE
 **UN monde SVG, UNE caméra, 3 profondeurs, une primitive `flyTo(lieu, profondeur)`.** (ArchipelView l.9474 = déjà FAR 0.32 / MID 0.82 / NEAR 2.6 ; StoryEngine = le mouvement ; deep-link slug = le téléporteur ; `openPremium` = la sortie unique.)
 - **FAR** = carte / vue d'ensemble (home au repos, /carte, /previsions, hubs clean-list/conditions, +nouveau /aujourd'hui /près-de-moi).

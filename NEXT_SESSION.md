@@ -1,5 +1,7 @@
 # NEXT_SESSION — sargagame
 
+> **👉 HANDOFF CANONIQUE (Opus OU Sonnet) : lire D'ABORD `design/REFONTE-EXECUTION.md`** (runbook bulletproof : cadence, vérif navigateur, port A/B, git, INTERDITS, bases validées) + le **tableau de bord** en tête de `design/REFONTE-MASTER.md` (avancement) + les **specs par page** dans `design/specs/*.md`. Bases validées à NE PAS purger : `design/proto-map-v2.html` (carte) + `design/proto-plage-plongee.html` (fiche, **préférée fondateur**) + `src/HomeAZ.jsx` (réf. qualité). Règle d'or : proto→build→**vérif navigateur (8790+Playwright, l'app preview timeout)**→ship A/B→push→cocher.*
+
 *MODE : BOUCLE AUTONOME A→Z (depuis le 17/06). Mission = refondre/orchestrer le SITE + l'APP + l'EXPÉRIENCE + résoudre les PROBLÈMES SARGASSES, de bout en bout, en autonome, sans redemander de validations de goût. Backbone d'exécution = `design/REFONTE-MASTER.md` (cochable). Détail/raison = memory `project_funnel_program_2026.md`.*
 
 ## ▶️ REPRISE IMMÉDIATE (toute nouvelle session fait ça, zéro confirmation)
