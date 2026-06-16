@@ -16,7 +16,7 @@
 const fs = require('fs')
 const path = require('path')
 const https = require('https')
-const { injectPreheader } = require('./lib/email-send.cjs')
+const { injectPreheader, applyBrand } = require('./lib/email-send.cjs')
 
 const FORCE = process.argv.includes('--force')
 const SARG_PATH = path.join(__dirname, '../../public/api/copernicus/sargassum.json')
@@ -92,9 +92,9 @@ function buildEmailHTML(island, topBeaches, stats, domain) {
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
 <body style="margin:0;padding:0;background:#F7F5EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
 <div style="max-width:480px;margin:0 auto;padding:20px">
-  <div style="background:#0D1E1C;border-radius:16px 16px 0 0;padding:24px;text-align:center">
-    <div style="font-size:12px;font-weight:700;color:#E8A800;text-transform:uppercase;letter-spacing:.08em">Bulletin weekend</div>
-    <div style="font-size:24px;font-weight:800;color:#fff;margin-top:8px">Plages ${islandName}</div>
+  <div style="background:radial-gradient(120% 90% at 76% -15%, rgba(255,199,44,.30), rgba(255,199,44,0) 55%), linear-gradient(168deg,#0B2230 0%,#0D1E1C 60%,#0A1714 100%);border-radius:16px 16px 0 0;padding:30px 24px 26px;text-align:center">
+    <div style="font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:11px;font-weight:800;color:#FFC72C;text-transform:uppercase;letter-spacing:.14em">Bulletin weekend</div>
+    <div style="font-family:'Anton','Bricolage Grotesque',Impact,'Arial Narrow',sans-serif;font-size:29px;font-weight:400;color:#fff;margin-top:9px;letter-spacing:.01em">Plages ${islandName}</div>
     <div style="font-size:13px;color:rgba(255,255,255,.6);margin-top:4px">Ce weekend — tes meilleures plages not\u00E9es</div>
   </div>
 
@@ -231,7 +231,7 @@ async function main() {
       .slice(0, 5)
 
     const preheader = `Tes meilleures plages notées pour samedi — score sur 100, prévision satellite à jour.`
-    const html = injectPreheader(buildEmailHTML(island, topBeaches, stats, domain), preheader)
+    const html = applyBrand(injectPreheader(buildEmailHTML(island, topBeaches, stats, domain), preheader))
 
     const bestScore = topBeaches[0]?.unifiedScore
     const bestLabel = topBeaches[0]?.unifiedLabel

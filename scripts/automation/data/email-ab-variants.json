@@ -1,0 +1,218 @@
+{
+  "welcome.fr": {
+    "key": "welcome",
+    "lang": "fr",
+    "intent": "Activer le nouvel inscrit : le faire ouvrir la carte dès maintenant tout en posant l'habitude du bulletin du vendredi.",
+    "flags": {
+      "brand_ok": true,
+      "false_freshness": false,
+      "over_promise": false,
+      "one_cta": true
+    },
+    "ship": {
+      "subject": "Le Veilleur a déjà l'œil sur ta plage",
+      "preheader": "Ta carte est prête. Un coup d'œil maintenant, on se retrouve vendredi.",
+      "headline": "Bienvenue. Le Veilleur veille ta plage, maintenant.",
+      "body": "Pendant que tu lis ça, le satellite Copernicus passe au crible le littoral, 4 fois par jour, rien que pour toi.\n\nLe Veilleur a déjà fait le tri : voici où c'est propre aujourd'hui, et où les sargasses se dirigent.\n\n- Un coup d'œil à la carte = ta décision plage prise en 10 secondes.\n- Chaque vendredi, je t'envoie le bulletin du week-end pour que tu poses ta serviette au bon endroit.",
+      "cta": "Ouvrir ma carte"
+    }
+  },
+  "welcome.en": {
+    "key": "welcome",
+    "lang": "en",
+    "intent": "Get the new subscriber to open the live Florida/Punta Cana map immediately and form the habit of checking it.",
+    "flags": {
+      "brand_ok": true,
+      "false_freshness": false,
+      "over_promise": false,
+      "one_cta": true
+    },
+    "ship": {
+      "subject": "Someone's watching the water for you",
+      "preheader": "Open your live Florida + Punta Cana map — refreshed 4x a day.",
+      "headline": "Your beach, checked before you even wake up",
+      "body": "Welcome aboard. From now on you don't have to guess whether the sargassum's rolled in — the Watcher scans your coast from space and tells you straight: clean, or not.\n\nYour map now shows the latest satellite read for Florida and Punta Cana, refreshed 4 times a day. No guesswork, no noise.\n\nTake a look — see today's water before you pack the towels.",
+      "cta": "See today's water"
+    }
+  },
+  "welcome.es": {
+    "key": "welcome",
+    "lang": "es",
+    "intent": "Que el nuevo registrado abra de inmediato el mapa en vivo de Cancún y compruebe el estado del sargazo de hoy, primer paso hacia Premium.",
+    "flags": {
+      "brand_ok": true,
+      "false_freshness": false,
+      "over_promise": false,
+      "one_cta": true
+    },
+    "ship": {
+      "subject": "El sargazo en tu playa, ahora mismo",
+      "preheader": "Cómo está hoy la costa de Cancún, en 5 segundos",
+      "headline": "Alguien vigila tu playa por ti",
+      "body": "Tu mapa de Cancún ya está activo. El satélite Copernicus revisa la costa 4 veces al día, así que abres la app y ves cómo está el sargazo hoy, no la semana pasada.\n\n- En vivo: la situación de cada playa, actualizada hoy\n- Tendencia a 3 días para planear sin sorpresas\n\nÉchale un ojo antes de salir. Te quitamos la duda en segundos.",
+      "cta": "Ver mi mapa en vivo"
+    }
+  },
+  "drip_j7.fr": {
+    "key": "drip_j7",
+    "lang": "fr",
+    "intent": "Faire passer l'abonné gratuit à l'essai Premium 7 jours en incarnant la promesse « quelqu'un veille ta plage pour toi », pour qu'il délègue la corvée de vérification.",
+    "flags": {
+      "brand_ok": true,
+      "false_freshness": false,
+      "over_promise": false,
+      "one_cta": true
+    },
+    "ship": {
+      "subject": "Pendant que tu vis, le Veilleur regarde la mer",
+      "preheader": "Ta plage, surveillee pour toi. Toi, tu profites.",
+      "headline": "Et si quelqu'un veillait ta plage a ta place ?",
+      "body": "Tu connais le reflexe : ouvrir la carte, zoomer, verifier. Encore. Et si tu n'avais plus a le faire ?\n\nC'est le job du Veilleur. Il garde un oeil sur TA plage avec la donnee satellite Copernicus (mise a jour 4x/jour) et te previent quand ca bouge :\n\n- Un mot le matin : c'est clair, ou pas\n- Un signe si les sargasses approchent dans les 3 jours\n- Une plage propre a proximite quand la tienne ne l'est pas\n\nToi, tu profites. Lui, il regarde la mer pour toi.\n\nEssai 7 jours offert, annulation en 2 clics.",
+      "cta": "Laisser le Veilleur s'en charger"
+    }
+  },
+  "drip_j14.fr": {
+    "key": "drip_j14",
+    "lang": "fr",
+    "intent": "Convertir le lead J14 en essai Premium en transformant la perte d'un weekend en perte du Veilleur qui veille déjà sa plage.",
+    "flags": {
+      "brand_ok": true,
+      "false_freshness": false,
+      "over_promise": false,
+      "one_cta": true
+    },
+    "ship": {
+      "subject": "Ton veilleur ferme l'œil vendredi",
+      "preheader": "14 jours qu'il veille sur ta plage. Garde-le pour ton prochain weekend.",
+      "headline": "Et si personne ne veillait, samedi ?",
+      "body": "Depuis 14 jours, Le Veilleur garde un œil sur ta plage pour toi. Donnée satellite Copernicus, rafraîchie 4 fois par jour, tendance jusqu'à 7 jours pour planifier ton weekend tranquille.\n\nVendredi, il s'arrête. Le prochain samedi, tu y vas à l'aveugle — et les sargasses, on les découvre toujours trop tard, les pieds dans l'algue.\n\n- Tu sais avant de partir si c'est clean\n- Une alerte dès que ça change sur TA plage\n- 7 jours offerts, annulation en 2 clics\n\nGarde quelqu'un qui veille pour toi. C'est 4,99 €/mois, soit moins qu'un ti-punch.",
+      "cta": "Garder mon veilleur · 7 jours offerts"
+    }
+  },
+  "drip_j7.en": {
+    "key": "drip_j7",
+    "lang": "en",
+    "intent": "Convert J7 USD lead to Premium by reframing daily map-checking as a chore the Veilleur takes off their hands.",
+    "flags": {
+      "brand_ok": true,
+      "false_freshness": false,
+      "over_promise": false,
+      "one_cta": true
+    },
+    "ship": {
+      "subject": "Someone's keeping an eye on your beach",
+      "preheader": "So you can stop refreshing the map and just show up.",
+      "headline": "You check the map. The Veilleur watches your beach so you don't have to.",
+      "body": "Right now you're the one opening the app, scanning the colors, guessing if today's the day. That's a job. Hand it over. Premium puts the Veilleur on YOUR beach — he reads the satellite (Copernicus, refreshed 4× a day) and gives you the heads-up when it's clear or when to wait. No more daily map checks. Just a nudge when it actually matters, so you can relax and show up. $9.99/mo, cancel anytime, no trial.",
+      "cta": "Put the Veilleur on my beach"
+    }
+  },
+  "drip_j14.es": {
+    "key": "drip_j14",
+    "lang": "es",
+    "intent": "Convertir al lead USD a Premium antes de que termine el drip, usando la aversión a perder el fin de semana.",
+    "flags": {
+      "brand_ok": true,
+      "false_freshness": false,
+      "over_promise": false,
+      "one_cta": true
+    },
+    "ship": {
+      "subject": "Tu sábado en Cancún: ¿playa o sorpresa?",
+      "preheader": "Deja que el Vigía mire TU playa por ti antes de salir.",
+      "headline": "No dejes tu playa al azar este fin de semana",
+      "body": "Manejas hasta la playa, extiendes la toalla… y el olor te recibe antes que el mar. Pasa más de lo que crees.\n\nEl satélite Copernicus ya ve el sargazo que se acerca a tu costa, y se actualiza 4 veces al día. Con Premium, el Vigía mira TU playa por ti y te avisa antes de que salgas de casa.\n\n- Sin sorpresas: sabes qué vas a encontrar antes de subir al carro.\n- Tendencia a 3 días (hasta 7), no una bola de cristal: datos reales y claros.\n- $9.99/mes, sin prueba, cancelas cuando quieras.\n\nEste fin de semana no tiene por qué ser una lotería. Deja que alguien lo mire por ti.",
+      "cta": "Que el Vigía cuide mi playa"
+    }
+  },
+  "weekend_bulletin.fr": {
+    "key": "weekend_bulletin",
+    "lang": "fr",
+    "intent": "Transformer le bulletin hebdo en réflexe « le Veilleur me trouve mon plan plage », puis convertir vers le suivi quotidien Premium.",
+    "flags": {
+      "brand_ok": true,
+      "false_freshness": true,
+      "over_promise": false,
+      "one_cta": true
+    },
+    "ship": {
+      "subject": "Le Veilleur a trouvé ta plage de samedi",
+      "preheader": "Une plage propre repérée près de chez toi, par satellite. Ton spot du weekend, sans chercher.",
+      "headline": "Ton samedi est prêt.",
+      "body": "Cette semaine, Le Veilleur a gardé un œil sur la mer pour toi. Et il a une bonne nouvelle pour le weekend.\n\n- La plage la plus propre près de chez toi, repérée pour samedi.\n- D'après la donnée satellite Copernicus, mise à jour 4× par jour.\n- Plus le top des plages dégagées en Martinique, classé en un coup d'œil.\n\nPas de scroll, pas de prise de tête : on te dit où poser ta serviette. Et avec Premium, ce n'est plus une fois par semaine — Le Veilleur veille sur TA plage tous les jours et te prévient avant que tu fasses la route.",
+      "cta": "Voir ma plage du weekend"
+    }
+  },
+  "cart_declined.en": {
+    "key": "cart_declined",
+    "lang": "en",
+    "intent": "Reassure the high-intent buyer that the decline is harmless and routine, then make retrying with a different card the single obvious next step toward the Trip Pass.",
+    "flags": {
+      "brand_ok": true,
+      "false_freshness": false,
+      "over_promise": false,
+      "one_cta": true
+    },
+    "ship": {
+      "subject": "Quick fix — your card was declined, not you",
+      "preheader": "One tap to finish with another card. Your Trip Pass is still waiting.",
+      "headline": "That was your bank, not you.",
+      "body": "Cards get declined for all kinds of small reasons — a daily limit, a foreign-payment block, a tiny typo. Nothing's lost on our end.\n\nYour Trip Pass is still right here, ready when you are:\n- $5.99 once. No subscription, nothing to cancel.\n- Access the moment your payment clears.\n- The Veilleur starts watching your beach for you — fresh satellite data, 4× a day.\n\nPick up right where you left off with another card.",
+      "cta": "Finish with another card — $5.99"
+    }
+  },
+  "cart_action.en": {
+    "key": "cart_action",
+    "lang": "en",
+    "intent": "Get the very-high-intent user to complete the pending 3D Secure bank confirmation and unlock their Trip Pass.",
+    "flags": {
+      "brand_ok": true,
+      "false_freshness": false,
+      "over_promise": false,
+      "one_cta": true
+    },
+    "ship": {
+      "subject": "Your bank just needs a tap to say yes",
+      "preheader": "Your Trip Pass is held and ready — one quick confirm with your bank unlocks it.",
+      "headline": "You're one tap away from your Trip Pass",
+      "body": "Almost there. Your card details checked out — your bank just needs you to confirm it's really you (that quick 3D Secure check).\n\nIt takes a few seconds, and your Trip Pass is ready the moment you do:\n- Your beach, watched for you with fresh satellite data 4× a day\n- $5.99 once. No subscription, nothing to cancel.\n\nThe Veilleur's already keeping an eye on the coast — finish up and he'll start watching yours.",
+      "cta": "Confirm with my bank — $5.99"
+    }
+  },
+  "cart_abandoned.en": {
+    "key": "cart_abandoned",
+    "lang": "en",
+    "intent": "Réengager l'hésitant en transformant l'abandon en réassurance (\"on a déjà regardé pour toi\") et pousser au paiement unique Trip Pass.",
+    "flags": {
+      "brand_ok": true,
+      "false_freshness": false,
+      "over_promise": false,
+      "one_cta": true
+    },
+    "ship": {
+      "subject": "You stopped before seeing your beach",
+      "preheader": "The Watcher already keeps an eye on it — one pass, no subscription.",
+      "headline": "Someone's watching your beach for you",
+      "body": "You started unlocking the forecast for your Florida beach — then stepped away. No rush, it's still here.\n\nThe Watcher keeps an eye on your beach with Copernicus satellite data, refreshed 4 times a day — so you know what the sand looks like before you load the car.\n\n- Today and the next 3 days at a glance (trend out to 7)\n- One beach, or all of them — your call\n- A Trip Pass: $5.99 once, no subscription, instant access\n\nFinish where you left off and see your beach before you drive there.",
+      "cta": "See your beach now — $5.99"
+    }
+  },
+  "daily_verdict.fr": {
+    "key": "daily_verdict",
+    "lang": "fr",
+    "intent": "Transformer le lecteur du verdict gratuit en abonné Premium en lui faisant adopter l'habitude « le Veilleur vérifie TA plage à ma place chaque matin ».",
+    "flags": {
+      "brand_ok": true,
+      "false_freshness": false,
+      "over_promise": false,
+      "one_cta": true
+    },
+    "ship": {
+      "subject": "Demain matin, tu sauras avant d'y aller",
+      "preheader": "<plage> aujourd'hui : XX/100. Le Veilleur regarde déjà pour demain.",
+      "headline": "Demain matin, tu sauras avant d'y aller",
+      "body": "Aujourd'hui, <plage> est propre : XX/100. Pour demain, la tendance penche vers le calme — et tu n'auras pas à deviner toi-même.\n\nLe Veilleur regarde TA plage au satellite, 4 fois par jour. Au lieu d'ouvrir la carte chaque matin, tu reçois le verdict avant le café :\n- propre, ou pas\n- la tendance des 3 prochains jours\n- rien à vérifier toi-même\n\nActive-le pour une plage en particulier, et il veille pour toi — chaque jour. Essai 7 jours gratuit, annulation en 2 clics.",
+      "cta": "Faire veiller ma plage"
+    }
+  }
+}

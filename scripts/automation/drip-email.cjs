@@ -19,7 +19,7 @@ const fs = require('fs')
 const path = require('path')
 const { Resend } = require('resend')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
-const { sendEmail } = require('./lib/email-send.cjs')
+const { sendEmail, brandHeader } = require('./lib/email-send.cjs')
 
 const API_KEY = process.env.RESEND_API_KEY
 const FORCE = process.argv.includes('--force')
@@ -235,11 +235,7 @@ const IS_HIGH_SEASON = MONTH >= 3 && MONTH <= 8 // April-September
 // « SARGASSES » + « Se désabonner » partaient sur les emails EN/ES des régions).
 function brandWord(lang) { return lang === 'es' ? 'Sargazo' : lang === 'en' ? 'Sargassum' : 'Sargasses' }
 function header(title, subtitle, lang = 'fr') {
-  return `<div style="background:#0D1E1C;border-radius:16px 16px 0 0;padding:28px 24px;text-align:center">
-    <div style="font-size:11px;font-weight:700;color:#E8A800;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">${brandWord(lang)}</div>
-    <div style="font-size:24px;font-weight:800;color:#fff;line-height:1.1">${title}</div>
-    <div style="font-size:13px;color:rgba(255,255,255,.5);margin-top:6px">${subtitle}</div>
-  </div>`
+  return brandHeader(brandWord(lang), title, subtitle)
 }
 
 function footer(islandName, domain, email, island, lang = 'fr') {

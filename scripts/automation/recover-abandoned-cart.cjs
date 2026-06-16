@@ -23,7 +23,7 @@ const fs = require('fs')
 const path = require('path')
 const { Resend } = require('resend')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
-const { sendEmail } = require('./lib/email-send.cjs')
+const { sendEmail, brandHeader } = require('./lib/email-send.cjs')
 const { getAllRegions } = require('../../regions/index.cjs')
 
 const args = process.argv.slice(2)
@@ -132,11 +132,7 @@ function buildHTML(region, email, kind) {
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
 <body style="margin:0;padding:0;background:#F7F5EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
 <div style="max-width:480px;margin:0 auto;padding:20px">
-  <div style="background:linear-gradient(145deg,#0D1E1C,#0A1714);border-radius:16px 16px 0 0;padding:32px 24px;text-align:center">
-    <div style="font-size:11px;font-weight:700;color:#E8A800;text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px">${t.kicker}</div>
-    <div style="font-size:28px;font-weight:800;color:#fff;line-height:1.1">${t.brand}</div>
-    <div style="font-size:14px;color:rgba(255,255,255,.55);margin-top:8px;line-height:1.4">${t.tagline}</div>
-  </div>
+  ${brandHeader(t.kicker, t.brand, t.tagline)}
   <div style="background:#fff;padding:24px 20px">
     <div style="font-size:14px;color:#444;line-height:1.5;margin-bottom:18px">${t.body}</div>
     <table style="width:100%;border-collapse:collapse">
