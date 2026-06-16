@@ -3990,6 +3990,7 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
     return r
   },[beaches,q,chip,favorites])
   const nClean=filtered.filter(b=>b.status==="clean").length
+  const bestToday=useMemo(()=>beaches.filter(b=>b.status==="clean"&&typeof b.score==="number").sort((a,bb)=>bb.score-a.score)[0]||null,[beaches])
   const EMO={clean:"😎",moderate:"😐",avoid:"🚫"}
   const chips=[
     {id:"clean",label:_t(lang,"Propres","Clean","Limpias"),c:"#16A34A"},
@@ -4012,6 +4013,30 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
           {_t(lang,`plages · ${nClean} propres`,`beaches · ${nClean} clean`,`playas · ${nClean} limpias`)}
         </span>
       </div>
+      {/* Strip meilleur aujourd'hui — best clean beach card (no filter active, has candidate) */}
+      {!q&&!chip&&bestToday&&(
+        <button onClick={()=>onBeachClick(bestToday)}
+          style={{display:"flex",alignItems:"center",gap:12,width:"calc(100% - 32px)",margin:"0 16px 12px",
+            padding:"12px 14px",borderRadius:18,border:"1px solid rgba(255,216,132,.28)",
+            background:"linear-gradient(135deg,rgba(255,216,132,.10),rgba(201,126,58,.08))",
+            cursor:"pointer",textAlign:"left",fontFamily:"inherit",color:"#fff",
+            boxShadow:"0 4px 20px -8px rgba(0,0,0,.4)"}}>
+          <div style={{width:52,height:52,flexShrink:0,borderRadius:12,
+            background:`url(${getBeachPhoto(bestToday)}) center/cover`,position:"relative",overflow:"hidden"}}>
+            <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.12)"}}/>
+          </div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontSize:10,fontWeight:800,letterSpacing:".1em",textTransform:"uppercase",
+              color:"#FFE47A",marginBottom:3}}>{_t(lang,"Meilleure aujourd'hui","Best today","Mejor hoy")}</div>
+            <div className="anton" style={{fontSize:16,lineHeight:1.05,textTransform:"uppercase",
+              whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{bestToday.name}</div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.55)",marginTop:2}}>
+              {bestToday.commune} · {_t(lang,"Score","Score","Puntaje")} {bestToday.score}/100
+            </div>
+          </div>
+          <span style={{fontSize:18,flexShrink:0}}>😎</span>
+        </button>
+      )}
       {/* Search + filter chips */}
       <div style={{padding:"0 16px 10px"}}>
         <div style={{display:"flex",alignItems:"center",gap:8,background:"rgba(255,255,255,.08)",
