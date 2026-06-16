@@ -96,3 +96,19 @@ npm run build   # attendre "built in", vérifier chunk + 136 pages + 0 erreur
 
 ## 9 · MONITORING (pour le fondateur)
 Dashboard en tête de `design/REFONTE-MASTER.md` (avancement, ✅/🟡/🔴) · `git log` (chaque ship) · `/workflows` (workflows finis) · mes pings. **« Fini » = tout ✅.**
+
+---
+
+## 10 · MULTI-SITES (la refonte couvre TOUS les sites, pas que MQ/GP)
+**5 régions** (config : `regions/<id>.json` → `bbox`, `center`, `name`) :
+| id | marché | plages (source) | géo |
+|---|---|---|---|
+| `mq` | Martinique (EUR) | `public/data/beaches-list.json` filtré `island==='mq'` | ✅ |
+| `gp` | Guadeloupe (EUR) | `beaches-list.json` filtré `island==='gp'` | ✅ |
+| `florida` | Floride/Miami (USD) | `regions/florida.json` `.beaches` (12) | ✅ |
+| `puntacana` | Punta Cana / RD (USD) | `regions/puntacana.json` `.beaches` (12) | ✅ |
+| `rivieramaya` | Cancún / Riviera Maya (USD) | `regions/rivieramaya.json` `.beaches` (12) | ✅ |
+
+- **Géo côtière réelle** : `public/data/region-outlines/<id>.json` (path SVG + bbox + proj), généré par `scripts/build-region-outlines.cjs` (OSM→clip bbox→DP→projection). Régénérer si une `bbox` change : `node scripts/build-region-outlines.cjs [id]`.
+- **RÈGLE D'OR MULTI-SITES** : toute surface refondue (carte, fiche, pages, éléments) doit être **REGION-AWARE** — lire la région active (build `__REGION__` / `REGION`/`IS_NEW_REGION` dans `Sargasses_PROD.jsx`, ou `?region=` côté proto), **JAMAIS hardcoder MQ**. Le build émet les variantes par région (`vite.config.js` + `__REGION__`).
+- **VÉRIFIER chaque surface sur les 5 régions** avant ship (le proto carte le fait via `?region=`). Bench/labels : MQ a un relief sur-mesure ; les autres non (générique). EUR>>USD = prioriser MQ/GP mais livrer les 5.
