@@ -3205,12 +3205,12 @@
         },
         {
           "id": "gp-grande-anse",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
           "id": "gp-malendure",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
@@ -3220,27 +3220,27 @@
         },
         {
           "id": "gp-pt-chateaux",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
           "id": "gp-gosier",
-          "afai": 0.12,
+          "afai": 0.13,
           "status": "clean"
         },
         {
           "id": "gp-caravelle",
-          "afai": 0.11,
-          "status": "clean"
-        },
-        {
-          "id": "gp-bas-du-fort",
           "afai": 0.12,
           "status": "clean"
         },
         {
+          "id": "gp-bas-du-fort",
+          "afai": 0.13,
+          "status": "clean"
+        },
+        {
           "id": "gp-deshaies",
-          "afai": 0.07,
+          "afai": 0.08,
           "status": "clean"
         },
         {
