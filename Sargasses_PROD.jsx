@@ -2882,6 +2882,135 @@ function PlanBPanel({beach,allBeaches,userPos,lang,sargData,onBeachClick,onClose
   )
 }
 
+/* ════════════════════════════════════════════════════════════════════════════
+   BADGE INDICE SANTÉ / H2S (feature SARGASSES #4, le standout) — porté du design
+   validé design/proto-h2s-health-index.html. La sargasse ACCUMULÉE qui POURRIT
+   dégage du H2S (œuf pourri) → risque respiratoire (asthme, bébés, grossesse,
+   seniors). Badge LIBRE toujours visible + panneau dépliable (pourquoi + conseils
+   riverains/visiteurs/sensibles), CTA alerte santé = Premium.
+   ⚠️ HONNÊTE : indice DÉRIVÉ (sargasse accumulée + décompo demi-vie 3,5j), JAMAIS
+   une mesure de gaz (aucun capteur). Source niveau : beach.h2s (pipeline, même
+   formule que scripts/lib/h2s.cjs) sinon repli sur le statut (avoid→élevé), jamais
+   sous-estimé pour la santé. A/B `pw_h2s`.
+   ════════════════════════════════════════════════════════════════════════════ */
+const H2S_LV={low:{w:["faible","low","bajo"],c:"#22C55E",soft:"rgba(34,197,94,.16)",frac:.14},
+  mod:{w:["modéré","moderate","moderado"],c:"#E8A800",soft:"rgba(232,168,0,.18)",frac:.5},
+  high:{w:["élevé","high","alto"],c:"#E8522A",soft:"rgba(232,82,42,.20)",frac:.86}}
+function H2SBadge({beach,lang,weather,onPremiumClick}){
+  const [open,setOpen]=useState(false)
+  const panelRef=useRef(null)
+  // niveau : beach.h2s (pipeline) prioritaire ; sinon repli HONNÊTE sur le statut.
+  const h2s=beach&&beach.h2s&&typeof beach.h2s==="object"?beach.h2s:null
+  const rawLvl=h2s?h2s.level:null
+  const level=rawLvl==="high"?"high":rawLvl==="moderate"||rawLvl==="mod"?"mod":rawLvl==="low"?"low"
+    :(beach.status==="avoid"?"high":beach.status==="moderate"?"mod":"low")
+  const score=h2s&&typeof h2s.score==="number"?h2s.score:null
+  const mass=h2s&&h2s.signals&&typeof h2s.signals.mass==="number"?h2s.signals.mass:(typeof beach.afai==="number"?beach.afai:0)
+  const consecDays=h2s&&h2s.signals&&typeof h2s.signals.consecDays==="number"?h2s.signals.consecDays:null
+  const sheltered=(()=>{try{const c=beach.coast||classifyBeachCoast(beach.lat,beach.lng,beach.island);return c==="sheltered"}catch(_){return false}})()
+  const windSpeed=(()=>{try{return weather&&(weather.wind!=null?weather.wind:weather.windSpeed!=null?weather.windSpeed:weather.current&&weather.current.wind)}catch(_){return null}})()
+  const L=H2S_LV[level]
+  const frac=Math.max(0.08,score!=null?score/100:L.frac)
+  const ARC=2*Math.PI*22
+  const word=L.w[lang==="en"?1:lang==="es"?2:0]
+  const oneLine=level==="low"?_t(lang,"Plage propre — aucune odeur attendue aujourd'hui.","Clean beach — no odour expected today.","Playa limpia — sin olores previstos hoy.")
+    :level==="mod"?_t(lang,"Algues qui se décomposent — odeur possible par moments.","Decomposing seaweed — occasional odour possible.","Algas en descomposición — posible olor por momentos.")
+    :_t(lang,"Forte accumulation en décomposition — odeur d'œuf pourri probable.","Heavy decomposing build-up — rotten-egg smell likely.","Fuerte acumulación en descomposición — probable olor a huevo podrido.")
+  const why=[]
+  why.push({ic:"algae",
+    main:mass>=0.40?_t(lang,"Forte accumulation d'algues","Heavy seaweed build-up","Fuerte acumulación de algas"):mass>=0.15?_t(lang,"Algues présentes sur la plage","Seaweed on the beach","Algas en la playa"):_t(lang,"Très peu d'algues","Very little seaweed","Muy pocas algas"),
+    meta:mass>=0.15?_t(lang,"indice de présence "+mass.toFixed(2),"presence index "+mass.toFixed(2),"índice de presencia "+mass.toFixed(2)):_t(lang,"rien à décomposer","nothing to decompose","nada que descomponer")})
+  if(consecDays!=null&&consecDays>=2) why.push({ic:"clock",main:_t(lang,"Présentes depuis "+consecDays+" jours","Present for "+consecDays+" days","Presentes desde hace "+consecDays+" días"),meta:_t(lang,"décomposition avancée = plus de gaz","advanced decomposition = more gas","descomposición avanzada = más gas")})
+  else why.push({ic:"clock",main:_t(lang,"Échouage récent / frais","Recent / fresh landing","Llegada reciente / fresca"),meta:_t(lang,"peu de décomposition pour l'instant","little decomposition so far","poca descomposición por ahora")})
+  why.push(sheltered?{ic:"wind",main:_t(lang,"Baie peu ventilée","Poorly ventilated bay","Bahía poco ventilada"),meta:_t(lang,"l'air se renouvelle mal, le gaz stagne","air renews poorly, gas lingers","el aire se renueva mal, el gas se estanca")}
+    :{ic:"wind",main:_t(lang,"Côte ouverte, bien ventilée","Open, well-ventilated coast","Costa abierta, bien ventilada"),meta:_t(lang,"l'air disperse les odeurs","air disperses odours","el aire dispersa los olores")})
+  const WHO={tous:_t(lang,"Tous","All","Todos"),sens:_t(lang,"Sensibles","Sensitive","Sensibles"),riv:_t(lang,"Riverains","Residents","Residentes"),vis:_t(lang,"Visiteurs","Visitors","Visitantes")}
+  const tips=level==="low"?[
+      {who:WHO.tous,t:_t(lang,"Rien à signaler côté air. Bonne journée plage.","Nothing to report air-wise. Enjoy the beach.","Nada que señalar en el aire. Disfruta la playa.")},
+      {who:WHO.sens,t:_t(lang,"Asthme, bébés, femmes enceintes, seniors : conditions favorables aujourd'hui.","Asthma, babies, pregnancy, seniors: favourable conditions today.","Asma, bebés, embarazo, mayores: condiciones favorables hoy.")}]
+    :level==="mod"?[
+      {who:WHO.riv,t:_t(lang,"Aère tôt le matin, garde les fenêtres fermées l'après-midi si l'odeur monte.","Air out early, keep windows shut in the afternoon if odour rises.","Ventila temprano, cierra ventanas por la tarde si sube el olor.")},
+      {who:WHO.vis,t:_t(lang,"Préfère une zone dégagée, à l'écart des amas bruns.","Pick an open spot, away from the brown piles.","Elige una zona despejada, lejos de los montones marrones.")},
+      {who:WHO.sens,t:_t(lang,"Asthme, bébés, femmes enceintes, seniors : limite le temps près des algues.","Asthma, babies, pregnancy, seniors: limit time near the seaweed.","Asma, bebés, embarazo, mayores: limita el tiempo cerca de las algas.")}]
+    :[
+      {who:WHO.riv,t:_t(lang,"Ferme les fenêtres côté mer, fais tourner la ventilation, évite l'effort dehors près du rivage.","Close sea-facing windows, run ventilation, avoid exertion near the shore.","Cierra ventanas hacia el mar, ventila, evita el esfuerzo cerca de la orilla.")},
+      {who:WHO.vis,t:_t(lang,"Reporte ou choisis une autre plage : l'odeur et l'irritation seront fortes près des amas.","Postpone or pick another beach: odour and irritation will be strong near the piles.","Pospón o elige otra playa: el olor y la irritación serán fuertes cerca de los montones.")},
+      {who:WHO.sens,t:_t(lang,"Asthme, bébés, femmes enceintes, seniors : évite la plage aujourd'hui par prudence.","Asthma, babies, pregnancy, seniors: avoid the beach today as a precaution.","Asma, bebés, embarazo, mayores: evita la playa hoy por precaución.")}]
+  const adviceLbl=level==="high"?_t(lang,"À faire aujourd'hui","What to do today","Qué hacer hoy"):_t(lang,"Conseil riverains & visiteurs","For residents & visitors","Para residentes y visitantes")
+  const ctaK=level==="high"?_t(lang,"Préviens-moi avant le prochain pic d'odeur","Warn me before the next odour peak","Avísame antes del próximo pico de olor"):_t(lang,"Sois alerté quand l'air se dégrade","Get alerted when the air worsens","Recibe alerta cuando el aire empeore")
+  useEffect(()=>{if(panelRef.current){try{if(window.matchMedia("(prefers-reduced-motion:reduce)").matches){panelRef.current.style.maxHeight=open?"none":"0";return}panelRef.current.style.maxHeight=open?panelRef.current.scrollHeight+"px":"0"}catch(_){}}},[open,level,lang])
+  const iconPath=n=>n==="algae"?<path d="M7 13c0-4 1.5-6 .5-9M7 13c2.5 0 4-2 3.5-5M7 13c-2.4 0-4-2-3.5-4.5" fill="none" stroke="var(--sg-mid,#686868)" strokeWidth="1.4" strokeLinecap="round"/>
+    :n==="clock"?<g fill="none" stroke="var(--sg-mid,#686868)" strokeWidth="1.4" strokeLinecap="round"><circle cx="7" cy="7" r="5.4"/><path d="M7 4v3.2l2 1.2"/></g>
+    :<path d="M2 5.5h6.5a1.8 1.8 0 1 0-1.8-1.8M2 9h9a1.8 1.8 0 1 1-1.8 1.8" fill="none" stroke="var(--sg-mid,#686868)" strokeWidth="1.4" strokeLinecap="round"/>
+  return(
+    <div style={{margin:"4px 0 14px"}}>
+      <button onClick={()=>{setOpen(o=>!o);track("sg_h2s_expand",{beach_id:beach.id,level,open:!open})}} aria-expanded={open}
+        style={{display:"flex",alignItems:"center",gap:13,width:"100%",cursor:"pointer",textAlign:"left",fontFamily:"inherit",
+          background:"var(--sg-card,#fff)",border:"1px solid "+L.soft,borderLeft:"4px solid "+L.c,borderRadius:16,padding:"13px 15px",
+          boxShadow:"0 8px 22px -14px "+L.c+"66"}}>
+        <span style={{flex:"0 0 auto"}}>
+          <svg width="52" height="52" viewBox="0 0 56 56" aria-hidden="true">
+            <circle cx="28" cy="28" r="22" fill="none" stroke="rgba(13,13,13,.10)" strokeWidth="6"/>
+            <circle cx="28" cy="28" r="22" fill="none" stroke={L.c} strokeWidth="6" strokeLinecap="round" transform="rotate(-90 28 28)" strokeDasharray={ARC} strokeDashoffset={ARC*(1-frac)}/>
+            <g transform="translate(28 28)" stroke={L.c} strokeWidth="2" strokeLinecap="round" fill="none" opacity=".95">
+              <path d="M -5 4 q -3 -3 0 -6 q 3 -3 0 -6"/><path d="M 0 5 q -3 -3.5 0 -7 q 3 -3.5 0 -7"/><path d="M 5 4 q -3 -3 0 -6 q 3 -3 0 -6"/>
+            </g>
+          </svg>
+        </span>
+        <span style={{flex:"1 1 auto",minWidth:0}}>
+          <span style={{display:"block",fontSize:10.5,fontWeight:800,letterSpacing:".14em",textTransform:"uppercase",color:"var(--sg-mid,#686868)"}}>{_t(lang,"Indice santé · air","Health · air quality","Salud · calidad del aire")}</span>
+          <span className="anton" style={{display:"block",fontSize:21,lineHeight:1.02,marginTop:2,color:"var(--sg-ink)"}}>{_t(lang,"Risque H2S","H2S risk","Riesgo H2S")} <b style={{color:L.c}}>{word}</b></span>
+          <span style={{display:"block",fontSize:12.5,color:"var(--sg-mid,#686868)",lineHeight:1.35,marginTop:4}}>{oneLine}</span>
+        </span>
+        <span aria-hidden="true" style={{flex:"0 0 auto",color:"var(--sg-mid,#999)",transform:open?"rotate(180deg)":"none",transition:"transform .35s cubic-bezier(.22,1,.36,1)"}}>
+          <svg width="16" height="16" viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        </span>
+      </button>
+      <div ref={panelRef} role="region" aria-label={_t(lang,"Détail indice santé H2S","H2S health index detail","Detalle índice de salud H2S")} style={{overflow:"hidden",maxHeight:0,transition:"max-height .5s cubic-bezier(.22,1,.36,1)"}}>
+        <div style={{marginTop:9,background:"rgba(13,13,13,.03)",border:"1px solid var(--sg-border,rgba(13,13,13,.08))",borderRadius:16,padding:"16px 15px 14px"}}>
+          <div style={{fontSize:10,fontWeight:800,letterSpacing:".14em",textTransform:"uppercase",color:"#B87A00",marginBottom:9}}>{_t(lang,"Pourquoi ce niveau","Why this level","Por qué este nivel")}</div>
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            {why.map((w,i)=>(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:10,fontSize:13,color:"var(--sg-ink)"}}>
+                <span style={{flex:"0 0 26px",height:26,borderRadius:8,display:"grid",placeItems:"center",background:"rgba(13,13,13,.04)",border:"1px solid var(--sg-border,rgba(13,13,13,.08))"}}>
+                  <svg width="15" height="15" viewBox="0 0 14 14">{iconPath(w.ic)}</svg>
+                </span>
+                <span><b style={{fontWeight:700}}>{w.main}</b><span style={{display:"block",fontSize:11,color:"var(--sg-mid,#888)",marginTop:1}}>{w.meta}</span></span>
+              </div>
+            ))}
+          </div>
+          <div style={{marginTop:15,borderTop:"1px solid var(--sg-border,rgba(13,13,13,.08))",paddingTop:13}}>
+            <div style={{fontSize:10,fontWeight:800,letterSpacing:".14em",textTransform:"uppercase",color:"#B87A00",marginBottom:8}}>{adviceLbl}</div>
+            <div style={{display:"flex",flexDirection:"column",gap:9}}>
+              {tips.map((tp,i)=>(
+                <div key={i} style={{display:"flex",gap:10,alignItems:"flex-start",fontSize:13,lineHeight:1.4,color:"var(--sg-ink)"}}>
+                  <span style={{flex:"0 0 auto",marginTop:6,width:7,height:7,borderRadius:4,background:L.c}}/>
+                  <span><span style={{display:"inline-block",fontSize:10,fontWeight:800,letterSpacing:".05em",textTransform:"uppercase",color:"#1A2B26",background:"#FFC72C",borderRadius:6,padding:"1px 6px",marginRight:6,verticalAlign:1}}>{tp.who}</span>{tp.t}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <button onClick={e=>{e.stopPropagation();onPremiumClick&&onPremiumClick("h2s_health_alert")}}
+            style={{display:"flex",alignItems:"center",gap:12,width:"100%",marginTop:15,cursor:"pointer",textAlign:"left",border:0,fontFamily:"inherit",color:"#1a1300",
+              background:"linear-gradient(158deg,#FFE47A 0%,#FFC72C 42%,#E89400 100%)",boxShadow:"0 8px 24px rgba(232,148,0,.34),inset 0 1px 0 rgba(255,255,255,.55)",borderRadius:14,padding:"12px 15px"}}>
+            <span style={{flex:"1 1 auto"}}>
+              <span style={{display:"block",fontSize:14,fontWeight:800,lineHeight:1.15}}>{ctaK}</span>
+              <span style={{display:"block",fontSize:11.5,fontWeight:600,opacity:.8,marginTop:1}}>{_t(lang,"Alerte santé Premium — la veille, sur TA plage","Premium health alert — the day before, on YOUR beach","Alerta de salud Premium — la víspera, en TU playa")}</span>
+            </span>
+            <span style={{flex:"0 0 auto",fontWeight:800,fontSize:18}}>→</span>
+          </button>
+          <p style={{marginTop:13,fontSize:11,lineHeight:1.45,color:"var(--sg-mid,#888)",borderLeft:"3px solid rgba(232,168,0,.4)",padding:"2px 0 2px 11px"}}>
+            {_t(lang,
+              "Indice de risque calculé à partir de la sargasse accumulée et de sa décomposition (demi-vie 3,5 j) — ce n'est pas une mesure de gaz. Aucun capteur H2S sur place ; suis toujours les consignes des autorités sanitaires (HCSP/ARS).",
+              "Risk index derived from accumulated seaweed and its decomposition (3.5-day half-life) — this is not a gas measurement. No on-site H2S sensor; always follow public-health guidance.",
+              "Índice de riesgo derivado del sargazo acumulado y su descomposición (vida media 3,5 d) — no es una medición de gas. Sin sensor de H2S en sitio; sigue siempre las indicaciones sanitarias.")}
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMap,onBeachClick,onPremiumClick,isPremium,historyData,sargData,dataSource,userPos,communityReports,fbPosts}){
   const LL=T[lang]||T.fr
   const weather=useWeather(beach)
@@ -2947,6 +3076,10 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
   // Additif (control = fiche inchangée), ?planb=1/0 force en QA. Réduit l'angoisse
   // « journée gâchée » au moment vécu ; chaque pick = sg_planb_pick (segmentable).
   const pwPlanb=(()=>{try{const q=window.location.search;if(/[?&]planb=1/.test(q))return true;if(/[?&]planb=0/.test(q))return false;return abVariant("pw_planb",["control","planb"],[.5,.5])==="planb"}catch(_){return false}})()
+  // A/B `pw_h2s` : badge Indice santé/H2S GRADUÉ (feature #4, le standout) — libre,
+  // toujours visible, panneau dépliable + alerte santé Premium. Remplace le warning
+  // binaire (control = warning sur avoid uniquement). ?h2s=1/0 force en QA.
+  const pwH2s=(()=>{try{const q=window.location.search;if(/[?&]h2s=1/.test(q))return true;if(/[?&]h2s=0/.test(q))return false;return abVariant("pw_h2s",["control","badge"],[.5,.5])==="badge"}catch(_){return false}})()
 
   // Scroll to top when beach changes
   useEffect(()=>{
@@ -3351,14 +3484,17 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
 
           {/* MethodologyLink removed — technical jargon (IDW, pipeline) doesn't help users */}
 
-          {/* H2S warning */}
-          {ST[beach.status]?.h2s&&(
-            <div style={{padding:"10px 14px",borderRadius:12,background:C.redBg,
-              color:C.red,fontSize:13,fontWeight:600,marginBottom:12,
-              display:"flex",alignItems:"center",gap:8}}>
-              ⚠️ {LL.h2sWarn}
-            </div>
-          )}
+          {/* INDICE SANTÉ / H2S — badge gradué (A/B pw_h2s, feature #4) ; sinon
+              warning binaire historique (control, sur avoid uniquement). */}
+          {pwH2s
+            ? <H2SBadge beach={beach} lang={lang} weather={weather} onPremiumClick={onPremiumClick}/>
+            : (ST[beach.status]?.h2s&&(
+                <div style={{padding:"10px 14px",borderRadius:12,background:C.redBg,
+                  color:C.red,fontSize:13,fontWeight:600,marginBottom:12,
+                  display:"flex",alignItems:"center",gap:8}}>
+                  ⚠️ {LL.h2sWarn}
+                </div>
+              ))}
 
           {/* Email capture — above the fold, before forecast teaser */}
           <InlineEmailCapture lang={lang} beachName={beach.name}/>
