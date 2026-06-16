@@ -10539,9 +10539,19 @@ export default function App(){
     return()=>clearTimeout(t)
   },[])
 
-  // Geolocation — center map on user, find nearest beach
+  // Geolocation — center map on user, find nearest beach.
+  // MOLO (2026-06-16) : ne plus prompter la géoloc À FROID au mount — anti-pattern
+  // (~14% d'opt-in à froid, intrusif, contraire à « vas-y molo sur les autorisations »).
+  // Cohorte "molo" = AUCUN prompt au load ; la géoloc précise s'acquiert ensuite via
+  // soft-ask contextuel (rung #2, clic « Trouve la plage la plus proche de toi »).
+  // Control = ancien comportement. A/B molo_ladder, override ?molo=1/0. Fallback gracieux
+  // sur l'estimation passive (timezone/hostname) — rankBeaches gère userPos=null.
   useEffect(()=>{
     if(!navigator.geolocation)return
+    let moloV
+    try{const o=new URLSearchParams(window.location.search).get("molo");moloV=o==="1"?"molo":o==="0"?"control":null}catch(_){moloV=null}
+    if(!moloV)moloV=abVariant("molo_ladder",["control","molo"],[.5,.5])
+    if(moloV==="molo")return
     navigator.geolocation.getCurrentPosition(pos=>{
       const lat=pos.coords.latitude,lng=pos.coords.longitude
       setUserPos({lat,lng})
