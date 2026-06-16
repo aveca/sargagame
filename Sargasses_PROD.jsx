@@ -2313,7 +2313,7 @@ function LearnView({lang,onBack,onGoMap}){
   )
 }
 
-function BottomNav({view,onChangeView,lang}){
+function BottomNav({view,onChangeView,lang,premiumOpen}){
   const LL=T[lang]||T.fr
   // Le jeu reste un EASTER EGG (toast d'inactivité), jamais un onglet de menu
   // (directive user 14/06 : « j'aimais bien le jeu en petit easter egg pas en menu »).
@@ -2332,7 +2332,7 @@ function BottomNav({view,onChangeView,lang}){
       padding:"8px 0 max(12px,env(safe-area-inset-bottom))",
     }}>
       {tabs.map(t=>{
-        const active=view===t.id
+        const active=t.id==="premium"?premiumOpen:(view===t.id)
         return(
         <button key={t.id} onClick={()=>onChangeView(t.id)} style={{
           display:"flex",flexDirection:"column",alignItems:"center",gap:2,
@@ -11576,7 +11576,7 @@ export default function App(){
         {view==="learn"&&<LearnView lang={lang} onBack={()=>setView("map")} onGoMap={()=>setView("map")}/>}
 
         {/* BOTTOM NAV */}
-        <BottomNav view={view} onChangeView={onChangeView} lang={lang}/>
+        <BottomNav view={view} onChangeView={onChangeView} lang={lang} premiumOpen={showPremium}/>
 
         {/* BOTTOM SHEET (beach detail) */}
         {selectedBeach&&beachDive&&(()=>{
