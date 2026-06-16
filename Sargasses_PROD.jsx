@@ -3977,10 +3977,12 @@ function SearchBar({value,onChange,lang}){
 /* ═══════════════════════════════════════════════════════════════════════════
    BEACH LIST VIEW — alternative to map (tab Plages)
    ═══════════════════════════════════════════════════════════════════════════ */
-function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
+function BeachListView({beaches,onBeachClick,favorites,lang,imageMap,sargData,onPremiumClick,isPremium}){
   const LL=T[lang]||T.fr
   const [q,setQ]=useState("")
   const [chip,setChip]=useState(null)
+  const listFclock=useMemo(()=>{try{const q=window.location.search;if(/[?&]listfclock=1/.test(q))return true;if(/[?&]listfclock=0/.test(q))return false;return abVariant("list_fclock",["control","lock"],[.5,.5])==="lock"}catch(_){return false}},[])
+
   const filtered=useMemo(()=>{
     let r=beaches
     if(q){const lq=q.toLowerCase();r=r.filter(b=>(b.name+" "+b.commune).toLowerCase().includes(lq))}
@@ -4080,19 +4082,31 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
           const scoreColor=b.scoreColor||st.c
           // emoji aligné sur le SCORE affiché (pas le status) → plus de « 😎 MOYEN 64 »
           const emo=hasScore?(b.score>=70?"😎":b.score>=40?"😐":"🚫"):(EMO[b.status]||"")
+          const isFav=favorites.includes(b.id)
+          const sargId=BEACH_TO_SARG?.[b.id]
+          const fcDays=(listFclock&&isFav&&!isPremium&&sargData)
+            ?(sargData?.weekly?.[sargId]?.forecast||null)
+            :null
+          const colFc=s=>s==="clean"?"#2BB673":s==="moderate"?"#E8A800":"#E2603B"
+          const hFc=s=>s==="clean"?20:s==="moderate"?28:36
           return(
             <button key={b.id} onClick={()=>onBeachClick(b)} style={{
               position:"relative",
-              display:"flex",alignItems:"center",gap:13,padding:0,
-              borderRadius:18,border:"1px solid rgba(255,255,255,.08)",
-              background:"linear-gradient(180deg,rgba(22,46,40,.82),rgba(12,26,22,.86))",
+              display:"flex",flexDirection:fcDays?"column":"row",alignItems:fcDays?"stretch":"center",
+              gap:fcDays?0:13,padding:0,
+              borderRadius:18,border:`1px solid ${isFav?"rgba(255,216,132,.22)":"rgba(255,255,255,.08)"}`,
+              background:isFav&&fcDays
+                ?"linear-gradient(180deg,rgba(28,54,46,.90),rgba(13,30,25,.94))"
+                :"linear-gradient(180deg,rgba(22,46,40,.82),rgba(12,26,22,.86))",
               cursor:"pointer",textAlign:"left",fontFamily:"inherit",width:"100%",color:"#fff",
-              boxShadow:`0 10px 26px -14px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.06)`,
+              boxShadow:`0 10px 26px -14px rgba(0,0,0,.6), inset 0 1px 0 ${isFav&&fcDays?"rgba(255,216,132,.10)":"rgba(255,255,255,.06)"}`,
               transition:"all .25s cubic-bezier(.22,1,.36,1)",
               animation:"slideUp .3s cubic-bezier(.22,1,.36,1) backwards",
               animationDelay:`${Math.min(b._dist||0,10)*20}ms`,
               overflow:"hidden",
             }}>
+              {/* Top row (always) */}
+              <div style={{display:"flex",alignItems:"center",gap:13,position:"relative"}}>
               {/* Score-colored left rail — glowing */}
               <div aria-hidden="true" style={{position:"absolute",left:0,top:0,bottom:0,width:4,
                 background:`linear-gradient(180deg, ${scoreColor}, ${scoreColor}aa)`,
@@ -4108,7 +4122,7 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
                 <div className="anton" style={{fontSize:16,lineHeight:1.05,letterSpacing:".005em",
                   textTransform:"uppercase",color:"#fff",
                   whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
-                  {favorites.includes(b.id)?"♥ ":""}{b.name}
+                  {isFav?"♥ ":""}{b.name}
                 </div>
                 <div style={{fontSize:11.5,color:"rgba(255,255,255,.56)",marginTop:3,fontWeight:500,
                   whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
@@ -4130,6 +4144,48 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
                   </span>
                   <span style={{fontSize:8,fontWeight:800,color:"rgba(255,255,255,.5)",
                     letterSpacing:".08em",marginTop:1}}>/100</span>
+                </div>
+              )}
+              </div>
+              {/* Forecast lock strip — fav only, !isPremium, A/B list_fclock */}
+              {fcDays&&(
+                <div onClick={e=>{e.stopPropagation();track("sg_list_fclock_click",{beach_id:b.id});onPremiumClick("list_forecast_lock")}}
+                  style={{margin:"0 14px 13px",padding:"10px 14px 9px",borderRadius:12,
+                    background:"linear-gradient(180deg,rgba(8,18,15,.55),rgba(8,18,15,.30))",
+                    border:"1px solid rgba(255,255,255,.07)",cursor:"pointer"}}>
+                  <div style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",gap:10}}>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:9,fontWeight:800,letterSpacing:".08em",textTransform:"uppercase",color:"rgba(255,216,132,.82)"}}>
+                        {_t(lang,"🛰 Prévisions 4 jours","🛰 4-day Forecast","🛰 Pronóstico 4 días")}
+                      </div>
+                      <div style={{fontSize:10,color:"rgba(255,255,255,.45)",marginTop:3}}>
+                        {_t(lang,"J+2 · J+3 réservés Veilleurs","J+2 · J+3 for Watchers","J+2 · J+3 para Veilleurs")}
+                      </div>
+                    </div>
+                    <div style={{display:"flex",alignItems:"flex-end",gap:8,flexShrink:0}}>
+                      {[0,1].map(i=>{
+                        const day=fcDays[i]
+                        const c=colFc(day?.status||b.status)
+                        const h=hFc(day?.status||b.status)
+                        return(
+                          <div key={i} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                            <div style={{width:22,height:h,borderRadius:5,background:c,opacity:.9}}/>
+                            <span style={{fontSize:7.5,fontWeight:800,color:"rgba(255,255,255,.55)",letterSpacing:".04em"}}>
+                              {i===0?_t(lang,"AUJ","TODAY","HOY"):"J+1"}
+                            </span>
+                          </div>
+                        )
+                      })}
+                      {["J+2","J+3"].map(lbl=>(
+                        <div key={lbl} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                          <div style={{width:22,height:28,borderRadius:5,border:"1.5px dashed #FFC72C",
+                            background:"rgba(255,199,44,.1)",display:"flex",alignItems:"center",
+                            justifyContent:"center",fontSize:10}}>🔒</div>
+                          <span style={{fontSize:7.5,fontWeight:800,color:"rgba(255,199,44,.7)",letterSpacing:".04em"}}>{lbl}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
             </button>
@@ -11259,7 +11315,8 @@ export default function App(){
         <div style={{position:"absolute",inset:0,opacity:view==="list"?1:0,
           pointerEvents:view==="list"?"auto":"none",transition:"opacity .25s ease"}}>
           <BeachListView beaches={filtered} onBeachClick={onBeachClick}
-            favorites={favorites} lang={lang} imageMap={imageMap}/>
+            favorites={favorites} lang={lang} imageMap={imageMap}
+            sargData={sargData} onPremiumClick={openPremium} isPremium={isPremium}/>
         </div>
 
         {/* HERO VERDICT — premier écran au-dessus de la carte (z 1050 : couvre
