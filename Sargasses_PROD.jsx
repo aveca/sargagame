@@ -7044,17 +7044,17 @@ function CaptureGateModal({lang,onSubmit,onClose}){
         {!sent?(<>
           <div style={{fontSize:10,fontWeight:700,color:"rgba(255,232,168,.55)",
             textTransform:"uppercase",letterSpacing:".1em",marginBottom:10}}>
-            {_t(lang,"PRÉVISION · GRATUITE","FORECAST · FREE","PRONÓSTICO · GRATIS")}
+            {_t(lang,"BRIEF MATIN · GRATUIT","MORNING BRIEF · FREE","BRIEF MATINAL · GRATIS")}
           </div>
           <div style={{fontSize:22,fontWeight:800,color:"#fff",lineHeight:1.2,
             marginBottom:8,fontFamily:"Bricolage Grotesque,sans-serif"}}>
-            {_t(lang,"Vois les 7 jours,\ngratuitement","See the full 7 days,\nfor free","Ve los 7 días,\ngratis")}
+            {_t(lang,"Le brief sargasses\nchaque matin","Daily sargassum brief\nin your inbox","El resumen de sargazo\ncada mañana")}
           </div>
           <div style={{fontSize:13,color:"rgba(255,255,255,.46)",marginBottom:20,lineHeight:1.5}}>
             {_t(lang,
-              "Laisse ton email — on t'envoie le rapport complet chaque matin, prévision J+2 à J+7 incluse.",
-              "Leave your email — we send the full report each morning, J+2 to J+7 forecast included.",
-              "Deja tu email — te enviamos el informe completo cada mañana, pronóstico J+2 a J+7 incluido.")}
+              "Laisse ton email — on t'envoie chaque matin l'état de tes plages et la meilleure où aller.",
+              "Leave your email — we send you every morning the beach status and the best spot to go.",
+              "Deja tu email — te enviamos cada mañana el estado de tus playas y la mejor opción del día.")}
           </div>
           <form onSubmit={submit} style={{display:"flex",gap:8,marginBottom:12}}>
             <input type="email" inputMode="email" autoComplete="email"
@@ -7069,7 +7069,7 @@ function CaptureGateModal({lang,onSubmit,onClose}){
               background:"linear-gradient(158deg,#FFE47A,#FFC72C,#E89400)",
               color:"#06121A",fontSize:13,fontWeight:800,fontFamily:"inherit",
               boxShadow:"0 2px 12px rgba(232,168,0,.35)",whiteSpace:"nowrap"}}>
-              {_t(lang,"Débloquer →","Unlock →","Desbloquear →")}
+              {_t(lang,"Recevoir →","Subscribe →","Recibir →")}
             </button>
           </form>
           <div style={{textAlign:"center"}}>
@@ -7087,9 +7087,9 @@ function CaptureGateModal({lang,onSubmit,onClose}){
             </div>
             <div style={{fontSize:13,color:"rgba(255,255,255,.5)",lineHeight:1.5}}>
               {_t(lang,
-                "Premier rapport demain matin — prévision J+2 à J+7 dedans.",
-                "First report tomorrow morning — J+2 to J+7 forecast included.",
-                "Primer informe mañana por la mañana — pronóstico J+2 a J+7 incluido.")}
+                "Premier brief demain matin — état des plages en direct.",
+                "First brief tomorrow morning — live beach status.",
+                "Primer resumen mañana por la mañana — estado de las playas en directo.")}
             </div>
           </div>
         )}
