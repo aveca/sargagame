@@ -30,6 +30,8 @@ const lazyWithRetry=imp=>lazy(()=>imp()
 const LazyMapView=lazyWithRetry(()=>import("./src/MapView"))
 // Accueil A→Z (bras A/B `home_az`) — design validé porté en Shadow DOM.
 const LazyHomeAZ=lazyWithRetry(()=>import("./src/HomeAZ"))
+// Carte SVG monde golden-hour (bras A/B `map_world`) — port proto-map-v2, region-aware.
+const LazyWorldMapView=lazyWithRetry(()=>import("./src/WorldMapView"))
 
 class ErrBound extends Component{
   constructor(p){super(p);this.state={err:null}}
@@ -10444,6 +10446,10 @@ export default function App(){
   // Verdict) intact. Override ?home_az=1/0. La conversion (openPremium/Stripe/
   // pw_*) reste strictement la même porte. Reduced-motion : HomeAZ a son plancher.
   const[homeAZ]=useState(()=>{try{const q=window.location.search;if(/[?&]home_az=1/.test(q))return true;if(/[?&]home_az=0/.test(q))return false;return abVariant("home_az",["control","az"],[.7,.3])==="az"}catch(_){return false}})
+  // A/B `map_world` : carte SVG monde golden-hour (vraie géo OSM + golden-hour + scrub)
+  // vs ArchipelView (bounding-box simple, control). 50/50. Override ?map_world=1/0.
+  // Additif : control = ArchipelView intact, Leaflet = fallback ?nav=map (jamais touché).
+  const mapWorld=useMemo(()=>{try{const q=window.location.search;if(/[?&]map_world=1/.test(q))return"world";if(/[?&]map_world=0/.test(q))return"control";return abVariant("map_world",["control","world"],[.5,.5])}catch(_){return"control"}},[])
   // Transition phasée accueil → carte/plage (SceneWipe). Jamais si reduced-motion.
   const[wipe,setWipe]=useState(null)
   const fireWipe=useCallback(label=>{
@@ -11396,7 +11402,16 @@ export default function App(){
               fontSize:19,cursor:"pointer",boxShadow:"0 6px 20px rgba(0,0,0,.4)",display:"flex",alignItems:"center",justifyContent:"center",
               animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>🧭</button>
         )}
-        {showArchipel&&<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onBeachClick} onSolutions={()=>{setShowSolutions(true);track("sg_archipel_to_solutions",{})}} onPremium={()=>openPremium("archipel")} rootMode={navWorld} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}}/>}
+        {showArchipel&&(mapWorld==="world"
+          ?<ErrBound><Suspense fallback={<div style={{position:"fixed",inset:0,background:"#072019",zIndex:1020}}/>}>
+              <LazyWorldMapView
+                beaches={allBeaches} island={island} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null}
+                lang={lang} onOpenBeach={onBeachClick} onPremium={openPremium}
+                rootMode={navWorld} track={track}
+                onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{source:"map_world"})}}/>
+            </Suspense></ErrBound>
+          :<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onBeachClick} onSolutions={()=>{setShowSolutions(true);track("sg_archipel_to_solutions",{})}} onPremium={()=>openPremium("archipel")} rootMode={navWorld} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}}/>
+        )}
 
         {/* MONDE SVG — la fondation : feed vertical des plages, zéro photo, data en
             scène, cliquable, loopé. Additif (z1005) ; fiche+paywall s'ouvrent au-dessus. */}

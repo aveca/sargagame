@@ -8,8 +8,8 @@
 
 ## 0 · MISSION + ÉTAT
 - **Mission** : refonte A→Z, **couverture TOTALE** (chaque page, écran, élément, requête SEO) à la **barre HomeAZ**, **chaque changement en A/B**, sans jamais casser SEO/funnel.
-- **Live en prod aujourd'hui** (SW v173, MQ+GP) : Accueil A→Z (`home_az`), Plan-B fiche (`pw_planb`), badge H2S fiche (`pw_h2s`), fiabilité par régime.
-- **En cours** : carte (`map_world`), fiche « plongée » (`pw_beach_dive`).
+- **Live en prod aujourd'hui** (SW v174, MQ+GP) : Accueil A→Z (`home_az`), Plan-B fiche (`pw_planb`), badge H2S fiche (`pw_h2s`), fiabilité par régime, **carte `map_world`** (`WorldMapView` region-aware A/B 50/50).
+- **En cours** : fiche « plongée » (`pw_beach_dive`).
 - **Avancement ~20 %.** Dashboard = haut de `design/REFONTE-MASTER.md` (le mettre à jour à chaque tick).
 
 ---
