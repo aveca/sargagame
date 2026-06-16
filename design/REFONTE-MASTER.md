@@ -5,7 +5,7 @@
 
 ## 📊 TABLEAU DE BORD — COUVERTURE (maj à chaque tick · MONITOR FONDATEUR)
 > **C'est ICI qu'on suit l'avancement.** La boucle met ce bloc à jour à chaque action. « Fini » = tout en ✅.
-> Avancement global estimé : **~33 %** · maj 2026-06-16.
+> Avancement global estimé : **~38 %** · maj 2026-06-16.
 
 | Phase | Lot | État |
 |---|---|---|
@@ -14,7 +14,7 @@
 | A | Fiche « plongée » — `pw_beach_dive` 50/50, `src/BeachDive.jsx`, beats=6, factors=7, Veilleur v2, scroll+scrub, SW v175 | ✅ **LIVE prod** |
 | B | Demo-gate email `capture_gate` 50/50 — intercept forecast intent → email gate → PremiumModal, SW v176 | ✅ **LIVE prod** |
 | B | Canonical/hreflang + indexation (MQ ~3/30 · GP ~2/30) | 🔴 à faire |
-| B | Copie paywall contextualisée (modal→CTA 2 %) | 🔴 à faire |
+| B | Copie paywall contextualisée `pw_modal_ctx` — beach name + score injectés dans hero + preuve PremiumModal, SW v177 | ✅ **LIVE prod** |
 | C | Pages : prévisions · alertes · clean-list · zones · 5 stations · à-propos · fiabilité UI · conditions · widget | 🔴 à faire |
 | C | Les 136 fiches plages (contenu/SEO) | 🔴 à faire |
 | D | SEO requête par requête + nouvelles pages (`/près-de-moi`, `/aujourdhui`, zones) + OG + 301 legacy | 🔴 à faire |

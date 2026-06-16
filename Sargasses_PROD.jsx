@@ -5358,7 +5358,7 @@ function SeasonBanner({lang}){
    events that polluted the funnel. All paid conversion now flows through the
    Stripe Payment Link via same-tab redirect (window.location.href in the modal
    CTA) + dashboard-configured success_url that fires sg_conversion on return. */
-function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
+function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const LL=T[lang]||T.fr
   const hasAnnual=!!LINK_ANNUAL
   const hasPro=!!LINK_PRO
@@ -5389,6 +5389,12 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
     ||lv?.id?.replace(/^gp-/,"").split("-").map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(" ")||null
   const _topName=_nameOf(_topBeach)
   const _topScore=_topBeach?.score||null
+  // Contexte plage : quand la modal s'ouvre DEPUIS une fiche, le copy cite la plage vue.
+  const _bcSrcs=["forecast_lock","forecast_cta","forecast_scrub","forecast_beat","beach_dive_footer","post_gate","social_proof","whisper_veilleur","arrive"]
+  const _hasBeachCtx=!!(beach&&_bcSrcs.some(ss=>(source||"").includes(ss)||(source||"")==="post_gate"))
+  const _ctxName=_hasBeachCtx?(beach&&beach.name)||null:null
+  const _ctxScore=_hasBeachCtx?(beach&&beach.score)||null:null
+  const _ctxStatus=_hasBeachCtx?(beach&&beach.status)||null:null
   // Paywall-constellation (A/B pw_constel) : tes plages = points lumineux sur la mer
   // golden-hour. PRNG seedé (stable entre renders = calme, jamais Math.random/render),
   // capé 14 (avoid d'abord puis top scores), couleur = statut. _topBeach = étoile-guide.
@@ -5758,11 +5764,14 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island}){
           const sparkPath=spark?("M"+spark.map(p=>p.x.toFixed(0)+" "+p.y.toFixed(0)).join(" L")):null
           const guide=_constel.find(p=>p.top)
           const G={background:"linear-gradient(135deg,#FFE47A,#FFC72C 55%,#E89400)",WebkitBackgroundClip:"text",backgroundClip:"text",WebkitTextFillColor:"transparent",color:"transparent"}
-          const promiseEl=_allCalm
-            ?(lang==="es"?(<>Todo en calma. ¿Y <span style={G}>mañana</span>? Ya lo he visto.</>):lang==="en"?(<>All calm. And <span style={G}>tomorrow</span>? I've already seen it.</>):(<>Tout est calme. Et <span style={G}>demain</span> ? Je l'ai déjà vu.</>))
-            :(lang==="es"?(<>Sabe dónde estará el mar <span style={G}>mañana</span>, no solo hoy</>):lang==="en"?(<>Know where the sea will be <span style={G}>tomorrow</span>, not just today</>):(<>Sache où sera la mer <span style={G}>demain</span>, pas juste aujourd'hui</>))
-          const proof=(_topName&&_topScore)
-            ?_t(lang,`${_topName} · ${_topScore}/100 · vérifié satellite`,`${_topName} · ${_topScore}/100 · satellite-verified`,`${_topName} · ${_topScore}/100 · verificado por satélite`)
+          const promiseEl=_ctxName
+            ?(lang==="es"?(<><span style={G}>{_ctxName}</span>. ¿Y mañana? Ya lo he visto.</>):lang==="en"?(<><span style={G}>{_ctxName}</span>. And tomorrow? I've already seen it.</>):(<><span style={G}>{_ctxName}</span>. Et demain ? Je l'ai déjà vu.</>))
+            :_allCalm
+              ?(lang==="es"?(<>Todo en calma. ¿Y <span style={G}>mañana</span>? Ya lo he visto.</>):lang==="en"?(<>All calm. And <span style={G}>tomorrow</span>? I've already seen it.</>):(<>Tout est calme. Et <span style={G}>demain</span> ? Je l'ai déjà vu.</>))
+              :(lang==="es"?(<>Sabe dónde estará el mar <span style={G}>mañana</span>, no solo hoy</>):lang==="en"?(<>Know where the sea will be <span style={G}>tomorrow</span>, not just today</>):(<>Sache où sera la mer <span style={G}>demain</span>, pas juste aujourd'hui</>))
+          const _pName=_ctxName||_topName, _pScore=_ctxScore||_topScore
+          const proof=(_pName&&_pScore)
+            ?_t(lang,`${_pName} · ${_pScore}/100 · vérifié satellite`,`${_pName} · ${_pScore}/100 · satellite-verified`,`${_pName} · ${_pScore}/100 · verificado por satélite`)
             :_t(lang,"Toute ta côte · vérifiée 4×/jour · satellite","Your whole coast · checked 4×/day · satellite","Toda tu costa · 4×/día · satélite")
           return(<>
             <style>{`@keyframes pcDot{from{opacity:0;transform:translateY(2px)}to{opacity:1;transform:translateY(0)}}.pc-dot{animation:pcDot .42s ease-out both}@keyframes pcStar{0%{transform:scale(1)}45%{transform:scale(1.18)}100%{transform:scale(1)}}.pc-star{animation:pcStar .7s ease-out 1 both;transform-origin:center;transform-box:fill-box}@media(prefers-reduced-motion:reduce){.pc-dot,.pc-star{animation:none}}`}</style>
@@ -11474,7 +11483,8 @@ export default function App(){
 
         {/* PREMIUM MODAL */}
         {showPremium&&<PremiumModal onClose={()=>setShowPremium(false)} lang={lang} source={premiumSource}
-          onActivated={()=>{setIsPremium(true);setShowWelcome(true)}} sargData={sargData} island={island}/>}
+          onActivated={()=>{setIsPremium(true);setShowWelcome(true)}} sargData={sargData} island={island}
+          beach={selectedBeach||null}/>}
 
         {/* First-visit hint removed — the Hero peek card now carries the same
             affordance ("Plage de la Française · Voir →") without competing with
