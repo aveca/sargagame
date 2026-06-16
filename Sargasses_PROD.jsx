@@ -5845,6 +5845,94 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const seasonMsg=daysToSeason>0
     ?_t(lang,`La saison commence dans ${daysToSeason} jours`,`Season starts in ${daysToSeason} days`,`La temporada empieza en ${daysToSeason} días`)
     :_t(lang,"La saison des sargasses est là","Sargassum season is here","La temporada de sargazo ya está aquí")
+
+  // ── pw_hot_intent : paywall in-scene ancré plage (hot intent + beach ctx) ──
+  // A/B 50/50 vs cold modal. Override ?pwhot=1/0. Actif SEULEMENT si source
+  // est hot-intent ET que beach est disponible dans le contexte courant.
+  const HOT_INTENT_SRCS=["forecast_lock","forecast_cta","forecast_scrub","forecast_beat","urgency_banner","list_forecast_lock"]
+  const _isHot=!!(beach&&HOT_INTENT_SRCS.includes(source||""))
+  const pwHot=_isHot&&(()=>{try{const q=window.location.search;if(/[?&]pwhot=1/.test(q))return true;if(/[?&]pwhot=0/.test(q))return false;return abVariant("pw_hot_intent",["control","hot"],[.5,.5])==="hot"}catch(_){return false}})()
+  if(pwHot&&beach){
+    const _st=beach.status||"clean"
+    const _stCol=_st==="clean"?"#22C55E":_st==="moderate"?"#E8A800":"#E8522A"
+    const _stLbl=_st==="clean"?_t(lang,"propre aujourd'hui","clean today","limpia hoy"):_st==="moderate"?_t(lang,"modéré","moderate","moderada"):_t(lang,"à éviter","avoid","evitar")
+    const _sargId=BEACH_TO_SARG?.[beach.id]
+    const _fc=_sargId?sargData?.weekly?.[_sargId]?.forecast:null
+    let _nextDeg=null
+    if(_fc&&_fc.length>=2){const RANK={clean:0,moderate:1,avoid:2};const _t0=RANK[_fc[0]?.status]??0;for(let i=1;i<=5&&i<_fc.length;i++){const r=RANK[_fc[i]?.status];if(r!=null&&r>_t0){try{const dow=new Date((_fc[i].date||"")+"T12:00:00Z").toLocaleDateString(lang==="es"?"es-MX":lang==="en"?"en-US":"fr-FR",{weekday:"long"});_nextDeg={when:dow,status:_fc[i].status}}catch(_){}break}}}
+    return(
+      <div style={{position:"fixed",inset:0,zIndex:1100,overflow:"hidden"}}>
+        <svg style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block"}} viewBox="0 0 390 720" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <linearGradient id="hiSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0B2230"/><stop offset=".46" stopColor="#155A5A"/><stop offset=".74" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/></linearGradient>
+            <linearGradient id="hiSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1A5852"/><stop offset="1" stopColor="#08251F"/></linearGradient>
+            <radialGradient id="hiSun" cx="50%" cy="50%" r="50%"><stop offset="0" stopColor="#FFE6A8" stopOpacity=".95"/><stop offset=".4" stopColor="#FFD884" stopOpacity=".55"/><stop offset="1" stopColor="#FFD884" stopOpacity="0"/></radialGradient>
+            <linearGradient id="hiLand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1C3138"/><stop offset="1" stopColor="#16242A"/></linearGradient>
+            <radialGradient id="hiGlow" cx="50%" cy="50%" r="50%"><stop offset="0" stopColor="#FFE6A8" stopOpacity=".5"/><stop offset="1" stopColor="#FFE6A8" stopOpacity="0"/></radialGradient>
+          </defs>
+          <rect width="390" height="430" fill="url(#hiSky)"/>
+          <circle cx="262" cy="300" r="120" fill="url(#hiSun)"/>
+          <circle cx="262" cy="300" r="30" fill="#FFE6A8" opacity=".9"/>
+          <path d="M0 300 Q40 286 86 296 L120 300 Z" fill="#0E1F25" opacity=".8"/>
+          <path d="M286 282 q14 -40 30 -2 q8 22 4 22 l-44 0 q-2 -10 10 -18 Z" fill="#12262B" opacity=".92"/>
+          <rect x="0" y="300" width="390" height="240" fill="url(#hiSea)"/>
+          <path d="M232 304 L292 304 L320 540 L204 540 Z" fill="#FFD884" opacity=".10"/>
+          <ellipse cx="262" cy="324" rx="40" ry="4" fill="#FFD884" opacity=".30"/>
+          <ellipse cx="262" cy="356" rx="58" ry="4.5" fill="#FFD884" opacity=".16"/>
+          <path d="M0 470 Q150 446 390 486 L390 720 L0 720 Z" fill="url(#hiLand)"/>
+          <path d="M0 470 Q150 446 390 486" fill="none" stroke="#FFD884" strokeWidth="1.4" opacity=".26"/>
+          <circle cx="116" cy="372" r="52" fill="url(#hiGlow)"/>
+          <circle cx="116" cy="372" r="7.5" fill={_stCol} stroke="#06121A" strokeWidth="1.4"/>
+          <circle cx="116" cy="372" r="13" fill="none" stroke="#FFE6A8" strokeWidth="1.2" opacity=".6"/>
+        </svg>
+        <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg,rgba(4,12,16,0) 0%,rgba(4,12,16,.22) 34%,rgba(4,12,16,.70) 64%,rgba(4,12,16,.93) 100%)"}}/>
+        <button onClick={()=>{track("sg_premium_modal_close",{source:source||"unknown",via:"hot_close"});onClose()}}
+          style={{position:"absolute",top:"calc(14px + env(safe-area-inset-top))",right:14,width:34,height:34,borderRadius:"50%",
+            background:"rgba(10,23,20,.55)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",
+            color:"#fff",fontSize:18,cursor:"pointer",zIndex:10,fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+        <div style={{position:"absolute",left:0,right:0,bottom:0,padding:"22px 22px calc(26px + env(safe-area-inset-bottom))",color:"#EAF7F4"}}>
+          <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(255,216,132,.12)",border:"1px solid rgba(255,216,132,.30)",borderRadius:999,padding:"6px 12px 6px 9px",marginBottom:16}}>
+            <div style={{width:9,height:9,borderRadius:"50%",background:_stCol,boxShadow:`0 0 0 3px ${_stCol}38`}}/>
+            <span style={{font:"800 12.5px/1 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".01em"}}>{beach.name}</span>
+            <span style={{fontSize:11,opacity:.7,fontWeight:600}}>· {_stLbl}</span>
+          </div>
+          <div className="anton" style={{fontSize:28,lineHeight:1.06,margin:"0 0 16px",textShadow:"0 2px 18px rgba(0,0,0,.45)"}}>
+            {_t(lang,<>Le Veilleur surveille <span style={{color:"#FFC72C"}}>{beach.name}</span> et te prévient.</>,<>The Watcher monitors <span style={{color:"#FFC72C"}}>{beach.name}</span> and alerts you.</>,<>El Vigía vigila <span style={{color:"#FFC72C"}}>{beach.name}</span> y te avisa.</>)}
+          </div>
+          {_nextDeg&&(
+            <div style={{display:"flex",gap:13,alignItems:"flex-start",background:"rgba(232,82,42,.13)",border:"1px solid rgba(232,82,42,.34)",borderRadius:15,padding:"14px 15px",marginBottom:18}}>
+              <span style={{fontSize:19,lineHeight:1,flexShrink:0,marginTop:1}}>⚠️</span>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{font:"800 13px/1 'Bricolage Grotesque',system-ui,sans-serif",color:"#FFB59E",marginBottom:3}}>
+                  {_t(lang,`Dégradation prévue : ${_nextDeg.when}`,`Forecast degradation: ${_nextDeg.when}`,`Desmejora prevista: ${_nextDeg.when}`)}
+                </div>
+                <div style={{font:"600 12.5px/1.45 system-ui,sans-serif",color:"rgba(234,247,244,.92)"}}>
+                  {_t(lang,"Le satellite voit les sargasses arriver. Tu seras prévenu avant que ça tourne.","Satellite detects incoming sargassum. You'll be alerted before conditions change.","El satélite detecta sargazo llegando. Recibirás alerta antes del cambio.")}
+                </div>
+                <span style={{display:"block",marginTop:6,font:"600 10.5px/1 system-ui,sans-serif",color:"rgba(234,247,244,.55)",letterSpacing:".02em"}}>
+                  {_t(lang,"Donnée Copernicus · 80 % justes / 30 j","Copernicus data · 80% accurate / 30d","Datos Copernicus · 80% exactos / 30d")}
+                </span>
+              </div>
+            </div>
+          )}
+          <button onClick={()=>startCheckout("monthly","hot_intent")}
+            style={{display:"block",width:"100%",border:"none",cursor:"pointer",fontFamily:"inherit",textAlign:"center",borderRadius:15,padding:"16px 18px",
+              background:"linear-gradient(135deg,#FFC72C,#E8A800)",color:"#1A2B26",boxShadow:"0 10px 30px rgba(232,168,0,.30)"}}>
+            <div style={{font:"800 16.5px/1 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".005em"}}>
+              {_t(lang,`Activer l'alerte sur ${beach.name}`,`Activate alert on ${beach.name}`,`Activar alerta en ${beach.name}`)}
+            </div>
+            <div style={{font:"600 12px/1 system-ui,sans-serif",opacity:.78,marginTop:3}}>
+              {NO_TRIAL?_t(lang,"4,99 €/mois · annulable en 2 clics","€4.99/mo · cancel anytime","4,99/mes · cancela cuando quieras"):_t(lang,"7 jours offerts · 4,99 €/mois ensuite","7-day free trial · €4.99/mo after","7 días gratis · 4,99/mes después")}
+            </div>
+          </button>
+          <div style={{textAlign:"center",marginTop:13,font:"600 10.5px/1 system-ui,sans-serif",color:"rgba(234,247,244,.5)",letterSpacing:".015em"}}>
+            {_t(lang,"Sans engagement · Paiement sécurisé Stripe","No commitment · Secure Stripe payment","Sin compromiso · Pago seguro Stripe")}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return(
     <>
       <div className="backdrop" onClick={(e)=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts});const x=e.clientX,y=e.clientY;onClose();/* pass-through : si le clic tombe pile sur un pin de la carte (sous le backdrop), ouvrir cette plage au lieu de juste fermer — sinon le clic paraît "mort" */requestAnimationFrame(()=>{try{const el=document.elementFromPoint(x,y);const pin=el&&el.closest&&el.closest(".leaflet-marker-icon");if(pin)pin.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true,view:window,clientX:x,clientY:y}))}catch(_){}})}}/>
