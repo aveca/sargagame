@@ -2959,7 +2959,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
         {/* Hero — photo le jour, scène vectorielle golden-hour personnalisée par
             l'heure sinon (cf. useVectorHero). Immersif, tap pour scanner. */}
         <div onClick={e=>{if(!e.target.closest("button")){setPhotoScanOpen(v=>!v);track("sg_photo_scan",{beach_id:beach.id,open:!photoScanOpen,hero:"vector",ph:heroPh,status:beach.status})}}}
-          style={{height:"min(600px, 70svh)",background:"#0B2230",
+          style={{height:(()=>{try{const q=window.location.search;if(/[?&]heroh=1/.test(q))return "min(480px, 46svh)";if(/[?&]heroh=0/.test(q))return "min(600px, 70svh)";return abVariant("aw_hero_height",["control","short"],[.6,.4])==="short"?"min(480px, 46svh)":"min(600px, 70svh)"}catch(_){return "min(600px, 70svh)"}})(),background:"#0B2230",
           borderRadius:"0",position:"relative",overflow:"hidden",cursor:"pointer"}}>
           {/* SVG D'ABORD (directive 14/06 : « les images dépendent du jour,
               remplace par du svg perso par heure/lieu, pas ce qu'on voit en
