@@ -19,6 +19,7 @@ const fs = require('fs')
 const path = require('path')
 const { Resend } = require('resend')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
+const { sendEmail } = require('./lib/email-send.cjs')
 
 const API_KEY = process.env.RESEND_API_KEY
 const FORCE = process.argv.includes('--force')
@@ -644,6 +645,26 @@ function getSubject(step, island, cleanCount, brief) {
   }
 }
 
+// Preheader (aperçu inbox) par étape — complète l'objet sans le répéter.
+function getPreheader(step, island) {
+  const rMeta = REGION_META[island]
+  const lang = (rMeta && rMeta.lang) || 'fr'
+  const t = (fr, en, es) => lang === 'es' ? es : lang === 'en' ? en : fr
+  if (step === 'j3') return t(
+    'Le vrai brief satellite de ce matin — ta plage, son score, la tendance 7 jours.',
+    "This morning's real satellite brief — your beach, its score, the 7-day trend.",
+    'El brief satelital real de esta mañana — tu playa, su score y la tendencia a 7 días.')
+  if (step === 'j7') return t(
+    "Et si tu n'avais plus jamais à ouvrir la carte ? Le Veilleur s'en charge.",
+    'What if you never had to open the map again? The watcher does it for you.',
+    '¿Y si nunca más tuvieras que abrir el mapa? El vigía lo hace por ti.')
+  if (step === 'j14') return t(
+    "Le weekend gâché — ou évité d'un coup d'œil vendredi soir. À toi de voir.",
+    'A ruined weekend — or one glance Friday night that saves it. Your call.',
+    'Un finde arruinado — o una mirada el viernes que lo salva. Tú decides.')
+  return ''
+}
+
 function getHTML(step, island, cleanCount, topBeaches, email, brief) {
   const isNewRegion = !!(REGION_META[island] && REGION_META[island].regionId)
   switch (step) {
@@ -749,15 +770,12 @@ async function main() {
         : (island === 'GP' ? FROM_GP : FROM_MQ)
       const subject = getSubject(step.key, island, cleanCount, brief)
       const html = getHTML(step.key, island, cleanCount, topBeaches, email, brief)
+      const preheader = getPreheader(step.key, island)
       const unsub = unsubUrl(email, island)
 
       try {
-        const { data, error } = await resend.emails.send({
-          from, to: email, subject, html,
-          headers: {
-            'List-Unsubscribe': `<${unsub}>`,
-            'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
-          },
+        const { data, error } = await sendEmail(resend, {
+          from, to: email, subject, html, preheader, unsubUrl: unsub,
         })
         if (error) {
           console.log(`  x ${logId(email)} [${step.key}]: ${error.message}`)
@@ -834,13 +852,16 @@ async function main() {
       ? `${meta.lang === 'es' ? 'Sargazo' : 'Sargassum'} ${meta.place} <alerte@sargasses-martinique.com>`
       : (island === 'GP' ? FROM_GP : FROM_MQ)
     const { subject, html } = buildDaily(island, brief, email)
+    const dl = meta.lang
+    const dailyPre = dl === 'es'
+      ? `${brief.best.name} y tus otras playas, revisadas por satélite esta mañana.`
+      : dl === 'en'
+        ? `${brief.best.name} and your other beaches, checked by satellite this morning.`
+        : `${brief.best.name} et tes autres plages, vérifiées au satellite ce matin.`
     try {
-      const { data, error } = await resend.emails.send({
-        from, to: email, subject, html,
-        headers: {
-          'List-Unsubscribe': `<${unsubUrl(email, island)}>`,
-          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
-        },
+      const { data, error } = await sendEmail(resend, {
+        from, to: email, subject, html, preheader: dailyPre,
+        unsubUrl: unsubUrl(email, island),
       })
       if (error) { console.log(`  x ${logId(email)} [daily]: ${error.message}`) }
       else {

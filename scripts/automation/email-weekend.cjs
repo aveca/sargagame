@@ -16,6 +16,7 @@
 const fs = require('fs')
 const path = require('path')
 const https = require('https')
+const { injectPreheader } = require('./lib/email-send.cjs')
 
 const FORCE = process.argv.includes('--force')
 const SARG_PATH = path.join(__dirname, '../../public/api/copernicus/sargassum.json')
@@ -229,7 +230,8 @@ async function main() {
       .sort((a, b) => rank(b) - rank(a))
       .slice(0, 5)
 
-    const html = buildEmailHTML(island, topBeaches, stats, domain)
+    const preheader = `Tes meilleures plages notées pour samedi — score sur 100, prévision satellite à jour.`
+    const html = injectPreheader(buildEmailHTML(island, topBeaches, stats, domain), preheader)
 
     const bestScore = topBeaches[0]?.unifiedScore
     const bestLabel = topBeaches[0]?.unifiedLabel

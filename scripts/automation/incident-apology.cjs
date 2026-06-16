@@ -22,6 +22,13 @@ const fs = require('fs')
 const path = require('path')
 const { Resend } = require('resend')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
+const { sendEmail } = require('./lib/email-send.cjs')
+
+const APOLOGY_PRE = {
+  fr: 'Un bug d\'envoi de notre côté — déjà corrigé. Rien à faire de votre part.',
+  en: 'A sending bug on our side — already fixed. Nothing needed from you.',
+  es: 'Un error de envío de nuestra parte — ya corregido. No necesita hacer nada.',
+}
 
 const API_KEY = process.env.RESEND_API_KEY
 const FORCE = process.argv.includes('--force')
@@ -136,12 +143,10 @@ async function main() {
         continue
       }
       try {
-        const { data, error } = await resend.emails.send({
+        const { data, error } = await sendEmail(resend, {
           from, to: sub.email, subject: t.subject, html,
-          headers: {
-            'List-Unsubscribe': `<${unsubUrl(sub.email, island)}>`,
-            'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
-          },
+          preheader: APOLOGY_PRE[meta.lang] || APOLOGY_PRE.fr,
+          unsubUrl: unsubUrl(sub.email, island),
         })
         if (error) { console.log(`  x ${logId(sub.email)}: ${error.message}`); continue }
         inc.sent[h] = new Date().toISOString()
