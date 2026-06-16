@@ -9429,7 +9429,7 @@ function WorldFeed({beaches,lang,onPremium,onClose,island}){
 // immediate (on atterrit MID-zoom sur SA cote, verdict <1s), l'exploration est un
 // bonus libre par-dessus. v0 = pan + zoom (wheel/pinch/double-tap) + atterrissage +
 // tap->BeachSheet existante (funnel INTACT). Pas de dive/momentum/LOD (slices 2-4).
-function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutions,onPremium,rootMode}){
+function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutions,onPremium,rootMode,updatedAt}){
   const wrapRef=useRef(null),gRef=useRef(null),camRef=useRef({cx:0,cy:0,cz:0.8}),rafRef=useRef(0)
   const ptrs=useRef(new Map()),movedRef=useRef(false),pinchRef=useRef(null),lastTap=useRef(0)
   const velRef=useRef({x:0,y:0}),inertRaf=useRef(0),pannedRef=useRef(false)
@@ -9688,6 +9688,8 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
           </div>
         </div>
         :(()=>{const i=tourOrder[tour],b=proj[i]&&proj[i].b;if(!b)return null;const vm=verdictMeta(b.status,lang),sc=typeof b.score==="number"?b.score:null,afai=typeof b.afai==="number"?b.afai:null
+          // A/B pw_freshness (geste Watch Duty : « vérifié il y a 2h » lève l'objection screenshot-périmé). Override ?fresh=1/0.
+          const freshLbl=(()=>{try{if(!updatedAt)return null;const q=window.location.search;const on=/[?&]fresh=1/.test(q)?true:/[?&]fresh=0/.test(q)?false:abVariant("pw_freshness",["control","fresh"],[.3,.7])==="fresh";if(!on)return null;const fr=formatFreshness(updatedAt,lang);return fr?(_t(lang,"vérifié","verified","verificado")+" "+fr):null}catch(_){return null}})()
           return(<div onClick={e=>e.stopPropagation()} style={{position:"absolute",left:0,right:0,bottom:0,zIndex:7,padding:"0 12px calc(14px + env(safe-area-inset-bottom))"}}>
             <div style={{maxWidth:520,margin:"0 auto",background:"rgba(7,32,30,.94)",border:"1px solid rgba(95,211,201,.32)",borderRadius:18,padding:"14px 16px",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",color:"#fff",boxShadow:"0 -6px 34px rgba(0,0,0,.5)"}}>
               <div style={{display:"flex",alignItems:"center",gap:11}}>
@@ -9696,6 +9698,7 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
                   <div style={{fontSize:10.5,fontWeight:800,letterSpacing:".06em",color:"rgba(255,255,255,.5)"}}>{(tour+1)+" / "+tourOrder.length} · {_t(lang,"VISITE","TOUR","VISITA")}</div>
                   <div style={{fontSize:17,fontWeight:800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.name}</div>
                   <div style={{fontSize:13,fontWeight:700,color:vm.color}}>{vm.emoji} {vm.verb}{b.commune?" · "+b.commune:""}</div>
+                  {freshLbl&&<div style={{fontSize:10.5,fontWeight:700,color:"#5FD3C9",marginTop:2,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>🛰️ {freshLbl}</div>}
                 </div>
                 <Veilleur mood={moodFromStatus(b.status)} size={34}/>
               </div>
@@ -11005,7 +11008,7 @@ export default function App(){
               fontSize:19,cursor:"pointer",boxShadow:"0 6px 20px rgba(0,0,0,.4)",display:"flex",alignItems:"center",justifyContent:"center",
               animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>🧭</button>
         )}
-        {showArchipel&&<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onBeachClick} onSolutions={()=>{setShowSolutions(true);track("sg_archipel_to_solutions",{})}} onPremium={()=>openPremium("archipel")} rootMode={navWorld} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}}/>}
+        {showArchipel&&<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onBeachClick} onSolutions={()=>{setShowSolutions(true);track("sg_archipel_to_solutions",{})}} onPremium={()=>openPremium("archipel")} rootMode={navWorld} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}}/>}
 
         {/* MONDE SVG — la fondation : feed vertical des plages, zéro photo, data en
             scène, cliquable, loopé. Additif (z1005) ; fiche+paywall s'ouvrent au-dessus. */}
