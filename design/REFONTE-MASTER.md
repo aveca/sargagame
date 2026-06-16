@@ -96,6 +96,10 @@
 ---
 
 ## 5 · ACTION PAR ACTION (backlog ordonné, cochable)
+
+> **🎯 PRIORITÉ ACTIVE (fondateur 16/06)** : **REFONTE COMPLÈTE de 2 surfaces, en EXPÉRIENCE SVG cohérente** — (1) **LA CARTE** (FAR, /carte-sargasses/, aujourd'hui src/MapView.jsx/Leaflet) et (2) **LES PAGES PLAGES individuelles** (NEAR, BeachSheet, deep-link /plages/<slug>/).
+> Directives fondateur (dures) : **plus de SVG** (viser le monde SVG propriétaire, pas Leaflet-décoré ; Leaflet = substrat data seulement si perf l'exige, enveloppé SVG) · **plus d'interactions** (calmes, incidentes) · **liens + assets** (maillage interne riche + remplacer photos diurnes par scènes SVG golden-hour si ça sert) · **UNE expérience continue** home→carte→plage (même caméra, flyTo incassable) · **fluide + garder la VIBE d'ouverture du funnel** = l'accueil A→Z (src/HomeAZ.jsx) comme référence de grammaire visuelle.
+> Workflow specs `wrbyee2gi` (explore code+assets → 3 directions SVG-first/surface → juge → spec buildable + plan assets/liens) en cours → à la complétion : BUILD proto standalone par surface → vérif navigateur (harnais) → port A/B (`map_refonte` / `beach_refonte`). Baignade #5 + collecte #9 = **différées après** ces 2 refontes.
 **PHASE 0 — réparer le FIL de conversion (avant d'embellir).** KPI : leak<10 %, 0 fake freshness, 0 href cassé, indexation en hausse.
 - [ ] Vérifier le leak CTA→redirect post same-tab (mon pull : 92 % = ~OK) ; sinon corriger la race beacon.
 - [ ] Kill-switch fake freshness (grep « vérifié/maj/en direct » → `formatFreshness(updatedAt)`).
