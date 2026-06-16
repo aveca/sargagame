@@ -6784,6 +6784,85 @@ function AfaiChip({beach,lang}){
   )
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   CAPTURE GATE MODAL — bras A/B `capture_gate` (50/50).
+   Intercepte openPremium("forecast_*") quand aucun email capturé.
+   Pitch : email → rapport matin + prévision J+2-J+7. Après submit → PremiumModal.
+   ═══════════════════════════════════════════════════════════════════════════ */
+function CaptureGateModal({lang,onSubmit,onClose}){
+  const[email,setEmail]=useState(()=>{try{return localStorage.getItem("sg_email")||""}catch{return ""}})
+  const[sent,setSent]=useState(false)
+  const[err,setErr]=useState(false)
+  function submit(e){
+    e.preventDefault()
+    if(!email||!email.includes("@")){setErr(true);return}
+    setSent(true)
+    onSubmit(email)
+  }
+  return(
+    <div style={{position:"fixed",inset:0,zIndex:1055,background:"rgba(2,9,7,.88)",
+      display:"flex",alignItems:"flex-end",justifyContent:"center",backdropFilter:"blur(6px)"}}
+      onClick={e=>{if(e.target===e.currentTarget)onClose()}}>
+      <div style={{width:"100%",maxWidth:520,borderRadius:"24px 24px 0 0",
+        background:"linear-gradient(180deg,#0E1C1A,#061210)",
+        padding:"32px 24px 48px",boxShadow:"0 -8px 40px rgba(0,0,0,.6)"}}>
+        {!sent?(<>
+          <div style={{fontSize:10,fontWeight:700,color:"rgba(255,232,168,.55)",
+            textTransform:"uppercase",letterSpacing:".1em",marginBottom:10}}>
+            {_t(lang,"PRÉVISION · GRATUITE","FORECAST · FREE","PRONÓSTICO · GRATIS")}
+          </div>
+          <div style={{fontSize:22,fontWeight:800,color:"#fff",lineHeight:1.2,
+            marginBottom:8,fontFamily:"Bricolage Grotesque,sans-serif"}}>
+            {_t(lang,"Vois les 7 jours,\ngratuitement","See the full 7 days,\nfor free","Ve los 7 días,\ngratis")}
+          </div>
+          <div style={{fontSize:13,color:"rgba(255,255,255,.46)",marginBottom:20,lineHeight:1.5}}>
+            {_t(lang,
+              "Laisse ton email — on t'envoie le rapport complet chaque matin, prévision J+2 à J+7 incluse.",
+              "Leave your email — we send the full report each morning, J+2 to J+7 forecast included.",
+              "Deja tu email — te enviamos el informe completo cada mañana, pronóstico J+2 a J+7 incluido.")}
+          </div>
+          <form onSubmit={submit} style={{display:"flex",gap:8,marginBottom:12}}>
+            <input type="email" inputMode="email" autoComplete="email"
+              placeholder={_t(lang,"ton@email.com","your@email.com","tu@email.com")}
+              value={email} onChange={e=>{setEmail(e.target.value);setErr(false)}}
+              style={{flex:1,padding:"12px 16px",borderRadius:14,
+                border:`1px solid ${err?"#E8522A":"rgba(255,255,255,.12)"}`,
+                fontSize:16,fontFamily:"inherit",background:"rgba(255,255,255,.07)",
+                outline:"none",color:"#fff",minWidth:0}}/>
+            <button type="submit" style={{
+              padding:"12px 20px",borderRadius:14,border:"none",cursor:"pointer",
+              background:"linear-gradient(158deg,#FFE47A,#FFC72C,#E89400)",
+              color:"#06121A",fontSize:13,fontWeight:800,fontFamily:"inherit",
+              boxShadow:"0 2px 12px rgba(232,168,0,.35)",whiteSpace:"nowrap"}}>
+              {_t(lang,"Débloquer →","Unlock →","Desbloquear →")}
+            </button>
+          </form>
+          <div style={{textAlign:"center"}}>
+            <button onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",
+              color:"rgba(255,255,255,.28)",fontSize:11,padding:0,fontFamily:"inherit"}}>
+              {_t(lang,"Non merci, voir les offres →","No thanks, see plans →","No gracias, ver planes →")}
+            </button>
+          </div>
+        </>):(
+          <div style={{textAlign:"center",padding:"16px 0"}}>
+            <div style={{fontSize:36,marginBottom:10}}>✅</div>
+            <div style={{fontSize:18,fontWeight:800,color:"#22C55E",marginBottom:6,
+              fontFamily:"Bricolage Grotesque,sans-serif"}}>
+              {_t(lang,"C'est bon !","Done!","¡Listo!")}
+            </div>
+            <div style={{fontSize:13,color:"rgba(255,255,255,.5)",lineHeight:1.5}}>
+              {_t(lang,
+                "Premier rapport demain matin — prévision J+2 à J+7 dedans.",
+                "First report tomorrow morning — J+2 to J+7 forecast included.",
+                "Primer informe mañana por la mañana — pronóstico J+2 a J+7 incluido.")}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function InlineEmailCapture({lang,beachName}){
   const[email,setEmail]=useState("")
   const[submitted,setSubmitted]=useState(false)
@@ -10096,6 +10175,8 @@ export default function App(){
   const[showPremium,setShowPremium]=useState(false)
   const[showChat,setShowChat]=useState(false) // assistant guidé (SargaChat)
   const[premiumSource,setPremiumSource]=useState(null)
+  const[showCaptureGate,setShowCaptureGate]=useState(false)
+  const[captureGateSrc,setCaptureGateSrc]=useState("")
   const[showFavToast,setShowFavToast]=useState(false)
   const[isPremium,setIsPremium]=useState(()=>{
     if(g("sg_premium",false))return true
@@ -10457,6 +10538,9 @@ export default function App(){
   // Le Veilleur v2, scrub prévision verrouillé J2-7) vs BeachSheet (control intact).
   // 50/50. Override ?beachdive=1/0. Conversion = openPremium UNIQUE (contextualisé plage).
   const beachDive=useMemo(()=>{try{const q=window.location.search;if(/[?&]beachdive=1/.test(q))return true;if(/[?&]beachdive=0/.test(q))return false;return abVariant("pw_beach_dive",["control","dive"],[.5,.5])==="dive"}catch(_){return false}},[])
+  // A/B `capture_gate` : gate email légère avant PremiumModal sur intent forecast.
+  // 50/50. Override ?capture_gate=1/0. Cible : lever le 0,35 % capture email.
+  const captureGate=useMemo(()=>{try{const q=window.location.search;if(/[?&]capture_gate=1/.test(q))return true;if(/[?&]capture_gate=0/.test(q))return false;return abVariant("capture_gate",["control","gate"],[.5,.5])==="gate"}catch(_){return false}},[])
   // Transition phasée accueil → carte/plage (SceneWipe). Jamais si reduced-motion.
   const[wipe,setWipe]=useState(null)
   const fireWipe=useCallback(label=>{
@@ -10973,7 +11057,16 @@ export default function App(){
     else setView(v)
   },[])
 
-  const openPremium=useCallback((src)=>{const s=src||"nav";setPremiumSource(s);setShowPremium(true);track("sg_premium_modal_open",{source:s})},[])
+  const FORECAST_GATE_SRCS=["forecast_lock","forecast_cta","forecast_scrub","forecast_beat","forecast_scrub_premium","whisper_veilleur"]
+  const openPremium=useCallback((src)=>{
+    const s=src||"nav"
+    // capture_gate : intercept si A/B actif + source forecast + pas encore d'email
+    if(captureGate&&FORECAST_GATE_SRCS.includes(s)){
+      let hasEm=false;try{hasEm=!!localStorage.getItem("sg_email")}catch(_){}
+      if(!hasEm){setCaptureGateSrc(s);setShowCaptureGate(true);track("sg_capture_gate_view",{src:s});return}
+    }
+    setPremiumSource(s);setShowPremium(true);track("sg_premium_modal_open",{source:s})
+  },[captureGate])
   // Deep-link OUVRE le paywall (≠ ?premium=1 qui ACCORDE premium — piège). Utilisé par
   // la page de confiance /a-propos/ dont les CTA étaient href="#" morts. source = utm_source.
   useEffect(()=>{try{const p=new URLSearchParams(window.location.search);if(p.get("paywall")==="1"){const u=p.get("utm_source");openPremium(u?("deeplink_"+u).slice(0,40):"deeplink");window.history.replaceState({},"",window.location.pathname)}}catch(_){}},[openPremium])
@@ -11360,6 +11453,24 @@ export default function App(){
             historyData={historyData} sargData={sargData}
             dataSource={dataSource} userPos={userPos} communityReports={communityReports} fbPosts={fbPosts}/>
         )}
+
+        {/* CAPTURE GATE — A/B capture_gate · intercept forecast intent avant PremiumModal */}
+        {showCaptureGate&&<CaptureGateModal lang={lang}
+          onSubmit={em=>{
+            try{localStorage.setItem("sg_email",em);localStorage.setItem("sg_email_prompt","true")}catch(_){}
+            const isl=IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"
+            try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
+              method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
+              body:JSON.stringify({email:em,island:isl,source:"capture-gate",date:new Date().toISOString()})
+            }).catch(()=>{})}catch{}
+            track("sg_capture_gate_submit",{src:captureGateSrc,variant:"gate"})
+            setTimeout(()=>{setShowCaptureGate(false);setPremiumSource("post_gate");setShowPremium(true);track("sg_premium_modal_open",{source:"post_gate"})},2200)
+          }}
+          onClose={()=>{
+            setShowCaptureGate(false)
+            track("sg_capture_gate_dismiss",{src:captureGateSrc})
+            setPremiumSource(captureGateSrc);setShowPremium(true);track("sg_premium_modal_open",{source:captureGateSrc})
+          }}/>}
 
         {/* PREMIUM MODAL */}
         {showPremium&&<PremiumModal onClose={()=>setShowPremium(false)} lang={lang} source={premiumSource}
