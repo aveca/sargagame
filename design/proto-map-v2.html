@@ -3,153 +3,196 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Sargasses — Carte Martinique (v2 interactive, golden-hour)</title>
+<title>Sargasses — Carte Martinique (v2, vraie géographie golden-hour)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:wght@600;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --sky0:#0B2230; --glint:#FFD884; --gold:#E8A800; --goldL:#FFC72C; --goldS:#FFE47A;
+  --sky0:#0B2230; --sky1:#155A5A; --sky2:#C97E3A; --sky3:#F2B05E;
+  --seaT:#1A5852; --seaB:#08251F; --glint:#FFD884; --gold:#E8A800; --goldL:#FFC72C; --goldS:#FFE47A;
   --ink:#EAF7F4; --green:#22C55E; --amber:#E8A800; --coral:#E8522A; --tealL:#5FD3C9; --mid:#9DB4B0;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
 html,body{height:100%}
-body{background:#06140f;color:var(--ink);overflow:hidden;font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif}
+body{background:#06140f;color:var(--ink);overflow:hidden;
+  font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif}
 .anton{font-family:'Anton',"Haettenschweiler","Arial Narrow Bold",Impact,sans-serif;font-weight:400;letter-spacing:-.01em;text-transform:uppercase}
 .mono{font-family:'JetBrains Mono',monospace}
+/* SEA golden-hour plein écran (CSS) : l'île flotte dedans, jamais rognée */
 #stage{position:fixed;inset:0;overflow:hidden;
-  background:radial-gradient(130% 70% at 76% 4%, rgba(255,224,160,.16), transparent 48%),
-             linear-gradient(158deg,#1f6157 0%,#114440 44%,#072019 100%)}
-#stage .sun{position:absolute;top:-16%;right:-10%;width:82%;height:64%;pointer-events:none;z-index:0;
-  background:radial-gradient(closest-side, rgba(255,243,214,.52), rgba(255,216,132,.22) 46%, transparent 72%);animation:sunBreath 11s ease-in-out infinite}
+  background:linear-gradient(158deg,#1c5f57 0%,#114440 42%,#08251f 100%)}
+#stage .sun{position:absolute;top:-14%;right:-8%;width:78%;height:62%;pointer-events:none;z-index:0;
+  background:radial-gradient(closest-side, rgba(255,243,214,.5), rgba(255,216,132,.22) 46%, transparent 72%);
+  animation:sunBreath 11s ease-in-out infinite}
 @keyframes sunBreath{0%,100%{opacity:.9;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
-svg.scene{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:1;touch-action:none;cursor:grab}
-svg.scene.drag{cursor:grabbing}
-#world{will-change:transform}
-.pin{cursor:pointer}.pin .core{transition:transform .15s cubic-bezier(.34,1.56,.64,1)}.pin:hover .core{transform:scale(1.28)}
-.pinhalo{animation:halo 3.6s ease-in-out infinite}@keyframes halo{0%,100%{opacity:.45}50%{opacity:.8}}
-.plabel{font:800 10px/1 "Bricolage Grotesque";fill:#fff;paint-order:stroke;stroke:#06140f;stroke-width:3px;stroke-linejoin:round;stroke-opacity:.9;pointer-events:none}
+svg.scene{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;z-index:1}
+.pin{cursor:pointer}
+.pin .core{transition:transform .15s cubic-bezier(.34,1.56,.64,1)}
+.pin:hover .core{transform:scale(1.25)}
+.pinhalo{animation:halo 3.4s ease-in-out infinite}
+@keyframes halo{0%,100%{opacity:.5}50%{opacity:.85}}
+
+/* chrome */
 .chrome{position:fixed;inset:0;pointer-events:none;z-index:5}
-.top{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:calc(12px + env(safe-area-inset-top)) 16px 12px;max-width:560px;margin:0 auto}
-.live{display:inline-flex;align-items:center;gap:7px;pointer-events:auto;padding:6px 12px 6px 10px;border-radius:999px;background:rgba(8,18,16,.5);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.14)}
+.top{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;
+  padding:calc(12px + env(safe-area-inset-top)) 16px 12px;max-width:560px;margin:0 auto}
+.live{display:inline-flex;align-items:center;gap:7px;pointer-events:auto;padding:6px 12px 6px 10px;border-radius:999px;
+  background:rgba(8,18,16,.5);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.14)}
 .live .pulse{width:8px;height:8px;border-radius:50%;background:var(--coral);box-shadow:0 0 0 0 rgba(232,82,42,.6);animation:lp 2.4s ease-out infinite}
 @keyframes lp{0%{box-shadow:0 0 0 0 rgba(232,82,42,.55)}70%{box-shadow:0 0 0 9px rgba(232,82,42,0)}100%{box-shadow:0 0 0 0 rgba(232,82,42,0)}}
 .live .t{font:800 11px/1 "Bricolage Grotesque";letter-spacing:.08em;text-transform:uppercase;color:#fff}
 .live .h{font:700 11px/1 'JetBrains Mono';color:var(--tealL);margin-left:2px}
 .langs{display:flex;gap:4px;pointer-events:auto}
-.langs button{border:1px solid rgba(255,255,255,.14);background:rgba(8,18,16,.5);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);color:var(--ink);font:800 11px/1 "Bricolage Grotesque";padding:7px 9px;border-radius:9px;cursor:pointer}
+.langs button{border:1px solid rgba(255,255,255,.14);background:rgba(8,18,16,.5);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  color:var(--ink);font:800 11px/1 "Bricolage Grotesque";padding:7px 9px;border-radius:9px;cursor:pointer}
 .langs button[aria-pressed="true"]{background:var(--goldL);color:#1A2B26;border-color:transparent}
+
+/* titre + jauge du jour */
 .head{position:absolute;top:calc(58px + env(safe-area-inset-top));left:0;right:0;max-width:560px;margin:0 auto;padding:0 18px;pointer-events:none}
-.head h1{font-size:clamp(24px,6.4vw,32px);line-height:.96;color:#fff;text-shadow:0 2px 18px rgba(0,0,0,.5)}
+.head h1{font-size:clamp(26px,7vw,34px);line-height:.96;color:#fff;text-shadow:0 2px 18px rgba(0,0,0,.5)}
 .head h1 .d{color:var(--goldS)}
-.gauge{margin-top:9px;display:inline-flex;align-items:center;gap:9px;pointer-events:auto;background:rgba(8,18,16,.42);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:8px 13px}
-.gauge .bar{width:104px;height:7px;border-radius:4px;background:rgba(255,255,255,.14);overflow:hidden}
-.gauge .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--goldL));border-radius:4px;transition:width .4s ease}
-.gauge .txt{font:700 12.5px/1 "Bricolage Grotesque";color:#fff}.gauge .txt b{color:var(--goldS)}
-/* scrub jours */
-.scrub{position:absolute;left:0;right:0;bottom:calc(120px + env(safe-area-inset-bottom));display:flex;justify-content:center;pointer-events:none}
-.scrub .row{pointer-events:auto;display:flex;gap:4px;background:rgba(8,18,16,.6);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:4px}
-.scrub button{border:0;background:transparent;color:rgba(255,255,255,.75);font:800 11px/1 "Bricolage Grotesque";padding:8px 11px;border-radius:999px;cursor:pointer;position:relative}
-.scrub button[aria-pressed="true"]{background:var(--goldL);color:#16241f}
-.scrub button.lock::after{content:"🔒";font-size:8px;position:absolute;top:1px;right:2px}
+.gauge{margin-top:9px;display:inline-flex;align-items:center;gap:9px;pointer-events:auto;
+  background:rgba(8,18,16,.42);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:8px 13px}
+.gauge .bar{width:108px;height:7px;border-radius:4px;background:rgba(255,255,255,.14);overflow:hidden}
+.gauge .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--goldL));border-radius:4px}
+.gauge .txt{font:700 12.5px/1 "Bricolage Grotesque";color:#fff}
+.gauge .txt b{color:var(--goldS)}
+
+/* dock + légende */
 .dock{position:absolute;left:0;right:0;bottom:calc(16px + env(safe-area-inset-bottom));display:flex;justify-content:center;pointer-events:none}
-.dock .pill{pointer-events:auto;display:flex;gap:3px;background:rgba(8,18,16,.62);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:5px}
-.dock .pill button{display:flex;align-items:center;gap:6px;border:0;background:transparent;color:rgba(255,255,255,.7);font:800 12px/1 "Bricolage Grotesque";padding:9px 15px;border-radius:999px;cursor:pointer}
+.dock .pill{pointer-events:auto;display:flex;gap:3px;background:rgba(8,18,16,.62);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:5px}
+.dock .pill button{display:flex;align-items:center;gap:6px;border:0;background:transparent;color:rgba(255,255,255,.7);
+  font:800 12px/1 "Bricolage Grotesque";padding:9px 15px;border-radius:999px;cursor:pointer}
 .dock .pill button[aria-pressed="true"]{background:var(--goldL);color:#16241f}
 .legend{position:absolute;left:16px;bottom:calc(74px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:5px;pointer-events:none}
-.legend .row{display:flex;align-items:center;gap:7px;font:700 10.5px/1 "Bricolage Grotesque";color:rgba(255,255,255,.8);text-shadow:0 1px 4px #000}
+.legend .row{display:flex;align-items:center;gap:7px;font:700 10.5px/1 "Bricolage Grotesque";color:rgba(255,255,255,.78);text-shadow:0 1px 4px #000}
 .legend .row i{width:9px;height:9px;border-radius:50%}
-.near{position:absolute;right:16px;bottom:calc(74px + env(safe-area-inset-bottom));pointer-events:auto;display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,var(--goldS),var(--goldL) 45%,var(--gold));color:#16241f;border:0;font:800 12.5px/1 "Bricolage Grotesque";padding:11px 14px;border-radius:999px;cursor:pointer;box-shadow:0 8px 22px rgba(232,168,0,.34)}
-.tag{position:absolute;z-index:6;pointer-events:none;transform:translate(-50%,-100%);background:rgba(8,18,16,.86);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:8px 11px;opacity:0;transition:opacity .2s ease;white-space:nowrap}
+.near{position:absolute;right:16px;bottom:calc(74px + env(safe-area-inset-bottom));pointer-events:auto;
+  display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,var(--goldS),var(--goldL) 45%,var(--gold));
+  color:#16241f;border:0;font:800 12.5px/1 "Bricolage Grotesque";padding:11px 14px;border-radius:999px;cursor:pointer;
+  box-shadow:0 8px 22px rgba(232,168,0,.34)}
+
+/* étiquette-verdict ancrée (in-scene, pas un popup flottant) */
+.tag{position:absolute;z-index:6;pointer-events:none;transform:translate(-50%,-100%);
+  background:rgba(8,18,16,.82);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:8px 11px;opacity:0;transition:opacity .25s ease;white-space:nowrap}
 .tag.on{opacity:1}
 .tag .n{font:800 12.5px/1.1 "Bricolage Grotesque";color:#fff}
 .tag .s{font:800 10.5px/1 "Bricolage Grotesque";letter-spacing:.04em;text-transform:uppercase;margin-top:4px;display:flex;align-items:center;gap:5px}
-.tag .s i{width:7px;height:7px;border-radius:50%}.tag .f{font:700 10px/1 'JetBrains Mono';color:var(--mid);margin-top:4px}
-.openbeach{position:absolute;left:50%;transform:translateX(-50%) translateY(16px);bottom:calc(176px + env(safe-area-inset-bottom));z-index:6;pointer-events:none;opacity:0;transition:opacity .25s ease,transform .25s cubic-bezier(.34,1.56,.64,1);
-  display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--goldS),var(--goldL) 42%,var(--gold));color:#16241f;border:0;font:800 13.5px/1 "Bricolage Grotesque";padding:13px 18px;border-radius:999px;box-shadow:0 10px 28px rgba(232,168,0,.4);cursor:pointer}
-.openbeach.on{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
-.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(20px);z-index:9;background:#08120E;border:1px solid #1f5e58;color:#5FD3C9;font:700 11px/1 'JetBrains Mono';padding:9px 14px;border-radius:10px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
-.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
-.veil{position:absolute;inset:0;pointer-events:none;z-index:1;background:linear-gradient(180deg, rgba(7,18,15,0) 50%, rgba(7,18,15,.30) 100%)}
-@media (prefers-reduced-motion:reduce){.sun,.pinhalo,.live .pulse{animation:none!important}.pin .core{transition:none}}
+.tag .s i{width:7px;height:7px;border-radius:50%}
+.tag .f{font:700 10px/1 'JetBrains Mono';color:var(--mid);margin-top:4px}
+
+@media (prefers-reduced-motion:reduce){
+  #sunGlow,.pinhalo,.live .pulse{animation:none!important}
+  .pin .core{transition:none}
+}
+.veil{position:absolute;inset:0;pointer-events:none;z-index:1;
+  background:radial-gradient(120% 90% at 78% 6%, rgba(242,176,94,.20), transparent 46%),
+             linear-gradient(180deg, rgba(7,18,15,0) 52%, rgba(7,18,15,.34) 100%)}
 </style>
 </head>
 <body>
 <div id="stage">
   <div class="sun"></div>
   <svg class="scene" id="scene" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"
-       role="img" aria-label="Carte interactive de la Martinique : déplace, zoome, touche une plage pour son verdict, fais glisser les jours.">
+       role="img" aria-label="Carte de la Martinique golden-hour : chaque plage est une pastille colorée selon l'état des sargasses aujourd'hui.">
     <defs>
-      <radialGradient id="phalo" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FFE6A8" stop-opacity=".55"/><stop offset="1" stop-color="#FFE6A8" stop-opacity="0"/></radialGradient>
-      <linearGradient id="land" x1="0" y1="0" x2=".8" y2="1"><stop offset="0" stop-color="#37471f"/><stop offset=".22" stop-color="#2c3b1c"/><stop offset=".62" stop-color="#1b2a18"/><stop offset="1" stop-color="#111b13"/></linearGradient>
-      <linearGradient id="warm" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E8A23A" stop-opacity=".34"/><stop offset=".42" stop-color="#C97E3A" stop-opacity="0"/></linearGradient>
-      <filter id="rim" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3"/></filter>
+      <linearGradient id="sea" x1="0" y1="1" x2="1" y2="0">
+        <stop offset="0" stop-color="#06201c"/><stop offset=".5" stop-color="#0e3b39"/><stop offset="1" stop-color="#1b5a54"/>
+      </linearGradient>
+      <radialGradient id="sun" cx="50%" cy="50%" r="50%">
+        <stop offset="0" stop-color="#FFF3D6" stop-opacity=".55"/><stop offset=".5" stop-color="#FFD884" stop-opacity=".22"/><stop offset="1" stop-color="#F2B05E" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="land" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#27331f"/><stop offset=".55" stop-color="#1c2a1a"/><stop offset="1" stop-color="#14201a"/>
+      </linearGradient>
+      <linearGradient id="landWarm" x1="1" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#6b5a २a" stop-opacity=".0"/><stop offset="0" stop-color="#C97E3A" stop-opacity=".35"/><stop offset=".4" stop-color="#C97E3A" stop-opacity="0"/>
+      </linearGradient>
+      <radialGradient id="phalo" cx="50%" cy="50%" r="50%">
+        <stop offset="0" stop-color="#FFE6A8" stop-opacity=".55"/><stop offset="1" stop-color="#FFE6A8" stop-opacity="0"/>
+      </radialGradient>
+      <filter id="rim" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3.2"/></filter>
       <filter id="soft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="6"/></filter>
-      <filter id="shlw" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="12"/></filter>
-      <filter id="shlw2" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4.5"/></filter>
+      <filter id="shlw" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="11"/></filter>
+      <filter id="shlw2" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="4.5"/></filter>
+      <linearGradient id="land2" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#33421f"/><stop offset=".18" stop-color="#2a3a1d"/><stop offset=".6" stop-color="#1b2a18"/><stop offset="1" stop-color="#121c13"/>
+      </linearGradient>
       <linearGradient id="sailR" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF6A3D"/><stop offset="1" stop-color="#D8431F"/></linearGradient>
       <linearGradient id="sailY" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFD45A"/><stop offset="1" stop-color="#F0A81E"/></linearGradient>
     </defs>
 
-    <g id="world">
-      <g stroke="#5FD3C9" stroke-width="2" stroke-linecap="round" fill="none" opacity=".07">
-        <path d="M40 250 q60 -16 120 -4"/><path d="M70 340 q70 -18 140 -2"/><path d="M520 120 q60 -14 120 0"/><path d="M600 470 q70 -16 130 -2"/>
-      </g>
-      <g stroke="#0B2230" stroke-width="2.2" stroke-linecap="round" fill="none" opacity=".5"><path d="M120 120 q6 -5 12 0 q6 -5 12 0"/><path d="M170 140 q5 -4 10 0 q5 -4 10 0"/></g>
-      <g id="islandG">
-        <path id="shallowFar" fill="none" stroke="#3fb9ad" stroke-width="26" stroke-opacity=".32" filter="url(#shlw)"/>
-        <path id="shallowNear" fill="none" stroke="#9aead9" stroke-width="10" stroke-opacity=".5" filter="url(#shlw2)"/>
-        <path id="islandShadow" fill="#03110d" opacity=".5" filter="url(#soft)" transform="translate(6 11)"/>
-        <path id="islandRimGlow" fill="none" stroke="#FFE6A8" stroke-width="6" stroke-opacity=".55" filter="url(#rim)"/>
-        <path id="island" fill="url(#land)" stroke="#FFE6A8" stroke-width="1.5" stroke-opacity=".9"/>
-        <path id="islandWarm" fill="url(#warm)" opacity=".85"/>
-        <g id="relief" fill="#0c1710" opacity=".42"></g>
-        <g id="ridge" stroke="#46582c" stroke-width="1.4" fill="none" opacity=".3"></g>
-      </g>
-      <g id="yole" transform="translate(150 470) scale(.58)" opacity=".95">
-        <ellipse cx="0" cy="26" rx="46" ry="6" fill="#06201c" opacity=".5"/>
-        <g><line x1="-2" y1="4" x2="-2" y2="-64" stroke="#241608" stroke-width="3"/>
-          <path d="M-2 -62 L-2 -6 L42 -6 Z" fill="url(#sailR)"/><path d="M-2 -44 L-2 -6 L28 -6 Z" fill="url(#sailY)"/><path d="M-4 -52 L-4 -8 L-32 -8 Z" fill="#1EC8B0" opacity=".94"/></g>
-        <path d="M-46 4 Q0 24 46 4 Q40 14 32 16 L-32 16 Q-40 14 -46 4 Z" fill="#0f5d54"/>
-        <path d="M-46 4 Q0 18 46 4" fill="none" stroke="#FFD884" stroke-width="1.6" stroke-opacity=".6"/>
-      </g>
-      <g id="pins"></g>
-      <g id="labels"></g>
+    <!-- la mer est plein écran en CSS (#stage) ; le SVG est transparent et ne porte que l'île + la vie -->
+    <!-- courants doux (statiques au repos) -->
+    <g stroke="#5FD3C9" stroke-width="2" stroke-linecap="round" fill="none" opacity=".08">
+      <path d="M40 250 q60 -16 120 -4"/><path d="M70 340 q70 -18 140 -2"/>
+      <path d="M520 120 q60 -14 120 0"/><path d="M600 470 q70 -16 130 -2"/>
     </g>
 
-    <!-- Veilleur fixe (ne zoome pas) : petit, serein, veille la mer -->
-    <g id="veilleur" transform="translate(726 104) scale(.46)" opacity=".95" aria-hidden="true">
+    <!-- ÎLE (vraie géo, injectée) : ombre portée + masse + rim doré + chaleur soleil -->
+    <g id="islandG">
+      <path id="islandShadow" fill="#03110d" opacity=".55" filter="url(#soft)" transform="translate(7 12)"/>
+      <path id="islandRimGlow" fill="none" stroke="#FFD884" stroke-width="6" stroke-opacity=".5" filter="url(#rim)"/>
+      <path id="island" fill="url(#land)" stroke="#FFD884" stroke-width="1.4" stroke-opacity=".85"/>
+      <path id="islandWarm" fill="url(#landWarm)" opacity=".9"/>
+      <!-- relief intérieur sobre (mornes) -->
+      <g id="relief" fill="#0e1a12" opacity=".5"></g>
+    </g>
+
+    <!-- yole (vie + échelle) -->
+    <g id="yole" transform="translate(150 470) scale(.6)" opacity=".95">
+      <ellipse cx="0" cy="26" rx="46" ry="6" fill="#06201c" opacity=".5"/>
+      <g><line x1="-2" y1="4" x2="-2" y2="-64" stroke="#241608" stroke-width="3"/>
+        <path d="M-2 -62 L-2 -6 L42 -6 Z" fill="url(#sailR)"/><path d="M-2 -44 L-2 -6 L28 -6 Z" fill="url(#sailY)"/>
+        <path d="M-4 -52 L-4 -8 L-32 -8 Z" fill="#1EC8B0" opacity=".94"/></g>
+      <path d="M-46 4 Q0 24 46 4 Q40 14 32 16 L-32 16 Q-40 14 -46 4 Z" fill="#0f5d54"/>
+      <path d="M-46 4 Q0 18 46 4" fill="none" stroke="#FFD884" stroke-width="1.6" stroke-opacity=".6"/>
+    </g>
+
+    <!-- pastilles-verdict (injectées) -->
+    <g id="pins"></g>
+
+    <!-- Le Veilleur : petit, en veille, coin haut-droit (regarde la mer) -->
+    <g id="veilleur" transform="translate(720 110) scale(.5)" opacity=".96" aria-hidden="true">
       <circle cx="0" cy="0" r="42" fill="url(#phalo)"/>
       <rect x="-58" y="-6" width="34" height="20" rx="3" fill="#163a4f" transform="rotate(-8 -41 4)"/>
       <rect x="24" y="-6" width="34" height="20" rx="3" fill="#163a4f" transform="rotate(8 41 4)"/>
       <path d="M0 -22 C14 -22 22 -14 22 2 C22 18 14 30 0 30 C-14 30 -22 18 -22 2 C-22 -14 -14 -22 0 -22 Z" fill="#102622" stroke="#FFD884" stroke-width="1.1" stroke-opacity=".5"/>
-      <circle cx="0" cy="4" r="15" fill="#0d3a39"/><circle cx="0" cy="4" r="15" fill="none" stroke="#E8A800" stroke-width="2.4"/>
-      <ellipse cx="0" cy="9" rx="15" ry="9" fill="#102622"/>
+      <circle cx="0" cy="4" r="15" fill="#0d3a39"/>
+      <circle cx="0" cy="4" r="15" fill="none" stroke="#E8A800" stroke-width="2.4"/>
+      <ellipse cx="0" cy="9" rx="15" ry="9" fill="#102622"/><!-- paupière mi-close = serein -->
       <circle cx="2" cy="3" r="5.4" fill="#0a3a39"/><circle cx="0.5" cy="1.2" r="2" fill="#cff4ff"/>
-      <line x1="0" y1="-22" x2="0" y2="-34" stroke="#0e2622" stroke-width="2.4"/><circle id="vant" cx="0" cy="-36" r="3.4" fill="#22C55E"/>
+      <line x1="0" y1="-22" x2="0" y2="-34" stroke="#0e2622" stroke-width="2.4"/><circle cx="0" cy="-36" r="3.4" fill="#22C55E"/>
     </g>
   </svg>
+
   <div class="veil"></div>
 
+  <!-- CHROME -->
   <div class="chrome">
     <div class="top">
       <div class="live"><span class="pulse"></span><span class="t">EN DIRECT</span><span class="h" id="fresh">·</span></div>
       <div class="langs"><button data-l="fr" aria-pressed="true">FR</button><button data-l="en">EN</button><button data-l="es">ES</button></div>
     </div>
     <div class="head">
-      <h1 class="anton"><span id="regionName">Martinique</span> <span class="d" id="dayLbl">aujourd'hui</span></h1>
-      <div class="gauge"><span class="bar"><i id="gbar"></i></span><span class="txt"><b id="gnum">—</b> plages propres</span></div>
+      <h1 class="anton">Martinique <span class="d">aujourd'hui</span></h1>
+      <div class="gauge"><span class="bar"><i id="gbar"></i></span><span class="txt"><b id="gnum">—</b> plages propres ce matin</span></div>
     </div>
     <div class="legend">
-      <div class="row"><i style="background:#22C55E"></i> Propre</div><div class="row"><i style="background:#E8A800"></i> Modéré</div><div class="row"><i style="background:#E8522A"></i> À éviter</div>
+      <div class="row"><i style="background:#22C55E"></i> Propre</div>
+      <div class="row"><i style="background:#E8A800"></i> Modéré</div>
+      <div class="row"><i style="background:#E8522A"></i> À éviter</div>
     </div>
     <button class="near" id="nearBtn">📍 Près de moi</button>
-    <div class="scrub"><div class="row" id="scrubRow"></div></div>
-    <div class="dock"><div class="pill"><button aria-pressed="true">🗺️ Carte</button><button id="zonesBtn">🏝️ Zones</button><button>⭐ Moi</button></div></div>
+    <div class="dock"><div class="pill">
+      <button aria-pressed="true">🗺️ Carte</button><button>🏝️ Zones</button><button>⭐ Moi</button>
+    </div></div>
   </div>
   <div class="tag" id="tag"><div class="n" id="tagN"></div><div class="s" id="tagS"><i></i><span></span></div><div class="f" id="tagF"></div></div>
-  <button class="openbeach" id="openBeach">Voir la plage <span style="font-weight:800">→</span></button>
-  <div class="toast" id="toast"></div>
 </div>
 
 <script>
@@ -157,150 +200,73 @@ svg.scene.drag{cursor:grabbing}
   "use strict";
   var C={clean:"#22C55E",moderate:"#E8A800",avoid:"#E8522A"};
   var LBL={clean:["Propre","Clean","Limpia"],moderate:["Modéré","Moderate","Moderado"],avoid:["À éviter","Avoid","Evitar"]};
-  var LANG="fr", NS="http://www.w3.org/2000/svg";
-  var scene=document.getElementById("scene"), world=document.getElementById("world"), tag=document.getElementById("tag"), toast=document.getElementById("toast");
-  var REDUCE=matchMedia("(prefers-reduced-motion:reduce)").matches;
-  function ti(a){return a[LANG==="en"?1:LANG==="es"?2:0];}
-  function toastMsg(m){toast.textContent=m;toast.classList.add("on");clearTimeout(toast._t);toast._t=setTimeout(function(){toast.classList.remove("on");},1900);}
-  var NAMED=[["Salines",1,1],["Diamant",-1,1],["Tartane",1,0],["Dufour",-1,0],["Anse Mitan",-1,1],["Anse Noire",-1,0],["Caravelle",1,-1]];
+  var LANG="fr", scene=document.getElementById("scene");
+  function ti(arr){return arr[LANG==="en"?1:LANG==="es"?2:0];}
 
-  /* ===== caméra (translate+scale sur #world, espace viewBox 800x600) ===== */
-  var cam={tx:0,ty:0,k:1}, K_MIN=1, K_MAX=4.6;
-  function writeCam(){world.setAttribute("transform","translate("+cam.tx.toFixed(2)+" "+cam.ty.toFixed(2)+") scale("+cam.k.toFixed(4)+")");}
-  function clampCam(){
-    cam.k=Math.max(K_MIN,Math.min(K_MAX,cam.k));
-    // garder l'île grossièrement dans le cadre : le centre monde reste dans [ -m .. 800+m ]
-    var m=260;
-    var minTx=400-(800-(-m))*0, maxTx;
-    // bornes simples : empêcher de pousser le monde entièrement hors écran
-    var span=800*cam.k;
-    cam.tx=Math.max(400-span+m, Math.min(m, cam.tx));
-    cam.ty=Math.max(300-600*cam.k+m, Math.min(m, cam.ty));
-  }
-  // point écran -> point viewBox (pré-transform monde), via meet
-  function toSvg(cx,cy){var r=scene.getBoundingClientRect(),s=Math.min(r.width/800,r.height/600);var ox=(r.width-800*s)/2,oy=(r.height-600*s)/2;return [(cx-r.left-ox)/s,(cy-r.top-oy)/s];}
-  // point viewBox-monde -> écran (avec transform monde courant)
-  function worldToScreen(wx,wy){var r=scene.getBoundingClientRect(),s=Math.min(r.width/800,r.height/600);var ox=(r.width-800*s)/2,oy=(r.height-600*s)/2;var sx=wx*cam.k+cam.tx, sy=wy*cam.k+cam.ty;return [r.left+ox+sx*s, r.top+oy+sy*s];}
-
-  /* ===== flyTo (1 rAF) ===== */
-  var anim=null;
-  function flyTo(wx,wy,k){
-    var tk=Math.max(K_MIN,Math.min(K_MAX,k)), ttx=400-wx*tk, tty=300-wy*tk;
-    if(REDUCE){cam.k=tk;cam.tx=ttx;cam.ty=tty;clampCam();writeCam();return;}
-    var s0={tx:cam.tx,ty:cam.ty,k:cam.k}, t0=performance.now(), D=720;
-    if(anim)cancelAnimationFrame(anim);
-    function step(t){var p=Math.min(1,(t-t0)/D);var e=p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
-      cam.tx=s0.tx+(ttx-s0.tx)*e;cam.ty=s0.ty+(tty-s0.ty)*e;cam.k=s0.k+(tk-s0.k)*e;clampCam();writeCam();
-      if(p<1)anim=requestAnimationFrame(step);}
-    anim=requestAnimationFrame(step);
-  }
-
-  var REGION=(function(){try{var m=location.search.match(/[?&]region=([a-z]+)/);return m?m[1]:"mq";}catch(e){return "mq";}})();
-  var EUR={mq:1,gp:1};
   Promise.all([
-    fetch("/public/data/region-outlines/"+REGION+".json").then(function(r){return r.json();}),
-    fetch(EUR[REGION]?"/public/data/beaches-list.json":"/regions/"+REGION+".json").then(function(r){return r.json();})
+    fetch("/design/mq-outline.json").then(r=>r.json()),
+    fetch("/public/data/beaches-list.json").then(r=>r.json())
   ]).then(function(res){
     var O=res[0], raw=res[1];
     var arr=Array.isArray(raw)?raw:(raw.beaches||Object.values(raw).find(Array.isArray)||[]);
-    var beaches=arr.filter(function(b){return (EUR[REGION]?(b.island===REGION):true)&&b.lat&&b.lng;});
-    var rn=document.getElementById("regionName");if(rn&&O.name)rn.textContent=O.name;
+    var beaches=arr.filter(function(b){return (b.island==="mq"||b.island==="martinique"||!b.island)&&b.lat&&b.lng;});
     var bb=O.bbox, pj=O.proj;
     function toVB(la,lo){return [pj.offX+(lo-bb.minLng)*pj.kx*pj.sc, pj.offY+(bb.maxLat-la)*pj.sc];}
 
-    ["shallowFar","shallowNear","islandShadow","islandRimGlow","island","islandWarm"].forEach(function(id){document.getElementById(id).setAttribute("d",O.path);});
-    var relief=document.getElementById("relief"), ridge=document.getElementById("ridge");
-    if(REGION==="mq"){[[14.79,-61.10,24],[14.74,-61.10,18],[14.70,-61.07,20],[14.52,-61.06,15],[14.47,-60.92,12]].forEach(function(m){
-      var v=toVB(m[0],m[1]);var e=document.createElementNS(NS,"ellipse");e.setAttribute("cx",v[0]);e.setAttribute("cy",v[1]);e.setAttribute("rx",m[2]);e.setAttribute("ry",m[2]*0.66);relief.appendChild(e);
-      var hl=document.createElementNS(NS,"path");hl.setAttribute("d","M"+(v[0]-m[2]*0.6)+" "+(v[1]-m[2]*0.2)+" Q"+v[0]+" "+(v[1]-m[2]*0.7)+" "+(v[0]+m[2]*0.6)+" "+(v[1]-m[2]*0.2));ridge.appendChild(hl);
-    });}
-
-    // chaque plage : pos viewBox + état par jour (J0 réel, J1-5 mock déterministe honnête-proto)
-    beaches.forEach(function(b){var v=toVB(b.lat,b.lng);b._vx=v[0];b._vy=v[1];
-      b._days=[b.status||"clean"];var seed=(b.id||b.name||"x").split("").reduce(function(a,c){return a+c.charCodeAt(0);},0);
-      for(var d=1;d<6;d++){var r=((seed*9301+d*49297)%233280)/233280;b._days.push(r<.62?"clean":r<.86?"moderate":"avoid");}
+    // île
+    document.getElementById("island").setAttribute("d",O.path);
+    document.getElementById("islandShadow").setAttribute("d",O.path);
+    document.getElementById("islandRimGlow").setAttribute("d",O.path);
+    document.getElementById("islandWarm").setAttribute("d",O.path);
+    // relief sobre : 2 mornes suggérés (Pelée nord, Carbet centre)
+    var relief=document.getElementById("relief");
+    [[14.78,-61.10,26],[14.70,-61.07,20],[14.52,-61.06,16]].forEach(function(m){
+      var v=toVB(m[0],m[1]);var e=document.createElementNS("http://www.w3.org/2000/svg","ellipse");
+      e.setAttribute("cx",v[0]);e.setAttribute("cy",v[1]);e.setAttribute("rx",m[2]);e.setAttribute("ry",m[2]*0.7);relief.appendChild(e);
     });
 
-    var pins=document.getElementById("pins"), labels=document.getElementById("labels");
-    var pinEls={}, labelStep=Math.max(1,Math.ceil(beaches.length/9));
-    beaches.forEach(function(b,i){
-      var g=document.createElementNS(NS,"g");g.setAttribute("class","pin");g.setAttribute("transform","translate("+b._vx.toFixed(1)+" "+b._vy.toFixed(1)+")");
+    // pastilles
+    var pins=document.getElementById("pins"), NS="http://www.w3.org/2000/svg";
+    var cleanCount=beaches.filter(function(b){return b.status==="clean";}).length;
+    document.getElementById("gnum").textContent=cleanCount;
+    document.getElementById("gbar").style.width=Math.round(cleanCount/Math.max(1,beaches.length)*100)+"%";
+
+    beaches.forEach(function(b){
+      var v=toVB(b.lat,b.lng), col=C[b.status]||"#888";
+      var g=document.createElementNS(NS,"g");g.setAttribute("class","pin");g.setAttribute("transform","translate("+v[0].toFixed(1)+" "+v[1].toFixed(1)+")");
       var halo=document.createElementNS(NS,"circle");halo.setAttribute("class","pinhalo");halo.setAttribute("r","13");halo.setAttribute("fill","url(#phalo)");g.appendChild(halo);
-      var core=document.createElementNS(NS,"circle");core.setAttribute("class","core");core.setAttribute("r","6");core.setAttribute("stroke","#06121A");core.setAttribute("stroke-width","1.3");g.appendChild(core);
-      var ring=document.createElementNS(NS,"circle");ring.setAttribute("r","6");ring.setAttribute("fill","none");ring.setAttribute("stroke","#fff");ring.setAttribute("stroke-opacity",".55");ring.setAttribute("stroke-width","1");g.appendChild(ring);
-      g.addEventListener("click",function(e){e.stopPropagation();selectBeach(b);});
-      pins.appendChild(g);pinEls[b.id||b.name]={core:core,ring:ring,b:b};
-      var side=1,voff=1,doLabel=false;
-      if(REGION==="mq"){var nm=NAMED.find(function(n){return (b.name||"").indexOf(n[0])>=0;});if(nm){doLabel=true;side=nm[1];voff=nm[2];}}
-      else if(i%labelStep===0){doLabel=true;side=(i%2?-1:1);}
-      if(doLabel){var t=document.createElementNS(NS,"text");t.setAttribute("class","plabel");t.setAttribute("x",(b._vx+side*11).toFixed(1));t.setAttribute("y",(b._vy+voff*4-(voff<0?6:-3)).toFixed(1));t.setAttribute("text-anchor",side<0?"end":"start");t.textContent=b.name;labels.appendChild(t);}
+      var core=document.createElementNS(NS,"circle");core.setAttribute("class","core");core.setAttribute("r","6");core.setAttribute("fill",col);core.setAttribute("stroke","#06121A");core.setAttribute("stroke-width","1.3");g.appendChild(core);
+      if(b.status==="clean"){var ring=document.createElementNS(NS,"circle");ring.setAttribute("r","6");ring.setAttribute("fill","none");ring.setAttribute("stroke","#fff");ring.setAttribute("stroke-opacity",".55");ring.setAttribute("stroke-width","1");g.appendChild(ring);}
+      g.addEventListener("click",function(e){e.stopPropagation();showTag(b,v);});
+      g.addEventListener("mouseenter",function(){showTag(b,v);});
+      pins.appendChild(g);
     });
 
-    // ===== jour courant + re-teinte =====
-    var day=0;
-    function paint(){
-      var clean=0;
-      beaches.forEach(function(b){var st=b._days[day]||"clean";if(st==="clean")clean++;var el=pinEls[b.id||b.name];el.core.setAttribute("fill",C[st]||"#888");el.ring.style.display=st==="clean"?"":"none";});
-      document.getElementById("gnum").textContent=clean;
-      document.getElementById("gbar").style.width=Math.round(clean/Math.max(1,beaches.length)*100)+"%";
-      // humeur Veilleur (antenne) = médiane
-      var med=clean/beaches.length; document.getElementById("vant").setAttribute("fill",med>=.6?"#22C55E":med>=.35?"#E8A800":"#E8522A");
-    }
-    // chips scrub
-    var labelsDay=["Auj","+1","+2","+3","+4","+5"];
-    var row=document.getElementById("scrubRow");
-    labelsDay.forEach(function(lb,i){var btn=document.createElement("button");btn.textContent=lb;btn.setAttribute("aria-pressed",i===0?"true":"false");if(i>=1)btn.className="lock";
-      btn.addEventListener("click",function(){
-        if(i>=1){toastMsg("▸ openPremium(map_scrub_forecast)");/* EN PROD : openPremium('map_scrub_forecast', ctx) */}
-        day=i;[].forEach.call(row.children,function(c,j){c.setAttribute("aria-pressed",j===i?"true":"false");});
-        document.getElementById("dayLbl").textContent=i===0?(LANG==="en"?"today":LANG==="es"?"hoy":"aujourd'hui"):(LANG==="en"?"in "+i+"d":LANG==="es"?"en "+i+"d":"dans "+i+"j");
-        paint();
-      });row.appendChild(btn);
-    });
-    paint();
-
-    // ===== sélection plage + plongée =====
-    var selected=null, openBeach=document.getElementById("openBeach");
-    function showTag(b){
+    // étiquette ancrée
+    var tag=document.getElementById("tag");
+    function showTag(b,v){
       document.getElementById("tagN").textContent=b.name||"";
-      var s=document.getElementById("tagS"),st=b._days[day]||"clean";s.querySelector("i").style.background=C[st];s.querySelector("span").textContent=ti(LBL[st]||["—","—","—"]);
+      var s=document.getElementById("tagS");s.querySelector("i").style.background=C[b.status]||"#888";s.querySelector("span").textContent=ti(LBL[b.status]||["—","—","—"]);
       document.getElementById("tagF").textContent=(b.commune||"")+(b.score!=null?" · score "+b.score:"");
-      var sc=worldToScreen(b._vx,b._vy);tag.style.left=sc[0]+"px";tag.style.top=(sc[1]-14)+"px";tag.classList.add("on");
+      // position écran depuis coords viewBox (slice cover-math)
+      var r=scene.getBoundingClientRect(),sc=Math.max(r.width/800,r.height/600);
+      var dw=800*sc,dh=600*sc,ox=(r.width-dw)/2,oy=(r.height-dh)/2;
+      tag.style.left=(r.left+ox+v[0]*sc)+"px";tag.style.top=(r.top+oy+v[1]*sc-12)+"px";
+      tag.classList.add("on");clearTimeout(tag._t);tag._t=setTimeout(function(){tag.classList.remove("on");},2600);
     }
-    function selectBeach(b){selected=b;showTag(b);flyTo(b._vx,b._vy,3.0);openBeach.classList.add("on");
-      // mettre à jour la position du tag après le fly
-      clearTimeout(showTag._t);showTag._t=setTimeout(function(){showTag(b);},740);
-      toastMsg("▸ sg_archipel_tap "+(b.id||b.name));
-    }
-    openBeach.addEventListener("click",function(){if(selected)toastMsg("▸ flyTo NEAR → fiche "+(selected.id||selected.name));/* EN PROD : onBeachClick(selected) plongée fiche */});
-    scene.addEventListener("click",function(){tag.classList.remove("on");openBeach.classList.remove("on");selected=null;});
+    scene.addEventListener("click",function(){tag.classList.remove("on");});
 
-    // près de moi (mock : plus proche propre = 1re clean)
-    document.getElementById("nearBtn").addEventListener("click",function(e){e.stopPropagation();var c=beaches.find(function(b){return (b._days[day]||"clean")==="clean";});if(c){selectBeach(c);toastMsg("▸ sg_map_recenter près-de-moi");}});
-    document.getElementById("zonesBtn").addEventListener("click",function(){flyTo(400,300,1);toastMsg("▸ vue zones");});
-
-    document.getElementById("fresh").textContent="il y a 3 h";
-    writeCam();
+    // fraîcheur honnête (mock : il y a ~3 h)
+    var ageH=3;
+    document.getElementById("fresh").textContent="il y a "+ageH+" h";
   }).catch(function(e){document.getElementById("fresh").textContent="hors-ligne";console.error(e);});
 
-  /* ===== pan / zoom / pinch ===== */
-  var ptrs={}, dragging=false, moved=false, last=null, pinchD0=0, k0=1;
-  scene.addEventListener("pointerdown",function(e){ptrs[e.pointerId]={x:e.clientX,y:e.clientY};moved=false;
-    if(Object.keys(ptrs).length===1){dragging=true;last={x:e.clientX,y:e.clientY};scene.classList.add("drag");}
-    else if(Object.keys(ptrs).length===2){var p=Object.values(ptrs);pinchD0=Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y);k0=cam.k;}
+  // langue (re-render léger des libellés statiques)
+  document.querySelectorAll(".langs button").forEach(function(btn){
+    btn.addEventListener("click",function(){LANG=btn.getAttribute("data-l");
+      document.querySelectorAll(".langs button").forEach(function(x){x.setAttribute("aria-pressed",x===btn?"true":"false");});
+    });
   });
-  scene.addEventListener("pointermove",function(e){
-    if(!ptrs[e.pointerId])return;ptrs[e.pointerId]={x:e.clientX,y:e.clientY};
-    var keys=Object.keys(ptrs);
-    if(keys.length>=2){var p=Object.values(ptrs);var d=Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y);if(pinchD0>0){var mid={x:(p[0].x+p[1].x)/2,y:(p[0].y+p[1].y)/2};zoomAt(mid.x,mid.y,(k0*d/pinchD0)/cam.k);}moved=true;return;}
-    if(dragging&&last){var r=scene.getBoundingClientRect(),s=Math.min(r.width/800,r.height/600);cam.tx+=(e.clientX-last.x)/s;cam.ty+=(e.clientY-last.y)/s;last={x:e.clientX,y:e.clientY};moved=true;clampCam();writeCam();tag.classList.remove("on");}
-  });
-  function endPtr(e){delete ptrs[e.pointerId];if(Object.keys(ptrs).length<2)pinchD0=0;if(Object.keys(ptrs).length===0){dragging=false;scene.classList.remove("drag");}}
-  scene.addEventListener("pointerup",endPtr);scene.addEventListener("pointercancel",endPtr);scene.addEventListener("pointerleave",function(e){if(e.pointerType==="mouse")endPtr(e);});
-  scene.addEventListener("wheel",function(e){e.preventDefault();var f=e.deltaY<0?1.12:1/1.12;zoomAt(e.clientX,e.clientY,f);},{passive:false});
-  function zoomAt(cx,cy,f){var s=toSvg(cx,cy);var wx=(s[0]-cam.tx)/cam.k, wy=(s[1]-cam.ty)/cam.k;cam.k*=f;clampCam();cam.tx=s[0]-wx*cam.k;cam.ty=s[1]-wy*cam.k;clampCam();writeCam();tag.classList.remove("on");}
-
-  document.querySelectorAll(".langs button").forEach(function(btn){btn.addEventListener("click",function(){LANG=btn.getAttribute("data-l");document.querySelectorAll(".langs button").forEach(function(x){x.setAttribute("aria-pressed",x===btn?"true":"false");});});});
 })();
 </script>
 </body>

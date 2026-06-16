@@ -3385,7 +3385,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             )
           })()}
           {/* Freshness chip — satellite timestamp sous le verdict */}
-          {!beachStory&&(()=>{try{const ts=sargData?.updatedAt||sargData?.erddapTimestamp;if(!ts)return null;const h=(Date.now()-new Date(ts).getTime())/3.6e6;if(!(h>=0&&h<48))return null;const label=h<1?_t(lang,"À l'instant","Just now","Ahora mismo"):_t(lang,"il y a "+Math.round(h)+" h",Math.round(h)+"h ago","hace "+Math.round(h)+" h");return(<div style={{display:"flex",alignItems:"center",gap:5,margin:"-10px 0 14px",opacity:.72}}><span style={{fontSize:11}}>🛰️</span><span style={{fontSize:10.5,fontWeight:600,color:"var(--sg-mid,#686868)",letterSpacing:".02em"}}>{_t(lang,"Satellite","Satellite","Satélite")} · {label}</span></div>)}catch(_){return null}})()}
+          {!beachStory&&(()=>{try{const ts=sargData?.updatedAt||sargData?.erddapTimestamp;if(!ts)return null;const h=(Date.now()-new Date(ts).getTime())/3.6e6;if(!(h>=0&&h<72))return null;const label=h<1?_t(lang,"À l'instant","Just now","Ahora mismo"):h<12?_t(lang,"il y a "+Math.round(h)+" h",Math.round(h)+"h ago","hace "+Math.round(h)+" h"):_t(lang,"vérif. en cours","checking","verificando");return(<div style={{display:"flex",alignItems:"center",gap:5,margin:"-10px 0 14px",opacity:.72}}><span style={{fontSize:11}}>🛰️</span><span style={{fontSize:10.5,fontWeight:600,color:"var(--sg-mid,#686868)",letterSpacing:".02em"}}>{_t(lang,"Satellite","Satellite","Satélite")} · {label}</span></div>)}catch(_){return null}})()}
           {/* Verdict du Jour — Devine-puis-Révèle (A/B pw_verdict_guess). Rendu
               dans LES DEUX bras (additif) quand le vrai statut est connu. */}
           {verdictGuess&&ST[beach.status]&&<VerdictDuJourCard beach={beach} lang={lang}/>}
@@ -6670,9 +6670,10 @@ function formatFreshness(updatedAt,lang){
   if(min<1)return lang==="en"?"just now":lang==="es"?"ahora":"à l'instant"
   if(min<60)return lang==="en"?`${min}m ago`:lang==="es"?`hace ${min}m`:`il y a ${min}m`
   const h=Math.floor(min/60)
-  if(h<24)return lang==="en"?`${h}h ago`:lang==="es"?`hace ${h}h`:`il y a ${h}h`
-  const d=Math.floor(h/24)
-  return lang==="en"?`${d}d ago`:lang==="es"?`hace ${d}d`:`il y a ${d}j`
+  // Kill-switch anti-fake-freshness : données >12h = stale, ne pas afficher un horodatage
+  // précis qui suggèrerait « presque en direct » (cf. Phase 0 REFONTE-MASTER).
+  if(h>=12)return null
+  return lang==="en"?`${h}h ago`:lang==="es"?`hace ${h}h`:`il y a ${h}h`
 }
 function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,beachCount,dataSource,updatedAt,onHome}){
   const LL=T[lang]||T.fr
