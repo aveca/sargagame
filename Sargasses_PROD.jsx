@@ -9586,6 +9586,11 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
   },[beaches,island,lang])
   const ph=(()=>{try{if(typeof HERO_PH_OVERRIDE!=="undefined"&&HERO_PH_OVERRIDE)return HERO_PH_OVERRIDE;const h=new Date().getHours();return h<5?"night":h<8?"dawn":h<17?"day":h<20?"golden":"night"}catch(_){return "golden"}})()
   const sky=BEACH_PHASE[ph]||BEACH_PHASE.golden
+  // GROUNDING de la carte (fix « elle est un peu vide ») : socle de côte douce + halos
+  //   de rivage golden-hour, dessinés LÀ où sont les plages (concave, gère les baies,
+  //   AUCUNE fake-île — la lumière = exactement les plages surveillées). Statique = calme.
+  //   A/B pw_mapground (override ?mapground=1/0). Filter-free → zéro re-raster au zoom.
+  const groundOn=useMemo(()=>{try{const q=window.location.search;if(/[?&]mapground=1/.test(q))return true;if(/[?&]mapground=0/.test(q))return false;return abVariant("pw_mapground",["control","ground"],[.18,.82])==="ground"}catch(_){return true}},[])
   // CARTE-FOG + STREAK DE VEILLE (brief #5, rétention « payer = habitude », Zenly).
   // veille = série de jours consécutifs où l'user ouvre l'app (habitude). consultedRef
   // = plages déjà ouvertes (fog sur les autres). Le fog NE voile JAMAIS la couleur de
@@ -9660,6 +9665,16 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
       </svg>
       <svg width="100%" height="100%" style={{position:"absolute",inset:0,display:"block"}} aria-hidden="true">
         <g ref={gRef}>
+          {groundOn&&<g aria-hidden="true">
+            <defs>
+              <radialGradient id="awGround" cx="50%" cy="50%" r="50%"><stop offset="0" stopColor="#16383A" stopOpacity=".82"/><stop offset=".6" stopColor="#123031" stopOpacity=".46"/><stop offset="1" stopColor="#123031" stopOpacity="0"/></radialGradient>
+              <radialGradient id="awShoreGlow" cx="50%" cy="50%" r="50%"><stop offset="0" stopColor="#FFE6A8" stopOpacity=".36"/><stop offset=".55" stopColor="#5FD3C9" stopOpacity=".10"/><stop offset="1" stopColor="#5FD3C9" stopOpacity="0"/></radialGradient>
+            </defs>
+            {/* SOCLE DE CÔTE : la terre douce LÀ où sont les plages — concave (gère les baies),
+                zéro fake-île. + HALOS de rivage golden-hour (« les plages scintillent sur l'eau »). */}
+            <g>{proj.map(p=>(<circle key={"gr"+p.b.id} cx={p.x.toFixed(1)} cy={p.y.toFixed(1)} r="46" fill="url(#awGround)"/>))}</g>
+            <g style={{mixBlendMode:"screen"}}>{proj.map(p=>(<circle key={"hl"+p.b.id} cx={p.x.toFixed(1)} cy={p.y.toFixed(1)} r="50" fill="url(#awShoreGlow)"/>))}</g>
+          </g>}
           {proj.map((p,i)=>{const b=p.b,col=b.scoreColor||verdictMeta(b.status,lang).color,sc=typeof b.score==="number"?b.score:null,me=i===myIdx,r=sc!=null?5+sc/15:6,fog=fogOn&&!me&&!consultedRef.current.has(b.id)
             return(<g key={b.id} data-beach={b.id} transform={"translate("+p.x.toFixed(1)+" "+p.y.toFixed(1)+")"} style={{cursor:"pointer"}}
               onClick={ev=>{ev.stopPropagation();if(movedRef.current)return;markConsulted(b.id);diveBeach(i,b)}}>
