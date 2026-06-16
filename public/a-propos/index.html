@@ -61,9 +61,6 @@
   .bt-stat{padding:14px 0;border-top:1px solid rgba(255,255,255,.14)}
   .bt-stat-big{font-family:var(--sg-font-display);font-size:44px;line-height:1;letter-spacing:-.02em;background:linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A800);-webkit-background-clip:text;background-clip:text;color:transparent}
   .bt-stat-lab{font-size:11px;color:rgba(255,255,255,.6);margin-top:6px;letter-spacing:.04em}
-  .bt-chart{height:80px;position:relative;margin:16px 0 12px}
-  .bt-chart svg{width:100%;height:100%}
-  .bt-legend{display:flex;justify-content:space-between;font-size:9px;color:rgba(255,255,255,.5);font-family:var(--sg-font-mono);letter-spacing:.05em}
   .bt-note{font-size:11px;color:rgba(255,255,255,.55);margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.1);line-height:1.5}
 
   /* ---------- team ---------- */
@@ -145,7 +142,7 @@
         <div class="src-meta">
           <span class="src-pulse"><span class="src-pulse-dot"></span><b>LIVE</b></span>
           <span>4×/jour</span>
-          <span>Maj. 07:03</span>
+          <span>Mise à jour auto</span>
         </div>
       </div>
 
@@ -195,34 +192,6 @@
       <h3 class="bt-head">On compare chaque prévision à ce que le satellite a vraiment vu</h3>
       <p class="bt-note" style="margin-top:2px">Le décompte complet et à jour — fiabilité par horizon (J+1→J+4), par régime, par plage, avec l'échantillon, les dates et ce qu'on rate — est public et recalculé chaque jour :</p>
       <p style="margin:14px 0 2px"><a href="/fiabilite/" style="display:inline-flex;align-items:center;gap:7px;color:#FFC72C;font-weight:700;text-decoration:none">Voir la fiabilité chiffrée, à jour → /fiabilite/</a></p>
-
-      <div class="bt-chart">
-        <svg viewBox="0 0 320 80" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="gx" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0" stop-color="#FFC72C" stop-opacity=".4"/>
-              <stop offset="1" stop-color="#FFC72C" stop-opacity="0"/>
-            </linearGradient>
-          </defs>
-          <!-- grid -->
-          <line x1="0" y1="20" x2="320" y2="20" stroke="rgba(255,255,255,.08)"/>
-          <line x1="0" y1="40" x2="320" y2="40" stroke="rgba(255,255,255,.08)" stroke-dasharray="2 3"/>
-          <line x1="0" y1="60" x2="320" y2="60" stroke="rgba(255,255,255,.08)"/>
-          <!-- predicted -->
-          <path d="M0,48 L26,44 L53,52 L80,38 L106,46 L133,32 L160,40 L186,28 L213,36 L240,24 L266,32 L293,20 L320,28"
-                fill="none" stroke="#FFC72C" stroke-width="1.8" stroke-linejoin="round"/>
-          <path d="M0,48 L26,44 L53,52 L80,38 L106,46 L133,32 L160,40 L186,28 L213,36 L240,24 L266,32 L293,20 L320,28 L320,80 L0,80 Z"
-                fill="url(#gx)"/>
-          <!-- observed (dashed) -->
-          <path d="M0,52 L26,46 L53,50 L80,42 L106,48 L133,36 L160,42 L186,34 L213,38 L240,30 L266,34 L293,26 L320,32"
-                fill="none" stroke="rgba(30,200,176,.9)" stroke-width="1.5" stroke-dasharray="3 2" stroke-linejoin="round"/>
-        </svg>
-      </div>
-      <div class="bt-legend">
-        <span>—— prévu</span>
-        <span style="color:rgba(30,200,176,.9)">- - observé</span>
-        <span>prévu vs observé satellite</span>
-      </div>
 
       <p class="bt-note">Méthode : écart entre catégorie prévue (propre / modéré / alerte) et catégorie observée, sur l'ensemble des plages suivies. Le décompte exact (échantillon, fenêtre, dates) vit sur la page Fiabilité, recalculé chaque jour.</p>
     </div>
