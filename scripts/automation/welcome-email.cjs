@@ -15,6 +15,7 @@ const fs = require('fs')
 const path = require('path')
 const { Resend } = require('resend')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
+const { sendEmail } = require('./lib/email-send.cjs')
 
 const API_KEY = process.env.RESEND_API_KEY
 const SUBSCRIBERS_PATH = path.join(__dirname, 'data', 'subscribers.json')
@@ -256,7 +257,7 @@ async function main() {
     const island = (sub.island || 'MQ').toUpperCase()
     const newRegion = NEW_REGIONS[island] || null
 
-    let from, subjectLine, htmlBody
+    let from, subjectLine, htmlBody, preheader
     if (newRegion) {
       // Nouvelle r\u00E9gion : sender via domaine MQ v\u00E9rifi\u00E9, contenu EN/ES.
       const cleanCount = regionCleanCount(newRegion)
@@ -266,6 +267,9 @@ async function main() {
         ? (cleanCount > 0 ? `${cleanCount} playas sin sargazo en ${newRegion.name} \u2014 tu mapa est\u00E1 listo` : `Bienvenido \u2014 tu mapa de sargazo de ${newRegion.name} est\u00E1 listo`)
         : (cleanCount > 0 ? `${cleanCount} sargassum-free beaches in ${newRegion.name} \u2014 your map is ready` : `Welcome \u2014 your ${newRegion.name} sargassum map is ready`)
       htmlBody = buildWelcomeHTMLRegion(newRegion, cleanCount, sub.email)
+      preheader = es
+        ? `Tu mapa de playas en vivo, actualizado 4×/día — mira cualquier playa en 5 segundos.`
+        : `Your live beach map, updated 4×/day — check any beach in 5 seconds.`
     } else {
       const islandBeaches = beaches.filter(b => b.island === island.toLowerCase())
       const cleanCount = islandBeaches.filter(b => b.status === 'clean').length
@@ -273,19 +277,18 @@ async function main() {
       const name = island === 'MQ' ? 'Martinique' : 'Guadeloupe'
       subjectLine = cleanCount > 0 ? `${cleanCount} plages propres en ${name} \u2014 ta carte est pr\u00EAte` : `Bienvenue \u2014 ta carte sargasses ${name} est pr\u00EAte`
       htmlBody = buildWelcomeHTML(island, cleanCount, sub.email)
+      preheader = `Ta carte des plages en direct, mise \u00E0 jour 4\u00D7/jour \u2014 et le bon plan plage chaque vendredi.`
     }
 
     try {
       const unsub = unsubUrl(sub.email, island)
-      const { data, error } = await resend.emails.send({
+      const { data, error } = await sendEmail(resend, {
         from,
         to: sub.email,
         subject: subjectLine,
         html: htmlBody,
-        headers: {
-          'List-Unsubscribe': `<${unsub}>`,
-          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
-        },
+        preheader,
+        unsubUrl: unsub,
       })
 
       if (error) {

@@ -23,6 +23,7 @@ const fs = require('fs')
 const path = require('path')
 const { Resend } = require('resend')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
+const { sendEmail } = require('./lib/email-send.cjs')
 const { getAllRegions } = require('../../regions/index.cjs')
 
 const args = process.argv.slice(2)
@@ -41,6 +42,7 @@ const STRIPE_KEY = envVal('STRIPE_SECRET_KEY')
 const RESEND_KEY = envVal('RESEND_API_KEY') || envVal('RESEND')
 
 const SENT_PATH = path.join(__dirname, 'data', 'cart-recovery-sent.json')
+const BOUNCED_PATH = path.join(__dirname, 'data', 'bounced-emails.json')
 const HOOK = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec'
 const FROM_DOMAIN = 'alerte@sargasses-martinique.com' // seul domaine vérifié Resend (free plan)
 const FRAUD_CODES = new Set(['fraudulent', 'stolen_card', 'lost_card', 'pickup_card']) // ne JAMAIS inciter à réessayer
@@ -87,28 +89,34 @@ function copy(region, kind) {
   const V = {
     declined: es
       ? { subject: `Tu pago no se completó — ¿probar con otra tarjeta?`, kicker: 'Casi listo',
+          pre: `Suele ser un bloqueo temporal del banco — con otra tarjeta entras en 30 segundos.`,
           tagline: 'Tu tarjeta fue rechazada — pasa a veces. Prueba con otra y listo.',
           body: `Tu banco rechazó el pago de tu pase de ${name}. Suele ser un bloqueo temporal — prueba con otra tarjeta y tendrás acceso al instante:`,
           cta: 'Probar con otra tarjeta — $5.99' }
       : { subject: `Your payment didn't go through — try another card?`, kicker: 'Almost there',
+          pre: `Usually just a temporary bank hold — another card gets you in within 30 seconds.`,
           tagline: 'Your card was declined — it happens. Try another and you’re in.',
           body: `Your bank declined the payment for your ${name} trip pass. It’s usually a temporary block — try another card and you’ll get instant access:`,
           cta: 'Try another card — $5.99' },
     action: es
       ? { subject: `Un último paso para confirmar tu pago`, kicker: 'Un último paso',
+          pre: `Tu banco solo necesita una confirmación rápida — y tu pase de ${name} queda activo.`,
           tagline: 'Tu banco solo necesita que confirmes el pago.',
           body: `Estás a un paso de tu pase de ${name}. Tu banco solo necesita que confirmes el pago — toca abajo para terminar:`,
           cta: 'Completar mi pago — $5.99' }
       : { subject: `One last step to confirm your payment`, kicker: 'One last step',
+          pre: `Your bank just needs a quick confirmation — then your ${name} pass is live.`,
           tagline: 'Your bank just needs you to confirm the payment.',
           body: `You’re one step away from your ${name} trip pass. Your bank just needs you to confirm the payment — tap below to finish:`,
           cta: 'Finish my payment — $5.99' },
     abandoned: es
       ? { subject: `¿Aún lo estás pensando? Tu pronóstico de playas de ${name} está listo`, kicker: 'Casi lo tienes',
+          pre: `Mira cualquier playa de ${name} antes de ir — limpia o no, en 5 segundos.`,
           tagline: 'Sabe qué playas están limpias — antes de ir.',
           body: `Estabas a un paso de tu pase de viaje de ${name}. Sin prisa — esto es lo que te espera:`,
           cta: 'Obtén tu pase — $5.99' }
       : { subject: `Still thinking about it? Your ${name} beach forecast is ready`, kicker: "You’re almost there",
+          pre: `Check any ${name} beach before you go — clean or not, in 5 seconds.`,
           tagline: 'Know which beaches are clear — before you go.',
           body: `You were one step away from your ${name} trip pass. No rush — here’s what’s waiting for you:`,
           cta: 'Get your pass — $5.99' },
@@ -176,6 +184,7 @@ async function main() {
   for (const cid of activeCustIds) { try { const c = await stripe(`customers/${cid}`); if (c.email) activeHashes.add(emailHash(c.email)) } catch {} }
 
   const sentSet = hashedSet(loadJSON(SENT_PATH, []))
+  const bouncedSet = hashedSet(loadJSON(BOUNCED_PATH, [])) // ne JAMAIS écrire à une adresse morte
   const cutoff = Date.now() - SINCE_DAYS * 864e5
   const sessions = await listAll('checkout/sessions', 400)
 
@@ -187,7 +196,7 @@ async function main() {
     const email = s.customer_details?.email || s.customer_email
     if (!email) continue
     const h = emailHash(email)
-    if (seen.has(h) || activeHashes.has(h) || sentSet.has(h)) continue
+    if (seen.has(h) || activeHashes.has(h) || sentSet.has(h) || bouncedSet.has(h)) continue
     let island = s.metadata?.island
     if (!island && s.payment_link) { try { island = (await stripe(`payment_links/${s.payment_link}`)).metadata?.island } catch {} }
     const region = REGIONS[island]
@@ -213,9 +222,9 @@ async function main() {
     const from = `${t.brand} <${FROM_DOMAIN}>`
     const unsub = unsubUrl(email, region.id)
     try {
-      const { data, error } = await resend.emails.send({
+      const { data, error } = await sendEmail(resend, {
         from, to: email, subject: t.subject, html: buildHTML(region, email, kind),
-        headers: { 'List-Unsubscribe': `<${unsub}>`, 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' },
+        preheader: t.pre, unsubUrl: unsub,
       })
       if (error) { console.log(`  ❌ ${logId(email)} : ${error.message}`); continue }
       console.log(`  ✅ ${logId(email)} (${region.name}/${kind})`)
