@@ -1990,6 +1990,20 @@ button:active,a:active,[role="button"]:active{transform:scale(.96)!important;opa
   .sheet{max-width:540px}
 }
 
+/* Dock glass : pill sombre flottant à TOUS les breakpoints (variant dock_glass A/B) */
+.sg-dock-glass{
+  left:50% !important;right:auto !important;
+  transform:translateX(-50%);
+  bottom:calc(16px + env(safe-area-inset-bottom)) !important;
+  width:auto !important;max-width:calc(100vw - 32px);
+  background:rgba(8,18,16,.62) !important;
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,.12) !important;
+  border-top:1px solid rgba(255,255,255,.12) !important;
+  border-radius:999px !important;padding:5px !important;
+  box-shadow:0 10px 30px rgba(0,0,0,.4);
+}
+
 /* Landscape — reduce vertical footprint */
 @media(orientation:landscape) and (max-height:500px){
   .sheet{max-height:92dvh !important}
@@ -2313,16 +2327,17 @@ function LearnView({lang,onBack,onGoMap}){
   )
 }
 
-function BottomNav({view,onChangeView,lang,premiumOpen}){
+function BottomNav({view,onChangeView,lang,premiumOpen,glass=false,isPremium=false}){
   const LL=T[lang]||T.fr
   // Le jeu reste un EASTER EGG (toast d'inactivité), jamais un onglet de menu
   // (directive user 14/06 : « j'aimais bien le jeu en petit easter egg pas en menu »).
-  const tabs=[
+  let tabs=[
     {id:"map",label:LL.navMap,icon:"🗺️"},
     {id:"list",label:LL.navList,icon:"📋"},
     {id:"premium",label:LL.navPremium,icon:"⭐"},
   ]
-  return(
+  if(isPremium) tabs=tabs.filter(t=>t.id!=="premium")
+  if(!glass) return(
     <nav className="sg-bottom-nav" style={{
       position:"fixed",bottom:0,left:0,right:0,zIndex:800,
       display:"flex",justifyContent:"space-around",alignItems:"center",
@@ -2345,6 +2360,31 @@ function BottomNav({view,onChangeView,lang,premiumOpen}){
           {active&&<div style={{position:"absolute",top:-1,width:24,height:3,
             borderRadius:2,background:C.gold,transition:"width .2s"}}/>}
           <span style={{fontSize:20,transition:"transform .2s",
+            transform:active?"scale(1.1)":"scale(1)"}}>{t.icon}</span>
+          <span>{t.label}</span>
+        </button>
+      )})}
+    </nav>
+  )
+  // VARIANTE glass : pill sombre flottant golden-hour, mobile + desktop
+  return(
+    <nav className="sg-bottom-nav sg-dock-glass" style={{
+      position:"fixed",zIndex:800,
+      display:"flex",alignItems:"center",gap:4,padding:5,
+    }}>
+      {tabs.map(t=>{
+        const active=t.id==="premium"?premiumOpen:(view===t.id)
+        return(
+        <button key={t.id} onClick={()=>onChangeView(t.id)} style={{
+          display:"flex",flexDirection:"row",alignItems:"center",gap:6,
+          background:active?"rgba(255,199,44,.18)":"none",
+          border:"none",cursor:"pointer",
+          color:active?"#FFC72C":"rgba(255,255,255,.7)",
+          fontSize:12,fontWeight:active?700:500,fontFamily:"inherit",
+          transition:"all .2s",padding:"9px 15px",
+          borderRadius:999,minHeight:44,justifyContent:"center",
+        }}>
+          <span style={{fontSize:18,transition:"transform .2s",
             transform:active?"scale(1.1)":"scale(1)"}}>{t.icon}</span>
           <span>{t.label}</span>
         </button>
@@ -7024,7 +7064,7 @@ function AfaiChip({beach,lang}){
    Intercepte openPremium("forecast_*") quand aucun email capturé.
    Pitch : email → rapport matin + prévision J+2-J+7. Après submit → PremiumModal.
    ═══════════════════════════════════════════════════════════════════════════ */
-function CaptureGateModal({lang,onSubmit,onClose}){
+function CaptureGateModal({lang,onSubmit,onClose,beach}){
   const[email,setEmail]=useState(()=>{try{return localStorage.getItem("sg_email")||""}catch{return ""}})
   const[sent,setSent]=useState(false)
   const[err,setErr]=useState(false)
@@ -7034,6 +7074,9 @@ function CaptureGateModal({lang,onSubmit,onClose}){
     setSent(true)
     onSubmit(email)
   }
+  // When a beach is in context, use anchored copy + mini forecast preview (J+0 visible, J+1 blurred)
+  const hasBeach=!!(beach?.name)
+  const statusColor={clean:"#22C55E",moderate:"#F59E0B",avoid:"#EF4444"}[beach?.status]||"#F59E0B"
   return(
     <div style={{position:"fixed",inset:0,zIndex:1055,background:"rgba(2,9,7,.88)",
       display:"flex",alignItems:"flex-end",justifyContent:"center",backdropFilter:"blur(6px)"}}
@@ -7044,18 +7087,57 @@ function CaptureGateModal({lang,onSubmit,onClose}){
         {!sent?(<>
           <div style={{fontSize:10,fontWeight:700,color:"rgba(255,232,168,.55)",
             textTransform:"uppercase",letterSpacing:".1em",marginBottom:10}}>
-            {_t(lang,"BRIEF MATIN · GRATUIT","MORNING BRIEF · FREE","BRIEF MATINAL · GRATIS")}
+            {hasBeach
+              ?_t(lang,"DEMAIN · GRATUIT","TOMORROW · FREE","MAÑANA · GRATIS")
+              :_t(lang,"BRIEF MATIN · GRATUIT","MORNING BRIEF · FREE","BRIEF MATINAL · GRATIS")}
           </div>
           <div style={{fontSize:22,fontWeight:800,color:"#fff",lineHeight:1.2,
-            marginBottom:8,fontFamily:"Bricolage Grotesque,sans-serif"}}>
-            {_t(lang,"Le brief sargasses\nchaque matin","Daily sargassum brief\nin your inbox","El resumen de sargazo\ncada mañana")}
+            marginBottom:hasBeach?10:8,fontFamily:"Bricolage Grotesque,sans-serif"}}>
+            {hasBeach
+              ?_t(lang,`Demain à ${beach.name}`,`Tomorrow at ${beach.name}`,`Mañana en ${beach.name}`)
+              :_t(lang,"Le brief sargasses\nchaque matin","Daily sargassum brief\nin your inbox","El resumen de sargazo\ncada mañana")}
           </div>
-          <div style={{fontSize:13,color:"rgba(255,255,255,.46)",marginBottom:20,lineHeight:1.5}}>
-            {_t(lang,
-              "Laisse ton email — on t'envoie chaque matin l'état de tes plages et la meilleure où aller.",
-              "Leave your email — we send you every morning the beach status and the best spot to go.",
-              "Deja tu email — te enviamos cada mañana el estado de tus playas y la mejor opción del día.")}
-          </div>
+          {hasBeach&&(
+            // Mini 2-bar preview: today (visible) + tomorrow (blurred = email unlocks it)
+            <div style={{display:"flex",gap:6,alignItems:"flex-end",marginBottom:14,height:52}}>
+              {/* J+0 today — visible, anchors the user to real data */}
+              <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
+                <div style={{width:"100%",borderRadius:6,height:36,background:statusColor,opacity:.75}}/>
+                <span style={{fontSize:9,color:"rgba(255,255,255,.4)",fontWeight:700,letterSpacing:".05em"}}>
+                  {_t(lang,"Auj.","Today","Hoy")}
+                </span>
+              </div>
+              {/* J+1 tomorrow — blurred, email unlocks this */}
+              <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,position:"relative"}}>
+                <div style={{width:"100%",borderRadius:6,height:28,background:statusColor,opacity:.22,filter:"blur(2px)"}}/>
+                <span style={{position:"absolute",top:6,left:"50%",transform:"translateX(-50%)",
+                  fontSize:14}}>✉️</span>
+                <span style={{fontSize:9,color:"rgba(255,232,168,.6)",fontWeight:700,letterSpacing:".05em"}}>
+                  {_t(lang,"Demain","Tomorrow","Mañana")}
+                </span>
+              </div>
+              {/* J+2-J+7 — clearly Premium */}
+              <div style={{flex:3,display:"flex",flexDirection:"column",alignItems:"center",gap:3,position:"relative"}}>
+                <div style={{width:"100%",borderRadius:6,height:22,background:"rgba(255,255,255,.06)",
+                  display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  <span style={{fontSize:9,color:"rgba(255,255,255,.2)",fontWeight:700,letterSpacing:".05em"}}>
+                    🔒 J+2 → J+7
+                  </span>
+                </div>
+                <span style={{fontSize:9,color:"rgba(255,255,255,.2)",fontWeight:700,letterSpacing:".05em"}}>
+                  {_t(lang,"Premium","Premium","Premium")}
+                </span>
+              </div>
+            </div>
+          )}
+          {!hasBeach&&(
+            <div style={{fontSize:13,color:"rgba(255,255,255,.46)",marginBottom:20,lineHeight:1.5}}>
+              {_t(lang,
+                "Laisse ton email — on t'envoie chaque matin l'état de tes plages et la meilleure où aller.",
+                "Leave your email — we send you every morning the beach status and the best spot to go.",
+                "Deja tu email — te enviamos cada mañana el estado de tus playas y la mejor opción del día.")}
+            </div>
+          )}
           <form onSubmit={submit} style={{display:"flex",gap:8,marginBottom:12}}>
             <input type="email" inputMode="email" autoComplete="email"
               placeholder={_t(lang,"ton@email.com","your@email.com","tu@email.com")}
@@ -7069,13 +7151,17 @@ function CaptureGateModal({lang,onSubmit,onClose}){
               background:"linear-gradient(158deg,#FFE47A,#FFC72C,#E89400)",
               color:"#06121A",fontSize:13,fontWeight:800,fontFamily:"inherit",
               boxShadow:"0 2px 12px rgba(232,168,0,.35)",whiteSpace:"nowrap"}}>
-              {_t(lang,"Recevoir →","Subscribe →","Recibir →")}
+              {hasBeach
+                ?_t(lang,"Voir demain →","See tomorrow →","Ver mañana →")
+                :_t(lang,"Recevoir →","Subscribe →","Recibir →")}
             </button>
           </form>
           <div style={{textAlign:"center"}}>
             <button onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",
               color:"rgba(255,255,255,.28)",fontSize:11,padding:0,fontFamily:"inherit"}}>
-              {_t(lang,"Non merci, voir les offres →","No thanks, see plans →","No gracias, ver planes →")}
+              {hasBeach
+                ?_t(lang,"Voir les 7 jours → Premium","See 7-day forecast → Premium","Ver 7 días → Premium")
+                :_t(lang,"Non merci, voir les offres →","No thanks, see plans →","No gracias, ver planes →")}
             </button>
           </div>
         </>):(
@@ -7086,10 +7172,15 @@ function CaptureGateModal({lang,onSubmit,onClose}){
               {_t(lang,"C'est bon !","Done!","¡Listo!")}
             </div>
             <div style={{fontSize:13,color:"rgba(255,255,255,.5)",lineHeight:1.5}}>
-              {_t(lang,
-                "Premier brief demain matin — état des plages en direct.",
-                "First brief tomorrow morning — live beach status.",
-                "Primer resumen mañana por la mañana — estado de las playas en directo.")}
+              {hasBeach
+                ?_t(lang,
+                  `Verdict de demain à ${beach.name} dans ta boîte demain matin.`,
+                  `Tomorrow's verdict for ${beach.name} in your inbox tomorrow morning.`,
+                  `El veredicto de mañana en ${beach.name} en tu correo mañana por la mañana.`)
+                :_t(lang,
+                  "Premier brief demain matin — état des plages en direct.",
+                  "First brief tomorrow morning — live beach status.",
+                  "Primer resumen mañana por la mañana — estado de las playas en directo.")}
             </div>
           </div>
         )}
@@ -10766,6 +10857,9 @@ export default function App(){
   // Verdict) intact. Override ?home_az=1/0. La conversion (openPremium/Stripe/
   // pw_*) reste strictement la même porte. Reduced-motion : HomeAZ a son plancher.
   const[homeAZ]=useState(()=>{try{const q=window.location.search;if(/[?&]home_az=1/.test(q))return true;if(/[?&]home_az=0/.test(q))return false;return abVariant("home_az",["control","az"],[.7,.3])==="az"}catch(_){return false}})
+  // A/B `dock_glass` : pill sombre flottant golden-hour vs dock blanc (control). 50/50.
+  // Override ?dock=1/0. Bug fixes (premiumOpen + openPremium source) s'appliquent aux 2 bras.
+  const[dockGlass]=useState(()=>{try{const q=window.location.search;if(/[?&]dock=1/.test(q))return true;if(/[?&]dock=0/.test(q))return false;return abVariant("dock_glass",["control","glass"],[.5,.5])==="glass"}catch(_){return false}})
   // A/B `map_world` : carte SVG monde golden-hour (vraie géo OSM + golden-hour + scrub)
   // vs ArchipelView (bounding-box simple, control). 50/50. Override ?map_world=1/0.
   // Additif : control = ArchipelView intact, Leaflet = fallback ?nav=map (jamais touché).
@@ -11287,12 +11381,6 @@ export default function App(){
     }
   },[selectedBeach,allBeaches])
 
-  const onChangeView=useCallback(v=>{
-    track("sg_nav_change",{tab:v})
-    if(v==="premium")setShowPremium(true)
-    else setView(v)
-  },[])
-
   const FORECAST_GATE_SRCS=["forecast_lock","forecast_cta","forecast_scrub","forecast_beat","forecast_scrub_premium","whisper_veilleur"]
   const openPremium=useCallback((src)=>{
     const s=src||"nav"
@@ -11303,6 +11391,13 @@ export default function App(){
     }
     setPremiumSource(s);setShowPremium(true);track("sg_premium_modal_open",{source:s})
   },[captureGate])
+  // onChangeView déclaré APRÈS openPremium pour pouvoir l'appeler directement (évite la stale closure).
+  // Les bug fixes (source correcte + capture gate) s'appliquent aux deux bras A/B.
+  const onChangeView=useCallback(v=>{
+    track("sg_nav_change",{tab:v})
+    if(v==="premium")openPremium("nav")
+    else setView(v)
+  },[openPremium])
   // Deep-link OUVRE le paywall (≠ ?premium=1 qui ACCORDE premium — piège). Utilisé par
   // la page de confiance /a-propos/ dont les CTA étaient href="#" morts. source = utm_source.
   // /alertes/ = landing page hot-intent (cherché "alertes sargasses") → ouvre paywall direct.
@@ -11671,7 +11766,7 @@ export default function App(){
         {view==="learn"&&<LearnView lang={lang} onBack={()=>setView("map")} onGoMap={()=>setView("map")}/>}
 
         {/* BOTTOM NAV */}
-        <BottomNav view={view} onChangeView={onChangeView} lang={lang} premiumOpen={showPremium}/>
+        <BottomNav view={view} onChangeView={onChangeView} lang={lang} premiumOpen={showPremium} glass={dockGlass} isPremium={isPremium}/>
 
         {/* BOTTOM SHEET (beach detail) */}
         {selectedBeach&&beachDive&&(()=>{
