@@ -188,29 +188,13 @@
     <div class="sec-num">02 / 05</div>
     <div class="sec-label">Fiabilité mesurée</div>
     <h2 class="sec-h">On se trompe parfois. On l'écrit.</h2>
-    <p class="sec-sub">Chaque semaine, nos prévisions J–1 à J–4 sont re-comparées aux observations satellite réelles. Voici le résultat brut.</p>
+    <p class="sec-sub">Chaque prévision J+1 à J+4 est recoupée aux observations satellite réelles — par régime (mer calme / saison haute) et par horizon. Recalculé chaque jour, publié brut, jamais lissé en un seul chiffre flatteur.</p>
 
     <div class="bt-wrap">
-      <div class="bt-eyebrow">Backtest · 84 jours</div>
-      <h3 class="bt-head">Fiabilité par horizon</h3>
-      <div class="bt-stats">
-        <div class="bt-stat">
-          <div class="bt-stat-big">78%</div>
-          <div class="bt-stat-lab">J+1 — demain</div>
-        </div>
-        <div class="bt-stat">
-          <div class="bt-stat-big">74%</div>
-          <div class="bt-stat-lab">J+2 — après-demain</div>
-        </div>
-        <div class="bt-stat">
-          <div class="bt-stat-big">71%</div>
-          <div class="bt-stat-lab">J+3</div>
-        </div>
-        <div class="bt-stat">
-          <div class="bt-stat-big">74%</div>
-          <div class="bt-stat-lab">J+4 — horizon fiable</div>
-        </div>
-      </div>
+      <div class="bt-eyebrow">Fiabilité mesurée · recalculée chaque jour</div>
+      <h3 class="bt-head">On compare chaque prévision à ce que le satellite a vraiment vu</h3>
+      <p class="bt-note" style="margin-top:2px">Le décompte complet et à jour — fiabilité par horizon (J+1→J+4), par régime, par plage, avec l'échantillon, les dates et ce qu'on rate — est public et recalculé chaque jour :</p>
+      <p style="margin:14px 0 2px"><a href="/fiabilite/" style="display:inline-flex;align-items:center;gap:7px;color:#FFC72C;font-weight:700;text-decoration:none">Voir la fiabilité chiffrée, à jour → /fiabilite/</a></p>
 
       <div class="bt-chart">
         <svg viewBox="0 0 320 80" preserveAspectRatio="none">
@@ -237,10 +221,10 @@
       <div class="bt-legend">
         <span>—— prévu</span>
         <span style="color:rgba(30,200,176,.9)">- - observé</span>
-        <span>84j · glissant</span>
+        <span>prévu vs observé satellite</span>
       </div>
 
-      <p class="bt-note">Méthode : écart absolu entre catégorie prévue (propre / modéré / alerte) et catégorie observée sur 20 plages × 84 jours = 1 680 points. Données brutes disponibles sur demande.</p>
+      <p class="bt-note">Méthode : écart entre catégorie prévue (propre / modéré / alerte) et catégorie observée, sur l'ensemble des plages suivies. Le décompte exact (échantillon, fenêtre, dates) vit sur la page Fiabilité, recalculé chaque jour.</p>
     </div>
   </section>
 

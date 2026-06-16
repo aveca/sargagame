@@ -233,9 +233,18 @@ function precisionSection(lang, bt, regionName) {
 <p class="note">${esc(t.missWhy)}</p></div>`
   }
 
+  // Lead HONNÊTE par régime (regimeReliability.note : « publier ÇA, jamais le global % seul,
+  // qui masque que les alertes en saison calme sont bien moins fiables que les mer-propre »).
+  // Le même chiffre alimente le badge in-app (vite __RELIABILITY__) → fil de preuve cohérent.
+  const rr = bt.regimeReliability
+  const regimeLead = rr && rr.headline && rr.headline[lang]
+    ? `<p style="background:var(--card);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:14px;padding:14px 16px;color:#fff;font-size:15px;font-weight:600;line-height:1.5;margin-bottom:6px">${esc(rr.headline[lang])}</p>`
+    : ''
+
   return `<section>
     <div class="lbl">${esc(t.l2)}</div>
     <h2>${esc(t.h2p)}</h2>
+    ${regimeLead}
     ${intro}${carib}
     <div class="stats">${stats.join('')}</div>
     ${hitDef}

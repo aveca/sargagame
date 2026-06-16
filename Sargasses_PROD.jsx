@@ -43,6 +43,8 @@ class ErrBound extends Component{
    (REGION reste null → toutes les branches MQ/GP sont strictement inchangées).
    ═══════════════════════════════════════════════════════════════════════════ */
 const __R = (typeof __REGION__ !== "undefined" && __REGION__) || null
+// Fiabilité honnête par régime injectée au build (cf. vite.config.js __RELIABILITY__).
+const __REL = (typeof __RELIABILITY__ !== "undefined" && __RELIABILITY__) || null
 const IS_NEW_REGION = !!(__R && __R.id !== "mq" && __R.id !== "gp")
 const REGION = IS_NEW_REGION ? __R : null
 // Email support région-aware (MQ/GP : littéral historique inchangé)
@@ -889,7 +891,7 @@ function solutionsBeats(lang){
       </g>},
     // 1 — ON VOIT TOUT : le satellite scanne (notre moat)
     {eyebrow:T("ON VOIT TOUT","WE SEE IT ALL","LO VEMOS TODO"),heading:T("Lue depuis l'espace","Read from space","Leída desde el espacio"),
-      sub:T("Le Veilleur lit l'indice AFAI des satellites (NASA/Copernicus) et prévient ta plage 2 à 5 jours avant l'arrivée — vérifié 80% juste sur 30 jours.","The Watchman reads the satellites' AFAI index (NASA/Copernicus) and warns your beach 2-5 days ahead — verified 80% accurate over 30 days.","El Vigía lee el índice AFAI (NASA/Copernicus) y avisa tu playa 2-5 días antes — 80% exacto en 30 días."),
+      sub:T("Le Veilleur lit l'indice AFAI des satellites (NASA/Copernicus) et prévient ta plage 2 à 5 jours avant l'arrivée — recoupé chaque jour au satellite.","The Watchman reads the satellites' AFAI index (NASA/Copernicus) and warns your beach 2-5 days ahead — cross-checked daily against satellite.","El Vigía lee el índice AFAI (NASA/Copernicus) y avisa tu playa 2-5 días antes — contrastado a diario con satélite."),
       scene:<g><defs>{SEA("sol1")}</defs><rect width="800" height="600" fill="#06121A"/>
         {[[120,90],[300,70],[520,110],[680,80],[420,150],[600,180]].map((s,i)=>(<circle key={i} cx={s[0]} cy={s[1]} r="1.3" fill="#fff" opacity=".5"/>))}
         <rect y="360" width="800" height="240" fill="url(#sol1)"/>
@@ -3121,7 +3123,25 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             background:"rgba(34,197,94,.10)",border:"1px solid rgba(34,197,94,.26)",textDecoration:"none",cursor:"pointer"}}>
             <span aria-hidden="true" style={{fontSize:15,lineHeight:1}}>✅</span>
             <span style={{flex:1,fontSize:12.5,fontWeight:700,color:"var(--sg-ink,#13241F)",lineHeight:1.3}}>
-              {_t(lang,"Prévisions recoupées au satellite — 80% justes sur 30 jours","Forecasts cross-checked with satellite — 80% accurate over 30 days","Pronósticos contrastados con satélite — 80% exactos en 30 días")}
+              {(()=>{
+                // Chiffre RÉEL injecté au build (__RELIABILITY__, même source que /fiabilite/).
+                // On publie le clean-rate par régime (jamais le global %, cf. regimeReliability.note).
+                if(__REL&&typeof __REL.cleanPct==="number"){
+                  const reg=__REL.regime==="high"?_t(lang,"saison haute","high season","temporada alta"):_t(lang,"saison calme","calm season","temporada tranquila")
+                  const n=(__REL.cleanN||0).toLocaleString(lang==="fr"?"fr-FR":lang==="es"?"es-ES":"en-US")
+                  return _t(lang,
+                    `${__REL.cleanPct}% de nos prévisions « mer propre » vérifiées · ${reg} (${n})`,
+                    `${__REL.cleanPct}% of our “clean water” forecasts proved correct · ${reg} (${n})`,
+                    `${__REL.cleanPct}% de pronósticos “agua limpia” verificados · ${reg} (${n})`)
+                }
+                if(__REL&&typeof __REL.global==="number"){
+                  return _t(lang,
+                    `Prévisions recoupées au satellite — ${__REL.global}% justes (30 j)`,
+                    `Forecasts cross-checked with satellite — ${__REL.global}% accurate (30 d)`,
+                    `Pronósticos contrastados con satélite — ${__REL.global}% exactos (30 d)`)
+                }
+                return _t(lang,"Prévisions recoupées au satellite, backtest quotidien","Forecasts cross-checked with satellite, daily backtest","Pronósticos contrastados con satélite, backtest diario")
+              })()}
             </span>
             <span aria-hidden="true" style={{fontSize:13,fontWeight:800,color:"#16A34A",flexShrink:0}}>→</span>
           </a>
@@ -9096,7 +9116,7 @@ function WorldCard({beach,lang,active,index,onCarnet,phaseGrad}){
         <WorldAfaiGauge afai={beach.afai} lang={lang}/>
         <a href="/fiabilite/" onClick={e=>{e.stopPropagation();try{track("sg_reliability_open",{from:"world_card"})}catch(_){}}}
           style={{display:"inline-flex",alignItems:"center",gap:7,marginTop:10,fontSize:11.5,fontWeight:700,color:"rgba(255,255,255,.92)",textDecoration:"none"}}>
-          🛰️ <span>{_t(lang,"Scan satellite • 80% justes sur 30j","Satellite scan • 80% accurate over 30d","Escaneo satélite • 80% exacto 30d")}</span> <span style={{color:"#5FD3C9"}}>→</span>
+          🛰️ <span>{_t(lang,"Scan satellite • recoupé chaque jour","Satellite scan • cross-checked daily","Escaneo satélite • contrastado a diario")}</span> <span style={{color:"#5FD3C9"}}>→</span>
         </a>
         <button onClick={()=>{try{track("sg_world_carnet",{beach_id:beach.id,status})}catch(_){}; onCarnet&&onCarnet(beach)}}
           style={{display:"block",width:"100%",marginTop:14,padding:"14px",borderRadius:16,border:"none",cursor:"pointer",
@@ -9121,7 +9141,7 @@ function WorldCard({beach,lang,active,index,onCarnet,phaseGrad}){
 // Infos SVG INTERCALÉES entre les plages (la découverte, pas que du scroll).
 const WORLD_FACTS=[
   {emoji:"🌊",t:l=>_t(l,"8 000 km d'algues","8,000 km of algae","8.000 km de algas"),b:l=>_t(l,"La grande ceinture atlantique relie l'Afrique au Brésil. On la suit par satellite, chaque jour.","The great Atlantic belt links Africa to Brazil. We track it by satellite, every day.","El gran cinturón atlántico une África y Brasil. Lo seguimos por satélite, cada día.")},
-  {emoji:"🛰️",t:l=>_t(l,"L'œil dans l'espace","The eye in space","El ojo en el espacio"),b:l=>_t(l,"Le Veilleur lit l'indice AFAI des satellites et le recoupe sur 30 jours : 80% de prévisions justes.","The Watchman reads the satellites' AFAI index, cross-checked over 30 days: 80% accurate.","El Vigía lee el índice AFAI, contrastado 30 días: 80% exacto.")},
+  {emoji:"🛰️",t:l=>_t(l,"L'œil dans l'espace","The eye in space","El ojo en el espacio"),b:l=>_t(l,"Le Veilleur lit l'indice AFAI des satellites et le recoupe chaque jour : prévisions vérifiées au satellite.","The Watchman reads the satellites' AFAI index, cross-checked daily against satellite.","El Vigía lee el índice AFAI, contrastado a diario con satélite.")},
   {emoji:"💨",t:l=>_t(l,"Le H₂S, c'est quoi ?","What is H₂S?","¿Qué es el H₂S?"),b:l=>_t(l,"En se décomposant, les sargasses dégagent du sulfure d'hydrogène — l'odeur d'œuf. On te prévient avant.","Decomposing sargassum releases hydrogen sulfide — the egg smell. We warn you first.","Al descomponerse libera sulfuro de hidrógeno — olor a huevo. Te avisamos antes.")},
   {emoji:"♻️",t:l=>_t(l,"Une ressource ?","A resource?","¿Un recurso?"),b:l=>_t(l,"Ramassées tôt, les sargasses deviennent engrais, bioplastique ou énergie. Le timing change tout.","Collected early, sargassum becomes fertilizer, bioplastic or energy. Timing is everything.","Recogido a tiempo, el sargazo se vuelve fertilizante o energía. El tiempo lo es todo.")},
 ]
@@ -9333,7 +9353,7 @@ function WorldCarnet({beach,lang,onClose,onPremium}){
         </button>
         <a href="/fiabilite/" onClick={()=>{try{track("sg_reliability_open",{from:"world_carnet"})}catch(_){}}}
           style={{display:"inline-flex",alignItems:"center",gap:7,marginTop:16,fontSize:12,fontWeight:700,color:"rgba(255,255,255,.82)",textDecoration:"none"}}>
-          🛰️ {_t(lang,"Comment on prévoit : 80% justes sur 30 jours →","How we forecast: 80% accurate over 30 days →","Cómo pronosticamos: 80% exacto →")}
+          🛰️ {_t(lang,"Comment on prévoit : notre fiabilité →","How we forecast: our reliability →","Cómo pronosticamos: nuestra fiabilidad →")}
         </a>
       </div>
     </div>

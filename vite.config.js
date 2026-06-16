@@ -43,6 +43,33 @@ try {
 // Nouvelle région (≠ mq/gp) → build dédié mono-région (SPA + meta), sans la génération SEO MQ/GP historique.
 const IS_NEW_REGION = !!(REGION && REGION.id !== 'mq' && REGION.id !== 'gp')
 
+// FIABILITÉ HONNÊTE — injectée au runtime via __RELIABILITY__ pour que le badge in-app
+// consomme la MÊME source que /fiabilite/ (backtest-results.json) et ne sur-claime/dérive
+// plus (était hardcodé "80%"). On publie le hit-rate PAR RÉGIME, jamais le global %
+// (instruction explicite de regimeReliability.note : le global masque que les ALERTES en
+// saison calme sont bien moins fiables que les « mer propre »). Fallback global si absent.
+let RELIABILITY = null
+try {
+  const _bt = JSON.parse(readFileSync(resolve(__dirname, 'scripts/automation/data/backtest-results.json'), 'utf-8'))
+  const _rr = _bt && _bt.regimeReliability
+  const _reg = _rr && _rr.regimes && (_rr.regimes.high && _rr.regimes.high.samples > (_rr.regimes.calm ? _rr.regimes.calm.samples : 0) ? _rr.regimes.high : _rr.regimes.calm)
+  const _regKey = _rr && _rr.regimes ? (_rr.regimes.high && _reg === _rr.regimes.high ? 'high' : 'calm') : null
+  if (_reg && typeof _reg.cleanReliabilityPct === 'number' && _reg.cleanSamples > 0) {
+    RELIABILITY = {
+      regime: _regKey,
+      cleanPct: _reg.cleanReliabilityPct,
+      cleanN: _reg.cleanSamples,
+      falseAlarmPct: _reg.falseAlarmRatePct,
+      window: _rr.window || null,
+      headline: _rr.headline || null,
+    }
+  } else if (_bt && _bt.overall && typeof _bt.overall.statusHitRate === 'number' && _bt.totalPairs > 0) {
+    RELIABILITY = { global: Math.round(_bt.overall.statusHitRate), pairs: _bt.totalPairs }
+  }
+} catch (e) {
+  console.warn('vite.config.js: backtest fiabilité non chargé:', e.message)
+}
+
 // Données de référence sargasses par plage (fallback si API Copernicus indisponible) — sync avec beaches-list.json
 const SARGASSUM_REF = ALL_BEACHES.map(b => ({
   id: b.id,
@@ -1562,6 +1589,8 @@ ${isGP ? '' : `  <url><loc>${d}/a-propos/</loc><lastmod>${today}</lastmod><chang
     // Config région injectée au build (id/domain/lang/currency/center/bbox/emails/beaches…).
     // No-op pour MQ/GP tant que le runtime ne lit pas __REGION__ (consommé en phase runtime).
     __REGION__: JSON.stringify(REGION),
+    // Fiabilité honnête par régime (cf. bloc RELIABILITY plus haut) — badge in-app.
+    __RELIABILITY__: JSON.stringify(RELIABILITY),
   },
   build: {
     rollupOptions: {
