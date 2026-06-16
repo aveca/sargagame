@@ -923,11 +923,13 @@
   },
   "a06e34affbd9b0b02bac52c51da38802": {
     "daily_last": "2026-06-16",
-    "daily_sig": "Anse Madame|clean|78|clean|2|mercredi"
+    "daily_sig": "Anse Madame|clean|78|clean|2|mercredi",
+    "j3": "2026-06-16T12:33:21.371Z"
   },
   "6023d811323298320ce8ca49b4121adf": {
     "daily_last": "2026-06-16",
-    "daily_sig": "Anse Madame|clean|78|clean|2|mercredi"
+    "daily_sig": "Anse Madame|clean|78|clean|2|mercredi",
+    "j3": "2026-06-16T12:33:22.814Z"
   },
   "824a7b53f1f68745929343bc9f17c617": {},
   "44b5ee39b1d81296a982c40635cae215": {},
@@ -963,5 +965,7 @@
   "325e2888d0e38db2fc7b1a7a4bda0a9f": {
     "daily_last": "2026-06-16",
     "daily_sig": "Plage de Grande Anse|clean|80|clean|3|mercredi"
-  }
+  },
+  "faaa8e1922c2cbf5fffbffc20e792a0b": {},
+  "d33a60e3f95e14e60f9d3138be3f39b5": {}
 }
