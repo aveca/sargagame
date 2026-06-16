@@ -9516,21 +9516,31 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
     // PAS de setPointerCapture ici : sinon le `click` est re-routé vers le wrap et
     // les onClick des points/boutons ne se déclenchent JAMAIS. On capture seulement
     // quand un vrai drag/pinch démarre (dans onMove) → un simple tap reste un clic.
-    ptrs.current.set(e.pointerId,rel(e));swipeY.current=rel(e).y;if(ptrs.current.size===2){try{e.currentTarget.setPointerCapture(e.pointerId)}catch(_){}const[a,b]=[...ptrs.current.values()];pinchRef.current={d:Math.hypot(a.x-b.x,a.y-b.y),mx:(a.x+b.x)/2,my:(a.y+b.y)/2}}}
+    ptrs.current.set(e.pointerId,rel(e));swipeY.current=rel(e).y;swipeX.current=rel(e).x;if(ptrs.current.size===2){try{e.currentTarget.setPointerCapture(e.pointerId)}catch(_){}const[a,b]=[...ptrs.current.values()];pinchRef.current={d:Math.hypot(a.x-b.x,a.y-b.y),mx:(a.x+b.x)/2,my:(a.y+b.y)/2}}}
   const onMove=e=>{if(!ptrs.current.has(e.pointerId))return;const prev=ptrs.current.get(e.pointerId),p=rel(e);ptrs.current.set(e.pointerId,p)
     if(satDragRef.current){const sc=satScale();satOffRef.current.x+=(p.x-prev.x)/sc;satOffRef.current.y+=(p.y-prev.y)/sc;satWrite();movedRef.current=true;return}
     if(ptrs.current.size>=2&&pinchRef.current){const[a,b]=[...ptrs.current.values()];const d=Math.hypot(a.x-b.x,a.y-b.y),mx=(a.x+b.x)/2,my=(a.y+b.y)/2;const c=camRef.current;if(pinchRef.current.d>0){const f=d/pinchRef.current.d;const nz=clampZ(c.cz*f),wx=(mx-c.cx)/c.cz,wy=(my-c.cy)/c.cz;c.cz=nz;c.cx=mx-wx*nz;c.cy=my-wy*nz}c.cx+=mx-pinchRef.current.mx;c.cy+=my-pinchRef.current.my;pinchRef.current={d,mx,my};movedRef.current=true;schedule();return}
     if(tourRef.current!=null){const dx2=p.x-prev.x,dy2=p.y-prev.y;if(Math.abs(dx2)+Math.abs(dy2)>2)movedRef.current=true;return}
     const dx=p.x-prev.x,dy=p.y-prev.y;if(Math.abs(dx)+Math.abs(dy)>2){if(!movedRef.current){try{e.currentTarget.setPointerCapture(e.pointerId)}catch(_){}}movedRef.current=true}const c=camRef.current;c.cx+=dx;c.cy+=dy;panClampDrag(c);velRef.current={x:dx*0.55+velRef.current.x*0.45,y:dy*0.55+velRef.current.y*0.45};pannedRef.current=true;schedule()}
   const onUp=e=>{if(satDragRef.current){satDragRef.current=false;setSatGrab(false);satSpringHome();ptrs.current.delete(e.pointerId);try{e.currentTarget.releasePointerCapture(e.pointerId)}catch(_){}if(sayTimerRef.current)clearTimeout(sayTimerRef.current);sayTimerRef.current=setTimeout(()=>setSatSay(null),1700);try{track("sg_archipel_sat_drop",{})}catch(_){};return}
-    if(tourRef.current!=null&&swipeY.current!=null&&ptrs.current.size===1){const dy=rel(e).y-swipeY.current;if(dy<-44){tourGo(tourRef.current>=tourOrder.length-1?0:tourRef.current+1)}else if(dy>44){if(tourRef.current<=0)exitTour();else tourGo(tourRef.current-1)}}else if(tourRef.current==null&&pannedRef.current&&ptrs.current.size===1&&!pinchRef.current){startInertia()}ptrs.current.delete(e.pointerId);if(ptrs.current.size<2)pinchRef.current=null;swipeY.current=null}
+    if(tourRef.current!=null&&swipeY.current!=null&&ptrs.current.size===1){const dy=rel(e).y-swipeY.current;if(dy<-44){tourGo(tourRef.current>=tourOrder.length-1?0:tourRef.current+1)}else if(dy>44){if(tourRef.current<=0)exitTour();else tourGo(tourRef.current-1)}}
+    else if(tourRef.current==null&&ptrs.current.size===1&&!pinchRef.current){
+      // FLICK vertical vers le haut, hors visite = ENTRER dans la visite (parité molette,
+      //   doctrine #24 : le scroll PILOTE la visite). Gardé par la vélocité : un pan lent
+      //   d'exploration reste un pan ; seul un vrai flick rapide & dominant-vertical entre.
+      const dy=swipeY.current!=null?rel(e).y-swipeY.current:0,dx=swipeX.current!=null?rel(e).x-swipeX.current:0
+      const flickUp=dy<-50&&Math.abs(dy)>Math.abs(dx)*1.3&&Math.abs(velRef.current.y)>3
+      if(flickUp){stopInertia();startTour();try{track("sg_archipel_swipe_enter",{})}catch(_){}}
+      else if(pannedRef.current){startInertia()}
+    }
+    ptrs.current.delete(e.pointerId);if(ptrs.current.size<2)pinchRef.current=null;swipeY.current=null;swipeX.current=null}
   // Double-tap = bascule entre paliers NOMMÉS (vue côte MID ↔ rivage NEAR) au point
   // tapé, au lieu de magic numbers. zoomAt borne via clampZ. (workflow step 3)
   const onTap=e=>{if(tourRef.current!=null)return;const now=Date.now();if(now-lastTap.current<300&&!movedRef.current){const r=wrapRef.current.getBoundingClientRect(),c=camRef.current;zoomAt(c.cz<(MID+NEAR)/2?NEAR/c.cz:MID/c.cz,e.clientX-r.left,e.clientY-r.top)}lastTap.current=now}
   // ── MODE VISITE : scroll/swipe de plage en plage, la caméra glisse, une fiche-info
   //    par plage (« quand on scroll down ça passe de plage en plage avec des infos »).
   const[tour,setTour]=useState(null) // null=exploration libre ; sinon position dans l'ordre
-  const tourRef=useRef(null),twRaf=useRef(0),twTarget=useRef(null),swipeY=useRef(null)
+  const tourRef=useRef(null),twRaf=useRef(0),twTarget=useRef(null),swipeY=useRef(null),swipeX=useRef(null)
   const FOCUS=1.6
   const tourOrder=useMemo(()=>{if(!proj.length)return[];const m=proj[myIdx];return proj.map((_,i)=>i).sort((a,b)=>((proj[a].x-m.x)**2+(proj[a].y-m.y)**2)-((proj[b].x-m.x)**2+(proj[b].y-m.y)**2))},[proj,myIdx])
   const runTween=()=>{if(twRaf.current)return;const step=()=>{const t=twTarget.current,c=camRef.current;if(!t){twRaf.current=0;return}c.cx+=(t.cx-c.cx)*0.2;c.cy+=(t.cy-c.cy)*0.2;c.cz+=(t.cz-c.cz)*0.2;writeCam();if(Math.hypot(t.cx-c.cx,t.cy-c.cy)<0.6&&Math.abs(t.cz-c.cz)<0.003){c.cx=t.cx;c.cy=t.cy;c.cz=t.cz;writeCam();twTarget.current=null;twRaf.current=0;return}twRaf.current=requestAnimationFrame(step)};twRaf.current=requestAnimationFrame(step)}
