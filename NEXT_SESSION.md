@@ -8,14 +8,16 @@
 3. Exécuter le prompt de reprise ci-dessous (= mandat complet, tous sites).
 
 ## ✅ ÉTAT À L'ARRÊT
-**Live en prod (toutes régions, SW v173) :** Accueil A→Z (`home_az`), Plan-B fiche (`pw_planb`), badge H2S fiche (`pw_h2s`), fiabilité par régime.
+**Live en prod (toutes régions, SW v175) :** Accueil A→Z (`home_az`), carte SVG monde (`map_world` 50/50, `src/WorldMapView.jsx`), **fiche « plongée » (`pw_beach_dive` 50/50, `src/BeachDive.jsx`)**, Plan-B fiche (`pw_planb`), badge H2S fiche (`pw_h2s`), fiabilité par régime.
+
+**Fiche plongée — shippé `ef638336` (2026-06-16) :** port Shadow-DOM du proto VALIDÉ `design/proto-plage-plongee.html` (6 beats SVG plein écran : arrivée→verdict→preuve-mesure→prévision 7j scrub→plan-B+H2S→preuve sociale ; Le Veilleur v2 rassure≠surveille ; scroll-sur-hôte). Region-aware (région = `selectedBeach.island`, breadcrumb Martinique/Guadeloupe vérifié). Données RÉELLES : score+7 facteurs (`scoreBreakdown`/`scoreStrengths`), forecast résolu (`BEACH_TO_SARG`/interp), plan-B (3 plages propres proches haversine), H2S dérivé statut, fiabilité 79%/76%. Conversion = `openPremium` UNIQUE contextualisé (`forecast_lock`/`beach_dive_footer`/`scene_*`). **Adaptation délibérée :** le scrub prévision n'AUTO-ouvre PAS le premium (modal involontaire banni) → premium uniquement sur CTA « Débloquer les 7 jours ». Additif, control = `BeachSheet` intact, override `?beachdive=1/0`. Vérif Playwright (`scripts/test-beach-dive.cjs`, dist sur 8790) : 5 tests PASS (MQ clean 6 beats/7 facteurs/7 jours/3 plan-B, MQ 2e, control=BeachSheet, GP=Guadeloupe, scroll `--gp` 0→0.72), 0 erreur ; build vite OK (chunk 87 KB, 136 pages).
 **Protos VALIDÉS + vérifiés navigateur, prêts à porter (NE JAMAIS purger) :**
 - `design/proto-map-v2.html` — carte **interactive MULTI-SITES** (`?region=mq|gp|florida|puntacana|rivieramaya`) : vraie géo OSM (`public/data/region-outlines/`), pan/zoom/pinch, tap plage→plongée flyTo + verdict + CTA, scrub des jours (J0 gratuit / J+1+ → openPremium), Veilleur data-driven. 5 sites vérifiés.
 - `design/proto-plage-plongee.html` — **fiche NEAR « plongée » (PRÉFÉRÉE FONDATEUR)** : satellite-héros + scrollytelling verdict→preuve→prévision lockée. Greffes à intégrer depuis `design/proto-plage-v2.html` (Rocher du Diamant, chip H2S).
 - Géo réelle des 5 régions : `public/data/region-outlines/*.json` (générée par `scripts/build-region-outlines.cjs`).
 - Réf. de qualité/vibe : `src/HomeAZ.jsx` (+ `src/home-az-assets.js`).
 
-**PROCHAINE ACTION = porter la carte en A/B `map_world` (region-aware), puis la fiche en `pw_beach_dive`, puis le reste (specs).**
+**PROCHAINE ACTION = PHASE B (leviers #1 + SEO bloquant) :** (1) **demo-gate email à l'aha-moment** (répare capture 0,35 % = levier vierge #1 — spec `design/specs/demo-gate-email.md`) ; (2) **canonical/hreflang + indexation** (MQ ~3/30, GP ~2/30 — BLOQUANT avant modif pageShell — spec `design/specs/seo-indexation.md`) ; (3) **copie paywall contextualisée** (modal→CTA 2 % — spec `design/specs/paywall-copy.md`). Carte (`map_world`) + fiche (`pw_beach_dive`) = FAITES (phase A close). Évaluer les 3 A/B live à J+28 : `node scripts/automation/ab-eval.cjs --days=28`.
 
 ## 🧭 MULTI-SITES (couvrir TOUS les sites, jamais hardcoder MQ)
 5 régions : `mq`,`gp` (EUR, plages dans `public/data/beaches-list.json` filtré `island`) · `florida`,`puntacana`,`rivieramaya` (USD, plages dans `regions/<id>.json` `.beaches`). Config : `regions/<id>.json` (bbox/center/name). Géo : `public/data/region-outlines/<id>.json`. Toute surface = REGION-AWARE + vérifiée sur les 5 régions. EUR>>USD = prioriser MQ/GP mais livrer les 5.
