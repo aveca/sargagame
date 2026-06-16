@@ -3408,12 +3408,13 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             <ForecastChart forecast={forecast} lang={lang} onPremiumClick={onPremiumClick} isPremium={isPremium} weatherDaily={weather?.daily||null} weeklyData={weeklyData}/>
           </>)}
 
-          {/* GRATUIT — le chiffre de précision devient le HÉROS cliquable (blueprint
-              move #1 : fil rouge de preuve fiche→/fiabilite). Copy honnête : c'est
-              un backtest 30j recoupé au satellite, pas une claim vague. Trust → conv. */}
-          <a href="/fiabilite/" onClick={()=>{try{track("sg_reliability_open",{from:"beach_badge"})}catch(_){}}}
+          {/* rel_hot_cta : badge fiabilité → openPremium depuis la fiche (hot intent).
+              Link /fiabilite/ serait une sortie de funnel ; ici l'user est sur une plage
+              et veut vérifier avant d'acheter → CTA premium direct. */}
+          <button onClick={()=>{track("sg_reliability_open",{from:"beach_badge",hot:true});onPremiumClick("rel_hot_cta")}}
             style={{display:"flex",alignItems:"center",gap:9,margin:"10px 0 2px",padding:"9px 12px",borderRadius:12,
-            background:"rgba(34,197,94,.10)",border:"1px solid rgba(34,197,94,.26)",textDecoration:"none",cursor:"pointer"}}>
+            background:"rgba(34,197,94,.10)",border:"1px solid rgba(34,197,94,.26)",textDecoration:"none",cursor:"pointer",
+            width:"100%",fontFamily:"inherit",textAlign:"left"}}>
             <span aria-hidden="true" style={{fontSize:15,lineHeight:1}}>✅</span>
             <span style={{flex:1,fontSize:12.5,fontWeight:700,color:"var(--sg-ink,#13241F)",lineHeight:1.3}}>
               {(()=>{
@@ -3437,7 +3438,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               })()}
             </span>
             <span aria-hidden="true" style={{fontSize:13,fontWeight:800,color:"#16A34A",flexShrink:0}}>→</span>
-          </a>
+          </button>
 
           {/* La vraie photo « calée en cool » plus bas (directive 14/06 : pas en
               premier, le SVG d'abord). On la garde car elle est individuelle. */}
