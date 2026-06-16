@@ -11305,7 +11305,13 @@ export default function App(){
   },[captureGate])
   // Deep-link OUVRE le paywall (≠ ?premium=1 qui ACCORDE premium — piège). Utilisé par
   // la page de confiance /a-propos/ dont les CTA étaient href="#" morts. source = utm_source.
-  useEffect(()=>{try{const p=new URLSearchParams(window.location.search);if(p.get("paywall")==="1"){const u=p.get("utm_source");openPremium(u?("deeplink_"+u).slice(0,40):"deeplink");window.history.replaceState({},"",window.location.pathname)}}catch(_){}},[openPremium])
+  // /alertes/ = landing page hot-intent (cherché "alertes sargasses") → ouvre paywall direct.
+  // Distinct du general auto-open désactivé L11319 (intention tiède) : ici l'intention est CHAUDE.
+  useEffect(()=>{try{
+    const p=new URLSearchParams(window.location.search)
+    if(p.get("paywall")==="1"){const u=p.get("utm_source");openPremium(u?("deeplink_"+u).slice(0,40):"deeplink");window.history.replaceState({},"",window.location.pathname)}
+    else if(/\/(alertes|sargassum-alerts|alertas-sargazo)\/?$/.test(window.location.pathname)){openPremium("alertes_landing")}
+  }catch(_){}},[openPremium])
 
   // Engagement trigger: modal open rate is 1.72% of sessions — most users never hit a paywall gate.
   // Show modal only to IDLE returning users (no beach-sheet interaction for 50s on visit 2+).
