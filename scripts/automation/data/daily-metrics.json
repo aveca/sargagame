@@ -813,7 +813,7 @@
   },
   {
     "date": "2026-06-16",
-    "time": "2026-06-16T06:54:58.862Z",
+    "time": "2026-06-16T07:46:08.605Z",
     "payments": 10,
     "revenue": 49.9,
     "emails": 207,
@@ -821,9 +821,9 @@
     "avgRating": 4,
     "pipelineOk": true,
     "funnel": {
-      "sessions": 22878,
+      "sessions": 22893,
       "lockClicks": 128,
-      "modalOpens": 3417,
+      "modalOpens": 3419,
       "modalCta": 72,
       "sampleStarts": 0,
       "emailSubmits": 66,
@@ -833,7 +833,7 @@
       "revenueReal": 4.99,
       "rates": {
         "session_to_lock": 0.6,
-        "lock_to_modal": 2670,
+        "lock_to_modal": 2671,
         "modal_to_cta": 2,
         "modal_to_sample": 0,
         "modal_to_any_action": 2,
