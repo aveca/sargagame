@@ -9321,10 +9321,11 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
                 {_t(lang,"état complet · météo · prévisions 7 jours","full status · weather · 7-day forecast","estado completo · clima · pronóstico 7 días")}
               </span>
             </button>
-            <button onClick={onShowMap} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:7,width:"100%",
-              background:"none",border:"none",color:"rgba(255,255,255,.66)",fontFamily:"inherit",fontSize:13,
-              fontWeight:600,padding:"14px 0 0",cursor:"pointer"}}>
-              🗺 {_t(lang,"Toutes les plages sur la carte","All beaches on the map","Todas las playas en el mapa")}
+            <button onClick={()=>{track("sg_hero_map_cta",{src:"mobile"});onShowMap()}} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,width:"100%",
+              marginTop:10,background:"rgba(10,23,20,.45)",color:"#fff",
+              border:"1.5px solid rgba(255,255,255,.35)",fontFamily:"inherit",fontWeight:700,fontSize:14,
+              padding:"14px 20px",borderRadius:18,backdropFilter:"blur(6px)",cursor:"pointer"}}>
+              <BrandIcon name="map" size={14} accent="#FFC72C" style={{verticalAlign:"-2px",display:"inline-block"}}/>{_t(lang,"Toutes les plages sur la carte","All beaches on the map","Todas las playas en el mapa")}
             </button>
           </>
         )}
