@@ -59,6 +59,7 @@ export default function WorldMapView({
   const lastTapRef = useRef(0)
   const tagTimerRef= useRef(null)
   const reduceRef  = useRef(false)
+  const labelLayerRef = useRef(null)
 
   const [outline, setOutline]   = useState(null)
   const [loadErr, setLoadErr]   = useState(false)
@@ -141,6 +142,15 @@ export default function WorldMapView({
     const g=worldRef.current; if(!g) return
     const{tx,ty,k}=camRef.current
     g.setAttribute("transform",`translate(${tx.toFixed(2)} ${ty.toFixed(2)}) scale(${k.toFixed(4)})`)
+    const layer=labelLayerRef.current; if(!layer) return
+    const r=wrapRef.current?.getBoundingClientRect(); if(!r) return
+    const s=Math.min(r.width/800,r.height/600)
+    const ox=(r.width-800*s)/2, oy=(r.height-600*s)/2
+    layer.querySelectorAll('[data-vx]').forEach(el=>{
+      const vx=parseFloat(el.dataset.vx), vy=parseFloat(el.dataset.vy)
+      el.style.left=(ox+(vx*k+tx)*s).toFixed(1)+'px'
+      el.style.top=(oy+(vy*k+ty)*s).toFixed(1)+'px'
+    })
   },[])
 
   const schedule=useCallback(()=>{
@@ -438,25 +448,6 @@ export default function WorldMapView({
             )
           })}
 
-          {/* Labels */}
-          {beachList.filter(b=>labeledIds.has(b.id)).map((b,i)=>{
-            const side=island==="mq"
-              ?(MQ_NAMED.findIndex(n=>(b.name||"").includes(n))%2===0?1:-1)
-              :(i%2===0?1:-1)
-            return(
-              <text key={b.id}
-                x={(b.vx+side*11).toFixed(1)} y={(b.vy-2).toFixed(1)}
-                textAnchor={side<0?"end":"start"}
-                style={{
-                  font:"800 10px/1 'Bricolage Grotesque',system-ui,sans-serif",
-                  fill:"#fff",paintOrder:"stroke",
-                  stroke:"#06140f",strokeWidth:"3px",strokeLinejoin:"round",strokeOpacity:".9",
-                  pointerEvents:"none",
-                }}>
-                {b.name}
-              </text>
-            )
-          })}
         </g>
 
         {/* Veilleur satellite — hors du monde, ne zoome pas, veille la mer */}
@@ -475,6 +466,41 @@ export default function WorldMapView({
           <circle cx="0" cy="-36" r="3.4" fill={vant}/>
         </g>
       </svg>
+
+      {/* Labels plages — couche HTML screen-space (hors transform SVG → taille pixel constante) */}
+      <div ref={labelLayerRef} style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:5,overflow:"hidden"}}>
+        {beachList.filter(b=>labeledIds.has(b.id)).map(b=>{
+          const st=b.days[day]||"clean"
+          const col=STATUS_C[st]||"#888"
+          const li=lang==="en"?1:lang==="es"?2:0
+          return(
+            <div key={b.id}
+              data-vx={b.vx}
+              data-vy={b.vy}
+              style={{
+                position:"absolute",left:0,top:0,
+                transform:"translate(-50%,-100%)",
+                paddingBottom:8,
+                textAlign:"center",
+                whiteSpace:"nowrap",
+              }}>
+              <div style={{
+                font:"800 11px/1 'Bricolage Grotesque',system-ui,sans-serif",
+                color:"#EAF7F4",
+                textShadow:"0 1px 0 rgba(3,17,15,.95),0 0 5px rgba(3,17,15,.9),0 0 9px rgba(3,17,15,.65)",
+              }}>{b.name}</div>
+              <div style={{
+                font:"700 9px/1 'Bricolage Grotesque',system-ui,sans-serif",
+                letterSpacing:".05em",
+                textTransform:"uppercase",
+                color:col,
+                marginTop:2,
+                textShadow:"0 1px 0 rgba(3,17,15,.95),0 0 4px rgba(3,17,15,.85)",
+              }}>{STATUS_LBL[st]?.[li]}</div>
+            </div>
+          )
+        })}
+      </div>
 
       {/* ══ CHROME HTML ══════════════════════════════════════════════════════════ */}
       <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:10}}>
