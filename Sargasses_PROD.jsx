@@ -1527,7 +1527,7 @@ function engInit(){
     //   "ça marche pas / je suis bloqué". Émis first-party (sg_friction) → nourrit
     //   l'alerte analyze-ux.cjs pour qu'on construise le fix (svg/marketing/code).
     let _rc=[]
-    window.addEventListener("click",e=>{const n=Date.now();_rc=_rc.filter(c=>n-c.t<900);_rc.push({t:n,x:e.clientX,y:e.clientY})
+    window.addEventListener("click",e=>{try{sgCollectClick(e)}catch(_){}const n=Date.now();_rc=_rc.filter(c=>n-c.t<900);_rc.push({t:n,x:e.clientX,y:e.clientY})
       if(_rc.length>=3){const a=_rc[0],b=_rc[_rc.length-1];if(Math.hypot(b.x-a.x,b.y-a.y)<44){_rc=[];try{track("sg_friction",{type:"rage",screen:_eng.screen||"?"})}catch(_){}}}},{passive:true})
   }catch(e){}
 }
@@ -1542,13 +1542,35 @@ const _sgc={sid:null,buf:null,dirty:false,started:false,lastSend:0}
 function _sgcRand(n){try{return Date.now().toString(36)+Math.random().toString(36).slice(2,2+n)}catch(_){return "x"+n}}
 function _sgcSid(){try{let s=sessionStorage.getItem("sg_sid");if(!s){s=_sgcRand(6);sessionStorage.setItem("sg_sid",s)}return s}catch(_){return "x"}}
 function _sgcCid(){try{let c=localStorage.getItem("sg_cid");if(!c){c=_sgcRand(8);localStorage.setItem("sg_cid",c)}return c}catch(_){return "x"}}
+function _sgcEnsureBuf(){
+  if(_sgc.buf)return
+  const region=(typeof IS_NEW_REGION!=="undefined"&&IS_NEW_REGION&&typeof REGION!=="undefined")?REGION.id:(location.hostname.includes("guadeloupe")?"gp":"mq")
+  let lang="fr";try{if(typeof getLang==="function")lang=getLang()}catch(_){}
+  _sgc.buf={v:1,sid:_sgcSid(),cid:_sgcCid(),region,lang,ts:Date.now(),ref:(document.referrer||"").slice(0,180),ab:g("sg_ab",{}),ev:[],scr:{},clk:{}}
+}
+// Mini-heatmap FIRST-PARTY (remplace Clarity, 100% organique) : chaque clic est bucket-quantifié
+// par écran (grille 16×24, coords NORMALISÉES → résolution-agnostique, AUCUNE coord brute, zéro PII)
+// + dead-click (clic sur un non-interactif = frustration). Agrégé client-side → payload minuscule.
+function sgCollectClick(e){
+  try{
+    _sgcEnsureBuf();if(!_sgc.buf||!_sgc.buf.clk)return
+    const scr=(typeof _eng!=="undefined"&&_eng&&_eng.screen)||"?"
+    const W=window.innerWidth||1,H=window.innerHeight||1
+    const gx=Math.max(0,Math.min(15,Math.floor((e.clientX/W)*16))),gy=Math.max(0,Math.min(23,Math.floor((e.clientY/H)*24)))
+    const k=gx+"_"+gy
+    let dead=true
+    try{const t=e.target
+      if(t&&t.closest&&t.closest('button,a,input,select,textarea,label,[role="button"],.leaflet-marker-icon,[data-beach]'))dead=false
+      else if(t&&t.nodeType===1){const cs=getComputedStyle(t);if(cs&&cs.cursor==="pointer")dead=false}
+    }catch(_){dead=false}
+    const o=_sgc.buf.clk[scr]||(_sgc.buf.clk[scr]={b:{},d:{},n:0})
+    if(o.b[k]==null&&Object.keys(o.b).length>=240)return // cap buckets/écran (anti-abus payload)
+    o.b[k]=(o.b[k]||0)+1;if(dead)o.d[k]=(o.d[k]||0)+1;o.n++;_sgc.dirty=true
+  }catch(_){}
+}
 function sgCollectEvent(event,params){
   try{
-    if(!_sgc.buf){
-      const region=(typeof IS_NEW_REGION!=="undefined"&&IS_NEW_REGION&&typeof REGION!=="undefined")?REGION.id:(location.hostname.includes("guadeloupe")?"gp":"mq")
-      let lang="fr";try{if(typeof getLang==="function")lang=getLang()}catch(_){}
-      _sgc.buf={v:1,sid:_sgcSid(),cid:_sgcCid(),region,lang,ts:Date.now(),ref:(document.referrer||"").slice(0,180),ab:g("sg_ab",{}),ev:[],scr:{}}
-    }
+    _sgcEnsureBuf()
     if(event==="sg_engagement"){
       const s=(params&&params.screen)||"?"
       const o=_sgc.buf.scr[s]||(_sgc.buf.scr[s]={dwell:0,acts:0,bored:0,maxScroll:0,n:0})

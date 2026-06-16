@@ -46,7 +46,7 @@ for ($i = 0; $i < $days; $i++) {
 
 $out = array(
   'days' => $days, 'region_filter' => ($regionFilter ?: null), 'sessions' => 0,
-  'events' => array(), 'screens' => array(), 'ab' => array(), 'regions' => array(),
+  'events' => array(), 'screens' => array(), 'clicks' => array(), 'ab' => array(), 'regions' => array(),
   'byRegion' => array(), 'generated' => gmdate('c')
 );
 
@@ -91,6 +91,16 @@ foreach ($sessions as $d) {
     $byR[$rg]['screens_dwell']  += $o['dwell'] ?? 0;
     $byR[$rg]['screens_bored']  += $o['bored'] ?? 0;
   }
+
+  // HEATMAP first-party (clk) : densité de clics + DEAD-CLICKS par écran et par bucket
+  // de grille (16×24 normalisée). Remplace Clarity : on voit OÙ ça clique et où ça clique
+  // dans le vide (frustration). Agrégé sur toutes les sessions de la fenêtre.
+  if (!empty($d['clk']) && is_array($d['clk'])) foreach ($d['clk'] as $s => $o) {
+    if (!isset($out['clicks'][$s])) $out['clicks'][$s] = array('n'=>0,'dead'=>0,'b'=>array(),'d'=>array());
+    $out['clicks'][$s]['n'] += $o['n'] ?? 0;
+    if (!empty($o['b']) && is_array($o['b'])) foreach ($o['b'] as $k => $c) { $out['clicks'][$s]['b'][$k] = ($out['clicks'][$s]['b'][$k] ?? 0) + $c; }
+    if (!empty($o['d']) && is_array($o['d'])) foreach ($o['d'] as $k => $c) { $out['clicks'][$s]['d'][$k] = ($out['clicks'][$s]['d'][$k] ?? 0) + $c; $out['clicks'][$s]['dead'] += $c; }
+  }
 }
 foreach ($out['screens'] as $s => &$o) {
   $v = max(1, $o['visits']);
@@ -100,6 +110,17 @@ foreach ($out['screens'] as $s => &$o) {
 }
 unset($o);
 arsort($out['events']);
+// Heatmap : dead-rate par écran + buckets les + chauds (clics & dead-clicks) — la grille
+// complète reste dispo (b/d) pour rendre la carte de chaleur ; le dead-rate trie les écrans
+// frustrants (où l'utilisateur tape sans réponse).
+foreach ($out['clicks'] as $s => &$c) {
+  $c['dead_rate'] = $c['n'] ? round($c['dead'] / $c['n'], 3) : 0;
+  arsort($c['b']); arsort($c['d']);
+  $c['top_dead_buckets'] = array_slice($c['d'], 0, 6, true);
+}
+unset($c);
+// Écrans triés par volume de clics décroissant (le + cliqué en tête).
+uasort($out['clicks'], function($x, $y){ return ($y['n'] ?? 0) - ($x['n'] ?? 0); });
 
 // Synthèse par région : funnel + taux de conversion par étape + ennui + top events.
 foreach ($byR as $rg => $a) {
