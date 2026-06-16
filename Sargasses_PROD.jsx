@@ -3367,12 +3367,19 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             const verdictText = LL[verdictKey]||LL.verdictUnknown
             const verdictColor = ST[beach.status].c
             return (
-              <div style={{display:"flex",alignItems:"center",gap:10,margin:"0 0 14px"}}>
+              <div style={{display:"flex",alignItems:"center",gap:10,margin:"0 0 14px",flexWrap:"wrap"}}>
                 <span aria-hidden="true" style={{width:4,height:24,borderRadius:2,background:verdictColor,flexShrink:0}}/>
                 <span className="anton" style={{fontSize:"clamp(18px,4.6vw,22px)",lineHeight:1.1,color:verdictColor,letterSpacing:"-.01em",textTransform:"uppercase"}}>
                   {verdictText}
                 </span>
                 <span aria-hidden="true" style={{fontSize:20,lineHeight:1,flexShrink:0}}>{verdictMeta(beach.status,lang).emoji}</span>
+                {beach.status==="clean"&&__REL&&typeof __REL.cleanPct==="number"&&(
+                  <span style={{fontSize:10.5,fontWeight:700,padding:"3px 9px",borderRadius:100,
+                    background:"rgba(34,197,94,.12)",color:"#16A34A",border:"1px solid rgba(34,197,94,.25)",
+                    whiteSpace:"nowrap",flexShrink:0}}>
+                    ✓ {__REL.cleanPct}% {_t(lang,"fiables","reliable","fiables")}
+                  </span>
+                )}
               </div>
             )
           })()}
