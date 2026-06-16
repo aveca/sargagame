@@ -2331,7 +2331,7 @@ function BottomNav({view,onChangeView,lang}){
       padding:"8px 0 max(12px,env(safe-area-inset-bottom))",
     }}>
       {tabs.map(t=>{
-        const active=view===t.id||(t.id==="premium"&&false)
+        const active=view===t.id
         return(
         <button key={t.id} onClick={()=>onChangeView(t.id)} style={{
           display:"flex",flexDirection:"column",alignItems:"center",gap:2,
@@ -3085,6 +3085,9 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
   // toujours visible, panneau dépliable + alerte santé Premium. Remplace le warning
   // binaire (control = warning sur avoid uniquement). ?h2s=1/0 force en QA.
   const pwH2s=(()=>{try{const q=window.location.search;if(/[?&]h2s=1/.test(q))return true;if(/[?&]h2s=0/.test(q))return false;return abVariant("pw_h2s",["control","badge"],[.5,.5])==="badge"}catch(_){return false}})()
+  // A/B `fc_position` : ForecastChart remonté sous le verdict (valeur payante visible tôt)
+  // vs control (en bas après VisitPlan). ?fcup=1/0 force en QA.
+  const fcUp=(()=>{try{const q=window.location.search;if(/[?&]fcup=1/.test(q))return true;if(/[?&]fcup=0/.test(q))return false;return abVariant("fc_position",["control","top"],[.5,.5])==="top"}catch(_){return false}})()
 
   // Scroll to top when beach changes
   useEffect(()=>{
@@ -3389,6 +3392,11 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             </div>
           )}
           <AfaiChip beach={beach} lang={lang}/>
+          {/* A/B fc_position="top" : ForecastChart remonte sous le verdict (avant les info-filler) */}
+          {fcUp&&forecast&&(<>
+            {weeklyData?.arrivalDetected&&<div style={{padding:"10px 12px",marginBottom:10,borderRadius:12,background:"linear-gradient(135deg,rgba(232,143,42,.12),rgba(232,82,42,.08))",border:"1px solid rgba(232,143,42,.35)",display:"flex",alignItems:"center",gap:10}}><span style={{fontSize:20}}>⚠</span><div style={{flex:1}}><div style={{fontSize:13,fontWeight:700,color:"#b35818"}}>{_t(lang,"Banc de sargasses en approche","Sargassum mat approaching","Banco de sargazo en camino")}</div><div style={{fontSize:11,color:"var(--sg-mid,#686868)",marginTop:2}}>{_t(lang,"Le satellite détecte un banc dérivant vers cette plage (1–3 jours).","Satellite shows a mat drifting toward this beach (1–3 days).","El satélite detecta un banco derivando hacia esta playa (1–3 días).")}</div></div></div>}
+            <ForecastChart forecast={forecast} lang={lang} onPremiumClick={onPremiumClick} isPremium={isPremium} weatherDaily={weather?.daily||null} weeklyData={weeklyData}/>
+          </>)}
 
           {/* GRATUIT — le chiffre de précision devient le HÉROS cliquable (blueprint
               move #1 : fil rouge de preuve fiche→/fiabilite). Copy honnête : c'est
@@ -3640,10 +3648,10 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               réels). DANS la fiche, pas un popup (feedback_no_ui_in_ui). */}
           <VisitPlan beach={beach} lang={lang} allBeaches={allBeaches} weeklyData={weeklyData}/>
 
-          {/* Forecast (days 4-7 locked) */}
-          <h3 style={{fontSize:15,fontWeight:700,marginBottom:8}}>{LL.forecast}</h3>
+          {/* Forecast (days 4-7 locked) — control only; "top" variant renders above */}
+          {!fcUp&&<h3 style={{fontSize:15,fontWeight:700,marginBottom:8}}>{LL.forecast}</h3>}
           {/* v3: Arrival banner — strongest signal the app provides */}
-          {weeklyData?.arrivalDetected&&(
+          {!fcUp&&weeklyData?.arrivalDetected&&(
             <div style={{
               padding:"10px 12px",marginBottom:10,borderRadius:12,
               background:"linear-gradient(135deg,rgba(232,143,42,.12),rgba(232,82,42,.08))",
@@ -3661,8 +3669,8 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               </div>
             </div>
           )}
-          <ForecastChart forecast={forecast} lang={lang} onPremiumClick={onPremiumClick} isPremium={isPremium}
-            weatherDaily={weather?.daily||null} weeklyData={weeklyData}/>
+          {!fcUp&&<ForecastChart forecast={forecast} lang={lang} onPremiumClick={onPremiumClick} isPremium={isPremium}
+            weatherDaily={weather?.daily||null} weeklyData={weeklyData}/>}
           {/* Disclaimer : la clé machine forecastMethod (pipeline forecast.cjs +
               'interpolated' côté client) est mappée vers une copy localisée —
               ne JAMAIS rendre weeklyData.forecastDisclaimer brut (FR sans
