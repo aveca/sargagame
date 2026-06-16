@@ -1,0 +1,842 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le Phare — clip de marque (direction PHARE)</title>
+<style>
+  /* ============================================================
+     TOKENS MARQUE (identiques au moteur v2 — golden-hour côte)
+     ============================================================ */
+  :root{
+    --bg:#FDFCF7; --gold:#E8A800; --goldL:#FFC72C; --goldLL:#FFE47A;
+    --teal:#009E8E; --green:#22C55E; --amber:#B87A00; --coral:#E8522A;
+    --ink:#0D0D0D; --mid:#686868;
+    --sky0:#0B2230; --sky1:#155A5A; --sky2:#C97E3A; --sky3:#F2B05E;
+    --seaT:#1A5852; --seaB:#08251F; --glit:#FFD884; --sand:#1C1712; --rim:#FFD884;
+    --display:"Anton","Haettenschweiler","Arial Narrow Bold","Impact",system-ui,sans-serif;
+    --ui:"Bricolage Grotesque",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+    /* couleur d'humeur courante (mutée par JS pour crossfades doux) */
+    --mood:#1FB6A6;       /* teinte fanal / lumière du phare */
+    --moodHalo:#1FB6A6;   /* halo de réassurance autour du phare */
+    --moodDot:#22C55E;    /* fanal (lanterne) au sommet */
+    --beamCol:#FFE6A6;    /* couleur du faisceau (lumière chaude qui veille la mer) */
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:#06140f;color:#fff;font-family:var(--ui);-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+  #stage{position:fixed;inset:0;overflow:hidden}
+  svg#scene{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+
+  @keyframes uiIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .fadeIn{animation:uiIn 1.5s cubic-bezier(.22,1,.36,1) .35s both}
+
+  /* ============================================================
+     AMBIENT lent autorisé (doctrine calme) — lumière + nuages
+     uniquement. La micro-vie du phare est gérée dans le rAF.
+     ============================================================ */
+  @keyframes cloud{from{transform:translateX(0)}to{transform:translateX(64px)}}
+  @keyframes cloud2{from{transform:translateX(0)}to{transform:translateX(-46px)}}
+  @keyframes sunBreath{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:.82;transform:scale(1.05)}}
+  .cloud{animation:cloud 132s linear infinite alternate;transform-box:fill-box}
+  .cloud-b{animation:cloud2 168s linear infinite alternate;transform-box:fill-box}
+  #sunGlow{animation:sunBreath 11s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+
+  /* ---- Ripple barrage (transitoire au clic) ---- */
+  @keyframes ripple{from{r:2;opacity:.65;stroke-width:3}to{r:52;opacity:0;stroke-width:.5}}
+  .ripple{animation:ripple 1.2s cubic-bezier(.2,.6,.2,1) forwards}
+  @keyframes boomIn{from{opacity:0;transform:scale(.55) translateY(4px)}to{opacity:1;transform:scale(1) translateY(0)}}
+  .boom{animation:boomIn .5s cubic-bezier(.34,1.56,.64,1) both;transform-box:fill-box;transform-origin:center}
+
+  /* ============================================================
+     OVERLAY UI
+     ============================================================ */
+  .ov{position:absolute;left:0;right:0;pointer-events:none}
+  .top{top:0;padding:16px 18px;display:flex;align-items:center;gap:12px}
+  .live{pointer-events:auto;display:inline-flex;align-items:center;gap:7px;background:rgba(8,20,15,.42);border:1px solid rgba(255,216,132,.28);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);padding:6px 11px;border-radius:100px;font-size:12px;font-weight:700;letter-spacing:.08em}
+  .live i{width:8px;height:8px;border-radius:50%;background:var(--moodDot);box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:dot 2.6s ease-out infinite}
+  @keyframes dot{0%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}70%{box-shadow:0 0 0 9px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+  .wm{font-family:var(--display);font-size:15px;letter-spacing:.04em;opacity:.92;text-transform:uppercase}
+
+  .scrim{position:absolute;left:0;right:0;bottom:0;height:46%;pointer-events:none;
+    background:linear-gradient(to top,rgba(4,16,11,.62) 0%,rgba(4,16,11,.28) 42%,rgba(4,16,11,0) 100%)}
+
+  .bottom{bottom:0;padding:0 20px max(22px,env(safe-area-inset-bottom)) 20px;display:flex;flex-direction:column;gap:10px}
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:.16em;color:var(--goldLL);text-transform:uppercase;text-shadow:0 1px 8px rgba(0,0,0,.5)}
+  .title{font-family:var(--display);font-weight:400;text-transform:uppercase;letter-spacing:-.02em;line-height:.9;margin:0;font-size:clamp(40px,11.5vw,80px);text-shadow:0 2px 26px rgba(0,0,0,.5)}
+  .sub{max-width:30ch;font-size:15px;line-height:1.45;color:rgba(255,255,255,.92);text-shadow:0 1px 10px rgba(0,0,0,.6)}
+  .cta{pointer-events:auto;align-self:flex-start;margin-top:8px;border:0;cursor:pointer;font-family:var(--ui);font-weight:800;font-size:16px;color:#1a1300;padding:14px 24px;border-radius:100px;
+    background:linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%);
+    box-shadow:0 8px 26px rgba(232,148,0,.4),inset 0 1px 0 rgba(255,255,255,.55);
+    transition:transform .16s cubic-bezier(.175,.885,.32,1.275),box-shadow .25s ease}
+  .cta:hover{box-shadow:0 12px 32px rgba(232,148,0,.55),inset 0 1px 0 rgba(255,255,255,.6)}
+  .cta:active{transform:scale(.96)}
+  .hint{position:absolute;left:50%;bottom:104px;transform:translateX(-50%);font-size:11.5px;letter-spacing:.06em;color:rgba(255,255,255,.62);pointer-events:none;text-shadow:0 1px 8px rgba(0,0,0,.6);white-space:nowrap}
+
+  @media (min-width:740px){
+    .bottom{padding-bottom:40px} .sub{font-size:17px} .hint{bottom:112px}
+  }
+
+  /* ============================================================
+     PLANCHER DUR reduced-motion — tableau figé, lisible, cliquable
+     ============================================================ */
+  @media (prefers-reduced-motion:reduce){
+    #scene *{animation:none!important;transition:none!important}
+    .fadeIn{animation:none!important;opacity:1!important;transform:none!important}
+    .live i{animation:none!important}
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <svg id="scene" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" aria-label="Le Phare veille la mer au lever du jour">
+    <defs>
+      <!-- CIEL golden-hour imposé -->
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="var(--sky0)"/>
+        <stop offset=".42" stop-color="var(--sky1)"/>
+        <stop offset=".74" stop-color="var(--sky2)"/>
+        <stop offset="1" stop-color="var(--sky3)"/>
+      </linearGradient>
+      <linearGradient id="warmG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#3a2a18" stop-opacity="0"/>
+        <stop offset=".6" stop-color="#C97E3A" stop-opacity=".22"/>
+        <stop offset="1" stop-color="#F2B05E" stop-opacity=".46"/>
+      </linearGradient>
+      <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="var(--seaT)"/>
+        <stop offset=".55" stop-color="#0f3b34"/>
+        <stop offset="1" stop-color="var(--seaB)"/>
+      </linearGradient>
+      <radialGradient id="sunG" cx="50%" cy="50%" r="50%">
+        <stop offset="0" stop-color="#FFF6E0"/>
+        <stop offset=".48" stop-color="var(--glit)"/>
+        <stop offset="1" stop-color="#F2B05E" stop-opacity="0"/>
+      </radialGradient>
+
+      <!-- FAISCEAU du phare : cône chaud, plus dense près de la lanterne,
+           se dissout sur la mer (lumière qui guide, pas un scan dur) -->
+      <linearGradient id="beamGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="var(--beamCol)" stop-opacity=".62"/>
+        <stop offset=".45" stop-color="var(--beamCol)" stop-opacity=".24"/>
+        <stop offset="1" stop-color="var(--beamCol)" stop-opacity="0"/>
+      </linearGradient>
+      <!-- coeur lumineux du fanal -->
+      <radialGradient id="lampG" cx="50%" cy="50%" r="50%">
+        <stop offset="0" stop-color="#FFFDF2"/>
+        <stop offset=".4" stop-color="var(--moodDot)"/>
+        <stop offset="1" stop-color="var(--moodDot)" stop-opacity="0"/>
+      </radialGradient>
+
+      <!-- corps du phare (maçonnerie chaude, ombrée à gauche, rim chaud à droite) -->
+      <linearGradient id="towerG" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#0C2722"/>
+        <stop offset=".42" stop-color="#163E38"/>
+        <stop offset=".72" stop-color="#23564C"/>
+        <stop offset="1" stop-color="#3C6E5C"/>
+      </linearGradient>
+      <linearGradient id="bandG" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#A8521E"/>
+        <stop offset=".55" stop-color="#E8522A"/>
+        <stop offset="1" stop-color="#F2884A"/>
+      </linearGradient>
+      <linearGradient id="rockG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#123029"/>
+        <stop offset="1" stop-color="#08211C"/>
+      </linearGradient>
+      <linearGradient id="lanternHouseG" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#0A2A26"/>
+        <stop offset="1" stop-color="#1C4C44"/>
+      </linearGradient>
+      <!-- verre de la lanterne (la vitre du fanal — teintée par l'humeur) -->
+      <radialGradient id="glassG" cx="42%" cy="38%" r="68%">
+        <stop offset="0" stop-color="#FFFBEC"/>
+        <stop offset=".5" stop-color="var(--mood)"/>
+        <stop offset="1" stop-color="#06201f"/>
+      </radialGradient>
+
+      <!-- halo de réassurance DERRIÈRE le phare (couleur d'humeur) -->
+      <radialGradient id="haloG" cx="50%" cy="50%" r="50%">
+        <stop offset="0" stop-color="var(--moodHalo)" stop-opacity=".5"/>
+        <stop offset=".5" stop-color="var(--moodHalo)" stop-opacity=".16"/>
+        <stop offset="1" stop-color="var(--moodHalo)" stop-opacity="0"/>
+      </radialGradient>
+
+      <!-- VOILE de la yole (les couleurs traditionnelles martiniquaises) -->
+      <linearGradient id="sailG" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#FFF3DC"/>
+        <stop offset="1" stop-color="#F2C98A"/>
+      </linearGradient>
+      <linearGradient id="hullG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#E8A800"/>
+        <stop offset="1" stop-color="#B05A12"/>
+      </linearGradient>
+
+      <filter id="soft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="7"/></filter>
+      <filter id="softS" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3"/></filter>
+      <filter id="beamBlur" x="-40%" y="-20%" width="180%" height="160%"><feGaussianBlur stdDeviation="5"/></filter>
+      <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope=".03"/></feComponentTransfer><feComposite operator="over" in2="SourceGraphic"/></filter>
+
+      <!-- ============================================================
+           SYMBOLE RÉDUCTIBLE — la marque (test silhouette 24px→1024px)
+           Un PHARE : tour rayée + lanterne + fanal chaud + halo.
+           PAS d'œil. La lanterne regarde la MER, jamais l'utilisateur.
+           ============================================================ -->
+      <symbol id="phare-glyph" viewBox="0 0 120 120">
+        <!-- socle / rocher -->
+        <path d="M30 112 Q60 100 90 112 L96 120 L24 120 Z" fill="#0A1F1B"/>
+        <!-- tour conique -->
+        <path d="M44 104 L40 40 L80 40 L76 104 Z" fill="#1C4C44"/>
+        <!-- bande -->
+        <path d="M42.5 78 L77.5 78 L76.6 92 L43.4 92 Z" fill="#E8522A"/>
+        <!-- galerie -->
+        <rect x="36" y="34" width="48" height="6" rx="2" fill="#0A2A26"/>
+        <!-- maison-lanterne -->
+        <path d="M46 34 L46 18 L74 18 L74 34 Z" fill="#0A2A26"/>
+        <!-- fanal -->
+        <circle cx="60" cy="26" r="9" fill="#FFE47A"/>
+        <!-- toit -->
+        <path d="M44 18 L60 4 L76 18 Z" fill="#0A2A26"/>
+        <circle cx="60" cy="3" r="3" fill="#E8A800"/>
+      </symbol>
+    </defs>
+
+    <!-- ===================== PLAN ARRIÈRE (parallaxe ~0) ===================== -->
+    <g id="pBack">
+      <rect x="-40" y="-40" width="880" height="420" fill="url(#sky)"/>
+      <rect id="warm" x="-40" y="-40" width="880" height="420" fill="url(#warmG)"/>
+
+      <!-- soleil bas + halo qui respire -->
+      <circle id="sunGlow" cx="612" cy="206" r="124" fill="url(#sunG)"/>
+      <circle cx="612" cy="206" r="44" fill="#FFF7E2"/>
+
+      <!-- nuages longs lents (2 couches déphasées) -->
+      <g class="cloud" opacity=".42">
+        <ellipse cx="180" cy="116" rx="128" ry="11" fill="#10333E"/>
+        <ellipse cx="250" cy="128" rx="70" ry="7" fill="#10333E" opacity=".7"/>
+      </g>
+      <g class="cloud-b" opacity=".32">
+        <ellipse cx="500" cy="150" rx="100" ry="8" fill="#0d2c36"/>
+      </g>
+
+      <!-- oiseaux lointains (2, donnent l'échelle + vie sans jank) -->
+      <path d="M150 122 q7 -6 14 0 q7 -6 14 0" fill="none" stroke="#0B2230" stroke-width="2.2" stroke-linecap="round" opacity=".5"/>
+      <path d="M196 134 q5 -4 10 0 q5 -4 10 0" fill="none" stroke="#0B2230" stroke-width="1.8" stroke-linecap="round" opacity=".4"/>
+    </g>
+
+    <!-- ===================== PLAN MÉDIAN (parallaxe légère) ===================== -->
+    <g id="pMid">
+      <!-- îles-silhouettes lointaines (profondeur) -->
+      <path d="M30 330 q70 -38 156 -32 q60 4 100 32 Z" fill="#0a2a2c" opacity=".5"/>
+      <path d="M540 333 q60 -26 130 -22 q52 3 92 22 Z" fill="#0a2a2c" opacity=".4"/>
+
+      <!-- mer -->
+      <rect x="-40" y="330" width="880" height="312" fill="url(#sea)"/>
+
+      <!-- allée scintillante du soleil (vers le large, profondeur) -->
+      <g id="sunPath" opacity=".9">
+        <ellipse cx="612" cy="352" rx="78" ry="6" fill="var(--glit)" opacity=".46"/>
+        <ellipse cx="600" cy="368" rx="58" ry="5" fill="var(--glit)" opacity=".4"/>
+        <ellipse cx="585" cy="386" rx="44" ry="4.5" fill="var(--glit)" opacity=".33"/>
+        <ellipse cx="565" cy="406" rx="32" ry="4" fill="var(--glit)" opacity=".26"/>
+        <ellipse cx="540" cy="428" rx="22" ry="3.5" fill="var(--glit)" opacity=".2"/>
+      </g>
+
+      <!-- ondulations de houle douces (remplacent les "filets" cheap) -->
+      <g stroke="#0c302b" stroke-width="2" stroke-linecap="round" opacity=".4" fill="none">
+        <path d="M70 396 q26 -5 52 0 q26 5 52 0"/>
+        <path d="M250 438 q24 -5 48 0 q24 5 48 0"/>
+        <path d="M450 478 q30 -6 60 0 q30 6 60 0"/>
+        <path d="M120 512 q26 -5 52 0 q26 5 52 0"/>
+      </g>
+    </g>
+
+    <!-- ===================== PLAN AVANT (parallaxe + acteurs) ===================== -->
+    <g id="pFront">
+
+      <!-- ============================================================
+           LE FAISCEAU DU PHARE — émis de la LANTERNE, balaie la MER.
+           reframe dur : l'angle est BORNÉ vers le LARGE (jamais vers
+           le bas/spectateur). C'est une lumière qui VEILLE l'eau et
+           POSE une nappe chaude sur la mer, pas un scan qui scrute.
+           Vit DERRIÈRE le phare pour qu'il "éclaire devant lui".
+           ============================================================ -->
+      <g id="beamWrap">
+        <g id="beamG">
+          <!-- cône large et doux -->
+          <polygon id="beam" points="0,0 -190,300 190,300" fill="url(#beamGrad)" filter="url(#beamBlur)" opacity="0"/>
+          <!-- coeur du faisceau plus net -->
+          <polygon id="beamCore" points="0,0 -60,300 60,300" fill="url(#beamGrad)" opacity="0"/>
+        </g>
+      </g>
+      <!-- nappe lumineuse posée sur la mer là où le faisceau touche l'eau -->
+      <ellipse id="seaPool" cx="300" cy="372" rx="90" ry="14" fill="url(#lampG)" opacity="0"/>
+
+      <!-- radeau de sargasses (se rapproche/grossit en alerte) -->
+      <g id="raft" transform="translate(560 414)" opacity=".95">
+        <ellipse cx="0" cy="0" rx="42" ry="9" fill="#3a4a1e"/>
+        <ellipse cx="-20" cy="-4" rx="17" ry="6" fill="#4d6326"/>
+        <ellipse cx="16" cy="3" rx="15" ry="5" fill="#2f3d18"/>
+        <ellipse cx="-2" cy="5" rx="22" ry="5" fill="#56702c"/>
+        <ellipse cx="24" cy="-2" rx="11" ry="4" fill="#445a24"/>
+      </g>
+
+      <!-- ============================================================
+           LA YOLE RONDE (bateau traditionnel martiniquais) — au large,
+           sous le faisceau. Donne échelle + âme locale + vie. C'est
+           CE QUE LE PHARE VEILLE : "il y a quelqu'un sur l'eau, le
+           phare le guide". Reflet sous la coque pour la profondeur.
+           ============================================================ -->
+      <g id="yole" transform="translate(360 408)" opacity=".96" style="cursor:pointer">
+        <!-- reflet de la voile sur l'eau (profondeur) -->
+        <path d="M2 26 L20 50 L-2 50 Z" fill="var(--glit)" opacity=".16"/>
+        <!-- coque (forme ronde caractéristique de la yole) -->
+        <path d="M-26 22 Q0 38 26 22 Q22 30 0 31 Q-22 30 -26 22 Z" fill="url(#hullG)"/>
+        <path d="M-26 22 Q0 33 26 22" fill="none" stroke="#7a3e0c" stroke-width="1.4"/>
+        <!-- liston coloré (détail typique) -->
+        <path d="M-24 23 Q0 30 24 23" fill="none" stroke="#009E8E" stroke-width="2" stroke-linecap="round"/>
+        <!-- mât -->
+        <line x1="0" y1="24" x2="2" y2="-22" stroke="#3a2a14" stroke-width="2.2"/>
+        <!-- voile triangulaire (gonflée par le vent) -->
+        <path d="M2 -22 Q26 -2 18 24 L2 24 Z" fill="url(#sailG)"/>
+        <path d="M2 -22 Q14 -8 8 22" fill="none" stroke="#d9a85a" stroke-width="1" opacity=".5"/>
+        <!-- petit pavillon corail au sommet -->
+        <path d="M2 -22 l10 3 l-10 3 z" fill="var(--coral)"/>
+        <!-- micro-vague à l'étrave -->
+        <path id="yoleWake" d="M-30 24 q-8 1 -14 4" fill="none" stroke="var(--glit)" stroke-width="2" stroke-linecap="round" opacity=".5"/>
+      </g>
+
+      <!-- tortue posée (figée au repos = tableau, doctrine calme) -->
+      <g id="turtle" transform="translate(150 500)" opacity=".82">
+        <ellipse cx="0" cy="0" rx="28" ry="17" fill="#0c4b44"/>
+        <ellipse cx="0" cy="-2" rx="20" ry="12" fill="#11635a"/>
+        <path d="M-2 -12 l4 0 l3 7 l-9 0 z" fill="#0a423c"/>
+        <path d="M-8 8 l5 7 M8 8 l5 7 M-20 -4 l-8 3 M20 -4 l8 3" stroke="#0c4b44" stroke-width="5.5" stroke-linecap="round"/>
+        <ellipse cx="24" cy="-3" rx="7" ry="5" fill="#0c4b44"/>
+        <circle cx="27" cy="-4" r="1.4" fill="#06140f"/>
+      </g>
+
+      <!-- ============================================================
+           LE PHARE (la face de marque)
+             gPose  = posture émotionnelle (lift + micro-inclinaison) — JS
+               gLife  = micro-respiration de la lumière (PAS le bâti) — JS
+                 gTower = tour + lanterne + fanal
+           Ancre scène : translate(EYE.x, baseY). Lanterne ≈ sommet.
+           La maçonnerie NE BOUGE PAS (un phare est stable = réassurant).
+           Seules la LUMIÈRE et le HALO respirent.
+           ============================================================ -->
+      <!-- halo de réassurance DERRIÈRE le phare -->
+      <circle id="halo" cx="400" cy="300" r="150" fill="url(#haloG)" filter="url(#soft)" opacity=".45"/>
+
+      <g id="gPose" transform="translate(400 196)">
+       <g id="gLife">
+        <g id="gTower" transform="scale(1.30)">
+
+          <!-- ROCHER / socle (ancre le phare, lui donne du poids) -->
+          <path d="M-58 150 Q-30 128 0 130 Q34 128 60 150 L74 176 L-74 176 Z" fill="url(#rockG)"/>
+          <path d="M-58 150 Q-30 128 0 130 Q34 128 60 150" fill="none" stroke="var(--rim)" stroke-width="1.4" stroke-opacity=".3"/>
+          <!-- écume au pied du rocher -->
+          <path d="M-72 168 q14 -7 28 0 q14 7 28 0 q14 -7 28 0 q14 7 28 0" fill="none" stroke="var(--glit)" stroke-width="2.4" stroke-linecap="round" opacity=".4"/>
+
+          <!-- TOUR conique (maçonnerie) -->
+          <path d="M-26 130 L-19 -34 L19 -34 L26 130 Z" fill="url(#towerG)"/>
+          <!-- bande corail signature (rayure de phare) -->
+          <path d="M-22.2 64 L22.2 64 L23.6 94 L-23.6 94 Z" fill="url(#bandG)"/>
+          <!-- ombre portée verticale gauche (volume) -->
+          <path d="M-26 130 L-19 -34 L-12 -34 L-18 130 Z" fill="#06201c" opacity=".4"/>
+          <!-- liseré chaud rim-light bord droit (golden-hour) -->
+          <path d="M19 -34 L26 130" fill="none" stroke="var(--rim)" stroke-width="2.2" stroke-opacity=".55" stroke-linecap="round"/>
+          <!-- 2 fenêtres (échelle humaine, détail "habité") -->
+          <rect x="-4" y="20" width="8" height="12" rx="2" fill="#0a1f1c"/>
+          <rect x="-4" y="-12" width="8" height="11" rx="2" fill="#0a1f1c"/>
+
+          <!-- GALERIE (plateforme sous la lanterne) -->
+          <rect x="-30" y="-44" width="60" height="10" rx="2.5" fill="#0A2A26"/>
+          <rect x="-30" y="-44" width="60" height="3" fill="var(--rim)" opacity=".3"/>
+          <!-- garde-corps -->
+          <g stroke="#0A2A26" stroke-width="2">
+            <line x1="-28" y1="-44" x2="-28" y2="-54"/><line x1="-14" y1="-44" x2="-14" y2="-54"/>
+            <line x1="0" y1="-44" x2="0" y2="-54"/><line x1="14" y1="-44" x2="14" y2="-54"/>
+            <line x1="28" y1="-44" x2="28" y2="-54"/>
+            <line x1="-28" y1="-54" x2="28" y2="-54"/>
+          </g>
+
+          <!-- MAISON-LANTERNE (vitrage du fanal) -->
+          <path d="M-22 -54 L-18 -86 L18 -86 L22 -54 Z" fill="url(#lanternHouseG)"/>
+          <!-- montants verticaux du vitrage -->
+          <g stroke="#0A2A26" stroke-width="1.6" opacity=".7">
+            <line x1="-9" y1="-54" x2="-7" y2="-86"/>
+            <line x1="9" y1="-54" x2="7" y2="-86"/>
+          </g>
+          <!-- VERRE/FANAL (teinté par l'humeur — c'est ici que "brille la veille") -->
+          <ellipse id="lampGlow" cx="0" cy="-70" rx="30" ry="26" fill="url(#lampG)" filter="url(#softS)" opacity=".7"/>
+          <circle id="glass" cx="0" cy="-70" r="14" fill="url(#glassG)"/>
+          <!-- coeur incandescent du fanal -->
+          <circle id="lamp" cx="0" cy="-70" r="6.5" fill="var(--moodDot)"/>
+          <circle id="lampCore" cx="0" cy="-72" r="2.6" fill="#FFFDF2"/>
+          <!-- reflet froid discret sur le verre (vie sans "œil") -->
+          <ellipse cx="-5" cy="-76" rx="3.2" ry="2" fill="#fff" opacity=".5"/>
+
+          <!-- TOIT (coupole) + épi -->
+          <path d="M-22 -86 L0 -106 L22 -86 Z" fill="#0A2A26"/>
+          <path d="M-22 -86 L0 -106" fill="none" stroke="var(--rim)" stroke-width="1.6" stroke-opacity=".4"/>
+          <line x1="0" y1="-106" x2="0" y2="-118" stroke="#0e2622" stroke-width="3"/>
+          <!-- pastille au sommet = "EN VEILLE" (équiv. antenne v2, data-driven) -->
+          <circle id="finialGlow" cx="0" cy="-121" r="9" fill="var(--moodDot)" opacity=".22" filter="url(#softS)"/>
+          <circle id="finial" cx="0" cy="-121" r="4.4" fill="var(--moodDot)"/>
+
+        </g>
+       </g>
+      </g>
+    </g>
+
+    <!-- ============================================================
+         CAUTION CRÉDIBILITÉ — le satellite reste présent comme PREUVE
+         (mascotte = le service chaleureux = le phare ; satellite =
+         l'outil crédible). Petit, haut à gauche, discret, NON cliquable.
+         Émet un fin trait de mesure vers la mer (4 passages/jour).
+         ============================================================ -->
+    <g id="sat" transform="translate(96 96)" opacity=".9">
+      <line x1="2" y1="6" x2="46" y2="120" stroke="var(--glit)" stroke-width="1" stroke-dasharray="2 6" opacity=".35"/>
+      <g transform="rotate(18)">
+        <rect x="-18" y="-4" width="12" height="8" rx="1.4" fill="url(#towerG)"/>
+        <rect x="6" y="-4" width="12" height="8" rx="1.4" fill="url(#towerG)"/>
+        <rect x="-5" y="-5" width="10" height="10" rx="2" fill="#1b4763"/>
+        <circle cx="0" cy="0" r="2.4" fill="var(--glit)"/>
+      </g>
+    </g>
+
+    <!-- grain -->
+    <rect x="0" y="0" width="800" height="600" filter="url(#grain)" opacity=".42" pointer-events="none"/>
+  </svg>
+
+  <!-- assombrissement local sous le texte -->
+  <div class="scrim"></div>
+
+  <!-- Overlay marque -->
+  <div class="ov top fadeIn">
+    <span class="live"><i></i> EN TEMPS RÉEL</span>
+    <span class="wm">Sargasses</span>
+  </div>
+
+  <div class="hint fadeIn" id="hint">bouge — son faisceau veille la mer · touche l'eau</div>
+
+  <div class="ov bottom fadeIn">
+    <span class="eyebrow" id="eyebrow">Martinique · Aujourd'hui</span>
+    <h1 class="title">La mer,<br>en direct.</h1>
+    <p class="sub">Le Phare veille tes plages au lever du jour. Propre, ou pas — tu le sais avant d'y aller.</p>
+    <button class="cta" id="cta">Voir ma plage →</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---- noeuds ----
+  var svg      = document.getElementById("scene");
+  var pMid     = document.getElementById("pMid");
+  var pFront   = document.getElementById("pFront");
+  var gPose    = document.getElementById("gPose");
+  var gLife    = document.getElementById("gLife");
+  var halo     = document.getElementById("halo");
+  var beamWrap = document.getElementById("beamWrap");
+  var beamG    = document.getElementById("beamG");
+  var beam     = document.getElementById("beam");
+  var beamCore = document.getElementById("beamCore");
+  var seaPool  = document.getElementById("seaPool");
+  var lamp     = document.getElementById("lamp");
+  var lampGlow = document.getElementById("lampGlow");
+  var glass    = document.getElementById("glass");
+  var finial   = document.getElementById("finial");
+  var raft     = document.getElementById("raft");
+  var yole     = document.getElementById("yole");
+  var cta      = document.getElementById("cta");
+  var hint     = document.getElementById("hint");
+  var eyebrow  = document.getElementById("eyebrow");
+  var rootStyle= document.documentElement.style;
+
+  var RM=false; try{RM=window.matchMedia("(prefers-reduced-motion: reduce)").matches;}catch(e){}
+
+  // ---- géométrie : la LANTERNE (source du faisceau) en coords viewBox ----
+  // ancre gPose translate(400,196) ; lanterne locale (0,-70)*scale(1.30) ≈ (0,-91)
+  // → y = 196 - 91 = 105 ; x = 400
+  var LAMP = {x:400, y:105};
+  // base du phare (pivot de posture, jamais hors-champ)
+  var BASE = {x:400, y:196};
+
+  // ---- utils ----
+  function lerp(a,b,t){return a+(b-a)*t;}
+  function clamp(v,a,b){return v<a?a:(v>b?b:v);}
+  function easeInOut(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;}
+  function hx(c){c=c.replace('#','');return [parseInt(c.substr(0,2),16),parseInt(c.substr(2,2),16),parseInt(c.substr(4,2),16)];}
+  function mix(a,b,t){var A=hx(a),B=hx(b);return 'rgb('+Math.round(lerp(A[0],B[0],t))+','+Math.round(lerp(A[1],B[1],t))+','+Math.round(lerp(A[2],B[2],t))+')';}
+
+  // clientXY -> coords viewBox (slice = cover) — précis mobile ET desktop
+  function toVB(clientX,clientY){
+    var r=svg.getBoundingClientRect();
+    var vw=800,vh=600, sc=Math.max(r.width/vw,r.height/vh);
+    var dw=vw*sc,dh=vh*sc, ox=(r.width-dw)/2, oy=(r.height-dh)/2;
+    return {x:(clientX-r.left-ox)/sc, y:(clientY-r.top-oy)/sc};
+  }
+
+  // ============================================================
+  //  PALETTES D'HUMEUR (couleur + forme + posture, jamais couleur seule)
+  //  Reframe PHARE : pas de paupière/iris. L'émotion vit dans la
+  //  LUMIÈRE (intensité, teinte, balayage du faisceau) + la posture
+  //  du bâti (lift quasi nul = le phare reste STABLE = réassurant).
+  //  - calm : fanal teal doux, faisceau au repos, balayage très lent
+  //  - scan : fanal doré, faisceau actif qui balaie (il MESURE)
+  //  - alert: fanal corail, faisceau soutenu pointé vers le radeau
+  //    JAMAIS clignotant frénétique (anti-flippe) : la lumière reste
+  //    CHAUDE et CONTINUE, elle "tient bon" plutôt qu'elle alarme.
+  // ============================================================
+  var MOODS = {
+    calm:  { mood:'#1FB6A6', halo:'#1FB6A6', dot:'#22C55E', beamCol:'#FFE6A6', lampR:6.0, glow:.55, lift:0,    beam:0,   sweepAmp:8,  sweepSpd:9000 },
+    scan:  { mood:'#FFC72C', halo:'#E8A800', dot:'#FFC72C', beamCol:'#FFE6A6', lampR:7.6, glow:.80, lift:-1,   beam:1,   sweepAmp:18, sweepSpd:5200 },
+    alert: { mood:'#E8522A', halo:'#E8522A', dot:'#E8522A', beamCol:'#FFCBA0', lampR:8.4, glow:.95, lift:-2,   beam:.85, sweepAmp:6,  sweepSpd:6500 }
+  };
+  var M = clone(MOODS.calm), MT = clone(MOODS.calm);
+  function clone(o){var n={};for(var k in o)n[k]=o[k];return n;}
+  function setMoodTarget(name){ if(MOODS[name]) MT=clone(MOODS[name]); curMoodName=name; }
+  var curMoodName='calm';
+
+  // setMood public : branché sur le VRAI score plage (honnêteté = pricing)
+  // score >=70 calme · 40-69 scan · <40 alerte.
+  function setMoodFromScore(score){
+    if(score>=70) setMoodTarget('calm');
+    else if(score>=40) setMoodTarget('scan');
+    else setMoodTarget('alert');
+  }
+  window.setVeilleurScore = setMoodFromScore; // hook data-driven externe (API conservée)
+
+  // ============================================================
+  //  CIBLE DU FAISCEAU — il regarde la MER, pas l'utilisateur.
+  //  Le curseur DÉPLACE le point veillé sur l'eau, borné au large.
+  //  La lanterne pivote vers ce point ; jamais vers le bas/spectateur.
+  // ============================================================
+  var tx=BASE.x, ty=420, cx=BASE.x, cy=420;  // cible & courant (viewBox)
+  var pointerActive=false;
+
+  function onMove(e){
+    var p=toVB(e.clientX,e.clientY);
+    // REFRAME DUR : on ne suit PAS le pointeur en y au-dessus de l'horizon.
+    // Le faisceau veille la MER → on projette la cible SUR l'eau (y>=340).
+    tx=clamp(p.x,40,760);
+    ty=clamp(Math.max(p.y,344),344,560);
+    pointerActive=true; lastInput=now(); saccadeUntil=0;
+    wake();
+  }
+
+  // ============================================================
+  //  INTERACTIONS calmes (non-jeu)
+  // ============================================================
+  // clic mer = barrage + ripple ; le Phare "salue" d'un pulse de fanal
+  svg.addEventListener("pointerdown",function(e){
+    var p=toVB(e.clientX,e.clientY);
+    if(e.target===yole || yole.contains(e.target)){ nudgeYole(); return; }
+    if(p.y<340) { tapPhareMaybe(p); return; }   // au-dessus de l'eau
+    dropBarrage(p.x,p.y);
+    lampPulse();             // salut chaleureux de la lumière
+    tx=clamp(p.x,40,760); ty=clamp(p.y,344,560); saccadeUntil=now()+1400;
+    wake();
+  });
+
+  // tap sur le Phare = micro-réaction d'humeur (cycle calm->scan->alert)
+  function tapPhareMaybe(p){
+    var dx=p.x-BASE.x, dy=p.y-(BASE.y-40);
+    if(dx*dx+dy*dy < 110*110){
+      var order=['calm','scan','alert'];
+      var i=(order.indexOf(curMoodName)+1)%3;
+      setMoodTarget(order[i]);
+      lampPulse();
+      updateHint(order[i]);
+      wake();
+    }
+  }
+
+  function updateHint(m){
+    var t = m==='calm' ? "mer propre — il veille, tu peux y aller"
+          : m==='scan' ? "il éclaire ta plage et la mesure en direct"
+          : "sargasses repérées au large — il te prévient";
+    hint.textContent=t;
+    hint.style.opacity='1';
+  }
+
+  // la yole avance un peu (vie locale, jamais hors-champ)
+  function nudgeYole(){
+    yoleFromX=yoleX; yoleFromY=yoleY;
+    yoleX=clamp(yoleX+(Math.random()*70-20),120,640);
+    yoleY=clamp(yoleY+(Math.random()*20-12),392,452);
+    yoleTween=now();
+    tx=yoleX; ty=yoleY; saccadeUntil=now()+1300;   // le faisceau suit la yole
+    wake();
+  }
+  var yoleX=360,yoleY=408,yoleFromX=360,yoleFromY=408,yoleTween=-1;
+
+  function dropBarrage(x,y){
+    y=clamp(y,338,560);
+    var ns="http://www.w3.org/2000/svg";
+    var rip=document.createElementNS(ns,"circle");
+    rip.setAttribute("cx",x);rip.setAttribute("cy",y);
+    rip.setAttribute("fill","none");rip.setAttribute("stroke","var(--glit)");
+    rip.setAttribute("stroke-width","2");rip.setAttribute("class","ripple");
+    pFront.appendChild(rip);
+    setTimeout(function(){rip.remove();},1250);
+    if(RM) return;
+    var g=document.createElementNS(ns,"g");g.setAttribute("class","boom");g.setAttribute("opacity",".96");
+    var line=document.createElementNS(ns,"line");
+    line.setAttribute("x1",x-26);line.setAttribute("y1",y);line.setAttribute("x2",x+26);line.setAttribute("y2",y);
+    line.setAttribute("stroke","#0e2622");line.setAttribute("stroke-width","3");g.appendChild(line);
+    for(var i=-2;i<=2;i++){
+      var b=document.createElementNS(ns,"circle");
+      b.setAttribute("cx",x+i*13);b.setAttribute("cy",y);b.setAttribute("r","4.4");
+      b.setAttribute("fill",i%2?"#FFC72C":"#1FB6A6");g.appendChild(b);
+    }
+    pFront.appendChild(g);
+    var booms=pFront.querySelectorAll(".boom");
+    if(booms.length>6) booms[0].remove();
+  }
+
+  // pulse chaud du fanal (salut / validation, jamais "alarme")
+  var lampPulseT=-1;
+  function lampPulse(){ lampPulseT=now(); wake(); }
+
+  // CTA : le Phare le "désigne" en orientant brièvement sa lumière + pulse fanal
+  var ctaR=null;
+  function refreshCtaRect(){ ctaR=cta.getBoundingClientRect(); }
+  refreshCtaRect();
+  window.addEventListener("resize",function(){ refreshCtaRect(); });
+  cta.addEventListener("pointerenter",function(){ ctaHot=now(); });
+  var ctaHot=0;
+  cta.addEventListener("click",function(){
+    var o=cta.textContent;
+    cta.textContent="✓ ouverture de ta plage…";
+    lampPulse();
+    setMoodTarget('calm');
+    setTimeout(function(){cta.textContent=o;},1500);
+  });
+
+  // ============================================================
+  //  TIMELINE INTRO (même horloge que la boucle réactive)
+  // ============================================================
+  var t0=performance.now();
+  function now(){return performance.now();}
+  var introDone=RM;
+  var lastInput=-1, saccadeUntil=0;
+  function introProgress(){ return clamp((now()-t0)/3600,0,1); }
+
+  // ============================================================
+  //  IDLE-STOP du rAF
+  // ============================================================
+  var paused=false, raf=0;
+  function wake(){ if(!RM && !paused && !raf){ raf=requestAnimationFrame(tick); } }
+
+  var nextSaccade=now()+rand(4000,7000);
+  function rand(a,b){return a+Math.random()*(b-a);}
+
+  // parallaxe légère (input only)
+  var paMidX=0,paMidY=0, paFrX=0,paFrY=0;
+  var raftK=0;
+
+  // ============================================================
+  //  BOUCLE UNIQUE
+  // ============================================================
+  function tick(ts){
+    raf=0;
+    if(paused||RM) return;
+    var t=now();
+
+    // ---------- humeur : lerp lent des cibles ----------
+    var ms=.02;
+    M.lampR = lerp(M.lampR, MT.lampR, ms);
+    M.glow  = lerp(M.glow, MT.glow, ms);
+    M.lift  = lerp(M.lift, MT.lift, ms);
+    M.beam  = lerp(M.beam, MT.beam, ms);
+    M.sweepAmp = lerp(M.sweepAmp, MT.sweepAmp, ms);
+    M.sweepSpd = lerp(M.sweepSpd, MT.sweepSpd, ms);
+    // couleurs (crossfade via custom props)
+    var moodCol = mixCss(getCss('--mood'), MT.mood, ms);
+    var haloCol = mixCss(getCss('--moodHalo'), MT.halo, ms);
+    var dotCol  = mixCss(getCss('--moodDot'), MT.dot, ms);
+    var beamCol = mixCss(getCss('--beamCol'), MT.beamCol, ms);
+    rootStyle.setProperty('--mood', moodCol);
+    rootStyle.setProperty('--moodHalo', haloCol);
+    rootStyle.setProperty('--moodDot', dotCol);
+    rootStyle.setProperty('--beamCol', beamCol);
+    // snap aux VRAIES couleurs marque une fois stabilisé (le lerp exp.
+    // n'atteint jamais le corail #E8522A exact)
+    if(Math.abs(M.lampR-MT.lampR)<0.04){
+      rootStyle.setProperty('--mood',MT.mood); rootStyle.setProperty('--moodHalo',MT.halo);
+      rootStyle.setProperty('--moodDot',MT.dot); rootStyle.setProperty('--beamCol',MT.beamCol);
+    }
+
+    // fanal : rayon + glow (pulse de salut additif)
+    var pulse=0;
+    if(lampPulseT>0){ var pt=(t-lampPulseT)/520; if(pt>=1) lampPulseT=-1; else pulse=Math.sin(pt*Math.PI)*0.6; }
+    lamp.setAttribute('r', (M.lampR+pulse*2).toFixed(2));
+    lampGlow.setAttribute('opacity', clamp(M.glow + pulse*0.3,0,1).toFixed(3));
+
+    // ---------- cible du faisceau ----------
+    if(pointerActive && t-lastInput<1100){
+      // le faisceau suit le point veillé sur l'eau
+    } else if(t>saccadeUntil){
+      // doctrine calme : AUCUNE saccade autonome. Le faisceau revient
+      // doucement vers le large devant le phare (il veille l'eau).
+      tx=lerp(tx,BASE.x,.02); ty=lerp(ty,420,.02);
+    }
+    cx=lerp(cx,tx,.07); cy=lerp(cy,ty,.07);
+
+    // ---------- balayage AMBIENT lent du faisceau (doctrine calme) ----------
+    // au repos, la lumière respire d'un léger va-et-vient sur la mer
+    // (lent en calme, plus marqué en scan), comme un vrai phare qui veille.
+    var sweep = Math.sin(t/M.sweepSpd) * M.sweepAmp;
+
+    // ---------- angle de la lanterne : pointe vers le point veillé ----------
+    // BORNÉ vers le large (jamais le faisceau ne descend sous la verticale
+    // vers le spectateur ; il reste tourné vers la MER devant le phare).
+    var aimAng = Math.atan2(cy-LAMP.y, cx-LAMP.x)*180/Math.PI - 90;
+    aimAng = clamp(aimAng + sweep, -38, 38);
+    beamG.setAttribute('transform','translate('+LAMP.x+' '+LAMP.y+') rotate('+aimAng.toFixed(2)+')');
+
+    // intro : un balayage signature gauche->droite au load
+    var introT=introProgress(), sweepOp=0, introAng=aimAng;
+    if(introT<1 && !introDone){
+      var s=clamp((introT-0.25)/0.75,0,1);
+      introAng = (-30 + 60*easeInOut(s));
+      sweepOp = Math.sin(s*Math.PI)*0.9;
+      beamG.setAttribute('transform','translate('+LAMP.x+' '+LAMP.y+') rotate('+introAng.toFixed(2)+')');
+    } else introDone=true;
+
+    // ---------- opacité du faisceau : toujours un peu présent (il veille
+    // en continu), renforcé en scan/alerte. Anti-flippe : pas de clignotement.
+    var baseBeam = introDone ? (0.22 + M.beam*0.55) : Math.max(sweepOp, 0.22);
+    // micro-respiration douce du cône (lumière vivante, lente ~6s)
+    var beamBreath = 1 + 0.06*Math.sin(t/3000);
+    beam.setAttribute('opacity', (baseBeam*0.7).toFixed(3));
+    beamCore.setAttribute('opacity', (baseBeam*0.55*beamBreath).toFixed(3));
+
+    // nappe lumineuse sur la mer là où le faisceau touche l'eau (y≈372)
+    var hitX = LAMP.x + Math.tan(clamp(aimAng,-38,38)*Math.PI/180)*(372-LAMP.y);
+    seaPool.setAttribute('cx', clamp(hitX,40,760).toFixed(1));
+    seaPool.setAttribute('opacity', (baseBeam*0.5).toFixed(3));
+    seaPool.setAttribute('rx', (84 + 14*M.beam).toFixed(1));
+
+    // ---------- posture : le BÂTI reste stable (réassurance).
+    // Seul un lift quasi nul + une micro-inclinaison de respiration. ----------
+    var sway = Math.sin(t/5200)*0.25;   // ±0.25° très lent (le phare "respire")
+    gPose.setAttribute('transform','translate('+BASE.x.toFixed(1)+' '+(196+M.lift).toFixed(1)+') rotate('+sway.toFixed(3)+')');
+
+    // ---------- micro-vie : la LUMIÈRE respire, pas la pierre ----------
+    var glowBreath = 1 + 0.05*Math.sin(t/3300);
+    gLife.setAttribute('transform','scale('+glowBreath.toFixed(4)+')');
+    // recentrage du scale autour de la base (sinon le phare "grandit" vers le haut)
+    // → on compense par un translate inverse léger
+    var gy = (1-glowBreath)*0; // négligeable à cette amplitude, gardé lisible
+    gLife.setAttribute('transform','translate(0 '+gy.toFixed(2)+') scale('+glowBreath.toFixed(4)+')');
+
+    // finial (pastille EN VEILLE) : pulse doux en scan
+    var fr = 4.4 + (M.beam>0.4 ? 0.9*Math.abs(Math.sin(t/2400)) : 0);
+    finial.setAttribute('r', fr.toFixed(2));
+
+    // ---------- halo de réassurance : suit la respiration de la lumière ----------
+    halo.setAttribute('opacity',(0.36 + 0.10*Math.sin(t/3300) + M.glow*0.10).toFixed(3));
+
+    // ---------- radeau : se rapproche/grossit en alerte ----------
+    var alertK = curMoodName==='alert' ? 1 : 0;
+    raftK = lerp(raftK, alertK, .015);
+    var rx=560 - raftK*60, ry=414 + raftK*20, rs=1+raftK*0.32;
+    raft.setAttribute('transform','translate('+rx.toFixed(1)+' '+ry.toFixed(1)+') scale('+rs.toFixed(3)+')');
+    // en alerte, le faisceau veille le radeau par intermittence
+    if(curMoodName==='alert' && Math.sin(t/2200)>0.4 && t>saccadeUntil){
+      tx=rx; ty=ry; saccadeUntil=t+1200;
+    }
+
+    // ---------- yole tween (avance douce) ----------
+    if(yoleTween>0){
+      var yt=clamp((t-yoleTween)/1100,0,1);
+      var e=easeInOut(yt);
+      var yx=lerp(yoleFromX,yoleX,e), yy=lerp(yoleFromY,yoleY,e);
+      yole.setAttribute('transform','translate('+yx.toFixed(1)+' '+yy.toFixed(1)+')');
+      if(yt>=1){ yoleTween=-1; yoleFromX=yoleX; yoleFromY=yoleY; }
+    } else {
+      // dérive ambient TRÈS lente de la yole (vie au repos tolérée, lente)
+      var drift = Math.sin(t/14000)*8;
+      yole.setAttribute('transform','translate('+(yoleX+drift).toFixed(1)+' '+(yoleY+Math.sin(t/9000)*2).toFixed(1)+')');
+    }
+
+    // ---------- parallaxe légère (input only) ----------
+    if(pointerActive){
+      var ndx=(cx-400), ndy=(cy-300);
+      paMidX=lerp(paMidX, clamp(-ndx*0.012,-6,6), .06);
+      paMidY=lerp(paMidY, clamp(-ndy*0.010,-4,4), .06);
+      paFrX =lerp(paFrX,  clamp(-ndx*0.028,-9,9), .06);
+      paFrY =lerp(paFrY,  clamp(-ndy*0.018,-5,5), .06);
+    } else {
+      paMidX=lerp(paMidX,0,.04); paMidY=lerp(paMidY,0,.04);
+      paFrX=lerp(paFrX,0,.04);   paFrY=lerp(paFrY,0,.04);
+    }
+    pMid.setAttribute('transform','translate('+paMidX.toFixed(2)+' '+paMidY.toFixed(2)+')');
+    pFront.setAttribute('transform','translate('+paFrX.toFixed(2)+' '+paFrY.toFixed(2)+')');
+
+    // ---------- CTA "désigné" : le faisceau s'oriente brièvement vers lui ----------
+    if(ctaHot && t-ctaHot<1800 && ctaR){
+      var c=toVB(ctaR.left+ctaR.width/2, ctaR.top+ctaR.height/2);
+      tx=clamp(c.x,40,760); ty=clamp(Math.max(c.y,344),344,560); saccadeUntil=t+800;
+    }
+
+    if(!RM) requestAnimationFrame(tick);
+  }
+
+  // ---- helpers couleur sur custom props ----
+  function getCss(name){
+    var v=getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return v||'#1FB6A6';
+  }
+  function mixCss(curr, target, t){ return mix(toHex(curr), toHex(target), t); }
+  function toHex(c){
+    c=c.trim();
+    if(c[0]==='#') return c.length===4 ? '#'+c[1]+c[1]+c[2]+c[2]+c[3]+c[3] : c;
+    var m=c.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+    if(m){ return '#'+([1,2,3].map(function(i){return ('0'+parseInt(m[i]).toString(16)).slice(-2);}).join('')); }
+    return '#1FB6A6';
+  }
+
+  // ============================================================
+  //  DÉMARRAGE
+  // ============================================================
+  if(!RM){
+    window.addEventListener("pointermove",onMove,{passive:true});
+    // on OUVRE en CALME (tableau), signature = le balayage d'intro, puis repos.
+    setMoodTarget('calm'); updateHint('calm');
+    requestAnimationFrame(tick);
+  } else {
+    // reduced-motion = TABLEAU figé sur une belle pose CALME, lisible+cliquable
+    M=clone(MOODS.calm); MT=clone(MOODS.calm); curMoodName='calm';
+    rootStyle.setProperty('--mood', MOODS.calm.mood);
+    rootStyle.setProperty('--moodHalo', MOODS.calm.halo);
+    rootStyle.setProperty('--moodDot', MOODS.calm.dot);
+    rootStyle.setProperty('--beamCol', MOODS.calm.beamCol);
+    lamp.setAttribute('r', MOODS.calm.lampR);
+    lampGlow.setAttribute('opacity', MOODS.calm.glow);
+    halo.setAttribute('opacity','.42');
+    // faisceau posé, doux, pointé vers le large devant le phare
+    beamG.setAttribute('transform','translate('+LAMP.x+' '+LAMP.y+') rotate(-8)');
+    beam.setAttribute('opacity','.18');
+    beamCore.setAttribute('opacity','.14');
+    var hitX0 = LAMP.x + Math.tan(-8*Math.PI/180)*(372-LAMP.y);
+    seaPool.setAttribute('cx', clamp(hitX0,40,760));
+    seaPool.setAttribute('opacity','.18');
+    finial.setAttribute('r','4.4');
+  }
+
+  // pause sur visibilitychange (unique rAF)
+  document.addEventListener("visibilitychange",function(){
+    paused=document.hidden;
+    if(!paused && !RM && !raf){ raf=requestAnimationFrame(tick); }
+  });
+
+  setTimeout(refreshCtaRect, 400);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>aw_screen_labels — couche de labels screen-space</title>
+<style>
+  /* === GOLDEN-HOUR TOKENS (match app) === */
+  :root{
+    --sky0:#0B2230; --sky1:#155A5A; --sky2:#C97E3A; --sky3:#F2B05E;
+    --seaT:#1A5852; --seaB:#08251F; --glint:#FFD884; --land:#16242A; --ink:#EAF7F4;
+    --good:#2BB673; --watch:#E8A800; --avoid:#E2603B;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#02060A;color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  .wrap{display:flex;gap:18px;padding:18px;align-items:flex-start}
+  .col{display:flex;flex-direction:column;gap:9px}
+  .cap{font:800 13px/1.3 system-ui;color:var(--ink);letter-spacing:.01em}
+  .cap small{display:block;font-weight:600;font-size:11px;color:rgba(234,247,244,.6);margin-top:2px}
+  /* the device frame — one map instance */
+  .stage{position:relative;width:390px;height:720px;border-radius:26px;overflow:hidden;background:#04090B;
+    box-shadow:0 18px 50px rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.06)}
+  .stage svg{position:absolute;inset:0;display:block}
+
+  /* === screen-space label layer (THE FIX) === */
+  /* Lives OUTSIDE the SVG gRef transform → constant pixel size, never world-scaled. */
+  .labels{position:absolute;inset:0;pointer-events:none;z-index:5}
+  .lbl{position:absolute;transform:translate(-50%,0);text-align:center;white-space:nowrap;will-change:transform}
+  .lbl .nm{display:inline-block;font:800 12.5px/1 system-ui;letter-spacing:.01em;color:var(--ink);padding:0 1px;
+    /* legibility on any sea/sky pixel without a UI chip: tight ink halo */
+    text-shadow:0 1px 0 rgba(3,17,15,.95),0 0 5px rgba(3,17,15,.9),0 0 9px rgba(3,17,15,.65)}
+  .lbl .vd{display:inline-block;margin-top:2px;font:900 10px/1 'Anton',system-ui;letter-spacing:.06em;text-transform:uppercase;
+    text-shadow:0 1px 0 rgba(3,17,15,.95),0 0 4px rgba(3,17,15,.85)}
+  /* the worst (pire) gets a touch more weight — it's the one that matters at a glance */
+  .lbl.worst .nm{font-size:13.5px}
+  .lbl.worst .vd{font-size:11px}
+  /* connector tick from the dot up to the name (subtle, keeps the label tied to the point) */
+  .lbl .tick{position:absolute;left:50%;top:-9px;width:1px;height:8px;transform:translateX(-50%);
+    background:linear-gradient(to bottom,rgba(255,216,132,0),rgba(255,216,132,.5))}
+
+  .legend{font:600 11px/1.5 system-ui;color:rgba(234,247,244,.62);max-width:390px}
+  .legend b{color:var(--ink)}
+  .dotleg{display:inline-block;width:9px;height:9px;border-radius:50%;vertical-align:-1px;margin:0 3px 0 9px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="col">
+    <div class="cap">FAR — vue archipel (cz&asymp;0.34)
+      <small>pire + 4 plus proches. Labels lisibles &agrave; taille pixel constante.</small></div>
+    <div class="stage" id="stageFar"></div>
+  </div>
+
+  <div class="col">
+    <div class="cap">NEAR — vue c&ocirc;te (cz&asymp;1.55)
+      <small>tous les noms du viewport. Le texte world-scaled n'existe plus.</small></div>
+    <div class="stage" id="stageNear"></div>
+  </div>
+
+  <div class="col">
+    <div class="cap">AVANT — l'&eacute;tat cass&eacute; (r&eacute;f&eacute;rence)
+      <small>seul myIdx a un texte world-scaled &rarr; &eacute;norme au zoom, illisible au loin. 25% de clics morts.</small></div>
+    <div class="stage" id="stageBefore"></div>
+    <div class="legend" style="margin-top:6px">
+      <span class="dotleg" style="background:var(--good)"></span><b>Propre</b>
+      <span class="dotleg" style="background:var(--watch)"></span><b>Surveiller</b>
+      <span class="dotleg" style="background:var(--avoid)"></span><b>&Eacute;viter</b><br>
+      Couche HTML absolue <b>hors</b> du transform SVG gRef : projette cam.cx + p.x&middot;cam.cz chaque frame.
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+   DATA-TRUE sample: real-ish MQ beach world coords (the proj[] model)
+   world coord = ((lng-cLng)/span+0.5)*1000 etc. Here pre-projected.
+   status drives scoreColor; score 0-100.
+   ============================================================ */
+const C = { good:'#2BB673', watch:'#E8A800', avoid:'#E2603B' };
+const colFor = s => s==='avoid'?C.avoid : s==='watch'?C.watch : C.good;
+const verbFor = s => s==='avoid'?'ÉVITER' : s==='watch'?'SURVEILLER' : 'PROPRE';
+
+// 22 plages, world coords on the 1000px span (centroïde ~500,500), realistic spread MQ.
+const BEACHES = [
+  {id:'sainte-anne',   name:'Sainte-Anne',        x:744,y:884, s:'good',  score:88},
+  {id:'les-salines',   name:'Les Salines',        x:777,y:861, s:'good',  score:84},
+  {id:'le-diamant',    name:'Le Diamant',         x:560,y:778, s:'avoid', score:21},
+  {id:'anse-dufour',   name:"Anse Dufour",        x:430,y:662, s:'good',  score:79},
+  {id:'anses-arlet',   name:"Anses-d'Arlet",      x:419,y:766, s:'watch', score:58},
+  {id:'grande-anse',   name:'Grande Anse',        x:393,y:672, s:'good',  score:81},
+  {id:'le-carbet',     name:'Le Carbet',          x:366,y:527, s:'good',  score:76},
+  {id:'saint-pierre',  name:'Saint-Pierre',       x:360,y:521, s:'good',  score:72},
+  {id:'le-precheur',   name:'Le Prêcheur',        x:165,y:211, s:'watch', score:54},
+  {id:'anse-couleuvre',name:'Anse Couleuvre',     x:180,y:167, s:'good',  score:83},
+  {id:'la-trinite',    name:'La Trinité',         x:653,y:313, s:'avoid', score:18},
+  {id:'tartane',       name:'Tartane',            x:684,y:289, s:'avoid', score:24},
+  {id:'le-robert',     name:'Le Robert',          x:625,y:327, s:'watch', score:49},
+  {id:'le-vauclin',    name:'Le Vauclin',         x:720,y:456, s:'avoid', score:27},
+  {id:'cap-chevalier', name:'Cap Chevalier',      x:834,y:742, s:'watch', score:52},
+  {id:'macabou',       name:'Macabou',            x:808,y:650, s:'avoid', score:30},
+  {id:'pointe-marin',  name:'Pointe Marin',       x:714,y:836, s:'good',  score:80},
+  {id:'anse-michel',   name:'Anse Michel',        x:817,y:707, s:'watch', score:56},
+  {id:'fond-blanc',    name:'Fond Blanc',         x:630,y:773, s:'good',  score:74},
+  {id:'grosse-roche',  name:'Anse Grosse Roche',  x:794,y:639, s:'avoid', score:26},
+  {id:'fdf-bay',       name:'Fort-de-France',     x:505,y:621, s:'watch', score:47},
+  {id:'schoelcher',    name:'Schœlcher',          x:483,y:556, s:'good',  score:70},
+];
+
+// "my" beach = nearest to user: Anses-d'Arlet (south-west cluster)
+const MY_ID = 'anses-arlet';
+const SVGNS = 'http://www.w3.org/2000/svg';
+
+/* ---------- projection (mirrors Sargasses_PROD.jsx) ---------- */
+// screenX = cam.cx + p.x*cam.cz ; screenY = cam.cy + p.y*cam.cz
+function project(stage, cam){
+  const W = stage.clientWidth, H = stage.clientHeight;
+  return BEACHES.map(b=>({ b, sx: cam.cx + b.x*cam.cz, sy: cam.cy + b.y*cam.cz, W, H }));
+}
+
+/* ---------- SVG helpers (safe DOM build, no innerHTML) ---------- */
+function el(name, attrs){ const n=document.createElementNS(SVGNS,name); for(const k in attrs) n.setAttribute(k, attrs[k]); return n; }
+
+/* ---------- build the SVG world (sky + sea + ground + dots) ---------- */
+function buildWorld(stage, cam, showWorldText){
+  const W=stage.clientWidth, H=stage.clientHeight;
+
+  // --- sky layer (screen-fixed, golden-hour) ---
+  const sky = el('svg',{width:'100%',height:'100%',viewBox:`0 0 ${W} ${H}`,preserveAspectRatio:'xMidYMid slice','aria-hidden':'true'});
+  const defs1 = el('defs',{});
+  const gSky = el('linearGradient',{id:'awSky',x1:'0',y1:'0',x2:'0',y2:'1'});
+  [['0','var(--sky0)'],['.5','var(--sky1)'],['.82','var(--sky2)'],['1','var(--sky3)']].forEach(([o,c])=>gSky.appendChild(el('stop',{offset:o,'stop-color':c})));
+  const gSea = el('linearGradient',{id:'awSea',x1:'0',y1:'0',x2:'0',y2:'1'});
+  [['0','var(--seaT)'],['1','var(--seaB)']].forEach(([o,c])=>gSea.appendChild(el('stop',{offset:o,'stop-color':c})));
+  defs1.appendChild(gSky); defs1.appendChild(gSea); sky.appendChild(defs1);
+  sky.appendChild(el('rect',{width:W,height:H,fill:'url(#awSky)'}));
+  sky.appendChild(el('rect',{y:(H*0.46).toFixed(0),width:W,height:(H*0.54).toFixed(0),fill:'url(#awSea)'}));
+  sky.appendChild(el('rect',{y:(H*0.46-2).toFixed(0),width:W,height:'3',fill:'var(--glint)',opacity:'.34'}));
+  [['110','.05'],['52','.10'],['30','.46']].forEach(([r,o])=>sky.appendChild(el('circle',{cx:(W*0.5).toFixed(0),cy:(H*0.30).toFixed(0),r,fill:'var(--glint)',opacity:o})));
+
+  // --- world layer (camera transform) ---
+  const world = el('svg',{width:'100%',height:'100%','aria-hidden':'true'});
+  const defs2 = el('defs',{});
+  const gGround = el('radialGradient',{id:'awGround',cx:'50%',cy:'50%',r:'50%'});
+  [['0','#16383A','.82'],['.6','#123031','.46'],['1','#123031','0']].forEach(([o,c,op])=>gGround.appendChild(el('stop',{offset:o,'stop-color':c,'stop-opacity':op})));
+  const gGlow = el('radialGradient',{id:'awShoreGlow',cx:'50%',cy:'50%',r:'50%'});
+  [['0','#FFE6A8','.34'],['.55','#5FD3C9','.10'],['1','#5FD3C9','0']].forEach(([o,c,op])=>gGlow.appendChild(el('stop',{offset:o,'stop-color':c,'stop-opacity':op})));
+  defs2.appendChild(gGround); defs2.appendChild(gGlow); world.appendChild(defs2);
+
+  const g = el('g',{transform:`translate(${cam.cx.toFixed(1)} ${cam.cy.toFixed(1)}) scale(${cam.cz.toFixed(4)})`});
+  const gGroundG = el('g',{}); BEACHES.forEach(b=>gGroundG.appendChild(el('circle',{cx:b.x,cy:b.y,r:'46',fill:'url(#awGround)'}))); g.appendChild(gGroundG);
+  const gGlowG = el('g',{style:'mix-blend-mode:screen'}); BEACHES.forEach(b=>gGlowG.appendChild(el('circle',{cx:b.x,cy:b.y,r:'50',fill:'url(#awShoreGlow)'}))); g.appendChild(gGlowG);
+
+  BEACHES.forEach(b=>{
+    const r = 5 + b.score/15;
+    const me = b.id===MY_ID;
+    const col = colFor(b.s);
+    if(me){
+      g.appendChild(el('circle',{cx:b.x,cy:b.y,r:'40',fill:col,opacity:'.14'}));
+      g.appendChild(el('circle',{cx:b.x,cy:b.y,r:'23',fill:'#0E2A26',stroke:col,'stroke-width':'2.4'}));
+      const t = el('text',{x:b.x,y:b.y+7,'font-family':"'Anton',sans-serif",'font-size':'20',fill:'#fff','text-anchor':'middle'}); t.textContent=b.score; g.appendChild(t);
+      // AVANT: the lone world-scaled <text> on my beach (the bug) — it scales with cam.cz
+      if(showWorldText){
+        const wt = el('text',{x:b.x,y:b.y+46,'font-family':'ui-monospace,monospace','font-size':'11','font-weight':'700',fill:'#FFD884','text-anchor':'middle'});
+        wt.textContent=b.name; g.appendChild(wt);
+      }
+    } else {
+      g.appendChild(el('circle',{cx:b.x,cy:b.y,r:r.toFixed(1),fill:col,opacity:'.92'}));
+      g.appendChild(el('circle',{cx:b.x,cy:b.y,r:r.toFixed(1),fill:'none',stroke:'#06121A','stroke-width':'1.2'}));
+    }
+  });
+  world.appendChild(g);
+
+  return [sky, world];
+}
+
+/* ---------- the screen-space label layer (THE FIX) ---------- */
+// FAR: worst + nearest, anti-collision (drop overlappers, max 5).
+// NEAR: every dot inside the viewport, same anti-collision pass.
+function buildLabels(stage, cam, mode){
+  const W=stage.clientWidth, H=stage.clientHeight, pad=14;
+  const pts = project(stage, cam);
+  const myP = pts.find(p=>p.b.id===MY_ID);
+  const worstId = [...pts].sort((a,b)=>a.b.score-b.b.score)[0].b.id;
+
+  // --- candidate set + priority order ---
+  let cands, MAX;
+  if(mode==='far'){
+    // pire d'abord, puis les plus proches de ma plage
+    const worst = [...pts].sort((a,b)=>a.b.score-b.b.score)[0];
+    const byDist = [...pts].sort((a,b)=>
+      Math.hypot(a.sx-myP.sx,a.sy-myP.sy) - Math.hypot(b.sx-myP.sx,b.sy-myP.sy));
+    const seen = new Set([worst.b.id]); cands=[worst];
+    for(const p of byDist){ if(!seen.has(p.b.id)){ seen.add(p.b.id); cands.push(p); } }
+    MAX = 5;
+  } else {
+    // NEAR : tout ce qui est dans le viewport, priorisé pire→proche
+    const vis = pts.filter(p=> p.sx>pad && p.sx<W-pad && p.sy>pad+30 && p.sy<H-pad);
+    cands = vis.sort((a,b)=> (a.b.score-b.b.score) ||
+      (Math.hypot(a.sx-myP.sx,a.sy-myP.sy)-Math.hypot(b.sx-myP.sx,b.sy-myP.sy)));
+    MAX = 99;
+  }
+
+  // --- greedy de-collision : place a label only if its box is free ---
+  // box estimate from text length (constant pixel size — the whole point)
+  const placed=[]; // {x0,x1,y0,y1}
+  const out=[];
+  const overlaps=(a,b)=> !(a.x1<b.x0||a.x0>b.x1||a.y1<b.y0||a.y0>b.y1);
+  for(const p of cands){
+    if(out.length>=MAX) break;
+    const b=p.b, isWorst=b.id===worstId;
+    const fs = isWorst?13.5:12.5;
+    const halfW = (b.name.length*fs*0.30)+8;   // approx half label width
+    const labelH = 30;
+    const r = 5 + b.score/15;
+    let cx = Math.max(pad+halfW, Math.min(W-pad-halfW, p.sx));
+    let cy = Math.max(pad, p.sy - r*cam.cz - 30);
+    let box = {x0:cx-halfW,x1:cx+halfW,y0:cy,y1:cy+labelH};
+    // try a couple of vertical nudges before giving up (above, then below the dot)
+    const tries=[0, labelH+r*cam.cz+24, -(labelH+18)];
+    let ok=false;
+    for(const dy of tries){
+      const ny = Math.max(pad, Math.min(H-pad-labelH, cy + (dy===tries[1] ? (r*cam.cz*2+labelH+16) : dy)));
+      const nbox={x0:cx-halfW,x1:cx+halfW,y0:ny,y1:ny+labelH};
+      if(!placed.some(q=>overlaps(q,nbox))){ box=nbox; cy=ny; ok=true; break; }
+    }
+    if(!ok) continue; // skip — keeps the FAR view from turning into mush
+    placed.push(box);
+    out.push({p,cx,cy,isWorst});
+  }
+
+  // --- render ---
+  const layer = document.createElement('div'); layer.className='labels';
+
+  // leader lines : when a label was displaced from its dot, draw a thin connector
+  // so the association stays unambiguous in dense FAR clusters.
+  const lead = el('svg',{width:'100%',height:'100%',style:'position:absolute;inset:0;overflow:visible'});
+  out.forEach(({p,cx,cy})=>{
+    const dy = p.sy - (cy+30); // gap between dot and label bottom
+    if(Math.abs(p.sx-cx) > 6 || dy > 10){
+      lead.appendChild(el('line',{x1:cx,y1:cy+30,x2:p.sx,y2:p.sy,stroke:'rgba(255,216,132,.32)','stroke-width':'1'}));
+    }
+  });
+  layer.appendChild(lead);
+
+  out.forEach(({p,cx,cy,isWorst})=>{
+    const b=p.b, col=colFor(b.s);
+    const d = document.createElement('div'); d.className='lbl'+(isWorst?' worst':'');
+    d.style.left = cx.toFixed(1)+'px'; d.style.top = cy.toFixed(1)+'px';
+    const tick = document.createElement('span'); tick.className='tick'; d.appendChild(tick);
+    const nm = document.createElement('span'); nm.className='nm'; nm.textContent=b.name; d.appendChild(nm);
+    d.appendChild(document.createElement('br'));
+    const vd = document.createElement('span'); vd.className='vd'; vd.style.color=col; vd.textContent=verbFor(b.s); d.appendChild(vd);
+    layer.appendChild(d);
+  });
+  return layer;
+}
+
+/* ---------- render a stage ---------- */
+function render(stageId, cam, mode){
+  const stage = document.getElementById(stageId);
+  while(stage.firstChild) stage.removeChild(stage.firstChild);
+  const [sky, world] = buildWorld(stage, cam, mode==='before');
+  stage.appendChild(sky); stage.appendChild(world);
+  if(mode!=='before') stage.appendChild(buildLabels(stage, cam, mode));
+}
+
+/* ---------- camera presets (centred like the app) ---------- */
+function camFor(stageId, cz, focusId){
+  const stage = document.getElementById(stageId);
+  const W=stage.clientWidth, H=stage.clientHeight;
+  const f = BEACHES.find(b=>b.id===focusId) || {x:500,y:500};
+  return { cz, cx: W/2 - f.x*cz, cy: H/2 - f.y*cz };
+}
+
+function go(){
+  render('stageFar',    camFor('stageFar', 0.34, 'fdf-bay'), 'far');   // ≈ fitAll
+  render('stageNear',   camFor('stageNear', 1.55, MY_ID), 'near');     // ≈ centerOn(my, NEAR)
+  render('stageBefore', camFor('stageBefore', 1.55, MY_ID), 'before'); // broken reference
+}
+go();
+window.addEventListener('resize', go);
+</script>
+</body>
+</html>

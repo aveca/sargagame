@@ -1,0 +1,36 @@
+{
+  "mode": "reforecast",
+  "note": "Current buildHonestForecast re-run over history.json inputs (banks = current field, held constant). Calm-season false-alarm calibration.",
+  "computed": "2026-06-15T20:13:40.446Z",
+  "totalPairs": 2820,
+  "global": {
+    "statusHitRate": 99,
+    "falseAlarms": 22,
+    "falseAlarmRate": 0.8
+  },
+  "byRegime": {
+    "calm": {
+      "n": 2820,
+      "hit": 2798,
+      "falseAlarm": 22,
+      "actClean": 2820
+    }
+  },
+  "byRegimeDirection": {
+    "calm|clean": {
+      "n": 2798,
+      "hit": 2798
+    },
+    "calm|ALERT": {
+      "n": 22,
+      "hit": 0
+    }
+  },
+  "residualFalseAlarmsByBeach": {
+    "gp-caravelle": 9,
+    "pt-marin": 5,
+    "gp-sainte-anne": 7,
+    "gp-vieux-fort": 1
+  },
+  "maxConfidenceAmongFalseAlarms": 30
+}

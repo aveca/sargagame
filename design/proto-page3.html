@@ -1,0 +1,172 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#04090B;font-family:system-ui,-apple-system,sans-serif}
+  .stage{display:flex;gap:26px;padding:24px;align-items:flex-start}
+  .phone{
+    width:392px;border-radius:30px;overflow:hidden;
+    border:1px solid rgba(255,255,255,.10);
+    box-shadow:0 30px 70px -24px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  .cap{color:#EAF7F4;font:700 13px system-ui;margin:0 0 9px 4px;opacity:.94}
+  .sub{color:#9FC3BC;font:500 11px system-ui;margin:0 0 12px 4px;opacity:.82}
+
+  /* la vue Plages, fidele a BeachListView */
+  .listview{
+    height:760px;overflow:hidden;color:#fff;
+    background:
+      radial-gradient(120% 78% at 72% 0%, rgba(201,126,58,.28), rgba(242,176,94,.08) 42%, transparent 66%),
+      linear-gradient(180deg,#0B2230 0%,#103029 40%,#0A1714 100%);
+  }
+  .kicker{padding:18px 20px 8px;display:flex;align-items:baseline;gap:8}
+  .kicker .n{font-family:'Anton',sans-serif;font-size:26px;line-height:1;letter-spacing:-.02em;color:#fff}
+  .kicker .lbl{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.6)}
+  .cards{padding:6px 16px;display:flex;flex-direction:column;gap:11px}
+
+  .card{
+    position:relative;display:flex;align-items:center;gap:13px;padding:0;
+    border-radius:18px;border:1px solid rgba(255,255,255,.08);
+    background:linear-gradient(180deg,rgba(22,46,40,.82),rgba(12,26,22,.86));
+    text-align:left;width:100%;color:#fff;overflow:hidden;
+    box-shadow:0 10px 26px -14px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.06);
+  }
+  /* la carte favorite est plus chaude et passe en colonne pour loger un forecast pleine largeur */
+  .card.fav{
+    flex-direction:column;align-items:stretch;gap:0;
+    border:1px solid rgba(255,216,132,.24);
+    background:linear-gradient(180deg,rgba(28,54,46,.90),rgba(13,30,25,.94));
+    box-shadow:0 16px 34px -14px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,216,132,.12);
+  }
+  .card.fav .top{display:flex;align-items:center;gap:13px}
+  .rail{position:absolute;left:0;top:0;bottom:0;width:4px}
+  .thumb{width:74px;height:74px;flex-shrink:0;position:relative;margin-left:5px;border-radius:13px;background-size:cover;background-position:center 42%}
+  .thumb .dot{position:absolute;bottom:5px;right:5px;width:11px;height:11px;border-radius:6px;border:2px solid #0E1F1A}
+  .body{flex:1;min-width:0;padding:13px 4px 13px 0}
+  .name{font-family:'Anton',sans-serif;font-size:16px;line-height:1.05;letter-spacing:.005em;text-transform:uppercase;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .meta{font-size:11.5px;color:rgba(255,255,255,.56);margin-top:3px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .statusline{font-size:10px;font-weight:800;margin-top:5px;letter-spacing:.04em;text-transform:uppercase;display:flex;align-items:center;gap:5px}
+  .badge{flex-shrink:0;padding:0 16px 0 0;display:flex;flex-direction:column;align-items:flex-end;justify-content:center}
+  .badge .num{font-family:'Anton',sans-serif;font-size:28px;line-height:.95;letter-spacing:-.02em}
+  .badge .den{font-size:8px;font-weight:800;color:rgba(255,255,255,.5);letter-spacing:.08em;margin-top:1px}
+
+  /* le forecast = bandeau pleine largeur sous la carte favorite */
+  .fcstrip{
+    margin:11px 14px 13px;padding:11px 16px 10px;border-radius:13px;
+    background:linear-gradient(180deg,rgba(8,18,15,.55),rgba(8,18,15,.30));
+    border:1px solid rgba(255,255,255,.07);
+    display:flex;align-items:flex-end;justify-content:space-between;gap:14px;
+  }
+  .fchead{flex:1;min-width:0}
+  .fchead .ttl{font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,216,132,.82)}
+  .fchead .hint{font-size:10.5px;font-weight:600;color:rgba(255,255,255,.52);margin-top:4px;line-height:1.3}
+  .fc{flex-shrink:0;display:flex;align-items:flex-end;gap:9px}
+  .fcunit{display:flex;flex-direction:column;align-items:center;gap:6px}
+  .fctrack{display:flex;flex-direction:column;justify-content:flex-end;border-radius:5px;background:rgba(255,255,255,.06)}
+  .fcbar{border-radius:5px;position:relative}
+  .fcbarcap{position:absolute;top:0;left:0;right:0;height:5px;border-radius:4px 4px 0 0;background:rgba(255,255,255,.42)}
+  .fclbl{font-size:8.5px;font-weight:800;letter-spacing:.03em;color:rgba(234,247,244,.85)}
+  .lockbtn{cursor:pointer}
+  .lockbar{border-radius:5px;border:1.5px dashed #FFC72C;background:rgba(255,199,44,.12);position:relative;display:flex;align-items:center;justify-content:center}
+  .locklbl{font-size:8.5px;font-weight:800;letter-spacing:.03em;color:#FFC72C}
+</style></head>
+<body>
+<div class="stage">
+
+  <!-- A : la liste complete, telle qu'on la verra -->
+  <div>
+    <p class="cap">A — Vue Plages : seule la carte favorite porte le forecast-verrou</p>
+    <p class="sub">3 barres reelles (AUJ/J+1/J+2, hauteur = score) + J+3 verrouille -> onPremium('list_forecast')</p>
+    <div class="phone">
+      <div class="listview">
+        <div class="kicker"><span class="n">53</span><span class="lbl">plages · 31 propres</span></div>
+        <div class="cards" id="cards"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- B : zoom sur la carte favorite -->
+  <div>
+    <p class="cap">B — Zoom : la carte favorite</p>
+    <p class="sub">Le verrou est dans la scene, pas un popup. La lecture vit sur la carte.</p>
+    <div class="phone" style="width:392px">
+      <div style="background:radial-gradient(120% 120% at 72% 0%, rgba(201,126,58,.28), rgba(242,176,94,.08) 42%, transparent 66%), linear-gradient(180deg,#0B2230,#0A1714);padding:24px 16px 28px">
+        <div id="zoomcard"></div>
+        <div style="margin-top:18px;text-align:center;color:#9FC3BC;font:600 11px system-ui">
+          AUJ / J+1 / J+2 colores par statut reel · J+3 verrouille
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const STATUS = { clean:'#22C55E', moderate:'#F59E0B', avoid:'#E8522A' };
+const PHOTO = {
+  diamant:'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=200&q=70',
+  salines:'https://images.unsplash.com/photo-1505228395891-9a51e7e86bf6?w=200&q=70',
+  anses:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=200&q=70',
+  carbet:'https://images.unsplash.com/photo-1473116763249-2faaef81ccda?w=200&q=70'
+};
+
+const beaches = [
+  { name:'GRANDE ANSE DES SALINES', commune:'Sainte-Anne', drive:'42 min', score:84, status:'clean', emo:'😎', label:'Propre',
+    fav:true, photo:PHOTO.salines,
+    fc:[{d:'AUJ',score:84,status:'clean'},{d:'J+1',score:78,status:'clean'},{d:'J+2',score:52,status:'moderate'}] },
+  { name:'LE DIAMANT', commune:'Le Diamant', drive:'31 min', score:38, status:'avoid', emo:'🚫', label:'Alerte', photo:PHOTO.diamant },
+  { name:'ANSE DUFOUR', commune:"Anses-d'Arlet", drive:'28 min', score:71, status:'clean', emo:'😎', label:'Propre', photo:PHOTO.anses },
+  { name:'GRANDE ANSE DU CARBET', commune:'Le Carbet', drive:'24 min', score:58, status:'moderate', emo:'😐', label:'Modere', photo:PHOTO.carbet },
+  { name:'ANSE COULEUVRE', commune:'Le Precheur', drive:'47 min', score:66, status:'moderate', emo:'😐', label:'Modere', photo:PHOTO.salines }
+];
+
+function forecastEl(fc, big){
+  const H = big ? 52 : 44;
+  const W = big ? 17 : 15;
+  let bars = '';
+  fc.forEach(function(f){
+    const h = Math.max(9, Math.round(f.score/100*H));
+    const col = STATUS[f.status];
+    bars += '<div class="fcunit">'
+      + '<div class="fctrack" style="width:'+W+'px;height:'+H+'px">'
+      + '<div class="fcbar" style="width:'+W+'px;height:'+h+'px;background:'+col+'"><div class="fcbarcap"></div></div>'
+      + '</div><div class="fclbl">'+f.d+'</div></div>';
+  });
+  bars += '<div class="fcunit lockbtn" title="onPremium(list_forecast)">'
+    + '<div class="lockbar" style="width:'+W+'px;height:'+H+'px"><span style="font-size:'+(big?17:15)+'px">🔒</span></div>'
+    + '<div class="locklbl">J+3</div></div>';
+  return '<div class="fc">'+bars+'</div>';
+}
+
+function cardEl(b, zoom){
+  const col = STATUS[b.status];
+  if(b.fav){
+    return '<div class="card fav">'
+      + '<div class="rail" style="background:linear-gradient(180deg,'+col+','+col+'aa);box-shadow:0 0 14px '+col+'66"></div>'
+      + '<div class="top">'
+      + '<div class="thumb" style="background-image:url('+b.photo+')"><span class="dot" style="background:'+col+';box-shadow:0 0 8px '+col+'88"></span></div>'
+      + '<div class="body"><div class="name">♥ '+b.name+'</div>'
+      + '<div class="meta">'+b.commune+' · '+b.drive+'</div>'
+      + '<div class="statusline" style="color:'+col+'"><span style="font-size:12px">'+b.emo+'</span> '+b.label+'</div></div>'
+      + '<div class="badge"><span class="num" style="color:'+col+'">'+b.score+'</span><span class="den">/100</span></div>'
+      + '</div>'
+      + '<div class="fcstrip">'
+      + '<div class="fchead"><div class="ttl">Prevision 3 jours · ta plage favorite</div>'
+      + '<div class="hint">Tendance reelle AUJ -> J+2 · debloque J+3 et les alertes</div></div>'
+      + forecastEl(b.fc, zoom)
+      + '</div>'
+      + '</div>';
+  }
+  return '<div class="card">'
+    + '<div class="rail" style="background:linear-gradient(180deg,'+col+','+col+'aa);box-shadow:0 0 14px '+col+'66"></div>'
+    + '<div class="thumb" style="background-image:url('+b.photo+')"><span class="dot" style="background:'+col+';box-shadow:0 0 8px '+col+'88"></span></div>'
+    + '<div class="body"><div class="name">'+b.name+'</div>'
+    + '<div class="meta">'+b.commune+' · '+b.drive+'</div>'
+    + '<div class="statusline" style="color:'+col+'"><span style="font-size:12px">'+b.emo+'</span> '+b.label+'</div></div>'
+    + '<div class="badge"><span class="num" style="color:'+col+'">'+b.score+'</span><span class="den">/100</span></div>'
+    + '</div>';
+}
+
+document.getElementById('cards').innerHTML = beaches.map(function(b){return cardEl(b,false);}).join('');
+document.getElementById('zoomcard').innerHTML = cardEl(beaches[0], true);
+</script>
+</body></html>

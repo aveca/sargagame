@@ -20,7 +20,8 @@
 | B | CaptureGateModal copie honnête — brief gratuit (≠ 7j), CTA « Recevoir → » (9fe329c0, SW v193) | ✅ **LIVE prod** |
 | B | screen-space labels carte · BottomNav Premium fix · freshness kill-switch (SW v188–191) | ✅ **LIVE prod** |
 | E | Dock `dock_glass` 50/50 — pill sombre flottant golden-hour mobile+desktop, fix `openPremium("nav")` source, ⭐ masqué payants, SW v194 | ✅ **LIVE prod** |
-| C | Pages : prévisions · alertes · clean-list · zones · 5 stations · à-propos · fiabilité UI · conditions · widget | 🔴 à faire |
+| C | `/previsions/` landing golden-hour A/B `prev_az` 50/50 — ForecastChart + meilleur jour, noscript SEO, SW v195 | ✅ **LIVE prod** |
+| C | Pages : alertes · clean-list · zones · 5 stations · à-propos · fiabilité UI · conditions · widget | 🔴 à faire |
 | C | Les 136 fiches plages (contenu/SEO) | 🔴 à faire |
 | D | SEO requête par requête + nouvelles pages (`/près-de-moi`, `/aujourdhui`, zones) + OG + 301 legacy | 🔴 à faire |
 | E | Dock · share-cards · baignade #5 · collecte #9 | 🔴 à faire |
