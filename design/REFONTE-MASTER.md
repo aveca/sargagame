@@ -5,7 +5,7 @@
 
 ## 📊 TABLEAU DE BORD — COUVERTURE (maj à chaque tick · MONITOR FONDATEUR)
 > **C'est ICI qu'on suit l'avancement.** La boucle met ce bloc à jour à chaque action. « Fini » = tout en ✅.
-> Avancement global estimé : **~65 %** · maj 2026-06-16.
+> Avancement global estimé : **~68 %** · maj 2026-06-16.
 
 | Phase | Lot | État |
 |---|---|---|
@@ -17,6 +17,7 @@
 | B | Copie paywall contextualisée `pw_modal_ctx` — beach name + score injectés dans hero + preuve PremiumModal, SW v177 | ✅ **LIVE prod** |
 | B | pw_hot_intent 50/50 — paywall in-scene golden-hour ancré plage (forecast_* sources), SW v190 | ✅ **LIVE prod** |
 | B | /alertes/ auto-open paywall + copy Veilleur (a35a94ca, SW v192) | ✅ **LIVE prod** |
+| B | CaptureGateModal copie honnête — brief gratuit (≠ 7j), CTA « Recevoir → » (9fe329c0, SW v193) | ✅ **LIVE prod** |
 | B | screen-space labels carte · BottomNav Premium fix · freshness kill-switch (SW v188–191) | ✅ **LIVE prod** |
 | C | Pages : prévisions · alertes · clean-list · zones · 5 stations · à-propos · fiabilité UI · conditions · widget | 🔴 à faire |
 | C | Les 136 fiches plages (contenu/SEO) | 🔴 à faire |
@@ -145,12 +146,12 @@
 - [ ] flyTo(région,FAR) sur /carte ; dock = sélecteur profondeur.
 - [ ] flyTo(zone,MID) sur /plages/<zone>/ + event `sg_zone_click`.
 - [ ] flyTo(FAR+filtre) sur clean-list/meilleures/conditions + revalidation live /conditions.
-- [ ] Créer `/sargasses-pres-de-moi/` (géo) + `/sargasses-aujourdhui/` (FR daté).
+- [x] Créer `/sargasses-pres-de-moi/` (géo) + `/sargasses-aujourdhui/` (FR daté) — d0387568, +6 URLs sitemaps.
 
 **PHASE 3 — stations + autorité + anti-cul-de-sac.** KPI : 0 page orpheline, CTR SERP +, hreflang PASS↑.
 - [ ] CTA stations → flyTo ; tuer ?decouverte/?solutions.
 - [ ] Fraîcheur /fiabilite + désambiguïsation /saison-*.
-- [ ] 301 legacy (weekend/onboarding/sarg_carte/neptunes/articles).
+- [x] 301 legacy (weekend ✅ · articles ✅ 9f34a0c8 · onboarding/neptunes/sarg_carte ✅ 2026-06-16).
 - [ ] OG dynamiques par plage (SVG→PNG).
 
 **PHASE 4 (VERROUILLÉE — seulement si funnel sain).** KPI : email 0,35 %→≥2 %, share-cards si modal→CTA≥5 % tenu 2 sem.

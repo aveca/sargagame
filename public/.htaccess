@@ -221,6 +221,13 @@ RewriteRule ^weekend\.html$ / [R=301,L]
 # /articles/* : 2 bilans hebdomadaires avril 2026 — contenu daté, consolidé vers
 # /previsions/ (le flux hebdomadaire vivant). Retirés sitemap (vide index.json). 2026-06-16.
 RewriteRule ^articles/(.*)$ /previsions/ [R=301,L]
+# Pages legacy HTML (noindex ou canonical croisé) — consolidées. 2026-06-16.
+# onboarding.html : ancien onboarding abandonné (noindex), jamais lié depuis l'app.
+RewriteRule ^onboarding\.html$ / [R=301,L]
+# neptunes_fury.html : mini-jeu prototype (noindex), sans lien actif depuis l'app.
+RewriteRule ^neptunes_fury\.html$ / [R=301,L]
+# sarg_carte_satellite_app.html : ancienne carte satellite standalone (canonical → /carte-sargasses/).
+RewriteRule ^sarg_carte_satellite_app\.html$ /carte-sargasses/ [R=301,L]
 </IfModule>
 
 # =====================================================================
