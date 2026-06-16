@@ -26,7 +26,7 @@ $sessions = array(); // sid -> dernier résumé (dédoublonnage)
 
 // Étapes du funnel conversion (ordre) — les rates par région se calculent dessus.
 // Source de vérité = noms d'events track() de l'app (audit 2026-06-14).
-$FUNNEL = array('sg_session_start','sg_forecast_lock_click','sg_premium_modal_open','sg_premium_modal_cta','sg_checkout_redirect','sg_conversion','sg_email_submit');
+$FUNNEL = array('sg_session_start','sg_forecast_lock_click','sg_premium_modal_open','sg_premium_modal_cta','sg_checkout_redirect','sg_conversion','sg_email_submit','sg_hero_email_submit');
 
 for ($i = 0; $i < $days; $i++) {
   $f = $dir . '/sg-' . gmdate('Y-m-d', time() - $i * 86400) . '.ndjson';
@@ -55,6 +55,7 @@ function _regAcc() {
   return array('sessions'=>0,'funnel'=>array(),'screens_dwell'=>0,'screens_bored'=>0,'screens_visits'=>0,'events'=>array());
 }
 $byR = array();
+$abx = array(); // A/B cross-tab : test -> variante -> {sessions, events funnel, engagement}
 
 foreach ($sessions as $d) {
   $rg = !empty($d['region']) ? $d['region'] : 'unknown';
@@ -100,6 +101,24 @@ foreach ($sessions as $d) {
     $out['clicks'][$s]['n'] += $o['n'] ?? 0;
     if (!empty($o['b']) && is_array($o['b'])) foreach ($o['b'] as $k => $c) { $out['clicks'][$s]['b'][$k] = ($out['clicks'][$s]['b'][$k] ?? 0) + $c; }
     if (!empty($o['d']) && is_array($o['d'])) foreach ($o['d'] as $k => $c) { $out['clicks'][$s]['d'][$k] = ($out['clicks'][$s]['d'][$k] ?? 0) + $c; $out['clicks'][$s]['dead'] += $c; }
+  }
+
+  // A/B CROSS-TAB : par test -> par variante -> sessions + présence d'events funnel + engagement.
+  // Permet l'éval A/B automatisée (quelle variante convertit/engage le mieux) sans Google.
+  if (!empty($d['ab']) && is_array($d['ab'])) {
+    $sd = 0; $sb = 0; $sv2 = 0;
+    if (!empty($d['scr']) && is_array($d['scr'])) foreach ($d['scr'] as $o) {
+      $sd += $o['dwell'] ?? 0; $sb += $o['bored'] ?? 0; $sv2 += $o['n'] ?? 0;
+    }
+    foreach ($d['ab'] as $test => $variant) {
+      if (!is_scalar($variant)) continue;
+      if (!isset($abx[$test][$variant])) $abx[$test][$variant] = array('sessions'=>0,'ev'=>array(),'dwell'=>0,'bored'=>0,'visits'=>0);
+      $abx[$test][$variant]['sessions']++;
+      $abx[$test][$variant]['dwell']  += $sd;
+      $abx[$test][$variant]['bored']  += $sb;
+      $abx[$test][$variant]['visits'] += $sv2;
+      foreach ($seen as $en => $_) $abx[$test][$variant]['ev'][$en] = ($abx[$test][$variant]['ev'][$en] ?? 0) + 1;
+    }
   }
 }
 foreach ($out['screens'] as $s => &$o) {
@@ -165,5 +184,29 @@ foreach ($byR as $rg => $a) {
 }
 // Régions triées par sessions décroissantes (la plus active en tête).
 uasort($out['byRegion'], function($x, $y){ return $y['sessions'] - $x['sessions']; });
+
+// A/B breakdown : par test, par variante -> % de sessions atteignant chaque event funnel
+// + engagement (dwell, ennui). L'outil ab-eval lit ça pour sortir le verdict par test.
+$out['ab_breakdown'] = array();
+foreach ($abx as $test => $vars) {
+  $row = array();
+  foreach ($vars as $variant => $a) {
+    $s = max(1, $a['sessions']);
+    $rates = array();
+    foreach ($FUNNEL as $step) {
+      if (isset($a['ev'][$step])) $rates[$step] = round(100 * $a['ev'][$step] / $s, 2);
+    }
+    $vis = max(1, $a['visits']);
+    $row[$variant] = array(
+      'sessions'     => $a['sessions'],
+      'rates_pct'    => $rates,
+      'avg_dwell_ms' => round($a['dwell'] / $vis),
+      'bored_rate'   => round($a['bored'] / $vis, 3),
+    );
+  }
+  // variantes triées par nb de sessions (la + exposée en tête)
+  uasort($row, function($x, $y){ return $y['sessions'] - $x['sessions']; });
+  $out['ab_breakdown'][$test] = $row;
+}
 
 echo json_encode($out, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
