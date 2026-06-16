@@ -1023,6 +1023,21 @@ ${isGP ? '' : `  <url><loc>${d}/a-propos/</loc><lastmod>${today}</lastmod><chang
               clean: 'Pointe du Bout aux Trois-Îlets (Martinique) — plage propre en temps réel. Station balnéaire et marina face à Fort-de-France, côte centrale, idéal familles. Généralement protégée des sargasses. Prévisions 7 jours.',
               moderate: 'Sargasses à Pointe du Bout (Les Trois-Îlets, Martinique) — présence modérée détectée en temps réel. Côte centrale, baie de Fort-de-France. Carte et prévisions 7 jours.',
               avoid: 'Alerte sargasses à Pointe du Bout (Les Trois-Îlets, Martinique) — forte concentration détectée en temps réel. Carte des plages propres proches de Fort-de-France.'
+            },
+            'Plage de Sainte-Luce': {
+              clean: 'Plage de Sainte-Luce (Martinique) — propre en temps réel. Grande plage de la côte sud, succession d\'anses, eaux calmes, idéal familles. Carte sargasses Martinique et prévisions 7 jours.',
+              moderate: 'Sargasses à la Plage de Sainte-Luce (Martinique) — présence modérée détectée en temps réel. Côte sud, station balnéaire. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à la Plage de Sainte-Luce (Martinique) — forte concentration détectée en temps réel. Côte sud. Voir les plages propres à proximité sur la carte en temps réel.'
+            },
+            'Plage du Marin': {
+              clean: 'Plage du Marin (Martinique) — propre en temps réel. Baie abritée du Cul-de-sac du Marin, marina, eaux calmes, idéal familles. Carte sargasses Martinique et prévisions 7 jours.',
+              moderate: 'Sargasses à la Plage du Marin (Le Marin, Martinique) — présence modérée détectée en temps réel. Baie du Marin, sud de l\'île. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à la Plage du Marin (Le Marin, Martinique) — forte concentration détectée en temps réel. Baie du Marin. Voir les plages propres à proximité.'
+            },
+            'La Datcha': {
+              clean: 'Plage de la Datcha au Gosier (Guadeloupe) — propre en temps réel. Plage du bourg du Gosier, côte sud de Grande-Terre, eaux calmes, idéal familles. Carte sargasses Guadeloupe et prévisions 7 jours.',
+              moderate: 'Sargasses à la Datcha (Le Gosier, Guadeloupe) — présence modérée détectée en temps réel. Bourg du Gosier, côte sud Grande-Terre. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à la Plage de la Datcha (Le Gosier, Guadeloupe) — forte concentration détectée en temps réel. Carte des plages propres à proximité de Pointe-à-Pitre.'
             }
           }
           let sitemapMQBeaches = ''
