@@ -31,5 +31,9 @@
     "rivieramaya:rm009:clean>moderate",
     "rivieramaya:rm011:clean>moderate",
     "rivieramaya:rm004:clean>moderate"
+  ],
+  "2026-06-16": [
+    "rivieramaya:rm004:moderate>clean",
+    "rivieramaya:rm005:moderate>clean"
   ]
 }
