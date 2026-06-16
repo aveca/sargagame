@@ -5,13 +5,13 @@
 
 ## 📊 TABLEAU DE BORD — COUVERTURE (maj à chaque tick · MONITOR FONDATEUR)
 > **C'est ICI qu'on suit l'avancement.** La boucle met ce bloc à jour à chaque action. « Fini » = tout en ✅.
-> Avancement global estimé : **~25 %** · maj 2026-06-16.
+> Avancement global estimé : **~30 %** · maj 2026-06-16.
 
 | Phase | Lot | État |
 |---|---|---|
 | — | Accueil A→Z (`home_az`) · Plan-B (`pw_planb`) · H2S (`pw_h2s`) · fiabilité régime | ✅ **LIVE prod** |
 | A | Carte interactive **MULTI-SITES** (`WorldMapView` region-aware — vraie géo OSM 5 régions, pan/zoom/tap/scrub) — A/B `map_world` 50/50, `src/WorldMapView.jsx`, SW v174 | ✅ **LIVE prod** |
-| A | Fiche « plongée » → port `pw_beach_dive` | 🟡 **PROCHAINE ACTION** |
+| A | Fiche « plongée » — `pw_beach_dive` 50/50, `src/BeachDive.jsx`, beats=6, factors=7, Veilleur v2, scroll+scrub, SW v175 | ✅ **LIVE prod** |
 | B | Demo-gate email (capture 0,35 %) | 🔴 à faire |
 | B | Canonical/hreflang + indexation (MQ ~3/30 · GP ~2/30) | 🔴 à faire |
 | B | Copie paywall contextualisée (modal→CTA 2 %) | 🔴 à faire |

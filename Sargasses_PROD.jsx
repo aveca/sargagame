@@ -32,6 +32,9 @@ const LazyMapView=lazyWithRetry(()=>import("./src/MapView"))
 const LazyHomeAZ=lazyWithRetry(()=>import("./src/HomeAZ"))
 // Carte SVG monde golden-hour (bras A/B `map_world`) — port proto-map-v2, region-aware.
 const LazyWorldMapView=lazyWithRetry(()=>import("./src/WorldMapView"))
+// Fiche plage « en PLONGÉE » (bras A/B `pw_beach_dive`) — port proto-plage-plongee,
+// Shadow DOM, region-aware. Alternative additive à BeachSheet (control intact).
+const LazyBeachDive=lazyWithRetry(()=>import("./src/BeachDive"))
 
 class ErrBound extends Component{
   constructor(p){super(p);this.state={err:null}}
@@ -10450,6 +10453,10 @@ export default function App(){
   // vs ArchipelView (bounding-box simple, control). 50/50. Override ?map_world=1/0.
   // Additif : control = ArchipelView intact, Leaflet = fallback ?nav=map (jamais touché).
   const mapWorld=useMemo(()=>{try{const q=window.location.search;if(/[?&]map_world=1/.test(q))return"world";if(/[?&]map_world=0/.test(q))return"control";return abVariant("map_world",["control","world"],[.5,.5])}catch(_){return"control"}},[])
+  // A/B `pw_beach_dive` : fiche plage « en PLONGÉE » (scène SVG plein écran, 6 stages,
+  // Le Veilleur v2, scrub prévision verrouillé J2-7) vs BeachSheet (control intact).
+  // 50/50. Override ?beachdive=1/0. Conversion = openPremium UNIQUE (contextualisé plage).
+  const beachDive=useMemo(()=>{try{const q=window.location.search;if(/[?&]beachdive=1/.test(q))return true;if(/[?&]beachdive=0/.test(q))return false;return abVariant("pw_beach_dive",["control","dive"],[.5,.5])==="dive"}catch(_){return false}},[])
   // Transition phasée accueil → carte/plage (SceneWipe). Jamais si reduced-motion.
   const[wipe,setWipe]=useState(null)
   const fireWipe=useCallback(label=>{
@@ -11331,7 +11338,21 @@ export default function App(){
         <BottomNav view={view} onChangeView={onChangeView} lang={lang}/>
 
         {/* BOTTOM SHEET (beach detail) */}
-        {selectedBeach&&(
+        {selectedBeach&&beachDive&&(()=>{
+          // BRAS A/B `pw_beach_dive` — fiche « plongée » (Shadow DOM, region-aware).
+          // Forecast résolu ICI comme BeachSheet (BEACH_TO_SARG / interp) puis passé.
+          const _sid=IS_NEW_REGION?selectedBeach.id:BEACH_TO_SARG[selectedBeach.id]
+          const _fc=(_sid&&sargData?.weekly?.[_sid]?.forecast)||sargData?._enrichedWeekly?.[`_interp_${selectedBeach.id}`]?.forecast||null
+          // Région = celle de LA PLAGE (selectedBeach.island fait foi), pas l'état app.
+          const _rn=IS_NEW_REGION?(REGION?.name||""):(selectedBeach.island==="gp"?"Guadeloupe":"Martinique")
+          return(
+            <LazyBeachDive beach={selectedBeach} lang={lang} island={selectedBeach.island||island} regionName={_rn}
+              sargData={sargData} userPos={userPos} allBeaches={allBeaches} forecast={_fc} isPremium={isPremium}
+              onClose={closeSheet} onPremium={openPremium} onOpenBeach={onBeachClick}
+              onShowMap={closeSheet} track={track} exiting={false}/>
+          )
+        })()}
+        {selectedBeach&&!beachDive&&(
           <BeachSheet beach={selectedBeach} onClose={closeSheet}
             favorites={favorites} onToggleFav={toggleFav} lang={lang}
             allBeaches={allBeaches} imageMap={imageMap}
