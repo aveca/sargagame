@@ -72,7 +72,7 @@
     },
     "diamant": {
       "statusHitRate": 54,
-      "afaiMAE": 0.102,
+      "afaiMAE": 0.103,
       "pairs": 165
     },
     "pt-marin": {
@@ -210,7 +210,7 @@
       "es": "El 100% de nuestros pronósticos de \"agua limpia\" (temporada tranquila, 2026-05-17 → 2026-06-16) resultaron correctos (sobre 2395); las raras alertas se marcan con baja confianza hasta que el dato las confirma."
     }
   },
-  "computed": "2026-06-16T02:05:34.571Z",
+  "computed": "2026-06-16T02:50:54.359Z",
   "pairs": [
     {
       "snapshotDate": "2026-06-13",
@@ -1749,7 +1749,7 @@
       "horizon": 1,
       "regime": "calm",
       "predicted": {
-        "afai": 0.21,
+        "afai": 0.22,
         "status": "moderate",
         "confidence": 30
       },
@@ -1758,7 +1758,7 @@
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.11
+      "afaiError": 0.12
     },
     {
       "snapshotDate": "2026-06-15",
@@ -1767,7 +1767,7 @@
       "horizon": 1,
       "regime": "calm",
       "predicted": {
-        "afai": 0.13,
+        "afai": 0.14,
         "status": "clean",
         "confidence": 68
       },
@@ -1776,7 +1776,7 @@
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0.02
     },
     {
       "snapshotDate": "2026-06-15",
@@ -1785,7 +1785,7 @@
       "horizon": 1,
       "regime": "calm",
       "predicted": {
-        "afai": 0.13,
+        "afai": 0.14,
         "status": "clean",
         "confidence": 68
       },
@@ -1794,7 +1794,7 @@
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.02
+      "afaiError": 0.03
     },
     {
       "snapshotDate": "2026-06-15",
@@ -1803,7 +1803,7 @@
       "horizon": 1,
       "regime": "calm",
       "predicted": {
-        "afai": 0.09,
+        "afai": 0.1,
         "status": "clean",
         "confidence": 68
       },
@@ -1812,7 +1812,7 @@
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.02
+      "afaiError": 0.01
     },
     {
       "snapshotDate": "2026-06-15",
@@ -1893,7 +1893,7 @@
       "horizon": 1,
       "regime": "calm",
       "predicted": {
-        "afai": 0.11,
+        "afai": 0.1,
         "status": "clean",
         "confidence": 68
       },
@@ -1902,7 +1902,7 @@
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.01
+      "afaiError": 0
     },
     {
       "snapshotDate": "2026-06-15",
@@ -1911,7 +1911,7 @@
       "horizon": 1,
       "regime": "calm",
       "predicted": {
-        "afai": 0.11,
+        "afai": 0.1,
         "status": "clean",
         "confidence": 68
       },
@@ -1920,7 +1920,7 @@
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.02
+      "afaiError": 0.03
     },
     {
       "snapshotDate": "2026-06-15",
@@ -1929,7 +1929,7 @@
       "horizon": 1,
       "regime": "calm",
       "predicted": {
-        "afai": 0.23,
+        "afai": 0.22,
         "status": "moderate",
         "confidence": 30
       },
@@ -1938,7 +1938,7 @@
         "status": "clean"
       },
       "statusHit": 0,
-      "afaiError": 0.11
+      "afaiError": 0.1
     },
     {
       "snapshotDate": "2026-06-15",
@@ -1965,6 +1965,24 @@
       "horizon": 1,
       "regime": "calm",
       "predicted": {
+        "afai": 0.06,
+        "status": "clean",
+        "confidence": 68
+      },
+      "actual": {
+        "afai": 0.08,
+        "status": "clean"
+      },
+      "statusHit": 1,
+      "afaiError": 0.02
+    },
+    {
+      "snapshotDate": "2026-06-15",
+      "targetDate": "2026-06-16",
+      "beach": "gp-moule",
+      "horizon": 1,
+      "regime": "calm",
+      "predicted": {
         "afai": 0.07,
         "status": "clean",
         "confidence": 68
@@ -1979,29 +1997,11 @@
     {
       "snapshotDate": "2026-06-15",
       "targetDate": "2026-06-16",
-      "beach": "gp-moule",
-      "horizon": 1,
-      "regime": "calm",
-      "predicted": {
-        "afai": 0.08,
-        "status": "clean",
-        "confidence": 68
-      },
-      "actual": {
-        "afai": 0.08,
-        "status": "clean"
-      },
-      "statusHit": 1,
-      "afaiError": 0
-    },
-    {
-      "snapshotDate": "2026-06-15",
-      "targetDate": "2026-06-16",
       "beach": "gp-vieux-fort",
       "horizon": 1,
       "regime": "calm",
       "predicted": {
-        "afai": 0.12,
+        "afai": 0.11,
         "status": "clean",
         "confidence": 68
       },
@@ -2010,7 +2010,7 @@
         "status": "clean"
       },
       "statusHit": 1,
-      "afaiError": 0.03
+      "afaiError": 0.02
     }
   ]
 }
