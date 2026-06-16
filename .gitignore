@@ -21,6 +21,13 @@ guadeloupe-ftp
 .env.local
 .env.*.local
 
+# Credentials service account / API (déposés en local par le fondateur — JAMAIS commit)
+google-sa.json
+*-sa.json
+service-account*.json
+*-credentials.json
+gcp-*.json
+
 # Secrets guide (ne pas committer)
 SECRETS-GITHUB.txt
 
@@ -96,3 +103,6 @@ scripts/automation/data/verdict-sent.json
 
 # Pulse unifié (régénéré par chaque loop au cycle, transitoire)
 scripts/automation/data/pulse.json
+
+# Snapshot analytics unifié — merge first-party + GSC/GA4/funnel, JAMAIS commité
+scripts/automation/data/analytics-snapshot.json
