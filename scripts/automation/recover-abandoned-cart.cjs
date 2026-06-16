@@ -24,6 +24,8 @@ const path = require('path')
 const { Resend } = require('resend')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
 const { sendEmail, brandHeader } = require('./lib/email-send.cjs')
+const { pickArm, applyArm } = require('./lib/email-ab.cjs')
+const AB_VARS = require('./data/email-ab-variants.json')
 const { getAllRegions } = require('../../regions/index.cjs')
 
 const args = process.argv.slice(2)
@@ -217,10 +219,16 @@ async function main() {
     const t = copy(region, kind)
     const from = `${t.brand} <${FROM_DOMAIN}>`
     const unsub = unsubUrl(email, region.id)
+    // A/B — EN uniquement (les 3 variants cart sont EN, pas de variant ES pour l'instant)
+    const _isEsR = region.primaryLang === 'es'
+    const _cabKey = !_isEsR ? `em_cart_${kind}_v1` : null
+    const _cabArm = _cabKey ? pickArm(_cabKey, email) : 'A'
+    const _cabOut = applyArm(_cabArm, { subject: t.subject, preheader: t.pre },
+      _cabKey ? AB_VARS[`cart_${kind}.en`]?.ship : null)
     try {
       const { data, error } = await sendEmail(resend, {
-        from, to: email, subject: t.subject, html: buildHTML(region, email, kind),
-        preheader: t.pre, unsubUrl: unsub,
+        from, to: email, subject: _cabOut.subject, html: buildHTML(region, email, kind),
+        preheader: _cabOut.preheader, unsubUrl: unsub,
       })
       if (error) { console.log(`  ❌ ${logId(email)} : ${error.message}`); continue }
       console.log(`  ✅ ${logId(email)} (${region.name}/${kind})`)
@@ -229,7 +237,7 @@ async function main() {
       saveJSON(SENT_PATH, [...sentSet]) // flush incrémental anti-double-envoi
       try {
         await fetch(HOOK, { method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: 'email_tracking', resend_id: data?.id || '', to: email, subject: t.subject, email_type: `cart_recovery_${kind}`, island: region.id, status: 'sent', date: new Date().toISOString() }) })
+          body: JSON.stringify({ type: 'email_tracking', resend_id: data?.id || '', to: email, subject: _cabOut.subject, email_type: `cart_recovery_${kind}`, island: region.id, status: 'sent', ab_test: _cabKey || '', ab_arm: _cabArm, date: new Date().toISOString() }) })
       } catch {}
     } catch (e) { console.log(`  ❌ ${logId(email)} : ${e.message}`) }
   }

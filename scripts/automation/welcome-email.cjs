@@ -16,6 +16,8 @@ const path = require('path')
 const { Resend } = require('resend')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
 const { sendEmail, brandHeader } = require('./lib/email-send.cjs')
+const { pickArm, applyArm } = require('./lib/email-ab.cjs')
+const AB_VARS = require('./data/email-ab-variants.json')
 
 const API_KEY = process.env.RESEND_API_KEY
 const SUBSCRIBERS_PATH = path.join(__dirname, 'data', 'subscribers.json')
@@ -272,14 +274,23 @@ async function main() {
       preheader = `Ta carte des plages en direct, mise \u00E0 jour 4\u00D7/jour \u2014 et le bon plan plage chaque vendredi.`
     }
 
+    // A/B email (subject + preheader — levier #1, body/html = control intact)
+    const _isEs = newRegion && newRegion.primaryLang === 'es'
+    const abTestKey = newRegion
+      ? (_isEs ? 'em_welcome_es_v1' : 'em_welcome_en_v1')
+      : 'em_welcome_fr_v1'
+    const abVarKey = newRegion ? (_isEs ? 'welcome.es' : 'welcome.en') : 'welcome.fr'
+    const abArm = pickArm(abTestKey, sub.email)
+    const abOut = applyArm(abArm, { subject: subjectLine, preheader }, AB_VARS[abVarKey]?.ship)
+
     try {
       const unsub = unsubUrl(sub.email, island)
       const { data, error } = await sendEmail(resend, {
         from,
         to: sub.email,
-        subject: subjectLine,
+        subject: abOut.subject,
         html: htmlBody,
-        preheader,
+        preheader: abOut.preheader,
         unsubUrl: unsub,
       })
 
@@ -295,7 +306,8 @@ async function main() {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               type: 'email_tracking', resend_id: data?.id || '', to: sub.email,
-              subject: subjectLine, email_type: 'welcome', island,
+              subject: abOut.subject, email_type: 'welcome', island,
+              ab_test: abTestKey, ab_arm: abArm,
               status: 'sent', source: sub.source || '', date: new Date().toISOString()
             })
           })

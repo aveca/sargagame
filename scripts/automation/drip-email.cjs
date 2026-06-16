@@ -20,6 +20,8 @@ const path = require('path')
 const { Resend } = require('resend')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
 const { sendEmail, brandHeader } = require('./lib/email-send.cjs')
+const { pickArm, applyArm } = require('./lib/email-ab.cjs')
+const AB_VARS = require('./data/email-ab-variants.json')
 
 const API_KEY = process.env.RESEND_API_KEY
 const FORCE = process.argv.includes('--force')
@@ -768,10 +770,22 @@ async function main() {
       const html = getHTML(step.key, island, cleanCount, topBeaches, email, brief)
       const preheader = getPreheader(step.key, island)
       const unsub = unsubUrl(email, island)
+      // A/B — j7 + j14 par langue (j3 = pas de variant disponible)
+      const _dLang = (REGION_META[island] && REGION_META[island].lang) || 'fr'
+      let _dAbKey = null, _dAbVar = null
+      if (step.key === 'j7') {
+        if (_dLang === 'en') { _dAbKey = 'em_drip_j7_en_v1'; _dAbVar = 'drip_j7.en' }
+        else if (_dLang === 'fr') { _dAbKey = 'em_drip_j7_fr_v1'; _dAbVar = 'drip_j7.fr' }
+      } else if (step.key === 'j14') {
+        if (_dLang === 'es') { _dAbKey = 'em_drip_j14_es_v1'; _dAbVar = 'drip_j14.es' }
+        else if (_dLang === 'fr') { _dAbKey = 'em_drip_j14_fr_v1'; _dAbVar = 'drip_j14.fr' }
+      }
+      const _dAbArm = _dAbKey ? pickArm(_dAbKey, email) : 'A'
+      const _dAbOut = applyArm(_dAbArm, { subject, preheader }, _dAbKey ? AB_VARS[_dAbVar]?.ship : null)
 
       try {
         const { data, error } = await sendEmail(resend, {
-          from, to: email, subject, html, preheader, unsubUrl: unsub,
+          from, to: email, subject: _dAbOut.subject, html, preheader: _dAbOut.preheader, unsubUrl: unsub,
         })
         if (error) {
           console.log(`  x ${logId(email)} [${step.key}]: ${error.message}`)
@@ -783,9 +797,9 @@ async function main() {
           totalSent++
           if (isNewRegion) newRegionSent++
           await trackToSheet({
-            resend_id: data?.id || '', to: email, subject,
+            resend_id: data?.id || '', to: email, subject: _dAbOut.subject,
             email_type: `drip_${step.key}`, island, status: 'sent',
-            source: sub.source || '',
+            source: sub.source || '', ab_test: _dAbKey || '', ab_arm: _dAbArm,
           })
         }
       } catch (e) {
@@ -854,9 +868,22 @@ async function main() {
       : dl === 'en'
         ? `${brief.best.name} and your other beaches, checked by satellite this morning.`
         : `${brief.best.name} et tes autres plages, vérifiées au satellite ce matin.`
+    // A/B daily — FR uniquement (seul variant daily_verdict.fr disponible)
+    let _dabKey = null, _dabArm = 'A'
+    if (dl === 'fr') {
+      _dabKey = 'em_daily_fr_v1'
+      _dabArm = pickArm(_dabKey, email)
+    }
+    const _dabChal = _dabKey && AB_VARS['daily_verdict.fr']?.ship ? {
+      subject: AB_VARS['daily_verdict.fr'].ship.subject,
+      preheader: AB_VARS['daily_verdict.fr'].ship.preheader
+        .replace('<plage>', brief.best.name)
+        .replace('XX/100', brief.best.score != null ? `${brief.best.score}/100` : '—/100')
+    } : null
+    const _dabOut = applyArm(_dabArm, { subject, preheader: dailyPre }, _dabChal)
     try {
       const { data, error } = await sendEmail(resend, {
-        from, to: email, subject, html, preheader: dailyPre,
+        from, to: email, subject: _dabOut.subject, html, preheader: _dabOut.preheader,
         unsubUrl: unsubUrl(email, island),
       })
       if (error) { console.log(`  x ${logId(email)} [daily]: ${error.message}`) }
@@ -868,8 +895,9 @@ async function main() {
         saveJSON(DRIP_SENT_PATH, dripSent) // flush incrémental anti-resend
         dailySent++
         await trackToSheet({
-          resend_id: data?.id || '', to: email, subject,
+          resend_id: data?.id || '', to: email, subject: _dabOut.subject,
           email_type: 'daily_verdict', island, status: 'sent', source: sub.source || 'sargacatch',
+          ab_test: _dabKey || '', ab_arm: _dabArm,
         })
       }
     } catch (e) { console.log(`  x ${logId(email)} [daily]: ${e.message}`) }
