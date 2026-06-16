@@ -3968,27 +3968,64 @@ function SearchBar({value,onChange,lang}){
    ═══════════════════════════════════════════════════════════════════════════ */
 function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
   const LL=T[lang]||T.fr
-  const nClean=beaches.filter(b=>b.status==="clean").length
-  // MÊME MONDE : la liste vit dans la scène golden-hour, plus sur du blanc générique.
-  // Statut doublé (emoji + couleur + rail) ; cartes verre-sombre ; badge Anton.
+  const [q,setQ]=useState("")
+  const [chip,setChip]=useState(null)
+  const filtered=useMemo(()=>{
+    let r=beaches
+    if(q){const lq=q.toLowerCase();r=r.filter(b=>(b.name+" "+b.commune).toLowerCase().includes(lq))}
+    if(chip==="clean")r=r.filter(b=>b.status==="clean")
+    if(chip==="fav")r=r.filter(b=>favorites.includes(b.id))
+    if(chip==="avoid")r=r.filter(b=>b.status==="avoid")
+    return r
+  },[beaches,q,chip,favorites])
+  const nClean=filtered.filter(b=>b.status==="clean").length
   const EMO={clean:"😎",moderate:"😐",avoid:"🚫"}
+  const chips=[
+    {id:"clean",label:_t(lang,"Propres","Clean","Limpias"),c:"#16A34A"},
+    {id:"fav",label:_t(lang,"Favoris","Favourites","Favoritas"),c:"#FFC72C"},
+    {id:"avoid",label:_t(lang,"Éviter","Avoid","Evitar"),c:"#E8522A"},
+  ]
   return(
     <div style={{height:"100%",overflowY:"auto",
       paddingTop:"calc(var(--sg-header-offset,108px) + env(safe-area-inset-top,0px))",paddingBottom:"calc(70px + env(safe-area-inset-bottom,12px))",
       background:"radial-gradient(120% 78% at 72% 0%, rgba(201,126,58,.28), rgba(242,176,94,.08) 42%, transparent 66%), linear-gradient(180deg,#0B2230 0%,#103029 40%,#0A1714 100%)",
       color:"#fff",maxWidth:600,margin:"0 auto"}}>
-      {/* Editorial kicker — Anton count echoes the hero variance pill */}
+      {/* Editorial kicker */}
       <div style={{padding:"10px 20px 8px",display:"flex",alignItems:"baseline",gap:8}}>
         <span style={{fontFamily:"'Anton',sans-serif",fontSize:26,lineHeight:1,
           letterSpacing:"-.02em",color:"#fff"}}>
-          {beaches.length}
+          {filtered.length}
         </span>
         <span style={{fontSize:11,fontWeight:800,letterSpacing:".1em",textTransform:"uppercase",
           color:"rgba(255,255,255,.6)"}}>
           {_t(lang,`plages · ${nClean} propres`,`beaches · ${nClean} clean`,`playas · ${nClean} limpias`)}
         </span>
       </div>
-      {beaches.length===0?(
+      {/* Search + filter chips */}
+      <div style={{padding:"0 16px 10px"}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,background:"rgba(255,255,255,.08)",
+          borderRadius:12,padding:"8px 12px",marginBottom:10,border:"1px solid rgba(255,255,255,.1)"}}>
+          <span style={{fontSize:14,opacity:.5}}>🔍</span>
+          <input value={q} onChange={e=>setQ(e.target.value)}
+            placeholder={_t(lang,"Rechercher une plage…","Search a beach…","Buscar una playa…")}
+            style={{flex:1,background:"none",border:"none",outline:"none",fontSize:13,color:"#fff",fontFamily:"inherit"}}/>
+          {q&&<button onClick={()=>setQ("")} style={{background:"none",border:"none",color:"rgba(255,255,255,.5)",cursor:"pointer",fontSize:16,lineHeight:1,padding:0}}>✕</button>}
+        </div>
+        <div style={{display:"flex",gap:7}}>
+          {chips.map(ch=>{
+            const active=chip===ch.id
+            return(
+              <button key={ch.id} onClick={()=>setChip(active?null:ch.id)}
+                style={{fontSize:12,fontWeight:700,padding:"5px 13px",borderRadius:100,border:`1px solid ${active?ch.c:"rgba(255,255,255,.2)"}`,
+                  background:active?ch.c+"22":"rgba(255,255,255,.06)",color:active?ch.c:"rgba(255,255,255,.7)",
+                  cursor:"pointer",fontFamily:"inherit",transition:"all .2s",whiteSpace:"nowrap"}}>
+                {ch.label}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+      {filtered.length===0?(
         <div style={{padding:"60px 32px",textAlign:"center",animation:"fadeIn .3s ease"}}>
           <div style={{fontSize:48,marginBottom:12,opacity:.92}}>🏖️</div>
           <div style={{fontSize:16,fontWeight:800,color:"#fff",marginBottom:6}}>
@@ -4000,7 +4037,7 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap}){
         </div>
       ):(
       <div style={{padding:"6px 16px",display:"flex",flexDirection:"column",gap:11}}>
-        {beaches.map(b=>{
+        {filtered.map(b=>{
           const photo=getBeachPhoto(b)
           const st=ST[b.status]||ST._loading
           const hasScore=typeof b.score==="number"

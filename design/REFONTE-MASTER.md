@@ -5,7 +5,7 @@
 
 ## 📊 TABLEAU DE BORD — COUVERTURE (maj à chaque tick · MONITOR FONDATEUR)
 > **C'est ICI qu'on suit l'avancement.** La boucle met ce bloc à jour à chaque action. « Fini » = tout en ✅.
-> Avancement global estimé : **~40 %** · maj 2026-06-16.
+> Avancement global estimé : **~43 %** · maj 2026-06-16.
 
 | Phase | Lot | État |
 |---|---|---|
