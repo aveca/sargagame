@@ -810,5 +810,48 @@
         "users": 1302
       }
     }
+  },
+  {
+    "date": "2026-06-16",
+    "time": "2026-06-16T00:38:49.388Z",
+    "payments": 10,
+    "revenue": 49.9,
+    "emails": 207,
+    "feedbacks": 1,
+    "avgRating": 4,
+    "pipelineOk": true,
+    "funnel": {
+      "sessions": 22758,
+      "lockClicks": 127,
+      "modalOpens": 3417,
+      "modalCta": 72,
+      "sampleStarts": 0,
+      "emailSubmits": 66,
+      "checkoutRedirects": 66,
+      "conversions": 2,
+      "paymentsReal": 1,
+      "revenueReal": 4.99,
+      "rates": {
+        "session_to_lock": 0.6,
+        "lock_to_modal": 2691,
+        "modal_to_cta": 2,
+        "modal_to_sample": 0,
+        "modal_to_any_action": 2,
+        "cta_to_redirect": 92,
+        "redirect_to_payment": 2
+      }
+    },
+    "stripe": null,
+    "ga4": {
+      "date": "2026-06-15",
+      "mq": {
+        "sessions": 433,
+        "users": 1510
+      },
+      "gp": {
+        "sessions": 309,
+        "users": 1303
+      }
+    }
   }
 ]
