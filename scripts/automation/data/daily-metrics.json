@@ -813,7 +813,7 @@
   },
   {
     "date": "2026-06-16",
-    "time": "2026-06-16T12:37:33.311Z",
+    "time": "2026-06-16T13:01:01.334Z",
     "payments": 11,
     "revenue": 54.89,
     "emails": 209,
@@ -821,7 +821,7 @@
     "avgRating": 4,
     "pipelineOk": true,
     "funnel": {
-      "sessions": 23043,
+      "sessions": 23063,
       "lockClicks": 130,
       "modalOpens": 3412,
       "modalCta": 73,
@@ -841,7 +841,14 @@
         "redirect_to_payment": 3
       }
     },
-    "stripe": null,
+    "stripe": {
+      "active": 15,
+      "mrr": {
+        "eur": 74.85
+      },
+      "pastDue": 0,
+      "cancelScheduled": 0
+    },
     "ga4": {
       "date": "2026-06-15",
       "mq": {
