@@ -60,6 +60,8 @@
   .freshpill .pulse{width:7px;height:7px;border-radius:50%;background:#6AC15A;box-shadow:0 0 0 0 rgba(106,193,90,.6);animation:pulse 2.4s ease-out infinite}
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(106,193,90,.55)}70%{box-shadow:0 0 0 7px rgba(106,193,90,0)}100%{box-shadow:0 0 0 0 rgba(106,193,90,0)}}
   @media (prefers-reduced-motion:reduce){.sun,.freshpill .pulse{animation:none}}
+  .perso{display:none;margin-top:18px;background:rgba(255,199,44,.14);border:1px solid rgba(255,199,44,.4);border-radius:var(--sg-r-lg);padding:12px 16px;font-size:14px;font-weight:700;color:#fff}
+  .perso b{color:var(--sg-gold-l)}
 
   /* ---------- SECTIONS ---------- */
   section{padding:46px 0}
@@ -163,7 +165,8 @@
       <a class="btn btn-gold" href="#demande">Demander une démo (15 min)</a>
       <a class="btn btn-ghost" href="https://sargasses-martinique.com/" target="_blank" rel="noopener">Voir la prévision en direct</a>
     </div>
-    <div class="freshpill"><span class="pulse"></span><span id="fresh">données satellite en direct</span></div>
+    <div class="freshpill"><span class="pulse"></span><span id="fresh">données satellite Copernicus</span></div>
+    <div class="perso" id="perso"></div>
   </div>
 </header>
 
@@ -289,6 +292,14 @@
   var STATUS_WORD={clean:'PROPRE',moderate:'MODÉRÉ',avoid:'À ÉVITER'};
   var STATUS_COLOR={clean:'#22C55E',moderate:'#FFC72C',avoid:'#E8522A'};
 
+  // --- Personnalisation prospect : ?beach=<id sarg> & ?hotel=<nom> ---
+  // Un commercial envoie /pro/hotels/?beach=diamant&hotel=Hôtel%20X → l'hôtel voit
+  // SA plage en direct + sa ligne de palmarès surlignée + formulaire prérempli.
+  var Q=new URLSearchParams(location.search);
+  var QB=(Q.get('beach')||Q.get('b')||'').toLowerCase().trim();
+  var QH=(Q.get('hotel')||'').trim();
+  function prettyBeach(id){return String(id||'').replace(/^gp-/,'').replace(/-/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase()});}
+
   function relTime(iso){
     if(!iso) return '';
     var h=(Date.now()-new Date(iso).getTime())/3.6e6;
@@ -314,6 +325,7 @@
           var tr=document.createElement('tr');
           var td1=document.createElement('td');td1.textContent=b.name;
           var td2=document.createElement('td');td2.className='pct';td2.textContent=b.hitRatePct+'%';
+          if(QB&&String(b.id).toLowerCase()===QB){tr.style.background='rgba(255,199,44,.14)';td1.style.fontWeight='800';td2.style.color='#FFC72C';}
           tr.appendChild(td1);tr.appendChild(td2);body.appendChild(tr);
         });
         document.getElementById('tr-table').hidden=false;
@@ -327,10 +339,10 @@
   fetch('/api/copernicus/sargassum.json').then(function(r){return r.json()}).then(function(d){
     try{
       var lv=(d.levels||[]);
-      var pick=lv.filter(function(x){return x.status==='clean'})[0]||lv[0];
+      var pick=(QB&&lv.filter(function(x){return String(x.id).toLowerCase()===QB})[0])||lv.filter(function(x){return x.status==='clean'})[0]||lv[0];
       if(!pick) return;
       var col=STATUS_COLOR[pick.status]||'#22C55E';
-      document.getElementById('d-name').textContent=(pick.id||'').replace(/-/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase()});
+      document.getElementById('d-name').textContent=prettyBeach(pick.id);
       var vd=document.getElementById('d-verdict');
       vd.textContent=STATUS_WORD[pick.status]||'PROPRE';vd.style.color=col;
       document.getElementById('d-score').textContent=pick.score!=null?('score '+pick.score+'/100'):'';
@@ -340,12 +352,24 @@
         if(id==='d-halo'||id==='d-tip'){el.setAttribute('fill',col);}
         else{el.setAttribute('stroke',col);}
       });
-      document.getElementById('fresh').textContent=relTime(d.updatedAt)||'données satellite en direct';
+      document.getElementById('fresh').textContent=relTime(d.updatedAt)||'données satellite Copernicus';
+      // Bannière perso : montre que la démo est cadrée sur la plage/l'hôtel demandé
+      if(QB||QH){
+        var pe=document.getElementById('perso');
+        if(pe){
+          pe.textContent='';
+          pe.appendChild(document.createTextNode(QH?('Démo pour '+QH+' · '):'Démo personnalisée · '));
+          var bb=document.createElement('b');bb.textContent=prettyBeach(pick.id)+' en direct';
+          pe.appendChild(bb);
+          pe.style.display='block';
+        }
+      }
     }catch(e){}
   }).catch(function(){});
 
   // --- Capture lead B2B → Apps Script (source dédiée) ---
   var form=document.getElementById('b2b-form');
+  if(QH){var hi=document.getElementById('hotel');if(hi)hi.value=QH;}
   form.addEventListener('submit',function(e){
     e.preventDefault();
     var fd=new FormData(form);
