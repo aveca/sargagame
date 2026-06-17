@@ -1,7 +1,13 @@
-import React from "react"
+import React, { useEffect } from "react"
+import { getSegment } from "./lib/segment.js"
 
 // i18n local (le _t de l'app n'est pas exporté).
 const _t = (l, fr, en, es) => (l === "en" ? en : l === "es" ? es : fr)
+
+// Beacon segment first-party (même endpoint analytics que le reste). Mesure la
+// valeur PAR segment : sg_pass_seg {stage:view|cta, segment, pass, cents, variant}.
+const SEG_URL = "https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec"
+function sbeacon(p) { try { const b = JSON.stringify({ type: "analytics_event", e: "sg_pass_seg", p: p || {}, t: Date.now() }); if (navigator.sendBeacon) navigator.sendBeacon(SEG_URL, b); else fetch(SEG_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain" }, body: b }).catch(() => {}) } catch (_) {} }
 
 // A/B sticky local (même convention sg_ab que l'app) — retourne l'INDEX de variante.
 function abPick(testId, variants, weights) {
@@ -39,9 +45,14 @@ export default function PassOffer({ lang = "fr", onBuy }) {
   const isGP = typeof window !== "undefined" && /guadeloupe/.test(window.location.hostname)
   const cat = isGP ? PASS.gp : PASS.mq
   const v = abPick("pass_price", ["a", "b", "c"], [.34, .33, .33])
+  const seg = getSegment()
   const p30 = cat.p30[Math.min(v, cat.p30.length - 1)]
   const p7 = cat.p7[Math.min(v, cat.p7.length - 1)]
-  const buy = (item, pass) => { if (onBuy) onBuy({ ...item, pass }); else try { window.location.href = item.u } catch (_) {} }
+  useEffect(() => { sbeacon({ stage: "view", segment: seg, variant: v, island: isGP ? "gp" : "mq" }) }, [])// eslint-disable-line
+  const buy = (item, pass) => {
+    sbeacon({ stage: "cta", segment: seg, pass, cents: item.c, variant: v })
+    if (onBuy) onBuy({ ...item, pass, segment: seg }); else try { window.location.href = item.u } catch (_) {}
+  }
 
   return (
     <div style={{ margin: "0 0 8px" }}>
@@ -61,7 +72,12 @@ export default function PassOffer({ lang = "fr", onBuy }) {
         <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(13,30,28,0) 38%,rgba(13,30,28,.55) 78%,#0D1E1C 100%)" }} />
         <div style={{ position: "absolute", left: 24, right: 24, bottom: 10 }}>
           <div className="anton" style={{ fontSize: 23, lineHeight: 1.02, color: "#fff", textShadow: "0 2px 14px rgba(0,0,0,.5)", letterSpacing: ".005em" }}>
-            {_t(lang, <>Paie ta période. <span style={{ color: "#FFC72C" }}>Rien de plus.</span></>, <>Pay for your stay. <span style={{ color: "#FFC72C" }}>Nothing more.</span></>, <>Paga tu estancia. <span style={{ color: "#FFC72C" }}>Nada más.</span></>)}
+            {(() => { const G = { color: "#FFC72C" }; const H = {
+              voyageur: _t(lang, <>Ne gâche pas tes <span style={G}>vacances</span>.</>, <>Don't let sargassum ruin your <span style={G}>trip</span>.</>, <>Que el sargazo no arruine tus <span style={G}>vacaciones</span>.</>),
+              planificateur: _t(lang, <>Prépare ton séjour. Sache où sera la <span style={G}>mer</span>.</>, <>Plan your stay. Know where the <span style={G}>sea</span> will be.</>, <>Planea tu viaje. Sabe dónde estará el <span style={G}>mar</span>.</>),
+              habitue: _t(lang, <>Tes plages, surveillées tout l'<span style={G}>été</span>.</>, <>Your beaches, watched all <span style={G}>season</span>.</>, <>Tus playas, vigiladas toda la <span style={G}>temporada</span>.</>),
+              decouverte: _t(lang, <>Paie ta période. <span style={G}>Rien de plus.</span></>, <>Pay for your stay. <span style={G}>Nothing more.</span></>, <>Paga tu estancia. <span style={G}>Nada más.</span></>),
+            }; return H[seg] || H.decouverte })()}
           </div>
         </div>
       </div>
