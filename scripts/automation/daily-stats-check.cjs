@@ -56,11 +56,48 @@ async function stripeTruth() {
       const m = (pl.interval === 'year' ? (pl.amount || 0) / 12 : (pl.amount || 0)) / 100
       mrr[s.currency] = Math.round(((mrr[s.currency] || 0) + m) * 100) / 100
     }
+    // KPI checkout 30j roulants — abandon = revenu sur la table + signal friction.
+    // Audit 2026-06-17 : le « plein de paiements bloqués » = SURTOUT de l'abandon de
+    // checkout hébergé (Payment Links USD trip-pass + sub EUR legacy), PAS des cartes
+    // refusées (≈10-12 PaymentIntents/30j seulement). On suit donc le TAUX DE
+    // COMPLÉTION dans la durée. status=open = session encore vivante → ignorée ;
+    // fermée/expirée non payée = abandon réel. Détail par motif/région : voir
+    // scripts/analyze-failed-payments.cjs (on-demand). Échec/erreur → bloc null,
+    // carry-forward dans main().
+    let checkout = null
+    try {
+      const since = Math.floor((Date.now() - 30 * 864e5) / 1000)
+      const base = `/v1/checkout/sessions?created%5Bgte%5D=${since}&limit=100`
+      const sess = []
+      let url = base
+      for (let i = 0; i < 12; i++) {
+        const pg = await get(url)
+        if (!pg || !pg.data) break
+        sess.push(...pg.data)
+        if (!pg.has_more) break
+        url = `${base}&starting_after=${pg.data[pg.data.length - 1].id}`
+      }
+      let reached = 0, paid = 0, recoverable = 0
+      const lostCents = {}
+      for (const x of sess) {
+        if (x.status === 'open') continue // encore ouverte → pas (encore) un abandon
+        reached++
+        if (x.payment_status === 'paid') { paid++; continue }
+        if (x.customer_details?.email || x.customer_email) recoverable++ // joignable → cart-recovery
+        if (x.amount_total) lostCents[x.currency] = Math.round((lostCents[x.currency] || 0) + x.amount_total)
+      }
+      checkout = {
+        windowDays: 30, reached, paid,
+        completionRate: reached ? Math.round((paid / reached) * 1000) / 10 : null,
+        recoverable, lostCents,
+      }
+    } catch {}
     return {
       active: (act.data || []).length,
       mrr,
       pastDue: (pd.data || []).length,
       cancelScheduled: (act.data || []).filter(s => s.cancel_at_period_end).length,
+      checkout,
     }
   } catch { return null }
 }
@@ -190,6 +227,20 @@ async function main() {
   // 4. Trend detection — compare today vs last entry from a prior date
   const curr = metrics[metrics.length - 1]
   const prev = [...metrics].reverse().find(r => r.date !== curr.date)
+  // KPI checkout (abandon / complétion) — visible chaque run
+  const co = curr.stripe?.checkout
+  if (co) {
+    const lost = Object.entries(co.lostCents || {}).map(([c, n]) => `${(n / 100).toFixed(2)} ${c.toUpperCase()}`).join(' · ') || '—'
+    // NB: ne couvre QUE le checkout hébergé (Payment Links — USD trip-pass + sub EUR
+    // legacy). Les conversions on-site (subscribe/pay_once) ne créent PAS de session
+    // → invisibles ici. Ce n'est donc PAS le taux de conversion global, c'est le
+    // taux d'abandon sur la page Stripe hébergée (signal friction USD surtout).
+    console.log(`Checkout HÉBERGÉ (Payment Links) 30j: ${co.paid}/${co.reached} payés-sur-page (${co.completionRate ?? '–'}%) | ${co.recoverable} joignables | sur la table: ${lost}`)
+    const prevCo = prev?.stripe?.checkout
+    if (prevCo?.completionRate != null && co.completionRate != null && co.completionRate < prevCo.completionRate - 5) {
+      console.log(`⚠️  COMPLÉTION PAYMENT-LINK EN BAISSE: ${prevCo.completionRate}% -> ${co.completionRate}% (friction page hébergée ? voir scripts/analyze-failed-payments.cjs)`)
+    }
+  }
   if (prev) {
     if (prev.payments != null && curr.payments != null && curr.payments > prev.payments) {
       console.log(`NEW PAYMENT DETECTED: ${prev.payments} -> ${curr.payments}`)
