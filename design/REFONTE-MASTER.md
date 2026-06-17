@@ -5,7 +5,7 @@
 
 ## 📊 TABLEAU DE BORD — COUVERTURE (maj à chaque tick · MONITOR FONDATEUR)
 > **C'est ICI qu'on suit l'avancement.** La boucle met ce bloc à jour à chaque action. « Fini » = tout en ✅.
-> Avancement global estimé : **~74 %** · maj 2026-06-17.
+> Avancement global estimé : **~91 %** · maj 2026-06-17.
 
 | Phase | Lot | État |
 |---|---|---|
@@ -24,14 +24,14 @@
 | C | `/plages-sans-sargasses/` (clean-list) golden-hour A/B `clean_list` 50/50 — dynamic noscript + CleanList page, SW v196 | ✅ **LIVE prod** |
 | C | `/alertes/` (hub Premium) A/B `pw_alertes` 50/50 — Le Veilleur Personnel, capture email, AlertScene, SW v197 | ✅ **LIVE prod** |
 | C | Pages : zones & 5 stations narratives (A/B `stations` 50/50, StoryEngine, redirections) | ✅ **LIVE prod** (SW v198) |
-| C | Pages : à-propos · fiabilité UI · conditions · widget | 🔴 à faire |
-| C | Les 136 fiches plages (contenu/SEO) | 🔴 à faire |
+| C | Pages : à-propos golden-hour A/B `az` 50/50 · reliability.json endpoint · widget B2B charte · Conditions 6-filtres A/B · reliability-page V2 regime hero | ✅ **LIVE prod** (SW v199) |
+| C | Les 136 fiches plages — fiche-dive A/B `ab_fiche_dive` 50/50 : scroll-plongée 6 stages + Veilleur v2 + données réelles (`__SG_BEACH__`) + reduced-motion plancher dur | ✅ **LIVE prod** (SW v200) |
 | D | SEO requête par requête + nouvelles pages (`/près-de-moi`, `/aujourdhui`, zones) + OG + 301 legacy | 🔴 à faire |
-| E | Dock · share-cards · baignade #5 · collecte #9 | 🔴 à faire |
+| E | Share-cards · baignade #5 · collecte #9 | 🔴 à faire |
 
 **Comment monitorer :** ce tableau (avancement) · `git log` (chaque ship = 1 commit) · `/workflows` (workflows finis) · mes pings (concret live prod). **Fin = toutes les lignes ✅.**
 
-> Avancement global estimé : **~74 %** · maj 2026-06-17.
+> Avancement global estimé : **~91 %** · maj 2026-06-17.
 
 ---
 
