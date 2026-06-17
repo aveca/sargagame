@@ -1,0 +1,60 @@
+/* Retro RPG Gameboy Theme (A/B Test Variant) */
+:root.theme-retro {
+  --sg-bg: #2d3748;
+  --sg-bgD: #1e1e1e;
+  --sg-card: #f4f1ea;
+  --sg-cardS: #e1dad0;
+  --sg-ink: #1e1e1e;
+  --sg-mid: #7d7c75;
+  --sg-mute: #a3a3a3;
+  --sg-border: #1e1e1e;
+  --sg-glass: #f8f9fa;
+  font-family: 'Courier New', Courier, monospace !important;
+}
+
+body.theme-retro {
+  background-color: var(--sg-bg);
+  color: var(--sg-ink);
+  font-family: 'Courier New', Courier, monospace !important;
+  text-shadow: 1px 1px 0px #ffffff;
+}
+
+body.theme-retro::after {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.12) 2px, rgba(0,0,0,0.12) 4px);
+  pointer-events: none;
+  z-index: 99999;
+}
+
+.theme-retro .card, .theme-retro .modal, .theme-retro .beatcopy {
+  background: var(--sg-card) !important;
+  border: 4px solid var(--sg-border) !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.theme-retro button, .theme-retro .cta {
+  background: #f4f1ea !important;
+  border: 3px solid #1e1e1e !important;
+  border-radius: 2px !important;
+  color: #1e1e1e !important;
+  font-family: 'Courier New', Courier, monospace !important;
+  font-weight: bold !important;
+  text-transform: uppercase !important;
+  box-shadow: 2px 2px 0px #1e1e1e !important;
+}
+
+.theme-retro button:active, .theme-retro .cta:active {
+  box-shadow: 0px 0px 0px #1e1e1e !important;
+  transform: translate(2px, 2px) !important;
+}
+
+.theme-retro h1, .theme-retro h2, .theme-retro h3 {
+  font-family: 'Courier New', Courier, monospace !important;
+  font-weight: bold !important;
+  letter-spacing: 0px !important;
+}

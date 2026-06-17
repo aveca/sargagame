@@ -407,7 +407,7 @@ jobs:
         # (vu 2026-06-16 : 33 min bloqués, run suivant en queue derrière). Le step est
         # déjà continue-on-error → un timeout n'échoue PAS le build, il laisse tourner
         # le health-check (sites up = warning, down = error). Borne le blocage de queue.
-        timeout-minutes: 30
+        timeout-minutes: 60
         env:
           FTP_SERVER_MQ: ${{ secrets.FTP_SERVER_MQ }}
           FTP_USERNAME_MQ: ${{ secrets.FTP_USERNAME_MQ }}
@@ -437,9 +437,10 @@ jobs:
           # faire échouer le workflow — plus de monitoring MQ/GP-only.
           DOMAINS=$(node -e "console.log(require('./regions/index.cjs').getAllRegions().map(r => r.domain).join(' '))")
           DOWN=""
+          TS=$(date +%s)
           for D in $DOMAINS; do
-            STATUS=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 "https://$D" || echo 000)
-            AGE=$(curl -sL --max-time 15 "https://$D/api/copernicus/sargassum.json" | node -e "let d=''; process.stdin.on('data',c=>d+=c); process.stdin.on('end',()=>{try{const j=JSON.parse(d);const h=(Date.now()-new Date(j.updatedAt))/3.6e6;console.log(h.toFixed(1))}catch{console.log('NaN')}})" || echo NaN)
+            STATUS=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 "https://$D/?t=$TS" || echo 000)
+            AGE=$(curl -sL --max-time 15 "https://$D/api/copernicus/sargassum.json?t=$TS" | node -e "let d=''; process.stdin.on('data',c=>d+=c); process.stdin.on('end',()=>{try{const j=JSON.parse(d);const h=(Date.now()-new Date(j.updatedAt))/3.6e6;console.log(h.toFixed(1))}catch{console.log('NaN')}})" || echo NaN)
             echo "$D: HTTP $STATUS | data age ${AGE}h"
             if [ "$STATUS" != "200" ]; then DOWN="$DOWN $D"; fi
           done
@@ -461,8 +462,9 @@ jobs:
             WANT=$(grep -o "sargasses-v[0-9]*" martinique-ftp/sw.js 2>/dev/null | head -1)
             [ -z "$WANT" ] && WANT=$(grep -o "sargasses-v[0-9]*" public/sw.js | head -1)
             MISMATCH=""
+            TS=$(date +%s)
             for D in $DOMAINS; do
-              GOT=$(curl -sL --max-time 15 "https://$D/sw.js" | grep -o "sargasses-v[0-9]*" | head -1)
+              GOT=$(curl -sL --max-time 15 "https://$D/sw.js?t=$TS" | grep -o "sargasses-v[0-9]*" | head -1)
               if [ "$GOT" != "$WANT" ]; then MISMATCH="$MISMATCH $D($GOT)"; fi
             done
             if [ -n "$MISMATCH" ]; then

@@ -164,7 +164,7 @@ async function deployOne(t) {
   // fresh session per batch — the shared host resets the control socket past
   // ~660 cumulative STORs (beaches/ alone is now 422 files, so a single retry
   // after a mid-upload reset cumulates past the threshold).
-  const BATCH_SIZE = 150
+  const BATCH_SIZE = 100
   const subdirs = entries.filter(e => {
     if (skipUntil && e < skipUntil) return false
     if (exclude.has(e)) return false

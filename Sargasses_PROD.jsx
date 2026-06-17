@@ -8,6 +8,7 @@
 import React,{useState,useEffect,useRef,useMemo,useCallback,createContext,useContext,Component,Suspense,lazy}from"react"
 import {computeScore as _computeBeachScore} from "./src/lib/score.js"
 import { COAST_ZONES } from "./scripts/lib/coast-zones.cjs"
+import { getCanonicalSlug } from "./src/lib/slug-resolver.js"
 
 // Import résilient : pendant la fenêtre FTP d'un deploy (~25 min), un index.html
 // frais peut référencer un chunk pas encore uploadé → import() rejette et le
@@ -11488,6 +11489,20 @@ export default function App(){
     setTimeout(()=>{setShowPrevLanding(false);setPrevExiting(false)},300)
     try{track("sg_previsions_dismiss",{action})}catch(_){}
   },[])
+
+  // A/B `retro_rpg` : Retro Gameboy UI override
+  const[retroMode]=useState(()=>{try{const q=window.location.search;if(/[?&]retro=1/.test(q))return true;if(/[?&]retro=0/.test(q))return false;return abVariant("retro_rpg",["control","retro"],[.5,.5])==="retro"}catch(_){return false}})
+  useEffect(()=>{
+    if(retroMode){
+      document.body.classList.add("theme-retro");
+      const link=document.createElement("link");
+      link.rel="stylesheet";
+      link.href="/src/RetroTheme.css";
+      document.head.appendChild(link);
+      return ()=>document.body.classList.remove("theme-retro")
+    }
+  },[retroMode])
+
   // A/B `clean_list` : /plages-sans-sargasses/ scene golden-hour + rail clean beaches.
   // Override ?clean_list=1/0. Control = app/carte generique (comportement actuel).
   const isCleanListPath=(()=>{try{return /^\/(?:plages-sans-sargasses|en\/best-beaches-no-sargassum|es\/mejores-playas-sin-sargazo)\/?$/.test(window.location.pathname)}catch(_){return false}})()
@@ -11686,19 +11701,33 @@ export default function App(){
   // Deep-link: /plages/:slug → auto-open beach sheet OR zoom to zone MID
   useEffect(()=>{
     if(!allBeaches.length)return
-    const m=window.location.pathname.match(/^\/(?:plages|beaches|playas)\/([^/]+)/)
+    const p=window.location.pathname
+    
+    // 1) Handle explicit FAR routes (carte, pres-de-moi, aujourdhui, clean-list fallback)
+    const isFarRoute = /^\/(?:carte|carte-sargasses|map|mapa|sargasses-pres-de-moi|sargasses-aujourdhui|en\/sargassum-near-me|es\/sargazo-cerca-de-mi|en\/sargassum-today|es\/sargazo-hoy)\/?$/.test(p)
+    if(isFarRoute) {
+      setShowHero(false)
+      setShowPrevLanding(false)
+      setShowAlertHub(false)
+      setSelectedBeach(null)
+      setShowArchipel(true) // flyTo(FAR)
+      try { track("sg_map_open", { source: "deeplink_far" }) } catch(_) {}
+      return
+    }
+
+    // 2) Handle /plages/:slug
+    const m=p.match(/^\/(?:plages|beaches|playas)\/([^/]+)/)
     if(!m)return
     const slug=m[1]
-    const match=allBeaches.find(b=>
-      b.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")===slug)
+    const match=allBeaches.find(b=>getCanonicalSlug(b)===slug)
     if(match){
       setSelectedBeach(match)
       track("sg_beach_open",{beach_id:match.id,status:match.status,source:"deeplink"})
     } else {
-      // Check if it's a zone slug
+      // Check if it's a zone slug (MID zoom)
       const isZone = Object.values(COAST_ZONES).flat().some(z => z.slug === slug)
       if(isZone){
-        setInitialZone(slug)
+        setInitialZone(slug) // flyTo(MID)
         setShowHero(false)
         setShowPrevLanding(false)
         setShowCleanList(false)

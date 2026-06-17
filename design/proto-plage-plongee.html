@@ -223,6 +223,13 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
 .h2sbadge .lvl{font:800 11px/1 "Bricolage Grotesque";letter-spacing:.04em;text-transform:uppercase}
 .h2sbadge .lvltxt{font:600 11.5px/1.3 "Bricolage Grotesque";color:rgba(234,247,244,.78)}
 
+.safebadge{display:flex;align-items:flex-start;gap:11px;margin-bottom:14px;
+  padding:11px 13px;border-radius:12px;background:rgba(8,18,16,.46);border:1px solid rgba(255,255,255,.12);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.safebadge .icon{font-size:18px;line-height:1}
+.safebadge .txt{font:600 12.5px/1.3 "Bricolage Grotesque";color:rgba(234,247,244,.85)}
+.safebadge .txt b{display:block;font-size:13px;color:#fff;margin-bottom:2px}
+
 /* PREUVE SOCIALE + footer */
 .social{display:flex;align-items:center;gap:11px;margin-bottom:14px;
   padding:12px 14px;border-radius:14px;background:rgba(8,18,16,.46);border:1px solid rgba(255,255,255,.12);
@@ -645,6 +652,7 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
         <h2 class="head anton" id="h4"></h2>
         <p class="sub" id="s4"></p>
         <div class="h2sbadge" id="h2sBadge"><span class="lvl" id="h2sLvl"></span><span class="lvltxt" id="h2sTxt"></span></div>
+        <div class="safebadge" id="safeBadge"><span class="icon" id="safeIcon"></span><span class="txt" id="safeTxt"></span></div>
         <div class="planbrow" id="planbRow"></div>
       </div>
 
@@ -1188,6 +1196,13 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
     $("h2sTxt").textContent=h2s.txt;
     $("h2sMark").querySelector("circle").setAttribute("stroke",h2s.col);
     $("h2sMark").querySelector("text").setAttribute("fill",h2s.col);
+    
+    // Baignade / kids-safe
+    var safe = STATUS==="avoid" ? {icon:"⛔", b:_t("BAIGNADE DÉCONSEILLÉE","SWIMMING NOT RECOMMENDED","BAÑO NO RECOMENDADO"), txt:_t("Fortes nuisances olfactives (H₂S) et algues épaisses. Chiens interdits.","Strong odors (H₂S) and thick algae. Dogs restricted.","Fuertes olores (H₂S) y algas espesas. Perros restringidos.")}
+             : STATUS==="moderate" ? {icon:"⚠️", b:_t("PRUDENCE (ENFANTS & CHIENS)","CAUTION (KIDS & DOGS)","PRECAUCIÓN (NIÑOS Y PERROS)"), txt:_t("Baignade possible mais bancs isolés. Gardez un oeil sur vos animaux.","Swimming possible but isolated patches. Keep an eye on pets.","Baño posible pero parches aislados. Vigila a tus mascotas.")}
+             : {icon:"🏊", b:_t("BAIGNADE IDÉALE","IDEAL SWIMMING","BAÑO IDEAL"), txt:_t("Eau claire, aucun danger. Parfait pour les enfants et les chiens.","Clear water, no danger. Perfect for kids and dogs.","Agua clara, sin peligro. Perfecto para niños y perros.")};
+    $("safeIcon").textContent=safe.icon;
+    $("safeTxt").innerHTML="<b>"+safe.b+"</b>"+safe.txt;
 
     // STAGE 5
     $("eb5").textContent=T.eb5[LANG]; setHeading($("h5"),T.h5[LANG]);

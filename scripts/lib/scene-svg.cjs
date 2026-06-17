@@ -205,7 +205,10 @@ function _reliefMarkup(scene, t) {
     let pylons = ''
     for (let i = 0; i < 5; i++) { const px = (fl ? 64 : 548) + i * 30; pylons += `<line x1="${px}" y1="338" x2="${px + 8}" y2="372"/>` }
     let boats = ''
-    for (let i = 0; i < rel.boats; i++) { const bx = 372 + i * 84; boats += `<g transform="translate(${bx},348)"><ellipse rx="22" ry="6.5" fill="${t.rock}"/><line x1="-2" y1="-3" x2="-2" y2="-28" stroke="${t.rock}" stroke-width="2.4"/><path d="M-2 -26 L16 -7 L-2 -7 Z" fill="${t.rockLit}" opacity=".55"/></g>` }
+    for (let i = 0; i < rel.boats; i++) { 
+      const bx = 372 + i * 84; 
+      boats += `<g transform="translate(${bx},352) scale(0.35)"><ellipse cx="0" cy="18" rx="36" ry="5" fill="#06201c" opacity=".4"/><path d="M-30 0 L30 0 L20 12 L-20 12 Z" fill="#fff" opacity=".9"/><line x1="-5" y1="0" x2="-5" y2="-60" stroke="#ccc" stroke-width="2"/><path d="M-3 -58 L28 -10 L-3 -10 Z" fill="#fff" opacity=".8"/><path d="M-8 -52 L-24 -14 L-8 -14 Z" fill="#fff" opacity=".8"/></g>` 
+    }
     return `<g><rect x="${fl ? 40 : 524}" y="334" width="172" height="6" fill="${t.trunk}" opacity=".8"/>`
       + `<g stroke="${t.trunk}" stroke-width="4.5" opacity=".7" stroke-linecap="round">${pylons}</g>${boats}</g>`
   }
@@ -214,9 +217,15 @@ function _reliefMarkup(scene, t) {
 }
 
 // ── acteurs de statut (VERBATIM L584-600) → markup string ────────────────────
-function _actorsMarkup(status, t) {
+function _actorsMarkup(status, t, island) {
+  const isMQ = island === 'mq'
+  const yole = `<g transform="translate(180, 360) scale(0.35) scale(-1, 1)" opacity="0.95"><ellipse cx="0" cy="26" rx="46" ry="6" fill="#06201c" opacity=".5"/><g><line x1="-2" y1="4" x2="-2" y2="-64" stroke="#241608" stroke-width="3"/><path d="M-2 -62 L-2 -6 L42 -6 Z" fill="url(#wmSailR)"/><path d="M-2 -44 L-2 -6 L28 -6 Z" fill="url(#wmSailY)"/><path d="M-4 -52 L-4 -8 L-32 -8 Z" fill="#1EC8B0" opacity=".94"/></g><path d="M-46 4 Q0 24 46 4 Q40 14 32 16 L-32 16 Q-40 14 -46 4 Z" fill="#0f5d54"/><path d="M-46 4 Q0 18 46 4" fill="none" stroke="#FFD884" stroke-width="1.6" stroke-opacity=".6"/></g>`
+  const voilier = `<g transform="translate(180, 355) scale(0.4) scale(-1, 1)" opacity="0.9"><ellipse cx="0" cy="18" rx="36" ry="5" fill="#06201c" opacity=".4"/><path d="M-30 0 L30 0 L20 12 L-20 12 Z" fill="#fff" opacity=".9"/><line x1="-5" y1="0" x2="-5" y2="-60" stroke="#ccc" stroke-width="2"/><path d="M-3 -58 L28 -10 L-3 -10 Z" fill="#fff" opacity=".8"/><path d="M-8 -52 L-24 -14 L-8 -14 Z" fill="#fff" opacity=".8"/></g>`
+  const boat = isMQ ? yole : voilier
+
   if (status === 'clean') {
     return `<g>`
+      + boat
       + `<g><circle cx="372" cy="392" r="6" fill="#0D2B26"/><path d="M360 398 q12 -8 24 0" stroke="#0D2B26" stroke-width="3.4" fill="none" stroke-linecap="round"/></g>`
       + `<g><circle cx="452" cy="404" r="5" fill="#0D2B26"/><path d="M442 409 q10 -7 20 0" stroke="#0D2B26" stroke-width="3" fill="none" stroke-linecap="round"/></g>`
       + `<path d="M348 396 h8 M396 398 h7 M462 410 h8" stroke="${t.rim}" stroke-width="1.6" opacity=".5" stroke-linecap="round"/>`
@@ -293,6 +302,8 @@ function buildHeroSvg(beach, lv, data, opts) {
     const defs = `<defs>`
       + `<linearGradient id="sgSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sky[0]}"/><stop offset=".52" stop-color="${sky[1]}"/><stop offset=".84" stop-color="${sky[2]}"/><stop offset="1" stop-color="${sky[3]}"/></linearGradient>`
       + `<linearGradient id="sgSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${seaTop}"/><stop offset="1" stop-color="${tt.seaB}"/></linearGradient>`
+      + `<linearGradient id="wmSailR" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF6A3D"/><stop offset="1" stop-color="#D8431F"/></linearGradient>`
+      + `<linearGradient id="wmSailY" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFD45A"/><stop offset="1" stop-color="#F0A81E"/></linearGradient>`
       + `</defs>`
 
     // ── ciel + soleil (set/high/moon) ──
@@ -328,7 +339,7 @@ function buildHeroSvg(beach, lv, data, opts) {
       + `<g fill="${tt.glit}"><circle cx="372" cy="372" r="1.9" opacity=".5"/><circle cx="392" cy="398" r="1.5" opacity=".5"/><circle cx="356" cy="410" r="1.6" opacity=".5"/><circle cx="412" cy="384" r="1.4" opacity=".5"/></g>`
 
     // ── acteurs de statut ──
-    const actors = _actorsMarkup(status, t)
+    const actors = _actorsMarkup(status, t, beach.island)
 
     // ── sable + écume + galets + palmiers ──
     const beachland = `<path d="M-40 472 Q200 434 430 448 Q640 460 840 502 L840 620 L-40 620 Z" fill="${sand}"/>`

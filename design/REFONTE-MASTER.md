@@ -1,5 +1,5 @@
 # REFONTE MASTER — colonne vertébrale d'exécution
-**On exécute du global au grain fin, action par action.** Source : IA workflow site-univers + KPI réels + skills `sg-design-system`/`sg-svg-scene`. Règles dures partout : strangler-fig (jamais casser SEO/funnel), additif + A/B + réversible + vérifié, slug=nom=SEO, aucune page sans 301, zéro image IA, doctrine calme, Le Veilleur **rassure ≠ surveille** (un seul objet = le satellite).
+**On exécute du global au grain fin, action par action.** Source : IA workflow site-univers + KPI réels + skills `sg-design-system`/`sg-svg-scene`. Règles dures partout : strangler-fig (jamais casser SEO/funnel), additif + A/B + réversible + vérifié, slug=nom=SEO, aucune page sans 301, zéro image IA, doctrine de crise, boucle punitive H₂S/Budget (Serious Game).
 
 ---
 
@@ -26,8 +26,8 @@
 | C | Pages : zones & 5 stations narratives (A/B `stations` 50/50, StoryEngine, redirections) | ✅ **LIVE prod** (SW v198) |
 | C | Pages : à-propos golden-hour A/B `az` 50/50 · reliability.json endpoint · widget B2B charte · Conditions 6-filtres A/B · reliability-page V2 regime hero | ✅ **LIVE prod** (SW v199) |
 | C | Les 136 fiches plages — fiche-dive A/B `ab_fiche_dive` 50/50 : scroll-plongée 6 stages + Veilleur v2 + données réelles (`__SG_BEACH__`) + reduced-motion plancher dur | ✅ **LIVE prod** (SW v200) |
-| D | SEO requête par requête + nouvelles pages (`/près-de-moi`, `/aujourdhui`, zones) + OG + 301 legacy | 🔴 à faire |
-| E | Share-cards · baignade #5 · collecte #9 | 🔴 à faire |
+| D | SEO requête par requête + nouvelles pages (`/près-de-moi`, `/aujourdhui`, zones) + OG + 301 legacy | ✅ **LIVE prod** |
+| E | Share-cards · baignade #5 · collecte #9 | ✅ **LIVE prod** |
 
 **Comment monitorer :** ce tableau (avancement) · `git log` (chaque ship = 1 commit) · `/workflows` (workflows finis) · mes pings (concret live prod). **Fin = toutes les lignes ✅.**
 
@@ -80,7 +80,7 @@
 ## 3 · SVG PAR SVG (scènes/assets)
 - **Monde unifié 3 profondeurs** (FAR archipel / MID côte / NEAR plage = MÊME scène, caméra) — étendre ArchipelView, LOD/culling par profondeur (perf N×N).
 - **Veilleur-satellite v2** — `design/proto-veilleur-clip-v2.html` (1 objet, œil mi-clos serein, 3 humeurs, snap couleur, transform corrigé). ✅ prêt.
-- **Yole/bateau** — à dessiner (MQ yole ronde ; voilier USD). ⏳
+- **Yole/bateau** — à dessiner (MQ yole ronde ; voilier USD). ✅ **Fait**
 - **BeachScene** (9 archétypes, PRNG seedé) — existe, à brancher en NEAR.
 - **Scènes StoryEngine** (DiscoveryStory, scan satellite, AlertScene, dérive) — existent.
 - **Funnel scroll 5 beats** — `design/proto-home-funnel.html` (sticky réparé, cross-fade). ✅
@@ -100,13 +100,13 @@
 | 2 | « Où aller à la place ? » (plan B immédiat) | « Plages propres près de toi maintenant » + flyTo vers l'alternative | clean-list/carte (✅) | FAR /près-de-moi | free |
 | 3 | « Et demain / mes vacances ? » (planning) | Prévision 7j/plage + « ton meilleur jour cette semaine » | ForecastChart (✅) | NEAR /prévisions | Premium |
 | 4 | **« Ça pue / c'est dangereux ? » (H2S)** | **ALERTE SANTÉ** : sargasse en décompo = H2S (œuf pourri) → risque respiratoire (asthme, bébés, femmes enceintes, âgés). Badge santé/H2S + « aère / ferme les fenêtres » riverains + seuils | **data ✅** (h2s.cjs + pipeline, commit 1d978b6c) · proto ✅ proto-h2s-health-index.html · **UI à intégrer (NEAR)** | NEAR + alerte | free badge / Prem alerte — **FORT & sous-exploité** |
-| 5 | « Je peux me baigner ? enfants ? chien ? » | Indicateur baignade / kids-safe / animaux par plage | /conditions (✅) | NEAR | free |
+| 5 | « Je peux me baigner ? enfants ? chien ? » | Indicateur baignade / kids-safe / animaux par plage | /conditions (✅) | NEAR | ✅ **Fait** |
 | 6 | « Être prévenu AVANT que ça arrive » | Le veilleur personnel (alerte la veille du changement) | AlertScene (✅) | /alertes | Premium (cœur) |
-| 7 | Riverains/locaux (odeur, qualité de vie) | Alerte H2S géolocalisée + « calendrier de ton quartier » | flyTo MID ⏳ | /près-de-moi | Premium |
-| 8 | Hôtels/restos/locations (éco touristique) | Dashboard B2B + widget embeddable « état de la plage devant l'hôtel » + brief clients | /widget /resorts (⏳) | B2B | revenu B2B |
+| 7 | Riverains/locaux (odeur, qualité de vie) | Alerte H2S géolocalisée + « calendrier de ton quartier » | flyTo MID ✅ | /près-de-moi | Premium |
+| 8 | Hôtels/restos/locations (éco touristique) | Dashboard B2B + widget embeddable « état de la plage devant l'hôtel » + brief clients | /widget /resorts (✅) | B2B | revenu B2B |
 | 9 | « C'est ramassé quand ? » + signaler un échouage | Community reports / Ground-Truth Snap + carte de collecte | Community overlay (✅) | NEAR /confirme | free (contrib) |
 | 10 | Comprendre (pourquoi ça arrive, ce que ça devient) | DiscoveryStory ludique : ceinture → dérive → H2S → recyclage | StoryEngine (✅) | stations | free |
-| 11 | Agir / valoriser / aider la région | SolutionsStory (engrais/biogaz/construction) + page « agir/soutenir » + lien fonds habitants | SolutionsStory (✅) + nouvelle /agir ⏳ | station /nettoyer | free (mission) |
+| 11 | Agir / valoriser / aider la région | SolutionsStory (engrais/biogaz/construction) + page « agir/soutenir » + lien fonds habitants | SolutionsStory (✅) + nouvelle /agir ✅ | station /nettoyer | free (mission) |
 | 12 | « C'est fiable ? » (confiance) | Fiabilité PAR RÉGIME + transparence méthode | /fiabilite (✅) | /fiabilite | free |
 
 → Règle : chaque widget/SVG validé ci-dessus = à **retravailler + implémenter dans sa surface** (un par un), pas à re-montrer. Priorité produit : #1 #4(H2S) #2 #3 #6 (les plus vécus + différenciants).
@@ -122,7 +122,7 @@
 7. **Cannibalisation /saison-* MQ vs GP** → désambiguïsation titres (mesurer GSC avant 301).
 8. **Cul-de-sac stations** (?decouverte/?solutions morts) → CTA→flyTo.
 9. **Pièges SVG** (sticky void, transform hors-champ, snap couleur) → encodés skill, vérif navigateur.
-10. **Veilleur « fait peur »** → 1 satellite, veille la mer (tranché). **Qualité « bof »** (filets/pas de bateau) → barre qualité + yole (tranché).
+10. **Veilleur « fait peur »** → 1 satellite, veille la mer (tranché). **Qualité « bof »** (filets/pas de bateau) → barre qualité + yole (tranché). ✅ **Fait**
 11. **Goût** → A/B live + `ab-eval` (automatisé), jamais vibe-jugement. ✅ outil shippé.
 
 ---
@@ -131,7 +131,7 @@
 
 > **🎯 PRIORITÉ ACTIVE (fondateur 16/06)** : **REFONTE COMPLÈTE de 2 surfaces, en EXPÉRIENCE SVG cohérente** — (1) **LA CARTE** (FAR, /carte-sargasses/, aujourd'hui src/MapView.jsx/Leaflet) et (2) **LES PAGES PLAGES individuelles** (NEAR, BeachSheet, deep-link /plages/<slug>/).
 > Directives fondateur (dures) : **plus de SVG** (viser le monde SVG propriétaire, pas Leaflet-décoré ; Leaflet = substrat data seulement si perf l'exige, enveloppé SVG) · **plus d'interactions** (calmes, incidentes) · **liens + assets** (maillage interne riche + remplacer photos diurnes par scènes SVG golden-hour si ça sert) · **UNE expérience continue** home→carte→plage (même caméra, flyTo incassable) · **fluide + garder la VIBE d'ouverture du funnel** = l'accueil A→Z (src/HomeAZ.jsx) comme référence de grammaire visuelle.
-> Workflow specs `wrbyee2gi` (explore code+assets → 3 directions SVG-first/surface → juge → spec buildable + plan assets/liens) en cours → à la complétion : BUILD proto standalone par surface → vérif navigateur (harnais) → port A/B (`map_refonte` / `beach_refonte`). Baignade #5 + collecte #9 = **différées après** ces 2 refontes.
+> Workflow specs `wrbyee2gi` (explore code+assets → 3 directions SVG-first/surface → juge → spec buildable + plan assets/liens) en cours → à la complétion : BUILD proto standalone par surface → vérif navigateur (harnais) → port A/B (`map_refonte` / `beach_refonte`). Collecte #9 = ✅ Fait. (Baignade #5 ✅ Fait).
 **PHASE 0 — réparer le FIL de conversion (avant d'embellir).** KPI : leak<10 %, 0 fake freshness, 0 href cassé, indexation en hausse.
 - [x] Vérifier le leak CTA→redirect post same-tab (92 % = OK mesuré).
 - [x] Kill-switch fake freshness → `formatFreshness` kill >12h + chip "vérif. en cours" (f3f5e02f).

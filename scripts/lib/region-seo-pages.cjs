@@ -26,7 +26,7 @@ let _heroLib = null
 try { _heroLib = require('./scene-svg.cjs') } catch (e) { /* hero optionnel */ }
 
 const ROOT = path.resolve(__dirname, '..', '..')
-const slugify = n => n.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+const { getCanonicalSlug } = require('./slug-resolver.cjs')
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
 const STATUS_WORD = {
@@ -305,7 +305,7 @@ function generateRegionSeoPages(region, distDir) {
   const dateShort = new Date().toLocaleDateString(lang === 'es' ? 'es-MX' : 'en-US', { month: 'short', day: 'numeric' })
   const isoToday = new Date().toISOString().slice(0, 10)
   const levelsById = Object.fromEntries((data.levels || []).map(l => [l.id, l]))
-  const beaches = (region.beaches || []).map(b => ({ ...b, slug: slugify(b.name), lv: levelsById[b.id] || {} }))
+  const beaches = (region.beaches || []).map(b => ({ ...b, slug: getCanonicalSlug(b), lv: levelsById[b.id] || {} }))
   const byScore = [...beaches].sort((a, b2) => (b2.lv.score || 0) - (a.lv.score || 0))
   const urls = ['/']
   const sw = s => STATUS_WORD[lang][s] || s || '—'
