@@ -16,9 +16,13 @@ Au lancement de chaque session dans ce dossier, exécuter automatiquement (zéro
    node -e "const d=JSON.parse(require('fs').readFileSync('scripts/automation/data/daily-metrics.json','utf-8'));const l=d[d.length-1];console.log('Last:',l.date,'| Payments:',l.payments,'| Emails:',l.emails,'| Feedbacks:',l.feedbacks)"
    ```
 
-3. **Funnel live** (source de vérité revenu) :
+3. **MRR — source de vérité = Stripe** (bloc `stripe` dans daily-metrics) :
    ```bash
-   curl -sL "https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec?action=funnel" | python -c "import json,sys; d=json.load(sys.stdin); print(f'MRR: €{d[\"revenue_real\"]:.2f} | {d[\"payments_real\"]} payants | modal {d[\"rates\"][\"modal_to_cta\"]}% CTA | CTA→redirect {d[\"rates\"][\"cta_to_redirect\"]}%')"
+   node -e "const d=JSON.parse(require('fs').readFileSync('scripts/automation/data/daily-metrics.json','utf-8'));const s=[...d].reverse().find(x=>x.stripe&&x.stripe.active!=null).stripe;console.log('MRR Stripe: €'+s.mrr.eur+' |',s.active,'actifs | pastDue',s.pastDue,'| cancelScheduled',s.cancelScheduled)"
+   ```
+   ⚠️ Le `payments_real`/`revenue_real` du funnel Apps Script **sous-compte ~7×** (l'event de conversion ne se déclenche pas après redirect Stripe). Ne PAS l'utiliser pour le revenu. Garder le funnel uniquement pour les **taux d'engagement** (modal→CTA, CTA→redirect) :
+   ```bash
+   curl -sL "https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec?action=funnel" | python -c "import json,sys; d=json.load(sys.stdin); print(f'modal {d[\"rates\"][\"modal_to_cta\"]}% CTA | CTA→redirect {d[\"rates\"][\"cta_to_redirect\"]}% | opens {d[\"premium_modal_open\"]} → cta {d[\"premium_modal_cta\"]}')"
    ```
 
 4. **Workflows GitHub Actions récents** : `gh run list --repo aveca/sargagame --limit 5` (skip si gh non-authed).
@@ -51,10 +55,11 @@ Au lancement de chaque session dans ce dossier, exécuter automatiquement (zéro
 - **Trust page** : `/a-propos/` (shipped 2026-04-17, standalone HTML + colors_and_type.css)
 - **Repo** : aveca/sargagame (public, minutes illimitées GH Actions)
 
-## État business au 2026-04-17
+## État business au 2026-06-17
 
-- **MRR** : €34,93/mois (7 payants × 4,99)
-- **Leads** : 58 subscribers
+- **MRR** : €74,85/mois (15 abonnés actifs × 4,99 — source Stripe, daily-metrics) · pastDue 0
+- **Leads** : ~213 emails captés
+- **Bottleneck #1** : modal→CTA bloqué à **2%** (3 388 opens → 74 CTA) depuis ≥5 jours. CTA→redirect sain (97%). Levier prioritaire = le modal lui-même (offre/copy/anchoring), pas les bords du funnel.
 - **A/B tests live** : `pw_cta_order` (control/sample_first) + `pw_prelude` (direct/prelude) — mesure 4-8 semaines
 - **Pipeline** : ERDDAP-live, 4×/j, stable
 
