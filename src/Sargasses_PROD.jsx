@@ -82,6 +82,13 @@ export function useLang(){return useContext(LangCtx)||"fr"}
 function getLang(){try{const _d=IS_NEW_REGION?REGION.primaryLang:"fr";if(typeof window==="undefined")return _d;const p=window.location.pathname;if(p.startsWith("/es"))return"es";if(p.startsWith("/en"))return"en";return _d}catch{return IS_NEW_REGION?REGION.primaryLang:"fr"}}
 /* i18n inline helper — returns fr/en/es string based on current lang */
 function _t(lang,fr,en,es){return lang==="es"?es:lang==="en"?en:fr}
+/* Prix d'un pass one-time formaté selon la DEVISE du pass (pas la langue) :
+   USD ("$5.99") pour les régions touristes, EUR ("5,99 €"/"€5.99") pour MQ/GP.
+   cur vient de passCtxRef ('usd'|'eur') ; lang ne pilote que le séparateur EUR. */
+function fmtPassPrice(cents,cur,lang){
+  if(cur==="usd")return "$"+(cents/100).toFixed(2)
+  return lang==="en"?"€"+(cents/100).toFixed(2):(cents/100).toFixed(2).replace(".",",")+" €"
+}
 /* stripe.js partagé — chargé à l'idle de l'app (recommandation Stripe : inclure
    Stripe.js sur toutes les pages) car ce réseau (Caraïbe → CDN Stripe) le charge
    en ~15s : au moment du paywall il doit déjà être en cache. */
@@ -1739,6 +1746,11 @@ const PRICE_YR=REGION_PAY?(REGION.pricing?.yearly||"$79"):(getLang()==="en"?"€
 // stripeLinkFor (chemin funnel protégé) : chemin de checkout séparé.
 const LINK_TRIP=REGION_PAY?(REGION_PAY.tripPass||""):""
 const PRICE_TRIP=REGION_PAY?(REGION.pricing?.tripPass||"$5.99"):null
+// Montant du Trip Pass en cents, dérivé du prix région ("$5.99" → 599). Doit
+// matcher l'allowlist serveur create-checkout.php action:pay_once ($USD_ISLANDS
+// → [599]). 0 si non-parsable → startTripPass devient inerte (jamais d'appel
+// avec un montant hors allowlist qui se ferait rejeter 400).
+const TRIP_CENTS=(()=>{const n=parseFloat(String(PRICE_TRIP||"").replace(/[^\d.]/g,""));return Number.isFinite(n)&&n>0?Math.round(n*100):0})()
 // 2026-06-17 — Essai gratuit retiré PARTOUT : paiement IMMÉDIAT (USD + EUR, MQ/GP
 // inclus). Le serveur (create-checkout.php $noTrial=true) facture immédiatement ;
 // cette constante bascule toute la copy front en mode "accès immédiat". Le
@@ -2094,6 +2106,14 @@ function interpolateForecast(beach,sentinels,weeklyData,k=3,power=2){
 function getBeachPhoto(beach){
   if(!beach)return null
   return`/beaches/gplace-${beach.id}.jpg?v=3`
+}
+
+/* Vignette golden-hour de marque — remplace les photos externes (Google Places)
+   et les tuiles satellite qui juraient avec le design « 100% nos assets ».
+   Dégradé ciel→soleil→mer (SCENE_TOKENS) teinté par l'état réel de la plage. */
+function beachThumbBg(beach){
+  const c=(ST[beach?.status]||ST._loading).c
+  return`radial-gradient(120% 78% at 50% 14%, ${c}3a 0%, transparent 58%), linear-gradient(168deg, #0B2230 0%, #155A5A 30%, #C97E3A 56%, #F2B05E 70%, #1A5852 84%, #08251F 100%)`
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -3582,23 +3602,9 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
 
   if(!beach)return null
 
-  const photo=getBeachPhoto(beach)
-  const bgImage=photo||satImg(beach.lat,beach.lng,560)
-  // Hero personnalisé par l'HEURE (directive user 14/06) : la photo de plage est
-  // diurne et JURE pour un visiteur de nuit — et on n'a aucune photo de nuit.
-  // → scène vectorielle golden-hour (HeroScene, auto-phase sur l'heure locale,
-  // déjà validée sur l'accueil) dès qu'on n'est pas en plein jour OU sans vraie
-  // photo. Plein jour + vraie photo = on garde la photo (cinégénique, ça vend).
+  // Hero 100% scène vectorielle golden-hour (BeachScene, auto-phase sur l'heure
+  // locale). Les photos externes ont été retirées — elles juraient avec le design.
   const heroPh=(()=>{try{if(HERO_PH_OVERRIDE)return HERO_PH_OVERRIDE;const h=new Date().getHours();return h<5?"night":h<8?"dawn":h<17?"day":h<20?"golden":"night"}catch(_){return "day"}})()
-  const useVectorHero=heroPh!=="day"||!photo
-  // Grade de phase forgé SUR la photo réelle → cohérence avec l'heure locale
-  // (la plage de jour devient nuit/golden, jamais un plein soleil à minuit).
-  const heroGrade={
-    dawn:"linear-gradient(180deg,rgba(20,27,51,.48),rgba(184,110,126,.22) 46%,rgba(242,169,104,.12) 82%,rgba(0,0,0,0))",
-    day:"linear-gradient(180deg,rgba(26,111,168,.16),rgba(0,0,0,0) 42%)",
-    golden:"linear-gradient(180deg,rgba(11,34,48,.5),rgba(201,126,58,.26) 56%,rgba(255,216,132,.14) 86%,rgba(0,0,0,0))",
-    night:"linear-gradient(180deg,rgba(4,11,22,.74),rgba(10,27,46,.5) 50%,rgba(16,48,58,.34) 100%)",
-  }[heroPh]||"rgba(0,0,0,0)"
 
   const onTouchStart=e=>{startY.current=e.touches[0].clientY}
   const onTouchMove=e=>{
@@ -3914,15 +3920,8 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             <span aria-hidden="true" style={{fontSize:13,fontWeight:800,color:"#16A34A",flexShrink:0}}>→</span>
           </button>}
 
-          {/* La vraie photo « calée en cool » plus bas (directive 14/06 : pas en
-              premier, le SVG d'abord). On la garde car elle est individuelle. */}
-          {photo&&<div style={{margin:"14px 0 2px",borderRadius:16,overflow:"hidden",position:"relative",height:158,
-            background:`url(${photo}) center 42%/cover`,border:"1px solid rgba(0,0,0,.07)"}}>
-            <div aria-hidden="true" style={{position:"absolute",inset:0,background:"linear-gradient(180deg,transparent 55%,rgba(0,0,0,.45))"}}/>
-            <div style={{position:"absolute",left:12,bottom:9,fontSize:11,fontWeight:700,color:"#fff",letterSpacing:".05em",textTransform:"uppercase"}}>
-              {_t(lang,"La vraie plage","The real beach","La playa real")}
-            </div>
-          </div>}
+          {/* Photo externe retirée (juraient avec le design) — la scène vectorielle
+              golden-hour du hero porte déjà l'identité de la plage. */}
 
           {/* Urgence-donnée : arrivage RÉEL prévu (weeklyData.forecast pipeline,
               JAMAIS le fallback generateForecast) → CTA alerte. L'urgence vraie
@@ -4108,7 +4107,6 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
                 scrollbarWidth:"none",WebkitOverflowScrolling:"touch",margin:"0 -20px",padding:"0 20px 4px"}}>
                 {nearby.map(nb=>{
                   const nst=ST[nb.status]||ST._loading
-                  const nbPhoto=getBeachPhoto(nb)
                   return(
                     <button key={nb.id} onClick={()=>{track("sg_nearby_click",{from:beach.id,to:nb.id,status:nb.status});onBeachClick(nb)}} style={{
                       flex:"0 0 auto",width:140,padding:0,
@@ -4117,7 +4115,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
                       textAlign:"left",fontFamily:"inherit",
                       boxShadow:"0 2px 8px rgba(0,0,0,.06)",
                     }}>
-                      <div style={{height:80,background:`url(${nbPhoto||satImg(nb.lat,nb.lng,140)}) center/cover`,
+                      <div style={{height:80,background:beachThumbBg(nb),
                         position:"relative"}}>
                         <span style={{position:"absolute",top:6,right:6,fontSize:9,fontWeight:700,
                           padding:"2px 6px",borderRadius:100,background:nst.bg,color:nst.c,
@@ -4506,7 +4504,7 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap,sargData,on
             cursor:"pointer",textAlign:"left",fontFamily:"inherit",color:"#fff",
             boxShadow:"0 4px 20px -8px rgba(0,0,0,.4)"}}>
           <div style={{width:52,height:52,flexShrink:0,borderRadius:12,
-            background:`url(${getBeachPhoto(bestToday)}) center/cover`,position:"relative",overflow:"hidden"}}>
+            background:beachThumbBg(bestToday),position:"relative",overflow:"hidden"}}>
             <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.12)"}}/>
           </div>
           <div style={{flex:1,minWidth:0}}>
@@ -4558,7 +4556,6 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap,sargData,on
       ):(
       <div style={{padding:"6px 16px",display:"flex",flexDirection:"column",gap:11}}>
         {filtered.map(b=>{
-          const photo=getBeachPhoto(b)
           const st=ST[b.status]||ST._loading
           const hasScore=typeof b.score==="number"
           const scoreColor=b.scoreColor||st.c
@@ -4595,7 +4592,7 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap,sargData,on
                 boxShadow:`0 0 14px ${scoreColor}66`}}/>
               {/* Photo thumbnail */}
               <div style={{width:74,height:74,flexShrink:0,position:"relative",marginLeft:5,borderRadius:13,
-                background:`url(${photo||satImg(b.lat,b.lng,148)}) center 42%/cover`}}>
+                background:beachThumbBg(b)}}>
                 <span aria-hidden="true" style={{position:"absolute",bottom:5,right:5,width:11,height:11,borderRadius:6,
                   background:st.c,border:"2px solid #0E1F1A",
                   boxShadow:`0 0 8px ${st.c}88`}}/>
@@ -6351,7 +6348,10 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   // 15% holdout (mur sombre) = filet sécurité-revenu mesurable. ?pwconstel=0 force le holdout.
   const pwConstel=(()=>{try{const q=window.location.search;if(/[?&]pwconstel=1/.test(q))return true;if(/[?&]pwconstel=0/.test(q))return false;return abVariant("pw_constel",["control","constel"],[.15,.85])==="constel"}catch(_){return false}})()
   // A/B pw_pass : storefront « paie à l'usage » (passes one-time) en tête du paywall. ?pwpass=1/0.
-  const pwPass=(()=>{try{const q=window.location.search;if(/[?&]pwpass=1/.test(q))return true;if(/[?&]pwpass=0/.test(q))return false;return abVariant("pw_pass",["control","pass"],[.5,.5])==="pass"}catch(_){return false}})()
+  // EUR UNIQUEMENT : PassOffer n'a qu'un catalogue mq/gp (cents EUR) + liens buy.stripe.com EUR.
+  // Sur les régions USD (florida/rivieramaya/puntacana) il rendrait le mauvais devise + un
+  // redirect off-site EUR. Le pay-per-use USD passe par le Trip Pass on-site (tripAB, gaté plus bas).
+  const pwPass=!IS_NEW_REGION&&(()=>{try{const q=window.location.search;if(/[?&]pwpass=1/.test(q))return true;if(/[?&]pwpass=0/.test(q))return false;return abVariant("pw_pass",["control","pass"],[.5,.5])==="pass"}catch(_){return false}})()
   // Paiement on-site one-time des passes — OFF par défaut (le redirect reste le défaut qui marche). ?passonsite=1 pour live-test carte.
   const passOnsite=(()=>{try{const q=window.location.search;if(/[?&]passonsite=1/.test(q))return true;if(/[?&]passonsite=0/.test(q))return false;return abVariant("pw_pass_onsite",["off","on"],[1,0])==="on"}catch(_){return false}})()
   // A/B pw_trippass (USD only) : propose un accès UNIQUE 7 jours (one-time,
@@ -6359,14 +6359,30 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   // abo-mensuel/touriste-5-jours (verdict chantier USA). Inerte si pas de
   // LINK_TRIP. Override URL ?pwtrip=1/0 pour QA. Le CTA Trip Pass a son PROPRE
   // chemin (startTripPass) : ZÉRO contact avec effectivePlan/stripeLinkFor.
-  // 2026-06-17 — Trip Pass A/B DÉSACTIVÉ : c'était le dernier chemin off-site
-  // (Payment Link one-time buy.stripe.com). À réactiver UNIQUEMENT via un
-  // PaymentIntent one-time ON-SITE (create-checkout.php action:pay_once), jamais
-  // un redirect. Le bloc UI Trip Pass est masqué (tripAB=false).
-  const tripAB=false
-  // Inerte (tripAB=false) — conservé pour ne pas casser les refs JSX ; ne
-  // déclenche plus aucun redirect off-site.
-  const startTripPass=useCallback(()=>{},[])
+  // 2026-06-17 — Trip Pass RÉACTIVÉ mais 100% ON-SITE : PaymentIntent one-time
+  // (create-checkout.php action:pay_once, devise USD par région), JAMAIS de
+  // redirect buy.stripe.com. Gaté aux régions USD avec un prix trip parsable :
+  // récupère l'abandon ~$327/30j de la page hébergée + capture email → relance
+  // possible (recover-abandoned-cart.cjs). Override QA ?pwtrip=1/0. MQ/GP (EUR)
+  // n'affichent jamais ce bloc (PRICE_TRIP null → tripAB false).
+  const tripAB=(()=>{try{
+    if(!(IS_NEW_REGION&&REGION.currency==="USD"&&TRIP_CENTS>0))return false
+    const q=window.location.search
+    if(/[?&]pwtrip=1/.test(q))return true
+    if(/[?&]pwtrip=0/.test(q))return false
+    return true
+  }catch(_){return false}})()
+  // Trip Pass ON-SITE : même collecte de carte (SetupIntent → Payment Element)
+  // que l'abo, puis facturation UNE fois via action:pay_once (branche _pc de
+  // doSubscribe). passCtxRef porte cents/devise/jours pour l'écran de paiement.
+  const startTripPass=useCallback(()=>{
+    if(TRIP_CENTS<=0)return
+    passCtxRef.current={pass:"trip7",cents:TRIP_CENTS,days:7,cur:"usd"}
+    try{track("sg_pass_cta",{pass:"trip7",cents:TRIP_CENTS,source:source||"unknown",onsite:1,kind:"trip"})}catch(_){}
+    // Arme la relance panier abandonné (la bannière lit sg_checkout_abandoned).
+    try{const _em=localStorage.getItem("sg_email")||"";localStorage.setItem("sg_checkout_abandoned",JSON.stringify({email:_em,ts:Date.now()}))}catch(_){}
+    setPayStep(true)
+  },[source,setPayStep])
   const[showPrelude,setShowPrelude]=useState(false)
   // Compute upcoming dates for the Prelude ledger
   const _preludeDates=(()=>{
@@ -6503,7 +6519,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         {!scenePay&&<div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
           margin:"-8px -24px 20px",padding:0}}/>}
         {pwPass&&<PassOffer lang={lang} onBuy={(item)=>{try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown",onsite:passOnsite?1:0})}catch(_){}
-          if(passOnsite){passCtxRef.current={pass:item.pass,cents:item.c,days:item.pass==="p30"?30:7};setPayStep(true)}
+          if(passOnsite){passCtxRef.current={pass:item.pass,cents:item.c,days:item.pass==="p30"?30:7,cur:"eur"};setPayStep(true)}
           else{try{window.location.href=item.u}catch(_){}}}}/>}
         {/* A/B pw_scene : le paywall = CONTINUATION du monde golden-hour (Veilleur + promesse),
             pas un mur sombre plat. Calme (statique). Logique de paiement INCHANGÉE en dessous. */}
@@ -7164,7 +7180,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           </h3>
           <div style={{fontSize:13,color:"rgba(255,255,255,.6)",marginBottom:18}}>
             {passCtxRef.current
-              ?_t(lang,`${(passCtxRef.current.cents/100).toFixed(2).replace(".",",")} € · ${passCtxRef.current.days} jours d'accès complet · paiement unique`,`€${(passCtxRef.current.cents/100).toFixed(2)} · ${passCtxRef.current.days} days full access · one-time`,`${(passCtxRef.current.cents/100).toFixed(2).replace(".",",")} € · ${passCtxRef.current.days} días · pago único`)
+              ?_t(lang,`${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"fr")} · ${passCtxRef.current.days} jours d'accès complet · paiement unique`,`${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"en")} · ${passCtxRef.current.days} days full access · one-time`,`${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"es")} · ${passCtxRef.current.days} días · pago único`)
               :NO_TRIAL
               ?<>{payPlanRef.current==="annual"
                   ?_t(lang,`${PRICE_YR}/an · facturé aujourd'hui`,`${PRICE_YR}/yr · billed today`,`${PRICE_YR}/año · se cobra hoy`)
@@ -7199,7 +7215,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             {payBusy
               ?_t(lang,"Activation…","Activating…","Activando…")
               :passCtxRef.current
-              ?_t(lang,`Payer ${(passCtxRef.current.cents/100).toFixed(2).replace(".",",")} €`,`Pay €${(passCtxRef.current.cents/100).toFixed(2)}`,`Pagar ${(passCtxRef.current.cents/100).toFixed(2).replace(".",",")} €`)
+              ?_t(lang,`Payer ${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"fr")}`,`Pay ${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"en")}`,`Pagar ${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"es")}`)
               :NO_TRIAL
               ?(payPlanRef.current==="annual"
                 ?_t(lang,`Payer ${PRICE_YR} — activer maintenant`,`Pay ${PRICE_YR} — activate now`,`Pagar ${PRICE_YR} — activar ya`)
