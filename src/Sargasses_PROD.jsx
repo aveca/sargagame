@@ -11,6 +11,7 @@ import { COAST_ZONES } from "../scripts/lib/coast-zones.cjs"
 import { getCanonicalSlug } from "./lib/slug-resolver.js"
 import Dock from "./Dock.jsx"
 import DiveTransition from "./DiveTransition.jsx"
+import PassOffer from "./PassOffer.jsx"
 import "./RetroTheme.css"
 
 // Import résilient : pendant la fenêtre FTP d'un deploy (~25 min), un index.html
@@ -6320,6 +6321,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   // home, pas un mur sombre A/B-gaté à une minorité) → 85% voient la scène golden-hour,
   // 15% holdout (mur sombre) = filet sécurité-revenu mesurable. ?pwconstel=0 force le holdout.
   const pwConstel=(()=>{try{const q=window.location.search;if(/[?&]pwconstel=1/.test(q))return true;if(/[?&]pwconstel=0/.test(q))return false;return abVariant("pw_constel",["control","constel"],[.15,.85])==="constel"}catch(_){return false}})()
+  // A/B pw_pass : storefront « paie à l'usage » (passes one-time) en tête du paywall. ?pwpass=1/0.
+  const pwPass=(()=>{try{const q=window.location.search;if(/[?&]pwpass=1/.test(q))return true;if(/[?&]pwpass=0/.test(q))return false;return abVariant("pw_pass",["control","pass"],[.5,.5])==="pass"}catch(_){return false}})()
   // A/B pw_trippass (USD only) : propose un accès UNIQUE 7 jours (one-time,
   // aligné séjour, sans abonnement) EN PLUS de l'abo — répond au mismatch
   // abo-mensuel/touriste-5-jours (verdict chantier USA). Inerte si pas de
@@ -6467,6 +6470,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             zIndex:5,fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
         {!scenePay&&<div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
           margin:"-8px -24px 20px",padding:0}}/>}
+        {pwPass&&<PassOffer lang={lang} onBuy={(item)=>{try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown"})}catch(_){}try{window.location.href=item.u}catch(_){}}}/>}
         {/* A/B pw_scene : le paywall = CONTINUATION du monde golden-hour (Veilleur + promesse),
             pas un mur sombre plat. Calme (statique). Logique de paiement INCHANGÉE en dessous. */}
         {scenePay&&!pwConstel&&(<>
@@ -7622,7 +7626,7 @@ function CaptureGateModal({lang,onSubmit,onClose,beach}){
   )
 }
 
-function InlineEmailCapture({lang,beachName}){
+function InlineEmailCapture({lang,beachName,source="inline_beach"}){
   const[email,setEmail]=useState("")
   const[submitted,setSubmitted]=useState(false)
   const[dismissed,setDismissed]=useState(false)
@@ -7641,14 +7645,14 @@ function InlineEmailCapture({lang,beachName}){
   const handleSubmit=e=>{
     e.preventDefault()
     if(!email||!email.includes("@"))return
-    track("sg_email_submit",{source:"inline_beach",variant:em1V})
+    track("sg_email_submit",{source,variant:em1V})
     s("sg_email",email)
     s("sg_email_prompt",true)
     setSubmitted(true)
     const island=IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"
     try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
       method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
-      body:JSON.stringify({email,island,source:"inline-beach",date:new Date().toISOString()})
+      body:JSON.stringify({email,island,source,date:new Date().toISOString()})
     }).catch(()=>{})}catch{}
   }
 
