@@ -3170,7 +3170,7 @@
         },
         {
           "id": "tartane",
-          "afai": 0.08,
+          "afai": 0.07,
           "status": "clean"
         },
         {
@@ -3210,27 +3210,27 @@
         },
         {
           "id": "gp-malendure",
-          "afai": 0.1,
+          "afai": 0.11,
           "status": "clean"
         },
         {
           "id": "gp-sainte-anne",
-          "afai": 0.12,
+          "afai": 0.11,
           "status": "clean"
         },
         {
           "id": "gp-pt-chateaux",
-          "afai": 0.1,
+          "afai": 0.09,
           "status": "clean"
         },
         {
           "id": "gp-gosier",
-          "afai": 0.13,
+          "afai": 0.12,
           "status": "clean"
         },
         {
           "id": "gp-caravelle",
-          "afai": 0.12,
+          "afai": 0.11,
           "status": "clean"
         },
         {
