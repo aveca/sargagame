@@ -259,8 +259,8 @@
       var n=calm&&calm.cleanSamples?calm.cleanSamples:(d.sampleSize||0);
       document.getElementById('tr-clean').textContent=pct+'%';
       var win=d.window&&d.window.from?(' ('+d.window.from+' → '+d.window.to+')'):'';
-      document.getElementById('tr-headline').textContent='de nos prévisions « mer propre » se sont vérifiées'+win+' — sur '+Number(n).toLocaleString('fr-FR')+' comparaisons.';
-      var beaches=(d.byBeach||[]).slice().sort(function(a,b){return b.hitRatePct-a.hitRatePct}).slice(0,6);
+      document.getElementById('tr-headline').textContent='de nos prévisions « mer propre » se sont vérifiées en saison calme'+win+' — sur '+Number(n).toLocaleString('fr-FR')+' comparaisons.';
+      var beaches=(d.byBeach||[]);
       if(beaches.length){
         var body=document.getElementById('tr-body');
         beaches.forEach(function(b){

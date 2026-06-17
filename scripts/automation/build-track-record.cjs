@@ -78,7 +78,10 @@ function main() {
     .filter(h => h.day >= 1)
     .sort((a, b) => a.day - b.day)
 
-  // byBeach → libellés humains + tri (île, puis justesse décroissante).
+  // byBeach → libellés humains + tri NEUTRE (île, puis nom A→Z). PAS de tri par
+  // justesse : un ordre par performance + un slice côté page = cherry-pick (on
+  // cacherait les plages dures comme Le Diamant). L'ordre neutre rend tout extrait
+  // représentatif et le palmarès honnête (les pages affichent l'ensemble).
   const byBeach = Object.entries(bt.byBeach)
     .map(([id, v]) => {
       const meta = BEACH_LABELS[id] || {}
@@ -91,7 +94,7 @@ function main() {
         afaiMAE: v.afaiMAE,
       }
     })
-    .sort((a, b) => (a.island || '').localeCompare(b.island || '') || b.hitRatePct - a.hitRatePct)
+    .sort((a, b) => (a.island || '').localeCompare(b.island || '') || String(a.name).localeCompare(String(b.name)))
 
   // Régimes : on reprend le bloc honnête DÉJÀ calculé par le backtest
   // (jamais un global masquant ; chaque régime split clean/alerte).

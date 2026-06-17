@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Plan sargasses : l'outil de prévision et de suivi d'échouage pour les collectivités · Sargasses Pro</title>
+<meta name="description" content="En appui du Plan Sargasses II/III, un outil de prévision par plage et un historique daté et auditable pour piloter le ramassage, anticiper les moyens et documenter l'effort. Pour communes, EPCI et offices de tourisme des Antilles."/>
+<link rel="canonical" href="https://sargasses-martinique.com/pro/plan-sargasses-collectivite/"/>
+<meta property="og:title" content="Plan sargasses : l'outil de prévision et de suivi d'échouage pour les collectivités"/>
+<meta property="og:description" content="En appui du Plan Sargasses, prévision par plage + historique daté auditable pour piloter le ramassage et documenter l'effort. Antilles."/>
+<meta property="og:url" content="https://sargasses-martinique.com/pro/plan-sargasses-collectivite/"/>
+<meta property="og:type" content="article"/>
+<meta property="og:image" content="https://sargasses-martinique.com/social-share.png"/>
+<meta name="robots" content="index,follow"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/a-propos/colors_and_type.css"/>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Article","headline":"Plan sargasses : l'outil de prévision et de suivi d'échouage pour les collectivités","description":"En appui du Plan Sargasses II/III, un outil de prévision par plage et un historique daté et auditable pour piloter le ramassage, anticiper les moyens et documenter l'effort.","author":{"@type":"Organization","name":"Sargasses Pro"},"publisher":{"@type":"Organization","name":"Sargasses Pro","url":"https://sargasses-martinique.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://sargasses-martinique.com/pro/plan-sargasses-collectivite/"},"about":["Plan Sargasses","ramassage des sargasses","collectivités","prévision d'échouage"],"image":"https://sargasses-martinique.com/social-share.png"}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Sargasses","item":"https://sargasses-martinique.com/"},{"@type":"ListItem","position":2,"name":"Pro","item":"https://sargasses-martinique.com/pro/"},{"@type":"ListItem","position":3,"name":"Plan sargasses & collectivités","item":"https://sargasses-martinique.com/pro/plan-sargasses-collectivite/"}]}
+</script>
+<style>
+  html,body{margin:0;background:var(--sg-bg);color:var(--sg-ink);font-family:var(--sg-font-sans)}
+  *{box-sizing:border-box}a{color:inherit}
+  .wrap{max-width:760px;margin:0 auto}.px{padding-left:22px;padding-right:22px}
+
+  /* ---------- HERO ---------- */
+  .hero{position:relative;overflow:hidden;color:#fff;padding:calc(34px + env(safe-area-inset-top)) 22px 40px;
+    background:radial-gradient(130% 72% at 78% 2%,rgba(255,224,160,.18),transparent 50%),linear-gradient(158deg,#0B2230 0%,#155A5A 46%,#0A2A26 100%)}
+  .hero .wrap{position:relative;z-index:2}
+  .sun{position:absolute;top:-24%;right:-10%;width:74%;height:74%;pointer-events:none;z-index:1;
+    background:radial-gradient(closest-side,rgba(255,243,214,.40),rgba(255,216,132,.16) 46%,transparent 72%);animation:sunBreath 12s ease-in-out infinite}
+  @keyframes sunBreath{0%,100%{opacity:.9;transform:scale(1)}50%{opacity:1;transform:scale(1.04)}}
+  .veilleur{position:absolute;top:14px;right:14px;width:78px;height:78px;z-index:3;opacity:.96}
+  .crumb{font-size:11px;font-weight:700;letter-spacing:.02em;color:rgba(255,255,255,.62);margin:0 0 16px}
+  .crumb a{color:rgba(255,255,255,.62);text-decoration:none}
+  .crumb a:hover{color:#fff}
+  .eyebrow{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#5FD3C9;margin:0 0 14px}
+  h1{font-family:var(--sg-font-display);font-weight:400;font-size:clamp(30px,8vw,46px);line-height:1.02;letter-spacing:-.02em;margin:0 0 16px;max-width:17ch}
+  .hero h1 em{font-style:normal;color:var(--sg-gold-l)}
+  .lede{font-size:16px;line-height:1.6;color:rgba(255,255,255,.84);margin:0 0 24px;max-width:56ch}
+  .ctas{display:flex;flex-wrap:wrap;gap:12px}
+  .btn{display:inline-flex;align-items:center;gap:8px;border-radius:var(--sg-r-lg);padding:14px 22px;font-weight:800;font-size:15px;text-decoration:none;border:0;cursor:pointer;font-family:var(--sg-font-sans)}
+  .btn-gold{background:var(--sg-gold);color:#0A2A26;box-shadow:var(--sg-shadow-gold)}.btn-gold:hover{background:var(--sg-gold-l)}
+  .btn-ghost{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.22)}.btn-ghost:hover{background:rgba(255,255,255,.15)}
+  .freshpill{display:inline-flex;align-items:center;gap:7px;margin-top:22px;background:rgba(8,18,16,.42);border:1px solid rgba(255,255,255,.16);border-radius:999px;padding:6px 13px 6px 11px;font-family:var(--sg-font-mono);font-size:11px;font-weight:700;color:#fff}
+  .freshpill .pulse{width:7px;height:7px;border-radius:50%;background:#6AC15A;animation:pulse 2.4s ease-out infinite}
+  /* dot tracks reality : vert+pulse = live confirmé ; ambre statique = en vérification / indispo */
+  .freshpill.is-stale .pulse{background:#E0A93B;animation:none;box-shadow:none}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(106,193,90,.55)}70%{box-shadow:0 0 0 7px rgba(106,193,90,0)}100%{box-shadow:0 0 0 0 rgba(106,193,90,0)}}
+  @media (prefers-reduced-motion:reduce){.sun,.freshpill .pulse{animation:none}}
+
+  /* ---------- SECTIONS ---------- */
+  section{padding:46px 0}
+  .sec-eyebrow{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--sg-teal);margin:0 0 10px}
+  h2{font-family:var(--sg-font-display);font-weight:400;font-size:clamp(24px,5.4vw,32px);line-height:1.08;letter-spacing:-.015em;margin:0 0 14px}
+  .sub{font-size:15px;line-height:1.62;color:var(--sg-mid);margin:0 0 26px;max-width:58ch}
+  .prose p{font-size:15px;line-height:1.7;color:var(--sg-mid);margin:0 0 16px;max-width:64ch}
+  .prose p:last-child{margin-bottom:0}
+  .prose a.inline{color:var(--sg-teal);font-weight:700;text-decoration:none;border-bottom:1px solid var(--sg-border-m)}
+  .prose a.inline:hover{border-bottom-color:var(--sg-teal)}
+
+  /* enjeu tiles */
+  .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .tile{background:var(--sg-card);border:1px solid var(--sg-border-m);border-radius:var(--sg-r-lg);padding:18px 16px;box-shadow:var(--sg-shadow-sm)}
+  .tile .n{font-family:var(--sg-font-display);font-size:28px;line-height:1;color:var(--sg-teal);margin-bottom:8px;letter-spacing:-.01em}
+  .tile .t{font-size:12.5px;line-height:1.45;color:var(--sg-mid);font-weight:600}
+  .src{font-size:10.5px;color:var(--sg-mute);margin-top:14px;line-height:1.5}
+  @media (max-width:560px){.tiles{grid-template-columns:1fr}.tile{display:flex;align-items:center;gap:14px}.tile .n{margin-bottom:0;min-width:96px}}
+
+  /* apport cards */
+  .cards{display:grid;grid-template-columns:1fr;gap:14px}
+  .card{background:var(--sg-card);border:1px solid var(--sg-border-m);border-radius:var(--sg-r-xl);padding:22px;box-shadow:var(--sg-shadow-sm)}
+  .card .ic{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--sg-gold-bg-l);margin-bottom:12px;font-size:20px}
+  .card h3{font-size:16px;font-weight:800;margin:0 0 7px}
+  .card p{font-size:13.5px;line-height:1.55;color:var(--sg-mid);margin:0}
+
+  /* proof / transparence */
+  .proof{background:linear-gradient(168deg,#0B2230,#0D1E1C 62%,#0A1714);color:#fff}
+  .proof h2{color:#fff}.proof .sec-eyebrow{color:#5FD3C9}.proof .sub{color:rgba(255,255,255,.78)}
+  .gauge{margin:6px 0 8px}
+  .gauge .big{font-family:var(--sg-font-display);font-size:54px;line-height:1;color:var(--sg-clean)}
+  .gauge .cap{font-size:13px;color:rgba(255,255,255,.78);margin-top:6px;max-width:48ch;line-height:1.5}
+  .trtable{width:100%;border-collapse:collapse;margin-top:18px;font-size:13px}
+  .trtable th,.trtable td{text-align:left;padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.1)}
+  .trtable th{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.5);font-weight:700}
+  .trtable td.pct{font-family:var(--sg-font-mono);font-weight:700;text-align:right}
+  .bench{font-size:12px;color:rgba(255,255,255,.6);margin-top:16px;line-height:1.5}
+  .proof a.link{color:var(--sg-gold-l);font-weight:700;text-decoration:none;border-bottom:1px solid rgba(255,199,44,.4)}
+
+  /* steps */
+  .steps{display:grid;grid-template-columns:1fr;gap:14px;counter-reset:s}
+  .step{display:flex;gap:14px;align-items:flex-start}
+  .step .num{counter-increment:s;flex-shrink:0;width:32px;height:32px;border-radius:50%;background:var(--sg-teal);color:#fff;font-family:var(--sg-font-display);font-size:16px;display:flex;align-items:center;justify-content:center}
+  .step .num::before{content:counter(s)}
+  .step h3{font-size:15px;font-weight:800;margin:0 0 4px}.step p{font-size:13.5px;color:var(--sg-mid);margin:0;line-height:1.5}
+
+  /* CTA band */
+  .cta-band{background:var(--sg-bg-d)}
+  .cta-card{background:linear-gradient(158deg,#0B2230 0%,#155A5A 60%,#0A2A26 100%);color:#fff;border-radius:var(--sg-r-xl);padding:30px 24px;box-shadow:var(--sg-shadow-md);text-align:center}
+  .cta-card h2{color:#fff;margin-bottom:12px}
+  .cta-card p{font-size:14.5px;line-height:1.6;color:rgba(255,255,255,.84);margin:0 auto 22px;max-width:50ch}
+  .cta-card .ctas{justify-content:center}
+
+  /* related */
+  .related{display:grid;grid-template-columns:1fr;gap:12px;margin-top:8px}
+  .rel{display:block;background:var(--sg-card);border:1px solid var(--sg-border-m);border-radius:var(--sg-r-lg);padding:16px 18px;box-shadow:var(--sg-shadow-sm);text-decoration:none}
+  .rel .rk{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--sg-teal);margin-bottom:5px}
+  .rel .rt{font-size:14.5px;font-weight:800;color:var(--sg-ink);line-height:1.35}
+  .rel:hover{border-color:var(--sg-teal)}
+
+  /* faq */
+  details{border-bottom:1px solid var(--sg-border-m);padding:16px 0}
+  details summary{font-size:15px;font-weight:700;cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:12px}
+  details summary::-webkit-details-marker{display:none}
+  details summary::after{content:"+";color:var(--sg-teal);font-weight:800;font-size:20px;line-height:1}
+  details[open] summary::after{content:"–"}
+  details p{font-size:13.5px;line-height:1.6;color:var(--sg-mid);margin:12px 0 0}
+
+  footer{padding:30px 22px 48px;text-align:center;color:var(--sg-mute);font-size:12px}
+  footer a{color:var(--sg-mid);text-decoration:none;font-weight:600}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="sun"></div>
+  <svg class="veilleur" viewBox="0 0 100 100" aria-hidden="true">
+    <g transform="translate(50 50) scale(0.92)">
+      <circle cx="0" cy="0" r="44" fill="#1EC8B0" opacity="0.12"/>
+      <rect x="-42" y="-5" width="26" height="14" rx="2" fill="#163a4f"/>
+      <rect x="16" y="-5" width="26" height="14" rx="2" fill="#163a4f"/>
+      <path d="M0,-16 C10,-16 16,-10 16,1 C16,12 10,21 0,21 C-10,21 -16,12 -16,1 C-16,-10 -10,-16 0,-16 Z" fill="#102622" stroke="#1EC8B0" stroke-width="1.2"/>
+      <circle cx="0" cy="3" r="10" fill="#0d3a39"/>
+      <circle cx="0" cy="3" r="10" fill="none" stroke="#1EC8B0" stroke-width="1.8"/>
+      <circle cx="2" cy="1" r="1.3" fill="#cff4ff"/>
+      <line x1="0" y1="-16" x2="0" y2="-24" stroke="#0e2622" stroke-width="1.8"/>
+      <circle cx="0" cy="-25" r="2.2" fill="#1EC8B0"/>
+    </g>
+  </svg>
+  <div class="wrap">
+    <p class="crumb"><a href="https://sargasses-martinique.com/pro/">Sargasses Pro</a> · Plan sargasses & collectivités</p>
+    <p class="eyebrow">Plan sargasses · pour les collectivités</p>
+    <h1>Plan sargasses : l'outil de suivi d'échouage qui aide les <em>communes</em> à décider où poser les moyens.</h1>
+    <p class="lede">En appui des Plans Sargasses II et III : une prévision d'échouage plage par plage pour anticiper le ramassage, et un historique daté et auditable pour documenter l'effort et le reporting aux financeurs.</p>
+    <div class="ctas">
+      <a class="btn btn-gold" href="https://sargasses-martinique.com/pro/collectivites/">Voir l'offre collectivités</a>
+      <a class="btn btn-ghost" href="https://sargasses-martinique.com/" target="_blank" rel="noopener">Voir la prévision en direct</a>
+    </div>
+    <div class="freshpill is-stale" id="freshpill"><span class="pulse"></span><span id="fresh">données satellite — actualisation…</span></div>
+  </div>
+</header>
+
+<!-- INTRO / CONTEXTE -->
+<section class="px" style="padding-bottom:8px"><div class="wrap prose">
+  <p class="sec-eyebrow">Le contexte</p>
+  <h2>Un dispositif national, une exécution locale.</h2>
+  <p>Depuis 2018, les échouages massifs de sargasses font l'objet d'un plan national. Le Plan Sargasses II (2022-2025) a engagé des moyens importants pour la collecte et le traitement ; le Plan Sargasses III (2026-2029) prolonge l'effort. Mais sur le terrain, ce sont les communes, les EPCI et leurs prestataires qui déclenchent le ramassage, plage après plage, jour après jour.</p>
+  <p>Or les sargasses ne préviennent pas : un échouage peut frapper une plage et en épargner une autre à quelques kilomètres. Sans anticipation, les moyens partent là où l'algue est déjà visible — c'est-à-dire trop tard, quand la décomposition a commencé et que l'odeur (H2S) gêne déjà les riverains. Un outil de prévision par plage, adossé à un historique daté, transforme cette réaction en pilotage.</p>
+</div></section>
+
+<!-- L'ENJEU : BUDGETS PUBLICS -->
+<section class="px" style="padding-top:8px"><div class="wrap">
+  <p class="sec-eyebrow">L'enjeu</p>
+  <h2>Des budgets publics engagés — et une attente de résultats mesurables.</h2>
+  <p class="sub">L'argent du Plan Sargasses ne se juge pas au montant dépensé, mais à l'efficacité de chaque tonne ramassée et à la capacité à le prouver. Décider où déployer demain, et documenter ce qui a été fait.</p>
+  <div class="tiles">
+    <div class="tile"><div class="n">36 M€</div><div class="t">Plan Sargasses II (2022-2025) engagés aux Antilles</div></div>
+    <div class="tile"><div class="n">&gt;50 M€</div><div class="t">Plan Sargasses III identifié pour 2026-2029</div></div>
+    <div class="tile"><div class="n">~134 €</div><div class="t">coût de collecte par tonne ramassée (réf. 2025)</div></div>
+  </div>
+  <p class="src">Sources : outre-mer.gouv.fr (Plan Sargasses II), cap-infos.fr (Plan Sargasses III), le97150.fr (coût de collecte/tonne, 2025). Ordres de grandeur — l'exposition réelle dépend de chaque territoire.</p>
+</div></section>
+
+<!-- CE QUE L'OUTIL APPORTE AU PLAN -->
+<section class="px" style="padding-top:8px"><div class="wrap">
+  <p class="sec-eyebrow">Ce que l'outil apporte au plan</p>
+  <h2>Trois leviers, en appui du dispositif existant.</h2>
+  <p class="sub">L'outil ne remplace pas le bulletin officiel Météo-France : il l'opérationnalise à l'échelle de vos plages, pour passer de l'alerte régionale à la décision de terrain.</p>
+  <div class="cards">
+    <div class="card"><div class="ic">📍</div><h3>Anticiper les moyens</h3><p>Une prévision par plage sur 7 jours indique où concentrer engins et équipes avant l'échouage. On déploie sur la plage qui va recevoir, pas seulement sur celle déjà couverte — et on évite la collecte d'algue déjà en décomposition.</p></div>
+    <div class="card"><div class="ic">📊</div><h3>Documenter l'effort</h3><p>Un historique daté et auditable, plage par plage : conditions prévues, conditions observées, fenêtres d'intervention. De quoi nourrir les rapports aux financeurs et appuyer la transparence vis-à-vis des administrés.</p></div>
+    <div class="card"><div class="ic">📣</div><h3>Communiquer juste</h3><p>Une information fiable et datée à relayer aux habitants, aux visiteurs et aux offices de tourisme — sans sur-alerter ni minimiser. La donnée parle à la place de l'impression.</p></div>
+  </div>
+</div></section>
+
+<!-- PREUVE LIVE (transparence) -->
+<section class="proof px"><div class="wrap">
+  <p class="sec-eyebrow">La transparence attendue d'un outil public</p>
+  <h2>Nous publions notre fiabilité. Datée, par plage, auditable.</h2>
+  <p class="sub">Un outil qui appuie une décision publique doit pouvoir être vérifié. Chaque jour, notre prévision est figée puis comparée à l'observation satellite réelle — et le résultat est publié, pas affirmé.</p>
+  <div class="gauge">
+    <div class="big" id="tr-clean">—</div>
+    <div class="cap" id="tr-headline">Chargement du palmarès en direct…</div>
+  </div>
+  <table class="trtable" id="tr-table" hidden>
+    <thead><tr><th>Plage (Antilles)</th><th style="text-align:right">Prévisions justes</th></tr></thead>
+    <tbody id="tr-body"></tbody>
+  </table>
+  <p class="bench">Les modèles de dérive publiés plafonnent autour de 70 % de justesse à ±3 jours (Lesser Antilles, Ifremer). Nous affichons notre chiffre réel, daté, avec sa taille d'échantillon — et nous publions aussi nos limites (les alertes en saison calme sont émises avec prudence tant que le satellite ne les confirme pas).</p>
+  <p style="margin-top:16px"><a class="link" href="https://sargasses-martinique.com/fiabilite/" target="_blank" rel="noopener">Voir le palmarès complet et la méthode →</a></p>
+</div></section>
+
+<!-- COMMENT ÇA S'INSÈRE -->
+<section class="px"><div class="wrap">
+  <p class="sec-eyebrow">Comment ça s'insère dans le plan</p>
+  <h2>Du satellite à la décision, sans casser vos circuits.</h2>
+  <div class="steps">
+    <div class="step"><div class="num"></div><div><h3>Le satellite repère les bancs au large</h3><p>Données Copernicus / ERDDAP, indice AFAI, croisées avec vent et courants — mises à jour 4×/jour.</p></div></div>
+    <div class="step"><div class="num"></div><div><h3>On localise sur vos plages</h3><p>Modèle de dérive + persistance : une prévision par plage de votre territoire, sur 7 jours, avec niveau de confiance.</p></div></div>
+    <div class="step"><div class="num"></div><div><h3>Vous décidez, votre prestataire exécute, l'historique enregistre</h3><p>Anticipation des moyens, alerte au changement d'état, et archive datée pour le suivi et le reporting — alignée sur les objectifs du Plan Sargasses.</p></div></div>
+  </div>
+</div></section>
+
+<!-- CTA VERS LA VERTICALE -->
+<section class="cta-band px"><div class="wrap">
+  <div class="cta-card">
+    <h2>Outiller votre plan sargasses sur vos plages.</h2>
+    <p>Prévision par plage, historique daté, alertes par zone : nous vous montrons la lecture sur votre territoire et calons un échange. Sans engagement.</p>
+    <div class="ctas">
+      <a class="btn btn-gold" href="https://sargasses-martinique.com/pro/collectivites/">Voir l'offre collectivités</a>
+      <a class="btn btn-ghost" href="https://sargasses-martinique.com/fiabilite/" target="_blank" rel="noopener">Consulter la fiabilité publiée</a>
+    </div>
+  </div>
+</div></section>
+
+<!-- POUR ALLER PLUS LOIN -->
+<section class="px" style="padding-top:8px"><div class="wrap">
+  <p class="sec-eyebrow">Pour aller plus loin</p>
+  <h2>Sur le même sujet.</h2>
+  <div class="related">
+    <a class="rel" href="https://sargasses-martinique.com/pro/barrieres-vs-prevision/">
+      <div class="rk">Stratégie</div>
+      <div class="rt">Barrières anti-sargasses ou prévision : quelle stratégie pour votre plage ?</div>
+    </a>
+    <a class="rel" href="https://sargasses-martinique.com/pro/cout-sargasses-hotel/">
+      <div class="rk">Impact économique</div>
+      <div class="rt">Sargasses et tourisme : ce qu'une mauvaise saison coûte (et comment l'anticiper)</div>
+    </a>
+    <a class="rel" href="https://sargasses-martinique.com/fiabilite/">
+      <div class="rk">Méthode</div>
+      <div class="rt">Notre fiabilité publiée : palmarès daté, par plage, auditable</div>
+    </a>
+  </div>
+</div></section>
+
+<!-- FAQ -->
+<section class="px" style="padding-top:8px"><div class="wrap">
+  <p class="sec-eyebrow">Questions fréquentes</p>
+  <h2>Ce que les collectivités nous demandent.</h2>
+  <details><summary>L'outil remplace-t-il le Plan Sargasses ou le bulletin officiel ?</summary><p>Non. Il est en appui : le Plan Sargasses fixe le cadre et les moyens, le bulletin Météo-France donne le risque régional. Notre outil traduit cela en prévision plage par plage et en historique daté — pour décider où intervenir et documenter l'effort.</p></details>
+  <details><summary>Les données sont-elles exploitables pour nos rapports et nos financeurs ?</summary><p>Oui. L'historique est daté et auditable par plage (export possible), ce qui documente l'effort de ramassage et appuie la transparence vis-à-vis des administrés comme des financeurs du plan.</p></details>
+  <details><summary>Quelle est la fiabilité réelle de la prévision ?</summary><p>Nous la publions sur la <a class="inline" href="https://sargasses-martinique.com/fiabilite/" target="_blank" rel="noopener">page fiabilité</a>, datée et par plage. Nos prévisions « mer propre » se vérifient à un taux que nous affichons avec sa taille d'échantillon. Les alertes sont émises avec prudence tant que le satellite ne les confirme pas — et nous publions cette limite aussi.</p></details>
+  <details><summary>Peut-on le partager avec notre prestataire de ramassage ?</summary><p>Oui. La prévision d'échouage par plage sert d'entrée au planning des équipes et engins de votre prestataire, sur 7 jours.</p></details>
+  <details><summary>Quelles plages et régions sont couvertes ?</summary><p>Toutes les plages suivies de Martinique et de Guadeloupe, avec un historique daté par plage — les Antilles françaises, seule côte où notre précision est validée et publiée.</p></details>
+</div></section>
+
+<footer>
+  <a href="https://sargasses-martinique.com/pro/">Sargasses Pro</a> ·
+  <a href="https://sargasses-martinique.com/pro/collectivites/">Collectivités</a> ·
+  <a href="https://sargasses-martinique.com/fiabilite/">Fiabilité</a> ·
+  <a href="https://sargasses-martinique.com/a-propos/">À propos</a> ·
+  <a href="https://sargasses-martinique.com/">Carte en direct</a>
+  <div style="margin-top:10px">Prévision satellite des sargasses · Martinique &amp; Guadeloupe</div>
+</footer>
+
+<script>
+(function(){
+  // renvoie {text, live} — live pilote l'état visuel du point (vert pulse vs ambre statique)
+  function relTime(iso){
+    if(!iso) return {text:'',live:false};
+    var h=(Date.now()-new Date(iso).getTime())/3.6e6;
+    if(!isFinite(h)||h<0) return {text:'',live:false};
+    if(h>=12) return {text:'mise à jour en vérification…',live:false};
+    if(h<1){var m=Math.max(1,Math.round(h*60));return {text:'EN DIRECT · il y a '+m+' min',live:true};}
+    return {text:'EN DIRECT · il y a '+Math.max(1,Math.round(h))+' h',live:true};
+  }
+  function setFresh(text,live){
+    var pill=document.getElementById('freshpill');
+    document.getElementById('fresh').textContent=text;
+    if(pill){ if(live) pill.classList.remove('is-stale'); else pill.classList.add('is-stale'); }
+  }
+
+  // --- Preuve live : track-record.json (jamais de % en dur) ---
+  fetch('/api/copernicus/track-record.json').then(function(r){return r.json()}).then(function(d){
+    try{
+      var calm=(d.byRegime&&d.byRegime.calm)||null;
+      // métrique « mer propre » dédiée si dispo ; sinon repli sur le taux global — mais on relabelle honnêtement
+      var hasClean=!!(calm&&calm.cleanReliabilityPct!=null);
+      var pct=hasClean?calm.cleanReliabilityPct:(d.overall&&d.overall.statusHitRatePct);
+      var n=hasClean?(calm.cleanSamples||0):(d.sampleSize||0);
+      var win=d.window&&d.window.from?(' ('+d.window.from+' → '+d.window.to+')'):'';
+      if(pct!=null){
+        document.getElementById('tr-clean').textContent=pct+'%';
+        var lbl=hasClean
+          ? 'de nos prévisions « mer propre » se sont vérifiées'
+          : 'de nos prévisions correspondent à l’observation satellite (tous régimes)';
+        document.getElementById('tr-headline').textContent=lbl+win+' — sur '+Number(n).toLocaleString('fr-FR')+' comparaisons.';
+      } else {
+        document.getElementById('tr-headline').textContent='Palmarès consultable sur la page fiabilité.';
+      }
+      var beaches=(d.byBeach||[]);
+      if(beaches.length){
+        var body=document.getElementById('tr-body');
+        beaches.forEach(function(b){
+          var tr=document.createElement('tr');
+          var td1=document.createElement('td');td1.textContent=b.name;
+          var td2=document.createElement('td');td2.className='pct';td2.textContent=b.hitRatePct+'%';
+          tr.appendChild(td1);tr.appendChild(td2);body.appendChild(tr);
+        });
+        document.getElementById('tr-table').hidden=false;
+      }
+    }catch(e){}
+  }).catch(function(){
+    document.getElementById('tr-headline').textContent='Palmarès consultable sur la page fiabilité.';
+  });
+
+  // --- Fraîcheur live : sargassum.json (pas de timestamp figé ; le point suit l'état réel) ---
+  fetch('/api/copernicus/sargassum.json').then(function(r){return r.json()}).then(function(d){
+    try{
+      var t=relTime(d.updatedAt);
+      if(t.text) setFresh(t.text,t.live);
+      else setFresh('données satellite — voir la carte en direct',false);
+    }catch(e){ setFresh('données satellite — voir la carte en direct',false); }
+  }).catch(function(){ setFresh('données satellite — voir la carte en direct',false); });
+})();
+</script>
+</body>
+</html>

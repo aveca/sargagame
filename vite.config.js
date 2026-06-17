@@ -803,7 +803,12 @@ export default defineConfig({
   <url><loc>${d}/fiabilite/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
 ${isGP ? '' : `  <url><loc>${d}/pro/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>${d}/pro/hotels/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>${d}/pro/collectivites/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>`}
+  <url><loc>${d}/pro/collectivites/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>${d}/pro/cout-sargasses-hotel/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>${d}/pro/preparer-saison-sargasses/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>${d}/pro/barrieres-vs-prevision/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>${d}/pro/plan-sargasses-collectivite/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>${d}/pro/en/hotels/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>`}
 ${isGP ? '' : `  <url><loc>${d}/a-propos/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
 `}  <url><loc>${d}/en/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>${d}/en/sargassum-map/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
