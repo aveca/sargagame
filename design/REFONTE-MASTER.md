@@ -23,7 +23,8 @@
 | C | `/previsions/` landing golden-hour A/B `prev_az` 50/50 — ForecastChart + meilleur jour, noscript SEO, SW v195 | ✅ **LIVE prod** |
 | C | `/plages-sans-sargasses/` (clean-list) golden-hour A/B `clean_list` 50/50 — dynamic noscript + CleanList page, SW v196 | ✅ **LIVE prod** |
 | C | `/alertes/` (hub Premium) A/B `pw_alertes` 50/50 — Le Veilleur Personnel, capture email, AlertScene, SW v197 | ✅ **LIVE prod** |
-| C | Pages : zones · 5 stations · à-propos · fiabilité UI · conditions · widget | 🔴 à faire |
+| C | Pages : zones & 5 stations narratives (A/B `stations` 50/50, StoryEngine, redirections) | ✅ **LIVE prod** (SW v198) |
+| C | Pages : à-propos · fiabilité UI · conditions · widget | 🔴 à faire |
 | C | Les 136 fiches plages (contenu/SEO) | 🔴 à faire |
 | D | SEO requête par requête + nouvelles pages (`/près-de-moi`, `/aujourdhui`, zones) + OG + 301 legacy | 🔴 à faire |
 | E | Dock · share-cards · baignade #5 · collecte #9 | 🔴 à faire |
@@ -150,12 +151,12 @@
 
 **PHASE 2 — portes FAR/MID.** KPI : porte→NEAR +20 %, nouvelles pages indexées, 0 stale /conditions.
 - [ ] flyTo(région,FAR) sur /carte ; dock = sélecteur profondeur.
-- [ ] flyTo(zone,MID) sur /plages/<zone>/ + event `sg_zone_click`.
+- [x] flyTo(zone,MID) sur /plages/<zone>/ + event `sg_zone_click`.
 - [ ] flyTo(FAR+filtre) sur clean-list/meilleures/conditions + revalidation live /conditions.
 - [x] Créer `/sargasses-pres-de-moi/` (géo) + `/sargasses-aujourdhui/` (FR daté) — d0387568, +6 URLs sitemaps.
 
 **PHASE 3 — stations + autorité + anti-cul-de-sac.** KPI : 0 page orpheline, CTR SERP +, hreflang PASS↑.
-- [ ] CTA stations → flyTo ; tuer ?decouverte/?solutions.
+- [x] CTA stations → flyTo ; tuer ?decouverte/?solutions.
 - [ ] Fraîcheur /fiabilite + désambiguïsation /saison-*.
 - [x] 301 legacy (weekend ✅ · articles ✅ 9f34a0c8 · onboarding/neptunes/sarg_carte ✅ 2026-06-16).
 - [ ] OG dynamiques par plage (SVG→PNG).

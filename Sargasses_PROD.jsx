@@ -7,6 +7,7 @@
  */
 import React,{useState,useEffect,useRef,useMemo,useCallback,createContext,useContext,Component,Suspense,lazy}from"react"
 import {computeScore as _computeBeachScore} from "./src/lib/score.js"
+import { COAST_ZONES } from "./scripts/lib/coast-zones.cjs"
 
 // Import résilient : pendant la fenêtre FTP d'un deploy (~25 min), un index.html
 // frais peut référencer un chunk pas encore uploadé → import() rejette et le
@@ -778,6 +779,302 @@ function DiscoveryStory({lang,onClose,onShowMap}){
     </div>
   )
 }
+
+function comprendreBeats(lang){
+  const T=(fr,en,es)=>_t(lang,fr,en,es)
+  const d = discoveryBeats(lang)
+  if(d.length > 0) {
+    d[d.length - 1].cta = T("Voir les plages →", "See the beaches →", "Ver las playas →")
+  }
+  return d
+}
+
+function satelliteBeats(lang){
+  const T=(fr,en,es)=>_t(lang,fr,en,es)
+  return [
+    {
+      eyebrow: T("SURVEILLANCE", "SURVEILLANCE", "VIGILANCIA"),
+      heading: T("On regarde d'en haut", "Looking from above", "Mirando desde arriba"),
+      sub: T("Le satellite Sentinel-3 scanne l'Atlantique en continu pour détecter la signature lumineuse des algues.", "The Sentinel-3 satellite continuously scans the Atlantic to detect the light signature of the algae.", "El satélite Sentinel-3 escanea continuamente el Atlántico para detectar la firma luminosa de las algas."),
+      scene: (
+        <g>
+          <rect width="800" height="600" fill="#06121A"/>
+          {[120,90,300,70,520,110,680,80,420,150,600,180].map((s,i)=>(<circle key={i} cx={s[0]} cy={s[1]} r="1.3" fill="#fff" opacity=".5"/>))}
+          <circle cx="400" cy="380" r="160" fill="#155A5A" opacity=".3"/>
+          <path d="M400 150 L240 380 L560 380 Z" fill="#5FD3C9" opacity="0.12"/>
+          {miVeil(400, 150, "#3BA7A0", "#5FD3C9")}
+        </g>
+      )
+    },
+    {
+      eyebrow: T("L'INDICE AFAI", "THE AFAI INDEX", "EL ÍNDICE AFAI"),
+      heading: T("L'indice de détection", "The detection index", "El índice de detección"),
+      sub: T("L'indice AFAI mesure la concentration d'algues flottantes. En dessous de 0.15 la mer est propre, au-dessus de 0.40 l'alerte est maximale.", "The AFAI index measures floating algae concentration. Below 0.15 the sea is clean, above 0.40 it is a high alert.", "El índice AFAI mide la concentración de algas flotantes. Por debajo de 0.15 el mar está limpio, por encima de 0.40 la alerta es máxima."),
+      scene: (
+        <g>
+          <rect width="800" height="600" fill="#0A2E2A"/>
+          {[160,260,360].map((y,i)=>(<path key={i} d={`M-40 ${y} q60 -16 120 0 t120 0 t120 0`} fill="none" stroke="#3BA7A0" strokeWidth="2" opacity=".4"/>))}
+          <path d="M400 50 L100 550 L700 550 Z" fill="#5FD3C9" opacity="0.08"/>
+          <g transform="translate(320,380)"><ellipse rx="60" ry="14" fill="#7a5c14" opacity=".85"/><ellipse cx="-30" cy="-6" rx="35" ry="9" fill="#8a6c1c" opacity=".85"/></g>
+          <g transform="translate(480,420)"><ellipse rx="80" ry="18" fill="#5d400e" opacity=".85"/><ellipse cx="20" cy="-4" rx="40" ry="10" fill="#7a5c14" opacity=".85"/></g>
+          <line x1="0" y1="400" x2="800" y2="400" stroke="#FFC72C" strokeWidth="3" opacity="0.8"/>
+          <text x="400" y="370" fontFamily="ui-monospace,monospace" fontSize="14" fill="#FFC72C" textAnchor="middle">AFAI SCAN</text>
+        </g>
+      )
+    },
+    {
+      eyebrow: T("RÉSOLUTIONS & FRÉQUENCE", "RESOLUTION & FREQUENCY", "RESOLUCIÓN Y FRECUENCIA"),
+      heading: T("Scan toutes les 3 heures", "Scan every 3 hours", "Escaneo cada 3 horas"),
+      sub: T("La grille de détection a une précision de 300 mètres, actualisée plusieurs fois par jour pour anticiper les arrivées.", "The detection grid has a 300-meter precision, updated several times a day to anticipate arrivals.", "La cuadrícula de detección tiene una precisión de 300 metros, actualizada varias veces al día para anticipar llegadas."),
+      scene: (
+        <g>
+          <rect width="800" height="600" fill="#06211E"/>
+          {Array.from({length:9}).map((_,i)=>(<line key={`v${i}`} x1={80+i*80} y1="100" x2={80+i*80} y2="500" stroke="#1A5852" strokeWidth="1" opacity=".5"/>))}
+          {Array.from({length:6}).map((_,i)=>(<line key={`h${i}`} x1="80" y1={100+i*80} x2="720" y2={100+i*80} stroke="#1A5852" strokeWidth="1" opacity=".5"/>))}
+          <rect x="320" y="260" width="80" height="80" fill="#FFE08A" opacity="0.25" stroke="#FFC72C" strokeWidth="2"/>
+          <text x="360" y="305" fontFamily="ui-monospace,monospace" fontSize="16" fill="#FFC72C" textAnchor="middle">300m</text>
+          {miVeil(600, 180, "#3BA7A0", "#5FD3C9")}
+        </g>
+      )
+    },
+    {
+      eyebrow: T("TEMPS RÉEL", "REAL TIME", "TIEMPO REAL"),
+      heading: T("Ce que voit ta plage", "What your beach sees", "Lo que ve tu playa"),
+      sub: T("Grâce aux données satellite croisées en direct, tu sais si l'eau devant ta plage préférée est propre maintenant.", "Thanks to cross-referenced live satellite data, you know if the water in front of your favorite beach is clean right now.", "Gracias a los datos satelitales cruzados en vivo, sabes si el agua de tu playa favorita está limpia ahora."),
+      cta: T("Voir la carte en direct →", "See the live map →", "Ver el mapa en vivo →"),
+      scene: (
+        <g>
+          <rect width="800" height="600" fill="#0B2230"/>
+          <path d="M0 380 Q400 350 800 380 L800 600 L0 600 Z" fill="#1C1712"/>
+          <path d="M0 380 Q400 370 800 380" fill="none" stroke="#FFE47A" strokeWidth="2" opacity=".4"/>
+          {miVeil(400, 200, "#3BA7A0", "#5FD3C9")}
+          <g transform="translate(400,430)">
+            <ellipse rx="120" ry="24" fill="#22C55E" opacity=".8"/>
+            <text y="8" fontFamily="system-ui,sans-serif" fontSize="18" fontWeight="800" fill="#fff" textAnchor="middle">PROPRE / CLEAN</text>
+          </g>
+        </g>
+      )
+    }
+  ]
+}
+
+function h2sBeats(lang){
+  const T=(fr,en,es)=>_t(lang,fr,en,es)
+  return [
+    {
+      eyebrow: T("DANGER SANTE", "HEALTH HAZARD", "RIESGO DE SALUD"),
+      heading: T("Ça pourrit, ça pique", "It rots, it stings", "Se pudre, irrita"),
+      sub: T("En séchant au soleil, les algues sargasses échouées pourrissent et libèrent du sulfure d'hydrogène (H₂S), un gaz toxique qui sent l'œuf pourri.", "As they dry in the sun, stranded sargassum seaweed rots and releases hydrogen sulfide (H₂S), a toxic gas that smells of rotten eggs.", "Al secarse al sol, las algas de sargazo varadas se pudren y liberan sulfuro de hidrógeno (H₂S), un gas tóxico que huele a huevo podrido."),
+      scene: (
+        <g>
+          <rect width="800" height="600" fill="#0B2230"/>
+          <rect y="320" width="800" height="280" fill="#1C1712"/>
+          <g transform="translate(400,350)">
+            <ellipse rx="180" ry="34" fill="#5d400e"/>
+            <ellipse cx="-90" cy="-12" rx="60" ry="20" fill="#7a5c14"/>
+            <ellipse cx="80" cy="-10" rx="70" ry="22" fill="#6b4a12"/>
+          </g>
+          <g fill="#CC28FF" opacity=".6">
+            <circle cx="330" cy="270" r="5"/>
+            <circle cx="360" cy="230" r="3.5"/>
+            <circle cx="430" cy="242" r="4"/>
+            <circle cx="470" cy="218" r="3"/>
+          </g>
+          <text x="400" y="220" textAnchor="middle" fontFamily="'Anton',sans-serif" fontSize="26" fill="#CC28FF">H₂S</text>
+        </g>
+      )
+    },
+    {
+      eyebrow: T("POPULATIONS SENSIBLES", "SENSITIVE GROUPS", "GRUPOS SENSIBLES"),
+      heading: T("Qui est vulnérable ?", "Who is vulnerable?", "¿Quién es vulnerable?"),
+      sub: T("Les émanations de H₂S sont particulièrement irritantes pour les nourrissons, les femmes enceintes, et les personnes asthmatiques ou fragiles.", "H₂S fumes are particularly irritating for infants, pregnant women, and people with asthma or weak lungs.", "Las emanaciones de H₂S sont particulièrement irritantes pour nourrissons, femmes enceintes, et asthmatiques."),
+      scene: (
+        <g>
+          <rect width="800" height="600" fill="#06121A"/>
+          <g transform="translate(400,220)">
+            <polygon points="0,-60 -60,40 60,40" fill="#E8522A" stroke="#EAF7F4" strokeWidth="2"/>
+            <text x="0" y="24" fontFamily="'Anton',sans-serif" fontSize="56" fill="#fff" textAnchor="middle">!</text>
+          </g>
+          <text x="400" y="340" fontFamily="system-ui,sans-serif" fontSize="16" fill="#5FD3C9" textAnchor="middle">{T("Asthme · Nourrissons · Grossesse", "Asthma · Infants · Pregnancy", "Asma · Lactantes · Embarazo")}</text>
+        </g>
+      )
+    },
+    {
+      eyebrow: T("SEUILS & PRÉVENTION", "THRESHOLDS & CARE", "UMBRALES Y CUIDADO"),
+      heading: T("Aérer et s'éloigner", "Ventilate and stay away", "Ventilar y alejarse"),
+      sub: T("Au-dessus du seuil d'alerte, évitez de stationner près des échouages et fermez les fenêtres si vous habitez en bord de mer.", "Above the warning threshold, avoid staying near seaweed accumulations and close windows if you live by the coast.", "Por encima del umbral de alerta, evite permanecer cerca de las algas varadas y cierre las ventanas si vive en la costa."),
+      scene: (
+        <g>
+          <rect width="800" height="600" fill="#06211E"/>
+          <g transform="translate(400,280)">
+            <path d="M-60 40 L-60 -20 L0 -60 L60 -20 L60 40 Z" fill="none" stroke="#5FD3C9" strokeWidth="3"/>
+            <rect x="-20" y="-10" width="40" height="30" fill="none" stroke="#5FD3C9" strokeWidth="2"/>
+            <line x1="0" y1="-10" x2="0" y2="20" stroke="#5FD3C9" strokeWidth="1"/>
+          </g>
+          <path d="M100 240 Q220 220 280 250" fill="none" stroke="#E8522A" strokeWidth="3" opacity=".6"/>
+          <path d="M520 240 Q620 220 700 250" fill="none" stroke="#E8522A" strokeWidth="3" opacity=".6"/>
+        </g>
+      )
+    },
+    {
+      eyrow: T("ALERTE VEILLEUR", "WATCHMAN ALERTS", "ALERTA DEL VIGÍA"),
+      heading: T("Sois prévenu à temps", "Get warned in time", "Recibe alertas a tiempo"),
+      sub: T("Ne te laisse plus surprendre par l'odeur. Notre veilleur surveille les risques H₂S devant tes plages préférées.", "Never get caught off guard by the smell again. Our Watchman monitors H₂S risks in front of your favorite beaches.", "No te dejes sorprender por el olor. Nuestro Vigía monitorea los riesgos de H₂S frente a tus playas."),
+      cta: T("Activer Le Veilleur →", "Activate the Watchman →", "Activar el Vigía →"),
+      scene: (
+        <g>
+          <rect width="800" height="600" fill="#0A1714"/>
+          {miVeil(400, 200, "#E8522A", "#F4845F")}
+          <circle cx="400" cy="200" r="140" fill="none" stroke="#E8522A" strokeWidth="2" strokeDasharray="6 8" opacity="0.4"/>
+          <text x="400" y="380" fontFamily="system-ui,sans-serif" fontSize="18" fontWeight="800" fill="#E8522A" textAnchor="middle">ALERT H₂S ENABLED</text>
+        </g>
+      )
+    }
+  ]
+}
+
+function nettoyerBeats(lang){
+  const T=(fr,en,es)=>_t(lang,fr,en,es)
+  return [
+    {
+      eyebrow: T("L'ACTION", "ACTION", "ACCIÓN"),
+      heading: T("Récolter avant le sable", "Collect before the sand", "Recoger antes de la arena"),
+      sub: T("La récolte des algues en mer est 10 fois plus écologique car elle préserve le sable et évite la dégradation en gaz toxique.", "Collecting seaweed at sea is 10 times more ecological because it preserves sand and avoids degradation into toxic gas.", "Recoger el alga en el mar es 10 veces más ecológico porque conserva la arena y evita los gases tóxicos."),
+      scene: (
+        <g>
+          <rect width="800" height="360" fill="#0A1714"/>
+          <rect y="360" width="800" height="240" fill="#08251F"/>
+          <g transform="translate(400,430)">
+            <ellipse rx="150" ry="12" fill="#7a5c14"/>
+          </g>
+          <g transform="translate(350,340)"><path d="M-60 20 L60 20 L48 40 L-48 40 Z" fill="#1A5852" stroke="#5FD3C9" strokeWidth="2"/></g>
+        </g>
+      )
+    },
+    {
+      eyebrow: T("LE TRI", "THE SORTING", "LA CLASIFICACIÓN"),
+      heading: T("Séparer pour valoriser", "Sort to value", "Clasificar para valorizar"),
+      sub: T("L'algue récoltée passe par un système de tri mécanique pour séparer le sable et l'eau salée de la matière organique valorisable.", "The harvested algae goes through mechanical sorting to separate sand and saltwater from usable organic matter.", "El alga cosechada pasa por una clasificación mecánica para separar la arena y el agua de la materia orgánica."),
+      scene: <SolSortScene lang={lang}/>
+    },
+    {
+      eyebrow: T("LA TRANSFORMATION", "TRANSFORMATION", "TRANSFORMACIÓN"),
+      heading: T("Engrais, briques, énergie", "Fertilizer, bricks, energy", "Abono, ladrillos, energía"),
+      sub: T("Une fois triée et rincée, l'algue sargasse se transforme en compost agricole, en briques de construction ou en biogaz.", "Once sorted and rinsed, sargassum is transformed into agricultural compost, construction bricks or biogas.", "Una vez clasificada y enjuagada, el sargazo se transforma en compost agrícola, ladrillos o biogás."),
+      scene: <SolTransformScene lang={lang}/>
+    },
+    {
+      eyebrow: T("VALORISATION", "RECYCLING", "RECICLAJE"),
+      heading: T("Agir pour le climat", "Act for the climate", "Actuar por el clima"),
+      sub: T("Chaque tonne valorisée évite l'émanation de méthane en décomposition. Découvre toutes les initiatives locales.", "Each ton recycled avoids methane emissions from decomposition. Discover all local initiatives.", "Cada tonelada reciclada evita las emisiones de metano por descomposición. Descubre las iniciativas locales."),
+      cta: T("Voir les solutions →", "See the solutions →", "Ver las soluciones →"),
+      scene: (
+        <g>
+          <rect width="800" height="600" fill="#06211E"/>
+          <circle cx="400" cy="260" r="100" fill="none" stroke="#22C55E" strokeWidth="8"/>
+          <path d="M380 230 L400 210 L420 230" fill="none" stroke="#22C55E" strokeWidth="8" strokeLinecap="round"/>
+          <text x="400" y="275" fontFamily="'Anton',sans-serif" fontSize="48" fill="#22C55E" textAnchor="middle">CO₂</text>
+        </g>
+      )
+    }
+  ]
+}
+
+function methodeBeats(lang){
+  const T=(fr,en,es)=>_t(lang,fr,en,es)
+  const relCalme = __REL ? __REL.calmRate : "79"
+  const relHaute = __REL ? __REL.highRate : "76"
+  const relRateStr = T(`fiabilité de ${relCalme}% en saison calme / ${relHaute}% en saison haute`, `accuracy ${relCalme}% in calm season / ${relHaute}% in high season`, `fiabilidad ${relCalme}% en temporada baja / ${relHaute}% en temporada alta`)
+  return [
+    {
+      eyrow: T("NOTRE MÉTHODE", "OUR METHOD", "NUESTRO MÉTODO"),
+      heading: T("D'où vient la couleur ?", "Where does the color come from?", "¿De dónde viene el color?"),
+      sub: T("L'indice de couleur de nos cartes (propre, modéré, à éviter) provient de l'analyse automatisée de la signature satellite de l'océan.", "The color index on our maps (clean, moderate, avoid) comes from automated satellite signature analysis of the ocean.", "El índice de color de nuestros mapas (limpio, moderado, evitar) proviene del análisis automatizado de la firma satelital."),
+      scene: (
+        <g>
+          <rect width="800" height="600" fill="#0A2E2A"/>
+          <path d="M150 180 Q400 240 650 180" fill="none" stroke="#22C55E" strokeWidth="48" strokeLinecap="round" opacity="0.45"/>
+          <path d="M150 280 Q400 340 650 280" fill="none" stroke="#E8A800" strokeWidth="48" strokeLinecap="round" opacity="0.45"/>
+          <path d="M150 380 Q400 440 650 380" fill="none" stroke="#E8522A" strokeWidth="48" strokeLinecap="round" opacity="0.45"/>
+          {miVeil(400, 150, "#3BA7A0", "#5FD3C9")}
+        </g>
+      )
+    },
+    {
+      eyebrow: T("VALIDATION TERRAIN", "GROUND TRUTH", "VALIDACIÓN DE CAMPO"),
+      heading: T("On croise les données", "Cross-referencing data", "Cruzando datos"),
+      sub: T("Les signalements terrain de nos veilleurs locaux et les capteurs valident quotidiennement les prévisions satellites pour éliminer les faux positifs.", "Ground reports from our local watchers and sensors daily validate satellite forecasts to eliminate false positives.", "Los informes de campo de nuestros vigías locales y sensores validan diariamente los pronósticos satelitales."),
+      scene: (
+        <g>
+          <rect width="800" height="600" fill="#06121A"/>
+          <rect y="360" width="800" height="240" fill="#1C1712"/>
+          {[200,400,600].map((x,i)=>(
+            <g key={i} transform={`translate(${x},340)`}>
+              <circle r="12" fill="#22C55E"/>
+              <path d="M-6 0 L-2 4 L6 -4" fill="none" stroke="#fff" strokeWidth="2.5"/>
+            </g>
+          ))}
+          {miVeil(400, 140, "#3BA7A0", "#5FD3C9")}
+        </g>
+      )
+    },
+    {
+      eyebrow: T("FIABILITÉ", "ACCURACY", "FIABILIDAD"),
+      heading: T("Transparence totale", "Total transparency", "Transparencia total"),
+      sub: T("Notre modèle affiche une " + relRateStr + ". Le taux est recalibré chaque semaine pour rester digne de confiance.", "Our model shows " + relRateStr + ". The rate is recalibrated every week to remain trustworthy.", "Nuestro modelo muestra una " + relRateStr + "."),
+      scene: (
+        <g>
+          <rect width="800" height="600" fill="#06211E"/>
+          <g transform="translate(400,260)">
+            <circle r="80" fill="none" stroke="#5FD3C9" strokeWidth="8"/>
+            <text x="0" y="15" fontFamily="'Anton',sans-serif" fontSize="48" fill="#5FD3C9" textAnchor="middle">{relCalme}%</text>
+          </g>
+          <text x="400" y="380" fontFamily="system-ui,sans-serif" fontSize="14" fill="#9FE1CB" textAnchor="middle">{T("Indice de confiance mis à jour", "Confidence index updated", "Índice de confianza actualizado")}</text>
+        </g>
+      )
+    },
+    {
+      eyebrow: T("LA CARTE", "THE MAP", "EL MAPA"),
+      heading: T("Prêt pour la plage ?", "Ready for the beach?", "¿Listo para la playa?"),
+      sub: T("Ouvre la carte interactive pour voir l'état exact de tes plages aujourd'hui et planifier ta semaine en Martinique et Guadeloupe.", "Open the interactive map to see the exact state of your beaches today and plan your week in Martinique and Guadeloupe.", "Abre el mapa interactivo para ver el estado exacto de tus playas hoy y planificar tu semana."),
+      cta: T("Ouvrir la carte →", "Open the map →", "Abrir el mapa →"),
+      scene: (
+        <g>
+          <rect width="800" height="600" fill="#0B2230"/>
+          <path d="M100 250 Q400 220 700 250" fill="none" stroke="#FFE47A" strokeWidth="4" opacity=".5"/>
+          <g transform="translate(400,280)">
+            <path d="M0 -30 C-20 -30 -20 0 0 30 C20 0 20 -30 0 -30 Z" fill="#E8522A" stroke="#fff" strokeWidth="2"/>
+            <circle cx="0" cy="-10" r="10" fill="#fff"/>
+          </g>
+        </g>
+      )
+    }
+  ]
+}
+
+const STATION_BEATS = {
+  "comprendre-sargasses":      comprendreBeats,
+  "detection-satellite-sargasses": satelliteBeats,
+  "danger-sargasses-h2s":      h2sBeats,
+  "nettoyer-sargasses":        nettoyerBeats,
+  "methode-carte":             methodeBeats,
+  "en/understanding-sargassum":      comprendreBeats,
+  "en/satellite-sargassum-detection": satelliteBeats,
+}
+
+function StationStory({slug,lang,onExit,onCTA}){
+  const beatsFn = STATION_BEATS[slug] || discoveryBeats
+  const accent = slug.includes("h2s") ? "#CC28FF" : slug.includes("nettoyer") ? "#5FD3C9" : "#FFC72C"
+  return(
+    <div role="dialog" aria-label={slug} style={{position:"absolute",inset:0,zIndex:1060,background:"#0A1714",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
+      <button onClick={onExit} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"fixed",top:"calc(12px + env(safe-area-inset-top))",right:12,zIndex:30,width:42,height:42,borderRadius:21,background:"rgba(10,23,20,.55)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:16,cursor:"pointer"}}>✕</button>
+      <StoryEngine beats={beatsFn(lang)} lang={lang} accent={accent}
+        ev="sg_station_beat" onCTA={onCTA}
+        onBeat={(b,n)=>{try{track("sg_station_beat",{slug,b:b+1,n})}catch(_){}}}/>
+    </div>
+  )
+}
+
 
 // ── SolutionsStory — pages SVG sur les SOLUTIONS sargasses (mandat nuit 14/06) :
 //    problème global → on voit (satellite) → on agit (barrages+ramassage) → on
@@ -10411,7 +10708,7 @@ function WorldFeed({beaches,lang,onPremium,onClose,island}){
 // immediate (on atterrit MID-zoom sur SA cote, verdict <1s), l'exploration est un
 // bonus libre par-dessus. v0 = pan + zoom (wheel/pinch/double-tap) + atterrissage +
 // tap->BeachSheet existante (funnel INTACT). Pas de dive/momentum/LOD (slices 2-4).
-function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutions,onPremium,rootMode,updatedAt}){
+function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutions,onPremium,rootMode,updatedAt,initialZone}){
   const wrapRef=useRef(null),gRef=useRef(null),camRef=useRef({cx:0,cy:0,cz:0.8}),rafRef=useRef(0)
   const ptrs=useRef(new Map()),movedRef=useRef(false),pinchRef=useRef(null),lastTap=useRef(0)
   const velRef=useRef({x:0,y:0}),inertRaf=useRef(0),pannedRef=useRef(false)
@@ -10473,7 +10770,43 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
       writeCam();const slow=Math.hypot(v.x,v.y)<0.12,inB=!b||(c.cx>=b.minX-0.5&&c.cx<=b.maxX+0.5&&c.cy>=b.minY-0.5&&c.cy<=b.maxY+0.5)
       if(slow&&inB){inertRaf.current=0;return}inertRaf.current=requestAnimationFrame(step)}
     inertRaf.current=requestAnimationFrame(step)}
-  useEffect(()=>{centerOn(myIdx,MID);setReady(true);try{track("sg_archipel_open",{beaches:count})}catch(_){}},[])// eslint-disable-line
+  useEffect(()=>{
+    let centered = false
+    if(initialZone){
+      const zoneObj = (COAST_ZONES[island] || []).find(z => z.slug === initialZone)
+      if(zoneObj){
+        const zoneBeaches = proj.filter(p => zoneObj.communes.includes(p.b.commune))
+        if(zoneBeaches.length){
+          let avgX = 0, avgY = 0
+          for(const p of zoneBeaches){
+            avgX += p.x
+            avgY += p.y
+          }
+          avgX /= zoneBeaches.length
+          avgY /= zoneBeaches.length
+          const el = wrapRef.current
+          if(el){
+            const z = MID
+            const W = el.clientWidth
+            const H = el.clientHeight
+            camRef.current = {
+              cz: z,
+              cx: W / 2 - avgX * z,
+              cy: H / 2 - avgY * z
+            }
+            schedule()
+            centered = true
+            try { track("sg_zone_click", { zone: initialZone }) } catch(_) {}
+          }
+        }
+      }
+    }
+    if(!centered){
+      centerOn(myIdx,MID)
+    }
+    setReady(true)
+    try{track("sg_archipel_open",{beaches:count})}catch(_){}
+  },[initialZone])// eslint-disable-line
   // SCROLL / molette / swipe / flèches = VISITE plage-à-plage (doctrine #24 : le
   //   scroll pilote la VISITE, JAMAIS le zoom — zoom = pincer/double-tap). La caméra
   //   glisse vers la plage suivante/précédente. Fin de liste = BOUCLE (jamais bloqué,
@@ -10766,6 +11099,8 @@ export default function App(){
   const[search,setSearch]=useState("")
   const[filter,setFilter]=useState(0) // index in T.filters
   const[selectedBeach,setSelectedBeach]=useState(null)
+  const[initialZone,setInitialZone]=useState(null)
+
   const[favorites,setFavorites]=useState(()=>g("sg_fav",[]))
   const[myBeachId,setMyBeachId]=useState(()=>{
     const saved=g("sg_my_beach",null)
@@ -10920,6 +11255,24 @@ export default function App(){
 
   // Analytics: session start
   useEffect(()=>{track("sg_session_start",{island,is_premium:isPremium,is_returning:!!g("sg_seen",0)});s("sg_seen",1)},[])
+
+  // Redirect old query params to new narrative stations
+  useEffect(()=>{
+    try{
+      const q=window.location.search
+      if(/[?&]decouverte(=[^&]*)?/.test(q)){
+        const l=getLang()
+        const target=l==="en"?"/en/understanding-sargassum/":"/comprendre-sargasses/"
+        window.location.replace(target)
+        return
+      }
+      if(/[?&]solutions(=[^&]*)?/.test(q)){
+        window.location.replace("/nettoyer-sargasses/")
+        return
+      }
+    }catch(_){}
+  },[])
+
 
   // stripe.js à l'idle (3s post-load) : la 1re connexion js.stripe.com mesurée
   // 15-22s à froid (TLS 9s) sur réseau Caraïbe — preconnect (index.html) + charge
@@ -11090,6 +11443,19 @@ export default function App(){
   })
   // Découverte éducative (StoryEngine). Gate URL ?decouverte=1 pour QA ; entrée UI dédiée.
   const[showDiscovery,setShowDiscovery]=useState(()=>{try{return /[?&]decouverte=1/.test(window.location.search)}catch(_){return false}})
+  // A/B stations : sur une URL de station, le variant ouvre le StoryEngine golden-hour.
+  const stationSlug = (()=>{try{
+    const seg = window.location.pathname.replace(/^\/|\/$/g,"")   // "detection-satellite-sargasses" ou "en/satellite-sargassum-detection"
+    return STATION_BEATS[seg] ? seg : null
+  }catch(_){return null}})()
+  const stationOn = (()=>{try{
+    if(!stationSlug) return false
+    const q=window.location.search
+    if(/[?&]stations=1/.test(q)) return true
+    if(/[?&]stations=0/.test(q)) return false
+    return abVariant("stations",["control","story"],[.5,.5])==="story"
+  }catch(_){return false}})()
+  const [showStation,setShowStation] = useState(()=>stationOn)
   // MONDE SVG — feed vertical infini des plages (fondation, direction 14/06). Zéro
   // photo : chaque plage = un plein-écran SVG qui met NOTRE data en scène, cliquable,
   // snap, loopé, jamais bloqué. Additif derrière ?world=1 ; A-B nav à venir.
@@ -11149,18 +11515,18 @@ export default function App(){
   // dismisses, beaches pretes), UNE fois. Escapable (la croix renvoie a la carte control).
   useEffect(()=>{
     if(!navWorld||archAutoRef.current)return
-    if(showHero||showMapIntro||showPrevLanding||showCleanList||showAlertHub||selectedBeach||showPremium||showSolutions||showWorld||showArchipel)return
+    if(showHero||showMapIntro||showPrevLanding||showCleanList||showAlertHub||selectedBeach||showPremium||showSolutions||showWorld||showArchipel||showStation)return
     if(view!=="map"||!(allBeaches&&allBeaches.length>=3))return
     archAutoRef.current=true;setShowArchipel(true);try{track("sg_archipel_open",{from:"nav_world_default"})}catch(_){}
-  },[navWorld,showHero,showMapIntro,showPrevLanding,showCleanList,showAlertHub,view,allBeaches,selectedBeach,showPremium,showSolutions,showWorld,showArchipel])
+  },[navWorld,showHero,showMapIntro,showPrevLanding,showCleanList,showAlertHub,view,allBeaches,selectedBeach,showPremium,showSolutions,showWorld,showArchipel,showStation])
   // ENGAGEMENT CONTINU : à chaque changement d'écran, on clôt la mesure du précédent
   // (temps/actions/inactivité/scroll/ennui) → GA4. C'est la donnée qui fait "réfléchir" le produit
   // (où ça bloque, où ça s'ennuie), à chaque étape. Voir engInit/engScreen/engFlush.
   useEffect(()=>{
     engInit();sgCollectInit()
-    const screen=showPremium?"premium":selectedBeach?"beach":showSolutions?"solutions":showArchipel?"world":showMapIntro?"mapintro":showPrevLanding?"previsions":showCleanList?"clean_list":showAlertHub?"alertes":showHero?"hero":showWorld?"worldfeed":("map_"+(view||"map"))
+    const screen=showStation?("station_"+stationSlug):showPremium?"premium":selectedBeach?"beach":showSolutions?"solutions":showArchipel?"world":showMapIntro?"mapintro":showPrevLanding?"previsions":showCleanList?"clean_list":showAlertHub?"alertes":showHero?"hero":showWorld?"worldfeed":("map_"+(view||"map"))
     engScreen(screen)
-  },[showPremium,selectedBeach,showSolutions,showArchipel,showMapIntro,showPrevLanding,showCleanList,showAlertHub,showHero,showWorld,view])
+  },[showStation,stationSlug,showPremium,selectedBeach,showSolutions,showArchipel,showMapIntro,showPrevLanding,showCleanList,showAlertHub,showHero,showWorld,view])
   // Bras A/B du landing : control = HeroVerdict (éprouvé), game = GameFunnel
   // (funnel-jeu immersif, tranche verticale 13/06). Mesuré contre le landing
   // prouvé, jamais imposé ; ?lf=game force en QA. La conversion (paywall/trial/
@@ -11281,7 +11647,7 @@ export default function App(){
     return()=>{clearTimeout(idleT);acts.forEach(a=>window.removeEventListener(a,reset));document.removeEventListener("mouseleave",exitH)}
   },[])
 
-  // Deep-link: /plages/:slug → auto-open beach sheet
+  // Deep-link: /plages/:slug → auto-open beach sheet OR zoom to zone MID
   useEffect(()=>{
     if(!allBeaches.length)return
     const m=window.location.pathname.match(/^\/(?:plages|beaches|playas)\/([^/]+)/)
@@ -11289,8 +11655,25 @@ export default function App(){
     const slug=m[1]
     const match=allBeaches.find(b=>
       b.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")===slug)
-    if(match){setSelectedBeach(match);track("sg_beach_open",{beach_id:match.id,status:match.status,source:"deeplink"})}
+    if(match){
+      setSelectedBeach(match)
+      track("sg_beach_open",{beach_id:match.id,status:match.status,source:"deeplink"})
+    } else {
+      // Check if it's a zone slug
+      const isZone = Object.values(COAST_ZONES).flat().some(z => z.slug === slug)
+      if(isZone){
+        setInitialZone(slug)
+        setShowHero(false)
+        setShowPrevLanding(false)
+        setShowCleanList(false)
+        setShowAlertHub(false)
+        setSelectedBeach(null)
+        setShowArchipel(true)
+        try { track("sg_zone_open", { zone: slug, source: "deeplink" }) } catch(_) {}
+      }
+    }
   },[allBeaches])
+
 
   // PRIMER CALLBACKS — must come after userPos/allBeaches/island state to
   // avoid temporal dead zone in their dep arrays.
@@ -12231,6 +12614,19 @@ export default function App(){
         )}
         {showDiscovery&&<DiscoveryStory lang={lang} onClose={()=>setShowDiscovery(false)} onShowMap={()=>setShowDiscovery(false)}/>}
 
+        {showStation && stationSlug && (
+          <StationStory slug={stationSlug} lang={lang}
+            onExit={()=>{ setShowStation(false); track("sg_station_exit",{slug:stationSlug}) }}
+            onCTA={()=>{
+              track("sg_station_cta",{slug:stationSlug})
+              setShowStation(false)
+              // TODO map_world: flyTo(nearestCleanBeach)
+              if(stationSlug.includes("h2s")){ openPremium("station_h2s") }
+              else if(stationSlug.includes("nettoyer")){ setShowSolutions(true) }
+              else { setView("map") }
+            }}/>
+        )}
+
         {/* SOLUTIONS — pages SVG (problème→on voit→on agit→on transforme→on sort). Escapable. */}
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!showSolutions&&!showWorld&&!selectedBeach&&view==="map"&&(
           <button onClick={()=>{setShowSolutions(true);track("sg_solutions_open",{})}} aria-label={_t(lang,"Les solutions sargasses","Sargassum solutions","Soluciones al sargazo")}
@@ -12255,10 +12651,11 @@ export default function App(){
               <LazyWorldMapView
                 beaches={allBeaches} island={island} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null}
                 lang={lang} onOpenBeach={onBeachClick} onPremium={openPremium}
-                rootMode={navWorld} track={track}
+                rootMode={navWorld} track={track} initialZone={initialZone}
                 onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{source:"map_world"})}}/>
             </Suspense></ErrBound>
-          :<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onBeachClick} onSolutions={()=>{setShowSolutions(true);track("sg_archipel_to_solutions",{})}} onPremium={()=>openPremium("archipel")} rootMode={navWorld} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}}/>
+          :<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onBeachClick} onSolutions={()=>{setShowSolutions(true);track("sg_archipel_to_solutions",{})}} onPremium={()=>openPremium("archipel")} rootMode={navWorld} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}} initialZone={initialZone}/>
+
         )}
 
         {/* MONDE SVG — la fondation : feed vertical des plages, zéro photo, data en
