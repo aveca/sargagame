@@ -12145,7 +12145,7 @@ export default function App(){
   const onChangeView=useCallback(v=>{
     track("sg_nav_change",{tab:v})
     if(v==="premium")openPremium("nav")
-    else setView(v)
+    else {setShowPremium(false);setView(v)} // close paywall when navigating away → fixes ⭐ tab staying lit on map/list
   },[openPremium])
   // Deep-link OUVRE le paywall (≠ ?premium=1 qui ACCORDE premium — piège). Utilisé par
   // la page de confiance /a-propos/ dont les CTA étaient href="#" morts. source = utm_source.
@@ -12448,7 +12448,7 @@ export default function App(){
               in that band unclickable on both mobile and desktop. */}
           <div className="sg-header-chrome" style={{maxWidth:460,margin:"0 auto",pointerEvents:"none"}}>
             <style>{`.sg-header-chrome .sg-header-row{pointer-events:none}.sg-header-chrome .sg-header-row > *{pointer-events:auto}`}</style>
-            <Header island={island} onIslandChange={setIsland}
+            <Header island={island} onIslandChange={(id)=>{setIsland(id);setSelectedBeach(null)}}
               lang={lang} onLangToggle={toggleLang}
               theme={theme} onThemeToggle={toggleTheme}
               beachCount={allBeaches.length} dataSource={dataSource}
