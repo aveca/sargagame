@@ -138,6 +138,14 @@ jobs:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         run: node scripts/automation/drip-email.cjs
 
+      # Drip B2B (leads /pro/*) — séquence consultative séparée (source b2b_*),
+      # état dédié drip-b2b-sent.json. N'envoie JAMAIS l'offre conso 4,99 €.
+      - name: Send B2B drip emails (Sargasses Pro)
+        continue-on-error: true
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: node scripts/automation/drip-b2b-email.cjs
+
       # Relance panier abandonné : carte refusée / 3DS non confirmé / abandon.
       # schedule-only (jamais workflow_dispatch — règle retry-spam, cf. weekend).
       # Lit Stripe (sessions non payées + motif d'échec) au runtime → aucun email
@@ -201,7 +209,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json; do
+          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json; do
             [ -f "$f" ] && git add "$f"
           done
           if git diff --cached --quiet; then echo "Email state unchanged."; exit 0; fi
@@ -360,6 +368,7 @@ jobs:
           # welcome-sent/drip-sent/bounced sont désormais des hashes SHA-256.
           [ -f scripts/automation/data/welcome-sent.json ] && git add scripts/automation/data/welcome-sent.json
           [ -f scripts/automation/data/drip-sent.json ] && git add scripts/automation/data/drip-sent.json
+          [ -f scripts/automation/data/drip-b2b-sent.json ] && git add scripts/automation/data/drip-b2b-sent.json
           [ -f scripts/automation/data/bounced-emails.json ] && git add scripts/automation/data/bounced-emails.json
           [ -f scripts/automation/data/incidents.json ] && git add scripts/automation/data/incidents.json
           [ -f scripts/automation/data/backtest-results.json ] && git add scripts/automation/data/backtest-results.json

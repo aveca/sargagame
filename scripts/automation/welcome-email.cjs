@@ -25,6 +25,9 @@ const SENT_PATH = path.join(__dirname, 'data', 'welcome-sent.json')
 const BOUNCED_PATH = path.join(__dirname, 'data', 'bounced-emails.json')
 const SARG_PATH = path.join(__dirname, '../../public/api/copernicus/sargassum.json')
 const BEACHES_PATH = path.join(__dirname, '../../public/data/beaches-list.json')
+// Leads PRO (formulaires /pro/*) : exclus du welcome grand public — ils ont leur
+// propre séquence (drip-b2b-email.cjs). Un hôtel ne doit JAMAIS recevoir l'offre 4,99 €.
+const B2B_SOURCES = new Set(['b2b_hotel_request', 'b2b_collectivite_request'])
 
 // From address — GP uses MQ verified domain (free plan = 1 domain)
 const FROM_MQ = 'Sargasses Martinique <alerte@sargasses-martinique.com>'
@@ -227,7 +230,7 @@ async function main() {
   const bouncedSet = hashedSet(loadJSON(BOUNCED_PATH, []))
 
   // Find new subscribers not yet welcomed (skip bounced) — compare by hash
-  const newSubs = subscribers.filter(s => s.email && !sentSet.has(emailHash(s.email)) && !bouncedSet.has(emailHash(s.email)))
+  const newSubs = subscribers.filter(s => s.email && !B2B_SOURCES.has(s.source) && !sentSet.has(emailHash(s.email)) && !bouncedSet.has(emailHash(s.email)))
   const alreadySent = subscribers.filter(s => s.email && sentSet.has(emailHash(s.email))).length
   console.log(`Subscribers: ${subscribers.length} | already welcomed: ${alreadySent} | new: ${newSubs.length}`)
 

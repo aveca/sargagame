@@ -189,6 +189,11 @@ const DRIP_STEPS = [
   { key: 'j14', days: 14 },
 ]
 
+// Leads PRO (formulaires /pro/*) : exclus du drip grand public — séquence dédiée
+// dans drip-b2b-email.cjs. Un hôtel/une collectivité ne doit JAMAIS recevoir
+// l'offre conso 4,99 €. Le verdict quotidien est déjà gated à DAILY_SOURCES.
+const B2B_SOURCES = new Set(['b2b_hotel_request', 'b2b_collectivite_request'])
+
 function loadJSON(p, fallback) {
   try { return JSON.parse(fs.readFileSync(p, 'utf-8')) } catch { return fallback }
 }
@@ -733,6 +738,7 @@ async function main() {
     const email = sub.email
     const key = emailHash(email)
     if (bouncedSet.has(key)) continue
+    if (B2B_SOURCES.has(sub.source)) continue // leads pro → drip-b2b-email.cjs
     const island = (sub.island || 'MQ').toUpperCase()
     // Nouvelles régions (PUNTACANA/FLORIDA/RIVIERAMAYA) : séquence complète
     // j3/j7/j14 via les builders *Region (EN/ES, no-trial) depuis 2026-06-11.
