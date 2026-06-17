@@ -2,6 +2,10 @@
     Require all denied
 </Files>
 
+<Files "_deploy-secret.php">
+    Require all denied
+</Files>
+
 <IfModule mod_headers.c>
     Header set Access-Control-Allow-Methods "POST, OPTIONS"
     Header set Access-Control-Allow-Headers "Content-Type"

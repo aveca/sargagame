@@ -31,6 +31,7 @@ const path = require("path")
 const fs = require("fs")
 const { loadProjectEnv } = require("./lib/load-project-env.cjs")
 const { getAllRegions } = require("../regions/index.cjs")
+const { fastDeploy } = require("./lib/fast-deploy.cjs")
 
 loadProjectEnv()
 
@@ -54,6 +55,7 @@ const targets = getAllRegions().map((r) => {
     host,
     user,
     pass,
+    domain: r.domain,
     remote: env(`FTP_REMOTE_${ID}`) || "/",
     local: path.join(__dirname, "..", r.ftpDir),
   }
@@ -252,34 +254,140 @@ async function deployOne(t) {
   return true
 }
 
-async function main() {
-  const only = process.env.ONLY
-  const picked = only ? targets.filter(t => t.key === only) : targets
-  if (!picked.length) {
-    console.error("No target matched ONLY=" + only + " (régions: " + targets.map(t => t.key).join(", ") + ")")
-    process.exit(1)
+// Deploy complet d'UNE région : tente le chemin RAPIDE (zip → 1 STOR →
+// extraction serveur), retombe sur le chemin FTP fichier-par-fichier éprouvé
+// (deployOne) à la moindre erreur. Le fast path n'ajoute donc jamais de risque
+// net : pire cas = on a pingé un endpoint absent, puis on déploie comme avant.
+async function deployRegion(t, { token, noFast }) {
+  if (!t.host || !t.user || !t.pass) {
+    const ID = t.key.toUpperCase()
+    console.warn(`[${t.key}] Identifiants FTP manquants (FTP_HOST_${ID}/FTP_USER_${ID}/FTP_PASS_${ID}) — région ignorée.`)
+    return "skipped"
   }
-  let ok = true
-  let deployed = 0
-  for (const t of picked) {
+  if (!fs.existsSync(t.local)) {
+    console.warn(`[${t.key}] ${t.local} absent — région ignorée (run scripts/prepare-ftp.cjs first)`)
+    return "skipped"
+  }
+  if (!noFast && token) {
     try {
-      const r = await deployOne(t)
-      if (r === true) deployed++
-      else if (r === "skipped") { if (only) ok = false } // skip toléré sauf région demandée explicitement
-      else ok = false
+      const r = await fastDeploy(t, { token })
+      console.log(`[${t.label}] ⚡ fast deploy ✓ (${r.files} fichiers, ${r.zipKB} Ko, extract ${r.ms} ms)`)
+      return true
     } catch (err) {
-      console.error(`[${t.label}] FATAL:`, err.message)
-      ok = false
+      console.log(`  [${t.label}] fast path indispo (${err.message}) → fallback FTP fichier-par-fichier`)
     }
   }
+  return deployOne(t)
+}
+
+// Mode --files : pousse une liste de fichiers ciblés vers les 5 régions, SANS
+// rebuild ni full upload. Pour un changement back-only (ex: create-checkout.php,
+// _deploy.php) → secondes au lieu de minutes. Chemins attendus sous public/
+// (mappés vers la racine web : public/api/x.php → /api/x.php).
+function mapFiles(files) {
+  return files.map((f) => {
+    const norm = f.replace(/\\/g, "/")
+    const i = norm.indexOf("public/")
+    if (i === -1) throw new Error(`${f} : chemin attendu sous public/ (ex: public/api/create-checkout.php)`)
+    const rel = norm.slice(i + "public/".length) // api/create-checkout.php
+    const localAbs = path.isAbsolute(norm) ? norm : path.join(__dirname, "..", norm)
+    if (!fs.existsSync(localAbs)) throw new Error(`${localAbs} introuvable`)
+    return { localAbs, remote: "/" + rel }
+  })
+}
+
+async function deployFilesToRegion(t, mapped) {
+  if (!t.host || !t.user || !t.pass) {
+    console.warn(`[${t.key}] Identifiants FTP manquants — région ignorée.`)
+    return "skipped"
+  }
+  const MAX = 4
+  for (let attempt = 1; attempt <= MAX; attempt++) {
+    const client = await connect(t)
+    try {
+      for (const m of mapped) {
+        const dir = path.posix.dirname(m.remote)
+        await client.ensureDir(dir) // navigue (et crée) le dossier absolu
+        await client.uploadFrom(m.localAbs, path.posix.basename(m.remote))
+      }
+      client.close()
+      console.log(`[${t.label}] ${mapped.length} fichier(s) ciblé(s) déployé(s) → ${t.domain}`)
+      return true
+    } catch (err) {
+      try { client.close() } catch {}
+      if (attempt === MAX || !/ECONNRESET|timeout|ETIMEDOUT|control socket/i.test(err.message)) throw err
+      console.log(`  [${t.label}] reset, retry ${attempt + 1}/${MAX}…`)
+    }
+  }
+}
+
+function summarize(results, picked, only) {
+  let ok = true
+  let deployed = 0
+  results.forEach((res, i) => {
+    if (res.status === "rejected") {
+      console.error(`[${picked[i].label}] FATAL:`, res.reason && res.reason.message || res.reason)
+      ok = false
+    } else if (res.value === true) {
+      deployed++
+    } else if (res.value === "skipped") {
+      if (only) ok = false // skip toléré sauf région demandée explicitement
+    } else {
+      ok = false
+    }
+  })
   if (!deployed && ok) {
     console.error(`Aucune région déployée — aucuns identifiants FTP trouvés.\n${ftpHelpLines()}`)
     ok = false
   }
-  process.exit(ok ? 0 : 1)
+  return ok
+}
+
+async function main() {
+  const argv = process.argv.slice(2)
+  const only = process.env.ONLY
+  const noFast = argv.includes("--no-fast") || process.env.NO_FAST === "1"
+  const filesMode = argv.includes("--files") || process.env.FILES
+  const provision = argv.includes("--provision")
+  const token = process.env.DEPLOY_TOKEN || ""
+
+  const picked = only ? targets.filter((t) => t.key === only) : targets
+  if (!picked.length) {
+    console.error("No target matched ONLY=" + only + " (régions: " + targets.map((t) => t.key).join(", ") + ")")
+    process.exit(1)
+  }
+
+  // --provision : bootstrap du fast path = pousse l'endpoint + le coffre token
+  // (stripe-config.php, gitignoré) sur chaque serveur. À lancer une fois (ou
+  // après rotation du token). Réutilise le mode fichiers-ciblés.
+  if (provision) {
+    const provFiles = ["public/api/_deploy.php", "public/api/_deploy-secret.php"]
+    let mapped
+    try { mapped = mapFiles(provFiles) } catch (e) { console.error(e.message); process.exit(1) }
+    console.log(`Provision fast path (${provFiles.join(", ")}) → ${picked.length} région(s)…`)
+    const results = await Promise.allSettled(picked.map((t) => deployFilesToRegion(t, mapped)))
+    process.exit(summarize(results, picked, only) ? 0 : 1)
+  }
+
+  // --files <a> <b> … : deploy ciblé back-only (zéro rebuild).
+  if (filesMode) {
+    const files = (process.env.FILES ? process.env.FILES.split(",") : argv.filter((a) => !a.startsWith("--")))
+      .map((s) => s.trim()).filter(Boolean)
+    if (!files.length) { console.error("--files : aucun fichier fourni"); process.exit(1) }
+    let mapped
+    try { mapped = mapFiles(files) } catch (e) { console.error(e.message); process.exit(1) }
+    console.log(`Deploy ciblé (${files.length} fichier·s) → ${picked.length} région(s) en parallèle…`)
+    const results = await Promise.allSettled(picked.map((t) => deployFilesToRegion(t, mapped)))
+    process.exit(summarize(results, picked, only) ? 0 : 1)
+  }
+
+  // Défaut : full deploy, fast path + fallback, régions EN PARALLÈLE.
+  if (!token) console.log("⚠️  DEPLOY_TOKEN absent → fast path désactivé, fallback FTP fichier-par-fichier.")
+  const results = await Promise.allSettled(picked.map((t) => deployRegion(t, { token, noFast })))
+  process.exit(summarize(results, picked, only) ? 0 : 1)
 }
 
 if (require.main === module) main()
 
 // Export pour outillage/tests : mapping env → cibles sans déclencher d'upload.
-module.exports = { targets, deployOne }
+module.exports = { targets, deployOne, deployRegion, mapFiles }

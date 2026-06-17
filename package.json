@@ -10,11 +10,14 @@
     "preview": "vite preview",
     "martinique": "npm run build && node scripts/prepare-ftp.cjs",
     "ftp-deploy": "node scripts/manual-ftp-deploy.cjs",
+    "deploy-files": "node scripts/manual-ftp-deploy.cjs --files",
+    "deploy-provision": "node scripts/manual-ftp-deploy.cjs --provision",
     "verify-ftp": "node scripts/verify-ftp-ready.cjs",
     "session": "node scripts/cursor-session-startup.cjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.87.0",
+    "adm-zip": "^0.5.17",
     "basic-ftp": "^5.3.0",
     "googleapis": "^171.4.0",
     "leaflet": "^1.9.4",

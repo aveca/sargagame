@@ -34,6 +34,11 @@ SECRETS-GITHUB.txt
 # Stripe + Resend live keys — deployed via FTP manually, never in git
 # Pattern large : couvre TOUTES les copies (public/api/, *-ftp/api/, etc.) — sk_live/resend
 **/stripe-config.php
+# Token du deploy rapide (_deploy.php) — provisionné par FTP, jamais dans git.
+# L'exemple _deploy-secret.example.php (autre nom) reste committé.
+**/_deploy-secret.php
+# Archive transitoire du fast deploy (écrite dans tmpdir, jamais dans le repo).
+**/_deploy.zip
 
 # Build outputs FTP (martinique-ftp/, guadeloupe-ftp/, puntacana-ftp/...) — contiennent
 # des copies de stripe-config.php avec secrets. NE JAMAIS committer.
