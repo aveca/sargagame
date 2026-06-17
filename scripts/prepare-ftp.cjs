@@ -927,7 +927,7 @@ Sitemap: https://${domain}/sitemap.xml
     // MQ/GP copiés depuis dist/ : sans remplacement régional, ils afficheraient
     // les bancs/grille de Martinique sur la carte PC. caribbean-afai.json est
     // conservé : couche AFAI à l'échelle du bassin, pertinente partout.
-    const REGION_SPECIFIC_OVERLAYS = ['sargassum-banks.json', 'sargassum-grid.json', 'forecast-archive.json', 'forecast-accuracy.json']
+    const REGION_SPECIFIC_OVERLAYS = ['sargassum-banks.json', 'sargassum-grid.json', 'forecast-archive.json', 'forecast-accuracy.json', 'track-record.json']
     for (const entry of fs.readdirSync(outCopernicus)) {
       const full = path.join(outCopernicus, entry)
       if (fs.statSync(full).isDirectory()) { fs.rmSync(full, { recursive: true }); continue }

@@ -170,6 +170,14 @@ jobs:
         continue-on-error: true
         run: node scripts/automation/backtest-forecast.cjs
 
+      # Track record PUBLIC auditable (preuve B2B « X% justes par plage ») — pur
+      # transform de backtest-results.json → /api/copernicus/track-record.json.
+      # DOIT tourner APRÈS le backtest (sa source unique). Consommé par les pages
+      # de vente B2B (/pro/*) et auditable par un prospect hôtel/collectivité.
+      - name: Build public track record (B2B proof artifact)
+        continue-on-error: true
+        run: node scripts/automation/build-track-record.cjs
+
       - name: Check email delivery stats (opens, clicks, bounces)
         continue-on-error: true
         run: node scripts/automation/check-email-status.cjs
@@ -298,6 +306,7 @@ jobs:
               cp public/api/copernicus/history.json "$DIR/api/copernicus/"
               cp public/api/copernicus/sargassum-banks.json "$DIR/api/copernicus/" 2>/dev/null || true
               cp public/api/copernicus/forecast-archive.json "$DIR/api/copernicus/" 2>/dev/null || true
+              cp public/api/copernicus/track-record.json "$DIR/api/copernicus/" 2>/dev/null || true
               echo "Updated data in $DIR"
             fi
           done
@@ -358,6 +367,7 @@ jobs:
           # Dédup notifs inter-runs : sans persistance, la même alerte repart 4-6×/j.
           [ -f scripts/automation/data/notifications-sent.json ] && git add scripts/automation/data/notifications-sent.json
           [ -f public/api/copernicus/forecast-archive.json ] && git add public/api/copernicus/forecast-archive.json
+          [ -f public/api/copernicus/track-record.json ] && git add public/api/copernicus/track-record.json
           # Météo per-beach (Beach Scores) + bancs (arrival signal) : frais à
           # chaque run — leur absence du commit gelait les scores (bug 2 mois).
           [ -f public/api/weather/beaches-weather.json ] && git add public/api/weather/beaches-weather.json
