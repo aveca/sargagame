@@ -26,6 +26,7 @@
 | C | Pages : zones & 5 stations narratives (A/B `stations` 50/50, StoryEngine, redirections) | ✅ **LIVE prod** (SW v198) |
 | C | Pages : à-propos golden-hour A/B `az` 50/50 · reliability.json endpoint · widget B2B charte · Conditions 6-filtres A/B · reliability-page V2 regime hero | ✅ **LIVE prod** (SW v199) |
 | C | Les 136 fiches plages — fiche-dive A/B `ab_fiche_dive` 50/50 : scroll-plongée 6 stages + Veilleur v2 + données réelles (`__SG_BEACH__`) + reduced-motion plancher dur | ✅ **LIVE prod** (SW v200) |
+| C | **Parité H2S sur la fiche-plongée (`pw_beach_dive`)** : beat-4 gagne le **disclaimer honnête** (« indice dérivé, pas une mesure de gaz, aucun capteur — consignes ARS/HCSP ») + **CTA alerte santé Premium** → `openPremium("h2s_health_alert")` (parité avec H2SBadge control, in-scene, FR/EN/ES). Comble la lacune honnêteté + porte de conversion sur 50 % du trafic fiche. SW v202 | ✅ **LIVE prod** |
 | D | SEO requête par requête + nouvelles pages (`/près-de-moi`, `/aujourdhui`, zones) + OG + 301 legacy | ✅ **LIVE prod** |
 | E | Share-cards · baignade #5 · collecte #9 | ✅ **LIVE prod** |
 

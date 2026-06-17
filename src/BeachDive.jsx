@@ -454,6 +454,9 @@ export function initBeachDive(SR, HOST, opts){
     if($("h2sBadge")) $("h2sBadge").style.borderColor="rgba(255,255,255,.12)";
     if($("h2sTxt")) $("h2sTxt").textContent=h2s.txt;
     var hm=$("h2sMark"); if(hm){ var hc=hm.querySelector("circle"); if(hc) hc.setAttribute("stroke",h2s.col); var ht=hm.querySelector("text"); if(ht) ht.setAttribute("fill",h2s.col); }
+    if($("h2sDisc")) $("h2sDisc").textContent=_t("Indice dérivé de la sargasse accumulée et de sa décomposition — pas une mesure de gaz, aucun capteur sur place. Suis les consignes ARS/HCSP.","Index derived from accumulated seaweed and its decomposition — not a gas measurement, no on-site sensor. Always follow public-health guidance.","Índice derivado del sargazo acumulado y su descomposición — no es una medición de gas, sin sensor en sitio. Sigue las indicaciones sanitarias.");
+    if($("ctaH2ST")) $("ctaH2ST").textContent=_t("Préviens-moi avant le prochain pic d'odeur","Warn me before the next odour peak","Avísame antes del próximo pico de olor");
+    if($("ctaH2SS")) $("ctaH2SS").textContent=_t("Alerte santé Premium — la veille, sur TA plage","Premium health alert — the day before, on YOUR beach","Alerta de salud Premium — la víspera, en TU playa");
 
     if($("eb5")) $("eb5").textContent=T.eb5[LANG]; setHeading($("h5"),T.h5[LANG]);
     if($("socialB")) $("socialB").textContent=T.socialB[LANG]; if($("socialS")) $("socialS").textContent=T.socialS[LANG];
@@ -715,6 +718,7 @@ export function initBeachDive(SR, HOST, opts){
     if($("regimeBox")) on($("regimeBox"),"click", function(){ track("sg_nav",{to:"/fiabilite/",variant:"beach_dive"}); });
     if($("ctaMethode")) on($("ctaMethode"),"click", function(){ scrollNext(1.1); });
     if($("ctaForecast")) on($("ctaForecast"),"click", function(){ openPremium("forecast_lock"); });
+    if($("ctaH2S")) on($("ctaH2S"),"click", function(){ openPremium("h2s_health_alert"); });
     if($("ctaFooter")) on($("ctaFooter"),"click", function(){ openPremium("beach_dive_footer"); });
     if($("socialBox")) on($("socialBox"),"click", function(){ openPremium("social_proof"); });
     var cards=SR.querySelectorAll("#planbRow .pbcard");

@@ -222,6 +222,9 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
   -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
 .h2sbadge .lvl{font:800 11px/1 "Bricolage Grotesque";letter-spacing:.04em;text-transform:uppercase}
 .h2sbadge .lvltxt{font:600 11.5px/1.3 "Bricolage Grotesque";color:rgba(234,247,244,.78)}
+.h2sdisc{font:600 11px/1.45 "Bricolage Grotesque";color:rgba(234,247,244,.6);
+  border-left:3px solid rgba(232,168,0,.45);padding:1px 0 1px 10px;margin:-5px 0 13px}
+.h2scta{margin:2px 0 14px}
 
 .safebadge{display:flex;align-items:flex-start;gap:11px;margin-bottom:14px;
   padding:11px 13px;border-radius:12px;background:rgba(8,18,16,.46);border:1px solid rgba(255,255,255,.12);
@@ -652,6 +655,8 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
         <h2 class="head anton" id="h4"></h2>
         <p class="sub" id="s4"></p>
         <div class="h2sbadge" id="h2sBadge"><span class="lvl" id="h2sLvl"></span><span class="lvltxt" id="h2sTxt"></span></div>
+        <p class="h2sdisc" id="h2sDisc"></p>
+        <button class="cta h2scta" id="ctaH2S" data-src="h2s_health_alert"><span class="t" id="ctaH2ST"></span><span class="s" id="ctaH2SS"></span></button>
         <div class="safebadge" id="safeBadge"><span class="icon" id="safeIcon"></span><span class="txt" id="safeTxt"></span></div>
         <div class="planbrow" id="planbRow"></div>
       </div>
@@ -844,6 +849,9 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
     eb4:    {fr:"PLAN B, À CÔTÉ", en:"PLAN B, NEARBY", es:"PLAN B, CERCA"},
     h4:     {fr:[["DES PLAGES PROPRES"],["TOUT PRÈS"]], en:[["CLEAN BEACHES"],["RIGHT NEAR"]], es:[["PLAYAS LIMPIAS"],["MUY CERCA"]]},
     s4:     {fr:"Si ça ne le sent pas ici, voilà où aller — à quelques minutes.", en:"If it's not it here, here's where to go — minutes away.", es:"Si aquí no, aquí es dónde ir — a minutos."},
+    h2sDisc:{fr:"Indice dérivé de la sargasse accumulée et de sa décomposition — pas une mesure de gaz, aucun capteur sur place. Suis les consignes ARS/HCSP.", en:"Index derived from accumulated seaweed and its decomposition — not a gas measurement, no on-site sensor. Always follow public-health guidance.", es:"Índice derivado del sargazo acumulado y su descomposición — no es una medición de gas, sin sensor en sitio. Sigue las indicaciones sanitarias."},
+    ctaH2ST:{fr:"Préviens-moi avant le prochain pic d'odeur", en:"Warn me before the next odour peak", es:"Avísame antes del próximo pico de olor"},
+    ctaH2SS:{fr:"Alerte santé Premium — la veille, sur TA plage", en:"Premium health alert — the day before, on YOUR beach", es:"Alerta de salud Premium — la víspera, en TU playa"},
 
     eb5:    {fr:"CE QU'ILS EN DISENT", en:"WHAT THEY SAY", es:"LO QUE DICEN"},
     h5:     {fr:[["ON VEILLE"],["DÉJÀ POUR EUX"]], en:[["WE WATCH"],["FOR THEM ALREADY"]], es:[["YA VIGILAMOS"],["PARA ELLOS"]]},
@@ -1196,7 +1204,10 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
     $("h2sTxt").textContent=h2s.txt;
     $("h2sMark").querySelector("circle").setAttribute("stroke",h2s.col);
     $("h2sMark").querySelector("text").setAttribute("fill",h2s.col);
-    
+    $("h2sDisc").textContent=T.h2sDisc[LANG];
+    $("ctaH2ST").textContent=T.ctaH2ST[LANG];
+    $("ctaH2SS").textContent=T.ctaH2SS[LANG];
+
     // Baignade / kids-safe
     var safe = STATUS==="avoid" ? {icon:"⛔", b:_t("BAIGNADE DÉCONSEILLÉE","SWIMMING NOT RECOMMENDED","BAÑO NO RECOMENDADO"), txt:_t("Fortes nuisances olfactives (H₂S) et algues épaisses. Chiens interdits.","Strong odors (H₂S) and thick algae. Dogs restricted.","Fuertes olores (H₂S) y algas espesas. Perros restringidos.")}
              : STATUS==="moderate" ? {icon:"⚠️", b:_t("PRUDENCE (ENFANTS & CHIENS)","CAUTION (KIDS & DOGS)","PRECAUCIÓN (NIÑOS Y PERROS)"), txt:_t("Baignade possible mais bancs isolés. Gardez un oeil sur vos animaux.","Swimming possible but isolated patches. Keep an eye on pets.","Baño posible pero parches aislados. Vigila a tus mascotas.")}
@@ -1519,6 +1530,7 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
     $("regimeBox").addEventListener("click", function(){ track("sg_nav",{to:"/fiabilite/"}); /* EN PROD : /fiabilite/ */ });
     $("ctaMethode").addEventListener("click", function(){ window.scrollBy({top:window.innerHeight*1.1, behavior:"smooth"}); });
     $("ctaForecast").addEventListener("click", function(){ openPremium("forecast_cta"); });
+    $("ctaH2S").addEventListener("click", function(){ openPremium("h2s_health_alert"); });
     $("ctaFooter").addEventListener("click", function(){ openPremium("footer"); });
     $("socialBox").addEventListener("click", function(){ openPremium("social_proof"); });
     // plan-B cards
