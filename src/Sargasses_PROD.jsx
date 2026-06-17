@@ -10,6 +10,7 @@ import {computeScore as _computeBeachScore} from "./lib/score.js"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.cjs"
 import { getCanonicalSlug } from "./lib/slug-resolver.js"
 import Dock from "./Dock.jsx"
+import DiveTransition from "./DiveTransition.jsx"
 import "./RetroTheme.css"
 
 // Import résilient : pendant la fenêtre FTP d'un deploy (~25 min), un index.html
@@ -11158,6 +11159,7 @@ export default function App(){
   const[search,setSearch]=useState("")
   const[filter,setFilter]=useState(0) // index in T.filters
   const[selectedBeach,setSelectedBeach]=useState(null)
+  const[diveBeach,setDiveBeach]=useState(null) // overlay plongée carte→plage (1×/session, flag nav_dive)
   const[initialZone,setInitialZone]=useState(null)
 
   const[favorites,setFavorites]=useState(()=>g("sg_fav",[]))
@@ -11657,6 +11659,8 @@ export default function App(){
   // Le Veilleur v2, scrub prévision verrouillé J2-7) vs BeachSheet (control intact).
   // 50/50. Override ?beachdive=1/0. Conversion = openPremium UNIQUE (contextualisé plage).
   const beachDive=useMemo(()=>{try{const q=window.location.search;if(/[?&]beachdive=1/.test(q))return true;if(/[?&]beachdive=0/.test(q))return false;return abVariant("pw_beach_dive",["control","dive"],[.5,.5])==="dive"}catch(_){return false}},[])
+  // A/B nav_dive : plongée golden-hour carte→plage 1×/session (rollout 15%, ?navdive=1/0).
+  const navDive=useMemo(()=>{try{const q=window.location.search;if(/[?&]navdive=1/.test(q))return true;if(/[?&]navdive=0/.test(q))return false;return abVariant("nav_dive",["control","dive"],[.85,.15])==="dive"}catch(_){return false}},[])
   // A/B `capture_gate` : gate email légère avant PremiumModal sur intent forecast.
   // 50/50. Override ?capture_gate=1/0. Cible : lever le 0,35 % capture email.
   const captureGate=useMemo(()=>{try{const q=window.location.search;if(/[?&]capture_gate=1/.test(q))return true;if(/[?&]capture_gate=0/.test(q))return false;return abVariant("capture_gate",["control","gate"],[.5,.5])==="gate"}catch(_){return false}},[])
@@ -12231,6 +12235,8 @@ export default function App(){
   const onBeachClick=useCallback(b=>{
     if(!b||!b.id)return
     setSelectedBeach(b);track("sg_beach_open",{beach_id:b.id,status:b.status})
+    // Marée du Veilleur : plongée carte→plage 1×/session au 1er ouverture (skippable, reduced-motion off).
+    try{if(navDive&&b.status&&!sessionStorage.getItem("sg_dove")&&!(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches)){sessionStorage.setItem("sg_dove","1");setDiveBeach(b);track("sg_dive_play",{beach_id:b.id})}}catch(_){}
     setNextSuggestion(null) // clear any pending suggestion
     if(nextSuggestTimer.current)clearTimeout(nextSuggestTimer.current)
     // Signal to push auto-loader that user reached a value moment
@@ -12792,6 +12798,7 @@ export default function App(){
 
         {/* FAV TOAST — inline, first favorite only */}
         <FavToast show={showFavToast} lang={lang} onPremiumClick={openPremium} isPremium={isPremium}/>
+        {diveBeach&&<DiveTransition beach={diveBeach} lang={lang} onDone={()=>setDiveBeach(null)}/>}
 
         {/* SARGACHAT — assistant guidé statique (réponses = donnée live, arbre fermé) */}
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&(
