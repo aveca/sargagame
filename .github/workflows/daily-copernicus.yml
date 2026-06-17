@@ -10,6 +10,16 @@ on:
     branches:
       - main
 
+# Gating par événement (2026-06-17) — un push de code doit être RAPIDE :
+#   • push            → build des 5 régions + deploy FTP + health-check UNIQUEMENT.
+#                       Pas de vidéo ffmpeg (~10 min), pas d'emails, pas de fetch
+#                       data, pas de submit SEO, pas de commit. (if: != 'push')
+#   • schedule        → tout (data + emails + vidéo + SEO + build + deploy).
+#   • workflow_dispatch → comme schedule MAIS sans les envois email (== 'schedule')
+#                       ni la vidéo : refresh data + rebuild + deploy à la demande.
+# Le deploy FTP utilise le chemin RAPIDE (zip → _deploy.php) si DEPLOY_TOKEN est
+# présent, fallback fichier-par-fichier sinon (scripts/manual-ftp-deploy.cjs).
+
 permissions:
   contents: write
 
@@ -61,12 +71,14 @@ jobs:
       # (Bug 2 mois : le step tournait APRÈS le pipeline ET le fichier n'était
       # jamais commité → scores calculés avec la houle/UV du 12 avril.)
       - name: Fetch beach weather (Open-Meteo)
+        if: github.event_name != 'push'
         continue-on-error: true
         run: node scripts/fetch-beach-weather.cjs
 
       # ── 1. Fetch LIVE sargassum data (ERDDAP + fallback) ──
       - name: Fetch LIVE sargassum data from ERDDAP
         id: erddap
+        if: github.event_name != 'push'
         continue-on-error: true
         run: node scripts/fetch-sargassum-live.cjs
 
@@ -83,7 +95,7 @@ jobs:
           fi
 
       - name: Fallback to Node.js scraper (only if ERDDAP failed)
-        if: steps.check_live.outputs.source != 'erddap-live'
+        if: steps.check_live.outputs.source != 'erddap-live' && github.event_name != 'push'
         run: |
           echo "${{ secrets.COPERNICUS_USERNAME }}" > copernicustxt.txt
           echo "${{ secrets.COPERNICUS_PASSWORD }}" >> copernicustxt.txt
@@ -91,6 +103,7 @@ jobs:
           rm -f copernicustxt.txt
 
       - name: Send notifications (push + email)
+        if: github.event_name == 'schedule'
         continue-on-error: true
         env:
           ONESIGNAL_API_KEY_MQ: ${{ secrets.ONESIGNAL_API_KEY_MQ }}
@@ -102,6 +115,7 @@ jobs:
 
       # ── Email pipeline: clean bounces → fetch → send ──
       - name: Clean bounced emails from Sheet
+        if: github.event_name == 'schedule'
         continue-on-error: true
         run: |
           echo "Calling clean_bounces on Apps Script..."
@@ -109,6 +123,7 @@ jobs:
           echo "Result: $RESULT"
 
       - name: Fetch subscriber list
+        if: github.event_name == 'schedule'
         continue-on-error: true
         env:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
@@ -127,12 +142,14 @@ jobs:
         run: node scripts/automation/email-weekend.cjs
 
       - name: Send welcome emails (Resend)
+        if: github.event_name == 'schedule'
         continue-on-error: true
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         run: node scripts/automation/welcome-email.cjs
 
       - name: Send drip emails (J+3, J+7, J+14)
+        if: github.event_name == 'schedule'
         continue-on-error: true
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
@@ -141,6 +158,7 @@ jobs:
       # Drip B2B (leads /pro/*) — séquence consultative séparée (source b2b_*),
       # état dédié drip-b2b-sent.json. N'envoie JAMAIS l'offre conso 4,99 €.
       - name: Send B2B drip emails (Sargasses Pro)
+        if: github.event_name == 'schedule'
         continue-on-error: true
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
@@ -163,18 +181,21 @@ jobs:
       # au script — jamais d'excuse à 2h du matin). Pour tout incident futur :
       # ajouter une entrée à incidents.json, le prochain run en fenêtre envoie.
       - name: Send incident apologies (if any pending)
+        if: github.event_name == 'schedule'
         continue-on-error: true
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         run: node scripts/automation/incident-apology.cjs
 
       - name: Health check (uptime monitoring + staleness alerts)
+        if: github.event_name != 'push'
         continue-on-error: true
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         run: node scripts/automation/health-check.cjs
 
       - name: Backtest forecast accuracy (archive vs observations)
+        if: github.event_name != 'push'
         continue-on-error: true
         run: node scripts/automation/backtest-forecast.cjs
 
@@ -183,14 +204,17 @@ jobs:
       # DOIT tourner APRÈS le backtest (sa source unique). Consommé par les pages
       # de vente B2B (/pro/*) et auditable par un prospect hôtel/collectivité.
       - name: Build public track record (B2B proof artifact)
+        if: github.event_name != 'push'
         continue-on-error: true
         run: node scripts/automation/build-track-record.cjs
 
       - name: Check email delivery stats (opens, clicks, bounces)
+        if: github.event_name != 'push'
         continue-on-error: true
         run: node scripts/automation/check-email-status.cjs
 
       - name: Daily stats check (metrics + trend detection)
+        if: github.event_name != 'push'
         continue-on-error: true
         env:
           # GA4 veille dans la série KPI (#27) — lecture seule, préservé si absent
@@ -205,6 +229,7 @@ jobs:
       # → chaque retry renvoyait les mêmes emails (17× le même J+3 à 1 abonnée).
       # Un side-effect doit committer son état AVANT tout step faillible.
       - name: Commit email state (immédiat, anti-doublon)
+        if: github.event_name != 'push'
         continue-on-error: true
         run: |
           git config user.name "github-actions[bot]"
@@ -253,7 +278,7 @@ jobs:
       # le deploy data. Générées ici plutôt que commitées : ~80MB régénérables.
       # public/videos/hero/ est gitignoré ; Vite les copie dans dist/.
       - name: Hero loops vidéo (ffmpeg)
-        if: steps.check_build.outputs.full == 'true'
+        if: steps.check_build.outputs.full == 'true' && github.event_name == 'schedule'
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
@@ -289,7 +314,7 @@ jobs:
         run: node scripts/prepare-ftp.cjs
 
       - name: Submit URLs to Google Indexing
-        if: steps.check_build.outputs.full == 'true'
+        if: steps.check_build.outputs.full == 'true' && github.event_name != 'push'
         env:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: node scripts/automation/seo-submit-urls.cjs
@@ -298,7 +323,7 @@ jobs:
       # IndexNow (Bing/Yandex/Seznam) — lit les sitemaps des <region>-ftp/ générés
       # juste avant. Gratuit, clé publique servie par chaque domaine.
       - name: Submit URLs to IndexNow (Bing)
-        if: steps.check_build.outputs.full == 'true'
+        if: steps.check_build.outputs.full == 'true' && github.event_name != 'push'
         run: node scripts/automation/submit-indexnow.cjs
         continue-on-error: true
 
@@ -354,6 +379,7 @@ jobs:
 
       # ── 3. Commit updated data to repo ────────────────────
       - name: Commit updated sargassum.json
+        if: github.event_name != 'push'
         run: |
           set -e
           git config user.name "github-actions[bot]"
@@ -428,6 +454,7 @@ jobs:
         # le health-check (sites up = warning, down = error). Borne le blocage de queue.
         timeout-minutes: 60
         env:
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
           FTP_SERVER_MQ: ${{ secrets.FTP_SERVER_MQ }}
           FTP_USERNAME_MQ: ${{ secrets.FTP_USERNAME_MQ }}
           FTP_PASSWORD_MQ: ${{ secrets.FTP_PASSWORD_MQ }}
