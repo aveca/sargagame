@@ -119,9 +119,10 @@ cmore:'Otras fotos: Google Places y fuentes turísticas oficiales.',fdata:'Datos
 document.documentElement.lang=LANG
 document.getElementById('wm').textContent=SITE
 document.getElementById('wm2').textContent=SITE
-// Page « preuve » : /fiabilite/ sur les domaines FR (sargasses-*), sinon /research/
-// (espace recherche EN). /reliability/ & /fiabilidad/ n'existaient pas → étaient des 404 sur les sites USD.
-document.getElementById('vlink').href=/sargasses-/.test(HOST)?'/fiabilite/':'/research/'
+// Page « preuve » : /fiabilite/ sur les domaines FR (sargasses-*), sinon l'espace
+// recherche localisé — ES /investigacion/, EN /research/ (les anciens /reliability/
+// & /fiabilidad/ n'existaient pas → 404 sur les sites USD, désormais corrigés).
+document.getElementById('vlink').href=/sargasses-/.test(HOST)?'/fiabilite/':LANG==='es'?'/investigacion/':'/research/'
 document.querySelectorAll('[data-i]').forEach(n=>{
   const v=T[n.getAttribute('data-i')]
   if(v!=null)n.textContent=v
