@@ -148,7 +148,22 @@
     font-family:var(--sg-font-sans);font-size:14px;background:var(--sg-card);color:var(--sg-ink)}
   textarea{resize:vertical;min-height:64px}
   .form-ok{display:none;background:var(--sg-clean-bg);border:1px solid var(--sg-clean);border-radius:var(--sg-r-lg);padding:18px;font-weight:700;color:var(--sg-clean-l)}
+  .form-ok a{color:var(--sg-clean-l)}
   .trust-row{font-size:11.5px;color:var(--sg-mute);margin-top:10px}
+
+  /* lead magnet — free brief by email (low-friction capture) */
+  .magnet{display:flex;gap:18px;padding:26px 22px;border-radius:var(--sg-r-xl);
+    border:1px solid rgba(232,168,0,.34);box-shadow:var(--sg-shadow-md);
+    background:radial-gradient(120% 100% at 86% -12%,rgba(255,199,44,.16),transparent 56%),
+               linear-gradient(160deg,#FFFDF6,#FFF6DE)}
+  .magnet-ic{font-size:30px;line-height:1;flex-shrink:0;margin-top:2px}
+  .magnet-body{flex-grow:1;min-width:0}
+  .magnet-body h2{margin-bottom:8px}
+  .magnet-body .sub{margin-bottom:16px}
+  .magnet-form{display:flex;gap:10px;max-width:520px;margin:0}
+  .magnet-form input{flex:1 1 auto;width:auto}
+  .magnet-form .btn{flex:0 0 auto;white-space:nowrap}
+  @media (max-width:520px){.magnet{flex-direction:column;gap:12px}.magnet-form{flex-direction:column}.magnet-form .btn{justify-content:center}}
 
   footer{padding:30px 22px 48px;text-align:center;color:var(--sg-mute);font-size:12px}
   footer a{color:var(--sg-mid);text-decoration:none;font-weight:600}
@@ -255,6 +270,24 @@
     </div>
   </div>
   <p class="demo-note">A 100% on-brand badge with no technical dependency — a single snippet to paste. Available in English, French and Spanish.</p>
+</div></section>
+
+<!-- LEAD MAGNET: free brief by email -->
+<section class="px" style="padding-top:8px"><div class="wrap">
+  <div class="magnet">
+    <div class="magnet-ic">📩</div>
+    <div class="magnet-body">
+      <p class="sec-eyebrow" style="color:var(--sg-gold)">Free · by email</p>
+      <h2>Get your beach's sargassum brief, every morning.</h2>
+      <p class="sub">Leave your email and we'll send the 7-day forecast and the real state of your beachfront — satellite data, beach by beach. Free, no card, no demo to book — just the data you need.</p>
+      <form id="magnet-form" class="magnet-form" novalidate>
+        <input type="email" id="m-email" name="email" placeholder="you@hotel.com" required autocomplete="email" aria-label="Work email"/>
+        <button type="submit" class="btn btn-gold">Get my free brief</button>
+      </form>
+      <p class="trust-row" id="m-trust">Free · no card · one-click unsubscribe · Copernicus satellite data.</p>
+      <div class="form-ok" id="magnet-ok">Done — your first brief is on its way by email. Meanwhile, <a id="m-live" href="https://sargasses-martinique.com/" target="_blank" rel="noopener">see your beach live now →</a></div>
+    </div>
+  </div>
 </div></section>
 
 <!-- HOW IT WORKS -->
@@ -419,6 +452,28 @@
     document.getElementById('form-ok').style.display='block';
     document.getElementById('form-ok').scrollIntoView({behavior:'smooth',block:'center'});
   });
+
+  // --- Lead magnet: free brief by email (low-friction, SAME B2B source as the demo
+  // request → enters the drip-b2b sequence that delivers the content) ---
+  var mform=document.getElementById('magnet-form');
+  if(mform){
+    mform.addEventListener('submit',function(e){
+      e.preventDefault();
+      var em=(document.getElementById('m-email').value||'').trim();
+      if(!em||em.indexOf('@')<1){document.getElementById('m-email').focus();return;}
+      var payload={
+        email:em,island:'MQ',source:'b2b_hotel_request',
+        note:'Lead magnet — free brief',zone:'Martinique',
+        capture:'leadmagnet_brief',lang:'en',date:new Date().toISOString()
+      };
+      fetch(ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)}).catch(function(){});
+      try{if(window.gtag)gtag('event','sg_b2b_leadmagnet',{vertical:'hotels',lang:'en'});}catch(_){}
+      mform.style.display='none';
+      var mtr=document.getElementById('m-trust');if(mtr)mtr.style.display='none';
+      var mok=document.getElementById('magnet-ok');mok.style.display='block';
+      mok.scrollIntoView({behavior:'smooth',block:'center'});
+    });
+  }
 })();
 </script>
 </body>
