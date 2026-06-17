@@ -90,8 +90,41 @@
 </style>
 </head>
 <body>
+<!-- Sprite ANIME (créature à attraper, défaut) : clump golden-hour + visage. -->
 <template id="sgTpl">
-  <svg viewBox="0 0 64 48"><g fill="#7a5a14"><ellipse cx="32" cy="26" rx="26" ry="13" fill="#8a6a1a"/><ellipse cx="18" cy="20" rx="12" ry="8" fill="#9a7a22"/><ellipse cx="44" cy="20" rx="13" ry="8" fill="#6b4a12"/><circle cx="14" cy="14" r="3.5" fill="#b8962e"/><circle cx="26" cy="10" r="3" fill="#b8962e"/><circle cx="40" cy="12" r="3.5" fill="#b8962e"/><circle cx="50" cy="16" r="3" fill="#b8962e"/></g></svg>
+  <svg viewBox="0 0 64 48"><g>
+    <g fill="none" stroke="#4A3618" stroke-width="3" stroke-linecap="round"><path d="M20,34 q-3,8 1,12"/><path d="M32,36 q2,8 -2,11"/><path d="M44,34 q4,8 0,12"/></g>
+    <ellipse cx="31" cy="26" rx="26" ry="14" fill="#6b4a12"/>
+    <ellipse cx="32" cy="25" rx="25" ry="13" fill="#8a6a1a"/>
+    <ellipse cx="18" cy="19" rx="10" ry="7" fill="#9a7a22"/>
+    <ellipse cx="47" cy="20" rx="11" ry="7" fill="#9a7a22"/>
+    <path d="M9,22 Q22,9 36,13 Q49,16 55,24" fill="none" stroke="#FFD884" stroke-width="2.5" stroke-linecap="round" opacity=".85"/>
+    <g fill="#b8962e"><circle cx="13" cy="15" r="2.5"/><circle cx="26" cy="10" r="2.5"/><circle cx="40" cy="12" r="2.5"/><circle cx="51" cy="17" r="2.5"/></g>
+    <g fill="#FFF3C4"><circle cx="12.2" cy="14.2" r=".9"/><circle cx="25.2" cy="9.2" r=".9"/><circle cx="39.2" cy="11.2" r=".9"/></g>
+    <ellipse cx="25" cy="26" rx="5.5" ry="6.5" fill="#FFF8E7"/>
+    <ellipse cx="40" cy="26" rx="5.5" ry="6.5" fill="#FFF8E7"/>
+    <circle cx="26" cy="28" r="3" fill="#2A1D20"/><circle cx="39" cy="28" r="3" fill="#2A1D20"/>
+    <circle cx="24.5" cy="25" r="1.1" fill="#fff"/><circle cx="37.5" cy="25" r="1.1" fill="#fff"/>
+    <path d="M19,18 q5,-3 10,-1" fill="none" stroke="#5a3d10" stroke-width="2" stroke-linecap="round"/>
+    <path d="M46,18 q-5,-3 -10,-1" fill="none" stroke="#5a3d10" stroke-width="2" stroke-linecap="round"/>
+    <path d="M29,35 q3,4 6,0 q-3,2 -6,0z" fill="#3d2808"/>
+  </g></svg>
+</template>
+<!-- Sprite PIXEL MODERNE (variante A/B sg_sprite) : créature chunky, palette dorée. -->
+<template id="sgTplPixel">
+  <svg viewBox="0 0 64 48" shape-rendering="crispEdges"><g>
+    <rect x="8" y="20" width="4" height="16" fill="#6b4a12"/><rect x="52" y="20" width="4" height="16" fill="#6b4a12"/>
+    <rect x="24" y="8" width="16" height="4" fill="#FFD884"/>
+    <rect x="16" y="12" width="4" height="4" fill="#b8962e"/><rect x="20" y="12" width="24" height="4" fill="#8a6a1a"/><rect x="44" y="12" width="4" height="4" fill="#b8962e"/>
+    <rect x="12" y="16" width="4" height="4" fill="#b8962e"/><rect x="16" y="16" width="32" height="4" fill="#8a6a1a"/><rect x="48" y="16" width="4" height="4" fill="#b8962e"/><rect x="24" y="16" width="4" height="4" fill="#FFD884"/>
+    <rect x="12" y="20" width="40" height="4" fill="#8a6a1a"/>
+    <rect x="12" y="24" width="4" height="4" fill="#8a6a1a"/><rect x="16" y="24" width="8" height="4" fill="#FFF8E7"/><rect x="24" y="24" width="8" height="4" fill="#8a6a1a"/><rect x="32" y="24" width="8" height="4" fill="#FFF8E7"/><rect x="40" y="24" width="12" height="4" fill="#8a6a1a"/>
+    <rect x="12" y="28" width="4" height="4" fill="#8a6a1a"/><rect x="16" y="28" width="4" height="4" fill="#2A1D20"/><rect x="20" y="28" width="4" height="4" fill="#FFF8E7"/><rect x="24" y="28" width="8" height="4" fill="#8a6a1a"/><rect x="32" y="28" width="4" height="4" fill="#2A1D20"/><rect x="36" y="28" width="4" height="4" fill="#FFF8E7"/><rect x="40" y="28" width="12" height="4" fill="#8a6a1a"/>
+    <rect x="12" y="32" width="16" height="4" fill="#8a6a1a"/><rect x="28" y="32" width="8" height="4" fill="#2A1D20"/><rect x="36" y="32" width="16" height="4" fill="#8a6a1a"/>
+    <rect x="12" y="36" width="4" height="4" fill="#6b4a12"/><rect x="16" y="36" width="32" height="4" fill="#8a6a1a"/><rect x="48" y="36" width="4" height="4" fill="#6b4a12"/>
+    <rect x="16" y="40" width="4" height="4" fill="#4A3618"/><rect x="20" y="40" width="24" height="4" fill="#8a6a1a"/><rect x="44" y="40" width="4" height="4" fill="#4A3618"/>
+    <rect x="16" y="44" width="4" height="4" fill="#4A3618"/><rect x="28" y="44" width="4" height="4" fill="#4A3618"/><rect x="40" y="44" width="4" height="4" fill="#4A3618"/><rect x="48" y="44" width="4" height="4" fill="#4A3618"/>
+  </g></svg>
 </template>
 <div id="stage">
   <!-- Fond SVG illustré style anime (statique — décision user : pas d'animation,
@@ -314,7 +347,10 @@ const ISLAND=/guadeloupe/.test(HOST)?'GP':/puntacana/.test(HOST)?'PUNTACANA':/mi
 // dans la sheet events, indépendamment de GA4.
 const TRACK_URL='https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec'
 function gtrack(e,p){try{
-  const b=JSON.stringify({type:'analytics_event',e,p:p||{},t:Date.now(),island:ISLAND})
+  // Auto-inject les variants A/B assignés (ab_<testId>:<index>), même convention que track() de l'app.
+  const ab=JSON.parse(localStorage.getItem('sg_ab')||'{}')
+  const params={...(p||{})};for(const k in ab)params['ab_'+k]=ab[k]
+  const b=JSON.stringify({type:'analytics_event',e,p:params,t:Date.now(),island:ISLAND})
   if(navigator.sendBeacon)navigator.sendBeacon(TRACK_URL,b)
   else fetch(TRACK_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:b}).catch(()=>{})
 }catch{}}
@@ -369,14 +405,25 @@ $('defiBox').style.display='flex'
 $('defiTxt').textContent=DEFI?T.defi(DEFI):T.day(DAYN)
 $('mailIn').placeholder=T.mailPh;$('mailBtn').textContent=T.mailBtn
 
+// ── A/B sprite (lane jeune) : anime (défaut) vs pixel moderne. Sticky sg_ab —
+// même convention que l'app. ?sprite=anime|pixel force (vérif, non sticky). ──
+function abPick(testId,variants,weights){try{
+  const ab=JSON.parse(localStorage.getItem('sg_ab')||'{}')
+  if(ab[testId]!=null&&ab[testId]<variants.length)return variants[ab[testId]]
+  let r=Math.random(),cum=0,pick=0
+  for(let i=0;i<weights.length;i++){cum+=weights[i];if(r<cum){pick=i;break}}
+  ab[testId]=pick;localStorage.setItem('sg_ab',JSON.stringify(ab));return variants[pick]
+}catch{return variants[0]}}
+const SPRITE=(()=>{const m=location.search.match(/[?&]sprite=(anime|pixel)/);return m?m[1]:abPick('sg_sprite',['anime','pixel'],[.5,.5])})()
+
 // ── Jeu ──
-const stage=$('stage'),tpl=$('sgTpl')
+const stage=$('stage'),tpl=$('sgTpl'),tplPx=$('sgTplPixel')
 let blobs=[],score=0,lives=3,t=45,combo=0,maxCombo=0,comboT=0,running=false,raf=null,spawnAcc=0,last=0,timerIv=null
 function hud(){$('score').textContent=score;$('timer').textContent=Math.ceil(t)+'s'
   $('lives').textContent='🏖️'.repeat(lives)+'💀'.repeat(3-lives)}
 function spawn(){
   const el=document.createElement('div');el.className='sg'
-  el.appendChild(tpl.content.firstElementChild.cloneNode(true))
+  el.appendChild((SPRITE==='pixel'?tplPx:tpl).content.firstElementChild.cloneNode(true))
   const W=stage.clientWidth
   const b={el,x:20+rng()*(W-100),y:-60,vy:42+rng()*34+(45-t)*1.25,wob:rng()*6.28,alive:true}
   el.style.transform='translate('+b.x+'px,'+b.y+'px)'
