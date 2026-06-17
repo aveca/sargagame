@@ -106,3 +106,12 @@ scripts/automation/data/pulse.json
 
 # Snapshot analytics unifié — merge first-party + GSC/GA4/funnel, JAMAIS commité
 scripts/automation/data/analytics-snapshot.json
+
+# Prototype IA orphelin "serious game / crise simulator" (Gemini, 2026-06-17) —
+# hors projet : basé sur une analyse IA erronée, moteur physique cassé (CFL),
+# design hors-marque. Conservé en local comme artefact de concept, JAMAIS commité.
+# grill/ a été déplacé dans experiments/ ; backend/ + frontend/ restent à la racine
+# (verrouillés au moment du déplacement) — les deux chemins sont couverts ici.
+experiments/
+/backend/
+/frontend/

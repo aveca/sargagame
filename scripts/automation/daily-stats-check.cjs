@@ -136,21 +136,31 @@ async function main() {
   try { metrics = JSON.parse(fs.readFileSync(METRICS_PATH, 'utf-8')) } catch {}
 
   const today = now.toISOString().slice(0, 10)
-  // Le point de vérité Stripe vient des runs LOCAUX (clé absente en CI) : si la
-  // row du jour en a déjà un, le run CI suivant ne doit pas l'écraser par null.
-  const prevToday = metrics.find(r => r.date === today)
+  // Carry-forward anti-trous : quand une source échoue (fetch null/timeout/302),
+  // on NE clobber PAS par null — on garde la dernière valeur connue (run plus tôt
+  // aujourd'hui en priorité, sinon jour précédent). Sans ça, un run raté plus tard
+  // dans la journée écrasait un run réussi (upsert « last write wins ») → trous
+  // permanents sur des jours clos (ex. 06-12 funnel, 06-13 stripe, 06-17 stats).
+  const priorRows = metrics.slice() // snapshot AVANT l'upsert (inclut les runs du jour)
+  const lastKnown = (field) => {
+    for (let i = priorRows.length - 1; i >= 0; i--) {
+      if (priorRows[i][field] != null) return priorRows[i][field]
+    }
+    return null
+  }
   // Upsert by date: drop any prior same-day rows so the last write of the day wins.
   // Without this, 4x/day crons + local runs bloat the file (90-day cap = ~15 real days)
   // and trend detection below would compare same-day dups instead of day-over-day.
   metrics = metrics.filter(r => r.date !== today)
+  const statsOk = stats && !stats.error // fetch réussi → on prend la valeur live (0 inclus)
   metrics.push({
     date: today,
     time: now.toISOString(),
-    payments: stats?.payments || null,
-    revenue: stats?.revenue || null,
-    emails: stats?.emails || null,
-    feedbacks: stats?.feedbacks || null,
-    avgRating: stats?.avgRating || null,
+    payments: statsOk ? (stats.payments ?? null) : lastKnown('payments'),
+    revenue: statsOk ? (stats.revenue ?? null) : lastKnown('revenue'),
+    emails: statsOk ? (stats.emails ?? null) : lastKnown('emails'),
+    feedbacks: statsOk ? (stats.feedbacks ?? null) : lastKnown('feedbacks'),
+    avgRating: statsOk ? (stats.avgRating ?? null) : lastKnown('avgRating'),
     pipelineOk,
     // Série funnel (cumuls Apps Script — les DELTAS jour-à-jour font la série)
     funnel: funnel && !funnel.error ? {
@@ -165,11 +175,11 @@ async function main() {
       paymentsReal: funnel.payments_real ?? null, // ⚠️ trompeur, cf. memory
       revenueReal: funnel.revenue_real ?? null,
       rates: funnel.rates || null,
-    } : null,
-    // Vérité Stripe (runs locaux seulement — préservée si le run courant n'a pas la clé)
-    stripe: (await stripeTruth()) || prevToday?.stripe || null,
-    // GA4 veille (runs CI seulement — préservé comme le point Stripe)
-    ga4: (await ga4Yesterday()) || prevToday?.ga4 || null,
+    } : lastKnown('funnel'),
+    // Vérité Stripe (runs locaux seulement) — carry-forward dernière valeur connue
+    stripe: (await stripeTruth()) || lastKnown('stripe'),
+    // GA4 veille (runs CI seulement) — carry-forward dernière valeur connue
+    ga4: (await ga4Yesterday()) || lastKnown('ga4'),
   })
 
   // Keep last 90 days
