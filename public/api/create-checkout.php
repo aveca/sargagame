@@ -171,8 +171,13 @@ HTML;
 // partant ; prélèvement immédiat). MQ/GP (EUR) gardent le trial : rétention
 // post-trial mesurée 65% (15 actifs / 23 essais, réconciliation Stripe du
 // 2026-06-10) — ne pas casser ce qui convertit.
-$NO_TRIAL_ISLANDS = ['puntacana', 'florida', 'rivieramaya'];
-$noTrial = in_array($island, $NO_TRIAL_ISLANDS, true);
+// 2026-06-17 — Essai gratuit SUPPRIMÉ partout (décision fondateur) : prélèvement
+// IMMÉDIAT dans TOUTES les régions, y compris MQ/GP (EUR). Plus d'essai 7j ; le
+// renversement de risque est désormais la garantie satisfait-ou-remboursé 30j.
+// Le path 'subscribe' immédiat (payment_behavior=allow_incomplete + 3DS) couvre
+// déjà les cartes EU (SCA). Pour réactiver un essai sur une région : remettre une
+// liste blanche + in_array($island, $LISTE, true).
+$noTrial = true;
 
 if ($action === 'embedded') {
     $plan = (($input['plan'] ?? 'monthly') === 'annual') ? 'annual' : 'monthly';
@@ -406,6 +411,54 @@ if ($action === 'portal') {
     ]);
 
     echo json_encode(['url' => $session['url']]);
+    exit;
+}
+
+// ── Action: pay_once — PASS one-time (PaymentIntent). Reutilise le payment_method
+// collecte par le SetupIntent on-site (Payment Element), facture UNE fois (pas
+// d'abonnement). cents valide contre une allowlist (anti-tampering). 3DS renvoye
+// via piClientSecret. L'acces time-boxe est pose COTE CLIENT (sg_premium_pass_end)
+// + la conversion est loggee cote front (track sg_conversion onsite).
+if ($action === 'pay_once') {
+    $setupIntentId = $input['setupIntentId'] ?? '';
+    $pass = preg_replace('/[^a-z0-9]/', '', $input['pass'] ?? '');
+    $cents = (int)($input['cents'] ?? 0);
+    $email = trim($input['email'] ?? '');
+    $source = preg_replace('/[^a-zA-Z0-9_-]/', '', $input['source'] ?? 'unknown');
+    $ALLOWED_CENTS = [799, 999, 1499, 1999, 2499];
+    if (!$setupIntentId || !in_array($cents, $ALLOWED_CENTS, true)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'bad pass params']);
+        exit;
+    }
+    $si = stripe('GET', "/setup_intents/$setupIntentId");
+    $pm = $si['payment_method'] ?? '';
+    if (!$pm) {
+        http_response_code(400);
+        echo json_encode(['error' => 'no payment method']);
+        exit;
+    }
+    $piParams = [
+        'amount'                  => $cents,
+        'currency'                => 'eur',
+        'payment_method'          => $pm,
+        'confirm'                 => 'true',
+        'payment_method_types[0]' => 'card',
+        'metadata[island]'        => ($island !== '' ? $island : 'mq'),
+        'metadata[pass]'          => $pass,
+        'metadata[plan]'          => $pass,
+        'metadata[source]'        => $source,
+    ];
+    if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL)) $piParams['receipt_email'] = $email;
+    $pi = stripe('POST', '/payment_intents', $piParams);
+    $resp = ['paymentIntentId' => $pi['id'], 'status' => $pi['status'] ?? ''];
+    if (in_array($pi['status'] ?? '', ['requires_action', 'requires_confirmation'], true)) {
+        $resp['requiresAction'] = true;
+        $resp['piClientSecret'] = $pi['client_secret'] ?? null;
+    } elseif (($pi['status'] ?? '') !== 'succeeded') {
+        $resp['paymentFailed'] = true;
+    }
+    echo json_encode($resp);
     exit;
 }
 
