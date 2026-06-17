@@ -425,7 +425,16 @@ if ($action === 'pay_once') {
     $cents = (int)($input['cents'] ?? 0);
     $email = trim($input['email'] ?? '');
     $source = preg_replace('/[^a-zA-Z0-9_-]/', '', $input['source'] ?? 'unknown');
-    $ALLOWED_CENTS = [799, 999, 1499, 1999, 2499];
+    // Devise + montants autorisés PAR RÉGION (via $island = $ISLAND_BY_ORIGIN).
+    // Régions touristes USD : pass voyage 7j one-time $5.99 = 599¢ → même checkout
+    // ON-SITE que l'EUR (capture email + abandon récupérable, plus de Payment Link
+    // hébergé qui bounce). EUR (MQ/GP) : passes 7j/30j historiques inchangés.
+    // Allowlist PAR DEVISE = anti-tampering croisé (un 2499 USD ou un 599 EUR
+    // forgé est rejeté).
+    $USD_ISLANDS = ['florida', 'rivieramaya', 'puntacana'];
+    $isUsd = in_array($island, $USD_ISLANDS, true);
+    $currency = $isUsd ? 'usd' : 'eur';
+    $ALLOWED_CENTS = $isUsd ? [599] : [799, 999, 1499, 1999, 2499];
     if (!$setupIntentId || !in_array($cents, $ALLOWED_CENTS, true)) {
         http_response_code(400);
         echo json_encode(['error' => 'bad pass params']);
@@ -440,7 +449,7 @@ if ($action === 'pay_once') {
     }
     $piParams = [
         'amount'                  => $cents,
-        'currency'                => 'eur',
+        'currency'                => $currency,
         'payment_method'          => $pm,
         'confirm'                 => 'true',
         'payment_method_types[0]' => 'card',
