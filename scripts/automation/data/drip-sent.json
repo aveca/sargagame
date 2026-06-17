@@ -852,7 +852,8 @@
     "j7": "2026-06-17T05:48:20.941Z"
   },
   "00d39397495579598b9127db68ebf777": {
-    "j3": "2026-06-13T13:59:54.127Z"
+    "j3": "2026-06-13T13:59:54.127Z",
+    "j7": "2026-06-17T15:30:40.227Z"
   },
   "6743b255cf696f319ba3ee1435452f4c": {
     "daily_last": "2026-06-17",
@@ -949,7 +950,9 @@
   "d6ebd84f1a796343c69fc8645ffca415": {
     "j3": "2026-06-17T07:52:38.793Z"
   },
-  "f0bae18e7e303a53a4d6eac3eadb3702": {},
+  "f0bae18e7e303a53a4d6eac3eadb3702": {
+    "j3": "2026-06-17T15:30:42.546Z"
+  },
   "303f49dc2fb533905b2fa5012c33211e": {
     "daily_last": "2026-06-17",
     "daily_sig": "Plage de Grande Anse|clean|80|clean|0|"
@@ -960,8 +963,8 @@
   },
   "a834cb4133d4a707846673399dd1c1e7": {},
   "e6a566c20d0d640645292652dcc83adb": {
-    "daily_last": "2026-06-16",
-    "daily_sig": "Fort Lauderdale Beach|clean|93|clean|0|"
+    "daily_last": "2026-06-17",
+    "daily_sig": "Cocoa Beach|clean|87|clean|0|"
   },
   "73847215716df27d0e0585585d502598": {
     "daily_last": "2026-06-17",
