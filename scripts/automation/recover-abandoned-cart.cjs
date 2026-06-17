@@ -31,6 +31,9 @@ const { getAllRegions } = require('../../regions/index.cjs')
 const args = process.argv.slice(2)
 const DO_SEND = args.includes('--send')
 const SINCE_DAYS = Number((args.find(a => a.startsWith('--since-days=')) || '--since-days=1').split('=')[1]) || 1
+// --only=<email|hash|hash-prefix> : relance ciblée d'UN panier précis (le reste reste à la loop planifiée)
+const ONLY_RAW = (args.find(a => a.startsWith('--only=')) || '').split('=')[1] || null
+const ONLY_HASH = ONLY_RAW ? (ONLY_RAW.includes('@') ? require('crypto').createHash('sha256').update(ONLY_RAW.trim().toLowerCase()).digest('hex').slice(0, 32) : ONLY_RAW.toLowerCase()) : null
 
 function envVal(name) {
   if (process.env[name]) return process.env[name].trim()
@@ -194,6 +197,7 @@ async function main() {
     const email = s.customer_details?.email || s.customer_email
     if (!email) continue
     const h = emailHash(email)
+    if (ONLY_HASH && !h.startsWith(ONLY_HASH)) continue // relance ciblée
     if (seen.has(h) || activeHashes.has(h) || sentSet.has(h) || bouncedSet.has(h)) continue
     let island = s.metadata?.island
     if (!island && s.payment_link) { try { island = (await stripe(`payment_links/${s.payment_link}`)).metadata?.island } catch {} }
