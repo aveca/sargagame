@@ -31,6 +31,7 @@
 const fs = require('fs')
 const path = require('path')
 const L = require('./lib/share-card.cjs')
+const CR = require('./lib/creature.cjs')
 
 const args = process.argv.slice(2)
 const opt = k => { const a = args.find(x => x.startsWith(`--${k}=`)); return a ? a.split('=').slice(1).join('=') : null }
@@ -155,34 +156,40 @@ function buildResultCard(p, correct, streak) {
   const col = correct ? L.PALETTE.teal : L.STATUS.avoid.color
   const verdict = correct ? 'BIEN VU' : 'PRESQUE'
   const tagline = correct ? 'Le meilleur spot du jour, deviné au satellite.' : 'Le satellite avait un autre favori aujourd’hui.'
-  const cx = W / 2, by = 430, r = 142
-  // Badge ✓ / ✗
+  const cx = W / 2
+
+  // Hero = Le Sarga (mascotte), humeur selon le résultat → l'objet viral.
+  const creature = CR.sargaCreature({ variant: correct ? 'happy' : 'panic', x: 350, y: 208, scale: 1.9 })
+
+  // Badge ✓ / ✗ en accent, posé sur le coin de la créature.
+  const bx = 712, byb = 290, br = 58
   const glyph = correct
-    ? `<path d="M ${cx - 56} ${by + 4} l 34 38 l 72 -78" fill="none" stroke="${col}" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>`
-    : `<path d="M ${cx - 46} ${by - 46} l 92 92 M ${cx + 46} ${by - 46} l -92 92" fill="none" stroke="${col}" stroke-width="22" stroke-linecap="round"/>`
+    ? `<path d="M ${bx - 27} ${byb + 2} l 17 19 l 36 -40" fill="none" stroke="${L.PALETTE.ink2}" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>`
+    : `<path d="M ${bx - 22} ${byb - 22} l 44 44 M ${bx + 22} ${byb - 22} l -44 44" fill="none" stroke="${L.PALETTE.ink2}" stroke-width="12" stroke-linecap="round"/>`
 
   // Bandeau de série (squares verts) — uniquement si streak fourni
   let streakBlock = ''
   if (streak && streak > 0) {
-    const n = Math.min(streak, 7), sq = 58, g = 16
+    const n = Math.min(streak, 7), sq = 56, g = 16
     const totalW = n * sq + (n - 1) * g
-    const sx = (W - totalW) / 2, sy = 742
+    const sx = (W - totalW) / 2, sy = 724
     let cells = ''
     for (let i = 0; i < n; i++) cells += `<rect x="${sx + i * (sq + g)}" y="${sy}" width="${sq}" height="${sq}" rx="14" fill="${L.PALETTE.teal}"/>`
     streakBlock = `${cells}
-      <text x="${W / 2}" y="${sy + sq + 56}" text-anchor="middle" font-family="${L.FONT}" font-size="34" font-weight="800" fill="${L.PALETTE.white}">${streak} jours de suite</text>`
+      <text x="${cx}" y="${sy + sq + 52}" text-anchor="middle" font-family="${L.FONT}" font-size="34" font-weight="800" fill="${L.PALETTE.white}">${streak} jours de suite</text>`
   }
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
   ${L.commonDefs()}
   <rect width="${W}" height="${H}" fill="url(#bg)"/>
-  <circle cx="${cx}" cy="${by}" r="${r + 60}" fill="${col}" opacity="0.06"/>
+  <circle cx="${cx}" cy="360" r="300" fill="${col}" opacity="0.06"/>
   <rect width="${W}" height="${H}" fill="url(#vign)"/>
   ${header(p.n, `${L.dateLongFR(p.date)} · ${reg.label}`, '')}
-  <circle cx="${cx}" cy="${by}" r="${r}" fill="none" stroke="${col}" stroke-width="14" opacity="0.9"/>
+  ${creature}
+  <circle cx="${bx}" cy="${byb}" r="${br}" fill="${col}"/>
   ${glyph}
-  <text x="${cx}" y="${by + r + 92}" text-anchor="middle" font-family="${L.FONT}" font-size="80" font-weight="900" letter-spacing="-1" fill="${col}">${verdict}</text>
-  <text x="${cx}" y="${by + r + 146}" text-anchor="middle" font-family="${L.FONT}" font-size="29" font-weight="600" fill="${L.PALETTE.mut}">${L.esc(tagline)}</text>
+  <text x="${cx}" y="600" text-anchor="middle" font-family="${L.FONT}" font-size="88" font-weight="900" letter-spacing="-1" fill="${col}">${verdict}</text>
+  <text x="${cx}" y="652" text-anchor="middle" font-family="${L.FONT}" font-size="29" font-weight="600" fill="${L.PALETTE.mut}">${L.esc(tagline)}</text>
   ${streakBlock}
   ${L.domainWatermark(W, H, reg.domain)}
 </svg>`
