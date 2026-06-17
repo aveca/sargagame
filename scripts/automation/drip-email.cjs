@@ -192,6 +192,7 @@ const DRIP_STEPS = [
   { key: 'j3',  days: 3  },
   { key: 'j7',  days: 7  },
   { key: 'j14', days: 14 },
+  { key: 'j21', days: 21 }, // relance finale MQ/GP (renversement de risque) — USD skip via getHTML null
 ]
 
 // Leads PRO (formulaires /pro/*) : exclus du drip grand public — séquence dédiée
@@ -473,6 +474,53 @@ function buildJ14(island, cleanCount, email) {
 </div></body></html>`
 }
 
+// J+21 — Relance finale MQ/GP : angle RENVERSEMENT DE RISQUE (frais — les emails
+// précédents ne menaient pas avec la garantie 30j, introduite avec le passage no-trial).
+// Value-led, calme (pas de nag). Dernier mail incitatif du drip ; ensuite le bulletin
+// hebdo prend le relais. CTA on-site (?paywall=1). USD : pas de J21 (getHTML → null → skip).
+function buildJ21(island, cleanCount, email) {
+  const name = island === 'MQ' ? 'Martinique' : 'Guadeloupe'
+  const domain = island === 'MQ' ? 'sargasses-martinique.com' : 'sargasses-guadeloupe.com'
+
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
+<body style="margin:0;padding:0;background:#F7F5EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+<div style="max-width:480px;margin:0 auto;padding:20px">
+  ${header('Zéro risque', `3 semaines que le Veilleur surveille ${name} pour toi`, 'fr')}
+  <div style="background:#fff;padding:24px 20px">
+    <div style="font-size:15px;color:#333;line-height:1.6;margin-bottom:18px">
+      Tu reçois nos bulletins depuis 3 semaines. La seule vraie raison de ne pas activer ton veilleur personnel, c'est le risque — et il n'y en a aucun.
+    </div>
+
+    <div style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.18);border-radius:12px;padding:16px;margin-bottom:18px">
+      <div style="display:flex;align-items:center;margin-bottom:6px">
+        <span style="font-size:22px;margin-right:10px">&#x1F6E1;&#xFE0F;</span>
+        <div style="font-size:15px;font-weight:800;color:#16A34A">Satisfait ou remboursé 30 jours</div>
+      </div>
+      <div style="font-size:13px;color:#555;line-height:1.5">Tu actives, tu testes un mois entier. Ça ne te sert pas ? On te rembourse, sans question. Tu ne perds rien — sauf les mauvaises surprises sur la plage.</div>
+    </div>
+
+    <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">Ce que tu actives</div>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
+      <tr><td style="padding:7px 0;vertical-align:top;width:28px;font-size:17px">&#x1F4F2;</td>
+        <td style="padding:7px 0;font-size:13px;color:#333"><strong>Brief matin à 7h</strong> — ta meilleure plage du jour, sans ouvrir l'appli.</td></tr>
+      <tr><td style="padding:7px 0;vertical-align:top;font-size:17px">&#x1F514;</td>
+        <td style="padding:7px 0;font-size:13px;color:#333"><strong>Alerte</strong> dès qu'une plage favorite change d'état.</td></tr>
+      <tr><td style="padding:7px 0;vertical-align:top;font-size:17px">&#x1F4C5;</td>
+        <td style="padding:7px 0;font-size:13px;color:#333"><strong>Prévisions 7 jours</strong> plage par plage — planifie ton weekend à l'avance.</td></tr>
+    </table>
+
+    <div style="text-align:center">
+      ${ctaButton('Activer mon veilleur', sitePaywall(domain, 'j21'))}
+      <div style="font-size:11px;color:#999;margin-top:8px">4,99 €/mois · Satisfait ou remboursé 30 jours · Annule en 1 clic</div>
+    </div>
+  </div>
+  <div style="background:#fff;padding:14px 20px;border-top:1px solid #f0f0f0;text-align:center">
+    <a href="https://${domain}" style="color:#999;font-size:12px;text-decoration:none">Ou reste sur la carte gratuite, sans souci</a>
+  </div>
+  ${footer(name, domain, email, island)}
+</div></body></html>`
+}
+
 // ── J+7 / J+14 nouvelles régions (EN/ES, no-trial, données réelles) ─────────
 // Mêmes leviers que les versions FR (veilleur / aversion à la perte) mais :
 // plages RÉELLES du brief du jour (jamais d'exemples inventés), copy no-trial
@@ -650,6 +698,7 @@ function getSubject(step, island, cleanCount, brief) {
     case 'j14': return IS_HIGH_SEASON
       ? `Le satellite a vu quelque chose... 🛰️ (pour ton weekend)`
       : `Ne découvre pas les sargasses sur la plage`
+    case 'j21': return `30 jours pour tester ton veilleur — zéro risque`
   }
 }
 
@@ -670,6 +719,10 @@ function getPreheader(step, island) {
     "Le weekend gâché — ou évité d'un coup d'œil vendredi soir. À toi de voir.",
     "A ruined weekend — or one glance Friday night that saves it. Your call.",
     "Un finde arruinado — o una mirada el viernes que lo salva. Tú decides.")
+  if (step === 'j21') return t(
+    "Un mois entier pour essayer. Ça ne te sert pas ? Remboursé, sans question.",
+    "A full month to try. Not for you? Refunded, no questions.",
+    "Un mes entero para probarlo. ¿No te sirve? Reembolsado, sin preguntas.")
   return ''
 }
 
@@ -679,6 +732,7 @@ function getHTML(step, island, cleanCount, topBeaches, email, brief) {
     case 'j3':  return brief ? buildJ3(island, brief, email) : null
     case 'j7':  return isNewRegion ? (brief ? buildJ7Region(island, brief, email) : null) : buildJ7(island, cleanCount, email)
     case 'j14': return isNewRegion ? (brief ? buildJ14Region(island, brief, email) : null) : buildJ14(island, cleanCount, email)
+    case 'j21': return isNewRegion ? null : buildJ21(island, cleanCount, email) // MQ/GP only (USD = pas de relance J21 pour l'instant)
   }
 }
 
@@ -779,6 +833,9 @@ async function main() {
         : (island === 'GP' ? FROM_GP : FROM_MQ)
       const subject = getSubject(step.key, island, cleanCount, brief)
       const html = getHTML(step.key, island, cleanCount, topBeaches, email, brief)
+      // Pas de template pour ce (step, région) → skip SANS marquer (ex: j21 sur USD).
+      // Évite d'envoyer un email vide et ne grille pas l'étape (resend propre plus tard).
+      if (!html) continue
       const preheader = getPreheader(step.key, island)
       const unsub = unsubUrl(email, island)
       // A/B — j7 + j14 par langue (j3 = pas de variant disponible)
