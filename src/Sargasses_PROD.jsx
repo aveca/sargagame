@@ -6185,6 +6185,12 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
       stripeRef.current=window.Stripe(STRIPE_PK)
       elementsRef.current=stripeRef.current.elements({
         clientSecret,
+        // locale = langue de l'UI du modal (et donc des labels + texte de mandat
+        // « En fournissant vos informations… » rendus PAR Stripe). Sans ça, défaut
+        // 'auto' → détection navigateur : un site EN/USD (Florida) ou ES (Riviera/
+        // Punta Cana) affichait les labels en FR pour un navigateur FR. `lang` suit
+        // déjà la région (primaryLang) + override path /en /es → MQ/GP restent en FR.
+        locale:lang,
         appearance:{theme:"night",variables:{
           colorPrimary:"#FFC72C",colorBackground:"#13261F",colorText:"#e6edf3",
           colorDanger:"#E8522A",borderRadius:"12px",fontSizeBase:"15px",
