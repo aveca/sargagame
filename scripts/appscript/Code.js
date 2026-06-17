@@ -594,6 +594,13 @@ function doGet(e) {
         var aData = aSheet.getDataRange().getValues()
         var abCounts = {}
         var abCols = ['lock1', 'modal1', 'onb1', 'free1', 'vp1', 'price1']
+        // Breakdown du goulot modal→CTA (fuite #1, 2% blended). source + variante
+        // A/B vivent déjà dans raw_params (col 9) sur modal_open ET modal_cta — on
+        // les segmente ici (zéro changement client). Désambigue intent (forecast_lock)
+        // vs ouverture passive (nav/deeplink) et rend lisibles les A/B modal.
+        var modalBySource = {}   // src -> {open, cta}
+        var modalByVariant = {}  // testId -> value -> {open, cta}
+        var MODAL_AB_TESTS = ['pw_calm', 'pw_proof', 'pw_prelude', 'pw_hero', 'pw_pass_cta', 'pw_cta_order']
 
         for (var i = 1; i < aData.length; i++) {
           var tsCell = aData[i][0]
@@ -601,6 +608,29 @@ function doGet(e) {
           if (tsIso < cutoff) continue
           var evt = (aData[i][1] || '').replace('sg_', '')
           if (funnel.hasOwnProperty(evt)) funnel[evt]++
+
+          // Segmentation modal_open / modal_cta par source et par variante A/B.
+          var isMOpen = evt === 'premium_modal_open'
+          var isMCta = evt === 'premium_modal_cta'
+          if (isMOpen || isMCta) {
+            var mrp = null
+            try { var mraw = aData[i][9]; mrp = mraw ? (typeof mraw === 'string' ? JSON.parse(mraw) : mraw) : null } catch (e) { mrp = null }
+            var mSrc = (mrp && mrp.source) ? String(mrp.source) : 'unknown'
+            if (!modalBySource[mSrc]) modalBySource[mSrc] = { open: 0, cta: 0 }
+            modalBySource[mSrc][isMOpen ? 'open' : 'cta']++
+            if (mrp) {
+              for (var mt = 0; mt < MODAL_AB_TESTS.length; mt++) {
+                var tid = MODAL_AB_TESTS[mt]
+                var vv = mrp['ab_' + tid]
+                if (vv != null && vv !== '') {
+                  if (!modalByVariant[tid]) modalByVariant[tid] = {}
+                  var vkey = String(vv)
+                  if (!modalByVariant[tid][vkey]) modalByVariant[tid][vkey] = { open: 0, cta: 0 }
+                  modalByVariant[tid][vkey][isMOpen ? 'open' : 'cta']++
+                }
+              }
+            }
+          }
 
           // Aggregate A/B variant counts (cols 3-8: ab_lock1..ab_price1)
           for (var j = 0; j < abCols.length; j++) {
@@ -630,6 +660,28 @@ function doGet(e) {
         }
         funnel.total_events = aData.length - 1
         funnel.ab_variants = abCounts
+
+        // Taux modal→CTA par source (1 décimale) — trié décroissant par opens.
+        var msKeys = Object.keys(modalBySource).sort(function (a, b) { return modalBySource[b].open - modalBySource[a].open })
+        var bySrcOut = {}
+        for (var s2 = 0; s2 < msKeys.length; s2++) {
+          var sk = msKeys[s2], so = modalBySource[sk].open
+          bySrcOut[sk] = { open: so, cta: modalBySource[sk].cta, rate: so > 0 ? Math.round(modalBySource[sk].cta / so * 1000) / 10 : 0 }
+        }
+        funnel.modal_by_source = bySrcOut
+
+        // Taux modal→CTA par variante A/B (1 décimale) — lit enfin les tests modal.
+        var mvOut = {}
+        var mvKeys = Object.keys(modalByVariant)
+        for (var t2 = 0; t2 < mvKeys.length; t2++) {
+          var tk = mvKeys[t2]; mvOut[tk] = {}
+          var vKeys = Object.keys(modalByVariant[tk])
+          for (var v2 = 0; v2 < vKeys.length; v2++) {
+            var vk = vKeys[v2], vo = modalByVariant[tk][vk].open
+            mvOut[tk][vk] = { open: vo, cta: modalByVariant[tk][vk].cta, rate: vo > 0 ? Math.round(modalByVariant[tk][vk].cta / vo * 1000) / 10 : 0 }
+          }
+        }
+        funnel.modal_by_variant = mvOut
       }
 
       // payments_real: Stripe webhook truth (sg_conversion client event misses
