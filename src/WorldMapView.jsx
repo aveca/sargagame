@@ -9,6 +9,8 @@
  *         onClose, rootMode, track
  */
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"
+import { COAST_ZONES } from "../scripts/lib/coast-zones.cjs"
+
 
 const STATUS_C = { clean: "#22C55E", moderate: "#E8A800", avoid: "#E8522A" }
 const STATUS_LBL = {
@@ -47,7 +49,7 @@ function vantColor(beachList, day){
 const MQ_RELIEF = [[14.79,-61.10,24],[14.74,-61.10,18],[14.70,-61.07,20],[14.52,-61.06,15],[14.47,-60.92,12]]
 
 export default function WorldMapView({
-  beaches, island, updatedAt, lang, onOpenBeach, onPremium, onClose, rootMode, track,
+  beaches, island, updatedAt, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone,
 }){
   const wrapRef    = useRef(null)
   const worldRef   = useRef(null)  // <g id="world"> — transform mis à jour en RAF
@@ -193,15 +195,45 @@ export default function WorldMapView({
     animRef.current=requestAnimationFrame(step)
   },[clampCam,writeCam])
 
-  // Caméra initiale : centre de la bbox de l'outline
+  // Caméra initiale : centre de la bbox de l'outline ou de la zone
   useEffect(()=>{
     if(!outline) return
     const{proj,bbox}=outline
-    const cx=proj.offX+((bbox.minLng+bbox.maxLng)/2-bbox.minLng)*proj.kx*proj.sc
-    const cy=proj.offY+(bbox.maxLat-(bbox.minLat+bbox.maxLat)/2)*proj.sc
-    camRef.current={tx:400-cx,ty:300-cy,k:1}; clampCam(); writeCam()
-    try{ track&&track("sg_archipel_open",{source:"map_world",island}) }catch(_){}
-  },[outline]) // eslint-disable-line
+    let centered = false
+    if(initialZone && beachList.length){
+      const zoneObj = (COAST_ZONES[island] || []).find(z => z.slug === initialZone)
+      if(zoneObj){
+        const zoneBeaches = beachList.filter(b => zoneObj.communes.includes(b.commune))
+        if(zoneBeaches.length){
+          let avgVx = 0, avgVy = 0
+          for(const b of zoneBeaches){
+            avgVx += b.vx
+            avgVy += b.vy
+          }
+          avgVx /= zoneBeaches.length
+          avgVy /= zoneBeaches.length
+          
+          const tk = 2.0
+          camRef.current = {
+            tx: 400 - avgVx * tk,
+            ty: 300 - avgVy * tk,
+            k: tk
+          }
+          clampCam()
+          writeCam()
+          centered = true
+          try { track && track("sg_zone_click", { zone: initialZone }) } catch(_) {}
+        }
+      }
+    }
+    if(!centered){
+      const cx=proj.offX+((bbox.minLng+bbox.maxLng)/2-bbox.minLng)*proj.kx*proj.sc
+      const cy=proj.offY+(bbox.maxLat-(bbox.minLat+bbox.maxLat)/2)*proj.sc
+      camRef.current={tx:400-cx,ty:300-cy,k:1}; clampCam(); writeCam()
+      try{ track&&track("sg_archipel_open",{source:"map_world",island}) }catch(_){}
+    }
+  },[outline, initialZone, beachList]) // eslint-disable-line
+
 
   // ─── POINTEURS : pan / zoom / pinch ────────────────────────────────────────
   useEffect(()=>{
