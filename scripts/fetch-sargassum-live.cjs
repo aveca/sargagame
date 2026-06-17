@@ -625,6 +625,8 @@ function applyBeachAccumulation(levels, dir) {
 // ⚠️ risque dérivé, JAMAIS une mesure de gaz (aucun capteur terrain). REFONTE-MASTER §4A #4.
 function applyH2SIndex(levels, dir) {
   try {
+    const today = new Date().toISOString().slice(0, 10)
+    const WINDOW_DAYS = 10 // fenêtre de récence pour les jours consécutifs (cf. boostBeachMemory)
     const { deriveH2S } = require('./lib/h2s.cjs')
     let history = []
     try { history = (JSON.parse(fs.readFileSync(path.join(dir, 'history.json'), 'utf-8')).history) || [] } catch (_) {}
