@@ -84,7 +84,7 @@
 - **BeachScene** (9 archétypes, PRNG seedé) — existe, à brancher en NEAR.
 - **Scènes StoryEngine** (DiscoveryStory, scan satellite, AlertScene, dérive) — existent.
 - **Funnel scroll 5 beats** — `design/proto-home-funnel.html` (sticky réparé, cross-fade). ✅
-- **OG par plage** (SVG→PNG) — à créer. ⏳
+- **OG par plage** (SVG→PNG) — ✅ **Fait** (généré par scripts).
 - Pièges SVG (skill `sg-svg-scene`) : sticky (.scroller = Σspans + 1 viewport) ; transform de pose `translate(cx,cy) rotate()` sans translate parasite ; snap couleur humeur ; viewBox 800×600 slice ; 1 rAF + pause visibilitychange ; reduced-motion floor.
 
 ---
@@ -159,7 +159,7 @@
 - [x] CTA stations → flyTo ; tuer ?decouverte/?solutions.
 - [ ] Fraîcheur /fiabilite + désambiguïsation /saison-*.
 - [x] 301 legacy (weekend ✅ · articles ✅ 9f34a0c8 · onboarding/neptunes/sarg_carte ✅ 2026-06-16).
-- [ ] OG dynamiques par plage (SVG→PNG).
+- [x] OG dynamiques par plage (SVG→PNG).
 
 **PHASE 4 (VERROUILLÉE — seulement si funnel sain).** KPI : email 0,35 %→≥2 %, share-cards si modal→CTA≥5 % tenu 2 sem.
 - [ ] Déverrouiller share-cards · soigner capture · Bahamas (data≥2 sem) · widgets B2B depuis beaches-list.
