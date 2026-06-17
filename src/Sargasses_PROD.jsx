@@ -6,10 +6,10 @@
  * Stack : React 18 · Leaflet · Bricolage Grotesque + Anton · Open-Meteo
  */
 import React,{useState,useEffect,useRef,useMemo,useCallback,createContext,useContext,Component,Suspense,lazy}from"react"
-import {computeScore as _computeBeachScore} from "./src/lib/score.js"
-import { COAST_ZONES } from "./scripts/lib/coast-zones.cjs"
-import { getCanonicalSlug } from "./src/lib/slug-resolver.js"
-import Dock from "./src/Dock.jsx"
+import {computeScore as _computeBeachScore} from "./lib/score.js"
+import { COAST_ZONES } from "../scripts/lib/coast-zones.cjs"
+import { getCanonicalSlug } from "./lib/slug-resolver.js"
+import Dock from "./Dock.jsx"
 
 // Import résilient : pendant la fenêtre FTP d'un deploy (~25 min), un index.html
 // frais peut référencer un chunk pas encore uploadé → import() rejette et le
@@ -30,18 +30,18 @@ const lazyWithRetry=imp=>lazy(()=>imp()
     }catch(_){}
     throw err
   }))
-const LazyMapView=lazyWithRetry(()=>import("./src/MapView"))
+const LazyMapView=lazyWithRetry(()=>import("./MapView"))
 // Accueil A→Z (bras A/B `home_az`) — design validé porté en Shadow DOM.
-const LazyHomeAZ=lazyWithRetry(()=>import("./src/HomeAZ"))
+const LazyHomeAZ=lazyWithRetry(()=>import("./HomeAZ"))
 // Carte SVG monde golden-hour (bras A/B `map_world`) — port proto-map-v2, region-aware.
-const LazyWorldMapView=lazyWithRetry(()=>import("./src/WorldMapView"))
+const LazyWorldMapView=lazyWithRetry(()=>import("./WorldMapView"))
 // Fiche plage « en PLONGÉE » (bras A/B `pw_beach_dive`) — port proto-plage-plongee,
 // Shadow DOM, region-aware. Alternative additive à BeachSheet (control intact).
-const LazyBeachDive=lazyWithRetry(()=>import("./src/BeachDive"))
+const LazyBeachDive=lazyWithRetry(()=>import("./BeachDive"))
 // CleanList — /plages-sans-sargasses/ A/B `clean_list` (port proto-planb-clean-nearby)
-const LazyCleanList=lazyWithRetry(()=>import("./src/CleanList"))
+const LazyCleanList=lazyWithRetry(()=>import("./CleanList"))
 // Conditions — /conditions/<slug>/ A/B `pw_conditions`
-const LazyConditions=lazyWithRetry(()=>import("./src/Conditions"))
+const LazyConditions=lazyWithRetry(()=>import("./Conditions"))
 
 
 class ErrBound extends Component{

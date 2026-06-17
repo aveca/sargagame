@@ -1143,6 +1143,21 @@ ${isGP ? `  <url><loc>${d}/meteo-sargasses-guadeloupe/</loc><lastmod>${today}</l
               clean: 'Plage de la Datcha au Gosier (Guadeloupe) — propre en temps réel. Plage du bourg du Gosier, côte sud de Grande-Terre, eaux calmes, idéal familles. Carte sargasses Guadeloupe et prévisions 7 jours.',
               moderate: 'Sargasses à la Datcha (Le Gosier, Guadeloupe) — présence modérée détectée en temps réel. Bourg du Gosier, côte sud Grande-Terre. Carte et prévisions 7 jours.',
               avoid: 'Alerte sargasses à la Plage de la Datcha (Le Gosier, Guadeloupe) — forte concentration détectée en temps réel. Carte des plages propres à proximité de Pointe-à-Pitre.'
+            },
+            'Anse Michel': {
+              clean: 'Anse Michel à Sainte-Anne (Martinique) — plage propre en temps réel. Cap Chevalier, spot de kitesurf et snorkeling, côte Atlantique. Carte sargasses Martinique et prévisions 7 jours.',
+              moderate: 'Sargasses à Anse Michel (Sainte-Anne, Martinique) — présence modérée détectée en temps réel. Cap Chevalier, côte Atlantique. Kitesurf, snorkeling. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à Anse Michel (Cap Chevalier, Sainte-Anne, Martinique) — forte concentration côte Atlantique. Voir les plages propres à proximité sur la carte en temps réel.'
+            },
+            'Anse Céron': {
+              clean: 'Anse Céron au Prêcheur (Martinique) — plage propre en temps réel. Sable noir volcanique face au rocher de la Perle, côte Caraïbe nord-ouest, idéal familles. Généralement épargnée des sargasses. Prévisions 7 jours.',
+              moderate: 'Sargasses à l\'Anse Céron (Le Prêcheur, Martinique) — présence modérée détectée en temps réel. Plage de sable noir, côte Caraïbe nord-ouest. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à l\'Anse Céron (Le Prêcheur, Martinique) — forte concentration côte Caraïbe. Voir les plages propres à proximité de Saint-Pierre sur la carte en temps réel.'
+            },
+            'Anse Tarare': {
+              clean: 'Anse Tarare à Saint-François (Guadeloupe) — plage propre en temps réel. Crique près de la Pointe des Châteaux, snorkeling, côte Atlantique de Grande-Terre. Carte sargasses Guadeloupe et prévisions 7 jours.',
+              moderate: 'Sargasses à l\'Anse Tarare (Saint-François, Guadeloupe) — présence modérée détectée en temps réel. Près de la Pointe des Châteaux, côte Atlantique. Snorkeling. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à l\'Anse Tarare (Saint-François, Guadeloupe) — forte concentration côte Atlantique. Voir les plages propres à proximité de Saint-François sur la carte en temps réel.'
             }
           }
           let sitemapMQBeaches = ''
