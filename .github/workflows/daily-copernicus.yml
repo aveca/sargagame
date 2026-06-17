@@ -387,7 +387,17 @@ jobs:
           git add public/api/copernicus/sargassum.json public/api/copernicus/history.json public/api/copernicus/sargassum-grid.json
           # Sorties par région du pipeline multi-régions (mq/, gp/, puntacana/, …)
           # banks/grid régionaux inclus : persistance inter-runs = signal d'arrivée forecast
-          git add 'public/api/copernicus/*/sargassum.json' 'public/api/copernicus/*/history.json' 'public/api/copernicus/*/sargassum-banks.json' 'public/api/copernicus/*/sargassum-grid.json' 'public/api/copernicus/*/forecast-archive.json' 2>/dev/null || true
+          # Chaque pathspec ajouté SÉPARÉMENT — `git add a b c` est ATOMIQUE : si UN
+          # seul pathspec ne matche AUCUN fichier, git add sort en 128 et ne stage
+          # RIEN (les autres compris). C'est le bug qui a GELÉ toute la donnée
+          # régionale (mq/gp ET les 3 USD) du 2026-06-15 au 17 : forecast-archive.json
+          # par-région n'est jamais écrit par runRegionPipeline → ce pathspec matchait
+          # zéro fichier → git add 128 → 0 région committée (root frais, sous-dossiers
+          # figés, invisible sur MQ/GP qui servent aussi le root). La boucle + `|| true`
+          # isole chaque pathspec : un glob vide n'empêche plus les autres de stager.
+          for pat in sargassum.json history.json sargassum-banks.json sargassum-grid.json forecast-archive.json; do
+            git add "public/api/copernicus/*/$pat" 2>/dev/null || true
+          done
           [ -f scripts/automation/data/daily-metrics.json ] && git add scripts/automation/data/daily-metrics.json
           # RGPD : subscribers.json (emails en clair) n'est PLUS JAMAIS commité —
           # re-fetché à chaque run depuis Apps Script. Les fichiers d'état
