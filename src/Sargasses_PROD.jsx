@@ -6320,7 +6320,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   // ── pw_hot_intent : paywall in-scene ancré plage (hot intent + beach ctx) ──
   // A/B 50/50 vs cold modal. Override ?pwhot=1/0. Actif SEULEMENT si source
   // est hot-intent ET que beach est disponible dans le contexte courant.
-  const HOT_INTENT_SRCS=["forecast_lock","forecast_cta","forecast_scrub","forecast_beat","urgency_banner","list_forecast_lock"]
+  const HOT_INTENT_SRCS=["forecast_lock","forecast_cta","forecast_scrub","forecast_beat","urgency_banner","list_forecast_lock","rel_hot_cta","beach_dive_footer"]
   const _isHot=!!(beach&&HOT_INTENT_SRCS.includes(source||""))
   const pwHot=_isHot&&(()=>{try{const q=window.location.search;if(/[?&]pwhot=1/.test(q))return true;if(/[?&]pwhot=0/.test(q))return false;return abVariant("pw_hot_intent",["control","hot"],[.5,.5])==="hot"}catch(_){return false}})()
   if(pwHot&&beach){
@@ -6381,7 +6381,13 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
                   {_t(lang,"Le satellite voit les sargasses arriver. Tu seras prévenu avant que ça tourne.","Satellite detects incoming sargassum. You'll be alerted before conditions change.","El satélite detecta sargazo llegando. Recibirás alerta antes del cambio.")}
                 </div>
                 <span style={{display:"block",marginTop:6,font:"600 10.5px/1 system-ui,sans-serif",color:"rgba(234,247,244,.55)",letterSpacing:".02em"}}>
-                  {_t(lang,"Donnée Copernicus · 80 % justes / 30 j","Copernicus data · 80% accurate / 30d","Datos Copernicus · 80% exactos / 30d")}
+                  {/* Chiffre RÉEL injecté au build (__REL, même source que /fiabilite/ + badge rel_hot_cta).
+                      JAMAIS de "80%" hardcodé : on publie le clean-rate par régime (cf regimeReliability.note). */}
+                  {(()=>{
+                    if(__REL&&typeof __REL.cleanPct==="number"){const reg=__REL.regime==="high"?_t(lang,"saison haute","high season","temporada alta"):_t(lang,"saison calme","calm season","temporada tranquila");return _t(lang,`Donnée Copernicus · ${__REL.cleanPct}% « mer propre » vérifiées · ${reg}`,`Copernicus data · ${__REL.cleanPct}% “clean water” verified · ${reg}`,`Datos Copernicus · ${__REL.cleanPct}% “agua limpia” verificados · ${reg}`)}
+                    if(__REL&&typeof __REL.global==="number")return _t(lang,`Donnée Copernicus · ${__REL.global}% justes / 30 j`,`Copernicus data · ${__REL.global}% accurate / 30d`,`Datos Copernicus · ${__REL.global}% exactos / 30d`)
+                    return _t(lang,"Donnée Copernicus · backtest quotidien","Copernicus data · daily backtest","Datos Copernicus · backtest diario")
+                  })()}
                 </span>
               </div>
             </div>
@@ -11055,6 +11061,84 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
   )
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   LE JOURNAL DU VEILLEUR — accueil "nouveautés" des visiteurs qui reviennent.
+   Montré 1×/release (clé sg_rel_seen) à un visiteur CONNU, JAMAIS au tout 1er
+   passage. NON destructif : aucun reload (le nouveau bundle est déjà servi en
+   network-first) — c'est une scène golden-hour plein écran, fermable, qui
+   "rattrape" ce qu'on a publié en son absence puis le repose sur sa plage live.
+   Contenu = public/release-notes.json. Gated A/B `wn1`. Conversion-aware.
+   ═══════════════════════════════════════════════════════════════════════════ */
+function WhatsNewJournal({lang,title,items,releaseV,releaseDate,allowDeepLinks,isPremium,onClose,onExplore,onPremium}){
+  useEffect(()=>{try{track("sg_whatsnew_view",{v:releaseV,items:items.length})}catch(_){}},[])// eslint-disable-line
+  const L=(it)=>it[lang]||it.fr
+  const ttl=title?(title[lang]||title.fr):_t(lang,"Pendant ton absence","While you were away","Mientras no estabas")
+  const go=(href)=>{try{track("sg_whatsnew_item",{v:releaseV,href})}catch(_){};try{s("sg_rel_seen",releaseV)}catch(_){};try{window.location.href=href}catch(_){}}
+  return(
+    <div role="dialog" aria-label={_t(lang,"Nouveautés","What's new","Novedades")}
+      style={{position:"fixed",inset:0,zIndex:1072,overflowY:"auto",overflowX:"hidden",WebkitOverflowScrolling:"touch",overscrollBehavior:"contain",
+        background:"linear-gradient(180deg,#0B2230 0%,#123F44 34%,#7E5A38 72%,#C97E3A 100%)",
+        animation:"viewFadeIn .4s cubic-bezier(.22,1,.36,1) both"}}>
+      <div aria-hidden style={{position:"absolute",left:"50%",bottom:"-22%",width:"140%",height:"62%",transform:"translateX(-50%)",
+        background:"radial-gradient(closest-side,rgba(255,216,132,.5),rgba(255,216,132,0))",pointerEvents:"none"}}/>
+      <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")}
+        style={{position:"fixed",top:"calc(12px + env(safe-area-inset-top))",right:12,zIndex:6,width:42,height:42,borderRadius:21,
+          background:"rgba(7,32,30,.5)",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",
+          border:"1px solid rgba(255,255,255,.2)",color:"#fff",fontSize:16,cursor:"pointer"}}>✕</button>
+
+      <div style={{position:"relative",maxWidth:460,margin:"0 auto",minHeight:"100%",display:"flex",flexDirection:"column",
+        justifyContent:"center",padding:"max(40px,11vh) 22px max(26px,env(safe-area-inset-bottom)) 22px",boxSizing:"border-box"}}>
+        <div style={{display:"flex",justifyContent:"center",marginBottom:6}}><Veilleur mood="serein" size={70}/></div>
+        <div style={{textAlign:"center",fontSize:11.5,fontWeight:800,letterSpacing:".16em",textTransform:"uppercase",color:"#FFD884",marginBottom:7}}>
+          {_t(lang,"Content de te revoir","Good to see you back","Qué bueno verte")}
+        </div>
+        <h2 style={{margin:"0 0 8px",textAlign:"center",fontFamily:"'Anton',Impact,Haettenschweiler,'Arial Narrow',sans-serif",fontWeight:400,
+          textTransform:"uppercase",letterSpacing:"-.02em",lineHeight:1.02,color:"#fff",
+          fontSize:"clamp(30px,8vw,42px)",textShadow:"0 2px 24px rgba(0,0,0,.35)"}}>{ttl}</h2>
+        <p style={{margin:"0 auto 20px",textAlign:"center",maxWidth:360,fontSize:14,lineHeight:1.5,color:"rgba(255,255,255,.82)"}}>
+          {_t(lang,"On a continué à veiller pendant que tu n'étais pas là. Voilà ce qui a changé.",
+                  "We kept watch while you were gone. Here's what changed.",
+                  "Seguimos vigilando mientras no estabas. Esto fue lo que cambió.")}
+        </p>
+
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          {items.map((it,i)=>{
+            const clickable=allowDeepLinks&&it.href&&it.href.startsWith("/")
+            return(
+            <div key={i} onClick={clickable?()=>go(it.href):undefined}
+              style={{display:"flex",alignItems:"center",gap:13,padding:"13px 15px",borderRadius:16,
+                background:"rgba(255,252,247,.95)",border:"1px solid rgba(255,255,255,.5)",
+                boxShadow:"0 8px 26px rgba(7,32,30,.22)",cursor:clickable?"pointer":"default",
+                animation:`viewFadeIn .5s cubic-bezier(.22,1,.36,1) ${(0.06*i+0.12).toFixed(2)}s both`}}>
+              <div style={{flexShrink:0,width:40,height:40,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",
+                fontSize:21,background:"linear-gradient(180deg,#FFE47A,#F2B05E)"}}>{it.emoji||"✨"}</div>
+              <div style={{flex:1,fontSize:13.5,lineHeight:1.42,fontWeight:600,color:"#15110A"}}>{L(it)}</div>
+              {clickable&&<div style={{flexShrink:0,color:"#B87A00",fontSize:18,fontWeight:800}}>→</div>}
+            </div>)
+          })}
+        </div>
+
+        <button onClick={onExplore}
+          style={{marginTop:22,width:"100%",padding:"16px",borderRadius:16,border:"none",cursor:"pointer",
+            fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",fontSize:16,fontWeight:800,color:"#07201E",
+            background:"linear-gradient(180deg,#FFD884,#E8A800)",boxShadow:"0 10px 30px rgba(232,168,0,.4)"}}>
+          {_t(lang,"Voir ma plage en direct →","See my beach live →","Ver mi playa en vivo →")}
+        </button>
+
+        {!isPremium&&(
+          <button onClick={onPremium} style={{marginTop:13,background:"none",border:"none",cursor:"pointer",
+            color:"rgba(255,255,255,.9)",fontSize:13,fontWeight:700,fontFamily:"inherit",textAlign:"center",width:"100%"}}>
+            🛰️ {_t(lang,"Le Veilleur personnel veille TA plage pour toi →",
+                      "Your personal Watcher keeps an eye on YOUR beach →",
+                      "El Vigía personal cuida TU playa por ti →")}
+          </button>
+        )}
+        <div style={{textAlign:"center",marginTop:14,fontSize:10.5,color:"rgba(255,255,255,.45)"}}>{releaseV}{releaseDate?" · "+releaseDate:""}</div>
+      </div>
+    </div>
+  )
+}
+
 export default function App(){
   const[lang,setLang]=useState(getLang)
   const[theme,setTheme]=useState(()=>g("sg_theme","light"))
@@ -11092,6 +11176,9 @@ export default function App(){
   const[premiumSource,setPremiumSource]=useState(null)
   const[showCaptureGate,setShowCaptureGate]=useState(false)
   const[captureGateSrc,setCaptureGateSrc]=useState("")
+  // Journal du Veilleur (nouveautés pour visiteurs qui reviennent) : null OU
+  // {v,date,title,items}. Rempli par l'effet release-notes (gated A/B wn1) ci-dessous.
+  const[whatsNew,setWhatsNew]=useState(null)
   const[showFavToast,setShowFavToast]=useState(false)
   const[isPremium,setIsPremium]=useState(()=>{
     if(g("sg_premium",false))return true
@@ -12011,6 +12098,50 @@ export default function App(){
     s("sg_visit_count",vc)
   },[])
 
+  // ── JOURNAL DU VEILLEUR — "voilà ce qu'on a construit en ton absence" ──────
+  // Détecte le visiteur qui REVIENT (sg_visit_count≥2) et lui montre, 1×/release,
+  // les nouveautés publiées depuis sa dernière version vue (sg_rel_seen). Source :
+  // public/release-notes.json. NON destructif (aucun reload — le bundle frais est
+  // déjà servi network-first). Gated A/B `wn1` (80% journal / 20% holdout) pour
+  // mesurer l'effet sur ré-engagement + conversion (verdict via ab-eval).
+  useEffect(()=>{
+    if(abVariant("wn1",["journal","off"],[0.8,0.2])!=="journal")return
+    let cancelled=false
+    const numOf=(v)=>parseInt(String(v||"").replace(/^v/,""),10)||0
+    const run=async()=>{
+      try{
+        const res=await fetch("/release-notes.json",{cache:"no-store"})
+        if(!res.ok)return
+        const data=await res.json()
+        if(cancelled||!data||!data.current||!Array.isArray(data.releases)||!data.releases.length)return
+        const cur=data.current
+        const seen=g("sg_rel_seen",null)
+        if(seen===cur)return // déjà à jour
+        const returning=g("sg_visit_count",0)>=2 // compteur déjà incrémenté ce mount
+        let releasesToShow
+        if(!seen){
+          // Jamais vu le Journal : un NOUVEAU visiteur pose juste la baseline en
+          // silence (il n'a rien manqué). Un visiteur qui REVIENT voit la release courante.
+          if(!returning){s("sg_rel_seen",cur);return}
+          releasesToShow=[data.releases[0]]
+        }else{
+          // A déjà une baseline : montrer toutes les releases plus récentes que la sienne.
+          const sN=numOf(seen)
+          releasesToShow=data.releases.filter(r=>numOf(r.v)>sN)
+          if(!releasesToShow.length){s("sg_rel_seen",cur);return}
+        }
+        const items=[]
+        for(const r of releasesToShow)for(const it of (r.items||[]))items.push(it)
+        if(!items.length){s("sg_rel_seen",cur);return}
+        const head=releasesToShow[0]
+        if(!cancelled)setWhatsNew({v:cur,date:head.date||data.date||"",title:head.title||null,items})
+      }catch(_){}
+    }
+    // Léger délai : laisser le 1er paint / le hero se poser avant d'accueillir.
+    const t=setTimeout(run,1400)
+    return()=>{cancelled=true;clearTimeout(t)}
+  },[])
+
   // Island
   useEffect(()=>{s("sg_island",island)},[island])
 
@@ -12629,6 +12760,20 @@ export default function App(){
         {showPremium&&<PremiumModal onClose={()=>setShowPremium(false)} lang={lang} source={premiumSource}
           onActivated={()=>{setIsPremium(true);setShowWelcome(true)}} sargData={sargData} island={island}
           beach={selectedBeach||null}/>}
+
+        {/* JOURNAL DU VEILLEUR — nouveautés pour visiteurs qui reviennent (gated wn1).
+            Garde-fous : jamais par-dessus le hero/onboarding/paywall/fiche ouverte. */}
+        {whatsNew&&!showHero&&!showPrevLanding&&!showOnboarding&&!showPremium&&!showCaptureGate&&!showWelcome&&!selectedBeach&&(
+          <WhatsNewJournal lang={lang} title={whatsNew.title} items={whatsNew.items}
+            releaseV={whatsNew.v} releaseDate={whatsNew.date} allowDeepLinks={!IS_NEW_REGION} isPremium={isPremium}
+            onClose={()=>{try{s("sg_rel_seen",whatsNew.v)}catch(_){};track("sg_whatsnew_dismiss",{v:whatsNew.v});setWhatsNew(null)}}
+            onExplore={()=>{
+              try{s("sg_rel_seen",whatsNew.v)}catch(_){};track("sg_whatsnew_cta",{v:whatsNew.v})
+              setWhatsNew(null);setShowPremium(false);setView("map")
+              if(myBeach)onBeachClick(myBeach) // atterrissage personnel : sa plage en direct
+            }}
+            onPremium={()=>{try{s("sg_rel_seen",whatsNew.v)}catch(_){};track("sg_whatsnew_premium",{v:whatsNew.v});setWhatsNew(null);openPremium("whatsnew")}}/>
+        )}
 
         {/* First-visit hint removed — the Hero peek card now carries the same
             affordance ("Plage de la Française · Voir →") without competing with

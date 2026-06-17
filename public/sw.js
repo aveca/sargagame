@@ -1,8 +1,11 @@
 // Service Worker — Sargasses PWA
 // Cache-first for static assets, network-first for HTML/API data.
-// IMPORTANT : bumper CACHE_NAME a CHAQUE deploy de code -> purge l'ancien cache (sinon
-// les users restent coinces sur l'ancien index.html/bundle, cf. bug clic plages juin 2026).
-const CACHE_NAME = 'sargasses-v202'
+// IMPORTANT : ne PLUS éditer ce CACHE_NAME à la main — il est dérivé de
+// public/release-notes.json (`current`) par scripts/sync-version.cjs (lancé en
+// `prebuild`). Publier une release = monter `current` dans release-notes.json :
+// le SW + version.json se bumpent ensemble sur toute la flotte (cf. bug clic
+// plages juin 2026 = bundle figé faute de bump manuel).
+const CACHE_NAME = 'sargasses-v203'
 const STATIC_ASSETS = ['/', '/index.html', '/manifest.json', '/favicon.svg', '/icon-192.png', '/data/beaches-list.json', '/data/beaches-images.json']
 
 self.addEventListener('install', (e) => {

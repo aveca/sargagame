@@ -1,0 +1,38 @@
+{
+  "_comment": "SOURCE DE VÉRITÉ unique des releases. Édite UNIQUEMENT ce fichier pour publier une nouveauté à toute la flotte (mq/gp/florida/rivieramaya/puntacana). `current` = id de la release en cours = releases[0].v. `scripts/sync-version.cjs` en dérive public/version.json + le CACHE_NAME de public/sw.js. Le frontend (Journal du Veilleur) montre aux visiteurs qui reviennent toutes les releases dont le v est > à leur sg_rel_seen. Items i18n fr/en/es, honnêtes (jamais de fausse fraîcheur). href optionnel = lien same-origin (n'apparaît que s'il existe sur le domaine courant).",
+  "current": "v203",
+  "releases": [
+    {
+      "v": "v203",
+      "date": "2026-06-17",
+      "title": { "fr": "Ce qu'on a construit pour toi", "en": "What we built for you", "es": "Lo que construimos para ti" },
+      "items": [
+        {
+          "emoji": "🛰️",
+          "fr": "Un Veilleur veille ta plage en continu — il change d'humeur selon l'état de la mer.",
+          "en": "A Watcher keeps an eye on your beach around the clock — its mood shifts with the sea.",
+          "es": "Un Vigía cuida tu playa sin parar — su ánimo cambia con el estado del mar."
+        },
+        {
+          "emoji": "🗺️",
+          "fr": "Carte en direct plus nette : les bancs de sargasses au large sont désormais ancrés à la géographie réelle.",
+          "en": "Sharper live map: offshore sargassum rafts are now anchored to the real coastline.",
+          "es": "Mapa en vivo más nítido: los bancos de sargazo mar adentro se anclan a la costa real."
+        },
+        {
+          "emoji": "✅",
+          "fr": "Fiabilité publiée : on affiche notre taux de justesse, saison par saison, en toute transparence.",
+          "en": "Reliability, in the open: we now publish how often we get it right, season by season.",
+          "es": "Fiabilidad a la vista: publicamos qué tan seguido acertamos, temporada por temporada.",
+          "href": "/fiabilite/"
+        },
+        {
+          "emoji": "📊",
+          "fr": "Score 0-100 par plage : sargasses, houle, vent, soleil et température de l'eau, recalculé chaque jour.",
+          "en": "0-100 score per beach: sargassum, swell, wind, sun and water temp, recomputed daily.",
+          "es": "Puntuación 0-100 por playa: sargazo, oleaje, viento, sol y temperatura del agua, cada día."
+        }
+      ]
+    }
+  ]
+}

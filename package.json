@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/build-sargassum-json.cjs && vite build",
-    "daily": "node scripts/scrape-copernicus.cjs && vite build && node scripts/prepare-ftp.cjs && node scripts/verify-ftp-ready.cjs",
+    "build": "node scripts/sync-version.cjs && node scripts/build-sargassum-json.cjs && vite build",
+    "daily": "node scripts/sync-version.cjs && node scripts/scrape-copernicus.cjs && vite build && node scripts/prepare-ftp.cjs && node scripts/verify-ftp-ready.cjs",
     "preview": "vite preview",
     "martinique": "npm run build && node scripts/prepare-ftp.cjs",
     "ftp-deploy": "node scripts/manual-ftp-deploy.cjs",
