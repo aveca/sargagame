@@ -10,7 +10,7 @@ const { buildHeroSvg } = require('./lib/scene-svg.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
 const BEACHES_JSON = path.join(ROOT, 'public', 'data', 'beaches-list.json');
-const DIST_BEACHES = path.join(ROOT, 'dist', 'beaches');
+const DIST_BEACHES = path.join(ROOT, 'public', 'assets', 'og');
 
 async function run() {
   if (!fs.existsSync(BEACHES_JSON)) {
