@@ -126,11 +126,11 @@ function buildEmailHTML(island, topBeaches, stats, domain) {
       Pr\u00E9visions 7 jours + alertes push.<br>
       Rejoins les familles qui planifient leur weekend \u00E0 l'avance.
     </div>
-    <a href="https://buy.stripe.com/6oU3cxgg36J48Ox6ZZ0co0s?utm_source=email&utm_medium=weekend_bulletin&utm_campaign=sargasses" style="display:inline-block;padding:12px 28px;
+    <a href="https://${domain}/?paywall=1&utm_source=email&utm_medium=weekend_bulletin&utm_campaign=sargasses" style="display:inline-block;padding:12px 28px;
       background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);
       color:#0D0D0D;text-decoration:none;border-radius:10px;font-size:14px;font-weight:700;
-      box-shadow:0 4px 16px rgba(232,168,0,.3)">Essai gratuit 7 jours</a>
-    <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:8px">4,99\u00A0\u20AC/mois apr\u00E8s l'essai \u00B7 Annule quand tu veux</div>
+      box-shadow:0 4px 16px rgba(232,168,0,.3)">Activer mon veilleur</a>
+    <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:8px">4,99\u00A0\u20AC/mois \u00B7 Satisfait ou rembours\u00E9 30 jours \u00B7 Annule quand tu veux</div>
   </div>
 
   <div style="text-align:center;padding:20px;background:#fff;border-radius:0 0 16px 16px;border-top:1px solid #f0f0f0">

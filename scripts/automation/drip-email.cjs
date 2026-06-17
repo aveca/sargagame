@@ -37,6 +37,11 @@ const FROM_MQ = 'Sargasses Martinique <alerte@sargasses-martinique.com>'
 const FROM_GP = 'Sargasses Guadeloupe <alerte@sargasses-martinique.com>'
 const STRIPE_BASE = 'https://buy.stripe.com/6oU3cxgg36J48Ox6ZZ0co0s'
 function stripeLink(step, base) { return `${base || STRIPE_BASE}?utm_source=email&utm_medium=drip_${step}&utm_campaign=sargasses` }
+// 2026-06-17 — funnel email réaligné sur le funnel paiement : l'essai 7j a été
+// retiré (MQ/GP inclus, commit a9b3cf4e) et le checkout est 100% ON-SITE (plus de
+// buy.stripe.com). Les CTA email mènent donc au paywall on-site via ?paywall=1
+// (deep-link App → openPremium → Stripe Element) au lieu du Payment Link off-site.
+function sitePaywall(domain, step) { return `https://${domain}/?paywall=1&utm_source=email&utm_medium=drip_${step}&utm_campaign=sargasses` }
 const STRIPE_LINK = STRIPE_BASE // compat
 const UNSUB_BASE = WEBHOOK_URL
 function unsubUrl(email, island) { return `${UNSUB_BASE}?action=unsubscribe&email=${encodeURIComponent(email)}&island=${island}` }
@@ -393,8 +398,8 @@ function buildJ7(island, cleanCount, email) {
     </div>
 
     <div style="text-align:center">
-      ${ctaButton('Essayer 7 jours gratuit', stripeLink('j7'))}
-      <div style="font-size:11px;color:#999;margin-top:8px">Puis 4,99\u00A0\u20AC/mois \u00B7 Annule en 1 clic</div>
+      ${ctaButton('Activer mon veilleur', sitePaywall(domain, 'j7'))}
+      <div style="font-size:11px;color:#999;margin-top:8px">4,99\u00A0\u20AC/mois \u00B7 Satisfait ou rembours\u00E9 30\u00A0jours \u00B7 Annule en 1 clic</div>
     </div>
   </div>
 
@@ -456,8 +461,8 @@ function buildJ14(island, cleanCount, email) {
     </div>
 
     <div style="text-align:center;margin-bottom:16px">
-      ${ctaButton('Essayer 7 jours gratuit', stripeLink('j14'))}
-      <div style="font-size:11px;color:#999;margin-top:8px">Puis 4,99\u00A0\u20AC/mois \u00B7 Annule en 1 clic \u00B7 Un ti-punch co\u00FBte plus cher</div>
+      ${ctaButton('Activer mon veilleur', sitePaywall(domain, 'j14'))}
+      <div style="font-size:11px;color:#999;margin-top:8px">4,99\u00A0\u20AC/mois \u00B7 Satisfait ou rembours\u00E9 30 jours \u00B7 Un ti-punch co\u00FBte plus cher</div>
     </div>
 
     <div style="text-align:center;padding-top:12px;border-top:1px solid #f0f0f0">

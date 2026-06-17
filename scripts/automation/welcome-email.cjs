@@ -56,7 +56,9 @@ function hashedSet(arr) {
 function buildWelcomeHTML(island, cleanCount, email) {
   const name = island === 'MQ' ? 'Martinique' : 'Guadeloupe'
   const domain = island === 'MQ' ? 'sargasses-martinique.com' : 'sargasses-guadeloupe.com'
-  const stripe = 'https://buy.stripe.com/6oU3cxgg36J48Ox6ZZ0co0s'
+  // 2026-06-17 — checkout ON-SITE (essai retiré, plus de buy.stripe.com) : le CTA
+  // email ouvre le paywall on-site via ?paywall=1 (deep-link App → openPremium).
+  const stripe = `https://${domain}/?paywall=1&utm_source=email&utm_medium=welcome&utm_campaign=sargasses`
 
   return `<!DOCTYPE html>
 <html>
@@ -104,8 +106,8 @@ function buildWelcomeHTML(island, cleanCount, email) {
     </div>
     <a href="${stripe}" style="display:inline-block;padding:11px 26px;
       background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);
-      color:#0D0D0D;text-decoration:none;border-radius:10px;font-size:13px;font-weight:700">Essayer 7 jours gratuit</a>
-    <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:8px">4,99\u00A0\u20AC/mois \u00B7 Sans engagement \u00B7 Annule en 1 clic</div>
+      color:#0D0D0D;text-decoration:none;border-radius:10px;font-size:13px;font-weight:700">Activer mon veilleur</a>
+    <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:8px">4,99\u00A0\u20AC/mois \u00B7 Satisfait ou rembours\u00E9 30 jours \u00B7 Annule en 1 clic</div>
   </div>
 
   <div style="background:#fff;border-radius:0 0 16px 16px;text-align:center;padding:16px;font-size:10px;color:#999">
