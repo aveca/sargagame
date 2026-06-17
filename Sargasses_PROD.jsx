@@ -35,6 +35,8 @@ const LazyWorldMapView=lazyWithRetry(()=>import("./src/WorldMapView"))
 // Fiche plage « en PLONGÉE » (bras A/B `pw_beach_dive`) — port proto-plage-plongee,
 // Shadow DOM, region-aware. Alternative additive à BeachSheet (control intact).
 const LazyBeachDive=lazyWithRetry(()=>import("./src/BeachDive"))
+// CleanList — /plages-sans-sargasses/ A/B `clean_list` (port proto-planb-clean-nearby)
+const LazyCleanList=lazyWithRetry(()=>import("./src/CleanList"))
 
 class ErrBound extends Component{
   constructor(p){super(p);this.state={err:null}}
@@ -10958,22 +10960,33 @@ export default function App(){
     setTimeout(()=>{setShowPrevLanding(false);setPrevExiting(false)},300)
     try{track("sg_previsions_dismiss",{action})}catch(_){}
   },[])
+  // A/B `clean_list` : /plages-sans-sargasses/ scene golden-hour + rail clean beaches.
+  // Override ?clean_list=1/0. Control = app/carte generique (comportement actuel).
+  const isCleanListPath=(()=>{try{return /^\/(?:plages-sans-sargasses|en\/best-beaches-no-sargassum|es\/mejores-playas-sin-sargazo)\/?$/.test(window.location.pathname)}catch(_){return false}})()
+  const[cleanListAZ]=useState(()=>{try{const q=window.location.search;if(/[?&]clean_list=1/.test(q))return true;if(/[?&]clean_list=0/.test(q))return false;return isCleanListPath&&abVariant("clean_list",["control","scene"],[.5,.5])==="scene"}catch(_){return false}})
+  const[showCleanList,setShowCleanList]=useState(cleanListAZ)
+  const[cleanListExiting,setCleanListExiting]=useState(false)
+  const dismissCleanList=useCallback(action=>{
+    setCleanListExiting(true)
+    setTimeout(()=>{setShowCleanList(false);setCleanListExiting(false)},300)
+    try{track("sg_clean_list_dismiss",{action})}catch(_){}
+  },[])
   // Cohort world : ouvre l'Archipel par defaut quand la landing se pose (hero+mapintro
   // dismisses, beaches pretes), UNE fois. Escapable (la croix renvoie a la carte control).
   useEffect(()=>{
     if(!navWorld||archAutoRef.current)return
-    if(showHero||showMapIntro||showPrevLanding||selectedBeach||showPremium||showSolutions||showWorld||showArchipel)return
+    if(showHero||showMapIntro||showPrevLanding||showCleanList||selectedBeach||showPremium||showSolutions||showWorld||showArchipel)return
     if(view!=="map"||!(allBeaches&&allBeaches.length>=3))return
     archAutoRef.current=true;setShowArchipel(true);try{track("sg_archipel_open",{from:"nav_world_default"})}catch(_){}
-  },[navWorld,showHero,showMapIntro,showPrevLanding,view,allBeaches,selectedBeach,showPremium,showSolutions,showWorld,showArchipel])
+  },[navWorld,showHero,showMapIntro,showPrevLanding,showCleanList,view,allBeaches,selectedBeach,showPremium,showSolutions,showWorld,showArchipel])
   // ENGAGEMENT CONTINU : à chaque changement d'écran, on clôt la mesure du précédent
   // (temps/actions/inactivité/scroll/ennui) → GA4. C'est la donnée qui fait "réfléchir" le produit
   // (où ça bloque, où ça s'ennuie), à chaque étape. Voir engInit/engScreen/engFlush.
   useEffect(()=>{
     engInit();sgCollectInit()
-    const screen=showPremium?"premium":selectedBeach?"beach":showSolutions?"solutions":showArchipel?"world":showMapIntro?"mapintro":showPrevLanding?"previsions":showHero?"hero":showWorld?"worldfeed":("map_"+(view||"map"))
+    const screen=showPremium?"premium":selectedBeach?"beach":showSolutions?"solutions":showArchipel?"world":showMapIntro?"mapintro":showPrevLanding?"previsions":showCleanList?"clean_list":showHero?"hero":showWorld?"worldfeed":("map_"+(view||"map"))
     engScreen(screen)
-  },[showPremium,selectedBeach,showSolutions,showArchipel,showMapIntro,showPrevLanding,showHero,showWorld,view])
+  },[showPremium,selectedBeach,showSolutions,showArchipel,showMapIntro,showPrevLanding,showCleanList,showHero,showWorld,view])
   // Bras A/B du landing : control = HeroVerdict (éprouvé), game = GameFunnel
   // (funnel-jeu immersif, tranche verticale 13/06). Mesuré contre le landing
   // prouvé, jamais imposé ; ?lf=game force en QA. La conversion (paywall/trial/
@@ -11630,7 +11643,7 @@ export default function App(){
           {/* Intro carte SVG (MapIntroStory) — landing show-once, skippable, par-dessus
               la map. Démontée à l'entrée → ne vole jamais un clic pin. Jamais pendant
               hero/découverte/fiche/paywall ; bypass si <3 plages (jamais d'écran vide). */}
-          {showMapIntro&&view==="map"&&!showHero&&!showPrevLanding&&!showDiscovery&&!selectedBeach&&!showPremium&&!showWorld&&filtered.length>=3&&(
+          {showMapIntro&&view==="map"&&!showHero&&!showPrevLanding&&!showCleanList&&!showDiscovery&&!selectedBeach&&!showPremium&&!showWorld&&filtered.length>=3&&(
             <MapIntroStory lang={lang}
               counts={{clean:filtered.filter(b=>b.status==="clean").length,watch:filtered.filter(b=>b.status==="moderate").length,avoid:filtered.filter(b=>b.status==="avoid").length,total:filtered.length}}
               onEnterMap={()=>{setShowMapIntro(false);try{localStorage.setItem("sg_map_intro_v1","1")}catch(_){}}}/>
@@ -11745,6 +11758,22 @@ export default function App(){
             onShowMap={()=>dismissPrevLanding("map")}
             trackFn={track}
             exiting={prevExiting}/>
+        )}
+
+        {/* CLEAN LIST — /plages-sans-sargasses/ A/B `clean_list` (golden-hour + rail clean). */}
+        {showCleanList&&allBeaches?.length>=1&&(
+          <ErrBound><Suspense fallback={null}>
+          <LazyCleanList lang={lang} sargData={sargData}
+            cleanBeaches={rankBeaches(allBeaches,island,userPos,sargData,communityReports).filter(b=>b.status==="clean").slice(0,8)}
+            userPos={userPos}
+            track={track}
+            onOpenBeach={b=>{
+              dismissCleanList("beach")
+              setSelectedBeach(b)
+              track("sg_beach_open",{beach_id:b.id,status:b.status,source:"clean_list"})
+            }}
+            onShowMap={()=>dismissCleanList("map")}/>
+          </Suspense></ErrBound>
         )}
 
         {/* TRANSITION PHASÉE accueil → écran suivant (z 1095 : au-dessus du hero, sous paywall) */}

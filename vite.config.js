@@ -31,6 +31,32 @@ try {
   console.warn('vite.config.js: Could not load beaches-list.json:', e.message)
 }
 
+// Mapping between Copernicus levels/weekly IDs and beaches-list IDs
+const SARG_TO_BEACH = {
+  "grande-anse": "mq014",
+  "anse-mitan": "mq011",
+  "anse-noire": "mq012",
+  "tartane": "mq034",
+  "anse-madame": "mq024",
+  "diamant": "mq016",
+  "pt-marin": "mq008",
+  "sainte-anne": "mq004",
+  "les-salines": "mq001",
+  "vauclin": "mq044",
+  "gp-grande-anse": "gp021",
+  "gp-malendure": "gp031",
+  "gp-sainte-anne": "gp010",
+  "gp-pt-chateaux": "gp005",
+  "gp-gosier": "gp012",
+  "gp-caravelle": "gp009",
+  "gp-bas-du-fort": "gp014",
+  "gp-deshaies": "gp024",
+  "gp-moule": "gp080",
+  "gp-vieux-fort": "gp042"
+}
+const BEACH_TO_SARG = Object.fromEntries(Object.entries(SARG_TO_BEACH).map(([k, v]) => [v, k]))
+
+
 // Région active du build (env VITE_REGION), défaut 'mq' = comportement historique inchangé.
 // Injectée dans le runtime via `define __REGION__` (inclut les plages inline des nouvelles régions).
 let REGION = null
@@ -432,7 +458,44 @@ export default defineConfig({
           const editorialContent = {
             'saison-sargasses-martinique': `<article><h1>Saison des sargasses en Martinique 2026 — Calendrier mois par mois</h1><p>Quand partir en Martinique pour éviter les sargasses ? La saison s'étend d'avril à octobre, avec un pic entre mai et août. En 2026, les scientifiques prévoient une <a href="/sargasses-record-2026/">année record</a> : des bancs ont été détectés dès novembre 2025, et les côtes Caraïbe — normalement épargnées — ont été touchées en avril. Consulter la <a href="/">carte en temps réel</a> avant tout déplacement est plus utile que jamais.</p><h2>Calendrier mois par mois — risque sargasses Martinique</h2><ul><li><strong>Novembre – Février :</strong> risque faible à nul. Meilleure période de l'année. Côte Atlantique propre la plupart du temps, côte Caraïbe quasi garantie.</li><li><strong>Mars :</strong> début de saison possible. Premiers bancs détectés au large. Vérifiez la carte la veille.</li><li><strong>Avril :</strong> risque modéré. En 2026, la côte Caraïbe a été touchée dès la mi-avril — exceptionnellement précoce. Privilégiez les <a href="/alertes/">alertes push</a> pour être prévenu.</li><li><strong>Mai – Juin :</strong> premier pic. Les bancs atlantiques arrivent en masse sur la côte est. Plages les plus exposées : Tartane, Le Vauclin, Sainte-Anne côté est. Côte Caraïbe reste le refuge.</li><li><strong>Juillet – Août :</strong> pic maximal. Volumes les plus importants de l'année. Concentrez-vous sur les <a href="/meilleures-plages-martinique-sargasses/">plages Caraïbe</a> : Grande Anse d'Arlet, Anse Dufour, Anse Mitan, Anse Noire.</li><li><strong>Septembre – Octobre :</strong> déclin progressif. Les vents changent de direction, les bancs dérivent vers le nord. État très variable d'une semaine à l'autre — la <a href="/previsions/">prévision 7 jours</a> est décisive pour planifier.</li></ul><h2>Côte Caraïbe vs Atlantique — quelle différence ?</h2><p>La côte Caraïbe (Les Anses d'Arlet, Trois-Îlets, Schoelcher, Le Carbet) est protégée des alizés qui portent les sargasses par le relief de la Pelée. En dehors de 2026, elle était quasi-garantie en saison. La côte Atlantique (Trinité, Tartane, Le Vauclin, Sainte-Anne est) encaisse directement le flux d'arrivée.</p><p>En 2026, même la côte Caraïbe a subi des échouages ponctuels : les bancs ont contourné la pointe sud de l'île et atteint le Diamant, Anse Noire et Grande Anse d'Arlet temporairement. <strong>Vérifiez toujours la carte avant de partir, même pour les plages Caraïbe.</strong></p><h2>Plages les plus touchées en saison</h2><ul><li><a href="/plages/bourg-de-tartane/">Tartane / Presqu'île de la Caravelle</a> — plein est, exposition maximale</li><li><a href="/plages/plage-des-salines/">Les Salines</a> (Sainte-Anne) — belle mais exposée selon vent, état très variable</li><li>Le Vauclin, Le Robert, La Trinité — côte atlantique, échouages quasi-continus en pic</li></ul><h2>Plages les plus épargnées</h2><ul><li><a href="/plages/grande-anse-d-arlet/">Grande Anse d'Arlet</a> — refuge historique, rarement touchée</li><li><a href="/plages/anse-dufour/">Anse Dufour</a> — crique abritée, snorkeling</li><li><a href="/plages/anse-mitan/">Anse Mitan</a> (Trois-Îlets) — accessible, eau calme</li><li><a href="/plages/anse-noire/">Anse Noire</a> — sable noir volcanique, souvent propre</li></ul><h2>Quand partir pour être sûr à 90% ?</h2><p>Si vous avez le choix, planifiez entre <strong>novembre et mars</strong>. La haute saison touristique (juillet-août) coïncide malheureusement avec le pic de sargasses : <strong>activez les <a href="/alertes/">alertes push gratuites</a> une semaine avant de partir</strong> pour adapter votre itinéraire plage en fonction des <a href="/previsions/">prévisions 7 jours</a>.</p><p><a href="/">Carte en temps réel</a> · <a href="/meilleures-plages-martinique-sargasses/">Meilleures plages MQ 2026</a> · <a href="/sargasses-record-2026/">Saison record 2026</a> · <a href="/danger-sargasses-h2s/">Risques H2S</a></p></article>`,
             'saison-sargasses-guadeloupe': `<article><h1>Saison des sargasses en Guadeloupe 2026 — Calendrier mois par mois</h1><p>Quand partir en Guadeloupe pour éviter les sargasses ? La saison officielle s'étend d'avril à octobre, avec un pic entre mai et août. En 2026, les experts prévoient une <a href="/sargasses-record-2026/">année à haut risque</a> selon Météo-France Guadeloupe : des échouages ont débuté dès mars sur Grande-Terre et les côtes est de Basse-Terre. Consultez notre <a href="/">carte en temps réel</a> avant chaque sortie plage.</p><h2>Calendrier mois par mois — risque sargasses Guadeloupe</h2><ul><li><strong>Novembre – Février :</strong> risque faible à nul. Meilleure fenêtre de l'année. Côte sous-le-vent de Basse-Terre quasi garantie, Grande-Terre propre la plupart des semaines.</li><li><strong>Mars :</strong> début de saison précoce en 2026. Premiers arrivages détectés sur le sud-est de Grande-Terre et Marie-Galante. Consultez la carte avant tout déplacement.</li><li><strong>Avril :</strong> risque modéré, accentuation des échouages. Capesterre de Marie-Galante et sud Grande-Terre (Saint-François) en première ligne.</li><li><strong>Mai – Juin :</strong> premier pic. Gosier, Sainte-Anne, Saint-François reçoivent des bancs réguliers. Privilégiez les plages de Basse-Terre ouest ou nord Grande-Terre.</li><li><strong>Juillet – Août :</strong> pic maximal. Volumes records sur la côte est de Grande-Terre. La côte sous-le-vent de Basse-Terre reste le refuge le plus fiable de l'archipel.</li><li><strong>Septembre – Octobre :</strong> déclin progressif mais état très variable. Les <a href="/previsions/">prévisions 7 jours</a> sont indispensables pour s'adapter semaine par semaine.</li></ul><h2>Côte sous-le-vent vs Grande-Terre — quelle différence ?</h2><p>La façade ouest de Basse-Terre (Malendure, Deshaies, Bouillante, Trois-Rivières) est protégée par le relief de la Soufrière des alizés porteurs de sargasses. C'est le refuge le plus fiable de l'archipel. À l'opposé, le sud et l'est de Grande-Terre (Gosier, Sainte-Anne, Saint-François, Le Moule) sont exposés en plein aux flux atlantiques.</p><p>Les dépendances — Marie-Galante, Les Saintes, La Désirade — ont des profils variés : Capesterre de Marie-Galante est parmi les zones les plus touchées ; Terre-de-Haut (Les Saintes) reste souvent propre grâce à son relief. <strong>Consultez toujours la carte par île avant de prendre le ferry.</strong></p><h2>Plages les plus touchées en saison</h2><ul><li><a href="/plages/plage-du-gosier/">Plage du Gosier</a> — accessible mais souvent impactée côté est</li><li><a href="/plages/plage-de-sainte-anne/">Plage de Sainte-Anne</a> (Bourg) — état variable, surveiller avant de partir</li><li>Saint-François, Le Moule — côte atlantique Grande-Terre, exposition directe</li><li>Capesterre de Marie-Galante — pleine exposition atlantique</li></ul><h2>Plages les plus épargnées</h2><ul><li><a href="/plages/plage-de-malendure/">Plage de Malendure</a> (Bouillante) — côte sous-le-vent, départ réserve Cousteau</li><li><a href="/plages/la-grande-anse-deshaies/">La Grande Anse (Deshaies)</a> — la plus longue de Basse-Terre, quasi épargnée</li><li><a href="/plages/plage-du-souffleur/">Plage du Souffleur</a> (Port-Louis) — nord Grande-Terre, moins exposée</li><li><a href="/plages/plage-de-la-perle/">Plage de la Perle</a> (Deshaies) — baie en fer à cheval protégée</li></ul><h2>Quand partir pour être sûr à 90% ?</h2><p>Si vous avez le choix, planifiez entre <strong>novembre et mars</strong>. En juillet-août (haute saison), activez les <a href="/alertes/">alertes push gratuites</a> une semaine avant pour adapter votre programme plage selon les <a href="/previsions/">prévisions 7 jours par plage</a>. En 2026 notamment, même les plages historiquement épargnées peuvent connaître des épisodes temporaires.</p><p><a href="/">Carte en temps réel</a> · <a href="/meilleures-plages-guadeloupe-sargasses/">Meilleures plages GP 2026</a> · <a href="/sargasses-record-2026/">Saison record 2026</a> · <a href="/danger-sargasses-h2s/">Risques H2S</a></p></article>`,
-            'plages-sans-sargasses': `<article><h1>Plages sans sargasses en Martinique et Guadeloupe</h1><p>Vous cherchez une plage propre aujourd'hui ? Notre application surveille en temps réel l'état de plus de 50 plages en Martinique et Guadeloupe grâce aux données satellite Copernicus.</p><h2>Martinique — Plages généralement propres</h2><ul><li><a href="/plages/anse-mitan/">Anse Mitan</a> (Les Trois-Îlets) — côte caraïbe, rarement touchée</li><li><a href="/plages/anse-noire/">Anse Noire</a> (Les Anses-d'Arlet) — petite crique protégée</li><li><a href="/plages/grande-anse-d-arlet/">Grande Anse d'Arlet</a> — plage familiale, peu exposée</li></ul><h2>Guadeloupe — Plages généralement propres</h2><ul><li><a href="/plages/plage-de-malendure/">Plage de Malendure</a> (Bouillante) — côte sous le vent</li><li><a href="/plages/la-grande-anse-deshaies/">La Grande Anse (Deshaies)</a> — nord Basse-Terre</li><li><a href="/plages/plage-de-la-caravelle/">Plage de la Caravelle</a> (Sainte-Anne) — souvent épargnée</li></ul><p><a href="/">Consulter la carte en temps réel</a> pour l'état exact de chaque plage aujourd'hui.</p></article>`,
+            'plages-sans-sargasses': (() => {
+              // Dynamic noscript — reads sargassum.json at build time (spec clean-list.md étape 5)
+              try {
+                const _sj = JSON.parse(readFileSync(resolve(__dirname, 'public/api/copernicus/sargassum.json'), 'utf-8'))
+                const _lvById = Object.fromEntries((_sj.levels || []).map(l => [l.id, l]))
+                const _buildDate = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+                const _cleanByIsland = { mq: [], gp: [] }
+                for (const b of ALL_BEACHES) {
+                  const _slug = slugify(b.name)
+                  const sargId = BEACH_TO_SARG[b.id] || _slug
+                  const lv = _lvById[sargId] || _lvById[b.id]
+                  if (lv && lv.status === 'clean') {
+                    _cleanByIsland[b.island === 'gp' ? 'gp' : 'mq'].push({
+                      name: b.name, commune: b.commune, slug: _slug,
+                      score: typeof lv.score === 'number' ? lv.score : null
+                    })
+                  }
+                }
+                // Sort by score desc within each island
+                for (const k of ['mq', 'gp']) _cleanByIsland[k].sort((a, b) => (b.score || 0) - (a.score || 0))
+                const _li = (list) => list.map(b =>
+                  `<li><a href="/plages/${b.slug}/">${b.name}</a> — ${b.commune}` +
+                  ` · propre` + (b.score != null ? ` · score ${b.score}/100` : '') + `</li>`
+                ).join('')
+                const mqList = _cleanByIsland.mq.length ? `<h2>Martinique — Plages propres aujourd'hui</h2><ul>${_li(_cleanByIsland.mq)}</ul>` : ''
+                const gpList = _cleanByIsland.gp.length ? `<h2>Guadeloupe — Plages propres aujourd'hui</h2><ul>${_li(_cleanByIsland.gp)}</ul>` : ''
+                const totalClean = _cleanByIsland.mq.length + _cleanByIsland.gp.length
+                return `<article><h1>Plages sans sargasses en Martinique et Guadeloupe</h1>` +
+                  `<p><strong>État du ${_buildDate}.</strong> Notre satellite surveille en temps réel l'état de plus de 130 plages en Martinique et Guadeloupe grâce aux données Copernicus (ESA). ` +
+                  `Aujourd'hui, <strong>${totalClean} plage${totalClean > 1 ? 's' : ''} propre${totalClean > 1 ? 's' : ''}</strong> détectée${totalClean > 1 ? 's' : ''} par satellite.</p>` +
+                  mqList + gpList +
+                  `<p><strong>Vérifiez la <a href="/carte-sargasses/">carte en temps réel</a> avant de partir</strong> — l'état peut changer en quelques heures selon le vent. ` +
+                  `Consultez aussi les <a href="/previsions/">prévisions 7 jours par plage</a> et activez les <a href="/alertes/">alertes push gratuites</a>.</p></article>`
+              } catch (_e) {
+                // Fallback si sargassum.json absent au build — liste statique minimale
+                return `<article><h1>Plages sans sargasses en Martinique et Guadeloupe</h1><p>Vous cherchez une plage propre aujourd'hui ? Notre application surveille en temps réel l'état de plus de 130 plages en Martinique et Guadeloupe grâce aux données satellite Copernicus.</p><p><a href="/carte-sargasses/">Consulter la carte en temps réel</a> · <a href="/previsions/">Prévisions 7 jours</a> · <a href="/alertes/">Alertes push</a>.</p></article>`
+              }
+            })(),
             'danger-sargasses-h2s': `<article><h1>Sargasses et H2S : dangers pour la santé</h1><p>Lorsque les sargasses s'échouent et se décomposent sur les plages, elles libèrent du sulfure d'hydrogène (H2S), un gaz toxique reconnaissable à son odeur d'œuf pourri.</p><h2>Quels sont les risques ?</h2><p>À faible concentration, le H2S provoque des irritations des yeux, du nez et de la gorge. À forte concentration (au-dessus de 5 ppm), il peut causer des maux de tête, nausées et difficultés respiratoires. Les enfants, personnes âgées et asthmatiques sont particulièrement vulnérables.</p><h2>Précautions à prendre</h2><ul><li>Évitez les plages marquées "À éviter" sur notre <a href="/">carte en temps réel</a></li><li>Ne laissez pas les enfants jouer dans ou près des amas de sargasses en décomposition</li><li>Si vous sentez une forte odeur d'œuf pourri, éloignez-vous immédiatement</li><li>Consultez les <a href="/previsions/">prévisions 7 jours</a> avant de planifier une sortie plage</li></ul><h2>L'indice AFAI</h2><p>L'AFAI (Algal Floating Algae Index) est l'indice satellite que nous utilisons pour détecter les sargasses. En dessous de 0,3 la plage est propre. Au-dessus de 0,65, il vaut mieux éviter.</p></article>`,
             'alertes': `<article><h1>Alertes sargasses Martinique et Guadeloupe — Le Veilleur</h1><p><strong>Le Veilleur surveille tes plages et te prévient dès que l'état change.</strong> Sargasses en approche, plage qui se libère, risque H2S — toujours un coup d'avance, sans avoir à vérifier toi-même.</p><h2>Comment ça marche ?</h2><p>Notre satellite analyse les plages de Martinique et Guadeloupe chaque jour grâce aux données Copernicus (ESA). Dès qu'un changement est détecté, Le Veilleur t'envoie une alerte la veille — avant que tu n'aies à rafraîchir la carte le matin de ta baignade.</p><h2>Pourquoi activer les alertes ?</h2><ul><li>Alerte la veille d'un changement (sargasses en approche ou plage qui se libère)</li><li>Brief matinal chaque jour : tes plages favorites, leur état, la reco du jour</li><li>Prévision 7 jours débloquée pour planifier tes vacances et week-ends sans surprise</li><li>Alerte H2S : Le Veilleur t'avertit aussi des risques santé (gaz toxique dégagé par les algues en décomposition)</li></ul><h2>Activer Le Veilleur</h2><p><a href="/?paywall=1&utm_source=alertes_noscript">Activer Le Veilleur — 7 jours gratuits →</a></p><p><a href="/">Carte en temps réel</a> · <a href="/previsions/">Prévisions 7 jours</a> · <a href="/a-propos/">Comment ça marche</a> · <a href="/fiabilite/">Notre fiabilité</a></p></article>`,
             'comprendre-sargasses': `<article><h1>Comprendre les sargasses : origines, prolifération et prévision</h1><p>Les sargasses (Sargassum natans et Sargassum fluitans) sont des algues brunes pélagiques qui dérivent à la surface de l'océan Atlantique. Depuis 2011, des échouages massifs frappent les côtes caribéennes, particulièrement la Martinique et la Guadeloupe.</p><h2>D'où viennent les sargasses ?</h2><p>Contrairement à une idée reçue, les sargasses qui touchent les Antilles ne proviennent pas de la mer des Sargasses historique (nord Atlantique). Elles se développent dans une zone équatoriale (GASB — Great Atlantic Sargassum Belt) entre l'Afrique et le Brésil, alimentée par les nutriments des fleuves Amazone, Orénoque et Congo.</p><h2>Pourquoi la prolifération s'aggrave ?</h2><ul><li><strong>Nutriments :</strong> déforestation et agriculture intensive augmentent les apports azotés des fleuves tropicaux</li><li><strong>Température :</strong> le réchauffement de l'Atlantique tropical (+1.2°C vs 2011-2020) accélère la photosynthèse</li><li><strong>Courants :</strong> les modifications du courant nord-équatorial concentrent les algues vers les Caraïbes</li></ul><h2>Comment prévoir les échouages ?</h2><p>Notre système combine <a href="/detection-satellite-sargasses/">détection satellite</a> (indice AFAI), modèle de dérive (courants + vent), et <a href="/previsions/">prévisions 7 jours</a> par plage. Consultez la <a href="/">carte en temps réel</a> mise à jour quotidiennement.</p><p><a href="/saison-sargasses-martinique/">Saison MQ</a> · <a href="/saison-sargasses-guadeloupe/">Saison GP</a> · <a href="/danger-sargasses-h2s/">Risques H2S</a> · <a href="/plages-sans-sargasses/">Plages propres</a></p></article>`,
@@ -845,15 +908,16 @@ ${isGP ? '' : `  <url><loc>${d}/a-propos/</loc><lastmod>${today}</lastmod><chang
           const _statusWordFR = { clean: 'Propre', moderate: 'Modéré', avoid: 'À éviter' }
           // Ligne forecast 7j lisible (jour: statut) pour la bande verdict.
           const heroForecastLine = (b) => {
-            const slug = slugify(b.name)
-            const wk = _heroWeekly[b.id] || _heroLive.weeklyBySlug[slug] || _heroLive.weeklyBySlug[b.id]
+            const sargId = BEACH_TO_SARG[b.id] || slugify(b.name)
+            const wk = _heroWeekly[b.id] || _heroLive.weeklyBySlug[sargId] || _heroLive.weeklyBySlug[b.id]
             const fc = wk && wk.forecast
             if (!fc || !fc.length) return ''
             return fc.slice(0, 7).map(f => `${f.day} ${_statusWordFR[f.status] || f.status}`).join(' · ')
           }
           // lv live (score/afai/status réels) si la plage est couverte par le live.
           const heroLv = (b) => {
-            const lvLive = _heroLive.levelsBySlug[slugify(b.name)] || _heroLive.levelsBySlug[b.id]
+            const sargId = BEACH_TO_SARG[b.id] || slugify(b.name)
+            const lvLive = _heroLive.levelsBySlug[sargId] || _heroLive.levelsBySlug[b.id]
             return {
               status: (lvLive && lvLive.status) || b.status || 'clean',
               score: lvLive && typeof lvLive.score === 'number' ? lvLive.score : undefined,
