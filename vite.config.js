@@ -911,6 +911,12 @@ ${isGP ? '' : `  <url><loc>${d}/a-propos/</loc><lastmod>${today}</lastmod><chang
           // forecast déterministe via buildWeeklyBatch (clé = beach.id, 136/136).
           let _heroLib = null
           try { _heroLib = _require('./scripts/lib/scene-svg.cjs') } catch (e) { console.warn('   → hero scene-svg non chargé:', e.message) }
+          // Fiche-dive A/B assets (extracted from design/proto-plage-plongee.html)
+          // If not yet extracted (node scripts/build-fiche-dive.cjs), _ficheDive stays null → control only.
+          let _ficheDive = null
+          try { _ficheDive = _require('./scripts/lib/fiche-dive-assets.cjs') } catch (e) { /* not extracted yet, control-only */ }
+          // Backtest reader for fiche-dive reliability data
+          const readBacktestFD = () => { try { return JSON.parse(readFileSync(resolve(__dirname, 'scripts/automation/data/backtest-results.json'), 'utf-8')) } catch { return null } }
           let _heroLive = { updatedAt: null, levelsBySlug: {}, weeklyBySlug: {} }
           try {
             const _lj = JSON.parse(readFileSync(resolve(__dirname, 'public/api/copernicus/sargassum.json'), 'utf-8'))
@@ -1376,7 +1382,121 @@ ${isGP ? '' : `  <url><loc>${d}/a-propos/</loc><lastmod>${today}</lastmod><chang
                   .replace(/<\/noscript>/, `</div></noscript>`)
               } catch (e) { noscriptHero = noscriptBlock /* fallback : noscript nu, jamais cassé */ }
             }
-            const finalHtml = beachHtml.replace('</body>', noscriptHero + '\n</body>')
+            // ── FICHE-DIVE A/B variant (50/50, localStorage ab_fiche_dive) ──
+            // Load assets once outside this loop (placed just before beaches loop)
+            // The variant injects __SG_BEACH__ real data + the scroll-plongée engine.
+            // Control = noscriptHero (existing). Both coexist in the page; JS picks.
+            let ficheDiveHtml = beachHtml.replace('</body>', noscriptHero + '\n</body>')
+            if (typeof _ficheDive !== 'undefined' && _ficheDive) {
+              try {
+                // Real data for window.__SG_BEACH__
+                const _fd_lv = heroLv(b)
+                const _fd_liveStatus = (_fd_lv && _fd_lv.status) || b.status || 'clean'
+                const _fd_score = _fd_lv && typeof _fd_lv.score === 'number' ? {
+                  score: _fd_lv.score,
+                  label: _fd_lv.label || '',
+                  breakdown: _fd_lv.breakdown || {},
+                  strengths: _fd_lv.strengths || [],
+                  weaknesses: _fd_lv.weaknesses || []
+                } : null
+                const _fd_forecast = (_heroLive.weeklyBySlug && _heroLive.weeklyBySlug[slugify(b.name)])?.forecast
+                  || (_heroLive.weeklyBySlug && _heroLive.weeklyBySlug[b.id])?.forecast
+                  || (_heroWeekly[b.id])
+                  || null
+                // Nearby: same zone first, then same island, sorted by score, max 3
+                const _fd_nearby_all = beaches
+                  .filter(o => o.id !== b.id)
+                  .sort((a, z) => {
+                    const sa = (heroLv(a)||{}).score || 0
+                    const sz = (heroLv(z)||{}).score || 0
+                    if (sa !== sz) return sz - sa
+                    const za = a.zone === b.zone ? 0 : (a.commune === b.commune ? 1 : 2)
+                    const zz = z.zone === b.zone ? 0 : (z.commune === b.commune ? 1 : 2)
+                    return za - zz
+                  })
+                const _fd_nearby = _fd_nearby_all.slice(0, 3).map(o => ({
+                  id: o.id, name: o.name, commune: o.commune,
+                  status: (heroLv(o)||{}).status || o.status,
+                  score: (heroLv(o)||{}).score ?? null,
+                  drive: o.drive, lat: o.lat, lng: o.lng
+                }))
+                // Reliability (calm/high regime per backtest)
+                const _fd_rr = typeof readBacktestFD !== 'undefined' ? readBacktestFD() : null
+                const _fd_rel = _fd_rr ? {
+                  calm: _fd_rr.regimeReliability?.regimes?.calm?.cleanReliabilityPct ?? null,
+                  peak: _fd_rr.regimeReliability?.regimes?.high?.cleanReliabilityPct ?? null,
+                  sample: _fd_rr.totalPairs || 0
+                } : { calm: 79, peak: 76, sample: 0 }
+                // Freshness: honest (null if >12h)
+                const _fd_updatedAt = (() => {
+                  if (!_heroLive.updatedAt) return null
+                  const ageMin = (Date.now() - new Date(_heroLive.updatedAt).getTime()) / 60000
+                  return ageMin > 720 ? null : _heroLive.updatedAt
+                })()
+                const sgBeachData = JSON.stringify({
+                  beach: { id: b.id, island: b.island, name: b.name, commune: b.commune,
+                           lat: b.lat, lng: b.lng, drive: b.drive, status: _fd_liveStatus },
+                  score: _fd_score,
+                  forecast: _fd_forecast,
+                  nearby: _fd_nearby,
+                  reliability: _fd_rel,
+                  updatedAt: _fd_updatedAt
+                })
+                // Build the A/B shell:
+                // - control-only div = existing noscriptHero (HTML, js-off visible)
+                // - variant div = fiche-dive markup (hidden by default, shown by A/B script)
+                // - window.__sgTrack = real track fn called by the engine
+                // - window.__SG_BEACH__ = real data
+                // - A/B picker script (50/50 localStorage, URL override ?fichedive=1/0, prefers-reduced-motion → always control)
+                const ficheDiveInject = [
+                  noscriptHero,
+                  `<div id="sg-fiche-dive" hidden>`,
+                  `<style id="sg-fiche-dive-css">`,
+                  `/* scope fiche-dive CSS under wrapper to avoid collision with SPA */`,
+                  `#sg-fiche-dive{all:initial;position:fixed;inset:0;z-index:1200;overflow:hidden;background:#02060A;color:#EAF7F4;font-family:'Bricolage Grotesque',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}`,
+                  `#sg-fiche-dive *{box-sizing:border-box}`,
+                  `</style>`,
+                  _ficheDive.FICHE_DIVE_MARKUP,
+                  `</div>`,
+                  `<script>`,
+                  `window.__SG_BEACH__=${sgBeachData};`,
+                  `window.__sgTrack=function(ev,params){`,
+                  `  try{var mid="${isMQ ? 'G-V8JGMDZZ2Y' : 'G-Q31VV3LLM9'}",sec="${isMQ ? 'eFHMRr4tQ-2B-JYidixOSA' : 'eWAv3vACT6uVzcrAi7JgYQ'}";`,
+                  `  var cid=document.cookie.match(/_ga=GA\\d+\\.\\d+\\.(\\d+\\.\\d+)/);cid=cid?cid[1]:"a."+Date.now();`,
+                  `  if(navigator.sendBeacon)navigator.sendBeacon("https://www.google-analytics.com/mp/collect?measurement_id="+mid+"&api_secret="+sec,JSON.stringify({client_id:cid,events:[{name:ev,params:params||{}}]}));`,
+                  `  }catch(e){}`,
+                  `};`,
+                  `(function(){`,
+                  `  var RM=matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches;`,
+                  `  function pick(){`,
+                  `    try{var q=location.search;`,
+                  `    if(/[?&]fichedive=1/.test(q))return true;`,
+                  `    if(/[?&]fichedive=0/.test(q))return false;`,
+                  `    if(RM)return false;`,
+                  `    var k='ab_fiche_dive',v=localStorage.getItem(k);`,
+                  `    if(!v){v=Math.random()<0.5?'dive':'control';localStorage.setItem(k,v);}`,
+                  `    return v==='dive';`,
+                  `    }catch(e){return false;}`,
+                  `  }`,
+                  `  var active=pick();`,
+                  `  if(active){var d=document.getElementById('sg-fiche-dive');if(d)d.hidden=false;}`,
+                  `  try{window.__sgTrack('sg_fiche_view',{variant:active?'dive':'control',beach:'${b.id}',island:'${b.island}'});}catch(e){}`,
+                  `})();`,
+                  `</script>`,
+                  `<script>`,
+                  `(function(){var active=!document.getElementById('sg-fiche-dive')||!document.getElementById('sg-fiche-dive').hidden;if(!active)return;`,
+                  _ficheDive.FICHE_DIVE_ENGINE,
+                  `})();`,
+                  `</script>`
+                ].join('\n')
+                ficheDiveHtml = beachHtml.replace('</body>', ficheDiveInject + '\n</body>')
+              } catch (fdErr) {
+                // Fallback to control if fiche-dive injection throws
+                console.warn(`   ⚠ fiche-dive injection failed for ${b.slug}:`, fdErr.message)
+                ficheDiveHtml = beachHtml.replace('</body>', noscriptHero + '\n</body>')
+              }
+            }
+            const finalHtml = ficheDiveHtml
             writeFileSync(resolve(beachDir, 'index.html'), finalHtml)
             const sitemapEntry = `  <url><loc>${beachUrl}</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>\n`
             if (isMQ) sitemapMQBeaches += sitemapEntry
