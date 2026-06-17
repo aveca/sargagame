@@ -9,6 +9,7 @@ import React,{useState,useEffect,useRef,useMemo,useCallback,createContext,useCon
 import {computeScore as _computeBeachScore} from "./src/lib/score.js"
 import { COAST_ZONES } from "./scripts/lib/coast-zones.cjs"
 import { getCanonicalSlug } from "./src/lib/slug-resolver.js"
+import Dock from "./src/Dock.jsx"
 
 // Import résilient : pendant la fenêtre FTP d'un deploy (~25 min), un index.html
 // frais peut référencer un chunk pas encore uploadé → import() rejette et le
@@ -7489,122 +7490,83 @@ function CaptureGateModal({lang,onSubmit,onClose,beach}){
   const[email,setEmail]=useState(()=>{try{return localStorage.getItem("sg_email")||""}catch{return ""}})
   const[sent,setSent]=useState(false)
   const[err,setErr]=useState(false)
+
   function submit(e){
     e.preventDefault()
     if(!email||!email.includes("@")){setErr(true);return}
     setSent(true)
     onSubmit(email)
   }
-  // When a beach is in context, use anchored copy + mini forecast preview (J+0 visible, J+1 blurred)
+
   const hasBeach=!!(beach?.name)
-  const statusColor={clean:"#22C55E",moderate:"#F59E0B",avoid:"#EF4444"}[beach?.status]||"#F59E0B"
+  
   return(
-    <div style={{position:"fixed",inset:0,zIndex:1055,background:"rgba(2,9,7,.88)",
-      display:"flex",alignItems:"flex-end",justifyContent:"center",backdropFilter:"blur(6px)"}}
+    <div style={{position:"fixed",inset:0,zIndex:1055,background:"rgba(2,9,7,.85)",
+      display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(12px)"}}
       onClick={e=>{if(e.target===e.currentTarget)onClose()}}>
-      <div style={{width:"100%",maxWidth:520,borderRadius:"24px 24px 0 0",
-        background:"linear-gradient(180deg,#0E1C1A,#061210)",
-        padding:"32px 24px 48px",boxShadow:"0 -8px 40px rgba(0,0,0,.6)"}}>
+      <div style={{width:"90%",maxWidth:480,borderRadius:24,
+        background:"rgba(10,23,20,.65)",border:"1px solid rgba(255,255,255,.08)",
+        padding:"40px 24px",boxShadow:"0 20px 60px rgba(0,0,0,.6)",
+        display:"flex",flexDirection:"column",alignItems:"center",textAlign:"center"}}>
+        
         {!sent?(<>
-          <div style={{fontSize:10,fontWeight:700,color:"rgba(255,232,168,.55)",
-            textTransform:"uppercase",letterSpacing:".1em",marginBottom:10}}>
-            {hasBeach
-              ?_t(lang,"DEMAIN · GRATUIT","TOMORROW · FREE","MAÑANA · GRATIS")
-              :_t(lang,"BRIEF MATIN · GRATUIT","MORNING BRIEF · FREE","BRIEF MATINAL · GRATIS")}
+          <div style={{width:54,height:54,borderRadius:"50%",background:"rgba(95,211,201,.15)",
+            display:"flex",alignItems:"center",justifyContent:"center",marginBottom:20}}>
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#5FD3C9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
           </div>
-          <div style={{fontSize:22,fontWeight:800,color:"#fff",lineHeight:1.2,
-            marginBottom:hasBeach?10:8,fontFamily:"Bricolage Grotesque,sans-serif"}}>
-            {hasBeach
-              ?_t(lang,`Demain à ${beach.name}`,`Tomorrow at ${beach.name}`,`Mañana en ${beach.name}`)
-              :_t(lang,"Le brief sargasses\nchaque matin","Daily sargassum brief\nin your inbox","El resumen de sargazo\ncada mañana")}
-          </div>
-          {hasBeach&&(
-            // Mini 2-bar preview: today (visible) + tomorrow (blurred = email unlocks it)
-            <div style={{display:"flex",gap:6,alignItems:"flex-end",marginBottom:14,height:52}}>
-              {/* J+0 today — visible, anchors the user to real data */}
-              <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
-                <div style={{width:"100%",borderRadius:6,height:36,background:statusColor,opacity:.75}}/>
-                <span style={{fontSize:9,color:"rgba(255,255,255,.4)",fontWeight:700,letterSpacing:".05em"}}>
-                  {_t(lang,"Auj.","Today","Hoy")}
-                </span>
-              </div>
-              {/* J+1 tomorrow — blurred, email unlocks this */}
-              <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3,position:"relative"}}>
-                <div style={{width:"100%",borderRadius:6,height:28,background:statusColor,opacity:.22,filter:"blur(2px)"}}/>
-                <span style={{position:"absolute",top:6,left:"50%",transform:"translateX(-50%)",
-                  fontSize:14}}>✉️</span>
-                <span style={{fontSize:9,color:"rgba(255,232,168,.6)",fontWeight:700,letterSpacing:".05em"}}>
-                  {_t(lang,"Demain","Tomorrow","Mañana")}
-                </span>
-              </div>
-              {/* J+2-J+7 — clearly Premium */}
-              <div style={{flex:3,display:"flex",flexDirection:"column",alignItems:"center",gap:3,position:"relative"}}>
-                <div style={{width:"100%",borderRadius:6,height:22,background:"rgba(255,255,255,.06)",
-                  display:"flex",alignItems:"center",justifyContent:"center"}}>
-                  <span style={{fontSize:9,color:"rgba(255,255,255,.2)",fontWeight:700,letterSpacing:".05em"}}>
-                    🔒 J+2 → J+7
-                  </span>
-                </div>
-                <span style={{fontSize:9,color:"rgba(255,255,255,.2)",fontWeight:700,letterSpacing:".05em"}}>
-                  {_t(lang,"Premium","Premium","Premium")}
-                </span>
-              </div>
-            </div>
-          )}
-          {!hasBeach&&(
-            <div style={{fontSize:13,color:"rgba(255,255,255,.46)",marginBottom:20,lineHeight:1.5}}>
-              {_t(lang,
-                "Laisse ton email — on t'envoie chaque matin l'état de tes plages et la meilleure où aller.",
-                "Leave your email — we send you every morning the beach status and the best spot to go.",
-                "Deja tu email — te enviamos cada mañana el estado de tus playas y la mejor opción del día.")}
-            </div>
-          )}
-          <form onSubmit={submit} style={{display:"flex",gap:8,marginBottom:12}}>
+          
+          <h2 style={{fontSize:26,fontWeight:800,color:"#fff",lineHeight:1.2,margin:"0 0 12px 0",fontFamily:"Bricolage Grotesque,sans-serif"}}>
+            {hasBeach 
+              ? _t(lang,`Débloque la météo de ${beach.name} pour demain.`,`Unlock tomorrow's forecast for ${beach.name}.`,`Desbloquea el clima de ${beach.name} para mañana.`)
+              : _t(lang,"Reçois le rapport sargasses chaque matin.","Get the sargassum report every morning.","Recibe el informe de sargazo cada mañana.")}
+          </h2>
+          
+          <p style={{fontSize:15,color:"rgba(255,255,255,.6)",margin:"0 0 32px 0",lineHeight:1.5}}>
+            {_t(lang,"C'est totalement gratuit.","It's completely free.","Es totalmente gratis.")}
+          </p>
+
+          <form onSubmit={submit} style={{width:"100%",position:"relative",marginBottom:16}}>
             <input type="email" inputMode="email" autoComplete="email"
               placeholder={_t(lang,"ton@email.com","your@email.com","tu@email.com")}
               value={email} onChange={e=>{setEmail(e.target.value);setErr(false)}}
-              style={{flex:1,padding:"12px 16px",borderRadius:14,
-                border:`1px solid ${err?"#E8522A":"rgba(255,255,255,.12)"}`,
-                fontSize:16,fontFamily:"inherit",background:"rgba(255,255,255,.07)",
-                outline:"none",color:"#fff",minWidth:0}}/>
+              style={{width:"100%",boxSizing:"border-box",padding:"16px 64px 16px 20px",borderRadius:999,
+                border:`2px solid ${err?"#E8522A":"rgba(255,255,255,.15)"}`,
+                fontSize:16,fontFamily:"inherit",background:"rgba(255,255,255,.05)",
+                outline:"none",color:"#fff",transition:"border 0.2s ease"}}/>
             <button type="submit" style={{
-              padding:"12px 20px",borderRadius:14,border:"none",cursor:"pointer",
-              background:"linear-gradient(158deg,#FFE47A,#FFC72C,#E89400)",
-              color:"#06121A",fontSize:13,fontWeight:800,fontFamily:"inherit",
-              boxShadow:"0 2px 12px rgba(232,168,0,.35)",whiteSpace:"nowrap"}}>
-              {hasBeach
-                ?_t(lang,"Voir demain →","See tomorrow →","Ver mañana →")
-                :_t(lang,"Recevoir →","Subscribe →","Recibir →")}
+              position:"absolute",right:6,top:6,bottom:6,
+              width:44,borderRadius:999,border:"none",cursor:"pointer",
+              background:"linear-gradient(135deg,#5FD3C9,#3BA7A0)",
+              display:"flex",alignItems:"center",justifyContent:"center",
+              boxShadow:"0 2px 10px rgba(59,167,160,.4)"}}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#061210" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
             </button>
           </form>
-          <div style={{textAlign:"center"}}>
-            <button onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",
-              color:"rgba(255,255,255,.28)",fontSize:11,padding:0,fontFamily:"inherit"}}>
-              {hasBeach
-                ?_t(lang,"Voir les 7 jours → Premium","See 7-day forecast → Premium","Ver 7 días → Premium")
-                :_t(lang,"Non merci, voir les offres →","No thanks, see plans →","No gracias, ver planes →")}
+
+          <div style={{fontSize:12,color:"rgba(255,255,255,.4)",display:"flex",alignItems:"center",gap:6,marginBottom:16}}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            {_t(lang,"Sans spam. Désinscription en 1 clic.","No spam. 1-click unsubscribe.","Sin spam. Baja en 1 clic.")}
+          </div>
+          
+          <div style={{textAlign:"center", width:"100%"}}>
+            <button type="button" onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",
+              color:"rgba(255,255,255,.3)",fontSize:12,padding:"8px",fontFamily:"inherit"}}>
+              {_t(lang,"Non merci, fermer","No thanks, close","No gracias, cerrar")}
             </button>
           </div>
-        </>):(
-          <div style={{textAlign:"center",padding:"16px 0"}}>
-            <div style={{fontSize:36,marginBottom:10}}>✅</div>
-            <div style={{fontSize:18,fontWeight:800,color:"#22C55E",marginBottom:6,
-              fontFamily:"Bricolage Grotesque,sans-serif"}}>
-              {_t(lang,"C'est bon !","Done!","¡Listo!")}
-            </div>
-            <div style={{fontSize:13,color:"rgba(255,255,255,.5)",lineHeight:1.5}}>
-              {hasBeach
-                ?_t(lang,
-                  `Verdict de demain à ${beach.name} dans ta boîte demain matin.`,
-                  `Tomorrow's verdict for ${beach.name} in your inbox tomorrow morning.`,
-                  `El veredicto de mañana en ${beach.name} en tu correo mañana por la mañana.`)
-                :_t(lang,
-                  "Premier brief demain matin — état des plages en direct.",
-                  "First brief tomorrow morning — live beach status.",
-                  "Primer resumen mañana por la mañana — estado de las playas en directo.")}
-            </div>
-          </div>
-        )}
+        </>):(<>
+          <div style={{fontSize:48,marginBottom:16}}>📬</div>
+          <h3 style={{fontSize:24,color:"#fff",margin:"0 0 12px 0"}}>{_t(lang,"Magie en cours !","Magic in progress!","¡Magia en progreso!")}</h3>
+          <p style={{fontSize:15,color:"rgba(255,255,255,.6)",lineHeight:1.5}}>
+            {_t(lang,"Vérifie ta boîte de réception pour le lien magique.","Check your inbox for the magic link.","Revisa tu bandeja para el enlace mágico.")}
+          </p>
+        </>)}
       </div>
     </div>
   )

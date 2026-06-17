@@ -12,14 +12,14 @@
 | — | Accueil A→Z (`home_az`) · Plan-B (`pw_planb`) · H2S (`pw_h2s`) · fiabilité régime | ✅ **LIVE prod** |
 | A | Carte interactive **MULTI-SITES** (`WorldMapView` region-aware — vraie géo OSM 5 régions, pan/zoom/tap/scrub) — A/B `map_world` 50/50, `src/WorldMapView.jsx`, SW v174 | ✅ **LIVE prod** |
 | A | Fiche « plongée » — `pw_beach_dive` 50/50, `src/BeachDive.jsx`, beats=6, factors=7, Veilleur v2, scroll+scrub, SW v175 | ✅ **LIVE prod** |
-| B | Demo-gate email `capture_gate` 50/50 — intercept forecast intent → email gate → PremiumModal, SW v176 | ✅ **LIVE prod** |
+| B | Demo-gate email `capture_gate` 50/50 — V2 Single-Field Magic Link (répare 0,35%), SW v201 | ✅ **LIVE prod** |
 | B | Canonical/hreflang — infra saine (fixes 067a0611 · 2026-06-16) ; gap résiduel = autorité/crawl-budget (pas infra) | ✅ **infra OK** |
 | B | Copie paywall contextualisée `pw_modal_ctx` — beach name + score injectés dans hero + preuve PremiumModal, SW v177 | ✅ **LIVE prod** |
 | B | pw_hot_intent 50/50 — paywall in-scene golden-hour ancré plage (forecast_* sources), SW v190 | ✅ **LIVE prod** |
 | B | /alertes/ auto-open paywall + copy Veilleur (a35a94ca, SW v192) | ✅ **LIVE prod** |
 | B | CaptureGateModal copie honnête — brief gratuit (≠ 7j), CTA « Recevoir → » (9fe329c0, SW v193) | ✅ **LIVE prod** |
 | B | screen-space labels carte · BottomNav Premium fix · freshness kill-switch (SW v188–191) | ✅ **LIVE prod** |
-| E | Dock `dock_glass` 50/50 — pill sombre flottant golden-hour mobile+desktop, fix `openPremium("nav")` source, ⭐ masqué payants, SW v194 | ✅ **LIVE prod** |
+| E | Dock `dock_glass` 50/50 — pill sombre flottant golden-hour mobile+desktop, fix `openPremium("nav")` source, ⭐ masqué payants, SW v201 | ✅ **LIVE prod** |
 | C | `/previsions/` landing golden-hour A/B `prev_az` 50/50 — ForecastChart + meilleur jour, noscript SEO, SW v195 | ✅ **LIVE prod** |
 | C | `/plages-sans-sargasses/` (clean-list) golden-hour A/B `clean_list` 50/50 — dynamic noscript + CleanList page, SW v196 | ✅ **LIVE prod** |
 | C | `/alertes/` (hub Premium) A/B `pw_alertes` 50/50 — Le Veilleur Personnel, capture email, AlertScene, SW v197 | ✅ **LIVE prod** |
@@ -68,12 +68,12 @@
 | Badge verdict + score 0-100 | hero/fiche | existe | source pipeline |
 | Top-3 cartes plage (scroll-snap) + picker | verdict beat | existe | onOpenBeach |
 | ForecastChart + **pw_beat** (lock J2-7 in-scène) | fiche NEAR | existe | surface paywall UNIQUE, openPremium('forecast_lock') contextualisé |
-| Dock = **sélecteur de profondeur** (Carte/Plages/Premium) | chrome | à faire | onglet Premium = action (pas surligné — OK) |
+| Dock = **sélecteur de profondeur** (Carte/Plages/Premium) | chrome | ✅ **Fait** (v201) | onglet Premium = action (pas surligné — OK) |
 | Paywall modal (Stripe on-site, pw_calm/constel) | conversion | existe (optimisé) | enrichir copie « veilleur surveille TA plage » + temps-réel |
 | Live pill (EN DIRECT + heure réelle) · switch FR/EN/ES | chrome | existe | jamais de fake timestamp |
 | Stations StoryEngine (beats + CTA→flyTo) | éducatif | existe, CTA à rebrancher | finir en flyTo, anti-cul-de-sac |
 | Share-card + OG dynamiques (SVG→PNG sharp) | viral/SERP | VERROUILLÉ jusqu'à funnel sain | deep-link + visuel du lieu |
-| Demo-gate email (aha-moment → 1 champ) | capture | à construire | répare 0,35% |
+| Demo-gate email (aha-moment → 1 champ) | capture | ✅ **Fait** (v201) | répare 0,35% |
 
 ---
 
@@ -114,7 +114,7 @@
 ### 4B · Problèmes site/conversion (hygiène d'exécution — bien aussi, mais ≠ le produit)
 (chacun = la data + le fix)
 1. **modal→CTA 2 %** (LE goulot revenu, 3414 modals → 72 CTA) → contextualiser le paywall (plage+verdict) + crier temps-réel. cta→redirect = 92 % (sain). 
-2. **Capture email 0,35 %** (567 prompts → 2) → demo-gate à l'aha-moment, single-field (le plus gros levier vierge).
+2. **Capture email 0,35 %** (567 prompts → 2) → ✅ **Fait** : demo-gate à l'aha-moment, single-field glassmorphism (SW v201).
 3. **Dismiss hero 61 %** (ceux qui restent : 42 s) → perso 1er paint (TA plage live).
 4. **Indexation 3/30 MQ · 2/30 GP** → canonical/hreflang (tâche htaccess spinnée `task_d48a64ca`) = BLOQUANT avant modif pageShell.
 5. **Fake freshness** → kill-switch <12h (skill), grep tous libellés.

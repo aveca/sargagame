@@ -1,0 +1,97 @@
+/* Styles du Dock Glassmorphism */
+.sg-dock-container {
+  position: fixed;
+  bottom: 24px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none; /* Let clicks pass through container */
+  z-index: 8000;
+}
+
+.sg-dock-glass {
+  pointer-events: auto; /* Re-enable clicks on the dock itself */
+  display: flex;
+  align-items: center;
+  background: rgba(10, 23, 20, 0.65); /* Dark sea-green base */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px; /* Pill shape */
+  padding: 6px 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  gap: 4px;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.sg-dock-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.sg-dock-btn:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.sg-dock-btn.active {
+  color: #fff;
+  background: rgba(95, 211, 201, 0.15); /* Teal subtle bg */
+}
+
+.sg-dock-btn svg {
+  transition: transform 0.2s ease;
+}
+
+.sg-dock-btn:active svg {
+  transform: scale(0.9);
+}
+
+.sg-dock-divider {
+  width: 1px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0 4px;
+}
+
+.sg-dock-premium {
+  color: #E8A800; /* Gold */
+}
+
+.sg-dock-premium:hover {
+  color: #FFC72C;
+  background: rgba(232, 168, 0, 0.1);
+}
+
+/* Mobile Adjustments */
+@media (max-width: 600px) {
+  .sg-dock-container {
+    bottom: 16px;
+  }
+  
+  .sg-dock-glass {
+    padding: 6px;
+    gap: 2px;
+  }
+  
+  .sg-dock-label {
+    display: none; /* Hide text on very small screens, show icons only */
+  }
+  
+  .sg-dock-btn {
+    padding: 12px;
+  }
+}
