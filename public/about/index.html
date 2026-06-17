@@ -50,7 +50,7 @@
       <div class="row"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E8F2EF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><style>.acc{stroke:#FFC72C}.accfill{fill:#FFC72C}</style><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 9.5h17M8 3.2v3.4M16 3.2v3.4"/><text x="12" y="17.4" text-anchor="middle" font-size="7.5" font-weight="800" font-family="inherit" stroke="none" fill="currentColor">7</text></svg></span><div><b data-i="m3t"></b><span data-i="m3s"></span></div></div>
       <div class="row"><span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E8F2EF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex:none"><style>.acc{stroke:#FFC72C}.accfill{fill:#FFC72C}</style><circle cx="8" cy="8" r="3"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M3.5 19.5c.4-3.2 2.2-5 4.5-5s4.1 1.8 4.5 5M12.7 19.5c.3-2.4 1.6-3.8 3.8-3.8 2 0 3.3 1.3 3.7 3.8" class="acc"/></svg></span><div><b data-i="m4t"></b><span data-i="m4s"></span></div></div>
     </div>
-    <a class="vlink" id="vlink" href="/reliability/" data-i="vlink"></a>
+    <a class="vlink" id="vlink" href="/research/" data-i="vlink"></a>
   </section>
 
   <section>
@@ -119,8 +119,9 @@ cmore:'Otras fotos: Google Places y fuentes turísticas oficiales.',fdata:'Datos
 document.documentElement.lang=LANG
 document.getElementById('wm').textContent=SITE
 document.getElementById('wm2').textContent=SITE
-// Page fiabilité : slug localisé par domaine (FR /fiabilite/, ES /fiabilidad/, EN /reliability/)
-document.getElementById('vlink').href=/sargasses-/.test(HOST)?'/fiabilite/':LANG==='es'?'/fiabilidad/':'/reliability/'
+// Page « preuve » : /fiabilite/ sur les domaines FR (sargasses-*), sinon /research/
+// (espace recherche EN). /reliability/ & /fiabilidad/ n'existaient pas → étaient des 404 sur les sites USD.
+document.getElementById('vlink').href=/sargasses-/.test(HOST)?'/fiabilite/':'/research/'
 document.querySelectorAll('[data-i]').forEach(n=>{
   const v=T[n.getAttribute('data-i')]
   if(v!=null)n.textContent=v

@@ -810,6 +810,8 @@ ${isGP ? '' : `  <url><loc>${d}/pro/</loc><lastmod>${today}</lastmod><changefreq
   <url><loc>${d}/pro/plan-sargasses-collectivite/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>${d}/pro/en/hotels/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>`}
 ${isGP ? '' : `  <url><loc>${d}/a-propos/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>${d}/recherche/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>${d}/research/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
 `}  <url><loc>${d}/en/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>${d}/en/sargassum-map/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>${d}/en/best-beaches-no-sargassum/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
