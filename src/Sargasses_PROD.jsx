@@ -7597,6 +7597,11 @@ function InlineEmailCapture({lang,beachName}){
   if(dismissed||g("sg_email_prompt",false))return null
   // em1 test: control (loss-frame "know before you go") vs curiosity ("where's the best beach today?")
   const em1V=abVariant("em1",["control","curiosity"],[.5,.5])
+  // em2 test (capture = levier #1 funnel, mesuré 0,35%) : control vs "progressive" —
+  // vend le déblocage de valeur GRATUITE jour après jour (drip réel : confirmation →
+  // plages propres J+3 → récap hebdo + alerte). État de succès multi-étapes ("plein de
+  // state") qui matérialise la progression. Copy honnête (jamais plus que ce que le drip envoie).
+  const em2V=abVariant("em2",["control","progressive"],[.4,.6])
   if(!tracked.current){tracked.current=true;track("sg_smart_email_trigger",{visit_count:g("sg_visit_count",0)});track("sg_email_view")}
 
   const handleSubmit=e=>{
@@ -7613,6 +7618,39 @@ function InlineEmailCapture({lang,beachName}){
     }).catch(()=>{})}catch{}
   }
 
+  if(submitted&&em2V==="progressive"){
+    // "Plein de state" : on matérialise la veille gratuite qui se déroule jour après
+    // jour. Chaque ligne = un envoi RÉEL du drip (pas de promesse fictive).
+    const watch=beachName||_t(lang,"ta plage","your beach","tu playa")
+    const steps=[
+      {d:_t(lang,"Maintenant","Now","Ahora"), t:_t(lang,`On commence à veiller ${watch}.`,`We start watching ${watch}.`,`Empezamos a vigilar ${watch}.`)},
+      {d:_t(lang,"Dans 3 jours","In 3 days","En 3 días"), t:_t(lang,"Les plages propres de la semaine, par email.","This week's clean beaches, by email.","Las playas limpias de la semana, por email.")},
+      {d:_t(lang,"Chaque semaine","Every week","Cada semana"), t:_t(lang,"Ton récap + une alerte si ça se dégrade.","Your recap + an alert if it worsens.","Tu resumen + una alerta si empeora.")},
+    ]
+    return(
+      <div style={{margin:"0 0 12px",padding:"16px",borderRadius:16,
+        background:"linear-gradient(135deg,#0D1E1C,#142824)",border:"1px solid rgba(255,199,44,.18)"}}>
+        <div style={{fontSize:13.5,fontWeight:800,color:C.green,marginBottom:12,display:"flex",alignItems:"center",gap:7}}>
+          <span style={{fontSize:18}}>✅</span>{_t(lang,"La veille est lancée.","Your watch is on.","La vigilancia empezó.")}
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:0}}>
+          {steps.map((s,i)=>(
+            <div key={i} style={{display:"flex",gap:11,alignItems:"flex-start",paddingBottom:i<steps.length-1?12:0}}>
+              <div style={{display:"flex",flexDirection:"column",alignItems:"center",flexShrink:0}}>
+                <div style={{width:11,height:11,borderRadius:6,marginTop:2,
+                  background:i===0?"linear-gradient(180deg,#FFE47A,#E8A800)":"rgba(255,255,255,.18)"}}/>
+                {i<steps.length-1&&<div style={{width:2,flex:1,minHeight:18,background:"rgba(255,255,255,.12)",marginTop:3}}/>}
+              </div>
+              <div style={{paddingTop:0}}>
+                <div style={{fontSize:10.5,fontWeight:800,letterSpacing:".06em",textTransform:"uppercase",color:i===0?"#FFC72C":"rgba(255,255,255,.4)"}}>{s.d}</div>
+                <div style={{fontSize:12.5,color:"rgba(255,255,255,.8)",lineHeight:1.4,marginTop:1}}>{s.t}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
   if(submitted)return(
     <div style={{margin:"0 0 12px",padding:"14px 16px",borderRadius:16,
       background:"linear-gradient(135deg,#0D1E1C,#142824)",
@@ -7622,6 +7660,59 @@ function InlineEmailCapture({lang,beachName}){
     </div>
   )
 
+  if(em2V==="progressive"){
+    const chips=[
+      _t(lang,"Auj. : c'est lancé","Today: it's on","Hoy: ya está"),
+      _t(lang,"J+3 : plages propres","Day 3: clean beaches","Día 3: playas limpias"),
+      _t(lang,"Hebdo : récap + alerte","Weekly: recap + alert","Semanal: resumen + alerta"),
+    ]
+    return(
+      <div style={{margin:"0 0 12px",padding:"15px 16px",borderRadius:16,
+        background:"linear-gradient(135deg,#0D1E1C,#142824)",
+        border:"1px solid rgba(255,199,44,.2)",position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",top:"-60%",right:"-15%",width:"55%",height:"220%",
+          background:"radial-gradient(ellipse,rgba(255,199,44,.08) 0%,transparent 70%)",pointerEvents:"none"}}/>
+        <div style={{position:"relative"}}>
+          <div style={{fontSize:10,fontWeight:800,color:"#FFC72C",textTransform:"uppercase",letterSpacing:".09em",marginBottom:6}}>
+            {_t(lang,"Gratuit · sans carte","Free · no card","Gratis · sin tarjeta")}
+          </div>
+          <div style={{fontSize:14.5,fontWeight:800,color:"#fff",marginBottom:4,lineHeight:1.25}}>
+            {beachName
+              ?_t(lang,`Fais veiller ${beachName} pour toi`,`Have ${beachName} watched for you`,`Haz que vigilen ${beachName} por ti`)
+              :_t(lang,"Fais veiller ta plage pour toi","Have your beach watched for you","Haz que vigilen tu playa por ti")}
+          </div>
+          <div style={{fontSize:12,color:"rgba(255,255,255,.55)",marginBottom:11,lineHeight:1.4}}>
+            {_t(lang,"La veille démarre tout de suite, et la valeur arrive jour après jour.",
+                    "The watch starts now, and value lands day after day.",
+                    "La vigilancia empieza ya, y el valor llega día tras día.")}
+          </div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>
+            {chips.map((c,i)=>(
+              <span key={i} style={{fontSize:10.5,fontWeight:700,color:"rgba(255,255,255,.75)",
+                background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.1)",
+                borderRadius:8,padding:"4px 9px"}}>{c}</span>
+            ))}
+          </div>
+          <form onSubmit={handleSubmit} style={{display:"flex",gap:8,alignItems:"center"}}>
+            <input type="email" inputMode="email" autoComplete="email" placeholder={_t(lang,"ton@email.com","your@email.com","tu@email.com")}
+              value={email} onChange={e=>setEmail(e.target.value)}
+              style={{flex:1,padding:"10px 14px",borderRadius:12,border:"1px solid rgba(255,255,255,.12)",
+                fontSize:16,fontFamily:"inherit",background:"rgba(255,255,255,.06)",outline:"none",minWidth:0,color:"#fff"}}/>
+            <button type="submit" style={{padding:"10px 16px",borderRadius:12,border:"none",cursor:"pointer",
+              background:"linear-gradient(158deg,#FFE47A,#FFC72C,#E89400)",color:C.ink,fontSize:13,fontWeight:800,
+              whiteSpace:"nowrap",fontFamily:"inherit",boxShadow:"0 2px 12px rgba(232,168,0,.3)"}}>
+              {_t(lang,"Commencer →","Start →","Empezar →")}
+            </button>
+          </form>
+          <button onClick={()=>{setDismissed(true);s("sg_email_prompt",true);track("sg_email_dismiss")}} style={{
+            display:"block",margin:"8px auto 0",background:"none",border:"none",cursor:"pointer",
+            color:"rgba(255,255,255,.3)",fontSize:11,padding:0}}>
+            {_t(lang,"Plus tard","Not now","Ahora no")}
+          </button>
+        </div>
+      </div>
+    )
+  }
   return(
     <div style={{margin:"0 0 12px",padding:"14px 16px",borderRadius:16,
       background:"linear-gradient(135deg,#0D1E1C,#142824)",
