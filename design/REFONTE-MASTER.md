@@ -5,7 +5,7 @@
 
 ## 📊 TABLEAU DE BORD — COUVERTURE (maj à chaque tick · MONITOR FONDATEUR)
 > **C'est ICI qu'on suit l'avancement.** La boucle met ce bloc à jour à chaque action. « Fini » = tout en ✅.
-> Avancement global estimé : **~70 %** · maj 2026-06-17.
+> Avancement global estimé : **~74 %** · maj 2026-06-17.
 
 | Phase | Lot | État |
 |---|---|---|
@@ -22,14 +22,15 @@
 | E | Dock `dock_glass` 50/50 — pill sombre flottant golden-hour mobile+desktop, fix `openPremium("nav")` source, ⭐ masqué payants, SW v194 | ✅ **LIVE prod** |
 | C | `/previsions/` landing golden-hour A/B `prev_az` 50/50 — ForecastChart + meilleur jour, noscript SEO, SW v195 | ✅ **LIVE prod** |
 | C | `/plages-sans-sargasses/` (clean-list) golden-hour A/B `clean_list` 50/50 — dynamic noscript + CleanList page, SW v196 | ✅ **LIVE prod** |
-| C | Pages : alertes · zones · 5 stations · à-propos · fiabilité UI · conditions · widget | 🔴 à faire |
+| C | `/alertes/` (hub Premium) A/B `pw_alertes` 50/50 — Le Veilleur Personnel, capture email, AlertScene, SW v197 | ✅ **LIVE prod** |
+| C | Pages : zones · 5 stations · à-propos · fiabilité UI · conditions · widget | 🔴 à faire |
 | C | Les 136 fiches plages (contenu/SEO) | 🔴 à faire |
 | D | SEO requête par requête + nouvelles pages (`/près-de-moi`, `/aujourdhui`, zones) + OG + 301 legacy | 🔴 à faire |
 | E | Dock · share-cards · baignade #5 · collecte #9 | 🔴 à faire |
 
 **Comment monitorer :** ce tableau (avancement) · `git log` (chaque ship = 1 commit) · `/workflows` (workflows finis) · mes pings (concret live prod). **Fin = toutes les lignes ✅.**
 
-> Avancement global estimé : **~72 %** · maj 2026-06-17.
+> Avancement global estimé : **~74 %** · maj 2026-06-17.
 
 ---
 
