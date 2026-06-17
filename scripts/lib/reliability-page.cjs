@@ -514,7 +514,9 @@ if (capForm) {
 <meta property="og:title" content="${esc(title)}"/>
 <meta property="og:description" content="${esc(desc)}"/>
 <meta property="og:url" content="${canonical}"/>
-<meta property="og:type" content="website"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2026-03-01"/>
+<meta property="article:modified_time" content="${updatedISO}"/>
 <meta property="og:site_name" content="${esc(siteName)}"/>
 <script type="application/ld+json">${ldPage}</script>
 <script type="application/ld+json">${ldCrumb}</script>

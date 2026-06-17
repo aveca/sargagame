@@ -193,6 +193,21 @@ for (const region of legacyRegions) {
   // existe) ce serait un orphelin EN crawlable — miroir du skip 'a-propos' USD.
   try { fs.rmSync(path.join(out, 'about'), { recursive: true, force: true }) } catch (_) {}
 
+  // Drop cross-domain SEO landing pages to fix indexing cannibalization
+  const MQ_ONLY = new Set(['saison-sargasses-martinique', 'sargasses-martinique-cette-semaine', 'meteo-sargasses-martinique', 'meilleures-plages-martinique-sargasses', 'en/best-beaches-martinique'])
+  const GP_ONLY = new Set(['saison-sargasses-guadeloupe', 'sargasses-guadeloupe-cette-semaine', 'meteo-sargasses-guadeloupe', 'meilleures-plages-guadeloupe-sargasses', 'en/best-beaches-guadeloupe'])
+  
+  const drops = region.id === 'gp' ? MQ_ONLY : (region.id === 'mq' ? GP_ONLY : new Set())
+  let droppedCross = 0
+  for (const pageFolder of drops) {
+    const fullPath = path.join(out, pageFolder)
+    if (fs.existsSync(fullPath)) {
+      fs.rmSync(fullPath, { recursive: true, force: true })
+      droppedCross++
+    }
+  }
+  if (droppedCross > 0) console.log(`   → pages cross-domain supprimées (${title}): ${droppedCross}`)
+
   // Remplacer l'ancien OneSignal App ID par le bon pour ce site
   const filesToPatch = [
     'index.html',

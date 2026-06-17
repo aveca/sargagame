@@ -618,6 +618,13 @@ export default defineConfig({
             // MQ variant: rewrite GP-only beach refs to absolute partner URLs
             const mqPageHtml = rewriteCrossIsland(pageHtml, true)
             writeFileSync(resolve(dir, 'index.html'), mqPageHtml)
+            
+            const MQ_ONLY = new Set(['saison-sargasses-martinique', 'sargasses-martinique-cette-semaine', 'meteo-sargasses-martinique', 'meilleures-plages-martinique-sargasses', 'en/best-beaches-martinique'])
+            const GP_ONLY = new Set(['saison-sargasses-guadeloupe', 'sargasses-guadeloupe-cette-semaine', 'meteo-sargasses-guadeloupe', 'meilleures-plages-guadeloupe-sargasses', 'en/best-beaches-guadeloupe'])
+            
+            // Skip mirroring to GP if this is an MQ-only page
+            if (MQ_ONLY.has(p) || (enPath && MQ_ONLY.has(enPath))) continue
+
             // GP variant: same body, swap canonical/og/hreflang/JSON-LD URLs
             // to sargasses-guadeloupe.com, then rewrite MQ-only beach refs to
             // absolute partner URLs. Mirror to dist/_gp/{p}/ — prepare-ftp
@@ -807,13 +814,13 @@ ${isGP ? '' : `  <url><loc>${d}/a-propos/</loc><lastmod>${today}</lastmod><chang
   <url><loc>${d}/es/mejores-playas-sin-sargazo/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>${d}/es/temporada-sargazo/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>${d}/es/alertas-sargazo/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
-  <url><loc>${d}/saison-sargasses-martinique/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>${mqEditPrio}</priority></url>
-  <url><loc>${d}/saison-sargasses-guadeloupe/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>${gpEditPrio}</priority></url>
+${isGP ? '' : `  <url><loc>${d}/saison-sargasses-martinique/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>${mqEditPrio}</priority></url>`}
+${isGP ? `  <url><loc>${d}/saison-sargasses-guadeloupe/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>${gpEditPrio}</priority></url>` : ''}
   <url><loc>${d}/plages-sans-sargasses/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>${d}/meilleures-plages-martinique-sargasses/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>${d}/en/best-beaches-martinique/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>${d}/meilleures-plages-guadeloupe-sargasses/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>${d}/en/best-beaches-guadeloupe/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+${isGP ? '' : `  <url><loc>${d}/meilleures-plages-martinique-sargasses/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>${d}/en/best-beaches-martinique/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>`}
+${isGP ? `  <url><loc>${d}/meilleures-plages-guadeloupe-sargasses/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>${d}/en/best-beaches-guadeloupe/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>` : ''}
   <url><loc>${d}/danger-sargasses-h2s/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>${d}/comprendre-sargasses/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>${d}/bilan-sargasses-2025/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
@@ -824,10 +831,10 @@ ${isGP ? '' : `  <url><loc>${d}/a-propos/</loc><lastmod>${today}</lastmod><chang
   <url><loc>${d}/faq/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>${d}/lexique/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>${d}/methode-carte/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>${d}/sargasses-martinique-cette-semaine/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>${mqEditPrio}</priority></url>
-  <url><loc>${d}/sargasses-guadeloupe-cette-semaine/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>${gpEditPrio}</priority></url>
-  <url><loc>${d}/meteo-sargasses-martinique/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
-  <url><loc>${d}/meteo-sargasses-guadeloupe/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+${isGP ? '' : `  <url><loc>${d}/sargasses-martinique-cette-semaine/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>${mqEditPrio}</priority></url>`}
+${isGP ? `  <url><loc>${d}/sargasses-guadeloupe-cette-semaine/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>${gpEditPrio}</priority></url>` : ''}
+${isGP ? '' : `  <url><loc>${d}/meteo-sargasses-martinique/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>`}
+${isGP ? `  <url><loc>${d}/meteo-sargasses-guadeloupe/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>` : ''}
   <url><loc>${d}/widget/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>${d}/mentions-legales.html</loc><lastmod>${today}</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>${d}/confidentialite.html</loc><lastmod>${today}</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
@@ -915,6 +922,8 @@ ${isGP ? '' : `  <url><loc>${d}/a-propos/</loc><lastmod>${today}</lastmod><chang
           // If not yet extracted (node scripts/build-fiche-dive.cjs), _ficheDive stays null → control only.
           let _ficheDive = null
           try { _ficheDive = _require('./scripts/lib/fiche-dive-assets.cjs') } catch (e) { /* not extracted yet, control-only */ }
+          let _widgetRenderer = null
+          try { _widgetRenderer = _require('./scripts/lib/widget-embed.cjs') } catch (e) { console.warn('   ⚠ widget-embed non chargé:', e.message) }
           // Backtest reader for fiche-dive reliability data
           const readBacktestFD = () => { try { return JSON.parse(readFileSync(resolve(__dirname, 'scripts/automation/data/backtest-results.json'), 'utf-8')) } catch { return null } }
           let _heroLive = { updatedAt: null, levelsBySlug: {}, weeklyBySlug: {} }
@@ -1263,8 +1272,8 @@ ${isGP ? '' : `  <url><loc>${d}/a-propos/</loc><lastmod>${today}</lastmod><chang
               .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="${beachUrl}" />`)
               .replace(/<meta name="twitter:title"[^>]*>/, `<meta name="twitter:title" content="${beachTitle}" />`)
               .replace(/<meta name="twitter:description"[^>]*>/, `<meta name="twitter:description" content="${beachDesc}" />`)
-              .replace(/<meta property="og:image" [^>]*>/, _beachImages[b.id] ? `<meta property="og:image" content="https://${domain}/beaches/${_beachImages[b.id]}" />` : `<meta property="og:image" content="https://${domain}/og-image.png" />`)
-              .replace(/<meta name="twitter:image" [^>]*>/, _beachImages[b.id] ? `<meta name="twitter:image" content="https://${domain}/beaches/${_beachImages[b.id]}" />` : `<meta name="twitter:image" content="https://${domain}/og-image.png" />`)
+              .replace(/<meta property="og:image" [^>]*>/, `<meta property="og:image" content="https://${domain}/images/og/${b.slug}.png" />`)
+              .replace(/<meta name="twitter:image" [^>]*>/, `<meta name="twitter:image" content="https://${domain}/images/og/${b.slug}.png" />`)
               // Strip homepage schemas (WebApplication, FAQPage, Organization, SiteNavigationElement) — beach pages get their own
               .replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g, '')
               .replace('</head>', `\n    <script type="application/ld+json">\n    ${beachSchema}\n    </script>\n    <script type="application/ld+json">\n    ${breadcrumbBeach}\n    </script>\n    <script type="application/ld+json">\n    ${faqSchema}\n    </script>\n</head>`)
@@ -1498,6 +1507,31 @@ ${isGP ? '' : `  <url><loc>${d}/a-propos/</loc><lastmod>${today}</lastmod><chang
             }
             const finalHtml = ficheDiveHtml
             writeFileSync(resolve(beachDir, 'index.html'), finalHtml)
+
+            // ── WIDGET B2B GENERATION ──
+            if (_widgetRenderer) {
+              try {
+                const _w_lv = heroLv(b)
+                const _w_status = _w_lv.status || 'clean'
+                const _w_score = typeof _w_lv.score === 'number' ? _w_lv.score : null
+                const _w_updatedAt = _heroLive.updatedAt || new Date().toISOString()
+                const widgetHtmlFR = _widgetRenderer.renderWidget(b, _w_status, _w_score, _w_updatedAt, 'fr', b.island)
+                const widgetDir = resolve(outDir, 'widget', 'embed', b.slug)
+                mkdirSync(widgetDir, { recursive: true })
+                writeFileSync(resolve(widgetDir, 'index.html'), widgetHtmlFR)
+                
+                // Legacy alias routing if this beach has one
+                const sargId = BEACH_TO_SARG[b.id]
+                if (sargId && sargId !== b.slug) {
+                  const legacyDir = resolve(outDir, 'widget', 'embed', sargId)
+                  mkdirSync(legacyDir, { recursive: true })
+                  writeFileSync(resolve(legacyDir, 'index.html'), widgetHtmlFR)
+                }
+              } catch (we) {
+                console.warn(`   ⚠ widget failed for ${b.slug}:`, we.message)
+              }
+            }
+
             const sitemapEntry = `  <url><loc>${beachUrl}</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>\n`
             if (isMQ) sitemapMQBeaches += sitemapEntry
             else sitemapGPBeaches += sitemapEntry
@@ -1743,6 +1777,43 @@ ${isGP ? '' : `  <url><loc>${d}/a-propos/</loc><lastmod>${today}</lastmod><chang
           writeFileSync(resolve(outDir, 'sitemap-guadeloupe.xml'), sitemapGPFull)
           console.log(`   → ${beaches.length} pages plages générées (${beaches.filter(b=>b.island==='mq').length} MQ + ${beaches.filter(b=>b.island==='gp').length} GP)`)
           console.log('   → Sitemaps enrichis avec URLs plages')
+
+          // ── WIDGET B2B REGIONALIZATION & TRANSLATION ──
+          try {
+            const wPath = resolve(outDir, 'widget', 'index.html')
+            if (existsSync(wPath)) {
+              const baseHtml = readFileSync(wPath, 'utf-8')
+              const enHtml = baseHtml
+                .replace(/<html lang="fr">/, '<html lang="en">')
+                .replace(/Widget Sargasses B2B \u2014 Martinique et Guadeloupe/, 'B2B Sargassum Widget \u2014 Martinique & Guadeloupe')
+                .replace(/Intégrez gratuitement la météo des sargasses sur le site de votre hôtel ou base nautique/, 'Embed the sargassum weather map on your hotel or watersports website for free')
+                .replace(/Obtenir le code/, 'Get the code')
+                .replace(/Copiez-collez ce code/, 'Copy and paste this code')
+                .replace(/<link rel="canonical" href="[^"]*">/, '<link rel="canonical" href="https://sargasses-martinique.com/en/widget/" />')
+              
+              const esHtml = baseHtml
+                .replace(/<html lang="fr">/, '<html lang="es">')
+                .replace(/Widget Sargasses B2B \u2014 Martinique et Guadeloupe/, 'Widget Sargazo B2B \u2014 Martinica y Guadalupe')
+                .replace(/Intégrez gratuitement la météo des sargasses sur le site de votre hôtel ou base nautique/, 'Integra gratis el mapa de sargazo en el sitio web de tu hotel o centro náutico')
+                .replace(/Obtenir le code/, 'Obtener el código')
+                .replace(/Copiez-collez ce code/, 'Copia y pega este código')
+                .replace(/<link rel="canonical" href="[^"]*">/, '<link rel="canonical" href="https://sargasses-martinique.com/es/widget/" />')
+
+              const wDirEn = resolve(outDir, 'en', 'widget')
+              const wDirEs = resolve(outDir, 'es', 'widget')
+              mkdirSync(wDirEn, { recursive: true })
+              mkdirSync(wDirEs, { recursive: true })
+              writeFileSync(resolve(wDirEn, 'index.html'), enHtml)
+              writeFileSync(resolve(wDirEs, 'index.html'), esHtml)
+
+              // Regionalize for GP
+              const gpMirrorDir = resolve(outDir, '_gp', 'widget')
+              mkdirSync(gpMirrorDir, { recursive: true })
+              const gpW = toGpMirror(baseHtml)
+                .replace(/<link rel="canonical" href="[^"]*">/, '<link rel="canonical" href="https://sargasses-guadeloupe.com/widget/" />')
+              writeFileSync(resolve(gpMirrorDir, 'index.html'), gpW)
+            }
+          } catch (e) { console.warn('   ⚠ widget landing regionalization:', e.message) }
 
           // ── Pages mois /sargasses-juin-2026/ etc. — bilan mensuel calculé
           //    depuis history.json réel (MQ canonical + miroir _gp/, mois passés
