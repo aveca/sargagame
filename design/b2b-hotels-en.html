@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sargassum intelligence for hotels & resorts — Sargasses</title>
+<meta name="description" content="Give guests a live, honest beach-status widget and your ops team advance sargassum alerts — backed by an accuracy score we publish, season by season. Built for Caribbean, Mexico & Florida resorts.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FDFCF7; --gold:#E8A800; --goldL:#FFC72C; --goldLL:#FFE47A;
+    --teal:#009E8E; --tealL:#1EC8B0; --green:#22C55E; --amber:#B87A00; --coral:#E8522A;
+    --ink:#0D0D0D; --mid:#686868; --line:#ECE7DA;
+    --sky0:#0B2230; --sky1:#155A5A; --sky2:#C97E3A; --sky3:#F2B05E;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:600;line-height:1.5;-webkit-font-smoothing:antialiased}
+  h1,h2,h3,.anton{font-family:"Anton",Impact,"Arial Narrow Bold",sans-serif;font-weight:400;letter-spacing:-.02em;text-transform:uppercase;line-height:.98}
+  .mono{font-family:"JetBrains Mono",monospace}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+  a{color:inherit;text-decoration:none}
+  .btn{display:inline-flex;align-items:center;gap:.5em;font-weight:800;font-size:16px;padding:14px 24px;border-radius:999px;cursor:pointer;border:0;transition:transform .12s ease,box-shadow .12s ease}
+  .btn:hover{transform:translateY(-2px)}
+  .btn-gold{background:linear-gradient(135deg,var(--goldL),var(--gold));color:#1a1200;box-shadow:0 8px 22px rgba(232,168,0,.35)}
+  .btn-ghost{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.45)}
+  .btn-dark{background:var(--ink);color:#fff}
+  .eyebrow{font-size:12.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--teal)}
+
+  /* Header */
+  header{position:sticky;top:0;z-index:50;background:rgba(253,252,247,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .brand{font-family:"Anton",sans-serif;font-size:22px;letter-spacing:.01em;display:flex;align-items:center;gap:9px}
+  .brand .dot{width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 35% 30%,var(--goldLL),var(--gold));box-shadow:0 0 0 3px rgba(232,168,0,.18)}
+  .nav-cta{display:flex;align-items:center;gap:18px}
+  .nav-cta a.txt{font-size:14.5px;font-weight:700;color:var(--mid)}
+  @media(max-width:640px){.nav-cta a.txt{display:none}}
+
+  /* Hero */
+  .hero{position:relative;overflow:hidden;color:#fff;background:linear-gradient(180deg,var(--sky0) 0%,var(--sky1) 46%,var(--sky2) 84%,var(--sky3) 100%)}
+  .hero svg.scene{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+  .hero .wrap{position:relative;z-index:2;padding:74px 24px 96px}
+  .hero h1{font-size:clamp(40px,7vw,76px);max-width:15ch;text-shadow:0 2px 24px rgba(0,0,0,.28)}
+  .hero p.sub{margin-top:20px;max-width:54ch;font-size:clamp(17px,2.2vw,20px);font-weight:600;color:rgba(255,255,255,.92)}
+  .hero .cta-row{margin-top:32px;display:flex;flex-wrap:wrap;gap:14px}
+  .trust{margin-top:30px;display:flex;flex-wrap:wrap;gap:8px 18px;font-size:13px;font-weight:700;color:rgba(255,255,255,.82)}
+  .trust b{color:var(--goldLL)}
+
+  /* sections */
+  section{padding:72px 0}
+  .lead{font-size:13px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);margin-bottom:14px}
+  h2.title{font-size:clamp(30px,4.6vw,48px);max-width:18ch}
+  .muted{color:var(--mid);font-weight:600}
+
+  /* stat band */
+  .stats{background:var(--ink);color:#fff}
+  .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+  @media(max-width:760px){.stat-grid{grid-template-columns:1fr}}
+  .stat .n{font-family:"Anton",sans-serif;font-size:clamp(44px,6vw,64px);color:var(--goldL);line-height:1}
+  .stat .l{margin-top:8px;font-size:15px;font-weight:700;color:rgba(255,255,255,.86)}
+  .stat .src{margin-top:6px;font-size:11.5px;color:rgba(255,255,255,.45);font-weight:600}
+
+  /* offer cards */
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:42px}
+  @media(max-width:860px){.cards{grid-template-columns:1fr}}
+  .card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:28px;box-shadow:0 1px 0 rgba(0,0,0,.02)}
+  .card .ic{width:48px;height:48px;border-radius:13px;display:grid;place-items:center;font-size:24px;margin-bottom:16px}
+  .card h3{font-size:22px;margin-bottom:9px}
+  .card p{font-size:15px}
+  .ic.teal{background:rgba(0,158,142,.12)} .ic.gold{background:rgba(232,168,0,.15)} .ic.coral{background:rgba(232,82,42,.12)}
+
+  /* moat */
+  .moat{background:linear-gradient(135deg,#06302C,#0A4A43);color:#fff;border-radius:28px;padding:clamp(32px,5vw,56px);display:grid;grid-template-columns:1.2fr .8fr;gap:40px;align-items:center}
+  @media(max-width:820px){.moat{grid-template-columns:1fr;gap:28px}}
+  .moat h2{font-size:clamp(28px,4vw,42px);color:#fff}
+  .moat p{margin-top:16px;font-size:16.5px;color:rgba(255,255,255,.88)}
+  .gauge{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:20px;padding:26px;text-align:center}
+  .gauge .big{font-family:"Anton",sans-serif;font-size:60px;color:var(--tealL);line-height:1}
+  .gauge .reg{display:flex;justify-content:center;gap:22px;margin-top:18px}
+  .gauge .reg div{font-size:13px;font-weight:700;color:rgba(255,255,255,.7)}
+  .gauge .reg b{display:block;font-family:"JetBrains Mono",monospace;font-size:21px;color:#fff;margin-top:3px}
+
+  /* widget mock */
+  .widget-demo{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:center}
+  @media(max-width:820px){.widget-demo{grid-template-columns:1fr}}
+  .wcard{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 18px 40px rgba(11,34,48,.12);overflow:hidden;max-width:360px}
+  .wcard .top{background:linear-gradient(135deg,var(--green),#16a34a);color:#fff;padding:18px 20px}
+  .wcard .top .st{font-family:"Anton",sans-serif;font-size:26px;letter-spacing:.01em}
+  .wcard .top .nm{font-size:13px;font-weight:700;opacity:.9}
+  .wcard .body{padding:18px 20px;font-size:14px}
+  .wcard .row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px dashed var(--line)}
+  .wcard .row:last-child{border:0}
+  .wcard .foot{padding:12px 20px;background:#FAF7EE;font-size:11.5px;color:var(--mid);font-weight:700;display:flex;align-items:center;gap:7px}
+  .sample-tag{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);background:rgba(184,122,0,.1);padding:3px 9px;border-radius:999px;margin-top:12px}
+
+  /* pricing */
+  .price{background:#FAF7EE;border:1px solid var(--line);border-radius:24px;padding:clamp(28px,4vw,44px);text-align:center}
+  .price .from{font-size:15px;font-weight:700;color:var(--mid)}
+  .price .amt{font-family:"Anton",sans-serif;font-size:clamp(48px,7vw,72px);color:var(--ink);line-height:1;margin:6px 0}
+  .price .amt span{font-size:.35em;color:var(--mid);vertical-align:super}
+  .price .feat{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 22px;margin:22px 0 26px;font-size:14.5px;font-weight:700}
+  .price .feat span{display:inline-flex;gap:7px;align-items:center}
+  .check{color:var(--teal);font-weight:800}
+
+  /* CTA / form */
+  .final{background:linear-gradient(180deg,var(--sky2),var(--gold));color:#1a1200}
+  .final h2{color:#1a1200;font-size:clamp(30px,5vw,52px)}
+  .form{margin-top:28px;display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:560px}
+  @media(max-width:560px){.form{grid-template-columns:1fr}}
+  .form input,.form select{padding:13px 15px;border-radius:12px;border:1.5px solid rgba(26,18,0,.2);background:rgba(255,255,255,.85);font-family:inherit;font-size:15px;font-weight:600}
+  .form .full{grid-column:1/-1}
+  .form button{grid-column:1/-1}
+
+  footer{background:var(--ink);color:rgba(255,255,255,.7);padding:48px 0;font-size:13.5px}
+  footer a{color:var(--goldLL)}
+  .foot-grid{display:flex;flex-wrap:wrap;justify-content:space-between;gap:24px;align-items:center}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="brand"><span class="dot"></span>SARGASSES <span style="font-family:'Bricolage Grotesque';font-size:12px;font-weight:800;color:var(--teal);letter-spacing:.06em">FOR HOTELS</span></div>
+    <nav class="nav-cta">
+      <a class="txt" href="#offer">What you get</a>
+      <a class="txt" href="#proof">Why us</a>
+      <a class="btn btn-gold" href="#demo">Book a demo</a>
+    </nav>
+  </div>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <svg class="scene" viewBox="0 0 1200 560" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+    <defs>
+      <radialGradient id="sun" cx="78%" cy="30%" r="40%">
+        <stop offset="0%" stop-color="#FFE9B0" stop-opacity=".9"/><stop offset="100%" stop-color="#FFE9B0" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#1A5852"/><stop offset="100%" stop-color="#08251F"/>
+      </linearGradient>
+    </defs>
+    <circle cx="935" cy="170" r="220" fill="url(#sun)"/>
+    <circle cx="935" cy="172" r="58" fill="#FFD884" opacity=".85"/>
+    <path d="M0 372 Q300 340 600 360 T1200 350 V560 H0 Z" fill="url(#sea)"/>
+    <path d="M0 372 Q300 340 600 360 T1200 350" fill="none" stroke="#FFD884" stroke-width="2" opacity=".5"/>
+    <g opacity=".5" fill="#FFD884">
+      <rect x="900" y="392" width="70" height="3" rx="1.5"/><rect x="870" y="420" width="130" height="3" rx="1.5"/><rect x="905" y="450" width="60" height="3" rx="1.5"/>
+    </g>
+    <!-- distant yole (boat = life + scale, brand rule) -->
+    <g transform="translate(250 366)" opacity=".9">
+      <path d="M-34 0 Q0 16 34 0 L26 9 Q0 16 -26 9 Z" fill="#13433E"/>
+      <rect x="-1.5" y="-30" width="3" height="30" fill="#0E332F"/>
+      <path d="M1.5 -28 L24 -4 L1.5 -4 Z" fill="#E8522A" opacity=".85"/>
+    </g>
+  </svg>
+  <div class="wrap">
+    <div class="eyebrow" style="color:var(--goldLL)">For hotels &amp; resorts · Caribbean · Mexico · Florida</div>
+    <h1 style="margin-top:14px">Turn sargassum from a surprise into a selling point.</h1>
+    <p class="sub">2026 is the worst sargassum season on record. Give guests a live, honest beach-status widget, give your ops team advance alerts — backed by an accuracy score we <em>publish</em>, not just another map.</p>
+    <div class="cta-row">
+      <a class="btn btn-gold" href="#demo">Book a 15-min demo →</a>
+      <a class="btn btn-ghost" href="#offer">See a live widget</a>
+    </div>
+    <div class="trust">
+      <span>Built on <b>USF</b> · <b>NOAA SIR</b> · <b>Copernicus</b> data</span>
+      <span>·</span>
+      <span>Accuracy <b>published season by season</b></span>
+      <span>·</span>
+      <span>Already live on <b>2 public sites</b></span>
+    </div>
+  </div>
+</div>
+
+<!-- THE 2026 REALITY -->
+<section class="stats">
+  <div class="wrap">
+    <div class="lead" style="color:var(--goldL)">The 2026 reality</div>
+    <h2 class="title" style="color:#fff;max-width:20ch">When the beach turns, cancellations and 1-star reviews follow.</h2>
+    <div class="stat-grid" style="margin-top:42px">
+      <div class="stat"><div class="n">37.5M<span style="font-size:.4em">t</span></div><div class="l">Atlantic sargassum belt record (2025) — 2026 is tracking higher.</div><div class="src">Source: USF Optical Oceanography Lab</div></div>
+      <div class="stat"><div class="n">−40%</div><div class="l">Room rates being cut in the hardest-hit zones to fight cancellations.</div><div class="src">Source: travel-press reports, Quintana Roo, 2026</div></div>
+      <div class="stat"><div class="n">9.3M<span style="font-size:.4em">t</span></div><div class="l">Already en route to Florida &amp; the Caribbean, with the peak still building.</div><div class="src">Source: USF / NOAA, May–June 2026</div></div>
+    </div>
+    <p class="muted" style="color:rgba(255,255,255,.7);margin-top:36px;max-width:62ch">Guests check the beach before they book — and the moment it looks bad, silence costs you the reservation. The hotels that win 2026 are the ones that get <b style="color:#fff">ahead of it</b> and stay <b style="color:#fff">transparent</b>.</p>
+  </div>
+</section>
+
+<!-- OFFER -->
+<section id="offer">
+  <div class="wrap">
+    <div class="lead">What you get</div>
+    <h2 class="title">One subscription. Guest trust + ops readiness.</h2>
+    <div class="cards">
+      <div class="card">
+        <div class="ic teal">🪟</div>
+        <h3>Guest-facing widget</h3>
+        <p class="muted">An embeddable beach-status badge for your site and booking flow — honest, real-time, on-brand. Turns “is the beach clear?” emails into trust, and trust into completed bookings.</p>
+      </div>
+      <div class="card">
+        <div class="ic gold">🔔</div>
+        <h3>Operations alerts</h3>
+        <p class="muted">Advance warning, beach by beach, so your crews and barriers are ready instead of reacting. Delivered by email, Slack or WhatsApp — with a 7-day outlook.</p>
+      </div>
+      <div class="card">
+        <div class="ic coral">✅</div>
+        <h3>Published reliability</h3>
+        <p class="muted">We show how often we’re right, season by season. Your guests — and your revenue team — can trust the signal because the track record is open.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WIDGET DEMO -->
+<section style="padding-top:0">
+  <div class="wrap widget-demo">
+    <div>
+      <div class="lead">The widget</div>
+      <h2 class="title" style="font-size:clamp(26px,3.8vw,40px)">Honest status, on your page, in your language.</h2>
+      <p class="muted" style="margin-top:16px;max-width:46ch">Green / amber / red by beach, with a 0–100 score across sargassum, swell, wind, sun and water temp — recomputed every day. No fake “live” stamps: when data is older than 12 h it says so. English, Spanish, French.</p>
+      <span class="sample-tag">Sample · demo data</span>
+    </div>
+    <div style="display:grid;place-items:center">
+      <div class="wcard">
+        <div class="top"><div class="nm">Playa today</div><div class="st">CLEAR — 86/100</div></div>
+        <div class="body">
+          <div class="row"><span class="muted">Sargassum</span><b style="color:var(--green)">None on shore</b></div>
+          <div class="row"><span class="muted">7-day outlook</span><b>Low risk</b></div>
+          <div class="row"><span class="muted">Water</span><b>28°C · calm</b></div>
+        </div>
+        <div class="foot"><span style="color:var(--teal)">●</span> Updated from satellite + on-site reports</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MOAT -->
+<section id="proof">
+  <div class="wrap">
+    <div class="moat">
+      <div>
+        <div class="lead" style="color:var(--tealL)">Why us, not a free map</div>
+        <h2>Every tracker shows a map. We publish whether we were right.</h2>
+        <p>Free maps and satellite feeds tell you where the sargassum <em>is</em>. They never tell you how often their call was correct. We do — openly, by season — so the badge on your site is a promise you can stand behind. That’s the difference between decoration and a decision tool.</p>
+        <a class="btn btn-gold" style="margin-top:24px" href="https://sargasses-martinique.com/fiabilite/" target="_blank" rel="noopener">See our public track record →</a>
+      </div>
+      <div class="gauge">
+        <div style="font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.6)">Hit-rate, published</div>
+        <div class="big">76–79%</div>
+        <div style="font-size:12.5px;color:rgba(255,255,255,.55);font-weight:700">correct calls, on a published sample</div>
+        <div class="reg">
+          <div>Calm season<b>79%</b></div>
+          <div>High season<b>76%</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="price">
+      <div class="from">Simple, per-property pricing</div>
+      <div class="amt"><span>from</span> €149<span style="font-size:.28em;color:var(--mid)">/mo</span></div>
+      <div class="feat">
+        <span><span class="check">✓</span> Guest widget</span>
+        <span><span class="check">✓</span> Ops alerts + 7-day outlook</span>
+        <span><span class="check">✓</span> Published reliability</span>
+        <span><span class="check">✓</span> EN · ES · FR</span>
+      </div>
+      <p class="muted" style="max-width:50ch;margin:0 auto 22px">Annual and multi-property plans available. Set up in days, not months — we already run the data pipeline 4× a day.</p>
+      <a class="btn btn-dark" href="#demo">Book a demo →</a>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section id="demo" class="final">
+  <div class="wrap">
+    <div class="eyebrow" style="color:#5a3c00">Book a 15-minute demo</div>
+    <h2 style="margin-top:12px">See your resort’s risk report — and a widget on your beach.</h2>
+    <p style="margin-top:14px;font-weight:600;max-width:50ch">Tell us your property and we’ll send a live risk read for your beach plus a widget preview before the call.</p>
+    <form class="form" onsubmit="event.preventDefault();this.querySelector('button').textContent='Thanks — we’ll be in touch ✓';">
+      <input class="full" type="text" placeholder="Your name" required>
+      <input type="text" placeholder="Hotel / group" required>
+      <input type="email" placeholder="Work email" required>
+      <input type="text" placeholder="Beach / town">
+      <select class="full" aria-label="Region">
+        <option value="">Region…</option>
+        <option>Mexico — Cancún / Riviera Maya</option>
+        <option>Florida</option>
+        <option>Puerto Rico / USVI</option>
+        <option>Other Caribbean</option>
+      </select>
+      <button class="btn btn-dark full" type="submit">Get my resort’s risk report →</button>
+    </form>
+    <p style="margin-top:14px;font-size:12.5px;font-weight:700;color:#5a3c00">No spam. We reply within one business day.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-grid">
+    <div><span class="brand" style="color:#fff;font-size:18px"><span class="dot"></span>SARGASSES</span><div style="margin-top:8px;max-width:42ch">Coastal sargassum intelligence. Built on USF, NOAA &amp; Copernicus data — with an accuracy score we publish.</div></div>
+    <div style="text-align:right">
+      <a href="https://sargasses-martinique.com/fiabilite/" target="_blank" rel="noopener">Public track record</a> · <a href="#demo">Book a demo</a>
+      <div style="margin-top:8px;color:rgba(255,255,255,.4)">© 2026 Sargasses · for hotels &amp; resorts</div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
