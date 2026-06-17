@@ -1718,8 +1718,12 @@ const STRIPE_BUY_BTN_ANNUAL="buy_btn_1TJLcjP9RK8Orx51JDzUFge3"
    ci-dessus inchangées). REGION.paymentLinks={monthly,yearly} en devise locale.
    Liens absents → CTA paywall masqué (waitlist), JAMAIS de fallback vers l'EUR. ── */
 const REGION_PAY=IS_NEW_REGION?(REGION.paymentLinks||{}):null
-const LINK_MONTHLY=REGION_PAY?(REGION_PAY.monthly||""):STRIPE_LINK_MONTHLY
-const LINK_ANNUAL=REGION_PAY?(REGION_PAY.yearly||""):STRIPE_LINK_ANNUAL
+// EUR (MQ/GP, REGION_PAY null) : plans dispo ON-SITE → marqueur truthy "onsite"
+// (PAS une URL) qui alimente hasMonthly/hasAnnual/PAYWALL_READY sans réintroduire
+// le moindre lien off-site. Aucun code ne navigue plus vers LINK_* (stripeLinkFor
+// est mort depuis le retrait des redirects) : ces consts ne sont que des drapeaux.
+const LINK_MONTHLY=REGION_PAY?(REGION_PAY.monthly||""):"onsite"
+const LINK_ANNUAL=REGION_PAY?(REGION_PAY.yearly||""):"onsite"
 const LINK_PRO=REGION_PAY?"":STRIPE_LINK_PRO
 const PAYWALL_READY=!REGION_PAY||!!LINK_MONTHLY
 // EUR (MQ/GP, REGION_PAY null) : fallback de prix non-null OBLIGATOIRE — depuis
@@ -6149,6 +6153,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   // région) → premium activé EN PLACE. Fallback intégral : Payment Link.
   const[payStep,_setPayStep]=useState(false)
   const payStepRef=useRef(false)
+  const passCtxRef=useRef(null) // {pass,cents,days} si achat d'un PASS on-site, sinon null (abo)
   const setPayStep=useCallback(v=>{payStepRef.current=v;_setPayStep(v)},[])
   const[payReady,setPayReady]=useState(false)
   const[payBusy,setPayBusy]=useState(false)
@@ -6239,18 +6244,36 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         confirmParams:{return_url:window.location.origin+"/?setup_return=1",payment_method_data:{billing_details:{email}}},
       })
       if(error)throw error
+      // PASS one-time (pw_pass_onsite) : MÊME carte collectée, on facture UNE fois (PaymentIntent), pas d'abo.
+      const _pc=passCtxRef.current
+      if(_pc){
+        const pr=await fetch("/api/create-checkout.php",{method:"POST",headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({action:"pay_once",email,pass:_pc.pass,cents:_pc.cents,setupIntentId:setupIntent.id,lang,source:source||"unknown"})})
+        const pd=await pr.json().catch(()=>({}))
+        if(!pr.ok||pd.error||!pd.paymentIntentId)throw new Error(pd.error||"pay_once failed")
+        if(pd.paymentFailed)throw new Error(_t(lang,"Carte refusée. Essaie une autre carte.","Card declined. Try another card.","Tarjeta rechazada. Prueba otra tarjeta."))
+        if(pd.requiresAction&&pd.piClientSecret){
+          const{error:payErr,paymentIntent}=await stripeRef.current.confirmCardPayment(pd.piClientSecret)
+          if(payErr)throw payErr
+          if(paymentIntent&&paymentIntent.status!=="succeeded"&&paymentIntent.status!=="processing")throw new Error(_t(lang,"Paiement non confirmé. Réessaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."))
+        }
+        localStorage.setItem("sg_email",email)
+        localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000))
+        track("sg_conversion",{session_id:pd.paymentIntentId,method:"onsite_pass",plan:_pc.pass,pass_days:_pc.days})
+        setPayBusy(false);onActivated?.();onClose();return
+      }
       const r=await fetch("/api/create-checkout.php",{method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({action:"subscribe",email,plan,setupIntentId:setupIntent.id,lang,source:source||"unknown"})})
       const d=await r.json().catch(()=>({}))
       if(!r.ok||d.error||!d.subscriptionId)throw new Error(d.error||"subscribe failed")
       // NO_TRIAL (USD) : la 1re facture part immédiatement — si la banque
       // exige une confirmation (3DS), on la joue ici, dans le même écran.
-      if(d.paymentFailed)throw new Error(_t(lang,"Carte refusée. Essaie une autre carte ou continue sur Stripe.","Card declined. Try another card or continue on Stripe.","Tarjeta rechazada. Prueba otra o continúa en Stripe."))
+      if(d.paymentFailed)throw new Error(_t(lang,"Carte refusée. Essaie une autre carte.","Card declined. Try another card.","Tarjeta rechazada. Prueba otra tarjeta."))
       if(d.requiresAction&&d.piClientSecret){
         const{error:payErr,paymentIntent}=await stripeRef.current.confirmCardPayment(d.piClientSecret)
         if(payErr)throw payErr
         if(paymentIntent&&paymentIntent.status!=="succeeded"&&paymentIntent.status!=="processing"){
-          throw new Error(_t(lang,"Paiement non confirmé. Réessaie ou continue sur Stripe.","Payment not confirmed. Retry or continue on Stripe.","Pago no confirmado. Reintenta o continúa en Stripe."))
+          throw new Error(_t(lang,"Paiement non confirmé. Réessaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."))
         }
         track("sg_pay_onsite_3ds",{plan,status:paymentIntent?.status||"unknown"})
       }
@@ -6266,41 +6289,47 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     }catch(e){
       setPayBusy(false)
       const msg=(e&&e.message)?String(e.message):""
-      setPayError(msg||_t(lang,"Paiement impossible. Réessaie ou continue sur Stripe.","Payment failed. Retry or continue on Stripe.","Pago imposible. Reintenta o continúa en Stripe."))
+      setPayError(msg||_t(lang,"Paiement impossible. Réessaie.","Payment failed. Retry.","Pago imposible. Reintenta."))
       track("sg_pay_onsite_error",{plan,message:msg.slice(0,90)})
     }
   },[lang,source,payBusy,onActivated,onClose])
   const doSubscribeRef=useRef(doSubscribe)
   useEffect(()=>{doSubscribeRef.current=doSubscribe},[doSubscribe])
   const startCheckout=useCallback(async(plan,via)=>{
-    const link=stripeUrlWith(stripeLinkFor[plan]||LINK_MONTHLY,plan)
-    const goFallback=(why)=>{
-      setPayStep(false)
-      track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"payment_link",via:via+"_"+why})
-      setTimeout(()=>{window.location.href=link},0)
+    passCtxRef.current=null // entrée ABONNEMENT : ce n'est pas un pass one-time
+    // Checkout 100% ON-SITE — plus de redirect off-site buy.stripe.com. En cas
+    // d'échec de montage (réseau lent / Stripe.js bloqué), erreur + « Réessayer »
+    // DANS l'overlay (recharge propre) : on ne quitte jamais le domaine.
+    const onsiteError=(why)=>{
+      track("sg_pay_onsite_fail",{plan,source:source||"unknown",via:via+"_"+why})
+      setPayError(_t(lang,"Le paiement sécurisé n'a pas pu démarrer. Vérifie ta connexion et réessaie.","Secure checkout couldn't start. Check your connection and retry.","El pago seguro no pudo iniciarse. Revisa tu conexión y reinténtalo."))
     }
     payPlanRef.current=plan
+    // Arme la récupération de panier abandonné (ex-effet de bord de stripeUrlWith) :
+    // la bannière de relance lit sg_checkout_abandoned.
+    try{const _em=localStorage.getItem("sg_email")||"";localStorage.setItem("sg_checkout_abandoned",JSON.stringify({email:_em,ts:Date.now()}))}catch(_){}
+    setPayError("")
     track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"onsite",via})
     setPayStep(true) // révèle l'étape (le formulaire pré-monté est déjà prêt ou boote)
     const t0=Date.now()
     try{
       // Le prewarm a déjà tout lancé à l'ouverture du modal. Budget large :
-      // l'étape est visible avec spinner + bouton d'échappe vers Stripe.
+      // l'étape est visible avec spinner ; en cas d'échec → erreur + réessayer.
       await Promise.race([
         payPrewarmPromiseRef.current||Promise.reject(new Error("no prewarm")),
         new Promise((_,rej)=>setTimeout(()=>rej(new Error("prewarm timeout")),20000)),
       ])
       track("sg_pay_onsite_open",{plan,via,ms:Date.now()-t0,ready:payReadyRef.current})
-      // L'élément monte (ou est monté) ; si jamais ready n'arrive pas, on bascule.
+      // L'élément monte (ou est monté) ; si ready n'arrive pas → erreur in-place.
       setTimeout(()=>{
         if(payStepRef.current&&!payReadyRef.current&&payPlanRef.current===plan){
           try{console.error("sg_onsite_slow_element")}catch(_){}
-          goFallback("slow")
+          onsiteError("slow")
         }
       },20000)
     }catch(e){
       try{console.error("sg_onsite_mount_fail",e)}catch(_){}
-      goFallback("fallback")
+      onsiteError("fallback")
     }
   },[source,lang])
   // A/B test pw_cta_order KILLED 2026-06-09 (scheduled ab-evaluate run):
@@ -6323,18 +6352,21 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const pwConstel=(()=>{try{const q=window.location.search;if(/[?&]pwconstel=1/.test(q))return true;if(/[?&]pwconstel=0/.test(q))return false;return abVariant("pw_constel",["control","constel"],[.15,.85])==="constel"}catch(_){return false}})()
   // A/B pw_pass : storefront « paie à l'usage » (passes one-time) en tête du paywall. ?pwpass=1/0.
   const pwPass=(()=>{try{const q=window.location.search;if(/[?&]pwpass=1/.test(q))return true;if(/[?&]pwpass=0/.test(q))return false;return abVariant("pw_pass",["control","pass"],[.5,.5])==="pass"}catch(_){return false}})()
+  // Paiement on-site one-time des passes — OFF par défaut (le redirect reste le défaut qui marche). ?passonsite=1 pour live-test carte.
+  const passOnsite=(()=>{try{const q=window.location.search;if(/[?&]passonsite=1/.test(q))return true;if(/[?&]passonsite=0/.test(q))return false;return abVariant("pw_pass_onsite",["off","on"],[1,0])==="on"}catch(_){return false}})()
   // A/B pw_trippass (USD only) : propose un accès UNIQUE 7 jours (one-time,
   // aligné séjour, sans abonnement) EN PLUS de l'abo — répond au mismatch
   // abo-mensuel/touriste-5-jours (verdict chantier USA). Inerte si pas de
   // LINK_TRIP. Override URL ?pwtrip=1/0 pour QA. Le CTA Trip Pass a son PROPRE
   // chemin (startTripPass) : ZÉRO contact avec effectivePlan/stripeLinkFor.
-  const tripAB=IS_NEW_REGION&&!!LINK_TRIP&&(()=>{try{const q=window.location.search;if(/[?&]pwtrip=1/.test(q))return true;if(/[?&]pwtrip=0/.test(q))return false;return abVariant("pw_trippass",["control","trip"],[.5,.5])==="trip"}catch(_){return false}})()
-  const startTripPass=useCallback(()=>{
-    track("sg_premium_modal_cta",{plan:"trip",source:source||"unknown"})
-    track("sg_checkout_redirect",{plan:"trip",source:source||"unknown",destination:"payment_link",via:"trippass"})
-    const link=stripeUrlWith(LINK_TRIP,"trip")
-    setTimeout(()=>{window.location.href=link},0)
-  },[source])
+  // 2026-06-17 — Trip Pass A/B DÉSACTIVÉ : c'était le dernier chemin off-site
+  // (Payment Link one-time buy.stripe.com). À réactiver UNIQUEMENT via un
+  // PaymentIntent one-time ON-SITE (create-checkout.php action:pay_once), jamais
+  // un redirect. Le bloc UI Trip Pass est masqué (tripAB=false).
+  const tripAB=false
+  // Inerte (tripAB=false) — conservé pour ne pas casser les refs JSX ; ne
+  // déclenche plus aucun redirect off-site.
+  const startTripPass=useCallback(()=>{},[])
   const[showPrelude,setShowPrelude]=useState(false)
   // Compute upcoming dates for the Prelude ledger
   const _preludeDates=(()=>{
@@ -6470,7 +6502,9 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             zIndex:5,fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
         {!scenePay&&<div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
           margin:"-8px -24px 20px",padding:0}}/>}
-        {pwPass&&<PassOffer lang={lang} onBuy={(item)=>{try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown"})}catch(_){}try{window.location.href=item.u}catch(_){}}}/>}
+        {pwPass&&<PassOffer lang={lang} onBuy={(item)=>{try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown",onsite:passOnsite?1:0})}catch(_){}
+          if(passOnsite){passCtxRef.current={pass:item.pass,cents:item.c,days:item.pass==="p30"?30:7};setPayStep(true)}
+          else{try{window.location.href=item.u}catch(_){}}}}/>}
         {/* A/B pw_scene : le paywall = CONTINUATION du monde golden-hour (Veilleur + promesse),
             pas un mur sombre plat. Calme (statique). Logique de paiement INCHANGÉE en dessous. */}
         {scenePay&&!pwConstel&&(<>
@@ -7029,16 +7063,26 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             ?_t(lang,"Sans engagement · Annulation en 2 clics · Paiement sécurisé Stripe","No commitment · Cancel in 2 clicks · Secure Stripe payment","Sin permanencia · Cancela en 2 clics · Pago seguro Stripe")
             :_t(lang,"Sans engagement · Annulation en 2 clics · Rappel avant facturation","No commitment · Cancel in 2 clicks · Reminder before you're billed","Sin permanencia · Cancela en 2 clics · Aviso antes del cobro")}
         </div>
-        <div style={{display:"flex",justifyContent:"center",alignItems:"center",
-          gap:8,marginTop:8}}>
+        {/* 2026-06-17 — GARANTIE proéminente : remplace l'essai gratuit comme
+            renversement de risque (#1 levier de conversion quand on retire le
+            trial — recherche paywall). Réelle (remboursement Stripe), ton calme. */}
+        <div style={{display:"flex",alignItems:"center",gap:10,marginTop:12,
+          padding:"11px 13px",borderRadius:13,background:"rgba(34,197,94,.07)",
+          border:"1px solid rgba(34,197,94,.22)"}}>
+          <span style={{fontSize:18,lineHeight:1,flexShrink:0}}>🛡️</span>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontSize:12.5,fontWeight:700,color:"#fff",lineHeight:1.25}}>
+              {_t(lang,"Garantie 30 jours satisfait ou remboursé","30-day money-back guarantee","Garantía de reembolso de 30 días")}
+            </div>
+            <div style={{fontSize:11,color:"rgba(255,255,255,.6)",marginTop:2,lineHeight:1.3}}>
+              {_t(lang,"Pas convaincu ? Un email, remboursé — sans condition.","Not convinced? One email, full refund — no questions.","¿No te convence? Un email, reembolso — sin preguntas.")}
+            </div>
+          </div>
+        </div>
+        <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:6,marginTop:8}}>
           <span style={{display:"inline-flex",alignItems:"center",gap:4,
-            fontSize:10,color:"rgba(255,255,255,.7)",fontWeight:500}}>
-            <span>🛡</span>{_t(lang,"Satisfait ou remboursé 30 j","30-day money-back","Reembolso garantizado 30 días")}
-          </span>
-          <span style={{color:"rgba(255,255,255,.4)"}}>·</span>
-          <span style={{display:"inline-flex",alignItems:"center",gap:4,
-            fontSize:10,color:"rgba(255,255,255,.7)",fontWeight:500}}>
-            <span>🔒</span>Stripe
+            fontSize:10,color:"rgba(255,255,255,.6)",fontWeight:500}}>
+            <span>🔒</span>{_t(lang,"Paiement sécurisé Stripe","Secure Stripe payment","Pago seguro Stripe")}
           </span>
         </div>
         {/* Lien "À propos" retiré du paywall (demande user 2026-06-11 — épuré).
@@ -7112,12 +7156,16 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             </span>
           </div>
           <h3 className="anton" style={{fontSize:22,color:"#fff",margin:"0 0 4px",letterSpacing:"-.01em"}}>
-            {NO_TRIAL
+            {passCtxRef.current
+              ?_t(lang,`Active ton pass ${passCtxRef.current.days} jours`,`Activate your ${passCtxRef.current.days}-day pass`,`Activa tu pase ${passCtxRef.current.days} días`)
+              :NO_TRIAL
               ?_t(lang,"Active ta reco du jour","Activate your daily pick","Activa tu playa del día")
               :_t(lang,"Démarre ton essai gratuit","Start your free trial","Empieza tu prueba gratis")}
           </h3>
           <div style={{fontSize:13,color:"rgba(255,255,255,.6)",marginBottom:18}}>
-            {NO_TRIAL
+            {passCtxRef.current
+              ?_t(lang,`${(passCtxRef.current.cents/100).toFixed(2).replace(".",",")} € · ${passCtxRef.current.days} jours d'accès complet · paiement unique`,`€${(passCtxRef.current.cents/100).toFixed(2)} · ${passCtxRef.current.days} days full access · one-time`,`${(passCtxRef.current.cents/100).toFixed(2).replace(".",",")} € · ${passCtxRef.current.days} días · pago único`)
+              :NO_TRIAL
               ?<>{payPlanRef.current==="annual"
                   ?_t(lang,`${PRICE_YR}/an · facturé aujourd'hui`,`${PRICE_YR}/yr · billed today`,`${PRICE_YR}/año · se cobra hoy`)
                   :_t(lang,`${PRICE_MO}/mois · facturé aujourd'hui`,`${PRICE_MO}/mo · billed today`,`${PRICE_MO}/mes · se cobra hoy`)} · {_t(lang,"annule en 2 clics","cancel in 2 clicks","cancela en 2 clics")}</>
@@ -7150,6 +7198,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               opacity:payBusy?.7:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
             {payBusy
               ?_t(lang,"Activation…","Activating…","Activando…")
+              :passCtxRef.current
+              ?_t(lang,`Payer ${(passCtxRef.current.cents/100).toFixed(2).replace(".",",")} €`,`Pay €${(passCtxRef.current.cents/100).toFixed(2)}`,`Pagar ${(passCtxRef.current.cents/100).toFixed(2).replace(".",",")} €`)
               :NO_TRIAL
               ?(payPlanRef.current==="annual"
                 ?_t(lang,`Payer ${PRICE_YR} — activer maintenant`,`Pay ${PRICE_YR} — activate now`,`Pagar ${PRICE_YR} — activar ya`)
@@ -7161,14 +7211,16 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               ?_t(lang,"Sans engagement · Annule en 2 clics · Stripe sécurisé","No commitment · Cancel in 2 clicks · Secured by Stripe","Sin compromiso · Cancela en 2 clics · Stripe seguro")
               :_t(lang,"Sans engagement · Rappel 2 jours avant la 1re charge","No commitment · Reminder 2 days before first charge","Sin compromiso · Recordatorio 2 días antes del primer cobro")}
           </div>
-          <button onClick={()=>{
-            const link=stripeUrlWith(stripeLinkFor[payPlanRef.current]||LINK_MONTHLY,payPlanRef.current)
-            track("sg_checkout_redirect",{plan:payPlanRef.current,source:source||"unknown",destination:"payment_link",via:"onsite_escape"})
-            setTimeout(()=>{window.location.href=link},0)
-          }} style={{background:"none",border:"none",color:"rgba(255,255,255,.4)",fontSize:11.5,
-            cursor:"pointer",fontFamily:"inherit",marginTop:14,textDecoration:"underline"}}>
-            {_t(lang,"Ou continuer sur la page Stripe →","Or continue on the Stripe page →","O continuar en la página de Stripe →")}
+          {/* 2026-06-17 — bouton off-site « continuer sur Stripe » RETIRÉ (checkout
+              100% on-site). En cas d'échec de montage : bouton Réessayer (recharge
+              propre), jamais de redirect off-site. */}
+          {payError&&(
+          <button onClick={()=>{location.reload()}} style={{background:"none",border:"1px solid rgba(255,255,255,.25)",
+            borderRadius:12,color:"rgba(255,255,255,.8)",fontSize:12.5,fontWeight:600,padding:"11px 14px",width:"100%",
+            cursor:"pointer",fontFamily:"inherit",marginTop:14}}>
+            {_t(lang,"↻ Réessayer le paiement sécurisé","↻ Retry secure checkout","↻ Reintentar el pago seguro")}
           </button>
+          )}
         </div>
       </div>
     </>
@@ -7540,7 +7592,7 @@ function AfaiChip({beach,lang}){
    Intercepte openPremium("forecast_*") quand aucun email capturé.
    Pitch : email → rapport matin + prévision J+2-J+7. Après submit → PremiumModal.
    ═══════════════════════════════════════════════════════════════════════════ */
-function CaptureGateModal({lang,onSubmit,onClose,beach}){
+function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
   const[email,setEmail]=useState(()=>{try{return localStorage.getItem("sg_email")||""}catch{return ""}})
   const[sent,setSent]=useState(false)
   const[err,setErr]=useState(false)
@@ -7578,8 +7630,18 @@ function CaptureGateModal({lang,onSubmit,onClose,beach}){
               : _t(lang,"Reçois le rapport sargasses chaque matin.","Get the sargassum report every morning.","Recibe el informe de sargazo cada mañana.")}
           </h2>
           
-          <p style={{fontSize:15,color:"rgba(255,255,255,.6)",margin:"0 0 32px 0",lineHeight:1.5}}>
-            {_t(lang,"C'est totalement gratuit.","It's completely free.","Es totalmente gratis.")}
+          {__REL&&typeof __REL.cleanPct==="number"&&(()=>{
+            const reg=__REL.regime==="high"?_t(lang,"saison haute","high season","temporada alta"):_t(lang,"saison calme","calm season","temporada tranquila")
+            return <a href={IS_NEW_REGION?undefined:"/fiabilite/"} onClick={()=>{try{track("sg_reliability_open",{from:"capture_gate"})}catch(_){}}}
+              style={{display:"inline-flex",alignItems:"center",gap:7,margin:"0 0 16px",padding:"7px 13px",borderRadius:999,
+                background:"rgba(34,197,94,.10)",border:"1px solid rgba(34,197,94,.24)",textDecoration:"none",
+                fontSize:12,fontWeight:600,color:"#8FE3B0",cursor:IS_NEW_REGION?"default":"pointer"}}>
+              <span aria-hidden="true">✅</span>
+              <span>{_t(lang,`${__REL.cleanPct}% de nos prévisions « mer propre » vérifiées · ${reg}`,`${__REL.cleanPct}% of our “clean water” forecasts verified · ${reg}`,`${__REL.cleanPct}% de nuestros pronósticos “agua limpia” verificados · ${reg}`)}{!IS_NEW_REGION&&<span style={{opacity:.65}}>  →</span>}</span>
+            </a>
+          })()}
+          <p style={{fontSize:15,color:"rgba(255,255,255,.6)",margin:"0 0 22px 0",lineHeight:1.5}}>
+            {_t(lang,"Reçois le brief par email — gratuit. Ou débloque tout de suite par carte.","Get the brief by email — free. Or unlock everything now by card.","Recibe el informe por email — gratis. O desbloquéalo ya con tarjeta.")}
           </p>
 
           <form onSubmit={submit} style={{width:"100%",position:"relative",marginBottom:16}}>
@@ -7607,6 +7669,18 @@ function CaptureGateModal({lang,onSubmit,onClose,beach}){
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
             {_t(lang,"Sans spam. Désinscription en 1 clic.","No spam. 1-click unsubscribe.","Sin spam. Baja en 1 clic.")}
           </div>
+
+          {onPay&&(<>
+          <div style={{display:"flex",alignItems:"center",gap:10,width:"100%",margin:"2px 0 14px",color:"rgba(255,255,255,.3)",fontSize:11,fontWeight:700,letterSpacing:".1em"}}>
+            <div style={{flex:1,height:1,background:"rgba(255,255,255,.12)"}}/>{_t(lang,"OU","OR","O")}<div style={{flex:1,height:1,background:"rgba(255,255,255,.12)"}}/>
+          </div>
+          <button type="button" onClick={onPay} className="gbtn" style={{width:"100%",padding:"13px",borderRadius:14,border:"none",cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:14.5,marginBottom:7}}>
+            {_t(lang,`Débloquer tout par carte — ${PRICE_MO}/mois`,`Unlock everything by card — ${PRICE_MO}/mo`,`Desbloquéalo todo con tarjeta — ${PRICE_MO}/mes`)}
+          </button>
+          <div style={{fontSize:11,color:"rgba(255,255,255,.45)",marginBottom:14,lineHeight:1.35}}>
+            {_t(lang,"Alertes + reco du jour + prévision 7 jours · accès immédiat · annule en 2 clics","Alerts + daily pick + 7-day forecast · instant access · cancel in 2 clicks","Alertas + playa del día + pronóstico 7 días · acceso inmediato · cancela en 2 clics")}
+          </div>
+          </>)}
           
           <div style={{textAlign:"center", width:"100%"}}>
             <button type="button" onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",
@@ -7615,11 +7689,14 @@ function CaptureGateModal({lang,onSubmit,onClose,beach}){
             </button>
           </div>
         </>):(<>
-          <div style={{fontSize:48,marginBottom:16}}>📬</div>
-          <h3 style={{fontSize:24,color:"#fff",margin:"0 0 12px 0"}}>{_t(lang,"Magie en cours !","Magic in progress!","¡Magia en progreso!")}</h3>
-          <p style={{fontSize:15,color:"rgba(255,255,255,.6)",lineHeight:1.5}}>
-            {_t(lang,"Vérifie ta boîte de réception pour le lien magique.","Check your inbox for the magic link.","Revisa tu bandeja para el enlace mágico.")}
+          <div style={{fontSize:48,marginBottom:16}}>✅</div>
+          <h3 style={{fontSize:24,color:"#fff",margin:"0 0 10px 0"}}>{_t(lang,"La veille est lancée.","Your watch is on.","La vigilancia empezó.")}</h3>
+          <p style={{fontSize:15,color:"rgba(255,255,255,.65)",lineHeight:1.5,margin:"0 0 20px"}}>
+            {_t(lang,"On t'envoie le brief sargasses par email — ta meilleure plage, les jours propres, et une alerte si ça se dégrade.","We'll email you the sargassum brief — your best beach, clean days, and an alert if it worsens.","Te enviamos el informe de sargazo por email — tu mejor playa, los días limpios y una alerta si empeora.")}
           </p>
+          {onPay&&<button onClick={onPay} style={{background:"none",border:"1px solid rgba(255,255,255,.25)",borderRadius:999,color:"rgba(255,255,255,.8)",fontSize:13,fontWeight:600,padding:"11px 20px",cursor:"pointer",fontFamily:"inherit"}}>
+            {_t(lang,"Ou débloque tout maintenant →","Or unlock everything now →","O desbloquéalo todo ahora →")}
+          </button>}
         </>)}
       </div>
     </div>
@@ -11796,7 +11873,10 @@ export default function App(){
   const navDive=useMemo(()=>{try{const q=window.location.search;if(/[?&]navdive=1/.test(q))return true;if(/[?&]navdive=0/.test(q))return false;return abVariant("nav_dive",["control","dive"],[.85,.15])==="dive"}catch(_){return false}},[])
   // A/B `capture_gate` : gate email légère avant PremiumModal sur intent forecast.
   // 50/50. Override ?capture_gate=1/0. Cible : lever le 0,35 % capture email.
-  const captureGate=useMemo(()=>{try{const q=window.location.search;if(/[?&]capture_gate=1/.test(q))return true;if(/[?&]capture_gate=0/.test(q))return false;return abVariant("capture_gate",["control","gate"],[.5,.5])==="gate"}catch(_){return false}},[])
+  // 2026-06-17 — porte « soit email soit cb » PROMUE EN DÉFAUT (85% gate / 15%
+  // holdout mesurable) : modèle directeur fondateur = capturer le lead (email →
+  // drip de contenu) OU encaisser (carte, on-site). ?capture_gate=0 force le holdout.
+  const captureGate=useMemo(()=>{try{const q=window.location.search;if(/[?&]capture_gate=1/.test(q))return true;if(/[?&]capture_gate=0/.test(q))return false;return abVariant("capture_gate",["control","gate"],[.15,.85])==="gate"}catch(_){return false}},[])
   // Transition phasée accueil → carte/plage (SceneWipe). Jamais si reduced-motion.
   const[wipe,setWipe]=useState(null)
   const fireWipe=useCallback(label=>{
@@ -12878,7 +12958,7 @@ export default function App(){
         )}
 
         {/* CAPTURE GATE — A/B capture_gate · intercept forecast intent avant PremiumModal */}
-        {showCaptureGate&&<CaptureGateModal lang={lang}
+        {showCaptureGate&&<CaptureGateModal lang={lang} beach={selectedBeach||null}
           onSubmit={em=>{
             try{localStorage.setItem("sg_email",em);localStorage.setItem("sg_email_prompt","true")}catch(_){}
             const isl=IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"
@@ -12887,12 +12967,18 @@ export default function App(){
               body:JSON.stringify({email:em,island:isl,source:"capture-gate",date:new Date().toISOString()})
             }).catch(()=>{})}catch{}
             track("sg_capture_gate_submit",{src:captureGateSrc,variant:"gate"})
-            setTimeout(()=>{setShowCaptureGate(false);setPremiumSource("post_gate");setShowPremium(true);track("sg_premium_modal_open",{source:"post_gate"})},2200)
+            // Porte EMAIL choisie : on a capturé le lead → le drip envoie le contenu.
+            // On NE force PLUS la CB (modèle « soit email soit cb ») : l'état succès
+            // reste affiché ; la CB reste accessible via le bouton « ou débloque tout ».
+          }}
+          onPay={()=>{
+            setShowCaptureGate(false)
+            track("sg_capture_gate_pay",{src:captureGateSrc})
+            setPremiumSource("gate_cb");setShowPremium(true);track("sg_premium_modal_open",{source:"gate_cb"})
           }}
           onClose={()=>{
             setShowCaptureGate(false)
             track("sg_capture_gate_dismiss",{src:captureGateSrc})
-            setPremiumSource(captureGateSrc);setShowPremium(true);track("sg_premium_modal_open",{source:captureGateSrc})
           }}/>}
 
         {/* PREMIUM MODAL */}
