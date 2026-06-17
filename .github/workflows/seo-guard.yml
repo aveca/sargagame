@@ -1,0 +1,21 @@
+name: SEO Guard & Link Checker
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # Every night at 2 AM
+  workflow_dispatch:
+
+jobs:
+  link-checker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Link Checker
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: --base https://sargasses-martinique.com "https://sargasses-martinique.com/sitemap.xml"
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - name: Fail if broken links found
+        if: steps.lychee.outputs.exit_code != 0
+        run: exit 1
