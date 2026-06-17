@@ -946,7 +946,9 @@
     "daily_sig": "Anse Madame|clean|78|clean|2|mercredi",
     "j3": "2026-06-17T04:08:06.170Z"
   },
-  "d6ebd84f1a796343c69fc8645ffca415": {},
+  "d6ebd84f1a796343c69fc8645ffca415": {
+    "j3": "2026-06-17T07:52:38.793Z"
+  },
   "f0bae18e7e303a53a4d6eac3eadb3702": {},
   "303f49dc2fb533905b2fa5012c33211e": {
     "daily_last": "2026-06-16",
@@ -976,5 +978,6 @@
   },
   "faaa8e1922c2cbf5fffbffc20e792a0b": {},
   "d33a60e3f95e14e60f9d3138be3f39b5": {},
-  "3e236f28ec628017362c882b2c8253f0": {}
+  "3e236f28ec628017362c882b2c8253f0": {},
+  "c21792fe1e73217c3afef1be97e58ce4": {}
 }
