@@ -10,6 +10,7 @@ import {computeScore as _computeBeachScore} from "./lib/score.js"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.cjs"
 import { getCanonicalSlug } from "./lib/slug-resolver.js"
 import Dock from "./Dock.jsx"
+import "./RetroTheme.css"
 
 // Import résilient : pendant la fenêtre FTP d'un deploy (~25 min), un index.html
 // frais peut référencer un chunk pas encore uploadé → import() rejette et le
@@ -5997,7 +5998,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const _topName=_nameOf(_topBeach)
   const _topScore=_topBeach?.score||null
   // Contexte plage : quand la modal s'ouvre DEPUIS une fiche, le copy cite la plage vue.
-  const _bcSrcs=["forecast_lock","forecast_cta","forecast_scrub","forecast_beat","beach_dive_footer","post_gate","social_proof","whisper_veilleur","arrive"]
+  const _bcSrcs=["forecast_lock","forecast_cta","forecast_scrub","forecast_beat","beach_dive_footer","post_gate","social_proof","whisper_veilleur","arrive","rel_hot_cta"]
   const _hasBeachCtx=!!(beach&&_bcSrcs.some(ss=>(source||"").includes(ss)||(source||"")==="post_gate"))
   const _ctxName=_hasBeachCtx?(beach&&beach.name)||null:null
   const _ctxScore=_hasBeachCtx?(beach&&beach.score)||null:null
@@ -11464,11 +11465,9 @@ export default function App(){
   const[retroMode]=useState(()=>{try{const q=window.location.search;if(/[?&]retro=1/.test(q))return true;if(/[?&]retro=0/.test(q))return false;return abVariant("retro_rpg",["control","retro"],[.5,.5])==="retro"}catch(_){return false}})
   useEffect(()=>{
     if(retroMode){
+      // CSS is bundled via top-level `import "./RetroTheme.css"` (scoped under .theme-retro).
+      // Runtime <link href="/src/RetroTheme.css"> 404'd in prod after the JSX->src/ move.
       document.body.classList.add("theme-retro");
-      const link=document.createElement("link");
-      link.rel="stylesheet";
-      link.href="/src/RetroTheme.css";
-      document.head.appendChild(link);
       return ()=>document.body.classList.remove("theme-retro")
     }
   },[retroMode])
