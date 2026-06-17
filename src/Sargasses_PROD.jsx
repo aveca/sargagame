@@ -1699,9 +1699,11 @@ function findMostRelevantThreat(banks,beaches,favorites,userPos,island){
   return best
 }
 
-// Stripe — Payment Links (fallback popup) + Buy Button (embedded, si configure)
-const STRIPE_LINK_MONTHLY="https://buy.stripe.com/6oU3cxgg36J48Ox6ZZ0co0s" // 4.99 EUR/mois + 7d trial
-const STRIPE_LINK_ANNUAL="https://buy.stripe.com/14AeVf0h5c3o4yhgAz0co0r" // 39.99 EUR/an + 7d trial
+// 2026-06-17 — Payment Links OFF-SITE retirés : checkout 100% on-site (Stripe
+// Payment Element via /api/create-checkout.php). Plus AUCUN redirect buy.stripe.com.
+// Constantes vidées (conservées vides pour compat des refs aval + PAYWALL_READY).
+const STRIPE_LINK_MONTHLY=""
+const STRIPE_LINK_ANNUAL=""
 // Pro tier — activate by creating a new Stripe Payment Link @ 9.99 EUR/mo
 // (dashboard.stripe.com/payment-links) then paste the URL below. When empty,
 // the Pro tier is not shown anywhere in the UI. See `hasPro` flag below.
@@ -1719,8 +1721,12 @@ const LINK_MONTHLY=REGION_PAY?(REGION_PAY.monthly||""):STRIPE_LINK_MONTHLY
 const LINK_ANNUAL=REGION_PAY?(REGION_PAY.yearly||""):STRIPE_LINK_ANNUAL
 const LINK_PRO=REGION_PAY?"":STRIPE_LINK_PRO
 const PAYWALL_READY=!REGION_PAY||!!LINK_MONTHLY
-const PRICE_MO=REGION_PAY?(REGION.pricing?.monthly||"$9.99"):null
-const PRICE_YR=REGION_PAY?(REGION.pricing?.yearly||"$79"):null
+// EUR (MQ/GP, REGION_PAY null) : fallback de prix non-null OBLIGATOIRE — depuis
+// le passage no-trial global, les branches "accès immédiat" consomment PRICE_MO/
+// PRICE_YR à nu (avant, elles ne tournaient que pour l'USD). getLang() est défini
+// au module (l.81) → libellé localisé fr/en. Sans ça : "null/mois", "Payer null".
+const PRICE_MO=REGION_PAY?(REGION.pricing?.monthly||"$9.99"):(getLang()==="en"?"€4.99":"4,99 €")
+const PRICE_YR=REGION_PAY?(REGION.pricing?.yearly||"$79"):(getLang()==="en"?"€39.99":"39,99 €")
 // Trip Pass (USD A/B pw_trippass) : accès UNIQUE 7 jours, paiement one-time —
 // aligné sur la durée d'un séjour, pas d'abonnement. Inerte tant que
 // REGION.paymentLinks.tripPass n'existe pas (le lien Stripe one-time est créé
@@ -1728,13 +1734,12 @@ const PRICE_YR=REGION_PAY?(REGION.pricing?.yearly||"$79"):null
 // stripeLinkFor (chemin funnel protégé) : chemin de checkout séparé.
 const LINK_TRIP=REGION_PAY?(REGION_PAY.tripPass||""):""
 const PRICE_TRIP=REGION_PAY?(REGION.pricing?.tripPass||"$5.99"):null
-// Régions SANS essai gratuit (regions/*.json noTrial:true — marchés touristes
-// USD, prélèvement immédiat, décision 2026-06-10). MQ/GP gardent le trial
-// (rétention post-trial 65% mesurée — réconciliation Stripe 2026-06-10) :
-// toute la copy EUR reste BYTE-IDENTIQUE, les variantes no-trial ne
-// s'activent que via ce flag. Le PHP (create-checkout.php) applique le même
-// switch côté serveur par Origin.
-const NO_TRIAL=IS_NEW_REGION&&!!REGION.noTrial
+// 2026-06-17 — Essai gratuit retiré PARTOUT : paiement IMMÉDIAT (USD + EUR, MQ/GP
+// inclus). Le serveur (create-checkout.php $noTrial=true) facture immédiatement ;
+// cette constante bascule toute la copy front en mode "accès immédiat". Le
+// renversement de risque devient la garantie satisfait-ou-remboursé 30j (sous le
+// CTA). Réversible : repasser à une logique par-région si besoin de A/B un essai.
+const NO_TRIAL=true
 
 /* ═══════════════════════════════════════════════════════════════════════════
    UTILITIES
@@ -5969,6 +5974,29 @@ function SeasonBanner({lang}){
    CTA) + dashboard-configured success_url that fires sg_conversion on return. */
 function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const LL=T[lang]||T.fr
+  // ── Palmarès publié (« sell the track record, not the map ») ──────────────
+  // Le moat = notre fiabilité auditable. On la fetch à l'OUVERTURE du paywall
+  // (1 seul fetch, modal monté → pas de prop-threading dans le monolithe) et on
+  // la surface au POINT DE DÉCISION (fuite #1 modal→CTA 2%) façon Airbnb : note
+  // + volume + « public ». Honnêteté dure : on montre la fiabilité « mer propre »
+  // PAR RÉGIME (le nombre fort qui ne s'auto-mutile jamais), JAMAIS le hit-rate
+  // par plage (descend à 23% en saison calme = self-harm, cf reliability-badge).
+  const[_trackRec,_setTrackRec]=useState(null)
+  useEffect(()=>{let ok=true;fetch("/api/copernicus/track-record.json").then(r=>r.json()).then(d=>{if(ok)_setTrackRec(d)}).catch(()=>{});return()=>{ok=false}},[])
+  const pwProof=(()=>{try{const q=window.location.search;if(/[?&]pwproof=1/.test(q))return true;if(/[?&]pwproof=0/.test(q))return false;return abVariant("pw_proof",["control","record"],[.5,.5])==="record"}catch(_){return false}})()
+  // Régime au plus gros échantillon « mer propre » = nombre fort ET honnête.
+  const _recordProof=(()=>{
+    try{
+      const r=_trackRec;if(!r||!r.byRegime)return null
+      const best=Object.values(r.byRegime).filter(x=>x&&x.cleanSamples>0).sort((a,b)=>b.cleanSamples-a.cleanSamples)[0]
+      if(!best||!best.cleanReliabilityPct)return null
+      const pct=best.cleanReliabilityPct,nf=best.cleanSamples.toLocaleString(lang==="en"?"en-US":lang==="es"?"es-ES":"fr-FR")
+      return _t(lang,
+        `${pct}% justes · ${nf} prévisions « mer propre » vérifiées · registre public`,
+        `${pct}% correct · ${nf} “clean water” forecasts satellite-checked · public record`,
+        `${pct}% correctos · ${nf} pronósticos “agua limpia” verificados · registro público`)
+    }catch(_){return null}
+  })()
   const hasAnnual=!!LINK_ANNUAL
   const hasPro=!!LINK_PRO
   // isPro = user has paid for the Pro tier (9.99€, unlocks WhatsApp alerts,
@@ -6077,7 +6105,10 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   // USD (no-trial) : Mensuel par défaut — audit Starlink 2026-06-11 : leur 1er
   // contact prix est TOUJOURS mensuel ; un « $79 billed today » présélectionné
   // 60s après la découverte = le point de rupture probable. EUR inchangé (A/B).
-  const[plan,setPlan]=useState(hasAnnual&&!NO_TRIAL?"annual":"monthly")
+  // Défaut plan : EUR (MQ/GP, REGION_PAY null) → Annuel (engagement saison, +LTV) ;
+  // USD (REGION_PAY) → Mensuel (audit Starlink : 1er contact prix mensuel). On
+  // dérive de REGION_PAY (et non plus de NO_TRIAL, désormais true partout).
+  const[plan,setPlan]=useState(hasAnnual&&!REGION_PAY?"annual":"monthly")
   // effectivePlan is what we ship to Stripe on CTA click. Fallback chain:
   //   pro → annual → monthly, only if Stripe Link is configured for that tier.
   const effectivePlan=
@@ -6473,9 +6504,12 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               ?(lang==="es"?(<>Todo en calma. ¿Y <span style={G}>mañana</span>? Ya lo he visto.</>):lang==="en"?(<>All calm. And <span style={G}>tomorrow</span>? I've already seen it.</>):(<>Tout est calme. Et <span style={G}>demain</span> ? Je l'ai déjà vu.</>))
               :(lang==="es"?(<>Sabe dónde estará el mar <span style={G}>mañana</span>, no solo hoy</>):lang==="en"?(<>Know where the sea will be <span style={G}>tomorrow</span>, not just today</>):(<>Sache où sera la mer <span style={G}>demain</span>, pas juste aujourd'hui</>))
           const _pName=_ctxName||_topName, _pScore=_ctxScore||_topScore
-          const proof=(_pName&&_pScore)
+          const _baseProof=(_pName&&_pScore)
             ?_t(lang,`${_pName} · ${_pScore}/100 · vérifié satellite`,`${_pName} · ${_pScore}/100 · satellite-verified`,`${_pName} · ${_pScore}/100 · verificado por satélite`)
             :_t(lang,"Toute ta côte · vérifiée 4×/jour · satellite","Your whole coast · checked 4×/day · satellite","Toda tu costa · 4×/día · satélite")
+          // A/B pw_proof : au point de décision, remplace le snapshot du jour par
+          // le PALMARÈS auditable (preuve « Airbnb » = note + volume + public).
+          const proof=(pwProof&&_recordProof)||_baseProof
           return(<>
             <style>{`@keyframes pcDot{from{opacity:0;transform:translateY(2px)}to{opacity:1;transform:translateY(0)}}.pc-dot{animation:pcDot .42s ease-out both}@keyframes pcStar{0%{transform:scale(1)}45%{transform:scale(1.18)}100%{transform:scale(1)}}.pc-star{animation:pcStar .7s ease-out 1 both;transform-origin:center;transform-box:fill-box}@media(prefers-reduced-motion:reduce){.pc-dot,.pc-star{animation:none}}`}</style>
             <div style={{margin:"-12px -24px 0",position:"relative",overflow:"hidden"}}>
@@ -11294,16 +11328,20 @@ export default function App(){
       // permanent. DOIT être testé AVANT le bloc générique (qui, lui, lit
       // session_id et poserait sg_premium=1 à vie). Revenu loggé pareil (le
       // webhook gère checkout.session.completed pour les sessions mode=payment).
-      if(params.get("pass")==="trip"){
-        const end=Date.now()+7*86400000
+      // Pass one-time TIME-BOXÉ : ?pass=trip (7j, rétrocompat) OU ?pass=pNN (NN jours,
+      // ex pass vacances p30). Pose une expiration AU LIEU du flag premium permanent.
+      const passParam=params.get("pass")
+      if(passParam&&(passParam==="trip"||/^p\d{1,3}$/.test(passParam))){
+        const days=passParam==="trip"?7:Math.min(120,Math.max(1,parseInt(passParam.slice(1),10)||7))
+        const end=Date.now()+days*86400000
         try{localStorage.setItem("sg_premium_pass_end",String(end))}catch{}
         s("sg_premium_welcome",true)
-        track("sg_conversion",{session_id:sessionId||"trip",plan:"trip"})
+        track("sg_conversion",{session_id:sessionId||"pass",plan:passParam,pass_days:days})
         if(sessionId){
           try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
             method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
             body:JSON.stringify({type:"checkout.session.completed",data:{object:{id:sessionId,payment_status:"paid",
-              metadata:{island:IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ",plan:"trip"}}}})
+              metadata:{island:IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ",plan:passParam}}}})
           }).catch(()=>{})}catch(ex){}
         }
         window.history.replaceState({},"",window.location.pathname)

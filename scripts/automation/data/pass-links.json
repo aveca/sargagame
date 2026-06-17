@@ -1,0 +1,84 @@
+{
+  "generatedAt": "2026-06-17T21:22:25.115Z",
+  "product": "prod_UisfYHdT10G5hF",
+  "islands": {
+    "mq": {
+      "p7": {
+        "days": 7,
+        "label": "Pass 7 jours",
+        "variants": [
+          {
+            "cents": 799,
+            "priceId": "price_1TjQuZP9RK8Orx51OaXoWPWG",
+            "url": "https://buy.stripe.com/4gM6oJfbZ2sOggZacb0co0Q"
+          },
+          {
+            "cents": 999,
+            "priceId": "price_1TjQuaP9RK8Orx51AhwlQdXw",
+            "url": "https://buy.stripe.com/fZu28t1l92sO2q95VV0co0R"
+          }
+        ]
+      },
+      "p30": {
+        "days": 30,
+        "label": "Pass 30 jours",
+        "variants": [
+          {
+            "cents": 1499,
+            "priceId": "price_1TjQuaP9RK8Orx518ZCKPt2f",
+            "url": "https://buy.stripe.com/bJe5kFgg35F06Gp1FF0co0S"
+          },
+          {
+            "cents": 1999,
+            "priceId": "price_1TjQubP9RK8Orx51JGQM726G",
+            "url": "https://buy.stripe.com/28EdRbd3R4AWaWF8430co0T"
+          },
+          {
+            "cents": 2499,
+            "priceId": "price_1TjQubP9RK8Orx516MiF1pqC",
+            "url": "https://buy.stripe.com/aFa28t3th1oKggZ8430co0U"
+          }
+        ]
+      }
+    },
+    "gp": {
+      "p7": {
+        "days": 7,
+        "label": "Pass 7 jours",
+        "variants": [
+          {
+            "cents": 799,
+            "priceId": "price_1TjQuZP9RK8Orx51OaXoWPWG",
+            "url": "https://buy.stripe.com/8x26oJd3RgjE1m56ZZ0co0V"
+          },
+          {
+            "cents": 999,
+            "priceId": "price_1TjQuaP9RK8Orx51AhwlQdXw",
+            "url": "https://buy.stripe.com/00w28t8NB6J48Ox6ZZ0co0W"
+          }
+        ]
+      },
+      "p30": {
+        "days": 30,
+        "label": "Pass 30 jours",
+        "variants": [
+          {
+            "cents": 1499,
+            "priceId": "price_1TjQuaP9RK8Orx518ZCKPt2f",
+            "url": "https://buy.stripe.com/4gM6oJ2pd8Rcd4N6ZZ0co0X"
+          },
+          {
+            "cents": 1999,
+            "priceId": "price_1TjQubP9RK8Orx51JGQM726G",
+            "url": "https://buy.stripe.com/fZu00l6Ftd7se8R0BB0co0Y"
+          },
+          {
+            "cents": 2499,
+            "priceId": "price_1TjQubP9RK8Orx516MiF1pqC",
+            "url": "https://buy.stripe.com/fZu4gB9RF9Vg2q96ZZ0co0Z"
+          }
+        ]
+      }
+    }
+  }
+}
