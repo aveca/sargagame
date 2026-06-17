@@ -197,11 +197,43 @@ async function deployOne(t) {
       console.log(`  [${t.label}] ${label} ✓ (${n} files)`)
     }
     for (const sd of nestedDirs) {
-      const n = await withFreshClient(`${d}/${sd}/`, async client => {
-        await client.ensureDir(`/${d}/${sd}`)
-        await client.uploadFromDir(path.join(localDir, sd))
-      })
-      console.log(`  [${t.label}] ${d}/${sd}/ ✓ (${n} files)`)
+      function collectFiles(dir, prefix) {
+        let results = []
+        for (const e of fs.readdirSync(dir)) {
+          const fp = path.join(dir, e)
+          const rp = prefix ? `${prefix}/${e}` : e
+          if (fs.statSync(fp).isDirectory()) {
+            results = results.concat(collectFiles(fp, rp))
+          } else {
+            results.push({ local: fp, remote: rp })
+          }
+        }
+        return results
+      }
+      const sdPath = path.join(localDir, sd)
+      const allNestedFiles = collectFiles(sdPath, "")
+      
+      if (allNestedFiles.length <= BATCH_SIZE) {
+        const n = await withFreshClient(`${d}/${sd}/`, async client => {
+          await client.ensureDir(`/${d}/${sd}`)
+          await client.uploadFromDir(sdPath)
+        })
+        console.log(`  [${t.label}] ${d}/${sd}/ ✓ (${n} files)`)
+      } else {
+        for (let i = 0; i < allNestedFiles.length; i += BATCH_SIZE) {
+          const batch = allNestedFiles.slice(i, i + BATCH_SIZE)
+          const label = `${d}/${sd}/ [${i + 1}-${i + batch.length}/${allNestedFiles.length}]`
+          const n = await withFreshClient(label, async client => {
+            await client.ensureDir(`/${d}/${sd}`)
+            for (const f of batch) {
+              const remoteDir = path.dirname(`/${d}/${sd}/${f.remote}`).replace(/\\/g, '/')
+              await client.ensureDir(remoteDir)
+              await client.uploadFrom(f.local, `/${d}/${sd}/${f.remote}`.replace(/\\/g, '/'))
+            }
+          })
+          console.log(`  [${t.label}] ${label} ✓ (${n} files)`)
+        }
+      }
     }
   }
 
