@@ -100,6 +100,13 @@ const I18N = {
     cta: 'Voir la carte en direct →',
     fdata: 'Données : Copernicus Marine & NOAA ERDDAP · backtest recalculé automatiquement',
     caribNote: null,
+    rgClean: 'Prévisions « Propre »',
+    rgFalse: 'Taux Fausses Alertes',
+    capTitle: 'Recevez le verdict du matin',
+    capDesc: 'La même mesure satellite, chaque jour dans votre boîte email. Gratuit.',
+    capPlaceholder: 'Votre adresse email...',
+    capBtn: 'Recevoir',
+    capSuccess: "C'est fait ! Premier email dans 3 jours.",
   },
   en: {
     back: 'Back to the map',
@@ -131,6 +138,13 @@ const I18N = {
     cta: 'See the live map →',
     fdata: 'Data: Copernicus Marine & NOAA ERDDAP · backtest recomputed automatically',
     caribNote: region => `Accuracy is measured on our longest-running network — 20 Caribbean beaches (Martinique & Guadeloupe), where the verification archive is deepest. The exact same model (pipeline v3) powers the ${region} forecasts.`,
+    rgClean: '"Clean" Forecasts',
+    rgFalse: 'False Alarm Rate',
+    capTitle: 'Get the morning verdict',
+    capDesc: 'The same satellite measurement, daily in your inbox. Free.',
+    capPlaceholder: 'Your email address...',
+    capBtn: 'Subscribe',
+    capSuccess: "You're in! First email in 3 days.",
   },
   es: {
     back: 'Volver al mapa',
@@ -147,7 +161,7 @@ const I18N = {
     m4s: 'Ninguna cifra inventada: si una medición no existe, la sección desaparece antes que adivinar.',
     l2: 'La precisión, medida', h2p: 'Cuánto valen nuestros pronósticos',
     pIntro: (from, to, pairs, beaches) => `Del ${from} al ${to}, ${pairs} pronósticos se compararon con la observación satelital en ${beaches} playas.`,
-    statJ1: 'estado correcto a 1 día', statJ3: 'estado correcto a 3 días', statAll: 'todos los horizontes',
+    statJ1: 'estado correcto a 1 día', statJ3: 'estado correct a 3 días', statAll: 'todos los horizontes',
     hitDef: mae => `Un pronóstico es un «acierto» cuando el estado anunciado (limpia, moderada, evitar) coincide con el estado observado por el satélite el día previsto. Error medio en el índice AFAI: ${mae}.`,
     thH: 'Horizonte', thHit: 'Acierto', thN: 'Comparaciones', thConf: 'Confianza mostrada',
     horizon: i => `Día +${i}`,
@@ -162,6 +176,13 @@ const I18N = {
     cta: 'Ver el mapa en vivo →',
     fdata: 'Datos: Copernicus Marine & NOAA ERDDAP · backtest recalculado automáticamente',
     caribNote: region => `La precisión se mide en nuestra red más antigua — 20 playas del Caribe (Martinica y Guadalupe), donde el archivo de verificación es más profundo. El mismo modelo exacto (pipeline v3) genera los pronósticos de ${region}.`,
+    rgClean: 'Pronósticos «Limpia»',
+    rgFalse: 'Tasa Falsas Alertas',
+    capTitle: 'Recibe el veredicto de la mañana',
+    capDesc: 'La misma medición satelital, diario en tu correo. Gratis.',
+    capPlaceholder: 'Tu correo electrónico...',
+    capBtn: 'Suscribirse',
+    capSuccess: '¡Listo! Primer email en 3 días.',
   },
 }
 
@@ -236,12 +257,15 @@ function precisionSection(lang, bt, regionName) {
   // Lead HONNÊTE par régime (regimeReliability.note : « publier ÇA, jamais le global % seul,
   // qui masque que les alertes en saison calme sont bien moins fiables que les mer-propre »).
   // Le même chiffre alimente le badge in-app (vite __RELIABILITY__) → fil de preuve cohérent.
+  // Lead HONNÊTE par régime (regimeReliability.note : « publier ÇA, jamais le global % seul,
+  // qui masque que les alertes en saison calme sont bien moins fiables que les mer-propre »).
+  // Le même chiffre alimente le badge in-app (vite __RELIABILITY__) → fil de preuve cohérent.
   const rr = bt.regimeReliability
   const regimeLead = rr && rr.headline && rr.headline[lang]
-    ? `<p style="background:var(--card);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:14px;padding:14px 16px;color:#fff;font-size:15px;font-weight:600;line-height:1.5;margin-bottom:6px">${esc(rr.headline[lang])}</p>`
+    ? `<div class="control-only"><p style="background:var(--card);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:14px;padding:14px 16px;color:#fff;font-size:15px;font-weight:600;line-height:1.5;margin-bottom:6px">${esc(rr.headline[lang])}</p></div>`
     : ''
 
-  return `<section>
+  return `<section class="precision-section">
     <div class="lbl">${esc(t.l2)}</div>
     <h2>${esc(t.h2p)}</h2>
     ${regimeLead}
@@ -270,7 +294,7 @@ function freshnessSection(lang, data, slug) {
   </section>`
 }
 
-function renderPage({ lang, domain, siteName, slug, title, desc, data, bt, regionName, alternates }) {
+function renderPage({ lang, domain, siteName, slug, title, desc, data, bt, regionName, alternates, islandCode }) {
   const t = I18N[lang]
   const canonical = `https://${domain}/${slug}/`
   // hreflang : régions bilingues — chaque variante de langue (/reliability/ EN,
@@ -293,19 +317,194 @@ function renderPage({ lang, domain, siteName, slug, title, desc, data, bt, regio
       { '@type': 'ListItem', position: 2, name: title, item: canonical },
     ],
   })
+
+  // Régime dominant pour variant v2
+  const rr = bt && bt.regimeReliability
+  let dominantRegime = 'calm'
+  if (rr && rr.regimes) {
+    const calmSamples = rr.regimes.calm ? rr.regimes.calm.samples : 0
+    const highSamples = rr.regimes.high ? rr.regimes.high.samples : 0
+    dominantRegime = highSamples > calmSamples ? 'high' : 'calm'
+  }
+
+  let gaugeMarkup = ''
+  if (bt) {
+    let pct = bt.overall.statusHitRate
+    let txt = ''
+    if (rr && rr.regimes && rr.regimes[dominantRegime]) {
+      const rd = rr.regimes[dominantRegime]
+      pct = rd.cleanReliabilityPct
+      const regimeLabelText = dominantRegime === 'calm' 
+        ? (lang === 'es' ? 'temporada tranquila' : lang === 'en' ? 'calm season' : 'saison calme') 
+        : (lang === 'es' ? 'temporada alta' : lang === 'en' ? 'high season' : 'saison haute')
+      txt = lang === 'es' 
+        ? `<b>${pct}%</b> de pronósticos «agua limpia» correctos · ${fmtInt(lang, rd.cleanSamples)} pruebas · ${regimeLabelText}`
+        : lang === 'en'
+        ? `<b>${pct}%</b> correct \"clean water\" forecasts · ${fmtInt(lang, rd.cleanSamples)} checks · ${regimeLabelText}`
+        : `<b>${pct} %</b> des prévisions « mer propre » vérifiées · ${fmtInt(lang, rd.cleanSamples)} comparaisons · ${regimeLabelText}`
+    } else {
+      txt = lang === 'es'
+        ? `<b>${pct}%</b> de acierto global · ${fmtInt(lang, bt.totalPairs)} comparaciones`
+        : lang === 'en'
+        ? `<b>${pct}%</b> overall accuracy · ${fmtInt(lang, bt.totalPairs)} checks`
+        : `<b>${pct} %</b> justes · ${fmtInt(lang, bt.totalPairs)} comparaisons`
+    }
+    gaugeMarkup = `
+    <div class="gauge">
+      <span class="bar"><i style="width: ${pct}%"></i></span>
+      <span class="txt">${txt}</span>
+    </div>`
+  }
+
+  let regimeHeroSection = ''
+  if (rr && rr.regimes && rr.regimes[dominantRegime]) {
+    const rd = rr.regimes[dominantRegime]
+    const titleClean = t.rgClean
+    const descClean = lang === 'es' ? `Correctos a ${rd.cleanReliabilityPct}% (${fmtInt(lang, rd.cleanSamples)} muestras)` : lang === 'en' ? `Correct at ${rd.cleanReliabilityPct}% (${fmtInt(lang, rd.cleanSamples)} samples)` : `Vérifiées à ${rd.cleanReliabilityPct} % (${fmtInt(lang, rd.cleanSamples)} échantillons)`
+
+    let alertCard = ''
+    if (rd.alertSamples > 0 && typeof rd.falseAlarmRatePct === 'number') {
+      const titleAlert = t.rgFalse
+      const regimeLabelText = dominantRegime === 'calm' 
+        ? (lang === 'es' ? 'en temporada tranquila' : lang === 'en' ? 'in calm season' : 'en saison calme') 
+        : (lang === 'es' ? 'en temporada alta' : lang === 'en' ? 'in high season' : 'en saison haute')
+      const descAlert = lang === 'es' ? `${rd.falseAlarmRatePct}% en ${regimeLabelText}` : lang === 'en' ? `${rd.falseAlarmRatePct}% ${regimeLabelText}` : `${rd.falseAlarmRatePct} % ${regimeLabelText}`
+      alertCard = `
+      <div class="stat alert-card">
+        <div class="n" style="color: #FFC72C">${fmtPct(lang, rd.falseAlarmRatePct)}</div>
+        <div class="l"><strong>${esc(titleAlert)}</strong><br>${esc(descAlert)}</div>
+      </div>`
+    }
+
+    const headline = rr.headline && rr.headline[lang] ? `<p class="regime-headline">${esc(rr.headline[lang])}</p>` : ''
+    const windowText = rr.window ? `<p class="note">${lang === 'es' ? 'Período:' : lang === 'en' ? 'Period:' : 'Période :'} ${esc(rr.window)}</p>` : ''
+
+    regimeHeroSection = `
+    <div class="v2 regime-hero" style="margin-top: 30px;">
+      ${headline}
+      <div class="stats" style="margin-top: 10px;">
+        <div class="stat clean-card">
+          <div class="n" style="color: #22C55E">${fmtPct(lang, rd.cleanReliabilityPct)}</div>
+          <div class="l"><strong>${esc(titleClean)}</strong><br>${esc(descClean)}</div>
+        </div>
+        ${alertCard}
+      </div>
+      ${windowText}
+    </div>`
+  }
+
   // Refresh client : re-rend l'horodatage local + relatif, puis re-fetch la donnée live.
-  const js = `(function(){var ts=document.getElementById('f-ts'),rel=document.getElementById('f-rel');if(!ts)return;
-var L=${JSON.stringify(LOCALES[lang])},LT1=${JSON.stringify(t.agoLt1)},TPL=${JSON.stringify(t.agoTpl)};
-function show(iso){var d=new Date(iso);if(isNaN(d))return;
-ts.textContent=d.toLocaleString(L,{day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'});
-var h=Math.floor((Date.now()-d.getTime())/36e5);
-rel.textContent=h<1?LT1:TPL.replace('{h}',h)}
-show(ts.getAttribute('data-iso'));
-fetch('/api/copernicus/sargassum.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.updatedAt){ts.setAttribute('data-iso',d.updatedAt);show(d.updatedAt)}}).catch(function(){})})();`
+  const js = `(function(){
+var ts=document.getElementById('f-ts'),rel=document.getElementById('f-rel');
+if(ts){
+  var L=${JSON.stringify(LOCALES[lang])},LT1=${JSON.stringify(t.agoLt1)},TPL=${JSON.stringify(t.agoTpl)};
+  function show(iso){var d=new Date(iso);if(isNaN(d))return;
+  ts.textContent=d.toLocaleString(L,{day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'});
+  var h=Math.floor((Date.now()-d.getTime())/36e5);
+  rel.textContent=h<1?LT1:TPL.replace('{h}',h)}
+  show(ts.getAttribute('data-iso'));
+  fetch('/api/copernicus/sargassum.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.updatedAt){ts.setAttribute('data-iso',d.updatedAt);show(d.updatedAt)}}).catch(function(){})
+}
+
+var VARIANT = document.documentElement.className.indexOf("rel-v2") !== -1 ? "v2" : "control";
+var ISLAND_CODE = ${JSON.stringify(islandCode)};
+var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec";
+
+function track(event, params) {
+  var p = params || {};
+  try {
+    var ab = JSON.parse(localStorage.getItem("sg_ab") || "{}");
+    for (var k in ab) { p["ab_" + k] = ab[k]; }
+  } catch(e){}
+  p["ab_rel_v2"] = VARIANT === "v2" ? 1 : 0;
+  
+  if (ISLAND_CODE === "MQ" || ISLAND_CODE === "GP") {
+    try {
+      var mid = ISLAND_CODE === "GP" ? "G-Q31VV3LLM9" : "G-V8JGMDZZ2Y";
+      var sec = ISLAND_CODE === "GP" ? "eWAv3vACT6uVzcrAi7JgYQ" : "eFHMRr4tQ-2B-JYidixOSA";
+      var cid = document.cookie.match(/_ga=GA\\d+\\.\\d+\\.(\\d+\\.\\d+)/);
+      cid = cid ? cid[1] : "a." + Date.now();
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(
+          "https://www.google-analytics.com/mp/collect?measurement_id=" + mid + "&api_secret=" + sec,
+          JSON.stringify({ client_id: cid, events: [{ name: event, params: p }] })
+        );
+      }
+    } catch(e){}
+  }
+  
+  if (event === "sg_email_submit" || event === "sg_rel_view") {
+    try {
+      var entry = { e: event, p: p, t: Date.now(), island: ISLAND_CODE };
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(APPS_SCRIPT_URL, JSON.stringify({ type: "analytics_event", ...entry }));
+      }
+    } catch(e){}
+  }
+}
+
+track("sg_rel_view", { variant: VARIANT });
+
+var capForm = document.getElementById("cap-form");
+if (capForm) {
+  capForm.addEventListener("submit", function(e) {
+    e.preventDefault();
+    var emailInput = document.getElementById("cap-email");
+    if (!emailInput) return;
+    var email = emailInput.value.trim();
+    if (!email || email.indexOf("@") === -1) return;
+    
+    try {
+      localStorage.setItem("sg_email", JSON.stringify(email));
+      localStorage.setItem("sg_email_prompt", "true");
+    } catch(err){}
+    
+    track("sg_email_submit", { source: "fiabilite_capture", variant: VARIANT });
+    
+    try {
+      fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify({ email: email, island: ISLAND_CODE, source: "fiabilite", date: new Date().toISOString() })
+      }).catch(function(){});
+    } catch(err){}
+    
+    document.getElementById("cap-inputs").style.display = "none";
+    document.getElementById("cap-success").style.display = "block";
+  });
+}
+})();`
 
   return `<!doctype html>
 <html lang="${lang}">
 <head>
+<script>
+(function(){
+  var q = window.location.search;
+  var variant = "";
+  if (/[?&]rel_v2=1/.test(q)) {
+    variant = "v2";
+  } else if (/[?&]rel_v2=0/.test(q)) {
+    variant = "control";
+  } else {
+    try {
+      var ab = JSON.parse(localStorage.getItem("sg_ab") || "{}");
+      if (ab.rel_v2 != null) {
+        variant = (ab.rel_v2 === 1 || ab.rel_v2 === "v2") ? "v2" : "control";
+      } else {
+        var isV2 = Math.random() < 0.7;
+        variant = isV2 ? "v2" : "control";
+        ab.rel_v2 = isV2 ? 1 : 0;
+        localStorage.setItem("sg_ab", JSON.stringify(ab));
+      }
+    } catch(e) {
+      variant = "v2";
+    }
+  }
+  document.documentElement.className = "rel-" + variant;
+})();
+</script>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <title>${esc(title)}</title>
@@ -339,7 +538,7 @@ fetch('/api/copernicus/sargassum.json',{cache:'no-store'}).then(function(r){retu
   .row b{color:#fff;font-size:14px;display:block;margin-bottom:2px}
   .row span{color:var(--mut);font-size:13px}
   .row .ic{font-size:19px;line-height:1.3}
-  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+  .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:16px}
   .stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 10px;text-align:center}
   .stat .n{font-size:clamp(24px,6vw,32px);font-weight:900;color:var(--gold);line-height:1.05;white-space:nowrap}
   .stat .l{font-size:11px;color:var(--mut);margin-top:5px;line-height:1.35}
@@ -361,14 +560,150 @@ fetch('/api/copernicus/sargassum.json',{cache:'no-store'}).then(function(r){retu
   .dot{width:9px;height:9px;border-radius:50%;background:#6AC15A;margin-top:7px;flex:none;box-shadow:0 0 0 4px rgba(106,193,90,.15)}
   .foot{margin-top:54px;padding-top:24px;border-top:1px solid var(--line);text-align:center;font-size:11px;color:rgba(255,255,255,.38)}
   .cta{display:inline-block;margin-top:18px;background:var(--gold);color:var(--ink);font-weight:800;font-size:14px;padding:13px 22px;border-radius:16px;text-decoration:none}
+
+  /* A/B Test classes */
+  .rel-control .v2 { display: none !important; }
+  .rel-v2 .control-only { display: none !important; }
+
+  /* V2 styles */
+  .hero{position:relative;margin:0 -22px 20px;padding:calc(20px + env(safe-area-inset-top)) 22px 26px;overflow:hidden;
+    background:radial-gradient(130% 70% at 76% 4%,rgba(255,224,160,.16),transparent 48%),
+               linear-gradient(158deg,#1f6157 0%,#114440 44%,#072019 100%)}
+  .hero .sun{position:absolute;top:-30%;right:-12%;width:80%;height:80%;pointer-events:none;
+    background:radial-gradient(closest-side,rgba(255,243,214,.42),rgba(255,216,132,.18) 46%,transparent 72%);
+    animation:sunBreath 11s ease-in-out infinite}
+  @keyframes sunBreath{0%,100%{opacity:.9;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
+  @media (prefers-reduced-motion:reduce){.hero .sun{animation:none}}
+  
+  .hero-header { position: relative; z-index: 2; padding-right: 70px; }
+  .veil-satellite { position: absolute; top: -10px; right: 0; width: 80px; height: 80px; z-index: 2; }
+  .veilleur-svg { width: 100%; height: 100%; }
+
+  .gauge{margin-top:16px;display:inline-flex;align-items:center;gap:9px;
+    background:rgba(8,18,16,.42);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+    border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:8px 13px;position:relative;z-index:2;width:100%;}
+  .gauge .bar{width:80px;height:7px;border-radius:4px;background:rgba(255,255,255,.14);overflow:hidden;flex-shrink:0;}
+  .gauge .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--gold));border-radius:4px}
+  .gauge .txt{font-size:12.5px;color:#fff;line-height:1.2;}
+  .gauge .txt b{color:var(--gold)}
+
+  .regime-headline{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:14px;padding:14px 16px;color:#fff;font-size:15px;font-weight:600;line-height:1.5;margin-bottom:12px}
+
+  .capture-card {
+    background: linear-gradient(135deg, #0d1e1c, #142824);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-top: 30px;
+    position: relative;
+    overflow: hidden;
+  }
+  .capture-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -20%;
+    width: 60%;
+    height: 200%;
+    background: radial-gradient(ellipse, rgba(34,197,94,.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .capture-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+    position: relative;
+    z-index: 1;
+  }
+  .capture-desc {
+    font-size: 13px;
+    color: var(--mut);
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 1;
+    line-height: 1.4;
+  }
+  .capture-form {
+    display: flex;
+    gap: 8px;
+    position: relative;
+    z-index: 1;
+  }
+  .capture-input {
+    flex: 1;
+    background: rgba(0,0,0,.3);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: #fff;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+  }
+  .capture-input:focus {
+    border-color: var(--teal);
+  }
+  .capture-btn {
+    background: var(--gold);
+    color: var(--ink);
+    border: 0;
+    border-radius: 10px;
+    padding: 0 18px;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: opacity .15s ease;
+  }
+  .capture-btn:hover {
+    opacity: 0.9;
+  }
+  .capture-success {
+    display: none;
+    text-align: center;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--green);
+    position: relative;
+    z-index: 1;
+    padding: 10px 0;
+  }
 </style>
 </head>
 <body>
 <div class="page">
   <div class="tb"><a href="/">←&nbsp;${esc(t.back)}</a><span class="wordmark">${esc(siteName.toUpperCase())}</span></div>
 
-  <h1>${esc(t.h1a)} <em>${esc(t.h1b)}</em></h1>
-  <p class="lead">${esc(t.lead)}</p>
+  <div class="control-only">
+    <h1>${esc(t.h1a)} <em>${esc(t.h1b)}</em></h1>
+    <p class="lead">${esc(t.lead)}</p>
+  </div>
+
+  <div class="v2">
+    <div class="hero">
+      <div class="sun"></div>
+      <div class="hero-header">
+        <div class="veil-satellite">
+          <svg viewBox="0 0 120 120" class="veilleur-svg">
+            <g id="veilleur" transform="translate(60 60) scale(1.1)" opacity=".96" aria-hidden="true">
+              <circle cx="0" cy="0" r="42" fill="url(#phalo)"/>
+              <rect x="-58" y="-6" width="34" height="20" rx="3" fill="#163a4f" transform="rotate(-8 -41 4)"/>
+              <rect x="24" y="-6" width="34" height="20" rx="3" fill="#163a4f" transform="rotate(8 41 4)"/>
+              <path d="M0 -22 C14 -22 22 -14 22 2 C22 18 14 30 0 30 C-14 30 -22 18 -22 2 C-22 -14 -14 -22 0 -22 Z" fill="#102622" stroke="#FFD884" stroke-width="1.1" stroke-opacity=".5"/>
+              <circle cx="0" cy="4" r="15" fill="#0d3a39"/>
+              <circle cx="0" cy="4" r="15" fill="none" stroke="#E8A800" stroke-width="2.4"/>
+              <ellipse cx="0" cy="9" rx="15" ry="9" fill="#102622"/>
+              <circle cx="2" cy="3" r="5.4" fill="#0a3a39"/><circle cx="0.5" cy="1.2" r="2" fill="#cff4ff"/>
+              <line x1="0" y1="-22" x2="0" y2="-34" stroke="#0e2622" stroke-width="2.4"/><circle cx="0" cy="-36" r="3.4" fill="#22C55E"/>
+            </g>
+          </svg>
+        </div>
+        <h1>${esc(t.h1a)} <em>${esc(t.h1b)}</em></h1>
+        <p class="lead">${esc(t.lead)}</p>
+      </div>
+      ${gaugeMarkup}
+    </div>
+  </div>
 
   <section>
     <div class="lbl">${esc(t.l1)}</div>
@@ -381,9 +716,25 @@ fetch('/api/copernicus/sargassum.json',{cache:'no-store'}).then(function(r){retu
     </div>
   </section>
 
+  ${regimeHeroSection}
+
   ${precisionSection(lang, bt, regionName)}
 
   ${freshnessSection(lang, data, slug)}
+
+  <div class="v2 capture-card">
+    <div class="capture-title">${esc(t.capTitle)}</div>
+    <div class="capture-desc">${esc(t.capDesc)}</div>
+    <div id="cap-success" class="capture-success">
+      <span>✅</span> ${esc(t.capSuccess)}
+    </div>
+    <form id="cap-form" class="capture-form">
+      <div id="cap-inputs" style="display: flex; width: 100%; gap: 8px;">
+        <input type="email" id="cap-email" class="capture-input" placeholder="${esc(t.capPlaceholder)}" required />
+        <button type="submit" class="capture-btn">${esc(t.capBtn)}</button>
+      </div>
+    </form>
+  </div>
 
   <div class="foot">${esc(siteName.toUpperCase())} · ${esc(t.fdata)}</div>
 </div>
@@ -456,13 +807,13 @@ function generateReliabilityPages(region, distDir) {
     const mqMeta = buildMeta('fr', bt, 'Martinique')
     writePage(distDir, 'fiabilite', renderPage({
       lang: 'fr', domain: 'sargasses-martinique.com', siteName: 'Sargasses Martinique',
-      slug: 'fiabilite', title: mqMeta.title, desc: mqMeta.desc, data, bt,
+      slug: 'fiabilite', title: mqMeta.title, desc: mqMeta.desc, data, bt, islandCode: 'MQ'
     }))
     // GP — miroir dist/_gp/ (prepare-ftp l'overlay sur guadeloupe-ftp en dernier)
     const gpMeta = buildMeta('fr', bt, 'Guadeloupe')
     writePage(path.join(distDir, '_gp'), 'fiabilite', renderPage({
       lang: 'fr', domain: 'sargasses-guadeloupe.com', siteName: 'Sargasses Guadeloupe',
-      slug: 'fiabilite', title: gpMeta.title, desc: gpMeta.desc, data, bt,
+      slug: 'fiabilite', title: gpMeta.title, desc: gpMeta.desc, data, bt, islandCode: 'GP'
     }))
     console.log(`   → /fiabilite/ générée (MQ + miroir GP)${bt ? ` — backtest ${bt.overall.statusHitRate}% global, ${bt.totalPairs} paires` : ' — SANS section précision (backtest indisponible)'}`)
     return
@@ -488,7 +839,7 @@ function generateReliabilityPages(region, distDir) {
     const meta = buildMeta(l, bt, region.name)
     writePage(distDir, slug, renderPage({
       lang: l, domain: region.domain, siteName, slug, title: meta.title, desc: meta.desc,
-      data, bt, regionName: region.name, alternates,
+      data, bt, regionName: region.name, alternates, islandCode: region.id.toUpperCase()
     }))
     const inSitemap = appendToRegionSitemap(distDir, region.domain, slug)
     done.push(`/${slug}/${inSitemap ? '' : ' (sitemap absent)'}`)

@@ -38,6 +38,9 @@ const LazyWorldMapView=lazyWithRetry(()=>import("./src/WorldMapView"))
 const LazyBeachDive=lazyWithRetry(()=>import("./src/BeachDive"))
 // CleanList — /plages-sans-sargasses/ A/B `clean_list` (port proto-planb-clean-nearby)
 const LazyCleanList=lazyWithRetry(()=>import("./src/CleanList"))
+// Conditions — /conditions/<slug>/ A/B `pw_conditions`
+const LazyConditions=lazyWithRetry(()=>import("./src/Conditions"))
+
 
 class ErrBound extends Component{
   constructor(p){super(p);this.state={err:null}}
@@ -11430,6 +11433,7 @@ export default function App(){
   const[userPos,setUserPos]=useState(null) // {lat,lng}
   const[communityReports,setCommunityReports]=useState({})
   const[fbPosts,setFbPosts]=useState({})
+  const[beachesWeather,setBeachesWeather]=useState({})
   const[hasActiveThreat,setHasActiveThreat]=useState(false)
 
   // Hero Verdict — home "/" uniquement (jamais les deep-links/landings SEO),
@@ -11511,6 +11515,38 @@ export default function App(){
       return alertHubVariant==="hub"
     }catch(_){return false}
   })
+  // A/B `pw_conditions` : /conditions/<slug>/ (et /conditions/) scene golden-hour + filter logic.
+  const isConditionsPath = (() => {
+    try {
+      return /^\/conditions(?:\/.*)?\/?$/.test(window.location.pathname)
+    } catch (_) {
+      return false
+    }
+  })()
+  const [conditionsVariant] = useState(() => {
+    try {
+      const q = window.location.search
+      if (/[?&]pw_conditions=1/.test(q)) return "conditions"
+      if (/[?&]pw_conditions=0/.test(q)) return "control"
+      return abVariant("pw_conditions", ["control", "conditions"], [.7, .3])
+    } catch (_) {
+      return "control"
+    }
+  })
+  const [showConditions, setShowConditions] = useState(() => {
+    try {
+      if (!isConditionsPath) return false
+      return conditionsVariant === "conditions"
+    } catch (_) {
+      return false
+    }
+  })
+  const [conditionsExiting, setConditionsExiting] = useState(false)
+  const dismissConditions = useCallback(action => {
+    setConditionsExiting(true)
+    setTimeout(() => { setShowConditions(false); setConditionsExiting(false) }, 300)
+    try { track("sg_conditions_dismiss", { action }) } catch (_) {}
+  }, [])
   // Cohort world : ouvre l'Archipel par defaut quand la landing se pose (hero+mapintro
   // dismisses, beaches pretes), UNE fois. Escapable (la croix renvoie a la carte control).
   useEffect(()=>{
@@ -11524,9 +11560,9 @@ export default function App(){
   // (où ça bloque, où ça s'ennuie), à chaque étape. Voir engInit/engScreen/engFlush.
   useEffect(()=>{
     engInit();sgCollectInit()
-    const screen=showStation?("station_"+stationSlug):showPremium?"premium":selectedBeach?"beach":showSolutions?"solutions":showArchipel?"world":showMapIntro?"mapintro":showPrevLanding?"previsions":showCleanList?"clean_list":showAlertHub?"alertes":showHero?"hero":showWorld?"worldfeed":("map_"+(view||"map"))
+    const screen=showStation?("station_"+stationSlug):showPremium?"premium":selectedBeach?"beach":showSolutions?"solutions":showArchipel?"world":showMapIntro?"mapintro":showPrevLanding?"previsions":showCleanList?"clean_list":showConditions?"conditions":showAlertHub?"alertes":showHero?"hero":showWorld?"worldfeed":("map_"+(view||"map"))
     engScreen(screen)
-  },[showStation,stationSlug,showPremium,selectedBeach,showSolutions,showArchipel,showMapIntro,showPrevLanding,showCleanList,showAlertHub,showHero,showWorld,view])
+  },[showStation,stationSlug,showPremium,selectedBeach,showSolutions,showArchipel,showMapIntro,showPrevLanding,showCleanList,showConditions,showAlertHub,showHero,showWorld,view])
   // Bras A/B du landing : control = HeroVerdict (éprouvé), game = GameFunnel
   // (funnel-jeu immersif, tranche verticale 13/06). Mesuré contre le landing
   // prouvé, jamais imposé ; ?lf=game force en QA. La conversion (paywall/trial/
@@ -11718,6 +11754,7 @@ export default function App(){
       fetch("/api/weather/beaches-weather.json").then(r=>r.json()).catch(()=>null)
     ]).then(([beachData,sargResult,beachWx])=>{
       const perBeachWx=beachWx?.beaches||{}
+      setBeachesWeather(perBeachWx)
       // 1. Build full beach list (strip stale status/afai from JSON)
       let beaches=IS_NEW_REGION
         ?REGION.beaches.map(b=>({...b}))   // plages inline de la région (status placeholder jusqu'à la pipeline dédiée)
@@ -12330,6 +12367,27 @@ export default function App(){
               track("sg_beach_open",{beach_id:b.id,status:b.status,source:"clean_list"})
             }}
             onShowMap={()=>dismissCleanList("map")}/>
+          </Suspense></ErrBound>
+        )}
+
+        {/* CONDITIONS PAGES — /conditions/<slug>/ A/B `pw_conditions` */}
+        {showConditions && allBeaches?.length >= 1 && (
+          <ErrBound><Suspense fallback={null}>
+            <LazyConditions
+              lang={lang}
+              sargData={sargData}
+              allBeaches={allBeaches}
+              beachesWeather={beachesWeather}
+              userPos={userPos}
+              onOpenBeach={b => {
+                dismissConditions("beach")
+                setSelectedBeach(b)
+                track("sg_beach_open", { beach_id: b.id, status: b.status, source: "conditions" })
+              }}
+              onShowMap={() => dismissConditions("map")}
+              onPremium={src => openPremium(src || "conditions")}
+              track={track}
+            />
           </Suspense></ErrBound>
         )}
 

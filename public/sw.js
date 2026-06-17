@@ -2,7 +2,7 @@
 // Cache-first for static assets, network-first for HTML/API data.
 // IMPORTANT : bumper CACHE_NAME a CHAQUE deploy de code -> purge l'ancien cache (sinon
 // les users restent coinces sur l'ancien index.html/bundle, cf. bug clic plages juin 2026).
-const CACHE_NAME = 'sargasses-v198'
+const CACHE_NAME = 'sargasses-v199'
 const STATIC_ASSETS = ['/', '/index.html', '/manifest.json', '/favicon.svg', '/icon-192.png', '/data/beaches-list.json', '/data/beaches-images.json']
 
 self.addEventListener('install', (e) => {
