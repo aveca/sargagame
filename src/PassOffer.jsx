@@ -28,11 +28,12 @@ const PASS = {
 }
 
 const eur = (c, lang) => (lang === "en" ? "€" + (c / 100).toFixed(2) : (c / 100).toFixed(2).replace(".", ",") + " €")
+const perDay = (c, days, lang) => { const v = (c / 100 / days); const s = (lang === "en" ? "€" + v.toFixed(2) : v.toFixed(2).replace(".", ",") + " €"); return _t(lang, `${s}/jour`, `${s}/day`, `${s}/día`) }
 
 /**
- * PassOffer — storefront « paie à l'usage » : passes one-time (accès time-boxé à
- * la prévision 7j RÉELLE + alertes + brief). Sans abonnement, sans essai, sans
- * renouvellement. Prix choisi par A/B (pass_price). onBuy(item) gère track+redirect.
+ * PassOffer — storefront « paie à l'usage », niveau PRO golden-hour. Passes one-time
+ * (accès time-boxé à la prévision 7j RÉELLE + alertes + brief). Sans abonnement, sans
+ * essai. Prix par A/B (pass_price). onBuy(item) → track + redirect direct.
  */
 export default function PassOffer({ lang = "fr", onBuy }) {
   const isGP = typeof window !== "undefined" && /guadeloupe/.test(window.location.hostname)
@@ -42,41 +43,74 @@ export default function PassOffer({ lang = "fr", onBuy }) {
   const p7 = cat.p7[Math.min(v, cat.p7.length - 1)]
   const buy = (item, pass) => { if (onBuy) onBuy({ ...item, pass }); else try { window.location.href = item.u } catch (_) {} }
 
-  const card = (pass, item, days, hero) => (
-    <button onClick={() => buy(item, pass)} style={{
-      display: "block", width: "100%", textAlign: "left", cursor: "pointer", fontFamily: "inherit",
-      border: hero ? "1.5px solid #FFC72C" : "1px solid rgba(255,255,255,.16)", borderRadius: 16,
-      background: hero ? "linear-gradient(180deg,rgba(255,199,44,.12),rgba(255,199,44,.04))" : "rgba(255,255,255,.04)",
-      padding: "15px 16px", marginBottom: 10, position: "relative",
-    }}>
-      {hero && <span style={{ position: "absolute", top: -10, right: 14, background: "#FFC72C", color: "#1A2B26", font: "800 10.5px/1 system-ui", letterSpacing: ".04em", padding: "4px 9px", borderRadius: 999 }}>{_t(lang, "VACANCES", "VACATION", "VACACIONES")}</span>}
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10 }}>
-        <span style={{ font: "800 16px/1 'Bricolage Grotesque',system-ui,sans-serif", color: "#fff" }}>
-          {_t(lang, `Pass ${days} jours`, `${days}-day pass`, `Pase ${days} días`)}
-        </span>
-        <span className="anton" style={{ fontSize: 22, color: "#FFC72C", letterSpacing: "-.01em" }}>{eur(item.c, lang)}</span>
-      </div>
-      <div style={{ font: "600 12px/1.45 system-ui,sans-serif", color: "rgba(234,247,244,.7)", marginTop: 6 }}>
-        {_t(lang,
-          `Accès complet ${days} jours · prévision 7 j + alertes + brief. Paiement unique, sans abonnement.`,
-          `Full access for ${days} days · 7-day forecast + alerts + brief. One-time, no subscription.`,
-          `Acceso completo ${days} días · pronóstico 7 d + alertas + resumen. Pago único, sin suscripción.`)}
-      </div>
-    </button>
-  )
-
   return (
-    <div style={{ margin: "2px 0 6px" }}>
-      <div style={{ font: "800 17px/1.15 'Bricolage Grotesque',system-ui,sans-serif", color: "#fff", marginBottom: 3 }}>
-        {_t(lang, "Paie pour ta période. Rien de plus.", "Pay for your stay. Nothing more.", "Paga por tu estancia. Nada más.")}
+    <div style={{ margin: "0 0 8px" }}>
+      {/* Bandeau golden-hour (le style : une aube sur la mer, calme, statique) */}
+      <div style={{ position: "relative", margin: "0 -24px 16px", height: 86, overflow: "hidden" }}>
+        <svg viewBox="0 0 400 86" preserveAspectRatio="xMidYMid slice" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} aria-hidden="true">
+          <defs>
+            <linearGradient id="poSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0B2230" /><stop offset=".5" stopColor="#155A5A" /><stop offset=".84" stopColor="#C97E3A" /><stop offset="1" stopColor="#F2B05E" /></linearGradient>
+            <radialGradient id="poSun" cx="50%" cy="50%" r="50%"><stop offset="0" stopColor="#FFE6A8" stopOpacity=".95" /><stop offset=".45" stopColor="#FFD884" stopOpacity=".4" /><stop offset="1" stopColor="#FFD884" stopOpacity="0" /></radialGradient>
+          </defs>
+          <rect width="400" height="86" fill="url(#poSky)" />
+          <circle cx="300" cy="86" r="64" fill="url(#poSun)" /><circle cx="300" cy="84" r="17" fill="#FFE6A8" />
+          {[-32, -16, 0, 16, 32].map((a, i) => (<path key={i} d="M300 84 L295 30 L305 30 Z" fill="#FFD884" opacity=".07" transform={`rotate(${a} 300 84)`} />))}
+          <path d="M0 60 Q120 50 230 58 L240 86 L0 86 Z" fill="#0E1F25" opacity=".55" />
+          <path d="M250 50 q10 -26 22 -2 q6 16 2 16 l-30 0 q-2 -8 6 -14 Z" fill="#12262B" opacity=".7" />
+        </svg>
+        <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(13,30,28,0) 38%,rgba(13,30,28,.55) 78%,#0D1E1C 100%)" }} />
+        <div style={{ position: "absolute", left: 24, right: 24, bottom: 10 }}>
+          <div className="anton" style={{ fontSize: 23, lineHeight: 1.02, color: "#fff", textShadow: "0 2px 14px rgba(0,0,0,.5)", letterSpacing: ".005em" }}>
+            {_t(lang, <>Paie ta période. <span style={{ color: "#FFC72C" }}>Rien de plus.</span></>, <>Pay for your stay. <span style={{ color: "#FFC72C" }}>Nothing more.</span></>, <>Paga tu estancia. <span style={{ color: "#FFC72C" }}>Nada más.</span></>)}
+          </div>
+        </div>
       </div>
-      <div style={{ font: "600 12.5px/1.4 system-ui,sans-serif", color: "rgba(234,247,244,.62)", marginBottom: 14 }}>
-        {_t(lang, "Pas d'abonnement, pas de renouvellement. Tu actives, tu pars tranquille.", "No subscription, no auto-renew. Activate and go.", "Sin suscripción ni renovación. Actívalo y listo.")}
+
+      <div style={{ font: "600 12.5px/1.45 'Bricolage Grotesque',system-ui,sans-serif", color: "rgba(234,247,244,.66)", margin: "0 0 14px" }}>
+        {_t(lang, "Le Veilleur garde ta plage à l'œil le temps de tes vacances. Pas d'abonnement, pas de renouvellement.", "The Watcher keeps an eye on your beach for your whole stay. No subscription, no auto-renew.", "El Vigía vigila tu playa durante tu estancia. Sin suscripción ni renovación.")}
       </div>
-      {card("p30", p30, 30, true)}
-      {card("p7", p7, 7, false)}
-      <div style={{ textAlign: "center", marginTop: 8, font: "600 10.5px/1 system-ui,sans-serif", color: "rgba(234,247,244,.45)", letterSpacing: ".015em" }}>
-        {_t(lang, "Paiement sécurisé Stripe · accès immédiat", "Secure Stripe payment · instant access", "Pago seguro Stripe · acceso inmediato")}
+
+      {/* Carte 30j — HÉRO (golden) */}
+      <button onClick={() => buy(p30, "p30")} style={{
+        display: "block", width: "100%", textAlign: "left", cursor: "pointer", fontFamily: "inherit", position: "relative",
+        border: "1.5px solid #FFC72C", borderRadius: 18, background: "linear-gradient(165deg,rgba(255,199,44,.16),rgba(255,199,44,.03) 60%,transparent)",
+        padding: "16px 17px 15px", marginBottom: 11, boxShadow: "0 10px 30px rgba(232,168,0,.16)",
+      }}>
+        <span style={{ position: "absolute", top: -10, right: 16, background: "linear-gradient(135deg,#FFD75A,#E8A800)", color: "#1A2B26", font: "800 10.5px/1 'Bricolage Grotesque',system-ui", letterSpacing: ".05em", padding: "5px 10px", borderRadius: 999, boxShadow: "0 4px 12px rgba(232,168,0,.4)" }}>
+          {_t(lang, "VACANCES", "VACATION", "VACACIONES")}
+        </span>
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 12 }}>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ font: "800 17px/1 'Bricolage Grotesque',system-ui,sans-serif", color: "#fff" }}>{_t(lang, "Pass 30 jours", "30-day pass", "Pase 30 días")}</div>
+            <div style={{ font: "700 11px/1 'Bricolage Grotesque',system-ui", color: "#FFC72C", marginTop: 5, letterSpacing: ".02em" }}>{perDay(p30.c, 30, lang)}</div>
+          </div>
+          <div className="anton" style={{ fontSize: 30, color: "#FFC72C", lineHeight: .9, letterSpacing: "-.01em", flexShrink: 0 }}>{eur(p30.c, lang)}</div>
+        </div>
+        <div style={{ font: "600 12px/1.4 system-ui,sans-serif", color: "rgba(234,247,244,.72)", margin: "9px 0 13px" }}>
+          {_t(lang, "Accès complet 30 jours · prévision 7 j, alertes & brief par plage. Paiement unique.", "Full access for 30 days · 7-day forecast, alerts & brief per beach. One-time.", "Acceso completo 30 días · pronóstico 7 d, alertas y resumen por playa. Pago único.")}
+        </div>
+        <div style={{ display: "block", width: "100%", textAlign: "center", borderRadius: 13, padding: "13px", background: "linear-gradient(135deg,#FFC72C,#E8A800)", color: "#1A2B26", font: "800 15px/1 'Bricolage Grotesque',system-ui", boxShadow: "0 6px 18px rgba(232,168,0,.3)" }}>
+          {_t(lang, "Activer mes 30 jours →", "Activate my 30 days →", "Activar mis 30 días →")}
+        </div>
+      </button>
+
+      {/* Carte 7j — secondaire */}
+      <button onClick={() => buy(p7, "p7")} style={{
+        display: "flex", width: "100%", alignItems: "center", justifyContent: "space-between", gap: 12, cursor: "pointer", fontFamily: "inherit", textAlign: "left",
+        border: "1px solid rgba(255,255,255,.18)", borderRadius: 15, background: "rgba(255,255,255,.04)", padding: "13px 15px",
+      }}>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ font: "800 14.5px/1 'Bricolage Grotesque',system-ui", color: "#fff" }}>{_t(lang, "Pass 7 jours", "7-day pass", "Pase 7 días")}</div>
+          <div style={{ font: "600 11.5px/1.3 system-ui", color: "rgba(234,247,244,.6)", marginTop: 4 }}>{_t(lang, "Un week-end, une escapade.", "A weekend, a getaway.", "Un finde, una escapada.")} · {perDay(p7.c, 7, lang)}</div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 9, flexShrink: 0 }}>
+          <span className="anton" style={{ fontSize: 19, color: "#EAF7F4", lineHeight: .9 }}>{eur(p7.c, lang)}</span>
+          <span style={{ color: "#FFC72C", fontSize: 18, fontWeight: 800 }}>→</span>
+        </div>
+      </button>
+
+      <div style={{ textAlign: "center", marginTop: 12, font: "600 10.5px/1.3 system-ui,sans-serif", color: "rgba(234,247,244,.46)", letterSpacing: ".015em" }}>
+        {_t(lang, "Sans abonnement · sans renouvellement · accès immédiat · paiement sécurisé Stripe", "No subscription · no auto-renew · instant access · secure Stripe payment", "Sin suscripción · sin renovación · acceso inmediato · pago seguro Stripe")}
       </div>
     </div>
   )
