@@ -424,10 +424,10 @@ function buildJ14(island, cleanCount, email) {
     </div>
 
     <div style="font-size:15px;color:#333;line-height:1.6;margin-bottom:20px">
-      Imagine : tu arrives \u00E0 Sainte-Anne samedi avec les enfants. Sargasses partout. Weekend g\u00E2ch\u00E9.
+      Imagine : tu arrives à Sainte-Anne samedi avec les enfants. Sargasses partout. Weekend gâché.
     </div>
     <div style="font-size:15px;color:#333;line-height:1.6;margin-bottom:20px">
-      Avec le <strong>veilleur sargasses</strong>, tu aurais su vendredi soir. Tu aurais chang\u00E9 pour les Salines. Weekend sauv\u00E9.
+      Ton <strong>veilleur personnel</strong> t'aurait prévenu dès vendredi soir. Tu aurais changé pour les Salines. Weekend sauvé.
     </div>
 
     <div style="background:#0D1E1C;border-radius:12px;padding:16px;margin-bottom:10px">
@@ -613,33 +613,33 @@ function getSubject(step, island, cleanCount, brief) {
     if (brief.degradedCount > 0 && brief.degradeDay) {
       const n = brief.degradedCount
       return t(
-        `${n} plage${n > 1 ? 's' : ''} touch\u00E9e${n > 1 ? 's' : ''} ${brief.degradeDay} ${meta.inRegion}`,
-        `Sargassum reaches ${n} ${place} beach${n > 1 ? 'es' : ''} by ${brief.degradeDay}`,
-        `El sargazo llega a ${n} playa${n > 1 ? 's' : ''} de ${place} el ${brief.degradeDay}`)
+        `🚨 ${n} plage${n > 1 ? 's' : ''} touch\u00E9e${n > 1 ? 's' : ''} ${brief.degradeDay} ${meta.inRegion}`,
+        `🚨 Sargassum reaches ${n} ${place} beach${n > 1 ? 'es' : ''} by ${brief.degradeDay}`,
+        `🚨 El sargazo llega a ${n} playa${n > 1 ? 's' : ''} de ${place} el ${brief.degradeDay}`)
     }
     return t(
-      `Ta plage de demain matin : ${best.name} \u2014 ${best.score ?? '\u2014'}/100`,
-      `Tomorrow morning's beach: ${best.name} \u2014 ${best.score ?? '\u2014'}/100`,
-      `Tu playa de ma\u00F1ana: ${best.name} \u2014 ${best.score ?? '\u2014'}/100`)
+      `🌅 Ton verdict plage pour demain : ${best.name}`,
+      `🌅 Your beach verdict for tomorrow: ${best.name}`,
+      `🌅 Tu veredicto de playa para mañana: ${best.name}`)
   }
   // Nouvelles r\u00E9gions : objets localis\u00E9s (le brief porte la langue + le lieu)
   const rMeta = REGION_META[island]
   if (rMeta && rMeta.regionId && brief) {
     const t = (en, es) => rMeta.lang === 'es' ? es : en
     if (step === 'j7') return IS_HIGH_SEASON
-      ? t('Still checking the map every day?', '\u00BFSigues revisando el mapa cada d\u00EDa?')
-      : t('What if you never had to open the map?', '\u00BFY si no tuvieras que abrir el mapa?')
+      ? t('Tired of checking the map? 😴 Let me do it.', '\u00BFSintiendo cansancio de revisar el mapa? 😴 Yo lo hago por ti.')
+      : t('What if you never had to open the map again?', '\u00BFY si no tuvieras que abrir el mapa?')
     if (step === 'j14') return IS_HIGH_SEASON
-      ? t(`Saturday sargassum at ${brief.best.name}. Would you have known?`, `Sargazo el s\u00E1bado en ${brief.best.name}. \u00BFLo habr\u00EDas sabido?`)
+      ? t(`The satellite saw something... 🛰️ (at ${brief.best.name})`, `El sat\u00E9lite vio algo... 🛰️ (en ${brief.best.name})`)
       : t("Don't find out on the beach", 'No lo descubras en la playa')
   }
   switch (step) {
     case 'j7':  return IS_HIGH_SEASON
-      ? `Tu v\u00E9rifies encore la carte tous les jours\u00A0?`
-      : `Et si tu n'avais plus besoin d'ouvrir la carte\u00A0?`
+      ? `Marre de vérifier la carte ? 😴 Laisse-moi faire.`
+      : `Et si tu n'avais plus besoin d'ouvrir la carte ?`
     case 'j14': return IS_HIGH_SEASON
-      ? `Samedi, sargasses \u00E0 Sainte-Anne. Tu le savais\u00A0?`
-      : `Ne d\u00E9couvre pas les sargasses sur la plage`
+      ? `Le satellite a vu quelque chose... 🛰️ (pour ton weekend)`
+      : `Ne découvre pas les sargasses sur la plage`
   }
 }
 
@@ -649,17 +649,17 @@ function getPreheader(step, island) {
   const lang = (rMeta && rMeta.lang) || 'fr'
   const t = (fr, en, es) => lang === 'es' ? es : lang === 'en' ? en : fr
   if (step === 'j3') return t(
-    'Le vrai brief satellite de ce matin — ta plage, son score, la tendance 7 jours.',
-    "This morning's real satellite brief — your beach, its score, the 7-day trend.",
-    'El brief satelital real de esta mañana — tu playa, su score y la tendencia a 7 días.')
+    "Le Veilleur a scruté l'Atlantique pour toi. Voici le résultat pour demain.",
+    "The Watcher scanned the Atlantic for you. Here is the verdict for tomorrow.",
+    "El Vigía ha escaneado el Atlántico por ti. Aquí está el veredicto para mañana.")
   if (step === 'j7') return t(
-    "Et si tu n'avais plus jamais à ouvrir la carte ? Le Veilleur s'en charge.",
-    'What if you never had to open the map again? The watcher does it for you.',
-    '¿Y si nunca más tuvieras que abrir el mapa? El vigía lo hace por ti.')
+    "Gagne 5 minutes chaque matin. Active ton veilleur personnel.",
+    "Save 5 minutes every morning. Activate your personal watcher.",
+    "Gana 5 minutos cada mañana. Activa tu vigía personal.")
   if (step === 'j14') return t(
     "Le weekend gâché — ou évité d'un coup d'œil vendredi soir. À toi de voir.",
-    'A ruined weekend — or one glance Friday night that saves it. Your call.',
-    'Un finde arruinado — o una mirada el viernes que lo salva. Tú decides.')
+    "A ruined weekend — or one glance Friday night that saves it. Your call.",
+    "Un finde arruinado — o una mirada el viernes que lo salva. Tú decides.")
   return ''
 }
 

@@ -61,7 +61,7 @@ function buildWelcomeHTML(island, cleanCount, email) {
 <body style="margin:0;padding:0;background:#F7F5EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
 <div style="max-width:480px;margin:0 auto;padding:20px">
 
-  ${brandHeader('Bienvenue parmi nous', `Sargasses ${name}`, 'Fini les mauvaises surprises au bord de l\u2019eau.')}
+  ${brandHeader('Bienvenue parmi nous', `Sargasses ${name}`, 'Le Veilleur surveille l’Atlantique pour toi. Fini les mauvaises surprises.')}
 
   <div style="background:#fff;padding:24px 20px">
     ${cleanCount > 0 ? `<div style="text-align:center;margin-bottom:20px;padding:16px;background:rgba(34,197,94,.06);border-radius:12px">
@@ -70,7 +70,7 @@ function buildWelcomeHTML(island, cleanCount, email) {
     </div>` : ''}
 
     <div style="font-size:14px;color:#444;line-height:1.5;margin-bottom:18px">
-      Tu viens de rejoindre les habitants de ${name} qui v\u00E9rifient avant de partir. Voici ce que tu re\u00E7ois :
+      Tu viens de rejoindre les habitants de ${name} protégés par le Veilleur. Voici ce que tu vas recevoir :
     </div>
 
     <table style="width:100%;border-collapse:collapse">

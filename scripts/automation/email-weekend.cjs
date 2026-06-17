@@ -93,9 +93,9 @@ function buildEmailHTML(island, topBeaches, stats, domain) {
 <body style="margin:0;padding:0;background:#F7F5EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
 <div style="max-width:480px;margin:0 auto;padding:20px">
   <div style="background:radial-gradient(120% 90% at 76% -15%, rgba(255,199,44,.30), rgba(255,199,44,0) 55%), linear-gradient(168deg,#0B2230 0%,#0D1E1C 60%,#0A1714 100%);border-radius:16px 16px 0 0;padding:30px 24px 26px;text-align:center">
-    <div style="font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:11px;font-weight:800;color:#FFC72C;text-transform:uppercase;letter-spacing:.14em">Bulletin weekend</div>
+    <div style="font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:11px;font-weight:800;color:#FFC72C;text-transform:uppercase;letter-spacing:.14em">Le Bulletin du Veilleur</div>
     <div style="font-family:'Anton','Bricolage Grotesque',Impact,'Arial Narrow',sans-serif;font-size:29px;font-weight:400;color:#fff;margin-top:9px;letter-spacing:.01em">Plages ${islandName}</div>
-    <div style="font-size:13px;color:rgba(255,255,255,.6);margin-top:4px">Ce weekend — tes meilleures plages not\u00E9es</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.6);margin-top:4px">Le Veilleur a scruté l'Atlantique. Voici ton weekend.</div>
   </div>
 
   <div style="background:#fff;padding:20px">

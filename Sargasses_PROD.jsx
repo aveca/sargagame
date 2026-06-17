@@ -4043,18 +4043,26 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
           )}
 
           {/* Actions — Waze + Share (Fav moved to photo hero) */}
-          <div style={{display:"flex",gap:10,marginBottom:16}}>
+          <div style={{display:"flex",gap:8,marginBottom:16}}>
             <a href={wazeUrl} target="_blank" rel="noopener" className="gbtn"
               style={{flex:1,textDecoration:"none",textAlign:"center",
-                display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+                display:"flex",alignItems:"center",justifyContent:"center",gap:6,
+                padding:"14px 10px",borderRadius:16,background:"#0D0D0D",color:"#fff",fontSize:14,fontWeight:700}}>
               <span style={{fontSize:16}}>🚗</span> {LL.directions}
             </a>
+            <a href={`/plages/${getCanonicalSlug(beach.name)}/`} target="_blank" rel="noopener"
+              style={{flex:1,textDecoration:"none",textAlign:"center",
+                display:"flex",alignItems:"center",justifyContent:"center",gap:8,
+                padding:"14px 10px",borderRadius:16,border:"1.5px solid var(--sg-border)",
+                background:"var(--sg-card)",color:"var(--sg-ink)",fontSize:14,fontWeight:700}}>
+              <span style={{fontSize:16}}>📄</span> {LL.fullSheet}
+            </a>
             <button onClick={async()=>{
-              // PRIMAIRE : carte-image spoiler-free SANS lien (effet Wordle = port\u00e9e max). Recherche valeur.
+              // PRIMAIRE : carte-image spoiler-free SANS lien (effet Wordle = portée max). Recherche valeur.
               track("sg_share",{beach_id:beach.id,method:"card",status:beach.status})
               if(await shareBeachCard(beach,lang,forecast))return
-              // FALLBACK (partage de fichier indispo) : texte + lien (r\u00e9f\u00e9rral si premium).
-              const slug=beach.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/-+$/,"")
+              // FALLBACK (partage de fichier indispo) : texte + lien (référral si premium).
+              const slug=getCanonicalSlug(beach.name)
               const refCode=isPremium?localStorage.getItem("sg_referral_code"):""
               const url=window.location.origin+"/plages/"+slug+(refCode?"?ref="+refCode:"")
               const isRef=!!refCode
@@ -4067,7 +4075,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
                 `☀️ ${beach.name} — ${_stl}${_sc} hoy. ¡La playa del día!`)
               if(navigator.share){track("sg_share",{beach_id:beach.id,method:"native",has_referral:isRef});navigator.share({title:beach.name+" — Sargasses",text:_txt,url}).catch(()=>{})}
               else{navigator.clipboard?.writeText(`${_txt} ${url}`);track("sg_share",{beach_id:beach.id,has_referral:isRef})}
-            }} style={{flex:0,padding:"14px 20px",borderRadius:16,
+            }} style={{flex:0,padding:"14px 18px",borderRadius:16,
               border:"1.5px solid var(--sg-border)",
               background:"var(--sg-card)",cursor:"pointer",fontSize:18,fontFamily:"inherit",
               display:"flex",alignItems:"center",justifyContent:"center"}}>
