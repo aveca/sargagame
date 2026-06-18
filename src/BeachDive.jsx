@@ -913,11 +913,11 @@ function haversineKm(a,b,c,d){var R=6371,p=Math.PI/180,x=(c-a)*p,y=(d-b)*p,
 const DAY_FR=["DIM","LUN","MAR","MER","JEU","VEN","SAM"];
 
 export default function BeachDive(props){
-  const {beach,lang,island,regionName,sargData,userPos,allBeaches,forecast,onClose,onPremium,onOpenBeach,onShowMap,track,exiting}=props;
+  const {beach,lang,island,regionName,sargData,userPos,allBeaches,forecast,onClose,onPremium,onOpenBeach,onShowMap,onFail,track,exiting}=props;
   const hostRef=useRef(null);
   const engRef=useRef(null);
   const cbRef=useRef({});
-  cbRef.current={onClose,onPremium,onOpenBeach,onShowMap,track};
+  cbRef.current={onClose,onPremium,onOpenBeach,onShowMap,onFail,track};
 
   function regionLabel(){
     if(regionName) return regionName;
@@ -995,8 +995,9 @@ export default function BeachDive(props){
     try{ eng=initBeachDive(SR, host, {data:buildData(), hooks, lang:lang||"fr", regionName:regionLabel()}); }
     catch(e){ if(typeof console!=="undefined") console.error("BeachDive init:",e); }
     engRef.current=eng;
-    /* SÉCURITÉ : moteur KO → ne jamais laisser une fiche morte → fermer (= control). */
-    if(!eng){ try{ cbRef.current.onClose && cbRef.current.onClose(); }catch(e){} }
+    /* SÉCURITÉ : moteur KO → bascule sur la fiche classique (onFail), JAMAIS fermer vers "rien".
+       Fallback historique = onClose si onFail absent (ancien comportement). */
+    if(!eng){ try{ cbRef.current.onFail ? cbRef.current.onFail() : (cbRef.current.onClose && cbRef.current.onClose()); }catch(e){} }
     return ()=>{ try{ eng&&eng.teardown(); }catch(e){} engRef.current=null;
       try{ while(SR.firstChild) SR.removeChild(SR.firstChild); }catch(e){} };
     // eslint-disable-next-line react-hooks/exhaustive-deps

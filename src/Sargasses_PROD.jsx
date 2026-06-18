@@ -51,7 +51,7 @@ class ErrBound extends Component{
   constructor(p){super(p);this.state={err:null}}
   static getDerivedStateFromError(e){return{err:e}}
   componentDidCatch(e){console.error("CAUGHT:",e.message,e.stack)}
-  render(){if(this.state.err)return React.createElement("pre",{style:{color:"red",padding:20,whiteSpace:"pre-wrap"}},this.state.err.message+"\n\n"+this.state.err.stack);return this.props.children}
+  render(){if(this.state.err)return this.props.fallback!==undefined?this.props.fallback:React.createElement("pre",{style:{color:"red",padding:20,whiteSpace:"pre-wrap"}},this.state.err.message+"\n\n"+this.state.err.stack);return this.props.children}
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -11393,6 +11393,7 @@ export default function App(){
   const[filter,setFilter]=useState(0) // index in T.filters
   const[selectedBeach,setSelectedBeach]=useState(null)
   const[diveBeach,setDiveBeach]=useState(null) // overlay plongée carte→plage (1×/session, flag nav_dive)
+  const[diveFail,setDiveFail]=useState(null) // id de la plage dont la fiche plongée a KO → fallback BeachSheet (jamais "rien")
   const[initialZone,setInitialZone]=useState(null)
 
   const[favorites,setFavorites]=useState(()=>g("sg_fav",[]))
@@ -12975,28 +12976,38 @@ export default function App(){
         )}
 
         {/* BOTTOM SHEET (beach detail) */}
-        {selectedBeach&&beachDive&&(()=>{
-          // BRAS A/B `pw_beach_dive` — fiche « plongée » (Shadow DOM, region-aware).
-          // Forecast résolu ICI comme BeachSheet (BEACH_TO_SARG / interp) puis passé.
+        {selectedBeach&&(()=>{
+          // BeachSheet (control) — calculé UNE fois, sert aussi de fallback robuste si la plongée échoue
+          // (lazy non chargé / moteur KO) → on ne montre JAMAIS "rien" sur un clic de plage.
+          const _sheet=(
+            <BeachSheet beach={selectedBeach} onClose={closeSheet}
+              favorites={favorites} onToggleFav={toggleFav} lang={lang}
+              allBeaches={allBeaches} imageMap={imageMap}
+              onBeachClick={onBeachClick} onPremiumClick={openPremium} isPremium={isPremium}
+              historyData={historyData} sargData={sargData}
+              dataSource={dataSource} userPos={userPos} communityReports={communityReports} fbPosts={fbPosts}/>
+          )
+          // contrôle, ou plongée déjà KO sur cette plage → fiche classique (toujours fonctionnelle)
+          if(!beachDive||diveFail===selectedBeach.id) return _sheet
+          // BRAS A/B `pw_beach_dive` — fiche « plongée » (Shadow DOM, region-aware), lazy.
+          // OBLIGATOIRE : <Suspense> (sinon la suspension du chunk = crash écran blanc = "rien")
+          // + <ErrBound fallback={_sheet}> (crash de rendu → fiche classique, jamais "rien").
           const _sid=IS_NEW_REGION?selectedBeach.id:BEACH_TO_SARG[selectedBeach.id]
           const _fc=(_sid&&sargData?.weekly?.[_sid]?.forecast)||sargData?._enrichedWeekly?.[`_interp_${selectedBeach.id}`]?.forecast||null
           // Région = celle de LA PLAGE (selectedBeach.island fait foi), pas l'état app.
           const _rn=IS_NEW_REGION?(REGION?.name||""):(selectedBeach.island==="gp"?"Guadeloupe":"Martinique")
           return(
-            <LazyBeachDive beach={selectedBeach} lang={lang} island={selectedBeach.island||island} regionName={_rn}
-              sargData={sargData} userPos={userPos} allBeaches={allBeaches} forecast={_fc} isPremium={isPremium}
-              onClose={closeSheet} onPremium={openPremium} onOpenBeach={onBeachClick}
-              onShowMap={closeSheet} track={track} exiting={false}/>
+            <ErrBound key={selectedBeach.id} fallback={_sheet}>
+              <Suspense fallback={<div style={{position:"fixed",inset:0,background:"#02060A",zIndex:1050}}/>}>
+                <LazyBeachDive beach={selectedBeach} lang={lang} island={selectedBeach.island||island} regionName={_rn}
+                  sargData={sargData} userPos={userPos} allBeaches={allBeaches} forecast={_fc} isPremium={isPremium}
+                  onClose={closeSheet} onPremium={openPremium} onOpenBeach={onBeachClick}
+                  onFail={()=>setDiveFail(selectedBeach.id)}
+                  onShowMap={closeSheet} track={track} exiting={false}/>
+              </Suspense>
+            </ErrBound>
           )
         })()}
-        {selectedBeach&&!beachDive&&(
-          <BeachSheet beach={selectedBeach} onClose={closeSheet}
-            favorites={favorites} onToggleFav={toggleFav} lang={lang}
-            allBeaches={allBeaches} imageMap={imageMap}
-            onBeachClick={onBeachClick} onPremiumClick={openPremium} isPremium={isPremium}
-            historyData={historyData} sargData={sargData}
-            dataSource={dataSource} userPos={userPos} communityReports={communityReports} fbPosts={fbPosts}/>
-        )}
 
         {/* CAPTURE GATE — A/B capture_gate · intercept forecast intent avant PremiumModal */}
         {showCaptureGate&&<CaptureGateModal lang={lang} beach={selectedBeach||null}
