@@ -6343,7 +6343,12 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   // micro-interstitial inside modal. Design v2 bet #2 — addresses the 50% drop
   // measured at redirect→payment by showing "exactly what happens" (plan summary,
   // timeline, trust row) before the tab navigates to buy.stripe.com.
-  const preludeVariant=abVariant("pw_prelude",["direct","prelude"],[.5,.5])
+  // pw_prelude HARVESTED 2026-06-18 → inlined to control "direct". ab-eval 28j :
+  // prelude=0% (n=210) vs direct=0.79% (n=252) — l'interstitiel ajoute une étape
+  // sans bénéfice mesurable (cf. methodo [[reference_ab_tests]] : conversion non
+  // concluable à ce traffic, on RÉCOLTE le bras simple en tête). Défaut = chemin
+  // direct (plus court, en tête). Réversible : restaurer abVariant("pw_prelude",…).
+  const preludeVariant="direct"
   // A/B pw_scene : le paywall comme CONTINUATION du monde (en-tête golden-hour + Veilleur +
   // promesse) au lieu d'un mur sombre plat — cible la fuite modal→CTA 2%. N'habille QUE le
   // shell, AUCUN changement à la logique de paiement. Mesurable (modal_open/cta identiques).
