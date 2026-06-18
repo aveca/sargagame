@@ -937,7 +937,7 @@ ${isGP ? `  <url><loc>${d}/meteo-sargasses-guadeloupe/</loc><lastmod>${today}</l
           try { _widgetRenderer = _require('./scripts/lib/widget-embed.cjs') } catch (e) { console.warn('   ⚠ widget-embed non chargé:', e.message) }
           // Backtest reader for fiche-dive reliability data
           const readBacktestFD = () => { try { return JSON.parse(readFileSync(resolve(__dirname, 'scripts/automation/data/backtest-results.json'), 'utf-8')) } catch { return null } }
-          let _heroLive = { updatedAt: null, levelsBySlug: {}, weeklyBySlug: {} }
+          let _heroLive = { updatedAt: null, levelsBySlug: {}, weeklyBySlug: {}, scoresBySarg: {} }
           try {
             const _lj = JSON.parse(readFileSync(resolve(__dirname, 'public/api/copernicus/sargassum.json'), 'utf-8'))
             _heroLive.updatedAt = _lj.updatedAt || null
@@ -946,6 +946,9 @@ ${isGP ? `  <url><loc>${d}/meteo-sargasses-guadeloupe/</loc><lastmod>${today}</l
             // quand il existe ; sinon on dégrade proprement (mood depuis status).
             for (const l of (_lj.levels || [])) { _heroLive.levelsBySlug[l.id] = l }
             for (const [k, v] of Object.entries(_lj.weekly || {})) { _heroLive.weeklyBySlug[k] = v }
+            // scores RÉELS (score + breakdown 7 facteurs + forces) keyés par sargId —
+            // la source des barres de facteurs de la plongée (heroLv n'a PAS le breakdown).
+            for (const [k, v] of Object.entries(_lj.scores || {})) { _heroLive.scoresBySarg[k] = v }
           } catch (e) { /* live absent → fallback déterministe, jamais bloquant */ }
           // Forecast déterministe pour les 136 plages (clé = beaches-list id).
           let _heroWeekly = {}
@@ -968,6 +971,15 @@ ${isGP ? `  <url><loc>${d}/meteo-sargasses-guadeloupe/</loc><lastmod>${today}</l
               score: lvLive && typeof lvLive.score === 'number' ? lvLive.score : undefined,
               afai: lvLive && typeof lvLive.afai === 'number' ? lvLive.afai : (typeof b.afai === 'number' ? b.afai : 0.2),
             }
+          }
+          // Score RÉEL complet (score + breakdown 7 facteurs + forces) depuis la map
+          // scores de sargassum.json, ou null si la plage n'est pas couverte (~20/136).
+          // C'est la SEULE source honnête du beat « 7 facteurs » de la plongée.
+          const heroScore = (b) => {
+            const sargId = BEACH_TO_SARG[b.id] || slugify(b.name)
+            const s = _heroLive.scoresBySarg[sargId]
+            if (!s || typeof s.score !== 'number') return null
+            return { score: s.score, label: s.label || '', breakdown: s.breakdown || {}, strengths: s.strengths || [], weaknesses: s.weaknesses || [] }
           }
           const heroCssOnce = _heroLib ? _heroLib.buildHeroCss() : ''
           const domainMQ = 'sargasses-martinique.com'
@@ -1427,13 +1439,12 @@ ${isGP ? `  <url><loc>${d}/meteo-sargasses-guadeloupe/</loc><lastmod>${today}</l
                 // Real data for window.__SG_BEACH__
                 const _fd_lv = heroLv(b)
                 const _fd_liveStatus = (_fd_lv && _fd_lv.status) || b.status || 'clean'
-                const _fd_score = _fd_lv && typeof _fd_lv.score === 'number' ? {
-                  score: _fd_lv.score,
-                  label: _fd_lv.label || '',
-                  breakdown: _fd_lv.breakdown || {},
-                  strengths: _fd_lv.strengths || [],
-                  weaknesses: _fd_lv.weaknesses || []
-                } : null
+                // Score RÉEL (score + breakdown 7 facteurs + forces) depuis la map scores,
+                // pas heroLv (qui n'a que le score sans breakdown). null si non couvert.
+                const _fd_score = heroScore(b)
+                // Éligibilité plongée : seulement les plages avec score+facteurs réels
+                // (~20/136). Ailleurs → contrôle (jamais de plongée avec données vides/MOCK).
+                const _fd_eligible = !!_fd_score
                 // Resolve the weekly entry, then NORMALIZE to a forecast array.
                 // _heroWeekly[b.id] is the wrapper {forecast:[…], drift,…} (see
                 // heroForecastLine l.957) — the old chain fed that object straight
@@ -1539,17 +1550,20 @@ ${isGP ? `  <url><loc>${d}/meteo-sargasses-guadeloupe/</loc><lastmod>${today}</l
                   `};`,
                   `(function(){`,
                   `  var RM=matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches;`,
+                  // RE-LANCÉ GATÉ 2026-06-18 : après fix honnêteté (no-MOCK, garde-fou 100%,
+                  // onOpenBeach, score+facteurs RÉELS). La plongée n'est servie QUE sur les
+                  // plages avec score+breakdown réels (SGFD_ELIGIBLE, ~20/136) — ailleurs
+                  // contrôle (jamais de données vides/fabriquées). 50/50 sur les éligibles.
+                  `  var SGFD_ELIGIBLE=${_fd_eligible ? 'true' : 'false'};`,
                   `  function pick(){`,
                   `    try{var q=location.search;`,
                   `    if(/[?&]fichedive=1/.test(q))return true;`,
                   `    if(/[?&]fichedive=0/.test(q))return false;`,
                   `    if(RM)return false;`,
-                  // RE-PARQUÉ 2026-06-18 (circuit-breaker) : l'audit ultracode a trouvé
-                  // que la plongée affichait un SCORE MOCK fabriqué (69) sur ~116/136
-                  // plages sans score live + claim « 100% justes » + clics morts Plan-B.
-                  // Re-park le temps de corriger ces violations d'honnêteté, puis re-launch
-                  // 50/50 propre. ?fichedive=1 = QA. Bucket 50/50 à rebrancher après fix.
-                  `    return false;`,
+                  `    if(!SGFD_ELIGIBLE)return false;`,
+                  `    var k='ab_fiche_dive',v=localStorage.getItem(k);`,
+                  `    if(!v){v=Math.random()<0.5?'dive':'control';localStorage.setItem(k,v);}`,
+                  `    return v==='dive';`,
                   `    }catch(e){return false;}`,
                   `  }`,
                   `  var active=pick();`,
