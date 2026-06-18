@@ -1543,7 +1543,12 @@ ${isGP ? `  <url><loc>${d}/meteo-sargasses-guadeloupe/</loc><lastmod>${today}</l
                   `    if(/[?&]fichedive=1/.test(q))return true;`,
                   `    if(/[?&]fichedive=0/.test(q))return false;`,
                   `    if(RM)return false;`,
-                  `    return false; /* PARKED 2026-06-18 : dive A/B off — DATA.forecast vide -> afai TypeError + scroll gelé (overflow:hidden du shell). ?fichedive=1 force le dive pour test interne ; rebrancher le bucket 50/50 localStorage quand les 2 bugs sont réparés. */`,
+                  // DÉ-PARQUÉ 2026-06-18 (feu vert fondateur) : les 3 bugs sont réparés
+                  // + vérifiés (16/16 plages/langues, funnel, perf, RM). Bucket 50/50
+                  // localStorage rebranché. ?fichedive=0 force le contrôle (sécurité).
+                  `    var k='ab_fiche_dive',v=localStorage.getItem(k);`,
+                  `    if(!v){v=Math.random()<0.5?'dive':'control';localStorage.setItem(k,v);}`,
+                  `    return v==='dive';`,
                   `    }catch(e){return false;}`,
                   `  }`,
                   `  var active=pick();`,

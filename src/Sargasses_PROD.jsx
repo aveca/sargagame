@@ -11886,7 +11886,7 @@ export default function App(){
   // Prioritaire sur le hero quand actif ; ADDITIF, control (GameFunnel/Hero
   // Verdict) intact. Override ?home_az=1/0. La conversion (openPremium/Stripe/
   // pw_*) reste strictement la même porte. Reduced-motion : HomeAZ a son plancher.
-  const[homeAZ]=useState(()=>{try{const q=window.location.search;if(/[?&]home_az=1/.test(q))return true;if(/[?&]home_az=0/.test(q))return false;return abVariant("home_az",["control","az"],[.7,.3])==="az"}catch(_){return false}})
+  const[homeAZ]=useState(()=>{try{const q=window.location.search;if(/[?&]home_az=1/.test(q))return true;if(/[?&]home_az=0/.test(q))return false;return abVariant("home_az",["control","az"],[.5,.5])==="az"}catch(_){return false}})
   // A/B `dock_glass` : pill sombre flottant golden-hour vs dock blanc (control). 50/50.
   // Override ?dock=1/0. Bug fixes (premiumOpen + openPremium source) s'appliquent aux 2 bras.
   const[dockGlass]=useState(()=>{try{const q=window.location.search;if(/[?&]dock=1/.test(q))return true;if(/[?&]dock=0/.test(q))return false;return abVariant("dock_glass",["control","glass"],[.5,.5])==="glass"}catch(_){return false}})
