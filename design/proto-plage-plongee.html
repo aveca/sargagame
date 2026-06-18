@@ -1125,7 +1125,10 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
       var ps=document.createElement("div"); ps.className="ps "+(sk==="avoid"?"st-avoid":sk==="moderate"?"st-mod":"st-clean");
       var d=document.createElement("span"); d.className="d"; ps.appendChild(d);
       ps.appendChild(document.createTextNode(STATUS_WORD[sk][LANG])); card.appendChild(ps);
-      var pf=document.createElement("div"); pf.className="pf"; pf.textContent="score "+b.score+" · "+b.drive+" min"; card.appendChild(pf);
+      var pf=document.createElement("div"); pf.className="pf";
+      // n'affiche le score que s'il existe (sinon « score null » sur les plages non couvertes)
+      pf.textContent=(b.score!=null ? _t("score","score","puntaje")+" "+b.score+" · " : "")+b.drive+" min";
+      card.appendChild(pf);
       row.appendChild(card);
     });
   }
