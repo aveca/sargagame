@@ -284,19 +284,19 @@
   fetch('/api/copernicus/track-record.json').then(function(r){return r.json()}).then(function(d){
     try{
       var calm=(d.byRegime&&d.byRegime.calm)||null;
-      var pct=calm&&calm.cleanReliabilityPct!=null?calm.cleanReliabilityPct:(d.overall&&d.overall.statusHitRatePct);
-      var n=calm&&calm.cleanSamples?calm.cleanSamples:(d.sampleSize||0);
+      var pct=(d.overall&&d.overall.statusHitRatePct)||(calm&&calm.cleanReliabilityPct);
+      var n=(d.sampleSize||(calm&&calm.cleanSamples)||0);
       document.getElementById('tr-clean').textContent=pct+'%';
       var win=d.window&&d.window.from?(' ('+d.window.from+' → '+d.window.to+')'):'';
       document.getElementById('tr-headline').textContent=
-        'de nos prévisions « mer propre » se sont vérifiées'+win+' — sur '+Number(n).toLocaleString('fr-FR')+' comparaisons.';
+        'de nos verdicts se sont vérifiés, tous régimes confondus'+win+' — sur '+Number(n).toLocaleString('fr-FR')+' comparaisons.';
       var beaches=(d.byBeach||[]);
       if(beaches.length){
         var body=document.getElementById('tr-body');
         beaches.forEach(function(b){
           var tr=document.createElement('tr');
           var td1=document.createElement('td');td1.textContent=b.name;
-          var td2=document.createElement('td');td2.className='pct';td2.textContent=b.hitRatePct+'%';
+          var td2=document.createElement('td');td2.className='pct';td2.textContent=b.hitRatePct+'% ('+(b.samples||0)+')';
           tr.appendChild(td1);tr.appendChild(td2);body.appendChild(tr);
         });
         document.getElementById('tr-table').hidden=false;

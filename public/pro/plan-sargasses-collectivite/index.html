@@ -289,13 +289,13 @@
       var calm=(d.byRegime&&d.byRegime.calm)||null;
       // métrique « mer propre » dédiée si dispo ; sinon repli sur le taux global — mais on relabelle honnêtement
       var hasClean=!!(calm&&calm.cleanReliabilityPct!=null);
-      var pct=hasClean?calm.cleanReliabilityPct:(d.overall&&d.overall.statusHitRatePct);
+      var pct=(d.overall&&d.overall.statusHitRatePct)||(hasClean?calm.cleanReliabilityPct:null);
       var n=hasClean?(calm.cleanSamples||0):(d.sampleSize||0);
       var win=d.window&&d.window.from?(' ('+d.window.from+' → '+d.window.to+')'):'';
       if(pct!=null){
         document.getElementById('tr-clean').textContent=pct+'%';
         var lbl=hasClean
-          ? 'de nos prévisions « mer propre » se sont vérifiées'
+          ? 'de nos verdicts se sont vérifiés, tous régimes confondus'
           : 'de nos prévisions correspondent à l’observation satellite (tous régimes)';
         document.getElementById('tr-headline').textContent=lbl+win+' — sur '+Number(n).toLocaleString('fr-FR')+' comparaisons.';
       } else {
@@ -307,7 +307,7 @@
         beaches.forEach(function(b){
           var tr=document.createElement('tr');
           var td1=document.createElement('td');td1.textContent=b.name;
-          var td2=document.createElement('td');td2.className='pct';td2.textContent=b.hitRatePct+'%';
+          var td2=document.createElement('td');td2.className='pct';td2.textContent=b.hitRatePct+'% ('+(b.samples||0)+')';
           tr.appendChild(td1);tr.appendChild(td2);body.appendChild(tr);
         });
         document.getElementById('tr-table').hidden=false;

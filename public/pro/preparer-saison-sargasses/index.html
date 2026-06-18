@@ -320,14 +320,14 @@
       var calm=(d.byRegime&&d.byRegime.calm)||null;
       // On expose le chiffre HONNÊTE et précis : fiabilité des prévisions « mer
       // propre » en saison calme (le cas que la donnée confirme), pas un global flou.
-      var pct=calm&&calm.cleanReliabilityPct!=null?calm.cleanReliabilityPct:(d.overall&&d.overall.statusHitRatePct);
-      var n=calm&&calm.cleanSamples?calm.cleanSamples:(d.sampleSize||0);
+      var pct=(d.overall&&d.overall.statusHitRatePct)||(calm&&calm.cleanReliabilityPct);
+      var n=(d.sampleSize||(calm&&calm.cleanSamples)||0);
       if(pct!=null) $('tr-clean').textContent=pct+'%';
       // Le régime est affiché EN GRAND sous le chiffre — un 100% nu se lirait comme un bug.
       $('tr-regime').textContent='prévisions « mer propre » · saison calme';
       var win=d.window&&d.window.from?(' ('+d.window.from+' → '+d.window.to+')'):'';
       $('tr-headline').textContent=
-        'des prévisions « mer propre » se sont vérifiées'+win+' — sur '
+        'de nos verdicts se sont vérifiés, tous régimes confondus'+win+' — sur '
         +Number(n).toLocaleString('fr-FR')+' comparaisons satellite. Les rares alertes restent signalées à confiance prudente tant que la donnée ne les confirme pas.';
       // Extrait par plage : on garde l'ordre publié (pas de cherry-pick caché) et on
       // libelle « extrait » + lien vers le palmarès complet, sans laisser croire que c'est exhaustif.
@@ -338,7 +338,7 @@
           var tr=document.createElement('tr');
           var td1=document.createElement('td');td1.textContent=b.name;
           var td2=document.createElement('td');td2.className='pct';
-          td2.textContent=(b.hitRatePct!=null?b.hitRatePct+'%':'—');
+          td2.textContent=(b.hitRatePct!=null?b.hitRatePct+'% ('+(b.samples||0)+')':'—');
           tr.appendChild(td1);tr.appendChild(td2);body.appendChild(tr);
         });
         $('tr-table').hidden=false;

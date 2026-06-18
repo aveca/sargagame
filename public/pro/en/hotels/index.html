@@ -373,7 +373,7 @@
     try{
       var overall=(d.overall&&d.overall.statusHitRatePct!=null)?d.overall.statusHitRatePct:null;
       var calm=(d.byRegime&&d.byRegime.calm)||null;
-      var cleanPct=calm&&calm.cleanReliabilityPct!=null?calm.cleanReliabilityPct:null;
+      var cleanPct=(d.overall&&d.overall.statusHitRatePct)||(calm&&calm.cleanReliabilityPct!=null?calm.cleanReliabilityPct:null);
       var cleanN=calm&&calm.cleanSamples?calm.cleanSamples:0;
       var totalN=d.sampleSize||0;
       // Hero = overall measured hit rate; fall back to clean-sea figure only if absent.
@@ -381,7 +381,7 @@
       if(hero==null) throw new Error('no figure');
       document.getElementById('tr-clean').textContent=hero+'%';
       var win=d.window&&d.window.from?(' ('+d.window.from+' → '+d.window.to+')'):'';
-      var cap='of forecasts verified against satellite observation'+win+
+      var cap='of our verdicts held against satellite observation, all regimes'+win+
         (totalN?(' — across '+Number(totalN).toLocaleString('en-US')+' dated comparisons in the French Antilles'):'')+'.';
       if(cleanPct!=null&&cleanN){
         cap+=' Our “clean sea” calls verify at '+cleanPct+'% ('+Number(cleanN).toLocaleString('en-US')+
@@ -396,7 +396,7 @@
         beaches.forEach(function(b){
           var tr=document.createElement('tr');
           var td1=document.createElement('td');td1.textContent=b.name;
-          var td2=document.createElement('td');td2.className='pct';td2.textContent=b.hitRatePct+'%';
+          var td2=document.createElement('td');td2.className='pct';td2.textContent=b.hitRatePct+'% ('+(b.samples||0)+')';
           tr.appendChild(td1);tr.appendChild(td2);body.appendChild(tr);
         });
         document.getElementById('tr-table').hidden=false;

@@ -72,7 +72,7 @@
     <p class="eyebrow">Sargasses Pro</p>
     <h1>La prévision sargasses, au service des professionnels.</h1>
     <p class="lede">Anticiper les échouages plage par plage, 7 jours à l'avance, avec une fiabilité que nous publions et auditons chaque jour. Pour celles et ceux dont l'activité dépend de l'état des plages.</p>
-    <p class="proofline"><b id="tr-clean">—</b> <span id="tr-line">de nos prévisions « mer propre » se vérifient.</span> <a href="https://sargasses-martinique.com/fiabilite/" target="_blank" rel="noopener">Voir le palmarès →</a></p>
+    <p class="proofline"><b id="tr-clean">—</b> <span id="tr-line">de nos verdicts se vérifient, tous régimes confondus.</span> <a href="https://sargasses-martinique.com/fiabilite/" target="_blank" rel="noopener">Voir le palmarès →</a></p>
   </div>
 </header>
 
@@ -114,10 +114,10 @@
   fetch('/api/copernicus/track-record.json').then(function(r){return r.json()}).then(function(d){
     try{
       var calm=(d.byRegime&&d.byRegime.calm)||null;
-      var pct=calm&&calm.cleanReliabilityPct!=null?calm.cleanReliabilityPct:(d.overall&&d.overall.statusHitRatePct);
-      var n=calm&&calm.cleanSamples?calm.cleanSamples:(d.sampleSize||0);
+      var pct=(d.overall&&d.overall.statusHitRatePct)||(calm&&calm.cleanReliabilityPct);
+      var n=(d.sampleSize||(calm&&calm.cleanSamples)||0);
       document.getElementById('tr-clean').textContent=pct+'%';
-      document.getElementById('tr-line').textContent='de nos prévisions « mer propre » se sont vérifiées (sur '+Number(n).toLocaleString('fr-FR')+' comparaisons).';
+      document.getElementById('tr-line').textContent='de nos verdicts se sont vérifiés, tous régimes confondus (sur '+Number(n).toLocaleString('fr-FR')+' comparaisons).';
     }catch(e){}
   }).catch(function(){});
 })();
