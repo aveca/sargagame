@@ -49,7 +49,15 @@ function walk(dir, acc) {
   }
   return acc
 }
+// Hash src/ + les autres ENTRÉES qui changent le bundle/HTML servi : index.html
+// (shell + <style> global) et vite.config.js (génération pages + injections). Sans ça,
+// un fix dans index.html (ex: forced-color-adjust global) ne bumpait PAS le SW → les
+// PWA installées ne se rafraîchissaient pas (rapport fondateur 18/06).
 const files = walk(srcDir, []).sort()
+for (const extra of ['index.html', 'vite.config.js']) {
+  const fp = path.join(root, extra)
+  if (fs.existsSync(fp)) files.push(fp)
+}
 const h = crypto.createHash('sha256')
 for (const f of files) {
   h.update(path.relative(root, f).replace(/\\/g, '/'))

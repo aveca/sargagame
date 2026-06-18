@@ -54,6 +54,12 @@
     /* SCENE_TOKENS golden-hour (défaut) émis en --sg-* : l'app + les 136 pages SEO (pageShell réutilise cet index.html) partagent la source ; REGION.sceneTheme surcharge par marché via vite.config.js. Aucun consommateur par défaut → 0 changement visuel. */
     :root{--sg-sky-0:#0B2230;--sg-sky-1:#155A5A;--sg-sky-2:#C97E3A;--sg-sky-3:#F2B05E;--sg-sea-top:#1A5852;--sg-sea-bot:#08251F;--sg-sand:#1C1712;--sg-rim:#FFD884;--sg-glit:#FFD884;--sg-sarg:#7a5c14;--sg-sarg-d:#5d400e;--sg-sarg-l:#8a6c1c;--sg-sarg-glint:#a8862a;--sg-sarg-strand:#6b4a12;--sg-sat-body:#C9971F;--sg-sat-top:#FFC72C;--sg-sat-lens:#07201E;}
     html{font-size:clamp(14px,2.2vw + 12px,16px);-webkit-text-size-adjust:100%}
+    /* GLOBAL : l'app garde SES couleurs (golden-hour, dorés, statuts) même si le système
+       force les couleurs (thème contraste Windows / filtre couleur / forced-colors). Hérité
+       → couvre TOUTE l'app (nav, modales, boutons), pas juste les surfaces SVG. Sinon les
+       fonds inline étaient remappés en gris/blanc système (rapport fondateur : « cases grises
+       écritures grises sur les boutons »). Justifié : couleur = sens (statuts vert/ambre/corail). */
+    html{forced-color-adjust:none}
     html,body{font-family:'Bricolage Grotesque',system-ui,sans-serif;background:var(--sg-bg);color:var(--sg-ink);height:100vh;height:100dvh;width:100%;margin:0;padding:0;overflow:hidden;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
     #root{height:100vh;height:100dvh;width:100%;position:relative;overflow:hidden}
     *,*::before,*::after{box-sizing:border-box}
