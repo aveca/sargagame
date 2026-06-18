@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Share — Vauclin : une photo ne se vérifie pas</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:wght@600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { background:#0B2230; }
+  #card { width:1080px; height:1350px; display:block; }
+  .anton { font-family:'Anton', Impact, 'Haettenschweiler', 'Arial Narrow Bold', sans-serif; }
+  .bric  { font-family:'Bricolage Grotesque', system-ui, sans-serif; }
+  .mono  { font-family:'JetBrains Mono', ui-monospace, monospace; }
+</style>
+</head>
+<body>
+<svg id="card" viewBox="0 0 1080 1350" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- golden-hour sky : sombre en haut (texte lisible) -> doré sur l'horizon -->
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0"    stop-color="#0B2230"/>
+      <stop offset="0.42" stop-color="#155A5A"/>
+      <stop offset="0.78" stop-color="#C97E3A"/>
+      <stop offset="1"    stop-color="#F2B05E"/>
+    </linearGradient>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1A5852"/>
+      <stop offset="1" stop-color="#08251F"/>
+    </linearGradient>
+    <linearGradient id="sand" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2A1F14"/>
+      <stop offset="1" stop-color="#161009"/>
+    </linearGradient>
+    <radialGradient id="sunGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0"   stop-color="#FFE9B0" stop-opacity="0.95"/>
+      <stop offset="0.4" stop-color="#FFD884" stop-opacity="0.55"/>
+      <stop offset="1"   stop-color="#FFD884" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="reflect" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0"   stop-color="#FFD884" stop-opacity="0.55"/>
+      <stop offset="1"   stop-color="#FFD884" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="beam" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1EC8B0" stop-opacity="0.30"/>
+      <stop offset="1" stop-color="#1EC8B0" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="6"/>
+    </filter>
+  </defs>
+
+  <!-- ===== SCENE ===== -->
+  <rect x="0" y="0"    width="1080" height="768" fill="url(#sky)"/>
+  <rect x="0" y="768"  width="1080" height="412" fill="url(#sea)"/>
+  <rect x="0" y="1180" width="1080" height="170" fill="url(#sand)"/>
+
+  <!-- soleil sur l'horizon -->
+  <circle cx="752" cy="700" r="210" fill="url(#sunGlow)"/>
+  <circle cx="752" cy="734" r="74"  fill="#FFE9B0"/>
+  <!-- banc de sargasses tenu au large (clin d'oeil au filet deviant, jamais "cheap") -->
+  <ellipse cx="250" cy="752" rx="240" ry="13" fill="#2E3B22" opacity="0.55"/>
+  <ellipse cx="470" cy="760" rx="150" ry="9"  fill="#2E3B22" opacity="0.40"/>
+
+  <!-- reflet du soleil sur l'eau -->
+  <polygon points="712,772 792,772 838,1175 666,1175" fill="url(#reflect)"/>
+  <rect x="700" y="812" width="104" height="6" rx="3" fill="#FFE9B0" opacity="0.5"/>
+  <rect x="688" y="872" width="128" height="6" rx="3" fill="#FFE9B0" opacity="0.38"/>
+  <rect x="676" y="942" width="152" height="7" rx="3" fill="#FFE9B0" opacity="0.30"/>
+
+  <!-- Le Veilleur : LE satellite (objet unique), veille la MER, ne fixe pas le lecteur -->
+  <g transform="translate(884,232)">
+    <polygon points="40,150 12,300 -300,470 -120,150" fill="url(#beam)"/>
+    <!-- panneaux solaires -->
+    <g stroke="#0B2230" stroke-width="2">
+      <rect x="-118" y="-18" width="74" height="40" rx="4" fill="#0E5B53"/>
+      <line x1="-93" y1="-18" x2="-93" y2="22"/><line x1="-68" y1="-18" x2="-68" y2="22"/>
+      <rect x="44" y="-18" width="74" height="40" rx="4" fill="#0E5B53"/>
+      <line x1="69" y1="-18" x2="69" y2="22"/><line x1="94" y1="-18" x2="94" y2="22"/>
+    </g>
+    <!-- corps -->
+    <rect x="-40" y="-30" width="80" height="64" rx="16" fill="#1EC8B0" stroke="#0B2230" stroke-width="2.5"/>
+    <!-- capteur tourne vers la mer (mi-clos, serein) -->
+    <circle cx="0" cy="6" r="19" fill="#08322E"/>
+    <circle cx="0" cy="6" r="11" fill="#9BF3E6"/>
+    <path d="M-16,6 a16,16 0 0 0 32,0" fill="#0B2230" opacity="0.55"/>
+    <circle cx="0" cy="46" r="5" fill="#FFD884"/>
+  </g>
+
+  <!-- yole ronde de Martinique (vie + ame + echelle) -->
+  <g transform="translate(806,1086)">
+    <ellipse cx="0" cy="58" rx="92" ry="9" fill="#000" opacity="0.18"/>
+    <path d="M-86,28 Q0,72 86,28 L70,40 Q0,58 -70,40 Z" fill="#16332E"/>
+    <path d="M-86,22 Q0,60 86,22 L86,30 Q0,66 -86,30 Z" fill="#E8522A"/>
+    <path d="M-86,22 Q0,60 86,22" fill="none" stroke="#FFC72C" stroke-width="5"/>
+    <path d="M-58,24 Q0,50 58,24" fill="none" stroke="#009E8E" stroke-width="5"/>
+    <line x1="2" y1="22" x2="2" y2="-52" stroke="#0B2230" stroke-width="4"/>
+    <path d="M4,-50 L4,16 L62,12 Z" fill="#FDFCF7" opacity="0.94"/>
+    <path d="M0,-50 L0,14 L-46,12 Z" fill="#FFE47A" opacity="0.9"/>
+  </g>
+
+  <!-- ===== TEXTE ===== -->
+  <!-- eyebrow -->
+  <circle cx="86" cy="90" r="7" fill="#FFC72C"/>
+  <text x="106" y="99" class="bric" font-size="27" font-weight="800" fill="#FFC72C" letter-spacing="3">LE VAUCLIN · CHÂTEAU PAILLE</text>
+
+  <!-- titre -->
+  <text x="78" y="214" class="anton" font-size="84" fill="#FDFCF7">UNE PHOTO</text>
+  <text x="78" y="298" class="anton" font-size="84" fill="#FDFCF7">NE SE VÉRIFIE PAS.</text>
+  <text x="78" y="382" class="anton" font-size="84" fill="#FFC72C">UN BILAN, SI.</text>
+
+  <!-- sous-titre / accroche news -->
+  <text x="80" y="452" class="bric" font-size="28" font-weight="600" fill="#FDFCF7" opacity="0.94">L'État pose des filets déviants à Château Paille, au Vauclin.</text>
+  <text x="80" y="490" class="bric" font-size="28" font-weight="600" fill="#FDFCF7" opacity="0.94">Nous, on publie nos résultats — plage par plage.</text>
+
+  <!-- stat hero sur la mer -->
+  <text x="74" y="958" class="anton" font-size="150" fill="#FFC72C">77%</text>
+  <text x="430" y="888" class="bric" font-size="34" font-weight="700" fill="#FDFCF7">de justesse sur nos</text>
+  <text x="430" y="930" class="bric" font-size="34" font-weight="700" fill="#FDFCF7">prévisions au Vauclin.</text>
+  <text x="432" y="977" class="mono" font-size="22" font-weight="500" fill="#FFE47A">171 prévisions · 17 mai → 17 juin 2026</text>
+  <text x="432" y="1007" class="mono" font-size="22" font-weight="500" fill="#FDFCF7" opacity="0.72">publiées et auditables, jour par jour.</text>
+
+  <!-- sable : honnêteté + CTA -->
+  <text x="80" y="1248" class="bric" font-size="33" font-weight="800" fill="#FDFCF7">On publie même nos ratés. C'est ça, la confiance.</text>
+  <rect x="80" y="1280" width="556" height="56" rx="28" fill="#FFC72C"/>
+  <text x="358" y="1317" text-anchor="middle" class="bric" font-size="27" font-weight="800" fill="#0D0D0D">sargasses-martinique.com/fiabilite</text>
+</svg>
+</body>
+</html>
