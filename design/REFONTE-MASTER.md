@@ -32,7 +32,7 @@
 
 **Comment monitorer :** ce tableau (avancement) · `git log` (chaque ship = 1 commit) · `/workflows` (workflows finis) · mes pings (concret live prod). **Fin = toutes les lignes ✅.**
 
-> Avancement global estimé : **~91 %** · maj 2026-06-17.
+> Avancement global estimé : **~91 %** · maj 2026-06-18 (récolte A/B `pw_prelude`).
 
 ---
 
@@ -125,6 +125,7 @@
 9. **Pièges SVG** (sticky void, transform hors-champ, snap couleur) → encodés skill, vérif navigateur.
 10. **Veilleur « fait peur »** → 1 satellite, veille la mer (tranché). **Qualité « bof »** (filets/pas de bateau) → barre qualité + yole (tranché). ✅ **Fait**
 11. **Goût** → A/B live + `ab-eval` (automatisé), jamais vibe-jugement. ✅ outil shippé.
+12. **Dilution A/B** (≥25 flags conversion, ~1171 sessions/28j éclatées → aucun ne converge ; conversion non concluable à ce traffic, ~150k sessions/bras requis) → **RÉCOLTE avant tout nouveau test.** ▸ 18/06 : `pw_prelude` inliné à `direct`/control (prelude=0% n=210 vs direct=0,79% n=252 ; interstitiel = friction sans bénéfice), 1 slot libéré (commit 4ac9b820). Prochaines récoltes candidates (vérifier sample suffisant avant) : promouvoir `home_az` v1 (+573%, n=255) si l'échantillon tient ; retirer les bras morts (`nav_dive` n=25). Levier réel = SEO volume + capture email 0,35% + B2B, PAS un Nᵉ paywall.
 
 ---
 
