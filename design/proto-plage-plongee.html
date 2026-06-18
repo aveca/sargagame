@@ -797,6 +797,11 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
   /* statut canonique : clean | moderate | avoid (mappe vers classes courtes) */
   function stKey(s){ s=(s||"").toLowerCase(); if(s==="avoid"||s==="bad") return "avoid"; if(s==="moderate"||s==="mod") return "moderate"; return "clean"; }
   var STATUS = stKey(DATA.beach.status);
+  // Cohérence « aujourd'hui » : le verdict d'arrivée (statut MESURÉ live) et la
+  // 1re barre de prévision (« Auj. ») doivent dire la MÊME chose. Le statut mesuré
+  // du jour prime sur la prévision-du-jour du modèle → on aligne forecast[0] dessus
+  // (évite « BAIGNADE OK » + barre « À éviter » le même jour). Jours 1-6 inchangés.
+  if(DATA.forecast && DATA.forecast[0] && DATA.forecast[0].status!==DATA.beach.status){ DATA.forecast[0].status = DATA.beach.status; }
   var STCOL  = STATUS==="avoid" ? "var(--coral)" : STATUS==="moderate" ? "#E8B23A" : "var(--green)";
   var STCLS  = STATUS==="avoid" ? "st-avoid" : STATUS==="moderate" ? "st-mod" : "st-clean";
 
@@ -1593,6 +1598,15 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
      WIRING conversion (CTA + chrome + cards)
      ==================================================================== */
   function wire(){
+    // a11y : les role="button" focusables (tabindex=0) doivent répondre au clavier.
+    // Enter/Espace → déclenche le click. Sinon morts pour clavier/lecteur d'écran.
+    var _kbRoot = (typeof SG_VAR_EL!=="undefined" && SG_VAR_EL.querySelectorAll) ? SG_VAR_EL : document;
+    var _kbBtns = _kbRoot.querySelectorAll('[role="button"][tabindex]');
+    for(var _kb=0; _kb<_kbBtns.length; _kb++){
+      _kbBtns[_kb].addEventListener("keydown", function(e){
+        if(e.key==="Enter" || e.key===" " || e.key==="Spacebar"){ e.preventDefault(); this.click(); }
+      });
+    }
     $("backBtn").addEventListener("click", function(){ onShowMap(); });
     $("freshPill").addEventListener("click", function(){ track("sg_scene_tap",{el:"fresh"}); });
     $("statusPill").addEventListener("click", function(){ onOpenBeach(DATA.beach.id, DATA.beach.name); });
