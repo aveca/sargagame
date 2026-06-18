@@ -61,6 +61,7 @@ Au lancement de chaque session dans ce dossier, exécuter automatiquement (zéro
 - **Leads** : ~213 emails captés
 - **Bottleneck #1** : modal→CTA bloqué à **2%** (3 388 opens → 74 CTA) depuis ≥5 jours. CTA→redirect sain (97%). Levier prioritaire = le modal lui-même (offre/copy/anchoring), pas les bords du funnel.
 - **A/B tests live** : `pw_cta_order` (control/sample_first) + `pw_prelude` (direct/prelude) — mesure 4-8 semaines
+- **Refonte golden-hour promue (18/06, feu vert)** : `ab_fiche_dive` **DÉ-PARQUÉ 50/50** (plongée scrollytelling sur fiches plage SEO `/plages/`, vérifiée 16/16 ; `?fichedive=0` re-force le contrôle, re-park = un flip dans `vite.config.js` picker) + `home_az` 30→**50%** + `map_world` **50%** (ArchipelView). À évaluer conversion ~2-4 sem. cf. skill `sargasses` / mémoire `project_fiche_dive_status`.
 - **Pipeline** : ERDDAP-live, 4×/j, stable
 
 Pour les opérations détaillées (deploy manuel, A/B eval, backtest forecast, stats), invoquer le skill `sargasses`.
