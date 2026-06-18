@@ -654,10 +654,12 @@ function writeRegionIndex(region, out) {
     (function(){
       var LOCAL_KEY='sg_v';
       fetch('/version.json',{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){
-        var cur=d&&d.v;if(!cur)return;
+        if(!d||!d.v)return;
+        var cur=d.v+'|'+(d.b||'');
         var prev=localStorage.getItem(LOCAL_KEY);
         localStorage.setItem(LOCAL_KEY,cur);
-        if(prev&&prev!==cur&&'caches' in window){
+        if(prev&&prev!==cur&&'caches' in window&&sessionStorage.getItem('sg_vreload')!==cur){
+          sessionStorage.setItem('sg_vreload',cur);
           caches.keys().then(function(ks){
             return Promise.all(ks.map(function(k){return caches.delete(k)}));
           }).then(function(){location.reload()});
@@ -666,7 +668,11 @@ function writeRegionIndex(region, out) {
     })();
     if('serviceWorker' in navigator){
       window.addEventListener('load',function(){
-        navigator.serviceWorker.register('/sw.js').catch(function(){})
+        navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).then(function(reg){
+          var upd=function(){try{reg.update()}catch(e){}}
+          setInterval(upd,15*60*1000)
+          document.addEventListener('visibilitychange',function(){if(!document.hidden)upd()})
+        }).catch(function(){})
       })
     }
     </script>
