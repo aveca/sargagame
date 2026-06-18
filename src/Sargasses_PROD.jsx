@@ -11483,8 +11483,10 @@ export default function App(){
     return w
   })
   // A/B `pw_onboard` : onboarding guidé payant (favoris→notif→brief) vs toast 5s (control).
-  // PARQUÉ ([1,0] = 100% control) tant que non vérifié. Override ?onboard=1/0. Flip = [.5,.5].
-  const pwOnboard=useMemo(()=>{try{const q=window.location.search;if(/[?&]onboard=1/.test(q))return"onboard";if(/[?&]onboard=0/.test(q))return"control";return abVariant("pw_onboard",["control","onboard"],[1,0])}catch(_){return"control"}},[])
+  // ACTIVÉ 100% ([0,1]) le 18/06 (feu vert fondateur « lance ») — vu le faible volume de
+  // payeurs un A/B serait trop lent à lire ; tout nouveau payeur a le setup guidé. Override
+  // ?onboard=0 re-force le toast (sécurité). Réversible : repasser à [1,0] (parqué) ou [.5,.5] (A/B).
+  const pwOnboard=useMemo(()=>{try{const q=window.location.search;if(/[?&]onboard=1/.test(q))return"onboard";if(/[?&]onboard=0/.test(q))return"control";return abVariant("pw_onboard",["control","onboard"],[0,1])}catch(_){return"control"}},[])
   // Toast 5s : auto-dismiss UNIQUEMENT en control. En onboarding, l'overlay reste jusqu'à onDone.
   useEffect(()=>{if(showWelcome&&pwOnboard!=="onboard"){track("sg_welcome_toast_view");const t=setTimeout(()=>setShowWelcome(false),5000);return()=>clearTimeout(t)}},[showWelcome,pwOnboard])
 
