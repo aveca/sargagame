@@ -1033,11 +1033,9 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
       grp.appendChild(svgEl("circle",{cx:p.x,cy:p.y,r:"6.5",fill:col,stroke:"#06121A","stroke-width":"1.3"}));
       var ring=svgEl("circle",{class:"ring nhpulse",cx:p.x,cy:p.y,r:"12",fill:"none",stroke:"#FFE6A8","stroke-width":"1.4",style:"transform-origin:"+p.x+"px "+p.y+"px"});
       grp.appendChild(ring);
-      // libellé double-passe (lisible, comme map-grounding E)
-      var name=(LANG==="fr"?b.name:beachNoArticle(b.name));
-      grp.appendChild(svgEl("text",{x:p.x,y:p.y-16,"text-anchor":"middle","font-family":"Bricolage Grotesque,sans-serif","font-size":"12","font-weight":"800",fill:"#02100E","fill-opacity":".6",transform:"translate(0 1.2)"})).textContent=name;
-      var t=svgEl("text",{x:p.x,y:p.y-16,"text-anchor":"middle","font-family":"Bricolage Grotesque,sans-serif","font-size":"12","font-weight":"800",fill:"#fff"});
-      t.textContent=name; grp.appendChild(t);
+      // PAS de libellé sur l'eau : le nom est déjà dans la carte plan-B en dessous
+      // (doublon + fantôme derrière les cartes). On garde le point lumineux = repère
+      // spatial « des spots propres au large », les cartes portent les noms.
       g.appendChild(grp);
     });
   }
