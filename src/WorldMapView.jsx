@@ -148,10 +148,32 @@ export default function WorldMapView({
     const r=wrapRef.current?.getBoundingClientRect(); if(!r) return
     const s=Math.min(r.width/800,r.height/600)
     const ox=(r.width-800*s)/2, oy=(r.height-600*s)/2
-    layer.querySelectorAll('[data-vx]').forEach(el=>{
+    const els=layer.querySelectorAll('[data-vx]')
+    els.forEach(el=>{
       const vx=parseFloat(el.dataset.vx), vy=parseFloat(el.dataset.vy)
       el.style.left=(ox+(vx*k+tx)*s).toFixed(1)+'px'
       el.style.top=(oy+(vy*k+ty)*s).toFixed(1)+'px'
+    })
+    // Déclutter screen-space : empêche les labels de se chevaucher (noms + verdicts
+    // empilés type « Anse Mitan/Anse Dufour » illisibles). Priorité : plage
+    // sélectionnée > pire statut (avoid>moderate>clean) > nord→sud. Au zoom, les
+    // positions s'écartent → les labels masqués réapparaissent (recalcul chaque RAF).
+    // visibility (pas display) pour rester mesurable et réversible frame à frame.
+    const RANK={avoid:0,moderate:1,clean:2}
+    const boxes=[]
+    els.forEach(el=>{
+      const w=el.offsetWidth, h=el.offsetHeight
+      const L=parseFloat(el.style.left)||0, T=parseFloat(el.style.top)||0
+      boxes.push({el, sel:el.dataset.sel==='1', rank:RANK[el.dataset.status]??3,
+        vy:parseFloat(el.dataset.vy)||0,
+        l:L-w/2-2, r:L+w/2+2, t:T-h-2, b:T+2})
+    })
+    boxes.sort((a,b)=> a.sel!==b.sel ? (a.sel?-1:1) : (a.rank!==b.rank ? a.rank-b.rank : a.vy-b.vy))
+    const kept=[]
+    boxes.forEach(bx=>{
+      const hit=kept.some(k=> !(bx.r<k.l||bx.l>k.r||bx.b<k.t||bx.t>k.b))
+      if(hit){ bx.el.style.visibility='hidden' }
+      else { bx.el.style.visibility='visible'; kept.push(bx) }
     })
   },[])
 
@@ -509,6 +531,8 @@ export default function WorldMapView({
             <div key={b.id}
               data-vx={b.vx}
               data-vy={b.vy}
+              data-status={st}
+              data-sel={selected?.id===b.id?"1":"0"}
               style={{
                 position:"absolute",left:0,top:0,
                 transform:"translate(-50%,-100%)",
