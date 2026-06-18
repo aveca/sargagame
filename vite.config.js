@@ -1445,23 +1445,38 @@ ${isGP ? `  <url><loc>${d}/meteo-sargasses-guadeloupe/</loc><lastmod>${today}</l
                   || null
                 const _fd_forecast = Array.isArray(_fd_wk) ? _fd_wk
                   : (_fd_wk && Array.isArray(_fd_wk.forecast) ? _fd_wk.forecast : null)
-                // Nearby: same zone first, then same island, sorted by score, max 3
+                // Nearby = "plan B à côté" : MÊME ÎLE (jamais cross-island), plages
+                // PROPRES d'abord, puis proximité (même zone > même commune > reste de
+                // l'île), puis score. L'ancien tri score-first sortait le top-3 GLOBAL
+                // = les 3 mêmes plages GP pour TOUTES les plages (MQ comprises) →
+                // « des plages propres tout près · à quelques minutes » était mensonger.
+                // distance réelle depuis la plage courante (haversine, km) — sert au tri
+                // « le plus près » ET au temps de trajet honnête (~40 km/h).
+                const _havKm = (la1, lo1, la2, lo2) => {
+                  if (![la1, lo1, la2, lo2].every(n => typeof n === 'number')) return null
+                  const R = 6371, toR = x => x * Math.PI / 180
+                  const dLa = toR(la2 - la1), dLo = toR(lo2 - lo1)
+                  const A = Math.sin(dLa / 2) ** 2 + Math.cos(toR(la1)) * Math.cos(toR(la2)) * Math.sin(dLo / 2) ** 2
+                  return 2 * R * Math.asin(Math.sqrt(A))
+                }
+                const _fd_isClean = o => (((heroLv(o)||{}).status) || o.status) === 'clean'
+                const _fd_km = o => { const k = _havKm(b.lat, b.lng, o.lat, o.lng); return k == null ? 1e9 : k }
                 const _fd_nearby_all = beaches
-                  .filter(o => o.id !== b.id)
+                  .filter(o => o.id !== b.id && o.island === b.island)
                   .sort((a, z) => {
-                    const sa = (heroLv(a)||{}).score || 0
-                    const sz = (heroLv(z)||{}).score || 0
-                    if (sa !== sz) return sz - sa
-                    const za = a.zone === b.zone ? 0 : (a.commune === b.commune ? 1 : 2)
-                    const zz = z.zone === b.zone ? 0 : (z.commune === b.commune ? 1 : 2)
-                    return za - zz
+                    if (_fd_isClean(a) !== _fd_isClean(z)) return _fd_isClean(a) ? -1 : 1 // propres d'abord
+                    return _fd_km(a) - _fd_km(z) // puis le plus PRÈS (distance réelle)
                   })
-                const _fd_nearby = _fd_nearby_all.slice(0, 3).map(o => ({
-                  id: o.id, name: o.name, commune: o.commune,
-                  status: (heroLv(o)||{}).status || o.status,
-                  score: (heroLv(o)||{}).score ?? null,
-                  drive: o.drive, lat: o.lat, lng: o.lng
-                }))
+                const _fd_nearby = _fd_nearby_all.slice(0, 3).map(o => {
+                  const km = _havKm(b.lat, b.lng, o.lat, o.lng)
+                  return {
+                    id: o.id, name: o.name, commune: o.commune,
+                    status: (heroLv(o)||{}).status || o.status,
+                    score: (heroLv(o)||{}).score ?? null,
+                    drive: km != null ? Math.max(5, Math.round(km / 40 * 60)) : o.drive,
+                    lat: o.lat, lng: o.lng
+                  }
+                })
                 // Reliability (calm/high regime per backtest)
                 const _fd_rr = typeof readBacktestFD !== 'undefined' ? readBacktestFD() : null
                 const _fd_rel = _fd_rr ? {
