@@ -37,6 +37,8 @@ export default function PaidOnboarding({ lang = "fr", allBeaches = [], favorites
 
   const GOLD = "#FFC72C", GOLD_D = "#E8A800", TEAL = "#1EC8B0", INK = "#EAF7F4"
   const wrap = {
+    // garde les couleurs golden-hour même sous thème contraste / forced-colors (hérité)
+    forcedColorAdjust: "none",
     position: "fixed", inset: 0, zIndex: 1450, display: "flex", flexDirection: "column",
     background: "radial-gradient(120% 80% at 78% 6%, rgba(255,224,160,.20), transparent 50%), linear-gradient(168deg,#0B2230 0%,#103a3a 40%,#02060A 100%)",
     color: INK, fontFamily: "'Bricolage Grotesque',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif",
