@@ -1075,17 +1075,52 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
     el.appendChild(document.createElement("br"));
     el.appendChild(document.createTextNode(v[1]));
   }
+  /* i18n des chips forces/faiblesses : le pipeline ne fournit QUE le FR (MQ/GP).
+     Forces = vocabulaire fixe (lookup) ; faiblesses = templates avec valeurs (re-template). */
+  var STR_I18N = {
+    "zéro sargasses":{en:"zero sargassum",es:"cero sargazo"},
+    "mer plate":{en:"flat sea",es:"mar plano"},
+    "vent calme":{en:"calm wind",es:"viento en calma"},
+    "eau chaude":{en:"warm water",es:"agua cálida"},
+    "ciel dégagé":{en:"clear sky",es:"cielo despejado"},
+    "soleil parfait":{en:"perfect sun",es:"sol perfecto"},
+    "marée idéale":{en:"ideal tide",es:"marea ideal"}
+  };
+  function trChip(s){
+    if(LANG==="fr"||!s) return s;
+    if(STR_I18N[s]) return STR_I18N[s][LANG]||s;
+    var m, en=LANG==="en";
+    if((m=s.match(/^alerte sargasses \(AFAI (.+)\)$/))) return en?"sargassum alert (AFAI "+m[1]+")":"alerta de sargazo (AFAI "+m[1]+")";
+    if((m=s.match(/^sargasses présentes \(AFAI (.+)\)$/))) return en?"sargassum present (AFAI "+m[1]+")":"sargazo presente (AFAI "+m[1]+")";
+    if((m=s.match(/^trace de sargasses \(AFAI (.+)\)$/))) return en?"trace of sargassum (AFAI "+m[1]+")":"rastro de sargazo (AFAI "+m[1]+")";
+    if((m=s.match(/^houle (.+) m$/))) return en?m[1]+" m swell":"oleaje de "+m[1]+" m";
+    if((m=s.match(/^vent (.+) km\/h$/))) return en?m[1]+" km/h wind":"viento de "+m[1]+" km/h";
+    if((m=s.match(/^eau fraîche (.+) °C$/))) return en?"cool water "+m[1]+" °C":"agua fresca "+m[1]+" °C";
+    if(s==="ciel couvert") return en?"overcast sky":"cielo nublado";
+    if(s==="UV extrême") return en?"extreme UV":"UV extremo";
+    if(s==="UV faible") return en?"low UV":"UV bajo";
+    return s;
+  }
+  /* libellés de jours forecast i18n : FR vient du pipeline (intact) ; EN/ES dérivés de f.date */
+  var WDAY_I18N={en:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],es:["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"]};
+  function fcLabel(f,i){
+    if(LANG==="fr") return f.day;
+    if(i===0) return LANG==="es"?"Hoy":"Today";
+    if(i===1) return LANG==="es"?"Mañ.":"Tom.";
+    if(f.date){ var d=new Date(f.date+"T12:00:00"); if(!isNaN(d.getTime())) return (WDAY_I18N[LANG]||WDAY_I18N.en)[d.getDay()]; }
+    return f.day;
+  }
   function buildChips(){
     var row=$("chipRow"); while(row.firstChild) row.removeChild(row.firstChild);
     (DATA.score.strengths||[]).slice(0,2).forEach(function(s){
       var c=document.createElement("span"); c.className="chip good";
       var i=document.createElement("span"); i.className="i"; i.textContent="✓"; c.appendChild(i);
-      c.appendChild(document.createTextNode(s)); row.appendChild(c);
+      c.appendChild(document.createTextNode(trChip(s))); row.appendChild(c);
     });
     (DATA.score.weaknesses||[]).slice(0,2).forEach(function(s){
       var c=document.createElement("span"); c.className="chip bad";
       var i=document.createElement("span"); i.className="i"; i.textContent="!"; c.appendChild(i);
-      c.appendChild(document.createTextNode(s)); row.appendChild(c);
+      c.appendChild(document.createTextNode(trChip(s))); row.appendChild(c);
     });
   }
   function buildFactors(){
@@ -1119,7 +1154,7 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
       bar.setAttribute("data-h",h.toFixed(3));
       if(REDUCE) bar.style.setProperty("--rmh", h.toFixed(3));
       bb.appendChild(bar); day.appendChild(bb);
-      var lab=document.createElement("div"); lab.className="fcl"; lab.textContent=f.day; day.appendChild(lab);
+      var lab=document.createElement("div"); lab.className="fcl"; lab.textContent=fcLabel(f,i); day.appendChild(lab);
       strip.appendChild(day);
     });
   }
