@@ -1543,12 +1543,12 @@ ${isGP ? `  <url><loc>${d}/meteo-sargasses-guadeloupe/</loc><lastmod>${today}</l
                   `    if(/[?&]fichedive=1/.test(q))return true;`,
                   `    if(/[?&]fichedive=0/.test(q))return false;`,
                   `    if(RM)return false;`,
-                  // DÉ-PARQUÉ 2026-06-18 (feu vert fondateur) : les 3 bugs sont réparés
-                  // + vérifiés (16/16 plages/langues, funnel, perf, RM). Bucket 50/50
-                  // localStorage rebranché. ?fichedive=0 force le contrôle (sécurité).
-                  `    var k='ab_fiche_dive',v=localStorage.getItem(k);`,
-                  `    if(!v){v=Math.random()<0.5?'dive':'control';localStorage.setItem(k,v);}`,
-                  `    return v==='dive';`,
+                  // RE-PARQUÉ 2026-06-18 (circuit-breaker) : l'audit ultracode a trouvé
+                  // que la plongée affichait un SCORE MOCK fabriqué (69) sur ~116/136
+                  // plages sans score live + claim « 100% justes » + clics morts Plan-B.
+                  // Re-park le temps de corriger ces violations d'honnêteté, puis re-launch
+                  // 50/50 propre. ?fichedive=1 = QA. Bucket 50/50 à rebrancher après fix.
+                  `    return false;`,
                   `    }catch(e){return false;}`,
                   `  }`,
                   `  var active=pick();`,
