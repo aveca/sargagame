@@ -41,6 +41,9 @@ const LazyWorldMapView=lazyWithRetry(()=>import("./WorldMapView"))
 // Fiche plage « en PLONGÉE » (bras A/B `pw_beach_dive`) — port proto-plage-plongee,
 // Shadow DOM, region-aware. Alternative additive à BeachSheet (control intact).
 const LazyBeachDive=lazyWithRetry(()=>import("./BeachDive"))
+// Onboarding GUIDÉ des nouveaux clients PAYANTS (bras A/B `pw_onboard`) — remplace
+// le toast 5s par un mini-setup (favoris→notif→brief). Lazy → DOIT être sous Suspense.
+const LazyPaidOnboarding=lazyWithRetry(()=>import("./PaidOnboarding"))
 // CleanList — /plages-sans-sargasses/ A/B `clean_list` (port proto-planb-clean-nearby)
 const LazyCleanList=lazyWithRetry(()=>import("./CleanList"))
 // Conditions — /conditions/<slug>/ A/B `pw_conditions`
@@ -11479,7 +11482,11 @@ export default function App(){
     if(w){s("sg_premium_welcome",false)}
     return w
   })
-  useEffect(()=>{if(showWelcome){track("sg_welcome_toast_view");const t=setTimeout(()=>setShowWelcome(false),5000);return()=>clearTimeout(t)}},[showWelcome])
+  // A/B `pw_onboard` : onboarding guidé payant (favoris→notif→brief) vs toast 5s (control).
+  // PARQUÉ ([1,0] = 100% control) tant que non vérifié. Override ?onboard=1/0. Flip = [.5,.5].
+  const pwOnboard=useMemo(()=>{try{const q=window.location.search;if(/[?&]onboard=1/.test(q))return"onboard";if(/[?&]onboard=0/.test(q))return"control";return abVariant("pw_onboard",["control","onboard"],[1,0])}catch(_){return"control"}},[])
+  // Toast 5s : auto-dismiss UNIQUEMENT en control. En onboarding, l'overlay reste jusqu'à onDone.
+  useEffect(()=>{if(showWelcome&&pwOnboard!=="onboard"){track("sg_welcome_toast_view");const t=setTimeout(()=>setShowWelcome(false),5000);return()=>clearTimeout(t)}},[showWelcome,pwOnboard])
 
   // Handle ?manage=1 → open Stripe Customer Portal
   // MUST run independently of isPremium state: the user is already premium and
@@ -13167,7 +13174,18 @@ export default function App(){
         )}
 
         {/* PREMIUM WELCOME TOAST */}
-        {showWelcome&&(
+        {/* Onboarding payant guidé (A/B pw_onboard) — remplace le toast. Lazy sous Suspense+ErrBound,
+            fallback = fermer (le control toast n'est pas re-render ici, donc échec = pas de "rien" bloquant). */}
+        {showWelcome&&pwOnboard==="onboard"&&(
+          <ErrBound fallback={null}>
+            <Suspense fallback={<div style={{position:"fixed",inset:0,background:"#02060A",zIndex:1450}}/>}>
+              <LazyPaidOnboarding lang={lang} allBeaches={allBeaches} favorites={favorites}
+                onToggleFav={toggleFav} onEnableNotif={()=>loadPushNow("onboard")}
+                onDone={()=>setShowWelcome(false)} island={island} userPos={userPos} track={track}/>
+            </Suspense>
+          </ErrBound>
+        )}
+        {showWelcome&&pwOnboard!=="onboard"&&(
           <div style={{position:"fixed",bottom:"calc(104px + env(safe-area-inset-bottom, 0px))",left:"50%",transform:"translateX(-50%)",
             zIndex:1400,background:"linear-gradient(135deg,#009E8E,#1EC8B0)",color:"#fff",
             padding:"14px 24px",borderRadius:16,fontSize:14,fontWeight:600,
