@@ -2,6 +2,8 @@
 
 > **Reprise 2026-06-17 (soir).** Pivot MONÉTISATION shippé : modèle « paie à l'usage » (passes one-time) + 4 segments + lane jeune. On ATTEND la data clients. **La reprise = LIRE les 2 signaux, pas coder.**
 
+> **Nuit 18/06 (side-quest social — ne change PAS la reprise ci-dessous).** 1er post « news-jacking honnêteté » shippé : carte golden-hour « une photo ne se vérifie pas, un bilan si » + fiabilité **Vauclin 77 %** (track-record, arrivées = point faible assumé) publiée dans le groupe **SOS Sargasses Martinique** (réaction au post Préfecture/GIP « filets Château Paille »). Passée une review adversariale 3-lentilles (corrigé un cherry-picking 77%↔arrivage). Nouvel outil réutilisable **`scripts/automation/fb-post-card.cjs`** (image+légende → groupe FB, dry-run défaut, garde-fou légende, UI FB en **anglais** → bouton « Post »). Déployé `58e8806b` (deploy OK). `design/proto-plage-plongee.html` (fiche-dive parkée) laissé **NON-committé** — sign-off requis. cf. [[reference_fb_publisher]].
+
 ## 📊 LES 2 SIGNAUX À LIRE EN PREMIER
 1. **Passes — quel segment achète, à quel prix ?** Events `sg_pass_seg {segment,stage,cents}` + `sg_conversion {plan:pNN}` (sheet Apps Script / `?action=funnel`). Segments : voyageur / planificateur / habitué / découverte. Prix A/B `pass_price` (14,99 / 19,99 / 24,99). → si **voyageur** convertit, concentrer le SEO « sargasses + mois » dessus ; arrêter de pousser les passes au local.
 2. **B2B — un hôtel mord ?** Pages `/pro/` + lead-magnet brief gratuit (thread session parallèle).
