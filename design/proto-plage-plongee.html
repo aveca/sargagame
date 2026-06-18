@@ -1446,7 +1446,10 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
     var nh=$("nearbyHalos"), showNearby=(active===4 && prog[4]>0.12);
     if(showNearby){ nh.classList.add("on"); } else { nh.classList.remove("on"); }
     nh.style.opacity = showNearby ? "1" : "0";
-    $("h2sAnchor").style.opacity = showNearby ? (STATUS==="clean"?0.55:1).toFixed(2) : "0";
+    // marqueur H2S sur l'eau : SEULEMENT si H2S est un vrai risque (modéré/avoid).
+    // Sur une plage propre, le journal dit « H2S NUL » → un anneau H2S corail au
+    // large serait contradictoire + fantôme derrière les cartes. Donc 0 si clean.
+    $("h2sAnchor").style.opacity = (showNearby && STATUS!=="clean") ? (STATUS==="avoid"?"0.85":"0.6") : "0";
     if(active===4 && prog[4]>0.3 && !revealed.nhpulse){ revealed.nhpulse=true; pulseNearby(); }
 
     /* alerte wash si la plage/forecast scruté est avoid */
@@ -1644,7 +1647,7 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
     $("scoreNum").textContent=SCORE; $("scoreArc").setAttribute("stroke-dashoffset",(264*(1-SCORE/100)).toFixed(1));
     $("regimeArc").setAttribute("stroke-dashoffset",(251*(1-DATA.reliability.calm/100)).toFixed(1));
     $("rasterGrain").style.opacity=".08";
-    $("nearbyHalos").classList.add("on"); $("h2sAnchor").style.opacity=(STATUS==="clean"?0.55:1).toFixed(2);
+    $("nearbyHalos").classList.add("on"); $("h2sAnchor").style.opacity=(STATUS!=="clean")?(STATUS==="avoid"?"0.85":"0.6"):"0";
     return; /* pas de rAF */
   }
 
