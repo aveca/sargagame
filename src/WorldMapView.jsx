@@ -385,6 +385,12 @@ export default function WorldMapView({
   return(
     <div ref={wrapRef} style={{
       position:"fixed",inset:0,zIndex:1020,overflow:"hidden",touchAction:"none",userSelect:"none",
+      // forced-color-adjust HÉRITE → préserve les VRAIES couleurs golden-hour de TOUTE la
+      // carte (fond + CTA dorés + dots de statut) même si le système force les couleurs
+      // (thème contraste Windows / filtre couleur / forced-colors navigateur). Sans ça,
+      // les fonds inline (#FFC72C…) étaient remappés en blanc système → boutons/scène délavés
+      // (rapport fondateur 18/06). Justifié : la couleur PORTE le sens (statut vert/ambre/corail).
+      forcedColorAdjust:"none",
       background:"radial-gradient(130% 70% at 76% 4%, rgba(255,224,160,.16), transparent 48%), linear-gradient(158deg,#1f6157 0%,#114440 44%,#072019 100%)",
     }}>
       <style>{`
