@@ -1491,11 +1491,16 @@ ${isGP ? `  <url><loc>${d}/meteo-sargasses-guadeloupe/</loc><lastmod>${today}</l
                 })
                 // Reliability (calm/high regime per backtest)
                 const _fd_rr = typeof readBacktestFD !== 'undefined' ? readBacktestFD() : null
+                // overall.statusHitRate = LE chiffre honnête à afficher (tous régimes, ~77%).
+                // calm.cleanReliabilityPct=100% est vrai mais TROMPEUR en titre (n'inclut
+                // pas les alertes 0%-fiables / 23% fausses) — le backtest dit lui-même de ne
+                // jamais publier un % unique sans le régime. On montre l'overall + lien fiabilité.
                 const _fd_rel = _fd_rr ? {
+                  overall: _fd_rr.overall?.statusHitRate ?? null,
                   calm: _fd_rr.regimeReliability?.regimes?.calm?.cleanReliabilityPct ?? null,
                   peak: _fd_rr.regimeReliability?.regimes?.high?.cleanReliabilityPct ?? null,
                   sample: _fd_rr.totalPairs || 0
-                } : { calm: 79, peak: 76, sample: 0 }
+                } : { overall: 77, calm: 79, peak: 76, sample: 0 }
                 // Freshness: honest (null if >12h)
                 const _fd_updatedAt = (() => {
                   if (!_heroLive.updatedAt) return null

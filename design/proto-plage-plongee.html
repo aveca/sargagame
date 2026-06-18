@@ -1221,22 +1221,23 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
     buildFactors();
     setHeading($("m2cH"),T.m2cH[LANG]);
     $("regimeT").textContent=T.regimeT[LANG];
-    // Garde-fou honnêteté : un % >=98 (ou nul/absurde) n'est PAS crédible pour une
-    // prévision (doctrine : ~79% saison calme). On masque le chiffre et on renvoie
-    // à la page fiabilité plutôt que d'afficher « 100% justes » (sur-claim).
-    var _rc=DATA.reliability && DATA.reliability.calm;
-    if(_rc==null || _rc>=98 || _rc<=0){
+    // Honnêteté : on affiche le hit-rate GLOBAL (tous régimes, ~77%) — chiffre réel
+    // et crédible — pas le « 100% justes » du clean-en-saison-calme (vrai mais
+    // trompeur : il masque les alertes 0%-fiables / 23% de fausses). Détail par
+    // régime renvoyé sur /fiabilite/. Garde-fou si pas de chiffre crédible.
+    var _ro=DATA.reliability && DATA.reliability.overall;
+    if(_ro!=null && _ro>0 && _ro<98){
+      $("regimePct").textContent=_ro+"%"; $("regimePctL").textContent=_t("tous régimes","all regimes","todos los regímenes");
+      $("regimeS").textContent=_t(
+        "Nos verdicts se vérifient "+_ro+"% du temps, tous régimes confondus ("+DATA.reliability.sample+" mesures). Détail par régime sur notre page fiabilité.",
+        "Our verdicts hold "+_ro+"% of the time across all regimes ("+DATA.reliability.sample+" readings). Per-regime detail on our reliability page.",
+        "Nuestros veredictos aciertan el "+_ro+"% en todos los regímenes ("+DATA.reliability.sample+" mediciones). Detalle por régimen en nuestra página de fiabilidad.");
+    } else {
       $("regimePct").textContent="—"; $("regimePctL").textContent="";
       $("regimeS").textContent=_t(
-        "Fiabilité par régime en cours de calibration — détail honnête sur notre page fiabilité.",
-        "Per-regime reliability is being calibrated — full honest detail on our reliability page.",
-        "Fiabilidad por régimen en calibración — detalle honesto en nuestra página de fiabilidad.");
-    } else {
-      $("regimePct").textContent=_rc+"%"; $("regimePctL").textContent=T.regimePctL[LANG];
-      $("regimeS").textContent=_t(
-        "En saison calme, nos verdicts sont justes "+_rc+"% du temps ("+DATA.reliability.sample+" mesures vérifiées).",
-        "In calm season our verdicts are right "+_rc+"% of the time ("+DATA.reliability.sample+" verified readings).",
-        "En temporada calma acertamos el "+_rc+"% ("+DATA.reliability.sample+" mediciones verificadas).");
+        "Fiabilité en cours de calibration — détail honnête sur notre page fiabilité.",
+        "Reliability is being calibrated — full honest detail on our reliability page.",
+        "Fiabilidad en calibración — detalle honesto en nuestra página de fiabilidad.");
     }
     $("regimeMore").textContent=T.regimeMore[LANG];
     $("ctaMethodeT").textContent=T.ctaMethodeT[LANG];
