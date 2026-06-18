@@ -700,6 +700,34 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
   "use strict";
 
   /* ====================================================================
+     SCROLL HOST — standalone: la fenêtre scrolle (window). Injecté dans la
+     fiche SEO: le shell verrouille html/body (overflow:hidden) et la plongée
+     vit dans un wrapper #sg-fiche-dive position:fixed;overflow-y:auto. Le
+     moteur doit donc lire/écouter le SCROLL de ce wrapper, et y poser les
+     variables CSS (sinon elles sont shadowées par le :root scopé au wrapper).
+     SG_HOST=null en standalone → fallback documentElement/window à l'identique.
+     ==================================================================== */
+  var SG_HOST = document.getElementById('sg-fiche-dive');      // null en standalone
+  var SG_VAR_EL = SG_HOST || document.documentElement;          // hôte des variables CSS
+  var SG_SCROLL_EL = SG_HOST || window;                         // ce qui scrolle
+  function sgScrollTop(){
+    return SG_SCROLL_EL === window
+      ? (window.pageYOffset || document.documentElement.scrollTop || 0)
+      : SG_SCROLL_EL.scrollTop;
+  }
+  function sgScrollBase(){
+    var sc = document.getElementById('scroller'); if(!sc) return 0;
+    var top = sc.getBoundingClientRect().top, st = sgScrollTop();
+    return SG_SCROLL_EL === window ? top + st
+      : top - SG_SCROLL_EL.getBoundingClientRect().top + st;
+  }
+  function sgScrollBy(dy){
+    var tgt = SG_SCROLL_EL === window ? window : SG_SCROLL_EL;
+    try { tgt.scrollBy({ top: dy, behavior: 'smooth' }); }
+    catch(e){ if(tgt===window){ window.scrollBy(0, dy); } else { tgt.scrollTop += dy; } }
+  }
+
+  /* ====================================================================
      DONNÉES MOCKÉES — MIME la vraie structure du repo.
      EN PROD : viennent de public/api/copernicus/sargassum.json
        (scores[id], weekly[id].forecast[].{afai,status,confidence,type,regime,sources},
@@ -744,7 +772,10 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
   var DATA = {
     beach:   INJ.beach   || MOCK_BEACH,
     score:   INJ.score   || MOCK_SCORE,
-    forecast:INJ.forecast|| MOCK_FORECAST,
+    // Honnêteté : en prod (INJ présent) on n'invente JAMAIS de prévision —
+    // si la donnée manque, tableau vide (le beat prévision se dégrade), pas de MOCK.
+    forecast:(Array.isArray(INJ.forecast) && INJ.forecast.length) ? INJ.forecast
+             : (window.__SG_BEACH__ ? [] : MOCK_FORECAST),
     nearby:  INJ.nearby  || MOCK_NEARBY,
     reliability: INJ.reliability || MOCK_RELIABILITY,
     updatedAt: INJ.updatedAt || "2026-06-16T09:24:01.239Z"
@@ -1169,10 +1200,15 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
     // STAGE 2
     $("eb2").textContent=T.eb2[LANG];
     setHeading($("m2aH"),T.m2aH[LANG]);
+    // AFAI : guard contre prévision absente — on n'affiche jamais un chiffre inventé.
+    var _afai0 = (DATA.forecast && DATA.forecast[0] && DATA.forecast[0].afai!=null) ? DATA.forecast[0].afai : null;
+    var _afaiFr = _afai0!=null ? "l'indice AFAI ("+_afai0+")" : "l'indice AFAI";
+    var _afaiEn = _afai0!=null ? "the AFAI index ("+_afai0+")" : "the AFAI index";
+    var _afaiEs = _afai0!=null ? "el índice AFAI ("+_afai0+")" : "el índice AFAI";
     $("m2aS").textContent=_t(
-      "Copernicus passe 4 fois par jour. On lit l'indice AFAI ("+DATA.forecast[0].afai+") au large de "+beachName()+".",
-      "Copernicus passes 4 times a day. We read the AFAI index ("+DATA.forecast[0].afai+") off "+beachName()+".",
-      "Copernicus pasa 4 veces al día. Leemos el índice AFAI ("+DATA.forecast[0].afai+") frente a "+beachName()+".");
+      "Copernicus passe 4 fois par jour. On lit "+_afaiFr+" au large de "+beachName()+".",
+      "Copernicus passes 4 times a day. We read "+_afaiEn+" off "+beachName()+".",
+      "Copernicus pasa 4 veces al día. Leemos "+_afaiEs+" frente a "+beachName()+".");
     setHeading($("m2bH"),T.m2bH[LANG]);
     buildFactors();
     setHeading($("m2cH"),T.m2cH[LANG]);
@@ -1232,7 +1268,7 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
       iris=$("iris"), irisTint=$("irisTint"), pupil=$("pupil"),
       catchB=$("catchB"), lidTop=$("lidTop"), lidBot=$("lidBot"),
       brow=$("brow"), halo=$("halo"), beamG=$("beamG"), beam=$("beam"),
-      scanRing=$("scanRing"), ant=$("ant"), rootStyle=document.documentElement.style;
+      scanRing=$("scanRing"), ant=$("ant"), rootStyle=SG_VAR_EL.style;
   var WIDE = window.matchMedia && window.matchMedia("(min-width:680px)").matches;
   var EYE_BASE = WIDE ? 172 : 198;
   var EYE = {x:400, y:EYE_BASE+5.2};
@@ -1249,7 +1285,7 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
     var dw=800*sc,dh=600*sc, ox=(r.width-dw)/2, oy=(r.height-dh)/2;
     return {x:(clientX-r.left-ox)/sc, y:(clientY-r.top-oy)/sc};
   }
-  function getCss(name){ var v=getComputedStyle(document.documentElement).getPropertyValue(name).trim(); return v||'#1FB6A6'; }
+  function getCss(name){ var v=getComputedStyle(SG_VAR_EL).getPropertyValue(name).trim(); return v||'#1FB6A6'; }
   function toHex(c){ c=c.trim(); if(c[0]==='#') return c.length===4?'#'+c[1]+c[1]+c[2]+c[2]+c[3]+c[3]:c;
     var m=c.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/); if(m){ return '#'+([1,2,3].map(function(i){return ('0'+parseInt(m[i]).toString(16)).slice(-2);}).join('')); } return '#1FB6A6'; }
   function mixCss(curr,target,t){ return mix(toHex(curr), toHex(target), t); }
@@ -1284,7 +1320,7 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
   /* ====================================================================
      MOTEUR SCROLL — --gp, --p{i}, --e{i}, dolly, humeur du stage.
      ==================================================================== */
-  var root=document.documentElement;
+  var root=SG_VAR_EL;
   var spans=[$("sp0"),$("sp1"),$("sp2"),$("sp3"),$("sp4"),$("sp5")];
   var copies=[$("bc0"),$("bc1"),$("bc2"),$("bc3"),$("bc4"),$("bc5")];
   var cam=$("cam"), vp=$("viewport"), scene=$("scene");
@@ -1315,6 +1351,7 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
   var fcCursor=0, fcCrossedFired=false;
   var SEA_TINT = {clean:"#1A5852", moderate:"#19453d", avoid:"#2c3b1a"};
   function applyForecastScrub(p){ /* p = progression du stage 3 (0..1) */
+    if(!DATA.forecast || !DATA.forecast.length) return; // prévision indisponible : pas de scrub
     // on autorise le scrub J0..J1 librement ; au-delà = locked (premium)
     var cont = p*2; // 0..2 sur la 1re moitié -> J0..J1
     var idx = clamp(Math.round(cont),0,6);
@@ -1344,9 +1381,9 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
   }
 
   function computeScroll(){
-    var scrollY=window.pageYOffset||document.documentElement.scrollTop;
+    var scrollY=sgScrollTop();
     var scroller=$("scroller");
-    var base=scroller.getBoundingClientRect().top+scrollY;
+    var base=sgScrollBase();
     var prog=[0,0,0,0,0,0], acc=base;
     for(var i=0;i<spans.length;i++){ var h=spans[i].offsetHeight; prog[i]=clamp((scrollY-acc)/h,0,1); acc+=h; }
     for(var j=0;j<6;j++){ root.style.setProperty("--p"+j, smooth(prog[j]).toFixed(4)); }
@@ -1524,11 +1561,11 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
     $("backBtn").addEventListener("click", function(){ onShowMap(); });
     $("freshPill").addEventListener("click", function(){ track("sg_scene_tap",{el:"fresh"}); });
     $("statusPill").addEventListener("click", function(){ onOpenBeach(DATA.beach.id, DATA.beach.name); });
-    $("ctaArrive").addEventListener("click", function(){ track("sg_cta",{src:"arrive"}); /* scroll vers la preuve */ window.scrollBy({top:window.innerHeight*1.05, behavior:"smooth"}); });
+    $("ctaArrive").addEventListener("click", function(){ track("sg_cta",{src:"arrive"}); /* scroll vers la preuve */ sgScrollBy(window.innerHeight*1.05); });
     $("scoreBlob").addEventListener("click", function(){ track("sg_scene_tap",{el:"scoreblob"}); });
-    $("ctaVerdict").addEventListener("click", function(){ window.scrollBy({top:window.innerHeight*1.1, behavior:"smooth"}); });
+    $("ctaVerdict").addEventListener("click", function(){ sgScrollBy(window.innerHeight*1.1); });
     $("regimeBox").addEventListener("click", function(){ track("sg_nav",{to:"/fiabilite/"}); /* EN PROD : /fiabilite/ */ });
-    $("ctaMethode").addEventListener("click", function(){ window.scrollBy({top:window.innerHeight*1.1, behavior:"smooth"}); });
+    $("ctaMethode").addEventListener("click", function(){ sgScrollBy(window.innerHeight*1.1); });
     $("ctaForecast").addEventListener("click", function(){ openPremium("forecast_cta"); });
     $("ctaH2S").addEventListener("click", function(){ openPremium("h2s_health_alert"); });
     $("ctaFooter").addEventListener("click", function(){ openPremium("footer"); });
@@ -1605,7 +1642,7 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
   function introProgress(){ return clamp((nowt()-t0)/3400,0,1); }
   function wake(){ if(!running && !paused){ running=true; requestAnimationFrame(loop); } }
 
-  window.addEventListener("scroll", function(){ needScroll=true; lastInput=nowt(); wake(); }, {passive:true});
+  SG_SCROLL_EL.addEventListener("scroll", function(){ needScroll=true; lastInput=nowt(); wake(); }, {passive:true});
   window.addEventListener("resize", function(){ sizeScroller(); needScroll=true; wake(); }, {passive:true});
   document.addEventListener("visibilitychange", function(){ paused=document.hidden; if(!paused){ needScroll=true; lastInput=nowt(); wake(); } });
 
