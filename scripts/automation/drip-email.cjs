@@ -321,7 +321,10 @@ function buildJ3(island, brief, email) {
       "No commitment · Cancel in 2 clicks · Reminder before you're billed",
       'Sin permanencia · Cancela en 2 clics · Aviso antes del cobro')
   const dateLong = new Date().toLocaleDateString(lang === 'es' ? 'es-MX' : lang === 'en' ? 'en-US' : 'fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
-  const ctaHref = brief.stripeBase ? stripeLink('j3_brief', brief.stripeBase) : `https://${domain}`
+  // CTA 100% on-site (?paywall=1) — termine la migration on-site (J7/J14/J21 le sont
+  // déjà). Débloque l'attribution : le front lit utm_source=email → metadata.source=
+  // deeplink_email côté create-checkout.php → le paiement remonte comme « venu d'un mail ».
+  const ctaHref = sitePaywall(domain, 'j3')
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
 <body style="margin:0;padding:0;background:#F7F5EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
@@ -583,7 +586,7 @@ function buildJ7Region(island, brief, email) {
     </div>
 
     <div style="text-align:center">
-      ${ctaButton(t('Become the watcher', 'Activar el vigía'), brief.stripeBase ? stripeLink('j7', brief.stripeBase) : `https://${domain}`)}
+      ${ctaButton(t('Become the watcher', 'Activar el vigía'), sitePaywall(domain, 'j7'))}
       <div style="font-size:11px;color:#999;margin-top:8px">${price}${t('/mo · No commitment · Cancel in 2 clicks', '/mes · Sin permanencia · Cancela en 2 clics')}</div>
     </div>
   </div>
@@ -646,7 +649,7 @@ function buildJ14Region(island, brief, email) {
     </div>
 
     <div style="text-align:center;margin-bottom:16px">
-      ${ctaButton(t('Get the watcher', 'Activar el vigía'), brief.stripeBase ? stripeLink('j14', brief.stripeBase) : `https://${domain}`)}
+      ${ctaButton(t('Get the watcher', 'Activar el vigía'), sitePaywall(domain, 'j14'))}
       <div style="font-size:11px;color:#999;margin-top:8px">${price}${t('/mo · cancel anytime · less than one beach chair', '/mes · cancela cuando quieras · menos que una silla de playa')}</div>
     </div>
 

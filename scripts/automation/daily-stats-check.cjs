@@ -12,6 +12,7 @@ const https = require('https')
 
 const STATS_URL = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec?action=stats'
 const FUNNEL_URL = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec?action=funnel'
+const EMAIL_STATS_URL = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec?action=email_stats'
 const METRICS_PATH = path.join(__dirname, 'data', 'daily-metrics.json')
 const SARG_PATH = path.join(__dirname, '../../public/api/copernicus/sargassum.json')
 
@@ -51,10 +52,24 @@ async function stripeTruth() {
     const act = await get('/v1/subscriptions?status=active&limit=100')
     const pd = await get('/v1/subscriptions?status=past_due&limit=100')
     const mrr = {}
+    // Attribution par source — metadata.source est posé par create-checkout.php
+    // (front : utm_source=email → openPremium → source 'deeplink_email' ; 'nav',
+    // 'alertes_landing'… pour les autres surfaces). Les subs antérieurs au checkout
+    // on-site (Payment Links legacy) n'ont pas de source → '(none)'. C'est la mesure
+    // « combien rapporte l'email » : ce KPI démarre à 0 et se remplit dès qu'une
+    // vente vient d'un clic mail (B, 2026-06-17). emailAttributed = floor (MRR en €,
+    // les passes one-time ne sont pas comptés ici — c'est de l'abonnement seulement).
+    const bySource = {}
+    let emailActive = 0, emailMrrEur = 0
     for (const s of act.data || []) {
       const pl = s.plan || s.items?.data?.[0]?.plan || {}
       const m = (pl.interval === 'year' ? (pl.amount || 0) / 12 : (pl.amount || 0)) / 100
       mrr[s.currency] = Math.round(((mrr[s.currency] || 0) + m) * 100) / 100
+      const src = (s.metadata && s.metadata.source) || '(none)'
+      if (!bySource[src]) bySource[src] = { active: 0, mrrEur: 0 }
+      bySource[src].active++
+      if (s.currency === 'eur') bySource[src].mrrEur = Math.round((bySource[src].mrrEur + m) * 100) / 100
+      if (/email/i.test(src)) { emailActive++; if (s.currency === 'eur') emailMrrEur = Math.round((emailMrrEur + m) * 100) / 100 }
     }
     // KPI checkout 30j roulants — abandon = revenu sur la table + signal friction.
     // Audit 2026-06-17 : le « plein de paiements bloqués » = SURTOUT de l'abandon de
@@ -98,6 +113,8 @@ async function stripeTruth() {
       pastDue: (pd.data || []).length,
       cancelScheduled: (act.data || []).filter(s => s.cancel_at_period_end).length,
       checkout,
+      bySource,
+      emailAttributed: { active: emailActive, mrrEur: emailMrrEur },
     }
   } catch { return null }
 }
@@ -154,6 +171,17 @@ async function main() {
   const funnel = await fetchJSON(FUNNEL_URL)
   if (funnel && !funnel.error) {
     console.log(`Funnel: ${funnel.session_start} sessions | ${funnel.premium_modal_open} modals | ${funnel.premium_modal_cta} CTA | ${funnel.checkout_redirect} redirects | ${funnel.email_submit} emails`)
+  }
+
+  // 1c. Engagement email (opens/clicks/bounces) — cumuls Resend via Apps Script.
+  // Jamais persisté jusqu'ici (check-email-status.cjs les jetait dans les logs CI).
+  // On les met EN SÉRIE : les deltas jour-à-jour = activité réelle de lecture/clic
+  // (B, 2026-06-17 — répondre à « qu'est-ce que l'email rapporte »).
+  console.log('Fetching email engagement from Apps Script...')
+  const emailStats = await fetchJSON(EMAIL_STATS_URL)
+  if (emailStats && !emailStats.error && emailStats.counts) {
+    const c = emailStats.counts, r = emailStats.rates || {}
+    console.log(`Email: ${c.opened}/${c.delivered} ouverts (${r.open ?? '–'}%) | ${c.clicked} clics (${r.click ?? '–'}%) | ${c.bounced} bounces`)
   }
 
   // 2. Check pipeline freshness
@@ -213,6 +241,16 @@ async function main() {
       revenueReal: funnel.revenue_real ?? null,
       rates: funnel.rates || null,
     } : lastKnown('funnel'),
+    // Engagement email (cumuls Resend) — carry-forward si le fetch échoue
+    email: emailStats && !emailStats.error && emailStats.counts ? {
+      sent: emailStats.counts.sent ?? null,
+      delivered: emailStats.counts.delivered ?? null,
+      opened: emailStats.counts.opened ?? null,
+      clicked: emailStats.counts.clicked ?? null,
+      bounced: emailStats.counts.bounced ?? null,
+      openRate: emailStats.rates?.open ?? null,
+      clickRate: emailStats.rates?.click ?? null,
+    } : lastKnown('email'),
     // Vérité Stripe (runs locaux seulement) — carry-forward dernière valeur connue
     stripe: (await stripeTruth()) || lastKnown('stripe'),
     // GA4 veille (runs CI seulement) — carry-forward dernière valeur connue
@@ -240,6 +278,18 @@ async function main() {
     if (prevCo?.completionRate != null && co.completionRate != null && co.completionRate < prevCo.completionRate - 5) {
       console.log(`⚠️  COMPLÉTION PAYMENT-LINK EN BAISSE: ${prevCo.completionRate}% -> ${co.completionRate}% (friction page hébergée ? voir scripts/analyze-failed-payments.cjs)`)
     }
+  }
+  // KPI ATTRIBUTION EMAIL (« qu'est-ce que l'email rapporte » — B). Démarre à 0,
+  // se remplit dès qu'une vente porte une source *email*. Détail : scripts/automation/email-roi.cjs
+  const att = curr.stripe?.emailAttributed
+  if (att) {
+    console.log(`Email attribué: ${att.active} abonné(s) actifs · €${att.mrrEur}/mois (source=*email* dans Stripe)`)
+    if (att.active === 0) console.log('  (encore 0 — normal : l\'attribution démarre au déploiement, les 15 abonnés actuels sont pré-on-site sans source)')
+  }
+  // Delta engagement email (clics ouverts depuis le dernier point connu)
+  const em = curr.email, pe = prev?.email
+  if (em && pe && em.clicked != null && pe.clicked != null && em.clicked > pe.clicked) {
+    console.log(`Email clics: ${pe.clicked} -> ${em.clicked} (+${em.clicked - pe.clicked}) | ouverts +${(em.opened ?? 0) - (pe.opened ?? 0)}`)
   }
   if (prev) {
     if (prev.payments != null && curr.payments != null && curr.payments > prev.payments) {
