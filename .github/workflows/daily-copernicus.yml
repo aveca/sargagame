@@ -176,6 +176,18 @@ jobs:
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
         run: node scripts/automation/recover-abandoned-cart.cjs --send --since-days=2
 
+      # Bienvenue PAYEURS (Part 2 onboarding) : email d'accueil aux nouveaux abonnés
+      # Stripe (active+trialing créés <14j), SANS CTA paywall (déjà payé). schedule-only
+      # (jamais workflow_dispatch — règle retry-spam) ; idempotent par hash
+      # (welcome-paid-sent.json committé plus bas) ; lit Stripe au runtime.
+      - name: Send paid-subscriber welcome emails (Resend)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+        run: node scripts/automation/welcome-paid.cjs --send
+
       # Support automatisé : excuses d'incident depuis data/incidents.json
       # (hashes RGPD, idempotent par destinataire, fenêtre 10-20 UTC interne
       # au script — jamais d'excuse à 2h du matin). Pour tout incident futur :
@@ -234,7 +246,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json; do
+          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json; do
             [ -f "$f" ] && git add "$f"
           done
           if git diff --cached --quiet; then echo "Email state unchanged."; exit 0; fi
