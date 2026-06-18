@@ -774,7 +774,11 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
 
   var DATA = {
     beach:   INJ.beach   || MOCK_BEACH,
-    score:   INJ.score   || MOCK_SCORE,
+    // Honnêteté : en prod (INJ présent) on n'invente JAMAIS de score. Si pas de
+    // score réel → objet vide (score null, pas de breakdown/forces) → les beats
+    // verdict/mesure se dégradent, JAMAIS le MOCK 69. (La plongée est en plus
+    // gatée aux plages avec score réel côté picker — ceci = ceinture+bretelles.)
+    score:   (window.__SG_BEACH__ ? (INJ.score || {score:null,label:"",breakdown:{},strengths:[],weaknesses:[]}) : MOCK_SCORE),
     // Honnêteté : en prod (INJ présent) on n'invente JAMAIS de prévision —
     // si la donnée manque, tableau vide (le beat prévision se dégrade), pas de MOCK.
     forecast:(Array.isArray(INJ.forecast) && INJ.forecast.length) ? INJ.forecast
@@ -890,7 +894,7 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
     eb5:    {fr:"CE QU'ILS EN DISENT", en:"WHAT THEY SAY", es:"LO QUE DICEN"},
     h5:     {fr:[["ON VEILLE"],["DÉJÀ POUR EUX"]], en:[["WE WATCH"],["FOR THEM ALREADY"]], es:[["YA VIGILAMOS"],["PARA ELLOS"]]},
     socialB:{fr:"« Plus jamais une route pour rien. »", en:"“Never a wasted drive again.”", es:"“Nunca más un viaje en vano.”"},
-    socialS:{fr:"58 voisins suivent leurs plages chaque matin.", en:"58 locals follow their beaches each morning.", es:"58 vecinos siguen sus playas cada mañana."},
+    socialS:{fr:"Des voisins consultent leurs plages chaque matin.", en:"Locals check their beaches every morning.", es:"Vecinos consultan sus playas cada mañana."},
     footCredit:{fr:"Données : Copernicus Marine · mesuré, pas deviné", en:"Data: Copernicus Marine · measured, not guessed", es:"Datos: Copernicus Marine · medido, no adivinado"},
     ctaFooterT:{fr:"Activer mon veilleur", en:"Turn on my watcher", es:"Activar mi vigía"},
     reassure:{fr:"Sans engagement — annulable en 1 clic.", en:"No commitment — cancel in one click.", es:"Sin compromiso — cancela en un clic."},
@@ -1217,11 +1221,23 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
     buildFactors();
     setHeading($("m2cH"),T.m2cH[LANG]);
     $("regimeT").textContent=T.regimeT[LANG];
-    $("regimePct").textContent=DATA.reliability.calm+"%"; $("regimePctL").textContent=T.regimePctL[LANG];
-    $("regimeS").textContent=_t(
-      "En saison calme, nos verdicts sont justes "+DATA.reliability.calm+"% du temps ("+DATA.reliability.sample+" mesures vérifiées).",
-      "In calm season our verdicts are right "+DATA.reliability.calm+"% of the time ("+DATA.reliability.sample+" verified readings).",
-      "En temporada calma acertamos el "+DATA.reliability.calm+"% ("+DATA.reliability.sample+" mediciones verificadas).");
+    // Garde-fou honnêteté : un % >=98 (ou nul/absurde) n'est PAS crédible pour une
+    // prévision (doctrine : ~79% saison calme). On masque le chiffre et on renvoie
+    // à la page fiabilité plutôt que d'afficher « 100% justes » (sur-claim).
+    var _rc=DATA.reliability && DATA.reliability.calm;
+    if(_rc==null || _rc>=98 || _rc<=0){
+      $("regimePct").textContent="—"; $("regimePctL").textContent="";
+      $("regimeS").textContent=_t(
+        "Fiabilité par régime en cours de calibration — détail honnête sur notre page fiabilité.",
+        "Per-regime reliability is being calibrated — full honest detail on our reliability page.",
+        "Fiabilidad por régimen en calibración — detalle honesto en nuestra página de fiabilidad.");
+    } else {
+      $("regimePct").textContent=_rc+"%"; $("regimePctL").textContent=T.regimePctL[LANG];
+      $("regimeS").textContent=_t(
+        "En saison calme, nos verdicts sont justes "+_rc+"% du temps ("+DATA.reliability.sample+" mesures vérifiées).",
+        "In calm season our verdicts are right "+_rc+"% of the time ("+DATA.reliability.sample+" verified readings).",
+        "En temporada calma acertamos el "+_rc+"% ("+DATA.reliability.sample+" mediciones verificadas).");
+    }
     $("regimeMore").textContent=T.regimeMore[LANG];
     $("ctaMethodeT").textContent=T.ctaMethodeT[LANG];
 
@@ -1543,7 +1559,7 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
      (EN PROD : recadre la caméra vers la plage voisine puis charge sa fiche). */
   function flyTo(b,idx){
     track("sg_fly_to",{from:DATA.beach.id, to:b.id});
-    onOpenBeach(b.id, b.name);
+    onOpenBeach(b.id, b.name, b.slug); /* slug = nav réelle vers /plages/<slug>/ (patché par build-fiche-dive) */
   }
 
   var scene=$("scene");

@@ -1471,6 +1471,7 @@ ${isGP ? `  <url><loc>${d}/meteo-sargasses-guadeloupe/</loc><lastmod>${today}</l
                   const km = _havKm(b.lat, b.lng, o.lat, o.lng)
                   return {
                     id: o.id, name: o.name, commune: o.commune,
+                    slug: o.slug || slugify(o.name), // nav réelle vers /plages/<slug>/ (onOpenBeach)
                     status: (heroLv(o)||{}).status || o.status,
                     score: (heroLv(o)||{}).score ?? null,
                     drive: km != null ? Math.max(5, Math.round(km / 40 * 60)) : o.drive,

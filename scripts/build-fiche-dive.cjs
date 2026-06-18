@@ -138,6 +138,17 @@ function extract () {
     `function onShowMap() { window.location.href = '/carte-sargasses/'; }`
   )
 
+  // Patch: onOpenBeach() — sinon les cartes Plan-B / halos voisins / status pill
+  // sont des CLICS MORTS (la proto ne fait que log). Navigation réelle vers la
+  // fiche voisine via son slug (injecté dans nearby) ; sans slug → carte.
+  ENGINE = ENGINE.replace(
+    /function onOpenBeach\([^)]*\)\s*\{[^\n]*\}/,
+    `function onOpenBeach(id, name, slug) {
+    try { track('sg_open_beach', { beach: id, name: name, src: 'fiche_nearby' }); } catch(e) {}
+    window.location.href = slug ? ('/plages/' + slug + '/') : '/carte-sargasses/';
+  }`
+  )
+
   // Patch: remove MOCK data block (will be provided by window.__SG_BEACH__ injection)
   // Keep the DATA = {...} line that reads from INJ first, MOCK as fallback is fine for resilience
 
@@ -159,6 +170,11 @@ function extract () {
   }
   if (!ENGINE.includes("?paywall=1")) {
     console.error('openPremium patch did NOT apply — check the regex vs proto signature')
+    process.exit(1)
+  }
+  // Guard: onOpenBeach must navigate (else Plan-B cards / nearby halos = dead clicks).
+  if (!ENGINE.includes("'/plages/' + slug + '/'")) {
+    console.error('onOpenBeach patch did NOT apply — Plan-B nearby clicks would be dead')
     process.exit(1)
   }
   // Guard: the debug track() (writes to the stripped #trackToast) must be gone,
