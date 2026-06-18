@@ -23,13 +23,24 @@ const dist = path.join(root, 'dist')
 // destructeur) et le public/version.json figé depuis avril sur MQ/GP. Source
 // unique synchronisée par scripts/sync-version.cjs (prebuild).
 function fleetVersion() {
+  // `b` = hash de build (posé par stamp-sw-hash.cjs dans dist/sw.js CACHE_NAME = sargasses-vNNN-<b>).
+  // ESSENTIEL : sans `b` dans le version.json DÉPLOYÉ, la garde de version page-level ne reload
+  // jamais sur un deploy de CODE (`current` ne bouge pas). prepare-ftp RÉGÉNÈRE version.json → il
+  // doit ré-injecter `b`, sinon le hash du stamp est perdu (bug « version grise coincée » 18/06).
+  let b
+  try {
+    const sw = fs.readFileSync(path.join(dist, 'sw.js'), 'utf-8')
+    const m = sw.match(/CACHE_NAME = 'sargasses-v\d+-([a-z0-9]+)'/)
+    if (m) b = m[1]
+  } catch (e) {}
   try {
     const n = JSON.parse(fs.readFileSync(path.join(root, 'public', 'release-notes.json'), 'utf-8'))
     const v = n.current
     const date = (n.releases && n.releases[0] && n.releases[0].date) || new Date().toISOString().slice(0, 10)
-    if (v) return { v, date }
+    if (v) return b ? { v, date, b } : { v, date }
   } catch (e) { console.warn('   ⚠ release-notes.json illisible, version.json fallback date:', e.message) }
-  return { v: new Date().toISOString().slice(0, 10), date: new Date().toISOString().slice(0, 10) }
+  const d = new Date().toISOString().slice(0, 10)
+  return b ? { v: d, date: d, b } : { v: d, date: d }
 }
 
 if (!fs.existsSync(dist)) {
