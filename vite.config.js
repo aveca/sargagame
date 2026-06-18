@@ -1500,6 +1500,10 @@ ${isGP ? `  <url><loc>${d}/meteo-sargasses-guadeloupe/</loc><lastmod>${today}</l
                   // overflow-y:auto + the scoped proto CSS (span vh-heights + sticky
                   // .viewport) is what lets the scroll-driven camera advance.
                   `#sg-fiche-dive{all:initial;position:fixed;inset:0;z-index:1200;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:#02060A;color:#EAF7F4;font-family:'Bricolage Grotesque',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}`,
+                  // all:initial + position:fixed blockifies display:inline→block, which
+                  // DEFEATS the UA [hidden]{display:none} — so the control arm would still
+                  // render the dive. Force hidden to win (higher specificity + !important).
+                  `#sg-fiche-dive[hidden]{display:none!important}`,
                   `#sg-fiche-dive *{box-sizing:border-box}`,
                   `</style>`,
                   // Scoped proto CSS (selectors prefixed under #sg-fiche-dive,
