@@ -10,12 +10,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # lychee ne déplie pas les <loc> d'un sitemap XML distant (→ "0 links" + failIfEmpty=exit 1).
+      # On extrait nous-mêmes les URLs du sitemap live et on les donne en liste à lychee.
+      - name: Extract URLs from live sitemap
+        run: |
+          curl -sSL https://sargasses-martinique.com/sitemap.xml \
+            | grep -oE '<loc>[^<]+</loc>' | sed -E 's@</?loc>@@g' > urls.txt
+          n=$(wc -l < urls.txt)
+          echo "Extracted $n URLs from sitemap"
+          if [ "$n" -eq 0 ]; then
+            echo "::error::Sitemap returned 0 URLs — site or sitemap unreachable"
+            exit 1
+          fi
       - name: Link Checker
+        id: lychee
         uses: lycheeverse/lychee-action@v2
         with:
-          args: --base https://sargasses-martinique.com "https://sargasses-martinique.com/sitemap.xml"
+          args: --no-progress --max-concurrency 4 urls.txt
+          fail: false
+          failIfEmpty: true
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - name: Fail if broken links found
         if: steps.lychee.outputs.exit_code != 0
-        run: exit 1
+        run: |
+          echo "::error::Broken links detected on sitemap pages (lychee exit ${{ steps.lychee.outputs.exit_code }})"
+          exit 1
