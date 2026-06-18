@@ -1181,6 +1181,21 @@ ${isGP ? `  <url><loc>${d}/meteo-sargasses-guadeloupe/</loc><lastmod>${today}</l
               clean: 'Anse Tarare à Saint-François (Guadeloupe) — plage propre en temps réel. Crique près de la Pointe des Châteaux, snorkeling, côte Atlantique de Grande-Terre. Carte sargasses Guadeloupe et prévisions 7 jours.',
               moderate: 'Sargasses à l\'Anse Tarare (Saint-François, Guadeloupe) — présence modérée détectée en temps réel. Près de la Pointe des Châteaux, côte Atlantique. Snorkeling. Carte et prévisions 7 jours.',
               avoid: 'Alerte sargasses à l\'Anse Tarare (Saint-François, Guadeloupe) — forte concentration côte Atlantique. Voir les plages propres à proximité de Saint-François sur la carte en temps réel.'
+            },
+            'Plage de Saint-Pierre': {
+              clean: 'Plage de Saint-Pierre (Martinique) — propre en temps réel. Sable noir au pied de la ville historique, côte Caraïbe, snorkeling sur les épaves de la baie. Généralement protégée des sargasses. Carte et prévisions 7 jours.',
+              moderate: 'Sargasses à la Plage de Saint-Pierre (Martinique) — présence modérée détectée en temps réel. Côte Caraïbe, sable noir, ville historique au pied de la Montagne Pelée. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à la Plage de Saint-Pierre (Martinique) — forte concentration détectée côte Caraïbe. Voir les plages propres du nord-ouest à proximité sur la carte en temps réel.'
+            },
+            'Anse Caritan': {
+              clean: 'Anse Caritan à Sainte-Anne (Martinique) — plage propre en temps réel. Côte Atlantique du sud de l\'île, eaux calmes et snorkeling, idéal familles. Carte sargasses Martinique et prévisions 7 jours.',
+              moderate: 'Sargasses à l\'Anse Caritan (Sainte-Anne, Martinique) — présence modérée détectée en temps réel. Côte Atlantique. Snorkeling, idéal familles. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à l\'Anse Caritan (Sainte-Anne, Martinique) — forte concentration côte Atlantique. Voir les plages propres à proximité des Salines sur la carte en temps réel.'
+            },
+            'Petite Plage Malendure': {
+              clean: 'Petite Plage Malendure à Bouillante (Guadeloupe) — propre en temps réel. Côte sous-le-vent, départ snorkeling vers la réserve Cousteau et les îlets Pigeon. Généralement protégée des sargasses. Prévisions 7 jours.',
+              moderate: 'Sargasses à la Petite Plage Malendure (Bouillante, Guadeloupe) — présence modérée détectée en temps réel. Côte sous-le-vent, réserve Cousteau. Snorkeling. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à la Petite Plage Malendure (Bouillante, Guadeloupe) — forte concentration détectée côte sous-le-vent. Voir les plages propres à proximité sur la carte en temps réel.'
             }
           }
           let sitemapMQBeaches = ''
