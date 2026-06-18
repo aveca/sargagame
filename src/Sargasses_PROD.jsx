@@ -11635,6 +11635,13 @@ export default function App(){
     const FALLBACK_MS=isStandalone?30000:60000
     const t=setTimeout(()=>{
       if(pushLoadedRef.current||recentlyDismissed)return
+      // Jamais de soft-ask à FROID : exiger un vrai signal d'engagement
+      // (≥1 fiche plage ouverte OU ≥1 favori). Sinon on promet des alertes sur
+      // des « favoris » inexistants au 1er paint et on brûle le cooldown 7j.
+      const opened=parseInt(sessionStorage.getItem("sg_beach_views")||"0",10)>0
+      const favs=g("sg_fav",[])
+      const hasFav=Array.isArray(favs)&&favs.length>0
+      if(!opened&&!hasFav)return
       setShowPushPrimer(true)
       track("sg_push_primer_shown",{trigger:"fallback_timer"})
     },FALLBACK_MS)
@@ -12566,7 +12573,9 @@ export default function App(){
     <LangCtx.Provider value={lang}>
       <StyleInjector/>
       <AbDebug/>
-      <h1 style={{position:"absolute",width:"1px",height:"1px",overflow:"hidden",clip:"rect(0,0,0,0)",whiteSpace:"nowrap"}}>{IS_NEW_REGION?(REGION.primaryLang==="es"?`Sargazo en ${REGION.name} en vivo — mapa de playas hoy`:`${REGION.name} sargassum live — beach map today`):island==="mq"?"Sargasses Martinique en temps réel — carte et plages aujourd'hui":"Sargasses Guadeloupe en temps réel — carte et plages aujourd'hui"}</h1>
+      {/* Mot-clé SEO sr-only — <p> (PAS <h1>) : la scène/route visible fournit déjà
+          l'unique <h1> ; deux <h1> = anti-pattern SEO + a11y. Texte reste crawlable. */}
+      <p style={{position:"absolute",width:"1px",height:"1px",overflow:"hidden",clip:"rect(0,0,0,0)",whiteSpace:"nowrap"}}>{IS_NEW_REGION?(REGION.primaryLang==="es"?`Sargazo en ${REGION.name} en vivo — mapa de playas hoy`:`${REGION.name} sargassum live — beach map today`):island==="mq"?"Sargasses Martinique en temps réel — carte et plages aujourd'hui":"Sargasses Guadeloupe en temps réel — carte et plages aujourd'hui"}</p>
       <div style={{position:"relative",width:"100%",height:"100%",overflow:"hidden"}}>
 
         {/* CHECKOUT RECOVERY BANNER */}
@@ -12952,8 +12961,13 @@ export default function App(){
         {/* LEARN VIEW — educational tunnel */}
         {view==="learn"&&<LearnView lang={lang} onBack={()=>setView("map")} onGoMap={()=>setView("map")}/>}
 
-        {/* BOTTOM NAV */}
-        <BottomNav view={view} onChangeView={onChangeView} lang={lang} premiumOpen={showPremium} glass={dockGlass} isPremium={isPremium}/>
+        {/* BOTTOM NAV — masquée pendant les takeovers plein écran (hero/landing/
+            world/fiche) qui la recouvrent (z>nav) et lui VOLAIENT les clics
+            (Premium/Carte/Plages inertes sous la scène). Pas masquée sur le
+            paywall : BottomNav reçoit premiumOpen et doit le refléter. */}
+        {!showHero&&!showPrevLanding&&!showWorld&&!selectedBeach&&(
+          <BottomNav view={view} onChangeView={onChangeView} lang={lang} premiumOpen={showPremium} glass={dockGlass} isPremium={isPremium}/>
+        )}
 
         {/* BOTTOM SHEET (beach detail) */}
         {selectedBeach&&beachDive&&(()=>{

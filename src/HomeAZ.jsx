@@ -171,10 +171,20 @@ export function initHomeAZ(SR, HOST, opts){
   function setHeroHeading(){
     var l2word=_t("AUJOURD'HUI","TODAY","HOY");
     var live=_t("EN DIRECT","LIVE","EN DIRECTO");
-    var lead, core;
-    if(LANG==="fr"){ var fr=frHeroLead(HOME.beach); lead=fr[0]; core=fr[1]; }
-    else { lead=_t("SARGASSES À","SARGASSUM AT","SARGAZO EN")+" "; core=beachName(); }
-    setHeading($("h0"), [[lead],[core.toUpperCase(),"pl"],[l2word+" — ", false]]);
+    var st=HOME.status||"clean";
+    var segs;
+    if(st==="clean"){
+      /* plage PROPRE : titrer le verdict réel — jamais « sargasses à … »,
+         qui contredisait le badge « PROPRE AUJOURD'HUI » juste en dessous. */
+      var bnc=(LANG==="fr"?HOME.beach:beachName()).toUpperCase();
+      segs=[[bnc,"pl"],[_t("PROPRE ","CLEAN ","LIMPIA ")+l2word+" — ", false]];
+    } else {
+      var lead, core;
+      if(LANG==="fr"){ var fr=frHeroLead(HOME.beach); lead=fr[0]; core=fr[1]; }
+      else { lead=_t("SARGASSES À","SARGASSUM AT","SARGAZO EN")+" "; core=beachName(); }
+      segs=[[lead],[core.toUpperCase(),"pl"],[l2word+" — ", false]];
+    }
+    setHeading($("h0"), segs);
     var el=$("h0"); if(el){ var sp=document.createElement("span"); sp.className="b"; sp.textContent=live; el.appendChild(sp); }
   }
   function setEyebrow0(){
@@ -521,7 +531,7 @@ export function initHomeAZ(SR, HOST, opts){
     if($("ctaMethode")) on($("ctaMethode"),"click",function(){ onOpenHero(); });
     if($("ctaPremium")) on($("ctaPremium"),"click",function(){ openPremium("landing_premium"); });
     if($("footPrem")) on($("footPrem"),"click",function(e){ e.preventDefault(); openPremium("footer"); });
-    if($("aboutLink")) on($("aboutLink"),"click",function(e){ e.preventDefault(); track("sg_nav",{to:"/a-propos/"}); try{window.location.assign("/a-propos/");}catch(_){} });
+    if($("aboutLink")) on($("aboutLink"),"click",function(){ track("sg_nav",{to:"/a-propos/"}); /* href natif fait la nav (middle-click/nouvel-onglet OK) */ });
     if($("verdictBadge")) on($("verdictBadge"),"click",function(){ track("sg_hero_tap",{t:"verdict"}); onOpenHero(); });
     var t3=$("top3");
     if(t3) on(t3,"click",function(e){

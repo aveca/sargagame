@@ -172,8 +172,8 @@ h1.head,h2.head{font-size:clamp(31px,8.4vw,50px);line-height:.98;color:#fff;marg
 .wordmark{font-family:'Anton',sans-serif;font-size:40px;line-height:.9;color:#fff;text-transform:uppercase;letter-spacing:-.02em;margin-bottom:10px}
 .foot-credit{font:600 12.5px/1.5 "Bricolage Grotesque";color:rgba(234,247,244,.7);margin-bottom:14px}
 .foot-links{display:flex;gap:18px;align-items:center}
-.foot-links a{font:800 12.5px/1 "Bricolage Grotesque";color:var(--ink);opacity:.8;text-decoration:none}
-.foot-links a.prem{color:var(--goldS);text-decoration:underline;text-underline-offset:3px}
+.foot-links a,.foot-links button{font:800 12.5px/1 "Bricolage Grotesque";color:var(--ink);opacity:.8;text-decoration:none;border:0;background:none;padding:0;cursor:pointer}
+.foot-links a.prem,.foot-links button.prem{color:var(--goldS);text-decoration:underline;text-underline-offset:3px}
 
 /* indicateur de scroll (hero) */
 .scrollhint{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:7;
@@ -702,8 +702,8 @@ h1.head,h2.head{font-size:clamp(31px,8.4vw,50px);line-height:.98;color:#fff;marg
           <div class="wordmark">SARGASSES</div>
           <div class="foot-credit" id="footCredit"></div>
           <div class="foot-links">
-            <a href="#" id="aboutLink"></a>
-            <a href="#" class="prem" id="footPrem" data-src="footer"></a>
+            <a href="/a-propos/" id="aboutLink"></a>
+            <button type="button" class="prem" id="footPrem" data-src="footer"></button>
           </div>
         </div>
       </div>
