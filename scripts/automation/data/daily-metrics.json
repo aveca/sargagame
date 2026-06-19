@@ -993,7 +993,7 @@
   },
   {
     "date": "2026-06-19",
-    "time": "2026-06-19T15:22:19.892Z",
+    "time": "2026-06-19T19:54:39.424Z",
     "payments": 11,
     "revenue": 54.89,
     "emails": 213,
@@ -1001,9 +1001,9 @@
     "avgRating": 4,
     "pipelineOk": true,
     "funnel": {
-      "sessions": 26341,
-      "lockClicks": 144,
-      "modalOpens": 3428,
+      "sessions": 26457,
+      "lockClicks": 143,
+      "modalOpens": 3405,
       "modalCta": 77,
       "sampleStarts": 0,
       "emailSubmits": 64,
@@ -1062,8 +1062,8 @@
     "ga4": {
       "date": "2026-06-18",
       "mq": {
-        "sessions": 285,
-        "users": 3135
+        "sessions": 287,
+        "users": 3233
       },
       "gp": {
         "sessions": 247,
