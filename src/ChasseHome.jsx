@@ -433,6 +433,13 @@ export default function ChasseHome(props){
   const collFiltered=useMemo(()=>{ const qq=q.trim().toLowerCase()
     return collList.filter(b=>(filt==="all"||b.status===filt)&&(!qq||(b.name||"").toLowerCase().includes(qq)))
   },[collList,q,filt])
+  /* fiabilité publique (track-record) — confiance honnête, écran v2 #24 */
+  const [trackRec,setTrackRec]=useState(null)
+  useEffect(()=>{ let ok=true; fetch("/api/copernicus/track-record.json").then(r=>r.json()).then(d=>{if(ok)setTrackRec(d)}).catch(()=>{}); return()=>{ok=false} },[])
+  const reliab=useMemo(()=>{ try{ const r=trackRec; if(!r||!r.byRegime)return null
+    const best=Object.values(r.byRegime).filter(x=>x&&x.cleanSamples>0&&x.cleanReliabilityPct).sort((a,b)=>b.cleanSamples-a.cleanSamples)[0]
+    return best?{pct:Math.round(best.cleanReliabilityPct),n:best.cleanSamples}:null
+  }catch(_){return null} },[trackRec])
 
   const dayV = beach ? vof(beach.status) : VERDICT.clean
   const vedRare = beach ? rarity(beach.score).cls : "r-com"   /* rareté de la vedette (tension du pull) */
@@ -617,6 +624,21 @@ export default function ChasseHome(props){
                   : _t({fr:"Déjà joué aujourd'hui — reviens demain.",en:"Already played today — come back tomorrow.",es:"Ya jugaste hoy — vuelve mañana."})}</p>
               </>
             )}
+          </div>
+        </section>
+      )}
+
+      {/* ---- FIABILITÉ DU VEILLEUR (track-record honnête) ---- */}
+      {reliab&&(
+        <section className="lc-reliab">
+          <div className="lc-eyebrow lc-center">{_t({fr:"FIABILITÉ DU VEILLEUR",en:"WATCHMAN RELIABILITY",es:"FIABILIDAD DEL VIGÍA"})}</div>
+          <div className="lc-reliab-card">
+            <div className="lc-reliab-pct">{reliab.pct}<small>%</small></div>
+            <div className="lc-reliab-bar"><div className="lc-reliab-fill" style={{width:reliab.pct+"%"}}/></div>
+            <p className="lc-sub lc-center">{_t({
+              fr:reliab.n.toLocaleString("fr-FR")+" prévisions « mer propre » vérifiées au satellite · registre public",
+              en:reliab.n.toLocaleString("en-US")+" “clean water” forecasts satellite-verified · public record",
+              es:reliab.n.toLocaleString("es-ES")+" pronósticos « agua limpia » verificados · registro público"})}</p>
           </div>
         </section>
       )}
@@ -832,6 +854,14 @@ const CSS=`
 .lc-defi-cur b{font-family:"AntonLC",system-ui,sans-serif;font-size:18px;letter-spacing:.3px;text-transform:uppercase}
 .lc-defi-sc{font-family:"AntonLC",system-ui,sans-serif;font-size:26px;color:#fff;background:var(--grn);border:2.5px solid var(--ink);border-radius:9px;padding:2px 11px;box-shadow:2px 2px 0 var(--ink);text-shadow:1.5px 1.5px 0 var(--ink)}
 .lc-defi-card .lc-sub{margin:9px 0 12px;color:#2a2536;font-weight:700}
+/* fiabilité du Veilleur (jauge track-record) */
+.lc-reliab{max-width:520px;margin:22px auto 0;text-align:center}
+.lc-reliab-card{margin-top:10px;background:var(--paper);border:3px solid var(--ink);border-radius:16px;padding:16px 16px 14px;box-shadow:0 5px 0 var(--ink),0 12px 22px rgba(13,11,20,.32)}
+.lc-reliab-pct{font-family:"AntonLC",system-ui,sans-serif;font-size:46px;line-height:.9;color:var(--grn);text-shadow:2px 2px 0 var(--ink)}
+.lc-reliab-pct small{font-size:22px}
+.lc-reliab-bar{height:14px;margin:10px 0;border:2.5px solid var(--ink);border-radius:10px;background:#fff;overflow:hidden;box-shadow:2px 2px 0 var(--ink);forced-color-adjust:none}
+.lc-reliab-fill{height:100%;background:linear-gradient(90deg,#3fd98a,var(--grn));border-right:2px solid var(--ink)}
+.lc-reliab-card .lc-sub{margin:6px 0 0;color:#2a2536;font-weight:700;font-size:12.5px}
 /* capture email (funnel) — case comic claire */
 .lc-capture{max-width:520px;margin:18px auto 0}
 .lc-cap-card{background:var(--paper);border:3px solid var(--ink);border-radius:16px;padding:14px 15px;box-shadow:0 5px 0 var(--ink),0 12px 22px rgba(13,11,20,.32)}
