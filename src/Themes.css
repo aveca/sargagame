@@ -45,14 +45,23 @@ body.theme-comic{
   background:linear-gradient(115deg,transparent 30%,rgba(255,0,170,.22) 42%,rgba(0,200,255,.22) 50%,rgba(120,255,90,.22) 58%,transparent 70%);
   background-size:280% 280%;mix-blend-mode:screen;animation:cmFoil 5.5s linear infinite}
 @keyframes cmFoil{0%{background-position:0 0}100%{background-position:280% 280%}}
-.theme-comic button,.theme-comic .sg-cta,.theme-comic [class*="cta"],.theme-comic [role="button"]{
-  font-family:"Anton","Bricolage Grotesque",sans-serif !important;letter-spacing:.5px;
+/* boutons génériques / lignes cliquables = carte PAPIER encrée (PAS rouge — feedback
+   fondateur "cartes rouges moches"). Le rouge est réservé aux VRAIS CTA primaires. */
+.theme-comic button,.theme-comic [role="button"]{
+  font-family:"Bricolage Grotesque",sans-serif !important;
   border:3px solid var(--sg-ink) !important;border-radius:11px !important;
-  box-shadow:4px 4px 0 var(--sg-ink) !important;text-shadow:1.5px 1.5px 0 rgba(13,11,20,.55);
-  color:#fff;background:linear-gradient(180deg,#ff5a4f,#e8322a) !important;
+  box-shadow:3px 3px 0 var(--sg-ink) !important;
+  color:var(--sg-ink) !important;background:var(--sg-card) !important;text-shadow:none !important;
+}
+/* CTA primaires uniquement → rouge comic punchy */
+.theme-comic .sg-cta,.theme-comic [class*="cta"],.theme-comic button[type="submit"],
+.theme-comic .sg-modal-panel button{
+  font-family:"Anton","Bricolage Grotesque",sans-serif !important;letter-spacing:.5px;
+  text-shadow:1.5px 1.5px 0 rgba(13,11,20,.55) !important;
+  color:#fff !important;background:linear-gradient(180deg,#ff5a4f,#e8322a) !important;
 }
 .theme-comic button:active,.theme-comic .sg-cta:active,.theme-comic [role="button"]:active{
-  box-shadow:0 0 0 var(--sg-ink) !important;transform:translate(4px,4px) !important}
+  box-shadow:0 0 0 var(--sg-ink) !important;transform:translate(3px,3px) !important}
 .theme-comic .sg-bottom-nav{background:var(--sg-card) !important;border-top:3px solid var(--sg-ink) !important}
 .theme-comic .sheet-handle{background:var(--sg-ink) !important;opacity:.85}
 
