@@ -239,30 +239,43 @@ export default function ChasseHome(props){
       const next={...prev,collected:[...prev.collected,b.id]}; saveState(next); return next })
   },[])
 
-  /* duel : deviner le verdict de la carte du jour */
+  /* BOOSTER DU JOUR — 3 cartes, stables sur la journée (offset = index du jour).
+     La VEDETTE (carte révélée en dernier) = la plage du hero ; +2 plages
+     bonus piochées dans la région. Disposées en éventail, vedette devant. */
+  const packBeaches = useMemo(()=>{
+    if(!beach) return []
+    const pool=(pickBeaches||[]).filter(b=>b&&b.id&&b.id!==beach.id&&b.status&&b.score!=null)
+    const doy=Math.floor(Date.now()/864e5)
+    const bonus=[]
+    for(let k=0;k<2&&pool.length;k++){ bonus.push(pool[(doy*2+k)%pool.length]) }
+    return [beach,...bonus]   /* [vedette, g, d] */
+  },[beach,pickBeaches])
+
+  /* duel : devine le verdict de la VEDETTE → ouvre le booster (les 3 cartes) */
   const guess=useCallback((status)=>{
     if(revealed||!beach) return
     const real=beach.status||"clean"
     const ok = (status===real)
-    const v=vof(real)
     setOutcome(ok?"win":"lose")
-    setMood(v.mood)
+    setMood(vof(real).mood)
     setRevealed(true)
     /* série : +1 si bien vu ET (premier jeu ou enchaîné depuis hier), sinon repart à 1 (win) / 0 (lose) */
     const cont = st.last===yesterdayKey()||st.last===todayKey()
     let streak = ok ? ( (st.last===null||cont) ? st.streak+1 : 1 ) : 0
     const best=Math.max(st.best,streak)
-    const coll = beach.id&&!st.collected.includes(beach.id) ? [...st.collected,beach.id] : st.collected
+    /* on collectionne TOUT le pack (vedette + bonus) */
+    const ids=packBeaches.map(b=>b&&b.id).filter(Boolean)
+    const coll=[...st.collected]; ids.forEach(id=>{ if(!coll.includes(id)) coll.push(id) })
     persist({...st, streak, best, last:todayKey(), played:todayKey(), guessOk:ok, collected:coll})
-    if(track) try{ track("sg_chasse_guess",{correct:ok?1:0,guess:status,real,streak}) }catch(_){}
-  },[revealed,beach,st,persist,track])
+    if(track) try{ track("sg_chasse_guess",{correct:ok?1:0,guess:status,real,streak,pack:ids.length}) }catch(_){}
+  },[revealed,beach,st,persist,track,packBeaches])
 
-  /* liste collection (sans la carte du jour, triée par score) */
+  /* POKÉDEX — toutes les plages de la région (collectées en couleur, sinon grisées) */
   const collList = useMemo(()=>{
-    const seen=new Set(beach?[beach.id]:[])
-    return (pickBeaches||[]).filter(b=>b&&b.id&&!seen.has(b.id)&&b.status&&b.score!=null)
-      .sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,24)
-  },[pickBeaches,beach])
+    return (pickBeaches||[]).filter(b=>b&&b.id&&b.status&&b.score!=null)
+      .sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,90)
+  },[pickBeaches])
+  const dexTotal = useMemo(()=>(pickBeaches||[]).filter(b=>b&&b.id&&b.status&&b.score!=null).length,[pickBeaches])
 
   const dayV = beach ? vof(beach.status) : VERDICT.clean
   const dateLbl = useMemo(()=>{
@@ -296,9 +309,27 @@ export default function ChasseHome(props){
         <div className="lc-eyebrow lc-center">{revealed?_t(I18N.reveal):_t(I18N.guessTitle)}</div>
         {!revealed && <p className="lc-sub">{_t(I18N.guessSub)}</p>}
 
-        {beach ? (
-          <div className="lc-stage">
-            {revealed&&(
+        {!beach ? <div className="lc-fanwrap"/> : !revealed ? (
+          <>
+            {/* PACK FERMÉ */}
+            <div className="lc-pack">
+              <div className="lc-pack-shine" aria-hidden="true"/>
+              <div className="lc-pack-top"><Veilleur mood="scan" size={84}/></div>
+              <div className="lc-pack-lbl">{_t({fr:"PACK DU JOUR",en:"DAILY PACK",es:"PACK DEL DÍA"})}</div>
+              <div className="lc-pack-count">{_t({fr:"3 cartes à révéler",en:"3 cards to reveal",es:"3 cartas por revelar"})}</div>
+            </div>
+            <div className="lc-guesses">
+              {["clean","moderate","avoid"].map(s=>(
+                <button key={s} type="button" className={`lc-gbtn s-${vof(s).st}`} onClick={()=>guess(s)}>
+                  {_t(I18N.guessBtn[s])}
+                </button>
+              ))}
+            </div>
+            <div className="lc-backnote lc-rip">{_t({fr:"devine la vedette → ouvre ton booster",en:"guess the star → rip your booster",es:"adivina la estrella → abre tu sobre"})}</div>
+          </>
+        ) : (
+          <>
+            <div className="lc-fanwrap">
               <svg className={`lc-burst s-${dayV.st}`} viewBox="0 0 300 300" aria-hidden="true">
                 {Array.from({length:18}).map((_,i)=>{
                   const a=(i/18)*Math.PI*2, x1=150+Math.cos(a)*70, y1=150+Math.sin(a)*70,
@@ -306,48 +337,35 @@ export default function ChasseHome(props){
                   return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} strokeWidth={i%2?6:10}/>
                 })}
               </svg>
-            )}
-          <div className={"lc-flip"+(revealed?" is-rev":"")}>
-            <div className="lc-flip-inner">
-              {/* dos de carte */}
-              <div className="lc-face lc-front">
-                <div className="lc-back-art">
-                  <Veilleur mood="scan" size={92}/>
-                  <div className="lc-back-q">?</div>
-                </div>
-                <div className="lc-back-lbl">{beach.name}</div>
-              </div>
-              {/* recto révélé */}
-              <div className="lc-face lc-rear">
-                <TCard beach={beach} lang={lang} rot={-1.5} onTap={()=>{ if(track)try{track("sg_chasse_card_open",{beach_id:beach.id,which:"day"})}catch(_){}; onOpen&&onOpen() }}/>
+              <div className="lc-fan">
+                {packBeaches.map((b,i)=>{
+                  const fan=[{r:0,x:0,z:3,d:.55},{r:-13,x:-60,z:1,d:0},{r:13,x:60,z:2,d:.27}][i]||{r:0,x:0,z:1,d:0}
+                  return (
+                    <div className="lc-fancard" key={b.id||i}
+                      style={{"--d":fan.d+"s",zIndex:fan.z,
+                        transform:`translateX(calc(-50% + ${fan.x}px)) rotate(${fan.r}deg)`}}>
+                      {i===0&&<span className={`lc-pow s-${dayV.st} lc-verdictpow`}><b>{outcome==="win"?_t(I18N.win):_t(I18N.lose)}</b></span>}
+                      <TCard beach={b} lang={lang}
+                        onTap={()=>{ if(track)try{track("sg_chasse_card_open",{beach_id:b.id,which:i===0?"day":"pack"})}catch(_){};
+                          i===0 ? (onOpen&&onOpen()) : (collect(b),onOpenBeach&&onOpenBeach(b)) }}/>
+                    </div>
+                  )
+                })}
               </div>
             </div>
-          </div>
-          </div>
-        ) : <div className="lc-flip"/>}
-
-        {!revealed ? (
-          <div className="lc-guesses">
-            {["clean","moderate","avoid"].map(s=>(
-              <button key={s} type="button" className={`lc-gbtn s-${vof(s).st}`} onClick={()=>guess(s)}>
-                {_t(I18N.guessBtn[s])}
+            <div className="lc-result">
+              <div className={"lc-streakup"+(outcome==="win"?" win":"")}>
+                {outcome==="win"
+                  ? _t({fr:"+1 · série "+st.streak+" 🔥",en:"+1 · streak "+st.streak+" 🔥",es:"+1 · racha "+st.streak+" 🔥"})
+                  : _t({fr:"série à 0 — la vedette était "+_t(dayV),en:"streak reset — the star was "+_t(dayV),es:"racha a 0 — la estrella era "+_t(dayV)})}
+              </div>
+              <button type="button" className="lc-cta yel"
+                onClick={()=>{ if(track)try{track("sg_chasse_card_open",{beach_id:beach?.id,which:"cta"})}catch(_){}; onOpen&&onOpen() }}>
+                {_t(I18N.openBeach)}
               </button>
-            ))}
-          </div>
-        ) : (
-          <div className="lc-result">
-            <span className={`lc-pow s-${dayV.st} lc-verdictpow`}><b>{outcome==="win"?_t(I18N.win):_t(I18N.lose)}</b></span>
-            <div className={"lc-streakup"+(outcome==="win"?" win":"")}>
-              {outcome==="win"
-                ? _t({fr:"+1 · série "+st.streak+" 🔥",en:"+1 · streak "+st.streak+" 🔥",es:"+1 · racha "+st.streak+" 🔥"})
-                : _t({fr:"série remise à 0 — verdict "+_t(dayV),en:"streak reset — verdict "+_t(dayV),es:"racha a 0 — veredicto "+_t(dayV)})}
+              <div className="lc-backnote">{_t(I18N.back)}</div>
             </div>
-            <button type="button" className="lc-cta yel"
-              onClick={()=>{ if(track)try{track("sg_chasse_card_open",{beach_id:beach?.id,which:"cta"})}catch(_){}; onOpen&&onOpen() }}>
-              {_t(I18N.openBeach)}
-            </button>
-            <div className="lc-backnote">{_t(I18N.back)}</div>
-          </div>
+          </>
         )}
       </section>
 
@@ -355,7 +373,7 @@ export default function ChasseHome(props){
       <section className="lc-coll">
         <div className="lc-coll-h">
           <div className="lc-eyebrow">{_t(I18N.collTitle)}</div>
-          <div className="lc-coll-sub">{(I18N.collSub[lang]||I18N.collSub.fr)(collSet.size,(pickBeaches||[]).length||collList.length)}</div>
+          <div className="lc-coll-sub">{(I18N.collSub[lang]||I18N.collSub.fr)(collSet.size,dexTotal||collList.length)}</div>
         </div>
         <div className="lc-grid">
           {collList.map((b,i)=>(
@@ -530,6 +548,39 @@ const CSS=`
 .lc-maplink{display:inline-block;margin-top:16px;font-weight:800;font-size:13px;color:#fff;background:none;border:none;
   text-decoration:underline;text-shadow:1px 1px 0 rgba(13,11,20,.5);cursor:pointer}
 .lc-veil .lc-iris{transition:fill .6s ease}
+
+/* ---- BOOSTER : pack fermé ---- */
+.lc-pack{position:relative;width:210px;aspect-ratio:5/7;margin:16px auto 0;border-radius:18px;border:3px solid var(--ink);
+  box-shadow:0 8px 0 rgba(13,11,20,.4),0 14px 26px rgba(13,11,20,.45);overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  background:linear-gradient(160deg,#8a55e8,#6a3bc0 45%,#4f2a99);cursor:default}
+.lc-pack-top{filter:drop-shadow(2px 3px 0 rgba(13,11,20,.5))}
+.lc-pack-lbl{font-family:"AntonLC",system-ui,sans-serif;font-size:24px;line-height:.95;color:#fff;
+  text-shadow:3px 3px 0 var(--ink);text-align:center;letter-spacing:.5px;transform:rotate(-2deg)}
+.lc-pack-count{font:800 11px/1 "Comic Neue",system-ui,sans-serif;color:var(--ink);background:var(--yel);
+  border:2.5px solid var(--ink);border-radius:20px;padding:4px 11px;box-shadow:2px 2px 0 var(--ink)}
+.lc-pack-shine{position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.45) 48%,transparent 58%);
+  background-size:280% 280%;mix-blend-mode:screen;animation:lc-foil 3.2s linear infinite}
+.lc-reduce .lc-pack-shine{animation:none;opacity:.3}
+.lc-rip{margin-top:12px;display:block;text-align:center}
+
+/* ---- BOOSTER : éventail de 3 cartes au reveal ---- */
+.lc-fanwrap{position:relative;width:100%;max-width:360px;margin:14px auto 0}
+.lc-fan{position:relative;width:100%;height:300px;z-index:1}
+.lc-fancard{position:absolute;top:0;left:50%;width:160px;transform-origin:bottom center;
+  animation:lc-fanin .5s cubic-bezier(.2,1.2,.3,1) both;animation-delay:var(--d)}
+.lc-fancard .lc-card{width:100%}
+.lc-reduce .lc-fancard{animation:none}
+@keyframes lc-fanin{0%{opacity:0;transform:translateX(-50%) translateY(26px) scale(.55) rotate(0)}}
+.lc-fancard .lc-verdictpow{top:-14px;right:-8px}
+
+/* ---- holo renforcé sur épique / légendaire ---- */
+.lc-root .lc-card.r-epic::after{opacity:1}
+.lc-root .lc-card.r-leg::after{opacity:1}
+.lc-card.r-leg .lc-in::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(circle at 30% 18%,rgba(255,255,255,.55),transparent 42%);mix-blend-mode:screen}
+.lc-card.lc-locked::after{animation:none;opacity:0}
 
 /* ====================================================================
    OVERRIDES — le thème comic de l'app force background/border/shadow en
