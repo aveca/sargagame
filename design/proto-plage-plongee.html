@@ -420,12 +420,17 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
           </radialGradient>
           <filter id="soft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="7"/></filter>
           <filter id="softS" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3"/></filter>
+          <!-- COMIC : trame halftone Ben-Day (texture BD), réutilisée en overlay -->
+          <pattern id="cmHalf" width="9" height="9" patternUnits="userSpaceOnUse">
+            <circle cx="2.2" cy="2.2" r="1.5" fill="#0d0b14" opacity=".12"/>
+          </pattern>
         </defs>
 
         <!-- ===== CIEL ===== -->
         <g class="lyr-sky">
           <rect x="-40" y="-40" width="880" height="420" fill="url(#sky)"/>
           <rect x="-40" y="-40" width="880" height="420" fill="url(#warmG)"/>
+          <rect x="-40" y="-40" width="880" height="420" fill="url(#cmHalf)"/>
           <!-- soleil : glisse J0→J6 au scrub (translateX via #sunGroup) + monte au scroll -->
           <g id="sunGroup">
             <!-- halo : cercles PLEINS empilés (pas de paint-server SVG) — immunise
@@ -453,6 +458,8 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
         <!-- ===== MER ===== -->
         <g class="lyr-sea">
           <rect x="-40" y="300" width="880" height="260" fill="url(#sea)"/>
+          <rect x="-40" y="300" width="880" height="260" fill="url(#cmHalf)"/>
+          <line x1="-40" y1="300" x2="840" y2="300" stroke="#0d0b14" stroke-width="3" opacity=".55"/>
           <!-- grain raster satellite (révélé au sous-beat "satellite scanne") -->
           <g id="rasterGrain" opacity="0">
             <line x1="0" y1="320" x2="800" y2="320" stroke="#5FD3C9" stroke-width="1"/>
@@ -511,7 +518,8 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
         <!-- ===== SABLE ===== -->
         <g class="lyr-sand">
           <path d="M-40 482 Q300 450 840 500 L840 600 L-40 600 Z" fill="url(#land)"/>
-          <path d="M-40 482 Q300 450 840 500" fill="none" stroke="#FFD884" stroke-width="1.6" opacity=".24"/>
+          <path d="M-40 482 Q300 450 840 500" fill="none" stroke="#0d0b14" stroke-width="3" opacity=".5"/>
+          <path d="M-40 482 Q300 450 840 500" fill="none" stroke="#FFD884" stroke-width="1.4" opacity=".3"/>
           <!-- amas échoués sur le sable (state avoid/moderate) injecté par JS dans #shoreStateG -->
           <g id="shoreStateG"></g>
           <!-- badge H2S gradué ancré sur l'amas (stage 4) -->

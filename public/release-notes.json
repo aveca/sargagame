@@ -13,9 +13,9 @@
       "items": [
         {
           "emoji": "🎴",
-          "fr": "L'app passe à son nouvel habillage cartes/comic. Bouton 🎨 pour changer de thème quand tu veux.",
-          "en": "The app moves to its new card/comic look. 🎨 button to switch themes anytime.",
-          "es": "La app estrena su nuevo look cartas/comic. Botón 🎨 para cambiar de tema."
+          "fr": "L'app teste son nouvel habillage (cartes/comic & version claire). Le tunnel de paiement reste identique.",
+          "en": "The app is testing its new look (card/comic & a light version). Checkout is unchanged.",
+          "es": "La app prueba su nuevo look (cartas/comic y una versión clara). El pago no cambia."
         }
       ]
     },

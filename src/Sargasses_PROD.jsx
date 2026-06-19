@@ -11830,6 +11830,7 @@ export default function App(){
   const THEMES = useMemo(()=>([
     {id:"golden", label:"Golden hour",  emoji:"🌅"},
     {id:"comic",  label:"Comic / TCG",  emoji:"🎴"},
+    {id:"soft",   label:"Soft Modern",  emoji:"🫧"},
     {id:"manga",  label:"Manga N&B",    emoji:"🖊️"},
     {id:"arcade", label:"Arcade néon",  emoji:"🕹️"},
     {id:"sticker",label:"Sticker kawaii",emoji:"🌈"},
@@ -11842,11 +11843,12 @@ export default function App(){
       if(/[?&]comic=1/.test(q)) return "comic";
       const saved=localStorage.getItem("sg_ui_theme");
       if(saved && THEMES.some(t=>t.id===saved)) return saved;
-      // 100% ARENA (comic) = nouveau défaut pour TOUT LE MONDE. L'ancien golden est retiré
-      // comme défaut (reste accessible via ?theme=golden / picker). Les futurs A/B se font
-      // DANS la nouvelle version (copy paywall, layout carte…), plus golden-vs-comic.
+      // A/B LIVE "skin_v2" — golden ABANDONNÉ : 100% des visiteurs ont un skin.
+      //   B = comic (skin cartes/BD actuel) · A = soft (Soft Modern clair, CTA teal).
+      //   50/50, paywall exclu des deux. Override : ?theme=comic / ?theme=soft.
+      if(typeof abVariant==="function"){ try{ return abVariant("skin_v2",["comic","soft"],[.5,.5]); }catch(_){} }
       return "comic";
-    }catch(_){ return "golden"; }
+    }catch(_){ return "comic"; }
   },[THEMES])
   const[uiTheme,setUiTheme]=useState(initialTheme)
   useEffect(()=>{
@@ -11861,29 +11863,9 @@ export default function App(){
   // A/B `theme_nudge` (control vs nudge) : le FAB "pulse" 1× pour mesurer l'ADOPTION des thèmes
   // sans rien forcer. Events trackés : ui_theme_view (exposition) + ui_theme_pick (choix).
   // Résolution à ~24h via scripts/resolve-theme-ab.cjs (cf. design/themes-lab-src/AB-THEMES.md).
-  useEffect(()=>{
-    if(typeof document==="undefined") return;
-    try{ if(/[?&]themes=0/.test(window.location.search)) return; }catch(_){}
-    let nudge=false;
-    try{ nudge = (typeof abVariant==="function") && abVariant("theme_nudge",["control","nudge"],[.5,.5])==="nudge"; }catch(_){}
-    try{ if(typeof track==="function") track("ui_theme_view",{theme:uiTheme,nudge:nudge?1:0}); }catch(_){}
-    const fab=document.createElement("button"); fab.className="sg-theme-fab"+(nudge?" pulse":""); fab.setAttribute("aria-label","Changer de thème"); fab.textContent="🎨";
-    const menu=document.createElement("div"); menu.className="sg-theme-menu";
-    THEMES.forEach(function(t){
-      const b=document.createElement("button"); b.className="sg-theme-opt"; b.setAttribute("data-theme",t.id);
-      const e=document.createElement("span"); e.className="e"; e.textContent=t.emoji; b.appendChild(e);
-      b.appendChild(document.createTextNode(t.label));
-      b.addEventListener("click",function(){
-        THEMES.forEach(function(x){ if(x.id!=="golden") document.body.classList.remove("theme-"+x.id); });
-        setUiTheme(t.id); menu.classList.remove("open");
-        try{ if(typeof track==="function") track("ui_theme_pick",{theme:t.id,nudge:nudge?1:0}); }catch(_){}
-      });
-      menu.appendChild(b);
-    });
-    fab.addEventListener("click",function(){ menu.classList.toggle("open"); fab.classList.remove("pulse"); });
-    document.body.appendChild(fab); document.body.appendChild(menu);
-    return function(){ try{ fab.remove(); menu.remove(); }catch(_){} };
-  },[THEMES])
+  // 🎨 PICKER RETIRÉ (demande fondateur : "ça sert à rien, on fait LE thème"). Pas de sélecteur.
+  // Le thème est appliqué directement via l'A/B (comic vs arena2). theme_nudge abandonné.
+  // useEffect retiré volontairement.
 
   // A/B `clean_list` : /plages-sans-sargasses/ scene golden-hour + rail clean beaches.
   // Override ?clean_list=1/0. Control = app/carte generique (comportement actuel).
