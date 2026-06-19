@@ -23,6 +23,7 @@ $days = max(1, min(30, (int)($_GET['days'] ?? 7)));
 $regionFilter = isset($_GET['region']) ? preg_replace('/[^a-z0-9_-]/', '', strtolower((string)$_GET['region'])) : '';
 $dir  = __DIR__ . '/sg-data';
 $sessions = array(); // sid -> dernier résumé (dédoublonnage)
+$W = array('total'=>0,'byHost'=>array(),'byBeach'=>array(),'last'=>null); // installs widget B2B (embed)
 
 // Étapes du funnel conversion (ordre) — les rates par région se calculent dessus.
 // Source de vérité = noms d'events track() de l'app (audit 2026-06-14).
@@ -37,6 +38,17 @@ for ($i = 0; $i < $days; $i++) {
     $r = json_decode($l, true);
     if (!is_array($r) || !isset($r['d']) || !is_array($r['d'])) continue;
     $d = $r['d'];
+    // Installs widget B2B (embed) : agrégés à part, jamais comptés comme sessions/funnel.
+    if (($d['type'] ?? '') === 'widget') {
+      $wh = preg_replace('/[^a-z0-9.\-]/', '', strtolower((string)($d['host'] ?? '(direct)')));
+      if ($wh === '') $wh = '(direct)';
+      $wb = preg_replace('/[^a-z0-9\-]/', '', strtolower((string)($d['beach'] ?? '')));
+      $W['total']++;
+      $W['byHost'][$wh] = ($W['byHost'][$wh] ?? 0) + 1;
+      if ($wb !== '') $W['byBeach'][$wb] = ($W['byBeach'][$wb] ?? 0) + 1;
+      $W['last'] = $r['rt'] ?? $W['last'];
+      continue;
+    }
     $sid = $d['sid'] ?? null;
     if (!$sid) continue;
     $sessions[$sid] = $d;
@@ -208,5 +220,17 @@ foreach ($abx as $test => $vars) {
   uasort($row, function($x, $y){ return $y['sessions'] - $x['sessions']; });
   $out['ab_breakdown'][$test] = $row;
 }
+
+// INSTALLS WIDGET B2B : combien de chargements, depuis quels DOMAINES hôtes (= qui nous
+// embarque), pour quelles plages. distinctHosts = nombre de sites tiers qui affichent le widget.
+arsort($W['byHost']);
+arsort($W['byBeach']);
+$out['widget'] = array(
+  'total'        => $W['total'],
+  'distinctHosts'=> count($W['byHost']),
+  'byHost'       => $W['byHost'],
+  'byBeach'      => $W['byBeach'],
+  'last'         => $W['last'],
+);
 
 echo json_encode($out, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);

@@ -141,6 +141,18 @@ body.dark{--card:#10202b;--ink:#fff;--mid:#9fb2bd;--line:rgba(255,255,255,.12)}
   var base = isLocal ? "" : prodHome;          // base API (relatif en local)
   var home = base || prodHome;                 // lien "Sargasses →" jamais vide
 
+  // Ping d'install FIRST-PARTY (anonyme, no PII) : 1×/session, dit quel DOMAINE hôte
+  // embarque le widget + quelle plage → détecte l'adoption B2B. Same-origin, fire-and-forget.
+  function pingInstall(beach){
+    try{ if(sessionStorage.getItem("sgw"))return; sessionStorage.setItem("sgw","1"); }catch(_){}
+    try{
+      var refHost="(direct)";
+      try{ if(document.referrer) refHost=(new URL(document.referrer).hostname)||"(direct)"; }catch(_){}
+      var body=JSON.stringify({type:"widget",ev:"load",beach:beach,host:refHost,lang:lang});
+      if(navigator.sendBeacon) navigator.sendBeacon(base+"/collect.php", new Blob([body],{type:"application/json"}));
+    }catch(_){}
+  }
+
   function relAge(updatedAt){
     var ms = Date.now() - new Date(updatedAt).getTime();
     if (!(ms>=0)) return null;
@@ -198,6 +210,7 @@ body.dark{--card:#10202b;--ink:#fff;--mid:#9fb2bd;--line:rgba(255,255,255,.12)}
       fc.style.display = "";
     }
     $("card").setAttribute("aria-label", label+" : "+(T[status]||status)+(fresh?(", "+T.live):""));
+    pingInstall(sargId);   // signal d'adoption B2B (1×/session)
   }
 
   function load(){
