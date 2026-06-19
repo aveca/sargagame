@@ -50,10 +50,37 @@ function rarity(score){
   return            {cls:"r-com", lbl:{fr:"COMMUNE",en:"COMMON",es:"COMÚN"},         stars:"★★☆☆☆"}
 }
 
+/* emoji-type : varie le visuel même entre plages « propres » */
+function typeEmoji(b){
+  if(b.status==="avoid") return "⚠️"
+  if(b.snorkel) return "🐠"
+  if(b.status==="moderate") return "🌬️"
+  if((b.score||0)>=88) return "🌴"
+  return "🌊"
+}
+
+/* n° de carte (depuis l'id : mq016 → 016) */
+function cardNum(b){ const m=b&&b.id&&String(b.id).match(/(\d+)/); return m?m[1].padStart(3,"0"):"—" }
+
+/* « pouvoirs » = vraies caractéristiques de la plage (mesuré, pas deviné) */
+function powers(b,lang){
+  const _t=(o)=>o[lang]||o.fr
+  const out=[]
+  if(b.status==="avoid") out.push(["☠",_t({fr:"Sargasses +++",en:"Sargassum +++",es:"Sargazo +++"})])
+  else if(b.status==="moderate") out.push(["👁",_t({fr:"À surveiller",en:"Watch it",es:"Vigilar"})])
+  if(b.snorkel) out.push(["🤿",_t({fr:"Snorkeling",en:"Snorkeling",es:"Snorkel"})])
+  if(b.kids) out.push(["👶",_t({fr:"Familles",en:"Families",es:"Familias"})])
+  if(b.parking) out.push(["🅿️",_t({fr:"Parking",en:"Parking",es:"Parking"})])
+  if(b.drive!=null&&isFinite(b.drive)) out.push(["🚗",_t({fr:"à "+b.drive+" min",en:b.drive+" min away",es:"a "+b.drive+" min"})])
+  if(!out.length) out.push(["≈",_t({fr:"Eau calme",en:"Calm water",es:"Agua tranquila"})])
+  return out.slice(0,2)
+}
+
 /* ---- illustration golden-hour (portée de comic-cartes.html, en JSX) ---- */
-function Illu({st,uid}){
+function Illu({st,uid,score=0}){
   const sea = st==="bad" ? "#7a8a4a" : st==="mod" ? "#3a8f86" : "#2bb6a6"
   const gid = "lcg"+uid
+  const top = score>=85   /* plages d'exception → oiseaux + soleil franc */
   return (
     <svg viewBox="0 0 200 96" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
       <defs><linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
@@ -79,6 +106,11 @@ function Illu({st,uid}){
         <g fill="#6b4a26" stroke="#0d0b14" strokeWidth="1" opacity=".9">
           <ellipse cx="80" cy="80" rx="16" ry="5"/><ellipse cx="120" cy="86" rx="20" ry="6"/>
           <ellipse cx="150" cy="80" rx="13" ry="4"/>
+        </g>
+      )}
+      {top&&(
+        <g stroke="#0d0b14" strokeWidth="1.6" fill="none" strokeLinecap="round" opacity=".75">
+          <path d="M96 26 q5 -4 10 0 q5 -4 10 0"/><path d="M120 34 q4 -3 8 0 q4 -3 8 0"/>
         </g>
       )}
     </svg>
@@ -118,6 +150,8 @@ function TCard({beach,lang,onTap,rot=0,collected=true}){
   const v=vof(beach.status), r=rarity(beach.score)
   const uid=beach.id||Math.random().toString(36).slice(2,7)
   const _t=(o)=>o[lang]||o.fr
+  const sc=beach.score!=null?Math.round(beach.score):null
+  const pw=powers(beach,lang)
   return (
     <button type="button" className={`lc-card ${r.cls} ${collected?"":"lc-locked"}`} style={{"--rot":rot+"deg"}}
       onClick={onTap} aria-label={beach.name}>
@@ -125,16 +159,21 @@ function TCard({beach,lang,onTap,rot=0,collected=true}){
       <span className="lc-in">
         <span className={`lc-bn s-${v.st}`}>
           <span className="lc-nm">{beach.name}</span>
-          <span className="lc-sc">{beach.score!=null?Math.round(beach.score):"—"}</span>
+          <span className="lc-sc">{sc!=null?sc:"—"}</span>
+          <span className="lc-ty">{typeEmoji(beach)}</span>
         </span>
-        <span className="lc-illu"><Illu st={v.st} uid={uid}/>
+        <span className="lc-hp" aria-hidden="true"><span className={`lc-hpfill s-${v.st}`} style={{width:(sc||0)+"%"}}/></span>
+        <span className="lc-illu"><Illu st={v.st} score={sc||0} uid={uid}/>
           <span className="lc-rar">{r.stars} {_t(r.lbl)}</span></span>
         <span className="lc-bd">
-          <span className="lc-atk"><span className="lc-atkt">{beach.commune||_t({fr:"Plage",en:"Beach",es:"Playa"})}</span>
-            <span className="lc-atkv">{_t(v)}</span></span>
-          <span className="lc-ft"><span>{_t({fr:"Score du jour = PV",en:"Today's score = HP",es:"Puntaje = PV"})}</span><span>Copernicus</span></span>
+          {pw.map(([e,t],i)=>(
+            <span className="lc-atk" key={i}><span className="lc-atke">{e}</span>
+              <span className="lc-atkt">{t}</span></span>
+          ))}
+          <span className="lc-ft"><span>N° {cardNum(beach)}</span><span>{beach.commune||"Copernicus"}</span></span>
         </span>
       </span>
+      {!collected&&<span className="lc-collect">{_t({fr:"COLLECTER",en:"COLLECT",es:"COLECCIONAR"})}</span>}
     </button>
   )
 }
@@ -258,6 +297,16 @@ export default function ChasseHome(props){
         {!revealed && <p className="lc-sub">{_t(I18N.guessSub)}</p>}
 
         {beach ? (
+          <div className="lc-stage">
+            {revealed&&(
+              <svg className={`lc-burst s-${dayV.st}`} viewBox="0 0 300 300" aria-hidden="true">
+                {Array.from({length:18}).map((_,i)=>{
+                  const a=(i/18)*Math.PI*2, x1=150+Math.cos(a)*70, y1=150+Math.sin(a)*70,
+                        x2=150+Math.cos(a)*150, y2=150+Math.sin(a)*150
+                  return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} strokeWidth={i%2?6:10}/>
+                })}
+              </svg>
+            )}
           <div className={"lc-flip"+(revealed?" is-rev":"")}>
             <div className="lc-flip-inner">
               {/* dos de carte */}
@@ -274,6 +323,7 @@ export default function ChasseHome(props){
               </div>
             </div>
           </div>
+          </div>
         ) : <div className="lc-flip"/>}
 
         {!revealed ? (
@@ -287,6 +337,11 @@ export default function ChasseHome(props){
         ) : (
           <div className="lc-result">
             <span className={`lc-pow s-${dayV.st} lc-verdictpow`}><b>{outcome==="win"?_t(I18N.win):_t(I18N.lose)}</b></span>
+            <div className={"lc-streakup"+(outcome==="win"?" win":"")}>
+              {outcome==="win"
+                ? _t({fr:"+1 · série "+st.streak+" 🔥",en:"+1 · streak "+st.streak+" 🔥",es:"+1 · racha "+st.streak+" 🔥"})
+                : _t({fr:"série remise à 0 — verdict "+_t(dayV),en:"streak reset — verdict "+_t(dayV),es:"racha a 0 — veredicto "+_t(dayV)})}
+            </div>
             <button type="button" className="lc-cta yel"
               onClick={()=>{ if(track)try{track("sg_chasse_card_open",{beach_id:beach?.id,which:"cta"})}catch(_){}; onOpen&&onOpen() }}>
               {_t(I18N.openBeach)}
@@ -372,10 +427,24 @@ const CSS=`
   text-transform:uppercase;letter-spacing:.4px;padding:0 10px}
 .lc-rear{transform:rotateY(180deg);align-items:stretch;justify-content:center}
 .lc-rear .lc-card{width:100%}
+.lc-stage{position:relative;width:230px;margin:14px auto 0}
+.lc-stage .lc-flip{margin-top:0}
+.lc-burst{position:absolute;top:50%;left:50%;width:420px;height:420px;transform:translate(-50%,-50%);z-index:0;
+  pointer-events:none;animation:lc-burstin .55s cubic-bezier(.2,1.1,.3,1) both}
+.lc-burst line{stroke:#0d0b14;opacity:.22;stroke-linecap:round}
+.lc-burst.s-ok line{stroke:#19a85f;opacity:.5}.lc-burst.s-mod line{stroke:#e08a1e;opacity:.5}.lc-burst.s-bad line{stroke:#d8351f;opacity:.5}
+.lc-stage .lc-flip{position:relative;z-index:1}
+.lc-reduce .lc-burst{animation:none;opacity:.4}
+@keyframes lc-burstin{0%{transform:translate(-50%,-50%) scale(.2) rotate(-30deg);opacity:0}
+  60%{opacity:.8}100%{transform:translate(-50%,-50%) scale(1) rotate(0);opacity:.6}}
+.lc-streakup{font-family:"AntonLC",system-ui,sans-serif;font-size:15px;letter-spacing:.4px;color:#fff;
+  background:rgba(13,11,20,.65);border:2.5px solid var(--ink);border-radius:20px;padding:5px 14px;
+  text-shadow:1.5px 1.5px 0 var(--ink);box-shadow:3px 3px 0 var(--ink)}
+.lc-streakup.win{background:linear-gradient(180deg,#3fd98a,var(--grn))}
 
 /* boutons guess */
 .lc-guesses{display:flex;gap:8px;max-width:340px;margin:16px auto 0}
-.lc-gbtn{flex:1;font-family:"AntonLC",system-ui,sans-serif;font-size:13px;letter-spacing:.3px;color:#fff;
+.lc-gbtn{-webkit-appearance:none;appearance:none;flex:1;font-family:"AntonLC",system-ui,sans-serif;font-size:13px;letter-spacing:.3px;color:#fff;
   border:3px solid var(--ink);border-radius:11px;padding:11px 6px;text-shadow:1.5px 1.5px 0 rgba(13,11,20,.6);
   box-shadow:3px 3px 0 var(--ink);cursor:pointer;transition:transform .08s}
 .lc-gbtn:active{transform:translateY(3px);box-shadow:0 0 0 var(--ink)}
@@ -415,10 +484,20 @@ const CSS=`
 .lc-card.r-com::after{opacity:.35}.lc-card.r-rare::after{opacity:.7}
 .lc-reduce .lc-card::after{animation:none}
 @keyframes lc-foil{0%{background-position:0 0}100%{background-position:280% 280%}}
-.lc-card.lc-locked{filter:saturate(.55) brightness(.94)}
-.lc-card.lc-locked::before{content:"+";position:absolute;z-index:4;top:50%;left:50%;transform:translate(-50%,-50%);
-  font-family:"AntonLC",system-ui,sans-serif;font-size:30px;color:#fff;text-shadow:2px 2px 0 var(--ink);
-  background:rgba(13,11,20,.55);width:46px;height:46px;border-radius:50%;display:grid;place-items:center;border:2.5px solid #fff}
+.lc-card.lc-locked .lc-in{filter:saturate(.32) brightness(.9) contrast(.95)}
+.lc-card.lc-locked::before{content:"";position:absolute;inset:6px;z-index:3;border-radius:9px;pointer-events:none;
+  background:repeating-linear-gradient(45deg,rgba(13,11,20,.16) 0 9px,rgba(13,11,20,.04) 9px 18px)}
+.lc-collect{position:absolute;z-index:5;bottom:14px;left:50%;transform:translateX(-50%) rotate(-3deg);
+  font-family:"AntonLC",system-ui,sans-serif;font-size:11px;letter-spacing:1px;color:var(--ink);
+  background:var(--yel);border:2.5px solid var(--ink);border-radius:7px;padding:4px 10px;box-shadow:2px 2px 0 var(--ink);white-space:nowrap}
+.lc-ty{flex:0 0 auto;width:22px;height:22px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;
+  font-size:12px;background:radial-gradient(circle at 35% 30%,#fff,#cfeafe)}
+.lc-hp{display:block;height:7px;background:rgba(13,11,20,.18);border-bottom:2px solid var(--ink)}
+.lc-hpfill{display:block;height:100%}
+.lc-hpfill.s-ok{background:linear-gradient(90deg,#3fd98a,var(--grn))}
+.lc-hpfill.s-mod{background:linear-gradient(90deg,#ffd569,var(--org))}
+.lc-hpfill.s-bad{background:linear-gradient(90deg,#ff8a6a,var(--red))}
+.lc-atke{flex:0 0 auto;width:18px;text-align:center;font-size:12px}
 .lc-in{position:relative;z-index:2;display:block;border:2px solid var(--ink);border-radius:9px;overflow:hidden;background:var(--paper)}
 .lc-bn{display:flex;align-items:center;gap:5px;padding:5px 7px;border-bottom:2.5px solid var(--ink)}
 .lc-bn.s-ok{background:linear-gradient(90deg,#2bb6a6,#0f7d72)}
@@ -451,4 +530,25 @@ const CSS=`
 .lc-maplink{display:inline-block;margin-top:16px;font-weight:800;font-size:13px;color:#fff;background:none;border:none;
   text-decoration:underline;text-shadow:1px 1px 0 rgba(13,11,20,.5);cursor:pointer}
 .lc-veil .lc-iris{transition:fill .6s ease}
+
+/* ====================================================================
+   OVERRIDES — le thème comic de l'app force background/border/shadow en
+   !important sur TOUT <button> / [role=button] / [class*=cta]. Mes cartes
+   et boutons SONT des <button> → on regagne la main avec une spécificité
+   supérieure (préfixe .lc-root) + !important, sinon rareté & couleurs
+   sautent (cartes cream, verdicts blancs).
+   ==================================================================== */
+.lc-root .lc-gbtn{font-family:"AntonLC",system-ui,sans-serif!important;border-radius:11px!important}
+.lc-root .lc-gbtn.s-ok{background:linear-gradient(180deg,#3fd98a,var(--grn))!important}
+.lc-root .lc-gbtn.s-mod{background:linear-gradient(180deg,#ffd569,var(--org))!important;color:var(--ink)}
+.lc-root .lc-gbtn.s-bad{background:linear-gradient(180deg,#ff6a4a,var(--red))!important}
+.lc-root .lc-card{border-radius:14px!important;
+  box-shadow:0 6px 0 rgba(13,11,20,.35),0 10px 20px rgba(13,11,20,.4)!important}
+.lc-root .lc-card.r-com{background:linear-gradient(135deg,#dfe6ea,#bfcad2 60%,#eef2f4)!important}
+.lc-root .lc-card.r-rare{background:linear-gradient(135deg,#bfe3ff,#5fb6e8 55%,#dff2ff)!important}
+.lc-root .lc-card.r-epic{background:linear-gradient(135deg,#e9d3ff,#a86fe0 55%,#f3e8ff)!important}
+.lc-root .lc-card.r-leg{background:linear-gradient(135deg,#ffe79a,#f6b73c 28%,#fff3c4 52%,#e0962a 74%,#ffe79a)!important}
+.lc-root .lc-cta{border-radius:12px!important;box-shadow:4px 4px 0 var(--ink)!important}
+.lc-root .lc-maplink{background:none!important;border:none!important;box-shadow:none!important;
+  font-family:inherit!important;border-radius:0!important}
 `
