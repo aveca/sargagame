@@ -5999,7 +5999,7 @@ function SeasonBanner({lang}){
 // plan/setPlan/effectivePlan) du PremiumModal parent → ZÉRO logique de paiement ici.
 // Tokens .lc- (paper/ink/yel) + scène golden-hour + cases BD, miroir de ChasseDetail.
 // Asset validé : design/proto-paywall-comic.html (vérifié navigateur 2026-06-19).
-function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxStatus,cleanCount,totalCount,seasonMsg,plan,setPlan,effectivePlan,hasAnnual,onStart,onAlready,onClose}){
+function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxStatus,cleanCount,totalCount,recordProof,seasonMsg,plan,setPlan,effectivePlan,hasAnnual,onStart,onAlready,onClose}){
   const ST=ctxStatus||(beach&&beach.status)||null
   const stCls=ST==="avoid"?"bad":ST==="moderate"?"mod":"ok"
   const iris=ST==="avoid"?"#e8322a":ST==="moderate"?"#ffd23f":"#27c46b"
@@ -6010,6 +6010,18 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
   const pMo=REGION_PAY?PRICE_MO:(lang==="en"?"€4.99":"4,99 €")
   const pYr=REGION_PAY?PRICE_YR:(lang==="en"?"€39.99":"39,99 €")
   const eqMo=(()=>{const raw=REGION_PAY?PRICE_YR:"39.99";const n=parseFloat(String(raw).replace(/[^0-9.,]/g,"").replace(",","."));if(!n)return null;const sym=(String(raw).match(/[€$£]/)||["€"])[0];const e=(n/12).toFixed(2).replace(".",lang==="fr"?",":".");return _t(lang,`soit ${e} ${sym}/mois`,`${sym}${e}/mo`,`${sym}${e}/mes`)})()
+  // Ancrage prix « par jour » dérivé du prix réellement présélectionné (annuel si
+  // dispo, sinon mensuel) — recalculé depuis les MÊMES strings que le toggle, zéro
+  // hardcode devise. « moins qu'un café » = ancrage de référence quotidien.
+  const perDay=(()=>{
+    const useYr=effectivePlan==="annual"
+    const raw=useYr?(REGION_PAY?PRICE_YR:"39.99"):(REGION_PAY?PRICE_MO:"4.99")
+    const n=parseFloat(String(raw).replace(/[^0-9.,]/g,"").replace(",","."));if(!n)return null
+    const sym=(String(raw).match(/[€$£]/)||["€"])[0]
+    const per=(n/(useYr?365:30))
+    const d=(per<1?per.toFixed(2):per.toFixed(2)).replace(".",lang==="fr"?",":".")
+    return _t(lang,`soit ${d} ${sym}/jour · moins qu'un café`,`just ${sym}${d}/day · less than a coffee`,`solo ${sym}${d}/día · menos que un café`)
+  })()
   const ctaSub=NO_TRIAL
     ?_t(lang,`${effectivePlan==="annual"?pYr+"/an":pMo+"/mois"} · annulable en 2 clics`,`${effectivePlan==="annual"?pYr+"/yr":pMo+"/mo"} · cancel anytime`,`${effectivePlan==="annual"?pYr+"/año":pMo+"/mes"} · cancela cuando quieras`)
     :_t(lang,"7 jours offerts, puis "+(effectivePlan==="annual"?pYr+"/an":pMo+"/mois"),"7 days free, then "+(effectivePlan==="annual"?pYr+"/yr":pMo+"/mo"),"7 días gratis, luego "+(effectivePlan==="annual"?pYr+"/año":pMo+"/mes"))
@@ -6057,6 +6069,11 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
       .pwx-line{display:block;font-size:14.5px;font-weight:800;color:var(--ink);line-height:1.2}
       .pwx-meta{display:block;font-size:11.5px;font-weight:700;color:#5a5566;margin-top:3px}
       .pwx-proof{text-align:center;font-size:11.5px;font-weight:700;color:#0d2330;margin:4px 0 14px;opacity:.85}
+      .pwx-record{display:flex;align-items:center;gap:9px;margin:6px 0 14px;padding:9px 12px;border-radius:12px;background:rgba(39,196,107,.13);border:2.5px solid var(--ink);box-shadow:3px 3px 0 var(--ink)}
+      .pwx-record .pwx-rdot{color:var(--grn);font-size:11px;flex:0 0 auto;filter:drop-shadow(0 0 3px rgba(39,196,107,.7))}
+      .pwx-record b{display:block;font-size:11.5px;font-weight:800;color:var(--ink);line-height:1.25}
+      .pwx-record em{display:block;font-style:normal;font-size:10.5px;font-weight:700;color:#1f3a28;margin-top:2px}
+      .pwx-perday{text-align:center;font-size:11.5px;font-weight:800;color:var(--yel);margin-top:9px;letter-spacing:.2px}
       .pwx-act{margin:2px -22px 0;padding:16px 22px 22px;background:linear-gradient(180deg,rgba(13,11,20,0),rgba(13,11,20,.06) 8%,#0d0b14 26%);border-radius:18px 18px 0 0}
       .pwx-plans{display:flex;gap:9px;margin-bottom:13px}
       .pwx-plan{flex:1;border:2.5px solid var(--ink);border-radius:12px;padding:10px 8px;cursor:pointer;position:relative;background:var(--paper);color:var(--ink);box-shadow:2px 2px 0 var(--ink);font-family:inherit;forced-color-adjust:none}
@@ -6131,9 +6148,13 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
           wkend?_t(lang,`Samedi : ${wkend.name}`,`Saturday: ${wkend.name}`,`El sábado: ${wkend.name}`):_t(lang,"Samedi : ta meilleure plage","Saturday: your top beach","El sábado: tu mejor playa"),
           wkend?(wkend.allClean?_t(lang,`Propre tout le weekend${wkend.kids?" · idéal enfants":""}`,`Clean all weekend${wkend.kids?" · great for kids":""}`,`Limpia todo el finde${wkend.kids?" · ideal niños":""}`):_t(lang,"Calculé depuis la prévision 7 jours","From the 7-day forecast","Según el pronóstico de 7 días")):_t(lang,"Calculé depuis la prévision 7 jours","From the 7-day forecast","Según el pronóstico de 7 días"))}
 
-        {totalCount>0&&<div className="pwx-proof">{cleanCount>0
-          ?_t(lang,`${cleanCount}/${totalCount} plages propres en ce moment · satellite 4×/jour`,`${cleanCount}/${totalCount} beaches clean right now · satellite 4×/day`,`${cleanCount}/${totalCount} playas limpias ahora · satélite 4×/día`)
-          :_t(lang,`${totalCount} plages suivies · satellite 4×/jour · prévision 7 jours`,`${totalCount} beaches tracked · satellite 4×/day · 7-day forecast`,`${totalCount} playas · satélite 4×/día · pronóstico 7 días`)}</div>}
+        {/* Preuve au point de décision : le PALMARÈS auditable (note + volume +
+            registre public) > snapshot du jour. « mesuré au satellite, pas deviné ». */}
+        {recordProof
+          ?<div className="pwx-record"><span className="pwx-rdot">●</span><span><b>{recordProof}</b><em>{_t(lang,"Mesuré au satellite, pas deviné.","Measured by satellite, not guessed.","Medido por satélite, no adivinado.")}</em></span></div>
+          :totalCount>0&&<div className="pwx-proof">{cleanCount>0
+            ?_t(lang,`${cleanCount}/${totalCount} plages propres en ce moment · satellite 4×/jour`,`${cleanCount}/${totalCount} beaches clean right now · satellite 4×/day`,`${cleanCount}/${totalCount} playas limpias ahora · satélite 4×/día`)
+            :_t(lang,`${totalCount} plages suivies · satellite 4×/jour · prévision 7 jours`,`${totalCount} beaches tracked · satellite 4×/day · 7-day forecast`,`${totalCount} playas · satélite 4×/día · pronóstico 7 días`)}</div>}
 
         <div className="pwx-act">
           {hasAnnual&&<div className="pwx-plans">
@@ -6141,9 +6162,10 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
             {planBtn("annual",_t(lang,"Annuel","Annual","Anual"),pYr,_t(lang,"an","yr","año"),"-33%",eqMo)}
           </div>}
           <button type="button" className="pwx-cta" onClick={onStart}>
-            <span className="big">{_t(lang,"Activer mon Veilleur →","Turn on my Watcher →","Activar mi Vigía →")}</span>
+            <span className="big">{_t(lang,"Je veux la prévision →","I want the forecast →","Quiero el pronóstico →")}</span>
             <span className="sm">{ctaSub}</span>
           </button>
+          {perDay&&<div className="pwx-perday">{perDay}</div>}
           <div className="pwx-trust">
             <div className="pwx-tc"><span className="ic">🛡</span><b>Stripe</b><em>{_t(lang,"Paiement sécurisé","Secure payment","Pago seguro")}</em></div>
             <div className="pwx-tc"><span className="ic">⏱</span><b>{_t(lang,"30 jours","30 days","30 días")}</b><em>{_t(lang,"Satisfait ou remboursé","Money-back","Reembolso")}</em></div>
@@ -6747,6 +6769,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         {pwComic&&<ComicPaywall lang={lang} beach={beach} source={source}
           topName={_topName} topScore={_topScore} exSwitch={_exSwitch} wkend={_wkend}
           ctxName={_ctxName} ctxStatus={_ctxStatus} cleanCount={_cleanCount} totalCount={_totalCount}
+          recordProof={_recordProof}
           seasonMsg={seasonMsg} plan={plan} setPlan={setPlan} effectivePlan={effectivePlan} hasAnnual={hasAnnual}
           onStart={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown",skin:"comic"});startCheckout(effectivePlan,"comic")}}
           onAlready={verifyExistingSub}
