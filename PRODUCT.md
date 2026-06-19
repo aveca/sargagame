@@ -132,4 +132,14 @@ Paiement → Onboarding payant**. Chaque écran doit être 100% monde comic + an
 Mascotte **Le Veilleur** : ✅ clignement comic steppé (arène + détail).
 
 **Prochaines passes (ordre) :** (7) onboarding payant en comic (rapide, contenu) → (6) paiement on-site → finir variants paywall (scene/constel headers) → (9) fiche data OU router pins carte → détail comic (au lieu de la fiche data) → transitions de **case BD** entre écrans top-niveau.
+
+### ⭐ Item #1 demandé : « la carte doit déboucher sur plein de trucs » (pins carte → détail comic)
+Le détail comic (`ChasseDetail`) vit dans `ChasseHome.jsx` et dépend de son CSS injecté + helpers (TCard/Veilleur/Illu). La carte (`WorldMapView`) est un écran séparé où `ChasseHome` n'est PAS monté → son CSS `.lc-` absent.
+**Approche SÛRE (additive, arène intouchée, blast-radius nul) :**
+1. NOUVEAU fichier `src/ComicDetail.jsx` **auto-suffisant** (composant + helpers + `<style>` scopé avec les tokens `--ink/--paper/...` + le CSS du détail). Lazy. **Ne PAS toucher `ChasseHome`** (l'arène = 100% accueil = zéro risque).
+2. Le monter au niveau App quand un state `comicBeach` est set, sous `Suspense`+`ErrBound` (fallback = fiche data existante).
+3. Router `WorldMapView` `onOpenBeach` → `setComicBeach(b)` **derrière flag `?mapdetail=1` (défaut OFF)**.
+4. Étendre `scripts/ux-smoke.mjs` : ouvrir la carte → taper un pin → vérifier le détail comic. Puis flip le flag ON.
+5. (Plus tard, avec le fondateur) dé-dupliquer ChasseDetail ↔ ComicDetail en module partagé.
+**Pourquoi pas l'extraction CSS partagée d'abord :** elle touche `ChasseHome` (arène 100%) = blast-radius élevé → à faire en review fondateur, pas en aveugle.
 **Anti-régression :** chaque écran vérifié au screenshot mobile WebKit + scan boutons blancs (`_journey.mjs`), checkout Stripe jamais touché, tout réversible.

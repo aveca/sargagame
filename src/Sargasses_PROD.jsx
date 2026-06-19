@@ -12785,6 +12785,7 @@ export default function App(){
               track("sg_beach_open",{beach_id:b.id,status:b.status,source:"chasse_coll"})
             }}
             onPremium={src=>{dismissHero("chasse_premium");openPremium(src||"chasse")}}
+            onCaptureEmail={em=>{ try{ submitLead(em,"chasse") }catch(_){} }}
             onShowMap={()=>{
               dismissHero("chasse_map")
               fireWipe(_t(lang,"Chaque pastille = la mesure du matin","Every dot = this morning's measurement","Cada punto = la medición de la mañana"))
