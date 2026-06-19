@@ -200,7 +200,7 @@ function TCard({beach,lang,onTap,rot=0,collected=true}){
 /* DÉTAIL PLAGE « en monde comic » — ouvert au tap d'une carte. Garde le joueur
    dans l'univers arène (mêmes police/couleurs/Veilleur) au lieu de l'éjecter
    vers l'app sombre. Le seul handoff = le CTA premium (moment de conversion). */
-function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool=[],track}){
+export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool=[],track}){
   const rel=(pool||[]).filter(b=>b&&b.id&&b.id!==beach.id&&b.status&&b.score!=null).slice(0,3)
   const _t=(o)=>(o&&(o[lang]||o.fr))||""
   const v=vof(beach.status), r=rarity(beach.score)
@@ -307,7 +307,7 @@ const I18N={
 }
 
 export default function ChasseHome(props){
-  const {beach,lang="fr",sargData,pickBeaches=[],onOpen,onOpenBeach,onPremium,onShowMap,track,exiting}=props
+  const {beach,lang="fr",sargData,pickBeaches=[],onOpen,onOpenBeach,onPremium,onShowMap,onCaptureEmail,track,exiting}=props
   const _t=useCallback((o)=>{ const v=o&&(o[lang]!=null?o[lang]:o.fr); return v },[lang])
 
   const reduce = useMemo(()=>{ try{ return window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches }catch(_){ return false } },[])
@@ -320,6 +320,16 @@ export default function ChasseHome(props){
   /* re-sync l'humeur si la plage arrive après le mount sur un jour déjà joué (évite iris faux) */
   useEffect(()=>{ if(playedToday&&beach) setMood(vof(beach.status).mood) },[beach,playedToday])
   const [detail,setDetail]=useState(null)   /* plage ouverte en détail (monde comic) */
+  /* capture email (funnel) — l'arène est l'accueil 100% : sans ça, plus de leads */
+  const [capEmail,setCapEmail]=useState("")
+  const [capDone,setCapDone]=useState(()=>{ try{ return !!localStorage.getItem("sg_email") }catch(_){ return false } })
+  const submitCap=useCallback((e)=>{ if(e&&e.preventDefault)e.preventDefault()
+    const em=(capEmail||"").trim(); if(!em||!em.includes("@")||!em.includes("."))return
+    try{ localStorage.setItem("sg_email",em) }catch(_){}
+    try{ onCaptureEmail&&onCaptureEmail(em) }catch(_){}
+    if(track)try{track("sg_email_submit",{source:"chasse"})}catch(_){}
+    setCapDone(true)
+  },[capEmail,onCaptureEmail,track])
   const openDetail=useCallback((b,src)=>{ if(!b)return; if(track)try{track("sg_chasse_card_open",{beach_id:b.id,which:src})}catch(_){}; setDetail(b) },[track])
 
   /* collection : on sème avec la plage du jour + ce qui est déjà collecté */
@@ -475,6 +485,24 @@ export default function ChasseHome(props){
               <div className="lc-backnote">{_t(I18N.back)}</div>
             </div>
           </>
+        )}
+      </section>
+
+      {/* ---- CAPTURE EMAIL (funnel — gratuit, distinct du premium) ---- */}
+      <section className="lc-capture">
+        {capDone ? (
+          <div className="lc-cap-done"><span>✅</span> {_t({fr:"C'est lancé — le verdict t'attendra chaque matin.",en:"You're set — the verdict waits each morning.",es:"¡Listo! El veredicto te espera cada mañana."})}</div>
+        ) : (
+          <div className="lc-cap-card">
+            <div className="lc-eyebrow">{_t({fr:"LE VERDICT, CHAQUE MATIN",en:"THE VERDICT, EVERY MORNING",es:"EL VEREDICTO, CADA MAÑANA"})}</div>
+            <p className="lc-sub">{_t({fr:"Reçois l'état de la mer par email — gratuit, zéro spam.",en:"Get the sea's status by email — free, no spam.",es:"Recibe el estado del mar por email — gratis, sin spam."})}</p>
+            <form className="lc-cap-row" onSubmit={submitCap}>
+              <input className="lc-cap-in" type="email" inputMode="email" autoComplete="email"
+                placeholder={_t({fr:"ton email",en:"your email",es:"tu email"})}
+                value={capEmail} onChange={e=>setCapEmail(e.target.value)} aria-label="email"/>
+              <button type="submit" className="lc-cta yel lc-cap-btn">{_t({fr:"JE VEUX",en:"I'M IN",es:"QUIERO"})}</button>
+            </form>
+          </div>
         )}
       </section>
 
@@ -677,6 +705,18 @@ const CSS=`
 .lc-detail-rel{margin-top:20px}
 .lc-detail-rel-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}
 .lc-detail-rel-card .lc-card{width:100%}
+/* capture email (funnel) — case comic claire */
+.lc-capture{max-width:520px;margin:18px auto 0}
+.lc-cap-card{background:var(--paper);border:3px solid var(--ink);border-radius:16px;padding:14px 15px;box-shadow:0 5px 0 var(--ink),0 12px 22px rgba(13,11,20,.32)}
+.lc-cap-card .lc-sub{margin:7px 0 11px;color:#2a2536;font-weight:700;font-size:13px}
+.lc-cap-row{display:flex;gap:8px}
+.lc-cap-in{flex:1;min-width:0;font-family:"Comic Neue",system-ui,sans-serif;font-size:15px;font-weight:700;color:var(--ink);
+  background:#fff;border:2.5px solid var(--ink);border-radius:11px;padding:11px 13px;box-shadow:2px 2px 0 var(--ink) inset;forced-color-adjust:none}
+.lc-cap-in::placeholder{color:#9a93a8}
+.lc-cap-btn{width:auto!important;flex:0 0 auto;padding:11px 16px!important;font-size:15px!important}
+.lc-cap-done{max-width:520px;margin:18px auto 0;background:#0e3a28;border:2.5px solid var(--ink);border-radius:14px;
+  padding:13px 15px;color:#fff;font-weight:800;font-size:13.5px;box-shadow:2px 2px 0 var(--ink);forced-color-adjust:none}
+.lc-cap-done span{font-size:17px}
 
 /* carte TCG (réutilisable) */
 .lc-card{position:relative;border-radius:14px;padding:6px;border:2.5px solid var(--ink);text-align:left;cursor:pointer;

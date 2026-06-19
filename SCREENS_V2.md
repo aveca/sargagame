@@ -1,0 +1,64 @@
+# SCREENS_V2 — backlog de reconstruction « ARENA v2 » (spec = maquette fondateur)
+
+> **Source de vérité = la maquette ARENA v2 du fondateur** (image ~40 écrans comic,
+> envoyée en session 2026-06-19). Ce fichier la décompose en **backlog fini** : 1 ligne
+> = 1 écran = 1 tâche autonome. Une boucle agent prend le prochain `[ ]`, le construit
+> à l'identique de la maquette, le vérifie (smoke), le connecte, le coche `[x]`, ship.
+> Lire `PRODUCT.md` (design system) + `AUTONOMOUS_BUILD.md` (boucle + garde-fous).
+
+## Pitch produit (à rendre LIMPIDE — critique fondateur « pas compréhensible »)
+**LE VEILLEUR** — un satellite-mascotte qui scanne la mer chaque matin. Toi = **chasseur
+de plages** : tu reçois le **verdict du jour** sous forme de **cartes à collectionner**,
+tu montes en **rang**, tu te mesures au **classement**. Premium = la **prévision 7 j** +
+l'**alerte** le jour où ta plage bascule. Un seul monde **comic-book animé** (réf Spider-Verse).
+
+## Règles de reconstruction
+- Fidélité **pixel-intention** à la maquette (layout, hiérarchie, couleurs, onomatopées, cases).
+- Design system = `PRODUCT.md §4` (ink/paper/yel, Anton, ombres dures, halftone, chroma steppée).
+- **Connecté** : chaque écran déclare ses entrées/sorties (colonne « → vers »). Zéro cul-de-sac.
+- Réversible + flag si ça touche conversion/revenu. **Stripe jamais touché.** Smoke avant merge.
+- Mobile-first (390×844), reduced-motion = plancher, i18n fr/en/es.
+
+## Backlog (cocher au fur et à mesure ; statut comic actuel entre parenthèses)
+### Bloc 1 — Entrée & accueil
+- [x] 01 SPLASH — Le Veilleur + barre de chargement comic (fait) → 02
+- [x] 02 ONBOARDING « Bienvenue chasseur de plages » (fait) → 03
+- [x] 03 ONBOARDING « Le satellite scanne » (fait) → 04
+- [ ] 04 ONBOARDING « Choisis ta région » (MQ/GP/…) — sélecteur cartes comic → 05
+- [x] 05 ACCUEIL / RADAR « Verdict du jour » (= arène booster, fait) → 06/07/10/12
+### Bloc 2 — Plages & cartes
+- [ ] 06 LISTE DES PLAGES — rangée de cartes comic triables → 07
+- [x] 07 CARTE PLAGE DU JOUR (= booster vedette, fait) → 08/12
+- [x] 08 DÉTAIL PLAGE + 7 JOURS (= ChasseDetail, fait) → 09/12/voisines
+- [ ] 09 PRÉVISION 7 JOURS détaillée (timeline complète) — premium → 12
+- [ ] 11 PLAGE — PRÉVISIONS (fiche data en comic, remplace le « scroll satellite ») → 12
+### Bloc 3 — Carte
+- [x] 10 CARTE monde golden-hour (fait) — ⚠️ pins → doivent ouvrir le **détail comic** (item ⭐, cf PRODUCT §8)
+### Bloc 4 — Jeu / rétention (le « plein de jeux » demandé)
+- [x] 13 PROFIL / MA COLLECTION (= Pokédex + paliers, fait) → 07
+- [ ] 14 CLASSEMENT / TOP JOUEURS (leaderboard série 🔥) → 13
+- [ ] 15 DÉFI DU JOUR / « Devine le score » (mini-jeu) → 16/17
+- [ ] 16 DÉBLOQUER BADGE « Niveau ! » (achievement comic) → 13
+- [ ] 17 RÉCOMPENSE (palier atteint → skin/titre Veilleur) → 13
+- [ ] 18 DÉFI DU THÈME / contest → 14
+- [ ] 28 SÉRIE « 7 jours d'affilée » (streak reward) → 05
+### Bloc 5 — Conversion
+- [~] 12 PAYWALL « Réveil du Veilleur » / Pass (partiel comic — finir variants) → paiement
+- [ ] 06b PAIEMENT on-site (PayStep) en comic → succès → 29
+- [ ] 29 BIENVENUE PREMIUM (PaidOnboarding) en comic → 05
+### Bloc 6 — Système & utilitaires
+- [ ] 19 NOTIFICATIONS / centre d'alertes (liste comic)
+- [ ] 20 ALERTE SARGASSE / hydrogène sulfuré (écran d'alerte rouge)
+- [ ] 21 RECHERCHE plages
+- [ ] 22 FILTRES (familles/snorkel/parking/distance)
+- [ ] 24 FIABILITÉ DU VEILLEUR (jauge track-record honnête)
+- [ ] 25 PARTAGE (share-card comic)
+- [ ] 27 HORS-LIGNE / envoi
+- [ ] (+ écrans restants de la maquette à transcrire : ~30→40)
+
+## Connexions (graphe minimal)
+`01→02→03→04→05`(accueil hub)`→{06 liste, 07 carte-jour, 10 carte, 13 profil, 12 paywall}`.
+`07/06/10-pins → 08 détail → {09 prévision, 12 paywall, voisines}`. `12 → paiement → 29 → 05`.
+Jeu : `05 → 15 défi → 16/17 → 13 profil → 14 classement`. **Aucun écran ne sort du monde comic.**
+
+## Statut légende : [ ] à faire · [~] partiel · [x] fait (vérifié smoke + en prod)
