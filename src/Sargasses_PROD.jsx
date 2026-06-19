@@ -6532,7 +6532,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         // Refonte CONTINUATION DE SCÈNE (arm constellation = défaut) : le golden-hour
         // descend à travers tout le modal (ciel → mer profonde → nuit) → la premium
         // est UNE scène continue, pas une feuille sombre. Holdout garde le sombre.
-        background:pwConstel?"linear-gradient(180deg,#0B2230 0%,#0E2A26 20%,#08251F 52%,#0A1714 100%)":"linear-gradient(145deg,#0D1E1C,#0A1714)",
+        /* halftone Ben-Day comic (réf Spider-Verse) par-dessus le dégradé — texte intact */
+        background:"radial-gradient(rgba(255,255,255,.05) 1.2px,transparent 1.3px) 0 0/8px 8px,radial-gradient(rgba(255,210,90,.06) 1.2px,transparent 1.3px) 4px 4px/8px 8px,"+(pwConstel?"linear-gradient(180deg,#0B2230 0%,#0E2A26 20%,#08251F 52%,#0A1714 100%)":"linear-gradient(145deg,#0D1E1C,#0A1714)"),
         borderRadius:"24px 24px 0 0",padding:"28px 24px 20px",
         color:"#e6edf3",maxHeight:"85vh",overflow:"auto",
       }}>
@@ -6939,23 +6940,24 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             container with 5% white bg (Design v1 spec) — visually says "pick one,
             they're grouped" instead of loose side-by-side pill look. */}
         {hasAnnual&&(
-        <div style={{display:"flex",gap:8,marginBottom:14,padding:4,
-          background:"rgba(255,255,255,.05)",borderRadius:14}}>
+        <div style={{display:"flex",gap:8,marginBottom:14}}>
           <button onClick={()=>{setPlan("monthly");track("sg_plan_toggle",{plan:"monthly"})}} style={{
-            flex:1,padding:"10px 8px",borderRadius:10,cursor:"pointer",fontFamily:"inherit",
-            background:plan==="monthly"?"rgba(255,199,44,.12)":"transparent",
-            border:plan==="monthly"?"1.5px solid rgba(255,199,44,.4)":"1.5px solid transparent",
-            color:plan==="monthly"?"#fff":"rgba(255,255,255,.7)",fontSize:13,fontWeight:600,
-            transition:"all .2s"}}>
+            flex:1,padding:"10px 8px",borderRadius:11,cursor:"pointer",fontFamily:"inherit",forcedColorAdjust:"none",
+            background:plan==="monthly"?"linear-gradient(180deg,#FFE07A,#FFC72C)":"#fdf6e3",
+            border:"2.5px solid #0d0b14",
+            color:"#0d0b14",fontSize:13,fontWeight:700,
+            boxShadow:plan==="monthly"?"0 4px 0 #0d0b14":"2px 2px 0 #0d0b14",
+            transition:"all .15s"}}>
             <div>{_t(lang,"Mensuel","Monthly","Mensual")}</div>
             <div style={{fontSize:18,fontWeight:700,marginTop:2}}>{REGION_PAY?PRICE_MO:lang==="en"?"€4.99":"4,99 €"}<span style={{fontSize:11,fontWeight:400}}>/{_t(lang,"mois","mo","mes")}</span></div>
           </button>
           <button onClick={()=>{setPlan("annual");track("sg_plan_toggle",{plan:"annual"})}} style={{
-            flex:1,padding:"10px 8px",borderRadius:10,cursor:"pointer",fontFamily:"inherit",position:"relative",
-            background:plan==="annual"?"rgba(255,199,44,.12)":"transparent",
-            border:plan==="annual"?"1.5px solid rgba(255,199,44,.4)":"1.5px solid transparent",
-            color:plan==="annual"?"#fff":"rgba(255,255,255,.7)",fontSize:13,fontWeight:600,
-            transition:"all .2s"}}>
+            flex:1,padding:"10px 8px",borderRadius:11,cursor:"pointer",fontFamily:"inherit",position:"relative",forcedColorAdjust:"none",
+            background:plan==="annual"?"linear-gradient(180deg,#FFE07A,#FFC72C)":"#fdf6e3",
+            border:"2.5px solid #0d0b14",
+            color:"#0d0b14",fontSize:13,fontWeight:700,
+            boxShadow:plan==="annual"?"0 4px 0 #0d0b14":"2px 2px 0 #0d0b14",
+            transition:"all .15s"}}>
             <div style={{position:"absolute",top:-8,right:8,background:C.gold,color:C.ink,
               fontSize:9,fontWeight:800,padding:"2px 7px",borderRadius:100,letterSpacing:".02em"}}>
               -33%
@@ -6978,11 +6980,12 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           </button>
           {hasPro&&(
           <button onClick={()=>{setPlan("pro");track("sg_plan_toggle",{plan:"pro"})}} style={{
-            flex:1,padding:"10px 8px",borderRadius:10,cursor:"pointer",fontFamily:"inherit",position:"relative",
-            background:plan==="pro"?"rgba(255,100,100,.12)":"transparent",
-            border:plan==="pro"?"1.5px solid rgba(255,100,100,.45)":"1.5px solid transparent",
-            color:plan==="pro"?"#fff":"rgba(255,255,255,.7)",fontSize:13,fontWeight:600,
-            transition:"all .2s"}}>
+            flex:1,padding:"10px 8px",borderRadius:11,cursor:"pointer",fontFamily:"inherit",position:"relative",forcedColorAdjust:"none",
+            background:plan==="pro"?"linear-gradient(180deg,#ff8a8a,#ff6464)":"#fdf6e3",
+            border:"2.5px solid #0d0b14",
+            color:"#0d0b14",fontSize:13,fontWeight:700,
+            boxShadow:plan==="pro"?"0 4px 0 #0d0b14":"2px 2px 0 #0d0b14",
+            transition:"all .15s"}}>
             <div style={{position:"absolute",top:-8,right:8,background:"#ff6464",color:"#fff",
               fontSize:9,fontWeight:800,padding:"2px 7px",borderRadius:100,letterSpacing:".02em"}}>
               PRO
@@ -7053,7 +7056,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               startCheckout(effectivePlan,"direct")
             }}
             className="gbtn" style={{width:"100%",textAlign:"center",fontSize:17,
-              padding:"16px 24px",display:"block",border:"none",cursor:"pointer",fontFamily:"inherit",lineHeight:1.2}}>
+              padding:"16px 24px",display:"block",cursor:"pointer",fontFamily:"inherit",lineHeight:1.2,
+              /* bouton comic « case BD » : jaune plein, contour encré, ombre dure */
+              background:"linear-gradient(180deg,#FFE07A,#FFC72C)",color:"#0d0b14",
+              border:"2.5px solid #0d0b14",borderRadius:14,
+              boxShadow:"0 4px 0 #0d0b14,0 9px 18px rgba(13,11,20,.32)",transform:"rotate(-.8deg)"}}>
               <div>{NO_TRIAL
                 ?_t(lang,"Activer ma reco maintenant","Get my daily pick — start now","Mi playa del día — empezar ya")
                 :_t(lang,"Activer ma reco — 7 jours offerts","Start my daily pick — 7 days free","Activar mi playa del día — 7 días gratis")}</div>
