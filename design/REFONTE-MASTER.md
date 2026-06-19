@@ -29,6 +29,7 @@
 | C | **Parité H2S sur la fiche-plongée (`pw_beach_dive`)** : beat-4 gagne le **disclaimer honnête** (« indice dérivé, pas une mesure de gaz, aucun capteur — consignes ARS/HCSP ») + **CTA alerte santé Premium** → `openPremium("h2s_health_alert")` (parité avec H2SBadge control, in-scene, FR/EN/ES). Comble la lacune honnêteté + porte de conversion sur 50 % du trafic fiche. SW v202 | ✅ **LIVE prod** |
 | D | SEO requête par requête + nouvelles pages (`/près-de-moi`, `/aujourdhui`, zones) + OG + 301 legacy | ✅ **LIVE prod** |
 | E | Share-cards · baignade #5 · collecte #9 | ✅ **LIVE prod** |
+| Paywall | **Refonte COMIC/BD du PremiumModal** (A/B `pw_comic` 50/50, `?pwcomic=1/0`) — scène golden-hour + Veilleur, cases BD paper/ink, titre Anton chroma ; checkout Stripe **intact** ; proto `design/proto-paywall-comic.html` vérifié. SW v215 | ✅ **LIVE prod** (pivot 19/06) |
 
 **Comment monitorer :** ce tableau (avancement) · `git log` (chaque ship = 1 commit) · `/workflows` (workflows finis) · mes pings (concret live prod). **Fin = toutes les lignes ✅.**
 
