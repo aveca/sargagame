@@ -11842,10 +11842,10 @@ export default function App(){
       if(/[?&]comic=1/.test(q)) return "comic";
       const saved=localStorage.getItem("sg_ui_theme");
       if(saved && THEMES.some(t=>t.id===saved)) return saved;
-      // A/B TOUT NEUF "arena_v1" (on oublie golden comme "thème", c'est juste le contrôle =
-      // app d'origine). control = pas de skin · arena = skin comic/TCG. 50/50, suivi conversion.
-      if(typeof abVariant==="function"){ return abVariant("arena_v1",["control","arena"],[.5,.5])==="arena" ? "comic" : "golden"; }
-      return "golden";
+      // 100% ARENA (comic) = nouveau défaut pour TOUT LE MONDE. L'ancien golden est retiré
+      // comme défaut (reste accessible via ?theme=golden / picker). Les futurs A/B se font
+      // DANS la nouvelle version (copy paywall, layout carte…), plus golden-vs-comic.
+      return "comic";
     }catch(_){ return "golden"; }
   },[THEMES])
   const[uiTheme,setUiTheme]=useState(initialTheme)
