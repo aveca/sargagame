@@ -78,8 +78,11 @@
   <link rel="preload" href="/data/beaches-list.json" as="fetch" crossorigin />
   <link rel="preload" href="/data/beaches-images.json" as="fetch" crossorigin />
   <link rel="preload" href="/data/beaches-images-quality.json" as="fetch" crossorigin />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Polices AUTO-HÉBERGÉES (same-origin) — Google Fonts est bloqué par les navigateurs
+       anti-suivi (Edge « Prévention du suivi », Brave Shields) → rendu en police de secours
+       (« gris/cheap »). En les servant depuis notre domaine, plus rien à bloquer + chargement
+       plus rapide. cf. public/fonts/. -->
+  <link rel="stylesheet" href="/fonts/fonts.css" />
   <link rel="preconnect" href="https://www.clarity.ms" />
   <!-- Stripe : TLS cold-start mesuré à 9-22s sur réseau Caraïbe — préchauffer les
        connexions pendant le chargement de l'app rend le checkout on-site instantané. -->
@@ -89,8 +92,7 @@
   <link rel="dns-prefetch" href="https://api.open-meteo.com" />
   <link rel="dns-prefetch" href="https://marine-api.open-meteo.com" />
   <link rel="dns-prefetch" href="https://server.arcgisonline.com" />
-  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
-  <noscript><link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet" /></noscript>
+  <!-- (polices servies via /fonts/fonts.css ci-dessus — plus de dépendance Google Fonts) -->
   <!-- OneSignal Push — SDK chargé à la demande (pas au démarrage) -->
   <script>
     window.ONESIGNAL_APP_ID="4280dcab-fc43-415d-a9cd-a3da8cf601f1";
