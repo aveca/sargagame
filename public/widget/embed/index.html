@@ -4,66 +4,210 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex, follow">
+<title>Sargasses — conditions en direct</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:system-ui,-apple-system,sans-serif;background:transparent}
-.w{display:flex;align-items:center;gap:12px;padding:10px 16px;border-radius:12px;border:1px solid rgba(0,0,0,.08);background:#fff}
-.dot{width:14px;height:14px;border-radius:50%;flex-shrink:0}
-.dot.clean{background:#22C55E}
-.dot.moderate{background:#B87A00}
-.dot.avoid{background:#E8522A}
-.name{font-weight:600;font-size:14px;color:#0D0D0D}
-.status{font-size:13px;color:#686868;margin-left:auto}
-.link{font-size:11px;color:#009E8E;text-decoration:none;margin-left:8px;white-space:nowrap}
+:root{
+  --acc:#009E8E;           /* accent (overridable via ?accent=) */
+  --card:#ffffff; --ink:#0D0D0D; --mid:#686868; --line:rgba(0,0,0,.09);
+  --clean:#22C55E; --moderate:#B87A00; --avoid:#E8522A;
+}
+*{margin:0;padding:0;box-sizing:border-box;forced-color-adjust:none}
+html,body{background:transparent}
+body{font-family:'Bricolage Grotesque',system-ui,-apple-system,Segoe UI,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:14px;
+  padding:14px 16px 11px;max-width:520px;margin:2px auto;
+  box-shadow:0 1px 3px rgba(0,0,0,.05),0 8px 24px -16px rgba(0,0,0,.18);
+}
+.top{display:flex;align-items:center;gap:10px}
+.dot{width:13px;height:13px;border-radius:50%;flex-shrink:0;box-shadow:0 0 0 4px color-mix(in srgb,var(--st) 18%,transparent)}
+.name{font-weight:700;font-size:15px;letter-spacing:-.01em;line-height:1.1;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:100px;white-space:nowrap;color:#fff;background:var(--st);letter-spacing:.01em}
+.sub{font-size:11.5px;color:var(--mid);margin:5px 0 0;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.live{display:inline-flex;align-items:center;gap:4px;color:var(--acc);font-weight:600}
+.live::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 0 var(--acc);animation:p 2.4s ease-out infinite}
+@keyframes p{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--acc) 55%,transparent)}70%,100%{box-shadow:0 0 0 6px transparent}}
+.fc{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin:11px 0 0}
+.d{text-align:center;border-radius:9px;padding:7px 2px 6px;background:color-mix(in srgb,var(--st) 9%,transparent);position:relative}
+.d.now{outline:2px solid var(--acc);outline-offset:-2px}
+.d .dl{font-size:10px;color:var(--mid);font-weight:600;margin-bottom:5px;text-transform:capitalize}
+.d .dd{width:9px;height:9px;border-radius:50%;margin:0 auto;background:var(--st)}
+.foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:11px 0 0;padding-top:9px;border-top:1px solid var(--line)}
+.src{font-size:10.5px;color:var(--mid)}
+.link{font-size:11.5px;font-weight:700;color:var(--acc);text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center;gap:3px}
 .link:hover{text-decoration:underline}
+/* dark theme */
+body.dark{--card:#10202b;--ink:#fff;--mid:#9fb2bd;--line:rgba(255,255,255,.12)}
+@media (prefers-color-scheme:dark){body.auto{--card:#10202b;--ink:#fff;--mid:#9fb2bd;--line:rgba(255,255,255,.12)}}
+@media (prefers-reduced-motion:reduce){.live::before{animation:none}}
 </style>
 </head>
 <body>
-<div class="w" id="widget">
-  <div class="dot" id="dot"></div>
-  <span class="name" id="name">Chargement...</span>
-  <span class="status" id="status"></span>
-  <a class="link" id="link" target="_blank" rel="noopener">Carte →</a>
+<div class="card" id="card" role="img" aria-label="Conditions sargasses en cours de chargement">
+  <div class="top">
+    <span class="dot" id="dot" style="--st:#ccc"></span>
+    <span class="name" id="name">…</span>
+    <span class="pill" id="pill" style="--st:#ccc;display:none"></span>
+  </div>
+  <div class="sub" id="sub"></div>
+  <div class="fc" id="fc" style="display:none"></div>
+  <div class="foot">
+    <span class="src" id="src"></span>
+    <a class="link" id="link" target="_blank" rel="noopener">Sargasses →</a>
+  </div>
 </div>
 <script>
 (function(){
-  var path = location.pathname.replace('/widget/embed/','').replace(/\/$/,'');
-  var slug = path || 'anse-mitan';
-  var host = location.hostname;
-  var isGP = host.includes('guadeloupe');
-  var domain = isGP ? 'sargasses-guadeloupe.com' : 'sargasses-martinique.com';
-  var base = 'https://' + domain;
+  "use strict";
+  var Q = new URLSearchParams(location.search);
+  var $ = function(id){return document.getElementById(id)};
+  var el = function(tag,cls,txt){var n=document.createElement(tag);if(cls)n.className=cls;if(txt!=null)n.textContent=txt;return n};
+  function clear(n){while(n.firstChild)n.removeChild(n.firstChild)}
 
-  fetch(base + '/api/copernicus/sargassum.json')
-    .then(function(r){return r.json()})
-    .then(function(d){
-      var levels = d.levels || d.beaches || [];
-      var b = levels.find(function(l){return l.id === slug});
-      if(!b){
-        document.getElementById('name').textContent = slug;
-        document.getElementById('status').textContent = 'Plage non trouvée';
-        return;
-      }
-      var names = {
-        'grande-anse':"Grande Anse",'anse-mitan':'Anse Mitan','anse-noire':'Anse Noire',
-        'tartane':'Tartane','anse-madame':'Anse Madame','diamant':'Le Diamant',
-        'pt-marin':'Pointe du Marin','sainte-anne':'Sainte-Anne','les-salines':'Les Salines',
-        'vauclin':'Le Vauclin','gp-grande-anse':'Grande Anse','gp-malendure':'Malendure',
-        'gp-sainte-anne':'Sainte-Anne','gp-pt-chateaux':'Pointe des Châteaux',
-        'gp-gosier':'Le Gosier','gp-caravelle':'La Caravelle','gp-bas-du-fort':'Bas du Fort',
-        'gp-deshaies':'Deshaies','gp-moule':'Le Moule','gp-vieux-fort':'Vieux-Fort'
-      };
-      var statusLabels = {clean:'Propre',moderate:'Modéré',avoid:'À éviter'};
-      document.getElementById('dot').className = 'dot ' + b.status;
-      document.getElementById('name').textContent = names[slug] || slug;
-      document.getElementById('status').textContent = (statusLabels[b.status]||b.status) + ' — AFAI ' + b.afai.toFixed(2);
-      document.getElementById('link').href = base;
-    })
-    .catch(function(){
-      document.getElementById('status').textContent = 'Données indisponibles';
-    });
+  // --- beach resolution : accepte le slug SEO OU l'id data ---------------
+  var ALIAS = {
+    "plage-des-salines":"les-salines","salines":"les-salines","les-salines":"les-salines",
+    "plage-du-diamant":"diamant","le-diamant":"diamant","diamant":"diamant",
+    "pointe-faula":"vauclin","le-vauclin":"vauclin","vauclin":"vauclin",
+    "grande-anse-d-arlet":"grande-anse","grande-anse":"grande-anse",
+    "anse-mitan":"anse-mitan","anse-noire":"anse-noire","anse-madame":"anse-madame",
+    "bourg-de-tartane":"tartane","tartane":"tartane",
+    "plage-du-marin":"pt-marin","pointe-du-marin":"pt-marin","pt-marin":"pt-marin",
+    "plage-du-bourg-sainte-anne":"sainte-anne","sainte-anne":"sainte-anne",
+    "plage-de-grande-anse":"gp-grande-anse","la-grande-anse-deshaies":"gp-grande-anse","gp-grande-anse":"gp-grande-anse",
+    "plage-de-malendure":"gp-malendure","malendure":"gp-malendure","gp-malendure":"gp-malendure",
+    "plage-de-sainte-anne":"gp-sainte-anne","gp-sainte-anne":"gp-sainte-anne",
+    "pointe-des-chateaux":"gp-pt-chateaux","gp-pt-chateaux":"gp-pt-chateaux",
+    "plage-du-gosier":"gp-gosier","le-gosier":"gp-gosier","gp-gosier":"gp-gosier",
+    "plage-de-la-caravelle":"gp-caravelle","la-caravelle":"gp-caravelle","gp-caravelle":"gp-caravelle",
+    "plage-de-bas-du-fort":"gp-bas-du-fort","bas-du-fort":"gp-bas-du-fort","gp-bas-du-fort":"gp-bas-du-fort",
+    "plage-de-deshaies":"gp-deshaies","deshaies":"gp-deshaies","gp-deshaies":"gp-deshaies",
+    "plage-du-moule":"gp-moule","le-moule":"gp-moule","gp-moule":"gp-moule",
+    "plage-du-vieux-fort":"gp-vieux-fort","vieux-fort":"gp-vieux-fort","gp-vieux-fort":"gp-vieux-fort"
+  };
+  var NAMES = {
+    "les-salines":"Plage des Salines","diamant":"Plage du Diamant","vauclin":"Pointe Faula",
+    "grande-anse":"Grande Anse d'Arlet","anse-mitan":"Anse Mitan","anse-noire":"Anse Noire",
+    "anse-madame":"Anse Madame","tartane":"Bourg de Tartane","pt-marin":"Plage du Marin",
+    "sainte-anne":"Plage du Bourg (Sainte-Anne)",
+    "gp-grande-anse":"Plage de Grande Anse","gp-malendure":"Plage de Malendure",
+    "gp-sainte-anne":"Plage de Sainte-Anne","gp-pt-chateaux":"Pointe des Châteaux",
+    "gp-gosier":"Plage du Gosier","gp-caravelle":"Plage de la Caravelle",
+    "gp-bas-du-fort":"Plage de Bas-du-Fort","gp-deshaies":"Plage de Deshaies",
+    "gp-moule":"Plage du Moule","gp-vieux-fort":"Plage du Vieux-Fort"
+  };
+  // slug : ?beach= prioritaire, sinon path /widget/embed/<slug>/ (rétro-compat)
+  var raw = (Q.get("beach") || location.pathname.replace(/.*\/widget\/embed\//,"").replace(/\/+$/,"") || "anse-mitan").toLowerCase().trim();
+  var sargId = ALIAS[raw] || (NAMES[raw] ? raw : null);
 
-  document.getElementById('link').href = base;
+  // --- i18n --------------------------------------------------------------
+  var lang = (Q.get("lang") || document.documentElement.lang || "fr").slice(0,2).toLowerCase();
+  if (["fr","en","es"].indexOf(lang) < 0) lang = "fr";
+  document.documentElement.lang = lang;
+  var T = {
+    fr:{clean:"Mer propre",moderate:"Présence modérée",avoid:"À éviter",live:"En direct",
+        updated:function(h){return "il y a "+h},stale:"Vérification en cours",
+        wd:["dim","lun","mar","mer","jeu","ven","sam"],today:"auj.",
+        src:"Données satellite Copernicus",notfound:"Voir toutes les plages",
+        unavail:"Conditions momentanément indisponibles"},
+    en:{clean:"Clear water",moderate:"Moderate",avoid:"Avoid",live:"Live",
+        updated:function(h){return h+" ago"},stale:"Checking",
+        wd:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],today:"today",
+        src:"Copernicus satellite data",notfound:"See all beaches",
+        unavail:"Conditions temporarily unavailable"},
+    es:{clean:"Agua limpia",moderate:"Moderado",avoid:"Evitar",live:"En vivo",
+        updated:function(h){return "hace "+h},stale:"Verificando",
+        wd:["dom","lun","mar","mié","jue","vie","sáb"],today:"hoy",
+        src:"Datos satélite Copernicus",notfound:"Ver todas las playas",
+        unavail:"Condiciones no disponibles"}
+  }[lang];
+  var ST = {clean:"var(--clean)",moderate:"var(--moderate)",avoid:"var(--avoid)"};
+
+  // --- options (brand) ---------------------------------------------------
+  var accent = (Q.get("accent")||"").replace(/[^0-9a-fA-F]/g,"").slice(0,6);
+  if (accent.length===3 || accent.length===6) document.documentElement.style.setProperty("--acc","#"+accent);
+  var theme = (Q.get("theme")||"light").toLowerCase();
+  if (theme==="dark") document.body.classList.add("dark");
+  else if (theme==="auto") document.body.classList.add("auto");
+  var showFc = Q.get("forecast")!=="0" && Q.get("compact")!=="1";
+  var customName = (Q.get("name")||"").replace(/[<>]/g,"").slice(0,40);
+
+  // --- host / endpoint (iframe même-origine → pas de CORS) ---------------
+  // Si l'hôte sert déjà /api (notre domaine, ou un mirror, ou localhost) → relatif.
+  var hn = location.hostname;
+  var isLocal = !hn || hn==="localhost" || hn==="127.0.0.1";
+  var isGP = hn.indexOf("guadeloupe")>=0;
+  var prodHome = "https://" + (isGP ? "sargasses-guadeloupe.com" : "sargasses-martinique.com");
+  var base = isLocal ? "" : prodHome;          // base API (relatif en local)
+  var home = base || prodHome;                 // lien "Sargasses →" jamais vide
+
+  function relAge(updatedAt){
+    var ms = Date.now() - new Date(updatedAt).getTime();
+    if (!(ms>=0)) return null;
+    var h = ms/3.6e6;
+    if (h < 1) return Math.max(1,Math.round(ms/6e4))+" min";
+    if (h < 36) return Math.round(h)+" h";
+    return Math.round(h/24)+" j";
+  }
+  function setSub(){ var s=$("sub"); clear(s); for(var i=0;i<arguments.length;i++) s.appendChild(arguments[i]); }
+  function fail(){
+    $("name").textContent = customName || (sargId&&NAMES[sargId]) || "Sargasses";
+    setSub(el("span",null,T.unavail));
+    $("src").textContent = T.src; $("link").href = home;
+  }
+
+  if (!sargId){ // slug inconnu → on reste utile (lien carte), pas de "non trouvée" mort
+    $("name").textContent = customName || "Sargasses Antilles";
+    $("link").href = home; $("link").textContent = T.notfound+" →";
+    $("src").textContent = T.src;
+    return;
+  }
+
+  function render(d){
+    var lv = (d.levels||[]).find(function(l){return l.id===sargId});
+    if (!lv){ fail(); return; }
+    var status = lv.status;
+    var label = customName || NAMES[sargId] || sargId;
+    var stColor = ST[status]||"#999";
+    $("dot").style.setProperty("--st", stColor);
+    $("pill").style.setProperty("--st", stColor);
+    $("name").textContent = label;
+    $("pill").textContent = T[status]||status;
+    $("pill").style.display = "";
+
+    var age = relAge(d.updatedAt);
+    var fresh = age && (Date.now()-new Date(d.updatedAt).getTime()) < 12*3.6e6;
+    if (fresh) setSub(el("span","live",T.live), el("span",null,"· "+T.updated(age)));
+    else setSub(el("span",null,T.stale));
+    $("src").textContent = T.src;
+    $("link").href = home;
+
+    // 7 jours : jour 0 ancré sur le statut LIVE (évite la contradiction live≠forecast[0])
+    var wk = (d.weekly && d.weekly[sargId] && d.weekly[sargId].forecast) || [];
+    if (showFc && wk.length){
+      var fc = $("fc"); clear(fc);
+      wk.forEach(function(f,i){
+        var st = i===0 ? status : f.status;             // day0 = live
+        var dt = new Date((f.date||"")+"T12:00:00");
+        var lbl = i===0 ? T.today : (isNaN(dt) ? (f.day||"") : T.wd[dt.getDay()]);
+        var cell = el("div","d"+(i===0?" now":""));
+        cell.appendChild(el("div","dl",lbl));
+        var dd = el("div","dd"); dd.style.setProperty("--st", ST[st]||"#999");
+        cell.appendChild(dd); fc.appendChild(cell);
+      });
+      fc.style.display = "";
+    }
+    $("card").setAttribute("aria-label", label+" : "+(T[status]||status)+(fresh?(", "+T.live):""));
+  }
+
+  function load(){
+    fetch(base + "/api/copernicus/sargassum.json", {cache:"no-store"})
+      .then(function(r){return r.ok?r.json():Promise.reject()})
+      .then(render)
+      .catch(fail);
+  }
+  load();
+  setInterval(load, 30*60*1000); // auto-refresh 30 min (écran de hall)
 })();
 </script>
 </body>

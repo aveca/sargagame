@@ -3,108 +3,163 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Widget Sargasses — Int\u00e9grez l'\u00e9tat des plages sur votre site</title>
-  <meta name="description" content="Widget gratuit sargasses Martinique et Guadeloupe. Int\u00e9grez l'\u00e9tat des plages en temps r\u00e9el sur votre site d'h\u00f4tel, location ou blog voyage.">
+  <title>Widget sargasses gratuit — l'état des plages en direct sur votre site</title>
+  <meta name="description" content="Widget gratuit sargasses Martinique et Guadeloupe. Affichez l'état des plages en temps réel sur votre site d'hôtel, location ou blog voyage. Données satellite Copernicus, prévision 7 jours.">
   <link rel="canonical" href="https://sargasses-martinique.com/widget/">
   <link rel="alternate" hreflang="fr" href="https://sargasses-martinique.com/widget/" />
-  <link rel="alternate" hreflang="en" href="https://sargasses-martinique.com/en/widget/" />
-  <link rel="alternate" hreflang="es" href="https://sargasses-martinique.com/es/widget/" />
   <link rel="alternate" hreflang="x-default" href="https://sargasses-martinique.com/widget/" />
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Anton&display=swap" rel="stylesheet">
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
-    body { font-family: 'Bricolage Grotesque', sans-serif; background: #0a1620; color: #fff; font-size: 17px; line-height: 1.65 }
-    header { background: linear-gradient(135deg, #0B2230 0%, #124C4F 100%); padding: 14px 24px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); }
-    header a { color: #fff; text-decoration: none; font-family: Anton, sans-serif; font-size: 20px; letter-spacing: -.02em }
-    header span { color: #FFC72C }
-    .back { color: rgba(255,255,255,.6); font-size: 13px; text-decoration: none; margin-left: auto; transition: color .15s }
-    .back:hover { color: #fff }
-    main { max-width: 800px; margin: 0 auto; padding: 48px 20px 80px }
-    h1 { font-family: Anton, sans-serif; font-size: clamp(28px,5vw,42px); letter-spacing: -.02em; text-transform: uppercase; line-height: 1.1; margin-bottom: 16px }
-    .sub { color: rgba(255,255,255,.72); font-size: 15px; margin-bottom: 40px }
-    h2 { font-family: Anton, sans-serif; font-size: 20px; text-transform: uppercase; letter-spacing: -.01em; margin: 40px 0 12px }
-    p { margin-bottom: 16px }
-    .demo-frame { border: 1px solid rgba(255,255,255,.08); border-radius: 16px; overflow: hidden; margin: 24px 0 }
-    pre { background: #070f16; color: #e0e0e0; padding: 20px; border-radius: 12px; overflow-x: auto; font-size: 14px; line-height: 1.5; margin: 16px 0; border: 1px solid rgba(255,255,255,0.06); }
-    code { font-family: 'JetBrains Mono', monospace }
-    .copy-btn { background: linear-gradient(158deg, #FFE47A 0%, #FFC72C 40%, #E89400 100%); border: none; padding: 10px 24px; border-radius: 100px; font-weight: 700; cursor: pointer; font-size: 14px; margin-top: 8px; transition: opacity .15s }
-    .copy-btn:hover { opacity: 0.95 }
-    .beaches-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; margin: 16px 0 }
-    .beaches-list code { background: rgba(255,255,255,0.06); padding: 4px 8px; border-radius: 6px; font-size: 13px; color: #fff; border: 1px solid rgba(255,255,255,0.10); }
-    .benefit { display: flex; gap: 12px; align-items: start; margin-bottom: 16px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.06) }
-    .benefit-icon { font-size: 24px; flex-shrink: 0 }
-    .benefit strong { display: block; margin-bottom: 2px; color: #fff }
-    .benefit p { margin: 0; font-size: 14px; color: rgba(255,255,255,0.62) }
-    footer { text-align: center; padding: 24px; color: rgba(255,255,255,0.5); font-size: 13px; border-top: 1px solid rgba(255,255,255,0.08) }
-    footer a { color: #FFC72C; text-decoration: none }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;forced-color-adjust:none}
+    body{font-family:'Bricolage Grotesque',sans-serif;background:#0a1620;color:#fff;font-size:17px;line-height:1.65}
+    header{background:linear-gradient(135deg,#0B2230 0%,#124C4F 100%);padding:14px 24px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,.08)}
+    header a.brand{color:#fff;text-decoration:none;font-family:Anton,sans-serif;font-size:20px;letter-spacing:-.02em}
+    header .brand span{color:#FFC72C}
+    .back{color:rgba(255,255,255,.6);font-size:13px;text-decoration:none;margin-left:auto;transition:color .15s}
+    .back:hover{color:#fff}
+    main{max-width:820px;margin:0 auto;padding:48px 20px 80px}
+    h1{font-family:Anton,sans-serif;font-size:clamp(28px,5vw,42px);letter-spacing:-.02em;text-transform:uppercase;line-height:1.08;margin-bottom:14px}
+    .sub{color:rgba(255,255,255,.74);font-size:16px;margin-bottom:36px;max-width:62ch}
+    h2{font-family:Anton,sans-serif;font-size:21px;text-transform:uppercase;letter-spacing:-.01em;margin:44px 0 14px}
+    p{margin-bottom:14px;color:rgba(255,255,255,.86)}
+    .builder{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:22px}
+    .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:20px}
+    label{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:rgba(255,255,255,.55);margin-bottom:6px}
+    select,input[type=color]{width:100%;font:inherit;font-size:15px;padding:9px 11px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:#0d1c27;color:#fff}
+    input[type=color]{height:42px;padding:4px;cursor:pointer}
+    .prev{background:repeating-conic-gradient(#e9eef2 0 25%,#f6f9fb 0 50%) 0 0/22px 22px;border-radius:14px;padding:22px;min-height:120px;display:flex;align-items:center;justify-content:center}
+    .prev iframe{width:100%;max-width:520px;border:0;background:transparent}
+    pre{background:#070f16;color:#e6edf2;padding:18px;border-radius:12px;overflow-x:auto;font-size:13.5px;line-height:1.5;margin:14px 0 0;border:1px solid rgba(255,255,255,.06)}
+    code{font-family:'JetBrains Mono',ui-monospace,monospace}
+    .copy{background:linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%);color:#0a1620;border:none;padding:11px 26px;border-radius:100px;font-weight:700;cursor:pointer;font-size:14px;margin-top:14px;transition:opacity .15s;font-family:inherit}
+    .copy:hover{opacity:.94}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:8px 0}
+    @media(max-width:640px){.grid2{grid-template-columns:1fr}}
+    .benefit{display:flex;gap:12px;align-items:flex-start;padding:15px;background:rgba(255,255,255,.03);border-radius:12px;border:1px solid rgba(255,255,255,.06)}
+    .benefit .ic{font-size:22px;flex-shrink:0;line-height:1.2}
+    .benefit strong{display:block;margin-bottom:2px}
+    .benefit p{margin:0;font-size:13.5px;color:rgba(255,255,255,.6)}
+    .pro{margin-top:44px;background:linear-gradient(135deg,rgba(255,199,44,.10),rgba(0,158,142,.10));border:1px solid rgba(255,199,44,.28);border-radius:18px;padding:24px}
+    .pro h2{margin-top:0}
+    .pro .cta{display:inline-block;margin-top:10px;background:#FFC72C;color:#0a1620;font-weight:700;text-decoration:none;padding:11px 24px;border-radius:100px;font-size:15px}
+    footer{text-align:center;padding:24px;color:rgba(255,255,255,.5);font-size:13px;border-top:1px solid rgba(255,255,255,.08)}
+    footer a{color:#FFC72C;text-decoration:none}
   </style>
 </head>
 <body>
   <header>
-    <a id="clBrandLink" href="/">Sargasses <span>Martinique</span></a>
-    <a class="back" id="clBackLink" href="/">← Retour \u00e0 la carte</a>
+    <a class="brand" href="/">Sargasses <span>Martinique</span></a>
+    <a class="back" href="/">← Retour à la carte</a>
   </header>
   <main>
-    <h1 id="clH1">Widget sargasses gratuit pour votre site</h1>
-    <p class="sub" id="clSub">H\u00f4tel, location, blog voyage \u2014 affichez l'\u00e9tat des plages en temps r\u00e9el. Donn\u00e9es satellite Copernicus, mises \u00e0 jour 4x/jour. Gratuit, sans inscription.</p>
+    <h1>Le widget « plages en direct » pour votre site</h1>
+    <p class="sub">Hôtel, location, restaurant de plage, blog voyage — affichez l'état réel des sargasses et la prévision 7 jours, mis à jour 4× par jour à partir des données satellite Copernicus. Gratuit, sans inscription, à vos couleurs.</p>
 
-    <h2 id="clPreviewTitle">Aper\u00e7u</h2>
-    <div class="demo-frame">
-      <iframe src="/widget/embed/plage-du-diamant/" width="100%" height="90" frameborder="0" style="border:0"></iframe>
-    </div>
-
-    <h2 id="clHowToTitle">Comment l'int\u00e9grer</h2>
-    <p id="clHowToDesc">Copiez ce code HTML et collez-le sur votre site. Remplacez <code>plage-du-diamant</code> par le slug de la plage souhait\u00e9e.</p>
-    <pre><code>&lt;iframe
-  src="https://sargasses-martinique.com/widget/embed/plage-du-diamant/"
-  width="100%" height="90"
-  frameborder="0"
-  title="Sargasses Plage du Diamant - \u00e9tat en temps r\u00e9el"
-&gt;&lt;/iframe&gt;</code></pre>
-    <button class="copy-btn" id="clCopyBtn" onclick="navigator.clipboard.writeText(document.querySelector('pre code').textContent);this.textContent='Copi\u00e9 !'">Copier le code</button>
-
-    <h2 id="clWhyTitle">Pourquoi l'utiliser</h2>
-    <div class="benefit">
-      <span class="benefit-icon">\ud83d\udce1</span>
-      <div>
-        <strong id="clBen1Title">Donn\u00e9es satellite r\u00e9elles</strong>
-        <p id="clBen1Desc">Indice AFAI Copernicus Marine, pas du d\u00e9claratif. Mis \u00e0 jour 4 fois par jour automatiquement.</p>
+    <h2>Configurez le vôtre</h2>
+    <div class="builder">
+      <div class="controls">
+        <div>
+          <label for="b">Plage</label>
+          <select id="b">
+            <optgroup label="Martinique">
+              <option value="plage-des-salines">Plage des Salines</option>
+              <option value="plage-du-diamant" selected>Plage du Diamant</option>
+              <option value="pointe-faula">Pointe Faula</option>
+              <option value="grande-anse-d-arlet">Grande Anse d'Arlet</option>
+              <option value="anse-mitan">Anse Mitan</option>
+              <option value="bourg-de-tartane">Bourg de Tartane</option>
+              <option value="anse-noire">Anse Noire</option>
+              <option value="anse-madame">Anse Madame</option>
+              <option value="plage-du-marin">Plage du Marin</option>
+              <option value="plage-du-bourg-sainte-anne">Plage du Bourg (Sainte-Anne)</option>
+            </optgroup>
+            <optgroup label="Guadeloupe">
+              <option value="plage-de-grande-anse" data-gp>Plage de Grande Anse</option>
+              <option value="plage-de-malendure" data-gp>Plage de Malendure</option>
+              <option value="plage-de-sainte-anne" data-gp>Plage de Sainte-Anne</option>
+              <option value="pointe-des-chateaux" data-gp>Pointe des Châteaux</option>
+              <option value="plage-du-gosier" data-gp>Plage du Gosier</option>
+              <option value="plage-de-la-caravelle" data-gp>Plage de la Caravelle</option>
+              <option value="plage-de-bas-du-fort" data-gp>Plage de Bas-du-Fort</option>
+              <option value="plage-de-deshaies" data-gp>Plage de Deshaies</option>
+              <option value="plage-du-moule" data-gp>Plage du Moule</option>
+              <option value="plage-du-vieux-fort" data-gp>Plage du Vieux-Fort</option>
+            </optgroup>
+          </select>
+        </div>
+        <div>
+          <label for="l">Langue</label>
+          <select id="l"><option value="fr" selected>Français</option><option value="en">English</option><option value="es">Español</option></select>
+        </div>
+        <div>
+          <label for="t">Thème</label>
+          <select id="t"><option value="light" selected>Clair</option><option value="dark">Sombre</option><option value="auto">Auto</option></select>
+        </div>
+        <div>
+          <label for="a">Couleur d'accent</label>
+          <input type="color" id="a" value="#009E8E">
+        </div>
       </div>
-    </div>
-    <div class="benefit">
-      <span class="benefit-icon">\u26a1</span>
-      <div>
-        <strong id="clBen2Title">Ultra-l\u00e9ger</strong>
-        <p id="clBen2Desc">Iframe de 90px de haut, aucun JavaScript \u00e0 charger, aucun impact sur la performance de votre site.</p>
-      </div>
-    </div>
-    <div class="benefit">
-      <span class="benefit-icon">\ud83c\udfa8</span>
-      <div>
-        <strong id="clBen3Title">S'adapte \u00e0 votre design</strong>
-        <p id="clBen3Desc">Fond transparent, taille flexible. Fonctionne sur mobile et desktop.</p>
-      </div>
+      <div class="prev"><iframe id="prev" title="Aperçu du widget" height="168"></iframe></div>
+      <pre><code id="code"></code></pre>
+      <button class="copy" id="copy">Copier le code</button>
     </div>
 
-    <h2 id="clBeachesTitle">Plages disponibles</h2>
-    <p><strong>Martinique :</strong></p>
-    <div class="beaches-list">
-      <code>plage-des-salines</code><code>plage-du-diamant</code><code>pointe-faula</code>
-      <code>grande-anse-d-arlet</code><code>anse-mitan</code><code>bourg-de-tartane</code>
-      <code>anse-noire</code><code>anse-a-l-ane</code><code>anse-dufour</code><code>petite-anse-d-arlet</code>
-    </div>
-    <p><strong>Guadeloupe</strong> (utiliser sargasses-guadeloupe.com) :</p>
-    <div class="beaches-list">
-      <code>plage-bois-jolan</code><code>plage-de-sainte-anne</code><code>plage-du-gosier</code>
-      <code>plage-de-malendure</code><code>plage-de-la-caravelle</code><code>la-grande-anse-deshaies</code>
-      <code>plage-de-saint-francois</code><code>anse-a-la-gourde</code><code>plage-de-bas-du-fort</code><code>la-datcha</code>
+    <h2>Pourquoi l'installer</h2>
+    <div class="grid2">
+      <div class="benefit"><span class="ic">📡</span><div><strong>Données satellite réelles</strong><p>Indice AFAI Copernicus Marine, pas du déclaratif. Mis à jour 4× par jour, automatiquement.</p></div></div>
+      <div class="benefit"><span class="ic">🗓️</span><div><strong>Prévision 7 jours</strong><p>Vos clients voient l'état du jour <em>et</em> la tendance de la semaine avant de réserver.</p></div></div>
+      <div class="benefit"><span class="ic">🎨</span><div><strong>À vos couleurs</strong><p>Couleur d'accent, thème clair ou sombre, 3 langues. S'intègre à votre charte.</p></div></div>
+      <div class="benefit"><span class="ic">⚡</span><div><strong>Zéro maintenance</strong><p>Une simple iframe, aucun script à charger. Se met à jour tout seul, pour toujours.</p></div></div>
     </div>
 
-    <h2 id="clContactTitle">Contact partenariat</h2>
-    <p id="clContactDesc">Vous g\u00e9rez un h\u00f4tel, une agence de location ou un blog voyage aux Antilles ? Nous pouvons cr\u00e9er un widget personnalis\u00e9 avec votre logo. Contactez-nous \u00e0 <strong>contact@sargasses-martinique.com</strong>.</p>
+    <div class="pro">
+      <h2>Vous gérez un hôtel ou une location ?</h2>
+      <p>Le widget est gratuit. Pour aller plus loin — <strong>alerte automatique par email dès que votre plage bascule</strong> (votre équipe et vos prestataires prévenus avant les clients), widget à votre logo, et prévision détaillée plage par plage — découvrez l'offre Pro.</p>
+      <a class="cta" href="/pro/hotels/">Découvrir Sargasses Pro →</a>
+    </div>
+
+    <h2>Questions fréquentes</h2>
+    <p><strong>C'est vraiment gratuit ?</strong> Oui, le widget est gratuit et le restera. Il affiche en retour un discret « Sargasses → » qui renvoie à la carte.</p>
+    <p><strong>Ça ralentit mon site ?</strong> Non. C'est une iframe légère, isolée, sans script tiers sur votre page.</p>
+    <p><strong>Ma plage n'est pas dans la liste ?</strong> Nous suivons les 20 plages les plus fréquentées des Antilles. Écrivez-nous à <strong>contact@sargasses-martinique.com</strong> pour en ajouter une.</p>
   </main>
   <footer>
-    <p id="clFooter">Source : donn\u00e9es satellite Copernicus Marine \u2014 <a href="/">sargasses-martinique.com</a></p>
+    <p>Source : données satellite Copernicus Marine — <a href="/">sargasses-martinique.com</a></p>
   </footer>
+
+  <script>
+  (function(){
+    "use strict";
+    var b=document.getElementById('b'),l=document.getElementById('l'),t=document.getElementById('t'),
+        a=document.getElementById('a'),prev=document.getElementById('prev'),code=document.getElementById('code'),copy=document.getElementById('copy');
+    function opt(){return b.options[b.selectedIndex]}
+    function domain(){return opt().hasAttribute('data-gp')?'sargasses-guadeloupe.com':'sargasses-martinique.com'}
+    function qs(){
+      var p=new URLSearchParams();
+      p.set('beach',b.value);
+      if(l.value!=='fr')p.set('lang',l.value);
+      if(t.value!=='light')p.set('theme',t.value);
+      var hex=a.value.replace('#','').toUpperCase();
+      if(hex && hex!=='009E8E')p.set('accent',hex);
+      return p.toString();
+    }
+    function snippet(){
+      return '<iframe\n  src="https://'+domain()+'/widget/embed/?'+qs()+'"\n  width="100%" height="168" frameborder="0"\n  title="Sargasses — '+opt().textContent.replace(/"/g,'')+'"\n  style="border:0;max-width:520px"\n></iframe>';
+    }
+    function update(){
+      // aperçu : iframe relative (même origine que cette page → fonctionne sur MQ et GP)
+      prev.src='/widget/embed/?'+qs();
+      code.textContent=snippet();
+    }
+    [b,l,t,a].forEach(function(e){e.addEventListener('input',update);e.addEventListener('change',update)});
+    copy.addEventListener('click',function(){
+      navigator.clipboard.writeText(code.textContent).then(function(){
+        copy.textContent='Copié ✓';setTimeout(function(){copy.textContent='Copier le code'},1800);
+      });
+    });
+    update();
+  })();
+  </script>
 </body>
 </html>
