@@ -50,7 +50,7 @@ export default function ArenaOnboarding({onDone,onSkip,lang="fr",track}){
     <div className={"arena-onb bg-"+bg} role="dialog" aria-modal="true">
       <style>{`
         .arena-onb{position:fixed;inset:0;z-index:2900;overflow-y:auto;-webkit-overflow-scrolling:touch;
-          font-family:"Bricolage Grotesque",system-ui,sans-serif;color:#fff;
+          font-family:"Comic Neue",system-ui,sans-serif;color:#fff;
           padding:max(18px,env(safe-area-inset-top)) 16px max(22px,env(safe-area-inset-bottom));
           display:flex;flex-direction:column;animation:arenaOnbIn .35s ease}
         @keyframes arenaOnbIn{from{opacity:0}to{opacity:1}}
@@ -67,7 +67,7 @@ export default function ArenaOnboarding({onDone,onSkip,lang="fr",track}){
           box-shadow:2px 2px 0 #0d0b14;text-transform:uppercase;letter-spacing:.4px}
         .arena-onb .skip{background:none;border:none;color:#fff;font:800 13px/1 "Bricolage Grotesque";
           text-shadow:1px 1px 0 rgba(0,0,0,.5);cursor:pointer;padding:6px}
-        .arena-onb h1{font:400 30px/1 "Anton","Bricolage Grotesque",sans-serif;color:#fff;
+        .arena-onb h1{font:400 30px/1 "AntonLC","Anton",sans-serif;color:#fff;
           text-shadow:3px 3px 0 #0d0b14;transform:rotate(-2deg);letter-spacing:.5px;margin:14px 0 0}
         .arena-onb .sub{margin-top:6px;font-weight:700;font-size:13px;text-shadow:1px 1px 0 rgba(0,0,0,.5)}
         .arena-onb .panel{background:#fdf6e3;border:3px solid #0d0b14;border-radius:14px;padding:12px;
@@ -103,7 +103,20 @@ export default function ArenaOnboarding({onDone,onSkip,lang="fr",track}){
       </div>
 
       {step===0 && (<>
-        <div style={{textAlign:"center",marginTop:18,fontSize:62,filter:"drop-shadow(3px 4px 0 rgba(0,0,0,.35))"}}>🛰️👁</div>
+        <div style={{textAlign:"center",marginTop:18,filter:"drop-shadow(3px 4px 0 rgba(0,0,0,.35))"}}>
+          <svg viewBox="0 0 120 120" width="96" height="96" aria-hidden="true" style={{display:'block',margin:"0 auto"}}>
+            <g stroke="#0d0b14" strokeWidth="2.5"><rect x="6" y="50" width="20" height="22" rx="2" fill="#27a9e3"/><rect x="94" y="50" width="20" height="22" rx="2" fill="#27a9e3"/><line x1="26" y1="61" x2="40" y2="61"/><line x1="94" y1="61" x2="80" y2="61"/></g>
+            <circle cx="60" cy="62" r="34" fill="#fdf6e3" stroke="#0d0b14" strokeWidth="3"/>
+            <line x1="60" y1="28" x2="60" y2="14" stroke="#0d0b14" strokeWidth="3"/>
+            <circle cx="60" cy="11" r="5" fill="#ffd23f" stroke="#0d0b14" strokeWidth="2.5"/>
+            <circle cx="60" cy="62" r="20" fill="#0d0b14"/>
+            <circle cx="60" cy="62" r="14" fill="#27c46b"/>
+            <circle cx="60" cy="62" r="6" fill="#0d0b14"/>
+            <circle cx="64" cy="58" r="2.5" fill="#fff"/>
+            <path d="M44 40 Q60 34 76 40" fill="none" stroke="#0d0b14" strokeWidth="3" strokeLinecap="round"/>
+            <path d="M50 86 Q60 92 70 86" fill="none" stroke="#0d0b14" strokeWidth="3" strokeLinecap="round"/>
+          </svg>
+        </div>
         <h1 style={{textAlign:"center"}}>{L(t.welcome,lang)[0]}<br/>{L(t.welcome,lang)[1]}</h1>
         <div style={{textAlign:"center",marginTop:8}}><span className="pow">PROPRE!</span></div>
         <div className="stack">
@@ -124,7 +137,20 @@ export default function ArenaOnboarding({onDone,onSkip,lang="fr",track}){
         <div style={{position:"relative",marginTop:16,height:150,border:"4px solid #0d0b14",borderRadius:16,
           background:"radial-gradient(circle at 50% 22%,rgba(95,208,255,.45),transparent 60%),linear-gradient(180deg,#0c2a3a,#10202b)",
           overflow:"hidden",boxShadow:"5px 5px 0 #0d0b14"}}>
-          <div style={{position:"absolute",top:12,left:"50%",transform:"translateX(-50%)",fontSize:42,filter:"drop-shadow(2px 2px 0 rgba(0,0,0,.5))"}}>🛰️</div>
+          <div style={{position:"absolute",top:8,left:"50%",transform:"translateX(-50%)",filter:"drop-shadow(2px 2px 0 rgba(0,0,0,.5))"}}>
+            <svg viewBox="0 0 120 120" width="64" height="64" aria-hidden="true" style={{display:'block'}}>
+              <g stroke="#0d0b14" strokeWidth="2.5"><rect x="6" y="50" width="20" height="22" rx="2" fill="#27a9e3"/><rect x="94" y="50" width="20" height="22" rx="2" fill="#27a9e3"/><line x1="26" y1="61" x2="40" y2="61"/><line x1="94" y1="61" x2="80" y2="61"/></g>
+              <circle cx="60" cy="62" r="34" fill="#fdf6e3" stroke="#0d0b14" strokeWidth="3"/>
+              <line x1="60" y1="28" x2="60" y2="14" stroke="#0d0b14" strokeWidth="3"/>
+              <circle cx="60" cy="11" r="5" fill="#ffd23f" stroke="#0d0b14" strokeWidth="2.5"/>
+              <circle cx="60" cy="62" r="20" fill="#0d0b14"/>
+              <circle cx="60" cy="62" r="14" fill="#ffd23f"/>
+              <circle cx="60" cy="62" r="6" fill="#0d0b14"/>
+              <circle cx="64" cy="58" r="2.5" fill="#fff"/>
+              <path d="M44 40 Q60 34 76 40" fill="none" stroke="#0d0b14" strokeWidth="3" strokeLinecap="round"/>
+              <path d="M50 86 Q60 92 70 86" fill="none" stroke="#0d0b14" strokeWidth="3" strokeLinecap="round"/>
+            </svg>
+          </div>
           <div style={{position:"absolute",top:50,left:"50%",width:2,height:60,transform:"translateX(-50%)",background:"linear-gradient(180deg,#27c46b,transparent)"}}/>
           <div style={{position:"absolute",bottom:0,left:0,right:0,height:46,background:"repeating-linear-gradient(90deg,#1d6b3f,#1d6b3f 10px,#27c46b 10px,#27c46b 20px)"}}/>
           <div style={{position:"absolute",bottom:30,right:14}}><span className="pow" style={{background:"#ffd23f",color:"#0d0b14"}}>BIP BIP!</span></div>

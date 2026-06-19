@@ -12,7 +12,8 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.cjs"
 
 
-const STATUS_C = { clean: "#22C55E", moderate: "#E8A800", avoid: "#E8522A" }
+const STATUS_C = { clean: "#27c46b", moderate: "#ffd23f", avoid: "#e8322a" }
+const INK = "#0d0b14"
 const STATUS_LBL = {
   clean:    ["Propre","Clean","Limpia"],
   moderate: ["Modéré","Moderate","Moderado"],
@@ -40,9 +41,9 @@ function fmtFresh(updatedAt){
 
 // Couleur antenne Veilleur selon proportion propres
 function vantColor(beachList, day){
-  const n=beachList.length; if(!n) return "#22C55E"
+  const n=beachList.length; if(!n) return "#27c46b"
   const c=beachList.filter(b=>(b.days[day]||"clean")==="clean").length
-  return c/n>=.6?"#22C55E":c/n>=.35?"#E8A800":"#E8522A"
+  return c/n>=.6?"#27c46b":c/n>=.35?"#ffd23f":"#e8322a"
 }
 
 // Ellipses de relief (Martinique uniquement)
@@ -420,19 +421,19 @@ export default function WorldMapView({
       <style>{`
         @keyframes wmSun{0%,100%{opacity:.9;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
         @keyframes wmHalo{0%,100%{opacity:.45}50%{opacity:.8}}
-        @keyframes wmPulse{0%{box-shadow:0 0 0 0 rgba(232,82,42,.55)}70%{box-shadow:0 0 0 9px rgba(232,82,42,0)}100%{box-shadow:0 0 0 0 rgba(232,82,42,0)}}
+        @keyframes wmPulse{0%{box-shadow:0 0 0 0 rgba(232,50,42,.55)}70%{box-shadow:0 0 0 9px rgba(232,50,42,0)}100%{box-shadow:0 0 0 0 rgba(232,50,42,0)}}
         @keyframes wmSlide{from{opacity:0;transform:translateX(-50%) translateY(16px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
       `}</style>
 
       {/* Bande horizon doré (heure dorée sur la mer) */}
       <div style={{position:"absolute",top:0,left:0,right:0,height:"40%",pointerEvents:"none",zIndex:0,
-        background:"linear-gradient(180deg,rgba(255,198,108,.5) 0%,rgba(255,176,92,.24) 34%,rgba(255,170,96,.08) 60%,transparent 100%)",
+        background:"linear-gradient(180deg,rgba(255,178,103,.5) 0%,rgba(255,138,61,.24) 34%,rgba(255,138,61,.08) 60%,transparent 100%)",
         mixBlendMode:"screen"}}/>
 
       {/* Soleil — disque chaud top-right (le « soleil » d'heure dorée) */}
       <div style={{position:"absolute",top:"-7%",right:"4%",width:130,height:130,borderRadius:"50%",
         pointerEvents:"none",zIndex:0,
-        background:"radial-gradient(circle at 50% 50%, rgba(255,248,224,.96), rgba(255,222,148,.9) 38%, rgba(255,196,92,.45) 62%, transparent 74%)",
+        background:"radial-gradient(circle at 50% 50%, rgba(255,238,210,.96), rgba(255,178,103,.9) 38%, rgba(255,138,61,.45) 62%, transparent 74%)",
         animation:noAnim?"none":"wmSun 11s ease-in-out infinite"}}/>
       {/* Halo soleil large */}
       {!noAnim&&<div style={{position:"absolute",top:"-22%",right:"-12%",width:"80%",height:"58%",
@@ -474,8 +475,8 @@ export default function WorldMapView({
           </radialGradient>
           {/* Terre : vert tropical lumineux haut-droite (soleil) → vert profond + sable côtier */}
           <linearGradient id="wmLand" x1="1" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#9bc24e"/><stop offset=".26" stopColor="#6fa838"/>
-            <stop offset=".58" stopColor="#4a8a32"/><stop offset="1" stopColor="#2f6b2c"/>
+            <stop offset="0" stopColor="#6fe39a"/><stop offset=".26" stopColor="#3fd07e"/>
+            <stop offset=".58" stopColor="#27c46b"/><stop offset="1" stopColor="#1c8f4e"/>
           </linearGradient>
           {/* Overlay chaud d'heure dorée sur la terre (côté soleil) */}
           <linearGradient id="wmWarm" x1="1" y1="0" x2=".2" y2="1">
@@ -536,7 +537,7 @@ export default function WorldMapView({
             {/* overlay chaud (lumière dorée côté soleil) */}
             <path d={outline.path} fill="url(#wmWarm)" opacity=".9" transform="scale(.985)" style={{transformOrigin:"328px 300px"}}/>
             {/* CONTOUR ENCRE comic épais — fait POPPER l'île sur la mer */}
-            <path d={outline.path} fill="none" stroke="#0d1726" strokeWidth="3" strokeLinejoin="round"/>
+            <path d={outline.path} fill="none" stroke={INK} strokeWidth="3" strokeLinejoin="round"/>
           </>}
 
           {/* Relief Martinique — collines comic (ombre verte + crête ensoleillée) */}
@@ -584,15 +585,15 @@ export default function WorldMapView({
                 {/* corps teardrop : pointe en bas (cy=0), bulbe au-dessus */}
                 <g transform={`scale(${s})`} style={{transition:"transform .16s cubic-bezier(.34,1.56,.64,1)"}}>
                   <path d="M0 0 C-5.4 -7 -8 -10.4 -8 -14.4 A8 8 0 1 1 8 -14.4 C8 -10.4 5.4 -7 0 0 Z"
-                    fill={fill} stroke="#0d1726" strokeWidth="1.6" strokeLinejoin="round"/>
+                    fill={fill} stroke={INK} strokeWidth="1.6" strokeLinejoin="round"/>
                   {/* reflet lumineux (volume comic) */}
                   <ellipse cx="-2.6" cy="-17" rx="2.4" ry="3.2" fill="#fff" opacity=".5"/>
                   {/* score visible quand sélectionné, sinon trou blanc */}
                   {isSel&&b.score!=null
                     ? <text x="0" y="-11.4" textAnchor="middle"
-                        fontSize="8.5" fontWeight="800" fill="#0d1726"
-                        fontFamily="'Bricolage Grotesque',system-ui,sans-serif">{Math.round(b.score)}</text>
-                    : <circle cx="0" cy="-14.4" r="3" fill="#fff" stroke="#0d1726" strokeWidth=".7"/>}
+                        fontSize="8.5" fontWeight="800" fill={INK}
+                        fontFamily="'AntonLC','Anton',sans-serif">{Math.round(b.score)}</text>
+                    : <circle cx="0" cy="-14.4" r="3" fill="#fff" stroke={INK} strokeWidth=".7"/>}
                 </g>
               </g>
             )
@@ -600,20 +601,28 @@ export default function WorldMapView({
 
         </g>
 
-        {/* Veilleur satellite — hors du monde, ne zoome pas, veille la mer */}
-        <g transform="translate(726 104) scale(.46)" opacity=".95" aria-hidden="true">
-          <circle cx="0" cy="0" r="42" fill="url(#wmPhalo)"/>
-          <rect x="-58" y="-6" width="34" height="20" rx="3" fill="#163a4f" transform="rotate(-8 -41 4)"/>
-          <rect x="24"  y="-6" width="34" height="20" rx="3" fill="#163a4f" transform="rotate(8 41 4)"/>
-          <path d="M0 -22 C14 -22 22 -14 22 2 C22 18 14 30 0 30 C-14 30 -22 18 -22 2 C-22 -14 -14 -22 0 -22 Z"
-            fill="#102622" stroke="#FFD884" strokeWidth="1.1" strokeOpacity=".5"/>
-          <circle cx="0" cy="4" r="15" fill="#0d3a39"/>
-          <circle cx="0" cy="4" r="15" fill="none" stroke="#E8A800" strokeWidth="2.4"/>
-          <ellipse cx="0" cy="9" rx="15" ry="9" fill="#102622"/>
-          <circle cx="2" cy="3" r="5.4" fill="#0a3a39"/>
-          <circle cx="0.5" cy="1.2" r="2" fill="#cff4ff"/>
-          <line x1="0" y1="-22" x2="0" y2="-34" stroke="#0e2622" strokeWidth="2.4"/>
-          <circle cx="0" cy="-36" r="3.4" fill={vant}/>
+        {/* Veilleur satellite — canonique comic, hors du monde, ne zoome pas, veille la mer */}
+        <g transform="translate(666 44) scale(.84)" opacity=".95" aria-hidden="true">
+          <circle cx="60" cy="60" r="46" fill="url(#wmPhalo)"/>
+          {/* panneaux solaires comic ink */}
+          <g stroke="#0d0b14" strokeWidth="2.5">
+            <rect x="2"   y="50" width="30" height="20" rx="3" fill="#27a9e3" transform="rotate(-8 17 60)"/>
+            <rect x="88"  y="50" width="30" height="20" rx="3" fill="#27a9e3" transform="rotate(8 103 60)"/>
+            <line x1="32" y1="60" x2="46" y2="60"/><line x1="88" y1="60" x2="74" y2="60"/>
+          </g>
+          {/* corps crème */}
+          <circle cx="60" cy="63" r="34" fill="#fdf6e3" stroke="#0d0b14" strokeWidth="3"/>
+          {/* antenne + boule jaune */}
+          <line x1="60" y1="29" x2="60" y2="14" stroke="#0d0b14" strokeWidth="3"/>
+          <circle cx="60" cy="11" r="5" fill="#ffd23f" stroke="#0d0b14" strokeWidth="2"/>
+          {/* œil amical + iris selon humeur */}
+          <circle cx="60" cy="63" r="20" fill="#0d0b14"/>
+          <circle cx="60" cy="63" r="14" fill={vant}/>
+          <circle cx="60" cy="63" r="6"  fill="#0d0b14"/>
+          <circle cx="55" cy="58" r="2.5" fill="#fff"/>
+          {/* sourcil + sourire */}
+          <path d="M44 47 Q60 41 76 47" stroke="#0d0b14" strokeWidth="3" fill="none" strokeLinecap="round"/>
+          <path d="M50 89 Q60 95 70 89" stroke="#0d0b14" strokeWidth="3" fill="none" strokeLinecap="round"/>
         </g>
       </svg>
 
@@ -637,17 +646,17 @@ export default function WorldMapView({
                 whiteSpace:"nowrap",
               }}>
               <div style={{
-                font:"800 11px/1 'Bricolage Grotesque',system-ui,sans-serif",
-                color:"#EAF7F4",
-                textShadow:"0 1px 0 rgba(3,17,15,.95),0 0 5px rgba(3,17,15,.9),0 0 9px rgba(3,17,15,.65)",
+                font:"800 11px/1 'Comic Neue',system-ui,sans-serif",
+                color:"#fff",
+                textShadow:`1px 1px 0 ${INK},0 0 5px ${INK},0 0 9px rgba(13,11,20,.65)`,
               }}>{b.name}</div>
               <div style={{
-                font:"700 9px/1 'Bricolage Grotesque',system-ui,sans-serif",
+                font:"800 9px/1 'Comic Neue',system-ui,sans-serif",
                 letterSpacing:".05em",
                 textTransform:"uppercase",
                 color:col,
                 marginTop:2,
-                textShadow:"0 1px 0 rgba(3,17,15,.95),0 0 4px rgba(3,17,15,.85)",
+                textShadow:`1px 1px 0 ${INK},0 0 4px ${INK}`,
               }}>{STATUS_LBL[st]?.[li]}</div>
             </div>
           )
@@ -668,24 +677,24 @@ export default function WorldMapView({
           <div style={{
             display:"inline-flex",alignItems:"center",gap:7,pointerEvents:"auto",
             padding:"6px 12px 6px 10px",borderRadius:999,
-            background:"rgba(8,18,16,.5)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",
-            border:"1px solid rgba(255,255,255,.14)",
+            background:"#fdf6e3",
+            border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,
           }}>
             <div style={{
-              width:8,height:8,borderRadius:"50%",background:"#E8522A",
+              width:8,height:8,borderRadius:"50%",background:"#e8322a",border:`1.5px solid ${INK}`,
               animation:noAnim?"none":"wmPulse 2.4s ease-out infinite",
             }}/>
-            <span style={{font:"800 11px/1 'Bricolage Grotesque',sans-serif",letterSpacing:".08em",textTransform:"uppercase",color:"#fff"}}>EN DIRECT</span>
-            <span style={{font:"700 11px/1 'JetBrains Mono',monospace",color:"#5FD3C9",marginLeft:2}}>
+            <span style={{font:"800 11px/1 'Comic Neue',system-ui,sans-serif",letterSpacing:".06em",textTransform:"uppercase",color:INK}}>EN DIRECT</span>
+            <span style={{font:"700 11px/1 'JetBrains Mono',monospace",color:"#1c8f4e",marginLeft:2}}>
               {updatedAt?`il y a ${fmtFresh(updatedAt)}`:"···"}
             </span>
           </div>
           {/* Fermer (hors rootMode) */}
           {!rootMode&&<button onClick={onClose} style={{
-            border:"1px solid rgba(255,255,255,.14)",
-            background:"rgba(8,18,16,.5)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",
-            color:"#EAF7F4",font:"800 12px/1 'Bricolage Grotesque',sans-serif",
-            padding:"8px 12px",borderRadius:9,cursor:"pointer",pointerEvents:"auto",
+            border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,
+            background:"#fdf6e3",
+            color:INK,font:"800 12px/1 'Comic Neue',system-ui,sans-serif",
+            padding:"8px 12px",borderRadius:10,cursor:"pointer",pointerEvents:"auto",
           }}>✕</button>}
         </div>
 
@@ -695,26 +704,26 @@ export default function WorldMapView({
           left:0,right:0,maxWidth:560,margin:"0 auto",padding:"0 18px",pointerEvents:"none",
         }}>
           <h2 style={{
-            fontFamily:"'Anton','Haettenschweiler','Arial Narrow Bold',Impact,sans-serif",
+            fontFamily:"'AntonLC','Anton',sans-serif",
             fontWeight:400,letterSpacing:"-.01em",textTransform:"uppercase",
             fontSize:"clamp(24px,6.4vw,32px)",lineHeight:.96,color:"#fff",
-            textShadow:"0 2px 18px rgba(0,0,0,.5)",margin:0,
+            textShadow:`2px 2px 0 ${INK},0 3px 14px rgba(0,0,0,.45)`,margin:0,
           }}>
-            {regionName} <span style={{color:"#FFE47A"}}>{dayLbl}</span>
+            {regionName} <span style={{color:"#ffd23f"}}>{dayLbl}</span>
           </h2>
           <div style={{
             marginTop:9,display:"inline-flex",alignItems:"center",gap:9,pointerEvents:"auto",
-            background:"rgba(8,18,16,.42)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",
-            border:"1px solid rgba(255,255,255,.12)",borderRadius:12,padding:"8px 13px",
+            background:"#fdf6e3",
+            border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:12,padding:"8px 13px",
           }}>
-            <div style={{width:104,height:7,borderRadius:4,background:"rgba(255,255,255,.14)",overflow:"hidden"}}>
+            <div style={{width:104,height:8,borderRadius:5,background:"#fff",border:`2px solid ${INK}`,overflow:"hidden"}}>
               <div style={{
-                height:"100%",background:"linear-gradient(90deg,#22C55E,#FFC72C)",borderRadius:4,transition:"width .4s ease",
+                height:"100%",background:"linear-gradient(90deg,#27c46b,#ffd23f)",transition:"width .4s ease",
                 width:beachList.length?Math.round(cleanCnt/beachList.length*100)+"%":"0%",
               }}/>
             </div>
-            <span style={{font:"700 12.5px/1 'Bricolage Grotesque',sans-serif",color:"#fff"}}>
-              <b style={{color:"#FFE47A"}}>{cleanCnt}</b> {_t(lang,"plages propres","clean beaches","playas limpias")}
+            <span style={{font:"700 12.5px/1 'Comic Neue',system-ui,sans-serif",color:INK}}>
+              <b style={{fontFamily:"'AntonLC','Anton',sans-serif",fontWeight:400,color:"#1c8f4e"}}>{cleanCnt}</b> {_t(lang,"plages propres","clean beaches","playas limpias")}
             </span>
           </div>
         </div>
@@ -724,13 +733,13 @@ export default function WorldMapView({
           position:"absolute",left:16,bottom:"calc(74px + env(safe-area-inset-bottom))",
           display:"flex",flexDirection:"column",gap:5,pointerEvents:"none",
         }}>
-          {[["#22C55E",_t(lang,"Propre","Clean","Limpia")],
-            ["#E8A800",_t(lang,"Modéré","Moderate","Moderado")],
-            ["#E8522A",_t(lang,"À éviter","Avoid","Evitar")]].map(([c,l])=>(
+          {[["#27c46b",_t(lang,"Propre","Clean","Limpia")],
+            ["#ffd23f",_t(lang,"Modéré","Moderate","Moderado")],
+            ["#e8322a",_t(lang,"À éviter","Avoid","Evitar")]].map(([c,l])=>(
             <div key={c} style={{display:"flex",alignItems:"center",gap:7,
-              font:"700 10.5px/1 'Bricolage Grotesque',sans-serif",
-              color:"rgba(255,255,255,.8)",textShadow:"0 1px 4px #000"}}>
-              <div style={{width:9,height:9,borderRadius:"50%",background:c}}/>{l}
+              font:"700 10.5px/1 'Comic Neue',system-ui,sans-serif",
+              color:"#fff",textShadow:`0 1px 0 ${INK},0 0 4px ${INK}`}}>
+              <div style={{width:10,height:10,borderRadius:"50%",background:c,border:`1.5px solid ${INK}`}}/>{l}
             </div>
           ))}
         </div>
@@ -739,10 +748,10 @@ export default function WorldMapView({
         <button style={{
           position:"absolute",right:16,bottom:"calc(74px + env(safe-area-inset-bottom))",
           pointerEvents:"auto",display:"inline-flex",alignItems:"center",gap:7,
-          background:"linear-gradient(135deg,#FFE47A,#FFC72C 45%,#E8A800)",
-          color:"#16241f",border:0,font:"800 12.5px/1 'Bricolage Grotesque',sans-serif",
+          background:"#fdf6e3",
+          color:INK,border:`2.5px solid ${INK}`,font:"800 12.5px/1 'Comic Neue',system-ui,sans-serif",
           padding:"11px 14px",borderRadius:999,cursor:"pointer",
-          boxShadow:"0 8px 22px rgba(232,168,0,.34)",
+          boxShadow:`3px 3px 0 ${INK}`,
         }} onClick={nearMe}>
           📍 {_t(lang,"Près de moi","Near me","Cerca de mí")}
         </button>
@@ -754,16 +763,16 @@ export default function WorldMapView({
         }}>
           <div style={{
             pointerEvents:"auto",display:"flex",gap:4,
-            background:"rgba(8,18,16,.6)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",
-            border:"1px solid rgba(255,255,255,.12)",borderRadius:999,padding:4,
+            background:"#fdf6e3",
+            border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:999,padding:4,
           }}>
             {DAY_LBL.map((lbl,i)=>(
               <button key={i} style={{
-                border:0,position:"relative",
-                background:day===i?"#FFC72C":"transparent",
-                color:day===i?"#16241f":"rgba(255,255,255,.75)",
-                font:"800 11px/1 'Bricolage Grotesque',sans-serif",
-                padding:"8px 11px",borderRadius:999,cursor:"pointer",
+                border:day===i?`2px solid ${INK}`:"2px solid transparent",position:"relative",
+                background:day===i?"#ffd23f":"transparent",
+                color:INK,
+                font:"800 11px/1 'Comic Neue',system-ui,sans-serif",
+                padding:"7px 10px",borderRadius:999,cursor:"pointer",
               }} onClick={()=>{
                 if(i>=1){ try{track&&track("sg_map_scrub_locked",{day:i})}catch(_){}; onPremium&&onPremium("map_scrub_forecast"); return }
                 setDay(i)
@@ -783,20 +792,20 @@ export default function WorldMapView({
         }}>
           <div style={{
             pointerEvents:"auto",display:"flex",gap:3,
-            background:"rgba(8,18,16,.62)",backdropFilter:"blur(14px)",WebkitBackdropFilter:"blur(14px)",
-            border:"1px solid rgba(255,255,255,.12)",borderRadius:999,padding:5,
+            background:"#fdf6e3",
+            border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:999,padding:5,
           }}>
             <button style={{
-              display:"flex",alignItems:"center",gap:6,border:0,
-              background:"#FFC72C",color:"#16241f",
-              font:"800 12px/1 'Bricolage Grotesque',sans-serif",
-              padding:"9px 15px",borderRadius:999,cursor:"default",
+              display:"flex",alignItems:"center",gap:6,border:`2px solid ${INK}`,
+              background:"#ffd23f",color:INK,
+              font:"800 12px/1 'Comic Neue',system-ui,sans-serif",
+              padding:"8px 14px",borderRadius:999,cursor:"default",
             }}>🗺️ {_t(lang,"Carte","Map","Mapa")}</button>
             {!rootMode&&<button onClick={onClose} style={{
-              display:"flex",alignItems:"center",gap:6,border:0,
-              background:"transparent",color:"rgba(255,255,255,.7)",
-              font:"800 12px/1 'Bricolage Grotesque',sans-serif",
-              padding:"9px 15px",borderRadius:999,cursor:"pointer",
+              display:"flex",alignItems:"center",gap:6,border:"2px solid transparent",
+              background:"transparent",color:INK,
+              font:"800 12px/1 'Comic Neue',system-ui,sans-serif",
+              padding:"8px 14px",borderRadius:999,cursor:"pointer",
             }}>✕ {_t(lang,"Fermer","Close","Cerrar")}</button>}
           </div>
         </div>
@@ -806,17 +815,17 @@ export default function WorldMapView({
           <div style={{
             position:"absolute",left:tagPos.x,top:tagPos.y-14,
             transform:"translate(-50%,-100%)",
-            background:"rgba(8,18,16,.86)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",
-            border:"1px solid rgba(255,255,255,.14)",borderRadius:12,padding:"8px 11px",
+            background:"#fdf6e3",
+            border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:12,padding:"8px 11px",
             pointerEvents:"none",whiteSpace:"nowrap",
           }}>
-            <div style={{font:"800 12.5px/1.1 'Bricolage Grotesque',sans-serif",color:"#fff"}}>{selected.name}</div>
-            <div style={{font:"800 10.5px/1 'Bricolage Grotesque',sans-serif",letterSpacing:".04em",
-              textTransform:"uppercase",marginTop:4,display:"flex",alignItems:"center",gap:5}}>
-              <div style={{width:7,height:7,borderRadius:"50%",background:STATUS_C[selected.days[day]||"clean"]}}/>
+            <div style={{font:"400 14px/1.1 'AntonLC','Anton',sans-serif",letterSpacing:".01em",color:INK}}>{selected.name}</div>
+            <div style={{font:"800 10.5px/1 'Comic Neue',system-ui,sans-serif",letterSpacing:".04em",
+              textTransform:"uppercase",marginTop:4,display:"flex",alignItems:"center",gap:5,color:INK}}>
+              <div style={{width:8,height:8,borderRadius:"50%",background:STATUS_C[selected.days[day]||"clean"],border:`1.5px solid ${INK}`}}/>
               <span>{ti(lang,STATUS_LBL[selected.days[day]||"clean"]||["—","—","—"])}</span>
             </div>
-            {selected.commune&&<div style={{font:"700 10px/1 'JetBrains Mono',monospace",color:"#9DB4B0",marginTop:4}}>{selected.commune}</div>}
+            {selected.commune&&<div style={{font:"700 10px/1 'Comic Neue',system-ui,sans-serif",color:"#6b6478",marginTop:4}}>{selected.commune}</div>}
           </div>
         )}
 
@@ -826,11 +835,11 @@ export default function WorldMapView({
             position:"absolute",left:"50%",bottom:"calc(176px + env(safe-area-inset-bottom))",
             transform:"translateX(-50%)",pointerEvents:"auto",
             display:"inline-flex",alignItems:"center",gap:8,
-            background:"linear-gradient(135deg,#FFE47A,#FFC72C 42%,#E8A800)",
-            color:"#16241f",border:0,
-            font:"800 13.5px/1 'Bricolage Grotesque',sans-serif",
+            background:"linear-gradient(180deg,#FFE07A,#FFC72C)",
+            color:INK,border:`2.5px solid ${INK}`,
+            font:"800 13.5px/1 'Comic Neue',system-ui,sans-serif",
             padding:"13px 18px",borderRadius:999,
-            boxShadow:"0 10px 28px rgba(232,168,0,.4)",cursor:"pointer",
+            boxShadow:`4px 4px 0 ${INK}`,cursor:"pointer",
             animation:"wmSlide .25s cubic-bezier(.34,1.56,.64,1) both",
           }}>
             {_t(lang,"Voir la plage","Open beach","Ver la playa")} <span style={{fontWeight:800}}>→</span>
