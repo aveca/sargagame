@@ -5,7 +5,7 @@ import React,{useState,useEffect} from "react";
    N'altère ni le moteur ni le paywall. Palette ink/yel/blu/grn/red/paper. */
 const L=(o,lang)=>(o&&(o[lang]||o.fr))||"";
 
-export default function ArenaOnboarding({onDone,onSkip,lang="fr",track}){
+export default function ArenaOnboarding({onDone,onSkip,lang="fr",track,region=null}){
   const [step,setStep]=useState(0);
   // Instrumentation : sans elle, on est aveugle sur le premier écran que voient TOUS
   // les nouveaux visiteurs (« les clients en disent rien » → seul le comportement parle).
@@ -43,7 +43,21 @@ export default function ArenaOnboarding({onDone,onSkip,lang="fr",track}){
     soon:{fr:"🔒 Bientôt",en:"🔒 Soon",es:"🔒 Pronto"},
     cta3:{fr:"Entrer en Martinique",en:"Enter Martinique",es:"Entrar en Martinica"},
     cta3s:{fr:"Tu pourras changer dans Réglages",en:"You can change in Settings",es:"Podrás cambiar en Ajustes"},
+    cleanPill:{fr:"PROPRES",en:"CLEAN",es:"LIMPIAS"},
+    modPill:{fr:"MODÉRÉ",en:"MODERATE",es:"MODERADO"},
+    avoidPill:{fr:"À ÉVITER",en:"AVOID",es:"EVITAR"},
   };
+  // Régionalisation : Martinique (region=null) garde les chaînes legacy À L'IDENTIQUE
+  // (zéro régression sur le domaine principal). Sinon on injecte le bon marché — GP et
+  // les domaines internationaux affichaient « Martinique » sur le 1er écran (bug cohérence).
+  const RL = region && region.label ? String(region.label) : null;
+  const p1a = RL
+    ? {fr:`Le Veilleur scrute la côte de ${RL} depuis l'espace.`,en:`The Watcher scans the ${RL} coast from space.`,es:`El Vigía escruta la costa de ${RL} desde el espacio.`}
+    : t.p1a;
+  const cta3 = RL
+    ? {fr:`Entrer · ${RL}`,en:`Enter ${RL}`,es:`Entrar · ${RL}`}
+    : t.cta3;
+  const regBeaches = region && Array.isArray(region.beaches) ? region.beaches.filter(Boolean).slice(0,3) : [];
   const bg = step===1 ? "night" : "sky";
 
   return (
@@ -121,7 +135,7 @@ export default function ArenaOnboarding({onDone,onSkip,lang="fr",track}){
         <div style={{textAlign:"center",marginTop:8}}><span className="pow">PROPRE!</span></div>
         <div className="stack">
           <div className="panel">
-            <div className="txt" style={{fontWeight:800}} dangerouslySetInnerHTML={{__html:L(t.p1a,lang)}}/>
+            <div className="txt" style={{fontWeight:800}} dangerouslySetInnerHTML={{__html:L(p1a,lang)}}/>
             <div className="txt" style={{marginTop:8}} dangerouslySetInnerHTML={{__html:L(t.p1b,lang)}}/>
           </div>
           <div className="row"><span style={{fontSize:26}}>🌊</span><span className="txt" style={{flex:1}} dangerouslySetInnerHTML={{__html:L(t.r1a,lang)}}/></div>
@@ -172,19 +186,19 @@ export default function ArenaOnboarding({onDone,onSkip,lang="fr",track}){
             <div style={{background:"linear-gradient(90deg,#2bb6a6,#0f7d72)",padding:"10px 12px",display:"flex",alignItems:"center",gap:8,borderBottom:"3px solid #0d0b14"}}>
               <span style={{fontSize:30}}>🏝️</span>
               <span style={{flex:1}}>
-                <span style={{display:"block",fontFamily:"Anton",color:"#fff",fontSize:18,textShadow:"1.5px 1.5px 0 #0d0b14"}}>MARTINIQUE</span>
-                <span style={{display:"block",font:"800 10px/1.2 'Bricolage Grotesque'",color:"#d8fff6"}}>10 plages · Le Diamant, Les Salines…</span>
+                <span style={{display:"block",fontFamily:"Anton",color:"#fff",fontSize:18,textShadow:"1.5px 1.5px 0 #0d0b14"}}>{RL?RL.toUpperCase():"MARTINIQUE"}</span>
+                <span style={{display:"block",font:"800 10px/1.2 'Bricolage Grotesque'",color:"#d8fff6"}}>{RL?(regBeaches.length?regBeaches.join(", ")+"…":RL):"10 plages · Le Diamant, Les Salines…"}</span>
               </span>
               <span className="pill" style={{background:"#27c46b",color:"#fff",borderWidth:2.5}}>{L(t.chosen,lang)}</span>
             </div>
             <div style={{padding:"10px 12px",display:"flex",gap:7,flexWrap:"wrap",background:"#fdf6e3"}}>
-              <span className="pill"><span className="dot" style={{background:"#27c46b"}}/>6 PROPRES</span>
-              <span className="pill"><span className="dot" style={{background:"#ffd23f"}}/>2 MODÉRÉ</span>
-              <span className="pill"><span className="dot" style={{background:"#e8322a"}}/>2 À ÉVITER</span>
+              <span className="pill"><span className="dot" style={{background:"#27c46b"}}/>{RL?L(t.cleanPill,lang):"6 PROPRES"}</span>
+              <span className="pill"><span className="dot" style={{background:"#ffd23f"}}/>{RL?L(t.modPill,lang):"2 MODÉRÉ"}</span>
+              <span className="pill"><span className="dot" style={{background:"#e8322a"}}/>{RL?L(t.avoidPill,lang):"2 À ÉVITER"}</span>
             </div>
             <div className="pow" style={{position:"absolute",top:-10,right:8,background:"#ffd23f",color:"#0d0b14"}}>YEAH!</div>
           </div>
-          <div className="panel" style={{padding:0,overflow:"hidden",opacity:.85,borderStyle:"dashed"}}>
+          {!RL && <div className="panel" style={{padding:0,overflow:"hidden",opacity:.85,borderStyle:"dashed"}}>
             <div style={{background:"linear-gradient(90deg,#6b6577,#403b4d)",padding:"10px 12px",display:"flex",alignItems:"center",gap:8,borderBottom:"3px solid #0d0b14"}}>
               <span style={{fontSize:30}}>🦋</span>
               <span style={{flex:1}}>
@@ -193,10 +207,10 @@ export default function ArenaOnboarding({onDone,onSkip,lang="fr",track}){
               </span>
               <span className="pill" style={{background:"#ffd23f",borderWidth:2.5}}>{L(t.soon,lang)}</span>
             </div>
-          </div>
+          </div>}
         </div>
         <div className="spacer"/>
-        <button className="btn yel" onClick={done}>{L(t.cta3,lang)}<small>{L(t.cta3s,lang)}</small></button>
+        <button className="btn yel" onClick={done}>{L(cta3,lang)}<small>{L(t.cta3s,lang)}</small></button>
       </>)}
 
       <div className="dots" aria-hidden="true">

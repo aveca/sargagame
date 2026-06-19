@@ -4,7 +4,7 @@ import React,{useEffect,useState} from "react";
    Overlay plein cadre affiché brièvement au démarrage à froid (gated par sessionStorage,
    uniquement sur l'entrée app — pas les pages SEO). N'altère ni le moteur ni le paywall.
    Palette : ink #0d0b14, yel #ffd23f, blu #27a9e3, grn #27c46b, paper #fdf6e3. */
-export default function ArenaSplash({onDone,lang="fr",track}){
+export default function ArenaSplash({onDone,lang="fr",track,wordmark="SARGASSES MARTINIQUE"}){
   const [leaving,setLeaving]=useState(false);
   useEffect(()=>{
     // Dénominateur de l'entonnoir première visite (entrées app à froid qui voient le splash).
@@ -74,7 +74,7 @@ export default function ArenaSplash({onDone,lang="fr",track}){
         <span className="pow">SCAN!</span>
       </div>
       <h1>LE VEILLEUR</h1>
-      <div className="wm">SARGASSES MARTINIQUE</div>
+      <div className="wm">{wordmark}</div>
       <div className="tag">{L("tagline")}</div>
       <div className="bar" aria-hidden="true"><i></i></div>
       <div className="stat">{L("loading")}</div>
