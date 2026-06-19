@@ -210,8 +210,10 @@ function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool=[],tra
     : beach.status==="moderate" ? {fr:"À SURVEILLER",en:"KEEP AN EYE",es:"A VIGILAR"}
     : {fr:"BAIGNADE OK",en:"SWIM OK",es:"BAÑO OK"}
   useEffect(()=>{ try{ document.body.style.overflow="hidden" }catch(_){}; return ()=>{ try{ document.body.style.overflow="" }catch(_){} } },[])
+  /* a11y clavier : Échap ferme le détail plein écran */
+  useEffect(()=>{ const k=(e)=>{ if(e.key==="Escape"){ e.stopPropagation(); onClose&&onClose() } }; window.addEventListener("keydown",k); return ()=>window.removeEventListener("keydown",k) },[onClose])
   return (
-    <div className="lc-detail" role="dialog" aria-label={beach.name}>
+    <div className="lc-detail" role="dialog" aria-modal="true" aria-label={beach.name}>
       <button type="button" className="lc-detail-x" onClick={onClose} aria-label="Fermer">✕</button>
       <div className={`lc-detail-illu s-${v.st}`}>
         <Illu st={v.st} score={sc||0} uid={(beach.id||"d")+"-dt"}/>
