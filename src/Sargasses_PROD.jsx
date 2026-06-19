@@ -10,6 +10,7 @@ import {computeScore as _computeBeachScore} from "./lib/score.js"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.cjs"
 import { getCanonicalSlug } from "./lib/slug-resolver.js"
 import Dock from "./Dock.jsx"
+import ArenaSplash from "./ArenaSplash.jsx"
 import DiveTransition from "./DiveTransition.jsx"
 import PassOffer from "./PassOffer.jsx"
 import "./Themes.css"
@@ -12644,9 +12645,25 @@ export default function App(){
     return()=>{if(t)clearTimeout(t);window.removeEventListener("sg:value_moment",reset)}
   },[])
 
+  const [showSplash,setShowSplash]=useState(()=>{
+    try{
+      if(typeof window==="undefined") return false;
+      const q=window.location.search||"";
+      if(/[?&]splash=0/.test(q)) return false;
+      if(/[?&]splash=1/.test(q)) return true;
+      const path=window.location.pathname;
+      // splash UNIQUEMENT sur l'entrée app (racine) — jamais sur les pages plages SEO
+      if(!(path==="/"||path===""||path==="/index.html")) return false;
+      if(sessionStorage.getItem("sg_splash_seen")) return false;
+      sessionStorage.setItem("sg_splash_seen","1");
+      return true;
+    }catch(_){ return false; }
+  });
+
   return(
     <LangCtx.Provider value={lang}>
       <StyleInjector/>
+      {showSplash&&<ArenaSplash lang={lang} onDone={()=>setShowSplash(false)}/>}
       <AbDebug/>
       {/* Mot-clé SEO sr-only — <p> (PAS <h1>) : la scène/route visible fournit déjà
           l'unique <h1> ; deux <h1> = anti-pattern SEO + a11y. Texte reste crawlable. */}
