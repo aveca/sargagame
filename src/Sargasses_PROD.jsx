@@ -11916,8 +11916,10 @@ export default function App(){
   // Le Veilleur v2, scrub prévision verrouillé J2-7) vs BeachSheet (control intact).
   // 50/50. Override ?beachdive=1/0. Conversion = openPremium UNIQUE (contextualisé plage).
   const beachDive=useMemo(()=>{try{const q=window.location.search;if(/[?&]beachdive=1/.test(q))return true;if(/[?&]beachdive=0/.test(q))return false;return abVariant("pw_beach_dive",["control","dive"],[.5,.5])==="dive"}catch(_){return false}},[])
-  // A/B nav_dive : plongée golden-hour carte→plage 1×/session (rollout 15%, ?navdive=1/0).
-  const navDive=useMemo(()=>{try{const q=window.location.search;if(/[?&]navdive=1/.test(q))return true;if(/[?&]navdive=0/.test(q))return false;return abVariant("nav_dive",["control","dive"],[.85,.15])==="dive"}catch(_){return false}},[])
+  // nav_dive RETIRÉ 2026-06-18 (loop ab-eval 28j) : bras mort n=46 @0% conv vs control n=358 @1.4%.
+  // Inliné au control — la plongée 1×/session ajoutait une friction sans conversion. ?navdive=1 force
+  // encore l'aperçu. Réversible : restaurer abVariant("nav_dive",["control","dive"],[.85,.15])==="dive".
+  const navDive=useMemo(()=>{try{const q=window.location.search;if(/[?&]navdive=1/.test(q))return true;if(/[?&]navdive=0/.test(q))return false;return false}catch(_){return false}},[])
   // A/B `capture_gate` : gate email légère avant PremiumModal sur intent forecast.
   // 50/50. Override ?capture_gate=1/0. Cible : lever le 0,35 % capture email.
   // 2026-06-17 — porte « soit email soit cb » PROMUE EN DÉFAUT (85% gate / 15%
