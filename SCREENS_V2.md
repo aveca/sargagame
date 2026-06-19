@@ -37,7 +37,7 @@ l'**alerte** le jour où ta plage bascule. Un seul monde **comic-book animé** (
 ### Bloc 4 — Jeu / rétention (le « plein de jeux » demandé)
 - [x] 13 PROFIL / MA COLLECTION (= Pokédex + paliers, fait) → 07
 - [ ] 14 CLASSEMENT / TOP JOUEURS (leaderboard série 🔥) → 13
-- [ ] 15 DÉFI DU JOUR / « Devine le score » (mini-jeu) → 16/17
+- [x] 15 DÉFI DU JOUR « plus chaud / plus froid » (higher-lower 1 round/jour — fait) → 13
 - [ ] 16 DÉBLOQUER BADGE « Niveau ! » (achievement comic) → 13
 - [x] 17 RÉCOMPENSE (célébration comic « NIVEAU ! » au franchissement de rang — fait) → 13
 - [ ] 18 DÉFI DU THÈME / contest → 14
