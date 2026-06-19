@@ -1,7 +1,24 @@
 {
   "_comment": "SOURCE DE VÉRITÉ unique des releases. Édite UNIQUEMENT ce fichier pour publier une nouveauté à toute la flotte (mq/gp/florida/rivieramaya/puntacana). `current` = id de la release en cours = releases[0].v. `scripts/sync-version.cjs` en dérive public/version.json + le CACHE_NAME de public/sw.js. Le frontend (Journal du Veilleur) montre aux visiteurs qui reviennent toutes les releases dont le v est > à leur sg_rel_seen. Items i18n fr/en/es, honnêtes (jamais de fausse fraîcheur). href optionnel = lien same-origin (n'apparaît que s'il existe sur le domaine courant).",
-  "current": "v211",
+  "current": "v212",
   "releases": [
+    {
+      "v": "v212",
+      "date": "2026-06-19",
+      "title": {
+        "fr": "Thèmes jouables",
+        "en": "Playable themes",
+        "es": "Temas jugables"
+      },
+      "items": [
+        {
+          "emoji": "🎨",
+          "fr": "Choisis ton thème : un bouton 🎨 en bas à droite pour habiller l'app (comic, arcade, manga, sticker). Réglable, sans rien changer à tes données.",
+          "en": "Pick your theme: a 🎨 button (bottom-right) to skin the app (comic, arcade, manga, sticker).",
+          "es": "Elige tu tema: un botón 🎨 abajo a la derecha para vestir la app."
+        }
+      ]
+    },
     {
       "v": "v211",
       "date": "2026-06-19",

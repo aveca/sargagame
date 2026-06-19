@@ -11853,18 +11853,19 @@ export default function App(){
     try{ if(uiTheme) localStorage.setItem("sg_ui_theme", uiTheme); }catch(_){}
     return ()=>{ if(cls) document.body.classList.remove(cls); };
   },[uiTheme])
-  // Picker flottant (DOM vanilla isolé) — switch live entre tous les thèmes.
-  // ROLLOUT : visible uniquement en preview (?themes=1 / ?theme= / ?comic=1 / thème sauvegardé)
-  // tant qu'on n'a pas validé. Flip = retirer cette garde (showPicker=true partout).
+  // Picker flottant (DOM vanilla isolé) — switch live entre tous les thèmes. ACTIVÉ POUR TOUS :
+  // les thèmes sont OPT-IN (défaut golden = app intacte → aucun skin forcé sur le paywall),
+  // le picker 🎨 invite à jouer (vibe jeu). ?themes=0 = masquer.
+  // A/B `theme_nudge` (control vs nudge) : le FAB "pulse" 1× pour mesurer l'ADOPTION des thèmes
+  // sans rien forcer. Events trackés : ui_theme_view (exposition) + ui_theme_pick (choix).
+  // Résolution à ~24h via scripts/resolve-theme-ab.cjs (cf. design/themes-lab-src/AB-THEMES.md).
   useEffect(()=>{
     if(typeof document==="undefined") return;
-    let showPicker=false;
-    try{
-      const q=window.location.search;
-      showPicker = /[?&](themes=1|theme=|comic=1)/i.test(q) || !!localStorage.getItem("sg_ui_theme");
-    }catch(_){}
-    if(!showPicker) return;
-    const fab=document.createElement("button"); fab.className="sg-theme-fab"; fab.setAttribute("aria-label","Changer de thème"); fab.textContent="🎨";
+    try{ if(/[?&]themes=0/.test(window.location.search)) return; }catch(_){}
+    let nudge=false;
+    try{ nudge = (typeof abVariant==="function") && abVariant("theme_nudge",["control","nudge"],[.5,.5])==="nudge"; }catch(_){}
+    try{ if(typeof track==="function") track("ui_theme_view",{theme:uiTheme,nudge:nudge?1:0}); }catch(_){}
+    const fab=document.createElement("button"); fab.className="sg-theme-fab"+(nudge?" pulse":""); fab.setAttribute("aria-label","Changer de thème"); fab.textContent="🎨";
     const menu=document.createElement("div"); menu.className="sg-theme-menu";
     THEMES.forEach(function(t){
       const b=document.createElement("button"); b.className="sg-theme-opt"; b.setAttribute("data-theme",t.id);
@@ -11873,11 +11874,11 @@ export default function App(){
       b.addEventListener("click",function(){
         THEMES.forEach(function(x){ if(x.id!=="golden") document.body.classList.remove("theme-"+x.id); });
         setUiTheme(t.id); menu.classList.remove("open");
-        try{ if(typeof track==="function") track("ui_theme_pick",{theme:t.id}); }catch(_){}
+        try{ if(typeof track==="function") track("ui_theme_pick",{theme:t.id,nudge:nudge?1:0}); }catch(_){}
       });
       menu.appendChild(b);
     });
-    fab.addEventListener("click",function(){ menu.classList.toggle("open"); });
+    fab.addEventListener("click",function(){ menu.classList.toggle("open"); fab.classList.remove("pulse"); });
     document.body.appendChild(fab); document.body.appendChild(menu);
     return function(){ try{ fab.remove(); menu.remove(); }catch(_){} };
   },[THEMES])
