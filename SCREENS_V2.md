@@ -27,7 +27,7 @@ l'**alerte** le jour où ta plage bascule. Un seul monde **comic-book animé** (
 - [ ] 04 ONBOARDING « Choisis ta région » (MQ/GP/…) — sélecteur cartes comic → 05
 - [x] 05 ACCUEIL / RADAR « Verdict du jour » (= arène booster, fait) → 06/07/10/12
 ### Bloc 2 — Plages & cartes
-- [ ] 06 LISTE DES PLAGES — rangée de cartes comic triables → 07
+- [x] 06/21/22 RECHERCHE + FILTRES du Pokédex (search + chips statut — fait) → 08
 - [x] 07 CARTE PLAGE DU JOUR (= booster vedette, fait) → 08/12
 - [x] 08 DÉTAIL PLAGE + 7 JOURS (= ChasseDetail, fait) → 09/12/voisines
 - [ ] 09 PRÉVISION 7 JOURS détaillée (timeline complète) — premium → 12
@@ -49,8 +49,8 @@ l'**alerte** le jour où ta plage bascule. Un seul monde **comic-book animé** (
 ### Bloc 6 — Système & utilitaires
 - [ ] 19 NOTIFICATIONS / centre d'alertes (liste comic)
 - [ ] 20 ALERTE SARGASSE / hydrogène sulfuré (écran d'alerte rouge)
-- [ ] 21 RECHERCHE plages
-- [ ] 22 FILTRES (familles/snorkel/parking/distance)
+- [x] 21 RECHERCHE plages (fait, cf 06)
+- [x] 22 FILTRES statut (fait, cf 06)
 - [ ] 24 FIABILITÉ DU VEILLEUR (jauge track-record honnête)
 - [ ] 25 PARTAGE (share-card comic)
 - [ ] 27 HORS-LIGNE / envoi
