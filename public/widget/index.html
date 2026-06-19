@@ -88,6 +88,10 @@
           </select>
         </div>
         <div>
+          <label for="f">Format</label>
+          <select id="f"><option value="full" selected>Complet · prévision 7 jours</option><option value="compact">Compact · statut du jour</option></select>
+        </div>
+        <div>
           <label for="l">Langue</label>
           <select id="l"><option value="fr" selected>Français</option><option value="en">English</option><option value="es">Español</option></select>
         </div>
@@ -131,13 +135,15 @@
   <script>
   (function(){
     "use strict";
-    var b=document.getElementById('b'),l=document.getElementById('l'),t=document.getElementById('t'),
+    var b=document.getElementById('b'),f=document.getElementById('f'),l=document.getElementById('l'),t=document.getElementById('t'),
         a=document.getElementById('a'),prev=document.getElementById('prev'),code=document.getElementById('code'),copy=document.getElementById('copy');
     function opt(){return b.options[b.selectedIndex]}
     function domain(){return opt().hasAttribute('data-gp')?'sargasses-guadeloupe.com':'sargasses-martinique.com'}
+    function vh(){return f.value==='compact'?116:168;} // hauteur réelle mesurée (compact = sans la semaine)
     function qs(){
       var p=new URLSearchParams();
       p.set('beach',b.value);
+      if(f.value==='compact')p.set('compact','1');
       if(l.value!=='fr')p.set('lang',l.value);
       if(t.value!=='light')p.set('theme',t.value);
       var hex=a.value.replace('#','').toUpperCase();
@@ -145,17 +151,18 @@
       return p.toString();
     }
     function snippet(){
-      return '<iframe\n  src="https://'+domain()+'/widget/embed/?'+qs()+'"\n  width="100%" height="168" frameborder="0"\n  title="Sargasses — '+opt().textContent.replace(/"/g,'')+'"\n  style="border:0;max-width:520px"\n></iframe>';
+      return '<iframe\n  src="https://'+domain()+'/widget/embed/?'+qs()+'"\n  width="100%" height="'+vh()+'" frameborder="0"\n  title="Sargasses — '+opt().textContent.replace(/"/g,'')+'"\n  style="border:0;max-width:520px"\n></iframe>';
     }
     function update(){
       // aperçu : iframe relative (même origine que cette page → fonctionne sur MQ et GP)
       prev.src='/widget/embed/?'+qs();
+      prev.height=vh();
       code.textContent=snippet();
     }
     // préremplissage depuis ?beach=<slug> (deep-link discret des pages plage SEO)
     var preBeach=new URLSearchParams(location.search).get('beach');
     if(preBeach){for(var i=0;i<b.options.length;i++){if(b.options[i].value===preBeach){b.selectedIndex=i;break;}}}
-    [b,l,t,a].forEach(function(e){e.addEventListener('input',update);e.addEventListener('change',update)});
+    [b,f,l,t,a].forEach(function(e){e.addEventListener('input',update);e.addEventListener('change',update)});
     copy.addEventListener('click',function(){
       navigator.clipboard.writeText(code.textContent).then(function(){
         copy.textContent='Copié ✓';setTimeout(function(){copy.textContent='Copier le code'},1800);
