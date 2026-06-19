@@ -1,161 +1,169 @@
 {
-  "totalPairs": 3520,
-  "archiveDays": 33,
+  "totalPairs": 3180,
+  "windowDays": 30,
+  "archiveDays": 30,
   "historyDays": 31,
   "dateRange": {
-    "archiveFrom": "2026-05-17",
+    "archiveFrom": "2026-05-20",
     "archiveTo": "2026-06-18"
+  },
+  "lifetime": {
+    "totalPairs": 3520,
+    "statusHitRate": 77,
+    "days": 33,
+    "from": "2026-05-17",
+    "to": "2026-06-18"
   },
   "byHorizon": {
     "day1": {
       "statusHitRate": 76,
       "afaiMAE": 0.044,
       "avgConfidence": 51,
-      "pairs": 620
+      "pairs": 580
     },
     "day2": {
       "statusHitRate": 72,
       "afaiMAE": 0.055,
       "avgConfidence": 38,
-      "pairs": 620
+      "pairs": 560
     },
     "day3": {
       "statusHitRate": 73,
-      "afaiMAE": 0.055,
+      "afaiMAE": 0.056,
       "avgConfidence": 31,
-      "pairs": 600
+      "pairs": 540
     },
     "day4": {
       "statusHitRate": 75,
-      "afaiMAE": 0.046,
+      "afaiMAE": 0.047,
       "avgConfidence": 12,
-      "pairs": 580
+      "pairs": 520
     },
     "day5": {
       "statusHitRate": 80,
       "afaiMAE": 0.038,
       "avgConfidence": 9,
-      "pairs": 560
+      "pairs": 500
     },
     "day6": {
       "statusHitRate": 87,
       "afaiMAE": 0.031,
       "avgConfidence": 6,
-      "pairs": 540
+      "pairs": 480
     }
   },
   "byBeach": {
     "grande-anse": {
-      "statusHitRate": 70,
-      "afaiMAE": 0.064,
-      "pairs": 176
+      "statusHitRate": 67,
+      "afaiMAE": 0.071,
+      "pairs": 159
     },
     "anse-mitan": {
       "statusHitRate": 97,
-      "afaiMAE": 0.012,
-      "pairs": 176
+      "afaiMAE": 0.013,
+      "pairs": 159
     },
     "anse-noire": {
-      "statusHitRate": 95,
-      "afaiMAE": 0.016,
-      "pairs": 176
+      "statusHitRate": 94,
+      "afaiMAE": 0.017,
+      "pairs": 159
     },
     "tartane": {
-      "statusHitRate": 92,
+      "statusHitRate": 91,
       "afaiMAE": 0.024,
-      "pairs": 176
+      "pairs": 159
     },
     "anse-madame": {
       "statusHitRate": 97,
-      "afaiMAE": 0.012,
-      "pairs": 176
+      "afaiMAE": 0.013,
+      "pairs": 159
     },
     "diamant": {
-      "statusHitRate": 51,
-      "afaiMAE": 0.108,
-      "pairs": 176
+      "statusHitRate": 47,
+      "afaiMAE": 0.114,
+      "pairs": 159
     },
     "pt-marin": {
-      "statusHitRate": 68,
-      "afaiMAE": 0.04,
-      "pairs": 176
+      "statusHitRate": 65,
+      "afaiMAE": 0.044,
+      "pairs": 159
     },
     "sainte-anne": {
-      "statusHitRate": 67,
-      "afaiMAE": 0.043,
-      "pairs": 176
+      "statusHitRate": 64,
+      "afaiMAE": 0.047,
+      "pairs": 159
     },
     "les-salines": {
-      "statusHitRate": 71,
-      "afaiMAE": 0.049,
-      "pairs": 176
+      "statusHitRate": 68,
+      "afaiMAE": 0.053,
+      "pairs": 159
     },
     "vauclin": {
-      "statusHitRate": 76,
-      "afaiMAE": 0.046,
-      "pairs": 176
+      "statusHitRate": 74,
+      "afaiMAE": 0.05,
+      "pairs": 159
     },
     "gp-grande-anse": {
       "statusHitRate": 100,
-      "afaiMAE": 0.022,
-      "pairs": 176
+      "afaiMAE": 0.023,
+      "pairs": 159
     },
     "gp-malendure": {
       "statusHitRate": 100,
-      "afaiMAE": 0.021,
-      "pairs": 176
+      "afaiMAE": 0.022,
+      "pairs": 159
     },
     "gp-sainte-anne": {
-      "statusHitRate": 49,
-      "afaiMAE": 0.072,
-      "pairs": 176
+      "statusHitRate": 52,
+      "afaiMAE": 0.066,
+      "pairs": 159
     },
     "gp-pt-chateaux": {
-      "statusHitRate": 71,
-      "afaiMAE": 0.063,
-      "pairs": 176
+      "statusHitRate": 77,
+      "afaiMAE": 0.056,
+      "pairs": 159
     },
     "gp-gosier": {
-      "statusHitRate": 64,
-      "afaiMAE": 0.054,
-      "pairs": 176
+      "statusHitRate": 66,
+      "afaiMAE": 0.051,
+      "pairs": 159
     },
     "gp-caravelle": {
-      "statusHitRate": 22,
-      "afaiMAE": 0.141,
-      "pairs": 176
+      "statusHitRate": 23,
+      "afaiMAE": 0.139,
+      "pairs": 159
     },
     "gp-bas-du-fort": {
-      "statusHitRate": 85,
-      "afaiMAE": 0.036,
-      "pairs": 176
+      "statusHitRate": 84,
+      "afaiMAE": 0.039,
+      "pairs": 159
     },
     "gp-deshaies": {
       "statusHitRate": 100,
-      "afaiMAE": 0.009,
-      "pairs": 176
+      "afaiMAE": 0.01,
+      "pairs": 159
     },
     "gp-moule": {
-      "statusHitRate": 74,
-      "afaiMAE": 0.042,
-      "pairs": 176
+      "statusHitRate": 82,
+      "afaiMAE": 0.032,
+      "pairs": 159
     },
     "gp-vieux-fort": {
-      "statusHitRate": 89,
-      "afaiMAE": 0.028,
-      "pairs": 176
+      "statusHitRate": 88,
+      "afaiMAE": 0.031,
+      "pairs": 159
     }
   },
   "overall": {
     "statusHitRate": 77,
-    "afaiMAE": 0.045
+    "afaiMAE": 0.046
   },
   "byRegime": {
     "unknown": {
-      "n": 460,
-      "hit": 361,
-      "falseAlarm": 99,
-      "actClean": 460
+      "n": 120,
+      "hit": 94,
+      "falseAlarm": 26,
+      "actClean": 120
     },
     "calm": {
       "n": 3060,
@@ -166,11 +174,11 @@
   },
   "byRegimeDirection": {
     "unknown|clean": {
-      "n": 361,
-      "hit": 361
+      "n": 94,
+      "hit": 94
     },
     "unknown|ALERT": {
-      "n": 99,
+      "n": 26,
       "hit": 0
     },
     "calm|clean": {
@@ -185,14 +193,14 @@
   "regimeReliability": {
     "note": "Reliability conditioned on each beach's OWN recent regime (calm/transition/high), split by predicted direction. Publish THIS, never a single global %, which blends regimes and hides that calm-season ALERTS are far less reliable than calm-season CLEAN calls. Always bind the figure to its window; for the freshest current-model number cite the reforecast output, not the archive blend.",
     "method": "archive",
-    "window": "2026-05-17 → 2026-06-18",
+    "window": "2026-05-20 → 2026-06-18",
     "regimes": {
       "unknown": {
-        "samples": 460,
+        "samples": 120,
         "cleanReliabilityPct": 100,
-        "cleanSamples": 361,
+        "cleanSamples": 94,
         "alertReliabilityPct": 0,
-        "alertSamples": 99,
+        "alertSamples": 26,
         "falseAlarmRatePct": 22
       },
       "calm": {
@@ -205,12 +213,12 @@
       }
     },
     "headline": {
-      "fr": "100% de nos prévisions « mer propre » (saison calme, 2026-05-17 → 2026-06-18) se sont vérifiées (sur 2347) ; les rares alertes restent signalées à faible confiance tant que la donnée ne les confirme pas.",
-      "en": "100% of our \"clean water\" forecasts (calm season, 2026-05-17 → 2026-06-18) proved correct (over 2347); the rare alerts stay flagged low-confidence until the data confirms them.",
-      "es": "El 100% de nuestros pronósticos de \"agua limpia\" (temporada tranquila, 2026-05-17 → 2026-06-18) resultaron correctos (sobre 2347); las raras alertas se marcan con baja confianza hasta que el dato las confirma."
+      "fr": "100% de nos prévisions « mer propre » (saison calme, 2026-05-20 → 2026-06-18) se sont vérifiées (sur 2347) ; les rares alertes restent signalées à faible confiance tant que la donnée ne les confirme pas.",
+      "en": "100% of our \"clean water\" forecasts (calm season, 2026-05-20 → 2026-06-18) proved correct (over 2347); the rare alerts stay flagged low-confidence until the data confirms them.",
+      "es": "El 100% de nuestros pronósticos de \"agua limpia\" (temporada tranquila, 2026-05-20 → 2026-06-18) resultaron correctos (sobre 2347); las raras alertas se marcan con baja confianza hasta que el dato las confirma."
     }
   },
-  "computed": "2026-06-18T20:26:28.960Z",
+  "computed": "2026-06-19T04:03:54.881Z",
   "pairs": [
     {
       "snapshotDate": "2026-06-15",

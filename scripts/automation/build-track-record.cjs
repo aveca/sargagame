@@ -71,6 +71,22 @@ function main() {
     ? Math.round((new Date(win.archiveTo) - new Date(win.archiveFrom)) / 864e5) + 1
     : null
 
+  // Freshness guard — the track-record IS the moat; publishing a stale figure
+  // (e.g. backtest step failed but this step still ran) silently erodes trust. We
+  // never REFUSE to write (that would leave an even older artefact in place), but
+  // we surface freshness in the artefact + WARN loudly so a stalled pipeline is
+  // visible in CI and downstream pages can choose to hide a stale claim.
+  const nowMs = Date.now()
+  const computedMs = bt.computed ? new Date(bt.computed).getTime() : NaN
+  const ageHours = isFinite(computedMs) ? Math.round((nowMs - computedMs) / 36e5) : null
+  // Most recent observation the backtest scored against (its window end).
+  const archiveToMs = win.archiveTo ? new Date(win.archiveTo + 'T23:59:59Z').getTime() : NaN
+  const archiveToAgeDays = isFinite(archiveToMs) ? Math.round((nowMs - archiveToMs) / 864e5) : null
+  const stale = (ageHours != null && ageHours > 36) || (archiveToAgeDays != null && archiveToAgeDays > 2)
+  if (stale) {
+    console.warn(`⚠️  Track-record source is STALE — backtest computed ${ageHours}h ago, window ends ${win.archiveTo} (${archiveToAgeDays}d behind). Publishing with freshness flag; investigate the backtest step.`)
+  }
+
   // byHorizon → tableau J+1..J+6 (justesse qui décroît puis remonte = la
   // persistance gagne aux horizons longs en saison calme ; on publie tel quel).
   const byHorizon = Object.entries(bt.byHorizon || {})
@@ -103,7 +119,20 @@ function main() {
   const out = {
     _note: "Palmarès PUBLIC et auditable des prévisions sargasses. Source : forecast-archive.json (snapshots figés à la date d'émission, append-only) comparés aux observations satellite (history.json). Aucun chiffre n'est rétro-ajustable.",
     generatedAt: new Date().toISOString(),
-    window: { from: win.archiveFrom || null, to: win.archiveTo || null, days },
+    window: { from: win.archiveFrom || null, to: win.archiveTo || null, days, rollingDays: bt.windowDays || null },
+    // Tous les chiffres publiés portent sur une fenêtre glissante récente (les
+    // snapshots anciens sortent du calcul → le palmarès reste à jour, jamais figé
+    // sur de vieilles erreurs). « lifetime » = repère d'audit depuis le 1er jour.
+    lifetime: bt.lifetime ? {
+      from: bt.lifetime.from || null, to: bt.lifetime.to || null, days: bt.lifetime.days || null,
+      sampleSize: bt.lifetime.totalPairs || null, statusHitRatePct: bt.lifetime.statusHitRate ?? null,
+    } : null,
+    freshness: {
+      computedAt: bt.computed || null,
+      backtestAgeHours: ageHours,
+      observationLagDays: archiveToAgeDays,
+      stale,
+    },
     sampleSize: bt.totalPairs || null,
     regions: ['mq', 'gp'],
     method: "Chaque jour, la prévision J+1→J+6 émise est figée. On la compare ensuite à l'observation satellite réelle à l'échéance. Le « taux de justesse » = % de jours où le statut prévu (mer propre / modéré / éviter) correspond à l'observé.",

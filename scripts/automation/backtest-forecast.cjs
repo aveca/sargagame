@@ -32,6 +32,24 @@ function loadJSON(p, fallback) {
 
 function isAlertStatus(s) { return s === 'moderate' || s === 'avoid' }
 
+// Shift an ISO date (YYYY-MM-DD) by N days, UTC-safe. Used to anchor the rolling
+// publication window. Off-by-one here would mis-state the public window, so it is
+// guarded in --selftest.
+function isoShift(iso, days) {
+  const d = new Date(iso + 'T00:00:00Z')
+  d.setUTCDate(d.getUTCDate() + days)
+  return d.toISOString().slice(0, 10)
+}
+
+// The PUBLISHED reliability is computed over a rolling recent window, not the
+// whole append-only archive. Why: the forecast-archive grows unbounded, so a
+// past stretch of mistakes (e.g. the pre-2026-06-14 calm over-prediction) would
+// otherwise dilute the public moat number FOREVER. Windowing makes the figure
+// self-healing (old snapshots age out) and binds it to a recent period — exactly
+// what regimeReliability.note already mandates. The on-disk archive is NEVER
+// trimmed (audit trail stays intact); we only window at read/compute time.
+const PUBLISH_WINDOW_DAYS = 30
+
 // Beach geo metadata — mirrors BEACHES in scripts/fetch-sargassum-live.cjs (kept
 // here so the re-forecast harness has no cross-module side effects). Only used by
 // the --reforecast mode. If you add/move a beach there, mirror it here.
@@ -189,6 +207,15 @@ function main() {
     return
   }
 
+  // Apply the rolling publication window. Anchor it to the LATEST snapshot date
+  // (not wall-clock now) so a momentarily stalled pipeline still produces a
+  // coherent window rather than an empty one.
+  const allSnaps = archive.snapshots
+  const latestDate = allSnaps.reduce((m, s) => (s.date > m ? s.date : m), allSnaps[0].date)
+  const windowCutoff = isoShift(latestDate, -(PUBLISH_WINDOW_DAYS - 1))
+  const snapshots = allSnaps.filter(s => s.date >= windowCutoff)
+  console.log(`Publication window: last ${PUBLISH_WINDOW_DAYS}d → ${windowCutoff}..${latestDate} (${snapshots.length}/${allSnaps.length} snapshots; archive kept whole on disk)`)
+
   // Index history by date for O(1) lookup
   const historyByDate = {}
   for (const entry of historyData.history) {
@@ -207,7 +234,7 @@ function main() {
     pairs: [],     // all individual prediction-observation pairs (for debugging)
   }
 
-  for (const snap of archive.snapshots) {
+  for (const snap of snapshots) {
     const forecasts = snap.forecasts
     if (!forecasts) continue
 
@@ -259,21 +286,50 @@ function main() {
     }
   }
 
-  // Compute summary metrics
+  // Lifetime audit figure — computed over the WHOLE archive (never windowed), so
+  // the public record still discloses the full sample size and all-time accuracy.
+  // The headline / per-regime numbers below use the rolling window; this is the
+  // secondary "since we started measuring" line. Cheap second pass (count only).
+  let lifePairs = 0, lifeHits = 0
+  for (const snap of allSnaps) {
+    if (!snap.forecasts) continue
+    for (const [beachId, bf] of Object.entries(snap.forecasts)) {
+      if (!bf.forecast) continue
+      for (const pred of bf.forecast) {
+        const horizon = pred.type === 'observation' ? 0 : (parseInt(pred.day) || daysBetween(snap.date, pred.date))
+        if (horizon === 0) continue
+        const actual = historyByDate[pred.date]?.[beachId]
+        if (!actual) continue
+        lifePairs++; if (pred.status === actual.status) lifeHits++
+      }
+    }
+  }
+
+  // Compute summary metrics. dateRange / archiveDays / totalPairs all describe the
+  // PUBLISHED window (what the pages and badge claim), not the on-disk archive.
+  const winDates = snapshots.map(s => s.date).sort()
   const summary = {
     totalPairs: results.pairs.length,
-    archiveDays: archive.snapshots.length,
+    windowDays: PUBLISH_WINDOW_DAYS,
+    archiveDays: snapshots.length,
     historyDays: historyData.history.length,
     dateRange: {
-      archiveFrom: archive.snapshots[0]?.date,
-      archiveTo: archive.snapshots[archive.snapshots.length - 1]?.date,
+      archiveFrom: winDates[0],
+      archiveTo: winDates[winDates.length - 1],
+    },
+    lifetime: {
+      totalPairs: lifePairs,
+      statusHitRate: lifePairs ? Math.round(lifeHits / lifePairs * 100) : null,
+      days: new Set(allSnaps.map(s => s.date)).size,
+      from: allSnaps.map(s => s.date).sort()[0],
+      to: latestDate,
     },
     byHorizon: {},
     byBeach: {},
   }
 
-  console.log(`\nArchive: ${archive.snapshots.length} days | History: ${historyData.history.length} days`)
-  console.log(`Prediction-observation pairs: ${results.pairs.length}`)
+  console.log(`\nWindow: ${summary.archiveDays} days (lifetime archive: ${summary.lifetime.days} days) | History: ${historyData.history.length} days`)
+  console.log(`Prediction-observation pairs: ${results.pairs.length} (lifetime: ${lifePairs})`)
 
   if (results.pairs.length === 0) {
     console.log('\nNo overlapping forecast/observation pairs yet.')
@@ -479,6 +535,17 @@ function selfTest() {
   const r1 = JSON.stringify(fc({ id: 't', afai: 0.08, status: 'clean', confidence: 85 }, [strongBank]))
   const r2 = JSON.stringify(fc({ id: 't', afai: 0.08, status: 'clean', confidence: 85 }, [strongBank]))
   ok('deterministic (identical inputs -> identical output)', r1 === r2)
+
+  // 6. publication-window date math (UTC-safe, no off-by-one). A 30-day window
+  // anchored to D includes exactly D-29..D; the cutoff must cross months cleanly.
+  ok('isoShift simple (-29 from 18 Jun = 20 May)', isoShift('2026-06-18', -(PUBLISH_WINDOW_DAYS - 1)) === '2026-05-20')
+  ok('isoShift month boundary (-1 from 1 Jun = 31 May)', isoShift('2026-06-01', -1) === '2026-05-31')
+  ok('isoShift identity (0 days)', isoShift('2026-06-18', 0) === '2026-06-18')
+  ok('window is inclusive of exactly WINDOW_DAYS dates', (() => {
+    const D = '2026-06-18', cut = isoShift(D, -(PUBLISH_WINDOW_DAYS - 1))
+    let n = 0; for (let i = 0; i < 60; i++) { const d = isoShift(D, -i); if (d >= cut) n++ }
+    return n === PUBLISH_WINDOW_DAYS
+  })())
 
   if (fails.length) { console.error(`\nSELF-TEST FAILED (${fails.length}): ${fails.join(' | ')}`); process.exit(1) }
   console.log('\nAll invariants hold. ✓')

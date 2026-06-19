@@ -1,36 +1,54 @@
 {
   "mode": "reforecast",
   "note": "Current buildHonestForecast re-run over history.json inputs (banks = current field, held constant). Calm-season false-alarm calibration.",
-  "computed": "2026-06-15T20:13:40.446Z",
+  "computed": "2026-06-19T03:56:28.903Z",
   "totalPairs": 2820,
   "global": {
     "statusHitRate": 99,
-    "falseAlarms": 22,
-    "falseAlarmRate": 0.8
+    "falseAlarms": 15,
+    "falseAlarmRate": 0.5
   },
   "byRegime": {
     "calm": {
       "n": 2820,
-      "hit": 2798,
-      "falseAlarm": 22,
+      "hit": 2805,
+      "falseAlarm": 15,
       "actClean": 2820
     }
   },
   "byRegimeDirection": {
     "calm|clean": {
-      "n": 2798,
-      "hit": 2798
+      "n": 2805,
+      "hit": 2805
     },
     "calm|ALERT": {
-      "n": 22,
+      "n": 15,
       "hit": 0
     }
   },
+  "regimeReliability": {
+    "note": "Reliability conditioned on each beach's OWN recent regime (calm/transition/high), split by predicted direction. Publish THIS, never a single global %, which blends regimes and hides that calm-season ALERTS are far less reliable than calm-season CLEAN calls. Always bind the figure to its window; for the freshest current-model number cite the reforecast output, not the archive blend.",
+    "method": "reforecast",
+    "window": "2026-05-19 → 2026-06-18",
+    "regimes": {
+      "calm": {
+        "samples": 2820,
+        "cleanReliabilityPct": 100,
+        "cleanSamples": 2805,
+        "alertReliabilityPct": 0,
+        "alertSamples": 15,
+        "falseAlarmRatePct": 1
+      }
+    },
+    "headline": {
+      "fr": "100% de nos prévisions « mer propre » (saison calme, 2026-05-19 → 2026-06-18) se sont vérifiées (sur 2805) ; les rares alertes restent signalées à faible confiance tant que la donnée ne les confirme pas.",
+      "en": "100% of our \"clean water\" forecasts (calm season, 2026-05-19 → 2026-06-18) proved correct (over 2805); the rare alerts stay flagged low-confidence until the data confirms them.",
+      "es": "El 100% de nuestros pronósticos de \"agua limpia\" (temporada tranquila, 2026-05-19 → 2026-06-18) resultaron correctos (sobre 2805); las raras alertas se marcan con baja confianza hasta que el dato las confirma."
+    }
+  },
   "residualFalseAlarmsByBeach": {
-    "gp-caravelle": 9,
-    "pt-marin": 5,
-    "gp-sainte-anne": 7,
-    "gp-vieux-fort": 1
+    "gp-gosier": 6,
+    "gp-bas-du-fort": 9
   },
   "maxConfidenceAmongFalseAlarms": 30
 }

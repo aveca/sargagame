@@ -1833,6 +1833,19 @@ function flushTrackQueue(){
 }
 try{if(typeof window!=="undefined")setTimeout(flushTrackQueue,5000)}catch{}
 
+// Envoi RÉSILIENT d'un lead capturé vers la liste (Apps Script). L'ancien
+// fetch fire-and-forget était silencieusement perdu si la page naviguait pendant
+// la requête (capture = levier #1, on ne peut PAS perdre un email saisi) ou si
+// Apps Script était froid. sendBeacon survit à l'unload ; fallback fetch keepalive.
+function submitLead(email,source){
+  try{
+    const island=IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"
+    const body=JSON.stringify({email,island,source,date:new Date().toISOString()})
+    if(navigator.sendBeacon){try{if(navigator.sendBeacon(APPS_SCRIPT_URL,body))return}catch{}}
+    fetch(APPS_SCRIPT_URL,{method:"POST",mode:"no-cors",keepalive:true,headers:{"Content-Type":"text/plain"},body}).catch(()=>{})
+  }catch{}
+}
+
 // ── ENGAGEMENT CONTINU — le produit "se voit penser" : on mesure l'ENNUI/le BLOCAGE, pas
 //    seulement les clics. Par écran : temps passé, nb d'actions, plus longue inactivité, scroll,
 //    flag `bored` (entré, rien fait, resté / longue inactivité). Émis vers GA4 via track() à
@@ -7738,8 +7751,12 @@ function InlineEmailCapture({lang,beachName,source="inline_beach"}){
   const[submitted,setSubmitted]=useState(false)
   const[dismissed,setDismissed]=useState(false)
   const tracked=useRef(false)
-  // Show from first visit (was visit 2+). Already subscribed? hide.
-  if(dismissed||g("sg_email_prompt",false))return null
+  // Show from first visit (was visit 2+). Already subscribed → hide définitivement
+  // (sg_email_prompt, posé au submit). "Plus tard" → snooze 14j (sg_email_snooze),
+  // pas un kill perma. Le garde NE masque PAS quand submitted : sinon l'état succès
+  // (timeline em2) ne rendait jamais — handleSubmit pose sg_email_prompt avant le
+  // re-render, ce qui court-circuitait la confirmation au tout premier render post-submit.
+  if(!submitted&&(dismissed||g("sg_email_prompt",false)||g("sg_email_snooze",0)>Date.now()))return null
   // em1 test: control (loss-frame "know before you go") vs curiosity ("where's the best beach today?")
   const em1V=abVariant("em1",["control","curiosity"],[.5,.5])
   // em2 test (capture = levier #1 funnel, mesuré 0,35%) : control vs "progressive" —
@@ -7756,11 +7773,7 @@ function InlineEmailCapture({lang,beachName,source="inline_beach"}){
     s("sg_email",email)
     s("sg_email_prompt",true)
     setSubmitted(true)
-    const island=IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"
-    try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
-      method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
-      body:JSON.stringify({email,island,source,date:new Date().toISOString()})
-    }).catch(()=>{})}catch{}
+    submitLead(email,source)
   }
 
   if(submitted&&em2V==="progressive"){
@@ -7849,7 +7862,7 @@ function InlineEmailCapture({lang,beachName,source="inline_beach"}){
               {_t(lang,"Commencer →","Start →","Empezar →")}
             </button>
           </form>
-          <button onClick={()=>{setDismissed(true);s("sg_email_prompt",true);track("sg_email_dismiss")}} style={{
+          <button onClick={()=>{setDismissed(true);s("sg_email_snooze",Date.now()+12096e5);track("sg_email_dismiss")}} style={{
             display:"block",margin:"8px auto 0",background:"none",border:"none",cursor:"pointer",
             color:"rgba(255,255,255,.3)",fontSize:11,padding:0}}>
             {_t(lang,"Plus tard","Not now","Ahora no")}
@@ -7901,7 +7914,7 @@ function InlineEmailCapture({lang,beachName,source="inline_beach"}){
             {_t(lang,"OK","Go","OK")}
           </button>
         </form>
-        <button onClick={()=>{setDismissed(true);s("sg_email_prompt",true);track("sg_email_dismiss")}} style={{
+        <button onClick={()=>{setDismissed(true);s("sg_email_snooze",Date.now()+12096e5);track("sg_email_dismiss")}} style={{
           display:"block",margin:"8px auto 0",background:"none",border:"none",
           cursor:"pointer",color:"rgba(255,255,255,.3)",fontSize:11,padding:0}}>
           {_t(lang,"Plus tard","Not now","Ahora no")}
@@ -13027,11 +13040,7 @@ export default function App(){
         {showCaptureGate&&<CaptureGateModal lang={lang} beach={selectedBeach||null}
           onSubmit={em=>{
             try{localStorage.setItem("sg_email",em);localStorage.setItem("sg_email_prompt","true")}catch(_){}
-            const isl=IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"
-            try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
-              method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
-              body:JSON.stringify({email:em,island:isl,source:"capture-gate",date:new Date().toISOString()})
-            }).catch(()=>{})}catch{}
+            submitLead(em,"capture-gate")
             track("sg_capture_gate_submit",{src:captureGateSrc,variant:"gate"})
             // Porte EMAIL choisie : on a capturé le lead → le drip envoie le contenu.
             // On NE force PLUS la CB (modèle « soit email soit cb ») : l'état succès
