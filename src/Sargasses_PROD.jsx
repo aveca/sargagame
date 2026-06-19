@@ -11988,12 +11988,12 @@ export default function App(){
 
   // Hero Verdict — home "/" uniquement (jamais les deep-links/landings SEO),
   // 1×/session (sessionStorage), jamais pendant une activation premium.
-  // CARTE-FIRST (décision fondateur 2026-06-19, option A) : on ATTERRIT sur la CARTE
-  // (« carte sargasses » = cœur produit + mot-clé SEO + solution au problème). L'arène/jeu
-  // s'ouvre PAR-DESSUS en 1 tap (bouton flottant « JOUER »). Avant : l'arène (hero) couvrait
-  // la carte au chargement. Réversible : ?arena=1 = atterrir sur l'arène comme avant.
   const[showHero,setShowHero]=useState(()=>{
-    try{ return /[?&]arena=1/.test(window.location.search) }catch(_){return false}
+    try{
+      return window.location.pathname==="/"
+        &&!window.location.search.includes("premium")
+        &&!sessionStorage.getItem("sg_hero_seen")
+    }catch(_){return false}
   })
   // Découverte éducative (StoryEngine). Gate URL ?decouverte=1 pour QA ; entrée UI dédiée.
   const[showDiscovery,setShowDiscovery]=useState(()=>{try{return /[?&]decouverte=1/.test(window.location.search)}catch(_){return false}})
@@ -12186,7 +12186,7 @@ export default function App(){
   // A/B `map_world` : carte SVG monde golden-hour (vraie géo OSM + golden-hour + scrub)
   // vs ArchipelView (bounding-box simple, control). 50/50. Override ?map_world=1/0.
   // Additif : control = ArchipelView intact, Leaflet = fallback ?nav=map (jamais touché).
-  const mapWorld=useMemo(()=>{try{const q=window.location.search;if(/[?&]map_world=1/.test(q))return"world";if(/[?&]map_world=0/.test(q))return"control";return abVariant("map_world",["control","world"],[.5,.5])}catch(_){return"control"}},[])
+  const mapWorld=useMemo(()=>{try{return /[?&]map_world=0/.test(window.location.search)?"control":"world"}catch(_){return"world"}},[])
   // Carte monde RÉCHAUFFÉE golden-hour pour TOUS (décision produit 19/06 : un seul
   // monde comic cohérent, fin de la base teal froide). Override debug ?mapwarm=0.
   const mapWarm=useMemo(()=>{try{return /[?&]mapwarm=0/.test(window.location.search)?"control":"warm"}catch(_){return"warm"}},[])
