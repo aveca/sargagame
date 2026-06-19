@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Widget sargasses gratuit pour votre hôtel — l'état des plages en direct sur votre site · Sargasses Pro</title>
+<meta name="description" content="Ajoutez gratuitement un widget sargasses sur le site de votre hôtel ou location : état de la plage en direct + prévision 7 jours, données satellite Copernicus. Code à copier-coller, installation en 2 minutes, à vos couleurs."/>
+<link rel="canonical" href="https://sargasses-martinique.com/pro/widget-sargasses-hotel/"/>
+<meta property="og:title" content="Widget sargasses gratuit pour votre hôtel — l'état des plages en direct sur votre site"/>
+<meta property="og:description" content="Affichez l'état réel des sargasses et la prévision 7 jours sur le site de votre hébergement. Gratuit, copier-coller, données satellite Copernicus. Installation en 2 minutes."/>
+<meta property="og:url" content="https://sargasses-martinique.com/pro/widget-sargasses-hotel/"/>
+<meta property="og:type" content="article"/>
+<meta property="og:image" content="https://sargasses-martinique.com/social-share.png"/>
+<meta name="robots" content="index,follow"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/a-propos/colors_and_type.css"/>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Article","headline":"Widget sargasses gratuit pour votre hôtel : afficher l'état des plages en direct sur votre site","description":"Comment ajouter gratuitement un widget sargasses (état de la plage en direct + prévision 7 jours, données satellite Copernicus) sur le site d'un hôtel ou d'une location.","about":["Sargasses","Hôtellerie","Widget","Site web","Prévision côtière"],"author":{"@type":"Organization","name":"Sargasses Pro","url":"https://sargasses-martinique.com/"},"publisher":{"@type":"Organization","name":"Sargasses Pro","url":"https://sargasses-martinique.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://sargasses-martinique.com/pro/widget-sargasses-hotel/"},"image":"https://sargasses-martinique.com/social-share.png","inLanguage":"fr"}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"HowTo","name":"Installer le widget sargasses sur le site de votre hôtel","description":"Ajouter un encart « état de la plage en direct » sur le site d'un hôtel ou d'une location, gratuitement, en trois étapes.","totalTime":"PT2M","tool":[{"@type":"HowToTool","name":"L'éditeur de page de votre site (CMS, WordPress, Wix, etc.)"}],"step":[{"@type":"HowToStep","name":"Choisir votre plage et le format","text":"Sur le générateur, sélectionnez votre plage, la langue, le format (complet ou compact) et votre couleur.","url":"https://sargasses-martinique.com/widget/"},{"@type":"HowToStep","name":"Copier le code","text":"Copiez le code iframe généré (un simple bloc à coller, aucun script tiers).","url":"https://sargasses-martinique.com/widget/"},{"@type":"HowToStep","name":"Coller dans votre site","text":"Collez le code dans un bloc HTML de votre page. Le widget s'affiche et se met à jour tout seul.","url":"https://sargasses-martinique.com/pro/widget-sargasses-hotel/"}]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Sargasses","item":"https://sargasses-martinique.com/"},{"@type":"ListItem","position":2,"name":"Pro","item":"https://sargasses-martinique.com/pro/"},{"@type":"ListItem","position":3,"name":"Hôtels","item":"https://sargasses-martinique.com/pro/hotels/"},{"@type":"ListItem","position":4,"name":"Widget sargasses gratuit","item":"https://sargasses-martinique.com/pro/widget-sargasses-hotel/"}]}
+</script>
+<style>
+  html,body{margin:0;background:var(--sg-bg);color:var(--sg-ink);font-family:var(--sg-font-sans)}
+  *{box-sizing:border-box}
+  a{color:inherit}
+  .wrap{max-width:760px;margin:0 auto}
+  .px{padding-left:22px;padding-right:22px}
+
+  /* ---------- HERO ---------- */
+  .hero{position:relative;overflow:hidden;color:#fff;
+    padding:calc(34px + env(safe-area-inset-top)) 22px 40px;
+    background:radial-gradient(130% 72% at 78% 2%,rgba(255,224,160,.18),transparent 50%),
+               linear-gradient(158deg,#0B2230 0%,#155A5A 46%,#0A2A26 100%);}
+  .hero .wrap{position:relative;z-index:2}
+  .sun{position:absolute;top:-24%;right:-10%;width:74%;height:74%;pointer-events:none;z-index:1;
+    background:radial-gradient(closest-side,rgba(255,243,214,.40),rgba(255,216,132,.16) 46%,transparent 72%);
+    animation:sunBreath 12s ease-in-out infinite}
+  @keyframes sunBreath{0%,100%{opacity:.9;transform:scale(1)}50%{opacity:1;transform:scale(1.04)}}
+  .veilleur{position:absolute;top:14px;right:14px;width:78px;height:78px;z-index:3;opacity:.96}
+  .eyebrow{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#5FD3C9;margin:0 0 14px}
+  h1{font-family:var(--sg-font-display);font-weight:400;font-size:clamp(30px,8vw,46px);
+    line-height:1.02;letter-spacing:-.02em;margin:0 0 16px;max-width:18ch}
+  .hero h1 em{font-style:normal;color:var(--sg-gold-l)}
+  .lede{font-size:16px;line-height:1.6;color:rgba(255,255,255,.84);margin:0 0 24px;max-width:56ch}
+  .ctas{display:flex;flex-wrap:wrap;gap:12px}
+  .btn{display:inline-flex;align-items:center;gap:8px;border-radius:var(--sg-r-lg);
+    padding:14px 22px;font-weight:800;font-size:15px;text-decoration:none;border:0;cursor:pointer;font-family:var(--sg-font-sans)}
+  .btn-gold{background:var(--sg-gold);color:#0A2A26;box-shadow:var(--sg-shadow-gold)}
+  .btn-gold:hover{background:var(--sg-gold-l)}
+  .btn-ghost{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.22)}
+  .btn-ghost:hover{background:rgba(255,255,255,.15)}
+  .freshpill{display:inline-flex;align-items:center;gap:7px;margin-top:22px;
+    background:rgba(8,18,16,.42);border:1px solid rgba(255,255,255,.16);border-radius:999px;
+    padding:6px 13px 6px 11px;font-family:var(--sg-font-mono);font-size:11px;font-weight:700;color:#fff}
+  .freshpill .pulse{width:7px;height:7px;border-radius:50%;background:#6AC15A;box-shadow:0 0 0 0 rgba(106,193,90,.6);animation:pulse 2.4s ease-out infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(106,193,90,.55)}70%{box-shadow:0 0 0 7px rgba(106,193,90,0)}100%{box-shadow:0 0 0 0 rgba(106,193,90,0)}}
+  @media (prefers-reduced-motion:reduce){.sun,.freshpill .pulse{animation:none}}
+
+  /* ---------- SECTIONS ---------- */
+  section{padding:46px 0}
+  .sec-eyebrow{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--sg-teal);margin:0 0 10px}
+  h2{font-family:var(--sg-font-display);font-weight:400;font-size:clamp(24px,5.4vw,32px);line-height:1.08;letter-spacing:-.015em;margin:0 0 14px}
+  .sub{font-size:15px;line-height:1.62;color:var(--sg-mid);margin:0 0 26px;max-width:58ch}
+  .prose p{font-size:15px;line-height:1.68;color:var(--sg-ink);margin:0 0 16px;max-width:62ch}
+  .prose p.muted{color:var(--sg-mid)}
+
+  /* demo + snippet (mini-builder) */
+  .demobox{background:var(--sg-card);border:1px solid var(--sg-border-m);border-radius:var(--sg-r-xl);padding:20px;box-shadow:var(--sg-shadow-sm)}
+  .demowrap{background:repeating-conic-gradient(#eef2f5 0 25%,#f7fafb 0 50%) 0 0/22px 22px;border-radius:var(--sg-r-lg);padding:18px;display:flex;justify-content:center}
+  .demowrap iframe{width:100%;max-width:520px;border:0;background:transparent}
+  .seg{display:inline-flex;gap:4px;background:var(--sg-bg);border:1px solid var(--sg-border-m);border-radius:999px;padding:4px;margin:16px 0 6px}
+  .seg button{border:0;background:transparent;color:var(--sg-mid);font:inherit;font-size:13px;font-weight:700;padding:7px 15px;border-radius:999px;cursor:pointer}
+  .seg button[aria-pressed=true]{background:var(--sg-teal);color:#fff}
+  .codewrap{position:relative;margin-top:8px}
+  pre{background:#0B1A16;color:#e6f2ee;padding:16px 16px 14px;border-radius:var(--sg-r-lg);overflow-x:auto;font-size:13px;line-height:1.5;margin:0;border:1px solid rgba(255,255,255,.06)}
+  pre code{font-family:var(--sg-font-mono);white-space:pre}
+  .copy{margin-top:12px;background:var(--sg-gold);color:#0A2A26;border:0;padding:11px 22px;border-radius:999px;font-weight:800;font-size:14px;cursor:pointer;font-family:var(--sg-font-sans)}
+  .copy:hover{background:var(--sg-gold-l)}
+  .customlink{display:inline-block;margin-top:14px;margin-left:12px;font-size:14px;font-weight:700;color:var(--sg-teal);text-decoration:none}
+  .customlink:hover{text-decoration:underline}
+
+  /* benefits */
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .card{background:var(--sg-card);border:1px solid var(--sg-border-m);border-radius:var(--sg-r-xl);padding:20px;box-shadow:var(--sg-shadow-sm)}
+  .card .ic{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--sg-gold-bg-l);margin-bottom:12px;font-size:20px}
+  .card h3{font-size:15px;font-weight:800;margin:0 0 7px}
+  .card p{font-size:13.5px;line-height:1.55;color:var(--sg-mid);margin:0}
+  @media (max-width:560px){.cards{grid-template-columns:1fr}}
+
+  /* steps */
+  .steps{display:grid;grid-template-columns:1fr;gap:14px;counter-reset:s}
+  .step{display:flex;gap:16px;align-items:flex-start;background:var(--sg-card);border:1px solid var(--sg-border-m);border-radius:var(--sg-r-lg);padding:18px 20px;box-shadow:var(--sg-shadow-sm)}
+  .step .num{counter-increment:s;flex-shrink:0;width:34px;height:34px;border-radius:50%;background:var(--sg-teal);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--sg-font-display);font-size:18px}
+  .step .num::before{content:counter(s)}
+  .step h3{font-size:15px;font-weight:800;margin:2px 0 5px}
+  .step p{font-size:13.5px;line-height:1.55;color:var(--sg-mid);margin:0}
+
+  /* proof / moat */
+  .proof{background:linear-gradient(168deg,#0B2230,#0D1E1C 62%,#0A1714);color:#fff}
+  .proof h2{color:#fff}
+  .proof .sec-eyebrow{color:#5FD3C9}
+  .proof .sub{color:rgba(255,255,255,.78)}
+  .gauge{margin:6px 0 8px}
+  .gauge .big{font-family:var(--sg-font-display);font-size:54px;line-height:1;color:var(--sg-clean)}
+  .gauge .cap{font-size:13px;color:rgba(255,255,255,.78);margin-top:6px;max-width:48ch;line-height:1.5}
+  .bench{font-size:12px;color:rgba(255,255,255,.6);margin-top:16px;line-height:1.5}
+  .proof a.link{color:var(--sg-gold-l);font-weight:700;text-decoration:none;border-bottom:1px solid rgba(255,199,44,.4)}
+
+  /* related links */
+  .related{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .rl{display:block;background:var(--sg-card);border:1px solid var(--sg-border-m);border-radius:var(--sg-r-lg);padding:16px 18px;text-decoration:none;box-shadow:var(--sg-shadow-sm)}
+  .rl:hover{border-color:var(--sg-teal)}
+  .rl .k{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--sg-teal);margin-bottom:6px}
+  .rl .h{font-size:14px;font-weight:800;color:var(--sg-ink);line-height:1.35}
+  @media (max-width:560px){.related{grid-template-columns:1fr}}
+
+  /* final CTA band */
+  .cta-band{background:radial-gradient(120% 80% at 80% 0%,rgba(255,224,160,.16),transparent 55%),linear-gradient(158deg,#0B2230,#155A5A 60%,#0A2A26);color:#fff;text-align:center}
+  .cta-band h2{color:#fff}
+  .cta-band p{color:rgba(255,255,255,.82);font-size:15px;line-height:1.6;max-width:48ch;margin:0 auto 24px}
+  .cta-band .ctas{justify-content:center}
+
+  footer{padding:30px 22px 48px;text-align:center;color:var(--sg-mute);font-size:12px}
+  footer a{color:var(--sg-mid);text-decoration:none;font-weight:600}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="sun"></div>
+  <svg class="veilleur" viewBox="0 0 100 100" aria-hidden="true">
+    <g transform="translate(50 50) scale(0.92)">
+      <circle cx="0" cy="0" r="44" fill="#1EC8B0" opacity="0.12"/>
+      <rect x="-42" y="-5" width="26" height="14" rx="2" fill="#163a4f"/>
+      <rect x="16" y="-5" width="26" height="14" rx="2" fill="#163a4f"/>
+      <path d="M0,-16 C10,-16 16,-10 16,1 C16,12 10,21 0,21 C-10,21 -16,12 -16,1 C-16,-10 -10,-16 0,-16 Z" fill="#102622" stroke="#1EC8B0" stroke-width="1.2"/>
+      <circle cx="0" cy="3" r="10" fill="#0d3a39"/>
+      <circle cx="0" cy="3" r="10" fill="none" stroke="#1EC8B0" stroke-width="1.8"/>
+      <circle cx="2" cy="1" r="1.3" fill="#cff4ff"/>
+      <line x1="0" y1="-16" x2="0" y2="-24" stroke="#0e2622" stroke-width="1.8"/>
+      <circle cx="0" cy="-25" r="2.2" fill="#1EC8B0"/>
+    </g>
+  </svg>
+  <div class="wrap">
+    <p class="eyebrow">Sargasses Pro · hôtellerie</p>
+    <h1>Affichez l'état des plages en direct sur le site de votre hôtel. <em>Widget gratuit.</em></h1>
+    <p class="lede">Vos futurs clients veulent savoir si la plage est propre avant de réserver. Donnez-leur la réponse honnête, directement sur votre site : un encart « état du jour + prévision 7 jours », alimenté par le satellite Copernicus, à vos couleurs. Code à copier-coller, installation en deux minutes, aucun script à charger.</p>
+    <div class="ctas">
+      <a class="btn btn-gold" href="https://sargasses-martinique.com/widget/">Créer mon widget</a>
+      <a class="btn btn-ghost" href="#demo">Voir une démo en direct</a>
+    </div>
+    <div class="freshpill"><span class="pulse"></span><span id="fresh">données satellite en direct</span></div>
+  </div>
+</header>
+
+<!-- DÉMO LIVE + SNIPPET (mini-générateur) -->
+<section class="px" id="demo"><div class="wrap">
+  <p class="sec-eyebrow">À quoi ça ressemble</p>
+  <h2>Le widget, en vrai, mis à jour tout seul.</h2>
+  <p class="sub">Voici l'encart tel qu'il apparaîtra sur votre site (exemple : Plage du Diamant). Choisissez le format qui rentre le mieux dans votre page, puis copiez le code.</p>
+  <div class="demobox">
+    <div class="demowrap">
+      <iframe id="demo-frame" title="Aperçu du widget sargasses — Plage du Diamant" height="168"></iframe>
+    </div>
+    <div class="seg" role="group" aria-label="Format du widget">
+      <button id="fmt-full" aria-pressed="true">Complet · 7 jours</button>
+      <button id="fmt-compact" aria-pressed="false">Compact · statut</button>
+    </div>
+    <div class="codewrap"><pre><code id="snip"></code></pre></div>
+    <button class="copy" id="copy">Copier le code</button>
+    <a class="customlink" href="https://sargasses-martinique.com/widget/">Personnaliser (plage, langue, couleur) →</a>
+  </div>
+</div></section>
+
+<!-- POURQUOI L'INSTALLER -->
+<section class="px" style="padding-top:8px"><div class="wrap">
+  <p class="sec-eyebrow">Pourquoi un hôtel l'installe</p>
+  <h2>Rassurer avant la réservation, sans rien promettre de faux.</h2>
+  <p class="sub">L'algue, on ne la cache pas — on la documente. Un établissement transparent inspire plus confiance qu'une galerie de photos parfaites que la réalité du matin contredit.</p>
+  <div class="cards">
+    <div class="card"><div class="ic">🛰️</div><h3>Donnée réelle, pas du déclaratif</h3><p>Indice satellite Copernicus Marine, rafraîchi 4× par jour automatiquement. Jamais un « tout va bien » écrit à la main.</p></div>
+    <div class="card"><div class="ic">🗓️</div><h3>Prévision 7 jours</h3><p>Le client voit l'état du jour <em>et</em> la tendance de la semaine — exactement ce qu'il cherche avant de bloquer ses dates.</p></div>
+    <div class="card"><div class="ic">🎨</div><h3>À vos couleurs</h3><p>Couleur d'accent, thème clair ou sombre, français / anglais / espagnol. Le widget épouse votre charte, pas l'inverse.</p></div>
+    <div class="card"><div class="ic">⚡</div><h3>Zéro maintenance, zéro risque</h3><p>Une simple iframe isolée : aucun script tiers sur votre page, rien à mettre à jour. Se met à jour seul, pour toujours.</p></div>
+  </div>
+  <p class="prose" style="margin-top:20px"><span class="muted">Le widget est et restera gratuit. En contrepartie il affiche un discret « Sargasses → » qui renvoie à la carte — un lien sobre, jamais une publicité.</span></p>
+</div></section>
+
+<!-- INSTALLATION EN 3 ÉTAPES -->
+<section class="px" style="padding-top:8px"><div class="wrap">
+  <p class="sec-eyebrow">Installation</p>
+  <h2>Trois étapes, deux minutes, aucun développeur.</h2>
+  <p class="sub">Si vous savez coller un bloc dans WordPress, Wix, Squarespace ou n'importe quel CMS, vous savez installer le widget.</p>
+  <div class="steps">
+    <div class="step"><div class="num"></div><div><h3>Choisissez votre plage et le format</h3><p>Sur le <a href="https://sargasses-martinique.com/widget/" style="color:var(--sg-teal);font-weight:700">générateur</a>, sélectionnez la plage la plus proche de votre établissement, la langue, le format (complet ou compact) et votre couleur. L'aperçu se met à jour en direct.</p></div></div>
+    <div class="step"><div class="num"></div><div><h3>Copiez le code</h3><p>Un seul bloc <code>&lt;iframe&gt;</code> à copier — celui affiché ci-dessus. Aucun compte, aucune inscription, aucun script à installer.</p></div></div>
+    <div class="step"><div class="num"></div><div><h3>Collez-le dans votre page</h3><p>Insérez le code dans un bloc HTML / « code embed » de votre site (page d'accueil, page « la plage », confirmation de réservation…). C'est en ligne. Le widget vit ensuite sa vie et se rafraîchit tout seul.</p></div></div>
+  </div>
+</div></section>
+
+<!-- PREUVE / MOAT — live track-record -->
+<section class="proof px"><div class="wrap">
+  <p class="sec-eyebrow">Pourquoi vous pouvez l'afficher en confiance</p>
+  <h2>Un widget n'a de valeur que si la donnée est juste. On publie la nôtre.</h2>
+  <p class="sub">Chaque jour, notre verdict est figé puis comparé à l'observation satellite réelle. Le palmarès est daté, par plage, et auditable — c'est ce même moteur qui alimente votre widget.</p>
+  <div class="gauge">
+    <div class="big" id="tr-clean">—</div>
+    <div class="cap" id="tr-headline">Chargement du palmarès en direct…</div>
+  </div>
+  <p class="bench">Nous couvrons les 20 plages les plus fréquentées des Antilles (Martinique &amp; Guadeloupe). Nous affichons notre chiffre réel, daté, avec sa taille d'échantillon — et nous publions aussi nos limites : en saison calme, les alertes sont émises avec prudence tant que le satellite ne les confirme pas.</p>
+  <p style="margin-top:16px"><a class="link" href="https://sargasses-martinique.com/fiabilite/" target="_blank" rel="noopener">Voir le palmarès complet et la méthode →</a></p>
+</div></section>
+
+<!-- POUR ALLER PLUS LOIN — internal links -->
+<section class="px"><div class="wrap">
+  <p class="sec-eyebrow">Pour aller plus loin</p>
+  <h2>Le widget rassure. L'anticipation, elle, vous fait économiser.</h2>
+  <p class="sub">Au-delà de l'affichage, savoir plusieurs jours à l'avance ce qui arrive sur votre front de mer change la gestion de la saison.</p>
+  <div class="related">
+    <a class="rl" href="https://sargasses-martinique.com/pro/hotels/">
+      <div class="k">Offre</div>
+      <div class="h">Sargasses Pro pour les hôtels : brief, alertes et widget par plage</div>
+    </a>
+    <a class="rl" href="https://sargasses-martinique.com/pro/cout-sargasses-hotel/">
+      <div class="k">Chiffres</div>
+      <div class="h">Ce qu'une mauvaise saison sargasses coûte vraiment à un hôtel</div>
+    </a>
+  </div>
+</div></section>
+
+<!-- CTA FINAL FORT -->
+<section class="cta-band px"><div class="wrap">
+  <p class="sec-eyebrow" style="color:#5FD3C9">Gratuit, en deux minutes</p>
+  <h2>Mettez l'état de votre plage en direct sur votre site dès aujourd'hui.</h2>
+  <p>Choisissez votre plage, vos couleurs, copiez le code. C'est gratuit, ça reste gratuit, et ça rassure vos clients en toute transparence.</p>
+  <div class="ctas">
+    <a class="btn btn-gold" href="https://sargasses-martinique.com/widget/">Créer mon widget gratuit</a>
+    <a class="btn btn-ghost" href="https://sargasses-martinique.com/pro/hotels/">Découvrir l'offre hôtels</a>
+  </div>
+</div></section>
+
+<footer>
+  <a href="https://sargasses-martinique.com/pro/">Sargasses Pro</a> ·
+  <a href="https://sargasses-martinique.com/pro/hotels/">Hôtels</a> ·
+  <a href="https://sargasses-martinique.com/widget/">Générateur de widget</a> ·
+  <a href="https://sargasses-martinique.com/fiabilite/">Fiabilité</a> ·
+  <a href="https://sargasses-martinique.com/">Carte en direct</a>
+  <div style="margin-top:10px">Prévision satellite des sargasses · Martinique &amp; Guadeloupe</div>
+</footer>
+
+<script>
+(function(){
+  var ORIGIN='https://sargasses-martinique.com';
+  var BEACH='plage-du-diamant';
+  var NAME='Plage du Diamant';
+  var frame=document.getElementById('demo-frame');
+  var snip=document.getElementById('snip');
+  var copy=document.getElementById('copy');
+  var bFull=document.getElementById('fmt-full');
+  var bCompact=document.getElementById('fmt-compact');
+  var fmt='full';
+
+  function render(){
+    var compact=fmt==='compact';
+    var h=compact?116:168;
+    var src=ORIGIN+'/widget/embed/?beach='+BEACH+(compact?'&compact=1':'');
+    frame.src=src;
+    frame.height=h;
+    snip.textContent='<iframe\n  src="'+src+'"\n  width="100%" height="'+h+'" frameborder="0"\n  title="Sargasses '+NAME+' — état du jour"\n  style="border:0;max-width:520px"\n></iframe>';
+    bFull.setAttribute('aria-pressed', String(!compact));
+    bCompact.setAttribute('aria-pressed', String(compact));
+  }
+  bFull.addEventListener('click',function(){fmt='full';render();});
+  bCompact.addEventListener('click',function(){fmt='compact';render();});
+  copy.addEventListener('click',function(){
+    navigator.clipboard.writeText(snip.textContent).then(function(){
+      copy.textContent='Copié ✓';setTimeout(function(){copy.textContent='Copier le code';},1800);
+    });
+  });
+  render();
+
+  // --- Fraîcheur du pill : sargassum.json (pas de timestamp figé) ---
+  function relTime(iso){
+    if(!iso) return '';
+    var h=(Date.now()-new Date(iso).getTime())/3.6e6;
+    if(h>=12) return 'vérification en cours…';
+    if(h<1){var m=Math.max(1,Math.round(h*60));return 'satellite · il y a '+m+' min';}
+    return 'satellite · il y a '+Math.max(1,Math.round(h))+' h';
+  }
+  fetch(ORIGIN+'/api/copernicus/sargassum.json').then(function(r){return r.json()}).then(function(d){
+    try{document.getElementById('fresh').textContent=relTime(d.updatedAt)||'données satellite en direct';}catch(e){}
+  }).catch(function(){});
+
+  // --- Preuve live : track-record.json (chiffre JAMAIS codé en dur) ---
+  fetch(ORIGIN+'/api/copernicus/track-record.json').then(function(r){return r.json()}).then(function(d){
+    try{
+      var calm=(d.byRegime&&d.byRegime.calm)||null;
+      var pct=(d.overall&&d.overall.statusHitRatePct)||(calm&&calm.cleanReliabilityPct);
+      var n=(d.sampleSize||(calm&&calm.cleanSamples)||0);
+      if(pct!=null) document.getElementById('tr-clean').textContent=pct+'%';
+      var win=d.window&&d.window.from?(' ('+d.window.from+' → '+d.window.to+')'):'';
+      document.getElementById('tr-headline').textContent=
+        'de nos verdicts se sont vérifiés, tous régimes confondus'+win+' — sur '+Number(n).toLocaleString('fr-FR')+' comparaisons.';
+    }catch(e){}
+  }).catch(function(){
+    document.getElementById('tr-headline').textContent='Palmarès consultable sur la page fiabilité.';
+  });
+})();
+</script>
+</body>
+</html>
