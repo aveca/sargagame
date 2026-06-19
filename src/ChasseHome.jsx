@@ -212,9 +212,12 @@ function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool=[],tra
   useEffect(()=>{ try{ document.body.style.overflow="hidden" }catch(_){}; return ()=>{ try{ document.body.style.overflow="" }catch(_){} } },[])
   /* a11y clavier : Échap ferme le détail plein écran */
   useEffect(()=>{ const k=(e)=>{ if(e.key==="Escape"){ e.stopPropagation(); onClose&&onClose() } }; window.addEventListener("keydown",k); return ()=>window.removeEventListener("keydown",k) },[onClose])
+  /* a11y focus : à l'ouverture, le focus entre dans le dialog (bouton fermer) */
+  const closeRef=useRef(null)
+  useEffect(()=>{ try{ closeRef.current&&closeRef.current.focus() }catch(_){} },[])
   return (
     <div className="lc-detail" role="dialog" aria-modal="true" aria-label={beach.name}>
-      <button type="button" className="lc-detail-x" onClick={onClose} aria-label="Fermer">✕</button>
+      <button type="button" ref={closeRef} className="lc-detail-x" onClick={onClose} aria-label="Fermer">✕</button>
       <div className={`lc-detail-illu s-${v.st}`}>
         <Illu st={v.st} score={sc||0} uid={(beach.id||"d")+"-dt"}/>
         <svg className="lc-zip" viewBox="0 0 200 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
