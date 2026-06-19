@@ -1,3 +1,5 @@
+> **🎬 PROTOTYPE NAVIGABLE COMPLET = `design/arena-v2.html` (28 écrans, transitions, annotations UX/UI).** Ouvrir en local OU en prod `/arena-v2.html`. Assemblé par `node scripts/build-v2-proto.cjs` depuis `design/v2-parts/`. Construit en multi-agents (contexte frais).
+
 # SCREENS_V2 — backlog de reconstruction « ARENA v2 » (spec = maquette fondateur)
 
 > **Source de vérité = la maquette ARENA v2 du fondateur** (image ~40 écrans comic,
