@@ -11842,8 +11842,10 @@ export default function App(){
       if(/[?&]comic=1/.test(q)) return "comic";
       const saved=localStorage.getItem("sg_ui_theme");
       if(saved && THEMES.some(t=>t.id===saved)) return saved;
-      // A/B câblé mais en contrôle (golden) tant qu'on prévisualise via le picker.
-      return (typeof abVariant==="function") ? abVariant("ui_theme",["golden","comic"],[1,0]) : "golden";
+      // A/B TOUT NEUF "arena_v1" (on oublie golden comme "thème", c'est juste le contrôle =
+      // app d'origine). control = pas de skin · arena = skin comic/TCG. 50/50, suivi conversion.
+      if(typeof abVariant==="function"){ return abVariant("arena_v1",["control","arena"],[.5,.5])==="arena" ? "comic" : "golden"; }
+      return "golden";
     }catch(_){ return "golden"; }
   },[THEMES])
   const[uiTheme,setUiTheme]=useState(initialTheme)
