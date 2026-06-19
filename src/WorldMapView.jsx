@@ -412,8 +412,10 @@ export default function WorldMapView({
       // vivent sur la terre (dégradé propre) → contraste préservé. Bas profond = dots lisibles.
       // Control = base teal froide (inchangée, ci-dessous).
       background: warm
-        ? "radial-gradient(100% 82% at 80% -10%, rgba(255,196,92,.52), rgba(224,130,48,.16) 36%, transparent 62%), radial-gradient(125% 105% at 6% 112%, rgba(4,22,32,.62), transparent 54%), linear-gradient(158deg,#236b57 0%,#134c44 40%,#0a3330 70%,#061f22 100%)"
-        : "radial-gradient(130% 70% at 76% 4%, rgba(255,224,160,.16), transparent 48%), linear-gradient(158deg,#1f6157 0%,#114440 44%,#072019 100%)",
+        // Golden-hour SEA : soleil chaud ambre haut-droite → horizon doré → mer bleu-teal
+        // profonde bas-gauche. Lecture « eau » nette (bleu/teal) + chaleur d'heure dorée.
+        ? "radial-gradient(108% 78% at 82% -6%, rgba(255,206,120,.62), rgba(240,158,70,.30) 30%, rgba(214,118,52,.06) 52%, transparent 66%), radial-gradient(130% 110% at 4% 118%, rgba(6,28,46,.78), rgba(8,40,58,.32) 40%, transparent 60%), linear-gradient(162deg,#3aa6c4 0%,#2487a9 22%,#1c6f93 44%,#15577d 66%,#103f63 84%,#0b2e4d 100%)"
+        : "radial-gradient(130% 70% at 76% 4%, rgba(255,224,160,.16), transparent 48%), linear-gradient(162deg,#3aa6c4 0%,#1c6f93 40%,#103f63 72%,#0b2e4d 100%)",
     }}>
       <style>{`
         @keyframes wmSun{0%,100%{opacity:.9;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
@@ -422,15 +424,39 @@ export default function WorldMapView({
         @keyframes wmSlide{from{opacity:0;transform:translateX(-50%) translateY(16px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
       `}</style>
 
-      {/* Lumière soleil top-right */}
-      {!noAnim&&<div style={{position:"absolute",top:"-16%",right:"-10%",width:"82%",height:"64%",
+      {/* Bande horizon doré (heure dorée sur la mer) */}
+      <div style={{position:"absolute",top:0,left:0,right:0,height:"40%",pointerEvents:"none",zIndex:0,
+        background:"linear-gradient(180deg,rgba(255,198,108,.5) 0%,rgba(255,176,92,.24) 34%,rgba(255,170,96,.08) 60%,transparent 100%)",
+        mixBlendMode:"screen"}}/>
+
+      {/* Soleil — disque chaud top-right (le « soleil » d'heure dorée) */}
+      <div style={{position:"absolute",top:"-7%",right:"4%",width:130,height:130,borderRadius:"50%",
         pointerEvents:"none",zIndex:0,
-        background:"radial-gradient(closest-side, rgba(255,243,214,.52), rgba(255,216,132,.22) 46%, transparent 72%)",
+        background:"radial-gradient(circle at 50% 50%, rgba(255,248,224,.96), rgba(255,222,148,.9) 38%, rgba(255,196,92,.45) 62%, transparent 74%)",
+        animation:noAnim?"none":"wmSun 11s ease-in-out infinite"}}/>
+      {/* Halo soleil large */}
+      {!noAnim&&<div style={{position:"absolute",top:"-22%",right:"-12%",width:"80%",height:"58%",
+        pointerEvents:"none",zIndex:0,
+        background:"radial-gradient(closest-side, rgba(255,236,190,.40), rgba(255,210,130,.16) 48%, transparent 74%)",
         animation:"wmSun 11s ease-in-out infinite"}}/>}
 
-      {/* Dégradé bas (veil) */}
+      {/* Sun-glitter scintillement sur la mer (reflet doré du soleil) */}
+      <div style={{position:"absolute",top:"6%",right:"2%",width:"46%",height:"60%",
+        pointerEvents:"none",zIndex:0,opacity:.5,mixBlendMode:"screen",
+        background:"radial-gradient(60% 40% at 78% 16%, rgba(255,224,160,.5), transparent 70%)"}}/>
+      {/* Colonne de reflet solaire descendant sur la mer */}
+      <div style={{position:"absolute",top:"4%",right:"14%",width:"22%",height:"66%",
+        pointerEvents:"none",zIndex:0,opacity:.42,mixBlendMode:"screen",
+        background:"radial-gradient(40% 100% at 50% 0%, rgba(255,228,168,.7), rgba(255,210,140,.18) 46%, transparent 78%)"}}/>
+
+      {/* Halftone comic (points subtils, profondeur d'encre douce) */}
+      <div style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:0,opacity:.10,
+        backgroundImage:"radial-gradient(rgba(8,30,50,.9) 1px, transparent 1.3px)",
+        backgroundSize:"7px 7px"}}/>
+
+      {/* Dégradé bas (veil — profondeur de mer froide bas-gauche) */}
       <div style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:2,
-        background:"linear-gradient(180deg,rgba(7,18,15,0) 50%,rgba(7,18,15,.30) 100%)"}}/>
+        background:"linear-gradient(200deg,rgba(11,46,77,0) 48%,rgba(7,26,46,.42) 100%)"}}/>
 
       {/* ── SVG monde ──────────────────────────────────────────────────────── */}
       <svg
@@ -446,13 +472,30 @@ export default function WorldMapView({
             <stop offset="0" stopColor="#FFE6A8" stopOpacity=".55"/>
             <stop offset="1" stopColor="#FFE6A8" stopOpacity="0"/>
           </radialGradient>
-          <linearGradient id="wmLand" x1="0" y1="0" x2=".8" y2="1">
-            <stop offset="0" stopColor="#37471f"/><stop offset=".22" stopColor="#2c3b1c"/>
-            <stop offset=".62" stopColor="#1b2a18"/><stop offset="1" stopColor="#111b13"/>
+          {/* Terre : vert tropical lumineux haut-droite (soleil) → vert profond + sable côtier */}
+          <linearGradient id="wmLand" x1="1" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#9bc24e"/><stop offset=".26" stopColor="#6fa838"/>
+            <stop offset=".58" stopColor="#4a8a32"/><stop offset="1" stopColor="#2f6b2c"/>
           </linearGradient>
-          <linearGradient id="wmWarm" x1="1" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#E8A23A" stopOpacity=".34"/>
-            <stop offset=".42" stopColor="#C97E3A" stopOpacity="0"/>
+          {/* Overlay chaud d'heure dorée sur la terre (côté soleil) */}
+          <linearGradient id="wmWarm" x1="1" y1="0" x2=".2" y2="1">
+            <stop offset="0" stopColor="#FFD27A" stopOpacity=".55"/>
+            <stop offset=".4" stopColor="#F0A23A" stopOpacity=".14"/>
+            <stop offset="1" stopColor="#C97E3A" stopOpacity="0"/>
+          </linearGradient>
+          {/* Liseré de sable / plage clair en bordure d'île */}
+          <linearGradient id="wmSand" x1="1" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#FFEFC4"/><stop offset="1" stopColor="#F4D38C"/>
+          </linearGradient>
+          {/* Pin teardrop dégradés par statut */}
+          <linearGradient id="wmPinClean" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#5BE38A"/><stop offset="1" stopColor="#1FA34D"/>
+          </linearGradient>
+          <linearGradient id="wmPinMod" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#FFC53D"/><stop offset="1" stopColor="#D88A00"/>
+          </linearGradient>
+          <linearGradient id="wmPinAvoid" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#FF7A4D"/><stop offset="1" stopColor="#C93A18"/>
           </linearGradient>
           <linearGradient id="wmSailR" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0" stopColor="#FF6A3D"/><stop offset="1" stopColor="#D8431F"/>
@@ -468,34 +511,44 @@ export default function WorldMapView({
 
         {/* Monde — transform caméra appliqué ici via ref */}
         <g ref={worldRef}>
-          {/* Grille océan décorative */}
-          <g stroke="#5FD3C9" strokeWidth="2" strokeLinecap="round" fill="none" opacity=".05">
+          {/* Vagues océan décoratives (traits d'écume comic) */}
+          <g stroke="#bfeee8" strokeWidth="2.4" strokeLinecap="round" fill="none" opacity=".14">
             <path d="M40 250 q60 -16 120 -4"/><path d="M70 340 q70 -18 140 -2"/>
+            <path d="M30 430 q66 -16 130 -2"/>
             <path d="M520 120 q60 -14 120 0"/><path d="M600 470 q70 -16 130 -2"/>
+            <path d="M560 540 q66 -16 130 -2"/>
           </g>
 
-          {/* Contour côtier — toutes les couches du proto */}
+          {/* Contour côtier — couches mer → île ink comic */}
           {outline&&<>
-            {/* eau peu profonde lointaine */}
-            <path d={outline.path} fill="none" stroke="#3fb9ad" strokeWidth="26" strokeOpacity=".32" filter="url(#wmShlw)"/>
-            {/* eau peu profonde proche */}
-            <path d={outline.path} fill="none" stroke="#9aead9" strokeWidth="10" strokeOpacity=".5"  filter="url(#wmShl2)"/>
-            {/* ombre portée */}
-            <path d={outline.path} fill="#03110d" opacity=".5" filter="url(#wmSoft)" transform="translate(6 11)"/>
-            {/* rim doré */}
-            <path d={outline.path} fill="none" stroke="#FFE6A8" strokeWidth="6" strokeOpacity=".55" filter="url(#wmRim)"/>
-            {/* île solide */}
-            <path d={outline.path} fill="url(#wmLand)" stroke="#FFE6A8" strokeWidth="1.5" strokeOpacity=".9"/>
-            {/* overlay chaud */}
-            <path d={outline.path} fill="url(#wmWarm)" opacity=".85"/>
+            {/* eau peu profonde lointaine (lagon turquoise large) */}
+            <path d={outline.path} fill="none" stroke="#46c8bd" strokeWidth="30" strokeOpacity=".42" filter="url(#wmShlw)"/>
+            {/* eau peu profonde proche (turquoise clair lagon) */}
+            <path d={outline.path} fill="none" stroke="#a8f0e0" strokeWidth="12" strokeOpacity=".58" filter="url(#wmShl2)"/>
+            {/* ombre portée profonde de l'île */}
+            <path d={outline.path} fill="#062033" opacity=".5" filter="url(#wmSoft)" transform="translate(7 13)"/>
+            {/* halo rim doré (heure dorée léchant la côte) */}
+            <path d={outline.path} fill="none" stroke="#FFE6A8" strokeWidth="7" strokeOpacity=".5" filter="url(#wmRim)"/>
+            {/* liseré de sable (plage claire) sous l'encre */}
+            <path d={outline.path} fill="url(#wmSand)" stroke="none"/>
+            {/* île solide verte */}
+            <path d={outline.path} fill="url(#wmLand)" stroke="none" transform="scale(.985)" style={{transformOrigin:"328px 300px"}}/>
+            {/* overlay chaud (lumière dorée côté soleil) */}
+            <path d={outline.path} fill="url(#wmWarm)" opacity=".9" transform="scale(.985)" style={{transformOrigin:"328px 300px"}}/>
+            {/* CONTOUR ENCRE comic épais — fait POPPER l'île sur la mer */}
+            <path d={outline.path} fill="none" stroke="#0d1726" strokeWidth="3" strokeLinejoin="round"/>
           </>}
 
-          {/* Relief Martinique */}
+          {/* Relief Martinique — collines comic (ombre verte + crête ensoleillée) */}
           {reliefEls.map(({vx,vy,rx},i)=>(
             <g key={i}>
-              <ellipse cx={vx} cy={vy} rx={rx} ry={rx*0.66} fill="#0c1710" opacity=".42"/>
-              <path d={`M${(vx-rx*.6).toFixed(1)} ${(vy-rx*.2).toFixed(1)} Q${vx.toFixed(1)} ${(vy-rx*.7).toFixed(1)} ${(vx+rx*.6).toFixed(1)} ${(vy-rx*.2).toFixed(1)}`}
-                stroke="#46582c" strokeWidth="1.4" fill="none" opacity=".3"/>
+              {/* versant ombre */}
+              <ellipse cx={vx} cy={vy} rx={rx} ry={rx*0.66} fill="#2c5a26" opacity=".5"/>
+              {/* crête éclairée par le soleil */}
+              <path d={`M${(vx-rx*.72).toFixed(1)} ${(vy+rx*.18).toFixed(1)} Q${vx.toFixed(1)} ${(vy-rx*.78).toFixed(1)} ${(vx+rx*.72).toFixed(1)} ${(vy+rx*.18).toFixed(1)}`}
+                stroke="#bfe07a" strokeWidth="2" fill="none" opacity=".55" strokeLinecap="round"/>
+              <path d={`M${(vx-rx*.4).toFixed(1)} ${(vy+rx*.05).toFixed(1)} Q${(vx-rx*.05).toFixed(1)} ${(vy-rx*.5).toFixed(1)} ${(vx+rx*.35).toFixed(1)} ${(vy+rx*.02).toFixed(1)}`}
+                stroke="#1d4a1c" strokeWidth="1.4" fill="none" opacity=".4" strokeLinecap="round"/>
             </g>
           ))}
 
@@ -512,20 +565,35 @@ export default function WorldMapView({
             <path d="M-46 4 Q0 18 46 4" fill="none" stroke="#FFD884" strokeWidth="1.6" strokeOpacity=".6"/>
           </g>
 
-          {/* Pins plages */}
+          {/* Pins plages — marqueurs comic teardrop ink-outline */}
           {beachList.map(b=>{
             const st=b.days[day]||"clean"
             const isSel=selected?.id===b.id
+            const fill=st==="clean"?"url(#wmPinClean)":st==="moderate"?"url(#wmPinMod)":"url(#wmPinAvoid)"
+            const s=isSel?1.18:1
             return(
               <g key={b.id}
                 transform={`translate(${b.vx.toFixed(1)} ${b.vy.toFixed(1)})`}
                 style={{cursor:"pointer"}}
                 onClick={e=>{ e.stopPropagation(); selectBeach(b) }}>
-                {!noAnim&&<circle r="13" fill="url(#wmPhalo)"
+                {/* halo doux pour les propres / pulsation sélection */}
+                {(!noAnim&&st==="clean")&&<circle r="13" cy="-9" fill="url(#wmPhalo)"
                   style={{animation:"wmHalo 3.6s ease-in-out infinite"}}/>}
-                <circle r={isSel?8:6} fill={STATUS_C[st]||"#888"} stroke="#06121A" strokeWidth="1.3"
-                  style={{transition:"r .15s cubic-bezier(.34,1.56,.64,1)"}}/>
-                {st==="clean"&&<circle r={isSel?8:6} fill="none" stroke="#fff" strokeOpacity=".55" strokeWidth="1"/>}
+                {/* ombre au sol */}
+                <ellipse cx="0" cy="1" rx={5*s} ry={2*s} fill="#062033" opacity=".4"/>
+                {/* corps teardrop : pointe en bas (cy=0), bulbe au-dessus */}
+                <g transform={`scale(${s})`} style={{transition:"transform .16s cubic-bezier(.34,1.56,.64,1)"}}>
+                  <path d="M0 0 C-5.4 -7 -8 -10.4 -8 -14.4 A8 8 0 1 1 8 -14.4 C8 -10.4 5.4 -7 0 0 Z"
+                    fill={fill} stroke="#0d1726" strokeWidth="1.6" strokeLinejoin="round"/>
+                  {/* reflet lumineux (volume comic) */}
+                  <ellipse cx="-2.6" cy="-17" rx="2.4" ry="3.2" fill="#fff" opacity=".5"/>
+                  {/* score visible quand sélectionné, sinon trou blanc */}
+                  {isSel&&b.score!=null
+                    ? <text x="0" y="-11.4" textAnchor="middle"
+                        fontSize="8.5" fontWeight="800" fill="#0d1726"
+                        fontFamily="'Bricolage Grotesque',system-ui,sans-serif">{Math.round(b.score)}</text>
+                    : <circle cx="0" cy="-14.4" r="3" fill="#fff" stroke="#0d1726" strokeWidth=".7"/>}
+                </g>
               </g>
             )
           })}
