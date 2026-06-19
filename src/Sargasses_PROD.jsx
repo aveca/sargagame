@@ -11,6 +11,7 @@ import { COAST_ZONES } from "../scripts/lib/coast-zones.cjs"
 import { getCanonicalSlug } from "./lib/slug-resolver.js"
 import Dock from "./Dock.jsx"
 import ArenaSplash from "./ArenaSplash.jsx"
+import ArenaOnboarding from "./ArenaOnboarding.jsx"
 import DiveTransition from "./DiveTransition.jsx"
 import PassOffer from "./PassOffer.jsx"
 import "./Themes.css"
@@ -11426,7 +11427,8 @@ export default function App(){
     return null
   })
   const[showPicker,setShowPicker]=useState(false)
-  const[showOnboarding,setShowOnboarding]=useState(()=>!g("sg_onb",0))
+  // Ancien coachmark désactivé : remplacé par ArenaOnboarding (flow 3 étapes plein cadre).
+  const[showOnboarding,setShowOnboarding]=useState(false)
   const[showPremium,setShowPremium]=useState(false)
   const[showChat,setShowChat]=useState(false) // assistant guidé (SargaChat)
   const[premiumSource,setPremiumSource]=useState(null)
@@ -12660,10 +12662,23 @@ export default function App(){
     }catch(_){ return false; }
   });
 
+  const [showArenaOnb,setShowArenaOnb]=useState(()=>{
+    try{
+      const q=window.location.search||"";
+      if(/[?&]onb=1/.test(q)) return true;
+      if(/[?&]onb=0/.test(q)) return false;
+      const path=window.location.pathname;
+      if(!(path==="/"||path===""||path==="/index.html")) return false; // jamais sur pages SEO
+      return !g("sg_onb",0); // première visite uniquement
+    }catch(_){ return false; }
+  });
+  const finishArenaOnb=useCallback(()=>{ try{localStorage.setItem("sg_onb","1");}catch(_){} setShowArenaOnb(false); },[]);
+
   return(
     <LangCtx.Provider value={lang}>
       <StyleInjector/>
       {showSplash&&<ArenaSplash lang={lang} onDone={()=>setShowSplash(false)}/>}
+      {showArenaOnb&&<ArenaOnboarding lang={lang} onDone={finishArenaOnb} onSkip={finishArenaOnb}/>}
       <AbDebug/>
       {/* Mot-clé SEO sr-only — <p> (PAS <h1>) : la scène/route visible fournit déjà
           l'unique <h1> ; deux <h1> = anti-pattern SEO + a11y. Texte reste crawlable. */}
