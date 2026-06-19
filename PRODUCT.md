@@ -117,17 +117,19 @@ Paiement → Onboarding payant**. Chaque écran doit être 100% monde comic + an
 
 | # | Écran | Fichier | Comic ? | Connexion |
 |---|-------|---------|---------|-----------|
-| 1 | Splash | `ArenaSplash` (Sargasses_PROD) | ⚠️ à auditer | → Onboarding |
-| 2 | Onboarding 3 étapes | `src/ArenaOnboarding.jsx` | ⚠️ à auditer | → Arène |
-| 3 | **Accueil = Arène** | `src/ChasseHome.jsx` | ✅ | → Détail / Paywall / Carte |
-| 4 | **Détail plage in-world** | `ChasseDetail` (ChasseHome) | ✅ + strip 7j | → Paywall / Fiche complète |
-| 5 | **Paywall** | `PremiumModal` (Sargasses_PROD) | 🟡 partiel (cards/CTA/garantie) | → Paiement / close |
+| 1 | Splash | `ArenaSplash` (Sargasses_PROD) | ✅ (Veilleur/pow/Anton) | → Onboarding |
+| 2 | Onboarding 3 étapes | `src/ArenaOnboarding.jsx` | ✅ (fidèle arena.html) | → Arène |
+| 3 | **Accueil = Arène** | `src/ChasseHome.jsx` | ✅ booster+dex+FX | → Détail / Paywall / Carte |
+| 4 | **Détail plage in-world** | `ChasseDetail` (ChasseHome) | ✅ verdict+score+facts+7j+VOISINES+speed-lines | → Paywall / voisines / Fiche complète |
+| 5 | **Paywall** | `PremiumModal` (Sargasses_PROD) | 🟡 partiel (plan cards/CTA/garantie/timeline/halftone) | → Paiement / close |
 | 6 | Paiement on-site | `PayStep` overlay (PremiumModal) | ⚠️ à auditer | → succès → onboarding payant |
-| 7 | Onboarding payant | `src/PaidOnboarding.jsx` | ⚠️ à auditer | → Arène premium |
-| 8 | **Carte** (« déboucher sur plein de trucs ») | `src/WorldMapView.jsx` | ❌ palette froide | pins → Détail |
-| 9 | Fiche plage data complète | `BeachDive`/`BeachSheet` | ⚠️ autre style | depuis « Fiche complète » |
+| 7 | Onboarding payant | `src/PaidOnboarding.jsx` | ⚠️ style data (Bricolage, rgba translucides) | → Arène premium |
+| 8 | **Carte** | `src/WorldMapView.jsx` | ✅ golden-hour pour tous | pins → (encore fiche data, à router vers détail comic) |
+| 9 | Fiche plage data complète | `BeachDive`/`BeachSheet` | ⚠️ autre style (« scroll satellite » que le fondateur déteste) | depuis « Fiche complète » + pins carte |
 | 10 | Liste plages | `BeachListView` | ⚠️ (souvent recouverte) | → Détail |
 | 11 | Feedback | (Sargasses_PROD) | ⚠️ | overlay |
 
-**Prochaines passes (ordre) :** (5) finir paywall variants → (8) réchauffer la carte + pins→détail comic → (1-2) splash/onboarding au niveau arène → (6-7) paiement+onboarding payant → (9) fiche data → transitions de **case BD** entre tous.
+Mascotte **Le Veilleur** : ✅ clignement comic steppé (arène + détail).
+
+**Prochaines passes (ordre) :** (7) onboarding payant en comic (rapide, contenu) → (6) paiement on-site → finir variants paywall (scene/constel headers) → (9) fiche data OU router pins carte → détail comic (au lieu de la fiche data) → transitions de **case BD** entre écrans top-niveau.
 **Anti-régression :** chaque écran vérifié au screenshot mobile WebKit + scan boutons blancs (`_journey.mjs`), checkout Stripe jamais touché, tout réversible.
