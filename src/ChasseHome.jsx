@@ -214,6 +214,9 @@ function ChasseDetail({beach,lang,onClose,onPremium,onFull,track}){
       <button type="button" className="lc-detail-x" onClick={onClose} aria-label="Fermer">✕</button>
       <div className={`lc-detail-illu s-${v.st}`}>
         <Illu st={v.st} score={sc||0} uid={(beach.id||"d")+"-dt"}/>
+        <svg className="lc-zip" viewBox="0 0 200 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          {Array.from({length:20}).map((_,i)=>{const a=(i/20)*Math.PI*2,x1=100+Math.cos(a)*28,y1=100+Math.sin(a)*28,x2=100+Math.cos(a)*180,y2=100+Math.sin(a)*180;return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2}/>})}
+        </svg>
         <span className="lc-detail-veil"><Veilleur mood={v.mood} size={62}/></span>
         <span className={`lc-detail-tag s-${v.st}`}>{r.stars} {_t(r.lbl)} · N° {cardNum(beach)}</span>
       </div>
@@ -614,7 +617,11 @@ const CSS=`
   border:2.5px solid var(--ink);background:var(--yel);color:var(--ink);font-size:17px;font-weight:800;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
 .lc-detail-illu{position:relative;height:230px;border-bottom:3px solid var(--ink);overflow:hidden}
 .lc-detail-illu svg{position:absolute;inset:0;width:100%;height:100%}
-.lc-detail-veil{position:absolute;left:50%;top:50%;transform:translate(-50%,-58%);filter:drop-shadow(2px 4px 0 rgba(13,11,20,.4))}
+.lc-detail-veil{position:absolute;left:50%;top:50%;transform:translate(-50%,-58%);filter:drop-shadow(2px 4px 0 rgba(13,11,20,.4));z-index:2}
+.lc-detail-illu .lc-zip{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;
+  stroke:rgba(255,255,255,.55);stroke-width:2.5;transform-origin:center;animation:lc-zip .5s steps(4,end) forwards}
+@keyframes lc-zip{0%{opacity:.9;transform:scale(.55)}100%{opacity:0;transform:scale(1.6)}}
+.lc-reduce .lc-detail-illu .lc-zip{display:none}
 .lc-detail-tag{position:absolute;left:12px;bottom:10px;font-family:"AntonLC",system-ui,sans-serif;font-size:10px;color:#fff;
   background:var(--ink);border:2px solid #fff;padding:3px 9px;border-radius:14px;letter-spacing:.5px}
 .lc-detail-body{max-width:520px;margin:0 auto;padding:16px 18px 60px}
