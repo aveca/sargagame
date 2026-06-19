@@ -24,7 +24,7 @@ export default function ArenaSplash({onDone,lang="fr",track}){
       <style>{`
         .arena-splash{position:fixed;inset:0;z-index:3000;display:flex;flex-direction:column;
           align-items:center;justify-content:center;gap:14px;padding:24px;
-          font-family:"Bricolage Grotesque",system-ui,sans-serif;color:#fff;
+          font-family:"Comic Neue",system-ui,sans-serif;color:#fff;
           background:
             radial-gradient(rgba(255,255,255,.06) 1.2px,transparent 1.3px) 0 0/8px 8px,
             linear-gradient(180deg,#10202b,#0c2a3a 60%,#3a2a18);
@@ -39,12 +39,10 @@ export default function ArenaSplash({onDone,lang="fr",track}){
           border:5px solid #0d0b14;background:linear-gradient(160deg,#5fd0ff,#27a9e3);
           box-shadow:0 8px 0 rgba(0,0,0,.5),inset 0 0 0 4px #fff;transform:rotate(-3deg);
           display:grid;place-items:center;animation:arenaBob 2.4s ease-in-out infinite}
-        .arena-splash .orbe .sat{font-size:70px;filter:drop-shadow(2px 3px 0 rgba(0,0,0,.4))}
-        .arena-splash .orbe .eye{position:absolute;right:20px;bottom:30px;font-size:32px}
         .arena-splash .orbe .pow{position:absolute;top:-12px;right:-10px;background:#e8322a;
           border:3px solid #0d0b14;border-radius:8px;padding:2px 9px;color:#fff;
           font:400 15px/1 "Anton",sans-serif;transform:rotate(6deg);box-shadow:2px 2px 0 #0d0b14}
-        .arena-splash h1{margin:8px 0 0;font:400 32px/1 "Anton","Bricolage Grotesque",sans-serif;
+        .arena-splash h1{margin:8px 0 0;font:400 32px/1 "AntonLC","Anton",sans-serif;
           color:#fff;text-shadow:3px 3px 0 #0d0b14;transform:rotate(-2deg);letter-spacing:.5px}
         .arena-splash .wm{font:400 16px/1 "Anton",sans-serif;color:#ffd23f;letter-spacing:1px;
           text-shadow:2px 2px 0 #0d0b14;transform:rotate(1deg)}
@@ -61,8 +59,18 @@ export default function ArenaSplash({onDone,lang="fr",track}){
       <div className="glow" aria-hidden="true"></div>
       <div className="eyebrow">{L("eyebrow")}</div>
       <div className="orbe" aria-hidden="true">
-        <span className="sat">🛰️</span>
-        <span className="eye">👁</span>
+        <svg viewBox="0 0 120 120" width="120" height="120" aria-hidden="true" style={{display:'block'}}>
+          <g stroke="#0d0b14" strokeWidth="2.5"><rect x="6" y="50" width="20" height="22" rx="2" fill="#27a9e3"/><rect x="94" y="50" width="20" height="22" rx="2" fill="#27a9e3"/><line x1="26" y1="61" x2="40" y2="61"/><line x1="94" y1="61" x2="80" y2="61"/></g>
+          <circle cx="60" cy="62" r="34" fill="#fdf6e3" stroke="#0d0b14" strokeWidth="3"/>
+          <line x1="60" y1="28" x2="60" y2="14" stroke="#0d0b14" strokeWidth="3"/>
+          <circle cx="60" cy="11" r="5" fill="#ffd23f" stroke="#0d0b14" strokeWidth="2.5"/>
+          <circle cx="60" cy="62" r="20" fill="#0d0b14"/>
+          <circle cx="60" cy="62" r="14" fill="#ffd23f"/>
+          <circle cx="60" cy="62" r="6" fill="#0d0b14"/>
+          <circle cx="64" cy="58" r="2.5" fill="#fff"/>
+          <path d="M44 40 Q60 34 76 40" fill="none" stroke="#0d0b14" strokeWidth="3" strokeLinecap="round"/>
+          <path d="M50 86 Q60 92 70 86" fill="none" stroke="#0d0b14" strokeWidth="3" strokeLinecap="round"/>
+        </svg>
         <span className="pow">SCAN!</span>
       </div>
       <h1>LE VEILLEUR</h1>
