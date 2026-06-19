@@ -396,6 +396,13 @@ export default function ChasseHome(props){
   const dayV = beach ? vof(beach.status) : VERDICT.clean
   const vedRare = beach ? rarity(beach.score).cls : "r-com"   /* rareté de la vedette (tension du pull) */
   const tier = useMemo(()=>tierOf(collSet.size),[collSet])
+  /* RÉCOMPENSE : célébration comic quand on franchit un rang Veilleur (one-shot, persistée) */
+  const [levelUp,setLevelUp]=useState(null)
+  useEffect(()=>{ try{
+    const idx=TIERS.indexOf(tier.cur)
+    const prev=parseInt(localStorage.getItem("sg_chasse_rank")||"-1",10)
+    if(idx>prev){ localStorage.setItem("sg_chasse_rank",String(idx)); if(prev>=0&&idx>0){ setLevelUp(tier.cur); if(track)try{track("sg_chasse_levelup",{rank:idx})}catch(_){} } }
+  }catch(_){} },[tier,track])
   const dateLbl = useMemo(()=>{
     const d=new Date(), moFR=["JANV.","FÉVR.","MARS","AVR.","MAI","JUIN","JUIL.","AOÛT","SEPT.","OCT.","NOV.","DÉC."]
     return d.getDate()+" "+moFR[d.getMonth()]
@@ -545,6 +552,21 @@ export default function ChasseHome(props){
         onPremium={(src)=>{ setDetail(null); onPremium&&onPremium(src||"chasse_detail") }}
         onRelated={(b)=>{ collect(b); if(track)try{track("sg_chasse_card_open",{beach_id:b.id,which:"related"})}catch(_){}; setDetail(b) }}
         onFull={()=>{ const b=detail; setDetail(null); onOpenBeach&&onOpenBeach(b) }}/>}
+
+      {levelUp&&(
+        <div className="lc-levelup" role="dialog" aria-label="Nouveau rang" onClick={()=>setLevelUp(null)}>
+          <svg className="lc-burst s-ok" viewBox="0 0 300 300" aria-hidden="true">
+            {Array.from({length:18}).map((_,i)=>{const a=(i/18)*Math.PI*2,x1=150+Math.cos(a)*70,y1=150+Math.sin(a)*70,x2=150+Math.cos(a)*150,y2=150+Math.sin(a)*150;return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} strokeWidth={i%2?6:10}/>})}
+          </svg>
+          <div className="lc-lvl-card" onClick={e=>e.stopPropagation()}>
+            <span className="lc-pow s-ok lc-verdictpow"><b>{_t({fr:"NIVEAU !",en:"LEVEL UP!",es:"¡NIVEL!"})}</b></span>
+            <div className="lc-lvl-veil"><Veilleur mood="calm" size={88}/></div>
+            <div className="lc-lvl-rank" style={{background:levelUp.iris}}>{_t(levelUp)}</div>
+            <p className="lc-sub lc-center">{_t({fr:"Nouveau rang de Veilleur débloqué. Continue à collectionner.",en:"New Veilleur rank unlocked. Keep collecting.",es:"Nuevo rango de Vigía desbloqueado. Sigue coleccionando."})}</p>
+            <button type="button" className="lc-cta yel" onClick={()=>setLevelUp(null)}>{_t({fr:"CONTINUER",en:"CONTINUE",es:"SEGUIR"})}</button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -717,6 +739,18 @@ const CSS=`
 .lc-cap-done{max-width:520px;margin:18px auto 0;background:#0e3a28;border:2.5px solid var(--ink);border-radius:14px;
   padding:13px 15px;color:#fff;font-weight:800;font-size:13.5px;box-shadow:2px 2px 0 var(--ink);forced-color-adjust:none}
 .lc-cap-done span{font-size:17px}
+/* RÉCOMPENSE niveau (célébration comic) */
+.lc-levelup{position:fixed;inset:0;z-index:1250;display:flex;align-items:center;justify-content:center;padding:24px;
+  background:radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 0 0/9px 9px,rgba(13,11,20,.62);
+  animation:lc-detail-in .3s cubic-bezier(.2,1.2,.3,1) both}
+.lc-levelup .lc-burst{position:absolute;width:min(112vw,460px);height:min(112vw,460px);opacity:.9}
+.lc-lvl-card{position:relative;z-index:1;max-width:330px;width:100%;text-align:center;background:var(--paper);
+  border:3px solid var(--ink);border-radius:18px;padding:30px 22px 22px;box-shadow:0 7px 0 var(--ink),0 16px 30px rgba(13,11,20,.5)}
+.lc-lvl-veil{display:flex;justify-content:center;filter:drop-shadow(2px 4px 0 rgba(13,11,20,.4))}
+.lc-lvl-rank{display:inline-block;margin:12px 0 4px;font-family:"AntonLC",system-ui,sans-serif;font-size:24px;color:#fff;
+  text-shadow:2px 2px 0 var(--ink);border:3px solid var(--ink);border-radius:11px;padding:6px 16px;box-shadow:3px 3px 0 var(--ink);transform:rotate(-1.5deg)}
+.lc-lvl-card .lc-sub{margin:8px 0 16px;color:#2a2536;font-weight:700}
+.lc-reduce .lc-levelup{animation:none}
 
 /* carte TCG (réutilisable) */
 .lc-card{position:relative;border-radius:14px;padding:6px;border:2.5px solid var(--ink);text-align:left;cursor:pointer;
