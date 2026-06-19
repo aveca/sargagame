@@ -32,6 +32,7 @@ const fs = require("fs")
 const { loadProjectEnv } = require("./lib/load-project-env.cjs")
 const { getAllRegions } = require("../regions/index.cjs")
 const { fastDeploy } = require("./lib/fast-deploy.cjs")
+const { purgeRegionResidues } = require("./lib/purge-cross-domain.cjs")
 
 loadProjectEnv()
 
@@ -268,16 +269,31 @@ async function deployRegion(t, { token, noFast }) {
     console.warn(`[${t.key}] ${t.local} absent — région ignorée (run scripts/prepare-ftp.cjs first)`)
     return "skipped"
   }
+  let result
   if (!noFast && token) {
     try {
       const r = await fastDeploy(t, { token })
       console.log(`[${t.label}] ⚡ fast deploy ✓ (${r.files} fichiers, ${r.zipKB} Ko, extract ${r.ms} ms)`)
-      return true
+      result = true
     } catch (err) {
       console.log(`  [${t.label}] fast path indispo (${err.message}) → fallback FTP fichier-par-fichier`)
     }
   }
-  return deployOne(t)
+  if (result === undefined) result = await deployOne(t)
+
+  // Garde-fou cross-domain : le deploy n'efface jamais ce qui a été retiré du
+  // build → un slug passé MQ_ONLY/GP_ONLY après un 1er déploiement reste
+  // orphelin sur l'autre île (duplicate-content indexable, cf. residu 2026-06-19).
+  // On retire ces dossiers côté serveur APRÈS un upload réussi. Best-effort :
+  // ne doit jamais faire échouer le deploy. No-op pour les régions sans drops.
+  if (result === true) {
+    try {
+      await purgeRegionResidues(t, { apply: true })
+    } catch (err) {
+      console.log(`  [${t.label}] purge cross-domain best-effort échouée (non bloquant): ${err.message}`)
+    }
+  }
+  return result
 }
 
 // Mode --files : pousse une liste de fichiers ciblés vers les 5 régions, SANS
