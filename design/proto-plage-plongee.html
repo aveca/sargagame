@@ -364,24 +364,25 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
            xmlns="http://www.w3.org/2000/svg" role="img"
            aria-label="Scène de la plage golden-hour mesurée au satellite : ciel, mer, sable, relief de la plage, une yole et Le Veilleur satellite qui veille la mer.">
         <defs>
+          <!-- COMIC : ciel aplati en 2 bandes franches (turquoise → chaud) -->
           <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#0B2230"/><stop offset=".42" stop-color="#155A5A"/>
-            <stop offset=".74" stop-color="#C97E3A"/><stop offset="1" stop-color="#F2B05E"/>
+            <stop offset="0" stop-color="#2bb6ef"/><stop offset=".48" stop-color="#62c8ee"/>
+            <stop offset=".49" stop-color="#ffc187"/><stop offset="1" stop-color="#ff944a"/>
           </linearGradient>
           <linearGradient id="warmG" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#3a2a18" stop-opacity="0"/>
-            <stop offset=".6" stop-color="#C97E3A" stop-opacity=".20"/>
-            <stop offset="1" stop-color="#F2B05E" stop-opacity=".42"/>
+            <stop offset="0" stop-color="#ffc187" stop-opacity="0"/>
+            <stop offset=".6" stop-color="#ff944a" stop-opacity=".22"/>
+            <stop offset="1" stop-color="#ff944a" stop-opacity=".46"/>
           </linearGradient>
           <!-- mer : teinte du SOMMET pilotée par --seaTint (scrub prévision = status réel) -->
           <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="var(--seaTint)"/><stop offset=".55" stop-color="#0f3b34"/>
-            <stop offset="1" stop-color="#08251F"/>
+            <stop offset="0" stop-color="var(--seaTint)"/><stop offset=".5" stop-color="#0f4f47"/>
+            <stop offset=".51" stop-color="#0c3b34"/><stop offset="1" stop-color="#08251F"/>
           </linearGradient>
           <radialGradient id="sun" gradientUnits="userSpaceOnUse" cx="540" cy="300" r="150">
-            <stop offset="0" stop-color="#FFF6E0"/>
-            <stop offset=".46" stop-color="#FFD884" stop-opacity=".62"/>
-            <stop offset="1" stop-color="#F2B05E" stop-opacity="0"/>
+            <stop offset="0" stop-color="#fdf6e3"/>
+            <stop offset=".46" stop-color="#ffc187" stop-opacity=".7"/>
+            <stop offset="1" stop-color="#ff944a" stop-opacity="0"/>
           </radialGradient>
           <linearGradient id="land" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stop-color="#241A12"/><stop offset="1" stop-color="#120D08"/>
@@ -400,8 +401,8 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
             <stop offset="1" stop-color="#5FD3C9" stop-opacity="0"/>
           </radialGradient>
           <!-- voile yole -->
-          <linearGradient id="sailR" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF6A3D"/><stop offset="1" stop-color="#D8431F"/></linearGradient>
-          <linearGradient id="sailY" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFD45A"/><stop offset="1" stop-color="#F0A81E"/></linearGradient>
+          <linearGradient id="sailR" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6a3d"/><stop offset=".5" stop-color="#e8522a"/><stop offset="1" stop-color="#e8522a"/></linearGradient>
+          <linearGradient id="sailY" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffc187"/><stop offset="1" stop-color="#e8a800"/></linearGradient>
           <linearGradient id="hullG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#13776B"/><stop offset="1" stop-color="#0A463F"/></linearGradient>
           <!-- œil Veilleur -->
           <radialGradient id="lens" cx="38%" cy="32%" r="72%"><stop offset="0" stop-color="#CFF4FF"/><stop offset=".34" stop-color="#16b9c9"/><stop offset="1" stop-color="#052b2b"/></radialGradient>
@@ -422,7 +423,15 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
           <filter id="softS" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3"/></filter>
           <!-- COMIC : trame halftone Ben-Day (texture BD), réutilisée en overlay -->
           <pattern id="cmHalf" width="9" height="9" patternUnits="userSpaceOnUse">
-            <circle cx="2.2" cy="2.2" r="1.5" fill="#0d0b14" opacity=".12"/>
+            <circle cx="2.2" cy="2.2" r="1.7" fill="#0d0b14" opacity=".22"/>
+          </pattern>
+          <!-- COMIC : trame Ben-Day chaude (corail) pour le ciel/soleil -->
+          <pattern id="cmHalfWarm" width="11" height="11" patternUnits="userSpaceOnUse">
+            <circle cx="2.6" cy="2.6" r="2" fill="#e8522a" opacity=".20"/>
+          </pattern>
+          <!-- COMIC : trame Ben-Day turquoise dense pour la mer -->
+          <pattern id="cmHalfSea" width="8" height="8" patternUnits="userSpaceOnUse">
+            <circle cx="2" cy="2" r="1.6" fill="#0d0b14" opacity=".28"/>
           </pattern>
         </defs>
 
@@ -430,18 +439,21 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
         <g class="lyr-sky">
           <rect x="-40" y="-40" width="880" height="420" fill="url(#sky)"/>
           <rect x="-40" y="-40" width="880" height="420" fill="url(#warmG)"/>
+          <rect x="-40" y="-40" width="880" height="420" fill="url(#cmHalfWarm)"/>
           <rect x="-40" y="-40" width="880" height="420" fill="url(#cmHalf)"/>
           <!-- soleil : glisse J0→J6 au scrub (translateX via #sunGroup) + monte au scroll -->
           <g id="sunGroup">
             <!-- halo : cercles PLEINS empilés (pas de paint-server SVG) — immunise
                  contre le bug WebKit/iOS qui peignait le gradient en gris plat. -->
             <g id="sunGlow">
-              <circle cx="540" cy="300" r="150" fill="#F2B05E" opacity=".06"/>
-              <circle cx="540" cy="300" r="120" fill="#FFC979" opacity=".12"/>
-              <circle cx="540" cy="300" r="92" fill="#FFD884" opacity=".20"/>
-              <circle cx="540" cy="300" r="66" fill="#FFE6B4" opacity=".34"/>
+              <circle cx="540" cy="300" r="150" fill="#ff944a" opacity=".08"/>
+              <circle cx="540" cy="300" r="120" fill="#ffc187" opacity=".16"/>
+              <circle cx="540" cy="300" r="92" fill="#ffc187" opacity=".26"/>
+              <circle cx="540" cy="300" r="66" fill="#fdf6e3" opacity=".42"/>
             </g>
-            <circle cx="540" cy="300" r="40" fill="#FFF7E2"/>
+            <circle cx="540" cy="300" r="40" fill="#fdf6e3"/>
+            <!-- COMIC : contour encré du disque solaire -->
+            <circle cx="540" cy="300" r="40" fill="none" stroke="#0d0b14" stroke-width="3" opacity=".55"/>
           </g>
           <g class="sgh-cloud1" opacity=".46">
             <ellipse cx="180" cy="118" rx="120" ry="13" fill="#10333E"/>
@@ -458,8 +470,8 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
         <!-- ===== MER ===== -->
         <g class="lyr-sea">
           <rect x="-40" y="300" width="880" height="260" fill="url(#sea)"/>
-          <rect x="-40" y="300" width="880" height="260" fill="url(#cmHalf)"/>
-          <line x1="-40" y1="300" x2="840" y2="300" stroke="#0d0b14" stroke-width="3" opacity=".55"/>
+          <rect x="-40" y="300" width="880" height="260" fill="url(#cmHalfSea)"/>
+          <line x1="-40" y1="300" x2="840" y2="300" stroke="#0d0b14" stroke-width="4" opacity=".6"/>
           <!-- grain raster satellite (révélé au sous-beat "satellite scanne") -->
           <g id="rasterGrain" opacity="0">
             <line x1="0" y1="320" x2="800" y2="320" stroke="#5FD3C9" stroke-width="1"/>
@@ -499,12 +511,15 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
               <line x1="-2" y1="6" x2="-2" y2="-86" stroke="#241608" stroke-width="3.4" stroke-linecap="round"/>
               <path d="M-2 -84 L-2 -6 L56 -6 Z" fill="url(#sailR)"/>
               <path d="M-2 -58 L-2 -6 L38 -6 Z" fill="url(#sailY)"/>
-              <path d="M-2 -84 L-2 -6 L56 -6 Z" fill="none" stroke="#7a2a16" stroke-width="1.3" stroke-opacity=".55"/>
+              <!-- COMIC : contour encré de la grand-voile -->
+              <path d="M-2 -84 L-2 -6 L56 -6 Z" fill="none" stroke="#0d0b14" stroke-width="2.2" stroke-opacity=".5"/>
               <path d="M-2 -78 Q12 -42 30 -8" fill="none" stroke="#9c2f17" stroke-width="1" stroke-opacity=".4"/>
               <path d="M-4 -70 L-4 -8 L-44 -8 Z" fill="#1EC8B0" opacity=".94"/>
               <path d="M-4 -70 L-4 -8 L-44 -8 Z" fill="none" stroke="#0b5147" stroke-width="1.1" stroke-opacity=".5"/>
             </g>
             <path d="M-62 4 Q0 30 62 4 Q56 16 46 18 L-46 18 Q-56 16 -62 4 Z" fill="url(#hullG)"/>
+            <!-- COMIC : contour encré de la coque -->
+            <path d="M-62 4 Q0 30 62 4 Q56 16 46 18 L-46 18 Q-56 16 -62 4 Z" fill="none" stroke="#0d0b14" stroke-width="2.4" stroke-opacity=".6"/>
             <path d="M-62 4 Q0 22 62 4" fill="none" stroke="#FFD884" stroke-width="2" stroke-opacity=".62"/>
             <path d="M-46 18 L46 18 Q40 24 0 24 Q-40 24 -46 18 Z" fill="#08332e"/>
             <circle cx="14" cy="-2" r="4.2" fill="#1a120b"/>
@@ -518,7 +533,9 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
         <!-- ===== SABLE ===== -->
         <g class="lyr-sand">
           <path d="M-40 482 Q300 450 840 500 L840 600 L-40 600 Z" fill="url(#land)"/>
-          <path d="M-40 482 Q300 450 840 500" fill="none" stroke="#0d0b14" stroke-width="3" opacity=".5"/>
+          <path d="M-40 482 Q300 450 840 500 L840 600 L-40 600 Z" fill="url(#cmHalf)"/>
+          <!-- COMIC : contour encré de la ligne de sable -->
+          <path d="M-40 482 Q300 450 840 500" fill="none" stroke="#0d0b14" stroke-width="4" opacity=".6"/>
           <path d="M-40 482 Q300 450 840 500" fill="none" stroke="#FFD884" stroke-width="1.4" opacity=".3"/>
           <!-- amas échoués sur le sable (state avoid/moderate) injecté par JS dans #shoreStateG -->
           <g id="shoreStateG"></g>
@@ -550,6 +567,9 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
             <rect x="-32" y="2" width="64" height="6" rx="3" fill="#0e2622"/>
             <path d="M0 -30 C20 -30 32 -20 32 0 C32 24 22 42 0 42 C-22 42 -32 24 -32 0 C-32 -20 -20 -30 0 -30 Z"
                   fill="url(#bodyG)" stroke="var(--rim)" stroke-width="1.3" stroke-opacity=".5"/>
+            <!-- COMIC : contour encré du corps du Veilleur -->
+            <path d="M0 -30 C20 -30 32 -20 32 0 C32 24 22 42 0 42 C-22 42 -32 24 -32 0 C-32 -20 -20 -30 0 -30 Z"
+                  fill="none" stroke="#0d0b14" stroke-width="2.6" stroke-opacity=".5"/>
             <path d="M26 -16 C33 -10 33 22 22 32" fill="none" stroke="var(--rim)" stroke-width="2.4" stroke-opacity=".55" stroke-linecap="round"/>
             <circle cx="0" cy="4" r="22" fill="url(#lens)"/>
             <circle id="lensTint" cx="0" cy="4" r="22" fill="var(--mood)" opacity=".42"/>
@@ -569,6 +589,8 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
             <circle cx="0" cy="4" r="22" fill="none" stroke="var(--gold)" stroke-width="3"/>
             <path id="brow" d="M-15 -19 Q0 -25 15 -19" fill="none" stroke="#0a1f1c" stroke-width="3.4" stroke-linecap="round" opacity=".9"/>
             <line x1="0" y1="-30" x2="0" y2="-46" stroke="#0e2622" stroke-width="3"/>
+            <!-- COMIC : contour encré de l'antenne -->
+            <line x1="0" y1="-30" x2="0" y2="-46" stroke="#0d0b14" stroke-width="4" stroke-opacity=".45" stroke-linecap="round"/>
             <circle id="antGlow" cx="0" cy="-49" r="10" fill="var(--moodDot)" opacity=".22" filter="url(#softS)"/>
             <circle id="ant" cx="0" cy="-49" r="4.6" fill="var(--moodDot)"/>
             <circle class="ring ringV" cx="0" cy="4" r="30" fill="none" stroke="var(--moodHalo)" stroke-width="2" style="transform-origin:0px 4px"/>

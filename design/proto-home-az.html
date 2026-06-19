@@ -308,26 +308,33 @@ h1.head,h2.head{font-size:clamp(31px,8.4vw,50px);line-height:.98;color:#fff;marg
            xmlns="http://www.w3.org/2000/svg" role="img"
            aria-label="Scène de plage golden-hour : ciel, mer, sable, une yole et Le Veilleur satellite qui veille la mer.">
         <defs>
+          <!-- TRAME HALFTONE Ben-Day (points encrés, overlay BD léger) -->
+          <pattern id="benDaySky" patternUnits="userSpaceOnUse" width="14" height="14" patternTransform="rotate(8)">
+            <circle cx="3" cy="3" r="2" fill="#0d0b14"/>
+          </pattern>
+          <pattern id="benDaySea" patternUnits="userSpaceOnUse" width="11" height="11" patternTransform="rotate(-6)">
+            <circle cx="2.6" cy="2.6" r="1.7" fill="#0d0b14"/>
+          </pattern>
           <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#0B2230"/><stop offset=".42" stop-color="#155A5A"/>
-            <stop offset=".74" stop-color="#C97E3A"/><stop offset="1" stop-color="#F2B05E"/>
+            <stop offset="0" stop-color="#2bb6ef"/><stop offset=".4" stop-color="#62c8ee"/>
+            <stop offset=".68" stop-color="#ffc187"/><stop offset="1" stop-color="#ff944a"/>
           </linearGradient>
           <linearGradient id="warmG" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#3a2a18" stop-opacity="0"/>
-            <stop offset=".6" stop-color="#C97E3A" stop-opacity=".20"/>
-            <stop offset="1" stop-color="#F2B05E" stop-opacity=".42"/>
+            <stop offset="0" stop-color="#ffc187" stop-opacity="0"/>
+            <stop offset=".6" stop-color="#ff944a" stop-opacity=".24"/>
+            <stop offset="1" stop-color="#ff944a" stop-opacity=".5"/>
           </linearGradient>
           <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#1A5852"/><stop offset=".55" stop-color="#0f3b34"/>
-            <stop offset="1" stop-color="#08251F"/>
+            <stop offset="0" stop-color="#1f7d72"/><stop offset=".55" stop-color="#0f5f54"/>
+            <stop offset="1" stop-color="#08362d"/>
           </linearGradient>
           <radialGradient id="sun" cx="50%" cy="50%" r="50%">
-            <stop offset="0" stop-color="#FFF6E0"/>
-            <stop offset=".46" stop-color="#FFD884" stop-opacity=".62"/>
-            <stop offset="1" stop-color="#F2B05E" stop-opacity="0"/>
+            <stop offset="0" stop-color="#fdf6e3"/>
+            <stop offset=".46" stop-color="#ffc187" stop-opacity=".72"/>
+            <stop offset="1" stop-color="#ff944a" stop-opacity="0"/>
           </radialGradient>
           <linearGradient id="land" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#241A12"/><stop offset="1" stop-color="#120D08"/>
+            <stop offset="0" stop-color="#3a2a18"/><stop offset="1" stop-color="#1c1308"/>
           </linearGradient>
           <radialGradient id="anchorGlow" cx="50%" cy="50%" r="50%">
             <stop offset="0" stop-color="#FFE6A8" stop-opacity=".5"/>
@@ -335,19 +342,19 @@ h1.head,h2.head{font-size:clamp(31px,8.4vw,50px);line-height:.98;color:#fff;marg
           </radialGradient>
           <!-- voile yole : dégradés chauds pour profondeur (pas un aplat « toc ») -->
           <linearGradient id="sailR" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#FF6A3D"/><stop offset="1" stop-color="#D8431F"/>
+            <stop offset="0" stop-color="#e8522a"/><stop offset="1" stop-color="#c43d1c"/>
           </linearGradient>
           <linearGradient id="sailY" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#FFD45A"/><stop offset="1" stop-color="#F0A81E"/>
+            <stop offset="0" stop-color="#e8a800"/><stop offset="1" stop-color="#c78f00"/>
           </linearGradient>
           <linearGradient id="hullG" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#13776B"/><stop offset="1" stop-color="#0A463F"/>
+            <stop offset="0" stop-color="#27c46b"/><stop offset="1" stop-color="#0f7a48"/>
           </linearGradient>
           <!-- LENTILLE œil du Veilleur (dégradé marque) -->
           <radialGradient id="lens" cx="38%" cy="32%" r="72%">
-            <stop offset="0" stop-color="#CFF4FF"/>
-            <stop offset=".34" stop-color="#16b9c9"/>
-            <stop offset="1" stop-color="#052b2b"/>
+            <stop offset="0" stop-color="#d8f7ff"/>
+            <stop offset=".4" stop-color="#1cc8d8"/>
+            <stop offset="1" stop-color="#063838"/>
           </radialGradient>
           <radialGradient id="irisG" cx="42%" cy="38%" r="62%">
             <stop offset="0" stop-color="#0a3a39"/><stop offset="1" stop-color="#03100f"/>
@@ -356,8 +363,8 @@ h1.head,h2.head{font-size:clamp(31px,8.4vw,50px);line-height:.98;color:#fff;marg
             <stop offset="0" stop-color="#1b4763"/><stop offset="1" stop-color="#0B2230"/>
           </linearGradient>
           <linearGradient id="bodyG" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#1d3c38"/><stop offset=".55" stop-color="#102622"/>
-            <stop offset="1" stop-color="#0A1714"/>
+            <stop offset="0" stop-color="#2a4f49"/><stop offset=".55" stop-color="#16332d"/>
+            <stop offset="1" stop-color="#0d0b14"/>
           </linearGradient>
           <radialGradient id="haloG" cx="50%" cy="50%" r="50%">
             <stop offset="0" stop-color="var(--moodHalo)" stop-opacity=".55"/>
@@ -377,10 +384,15 @@ h1.head,h2.head{font-size:clamp(31px,8.4vw,50px);line-height:.98;color:#fff;marg
         <g class="lyr-sky">
           <rect x="-40" y="-40" width="880" height="420" fill="url(#sky)"/>
           <rect x="-40" y="-40" width="880" height="420" fill="url(#warmG)"/>
+          <!-- trame Ben-Day ciel (overlay BD léger) -->
+          <rect x="-40" y="-40" width="880" height="420" fill="url(#benDaySky)" opacity=".26"/>
+          <!-- ligne d'horizon encrée -->
+          <line x1="-40" y1="300" x2="840" y2="300" stroke="#0d0b14" stroke-width="3" opacity=".5"/>
           <!-- soleil bas + halo qui respire (monte d'un cran avec --p0 via JS sur #sunGroup) -->
           <g id="sunGroup">
             <circle id="sunGlow" cx="540" cy="300" r="150" fill="url(#sun)"/>
-            <circle cx="540" cy="300" r="40" fill="#FFF7E2"/>
+            <circle cx="540" cy="300" r="40" fill="#fdf6e3"/>
+            <circle cx="540" cy="300" r="40" fill="none" stroke="#0d0b14" stroke-width="3" opacity=".55"/>
           </g>
           <!-- 2 nuages = SEUL ambient autorisé (doctrine calme) -->
           <g class="sgh-cloud1" opacity=".46">
@@ -402,6 +414,10 @@ h1.head,h2.head{font-size:clamp(31px,8.4vw,50px);line-height:.98;color:#fff;marg
         <!-- ===== COUCHE MER (parallaxe + dolly) ===== -->
         <g class="lyr-sea">
           <rect x="-40" y="300" width="880" height="260" fill="url(#sea)"/>
+          <!-- trame Ben-Day mer (overlay BD léger) -->
+          <rect x="-40" y="300" width="880" height="260" fill="url(#benDaySea)" opacity=".30"/>
+          <!-- bord supérieur de mer encré -->
+          <line x1="-40" y1="300" x2="840" y2="300" stroke="#0d0b14" stroke-width="2.5" opacity=".6"/>
           <!-- grain raster satellite (révélé par --p1) -->
           <g id="rasterGrain" opacity="0">
             <line x1="0" y1="320" x2="800" y2="320" stroke="#5FD3C9" stroke-width="1"/>
@@ -443,20 +459,21 @@ h1.head,h2.head{font-size:clamp(31px,8.4vw,50px);line-height:.98;color:#fff;marg
             <ellipse cx="2" cy="40" rx="30" ry="4" fill="#FFD884" opacity=".18"/>
             <!-- voiles (groupe luff doux) : mât + grand-voile bandes rouge/jaune + foc -->
             <g id="yoleSails">
-              <line x1="-2" y1="6" x2="-2" y2="-86" stroke="#241608" stroke-width="3.4" stroke-linecap="round"/>
+              <line x1="-2" y1="6" x2="-2" y2="-86" stroke="#0d0b14" stroke-width="3.4" stroke-linecap="round"/>
               <path d="M-2 -84 L-2 -6 L56 -6 Z" fill="url(#sailR)"/>
               <path d="M-2 -58 L-2 -6 L38 -6 Z" fill="url(#sailY)"/>
-              <path d="M-2 -84 L-2 -6 L56 -6 Z" fill="none" stroke="#7a2a16" stroke-width="1.3" stroke-opacity=".55"/>
+              <path d="M-2 -84 L-2 -6 L56 -6 Z" fill="none" stroke="#0d0b14" stroke-width="2.4" stroke-opacity=".6"/>
               <!-- pli d'ombre central : donne du galbe à la voile (pas un aplat) -->
               <path d="M-2 -78 Q12 -42 30 -8" fill="none" stroke="#9c2f17" stroke-width="1" stroke-opacity=".4"/>
               <!-- foc (petite voile avant) -->
-              <path d="M-4 -70 L-4 -8 L-44 -8 Z" fill="#1EC8B0" opacity=".94"/>
-              <path d="M-4 -70 L-4 -8 L-44 -8 Z" fill="none" stroke="#0b5147" stroke-width="1.1" stroke-opacity=".5"/>
+              <path d="M-4 -70 L-4 -8 L-44 -8 Z" fill="#1cc8d8" opacity=".94"/>
+              <path d="M-4 -70 L-4 -8 L-44 -8 Z" fill="none" stroke="#0d0b14" stroke-width="2" stroke-opacity=".6"/>
             </g>
-            <!-- coque ronde bicolore + liseré chaud -->
+            <!-- coque ronde bicolore + liseré + contour encré -->
             <path d="M-62 4 Q0 30 62 4 Q56 16 46 18 L-46 18 Q-56 16 -62 4 Z" fill="url(#hullG)"/>
-            <path d="M-62 4 Q0 22 62 4" fill="none" stroke="#FFD884" stroke-width="2" stroke-opacity=".62"/>
-            <path d="M-46 18 L46 18 Q40 24 0 24 Q-40 24 -46 18 Z" fill="#08332e"/>
+            <path d="M-62 4 Q0 30 62 4 Q56 16 46 18 L-46 18 Q-56 16 -62 4 Z" fill="none" stroke="#0d0b14" stroke-width="3" stroke-opacity=".6"/>
+            <path d="M-62 4 Q0 22 62 4" fill="none" stroke="#fdf6e3" stroke-width="2" stroke-opacity=".7"/>
+            <path d="M-46 18 L46 18 Q40 24 0 24 Q-40 24 -46 18 Z" fill="#0d3f38"/>
             <!-- pêcheur (silhouette, échelle humaine) -->
             <circle cx="14" cy="-2" r="4.2" fill="#1a120b"/>
             <rect x="11" y="2" width="7" height="13" rx="3" fill="#1a120b"/>
@@ -512,7 +529,9 @@ h1.head,h2.head{font-size:clamp(31px,8.4vw,50px);line-height:.98;color:#fff;marg
         <!-- ===== COUCHE SABLE (parallaxe forte + dolly) ===== -->
         <g class="lyr-sand">
           <path d="M-40 482 Q300 450 840 500 L840 600 L-40 600 Z" fill="url(#land)"/>
-          <path d="M-40 482 Q300 450 840 500" fill="none" stroke="#FFD884" stroke-width="1.6" opacity=".24"/>
+          <!-- bord de sable/relief encré -->
+          <path d="M-40 482 Q300 450 840 500" fill="none" stroke="#0d0b14" stroke-width="3" opacity=".55"/>
+          <path d="M-40 482 Q300 450 840 500" fill="none" stroke="#fdf6e3" stroke-width="1.6" opacity=".3"/>
           <!-- échouage du jour sur le sable (ramassable au beat méthode) -->
           <g class="raft" id="shoreMat" style="cursor:pointer">
             <ellipse cx="360" cy="524" rx="46" ry="9" fill="#3a3010"/>
@@ -558,6 +577,9 @@ h1.head,h2.head{font-size:clamp(31px,8.4vw,50px);line-height:.98;color:#fff;marg
             <!-- CORPS squircle (superellipse, joues > sommet = baby-schema) -->
             <path d="M0 -30 C20 -30 32 -20 32 0 C32 24 22 42 0 42 C-22 42 -32 24 -32 0 C-32 -20 -20 -30 0 -30 Z"
                   fill="url(#bodyG)" stroke="var(--rim)" stroke-width="1.3" stroke-opacity=".5"/>
+            <!-- contour encré du corps (look BD) -->
+            <path d="M0 -30 C20 -30 32 -20 32 0 C32 24 22 42 0 42 C-22 42 -32 24 -32 0 C-32 -20 -20 -30 0 -30 Z"
+                  fill="none" stroke="#0d0b14" stroke-width="3" stroke-opacity=".6"/>
             <path d="M26 -16 C33 -10 33 22 22 32" fill="none" stroke="var(--rim)" stroke-width="2.4" stroke-opacity=".55" stroke-linecap="round"/>
             <!-- ===== ŒIL ===== -->
             <circle cx="0" cy="4" r="22" fill="url(#lens)"/>
@@ -579,8 +601,8 @@ h1.head,h2.head{font-size:clamp(31px,8.4vw,50px);line-height:.98;color:#fff;marg
             <circle cx="0" cy="4" r="22" fill="none" stroke="var(--gold)" stroke-width="3"/>
             <!-- sourcil -->
             <path id="brow" d="M-15 -19 Q0 -25 15 -19" fill="none" stroke="#0a1f1c" stroke-width="3.4" stroke-linecap="round" opacity=".9"/>
-            <!-- antenne -->
-            <line x1="0" y1="-30" x2="0" y2="-46" stroke="#0e2622" stroke-width="3"/>
+            <!-- antenne (encrée BD) -->
+            <line x1="0" y1="-30" x2="0" y2="-46" stroke="#0d0b14" stroke-width="3.2" stroke-opacity=".7"/>
             <circle id="antGlow" cx="0" cy="-49" r="10" fill="var(--moodDot)" opacity=".22" filter="url(#softS)"/>
             <circle id="ant" cx="0" cy="-49" r="4.6" fill="var(--moodDot)"/>
             <!-- anneau echo (tap) -->
