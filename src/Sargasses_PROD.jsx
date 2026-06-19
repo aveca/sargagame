@@ -10360,6 +10360,9 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
           <a href={IS_NEW_REGION?"/about/":"/a-propos/"} style={{color:"rgba(255,255,255,.38)"}}>
             {_t(lang,"À propos","About","Acerca de")}
           </a>
+          {!IS_NEW_REGION && <>{" · "}<a href="/widget/" style={{color:"rgba(255,255,255,.38)"}}>
+            {_t(lang,"Pro : widget gratuit","Pro: free widget","Pro: widget gratis")}
+          </a></>}
         </div>
       </footer>
     </div>
