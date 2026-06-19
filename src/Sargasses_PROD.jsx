@@ -12,7 +12,7 @@ import { getCanonicalSlug } from "./lib/slug-resolver.js"
 import Dock from "./Dock.jsx"
 import DiveTransition from "./DiveTransition.jsx"
 import PassOffer from "./PassOffer.jsx"
-import "./ComicTheme.css"
+import "./Themes.css"
 
 // Import résilient : pendant la fenêtre FTP d'un deploy (~25 min), un index.html
 // frais peut référencer un chunk pas encore uploadé → import() rejette et le
@@ -11822,18 +11822,65 @@ export default function App(){
     try{track("sg_previsions_dismiss",{action})}catch(_){}
   },[])
 
-  // THÈME COMIC / TCG : skin global (cartes holographiques + contours BD encrés +
-  // halftone + speed-lines). Remplace l'ancien A/B "retro_rpg" Gameboy (retiré).
-  // ROLLOUT PRUDENT : activé via ?comic=1 (preview) le temps de valider TOUTES les
-  // surfaces (dont modal premium / tunnel paiement). Une fois validé → flip le défaut
-  // à `true` pour tout le monde. CSS via import "./ComicTheme.css" (scopé .theme-comic).
-  const[comicMode]=useState(()=>{try{return /[?&]comic=1/.test(window.location.search)}catch(_){return false}})
+  // SYSTÈME MULTI-THÈMES (skins UI, fun/jeu) — CSS dans Themes.css (scopé body.theme-*).
+  // Sélection : ?theme=<id> (ou alias ?comic=1) > A/B "ui_theme" > "golden" (contrôle, app d'origine).
+  // ROLLOUT PRUDENT : l'A/B ne distribue que des variantes "soft" pour l'instant ; un picker
+  // flottant laisse TOUT LE MONDE essayer les skins en live (vibe jeu). Modal premium/paiement
+  // restylé en visuel only → pas de casse. id "golden" = aucune classe = app d'origine.
+  const THEMES = useMemo(()=>([
+    {id:"golden", label:"Golden hour",  emoji:"🌅"},
+    {id:"comic",  label:"Comic / TCG",  emoji:"🎴"},
+    {id:"manga",  label:"Manga N&B",    emoji:"🖊️"},
+    {id:"arcade", label:"Arcade néon",  emoji:"🕹️"},
+    {id:"sticker",label:"Sticker kawaii",emoji:"🌈"},
+  ]),[])
+  const initialTheme = useMemo(()=>{
+    try{
+      const q=window.location.search;
+      const m=q.match(/[?&]theme=([a-z]+)/i);
+      if(m && THEMES.some(t=>t.id===m[1].toLowerCase())) return m[1].toLowerCase();
+      if(/[?&]comic=1/.test(q)) return "comic";
+      const saved=localStorage.getItem("sg_ui_theme");
+      if(saved && THEMES.some(t=>t.id===saved)) return saved;
+      // A/B câblé mais en contrôle (golden) tant qu'on prévisualise via le picker.
+      return (typeof abVariant==="function") ? abVariant("ui_theme",["golden","comic"],[1,0]) : "golden";
+    }catch(_){ return "golden"; }
+  },[THEMES])
+  const[uiTheme,setUiTheme]=useState(initialTheme)
   useEffect(()=>{
-    if(comicMode){
-      document.body.classList.add("theme-comic");
-      return ()=>document.body.classList.remove("theme-comic")
-    }
-  },[comicMode])
+    const cls = uiTheme && uiTheme!=="golden" ? "theme-"+uiTheme : null;
+    if(cls){ document.body.classList.add(cls); }
+    try{ if(uiTheme) localStorage.setItem("sg_ui_theme", uiTheme); }catch(_){}
+    return ()=>{ if(cls) document.body.classList.remove(cls); };
+  },[uiTheme])
+  // Picker flottant (DOM vanilla isolé) — switch live entre tous les thèmes.
+  // ROLLOUT : visible uniquement en preview (?themes=1 / ?theme= / ?comic=1 / thème sauvegardé)
+  // tant qu'on n'a pas validé. Flip = retirer cette garde (showPicker=true partout).
+  useEffect(()=>{
+    if(typeof document==="undefined") return;
+    let showPicker=false;
+    try{
+      const q=window.location.search;
+      showPicker = /[?&](themes=1|theme=|comic=1)/i.test(q) || !!localStorage.getItem("sg_ui_theme");
+    }catch(_){}
+    if(!showPicker) return;
+    const fab=document.createElement("button"); fab.className="sg-theme-fab"; fab.setAttribute("aria-label","Changer de thème"); fab.textContent="🎨";
+    const menu=document.createElement("div"); menu.className="sg-theme-menu";
+    THEMES.forEach(function(t){
+      const b=document.createElement("button"); b.className="sg-theme-opt"; b.setAttribute("data-theme",t.id);
+      const e=document.createElement("span"); e.className="e"; e.textContent=t.emoji; b.appendChild(e);
+      b.appendChild(document.createTextNode(t.label));
+      b.addEventListener("click",function(){
+        THEMES.forEach(function(x){ if(x.id!=="golden") document.body.classList.remove("theme-"+x.id); });
+        setUiTheme(t.id); menu.classList.remove("open");
+        try{ if(typeof track==="function") track("ui_theme_pick",{theme:t.id}); }catch(_){}
+      });
+      menu.appendChild(b);
+    });
+    fab.addEventListener("click",function(){ menu.classList.toggle("open"); });
+    document.body.appendChild(fab); document.body.appendChild(menu);
+    return function(){ try{ fab.remove(); menu.remove(); }catch(_){} };
+  },[THEMES])
 
   // A/B `clean_list` : /plages-sans-sargasses/ scene golden-hour + rail clean beaches.
   // Override ?clean_list=1/0. Control = app/carte generique (comportement actuel).

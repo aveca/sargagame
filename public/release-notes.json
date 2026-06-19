@@ -1,7 +1,24 @@
 {
   "_comment": "SOURCE DE VÉRITÉ unique des releases. Édite UNIQUEMENT ce fichier pour publier une nouveauté à toute la flotte (mq/gp/florida/rivieramaya/puntacana). `current` = id de la release en cours = releases[0].v. `scripts/sync-version.cjs` en dérive public/version.json + le CACHE_NAME de public/sw.js. Le frontend (Journal du Veilleur) montre aux visiteurs qui reviennent toutes les releases dont le v est > à leur sg_rel_seen. Items i18n fr/en/es, honnêtes (jamais de fausse fraîcheur). href optionnel = lien same-origin (n'apparaît que s'il existe sur le domaine courant).",
-  "current": "v208",
+  "current": "v209",
   "releases": [
+    {
+      "v": "v209",
+      "date": "2026-06-19",
+      "title": {
+        "fr": "Coulisses",
+        "en": "Behind the scenes",
+        "es": "Entre bastidores"
+      },
+      "items": [
+        {
+          "emoji": "🎨",
+          "fr": "Système de thèmes en préparation (comic, arcade, manga, sticker) — bientôt jouable.",
+          "en": "Theme system in the works (comic, arcade, manga, sticker) — playable soon.",
+          "es": "Sistema de temas en preparación — pronto."
+        }
+      ]
+    },
     {
       "v": "v208",
       "date": "2026-06-19",
