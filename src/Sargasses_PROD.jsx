@@ -12,7 +12,7 @@ import { getCanonicalSlug } from "./lib/slug-resolver.js"
 import Dock from "./Dock.jsx"
 import DiveTransition from "./DiveTransition.jsx"
 import PassOffer from "./PassOffer.jsx"
-import "./RetroTheme.css"
+import "./ComicTheme.css"
 
 // Import résilient : pendant la fenêtre FTP d'un deploy (~25 min), un index.html
 // frais peut référencer un chunk pas encore uploadé → import() rejette et le
@@ -11822,18 +11822,18 @@ export default function App(){
     try{track("sg_previsions_dismiss",{action})}catch(_){}
   },[])
 
-  // A/B `retro_rpg` : DÉSACTIVÉ (le thème Gameboy beige+scanlines ratait le brief
-  // comic/anime/TCG → gris cassé chez les bucketés). Plus d'auto-bucketing : tout le
-  // monde = control. ?retro=1 reste comme override DEV pour itérer le futur thème.
-  const[retroMode]=useState(()=>{try{return /[?&]retro=1/.test(window.location.search)}catch(_){return false}})
+  // THÈME COMIC / TCG : skin global (cartes holographiques + contours BD encrés +
+  // halftone + speed-lines). Remplace l'ancien A/B "retro_rpg" Gameboy (retiré).
+  // ROLLOUT PRUDENT : activé via ?comic=1 (preview) le temps de valider TOUTES les
+  // surfaces (dont modal premium / tunnel paiement). Une fois validé → flip le défaut
+  // à `true` pour tout le monde. CSS via import "./ComicTheme.css" (scopé .theme-comic).
+  const[comicMode]=useState(()=>{try{return /[?&]comic=1/.test(window.location.search)}catch(_){return false}})
   useEffect(()=>{
-    if(retroMode){
-      // CSS is bundled via top-level `import "./RetroTheme.css"` (scoped under .theme-retro).
-      // Runtime <link href="/src/RetroTheme.css"> 404'd in prod after the JSX->src/ move.
-      document.body.classList.add("theme-retro");
-      return ()=>document.body.classList.remove("theme-retro")
+    if(comicMode){
+      document.body.classList.add("theme-comic");
+      return ()=>document.body.classList.remove("theme-comic")
     }
-  },[retroMode])
+  },[comicMode])
 
   // A/B `clean_list` : /plages-sans-sargasses/ scene golden-hour + rail clean beaches.
   // Override ?clean_list=1/0. Control = app/carte generique (comportement actuel).
