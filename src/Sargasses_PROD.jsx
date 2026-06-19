@@ -12677,8 +12677,8 @@ export default function App(){
   return(
     <LangCtx.Provider value={lang}>
       <StyleInjector/>
-      {showSplash&&<ArenaSplash lang={lang} onDone={()=>setShowSplash(false)}/>}
-      {showArenaOnb&&<ArenaOnboarding lang={lang} onDone={finishArenaOnb} onSkip={finishArenaOnb}/>}
+      {showSplash&&<ArenaSplash lang={lang} track={track} onDone={()=>setShowSplash(false)}/>}
+      {showArenaOnb&&<ArenaOnboarding lang={lang} track={track} onDone={finishArenaOnb} onSkip={finishArenaOnb}/>}
       <AbDebug/>
       {/* Mot-clé SEO sr-only — <p> (PAS <h1>) : la scène/route visible fournit déjà
           l'unique <h1> ; deux <h1> = anti-pattern SEO + a11y. Texte reste crawlable. */}

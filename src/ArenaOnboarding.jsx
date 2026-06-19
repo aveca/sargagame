@@ -1,15 +1,21 @@
-import React,{useState} from "react";
+import React,{useState,useEffect} from "react";
 
 /* ARENA ONBOARDING — flow 3 étapes comic fidèle à /themes-lab/arena.html (écrans 2-4) :
    Bienvenue → Le satellite scanne → Choisis ton terrain. Plein cadre, première visite.
    N'altère ni le moteur ni le paywall. Palette ink/yel/blu/grn/red/paper. */
 const L=(o,lang)=>(o&&(o[lang]||o.fr))||"";
 
-export default function ArenaOnboarding({onDone,onSkip,lang="fr"}){
+export default function ArenaOnboarding({onDone,onSkip,lang="fr",track}){
   const [step,setStep]=useState(0);
+  // Instrumentation : sans elle, on est aveugle sur le premier écran que voient TOUS
+  // les nouveaux visiteurs (« les clients en disent rien » → seul le comportement parle).
+  // sg_arena_onb_step (1→3) = entonnoir de complétion ; _skip = abandon (avec l'étape) ;
+  // _done = a fini les 3 écrans. Permet de mesurer si l'onboarding forcé aide ou fait fuir.
+  const T=(e,p)=>{ try{ track&&track(e,p||{}); }catch(_){} };
+  useEffect(()=>{ T("sg_arena_onb_step",{step:step+1}); },[step]); // eslint-disable-line
   const next=()=>{ if(step<2) setStep(step+1); else done(); };
-  const done=()=>{ try{onDone&&onDone();}catch(_){} };
-  const skip=()=>{ try{(onSkip||onDone)&&(onSkip||onDone)();}catch(_){} };
+  const done=()=>{ T("sg_arena_onb_done",{}); try{onDone&&onDone();}catch(_){} };
+  const skip=()=>{ T("sg_arena_onb_skip",{from_step:step+1}); try{(onSkip||onDone)&&(onSkip||onDone)();}catch(_){} };
 
   const t={
     skip:{fr:"Passer ›",en:"Skip ›",es:"Saltar ›"},
