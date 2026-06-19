@@ -17,7 +17,7 @@
 2. **Construire** (édits scopés, réversibles).
 3. **Vérifier** AVANT merge :
    - `npx vite build` vert.
-   - `cp /tmp/journey.mjs _journey.mjs && node _journey.mjs && rm _journey.mjs`
+   - `(npx vite preview --port 4173 &)` puis `node scripts/ux-smoke.mjs`
      (Playwright mobile WebKit : splash→arène→reveal→détail→paywall + scan boutons blancs = 0).
    - Juger les couleurs via **computed styles** (les captures headless peuvent fuiter forced-colors).
 4. **Review multi-agents** si le diff est non trivial (logique, >~50 lignes, ou touche le
