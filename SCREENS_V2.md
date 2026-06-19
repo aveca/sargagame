@@ -39,7 +39,7 @@ l'**alerte** le jour où ta plage bascule. Un seul monde **comic-book animé** (
 - [ ] 14 CLASSEMENT / TOP JOUEURS (leaderboard série 🔥) → 13
 - [ ] 15 DÉFI DU JOUR / « Devine le score » (mini-jeu) → 16/17
 - [ ] 16 DÉBLOQUER BADGE « Niveau ! » (achievement comic) → 13
-- [ ] 17 RÉCOMPENSE (palier atteint → skin/titre Veilleur) → 13
+- [x] 17 RÉCOMPENSE (célébration comic « NIVEAU ! » au franchissement de rang — fait) → 13
 - [ ] 18 DÉFI DU THÈME / contest → 14
 - [ ] 28 SÉRIE « 7 jours d'affilée » (streak reward) → 05
 ### Bloc 5 — Conversion
