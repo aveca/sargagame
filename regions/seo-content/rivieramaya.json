@@ -6,7 +6,7 @@
     },
     {
       "q": "¿Qué playas tienen menos sargazo en la Riviera Maya?",
-      "a": "Las que no miran al este: Playa Norte en Isla Mujeres, Holbox al norte de la península y la costa oeste de Cozumel (Palancar) casi nunca reciben sargazo. En el corredor Cancún–Tulum, las playas protegidas por bahía o arrecife — Akumal, Puerto Morelos — acumulan menos que las abiertas. Revisa el mapa en vivo: los datos satelitales diarios muestran cuáles están limpias hoy mismo."
+      "a": "Las que no miran al este: Playa Norte en Isla Mujeres, Holbox al norte de la península y la costa oeste de Cozumel (Palancar) casi nunca reciben sargazo. En el corredor Cancún–Tulum, las playas protegidas por bahía o arrecife — Akumal, Puerto Morelos — acumulan menos que las abiertas. Revisa el mapa en vivo: los datos satelitales diarios muestran cuáles están limpias de algas hoy mismo."
     },
     {
       "q": "¿Qué tan confiables son los datos de este sitio?",
@@ -31,25 +31,25 @@
       "title": "Pronóstico de Sargazo Riviera Maya 2026 — 7 Días por Playa",
       "desc": "Pronóstico de sargazo a 7 días para Cancún, Playa del Carmen y Tulum, actualizado a diario con datos satelitales. Mira qué playas estarán limpias esta semana.",
       "h1": "Pronóstico de Sargazo en Cancún y la Riviera Maya — Próximos 7 Días",
-      "intro": "Casi todos los pronósticos de sargazo te dan un solo veredicto para todo Quintana Roo, basado en imágenes oficiales que ya tienen días de retraso cuando se publican. Aquí funciona distinto: corremos un pronóstico independiente para cada una de las 12 playas que monitoreamos, de Holbox a Mahahual, porque la realidad cambia de una bahía a otra — la misma mancha que tapa Playa Delfines puede pasar de largo frente a Puerto Morelos. Cada mañana el modelo procesa la pasada más reciente del satélite Copernicus, ubica las manchas que vienen en camino y proyecta los arribos de los próximos siete días, playa por playa. El resultado se actualiza a diario — cuatro lecturas satelitales al día lo alimentan — para que decidas tu día de playa antes de que el sargazo lo decida por ti.",
-      "method": "Partimos del índice AFAI (Alternative Floating Algae Index), la firma espectral con la que los satélites de Copernicus y la NOAA detectan sargazo flotante desde órbita. Cada mancha detectada se proyecta hacia adelante con datos de viento y corriente superficial — el sargazo deriva a un 2.5% de la velocidad del viento más la corriente local. Para el alga que ya está en la arena aplicamos persistencia exponencial con vida media de 3.5 días: se degrada salvo que llegue material nuevo. Los reportes de la comunidad corrigen al satélite cuando hay nubes. La mayor precisión está en los días 1 a 3, y todo se recalcula a diario."
+      "intro": "Casi todos los pronósticos de sargazo —las algas que invaden el Caribe mexicano— te dan un solo veredicto para todo Quintana Roo, basado en imágenes oficiales que ya tienen días de retraso cuando se publican. Aquí funciona distinto: corremos un pronóstico independiente para cada una de las 12 playas que monitoreamos, de Holbox a Mahahual, porque la realidad cambia de una bahía a otra — la misma mancha que tapa Playa Delfines puede pasar de largo frente a Puerto Morelos. Cada mañana el modelo procesa la pasada más reciente del satélite Copernicus, ubica las manchas que vienen en camino y proyecta los arribos de los próximos siete días, playa por playa. El resultado se actualiza a diario — cuatro lecturas satelitales al día lo alimentan — para que decidas tu día de playa antes de que el sargazo lo decida por ti.",
+      "method": "Partimos del índice AFAI (Alternative Floating Algae Index), la firma espectral con la que los satélites de Copernicus y la NOAA detectan sargazo —algas flotantes— desde órbita. Cada mancha detectada se proyecta hacia adelante con datos de viento y corriente superficial — el sargazo deriva a un 2.5% de la velocidad del viento más la corriente local. Para el alga que ya está en la arena aplicamos persistencia exponencial con vida media de 3.5 días: se degrada salvo que llegue material nuevo. Los reportes de la comunidad corrigen al satélite cuando hay nubes. La mayor precisión está en los días 1 a 3, y todo se recalcula a diario."
     },
     "today": {
       "slug": "playas-sin-sargazo-hoy",
       "title": "Playas sin Sargazo Hoy en Riviera Maya (Lista en Vivo)",
       "desc": "Lista en vivo de las playas sin sargazo hoy en Cancún y la Riviera Maya. Verificada por satélite 4 veces al día — encuentra hoy agua turquesa de verdad.",
       "h1": "Playas sin Sargazo Hoy en Cancún y la Riviera Maya",
-      "intro": "¿Buscas una playa limpia hoy mismo? Abajo está la lista del día, ordenada de la más limpia a la más afectada, con las playas que ahora mismo están libres de sargazo según la última pasada satelital — se actualiza cuatro veces al día. Como regla general, Playa Norte, Holbox y el lado oeste de Cozumel casi siempre encabezan la lista, mientras que el corredor Cancún–Tulum sube y baja según el viento de la semana. Pero la regla general no es lo que importa cuando ya empacaste la hielera: importa el dato de hoy. Revisa el número junto a tu playa y lánzate."
+      "intro": "¿Buscas una playa limpia de algas hoy mismo? Abajo está la lista del día, ordenada de la más limpia a la más afectada, con las playas que ahora mismo están libres de sargazo según la última pasada satelital — se actualiza cuatro veces al día. Como regla general, Playa Norte, Holbox y el lado oeste de Cozumel casi siempre encabezan la lista, mientras que el corredor Cancún–Tulum sube y baja según el viento de la semana. Pero la regla general no es lo que importa cuando ya empacaste la hielera: importa el dato de hoy. Revisa el número junto a tu playa y lánzate."
     },
     "map": {
       "slug": "mapa-sargazo",
       "title": "Mapa del Sargazo Riviera Maya (En Vivo) — Playa por Playa",
       "desc": "Mapa interactivo del sargazo en Cancún y la Riviera Maya, actualizado 4 veces al día con imágenes satelitales. Revisa cada playa antes de salir de casa.",
       "h1": "Mapa del Sargazo en Vivo — Cancún y Riviera Maya",
-      "intro": "Este es un mapa interactivo y en vivo del sargazo en el Caribe mexicano: cada playa, de Holbox a Mahahual, aparece con su estado en colores — limpia, moderada o evitar. Lo alimentan imágenes satelitales de Copernicus actualizadas cuatro veces al día, más los reportes de gente que está parada en la arena en este momento. Toca cualquier playa para ver su estado actual, su calificación de 0 a 100 y el pronóstico a 7 días. A diferencia de las guías de temporada, este mapa cambia cuando cambia el mar: un giro de viento en la noche puede limpiar Cancún y cargar Tulum antes del mediodía. Revísalo la mañana que vayas."
+      "intro": "Este es un mapa interactivo y en vivo del sargazo —las algas marinas— en el Caribe mexicano: cada playa, de Holbox a Mahahual, aparece con su estado en colores — limpia, moderada o evitar. Lo alimentan imágenes satelitales de Copernicus actualizadas cuatro veces al día, más los reportes de gente que está parada en la arena en este momento. Toca cualquier playa para ver su estado actual, su calificación de 0 a 100 y el pronóstico a 7 días. A diferencia de las guías de temporada, este mapa cambia cuando cambia el mar: un giro de viento en la noche puede limpiar Cancún y cargar Tulum antes del mediodía. Revísalo la mañana que vayas."
     },
     "season": {
-      "intro": "¿Planeas un viaje a la Riviera Maya y te preocupa el sargazo? Esta es la imagen honesta de 2026 — cuándo llega el alga, cuándo las playas quedan limpias y cómo planificar tu viaje. En corto: de noviembre a marzo es fiable y limpio; el cinturón atlántico llega de abril a octubre, más fuerte de mayo a agosto. Si tus fechas son flexibles, ese único dato decide tu viaje.",
+      "intro": "¿Planeas un viaje a la Riviera Maya y te preocupan el sargazo y las algas? Esta es la imagen honesta de 2026 — cuándo llega el alga, cuándo las playas quedan limpias y cómo planificar tu viaje. En corto: de noviembre a marzo es fiable y limpio; el cinturón atlántico llega de abril a octubre, más fuerte de mayo a agosto. Si tus fechas son flexibles, ese único dato decide tu viaje.",
       "slug": "temporada-sargazo-rivieramaya",
       "title": "Temporada de Sargazo Riviera Maya 2026 — Mes por Mes",
       "desc": "¿Cuándo hay sargazo en Cancún y la Riviera Maya? De abril a septiembre, con pico de mayo a julio. Calendario mes a mes y seguimiento satelital diario.",
@@ -80,7 +80,7 @@
           "text": "La cola de la temporada. Los volúmenes caen semana a semana y para finales de mes la mayoría de las playas vuelve a estar limpia de forma estable. Puede colarse un pulso tardío tras un norte, así que los precavidos siguen checando el mapa — pero las probabilidades ya están de tu lado."
         }
       ],
-      "tips": "Si tus fechas son flexibles, reserva de noviembre a marzo y olvídate del tema. ¿Viajas en pico de temporada? Prefiere hospedarte en Isla Mujeres, Holbox o el lado oeste de Cozumel — o, en el corredor, elige un resort con limpieza diaria y barrera antisargazo. Revisa nuestro mapa la semana previa al vuelo (lo que digan los foros de hace un mes ya no sirve) y, ya aquí, planea las mañanas de playa y deja un cenote o Cozumel como plan B para los días cargados."
+      "tips": "Si tus fechas son flexibles, reserva de noviembre a marzo y olvídate de las algas. ¿Viajas en pico de temporada? Prefiere hospedarte en Isla Mujeres, Holbox o el lado oeste de Cozumel — o, en el corredor, elige un resort con limpieza diaria y barrera antisargazo. Revisa nuestro mapa la semana previa al vuelo (lo que digan los foros de hace un mes ya no sirve) y, ya aquí, planea las mañanas de playa y deja un cenote o Cozumel como plan B para los días cargados."
     }
   },
   "beachBlurbs": {
@@ -99,6 +99,6 @@
   },
   "resortPageTpl": {
     "titlePattern": "Sargazo en {resort} Hoy — Estado en Vivo y Pronóstico",
-    "introPattern": "¿Quieres saber si la playa de {resort} amaneció limpia? Esta página monitorea {beach}, el tramo de arena frente al hotel, con imágenes satelitales de Copernicus actualizadas cuatro veces al día. Aquí ves el estado actual, una calificación de playa de 0 a 100 y el pronóstico a 7 días, para planear tus días de mar — o de alberca — antes del check-in. En temporada las condiciones cambian de la noche a la mañana: guarda esta página y revísala cada mañana."
+    "introPattern": "¿Quieres saber si la playa de {resort} amaneció limpia de algas y sargazo? Esta página monitorea {beach}, el tramo de arena frente al hotel, con imágenes satelitales de Copernicus actualizadas cuatro veces al día. Aquí ves el estado actual, una calificación de playa de 0 a 100 y el pronóstico a 7 días, para planear tus días de mar — o de alberca — antes del check-in. En temporada las condiciones cambian de la noche a la mañana: guarda esta página y revísala cada mañana."
   }
 }
