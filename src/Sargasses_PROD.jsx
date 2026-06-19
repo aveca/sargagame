@@ -11843,10 +11843,9 @@ export default function App(){
       if(/[?&]comic=1/.test(q)) return "comic";
       const saved=localStorage.getItem("sg_ui_theme");
       if(saved && THEMES.some(t=>t.id===saved)) return saved;
-      // A/B LIVE "skin_v2" — golden ABANDONNÉ : 100% des visiteurs ont un skin.
-      //   B = comic (skin cartes/BD actuel) · A = soft (Soft Modern clair, CTA teal).
-      //   50/50, paywall exclu des deux. Override : ?theme=comic / ?theme=soft.
-      if(typeof abVariant==="function"){ try{ return abVariant("skin_v2",["comic","soft"],[.5,.5]); }catch(_){} }
+      // COMIC 100% sur tout le site (décision fondateur). Plus d'A/B skin, plus de golden.
+      //   Le thème 'soft' reste dispo via ?theme=soft mais n'est plus servi par défaut.
+      //   Paywall (.sg-modal-panel) toujours exclu du thème → revenu protégé.
       return "comic";
     }catch(_){ return "comic"; }
   },[THEMES])
