@@ -1,7 +1,20 @@
 {
   "_comment": "SOURCE DE VÉRITÉ unique des releases. Édite UNIQUEMENT ce fichier pour publier une nouveauté à toute la flotte (mq/gp/florida/rivieramaya/puntacana). `current` = id de la release en cours = releases[0].v. `scripts/sync-version.cjs` en dérive public/version.json + le CACHE_NAME de public/sw.js. Le frontend (Journal du Veilleur) montre aux visiteurs qui reviennent toutes les releases dont le v est > à leur sg_rel_seen. Items i18n fr/en/es, honnêtes (jamais de fausse fraîcheur). href optionnel = lien same-origin (n'apparaît que s'il existe sur le domaine courant).",
-  "current": "v203",
+  "current": "v204",
   "releases": [
+    {
+      "v": "v204",
+      "date": "2026-06-19",
+      "title": { "fr": "Affichage plus net", "en": "Crisper display", "es": "Pantalla más nítida" },
+      "items": [
+        {
+          "emoji": "🎨",
+          "fr": "Correctif d'affichage : sur Edge et Brave, certains écrans pouvaient virer au gris — c'est réglé, le golden-hour s'affiche net partout.",
+          "en": "Display fix: on Edge and Brave a few screens could turn grey — now fixed, the golden-hour renders crisp everywhere.",
+          "es": "Corrección de pantalla: en Edge y Brave algunas vistas podían volverse grises — ya está arreglado, el golden-hour se ve nítido en todas partes."
+        }
+      ]
+    },
     {
       "v": "v203",
       "date": "2026-06-17",
