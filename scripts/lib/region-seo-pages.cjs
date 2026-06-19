@@ -94,15 +94,17 @@ function loadJSON(p, fallback) {
   try { return JSON.parse(fs.readFileSync(p, 'utf-8')) } catch { return fallback }
 }
 
-function networkFooter(region, t) {
-  const lang = region.primaryLang === 'es' ? 'es' : 'en'
+function networkFooter(region, t, lang) {
+  lang = (lang || region.primaryLang) === 'es' ? 'es' : 'en'
   const links = NETWORK.filter(n => !n.url.includes(region.domain))
     .map(n => `<a href="${n.url}" rel="noopener">${esc(n.name[lang] || n.name.en)}</a>`).join(' · ')
   return `<p><strong>${t.network}:</strong> ${links}</p>`
 }
 
-/** Page shell : repart de l'index buildé, remplace head + noscript + JSON-LD. */
-function pageShell(tpl, { title, desc, pathname, domain, lang, noscript, jsonLd }) {
+/** Page shell : repart de l'index buildé, remplace head + noscript + JSON-LD.
+ *  alternates (optionnel) : cluster hreflang complet [{lang,href,xDefault}] pour
+ *  les régions bilingues (es↔en). Absent → self + x-default (mono-langue, inchangé). */
+function pageShell(tpl, { title, desc, pathname, domain, lang, noscript, jsonLd, alternates }) {
   const canonical = `https://${domain}${pathname}`
   let html = tpl
     .replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(title)}</title>`)
@@ -120,12 +122,19 @@ function pageShell(tpl, { title, desc, pathname, domain, lang, noscript, jsonLd 
   // noscript racine → noscript de la page
   html = html.replace(/<noscript>\s*<h1>[\s\S]*?<\/noscript>/, '')
   const ld = (jsonLd || []).map(o => `<script type="application/ld+json">${JSON.stringify(o)}</script>`).join('\n')
-  // Toute sous-page DOIT porter un hreflang self + x-default (sinon Google n'a
-  // aucun signal de langue stable). Les pages home régionales ont déjà leur
-  // cluster ; ici on rétablit au minimum self+x-default retirés au strip L113
-  // (audit SEO multilang 13/06 : 55/56 sous-pages USD partaient sans hreflang).
-  const selfAlt = `<link rel="alternate" hreflang="${lang}" href="${canonical}" />\n<link rel="alternate" hreflang="x-default" href="${canonical}" />`
-  html = html.replace('</head>', `${selfAlt}\n${ld}\n</head>`)
+  // Toute sous-page DOIT porter un hreflang (sinon Google n'a aucun signal de
+  // langue stable). Régions bilingues : cluster complet es↔en + x-default = la
+  // langue primaire (chaque variante pointe vers sa sœur). Mono-langue : self +
+  // x-default sur le canonical (= comportement historique FL/PC, octet pour octet).
+  let altBlock
+  if (Array.isArray(alternates) && alternates.length) {
+    const tags = alternates.map(a => `<link rel="alternate" hreflang="${a.lang}" href="${a.href}" />`)
+    const xd = (alternates.find(a => a.xDefault) || alternates[0]).href
+    altBlock = `${tags.join('\n')}\n<link rel="alternate" hreflang="x-default" href="${xd}" />`
+  } else {
+    altBlock = `<link rel="alternate" hreflang="${lang}" href="${canonical}" />\n<link rel="alternate" hreflang="x-default" href="${canonical}" />`
+  }
+  html = html.replace('</head>', `${altBlock}\n${ld}\n</head>`)
   html = html.replace('<div id="root">', `<noscript>${noscript}</noscript>\n<div id="root">`)
   return html
 }
@@ -245,7 +254,7 @@ function buildResortBrief(region, r, b, data, lang, today, domain, beaches) {
 // Annuaire B2B : page /resorts/ listant TOUS les hôtels d'une région + statut de
 // leur plage + lien brief. Asset de prospection (« état sargasses de tous les
 // hôtels de Bávaro ») ET hub SEO indexable (maille les pages resort).
-function buildResortDirectory(region, resorts, beaches, data, lang, t, today, domain) {
+function buildResortDirectory(region, resorts, beaches, data, lang, t, today, domain, prefix = '') {
   const L = _BRIEF_T[lang] || _BRIEF_T.en
   const C = { clean: '#16A34A', moderate: '#D97706', avoid: '#DC2626' }
   const W = { clean: L.clean, moderate: L.moderate, avoid: L.avoid }
@@ -260,29 +269,40 @@ function buildResortDirectory(region, resorts, beaches, data, lang, t, today, do
     const items = groups[area].map(r => {
       const b = byId[r.beachId]; if (!b) return ''
       const st = (b.lv && b.lv.status) || 'clean'
-      return `<li><span class="d" style="background:${C[st] || '#999'}"></span><span class="n"><b>${esc(r.name)}</b><br><small>${esc(b.name)} · ${W[st] || st}</small></span><a href="/${t.resortsDir}/${r.slug}/brief/">${esc(T2.brief)} →</a></li>`
+      return `<li><span class="d" style="background:${C[st] || '#999'}"></span><span class="n"><b>${esc(r.name)}</b><br><small>${esc(b.name)} · ${W[st] || st}</small></span><a href="${prefix}/${t.resortsDir}/${r.slug}/brief/">${esc(T2.brief)} →</a></li>`
     }).join('')
     return `<h2>${esc(area)}</h2><ul>${items}</ul>`
   }).join('')
   const mailto = `mailto:${(region.emails && region.emails.support) || 'hotels@' + domain}?subject=${encodeURIComponent('Daily sargassum briefs — ' + region.name)}`
   return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${esc(T2.title(region.name))}</title><meta name="description" content="${esc(T2.desc(region.name))}"><link rel="canonical" href="https://${domain}/${t.resortsDir}/">
+<title>${esc(T2.title(region.name))}</title><meta name="description" content="${esc(T2.desc(region.name))}"><link rel="canonical" href="https://${domain}${prefix}/${t.resortsDir}/">
 <meta property="og:title" content="${esc(T2.title(region.name))}"><meta property="og:description" content="${esc(T2.desc(region.name))}"><meta property="og:image" content="https://${domain}/og-image.png"><meta property="og:type" content="website"><meta name="twitter:card" content="summary_large_image">
 <style>*{box-sizing:border-box;margin:0}body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#F7F5EF;color:#15110d;line-height:1.5;padding:16px 0}.wrap{max-width:620px;margin:0 auto;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.08)}.hd{background:linear-gradient(135deg,#0B2230,#155A5A 45%,#C97E3A 85%,#F2B05E);color:#fff;padding:24px 22px}.hd h1{font-size:22px;line-height:1.2}.hd p{font-size:13px;opacity:.92;margin-top:6px}.bd{padding:14px 22px}h2{font-size:13px;letter-spacing:.03em;text-transform:uppercase;color:#6b6b66;margin:18px 0 4px}ul{list-style:none}li{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #eee}.d{width:14px;height:14px;border-radius:50%;flex:none}.n{flex:1}.n small{font-size:12px;color:#7a756c}li a{font-size:12.5px;color:#155A5A;font-weight:700;white-space:nowrap;text-decoration:none}.cta{display:block;background:linear-gradient(135deg,#0B2230,#155A5A);color:#fff;text-decoration:none;border-radius:14px;padding:15px 18px;margin:20px 0 4px;font-weight:700;font-size:14.5px}.ft{font-size:11px;color:#8a857c;padding:8px 22px 20px}.ft a{color:#155A5A}</style></head>
 <body><div class="wrap">
 <div class="hd"><h1>${esc(region.name)} ${esc(T2.h)}</h1><p>${esc(T2.sub(resorts.length))} · ${esc(today)}</p></div>
 <div class="bd">${sections}
 <a class="cta" href="${mailto}">${esc(T2.cta)} →</a></div>
-<div class="ft">${esc(L.foot)} · <a href="https://${domain}/">${esc(T2.map)}</a> · ${esc(domain)}</div>
+<div class="ft">${esc(L.foot)} · <a href="https://${domain}${prefix}/">${esc(T2.map)}</a> · ${esc(domain)}</div>
 </div></body></html>`
 }
 
 function generateRegionSeoPages(region, distDir) {
-  const lang = region.primaryLang === 'es' ? 'es' : 'en'
-  const t = T[lang]
+  const RL = require('./region-langs.cjs')
   const domain = region.domain
-  const content = loadJSON(path.join(ROOT, 'regions', 'seo-content', `${region.id}.json`), null)
-  if (!content) { console.warn(`   ⚠ seo-pages région: pas de regions/seo-content/${region.id}.json — pages non générées`); return }
+  const primary = RL.normLang(region.primaryLang)
+  // Langues émises : primaire (racine) + secondaires AVEC fichier de contenu, sous
+  // /<lang>/. FL/PC déclarent secondaryLangs:["es"] sans florida.es.json → restent
+  // mono-langue (EN racine), sortie inchangée. Riviera Maya : ES racine + EN /en/.
+  const langs = RL.emittedLangs(region)
+  const contents = {}
+  for (const l of langs) {
+    const c = loadJSON(RL.seoContentPath(region.id, l, l === primary), null)
+    if (c) contents[l] = c
+  }
+  if (!contents[primary]) { console.warn(`   ⚠ seo-pages région: pas de regions/seo-content/${region.id}.json — pages non générées`); return }
+  const useLangs = langs.filter(l => contents[l])
+
+  // ── Données partagées (indépendantes de la langue) ──
   const resorts = loadJSON(path.join(ROOT, 'regions', 'resorts', `${region.id}.json`), [])
   const data = loadJSON(path.join(ROOT, 'public', 'api', 'copernicus', region.id, 'sargassum.json'), { levels: [], weekly: {} })
   // Précision réelle : backtest-results.json (régénéré CHAQUE JOUR par
@@ -300,29 +320,99 @@ function generateRegionSeoPages(region, distDir) {
   } : loadJSON(path.join(ROOT, 'public', 'api', 'copernicus', 'forecast-accuracy.json'), null)
   const photos = loadJSON(path.join(ROOT, 'public', 'data', 'beaches-images.json'), {})
   const tpl = fs.readFileSync(path.join(distDir, 'index.html'), 'utf-8')
+  const isoToday = new Date().toISOString().slice(0, 10)
+  const levelsById = Object.fromEntries((data.levels || []).map(l => [l.id, l]))
+  // slug + statut live sont indépendants de la langue → calculés une fois.
+  const beaches = (region.beaches || []).map(b => ({ ...b, slug: getCanonicalSlug(b), lv: levelsById[b.id] || {} }))
+  const byScore = [...beaches].sort((a, b2) => (b2.lv.score || 0) - (a.lv.score || 0))
+  const resortsByBeach = {}
+  for (const r of resorts) (resortsByBeach[r.beachId] = resortsByBeach[r.beachId] || []).push(r)
+
+  // ── Index des slugs par langue : chaque page connaît l'URL de sa sœur (hreflang) ──
+  const slugIndex = {}
+  for (const l of useLangs) slugIndex[l] = buildSlugMap(region, l, contents[l], primary)
+
+  // Sitemap commun à toutes les langues (objets {loc, changefreq, priority}).
+  const sitemap = []
+
+  for (const lang of useLangs) {
+    emitLangPages({
+      region, distDir, domain, lang, primary, useLangs, slugIndex, sitemap,
+      content: contents[lang], t: T[lang], prefix: slugIndex[lang].prefix,
+      routes: { best: slugIndex[lang].best, weekly: slugIndex[lang].weekly },
+      tpl, resorts, data, accuracy, photos, beaches, byScore, resortsByBeach, isoToday,
+    })
+  }
+
+  // ── Sitemap unique (toutes langues), format historique (les générateurs frères
+  //    reliability/month/health append en remplaçant </urlset>). ──
+  const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${sitemap.map(u => `  <url><loc>https://${domain}${u.loc}</loc><lastmod>${isoToday}</lastmod><changefreq>${u.changefreq}</changefreq><priority>${u.priority}</priority></url>`).join('\n')}
+</urlset>
+`
+  fs.writeFileSync(path.join(distDir, 'sitemap.xml'), sitemapXml, 'utf-8')
+  console.log(`   → SEO régional ${region.id} (${useLangs.join('+')}) : ${sitemap.length} URLs sitemap · ${beaches.length} plages, ${resorts.length} resorts × ${useLangs.length} langue(s)`)
+}
+
+// Slugs d'une langue (clé = type de page). Primaire : routes depuis regions/<id>.json ;
+// secondaire : routes depuis le fichier de contenu <id>.<lang>.json (slugs EN propres).
+function buildSlugMap(region, lang, content, primary) {
+  const isPrimary = lang === primary
+  const routes = isPrimary ? (region.routes || {}) : (content.routes || {})
+  const p = content.pages || {}
+  return {
+    prefix: isPrimary ? '' : `/${lang}`,
+    beachesDir: T[lang].beachesDir,
+    resortsDir: T[lang].resortsDir,
+    forecast: p.forecast && p.forecast.slug,
+    today: p.today && p.today.slug,
+    map: p.map && p.map.slug,
+    season: p.season && p.season.slug,
+    methodology: lang === 'es' ? 'metodologia' : 'methodology',
+    best: routes.best || null,
+    weekly: routes.weekly || null,
+    press: (content.press && content.press.slug) || null,
+    semaforo: lang === 'es' ? 'semaforo-del-sargazo' : null,
+  }
+}
+
+// Génère le jeu de pages d'UNE langue (préfixe '' = primaire racine, '/en' = secondaire).
+// Toute la logique de page (hero SVG, FAQ, JSON-LD, briefs) est identique d'une langue
+// à l'autre : seuls le préfixe d'URL, les liens internes et le cluster hreflang changent.
+function emitLangPages(ctx) {
+  const { region, distDir, domain, lang, primary, useLangs, slugIndex, sitemap,
+    content, t, prefix, routes, tpl, resorts, data, accuracy, photos, beaches, byScore, resortsByBeach, isoToday } = ctx
   const today = fmtDate(lang)
   // Date courte pour les titles (jamais coupée : on trimme le reste AVANT de l'appender)
   const dateShort = new Date().toLocaleDateString(lang === 'es' ? 'es-MX' : 'en-US', { month: 'short', day: 'numeric' })
-  const isoToday = new Date().toISOString().slice(0, 10)
-  const levelsById = Object.fromEntries((data.levels || []).map(l => [l.id, l]))
-  const beaches = (region.beaches || []).map(b => ({ ...b, slug: getCanonicalSlug(b), lv: levelsById[b.id] || {} }))
-  const byScore = [...beaches].sort((a, b2) => (b2.lv.score || 0) - (a.lv.score || 0))
-  const urls = ['/']
   const sw = s => STATUS_WORD[lang][s] || s || '—'
+  const pushUrl = (loc, opt = {}) => sitemap.push({ loc, changefreq: opt.daily ? 'daily' : 'weekly', priority: opt.priority || '0.5' })
 
-  const beachLink = b => `<a href="/${t.beachesDir}/${b.slug}/">${esc(b.name)}</a>`
+  // Cluster hreflang : une page connaît ses sœurs dans toutes les langues émises.
+  // Pages hub : slug par langue (slugIndex). Plages/resorts : slug identique (dérivé
+  // du nom) entre langues, seul le préfixe + le dossier changent. x-default = primaire.
+  const altsForKind = kind => useLangs.filter(l => slugIndex[l][kind])
+    .map(l => ({ lang: l, href: `https://${domain}${slugIndex[l].prefix}/${slugIndex[l][kind]}/`, xDefault: l === primary }))
+  const altsForBeach = b => useLangs.map(l => ({ lang: l, href: `https://${domain}${slugIndex[l].prefix}/${slugIndex[l].beachesDir}/${b.slug}/`, xDefault: l === primary }))
+  const altsForResort = r => useLangs.map(l => ({ lang: l, href: `https://${domain}${slugIndex[l].prefix}/${slugIndex[l].resortsDir}/${r.slug}/`, xDefault: l === primary }))
+
+  // Home en tête du sitemap (ordre historique : '/' d'abord).
+  pushUrl(`${prefix}/`, { daily: true, priority: prefix === '' ? '1.0' : '0.9' })
+
+  const beachLink = b => `<a href="${prefix}/${t.beachesDir}/${b.slug}/">${esc(b.name)}</a>`
   const hubLinks = (except) => {
     const p = content.pages
     const items = [
-      ['map', `/${p.map.slug}/`, p.map.h1], ['forecast', `/${p.forecast.slug}/`, p.forecast.h1],
-      ['today', `/${p.today.slug}/`, p.today.h1], ['season', `/${p.season.slug}/`, p.season.h1],
+      ['map', `${prefix}/${p.map.slug}/`, p.map.h1], ['forecast', `${prefix}/${p.forecast.slug}/`, p.forecast.h1],
+      ['today', `${prefix}/${p.today.slug}/`, p.today.h1], ['season', `${prefix}/${p.season.slug}/`, p.season.h1],
     ]
     // Maillage des pages générées HORS seo-content (étaient orphelines = crawl-starved) :
     // best (transactionnel) + weekly (haute-intention) + méthodologie (E-E-A-T).
-    if (region.routes && region.routes.best) items.push(['best', `/${region.routes.best}/`, lang === 'es' ? 'Mejores playas sin sargazo' : 'Best beaches without sargassum'])
-    if (region.routes && region.routes.weekly) items.push(['weekly', `/${region.routes.weekly}/`, lang === 'es' ? 'Sargazo esta semana' : 'Sargassum this week'])
-    items.push(['method', `/${lang === 'es' ? 'metodologia' : 'methodology'}/`, lang === 'es' ? 'Metodología y precisión' : 'Methodology & accuracy'])
-    return `<p>${items.filter(([k]) => k !== except).map(([, href, label]) => `<a href="${href}">${esc(label)}</a>`).join(' · ')} · <a href="/">${t.home}</a></p>`
+    if (routes.best) items.push(['best', `${prefix}/${routes.best}/`, lang === 'es' ? 'Mejores playas sin sargazo' : 'Best beaches without sargassum'])
+    if (routes.weekly) items.push(['weekly', `${prefix}/${routes.weekly}/`, lang === 'es' ? 'Sargazo esta semana' : 'Sargassum this week'])
+    items.push(['method', `${prefix}/${lang === 'es' ? 'metodologia' : 'methodology'}/`, lang === 'es' ? 'Metodología y precisión' : 'Methodology & accuracy'])
+    return `<p>${items.filter(([k]) => k !== except).map(([, href, label]) => `<a href="${href}">${esc(label)}</a>`).join(' · ')} · <a href="${prefix}/">${t.home}</a></p>`
   }
 
   // ── 1. Pages hub (forecast, today, map, season) ──
@@ -331,12 +421,13 @@ function generateRegionSeoPages(region, distDir) {
 
   // forecast — barres 7j par plage (texte) + méthode
   hubs.push({
+    kind: 'forecast', sm: { daily: true, priority: '0.9' },
     slug: p.forecast.slug, title: p.forecast.title, desc: p.forecast.desc,
     noscript: `<article><h1>${esc(p.forecast.h1)}</h1><p><em>${t.updated(today)}</em></p><p>${esc(p.forecast.intro)}</p>
 <h2>${t.forecast7} — ${esc(region.name)}</h2>
 <ul>${beaches.map(b => `<li><strong>${beachLink(b)}</strong> (${sw(b.lv.status)}, ${t.score} ${b.lv.score ?? '—'}/100) — ${forecastLine(data.weekly, b.id, lang)}</li>`).join('')}</ul>
 <h2>${lang === 'es' ? 'Cómo funciona nuestro pronóstico' : 'How our forecast works'}</h2><p>${esc(p.forecast.method)}</p>
-${hubLinks('forecast')}${networkFooter(region, t)}</article>`,
+${hubLinks('forecast')}${networkFooter(region, t, lang)}</article>`,
   })
 
   // today — liste ordonnée par score, format featured-snippet, datée.
@@ -345,28 +436,31 @@ ${hubLinks('forecast')}${networkFooter(region, t)}</article>`,
   const todayBase = p.today.title.replace(/\s*[—-]\s*\d{4}.*$|$/, '')
   const todayTitle = `${smartTrim(todayBase, 70 - dateShort.length - 3)} (${dateShort})`
   hubs.push({
+    kind: 'today', sm: { daily: true, priority: '0.9' },
     slug: p.today.slug, title: todayTitle, desc: p.today.desc,
     noscript: `<article><h1>${esc(p.today.h1)} — ${today}</h1><p><em>${t.updated(today)}</em></p><p>${esc(p.today.intro)}</p>
 <ol>${byScore.map(b => `<li><strong>${beachLink(b)}</strong> — ${sw(b.lv.status)}, ${t.score} ${b.lv.score ?? '—'}/100</li>`).join('')}</ol>
-${hubLinks('today')}${networkFooter(region, t)}</article>`,
+${hubLinks('today')}${networkFooter(region, t, lang)}</article>`,
   })
 
   // map — landing carte live
   hubs.push({
+    kind: 'map', sm: { priority: '0.5' },
     slug: p.map.slug, title: p.map.title, desc: p.map.desc,
     noscript: `<article><h1>${esc(p.map.h1)}</h1><p><em>${t.updated(today)}</em></p><p>${esc(p.map.intro)}</p>
 <h2>${t.allBeaches}</h2><ul>${beaches.map(b => `<li>${beachLink(b)} — ${sw(b.lv.status)} (${b.lv.score ?? '—'}/100)</li>`).join('')}</ul>
-${hubLinks('map')}${networkFooter(region, t)}</article>`,
+${hubLinks('map')}${networkFooter(region, t, lang)}</article>`,
   })
 
   // season — calendrier mois par mois
   hubs.push({
+    kind: 'season', sm: { priority: '0.5' },
     slug: p.season.slug, title: p.season.title, desc: p.season.desc,
     noscript: `<article><h1>${esc(p.season.h1)}</h1><p>${t.updated(today)}</p>
 ${p.season.intro ? `<p>${esc(p.season.intro)}</p>` : ''}
 ${(p.season.months || []).map(m => `<h2>${esc(m.period)}</h2><p>${esc(m.text)}</p>`).join('')}
 <h2>${lang === 'es' ? 'Consejos para reservar' : 'Booking tips'}</h2><p>${esc(p.season.tips || '')}</p>
-${hubLinks('season')}${networkFooter(region, t)}</article>`,
+${hubLinks('season')}${networkFooter(region, t, lang)}</article>`,
   })
 
   // methodology — backtests réels (différenciateur : le #1 EN vend du Math.random)
@@ -381,8 +475,9 @@ ${hubLinks('season')}${networkFooter(region, t)}</article>`,
       ? `<p>Muestreamos el índice AFAI (algas flotantes) de los satélites Copernicus/NOAA 4 veces al día, píxel por píxel frente a cada playa — no un promedio regional. Una corrección diaria ponderada y una memoria de playa (vida media de varios días) convierten la señal satelital en el estado que ves en el mapa. El pronóstico de 7 días combina persistencia, viento y detección de bancos en el mar.</p><p>Nuestros datos nunca se editan a mano, nunca se filtran por hoteles y nunca se borran. Fuentes: Copernicus Marine, NOAA ERDDAP (AFAI), Open-Meteo.</p>`
       : `<p>We sample the AFAI (floating algae) index from Copernicus/NOAA satellites 4 times a day, pixel by pixel in front of each beach — not a regional average. A weighted daily correction and a beach memory (multi-day half-life) turn the satellite signal into the status you see on the map. The 7-day forecast combines persistence, wind and offshore sargassum-bank detection.</p><p>Our data is never hand-edited, never filtered for resorts, never deleted. Sources: Copernicus Marine, NOAA ERDDAP (AFAI), Open-Meteo.</p>`
     hubs.push({
+      kind: 'methodology', sm: { daily: true, priority: '0.5' },
       slug: methodSlug, title: smartTrim(t.methodTitle(region.name), 65), desc: t.methodDesc(region.name),
-      noscript: `<article><h1>${t.methodH1}</h1><p><em>${t.updated(today)}</em></p>${body}<p><strong>${accLine}</strong></p>${hubLinks(null)}${networkFooter(region, t)}</article>`,
+      noscript: `<article><h1>${t.methodH1}</h1><p><em>${t.updated(today)}</em></p>${body}<p><strong>${accLine}</strong></p>${hubLinks(null)}${networkFooter(region, t, lang)}</article>`,
     })
   }
 
@@ -390,13 +485,14 @@ ${hubLinks('season')}${networkFooter(region, t)}</article>`,
   if (lang === 'es') {
     const sem = { clean: '🟢 Verde — sin sargazo', moderate: '🟡 Amarillo — recale moderado', avoid: '🔴 Rojo — recale abundante' }
     hubs.push({
+      kind: 'semaforo', sm: { daily: true, priority: '0.5' },
       slug: 'semaforo-del-sargazo',
       title: smartTrim(`Semáforo del Sargazo HOY (${today}) — ${region.name}`, 68),
       desc: `Semáforo del sargazo actualizado 4 veces al día con datos satelitales: estado playa por playa en ${region.name}, pronóstico de 7 días y alertas. Independiente: nunca borrado, nunca filtrado.`,
       noscript: `<article><h1>Semáforo del sargazo — ${today}</h1><p><em>${t.updated(today)}</em></p>
 <p>El semáforo independiente del sargazo: datos satelitales, no reportes editados. Estado de cada playa ahora mismo:</p>
 <ul>${byScore.map(b => `<li>${sem[b.lv.status] || '⚪'} — ${beachLink(b)} (${b.lv.score ?? '—'}/100)</li>`).join('')}</ul>
-${hubLinks(null)}${networkFooter(region, t)}</article>`,
+${hubLinks(null)}${networkFooter(region, t, lang)}</article>`,
     })
   }
 
@@ -419,17 +515,18 @@ ${hubLinks(null)}${networkFooter(region, t)}</article>`,
       .replace(/\{contact\}/g, pr.contact || region.emails?.support || '')
       .replace(/\{citation\}/g, pr.citation || '')
     hubs.push({
+      kind: 'press', sm: { priority: '0.5' },
       slug: pr.slug, title: smartTrim(pr.title, 70), desc: trimDesc(pr.desc),
       noscript: `<article><h1>${esc(pr.h1)}</h1><p><em>${t.updated(today)}</em></p><p>${esc(tok(pr.intro))}</p>
 ${(pr.sections || []).map(s => `<h2>${esc(s.h2)}</h2><p>${esc(tok(s.text))}</p>`).join('')}
-${hubLinks(null)}${networkFooter(region, t)}</article>`,
+${hubLinks(null)}${networkFooter(region, t, lang)}</article>`,
     })
   }
 
   // "Best beaches" — page HAUTE-INTENTION "meilleures plages sans sargasses
   // aujourd'hui", data-driven (clean d'abord, puis score). La route existe
   // (region.routes.best) mais n'était pas générée. Pré-voyage + sur place.
-  if (region.routes && region.routes.best && byScore.length) {
+  if (routes.best && byScore.length) {
     const rank = s => s === 'clean' ? 0 : s === 'moderate' ? 1 : 2
     const ranked = [...byScore].sort((a, b2) => (rank(a.lv.status) - rank(b2.lv.status)) || ((b2.lv.score || 0) - (a.lv.score || 0)))
     const cleanN = ranked.filter(x => x.lv.status === 'clean').length
@@ -444,17 +541,18 @@ ${hubLinks(null)}${networkFooter(region, t)}</article>`,
       ? 'Estas son las playas más limpias en este momento según el satélite — empieza por arriba. El estado se actualiza 4 veces al día.'
       : 'These are the cleanest beaches right now per satellite — start at the top. Status updates 4× a day.'
     hubs.push({
-      slug: region.routes.best, title: bestTitle, desc: bestDesc,
+      kind: 'best', sm: { daily: true, priority: '0.9' },
+      slug: routes.best, title: bestTitle, desc: bestDesc,
       noscript: `<article><h1>${esc(bestH1)}</h1><p><em>${t.updated(today)}</em></p><p>${esc(bestIntro)}</p>
 <ol>${ranked.map(x => `<li><strong>${beachLink(x)}</strong> — ${sw(x.lv.status)}, ${t.score} ${x.lv.score ?? '—'}/100${x.commune ? ' · ' + esc(x.commune) : ''}</li>`).join('')}</ol>
-${hubLinks(null)}${networkFooter(region, t)}</article>`,
+${hubLinks(null)}${networkFooter(region, t, lang)}</article>`,
     })
   }
 
   // "This week" — page HAUTE-INTENTION "sargassum [dest] this week". La route
   // region.routes.weekly était DÉCLARÉE dans les 3 configs USD mais JAMAIS générée
   // → 404 en GSC ("unknown to Google"). 1 fonction transforme le 404 en page.
-  if (region.routes && region.routes.weekly && byScore.length) {
+  if (routes.weekly && byScore.length) {
     const wk = data.weekly || {}
     const withClean = byScore.map(x => { const fc = ((wk[x.id] || {}).forecast || []).slice(0, 7); return { x, clean: fc.filter(f => f.status === 'clean').length } }).sort((a, c) => c.clean - a.clean)
     const wkTitle = smartTrim(lang === 'es' ? `Sargazo en ${region.name} esta semana — pronóstico 7 días` : `Sargassum in ${region.name} This Week — 7-Day Outlook`, 68)
@@ -466,28 +564,28 @@ ${hubLinks(null)}${networkFooter(region, t)}</article>`,
       ? 'El pronóstico de 7 días playa por playa, según el satélite. Empieza por las playas con más días limpios esta semana.'
       : 'The 7-day outlook beach by beach, from satellite. Start with the beaches that have the most clean days this week.'
     hubs.push({
-      slug: region.routes.weekly, title: wkTitle, desc: wkDesc,
+      kind: 'weekly', sm: { daily: true, priority: '0.9' },
+      slug: routes.weekly, title: wkTitle, desc: wkDesc,
       noscript: `<article><h1>${esc(wkH1)}</h1><p><em>${t.updated(today)}</em></p><p>${esc(wkIntro)}</p>
 <ul>${withClean.map(({ x, clean }) => `<li><strong>${beachLink(x)}</strong> — ${clean}/7 ${lang === 'es' ? 'días limpios' : 'clean days'} · ${forecastLine(data.weekly, x.id, lang)}</li>`).join('')}</ul>
-${hubLinks('weekly')}${networkFooter(region, t)}</article>`,
+${hubLinks('weekly')}${networkFooter(region, t, lang)}</article>`,
     })
   }
 
   for (const h of hubs) {
-    const pathname = `/${h.slug}/`
+    const pathname = `${prefix}/${h.slug}/`
     writePage(distDir, pathname, pageShell(tpl, {
       title: h.title, desc: h.desc, pathname, domain, lang,
       noscript: h.noscript,
-      jsonLd: [breadcrumb(domain, [{ name: t.home, path: '/' }, { name: h.title, path: pathname }])],
+      jsonLd: [breadcrumb(domain, [{ name: t.home, path: `${prefix}/` }, { name: h.title, path: pathname }])],
+      alternates: altsForKind(h.kind),
     }))
-    urls.push(pathname)
+    pushUrl(pathname, h.sm)
   }
 
-  // ── 2. Pages plages ──
-  const resortsByBeach = {}
-  for (const r of resorts) (resortsByBeach[r.beachId] = resortsByBeach[r.beachId] || []).push(r)
+  // ── 2. Pages plages (resortsByBeach fourni par le contexte partagé) ──
   for (const b of beaches) {
-    const pathname = `/${t.beachesDir}/${b.slug}/`
+    const pathname = `${prefix}/${t.beachesDir}/${b.slug}/`
     const blurb = (content.beachBlurbs || {})[b.id] || ''
     const nearby = beaches.filter(x => x.id !== b.id)
       .map(x => ({ x, d: (x.lat - b.lat) ** 2 + (x.lng - b.lng) ** 2 }))
@@ -538,10 +636,10 @@ ${hubLinks('weekly')}${networkFooter(region, t)}</article>`,
 <p><strong>${t.status}: ${sw(b.lv.status)}</strong> · ${t.score} ${b.lv.score ?? '—'}/100</p>
 <p>${esc(blurb)}</p>
 <h2>${t.forecast7}</h2><p>${forecastLine(data.weekly, b.id, lang)}</p>
-${beachResorts.length ? `<h2>${t.resortsAt}</h2><ul>${beachResorts.map(r => `<li><a href="/${t.resortsDir}/${r.slug}/">${esc(r.name)}</a></li>`).join('')}</ul>` : ''}
+${beachResorts.length ? `<h2>${t.resortsAt}</h2><ul>${beachResorts.map(r => `<li><a href="${prefix}/${t.resortsDir}/${r.slug}/">${esc(r.name)}</a></li>`).join('')}</ul>` : ''}
 <h2>${t.nearby}</h2><ul>${nearby.map(n => `<li>${beachLink(n)} — ${sw(n.lv.status)}</li>`).join('')}</ul>
 ${beachFaqHtml}
-${hubLinks(null)}${networkFooter(region, t)}</article>`
+${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
     // HERO golden-hour (additif) : préfixe l'article par scène SVG inline + bande
     // verdict. b a coords/island/status/afai (REGION.beaches) + b.lv live. Robuste.
     let noscript = articleHtml
@@ -563,8 +661,9 @@ ${hubLinks(null)}${networkFooter(region, t)}</article>`
     }
     writePage(distDir, pathname, pageShell(tpl, {
       title, desc, pathname, domain, lang, noscript,
+      alternates: altsForBeach(b),
       jsonLd: [
-        breadcrumb(domain, [{ name: t.home, path: '/' }, { name: b.name, path: pathname }]),
+        breadcrumb(domain, [{ name: t.home, path: `${prefix}/` }, { name: b.name, path: pathname }]),
         { '@context': 'https://schema.org', '@type': 'Beach', name: b.name, address: { '@type': 'PostalAddress', addressLocality: b.commune || region.name, addressCountry: region.countryCode || '' }, geo: { '@type': 'GeoCoordinates', latitude: b.lat, longitude: b.lng }, url: `https://${domain}${pathname}`, ...(photos[b.id] ? { image: `https://${domain}/beaches/${photos[b.id]}` } : {}) },
         // dateModified réel du pipeline (flag region.seo) — PAS de datePublished
         // en plus (published+updated ensemble = -22% CTR documenté).
@@ -573,14 +672,14 @@ ${hubLinks(null)}${networkFooter(region, t)}</article>`
         ...(beachFaqLd ? [beachFaqLd] : []),
       ],
     }))
-    urls.push(pathname)
+    pushUrl(pathname, { daily: true, priority: '0.7' })
   }
 
   // ── 3. Pages resorts (long-tail "sargassum at <resort>") ──
   for (const r of resorts) {
     const b = beaches.find(x => x.id === r.beachId)
     if (!b) continue
-    const pathname = `/${t.resortsDir}/${r.slug}/`
+    const pathname = `${prefix}/${t.resortsDir}/${r.slug}/`
     // Noms d'hôtels longs : templates de repli de plus en plus courts plutôt
     // qu'une coupe en plein mot (SERP "…Live Beach St" sur 35 pages).
     let title = (content.resortPageTpl?.titlePattern || (lang === 'es' ? 'Sargazo en {resort} HOY — estado y pronóstico' : 'Sargassum at {resort} Today — Live Status & Forecast')).replace('{resort}', r.name)
@@ -602,62 +701,84 @@ ${hubLinks(null)}${networkFooter(region, t)}</article>`
 <p>${esc(intro)}</p>
 <p><strong>${t.beachOf(r.name)} — ${beachLink(b)}</strong>: ${sw(b.lv.status)} · ${t.score} ${b.lv.score ?? '—'}/100${areaHtml}</p>
 <h2>${t.forecast7}</h2><p>${forecastLine(data.weekly, b.id, lang)}</p>
-${hubLinks(null)}${networkFooter(region, t)}</article>`
+${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
     writePage(distDir, pathname, pageShell(tpl, {
       title, desc, pathname, domain, lang, noscript,
-      jsonLd: [breadcrumb(domain, [{ name: t.home, path: '/' }, { name: b.name, path: `/${t.beachesDir}/${b.slug}/` }, { name: r.name, path: pathname }])],
+      alternates: altsForResort(r),
+      jsonLd: [breadcrumb(domain, [{ name: t.home, path: `${prefix}/` }, { name: b.name, path: `${prefix}/${t.beachesDir}/${b.slug}/` }, { name: r.name, path: pathname }])],
     }))
-    urls.push(pathname)
+    pushUrl(pathname, { priority: '0.5' })
     // B2B brief standalone (lead-magnet envoyable, noindex, HORS sitemap)
     try { writePage(distDir, `${pathname}brief/`, buildResortBrief(region, r, b, data, lang, today, domain, beaches)) } catch (e) { /* brief best-effort */ }
   }
   // Annuaire B2B + hub SEO : 1 page /resorts/ listant tous les hôtels (statut + brief).
   if (resorts.length) {
-    try { writePage(distDir, `/${t.resortsDir}/`, buildResortDirectory(region, resorts, beaches, data, lang, t, today, domain)); urls.push(`/${t.resortsDir}/`) } catch (e) { /* directory best-effort */ }
+    try { writePage(distDir, `${prefix}/${t.resortsDir}/`, buildResortDirectory(region, resorts, beaches, data, lang, t, today, domain, prefix)); pushUrl(`${prefix}/${t.resortsDir}/`, { priority: '0.5' }) } catch (e) { /* directory best-effort */ }
   }
 
-  // ── 4. Patch homepage : FAQPage JSON-LD + réseau inter-sites + title override ──
-  let home = fs.readFileSync(path.join(distDir, 'index.html'), 'utf-8')
-  if (region.seo && region.seo.homeTitle) {
-    home = home
-      .replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(region.seo.homeTitle)}</title>`)
-      .replace(/(<meta property="og:title" content=)"[^"]*"/, `$1"${esc(region.seo.homeTitle)}"`)
-      .replace(/(<meta name="twitter:title" content=)"[^"]*"/, `$1"${esc(region.seo.homeTitle)}"`)
-    if (region.seo.homeDesc) home = home
-      .replace(/(<meta name="description" content=)"[^"]*"/, `$1"${esc(region.seo.homeDesc)}"`)
-      .replace(/(<meta property="og:description" content=)"[^"]*"/, `$1"${esc(region.seo.homeDesc)}"`)
+  // ── 4. Home : langue PRIMAIRE = patch dist/index.html en place (inchangé) ;
+  //    langue SECONDAIRE = dist/<lang>/index.html re-pointé (ex. Riviera Maya /en/). ──
+  if (prefix === '') {
+    let home = fs.readFileSync(path.join(distDir, 'index.html'), 'utf-8')
+    if (region.seo && region.seo.homeTitle) {
+      home = home
+        .replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(region.seo.homeTitle)}</title>`)
+        .replace(/(<meta property="og:title" content=)"[^"]*"/, `$1"${esc(region.seo.homeTitle)}"`)
+        .replace(/(<meta name="twitter:title" content=)"[^"]*"/, `$1"${esc(region.seo.homeTitle)}"`)
+      if (region.seo.homeDesc) home = home
+        .replace(/(<meta name="description" content=)"[^"]*"/, `$1"${esc(region.seo.homeDesc)}"`)
+        .replace(/(<meta property="og:description" content=)"[^"]*"/, `$1"${esc(region.seo.homeDesc)}"`)
+    }
+    if (Array.isArray(content.faq) && content.faq.length) {
+      const faqLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: content.faq.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) }
+      const faqScript = `<script type="application/ld+json">${JSON.stringify(faqLd)}</script>`
+      // Un FAQPage existe déjà dans le head (transformIndexHtml) → on le REMPLACE
+      // (2 FAQPage sur une page = schema invalide pour Google).
+      const existingFaq = home.match(/<script type="application\/ld\+json">[^<]*"@type":\s*"FAQPage"[\s\S]*?<\/script>/)
+      home = existingFaq ? home.replace(existingFaq[0], faqScript) : home.replace('</head>', `${faqScript}\n</head>`)
+      // FAQ + liens hubs + réseau dans le noscript racine (avant sa fermeture)
+      const faqHtml = `<section><h2>FAQ</h2>${content.faq.map(f => `<h3>${esc(f.q)}</h3><p>${esc(f.a)}</p>`).join('')}</section>
+<nav>${hubLinks(null)}${networkFooter(region, t, lang)}</nav>`
+      home = home.includes('</noscript>') ? home.replace('</noscript>', `${faqHtml}</noscript>`) : home.replace('<div id="root">', `<noscript>${faqHtml}</noscript><div id="root">`)
+    }
+    fs.writeFileSync(path.join(distDir, 'index.html'), home, 'utf-8')
+  } else {
+    // Home secondaire : on repart du shell SPA (tpl, langue primaire) et on le
+    // re-pointe langue. L'app honore le path /<lang>/ (getLang) → rendu EN côté JS.
+    // hreflang : tpl porte déjà le cluster home es↔en (posé par transformIndexHtml),
+    // identique pour / et /en/ → on le garde tel quel, on ne change que canonical/og.
+    const canonical = `https://${domain}${prefix}/`
+    const hm = content.home || {}
+    const homeTitle = hm.title || (lang === 'es'
+      ? `Sargazo en ${region.name} Hoy — Mapa de Playas en Vivo y Pronóstico 7 Días 2026`
+      : `${region.name} Sargassum Today — Live Beach Map & 7-Day Forecast 2026`)
+    const homeDesc = hm.desc || (lang === 'es'
+      ? `¿Qué playa de ${region.name} está sin sargazo hoy? Mapa en vivo playa por playa, Beach Score 0-100 y pronóstico de 7 días. Actualizado 4 veces al día con datos satelitales.`
+      : `Which ${region.name} beach is sargassum-free today? Live per-beach seaweed map, Beach Score 0-100 and 7-day forecast. Updated 4× daily from satellite data.`)
+    let home = tpl
+      .replace(/<html lang="[^"]*"/, `<html lang="${lang}"`)
+      .replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(homeTitle)}</title>`)
+      .replace(/(<meta name="description" content=)"[^"]*"/, `$1"${esc(homeDesc)}"`)
+      .replace(/(<meta property="og:title" content=)"[^"]*"/, `$1"${esc(homeTitle)}"`)
+      .replace(/(<meta property="og:description" content=)"[^"]*"/, `$1"${esc(homeDesc)}"`)
+      .replace(/(<meta property="og:url" content=)"[^"]*"/, `$1"${canonical}"`)
+      .replace(/(<meta property="og:locale" content=)"[^"]*"/, `$1"${lang === 'es' ? 'es_MX' : 'en_US'}"`)
+      .replace(/(<meta name="twitter:title" content=)"[^"]*"/, `$1"${esc(homeTitle)}"`)
+      .replace(/(<meta name="twitter:description" content=)"[^"]*"/, `$1"${esc(homeDesc)}"`)
+      .replace(/(<link rel="canonical" href=)"[^"]*"/, `$1"${canonical}"`)
+    if (Array.isArray(content.faq) && content.faq.length) {
+      const faqLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: content.faq.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) }
+      const faqScript = `<script type="application/ld+json">${JSON.stringify(faqLd)}</script>`
+      const existingFaq = home.match(/<script type="application\/ld\+json">[^<]*"@type":\s*"FAQPage"[\s\S]*?<\/script>/)
+      home = existingFaq ? home.replace(existingFaq[0], faqScript) : home.replace('</head>', `${faqScript}\n</head>`)
+    }
+    // noscript : retire le bloc SEO de la langue primaire et pose le noscript secondaire.
+    const faqHtml = `<section><h2>FAQ</h2>${(content.faq || []).map(f => `<h3>${esc(f.q)}</h3><p>${esc(f.a)}</p>`).join('')}</section>
+<nav>${hubLinks(null)}${networkFooter(region, t, lang)}</nav>`
+    home = home.replace(/<noscript>\s*<h1>[\s\S]*?<\/noscript>/, '')
+    home = home.replace('<div id="root">', `<noscript>${faqHtml}</noscript>\n<div id="root">`)
+    writePage(distDir, `${prefix}/`, home)
   }
-  if (Array.isArray(content.faq) && content.faq.length) {
-    const faqLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: content.faq.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) }
-    const faqScript = `<script type="application/ld+json">${JSON.stringify(faqLd)}</script>`
-    // Un FAQPage existe déjà dans le head (transformIndexHtml) → on le REMPLACE
-    // (2 FAQPage sur une page = schema invalide pour Google).
-    const existingFaq = home.match(/<script type="application\/ld\+json">[^<]*"@type":\s*"FAQPage"[\s\S]*?<\/script>/)
-    home = existingFaq ? home.replace(existingFaq[0], faqScript) : home.replace('</head>', `${faqScript}\n</head>`)
-    // FAQ + liens hubs + réseau dans le noscript racine (avant sa fermeture)
-    const faqHtml = `<section><h2>FAQ</h2>${content.faq.map(f => `<h3>${esc(f.q)}</h3><p>${esc(f.a)}</p>`).join('')}</section>
-<nav>${hubLinks(null)}${networkFooter(region, t)}</nav>`
-    home = home.includes('</noscript>') ? home.replace('</noscript>', `${faqHtml}</noscript>`) : home.replace('<div id="root">', `<noscript>${faqHtml}</noscript><div id="root">`)
-  }
-  fs.writeFileSync(path.join(distDir, 'index.html'), home, 'utf-8')
-
-  // ── 5. Sitemap complet ──
-  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map(u => {
-    // Fraîcheur réelle : les fiches plage + hubs high-intent ont un title+statut
-    // qui change 4×/j → daily + priority (USD était weekly sans priority).
-    const hot = [p.today.slug, p.forecast.slug, region.routes && region.routes.best, region.routes && region.routes.weekly, 'semaforo-del-sargazo', 'metodologia', 'methodology'].filter(Boolean)
-    const isBeach = u.includes(`/${t.beachesDir}/`)
-    const isHot = hot.some(s => u.includes(s))
-    const daily = u === '/' || isHot || isBeach
-    const pr = u === '/' ? '1.0' : (u.includes(p.today.slug) || u.includes(p.forecast.slug) || (region.routes && (u.includes(region.routes.best || '\0') || u.includes(region.routes.weekly || '\0')))) ? '0.9' : isBeach ? '0.7' : '0.5'
-    return `  <url><loc>https://${domain}${u}</loc><lastmod>${isoToday}</lastmod><changefreq>${daily ? 'daily' : 'weekly'}</changefreq><priority>${pr}</priority></url>`
-  }).join('\n')}
-</urlset>
-`
-  fs.writeFileSync(path.join(distDir, 'sitemap.xml'), sitemap, 'utf-8')
-  console.log(`   → ${urls.length - 1} pages SEO générées (${region.id}: ${hubs.length} hubs, ${beaches.length} plages, ${resorts.length} resorts) + sitemap + FAQ schema`)
 }
 
 module.exports = { generateRegionSeoPages }

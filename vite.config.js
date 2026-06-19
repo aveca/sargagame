@@ -181,11 +181,20 @@ export default defineConfig({
           .replace(/<meta property="og:locale:alternate" content="[^"]*" \/>\s*/g, '')
           .replace(/https:\/\/sargasses-martinique\.com/g, `https://${domain}`)
 
-        // ── 2) hreflang : langue primaire à la racine + x-default. Pas de /es/ tant que
-        //      la page n'existe pas (build mono-SPA, pas de sous-pages générées). ──
+        // ── 2) hreflang home : langue primaire à la racine + chaque langue secondaire
+        //      RÉELLEMENT émise (fichier de contenu <id>.<lang>.json présent) sous
+        //      /<lang>/, + x-default = primaire. Source unique = region-langs.cjs, le
+        //      MÊME oracle que region-seo-pages (génération) et prepare-ftp (déploiement)
+        //      → jamais de hreflang vers un /en/ inexistant. FL/PC (secondaryLangs:["es"]
+        //      sans florida.es.json) → cluster identique à avant (en racine + x-default) ;
+        //      Riviera Maya → es racine + en /en/ + x-default. ──
+        const _RL = _require('./scripts/lib/region-langs.cjs')
+        const _homeAlts = _RL.emittedLangs(REGION)
+          .map(l => `<link rel="alternate" hreflang="${l}" href="https://${domain}${_RL.langPrefix(REGION, l)}/" />`)
+          .join('\n    ')
         html = html.replace(
           /<link rel="alternate" hreflang="fr"[^>]*\/>\s*<link rel="alternate" hreflang="en"[^>]*\/>\s*<link rel="alternate" hreflang="es"[^>]*\/>\s*<link rel="alternate" hreflang="x-default"[^>]*\/>/,
-          `<link rel="alternate" hreflang="${lang}" href="https://${domain}/" />\n    <link rel="alternate" hreflang="x-default" href="https://${domain}/" />`
+          `${_homeAlts}\n    <link rel="alternate" hreflang="x-default" href="https://${domain}/" />`
         )
 
         // ── 2.5) REGION.sceneTheme : surcharge --sg-* (scène golden-hour) PAR MARCHÉ.
@@ -1709,10 +1718,12 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
                   `};`,
                   `(function(){`,
                   `  var RM=matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches;`,
-                  // RE-LANCÉ GATÉ 2026-06-18 : après fix honnêteté (no-MOCK, garde-fou 100%,
-                  // onOpenBeach, score+facteurs RÉELS). La plongée n'est servie QUE sur les
+                  // RE-LANCÉ GATÉ 2026-06-18 puis PROMU 2026-06-19 (GO fondateur) : variante
+                  // `dive` gagnante +84% @95% (n=416/469, 28j). 100% dive sur les éligibles
+                  // (parité avec l'in-app `pw_beach_dive`). La plongée n'est servie QUE sur les
                   // plages avec score+breakdown réels (SGFD_ELIGIBLE, ~20/136) — ailleurs
-                  // contrôle (jamais de données vides/fabriquées). 50/50 sur les éligibles.
+                  // contrôle (jamais de données vides/fabriquées). Réversible : restaurer le
+                  // bloc 50/50 localStorage (var k='ab_fiche_dive'…) à la place du `return true`.
                   `  var SGFD_ELIGIBLE=${_fd_eligible ? 'true' : 'false'};`,
                   `  function pick(){`,
                   `    try{var q=location.search;`,
@@ -1720,9 +1731,7 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
                   `    if(/[?&]fichedive=0/.test(q))return false;`,
                   `    if(RM)return false;`,
                   `    if(!SGFD_ELIGIBLE)return false;`,
-                  `    var k='ab_fiche_dive',v=localStorage.getItem(k);`,
-                  `    if(!v){v=Math.random()<0.5?'dive':'control';localStorage.setItem(k,v);}`,
-                  `    return v==='dive';`,
+                  `    return true;`,
                   `    }catch(e){return false;}`,
                   `  }`,
                   `  var active=pick();`,

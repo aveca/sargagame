@@ -744,6 +744,12 @@ function prepareNewRegion(region) {
     skip.add(`island-${other.id}.svg`)
     for (const route of Object.values(other.routes || {})) skip.add(route)
   }
+  // Garder les dossiers de langue secondaire que CETTE région génère réellement
+  // (ex. Riviera Maya /en/ : region-seo-pages y écrit son jeu de pages EN, qui a
+  // écrasé la landing statique MQ public/en/). Le skip 'en' ci-dessus ne visait que
+  // cette landing MQ — inexistante dès qu'une région émet son propre /en/. Même
+  // oracle (region-langs.cjs) que region-seo-pages → cohérence build ↔ déploiement.
+  for (const d of require('./lib/region-langs.cjs').secondaryLangDirs(region)) skip.delete(d)
   copyRecursive(dist, out, skip)
 
   // og:image région-aware : remplace og-image.png (visuel FR "Martinique &

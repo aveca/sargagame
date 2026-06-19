@@ -1,0 +1,113 @@
+{
+  "_note": "EN secondary-language SEO content for Riviera Maya / Cancún (sargassumcancun.com). Pages render under /en/. Primary (ES) lives at regions/seo-content/rivieramaya.json. Same facts as the ES file, written natively for English-speaking (US/Canada) visitors — not machine-translated. Slugs are EN; routes here drive the /en/ best + weekly pages.",
+  "home": {
+    "title": "Cancún Sargassum Today — Live Seaweed Map & 7-Day Forecast 2026",
+    "desc": "Which Cancún or Riviera Maya beach is free of sargassum today? Live per-beach seaweed map, Beach Score 0-100 and a 7-day forecast. Updated 4× a day from satellite."
+  },
+  "routes": {
+    "best": "best-beaches-no-sargassum-cancun",
+    "weekly": "sargassum-cancun-this-week"
+  },
+  "faq": [
+    {
+      "q": "When is sargassum season in Cancún and the Riviera Maya?",
+      "a": "The season runs April through September, peaking from May to July. November through March the beaches are usually clean, though stray patches can land at any time. Because each year is different — sometimes wildly so — we track every beach with Copernicus satellite imagery refreshed four times a day, so you see what is on the sand today rather than a historical average."
+    },
+    {
+      "q": "Which Riviera Maya beaches get the least sargassum?",
+      "a": "The ones that don't face east: Playa Norte on Isla Mujeres, Holbox at the top of the peninsula, and the west coast of Cozumel (Palancar) almost never get sargassum. Along the Cancún–Tulum corridor, beaches sheltered by a bay or reef — Akumal, Puerto Morelos — pile up far less than the open ones. Check the live map: daily satellite data shows which beaches are seaweed-free right now."
+    },
+    {
+      "q": "How reliable is the data on this site?",
+      "a": "We use the AFAI index — the same standard NOAA uses to detect floating sargassum from satellite — with Copernicus imagery refreshed four times a day. Reports from people on the beach fill in what clouds can hide. Every beach shows the exact time of its last update and a confidence level, so you know how fresh the reading you're looking at really is."
+    },
+    {
+      "q": "Can you forecast sargassum a week ahead?",
+      "a": "Yes, within reasonable limits. Sargassum drifts with the wind and currents, so once the satellite spots a mat offshore we can project its path toward each beach over the next seven days. Days 1 to 3 are the most accurate; days 4 to 7 show the trend. The forecast is recalculated every day with each new satellite pass."
+    },
+    {
+      "q": "Do the hotels clean sargassum off their beaches?",
+      "a": "The big resorts in Cancún, Playa del Carmen and Tulum rake their beachfront every morning, and many install offshore sargassum barriers; the municipalities and the Navy also collect tons in season. Even so, on a heavy landing day the seaweed comes back within hours. That's why it pays to watch the real satellite flow: if nothing new is inbound, a raked beach stays clean all day."
+    },
+    {
+      "q": "What do I do if my beach is buried in sargassum?",
+      "a": "Move — the geography gives you options. If the Cancún hotel zone wakes up bad, Playa Norte on Isla Mujeres is usually clean; from Playa del Carmen, the ferry puts you half an hour from Palancar on Cozumel. Fresh sargassum isn't dangerous, but rotting piles smell of sulfur and are best avoided. With premium alerts we tell you the moment your beach changes status."
+    }
+  ],
+  "pages": {
+    "forecast": {
+      "slug": "sargassum-forecast",
+      "title": "Cancún Sargassum Forecast 2026 — 7-Day Outlook by Beach",
+      "desc": "7-day sargassum forecast for Cancún, Playa del Carmen and Tulum, updated daily from satellite. See which Riviera Maya beaches will be clean this week.",
+      "h1": "Sargassum Forecast for Cancún & the Riviera Maya — Next 7 Days",
+      "intro": "Most sargassum forecasts for the Mexican Caribbean hand you one verdict for all of Quintana Roo, built from official imagery that's already days old by the time it's published. This works differently: we run a separate forecast for each of the 12 beaches we monitor, from Holbox to Mahahual, because reality changes from one bay to the next — the same mat that buries Playa Delfines can slide right past Puerto Morelos. Every morning the model ingests the latest Copernicus satellite pass, locates the mats drifting inbound, and projects landings for the next seven days, beach by beach. The result updates daily — four satellite reads a day feed it — so you can pick your beach day before the sargassum picks it for you.",
+      "method": "We start from the AFAI (Alternative Floating Algae Index), the spectral signature Copernicus and NOAA satellites use to detect floating sargassum from orbit. Each detected mat is projected forward with wind and surface-current data — sargassum drifts at roughly 2.5% of wind speed plus the local current. For seaweed already on the sand we apply exponential persistence with a 3.5-day half-life: it decays unless fresh material arrives. Community reports correct the satellite when clouds get in the way. Accuracy is highest on days 1 to 3, and everything recomputes daily."
+    },
+    "today": {
+      "slug": "beaches-without-sargassum-today",
+      "title": "Cancún Beaches Without Sargassum Today (Live List)",
+      "desc": "Live list of seaweed-free beaches in Cancún and the Riviera Maya today. Satellite-checked 4× a day — find genuinely turquoise water right now.",
+      "h1": "Beaches Without Sargassum Today in Cancún & the Riviera Maya",
+      "intro": "Looking for a seaweed-free beach today? Below is the live list, ranked cleanest to most affected, showing which beaches are sargassum-free right now on the latest satellite pass — refreshed four times a day. As a rule of thumb, Playa Norte, Holbox and the west side of Cozumel almost always top the list, while the Cancún–Tulum corridor rises and falls with the week's wind. But the rule of thumb isn't what matters once the cooler is packed: today's reading is. Check the number next to your beach and go."
+    },
+    "map": {
+      "slug": "seaweed-map",
+      "title": "Cancún Seaweed Map (Live) — Riviera Maya Sargassum Tracker",
+      "desc": "Interactive live seaweed map of Cancún and the Riviera Maya, updated 4× a day from satellite. Check every beach before you leave the room.",
+      "h1": "Live Seaweed & Sargassum Map — Cancún and the Riviera Maya",
+      "intro": "This is an interactive, live map of the sargassum — the seaweed — across the Mexican Caribbean: every beach, from Holbox to Mahahual, shown with a color-coded status (clean, moderate, or avoid). It's fed by Copernicus satellite imagery refreshed four times a day, plus reports from people standing on the sand right now. Tap any beach for its current status, a 0–100 Beach Score, and the 7-day forecast. Unlike a seasonal guide, this map changes when the sea changes: an overnight wind shift can clear Cancún and load Tulum by noon. Check it the morning you go."
+    },
+    "season": {
+      "intro": "Planning a Riviera Maya trip and worried about sargassum and seaweed? Here's the honest 2026 picture — when the seaweed arrives, when the beaches stay clean, and how to time your trip. Short version: November through March is reliable and clean; the Atlantic belt arrives April through October, heaviest May to August. If your dates are flexible, that single fact plans the trip.",
+      "slug": "sargassum-season-cancun",
+      "title": "Cancún Sargassum Season 2026 — Month-by-Month Guide",
+      "desc": "When does sargassum hit Cancún and the Riviera Maya? April to September, peaking May–July. Month-by-month 2026 guide with daily satellite tracking.",
+      "h1": "Sargassum Season in Cancún & the Riviera Maya — 2026 Guide",
+      "months": [
+        {
+          "period": "November – February",
+          "text": "The reliable window. Landings are rare and light, the Atlantic is at its annual minimum, and almost the entire coast — Cancún to Tulum — stays clean for weeks at a stretch. If avoiding sargassum is your priority, travel in these months."
+        },
+        {
+          "period": "March",
+          "text": "The warning month. Satellites start picking up the first mats of the new bloom crossing the Atlantic. Beaches are mostly still clean, but stray patches can land on the open coast. Worth a glance at the map before you book tours."
+        },
+        {
+          "period": "April",
+          "text": "The season kicks off. Landings become regular on the east-facing beaches — Playa del Carmen, Tulum, Xpu-Ha — though still at moderate volumes that crews handle in the morning. Isla Mujeres, Holbox and west Cozumel stay quiet."
+        },
+        {
+          "period": "May – July",
+          "text": "The peak. The Atlantic sargassum belt delivers steady volume and the open coast can wake up buried several times a week. The gap between beaches becomes enormous: on the same day, Delfines can be brown and Palancar crystal-clear. This is when a per-beach forecast is worth its weight in gold."
+        },
+        {
+          "period": "August – September",
+          "text": "Still strong but easing. Landings turn episodic: a beach can be covered Tuesday and raked clean by Friday. Hotels keep up the cleaning pace and sheltered beaches recover fast. The 7-day radar helps you dodge the pulses."
+        },
+        {
+          "period": "October",
+          "text": "The tail of the season. Volumes drop week by week and by month's end most beaches are stably clean again. A late pulse can sneak in after a norte, so the cautious keep checking the map — but the odds are firmly in your favor."
+        }
+      ],
+      "tips": "If your dates are flexible, book November through March and forget about seaweed. Traveling in peak season? Favor staying on Isla Mujeres, Holbox or the west side of Cozumel — or, in the corridor, pick a resort with daily cleaning and an offshore barrier. Check our map the week before you fly (last month's forum posts are useless), and once you're here, plan beach mornings and keep a cenote or a Cozumel day as your plan B for the heavy days."
+    }
+  },
+  "beachBlurbs": {
+    "rm001": "Cancún's most famous public beach, with the lookout by the giant sign and no hotels blocking the view. It faces dead east with strong surf, so in season it's among the first to catch sargassum — and being public, cleanup depends on the municipality. Go early on a green-flag day; the postcard is worth it.",
+    "rm002": "A family-friendly beach in the northern hotel zone, with calm water thanks to the shelter of Isla Mujeres and the ferry pier a step away. Its north-facing orientation spares it much of the sargassum that hammers the rest of Cancún. Ideal with kids and easy to pair with a hop over to the island.",
+    "rm003": "The quintessential town beach: step off the bus, cross Fifth Avenue, and you're on the sand, with the Cozumel ferry right there. It faces east and takes moderate sargassum in season, though municipal and beach-club cleaning is constant. Perfect if you want beach without giving up restaurants and nightlife.",
+    "rm004": "The Tulum postcard: leaning palms, white sand, and the most photographed beach clubs in Mexico. It's fully exposed to the east, so at peak season it can wake up loaded — each club rakes its stretch daily. Arrive early for the cleanest sand and the best spot under the palapa.",
+    "rm005": "The turtle bay: shallow water, a reef that breaks the swell, and snorkeling with turtles a few meters off the shore. The shape of the bay holds less sargassum than the open beaches, though a heavy landing still gets some through. One of the corridor's safer bets for families and snorkelers.",
+    "rm006": "The good side of Cozumel: the west, leeward coast, where sargassum barely reaches even at peak season. Clear water, a relaxed beach club, and the Palancar reef for snorkeling a few minutes away by boat. The perfect plan B when the corridor wakes up brown — and a great day out in its own right.",
+    "rm007": "The jewel of Isla Mujeres and one of the few Mexican Caribbean beaches that almost never sees sargassum, thanks to its north-facing orientation. Waist-deep water for hundreds of meters, calendar-worthy sunsets, and a small-town feel. When everything else fails in season, Playa Norte delivers.",
+    "rm008": "A fishing village halfway between Cancún and Playa del Carmen, with the national-park reef just 500 meters offshore. The reef blocks part of the sargassum and the vibe stays boardwalk-and-boat, not nightclub. For travelers after top-tier snorkeling and a slower Mexican pace.",
+    "rm009": "The deep south of the Costa Maya: a town boardwalk, shallow water, and prices that are still friendly. Sargassum is variable with the wind, but the boardwalk stretch is cleaned daily and, outside cruise-ship days, the beach is nearly private. For travelers who want the Caribbean without the corridor's scale.",
+    "rm010": "Up at the top of the peninsula, already in Gulf waters, sargassum simply barely reaches — that's half the magic. The other half: sand streets, flamingos, summer bioluminescence, and endless sandbars. The anti-sargassum escape par excellence — no cars, no rush.",
+    "rm011": "A wide, still-relaxed bay between Playa del Carmen and Tulum, with white sand, fried-fish palapas, and far less noise than its neighbors. It's exposed to the east, so in season it's worth checking on the map before you drive out. On a clean day it competes with any beach in the corridor.",
+    "rm012": "Ranked for years among the most beautiful beaches in the world, today it's luxury-resort territory with talcum sand and turquoise water. The hotels invest heavily in barriers and daily cleaning, so it usually wakes up better than the open coast in season. For honeymoons and spa days by the sea."
+  },
+  "resortPageTpl": {
+    "titlePattern": "Sargassum at {resort} Today — Live Beach Status & Forecast",
+    "introPattern": "Want to know whether the beach at {resort} woke up free of seaweed and sargassum? This page monitors {beach}, the stretch of sand in front of the hotel, with Copernicus satellite imagery refreshed four times a day. You'll find the current status, a 0–100 Beach Score, and a 7-day forecast, so you can plan your beach — or pool — days before check-in. In season, conditions flip overnight: save this page and check it each morning."
+  }
+}
