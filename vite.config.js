@@ -1322,6 +1322,21 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
               clean: 'Petite Plage Malendure à Bouillante (Guadeloupe) — propre en temps réel. Côte sous-le-vent, départ snorkeling vers la réserve Cousteau et les îlets Pigeon. Généralement protégée des sargasses. Prévisions 7 jours.',
               moderate: 'Sargasses à la Petite Plage Malendure (Bouillante, Guadeloupe) — présence modérée détectée en temps réel. Côte sous-le-vent, réserve Cousteau. Snorkeling. Carte et prévisions 7 jours.',
               avoid: 'Alerte sargasses à la Petite Plage Malendure (Bouillante, Guadeloupe) — forte concentration détectée côte sous-le-vent. Voir les plages propres à proximité sur la carte en temps réel.'
+            },
+            'Anse Meunier': {
+              clean: 'Anse Meunier à Sainte-Anne (Martinique) — plage propre en temps réel. Voisine sauvage des Salines, côte sud Atlantique, plus calme et ombragée. Idéal familles. Carte sargasses et prévisions 7 jours.',
+              moderate: 'Sargasses à Anse Meunier (Sainte-Anne, Martinique) — présence modérée détectée en temps réel. Voisine des Salines, côte sud Atlantique. Snorkeling. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à Anse Meunier (Sainte-Anne, Martinique) — forte concentration côte sud Atlantique. Voir les plages propres à proximité des Salines sur la carte en temps réel.'
+            },
+            'Anse Figuier': {
+              clean: 'Anse Figuier à Rivière-Pilote (Martinique) — plage propre en temps réel. Crique du sud face à la mer des Caraïbes, généralement épargnée des sargasses, eaux calmes, écomusée. Idéal familles. Prévisions 7 jours.',
+              moderate: 'Sargasses à Anse Figuier (Rivière-Pilote, Martinique) — présence modérée détectée en temps réel. Crique abritée du sud, eaux calmes. Snorkeling. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à Anse Figuier (Rivière-Pilote, Martinique) — forte concentration détectée au large du sud. Voir les plages propres à proximité de Sainte-Luce sur la carte en temps réel.'
+            },
+            'Petit-Havre (Gosier)': {
+              clean: 'Petit-Havre au Gosier (Guadeloupe) — plage propre en temps réel. Crique abritée de la côte sud de Grande-Terre, eaux calmes, idéal familles. Carte sargasses Guadeloupe et prévisions 7 jours.',
+              moderate: 'Sargasses à Petit-Havre (Le Gosier, Guadeloupe) — présence modérée détectée en temps réel. Crique de la côte sud de Grande-Terre. Idéal familles. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à Petit-Havre (Le Gosier, Guadeloupe) — forte concentration détectée en temps réel. Voir les plages propres à proximité du Gosier sur la carte en temps réel.'
             }
           }
           let sitemapMQBeaches = ''

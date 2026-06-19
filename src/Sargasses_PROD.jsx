@@ -5994,6 +5994,173 @@ function SeasonBanner({lang}){
    events that polluted the funnel. All paid conversion now flows through the
    Stripe Payment Link via same-tab redirect (window.location.href in the modal
    CTA) + dashboard-configured success_url that fires sg_conversion on return. */
+// ── ComicPaywall — skin BD du paywall (A/B pw_comic). PRODUCT.md §6 / pivot 19/06.
+// PUREMENT VISUEL : reçoit toutes les portes (onStart=startCheckout, onAlready, onClose,
+// plan/setPlan/effectivePlan) du PremiumModal parent → ZÉRO logique de paiement ici.
+// Tokens .lc- (paper/ink/yel) + scène golden-hour + cases BD, miroir de ChasseDetail.
+// Asset validé : design/proto-paywall-comic.html (vérifié navigateur 2026-06-19).
+function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxStatus,cleanCount,totalCount,seasonMsg,plan,setPlan,effectivePlan,hasAnnual,onStart,onAlready,onClose}){
+  const ST=ctxStatus||(beach&&beach.status)||null
+  const stCls=ST==="avoid"?"bad":ST==="moderate"?"mod":"ok"
+  const iris=ST==="avoid"?"#e8322a":ST==="moderate"?"#ffd23f":"#27c46b"
+  const vLbl=ST==="avoid"?_t(lang,"à éviter","avoid","evitar"):ST==="moderate"?_t(lang,"à surveiller","watch it","a vigilar"):_t(lang,"propre","clean","limpia")
+  const ctx=ctxName||topName
+  const best=topName
+  // prix (mêmes expressions que le toggle classique — aucune divergence)
+  const pMo=REGION_PAY?PRICE_MO:(lang==="en"?"€4.99":"4,99 €")
+  const pYr=REGION_PAY?PRICE_YR:(lang==="en"?"€39.99":"39,99 €")
+  const eqMo=(()=>{const raw=REGION_PAY?PRICE_YR:"39.99";const n=parseFloat(String(raw).replace(/[^0-9.,]/g,"").replace(",","."));if(!n)return null;const sym=(String(raw).match(/[€$£]/)||["€"])[0];const e=(n/12).toFixed(2).replace(".",lang==="fr"?",":".");return _t(lang,`soit ${e} ${sym}/mois`,`${sym}${e}/mo`,`${sym}${e}/mes`)})()
+  const ctaSub=NO_TRIAL
+    ?_t(lang,`${effectivePlan==="annual"?pYr+"/an":pMo+"/mois"} · annulable en 2 clics`,`${effectivePlan==="annual"?pYr+"/yr":pMo+"/mo"} · cancel anytime`,`${effectivePlan==="annual"?pYr+"/año":pMo+"/mes"} · cancela cuando quieras`)
+    :_t(lang,"7 jours offerts, puis "+(effectivePlan==="annual"?pYr+"/an":pMo+"/mois"),"7 days free, then "+(effectivePlan==="annual"?pYr+"/yr":pMo+"/mo"),"7 días gratis, luego "+(effectivePlan==="annual"?pYr+"/año":pMo+"/mes"))
+  const panel=(num,gold,kicker,line,meta)=>(
+    <div className={"pwx-panel"+(gold?" gold":"")}>
+      <span className="pwx-num">{num}</span>
+      <span className="pwx-pc">
+        <span className="pwx-kick">{kicker}</span>
+        <span className="pwx-line">{line}</span>
+        {meta&&<span className="pwx-meta">{meta}</span>}
+      </span>
+    </div>
+  )
+  const planBtn=(key,label,price,unit,badge,eq)=>(
+    <button type="button" onClick={()=>{setPlan(key);try{track("sg_plan_toggle",{plan:key,skin:"comic"})}catch(_){}}}
+      className={"pwx-plan"+(plan===key?" on":"")}>
+      {badge&&<span className="pwx-badge">{badge}</span>}
+      <b>{label}</b><span className="pwx-pr">{price}<small>/{unit}</small></span>
+      {eq&&<span className="pwx-eq">{eq}</span>}
+    </button>
+  )
+  return(<>
+    <style>{`
+      .pwx-wrap{--ink:#0d0b14;--paper:#fdf6e3;--red:#e8322a;--yel:#ffd23f;--org:#ff8a3d;--grn:#27c46b;
+        font-family:"Comic Neue","Comic Sans MS",system-ui,sans-serif;color:var(--ink);margin:-28px -24px -20px;position:relative}
+      .pwx-hero{position:relative;height:188px;border-bottom:3px solid var(--ink);overflow:hidden}
+      .pwx-hero>svg.sc{position:absolute;inset:0;width:100%;height:100%}
+      .pwx-veil{position:absolute;left:50%;top:46%;transform:translate(-50%,-58%);z-index:2;filter:drop-shadow(2px 4px 0 rgba(13,11,20,.4))}
+      .pwx-eyebrow{position:absolute;left:12px;top:14px;z-index:3;font-family:"AntonLC","Anton",system-ui,sans-serif;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink);background:var(--yel);border:2px solid var(--ink);padding:3px 9px;border-radius:5px;box-shadow:2px 2px 0 var(--ink)}
+      .pwx-verdict{position:absolute;left:12px;bottom:10px;z-index:3;font-family:"AntonLC","Anton",system-ui,sans-serif;font-size:12px;color:#fff;border:2.5px solid var(--ink);border-radius:9px;padding:4px 11px;box-shadow:3px 3px 0 var(--ink);transform:rotate(-1.5deg)}
+      .pwx-verdict.ok{background:var(--grn)}.pwx-verdict.mod{background:var(--org)}.pwx-verdict.bad{background:var(--red)}
+      .pwx-season{position:absolute;right:12px;bottom:10px;z-index:3;font-size:10px;font-weight:800;color:#fff;background:rgba(13,11,20,.7);border:2px solid #fff;border-radius:14px;padding:3px 9px;letter-spacing:.3px}
+      .pwx-body{padding:16px 22px 14px}
+      @keyframes pwxChroma{0%{text-shadow:-1.5px 0 rgba(255,0,92,.55),1.6px 0 rgba(0,214,255,.55),2px 2px 0 #fff}100%{text-shadow:-2.6px .5px rgba(255,0,92,.6),2.6px -.5px rgba(0,214,255,.6),2px 2px 0 #fff}}
+      .pwx-title{font-family:"AntonLC","Anton",system-ui,sans-serif;font-size:26px;line-height:1.03;margin:6px 0 8px;color:var(--ink);text-shadow:2px 2px 0 #fff;animation:pwxChroma 1.6s steps(3) infinite alternate}
+      .pwx-title em{font-style:normal;color:var(--red)}
+      .pwx-sub{font-size:13.5px;font-weight:700;color:#0d2330;margin:0 0 15px;line-height:1.35}
+      .pwx-panel{position:relative;display:flex;align-items:center;gap:13px;background:var(--paper);border:2.5px solid var(--ink);border-radius:14px;padding:12px 14px;margin-bottom:11px;box-shadow:4px 4px 0 var(--ink)}
+      .pwx-panel:nth-child(odd){transform:rotate(-.7deg)}.pwx-panel:nth-child(even){transform:rotate(.7deg)}
+      .pwx-panel.gold{background:linear-gradient(180deg,#fff6d6,#ffe9a6)}
+      .pwx-num{flex:0 0 auto;width:38px;text-align:center;font-family:"AntonLC","Anton",system-ui,sans-serif;font-size:30px;line-height:1;color:var(--ink);text-shadow:2px 2px 0 var(--yel)}
+      .pwx-panel.gold .pwx-num{text-shadow:2px 2px 0 var(--org)}
+      .pwx-pc{flex:1;min-width:0}
+      .pwx-kick{display:block;font-size:9.5px;font-weight:800;letter-spacing:.08em;color:#9a5b12;margin-bottom:3px;text-transform:uppercase}
+      .pwx-line{display:block;font-size:14.5px;font-weight:800;color:var(--ink);line-height:1.2}
+      .pwx-meta{display:block;font-size:11.5px;font-weight:700;color:#5a5566;margin-top:3px}
+      .pwx-proof{text-align:center;font-size:11.5px;font-weight:700;color:#0d2330;margin:4px 0 14px;opacity:.85}
+      .pwx-act{margin:2px -22px 0;padding:16px 22px 22px;background:linear-gradient(180deg,rgba(13,11,20,0),rgba(13,11,20,.06) 8%,#0d0b14 26%);border-radius:18px 18px 0 0}
+      .pwx-plans{display:flex;gap:9px;margin-bottom:13px}
+      .pwx-plan{flex:1;border:2.5px solid var(--ink);border-radius:12px;padding:10px 8px;cursor:pointer;position:relative;background:var(--paper);color:var(--ink);box-shadow:2px 2px 0 var(--ink);font-family:inherit;forced-color-adjust:none}
+      .pwx-plan.on{background:linear-gradient(180deg,#ffe07a,var(--yel));box-shadow:0 4px 0 var(--ink)}
+      .pwx-plan b{display:block;font-size:13px;font-weight:800}
+      .pwx-plan .pwx-pr{display:block;font-family:"AntonLC","Anton",system-ui,sans-serif;font-size:19px;margin-top:2px;letter-spacing:.3px}
+      .pwx-plan .pwx-pr small{font-size:11px;font-weight:400;font-family:"Comic Neue",system-ui,sans-serif}
+      .pwx-plan .pwx-eq{display:block;font-size:9px;font-weight:700;color:#7a6a2a;margin-top:1px}
+      .pwx-badge{position:absolute;top:-9px;right:7px;background:var(--red);color:#fff;font-size:9px;font-weight:800;padding:2px 7px;border-radius:100px;border:2px solid var(--ink)}
+      .pwx-cta{display:block;width:100%;border:2.5px solid var(--ink);border-radius:14px;padding:15px 18px;cursor:pointer;font-family:"AntonLC","Anton",system-ui,sans-serif;letter-spacing:.5px;text-transform:uppercase;text-align:center;background:linear-gradient(180deg,#ffe07a,var(--yel));color:var(--ink);box-shadow:0 5px 0 var(--ink),0 11px 20px rgba(13,11,20,.4);transform:rotate(-.8deg);forced-color-adjust:none}
+      .pwx-cta:active{transform:rotate(-.8deg) translateY(4px);box-shadow:0 1px 0 var(--ink)}
+      .pwx-cta .big{display:block;font-size:18px;line-height:1.05}
+      .pwx-cta .sm{display:block;font-family:"Comic Neue",system-ui,sans-serif;font-size:12px;font-weight:700;text-transform:none;opacity:.82;margin-top:4px}
+      .pwx-trust{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:14px}
+      .pwx-tc{background:var(--paper);border:2.5px solid var(--ink);border-radius:11px;padding:9px 6px;text-align:center;box-shadow:2px 2px 0 var(--ink)}
+      .pwx-tc .ic{font-size:17px}.pwx-tc b{display:block;font-size:10.5px;color:var(--ink);margin-top:2px}
+      .pwx-tc em{display:block;font-style:normal;font-size:9px;color:#5a5566;font-weight:700;line-height:1.25;margin-top:1px}
+      .pwx-guar{display:flex;align-items:center;gap:11px;margin-top:13px;padding:11px 13px;border-radius:13px;background:rgba(39,196,107,.18);border:2.5px solid var(--grn);box-shadow:3px 3px 0 var(--ink)}
+      .pwx-guar .gic{font-size:19px}.pwx-guar b{display:block;font-size:12.5px;color:var(--ink)}
+      .pwx-guar em{display:block;font-style:normal;font-size:11px;color:#1f3a28;font-weight:700;margin-top:1px}
+      .pwx-foot{display:block;width:100%;margin-top:11px;background:none;border:none;color:#fff;font-weight:800;font-size:12.5px;text-decoration:underline;cursor:pointer;font-family:inherit;opacity:.9}
+      .pwx-secure{text-align:center;font-size:10px;color:rgba(255,255,255,.7);font-weight:700;margin-top:9px}
+      @media(prefers-reduced-motion:reduce){.pwx-title{animation:none;text-shadow:2px 2px 0 #fff}}
+    `}</style>
+    <div className="pwx-wrap">
+      <div className="pwx-hero">
+        <svg className="sc" viewBox="0 0 430 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs><linearGradient id="pwxSky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#1f6f9e"/><stop offset=".5" stopColor="#5fb6d6"/>
+            <stop offset=".78" stopColor="#ffb267"/><stop offset="1" stopColor="#ff8a3d"/></linearGradient></defs>
+          <rect width="430" height="200" fill="url(#pwxSky)"/>
+          <circle cx="330" cy="120" r="46" fill="#ffe08a" opacity=".5"/>
+          <circle cx="330" cy="120" r="28" fill="#fff2c4"/>
+          <g stroke="#fff" strokeOpacity=".28" strokeWidth="1.6"><line x1="20" y1="36" x2="120" y2="31"/><line x1="14" y1="54" x2="96" y2="50"/></g>
+          <path d="M0 138 H430 V200 H0 Z" fill="#2bb6a6"/>
+          <path d="M0 138 q110 -10 215 0 t215 0 V160 H0 Z" fill="#2bb6a6" opacity=".6"/>
+          <path d="M0 176 Q215 168 430 182 V200 H0 Z" fill="#f3d9a3"/>
+          <path d="M0 176 Q215 168 430 182" fill="none" stroke="#0d0b14" strokeWidth="1.6"/>
+        </svg>
+        <span className="pwx-veil">
+          <svg viewBox="0 0 120 120" width="72" height="72" aria-hidden="true">
+            <g stroke="#0d0b14" strokeWidth="2.5">
+              <rect x="6" y="50" width="20" height="22" rx="2" fill="#27a9e3"/>
+              <rect x="94" y="50" width="20" height="22" rx="2" fill="#27a9e3"/>
+              <line x1="26" y1="61" x2="40" y2="61"/><line x1="94" y1="61" x2="80" y2="61"/>
+            </g>
+            <circle cx="60" cy="62" r="34" fill="#fdf6e3" stroke="#0d0b14" strokeWidth="3"/>
+            <line x1="60" y1="28" x2="60" y2="14" stroke="#0d0b14" strokeWidth="3"/>
+            <circle cx="60" cy="11" r="5" fill="#ffd23f" stroke="#0d0b14" strokeWidth="2.5"/>
+            <circle cx="60" cy="62" r="20" fill="#0d0b14"/>
+            <circle cx="60" cy="62" r="14" fill={iris}/>
+            <circle cx="60" cy="62" r="6" fill="#0d0b14"/>
+            <circle cx="64" cy="58" r="2.5" fill="#fff"/>
+            <path d="M44 40 Q60 34 76 40" fill="none" stroke="#0d0b14" strokeWidth="3" strokeLinecap="round"/>
+            <path d="M50 86 Q60 92 70 86" fill="none" stroke="#0d0b14" strokeWidth="3" strokeLinecap="round"/>
+          </svg>
+        </span>
+        <span className="pwx-eyebrow">{_t(lang,"Le Veilleur · Premium","The Watcher · Premium","El Vigía · Premium")}</span>
+        {ctx&&<span className={"pwx-verdict "+stCls}>{ctx}{ST?" · "+vLbl:""}</span>}
+      </div>
+      <div className="pwx-body">
+        <h2 className="pwx-title">{_t(lang,<>Sois <em>prévenu</em><br/>avant que ta plage tourne</>,<>Know <em>before</em><br/>your beach turns</>,<>Entérate <em>antes</em><br/>de que tu playa cambie</>)}</h2>
+        <p className="pwx-sub">{_t(lang,<>Le gratuit te dit aujourd'hui. Le Veilleur te dit <b>demain</b> — et t'alerte le jour où ça bascule.</>,<>Free tells you today. The Watcher tells you <b>tomorrow</b> — and alerts you the day it flips.</>,<>Lo gratis te dice hoy. El Vigía te dice <b>mañana</b> — y te avisa el día que cambia.</>)}</p>
+
+        {panel("01",true,_t(lang,"Chaque matin · 7h","Every morning · 7am","Cada mañana · 7am"),
+          best?_t(lang,`Ta meilleure plage : ${best}`,`Your best beach: ${best}`,`Tu mejor playa: ${best}`):_t(lang,"Ta meilleure plage du jour","Your best beach today","Tu mejor playa de hoy"),
+          topScore?_t(lang,`Score ${topScore}/100 · vérifié satellite`,`Score ${topScore}/100 · satellite-verified`,`Score ${topScore}/100 · verificado satélite`):_t(lang,"Vérifié au satellite","Satellite-verified","Verificado por satélite"))}
+        {panel("02",false,_t(lang,"Alerte instantanée","Instant alert","Alerta instantánea"),
+          _t(lang,"Ta plage favorite a changé","Your saved beach just changed","Tu playa favorita cambió"),
+          exSwitch?_t(lang,`Propre → Modéré — va plutôt à ${exSwitch}`,`Clean → Moderate — switch to ${exSwitch}`,`Limpia → Moderada — mejor ve a ${exSwitch}`):_t(lang,"Propre → Modéré, on te prévient","Clean → Moderate, you're warned","Limpia → Moderada, te avisamos"))}
+        {panel("03",false,_t(lang,"Le weekend","Weekend forecast","El fin de semana"),
+          wkend?_t(lang,`Samedi : ${wkend.name}`,`Saturday: ${wkend.name}`,`El sábado: ${wkend.name}`):_t(lang,"Samedi : ta meilleure plage","Saturday: your top beach","El sábado: tu mejor playa"),
+          wkend?(wkend.allClean?_t(lang,`Propre tout le weekend${wkend.kids?" · idéal enfants":""}`,`Clean all weekend${wkend.kids?" · great for kids":""}`,`Limpia todo el finde${wkend.kids?" · ideal niños":""}`):_t(lang,"Calculé depuis la prévision 7 jours","From the 7-day forecast","Según el pronóstico de 7 días")):_t(lang,"Calculé depuis la prévision 7 jours","From the 7-day forecast","Según el pronóstico de 7 días"))}
+
+        {totalCount>0&&<div className="pwx-proof">{cleanCount>0
+          ?_t(lang,`${cleanCount}/${totalCount} plages propres en ce moment · satellite 4×/jour`,`${cleanCount}/${totalCount} beaches clean right now · satellite 4×/day`,`${cleanCount}/${totalCount} playas limpias ahora · satélite 4×/día`)
+          :_t(lang,`${totalCount} plages suivies · satellite 4×/jour · prévision 7 jours`,`${totalCount} beaches tracked · satellite 4×/day · 7-day forecast`,`${totalCount} playas · satélite 4×/día · pronóstico 7 días`)}</div>}
+
+        <div className="pwx-act">
+          {hasAnnual&&<div className="pwx-plans">
+            {planBtn("monthly",_t(lang,"Mensuel","Monthly","Mensual"),pMo,_t(lang,"mois","mo","mes"),null,null)}
+            {planBtn("annual",_t(lang,"Annuel","Annual","Anual"),pYr,_t(lang,"an","yr","año"),"-33%",eqMo)}
+          </div>}
+          <button type="button" className="pwx-cta" onClick={onStart}>
+            <span className="big">{_t(lang,"Activer mon Veilleur →","Turn on my Watcher →","Activar mi Vigía →")}</span>
+            <span className="sm">{ctaSub}</span>
+          </button>
+          <div className="pwx-trust">
+            <div className="pwx-tc"><span className="ic">🛡</span><b>Stripe</b><em>{_t(lang,"Paiement sécurisé","Secure payment","Pago seguro")}</em></div>
+            <div className="pwx-tc"><span className="ic">⏱</span><b>{_t(lang,"30 jours","30 days","30 días")}</b><em>{_t(lang,"Satisfait ou remboursé","Money-back","Reembolso")}</em></div>
+            <div className="pwx-tc"><span className="ic">✕</span><b>{_t(lang,"2 clics","2 clicks","2 clics")}</b><em>{_t(lang,"Annule quand tu veux","Cancel anytime","Cancela cuando quieras")}</em></div>
+          </div>
+          <div className="pwx-guar">
+            <span className="gic">🛡️</span>
+            <span><b>{_t(lang,"Garantie 30 jours satisfait ou remboursé","30-day money-back guarantee","Garantía de reembolso 30 días")}</b>
+            <em>{_t(lang,"Pas convaincu ? Un email, remboursé — sans condition.","Not convinced? One email, full refund — no questions.","¿No te convence? Un email, reembolso — sin preguntas.")}</em></span>
+          </div>
+          <button type="button" className="pwx-foot" onClick={onAlready}>{_t(lang,"J'ai déjà un abonnement","I already have a subscription","Ya tengo una suscripción")}</button>
+          <div className="pwx-secure">🔒 {_t(lang,"Paiement sécurisé Stripe · Sans engagement","Secure Stripe payment · No commitment","Pago seguro Stripe · Sin compromiso")}</div>
+        </div>
+      </div>
+    </div>
+  </>)
+}
 function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const LL=T[lang]||T.fr
   // ── Palmarès publié (« sell the track record, not the map ») ──────────────
@@ -6378,6 +6545,30 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   // home, pas un mur sombre A/B-gaté à une minorité) → 85% voient la scène golden-hour,
   // 15% holdout (mur sombre) = filet sécurité-revenu mesurable. ?pwconstel=0 force le holdout.
   const pwConstel=(()=>{try{const q=window.location.search;if(/[?&]pwconstel=1/.test(q))return true;if(/[?&]pwconstel=0/.test(q))return false;return abVariant("pw_constel",["control","constel"],[.15,.85])==="constel"}catch(_){return false}})()
+  // A/B pw_comic — REFONTE PAYWALL « COMIC-BOOK / BD » (PRODUCT.md §6, pivot 19/06).
+  // Tue « le paywall blanc générique » (cards translucides sur vert sombre) : remplace
+  // TOUT le pitch + l'action par une scène golden-hour comic + cases BD paper/ink (mêmes
+  // tokens .lc- que ChasseDetail). Asset validé = design/proto-paywall-comic.html. NE TOUCHE
+  // PAS la logique de paiement : le CTA appelle startCheckout(effectivePlan,"comic") inchangé,
+  // l'overlay payStep on-site (rendu hors panel) reste monté. Override ?pwcomic=1/0. 50/50 =
+  // holdout sécurité-revenu mesurable (modal→CTA) tant que le rendu live n'est pas confirmé.
+  const pwComic=(()=>{try{const q=window.location.search;if(/[?&]pwcomic=1/.test(q))return true;if(/[?&]pwcomic=0/.test(q))return false;return abVariant("pw_comic",["control","comic"],[.5,.5])==="comic"}catch(_){return false}})()
+  // Vérif d'abo existant (PWA installée après paiement) — extraite en callback pour
+  // que les deux skins (comic + classique) la partagent sans dupliquer la logique.
+  const verifyExistingSub=useCallback(()=>{
+    track("sg_premium_already_click",{source:source||"unknown"})
+    const em=prompt(_t(lang,"Entre l'email utilisé pour ton abonnement :","Enter the email used for your subscription:","Introduce el email usado para tu suscripción:"))
+    if(!em||!em.includes("@"))return
+    fetch("/api/create-checkout.php",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({action:"verify_subscription",email:em})}).then(r=>r.json()).then(d=>{
+      if(d.active){localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",em)
+        if(d.trialEnd)localStorage.setItem("sg_premium_trial_end",String(d.trialEnd))
+        track("sg_premium_already_success",{source:source||"unknown"});onActivated?.();onClose()}
+      else{track("sg_premium_already_failed",{reason:d.reason||d.error||"inactive"})
+        alert(_t(lang,"Aucun abonnement actif trouvé pour cet email. Vérifie l'adresse ou contacte "+SUPPORT_EMAIL+".","No active subscription found for this email. Check the address or contact "+SUPPORT_EMAIL+".","No se encontró ninguna suscripción activa para este email. Verifica la dirección o contacta "+SUPPORT_EMAIL+"."))}
+    }).catch(e=>{track("sg_premium_already_failed",{reason:e?.message||"network"})
+      alert(_t(lang,"Connexion impossible. Réessaie dans un instant.","Connection issue. Try again in a moment.","No hay conexión. Inténtalo de nuevo en un momento."))})
+  },[lang,source,onActivated,onClose])
   // A/B pw_pass : storefront « paie à l'usage » (passes one-time) en tête du paywall. ?pwpass=1/0.
   // EUR UNIQUEMENT : PassOffer n'a qu'un catalogue mq/gp (cents EUR) + liens buy.stripe.com EUR.
   // Sur les régions USD (florida/rivieramaya/puntacana) il rendrait le mauvais devise + un
@@ -6533,9 +6724,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         // descend à travers tout le modal (ciel → mer profonde → nuit) → la premium
         // est UNE scène continue, pas une feuille sombre. Holdout garde le sombre.
         /* halftone Ben-Day comic (réf Spider-Verse) par-dessus le dégradé — texte intact */
-        background:"radial-gradient(rgba(255,255,255,.05) 1.2px,transparent 1.3px) 0 0/8px 8px,radial-gradient(rgba(255,210,90,.06) 1.2px,transparent 1.3px) 4px 4px/8px 8px,"+(pwConstel?"linear-gradient(180deg,#0B2230 0%,#0E2A26 20%,#08251F 52%,#0A1714 100%)":"linear-gradient(145deg,#0D1E1C,#0A1714)"),
+        background:pwComic
+          ? "radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 0 0/9px 9px,radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 4.5px 4.5px/9px 9px,linear-gradient(170deg,#2bb6ef,#5fc8ef 26%,#ffb36b 68%,#ff8a3d)"
+          : "radial-gradient(rgba(255,255,255,.05) 1.2px,transparent 1.3px) 0 0/8px 8px,radial-gradient(rgba(255,210,90,.06) 1.2px,transparent 1.3px) 4px 4px/8px 8px,"+(pwConstel?"linear-gradient(180deg,#0B2230 0%,#0E2A26 20%,#08251F 52%,#0A1714 100%)":"linear-gradient(145deg,#0D1E1C,#0A1714)"),
         borderRadius:"24px 24px 0 0",padding:"28px 24px 20px",
-        color:"#e6edf3",maxHeight:"85vh",overflow:"auto",
+        color:pwComic?"#0d0b14":"#e6edf3",maxHeight:"85vh",overflow:"auto",
       }}>
         <div className="sheet-handle" style={{background:"rgba(255,255,255,.2)"}}/>
         {/* Close X top-right — resolves Design feedback "no close affordance
@@ -6544,10 +6737,19 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         <button
           aria-label={_t(lang,"Fermer","Close","Cerrar")}
           onClick={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"close_x"});onClose()}}
-          style={{position:"absolute",top:14,right:14,width:30,height:30,
-            borderRadius:"50%",background:"rgba(255,255,255,.08)",border:"none",
-            color:"rgba(255,255,255,.7)",fontSize:18,cursor:"pointer",lineHeight:1,
-            zIndex:5,fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+          style={{position:"absolute",top:14,right:14,width:pwComic?34:30,height:pwComic?34:30,
+            borderRadius:"50%",background:pwComic?"#ffd23f":"rgba(255,255,255,.08)",border:pwComic?"2.5px solid #0d0b14":"none",
+            color:pwComic?"#0d0b14":"rgba(255,255,255,.7)",fontSize:18,cursor:"pointer",lineHeight:1,fontWeight:pwComic?800:400,
+            boxShadow:pwComic?"2px 2px 0 #0d0b14":"none",forcedColorAdjust:"none",
+            zIndex:6,fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+        {pwComic&&<ComicPaywall lang={lang} beach={beach} source={source}
+          topName={_topName} topScore={_topScore} exSwitch={_exSwitch} wkend={_wkend}
+          ctxName={_ctxName} ctxStatus={_ctxStatus} cleanCount={_cleanCount} totalCount={_totalCount}
+          seasonMsg={seasonMsg} plan={plan} setPlan={setPlan} effectivePlan={effectivePlan} hasAnnual={hasAnnual}
+          onStart={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown",skin:"comic"});startCheckout(effectivePlan,"comic")}}
+          onAlready={verifyExistingSub}
+          onClose={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"comic_close"});onClose()}}/>}
+        {!pwComic&&(<>
         {!scenePay&&<div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
           margin:"-8px -24px 20px",padding:0}}/>}
         {pwPass&&<PassOffer lang={lang} onBuy={(item)=>{try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown",onsite:passOnsite?1:0})}catch(_){}
@@ -7184,6 +7386,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           color:"#8b949e",fontSize:13,cursor:"pointer",fontFamily:"inherit",
         }}>{LL.close}</button>
         </div>{/* end sticky CTA section */}
+        </>)}{/* end !pwComic classic skin */}
       </div>
       {/* Étape paiement ON-SITE — overlay sombre au-dessus du modal (z 1300),
           design maison : email + Apple/Google Pay + Payment Element (carte).

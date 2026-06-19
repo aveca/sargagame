@@ -95,8 +95,11 @@ fond: halftone (radial dots) + dégradé golden-hour (bleu→ambre→orange)
 - [x] Couleurs rareté + paliers + tension du pull (19/06)
 - [ ] **Détail-carte « débouche sur plein de trucs »** : prévision 7j teaser, plages
       voisines, partage — EN COURS.
-- [ ] **Refonte paywall en BD** (reskin du `PremiumModal` au niveau tokens, garder
-      `startCheckout`/`startTripPass`/plans/EUR/source intacts). MOCHE aujourd'hui.
+- [x] **Refonte paywall en BD** (19/06) — `ComicPaywall` derrière A/B `pw_comic` 50/50
+      (override `?pwcomic=1/0`). Scène golden-hour + Veilleur, titre Anton chroma, cases
+      BD paper/ink, toggle + CTA encrés, trust + garantie comic. `startCheckout`/plans/
+      EUR/source **intacts** (overlay payStep hors panel = reste monté). Asset validé :
+      `design/proto-paywall-comic.html`. NEXT : confirmer rendu live (`?pwcomic=1`) → promouvoir défaut.
 - [ ] **Transitions de case BD** entre booster → détail → premium.
 - [ ] Purge des A/B morts (paywall : ~25 flags non concluants à ce trafic).
 - [ ] Mascotte Le Veilleur enrichie (réactions, micro-anim).
