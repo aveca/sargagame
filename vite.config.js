@@ -1230,6 +1230,20 @@ ${isGP ? `  <url><loc>${d}/meteo-sargasses-guadeloupe/</loc><lastmod>${today}</l
             const orphans = beaches.filter(b => !zoneOf(b))
             if (orphans.length) console.warn(`   ⚠ ${orphans.length} plage(s) sans zone côtière:`, orphans.slice(0, 5).map(b => b.commune).join(', '))
           }
+          // Plages que le widget embeddable SAIT rendre (table ALIAS de
+          // public/widget/embed/index.html + options du builder public/widget/index.html).
+          // Sert au touchpoint inbound B2B « widget gratuit » : on ne le pose QUE sur
+          // ces plages (honnêteté — pas de widget proposé pour une plage non couverte).
+          const WIDGET_BEACHES = new Set([
+            // Martinique
+            'plage-des-salines', 'plage-du-diamant', 'pointe-faula', 'grande-anse-d-arlet',
+            'anse-mitan', 'anse-noire', 'anse-madame', 'bourg-de-tartane', 'plage-du-marin',
+            'plage-du-bourg-sainte-anne',
+            // Guadeloupe
+            'plage-de-grande-anse', 'plage-de-malendure', 'plage-de-sainte-anne',
+            'pointe-des-chateaux', 'plage-du-gosier', 'plage-de-la-caravelle',
+            'plage-de-bas-du-fort', 'plage-de-deshaies', 'plage-du-moule', 'plage-du-vieux-fort'
+          ])
           for (const b of beaches) {
             const isMQ = b.island === 'mq'
             const domain = isMQ ? domainMQ : domainGP
@@ -1404,18 +1418,26 @@ ${isGP ? `  <url><loc>${d}/meteo-sargasses-guadeloupe/</loc><lastmod>${today}</l
             // plage déclare sa zone, le hub liste ses plages — GSC indexation).
             const _zone = zoneOf(b)
             const zoneLine = _zone ? `<p>Toutes les plages de ${_zone.shortName} : <a href="/plages/${_zone.slug}/">${_zone.name}</a>.</p>` : ''
+            // Touchpoint inbound B2B discret (1 ligne, noscript SEO uniquement → zéro
+            // impact conversion conso) : capte l'hôtellerie qui nous lit sur la requête
+            // de SA plage. Posé SEULEMENT sur les plages que le widget rend (WIDGET_BEACHES),
+            // lien relatif (reste sur MQ/GP), préremplit le builder via ?beach=<slug>.
+            // Pas le mot « Martinique » (le text-swap GP ne doit pas le toucher, cf. networkLine).
+            const proLine = WIDGET_BEACHES.has(b.slug)
+              ? `<p>Vous gérez un hôtel, une location ou un restaurant près de ${b.name} ? Affichez l'état de cette plage en direct sur votre site avec notre <a href="/widget/?beach=${b.slug}">widget sargasses gratuit</a>.</p>`
+              : ''
             let noscriptBlock
             if (_enrichments[b.slug]) {
               // Keep existing enrichment noscript but prepend image and append extra sections
               const enrichedWithImg = _enrichments[b.slug].noscript.replace('<article>', `<article>${beachImgTag}`)
-              noscriptBlock = enrichedWithImg.replace('</article>', `${extraSections}${zoneLine}${networkLine}</article>`)
+              noscriptBlock = enrichedWithImg.replace('</article>', `${extraSections}${zoneLine}${networkLine}${proLine}</article>`)
             } else {
               const sameCommune = beaches.filter(o => o.commune === b.commune && o.slug !== b.slug)
               const sameIsland = beaches.filter(o => o.island === b.island && o.commune !== b.commune && o.slug !== b.slug)
               const nearby = sameCommune.slice(0, 4)
               if (nearby.length < 4) nearby.push(...sameIsland.slice(0, 4 - nearby.length))
               const nearbyLi = nearby.map(o => `<li><a href="/plages/${o.slug}/">${o.name}</a> — ${o.commune}</li>`).join('')
-              noscriptBlock = `\n    <noscript>\n      <article>\n        <h1>Sargasses à ${b.name} (${b.commune}, ${island})</h1>\n        ${beachImgTag}\n        <p>État des sargasses à ${b.name} en temps réel. Cette plage de ${b.commune} en ${island} est surveillée quotidiennement par satellite.</p>\n        ${extraSections}\n        <h3>Plages à proximité</h3>\n        <ul>${nearbyLi}</ul>\n        <p><a href="/carte-sargasses/">Voir la carte des sargasses</a> · <a href="/alertes/">Alertes sargasses</a> · <a href="/">Accueil Sargasses ${island}</a></p>\n        ${zoneLine}${networkLine}\n      </article>\n    </noscript>`
+              noscriptBlock = `\n    <noscript>\n      <article>\n        <h1>Sargasses à ${b.name} (${b.commune}, ${island})</h1>\n        ${beachImgTag}\n        <p>État des sargasses à ${b.name} en temps réel. Cette plage de ${b.commune} en ${island} est surveillée quotidiennement par satellite.</p>\n        ${extraSections}\n        <h3>Plages à proximité</h3>\n        <ul>${nearbyLi}</ul>\n        <p><a href="/carte-sargasses/">Voir la carte des sargasses</a> · <a href="/alertes/">Alertes sargasses</a> · <a href="/">Accueil Sargasses ${island}</a></p>\n        ${zoneLine}${networkLine}${proLine}\n      </article>\n    </noscript>`
             }
             // ── HERO golden-hour : préfixe le noscript (page JS-off) par une scène
             // SVG inline + bande verdict, AVANT l'<article>. Additif, jamais bloquant :

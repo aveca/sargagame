@@ -152,6 +152,9 @@
       prev.src='/widget/embed/?'+qs();
       code.textContent=snippet();
     }
+    // préremplissage depuis ?beach=<slug> (deep-link discret des pages plage SEO)
+    var preBeach=new URLSearchParams(location.search).get('beach');
+    if(preBeach){for(var i=0;i<b.options.length;i++){if(b.options[i].value===preBeach){b.selectedIndex=i;break;}}}
     [b,l,t,a].forEach(function(e){e.addEventListener('input',update);e.addEventListener('change',update)});
     copy.addEventListener('click',function(){
       navigator.clipboard.writeText(code.textContent).then(function(){
