@@ -13206,12 +13206,17 @@ export default function App(){
         )}
 
         {/* TOP FLOATING — Header pill only. Transparent over map so the full
-            viewport reads as the map. Chrome is capped at 600px centered. */}
+            viewport reads as the map. Chrome is capped at 600px centered.
+            Masqué pendant le paywall premium (ComicPaywall = takeover plein écran
+            type ChasseDetail) : sinon le rail gris MQ/GP fuite AU-DESSUS du panel
+            bottom-sheet (header z700 < backdrop semi-transparent z1005) et casse
+            l'immersion BD au moment exact de la conversion. Réaffiché à la fermeture. */}
         <div style={{
           position:"absolute",top:0,left:0,right:0,zIndex:700,
           padding:`calc(max(12px, env(safe-area-inset-top)) + ${showRecoveryBanner?64:(showPushPrimer?58:0)}px) 16px 0`,
           pointerEvents:"none",
           transition:"padding-top .25s ease",
+          display:showPremium?"none":undefined,
         }}>
           {/* Header chrome follows the same pattern as sg-map-chrome:
               wrapper pe:none so the empty band between pill-items passes
