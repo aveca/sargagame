@@ -6900,8 +6900,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             pw_prelude (ne touche ni au flow ni aux Payment Links).
             Masquée en NO_TRIAL (USD) : il n'y a pas d'essai à raconter. */}
         {PAYWALL_READY&&!NO_TRIAL&&(
-        <div style={{margin:"0 0 14px",padding:"12px 14px",borderRadius:14,
-          background:"rgba(255,255,255,.03)",border:"1px solid rgba(255,255,255,.08)"}}>
+        <div style={{margin:"0 0 14px",padding:"12px 14px",borderRadius:14,forcedColorAdjust:"none",
+          background:"#0c1f1c",border:"2.5px solid #0d0b14",boxShadow:"2px 2px 0 #0d0b14"}}>
           {[
             {k:_t(lang,"Aujourd'hui","Today","Hoy"),v:_t(lang,"reco du jour + alertes débloquées","daily pick + alerts unlocked","tu playa del día + alertas activadas"),gold:true},
             {k:_t(lang,"Jour 5","Day 5","Día 5"),v:_t(lang,"on te prévient par email avant la facturation","heads-up email before you're ever charged","te avisamos por email antes del cobro")},
@@ -7121,8 +7121,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             renversement de risque (#1 levier de conversion quand on retire le
             trial — recherche paywall). Réelle (remboursement Stripe), ton calme. */}
         <div style={{display:"flex",alignItems:"center",gap:10,marginTop:12,
-          padding:"11px 13px",borderRadius:13,background:"rgba(34,197,94,.07)",
-          border:"1px solid rgba(34,197,94,.22)"}}>
+          padding:"11px 13px",borderRadius:13,background:"#0e3a28",forcedColorAdjust:"none",
+          border:"2.5px solid #0d0b14",boxShadow:"2px 2px 0 #0d0b14"}}>
           <span style={{fontSize:18,lineHeight:1,flexShrink:0}}>🛡️</span>
           <div style={{flex:1,minWidth:0}}>
             <div style={{fontSize:12.5,fontWeight:700,color:"#fff",lineHeight:1.25}}>
