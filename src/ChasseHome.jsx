@@ -41,6 +41,23 @@ const VERDICT={
 function vof(status){ return VERDICT[status]||VERDICT.clean }
 const MOOD_COL={calm:"#27c46b",scan:"#ffd23f",alert:"#e8322a"}
 
+/* paliers de complétion du Pokédex → titre + skin d'iris du Veilleur */
+const TIERS=[
+  {n:0,  iris:"#7a6cff", fr:"Promeneur",        en:"Stroller",        es:"Paseante"},
+  {n:5,  iris:"#27c46b", fr:"Apprenti Veilleur",en:"Veilleur Trainee",es:"Aprendiz"},
+  {n:12, iris:"#19b3e6", fr:"Éclaireur",        en:"Scout",           es:"Explorador"},
+  {n:25, iris:"#ffd23f", fr:"Cartographe",      en:"Cartographer",    es:"Cartógrafo"},
+  {n:45, iris:"#ff8a1e", fr:"Maître Veilleur",  en:"Veilleur Master", es:"Maestro"},
+  {n:70, iris:"#ff3da6", fr:"Légende du Lagon", en:"Lagoon Legend",   es:"Leyenda"}
+]
+function tierOf(count){
+  let cur=TIERS[0],nx=null
+  for(const t of TIERS){ if(count>=t.n) cur=t; else { nx=t; break } }
+  const span = nx ? nx.n-cur.n : 1
+  const prog = nx ? Math.max(0,Math.min(1,(count-cur.n)/span)) : 1
+  return {cur,nx,prog}
+}
+
 /* rareté dérivée du score (0-100) */
 function rarity(score){
   const s=+score||0
@@ -278,6 +295,8 @@ export default function ChasseHome(props){
   const dexTotal = useMemo(()=>(pickBeaches||[]).filter(b=>b&&b.id&&b.status&&b.score!=null).length,[pickBeaches])
 
   const dayV = beach ? vof(beach.status) : VERDICT.clean
+  const vedRare = beach ? rarity(beach.score).cls : "r-com"   /* rareté de la vedette (tension du pull) */
+  const tier = useMemo(()=>tierOf(collSet.size),[collSet])
   const dateLbl = useMemo(()=>{
     const d=new Date(), moFR=["JANV.","FÉVR.","MARS","AVR.","MAI","JUIN","JUIL.","AOÛT","SEPT.","OCT.","NOV.","DÉC."]
     return d.getDate()+" "+moFR[d.getMonth()]
@@ -329,7 +348,9 @@ export default function ChasseHome(props){
           </>
         ) : (
           <>
-            <div className="lc-fanwrap">
+            <div className={"lc-fanwrap "+vedRare}>
+              {vedRare==="r-leg"&&<div className="lc-halo" aria-hidden="true"/>}
+              <div className={"lc-flash"+(vedRare==="r-leg"?" leg":"")} aria-hidden="true"/>
               <svg className={`lc-burst s-${dayV.st}`} viewBox="0 0 300 300" aria-hidden="true">
                 {Array.from({length:18}).map((_,i)=>{
                   const a=(i/18)*Math.PI*2, x1=150+Math.cos(a)*70, y1=150+Math.sin(a)*70,
@@ -374,6 +395,14 @@ export default function ChasseHome(props){
         <div className="lc-coll-h">
           <div className="lc-eyebrow">{_t(I18N.collTitle)}</div>
           <div className="lc-coll-sub">{(I18N.collSub[lang]||I18N.collSub.fr)(collSet.size,dexTotal||collList.length)}</div>
+          {/* PALIER : titre du Veilleur + progression vers le rang suivant */}
+          <div className="lc-rank">
+            <span className="lc-rank-badge" style={{background:tier.cur.iris}}>{_t(tier.cur)}</span>
+            <div className="lc-rank-bar"><div className="lc-rank-fill" style={{width:Math.round(tier.prog*100)+"%",background:tier.cur.iris}}/></div>
+            <span className="lc-rank-next">{tier.nx
+              ? _t({fr:(tier.nx.n-collSet.size)+" → "+tier.nx.fr,en:(tier.nx.n-collSet.size)+" → "+tier.nx.en,es:(tier.nx.n-collSet.size)+" → "+tier.nx.es})
+              : _t({fr:"rang max 👑",en:"max rank 👑",es:"rango máx 👑"})}</span>
+          </div>
         </div>
         <div className="lc-grid">
           {collList.map((b,i)=>(
@@ -493,9 +522,12 @@ const CSS=`
   box-shadow:0 6px 0 rgba(13,11,20,.35),0 10px 20px rgba(13,11,20,.4);transform:rotate(var(--rot,-1deg));
   font-family:inherit;display:block;width:100%}
 .lc-card.r-com{background:linear-gradient(135deg,#dfe6ea,#bfcad2 60%,#eef2f4)}
-.lc-card.r-rare{background:linear-gradient(135deg,#bfe3ff,#5fb6e8 55%,#dff2ff)}
-.lc-card.r-epic{background:linear-gradient(135deg,#e9d3ff,#a86fe0 55%,#f3e8ff)}
-.lc-card.r-leg{background:linear-gradient(135deg,#ffe79a,#f6b73c 28%,#fff3c4 52%,#e0962a 74%,#ffe79a)}
+.lc-card.r-rare{background:linear-gradient(135deg,#bfe3ff,#5fb6e8 55%,#dff2ff);
+  box-shadow:0 0 0 2px #2f9fe0 inset,0 6px 0 rgba(13,11,20,.35),0 10px 20px rgba(47,159,224,.4)}
+.lc-card.r-epic{background:linear-gradient(135deg,#e9d3ff,#a86fe0 55%,#f3e8ff);
+  box-shadow:0 0 0 2px #8a4fd0 inset,0 6px 0 rgba(13,11,20,.35),0 10px 22px rgba(138,79,208,.5)}
+.lc-card.r-leg{background:linear-gradient(135deg,#ffe79a,#f6b73c 28%,#fff3c4 52%,#e0962a 74%,#ffe79a);
+  box-shadow:0 0 0 2px #e0962a inset,0 6px 0 rgba(13,11,20,.35),0 10px 26px rgba(246,183,60,.65)}
 .lc-card::after{content:"";position:absolute;inset:0;border-radius:14px;pointer-events:none;
   background:linear-gradient(115deg,transparent 30%,rgba(255,0,170,.28) 42%,rgba(0,200,255,.28) 50%,rgba(120,255,90,.28) 58%,transparent 70%);
   background-size:280% 280%;mix-blend-mode:screen;animation:lc-foil 5s linear infinite}
@@ -527,7 +559,11 @@ const CSS=`
 .lc-illu{position:relative;display:block;height:96px;border-bottom:2.5px solid var(--ink);overflow:hidden}
 .lc-illu svg{position:absolute;inset:0;width:100%;height:100%}
 .lc-rar{position:absolute;left:5px;bottom:4px;font-family:"AntonLC",system-ui,sans-serif;font-size:8px;color:#fff;
-  background:var(--ink);padding:1.5px 6px;border-radius:12px;letter-spacing:.4px}
+  background:var(--ink);padding:1.5px 6px;border-radius:12px;letter-spacing:.4px;border:1.5px solid rgba(255,255,255,.5)}
+.lc-card.r-rare .lc-rar{background:#1f7fc0}
+.lc-card.r-epic .lc-rar{background:#7a3fc0}
+.lc-card.r-leg .lc-rar{background:#c47a12;color:#fff8e0}
+.lc-card.r-leg .lc-ty{background:radial-gradient(circle at 35% 30%,#fff,#ffe08a);box-shadow:0 0 8px rgba(246,183,60,.9)}
 .lc-pow{position:absolute;z-index:3;top:-9px;right:-5px;font-family:"AntonLC",system-ui,sans-serif;font-size:13px;transform:rotate(9deg)}
 .lc-pow b{display:inline-block;border:2.5px solid var(--ink);border-radius:6px;padding:1px 7px;color:#fff;text-shadow:1.5px 1.5px 0 var(--ink)}
 .lc-pow.s-ok b{background:var(--grn)}.lc-pow.s-mod b{background:var(--org)}.lc-pow.s-bad b{background:var(--red)}
@@ -574,6 +610,25 @@ const CSS=`
 .lc-reduce .lc-fancard{animation:none}
 @keyframes lc-fanin{0%{opacity:0;transform:translateX(-50%) translateY(26px) scale(.55) rotate(0)}}
 .lc-fancard .lc-verdictpow{top:-14px;right:-8px}
+/* tension du pull : flash blanc à l'arrivée de la vedette (gros + doré si légendaire) */
+.lc-flash{position:absolute;left:50%;top:42%;width:120%;height:120%;transform:translate(-50%,-50%);pointer-events:none;z-index:4;
+  border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.95),rgba(255,255,255,0) 60%);
+  opacity:0;animation:lc-flash .7s ease-out .5s both}
+.lc-flash.leg{background:radial-gradient(circle,rgba(255,255,255,.98),rgba(255,210,90,.7) 38%,rgba(255,170,30,0) 66%);animation-duration:1s}
+@keyframes lc-flash{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}28%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.5)}}
+.lc-halo{position:absolute;left:50%;top:44%;width:300px;height:300px;transform:translate(-50%,-50%);pointer-events:none;z-index:0;
+  background:conic-gradient(from 0deg,rgba(255,200,60,.55),rgba(255,255,255,0) 22%,rgba(255,200,60,.55) 50%,rgba(255,255,255,0) 72%,rgba(255,200,60,.55));
+  border-radius:50%;animation:lc-spin 7s linear infinite;filter:blur(2px)}
+@keyframes lc-spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+.lc-reduce .lc-flash,.lc-reduce .lc-halo{animation:none;opacity:.25}
+
+/* PALIER de complétion (rang Veilleur + barre) */
+.lc-rank{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
+.lc-rank-badge{font-family:"AntonLC",system-ui,sans-serif;font-size:11px;color:#fff;text-shadow:1.5px 1.5px 0 var(--ink);
+  border:2.5px solid var(--ink);border-radius:8px;padding:3px 9px;box-shadow:2px 2px 0 var(--ink);letter-spacing:.4px;white-space:nowrap}
+.lc-rank-bar{flex:1;min-width:90px;height:11px;background:#fff;border:2.5px solid var(--ink);border-radius:10px;overflow:hidden;box-shadow:2px 2px 0 var(--ink)}
+.lc-rank-fill{height:100%;border-right:2px solid var(--ink);transition:width .6s cubic-bezier(.22,1,.36,1)}
+.lc-rank-next{font:800 10px/1 "Comic Neue",system-ui,sans-serif;color:var(--ink);white-space:nowrap}
 
 /* ---- holo renforcé sur épique / légendaire ---- */
 .lc-root .lc-card.r-epic::after{opacity:1}
