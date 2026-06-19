@@ -11979,11 +11979,9 @@ export default function App(){
   // vs ArchipelView (bounding-box simple, control). 50/50. Override ?map_world=1/0.
   // Additif : control = ArchipelView intact, Leaflet = fallback ?nav=map (jamais touché).
   const mapWorld=useMemo(()=>{try{const q=window.location.search;if(/[?&]map_world=1/.test(q))return"world";if(/[?&]map_world=0/.test(q))return"control";return abVariant("map_world",["control","world"],[.5,.5])}catch(_){return"control"}},[])
-  // A/B `map_warm` : réchauffe la BASE de la carte monde vers le golden-hour (horizon ambré
-  // cohérent home/fiche) vs base teal froide (control). 50/50. Override ?mapwarm=1/0.
-  // Strictement additif : n'agit QUE sur le fond (mer) de WorldMapView ; dots statut, labels,
-  // géo, conversion inchangés. Réversible (un flip). N'affecte que le bras map_world="world".
-  const mapWarm=useMemo(()=>{try{const q=window.location.search;if(/[?&]mapwarm=1/.test(q))return"warm";if(/[?&]mapwarm=0/.test(q))return"control";return abVariant("map_warm",["control","warm"],[.5,.5])}catch(_){return"control"}},[])
+  // Carte monde RÉCHAUFFÉE golden-hour pour TOUS (décision produit 19/06 : un seul
+  // monde comic cohérent, fin de la base teal froide). Override debug ?mapwarm=0.
+  const mapWarm=useMemo(()=>{try{return /[?&]mapwarm=0/.test(window.location.search)?"control":"warm"}catch(_){return"warm"}},[])
   // A/B `pw_beach_dive` : fiche plage « en PLONGÉE » (scène SVG plein écran, 6 stages,
   // Le Veilleur v2, scrub prévision verrouillé J2-7) vs BeachSheet (control intact).
   // pw_beach_dive PROMU 2026-06-19 (GO fondateur) : variante `dive` gagnante +84% @95% (n=416/469, 28j).
