@@ -11822,8 +11822,10 @@ export default function App(){
     try{track("sg_previsions_dismiss",{action})}catch(_){}
   },[])
 
-  // A/B `retro_rpg` : Retro Gameboy UI override
-  const[retroMode]=useState(()=>{try{const q=window.location.search;if(/[?&]retro=1/.test(q))return true;if(/[?&]retro=0/.test(q))return false;return abVariant("retro_rpg",["control","retro"],[.5,.5])==="retro"}catch(_){return false}})
+  // A/B `retro_rpg` : DÉSACTIVÉ (le thème Gameboy beige+scanlines ratait le brief
+  // comic/anime/TCG → gris cassé chez les bucketés). Plus d'auto-bucketing : tout le
+  // monde = control. ?retro=1 reste comme override DEV pour itérer le futur thème.
+  const[retroMode]=useState(()=>{try{return /[?&]retro=1/.test(window.location.search)}catch(_){return false}})
   useEffect(()=>{
     if(retroMode){
       // CSS is bundled via top-level `import "./RetroTheme.css"` (scoped under .theme-retro).

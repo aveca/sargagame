@@ -1,11 +1,32 @@
 {
   "_comment": "SOURCE DE VÉRITÉ unique des releases. Édite UNIQUEMENT ce fichier pour publier une nouveauté à toute la flotte (mq/gp/florida/rivieramaya/puntacana). `current` = id de la release en cours = releases[0].v. `scripts/sync-version.cjs` en dérive public/version.json + le CACHE_NAME de public/sw.js. Le frontend (Journal du Veilleur) montre aux visiteurs qui reviennent toutes les releases dont le v est > à leur sg_rel_seen. Items i18n fr/en/es, honnêtes (jamais de fausse fraîcheur). href optionnel = lien same-origin (n'apparaît que s'il existe sur le domaine courant).",
-  "current": "v206",
+  "current": "v207",
   "releases": [
+    {
+      "v": "v207",
+      "date": "2026-06-19",
+      "title": {
+        "fr": "Affichage",
+        "en": "Display",
+        "es": "Pantalla"
+      },
+      "items": [
+        {
+          "emoji": "🎨",
+          "fr": "Désactivation d'un thème expérimental qui pouvait afficher des lignes grises par-dessus l'app.",
+          "en": "Disabled an experimental theme that could overlay grey lines on the app.",
+          "es": "Desactivado un tema experimental que podía superponer líneas grises en la app."
+        }
+      ]
+    },
     {
       "v": "v206",
       "date": "2026-06-19",
-      "title": { "fr": "Soleil net sur iPhone", "en": "Crisp sun on iPhone", "es": "Sol nítido en iPhone" },
+      "title": {
+        "fr": "Soleil net sur iPhone",
+        "en": "Crisp sun on iPhone",
+        "es": "Sol nítido en iPhone"
+      },
       "items": [
         {
           "emoji": "🌅",
@@ -18,7 +39,11 @@
     {
       "v": "v205",
       "date": "2026-06-19",
-      "title": { "fr": "Soleil net sur iPhone", "en": "Crisp sun on iPhone", "es": "Sol nítido en iPhone" },
+      "title": {
+        "fr": "Soleil net sur iPhone",
+        "en": "Crisp sun on iPhone",
+        "es": "Sol nítido en iPhone"
+      },
       "items": [
         {
           "emoji": "🌅",
@@ -31,7 +56,11 @@
     {
       "v": "v204",
       "date": "2026-06-19",
-      "title": { "fr": "Affichage plus net", "en": "Crisper display", "es": "Pantalla más nítida" },
+      "title": {
+        "fr": "Affichage plus net",
+        "en": "Crisper display",
+        "es": "Pantalla más nítida"
+      },
       "items": [
         {
           "emoji": "🎨",
@@ -44,7 +73,11 @@
     {
       "v": "v203",
       "date": "2026-06-17",
-      "title": { "fr": "Ce qu'on a construit pour toi", "en": "What we built for you", "es": "Lo que construimos para ti" },
+      "title": {
+        "fr": "Ce qu'on a construit pour toi",
+        "en": "What we built for you",
+        "es": "Lo que construimos para ti"
+      },
       "items": [
         {
           "emoji": "🛰️",
