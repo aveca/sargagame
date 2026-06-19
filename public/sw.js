@@ -5,7 +5,7 @@
 // `prebuild`). Publier une release = monter `current` dans release-notes.json :
 // le SW + version.json se bumpent ensemble sur toute la flotte (cf. bug clic
 // plages juin 2026 = bundle figé faute de bump manuel).
-const CACHE_NAME = 'sargasses-v205'
+const CACHE_NAME = 'sargasses-v206'
 const STATIC_ASSETS = ['/', '/index.html', '/manifest.json', '/favicon.svg', '/icon-192.png', '/data/beaches-list.json', '/data/beaches-images.json']
 
 self.addEventListener('install', (e) => {
