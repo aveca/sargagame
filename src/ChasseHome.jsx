@@ -195,6 +195,49 @@ function TCard({beach,lang,onTap,rot=0,collected=true}){
   )
 }
 
+/* DÉTAIL PLAGE « en monde comic » — ouvert au tap d'une carte. Garde le joueur
+   dans l'univers arène (mêmes police/couleurs/Veilleur) au lieu de l'éjecter
+   vers l'app sombre. Le seul handoff = le CTA premium (moment de conversion). */
+function ChasseDetail({beach,lang,onClose,onPremium,onFull,track}){
+  const _t=(o)=>(o&&(o[lang]||o.fr))||""
+  const v=vof(beach.status), r=rarity(beach.score)
+  const sc=beach.score!=null?Math.round(beach.score):null
+  const pw=powers(beach,lang)
+  const head = beach.status==="avoid" ? {fr:"ÉVITE CE MATIN",en:"AVOID THIS MORNING",es:"EVITA HOY"}
+    : beach.status==="moderate" ? {fr:"À SURVEILLER",en:"KEEP AN EYE",es:"A VIGILAR"}
+    : {fr:"BAIGNADE OK",en:"SWIM OK",es:"BAÑO OK"}
+  useEffect(()=>{ try{ document.body.style.overflow="hidden" }catch(_){}; return ()=>{ try{ document.body.style.overflow="" }catch(_){} } },[])
+  return (
+    <div className="lc-detail" role="dialog" aria-label={beach.name}>
+      <button type="button" className="lc-detail-x" onClick={onClose} aria-label="Fermer">✕</button>
+      <div className={`lc-detail-illu s-${v.st}`}>
+        <Illu st={v.st} score={sc||0} uid={(beach.id||"d")+"-dt"}/>
+        <span className="lc-detail-veil"><Veilleur mood={v.mood} size={62}/></span>
+        <span className={`lc-detail-tag s-${v.st}`}>{r.stars} {_t(r.lbl)} · N° {cardNum(beach)}</span>
+      </div>
+      <div className="lc-detail-body">
+        <h2 className="lc-detail-name">{beach.name}</h2>
+        <div className={`lc-detail-head s-${v.st}`}>{_t(head)}</div>
+        <div className="lc-detail-sub">{_t({fr:"Mesuré au satellite ce matin — pas deviné.",en:"Measured by satellite this morning — not guessed.",es:"Medido por satélite — no adivinado."})}</div>
+        <div className="lc-detail-score">
+          <span className="lc-detail-scnum">{sc!=null?sc:"—"}<small>/100</small></span>
+          <span className="lc-hp"><span className={`lc-hpfill s-${v.st}`} style={{width:(sc||0)+"%"}}/></span>
+        </div>
+        <div className="lc-detail-facts">
+          {pw.map(([e,t],i)=><span className="lc-detail-fact" key={i}><b>{e}</b> {t}</span>)}
+          {beach.commune&&<span className="lc-detail-fact">📍 {beach.commune}</span>}
+        </div>
+        <button type="button" className="lc-cta yel" onClick={()=>{ if(track)try{track("sg_chasse_detail_premium",{beach_id:beach.id})}catch(_){}; onPremium&&onPremium("chasse_detail") }}>
+          {_t({fr:"VOIR LES 7 PROCHAINS JOURS →",en:"SEE THE NEXT 7 DAYS →",es:"VER LOS 7 DÍAS →"})}
+        </button>
+        <button type="button" className="lc-detail-full" onClick={onFull}>
+          {_t({fr:"Fiche complète & carte →",en:"Full sheet & map →",es:"Ficha completa y mapa →"})}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 const I18N={
   eyebrow:{fr:"LA CHASSE · EN DIRECT",en:"THE HUNT · LIVE",es:"LA CAZA · EN DIRECTO"},
   guessTitle:{fr:"DEVINE LE VERDICT",en:"GUESS THE VERDICT",es:"ADIVINA EL VEREDICTO"},
@@ -232,6 +275,8 @@ export default function ChasseHome(props){
   const [revealed,setRevealed]=useState(playedToday)   /* carte du jour retournée ? */
   const [outcome,setOutcome]=useState(playedToday?(st.guessOk?"win":"lose"):null)
   const [mood,setMood]=useState(()=> playedToday ? vof(beach?.status).mood : "scan")
+  const [detail,setDetail]=useState(null)   /* plage ouverte en détail (monde comic) */
+  const openDetail=useCallback((b,src)=>{ if(!b)return; if(track)try{track("sg_chasse_card_open",{beach_id:b.id,which:src})}catch(_){}; setDetail(b) },[track])
 
   /* collection : on sème avec la plage du jour + ce qui est déjà collecté */
   const collected = st.collected||[]
@@ -367,8 +412,7 @@ export default function ChasseHome(props){
                         transform:`translateX(calc(-50% + ${fan.x}px)) rotate(${fan.r}deg)`}}>
                       {i===0&&<span className={`lc-pow s-${dayV.st} lc-verdictpow`}><b>{outcome==="win"?_t(I18N.win):_t(I18N.lose)}</b></span>}
                       <TCard beach={b} lang={lang}
-                        onTap={()=>{ if(track)try{track("sg_chasse_card_open",{beach_id:b.id,which:i===0?"day":"pack"})}catch(_){};
-                          i===0 ? (onOpen&&onOpen()) : (collect(b),onOpenBeach&&onOpenBeach(b)) }}/>
+                        onTap={()=>{ if(i!==0) collect(b); openDetail(b,i===0?"day":"pack") }}/>
                     </div>
                   )
                 })}
@@ -381,7 +425,7 @@ export default function ChasseHome(props){
                   : _t({fr:"série à 0 — la vedette était "+_t(dayV),en:"streak reset — the star was "+_t(dayV),es:"racha a 0 — la estrella era "+_t(dayV)})}
               </div>
               <button type="button" className="lc-cta yel"
-                onClick={()=>{ if(track)try{track("sg_chasse_card_open",{beach_id:beach?.id,which:"cta"})}catch(_){}; onOpen&&onOpen() }}>
+                onClick={()=>openDetail(beach,"cta")}>
                 {_t(I18N.openBeach)}
               </button>
               <div className="lc-backnote">{_t(I18N.back)}</div>
@@ -408,7 +452,7 @@ export default function ChasseHome(props){
           {collList.map((b,i)=>(
             <TCard key={b.id} beach={b} lang={lang} rot={(i%2?1:-1)*(0.6+(i%3)*0.4)}
               collected={collSet.has(b.id)}
-              onTap={()=>{ collect(b); if(track)try{track("sg_chasse_card_open",{beach_id:b.id,which:"coll"})}catch(_){}; onOpenBeach&&onOpenBeach(b) }}/>
+              onTap={()=>{ collect(b); openDetail(b,"coll") }}/>
           ))}
         </div>
       </section>
@@ -423,6 +467,11 @@ export default function ChasseHome(props){
         </div>
         <button type="button" className="lc-maplink" onClick={()=>onShowMap&&onShowMap()}>{_t(I18N.mapLink)}</button>
       </section>
+
+      {detail&&<ChasseDetail beach={detail} lang={lang} track={track}
+        onClose={()=>setDetail(null)}
+        onPremium={(src)=>{ onPremium&&onPremium(src||"chasse_detail") }}
+        onFull={()=>{ const b=detail; setDetail(null); onOpenBeach&&onOpenBeach(b) }}/>}
     </div>
   )
 }
@@ -516,6 +565,40 @@ const CSS=`
 .lc-coll-h{text-align:center;margin-bottom:14px}
 .lc-coll-sub{font-size:12px;color:#fff;text-shadow:1px 1px 0 rgba(13,11,20,.5);font-weight:700;margin-top:7px}
 .lc-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+/* PERF : les cartes hors écran ne sont ni peintes ni animées (foil) */
+.lc-grid .lc-card{content-visibility:auto;contain-intrinsic-size:auto 240px}
+
+/* ---- DÉTAIL PLAGE « monde comic » (plein écran, même univers) ---- */
+.lc-detail{position:fixed;inset:0;z-index:1200;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  font-family:"Comic Neue","Comic Sans MS",system-ui,sans-serif;color:var(--ink);
+  background:
+    radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 0 0/9px 9px,
+    linear-gradient(170deg,#2bb6ef,#5fc8ef 28%,#ffb36b 70%,#ff8a3d);
+  animation:lc-detail-in .28s cubic-bezier(.22,1,.36,1) both}
+@keyframes lc-detail-in{0%{opacity:0;transform:translateY(14px)}}
+.lc-reduce .lc-detail{animation:none}
+.lc-detail-x{position:fixed;top:calc(12px + env(safe-area-inset-top));right:12px;z-index:3;width:42px;height:42px;border-radius:50%;
+  border:2.5px solid var(--ink);background:var(--yel);color:var(--ink);font-size:17px;font-weight:800;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.lc-detail-illu{position:relative;height:230px;border-bottom:3px solid var(--ink);overflow:hidden}
+.lc-detail-illu svg{position:absolute;inset:0;width:100%;height:100%}
+.lc-detail-veil{position:absolute;left:50%;top:50%;transform:translate(-50%,-58%);filter:drop-shadow(2px 4px 0 rgba(13,11,20,.4))}
+.lc-detail-tag{position:absolute;left:12px;bottom:10px;font-family:"AntonLC",system-ui,sans-serif;font-size:10px;color:#fff;
+  background:var(--ink);border:2px solid #fff;padding:3px 9px;border-radius:14px;letter-spacing:.5px}
+.lc-detail-body{max-width:520px;margin:0 auto;padding:16px 18px 60px}
+.lc-detail-name{font-family:"AntonLC",system-ui,sans-serif;font-size:30px;line-height:1;margin:6px 0 8px;color:var(--ink);
+  text-shadow:2px 2px 0 #fff;letter-spacing:.3px}
+.lc-detail-head{display:inline-block;font-family:"AntonLC",system-ui,sans-serif;font-size:22px;color:#fff;
+  border:2.5px solid var(--ink);border-radius:9px;padding:5px 12px;box-shadow:3px 3px 0 var(--ink);transform:rotate(-1.5deg)}
+.lc-detail-head.s-ok{background:var(--grn)}.lc-detail-head.s-mod{background:var(--org)}.lc-detail-head.s-bad{background:var(--red)}
+.lc-detail-sub{font-size:13px;font-weight:700;margin:11px 0 14px;color:#0d2330}
+.lc-detail-score{display:flex;align-items:center;gap:11px;margin-bottom:14px}
+.lc-detail-scnum{font-family:"AntonLC",system-ui,sans-serif;font-size:34px;line-height:.9;color:var(--ink);text-shadow:1.5px 1.5px 0 #fff}
+.lc-detail-scnum small{font-size:14px;opacity:.6}
+.lc-detail-score .lc-hp{flex:1;height:14px;border:2.5px solid var(--ink);border-radius:10px;background:#fff;box-shadow:2px 2px 0 var(--ink)}
+.lc-detail-facts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.lc-detail-fact{font-size:13px;font-weight:800;background:#fff;border:2.5px solid var(--ink);border-radius:20px;padding:6px 12px;box-shadow:2px 2px 0 var(--ink)}
+.lc-detail-full{display:block;width:100%;margin-top:12px;background:none;border:none;color:#0d2330;font-weight:800;font-size:13px;
+  text-decoration:underline;cursor:pointer;font-family:inherit}
 
 /* carte TCG (réutilisable) */
 .lc-card{position:relative;border-radius:14px;padding:6px;border:2.5px solid var(--ink);text-align:left;cursor:pointer;
