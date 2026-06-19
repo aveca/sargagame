@@ -29,6 +29,8 @@
     input[type=color]{height:42px;padding:4px;cursor:pointer}
     .prev{background:repeating-conic-gradient(#e9eef2 0 25%,#f6f9fb 0 50%) 0 0/22px 22px;border-radius:14px;padding:22px;min-height:120px;display:flex;align-items:center;justify-content:center}
     .prev iframe{width:100%;max-width:520px;border:0;background:transparent}
+    .credit{margin:4px 0 0;font:12px/1.4 system-ui,sans-serif;color:#888;text-align:right}
+    .credit a{color:#009E8E;text-decoration:none}
     pre{background:#070f16;color:#e6edf2;padding:18px;border-radius:12px;overflow-x:auto;font-size:13.5px;line-height:1.5;margin:14px 0 0;border:1px solid rgba(255,255,255,.06)}
     code{font-family:'JetBrains Mono',ui-monospace,monospace}
     .copy{background:linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%);color:#0a1620;border:none;padding:11px 26px;border-radius:100px;font-weight:700;cursor:pointer;font-size:14px;margin-top:14px;transition:opacity .15s;font-family:inherit}
@@ -104,7 +106,7 @@
           <input type="color" id="a" value="#009E8E">
         </div>
       </div>
-      <div class="prev"><iframe id="prev" title="Aperçu du widget" height="168"></iframe></div>
+      <div class="prev"><div style="width:100%;max-width:520px"><iframe id="prev" title="Aperçu du widget" height="168" style="width:100%;border:0"></iframe><p class="credit" id="prevcredit">Conditions en direct par <a id="prevcreditlink" href="https://sargasses-martinique.com/">Sargasses Martinique</a></p></div></div>
       <pre><code id="code"></code></pre>
       <button class="copy" id="copy">Copier le code</button>
     </div>
@@ -124,7 +126,7 @@
     </div>
 
     <h2>Questions fréquentes</h2>
-    <p><strong>C'est vraiment gratuit ?</strong> Oui, le widget est gratuit et le restera. Il affiche en retour un discret « Sargasses → » qui renvoie à la carte.</p>
+    <p><strong>C'est vraiment gratuit ?</strong> Oui, le widget est gratuit et le restera. En retour, un discret crédit « Conditions par Sargasses » sous le widget renvoie à notre carte — c'est ce lien qui nous permet de le garder gratuit. Vous restez libre de le retirer.</p>
     <p><strong>Ça ralentit mon site ?</strong> Non. C'est une iframe légère, isolée, sans script tiers sur votre page.</p>
     <p><strong>Ma plage n'est pas dans la liste ?</strong> Nous suivons les 20 plages les plus fréquentées des Antilles. Écrivez-nous à <strong>contact@sargasses-martinique.com</strong> pour en ajouter une.</p>
   </main>
@@ -136,9 +138,11 @@
   (function(){
     "use strict";
     var b=document.getElementById('b'),f=document.getElementById('f'),l=document.getElementById('l'),t=document.getElementById('t'),
-        a=document.getElementById('a'),prev=document.getElementById('prev'),code=document.getElementById('code'),copy=document.getElementById('copy');
+        a=document.getElementById('a'),prev=document.getElementById('prev'),code=document.getElementById('code'),copy=document.getElementById('copy'),
+        prevlink=document.getElementById('prevcreditlink');
     function opt(){return b.options[b.selectedIndex]}
     function domain(){return opt().hasAttribute('data-gp')?'sargasses-guadeloupe.com':'sargasses-martinique.com'}
+    function brand(){return opt().hasAttribute('data-gp')?'Guadeloupe':'Martinique'}
     function vh(){return f.value==='compact'?116:168;} // hauteur réelle mesurée (compact = sans la semaine)
     function qs(){
       var p=new URLSearchParams();
@@ -151,12 +155,20 @@
       return p.toString();
     }
     function snippet(){
-      return '<iframe\n  src="https://'+domain()+'/widget/embed/?'+qs()+'"\n  width="100%" height="'+vh()+'" frameborder="0"\n  title="Sargasses — '+opt().textContent.replace(/"/g,'')+'"\n  style="border:0;max-width:520px"\n></iframe>';
+      var d=domain();
+      // Le crédit sous l'iframe = un VRAI lien depuis le site de l'hôtel vers le nôtre
+      // (un lien dans l'iframe ne compte pas comme backlink). Chaque install = un backlink.
+      return '<div style="max-width:520px">\n'
+        +'  <iframe\n    src="https://'+d+'/widget/embed/?'+qs()+'"\n    width="100%" height="'+vh()+'" frameborder="0"\n    title="Sargasses — '+opt().textContent.replace(/"/g,'')+'"\n    style="border:0;width:100%"\n  ></iframe>\n'
+        +'  <p style="margin:4px 0 0;font:12px/1.4 system-ui,sans-serif;color:#888;text-align:right">Conditions en direct par <a href="https://'+d+'/" style="color:#009E8E;text-decoration:none">Sargasses '+brand()+'</a></p>\n'
+        +'</div>';
     }
     function update(){
       // aperçu : iframe relative (même origine que cette page → fonctionne sur MQ et GP)
       prev.src='/widget/embed/?'+qs();
       prev.height=vh();
+      prevlink.href='https://'+domain()+'/';
+      prevlink.textContent='Sargasses '+brand();
       code.textContent=snippet();
     }
     // préremplissage depuis ?beach=<slug> (deep-link discret des pages plage SEO)
