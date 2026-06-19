@@ -125,3 +125,4 @@ experiments/
 _*.mjs
 qa-capture-tmp.cjs
 qa-*.cjs
+_*.cjs
