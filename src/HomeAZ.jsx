@@ -518,7 +518,15 @@ export function initHomeAZ(SR, HOST, opts){
     var rt=hit(evt.target,".raft");
     if(rt && rt.id && rt.id.indexOf("raft")===0){ pickRaft(parseInt(rt.id.replace("raft",""),10)-1,false); return; }
     if(hit(evt.target,"#alertNotif")){ openPremium("scene_alert"); return; }
-    if(c.y>=324 && c.y<=476 && c.x>=0 && c.x<=800){ placeBoom(c.x,c.y,false); }
+    if(c.y>=324 && c.y<=476 && c.x>=0 && c.x<=800){ placeBoom(c.x,c.y,false); return; }
+    // Taps qui tombaient « dans le vide » (ciel / sable) — source #1 de dead-clicks
+    // mesurée par les visiteurs (rapport UX : 2021 sur / MQ, 2451 GP). La scène comic
+    // a l'air entièrement cliquable mais seuls 5 éléments + la bande mer répondaient.
+    // On convertit ces taps perdus en l'action voulue (voir SA plage = CTA principal,
+    // = onOpenHero) au lieu d'un clic mort, et on trace la zone (band) pour que le
+    // prochain rapport UX pointe enfin le hotspot exact (target était vide "").
+    track("sg_scene_tap",{el:"empty",band:c.y<324?"sky":"sand",vy:Math.round(c.y)});
+    onOpenHero();
   },{passive:true});
 
   /* ====================================================================
