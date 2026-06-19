@@ -1,0 +1,112 @@
+<!doctype html><html lang="fr"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Collection — Plages de Martinique (style cartes)</title>
+<style>
+@font-face{font-family:"Anton";src:url("/fonts/anton-1Ptgg87LROyAm3Kz-C8.woff2") format("woff2");font-weight:400;font-display:swap}
+:root{--ink:#0d0b14;--paper:#fdf6e3;--red:#e8322a;--yel:#ffd23f;--blu:#27a9e3;--org:#ff8a3d;--grn:#27c46b;--pur:#7b46d6}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#0d0b14}
+body{font-family:"Comic Neue","Comic Sans MS",system-ui,sans-serif;min-height:100vh;padding:16px 12px 50px;
+  background:
+    radial-gradient(rgba(13,11,20,.16) 1.4px,transparent 1.5px) 0 0/9px 9px,
+    radial-gradient(rgba(13,11,20,.16) 1.4px,transparent 1.5px) 4.5px 4.5px/9px 9px,
+    linear-gradient(170deg,#2bb6ef,#5fc8ef 30%,#ffb36b 66%,#ff8a3d);
+  background-attachment:fixed}
+.hd{text-align:center;color:#fff;margin:6px 0 14px}
+.hd .t{font-family:"Anton";font-size:30px;letter-spacing:.5px;text-shadow:3px 3px 0 var(--ink);transform:rotate(-1.2deg)}
+.hd .s{font-weight:700;font-size:13px;color:var(--ink);background:var(--yel);display:inline-block;
+  border:2.5px solid var(--ink);border-radius:20px;padding:3px 12px;margin-top:8px;box-shadow:3px 3px 0 var(--ink)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;max-width:520px;margin:0 auto}
+
+.card{position:relative;border-radius:14px;padding:6px;border:2.5px solid var(--ink);
+  box-shadow:0 6px 0 rgba(13,11,20,.35),0 10px 20px rgba(13,11,20,.45);transform:rotate(var(--rot,-1deg))}
+.card.r-com{background:linear-gradient(135deg,#dfe6ea,#bfcad2 60%,#eef2f4)}
+.card.r-rare{background:linear-gradient(135deg,#bfe3ff,#5fb6e8 55%,#dff2ff)}
+.card.r-epic{background:linear-gradient(135deg,#e9d3ff,#a86fe0 55%,#f3e8ff)}
+.card.r-leg{background:linear-gradient(135deg,#ffe79a,#f6b73c 28%,#fff3c4 52%,#e0962a 74%,#ffe79a)}
+.card::after{content:"";position:absolute;inset:0;border-radius:14px;pointer-events:none;
+  background:linear-gradient(115deg,transparent 30%,rgba(255,0,170,.28) 42%,rgba(0,200,255,.28) 50%,rgba(120,255,90,.28) 58%,transparent 70%);
+  background-size:280% 280%;mix-blend-mode:screen;animation:foil 5s linear infinite}
+.card.r-com::after{opacity:.35}.card.r-rare::after{opacity:.7}
+@keyframes foil{0%{background-position:0 0}100%{background-position:280% 280%}}
+
+.in{position:relative;z-index:2;border:2px solid var(--ink);border-radius:9px;overflow:hidden;background:var(--paper)}
+.bn{display:flex;align-items:center;gap:5px;padding:5px 7px;border-bottom:2.5px solid var(--ink)}
+.bn.s-ok{background:linear-gradient(90deg,#2bb6a6,#0f7d72)}
+.bn.s-mod{background:linear-gradient(90deg,#f0b73a,#d4912a)}
+.bn.s-bad{background:linear-gradient(90deg,#ff6a4a,#d8351f)}
+.nm{font-family:"Anton";font-size:14px;color:#fff;line-height:1;text-shadow:1.5px 1.5px 0 var(--ink);flex:1;text-transform:uppercase;letter-spacing:.3px}
+.sc{font-family:"Anton";font-size:18px;color:#fff;text-shadow:1.5px 1.5px 0 var(--ink);line-height:1}
+.ty{width:21px;height:21px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font-size:11px;background:radial-gradient(circle at 35% 30%,#bff0ff,var(--blu))}
+.illu{position:relative;height:96px;border-bottom:2.5px solid var(--ink);overflow:hidden}
+.illu svg{position:absolute;inset:0;width:100%;height:100%}
+.rar{position:absolute;left:5px;bottom:4px;font-family:"Anton";font-size:8px;color:#fff;background:var(--ink);
+  padding:1.5px 6px;border-radius:12px;letter-spacing:.4px}
+.pow{position:absolute;z-index:3;top:-9px;right:-5px;font-family:"Anton";font-size:13px;transform:rotate(9deg)}
+.pow b{display:inline-block;border:2.5px solid var(--ink);border-radius:6px;padding:1px 6px;color:#fff;
+  text-shadow:1.5px 1.5px 0 var(--ink)}
+.pow.s-ok b{background:var(--grn)}.pow.s-mod b{background:var(--org)}.pow.s-bad b{background:var(--red)}
+.bd{padding:6px 8px 8px}
+.atk{display:flex;gap:6px;align-items:baseline;padding:3px 0;border-bottom:1px dashed rgba(13,11,20,.35)}
+.atk:last-child{border:none}
+.atkt{font-family:"Anton";font-size:10.5px;text-transform:uppercase;color:var(--ink);flex:1;letter-spacing:.2px}
+.atkv{font-family:"Anton";font-size:13px;color:var(--red);text-shadow:1px 1px 0 var(--ink)}
+.ft{display:flex;justify-content:space-between;font-size:7.5px;color:#7a7488;padding-top:3px;margin-top:2px;border-top:1.5px solid var(--ink)}
+.legend{text-align:center;color:#fff;font-weight:700;font-size:11px;margin-top:18px;text-shadow:1px 1px 0 var(--ink)}
+</style></head>
+<body>
+<div class="hd">
+  <div class="t">★ MA COLLECTION ★</div>
+  <div class="s">PLAGES DE MARTINIQUE · 10 cartes</div>
+</div>
+<div class="grid" id="grid"></div>
+<div class="legend">Chaque plage = une carte. Score du jour = PV. Mesuré au satellite, pas deviné.</div>
+
+<script>
+const BEACHES=[
+ {n:"Anse Mitan",sc:77,st:"ok",ty:"🌊",rar:["★★★★☆","RARE","r-rare"],a1:["Baignade OK","+30"],a2:["Plan B voisin","↺"],no:"PROPRE!",num:"016"},
+ {n:"Les Salines",sc:92,st:"ok",ty:"🌴",rar:["★★★★★","LÉGENDAIRE","r-leg"],a1:["Eau cristalline","+40"],a2:["Sable blanc","★"],no:"PARFAIT!",num:"041"},
+ {n:"Grande Anse",sc:81,st:"ok",ty:"🐢",rar:["★★★★☆","ÉPIQUE","r-epic"],a1:["Houle faible","+22"],a2:["Tortues","♥"],no:"PROPRE!",num:"028"},
+ {n:"Anse Charpentier",sc:34,st:"bad",ty:"⚠️",rar:["★★☆☆☆","COMMUNE","r-com"],a1:["Sargasses+++","-30"],a2:["Odeur H₂S","☠"],no:"BERK!",num:"007"},
+ {n:"Le Diamant",sc:68,st:"mod",ty:"🌬️",rar:["★★★☆☆","RARE","r-rare"],a1:["Vent fort","-10"],a2:["Surveiller","👁"],no:"BOF…",num:"019"},
+ {n:"Anse Dufour",sc:88,st:"ok",ty:"🐠",rar:["★★★★★","LÉGENDAIRE","r-leg"],a1:["Snorkeling","+38"],a2:["Eau calme","≈"],no:"TOP!",num:"012"},
+ {n:"Tartane",sc:59,st:"mod",ty:"🌊",rar:["★★★☆☆","ÉPIQUE","r-epic"],a1:["Houle moyenne","-8"],a2:["Spot surf","🏄"],no:"OK!",num:"033"},
+ {n:"Anse Noire",sc:84,st:"ok",ty:"🖤",rar:["★★★★☆","RARE","r-rare"],a1:["Sable noir","+34"],a2:["Plongée","🤿"],no:"PROPRE!",num:"014"},
+ {n:"Pointe Marin",sc:79,st:"ok",ty:"⛱️",rar:["★★★★☆","RARE","r-rare"],a1:["Familles","+31"],a2:["Peu profond","👶"],no:"PROPRE!",num:"045"},
+ {n:"Anse Trabaud",sc:26,st:"bad",ty:"⚠️",rar:["★☆☆☆☆","COMMUNE","r-com"],a1:["Amas massif","-38"],a2:["À éviter","✕"],no:"NON!",num:"049"},
+];
+function illu(b){
+ const sky=b.st==="bad"?"#7a8a4a":b.st==="mod"?"#3a8f86":"#2bb6a6";
+ return `<svg viewBox="0 0 200 96" preserveAspectRatio="xMidYMid slice">
+  <defs><linearGradient id="g${b.num}" x1="0" y1="0" x2="0" y2="1">
+   <stop offset="0" stop-color="#1f6f9e"/><stop offset=".55" stop-color="#5fb6d6"/>
+   <stop offset=".8" stop-color="#ffb267"/><stop offset="1" stop-color="#ff8a3d"/></linearGradient></defs>
+  <rect width="200" height="96" fill="url(#g${b.num})"/>
+  <circle cx="150" cy="60" r="26" fill="#ffe08a" opacity=".5"/><circle cx="150" cy="60" r="16" fill="#fff2c4"/>
+  <g stroke="#fff" stroke-opacity=".3" stroke-width="1.4"><line x1="10" y1="20" x2="70" y2="17"/><line x1="6" y1="32" x2="56" y2="30"/></g>
+  <path d="M0 64 H200 V96 H0 Z" fill="${sky}"/>
+  <path d="M0 64 q50 -6 100 0 t100 0 V76 H0 Z" fill="#2bb6a6" opacity=".6"/>
+  <path d="M0 84 Q100 78 200 86 V96 H0 Z" fill="#f3d9a3"/>
+  <path d="M0 84 Q100 78 200 86" fill="none" stroke="#0d0b14" stroke-width="1.5"/>
+  <g stroke="#0d0b14" stroke-width="2.5" fill="none" stroke-linecap="round"><path d="M34 92 Q30 70 38 56"/></g>
+  <g fill="#1c7a3a" stroke="#0d0b14" stroke-width="1.4">
+   <path d="M38 56 Q22 49 16 53 Q29 51 38 58Z"/><path d="M38 56 Q56 48 62 52 Q47 51 38 58Z"/>
+   <path d="M38 56 Q31 42 25 41 Q36 48 39 57Z"/><path d="M38 56 Q47 43 55 43 Q41 48 39 57Z"/></g>
+ </svg>`;
+}
+document.getElementById('grid').innerHTML=BEACHES.map((b,i)=>`
+ <div class="card ${b.rar[2]}" style="--rot:${(i%2?1:-1)*(0.6+(i%3)*0.4)}deg">
+  <div class="pow s-${b.st}"><b>${b.no}</b></div>
+  <div class="in">
+   <div class="bn s-${b.st}"><span class="nm">${b.n}</span><span class="sc">${b.sc}</span><span class="ty">${b.ty}</span></div>
+   <div class="illu">${illu(b)}<span class="rar">${b.rar[0]} ${b.rar[1]}</span></div>
+   <div class="bd">
+    <div class="atk"><span class="atkt">${b.a1[0]}</span><span class="atkv">${b.a1[1]}</span></div>
+    <div class="atk"><span class="atkt">${b.a2[0]}</span><span class="atkv">${b.a2[1]}</span></div>
+    <div class="ft"><span>N° ${b.num}</span><span>Copernicus</span></div>
+   </div>
+  </div>
+ </div>`).join('');
+</script>
+</body></html>
