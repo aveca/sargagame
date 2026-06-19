@@ -215,6 +215,18 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
   /* a11y focus : à l'ouverture, le focus entre dans le dialog (bouton fermer) */
   const closeRef=useRef(null)
   useEffect(()=>{ try{ closeRef.current&&closeRef.current.focus() }catch(_){} },[])
+  const [shared,setShared]=useState(false)
+  const share=useCallback(()=>{
+    const url=(typeof window!=="undefined"&&window.location&&window.location.origin)||""
+    const txt=_t({fr:`${beach.name} — ${_t(head)} ce matin. Vérifié au satellite par Le Veilleur 🛰️`,
+                  en:`${beach.name} — ${_t(head)} this morning. Satellite-checked by Le Veilleur 🛰️`,
+                  es:`${beach.name} — ${_t(head)} esta mañana. Verificado por satélite 🛰️`})
+    try{
+      if(navigator.share){ navigator.share({title:"Le Veilleur",text:txt,url}).catch(()=>{}) }
+      else if(navigator.clipboard){ navigator.clipboard.writeText(txt+" "+url); setShared(true); setTimeout(()=>setShared(false),1800) }
+    }catch(_){}
+    if(track)try{track("sg_chasse_share",{beach_id:beach.id})}catch(_){}
+  },[beach,head,track]) // eslint-disable-line
   return (
     <div className="lc-detail" role="dialog" aria-modal="true" aria-label={beach.name}>
       <button type="button" ref={closeRef} className="lc-detail-x" onClick={onClose} aria-label="Fermer">✕</button>
@@ -259,9 +271,14 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
         <button type="button" className="lc-cta yel" onClick={()=>{ if(track)try{track("sg_chasse_detail_premium",{beach_id:beach.id})}catch(_){}; onPremium&&onPremium("chasse_detail") }}>
           {_t({fr:"VOIR LES 7 PROCHAINS JOURS →",en:"SEE THE NEXT 7 DAYS →",es:"VER LOS 7 DÍAS →"})}
         </button>
-        <button type="button" className="lc-detail-full" onClick={onFull}>
-          {_t({fr:"Fiche complète & carte →",en:"Full sheet & map →",es:"Ficha completa y mapa →"})}
-        </button>
+        <div className="lc-detail-actions">
+          <button type="button" className="lc-detail-full" onClick={share}>
+            📣 {shared?_t({fr:"Copié !",en:"Copied!",es:"¡Copiado!"}):_t({fr:"Partager",en:"Share",es:"Compartir"})}
+          </button>
+          <button type="button" className="lc-detail-full" onClick={onFull}>
+            {_t({fr:"Fiche complète →",en:"Full sheet →",es:"Ficha completa →"})}
+          </button>
+        </div>
 
         {rel.length>0&&(
           <div className="lc-detail-rel">
@@ -790,6 +807,8 @@ const CSS=`
 .lc-detail-fact{font-size:13px;font-weight:800;background:#fff;border:2.5px solid var(--ink);border-radius:20px;padding:6px 12px;box-shadow:2px 2px 0 var(--ink)}
 .lc-detail-full{display:block;width:100%;margin-top:12px;background:none;border:none;color:#0d2330;font-weight:800;font-size:13px;
   text-decoration:underline;cursor:pointer;font-family:inherit}
+.lc-detail-actions{display:flex;gap:14px;justify-content:center;margin-top:12px}
+.lc-detail-actions .lc-detail-full{width:auto;margin-top:0}
 /* strip 7 jours (case BD) */
 .lc-detail-fc{margin:4px 0 18px}
 .lc-detail-fc-h{font-family:"AntonLC",system-ui,sans-serif;font-size:13px;letter-spacing:.6px;margin-bottom:7px;color:var(--ink)}
