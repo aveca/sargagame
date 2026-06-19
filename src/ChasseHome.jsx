@@ -477,6 +477,16 @@ export default function ChasseHome(props){
         </div>
       </div>
 
+      {/* ---- CARTE = cœur produit (« carte sargasses ») : accès direct proéminent ---- */}
+      <button type="button" className="lc-gomap" onClick={()=>{ if(track)try{track("sg_chasse_mapcta")}catch(_){}; onShowMap&&onShowMap() }}>
+        <span className="lc-gomap-ic">🗺️</span>
+        <span className="lc-gomap-tx">
+          <b>{_t({fr:"VOIR LA CARTE SARGASSES",en:"SEE THE SARGASSUM MAP",es:"VER EL MAPA DE SARGAZO"})}</b>
+          <small>{(()=>{const ok=(pickBeaches||[]).filter(b=>b&&b.status==="clean").length,tot=(pickBeaches||[]).filter(b=>b&&b.status&&b.score!=null).length;return _t({fr:ok+"/"+tot+" plages propres aujourd'hui · en direct",en:ok+"/"+tot+" clean beaches today · live",es:ok+"/"+tot+" playas limpias hoy · en directo"})})()}</small>
+        </span>
+        <span className="lc-gomap-go">›</span>
+      </button>
+
       {/* ---- CARTE DU JOUR : duel → reveal ---- */}
       <section className="lc-hero">
         <div className="lc-eyebrow lc-center">{revealed?_t(I18N.reveal):_t(I18N.guessTitle)}</div>
@@ -703,6 +713,15 @@ const CSS=`
 .lc-veilwrap{flex:0 0 auto;filter:drop-shadow(2px 2px 0 rgba(13,11,20,.4))}
 .lc-live{flex:1;display:flex;flex-direction:column;gap:4px;align-items:flex-start}
 .lc-date{font-weight:700;font-size:11px;color:#fff;text-shadow:1px 1px 0 rgba(13,11,20,.6)}
+.lc-gomap{display:flex;align-items:center;gap:11px;width:100%;margin:12px 0 2px;cursor:pointer;text-align:left;
+  background:linear-gradient(135deg,#2bb6ef,#1f8fd0);border:3px solid var(--ink);border-radius:15px;padding:11px 13px;
+  box-shadow:0 5px 0 var(--ink),0 11px 20px rgba(13,11,20,.3);font-family:inherit;forced-color-adjust:none}
+.lc-gomap:active{transform:translateY(2px);box-shadow:0 3px 0 var(--ink)}
+.lc-gomap-ic{flex:0 0 auto;font-size:26px;filter:drop-shadow(1px 2px 0 rgba(13,11,20,.5))}
+.lc-gomap-tx{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.1}
+.lc-gomap-tx b{font-family:"AntonLC",system-ui,sans-serif;font-size:16px;color:#fff;text-shadow:2px 2px 0 var(--ink);letter-spacing:.3px}
+.lc-gomap-tx small{font-weight:800;font-size:11.5px;color:#eaf7ff;margin-top:2px}
+.lc-gomap-go{flex:0 0 auto;font-family:"AntonLC",system-ui,sans-serif;font-size:26px;color:var(--ink);background:var(--yel);border:2.5px solid var(--ink);border-radius:9px;width:34px;height:34px;display:grid;place-items:center;box-shadow:2px 2px 0 var(--ink)}
 .lc-streak{flex:0 0 auto;background:var(--paper);border:2.5px solid var(--ink);border-radius:14px;padding:4px 10px;
   box-shadow:3px 3px 0 var(--ink);text-align:center;line-height:1}
 .lc-streak .lc-fire{font-size:15px}
@@ -1028,6 +1047,7 @@ const CSS=`
 .lc-root .lc-card.r-epic{background:linear-gradient(135deg,#e9d3ff,#a86fe0 55%,#f3e8ff)!important}
 .lc-root .lc-card.r-leg{background:linear-gradient(135deg,#ffe79a,#f6b73c 28%,#fff3c4 52%,#e0962a 74%,#ffe79a)!important}
 .lc-root .lc-cta{border-radius:12px!important;box-shadow:4px 4px 0 var(--ink)!important}
+.lc-root .lc-gomap{background:linear-gradient(135deg,#2bb6ef,#1f8fd0)!important;border:3px solid var(--ink)!important;border-radius:15px!important;box-shadow:0 5px 0 var(--ink),0 11px 20px rgba(13,11,20,.3)!important}
 .lc-root .lc-maplink{background:none!important;border:none!important;box-shadow:none!important;
   font-family:inherit!important;border-radius:0!important}
 `
