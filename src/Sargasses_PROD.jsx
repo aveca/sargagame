@@ -11925,6 +11925,11 @@ export default function App(){
   // vs ArchipelView (bounding-box simple, control). 50/50. Override ?map_world=1/0.
   // Additif : control = ArchipelView intact, Leaflet = fallback ?nav=map (jamais touché).
   const mapWorld=useMemo(()=>{try{const q=window.location.search;if(/[?&]map_world=1/.test(q))return"world";if(/[?&]map_world=0/.test(q))return"control";return abVariant("map_world",["control","world"],[.5,.5])}catch(_){return"control"}},[])
+  // A/B `map_warm` : réchauffe la BASE de la carte monde vers le golden-hour (horizon ambré
+  // cohérent home/fiche) vs base teal froide (control). 50/50. Override ?mapwarm=1/0.
+  // Strictement additif : n'agit QUE sur le fond (mer) de WorldMapView ; dots statut, labels,
+  // géo, conversion inchangés. Réversible (un flip). N'affecte que le bras map_world="world".
+  const mapWarm=useMemo(()=>{try{const q=window.location.search;if(/[?&]mapwarm=1/.test(q))return"warm";if(/[?&]mapwarm=0/.test(q))return"control";return abVariant("map_warm",["control","warm"],[.5,.5])}catch(_){return"control"}},[])
   // A/B `pw_beach_dive` : fiche plage « en PLONGÉE » (scène SVG plein écran, 6 stages,
   // Le Veilleur v2, scrub prévision verrouillé J2-7) vs BeachSheet (control intact).
   // 50/50. Override ?beachdive=1/0. Conversion = openPremium UNIQUE (contextualisé plage).
@@ -13153,7 +13158,7 @@ export default function App(){
               <LazyWorldMapView
                 beaches={allBeaches} island={island} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null}
                 lang={lang} onOpenBeach={onBeachClick} onPremium={openPremium}
-                rootMode={navWorld} track={track} initialZone={initialZone}
+                rootMode={navWorld} track={track} initialZone={initialZone} warm={mapWarm==="warm"}
                 onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{source:"map_world"})}}/>
             </Suspense></ErrBound>
           :<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onBeachClick} onSolutions={()=>{setShowSolutions(true);track("sg_archipel_to_solutions",{})}} onPremium={()=>openPremium("archipel")} rootMode={navWorld} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}} initialZone={initialZone}/>
