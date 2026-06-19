@@ -164,6 +164,18 @@ jobs:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         run: node scripts/automation/drip-b2b-email.cjs
 
+      # Adoption widget B2B : un site tiers affiche-t-il le widget ? (ping install
+      # first-party → stats.php). Prévient le fondateur par email au 1er domaine détecté.
+      # Dédoublonné via widget-hosts-seen.json (committé plus bas). schedule-only.
+      - name: Watch widget installs (B2B adoption)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          SG_STATS_KEY_MQ: ${{ secrets.SG_STATS_KEY_MQ }}
+          SG_STATS_KEY_GP: ${{ secrets.SG_STATS_KEY_GP }}
+        run: node scripts/automation/widget-install-watch.cjs --send
+
       # Relance panier abandonné : carte refusée / 3DS non confirmé / abandon.
       # schedule-only (jamais workflow_dispatch — règle retry-spam, cf. weekend).
       # Lit Stripe (sessions non payées + motif d'échec) au runtime → aucun email
@@ -246,7 +258,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json; do
+          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/widget-hosts-seen.json; do
             [ -f "$f" ] && git add "$f"
           done
           if git diff --cached --quiet; then echo "Email state unchanged."; exit 0; fi
