@@ -155,6 +155,8 @@ function Veilleur({mood,size=64}){
       <circle className="lc-iris" cx="60" cy="62" r="14" fill={iris}/>
       <circle cx="60" cy="62" r="6" fill="#0d0b14"/>
       <circle cx="64" cy="58" r="2.5" fill="#fff"/>
+      {/* paupière (clignement comic steppé) */}
+      <rect className="lc-lid" x="39" y="41" width="42" height="22" fill="#fdf6e3"/>
       {/* sourcil + sourire */}
       <path d="M44 40 Q60 34 76 40" fill="none" stroke="#0d0b14" strokeWidth="3" strokeLinecap="round"/>
       <path d="M50 86 Q60 92 70 86" fill="none" stroke="#0d0b14" strokeWidth="3" strokeLinecap="round"/>
@@ -710,6 +712,9 @@ const CSS=`
 .lc-maplink{display:inline-block;margin-top:16px;font-weight:800;font-size:13px;color:#fff;background:none;border:none;
   text-decoration:underline;text-shadow:1px 1px 0 rgba(13,11,20,.5);cursor:pointer}
 .lc-veil .lc-iris{transition:fill .6s ease}
+.lc-veil .lc-lid{transform-box:fill-box;transform-origin:top;transform:scaleY(0);animation:lc-blink 5.4s steps(1,end) infinite}
+@keyframes lc-blink{0%,93%{transform:scaleY(0)}95%,98%{transform:scaleY(1)}100%{transform:scaleY(0)}}
+.lc-reduce .lc-veil .lc-lid{animation:none;transform:scaleY(0)}
 
 /* ---- BOOSTER : pack fermé ---- */
 .lc-pack{position:relative;width:210px;aspect-ratio:5/7;margin:16px auto 0;border-radius:18px;border:3px solid var(--ink);
