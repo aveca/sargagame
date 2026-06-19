@@ -227,6 +227,24 @@ function ChasseDetail({beach,lang,onClose,onPremium,onFull,track}){
           {pw.map(([e,t],i)=><span className="lc-detail-fact" key={i}><b>{e}</b> {t}</span>)}
           {beach.commune&&<span className="lc-detail-fact">📍 {beach.commune}</span>}
         </div>
+
+        {/* 7 PROCHAINS JOURS — aujourd'hui réel, le reste verrouillé (honnête) → premium */}
+        <div className="lc-detail-fc">
+          <div className="lc-detail-fc-h">{_t({fr:"7 PROCHAINS JOURS",en:"NEXT 7 DAYS",es:"PRÓXIMOS 7 DÍAS"})}</div>
+          <div className="lc-detail-fc-row" onClick={()=>{ if(track)try{track("sg_chasse_detail_premium",{beach_id:beach.id,from:"fcstrip"})}catch(_){}; onPremium&&onPremium("chasse_detail_fc") }}>
+            {Array.from({length:7}).map((_,i)=>{
+              const d=new Date(Date.now()+i*864e5)
+              const dl=["D","L","M","M","J","V","S"][d.getDay()]
+              return (
+                <div key={i} className={"lc-fc-cell"+(i===0?` s-${v.st} now`:" lock")}>
+                  <span className="lc-fc-day">{i===0?_t({fr:"Auj",en:"Now",es:"Hoy"}):dl}</span>
+                  <span className="lc-fc-dot">{i===0?(sc!=null?sc:"•"):"🔒"}</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
         <button type="button" className="lc-cta yel" onClick={()=>{ if(track)try{track("sg_chasse_detail_premium",{beach_id:beach.id})}catch(_){}; onPremium&&onPremium("chasse_detail") }}>
           {_t({fr:"VOIR LES 7 PROCHAINS JOURS →",en:"SEE THE NEXT 7 DAYS →",es:"VER LOS 7 DÍAS →"})}
         </button>
@@ -487,6 +505,7 @@ const CSS=`
   background:
     radial-gradient(rgba(13,11,20,.14) 1.4px,transparent 1.5px) 0 0/9px 9px,
     radial-gradient(rgba(13,11,20,.14) 1.4px,transparent 1.5px) 4.5px 4.5px/9px 9px,
+    radial-gradient(rgba(214,0,92,.06) 1.3px,transparent 1.4px) 2px 1px/7px 7px,
     linear-gradient(170deg,#2bb6ef,#5fc8ef 30%,#ffb36b 66%,#ff8a3d);
   padding:14px 12px 60px;-webkit-tap-highlight-color:transparent}
 .lc-root *{box-sizing:border-box}
@@ -575,8 +594,20 @@ const CSS=`
     radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 0 0/9px 9px,
     linear-gradient(170deg,#2bb6ef,#5fc8ef 28%,#ffb36b 70%,#ff8a3d);
   animation:lc-detail-in .28s cubic-bezier(.22,1,.36,1) both}
-@keyframes lc-detail-in{0%{opacity:0;transform:translateY(14px)}}
+@keyframes lc-detail-in{0%{opacity:0;transform:scale(.88) rotate(-1.2deg)}55%{opacity:1}100%{opacity:1;transform:none}}
 .lc-reduce .lc-detail{animation:none}
+
+/* ============================================================
+   FX COMIC-BOOK ANIMÉ « Marvel / Spider-Verse » (réf : clip
+   From The D 2 The LBC). Aberration chromatique + steps() +
+   halftone désaligné + slam de case. Reduced-motion = figé.
+   ============================================================ */
+/* aberration chromatique steppée sur les gros titres encrés */
+@keyframes lc-chroma{
+  0%{text-shadow:-1.5px 0 rgba(255,0,92,.55),1.6px 0 rgba(0,214,255,.55),2px 2px 0 var(--ink)}
+  100%{text-shadow:-2.6px .5px rgba(255,0,92,.6),2.6px -.5px rgba(0,214,255,.6),2px 2px 0 var(--ink)}}
+.lc-detail-name,.lc-pack-lbl{animation:lc-chroma 1.6s steps(3) infinite alternate}
+.lc-reduce .lc-detail-name,.lc-reduce .lc-pack-lbl{animation:none}
 .lc-detail-x{position:fixed;top:calc(12px + env(safe-area-inset-top));right:12px;z-index:3;width:42px;height:42px;border-radius:50%;
   border:2.5px solid var(--ink);background:var(--yel);color:var(--ink);font-size:17px;font-weight:800;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
 .lc-detail-illu{position:relative;height:230px;border-bottom:3px solid var(--ink);overflow:hidden}
@@ -599,6 +630,18 @@ const CSS=`
 .lc-detail-fact{font-size:13px;font-weight:800;background:#fff;border:2.5px solid var(--ink);border-radius:20px;padding:6px 12px;box-shadow:2px 2px 0 var(--ink)}
 .lc-detail-full{display:block;width:100%;margin-top:12px;background:none;border:none;color:#0d2330;font-weight:800;font-size:13px;
   text-decoration:underline;cursor:pointer;font-family:inherit}
+/* strip 7 jours (case BD) */
+.lc-detail-fc{margin:4px 0 18px}
+.lc-detail-fc-h{font-family:"AntonLC",system-ui,sans-serif;font-size:13px;letter-spacing:.6px;margin-bottom:7px;color:var(--ink)}
+.lc-detail-fc-row{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;cursor:pointer}
+.lc-fc-cell{border:2.5px solid var(--ink);border-radius:9px;padding:7px 2px;text-align:center;background:#fff;box-shadow:2px 2px 0 var(--ink);
+  display:flex;flex-direction:column;align-items:center;gap:3px}
+.lc-fc-cell.now.s-ok{background:var(--grn)}.lc-fc-cell.now.s-mod{background:var(--org)}.lc-fc-cell.now.s-bad{background:var(--red)}
+.lc-fc-cell.now{color:#fff}
+.lc-fc-cell.lock{background:repeating-linear-gradient(45deg,#eee 0 5px,#fff 5px 10px)}
+.lc-fc-day{font:800 9px/1 "Comic Neue",system-ui,sans-serif;text-transform:uppercase;opacity:.8}
+.lc-fc-dot{font-family:"AntonLC",system-ui,sans-serif;font-size:14px;line-height:1}
+.lc-fc-cell.lock .lc-fc-dot{font-size:11px;filter:grayscale(1);opacity:.7}
 
 /* carte TCG (réutilisable) */
 .lc-card{position:relative;border-radius:14px;padding:6px;border:2.5px solid var(--ink);text-align:left;cursor:pointer;
