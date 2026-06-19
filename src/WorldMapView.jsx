@@ -391,11 +391,13 @@ export default function WorldMapView({
       // les fonds inline (#FFC72C…) étaient remappés en blanc système → boutons/scène délavés
       // (rapport fondateur 18/06). Justifié : la couleur PORTE le sens (statut vert/ambre/corail).
       forcedColorAdjust:"none",
-      // A/B `map_warm` : variante golden-hour (horizon ambré cohérent home/fiche) — N'affecte
-      // QUE le fond (mer). Le bas reste profond/sombre → contraste dots statut (#22C55E/#E8A800/
-      // #E8522A) + labels préservé. Control = base teal froide (inchangée, ci-dessous).
+      // A/B `map_warm` : variante golden-hour DIRECTIONNELLE — soleil chaud haut-droite →
+      // ombre froide bas-gauche (lumière d'heure dorée crédible, nettement distincte du control
+      // teal plat). N'affecte QUE le fond (mer) ; dots statut (#22C55E/#E8A800/#E8522A) + labels
+      // vivent sur la terre (dégradé propre) → contraste préservé. Bas profond = dots lisibles.
+      // Control = base teal froide (inchangée, ci-dessous).
       background: warm
-        ? "linear-gradient(180deg, rgba(242,176,94,.20) 0%, rgba(201,126,58,.09) 17%, transparent 37%), radial-gradient(122% 72% at 71% -7%, rgba(255,201,108,.38), transparent 56%), linear-gradient(160deg,#1c5a55 0%,#114440 42%,#08271f 78%,#05201a 100%)"
+        ? "radial-gradient(100% 82% at 80% -10%, rgba(255,196,92,.52), rgba(224,130,48,.16) 36%, transparent 62%), radial-gradient(125% 105% at 6% 112%, rgba(4,22,32,.62), transparent 54%), linear-gradient(158deg,#236b57 0%,#134c44 40%,#0a3330 70%,#061f22 100%)"
         : "radial-gradient(130% 70% at 76% 4%, rgba(255,224,160,.16), transparent 48%), linear-gradient(158deg,#1f6157 0%,#114440 44%,#072019 100%)",
     }}>
       <style>{`
