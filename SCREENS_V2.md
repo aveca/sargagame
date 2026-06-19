@@ -52,7 +52,7 @@ l'**alerte** le jour où ta plage bascule. Un seul monde **comic-book animé** (
 - [x] 21 RECHERCHE plages (fait, cf 06)
 - [x] 22 FILTRES statut (fait, cf 06)
 - [ ] 24 FIABILITÉ DU VEILLEUR (jauge track-record honnête)
-- [ ] 25 PARTAGE (share-card comic)
+- [x] 25 PARTAGE (navigator.share + fallback copie, sur le détail — fait)
 - [ ] 27 HORS-LIGNE / envoi
 - [ ] (+ écrans restants de la maquette à transcrire : ~30→40)
 
