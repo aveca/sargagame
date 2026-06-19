@@ -312,6 +312,8 @@ export default function ChasseHome(props){
   const [revealed,setRevealed]=useState(playedToday)   /* carte du jour retournée ? */
   const [outcome,setOutcome]=useState(playedToday?(st.guessOk?"win":"lose"):null)
   const [mood,setMood]=useState(()=> playedToday ? vof(beach?.status).mood : "scan")
+  /* re-sync l'humeur si la plage arrive après le mount sur un jour déjà joué (évite iris faux) */
+  useEffect(()=>{ if(playedToday&&beach) setMood(vof(beach.status).mood) },[beach,playedToday])
   const [detail,setDetail]=useState(null)   /* plage ouverte en détail (monde comic) */
   const openDetail=useCallback((b,src)=>{ if(!b)return; if(track)try{track("sg_chasse_card_open",{beach_id:b.id,which:src})}catch(_){}; setDetail(b) },[track])
 
@@ -374,7 +376,7 @@ export default function ChasseHome(props){
     return (pickBeaches||[]).filter(b=>b&&b.id&&b.status&&b.score!=null)
       .sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,90)
   },[pickBeaches])
-  const dexTotal = useMemo(()=>(pickBeaches||[]).filter(b=>b&&b.id&&b.status&&b.score!=null).length,[pickBeaches])
+  const dexTotal = useMemo(()=>Math.min((pickBeaches||[]).filter(b=>b&&b.id&&b.status&&b.score!=null).length,90),[pickBeaches])
 
   const dayV = beach ? vof(beach.status) : VERDICT.clean
   const vedRare = beach ? rarity(beach.score).cls : "r-com"   /* rareté de la vedette (tension du pull) */
@@ -507,7 +509,7 @@ export default function ChasseHome(props){
 
       {detail&&<ChasseDetail beach={detail} lang={lang} track={track} pool={collList}
         onClose={()=>setDetail(null)}
-        onPremium={(src)=>{ onPremium&&onPremium(src||"chasse_detail") }}
+        onPremium={(src)=>{ setDetail(null); onPremium&&onPremium(src||"chasse_detail") }}
         onRelated={(b)=>{ collect(b); if(track)try{track("sg_chasse_card_open",{beach_id:b.id,which:"related"})}catch(_){}; setDetail(b) }}
         onFull={()=>{ const b=detail; setDetail(null); onOpenBeach&&onOpenBeach(b) }}/>}
     </div>
