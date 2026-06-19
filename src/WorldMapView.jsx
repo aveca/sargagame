@@ -49,7 +49,7 @@ function vantColor(beachList, day){
 const MQ_RELIEF = [[14.79,-61.10,24],[14.74,-61.10,18],[14.70,-61.07,20],[14.52,-61.06,15],[14.47,-60.92,12]]
 
 export default function WorldMapView({
-  beaches, island, updatedAt, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone,
+  beaches, island, updatedAt, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm,
 }){
   const wrapRef    = useRef(null)
   const worldRef   = useRef(null)  // <g id="world"> — transform mis à jour en RAF
@@ -391,7 +391,12 @@ export default function WorldMapView({
       // les fonds inline (#FFC72C…) étaient remappés en blanc système → boutons/scène délavés
       // (rapport fondateur 18/06). Justifié : la couleur PORTE le sens (statut vert/ambre/corail).
       forcedColorAdjust:"none",
-      background:"radial-gradient(130% 70% at 76% 4%, rgba(255,224,160,.16), transparent 48%), linear-gradient(158deg,#1f6157 0%,#114440 44%,#072019 100%)",
+      // A/B `map_warm` : variante golden-hour (horizon ambré cohérent home/fiche) — N'affecte
+      // QUE le fond (mer). Le bas reste profond/sombre → contraste dots statut (#22C55E/#E8A800/
+      // #E8522A) + labels préservé. Control = base teal froide (inchangée, ci-dessous).
+      background: warm
+        ? "linear-gradient(180deg, rgba(242,176,94,.20) 0%, rgba(201,126,58,.09) 17%, transparent 37%), radial-gradient(122% 72% at 71% -7%, rgba(255,201,108,.38), transparent 56%), linear-gradient(160deg,#1c5a55 0%,#114440 42%,#08271f 78%,#05201a 100%)"
+        : "radial-gradient(130% 70% at 76% 4%, rgba(255,224,160,.16), transparent 48%), linear-gradient(158deg,#1f6157 0%,#114440 44%,#072019 100%)",
     }}>
       <style>{`
         @keyframes wmSun{0%,100%{opacity:.9;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
