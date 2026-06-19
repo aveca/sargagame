@@ -140,25 +140,18 @@ export default function WorldMapView({
     c.ty=Math.max(300-600*c.k+m,Math.min(m,c.ty))
   },[])
 
-  const writeCam=useCallback(()=>{
-    const g=worldRef.current; if(!g) return
-    const{tx,ty,k}=camRef.current
-    g.setAttribute("transform",`translate(${tx.toFixed(2)} ${ty.toFixed(2)}) scale(${k.toFixed(4)})`)
+  // Déclutter screen-space : empêche les labels de se chevaucher (noms + verdicts
+  // empilés type « Anse Mitan/Anse Dufour » illisibles). Priorité : plage
+  // sélectionnée > pire statut (avoid>moderate>clean) > nord→sud.
+  // COÛTEUX : lit offsetWidth/Height → force un reflow. On le SORT du chemin chaud
+  // du pan/zoom : writeCam ne fait que repositionner (zéro lecture layout) à chaque
+  // frame, et le déclutter ne tourne qu'AU REPOS (débounce 90ms après le dernier
+  // geste). Sans ça, sur mobile (Safari) le pan saccadait ET les noms clignotaient
+  // frame à frame (recalcul de visibility chaque RAF) → ressenti « carte buggée ».
+  const declutterRef=useRef(0)
+  const declutter=useCallback(()=>{
     const layer=labelLayerRef.current; if(!layer) return
-    const r=wrapRef.current?.getBoundingClientRect(); if(!r) return
-    const s=Math.min(r.width/800,r.height/600)
-    const ox=(r.width-800*s)/2, oy=(r.height-600*s)/2
     const els=layer.querySelectorAll('[data-vx]')
-    els.forEach(el=>{
-      const vx=parseFloat(el.dataset.vx), vy=parseFloat(el.dataset.vy)
-      el.style.left=(ox+(vx*k+tx)*s).toFixed(1)+'px'
-      el.style.top=(oy+(vy*k+ty)*s).toFixed(1)+'px'
-    })
-    // Déclutter screen-space : empêche les labels de se chevaucher (noms + verdicts
-    // empilés type « Anse Mitan/Anse Dufour » illisibles). Priorité : plage
-    // sélectionnée > pire statut (avoid>moderate>clean) > nord→sud. Au zoom, les
-    // positions s'écartent → les labels masqués réapparaissent (recalcul chaque RAF).
-    // visibility (pas display) pour rester mesurable et réversible frame à frame.
     const RANK={avoid:0,moderate:1,clean:2}
     const boxes=[]
     els.forEach(el=>{
@@ -176,6 +169,27 @@ export default function WorldMapView({
       else { bx.el.style.visibility='visible'; kept.push(bx) }
     })
   },[])
+  const scheduleDeclutter=useCallback(()=>{
+    if(declutterRef.current) clearTimeout(declutterRef.current)
+    declutterRef.current=setTimeout(()=>{ declutterRef.current=0; declutter() },90)
+  },[declutter])
+
+  const writeCam=useCallback(()=>{
+    const g=worldRef.current; if(!g) return
+    const{tx,ty,k}=camRef.current
+    g.setAttribute("transform",`translate(${tx.toFixed(2)} ${ty.toFixed(2)}) scale(${k.toFixed(4)})`)
+    const layer=labelLayerRef.current; if(!layer) return
+    const r=wrapRef.current?.getBoundingClientRect(); if(!r) return
+    const s=Math.min(r.width/800,r.height/600)
+    const ox=(r.width-800*s)/2, oy=(r.height-600*s)/2
+    const els=layer.querySelectorAll('[data-vx]')
+    els.forEach(el=>{
+      const vx=parseFloat(el.dataset.vx), vy=parseFloat(el.dataset.vy)
+      el.style.left=(ox+(vx*k+tx)*s).toFixed(1)+'px'
+      el.style.top=(oy+(vy*k+ty)*s).toFixed(1)+'px'
+    })
+    scheduleDeclutter()
+  },[scheduleDeclutter])
 
   const schedule=useCallback(()=>{
     if(rafRef.current) return
@@ -348,6 +362,7 @@ export default function WorldMapView({
     if(animRef.current)  cancelAnimationFrame(animRef.current)
     if(rafRef.current)   cancelAnimationFrame(rafRef.current)
     if(tagTimerRef.current) clearTimeout(tagTimerRef.current)
+    if(declutterRef.current) clearTimeout(declutterRef.current)
   },[])
 
   // ─── SÉLECTION PLAGE ───────────────────────────────────────────────────────

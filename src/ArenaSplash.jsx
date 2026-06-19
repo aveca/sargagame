@@ -4,13 +4,15 @@ import React,{useEffect,useState} from "react";
    Overlay plein cadre affiché brièvement au démarrage à froid (gated par sessionStorage,
    uniquement sur l'entrée app — pas les pages SEO). N'altère ni le moteur ni le paywall.
    Palette : ink #0d0b14, yel #ffd23f, blu #27a9e3, grn #27c46b, paper #fdf6e3. */
-export default function ArenaSplash({onDone,lang="fr"}){
+export default function ArenaSplash({onDone,lang="fr",track}){
   const [leaving,setLeaving]=useState(false);
   useEffect(()=>{
+    // Dénominateur de l'entonnoir première visite (entrées app à froid qui voient le splash).
+    try{ track&&track("sg_arena_splash_view",{}); }catch(_){}
     const t1=setTimeout(()=>setLeaving(true),1500);
     const t2=setTimeout(()=>{ try{onDone&&onDone();}catch(_){} },2050);
     return ()=>{ clearTimeout(t1); clearTimeout(t2); };
-  },[onDone]);
+  },[onDone]);// eslint-disable-line
   const T={
     eyebrow:{fr:"Copernicus Marine · Live",en:"Copernicus Marine · Live",es:"Copernicus Marine · Live"},
     tagline:{fr:"« mesuré au satellite, pas deviné »",en:"« measured by satellite, not guessed »",es:"« medido por satélite, no adivinado »"},

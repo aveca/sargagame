@@ -38,6 +38,8 @@ const lazyWithRetry=imp=>lazy(()=>imp()
 const LazyMapView=lazyWithRetry(()=>import("./MapView"))
 // Accueil A→Z (bras A/B `home_az`) — design validé porté en Shadow DOM.
 const LazyHomeAZ=lazyWithRetry(()=>import("./HomeAZ"))
+// Accueil « LA CHASSE » (bras A/B `arena_loop`) — boucle de jeu TCG comic.
+const LazyChasse=lazyWithRetry(()=>import("./ChasseHome"))
 // Carte SVG monde golden-hour (bras A/B `map_world`) — port proto-map-v2, region-aware.
 const LazyWorldMapView=lazyWithRetry(()=>import("./WorldMapView"))
 // Fiche plage « en PLONGÉE » (bras A/B `pw_beach_dive`) — port proto-plage-plongee,
@@ -11956,6 +11958,12 @@ export default function App(){
   // Verdict) intact. Override ?home_az=1/0. La conversion (openPremium/Stripe/
   // pw_*) reste strictement la même porte. Reduced-motion : HomeAZ a son plancher.
   const[homeAZ]=useState(()=>{try{const q=window.location.search;if(/[?&]home_az=1/.test(q))return true;if(/[?&]home_az=0/.test(q))return false;return abVariant("home_az",["control","az"],[.5,.5])==="az"}catch(_){return false}})
+  // Bras A/B `arena_loop` : accueil « LA CHASSE » (boucle de jeu TCG comic —
+  // carte du jour à deviner/révéler + série 🔥 + collection holographique +
+  // Veilleur réactif). Prioritaire sur le hero quand actif ; ADDITIF, control
+  // (HomeAZ/GameFunnel/HeroVerdict) intact. Override ?chasse=1/0. Conversion
+  // (onOpen/onOpenBeach/onPremium) = mêmes portes que HomeAZ. RM : plancher statique.
+  const[chasse]=useState(()=>{try{const q=window.location.search;if(/[?&]chasse=1/.test(q))return true;if(/[?&]chasse=0/.test(q))return false;return abVariant("arena_loop",["control","chasse"],[.5,.5])==="chasse"}catch(_){return false}})
   // A/B `dock_glass` : pill sombre flottant golden-hour vs dock blanc (control). 50/50.
   // Override ?dock=1/0. Bug fixes (premiumOpen + openPremium source) s'appliquent aux 2 bras.
   const[dockGlass]=useState(()=>{try{const q=window.location.search;if(/[?&]dock=1/.test(q))return true;if(/[?&]dock=0/.test(q))return false;return abVariant("dock_glass",["control","glass"],[.5,.5])==="glass"}catch(_){return false}})
@@ -12677,8 +12685,8 @@ export default function App(){
   return(
     <LangCtx.Provider value={lang}>
       <StyleInjector/>
-      {showSplash&&<ArenaSplash lang={lang} onDone={()=>setShowSplash(false)}/>}
-      {showArenaOnb&&<ArenaOnboarding lang={lang} onDone={finishArenaOnb} onSkip={finishArenaOnb}/>}
+      {showSplash&&<ArenaSplash lang={lang} track={track} onDone={()=>setShowSplash(false)}/>}
+      {showArenaOnb&&<ArenaOnboarding lang={lang} track={track} onDone={finishArenaOnb} onSkip={finishArenaOnb}/>}
       <AbDebug/>
       {/* Mot-clé SEO sr-only — <p> (PAS <h1>) : la scène/route visible fournit déjà
           l'unique <h1> ; deux <h1> = anti-pattern SEO + a11y. Texte reste crawlable. */}
@@ -12750,7 +12758,34 @@ export default function App(){
             header z700 + contrôles MapView z1000 ["Toute l'île"/Caraïbe],
             sous paywall z1100+). La carte charge derrière pendant la
             lecture → plus de "vide bleu nuit" au premier paint. */}
-        {showHero&&heroPick&&(homeAZ?(
+        {showHero&&heroPick&&(chasse?(
+          /* BRAS A/B `arena_loop` — accueil « LA CHASSE » (boucle de jeu TCG).
+             Additif : control = HomeAZ/GameFunnel/HeroVerdict, intact. ?chasse=1/0. */
+          <ErrBound><Suspense fallback={null}>
+          <LazyChasse beach={heroPick} lang={lang} island={island} sargData={sargData} userPos={userPos}
+            pickBeaches={(allBeaches||[]).filter(b=>(IS_NEW_REGION||b.island===island)&&b.status&&b.score!=null)
+              .sort((a,b)=>(b.score||0)-(a.score||0))}
+            track={track}
+            onOpen={()=>{
+              dismissHero("chasse_cta")
+              setSelectedBeach(heroPick)
+              fireWipe(_t(lang,"Score 0-100 · mis à jour 4×/jour","0-100 score · updated 4×/day","Score 0-100 · actualizado 4×/día"))
+              track("sg_beach_open",{beach_id:heroPick.id,status:heroPick.status,source:"chasse"})
+            }}
+            onOpenBeach={b=>{
+              dismissHero("chasse_card")
+              setSelectedBeach(b)
+              fireWipe(_t(lang,"Score 0-100 · mis à jour 4×/jour","0-100 score · updated 4×/day","Score 0-100 · actualizado 4×/día"))
+              track("sg_beach_open",{beach_id:b.id,status:b.status,source:"chasse_coll"})
+            }}
+            onPremium={src=>{dismissHero("chasse_premium");openPremium(src||"chasse")}}
+            onShowMap={()=>{
+              dismissHero("chasse_map")
+              fireWipe(_t(lang,"Chaque pastille = la mesure du matin","Every dot = this morning's measurement","Cada punto = la medición de la mañana"))
+            }}
+            exiting={heroExiting}/>
+          </Suspense></ErrBound>
+        ):homeAZ?(
           /* BRAS A/B `home_az` — accueil A→Z (design validé, Shadow DOM).
              Additif : control = GameFunnel/HeroVerdict, intact. ?home_az=1/0. */
           <ErrBound><Suspense fallback={null}>
