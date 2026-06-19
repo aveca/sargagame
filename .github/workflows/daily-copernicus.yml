@@ -129,17 +129,14 @@ jobs:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: node scripts/automation/fetch-subscribers.cjs
 
-      # Weekend email: schedule-only, Friday 12h UTC (= 8h MQ).
-      # NEVER on workflow_dispatch — retry-on-failure re-triggers via workflow_dispatch
-      # and manual reruns would duplicate sends. To force-send, run email-weekend.cjs
-      # locally with --force, or delete weekend-sent.json and dispatch manually.
-      # Fenêtre 12-13h : les crons GH à :00 subissent régulièrement 20-50 min de
-      # délai de queue — à 12h strict un vendredi chargé sautait le bulletin.
-      # Anti-doublon server-side (Apps Script weekend_email) rend le 13h sûr.
-      - name: Send weekend email bulletin (Friday 12-13h UTC = 8-9h MQ only)
-        if: github.event_name == 'schedule' && steps.check_day.outputs.dow == '5' && (steps.check_day.outputs.hour == '12' || steps.check_day.outputs.hour == '13')
-        continue-on-error: true
-        run: node scripts/automation/email-weekend.cjs
+      # Weekend email « Bulletin du Veilleur » : DÉPLACÉ vers son propre workflow
+      # .github/workflows/weekend-email.yml (cron 0 12 * * 5, SANS gate horaire).
+      # Raison : l'ancienne gate `hour==12||13` ici sautait de façon FIABLE — les
+      # crons à :00 dérivent ~3h sous la charge de queue (le run 12:00 UTC atterrit
+      # à 14:58–15:16), donc hour valait 14/15 et le bulletin n'est plus parti
+      # pendant ~2 mois (figé au 2026-04-17). Le workflow dédié ne se déclenche QUE
+      # le vendredi → la dérive n'a plus d'effet. Anti-doublon : dedup Apps Script
+      # + marqueur weekend-sent.json. NE PAS ré-ajouter d'envoi weekend ici.
 
       - name: Send welcome emails (Resend)
         if: github.event_name == 'schedule'

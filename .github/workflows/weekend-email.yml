@@ -1,0 +1,103 @@
+name: Weekend Email Bulletin
+
+# Le « Bulletin du Veilleur » hebdo — vendredi, à tous les abonnés MQ/GP.
+#
+# POURQUOI UN WORKFLOW DÉDIÉ (2026-06-19) :
+# Le bulletin était un step de daily-copernicus.yml gaté à `hour==12||13` UTC.
+# Mais les crons GitHub à :00 dérivent de façon FIABLE sous la charge de queue :
+# le run du cron 12:00 UTC atterrit en pratique à 14:58–15:16 (mesuré les 12 et
+# 19 juin — aucun run vendredi n'a JAMAIS touché l'heure 12 ou 13). Résultat :
+# `hour` valait 14/15, le step SAUTAIT, et weekend-sent.json est resté figé au
+# 2026-04-17 pendant ~2 mois (59 abonnés privés de leur touch hebdo à plus forte
+# intention). Les crons samedi/dimanche ne pouvaient jamais rattraper (la gate
+# exigeait aussi dow==5).
+#
+# LA CORRECTION : un workflow dédié dont le cron `0 12 * * 5` ne se déclenche QUE
+# le vendredi → il n'a AUCUNE gate horaire. Quelle que soit la dérive (12h, 15h,
+# 16h…), il envoie dès qu'il tourne. La dérive devient sans effet par construction.
+# Anti-doublon (si plusieurs runs qualifient le même vendredi) :
+#   1. dedup server-side Apps Script (type=weekend_email)
+#   2. marqueur local weekend-sent.json (commité ci-dessous, lu au prochain run)
+#   3. le script garde sa propre garde getUTCDay()===5 + lastSent===todayKey.
+
+on:
+  schedule:
+    - cron: '0 12 * * 5'   # vendredi 12:00 UTC (= 8h MQ) ; dérive tolérée, PAS de gate horaire
+  workflow_dispatch:        # envoi manuel de secours (script + dedup empêchent le doublon)
+
+permissions:
+  contents: write
+
+# Deux déclenchements le même vendredi (double-livraison cron rare, ou dispatch
+# manuel pendant que le cron tourne) se sérialisent : le 2e voit le marqueur
+# commité par le 1er et saute. Pas de cancel-in-progress (on ne coupe pas un envoi).
+concurrency:
+  group: weekend-email
+  cancel-in-progress: false
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15   # généreux : l'envoi est rapide ; marge pour la latence Apps Script
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      # Pas de `npm ci` : email-weekend.cjs n'a AUCUNE dépendance npm
+      # (fs/path/https natifs + lib/email-send.cjs pur). Plus rapide, plus robuste.
+
+      # Lit la donnée COMMITÉE (public/api/copernicus/sargassum.json — ≤6h frais
+      # via daily-copernicus 4×/j) + public/data/beaches-list.json. Webhook Apps
+      # Script hardcodé → aucun secret requis. Pas de retry-on-failure ici (donc
+      # workflow_dispatch reste sûr, contrairement à daily-copernicus).
+      - name: Send weekend bulletin (Apps Script → MQ + GP)
+        run: node scripts/automation/email-weekend.cjs
+
+      # Persiste le marqueur anti-doublon. Push via GITHUB_TOKEN → ne re-déclenche
+      # NI daily-copernicus NI ci-tests (règle no-recursion GitHub Actions).
+      # rebase -X theirs : co-existe avec les commits data concurrents de
+      # daily-copernicus. Si le send a été sauté/échoué, le fichier est inchangé
+      # → rien à committer (garde le marqueur honnête).
+      - name: Commit dedup marker (weekend-sent.json)
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add scripts/automation/data/weekend-sent.json
+          if git diff --cached --quiet; then echo "Marqueur inchangé (envoi sauté ou déjà fait aujourd'hui)."; exit 0; fi
+          git commit -m "chore: weekend bulletin sent $(date -u +'%Y-%m-%d')"
+          BRANCH="${GITHUB_REF_NAME:-main}"
+          for i in 1 2 3 4 5; do
+            git fetch origin "$BRANCH"
+            git rebase -X theirs "origin/$BRANCH" || { echo "::warning::rebase échoué ($i/5)"; git rebase --abort || true; sleep 10; continue; }
+            if git push origin "HEAD:$BRANCH"; then echo "push marqueur OK ($i)"; exit 0; fi
+            echo "::warning::push échoué ($i/5), pause 15s"; sleep 15
+          done
+          echo "::warning::push du marqueur weekend-sent.json échoué — dedup server-side Apps Script reste actif"
+
+  # ── Alerte en cas d'échec (parité avec les autres workflows) ──
+  # PAS de retry-on-failure ici : un envoi raté n'est jamais ré-essayé en boucle
+  # (règle anti-spam). Le fondateur reçoit UN email d'alerte, point.
+  notify-failure:
+    needs: send
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm ci
+      - name: Send failure alert email
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          WORKFLOW_NAME: 'Weekend Email Bulletin'
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: node scripts/automation/notify-failure.cjs
