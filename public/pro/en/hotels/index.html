@@ -63,6 +63,8 @@
   .freshpill .pulse{width:7px;height:7px;border-radius:50%;background:#6AC15A;box-shadow:0 0 0 0 rgba(106,193,90,.6);animation:pulse 2.4s ease-out infinite}
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(106,193,90,.55)}70%{box-shadow:0 0 0 7px rgba(106,193,90,0)}100%{box-shadow:0 0 0 0 rgba(106,193,90,0)}}
   @media (prefers-reduced-motion:reduce){.sun,.freshpill .pulse{animation:none}}
+  .perso{display:none;margin-top:18px;background:rgba(255,199,44,.14);border:1px solid rgba(255,199,44,.4);border-radius:var(--sg-r-lg);padding:12px 16px;font-size:14px;font-weight:700;color:#fff}
+  .perso b{color:var(--sg-gold-l)}
 
   /* lang switch */
   .langs{position:absolute;top:18px;left:18px;z-index:4;display:flex;gap:6px;font-family:var(--sg-font-mono);font-size:10px;font-weight:700}
@@ -199,6 +201,7 @@
       <a class="btn btn-ghost" href="https://sargasses-martinique.com/" target="_blank" rel="noopener">See the live forecast</a>
     </div>
     <div class="freshpill"><span class="pulse"></span><span id="fresh">live satellite data</span></div>
+    <div class="perso" id="perso"></div>
   </div>
 </header>
 
@@ -279,7 +282,7 @@
     <div class="magnet-ic">📩</div>
     <div class="magnet-body">
       <p class="sec-eyebrow" style="color:var(--sg-gold)">Free · by email</p>
-      <h2>Get your beach's sargassum brief, every morning.</h2>
+      <h2 id="m-title">Get your beach's sargassum brief, every morning.</h2>
       <p class="sub">Leave your email and we'll send the 7-day forecast and the real state of your beachfront — satellite data, beach by beach. Free, no card, no demo to book — just the data you need.</p>
       <form id="magnet-form" class="magnet-form" novalidate>
         <input type="email" id="m-email" name="email" placeholder="you@hotel.com" required autocomplete="email" aria-label="Work email"/>
@@ -357,6 +360,14 @@
   var STATUS_WORD={clean:'CLEAN',moderate:'MODERATE',avoid:'AVOID'};
   var STATUS_COLOR={clean:'#22C55E',moderate:'#FFC72C',avoid:'#E8522A'};
 
+  // --- Prospect personalization: ?beach=<sarg id> & ?hotel=<name> ---
+  // A rep sends /pro/en/hotels/?beach=diamant&hotel=Hotel%20X → the hotel sees
+  // THEIR beach live + their track-record row highlighted + the form prefilled.
+  var Q=new URLSearchParams(location.search);
+  var QB=(Q.get('beach')||Q.get('b')||'').toLowerCase().trim();
+  var QH=(Q.get('hotel')||'').trim();
+  function prettyBeach(id){return String(id||'').replace(/^gp-/,'').replace(/-/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase()});}
+
   function relTime(iso){
     if(!iso) return '';
     var h=(Date.now()-new Date(iso).getTime())/3.6e6;
@@ -398,6 +409,7 @@
           var tr=document.createElement('tr');
           var td1=document.createElement('td');td1.textContent=b.name;
           var td2=document.createElement('td');td2.className='pct';td2.textContent=b.hitRatePct+'% ('+(b.samples||0)+')';
+          if(QB&&String(b.id).toLowerCase()===QB){tr.style.background='rgba(255,199,44,.14)';td1.style.fontWeight='800';td2.style.color='#FFC72C';}
           tr.appendChild(td1);tr.appendChild(td2);body.appendChild(tr);
         });
         document.getElementById('tr-table').hidden=false;
@@ -413,10 +425,10 @@
   fetch('/api/copernicus/sargassum.json').then(function(r){return r.json()}).then(function(d){
     try{
       var lv=(d.levels||[]);
-      var pick=lv.filter(function(x){return x.status==='clean'})[0]||lv[0];
+      var pick=(QB&&lv.filter(function(x){return String(x.id).toLowerCase()===QB})[0])||lv.filter(function(x){return x.status==='clean'})[0]||lv[0];
       if(!pick) return;
       var col=STATUS_COLOR[pick.status]||'#22C55E';
-      document.getElementById('d-name').textContent=(pick.id||'').replace(/-/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase()});
+      document.getElementById('d-name').textContent=prettyBeach(pick.id);
       var vd=document.getElementById('d-verdict');
       vd.textContent=STATUS_WORD[pick.status]||'CLEAN';vd.style.color=col;
       document.getElementById('d-score').textContent=pick.score!=null?('score '+pick.score+'/100'):'';
@@ -427,11 +439,23 @@
         else{el.setAttribute('stroke',col);}
       });
       document.getElementById('fresh').textContent=relTime(d.updatedAt)||'live satellite data';
+      // Perso banner: shows the demo is framed on the requested beach/hotel
+      if(QB||QH){
+        var pe=document.getElementById('perso');
+        if(pe){
+          pe.textContent='';
+          pe.appendChild(document.createTextNode(QH?('Demo for '+QH+' · '):'Personalized demo · '));
+          var bb=document.createElement('b');bb.textContent=prettyBeach(pick.id)+' live';
+          pe.appendChild(bb);
+          pe.style.display='block';
+        }
+      }
     }catch(e){}
   }).catch(function(){});
 
   // --- B2B lead capture → Apps Script (dedicated source) ---
   var form=document.getElementById('b2b-form');
+  if(QH){var hi=document.getElementById('hotel');if(hi)hi.value=QH;}
   form.addEventListener('submit',function(e){
     e.preventDefault();
     var fd=new FormData(form);
@@ -458,17 +482,23 @@
   // request → enters the drip-b2b sequence that delivers the content) ---
   var mform=document.getElementById('magnet-form');
   if(mform){
+    var mIsland=/^gp-/.test(QB)?'GP':'MQ';
+    var ml=document.getElementById('m-live');
+    if(ml&&mIsland==='GP')ml.href='https://sargasses-guadeloupe.com/';
+    if(QB){var mt2=document.getElementById('m-title');if(mt2)mt2.textContent="Get "+prettyBeach(QB)+"'s sargassum brief, every morning.";}
     mform.addEventListener('submit',function(e){
       e.preventDefault();
       var em=(document.getElementById('m-email').value||'').trim();
       if(!em||em.indexOf('@')<1){document.getElementById('m-email').focus();return;}
       var payload={
-        email:em,island:'MQ',source:'b2b_hotel_request',
-        note:'Lead magnet — free brief',zone:'Martinique',
+        email:em,island:mIsland,source:'b2b_hotel_request',
+        hotel_name:QH||'',beach:QB||'',
+        note:'Lead magnet — free brief'+(QB?(' · beach '+QB):''),
+        zone:mIsland==='GP'?'Guadeloupe':'Martinique',
         capture:'leadmagnet_brief',lang:'en',date:new Date().toISOString()
       };
       fetch(ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)}).catch(function(){});
-      try{if(window.gtag)gtag('event','sg_b2b_leadmagnet',{vertical:'hotels',lang:'en'});}catch(_){}
+      try{if(window.gtag)gtag('event','sg_b2b_leadmagnet',{vertical:'hotels',beach:QB||'',hotel:QH||'',lang:'en'});}catch(_){}
       mform.style.display='none';
       var mtr=document.getElementById('m-trust');if(mtr)mtr.style.display='none';
       var mok=document.getElementById('magnet-ok');mok.style.display='block';
