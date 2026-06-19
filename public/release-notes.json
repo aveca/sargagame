@@ -1,7 +1,20 @@
 {
   "_comment": "SOURCE DE VÉRITÉ unique des releases. Édite UNIQUEMENT ce fichier pour publier une nouveauté à toute la flotte (mq/gp/florida/rivieramaya/puntacana). `current` = id de la release en cours = releases[0].v. `scripts/sync-version.cjs` en dérive public/version.json + le CACHE_NAME de public/sw.js. Le frontend (Journal du Veilleur) montre aux visiteurs qui reviennent toutes les releases dont le v est > à leur sg_rel_seen. Items i18n fr/en/es, honnêtes (jamais de fausse fraîcheur). href optionnel = lien same-origin (n'apparaît que s'il existe sur le domaine courant).",
-  "current": "v204",
+  "current": "v205",
   "releases": [
+    {
+      "v": "v205",
+      "date": "2026-06-19",
+      "title": { "fr": "Soleil net sur iPhone", "en": "Crisp sun on iPhone", "es": "Sol nítido en iPhone" },
+      "items": [
+        {
+          "emoji": "🌅",
+          "fr": "Correctif d'affichage : sur Safari iPhone, le soleil du golden-hour pouvait apparaître en gris — c'est réglé, il s'affiche chaud et net.",
+          "en": "Display fix: on iPhone Safari the golden-hour sun could show up grey — now fixed, it renders warm and crisp.",
+          "es": "Corrección de pantalla: en Safari de iPhone el sol del golden-hour podía verse gris — ya está arreglado, se ve cálido y nítido."
+        }
+      ]
+    },
     {
       "v": "v204",
       "date": "2026-06-19",
