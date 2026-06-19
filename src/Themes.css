@@ -193,8 +193,9 @@ body.theme-soft{
   font-family:"Bricolage Grotesque",system-ui,sans-serif;
 }
 .theme-soft h1,.theme-soft h2,.theme-soft h3,.theme-soft [class*="-title"]{
+  /* PAS de couleur forcée : titres adaptés au fond (sombre sur scènes, encre sur cartes claires).
+     Forcer une couleur cassait le contraste sur les scènes golden-hour. */
   font-family:"Anton","Bricolage Grotesque",sans-serif !important;letter-spacing:.3px;
-  color:#0f3d38 !important;text-shadow:none;
 }
 .theme-soft .sheet,.theme-soft .sg-l-card,
 .theme-soft .gf-card,.theme-soft .gf-panel,.theme-soft .sg-float-panel,.theme-soft .sg-dock-glass{
