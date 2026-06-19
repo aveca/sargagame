@@ -348,6 +348,9 @@ export default function ChasseHome(props){
     setDefiDone(true)
     if(track)try{track("sg_chasse_defi",{correct:ok?1:0})}catch(_){}
   },[defiPair,defiRes,defiDone,track])
+  /* recherche + filtre du Pokédex (écrans v2 #06/#21/#22) — collFiltered défini après collList */
+  const [q,setQ]=useState("")
+  const [filt,setFilt]=useState("all")
   const openDetail=useCallback((b,src)=>{ if(!b)return; if(track)try{track("sg_chasse_card_open",{beach_id:b.id,which:src})}catch(_){}; setDetail(b) },[track])
 
   /* collection : on sème avec la plage du jour + ce qui est déjà collecté */
@@ -410,6 +413,9 @@ export default function ChasseHome(props){
       .sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,90)
   },[pickBeaches])
   const dexTotal = useMemo(()=>Math.min((pickBeaches||[]).filter(b=>b&&b.id&&b.status&&b.score!=null).length,90),[pickBeaches])
+  const collFiltered=useMemo(()=>{ const qq=q.trim().toLowerCase()
+    return collList.filter(b=>(filt==="all"||b.status===filt)&&(!qq||(b.name||"").toLowerCase().includes(qq)))
+  },[collList,q,filt])
 
   const dayV = beach ? vof(beach.status) : VERDICT.clean
   const vedRare = beach ? rarity(beach.score).cls : "r-com"   /* rareté de la vedette (tension du pull) */
@@ -545,13 +551,26 @@ export default function ChasseHome(props){
               : _t({fr:"rang max 👑",en:"max rank 👑",es:"rango máx 👑"})}</span>
           </div>
         </div>
-        <div className="lc-grid">
-          {collList.map((b,i)=>(
-            <TCard key={b.id} beach={b} lang={lang} rot={(i%2?1:-1)*(0.6+(i%3)*0.4)}
-              collected={collSet.has(b.id)}
-              onTap={()=>{ collect(b); openDetail(b,"coll") }}/>
-          ))}
+        <div className="lc-coll-tools">
+          <input className="lc-coll-search" type="search" value={q} onChange={e=>setQ(e.target.value)}
+            placeholder={_t({fr:"Chercher une plage…",en:"Search a beach…",es:"Buscar una playa…"})} aria-label={_t({fr:"Chercher une plage",en:"Search a beach",es:"Buscar una playa"})}/>
+          <div className="lc-coll-chips">
+            {[["all",{fr:"Toutes",en:"All",es:"Todas"}],["clean",VERDICT.clean],["moderate",VERDICT.moderate],["avoid",VERDICT.avoid]].map(([k,lbl])=>(
+              <button key={k} type="button" className={"lc-chip"+(filt===k?" on s-"+(k==="all"?"all":vof(k).st):"")} onClick={()=>setFilt(k)}>{_t(lbl)}</button>
+            ))}
+          </div>
         </div>
+        {collFiltered.length ? (
+          <div className="lc-grid">
+            {collFiltered.map((b,i)=>(
+              <TCard key={b.id} beach={b} lang={lang} rot={(i%2?1:-1)*(0.6+(i%3)*0.4)}
+                collected={collSet.has(b.id)}
+                onTap={()=>{ collect(b); openDetail(b,"coll") }}/>
+            ))}
+          </div>
+        ) : (
+          <p className="lc-sub lc-center">{_t({fr:"Aucune plage ne correspond.",en:"No beach matches.",es:"Ninguna playa coincide."})}</p>
+        )}
       </section>
 
       {/* ---- DÉFI DU JOUR : plus chaud / plus froid (mini-jeu) ---- */}
@@ -709,6 +728,17 @@ const CSS=`
 .lc-coll{max-width:520px;margin:28px auto 0}
 .lc-coll-h{text-align:center;margin-bottom:14px}
 .lc-coll-sub{font-size:12px;color:#fff;text-shadow:1px 1px 0 rgba(13,11,20,.5);font-weight:700;margin-top:7px}
+/* outils Pokédex : recherche + filtres */
+.lc-coll-tools{margin:0 0 13px}
+.lc-coll-search{width:100%;font-family:"Comic Neue",system-ui,sans-serif;font-size:15px;font-weight:700;color:var(--ink);
+  background:#fff;border:2.5px solid var(--ink);border-radius:11px;padding:10px 13px;box-shadow:2px 2px 0 var(--ink);forced-color-adjust:none}
+.lc-coll-search::placeholder{color:#9a93a8}
+.lc-coll-chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+.lc-chip{font-family:"AntonLC",system-ui,sans-serif;font-size:11px;letter-spacing:.4px;color:var(--ink);
+  background:var(--paper);border:2.5px solid var(--ink);border-radius:20px;padding:5px 12px;box-shadow:2px 2px 0 var(--ink);cursor:pointer;forced-color-adjust:none}
+.lc-chip.on{color:#fff}
+.lc-chip.on.s-all{background:var(--ink)}
+.lc-chip.on.s-ok{background:var(--grn)}.lc-chip.on.s-mod{background:var(--org)}.lc-chip.on.s-bad{background:var(--red)}
 .lc-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
 /* PERF : les cartes hors écran ne sont ni peintes ni animées (foil) */
 .lc-grid .lc-card{content-visibility:auto;contain-intrinsic-size:auto 240px}
