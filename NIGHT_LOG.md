@@ -1,5 +1,18 @@
 # NIGHT LOG — build autonome (nuit du 14→15/06/2026)
 
+## ⏱️ SESSION 19/06 (PIVOT PRODUIT « LE VEILLEUR » — monde comic-book animé, autonome)
+**Goal fondateur : trouve LE produit, UX fluide de bout en bout, design comic animé (réf clip Eminem×Snoop « From The D 2 The LBC » + Spider-Verse), en prod. Marre du « scroll satellite » sombre + design flou + boutons blancs + expérience fragmentée.**
+- **DIAGNOSTIC (capture Playwright)** : fragmentation = **39 A/B en parallèle** (aucun parcours unique) ; taper une carte arène **éjectait vers l'app sombre** HeroVerdict ; **cause racine « boutons/cases blancs »** = fonds `rgba(255,255,255,.05)` **translucides** re-mappés en blanc/gris sous forced-colors.
+- **SHIPPÉ EN PROD (5 PR mergées #18→#21, auto-deploy main, domaines 200)** :
+  - Accueil **unique = arène « La Chasse »** par défaut (fin roulette A/B home ; `home_az` off ; `?chasse=0` debug).
+  - **Détail plage in-world** (`ChasseDetail`, `src/ChasseHome.jsx`) : taper une carte → fiche 100% comic (verdict + score + facts + **strip 7 jours** auj-réel/reste-🔒→premium + CTA + « Fiche complète »). Plus d'éjection.
+  - Booster du jour (pull 3 cartes éventail), Pokédex complet, couleurs rareté, paliers Veilleur, tension du pull (flash/halo légendaire).
+  - **FX comic animé** : aberration chromatique steppée (`lc-chroma`/`steps()`), halftone off-register, slam de case. Perf : `content-visibility` sur le dex.
+  - **Paywall** (1er pass sûr) : plan cards → **cases comic** (paper+ink+ombre dure) au lieu de blanc translucide + halftone panneau + CTA comic. Checkout Stripe INTACT.
+  - **`PRODUCT.md`** (north-star produit + design system) + `NEXT_SESSION.md` mis à jour.
+- **PROCHAIN (cf PRODUCT.md §6)** : reskin COMPLET paywall (variants scene/constel/pass + secondaires) en BD ; transitions de case BD entre écrans ; purge A/B morts ; mascotte Veilleur enrichie. ⚠️ Surveiller MRR (arène = 100% accueil maintenant ; `?chasse=0` = rollback instant).
+
+
 ## ⏱️ SESSION 15/06 (loop DESIGN — chaque écran au niveau home) — worktree isolé `sargagame-mw`
 **Verdict fondateur : « j'aime presque rien sauf la home » → l'anti-pattern = laisser un écran SOUS le niveau home. Audit visuel par preview_screenshot (mobile).**
 - **DIAGNOSTIC visuel** : home/monde(Archipel)/carte/fiche(BeachScene v2) = **golden-hour, au bar** ✓ (BeachScene inc 0-7 + reveal + VisitPlan = faits, vérifiés à l'écran). Liste classique `BeachListView` = rendue mais **invisible** (Archipel `navWorld=true` rootMode la recouvre en permanence) → élévation écartée (pas de code invisible). **Le seul écran MAJEUR sous le bar = la PREMIUM par défaut** (mur sombre 3-cartes), car les traitements golden-hour étaient A/B-gatés à des minorités (pw_constel 15%, pw_beat 50%).
