@@ -1,0 +1,454 @@
+/**
+ * ChasseHome — accueil « LA CHASSE » (bras A/B `arena_loop`).
+ *
+ * Boucle de jeu (thème ARENA / TCG comic) montée comme accueil alternatif,
+ * en priorité sur le hero quand le flag est actif. ADDITIF : control =
+ * GameFunnel / HeroVerdict, intact. Override ?chasse=1/0.
+ *
+ * Trois piliers fun, branchés sur les VRAIES portes de conversion (mêmes
+ * hooks que HomeAZ : onOpen / onOpenBeach / onPremium / onShowMap / track) :
+ *   1. CARTE DU JOUR — duel « devine le verdict » → flip reveal holographique
+ *      → le Veilleur réagit (iris calm/scan/alert) → série 🔥 (streak).
+ *   2. MA COLLECTION — chaque plage = une carte TCG (rareté = score), à
+ *      collectionner ; taper une carte ouvre la fiche plage (= conversion).
+ *   3. PRÉVISIONS 7 JOURS — carte verrouillée → premium (onPremium).
+ *
+ * Isolation : tout le CSS est scopé `.lc-` (injecté une fois) ; aucune classe
+ * générique (.card, .btn…) n'est utilisée nue → zéro fuite vers/depuis l'app.
+ * Persistance locale : localStorage `sg_chasse` { streak, best, last, collected[] }.
+ * Reduced-motion : foil + flip + flottement désactivés (plancher statique).
+ */
+import React,{useState,useEffect,useRef,useMemo,useCallback} from "react"
+
+/* ---- persistance locale (série + collection) ---- */
+const LS_KEY="sg_chasse"
+function todayKey(){ const d=new Date(); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate() }
+function yesterdayKey(){ const d=new Date(Date.now()-864e5); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate() }
+function loadState(){
+  try{ const v=JSON.parse(localStorage.getItem(LS_KEY)||"{}");
+    return { streak:+v.streak||0, best:+v.best||0, last:v.last||null, played:v.played||null,
+             guessOk:!!v.guessOk, collected:Array.isArray(v.collected)?v.collected:[] } }
+  catch(_){ return { streak:0, best:0, last:null, played:null, guessOk:false, collected:[] } }
+}
+function saveState(s){ try{ localStorage.setItem(LS_KEY,JSON.stringify(s)) }catch(_){} }
+
+/* ---- mapping statut → verdict / couleur / humeur Veilleur ---- */
+const VERDICT={
+  clean:   {fr:"PROPRE",en:"CLEAN",es:"LIMPIA", st:"ok",  mood:"calm",  no:{fr:"PROPRE!",en:"CLEAN!",es:"LIMPIA!"}},
+  moderate:{fr:"MODÉRÉ",en:"MODERATE",es:"MODERADA", st:"mod", mood:"scan",  no:{fr:"BOF…",en:"MEH…",es:"BAH…"}},
+  avoid:   {fr:"À ÉVITER",en:"AVOID",es:"EVITAR", st:"bad", mood:"alert", no:{fr:"BERK!",en:"YUCK!",es:"PUAJ!"}}
+}
+function vof(status){ return VERDICT[status]||VERDICT.clean }
+const MOOD_COL={calm:"#27c46b",scan:"#ffd23f",alert:"#e8322a"}
+
+/* rareté dérivée du score (0-100) */
+function rarity(score){
+  const s=+score||0
+  if(s>=90) return {cls:"r-leg", lbl:{fr:"LÉGENDAIRE",en:"LEGENDARY",es:"LEGENDARIA"}, stars:"★★★★★"}
+  if(s>=80) return {cls:"r-epic",lbl:{fr:"ÉPIQUE",en:"EPIC",es:"ÉPICA"},           stars:"★★★★☆"}
+  if(s>=65) return {cls:"r-rare",lbl:{fr:"RARE",en:"RARE",es:"RARA"},               stars:"★★★☆☆"}
+  return            {cls:"r-com", lbl:{fr:"COMMUNE",en:"COMMON",es:"COMÚN"},         stars:"★★☆☆☆"}
+}
+
+/* ---- illustration golden-hour (portée de comic-cartes.html, en JSX) ---- */
+function Illu({st,uid}){
+  const sea = st==="bad" ? "#7a8a4a" : st==="mod" ? "#3a8f86" : "#2bb6a6"
+  const gid = "lcg"+uid
+  return (
+    <svg viewBox="0 0 200 96" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs><linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stopColor="#1f6f9e"/><stop offset=".55" stopColor="#5fb6d6"/>
+        <stop offset=".8" stopColor="#ffb267"/><stop offset="1" stopColor="#ff8a3d"/>
+      </linearGradient></defs>
+      <rect width="200" height="96" fill={`url(#${gid})`}/>
+      <circle cx="150" cy="60" r="26" fill="#ffe08a" opacity=".5"/>
+      <circle cx="150" cy="60" r="16" fill="#fff2c4"/>
+      <g stroke="#fff" strokeOpacity=".3" strokeWidth="1.4">
+        <line x1="10" y1="20" x2="70" y2="17"/><line x1="6" y1="32" x2="56" y2="30"/>
+      </g>
+      <path d="M0 64 H200 V96 H0 Z" fill={sea}/>
+      <path d="M0 64 q50 -6 100 0 t100 0 V76 H0 Z" fill="#2bb6a6" opacity=".6"/>
+      <path d="M0 84 Q100 78 200 86 V96 H0 Z" fill="#f3d9a3"/>
+      <path d="M0 84 Q100 78 200 86" fill="none" stroke="#0d0b14" strokeWidth="1.5"/>
+      <g stroke="#0d0b14" strokeWidth="2.5" fill="none" strokeLinecap="round"><path d="M34 92 Q30 70 38 56"/></g>
+      <g fill="#1c7a3a" stroke="#0d0b14" strokeWidth="1.4">
+        <path d="M38 56 Q22 49 16 53 Q29 51 38 58Z"/><path d="M38 56 Q56 48 62 52 Q47 51 38 58Z"/>
+        <path d="M38 56 Q31 42 25 41 Q36 48 39 57Z"/><path d="M38 56 Q47 43 55 43 Q41 48 39 57Z"/>
+      </g>
+      {st==="bad"&&(
+        <g fill="#6b4a26" stroke="#0d0b14" strokeWidth="1" opacity=".9">
+          <ellipse cx="80" cy="80" rx="16" ry="5"/><ellipse cx="120" cy="86" rx="20" ry="6"/>
+          <ellipse cx="150" cy="80" rx="13" ry="4"/>
+        </g>
+      )}
+    </svg>
+  )
+}
+
+/* ---- Le Veilleur (satellite-œil) — iris piloté par l'humeur ---- */
+function Veilleur({mood,size=64}){
+  const iris=MOOD_COL[mood]||MOOD_COL.calm
+  return (
+    <svg className="lc-veil" viewBox="0 0 120 120" width={size} height={size} aria-hidden="true">
+      {/* panneaux solaires */}
+      <g stroke="#0d0b14" strokeWidth="2.5">
+        <rect x="6" y="50" width="20" height="22" rx="2" fill="#27a9e3"/>
+        <rect x="94" y="50" width="20" height="22" rx="2" fill="#27a9e3"/>
+        <line x1="26" y1="61" x2="40" y2="61"/><line x1="94" y1="61" x2="80" y2="61"/>
+      </g>
+      {/* corps */}
+      <circle cx="60" cy="62" r="34" fill="#fdf6e3" stroke="#0d0b14" strokeWidth="3"/>
+      {/* antenne */}
+      <line x1="60" y1="28" x2="60" y2="14" stroke="#0d0b14" strokeWidth="3"/>
+      <circle cx="60" cy="11" r="5" fill="#ffd23f" stroke="#0d0b14" strokeWidth="2.5"/>
+      {/* œil / iris */}
+      <circle cx="60" cy="62" r="20" fill="#0d0b14"/>
+      <circle className="lc-iris" cx="60" cy="62" r="14" fill={iris}/>
+      <circle cx="60" cy="62" r="6" fill="#0d0b14"/>
+      <circle cx="64" cy="58" r="2.5" fill="#fff"/>
+      {/* sourcil + sourire */}
+      <path d="M44 40 Q60 34 76 40" fill="none" stroke="#0d0b14" strokeWidth="3" strokeLinecap="round"/>
+      <path d="M50 86 Q60 92 70 86" fill="none" stroke="#0d0b14" strokeWidth="3" strokeLinecap="round"/>
+    </svg>
+  )
+}
+
+/* ---- carte TCG (face révélée) ---- */
+function TCard({beach,lang,onTap,rot=0,collected=true}){
+  const v=vof(beach.status), r=rarity(beach.score)
+  const uid=beach.id||Math.random().toString(36).slice(2,7)
+  const _t=(o)=>o[lang]||o.fr
+  return (
+    <button type="button" className={`lc-card ${r.cls} ${collected?"":"lc-locked"}`} style={{"--rot":rot+"deg"}}
+      onClick={onTap} aria-label={beach.name}>
+      <span className={`lc-pow s-${v.st}`}><b>{_t(v.no)}</b></span>
+      <span className="lc-in">
+        <span className={`lc-bn s-${v.st}`}>
+          <span className="lc-nm">{beach.name}</span>
+          <span className="lc-sc">{beach.score!=null?Math.round(beach.score):"—"}</span>
+        </span>
+        <span className="lc-illu"><Illu st={v.st} uid={uid}/>
+          <span className="lc-rar">{r.stars} {_t(r.lbl)}</span></span>
+        <span className="lc-bd">
+          <span className="lc-atk"><span className="lc-atkt">{beach.commune||_t({fr:"Plage",en:"Beach",es:"Playa"})}</span>
+            <span className="lc-atkv">{_t(v)}</span></span>
+          <span className="lc-ft"><span>{_t({fr:"Score du jour = PV",en:"Today's score = HP",es:"Puntaje = PV"})}</span><span>Copernicus</span></span>
+        </span>
+      </span>
+    </button>
+  )
+}
+
+const I18N={
+  eyebrow:{fr:"LA CHASSE · EN DIRECT",en:"THE HUNT · LIVE",es:"LA CAZA · EN DIRECTO"},
+  guessTitle:{fr:"DEVINE LE VERDICT",en:"GUESS THE VERDICT",es:"ADIVINA EL VEREDICTO"},
+  guessSub:{fr:"La carte du jour. Mesurée au satellite, pas devinée — à toi de jouer.",
+            en:"Today's card. Measured by satellite, not guessed — your turn.",
+            es:"La carta del día. Medida por satélite, no adivinada — te toca."},
+  win:{fr:"BIEN VU !",en:"NICE!",es:"¡BIEN!"},
+  lose:{fr:"RATÉ !",en:"MISSED!",es:"¡FALLASTE!"},
+  reveal:{fr:"Verdict mesuré",en:"Measured verdict",es:"Veredicto medido"},
+  streak:{fr:"série",en:"streak",es:"racha"},
+  best:{fr:"record",en:"best",es:"récord"},
+  back:{fr:"reviens demain pour la prochaine carte",en:"come back tomorrow for the next card",es:"vuelve mañana por la próxima carta"},
+  openBeach:{fr:"Voir ma plage en détail →",en:"See my beach in detail →",es:"Ver mi playa en detalle →"},
+  collTitle:{fr:"MA COLLECTION",en:"MY COLLECTION",es:"MI COLECCIÓN"},
+  collSub:{fr:(n,t)=>`${n}/${t} plages collectées · tape une carte pour l'ouvrir`,
+           en:(n,t)=>`${n}/${t} beaches collected · tap a card to open it`,
+           es:(n,t)=>`${n}/${t} playas coleccionadas · toca una carta`},
+  lockTitle:{fr:"LES 7 JOURS",en:"THE 7 DAYS",es:"LOS 7 DÍAS"},
+  lockSub:{fr:"Débloque la prévision plage par plage, et l'alerte le jour où ça bascule.",
+           en:"Unlock the forecast beach by beach, and the alert the day it flips.",
+           es:"Desbloquea el pronóstico playa por playa, y la alerta el día que cambia."},
+  lockCta:{fr:"Activer mon Veilleur",en:"Turn on my Veilleur",es:"Activar mi Veilleur"},
+  mapLink:{fr:"Ouvrir la carte en direct",en:"Open the live map",es:"Abrir el mapa en directo"},
+  guessBtn:{clean:{fr:"PROPRE",en:"CLEAN",es:"LIMPIA"},moderate:{fr:"MODÉRÉ",en:"MODERATE",es:"MODERADA"},avoid:{fr:"À ÉVITER",en:"AVOID",es:"EVITAR"}}
+}
+
+export default function ChasseHome(props){
+  const {beach,lang="fr",sargData,pickBeaches=[],onOpen,onOpenBeach,onPremium,onShowMap,track,exiting}=props
+  const _t=useCallback((o)=>{ const v=o&&(o[lang]!=null?o[lang]:o.fr); return v },[lang])
+
+  const reduce = useMemo(()=>{ try{ return window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches }catch(_){ return false } },[])
+
+  const [st,setSt]=useState(loadState)
+  const playedToday = st.played===todayKey()
+  const [revealed,setRevealed]=useState(playedToday)   /* carte du jour retournée ? */
+  const [outcome,setOutcome]=useState(playedToday?(st.guessOk?"win":"lose"):null)
+  const [mood,setMood]=useState(()=> playedToday ? vof(beach?.status).mood : "scan")
+
+  /* collection : on sème avec la plage du jour + ce qui est déjà collecté */
+  const collected = st.collected||[]
+  const collSet = useMemo(()=>new Set(collected),[collected])
+
+  const fresh = useMemo(()=>{
+    try{ const u=sargData&&(sargData.updatedAt||sargData.erddapTimestamp); if(!u) return null
+      const age=(Date.now()-new Date(u).getTime())/36e5; if(!isFinite(age)||age<0||age>12) return null
+      return age<1 ? _t({fr:"il y a "+Math.max(1,Math.round(age*60))+" min",en:Math.max(1,Math.round(age*60))+" min ago",es:"hace "+Math.max(1,Math.round(age*60))+" min"})
+                   : _t({fr:"il y a "+Math.round(age)+" h",en:Math.round(age)+"h ago",es:"hace "+Math.round(age)+" h"}) }
+    catch(_){ return null }
+  },[sargData,_t])
+
+  useEffect(()=>{ if(track) try{ track("sg_chasse_shown",{beach:beach?.id,score:beach?.score,status:beach?.status,streak:st.streak,collected:collected.length,variant:"chasse"}) }catch(_){} },[]) // eslint-disable-line
+
+  const persist=useCallback((next)=>{ setSt(next); saveState(next) },[])
+
+  /* collectionner une plage (taper une carte) */
+  const collect=useCallback((b)=>{
+    if(!b||!b.id) return
+    setSt(prev=>{ if(prev.collected.includes(b.id)) return prev
+      const next={...prev,collected:[...prev.collected,b.id]}; saveState(next); return next })
+  },[])
+
+  /* duel : deviner le verdict de la carte du jour */
+  const guess=useCallback((status)=>{
+    if(revealed||!beach) return
+    const real=beach.status||"clean"
+    const ok = (status===real)
+    const v=vof(real)
+    setOutcome(ok?"win":"lose")
+    setMood(v.mood)
+    setRevealed(true)
+    /* série : +1 si bien vu ET (premier jeu ou enchaîné depuis hier), sinon repart à 1 (win) / 0 (lose) */
+    const cont = st.last===yesterdayKey()||st.last===todayKey()
+    let streak = ok ? ( (st.last===null||cont) ? st.streak+1 : 1 ) : 0
+    const best=Math.max(st.best,streak)
+    const coll = beach.id&&!st.collected.includes(beach.id) ? [...st.collected,beach.id] : st.collected
+    persist({...st, streak, best, last:todayKey(), played:todayKey(), guessOk:ok, collected:coll})
+    if(track) try{ track("sg_chasse_guess",{correct:ok?1:0,guess:status,real,streak}) }catch(_){}
+  },[revealed,beach,st,persist,track])
+
+  /* liste collection (sans la carte du jour, triée par score) */
+  const collList = useMemo(()=>{
+    const seen=new Set(beach?[beach.id]:[])
+    return (pickBeaches||[]).filter(b=>b&&b.id&&!seen.has(b.id)&&b.status&&b.score!=null)
+      .sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,24)
+  },[pickBeaches,beach])
+
+  const dayV = beach ? vof(beach.status) : VERDICT.clean
+  const dateLbl = useMemo(()=>{
+    const d=new Date(), moFR=["JANV.","FÉVR.","MARS","AVR.","MAI","JUIN","JUIL.","AOÛT","SEPT.","OCT.","NOV.","DÉC."]
+    return d.getDate()+" "+moFR[d.getMonth()]
+  },[])
+
+  return (
+    <div className={"lc-root"+(reduce?" lc-reduce":"")} role="dialog" aria-label="La Chasse"
+      style={{position:"absolute",inset:0,zIndex:1050,overflowY:"auto",overflowX:"hidden",
+        WebkitOverflowScrolling:"touch",overscrollBehavior:"contain",
+        opacity:exiting?0:1,transform:exiting?"scale(1.04)":"none",
+        transition:"opacity .3s ease,transform .3s cubic-bezier(.22,1,.36,1)"}}>
+      <style>{CSS}</style>
+
+      {/* ---- barre haute : Veilleur + EN DIRECT + série ---- */}
+      <div className="lc-top">
+        <div className="lc-veilwrap"><Veilleur mood={mood} size={52}/></div>
+        <div className="lc-live">
+          <span className="lc-eyebrow">{_t(I18N.eyebrow)}</span>
+          <span className="lc-date">{dateLbl}{fresh?" · maj "+fresh:""}</span>
+        </div>
+        <div className="lc-streak" title={_t(I18N.streak)}>
+          <span className="lc-fire">🔥</span><b>{st.streak}</b>
+          <small>{_t(I18N.best)} {st.best}</small>
+        </div>
+      </div>
+
+      {/* ---- CARTE DU JOUR : duel → reveal ---- */}
+      <section className="lc-hero">
+        <div className="lc-eyebrow lc-center">{revealed?_t(I18N.reveal):_t(I18N.guessTitle)}</div>
+        {!revealed && <p className="lc-sub">{_t(I18N.guessSub)}</p>}
+
+        {beach ? (
+          <div className={"lc-flip"+(revealed?" is-rev":"")}>
+            <div className="lc-flip-inner">
+              {/* dos de carte */}
+              <div className="lc-face lc-front">
+                <div className="lc-back-art">
+                  <Veilleur mood="scan" size={92}/>
+                  <div className="lc-back-q">?</div>
+                </div>
+                <div className="lc-back-lbl">{beach.name}</div>
+              </div>
+              {/* recto révélé */}
+              <div className="lc-face lc-rear">
+                <TCard beach={beach} lang={lang} rot={-1.5} onTap={()=>{ if(track)try{track("sg_chasse_card_open",{beach_id:beach.id,which:"day"})}catch(_){}; onOpen&&onOpen() }}/>
+              </div>
+            </div>
+          </div>
+        ) : <div className="lc-flip"/>}
+
+        {!revealed ? (
+          <div className="lc-guesses">
+            {["clean","moderate","avoid"].map(s=>(
+              <button key={s} type="button" className={`lc-gbtn s-${vof(s).st}`} onClick={()=>guess(s)}>
+                {_t(I18N.guessBtn[s])}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="lc-result">
+            <span className={`lc-pow s-${dayV.st} lc-verdictpow`}><b>{outcome==="win"?_t(I18N.win):_t(I18N.lose)}</b></span>
+            <button type="button" className="lc-cta yel"
+              onClick={()=>{ if(track)try{track("sg_chasse_card_open",{beach_id:beach?.id,which:"cta"})}catch(_){}; onOpen&&onOpen() }}>
+              {_t(I18N.openBeach)}
+            </button>
+            <div className="lc-backnote">{_t(I18N.back)}</div>
+          </div>
+        )}
+      </section>
+
+      {/* ---- COLLECTION ---- */}
+      <section className="lc-coll">
+        <div className="lc-coll-h">
+          <div className="lc-eyebrow">{_t(I18N.collTitle)}</div>
+          <div className="lc-coll-sub">{(I18N.collSub[lang]||I18N.collSub.fr)(collSet.size,(pickBeaches||[]).length||collList.length)}</div>
+        </div>
+        <div className="lc-grid">
+          {collList.map((b,i)=>(
+            <TCard key={b.id} beach={b} lang={lang} rot={(i%2?1:-1)*(0.6+(i%3)*0.4)}
+              collected={collSet.has(b.id)}
+              onTap={()=>{ collect(b); if(track)try{track("sg_chasse_card_open",{beach_id:b.id,which:"coll"})}catch(_){}; onOpenBeach&&onOpenBeach(b) }}/>
+          ))}
+        </div>
+      </section>
+
+      {/* ---- PRÉVISION 7J = premium ---- */}
+      <section className="lc-lock">
+        <div className="lc-lock-card">
+          <div className="lc-lock-badge">🔒 7J</div>
+          <div className="lc-eyebrow">{_t(I18N.lockTitle)}</div>
+          <p className="lc-sub lc-center">{_t(I18N.lockSub)}</p>
+          <button type="button" className="lc-cta" onClick={()=>onPremium&&onPremium("chasse_lock")}>{_t(I18N.lockCta)}</button>
+        </div>
+        <button type="button" className="lc-maplink" onClick={()=>onShowMap&&onShowMap()}>{_t(I18N.mapLink)}</button>
+      </section>
+    </div>
+  )
+}
+
+/* ====================================================================
+   CSS — entièrement scopé `.lc-`. Tokens & cartes portés de
+   public/comic-cartes.html + public/themes-lab/arena.css.
+   ==================================================================== */
+const CSS=`
+@font-face{font-family:"AntonLC";src:url("/fonts/anton-1Ptgg87LROyAm3Kz-C8.woff2") format("woff2");font-weight:400;font-display:swap}
+.lc-root{--ink:#0d0b14;--paper:#fdf6e3;--red:#e8322a;--yel:#ffd23f;--blu:#27a9e3;--org:#ff8a3d;--grn:#27c46b;--pur:#7b46d6;
+  font-family:"Comic Neue","Comic Sans MS",system-ui,sans-serif;color:var(--ink);
+  background:
+    radial-gradient(rgba(13,11,20,.14) 1.4px,transparent 1.5px) 0 0/9px 9px,
+    radial-gradient(rgba(13,11,20,.14) 1.4px,transparent 1.5px) 4.5px 4.5px/9px 9px,
+    linear-gradient(170deg,#2bb6ef,#5fc8ef 30%,#ffb36b 66%,#ff8a3d);
+  padding:14px 12px 60px;-webkit-tap-highlight-color:transparent}
+.lc-root *{box-sizing:border-box}
+.lc-eyebrow{font-family:"AntonLC",system-ui,sans-serif;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink);
+  background:var(--yel);display:inline-block;border:2px solid var(--ink);padding:3px 9px;border-radius:5px;box-shadow:2px 2px 0 var(--ink)}
+.lc-center{display:block;margin:0 auto;text-align:center}
+.lc-sub{font-size:13px;line-height:1.35;color:#241f30;max-width:340px;margin:8px auto 0;text-align:center}
+
+/* barre haute */
+.lc-top{display:flex;align-items:center;gap:10px;max-width:520px;margin:0 auto 6px}
+.lc-veilwrap{flex:0 0 auto;filter:drop-shadow(2px 2px 0 rgba(13,11,20,.4))}
+.lc-live{flex:1;display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.lc-date{font-weight:700;font-size:11px;color:#fff;text-shadow:1px 1px 0 rgba(13,11,20,.6)}
+.lc-streak{flex:0 0 auto;background:var(--paper);border:2.5px solid var(--ink);border-radius:14px;padding:4px 10px;
+  box-shadow:3px 3px 0 var(--ink);text-align:center;line-height:1}
+.lc-streak .lc-fire{font-size:15px}
+.lc-streak b{font-family:"AntonLC",system-ui,sans-serif;font-size:18px;margin-left:2px}
+.lc-streak small{display:block;font-size:8.5px;font-weight:700;color:#7a7488;letter-spacing:.3px;margin-top:2px;text-transform:uppercase}
+
+/* hero / carte du jour */
+.lc-hero{max-width:520px;margin:14px auto 0;text-align:center}
+.lc-flip{width:230px;margin:14px auto 0;perspective:1100px}
+.lc-flip-inner{position:relative;width:100%;aspect-ratio:5/7;transform-style:preserve-3d;
+  transition:transform .8s cubic-bezier(.55,.06,.32,1.3)}
+.lc-flip.is-rev .lc-flip-inner{transform:rotateY(180deg)}
+.lc-reduce .lc-flip-inner{transition:none}
+.lc-face{position:absolute;inset:0;-webkit-backface-visibility:hidden;backface-visibility:hidden;display:flex}
+.lc-front{align-items:center;justify-content:center;flex-direction:column;gap:10px;
+  border-radius:16px;border:3px solid var(--ink);box-shadow:0 8px 0 rgba(13,11,20,.4);
+  background:repeating-linear-gradient(135deg,#7b46d6 0 14px,#6a3bc0 14px 28px)}
+.lc-back-art{position:relative;display:grid;place-items:center}
+.lc-back-q{position:absolute;font-family:"AntonLC",system-ui,sans-serif;font-size:54px;color:#fff;text-shadow:3px 3px 0 var(--ink)}
+.lc-back-lbl{font-family:"AntonLC",system-ui,sans-serif;font-size:15px;color:#fff;text-shadow:2px 2px 0 var(--ink);
+  text-transform:uppercase;letter-spacing:.4px;padding:0 10px}
+.lc-rear{transform:rotateY(180deg);align-items:stretch;justify-content:center}
+.lc-rear .lc-card{width:100%}
+
+/* boutons guess */
+.lc-guesses{display:flex;gap:8px;max-width:340px;margin:16px auto 0}
+.lc-gbtn{flex:1;font-family:"AntonLC",system-ui,sans-serif;font-size:13px;letter-spacing:.3px;color:#fff;
+  border:3px solid var(--ink);border-radius:11px;padding:11px 6px;text-shadow:1.5px 1.5px 0 rgba(13,11,20,.6);
+  box-shadow:3px 3px 0 var(--ink);cursor:pointer;transition:transform .08s}
+.lc-gbtn:active{transform:translateY(3px);box-shadow:0 0 0 var(--ink)}
+.lc-gbtn.s-ok{background:linear-gradient(180deg,#3fd98a,var(--grn))}
+.lc-gbtn.s-mod{background:linear-gradient(180deg,#ffd569,var(--org));color:var(--ink);text-shadow:1px 1px 0 #fff}
+.lc-gbtn.s-bad{background:linear-gradient(180deg,#ff6a4a,var(--red))}
+
+/* résultat */
+.lc-result{margin-top:16px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.lc-verdictpow{transform:rotate(-4deg) scale(1.2);animation:lc-pop .5s cubic-bezier(.18,1.4,.4,1) both}
+.lc-reduce .lc-verdictpow{animation:none}
+@keyframes lc-pop{0%{transform:rotate(-4deg) scale(0)}70%{transform:rotate(-4deg) scale(1.35)}100%{transform:rotate(-4deg) scale(1.2)}}
+.lc-cta{font-family:"AntonLC",system-ui,sans-serif;font-size:16px;letter-spacing:.5px;text-transform:uppercase;color:#fff;
+  background:linear-gradient(180deg,#ff5a4f,var(--red));border:3px solid var(--ink);border-radius:12px;padding:12px 20px;
+  text-shadow:2px 2px 0 rgba(13,11,20,.55);box-shadow:4px 4px 0 var(--ink);cursor:pointer;transition:transform .08s}
+.lc-cta:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.lc-cta.yel{background:linear-gradient(180deg,#ffe06a,var(--yel));color:var(--ink);text-shadow:1px 1px 0 #fff}
+.lc-backnote{font-size:11px;color:#fff;text-shadow:1px 1px 0 rgba(13,11,20,.5);font-weight:700}
+
+/* collection */
+.lc-coll{max-width:520px;margin:28px auto 0}
+.lc-coll-h{text-align:center;margin-bottom:14px}
+.lc-coll-sub{font-size:12px;color:#fff;text-shadow:1px 1px 0 rgba(13,11,20,.5);font-weight:700;margin-top:7px}
+.lc-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+
+/* carte TCG (réutilisable) */
+.lc-card{position:relative;border-radius:14px;padding:6px;border:2.5px solid var(--ink);text-align:left;cursor:pointer;
+  box-shadow:0 6px 0 rgba(13,11,20,.35),0 10px 20px rgba(13,11,20,.4);transform:rotate(var(--rot,-1deg));
+  font-family:inherit;display:block;width:100%}
+.lc-card.r-com{background:linear-gradient(135deg,#dfe6ea,#bfcad2 60%,#eef2f4)}
+.lc-card.r-rare{background:linear-gradient(135deg,#bfe3ff,#5fb6e8 55%,#dff2ff)}
+.lc-card.r-epic{background:linear-gradient(135deg,#e9d3ff,#a86fe0 55%,#f3e8ff)}
+.lc-card.r-leg{background:linear-gradient(135deg,#ffe79a,#f6b73c 28%,#fff3c4 52%,#e0962a 74%,#ffe79a)}
+.lc-card::after{content:"";position:absolute;inset:0;border-radius:14px;pointer-events:none;
+  background:linear-gradient(115deg,transparent 30%,rgba(255,0,170,.28) 42%,rgba(0,200,255,.28) 50%,rgba(120,255,90,.28) 58%,transparent 70%);
+  background-size:280% 280%;mix-blend-mode:screen;animation:lc-foil 5s linear infinite}
+.lc-card.r-com::after{opacity:.35}.lc-card.r-rare::after{opacity:.7}
+.lc-reduce .lc-card::after{animation:none}
+@keyframes lc-foil{0%{background-position:0 0}100%{background-position:280% 280%}}
+.lc-card.lc-locked{filter:saturate(.55) brightness(.94)}
+.lc-card.lc-locked::before{content:"+";position:absolute;z-index:4;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-family:"AntonLC",system-ui,sans-serif;font-size:30px;color:#fff;text-shadow:2px 2px 0 var(--ink);
+  background:rgba(13,11,20,.55);width:46px;height:46px;border-radius:50%;display:grid;place-items:center;border:2.5px solid #fff}
+.lc-in{position:relative;z-index:2;display:block;border:2px solid var(--ink);border-radius:9px;overflow:hidden;background:var(--paper)}
+.lc-bn{display:flex;align-items:center;gap:5px;padding:5px 7px;border-bottom:2.5px solid var(--ink)}
+.lc-bn.s-ok{background:linear-gradient(90deg,#2bb6a6,#0f7d72)}
+.lc-bn.s-mod{background:linear-gradient(90deg,#f0b73a,#d4912a)}
+.lc-bn.s-bad{background:linear-gradient(90deg,#ff6a4a,#d8351f)}
+.lc-nm{font-family:"AntonLC",system-ui,sans-serif;font-size:13px;color:#fff;line-height:1.05;text-shadow:1.5px 1.5px 0 var(--ink);
+  flex:1;text-transform:uppercase;letter-spacing:.3px}
+.lc-sc{font-family:"AntonLC",system-ui,sans-serif;font-size:18px;color:#fff;text-shadow:1.5px 1.5px 0 var(--ink);line-height:1}
+.lc-illu{position:relative;display:block;height:96px;border-bottom:2.5px solid var(--ink);overflow:hidden}
+.lc-illu svg{position:absolute;inset:0;width:100%;height:100%}
+.lc-rar{position:absolute;left:5px;bottom:4px;font-family:"AntonLC",system-ui,sans-serif;font-size:8px;color:#fff;
+  background:var(--ink);padding:1.5px 6px;border-radius:12px;letter-spacing:.4px}
+.lc-pow{position:absolute;z-index:3;top:-9px;right:-5px;font-family:"AntonLC",system-ui,sans-serif;font-size:13px;transform:rotate(9deg)}
+.lc-pow b{display:inline-block;border:2.5px solid var(--ink);border-radius:6px;padding:1px 7px;color:#fff;text-shadow:1.5px 1.5px 0 var(--ink)}
+.lc-pow.s-ok b{background:var(--grn)}.lc-pow.s-mod b{background:var(--org)}.lc-pow.s-bad b{background:var(--red)}
+.lc-bd{display:block;padding:6px 8px 8px}
+.lc-atk{display:flex;gap:6px;align-items:baseline;padding:3px 0}
+.lc-atkt{font-family:"AntonLC",system-ui,sans-serif;font-size:10px;text-transform:uppercase;color:var(--ink);flex:1;letter-spacing:.2px}
+.lc-atkv{font-family:"AntonLC",system-ui,sans-serif;font-size:12px;color:var(--red);text-shadow:1px 1px 0 var(--ink)}
+.lc-ft{display:flex;justify-content:space-between;font-size:7.5px;color:#7a7488;padding-top:3px;margin-top:2px;border-top:1.5px solid var(--ink)}
+
+/* premium / lock */
+.lc-lock{max-width:520px;margin:30px auto 0;text-align:center}
+.lc-lock-card{position:relative;background:linear-gradient(135deg,#e9d3ff,#b88be8 60%,#f3e8ff);border:3px solid var(--ink);
+  border-radius:16px;box-shadow:0 6px 0 rgba(13,11,20,.35);padding:18px 14px 16px}
+.lc-lock-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);font-family:"AntonLC",system-ui,sans-serif;
+  font-size:13px;background:var(--pur);color:#fff;border:2.5px solid var(--ink);border-radius:20px;padding:3px 12px;
+  text-shadow:1.5px 1.5px 0 var(--ink);box-shadow:2px 2px 0 var(--ink)}
+.lc-lock .lc-cta{margin-top:12px}
+.lc-maplink{display:inline-block;margin-top:16px;font-weight:800;font-size:13px;color:#fff;background:none;border:none;
+  text-decoration:underline;text-shadow:1px 1px 0 rgba(13,11,20,.5);cursor:pointer}
+.lc-veil .lc-iris{transition:fill .6s ease}
+`
