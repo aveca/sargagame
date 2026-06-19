@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>SARGASSES MARTINIQUE — Candidat 1 · Gold Premium TCG</title>
+<style>
+@font-face{
+  font-family:"Anton";
+  src:url("/fonts/anton-1Ptgg87LROyAm3Kz-C8.woff2") format("woff2");
+  font-display:swap;
+  font-weight:400;
+}
+
+:root{
+  --propre:#27c46b;
+  --modere:#e8a800;
+  --eviter:#e8522a;
+  --gold-1:#f6e3a8;
+  --gold-2:#d9b24a;
+  --gold-3:#a87c22;
+  --cream:#f7efdc;
+  --cream-2:#efe2c0;
+  --ink:#2a2114;
+  --ink-soft:#5a4a30;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, #20242e 0%, transparent 60%),
+    radial-gradient(900px 500px at 50% 110%, #1a1d26 0%, transparent 60%),
+    linear-gradient(160deg,#10131a 0%,#171a22 100%);
+  color:var(--cream);
+  min-height:100vh;
+  padding:34px 16px 70px;
+  -webkit-font-smoothing:antialiased;
+}
+
+.lab-head{
+  max-width:380px;margin:0 auto 30px;text-align:center;
+}
+.lab-kicker{
+  font-size:11px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--gold-2);font-weight:700;margin-bottom:8px;
+}
+.lab-title{
+  font-family:"Anton",sans-serif;font-size:30px;letter-spacing:.5px;
+  background:linear-gradient(180deg,var(--gold-1),var(--gold-3));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  text-transform:uppercase;line-height:1.05;
+}
+.lab-sub{font-size:12px;color:#9a948a;margin-top:8px;letter-spacing:.3px;}
+
+.stack{
+  max-width:380px;margin:0 auto;
+  display:flex;flex-direction:column;gap:46px;
+}
+
+.frame-label{
+  font-size:11px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--gold-2);font-weight:700;text-align:center;margin-bottom:14px;
+}
+
+/* ---- Phone shell ---- */
+.phone{
+  width:340px;margin:0 auto;
+  border-radius:42px;
+  padding:12px;
+  background:linear-gradient(160deg,#2b2b30,#15151a);
+  box-shadow:
+    0 0 0 2px rgba(217,178,74,.25),
+    0 30px 60px -20px rgba(0,0,0,.8),
+    inset 0 1px 0 rgba(255,255,255,.06);
+}
+.screen{
+  border-radius:32px;overflow:hidden;position:relative;
+  background:linear-gradient(170deg,#fbf5e6 0%,#f3e7c9 100%);
+  min-height:600px;
+}
+.notch{
+  position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:120px;height:24px;background:#15151a;
+  border-radius:0 0 16px 16px;z-index:30;
+}
+
+/* ---- Top bar ---- */
+.appbar{
+  display:flex;align-items:center;gap:9px;
+  padding:30px 18px 14px;
+  background:linear-gradient(180deg,#1f2730,#27313c);
+  color:var(--cream);
+  border-bottom:2px solid var(--gold-2);
+  box-shadow:0 3px 0 rgba(168,124,34,.5);
+}
+.brand-eye{flex:0 0 auto;}
+.brand-txt{line-height:1.05;}
+.brand-name{
+  font-family:"Anton",sans-serif;font-size:16px;letter-spacing:1.4px;
+  text-transform:uppercase;color:var(--gold-1);
+}
+.brand-tag{font-size:9px;letter-spacing:1.5px;color:#b9c4cf;text-transform:uppercase;}
+.appbar .veil{margin-left:auto;font-size:9px;text-align:right;color:#9fb0bb;letter-spacing:.5px;}
+
+.body-pad{padding:16px;}
+
+/* ---- Verdict hero ---- */
+.verdict-kicker{
+  font-size:10px;letter-spacing:2.5px;text-transform:uppercase;
+  color:var(--gold-3);font-weight:800;text-align:center;margin-bottom:10px;
+}
+.verdict-card{
+  position:relative;border-radius:22px;overflow:hidden;
+  border:2px solid var(--gold-2);
+  background:linear-gradient(160deg,#fff9ec,#f0e2bf);
+  box-shadow:0 12px 26px -14px rgba(120,80,10,.5),inset 0 0 0 1px rgba(255,255,255,.6);
+}
+.holo{
+  position:absolute;inset:0;pointer-events:none;mix-blend-mode:overlay;opacity:.55;
+  background:linear-gradient(115deg,transparent 20%,rgba(120,220,255,.5) 35%,rgba(255,120,220,.45) 50%,rgba(255,235,120,.5) 65%,transparent 80%);
+}
+.verdict-illus{position:relative;height:148px;}
+.verdict-meta{position:relative;padding:13px 15px 16px;}
+.beach-name{
+  font-family:"Anton",sans-serif;font-size:23px;letter-spacing:.4px;
+  color:var(--ink);text-transform:uppercase;line-height:1;
+}
+.beach-sub{font-size:11px;color:var(--ink-soft);margin-top:3px;}
+.score-row{display:flex;align-items:center;gap:12px;margin-top:13px;}
+.score-badge{
+  width:62px;height:62px;border-radius:50%;flex:0 0 auto;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  border:3px solid #fff;color:#fff;font-weight:800;line-height:1;
+  box-shadow:0 4px 12px -3px rgba(0,0,0,.4);
+}
+.score-badge .n{font-family:"Anton",sans-serif;font-size:26px;}
+.score-badge .l{font-size:8px;letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+.bg-propre{background:linear-gradient(150deg,#34d97b,#1ba458);}
+.status-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:13px;font-weight:800;letter-spacing:.5px;
+}
+.dot{width:10px;height:10px;border-radius:50%;}
+.verdict-note{font-size:11px;color:var(--ink-soft);margin-top:4px;}
+
+/* ---- Gold CTA ---- */
+.cta-gold{
+  display:block;width:100%;text-align:center;cursor:pointer;
+  border:none;border-radius:14px;
+  padding:14px 16px;margin-top:16px;
+  font-family:"Anton",sans-serif;font-size:15px;letter-spacing:1.4px;
+  text-transform:uppercase;color:#3a2b08;
+  background:linear-gradient(180deg,#f8e4a3 0%,#e6c563 45%,#c89a32 100%);
+  box-shadow:0 6px 14px -5px rgba(160,110,20,.7),inset 0 1px 0 rgba(255,255,255,.7),inset 0 -2px 0 rgba(120,80,10,.4);
+}
+.cta-gold.sm{font-size:12px;padding:11px;letter-spacing:1px;}
+
+/* ---- Collectible mini cards (frame 2) ---- */
+.list-head{
+  font-family:"Anton",sans-serif;font-size:18px;letter-spacing:.5px;
+  color:var(--ink);text-transform:uppercase;margin:2px 2px 14px;
+}
+.mini{
+  display:flex;align-items:center;gap:12px;
+  position:relative;border-radius:16px;padding:10px 12px;margin-bottom:11px;
+  background:linear-gradient(160deg,#fffaee,#f1e4c4);
+  border:1.5px solid var(--gold-2);
+  box-shadow:0 6px 14px -10px rgba(120,80,10,.5),inset 0 0 0 1px rgba(255,255,255,.5);
+}
+.mini-foil{
+  position:absolute;inset:0;border-radius:16px;pointer-events:none;opacity:.3;mix-blend-mode:overlay;
+  background:linear-gradient(120deg,transparent 30%,rgba(140,210,255,.7) 48%,rgba(255,170,235,.6) 58%,transparent 72%);
+}
+.mini-illus{
+  width:54px;height:54px;flex:0 0 auto;border-radius:11px;overflow:hidden;
+  border:1.5px solid rgba(168,124,34,.55);
+}
+.mini-info{flex:1;min-width:0;position:relative;}
+.mini-name{
+  font-family:"Anton",sans-serif;font-size:15px;letter-spacing:.3px;
+  color:var(--ink);text-transform:uppercase;line-height:1;
+}
+.mini-stat{display:flex;align-items:center;gap:6px;margin-top:5px;font-size:11px;font-weight:700;}
+.mini-pv{
+  margin-left:auto;flex:0 0 auto;position:relative;text-align:center;
+  font-family:"Anton",sans-serif;color:#fff;
+  width:42px;height:42px;border-radius:11px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  box-shadow:0 3px 8px -2px rgba(0,0,0,.35);
+}
+.mini-pv .pv-n{font-size:18px;line-height:1;}
+.mini-pv .pv-l{font-size:7px;letter-spacing:.5px;}
+
+/* ---- Hero big TCG card (frame 3) ---- */
+.tcg{
+  position:relative;width:286px;margin:0 auto;
+  border-radius:20px;padding:9px;
+  background:
+    linear-gradient(135deg,var(--gold-1) 0%,var(--gold-3) 30%,var(--gold-1) 55%,var(--gold-3) 80%,var(--gold-1) 100%);
+  box-shadow:0 18px 40px -16px rgba(0,0,0,.7),0 0 0 1px rgba(120,80,10,.6);
+}
+.tcg-inner{
+  border-radius:14px;overflow:hidden;position:relative;
+  background:linear-gradient(170deg,#fffaef,#efe1bf);
+  border:1px solid rgba(168,124,34,.5);
+}
+.tcg-head{
+  display:flex;align-items:center;gap:8px;padding:9px 12px 7px;
+  background:linear-gradient(180deg,#f6e7bd,#e9d399);
+  border-bottom:1.5px solid var(--gold-3);
+}
+.tcg-title{font-family:"Anton",sans-serif;font-size:18px;letter-spacing:.3px;color:var(--ink);text-transform:uppercase;}
+.tcg-type{margin-left:auto;font-size:13px;}
+.tcg-hpwrap{display:flex;align-items:baseline;gap:3px;color:#1ba458;font-weight:800;}
+.tcg-hpwrap .hpn{font-family:"Anton",sans-serif;font-size:22px;line-height:1;}
+.tcg-hpwrap .hpl{font-size:9px;}
+.tcg-art{position:relative;margin:8px;border-radius:8px;overflow:hidden;border:2px solid var(--gold-3);height:166px;}
+.tcg-holo{
+  position:absolute;inset:0;pointer-events:none;mix-blend-mode:overlay;opacity:.5;
+  background:linear-gradient(115deg,transparent 18%,rgba(120,220,255,.6) 34%,rgba(255,120,220,.5) 50%,rgba(255,235,120,.6) 66%,transparent 82%);
+}
+.tcg-rare{position:absolute;right:8px;bottom:6px;font-size:12px;color:#f6e3a8;text-shadow:0 1px 2px rgba(0,0,0,.6);}
+.tcg-body{padding:6px 13px 13px;}
+.tcg-move{
+  display:flex;align-items:center;gap:7px;
+  padding:7px 0;border-top:1px dashed rgba(168,124,34,.5);
+}
+.tcg-move:first-child{border-top:none;}
+.tcg-move .mname{font-weight:800;font-size:12px;color:var(--ink);}
+.tcg-move .mdesc{font-size:10px;color:var(--ink-soft);}
+.tcg-move .mdmg{margin-left:auto;font-family:"Anton",sans-serif;font-size:15px;color:#1ba458;}
+.tcg-foot{
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:8.5px;color:var(--ink-soft);
+  padding:7px 13px;background:rgba(168,124,34,.1);border-top:1px solid rgba(168,124,34,.3);
+}
+
+/* ---- Paywall (frame 4) ---- */
+.legend{
+  position:relative;width:300px;margin:0 auto;border-radius:22px;padding:10px;
+  background:linear-gradient(135deg,#f6e3a8,#a87c22,#f6e3a8,#a87c22,#f6e3a8);
+  box-shadow:0 22px 46px -16px rgba(0,0,0,.75),0 0 30px -8px rgba(217,178,74,.4);
+}
+.legend-inner{
+  position:relative;border-radius:15px;overflow:hidden;
+  background:linear-gradient(165deg,#1d2530,#11151c);color:var(--cream);
+  border:1px solid rgba(246,227,168,.4);
+}
+.legend-holo{
+  position:absolute;inset:0;pointer-events:none;opacity:.4;mix-blend-mode:screen;
+  background:linear-gradient(120deg,transparent 22%,rgba(120,220,255,.45) 38%,rgba(255,120,220,.4) 52%,rgba(255,235,120,.45) 66%,transparent 80%);
+}
+.legend-pad{position:relative;padding:20px 20px 22px;text-align:center;}
+.legend-rare{font-size:11px;letter-spacing:2px;color:var(--gold-1);text-transform:uppercase;font-weight:700;}
+.legend-name{
+  font-family:"Anton",sans-serif;font-size:27px;letter-spacing:1px;
+  background:linear-gradient(180deg,#fbeec0,#d9b24a);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  text-transform:uppercase;margin-top:4px;line-height:1;
+}
+.legend-eye{margin:14px auto 8px;}
+.legend-price{margin-top:6px;}
+.legend-price .amt{font-family:"Anton",sans-serif;font-size:34px;color:var(--gold-1);}
+.legend-price .per{font-size:12px;color:#b9c4cf;}
+.benefits{list-style:none;text-align:left;margin:16px auto 4px;max-width:230px;display:flex;flex-direction:column;gap:11px;}
+.benefits li{display:flex;align-items:flex-start;gap:10px;font-size:12.5px;line-height:1.35;color:#e9e0cd;}
+.benefits .bi{flex:0 0 auto;color:var(--gold-1);font-size:14px;margin-top:1px;}
+.legend-note{font-size:10px;color:#8c97a3;margin-top:13px;letter-spacing:.3px;}
+</style>
+</head>
+<body>
+
+<div class="lab-head">
+  <div class="lab-kicker">Themes Lab · Candidat 1</div>
+  <div class="lab-title">Gold Premium TCG</div>
+  <div class="lab-sub">Cartes à collectionner haut de gamme · foil holographique · Le Veilleur 🛰️</div>
+</div>
+
+<!-- mascot eye reusable defined inline per use -->
+
+<div class="stack">
+
+  <!-- ============ FRAME 1 — HOME VERDICT ============ -->
+  <section>
+    <div class="frame-label">1 · Verdict du jour</div>
+    <div class="phone">
+      <div class="screen">
+        <div class="notch"></div>
+        <div class="appbar">
+          <span class="brand-eye">
+            <svg width="30" height="30" viewBox="0 0 40 40" fill="none">
+              <circle cx="20" cy="20" r="18" fill="#0f1620" stroke="#d9b24a" stroke-width="2"/>
+              <ellipse cx="20" cy="20" rx="13" ry="9" fill="#f7efdc"/>
+              <circle cx="20" cy="20" r="6" fill="#1f6fb0"/>
+              <circle cx="20" cy="20" r="2.6" fill="#0f1620"/>
+              <circle cx="22.5" cy="17.5" r="1.4" fill="#fff"/>
+              <path d="M5 9 L1 5 M35 9 L39 5" stroke="#d9b24a" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="brand-txt">
+            <span class="brand-name">Sargasses</span><br>
+            <span class="brand-tag">Martinique · Copernicus</span>
+          </span>
+          <span class="veil">19 juin 2026<br>maj 06:00</span>
+        </div>
+
+        <div class="body-pad">
+          <div class="verdict-kicker">★ Plage vedette du jour ★</div>
+          <div class="verdict-card">
+            <div class="verdict-illus">
+              <svg width="100%" height="148" viewBox="0 0 308 148" preserveAspectRatio="xMidYMid slice">
+                <defs>
+                  <linearGradient id="sky1" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#ffd98a"/><stop offset=".5" stop-color="#ffb56b"/><stop offset="1" stop-color="#ff9b8a"/>
+                  </linearGradient>
+                  <linearGradient id="sea1" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#3fb6c9"/><stop offset="1" stop-color="#1f7fa8"/>
+                  </linearGradient>
+                </defs>
+                <rect width="308" height="148" fill="url(#sky1)"/>
+                <circle cx="232" cy="46" r="26" fill="#fff3c8"/><circle cx="232" cy="46" r="20" fill="#ffe79a"/>
+                <rect y="78" width="308" height="42" fill="url(#sea1)"/>
+                <path d="M0 84 q40 -6 80 0 t80 0 t80 0 t80 0" stroke="#bfeaf2" stroke-width="2" fill="none" opacity=".6"/>
+                <path d="M0 120 Q154 100 308 122 L308 148 L0 148 Z" fill="#f2dca0"/>
+                <path d="M0 120 Q154 100 308 122" stroke="#caa867" stroke-width="2" fill="none"/>
+                <!-- palm -->
+                <path d="M44 148 C40 120 38 104 40 92" stroke="#7a5a2e" stroke-width="5" fill="none" stroke-linecap="round"/>
+                <g stroke="#1f8f5a" stroke-width="4" fill="none" stroke-linecap="round">
+                  <path d="M40 92 C26 84 16 82 8 86"/>
+                  <path d="M40 92 C30 78 26 70 26 60"/>
+                  <path d="M40 92 C52 80 62 78 72 80"/>
+                  <path d="M40 92 C50 80 58 70 60 60"/>
+                </g>
+                <circle cx="40" cy="92" r="3.5" fill="#7a5a2e"/>
+              </svg>
+            </div>
+            <div class="holo"></div>
+            <div class="verdict-meta">
+              <div class="beach-name">Les Salines</div>
+              <div class="beach-sub">Sainte-Anne · Sud Caraïbe</div>
+              <div class="score-row">
+                <div class="score-badge bg-propre"><span class="n">92</span><span class="l">/100</span></div>
+                <div>
+                  <span class="status-pill" style="color:var(--propre)"><span class="dot" style="background:var(--propre)"></span>PROPRE</span>
+                  <div class="verdict-note">Eaux dégagées, aucun échouage détecté. Idéal aujourd'hui 🌊</div>
+                </div>
+              </div>
+              <button class="cta-gold">Voir la fiche →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FRAME 2 — COLLECTIBLE LIST ============ -->
+  <section>
+    <div class="frame-label">2 · Vos plages · collection</div>
+    <div class="phone">
+      <div class="screen">
+        <div class="notch"></div>
+        <div class="appbar">
+          <span class="brand-eye">
+            <svg width="30" height="30" viewBox="0 0 40 40" fill="none">
+              <circle cx="20" cy="20" r="18" fill="#0f1620" stroke="#d9b24a" stroke-width="2"/>
+              <ellipse cx="20" cy="20" rx="13" ry="9" fill="#f7efdc"/>
+              <circle cx="20" cy="20" r="6" fill="#1f6fb0"/><circle cx="20" cy="20" r="2.6" fill="#0f1620"/>
+              <circle cx="22.5" cy="17.5" r="1.4" fill="#fff"/>
+            </svg>
+          </span>
+          <span class="brand-txt"><span class="brand-name">Sargasses</span><br><span class="brand-tag">Mes plages suivies</span></span>
+        </div>
+        <div class="body-pad">
+          <div class="list-head">Collection — Sud</div>
+
+          <!-- Anse Mitan 77 PROPRE -->
+          <div class="mini">
+            <div class="mini-foil"></div>
+            <div class="mini-illus">
+              <svg width="54" height="54" viewBox="0 0 54 54"><rect width="54" height="54" fill="#ffc27a"/><circle cx="40" cy="14" r="8" fill="#ffe79a"/><rect y="30" width="54" height="14" fill="#2f9cc0"/><path d="M0 40 Q27 30 54 42 L54 54 L0 54Z" fill="#f2dca0"/><path d="M11 54 C9 40 9 34 11 30" stroke="#7a5a2e" stroke-width="2.5" fill="none"/><path d="M11 30 C5 27 2 27 0 29 M11 30 C8 24 7 21 8 17 M11 30 C17 25 21 25 26 27" stroke="#1f8f5a" stroke-width="2.5" fill="none"/></svg>
+            </div>
+            <div class="mini-info">
+              <div class="mini-name">Anse Mitan</div>
+              <div class="mini-stat" style="color:var(--propre)"><span class="dot" style="background:var(--propre)"></span>PROPRE · 🌊 type Caraïbe</div>
+            </div>
+            <div class="mini-pv" style="background:linear-gradient(150deg,#34d97b,#1ba458)"><span class="pv-n">77</span><span class="pv-l">PV</span></div>
+          </div>
+
+          <!-- Le Diamant 68 MODÉRÉ -->
+          <div class="mini">
+            <div class="mini-foil"></div>
+            <div class="mini-illus">
+              <svg width="54" height="54" viewBox="0 0 54 54"><rect width="54" height="54" fill="#ffd089"/><rect y="28" width="54" height="16" fill="#2f9cc0"/><path d="M34 44 L46 20 L54 44Z" fill="#5a6a72"/><path d="M0 40 Q27 32 54 42 L54 54 L0 54Z" fill="#e9cf94"/><path d="M0 36 q14 4 27 1 t27 1" stroke="#caa14e" stroke-width="2" fill="none" opacity=".8"/></svg>
+            </div>
+            <div class="mini-info">
+              <div class="mini-name">Le Diamant</div>
+              <div class="mini-stat" style="color:var(--modere)"><span class="dot" style="background:var(--modere)"></span>MODÉRÉ · 🌊 type Rocher</div>
+            </div>
+            <div class="mini-pv" style="background:linear-gradient(150deg,#f0bd3a,#c98e0e)"><span class="pv-n">68</span><span class="pv-l">PV</span></div>
+          </div>
+
+          <!-- Anse Charpentier 34 À ÉVITER -->
+          <div class="mini">
+            <div class="mini-foil"></div>
+            <div class="mini-illus">
+              <svg width="54" height="54" viewBox="0 0 54 54"><rect width="54" height="54" fill="#f0b27a"/><rect y="30" width="54" height="14" fill="#3a7d92"/><path d="M0 40 Q27 34 54 41 L54 54 L0 54Z" fill="#d9bf86"/><g fill="#9c6b2e"><circle cx="14" cy="42" r="4"/><circle cx="26" cy="45" r="5"/><circle cx="38" cy="42" r="4"/><circle cx="46" cy="46" r="3.5"/></g></svg>
+            </div>
+            <div class="mini-info">
+              <div class="mini-name">A. Charpentier</div>
+              <div class="mini-stat" style="color:var(--eviter)"><span class="dot" style="background:var(--eviter)"></span>À ÉVITER · 🌊 type Atlantique</div>
+            </div>
+            <div class="mini-pv" style="background:linear-gradient(150deg,#f0734a,#c23c14)"><span class="pv-n">34</span><span class="pv-l">PV</span></div>
+          </div>
+
+          <!-- Anse Dufour 88 PROPRE -->
+          <div class="mini">
+            <div class="mini-foil"></div>
+            <div class="mini-illus">
+              <svg width="54" height="54" viewBox="0 0 54 54"><rect width="54" height="54" fill="#ffce82"/><circle cx="42" cy="13" r="7" fill="#ffe79a"/><rect y="29" width="54" height="15" fill="#2aa0c4"/><path d="M0 41 Q27 31 54 43 L54 54 L0 54Z" fill="#f4dfa2"/><path d="M6 54 C16 50 22 52 27 54" stroke="#1f8f5a" stroke-width="2" fill="none"/></svg>
+            </div>
+            <div class="mini-info">
+              <div class="mini-name">Anse Dufour</div>
+              <div class="mini-stat" style="color:var(--propre)"><span class="dot" style="background:var(--propre)"></span>PROPRE · 🌊 type Crique</div>
+            </div>
+            <div class="mini-pv" style="background:linear-gradient(150deg,#34d97b,#1ba458)"><span class="pv-n">88</span><span class="pv-l">PV</span></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FRAME 3 — HERO TCG CARD ============ -->
+  <section>
+    <div class="frame-label">3 · Carte vedette · Anse Mitan</div>
+    <div class="phone">
+      <div class="screen" style="background:linear-gradient(170deg,#161b24,#0f131a);display:flex;align-items:center;justify-content:center;">
+        <div class="notch"></div>
+        <div class="tcg" style="margin:24px auto;">
+          <div class="tcg-inner">
+            <div class="tcg-head">
+              <span class="tcg-title">Anse Mitan</span>
+              <span class="tcg-hpwrap"><span class="hpn">77</span><span class="hpl">PV</span></span>
+              <span class="tcg-type">🌊</span>
+            </div>
+            <div class="tcg-art">
+              <svg width="100%" height="166" viewBox="0 0 252 166" preserveAspectRatio="xMidYMid slice">
+                <defs>
+                  <linearGradient id="skyB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe1a0"/><stop offset=".55" stop-color="#ffb070"/><stop offset="1" stop-color="#ff8f7e"/></linearGradient>
+                  <linearGradient id="seaB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#46c0d2"/><stop offset="1" stop-color="#1d7aa3"/></linearGradient>
+                  <radialGradient id="sunB" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#fff6d6"/><stop offset="1" stop-color="#ffdf8e"/></radialGradient>
+                </defs>
+                <rect width="252" height="166" fill="url(#skyB)"/>
+                <circle cx="180" cy="52" r="30" fill="url(#sunB)"/>
+                <g stroke="#fff" stroke-width="1.4" opacity=".35" fill="none"><path d="M150 52 h-20 M210 52 h20 M180 22 v-16"/></g>
+                <rect y="88" width="252" height="46" fill="url(#seaB)"/>
+                <g stroke="#cdeef4" stroke-width="2" fill="none" opacity=".55"><path d="M0 96 q32 -7 64 0 t64 0 t64 0 t64 0"/><path d="M0 112 q32 -7 64 0 t64 0 t64 0 t64 0"/></g>
+                <path d="M0 132 Q126 110 252 134 L252 166 L0 166 Z" fill="#f3dea0"/>
+                <path d="M0 132 Q126 110 252 134" stroke="#c9a45f" stroke-width="2" fill="none"/>
+                <!-- palmier encré -->
+                <path d="M38 166 C30 130 28 110 32 94" stroke="#6e4f28" stroke-width="6" fill="none" stroke-linecap="round"/>
+                <g stroke="#1c8a55" stroke-width="5" fill="none" stroke-linecap="round">
+                  <path d="M32 94 C14 84 4 82 -4 88"/>
+                  <path d="M32 94 C20 76 16 66 16 54"/>
+                  <path d="M32 94 C50 82 62 80 74 84"/>
+                  <path d="M32 94 C46 80 56 68 60 56"/>
+                  <path d="M32 94 C40 78 44 68 44 56"/>
+                </g>
+                <circle cx="32" cy="94" r="4" fill="#6e4f28"/>
+                <g fill="#caa14e"><circle cx="36" cy="100" r="2.4"/><circle cx="29" cy="100" r="2.4"/></g>
+              </svg>
+              <div class="tcg-holo"></div>
+              <div class="tcg-rare">★★★★ Rare Holo</div>
+            </div>
+            <div class="tcg-body">
+              <div class="tcg-move">
+                <span style="font-size:13px">🛰️</span>
+                <div><div class="mname">Lecture satellite</div><div class="mdesc">Indice Copernicus 19/06 · 06:00 UTC</div></div>
+                <span class="mdmg">+9</span>
+              </div>
+              <div class="tcg-move">
+                <span style="font-size:13px">🌬️</span>
+                <div><div class="mname">Vent porteur</div><div class="mdesc">Houle faible, dérive radeaux vers le large</div></div>
+                <span class="mdmg">+4</span>
+              </div>
+            </div>
+            <div class="tcg-foot">
+              <span>Faiblesse · 🌀 Tempête tropicale</span>
+              <span>Le Veilleur · Sargasses MQ</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FRAME 4 — PAYWALL LEGENDARY ============ -->
+  <section>
+    <div class="frame-label">4 · Le Veilleur · carte légendaire</div>
+    <div class="phone">
+      <div class="screen" style="background:linear-gradient(170deg,#141822,#0d1016);display:flex;align-items:center;justify-content:center;">
+        <div class="notch"></div>
+        <div class="legend" style="margin:22px auto;">
+          <div class="legend-inner">
+            <div class="legend-holo"></div>
+            <div class="legend-pad">
+              <div class="legend-rare">★ Édition Légendaire ★</div>
+              <div class="legend-name">Le Veilleur</div>
+
+              <div class="legend-eye">
+                <svg width="92" height="92" viewBox="0 0 92 92" fill="none">
+                  <circle cx="46" cy="46" r="42" fill="#10161f" stroke="#d9b24a" stroke-width="3"/>
+                  <circle cx="46" cy="46" r="42" fill="none" stroke="#f6e3a8" stroke-width="1" opacity=".5"/>
+                  <ellipse cx="46" cy="46" rx="30" ry="20" fill="#f7efdc"/>
+                  <circle cx="46" cy="46" r="14" fill="#1f6fb0"/>
+                  <circle cx="46" cy="46" r="6" fill="#0f1620"/>
+                  <circle cx="51" cy="40" r="3" fill="#fff"/>
+                  <!-- satellite panels -->
+                  <g stroke="#d9b24a" stroke-width="3" stroke-linecap="round">
+                    <path d="M12 20 L4 12 M80 20 L88 12 M12 72 L4 80 M80 72 L88 80"/>
+                  </g>
+                  <rect x="2" y="40" width="10" height="12" rx="2" fill="#2b6fa0" stroke="#d9b24a" stroke-width="1.5"/>
+                  <rect x="80" y="40" width="10" height="12" rx="2" fill="#2b6fa0" stroke="#d9b24a" stroke-width="1.5"/>
+                </svg>
+              </div>
+
+              <div class="legend-price"><span class="amt">4,99 €</span><span class="per"> / mois</span></div>
+
+              <ul class="benefits">
+                <li><span class="bi">🛰️</span><span><b>Alertes la veille</b> — chaque plage suivie, avant l'échouage.</span></li>
+                <li><span class="bi">📈</span><span><b>Prévisions 5 jours</b> — fenêtres propres anticipées.</span></li>
+                <li><span class="bi">⭐</span><span><b>Plages illimitées</b> — toute votre collection débloquée.</span></li>
+              </ul>
+
+              <button class="cta-gold">Activer mon Veilleur</button>
+              <div class="legend-note">Annulable en 1 clic · sans engagement</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+</body>
+</html>

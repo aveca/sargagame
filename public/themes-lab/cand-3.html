@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Cand 3 — Soft Modern Comic</title>
+<style>
+@font-face {
+  font-family: "Anton";
+  src: url("/fonts/anton-1Ptgg87LROyAm3Kz-C8.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
+:root {
+  --teal: #14b8a6;
+  --teal-deep: #0d9488;
+  --teal-soft: #ccfbf1;
+  --cream: #fff8ef;
+  --cream-2: #fdf2e3;
+  --ink: #1f2d3d;
+  --ink-soft: #5a6b7b;
+  --coral: #ff7a59;
+  --line: #2a3a4a;
+  --propre: #27c46b;
+  --modere: #e8a800;
+  --eviter: #e8522a;
+  --card-radius: 32px;
+  --shadow-teal: 0 14px 30px -12px rgba(20,184,166,.45);
+  --shadow-soft: 0 10px 26px -14px rgba(31,45,61,.30);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: radial-gradient(circle at 20% 0%, #e8fbf6 0%, #fef6ec 55%, #fdeede 100%);
+  color: var(--ink);
+  line-height: 1.45;
+  padding: 28px 14px 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+}
+
+.lab-head {
+  max-width: 380px;
+  text-align: center;
+}
+.lab-head h1 {
+  font-family: "Anton", sans-serif;
+  font-size: 26px;
+  letter-spacing: .5px;
+  color: var(--teal-deep);
+  text-transform: uppercase;
+}
+.lab-head p {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-top: 4px;
+}
+
+/* phone frame */
+.phone {
+  width: 340px;
+  max-width: 100%;
+  background: var(--cream);
+  border: 2.5px solid var(--line);
+  border-radius: 40px;
+  padding: 18px 16px 22px;
+  box-shadow: var(--shadow-soft), 0 0 0 8px rgba(255,255,255,.6);
+  position: relative;
+}
+.phone::before {
+  content: "";
+  position: absolute;
+  top: 9px; left: 50%;
+  transform: translateX(-50%);
+  width: 78px; height: 6px;
+  border-radius: 99px;
+  background: #d9e3e0;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 12px 2px 16px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.eye {
+  width: 34px; height: 34px;
+  flex: none;
+}
+.brand b {
+  font-family: "Anton", sans-serif;
+  font-size: 14px;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.brand span {
+  display: block;
+  font-size: 9px;
+  color: var(--ink-soft);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.pill {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: .5px;
+  color: var(--teal-deep);
+  background: var(--teal-soft);
+  border: 1.5px solid var(--teal);
+  border-radius: 99px;
+  padding: 5px 9px;
+  text-transform: uppercase;
+}
+
+/* labels */
+.section-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0 2px 10px;
+}
+
+/* status chip */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: #fff;
+  border-radius: 99px;
+  padding: 4px 11px;
+  border: 2px solid rgba(0,0,0,.12);
+}
+.chip.propre { background: var(--propre); }
+.chip.modere { background: var(--modere); }
+.chip.eviter { background: var(--eviter); }
+.chip .dot { width: 7px; height: 7px; border-radius: 50%; background: #fff; opacity: .9; }
+
+/* ===== 1. VERDICT ===== */
+.verdict {
+  background: linear-gradient(160deg, #ffffff 0%, var(--cream-2) 100%);
+  border: 2.5px solid var(--line);
+  border-radius: var(--card-radius);
+  padding: 20px;
+  box-shadow: var(--shadow-soft);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.verdict-sun {
+  position: absolute;
+  top: -28px; right: -28px;
+  width: 120px; height: 120px;
+  background: radial-gradient(circle, rgba(255,184,77,.35), transparent 70%);
+  border-radius: 50%;
+}
+.verdict h2 {
+  font-family: "Anton", sans-serif;
+  font-size: 30px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  line-height: 1;
+  margin-bottom: 14px;
+}
+.verdict .illus {
+  width: 100%;
+  border-radius: 22px;
+  display: block;
+  border: 2px solid var(--line);
+  margin-bottom: 14px;
+}
+.score-ring {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  background: #fff;
+  border: 2.5px solid var(--propre);
+  border-radius: 26px;
+  padding: 10px 22px;
+  box-shadow: 0 8px 20px -10px rgba(39,196,107,.5);
+  margin-bottom: 6px;
+}
+.score-ring b {
+  font-family: "Anton", sans-serif;
+  font-size: 46px;
+  color: var(--propre);
+  line-height: .9;
+}
+.score-ring small {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.verdict .meta {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin: 8px 0 16px;
+}
+.verdict .meta b { color: var(--ink); }
+
+/* CTA */
+.cta {
+  display: block;
+  width: 100%;
+  text-align: center;
+  font-family: "Anton", sans-serif;
+  font-size: 16px;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(135deg, var(--teal) 0%, var(--teal-deep) 100%);
+  border: 2.5px solid var(--line);
+  border-radius: 20px;
+  padding: 14px 16px;
+  box-shadow: var(--shadow-teal);
+  cursor: pointer;
+  text-decoration: none;
+}
+.cta.ghost {
+  background: #fff;
+  color: var(--teal-deep);
+  box-shadow: var(--shadow-soft);
+}
+
+/* ===== 2. LIST ===== */
+.beach-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+  border: 2.5px solid var(--line);
+  border-radius: 24px;
+  padding: 11px 14px 11px 11px;
+  box-shadow: var(--shadow-soft);
+  margin-bottom: 12px;
+}
+.beach-card:last-child { margin-bottom: 0; }
+.bc-thumb {
+  width: 52px; height: 52px;
+  flex: none;
+  border-radius: 16px;
+  border: 2px solid var(--line);
+  overflow: hidden;
+}
+.bc-thumb svg { display: block; width: 100%; height: 100%; }
+.bc-body { flex: 1; min-width: 0; }
+.bc-body h3 {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: .2px;
+}
+.bc-body .sub { font-size: 11px; color: var(--ink-soft); }
+.bc-score {
+  font-family: "Anton", sans-serif;
+  font-size: 26px;
+  line-height: 1;
+  flex: none;
+  width: 46px;
+  text-align: right;
+}
+.bc-score.propre { color: var(--propre); }
+.bc-score.modere { color: var(--modere); }
+.bc-score.eviter { color: var(--eviter); }
+
+/* ===== 3. TCG ===== */
+.tcg {
+  background:
+    radial-gradient(circle at 30% 0%, #fff 0%, transparent 60%),
+    linear-gradient(150deg, #14b8a6 0%, #0d9488 45%, #0e7490 100%);
+  border: 3px solid var(--line);
+  border-radius: 28px;
+  padding: 8px;
+  box-shadow: 0 20px 40px -16px rgba(13,148,136,.6);
+}
+.tcg-inner {
+  background: var(--cream);
+  border: 2.5px solid var(--line);
+  border-radius: 22px;
+  padding: 12px;
+}
+.tcg-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.tcg-name {
+  font-family: "Anton", sans-serif;
+  font-size: 19px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.tcg-hp {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.tcg-hp small { font-size: 9px; font-weight: 800; color: var(--ink-soft); }
+.tcg-hp b {
+  font-family: "Anton", sans-serif;
+  font-size: 26px;
+  color: var(--propre);
+  line-height: 1;
+}
+.tcg-art {
+  border: 3px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 0 0 3px #fff;
+}
+.tcg-art svg { display: block; width: 100%; }
+.tcg-typebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+.tcg-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  background: var(--teal-soft);
+  border: 2px solid var(--teal);
+  color: var(--teal-deep);
+  border-radius: 99px;
+  padding: 4px 10px;
+}
+.tcg-rare { font-size: 14px; letter-spacing: 2px; color: var(--modere); }
+.tcg-foot {
+  margin-top: 10px;
+  font-size: 10px;
+  color: var(--ink-soft);
+  display: flex;
+  justify-content: space-between;
+  border-top: 1.5px dashed #d4ddda;
+  padding-top: 8px;
+}
+.tcg-foot b { color: var(--ink); }
+
+/* ===== 4. PAYWALL ===== */
+.paywall {
+  background: linear-gradient(165deg, #ffffff 0%, var(--cream-2) 100%);
+  border: 2.5px solid var(--line);
+  border-radius: var(--card-radius);
+  padding: 20px;
+  box-shadow: var(--shadow-soft);
+  text-align: center;
+}
+.veilleur-badge {
+  width: 76px; height: 76px;
+  margin: 0 auto 10px;
+  background: radial-gradient(circle at 35% 30%, #2dd4bf, #0d9488);
+  border: 3px solid var(--line);
+  border-radius: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-teal);
+}
+.paywall h2 {
+  font-family: "Anton", sans-serif;
+  font-size: 24px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.paywall .tag { font-size: 12px; color: var(--ink-soft); margin-bottom: 4px; }
+.price {
+  font-family: "Anton", sans-serif;
+  font-size: 38px;
+  color: var(--teal-deep);
+  line-height: 1;
+  margin: 8px 0 16px;
+}
+.price span { font-size: 14px; color: var(--ink-soft); }
+.benefits {
+  list-style: none;
+  text-align: left;
+  margin-bottom: 16px;
+}
+.benefits li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  background: #fff;
+  border: 2px solid #e7ece9;
+  border-radius: 16px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  box-shadow: 0 4px 12px -8px rgba(31,45,61,.25);
+}
+.benefits .ck {
+  flex: none;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--teal-soft);
+  border: 2px solid var(--teal);
+  color: var(--teal-deep);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 900;
+  margin-top: 1px;
+}
+.benefits b { color: var(--ink); }
+.benefits .li-sub { color: var(--ink-soft); font-size: 11.5px; }
+.cancel {
+  font-size: 11px;
+  color: var(--ink-soft);
+  margin-top: 10px;
+}
+.cancel b { color: var(--teal-deep); }
+</style>
+</head>
+<body>
+
+<div class="lab-head">
+  <h1>Soft Modern Comic</h1>
+  <p>Candidat #3 — comic doux &amp; moderne · turquoise / crème / corail</p>
+</div>
+
+<!-- ============ 1. HOME — VERDICT DU JOUR ============ -->
+<div class="phone">
+  <div class="topbar">
+    <div class="brand">
+      <svg class="eye" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="20" cy="20" r="18" fill="#0d9488" stroke="#2a3a4a" stroke-width="2.5"/>
+        <ellipse cx="20" cy="20" rx="13" ry="9" fill="#fff8ef" stroke="#2a3a4a" stroke-width="2"/>
+        <circle cx="20" cy="20" r="5" fill="#0d9488" stroke="#2a3a4a" stroke-width="2"/>
+        <circle cx="22" cy="18" r="1.6" fill="#fff8ef"/>
+      </svg>
+      <div>
+        <b>Sargasses</b>
+        <span>Martinique</span>
+      </div>
+    </div>
+    <div class="pill">🛰️ Live</div>
+  </div>
+
+  <div class="section-label">Verdict du jour · jeu. 19 juin</div>
+
+  <div class="verdict">
+    <div class="verdict-sun"></div>
+    <h2>Les Salines</h2>
+    <svg class="illus" viewBox="0 0 300 130" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="sky1" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffe3b3"/><stop offset="1" stop-color="#ffd1e0"/>
+        </linearGradient>
+        <linearGradient id="sea1" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#5eead4"/><stop offset="1" stop-color="#14b8a6"/>
+        </linearGradient>
+      </defs>
+      <rect width="300" height="130" fill="url(#sky1)"/>
+      <circle cx="225" cy="42" r="22" fill="#ffb347"/>
+      <path d="M0 78 Q75 64 150 78 T300 78 V130 H0 Z" fill="url(#sea1)"/>
+      <path d="M0 96 Q70 84 150 96 T300 96 V130 H0 Z" fill="#0d9488" opacity=".55"/>
+      <path d="M0 118 Q150 104 300 118 V130 H0 Z" fill="#fff0d6"/>
+      <ellipse cx="150" cy="124" rx="150" ry="10" fill="#fde7c4"/>
+    </svg>
+    <div class="score-ring">
+      <b>92</b>
+      <small>Indice plage</small>
+    </div>
+    <div class="meta"><span class="chip propre"><span class="dot"></span>Propre</span><br><br>Eau dégagée, aucun radeau détecté à proximité.</div>
+    <a class="cta" href="#">Voir la fiche</a>
+  </div>
+</div>
+
+<!-- ============ 2. LISTE CARTES PLAGE ============ -->
+<div class="phone">
+  <div class="topbar">
+    <div class="brand">
+      <svg class="eye" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="#0d9488" stroke="#2a3a4a" stroke-width="2.5"/><ellipse cx="20" cy="20" rx="13" ry="9" fill="#fff8ef" stroke="#2a3a4a" stroke-width="2"/><circle cx="20" cy="20" r="5" fill="#0d9488" stroke="#2a3a4a" stroke-width="2"/><circle cx="22" cy="18" r="1.6" fill="#fff8ef"/></svg>
+      <div><b>Mes plages</b><span>Sud Caraïbe</span></div>
+    </div>
+    <div class="pill">4 suivies</div>
+  </div>
+
+  <div class="section-label">Classement du jour</div>
+
+  <div class="beach-card">
+    <div class="bc-thumb"><svg viewBox="0 0 52 52"><rect width="52" height="52" fill="#ffe3b3"/><path d="M0 30 Q26 22 52 30 V52 H0Z" fill="#14b8a6"/><circle cx="40" cy="14" r="7" fill="#ffb347"/></svg></div>
+    <div class="bc-body">
+      <h3>Anse Mitan</h3>
+      <div class="sub"><span class="chip propre" style="font-size:9px;padding:2px 8px;"><span class="dot"></span>Propre</span></div>
+    </div>
+    <div class="bc-score propre">88</div>
+  </div>
+
+  <div class="beach-card">
+    <div class="bc-thumb"><svg viewBox="0 0 52 52"><rect width="52" height="52" fill="#ffe3b3"/><path d="M0 30 Q26 22 52 30 V52 H0Z" fill="#14b8a6"/><circle cx="40" cy="14" r="7" fill="#ffb347"/></svg></div>
+    <div class="bc-body">
+      <h3>Anse Dufour</h3>
+      <div class="sub"><span class="chip propre" style="font-size:9px;padding:2px 8px;"><span class="dot"></span>Propre</span></div>
+    </div>
+    <div class="bc-score propre">77</div>
+  </div>
+
+  <div class="beach-card">
+    <div class="bc-thumb"><svg viewBox="0 0 52 52"><rect width="52" height="52" fill="#fff0d0"/><path d="M0 32 Q26 24 52 32 V52 H0Z" fill="#bfa66b"/><path d="M0 38 Q26 33 52 38 V52 H0Z" fill="#e8a800" opacity=".6"/></svg></div>
+    <div class="bc-body">
+      <h3>Le Diamant</h3>
+      <div class="sub"><span class="chip modere" style="font-size:9px;padding:2px 8px;"><span class="dot"></span>Modéré</span></div>
+    </div>
+    <div class="bc-score modere">68</div>
+  </div>
+
+  <div class="beach-card">
+    <div class="bc-thumb"><svg viewBox="0 0 52 52"><rect width="52" height="52" fill="#f3e6cc"/><path d="M0 28 Q26 22 52 28 V52 H0Z" fill="#9c7d3a"/><path d="M0 34 Q26 29 52 34 V52 H0Z" fill="#e8522a" opacity=".55"/></svg></div>
+    <div class="bc-body">
+      <h3>Anse Charpentier</h3>
+      <div class="sub"><span class="chip eviter" style="font-size:9px;padding:2px 8px;"><span class="dot"></span>À éviter</span></div>
+    </div>
+    <div class="bc-score eviter">34</div>
+  </div>
+</div>
+
+<!-- ============ 3. CARTE TCG HERO ============ -->
+<div class="phone">
+  <div class="topbar">
+    <div class="brand">
+      <svg class="eye" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="#0d9488" stroke="#2a3a4a" stroke-width="2.5"/><ellipse cx="20" cy="20" rx="13" ry="9" fill="#fff8ef" stroke="#2a3a4a" stroke-width="2"/><circle cx="20" cy="20" r="5" fill="#0d9488" stroke="#2a3a4a" stroke-width="2"/><circle cx="22" cy="18" r="1.6" fill="#fff8ef"/></svg>
+      <div><b>Ma collection</b><span>Carte du jour</span></div>
+    </div>
+    <div class="pill">★ Brillante</div>
+  </div>
+
+  <div class="section-label">Carte à collectionner</div>
+
+  <div class="tcg">
+    <div class="tcg-inner">
+      <div class="tcg-top">
+        <span class="tcg-name">Anse Mitan</span>
+        <span class="tcg-hp"><small>PV</small><b>88</b></span>
+      </div>
+      <div class="tcg-art">
+        <svg viewBox="0 0 280 170" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="tsky" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#ffd089"/><stop offset=".55" stop-color="#ffb3c9"/><stop offset="1" stop-color="#ffd9b0"/>
+            </linearGradient>
+            <linearGradient id="tsea" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#7df0dc"/><stop offset="1" stop-color="#0d9488"/>
+            </linearGradient>
+            <radialGradient id="tglow" cx="50%" cy="38%" r="55%">
+              <stop offset="0" stop-color="#fff7e0" stop-opacity=".9"/><stop offset="1" stop-color="#fff7e0" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <rect width="280" height="170" fill="url(#tsky)"/>
+          <circle cx="200" cy="56" r="30" fill="#ffba4d"/>
+          <circle cx="200" cy="56" r="44" fill="#ffd27a" opacity=".4"/>
+          <rect width="280" height="170" fill="url(#tglow)"/>
+          <path d="M0 96 Q70 82 140 96 T280 96 V170 H0Z" fill="url(#tsea)"/>
+          <path d="M0 112 Q70 100 140 112 T280 112 V170 H0Z" fill="#0d9488" opacity=".5"/>
+          <path d="M0 138 Q140 122 280 138 V170 H0Z" fill="#fff1d4"/>
+          <path d="M30 138 q3 -34 -6 -52 q14 8 20 22 q-2 -22 4 -34 q10 16 8 36 q8 -12 18 -16 q-10 18 -16 44Z" fill="#0d9488" stroke="#2a3a4a" stroke-width="2"/>
+          <rect x="28" y="136" width="6" height="20" fill="#8a5a2b"/>
+          <path d="M0 156 Q140 144 280 156 V170 H0Z" fill="#fbe2bc"/>
+        </svg>
+      </div>
+      <div class="tcg-typebar">
+        <span class="tcg-type">🌊 Type Eau</span>
+        <span class="tcg-rare">★★★★☆</span>
+      </div>
+      <div class="tcg-foot">
+        <span>Capacité : <b>Mer dégagée</b></span>
+        <span>Données <b>Copernicus</b></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 4. PAYWALL — LE VEILLEUR ============ -->
+<div class="phone">
+  <div class="topbar">
+    <div class="brand">
+      <svg class="eye" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="#0d9488" stroke="#2a3a4a" stroke-width="2.5"/><ellipse cx="20" cy="20" rx="13" ry="9" fill="#fff8ef" stroke="#2a3a4a" stroke-width="2"/><circle cx="20" cy="20" r="5" fill="#0d9488" stroke="#2a3a4a" stroke-width="2"/><circle cx="22" cy="18" r="1.6" fill="#fff8ef"/></svg>
+      <div><b>Premium</b><span>Le Veilleur</span></div>
+    </div>
+    <div class="pill">Essai libre</div>
+  </div>
+
+  <div class="paywall">
+    <div class="veilleur-badge">
+      <svg width="42" height="42" viewBox="0 0 40 40">
+        <ellipse cx="20" cy="20" rx="15" ry="10" fill="#fff8ef" stroke="#2a3a4a" stroke-width="2.2"/>
+        <circle cx="20" cy="20" r="6" fill="#0d9488" stroke="#2a3a4a" stroke-width="2.2"/>
+        <circle cx="22" cy="18" r="2" fill="#fff8ef"/>
+        <path d="M3 14 L8 16 M37 14 L32 16 M3 26 L8 24 M37 26 L32 24" stroke="#fff8ef" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="tag">Ton satellite personnel</div>
+    <h2>Le Veilleur</h2>
+    <div class="price">4,99€ <span>/ mois</span></div>
+
+    <ul class="benefits">
+      <li>
+        <span class="ck">✓</span>
+        <span><b>Alertes la veille</b><br><span class="li-sub">Reçois le verdict avant l'arrivée des radeaux.</span></span>
+      </li>
+      <li>
+        <span class="ck">✓</span>
+        <span><b>Toutes tes plages</b><br><span class="li-sub">Suivi illimité, prévision à 5 jours.</span></span>
+      </li>
+      <li>
+        <span class="ck">✓</span>
+        <span><b>Collection complète</b><br><span class="li-sub">Débloque les cartes brillantes &amp; rares.</span></span>
+      </li>
+    </ul>
+
+    <a class="cta" href="#">Activer mon Veilleur</a>
+    <div class="cancel">Sans engagement · <b>annulable en 1 clic</b></div>
+  </div>
+</div>
+
+</body>
+</html>

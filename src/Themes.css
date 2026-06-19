@@ -50,11 +50,11 @@ body.theme-comic{
   box-shadow:3px 3px 0 var(--sg-ink) !important;
   color:var(--sg-ink) !important;background:var(--sg-card) !important;text-shadow:none !important;
 }
-/* CTA primaires uniquement → rouge comic punchy */
+/* CTA primaires → DORÉ golden-hour (plus de rouge, feedback fondateur). Encré + punchy. */
 .theme-comic .sg-cta,.theme-comic [class*="cta"],.theme-comic button[type="submit"]{
   font-family:"Anton","Bricolage Grotesque",sans-serif !important;letter-spacing:.5px;
-  text-shadow:1.5px 1.5px 0 rgba(13,11,20,.55) !important;
-  color:#fff !important;background:linear-gradient(180deg,#ff5a4f,#e8322a) !important;
+  text-shadow:1px 1px 0 rgba(255,255,255,.45) !important;
+  color:#0d0b14 !important;background:linear-gradient(180deg,#ffe06a,#ffc72c 55%,#e8a800) !important;
 }
 .theme-comic button:active,.theme-comic .sg-cta:active,.theme-comic [role="button"]:active{
   box-shadow:0 0 0 var(--sg-ink) !important;transform:translate(3px,3px) !important}
@@ -170,7 +170,54 @@ body.theme-sticker{
 .theme-sticker .sheet-handle{background:#ffb3d9 !important}
 
 /* ============================ commun : contenu au-dessus du fond ============================ */
-.theme-comic #root,.theme-manga #root,.theme-arcade #root,.theme-sticker #root{position:relative;z-index:1}
+.theme-comic #root,.theme-manga #root,.theme-arcade #root,.theme-sticker #root,.theme-soft #root{position:relative;z-index:1}
+
+/* ============================ SOFT MODERN (clair, version A de l'A/B) ============================ */
+/* Direction "Soft Modern Comic" : clair, turquoise/crème, arrondi, contours fins, CTA teal.
+   Aucun rouge. Paywall (.sg-modal-panel) VOLONTAIREMENT exclu (revenu protégé, comme comic). */
+:root.theme-soft{
+  --sg-bg:#eafaf6; --sg-bgD:#d6f2ea;
+  --sg-card:#ffffff; --sg-cardS:#f2fbf8;
+  --sg-ink:#0f3d38; --sg-mid:#1d5b53; --sg-mute:#6f9b93; --sg-text:#0f3d38;
+  --sg-border:#cfeae3; --sg-borderM:#2fc6ae; --sg-line:#d4efe9;
+  --sg-glass:#ffffff; --sg-glassBorder:#cdeae3;
+  --sg-header:#0fae9a; --sg-handle:#bfe8df;
+  --sg-card-shadow:0 10px 24px rgba(15,61,56,.10);
+}
+body.theme-soft{
+  background:
+    radial-gradient(circle at 16% 10%, #d8f7ee, transparent 30%),
+    radial-gradient(circle at 86% 16%, #e7f4ff, transparent 30%),
+    linear-gradient(170deg,#f3fbf8 0%,#eafaf6 55%,#e4f6f1 100%) !important;
+  background-attachment:fixed !important;color:var(--sg-ink);
+  font-family:"Bricolage Grotesque",system-ui,sans-serif;
+}
+.theme-soft h1,.theme-soft h2,.theme-soft h3,.theme-soft [class*="-title"]{
+  font-family:"Anton","Bricolage Grotesque",sans-serif !important;letter-spacing:.3px;
+  color:#0f3d38 !important;text-shadow:none;
+}
+.theme-soft .sheet,.theme-soft .sg-l-card,
+.theme-soft .gf-card,.theme-soft .gf-panel,.theme-soft .sg-float-panel,.theme-soft .sg-dock-glass{
+  background:#fff !important;border:1.5px solid #d4ede7 !important;border-radius:20px !important;
+  box-shadow:0 10px 26px rgba(15,61,56,.10) !important;
+  -webkit-backdrop-filter:none !important;backdrop-filter:none !important;color:var(--sg-ink);
+}
+.theme-soft .sg-l-card{border-radius:20px !important;border-left:4px solid #2fc6ae !important}
+.theme-soft button,.theme-soft [role="button"]{
+  font-family:"Bricolage Grotesque",sans-serif !important;font-weight:800 !important;
+  border:1.5px solid #cfeae3 !important;border-radius:14px !important;
+  box-shadow:0 4px 12px rgba(15,61,56,.08) !important;
+  color:var(--sg-ink) !important;background:#fff !important;text-shadow:none !important;
+}
+.theme-soft .sg-cta,.theme-soft [class*="cta"],.theme-soft button[type="submit"]{
+  font-family:"Anton","Bricolage Grotesque",sans-serif !important;letter-spacing:.4px;
+  color:#fff !important;background:linear-gradient(180deg,#2fd0b4,#0fae9a 60%,#0a8e7e) !important;
+  border:none !important;box-shadow:0 8px 18px rgba(15,142,126,.30) !important;text-shadow:none !important;
+}
+.theme-soft button:active,.theme-soft .sg-cta:active,.theme-soft [role="button"]:active{
+  transform:translateY(2px) !important;box-shadow:0 3px 8px rgba(15,61,56,.12) !important}
+.theme-soft .sg-bottom-nav{background:#fff !important;border-top:1.5px solid #e0f1ec !important}
+.theme-soft .sheet-handle{background:#cfeae3 !important}
 
 /* ============================ THEME PICKER (fun, flottant) ============================ */
 .sg-theme-fab{position:fixed;right:12px;bottom:84px;z-index:99998;width:46px;height:46px;border-radius:50%;
