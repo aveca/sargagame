@@ -428,7 +428,14 @@ h2.head{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:-.02em;tex
           <rect x="-40" y="-40" width="880" height="420" fill="url(#warmG)"/>
           <!-- soleil : glisse J0→J6 au scrub (translateX via #sunGroup) + monte au scroll -->
           <g id="sunGroup">
-            <circle id="sunGlow" cx="540" cy="300" r="150" fill="url(#sun)"/>
+            <!-- halo : cercles PLEINS empilés (pas de paint-server SVG) — immunise
+                 contre le bug WebKit/iOS qui peignait le gradient en gris plat. -->
+            <g id="sunGlow">
+              <circle cx="540" cy="300" r="150" fill="#F2B05E" opacity=".06"/>
+              <circle cx="540" cy="300" r="120" fill="#FFC979" opacity=".12"/>
+              <circle cx="540" cy="300" r="92" fill="#FFD884" opacity=".20"/>
+              <circle cx="540" cy="300" r="66" fill="#FFE6B4" opacity=".34"/>
+            </g>
             <circle cx="540" cy="300" r="40" fill="#FFF7E2"/>
           </g>
           <g class="sgh-cloud1" opacity=".46">
