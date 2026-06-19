@@ -200,7 +200,8 @@ function TCard({beach,lang,onTap,rot=0,collected=true}){
 /* DÉTAIL PLAGE « en monde comic » — ouvert au tap d'une carte. Garde le joueur
    dans l'univers arène (mêmes police/couleurs/Veilleur) au lieu de l'éjecter
    vers l'app sombre. Le seul handoff = le CTA premium (moment de conversion). */
-function ChasseDetail({beach,lang,onClose,onPremium,onFull,track}){
+function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool=[],track}){
+  const rel=(pool||[]).filter(b=>b&&b.id&&b.id!==beach.id&&b.status&&b.score!=null).slice(0,3)
   const _t=(o)=>(o&&(o[lang]||o.fr))||""
   const v=vof(beach.status), r=rarity(beach.score)
   const sc=beach.score!=null?Math.round(beach.score):null
@@ -256,6 +257,19 @@ function ChasseDetail({beach,lang,onClose,onPremium,onFull,track}){
         <button type="button" className="lc-detail-full" onClick={onFull}>
           {_t({fr:"Fiche complète & carte →",en:"Full sheet & map →",es:"Ficha completa y mapa →"})}
         </button>
+
+        {rel.length>0&&(
+          <div className="lc-detail-rel">
+            <div className="lc-detail-fc-h">{_t({fr:"PLAGES VOISINES",en:"NEARBY BEACHES",es:"PLAYAS CERCA"})}</div>
+            <div className="lc-detail-rel-row">
+              {rel.map(b=>(
+                <div className="lc-detail-rel-card" key={b.id}>
+                  <TCard beach={b} lang={lang} onTap={()=>onRelated&&onRelated(b)}/>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
@@ -491,9 +505,10 @@ export default function ChasseHome(props){
         <button type="button" className="lc-maplink" onClick={()=>onShowMap&&onShowMap()}>{_t(I18N.mapLink)}</button>
       </section>
 
-      {detail&&<ChasseDetail beach={detail} lang={lang} track={track}
+      {detail&&<ChasseDetail beach={detail} lang={lang} track={track} pool={collList}
         onClose={()=>setDetail(null)}
         onPremium={(src)=>{ onPremium&&onPremium(src||"chasse_detail") }}
+        onRelated={(b)=>{ collect(b); if(track)try{track("sg_chasse_card_open",{beach_id:b.id,which:"related"})}catch(_){}; setDetail(b) }}
         onFull={()=>{ const b=detail; setDetail(null); onOpenBeach&&onOpenBeach(b) }}/>}
     </div>
   )
@@ -651,6 +666,10 @@ const CSS=`
 .lc-fc-day{font:800 9px/1 "Comic Neue",system-ui,sans-serif;text-transform:uppercase;opacity:.8}
 .lc-fc-dot{font-family:"AntonLC",system-ui,sans-serif;font-size:14px;line-height:1}
 .lc-fc-cell.lock .lc-fc-dot{font-size:11px;filter:grayscale(1);opacity:.7}
+/* plages voisines (hub d'exploration in-world) */
+.lc-detail-rel{margin-top:20px}
+.lc-detail-rel-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}
+.lc-detail-rel-card .lc-card{width:100%}
 
 /* carte TCG (réutilisable) */
 .lc-card{position:relative;border-radius:14px;padding:6px;border:2.5px solid var(--ink);text-align:left;cursor:pointer;
