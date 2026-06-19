@@ -6550,9 +6550,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   // TOUT le pitch + l'action par une scène golden-hour comic + cases BD paper/ink (mêmes
   // tokens .lc- que ChasseDetail). Asset validé = design/proto-paywall-comic.html. NE TOUCHE
   // PAS la logique de paiement : le CTA appelle startCheckout(effectivePlan,"comic") inchangé,
-  // l'overlay payStep on-site (rendu hors panel) reste monté. Override ?pwcomic=1/0. 50/50 =
-  // holdout sécurité-revenu mesurable (modal→CTA) tant que le rendu live n'est pas confirmé.
-  const pwComic=(()=>{try{const q=window.location.search;if(/[?&]pwcomic=1/.test(q))return true;if(/[?&]pwcomic=0/.test(q))return false;return abVariant("pw_comic",["control","comic"],[.5,.5])==="comic"}catch(_){return false}})()
+  // l'overlay payStep on-site (rendu hors panel) reste monté.
+  // PROMU EN DÉFAUT 2026-06-19 (rendu WebKit mobile vérifié OK, 0 erreur JS, smoke) : tous
+  // les visiteurs ont le paywall comic — un seul monde, fin de la roulette. Override debug
+  // ?pwcomic=0 = revient au PremiumModal legacy (rollback revenu instantané si besoin).
+  const pwComic=(()=>{try{return !/[?&]pwcomic=0/.test(window.location.search)}catch(_){return true}})()
   // Vérif d'abo existant (PWA installée après paiement) — extraite en callback pour
   // que les deux skins (comic + classique) la partagent sans dupliquer la logique.
   const verifyExistingSub=useCallback(()=>{
