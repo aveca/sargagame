@@ -11988,12 +11988,12 @@ export default function App(){
 
   // Hero Verdict — home "/" uniquement (jamais les deep-links/landings SEO),
   // 1×/session (sessionStorage), jamais pendant une activation premium.
+  // CARTE-FIRST (décision fondateur 2026-06-19, option A) : on ATTERRIT sur la CARTE
+  // (« carte sargasses » = cœur produit + mot-clé SEO + solution au problème). L'arène/jeu
+  // s'ouvre PAR-DESSUS en 1 tap (bouton flottant « JOUER »). Avant : l'arène (hero) couvrait
+  // la carte au chargement. Réversible : ?arena=1 = atterrir sur l'arène comme avant.
   const[showHero,setShowHero]=useState(()=>{
-    try{
-      return window.location.pathname==="/"
-        &&!window.location.search.includes("premium")
-        &&!sessionStorage.getItem("sg_hero_seen")
-    }catch(_){return false}
+    try{ return /[?&]arena=1/.test(window.location.search) }catch(_){return false}
   })
   // Découverte éducative (StoryEngine). Gate URL ?decouverte=1 pour QA ; entrée UI dédiée.
   const[showDiscovery,setShowDiscovery]=useState(()=>{try{return /[?&]decouverte=1/.test(window.location.search)}catch(_){return false}})
@@ -12901,6 +12901,18 @@ export default function App(){
       <StyleInjector/>
       {showSplash&&<ArenaSplash lang={lang} track={track} onDone={()=>setShowSplash(false)}/>}
       {showArenaOnb&&<ArenaOnboarding lang={lang} track={track} onDone={finishArenaOnb} onSkip={finishArenaOnb}/>}
+      {/* CARTE-FIRST (option A) : on atterrit sur la CARTE ; bouton flottant pour OUVRIR
+          l'arène/jeu par-dessus en 1 tap. Top-level = toujours rendu (≠ branche carte). */}
+      {!showHero&&chasse&&!showSplash&&!showArenaOnb&&!showPremium&&!showStation&&!showSolutions&&(
+        <button type="button" aria-label={_t(lang,"Ouvrir l'arène de jeu","Open the game arena","Abrir la arena")}
+          onClick={()=>{try{track("sg_open_arena",{from:"map"})}catch(_){};setShowHero(true)}}
+          style={{position:"fixed",left:"50%",transform:"translateX(-50%)",bottom:"calc(86px + env(safe-area-inset-bottom))",zIndex:1040,
+            display:"flex",alignItems:"center",gap:8,padding:"11px 22px",borderRadius:999,
+            background:"linear-gradient(180deg,#FFE07A,#FFC72C)",color:"#0d0b14",border:"2.5px solid #0d0b14",
+            boxShadow:"0 4px 0 #0d0b14,0 9px 20px rgba(13,11,20,.34)",fontFamily:"inherit",fontWeight:800,fontSize:15.5,cursor:"pointer",WebkitTapHighlightColor:"transparent",forcedColorAdjust:"none"}}>
+          🎴 {_t(lang,"Jouer","Play","Jugar")}
+        </button>
+      )}
       <AbDebug/>
       {/* Mot-clé SEO sr-only — <p> (PAS <h1>) : la scène/route visible fournit déjà
           l'unique <h1> ; deux <h1> = anti-pattern SEO + a11y. Texte reste crawlable. */}

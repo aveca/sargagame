@@ -19,7 +19,7 @@ p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
 p.on('pageerror', e => errs.push('PAGEERROR ' + e.message));
 
 // fresh first-launch: chasse on, splash+onboarding allowed to show
-await p.goto(BASE + '/?chasse=1', { waitUntil: 'networkidle', timeout: 30000 });
+await p.goto(BASE + '/?chasse=1&arena=1', { waitUntil: 'networkidle', timeout: 30000 });
 await p.waitForTimeout(1200);
 await p.screenshot({ path: '/tmp/j1-splash.png' });
 
