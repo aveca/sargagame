@@ -12025,8 +12025,11 @@ export default function App(){
   // Leaflet reste un fallback de secours via ?nav=map (QA / si jamais besoin).
   const[navWorld]=useState(()=>{try{return !/[?&]nav=map/.test(window.location.search)}catch(_){return true}})
   const archAutoRef=useRef(false)
-  // Intro carte (MapIntroStory) — landing SVG, show-once par device, skippable.
-  const[showMapIntro,setShowMapIntro]=useState(()=>{try{return /[?&]mapintro=1/.test(window.location.search)||!localStorage.getItem("sg_map_intro_v1")}catch(_){return false}})
+  // Intro carte (MapIntroStory) — DÉSACTIVÉE par défaut 2026-06-19 (audit live : le
+  // prélude « LE VEILLEUR SCANNE » enterrait la carte [3-4 taps] et son overlay #mi3sky
+  // interceptait les clics → dock bloqué). La CARTE = le cœur produit (« carte sargasses »)
+  // → taper Carte ouvre la carte DIRECT. Opt-in debug ?mapintro=1.
+  const[showMapIntro,setShowMapIntro]=useState(()=>{try{return /[?&]mapintro=1/.test(window.location.search)}catch(_){return false}})
   // A/B `prev_az` : landing golden-hour sur /previsions/ (ForecastChart + meilleur jour)
   // vs control (carte brute actuelle). 50/50. Override ?prev_az=1/0. Pathname-gated.
   const isPrevisions=(()=>{try{return /^\/previsions\/?$/.test(window.location.pathname)||/^\/_gp\/previsions\/?$/.test(window.location.pathname)}catch(_){return false}})()
