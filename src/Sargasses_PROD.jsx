@@ -11501,8 +11501,10 @@ export default function App(){
   // A/B `pw_onboard` : onboarding guidé payant (favoris→notif→brief) vs toast 5s (control).
   // ACTIVÉ 100% ([0,1]) le 18/06 (feu vert fondateur « lance ») — vu le faible volume de
   // payeurs un A/B serait trop lent à lire ; tout nouveau payeur a le setup guidé. Override
-  // ?onboard=0 re-force le toast (sécurité). Réversible : repasser à [1,0] (parqué) ou [.5,.5] (A/B).
-  const pwOnboard=useMemo(()=>{try{const q=window.location.search;if(/[?&]onboard=1/.test(q))return"onboard";if(/[?&]onboard=0/.test(q))return"control";return abVariant("pw_onboard",["control","onboard"],[0,1])}catch(_){return"control"}},[])
+  // ?onboard=0 re-force le toast (sécurité). RÉCOLTÉ 2026-06-19 (loop ab-eval) : le poids [0,1]
+  // renvoyait déjà toujours "onboard" → abVariant retiré (ne servait qu'à injecter le bruit
+  // ab_pw_onboard dans track() + polluer l'eval). Réversible : restaurer abVariant("pw_onboard",["control","onboard"],[.5,.5]).
+  const pwOnboard=useMemo(()=>{try{const q=window.location.search;if(/[?&]onboard=1/.test(q))return"onboard";if(/[?&]onboard=0/.test(q))return"control";return"onboard"}catch(_){return"control"}},[])
   // Toast 5s : auto-dismiss UNIQUEMENT en control. En onboarding, l'overlay reste jusqu'à onDone.
   useEffect(()=>{if(showWelcome&&pwOnboard!=="onboard"){track("sg_welcome_toast_view");const t=setTimeout(()=>setShowWelcome(false),5000);return()=>clearTimeout(t)}},[showWelcome,pwOnboard])
 
@@ -11932,8 +11934,10 @@ export default function App(){
   const mapWarm=useMemo(()=>{try{const q=window.location.search;if(/[?&]mapwarm=1/.test(q))return"warm";if(/[?&]mapwarm=0/.test(q))return"control";return abVariant("map_warm",["control","warm"],[.5,.5])}catch(_){return"control"}},[])
   // A/B `pw_beach_dive` : fiche plage « en PLONGÉE » (scène SVG plein écran, 6 stages,
   // Le Veilleur v2, scrub prévision verrouillé J2-7) vs BeachSheet (control intact).
-  // 50/50. Override ?beachdive=1/0. Conversion = openPremium UNIQUE (contextualisé plage).
-  const beachDive=useMemo(()=>{try{const q=window.location.search;if(/[?&]beachdive=1/.test(q))return true;if(/[?&]beachdive=0/.test(q))return false;return abVariant("pw_beach_dive",["control","dive"],[.5,.5])==="dive"}catch(_){return false}},[])
+  // pw_beach_dive PROMU 2026-06-19 (GO fondateur) : variante `dive` gagnante +84% @95% (n=416/469, 28j).
+  // Hardcodé `dive` (BeachDive) pour 100%. ?beachdive=0 force encore le control (BeachSheet) — rollback/preview.
+  // Réversible : restaurer abVariant("pw_beach_dive",["control","dive"],[.5,.5])==="dive".
+  const beachDive=useMemo(()=>{try{const q=window.location.search;if(/[?&]beachdive=1/.test(q))return true;if(/[?&]beachdive=0/.test(q))return false;return true}catch(_){return false}},[])
   // nav_dive RETIRÉ 2026-06-18 (loop ab-eval 28j) : bras mort n=46 @0% conv vs control n=358 @1.4%.
   // Inliné au control — la plongée 1×/session ajoutait une friction sans conversion. ?navdive=1 force
   // encore l'aperçu. Réversible : restaurer abVariant("nav_dive",["control","dive"],[.85,.15])==="dive".
