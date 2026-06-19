@@ -120,3 +120,8 @@ scripts/automation/data/analytics-snapshot.json
 experiments/
 /backend/
 /frontend/
+
+# scratch / QA temp scripts (build verif, agent captures)
+_*.mjs
+qa-capture-tmp.cjs
+qa-*.cjs
