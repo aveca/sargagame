@@ -330,6 +330,24 @@ export default function ChasseHome(props){
     if(track)try{track("sg_email_submit",{source:"chasse"})}catch(_){}
     setCapDone(true)
   },[capEmail,onCaptureEmail,track])
+  /* DÉFI DU JOUR « plus chaud / plus froid » (mini-jeu self-contained, 1 round/jour) */
+  const defiPair=useMemo(()=>{
+    const a=(pickBeaches||[]).filter(b=>b&&b.id&&b.score!=null&&b.status&&b.name)
+    if(a.length<2) return null
+    const doy=Math.floor(Date.now()/864e5), i=doy%a.length; let j=(doy*7+3)%a.length; if(j===i) j=(i+1)%a.length
+    return [a[i],a[j]]
+  },[pickBeaches])
+  const [defiDone,setDefiDone]=useState(()=>{ try{ return localStorage.getItem("sg_defi_day")===todayKey() }catch(_){ return false } })
+  const [defiRes,setDefiRes]=useState(null)
+  const guessDefi=useCallback((dir)=>{
+    if(!defiPair||defiRes||defiDone) return
+    const cur=defiPair[0], nxt=defiPair[1]
+    const ok = dir==="up" ? (nxt.score>=cur.score) : (nxt.score<=cur.score)
+    setDefiRes({ok,score:Math.round(nxt.score),name:nxt.name})
+    try{ localStorage.setItem("sg_defi_day",todayKey()) }catch(_){}
+    setDefiDone(true)
+    if(track)try{track("sg_chasse_defi",{correct:ok?1:0})}catch(_){}
+  },[defiPair,defiRes,defiDone,track])
   const openDetail=useCallback((b,src)=>{ if(!b)return; if(track)try{track("sg_chasse_card_open",{beach_id:b.id,which:src})}catch(_){}; setDetail(b) },[track])
 
   /* collection : on sème avec la plage du jour + ce qui est déjà collecté */
@@ -536,6 +554,37 @@ export default function ChasseHome(props){
         </div>
       </section>
 
+      {/* ---- DÉFI DU JOUR : plus chaud / plus froid (mini-jeu) ---- */}
+      {defiPair&&(
+        <section className="lc-defi">
+          <div className="lc-eyebrow lc-center">{_t({fr:"🎯 DÉFI DU JOUR",en:"🎯 DAILY CHALLENGE",es:"🎯 DESAFÍO DEL DÍA"})}</div>
+          <div className="lc-defi-card">
+            {(!defiRes&&!defiDone) ? (
+              <>
+                <div className="lc-defi-cur"><b>{defiPair[0].name}</b><span className="lc-defi-sc">{Math.round(defiPair[0].score)}</span></div>
+                <p className="lc-sub lc-center">{_t({
+                  fr:"« "+defiPair[1].name+" » est-elle plus propre, ou moins ?",
+                  en:"Is “"+defiPair[1].name+"” cleaner, or less?",
+                  es:"¿“"+defiPair[1].name+"” está más limpia, o menos?"})}</p>
+                <div className="lc-guesses">
+                  <button type="button" className="lc-gbtn s-ok" onClick={()=>guessDefi("up")}>⬆️ {_t({fr:"PLUS PROPRE",en:"CLEANER",es:"MÁS LIMPIA"})}</button>
+                  <button type="button" className="lc-gbtn s-bad" onClick={()=>guessDefi("down")}>⬇️ {_t({fr:"MOINS",en:"LESS",es:"MENOS"})}</button>
+                </div>
+              </>
+            ) : (
+              <>
+                {defiRes&&<span className={`lc-pow s-${defiRes.ok?"ok":"bad"} lc-verdictpow`}><b>{defiRes.ok?_t(I18N.win):_t(I18N.lose)}</b></span>}
+                <p className="lc-sub lc-center">{defiRes
+                  ? _t({fr:defiRes.name+" = "+defiRes.score+"/100. "+(defiRes.ok?"Bien vu !":"Raté !")+" Reviens demain.",
+                        en:defiRes.name+" = "+defiRes.score+"/100. "+(defiRes.ok?"Nice!":"Missed!")+" Come back tomorrow.",
+                        es:defiRes.name+" = "+defiRes.score+"/100. "+(defiRes.ok?"¡Bien!":"¡Fallaste!")+" Vuelve mañana."})
+                  : _t({fr:"Déjà joué aujourd'hui — reviens demain.",en:"Already played today — come back tomorrow.",es:"Ya jugaste hoy — vuelve mañana."})}</p>
+              </>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* ---- PRÉVISION 7J = premium ---- */}
       <section className="lc-lock">
         <div className="lc-lock-card">
@@ -727,6 +776,13 @@ const CSS=`
 .lc-detail-rel{margin-top:20px}
 .lc-detail-rel-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}
 .lc-detail-rel-card .lc-card{width:100%}
+/* DÉFI DU JOUR (mini-jeu plus chaud/plus froid) */
+.lc-defi{max-width:520px;margin:22px auto 0;text-align:center}
+.lc-defi-card{margin-top:10px;background:var(--paper);border:3px solid var(--ink);border-radius:16px;padding:16px 15px;box-shadow:0 5px 0 var(--ink),0 12px 22px rgba(13,11,20,.32);position:relative}
+.lc-defi-cur{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+.lc-defi-cur b{font-family:"AntonLC",system-ui,sans-serif;font-size:18px;letter-spacing:.3px;text-transform:uppercase}
+.lc-defi-sc{font-family:"AntonLC",system-ui,sans-serif;font-size:26px;color:#fff;background:var(--grn);border:2.5px solid var(--ink);border-radius:9px;padding:2px 11px;box-shadow:2px 2px 0 var(--ink);text-shadow:1.5px 1.5px 0 var(--ink)}
+.lc-defi-card .lc-sub{margin:9px 0 12px;color:#2a2536;font-weight:700}
 /* capture email (funnel) — case comic claire */
 .lc-capture{max-width:520px;margin:18px auto 0}
 .lc-cap-card{background:var(--paper);border:3px solid var(--ink);border-radius:16px;padding:14px 15px;box-shadow:0 5px 0 var(--ink),0 12px 22px rgba(13,11,20,.32)}
