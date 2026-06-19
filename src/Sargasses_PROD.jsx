@@ -12918,12 +12918,33 @@ export default function App(){
     }catch(_){ return false; }
   });
   const finishArenaOnb=useCallback(()=>{ try{localStorage.setItem("sg_onb","1");}catch(_){} setShowArenaOnb(false); },[]);
+  // Marché de l'onboarding : Martinique → null (chaînes legacy intactes). GP + régions
+  // internationales recevaient « Martinique » sur le 1er écran (bug cohérence corrigé).
+  const _onbRegion=useMemo(()=>{
+    try{
+      if(typeof IS_NEW_REGION!=="undefined"&&IS_NEW_REGION&&typeof REGION!=="undefined"&&REGION)
+        return {label:REGION.name,beaches:(REGION.beaches||[]).slice(0,3).map(b=>b&&b.name).filter(Boolean)};
+      if(typeof location!=="undefined"&&location.hostname&&location.hostname.includes("guadeloupe"))
+        return {label:"Guadeloupe",beaches:["Grande Anse","Plage de la Caravelle"]};
+    }catch(_){}
+    return null;
+  },[]);
+  // Wordmark du splash : international = « SARGASSUM <nom> », FR = « SARGASSES <NOM> ».
+  const _onbWordmark=useMemo(()=>{
+    try{
+      if(typeof IS_NEW_REGION!=="undefined"&&IS_NEW_REGION&&typeof REGION!=="undefined"&&REGION)
+        return "SARGASSUM "+String(REGION.name||"").toUpperCase();
+      if(typeof location!=="undefined"&&location.hostname&&location.hostname.includes("guadeloupe"))
+        return "SARGASSES GUADELOUPE";
+    }catch(_){}
+    return "SARGASSES MARTINIQUE";
+  },[]);
 
   return(
     <LangCtx.Provider value={lang}>
       <StyleInjector/>
-      {showSplash&&<ArenaSplash lang={lang} track={track} onDone={()=>setShowSplash(false)}/>}
-      {showArenaOnb&&<ArenaOnboarding lang={lang} track={track} onDone={finishArenaOnb} onSkip={finishArenaOnb}/>}
+      {showSplash&&<ArenaSplash lang={lang} track={track} wordmark={_onbWordmark} onDone={()=>setShowSplash(false)}/>}
+      {showArenaOnb&&<ArenaOnboarding lang={lang} track={track} region={_onbRegion} onDone={finishArenaOnb} onSkip={finishArenaOnb}/>}
       {/* CARTE-FIRST (option A) : on atterrit sur la CARTE ; bouton flottant pour OUVRIR
           l'arène/jeu par-dessus en 1 tap. Top-level = toujours rendu (≠ branche carte). */}
       {!showHero&&chasse&&!showSplash&&!showArenaOnb&&!showPremium&&!showStation&&!showSolutions&&(
