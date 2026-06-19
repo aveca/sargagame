@@ -100,7 +100,10 @@ svg.scene{position:absolute;inset:0;width:100%;height:100%;display:block;touch-a
 .beatcopy{position:absolute;left:0;right:0;bottom:0;padding:0 20px 40px;
   max-width:560px;margin:0 auto;will-change:opacity,transform;
   opacity:0;transform:translateY(14px);transition:opacity .25s linear}
-#bc0{opacity:var(--e0)} #bc1{opacity:var(--e1)} #bc2{opacity:var(--e2)}
+/* #bc0 : padding-bas augmenté pour que le lien "Ouvrir la carte" dégage le
+   .scrollhint centré (bottom:18px) — sinon la flèche → tape dans "DÉFILE"
+   (overlap mesuré 13px). Override id>class, n'affecte que le hero. */
+#bc0{opacity:var(--e0);padding-bottom:70px} #bc1{opacity:var(--e1)} #bc2{opacity:var(--e2)}
 #bc3{opacity:var(--e3)} #bc4{opacity:var(--e4)}
 .beatcopy.on{pointer-events:auto;transform:translateY(0)}
 

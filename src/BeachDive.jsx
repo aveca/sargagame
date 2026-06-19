@@ -45,7 +45,7 @@ export function initBeachDive(SR, HOST, opts){
       score: d.score || {score:(d.beach&&d.beach.score)||70, breakdown:{}, strengths:[], weaknesses:[]},
       forecast: Array.isArray(d.forecast)&&d.forecast.length ? d.forecast : [{day:"Auj.",afai:0.05,status:"clean",confidence:60}],
       nearby: Array.isArray(d.nearby) ? d.nearby : [],
-      reliability: d.reliability || {calm:79, peak:76, sample:412},
+      reliability: d.reliability || null,   /* fiabilité RÉELLE (/api/reliability.json) injectée par le composant ; null = bloc masqué, jamais de % fabriqué */
       updatedAt: d.updatedAt || null
     };
   }
@@ -54,6 +54,7 @@ export function initBeachDive(SR, HOST, opts){
 
   var LANG = opts.lang || "fr";
   function _t(fr,en,es){ return LANG==="en"?en : LANG==="es"?es : fr; }
+  function fmtInt(n){ try{ return Math.round(n).toLocaleString(LANG==="en"?"en-US":LANG==="es"?"es-ES":"fr-FR"); }catch(_){ return ""+Math.round(n); } }
 
   /* ---- portes de conversion (hooks app) — gardées contre l'après-démontage ---- */
   var H = opts.hooks || {};
@@ -135,7 +136,7 @@ export function initBeachDive(SR, HOST, opts){
     m2aH:   {fr:[["LE SATELLITE"],["SCANNE LA MER"]], en:[["THE SATELLITE"],["SCANS THE SEA"]], es:[["EL SATÉLITE"],["ESCANEA EL MAR"]]},
     m2bH:   {fr:[["7 FACTEURS,"],["UN SEUL SCORE"]], en:[["7 FACTORS,"],["ONE SCORE"]], es:[["7 FACTORES,"],["UN PUNTAJE"]]},
     m2cH:   {fr:[["ET ON SAIT"],["QUAND ON SE TROMPE"]], en:[["AND WE KNOW"],["WHEN WE'RE WRONG"]], es:[["Y SABEMOS"],["CUÁNDO FALLAMOS"]]},
-    regimeT:{fr:"Saison calme", en:"Calm season", es:"Temporada calma"},
+    regimeT:{fr:"Fiabilité mesurée", en:"Measured reliability", es:"Fiabilidad medida"},
     regimeMore:{fr:"Voir notre fiabilité →", en:"See our reliability →", es:"Ver nuestra fiabilidad →"},
     regimePctL:{fr:"justes", en:"right", es:"acierto"},
     ctaMethodeT:{fr:"Et la semaine qui vient ?", en:"And the week ahead?", es:"¿Y la semana que viene?"},
@@ -430,14 +431,25 @@ export function initBeachDive(SR, HOST, opts){
     setHeading($("m2bH"),T.m2bH[LANG]);
     buildFactors();
     setHeading($("m2cH"),T.m2cH[LANG]);
-    if($("regimeT")) $("regimeT").textContent=T.regimeT[LANG];
-    if($("regimePct")) $("regimePct").textContent=DATA.reliability.calm+"%";
-    if($("regimePctL")) $("regimePctL").textContent=T.regimePctL[LANG];
-    if($("regimeS")) $("regimeS").textContent=_t(
-      "En saison calme, nos verdicts sont justes "+DATA.reliability.calm+"% du temps ("+DATA.reliability.sample+" mesures vérifiées).",
-      "In calm season our verdicts are right "+DATA.reliability.calm+"% of the time ("+DATA.reliability.sample+" verified readings).",
-      "En temporada calma acertamos el "+DATA.reliability.calm+"% ("+DATA.reliability.sample+" mediciones verificadas).");
-    if($("regimeMore")) $("regimeMore").textContent=T.regimeMore[LANG];
+    /* FIABILITÉ — source UNIQUE /api/reliability.json (overall.statusHitRate, tous
+       régimes confondus), injectée par le composant. Le détail PAR RÉGIME vit sur
+       /fiabilite/ (lien). Pas de donnée réelle → on MASQUE (jamais le 79% fabriqué). */
+    var REL=DATA.reliability, rbox=$("regimeBox");
+    if(REL && REL.pct!=null){
+      if(rbox) rbox.style.display="";
+      var rp=Math.round(REL.pct), rs=REL.sample!=null?fmtInt(REL.sample):"", rw=REL.window||"";
+      if($("regimeT")) $("regimeT").textContent=T.regimeT[LANG];
+      if($("regimePct")) $("regimePct").textContent=rp+"%";
+      if($("regimePctL")) $("regimePctL").textContent=T.regimePctL[LANG];
+      if($("regimeS")) $("regimeS").textContent=_t(
+        "Tous régimes confondus, nos verdicts se vérifient "+rp+" % du temps"+(rs?" — sur "+rs+" prévisions":"")+(rw?" ("+rw+")":"")+".",
+        "Across all regimes, our verdicts hold up "+rp+"% of the time"+(rs?" — over "+rs+" forecasts":"")+(rw?" ("+rw+")":"")+".",
+        "En todos los regímenes, nuestros veredictos aciertan el "+rp+"%"+(rs?" — sobre "+rs+" pronósticos":"")+(rw?" ("+rw+")":"")+".");
+      if($("regimeMore")) $("regimeMore").textContent=T.regimeMore[LANG];
+      setRegimeArc(rp);
+    } else if(rbox){
+      rbox.style.display="none";
+    }
     if($("ctaMethodeT")) $("ctaMethodeT").textContent=T.ctaMethodeT[LANG];
 
     if($("eb3")) $("eb3").textContent=T.eb3[LANG]; setHeading($("h3"),T.h3[LANG]); if($("s3")) $("s3").textContent=T.s3[LANG];
@@ -626,8 +638,10 @@ export function initBeachDive(SR, HOST, opts){
     var fills=SR.querySelectorAll("#factors .ffill");
     for(var i=0;i<fills.length;i++){ (function(el,d){ later(function(){ el.style.transform="scaleX("+(el.getAttribute("data-w"))+")"; }, d); })(fills[i], i*70); }
   }
+  function relPct(){ return (DATA.reliability && DATA.reliability.pct!=null) ? clamp(DATA.reliability.pct/100,0,1) : 0; }
+  function setRegimeArc(p){ var arc=$("regimeArc"); if(!arc) return; var pct=(p!=null?clamp(p/100,0,1):relPct()); arc.setAttribute("stroke-dashoffset",(251*(1-pct)).toFixed(1)); }
   function animRegime(){
-    var arc=$("regimeArc"); if(!arc) return; var C=251, pct=DATA.reliability.calm/100, t0=performance.now();
+    var arc=$("regimeArc"); if(!arc) return; var C=251, pct=relPct(), t0=performance.now();
     (function step(){
       if(dead) return;
       var k=clamp((performance.now()-t0)/700,0,1), e=easeInOut(k);
@@ -715,7 +729,7 @@ export function initBeachDive(SR, HOST, opts){
     if($("ctaArrive")) on($("ctaArrive"),"click", function(){ track("sg_cta",{src:"arrive",variant:"beach_dive"}); scrollNext(1.05); });
     if($("scoreBlob")) on($("scoreBlob"),"click", function(){ track("sg_scene_tap",{el:"scoreblob"}); });
     if($("ctaVerdict")) on($("ctaVerdict"),"click", function(){ scrollNext(1.1); });
-    if($("regimeBox")) on($("regimeBox"),"click", function(){ track("sg_nav",{to:"/fiabilite/",variant:"beach_dive"}); });
+    if($("regimeBox")) on($("regimeBox"),"click", function(){ track("sg_nav",{to:"/fiabilite/",variant:"beach_dive"}); try{ window.location.assign("/fiabilite/"); }catch(_){} });
     if($("ctaMethode")) on($("ctaMethode"),"click", function(){ scrollNext(1.1); });
     if($("ctaForecast")) on($("ctaForecast"),"click", function(){ openPremium("forecast_lock"); });
     if($("ctaH2S")) on($("ctaH2S"),"click", function(){ openPremium("h2s_health_alert"); });
@@ -771,7 +785,7 @@ export function initBeachDive(SR, HOST, opts){
     if(gIris) gIris.setAttribute('transform','translate(0 1.5)');
     if(gPose) gPose.setAttribute('transform','translate('+EYE.x+' '+(EYE_BASE+M.lift)+') rotate('+M.pose+')');
     if($("scoreNum")) $("scoreNum").textContent=SCORE; if($("scoreArc")) $("scoreArc").setAttribute("stroke-dashoffset",(264*(1-SCORE/100)).toFixed(1));
-    if($("regimeArc")) $("regimeArc").setAttribute("stroke-dashoffset",(251*(1-DATA.reliability.calm/100)).toFixed(1));
+    if(DATA.reliability && DATA.reliability.pct!=null) setRegimeArc(Math.round(DATA.reliability.pct)); else if($("regimeBox")) $("regimeBox").style.display="none";
     if($("rasterGrain")) $("rasterGrain").style.opacity=".08";
     if($("nearbyHalos")) $("nearbyHalos").classList.add("on"); if($("h2sAnchor")) $("h2sAnchor").style.opacity=(STATUS==="clean"?0.55:1).toFixed(2);
     return { teardown:teardown, update:update, setLang:setLang };
@@ -917,6 +931,7 @@ export default function BeachDive(props){
   const hostRef=useRef(null);
   const engRef=useRef(null);
   const cbRef=useRef({});
+  const relRef=useRef(null);   /* fiabilité RÉELLE chargée depuis /api/reliability.json (source unique) */
   cbRef.current={onClose,onPremium,onOpenBeach,onShowMap,onFail,track};
 
   function regionLabel(){
@@ -971,7 +986,7 @@ export default function BeachDive(props){
         strengths:b.scoreStrengths||[], weaknesses:b.scoreWeaknesses||[] },
       forecast:buildForecast(),
       nearby:buildNearby(),
-      reliability:{calm:79, peak:76, sample:412},
+      reliability:relRef.current,   /* fiabilité RÉELLE (/api/reliability.json) ou null tant que non résolue → bloc masqué */
       updatedAt:(sargData&&(sargData.updatedAt||sargData.erddapTimestamp))||null,
       regionName:regionLabel()
     };
@@ -1012,6 +1027,28 @@ export default function BeachDive(props){
   useEffect(()=>{ if(engRef.current) engRef.current.setLang(lang||"fr");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   },[lang]);
+
+  /* FIABILITÉ — source UNIQUE /api/reliability.json (overall.statusHitRate = tous
+     régimes confondus). Additif, échec silencieux → relRef reste null → bloc masqué
+     (jamais de % fabriqué). Le détail PAR RÉGIME reste sur /fiabilite/. */
+  useEffect(()=>{
+    let alive=true;
+    fetch("/api/reliability.json",{cache:"no-store"})
+      .then(r=>r.ok?r.json():null)
+      .then(d=>{
+        if(!alive||!d) return;
+        const pct=d.overall&&d.overall.statusHitRate;
+        if(pct==null) return;
+        relRef.current={
+          pct, sample:(d.totalPairs!=null?d.totalPairs:null),
+          window:(d.regimeReliability&&d.regimeReliability.window)||(d.dateRange&&d.dateRange.archiveFrom&&d.dateRange.archiveTo?d.dateRange.archiveFrom+" → "+d.dateRange.archiveTo:"")
+        };
+        if(engRef.current) engRef.current.update(buildData());
+      })
+      .catch(()=>{});
+    return ()=>{ alive=false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[]);
 
   return React.createElement("div",{
     ref:hostRef, role:"dialog", "aria-label": beach&&beach.name ? beach.name : "Sargasses",
