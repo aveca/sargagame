@@ -181,7 +181,22 @@ async function main() {
   const emailStats = await fetchJSON(EMAIL_STATS_URL)
   if (emailStats && !emailStats.error && emailStats.counts) {
     const c = emailStats.counts, r = emailStats.rates || {}
-    console.log(`Email: ${c.opened}/${c.delivered} ouverts (${r.open ?? '–'}%) | ${c.clicked} clics (${r.click ?? '–'}%) | ${c.bounced} bounces`)
+    // Garde-fou intégrité : l'endpoint Apps Script email_stats a déjà renvoyé des
+    // compteurs physiquement impossibles (opened > delivered → openRate 108%, cf.
+    // 18-20/06 figés 836/907/538). On REFUSE de les écrire dans la série : tag
+    // .error → le bloc plus bas carry-forward la dernière valeur saine au lieu
+    // d'empoisonner l'historique et le trigger open-rate. Le vrai fix est côté
+    // Apps Script (désync delivered/opened). Sanity, pas correction des chiffres.
+    const impossible =
+      (c.opened != null && c.delivered != null && c.opened > c.delivered) ||
+      (c.delivered != null && c.sent != null && c.delivered > c.sent) ||
+      (r.open != null && r.open > 105)
+    if (impossible) {
+      console.log(`⚠️  EMAIL STATS INCOHÉRENTS (ignorés, carry-forward): opened=${c.opened} > delivered=${c.delivered} | open=${r.open}% — bug endpoint Apps Script email_stats (désync compteurs Resend)`)
+      emailStats.error = 'invalid_counts'
+    } else {
+      console.log(`Email: ${c.opened}/${c.delivered} ouverts (${r.open ?? '–'}%) | ${c.clicked} clics (${r.click ?? '–'}%) | ${c.bounced} bounces`)
+    }
   }
 
   // 2. Check pipeline freshness
