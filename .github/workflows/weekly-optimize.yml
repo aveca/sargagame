@@ -25,7 +25,11 @@ concurrency:
 jobs:
   optimize:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # 15 → 30 : le step Deploy FTPS a désormais son propre timeout (15 min). Ce
+    # timeout de JOB doit laisser assez de marge pour que le timeout DU STEP tape
+    # en premier — un timeout de JOB = run "cancelled" ; un timeout de STEP
+    # continue-on-error = toléré → "success". build+commit ≪ 15 min.
+    timeout-minutes: 30
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -283,6 +287,11 @@ jobs:
       - name: Deploy FTPS Martinique + Guadeloupe
         if: steps.day.outputs.task == 'monday' || steps.day.outputs.task == 'friday'
         continue-on-error: true
+        # Timeout PROPRE au step : une session FTPS morte pendait jusqu'au timeout
+        # du job → run "cancelled" cosmétique (la donnée est déjà commitée + le push
+        # redéploie via daily-copernicus). Avec ce timeout-step + continue-on-error,
+        # un blocage FTP est toléré → job "success". 15 min ≫ deploy MQ+GP normal.
+        timeout-minutes: 15
         env:
           FTP_SERVER_MQ: ${{ secrets.FTP_SERVER_MQ }}
           FTP_USERNAME_MQ: ${{ secrets.FTP_USERNAME_MQ }}
