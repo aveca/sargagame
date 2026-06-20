@@ -181,21 +181,22 @@ async function main() {
   const emailStats = await fetchJSON(EMAIL_STATS_URL)
   if (emailStats && !emailStats.error && emailStats.counts) {
     const c = emailStats.counts, r = emailStats.rates || {}
-    // Garde-fou intégrité : l'endpoint Apps Script email_stats a déjà renvoyé des
-    // compteurs physiquement impossibles (opened > delivered → openRate 108%, cf.
-    // 18-20/06 figés 836/907/538). On REFUSE de les écrire dans la série : tag
-    // .error → le bloc plus bas carry-forward la dernière valeur saine au lieu
-    // d'empoisonner l'historique et le trigger open-rate. Le vrai fix est côté
-    // Apps Script (désync delivered/opened). Sanity, pas correction des chiffres.
+    // Garde-fou intégrité — UNIQUEMENT les états physiquement impossibles. ⚠️ NE PAS
+    // ajouter `opened > delivered` ni `openRate > 100` : `opened`/`open` sont des
+    // ÉVÉNEMENTS Resend (ouvertures répétées), donc dépasser delivered/100% est NORMAL
+    // pour une liste engagée (cf. memory reference_email_system § ROI). Seul
+    // `delivered > sent` (ou compteur négatif) est réellement impossible → tag .error
+    // → carry-forward dernière valeur saine. (NB: l'anomalie observée 18-20/06 =
+    // delivered/opened/clicked FIGÉS pendant que sent monte = staleness côté endpoint
+    // Apps Script, pas une valeur impossible ; à diagnostiquer côté Apps Script.)
     const impossible =
-      (c.opened != null && c.delivered != null && c.opened > c.delivered) ||
       (c.delivered != null && c.sent != null && c.delivered > c.sent) ||
-      (r.open != null && r.open > 105)
+      [c.sent, c.delivered, c.opened, c.clicked, c.bounced].some(n => n != null && n < 0)
     if (impossible) {
-      console.log(`⚠️  EMAIL STATS INCOHÉRENTS (ignorés, carry-forward): opened=${c.opened} > delivered=${c.delivered} | open=${r.open}% — bug endpoint Apps Script email_stats (désync compteurs Resend)`)
+      console.log(`⚠️  EMAIL STATS IMPOSSIBLES (ignorés, carry-forward): sent=${c.sent} delivered=${c.delivered} opened=${c.opened} — bug endpoint Apps Script email_stats`)
       emailStats.error = 'invalid_counts'
     } else {
-      console.log(`Email: ${c.opened}/${c.delivered} ouverts (${r.open ?? '–'}%) | ${c.clicked} clics (${r.click ?? '–'}%) | ${c.bounced} bounces`)
+      console.log(`Email: ${c.opened}/${c.delivered} ouverts-évts (${r.open ?? '–'}%) | ${c.clicked} clics (${r.click ?? '–'}%) | ${c.bounced} bounces`)
     }
   }
 
