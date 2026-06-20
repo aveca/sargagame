@@ -1337,6 +1337,21 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
               clean: 'Petit-Havre au Gosier (Guadeloupe) — plage propre en temps réel. Crique abritée de la côte sud de Grande-Terre, eaux calmes, idéal familles. Carte sargasses Guadeloupe et prévisions 7 jours.',
               moderate: 'Sargasses à Petit-Havre (Le Gosier, Guadeloupe) — présence modérée détectée en temps réel. Crique de la côte sud de Grande-Terre. Idéal familles. Carte et prévisions 7 jours.',
               avoid: 'Alerte sargasses à Petit-Havre (Le Gosier, Guadeloupe) — forte concentration détectée en temps réel. Voir les plages propres à proximité du Gosier sur la carte en temps réel.'
+            },
+            'Plage du Souffleur': {
+              clean: 'Plage du Souffleur à Port-Louis (Guadeloupe) — propre en temps réel. Lagon de sable blanc de la côte ouest de Grande-Terre, eaux calmes du Grand Cul-de-sac Marin, idéal familles. Généralement protégée des sargasses. Carte et prévisions 7 jours.',
+              moderate: 'Sargasses à la Plage du Souffleur (Port-Louis, Guadeloupe) — présence modérée détectée en temps réel. Côte ouest de Grande-Terre, lagon abrité. Carte sargasses Guadeloupe et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à la Plage du Souffleur (Port-Louis, Guadeloupe) — forte concentration détectée en temps réel. Côte ouest de Grande-Terre. Voir les plages propres à proximité sur la carte en temps réel.'
+            },
+            'Île de la Petite Terre': {
+              clean: 'Île de la Petite Terre (Guadeloupe) — site propre en temps réel. Réserve naturelle au sud de Grande-Terre, lagon turquoise entre deux îlets, snorkeling avec iguanes et tortues. Accessible en bateau. Carte sargasses et prévisions 7 jours.',
+              moderate: 'Sargasses à l\'Île de la Petite Terre (La Désirade, Guadeloupe) — présence modérée détectée en temps réel. Réserve naturelle, lagon protégé, snorkeling. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à l\'Île de la Petite Terre (Guadeloupe) — forte concentration détectée en temps réel. Réserve naturelle exposée à l\'Atlantique. Voir les plages propres de Grande-Terre sur la carte en temps réel.'
+            },
+            'Petit-Havre Sud': {
+              clean: 'Petit-Havre Sud au Gosier (Guadeloupe) — plage propre en temps réel. Crique abritée de la côte sud de Grande-Terre, eaux calmes, idéal familles. Carte sargasses Guadeloupe et prévisions 7 jours.',
+              moderate: 'Sargasses à Petit-Havre Sud (Le Gosier, Guadeloupe) — présence modérée détectée en temps réel. Crique de la côte sud de Grande-Terre. Idéal familles. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à Petit-Havre Sud (Le Gosier, Guadeloupe) — forte concentration détectée en temps réel. Voir les plages propres à proximité du Gosier sur la carte en temps réel.'
             }
           }
           let sitemapMQBeaches = ''
