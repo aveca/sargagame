@@ -3155,7 +3155,7 @@
       "levels": [
         {
           "id": "grande-anse",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -3180,7 +3180,7 @@
         },
         {
           "id": "diamant",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -3220,7 +3220,7 @@
         },
         {
           "id": "gp-pt-chateaux",
-          "afai": 0.08,
+          "afai": 0.09,
           "status": "clean"
         },
         {
@@ -3245,7 +3245,7 @@
         },
         {
           "id": "gp-moule",
-          "afai": 0.08,
+          "afai": 0.09,
           "status": "clean"
         },
         {
