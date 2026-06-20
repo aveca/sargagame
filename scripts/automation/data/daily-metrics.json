@@ -1073,31 +1073,31 @@
   },
   {
     "date": "2026-06-20",
-    "time": "2026-06-20T19:31:04.108Z",
+    "time": "2026-06-20T23:12:19.789Z",
     "payments": 11,
     "revenue": 54.89,
     "emails": 215,
     "feedbacks": 1,
     "avgRating": 4,
-    "pipelineOk": true,
+    "pipelineOk": false,
     "funnel": {
-      "sessions": 26819,
-      "lockClicks": 142,
-      "modalOpens": 3404,
-      "modalCta": 76,
+      "sessions": 26889,
+      "lockClicks": 141,
+      "modalOpens": 3390,
+      "modalCta": 73,
       "sampleStarts": 0,
-      "emailSubmits": 64,
-      "checkoutRedirects": 87,
+      "emailSubmits": 63,
+      "checkoutRedirects": 84,
       "conversions": 4,
       "paymentsReal": 2,
       "revenueReal": 9.98,
       "rates": {
         "session_to_lock": 0.5,
-        "lock_to_modal": 2397,
+        "lock_to_modal": 2404,
         "modal_to_cta": 2,
         "modal_to_sample": 0,
         "modal_to_any_action": 2,
-        "cta_to_redirect": 114,
+        "cta_to_redirect": 115,
         "redirect_to_payment": 2
       }
     },
@@ -1111,27 +1111,27 @@
       "clickRate": 59
     },
     "stripe": {
-      "active": 15,
+      "active": 14,
       "mrr": {
-        "eur": 74.85
+        "eur": 69.86
       },
-      "pastDue": 0,
+      "pastDue": 1,
       "cancelScheduled": 0,
       "checkout": {
         "windowDays": 30,
-        "reached": 176,
+        "reached": 181,
         "paid": 1,
         "completionRate": 0.6,
         "recoverable": 13,
         "lostCents": {
-          "eur": 54768,
+          "eur": 56566,
           "usd": 93269
         }
       },
       "bySource": {
         "(none)": {
-          "active": 15,
-          "mrrEur": 74.85
+          "active": 14,
+          "mrrEur": 69.86
         }
       },
       "emailAttributed": {
@@ -1140,14 +1140,14 @@
       }
     },
     "ga4": {
-      "date": "2026-06-19",
+      "date": "2026-06-18",
       "mq": {
-        "sessions": 330,
-        "users": 1560
+        "sessions": 287,
+        "users": 3233
       },
       "gp": {
-        "sessions": 212,
-        "users": 1140
+        "sessions": 247,
+        "users": 1127
       }
     }
   }
