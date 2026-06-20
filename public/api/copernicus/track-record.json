@@ -1,6 +1,6 @@
 {
   "_note": "Palmarès PUBLIC et auditable des prévisions sargasses. Source : forecast-archive.json (snapshots figés à la date d'émission, append-only) comparés aux observations satellite (history.json). Aucun chiffre n'est rétro-ajustable.",
-  "generatedAt": "2026-06-20T08:57:00.929Z",
+  "generatedAt": "2026-06-20T14:05:02.657Z",
   "window": {
     "from": "2026-05-22",
     "to": "2026-06-20",
@@ -15,9 +15,9 @@
     "statusHitRatePct": 77
   },
   "freshness": {
-    "computedAt": "2026-06-20T08:57:00.877Z",
+    "computedAt": "2026-06-20T14:05:02.609Z",
     "backtestAgeHours": 0,
-    "observationLagDays": -1,
+    "observationLagDays": 0,
     "stale": false
   },
   "sampleSize": 3180,
@@ -133,7 +133,7 @@
       "island": "gp",
       "samples": 159,
       "hitRatePct": 89,
-      "afaiMAE": 0.025
+      "afaiMAE": 0.024
     },
     {
       "id": "gp-malendure",
@@ -173,7 +173,7 @@
       "island": "gp",
       "samples": 159,
       "hitRatePct": 88,
-      "afaiMAE": 0.032
+      "afaiMAE": 0.033
     },
     {
       "id": "anse-madame",
@@ -237,7 +237,7 @@
       "island": "mq",
       "samples": 159,
       "hitRatePct": 62,
-      "afaiMAE": 0.049
+      "afaiMAE": 0.05
     },
     {
       "id": "sainte-anne",
@@ -253,7 +253,7 @@
       "island": "mq",
       "samples": 159,
       "hitRatePct": 91,
-      "afaiMAE": 0.024
+      "afaiMAE": 0.023
     }
   ],
   "disclaimer": "Au-delà de J+3 la fiabilité décroît (prévision indicative). Les alertes (sargasses attendues) sont émises à confiance prudente tant que la donnée satellite ne les confirme pas. La période couverte est dans « window » ; les chiffres sont recalculés à chaque mise à jour de l'archive.",
