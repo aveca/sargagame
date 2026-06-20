@@ -1009,7 +1009,7 @@ function methodeBeats(lang){
   const relRateStr = T(`fiabilité de ${relCalme}% en saison calme / ${relHaute}% en saison haute`, `accuracy ${relCalme}% in calm season / ${relHaute}% in high season`, `fiabilidad ${relCalme}% en temporada baja / ${relHaute}% en temporada alta`)
   return [
     {
-      eyrow: T("NOTRE MÉTHODE", "OUR METHOD", "NUESTRO MÉTODO"),
+      eyebrow: T("NOTRE MÉTHODE", "OUR METHOD", "NUESTRO MÉTODO"),
       heading: T("D'où vient la couleur ?", "Where does the color come from?", "¿De dónde viene el color?"),
       sub: T("L'indice de couleur de nos cartes (propre, modéré, à éviter) provient de l'analyse automatisée de la signature satellite de l'océan.", "The color index on our maps (clean, moderate, avoid) comes from automated satellite signature analysis of the ocean.", "El índice de color de nuestros mapas (limpio, moderado, evitar) proviene del análisis automatizado de la firma satelital."),
       scene: (
