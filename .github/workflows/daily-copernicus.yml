@@ -183,7 +183,7 @@ jobs:
         env:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
-        run: node scripts/automation/recover-abandoned-cart.cjs --send --since-days=2
+        run: node scripts/automation/recover-abandoned-cart.cjs --send --since-days=4
 
       # Bienvenue PAYEURS (Part 2 onboarding) : email d'accueil aux nouveaux abonnés
       # Stripe (active+trialing créés <14j), SANS CTA paywall (déjà payé). schedule-only

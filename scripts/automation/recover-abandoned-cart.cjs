@@ -79,6 +79,33 @@ const loadJSON = (p, fb) => { try { return JSON.parse(fs.readFileSync(p, 'utf-8'
 const saveJSON = (p, d) => { fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, JSON.stringify(d, null, 2)) }
 const hashedSet = arr => new Set((Array.isArray(arr) ? arr : []).map(e => String(e).includes('@') ? emailHash(e) : e))
 
+// ---- Cadence multi-touch J0 / J1 / J3 -----------------------------------
+// État = map hash → { n: relances déjà envoyées, f: 1er contact (ms), l: dernier (ms) }.
+// Plusieurs touches espacées récupèrent bien plus qu'un envoi unique (la plus grosse
+// fuite mesurée). Rétro-compat : l'ancien format = tableau plat de hashes (relance
+// one-touch) → migré en cadence TERMINÉE (n=3) pour ne PAS re-spammer la backlog
+// historique ; seuls les NOUVEAUX abandons reçoivent la séquence complète. La fenêtre
+// SINCE_DAYS exclut de toute façon les sessions trop vieilles.
+const CADENCE_OFFSETS_H = [0, 24, 72] // J0 immédiat · J1 +24h · J3 +72h (depuis le 1er contact)
+function loadCadence(p) {
+  const raw = loadJSON(p, {})
+  if (Array.isArray(raw)) {
+    const m = {}
+    for (const e of raw) { const h = String(e).includes('@') ? emailHash(e) : e; m[h] = { n: CADENCE_OFFSETS_H.length, f: 0, l: 0 } }
+    return m
+  }
+  return (raw && typeof raw === 'object') ? raw : {}
+}
+// La relance n°(n+1) est due quand on a dépassé 1er_contact + offset[n]. Renvoie false
+// quand la séquence est terminée (n ≥ 3) ou pas encore l'heure → pas de double-envoi
+// intra-journée (le script tourne 4×/j).
+function cadenceDue(entry, nowMs) {
+  const n = entry ? (entry.n || 0) : 0
+  if (n >= CADENCE_OFFSETS_H.length) return false
+  const first = entry && entry.f ? entry.f : nowMs
+  return nowMs >= first + CADENCE_OFFSETS_H[n] * 3600e3
+}
+
 // ---- Copy par langue × motif --------------------------------------------
 function copy(region, kind) {
   const es = region.primaryLang === 'es'
@@ -185,9 +212,10 @@ async function main() {
   const activeHashes = new Set()
   for (const cid of activeCustIds) { try { const c = await stripe(`customers/${cid}`); if (c.email) activeHashes.add(emailHash(c.email)) } catch {} }
 
-  const sentSet = hashedSet(loadJSON(SENT_PATH, []))
+  const cadence = loadCadence(SENT_PATH)
+  const NOW = Date.now()
   const bouncedSet = hashedSet(loadJSON(BOUNCED_PATH, [])) // ne JAMAIS écrire à une adresse morte
-  const cutoff = Date.now() - SINCE_DAYS * 864e5
+  const cutoff = NOW - SINCE_DAYS * 864e5
   const sessions = await listAll('checkout/sessions', 400)
 
   const candidates = []
@@ -199,7 +227,9 @@ async function main() {
     if (!email) continue
     const h = emailHash(email)
     if (ONLY_HASH && !h.startsWith(ONLY_HASH)) continue // relance ciblée
-    if (seen.has(h) || activeHashes.has(h) || sentSet.has(h) || bouncedSet.has(h)) continue
+    // Skip si déjà vu ce run, client actif, bounce, OU pas encore l'heure de la
+    // prochaine touche de cadence (J0/J1/J3 ou séquence terminée).
+    if (seen.has(h) || activeHashes.has(h) || bouncedSet.has(h) || !cadenceDue(cadence[h], NOW)) continue
     let island = s.metadata?.island
     if (!island && s.payment_link) { try { island = (await stripe(`payment_links/${s.payment_link}`)).metadata?.island } catch {} }
     const region = REGIONS[island]
@@ -207,12 +237,12 @@ async function main() {
     const kind = await detectKind(s)
     if (kind === 'skip-fraud') { console.log(`  ⏭️  ${logId(email)} : carte fraud-flagged — pas de relance`); continue }
     seen.add(h)
-    candidates.push({ email, region, kind })
+    candidates.push({ email, region, kind, h, touch: (cadence[h]?.n || 0) + 1 })
   }
 
   const byKind = candidates.reduce((m, c) => ((m[c.kind] = (m[c.kind] || 0) + 1), m), {})
   console.log(`Leads à relancer : ${candidates.length}`, byKind)
-  for (const c of candidates) console.log(`  • ${logId(c.email)} | ${c.region.name} (${c.region.primaryLang}) | ${c.kind} | "${copy(c.region, c.kind).subject}"`)
+  for (const c of candidates) console.log(`  • ${logId(c.email)} | ${c.region.name} (${c.region.primaryLang}) | ${c.kind} | touche J${c.touch === 1 ? '0' : c.touch === 2 ? '1' : '3'} | "${copy(c.region, c.kind).subject}"`)
 
   if (!candidates.length) return
   if (!DO_SEND) { console.log('\nDRY-RUN — rien envoyé. Relancer avec --send.'); return }
@@ -220,7 +250,7 @@ async function main() {
 
   const resend = null
   let ok = 0
-  for (const { email, region, kind } of candidates) {
+  for (const { email, region, kind, h } of candidates) {
     const t = copy(region, kind)
     const from = `${t.brand} <${FROM_DOMAIN}>`
     const unsub = unsubUrl(email, region.id)
@@ -238,15 +268,17 @@ async function main() {
       if (error) { console.log(`  ❌ ${logId(email)} : ${error.message}`); continue }
       console.log(`  ✅ ${logId(email)} (${region.name}/${kind})`)
       ok++
-      sentSet.add(emailHash(email))
-      saveJSON(SENT_PATH, [...sentSet]) // flush incrémental anti-double-envoi
+      // Avance la cadence : +1 touche, fixe le 1er contact si absent, horodate.
+      const prev = cadence[h] || { n: 0, f: 0, l: 0 }
+      cadence[h] = { n: (prev.n || 0) + 1, f: prev.f || NOW, l: NOW }
+      saveJSON(SENT_PATH, cadence) // flush incrémental anti-double-envoi
       try {
         await fetch(HOOK, { method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ type: 'email_tracking', resend_id: data?.id || '', to: email, subject: _cabOut.subject, email_type: `cart_recovery_${kind}`, island: region.id, status: 'sent', ab_test: _cabKey || '', ab_arm: _cabArm, date: new Date().toISOString() }) })
       } catch {}
     } catch (e) { console.log(`  ❌ ${logId(email)} : ${e.message}`) }
   }
-  saveJSON(SENT_PATH, [...sentSet])
+  saveJSON(SENT_PATH, cadence)
   console.log(`Done. ${ok}/${candidates.length} envoyés.`)
 }
 main().catch(e => { console.error('ERROR:', e.message); process.exit(1) })
