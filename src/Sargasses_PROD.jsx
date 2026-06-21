@@ -12810,12 +12810,10 @@ export default function App(){
     const fire=trigger=>{
       const gate=gameGateRef.current
       if(gate.sheet||gate.premium||gate.hero||gate.view!=="map")return
-      // Capture email de sortie EN PREMIER (A/B exitcap) : visiteur en partance, pas d'email
-      if(gate.exitcapOn&&gate.exitcapPick&&!g("sg_email",null)&&g("sg_exitcap_snooze",0)<=Date.now()){
-        try{if(sessionStorage.getItem("sg_exitcap"))return;sessionStorage.setItem("sg_exitcap","1")}catch(_){return}
-        setShowExitCap(true);track("sg_exitcap_shown",{trigger});return
-      }
-      // sinon SargaCatch toast (inchangé)
+      // AFK + exit-intent (idle/exit/hidden/scrollup) → SargaCatch (le jeu).
+      // La capture email reste la surface PAR DÉFAUT, en contexte : InlineEmailCapture
+      // sur les fiches plage + capture hero. On ne montre PAS d'email sur ce déclencheur
+      // de sortie (décision fondateur 21/06 : défaut = email, afk/exit-intent = jeu).
       try{
         if(sessionStorage.getItem("sg_game_toast"))return
         sessionStorage.setItem("sg_game_toast","1")
