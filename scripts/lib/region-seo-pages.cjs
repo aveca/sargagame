@@ -104,7 +104,7 @@ function networkFooter(region, t, lang) {
 /** Page shell : repart de l'index buildé, remplace head + noscript + JSON-LD.
  *  alternates (optionnel) : cluster hreflang complet [{lang,href,xDefault}] pour
  *  les régions bilingues (es↔en). Absent → self + x-default (mono-langue, inchangé). */
-function pageShell(tpl, { title, desc, pathname, domain, lang, noscript, jsonLd, alternates }) {
+function pageShell(tpl, { title, desc, pathname, domain, lang, noscript, jsonLd, alternates, robots }) {
   const canonical = `https://${domain}${pathname}`
   let html = tpl
     .replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(title)}</title>`)
@@ -134,7 +134,11 @@ function pageShell(tpl, { title, desc, pathname, domain, lang, noscript, jsonLd,
   } else {
     altBlock = `<link rel="alternate" hreflang="${lang}" href="${canonical}" />\n<link rel="alternate" hreflang="x-default" href="${canonical}" />`
   }
-  html = html.replace('</head>', `${altBlock}\n${ld}\n</head>`)
+  // robots (optionnel) : ex. 'noindex,follow' pour les pages quasi-dupliquées
+  // (resorts d'une même plage). On retire d'abord un éventuel robots hérité du
+  // template pour ne pas émettre deux balises contradictoires.
+  if (robots) html = html.replace(/<meta name="robots"[^>]*>\s*/gi, '')
+  html = html.replace('</head>', `${robots ? `<meta name="robots" content="${robots}" />\n` : ''}${altBlock}\n${ld}\n</head>`)
   html = html.replace('<div id="root">', `<noscript>${noscript}</noscript>\n<div id="root">`)
   return html
 }
@@ -708,12 +712,18 @@ ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
 <p><strong>${t.beachOf(r.name)} — ${beachLink(b)}</strong>: ${sw(b.lv.status)} · ${t.score} ${b.lv.score ?? '—'}/100${areaHtml}</p>
 <h2>${t.forecast7}</h2><p>${forecastLine(data.weekly, b.id, lang)}</p>
 ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
+    // Doorway risk : plusieurs resorts d'une même plage partagent le MÊME pixel
+    // satellite → corps quasi byte-identique (nom seul échangé). On passe ces
+    // pages en noindex,follow (retire le cluster dupliqué de l'index, garde la
+    // page vivante pour le B2B/long-tail + transmet le jus interne à la fiche
+    // plage canonique) ET on les sort du sitemap (pas de pushUrl). Le hub
+    // /resorts/ (unique) reste indexable + sitemapé plus bas.
     writePage(distDir, pathname, pageShell(tpl, {
       title, desc, pathname, domain, lang, noscript,
       alternates: altsForResort(r),
+      robots: 'noindex,follow',
       jsonLd: [breadcrumb(domain, [{ name: t.home, path: `${prefix}/` }, { name: b.name, path: `${prefix}/${t.beachesDir}/${b.slug}/` }, { name: r.name, path: pathname }])],
     }))
-    pushUrl(pathname, { priority: '0.5' })
     // B2B brief standalone (lead-magnet envoyable, noindex, HORS sitemap)
     try { writePage(distDir, `${pathname}brief/`, buildResortBrief(region, r, b, data, lang, today, domain, beaches)) } catch (e) { /* brief best-effort */ }
   }
