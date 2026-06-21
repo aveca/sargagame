@@ -773,7 +773,7 @@ function buildMeta(lang, bt, regionLabel) {
   const days = bt && bt.archiveDays ? bt.archiveDays : null
   if (lang === 'fr') {
     return {
-      title: `Fiabilité des prévisions sargasses — précision mesurée | ${regionLabel}`,
+      title: all != null ? `${all} % de prévisions sargasses justes, vérifié — ${regionLabel}` : `Fiabilité des prévisions sargasses — précision mesurée | ${regionLabel}`,
       desc: j1 != null && all != null && pairs && days
         ? `Prévision vs observation satellite : ${j1} % de réussite à J+1, ${all} % global sur ${pairs} comparaisons (${days} jours). Méthode et chiffres réels, jamais retouchés.`
         : 'Comment nos prévisions sargasses sont calculées et vérifiées : satellite Copernicus/NOAA 4 passages par jour, modèle de dérive, backtest automatique quotidien.',
@@ -781,14 +781,14 @@ function buildMeta(lang, bt, regionLabel) {
   }
   if (lang === 'es') {
     return {
-      title: `Precisión del pronóstico de sargazo, verificada — ${regionLabel}`,
+      title: all != null ? `${all}% de pronósticos de sargazo acertados, verificado — ${regionLabel}` : `Precisión del pronóstico de sargazo, verificada — ${regionLabel}`,
       desc: j1 != null && all != null && pairs && days
         ? `Pronóstico vs observación satelital: ${j1}% de acierto a 1 día, ${all}% global en ${pairs} comparaciones (${days} días). Método y cifras reales, nunca retocadas.`
         : 'Cómo se calculan y verifican nuestros pronósticos de sargazo: satélite Copernicus/NOAA 4 veces al día, modelo de deriva, backtest automático diario.',
     }
   }
   return {
-    title: `Sargassum Forecast Accuracy, Verified — ${regionLabel}`,
+    title: all != null ? `${all}% Accurate Sargassum Forecasts, Verified — ${regionLabel}` : `Sargassum Forecast Accuracy, Verified — ${regionLabel}`,
     desc: j1 != null && all != null && pairs && days
       ? `Forecast vs satellite observation: ${j1}% next-day hit rate, ${all}% overall across ${pairs} checks (${days} days). Full method, real numbers, never edited.`
       : 'How our sargassum forecasts are computed and verified: Copernicus/NOAA satellite 4 passes a day, drift model, automatic daily backtest.',
