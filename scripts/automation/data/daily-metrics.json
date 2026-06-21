@@ -1153,7 +1153,7 @@
   },
   {
     "date": "2026-06-21",
-    "time": "2026-06-21T11:36:55.803Z",
+    "time": "2026-06-21T13:00:57.301Z",
     "payments": 11,
     "revenue": 54.89,
     "emails": 215,
@@ -1199,13 +1199,13 @@
       "cancelScheduled": 0,
       "checkout": {
         "windowDays": 30,
-        "reached": 181,
+        "reached": 205,
         "paid": 1,
-        "completionRate": 0.6,
-        "recoverable": 13,
+        "completionRate": 0.5,
+        "recoverable": 30,
         "lostCents": {
-          "eur": 56566,
-          "usd": 93269
+          "usd": 122448,
+          "eur": 56566
         }
       },
       "bySource": {
