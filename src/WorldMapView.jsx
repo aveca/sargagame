@@ -14,6 +14,9 @@ import { COAST_ZONES } from "../scripts/lib/coast-zones.cjs"
 
 const STATUS_C = { clean: "#27c46b", moderate: "#ffd23f", avoid: "#e8322a" }
 const INK = "#0d0b14"
+// Monde GTA : chrome en verre sombre (glass) + boutons primaires or (cohérence hero).
+const GLASS = { background:"rgba(20,11,32,.46)", border:"1px solid rgba(255,255,255,.22)", boxShadow:"0 8px 26px rgba(0,0,0,.42)", backdropFilter:"blur(11px)", WebkitBackdropFilter:"blur(11px)" }
+const GOLD  = { background:"linear-gradient(180deg,#ffe07a,#ffb338)", border:"1px solid rgba(0,0,0,.18)", boxShadow:"0 8px 22px rgba(255,150,60,.45)" }
 const STATUS_LBL = {
   clean:    ["Propre","Clean","Limpia"],
   moderate: ["Modéré","Moderate","Moderado"],
@@ -420,9 +423,9 @@ export default function WorldMapView({
       // vivent sur la terre (dégradé propre) → contraste préservé. Bas profond = dots lisibles.
       // Control = base teal froide (inchangée, ci-dessous).
       background: warm
-        // Golden-hour SEA : soleil chaud ambre haut-droite → horizon doré → mer bleu-teal
-        // profonde bas-gauche. Lecture « eau » nette (bleu/teal) + chaleur d'heure dorée.
-        ? "radial-gradient(108% 78% at 82% -6%, rgba(255,206,120,.62), rgba(240,158,70,.30) 30%, rgba(214,118,52,.06) 52%, transparent 66%), radial-gradient(130% 110% at 4% 118%, rgba(6,28,46,.78), rgba(8,40,58,.32) 40%, transparent 60%), linear-gradient(162deg,#3aa6c4 0%,#2487a9 22%,#1c6f93 44%,#15577d 66%,#103f63 84%,#0b2e4d 100%)"
+        // MONDE GTA SUNSET (cohérence avec le hero) : mer-coucher-de-soleil violet→magenta
+        // →orange, soleil chaud haut-droite. Remplace l'ancienne mer bleu-teal comic.
+        ? "radial-gradient(110% 80% at 80% 4%, rgba(255,214,140,.6), rgba(255,140,80,.26) 34%, transparent 62%), radial-gradient(130% 110% at 6% 116%, rgba(42,21,80,.7), rgba(58,28,90,.28) 42%, transparent 62%), linear-gradient(166deg,#ff9a5e 0%,#ff6b6b 18%,#c33a82 40%,#8a3a8e 60%,#5a2680 82%,#2e1a5e 100%)"
         : "radial-gradient(130% 70% at 76% 4%, rgba(255,224,160,.16), transparent 48%), linear-gradient(162deg,#3aa6c4 0%,#1c6f93 40%,#103f63 72%,#0b2e4d 100%)",
     }}>
       <style>{`
@@ -462,9 +465,12 @@ export default function WorldMapView({
         backgroundImage:"radial-gradient(rgba(8,30,50,.9) 1px, transparent 1.3px)",
         backgroundSize:"7px 7px"}}/>
 
-      {/* Dégradé bas (veil — profondeur de mer froide bas-gauche) */}
+      {/* Dégradé bas (veil — profondeur GTA violet bas-gauche) */}
       <div style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:2,
-        background:"linear-gradient(200deg,rgba(11,46,77,0) 48%,rgba(7,26,46,.42) 100%)"}}/>
+        background:"linear-gradient(200deg,rgba(42,21,80,0) 46%,rgba(26,12,46,.5) 100%)"}}/>
+      {/* Grain film (cohérence monde GTA / hero) */}
+      <div style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:3,opacity:.06,mixBlendMode:"overlay",
+        backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,backgroundSize:"cover"}}/>
 
       {/* ── SVG monde ──────────────────────────────────────────────────────── */}
       <svg

@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:wght@600;700;800&display=swap" rel="stylesheet">
+<title>Carte — 2 versions</title>
+<style>
+  *{margin:0;box-sizing:border-box;font-family:'Bricolage Grotesque',sans-serif}
+  body{background:#0b0716;display:flex;gap:30px;justify-content:center;align-items:flex-start;padding:30px}
+  .col{display:flex;flex-direction:column;align-items:center;gap:12px}
+  .tag{color:#fff;font:800 14px/1 'Bricolage Grotesque';letter-spacing:1px;background:#241634;padding:8px 16px;border-radius:999px}
+  .phone{width:330px;height:715px;position:relative;overflow:hidden;border-radius:30px;outline:5px solid #000}
+  /* sunset shared */
+  .sky{position:absolute;inset:0}
+  .grain{position:absolute;inset:0;opacity:.07;mix-blend-mode:overlay;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:cover}
+  svg.map{position:absolute;inset:0;width:100%;height:100%}
+  .hd{position:absolute;top:14px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:center;z-index:5}
+  .title{position:absolute;top:48px;left:14px;z-index:5;font-family:'Anton';font-size:30px;line-height:.9;color:#fff;text-transform:uppercase;letter-spacing:-1px}
+  .cnt{position:absolute;top:118px;left:14px;z-index:5}
+  .legend{position:absolute;left:14px;bottom:108px;z-index:5;display:flex;flex-direction:column;gap:6px;font:800 10px/1 'Bricolage Grotesque'}
+  .legend i{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:6px}
+  .scrub{position:absolute;left:0;right:0;bottom:62px;z-index:5;display:flex;justify-content:center;gap:5px}
+  .dock{position:absolute;left:0;right:0;bottom:16px;z-index:5;display:flex;justify-content:center;gap:8px}
+  .near{position:absolute;right:14px;bottom:108px;z-index:5}
+
+  /* ===== VERSION A — COMIC POP (vibrant, traits noirs, ombres dures) ===== */
+  .A .sky{background:radial-gradient(120% 70% at 80% 6%,#ffd27a,#ff9f43 30%,transparent 60%),linear-gradient(170deg,#ff7a4d 0%,#ff5e8e 30%,#c33a82 55%,#7a2f7e 78%,#3a1f63 100%)}
+  .A .pill{display:inline-flex;align-items:center;gap:6px;font:800 11px/1 'Bricolage Grotesque';color:#0d0b14;
+    background:#fdf6e3;border:2.5px solid #0d0b14;border-radius:999px;padding:7px 12px;box-shadow:3px 3px 0 #0d0b14}
+  .A .pill.live .d{width:8px;height:8px;border-radius:50%;background:#e8322a;border:1.5px solid #0d0b14}
+  .A .pill.grn{background:#27c46b;color:#0d0b14}
+  .A .legend{color:#fff;text-shadow:1px 1px 0 #0d0b14}
+  .A .sbtn{font:800 11px/1 'Bricolage Grotesque';color:#0d0b14;background:#fdf6e3;border:2.5px solid #0d0b14;border-radius:999px;padding:8px 11px;box-shadow:3px 3px 0 #0d0b14}
+  .A .sbtn.on{background:#ffd23f}
+  .A .dbtn{font:800 12px/1 'Bricolage Grotesque';border:2.5px solid #0d0b14;border-radius:999px;padding:10px 16px;box-shadow:3px 3px 0 #0d0b14}
+  .A .dbtn.gold{background:linear-gradient(180deg,#ffe07a,#ffc72c);color:#0d0b14}
+  .A .dbtn.cream{background:#fdf6e3;color:#0d0b14}
+
+  /* ===== VERSION B — COMIC CINÉMA (île silhouette rim-light, pins glow, pastilles néon) ===== */
+  .B .sky{background:radial-gradient(110% 60% at 78% 4%,#ffce8a,#ff7e4d 26%,transparent 56%),linear-gradient(172deg,#ff6b6b 0%,#c33a82 28%,#7a2f7e 52%,#43236e 74%,#1a0f33 100%)}
+  .B .pill{display:inline-flex;align-items:center;gap:6px;font:800 11px/1 'Bricolage Grotesque';color:#fff;
+    background:rgba(18,8,30,.5);border:1.5px solid rgba(255,255,255,.35);border-radius:999px;padding:7px 12px;backdrop-filter:blur(8px);box-shadow:0 4px 16px rgba(0,0,0,.4)}
+  .B .pill.live .d{width:8px;height:8px;border-radius:50%;background:#ff5e6b;box-shadow:0 0 8px #ff5e6b}
+  .B .pill.grn{color:#5bffa0}
+  .B .legend{color:#fff}
+  .B .sbtn{font:800 11px/1 'Bricolage Grotesque';color:#fff;background:rgba(18,8,30,.5);border:1.5px solid rgba(255,255,255,.3);border-radius:999px;padding:8px 11px;backdrop-filter:blur(8px)}
+  .B .sbtn.on{background:linear-gradient(180deg,#ffe07a,#ffb338);color:#2a1230;border-color:rgba(0,0,0,.2)}
+  .B .dbtn{font:800 12px/1 'Bricolage Grotesque';border-radius:999px;padding:10px 16px}
+  .B .dbtn.gold{background:linear-gradient(180deg,#ffe07a,#ffb338);color:#2a1230;box-shadow:0 8px 22px rgba(255,150,60,.5)}
+  .B .dbtn.cream{background:rgba(18,8,30,.5);color:#fff;border:1.5px solid rgba(255,255,255,.3);backdrop-filter:blur(8px)}
+</style></head>
+<body>
+<!-- island path reused -->
+<svg width="0" height="0"><defs><path id="isl" d="M168 150 C120 155 96 210 104 280 C110 340 140 430 176 470 C210 505 240 470 248 410 C258 340 250 250 232 200 C220 165 200 147 168 150 Z"/></defs></svg>
+
+<div class="col"><div class="tag">VERSION A · COMIC POP</div>
+  <div class="phone A">
+    <div class="sky"></div>
+    <svg class="map" viewBox="0 0 330 715">
+      <!-- île pop : vert + contour noir + ombre dure + halftone -->
+      <use href="#isl" x="6" y="6" fill="#0d0b14" opacity=".25"/>
+      <use href="#isl" fill="#27c46b" stroke="#0d0b14" stroke-width="4"/>
+      <use href="#isl" fill="url(#htA)" opacity=".3"/>
+      <pattern id="htA" width="8" height="8" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.1" fill="#0d0b14"/></pattern>
+      <!-- pins comic -->
+      <g stroke="#0d0b14" stroke-width="2.5">
+        <path d="M150 230 c-5 -7 -8 -10 -8 -14 a8 8 0 1 1 16 0 c0 4 -3 7 -8 14Z" fill="#27c46b" transform="translate(0,0)"/>
+        <path d="M200 200 c-5 -7 -8 -10 -8 -14 a8 8 0 1 1 16 0 c0 4 -3 7 -8 14Z" fill="#ffd23f"/>
+        <path d="M170 330 c-5 -7 -8 -10 -8 -14 a8 8 0 1 1 16 0 c0 4 -3 7 -8 14Z" fill="#27c46b"/>
+        <path d="M210 380 c-5 -7 -8 -10 -8 -14 a8 8 0 1 1 16 0 c0 4 -3 7 -8 14Z" fill="#e8322a"/>
+        <path d="M150 420 c-5 -7 -8 -10 -8 -14 a8 8 0 1 1 16 0 c0 4 -3 7 -8 14Z" fill="#27c46b"/>
+      </g>
+    </svg>
+    <div class="hd"><span class="pill live"><span class="d"></span>EN DIRECT · il y a 7h</span><span class="pill">FR</span></div>
+    <div class="title">Martinique<br><span style="color:#ffd23f">Aujourd'hui</span></div>
+    <div class="cnt"><span class="pill grn">● 53 plages propres</span></div>
+    <div class="legend"><span><i style="background:#27c46b"></i>Propre</span><span><i style="background:#ffd23f"></i>Modéré</span><span><i style="background:#e8322a"></i>À éviter</span></div>
+    <div class="near"><span class="pill">📍 Près de moi</span></div>
+    <div class="scrub"><span class="sbtn on">Auj</span><span class="sbtn">+1j🔒</span><span class="sbtn">+2j🔒</span><span class="sbtn">+3j🔒</span><span class="sbtn">+4j🔒</span></div>
+    <div class="dock"><span class="dbtn gold">🗺️ Carte</span><span class="dbtn cream">≡ Liste</span></div>
+    <div class="grain"></div>
+  </div>
+</div>
+
+<div class="col"><div class="tag">VERSION B · COMIC CINÉMA</div>
+  <div class="phone B">
+    <div class="sky"></div>
+    <svg class="map" viewBox="0 0 330 715">
+      <defs><filter id="pg"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+      <!-- île silhouette sombre + rim-light doré -->
+      <use href="#isl" fill="#1a0f2e"/>
+      <use href="#isl" fill="none" stroke="#ffb24d" stroke-width="2.5" opacity=".85"/>
+      <!-- pins glow -->
+      <g filter="url(#pg)">
+        <circle cx="150" cy="226" r="6" fill="#2bff88"/><circle cx="200" cy="196" r="6" fill="#ffd23f"/>
+        <circle cx="170" cy="326" r="6" fill="#2bff88"/><circle cx="210" cy="376" r="6" fill="#ff5e6b"/>
+        <circle cx="150" cy="416" r="6" fill="#2bff88"/>
+      </g>
+    </svg>
+    <div class="hd"><span class="pill live"><span class="d"></span>EN DIRECT · il y a 7h</span><span class="pill">FR</span></div>
+    <div class="title" style="text-shadow:0 0 20px rgba(255,140,90,.6)">Martinique<br><span style="color:#ffd27a">Aujourd'hui</span></div>
+    <div class="cnt"><span class="pill grn">● 53 plages propres</span></div>
+    <div class="legend"><span><i style="background:#2bff88"></i>Propre</span><span><i style="background:#ffd23f"></i>Modéré</span><span><i style="background:#ff5e6b"></i>À éviter</span></div>
+    <div class="near"><span class="pill">📍 Près de moi</span></div>
+    <div class="scrub"><span class="sbtn on">Auj</span><span class="sbtn">+1j🔒</span><span class="sbtn">+2j🔒</span><span class="sbtn">+3j🔒</span><span class="sbtn">+4j🔒</span></div>
+    <div class="dock"><span class="dbtn gold">🗺️ Carte</span><span class="dbtn cream">≡ Liste</span></div>
+    <div class="grain"></div>
+  </div>
+</div>
+</body></html>
