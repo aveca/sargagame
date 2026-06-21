@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>API Le Veilleur — l'état des plages en JSON (gratuit, satellite)</title>
+<meta name="description" content="API publique gratuite : l'état des sargasses plage par plage (Martinique & Guadeloupe) en JSON, mesuré au satellite Copernicus. Endpoints, champs, exemples.">
+<link rel="canonical" href="https://sargasses-martinique.com/api/">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:wght@600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#0d0b14;--cream:#fdf6e3;--gold:#ffc72c;--goldhi:#ffe07a;--blue:#1c7fb0;--orange:#ff7a2f;--violet:#5b3a8e;--green:#27c46b;--red:#e8322a;--sub:#6b6478}
+  *{margin:0;box-sizing:border-box}
+  body{font-family:'Bricolage Grotesque',system-ui,sans-serif;color:var(--ink);
+    background:radial-gradient(120% 70% at 82% 4%,rgba(255,138,77,.5),transparent 50%),linear-gradient(168deg,#ff8a4d 0%,#8a4a8e 24%,#3e2470 58%,#1a1140 100%);
+    background-attachment:fixed;min-height:100vh;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:760px;margin:0 auto;padding:26px 16px 60px}
+  .grain{position:fixed;inset:0;pointer-events:none;opacity:.05;mix-blend-mode:overlay;z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  .eyebrow{display:inline-flex;align-items:center;gap:7px;font:800 11px/1 'Bricolage Grotesque';letter-spacing:.1em;text-transform:uppercase;color:var(--ink);background:var(--blue);border:2px solid var(--ink);border-radius:6px;padding:5px 10px;box-shadow:2px 2px 0 var(--ink)}
+  h1{font-family:'Anton',sans-serif;font-size:clamp(34px,9vw,56px);line-height:.92;text-transform:uppercase;letter-spacing:-1px;color:#fff;-webkit-text-stroke:2.5px var(--ink);paint-order:stroke fill;margin:14px 0 8px}
+  .lede{font:600 15px/1.5 'Bricolage Grotesque';color:#f3ecdd;max-width:560px;margin-bottom:8px}
+  .pill{display:inline-flex;gap:6px;font:800 11px/1;color:var(--ink);background:var(--green);border:2px solid var(--ink);border-radius:999px;padding:5px 10px;box-shadow:2px 2px 0 var(--ink)}
+  .card{position:relative;background:var(--cream);background-image:radial-gradient(rgba(13,11,20,.05) 1.3px,transparent 1.5px);background-size:11px 11px;
+    border:3px solid var(--ink);border-radius:18px;box-shadow:5px 5px 0 var(--ink);padding:20px 18px;margin:18px 0}
+  h2{font-family:'Anton',sans-serif;font-size:25px;text-transform:uppercase;letter-spacing:-.5px;color:var(--ink);margin:0 0 4px;display:flex;align-items:center;gap:9px}
+  h2 .n{font-size:14px;color:#fff;background:var(--orange);border:2px solid var(--ink);border-radius:8px;padding:2px 9px;-webkit-text-stroke:0}
+  h3{font:800 15px/1.2 'Bricolage Grotesque';margin:16px 0 6px;color:var(--ink)}
+  p{font:600 14px/1.55 'Bricolage Grotesque';color:#41414a;margin:7px 0}
+  code,pre{font-family:'JetBrains Mono',monospace}
+  .ep{display:inline-block;font:700 12.5px/1.3 'JetBrains Mono';background:#fff;border:2px solid var(--ink);border-radius:8px;padding:5px 9px;margin:3px 0;word-break:break-all;box-shadow:2px 2px 0 var(--ink)}
+  .ep b{color:var(--green)}
+  pre{background:var(--ink);color:#eafaf2;border-radius:12px;padding:13px 14px;overflow-x:auto;font-size:12px;line-height:1.5;border:3px solid var(--ink);box-shadow:3px 3px 0 rgba(0,0,0,.3);margin:10px 0}
+  pre .k{color:#7fd1ff}pre .s{color:#ffd98a}pre .c{color:#8a93a8}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px}
+  th,td{text-align:left;padding:8px 9px;border-bottom:2px solid rgba(13,11,20,.12);vertical-align:top}
+  th{font:800 11px/1.2 'Bricolage Grotesque';text-transform:uppercase;letter-spacing:.04em;color:var(--sub)}
+  td b{font-family:'JetBrains Mono';font-weight:700;font-size:12.5px;color:var(--ink)}
+  td{font:600 13px/1.45 'Bricolage Grotesque';color:#41414a}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:50%;border:1.5px solid var(--ink);margin-right:5px;vertical-align:middle}
+  .btn{display:inline-flex;align-items:center;gap:7px;font:800 14px/1 'Bricolage Grotesque';padding:13px 18px;border-radius:14px;border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);text-decoration:none;color:var(--ink);margin:6px 8px 6px 0}
+  .btn.gold{background:linear-gradient(180deg,var(--goldhi),var(--gold))}
+  .btn.ghost{background:#fff}
+  .note{font:700 12.5px/1.5 'Bricolage Grotesque';color:var(--ink);background:#fff;border:2.5px dashed var(--ink);border-radius:12px;padding:11px 13px;margin:12px 0}
+  a{color:var(--blue);font-weight:800}
+  footer{text-align:center;color:#cdbfe6;font:700 12px/1.6 'Bricolage Grotesque';margin-top:26px}
+  footer a{color:#fff}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+<div class="wrap">
+  <span class="eyebrow">🛰️ Le Veilleur · API publique</span>
+  <h1>L'état des plages,<br>en JSON.</h1>
+  <p class="lede">L'état des sargasses plage par plage, mesuré au satellite Copernicus (indice AFAI), avec la prévision 7 jours. Données ouvertes, lecture seule, <strong>gratuites</strong>.</p>
+  <span class="pill">● Mise à jour 4×/jour · ERDDAP-live</span>
+
+  <!-- DÉMARRAGE -->
+  <div class="card">
+    <h2>Démarrage</h2>
+    <p>Aucune clé requise pour les données publiques. Une simple requête GET renvoie du JSON :</p>
+    <pre><span class="c"># Martinique — état + prévision de toutes les plages</span>
+curl -s https://sargasses-martinique.com/api/copernicus/sargassum.json
+
+<span class="c"># Guadeloupe</span>
+curl -s https://sargasses-guadeloupe.com/api/copernicus/sargassum.json</pre>
+    <p>CORS ouvert en lecture : utilisable depuis un navigateur, un script, ou un tableau de bord. Soyez raisonnable sur la fréquence (la donnée ne bouge que 4×/jour — un cache d'1 h suffit largement).</p>
+  </div>
+
+  <!-- ENDPOINT 1 -->
+  <div class="card">
+    <h2><span class="n">GET</span> État &amp; prévision</h2>
+    <span class="ep"><b>GET</b> /api/copernicus/sargassum.json</span>
+    <p>L'état du jour de chaque point de mesure + la prévision 7 jours. Extrait :</p>
+    <pre>{
+  <span class="k">"source"</span>: <span class="s">"erddap-live"</span>,
+  <span class="k">"updatedAt"</span>: <span class="s">"2026-06-21T04:13:25Z"</span>,
+  <span class="k">"dataAgeMinutes"</span>: 142,
+  <span class="k">"levels"</span>: [
+    { <span class="k">"id"</span>:<span class="s">"grande-anse"</span>, <span class="k">"afai"</span>:0.05, <span class="k">"status"</span>:<span class="s">"clean"</span>,
+      <span class="k">"confidence"</span>:70, <span class="k">"h2s"</span>:{ <span class="k">"score"</span>:0, <span class="k">"level"</span>:<span class="s">"low"</span> } }
+  ],
+  <span class="k">"weekly"</span>: {
+    <span class="k">"grande-anse"</span>: { <span class="k">"forecast"</span>: [
+      { <span class="k">"day"</span>:<span class="s">"Auj."</span>, <span class="k">"date"</span>:<span class="s">"2026-06-21"</span>, <span class="k">"status"</span>:<span class="s">"clean"</span>,
+        <span class="k">"afai"</span>:0.05, <span class="k">"confidence"</span>:70, <span class="k">"regime"</span>:<span class="s">"calm"</span> }
+    ] }
+  }
+}</pre>
+    <h3>Champs</h3>
+    <table>
+      <tr><th>Champ</th><th>Type</th><th>Sens</th></tr>
+      <tr><td><b>status</b></td><td>string</td><td><span class="dot" style="background:var(--green)"></span><code>clean</code> · <span class="dot" style="background:var(--orange)"></span><code>moderate</code> · <span class="dot" style="background:var(--red)"></span><code>avoid</code> — le verdict baignade.</td></tr>
+      <tr><td><b>afai</b></td><td>number</td><td>Indice AFAI (Algae Floating Area Index) mesuré au large, 0 → ~1. La matière première du statut.</td></tr>
+      <tr><td><b>confidence</b></td><td>0–100</td><td>Fiabilité de la lecture du jour (fraîcheur satellite + concordance des sources).</td></tr>
+      <tr><td><b>h2s</b></td><td>object</td><td>Indice de risque H2S (gaz de décomposition) dérivé de la masse accumulée — <code>level</code> = low/moderate/high. <em>Pas</em> une mesure de gaz in situ.</td></tr>
+      <tr><td><b>weekly[id].forecast[]</b></td><td>array</td><td>7 entrées (J0→J6) : <code>date</code>, <code>status</code>, <code>afai</code>, <code>confidence</code>, <code>regime</code>.</td></tr>
+      <tr><td><b>updatedAt</b> / <b>dataAgeMinutes</b></td><td>iso / int</td><td>Fraîcheur. Affichez toujours l'âge : ne servez jamais une donnée muette.</td></tr>
+    </table>
+  </div>
+
+  <!-- ENDPOINT 2 -->
+  <div class="card">
+    <h2><span class="n">GET</span> Fiabilité publiée</h2>
+    <span class="ep"><b>GET</b> /api/copernicus/track-record.json</span>
+    <p>Notre fiabilité, auditée et publiée — le contraire d'une boîte noire. Taux de justesse du statut, erreur AFAI moyenne, ventilés par horizon et par régime de saison (calme / transition).</p>
+    <pre>{
+  <span class="k">"overall"</span>: { <span class="k">"statusHitRatePct"</span>:77, <span class="k">"afaiMAE"</span>:0.047 },
+  <span class="k">"byRegime"</span>: { <span class="k">"calm"</span>:{…}, <span class="k">"transition"</span>:{…} },
+  <span class="k">"byHorizon"</span>: {…}, <span class="k">"sampleSize"</span>:…, <span class="k">"window"</span>:…
+}</pre>
+    <p>Règle d'or : aucun chiffre inventé. Un global masque que les alertes de saison calme sont moins fiables que les pics — on le dit. Voir la page lisible : <a href="/fiabilite/">/fiabilite/</a>.</p>
+  </div>
+
+  <!-- WIDGET -->
+  <div class="card">
+    <h2>Widget embarquable</h2>
+    <p>Pas envie de coder ? Affichez l'état de votre plage sur votre site avec un simple bout de HTML — zéro fetch, zéro maintenance, toujours à jour.</p>
+    <a class="btn gold" href="/widget/">⬩ Obtenir mon widget →</a>
+  </div>
+
+  <!-- PRO / VOLUME -->
+  <div class="card">
+    <h2>Pro · hôtels &amp; collectivités</h2>
+    <p>Recevez chaque matin le <strong>brief automatique de vos plages</strong> par email — 100% automatique, sans appel, stop quand vous voulez.</p>
+    <p>Besoin de volume élevé, d'un SLA, d'un accès clé (<code>/stats.php?key=…</code>), ou d'une intégration en marque blanche ? On en parle.</p>
+    <a class="btn gold" href="/?pro=1">⭐ Activer le brief gratuit →</a>
+    <a class="btn ghost" href="/pro/">Offre Pro →</a>
+  </div>
+
+  <div class="note">⚠️ Stabilité &amp; bon usage — la donnée vient des satellites Sentinel-3 / MODIS (Copernicus Marine), recalculée 4×/jour. Les champs ci-dessus sont stables ; tout changement cassant serait annoncé. Mentionnez la source « Le Veilleur · Copernicus Marine » si vous réutilisez la donnée. Ce n'est pas une mesure sanitaire : suivez toujours les consignes ARS/HCSP.</div>
+
+  <footer>
+    Le Veilleur · données satellite Copernicus Marine<br>
+    <a href="/">Carte temps réel</a> · <a href="/fiabilite/">Fiabilité</a> · <a href="/about/">À propos</a> · <a href="/widget/">Widget</a>
+  </footer>
+</div>
+</body>
+</html>
