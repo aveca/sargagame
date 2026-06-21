@@ -197,7 +197,7 @@ const _BRIEF_T = {
     guestWatch: 'Mixed week — point guests to the clear days above.',
     guestAvoid: 'Sargassum expected — keep a backup activity ready for affected days.',
     cta: 'Hotel team? Get this brief in your inbox every morning',
-    ctaSub: 'Free daily sargassum brief for your beach — reply and we set it up.',
+    ctaSub: 'Free daily sargassum brief for your beach — activate it yourself in 10 seconds, no call.',
     foot: 'Independent Copernicus / NOAA satellite data · refreshed 4× a day',
     cleaner: n => `↪ Cleaner right now: ${n}`, cleanerNote: 'A good backup to point your guests to today.' },
   es: { brief: 'Boletín de sargazo', beachOf: 'Playa', today: 'Hoy', week: 'Pronóstico 7 días', clean: 'Limpia', moderate: 'Moderada', avoid: 'Evitar',
@@ -206,7 +206,7 @@ const _BRIEF_T = {
     guestWatch: 'Semana mixta — orienta a tus huéspedes a los días limpios.',
     guestAvoid: 'Se espera sargazo — ten una actividad alternativa lista.',
     cta: '¿Equipo del hotel? Recibe este boletín cada mañana',
-    ctaSub: 'Boletín diario de sargazo gratis para tu playa — responde y lo activamos.',
+    ctaSub: 'Boletín diario de sargazo gratis para tu playa — actívalo tú mismo en 10 segundos, sin llamada.',
     foot: 'Datos satelitales independientes Copernicus / NOAA · 4 veces al día',
     cleaner: n => `↪ Más limpia ahora: ${n}`, cleanerNote: 'Un buen plan B para tus huéspedes hoy.' },
 }
@@ -232,7 +232,8 @@ function buildResortBrief(region, r, b, data, lang, today, domain, beaches) {
     const col = C[d.status] || '#999'
     return `<div style="flex:1;min-width:48px;text-align:center"><div style="font-size:11px;color:#6b6b66;font-weight:600">${dn}</div><div style="width:22px;height:22px;border-radius:50%;background:${col};margin:6px auto 4px"></div><div style="font-size:10px;color:${col};font-weight:700">${W[d.status] || d.status}</div></div>`
   }).join('')
-  const mailto = `mailto:${(region.emails && region.emails.support) || 'hotels@' + domain}?subject=${encodeURIComponent('Daily sargassum brief — ' + r.name)}&body=${encodeURIComponent('Hi, we run ' + r.name + ' and would like the free daily sargassum brief for ' + b.name + '.')}`
+  // Self-serve (pivot « zéro appel ») : la cible active le brief elle-même via ?pro=1.
+  const proLink = `https://${domain}/?pro=1`
   const scoreTxt = b.lv.score != null ? ` · ${b.lv.score}/100` : ''
   return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,follow">
 <title>${esc(r.name)} — ${L.brief}</title>
@@ -245,7 +246,7 @@ function buildResortBrief(region, r, b, data, lang, today, domain, beaches) {
 <h2 style="font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:#6b6b66;margin:18px 0 0;font-weight:700">${L.week}</h2>
 <div class="row">${cells}</div>
 <div class="tip">${L.cleanDays(cleanDays)} ${guest}</div>${altHtml}
-<a class="cta" href="${mailto}"><b>${L.cta}</b><span>${L.ctaSub}</span></a>
+<a class="cta" href="${proLink}"><b>${L.cta}</b><span>${L.ctaSub}</span></a>
 </div>
 <div class="ft">${L.foot} · ${esc(today)} · ${esc(domain)}</div>
 </div></body></html>`
