@@ -168,5 +168,13 @@
 - [ ] Déverrouiller share-cards · soigner capture · Bahamas (data≥2 sem) · widgets B2B depuis beaches-list.
 - [ ] **Capture email ATONE — revoir l'opt-in form** _(flag auto conversion-track 21/06)_ : leads quasi-plats (213→213→213 du 17→19/06, +2 le 20/06 = +2 en 4 j), `funnel.emailSubmits` ~62-63/j stable, `stripe.emailAttributed` = 0 actif/€0. Le canal capture ne croît plus. Revoir l'opt-in (placement, copy, aha-moment, friction) côté `sargasses-refonte-builder` — NE PAS éditer le JSX depuis conversion-track.
 
+**PHASE 5 — BACKLOG PLUS (workflows 21/06, source de vérité = `design/BACKLOG-PLUS-2026-06-21.md`).** Items NET-NEW vérifiés adversarialement (surface+substance). Chacun : build vert + vérif navigateur + A/B réversible + doctrine. Prends-en UN par run (le + haut non coché).
+- [ ] **Géoloc « Près de moi » RÉELLE** (P6) — aujourd'hui placebo (getCurrentPosition gaté A/B molo + WorldMapView.nearMe ignore userPos, prend la 1re plage clean de la liste). Au TAP : si userPos null → getCurrentPosition (geste=consentement) → plage clean la + proche en haversine ; passer userPos+setUserPos en props à WorldMapView, trier nearMe par distance. Le job #1 de l'app.
+- [ ] **Recherche plage par NOM dans la carte-monde** (P7) — SearchBar existe (view==='map' l.13786) mais masquée par l'Archipel z1020 du cohort par défaut. Remonter le composant SearchBar dans le chrome verre de l'Archipel + WorldMapView → tap = flyTo/centerOn + onOpenBeach. 2e job le + fréquent.
+- [ ] **Toast « plage propre la + proche » au close de fiche** (P9) — nextSuggestion déjà armé+tracké (closeSheet ~l.13309) mais rendu gaté view==='map' → invisible sous l'Archipel pour le cohort par défaut. Re-router le rendu vers le chrome Archipel/dock. Anti-cul-de-sac.
+- [ ] **Compteurs sur chips filtre liste** (P10) — BeachListView : « Propres 12 / Favoris 3 / Éviter 28 », griser un chip à 0 (évite l'état vide). useMemo sur beaches, trivial (nClean déjà calculé).
+- [ ] **Plan annuel ANCRÉ in-app** (S4) — prices existent (annual 39,99/an, season 19,99) mais le paywall pousse le mensuel. Ancrer l'annuel (cadrage valeur « toute la saison + l'an prochain », PAS un Nᵉ A/B copy dilutif). Anti-churn saisonnier, LTV.
+- [ ] **Capter l'email AVANT la carte** (S2, part monolithe) — `submitLead(email,'onsite_checkout')` déjà ajouté dans doSubscribe ; vérifier qu'il part bien AVANT confirmSetup + que la relance panier (`recover-abandoned-cart.cjs`) le consomme. Fuite mesurée ~565€+1224$/30j (completionRate 0,5).
+
 ---
 _Vérif continue : `ab-eval.cjs` (verdict A/B auto) · skill `sg-svg-scene` (navigateur). Doc vivant — coché au fil de l'exécution._
