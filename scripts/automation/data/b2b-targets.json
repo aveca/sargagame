@@ -1,0 +1,7 @@
+{
+  "_note": "Cibles B2B curées (hôtels, clubs de plage, offices de tourisme, mairies littorales MQ/GP). b2b-outreach.cjs scrape l'email de contact PUBLIC de chaque homepage puis envoie UN email consultatif (opt-out, faible volume, cross-dédup avec l'outreach backlink). Ajouter une cible = ajouter sa homepage dans `targets`. Format: \"https://...\" ou {\"url\":\"https://...\",\"island\":\"mq|gp\"}. Aucune cible n'est re-contactée (dédup par domaine).",
+  "targets": [
+    { "url": "https://www.martinique.org/", "island": "mq" },
+    { "url": "https://www.comite-martinique.org/", "island": "mq" }
+  ]
+}
