@@ -2137,7 +2137,7 @@ function getBeachPhoto(beach){
    Dégradé ciel→soleil→mer (SCENE_TOKENS) teinté par l'état réel de la plage. */
 function beachThumbBg(beach){
   const c=(ST[beach?.status]||ST._loading).c
-  return`radial-gradient(120% 78% at 50% 14%, ${c}3a 0%, transparent 58%), linear-gradient(168deg, #0B2230 0%, #155A5A 30%, #C97E3A 56%, #F2B05E 70%, #1A5852 84%, #08251F 100%)`
+  return`radial-gradient(120% 78% at 50% 14%, ${c}3a 0%, transparent 58%), linear-gradient(168deg, #2e1a5e 0%, #6a2f9e 30%, #C97E3A 56%, #F2B05E 70%, #6a2f9e 84%, #1a1140 100%)`
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
