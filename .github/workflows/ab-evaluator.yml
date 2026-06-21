@@ -1,4 +1,7 @@
-name: A/B Test Evaluator
+name: UX Alert Brain (funnel first-party)
+# NB: nom historique trompeur (« A/B Test Evaluator »). Ce workflow est le SEUL
+# trigger planifié du cerveau d'alerte UX : analyze-ux.cjs lit stats.php (first-party,
+# zéro Google) → ux-alerts.json, consommé par pulse.cjs. NE PAS supprimer.
 
 on:
   schedule:
@@ -15,14 +18,14 @@ jobs:
           node-version: '24'
           cache: 'npm'
       - run: npm ci
-      - name: Run A/B Evaluation
+      - name: Run UX alert brain (analyze-ux → ux-alerts.json)
         run: node scripts/analyze-ux.cjs
         env:
-          GA4_PROPERTY_ID_MQ: ${{ secrets.GA4_PROPERTY_ID_MQ }}
-          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
-      - name: Upload Report
+          # analyze-ux.cjs lit process.env.SG_STATS_KEY (l.44) ; sans clé = no-op.
+          SG_STATS_KEY: ${{ secrets.SG_STATS_KEY }}
+      - name: Upload UX alerts
         uses: actions/upload-artifact@v4
         with:
-          name: ab-test-report
-          path: scripts/automation/data/ab-results.json
+          name: ux-alerts
+          path: scripts/automation/data/ux-alerts.json
           if-no-files-found: ignore

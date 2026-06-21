@@ -119,9 +119,8 @@ jobs:
       - name: Enrich content (FAQ + noscript + links)
         run: node scripts/automation/seo-enrich-content.cjs
 
-      # ── 5. Generate new SEO pages ────────────────────────
-      - name: Generate new pages (keyword gaps)
-        run: node scripts/automation/generate-seo-pages.cjs
+      # ── 5. (retiré : generate-seo-pages.cjs = findKeywordGaps() stub vide → no-op
+      #     silencieux. À réactiver quand findKeywordGaps lit les vrais gaps GSC.) ──
 
       # ── 6. Rebuild with all SEO changes ──────────────────
       - name: Build site (Vite) + prepare FTP
