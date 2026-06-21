@@ -1,0 +1,33 @@
+name: SMTP self-test (manual)
+
+# Diagnostic manuel : envoie un email de test depuis la boîte alerte@ (SMTP) au
+# fondateur (ou à l'adresse fournie). Sert à vérifier que SMTP_PASS est posé et
+# que l'envoi fonctionne, sans toucher de vrais destinataires.
+
+on:
+  workflow_dispatch:
+    inputs:
+      to:
+        description: "Destinataire du test (vide = fondateur par défaut)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  smtp-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm ci
+      - name: Send SMTP test email
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          TEST_TO: ${{ github.event.inputs.to }}
+        run: node scripts/automation/smtp-selftest.cjs
