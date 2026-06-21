@@ -10933,6 +10933,10 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
           <a href={IS_NEW_REGION?"/about/":"/a-propos/"} style={{color:"rgba(255,255,255,.38)"}}>
             {_t(lang,"À propos","About","Acerca de")}
           </a>
+          {/* /press/ existe pour les régions USD (kit média = backlinks/E-E-A-T) */}
+          {IS_NEW_REGION && <>{" · "}<a href="/press/" style={{color:"rgba(255,255,255,.38)"}}>
+            {_t(lang,"Presse","Press","Prensa")}
+          </a></>}
           {!IS_NEW_REGION && <>{" · "}<a href="/widget/" style={{color:"rgba(255,255,255,.38)"}}>
             {_t(lang,"Pro : widget gratuit","Pro: free widget","Pro: widget gratis")}
           </a></>}
