@@ -605,9 +605,12 @@ ${hubLinks('weekly')}${networkFooter(region, t, lang)}</article>`,
         ? `Sargazo en ${b.name} HOY — Estado en vivo y pronóstico 7 días`
         : `${b.name} Sargassum Today — Live Status & 7-Day Forecast`, 68)
     }
+    // Signal géo renforcé : commune, région ET pays (ex. « Miami Beach, Florida,
+    // United States ») — meilleur ranking sur les requêtes US/MX/DR géolocalisées.
+    const _geo = [b.commune || '', region.name, region.country].filter(Boolean).join(', ')
     const desc = trimDesc(lang === 'es'
-      ? `¿Hay sargazo en ${b.name} hoy? Estado actualizado 4 veces al día por satélite, Beach Score ${b.lv.score ?? ''}/100 y pronóstico de 7 días. ${(b.commune || '')}, ${region.name}.`
-      : `Is there sargassum at ${b.name} today? Satellite status updated 4× daily, Beach Score ${b.lv.score ?? ''}/100 and a 7-day forecast. ${(b.commune || '')}, ${region.name}.`)
+      ? `¿Hay sargazo en ${b.name} hoy? Estado actualizado 4 veces al día por satélite, Beach Score ${b.lv.score ?? ''}/100 y pronóstico de 7 días. ${_geo}.`
+      : `Is there sargassum at ${b.name} today? Satellite status updated 4× daily, Beach Score ${b.lv.score ?? ''}/100 and a 7-day forecast. ${_geo}.`)
     // FAQPage par plage — templates de content.beachFaq (contrat tokens dans
     // regions/seo-content/<id>.json), fallback T[lang].beachFaq. Tokens résolus
     // depuis la donnée LIVE uniquement ; pas de FAQPage si donnée absente.
