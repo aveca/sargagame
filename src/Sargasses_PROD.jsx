@@ -1750,6 +1750,17 @@ const PAYWALL_READY=!REGION_PAY||!!LINK_MONTHLY
 // au module (l.81) → libellé localisé fr/en. Sans ça : "null/mois", "Payer null".
 const PRICE_MO=REGION_PAY?(REGION.pricing?.monthly||"$9.99"):(getLang()==="en"?"€4.99":"4,99 €")
 const PRICE_YR=REGION_PAY?(REGION.pricing?.yearly||"$79"):(getLang()==="en"?"€39.99":"39,99 €")
+// Prix/jour dérivé du mensuel (devise-aware) — pour l'ancrage « moins qu'un café »
+// dans la fiche. USD → "$0.33", EUR → "0,16 €". Null si non-parsable (fallback).
+function pricePerDay(){
+  try{
+    const mo=String(PRICE_MO)
+    const num=parseFloat(mo.replace(',','.').replace(/[^0-9.]/g,''))
+    if(!isFinite(num)||num<=0)return null
+    const d=num/30
+    return /\$/.test(mo)?`$${d.toFixed(2)}`:`${d.toFixed(2).replace('.',',')} €`
+  }catch(_){return null}
+}
 // Trip Pass (USD A/B pw_trippass) : accès UNIQUE 7 jours, paiement one-time —
 // aligné sur la durée d'un séjour, pas d'abonnement. Inerte tant que
 // REGION.paymentLinks.tripPass n'existe pas (le lien Stripe one-time est créé
@@ -3764,7 +3775,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
           <button className="bsc-cta" onClick={onCTA}>⭐ {ctaLabel} →</button>
           {!isPremium&&<>
             <div style={{font:"600 11.5px/1.4 'Bricolage Grotesque'",color:"#41414a",textAlign:"center",margin:"9px 8px 0"}}>{_t(lang,"Ne découvre plus les algues une fois sur place. Sois prévenu·e la veille.","Stop discovering the seaweed once you're there. Get warned the day before.","Deja de descubrir el sargazo al llegar. Te avisamos la víspera.")}</div>
-            <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:COMIC.sub,textAlign:"center",marginTop:6}}>≈ 0,16 € / {_t(lang,"jour","day","día")} · {_t(lang,"sans engagement, résiliable à tout moment","cancel anytime","sin compromiso, cancela cuando quieras")}</div>
+            <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:COMIC.sub,textAlign:"center",marginTop:6}}>≈ {pricePerDay()||"0,16 €"} / {_t(lang,"jour","day","día")} · {_t(lang,"sans engagement, résiliable à tout moment","cancel anytime","sin compromiso, cancela cuando quieras")}</div>
             <div style={{font:"800 11px/1.3 'Bricolage Grotesque'",color:COMIC.ink,textAlign:"center",marginTop:6}}>★ {_t(lang,`Rejoint par ${socialN}+ vacanciers`,`Joined by ${socialN}+ beachgoers`,`${socialN}+ veraneantes ya dentro`)}</div>
           </>}
           <button onClick={()=>{setShowProof(v=>!v);trk("sg_beach_proof",{beach_id:beach.id,open:!showProof})}}
