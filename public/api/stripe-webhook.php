@@ -111,6 +111,40 @@ if (!in_array($type, $HANDLED_TYPES, true)) {
 $KNOWN_REGIONS = ['mq', 'gp', 'puntacana', 'florida', 'rivieramaya'];
 
 $obj = (isset($event['data']['object']) && is_array($event['data']['object'])) ? $event['data']['object'] : [];
+
+// ── Widget hôtel PRO (Payment Link B2B, region-agnostic) : traité AVANT le filtre
+// island (le PRO n'a pas d'island). Le plan vit dans metadata.plan (du Payment Link).
+// → envoie le snippet d'intégration avec le jeton ?k= signé. Envoi via Resend (stream HTTP).
+if ($type === 'checkout.session.completed'
+    && isset($obj['metadata']['plan']) && strpos((string)$obj['metadata']['plan'], 'pro_widget') === 0) {
+    @file_put_contents($marker, ''); // idempotence
+    $proEmail = $obj['customer_details']['email'] ?? ($obj['customer_email'] ?? '');
+    http_response_code(200);
+    echo json_encode(['received' => true, 'pro_widget' => true]);
+    ignore_user_abort(true);
+    if (function_exists('fastcgi_finish_request')) { @fastcgi_finish_request(); }
+    if ($proEmail && !empty($cfg['resend_key'])) {
+        require_once __DIR__ . '/widget-token.php';
+        $k = sg_widget_sign($proEmail, 400);
+        $iframe = '<iframe src="https://sargasses-martinique.com/widget/embed/?beach=VOTRE-PLAGE&k=' . $k . '" style="width:100%;max-width:520px;height:230px;border:0" loading="lazy" title="Sargasses"></iframe>';
+        $html = '<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px">'
+            . '<h2 style="margin:0 0 10px">Ton widget PRO est active</h2>'
+            . '<p style="font-size:14px;color:#444">Merci ! Colle ce code sur ton site (remplace VOTRE-PLAGE par le slug de ta plage). Marque blanche, sans lien Sargasses.</p>'
+            . '<pre style="background:#0d0b14;color:#ffd23f;padding:14px;border-radius:10px;font-size:12px;overflow:auto;white-space:pre-wrap;word-break:break-all">' . htmlspecialchars($iframe) . '</pre>'
+            . '<p style="font-size:12px;color:#888">Garde ce jeton prive, c\'est ta cle PRO. Slugs de plage : sargasses-martinique.com/plages/</p></div>';
+        $payloadPro = json_encode(['from' => 'Sargasses Pro <alerte@sargasses-martinique.com>', 'to' => [$proEmail], 'subject' => 'Ton widget PRO est pret', 'html' => $html]);
+        $ctxPro = stream_context_create(['http' => [
+            'method'  => 'POST',
+            'header'  => "Authorization: Bearer " . $cfg['resend_key'] . "\r\nContent-Type: application/json\r\n",
+            'content' => $payloadPro,
+            'timeout' => 10,
+            'ignore_errors' => true,
+        ]]);
+        @file_get_contents('https://api.resend.com/emails', false, $ctxPro);
+    }
+    exit;
+}
+
 $island = extract_island($type, $obj);
 if ($island === '' || !in_array(strtolower($island), $KNOWN_REGIONS, true)) {
     // Event d'un autre business (BOT-WOW) ou sans island → 200 + ignore, pas de retry.
