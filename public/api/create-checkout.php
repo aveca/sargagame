@@ -27,6 +27,23 @@ $cfg = require __DIR__ . '/stripe-config.php';
 $input = json_decode(file_get_contents('php://input'), true) ?: [];
 $action = $input['action'] ?? 'setup';
 
+// ── Rate-limiting anti card-testing (par IP, fenêtre horaire fixe). FAIL-OPEN.
+// Une rafale de SetupIntents/PaymentIntents avec des cartes volées gèle le compte
+// Stripe (Radar) = 100% du MRR. On plafonne par IP et par action ; au-delà → 429.
+// 'setup' = vecteur principal (crée des SetupIntents confirmables côté client) ;
+// 'verify_subscription'/'portal' = lookup par email → plafond anti-énumération.
+// Réversible : SG_RL_KILL / rate_limit_enabled=false dans stripe-config.php.
+require_once __DIR__ . '/_ratelimit.php';
+$RL_LIMITS = [
+    'setup'               => 20,
+    'subscribe'           => 15,
+    'pay_once'            => 15,
+    'embedded'            => 20,
+    'verify_subscription' => 30,
+    'portal'              => 20,
+];
+sg_rate_limit('cc_' . $action, $RL_LIMITS[$action] ?? 30);
+
 function stripe($method, $path, $params = []) {
     global $cfg;
     $ch = curl_init("https://api.stripe.com/v1$path");
