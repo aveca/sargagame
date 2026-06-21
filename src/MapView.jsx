@@ -938,7 +938,7 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
           style={{
             width:32,height:32,borderRadius:"50%",
             border:"none",cursor:"pointer",padding:0,
-            background:autoPlaying?"linear-gradient(135deg,#00C2B0,#d6249f)":"rgba(0,0,0,.06)",
+            background:autoPlaying?"linear-gradient(135deg,#00C2B0,#156a96)":"rgba(0,0,0,.06)",
             color:autoPlaying?"#fff":"#120821",
             fontSize:11,fontWeight:800,
             display:"flex",alignItems:"center",justifyContent:"center",
@@ -958,7 +958,7 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
               minWidth:44,height:32,padding:"0 12px",
               border:"none",cursor:"pointer",
               borderRadius:999,
-              background:active?"linear-gradient(135deg,#00C2B0,#d6249f)":"transparent",
+              background:active?"linear-gradient(135deg,#00C2B0,#156a96)":"transparent",
               color:active?"#fff":"#120821",
               fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",
               fontSize:11,fontWeight:800,letterSpacing:".06em",

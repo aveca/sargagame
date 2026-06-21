@@ -444,7 +444,7 @@ export function initHomeAZ(SR, HOST, opts){
     for(var i=0;i<n;i++){
       var c=document.createElementNS("http://www.w3.org/2000/svg","circle");
       c.setAttribute("cx",x0+(span/(n-1))*i); c.setAttribute("cy",vy); c.setAttribute("r","5");
-      c.setAttribute("fill","#d6249f"); c.setAttribute("stroke","#06121A"); c.setAttribute("stroke-width","1.2");
+      c.setAttribute("fill","#156a96"); c.setAttribute("stroke","#06121A"); c.setAttribute("stroke-width","1.2");
       buoys.appendChild(c);
     }
     requestAnimationFrame(function(){ boom.classList.add("on"); });

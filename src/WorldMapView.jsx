@@ -425,7 +425,7 @@ export default function WorldMapView({
       background: warm
         // MONDE GTA SUNSET (cohérence avec le hero) : mer-coucher-de-soleil violet→magenta
         // →orange, soleil chaud haut-droite. Remplace l'ancienne mer bleu-teal comic.
-        ? "radial-gradient(110% 80% at 80% 4%, rgba(255,214,140,.6), rgba(255,140,80,.26) 34%, transparent 62%), radial-gradient(130% 110% at 6% 116%, rgba(42,21,80,.7), rgba(58,28,90,.28) 42%, transparent 62%), linear-gradient(166deg,#ff9a5e 0%,#ff6b6b 18%,#c33a82 40%,#8a3a8e 60%,#5a2680 82%,#2e1a5e 100%)"
+        ? "radial-gradient(110% 80% at 80% 4%, rgba(255,214,140,.6), rgba(255,140,80,.26) 34%, transparent 62%), radial-gradient(130% 110% at 6% 116%, rgba(42,21,80,.7), rgba(58,28,90,.28) 42%, transparent 62%), linear-gradient(166deg,#ff8a4d 0%,#ff7a4d 18%,#8a4a8e 40%,#6a2f9e 60%,#3e2470 82%,#2e1a5e 100%)"
         : "radial-gradient(130% 70% at 76% 4%, rgba(255,224,160,.16), transparent 48%), linear-gradient(162deg,#3aa6c4 0%,#1c6f93 40%,#103f63 72%,#0b2e4d 100%)",
     }}>
       <style>{`
@@ -573,7 +573,7 @@ export default function WorldMapView({
               <line x1="-2" y1="4" x2="-2" y2="-64" stroke="#241608" strokeWidth="3"/>
               <path d="M-2 -62 L-2 -6 L42 -6 Z" fill="url(#wmSailR)"/>
               <path d="M-2 -44 L-2 -6 L28 -6 Z" fill="url(#wmSailY)"/>
-              <path d="M-4 -52 L-4 -8 L-32 -8 Z" fill="#ff2db8" opacity=".94"/>
+              <path d="M-4 -52 L-4 -8 L-32 -8 Z" fill="#1c7fb0" opacity=".94"/>
             </g>
             <path d="M-46 4 Q0 24 46 4 Q40 14 32 16 L-32 16 Q-40 14 -46 4 Z" fill="#0f5d54"/>
             <path d="M-46 4 Q0 18 46 4" fill="none" stroke="#FFD884" strokeWidth="1.6" strokeOpacity=".6"/>

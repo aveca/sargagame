@@ -35,7 +35,7 @@ export default function PaidOnboarding({ lang = "fr", allBeaches = [], favorites
   const favSet = new Set(favorites)
   const picked = suggestions.filter(b => favSet.has(b.id)).length + favorites.filter(id => !suggestions.some(b => b.id === id)).length
 
-  const GOLD = "#FFC72C", GOLD_D = "#E8A800", TEAL = "#ff2db8", INK = "#EAF7F4"
+  const GOLD = "#FFC72C", GOLD_D = "#E8A800", TEAL = "#1c7fb0", INK = "#EAF7F4"
   const wrap = {
     // garde les couleurs golden-hour même sous thème contraste / forced-colors (hérité)
     forcedColorAdjust: "none",

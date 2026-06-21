@@ -135,7 +135,7 @@ const C={
   goldBg:"rgba(232,168,0,.07)",goldBgL:"rgba(255,199,44,.15)",
   // Accents « teal » REPRIS en néon magenta/violet (branding sunset Le Veilleur).
   // Noms conservés (consommés partout) ; seules les valeurs changent → cascade.
-  teal:"#d6249f",tealL:"#ff2db8",tealBg:"rgba(214,36,159,.08)",
+  teal:"#156a96",tealL:"#1c7fb0",tealBg:"rgba(28,127,176,.1)",
   green:"#27c46b",greenL:"#1ea75a",greenBg:"rgba(39,196,107,.1)",
   amber:"#B87A00",amberBg:"rgba(184,122,0,.1)",
   red:"#e8322a",redBg:"rgba(232,50,42,.1)",
@@ -151,7 +151,7 @@ const C={
 Object.assign(C,{
   inkD:"#160a26",card2:"#241246",
   orCTA:"#FFC72C",orLink:"#E8A800",orPale:"#FFE08A",orGlit:"#FFD884",
-  tealS:"#b93a8e",tealL2:"#ff2db8",
+  tealS:"#6a2f9e",tealL2:"#1c7fb0",
   seaD:"#08251F",seaM:"#1A5852",skyInk:"#0B2230",
   sargD:"#5d400e",sargM:"#7a5c14",sargL2:"#8a6c1c",sargV:"#a8862a",
   stClean:"#27c46b",stMod:"#ffb02e",stAvoid:"#e8322a",stAvoidL:"#F4845F",
@@ -207,7 +207,7 @@ function verdictMeta(status,lang){
     moderate:{color:"#F59E0B",emoji:"😐",verb:_t(lang,"Prudence","Careful","Cuidado")},
     avoid:{color:"#E8522A",emoji:"🚫",verb:_t(lang,"Pas aujourd'hui","Not today","Hoy no")},
   }
-  return M[status]||{color:"#ff2db8",emoji:"🛰️",verb:_t(lang,"Le veilleur scanne","Scanning","Escaneando")}
+  return M[status]||{color:"#1c7fb0",emoji:"🛰️",verb:_t(lang,"Le veilleur scanne","Scanning","Escaneando")}
 }
 // Carte de partage SPOILER-FREE (recherche valeur) — image golden-hour SANS lien (effet Wordle
 // = portée max sur les réseaux). Canvas PUR (réutilise les fonts déjà chargées), zéro dépendance.
@@ -3321,7 +3321,7 @@ function PlanBThumb({i}){
       style={{width:"100%",height:"100%",display:"block"}}>
       <rect width="172" height="90" fill="#FFE9B0"/>
       <circle cx="132" cy="22" r="13" fill="#FFF1C4"/>
-      <rect y="34" width="172" height="34" fill="#ff2db8"/>
+      <rect y="34" width="172" height="34" fill="#1c7fb0"/>
       <rect y="33" width="172" height="2" fill="#fff" opacity=".5"/>
       <path d="M0,62 Q86,56 172,62 L172,90 L0,90 Z" fill="#F2D9A0"/>
       {Array.from({length:palms}).map((_,k)=>(
@@ -3391,7 +3391,7 @@ function PlanBPanel({beach,allBeaches,userPos,lang,sargData,onBeachClick,onClose
                 </span>
                 {typeof b.score==="number"&&<span style={{fontWeight:800,color:"#22C55E",fontSize:13}}>{b.score}<span style={{fontSize:10,opacity:.7,fontWeight:700}}>/100</span></span>}
               </div>
-              <div style={{marginTop:9,fontSize:12,fontWeight:800,color:"#d6249f"}}>{_t(lang,"M'y emmener","Take me there","Llévame")} →</div>
+              <div style={{marginTop:9,fontSize:12,fontWeight:800,color:"#156a96"}}>{_t(lang,"M'y emmener","Take me there","Llévame")} →</div>
             </div>
           </button>
         ))}
@@ -3550,7 +3550,7 @@ function H2SBadge({beach,lang,weather,onPremiumClick}){
 const COMIC={
   cream:"#fdf6e3", ink:"#0d0b14", sub:"#6b6478",
   clean:"#27c46b", moderate:"#ffb02e", avoid:"#e8322a", loading:"#9a93a8",
-  sunset:"radial-gradient(120% 75% at 80% 4%, rgba(255,214,140,.65), rgba(255,159,67,.0) 52%), linear-gradient(168deg,#ff9b3d 0%,#ff5e8e 34%,#b93a8e 60%,#6a2f9e 100%)",
+  sunset:"radial-gradient(120% 75% at 82% 6%, rgba(255,138,77,.55), rgba(255,138,77,0) 50%), linear-gradient(168deg,#ff8a4d 0%,#8a4a8e 26%,#3e2470 58%,#1a1140 100%)",
   gold:"linear-gradient(180deg,#ffe07a,#ffc72c)",
 }
 function comicStatusColor(st){return st==="clean"?COMIC.clean:st==="moderate"?COMIC.moderate:st==="avoid"?COMIC.avoid:COMIC.loading}
@@ -5542,7 +5542,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
             <div style={{
               fontSize:9,fontWeight:800,
               letterSpacing:".14em",textTransform:"uppercase",
-              color:"#d6249f",opacity:.85,marginBottom:1,
+              color:"#156a96",opacity:.85,marginBottom:1,
             }}>
               {myPickLead} · {greet}
             </div>
@@ -5571,7 +5571,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
             fontSize:12,fontWeight:800,color:"#fff",
             flexShrink:0,whiteSpace:"nowrap",
             padding:"10px 18px",borderRadius:100,
-            background:"linear-gradient(135deg,#00C2B0 0%,#d6249f 100%)",
+            background:"linear-gradient(135deg,#00C2B0 0%,#156a96 100%)",
             boxShadow:"0 6px 18px rgba(0,158,142,.45), inset 0 1px 0 rgba(255,255,255,.35)",
             letterSpacing:".03em",
           }}>
@@ -6904,7 +6904,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
       <div style={{position:"fixed",inset:0,zIndex:1100,overflow:"hidden"}}>
         <svg style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block"}} viewBox="0 0 390 720" preserveAspectRatio="xMidYMid slice">
           <defs>
-            <linearGradient id="hiSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#2e1a5e"/><stop offset=".46" stopColor="#6a2f9e"/><stop offset=".74" stopColor="#b93a8e"/><stop offset="1" stopColor="#ff9b3d"/></linearGradient>
+            <linearGradient id="hiSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#2e1a5e"/><stop offset=".46" stopColor="#6a2f9e"/><stop offset=".74" stopColor="#6a2f9e"/><stop offset="1" stopColor="#ff9b3d"/></linearGradient>
             <linearGradient id="hiSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1A5852"/><stop offset="1" stopColor="#08251F"/></linearGradient>
             <radialGradient id="hiSun" cx="50%" cy="50%" r="50%"><stop offset="0" stopColor="#FFE6A8" stopOpacity=".95"/><stop offset=".4" stopColor="#FFD884" stopOpacity=".55"/><stop offset="1" stopColor="#FFD884" stopOpacity="0"/></radialGradient>
             <linearGradient id="hiLand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1C3138"/><stop offset="1" stopColor="#16242A"/></linearGradient>
@@ -10918,7 +10918,7 @@ function AlertHub({lang,island,beach,onPremium,onShowMap,onClose}){
       <div style={{maxWidth:560,margin:"0 auto",display:"flex",flexDirection:"column",alignItems:"stretch"}}>
         {/* Pli 1 — Promesse + Veilleur */}
         <div style={{textAlign:"center",marginBottom:20,marginTop:20}}>
-          <div style={{fontSize:10.5,fontWeight:800,color:"#d6249f",letterSpacing:".14em",textTransform:"uppercase",marginBottom:8}}>
+          <div style={{fontSize:10.5,fontWeight:800,color:"#156a96",letterSpacing:".14em",textTransform:"uppercase",marginBottom:8}}>
             {dateLong} · {_t(lang,"LE VEILLEUR PERSONNEL","YOUR PERSONAL WATCHER","TU VIGÍA PERSONAL")}
           </div>
           <h1 style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:"clamp(28px,6.5vw,42px)",lineHeight:1.02,letterSpacing:".01em",textTransform:"uppercase",margin:"0 0 16px",color:"#fff"}}>
@@ -10942,7 +10942,7 @@ function AlertHub({lang,island,beach,onPremium,onShowMap,onClose}){
           <div style={{position:"absolute",top:"-50%",left:"-20%",width:"60%",height:"200%",background:"radial-gradient(ellipse, rgba(34,197,94,.06) 0%, transparent 70%)",pointerEvents:"none"}}/>
           <div style={{position:"relative"}}>
             {submitted ? (
-              <div style={{textAlign:"center",fontSize:14,fontWeight:600,color:"#ff2db8"}}>
+              <div style={{textAlign:"center",fontSize:14,fontWeight:600,color:"#1c7fb0"}}>
                 <span style={{fontSize:22,display:"block",marginBottom:6}}>✅</span>
                 {_t(lang,"C'est fait ! Le verdict du matin arrive dans ta boîte.","You're in! The morning verdict will arrive in your inbox.","¡Listo! El veredicto matutino llegará a tu bandeja.")}
               </div>
@@ -10971,7 +10971,7 @@ function AlertHub({lang,island,beach,onPremium,onShowMap,onClose}){
                     value={email} onChange={e=>setEmail(e.target.value)} disabled={busy}
                     style={{flex:1,padding:"12px 14px",borderRadius:12,border:"1px solid rgba(255,255,255,.12)",fontSize:16,fontFamily:"inherit",background:"rgba(255,255,255,.06)",outline:"none",minWidth:0,color:"#fff"}}/>
                   <button type="submit" disabled={busy}
-                    style={{background:"#ff2db8",color:"#06231d",border:"none",borderRadius:12,padding:"12px 18px",fontSize:14.5,fontWeight:800,cursor:"pointer",fontFamily:"inherit",opacity:busy?.7:1}}>
+                    style={{background:"#1c7fb0",color:"#06231d",border:"none",borderRadius:12,padding:"12px 18px",fontSize:14.5,fontWeight:800,cursor:"pointer",fontFamily:"inherit",opacity:busy?.7:1}}>
                     {busy ? "..." : _t(lang,"S'inscrire","Subscribe","Suscribirme")}
                   </button>
                 </form>
@@ -11006,7 +11006,7 @@ function AlertHub({lang,island,beach,onPremium,onShowMap,onClose}){
         {/* Pli 6 — Sorties */}
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:12,borderTop:"1px solid rgba(255,255,255,.07)",paddingTop:24}}>
           <button onClick={onShowMap}
-            style={{background:"none",border:"none",color:"#ff2db8",fontWeight:700,fontSize:13.5,cursor:"pointer",textDecoration:"underline",fontFamily:"inherit"}}>
+            style={{background:"none",border:"none",color:"#1c7fb0",fontWeight:700,fontSize:13.5,cursor:"pointer",textDecoration:"underline",fontFamily:"inherit"}}>
             {_t(lang,"Voir l'état des plages maintenant →","See beach status now →","Ver el estado de las playas ahora →")}
           </button>
           <a href="/previsions/"
@@ -13834,7 +13834,7 @@ export default function App(){
         )}
         {showWelcome&&pwOnboard!=="onboard"&&(
           <div style={{position:"fixed",bottom:"calc(104px + env(safe-area-inset-bottom, 0px))",left:"50%",transform:"translateX(-50%)",
-            zIndex:1400,background:"linear-gradient(135deg,#d6249f,#ff2db8)",color:"#fff",
+            zIndex:1400,background:"linear-gradient(135deg,#156a96,#1c7fb0)",color:"#fff",
             padding:"14px 24px",borderRadius:16,fontSize:14,fontWeight:600,
             boxShadow:"0 8px 24px rgba(0,158,142,.35)",
             display:"flex",alignItems:"center",gap:10,maxWidth:"min(90vw, 460px)",boxSizing:"border-box",
