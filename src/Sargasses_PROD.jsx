@@ -12926,11 +12926,13 @@ export default function App(){
       fetch("/data/beaches-list.json").then(r=>r.json()).catch(()=>null),
       fetch("/api/copernicus/sargassum.json").then(r=>r.json()).catch(()=>null),
       fetch("/api/weather/beaches-weather.json").then(r=>r.json()).catch(()=>null),
-      // Signalements FB (local, rapide) DANS le fetch principal → les pins affichent leur VRAI
-      // statut (escaladé par les signalements) dès le 1er rendu, au lieu de flasher vert puis
-      // rouge/jaune quand l'overlay différé arrivait après coup. (Apps Script = effet différé séparé.)
+      // SIGNALEMENTS (local, rapide) DANS le fetch principal → les pins affichent leur VRAI statut
+      // (escaladé par les signalements) dès le 1er rendu, au lieu de flasher vert→rouge/jaune.
+      // app-reports.json = snapshot des reports IN-APP (le live Apps Script ~2,5 s reste en différé
+      // pour la fraîcheur) ; fb-reports.json = signaux Facebook scrapés. On fusionne les deux.
+      fetch("/api/community/app-reports.json").then(r=>r.json()).catch(()=>null),
       fetch("/api/community/fb-reports.json").then(r=>r.json()).catch(()=>null)
-    ]).then(([beachData,sargResult,beachWx,fbReports])=>{
+    ]).then(([beachData,sargResult,beachWx,appReports,fbReports])=>{
       const perBeachWx=beachWx?.beaches||{}
       setBeachesWeather(perBeachWx)
       // 1. Build full beach list (strip stale status/afai from JSON)
@@ -13060,13 +13062,17 @@ export default function App(){
           }
         }
       }
-      // Escalade signalements FB AVANT le 1er rendu (anti-flash vert→rouge/jaune). Même règle que
-      // l'overlay différé : on ne fait QU'escalader (consensus pire que le satellite), jamais adoucir.
-      if(fbReports?.reports){
+      // Escalade signalements (IN-APP + FB) AVANT le 1er rendu (anti-flash vert→rouge/jaune). Même
+      // merge + même règle que l'overlay différé : on SOMME les sources, et on ne fait QU'escalader
+      // (consensus pire que le satellite), jamais adoucir → le statut signalé s'affiche d'emblée.
+      {
+        const _cr={}
+        const _merge=src=>{if(!src||!src.reports)return;for(const id in src.reports){const r=src.reports[id];if(!_cr[id])_cr[id]={avoid:0,moderate:0,clean:0,total:0};_cr[id].avoid+=r.avoid||0;_cr[id].moderate+=r.moderate||0;_cr[id].clean+=r.clean||0;_cr[id].total+=r.total||0}}
+        _merge(appReports);_merge(fbReports)
         const _RANK={clean:0,moderate:1,avoid:2}
         for(let i=0;i<beaches.length;i++){
           const b=beaches[i]; if(!b.status)continue
-          const r=fbReports.reports[b.id]||fbReports.reports[BEACH_TO_SARG[b.id]]
+          const r=_cr[b.id]||_cr[BEACH_TO_SARG[b.id]]
           if(!r||!r.total||r.total<2)continue
           const consensus=r.avoid>=r.moderate&&r.avoid>=r.clean?"avoid":r.moderate>=r.clean?"moderate":"clean"
           if(_RANK[consensus]>_RANK[b.status])beaches[i]={...b,status:consensus,_communityOverride:true,_communityTotal:r.total}

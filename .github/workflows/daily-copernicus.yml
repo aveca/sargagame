@@ -324,6 +324,16 @@ jobs:
           echo "full=$FULL" >> $GITHUB_OUTPUT
           echo "Hour: $HOUR, event: ${{ github.event_name }}, Full build: $FULL"
 
+      # ── 2-pre-0. Snapshot des signalements IN-APP (anti-flash carte) : bake l'endpoint
+      # Apps Script /beach_reports (~2,5 s, trop lent pour le chemin critique) dans
+      # public/api/community/app-reports.json AVANT le build → l'app applique le bon statut
+      # signalé dès le 1er rendu (plus de flash vert→rouge/jaune). continue-on-error : si
+      # Apps Script est down, on garde le snapshot existant committé.
+      - name: Snapshot in-app reports (anti-flash carte)
+        if: steps.check_build.outputs.full == 'true'
+        continue-on-error: true
+        run: node scripts/automation/aggregate-app-reports.cjs
+
       # ── 2-pre. Builds des nouvelles régions (puntacana, florida, rivieramaya…)
       # Séquentiels : chaque build VITE_REGION=<id> écrase dist/. Le build
       # partagé MQ/GP (étapes suivantes, sans VITE_REGION) reste le DERNIER pour
