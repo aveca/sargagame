@@ -221,8 +221,8 @@ for (const region of legacyRegions) {
 
   // Drop cross-domain SEO landing pages to fix indexing cannibalization
   const MQ_ONLY = new Set(['saison-sargasses-martinique', 'sargasses-martinique-cette-semaine', 'meteo-sargasses-martinique', 'meilleures-plages-martinique-sargasses', 'en/best-beaches-martinique', 'bulletin-sargasses-martinique', 'sargasses-le-diamant', 'sargasses-sainte-luce', 'sargasses-sainte-anne-martinique', 'sargasses-les-trois-ilets', 'que-faire-sargasses-martinique', 'en/what-to-do-sargassum-martinique'])
-  const GP_ONLY = new Set(['saison-sargasses-guadeloupe', 'sargasses-guadeloupe-cette-semaine', 'meteo-sargasses-guadeloupe', 'meilleures-plages-guadeloupe-sargasses', 'en/best-beaches-guadeloupe', 'bulletin-sargasses-guadeloupe', 'que-faire-sargasses-guadeloupe', 'en/what-to-do-sargassum-guadeloupe'])
-  
+  const GP_ONLY = new Set(['saison-sargasses-guadeloupe', 'sargasses-guadeloupe-cette-semaine', 'meteo-sargasses-guadeloupe', 'meilleures-plages-guadeloupe-sargasses', 'en/best-beaches-guadeloupe', 'bulletin-sargasses-guadeloupe', 'que-faire-sargasses-guadeloupe', 'en/what-to-do-sargassum-guadeloupe', 'sargasses-deshaies', 'sargasses-sainte-anne-guadeloupe', 'sargasses-gosier', 'sargasses-saint-francois'])
+
   const drops = region.id === 'gp' ? MQ_ONLY : (region.id === 'mq' ? GP_ONLY : new Set())
   let droppedCross = 0
   for (const pageFolder of drops) {
