@@ -197,6 +197,18 @@ jobs:
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
         run: node scripts/automation/welcome-paid.cjs --send
 
+      # Dunning past_due (churn involontaire) : relance 1× les abonnés Stripe dont
+      # le renouvellement a échoué → email factuel vers le Customer Portal (MàJ carte).
+      # Câblé en DRY-RUN (pas de --send) : surface le compte past_due dans les logs CI
+      # sans envoyer. Idempotent par hash (dunning-sent.json committé plus bas) ; Stripe
+      # Smart Retries gère déjà le re-débit. Flip vers --send quand le fondateur valide.
+      - name: Dunning past_due (DRY-RUN — surface only, no send)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+        run: node scripts/automation/dunning-past-due.cjs
+
       # Support automatisé : excuses d'incident depuis data/incidents.json
       # (hashes RGPD, idempotent par destinataire, fenêtre 10-20 UTC interne
       # au script — jamais d'excuse à 2h du matin). Pour tout incident futur :
@@ -255,7 +267,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/widget-hosts-seen.json; do
+          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/widget-hosts-seen.json; do
             [ -f "$f" ] && git add "$f"
           done
           if git diff --cached --quiet; then echo "Email state unchanged."; exit 0; fi
