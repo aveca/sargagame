@@ -2241,9 +2241,10 @@ button:active,a:active,[role="button"]:active{transform:scale(.96)!important;opa
 @keyframes satellite-scan{0%{transform:translateX(-100%)}100%{transform:translateX(400%)}}
 
 /* ── WOW TRANSITIONS ── */
-@keyframes viewFadeIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+/* Comic spring-pop (overshoot cartoon, façon clip) — entrée de vues + FABs */
+@keyframes viewFadeIn{0%{opacity:0;transform:translateY(14px) scale(.92)}60%{opacity:1;transform:translateY(0) scale(1.03)}100%{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes viewFadeOut{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(.96)}}
-.view-enter{animation:viewFadeIn .35s cubic-bezier(.22,1,.36,1) both}
+.view-enter{animation:viewFadeIn .42s cubic-bezier(.34,1.56,.64,1) both}
 .view-exit{animation:viewFadeOut .2s ease both}
 
 /* Staggered card entrance */
@@ -13251,7 +13252,8 @@ export default function App(){
 
         {/* MAP, LIST or GAME — both rendered, visibility toggled for instant switch */}
         <div style={{position:"absolute",inset:0,opacity:view==="map"?1:0,
-          pointerEvents:view==="map"?"auto":"none",transition:"opacity .25s ease"}}>
+          transform:view==="map"?"scale(1)":"scale(1.03)",transformOrigin:"50% 42%",
+          pointerEvents:view==="map"?"auto":"none",transition:"opacity .28s ease, transform .42s cubic-bezier(.34,1.56,.64,1)"}}>
           {/* Intro carte SVG (MapIntroStory) — landing show-once, skippable, par-dessus
               la map. Démontée à l'entrée → ne vole jamais un clic pin. Jamais pendant
               hero/découverte/fiche/paywall ; bypass si <3 plages (jamais d'écran vide). */}
@@ -13272,7 +13274,8 @@ export default function App(){
           </Suspense></ErrBound>}
         </div>
         <div style={{position:"absolute",inset:0,opacity:view==="list"?1:0,
-          pointerEvents:view==="list"?"auto":"none",transition:"opacity .25s ease"}}>
+          transform:view==="list"?"translateY(0)":"translateY(14px)",
+          pointerEvents:view==="list"?"auto":"none",transition:"opacity .28s ease, transform .42s cubic-bezier(.34,1.56,.64,1)"}}>
           <BeachListView beaches={filtered} onBeachClick={onBeachClick}
             favorites={favorites} lang={lang} imageMap={imageMap}
             sargData={sargData} onPremiumClick={openPremium} isPremium={isPremium}/>
