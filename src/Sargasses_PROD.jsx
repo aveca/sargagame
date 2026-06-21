@@ -12013,9 +12013,11 @@ export default function App(){
   // 1×/session (sessionStorage), jamais pendant une activation premium.
   const[showHero,setShowHero]=useState(()=>{
     try{
-      return window.location.pathname==="/"
-        &&!window.location.search.includes("premium")
-        &&!sessionStorage.getItem("sg_hero_seen")
+      // COHÉRENCE : on atterrit sur la CARTE (l'utilitaire qui répond « où me baigner
+      // aujourd'hui »), pas sur le jeu. Le jeu reste à 1 tap via le bouton « 🎴 Jouer ».
+      // ?hero=1 force l'arène (QA / A-B). Avant : l'arène prenait l'accueil 1ʳᵉ visite.
+      if(/[?&]hero=1/.test(window.location.search)) return true
+      return false
     }catch(_){return false}
   })
   // Découverte éducative (StoryEngine). Gate URL ?decouverte=1 pour QA ; entrée UI dédiée.
@@ -12909,12 +12911,11 @@ export default function App(){
 
   const [showArenaOnb,setShowArenaOnb]=useState(()=>{
     try{
-      const q=window.location.search||"";
-      if(/[?&]onb=1/.test(q)) return true;
-      if(/[?&]onb=0/.test(q)) return false;
-      const path=window.location.pathname;
-      if(!(path==="/"||path===""||path==="/index.html")) return false; // jamais sur pages SEO
-      return !g("sg_onb",0); // première visite uniquement
+      // COHÉRENCE : l'onboarding « collectionne les plages-cartes » parlait du JEU, pas
+      // de la carte utilitaire sur laquelle on atterrit → incohérent. Désactivé par défaut.
+      // ?onb=1 le force (QA / réintroduction d'un vrai onboarding produit plus tard).
+      if(/[?&]onb=1/.test(window.location.search)) return true;
+      return false;
     }catch(_){ return false; }
   });
   const finishArenaOnb=useCallback(()=>{ try{localStorage.setItem("sg_onb","1");}catch(_){} setShowArenaOnb(false); },[]);

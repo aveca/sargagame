@@ -684,9 +684,9 @@ export default function WorldMapView({
               width:8,height:8,borderRadius:"50%",background:"#e8322a",border:`1.5px solid ${INK}`,
               animation:noAnim?"none":"wmPulse 2.4s ease-out infinite",
             }}/>
-            <span style={{font:"800 11px/1 'Comic Neue',system-ui,sans-serif",letterSpacing:".06em",textTransform:"uppercase",color:INK}}>EN DIRECT</span>
+            <span style={{font:"800 11px/1 'Comic Neue',system-ui,sans-serif",letterSpacing:".06em",textTransform:"uppercase",color:INK}}>{_t(lang,"EN DIRECT","LIVE","EN VIVO")}</span>
             <span style={{font:"700 11px/1 'JetBrains Mono',monospace",color:"#1c8f4e",marginLeft:2}}>
-              {updatedAt?`il y a ${fmtFresh(updatedAt)}`:"···"}
+              {updatedAt?_t(lang,`il y a ${fmtFresh(updatedAt)}`,`${fmtFresh(updatedAt)} ago`,`hace ${fmtFresh(updatedAt)}`):"···"}
             </span>
           </div>
           {/* Fermer (hors rootMode) */}
