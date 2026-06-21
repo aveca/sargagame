@@ -823,6 +823,7 @@ const CSS=`
 .lc-detail-name,.lc-pack-lbl{animation:lc-chroma 1.6s steps(3) infinite alternate}
 .lc-reduce .lc-detail-name,.lc-reduce .lc-pack-lbl{animation:none}
 .lc-detail-x{position:fixed;top:calc(12px + env(safe-area-inset-top));right:12px;z-index:3;width:42px;height:42px;border-radius:50%;
+  -webkit-appearance:none;appearance:none;
   border:2.5px solid var(--ink);background:var(--yel);color:var(--ink);font-size:17px;font-weight:800;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
 .lc-detail-illu{position:relative;height:230px;border-bottom:3px solid var(--ink);overflow:hidden}
 .lc-detail-illu svg{position:absolute;inset:0;width:100%;height:100%}
@@ -846,7 +847,7 @@ const CSS=`
 .lc-detail-score .lc-hp{flex:1;height:14px;border:2.5px solid var(--ink);border-radius:10px;background:#fff;box-shadow:2px 2px 0 var(--ink)}
 .lc-detail-facts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
 .lc-detail-fact{font-size:13px;font-weight:800;background:#fff;border:2.5px solid var(--ink);border-radius:20px;padding:6px 12px;box-shadow:2px 2px 0 var(--ink)}
-.lc-detail-full{display:block;width:100%;margin-top:12px;background:none;border:none;color:#0d2330;font-weight:800;font-size:13px;
+.lc-detail-full{display:block;width:100%;margin-top:12px;-webkit-appearance:none;appearance:none;background:none;border:none;color:#0d2330;font-weight:800;font-size:13px;
   text-decoration:underline;cursor:pointer;font-family:inherit}
 .lc-detail-actions{display:flex;gap:14px;justify-content:center;margin-top:12px}
 .lc-detail-actions .lc-detail-full{width:auto;margin-top:0}

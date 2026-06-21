@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>LE VEILLEUR — SCAN ASCII (proto)</title>
+<style>
+  :root{ --ink:#0d0b14; --paper:#fdf6e3; --yel:#ffd23f; --grn:#27c46b; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;background:var(--ink);overflow:hidden;font-family:"Arial Black",Impact,system-ui,sans-serif}
+  #c{display:block;position:fixed;inset:0}
+  /* ---- titre BD qui se pose après le scan ---- */
+  .ui{position:fixed;inset:0;pointer-events:none;display:flex;flex-direction:column;
+      align-items:center;justify-content:flex-end;padding:0 20px 9vh;text-align:center}
+  .ui .badge{opacity:0;transform:translateY(14px);transition:.7s cubic-bezier(.2,.9,.2,1);
+      font:800 12px/1 ui-monospace,monospace;letter-spacing:3px;color:var(--yel);
+      border:2px solid var(--yel);border-radius:999px;padding:7px 14px;margin-bottom:16px;
+      text-shadow:0 0 12px rgba(255,210,63,.6);background:rgba(13,11,20,.4)}
+  .ui h1{opacity:0;transform:translateY(20px) scale(.96);transition:.8s cubic-bezier(.2,.9,.2,1);
+      font-weight:900;font-size:13vw;line-height:.86;color:var(--paper);letter-spacing:-1px;
+      text-shadow:4px 4px 0 var(--ink),0 0 30px rgba(255,210,63,.25);text-transform:uppercase}
+  .ui h1 b{color:var(--yel)}
+  .ui .sub{opacity:0;transform:translateY(16px);transition:.8s .1s cubic-bezier(.2,.9,.2,1);
+      margin-top:12px;font:800 15px/1.3 ui-monospace,monospace;letter-spacing:2px;color:#bfe9f4}
+  .ui .pill{opacity:0;transform:translateY(16px);transition:.8s .2s cubic-bezier(.2,.9,.2,1);
+      margin-top:18px;display:inline-flex;align-items:center;gap:8px;
+      font:900 16px/1 ui-monospace,monospace;color:var(--ink);background:var(--grn);
+      border:3px solid var(--ink);border-radius:999px;padding:11px 18px;
+      box-shadow:5px 5px 0 var(--ink)}
+  .pill .dot{width:11px;height:11px;border-radius:50%;background:var(--ink)}
+  .cta{opacity:0;transform:translateY(16px);transition:.8s .32s cubic-bezier(.2,.9,.2,1);
+      margin-top:22px;pointer-events:auto;font:900 15px/1 ui-monospace,monospace;letter-spacing:1px;
+      color:var(--ink);background:var(--yel);border:3px solid var(--ink);border-radius:14px;
+      padding:14px 22px;box-shadow:5px 5px 0 var(--ink);cursor:pointer}
+  .show .badge,.show h1,.show .sub,.show .pill,.show .cta{opacity:1;transform:none}
+  /* statut "scan en cours" en haut */
+  .scanlbl{position:fixed;top:max(16px,env(safe-area-inset-top));left:0;right:0;text-align:center;
+      font:800 11px/1 ui-monospace,monospace;letter-spacing:4px;color:var(--yel);opacity:.9;
+      text-shadow:0 0 10px rgba(255,210,63,.7);transition:.5s}
+  .show .scanlbl{opacity:0}
+  .replay{position:fixed;bottom:14px;left:0;right:0;text-align:center;font:700 10px/1 ui-monospace,monospace;
+      color:#6b6577;opacity:0;transition:.6s 1s}.show .replay{opacity:1}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="scanlbl" id="scanlbl">◍ LE VEILLEUR SCANNE LA CÔTE…</div>
+<div class="ui" id="ui">
+  <div class="badge">COPERNICUS · SCAN SATELLITE LIVE</div>
+  <h1>LE <b>VEILLEUR</b></h1>
+  <div class="sub">MARTINIQUE · AUJOURD'HUI</div>
+  <div class="pill"><span class="dot"></span>53 PLAGES PROPRES</div>
+  <button class="cta" onclick="restart()">OÙ ME BAIGNER ? →</button>
+</div>
+<div class="replay">tap pour rejouer le scan</div>
+<script>
+const cv=document.getElementById('c'), ctx=cv.getContext('2d');
+const ui=document.getElementById('ui');
+const DPR=Math.min(window.devicePixelRatio||1,2);
+let W,H,cols,rows,charW,charH,full,noise,grid,front,t0,running,raf;
+// rampe de densité (sombre → clair) — donne l'effet "texte qui devient image"
+const RAMP=" .·:-=+*oxX#%@█";
+const F=10;                       // taille police
+function size(){
+  W=window.innerWidth; H=window.innerHeight;
+  charW=6.0; charH=10.0;
+  cols=Math.ceil(W/charW); rows=Math.ceil(H/charH);
+  cv.width=W*DPR; cv.height=H*DPR; cv.style.width=W+'px'; cv.style.height=H+'px';
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+}
+// 1) peindre la SCÈNE heure-dorée dans un canvas basse-rés (1px = 1 caractère)
+function paintScene(){
+  const s=document.createElement('canvas'); s.width=cols; s.height=rows;
+  const x=s.getContext('2d');
+  const g=x.createLinearGradient(0,0,0,rows);
+  g.addColorStop(0,'#ff7a2f'); g.addColorStop(.16,'#ffac5e'); g.addColorStop(.30,'#ffd23f');
+  g.addColorStop(.40,'#cfe9d8'); g.addColorStop(.46,'#7fcfe6'); g.addColorStop(.62,'#1f8fc4');
+  g.addColorStop(1,'#0e2c3a');
+  x.fillStyle=g; x.fillRect(0,0,cols,rows);
+  // soleil heure dorée (haut-droite)
+  const cx=cols*.80, cy=rows*.17, R=rows*.22;
+  const sun=x.createRadialGradient(cx,cy,0,cx,cy,R);
+  sun.addColorStop(0,'#fff7e0'); sun.addColorStop(.45,'#ffe08a'); sun.addColorStop(1,'rgba(255,210,80,0)');
+  x.fillStyle=sun; x.beginPath(); x.arc(cx,cy,R,0,7); x.fill();
+  // reflet du soleil sur la mer
+  const rf=x.createLinearGradient(0,rows*.52,0,rows);
+  rf.addColorStop(0,'rgba(255,224,138,.5)'); rf.addColorStop(1,'rgba(255,224,138,0)');
+  x.fillStyle=rf; x.fillRect(cols*.66,rows*.5,cols*.28,rows*.5);
+  // ÎLE Martinique (silhouette organique) au centre-bas
+  const ix=cols*.46, iy=rows*.66, w=cols*.30, h=rows*.34;
+  function blob(col){ x.fillStyle=col; x.beginPath();
+    x.ellipse(ix,iy,w*.6,h*.55,-.18,0,7);
+    x.ellipse(ix-w*.18,iy+h*.28,w*.34,h*.34,.1,0,7);
+    x.ellipse(ix+w*.24,iy-h*.22,w*.30,h*.30,-.3,0,7);
+    x.ellipse(ix+w*.05,iy+h*.40,w*.26,h*.24,0,0,7); x.fill(); }
+  blob('#1c8f4e');                                   // masse profonde
+  x.save(); x.translate(-cols*.004,-rows*.004); blob('#27c46b'); x.restore(); // crête ensoleillée
+  // 3 plages-pastilles (vert/jaune/rouge) = statut
+  const pins=[[ix-w*.30,iy+h*.10,'#27c46b'],[ix+w*.34,iy-h*.05,'#ffd23f'],[ix+w*.10,iy+h*.46,'#e8322a'],
+              [ix-w*.05,iy-h*.30,'#27c46b'],[ix+w*.42,iy+h*.30,'#27c46b']];
+  for(const [px,py,c] of pins){ x.fillStyle=c; x.beginPath(); x.arc(px,py,Math.max(1.4,cols*.012),0,7); x.fill(); }
+  return x.getImageData(0,0,cols,rows).data;
+}
+// 2) pré-rendre TOUT l'ASCII coloré une fois (perf : on ne le recalcule jamais)
+function build(){
+  const data=paintScene();
+  grid=new Array(rows);
+  full=document.createElement('canvas'); full.width=W*DPR; full.height=H*DPR;
+  const fx=full.getContext('2d'); fx.setTransform(DPR,0,0,DPR,0,0);
+  fx.font=`${F}px ui-monospace,Menlo,Consolas,monospace`; fx.textBaseline='top';
+  noise=document.createElement('canvas'); noise.width=W*DPR; noise.height=H*DPR;
+  const nx=noise.getContext('2d'); nx.setTransform(DPR,0,0,DPR,0,0);
+  nx.font=fx.font; nx.textBaseline='top';
+  for(let r=0;r<rows;r++){ grid[r]=new Array(cols);
+    for(let c=0;c<cols;c++){
+      const i=(r*cols+c)*4, R=data[i],G=data[i+1],B=data[i+2];
+      const lum=(0.299*R+0.587*G+0.114*B)/255;
+      let k=Math.round(lum*(RAMP.length-1));
+      const ch=RAMP[k]; grid[r][c]=ch;
+      // couleur du caractère : pixel boosté + plancher de lisibilité
+      const boost=v=>Math.min(255, 40+v*0.92);
+      fx.fillStyle=`rgb(${boost(R)|0},${boost(G)|0},${boost(B)|0})`;
+      fx.fillText(ch, c*charW, r*charH);
+      // couche "bruit non scanné" (sombre, froide)
+      nx.fillStyle='rgba(90,120,150,'+(0.05+Math.random()*0.10)+')';
+      nx.fillText(RAMP[1+((Math.random()*5)|0)], c*charW, r*charH);
+    }
+  }
+}
+function frame(ts){
+  if(!t0) t0=ts; const el=(ts-t0)/1000;
+  const dur=1.9;                         // durée du scan
+  front=Math.min(rows, (el/dur)*rows);
+  const fy=front*charH;
+  ctx.fillStyle='#0d0b14'; ctx.fillRect(0,0,W,H);
+  // bruit froid sous le faisceau (ce qui n'est pas encore scanné)
+  if(fy<H){ ctx.save(); ctx.beginPath(); ctx.rect(0,fy,W,H-fy); ctx.clip();
+    ctx.globalAlpha=.5; ctx.drawImage(noise,0,0,W,H); ctx.globalAlpha=1; ctx.restore(); }
+  // zone révélée : l'image-texte colorée
+  if(fy>0){ ctx.save(); ctx.beginPath(); ctx.rect(0,0,W,fy); ctx.clip();
+    ctx.drawImage(full,0,0,W,H); ctx.restore(); }
+  // FAISCEAU de scan (ligne dorée lumineuse)
+  if(front<rows){
+    const bg=ctx.createLinearGradient(0,fy-26,0,fy+6);
+    bg.addColorStop(0,'rgba(255,210,63,0)'); bg.addColorStop(1,'rgba(255,240,190,.55)');
+    ctx.fillStyle=bg; ctx.fillRect(0,fy-26,W,32);
+    ctx.fillStyle='rgba(255,247,224,.95)'; ctx.fillRect(0,fy-1.5,W,2.2);
+    ctx.fillStyle='rgba(255,210,63,.5)'; ctx.fillRect(0,fy+1,W,1);
+  }
+  if(front<rows){ raf=requestAnimationFrame(frame); }
+  else { document.body.classList.add('show'); running=false; seaShimmer(); }
+}
+// scintillement vivant de la mer après le scan (un sous-ensemble de cellules)
+function seaShimmer(){
+  if(running) return;
+  const fx=full.getContext('2d'); fx.setTransform(DPR,0,0,DPR,0,0);
+  fx.font=`${F}px ui-monospace,Menlo,Consolas,monospace`; fx.textBaseline='top';
+  let tick=0;
+  (function loop(){
+    tick++;
+    if(tick%4===0){
+      for(let n=0;n<70;n++){
+        const r=(rows*0.46+Math.random()*rows*0.54)|0, c=(Math.random()*cols)|0;
+        if(r>=rows||c>=cols) continue;
+        fx.fillStyle='#0d0b14'; fx.fillRect(c*charW,r*charH,charW+1,charH+1);
+        const ch=RAMP[2+((Math.random()*6)|0)];
+        fx.fillStyle='rgba('+(40+Math.random()*40|0)+','+(150+Math.random()*70|0)+','+(190+Math.random()*50|0)+',.95)';
+        fx.fillText(ch,c*charW,r*charH);
+      }
+      ctx.fillStyle='#0d0b14'; ctx.fillRect(0,0,W,H); ctx.drawImage(full,0,0,W,H);
+    }
+    if(!running) requestAnimationFrame(loop);
+  })();
+}
+function start(){ running=true; t0=0; document.body.classList.remove('show');
+  cancelAnimationFrame(raf); size(); build(); raf=requestAnimationFrame(frame); }
+function restart(){ start(); }
+window.restart=restart;
+window.addEventListener('resize',()=>{ if(!running) start(); });
+start();
+</script>
+</body>
+</html>
