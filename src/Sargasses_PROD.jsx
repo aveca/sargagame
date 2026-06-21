@@ -3733,6 +3733,18 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
           </div>
         </div>
 
+        {/* Honnêteté couverture satellite — côte exposée non observée directement.
+            Le satellite voit le large, pas l'échoué : on ne dit pas « propre » sans réserve. */}
+        {beach._satBlind&&status==="clean"&&(
+          <div style={{display:"flex",gap:9,padding:"11px 13px",margin:"0 0 12px",background:COMIC.cream,border:`2.5px solid ${COMIC.ink}`,borderRadius:14,boxShadow:`3px 3px 0 ${COMIC.ink}`}}>
+            <span aria-hidden style={{fontSize:18,lineHeight:1.1}}>🛰️</span>
+            <div style={{font:"700 11.5px/1.45 'Bricolage Grotesque'",color:COMIC.ink}}>{_t(lang,
+              "Rien détecté au large par satellite — mais le satellite ne voit pas le sargasse déjà échoué sur le sable. Sur cette côte exposée, vérifiez un signalement récent avant de vous déplacer.",
+              "Nothing detected offshore by satellite — but satellite can't see sargassum already piled on the sand. On this exposed coast, check a recent local report before heading out.",
+              "Nada detectado mar adentro por satélite — pero el satélite no ve el sargazo ya varado en la arena. En esta costa expuesta, consulte un reporte reciente antes de ir.")}</div>
+          </div>
+        )}
+
         {/* Score + facteurs (carte) */}
         <div className="bsc-card" style={{display:"flex",alignItems:"center",gap:14,padding:"13px 15px",marginBottom:12}}>
           {hasScore&&<div style={{flexShrink:0,textAlign:"center"}}>
@@ -12980,7 +12992,14 @@ export default function App(){
               (beaches[i].island==="mq"&&s.lat<15.5)||(beaches[i].island==="gp"&&s.lat>=15.5))
             const interp=interpolateIDW(beaches[i],same.length>0?same:sentinels)
             if(interp!==null){
-              beaches[i]={...beaches[i],afai:interp,status:statusFromAfai(interp),_src:"interpolated"}
+              // Honnêteté couverture satellite : l'AFAI voit les radeaux AU LARGE, pas le
+              // sargasse déjà échoué ni piégé dans les baies. Sur la côte ATLANTIQUE exposée
+              // (où le sargasse arrive et s'accumule), un statut « propre » obtenu par
+              // interpolation (pas une lecture directe) ne peut PAS garantir l'état du rivage.
+              // On le flagge pour ne plus affirmer « propre » sans réserve sur ces plages.
+              let _coast=beaches[i].coast
+              try{if(!_coast)_coast=classifyBeachCoast(beaches[i].lat,beaches[i].lng,beaches[i].island)}catch(_){_coast="atlantic"}
+              beaches[i]={...beaches[i],afai:interp,status:statusFromAfai(interp),_src:"interpolated",_satBlind:_coast==="atlantic"}
             }
           }
           // Beach Score 0-100 — year-round multi-factor (pipeline v3.1+)
