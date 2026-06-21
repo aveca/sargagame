@@ -573,7 +573,7 @@ export default function WorldMapView({
               <line x1="-2" y1="4" x2="-2" y2="-64" stroke="#241608" strokeWidth="3"/>
               <path d="M-2 -62 L-2 -6 L42 -6 Z" fill="url(#wmSailR)"/>
               <path d="M-2 -44 L-2 -6 L28 -6 Z" fill="url(#wmSailY)"/>
-              <path d="M-4 -52 L-4 -8 L-32 -8 Z" fill="#1EC8B0" opacity=".94"/>
+              <path d="M-4 -52 L-4 -8 L-32 -8 Z" fill="#ff2db8" opacity=".94"/>
             </g>
             <path d="M-46 4 Q0 24 46 4 Q40 14 32 16 L-32 16 Q-40 14 -46 4 Z" fill="#0f5d54"/>
             <path d="M-46 4 Q0 18 46 4" fill="none" stroke="#FFD884" strokeWidth="1.6" strokeOpacity=".6"/>

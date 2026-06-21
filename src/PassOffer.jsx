@@ -60,7 +60,7 @@ export default function PassOffer({ lang = "fr", onBuy }) {
       <div style={{ position: "relative", margin: "0 -24px 16px", height: 86, overflow: "hidden" }}>
         <svg viewBox="0 0 400 86" preserveAspectRatio="xMidYMid slice" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} aria-hidden="true">
           <defs>
-            <linearGradient id="poSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0B2230" /><stop offset=".5" stopColor="#155A5A" /><stop offset=".84" stopColor="#C97E3A" /><stop offset="1" stopColor="#F2B05E" /></linearGradient>
+            <linearGradient id="poSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#2e1a5e" /><stop offset=".5" stopColor="#6a2f9e" /><stop offset=".84" stopColor="#C97E3A" /><stop offset="1" stopColor="#F2B05E" /></linearGradient>
             <radialGradient id="poSun" cx="50%" cy="50%" r="50%"><stop offset="0" stopColor="#FFE6A8" stopOpacity=".95" /><stop offset=".45" stopColor="#FFD884" stopOpacity=".4" /><stop offset="1" stopColor="#FFD884" stopOpacity="0" /></radialGradient>
           </defs>
           <rect width="400" height="86" fill="url(#poSky)" />
@@ -69,7 +69,7 @@ export default function PassOffer({ lang = "fr", onBuy }) {
           <path d="M0 60 Q120 50 230 58 L240 86 L0 86 Z" fill="#0E1F25" opacity=".55" />
           <path d="M250 50 q10 -26 22 -2 q6 16 2 16 l-30 0 q-2 -8 6 -14 Z" fill="#12262B" opacity=".7" />
         </svg>
-        <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(13,30,28,0) 38%,rgba(13,30,28,.55) 78%,#0D1E1C 100%)" }} />
+        <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(13,30,28,0) 38%,rgba(13,30,28,.55) 78%,#190c2c 100%)" }} />
         <div style={{ position: "absolute", left: 24, right: 24, bottom: 10 }}>
           <div className="anton" style={{ fontSize: 23, lineHeight: 1.02, color: "#fff", textShadow: "0 2px 14px rgba(0,0,0,.5)", letterSpacing: ".005em" }}>
             {(() => { const G = { color: "#FFC72C" }; const H = {

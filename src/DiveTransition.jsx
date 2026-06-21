@@ -44,8 +44,8 @@ export default function DiveTransition({ beach, lang = "fr", onDone }) {
       `}</style>
       <svg viewBox="0 0 390 680" preserveAspectRatio="xMidYMid slice" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block" }}>
         <defs>
-          <linearGradient id="dtSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0B2230" /><stop offset=".42" stopColor="#155A5A" /><stop offset=".72" stopColor="#C97E3A" /><stop offset="1" stopColor="#F2B05E" /></linearGradient>
-          <linearGradient id="dtSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1A5852" /><stop offset="1" stopColor="#08251F" /></linearGradient>
+          <linearGradient id="dtSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#2e1a5e" /><stop offset=".42" stopColor="#6a2f9e" /><stop offset=".72" stopColor="#C97E3A" /><stop offset="1" stopColor="#F2B05E" /></linearGradient>
+          <linearGradient id="dtSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#6a2f9e" /><stop offset="1" stopColor="#190c2c" /></linearGradient>
           <radialGradient id="dtSun" cx="50%" cy="50%" r="50%"><stop offset="0" stopColor="#FFE6A8" stopOpacity=".95" /><stop offset=".4" stopColor="#FFD884" stopOpacity=".5" /><stop offset="1" stopColor="#FFD884" stopOpacity="0" /></radialGradient>
           <linearGradient id="dtRay" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#FFE6A8" stopOpacity=".55" /><stop offset="1" stopColor="#FFE6A8" stopOpacity="0" /></linearGradient>
           <linearGradient id="dtSand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1C3138" /><stop offset="1" stopColor="#13242A" /></linearGradient>
@@ -68,7 +68,7 @@ export default function DiveTransition({ beach, lang = "fr", onDone }) {
         <g className="sgDiveLayer" style={{ animation: "sgDiveSat .95s ease-in forwards" }}>
           <path d="M300 96 L322 96 L150 348 L120 338 Z" fill="#FFE6A8" opacity=".22" />
           <g transform="translate(300,90)">
-            <rect x="-9" y="-7" width="18" height="14" rx="3" fill="#0E2A2E" stroke="#5FD3C9" strokeWidth="1.4" />
+            <rect x="-9" y="-7" width="18" height="14" rx="3" fill="#0E2A2E" stroke="#3fd07f" strokeWidth="1.4" />
             <rect x="-26" y="-4" width="13" height="8" rx="1.5" fill="#173B40" stroke="#2A6B66" strokeWidth="1" />
             <rect x="13" y="-4" width="13" height="8" rx="1.5" fill="#173B40" stroke="#2A6B66" strokeWidth="1" />
             <circle cx="0" cy="0" r="3.4" fill="#FFE6A8" />

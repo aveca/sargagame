@@ -35,12 +35,12 @@ export default function PaidOnboarding({ lang = "fr", allBeaches = [], favorites
   const favSet = new Set(favorites)
   const picked = suggestions.filter(b => favSet.has(b.id)).length + favorites.filter(id => !suggestions.some(b => b.id === id)).length
 
-  const GOLD = "#FFC72C", GOLD_D = "#E8A800", TEAL = "#1EC8B0", INK = "#EAF7F4"
+  const GOLD = "#FFC72C", GOLD_D = "#E8A800", TEAL = "#ff2db8", INK = "#EAF7F4"
   const wrap = {
     // garde les couleurs golden-hour même sous thème contraste / forced-colors (hérité)
     forcedColorAdjust: "none",
     position: "fixed", inset: 0, zIndex: 1450, display: "flex", flexDirection: "column",
-    background: "radial-gradient(120% 80% at 78% 6%, rgba(255,224,160,.20), transparent 50%), linear-gradient(168deg,#0B2230 0%,#103a3a 40%,#02060A 100%)",
+    background: "radial-gradient(120% 80% at 78% 6%, rgba(255,224,160,.20), transparent 50%), linear-gradient(168deg,#2e1a5e 0%,#241246 40%,#0d0716 100%)",
     color: INK, fontFamily: "'Bricolage Grotesque',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif",
     padding: "max(28px,env(safe-area-inset-top)) 22px max(22px,env(safe-area-inset-bottom)) 22px",
     boxSizing: "border-box", animation: reduce ? "none" : "sgobIn .35s ease",

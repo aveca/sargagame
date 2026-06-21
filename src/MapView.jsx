@@ -801,8 +801,8 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
         <defs><linearGradient id="sgmBeam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#FFE08A" stopOpacity=".5"/><stop offset="1" stopColor="#FFE08A" stopOpacity="0"/></linearGradient></defs>
         <polygon className="sg-map-beam" points="22,10 40,10 52,170 6,170" fill="url(#sgmBeam)"/>
         <g transform="translate(30,10) scale(.92)">
-          <rect x="-22" y="-3" width="13" height="6" rx="1.5" fill="#3BA7A0"/>
-          <rect x="9" y="-3" width="13" height="6" rx="1.5" fill="#3BA7A0"/>
+          <rect x="-22" y="-3" width="13" height="6" rx="1.5" fill="#5b3a8e"/>
+          <rect x="9" y="-3" width="13" height="6" rx="1.5" fill="#5b3a8e"/>
           <rect x="-8" y="-8" width="17" height="15" rx="2.2" fill="#C9971F"/>
           <rect x="-8" y="-8" width="17" height="5" rx="2.2" fill="#FFC72C"/>
         </g>
@@ -938,8 +938,8 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
           style={{
             width:32,height:32,borderRadius:"50%",
             border:"none",cursor:"pointer",padding:0,
-            background:autoPlaying?"linear-gradient(135deg,#00C2B0,#009E8E)":"rgba(0,0,0,.06)",
-            color:autoPlaying?"#fff":"#0A1714",
+            background:autoPlaying?"linear-gradient(135deg,#00C2B0,#d6249f)":"rgba(0,0,0,.06)",
+            color:autoPlaying?"#fff":"#120821",
             fontSize:11,fontWeight:800,
             display:"flex",alignItems:"center",justifyContent:"center",
             transition:"all .2s ease",
@@ -958,8 +958,8 @@ export default function MapView({beaches,island,onBeachClick,selectedBeach,sargD
               minWidth:44,height:32,padding:"0 12px",
               border:"none",cursor:"pointer",
               borderRadius:999,
-              background:active?"linear-gradient(135deg,#00C2B0,#009E8E)":"transparent",
-              color:active?"#fff":"#0A1714",
+              background:active?"linear-gradient(135deg,#00C2B0,#d6249f)":"transparent",
+              color:active?"#fff":"#120821",
               fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",
               fontSize:11,fontWeight:800,letterSpacing:".06em",
               textTransform:"uppercase",
