@@ -19,17 +19,20 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - name: Install Puppeteer deps
-        run: sudo apt-get update && sudo apt-get install -y libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libpango-1.0-0 libcairo2 libasound2
+        run: sudo apt-get update && sudo apt-get install -y libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libpango-1.0-0 libcairo2 libasound2t64
       - name: Generate Images
-        run: node scripts/generate-beach-og.cjs
+        # generate-og-beaches.cjs écrit public/images/og/<slug>.png = le chemin déclaré
+        # par les balises og:image (vite.config.js). L'ancien generate-beach-og.cjs
+        # écrivait assets/og/og-<slug>.png, qu'AUCUNE page ne référence → OG mortes.
+        run: node scripts/automation/generate-og-beaches.cjs
       - name: Commit changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public/assets/og/
+          git add public/images/og/
           if git diff --cached --quiet; then
             echo "No new images"
           else
             git commit -m "chore(assets): auto-generate OG images"
-            git push
+            git pull --rebase && git push
           fi

@@ -81,7 +81,7 @@ async function run() {
     if (count % 20 === 0) console.log(`  ... ${count}/${beaches.length}`)
   }
   
-  console.log(`✓ Generated ${count} dynamic OG images in dist/images/og/`)
+  console.log(`✓ Generated ${count} dynamic OG images in public/images/og/`)
 }
 
 run().catch(e => {
