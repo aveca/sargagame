@@ -133,12 +133,14 @@ const C={
   border:"rgba(0,0,0,.04)",borderM:"rgba(0,0,0,.08)",
   gold:"#E8A800",goldL:"#FFC72C",goldLL:"#FFE47A",
   goldBg:"rgba(232,168,0,.07)",goldBgL:"rgba(255,199,44,.15)",
-  teal:"#009E8E",tealL:"#1EC8B0",tealBg:"rgba(0,158,142,.08)",
-  green:"#22C55E",greenL:"#16A34A",greenBg:"rgba(34,197,94,.1)",
+  // Accents « teal » REPRIS en néon magenta/violet (branding sunset Le Veilleur).
+  // Noms conservés (consommés partout) ; seules les valeurs changent → cascade.
+  teal:"#d6249f",tealL:"#ff2db8",tealBg:"rgba(214,36,159,.08)",
+  green:"#27c46b",greenL:"#1ea75a",greenBg:"rgba(39,196,107,.1)",
   amber:"#B87A00",amberBg:"rgba(184,122,0,.1)",
-  red:"#E8522A",redBg:"rgba(232,82,42,.1)",
+  red:"#e8322a",redBg:"rgba(232,50,42,.1)",
   sarg:"#8B6914",sargL:"#A67C1A",sargBg:"rgba(139,105,20,.12)",
-  night:"#0D1E1C",night2:"#0A1714",ocean:"#014F86",
+  night:"#190c2c",night2:"#120821",ocean:"#014F86",
 }
 
 /* ═══ SOCLE DESIGN (LOT 0 consolidation 14/06) — source de vérité golden-hour.
@@ -147,14 +149,14 @@ const C={
    'ink' — C.ink='#0D0D0D' déjà utilisé sur surfaces claires) ; 'RAD' (PAS 'R' —
    shadow du rayon haversine). Voir memory reference_refonte_screens.md. ═══ */
 Object.assign(C,{
-  inkD:"#0A1714",card2:"#10231E",
+  inkD:"#160a26",card2:"#241246",
   orCTA:"#FFC72C",orLink:"#E8A800",orPale:"#FFE08A",orGlit:"#FFD884",
-  tealS:"#3BA7A0",tealL2:"#5FD3C9",
+  tealS:"#b93a8e",tealL2:"#ff2db8",
   seaD:"#08251F",seaM:"#1A5852",skyInk:"#0B2230",
   sargD:"#5d400e",sargM:"#7a5c14",sargL2:"#8a6c1c",sargV:"#a8862a",
-  stClean:"#22C55E",stMod:"#F59E0B",stAvoid:"#E8522A",stAvoidL:"#F4845F",
-  gradClean:["#22C55E","#16A34A"],gradMod:["#F59E0B","#B87A00"],gradAvoid:["#E8522A","#B83A1A"],
-  satBody:"#C9971F",satTop:"#FFC72C",satWing:"#3BA7A0",moonCol:"#9ADCD4",
+  stClean:"#27c46b",stMod:"#ffb02e",stAvoid:"#e8322a",stAvoidL:"#F4845F",
+  gradClean:["#27c46b","#1ea75a"],gradMod:["#ffb02e","#d98a00"],gradAvoid:["#e8322a","#b8281f"],
+  satBody:"#C9971F",satTop:"#FFC72C",satWing:"#5b3a8e",moonCol:"#c9a0ff",
 })
 /* ═══ SCENE_TOKENS — design-system golden-hour, SOURCE UNIQUE de la scène SVG
    (notre valeur). Extrait de BEACH_PHASE (vérifié byte-identique) + sable inline +
@@ -190,10 +192,11 @@ const SG_BLOB_LEGEND_Y=346
 // réelle. Sobre/premium (satellite-caméra à 1 œil-objectif), JAMAIS visage
 // cartoon (= antidote au rejet « Adibou enfantin »). Réutilisable trans-écran.
 const VEILLEUR_MOOD={
-  serein:{wing:"#3BA7A0",halo:"#3BA7A0",lens:"#5FD3C9",ant:"#5FD3C9",tilt:0,ring:null},
+  // Veilleur canonique : corps/ailes violet, iris VERT, antenne or (réf. mascotte).
+  serein:{wing:"#5b3a8e",halo:"#7a4fb0",lens:"#3fd07f",ant:"#FFC72C",tilt:0,ring:null},
   vigilant:{wing:"#F59E0B",halo:"#F59E0B",lens:"#FFD27A",ant:"#FFD27A",tilt:0,ring:null},
-  alerte:{wing:"#E8522A",halo:"#E8522A",lens:"#F4845F",ant:"#F4845F",tilt:-8,ring:"#E8522A"},
-  scan:{wing:"#3BA7A0",halo:"#3BA7A0",lens:"#5FD3C9",ant:"#5FD3C9",tilt:0,ring:null},
+  alerte:{wing:"#e8322a",halo:"#e8322a",lens:"#F4845F",ant:"#F4845F",tilt:-8,ring:"#e8322a"},
+  scan:{wing:"#5b3a8e",halo:"#7a4fb0",lens:"#3fd07f",ant:"#FFC72C",tilt:0,ring:null},
 }
 function moodFromScore(score){return typeof score!=="number"?"scan":score>=70?"serein":score>=40?"vigilant":"alerte"}
 function moodFromStatus(s){return s==="clean"?"serein":s==="moderate"?"vigilant":s==="avoid"?"alerte":"scan"}
@@ -204,7 +207,7 @@ function verdictMeta(status,lang){
     moderate:{color:"#F59E0B",emoji:"😐",verb:_t(lang,"Prudence","Careful","Cuidado")},
     avoid:{color:"#E8522A",emoji:"🚫",verb:_t(lang,"Pas aujourd'hui","Not today","Hoy no")},
   }
-  return M[status]||{color:"#3BA7A0",emoji:"🛰️",verb:_t(lang,"Le veilleur scanne","Scanning","Escaneando")}
+  return M[status]||{color:"#ff2db8",emoji:"🛰️",verb:_t(lang,"Le veilleur scanne","Scanning","Escaneando")}
 }
 // Carte de partage SPOILER-FREE (recherche valeur) — image golden-hour SANS lien (effet Wordle
 // = portée max sur les réseaux). Canvas PUR (réutilise les fonts déjà chargées), zéro dépendance.
@@ -221,10 +224,10 @@ async function shareBeachCard(beach,lang,forecast){
     x.fillStyle="rgba(255,255,255,.82)";x.font="400 36px 'Anton',system-ui,sans-serif";x.fillText("S A R G A S S E S",W/2,118)
     x.save();x.translate(W/2,258)
     x.fillStyle="rgba(95,211,201,.16)";x.beginPath();x.arc(0,0,78,0,7);x.fill()
-    x.fillStyle="#3BA7A0";RR(-84,-18,44,36,8);x.fill();RR(40,-18,44,36,8);x.fill()
-    x.strokeStyle="#5FD3C9";x.lineWidth=6;x.lineCap="round";x.beginPath();x.moveTo(0,-42);x.lineTo(0,-68);x.stroke();x.fillStyle="#5FD3C9";x.beginPath();x.arc(0,-72,8,0,7);x.fill()
+    x.fillStyle="#5b3a8e";RR(-84,-18,44,36,8);x.fill();RR(40,-18,44,36,8);x.fill()
+    x.strokeStyle="#3fd07f";x.lineWidth=6;x.lineCap="round";x.beginPath();x.moveTo(0,-42);x.lineTo(0,-68);x.stroke();x.fillStyle="#3fd07f";x.beginPath();x.arc(0,-72,8,0,7);x.fill()
     x.fillStyle="#C9971F";RR(-40,-40,80,80,20);x.fill();x.fillStyle="#FFC72C";RR(-40,-40,80,26,20);x.fill()
-    x.fillStyle="#07201E";x.beginPath();x.arc(0,8,24,0,7);x.fill();x.fillStyle="#5FD3C9";x.beginPath();x.arc(0,8,16,0,7);x.fill();x.fillStyle="#EAFBF8";x.beginPath();x.arc(-6,2,6,0,7);x.fill()
+    x.fillStyle="#07201E";x.beginPath();x.arc(0,8,24,0,7);x.fill();x.fillStyle="#3fd07f";x.beginPath();x.arc(0,8,16,0,7);x.fill();x.fillStyle="#EAFBF8";x.beginPath();x.arc(-6,2,6,0,7);x.fill()
     x.restore()
     x.fillStyle="#fff";x.font="400 96px 'Anton',system-ui,sans-serif"
     const words=(beach.name||"").toUpperCase().split(" ");let line="";const lines=[]
@@ -269,10 +272,10 @@ async function buildShareCard(opts){
     x.fillStyle="rgba(255,255,255,.82)";x.font="400 36px 'Anton',system-ui,sans-serif";x.fillText("S A R G A S S E S",W/2,118)
     x.save();x.translate(W/2,250)
     x.fillStyle="rgba(95,211,201,.16)";x.beginPath();x.arc(0,0,78,0,7);x.fill()
-    x.fillStyle="#3BA7A0";RR(-84,-18,44,36,8);x.fill();RR(40,-18,44,36,8);x.fill()
-    x.strokeStyle="#5FD3C9";x.lineWidth=6;x.lineCap="round";x.beginPath();x.moveTo(0,-42);x.lineTo(0,-68);x.stroke();x.fillStyle="#5FD3C9";x.beginPath();x.arc(0,-72,8,0,7);x.fill()
+    x.fillStyle="#5b3a8e";RR(-84,-18,44,36,8);x.fill();RR(40,-18,44,36,8);x.fill()
+    x.strokeStyle="#3fd07f";x.lineWidth=6;x.lineCap="round";x.beginPath();x.moveTo(0,-42);x.lineTo(0,-68);x.stroke();x.fillStyle="#3fd07f";x.beginPath();x.arc(0,-72,8,0,7);x.fill()
     x.fillStyle="#C9971F";RR(-40,-40,80,80,20);x.fill();x.fillStyle="#FFC72C";RR(-40,-40,80,26,20);x.fill()
-    x.fillStyle="#07201E";x.beginPath();x.arc(0,8,24,0,7);x.fill();x.fillStyle="#5FD3C9";x.beginPath();x.arc(0,8,16,0,7);x.fill();x.fillStyle="#EAFBF8";x.beginPath();x.arc(-6,2,6,0,7);x.fill()
+    x.fillStyle="#07201E";x.beginPath();x.arc(0,8,24,0,7);x.fill();x.fillStyle="#3fd07f";x.beginPath();x.arc(0,8,16,0,7);x.fill();x.fillStyle="#EAFBF8";x.beginPath();x.arc(-6,2,6,0,7);x.fill()
     x.restore()
     const n=Math.max(0,opts.streak||0),best=opts.best||n,gap=96
     x.fillStyle="#FFD884";x.font="400 130px 'Anton',system-ui,sans-serif";x.fillText("🔥 "+n,W/2,500)
@@ -301,10 +304,10 @@ function _scChrome(x,W,H,RR,glyphY){
   x.fillStyle="rgba(255,255,255,.82)";x.font="400 36px 'Anton',system-ui,sans-serif";x.fillText("S A R G A S S E S",W/2,118)
   x.save();x.translate(W/2,glyphY||258)
   x.fillStyle="rgba(95,211,201,.16)";x.beginPath();x.arc(0,0,78,0,7);x.fill()
-  x.fillStyle="#3BA7A0";RR(-84,-18,44,36,8);x.fill();RR(40,-18,44,36,8);x.fill()
-  x.strokeStyle="#5FD3C9";x.lineWidth=6;x.lineCap="round";x.beginPath();x.moveTo(0,-42);x.lineTo(0,-68);x.stroke();x.fillStyle="#5FD3C9";x.beginPath();x.arc(0,-72,8,0,7);x.fill()
+  x.fillStyle="#5b3a8e";RR(-84,-18,44,36,8);x.fill();RR(40,-18,44,36,8);x.fill()
+  x.strokeStyle="#3fd07f";x.lineWidth=6;x.lineCap="round";x.beginPath();x.moveTo(0,-42);x.lineTo(0,-68);x.stroke();x.fillStyle="#3fd07f";x.beginPath();x.arc(0,-72,8,0,7);x.fill()
   x.fillStyle="#C9971F";RR(-40,-40,80,80,20);x.fill();x.fillStyle="#FFC72C";RR(-40,-40,80,26,20);x.fill()
-  x.fillStyle="#07201E";x.beginPath();x.arc(0,8,24,0,7);x.fill();x.fillStyle="#5FD3C9";x.beginPath();x.arc(0,8,16,0,7);x.fill();x.fillStyle="#EAFBF8";x.beginPath();x.arc(-6,2,6,0,7);x.fill()
+  x.fillStyle="#07201E";x.beginPath();x.arc(0,8,24,0,7);x.fill();x.fillStyle="#3fd07f";x.beginPath();x.arc(0,8,16,0,7);x.fill();x.fillStyle="#EAFBF8";x.beginPath();x.arc(-6,2,6,0,7);x.fill()
   x.restore()
 }
 function _scFooter(x,W,H,lang){const ds=new Date().toLocaleDateString(lang==="en"?"en-GB":lang==="es"?"es-ES":"fr-FR",{day:"numeric",month:"long"});x.textAlign="center";x.fillStyle="rgba(255,255,255,.72)";x.font="500 32px 'Bricolage Grotesque',system-ui,sans-serif";x.fillText(ds+"  ·  "+_scDomain(),W/2,H-86)}
@@ -373,10 +376,10 @@ function Veilleur({mood="serein",size=44}){
         <circle r="14" fill={m.lens} opacity=".12"/>
         <rect x="-27" y="-5" width="13" height="11" rx="2.5" fill={m.wing}/>
         <rect x="14" y="-5" width="13" height="11" rx="2.5" fill={m.wing}/>
-        <rect x="-11" y="-11" width="22" height="22" rx="6" fill="#C9971F"/>
-        <rect x="-11" y="-11" width="22" height="7" rx="6" fill="#FFC72C"/>
+        <rect x="-11" y="-11" width="22" height="22" rx="6" fill="#5b3a8e"/>
+        <rect x="-11" y="-11" width="22" height="7" rx="6" fill="#7a4fb0"/>
         <line x1="0" y1="-11" x2="0" y2="-19" stroke={m.ant} strokeWidth="1.6" strokeLinecap="round"/>
-        <circle cx="0" cy="-20" r="1.9" fill={m.lens}/>
+        <circle cx="0" cy="-20" r="1.9" fill={m.ant}/>
         {m.ring&&<circle cx="0" cy="2" r="6.6" fill="none" stroke={m.ring} strokeWidth="1"/>}
         <circle cx="0" cy="2" r="5.4" fill="#07201E"/>
         <circle cx="0" cy="2" r="4" fill={m.lens}/>
@@ -516,11 +519,11 @@ function buildBeachPlan(beach,lang,allBeaches,weeklyData){
 function VisitPlan({beach,lang,allBeaches,weeklyData}){
   const plan=useMemo(()=>buildBeachPlan(beach,lang,allBeaches,weeklyData),[beach&&beach.id,beach&&beach.status,beach&&beach.afai,lang])
   if(!plan.sections.length)return null
-  const tones={clean:"#22C55E",warn:"#F59E0B",avoid:"#E8522A",alt:"#3BA7A0",info:"#5FD3C9"}
+  const tones={clean:"#22C55E",warn:"#F59E0B",avoid:"#E8522A",alt:"#5b3a8e",info:"#3fd07f"}
   return(<div style={{margin:"14px 0 6px"}}>
     <div style={{fontSize:11,fontWeight:800,letterSpacing:".06em",textTransform:"uppercase",color:"var(--sg-mid,#8AA09B)",marginBottom:6}}>{_t(lang,"Le plan du Veilleur","The Watchman's plan","El plan del Vigía")}</div>
     {plan.sections.map((sec,i)=>(<div key={i} style={{display:"flex",gap:10,padding:"9px 0",borderTop:i?"1px solid rgba(120,140,135,.16)":"none"}}>
-      <div style={{width:3,borderRadius:3,background:tones[sec.tone]||"#5FD3C9",flexShrink:0,alignSelf:"stretch"}}/>
+      <div style={{width:3,borderRadius:3,background:tones[sec.tone]||"#3fd07f",flexShrink:0,alignSelf:"stretch"}}/>
       <div><div style={{fontSize:13.5,fontWeight:800,color:tones[sec.tone]||"var(--sg-text,#1A2B27)"}}>{sec.title}</div><div style={{fontSize:13,lineHeight:1.42,color:"var(--sg-text,#33433F)",marginTop:1}}>{sec.body}</div></div>
     </div>))}
   </div>)
@@ -689,9 +692,9 @@ function StoryEngine({beats,lang,accent="#FFC72C",ev="sg_engine_beat",onCTA,onBe
   for(let i=0;i<N;i++){baseVars[`--e${i}`]=(beat===i?1:0);baseVars[`--p${i}`]=(i<beat?1:i===beat?.5:0)}
   const last=beats[N-1]
   return(
-    <section ref={boxRef} aria-label={beats[0]&&beats[0].heading} style={{position:"relative",height:rm?"auto":`${Math.max(2,N)*100}vh`,background:"#0A1714",...baseVars}}>
+    <section ref={boxRef} aria-label={beats[0]&&beats[0].heading} style={{position:"relative",height:rm?"auto":`${Math.max(2,N)*100}vh`,background:"#120821",...baseVars}}>
       <style>{`.se-vp{height:100vh}@supports(height:100svh){.se-vp{height:100svh}}`}</style>
-      <div className="se-vp" style={{position:rm?"relative":"sticky",top:0,overflow:"hidden",background:"#0A1714",height:rm?"min(82vh,640px)":undefined}}>
+      <div className="se-vp" style={{position:rm?"relative":"sticky",top:0,overflow:"hidden",background:"#120821",height:rm?"min(82vh,640px)":undefined}}>
         <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block"}}>
           {beats.map((bt,i)=>(<g key={i} style={{opacity:`var(--e${i})`,"--p":`var(--p${i})`}}>{bt.scene}</g>))}
         </svg>
@@ -702,7 +705,7 @@ function StoryEngine({beats,lang,accent="#FFC72C",ev="sg_engine_beat",onCTA,onBe
                 {bt.eyebrow&&<div style={{fontSize:11,fontWeight:700,letterSpacing:".16em",color:accent,textTransform:"uppercase",marginBottom:8}}>{bt.eyebrow}</div>}
                 <h2 className="anton" style={{fontWeight:400,fontSize:"clamp(26px,6.6vw,42px)",lineHeight:1.02,textTransform:"uppercase",margin:0,color:"#fff"}}>{bt.heading}</h2>
                 {bt.sub&&<p style={{fontSize:14,color:"rgba(255,255,255,.74)",marginTop:10,lineHeight:1.5,maxWidth:440}}>{bt.sub}</p>}
-                {i===N-1&&onCTA&&last&&last.cta&&<button onClick={onCTA} style={{pointerEvents:"auto",marginTop:18,cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:16,color:"#0A1714",border:"none",borderRadius:16,padding:"15px 26px",background:"linear-gradient(135deg,#FFE08A,#FFC72C)",boxShadow:"0 8px 24px rgba(255,199,44,.32)"}}>{last.cta}</button>}
+                {i===N-1&&onCTA&&last&&last.cta&&<button onClick={onCTA} style={{pointerEvents:"auto",marginTop:18,cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:16,color:"#120821",border:"none",borderRadius:16,padding:"15px 26px",background:"linear-gradient(135deg,#FFE08A,#FFC72C)",boxShadow:"0 8px 24px rgba(255,199,44,.32)"}}>{last.cta}</button>}
               </div>
             </div>
           ))}
@@ -757,8 +760,8 @@ function PanelStoryEngine({beats,lang,accent="#FFC72C",ev="sg_panel_beat",onCTA,
   for(let i=0;i<N;i++){baseVars[`--e${i}`]=(beat===i?1:0);baseVars[`--p${i}`]=(i<beat?1:i===beat?.5:0)}
   const last=beats[N-1]
   return(
-    <section ref={boxRef} style={{position:"relative",background:"#0A1714",...baseVars}}>
-      <div ref={vpRef} style={{position:rm?"relative":"sticky",top:0,overflow:"hidden",background:"#0A1714"}}>
+    <section ref={boxRef} style={{position:"relative",background:"#120821",...baseVars}}>
+      <div ref={vpRef} style={{position:rm?"relative":"sticky",top:0,overflow:"hidden",background:"#120821"}}>
         <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block"}}>
           {beats.map((bt,i)=>(<g key={i} style={{opacity:`var(--e${i})`,"--p":`var(--p${i})`}}>{bt.scene}</g>))}
         </svg>
@@ -769,7 +772,7 @@ function PanelStoryEngine({beats,lang,accent="#FFC72C",ev="sg_panel_beat",onCTA,
                 {bt.eyebrow&&<div style={{fontSize:11,fontWeight:700,letterSpacing:".16em",color:accent,textTransform:"uppercase",marginBottom:8}}>{bt.eyebrow}</div>}
                 <h2 className="anton" style={{fontWeight:400,fontSize:"clamp(24px,6.2vw,38px)",lineHeight:1.04,textTransform:"uppercase",margin:0,color:"#fff"}}>{bt.heading}</h2>
                 {bt.sub&&<p style={{fontSize:14,color:"rgba(255,255,255,.74)",marginTop:9,lineHeight:1.5,maxWidth:440}}>{bt.sub}</p>}
-                {i===N-1&&onCTA&&last&&last.cta&&<button onClick={onCTA} style={{pointerEvents:"auto",marginTop:16,cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:16,color:"#0A1714",border:"none",borderRadius:16,padding:"15px 26px",background:"linear-gradient(135deg,#FFE08A,#FFC72C)",boxShadow:"0 8px 24px rgba(255,199,44,.32)"}}>{last.cta}</button>}
+                {i===N-1&&onCTA&&last&&last.cta&&<button onClick={onCTA} style={{pointerEvents:"auto",marginTop:16,cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:16,color:"#120821",border:"none",borderRadius:16,padding:"15px 26px",background:"linear-gradient(135deg,#FFE08A,#FFC72C)",boxShadow:"0 8px 24px rgba(255,199,44,.32)"}}>{last.cta}</button>}
               </div>
             </div>
           ))}
@@ -787,16 +790,16 @@ function discoveryBeats(lang){
     {eyebrow:T("LA SOURCE","THE SOURCE","EL ORIGEN"),heading:T("Une ceinture de 8000 km","An 8,000 km belt","Un cinturón de 8000 km"),sub:T("Chaque année, une nappe d'algues traverse l'Atlantique, de l'Afrique aux Caraïbes.","Every year a raft of seaweed crosses the Atlantic, from Africa to the Caribbean.","Cada año una masa de algas cruza el Atlántico, de África al Caribe."),
       scene:<><rect width="800" height="600" fill="#06211E"/><circle cx="400" cy="300" r="240" fill="#0A2E2A"/><circle cx="400" cy="300" r="240" fill="none" stroke="#1A5852" strokeWidth="2"/><path d="M170 380 Q400 300 630 360" fill="none" stroke="#7a5c14" strokeWidth="22" strokeLinecap="round" opacity=".85"/><path d="M170 380 Q400 300 630 360" fill="none" stroke="#a8862a" strokeWidth="8" strokeLinecap="round" strokeDasharray="4 14" opacity=".7"/><text x="246" y="372" fontFamily="ui-monospace,monospace" fontSize="12" fill="#9FE1CB">{T("Afrique","Africa","África")}</text><text x="560" y="348" fontFamily="ui-monospace,monospace" fontSize="12" fill="#9FE1CB">{T("Caraïbes","Caribbean","Caribe")}</text></>},
     {eyebrow:T("LA DÉRIVE","THE DRIFT","LA DERIVA"),heading:T("Le vent décide","The wind decides","El viento decide"),sub:T("Courants et alizés poussent les bancs vers certaines plages — pas toutes, pas en même temps.","Currents and trade winds push the rafts onto some beaches — not all, not at once.","Las corrientes y los vientos empujan los bancos a ciertas playas."),
-      scene:<><rect width="800" height="600" fill="url(#bscSea)"/><rect width="800" height="600" fill="#0A2E2A"/>{[160,260,360].map((y,i)=>(<path key={i} d={`M-40 ${y} q60 -16 120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0`} fill="none" stroke="#3BA7A0" strokeWidth="2" opacity=".4"/>))}<g><path d="M120 250 L520 250" stroke="#FFC72C" strokeWidth="2" strokeDasharray="6 8" opacity=".7"/><path d="M520 250 l-16 -8 0 16 Z" fill="#FFC72C"/></g><g transform="translate(150,250)"><ellipse rx="26" ry="9" fill="#7a5c14"/><ellipse cx="-12" cy="-4" rx="11" ry="5" fill="#8a6c1c"/></g><g transform="translate(560,420)"><path d="M-40 0 Q200 -30 430 0 L430 180 L-40 180 Z" fill="#1C1712"/></g></>},
+      scene:<><rect width="800" height="600" fill="url(#bscSea)"/><rect width="800" height="600" fill="#0A2E2A"/>{[160,260,360].map((y,i)=>(<path key={i} d={`M-40 ${y} q60 -16 120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0`} fill="none" stroke="#5b3a8e" strokeWidth="2" opacity=".4"/>))}<g><path d="M120 250 L520 250" stroke="#FFC72C" strokeWidth="2" strokeDasharray="6 8" opacity=".7"/><path d="M520 250 l-16 -8 0 16 Z" fill="#FFC72C"/></g><g transform="translate(150,250)"><ellipse rx="26" ry="9" fill="#7a5c14"/><ellipse cx="-12" cy="-4" rx="11" ry="5" fill="#8a6c1c"/></g><g transform="translate(560,420)"><path d="M-40 0 Q200 -30 430 0 L430 180 L-40 180 Z" fill="#1C1712"/></g></>},
     {eyebrow:T("LE RISQUE","THE RISK","EL RIESGO"),heading:T("En décomposition, ça pique","Rotting, it stings","Al descomponerse, irrita"),sub:T("Les algues échouées libèrent du H2S (odeur d'œuf). On surveille pour t'éviter ça.","Stranded seaweed releases H2S (egg smell). We watch so you avoid it.","Las algas varadas liberan H2S (olor a huevo). Vigilamos para evitártelo."),
       scene:<><rect width="800" height="600" fill="#0B2230"/><rect y="300" width="800" height="300" fill="#1C1712"/><g transform="translate(400,330)"><ellipse rx="180" ry="34" fill="#5d400e"/><ellipse cx="-90" cy="-12" rx="60" ry="20" fill="#7a5c14"/><ellipse cx="80" cy="-10" rx="70" ry="22" fill="#6b4a12"/></g><g fill="#CC28FF" opacity=".55"><circle cx="330" cy="280" r="4"/><circle cx="360" cy="250" r="3"/><circle cx="430" cy="262" r="3.5"/><circle cx="470" cy="238" r="2.6"/></g><text x="400" y="250" textAnchor="middle" fontFamily="'Anton',sans-serif" fontSize="20" fill="#CC28FF">H₂S</text></>},
     {eyebrow:T("LES SOLUTIONS","THE SOLUTIONS","LAS SOLUCIONES"),heading:T("Barrer, récolter, recycler","Block, collect, recycle","Frenar, recoger, reciclar"),sub:T("Barrages flottants, ramassage rapide, et valorisation : engrais, bioplastique, énergie.","Floating booms, fast collection, and reuse: fertiliser, bioplastic, energy.","Barreras, recogida rápida y reciclaje: abono, bioplástico, energía."),cta:T("Voir ma plage du jour →","See my beach today →","Ver mi playa de hoy →"),
-      scene:<><rect width="800" height="600" fill="#06211E"/><rect y="320" width="800" height="280" fill="#1A5852" opacity=".5"/><g><circle cx="170" cy="320" r="10" fill="#FFC72C"/><circle cx="230" cy="320" r="10" fill="#FFC72C"/><circle cx="290" cy="320" r="10" fill="#FFC72C"/><circle cx="350" cy="320" r="10" fill="#FFC72C"/><line x1="160" y1="332" x2="360" y2="332" stroke="#E8A800" strokeWidth="3"/></g><g transform="translate(470,300)"><path d="M-30 20 L30 20 L22 36 L-22 36 Z" fill="#16282C" stroke="#FFC72C" strokeWidth="1.5"/><rect x="-8" y="-6" width="16" height="26" rx="2" fill="#3BA7A0"/></g><g transform="translate(620,360)"><path d="M0 -26 A26 26 0 1 1 -18 44" fill="none" stroke="#22C55E" strokeWidth="6"/><path d="M-18 30 l0 16 l16 -4 Z" fill="#22C55E"/></g><text x="620" y="368" textAnchor="middle" fontFamily="'Anton',sans-serif" fontSize="13" fill="#9FE1CB">RE</text></>},
+      scene:<><rect width="800" height="600" fill="#06211E"/><rect y="320" width="800" height="280" fill="#1A5852" opacity=".5"/><g><circle cx="170" cy="320" r="10" fill="#FFC72C"/><circle cx="230" cy="320" r="10" fill="#FFC72C"/><circle cx="290" cy="320" r="10" fill="#FFC72C"/><circle cx="350" cy="320" r="10" fill="#FFC72C"/><line x1="160" y1="332" x2="360" y2="332" stroke="#E8A800" strokeWidth="3"/></g><g transform="translate(470,300)"><path d="M-30 20 L30 20 L22 36 L-22 36 Z" fill="#16282C" stroke="#FFC72C" strokeWidth="1.5"/><rect x="-8" y="-6" width="16" height="26" rx="2" fill="#5b3a8e"/></g><g transform="translate(620,360)"><path d="M0 -26 A26 26 0 1 1 -18 44" fill="none" stroke="#22C55E" strokeWidth="6"/><path d="M-18 30 l0 16 l16 -4 Z" fill="#22C55E"/></g><text x="620" y="368" textAnchor="middle" fontFamily="'Anton',sans-serif" fontSize="13" fill="#9FE1CB">RE</text></>},
   ]
 }
 function DiscoveryStory({lang,onClose,onShowMap}){
   return(
-    <div role="dialog" aria-label={_t(lang,"Comprendre les sargasses","Understand sargassum","Entender el sargazo")} style={{position:"absolute",inset:0,zIndex:1060,background:"#0A1714",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
+    <div role="dialog" aria-label={_t(lang,"Comprendre les sargasses","Understand sargassum","Entender el sargazo")} style={{position:"absolute",inset:0,zIndex:1060,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
       <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"fixed",top:"calc(12px + env(safe-area-inset-top))",right:12,zIndex:30,width:42,height:42,borderRadius:21,background:"rgba(10,23,20,.55)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:16,cursor:"pointer"}}>✕</button>
       <StoryEngine beats={discoveryBeats(lang)} lang={lang} ev="sg_discovery_beat" onCTA={onShowMap}/>
     </div>
@@ -824,8 +827,8 @@ function satelliteBeats(lang){
           <rect width="800" height="600" fill="#06121A"/>
           {[120,90,300,70,520,110,680,80,420,150,600,180].map((s,i)=>(<circle key={i} cx={s[0]} cy={s[1]} r="1.3" fill="#fff" opacity=".5"/>))}
           <circle cx="400" cy="380" r="160" fill="#155A5A" opacity=".3"/>
-          <path d="M400 150 L240 380 L560 380 Z" fill="#5FD3C9" opacity="0.12"/>
-          {miVeil(400, 150, "#3BA7A0", "#5FD3C9")}
+          <path d="M400 150 L240 380 L560 380 Z" fill="#3fd07f" opacity="0.12"/>
+          {miVeil(400, 150, "#5b3a8e", "#3fd07f")}
         </g>
       )
     },
@@ -836,8 +839,8 @@ function satelliteBeats(lang){
       scene: (
         <g>
           <rect width="800" height="600" fill="#0A2E2A"/>
-          {[160,260,360].map((y,i)=>(<path key={i} d={`M-40 ${y} q60 -16 120 0 t120 0 t120 0`} fill="none" stroke="#3BA7A0" strokeWidth="2" opacity=".4"/>))}
-          <path d="M400 50 L100 550 L700 550 Z" fill="#5FD3C9" opacity="0.08"/>
+          {[160,260,360].map((y,i)=>(<path key={i} d={`M-40 ${y} q60 -16 120 0 t120 0 t120 0`} fill="none" stroke="#5b3a8e" strokeWidth="2" opacity=".4"/>))}
+          <path d="M400 50 L100 550 L700 550 Z" fill="#3fd07f" opacity="0.08"/>
           <g transform="translate(320,380)"><ellipse rx="60" ry="14" fill="#7a5c14" opacity=".85"/><ellipse cx="-30" cy="-6" rx="35" ry="9" fill="#8a6c1c" opacity=".85"/></g>
           <g transform="translate(480,420)"><ellipse rx="80" ry="18" fill="#5d400e" opacity=".85"/><ellipse cx="20" cy="-4" rx="40" ry="10" fill="#7a5c14" opacity=".85"/></g>
           <line x1="0" y1="400" x2="800" y2="400" stroke="#FFC72C" strokeWidth="3" opacity="0.8"/>
@@ -856,7 +859,7 @@ function satelliteBeats(lang){
           {Array.from({length:6}).map((_,i)=>(<line key={`h${i}`} x1="80" y1={100+i*80} x2="720" y2={100+i*80} stroke="#1A5852" strokeWidth="1" opacity=".5"/>))}
           <rect x="320" y="260" width="80" height="80" fill="#FFE08A" opacity="0.25" stroke="#FFC72C" strokeWidth="2"/>
           <text x="360" y="305" fontFamily="ui-monospace,monospace" fontSize="16" fill="#FFC72C" textAnchor="middle">300m</text>
-          {miVeil(600, 180, "#3BA7A0", "#5FD3C9")}
+          {miVeil(600, 180, "#5b3a8e", "#3fd07f")}
         </g>
       )
     },
@@ -870,7 +873,7 @@ function satelliteBeats(lang){
           <rect width="800" height="600" fill="#0B2230"/>
           <path d="M0 380 Q400 350 800 380 L800 600 L0 600 Z" fill="#1C1712"/>
           <path d="M0 380 Q400 370 800 380" fill="none" stroke="#FFE47A" strokeWidth="2" opacity=".4"/>
-          {miVeil(400, 200, "#3BA7A0", "#5FD3C9")}
+          {miVeil(400, 200, "#5b3a8e", "#3fd07f")}
           <g transform="translate(400,430)">
             <ellipse rx="120" ry="24" fill="#22C55E" opacity=".8"/>
             <text y="8" fontFamily="system-ui,sans-serif" fontSize="18" fontWeight="800" fill="#fff" textAnchor="middle">PROPRE / CLEAN</text>
@@ -918,7 +921,7 @@ function h2sBeats(lang){
             <polygon points="0,-60 -60,40 60,40" fill="#E8522A" stroke="#EAF7F4" strokeWidth="2"/>
             <text x="0" y="24" fontFamily="'Anton',sans-serif" fontSize="56" fill="#fff" textAnchor="middle">!</text>
           </g>
-          <text x="400" y="340" fontFamily="system-ui,sans-serif" fontSize="16" fill="#5FD3C9" textAnchor="middle">{T("Asthme · Nourrissons · Grossesse", "Asthma · Infants · Pregnancy", "Asma · Lactantes · Embarazo")}</text>
+          <text x="400" y="340" fontFamily="system-ui,sans-serif" fontSize="16" fill="#3fd07f" textAnchor="middle">{T("Asthme · Nourrissons · Grossesse", "Asthma · Infants · Pregnancy", "Asma · Lactantes · Embarazo")}</text>
         </g>
       )
     },
@@ -930,9 +933,9 @@ function h2sBeats(lang){
         <g>
           <rect width="800" height="600" fill="#06211E"/>
           <g transform="translate(400,280)">
-            <path d="M-60 40 L-60 -20 L0 -60 L60 -20 L60 40 Z" fill="none" stroke="#5FD3C9" strokeWidth="3"/>
-            <rect x="-20" y="-10" width="40" height="30" fill="none" stroke="#5FD3C9" strokeWidth="2"/>
-            <line x1="0" y1="-10" x2="0" y2="20" stroke="#5FD3C9" strokeWidth="1"/>
+            <path d="M-60 40 L-60 -20 L0 -60 L60 -20 L60 40 Z" fill="none" stroke="#3fd07f" strokeWidth="3"/>
+            <rect x="-20" y="-10" width="40" height="30" fill="none" stroke="#3fd07f" strokeWidth="2"/>
+            <line x1="0" y1="-10" x2="0" y2="20" stroke="#3fd07f" strokeWidth="1"/>
           </g>
           <path d="M100 240 Q220 220 280 250" fill="none" stroke="#E8522A" strokeWidth="3" opacity=".6"/>
           <path d="M520 240 Q620 220 700 250" fill="none" stroke="#E8522A" strokeWidth="3" opacity=".6"/>
@@ -946,7 +949,7 @@ function h2sBeats(lang){
       cta: T("Activer Le Veilleur →", "Activate the Watchman →", "Activar el Vigía →"),
       scene: (
         <g>
-          <rect width="800" height="600" fill="#0A1714"/>
+          <rect width="800" height="600" fill="#120821"/>
           {miVeil(400, 200, "#E8522A", "#F4845F")}
           <circle cx="400" cy="200" r="140" fill="none" stroke="#E8522A" strokeWidth="2" strokeDasharray="6 8" opacity="0.4"/>
           <text x="400" y="380" fontFamily="system-ui,sans-serif" fontSize="18" fontWeight="800" fill="#E8522A" textAnchor="middle">ALERT H₂S ENABLED</text>
@@ -965,12 +968,12 @@ function nettoyerBeats(lang){
       sub: T("La récolte des algues en mer est 10 fois plus écologique car elle préserve le sable et évite la dégradation en gaz toxique.", "Collecting seaweed at sea is 10 times more ecological because it preserves sand and avoids degradation into toxic gas.", "Recoger el alga en el mar es 10 veces más ecológico porque conserva la arena y evita los gases tóxicos."),
       scene: (
         <g>
-          <rect width="800" height="360" fill="#0A1714"/>
+          <rect width="800" height="360" fill="#120821"/>
           <rect y="360" width="800" height="240" fill="#08251F"/>
           <g transform="translate(400,430)">
             <ellipse rx="150" ry="12" fill="#7a5c14"/>
           </g>
-          <g transform="translate(350,340)"><path d="M-60 20 L60 20 L48 40 L-48 40 Z" fill="#1A5852" stroke="#5FD3C9" strokeWidth="2"/></g>
+          <g transform="translate(350,340)"><path d="M-60 20 L60 20 L48 40 L-48 40 Z" fill="#1A5852" stroke="#3fd07f" strokeWidth="2"/></g>
         </g>
       )
     },
@@ -1019,7 +1022,7 @@ function methodeBeats(lang){
           <path d="M150 180 Q400 240 650 180" fill="none" stroke="#22C55E" strokeWidth="48" strokeLinecap="round" opacity="0.45"/>
           <path d="M150 280 Q400 340 650 280" fill="none" stroke="#E8A800" strokeWidth="48" strokeLinecap="round" opacity="0.45"/>
           <path d="M150 380 Q400 440 650 380" fill="none" stroke="#E8522A" strokeWidth="48" strokeLinecap="round" opacity="0.45"/>
-          {miVeil(400, 150, "#3BA7A0", "#5FD3C9")}
+          {miVeil(400, 150, "#5b3a8e", "#3fd07f")}
         </g>
       )
     },
@@ -1037,7 +1040,7 @@ function methodeBeats(lang){
               <path d="M-6 0 L-2 4 L6 -4" fill="none" stroke="#fff" strokeWidth="2.5"/>
             </g>
           ))}
-          {miVeil(400, 140, "#3BA7A0", "#5FD3C9")}
+          {miVeil(400, 140, "#5b3a8e", "#3fd07f")}
         </g>
       )
     },
@@ -1049,8 +1052,8 @@ function methodeBeats(lang){
         <g>
           <rect width="800" height="600" fill="#06211E"/>
           <g transform="translate(400,260)">
-            <circle r="80" fill="none" stroke="#5FD3C9" strokeWidth="8"/>
-            <text x="0" y="15" fontFamily="'Anton',sans-serif" fontSize="48" fill="#5FD3C9" textAnchor="middle">{relCalme}%</text>
+            <circle r="80" fill="none" stroke="#3fd07f" strokeWidth="8"/>
+            <text x="0" y="15" fontFamily="'Anton',sans-serif" fontSize="48" fill="#3fd07f" textAnchor="middle">{relCalme}%</text>
           </g>
           <text x="400" y="380" fontFamily="system-ui,sans-serif" fontSize="14" fill="#9FE1CB" textAnchor="middle">{T("Indice de confiance mis à jour", "Confidence index updated", "Índice de confianza actualizado")}</text>
         </g>
@@ -1087,9 +1090,9 @@ const STATION_BEATS = {
 
 function StationStory({slug,lang,onExit,onCTA}){
   const beatsFn = STATION_BEATS[slug] || discoveryBeats
-  const accent = slug.includes("h2s") ? "#CC28FF" : slug.includes("nettoyer") ? "#5FD3C9" : "#FFC72C"
+  const accent = slug.includes("h2s") ? "#CC28FF" : slug.includes("nettoyer") ? "#3fd07f" : "#FFC72C"
   return(
-    <div role="dialog" aria-label={slug} style={{position:"absolute",inset:0,zIndex:1060,background:"#0A1714",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
+    <div role="dialog" aria-label={slug} style={{position:"absolute",inset:0,zIndex:1060,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
       <button onClick={onExit} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"fixed",top:"calc(12px + env(safe-area-inset-top))",right:12,zIndex:30,width:42,height:42,borderRadius:21,background:"rgba(10,23,20,.55)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:16,cursor:"pointer"}}>✕</button>
       <StoryEngine beats={beatsFn(lang)} lang={lang} accent={accent}
         ev="sg_station_beat" onCTA={onCTA}
@@ -1114,15 +1117,15 @@ function SolTransformScene({lang}){
     {e:"📄",x:312,y:392,l:T("Papier","Paper","Papel"),f:T("Ses fibres font papier et carton.","Its fibres make paper and card.","Sus fibras hacen papel y cartón.")},
     {e:"🧴",x:488,y:392,l:T("Bioplastique","Bioplastic","Bioplástico"),f:T("Des emballages compostables.","Compostable packaging.","Envases compostables.")},
   ]
-  return(<g><defs><linearGradient id="sol4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0A1714"/><stop offset=".5" stopColor="#155A5A"/><stop offset=".84" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/></linearGradient></defs>
+  return(<g><defs><linearGradient id="sol4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#120821"/><stop offset=".5" stopColor="#155A5A"/><stop offset=".84" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/></linearGradient></defs>
     <rect width="800" height="600" fill="url(#sol4)"/>
     <g transform="translate(400,300)"><ellipse rx="46" ry="16" fill="#6b7a1c" style={{opacity:"calc(1 - var(--p5)*.7)"}}/></g>
     {items.map((o,i)=>(
       <g key={i} transform={"translate("+o.x+","+o.y+")"} role="button" tabIndex={0} aria-label={o.l} onClick={()=>{const ns=sel===i?null:i;setSel(ns);if(ns!=null){try{track("sg_sol_tap",{beat:"transforme",item:["engrais","briques","biogaz","papier","bioplastique"][i]})}catch(_){}}}} style={{cursor:"pointer",opacity:"calc(var(--p5)*1.4 - "+(i*0.16)+")",transformBox:"fill-box",transformOrigin:"center"}}>
-        <circle r="34" fill="#0E2A26" stroke={sel===i?"#FFD884":"#5FD3C9"} strokeWidth={sel===i?2.6:1.4}/><text y="10" fontSize="30" textAnchor="middle">{o.e}</text><text y="56" fontFamily="ui-monospace,monospace" fontSize="12" fill="#9FE1CB" textAnchor="middle">{o.l}</text>
+        <circle r="34" fill="#241246" stroke={sel===i?"#FFD884":"#3fd07f"} strokeWidth={sel===i?2.6:1.4}/><text y="10" fontSize="30" textAnchor="middle">{o.e}</text><text y="56" fontFamily="ui-monospace,monospace" fontSize="12" fill="#9FE1CB" textAnchor="middle">{o.l}</text>
       </g>))}
     {sel==null
-      ? <text x="400" y="104" fontFamily="ui-monospace,monospace" fontSize="13" fill="#5FD3C9" textAnchor="middle" style={{opacity:"var(--p5)"}}>👆 {T("touche une ressource","tap a resource","toca un recurso")}</text>
+      ? <text x="400" y="104" fontFamily="ui-monospace,monospace" fontSize="13" fill="#3fd07f" textAnchor="middle" style={{opacity:"var(--p5)"}}>👆 {T("touche une ressource","tap a resource","toca un recurso")}</text>
       : <g><rect x="120" y="70" width="560" height="62" rx="14" fill="rgba(7,32,30,.94)" stroke="#FFD884" strokeWidth="1.4"/><text x="400" y="97" fontFamily="system-ui,sans-serif" fontSize="15" fontWeight="800" fill="#fff" textAnchor="middle">{items[sel].e+"  "+items[sel].l}</text><text x="400" y="119" fontFamily="system-ui,sans-serif" fontSize="12.5" fill="rgba(255,255,255,.85)" textAnchor="middle">{items[sel].f}</text></g>}
   </g>)
 }
@@ -1132,19 +1135,19 @@ function SolSortScene({lang}){
   const T=(fr,en,es)=>_t(lang,fr,en,es)
   const[sel,setSel]=useState(null)
   const bins=[
-    {e:"♻️",x:300,c:"#5FD3C9",l:T("Valorisable","Reusable","Útil"),f:T("L'algue propre : engrais, biogaz, biochar.","Clean algae: fertilizer, biogas, biochar.","Alga limpia: abono, biogás, biochar.")},
+    {e:"♻️",x:300,c:"#3fd07f",l:T("Valorisable","Reusable","Útil"),f:T("L'algue propre : engrais, biogaz, biochar.","Clean algae: fertilizer, biogas, biochar.","Alga limpia: abono, biogás, biochar.")},
     {e:"🌊",x:400,c:"#3E9BC4",l:T("Eau & sel","Water & salt","Agua y sal"),f:T("Pressée, l'eau salée repart à la mer.","Pressed out, the brine returns to the sea.","Prensada, el agua vuelve al mar.")},
     {e:"🪨",x:500,c:"#9AA08A",l:T("Sable & résidus","Sand & residue","Arena y residuo"),f:T("Le sable rendu à la plage, les déchets écartés.","Sand returned to the beach, waste removed.","La arena vuelve a la playa.")},
   ]
-  return(<g><defs><linearGradient id="solSort" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0A1714"/><stop offset=".5" stopColor="#155A5A"/><stop offset=".84" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/></linearGradient>
+  return(<g><defs><linearGradient id="solSort" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#120821"/><stop offset=".5" stopColor="#155A5A"/><stop offset=".84" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/></linearGradient>
     <style>{`@keyframes solBelt{to{stroke-dashoffset:-40}}.sol-belt{animation:solBelt 1.5s linear 1 both}@media(prefers-reduced-motion:reduce){.sol-belt{animation:none}}`}</style></defs>
     <rect width="800" height="600" fill="url(#solSort)"/>
     {/* convoyeur incliné */}
-    <path d="M110 220 L460 330" stroke="#0E2A26" strokeWidth="26" strokeLinecap="round"/>
-    <path className="sol-belt" d="M110 220 L460 330" stroke="#5FD3C9" strokeWidth="3" strokeDasharray="6 16" opacity=".55"/>
+    <path d="M110 220 L460 330" stroke="#241246" strokeWidth="26" strokeLinecap="round"/>
+    <path className="sol-belt" d="M110 220 L460 330" stroke="#3fd07f" strokeWidth="3" strokeDasharray="6 16" opacity=".55"/>
     {[150,232,314,396].map((x,i)=>{const y=220+(x-110)*(110/350);return <ellipse key={i} cx={x} cy={y-16} rx="13" ry="6" fill="#8a6c1c" style={{opacity:"calc(var(--p4)*1.3 - "+(i*0.18)+")"}}/>})}
     {/* tête de tri (l'engin) */}
-    <g transform="translate(470,300)"><rect x="-20" y="-24" width="48" height="32" rx="6" fill="#155A5A"/><rect x="-10" y="-36" width="22" height="14" rx="3" fill="#0E2A26"/><circle cx="1" cy="-42" r="3.6" fill="#5FD3C9"/></g>
+    <g transform="translate(470,300)"><rect x="-20" y="-24" width="48" height="32" rx="6" fill="#155A5A"/><rect x="-10" y="-36" width="22" height="14" rx="3" fill="#241246"/><circle cx="1" cy="-42" r="3.6" fill="#3fd07f"/></g>
     {/* 3 bacs triés, cliquables, remplis par --p4 */}
     {bins.map((b,i)=>(
       <g key={i} transform={"translate("+b.x+",430)"} role="button" tabIndex={0} aria-label={b.l} onClick={()=>{const ns=sel===i?null:i;setSel(ns);if(ns!=null){try{track("sg_sol_tap",{beat:"tri",item:["valorisable","eau_sel","sable"][i]})}catch(_){}}}} style={{cursor:"pointer"}}>
@@ -1155,7 +1158,7 @@ function SolSortScene({lang}){
         <text y="88" fontFamily="ui-monospace,monospace" fontSize="11" fill="#9FE1CB" textAnchor="middle">{b.l}</text>
       </g>))}
     {sel==null
-      ? <text x="400" y="120" fontFamily="ui-monospace,monospace" fontSize="13" fill="#5FD3C9" textAnchor="middle" style={{opacity:"var(--p4)"}}>👆 {T("touche un bac de tri","tap a sort bin","toca un contenedor")}</text>
+      ? <text x="400" y="120" fontFamily="ui-monospace,monospace" fontSize="13" fill="#3fd07f" textAnchor="middle" style={{opacity:"var(--p4)"}}>👆 {T("touche un bac de tri","tap a sort bin","toca un contenedor")}</text>
       : <g><rect x="140" y="96" width="520" height="58" rx="14" fill="rgba(7,32,30,.94)" stroke="#FFD884" strokeWidth="1.4"/><text x="400" y="120" fontFamily="system-ui,sans-serif" fontSize="15" fontWeight="800" fill="#fff" textAnchor="middle">{bins[sel].e+"  "+bins[sel].l}</text><text x="400" y="140" fontFamily="system-ui,sans-serif" fontSize="12.5" fill="rgba(255,255,255,.85)" textAnchor="middle">{bins[sel].f}</text></g>}
   </g>)
 }
@@ -1182,12 +1185,12 @@ function SolDebateScene({lang}){
     <circle cx="400" cy="250" r="58" fill="#FFD884" opacity=".5"/>
     <rect y="372" width="800" height="228" fill="#10403A"/>
     <path d="M120 466 Q400 440 680 466 L680 600 L120 600 Z" fill="#C9A86A"/>
-    <g opacity={vi===0?1:.45}><rect x="300" y="420" width="34" height="40" fill="#13302A"/><path d="M296 420 l21 -16 l21 16 Z" fill="#0E2A26"/><rect x="344" y="428" width="28" height="32" fill="#13302A"/></g>
-    <g opacity={vi===0?1:.45}><rect x="440" y="416" width="46" height="44" fill="#0E2A26"/><line x1="463" y1="416" x2="463" y2="398" stroke="#FFD884" strokeWidth="2"/><path d="M463 398 l14 5 l-14 5 Z" fill="#E8522A"/></g>
+    <g opacity={vi===0?1:.45}><rect x="300" y="420" width="34" height="40" fill="#13302A"/><path d="M296 420 l21 -16 l21 16 Z" fill="#241246"/><rect x="344" y="428" width="28" height="32" fill="#13302A"/></g>
+    <g opacity={vi===0?1:.45}><rect x="440" y="416" width="46" height="44" fill="#241246"/><line x1="463" y1="416" x2="463" y2="398" stroke="#FFD884" strokeWidth="2"/><path d="M463 398 l14 5 l-14 5 Z" fill="#E8522A"/></g>
     <g opacity={vi===1||vi===3?1:.35} transform="translate(520,452)"><path d="M-24 0 l48 0 l-8 14 l-32 0 Z" fill="#13302A"/></g>
     {vi===0&&<g><ellipse cx="317" cy="404" rx="34" ry="11" fill="#9AA08A" opacity=".4"/><text x="317" y="384" fontSize="13" textAnchor="middle">💨</text></g>}
     {vi===4&&<g stroke="#FFD884" strokeWidth="2" fill="none" opacity=".7"><path d="M250 200 Q330 330 400 430"/><path d="M400 190 Q400 310 400 430"/><path d="M550 200 Q470 330 400 430"/></g>}
-    {miVeil(400,150,"#3BA7A0","#5FD3C9")}
+    {miVeil(400,150,"#5b3a8e","#3fd07f")}
     {/* sélecteur de voix (bande centrale, mobile-safe) */}
     <g role="button" tabIndex={0} aria-label="prev" onClick={()=>{const n=(vi+4)%5;setVi(n);try{track("sg_sol_tap",{beat:"debat",item:"voix_"+n})}catch(_){}}} style={{cursor:"pointer"}}><circle cx="272" cy="232" r="17" fill="rgba(7,32,30,.7)" stroke="rgba(95,211,201,.4)"/><text x="272" y="238" fontSize="16" fill="#fff" textAnchor="middle">‹</text></g>
     <g role="button" tabIndex={0} aria-label="next" onClick={()=>{const n=(vi+1)%5;setVi(n);try{track("sg_sol_tap",{beat:"debat",item:"voix_"+n})}catch(_){}}} style={{cursor:"pointer"}}><circle cx="528" cy="232" r="17" fill="rgba(7,32,30,.7)" stroke="rgba(95,211,201,.4)"/><text x="528" y="238" fontSize="16" fill="#fff" textAnchor="middle">›</text></g>
@@ -1196,25 +1199,25 @@ function SolDebateScene({lang}){
     {/* vote 2×2 (safe band) ou résultat */}
     {!voted
       ? <g><text x="400" y="312" fontSize="13.5" fontWeight="800" fill="#fff" textAnchor="middle">{T("Toi, où doit aller l'argent ?","You — where should the money go?","¿A dónde va el dinero?")}</text>
-          {O.map((o,i)=>{const cx=i%2===0?336:464,cy=i<2?340:376;return(<g key={i} transform={"translate("+cx+","+cy+")"} role="button" tabIndex={0} aria-label={o} onClick={()=>vote(i)} style={{cursor:"pointer"}}><rect x="-62" y="-13" width="124" height="28" rx="9" fill="rgba(255,255,255,.08)" stroke="#5FD3C9" strokeWidth="1.1"/><text x="0" y="5" fontSize="10.5" fontWeight="700" fill="#fff" textAnchor="middle">{o}</text></g>)})}
+          {O.map((o,i)=>{const cx=i%2===0?336:464,cy=i<2?340:376;return(<g key={i} transform={"translate("+cx+","+cy+")"} role="button" tabIndex={0} aria-label={o} onClick={()=>vote(i)} style={{cursor:"pointer"}}><rect x="-62" y="-13" width="124" height="28" rx="9" fill="rgba(255,255,255,.08)" stroke="#3fd07f" strokeWidth="1.1"/><text x="0" y="5" fontSize="10.5" fontWeight="700" fill="#fff" textAnchor="middle">{o}</text></g>)})}
         </g>
       : <g><text x="400" y="306" fontSize="12.5" fontWeight="800" fill="#FFD884" textAnchor="middle">{T("Le quartier a voté — l'argent suit la donnée :","The community voted — money follows data:","La comunidad votó:")}</text>
-          {O.map((o,i)=>{const pct=Math.round(100*(votes[i]||0)/tot),y=324+i*19;return(<g key={i} transform={"translate(290,"+y+")"}><text x="0" y="9" fontSize="10" fill="rgba(255,255,255,.85)" textAnchor="end">{o}</text><rect x="8" y="0" width="170" height="11" rx="5.5" fill="rgba(255,255,255,.1)"/><rect x="8" y="0" width={Math.max(5,170*pct/100)} height="11" rx="5.5" fill="#5FD3C9"/><text x="186" y="9" fontSize="10" fontWeight="700" fill="#5FD3C9">{pct+"%"}</text></g>)})}
+          {O.map((o,i)=>{const pct=Math.round(100*(votes[i]||0)/tot),y=324+i*19;return(<g key={i} transform={"translate(290,"+y+")"}><text x="0" y="9" fontSize="10" fill="rgba(255,255,255,.85)" textAnchor="end">{o}</text><rect x="8" y="0" width="170" height="11" rx="5.5" fill="rgba(255,255,255,.1)"/><rect x="8" y="0" width={Math.max(5,170*pct/100)} height="11" rx="5.5" fill="#3fd07f"/><text x="186" y="9" fontSize="10" fontWeight="700" fill="#3fd07f">{pct+"%"}</text></g>)})}
         </g>}
   </g>)
 }
 function solutionsBeats(lang){
   const T=(fr,en,es)=>_t(lang,fr,en,es)
-  const SKY=id=>(<linearGradient id={id} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0A1714"/><stop offset=".5" stopColor="#155A5A"/><stop offset=".84" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/></linearGradient>)
+  const SKY=id=>(<linearGradient id={id} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#120821"/><stop offset=".5" stopColor="#155A5A"/><stop offset=".84" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/></linearGradient>)
   const SEA=id=>(<linearGradient id={id} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1A5852"/><stop offset="1" stopColor="#08251F"/></linearGradient>)
   return[
     // 0 — LE PROBLÈME : la ceinture atlantique qui dérive
     {eyebrow:T("LE PROBLÈME","THE PROBLEM","EL PROBLEMA"),heading:T("Une ceinture de 8 000 km","An 8,000 km belt","Un cinturón de 8.000 km"),
       sub:T("Depuis 2011, une marée d'algues traverse l'Atlantique, de l'Afrique aux Caraïbes. En 2025, un record : 38 millions de tonnes — le double de 2022.","Since 2011 a tide of algae crosses the Atlantic, Africa to the Caribbean. In 2025 a record: 38 million tonnes — double 2022.","Desde 2011 una marea cruza el Atlántico. En 2025 un récord: 38 millones de toneladas — el doble que 2022."),
       scene:<g><defs>{SKY("sol0")}</defs><rect width="800" height="600" fill="url(#sol0)"/>
-        <ellipse cx="400" cy="320" rx="320" ry="170" fill="#0E2A26" opacity=".55"/>
+        <ellipse cx="400" cy="320" rx="320" ry="170" fill="#241246" opacity=".55"/>
         <g style={{transform:"translateX(calc(var(--p0)*70px - 35px))"}}>{[200,258,316,374,432,490,548,606].map((x,i)=>(<ellipse key={i} cx={x} cy={310+Math.sin(i*1.3)*16} rx="24" ry="8.5" fill="#8a6c1c" opacity=".82"/>))}</g>
-        <circle cx="170" cy="312" r="9" fill="#5FD3C9"/><text x="170" y="346" fontFamily="ui-monospace,monospace" fontSize="12" fill="#9FE1CB" textAnchor="middle">{T("Afrique","Africa","África")}</text>
+        <circle cx="170" cy="312" r="9" fill="#3fd07f"/><text x="170" y="346" fontFamily="ui-monospace,monospace" fontSize="12" fill="#9FE1CB" textAnchor="middle">{T("Afrique","Africa","África")}</text>
         <circle cx="636" cy="312" r="9" fill="#FFD884"/><text x="636" y="346" fontFamily="ui-monospace,monospace" fontSize="12" fill="#FFD884" textAnchor="middle">{T("Caraïbes","Caribbean","Caribe")}</text>
         <text x="400" y="150" fontFamily="'Anton',sans-serif" fontSize="40" fill="#fff" textAnchor="middle" opacity=".9">2011 →</text>
       </g>},
@@ -1224,10 +1227,10 @@ function solutionsBeats(lang){
       scene:<g><defs>{SEA("sol1")}</defs><rect width="800" height="600" fill="#06121A"/>
         {[[120,90],[300,70],[520,110],[680,80],[420,150],[600,180]].map((s,i)=>(<circle key={i} cx={s[0]} cy={s[1]} r="1.3" fill="#fff" opacity=".5"/>))}
         <rect y="360" width="800" height="240" fill="url(#sol1)"/>
-        <path className="bsc-beam" d="M400 150 L300 360 L500 360 Z" fill="#5FD3C9" opacity={"calc(.08 + var(--p1)*.16)"}/>
-        <g style={{transform:"translateX(calc(var(--p1)*120px - 60px))"}}>{miVeil(400,140,"#3BA7A0","#5FD3C9")}</g>
+        <path className="bsc-beam" d="M400 150 L300 360 L500 360 Z" fill="#3fd07f" opacity={"calc(.08 + var(--p1)*.16)"}/>
+        <g style={{transform:"translateX(calc(var(--p1)*120px - 60px))"}}>{miVeil(400,140,"#5b3a8e","#3fd07f")}</g>
         {[330,400,470].map((x,i)=>(<circle key={i} cx={x} cy="400" r="7" fill="#FFD884" style={{opacity:"calc(var(--p1) - "+(i*0.18)+")"}}/>))}
-        <text x="400" y="470" fontFamily="ui-monospace,monospace" fontSize="13" fill="#5FD3C9" textAnchor="middle" style={{opacity:"var(--p1)"}}>AFAI · scan</text>
+        <text x="400" y="470" fontFamily="ui-monospace,monospace" fontSize="13" fill="#3fd07f" textAnchor="middle" style={{opacity:"var(--p1)"}}>AFAI · scan</text>
       </g>},
     // 2 — ON ARRÊTE EN MER : barrages flottants + bateau collecteur
     {eyebrow:T("ON AGIT EN MER","WE ACT AT SEA","ACTUAMOS EN EL MAR"),heading:T("Stopper avant la plage","Stop it before the beach","Detenerla antes de la playa"),
@@ -1240,7 +1243,7 @@ function solutionsBeats(lang){
         <g><line x1="200" y1="408" x2="600" y2="408" stroke="#FFC72C" strokeWidth="4" strokeDasharray="10 6"/>{[230,290,350,410,470,530].map((x,i)=>(<circle key={i} cx={x} cy="408" r="6" fill="#FFC72C"/>))}</g>
         <g style={{opacity:"var(--p2)"}}>{[260,330,400,470,540].map((x,i)=>(<ellipse key={i} cx={x} cy="392" rx="18" ry="6" fill="#7a5c14"/>))}</g>
         {/* bateau collecteur arrive avec --p2 */}
-        <g style={{transform:"translateX(calc(var(--p2)*180px - 40px))"}}><path d="M120 388 l70 0 l-12 22 l-46 0 Z" fill="#13302A"/><rect x="142" y="368" width="26" height="20" fill="#0E2A26"/><circle cx="155" cy="360" r="4" fill="#5FD3C9"/></g>
+        <g style={{transform:"translateX(calc(var(--p2)*180px - 40px))"}}><path d="M120 388 l70 0 l-12 22 l-46 0 Z" fill="#13302A"/><rect x="142" y="368" width="26" height="20" fill="#241246"/><circle cx="155" cy="360" r="4" fill="#3fd07f"/></g>
       </g>},
     // 3 — ON RAMASSE VITE : fenêtre 24-48h avant le H2S
     {eyebrow:T("ON RAMASSE VITE","WE COLLECT FAST","RECOGEMOS RÁPIDO"),heading:T("48 heures, pas plus","48 hours, no more","48 horas, no más"),
@@ -1249,7 +1252,7 @@ function solutionsBeats(lang){
         <rect y="360" width="800" height="240" fill="#C9A86A"/>
         {/* tas d'algues fraiches -> machine qui ramasse avec --p3 */}
         <g style={{opacity:"calc(1 - var(--p3)*.85)"}}>{[300,360,420,480].map((x,i)=>(<ellipse key={i} cx={x} cy="430" rx="40" ry="14" fill="#6b7a1c"/>))}</g>
-        <g style={{transform:"translateX(calc(var(--p3)*260px - 120px))"}}><rect x="120" y="396" width="60" height="36" rx="6" fill="#155A5A"/><circle cx="138" cy="436" r="12" fill="#0A1714"/><circle cx="168" cy="436" r="12" fill="#0A1714"/><path d="M180 412 l40 -10 l0 22 l-40 6 Z" fill="#FFC72C"/></g>
+        <g style={{transform:"translateX(calc(var(--p3)*260px - 120px))"}}><rect x="120" y="396" width="60" height="36" rx="6" fill="#155A5A"/><circle cx="138" cy="436" r="12" fill="#120821"/><circle cx="168" cy="436" r="12" fill="#120821"/><path d="M180 412 l40 -10 l0 22 l-40 6 Z" fill="#FFC72C"/></g>
         {/* horloge / compte a rebours */}
         <g transform="translate(620,150)" style={{opacity:"calc(.5 + var(--p3)*.5)"}}><circle r="40" fill="none" stroke="#FFD884" strokeWidth="4"/><line x1="0" y1="0" x2="0" y2="-26" stroke="#FFD884" strokeWidth="4" strokeLinecap="round" style={{transformBox:"fill-box",transformOrigin:"0px 0px",transform:"rotate(calc(var(--p3)*300deg))"}}/><text x="0" y="64" fontFamily="ui-monospace,monospace" fontSize="13" fill="#FFD884" textAnchor="middle">48h</text></g>
       </g>},
@@ -1275,7 +1278,7 @@ function solutionsBeats(lang){
         <rect y="360" width="800" height="240" fill="url(#sol5)"/>
         <line x1="-40" y1="392" x2="840" y2="392" stroke="#FFD884" strokeWidth="2.2" strokeDasharray="3 13" opacity=".5"/>
         <path d="M250 500 Q400 478 560 498 L820 492 L820 620 L250 620 Z" fill="#C9A86A"/>
-        <g style={{transform:"translateY(calc(var(--p7)*-10px))"}}>{miVeil(400,150,"#3BA7A0","#5FD3C9")}</g>
+        <g style={{transform:"translateY(calc(var(--p7)*-10px))"}}>{miVeil(400,150,"#5b3a8e","#3fd07f")}</g>
       </g>},
   ]
 }
@@ -1288,15 +1291,15 @@ function SolutionsStory({lang,onClose,onExit}){
   const onBeat=(b)=>{const lvl=Math.min(N,b+1);if(lvl>unlocked){setUnlocked(lvl);try{s("sg_sol_lvl",lvl)}catch(_){}try{sgUnlock("sol_p"+lvl)}catch(_){}}}
   const pct=Math.round(100*Math.min(unlocked,N)/N)
   return(
-    <div role="dialog" aria-label={_t(lang,"Les solutions sargasses","Sargassum solutions","Soluciones al sargazo")} style={{position:"absolute",inset:0,zIndex:1065,background:"#0A1714",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
+    <div role="dialog" aria-label={_t(lang,"Les solutions sargasses","Sargassum solutions","Soluciones al sargazo")} style={{position:"absolute",inset:0,zIndex:1065,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
       <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"fixed",top:"calc(12px + env(safe-area-inset-top))",right:12,zIndex:31,width:42,height:42,borderRadius:21,background:"rgba(10,23,20,.55)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:16,cursor:"pointer"}}>✕</button>
       {/* HUD : barre de déblocage de NOS données (jamais décroît). Pas un popup — fin bandeau chrome. */}
       <div aria-hidden style={{position:"fixed",top:"calc(15px + env(safe-area-inset-top))",left:14,right:66,zIndex:30,pointerEvents:"none"}}>
-        <div style={{fontSize:10,fontWeight:800,letterSpacing:".04em",color:"#5FD3C9",textShadow:"0 1px 4px rgba(0,0,0,.6)"}}>{unlocked}/{N} · {_t(lang,"données débloquées","data unlocked","datos desbloqueados")}</div>
-        <div style={{height:5,borderRadius:3,background:"rgba(255,255,255,.13)",overflow:"hidden",marginTop:4}}><div style={{height:"100%",width:pct+"%",background:"linear-gradient(90deg,#3BA7A0,#5FD3C9)",borderRadius:3,transition:"width .55s cubic-bezier(.22,1,.36,1)"}}/></div>
+        <div style={{fontSize:10,fontWeight:800,letterSpacing:".04em",color:"#3fd07f",textShadow:"0 1px 4px rgba(0,0,0,.6)"}}>{unlocked}/{N} · {_t(lang,"données débloquées","data unlocked","datos desbloqueados")}</div>
+        <div style={{height:5,borderRadius:3,background:"rgba(255,255,255,.13)",overflow:"hidden",marginTop:4}}><div style={{height:"100%",width:pct+"%",background:"linear-gradient(90deg,#5b3a8e,#3fd07f)",borderRadius:3,transition:"width .55s cubic-bezier(.22,1,.36,1)"}}/></div>
       </div>
       {/* sol_exit_cta : le dernier CTA ouvre le premium (intent chaud post-éducation) */}
-      <StoryEngine beats={beats} lang={lang} accent="#5FD3C9" ev="sg_solutions_beat" onCTA={onExit||onClose} onBeat={onBeat}/>
+      <StoryEngine beats={beats} lang={lang} accent="#3fd07f" ev="sg_solutions_beat" onCTA={onExit||onClose} onBeat={onBeat}/>
     </div>
   )
 }
@@ -1323,21 +1326,21 @@ function mapIntroBeats(lang,counts){
     {eyebrow:T("LE VEILLEUR SCANNE","THE WATCHER SCANS","EL VIGÍA ESCANEA"),heading:T("Ta côte, vue du ciel","Your coast, from above","Tu costa, desde el cielo"),
       sub:T("Chaque jour, le satellite balaie le littoral. Le Veilleur lit l'eau pour toi.","Every day the satellite sweeps the coast. The Watcher reads the water for you.","Cada día el satélite barre la costa."),
       scene:<g>
-        <defs><linearGradient id="mi0sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0A1714"/><stop offset=".5" stopColor="#155A5A"/><stop offset=".84" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/></linearGradient><linearGradient id="mi0sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1A5852"/><stop offset="1" stopColor="#08251F"/></linearGradient></defs>
+        <defs><linearGradient id="mi0sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#120821"/><stop offset=".5" stopColor="#155A5A"/><stop offset=".84" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/></linearGradient><linearGradient id="mi0sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1A5852"/><stop offset="1" stopColor="#08251F"/></linearGradient></defs>
         <rect width="800" height="600" fill="url(#mi0sky)"/>
         <path d="M348 300 a57 57 0 0 1 114 0 Z" fill="#FFD884" opacity=".85"/>
         <rect y="360" width="800" height="240" fill="url(#mi0sea)"/>
-        <line x1="-40" y1="388" x2="840" y2="388" stroke="#FFD884" strokeWidth="2.2" strokeDasharray="3 13" opacity=".5"/><line x1="-40" y1="420" x2="840" y2="420" stroke="#5FD3C9" strokeWidth="1.6" strokeDasharray="2 17" opacity=".3"/>
+        <line x1="-40" y1="388" x2="840" y2="388" stroke="#FFD884" strokeWidth="2.2" strokeDasharray="3 13" opacity=".5"/><line x1="-40" y1="420" x2="840" y2="420" stroke="#3fd07f" strokeWidth="1.6" strokeDasharray="2 17" opacity=".3"/>
         <path d="M250 472 Q390 444 530 468 Q630 484 820 460 L820 620 L250 620 Z" fill="#13302A"/>
-        <g style={{transform:"translateX(calc(var(--p0)*170px - 30px))"}}>{miVeil(330,250,"#3BA7A0","#5FD3C9")}</g>
+        <g style={{transform:"translateX(calc(var(--p0)*170px - 30px))"}}>{miVeil(330,250,"#5b3a8e","#3fd07f")}</g>
       </g>},
     {eyebrow:T("TON LITTORAL AUJOURD'HUI","YOUR COAST TODAY","TU COSTA HOY"),heading:`${c.clean} ${T("propres","clean","limpias")} · ${c.avoid} ${T("à éviter","to avoid","a evitar")}`,
       sub:T("L'état du jour, plage par plage. Le vert respire, le corail prévient.","Today's status, beach by beach. Green breathes, coral warns.","El estado de hoy, playa por playa."),
       scene:<g>
-        <rect width="800" height="600" fill="#0A1714"/><rect width="800" height="600" fill="#0E2A26" opacity=".55"/>
+        <rect width="800" height="600" fill="#120821"/><rect width="800" height="600" fill="#241246" opacity=".55"/>
         <g style={{opacity:"calc(.3 + var(--p1)*.7)",transformBox:"fill-box",transformOrigin:"center",transform:"scale(calc(.92 + var(--p1)*.08))"}}>
-          <g transform="translate(300,296)"><rect x="-60" y="-42" width="120" height="84" rx="16" fill="#0E2A26" stroke="#22C55E" strokeWidth="1.6"/><circle cx="-32" cy="-9" r="9" fill="#22C55E"/><text x="6" y="3" fontFamily="'Anton',sans-serif" fontSize="36" fill="#fff" textAnchor="middle">{c.clean}</text><text x="0" y="27" fontFamily="ui-monospace,monospace" fontSize="12" fill="#9FE1CB" textAnchor="middle">{T("PROPRES","CLEAN","LIMPIAS")}</text></g>
-          <g transform="translate(500,296)"><rect x="-60" y="-42" width="120" height="84" rx="16" fill="#0E2A26" stroke="#E8522A" strokeWidth="1.6"/><circle cx="-32" cy="-9" r="9" fill="#E8522A"/><text x="6" y="3" fontFamily="'Anton',sans-serif" fontSize="36" fill="#fff" textAnchor="middle">{c.avoid}</text><text x="0" y="27" fontFamily="ui-monospace,monospace" fontSize="12" fill="#F4845F" textAnchor="middle">{T("À ÉVITER","AVOID","EVITAR")}</text></g>
+          <g transform="translate(300,296)"><rect x="-60" y="-42" width="120" height="84" rx="16" fill="#241246" stroke="#22C55E" strokeWidth="1.6"/><circle cx="-32" cy="-9" r="9" fill="#22C55E"/><text x="6" y="3" fontFamily="'Anton',sans-serif" fontSize="36" fill="#fff" textAnchor="middle">{c.clean}</text><text x="0" y="27" fontFamily="ui-monospace,monospace" fontSize="12" fill="#9FE1CB" textAnchor="middle">{T("PROPRES","CLEAN","LIMPIAS")}</text></g>
+          <g transform="translate(500,296)"><rect x="-60" y="-42" width="120" height="84" rx="16" fill="#241246" stroke="#E8522A" strokeWidth="1.6"/><circle cx="-32" cy="-9" r="9" fill="#E8522A"/><text x="6" y="3" fontFamily="'Anton',sans-serif" fontSize="36" fill="#fff" textAnchor="middle">{c.avoid}</text><text x="0" y="27" fontFamily="ui-monospace,monospace" fontSize="12" fill="#F4845F" textAnchor="middle">{T("À ÉVITER","AVOID","EVITAR")}</text></g>
         </g>
         <text x="400" y="420" fontFamily="ui-monospace,monospace" fontSize="13" fill="#7AADC4" textAnchor="middle" opacity=".8">{c.watch} {T("à surveiller","to watch","a vigilar")}</text>
       </g>},
@@ -1348,25 +1351,25 @@ function mapIntroBeats(lang,counts){
         <g opacity=".2" stroke="#1E4640" strokeWidth="1"><path d="M250 170 L560 170 M250 290 L560 290 M250 410 L560 410 M320 110 L320 470 M405 110 L405 470 M490 110 L490 470"/></g>
         <circle cx="344" cy="220" r="11" fill="#22C55E"/><circle cx="476" cy="180" r="11" fill="#F59E0B"/><circle cx="510" cy="320" r="11" fill="#E8522A"/><circle cx="386" cy="372" r="11" fill="#22C55E"/>
         <g style={{transformBox:"fill-box",transformOrigin:"405px 250px",transform:"scale(calc(1 + var(--p2)*.9))",opacity:"calc(1 - var(--p2)*.6)"}}><circle cx="405" cy="250" r="16" fill="none" stroke="#FFE08A" strokeWidth="2"/></g>
-        <circle cx="405" cy="250" r="13" fill="#22C55E"/><circle cx="405" cy="250" r="13" fill="none" stroke="#0A1714" strokeWidth="2"/>
-        <g style={{opacity:"var(--p2)"}}><g transform="translate(430,232)"><rect width="150" height="56" rx="12" fill="#0E2A26" stroke="#22C55E" strokeWidth="1.5"/><circle cx="24" cy="20" r="8" fill="#22C55E"/><text x="42" y="26" fontFamily="'Anton',sans-serif" fontSize="17" fill="#fff">{T("VAS-Y","GO","¡VE!")}</text><text x="16" y="44" fontFamily="ui-monospace,monospace" fontSize="11" fill="#9FE1CB">{T("verdict du jour →","today's verdict →","veredicto →")}</text></g></g>
+        <circle cx="405" cy="250" r="13" fill="#22C55E"/><circle cx="405" cy="250" r="13" fill="none" stroke="#120821" strokeWidth="2"/>
+        <g style={{opacity:"var(--p2)"}}><g transform="translate(430,232)"><rect width="150" height="56" rx="12" fill="#241246" stroke="#22C55E" strokeWidth="1.5"/><circle cx="24" cy="20" r="8" fill="#22C55E"/><text x="42" y="26" fontFamily="'Anton',sans-serif" fontSize="17" fill="#fff">{T("VAS-Y","GO","¡VE!")}</text><text x="16" y="44" fontFamily="ui-monospace,monospace" fontSize="11" fill="#9FE1CB">{T("verdict du jour →","today's verdict →","veredicto →")}</text></g></g>
         <g transform="translate(414,300)" style={{transform:"translate(414px,300px) translateY(calc(var(--p2)*-12px))"}}><path d="M0 0 q-7 -22 6 -30 q14 -8 13 8 l-2 26 Z" fill="#FFE08A"/><circle cx="2" cy="2" r="4" fill="#FFC72C"/></g>
       </g>},
     {eyebrow:T("LA CARTE EST PRÊTE","THE MAP IS READY","EL MAPA ESTÁ LISTO"),heading:T("Ouvre ta carte live","Open your live map","Abre tu mapa en vivo"),
       sub:T("Touche, zoome, compare. Le Veilleur reste serein tant que ton eau l'est.","Tap, zoom, compare. The Watcher stays calm while your water is.","Toca, acerca, compara."),
       cta:T("Ouvrir la carte live →","Open the live map →","Abrir el mapa →"),
       scene:<g>
-        <defs><linearGradient id="mi3sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0A1714"/><stop offset=".55" stopColor="#11463E"/><stop offset="1" stopColor="#FFC72C"/></linearGradient></defs>
+        <defs><linearGradient id="mi3sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#120821"/><stop offset=".55" stopColor="#11463E"/><stop offset="1" stopColor="#FFC72C"/></linearGradient></defs>
         <rect width="800" height="600" fill="url(#mi3sky)"/>
-        <g style={{opacity:"calc(.25 + var(--p3)*.55)"}} stroke="#3BA7A0" strokeWidth="1"><path d="M250 160 L560 160 M250 260 L560 260 M250 360 L560 360 M320 110 L320 420 M405 110 L405 420 M490 110 L490 420"/></g>
+        <g style={{opacity:"calc(.25 + var(--p3)*.55)"}} stroke="#5b3a8e" strokeWidth="1"><path d="M250 160 L560 160 M250 260 L560 260 M250 360 L560 360 M320 110 L320 420 M405 110 L405 420 M490 110 L490 420"/></g>
         <g style={{opacity:"var(--p3)"}}><circle cx="340" cy="220" r="8" fill="#22C55E"/><circle cx="470" cy="300" r="8" fill="#22C55E"/><circle cx="420" cy="380" r="8" fill={serene?"#22C55E":"#F59E0B"}/></g>
-        {miVeil(405,260,serene?"#5FD3C9":"#F59E0B",serene?"#5FD3C9":"#FFD27A")}
+        {miVeil(405,260,serene?"#3fd07f":"#F59E0B",serene?"#3fd07f":"#FFD27A")}
       </g>},
   ]
 }
 function MapIntroStory({lang,counts,onEnterMap}){
   return(
-    <div role="dialog" aria-label={_t(lang,"Présentation de la carte","Map intro","Intro del mapa")} style={{position:"absolute",inset:0,zIndex:1050,background:"#0A1714",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
+    <div role="dialog" aria-label={_t(lang,"Présentation de la carte","Map intro","Intro del mapa")} style={{position:"absolute",inset:0,zIndex:1050,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
       <button onClick={()=>{track("sg_map_intro_skip",{});onEnterMap()}} style={{position:"fixed",top:"calc(12px + env(safe-area-inset-top))",right:12,zIndex:30,padding:"8px 14px",borderRadius:20,background:"rgba(10,23,20,.6)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",color:"rgba(255,255,255,.85)",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{_t(lang,"Passer","Skip","Saltar")} →</button>
       <StoryEngine beats={mapIntroBeats(lang,counts)} lang={lang} ev="sg_map_beat" onCTA={()=>{track("sg_map_intro_enter",{});onEnterMap()}}/>
     </div>
@@ -1382,8 +1385,8 @@ function beachStoryBeats(beach,forecast,lang){
   const T=(fr,en,es)=>_t(lang,fr,en,es)
   const vm=verdictMeta(beach.status,lang)
   const mood=moodFromScore(beach.score)
-  const mwing=mood==="serein"?"#3BA7A0":mood==="vigilant"?"#F59E0B":"#E8522A"
-  const mlens=mood==="serein"?"#5FD3C9":mood==="vigilant"?"#FFD27A":"#F4845F"
+  const mwing=mood==="serein"?"#5b3a8e":mood==="vigilant"?"#F59E0B":"#E8522A"
+  const mlens=mood==="serein"?"#3fd07f":mood==="vigilant"?"#FFD27A":"#F4845F"
   const fc=forecast||[]
   const RANK={clean:0,moderate:1,avoid:2}
   let turn=null
@@ -1408,7 +1411,7 @@ function beachStoryBeats(beach,forecast,lang){
       scene:<g>
         <rect width="800" height="600" fill="#06211E"/><circle cx="400" cy="206" r="132" fill="#0A2E2A"/>
         <g style={{transform:"translateX(calc(var(--p1)*70px - 35px))"}}><line x1="250" y1="206" x2="560" y2="206" stroke="#FFC72C" strokeWidth="2" strokeDasharray="5 8" opacity=".55"/></g>
-        {miVeil(405,206,"#3BA7A0","#5FD3C9")}
+        {miVeil(405,206,"#5b3a8e","#3fd07f")}
         {[0,1,2,3,4].map(i=>(<g key={i} style={{opacity:`calc(var(--p1)*1.5 - ${i*0.2})`}}><circle cx={300+i*50} cy="372" r="11" fill={dotColor((fc[i]&&fc[i].status)||beach.status)}/></g>))}
         <text x="400" y="424" fontFamily="ui-monospace,monospace" fontSize="12" fill="#7AADC4" textAnchor="middle" opacity=".7">{T("auj","now","hoy")} → +5j</text>
       </g>},
@@ -2885,14 +2888,14 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
     {pwBeat&&beatOpen&&(()=>{
       const mood=VEILLEUR_MOOD[moodFromStatus(visible[0]?.status||"clean")]||VEILLEUR_MOOD.serein
       const allClean=visible.every(d=>d.status==="clean")
-      const stCol=s=>s==="clean"?"#5FD3C9":s==="moderate"?"#FFD27A":"#F4845F"
+      const stCol=s=>s==="clean"?"#3fd07f":s==="moderate"?"#FFD27A":"#F4845F"
       const G={background:"linear-gradient(135deg,#FFE47A,#FFC72C 55%,#E89400)",WebkitBackgroundClip:"text",backgroundClip:"text",WebkitTextFillColor:"transparent",color:"transparent"}
       const promiseEl=allClean
         ?(lang==="es"?(<>Tu costa está limpia. <span style={G}>Mañana</span>, el Vigía ya lo ha visto.</>):lang==="en"?(<>Your coast is clear. <span style={G}>Tomorrow</span>, the Watchman has already seen it.</>):(<>Ta côte est propre. <span style={G}>Demain</span>, le Veilleur l'a déjà vu.</>))
         :(lang==="es"?(<>El Vigía vigila tu costa <span style={G}>cada día</span>, antes que tú.</>):lang==="en"?(<>The Watchman watches your coast <span style={G}>every day</span>, before you.</>):(<>Le Veilleur garde ta côte <span style={G}>chaque jour</span>, avant toi.</>))
       const proof=_t(lang,`Fiable à ${Math.round(firstConf)}% demain · vérifié satellite`,`${Math.round(firstConf)}% confidence tomorrow · satellite-verified`,`${Math.round(firstConf)}% de confianza mañana · verificado por satélite`)
       return(
-        <div className="pw-beat-in" style={{marginTop:10,borderRadius:16,overflow:"hidden",border:"1px solid rgba(0,0,0,.06)",background:"#0D1E1C"}}>
+        <div className="pw-beat-in" style={{marginTop:10,borderRadius:16,overflow:"hidden",border:"1px solid rgba(0,0,0,.06)",background:"#190c2c"}}>
           <style>{`@keyframes pwBeatIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}.pw-beat-in{animation:pwBeatIn .34s cubic-bezier(.22,1,.36,1) both}@media(prefers-reduced-motion:reduce){.pw-beat-in{animation:none}}`}</style>
           <svg viewBox="0 0 400 116" preserveAspectRatio="xMidYMid slice" style={{width:"100%",height:108,display:"block"}} aria-hidden="true">
             <defs>
@@ -2970,7 +2973,7 @@ function ForecastLanding({beach,lang,island,sargData,isPremium,onPremium,onOpenB
               </div>
               <div style={{display:"flex",alignItems:"center",gap:6,marginTop:2}}>
                 {isLive&&<span style={{width:7,height:7,borderRadius:"50%",background:"#22C55E",flexShrink:0}}/>}
-                <span style={{fontSize:11,fontWeight:700,color:isLive?"#5FD3C9":"rgba(255,255,255,.6)"}}>
+                <span style={{fontSize:11,fontWeight:700,color:isLive?"#3fd07f":"rgba(255,255,255,.6)"}}>
                   {isLive?_t(lang,"EN DIRECT","LIVE","EN DIRECTO"):freshLbl}
                 </span>
                 {isLive&&freshLbl&&<span style={{fontSize:10,color:"rgba(255,255,255,.45)"}}>· {freshLbl}</span>}
@@ -3318,7 +3321,7 @@ function PlanBThumb({i}){
       style={{width:"100%",height:"100%",display:"block"}}>
       <rect width="172" height="90" fill="#FFE9B0"/>
       <circle cx="132" cy="22" r="13" fill="#FFF1C4"/>
-      <rect y="34" width="172" height="34" fill="#1EC8B0"/>
+      <rect y="34" width="172" height="34" fill="#ff2db8"/>
       <rect y="33" width="172" height="2" fill="#fff" opacity=".5"/>
       <path d="M0,62 Q86,56 172,62 L172,90 L0,90 Z" fill="#F2D9A0"/>
       {Array.from({length:palms}).map((_,k)=>(
@@ -3374,7 +3377,7 @@ function PlanBPanel({beach,allBeaches,userPos,lang,sargData,onBeachClick,onClose
             <div style={{position:"relative",height:74,background:"#FFE9B0"}}>
               <PlanBThumb i={i}/>
               <span style={{position:"absolute",top:7,left:7,fontSize:9,fontWeight:800,letterSpacing:".06em",
-                color:"#0A1714",background:"#22C55E",borderRadius:6,padding:"3px 6px"}}>{_t(lang,"PROPRE","CLEAN","LIMPIA")}</span>
+                color:"#120821",background:"#22C55E",borderRadius:6,padding:"3px 6px"}}>{_t(lang,"PROPRE","CLEAN","LIMPIA")}</span>
               {i===0&&<span style={{position:"absolute",top:7,right:7,fontSize:9,fontWeight:800,letterSpacing:".04em",
                 color:"#1A2B26",background:"#FFC72C",borderRadius:6,padding:"3px 6px"}}>{_t(lang,"le + sûr","best pick","mejor")}</span>}
             </div>
@@ -3388,7 +3391,7 @@ function PlanBPanel({beach,allBeaches,userPos,lang,sargData,onBeachClick,onClose
                 </span>
                 {typeof b.score==="number"&&<span style={{fontWeight:800,color:"#22C55E",fontSize:13}}>{b.score}<span style={{fontSize:10,opacity:.7,fontWeight:700}}>/100</span></span>}
               </div>
-              <div style={{marginTop:9,fontSize:12,fontWeight:800,color:"#009E8E"}}>{_t(lang,"M'y emmener","Take me there","Llévame")} →</div>
+              <div style={{marginTop:9,fontSize:12,fontWeight:800,color:"#d6249f"}}>{_t(lang,"M'y emmener","Take me there","Llévame")} →</div>
             </div>
           </button>
         ))}
@@ -4257,7 +4260,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
           {!isPremium&&!fcUp&&forecast&&forecast[1]&&(
             <div onClick={()=>{track("sg_forecast_teaser_click",{beach_id:beach.id,tomorrow:forecast[1].status});onPremiumClick("forecast_teaser")}}
               style={{padding:"14px 16px",borderRadius:16,marginBottom:12,cursor:"pointer",
-                background:"linear-gradient(135deg,#0D1E1C,#142824)",
+                background:"linear-gradient(135deg,#190c2c,#142824)",
                 border:"1px solid rgba(232,168,0,.2)",
                 display:"flex",alignItems:"center",gap:14,
                 boxShadow:"0 4px 20px rgba(0,0,0,.12)",
@@ -4739,7 +4742,7 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap,sargData,on
   return(
     <div style={{height:"100%",overflowY:"auto",
       paddingTop:"calc(var(--sg-header-offset,108px) + env(safe-area-inset-top,0px))",paddingBottom:"calc(70px + env(safe-area-inset-bottom,12px))",
-      background:"radial-gradient(120% 78% at 72% 0%, rgba(201,126,58,.28), rgba(242,176,94,.08) 42%, transparent 66%), linear-gradient(180deg,#0B2230 0%,#103029 40%,#0A1714 100%)",
+      background:"radial-gradient(120% 78% at 72% 0%, rgba(201,126,58,.28), rgba(242,176,94,.08) 42%, transparent 66%), linear-gradient(180deg,#0B2230 0%,#103029 40%,#120821 100%)",
       color:"#fff",maxWidth:600,margin:"0 auto"}}>
       {/* Editorial kicker */}
       <div style={{padding:"10px 20px 8px",display:"flex",alignItems:"baseline",gap:8}}>
@@ -5042,7 +5045,7 @@ function BeachPicker({island,allBeaches,onSelect,lang,userPos,onDismiss}){
     <div onClick={e=>{if(e.target===e.currentTarget&&onDismiss)onDismiss()}} style={{
       position:"absolute",top:0,left:0,right:0,bottom:0,zIndex:750,
       display:"flex",flexDirection:"column",
-      background:"linear-gradient(180deg,#0D1E1C 0%,#0A1714 100%)",
+      background:"linear-gradient(180deg,#190c2c 0%,#120821 100%)",
       animation:"fadeIn .3s ease",overflow:"auto",
     }}>
       {/* Ambient orbs */}
@@ -5539,7 +5542,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
             <div style={{
               fontSize:9,fontWeight:800,
               letterSpacing:".14em",textTransform:"uppercase",
-              color:"#009E8E",opacity:.85,marginBottom:1,
+              color:"#d6249f",opacity:.85,marginBottom:1,
             }}>
               {myPickLead} · {greet}
             </div>
@@ -5568,7 +5571,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
             fontSize:12,fontWeight:800,color:"#fff",
             flexShrink:0,whiteSpace:"nowrap",
             padding:"10px 18px",borderRadius:100,
-            background:"linear-gradient(135deg,#00C2B0 0%,#009E8E 100%)",
+            background:"linear-gradient(135deg,#00C2B0 0%,#d6249f 100%)",
             boxShadow:"0 6px 18px rgba(0,158,142,.45), inset 0 1px 0 rgba(255,255,255,.35)",
             letterSpacing:".03em",
           }}>
@@ -6488,7 +6491,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const _constel=useMemo(()=>{
     const seed=n=>{const x=Math.sin(n*127.1+74.7)*43758.5453;return x-Math.floor(x)}
     return [..._islandLvls].sort((a,b)=>((b.status==="avoid")-(a.status==="avoid"))||((b.score||0)-(a.score||0))).slice(0,14)
-      .map((b,i)=>{const row=i%3;const x=18+seed(i+1)*364;const y=111+row*10+seed(i+50.3)*5;const col=b.status==="clean"?"#5FD3C9":b.status==="moderate"?"#FFD27A":"#F4845F";return{x:+x.toFixed(1),y:+y.toFixed(1),col,top:!!(_topBeach&&b.id===_topBeach.id)}})
+      .map((b,i)=>{const row=i%3;const x=18+seed(i+1)*364;const y=111+row*10+seed(i+50.3)*5;const col=b.status==="clean"?"#3fd07f":b.status==="moderate"?"#FFD27A":"#F4845F";return{x:+x.toFixed(1),y:+y.toFixed(1),col,top:!!(_topBeach&&b.id===_topBeach.id)}})
   },[_islandLvls,_topBeach])
   // Value card 02 : destination = vraie plage propre du jour calculée du live —
   // plus aucun nom de plage inventé ni changement d'état fabriqué.
@@ -6901,7 +6904,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
       <div style={{position:"fixed",inset:0,zIndex:1100,overflow:"hidden"}}>
         <svg style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block"}} viewBox="0 0 390 720" preserveAspectRatio="xMidYMid slice">
           <defs>
-            <linearGradient id="hiSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0B2230"/><stop offset=".46" stopColor="#155A5A"/><stop offset=".74" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/></linearGradient>
+            <linearGradient id="hiSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#2e1a5e"/><stop offset=".46" stopColor="#6a2f9e"/><stop offset=".74" stopColor="#b93a8e"/><stop offset="1" stopColor="#ff9b3d"/></linearGradient>
             <linearGradient id="hiSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1A5852"/><stop offset="1" stopColor="#08251F"/></linearGradient>
             <radialGradient id="hiSun" cx="50%" cy="50%" r="50%"><stop offset="0" stopColor="#FFE6A8" stopOpacity=".95"/><stop offset=".4" stopColor="#FFD884" stopOpacity=".55"/><stop offset="1" stopColor="#FFD884" stopOpacity="0"/></radialGradient>
             <linearGradient id="hiLand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1C3138"/><stop offset="1" stopColor="#16242A"/></linearGradient>
@@ -6986,8 +6989,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         // est UNE scène continue, pas une feuille sombre. Holdout garde le sombre.
         /* halftone Ben-Day comic (réf Spider-Verse) par-dessus le dégradé — texte intact */
         background:pwComic
-          ? "radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 0 0/9px 9px,radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 4.5px 4.5px/9px 9px,linear-gradient(170deg,#2bb6ef,#5fc8ef 26%,#ffb36b 68%,#ff8a3d)"
-          : "radial-gradient(rgba(255,255,255,.05) 1.2px,transparent 1.3px) 0 0/8px 8px,radial-gradient(rgba(255,210,90,.06) 1.2px,transparent 1.3px) 4px 4px/8px 8px,"+(pwConstel?"linear-gradient(180deg,#0B2230 0%,#0E2A26 20%,#08251F 52%,#0A1714 100%)":"linear-gradient(145deg,#0D1E1C,#0A1714)"),
+          ? "radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 0 0/9px 9px,radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 4.5px 4.5px/9px 9px,linear-gradient(170deg,#ff9b6b,#ff6f9d 30%,#ffb36b 68%,#ff8a3d)"
+          : "radial-gradient(rgba(255,255,255,.05) 1.2px,transparent 1.3px) 0 0/8px 8px,radial-gradient(rgba(255,210,90,.06) 1.2px,transparent 1.3px) 4px 4px/8px 8px,"+(pwConstel?"linear-gradient(180deg,#2e1a5e 0%,#3a1f63 20%,#241246 52%,#160a26 100%)":"linear-gradient(145deg,#241246,#160a26)"),
         borderRadius:"24px 24px 0 0",padding:"28px 24px 20px",
         color:pwComic?"#0d0b14":"#e6edf3",maxHeight:"85vh",overflow:"auto",
       }}>
@@ -7026,9 +7029,9 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               <rect width="400" height="120" fill="url(#pwSky)"/>
               {[-40,-20,0,20,40].map((a,i)=>(<path key={i} d="M200 116 L192 28 L208 28 Z" fill="#FFD884" opacity=".08" transform={"rotate("+a+" 200 116)"}/>))}
               <circle cx="200" cy="116" r="56" fill="#FFD884" opacity=".22"/><circle cx="200" cy="116" r="30" fill="#FFD884" opacity=".42"/>
-              {miVeil(200,52,"#2A6B66","#5FD3C9")}
+              {miVeil(200,52,"#2A6B66","#3fd07f")}
             </svg>
-            <div aria-hidden style={{position:"absolute",left:0,right:0,bottom:0,height:46,background:"linear-gradient(180deg,transparent,#0D1E1C)"}}/>
+            <div aria-hidden style={{position:"absolute",left:0,right:0,bottom:0,height:46,background:"linear-gradient(180deg,transparent,#190c2c)"}}/>
           </div>
           <div style={{textAlign:"center",margin:"6px 0 16px"}}>
             <div style={{fontSize:16,fontWeight:800,color:"#fff",lineHeight:1.3}}>{_t(lang,"Le Veilleur garde ta côte à l'œil.","The Watchman keeps an eye on your coast.","El Vigía vigila tu costa.")}</div>
@@ -7078,9 +7081,9 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
                 {guide&&<circle className="pc-star" cx={guide.x} cy={guide.y} r="9" fill={m.lens} opacity=".22"/>}
                 {_constel.map((p,i)=>(<circle key={i} className="pc-dot" style={{animationDelay:(i*38)+"ms"}} cx={p.x} cy={p.y} r={p.top?4:2.4} fill={p.col}/>))}
                 <g>{miVeil(200,48,m.wing,m.lens)}</g>
-                <g><rect x="128" y="120" width="144" height="18" rx="9" fill="#0A1714" opacity=".4"/><text x="200" y="133" fontFamily="ui-monospace,monospace" fontSize="11" fill="#9ADCD4" opacity=".92" textAnchor="middle">{_cleanCount}/{_totalCount} {propres}</text></g>
+                <g><rect x="128" y="120" width="144" height="18" rx="9" fill="#120821" opacity=".4"/><text x="200" y="133" fontFamily="ui-monospace,monospace" fontSize="11" fill="#9ADCD4" opacity=".92" textAnchor="middle">{_cleanCount}/{_totalCount} {propres}</text></g>
               </svg>
-              <div aria-hidden style={{position:"absolute",left:0,right:0,bottom:0,height:42,background:"linear-gradient(180deg,transparent,#0D1E1C)"}}/>
+              <div aria-hidden style={{position:"absolute",left:0,right:0,bottom:0,height:42,background:"linear-gradient(180deg,transparent,#190c2c)"}}/>
             </div>
             <div style={{textAlign:"center",margin:"8px 0 16px"}}>
               <div style={{fontSize:15.5,fontWeight:800,color:"#fff",lineHeight:1.32}}>{promiseEl}</div>
@@ -7097,7 +7100,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             Back arrow returns to the paywall. Continue → actual redirect. */}
         {showPrelude&&(
         <div style={{position:"absolute",inset:0,zIndex:10,
-          background:"linear-gradient(145deg,#0D1E1C,#0A1714)",
+          background:"linear-gradient(145deg,#190c2c,#120821)",
           borderRadius:"24px 24px 0 0",padding:"28px 24px 20px",overflow:"auto",
           display:"flex",flexDirection:"column"}}>
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
@@ -7393,10 +7396,10 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         )}
 
         {/* CTA section — sticky so it's always visible even if user hasn't scrolled.
-            Solid #0A1714 bg + fade-in shadow ABOVE so card 03 doesn't bleed through
+            Solid #120821 bg + fade-in shadow ABOVE so card 03 doesn't bleed through
             (was: transparent→ink gradient that made WEEKEND card visible under the
             plan toggle per screenshot 05-paywall-control.png). */}
-        <div style={{position:"sticky",bottom:0,background:"#0A1714",
+        <div style={{position:"sticky",bottom:0,background:"#120821",
           paddingTop:12,paddingBottom:12,marginLeft:-24,marginRight:-24,paddingLeft:24,paddingRight:24,
           boxShadow:"0 -12px 16px -8px rgba(10,23,20,.85)"}}>
 
@@ -7653,7 +7656,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
       {/* Étape paiement ON-SITE — overlay sombre au-dessus du modal (z 1300),
           design maison : email + Apple/Google Pay + Payment Element (carte).
           TOUJOURS rendu (caché) pour que les Elements montés persistent. */}
-      <div style={{position:"fixed",inset:0,zIndex:1300,background:"linear-gradient(145deg,#0D1E1C,#0A1714)",
+      <div style={{position:"fixed",inset:0,zIndex:1300,background:"linear-gradient(145deg,#190c2c,#120821)",
         display:"flex",flexDirection:"column",overflow:"auto",
         // hors-écran (PAS visibility:hidden : les iframes Stripe ne bootent pas
         // dans un conteneur hidden — le pré-mount resterait gelé)
@@ -8040,7 +8043,7 @@ function ScoreReveal({beach,lang}){
         <div style={{height:8,borderRadius:99,overflow:"hidden",position:"relative",
           background:"linear-gradient(90deg,#16A34A 0%,#16A34A 18.75%,#E07800 18.75%,#E07800 50%,#E8522A 50%)"}}>
           <div style={{position:"absolute",top:-2,bottom:-2,width:3,borderRadius:2,
-            background:"#0A1714",left:`calc(${pct.toFixed(1)}% - 1px)`,
+            background:"#120821",left:`calc(${pct.toFixed(1)}% - 1px)`,
             boxShadow:"0 0 0 2px #fff"}}/>
         </div>
         <div style={{display:"flex",justifyContent:"space-between",fontSize:9,
@@ -8137,7 +8140,7 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
         {!sent?(<>
           <div style={{width:54,height:54,borderRadius:"50%",background:"rgba(95,211,201,.15)",
             display:"flex",alignItems:"center",justifyContent:"center",marginBottom:20}}>
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#5FD3C9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#3fd07f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
               <polyline points="22,6 12,13 2,6"></polyline>
             </svg>
@@ -8174,7 +8177,7 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
             <button type="submit" style={{
               position:"absolute",right:6,top:6,bottom:6,
               width:44,borderRadius:999,border:"none",cursor:"pointer",
-              background:"linear-gradient(135deg,#5FD3C9,#3BA7A0)",
+              background:"linear-gradient(135deg,#3fd07f,#5b3a8e)",
               display:"flex",alignItems:"center",justifyContent:"center",
               boxShadow:"0 2px 10px rgba(59,167,160,.4)"}}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#061210" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -8263,7 +8266,7 @@ function InlineEmailCapture({lang,beachName,source="inline_beach"}){
     ]
     return(
       <div style={{margin:"0 0 12px",padding:"16px",borderRadius:16,
-        background:"linear-gradient(135deg,#0D1E1C,#142824)",border:"1px solid rgba(255,199,44,.18)"}}>
+        background:"linear-gradient(135deg,#190c2c,#142824)",border:"1px solid rgba(255,199,44,.18)"}}>
         <div style={{fontSize:13.5,fontWeight:800,color:C.green,marginBottom:12,display:"flex",alignItems:"center",gap:7}}>
           <span style={{fontSize:18}}>✅</span>{_t(lang,"La veille est lancée.","Your watch is on.","La vigilancia empezó.")}
         </div>
@@ -8287,7 +8290,7 @@ function InlineEmailCapture({lang,beachName,source="inline_beach"}){
   }
   if(submitted)return(
     <div style={{margin:"0 0 12px",padding:"14px 16px",borderRadius:16,
-      background:"linear-gradient(135deg,#0D1E1C,#142824)",
+      background:"linear-gradient(135deg,#190c2c,#142824)",
       textAlign:"center",fontSize:13,fontWeight:600,color:C.green}}>
       <span style={{fontSize:20,display:"block",marginBottom:4}}>✅</span>
       {_t(lang,"C'est fait ! Premier email dans 3 jours.","You're in! First email in 3 days.","¡Listo! Primer email en 3 días.")}
@@ -8302,7 +8305,7 @@ function InlineEmailCapture({lang,beachName,source="inline_beach"}){
     ]
     return(
       <div style={{margin:"0 0 12px",padding:"15px 16px",borderRadius:16,
-        background:"linear-gradient(135deg,#0D1E1C,#142824)",
+        background:"linear-gradient(135deg,#190c2c,#142824)",
         border:"1px solid rgba(255,199,44,.2)",position:"relative",overflow:"hidden"}}>
         <div style={{position:"absolute",top:"-60%",right:"-15%",width:"55%",height:"220%",
           background:"radial-gradient(ellipse,rgba(255,199,44,.08) 0%,transparent 70%)",pointerEvents:"none"}}/>
@@ -8349,7 +8352,7 @@ function InlineEmailCapture({lang,beachName,source="inline_beach"}){
   }
   return(
     <div style={{margin:"0 0 12px",padding:"14px 16px",borderRadius:16,
-      background:"linear-gradient(135deg,#0D1E1C,#142824)",
+      background:"linear-gradient(135deg,#190c2c,#142824)",
       border:"1px solid rgba(255,255,255,.08)",position:"relative",overflow:"hidden"}}>
       {/* Ambient glow */}
       <div style={{position:"absolute",top:"-50%",left:"-20%",width:"60%",height:"200%",
@@ -8808,7 +8811,7 @@ function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,onPremium,onClos
   return(
     <div role="dialog" aria-label="Assistant" style={{position:"fixed",right:0,bottom:0,left:0,zIndex:1090,display:"flex",justifyContent:"flex-end",pointerEvents:"none"}}>
       <div style={{pointerEvents:"auto",width:"100%",maxWidth:420,margin:"0 10px calc(10px + env(safe-area-inset-bottom))",
-        background:"#0D1E1C",border:"1px solid rgba(255,255,255,.12)",borderRadius:20,overflow:"hidden",
+        background:"#190c2c",border:"1px solid rgba(255,255,255,.12)",borderRadius:20,overflow:"hidden",
         boxShadow:"0 18px 60px rgba(0,0,0,.55)",display:"flex",flexDirection:"column",maxHeight:"min(72vh,560px)"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 14px",
           borderBottom:"1px solid rgba(255,255,255,.08)"}}>
@@ -8823,7 +8826,7 @@ function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,onPremium,onClos
         <div ref={bodyRef} style={{overflowY:"auto",padding:"14px 12px",display:"flex",flexDirection:"column",gap:10}}>
           {msgs.map((m,i)=>(
             <div key={i} style={{alignSelf:m.who==="me"?"flex-end":"flex-start",maxWidth:"86%",
-              background:m.who==="me"?"#FFC72C":"rgba(255,255,255,.07)",color:m.who==="me"?"#0A1714":"#fff",
+              background:m.who==="me"?"#FFC72C":"rgba(255,255,255,.07)",color:m.who==="me"?"#120821":"#fff",
               fontSize:13.5,lineHeight:1.5,padding:"10px 13px",
               borderRadius:m.who==="me"?"16px 16px 4px 16px":"16px 16px 16px 4px"}}>{m.text}</div>
           ))}
@@ -9001,7 +9004,7 @@ function AlertCapture({beach,lang}){
         value={email} onChange={e=>setEmail(e.target.value)}
         style={{flex:1,minWidth:0,padding:"11px 13px",borderRadius:14,fontSize:13,fontFamily:"inherit",
           border:"1px solid var(--sg-line,rgba(0,0,0,.15))",background:"var(--sg-card,#fff)",color:"var(--sg-ink,#1A2B26)"}}/>
-      <button type="submit" style={{flexShrink:0,background:"#FFC72C",color:"#0A1714",border:"none",cursor:"pointer",
+      <button type="submit" style={{flexShrink:0,background:"#FFC72C",color:"#120821",border:"none",cursor:"pointer",
         fontFamily:"inherit",fontWeight:800,fontSize:13,padding:"11px 14px",borderRadius:14}}>OK</button>
     </form>
   )
@@ -9017,7 +9020,7 @@ function AlertCapture({beach,lang}){
 function MethodScene(){
   return(
     <div aria-hidden style={{borderRadius:20,overflow:"hidden",border:"1px solid rgba(255,255,255,.09)",
-      background:"linear-gradient(180deg,#0C1D21 0%,#0A1714 100%)"}}>
+      background:"linear-gradient(180deg,#0C1D21 0%,#120821 100%)"}}>
       <svg viewBox="0 0 560 300" style={{display:"block",width:"100%",height:"auto"}}>
         <style>{`
 .sgms-sat{animation:sgmsOrbit 26s linear 1 both}
@@ -9064,8 +9067,8 @@ function MethodScene(){
         <g className="sgms-sat">
           <g transform="translate(0,34)">
             <rect x="-9" y="-5" width="18" height="10" rx="2" fill="#E8EDF2"/>
-            <rect x="-26" y="-3" width="14" height="6" rx="1" fill="#3BA7A0"/>
-            <rect x="12" y="-3" width="14" height="6" rx="1" fill="#3BA7A0"/>
+            <rect x="-26" y="-3" width="14" height="6" rx="1" fill="#5b3a8e"/>
+            <rect x="12" y="-3" width="14" height="6" rx="1" fill="#5b3a8e"/>
             <polygon className="sgms-beam" points="-6,6 6,6 26,166 -26,166" fill="url(#sgmsBeamG)"/>
           </g>
         </g>
@@ -9087,11 +9090,11 @@ function MethodScene(){
         <g transform="translate(316,214)"><use href="#sgmsSarg" transform="scale(.85)"/></g>
         {/* écho radar sur le radeau détecté (continuité avec le film Sentinel-6)
             + l'étiquette de mesure — la détection rendue visible */}
-        <circle className="sgms-echo1" cx="316" cy="214" r="9" fill="none" stroke="#3BA7A0" strokeWidth="1.6"/>
-        <circle className="sgms-echo2" cx="316" cy="214" r="9" fill="none" stroke="#3BA7A0" strokeWidth="1.3"/>
+        <circle className="sgms-echo1" cx="316" cy="214" r="9" fill="none" stroke="#5b3a8e" strokeWidth="1.6"/>
+        <circle className="sgms-echo2" cx="316" cy="214" r="9" fill="none" stroke="#5b3a8e" strokeWidth="1.3"/>
         <g transform="translate(316,182)">
-          <rect x="-29" y="-10" width="58" height="17" rx="8.5" fill="rgba(10,23,20,.88)" stroke="#3BA7A0" strokeWidth="1"/>
-          <text x="0" y="3" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="9.5" fontWeight="700" fill="#5FD3C9">AFAI 0.42</text>
+          <rect x="-29" y="-10" width="58" height="17" rx="8.5" fill="rgba(10,23,20,.88)" stroke="#5b3a8e" strokeWidth="1"/>
+          <text x="0" y="3" textAnchor="middle" fontFamily="ui-monospace,monospace" fontSize="9.5" fontWeight="700" fill="#3fd07f">AFAI 0.42</text>
         </g>
         {/* plage : langue de sable + palmier + ramasseur au râteau */}
         <path d="M318 262 Q420 218 560 212 L560 300 L318 300 Z" fill="#1A2A23"/>
@@ -9121,7 +9124,7 @@ function MethodScene(){
         <circle className="sgms-ping" cx="497" cy="96" r="16" fill="none" stroke="#FFC72C" strokeWidth="2"/>
         <g>
           <rect x="473" y="84" width="48" height="24" rx="12" fill="#FFC72C"/>
-          <path d="M487 96 L494 102 L508 89" stroke="#0A1714" strokeWidth="3.2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M487 96 L494 102 L508 89" stroke="#120821" strokeWidth="3.2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
         </g>
       </svg>
     </div>
@@ -9135,7 +9138,7 @@ function MethodScene(){
 function AlertScene(){
   return(
     <div aria-hidden style={{borderRadius:20,overflow:"hidden",border:"1px solid rgba(255,255,255,.09)",
-      background:"linear-gradient(180deg,#0C1D21 0%,#0A1714 100%)"}}>
+      background:"linear-gradient(180deg,#0C1D21 0%,#120821 100%)"}}>
       <svg viewBox="0 0 560 240" style={{display:"block",width:"100%",height:"auto"}}>
         <style>{`
 .sgas-notif{animation:sgasNotif 9s cubic-bezier(.22,1,.36,1) 1 both}
@@ -9189,7 +9192,7 @@ function AlertScene(){
         </g>
         <g className="sgas-ok">
           <circle cx="468" cy="96" r="15" fill="#FFC72C"/>
-          <path d="M461 96 L466 101 L476 90" stroke="#0A1714" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M461 96 L466 101 L476 90" stroke="#120821" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
         </g>
       </svg>
     </div>
@@ -9258,7 +9261,7 @@ function SatelliteFilm({lang}){
       <span style={{position:"absolute",top:12,left:14,display:"inline-flex",alignItems:"center",gap:6,
         fontSize:10,fontWeight:700,letterSpacing:".1em",color:"#fff",background:"rgba(10,23,20,.5)",
         border:"1px solid rgba(255,255,255,.18)",padding:"4px 10px",borderRadius:999}}>
-        <span style={{width:6,height:6,borderRadius:"50%",background:"#3BA7A0",boxShadow:"0 0 7px #3BA7A0"}}/>
+        <span style={{width:6,height:6,borderRadius:"50%",background:"#5b3a8e",boxShadow:"0 0 7px #5b3a8e"}}/>
         SENTINEL-6 · COPERNICUS
       </span>
       <div style={{position:"absolute",left:14,right:14,bottom:10,display:"flex",alignItems:"flex-end",
@@ -9290,7 +9293,7 @@ function SceneWipe({label,onDone}){
       `}</style>
       {/* LE PLAN : descente orbite → golden-hour (le monde se révèle, pas un cut sec) */}
       <div style={{position:"absolute",inset:0,animation:"sgwScene .86s ease-out forwards",
-        background:"linear-gradient(180deg,#04090B 0%,#0A1714 24%,#155A5A 56%,#C97E3A 84%,#F2B05E 100%)"}}>
+        background:"linear-gradient(180deg,#04090B 0%,#120821 24%,#155A5A 56%,#C97E3A 84%,#F2B05E 100%)"}}>
         <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" style={{position:"absolute",inset:0,width:"100%",height:"100%"}}>
           {[[80,60],[220,92],[360,50],[540,80],[680,56],[150,150],[470,120],[620,100],[300,180]].map((s,i)=>(<circle key={i} cx={s[0]} cy={s[1]} r="1.4" fill="#fff" opacity=".5"/>))}
           <line x1="-40" y1="438" x2="840" y2="438" stroke="#FFD884" strokeWidth="2" strokeDasharray="3 13" opacity=".4"/>
@@ -9299,7 +9302,7 @@ function SceneWipe({label,onDone}){
       </div>
       {/* LE VEILLEUR DESCEND (du satellite à l'eau) — le mouvement de caméra */}
       <div style={{position:"absolute",left:"50%",top:0,marginLeft:-30,animation:"sgwSat .86s cubic-bezier(.4,0,.3,1) forwards"}}>
-        <svg width="60" height="60" viewBox="0 0 64 64" style={{display:"block",overflow:"visible"}}>{miVeil(32,32,"#3BA7A0","#5FD3C9")}</svg>
+        <svg width="60" height="60" viewBox="0 0 64 64" style={{display:"block",overflow:"visible"}}>{miVeil(32,32,"#5b3a8e","#3fd07f")}</svg>
       </div>
       {/* faisceau qui balaie */}
       <div style={{position:"absolute",top:0,bottom:0,left:0,width:"13vw",
@@ -9473,8 +9476,8 @@ function HeroScene(){
           </g>}
           {/* le satellite veille (continuité ScrollStory) */}
           <g transform="translate(474,78) scale(.62)">
-            <rect x="-26" y="-3" width="15" height="7" rx="1.5" fill="#3BA7A0"/>
-            <rect x="11" y="-3" width="15" height="7" rx="1.5" fill="#3BA7A0"/>
+            <rect x="-26" y="-3" width="15" height="7" rx="1.5" fill="#5b3a8e"/>
+            <rect x="11" y="-3" width="15" height="7" rx="1.5" fill="#5b3a8e"/>
             <rect x="-10" y="-9" width="20" height="17" rx="2.5" fill="#C9971F"/>
             <rect x="-10" y="-9" width="20" height="6" rx="2.5" fill="#FFC72C"/>
           </g>
@@ -9496,17 +9499,17 @@ function HeroScene(){
           <g className="sgh-mat" style={{animationDelay:"-3.5s"}}>
             <g transform="translate(452,334) scale(.55)" opacity=".9"><use href="#sghSarg"/></g>
             <g className="sgst-ring" style={{transformBox:"fill-box",transformOrigin:"center"}}>
-              <circle cx="452" cy="334" r="11" fill="none" stroke="#3BA7A0" strokeWidth="1.5"/>
+              <circle cx="452" cy="334" r="11" fill="none" stroke="#5b3a8e" strokeWidth="1.5"/>
             </g>
             <g className="sgst-ring2" style={{transformBox:"fill-box",transformOrigin:"center"}}>
-              <circle cx="452" cy="334" r="11" fill="none" stroke="#3BA7A0" strokeWidth="1.2"/>
+              <circle cx="452" cy="334" r="11" fill="none" stroke="#5b3a8e" strokeWidth="1.2"/>
             </g>
           </g>
           {/* un banc de sargasse arrive du large — repéré par le satellite (jour + golden) */}
           {t.boat&&<g className="sgh-arrive">
             <g transform="translate(498,328) scale(.62)" opacity=".9"><use href="#sghSarg"/></g>
             <g transform="translate(536,320) scale(.44)" opacity=".7"><use href="#sghSarg"/></g>
-            <g className="sgst-ring" style={{transformBox:"fill-box",transformOrigin:"center"}}><circle cx="498" cy="328" r="13" fill="none" stroke="#3BA7A0" strokeWidth="1.4"/></g>
+            <g className="sgst-ring" style={{transformBox:"fill-box",transformOrigin:"center"}}><circle cx="498" cy="328" r="13" fill="none" stroke="#5b3a8e" strokeWidth="1.4"/></g>
           </g>}
           {/* le bateau de collecte travaille (jour + golden) */}
           {t.boat&&<g className="sgst-bob">
@@ -9536,8 +9539,8 @@ function HeroScene(){
           </g>
           {/* poissons qui sautent hors de l'eau (jour + golden) */}
           {t.boat&&<>
-            <g transform="translate(414,340)"><g className="sgh-fish"><path d="M-8 0 Q0 -5 8 0 Q0 5 -8 0 Z" fill="#6FD8CC"/><path d="M8 0 l5 -4 0 8 Z" fill="#3BA7A0"/><circle cx="3" cy="-1.4" r=".9" fill="#0A1714"/></g></g>
-            <g transform="translate(356,350) scale(.82)"><g className="sgh-fish" style={{animationDelay:"-2.4s"}}><path d="M-8 0 Q0 -5 8 0 Q0 5 -8 0 Z" fill="#8AE4D8"/><path d="M8 0 l5 -4 0 8 Z" fill="#3BA7A0"/></g></g>
+            <g transform="translate(414,340)"><g className="sgh-fish"><path d="M-8 0 Q0 -5 8 0 Q0 5 -8 0 Z" fill="#6FD8CC"/><path d="M8 0 l5 -4 0 8 Z" fill="#5b3a8e"/><circle cx="3" cy="-1.4" r=".9" fill="#120821"/></g></g>
+            <g transform="translate(356,350) scale(.82)"><g className="sgh-fish" style={{animationDelay:"-2.4s"}}><path d="M-8 0 Q0 -5 8 0 Q0 5 -8 0 Z" fill="#8AE4D8"/><path d="M8 0 l5 -4 0 8 Z" fill="#5b3a8e"/></g></g>
           </>}
         </g>
 
@@ -9553,7 +9556,7 @@ function HeroScene(){
             <line x1="300" y1="466" x2="306" y2="508" stroke="#7A4A1E" strokeWidth="3.5"/>
             <path d="M268 472 A36 36 0 0 1 334 464 Z" fill="#E8522A"/>
             <path d="M268 472 L334 464" stroke="#B83A1A" strokeWidth="2"/>
-            <rect x="320" y="504" width="26" height="8" rx="3" transform="rotate(-6 320 504)" fill="#3BA7A0" opacity=".85"/>
+            <rect x="320" y="504" width="26" height="8" rx="3" transform="rotate(-6 320 504)" fill="#5b3a8e" opacity=".85"/>
           </g>}
           <g fill="none" stroke={t.frond} strokeWidth="9" strokeLinecap="round">
             <path d="M502 436 Q466 416 428 422"/><path d="M502 436 Q472 400 440 392"/>
@@ -9628,7 +9631,7 @@ function ScrollStory({lang,onShowMap}){
       st.setProperty("--b4",SEG(p,.64,.84).toFixed(4))
       st.setProperty("--b5",SEG(p,.82,1).toFixed(4))
       // beat 1 reste plein pendant l'ENTREE de la section (p clampe a 0 tant que
-      // la sticky n'est pas epinglee) — sinon le storyvp affiche son fond #0A1714
+      // la sticky n'est pas epinglee) — sinon le storyvp affiche son fond #120821
       // SANS contenu = "fond vert avec rien" signale par le user. b1o=1 a p=0.
       st.setProperty("--b1o",(1-SEG(p,.17,.23)).toFixed(3))
       st.setProperty("--b2o",WIN(p,.17,.23,.39,.45).toFixed(3))
@@ -9673,7 +9676,7 @@ function ScrollStory({lang,onShowMap}){
   const mono="ui-monospace,SFMono-Regular,monospace"
   // Variables d'animation pilotées par l'ÉTAT `beat` (pas des littéraux figés) :
   // au repos / après re-render / si le listener de scroll ne se rattache pas
-  // (iOS), l'inline style affiche TOUJOURS le bon temps — jamais le fond #0A1714
+  // (iOS), l'inline style affiche TOUJOURS le bon temps — jamais le fond #120821
   // nu (bug "scroll mobile vide", screenshot user 14/06). Le rAF lisse les fondus
   // PENDANT le scroll par-dessus (DOM setProperty, hors du style React).
   const sv=on=>on?1:0
@@ -9694,7 +9697,7 @@ function ScrollStory({lang,onShowMap}){
 .sgst-bob{animation:sgstBob 3.4s ease-in-out 1 both}@keyframes sgstBob{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
 .sg-flow{stroke-dasharray:4 6;animation:sgFlowY 1.2s linear 1 both}@keyframes sgFlowY{from{stroke-dashoffset:20}to{stroke-dashoffset:0}}
 @media(prefers-reduced-motion:reduce){.sgst-ring,.sgst-ring2,.sgst-bob,.sg-flow{animation:none}}`}</style>
-      <div className="sg-storyvp" style={{position:rm?"relative":"sticky",top:0,overflow:"hidden",background:"#0A1714",
+      <div className="sg-storyvp" style={{position:rm?"relative":"sticky",top:0,overflow:"hidden",background:"#120821",
         height:rm?"min(72vh,560px)":undefined}}>
         <svg viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice"
           style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block"}}>
@@ -9709,7 +9712,7 @@ function ScrollStory({lang,onShowMap}){
               <stop offset="0" stopColor="#FFC72C" stopOpacity=".5"/><stop offset="1" stopColor="#FFC72C" stopOpacity="0"/>
             </linearGradient>
             <linearGradient id="sgstDawn" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#0A1714"/><stop offset="1" stopColor="#143029"/>
+              <stop offset="0" stopColor="#120821"/><stop offset="1" stopColor="#143029"/>
             </linearGradient>
           </defs>
 
@@ -9720,17 +9723,17 @@ function ScrollStory({lang,onShowMap}){
               <circle key={i} cx={s[0]} cy={s[1]} r={s[2]} fill="#fff" opacity={s[3]}/>
             ))}
             <circle cx="400" cy="1460" r="1010" fill="#07211D"/>
-            <circle cx="400" cy="1460" r="1010" fill="none" stroke="#3BA7A0" strokeWidth="2.5" opacity=".5"/>
-            <circle cx="400" cy="1460" r="1022" fill="none" stroke="#3BA7A0" strokeWidth="9" opacity=".1"/>
+            <circle cx="400" cy="1460" r="1010" fill="none" stroke="#5b3a8e" strokeWidth="2.5" opacity=".5"/>
+            <circle cx="400" cy="1460" r="1022" fill="none" stroke="#5b3a8e" strokeWidth="9" opacity=".1"/>
             {/* trace orbitale */}
             <path d="M40 232 Q400 168 760 232" fill="none" stroke="rgba(255,255,255,.14)" strokeWidth="1.4" strokeDasharray="2 7"/>
             {/* le satellite (gabarit Sentinel-6 : corps or, ailes teal) */}
             <g style={{transform:"translate(calc(610px - var(--b1)*330px),calc(160px + var(--b1)*36px))"}}>
               <polygon className="sgst-beamP" points="-7,12 7,12 34,300 -34,300" fill="url(#sgstBeam)" opacity=".55"/>
-              <g className="sgst-ring" style={fb}><circle r="30" fill="none" stroke="#3BA7A0" strokeWidth="1.6"/></g>
-              <g className="sgst-ring2" style={fb}><circle r="30" fill="none" stroke="#3BA7A0" strokeWidth="1.3"/></g>
-              <rect x="-30" y="-4" width="18" height="9" rx="1.5" fill="#3BA7A0"/>
-              <rect x="12" y="-4" width="18" height="9" rx="1.5" fill="#3BA7A0"/>
+              <g className="sgst-ring" style={fb}><circle r="30" fill="none" stroke="#5b3a8e" strokeWidth="1.6"/></g>
+              <g className="sgst-ring2" style={fb}><circle r="30" fill="none" stroke="#5b3a8e" strokeWidth="1.3"/></g>
+              <rect x="-30" y="-4" width="18" height="9" rx="1.5" fill="#5b3a8e"/>
+              <rect x="12" y="-4" width="18" height="9" rx="1.5" fill="#5b3a8e"/>
               <rect x="-13" y="-11" width="26" height="22" rx="3" fill="#C9971F"/>
               <rect x="-13" y="-11" width="26" height="7" rx="3" fill="#FFC72C"/>
               <circle cx="0" cy="16" r="3.2" fill="#E8EDF2"/>
@@ -9742,20 +9745,20 @@ function ScrollStory({lang,onShowMap}){
             <rect width="800" height="600" fill="#06211E"/>
             {/* trame raster satellite */}
             {[80,160,240,320,400,480,520].map((y,i)=>(
-              <line key={"h"+i} x1="0" y1={y+40} x2="800" y2={y+40} stroke="#3BA7A0" strokeWidth=".6" opacity=".07"/>
+              <line key={"h"+i} x1="0" y1={y+40} x2="800" y2={y+40} stroke="#5b3a8e" strokeWidth=".6" opacity=".07"/>
             ))}
             {[100,240,380,520,660].map((x,i)=>(
-              <line key={"v"+i} x1={x} y1="0" x2={x} y2="600" stroke="#3BA7A0" strokeWidth=".6" opacity=".07"/>
+              <line key={"v"+i} x1={x} y1="0" x2={x} y2="600" stroke="#5b3a8e" strokeWidth=".6" opacity=".07"/>
             ))}
             {/* houle (3 rangées, parallaxe au scroll) */}
             <g style={{transform:"translateX(calc(var(--b2)*-46px))"}} opacity=".3">
               {[120,300,470].map((y,i)=>(
-                <path key={i} d={`M-60 ${y} q40 -10 80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0`} fill="none" stroke="#3BA7A0" strokeWidth="1.6"/>
+                <path key={i} d={`M-60 ${y} q40 -10 80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0`} fill="none" stroke="#5b3a8e" strokeWidth="1.6"/>
               ))}
             </g>
             <g style={{transform:"translateX(calc(var(--b2)*34px))"}} opacity=".18">
               {[200,390,545].map((y,i)=>(
-                <path key={i} d={`M-80 ${y} q40 -9 80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0`} fill="none" stroke="#5FD3C9" strokeWidth="1.3"/>
+                <path key={i} d={`M-80 ${y} q40 -9 80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0 t80 0`} fill="none" stroke="#3fd07f" strokeWidth="1.3"/>
               ))}
             </g>
             {/* radeaux dans le champ */}
@@ -9769,11 +9772,11 @@ function ScrollStory({lang,onShowMap}){
             {/* la détection : radeau cible + échos + mesure */}
             <g transform="translate(430,330)"><use href="#sgstSarg"/></g>
             <g style={{opacity:"calc(var(--b2)*4 - 2.2)"}}>
-              <g className="sgst-ring" style={fb}><circle cx="430" cy="330" r="13" fill="none" stroke="#3BA7A0" strokeWidth="1.8"/></g>
-              <g className="sgst-ring2" style={fb}><circle cx="430" cy="330" r="13" fill="none" stroke="#3BA7A0" strokeWidth="1.4"/></g>
-              <line x1="430" y1="296" x2="430" y2="318" stroke="#3BA7A0" strokeWidth="1.4" strokeDasharray="3 4"/>
-              <rect x="398" y="270" width="64" height="20" rx="10" fill="rgba(10,23,20,.9)" stroke="#3BA7A0" strokeWidth="1.1"/>
-              <text x="430" y="284" textAnchor="middle" fontFamily={mono} fontSize="10.5" fontWeight="700" fill="#5FD3C9">AFAI 0.42</text>
+              <g className="sgst-ring" style={fb}><circle cx="430" cy="330" r="13" fill="none" stroke="#5b3a8e" strokeWidth="1.8"/></g>
+              <g className="sgst-ring2" style={fb}><circle cx="430" cy="330" r="13" fill="none" stroke="#5b3a8e" strokeWidth="1.4"/></g>
+              <line x1="430" y1="296" x2="430" y2="318" stroke="#5b3a8e" strokeWidth="1.4" strokeDasharray="3 4"/>
+              <rect x="398" y="270" width="64" height="20" rx="10" fill="rgba(10,23,20,.9)" stroke="#5b3a8e" strokeWidth="1.1"/>
+              <text x="430" y="284" textAnchor="middle" fontFamily={mono} fontSize="10.5" fontWeight="700" fill="#3fd07f">AFAI 0.42</text>
             </g>
           </g>
 
@@ -9785,28 +9788,28 @@ function ScrollStory({lang,onShowMap}){
             <circle cx="140" cy="128" r="76" fill="#FFC72C" opacity=".06"/>
             <g style={{transform:"translateX(calc(var(--b3)*-28px))"}} opacity=".5">
               <path d="M178 96 q12 -22 42 -22 q16 -14 40 -9 q26 -7 38 11 q22 2 26 20 Z" fill="#16322B"/>
-              <path d="M180 97 h138" stroke="#3BA7A0" strokeWidth="1.6" opacity=".3"/>
+              <path d="M180 97 h138" stroke="#5b3a8e" strokeWidth="1.6" opacity=".3"/>
             </g>
             <g style={{transform:"translateX(calc(var(--b3)*-50px))"}} opacity=".4">
               <path d="M486 66 q10 -18 34 -18 q14 -11 32 -7 q21 -6 30 9 q18 2 21 16 Z" fill="#16322B"/>
             </g>
-            <g opacity=".4" stroke="#5FD3C9" strokeWidth="1.8" fill="none" strokeLinecap="round">
+            <g opacity=".4" stroke="#3fd07f" strokeWidth="1.8" fill="none" strokeLinecap="round">
               <path d="M250 168 q6 -7 12 0 q6 -7 12 0"/><path d="M298 156 q5 -6 10 0 q5 -6 10 0"/>
             </g>
             {/* le satellite plane au-dessus du banc et le garde dans son faisceau (continuité B1/B2) */}
             <g style={{transform:"translate(calc(96px + var(--b3)*424px),88px)"}}>
               <polygon points="-7,12 7,12 26,232 -26,232" fill="url(#sgstBeam)" opacity=".4"/>
-              <g className="sgst-ring" style={fb}><circle r="20" fill="none" stroke="#3BA7A0" strokeWidth="1.4"/></g>
-              <rect x="-22" y="-3" width="13" height="7" rx="1.5" fill="#3BA7A0"/>
-              <rect x="9" y="-3" width="13" height="7" rx="1.5" fill="#3BA7A0"/>
+              <g className="sgst-ring" style={fb}><circle r="20" fill="none" stroke="#5b3a8e" strokeWidth="1.4"/></g>
+              <rect x="-22" y="-3" width="13" height="7" rx="1.5" fill="#5b3a8e"/>
+              <rect x="9" y="-3" width="13" height="7" rx="1.5" fill="#5b3a8e"/>
               <rect x="-10" y="-8" width="20" height="16" rx="2.5" fill="#C9971F"/>
               <rect x="-10" y="-8" width="20" height="5" rx="2.5" fill="#FFC72C"/>
             </g>
             {/* mer en coupe */}
             <rect x="0" y="330" width="800" height="270" fill="#0E2E2A"/>
-            <path d="M0 330 q50 -8 100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0" fill="none" stroke="#3BA7A0" strokeWidth="2" opacity=".5"/>
+            <path d="M0 330 q50 -8 100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0" fill="none" stroke="#5b3a8e" strokeWidth="2" opacity=".5"/>
             {/* courant marin : la dérive (flèches → vers la côte, le « comment ça arrive ») */}
-            <g opacity=".28" stroke="#5FD3C9" strokeWidth="1.6" fill="none" strokeLinecap="round">
+            <g opacity=".28" stroke="#3fd07f" strokeWidth="1.6" fill="none" strokeLinecap="round">
               <path d="M60 384 h58 M110 378 l10 6 -10 6"/>
               <path d="M36 426 h66 M94 420 l10 6 -10 6"/>
               <path d="M168 406 h52 M212 400 l10 6 -10 6"/>
@@ -9840,11 +9843,11 @@ function ScrollStory({lang,onShowMap}){
             <g style={{transform:"translateX(calc(var(--b3)*424px))"}}>
               <g className="sgst-bob">
                 <g transform="translate(96,318)"><use href="#sgstSarg"/></g>
-                <g className="sgst-ring" style={fb}><circle cx="96" cy="318" r="14" fill="none" stroke="#3BA7A0" strokeWidth="1.4"/></g>
+                <g className="sgst-ring" style={fb}><circle cx="96" cy="318" r="14" fill="none" stroke="#5b3a8e" strokeWidth="1.4"/></g>
               </g>
             </g>
             {/* vent/courant */}
-            <g opacity=".35" stroke="#5FD3C9" strokeWidth="2" fill="none" strokeLinecap="round">
+            <g opacity=".35" stroke="#3fd07f" strokeWidth="2" fill="none" strokeLinecap="round">
               <path d="M70 130 q26 -10 52 0 M96 142 q22 -8 44 0"/>
               <path d="M180 100 q24 -9 48 0"/>
             </g>
@@ -9852,7 +9855,7 @@ function ScrollStory({lang,onShowMap}){
 
           {/* ════ B4 — LE VERDICT : 06:00, l'alerte tombe, la pastille claque ════ */}
           <g style={{opacity:"var(--b4o)"}}>
-            <rect width="800" height="600" fill="#0A1714"/>
+            <rect width="800" height="600" fill="#120821"/>
             <circle cx="120" cy="118" r="26" fill="#FFC72C" opacity=".9"/>
             <circle cx="120" cy="118" r="44" fill="#FFC72C" opacity=".1"/>
             <text x="166" y="126" fontFamily={mono} fontSize="22" fontWeight="700" fill="rgba(255,255,255,.8)">06:00</text>
@@ -9876,18 +9879,18 @@ function ScrollStory({lang,onShowMap}){
             <g style={{transform:"translate(466px,420px) scale(var(--b4s))"}}>
               <circle r="46" fill="none" stroke="#FFC72C" strokeWidth="1.4" opacity=".35"/>
               <rect x="-66" y="-21" width="132" height="42" rx="21" fill="#FFC72C"/>
-              <text x="8" y="7" textAnchor="middle" fontFamily="'Anton',sans-serif" fontSize="19" fill="#0A1714" letterSpacing=".02">
+              <text x="8" y="7" textAnchor="middle" fontFamily="'Anton',sans-serif" fontSize="19" fill="#120821" letterSpacing=".02">
                 {T("PROPRE","CLEAN","LIMPIA")}</text>
-              <path d="M-48 0 l8 8 14 -16" stroke="#0A1714" strokeWidth="4" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M-48 0 l8 8 14 -16" stroke="#120821" strokeWidth="4" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
             </g>
           </g>
 
           {/* ════ B5 — LE CHOIX : la carte, l'itinéraire bascule vers la plage propre ════ */}
           <g style={{opacity:"var(--b5o)"}}>
-            <rect width="800" height="600" fill="#0A1714"/>
+            <rect width="800" height="600" fill="#120821"/>
             {/* côtes stylisées */}
-            <path d="M-40 470 Q120 420 240 452 T520 470 T820 440" fill="none" stroke="#3BA7A0" strokeWidth="2" opacity=".22"/>
-            <path d="M-40 520 Q200 480 430 510 T820 500" fill="none" stroke="#3BA7A0" strokeWidth="1.4" opacity=".14"/>
+            <path d="M-40 470 Q120 420 240 452 T520 470 T820 440" fill="none" stroke="#5b3a8e" strokeWidth="2" opacity=".22"/>
+            <path d="M-40 520 Q200 480 430 510 T820 500" fill="none" stroke="#5b3a8e" strokeWidth="1.4" opacity=".14"/>
             {[[110,150],[688,128],[206,84],[560,70]].map((s,i)=>(
               <circle key={i} cx={s[0]} cy={s[1]} r="1" fill="#fff" opacity=".25"/>
             ))}
@@ -9943,7 +9946,7 @@ function ScrollStory({lang,onShowMap}){
             <span style={{position:"absolute",top:8,left:10,display:"inline-flex",alignItems:"center",gap:5,
               fontSize:8.5,fontWeight:700,letterSpacing:".09em",color:"#fff",background:"rgba(10,23,20,.55)",
               border:"1px solid rgba(255,255,255,.18)",padding:"3px 8px",borderRadius:999}}>
-              <span style={{width:5,height:5,borderRadius:"50%",background:"#3BA7A0",boxShadow:"0 0 6px #3BA7A0"}}/>
+              <span style={{width:5,height:5,borderRadius:"50%",background:"#5b3a8e",boxShadow:"0 0 6px #5b3a8e"}}/>
               {T("LE VRAI — NASA/JPL","THE REAL ONE — NASA/JPL","EL REAL — NASA/JPL")}
             </span>
           </div>
@@ -9953,7 +9956,7 @@ function ScrollStory({lang,onShowMap}){
         {beats.map((b,i)=>(
           <div key={i} aria-hidden={!rm&&beat!==i} style={{position:"absolute",left:"6%",right:"6%",
             bottom:"max(112px,15%)",opacity:`var(${b.o})`,pointerEvents:"none"}}>
-            <div style={{fontFamily:mono,fontSize:11,fontWeight:700,letterSpacing:".24em",color:"#3BA7A0",marginBottom:9}}>{b.k}</div>
+            <div style={{fontFamily:mono,fontSize:11,fontWeight:700,letterSpacing:".24em",color:"#5b3a8e",marginBottom:9}}>{b.k}</div>
             <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:"clamp(28px,5.6vw,52px)",lineHeight:1.02,
               letterSpacing:".01em",textTransform:"uppercase",color:"#fff",maxWidth:560,
               textShadow:"0 2px 26px rgba(0,0,0,.45)"}}>{b.h}</div>
@@ -9963,10 +9966,10 @@ function ScrollStory({lang,onShowMap}){
         {/* CTA du dernier temps */}
         <div style={{position:"absolute",left:"6%",bottom:"max(38px,5.5%)",opacity:"var(--b5o)",
           pointerEvents:beat===4?"auto":"none"}}>
-          <button onClick={onShowMap} className="gbtn" style={{background:"#FFC72C",color:"#0A1714",border:"none",
+          <button onClick={onShowMap} className="gbtn" style={{background:"#FFC72C",color:"#120821",border:"none",
             cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:15,padding:"14px 22px",borderRadius:999,
             boxShadow:"0 8px 28px rgba(255,199,44,.3)"}}>
-            <BrandIcon name="map" size={15} accent="#0A1714" style={{verticalAlign:"-2px",marginRight:7,display:"inline-block"}}/>
+            <BrandIcon name="map" size={15} accent="#120821" style={{verticalAlign:"-2px",marginRight:7,display:"inline-block"}}/>
             {T("Ouvrir la carte live","Open the live map","Abrir el mapa en vivo")}
           </button>
         </div>
@@ -10091,7 +10094,7 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
   const distTxt=b=>{if(!userPos||!b.lat)return b.drive!=null?`${b.drive} min`:"";const km=haversine(userPos.lat,userPos.lng,b.lat,b.lng);return US_UNITS?`${Math.max(1,Math.round(km*0.621))} mi`:`${Math.max(1,Math.round(km))} km`}
   return(
     <div role="dialog" aria-label={T("Trouve ta plage","Find your beach","Encuentra tu playa")} style={{position:"absolute",inset:0,zIndex:1050,
-      background:"#0A1714",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch",animation:"fadeIn .35s ease-out",
+      background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch",animation:"fadeIn .35s ease-out",
       opacity:exiting?0:1,transform:exiting?"scale(1.04)":"none",
       transition:"opacity .3s ease,transform .3s cubic-bezier(.22,1,.36,1)"}}>
       <style>{`
@@ -10139,14 +10142,14 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
       </div>
       <div aria-hidden style={{position:"absolute",inset:0,pointerEvents:"none",transition:"background .5s ease",
         background:stage==="scan"
-          ?"linear-gradient(180deg,rgba(5,18,24,.72) 0%,rgba(8,30,40,.4) 36%,rgba(10,23,20,.86) 70%,#0A1714 100%)"
+          ?"linear-gradient(180deg,rgba(5,18,24,.72) 0%,rgba(8,30,40,.4) 36%,rgba(10,23,20,.86) 70%,#120821 100%)"
           :stage==="verdict"
-          ?"linear-gradient(180deg,rgba(10,23,20,.45) 0%,rgba(10,23,20,.1) 28%,rgba(10,23,20,.5) 50%,rgba(10,23,20,.9) 76%,#0A1714 100%)"
+          ?"linear-gradient(180deg,rgba(10,23,20,.45) 0%,rgba(10,23,20,.1) 28%,rgba(10,23,20,.5) 50%,rgba(10,23,20,.9) 76%,#120821 100%)"
           :stage==="alert"
-          ?"linear-gradient(180deg,rgba(4,11,22,.86) 0%,rgba(4,11,22,.62) 38%,rgba(6,16,18,.9) 72%,#0A1714 100%)"
+          ?"linear-gradient(180deg,rgba(4,11,22,.86) 0%,rgba(4,11,22,.62) 38%,rgba(6,16,18,.9) 72%,#120821 100%)"
           :stage==="coast"
-          ?"linear-gradient(180deg,rgba(10,23,20,.5) 0%,rgba(10,23,20,.22) 24%,rgba(10,23,20,.86) 62%,#0A1714 100%)"
-          :"linear-gradient(180deg,rgba(10,23,20,.55) 0%,rgba(10,23,20,0) 30%,rgba(10,23,20,.8) 74%,#0A1714 100%)"}}/>
+          ?"linear-gradient(180deg,rgba(10,23,20,.5) 0%,rgba(10,23,20,.22) 24%,rgba(10,23,20,.86) 62%,#120821 100%)"
+          :"linear-gradient(180deg,rgba(10,23,20,.55) 0%,rgba(10,23,20,0) 30%,rgba(10,23,20,.8) 74%,#120821 100%)"}}/>
       {/* BEAT 2 — LE SCAN : scène SVG (le satellite descend, faisceau, pixels de
           la côte qui s'allument, médaillon-preuve Sentinel-6). opacity pilotée
           par --gfs2 (rAF). Continuité du monde : même satellite/faisceau/teal
@@ -10163,18 +10166,18 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
           {/* le satellite Sentinel-6 descend de l'orbite, faisceau vers la baie */}
           <g className="gf-sat">
             <polygon points="-8,16 8,16 44,330 -44,330" fill="url(#gfBeam)" opacity=".5"/>
-            <rect x="-30" y="-4" width="19" height="8" rx="1.5" fill="#3BA7A0"/>
-            <rect x="11" y="-4" width="19" height="8" rx="1.5" fill="#3BA7A0"/>
+            <rect x="-30" y="-4" width="19" height="8" rx="1.5" fill="#5b3a8e"/>
+            <rect x="11" y="-4" width="19" height="8" rx="1.5" fill="#5b3a8e"/>
             <rect x="-12" y="-11" width="24" height="21" rx="3" fill="#C9971F"/>
             <rect x="-12" y="-11" width="24" height="7" rx="3" fill="#FFC72C"/>
           </g>
           {/* la ligne de scan balaie la baie */}
-          <rect className="gf-scanline" x="-40" width="880" height="3" rx="1.5" fill="#5FD3C9"/>
+          <rect className="gf-scanline" x="-40" width="880" height="3" rx="1.5" fill="#3fd07f"/>
           {/* les pixels de la côte s'allument en cascade (teinte vers le statut) */}
           <g>
             {[...Array(15)].map((_,i)=>{
               const col=i%5,row=Math.floor(i/5)
-              const c=["#3BA7A0","#3BA7A0","#FFC72C","#FFC72C","#F59E0B"][col]
+              const c=["#5b3a8e","#5b3a8e","#FFC72C","#FFC72C","#F59E0B"][col]
               return <rect key={i} className="gf-px" x={326+col*30} y={272+row*30} width="22" height="22" rx="5" fill={c}
                 style={{"--d":`${(row*5+col)*55}ms`}}/>
             })}
@@ -10182,10 +10185,10 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
           {/* médaillon-preuve : Sentinel-6 / NASA-JPL / Copernicus */}
           <g className="gf-medal" transform="translate(400,408)">
             <circle r="34" fill="#08251F" stroke="#FFC72C" strokeWidth="2"/>
-            <circle r="34" fill="none" stroke="#3BA7A0" strokeWidth="1" strokeDasharray="3 6" opacity=".65"/>
+            <circle r="34" fill="none" stroke="#5b3a8e" strokeWidth="1" strokeDasharray="3 6" opacity=".65"/>
             <g transform="scale(.7)">
-              <rect x="-26" y="-3" width="15" height="6" rx="1.2" fill="#3BA7A0"/>
-              <rect x="11" y="-3" width="15" height="6" rx="1.2" fill="#3BA7A0"/>
+              <rect x="-26" y="-3" width="15" height="6" rx="1.2" fill="#5b3a8e"/>
+              <rect x="11" y="-3" width="15" height="6" rx="1.2" fill="#5b3a8e"/>
               <rect x="-9" y="-8" width="18" height="15" rx="2" fill="#C9971F"/>
               <rect x="-9" y="-8" width="18" height="5" rx="2" fill="#FFC72C"/>
             </g>
@@ -10202,7 +10205,7 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
         return(
         <svg aria-hidden viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice"
           style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none"}}>
-          <circle cx="400" cy="306" r="106" fill="none" stroke="#3BA7A0" strokeWidth="1.2" strokeDasharray="3 9" opacity=".32" className="gf-ring"/>
+          <circle cx="400" cy="306" r="106" fill="none" stroke="#5b3a8e" strokeWidth="1.2" strokeDasharray="3 9" opacity=".32" className="gf-ring"/>
           {alts.map((b,i)=>(
             <g key={b.id} transform={`translate(${POS[i][0]},${POS[i][1]})`}>
               <g className="gf-dot" style={{"--dd":`${320+i*90}ms`}}>
@@ -10277,7 +10280,7 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
               {T("Pourquoi la plage aujourd'hui ?","Why the beach today?","¿Por qué la playa hoy?")}
             </h1>
             <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16}}>
-              <span className="gf-pulse" style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#3BA7A0",boxShadow:"0 0 10px #3BA7A0",flexShrink:0}}/>
+              <span className="gf-pulse" style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#5b3a8e",boxShadow:"0 0 10px #5b3a8e",flexShrink:0}}/>
               <span style={{fontSize:13,color:"rgba(255,255,255,.74)",fontWeight:600}}>
                 {T("J'ai scanné tes côtes ce matin. Dis-moi ton envie.","I scanned your coast this morning. Tell me your mood.","Escaneé tu costa esta mañana. Dime tu plan.")}
               </span>
@@ -10285,7 +10288,7 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
             <div style={{display:"flex",flexWrap:"wrap",gap:9}}>
               {VIBES.map(v=>(
                 <button key={v.k} className="gf-chip" onClick={()=>pickVibe(v)}
-                  style={{cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:15,color:"#0A1714",
+                  style={{cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:15,color:"#120821",
                     border:"none",borderRadius:999,padding:"13px 18px",
                     background:`linear-gradient(135deg,${v.g[0]},${v.g[1]})`,
                     boxShadow:`0 6px 18px ${v.g[1]}55,inset 0 1px 0 rgba(255,255,255,.4)`}}>
@@ -10346,8 +10349,8 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
               ‹ {T("Retour","Back","Volver")}
             </button>
             <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
-              <span className="gf-pulse" style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#5FD3C9",boxShadow:"0 0 10px #5FD3C9",flexShrink:0}}/>
-              <span style={{fontSize:11,fontWeight:700,letterSpacing:".1em",color:"#5FD3C9",textTransform:"uppercase"}}>
+              <span className="gf-pulse" style={{display:"inline-block",width:8,height:8,borderRadius:"50%",background:"#3fd07f",boxShadow:"0 0 10px #3fd07f",flexShrink:0}}/>
+              <span style={{fontSize:11,fontWeight:700,letterSpacing:".1em",color:"#3fd07f",textTransform:"uppercase"}}>
                 {T("Le satellite scanne","Satellite scanning","El satélite escanea")}
               </span>
             </div>
@@ -10359,7 +10362,7 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
               {T("Sentinel-6 analyse les nappes","Sentinel-6 reads the rafts","Sentinel-6 analiza las manchas")} · NASA/JPL · Copernicus
             </div>
             <button onClick={()=>setStage("verdict")} className="gf-chip" style={{display:"block",width:"100%",textAlign:"center",
-              cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:16,color:"#0A1714",border:"none",borderRadius:16,
+              cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:16,color:"#120821",border:"none",borderRadius:16,
               padding:"15px 20px",background:"linear-gradient(135deg,#FFE08A,#FFC72C)",boxShadow:"0 8px 24px rgba(255,199,44,.32)"}}>
               {T("Voir le résultat →","See the result →","Ver el resultado →")}
             </button>
@@ -10401,7 +10404,7 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
               </button>
             )}
             <button onClick={()=>openBeach(chosenBeach)} className="gf-chip" style={{display:"block",width:"100%",textAlign:"center",
-              cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:16,color:"#0A1714",border:"none",borderRadius:16,
+              cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:16,color:"#120821",border:"none",borderRadius:16,
               padding:"15px 20px",background:"linear-gradient(135deg,#FFE08A,#FFC72C)",boxShadow:"0 8px 24px rgba(255,199,44,.32)"}}>
               {T("Voir la fiche complète →","See the full report →","Ver la ficha completa →")}
             </button>
@@ -10445,7 +10448,7 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
                  `En ${chosenBeach.name}, el agua empeora el ${dayName}. Te aviso la víspera — a tiempo para cambiar de plan.`)}
             </div>
             <button onClick={()=>onPremium&&onPremium("funnel_alert")} className="gf-chip" style={{display:"block",width:"100%",textAlign:"center",
-              cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:16,color:"#0A1714",border:"none",borderRadius:16,
+              cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:16,color:"#120821",border:"none",borderRadius:16,
               padding:"15px 20px",background:"linear-gradient(135deg,#FFE08A,#FFC72C)",boxShadow:"0 8px 24px rgba(255,199,44,.32)"}}>
               {T("Sois prévenu la veille →","Get warned the day before →","Te aviso la víspera →")}
             </button>
@@ -10476,10 +10479,10 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
       </section>
       <ScrollStory lang={lang} onShowMap={onShowMap}/>
       <section style={{padding:"28px 22px calc(40px + env(safe-area-inset-bottom))",maxWidth:560,margin:"0 auto"}}>
-        <div style={{background:"linear-gradient(145deg,#10231E,#0A1714)",border:"1px solid rgba(255,199,44,.25)",borderRadius:20,padding:"24px 20px",textAlign:"center"}}>
+        <div style={{background:"linear-gradient(145deg,#10231E,#120821)",border:"1px solid rgba(255,199,44,.25)",borderRadius:20,padding:"24px 20px",textAlign:"center"}}>
           <div style={{fontFamily:"'Anton',sans-serif",fontSize:23,color:"#fff",letterSpacing:".02em",textTransform:"uppercase",marginBottom:6}}>{T("Ton veilleur personnel","Your personal watcher","Tu vigía personal")}</div>
           <div style={{fontSize:13.5,color:"rgba(255,255,255,.66)",marginBottom:16,lineHeight:1.45}}>{T("Je surveille ta plage et je te préviens la veille où elle se trouble.","I watch your beach and warn you the day before it turns.","Vigilo tu playa y te aviso la víspera de que cambie.")}</div>
-          <button onClick={()=>onPremium&&onPremium("funnel_scroll")} className="gf-chip" style={{display:"block",width:"100%",cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:16,color:"#0A1714",border:"none",borderRadius:16,padding:"15px 20px",background:"linear-gradient(135deg,#FFE08A,#FFC72C)",boxShadow:"0 8px 24px rgba(255,199,44,.32)"}}>
+          <button onClick={()=>onPremium&&onPremium("funnel_scroll")} className="gf-chip" style={{display:"block",width:"100%",cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:16,color:"#120821",border:"none",borderRadius:16,padding:"15px 20px",background:"linear-gradient(135deg,#FFE08A,#FFC72C)",boxShadow:"0 8px 24px rgba(255,199,44,.32)"}}>
             {T("Découvrir le veilleur →","Meet the watcher →","Descubrir el vigía →")}
           </button>
           <button onClick={onShowMap} style={{display:"block",width:"100%",marginTop:10,background:"none",border:"none",color:"rgba(255,255,255,.6)",fontFamily:"inherit",fontSize:13,fontWeight:600,cursor:"pointer"}}>
@@ -10561,7 +10564,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
   const secPad={padding:"68px 22px 8px",maxWidth:560,margin:"0 auto"}
   return(
     <div ref={wrapRef} role="dialog" aria-label={beach.name} style={{position:"absolute",inset:0,zIndex:1050,
-      background:"#0A1714",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch",
+      background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch",
       /* PAS de fill-mode sur l'entrée : avec "both" l'animation épinglerait
          opacity:1 pour toujours et écraserait le fondu de sortie (inline) */
       animation:"fadeIn .35s ease-out",
@@ -10600,9 +10603,9 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
           backdropFilter:"blur(12px)",borderBottom:"1px solid rgba(255,255,255,.08)"}}>
           <span style={{fontFamily:"'Anton',sans-serif",fontSize:11.5,letterSpacing:".12em",color:"#fff",opacity:.92,
             whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{wordmark}</span>
-          <button onClick={onShowMap} style={{flexShrink:0,background:"#FFC72C",color:"#0A1714",border:"none",
+          <button onClick={onShowMap} style={{flexShrink:0,background:"#FFC72C",color:"#120821",border:"none",
             cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:13,padding:"9px 16px",borderRadius:999}}>
-            <BrandIcon name="map" size={15} accent="#0A1714" style={{verticalAlign:"-2px",marginRight:6,display:"inline-block"}}/>{_t(lang,"Ouvrir la carte","Open the map","Abrir el mapa")}
+            <BrandIcon name="map" size={15} accent="#120821" style={{verticalAlign:"-2px",marginRight:6,display:"inline-block"}}/>{_t(lang,"Ouvrir la carte","Open the map","Abrir el mapa")}
           </button>
         </div>
       </div>
@@ -10614,7 +10617,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
           l'image. Clarity 2026-06 : 46 rage + 670 dead clicks home — les
           visiteurs tapent la photo/le nom en attendant la fiche. 1 tap = fiche. */}
       <div aria-hidden onClick={()=>{track("sg_hero_tap",{t:"media"});onOpenBeach&&onOpenBeach(beach)}} style={{position:"absolute",inset:0,cursor:"pointer",
-        background:"linear-gradient(180deg,rgba(10,23,20,.55) 0%,rgba(10,23,20,0) 26%,rgba(10,23,20,0) 42%,rgba(10,23,20,.88) 78%,#0A1714 100%)"}}/>
+        background:"linear-gradient(180deg,rgba(10,23,20,.55) 0%,rgba(10,23,20,0) 26%,rgba(10,23,20,0) 42%,rgba(10,23,20,.88) 78%,#120821 100%)"}}/>
       <div style={{position:"absolute",top:0,left:0,right:0,display:"flex",justifyContent:"space-between",alignItems:"center",
         padding:"calc(14px + env(safe-area-inset-top)) 18px 0",maxWidth:560,margin:"0 auto"}}>
         <span style={{fontFamily:"'Anton',sans-serif",fontSize:13,letterSpacing:".14em",color:"#fff",opacity:.92}}>{wordmark}</span>
@@ -10641,7 +10644,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
           textShadow:"0 2px 24px rgba(0,0,0,.35)"}}>
           {beach.name}
         </h1>
-        <div onClick={()=>{track("sg_hero_tap",{t:"verdict"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:10,background:verdictBg,color:"#0A1714",
+        <div onClick={()=>{track("sg_hero_tap",{t:"verdict"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:10,background:verdictBg,color:"#120821",
           fontWeight:800,fontSize:15,letterSpacing:".02em",padding:"9px 16px",borderRadius:999,marginBottom:8,cursor:"pointer"}}>
           {verdictTxt}
           {beach.score!=null&&<span style={{fontFamily:"'Anton',sans-serif",fontSize:17,letterSpacing:".03em"}}>{beach.score}/100</span>}
@@ -10655,7 +10658,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
         {(typeof window!=="undefined"&&window.matchMedia&&window.matchMedia("(min-width:900px)").matches)?(
           <div style={{display:"flex",gap:10}}>
             <button onClick={onOpen} className="gbtn" style={{flex:1.5,textAlign:"center",
-              background:"#FFC72C",color:"#0A1714",border:"none",cursor:"pointer",fontFamily:"inherit",
+              background:"#FFC72C",color:"#120821",border:"none",cursor:"pointer",fontFamily:"inherit",
               fontWeight:800,fontSize:17,padding:"16px 24px",borderRadius:18,boxShadow:"0 8px 28px rgba(255,199,44,.32)"}}>
               {_t(lang,"Voir cette plage","See this beach","Ver esta playa")}
               <span style={{display:"block",fontWeight:500,fontSize:11.5,opacity:.75,marginTop:3}}>
@@ -10665,7 +10668,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
             <button onClick={onShowMap} style={{flex:1,textAlign:"center",cursor:"pointer",fontFamily:"inherit",
               background:"rgba(10,23,20,.45)",color:"#fff",border:"1.5px solid rgba(255,255,255,.35)",
               fontWeight:700,fontSize:15,padding:"16px 18px",borderRadius:18,backdropFilter:"blur(6px)"}}>
-              <BrandIcon name="map" size={15} accent="#0A1714" style={{verticalAlign:"-2px",marginRight:6,display:"inline-block"}}/>{_t(lang,"Ouvrir la carte live","Open the live map","Abrir el mapa en vivo")}
+              <BrandIcon name="map" size={15} accent="#120821" style={{verticalAlign:"-2px",marginRight:6,display:"inline-block"}}/>{_t(lang,"Ouvrir la carte live","Open the live map","Abrir el mapa en vivo")}
               <span style={{display:"block",fontWeight:500,fontSize:11.5,opacity:.7,marginTop:3}}>
                 {_t(lang,"toutes les plages, en direct","every beach, real time","todas las playas, en directo")}
               </span>
@@ -10674,7 +10677,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
         ):(
           <>
             <button onClick={onOpen} className="gbtn" style={{display:"block",width:"100%",textAlign:"center",
-              background:"#FFC72C",color:"#0A1714",border:"none",cursor:"pointer",fontFamily:"inherit",
+              background:"#FFC72C",color:"#120821",border:"none",cursor:"pointer",fontFamily:"inherit",
               fontWeight:800,fontSize:17,padding:"16px 24px",borderRadius:18,boxShadow:"0 8px 28px rgba(255,199,44,.32)"}}>
               {_t(lang,"Voir cette plage","See this beach","Ver esta playa")}
               <span style={{display:"block",fontWeight:500,fontSize:11.5,opacity:.75,marginTop:3}}>
@@ -10714,7 +10717,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
               <button key={b.id} className="sg-l-card" onClick={()=>onOpenBeach&&onOpenBeach(b)}>
                 <div style={{position:"relative",height:124,overflow:"hidden"}}>
                   <BeachScene beach={b}/>
-                  <span style={{position:"absolute",top:8,left:8,zIndex:2,background:statusCol(b),color:"#0A1714",
+                  <span style={{position:"absolute",top:8,left:8,zIndex:2,background:statusCol(b),color:"#120821",
                     fontWeight:800,fontSize:11,padding:"4px 9px",borderRadius:999}}>
                     {statusShort(b)}{b.score!=null?` · ${b.score}`:""}
                   </span>
@@ -10776,7 +10779,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
         <button onClick={onShowMap} className="sg-rv" style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,
           width:"100%",background:"rgba(10,23,20,.45)",color:"#fff",border:"1.5px solid rgba(255,255,255,.3)",
           cursor:"pointer",fontFamily:"inherit",fontWeight:700,fontSize:15,padding:"15px 18px",borderRadius:18,marginTop:14}}>
-          <BrandIcon name="map" size={15} accent="#0A1714" style={{verticalAlign:"-2px",marginRight:6,display:"inline-block"}}/>{_t(lang,"Ouvrir la carte live","Open the live map","Abrir el mapa en vivo")}
+          <BrandIcon name="map" size={15} accent="#120821" style={{verticalAlign:"-2px",marginRight:6,display:"inline-block"}}/>{_t(lang,"Ouvrir la carte live","Open the live map","Abrir el mapa en vivo")}
         </button>
       </section>
 
@@ -10830,7 +10833,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
         </div>
         {onPremium&&(
           <button onClick={onPremium} className="sg-rv gbtn" style={{display:"block",width:"100%",textAlign:"center",
-            background:"#FFC72C",color:"#0A1714",border:"none",cursor:"pointer",fontFamily:"inherit",
+            background:"#FFC72C",color:"#120821",border:"none",cursor:"pointer",fontFamily:"inherit",
             fontWeight:800,fontSize:16,padding:"16px 24px",borderRadius:18,boxShadow:"0 8px 28px rgba(255,199,44,.25)"}}>
             {_t(lang,"Découvrir Premium","Discover Premium","Descubrir Premium")}
           </button>
@@ -10905,7 +10908,7 @@ function AlertHub({lang,island,beach,onPremium,onShowMap,onClose}){
   }, [lang])
 
   return (
-    <div style={{minHeight:"100svh",background:"linear-gradient(180deg,#0C1D21 0%,#0A1714 100%)",color:"#fff",position:"relative",padding:"40px 16px 60px",fontFamily:"inherit"}}>
+    <div style={{minHeight:"100svh",background:"linear-gradient(180deg,#0C1D21 0%,#120821 100%)",color:"#fff",position:"relative",padding:"40px 16px 60px",fontFamily:"inherit"}}>
       {/* Croix de fermeture */}
       <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")}
         style={{position:"absolute",top:"calc(12px + env(safe-area-inset-top, 0px))",right:16,zIndex:10,background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.12)",color:"rgba(255,255,255,.85)",width:34,height:34,borderRadius:"50%",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"inherit"}}>
@@ -10915,7 +10918,7 @@ function AlertHub({lang,island,beach,onPremium,onShowMap,onClose}){
       <div style={{maxWidth:560,margin:"0 auto",display:"flex",flexDirection:"column",alignItems:"stretch"}}>
         {/* Pli 1 — Promesse + Veilleur */}
         <div style={{textAlign:"center",marginBottom:20,marginTop:20}}>
-          <div style={{fontSize:10.5,fontWeight:800,color:"#009E8E",letterSpacing:".14em",textTransform:"uppercase",marginBottom:8}}>
+          <div style={{fontSize:10.5,fontWeight:800,color:"#d6249f",letterSpacing:".14em",textTransform:"uppercase",marginBottom:8}}>
             {dateLong} · {_t(lang,"LE VEILLEUR PERSONNEL","YOUR PERSONAL WATCHER","TU VIGÍA PERSONAL")}
           </div>
           <h1 style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:"clamp(28px,6.5vw,42px)",lineHeight:1.02,letterSpacing:".01em",textTransform:"uppercase",margin:"0 0 16px",color:"#fff"}}>
@@ -10935,11 +10938,11 @@ function AlertHub({lang,island,beach,onPremium,onShowMap,onClose}){
         </div>
 
         {/* Pli 3 — Capture email */}
-        <div style={{background:"linear-gradient(135deg,#0D1E1C,#142824)",border:"1px solid rgba(255,255,255,.08)",borderRadius:18,padding:"18px 20px",marginBottom:28,position:"relative",overflow:"hidden"}}>
+        <div style={{background:"linear-gradient(135deg,#190c2c,#142824)",border:"1px solid rgba(255,255,255,.08)",borderRadius:18,padding:"18px 20px",marginBottom:28,position:"relative",overflow:"hidden"}}>
           <div style={{position:"absolute",top:"-50%",left:"-20%",width:"60%",height:"200%",background:"radial-gradient(ellipse, rgba(34,197,94,.06) 0%, transparent 70%)",pointerEvents:"none"}}/>
           <div style={{position:"relative"}}>
             {submitted ? (
-              <div style={{textAlign:"center",fontSize:14,fontWeight:600,color:"#1EC8B0"}}>
+              <div style={{textAlign:"center",fontSize:14,fontWeight:600,color:"#ff2db8"}}>
                 <span style={{fontSize:22,display:"block",marginBottom:6}}>✅</span>
                 {_t(lang,"C'est fait ! Le verdict du matin arrive dans ta boîte.","You're in! The morning verdict will arrive in your inbox.","¡Listo! El veredicto matutino llegará a tu bandeja.")}
               </div>
@@ -10968,7 +10971,7 @@ function AlertHub({lang,island,beach,onPremium,onShowMap,onClose}){
                     value={email} onChange={e=>setEmail(e.target.value)} disabled={busy}
                     style={{flex:1,padding:"12px 14px",borderRadius:12,border:"1px solid rgba(255,255,255,.12)",fontSize:16,fontFamily:"inherit",background:"rgba(255,255,255,.06)",outline:"none",minWidth:0,color:"#fff"}}/>
                   <button type="submit" disabled={busy}
-                    style={{background:"#1EC8B0",color:"#06231d",border:"none",borderRadius:12,padding:"12px 18px",fontSize:14.5,fontWeight:800,cursor:"pointer",fontFamily:"inherit",opacity:busy?.7:1}}>
+                    style={{background:"#ff2db8",color:"#06231d",border:"none",borderRadius:12,padding:"12px 18px",fontSize:14.5,fontWeight:800,cursor:"pointer",fontFamily:"inherit",opacity:busy?.7:1}}>
                     {busy ? "..." : _t(lang,"S'inscrire","Subscribe","Suscribirme")}
                   </button>
                 </form>
@@ -10993,7 +10996,7 @@ function AlertHub({lang,island,beach,onPremium,onShowMap,onClose}){
 
         {/* Pli 5 — CTA conversion UNIQUE */}
         <button onClick={() => onPremium("alertes")} className="gbtn"
-          style={{display:"block",width:"100%",textAlign:"center",background:"#FFC72C",color:"#0A1714",border:"none",cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:16,padding:"16px 24px",borderRadius:18,boxShadow:"0 8px 28px rgba(255,199,44,.25)",marginBottom:10}}>
+          style={{display:"block",width:"100%",textAlign:"center",background:"#FFC72C",color:"#120821",border:"none",cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:16,padding:"16px 24px",borderRadius:18,boxShadow:"0 8px 28px rgba(255,199,44,.25)",marginBottom:10}}>
           {_t(lang,"Découvrir Premium","Discover Premium","Descubrir Premium")}
         </button>
         <div style={{textAlign:"center",fontSize:11.5,color:"rgba(255,255,255,.45)",marginBottom:36}}>
@@ -11003,7 +11006,7 @@ function AlertHub({lang,island,beach,onPremium,onShowMap,onClose}){
         {/* Pli 6 — Sorties */}
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:12,borderTop:"1px solid rgba(255,255,255,.07)",paddingTop:24}}>
           <button onClick={onShowMap}
-            style={{background:"none",border:"none",color:"#1EC8B0",fontWeight:700,fontSize:13.5,cursor:"pointer",textDecoration:"underline",fontFamily:"inherit"}}>
+            style={{background:"none",border:"none",color:"#ff2db8",fontWeight:700,fontSize:13.5,cursor:"pointer",textDecoration:"underline",fontFamily:"inherit"}}>
             {_t(lang,"Voir l'état des plages maintenant →","See beach status now →","Ver el estado de las playas ahora →")}
           </button>
           <a href="/previsions/"
@@ -11085,7 +11088,7 @@ function WorldCard({beach,lang,active,index,onCarnet,phaseGrad}){
         <WorldAfaiGauge afai={beach.afai} lang={lang}/>
         <a href="/fiabilite/" onClick={e=>{e.stopPropagation();try{track("sg_reliability_open",{from:"world_card"})}catch(_){}}}
           style={{display:"inline-flex",alignItems:"center",gap:7,marginTop:10,fontSize:11.5,fontWeight:700,color:"rgba(255,255,255,.92)",textDecoration:"none"}}>
-          🛰️ <span>{_t(lang,"Scan satellite • recoupé chaque jour","Satellite scan • cross-checked daily","Escaneo satélite • contrastado a diario")}</span> <span style={{color:"#5FD3C9"}}>→</span>
+          🛰️ <span>{_t(lang,"Scan satellite • recoupé chaque jour","Satellite scan • cross-checked daily","Escaneo satélite • contrastado a diario")}</span> <span style={{color:"#3fd07f"}}>→</span>
         </a>
         <button onClick={()=>{try{track("sg_world_carnet",{beach_id:beach.id,status})}catch(_){}; onCarnet&&onCarnet(beach)}}
           style={{display:"block",width:"100%",marginTop:14,padding:"14px",borderRadius:16,border:"none",cursor:"pointer",
@@ -11099,7 +11102,7 @@ function WorldCard({beach,lang,active,index,onCarnet,phaseGrad}){
       </div>}
       {tip&&<button onClick={()=>setTip(null)} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"absolute",inset:0,zIndex:8,display:"flex",alignItems:"center",justifyContent:"center",padding:24,background:"rgba(4,9,11,.42)",border:"none",cursor:"pointer"}}>
         <div className="wf-pop" style={{maxWidth:332,background:"rgba(7,32,30,.95)",border:"1px solid rgba(95,211,201,.42)",borderRadius:18,padding:"18px 20px",textAlign:"left",boxShadow:"0 14px 44px rgba(0,0,0,.55)"}}>
-          <div style={{fontSize:13,fontWeight:800,color:"#5FD3C9",marginBottom:7}}>{tip.t}</div>
+          <div style={{fontSize:13,fontWeight:800,color:"#3fd07f",marginBottom:7}}>{tip.t}</div>
           <div style={{fontSize:14.5,lineHeight:1.5,color:"#fff"}}>{tip.b}</div>
           <div style={{marginTop:12,fontSize:11,color:"rgba(255,255,255,.5)"}}>{_t(lang,"Touche pour fermer","Tap to close","Toca para cerrar")}</div>
         </div>
@@ -11260,7 +11263,7 @@ function WorldBonus({level,topBeach,lang,onPremium,onClose}){
         <div style={{marginTop:6,fontSize:12,fontWeight:800,letterSpacing:".08em",color:"#FFD884"}}>🔥 {_t(lang,"SÉRIE DE","STREAK OF","RACHA DE")} {level} · {_t(lang,"BONUS DÉBLOQUÉ","BONUS UNLOCKED","BONO DESBLOQUEADO")}</div>
         <h2 style={{margin:"8px 0 0",fontFamily:"'Anton',system-ui,sans-serif",fontSize:30,lineHeight:1.06}}>{_t(lang,"Tu as l'œil du Veilleur","You've got the Watchman's eye","Tienes el ojo del Vigía")}</h2>
         {topBeach&&<div style={{margin:"16px 0 0",padding:"14px 16px",borderRadius:16,background:"rgba(255,255,255,.07)",border:"1px solid rgba(95,211,201,.35)",textAlign:"left"}}>
-          <div style={{fontSize:11,fontWeight:800,letterSpacing:".06em",color:"#5FD3C9",textTransform:"uppercase"}}>🎁 {_t(lang,"Offert : ta reco du moment","Free: your pick right now","Gratis: tu recomendación")}</div>
+          <div style={{fontSize:11,fontWeight:800,letterSpacing:".06em",color:"#3fd07f",textTransform:"uppercase"}}>🎁 {_t(lang,"Offert : ta reco du moment","Free: your pick right now","Gratis: tu recomendación")}</div>
           <div style={{display:"flex",alignItems:"center",gap:12,marginTop:8}}>
             {typeof topBeach.score==="number"&&<ScoreBlob score={topBeach.score} color={topBeach.scoreColor||vm.color} size={52}/>}
             <div style={{flex:1,minWidth:0}}><div style={{fontSize:16,fontWeight:800}}>{topBeach.name}</div><div style={{fontSize:12.5,color:"rgba(255,255,255,.82)"}}>{topBeach.commune?topBeach.commune+" · ":""}{vm.emoji} {vm.verb}</div></div>
@@ -11273,7 +11276,7 @@ function WorldBonus({level,topBeach,lang,onPremium,onClose}){
             émotionnel (le "Wordle de la mer", actif d'acquisition organique). */}
         <button onClick={async()=>{try{track("sg_share",{variant:"streak",level})}catch(_){}; let best=level;try{best=parseInt(localStorage.getItem("sg_world_best")||String(level))||level}catch(_){}; try{await buildShareCard({variant:"streak",streak:level,best,lang})}catch(_){}}}
           style={{display:"block",width:"100%",marginTop:16,padding:"14px",borderRadius:16,border:"1px solid rgba(95,211,201,.5)",cursor:"pointer",
-          fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",fontSize:14.5,fontWeight:800,color:"#5FD3C9",background:"rgba(95,211,201,.08)"}}>
+          fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",fontSize:14.5,fontWeight:800,color:"#3fd07f",background:"rgba(95,211,201,.08)"}}>
           🔥 {_t(lang,"Partager ma série","Share my streak","Compartir mi racha")}
         </button>
         <button onClick={()=>{try{track("sg_world_bonus_premium",{level})}catch(_){}; onPremium&&onPremium("world_bonus")}}
@@ -11683,7 +11686,7 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
             <circle cx="560" cy="92" r="30" fill={sky.glit} opacity=".07"/>
             {/* halo « attrapé » quand on le tient + le Veilleur lui-même */}
             {satGrab&&<circle cx="560" cy="90" r="58" fill={sky.glit} opacity=".18"/>}
-            {miVeil(560,90,ph==="day"?"#2A6B66":"#3BA7A0","#5FD3C9")}
+            {miVeil(560,90,ph==="day"?"#2A6B66":"#5b3a8e","#3fd07f")}
             {/* bulle de dialogue : le Veilleur râle gentiment quand on l'attrape (ancrée à lui) */}
             {satSay&&<g>
               <path d="M541 60 L557 82 L533 65 Z" fill="rgba(7,32,30,.95)"/>
@@ -11703,7 +11706,7 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
           {groundOn&&<g aria-hidden="true">
             <defs>
               <radialGradient id="awGround" cx="50%" cy="50%" r="50%"><stop offset="0" stopColor="#16383A" stopOpacity=".82"/><stop offset=".6" stopColor="#123031" stopOpacity=".46"/><stop offset="1" stopColor="#123031" stopOpacity="0"/></radialGradient>
-              <radialGradient id="awShoreGlow" cx="50%" cy="50%" r="50%"><stop offset="0" stopColor="#FFE6A8" stopOpacity=".36"/><stop offset=".55" stopColor="#5FD3C9" stopOpacity=".10"/><stop offset="1" stopColor="#5FD3C9" stopOpacity="0"/></radialGradient>
+              <radialGradient id="awShoreGlow" cx="50%" cy="50%" r="50%"><stop offset="0" stopColor="#FFE6A8" stopOpacity=".36"/><stop offset=".55" stopColor="#3fd07f" stopOpacity=".10"/><stop offset="1" stopColor="#3fd07f" stopOpacity="0"/></radialGradient>
             </defs>
             {/* SOCLE DE CÔTE : la terre douce LÀ où sont les plages — concave (gère les baies),
                 zéro fake-île. + HALOS de rivage golden-hour (« les plages scintillent sur l'eau »). */}
@@ -11715,7 +11718,7 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
               onPointerDown={pv?(()=>{pressStartRef.current=Date.now();pressedRef.current=b.id;setPressed(b.id)}):undefined}
               onClick={ev=>{ev.stopPropagation();if(movedRef.current)return;if(pv&&pressStartRef.current&&Date.now()-pressStartRef.current>280)return;markConsulted(b.id);diveBeach(i,b)}}>
               {me
-                ?<g><circle r="40" fill={col} opacity=".14"/><circle r="29" fill={col} opacity=".10"/><circle r="23" fill="#0E2A26" stroke={col} strokeWidth="2.4"/>{sc!=null&&<text y="7" fontFamily="'Anton',sans-serif" fontSize="20" fill="#fff" textAnchor="middle">{sc}</text>}<text y="46" fontFamily="ui-monospace,monospace" fontSize="11" fontWeight="700" fill="#FFD884" textAnchor="middle">{b.name}</text></g>
+                ?<g><circle r="40" fill={col} opacity=".14"/><circle r="29" fill={col} opacity=".10"/><circle r="23" fill="#241246" stroke={col} strokeWidth="2.4"/>{sc!=null&&<text y="7" fontFamily="'Anton',sans-serif" fontSize="20" fill="#fff" textAnchor="middle">{sc}</text>}<text y="46" fontFamily="ui-monospace,monospace" fontSize="11" fontWeight="700" fill="#FFD884" textAnchor="middle">{b.name}</text></g>
                 :(pv&&pressed===b.id
                   ?(()=>{const vm=verdictMeta(b.status,lang),vb=(vm.verb||"").toUpperCase();return(<g className="aw-pvb">
                       <circle r={r*2.5} fill={col} opacity=".12"/>
@@ -11769,7 +11772,7 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
                   <div style={{fontSize:10.5,fontWeight:800,letterSpacing:".06em",color:"rgba(255,255,255,.5)"}}>{(tour+1)+" / "+tourOrder.length} · {_t(lang,"VISITE","TOUR","VISITA")}</div>
                   <div style={{fontSize:17,fontWeight:800,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.name}</div>
                   <div style={{fontSize:13,fontWeight:700,color:vm.color}}>{vm.emoji} {vm.verb}{b.commune?" · "+b.commune:""}</div>
-                  {freshLbl&&<div style={{fontSize:10.5,fontWeight:700,color:"#5FD3C9",marginTop:2,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>🛰️ {freshLbl}</div>}
+                  {freshLbl&&<div style={{fontSize:10.5,fontWeight:700,color:"#3fd07f",marginTop:2,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>🛰️ {freshLbl}</div>}
                 </div>
                 <Veilleur mood={moodFromStatus(b.status)} size={34}/>
               </div>
@@ -13216,7 +13219,7 @@ export default function App(){
         {/* CHECKOUT RECOVERY BANNER */}
         {showRecoveryBanner&&(
           <div style={{position:"fixed",top:0,left:0,right:0,zIndex:1500,
-            background:"linear-gradient(90deg,#0A1714 0%,#1a2f28 100%)",
+            background:"linear-gradient(90deg,#120821 0%,#1a2f28 100%)",
             borderBottom:"1px solid rgba(232,168,0,.3)",
             padding:"10px max(12px,env(safe-area-inset-right)) 10px max(12px,env(safe-area-inset-left))",
             paddingTop:"max(10px, calc(10px + env(safe-area-inset-top)))",
@@ -13230,7 +13233,7 @@ export default function App(){
               track("sg_checkout_recovery_click",{island})
               setShowRecoveryBanner(false)
               openPremium("recovery_banner")
-            }} style={{background:"#E8A800",color:"#0A1714",border:"none",borderRadius:8,
+            }} style={{background:"#E8A800",color:"#120821",border:"none",borderRadius:8,
               padding:"6px 14px",fontSize:12,fontWeight:700,fontFamily:"inherit",cursor:"pointer",
               whiteSpace:"nowrap",flexShrink:0}}>
               {_t(lang,"Passer Premium","Go Premium","Hazte Premium")}
@@ -13259,7 +13262,7 @@ export default function App(){
           {/* LEAFLET retiré du chemin par défaut : monté UNIQUEMENT en fallback ?nav=map.
               En navWorld (tous), l'Archipel SVG EST la carte → Leaflet jamais chargé
               (~150KB économisés, fin de la « soupe de calques »). Vision full-SVG. */}
-          {!navWorld&&<ErrBound><Suspense fallback={<div style={{width:"100%",height:"100%",background:"#0A1714"}}/>}>
+          {!navWorld&&<ErrBound><Suspense fallback={<div style={{width:"100%",height:"100%",background:"#120821"}}/>}>
             <LazyMapView beaches={filtered} island={island} lang={lang}
             onBeachClick={onBeachClick} selectedBeach={selectedBeach} sargData={sargData} userPos={userPos}
             favorites={favorites} allBeaches={allBeaches} onThreatChange={setHasActiveThreat}
@@ -13435,7 +13438,7 @@ export default function App(){
 
         {/* ALERTS HUB — /alertes/ page view (hub Premium = le veilleur personnel). */}
         {showAlertHub&&allBeaches?.length>=1&&(
-          <div style={{position:"fixed",inset:0,zIndex:1006,overflowY:"auto",background:"#0A1714"}}>
+          <div style={{position:"fixed",inset:0,zIndex:1006,overflowY:"auto",background:"#120821"}}>
             <AlertHub
               lang={lang} island={island}
               beach={heroPick}
@@ -13464,7 +13467,7 @@ export default function App(){
                 {_t(lang,"Sauve la plage — bats le score du jour","Save the beach — beat today's score","Salva la playa — supera el récord de hoy")}
               </div>
               <a href="/jeu/?utm_source=app&utm_medium=toast" onClick={()=>track("sg_game_toast_click",{})}
-                style={{background:"#FFC72C",color:"#0A1714",fontWeight:800,fontSize:12.5,
+                style={{background:"#FFC72C",color:"#120821",fontWeight:800,fontSize:12.5,
                   padding:"9px 13px",borderRadius:10,textDecoration:"none",whiteSpace:"nowrap"}}>
                 {_t(lang,"Jouer","Play","Jugar")}
               </a>
@@ -13726,7 +13729,7 @@ export default function App(){
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&(
           <button onClick={()=>{setShowChat(true);track("sg_chat_open",{})}} aria-label={_t(lang,"Assistant","Assistant","Asistente")}
             style={{position:"fixed",right:14,bottom:"calc(166px + env(safe-area-inset-bottom))",zIndex:960,
-              width:46,height:46,borderRadius:"50%",background:"#0D1E1C",border:"1.5px solid rgba(255,199,44,.55)",
+              width:46,height:46,borderRadius:"50%",background:"#190c2c",border:"1.5px solid rgba(255,199,44,.55)",
               fontSize:19,cursor:"pointer",boxShadow:"0 6px 20px rgba(0,0,0,.4)",display:"flex",
               alignItems:"center",justifyContent:"center",
               animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>💬</button>
@@ -13738,7 +13741,7 @@ export default function App(){
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!selectedBeach&&view==="map"&&(
           <button onClick={()=>{setShowDiscovery(true);track("sg_discovery_open",{})}} aria-label={_t(lang,"Comprendre les sargasses","Understand sargassum","Entender el sargazo")}
             style={{position:"fixed",right:14,bottom:"calc(220px + env(safe-area-inset-bottom))",zIndex:960,
-              width:46,height:46,borderRadius:"50%",background:"#0D1E1C",border:"1.5px solid rgba(63,167,160,.6)",
+              width:46,height:46,borderRadius:"50%",background:"#190c2c",border:"1.5px solid rgba(63,167,160,.6)",
               fontSize:18,cursor:"pointer",boxShadow:"0 6px 20px rgba(0,0,0,.4)",display:"flex",alignItems:"center",justifyContent:"center",
               animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>🛰️</button>
         )}
@@ -13761,7 +13764,7 @@ export default function App(){
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!showSolutions&&!showWorld&&!selectedBeach&&view==="map"&&(
           <button onClick={()=>{setShowSolutions(true);track("sg_solutions_open",{})}} aria-label={_t(lang,"Les solutions sargasses","Sargassum solutions","Soluciones al sargazo")}
             style={{position:"fixed",right:14,bottom:"calc(328px + env(safe-area-inset-bottom))",zIndex:960,
-              width:46,height:46,borderRadius:"50%",background:"#0D1E1C",border:"1.5px solid rgba(95,211,201,.6)",
+              width:46,height:46,borderRadius:"50%",background:"#190c2c",border:"1.5px solid rgba(95,211,201,.6)",
               fontSize:19,cursor:"pointer",boxShadow:"0 6px 20px rgba(0,0,0,.4)",display:"flex",alignItems:"center",justifyContent:"center",
               animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>💡</button>
         )}
@@ -13772,7 +13775,7 @@ export default function App(){
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!showSolutions&&!showWorld&&!showArchipel&&!selectedBeach&&view==="map"&&(
           <button onClick={()=>{setShowArchipel(true);track("sg_archipel_open",{from:"fab"})}} aria-label={_t(lang,"L'archipel du Veilleur","The Watcher's archipelago","El archipiélago")}
             style={{position:"fixed",right:14,bottom:"calc(382px + env(safe-area-inset-bottom))",zIndex:960,
-              width:46,height:46,borderRadius:"50%",background:"#0D1E1C",border:"1.5px solid rgba(255,216,132,.7)",
+              width:46,height:46,borderRadius:"50%",background:"#190c2c",border:"1.5px solid rgba(255,216,132,.7)",
               fontSize:19,cursor:"pointer",boxShadow:"0 6px 20px rgba(0,0,0,.4)",display:"flex",alignItems:"center",justifyContent:"center",
               animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>🧭</button>
         )}
@@ -13831,7 +13834,7 @@ export default function App(){
         )}
         {showWelcome&&pwOnboard!=="onboard"&&(
           <div style={{position:"fixed",bottom:"calc(104px + env(safe-area-inset-bottom, 0px))",left:"50%",transform:"translateX(-50%)",
-            zIndex:1400,background:"linear-gradient(135deg,#009E8E,#1EC8B0)",color:"#fff",
+            zIndex:1400,background:"linear-gradient(135deg,#d6249f,#ff2db8)",color:"#fff",
             padding:"14px 24px",borderRadius:16,fontSize:14,fontWeight:600,
             boxShadow:"0 8px 24px rgba(0,158,142,.35)",
             display:"flex",alignItems:"center",gap:10,maxWidth:"min(90vw, 460px)",boxSizing:"border-box",
