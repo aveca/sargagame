@@ -3579,7 +3579,7 @@ function comicVerdict(status,lang,daypart){
   if(status==="avoid")return{big:_t(lang,"Évite l'eau","Skip the swim","Evita el agua"),when:w,hl:_t(lang,"ALERTE","ALERT","ALERTA")}
   return{big:_t(lang,"Le Veilleur scanne","Scanning","Escaneando"),when:w,hl:"…"}
 }
-function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,onBeachClick,onPremiumClick,isPremium,sargData,userPos,forecast:forecastProp,track:trackProp}){
+function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,onBeachClick,onPremiumClick,isPremium,sargData,userPos,forecast:forecastProp,track:trackProp,communityReports={}}){
   const trk=(n,p)=>{try{(trackProp||track)(n,p)}catch(_){}}
   const weather=useWeather(beach)
   const sheetRef=useRef(null), backdropRef=useRef(null), startY=useRef(0), dragY=useRef(0), closingRef=useRef(false)
@@ -3735,13 +3735,13 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
 
         {/* Honnêteté couverture satellite — côte exposée non observée directement.
             Le satellite voit le large, pas l'échoué : on ne dit pas « propre » sans réserve. */}
-        {beach._satBlind&&status==="clean"&&(
+        {beach._satBlind&&status==="clean"&&!beach._communityOverride&&(
           <div style={{display:"flex",gap:9,padding:"11px 13px",margin:"0 0 12px",background:COMIC.cream,border:`2.5px solid ${COMIC.ink}`,borderRadius:14,boxShadow:`3px 3px 0 ${COMIC.ink}`}}>
             <span aria-hidden style={{fontSize:18,lineHeight:1.1}}>🛰️</span>
             <div style={{font:"700 11.5px/1.45 'Bricolage Grotesque'",color:COMIC.ink}}>{_t(lang,
-              "Rien détecté au large par satellite — mais le satellite ne voit pas le sargasse déjà échoué sur le sable. Sur cette côte exposée, vérifiez un signalement récent avant de vous déplacer.",
-              "Nothing detected offshore by satellite — but satellite can't see sargassum already piled on the sand. On this exposed coast, check a recent local report before heading out.",
-              "Nada detectado mar adentro por satélite — pero el satélite no ve el sargazo ya varado en la arena. En esta costa expuesta, consulte un reporte reciente antes de ir.")}</div>
+              "Vu du ciel, rien au large ici. Mais le sargasse déjà échoué sur le sable ne se voit pas du satellite — si tu y es, signale-le pour les autres 👇",
+              "From the sky, nothing offshore here. But sargassum already on the sand isn't visible by satellite — if you're there, report it for others 👇",
+              "Desde el cielo, nada mar adentro aquí. Pero el sargazo ya varado no se ve por satélite — si estás ahí, repórtalo para los demás 👇")}</div>
           </div>
         )}
 
@@ -3788,6 +3788,10 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
               <span style={{color:COMIC.sub,font:"700 11px/1 'Bricolage Grotesque'",whiteSpace:"nowrap"}}>{Math.round(b._d)} km →</span></button>)}
           </div>
         </div>}
+
+        {/* Signaler — l'utilisateur sur place corrige le satellite (l'échoué n'est pas vu du ciel).
+            Alimente _communityOverride (« terrain prime », seuil ≥3). */}
+        <BeachReport beach={beach} lang={lang} communityReports={communityReports}/>
 
         {/* CTA collant — décision unique, or */}
         <div style={{position:"sticky",bottom:0,paddingTop:8,marginTop:4,background:`linear-gradient(to top, ${COMIC.cream} 72%, transparent)`}}>
@@ -13964,7 +13968,8 @@ export default function App(){
                 favorites={favorites} onToggleFav={toggleFav} lang={lang}
                 allBeaches={allBeaches} onBeachClick={onBeachClick}
                 onPremiumClick={openPremium} isPremium={isPremium}
-                sargData={sargData} userPos={userPos} forecast={_fc} track={track}/>
+                sargData={sargData} userPos={userPos} forecast={_fc} track={track}
+                communityReports={communityReports}/>
             </ErrBound>
           )
         })()}
