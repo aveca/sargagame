@@ -792,8 +792,9 @@ export default function WorldMapView({
           }}>
             {DAY_LBL.map((lbl,i)=>(
               <button key={i} style={{
+                WebkitAppearance:"none",appearance:"none",
                 border:day===i?`2px solid ${INK}`:"2px solid transparent",position:"relative",
-                background:day===i?"#ffd23f":"transparent",
+                background:day===i?"#ff7a2f":"transparent",
                 color:INK,
                 font:"800 11px/1 'Comic Neue',system-ui,sans-serif",
                 padding:"7px 10px",borderRadius:999,cursor:"pointer",
