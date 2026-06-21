@@ -493,13 +493,31 @@ jobs:
             exit 1
           fi
 
+      # ── Garde MOAT : intégrité des données AVANT publication FTP ────────────
+      # verify-ftp-ready.cjs refuse (exit 1) une carte issue d'une source dégradée
+      # / de référence OU un pic "tout vert" suspect (>40 pts de plages propres en
+      # <24h = grille corrompue / no-data masqué). « Jamais publier une fausse
+      # carte verte ». continue-on-error → n'échoue PAS le job (emails / SEO / vidéo
+      # en aval continuent) ; on saute UNIQUEMENT le deploy FTP (le « if » ci-dessous).
+      # Les données restent archivées en repo, le prochain run (4×/j) re-tentera.
+      - name: Vérifier l'intégrité des données avant publication FTP
+        id: verify_data
+        continue-on-error: true
+        run: node scripts/verify-ftp-ready.cjs
+
+      - name: Alerte si publication bloquée (intégrité données)
+        if: steps.verify_data.outcome == 'failure'
+        run: echo "::error title=Publication FTP bloquée::verify-ftp-ready a refusé la publication (source dégradée/référence ou pic tout-vert suspect). Deploy FTP sauté pour ne pas diffuser une fausse carte verte. Données archivées en repo ; prochain run re-tentera la source live."
+
       # ── 4–5. FTPS déployé en sessions fragmentées (basic-ftp) — évite
       # "Timeout (control socket)" de l'hébergeur (~660 STOR / session).
       # manual-ftp-deploy.cjs itère TOUTES les régions (regions/index.cjs) :
       # une région sans secrets FTP ou sans dossier <ftpDir>/ local = skip
       # silencieux (le workflow n'échoue pas).
+      # Gated : ne publie QUE si verify_data a réussi (intégrité OK).
       - name: Deploy FTPS toutes régions (sessions fragmentées)
         id: ftp_deploy
+        if: steps.verify_data.outcome == 'success'
         continue-on-error: true
         # Garde-fou : une session FTPS morte peut faire griller le step indéfiniment
         # (vu 2026-06-16 : 33 min bloqués, run suivant en queue derrière). Le step est

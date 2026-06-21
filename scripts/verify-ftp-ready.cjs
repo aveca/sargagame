@@ -46,6 +46,40 @@ function main() {
     ok = false
   } else {
     console.log('   source:', data.source)
+    // ── Garde MOAT #1 : ne JAMAIS publier une carte issue d'une source DÉGRADÉE
+    // ou de RÉFÉRENCE (jamais de fausse carte verte). Seules les sources LIVE
+    // réelles sont autorisées ; 'reference' / 'reference-fallback' (données
+    // hardcodées) / 'erddap-fallback' (grille ERDDAP manquante) sont bloquées.
+    // Allowlist (et non blocklist) = robuste à une source dégradée inconnue.
+    const LIVE_SOURCES = ['erddap-live', 'copernicus']
+    if (!LIVE_SOURCES.includes(data.source)) {
+      console.error(`❌ source="${data.source}" non-live (dégradée / référence) — publication FTP bloquée pour ne pas diffuser une carte sans données réelles. Le prochain run re-tentera la source live.`)
+      ok = false
+    }
+  }
+
+  // ── Garde MOAT #2 : pic "tout vert" suspect. Un bond brutal du taux de plages
+  // propres (>40 points vs le dernier jour DISTINCT de l'historique) est
+  // physiquement improbable (demi-vie échouage ~3,5j) et trahit une grille
+  // corrompue ou du no-data masqué en 'clean'. On bloque la publication.
+  // Source-agnostique : attrape la fausse carte verte même si le flag source ment.
+  // Lecture historique fail-open (si illisible → garde inactive, pas de blocage).
+  if (Array.isArray(data.levels) && data.levels.length) {
+    let prevCleanRatio = null
+    try {
+      const hist = JSON.parse(fs.readFileSync(path.join(root, 'public', 'api', 'copernicus', 'history.json'), 'utf-8'))
+      const entries = Array.isArray(hist.history) ? hist.history : []
+      const curDate = String(data.updatedAt || '').slice(0, 10)
+      // Dernier jour DISTINCT : l'historique contient déjà le run du jour, donc
+      // comparer au tout dernier reviendrait à se comparer à soi-même (no-op).
+      const prior = [...entries].reverse().find(e => e && e.date && e.date !== curDate && Array.isArray(e.levels) && e.levels.length)
+      if (prior) prevCleanRatio = prior.levels.filter(l => l.status === 'clean').length / prior.levels.length
+    } catch (_) {}
+    const curCleanRatio = data.levels.filter(l => l.status === 'clean').length / data.levels.length
+    if (prevCleanRatio !== null && (curCleanRatio - prevCleanRatio) > 0.4) {
+      console.error(`❌ Pic "tout vert" suspect : ${Math.round(prevCleanRatio * 100)}% → ${Math.round(curCleanRatio * 100)}% de plages propres en <24h (improbable, demi-vie ~3,5j). Publication bloquée — relancer fetch-sargassum-live.cjs pour confirmer.`)
+      ok = false
+    }
   }
 
   if (!data.updatedAt) {
