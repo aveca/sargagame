@@ -49,14 +49,30 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
-      # Pas de `npm ci` : email-weekend.cjs n'a AUCUNE dépendance npm
-      # (fs/path/https natifs + lib/email-send.cjs pur). Plus rapide, plus robuste.
+          cache: 'npm'
+      # nodemailer (envoi SMTP) + googleapis (fetch-subscribers) requièrent npm ci.
+      - name: Install deps
+        run: npm ci
+
+      # Récupère la liste d'abonnés (Sheet via service account) → data/subscribers.json
+      # (gitignored, RGPD). Déjà filtrée des désabonnés + bounces. Requis avant l'envoi.
+      - name: Fetch subscriber list
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: node scripts/automation/fetch-subscribers.cjs
 
       # Lit la donnée COMMITÉE (public/api/copernicus/sargassum.json — ≤6h frais
-      # via daily-copernicus 4×/j) + public/data/beaches-list.json. Webhook Apps
-      # Script hardcodé → aucun secret requis. Pas de retry-on-failure ici (donc
-      # workflow_dispatch reste sûr, contrairement à daily-copernicus).
-      - name: Send weekend bulletin (Apps Script → MQ + GP)
+      # via daily-copernicus 4×/j) + public/data/beaches-list.json. Envoi SMTP
+      # depuis la VRAIE boîte alerte@sargasses-martinique.com (cPanel) — plus de
+      # MailApp/gmail. Host/user/port non sensibles ; seul SMTP_PASS est un secret.
+      # Pas de fallback gmail : si SMTP échoue, le run échoue (alerté). Pas de
+      # retry-on-failure ici (workflow_dispatch reste sûr).
+      - name: Send weekend bulletin (SMTP alerte@ → MQ + GP)
+        env:
+          SMTP_HOST: premium115.web-hosting.com
+          SMTP_PORT: '465'
+          SMTP_USER: alerte@sargasses-martinique.com
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/email-weekend.cjs
 
       # Persiste le marqueur anti-doublon. Push via GITHUB_TOKEN → ne re-déclenche

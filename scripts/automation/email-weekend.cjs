@@ -3,11 +3,12 @@
  * Weekend Email Bulletin — Sargasses MQ/GP
  *
  * Sends a formatted HTML email every Friday to all captured emails
- * via Google Apps Script (which uses MailApp.sendEmail).
+ * via SMTP from the real alerte@sargasses-martinique.com mailbox (cPanel) —
+ * NO MORE Apps Script/MailApp (which could only send from the owner's Gmail).
  *
  * Setup:
- * 1. The Apps Script at WEBHOOK_URL must handle type="weekend_email"
- * 2. It reads emails from the Sheet and sends HTML email to each
+ * 1. Subscriber list comes from data/subscribers.json (fetch-subscribers.cjs)
+ * 2. SMTP creds via env: SMTP_HOST / SMTP_PORT / SMTP_USER / SMTP_PASS
  *
  * Usage:
  *   node scripts/automation/email-weekend.cjs
@@ -16,7 +17,31 @@
 const fs = require('fs')
 const path = require('path')
 const https = require('https')
-const { injectPreheader, applyBrand } = require('./lib/email-send.cjs')
+const nodemailer = require('nodemailer')
+const { injectPreheader, applyBrand, htmlToText } = require('./lib/email-send.cjs')
+const { logId } = require('./lib/email-hash.cjs')
+
+// SMTP — boîte alerte@ (cPanel). Envoi depuis le VRAI alerte@sargasses-martinique.com
+// (plus de MailApp/gmail). Lit process.env (CI) OU le .env local (comme welcome-paid.cjs).
+function envVal(name) {
+  if (process.env[name]) return process.env[name].trim()
+  try {
+    const t = fs.readFileSync(path.join(__dirname, '../../.env'), 'utf8')
+    const m = t.match(new RegExp('^' + name + '=([^\\r\\n]+)', 'm'))
+    return m ? m[1].trim() : null
+  } catch { return null }
+}
+const SMTP_HOST = envVal('SMTP_HOST'), SMTP_PORT = +envVal('SMTP_PORT') || 465
+const SMTP_USER = envVal('SMTP_USER'), SMTP_PASS = envVal('SMTP_PASS')
+// Leads PRO exclus du bulletin grand public (drip B2B dédié — jamais l'offre 4,99 €).
+const B2B_SOURCES = new Set(['b2b_hotel_request', 'b2b_collectivite_request'])
+// Liste d'abonnés fetchée au runtime par fetch-subscribers.cjs (RGPD : gitignored,
+// déjà filtrée des désabonnés + bounces + dédupliquée).
+const SUBSCRIBERS_PATH = path.join(__dirname, 'data', 'subscribers.json')
+const sleep = ms => new Promise(r => setTimeout(r, ms))
+function loadSubscribers() {
+  try { return JSON.parse(fs.readFileSync(SUBSCRIBERS_PATH, 'utf-8')) } catch { return [] }
+}
 
 const FORCE = process.argv.includes('--force')
 const SARG_PATH = path.join(__dirname, '../../public/api/copernicus/sargassum.json')
@@ -175,6 +200,25 @@ async function main() {
     }
   } catch {}
 
+  // SMTP transporter (boîte alerte@). Fail-fast si creds absents — JAMAIS de
+  // fallback gmail (c'est précisément ce qu'on supprime).
+  if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
+    console.error('SMTP_HOST/USER/PASS manquants — impossible d\'envoyer le bulletin.')
+    process.exitCode = 1
+    return
+  }
+  const subscribers = loadSubscribers()
+  if (!subscribers.length) {
+    console.error('subscribers.json vide/absent — lance fetch-subscribers.cjs avant.')
+    process.exitCode = 1
+    return
+  }
+  const transporter = nodemailer.createTransport({
+    host: SMTP_HOST, port: SMTP_PORT, secure: SMTP_PORT === 465,
+    auth: { user: SMTP_USER, pass: SMTP_PASS },
+    pool: true, maxConnections: 3, maxMessages: 50,
+  })
+
   let sargData, beaches
   try { sargData = JSON.parse(fs.readFileSync(SARG_PATH, 'utf-8')) } catch { console.error('No sargassum.json'); return }
   try { beaches = JSON.parse(fs.readFileSync(BEACHES_PATH, 'utf-8')) } catch { beaches = [] }
@@ -264,17 +308,40 @@ async function main() {
         ? `Ce weekend en ${islandName} : ${topBeaches[0].name}, ta meilleure option`
         : `Ce weekend en ${islandName} : la carte des plages en direct`
     }
-    const res = await post(WEBHOOK_URL, {
-      type: 'weekend_email',
-      island: island.toUpperCase(),
-      subject,
-      html,
-      date: new Date().toISOString(),
-    })
+    // Envoi SMTP depuis alerte@ à chaque abonné de l'île (perso {{EMAIL}} pour
+    // le lien de désabonnement + header List-Unsubscribe one-click RFC 8058).
+    const from = `Sargasses ${islandName} <alerte@sargasses-martinique.com>`
+    const text = htmlToText(html)
+    const recipients = subscribers.filter(s =>
+      s.email && s.email.includes('@') &&
+      (s.island || 'MQ').toUpperCase() === island.toUpperCase() &&
+      !B2B_SOURCES.has(s.source)
+    )
+    let sent = 0, failed = 0
+    for (const sub of recipients) {
+      const enc = encodeURIComponent(sub.email)
+      const personalHtml = html.replace(/\{\{EMAIL\}\}/g, enc)
+      const personalText = text.replace(/\{\{EMAIL\}\}/g, enc)
+      const unsub = unsubUrl(island).replace('{{EMAIL}}', enc)
+      try {
+        await transporter.sendMail({
+          from, to: sub.email, subject,
+          html: personalHtml, text: personalText,
+          headers: {
+            'List-Unsubscribe': `<${unsub}>`,
+            'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+          },
+        })
+        sent++
+        if (sent % 25 === 0) await sleep(1500) // douceur pour l'hôte mutualisé
+      } catch (e) {
+        failed++
+        console.log(`  ❌ ${logId(sub.email)}: ${e.message}`)
+      }
+    }
+    console.log(`${islandName}: envoyé ${sent}/${recipients.length} (échecs ${failed})`)
 
-    console.log(`Sent to webhook: status=${res.status}`)
-
-    // Track in Sheet
+    // Track aggregate in Sheet (best-effort, non bloquant)
     try {
       await post(WEBHOOK_URL, {
         type: 'email_tracking',
@@ -282,11 +349,14 @@ async function main() {
         subject,
         email_type: 'weekend_bulletin',
         island: island.toUpperCase(),
-        status: 'dispatched',
+        status: 'sent',
+        count: sent,
         date: new Date().toISOString(),
       })
     } catch {}
   }
+
+  transporter.close()
 
   // Mark as sent for deduplication
   try { fs.writeFileSync(SENT_PATH, JSON.stringify({ lastSent: todayKey })) } catch {}
