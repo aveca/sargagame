@@ -198,6 +198,10 @@ const VEILLEUR_MOOD={
   alerte:{wing:"#e8322a",halo:"#e8322a",lens:"#F4845F",ant:"#F4845F",tilt:-8,ring:"#e8322a"},
   scan:{wing:"#5b3a8e",halo:"#7a4fb0",lens:"#3fd07f",ant:"#FFC72C",tilt:0,ring:null},
 }
+// Chemin de la page « fiabilité » selon la région/langue : MQ/GP → /fiabilite/,
+// nouvelles régions → /reliability/ (EN) ou /fiabilidad/ (ES). Évite les 404 sur
+// les domaines US (la page n'existe qu'aux slugs régionaux, jamais /fiabilite/).
+function reliabilityHref(lang){return IS_NEW_REGION?(lang==="es"?"/fiabilidad/":"/reliability/"):"/fiabilite/"}
 function moodFromScore(score){return typeof score!=="number"?"scan":score>=70?"serein":score>=40?"vigilant":"alerte"}
 function moodFromStatus(s){return s==="clean"?"serein":s==="moderate"?"vigilant":s==="avoid"?"alerte":"scan"}
 // Verdict doublé texte+couleur+forme+emoji (jamais couleur seule — a11y). FR/EN/ES.
@@ -3781,7 +3785,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
           {!isPremium&&<>
             <div style={{font:"600 11.5px/1.4 'Bricolage Grotesque'",color:"#41414a",textAlign:"center",margin:"9px 8px 0"}}>{_t(lang,"Ne découvre plus les algues une fois sur place. Sois prévenu·e la veille.","Stop discovering the seaweed once you're there. Get warned the day before.","Deja de descubrir el sargazo al llegar. Te avisamos la víspera.")}</div>
             <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:COMIC.sub,textAlign:"center",marginTop:6}}>≈ {pricePerDay()||"0,16 €"} / {_t(lang,"jour","day","día")} · {_t(lang,"sans engagement, résiliable à tout moment","cancel anytime","sin compromiso, cancela cuando quieras")}</div>
-            <div style={{font:"800 11px/1.3 'Bricolage Grotesque'",color:COMIC.ink,textAlign:"center",marginTop:6}}>★ {_t(lang,`Rejoint par ${socialN}+ vacanciers`,`Joined by ${socialN}+ beachgoers`,`${socialN}+ veraneantes ya dentro`)}</div>
+            {!IS_NEW_REGION&&<div style={{font:"800 11px/1.3 'Bricolage Grotesque'",color:COMIC.ink,textAlign:"center",marginTop:6}}>★ {_t(lang,`Rejoint par ${socialN}+ vacanciers`,`Joined by ${socialN}+ beachgoers`,`${socialN}+ veraneantes ya dentro`)}</div>}
           </>}
           <button onClick={()=>{setShowProof(v=>!v);trk("sg_beach_proof",{beach_id:beach.id,open:!showProof})}}
             style={{display:"block",margin:"12px auto 0",background:"none",border:"none",color:COMIC.ink,font:"800 12.5px/1 'Bricolage Grotesque'",textDecoration:"underline",cursor:"pointer"}}>{_t(lang,"Voir la preuve · comment on mesure","See the proof · how we measure","Ver la prueba · cómo medimos")}</button>
@@ -7045,7 +7049,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               {_t(lang,`Activer l'alerte sur ${beach.name}`,`Activate alert on ${beach.name}`,`Activar alerta en ${beach.name}`)}
             </div>
             <div style={{font:"600 12px/1 system-ui,sans-serif",opacity:.78,marginTop:3}}>
-              {NO_TRIAL?_t(lang,"4,99 €/mois · annulable en 2 clics","€4.99/mo · cancel anytime","4,99/mes · cancela cuando quieras"):_t(lang,"7 jours offerts · 4,99 €/mois ensuite","7-day free trial · €4.99/mo after","7 días gratis · 4,99/mes después")}
+              {NO_TRIAL?_t(lang,"4,99 €/mois · annulable en 2 clics","€4.99/mo · cancel anytime","4,99 €/mes · cancela cuando quieras"):_t(lang,"7 jours offerts · 4,99 €/mois ensuite","7-day free trial · €4.99/mo after","7 días gratis · 4,99 €/mes después")}
             </div>
           </button>
           <div style={{textAlign:"center",marginTop:13,font:"600 10.5px/1 system-ui,sans-serif",color:"rgba(234,247,244,.5)",letterSpacing:".015em"}}>
@@ -8233,7 +8237,7 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
           
           {__REL&&typeof __REL.cleanPct==="number"&&(()=>{
             const reg=__REL.regime==="high"?_t(lang,"saison haute","high season","temporada alta"):_t(lang,"saison calme","calm season","temporada tranquila")
-            return <a href={IS_NEW_REGION?undefined:"/fiabilite/"} onClick={()=>{try{track("sg_reliability_open",{from:"capture_gate"})}catch(_){}}}
+            return <a href={reliabilityHref(lang)} onClick={()=>{try{track("sg_reliability_open",{from:"capture_gate"})}catch(_){}}}
               style={{display:"inline-flex",alignItems:"center",gap:7,margin:"0 0 16px",padding:"7px 13px",borderRadius:999,
                 background:"rgba(34,197,94,.10)",border:"1px solid rgba(34,197,94,.24)",textDecoration:"none",
                 fontSize:12,fontWeight:600,color:"#8FE3B0",cursor:IS_NEW_REGION?"default":"pointer"}}>
@@ -11088,10 +11092,10 @@ function AlertHub({lang,island,beach,onPremium,onShowMap,onClose}){
             style={{background:"none",border:"none",color:"#1c7fb0",fontWeight:700,fontSize:13.5,cursor:"pointer",textDecoration:"underline",fontFamily:"inherit"}}>
             {_t(lang,"Voir l'état des plages maintenant →","See beach status now →","Ver el estado de las playas ahora →")}
           </button>
-          <a href="/previsions/"
+          {!IS_NEW_REGION&&<a href="/previsions/"
             style={{color:"rgba(255,255,255,.5)",fontWeight:600,fontSize:13,textDecoration:"underline",fontFamily:"inherit"}}>
             {_t(lang,"Comment marchent nos prévisions →","How our forecasts work →","Cómo funcionan nuestros pronósticos →")}
-          </a>
+          </a>}
         </div>
       </div>
     </div>
@@ -11165,7 +11169,7 @@ function WorldCard({beach,lang,active,index,onCarnet,phaseGrad}){
           <button onClick={tapVeilleur} aria-label={TIPS.veilleur.t} style={{background:"none",border:"none",padding:0,cursor:"pointer"}}><Veilleur mood={mood} size={42}/></button>
         </div>
         <WorldAfaiGauge afai={beach.afai} lang={lang}/>
-        <a href="/fiabilite/" onClick={e=>{e.stopPropagation();try{track("sg_reliability_open",{from:"world_card"})}catch(_){}}}
+        <a href={reliabilityHref(lang)} onClick={e=>{e.stopPropagation();try{track("sg_reliability_open",{from:"world_card"})}catch(_){}}}
           style={{display:"inline-flex",alignItems:"center",gap:7,marginTop:10,fontSize:11.5,fontWeight:700,color:"rgba(255,255,255,.92)",textDecoration:"none"}}>
           🛰️ <span>{_t(lang,"Scan satellite • recoupé chaque jour","Satellite scan • cross-checked daily","Escaneo satélite • contrastado a diario")}</span> <span style={{color:"#3fd07f"}}>→</span>
         </a>
@@ -11402,7 +11406,7 @@ function WorldCarnet({beach,lang,onClose,onPremium}){
           <div style={{fontSize:12,fontWeight:800,letterSpacing:".06em",color:"#FFD884"}}>🔒 {_t(lang,"AVEC LE VEILLEUR","WITH THE WATCHMAN","CON EL VIGÍA")}</div>
           <div style={{marginTop:6,fontSize:15,fontWeight:700,lineHeight:1.4}}>{_t(lang,"Prévision 14 jours, historique, brief matin & alertes sur cette plage →","14-day forecast, history, morning brief & alerts for this beach →","Pronóstico 14 días, historial, resumen y alertas →")}</div>
         </button>
-        <a href="/fiabilite/" onClick={()=>{try{track("sg_reliability_open",{from:"world_carnet"})}catch(_){}}}
+        <a href={reliabilityHref(lang)} onClick={()=>{try{track("sg_reliability_open",{from:"world_carnet"})}catch(_){}}}
           style={{display:"inline-flex",alignItems:"center",gap:7,marginTop:16,fontSize:12,fontWeight:700,color:"rgba(255,255,255,.82)",textDecoration:"none"}}>
           🛰️ {_t(lang,"Comment on prévoit : notre fiabilité →","How we forecast: our reliability →","Cómo pronosticamos: nuestra fiabilidad →")}
         </a>
