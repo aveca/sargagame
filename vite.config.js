@@ -684,6 +684,23 @@ export default defineConfig({
               return text
             })
           }
+          // datePublished honnête par slug (date git du 1er commit) — remplace la
+          // constante '2026-03-01' antidatée (les clusters de juin n'existaient pas
+          // en mars). dateModified reste = build. Défaut conservateur 2026-04-01
+          // (jamais antérieur au réel → on n'antidate jamais). Les variantes EN
+          // partagent la date de leur équivalent FR.
+          const PUBLISHED_BY_SLUG = {
+            'sargasses-deshaies': '2026-06-21', 'sargasses-gosier': '2026-06-21', 'sargasses-sainte-anne-guadeloupe': '2026-06-21', 'sargasses-saint-francois': '2026-06-21',
+            'sargasses-le-diamant': '2026-06-19', 'sargasses-sainte-luce': '2026-06-19', 'sargasses-sainte-anne-martinique': '2026-06-19', 'sargasses-les-trois-ilets': '2026-06-19',
+            'bulletin-sargasses-martinique': '2026-06-19', 'bulletin-sargasses-guadeloupe': '2026-06-19',
+            'sargasses-sante-symptomes': '2026-06-19', 'en/sargassum-health': '2026-06-19',
+            'que-faire-sargasses-martinique': '2026-06-19', 'que-faire-sargasses-guadeloupe': '2026-06-19',
+            'en/what-to-do-sargassum-martinique': '2026-06-19', 'en/what-to-do-sargassum-guadeloupe': '2026-06-19',
+            'saison-sargasses-martinique': '2026-04-01', 'saison-sargasses-guadeloupe': '2026-04-01', 'en/sargassum-season': '2026-04-01',
+            'comprendre-sargasses': '2026-04-12', 'en/understanding-sargassum': '2026-04-12',
+            'detection-satellite-sargasses': '2026-04-12', 'en/satellite-sargassum-detection': '2026-04-12',
+          }
+          const pubDateFor = (slug) => PUBLISHED_BY_SLUG[slug] || '2026-04-01'
           for (const { path: p, title, desc, enPath, esPath } of pages) {
             const dir = resolve(outDir, p)
             mkdirSync(dir, { recursive: true })
@@ -706,8 +723,9 @@ export default defineConfig({
             // Inject noscript editorial content + article schema + OG freshness tags
             if (editorialContent[p]) {
               const modDate = new Date().toISOString().slice(0,10)
-              const articleSchema = JSON.stringify({"@context":"https://schema.org","@type":"Article","headline":title,"description":desc,"url":`https://sargasses-martinique.com/${p}/`,"datePublished":"2026-03-01","dateModified":modDate,"publisher":{"@type":"Organization","name":"Sargasses Martinique","logo":"https://sargasses-martinique.com/icon-512.png"},"author":{"@type":"Organization","name":"Sargasses Martinique","url":"https://sargasses-martinique.com/"}})
-              const ogArticleTags = `\n    <meta property="article:published_time" content="2026-03-01" />\n    <meta property="article:modified_time" content="${modDate}" />`
+              const pubDate = pubDateFor(p)
+              const articleSchema = JSON.stringify({"@context":"https://schema.org","@type":"Article","headline":title,"description":desc,"url":`https://sargasses-martinique.com/${p}/`,"image":"https://sargasses-martinique.com/og-image.png","datePublished":pubDate,"dateModified":modDate,"publisher":{"@type":"Organization","name":"Sargasses Martinique","logo":{"@type":"ImageObject","url":"https://sargasses-martinique.com/icon-512.png","width":512,"height":512}},"author":{"@type":"Organization","name":"Sargasses Martinique","url":"https://sargasses-martinique.com/"}})
+              const ogArticleTags = `\n    <meta property="article:published_time" content="${pubDate}" />\n    <meta property="article:modified_time" content="${modDate}" />`
               // Optional FAQPage schema — Google rich result for Q&A pages
               let faqSchemaTag = ''
               if (faqSchemas[p]) {
@@ -840,8 +858,9 @@ export default defineConfig({
             // EN pages that have a body — same crawlable-content treatment as FR editorials.
             if (editorialContent[ep.path]) {
               const modDate = new Date().toISOString().slice(0,10)
-              const articleSchema = JSON.stringify({"@context":"https://schema.org","@type":"Article","headline":ep.title,"description":ep.desc,"url":`https://sargasses-martinique.com/${ep.path}/`,"datePublished":"2026-03-01","dateModified":modDate,"inLanguage":"en","publisher":{"@type":"Organization","name":"Sargasses Martinique","logo":"https://sargasses-martinique.com/icon-512.png"},"author":{"@type":"Organization","name":"Sargasses Martinique","url":"https://sargasses-martinique.com/"}})
-              const ogArticleTags = `\n    <meta property="article:published_time" content="2026-03-01" />\n    <meta property="article:modified_time" content="${modDate}" />`
+              const pubDate = pubDateFor(ep.path)
+              const articleSchema = JSON.stringify({"@context":"https://schema.org","@type":"Article","headline":ep.title,"description":ep.desc,"url":`https://sargasses-martinique.com/${ep.path}/`,"image":"https://sargasses-martinique.com/og-image.png","datePublished":pubDate,"dateModified":modDate,"inLanguage":"en","publisher":{"@type":"Organization","name":"Sargasses Martinique","logo":{"@type":"ImageObject","url":"https://sargasses-martinique.com/icon-512.png","width":512,"height":512}},"author":{"@type":"Organization","name":"Sargasses Martinique","url":"https://sargasses-martinique.com/"}})
+              const ogArticleTags = `\n    <meta property="article:published_time" content="${pubDate}" />\n    <meta property="article:modified_time" content="${modDate}" />`
               let faqSchemaTag = ''
               if (faqSchemas[ep.path]) {
                 const faqSchema = JSON.stringify({"@context":"https://schema.org","@type":"FAQPage","mainEntity":faqSchemas[ep.path].map(item => ({"@type":"Question","name":item.q,"acceptedAnswer":{"@type":"Answer","text":item.a}}))})
@@ -936,6 +955,7 @@ ${isGP ? '' : `  <url><loc>${d}/pro/</loc><lastmod>${today}</lastmod><changefreq
   <url><loc>${d}/pro/preparer-saison-sargasses/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>${d}/pro/barrieres-vs-prevision/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>${d}/pro/plan-sargasses-collectivite/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>${d}/pro/en/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>${d}/pro/en/hotels/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>`}
 ${isGP ? '' : `  <url><loc>${d}/a-propos/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>${d}/recherche/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
@@ -982,6 +1002,10 @@ ${isGP ? '' : `  <url><loc>${d}/bulletin-sargasses-martinique/</loc><lastmod>${t
   <url><loc>${d}/que-faire-sargasses-martinique/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>${d}/en/what-to-do-sargassum-martinique/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>`}
 ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>${d}/sargasses-deshaies/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>${d}/sargasses-gosier/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>${d}/sargasses-sainte-anne-guadeloupe/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>${d}/sargasses-saint-francois/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>${d}/que-faire-sargasses-guadeloupe/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>${d}/en/what-to-do-sargassum-guadeloupe/</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>` : ''}
   <url><loc>${d}/sargasses-sante-symptomes/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>

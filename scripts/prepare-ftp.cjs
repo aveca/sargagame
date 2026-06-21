@@ -223,6 +223,17 @@ for (const region of legacyRegions) {
   const MQ_ONLY = new Set(['saison-sargasses-martinique', 'sargasses-martinique-cette-semaine', 'meteo-sargasses-martinique', 'meilleures-plages-martinique-sargasses', 'en/best-beaches-martinique', 'bulletin-sargasses-martinique', 'sargasses-le-diamant', 'sargasses-sainte-luce', 'sargasses-sainte-anne-martinique', 'sargasses-les-trois-ilets', 'que-faire-sargasses-martinique', 'en/what-to-do-sargassum-martinique'])
   const GP_ONLY = new Set(['saison-sargasses-guadeloupe', 'sargasses-guadeloupe-cette-semaine', 'meteo-sargasses-guadeloupe', 'meilleures-plages-guadeloupe-sargasses', 'en/best-beaches-guadeloupe', 'bulletin-sargasses-guadeloupe', 'que-faire-sargasses-guadeloupe', 'en/what-to-do-sargassum-guadeloupe', 'sargasses-deshaies', 'sargasses-sainte-anne-guadeloupe', 'sargasses-gosier', 'sargasses-saint-francois'])
 
+  // Pages EN/ES « génériques » bilingues (Martinique & Guadeloupe), publiées à
+  // l'identique sur les DEUX domaines. Sans traitement, le swap GP plus bas les
+  // re-canonise en self-GP → 2 copies self-canonical se cannibalisent (Google en
+  // drop une). On les consolide vers MQ (canonical/hreflang/og → martinique.com,
+  // GA4 GP intact). Exclut les EN/ES île-spécifiques (best-beaches-*, what-to-do-*)
+  // déjà routées par MQ_ONLY/GP_ONLY. Clés = chemins sans /index.html.
+  const GENERIC_INTL = new Set([
+    'en/sargassum-map', 'en/best-beaches-no-sargassum', 'en/sargassum-season', 'en/sargassum-alerts', 'en/understanding-sargassum', 'en/satellite-sargassum-detection', 'en/sargassum-health',
+    'es/mapa-sargazo', 'es/mejores-playas-sin-sargazo', 'es/temporada-sargazo', 'es/alertas-sargazo',
+  ])
+
   const drops = region.id === 'gp' ? MQ_ONLY : (region.id === 'mq' ? GP_ONLY : new Set())
   let droppedCross = 0
   for (const pageFolder of drops) {
@@ -368,6 +379,17 @@ Sitemap: https://${domain}/sitemap.xml
       content = content.replace(/##GP_AMP_MQ##/g, 'Guadeloupe &amp; Martinique')
       content = content.replace(/##GP_AMPRAW_MQ##/g, 'Guadeloupe & Martinique')
       content = content.replace(/##GP_AND_MQ##/g, 'Guadeloupe and Martinique')
+
+      // Dédup générique EN/ES : repointer UNIQUEMENT canonical/hreflang/og:url vers
+      // MQ (le swap ci-dessus vient de les mettre en self-GP). Le reste de la page
+      // (GA4 GP, texte, liens internes) reste GP — seul le signal de dédup change.
+      const pageKey = relPath.replace(/\/index\.html$/, '')
+      if (GENERIC_INTL.has(pageKey)) {
+        content = content
+          .replace(/(<link rel="canonical" href="https:\/\/)sargasses-guadeloupe\.com/, '$1sargasses-martinique.com')
+          .replace(/(<link rel="alternate" hreflang="[a-z-]+" href="https:\/\/)sargasses-guadeloupe\.com/g, '$1sargasses-martinique.com')
+          .replace(/(<meta property="og:url" content="https:\/\/)sargasses-guadeloupe\.com/, '$1sargasses-martinique.com')
+      }
 
       if (content !== before) {
         fs.writeFileSync(filePath, content, 'utf-8')
@@ -519,7 +541,7 @@ function writeRegionIndex(region, out) {
     {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Quelle plage de Guadeloupe aujourd'hui ?","acceptedAnswer":{"@type":"Answer","text":"Chaque plage reçoit un score 0-100 qui combine 7 facteurs : sargasses, houle, vent, température de l'eau, nuages, UV et marée. Le top 3 est recalculé chaque jour — ouvrez la carte pour voir les meilleures plages du jour en Grande-Terre et Basse-Terre."}},{"@type":"Question","name":"Comment est calculé le score 0-100 ?","acceptedAnswer":{"@type":"Answer","text":"Le score combine 7 facteurs pondérés : sargasses (30%), houle (20%), vent (15%), température eau (10%), nuages (10%), UV (10%), marée (5%). 90+ c'est exceptionnel, 70+ bon, en dessous de 40 mieux vaut éviter."}},{"@type":"Question","name":"Quand arrivent les sargasses en Guadeloupe en 2026 ?","acceptedAnswer":{"@type":"Answer","text":"Les pics sargasses en Guadeloupe sont observés entre avril et septembre, avec un maximum en juin-août. Les côtes sud et est de Grande-Terre (Sainte-Anne, Le Gosier, Saint-François) sont les plus touchées. Les plages sous le vent de Basse-Terre (Malendure, Deshaies) sont généralement épargnées. L'application fonctionne toute l'année et intègre les sargasses dans le score 0-100."}},{"@type":"Question","name":"Quelles plages de Guadeloupe sont sans sargasses ?","acceptedAnswer":{"@type":"Answer","text":"Les plages de la côte sous le vent de Basse-Terre (Malendure, Grande Anse Deshaies, Bouillante) sont rarement touchées. Sur Grande-Terre, vérifiez la carte en temps réel car la situation change quotidiennement."}},{"@type":"Question","name":"Comment fonctionnent les prévisions sargasses ?","acceptedAnswer":{"@type":"Answer","text":"Nos prévisions combinent les données satellite Copernicus (indice AFAI), les courants marins et les vents. Fiabilité : 80% à J+1, décroissante ensuite. Prévisions disponibles pour 83 plages en Guadeloupe."}},{"@type":"Question","name":"Les sargasses sont-elles dangereuses pour la santé ?","acceptedAnswer":{"@type":"Answer","text":"Les sargasses en décomposition libèrent du H2S (sulfure d'hydrogène), un gaz toxique. À forte concentration, il irrite les yeux et les voies respiratoires. Évitez les plages marquées en rouge sur notre carte, surtout avec des enfants."}},{"@type":"Question","name":"Où se baigner à Sainte-Anne en Guadeloupe sans sargasses ?","acceptedAnswer":{"@type":"Answer","text":"À Sainte-Anne (Grande-Terre), la plage de Bois Jolan et la plage du Bourg sont les plus surveillées. L'état change selon les vents et courants — consultez notre carte en temps réel avant de partir. Les plages protégées par la barrière de corail sont généralement plus propres."}},{"@type":"Question","name":"Le Gosier est-il touché par les sargasses ?","acceptedAnswer":{"@type":"Answer","text":"La plage du Gosier (Guadeloupe) est exposée aux sargasses en haute saison (juin-août). Elle est située sur la côte sud de Grande-Terre, face à l'îlet du Gosier. Consultez l'état en temps réel pour la journée."}},{"@type":"Question","name":"Quelles plages de Basse-Terre sont épargnées des sargasses ?","acceptedAnswer":{"@type":"Answer","text":"La côte sous-le-vent de Basse-Terre (Malendure, Plage de la Perle à Deshaies, Grande Anse Deshaies, Bouillante) est structurellement protégée des sargasses par le relief de l'île et les courants. Ces plages sont recommandées pendant les pics de saison."}},{"@type":"Question","name":"Comment recevoir une alerte sargasses en Guadeloupe ?","acceptedAnswer":{"@type":"Answer","text":"Activez les notifications push gratuites sur sargasses-guadeloupe.com : vous recevez une alerte quand l'état d'une plage favorite change (arrivée de sargasses, retour à propre). Disponible pour les 83 plages de Guadeloupe."}}]}
     </script>
     <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"Organization","name":"Sargasses Guadeloupe","url":"https://sargasses-guadeloupe.com","logo":"https://sargasses-guadeloupe.com/icon-512.png","description":"Compagnon plage Guadeloupe — score 0-100 par plage combinant sargasses, mer, vent, soleil et température de l'eau. 83 plages suivies en direct toute l'année.","areaServed":{"@type":"AdministrativeArea","name":"Guadeloupe"},"knowsAbout":["plages Guadeloupe","sargasses","baignade","Grande-Terre","Basse-Terre","Sainte-Anne","Le Gosier","Deshaies","météo marine","AFAI"],"sameAs":["https://sargasses-martinique.com"]}
+    {"@context":"https://schema.org","@type":"Organization","name":"Sargasses Guadeloupe","url":"https://sargasses-guadeloupe.com","logo":"https://sargasses-guadeloupe.com/icon-512.png","description":"Compagnon plage Guadeloupe — score 0-100 par plage combinant sargasses, mer, vent, soleil et température de l'eau. 83 plages suivies en direct toute l'année.","areaServed":{"@type":"AdministrativeArea","name":"Guadeloupe"},"knowsAbout":["plages Guadeloupe","sargasses","baignade","Grande-Terre","Basse-Terre","Sainte-Anne","Le Gosier","Deshaies","météo marine","AFAI"],"sameAs":["https://sargasses-martinique.com","https://www.data.gouv.fr/reuses/sargasses-guadeloupe-carte-temps-reel-palmares-auditable-des-previsions"]}
     </script>
     <script type="application/ld+json">
     {"@context":"https://schema.org","@type":"SiteNavigationElement","name":["Carte","Plages","Prévisions","Alertes"],"url":["https://sargasses-guadeloupe.com/carte-sargasses/","https://sargasses-guadeloupe.com/plages/","https://sargasses-guadeloupe.com/previsions/","https://sargasses-guadeloupe.com/alertes/"]}
