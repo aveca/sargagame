@@ -1036,6 +1036,61 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
           writeFileSync(resolve(outDir, 'alertes', 'index.html'), alertesHtml.replace('</head>', breadcrumbAlertes + '\n</head>'))
           console.log('   → BreadcrumbList ajouté à /carte-sargasses/, /previsions/ et /alertes/')
 
+          // ── /recherche/ /research/ /investigacion/ : synchroniser le JSON-LD Dataset
+          // + meta avec track-record.json (anti-dérive Google Dataset Search : ces pages
+          // sont copiées verbatim de public/ et leur donnée structurée mentait — window
+          // & sampleSize figés) + injecter un lien « nous citer » copiable (fabrique le
+          // backlink dofollow, la donnée citable = notre levier d'autorité).
+          try {
+            const _tr = JSON.parse(readFileSync(resolve(outDir, 'api', 'copernicus', 'track-record.json'), 'utf-8'))
+            const _from = _tr.window && _tr.window.from, _to = _tr.window && _tr.window.to
+            const _sample = _tr.sampleSize
+            const _modified = (_tr.generatedAt || '').slice(0, 10)
+            const _published = (_tr.lifetime && _tr.lifetime.from) || _from
+            const _CANON = 'https://sargasses-martinique.com'
+            const _fmt = (n, sep) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, sep)
+            const _RDIRS = {
+              recherche: { sep: ' ', anchor: 'Palmarès auditable des prévisions sargasses — Antilles', label: 'Nous citer en un clic', btn: 'Copier le lien HTML', word: 'prévisions' },
+              research: { sep: ',', anchor: 'Audited track record of sargassum forecasts — Caribbean', label: 'Cite us in one click', btn: 'Copy the HTML link', word: 'forecasts' },
+              investigacion: { sep: '.', anchor: 'Historial auditable de las previsiones de sargazo — Caribe', label: 'Cítanos con un clic', btn: 'Copiar el enlace HTML', word: 'previsiones' },
+            }
+            let _rOK = 0
+            for (const dir of Object.keys(_RDIRS)) {
+              const cfg = _RDIRS[dir]
+              const fp = resolve(outDir, dir, 'index.html')
+              if (!existsSync(fp)) continue
+              let h = readFileSync(fp, 'utf-8')
+              // 1+2) JSON-LD Dataset : parse, corrige la dérive, enrichit
+              h = h.replace(/(<script type="application\/ld\+json">)([^<]*"@type":"Dataset"[^<]*)(<\/script>)/, (m, a, json, b) => {
+                try {
+                  const ds = JSON.parse(json.trim())
+                  if (_from && _to) ds.temporalCoverage = `${_from}/${_to}`
+                  ds.datePublished = _published
+                  ds.dateModified = _modified
+                  ds.identifier = `${_CANON}/recherche/`
+                  ds.citation = 'Wang, M. & Hu, C. (2016). Mapping and quantifying Sargassum distribution and coverage in the Central West Atlantic. Remote Sensing of Environment 183, 350-367.'
+                  if (ds.creator && !ds.creator.sameAs) ds.creator.sameAs = ['https://sargasses-guadeloupe.com/', 'https://sargassummiami.com/', 'https://sargassumcancun.com/', 'https://sargassumpuntacana.com/']
+                  if (Array.isArray(ds.distribution)) {
+                    const _names = ['Palmarès — comparaison prévision vs satellite (JSON)', 'Fiabilité par régime et horizon (JSON)']
+                    ds.distribution.forEach((d, i) => { if (!d.name) d.name = _names[i] || 'Données (JSON)' })
+                  }
+                  return a + JSON.stringify(ds) + b
+                } catch (_) { return m }
+              })
+              // 2b) Compteur de prévisions (meta/og) : nombre figé → live (word-anchored, sûr)
+              if (_sample) h = h.replace(new RegExp('(\\d{1,2}[\\s.,\\u202f]?\\d{3})(\\s*' + cfg.word + ')', 'g'), (m, n, w) => _fmt(_sample, cfg.sep) + w)
+              // 3) Bloc « nous citer » copiable → backlink dofollow à ancre contrôlée
+              const _esc = cfg.anchor.replace(/</g, '&lt;').replace(/>/g, '&gt;')
+              const _snip = `<div class="linkus" style="margin-top:14px"><div class="seclabel">${cfg.label}</div>`
+                + `<code id="linkus-html" style="display:block;background:rgba(0,0,0,.05);padding:10px 12px;border-radius:8px;font-size:12px;word-break:break-all;margin:6px 0">&lt;a href="${_CANON}/${dir}/"&gt;${_esc}&lt;/a&gt;</code>`
+                + `<button type="button" onclick="navigator.clipboard.writeText(document.getElementById('linkus-html').textContent);this.textContent='\\u2713 '+this.textContent" style="font:600 13px/1 var(--sg-font-sans);background:var(--sg-gold,#E2A33B);color:#1a1a1a;border:0;padding:9px 14px;border-radius:8px;cursor:pointer">${cfg.btn}</button></div>`
+              h = h.replace(/(<div class="cite">[\s\S]*?<\/div>)/, `$1\n  ${_snip}`)
+              writeFileSync(fp, h)
+              _rOK++
+            }
+            console.log(`   → Dataset /recherche/ synchronisé (${_rOK} pages, window ${_from}→${_to}, n=${_sample}) + lien citable`)
+          } catch (e) { console.warn('   ⚠ sync /recherche/:', e.message) }
+
           // Pages statiques par plage (SEO longue traîne) — generated from beaches-list.json
           const beaches = ALL_BEACHES.map(b => ({
             id: b.id,

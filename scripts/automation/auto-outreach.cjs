@@ -53,7 +53,7 @@ const MARKETS = {
   fr: {
     lang: 'fr', from: FROM, replyTo: 'contact@sargasses-martinique.com',
     sites: [['Martinique', 'https://sargasses-martinique.com/'], ['Guadeloupe', 'https://sargasses-guadeloupe.com/']],
-    press: null, widget: 'https://sargasses-martinique.com/widget/', intl: false,
+    press: 'https://sargasses-martinique.com/recherche/', widget: 'https://sargasses-martinique.com/widget/', intl: false,
   },
   us: {
     lang: 'en', from: 'Sargassum Florida <alerte@sargassummiami.com>', replyTo: 'support@sargassummiami.com',
@@ -350,6 +350,7 @@ function buildEmailFR(target) {
   → Guadeloupe : <a href="https://sargasses-guadeloupe.com/">sargasses-guadeloupe.com</a>
 </p>
 <p>Nous proposons aussi un <a href="https://sargasses-martinique.com/widget/">widget embarquable gratuit</a> si vous préférez intégrer directement l'état d'une plage sur votre site.</p>
+<p>Et si vous publiez des données ou un article de fond : notre <a href="https://sargasses-martinique.com/recherche/">palmarès auditable des prévisions</a> (taux de justesse réel comparé au satellite, archive non rétro-ajustable) est en <strong>données ouvertes CC BY 4.0</strong>, librement citables et vérifiables.</p>
 <p>Merci pour votre travail,<br>
 <strong>L'équipe Sargasses Martinique</strong><br>
 <span style="color:#888;font-size:13px">Données satellite Copernicus Marine · sargasses-martinique.com</span></p>`)
