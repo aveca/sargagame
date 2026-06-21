@@ -35,7 +35,9 @@ const lazyWithRetry=imp=>lazy(()=>imp()
     }catch(_){}
     throw err
   }))
-const LazyMapView=lazyWithRetry(()=>import("./MapView"))
+// Carte Leaflet RETIRÉE (2026-06-21) — app full-SVG (WorldMapView/ArchipelView) : plus de
+// fallback ?nav=map, plus de dépendance leaflet (~146 Ko). Une vieille version (carte à tuiles,
+// menu « Toute l'île » à droite) flashait au lancement via un cache PWA → suppression propre.
 // Accueil A→Z (bras A/B `home_az`) — design validé porté en Shadow DOM.
 const LazyHomeAZ=lazyWithRetry(()=>import("./HomeAZ"))
 // Accueil « LA CHASSE » (bras A/B `arena_loop`) — boucle de jeu TCG comic.
@@ -12525,10 +12527,10 @@ export default function App(){
   const[showArchipel,setShowArchipel]=useState(()=>{try{return /[?&]archipel=1/.test(window.location.search)}catch(_){return false}})
   // A/B nav_world : le cohort "world" ATTERRIT dans l'Archipel par defaut (le monde
   // DEVIENT le produit principal, plus un flag cache). 50/50, control = carte actuelle.
-  // ?nav=world / ?nav=map en QA. Funnel intact (fiche+premium inchanges sous le monde).
-  // Vision fondateur : le MONDE remplace Leaflet pour TOUS. navWorld=true par defaut ;
-  // Leaflet reste un fallback de secours via ?nav=map (QA / si jamais besoin).
-  const[navWorld]=useState(()=>{try{return !/[?&]nav=map/.test(window.location.search)}catch(_){return true}})
+  // App full-SVG : le MONDE (WorldMapView/ArchipelView) EST la carte pour TOUS. La carte Leaflet
+  // a été RETIRÉE (2026-06-21, demande fondateur : une vieille version flashait au lancement via un
+  // cache PWA). navWorld reste une constante=true (encore référencée par rootMode + l'auto-open map).
+  const navWorld=true
   const archAutoRef=useRef(false)
   // Intro carte (MapIntroStory) — DÉSACTIVÉE par défaut 2026-06-19 (audit live : le
   // prélude « LE VEILLEUR SCANNE » enterrait la carte [3-4 taps] et son overlay #mi3sky
@@ -13555,16 +13557,9 @@ export default function App(){
               counts={{clean:filtered.filter(b=>b.status==="clean").length,watch:filtered.filter(b=>b.status==="moderate").length,avoid:filtered.filter(b=>b.status==="avoid").length,total:filtered.length}}
               onEnterMap={()=>{setShowMapIntro(false);try{localStorage.setItem("sg_map_intro_v1","1")}catch(_){}}}/>
           )}
-          {/* LEAFLET retiré du chemin par défaut : monté UNIQUEMENT en fallback ?nav=map.
-              En navWorld (tous), l'Archipel SVG EST la carte → Leaflet jamais chargé
-              (~150KB économisés, fin de la « soupe de calques »). Vision full-SVG. */}
-          {!navWorld&&<ErrBound><Suspense fallback={<div style={{width:"100%",height:"100%",background:"#120821"}}/>}>
-            <LazyMapView beaches={filtered} island={island} lang={lang}
-            onBeachClick={onBeachClick} selectedBeach={selectedBeach} sargData={sargData} userPos={userPos}
-            favorites={favorites} allBeaches={allBeaches} onThreatChange={setHasActiveThreat}
-            onPremiumClick={openPremium} track={track}
-            searchActive={search.trim().length>=2&&filtered.length>0}/>
-          </Suspense></ErrBound>}
+          {/* Carte Leaflet RETIRÉE 2026-06-21 — l'app est full-SVG : la vraie carte
+              (WorldMapView/ArchipelView) est montée plus bas via showArchipel. Plus de
+              fallback ?nav=map, plus de chunk leaflet. */}
         </div>
         <div style={{position:"absolute",inset:0,opacity:view==="list"?1:0,
           transform:view==="list"?"translateY(0)":"translateY(14px)",
