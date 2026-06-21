@@ -21,8 +21,11 @@ jobs:
       - name: Run UX alert brain (analyze-ux → ux-alerts.json)
         run: node scripts/analyze-ux.cjs
         env:
-          # analyze-ux.cjs lit process.env.SG_STATS_KEY (l.44) ; sans clé = no-op.
+          # analyze-ux.cjs lit SG_STATS_KEY (fallback) + reconstruit la map par région
+          # depuis SG_STATS_KEY_<REGION> (stats-keys.json gitignored = absent en CI).
           SG_STATS_KEY: ${{ secrets.SG_STATS_KEY }}
+          SG_STATS_KEY_MQ: ${{ secrets.SG_STATS_KEY_MQ }}
+          SG_STATS_KEY_GP: ${{ secrets.SG_STATS_KEY_GP }}
       - name: Upload UX alerts
         uses: actions/upload-artifact@v4
         with:

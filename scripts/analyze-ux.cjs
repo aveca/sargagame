@@ -44,6 +44,12 @@ function loadKeys() {
   const env = process.env.SG_STATS_KEY
   let map = {}
   try { map = JSON.parse(fs.readFileSync(path.join(ROOT, 'scripts', 'automation', 'data', 'stats-keys.json'), 'utf8')) } catch (e) {}
+  // CI : stats-keys.json est gitignored (absent) → reconstruire la map par région
+  // depuis les secrets SG_STATS_KEY_<REGION> (ex: SG_STATS_KEY_MQ, SG_STATS_KEY_GP).
+  for (const k of Object.keys(process.env)) {
+    const m = k.match(/^SG_STATS_KEY_([A-Z0-9]+)$/)
+    if (m && process.env[k]) map[m[1].toLowerCase()] = process.env[k]
+  }
   return { env, map }
 }
 
