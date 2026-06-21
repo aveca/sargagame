@@ -3549,7 +3549,8 @@ function H2SBadge({beach,lang,weather,onPremiumClick}){
    ═══════════════════════════════════════════════════════════════════════════ */
 const COMIC={
   cream:"#fdf6e3", ink:"#0d0b14", sub:"#6b6478",
-  clean:"#27c46b", moderate:"#ffb02e", avoid:"#e8322a", loading:"#9a93a8",
+  clean:"#27c46b", moderate:"#ff7a2f", avoid:"#e8322a", loading:"#9a93a8",
+  orange:"#ff7a2f", blue:"#1c7fb0", violet:"#5b3a8e",
   sunset:"radial-gradient(120% 75% at 82% 6%, rgba(255,138,77,.55), rgba(255,138,77,0) 50%), linear-gradient(168deg,#ff8a4d 0%,#8a4a8e 26%,#3e2470 58%,#1a1140 100%)",
   gold:"linear-gradient(180deg,#ffe07a,#ffc72c)",
 }
@@ -3612,12 +3613,15 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
   // ── Facteurs (data réelle, langage simple — pas un tableau d'expert)
   const chips=useMemo(()=>{
     const out=[]
-    const sgLvl=status==="clean"?{t:_t(lang,"Sargasses faibles","Low sargassum","Sargazo bajo"),c:COMIC.clean}:status==="moderate"?{t:_t(lang,"Sargasses modérées","Moderate sargassum","Sargazo moderado"),c:COMIC.moderate}:status==="avoid"?{t:_t(lang,"Sargasses fortes","Heavy sargassum","Sargazo fuerte"),c:COMIC.avoid}:null
+    // Pastilles facteurs : palette resserrée 2 états (vert = OK / orange = à surveiller)
+    // + bleu pour l'info neutre (température). Plus de rainbow vert/ambre/rouge sous le
+    // bandeau verdict (retour fondateur « trop de couleurs sur la carte plage »).
+    const sgLvl=status==="clean"?{t:_t(lang,"Sargasses faibles","Low sargassum","Sargazo bajo"),c:COMIC.clean}:status==="moderate"?{t:_t(lang,"Sargasses modérées","Moderate sargassum","Sargazo moderado"),c:COMIC.orange}:status==="avoid"?{t:_t(lang,"Sargasses fortes","Heavy sargassum","Sargazo fuerte"),c:COMIC.orange}:null
     if(sgLvl)out.push(sgLvl)
     if(weather){
-      if(weather.waveHeight!=null){const w=weather.waveHeight;out.push({t:w<.6?_t(lang,"Houle calme","Calm swell","Mar calmo"):w<1.2?_t(lang,"Houle modérée","Moderate swell","Mar moderado"):_t(lang,"Houle forte","Strong swell","Mar fuerte"),c:w<.6?COMIC.clean:w<1.2?COMIC.moderate:COMIC.avoid})}
-      if(weather.wind!=null){const v=weather.wind;out.push({t:v<20?_t(lang,"Vent léger","Light wind","Viento leve"):v<35?_t(lang,"Vent modéré","Moderate wind","Viento moderado"):_t(lang,"Vent fort","Strong wind","Viento fuerte"),c:v<20?COMIC.clean:v<35?COMIC.moderate:COMIC.avoid})}
-      if(weather.temp!=null)out.push({t:_t(lang,`Eau ${weather.temp}°`,`Water ${weather.temp}°`,`Agua ${weather.temp}°`),c:COMIC.clean})
+      if(weather.waveHeight!=null){const w=weather.waveHeight;out.push({t:w<.6?_t(lang,"Houle calme","Calm swell","Mar calmo"):w<1.2?_t(lang,"Houle modérée","Moderate swell","Mar moderado"):_t(lang,"Houle forte","Strong swell","Mar fuerte"),c:w<.6?COMIC.clean:COMIC.orange})}
+      if(weather.wind!=null){const v=weather.wind;out.push({t:v<20?_t(lang,"Vent léger","Light wind","Viento leve"):v<35?_t(lang,"Vent modéré","Moderate wind","Viento moderado"):_t(lang,"Vent fort","Strong wind","Viento fuerte"),c:v<20?COMIC.clean:COMIC.orange})}
+      if(weather.temp!=null)out.push({t:_t(lang,`Eau ${weather.temp}°`,`Water ${weather.temp}°`,`Agua ${weather.temp}°`),c:COMIC.blue})
     }
     return out.slice(0,4)
   },[status,weather,lang])
@@ -13185,18 +13189,12 @@ export default function App(){
   },[]);
 
   // HERO CINÉMATIQUE « GTA sunset » — 1er atterrissage sur la racine, 1×/session,
-  // skippable. CTA/skip → révèle la carte (l'utilitaire). ?vh=1 force, ?vh=0 saute.
+  // ATTERRISSAGE DIRECT SUR LA CARTE (décision fondateur : « la map direct au début »).
+  // L'intro plein écran ajoutait une friction avant l'utilitaire ; l'identité « Le
+  // Veilleur » est désormais FUSIONNÉE dans l'en-tête de la carte (mascotte + wordmark).
+  // L'intro cinématique reste accessible en QA/marketing via ?vh=1. ?vh=0 = no-op.
   const [showVeilleurHero,setShowVeilleurHero]=useState(()=>{
-    try{
-      const q=window.location.search||"";
-      if(/[?&]vh=0/.test(q)) return false;
-      if(/[?&]vh=1/.test(q)) return true;
-      const path=window.location.pathname;
-      if(!(path==="/"||path===""||path==="/index.html")) return false;
-      if(window.location.search.includes("premium")) return false;
-      if(sessionStorage.getItem("sg_vh_seen")) return false;
-      return true;
-    }catch(_){ return false; }
+    try{ return /[?&]vh=1/.test(window.location.search||""); }catch(_){ return false; }
   });
   const dismissVeilleurHero=useCallback(()=>{ try{sessionStorage.setItem("sg_vh_seen","1");track("sg_vh_enter",{})}catch(_){}; setShowVeilleurHero(false); },[track]);
 
