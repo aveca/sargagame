@@ -6242,12 +6242,62 @@ function SeasonBanner({lang}){
    events that polluted the funnel. All paid conversion now flows through the
    Stripe Payment Link via same-tab redirect (window.location.href in the modal
    CTA) + dashboard-configured success_url that fires sg_conversion on return. */
+// ── B2BModal — capture PRO (hôtels / collectivités). Point d'entrée discret depuis
+//    le paywall. Alimente le drip B2B DÉJÀ construit (drip-b2b-email.cjs) via
+//    submitLead(email, 'b2b_hotel_request'|'b2b_collectivite_request'). Aucune
+//    logique de paiement : on capte un lead, un humain recontacte (ton consultatif).
+function B2BModal({lang,onClose}){
+  const [kind,setKind]=useState("hotel")
+  const [email,setEmail]=useState("")
+  const [sent,setSent]=useState(false)
+  const valid=/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())
+  const submit=()=>{
+    if(!valid||sent)return
+    const source=kind==="hotel"?"b2b_hotel_request":"b2b_collectivite_request"
+    try{submitLead(email.trim(),source)}catch(_){}
+    try{track("sg_b2b_lead",{kind})}catch(_){}
+    setSent(true)
+  }
+  const I=COMIC
+  return(
+    <div className="bsc-sheet" onClick={onClose} style={{position:"fixed",inset:0,zIndex:1100,background:"rgba(11,7,22,.62)",backdropFilter:"blur(2px)",WebkitBackdropFilter:"blur(2px)",display:"flex",alignItems:"center",justifyContent:"center",padding:18,animation:"bscFade .22s ease both"}}>
+      <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:420,maxHeight:"92svh",overflowY:"auto",position:"relative",
+        background:I.cream,backgroundImage:`radial-gradient(${I.ink}0d 1.3px,transparent 1.5px)`,backgroundSize:"11px 11px",
+        border:`3px solid ${I.ink}`,borderRadius:22,boxShadow:`6px 6px 0 ${I.ink}`,padding:"20px 18px calc(18px + env(safe-area-inset-bottom))",
+        fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",animation:"bscPop .42s cubic-bezier(.16,1,.3,1) both"}}>
+        <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"absolute",top:13,right:13,width:34,height:34,borderRadius:"50%",border:`2.5px solid ${I.ink}`,background:"#fff",boxShadow:`2px 2px 0 ${I.ink}`,fontSize:16,fontWeight:900,color:I.ink,cursor:"pointer",lineHeight:1}}>✕</button>
+        <div style={{display:"inline-flex",alignItems:"center",gap:6,font:"800 10px/1 'Bricolage Grotesque'",letterSpacing:".09em",textTransform:"uppercase",color:I.ink,background:I.blue,border:`2px solid ${I.ink}`,borderRadius:6,padding:"4px 8px",boxShadow:`2px 2px 0 ${I.ink}`}}>🏨 {_t(lang,"Pro · Hôtels & collectivités","Pro · Hotels & towns","Pro · Hoteles y municipios")}</div>
+        {!sent?<>
+          <div style={{fontFamily:"'Anton',sans-serif",fontSize:27,lineHeight:.98,textTransform:"uppercase",letterSpacing:"-.5px",color:I.ink,margin:"13px 0 7px"}}>{_t(lang,"L'état réel de vos plages, chaque matin.","The real state of your beaches, every morning.","El estado real de sus playas, cada mañana.")}</div>
+          <div style={{font:"600 13.5px/1.45 'Bricolage Grotesque'",color:"#41414a",marginBottom:15}}>{_t(lang,"Brief quotidien fiable + alertes avant les échouages — pour rassurer vos clients ou vos administrés. Mesuré au satellite, pas deviné.","Reliable daily brief + alerts before sargassum lands — to reassure your guests or citizens. Measured by satellite, not guessed.","Informe diario fiable + alertas antes de la llegada — para tranquilizar a sus clientes o ciudadanos. Medido por satélite.")}</div>
+          <div style={{display:"flex",gap:8,marginBottom:12}}>
+            {[["hotel",_t(lang,"🏨 Hôtel · club plage","🏨 Hotel · beach club","🏨 Hotel · club")],["collectivite",_t(lang,"🏛️ Collectivité","🏛️ Town / public","🏛️ Municipio")]].map(([k,lbl])=>(
+              <button key={k} onClick={()=>setKind(k)} style={{flex:1,padding:"11px 8px",borderRadius:13,border:`2.5px solid ${I.ink}`,cursor:"pointer",font:"800 12.5px/1.15 'Bricolage Grotesque'",color:I.ink,
+                background:kind===k?I.gold:"#fff",boxShadow:kind===k?`3px 3px 0 ${I.ink}`:`2px 2px 0 ${I.ink}`,transition:"transform .08s ease"}}>{lbl}</button>
+            ))}
+          </div>
+          <input type="email" inputMode="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)}
+            onKeyDown={e=>{if(e.key==="Enter")submit()}}
+            placeholder={_t(lang,"Votre email pro","Your work email","Su email de trabajo")}
+            style={{width:"100%",padding:"14px 15px",borderRadius:13,border:`2.5px solid ${I.ink}`,background:"#fff",font:"700 15px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:11,boxShadow:`inset 2px 2px 0 rgba(13,11,20,.06)`}}/>
+          <button onClick={submit} disabled={!valid} style={{width:"100%",textAlign:"center",font:"800 16px/1 'Bricolage Grotesque'",padding:16,borderRadius:15,border:`3px solid ${I.ink}`,boxShadow:`3px 3px 0 ${I.ink}`,background:valid?I.gold:"#e7e2d4",color:I.ink,cursor:valid?"pointer":"default",opacity:valid?1:.7}}>{_t(lang,"Être recontacté·e →","Get a callback →","Que me contacten →")}</button>
+          <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:I.sub,textAlign:"center",marginTop:9}}>{_t(lang,"Sans engagement · réponse d'un humain sous 24 h","No commitment · a human replies within 24h","Sin compromiso · respuesta humana en 24 h")}</div>
+        </>:<>
+          <div style={{fontFamily:"'Anton',sans-serif",fontSize:26,lineHeight:1,textTransform:"uppercase",letterSpacing:"-.5px",color:"#1c8f4e",margin:"15px 0 8px"}}>{_t(lang,"Bien reçu ✓","Got it ✓","Recibido ✓")}</div>
+          <div style={{font:"600 14px/1.5 'Bricolage Grotesque'",color:"#41414a",marginBottom:16}}>{_t(lang,"On vous écrit sous 24 h pour caler 15 minutes et vous montrer l'état de VOS plages en direct.","We'll email you within 24h to set up 15 minutes and show you YOUR beaches live.","Le escribimos en 24 h para agendar 15 minutos y mostrarle SUS playas en directo.")}</div>
+          <button onClick={onClose} style={{width:"100%",textAlign:"center",font:"800 15px/1 'Bricolage Grotesque'",padding:15,borderRadius:15,border:`3px solid ${I.ink}`,boxShadow:`3px 3px 0 ${I.ink}`,background:I.gold,color:I.ink,cursor:"pointer"}}>{_t(lang,"Fermer","Close","Cerrar")}</button>
+        </>}
+      </div>
+    </div>
+  )
+}
+
 // ── ComicPaywall — skin BD du paywall (A/B pw_comic). PRODUCT.md §6 / pivot 19/06.
 // PUREMENT VISUEL : reçoit toutes les portes (onStart=startCheckout, onAlready, onClose,
 // plan/setPlan/effectivePlan) du PremiumModal parent → ZÉRO logique de paiement ici.
 // Tokens .lc- (paper/ink/yel) + scène golden-hour + cases BD, miroir de ChasseDetail.
 // Asset validé : design/proto-paywall-comic.html (vérifié navigateur 2026-06-19).
-function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxStatus,cleanCount,totalCount,recordProof,seasonMsg,plan,setPlan,effectivePlan,hasAnnual,onStart,onAlready,onClose}){
+function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxStatus,cleanCount,totalCount,recordProof,seasonMsg,plan,setPlan,effectivePlan,hasAnnual,onStart,onAlready,onClose,onB2B}){
   const ST=ctxStatus||(beach&&beach.status)||null
   const stCls=ST==="avoid"?"bad":ST==="moderate"?"mod":"ok"
   const iris=ST==="avoid"?"#e8322a":ST==="moderate"?"#ffd23f":"#27c46b"
@@ -6425,6 +6475,7 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
             <em>{_t(lang,"Pas convaincu ? Un email, remboursé — sans condition.","Not convinced? One email, full refund — no questions.","¿No te convence? Un email, reembolso — sin preguntas.")}</em></span>
           </div>
           <button type="button" className="pwx-foot" onClick={onAlready}>{_t(lang,"J'ai déjà un abonnement","I already have a subscription","Ya tengo una suscripción")}</button>
+          {onB2B&&<button type="button" className="pwx-foot" style={{marginTop:7,opacity:.78,fontSize:11.5}} onClick={onB2B}>🏨 {_t(lang,"Hôtel ou collectivité ? →","Hotel or town? →","¿Hotel o municipio? →")}</button>}
           <div className="pwx-secure">🔒 {_t(lang,"Paiement sécurisé Stripe · Sans engagement","Secure Stripe payment · No commitment","Pago seguro Stripe · Sin compromiso")}</div>
         </div>
       </div>
@@ -6433,6 +6484,8 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
 }
 function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const LL=T[lang]||T.fr
+  // Capture B2B (hôtels/collectivités) — porte discrète vers le drip B2B existant.
+  const [showB2B,setShowB2B]=useState(false)
   // ── Palmarès publié (« sell the track record, not the map ») ──────────────
   // Le moat = notre fiabilité auditable. On la fetch à l'OUVERTURE du paywall
   // (1 seul fetch, modal monté → pas de prop-threading dans le monolithe) et on
@@ -7021,7 +7074,9 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           seasonMsg={seasonMsg} plan={plan} setPlan={setPlan} effectivePlan={effectivePlan} hasAnnual={hasAnnual}
           onStart={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown",skin:"comic"});startCheckout(effectivePlan,"comic")}}
           onAlready={verifyExistingSub}
+          onB2B={()=>{try{track("sg_b2b_open",{source:source||"unknown"})}catch(_){}; setShowB2B(true)}}
           onClose={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"comic_close"});onClose()}}/>}
+        {showB2B&&<B2BModal lang={lang} onClose={()=>setShowB2B(false)}/>}
         {!pwComic&&(<>
         {!scenePay&&<div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
           margin:"-8px -24px 20px",padding:0}}/>}
