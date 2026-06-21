@@ -1,25 +1,24 @@
 #!/usr/bin/env node
 /**
- * Welcome Email — Sargasses MQ/GP (via Resend)
+ * Welcome Email — Sargasses MQ/GP (via SMTP, boîte alerte@)
  *
  * Runs 4x/day in the pipeline. Checks a local JSON file for emails
- * that haven't received a welcome email yet. Sends via Resend API.
+ * that haven't received a welcome email yet. Sends via SMTP (nodemailer).
  *
  * The email list comes from the Apps Script webhook which POSTs new
  * subscriber data back to the repo (via daily pipeline commit).
  *
- * Env: RESEND_API_KEY (required)
+ * Env: SMTP_PASS (required pour envoyer ; absent = dry-run)
  * Usage: node scripts/automation/welcome-email.cjs
  */
 const fs = require('fs')
 const path = require('path')
-const { Resend } = require('resend')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
-const { sendEmail, brandHeader } = require('./lib/email-send.cjs')
+const { sendEmail, brandHeader, mailReady } = require('./lib/email-send.cjs')
 const { pickArm, applyArm } = require('./lib/email-ab.cjs')
 const AB_VARS = require('./data/email-ab-variants.json')
 
-const API_KEY = process.env.RESEND_API_KEY
+const API_KEY = mailReady() // envoi via SMTP (boîte alerte@) — plus de Resend
 const SUBSCRIBERS_PATH = path.join(__dirname, 'data', 'subscribers.json')
 const SENT_PATH = path.join(__dirname, 'data', 'welcome-sent.json')
 const BOUNCED_PATH = path.join(__dirname, 'data', 'bounced-emails.json')
@@ -222,9 +221,9 @@ function regionCleanCount(region) {
 }
 
 async function main() {
-  console.log('=== Welcome Email (Resend) ===')
+  console.log('=== Welcome Email (SMTP) ===')
 
-  const resend = API_KEY ? new Resend(API_KEY) : null
+  const resend = API_KEY ? {} : null
 
   // Load subscriber list and already-sent list (state files store email hashes — RGPD)
   const subscribers = loadJSON(SUBSCRIBERS_PATH, [])
@@ -242,7 +241,7 @@ async function main() {
   }
 
   if (!API_KEY) {
-    console.log(`RESEND_API_KEY not set — skipping sends (would send ${newSubs.length}).`)
+    console.log(`SMTP_PASS not set — skipping sends (would send ${newSubs.length}).`)
     return
   }
 

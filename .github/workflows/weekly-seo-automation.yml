@@ -243,7 +243,7 @@ jobs:
       - run: npm ci
       - name: Send failure alert email
         env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
           WORKFLOW_NAME: 'Weekly SEO Automation'
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: node scripts/automation/notify-failure.cjs

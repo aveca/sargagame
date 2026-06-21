@@ -138,18 +138,18 @@ jobs:
       # le vendredi → la dérive n'a plus d'effet. Anti-doublon : dedup Apps Script
       # + marqueur weekend-sent.json. NE PAS ré-ajouter d'envoi weekend ici.
 
-      - name: Send welcome emails (Resend)
+      - name: Send welcome emails (SMTP alerte@)
         if: github.event_name == 'schedule'
         continue-on-error: true
         env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/welcome-email.cjs
 
       - name: Send drip emails (J+3, J+7, J+14)
         if: github.event_name == 'schedule'
         continue-on-error: true
         env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/drip-email.cjs
 
       # Drip B2B (leads /pro/*) — séquence consultative séparée (source b2b_*),
@@ -158,7 +158,7 @@ jobs:
         if: github.event_name == 'schedule'
         continue-on-error: true
         env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/drip-b2b-email.cjs
 
       # Adoption widget B2B : un site tiers affiche-t-il le widget ? (ping install
@@ -168,7 +168,7 @@ jobs:
         if: github.event_name == 'schedule'
         continue-on-error: true
         env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
           SG_STATS_KEY_MQ: ${{ secrets.SG_STATS_KEY_MQ }}
           SG_STATS_KEY_GP: ${{ secrets.SG_STATS_KEY_GP }}
         run: node scripts/automation/widget-install-watch.cjs --send
@@ -177,11 +177,11 @@ jobs:
       # schedule-only (jamais workflow_dispatch — règle retry-spam, cf. weekend).
       # Lit Stripe (sessions non payées + motif d'échec) au runtime → aucun email
       # dans le repo ; idempotent par hash (cart-recovery-sent.json committé plus bas).
-      - name: Send cart recovery emails (Resend)
+      - name: Send cart recovery emails (SMTP alerte@)
         if: github.event_name == 'schedule'
         continue-on-error: true
         env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
         run: node scripts/automation/recover-abandoned-cart.cjs --send --since-days=2
 
@@ -189,11 +189,11 @@ jobs:
       # Stripe (active+trialing créés <14j), SANS CTA paywall (déjà payé). schedule-only
       # (jamais workflow_dispatch — règle retry-spam) ; idempotent par hash
       # (welcome-paid-sent.json committé plus bas) ; lit Stripe au runtime.
-      - name: Send paid-subscriber welcome emails (Resend)
+      - name: Send paid-subscriber welcome emails (SMTP alerte@)
         if: github.event_name == 'schedule'
         continue-on-error: true
         env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
         run: node scripts/automation/welcome-paid.cjs --send
 
@@ -205,14 +205,14 @@ jobs:
         if: github.event_name == 'schedule'
         continue-on-error: true
         env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/incident-apology.cjs
 
       - name: Health check (uptime monitoring + staleness alerts)
         if: github.event_name != 'push'
         continue-on-error: true
         env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/health-check.cjs
 
       - name: Backtest forecast accuracy (archive vs observations)
@@ -586,7 +586,7 @@ jobs:
       - run: npm ci
       - name: Send failure alert email
         env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
           WORKFLOW_NAME: 'Daily Copernicus + Deploy'
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: node scripts/automation/notify-failure.cjs

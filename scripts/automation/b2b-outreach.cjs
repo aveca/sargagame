@@ -16,7 +16,7 @@
  *   4. Log dédupliqué (RGPD : hash, jamais d'email en clair)
  *
  * Sécurité :
- *   - DRY_RUN par défaut si pas de RESEND_API_KEY (rien n'est envoyé)
+ *   - DRY_RUN par défaut si pas de SMTP_PASS (rien n'est envoyé)
  *   - MAX 4 emails / run (protège la réputation du domaine)
  *   - dédup par domaine, ET cross-dédup avec outreach-log.json (jamais
  *     re-contacter un domaine déjà touché par l'outreach backlink)
@@ -28,17 +28,16 @@
  *
  * Usage :
  *   DRY_RUN=1 node scripts/automation/b2b-outreach.cjs   # simulation
- *   node scripts/automation/b2b-outreach.cjs             # live (si RESEND_API_KEY)
+ *   node scripts/automation/b2b-outreach.cjs             # live (si SMTP_PASS)
  */
 'use strict'
 
 const { readFileSync, writeFileSync, existsSync, mkdirSync } = require('fs')
 const { resolve } = require('path')
-const { Resend } = require('resend')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
+const { sendEmail: sendMail, mailReady } = require('./lib/email-send.cjs')
 
 const DRY_RUN = process.env.DRY_RUN === '1'
-const RESEND_API_KEY = process.env.RESEND_API_KEY
 const MAX_EMAILS_PER_RUN = 4
 
 const DATA_DIR = resolve(__dirname, 'data')
@@ -170,9 +169,8 @@ async function sendEmail(resend, to, target) {
     return { sent: true, dry: true }
   }
   try {
-    const { data, error } = await resend.emails.send({
-      from: FROM, to, subject, html, replyTo: REPLY_TO,
-      headers: { 'List-Unsubscribe': `<${UNSUB}>`, 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' },
+    const { data, error } = await sendMail({
+      from: FROM, to, subject, html, replyTo: REPLY_TO, unsubUrl: UNSUB,
     })
     if (error) { console.error(`  Échec: ${error.message}`); return { sent: false, error: error.message } }
     console.log(`  Envoyé → ${logId(to)} (id: ${data?.id})`)
@@ -184,8 +182,8 @@ async function sendEmail(resend, to, target) {
 async function main() {
   console.log(`=== B2B Outreach ${DRY_RUN ? '(DRY RUN)' : ''} ===`)
   console.log(`${new Date().toISOString()}\n`)
-  if (!RESEND_API_KEY && !DRY_RUN) { console.log('RESEND_API_KEY absent → rien envoyé (set DRY_RUN=1 pour simuler).'); return }
-  const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null
+  if (!mailReady() && !DRY_RUN) { console.log('SMTP_PASS absent → rien envoyé (set DRY_RUN=1 pour simuler).'); return }
+  const resend = mailReady() ? {} : null
 
   const log = readJSON(B2B_LOG) || { contacted: {}, lastRun: null, totalSent: 0 }
   const contacted = log.contacted || {}
@@ -207,7 +205,7 @@ async function main() {
   console.log(`  ${discovered.length} via découverte + ${seed.length} curées = ${found.length} uniques`)
   const fresh = found.filter(t => !contacted[t.domain] && !backlink[t.domain])
   console.log(`  ${found.length} trouvées · ${fresh.length} fraîches (${Object.keys(contacted).length} déjà B2B, ${Object.keys(backlink).length} déjà backlink)\n`)
-  if (!fresh.length) { console.log('Aucune nouvelle cible.'); log.lastRun = new Date().toISOString(); writeJSON(B2B_LOG, log); return }
+  if (!fresh.length) { console.log('Aucune nouvelle cible.'); log.lastRun = new Date().toISOString(); if (!DRY_RUN) writeJSON(B2B_LOG, log); return }
 
   let sent = 0
   for (const target of fresh.slice(0, MAX_EMAILS_PER_RUN + 4)) {
@@ -233,7 +231,7 @@ async function main() {
   log.contacted = contacted
   log.lastRun = new Date().toISOString()
   log.totalSent = Object.values(contacted).filter(c => c.status === 'sent').length
-  writeJSON(B2B_LOG, log)
+  if (!DRY_RUN) writeJSON(B2B_LOG, log) // dry-run ne brûle pas les cibles
   console.log(`\n=== Fini : ${sent} envoyés ce run (${log.totalSent} au total) ===`)
 }
 

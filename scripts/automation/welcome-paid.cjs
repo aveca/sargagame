@@ -9,7 +9,7 @@
  * marche, choisis tes plages »). i18n fr/en/es selon la région.
  *
  * Dédupe via data/welcome-paid-sent.json (hash). Idempotent → re-run sans double-envoi.
- * Dry-run par défaut. Clés : STRIPE_SECRET_KEY + RESEND_API_KEY (process.env OU .env).
+ * Dry-run par défaut. Clés : STRIPE_SECRET_KEY + SMTP_PASS (process.env OU .env).
  *
  * Usage:
  *   node scripts/automation/welcome-paid.cjs                 # dry-run
@@ -18,9 +18,8 @@
  */
 const fs = require('fs')
 const path = require('path')
-const { Resend } = require('resend')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
-const { sendEmail, brandHeader } = require('./lib/email-send.cjs')
+const { sendEmail, brandHeader, mailReady } = require('./lib/email-send.cjs')
 const { getAllRegions } = require('../../regions/index.cjs')
 
 const args = process.argv.slice(2)
@@ -36,7 +35,8 @@ function envVal(name) {
   } catch { return null }
 }
 const STRIPE_KEY = envVal('STRIPE_SECRET_KEY')
-const RESEND_KEY = envVal('RESEND_API_KEY') || envVal('RESEND')
+// Envoi via SMTP (boîte alerte@). Bridge .env → process.env pour l'exécution locale.
+;['SMTP_PASS', 'SMTP_USER', 'SMTP_HOST', 'SMTP_PORT'].forEach(k => { if (!process.env[k]) { const v = envVal(k); if (v) process.env[k] = v } })
 
 const SENT_PATH = path.join(__dirname, 'data', 'welcome-paid-sent.json')
 const BOUNCED_PATH = path.join(__dirname, 'data', 'bounced-emails.json')
@@ -145,8 +145,8 @@ async function main() {
   for (const q of queue) console.log(`  • ${logId(q.email)} (${q.island}, ${q.region.primaryLang || 'fr'})`)
 
   if (!DO_SEND) { console.log('\nDRY-RUN — rien envoyé. Relancer avec --send.'); return }
-  if (!RESEND_KEY) { console.error('\n❌ RESEND_API_KEY absent — impossible d\'envoyer.'); process.exit(1) }
-  const resend = new Resend(RESEND_KEY)
+  if (!mailReady()) { console.error('\n❌ SMTP_PASS absent — impossible d\'envoyer.'); process.exit(1) }
+  const resend = null
   const sentArr = loadJSON(SENT_PATH, [])
   for (const q of queue) {
     const c = copy(q.region)

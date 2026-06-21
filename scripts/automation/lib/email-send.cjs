@@ -9,8 +9,54 @@
  *      anti-spam, fallback clients sans HTML, accessibilité).
  *   3. LIST-UNSUBSCRIBE one-click — header RFC 8058 (déjà attendu par Gmail/Outlook).
  *
- * N'envoie RIEN tout seul : wrappe `resend.emails.send`. Pas de PII en log.
+ * TRANSPORT : SMTP de la boîte réelle alerte@sargasses-martinique.com (cPanel,
+ * premium115.web-hosting.com), via nodemailer — PLUS de Resend. Le From est
+ * NORMALISÉ sur cette adresse (le display-name passé par l'appelant est conservé)
+ * pour garantir SPF/DKIM : un From sur un autre domaine casserait la délivrabilité.
+ * Pas de PII en log.
  */
+
+const nodemailer = require('nodemailer')
+
+// SMTP — boîte alerte@ (cPanel). Host/user/port non sensibles (defaults ici) ;
+// seul SMTP_PASS est un secret. Lecture PARESSEUSE de process.env : un script qui
+// charge un .env local avant d'envoyer est ainsi pris en compte.
+function smtpCfg() {
+  return {
+    host: process.env.SMTP_HOST || 'premium115.web-hosting.com',
+    port: +(process.env.SMTP_PORT || 465),
+    user: process.env.SMTP_USER || 'alerte@sargasses-martinique.com',
+    pass: process.env.SMTP_PASS || '',
+  }
+}
+
+// Prêt à envoyer ? (creds présents). Les scripts gatent dessus au lieu de RESEND_API_KEY.
+function mailReady() { const c = smtpCfg(); return !!(c.host && c.user && c.pass) }
+
+// Transporter mutualisé (pool) — construit une seule fois (au 1er envoi, creds figés).
+let _transporter = null
+function getTransport() {
+  if (_transporter) return _transporter
+  const c = smtpCfg()
+  _transporter = nodemailer.createTransport({
+    host: c.host, port: c.port, secure: c.port === 465,
+    auth: { user: c.user, pass: c.pass },
+    pool: true, maxConnections: 3, maxMessages: 50,
+  })
+  return _transporter
+}
+
+// Force l'adresse From sur la boîte authentifiée (SPF/DKIM), en gardant le
+// display-name voulu par l'appelant. "Sargassum Florida <alerte@sargassummiami.com>"
+// → "Sargassum Florida <alerte@sargasses-martinique.com>".
+function normalizeFrom(from) {
+  const addr = smtpCfg().user
+  const raw = String(from || '').trim()
+  const m = raw.match(/^\s*(.*?)\s*<[^>]*>\s*$/)
+  const name = m ? m[1].replace(/^"|"$/g, '').trim() : (raw.includes('@') ? '' : raw)
+  return name ? `${name} <${addr}>` : addr
+}
+
 
 // HTML → texte lisible (liens conservés en "libellé (url)").
 function htmlToText(html) {
@@ -72,22 +118,41 @@ function applyBrand(html) {
 }
 
 /**
- * Envoie un email "propre". Retourne le résultat brut de Resend ({data,error}).
- * @param resend  instance Resend déjà construite
- * @param opts    { from, to, subject, html, preheader, unsubUrl, text?, replyTo? }
+ * Envoie un email "propre" via SMTP (boîte alerte@). Retourne un objet compatible
+ * avec l'ancien appelant Resend : { data: { id }, error: null | Error }.
+ *
+ * Signatures supportées (back-compat) :
+ *   sendEmail(opts)                 ← nouveau
+ *   sendEmail(legacyResend, opts)   ← ancien (1er arg ignoré)
+ * opts = { from, to, subject, html, preheader, unsubUrl, text?, replyTo? }
  */
-async function sendEmail(resend, { from, to, subject, html, preheader, unsubUrl, text, replyTo }) {
-  const payload = {
-    from, to, subject,
+async function sendEmail(a, b) {
+  const opts = (b === undefined) ? a : b
+  const { from, to, subject, html, preheader, unsubUrl, text, replyTo } = opts || {}
+  if (!mailReady()) {
+    return { data: null, error: new Error('SMTP non configuré (SMTP_PASS manquant)') }
+  }
+  const message = {
+    from: normalizeFrom(from),
+    to, subject,
     html: applyBrand(injectPreheader(html, preheader)),
     text: text || htmlToText(html),
   }
-  if (replyTo) payload.replyTo = replyTo
-  if (unsubUrl) payload.headers = {
+  if (replyTo) message.replyTo = replyTo
+  if (unsubUrl) message.headers = {
     'List-Unsubscribe': `<${unsubUrl}>`,
     'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
   }
-  return resend.emails.send(payload)
+  try {
+    const info = await getTransport().sendMail(message)
+    return { data: { id: info.messageId }, error: null }
+  } catch (error) {
+    return { data: null, error }
+  }
 }
 
-module.exports = { sendEmail, htmlToText, injectPreheader, applyBrand, brandHeader, FONT_LINK, FONT_SANS, FONT_DISPLAY }
+module.exports = {
+  sendEmail, mailReady, getTransport, normalizeFrom,
+  htmlToText, injectPreheader, applyBrand, brandHeader,
+  FONT_LINK, FONT_SANS, FONT_DISPLAY,
+}

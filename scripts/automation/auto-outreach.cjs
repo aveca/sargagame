@@ -6,14 +6,17 @@
  *   1. Scrape Google News for new articles about sargassum (FR, + US/MX/DR
  *      when OUTREACH_INTL=1), tagging each target with its market.
  *   2. Find contact emails on target sites
- *   3. Send a market-aware outreach email via Resend. FR pitches the MQ/GP
- *      maps; US/MX/DR pitch the region site + the free-to-cite /press/ kit,
- *      in the local language and from that region's own sender domain.
+ *   3. Send a market-aware outreach email via SMTP (boîte alerte@). FR pitches
+ *      the MQ/GP maps; US/MX/DR pitch the region site + the free-to-cite /press/
+ *      kit, in the local language. The From DISPLAY name stays per-market
+ *      ("Sargassum Florida"…) but the address is normalised to
+ *      alerte@sargasses-martinique.com (SPF/DKIM), and replies route to
+ *      contact@sargasses-martinique.com — everything goes out from the FR domain.
  *   4. Track contacted sites to never re-email
  *
  * Safety: max 5 emails per run. Dedup by domain. Professional tone. Intl is
- * gated on OUTREACH_INTL=1 and intl send-failures (e.g. an unverified Resend
- * sender domain) are NOT recorded, so targets retry once the domain is ready.
+ * gated on OUTREACH_INTL=1; intl send-failures are NOT recorded, so targets
+ * retry next week. DRY_RUN never writes the log (no target gets burned).
  *
  * Cron: 1x/semaine (Mardi 10h UTC) via weekly-outreach.yml
  *
@@ -26,12 +29,14 @@
 
 const { readFileSync, writeFileSync, existsSync, mkdirSync } = require('fs')
 const { resolve } = require('path')
-const { Resend } = require('resend')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
+const { sendEmail, mailReady, normalizeFrom } = require('./lib/email-send.cjs')
 
 const DRY_RUN = process.env.DRY_RUN === '1'
-const RESEND_API_KEY = process.env.RESEND_API_KEY
 const MAX_EMAILS_PER_RUN = 5
+// Réponses : tout l'outreach part désormais du domaine FR (boîte alerte@), donc on
+// route les réponses vers une boîte FR réelle plutôt qu'un support@ intl non créé.
+const OUTREACH_REPLY_TO = 'contact@sargasses-martinique.com'
 
 const DATA_DIR = resolve(__dirname, 'data')
 const OUTREACH_LOG = resolve(DATA_DIR, 'outreach-log.json')
@@ -351,7 +356,7 @@ function buildSubject(target) {
   return `Free-to-cite sargassum data for your ${subjReg} coverage`
 }
 
-// ── Step 4: Send via Resend ───────────────────────────────────
+// ── Step 4: Send via SMTP (boîte alerte@) ─────────────────────
 
 async function sendOutreachEmail(resend, to, target) {
   const m = MARKETS[target.market] || MARKETS.fr
@@ -360,18 +365,18 @@ async function sendOutreachEmail(resend, to, target) {
 
   if (DRY_RUN) {
     console.log(`  [DRY RUN] (${target.market || 'fr'}) Would send to: ${logId(to)}`)
-    console.log(`  From: ${m.from}`)
+    console.log(`  From: ${normalizeFrom(m.from)} · reply-to: ${OUTREACH_REPLY_TO}`)
     console.log(`  Subject: ${subject}`)
     return { sent: true, dry: true }
   }
 
   try {
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await sendEmail({
       from: m.from,
       to,
       subject,
       html,
-      replyTo: m.replyTo,
+      replyTo: OUTREACH_REPLY_TO,
     })
     if (error) {
       console.error(`  Failed: ${error.message}`)
@@ -391,13 +396,13 @@ async function main() {
   console.log(`=== Auto-Outreach ${DRY_RUN ? '(DRY RUN)' : ''} ===`)
   console.log(`Timestamp: ${new Date().toISOString()}\n`)
 
-  if (!RESEND_API_KEY && !DRY_RUN) {
-    console.error('RESEND_API_KEY not set.')
+  if (!mailReady() && !DRY_RUN) {
+    console.error('SMTP_PASS not set.')
     process.exit(0)
   }
 
   console.log(`International markets (US/MX/DR): ${OUTREACH_INTL ? 'ON' : 'off (set OUTREACH_INTL=1)'}`)
-  const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null
+  const resend = null
 
   // Load outreach log (tracks contacted domains) — emails stored as hashes (RGPD)
   const log = readJSON(OUTREACH_LOG) || { contacted: {}, lastRun: null }

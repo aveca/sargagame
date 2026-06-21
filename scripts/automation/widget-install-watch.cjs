@@ -89,11 +89,10 @@ async function main() {
 
   if (!DO_SEND) { console.log('\nDRY-RUN. --send pour envoyer l\'email au fondateur.'); return; }
 
-  const RESEND_KEY = envVal('RESEND_API_KEY') || envVal('RESEND');
-  if (!RESEND_KEY) { console.error('RESEND_API_KEY absente — seen-set mis à jour mais email NON envoyé.'); return; }
-  const { Resend } = require('resend');
-  const { sendEmail } = require('./lib/email-send.cjs');
-  const resend = new Resend(RESEND_KEY);
+  ;['SMTP_PASS', 'SMTP_USER', 'SMTP_HOST', 'SMTP_PORT'].forEach(k => { if (!process.env[k]) { const v = envVal(k); if (v) process.env[k] = v } });
+  const { sendEmail, mailReady } = require('./lib/email-send.cjs');
+  if (!mailReady()) { console.error('SMTP_PASS absent — seen-set mis à jour mais email NON envoyé.'); return; }
+  const resend = null;
 
   const list = newHosts.map(n => `<li><strong>${n.host}</strong> <span style="color:#686868">— ${n.region.toUpperCase()}, ${n.loads} chargement(s)</span></li>`).join('');
   const plural = newHosts.length > 1;

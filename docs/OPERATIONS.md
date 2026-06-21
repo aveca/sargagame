@@ -29,7 +29,7 @@
 | `GOOGLE_SERVICE_ACCOUNT_JSON` | Clé JSON du service account Google : GSC API, GA4 API, Sheets (subscribers), Indexing API | console.cloud.google.com → IAM → Service Accounts → Keys (révoquer l'ancienne, en générer une nouvelle, coller le JSON entier) |
 | `GSC_HUMAN_OWNER` | Email du propriétaire humain GSC — `provision-gsc.yml` le délègue sur les nouvelles propriétés | Valeur = adresse Google de l'utilisateur (pas de dashboard) |
 | `ONESIGNAL_API_KEY_MQ` / `_GP` / `_PUNTACANA` / `_FLORIDA` / `_RIVIERAMAYA` | Push notifications (daily, morning brief, push-debug) — clé REST nommée `github-actions` dans chaque app | onesignal.com → app de la région → Settings → Keys & IDs → REST API key |
-| `RESEND_API_KEY` | Tous les emails (welcome, drip, weekend, alertes failure, health-check) | resend.com → API Keys |
+| `SMTP_PASS` | Tous les emails (welcome, drip, weekend, outreach, alertes failure, health-check) — envoi via SMTP de la boîte `alerte@sargasses-martinique.com` (cPanel `premium115.web-hosting.com:465`). Host/user/port ont des defaults dans `scripts/automation/lib/email-send.cjs` ; seul ce mot de passe est secret. **Plus de Resend.** | cPanel → Email Accounts → `alerte@` → mot de passe |
 
 > Les `onesignalAppId`, `ga4Id`, `clarityProjectId` (IDs **publics**, pas des secrets) vivent dans `regions/<id>.json`.
 
@@ -53,7 +53,7 @@ Raison : isoler le risque (un ban FB ne touche pas les sessions Google/Stripe) e
 | `morning-brief.yml` | cron `57 11 * * *` (07:57 Antilles) | Push OneSignal quotidien "morning brief" — top plage du jour par région (F3). |
 | `weekly-seo-automation.yml` | cron lun 11h UTC | Le gros workflow SEO (~22 étapes, ~12 min) : GSC, analyzers, rapports, redeploy. |
 | `weekly-optimize.yml` | cron mar/mer/ven 10h + ven 14h UTC | Tâches d'optimisation par jour (A/B, funnel Apps Script, GA4, weekend prep). `day_override` en dispatch. |
-| `weekly-outreach.yml` | cron mar 10h UTC | Backlinks + social outreach (emails via Resend). |
+| `weekly-outreach.yml` | cron mar 10h UTC | Backlinks + social outreach (emails via SMTP boîte `alerte@`). |
 | `weekly-ux-report.yml` | cron ven 11h UTC | Rapport UX hebdo depuis GA4. |
 | `provision-gsc.yml` | dispatch (input `regions`) | Crée/vérifie les propriétés Google Search Console des nouvelles régions (vérification via fichier déposé en FTP), délègue à `GSC_HUMAN_OWNER`. |
 | `provision-ga4.yml` | dispatch (input `regions`) | Crée les propriétés GA4 des nouvelles régions sous `GA4_ACCOUNT`. |
