@@ -426,7 +426,7 @@ export function initHomeAZ(SR, HOST, opts){
     var b=el.querySelector("ellipse"); if(!b) return;
     var g=document.createElementNS("http://www.w3.org/2000/svg","ellipse");
     g.setAttribute("cx",b.getAttribute("cx")); g.setAttribute("cy",b.getAttribute("cy"));
-    g.setAttribute("rx","20"); g.setAttribute("ry","6"); g.setAttribute("fill","#5FD3C9");
+    g.setAttribute("rx","20"); g.setAttribute("ry","6"); g.setAttribute("fill","#3fd07f");
     g.setAttribute("class","glint-flash"); g.style.transformOrigin=b.getAttribute("cx")+"px "+b.getAttribute("cy")+"px";
     el.parentNode.appendChild(g); g.classList.add("go");
     later(function(){ if(g.parentNode) g.parentNode.removeChild(g); },1000);
@@ -444,7 +444,7 @@ export function initHomeAZ(SR, HOST, opts){
     for(var i=0;i<n;i++){
       var c=document.createElementNS("http://www.w3.org/2000/svg","circle");
       c.setAttribute("cx",x0+(span/(n-1))*i); c.setAttribute("cy",vy); c.setAttribute("r","5");
-      c.setAttribute("fill","#009E8E"); c.setAttribute("stroke","#06121A"); c.setAttribute("stroke-width","1.2");
+      c.setAttribute("fill","#d6249f"); c.setAttribute("stroke","#06121A"); c.setAttribute("stroke-width","1.2");
       buoys.appendChild(c);
     }
     requestAnimationFrame(function(){ boom.classList.add("on"); });
@@ -776,7 +776,7 @@ export default function HomeAZ(props){
     ref:hostRef, role:"dialog", "aria-label": beach&&beach.name ? beach.name : "Sargasses",
     style:{position:"absolute",inset:0,zIndex:1050,overflowY:"auto",overflowX:"hidden",
       forcedColorAdjust:"none",
-      background:"#02060A", WebkitOverflowScrolling:"touch", overscrollBehavior:"contain",
+      background:"#0d0716", WebkitOverflowScrolling:"touch", overscrollBehavior:"contain",
       opacity:exiting?0:1, transform:exiting?"scale(1.04)":"none",
       transition:"opacity .3s ease,transform .3s cubic-bezier(.22,1,.36,1)"}
   });

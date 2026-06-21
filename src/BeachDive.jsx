@@ -449,7 +449,7 @@ export function initBeachDive(SR, HOST, opts){
       var l=document.createElement("div"); l.className="fl"; l.textContent=meta[LANG]; row.appendChild(l);
       var tr=document.createElement("div"); tr.className="ftrack";
       var fl=document.createElement("div"); fl.className="ffill";
-      fl.style.background = k==="sargassum" ? "linear-gradient(90deg,#22C55E,#5FD3C9)" : "linear-gradient(90deg,#FFC72C,#E8A800)";
+      fl.style.background = k==="sargassum" ? "linear-gradient(90deg,#22C55E,#3fd07f)" : "linear-gradient(90deg,#FFC72C,#E8A800)";
       fl.setAttribute("data-w", w.toFixed(3));
       if(REDUCE) fl.style.setProperty("--rmw", w.toFixed(3));
       tr.appendChild(fl); row.appendChild(tr);
@@ -494,9 +494,9 @@ export function initBeachDive(SR, HOST, opts){
   function miniBeachScene(b){
     var s=mulberry(seedFrom(b.id||b.name||"x"));
     var sk=stKey(b.status);
-    var sea = sk==="avoid"?"#2c3b1a" : sk==="moderate"?"#19453d" : "#1A5852";
+    var sea = sk==="avoid"?"#2c3b1a" : sk==="moderate"?"#19453d" : "#6a2f9e";
     var svg=svgEl("svg",{viewBox:"0 0 200 64",preserveAspectRatio:"xMidYMid slice"});
-    svg.appendChild(svgEl("rect",{x:0,y:0,width:200,height:30,fill:"#155A5A"}));
+    svg.appendChild(svgEl("rect",{x:0,y:0,width:200,height:30,fill:"#6a2f9e"}));
     svg.appendChild(svgEl("rect",{x:0,y:0,width:200,height:30,fill:"url(#warmG)"}));
     svg.appendChild(svgEl("circle",{cx:130+ (s()*30)|0,cy:14,r:9,fill:"#FFD884",opacity:".7"}));
     svg.appendChild(svgEl("rect",{x:0,y:28,width:200,height:24,fill:sea}));
@@ -689,7 +689,7 @@ export function initBeachDive(SR, HOST, opts){
     return "calm";
   }
   var fcCursor=-1, prog0=0;
-  var SEA_TINT = {clean:"#1A5852", moderate:"#19453d", avoid:"#2c3b1a"};
+  var SEA_TINT = {clean:"#6a2f9e", moderate:"#19453d", avoid:"#2c3b1a"};
   function applyForecastScrub(p){
     var visIdx = clamp(Math.floor(p*6+0.001),0,6);
     if(visIdx!==fcCursor){
