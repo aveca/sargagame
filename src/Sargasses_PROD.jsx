@@ -4777,6 +4777,11 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap,sargData,on
     {id:"fav",label:_t(lang,"Favoris","Favourites","Favoritas"),c:"#FFC72C"},
     {id:"avoid",label:_t(lang,"Éviter","Avoid","Evitar"),c:"#E8522A"},
   ]
+  // Compteurs par chip (P10) : combien de plages chaque filtre donnerait, en respectant
+  // la recherche q mais indépendamment du chip actif → l'utilisateur voit où il y a des
+  // résultats avant de cliquer.
+  const qBase=useMemo(()=>{if(!q)return beaches;const lq=q.toLowerCase();return beaches.filter(b=>(b.name+" "+b.commune).toLowerCase().includes(lq))},[beaches,q])
+  const chipCount=id=>id==="fav"?qBase.filter(b=>favorites.includes(b.id)).length:qBase.filter(b=>b.status===id).length
   return(
     <div style={{height:"100%",overflowY:"auto",
       paddingTop:"calc(var(--sg-header-offset,108px) + env(safe-area-inset-top,0px))",paddingBottom:"calc(70px + env(safe-area-inset-bottom,12px))",
@@ -4835,7 +4840,7 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap,sargData,on
                 style={{fontSize:12,fontWeight:700,padding:"5px 13px",borderRadius:100,border:`1px solid ${active?ch.c:"rgba(255,255,255,.2)"}`,
                   background:active?ch.c+"22":"rgba(255,255,255,.06)",color:active?ch.c:"rgba(255,255,255,.7)",
                   cursor:"pointer",fontFamily:"inherit",transition:"all .2s",whiteSpace:"nowrap"}}>
-                {ch.label}
+                {ch.label} <span style={{opacity:.55,fontWeight:600,marginLeft:1}}>{chipCount(ch.id)}</span>
               </button>
             )
           })}
