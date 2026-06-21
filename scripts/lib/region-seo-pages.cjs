@@ -413,6 +413,8 @@ function emitLangPages(ctx) {
     if (routes.best) items.push(['best', `${prefix}/${routes.best}/`, lang === 'es' ? 'Mejores playas sin sargazo' : 'Best beaches without sargassum'])
     if (routes.weekly) items.push(['weekly', `${prefix}/${routes.weekly}/`, lang === 'es' ? 'Sargazo esta semana' : 'Sargassum this week'])
     items.push(['method', `${prefix}/${lang === 'es' ? 'metodologia' : 'methodology'}/`, lang === 'es' ? 'Metodología y precisión' : 'Methodology & accuracy'])
+    // press (kit média / E-E-A-T) : sinon orpheline = liée seulement par le sitemap.
+    if (content.press && content.press.slug) items.push(['press', `${prefix}/${content.press.slug}/`, lang === 'es' ? 'Prensa y medios' : 'Press & media'])
     return `<p>${items.filter(([k]) => k !== except).map(([, href, label]) => `<a href="${href}">${esc(label)}</a>`).join(' · ')} · <a href="${prefix}/">${t.home}</a></p>`
   }
 
@@ -520,7 +522,7 @@ ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`,
       slug: pr.slug, title: smartTrim(pr.title, 70), desc: trimDesc(pr.desc),
       noscript: `<article><h1>${esc(pr.h1)}</h1><p><em>${t.updated(today)}</em></p><p>${esc(tok(pr.intro))}</p>
 ${(pr.sections || []).map(s => `<h2>${esc(s.h2)}</h2><p>${esc(tok(s.text))}</p>`).join('')}
-${hubLinks(null)}${networkFooter(region, t, lang)}</article>`,
+${hubLinks('press')}${networkFooter(region, t, lang)}</article>`,
     })
   }
 
