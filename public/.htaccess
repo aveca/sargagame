@@ -280,6 +280,12 @@ ErrorDocument 404 /404.html
 <FilesMatch "^(?!sw\.js$).+\.(js|css)$">
 Header set Cache-Control "public, max-age=31536000, immutable"
 </FilesMatch>
+# Polices content-hashées (anton-*.woff2, bricolagegrotesque-*.woff2) — immutable 1 an.
+# Exclues de la règle js|css ci-dessus → elles tombaient sur le défaut mod_expires (1h via
+# le host), donc re-validées à chaque visite des 136 landing SEO (où le SW n'est pas installé).
+<FilesMatch "\.woff2?$">
+Header set Cache-Control "public, max-age=31536000, immutable"
+</FilesMatch>
 # sw.js + version.json JAMAIS caches. Place EN DERNIER pour ecraser toute regle ci-dessus
 # (Header set = le dernier qui matche gagne). Double securite avec le lookahead ci-dessus.
 <FilesMatch "(sw\.js|version\.json)$">
@@ -299,11 +305,19 @@ ExpiresByType image/png "access plus 1 month"
 ExpiresByType image/webp "access plus 1 month"
 ExpiresByType image/svg+xml "access plus 1 month"
 ExpiresByType application/json "access plus 1 hour"
+ExpiresByType font/woff2 "access plus 1 year"
 </IfModule>
 
 # Compression gzip (SEO : vitesse)
 <IfModule mod_deflate.c>
 AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
+</IfModule>
+# Compression Brotli (~15-20% de mieux que gzip sur JS/CSS/HTML/JSON). DEFLATE reste le
+# fallback ci-dessus ; Vary: Accept-Encoding déjà posé (section headers). NB : LiteSpeed/
+# Cloudflare gèrent souvent brotli en amont (panel/edge) → cette directive peut être un
+# no-op. Vérifier en prod : curl -H 'Accept-Encoding: br' -I https://… | grep -i content-encoding
+<IfModule mod_brotli.c>
+AddOutputFilterByType BROTLI_COMPRESS text/html text/css application/javascript application/json image/svg+xml
 </IfModule>
 
 # Trailing slash cohérent : redirige les URLs sans slash vers avec slash (évite contenu dupliqué)

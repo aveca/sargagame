@@ -2263,6 +2263,15 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
     __RELIABILITY__: JSON.stringify(RELIABILITY),
   },
   build: {
+    // Le chunk leaflet (~42 Ko gz / 146 Ko brut) n'est JAMAIS chargé dans la variante
+    // carte par défaut (map_world="world" → WorldMapView SVG ; leaflet = fallback
+    // ?nav=map uniquement). Vite le modulepreloadait quand même dans le <head> → 42 Ko
+    // gaspillés sur le chemin critique à chaque cold load mobile/4G. On le retire des
+    // hints de preload SANS toucher au découpage : leaflet reste lazy-chargé par MapView
+    // quand on ouvre réellement la carte Leaflet. (Vérifié : absent du <head> après build.)
+    modulePreload: {
+      resolveDependencies: (url, deps) => deps.filter(dep => !/leaflet/.test(dep)),
+    },
     rollupOptions: {
       output: {
         manualChunks: {
