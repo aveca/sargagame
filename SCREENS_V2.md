@@ -50,7 +50,7 @@ l'**alerte** le jour où ta plage bascule. Un seul monde **comic-book animé** (
 - [ ] 29 BIENVENUE PREMIUM (PaidOnboarding) en comic → 05
 ### Bloc 6 — Système & utilitaires
 - [ ] 19 NOTIFICATIONS / centre d'alertes (liste comic)
-- [ ] 20 ALERTE SARGASSE / hydrogène sulfuré (écran d'alerte rouge)
+- [~] 20 ALERTE SARGASSE / hydrogène sulfuré — repère santé H₂S **livré dans le détail comic** (`H2sNote` dans ChasseDetail : case BD rouge sur plages `avoid` + ambre sur `moderate`, danger H₂S/ammoniac + consignes groupes sensibles bébés/asthme/grossesse/seniors, i18n fr/en/es, réversible `?h2snote=0`). Reste : centre d'alertes/notifications (cf 19) + push
 - [x] 21 RECHERCHE plages (fait, cf 06)
 - [x] 22 FILTRES statut (fait, cf 06)
 - [x] 24 FIABILITÉ DU VEILLEUR (jauge track-record honnête — fait)

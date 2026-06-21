@@ -197,6 +197,50 @@ function TCard({beach,lang,onTap,rot=0,collected=true}){
   )
 }
 
+/* ---- REPÈRE SANTÉ H₂S (§4A santé) ----------------------------------------
+   Les sargasses qui s'échouent et pourrissent dégagent du sulfure d'hydrogène
+   (H₂S) + ammoniac. C'est LE vrai danger d'une plage « à éviter » — pas l'eau,
+   mais l'air près des amas en décomposition. On le dit honnêtement, sans alarmer,
+   avec un repère pour les personnes sensibles (réf. recommandations ARS Antilles).
+   Additif, in-world comic, ZÉRO impact conversion/Stripe. Réversible : ?h2snote=0.
+   (NB : ?h2s=1/0 est déjà pris par l'A/B `pw_h2s` du data-fiche BeachDive — surface
+   distincte ; ce repère-ci vit dans le détail comic qui n'avait AUCUNE info santé.) */
+function h2sOn(){ try{ return !/[?&]h2snote=0(?:&|$)/.test(window.location.search) }catch(_){ return true } }
+const H2S_TXT={
+  bad:{
+    h:{fr:"GAZ H₂S — PRUDENCE",en:"H₂S GAS — CAUTION",es:"GAS H₂S — PRECAUCIÓN"},
+    t:{fr:"Les sargasses échouées qui pourrissent dégagent du sulfure d'hydrogène (H₂S, odeur d'œuf pourri) et de l'ammoniac. À forte concentration ça irrite les yeux, la gorge et les voies respiratoires, et peut donner maux de tête et nausées.",
+       en:"Sargassum rotting on the shore releases hydrogen sulfide (H₂S, rotten-egg smell) and ammonia. At higher levels it irritates eyes, throat and airways and can cause headaches and nausea.",
+       es:"El sargazo varado que se pudre libera sulfuro de hidrógeno (H₂S, olor a huevo podrido) y amoníaco. En concentración alta irrita ojos, garganta y vías respiratorias y puede causar dolor de cabeza y náuseas."},
+    s:{fr:"Nourrissons, femmes enceintes, asthmatiques, personnes âgées ou cardiaques : restez à distance des amas échoués et ne stationnez pas sous le vent.",
+       en:"Infants, pregnant women, asthmatics, elderly or heart patients: keep your distance from the beached piles and don't stay downwind.",
+       es:"Bebés, embarazadas, asmáticos, personas mayores o cardíacas: manténganse lejos de los montones varados y no se queden a favor del viento."}
+  },
+  mod:{
+    h:{fr:"ODEUR POSSIBLE",en:"POSSIBLE SMELL",es:"POSIBLE OLOR"},
+    t:{fr:"Quelques sargasses peuvent échouer et dégager une légère odeur en se décomposant. Sans danger en passage, mais évitez de stationner près des amas, surtout avec de jeunes enfants.",
+       en:"Some sargassum may wash up and give off a mild smell as it decomposes. Harmless in passing, but avoid lingering near the piles, especially with young children.",
+       es:"Algo de sargazo puede llegar y oler al descomponerse. Inofensivo de paso, pero evita quedarte junto a los montones, sobre todo con niños pequeños."}
+  },
+  src:{fr:"Repère santé — recommandations sargasses (ARS Antilles)",
+       en:"Health note — sargassum public-health guidance",
+       es:"Nota de salud — recomendaciones sanitarias del sargazo"}
+}
+function H2sNote({status,lang}){
+  if(!h2sOn()) return null
+  if(status!=="avoid"&&status!=="moderate") return null
+  const bad=status==="avoid", k=bad?"bad":"mod"
+  const _t=(o)=>(o&&(o[lang]||o.fr))||""
+  return (
+    <div className={"lc-h2s "+(bad?"bad":"mod")} role="note">
+      <div className="lc-h2s-h"><span className="lc-h2s-ic" aria-hidden="true">{bad?"⚠️":"👃"}</span>{_t(H2S_TXT[k].h)}</div>
+      <p className="lc-h2s-txt">{_t(H2S_TXT[k].t)}</p>
+      {bad&&<div className="lc-h2s-sens"><b aria-hidden="true">👶</b><span>{_t(H2S_TXT.bad.s)}</span></div>}
+      <div className="lc-h2s-src">{_t(H2S_TXT.src)}</div>
+    </div>
+  )
+}
+
 /* DÉTAIL PLAGE « en monde comic » — ouvert au tap d'une carte. Garde le joueur
    dans l'univers arène (mêmes police/couleurs/Veilleur) au lieu de l'éjecter
    vers l'app sombre. Le seul handoff = le CTA premium (moment de conversion). */
@@ -250,6 +294,9 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
           {pw.map(([e,t],i)=><span className="lc-detail-fact" key={i}><b>{e}</b> {t}</span>)}
           {beach.commune&&<span className="lc-detail-fact">📍 {beach.commune}</span>}
         </div>
+
+        {/* REPÈRE SANTÉ H₂S — n'apparaît que sur les plages à éviter / à surveiller */}
+        <H2sNote status={beach.status} lang={lang}/>
 
         {/* 7 PROCHAINS JOURS — aujourd'hui réel, le reste verrouillé (honnête) → premium */}
         <div className="lc-detail-fc">
@@ -863,6 +910,18 @@ const CSS=`
 .lc-fc-day{font:800 9px/1 "Comic Neue",system-ui,sans-serif;text-transform:uppercase;opacity:.8}
 .lc-fc-dot{font-family:"AntonLC",system-ui,sans-serif;font-size:14px;line-height:1}
 .lc-fc-cell.lock .lc-fc-dot{font-size:11px;filter:grayscale(1);opacity:.7}
+/* repère santé H₂S (case BD — plages à éviter / à surveiller) */
+.lc-h2s{margin:2px 0 18px;border:3px solid var(--ink);border-radius:13px;padding:11px 13px 12px;box-shadow:0 4px 0 var(--ink);forced-color-adjust:none}
+.lc-h2s.bad{background:#fff0ed}
+.lc-h2s.mod{background:#fff7e6}
+.lc-h2s-h{display:flex;align-items:center;gap:8px;font-family:"AntonLC",system-ui,sans-serif;font-size:15px;letter-spacing:.4px;color:var(--ink);line-height:1}
+.lc-h2s.bad .lc-h2s-h{color:var(--red)}
+.lc-h2s-ic{font-size:17px;line-height:1}
+.lc-h2s-txt{font-size:12.5px;font-weight:700;line-height:1.45;color:#2a1f1f;margin:8px 0 0}
+.lc-h2s-sens{display:flex;gap:8px;align-items:flex-start;margin-top:9px;font-size:12px;font-weight:800;color:var(--ink);
+  background:#fff;border:2.5px solid var(--ink);border-radius:10px;padding:8px 10px;box-shadow:2px 2px 0 var(--ink);line-height:1.4}
+.lc-h2s-sens b{font-size:15px;line-height:1;flex:0 0 auto}
+.lc-h2s-src{font-size:9.5px;font-weight:700;color:#8a7f7f;margin-top:9px;letter-spacing:.2px}
 /* plages voisines (hub d'exploration in-world) */
 .lc-detail-rel{margin-top:20px}
 .lc-detail-rel-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}
