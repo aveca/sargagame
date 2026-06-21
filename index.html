@@ -82,7 +82,11 @@
        anti-suivi (Edge « Prévention du suivi », Brave Shields) → rendu en police de secours
        (« gris/cheap »). En les servant depuis notre domaine, plus rien à bloquer + chargement
        plus rapide. cf. public/fonts/. -->
-  <link rel="stylesheet" href="/fonts/fonts.css" />
+  <!-- fonts.css = QUE des @font-face (display:swap) → non render-blocking : le navigateur peint
+       en system-ui tout de suite puis swap quand la police arrive, au lieu d'attendre un round-trip
+       4G avant le 1er paint. (Pattern media=print→onload ; noscript fallback.) -->
+  <link rel="stylesheet" href="/fonts/fonts.css" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="/fonts/fonts.css" /></noscript>
   <link rel="preconnect" href="https://www.clarity.ms" />
   <!-- Stripe : TLS cold-start mesuré à 9-22s sur réseau Caraïbe — préchauffer les
        connexions pendant le chargement de l'app rend le checkout on-site instantané. -->

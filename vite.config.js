@@ -140,6 +140,18 @@ function buildWeeklyBatch(levels) {
 }
 
 export default defineConfig({
+  // PREACT (essai perf cold-start) : react/react-dom → preact/compat (~38 Ko gz de moins sur le JS
+  // critique). L'app n'utilise aucune feature concurrent React 18 (vérifié) + zéro lib tierce React
+  // (leaflet retiré) → compat faible-risque. Rollback = retirer ce bloc resolve. À VALIDER par smoke
+  // funnel/carte/paywall avant de garder en prod.
+  resolve: {
+    alias: {
+      react: 'preact/compat',
+      'react-dom': 'preact/compat',
+      'react-dom/client': 'preact/compat',
+      'react/jsx-runtime': 'preact/jsx-runtime',
+    },
+  },
   plugins: [
     react(),
     // ── Meta région-aware de l'index.html (nouvelles régions EN/ES) ──
