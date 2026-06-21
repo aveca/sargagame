@@ -3672,16 +3672,18 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
           <span style={{font:"800 11px/1 'Bricolage Grotesque'",padding:"7px 11px",borderRadius:999,border:`2.5px solid ${COMIC.ink}`,boxShadow:`2px 2px 0 ${COMIC.ink}`,background:sc,color:status==="moderate"?COMIC.ink:"#fff",whiteSpace:"nowrap",display:"inline-flex",alignItems:"center",gap:5}}>● {(ST[status]||ST._loading)[lang==="en"?"le":lang==="es"?"les":"l"]}</span>
         </div>
 
-        {/* VERDICT — réponse géante (verdict-first, lisible sans scroll) */}
-        <div style={{display:"flex",alignItems:"center",gap:12,margin:"14px 0 4px"}}>
-          <div aria-hidden style={{flexShrink:0,animation:"bscPop .5s .1s cubic-bezier(.16,1,.3,1) both"}}><Veilleur mood={hasScore?moodFromScore(beach.score):"scan"} size={56}/></div>
-          <div style={{animation:"bscPop .5s .16s cubic-bezier(.16,1,.3,1) both"}}>
-            <div style={{fontFamily:"'Anton',sans-serif",fontSize:34,lineHeight:.88,textTransform:"uppercase",letterSpacing:"-.8px",color:"#fff",WebkitTextStroke:`2.2px ${COMIC.ink}`,paintOrder:"stroke fill"}}>
-              {V.big} <span style={{color:sc,WebkitTextStroke:`2.2px ${COMIC.ink}`}}>{V.when}</span>
-            </div>
+        {/* VERDICT — bandeau couleur haute lisibilité (traffic-light + mot, le pattern
+            le plus scannable de la recherche). Fini le blanc-sur-crème illisible :
+            mot sombre net sur aplat de couleur = la réponse se lit en 0,2 s. */}
+        <div style={{display:"flex",alignItems:"center",gap:13,padding:"14px 16px",margin:"14px 0 12px",
+          background:sc,border:`3px solid ${COMIC.ink}`,borderRadius:18,boxShadow:`4px 4px 0 ${COMIC.ink}`,
+          animation:"bscPop .5s .1s cubic-bezier(.16,1,.3,1) both"}}>
+          <div aria-hidden style={{flexShrink:0}}><Veilleur mood={hasScore?moodFromScore(beach.score):"scan"} size={52}/></div>
+          <div style={{minWidth:0}}>
+            <div style={{fontFamily:"'Anton',sans-serif",fontSize:32,lineHeight:.9,textTransform:"uppercase",letterSpacing:"-.5px",color:COMIC.ink}}>{V.big}</div>
+            <div style={{font:"800 12.5px/1 'Bricolage Grotesque'",color:COMIC.ink,opacity:.8,marginTop:5,textTransform:"uppercase",letterSpacing:".6px"}}>{V.when} · {_t(lang,"mesuré au satellite","measured by satellite","medido por satélite")}</div>
           </div>
         </div>
-        <div style={{font:"600 13px/1.4 'Bricolage Grotesque'",color:"#41414a",margin:"6px 2px 14px"}}>{_t(lang,"L'état réel de l'eau — mesuré au satellite, pas deviné.","The real state of the water — measured by satellite, not guessed.","El estado real del agua — medido por satélite, no adivinado.")}</div>
 
         {/* Score + facteurs (carte) */}
         <div className="bsc-card" style={{display:"flex",alignItems:"center",gap:14,padding:"13px 15px",marginBottom:12}}>
