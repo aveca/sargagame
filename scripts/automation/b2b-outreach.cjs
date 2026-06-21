@@ -152,8 +152,8 @@ function buildEmailHTML(target) {
   <li>une <strong>alerte</strong> avant un échouage, pour anticiper auprès de vos clients ;</li>
   <li>de quoi <strong>répondre avec une donnée fiable</strong> plutôt qu'au doigt mouillé.</li>
 </ul>
-<p>Vous pouvez déjà voir l'outil grand public ici : <a href="https://${site}/">${site}</a>.</p>
-<p><strong>Seriez-vous ouvert·e à 15 minutes</strong> pour que je vous montre l'état de <em>vos</em> plages en direct ? Répondez simplement à cet email et on cale un créneau.</p>
+<p><strong>Voyez l'état de vos plages en direct, maintenant</strong> : <a href="https://${site}/">${site}</a> — carte satellite, prévision 7 jours, gratuit.</p>
+<p>Et pour recevoir <strong>le brief quotidien de vos plages par email</strong> (100% automatique, sans appel, stop quand vous voulez) : <a href="https://${site}/?pro=1">activez-le en 10 secondes ici</a>.</p>
 <p>Bien à vous,<br>
 <strong>L'équipe Le Veilleur · Sargasses ${region}</strong><br>
 <span style="color:#888;font-size:13px">Données satellite Copernicus Marine · ${site}</span></p>

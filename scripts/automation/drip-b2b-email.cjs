@@ -143,7 +143,9 @@ function build(step, sub, ctx) {
   const island = (sub.island || 'MQ').toUpperCase()
   const name = island === 'GP' ? 'Guadeloupe' : 'Martinique'
   const domain = island === 'GP' ? 'sargasses-guadeloupe.com' : 'sargasses-martinique.com'
-  const proPath = isColl ? `${PRO_URL}/collectivites/` : `${PRO_URL}/hotels/`
+  // Self-serve : le deep-link ?pro=1 ouvre l'activation du brief gratuit dans
+  // l'app (aucun appel). Remplace les anciennes landings /pro/* (inexistantes).
+  const proPath = `https://${domain}/?pro=1`
   const { proof, brief } = ctx
 
   if (step === 'b0') {
@@ -157,7 +159,7 @@ function build(step, sub, ctx) {
         <li>Une fiabilité que nous <strong>publions et auditons chaque jour</strong>.</li>
       </ul>
       ${proofBlock(proof)}
-      <div style="text-align:center;margin-top:8px">${cta('Voir l\'offre + caler 15 min', proPath)}</div>
+      <div style="text-align:center;margin-top:8px">${cta('Voir mes plages + activer le brief gratuit', proPath)}</div>
       <div style="font-size:12px;color:#888;margin-top:14px;line-height:1.5">${REPLY_HINT}</div>
     </div>`
     return { subject, html: shell(inner, name, domain, sub.email, island) }
@@ -196,12 +198,12 @@ function build(step, sub, ctx) {
   }
 
   if (step === 'b13') {
-    const subject = `15 minutes pour le voir sur ${beaches} ?`
-    const inner = `${brandHeader('On vous montre ?', 'Sargasses Pro', `Une démo sur ${beaches}, sans engagement`)}
+    const subject = `La prévision 7 jours de ${beaches}, en direct`
+    const inner = `${brandHeader('Quand vous voulez', 'Sargasses Pro', `${beaches} en direct, sans engagement`)}
     <div style="background:#fff;padding:24px 20px">
-      <div style="font-size:15px;color:#333;line-height:1.6">En 15 minutes, on vous montre la prévision 7 jours et le suivi daté sur ${beaches} exactement — et comment vos alertes seraient configurées.</div>
-      <div style="font-size:14px;color:#444;line-height:1.6;margin-top:12px">Pas de slides : votre plage, vos chiffres, en direct.</div>
-      <div style="text-align:center;margin-top:18px">${cta('Caler la démo (15 min)', proPath + '#demande')}</div>
+      <div style="font-size:15px;color:#333;line-height:1.6">Voyez la prévision 7 jours et le suivi daté sur ${beaches} exactement — en direct, maintenant. Le brief quotidien arrive ensuite par email, automatiquement.</div>
+      <div style="font-size:14px;color:#444;line-height:1.6;margin-top:12px">Pas de slides, pas d'appel : vos plages, vos chiffres, à l'écran.</div>
+      <div style="text-align:center;margin-top:18px">${cta('Voir mes plages en direct', proPath)}</div>
       <div style="font-size:12px;color:#888;margin-top:14px;line-height:1.5">${REPLY_HINT}</div>
     </div>`
     return { subject, html: shell(inner, name, domain, sub.email, island) }
