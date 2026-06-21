@@ -13,7 +13,7 @@
  * RGPD : re-fetch depuis Stripe à chaque run (aucun email écrit dans le repo) ;
  * état persisté = hashes only ; logs = hash8 only.
  *
- * Clés : STRIPE_SECRET_KEY + RESEND_API_KEY (lues depuis process.env OU .env).
+ * Clés : STRIPE_SECRET_KEY + SMTP_PASS (lues depuis process.env OU .env).
  * Usage :
  *   node scripts/automation/recover-abandoned-cart.cjs            # DRY-RUN
  *   node scripts/automation/recover-abandoned-cart.cjs --send     # envoie
@@ -21,9 +21,8 @@
  */
 const fs = require('fs')
 const path = require('path')
-const { Resend } = require('resend')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
-const { sendEmail, brandHeader } = require('./lib/email-send.cjs')
+const { sendEmail, brandHeader, mailReady } = require('./lib/email-send.cjs')
 const { pickArm, applyArm } = require('./lib/email-ab.cjs')
 const AB_VARS = require('./data/email-ab-variants.json')
 const { getAllRegions } = require('../../regions/index.cjs')
@@ -44,7 +43,9 @@ function envVal(name) {
   } catch { return null }
 }
 const STRIPE_KEY = envVal('STRIPE_SECRET_KEY')
-const RESEND_KEY = envVal('RESEND_API_KEY') || envVal('RESEND')
+// Envoi via SMTP (boîte alerte@). Bridge .env → process.env pour que la couche
+// d'envoi (qui lit process.env) voie les creds en exécution locale.
+;['SMTP_PASS', 'SMTP_USER', 'SMTP_HOST', 'SMTP_PORT'].forEach(k => { if (!process.env[k]) { const v = envVal(k); if (v) process.env[k] = v } })
 
 const SENT_PATH = path.join(__dirname, 'data', 'cart-recovery-sent.json')
 const BOUNCED_PATH = path.join(__dirname, 'data', 'bounced-emails.json')
@@ -176,7 +177,7 @@ async function detectKind(session) {
 
 async function main() {
   if (!STRIPE_KEY) { console.error('STRIPE_SECRET_KEY introuvable (.env)'); process.exit(1) }
-  console.log(`=== Cart Recovery === mode=${DO_SEND ? 'SEND' : 'DRY-RUN'} | fenêtre=${SINCE_DAYS}j | resend=${RESEND_KEY ? 'ok' : 'ABSENT'}`)
+  console.log(`=== Cart Recovery === mode=${DO_SEND ? 'SEND' : 'DRY-RUN'} | fenêtre=${SINCE_DAYS}j | smtp=${mailReady() ? 'ok' : 'ABSENT'}`)
 
   // Clients déjà actifs → exclure
   const subs = await listAll('subscriptions?status=all')
@@ -215,9 +216,9 @@ async function main() {
 
   if (!candidates.length) return
   if (!DO_SEND) { console.log('\nDRY-RUN — rien envoyé. Relancer avec --send.'); return }
-  if (!RESEND_KEY) { console.error('\n❌ RESEND_API_KEY absent — impossible d\'envoyer.'); process.exit(1) }
+  if (!mailReady()) { console.error('\n❌ SMTP_PASS absent — impossible d\'envoyer.'); process.exit(1) }
 
-  const resend = new Resend(RESEND_KEY)
+  const resend = null
   let ok = 0
   for (const { email, region, kind } of candidates) {
     const t = copy(region, kind)

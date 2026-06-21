@@ -33,7 +33,7 @@ jobs:
       # ── 1. Scrape targets + send outreach emails (backlinks) ─
       - name: Auto-outreach (scrape + email backlink requests)
         env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
           # International outreach (US/MX/DR) pitches the /press/ kit and sends
           # from each region's own domain — those domains must be verified as
           # Resend senders. Set to '1' to enable; intl sends that fail (e.g.
@@ -43,10 +43,10 @@ jobs:
 
       # ── 1b. Prospection B2B sortante SELF-SERVE (le bot prospecte, pas le fondateur).
       #   CTA = brief quotidien auto + widget gratuit (AUCUN appel demandé).
-      #   Faible volume (max 4/run), opt-out, cross-dédup, auto-gated sur RESEND_API_KEY.
+      #   Faible volume (max 4/run), opt-out, cross-dédup, auto-gated sur SMTP_PASS.
       - name: B2B outreach (self-serve, faible volume)
         env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/b2b-outreach.cjs
 
       # ── 2. Commit outreach logs ─────────────────────────────
@@ -71,7 +71,7 @@ jobs:
       - run: npm ci
       - name: Send failure alert
         env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
           WORKFLOW_NAME: 'Weekly Outreach'
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: node scripts/automation/notify-failure.cjs

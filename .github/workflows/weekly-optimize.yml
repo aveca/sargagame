@@ -135,7 +135,7 @@ jobs:
         if: steps.day.outputs.task == 'wednesday'
         continue-on-error: true
         env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/health-check.cjs
 
       - name: "[Wednesday] Daily stats + trend detection"
@@ -177,7 +177,7 @@ jobs:
         if: steps.day.outputs.task == 'thursday'
         continue-on-error: true
         env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/health-check.cjs
 
       - name: "[Thursday] Commit A/B data"
@@ -209,7 +209,7 @@ jobs:
         if: steps.day.outputs.task == 'saturday'
         continue-on-error: true
         env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/health-check.cjs
 
       - name: "[Saturday] Backtest forecast accuracy"
@@ -243,7 +243,7 @@ jobs:
         if: steps.day.outputs.task == 'sunday'
         continue-on-error: true
         env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/health-check.cjs
 
       - name: "[Sunday] Daily stats snapshot (pre-Monday baseline)"
@@ -315,7 +315,7 @@ jobs:
       - run: npm ci
       - name: Send failure alert email
         env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
           WORKFLOW_NAME: 'Weekly Optimization'
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: node scripts/automation/notify-failure.cjs

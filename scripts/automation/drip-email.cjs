@@ -11,19 +11,18 @@
  *
  * Tracks sent drip steps in data/drip-sent.json to avoid duplicates.
  *
- * Env: RESEND_API_KEY (required)
+ * Env: SMTP_PASS (required pour envoyer ; absent = dry-run)
  * Usage: node scripts/automation/drip-email.cjs
  *        node scripts/automation/drip-email.cjs --force  (ignore time gates)
  */
 const fs = require('fs')
 const path = require('path')
-const { Resend } = require('resend')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
-const { sendEmail, brandHeader } = require('./lib/email-send.cjs')
+const { sendEmail, brandHeader, mailReady } = require('./lib/email-send.cjs')
 const { pickArm, applyArm } = require('./lib/email-ab.cjs')
 const AB_VARS = require('./data/email-ab-variants.json')
 
-const API_KEY = process.env.RESEND_API_KEY
+const API_KEY = mailReady() // envoi via SMTP (boîte alerte@) — plus de Resend
 const FORCE = process.argv.includes('--force')
 const SUBSCRIBERS_PATH = path.join(__dirname, 'data', 'subscribers.json')
 const DRIP_SENT_PATH = path.join(__dirname, 'data', 'drip-sent.json')
@@ -754,13 +753,14 @@ async function trackToSheet(data) {
 // ── Main ─────────────────────────────────────────────────────
 
 async function main() {
-  console.log('=== Drip Email Sequence (Resend) ===')
+  console.log('=== Drip Email Sequence (SMTP) ===')
 
   if (!API_KEY) {
-    console.log('RESEND_API_KEY not set — skipping sends (dry-run).')
+    console.log('SMTP_PASS not set — skipping sends (dry-run).')
   }
 
-  const resend = API_KEY ? new Resend(API_KEY) : null
+  // Sentinelle truthy = SMTP prêt (sendEmail ignore ce 1er arg, back-compat).
+  const resend = API_KEY ? {} : null
   const subscribers = loadJSON(SUBSCRIBERS_PATH, [])
   // State files store email hashes (RGPD) — legacy plaintext entries hashed in memory
   const dripSent = hashedKeys(loadJSON(DRIP_SENT_PATH, {}))
@@ -824,7 +824,7 @@ async function main() {
       if (isNewRegion && newRegionSent >= NEW_REGION_J3_CAP) continue
 
       if (!resend) {
-        console.log(`  ~ ${logId(email)} [${step.key}] would send (no RESEND_API_KEY)`)
+        console.log(`  ~ ${logId(email)} [${step.key}] would send (no SMTP_PASS)`)
         wouldSend++
         break
       }

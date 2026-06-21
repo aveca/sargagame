@@ -1,33 +1,34 @@
 #!/usr/bin/env node
 /**
- * Drip Email B2B — Sargasses Pro (via Resend)
+ * Drip Email B2B — Sargasses Pro (via SMTP, boîte alerte@)
  *
  * Séquence de NURTURE B2B, totalement SÉPARÉE du drip grand public :
  *   - cible UNIQUEMENT les leads pro (source b2b_hotel_request / b2b_collectivite_request)
  *   - état dédié data/drip-b2b-sent.json (ne touche JAMAIS drip-sent.json conso)
- *   - ton consultatif : AUCUN push essai 4,99 € — le CTA est « caler 15 min » / répondre.
+ *   - produit AUTONOME self-serve : AUCUN appel (ni à prendre, ni à passer), aucune
+ *     démo commerciale. Le CTA est toujours « voir mes plages en direct + activer le
+ *     brief quotidien gratuit » ou répondre par email. Jamais « caler 15 min ».
  *
  * Cycle de vente (jours depuis le lead) :
  *   b0  — immédiat : bienvenue + ce que Pro fait + PREUVE (fiabilité publiée)
  *   b2  — valeur : l'état réel de vos plages ce matin (la lecture quotidienne)
  *   b6  — confiance + ROI : pourquoi c'est fiable, ce que ça économise
- *   b13 — closing doux : 15 minutes pour le voir sur vos plages ?
+ *   b13 — closing doux : voir la prévision 7 jours en direct, sans appel
  *
  * Sécurité (mêmes garde-fous que drip-email.cjs, leçon incident 17× du 11/06) :
  *   - dedup par HASH (RGPD), flush incrémental après CHAQUE envoi
  *   - bounced filtrés, 1 seul envoi par lead par run
  *   - brief 100 % donnée réelle ; donnée absente = on n'invente pas (skip l'étape)
  *
- * Env: RESEND_API_KEY (absent → dry-run, rien n'est envoyé ni sauvé)
+ * Env: SMTP_PASS (absent → dry-run, rien n'est envoyé ni sauvé)
  * Usage: node scripts/automation/drip-b2b-email.cjs [--force]
  */
 const fs = require('fs')
 const path = require('path')
-const { Resend } = require('resend')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
-const { sendEmail, brandHeader } = require('./lib/email-send.cjs')
+const { sendEmail, brandHeader, mailReady } = require('./lib/email-send.cjs')
 
-const API_KEY = process.env.RESEND_API_KEY
+const API_KEY = mailReady() // envoi via SMTP (boîte alerte@) — plus de Resend
 const FORCE = process.argv.includes('--force')
 const SUBSCRIBERS_PATH = path.join(__dirname, 'data', 'subscribers.json')
 const SENT_PATH = path.join(__dirname, 'data', 'drip-b2b-sent.json')
@@ -229,9 +230,10 @@ async function trackToSheet(data) {
 
 async function main() {
   console.log('=== Drip Email B2B (Sargasses Pro) ===')
-  if (!API_KEY) console.log('RESEND_API_KEY non défini — dry-run (rien envoyé ni sauvé).')
+  if (!API_KEY) console.log('SMTP_PASS non défini — dry-run (rien envoyé ni sauvé).')
 
-  const resend = API_KEY ? new Resend(API_KEY) : null
+  // Sentinelle truthy = SMTP prêt (sendEmail ignore ce 1er arg, back-compat).
+  const resend = API_KEY ? {} : null
   const subscribers = loadJSON(SUBSCRIBERS_PATH, [])
   const sent = hashedKeys(loadJSON(SENT_PATH, {}))
   const bounced = hashedSet(loadJSON(BOUNCED_PATH, []))

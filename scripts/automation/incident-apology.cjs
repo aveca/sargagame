@@ -16,13 +16,12 @@
  * = 8h locale Antilles — jamais d'excuse à 2h du matin. --force pour bypass,
  * --dry-run pour prévisualiser.
  *
- * Env: RESEND_API_KEY (absent = dry-run implicite)
+ * Env: SMTP_PASS (absent = dry-run implicite)
  */
 const fs = require('fs')
 const path = require('path')
-const { Resend } = require('resend')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
-const { sendEmail } = require('./lib/email-send.cjs')
+const { sendEmail, mailReady } = require('./lib/email-send.cjs')
 
 const APOLOGY_PRE = {
   fr: 'Un bug d\'envoi de notre côté — déjà corrigé. Rien à faire de votre part.',
@@ -30,7 +29,7 @@ const APOLOGY_PRE = {
   es: 'Un error de envío de nuestra parte — ya corregido. No necesita hacer nada.',
 }
 
-const API_KEY = process.env.RESEND_API_KEY
+const API_KEY = mailReady() // envoi via SMTP (boîte alerte@) — plus de Resend
 const FORCE = process.argv.includes('--force')
 const DRY = process.argv.includes('--dry-run')
 const INCIDENTS_PATH = path.join(__dirname, 'data', 'incidents.json')
@@ -122,7 +121,9 @@ async function main() {
   const subscribers = loadJSON(SUBSCRIBERS_PATH, [])
   if (!subscribers.length) { console.log('No subscribers.json — skipping without marking.'); return }
   const byHash = new Map(subscribers.map(s => [emailHash(s.email), s]))
-  const resend = API_KEY && !DRY ? new Resend(API_KEY) : null
+  // Sentinelle truthy = « on envoie pour de vrai » (SMTP prêt et pas en dry-run).
+  // La couche sendEmail() ignore ce 1er argument (back-compat) et envoie via SMTP.
+  const resend = (mailReady() && !DRY) ? {} : null
   let sent = 0
 
   for (const inc of pending) {

@@ -142,35 +142,23 @@ async function checkRealPages() {
   return issues
 }
 
-// Send staleness/downtime alert via Resend
-function sendAlert(subject, issues) {
-  const apiKey = process.env.RESEND_API_KEY
-  if (!apiKey) return
+// Send staleness/downtime alert via SMTP (boîte alerte@)
+const { sendEmail: sendAlertMail, mailReady } = require('./lib/email-send.cjs')
+async function sendAlert(subject, issues) {
+  if (!mailReady()) return
   const html = `<div style="font-family:system-ui;max-width:500px;padding:20px">
     <h2 style="color:#dc2626;margin:0 0 12px">${subject}</h2>
     <ul>${issues.map(i => `<li style="margin:4px 0">${i}</li>`).join('')}</ul>
     <p style="font-size:12px;color:#999;margin-top:16px">Auto-alert from health-check.cjs</p>
   </div>`
-  const body = JSON.stringify({
-    from: 'Sargasses Pipeline <alerts@sargasses-martinique.com>',
-    to: ['aveca@aveca.fr'],
+  const { error } = await sendAlertMail({
+    from: 'Sargasses Pipeline <alerte@sargasses-martinique.com>',
+    to: 'aveca@aveca.fr',
     subject: `[Sargasses] ${subject}`,
     html,
   })
-  const req = https.request({
-    hostname: 'api.resend.com', path: '/emails', method: 'POST',
-    headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
-  }, res => {
-    let d = ''
-    res.on('data', c => d += c)
-    res.on('end', () => {
-      if (res.statusCode < 300) console.log(`Alert email sent: ${subject}`)
-      else console.log(`Alert email failed: ${res.statusCode} ${d}`)
-    })
-  })
-  req.on('error', e => console.log(`Alert send error: ${e.message}`))
-  req.write(body)
-  req.end()
+  if (error) console.log(`Alert email failed: ${error.message}`)
+  else console.log(`Alert email sent: ${subject}`)
 }
 
 async function main() {
@@ -200,7 +188,7 @@ async function main() {
 
   if (allIssues.length > 0) {
     const severity = !criticalOk ? 'CRITICAL' : 'Warning'
-    sendAlert(`${severity}: ${allIssues.length} issue(s) detected`, allIssues)
+    await sendAlert(`${severity}: ${allIssues.length} issue(s) detected`, allIssues)
   }
 
   console.log(`\n${criticalOk ? '✅ Critical sites healthy' : '❌ CRITICAL SITES DOWN — check above'}`)
