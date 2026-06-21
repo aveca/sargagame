@@ -1474,8 +1474,17 @@ async function main() {
 
   const mqFetched = mqGrid && mqGrid.points !== undefined
   const gpFetched = gpGrid && gpGrid.points !== undefined
-  if (!mqFetched && !gpFetched) {
-    console.error('ERROR: ERDDAP unreachable for both regions. Exiting with code 1 so fallback runs.')
+  // EXIT-1 PAR RÉGION (moat/honnêteté) : si la grille ERDDAP manque pour MQ **OU** GP,
+  // on sort AVANT d'écrire la racine. Sans grille, extractBeachAfai renvoie 0.05 =
+  // 'clean' (no-data masqué en VERT) → publier ça = fausse carte verte avec horodatage
+  // FRAIS. En sortant, la dernière donnée RÉELLE reste en ligne (âge affiché, honnête)
+  // et le prochain run (4×/j) re-tente. Avant : on ne sortait que si MQ ET GP
+  // échouaient → un échec mono-région publiait une demi-carte verte fabriquée.
+  // (Une grille présente avec AFAI tout-null = océan réellement propre = donnée VALIDE,
+  // ce n'est pas ce cas-ci : ici la grille est absente/non récupérée.)
+  if (!mqFetched || !gpFetched) {
+    const failed = [!mqFetched && 'MQ', !gpFetched && 'GP'].filter(Boolean).join(' + ')
+    console.error(`ERROR: grille ERDDAP manquante pour ${failed} — exit 1 pour ne PAS publier de fausse carte "propre" (no-data masqué en clean). La donnée réelle précédente reste en ligne ; prochain run re-tente.`)
     process.exit(1)
   }
   // If grids were fetched but all values are null → no sargassum detected = all clean (this is valid data!)
