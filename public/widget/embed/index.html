@@ -192,7 +192,8 @@ body.dark{--card:#10202b;--ink:#fff;--mid:#9fb2bd;--line:rgba(255,255,255,.12)}
     if (fresh) setSub(el("span","live",T.live), el("span",null,"· "+T.updated(age)));
     else setSub(el("span",null,T.stale));
     $("src").textContent = T.src;
-    $("link").href = home;
+    if (isPro) { $("link").style.display = "none"; }        // PRO = marque blanche (pas de backlink)
+    else { $("link").style.display = ""; $("link").href = home; }
 
     // 7 jours : jour 0 ancré sur le statut LIVE (évite la contradiction live≠forecast[0])
     var wk = (d.weekly && d.weekly[sargId] && d.weekly[sargId].forecast) || [];
@@ -219,8 +220,18 @@ body.dark{--card:#10202b;--ink:#fff;--mid:#9fb2bd;--line:rgba(255,255,255,.12)}
       .then(render)
       .catch(fail);
   }
-  load();
-  setInterval(load, 30*60*1000); // auto-refresh 30 min (écran de hall)
+  // PRO (?k=) : jeton HMAC vérifié CÔTÉ SERVEUR (iframe servie depuis notre domaine →
+  // même-origine, /api/widget-token.php). PRO valide → marque blanche (backlink masqué).
+  var isPro = false;
+  var token = (Q.get("k")||"").trim();
+  function boot(){ load(); setInterval(load, 30*60*1000); } // auto-refresh 30 min (écran de hall)
+  if (token) {
+    fetch(base + "/api/widget-token.php?k=" + encodeURIComponent(token), {cache:"no-store"})
+      .then(function(r){return r.ok?r.json():null;})
+      .then(function(j){ isPro = !!(j && j.pro); })
+      .catch(function(){})
+      .then(boot);
+  } else { boot(); }
 })();
 </script>
 </body>
