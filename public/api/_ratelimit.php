@@ -73,9 +73,16 @@ function sg_rl_data_dir() {
 }
 
 /**
- * Plafonne $bucket à $maxPerHour requêtes par IP (fenêtre horaire fixe).
- * Émet 429 + JSON puis exit() si dépassé ; sinon incrémente le compteur et rend la
- * main. FAIL-OPEN sur toute condition d'erreur (jamais de blocage d'un payeur légitime).
+ * Plafonne $bucket à $maxPerHour requêtes par IP sur une FENÊTRE GLISSANTE d'une heure.
+ * Émet 429 + JSON puis exit() si le plafond est atteint sur les 3600 dernières secondes ;
+ * sinon enregistre l'horodatage et rend la main.
+ *
+ * Fenêtre GLISSANTE (et non fixe) : une fenêtre horaire fixe laisserait passer une rafale
+ * double au tournant d'heure (20 à 13:59:59 puis 20 à 14:00:00 = 40 en 2 s). On stocke donc
+ * les horodatages des hits récents et on ne compte que ceux de la dernière heure — le plafond
+ * est respecté en continu. Stockage borné à ~$maxPerHour+1 entrées.
+ *
+ * FAIL-OPEN sur toute condition d'erreur (jamais de blocage d'un payeur légitime).
  */
 function sg_rate_limit($bucket, $maxPerHour = 20) {
     if (!sg_rl_enabled()) return;
@@ -84,24 +91,30 @@ function sg_rate_limit($bucket, $maxPerHour = 20) {
     $dir = sg_rl_data_dir();
     if (!is_writable($dir)) return;         // FS non-inscriptible → fail-open
 
-    $window = (int)floor(time() / 3600);    // fenêtre horaire fixe
+    $now = time();
+    $cutoff = $now - 3600;                   // bord glissant de la fenêtre (1 h)
     $key = substr(hash_hmac('sha256', $ip . '|' . $bucket, sg_rl_secret()), 0, 24);
     $file = $dir . '/rl_' . $key . '.json';
 
     $fh = @fopen($file, 'c+');
     if (!$fh) return;                       // ouverture impossible → fail-open
     $blocked = false;
+    $hits = [];
     if (@flock($fh, LOCK_EX)) {
         $raw = stream_get_contents($fh);
         $st = json_decode($raw, true);
-        $n = (is_array($st) && isset($st['w']) && (int)$st['w'] === $window) ? (int)$st['n'] : 0;
-        $n++;
-        if ($n > $maxPerHour) {
-            $blocked = true;                 // ne pas réécrire : on plafonne, pas d'inflation
+        $prev = (is_array($st) && isset($st['t']) && is_array($st['t'])) ? $st['t'] : [];
+        // Ne garder que les hits encore dans la fenêtre glissante.
+        foreach ($prev as $t) { if ((int)$t > $cutoff) $hits[] = (int)$t; }
+        if (count($hits) >= $maxPerHour) {
+            $blocked = true;                 // plafond atteint sur la dernière heure → ne pas réécrire
         } else {
+            $hits[] = $now;
+            // Borne dure de sécurité (si la limite est élevée) : au plus $maxPerHour+1 entrées.
+            if (count($hits) > $maxPerHour + 1) $hits = array_slice($hits, -($maxPerHour + 1));
             @ftruncate($fh, 0);
             @rewind($fh);
-            @fwrite($fh, json_encode(['w' => $window, 'n' => $n]));
+            @fwrite($fh, json_encode(['t' => $hits]));
         }
         @flock($fh, LOCK_UN);
     }
@@ -111,9 +124,11 @@ function sg_rate_limit($bucket, $maxPerHour = 20) {
     if (mt_rand(1, 50) === 1) sg_rl_purge($dir);
 
     if ($blocked) {
+        // Retry-After = délai jusqu'à ce que le hit le plus ancien sorte de la fenêtre.
+        $retry = (!empty($hits)) ? max(1, ($hits[0] + 3600) - $now) : 3600;
         http_response_code(429);
-        header('Retry-After: 3600');
-        echo json_encode(['error' => 'rate_limited', 'retryAfter' => 3600]);
+        header('Retry-After: ' . $retry);
+        echo json_encode(['error' => 'rate_limited', 'retryAfter' => $retry]);
         exit;
     }
 }
