@@ -95,13 +95,13 @@ function powers(b,lang){
 
 /* ---- illustration golden-hour (portée de comic-cartes.html, en JSX) ---- */
 function Illu({st,uid,score=0}){
-  const sea = st==="bad" ? "#7a8a4a" : st==="mod" ? "#3a8f86" : "#2bb6a6"
+  const sea = st==="bad" ? "#7a8a4a" : st==="mod" ? "#3a8f86" : "#3e2470"
   const gid = "lcg"+uid
   const top = score>=85   /* plages d'exception → oiseaux + soleil franc */
   return (
     <svg viewBox="0 0 200 96" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
       <defs><linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stopColor="#1f6f9e"/><stop offset=".55" stopColor="#5fb6d6"/>
+        <stop offset="0" stopColor="#2e1a5e"/><stop offset=".55" stopColor="#6a2f9e"/>
         <stop offset=".8" stopColor="#ffb267"/><stop offset="1" stopColor="#ff8a3d"/>
       </linearGradient></defs>
       <rect width="200" height="96" fill={`url(#${gid})`}/>
@@ -111,7 +111,7 @@ function Illu({st,uid,score=0}){
         <line x1="10" y1="20" x2="70" y2="17"/><line x1="6" y1="32" x2="56" y2="30"/>
       </g>
       <path d="M0 64 H200 V96 H0 Z" fill={sea}/>
-      <path d="M0 64 q50 -6 100 0 t100 0 V76 H0 Z" fill="#2bb6a6" opacity=".6"/>
+      <path d="M0 64 q50 -6 100 0 t100 0 V76 H0 Z" fill="#3e2470" opacity=".6"/>
       <path d="M0 84 Q100 78 200 86 V96 H0 Z" fill="#f3d9a3"/>
       <path d="M0 84 Q100 78 200 86" fill="none" stroke="#0d0b14" strokeWidth="1.5"/>
       <g stroke="#0d0b14" strokeWidth="2.5" fill="none" strokeLinecap="round"><path d="M34 92 Q30 70 38 56"/></g>
@@ -141,8 +141,8 @@ function Veilleur({mood,size=64}){
     <svg className="lc-veil" viewBox="0 0 120 120" width={size} height={size} aria-hidden="true">
       {/* panneaux solaires */}
       <g stroke="#0d0b14" strokeWidth="2.5">
-        <rect x="6" y="50" width="20" height="22" rx="2" fill="#27a9e3"/>
-        <rect x="94" y="50" width="20" height="22" rx="2" fill="#27a9e3"/>
+        <rect x="6" y="50" width="20" height="22" rx="2" fill="#1c7fb0"/>
+        <rect x="94" y="50" width="20" height="22" rx="2" fill="#1c7fb0"/>
         <line x1="26" y1="61" x2="40" y2="61"/><line x1="94" y1="61" x2="80" y2="61"/>
       </g>
       {/* corps */}
@@ -694,13 +694,13 @@ export default function ChasseHome(props){
    ==================================================================== */
 const CSS=`
 @font-face{font-family:"AntonLC";src:url("/fonts/anton-1Ptgg87LROyAm3Kz-C8.woff2") format("woff2");font-weight:400;font-display:swap}
-.lc-root{--ink:#0d0b14;--paper:#fdf6e3;--red:#e8322a;--yel:#ffd23f;--blu:#27a9e3;--org:#ff8a3d;--grn:#27c46b;--pur:#7b46d6;
+.lc-root{--ink:#0d0b14;--paper:#fdf6e3;--red:#e8322a;--yel:#ffd23f;--blu:#1c7fb0;--org:#ff8a3d;--grn:#27c46b;--pur:#7b46d6;
   font-family:"Comic Neue","Comic Sans MS",system-ui,sans-serif;color:var(--ink);
   background:
     radial-gradient(rgba(13,11,20,.14) 1.4px,transparent 1.5px) 0 0/9px 9px,
     radial-gradient(rgba(13,11,20,.14) 1.4px,transparent 1.5px) 4.5px 4.5px/9px 9px,
     radial-gradient(rgba(214,0,92,.06) 1.3px,transparent 1.4px) 2px 1px/7px 7px,
-    linear-gradient(170deg,#2bb6ef,#5fc8ef 30%,#ffb36b 66%,#ff8a3d);
+    linear-gradient(170deg,#2e1a5e,#6a2f9e 30%,#ffb36b 66%,#ff8a3d);
   padding:14px 12px 60px;-webkit-tap-highlight-color:transparent}
 .lc-root *{box-sizing:border-box}
 .lc-eyebrow{font-family:"AntonLC",system-ui,sans-serif;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink);
@@ -714,7 +714,7 @@ const CSS=`
 .lc-live{flex:1;display:flex;flex-direction:column;gap:4px;align-items:flex-start}
 .lc-date{font-weight:700;font-size:11px;color:#fff;text-shadow:1px 1px 0 rgba(13,11,20,.6)}
 .lc-gomap{display:flex;align-items:center;gap:11px;width:100%;margin:12px 0 2px;cursor:pointer;text-align:left;
-  background:linear-gradient(135deg,#2bb6ef,#1f8fd0);border:3px solid var(--ink);border-radius:15px;padding:11px 13px;
+  background:linear-gradient(135deg,#2e1a5e,#156a96);border:3px solid var(--ink);border-radius:15px;padding:11px 13px;
   box-shadow:0 5px 0 var(--ink),0 11px 20px rgba(13,11,20,.3);font-family:inherit;forced-color-adjust:none}
 .lc-gomap:active{transform:translateY(2px);box-shadow:0 3px 0 var(--ink)}
 .lc-gomap-ic{flex:0 0 auto;font-size:26px;filter:drop-shadow(1px 2px 0 rgba(13,11,20,.5))}
@@ -806,7 +806,7 @@ const CSS=`
   font-family:"Comic Neue","Comic Sans MS",system-ui,sans-serif;color:var(--ink);
   background:
     radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 0 0/9px 9px,
-    linear-gradient(170deg,#2bb6ef,#5fc8ef 28%,#ffb36b 70%,#ff8a3d);
+    linear-gradient(170deg,#2e1a5e,#6a2f9e 28%,#ffb36b 70%,#ff8a3d);
   animation:lc-detail-in .28s cubic-bezier(.22,1,.36,1) both}
 @keyframes lc-detail-in{0%{opacity:0;transform:scale(.88) rotate(-1.2deg)}55%{opacity:1}100%{opacity:1;transform:none}}
 .lc-reduce .lc-detail{animation:none}
@@ -940,7 +940,7 @@ const CSS=`
 .lc-atke{flex:0 0 auto;width:18px;text-align:center;font-size:12px}
 .lc-in{position:relative;z-index:2;display:block;border:2px solid var(--ink);border-radius:9px;overflow:hidden;background:var(--paper)}
 .lc-bn{display:flex;align-items:center;gap:5px;padding:5px 7px;border-bottom:2.5px solid var(--ink)}
-.lc-bn.s-ok{background:linear-gradient(90deg,#2bb6a6,#0f7d72)}
+.lc-bn.s-ok{background:linear-gradient(90deg,#3e2470,#0f7d72)}
 .lc-bn.s-mod{background:linear-gradient(90deg,#f0b73a,#d4912a)}
 .lc-bn.s-bad{background:linear-gradient(90deg,#ff6a4a,#d8351f)}
 .lc-nm{font-family:"AntonLC",system-ui,sans-serif;font-size:13px;color:#fff;line-height:1.05;text-shadow:1.5px 1.5px 0 var(--ink);
@@ -1048,7 +1048,7 @@ const CSS=`
 .lc-root .lc-card.r-epic{background:linear-gradient(135deg,#e9d3ff,#a86fe0 55%,#f3e8ff)!important}
 .lc-root .lc-card.r-leg{background:linear-gradient(135deg,#ffe79a,#f6b73c 28%,#fff3c4 52%,#e0962a 74%,#ffe79a)!important}
 .lc-root .lc-cta{border-radius:12px!important;box-shadow:4px 4px 0 var(--ink)!important}
-.lc-root .lc-gomap{background:linear-gradient(135deg,#2bb6ef,#1f8fd0)!important;border:3px solid var(--ink)!important;border-radius:15px!important;box-shadow:0 5px 0 var(--ink),0 11px 20px rgba(13,11,20,.3)!important}
+.lc-root .lc-gomap{background:linear-gradient(135deg,#2e1a5e,#156a96)!important;border:3px solid var(--ink)!important;border-radius:15px!important;box-shadow:0 5px 0 var(--ink),0 11px 20px rgba(13,11,20,.3)!important}
 .lc-root .lc-maplink{background:none!important;border:none!important;box-shadow:none!important;
   font-family:inherit!important;border-radius:0!important}
 `
