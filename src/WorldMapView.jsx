@@ -133,12 +133,15 @@ export default function WorldMapView({
     const pts=isMQGP?afaiGrid.points.filter(p=>island==="gp"?p[0]>=15.5:p[0]<15.5):afaiGrid.points
     const out=[]
     for(const[lat,lng,afai]of pts){
-      if(afai<0.10) continue
-      const[vx,vy]=toVB(lat,lng)
+      if(afai<0.16) continue // seuil relevé 0.10→0.16 : jette le bruit de fond (~433 pts GP sans
+      const[vx,vy]=toVB(lat,lng) // signal lisible) → moins de cercles re-rasterisés à chaque frame
       if(vx<-60||vx>860||vy<-60||vy>660) continue
       out.push({vx,vy,afai})
     }
-    return out
+    // Cap aux 140 plus fortes : la couche sargasse = DONNÉE, pas alarme. 140 cercles semi-transparents
+    // couvrent les taches réelles sans empiler 621 fills/frame (perf mobile — fill-rate GPU bas de gamme).
+    out.sort((a,b)=>b.afai-a.afai)
+    return out.slice(0,140)
   },[afaiGrid,island,toVB])
 
   // P7 — recherche : plages dont le nom matche la requête (max 6).
@@ -502,8 +505,10 @@ export default function WorldMapView({
       {/* Dégradé bas (veil — profondeur GTA violet bas-gauche) */}
       <div style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:2,
         background:"linear-gradient(200deg,rgba(42,21,80,0) 46%,rgba(26,12,46,.5) 100%)"}}/>
-      {/* Grain film (cohérence monde GTA / hero) */}
-      <div style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:3,opacity:.06,mixBlendMode:"overlay",
+      {/* Grain film (cohérence monde GTA / hero) — SANS mix-blend : un overlay blend au-dessus
+          du SVG recompose toute la pile à CHAQUE frame de pan/zoom (cher sur GPU mobile). Texture
+          statique conservée en alpha normal. */}
+      <div style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:3,opacity:.05,
         backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,backgroundSize:"cover"}}/>
 
       {/* ── SVG monde ──────────────────────────────────────────────────────── */}
@@ -551,13 +556,15 @@ export default function WorldMapView({
           <linearGradient id="wmSailY" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0" stopColor="#FFD45A"/><stop offset="1" stopColor="#F0A81E"/>
           </linearGradient>
-          <filter id="wmRim"  x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3"/></filter>
-          <filter id="wmSoft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="6"/></filter>
-          <filter id="wmShlw" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="12"/></filter>
-          <filter id="wmShl2" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4.5"/></filter>
+          {/* PERF mobile : un flou DANS le <g> transformé se re-rasterise À CHAQUE frame de zoom.
+              On passe de 4 passes floues à 2 (wmRim + wmShl2 retirés, stdDev abaissés). */}
+          <filter id="wmSoft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="4"/></filter>
+          <filter id="wmShlw" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="8"/></filter>
         </defs>
 
-        {/* Monde — transform caméra appliqué ici via ref */}
+        {/* Monde — transform caméra appliqué ici via ref. (will-change retiré : sur GPU mobile
+            faible il met la mémoire sous pression et n'aide pas le pinch-zoom ; la vraie promo
+            couche = le bake raster du Stage 2.) */}
         <g ref={worldRef}>
           {/* Vagues océan décoratives (traits d'écume comic) */}
           <g stroke="#bfeee8" strokeWidth="2.4" strokeLinecap="round" fill="none" opacity=".14">
@@ -568,15 +575,15 @@ export default function WorldMapView({
           </g>
 
           {/* Contour côtier — couches mer → île ink comic */}
-          {outline&&<>
+          {outline&&<g>
             {/* eau peu profonde lointaine (lagon turquoise large) */}
             <path d={outline.path} fill="none" stroke="#46c8bd" strokeWidth="30" strokeOpacity=".42" filter="url(#wmShlw)"/>
-            {/* eau peu profonde proche (turquoise clair lagon) */}
-            <path d={outline.path} fill="none" stroke="#a8f0e0" strokeWidth="12" strokeOpacity=".58" filter="url(#wmShl2)"/>
+            {/* eau peu profonde proche : stroke turquoise SANS flou (le flou re-raster/frame au zoom) */}
+            <path d={outline.path} fill="none" stroke="#a8f0e0" strokeWidth="10" strokeOpacity=".42"/>
             {/* ombre portée profonde de l'île */}
             <path d={outline.path} fill="#062033" opacity=".5" filter="url(#wmSoft)" transform="translate(7 13)"/>
-            {/* halo rim doré (heure dorée léchant la côte) */}
-            <path d={outline.path} fill="none" stroke="#FFE6A8" strokeWidth="7" strokeOpacity=".5" filter="url(#wmRim)"/>
+            {/* halo rim doré (heure dorée léchant la côte) — stroke large sans flou */}
+            <path d={outline.path} fill="none" stroke="#FFE6A8" strokeWidth="7" strokeOpacity=".38"/>
             {/* liseré de sable (plage claire) sous l'encre */}
             <path d={outline.path} fill="url(#wmSand)" stroke="none"/>
             {/* île solide verte */}
@@ -585,7 +592,7 @@ export default function WorldMapView({
             <path d={outline.path} fill="url(#wmWarm)" opacity=".9" transform="scale(.985)" style={{transformOrigin:"328px 300px"}}/>
             {/* CONTOUR ENCRE comic épais — fait POPPER l'île sur la mer */}
             <path d={outline.path} fill="none" stroke={INK} strokeWidth="3" strokeLinejoin="round"/>
-          </>}
+          </g>}
 
           {/* Couche SARGASSES (satellite AFAI) — la matière sur l'eau, ce que les gens
               viennent voir. Sous les pins (donnée, pas alarme) ; opacité ∝ intensité. */}

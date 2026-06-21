@@ -59,6 +59,10 @@ memory
 session*-*.png
 responsive-*.png
 
+# Perf harness screenshots (scripts/perf/*.png) — the .cjs harnesses are committed,
+# their PNG outputs (before/after captures) are local artefacts, regenerated on each run.
+scripts/perf/*.png
+
 # Debug screenshots à la racine (artefacts locaux de sessions debug/Playwright).
 # Les images shippées vivent dans public/ et regions/og/, jamais à la racine.
 /*.png
