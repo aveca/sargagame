@@ -13,6 +13,7 @@ const fs = require('fs')
 const path = require('path')
 const { getAllRegions, getRegion, getBuildRegion } = require('../regions/index.cjs')
 const { zoneSlugsFor } = require('./lib/coast-zones.cjs')
+const CROSS_DOMAIN = require('./lib/cross-domain-drops.cjs')
 
 const root = path.join(__dirname, '..')
 const dist = path.join(root, 'dist')
@@ -219,9 +220,12 @@ for (const region of legacyRegions) {
   // existe) ce serait un orphelin EN crawlable — miroir du skip 'a-propos' USD.
   try { fs.rmSync(path.join(out, 'about'), { recursive: true, force: true }) } catch (_) {}
 
-  // Drop cross-domain SEO landing pages to fix indexing cannibalization
-  const MQ_ONLY = new Set(['saison-sargasses-martinique', 'sargasses-martinique-cette-semaine', 'meteo-sargasses-martinique', 'meilleures-plages-martinique-sargasses', 'en/best-beaches-martinique', 'bulletin-sargasses-martinique', 'sargasses-le-diamant', 'sargasses-sainte-luce', 'sargasses-sainte-anne-martinique', 'sargasses-les-trois-ilets', 'que-faire-sargasses-martinique', 'en/what-to-do-sargassum-martinique'])
-  const GP_ONLY = new Set(['saison-sargasses-guadeloupe', 'sargasses-guadeloupe-cette-semaine', 'meteo-sargasses-guadeloupe', 'meilleures-plages-guadeloupe-sargasses', 'en/best-beaches-guadeloupe', 'bulletin-sargasses-guadeloupe', 'que-faire-sargasses-guadeloupe', 'en/what-to-do-sargassum-guadeloupe', 'sargasses-deshaies', 'sargasses-sainte-anne-guadeloupe', 'sargasses-gosier', 'sargasses-saint-francois'])
+  // Drop cross-domain SEO landing pages to fix indexing cannibalization.
+  // Source UNIQUE = scripts/lib/cross-domain-drops.cjs (partagée avec la purge
+  // serveur purge-cross-domain.cjs) — fin de la dérive qui laissait des résidus
+  // orphelins live (ex. communes GP servies 200 sur MQ).
+  const MQ_ONLY = new Set(CROSS_DOMAIN.MQ_ONLY)
+  const GP_ONLY = new Set(CROSS_DOMAIN.GP_ONLY)
 
   // Pages EN/ES « génériques » bilingues (Martinique & Guadeloupe), publiées à
   // l'identique sur les DEUX domaines. Sans traitement, le swap GP plus bas les

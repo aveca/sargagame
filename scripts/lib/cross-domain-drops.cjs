@@ -46,6 +46,13 @@ const GP_ONLY = [
   'bulletin-sargasses-guadeloupe',
   'que-faire-sargasses-guadeloupe',
   'en/what-to-do-sargassum-guadeloupe',
+  // Cluster communes GP (hub-and-spoke vers les fiches plage GP) — étaient déjà
+  // dans prepare-ftp.cjs (drop du build) mais PAS ici → la purge serveur les
+  // laissait orphelines sur MQ (résidu 200, canonical auto-référent). 2026-06-21.
+  'sargasses-deshaies',
+  'sargasses-sainte-anne-guadeloupe',
+  'sargasses-gosier',
+  'sargasses-saint-francois',
 ]
 
 // Slugs à supprimer pour une région donnée (= les pages de l'AUTRE île).
