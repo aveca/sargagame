@@ -801,7 +801,7 @@ function discoveryBeats(lang){
 }
 function DiscoveryStory({lang,onClose,onShowMap}){
   return(
-    <div role="dialog" aria-label={_t(lang,"Comprendre les sargasses","Understand sargassum","Entender el sargazo")} style={{position:"absolute",inset:0,zIndex:1060,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
+    <div role="dialog" aria-modal="true" aria-label={_t(lang,"Comprendre les sargasses","Understand sargassum","Entender el sargazo")} style={{position:"absolute",inset:0,zIndex:1060,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
       <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"fixed",top:"calc(12px + env(safe-area-inset-top))",right:12,zIndex:30,width:42,height:42,borderRadius:21,background:"rgba(10,23,20,.55)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:16,cursor:"pointer"}}>✕</button>
       <StoryEngine beats={discoveryBeats(lang)} lang={lang} ev="sg_discovery_beat" onCTA={onShowMap}/>
     </div>
@@ -1094,7 +1094,7 @@ function StationStory({slug,lang,onExit,onCTA}){
   const beatsFn = STATION_BEATS[slug] || discoveryBeats
   const accent = slug.includes("h2s") ? "#CC28FF" : slug.includes("nettoyer") ? "#3fd07f" : "#FFC72C"
   return(
-    <div role="dialog" aria-label={slug} style={{position:"absolute",inset:0,zIndex:1060,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
+    <div role="dialog" aria-modal="true" aria-label={slug} style={{position:"absolute",inset:0,zIndex:1060,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
       <button onClick={onExit} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"fixed",top:"calc(12px + env(safe-area-inset-top))",right:12,zIndex:30,width:42,height:42,borderRadius:21,background:"rgba(10,23,20,.55)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:16,cursor:"pointer"}}>✕</button>
       <StoryEngine beats={beatsFn(lang)} lang={lang} accent={accent}
         ev="sg_station_beat" onCTA={onCTA}
@@ -1293,7 +1293,7 @@ function SolutionsStory({lang,onClose,onExit}){
   const onBeat=(b)=>{const lvl=Math.min(N,b+1);if(lvl>unlocked){setUnlocked(lvl);try{s("sg_sol_lvl",lvl)}catch(_){}try{sgUnlock("sol_p"+lvl)}catch(_){}}}
   const pct=Math.round(100*Math.min(unlocked,N)/N)
   return(
-    <div role="dialog" aria-label={_t(lang,"Les solutions sargasses","Sargassum solutions","Soluciones al sargazo")} style={{position:"absolute",inset:0,zIndex:1065,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
+    <div role="dialog" aria-modal="true" aria-label={_t(lang,"Les solutions sargasses","Sargassum solutions","Soluciones al sargazo")} style={{position:"absolute",inset:0,zIndex:1065,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
       <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"fixed",top:"calc(12px + env(safe-area-inset-top))",right:12,zIndex:31,width:42,height:42,borderRadius:21,background:"rgba(10,23,20,.55)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:16,cursor:"pointer"}}>✕</button>
       {/* HUD : barre de déblocage de NOS données (jamais décroît). Pas un popup — fin bandeau chrome. */}
       <div aria-hidden style={{position:"fixed",top:"calc(15px + env(safe-area-inset-top))",left:14,right:66,zIndex:30,pointerEvents:"none"}}>
@@ -1371,7 +1371,7 @@ function mapIntroBeats(lang,counts){
 }
 function MapIntroStory({lang,counts,onEnterMap}){
   return(
-    <div role="dialog" aria-label={_t(lang,"Présentation de la carte","Map intro","Intro del mapa")} style={{position:"absolute",inset:0,zIndex:1050,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
+    <div role="dialog" aria-modal="true" aria-label={_t(lang,"Présentation de la carte","Map intro","Intro del mapa")} style={{position:"absolute",inset:0,zIndex:1050,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
       <button onClick={()=>{track("sg_map_intro_skip",{});onEnterMap()}} style={{position:"fixed",top:"calc(12px + env(safe-area-inset-top))",right:12,zIndex:30,padding:"8px 14px",borderRadius:20,background:"rgba(10,23,20,.6)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",color:"rgba(255,255,255,.85)",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{_t(lang,"Passer","Skip","Saltar")} →</button>
       <StoryEngine beats={mapIntroBeats(lang,counts)} lang={lang} ev="sg_map_beat" onCTA={()=>{track("sg_map_intro_enter",{});onEnterMap()}}/>
     </div>
@@ -8890,7 +8890,7 @@ function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,onPremium,onClos
   }
   const last=msgs[msgs.length-1]
   return(
-    <div role="dialog" aria-label="Assistant" style={{position:"fixed",right:0,bottom:0,left:0,zIndex:1090,display:"flex",justifyContent:"flex-end",pointerEvents:"none"}}>
+    <div role="dialog" aria-modal="true" aria-label="Assistant" style={{position:"fixed",right:0,bottom:0,left:0,zIndex:1090,display:"flex",justifyContent:"flex-end",pointerEvents:"none"}}>
       <div style={{pointerEvents:"auto",width:"100%",maxWidth:420,margin:"0 10px calc(10px + env(safe-area-inset-bottom))",
         background:"#190c2c",border:"1px solid rgba(255,255,255,.12)",borderRadius:20,overflow:"hidden",
         boxShadow:"0 18px 60px rgba(0,0,0,.55)",display:"flex",flexDirection:"column",maxHeight:"min(72vh,560px)"}}>
@@ -9451,7 +9451,7 @@ function HeroScene(){
   useEffect(()=>{
     const box=boxRef.current;if(!box)return
     try{if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return}catch(_){}
-    const scroller=box.closest('[role="dialog"]')
+    const scroller=box.closest('[role="dialog" aria-modal="true"]')
     if(!scroller)return
     let raf=0
     const upd=()=>{
@@ -10174,7 +10174,7 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
   const dayName=j2info?(()=>{try{return new Date(j2info.date+"T12:00:00Z").toLocaleDateString(lang==="es"?"es-MX":lang==="en"?"en-US":"fr-FR",{weekday:"long"})}catch(_){return""}})():""
   const distTxt=b=>{if(!userPos||!b.lat)return b.drive!=null?`${b.drive} min`:"";const km=haversine(userPos.lat,userPos.lng,b.lat,b.lng);return US_UNITS?`${Math.max(1,Math.round(km*0.621))} mi`:`${Math.max(1,Math.round(km))} km`}
   return(
-    <div role="dialog" aria-label={T("Trouve ta plage","Find your beach","Encuentra tu playa")} style={{position:"absolute",inset:0,zIndex:1050,
+    <div role="dialog" aria-modal="true" aria-label={T("Trouve ta plage","Find your beach","Encuentra tu playa")} style={{position:"absolute",inset:0,zIndex:1050,
       background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch",animation:"fadeIn .35s ease-out",
       opacity:exiting?0:1,transform:exiting?"scale(1.04)":"none",
       transition:"opacity .3s ease,transform .3s cubic-bezier(.22,1,.36,1)"}}>
@@ -10644,7 +10644,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
     letterSpacing:".01em",textTransform:"uppercase",margin:"0 0 10px",color:"#fff"}
   const secPad={padding:"68px 22px 8px",maxWidth:560,margin:"0 auto"}
   return(
-    <div ref={wrapRef} role="dialog" aria-label={beach.name} style={{position:"absolute",inset:0,zIndex:1050,
+    <div ref={wrapRef} role="dialog" aria-modal="true" aria-label={beach.name} style={{position:"absolute",inset:0,zIndex:1050,
       background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch",
       /* PAS de fill-mode sur l'entrée : avec "both" l'animation épinglerait
          opacity:1 pour toujours et écraserait le fondu de sortie (inline) */
@@ -11337,7 +11337,7 @@ function WorldChallengeCard({beach,lang,active,phaseGrad,onGuess,streak}){
 function WorldBonus({level,topBeach,lang,onPremium,onClose}){
   const vm=topBeach?verdictMeta(topBeach.status||"clean",lang):null
   return(
-    <div role="dialog" aria-label={_t(lang,"Bonus débloqué","Bonus unlocked","Bono")} style={{position:"absolute",inset:0,zIndex:25,display:"flex",alignItems:"center",justifyContent:"center",padding:26,
+    <div role="dialog" aria-modal="true" aria-label={_t(lang,"Bonus débloqué","Bonus unlocked","Bono")} style={{position:"absolute",inset:0,zIndex:25,display:"flex",alignItems:"center",justifyContent:"center",padding:26,
       background:"radial-gradient(120% 90% at 50% 28%,rgba(17,70,62,.96),rgba(4,9,11,.97))",animation:"wfBonusIn .4s cubic-bezier(.22,1,.36,1) both"}}>
       <div className="wf-pop" style={{maxWidth:360,width:"100%",textAlign:"center",color:"#fff"}}>
         <div style={{fontSize:48,lineHeight:1}}>🎁</div>
@@ -11380,7 +11380,7 @@ function WorldCarnet({beach,lang,onClose,onPremium}){
   const hasScore=typeof beach.score==="number"
   const mood=hasScore?moodFromScore(beach.score):moodFromStatus(status)
   return(
-    <div role="dialog" aria-label={beach.name} style={{position:"absolute",inset:0,zIndex:20,overflowY:"auto",WebkitOverflowScrolling:"touch",
+    <div role="dialog" aria-modal="true" aria-label={beach.name} style={{position:"absolute",inset:0,zIndex:20,overflowY:"auto",WebkitOverflowScrolling:"touch",
       background:"linear-gradient(180deg,#04090B 0%,#0B2230 50%,#11463E 100%)",animation:"wfCarnetIn .32s cubic-bezier(.22,1,.36,1) both"}}>
       <button onClick={onClose} style={{position:"sticky",top:"calc(12px + env(safe-area-inset-top))",marginLeft:14,zIndex:3,padding:"8px 14px",borderRadius:999,
         background:"rgba(4,9,11,.5)",border:"1px solid rgba(255,255,255,.25)",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",backdropFilter:"blur(8px)"}}>← {_t(lang,"Retour","Back","Volver")}</button>
@@ -11614,7 +11614,7 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
       if(nx>tourOrder.length-1){tourGo(0);return}
       tourGo(nx)}
     const onWheel=e=>{e.preventDefault();step(e.deltaY>0?1:-1)}
-    const onKey=e=>{const t=e.target;if(t&&(/^(input|textarea|select)$/i.test(t.tagName)||t.isContentEditable))return;if(document.querySelector('[role="dialog"]'))return;if(e.key==="ArrowDown"){e.preventDefault();step(1)}else if(e.key==="ArrowUp"){e.preventDefault();step(-1)}else if(e.key==="Escape"&&tourRef.current!=null)exitTour()}
+    const onKey=e=>{const t=e.target;if(t&&(/^(input|textarea|select)$/i.test(t.tagName)||t.isContentEditable))return;if(document.querySelector('[role="dialog" aria-modal="true"]'))return;if(e.key==="ArrowDown"){e.preventDefault();step(1)}else if(e.key==="ArrowUp"){e.preventDefault();step(-1)}else if(e.key==="Escape"&&tourRef.current!=null)exitTour()}
     el.addEventListener("wheel",onWheel,{passive:false});window.addEventListener("keydown",onKey)
     return()=>{el.removeEventListener("wheel",onWheel);window.removeEventListener("keydown",onKey)}
   },[])// eslint-disable-line
@@ -11888,7 +11888,7 @@ function WhatsNewJournal({lang,title,items,releaseV,releaseDate,allowDeepLinks,i
   const ttl=title?(title[lang]||title.fr):_t(lang,"Pendant ton absence","While you were away","Mientras no estabas")
   const go=(href)=>{try{track("sg_whatsnew_item",{v:releaseV,href})}catch(_){};try{s("sg_rel_seen",releaseV)}catch(_){};try{window.location.href=href}catch(_){}}
   return(
-    <div role="dialog" aria-label={_t(lang,"Nouveautés","What's new","Novedades")}
+    <div role="dialog" aria-modal="true" aria-label={_t(lang,"Nouveautés","What's new","Novedades")}
       style={{position:"fixed",inset:0,zIndex:1072,overflowY:"auto",overflowX:"hidden",WebkitOverflowScrolling:"touch",overscrollBehavior:"contain",
         background:"linear-gradient(180deg,#0B2230 0%,#123F44 34%,#7E5A38 72%,#C97E3A 100%)",
         animation:"viewFadeIn .4s cubic-bezier(.22,1,.36,1) both"}}>
