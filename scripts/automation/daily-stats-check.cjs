@@ -181,7 +181,23 @@ async function main() {
   const emailStats = await fetchJSON(EMAIL_STATS_URL)
   if (emailStats && !emailStats.error && emailStats.counts) {
     const c = emailStats.counts, r = emailStats.rates || {}
-    console.log(`Email: ${c.opened}/${c.delivered} ouverts (${r.open ?? '–'}%) | ${c.clicked} clics (${r.click ?? '–'}%) | ${c.bounced} bounces`)
+    // Garde-fou intégrité — UNIQUEMENT les états physiquement impossibles. ⚠️ NE PAS
+    // ajouter `opened > delivered` ni `openRate > 100` : `opened`/`open` sont des
+    // ÉVÉNEMENTS Resend (ouvertures répétées), donc dépasser delivered/100% est NORMAL
+    // pour une liste engagée (cf. memory reference_email_system § ROI). Seul
+    // `delivered > sent` (ou compteur négatif) est réellement impossible → tag .error
+    // → carry-forward dernière valeur saine. (NB: l'anomalie observée 18-20/06 =
+    // delivered/opened/clicked FIGÉS pendant que sent monte = staleness côté endpoint
+    // Apps Script, pas une valeur impossible ; à diagnostiquer côté Apps Script.)
+    const impossible =
+      (c.delivered != null && c.sent != null && c.delivered > c.sent) ||
+      [c.sent, c.delivered, c.opened, c.clicked, c.bounced].some(n => n != null && n < 0)
+    if (impossible) {
+      console.log(`⚠️  EMAIL STATS IMPOSSIBLES (ignorés, carry-forward): sent=${c.sent} delivered=${c.delivered} opened=${c.opened} — bug endpoint Apps Script email_stats`)
+      emailStats.error = 'invalid_counts'
+    } else {
+      console.log(`Email: ${c.opened}/${c.delivered} ouverts-évts (${r.open ?? '–'}%) | ${c.clicked} clics (${r.click ?? '–'}%) | ${c.bounced} bounces`)
+    }
   }
 
   // 2. Check pipeline freshness

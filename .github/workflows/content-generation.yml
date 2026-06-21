@@ -18,7 +18,10 @@ concurrency:
 jobs:
   generate-content:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # 15 → 30 : marge pour que le timeout PROPRE du step Deploy FTPS (15 min) tape
+    # avant ce timeout de job — timeout de JOB = "cancelled", timeout de STEP
+    # continue-on-error = toléré → "success". generate+build+commit ≪ 15 min.
+    timeout-minutes: 30
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -72,6 +75,10 @@ jobs:
       # ── 5–6. FTPS sessions fragmentées
       - name: Deploy FTPS Martinique + Guadeloupe
         continue-on-error: true
+        # Timeout PROPRE au step (cf. weekly-optimize) : un blocage FTPS était
+        # "cancelled" par le timeout du job ; ici il est toléré → "success".
+        # L'article est déjà commité + push → redéployé via daily-copernicus.
+        timeout-minutes: 15
         env:
           FTP_SERVER_MQ: ${{ secrets.FTP_SERVER_MQ }}
           FTP_USERNAME_MQ: ${{ secrets.FTP_USERNAME_MQ }}

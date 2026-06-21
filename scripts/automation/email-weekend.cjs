@@ -149,17 +149,24 @@ function buildEmailHTML(island, topBeaches, stats, domain) {
 </html>`
 }
 
+// Gate predicates (purs, testables). Alignés sur le runner GitHub (UTC) : le
+// cron, le marqueur de dedup (clé = date UTC via toISOString) et ce jour-check
+// partagent désormais le MÊME fuseau. getUTCDay()===5 = vendredi UTC — identique
+// à getDay() sur un runner UTC (zéro changement en prod), mais déterministe
+// partout (testable hors-UTC, plus de fragilité local-vs-UTC).
+function isSendDay(d = new Date()) { return d.getUTCDay() === 5 }
+function sentKey(d = new Date()) { return d.toISOString().split('T')[0] }
+
 async function main() {
   console.log('=== Weekend Email Bulletin ===')
 
-  const dayOfWeek = new Date().getDay()
-  if (dayOfWeek !== 5 && !FORCE) {
-    console.log(`Not Friday (day=${dayOfWeek}). Use --force to override.`)
+  if (!isSendDay() && !FORCE) {
+    console.log(`Not Friday (UTC day=${new Date().getUTCDay()}). Use --force to override.`)
     return
   }
 
   // Deduplication: only send once per Friday
-  const todayKey = new Date().toISOString().split('T')[0]
+  const todayKey = sentKey()
   try {
     const sent = JSON.parse(fs.readFileSync(SENT_PATH, 'utf-8'))
     if (sent.lastSent === todayKey && !FORCE) {
@@ -287,4 +294,9 @@ async function main() {
   console.log('\nDone.')
 }
 
-main().catch(e => console.error(e))
+// Auto-run uniquement en exécution directe ; require()-able pour tests (gates).
+if (require.main === module) {
+  main().catch(e => { console.error(e); process.exitCode = 1 })
+}
+
+module.exports = { main, isSendDay, sentKey }
