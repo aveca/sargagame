@@ -278,6 +278,10 @@ export default function WorldMapView({
     let moved=false
 
     const onDown=e=>{
+      // Tap sur un contrôle chrome (CTA « Voir la plage », tooltip, dock) : ne PAS le
+      // traiter comme un pan (sinon le jitter du doigt déselectionne + capture le pointeur
+      // et vole le clic au bouton → fiche jamais ouverte). Laisse l'événement au bouton.
+      if(e.target&&e.target.closest&&e.target.closest('[data-vmui]')) return
       moved=false
       ptrsRef.current[e.pointerId]={x:e.clientX,y:e.clientY}
       if(Object.keys(ptrsRef.current).length===2){
@@ -317,6 +321,9 @@ export default function WorldMapView({
       }
     }
     const onUp=e=>{
+      // Idem onDown : un relâchement sur un contrôle chrome ne doit pas déclencher la
+      // logique carte (double-tap zoom) ni voler le clic au bouton « Voir la plage ».
+      if(e.target&&e.target.closest&&e.target.closest('[data-vmui]')) return
       const wasMoved=moved
       delete ptrsRef.current[e.pointerId]
       if(Object.keys(ptrsRef.current).length<2) pinchRef.current=null
@@ -576,7 +583,14 @@ export default function WorldMapView({
               <g key={b.id}
                 transform={`translate(${b.vx.toFixed(1)} ${b.vy.toFixed(1)})`}
                 style={{cursor:"pointer"}}
-                onClick={e=>{ e.stopPropagation(); selectBeach(b) }}>
+                onClick={e=>{ e.stopPropagation();
+                  // Tap pin → OUVRE la fiche directement (chemin tactile fiable : le pin est
+                  // dans le SVG qui reçoit le touch ; le CTA « Voir la plage » en couche chrome
+                  // n'était pas tapable au doigt → funnel cassé, fix P0 audit). La couleur du
+                  // pin indique déjà le statut, pas besoin d'aperçu intermédiaire.
+                  selectBeach(b)
+                  if(onOpenBeach){ try{track&&track("sg_beach_open",{from:"map_pin"})}catch(_){}; onOpenBeach(b) }
+                }}>
                 {/* halo doux pour les propres / pulsation sélection */}
                 {(!noAnim&&st==="clean")&&<circle r="13" cy="-9" fill="url(#wmPhalo)"
                   style={{animation:"wmHalo 3.6s ease-in-out infinite"}}/>}
@@ -664,7 +678,11 @@ export default function WorldMapView({
       </div>
 
       {/* ══ CHROME HTML ══════════════════════════════════════════════════════════ */}
-      <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:10}}>
+      {/* data-vmui : le handler de pan (onDown) ignore les pointeurs qui démarrent ici,
+          sinon un tap "tremblé" (>2px) sur un bouton (ex. « Voir la plage ») est traité
+          comme un pan → setSelected(null) + setPointerCapture volent le clic au bouton
+          → la fiche ne s'ouvrait jamais au doigt (P0 audit). */}
+      <div data-vmui="1" style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:10}}>
 
         {/* Barre top */}
         <div style={{
@@ -829,11 +847,14 @@ export default function WorldMapView({
           </div>
         )}
 
-        {/* CTA Voir la plage */}
+        {/* CTA Voir la plage — ouvre la fiche dès le pointerdown, en capturant la plage
+            sélectionnée AVANT toute déselection par la couche carte (fix P0 tap au doigt). */}
         {selected&&(
-          <button onClick={openBeach} style={{
+          <button onClick={openBeach}
+            onPointerDown={(e)=>{ try{e.stopPropagation()}catch(_){}; const sb=selected; if(sb&&onOpenBeach){ try{track&&track("sg_beach_open",{from:"map_cta"})}catch(_){}; onOpenBeach(sb) } }}
+            style={{
             position:"absolute",left:"50%",bottom:"calc(176px + env(safe-area-inset-bottom))",
-            transform:"translateX(-50%)",pointerEvents:"auto",
+            transform:"translateX(-50%)",pointerEvents:"auto",touchAction:"manipulation",
             display:"inline-flex",alignItems:"center",gap:8,
             background:"linear-gradient(180deg,#FFE07A,#FFC72C)",
             color:INK,border:`2.5px solid ${INK}`,
