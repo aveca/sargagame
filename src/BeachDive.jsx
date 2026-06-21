@@ -27,6 +27,136 @@ import React,{useRef,useEffect} from "react"
 import {BEACH_DIVE_CSS,BEACH_DIVE_MARKUP} from "./beach-dive-assets.js"
 
 /* ====================================================================
+   COMIC_POP_CSS — override visuel ADDITIF (founder a rejeté le dark-glass).
+   Injecté en SECOND <style> dans le shadow root, APRÈS BEACH_DIVE_CSS
+   (do-not-edit). Ne touche QUE l'apparence : fond SUNSET néon + halftone +
+   grain ; cartes/pills/panneaux = papier crème, contour noir épais, ombre
+   dure offset, texte ENCRE ; CTA = or comic ; titres = stroke noir.
+   Zéro changement de logique / structure / markup / scene IDs.
+   ==================================================================== */
+const COMIC_POP_CSS = `
+/* ---------- 1. FOND SUNSET plein écran (viewport + host) ---------- */
+:host{ --ink:#0d0b14; background:#6a2f9e !important; }
+.viewport{
+  background:
+    radial-gradient(120% 90% at 84% 8%, rgba(255,236,170,.55) 0%, rgba(255,194,80,0) 46%),
+    linear-gradient(168deg,#ff9b3d 0%,#ff5e8e 34%,#b93a8e 60%,#6a2f9e 100%) !important;
+}
+/* halftone comic (points) — opacité douce, derrière la scène SVG */
+.viewport::before{
+  content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
+  background-image:radial-gradient(#0d0b14 1.4px, transparent 1.6px);
+  background-size:9px 9px; opacity:.14;
+}
+/* film grain (noise data-URI) en overlay */
+.viewport::after{
+  content:""; position:absolute; inset:0; z-index:3; pointer-events:none;
+  opacity:.07; mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size:160px 160px;
+}
+/* le voile sombre de lisibilité d'origine — on l'allège (sunset doit rester vif) */
+.veil{
+  background:linear-gradient(180deg,
+    rgba(13,11,20,0) 0%,
+    rgba(13,11,20,calc(.04 + var(--gp)*.05)) 50%,
+    rgba(13,11,20,calc(.18 + var(--p1)*.08 + var(--p4)*.06)) 78%,
+    rgba(13,11,20,calc(.34 + var(--gp)*.06)) 100%) !important;
+}
+
+/* ---------- 2. CARTES / PILLS / PANNEAUX / BADGES = COMIC papier crème ---------- */
+.backbtn,.freshpill,.langs button,.statuspill,.chip,.regimebox,.pbcard,
+.h2sbadge,.safebadge,.social,.subpanel,.whisper,.zonelinks a{
+  background:#fdf6e3 !important;
+  border:2.5px solid #0d0b14 !important;
+  box-shadow:3px 3px 0 #0d0b14 !important;
+  -webkit-backdrop-filter:none !important; backdrop-filter:none !important;
+  color:#0d0b14 !important;
+}
+/* texte interne des panneaux : ENCRE (override blanc-sur-sombre) */
+.statuspill .pf,.scoreblob .num b,.fct .fl,.fct .fv,.regimering .rn b,
+.regimebox .rtxt b,.regimebox .rtxt span,.fcday .fcl,.pbcard .pn,
+.h2sbadge .lvltxt,.safebadge .txt,.safebadge .txt b,.social b,.social span,
+.scoreblob .num span,.sub,.reassure,.h2sdisc,.breadcrumb,.breadcrumb a,
+.backbtn,.zonelinks a,.langs button{
+  color:#0d0b14 !important; opacity:1 !important; text-shadow:none !important;
+}
+/* langue active = remplie or */
+.langs button[aria-pressed="true"]{
+  background:linear-gradient(180deg,#ffe07a,#ffc72c) !important; color:#0d0b14 !important;
+}
+/* chips bon/mauvais : fills status, contour encre */
+.chip.good{ background:#27c46b !important; color:#0d0b14 !important; }
+.chip.bad{ background:#e8322a !important; color:#fff !important; }
+.chip.good .i,.chip.bad .i{ color:#0d0b14 !important; }
+/* status pill / plan-B status : pastilles status visibles sur crème */
+.st-clean{ color:#1a8f4f !important } .st-clean .d{ background:#27c46b !important }
+.st-mod{ color:#9a7400 !important }  .st-mod .d{ background:#ffd23f !important }
+.st-avoid{ color:#c01d12 !important } .st-avoid .d{ background:#e8322a !important }
+.fct .ftrack{ background:rgba(13,11,20,.12) !important }
+.subdots i{ background:rgba(13,11,20,.22) !important }
+.h2sdisc{ border-left-color:#0d0b14 !important }
+.breadcrumb a{ text-decoration:underline !important }
+
+/* ---------- 3. CTA primaires = OR comic ---------- */
+.cta{
+  background:linear-gradient(180deg,#ffe07a,#ffc72c) !important;
+  color:#0d0b14 !important; font-weight:900 !important;
+  border:2.5px solid #0d0b14 !important; border-radius:14px !important;
+  box-shadow:3px 3px 0 #0d0b14 !important;
+}
+.linkcta,.more,.regimeMore,.zonelinks a .ar{ color:#0d0b14 !important; }
+
+/* ---------- 4. TITRES = blanc + stroke noir comic ---------- */
+.verdictverbal,h2.head,.wordmark{
+  color:#fff !important;
+  -webkit-text-stroke:2.5px #0d0b14; paint-order:stroke fill;
+  text-shadow:3px 3px 0 #0d0b14 !important;
+}
+.eyebrow{
+  color:#0d0b14 !important; text-shadow:none !important;
+  background:#ffe07a; display:inline-block; padding:3px 9px; border-radius:7px;
+  border:2px solid #0d0b14; box-shadow:2px 2px 0 #0d0b14;
+}
+.eyebrow .dt{ color:#c01d12 !important; }
+
+/* ---------- 5. scrollhint / touchhint lisibles sur sunset ---------- */
+.scrollhint .lab{ color:#0d0b14 !important; }
+.scrollhint .chev{ border-color:#0d0b14 !important; }
+.touchhint span{ color:#0d0b14 !important; text-shadow:0 1px 2px rgba(255,255,255,.6) !important; }
+.touchhint .ring{ border-color:#0d0b14 !important; }
+
+/* ---------- 6. SCÈNE SVG header → fond SUNSET (recolore les paint-servers
+   existants : #sky / #warmG / #sea + halftone, mascotte Veilleur intacte).
+   On recolore les <stop> in-place : la compo (2 bandes ciel, horizon, mer,
+   soleil, yole, Veilleur) reste identique — seules les teintes froides
+   teal/bleu deviennent violet→magenta→orange→or. Status/legend non touchés. ---------- */
+
+/* CIEL : bande haute froide → violet profond / magenta ; bande basse → orange chaud.
+   #sky stops (offset 0, .48, .49, 1) ciblés par nth-child. */
+#scene #sky stop:nth-child(1){ stop-color:#3a1f63 !important; }   /* haut = violet profond */
+#scene #sky stop:nth-child(2){ stop-color:#c33a82 !important; }   /* milieu-haut = magenta */
+#scene #sky stop:nth-child(3){ stop-color:#ff7656 !important; }   /* sous l'horizon = orange */
+#scene #sky stop:nth-child(4){ stop-color:#ff944a !important; }   /* bas ciel = orange chaud */
+
+/* surcouche chaude du ciel : renforce le glow sunset (orange profond) */
+#scene #warmG stop:nth-child(2){ stop-color:#ff5e8e !important; } /* magenta translucide */
+#scene #warmG stop:nth-child(3){ stop-color:#ff7656 !important; } /* orange translucide */
+
+/* MER : magenta → orange → or (override de --seaTint froid + verts teal). */
+#scene #sea stop:nth-child(1){ stop-color:#b93a8e !important; }   /* sommet mer = magenta */
+#scene #sea stop:nth-child(2){ stop-color:#e8522a !important; }   /* milieu = orange brûlé */
+#scene #sea stop:nth-child(3){ stop-color:#d8431f !important; }   /* sous-bande = orange */
+#scene #sea stop:nth-child(4){ stop-color:#7a2a52 !important; }   /* fond mer = prune sombre */
+
+/* HALFTONE Ben-Day : garde les points mais teinte chaude/sombre subtile
+   (le turquoise/froid d'origine clashait avec le sunset). */
+#scene #cmHalfWarm circle{ fill:#ff7656 !important; }            /* points ciel = orange */
+#scene #cmHalfSea circle{ fill:#3a1244 !important; }             /* points mer = prune sombre */
+#scene #cmHalf circle{ fill:#0d0b14 !important; }                /* trame neutre encre */
+`;
+
+/* ====================================================================
    MOTEUR — monté dans le shadow root SR, hôte/scroll-container HOST.
    opts = { data, hooks, lang, regionName }. Retourne { teardown, update, setLang }.
    ==================================================================== */
@@ -998,6 +1128,8 @@ export default function BeachDive(props){
     const SR = host.shadowRoot || host.attachShadow({mode:"open"});
     while(SR.firstChild) SR.removeChild(SR.firstChild);
     const styleEl=document.createElement("style"); styleEl.textContent=BEACH_DIVE_CSS; SR.appendChild(styleEl);
+    /* OVERRIDE COMIC POP + SUNSET — additif, après le CSS build (do-not-edit) */
+    const styleOv=document.createElement("style"); styleOv.textContent=COMIC_POP_CSS; SR.appendChild(styleOv);
     SR.appendChild(document.createRange().createContextualFragment(BEACH_DIVE_MARKUP));
     const hooks={
       track:(n,p)=>{ try{ cbRef.current.track && cbRef.current.track(n,p); }catch(e){} },
@@ -1054,7 +1186,7 @@ export default function BeachDive(props){
     ref:hostRef, role:"dialog", "aria-label": beach&&beach.name ? beach.name : "Sargasses",
     style:{position:"absolute",inset:0,zIndex:1050,overflowY:"auto",overflowX:"hidden",
       forcedColorAdjust:"none",
-      background:"#02060A", WebkitOverflowScrolling:"touch", overscrollBehavior:"contain",
+      background:"#6a2f9e", WebkitOverflowScrolling:"touch", overscrollBehavior:"contain",
       opacity:exiting?0:1, transform:exiting?"scale(1.04)":"none",
       transition:"opacity .3s ease,transform .3s cubic-bezier(.22,1,.36,1)"}
   });
