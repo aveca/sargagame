@@ -6294,7 +6294,7 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
   return(<>
     <style>{`
       .pwx-wrap{--ink:#0d0b14;--paper:#fdf6e3;--red:#e8322a;--yel:#ffd23f;--org:#ff8a3d;--grn:#27c46b;
-        font-family:"Comic Neue","Comic Sans MS",system-ui,sans-serif;color:var(--ink);margin:-28px -24px -20px;position:relative}
+        font-family:"Bricolage Grotesque",system-ui,sans-serif;color:var(--ink);margin:-28px -24px -20px;position:relative}
       .pwx-hero{position:relative;height:188px;border-bottom:3px solid var(--ink);overflow:hidden}
       .pwx-hero>svg.sc{position:absolute;inset:0;width:100%;height:100%}
       .pwx-veil{position:absolute;left:50%;top:46%;transform:translate(-50%,-58%);z-index:2;filter:drop-shadow(2px 4px 0 rgba(13,11,20,.4))}
@@ -6317,7 +6317,7 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
       .pwx-line{display:block;font-size:14.5px;font-weight:800;color:var(--ink);line-height:1.2}
       .pwx-meta{display:block;font-size:11.5px;font-weight:700;color:#5a5566;margin-top:3px}
       .pwx-proof{text-align:center;font-size:11.5px;font-weight:700;color:#0d2330;margin:4px 0 14px;opacity:.85}
-      .pwx-record{display:flex;align-items:center;gap:9px;margin:6px 0 14px;padding:9px 12px;border-radius:12px;background:rgba(39,196,107,.13);border:2.5px solid var(--ink);box-shadow:3px 3px 0 var(--ink)}
+      .pwx-record{display:flex;align-items:center;gap:9px;margin:6px 0 14px;padding:9px 12px;border-radius:12px;background:#fdf6e3;border:2.5px solid var(--ink);box-shadow:3px 3px 0 var(--ink)}
       .pwx-record .pwx-rdot{color:var(--grn);font-size:11px;flex:0 0 auto;filter:drop-shadow(0 0 3px rgba(39,196,107,.7))}
       .pwx-record b{display:block;font-size:11.5px;font-weight:800;color:var(--ink);line-height:1.25}
       .pwx-record em{display:block;font-style:normal;font-size:10.5px;font-weight:700;color:#1f3a28;margin-top:2px}
@@ -6328,18 +6328,18 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
       .pwx-plan.on{background:linear-gradient(180deg,#ffe07a,var(--yel));box-shadow:0 4px 0 var(--ink)}
       .pwx-plan b{display:block;font-size:13px;font-weight:800}
       .pwx-plan .pwx-pr{display:block;font-family:"AntonLC","Anton",system-ui,sans-serif;font-size:19px;margin-top:2px;letter-spacing:.3px}
-      .pwx-plan .pwx-pr small{font-size:11px;font-weight:400;font-family:"Comic Neue",system-ui,sans-serif}
+      .pwx-plan .pwx-pr small{font-size:11px;font-weight:400;font-family:"Bricolage Grotesque",system-ui,sans-serif}
       .pwx-plan .pwx-eq{display:block;font-size:9px;font-weight:700;color:#7a6a2a;margin-top:1px}
       .pwx-badge{position:absolute;top:-9px;right:7px;background:var(--red);color:#fff;font-size:9px;font-weight:800;padding:2px 7px;border-radius:100px;border:2px solid var(--ink)}
       .pwx-cta{display:block;width:100%;border:2.5px solid var(--ink);border-radius:14px;padding:15px 18px;cursor:pointer;font-family:"AntonLC","Anton",system-ui,sans-serif;letter-spacing:.5px;text-transform:uppercase;text-align:center;background:linear-gradient(180deg,#ffe07a,var(--yel));color:var(--ink);box-shadow:0 5px 0 var(--ink),0 11px 20px rgba(13,11,20,.4);transform:rotate(-.8deg);forced-color-adjust:none}
       .pwx-cta:active{transform:rotate(-.8deg) translateY(4px);box-shadow:0 1px 0 var(--ink)}
       .pwx-cta .big{display:block;font-size:18px;line-height:1.05}
-      .pwx-cta .sm{display:block;font-family:"Comic Neue",system-ui,sans-serif;font-size:12px;font-weight:700;text-transform:none;opacity:.82;margin-top:4px}
+      .pwx-cta .sm{display:block;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:12px;font-weight:700;text-transform:none;opacity:.82;margin-top:4px}
       .pwx-trust{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:14px}
       .pwx-tc{background:var(--paper);border:2.5px solid var(--ink);border-radius:11px;padding:9px 6px;text-align:center;box-shadow:2px 2px 0 var(--ink)}
       .pwx-tc .ic{font-size:17px}.pwx-tc b{display:block;font-size:10.5px;color:var(--ink);margin-top:2px}
       .pwx-tc em{display:block;font-style:normal;font-size:9px;color:#5a5566;font-weight:700;line-height:1.25;margin-top:1px}
-      .pwx-guar{display:flex;align-items:center;gap:11px;margin-top:13px;padding:11px 13px;border-radius:13px;background:rgba(39,196,107,.18);border:2.5px solid var(--grn);box-shadow:3px 3px 0 var(--ink)}
+      .pwx-guar{display:flex;align-items:center;gap:11px;margin-top:13px;padding:11px 13px;border-radius:13px;background:#fdf6e3;border:2.5px solid var(--ink);box-shadow:3px 3px 0 var(--ink)}
       .pwx-guar .gic{font-size:19px}.pwx-guar b{display:block;font-size:12.5px;color:var(--ink)}
       .pwx-guar em{display:block;font-style:normal;font-size:11px;color:#1f3a28;font-weight:700;margin-top:1px}
       .pwx-foot{display:block;width:100%;margin-top:11px;background:none;border:none;color:#fff;font-weight:800;font-size:12.5px;text-decoration:underline;cursor:pointer;font-family:inherit;opacity:.9}
@@ -6350,22 +6350,22 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
       <div className="pwx-hero">
         <svg className="sc" viewBox="0 0 430 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
           <defs><linearGradient id="pwxSky" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#1f6f9e"/><stop offset=".5" stopColor="#5fb6d6"/>
+            <stop offset="0" stopColor="#2e1a5e"/><stop offset=".5" stopColor="#6a2f9e"/>
             <stop offset=".78" stopColor="#ffb267"/><stop offset="1" stopColor="#ff8a3d"/></linearGradient></defs>
           <rect width="430" height="200" fill="url(#pwxSky)"/>
           <circle cx="330" cy="120" r="46" fill="#ffe08a" opacity=".5"/>
           <circle cx="330" cy="120" r="28" fill="#fff2c4"/>
           <g stroke="#fff" strokeOpacity=".28" strokeWidth="1.6"><line x1="20" y1="36" x2="120" y2="31"/><line x1="14" y1="54" x2="96" y2="50"/></g>
-          <path d="M0 138 H430 V200 H0 Z" fill="#2bb6a6"/>
-          <path d="M0 138 q110 -10 215 0 t215 0 V160 H0 Z" fill="#2bb6a6" opacity=".6"/>
+          <path d="M0 138 H430 V200 H0 Z" fill="#3e2470"/>
+          <path d="M0 138 q110 -10 215 0 t215 0 V160 H0 Z" fill="#3e2470" opacity=".6"/>
           <path d="M0 176 Q215 168 430 182 V200 H0 Z" fill="#f3d9a3"/>
           <path d="M0 176 Q215 168 430 182" fill="none" stroke="#0d0b14" strokeWidth="1.6"/>
         </svg>
         <span className="pwx-veil">
           <svg viewBox="0 0 120 120" width="72" height="72" aria-hidden="true">
             <g stroke="#0d0b14" strokeWidth="2.5">
-              <rect x="6" y="50" width="20" height="22" rx="2" fill="#27a9e3"/>
-              <rect x="94" y="50" width="20" height="22" rx="2" fill="#27a9e3"/>
+              <rect x="6" y="50" width="20" height="22" rx="2" fill="#5b3a8e"/>
+              <rect x="94" y="50" width="20" height="22" rx="2" fill="#5b3a8e"/>
               <line x1="26" y1="61" x2="40" y2="61"/><line x1="94" y1="61" x2="80" y2="61"/>
             </g>
             <circle cx="60" cy="62" r="34" fill="#fdf6e3" stroke="#0d0b14" strokeWidth="3"/>
