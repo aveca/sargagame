@@ -3642,8 +3642,13 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
   // ── Plan B : si avoid/moderate, plages PROPRES proches (réduit la frustration + maille SEO)
   const planB=useMemo(()=>{
     if(!beach||!allBeaches||status==="clean"||status==="_loading")return[]
+    // Plafond de distance : « plutôt y aller » n'a de sens que si c'est ATTEIGNABLE.
+    // Sur un grand marché (Floride : plages à 390 km), suggérer une plage à l'autre
+    // bout de l'État est inutile → on cache au-delà de 60 km (les petites îles MQ/GP
+    // restent toutes < 60 km, comportement inchangé).
     return allBeaches.filter(b=>b.id!==beach.id&&b.island===beach.island&&b.status==="clean")
       .map(b=>({...b,_d:haversine(beach.lat,beach.lng,b.lat,b.lng)}))
+      .filter(b=>b._d<=60)
       .sort((a,b)=>a._d-b._d).slice(0,3)
   },[beach?.id,allBeaches,status])
 
