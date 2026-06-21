@@ -216,26 +216,44 @@ async function fetchClarityEvents(analyticsdata, propertyId) {
 
 async function fetchCrUX(domain) {
   const CRUX_API_KEY = process.env.CRUX_API_KEY || ''
-  const url = CRUX_API_KEY
-    ? `https://chromeuxreport.googleapis.com/v1/records:queryRecord?key=${CRUX_API_KEY}`
-    : 'https://chromeuxreport.googleapis.com/v1/records:queryRecord'
-  try {
+  // The CrUX API 403s without a key for normal usage → without it we're blind on CWV.
+  // Free key (4 clicks): https://developer.chrome.com/docs/crux/api#crux-api-key
+  if (!CRUX_API_KEY) {
+    console.warn(`[CrUX] ${domain}: CRUX_API_KEY missing → skipping (set it as a repo secret).`)
+    return null
+  }
+  const url = `https://chromeuxreport.googleapis.com/v1/records:queryRecord?key=${CRUX_API_KEY}`
+  async function query(body) {
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ origin: `https://${domain}` }),
+      body: JSON.stringify(body),
     })
-    if (!res.ok) {
-      const text = await res.text()
-      console.warn(`[CrUX] ${domain}: ${res.status} — ${text.slice(0, 200)}`)
+    if (!res.ok) return { ok: false, status: res.status, text: await res.text() }
+    return { ok: true, data: await res.json() }
+  }
+  // Objectif = CWV MOBILE → on demande PHONE en priorité, fallback toutes-plateformes
+  // si l'origine n'a pas assez de trafic mobile (CrUX renvoie 404 pour ce form-factor).
+  const num = v => (v == null ? null : Number(v)) // CrUX renvoie CLS en STRING ("0.08")
+  try {
+    let r = await query({ origin: `https://${domain}`, formFactor: 'PHONE' })
+    let formFactor = 'PHONE'
+    if (!r.ok && r.status === 404) {
+      r = await query({ origin: `https://${domain}` })
+      formFactor = 'ALL'
+    }
+    if (!r.ok) {
+      console.warn(`[CrUX] ${domain}: ${r.status} — ${String(r.text).slice(0, 200)}`)
       return null
     }
-    const data = await res.json()
-    const metrics = data.record?.metrics || {}
+    const metrics = r.data.record?.metrics || {}
+    const p75 = m => num(m?.percentiles?.p75) // ?? not || : a real 0 (perfect CLS) is valid
     return {
-      lcp: metrics.largest_contentful_paint?.percentiles?.p75 || null,
-      inp: metrics.interaction_to_next_paint?.percentiles?.p75 || null,
-      cls: metrics.cumulative_layout_shift?.percentiles?.p75 || null,
+      formFactor,
+      lcp: p75(metrics.largest_contentful_paint),
+      inp: p75(metrics.interaction_to_next_paint),
+      cls: p75(metrics.cumulative_layout_shift),
+      ttfb: p75(metrics.experimental_time_to_first_byte),
     }
   } catch (e) {
     console.warn(`[CrUX] ${domain}:`, e.message)

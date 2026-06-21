@@ -55,6 +55,7 @@ jobs:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           GA4_PROPERTY_ID_MQ: ${{ secrets.GA4_PROPERTY_ID_MQ }}
           GA4_PROPERTY_ID_GP: ${{ secrets.GA4_PROPERTY_ID_GP }}
+          CRUX_API_KEY: ${{ secrets.CRUX_API_KEY }}
         run: node scripts/automation/seo-audit.cjs
         continue-on-error: true
 

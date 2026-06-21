@@ -61,14 +61,21 @@ function extractMetrics(crux) {
   }
   for (const [key, candidates] of Object.entries(map)) {
     for (const c of candidates) {
-      if (m[c]) {
-        const metric = m[c]
+      const metric = m[c]
+      if (metric == null) continue // not `if (metric)` — CLS p75 of 0 is valid, not absent
+      // seo-audit.cjs writes a FLAT shape ({lcp:<number>,inp:<number>,cls:<number>});
+      // raw CrUX records are nested ({percentiles:{p75},histogram:[...]}). Accept both —
+      // a flat number IS the p75. Before this, the flat shape silently yielded p75:null
+      // (the tracker read `.percentiles.p75` off a number) → cwv-history all-null = blind.
+      if (typeof metric === 'number') {
+        out[key] = { p75: metric, good: null }
+      } else {
         out[key] = {
           p75: metric.percentiles?.p75 ?? metric.p75 ?? null,
           good: metric.histogram?.[0]?.density ?? metric.histogramGood ?? null,
         }
-        break
       }
+      break
     }
   }
   return Object.keys(out).length > 0 ? out : null
