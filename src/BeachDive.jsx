@@ -40,7 +40,7 @@ const COMIC_POP_CSS = `
 .viewport{
   background:
     radial-gradient(120% 90% at 84% 8%, rgba(255,236,170,.55) 0%, rgba(255,194,80,0) 46%),
-    linear-gradient(168deg,#ff9b3d 0%,#ff5e8e 34%,#b93a8e 60%,#6a2f9e 100%) !important;
+    linear-gradient(168deg,#ff8a4d 0%,#8a4a8e 34%,#3e2470 60%,#6a2f9e 100%) !important;
 }
 /* halftone comic (points) — opacité douce, derrière la scène SVG */
 .viewport::before{
@@ -135,16 +135,16 @@ const COMIC_POP_CSS = `
 /* CIEL : bande haute froide → violet profond / magenta ; bande basse → orange chaud.
    #sky stops (offset 0, .48, .49, 1) ciblés par nth-child. */
 #scene #sky stop:nth-child(1){ stop-color:#3a1f63 !important; }   /* haut = violet profond */
-#scene #sky stop:nth-child(2){ stop-color:#c33a82 !important; }   /* milieu-haut = magenta */
+#scene #sky stop:nth-child(2){ stop-color:#6a2f9e !important; }   /* milieu-haut = magenta */
 #scene #sky stop:nth-child(3){ stop-color:#ff7656 !important; }   /* sous l'horizon = orange */
 #scene #sky stop:nth-child(4){ stop-color:#ff944a !important; }   /* bas ciel = orange chaud */
 
 /* surcouche chaude du ciel : renforce le glow sunset (orange profond) */
-#scene #warmG stop:nth-child(2){ stop-color:#ff5e8e !important; } /* magenta translucide */
+#scene #warmG stop:nth-child(2){ stop-color:#8a4a8e !important; } /* magenta translucide */
 #scene #warmG stop:nth-child(3){ stop-color:#ff7656 !important; } /* orange translucide */
 
 /* MER : magenta → orange → or (override de --seaTint froid + verts teal). */
-#scene #sea stop:nth-child(1){ stop-color:#b93a8e !important; }   /* sommet mer = magenta */
+#scene #sea stop:nth-child(1){ stop-color:#3e2470 !important; }   /* sommet mer = magenta */
 #scene #sea stop:nth-child(2){ stop-color:#e8522a !important; }   /* milieu = orange brûlé */
 #scene #sea stop:nth-child(3){ stop-color:#d8431f !important; }   /* sous-bande = orange */
 #scene #sea stop:nth-child(4){ stop-color:#7a2a52 !important; }   /* fond mer = prune sombre */

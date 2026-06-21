@@ -12,13 +12,13 @@ const SCENE = `
   <defs>
     <linearGradient id="vhSky" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#2e1a5e"/><stop offset=".16" stop-color="#6b257e"/>
-      <stop offset=".34" stop-color="#c33a82"/><stop offset=".50" stop-color="#ff5e6b"/>
+      <stop offset=".34" stop-color="#7e2f8e"/><stop offset=".50" stop-color="#ff7a5e"/>
       <stop offset=".64" stop-color="#ff8a4d"/><stop offset=".76" stop-color="#ffc15e"/><stop offset="1" stop-color="#ffe39a"/></linearGradient>
     <linearGradient id="vhSea" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#ffd789"/><stop offset=".12" stop-color="#ff7e8e"/>
-      <stop offset=".42" stop-color="#b83a86"/><stop offset=".74" stop-color="#5e2680"/><stop offset="1" stop-color="#241246"/></linearGradient>
+      <stop offset=".42" stop-color="#5e2680"/><stop offset=".74" stop-color="#5e2680"/><stop offset="1" stop-color="#241246"/></linearGradient>
     <radialGradient id="vhSun" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#fff8e6"/><stop offset=".28" stop-color="#ffe7a0"/><stop offset=".6" stop-color="#ff9a5e" stop-opacity=".7"/><stop offset="1" stop-color="#ff5e8e" stop-opacity="0"/></radialGradient>
-    <radialGradient id="vhHalo" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#4dffe0" stop-opacity=".85"/><stop offset=".5" stop-color="#2effd0" stop-opacity=".25"/><stop offset="1" stop-color="#2effd0" stop-opacity="0"/></radialGradient>
+    <radialGradient id="vhHalo" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#9a7cff" stop-opacity=".85"/><stop offset=".5" stop-color="#6a2f9e" stop-opacity=".25"/><stop offset="1" stop-color="#6a2f9e" stop-opacity="0"/></radialGradient>
     <radialGradient id="vhIris" cx="40%" cy="34%" r="74%"><stop offset="0" stop-color="#aaffe0"/><stop offset=".5" stop-color="#34e0b0"/><stop offset="1" stop-color="#0c7a52"/></radialGradient>
     <linearGradient id="vhLit" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0d4"/><stop offset="1" stop-color="#ffc59a"/></linearGradient>
     <filter id="vhbS"><feGaussianBlur stdDeviation="11"/></filter><filter id="vhbM"><feGaussianBlur stdDeviation="3.5"/></filter>

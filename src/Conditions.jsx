@@ -28,8 +28,8 @@ const COND_CSS = `
 .pb-title{margin:2px 0 0;font-size:clamp(18px,4.8vw,24px);line-height:1.05;color:#fff}
 .pb-title em{font-style:normal;color:#FFC72C}
 .pb-sub{font-size:12px;color:rgba(255,255,255,.62);margin-top:3px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.pb-live{display:inline-flex;align-items:center;gap:5px;color:#ff2db8;font-weight:700}
-.pb-live b{width:6px;height:6px;border-radius:50%;background:#ff2db8;display:inline-block}
+.pb-live{display:inline-flex;align-items:center;gap:5px;color:#1c7fb0;font-weight:700}
+.pb-live b{width:6px;height:6px;border-radius:50%;background:#1c7fb0;display:inline-block}
 
 .pb-rail{display:flex;gap:11px;overflow-x:auto;scroll-snap-type:x mandatory;
   padding:2px 2px 4px;margin:0 -2px;scrollbar-width:none;-webkit-overflow-scrolling:touch;
@@ -59,7 +59,7 @@ const COND_CSS = `
 .bplace{font-size:11px;color:#686868;margin-top:1px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .brow{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
-.bdist{font-size:11px;font-weight:700;color:#d6249f;display:flex;align-items:center;gap:4px}
+.bdist{font-size:11px;font-weight:700;color:#156a96;display:flex;align-items:center;gap:4px}
 .bdist.nodist{color:#B87A00}
 .bscore{display:flex;align-items:baseline;gap:2px}
 .bscore .n{font-size:17px;font-weight:800;color:#0D0D0D}
@@ -133,7 +133,7 @@ const SCENE_MARKUP = `<svg id="scene" viewBox="0 0 800 600" preserveAspectRatio=
       <path d="M-30,4 Q0,18 30,4 L30,2 Q0,14 -30,2 Z" fill="#13514c"/>
       <rect x="-26" y="-2" width="52" height="4" rx="2" fill="#E8522A"/>
       <rect x="-26" y="-6" width="52" height="4" rx="2" fill="#FFC72C"/>
-      <rect x="-26" y="-10" width="52" height="4" rx="2" fill="#d6249f"/>
+      <rect x="-26" y="-10" width="52" height="4" rx="2" fill="#156a96"/>
       <line x1="0" y1="-10" x2="0" y2="-40" stroke="#5b4a2a" stroke-width="2.4"/>
       <path d="M0,-40 L18,-16 L0,-16 Z" fill="#FBF3DC" opacity=".92"/>
     </g>
@@ -143,27 +143,27 @@ const SCENE_MARKUP = `<svg id="scene" viewBox="0 0 800 600" preserveAspectRatio=
     <g id="clVBody">
       <g opacity=".95">
         <rect x="-78" y="-9" width="48" height="20" rx="3" fill="#0e3b46"/>
-        <rect x="-78" y="-9" width="48" height="20" rx="3" fill="none" stroke="#ff2db8" stroke-width="1" opacity=".5"/>
+        <rect x="-78" y="-9" width="48" height="20" rx="3" fill="none" stroke="#1c7fb0" stroke-width="1" opacity=".5"/>
         <line x1="-62" y1="-9" x2="-62" y2="11" stroke="#08252b" stroke-width="1"/>
         <line x1="-46" y1="-9" x2="-46" y2="11" stroke="#08252b" stroke-width="1"/>
         <rect x="30" y="-9" width="48" height="20" rx="3" fill="#0e3b46"/>
-        <rect x="30" y="-9" width="48" height="20" rx="3" fill="none" stroke="#ff2db8" stroke-width="1" opacity=".5"/>
+        <rect x="30" y="-9" width="48" height="20" rx="3" fill="none" stroke="#1c7fb0" stroke-width="1" opacity=".5"/>
         <line x1="46" y1="-9" x2="46" y2="11" stroke="#08252b" stroke-width="1"/>
         <line x1="62" y1="-9" x2="62" y2="11" stroke="#08252b" stroke-width="1"/>
       </g>
       <rect x="-26" y="-20" width="52" height="42" rx="11" fill="#10434b"/>
-      <rect x="-26" y="-20" width="52" height="42" rx="11" fill="none" stroke="#ff2db8" stroke-width="1.4" opacity=".55"/>
+      <rect x="-26" y="-20" width="52" height="42" rx="11" fill="none" stroke="#1c7fb0" stroke-width="1.4" opacity=".55"/>
       <g transform="translate(0,2)">
         <circle r="13" fill="#0c2f33"/>
-        <circle r="8.5" fill="#ff2db8"/>
+        <circle r="8.5" fill="#1c7fb0"/>
         <circle r="4" fill="#06231d"/>
         <circle cx="-2.5" cy="-2.5" r="1.6" fill="#Eafff9" opacity=".9"/>
       </g>
-      <line x1="0" y1="-20" x2="0" y2="-34" stroke="#ff2db8" stroke-width="2"/>
+      <line x1="0" y1="-20" x2="0" y2="-34" stroke="#1c7fb0" stroke-width="2"/>
       <circle cx="0" cy="-34" r="2.6" fill="#FFC72C"/>
     </g>
     <g id="clBeam" opacity=".5">
-      <path id="clBeamPath" d="M0,14 L-46,150 L46,150 Z" fill="#ff2db8" opacity=".16" filter="url(#clSoft)"/>
+      <path id="clBeamPath" d="M0,14 L-46,150 L46,150 Z" fill="#1c7fb0" opacity=".16" filter="url(#clSoft)"/>
     </g>
   </g>
 </svg>`
@@ -184,7 +184,7 @@ function thumbSVG(seed) {
   }
   return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 172 90" preserveAspectRatio="xMidYMid slice">' +
     '<defs><linearGradient id="ct' + seed + '" x1="0" y1="0" x2="0" y2="1">' +
-    '<stop offset="0" stop-color="#9bd9cf"/><stop offset="1" stop-color="#ff2db8"/></linearGradient></defs>' +
+    '<stop offset="0" stop-color="#9bd9cf"/><stop offset="1" stop-color="#1c7fb0"/></linearGradient></defs>' +
     '<rect width="172" height="90" fill="#FFE9B0"/>' +
     '<circle cx="132" cy="22" r="13" fill="#FFF1C4"/>' +
     '<rect y="34" width="172" height="34" fill="url(#ct' + seed + ')"/>' +
