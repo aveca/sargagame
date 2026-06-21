@@ -9,7 +9,6 @@ import React,{useState,useEffect,useRef,useMemo,useCallback,createContext,useCon
 import {computeScore as _computeBeachScore} from "./lib/score.js"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.cjs"
 import { getCanonicalSlug } from "./lib/slug-resolver.js"
-import Dock from "./Dock.jsx"
 import ArenaSplash from "./ArenaSplash.jsx"
 import ArenaOnboarding from "./ArenaOnboarding.jsx"
 import VeilleurHero from "./VeilleurHero.jsx"
@@ -45,7 +44,6 @@ const LazyChasse=lazyWithRetry(()=>import("./ChasseHome"))
 const LazyWorldMapView=lazyWithRetry(()=>import("./WorldMapView"))
 // Fiche plage « en PLONGÉE » (bras A/B `pw_beach_dive`) — port proto-plage-plongee,
 // Shadow DOM, region-aware. Alternative additive à BeachSheet (control intact).
-const LazyBeachDive=lazyWithRetry(()=>import("./BeachDive"))
 // Onboarding GUIDÉ des nouveaux clients PAYANTS (bras A/B `pw_onboard`) — remplace
 // le toast 5s par un mini-setup (favoris→notif→brief). Lazy → DOIT être sous Suspense.
 const LazyPaidOnboarding=lazyWithRetry(()=>import("./PaidOnboarding"))
@@ -12543,7 +12541,6 @@ export default function App(){
   // pw_beach_dive PROMU 2026-06-19 (GO fondateur) : variante `dive` gagnante +84% @95% (n=416/469, 28j).
   // Hardcodé `dive` (BeachDive) pour 100%. ?beachdive=0 force encore le control (BeachSheet) — rollback/preview.
   // Réversible : restaurer abVariant("pw_beach_dive",["control","dive"],[.5,.5])==="dive".
-  const beachDive=useMemo(()=>{try{const q=window.location.search;if(/[?&]beachdive=1/.test(q))return true;if(/[?&]beachdive=0/.test(q))return false;return true}catch(_){return false}},[])
   // nav_dive RETIRÉ 2026-06-18 (loop ab-eval 28j) : bras mort n=46 @0% conv vs control n=358 @1.4%.
   // Inliné au control — la plongée 1×/session ajoutait une friction sans conversion. ?navdive=1 force
   // encore l'aperçu. Réversible : restaurer abVariant("nav_dive",["control","dive"],[.85,.15])==="dive".
