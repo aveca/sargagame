@@ -100,5 +100,37 @@
   "resortPageTpl": {
     "titlePattern": "Sargazo en {resort} Hoy — Estado en Vivo y Pronóstico",
     "introPattern": "¿Quieres saber si la playa de {resort} amaneció limpia de algas y sargazo? Esta página monitorea {beach}, el tramo de arena frente al hotel, con imágenes satelitales de Copernicus actualizadas cuatro veces al día. Aquí ves el estado actual, una calificación de playa de 0 a 100 y el pronóstico a 7 días, para planear tus días de mar — o de alberca — antes del check-in. En temporada las condiciones cambian de la noche a la mañana: guarda esta página y revísala cada mañana."
+  },
+  "press": {
+    "_doc": "Página de prensa renderizada en /press/ por region-seo-pages.cjs. Tokens resueltos en build desde datos reales — nunca inventados. Espejo del contrato press de puntacana.",
+    "slug": "press",
+    "title": "Sargazo en Cancún y Riviera Maya — Kit de Prensa",
+    "desc": "Recursos de prensa sobre el sargazo en Cancún y la Riviera Maya: estado satelital por playa actualizado 4× al día, pronóstico de 7 días y precisión publicada. Libre de citar.",
+    "h1": "Prensa y medios — datos de sargazo de la Riviera Maya",
+    "intro": "El Atlántico vive una temporada de sargazo de niveles récord, ampliamente reportada. Lo que los titulares rara vez responden es la pregunta que de verdad hace tu audiencia: ¿se puede nadar en mi playa hoy? Publicamos esa respuesta para Cancún y la Riviera Maya, playa por playa, a partir de datos satelitales — y es libre de citar con atribución.",
+    "sections": [
+      {
+        "h2": "Qué publicamos",
+        "text": "Estado del sargazo en vivo para {beachCount} playas de Cancún y la Riviera Maya — desde Playa Delfines y Playa Norte en Isla Mujeres hasta Akumal, Puerto Morelos, Xpu-Ha y Mahahual — cada una con una clasificación limpia / moderado / evitar, un Beach Score de 0 a 100 y un pronóstico de 7 días específico por playa. La detección usa el índice AFAI (Alternative Floating Algae Index) de los programas satelitales Copernicus y NOAA, muestreado píxel por píxel justo frente a cada playa — no un promedio regional — y actualizado cuatro veces al día, con datos de viento y oleaje de Open-Meteo. Al {updatedDate}, {cleanToday} de {beachCount} playas monitoreadas están limpias."
+      },
+      {
+        "h2": "Precisión, publicada abiertamente",
+        "text": "Comparamos el pronóstico con lo que los satélites observaron después, y publicamos los resultados: en toda nuestra red, el estado de la playa a un día se verifica el {accuracyJ1Pct}% de las veces, y a tres días el {accuracyJ3Pct}%. Los días 1 a 3 son los más fiables; los días 4 a 7 muestran la tendencia — y lo decimos en cada página. Los datos nunca se editan a mano, nunca se filtran para los hoteles, nunca se borran."
+      },
+      {
+        "h2": "Libre de usar, con atribución",
+        "text": "Periodistas, blogueros y medios pueden citar cualquier estado de playa, score o pronóstico con un enlace a la página de origen. Cita sugerida: {citation}. Para insertar el mapa en vivo, obtener datos por playa para un reportaje o un comentario sobre las condiciones actuales, escribe a {contact} — respondemos rápido."
+      },
+      {
+        "h2": "Ángulos de reportaje listos hoy",
+        "text": "Qué playa de la Riviera Maya está limpia esta semana (lista clasificada en vivo, actualizada 4× al día) · Por qué Isla Mujeres, Cozumel y Holbox suelen escapar del sargazo que golpea a Tulum y Playa del Carmen · Qué significa un récord de sargazo atlántico a nivel de playa para el turismo de Quintana Roo · Cómo funciona la detección satelital AFAI, con la precisión del pronóstico medida y publicada en nuestra página de metodología."
+      },
+      {
+        "h2": "Sobre la red",
+        "text": "SargassumCancun.com forma parte de una red de monitoreo de cinco sitios: Martinica y Guadalupe (francés), Punta Cana (inglés), Cancún y la Riviera Maya (español), y Miami y Florida (inglés). Los cinco sitios usan el mismo flujo satelital y la misma metodología publicada abiertamente. El mapa en vivo es gratuito para todos; la suscripción premium añade recomendaciones diarias de playa, alertas push y un resumen matinal."
+      }
+    ],
+    "citation": "Fuente: sargassumcancun.com — datos satelitales Copernicus/NOAA, actualizados 4× al día",
+    "contact": "support@sargassumcancun.com"
   }
 }
