@@ -6315,7 +6315,7 @@ function B2BModal({lang,onClose}){
 // plan/setPlan/effectivePlan) du PremiumModal parent → ZÉRO logique de paiement ici.
 // Tokens .lc- (paper/ink/yel) + scène golden-hour + cases BD, miroir de ChasseDetail.
 // Asset validé : design/proto-paywall-comic.html (vérifié navigateur 2026-06-19).
-function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxStatus,cleanCount,totalCount,recordProof,allCalm,pwCalm,seasonMsg,plan,setPlan,effectivePlan,hasAnnual,onStart,onAlready,onClose,onB2B}){
+function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxStatus,cleanCount,totalCount,recordProof,allCalm,pwCalm,seasonMsg,plan,setPlan,effectivePlan,hasAnnual,onStart,onAlready,onClose,onB2B,onSeason}){
   const ST=ctxStatus||(beach&&beach.status)||null
   const stCls=ST==="avoid"?"bad":ST==="moderate"?"mod":"ok"
   const iris=ST==="avoid"?"#e8322a":ST==="moderate"?"#ffd23f":"#27c46b"
@@ -6505,6 +6505,18 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
             <span><b>{_t(lang,"Garantie 30 jours satisfait ou remboursé","30-day money-back guarantee","Garantía de reembolso 30 días")}</b>
             <em>{_t(lang,"Pas convaincu ? Un email, remboursé — sans condition.","Not convinced? One email, full refund — no questions.","¿No te convence? Un email, reembolso — sin preguntas.")}</em></span>
           </div>
+          {/* A/B pw_season : alternative pass saison 19,99 € (paiement unique 6 mois,
+              sans abo) sous la garantie — cash d'avance, zéro churn. Chemin pay_once
+              on-site existant (onSeason → passCtxRef + payStep). Réversible ?pwseason=0. */}
+          {onSeason&&<button type="button" onClick={onSeason} style={{display:"block",width:"100%",marginTop:12,padding:"11px 13px",borderRadius:12,cursor:"pointer",border:"1.5px dashed rgba(13,11,20,.34)",background:"rgba(13,11,20,.04)",fontFamily:"inherit",textAlign:"left"}}>
+            <span style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
+              <span style={{display:"flex",flexDirection:"column",gap:2,minWidth:0}}>
+                <b style={{fontSize:13.5,color:"#0d0b14",fontWeight:800}}>🌅 {_t(lang,"Plutôt un pass saison ?","Prefer a season pass?","¿Mejor un pase de temporada?")}</b>
+                <em style={{fontSize:11.5,color:"rgba(13,11,20,.62)",fontStyle:"normal"}}>{_t(lang,"19,99 € une fois · 6 mois · sans abonnement","€19.99 once · 6 months · no subscription","19,99 € una vez · 6 meses · sin suscripción")}</em>
+              </span>
+              <span style={{fontSize:18,fontWeight:800,color:"#0d0b14",flexShrink:0}}>→</span>
+            </span>
+          </button>}
           <button type="button" className="pwx-foot" onClick={onAlready}>{_t(lang,"J'ai déjà un abonnement","I already have a subscription","Ya tengo una suscripción")}</button>
           {onB2B&&<button type="button" className="pwx-foot" style={{marginTop:7,opacity:.78,fontSize:11.5}} onClick={onB2B}>🏨 {_t(lang,"Hôtel ou collectivité ? →","Hotel or town? →","¿Hotel o municipio? →")}</button>}
           <div className="pwx-secure">🔒 {_t(lang,"Paiement sécurisé Stripe · Sans engagement","Secure Stripe payment · No commitment","Pago seguro Stripe · Sin compromiso")}</div>
@@ -6936,6 +6948,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const pwPass=!IS_NEW_REGION&&(()=>{try{const q=window.location.search;if(/[?&]pwpass=1/.test(q))return true;if(/[?&]pwpass=0/.test(q))return false;return abVariant("pw_pass",["control","pass"],[.5,.5])==="pass"}catch(_){return false}})()
   // Paiement on-site one-time des passes — OFF par défaut (le redirect reste le défaut qui marche). ?passonsite=1 pour live-test carte.
   const passOnsite=(()=>{try{const q=window.location.search;if(/[?&]passonsite=1/.test(q))return true;if(/[?&]passonsite=0/.test(q))return false;return abVariant("pw_pass_onsite",["off","on"],[1,0])==="on"}catch(_){return false}})()
+  // A/B pw_season : surface le SKU « pass saison » dormant (19,99 € paiement UNIQUE,
+  // 6 mois d'accès, sans abo) comme alternative dans ComicPaywall. EUR uniquement
+  // (allowlist serveur pay_once = [799..2499]¢ ; 1999 OK). Cash d'avance + zéro churn.
+  // Réversible ?pwseason=0 ; ?pwseason=1 force. Chemin pay_once on-site déjà éprouvé (p30).
+  const pwSeason=!IS_NEW_REGION&&(()=>{try{const q=window.location.search;if(/[?&]pwseason=1/.test(q))return true;if(/[?&]pwseason=0/.test(q))return false;return abVariant("pw_season",["control","season"],[.5,.5])==="season"}catch(_){return false}})()
   // A/B pw_trippass (USD only) : propose un accès UNIQUE 7 jours (one-time,
   // aligné séjour, sans abonnement) EN PLUS de l'abo — répond au mismatch
   // abo-mensuel/touriste-5-jours (verdict chantier USA). Inerte si pas de
@@ -7110,6 +7127,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           onStart={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown",skin:"comic"});startCheckout(effectivePlan,"comic")}}
           onAlready={verifyExistingSub}
           onB2B={()=>{try{track("sg_b2b_open",{source:source||"unknown"})}catch(_){}; setShowB2B(true)}}
+          onSeason={pwSeason?(()=>{try{track("sg_pass_cta",{pass:"season",cents:1999,source:source||"unknown",onsite:1})}catch(_){}
+            passCtxRef.current={pass:"season",cents:1999,days:183,cur:"eur"};setPayStep(true)}):undefined}
           onClose={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"comic_close"});onClose()}}/>}
         {showB2B&&<B2BModal lang={lang} onClose={()=>setShowB2B(false)}/>}
         {!pwComic&&(<>
