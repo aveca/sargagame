@@ -3583,6 +3583,19 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
   const daypart=(()=>{try{const h=new Date().getHours();return h<12?"matin":h<18?"aprem":"soir"}catch(_){return "matin"}})()
   const V=comicVerdict(status,lang,daypart)
 
+  // ── Score count-up « tally » cartoon — anime 0 → score à l'ouverture de la fiche
+  const [scoreAnim,setScoreAnim]=useState(0)
+  useEffect(()=>{
+    if(typeof beach?.score!=="number"){setScoreAnim(0);return}
+    let reduce=false;try{reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches}catch(_){}
+    const target=beach.score
+    if(reduce){setScoreAnim(target);return}
+    let raf,start=null
+    const tick=t=>{if(start==null)start=t;const p=Math.min(1,(t-start)/620);const e=1-Math.pow(1-p,3);setScoreAnim(Math.round(target*e));if(p<1)raf=requestAnimationFrame(tick)}
+    raf=requestAnimationFrame(tick)
+    return()=>{try{cancelAnimationFrame(raf)}catch(_){}}
+  },[beach?.id,beach?.score])
+
   // ── Fraîcheur satellite (confiance) — preuve « mesuré, pas deviné »
   const satAge=(()=>{try{const ts=sargData?.erddapTimestamp||sargData?.updatedAt;if(!ts)return null;const h=(Date.now()-new Date(ts).getTime())/3.6e6;return h>=0&&h<240?h:null}catch(_){return null}})()
   const satLabel=satAge==null?_t(lang,"Satellite récent","Recent satellite","Satélite reciente")
@@ -3643,10 +3656,16 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
         @keyframes bscUp{from{transform:translateY(102%)}to{transform:translateY(0)}}
         @keyframes bscFade{from{opacity:0}to{opacity:1}}
         @keyframes bscPop{0%{transform:scale(.82);opacity:0}60%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+        @keyframes bscChip{0%{transform:scale(.55) translateY(8px);opacity:0}65%{transform:scale(1.08) translateY(0)}100%{transform:scale(1);opacity:1}}
+        @keyframes bscBar{0%{transform:scaleY(.05);opacity:0}70%{transform:scaleY(1.12)}100%{transform:scaleY(1);opacity:1}}
+        @keyframes bscRow{0%{transform:translateX(-14px);opacity:0}100%{transform:translateX(0);opacity:1}}
         .bsc-card{background:#fff;border:3px solid ${COMIC.ink};border-radius:16px;box-shadow:3px 3px 0 ${COMIC.ink}}
-        .bsc-chip{font:800 11.5px/1 'Bricolage Grotesque',sans-serif;color:${COMIC.ink};background:#fff;border:2.5px solid ${COMIC.ink};border-radius:999px;padding:7px 11px;display:inline-flex;align-items:center;gap:6px}
+        .bsc-chip{font:800 11.5px/1 'Bricolage Grotesque',sans-serif;color:${COMIC.ink};background:#fff;border:2.5px solid ${COMIC.ink};border-radius:999px;padding:7px 11px;display:inline-flex;align-items:center;gap:6px;animation:bscChip .42s cubic-bezier(.16,1,.3,1) both}
+        .bsc-bar{transform-origin:bottom;animation:bscBar .5s cubic-bezier(.16,1,.3,1) both}
+        .bsc-row{animation:bscRow .4s cubic-bezier(.16,1,.3,1) both}
         .bsc-cta{width:100%;text-align:center;font:800 17px/1 'Bricolage Grotesque',sans-serif;padding:16px;border-radius:16px;border:3px solid ${COMIC.ink};box-shadow:3px 3px 0 ${COMIC.ink};background:${COMIC.gold};color:${COMIC.ink};cursor:pointer;transition:transform .08s ease}
         .bsc-cta:active{transform:translate(3px,3px);box-shadow:0 0 0 ${COMIC.ink}}
+        @media (prefers-reduced-motion:reduce){.bsc-chip,.bsc-bar,.bsc-row{animation:none!important}}
       `}</style>
       {/* Backdrop — assombrit la carte (élévation z, recherche Mobbin/LogRocket) */}
       <div ref={backdropRef} onClick={requestClose}
@@ -3688,11 +3707,11 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
         {/* Score + facteurs (carte) */}
         <div className="bsc-card" style={{display:"flex",alignItems:"center",gap:14,padding:"13px 15px",marginBottom:12}}>
           {hasScore&&<div style={{flexShrink:0,textAlign:"center"}}>
-            <div style={{fontFamily:"'Anton',sans-serif",fontSize:40,lineHeight:.85,color:COMIC.ink}}>{beach.score}<span style={{fontSize:15,color:COMIC.sub}}>/100</span></div>
+            <div style={{fontFamily:"'Anton',sans-serif",fontSize:40,lineHeight:.85,color:COMIC.ink}}>{scoreAnim}<span style={{fontSize:15,color:COMIC.sub}}>/100</span></div>
             <div style={{font:"800 8.5px/1 'Bricolage Grotesque'",color:COMIC.sub,letterSpacing:".5px",marginTop:2}}>{_t(lang,"INDICE","SCORE","ÍNDICE")}</div>
           </div>}
           <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
-            {chips.length?chips.map((c,i)=><span key={i} className="bsc-chip"><i style={{width:8,height:8,borderRadius:"50%",background:c.c,display:"inline-block"}}/>{c.t}</span>)
+            {chips.length?chips.map((c,i)=><span key={i} className="bsc-chip" style={{animationDelay:(.18+i*.07)+"s"}}><i style={{width:8,height:8,borderRadius:"50%",background:c.c,display:"inline-block"}}/>{c.t}</span>)
               :<span style={{font:"600 12px/1.4 'Bricolage Grotesque'",color:COMIC.sub}}>{_t(lang,"Conditions en cours de lecture…","Reading conditions…","Leyendo condiciones…")}</span>}
           </div>
         </div>
@@ -3711,7 +3730,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
           <div style={{display:"flex",gap:5,position:"relative"}}>
             {fcDays.map((d,i)=>{const gated=!isPremium&&i>0;return(
               <div key={i} style={{flex:1,textAlign:"center",filter:gated?"blur(3px)":"none",opacity:gated?.65:1}}>
-                <div style={{height:34,borderRadius:7,border:`2.5px solid ${COMIC.ink}`,background:comicStatusColor(d.status)}}/>
+                <div className="bsc-bar" style={{height:34,borderRadius:7,border:`2.5px solid ${COMIC.ink}`,background:comicStatusColor(d.status),animationDelay:(.32+i*.05)+"s"}}/>
                 <span style={{display:"block",font:"800 9px/1 'Bricolage Grotesque'",color:COMIC.sub,marginTop:4}}>{i===0?_t(lang,"Auj","Now","Hoy"):(d.day||"").slice(0,3)}</span>
               </div>)})}
             {!isPremium&&fcDays.length>1&&<button onClick={onCTA} style={{position:"absolute",right:0,top:0,bottom:18,left:"15%",border:"none",background:"transparent",cursor:"pointer"}} aria-label={_t(lang,"Débloquer les prévisions","Unlock forecast","Desbloquear pronóstico")}/>}
@@ -3722,8 +3741,8 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
         {planB.length>0&&<div className="bsc-card" style={{padding:"12px 14px",marginBottom:14,background:COMIC.cream}}>
           <div style={{font:"800 12px/1 'Bricolage Grotesque'",color:COMIC.ink,marginBottom:9}}>🌴 {_t(lang,"Plutôt y aller maintenant","Go here instead","Mejor ve aquí ahora")}</div>
           <div style={{display:"flex",flexDirection:"column",gap:7}}>
-            {planB.map((b,i)=><button key={b.id} onClick={()=>{trk("sg_planb_pick",{from:beach.id,to:b.id,rank:i});onBeachClick&&onBeachClick(b)}}
-              style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,padding:"10px 12px",borderRadius:12,border:`2.5px solid ${COMIC.ink}`,background:"#fff",boxShadow:`2px 2px 0 ${COMIC.ink}`,cursor:"pointer",font:"800 13px/1 'Bricolage Grotesque'",color:COMIC.ink,textAlign:"left"}}>
+            {planB.map((b,i)=><button key={b.id} className="bsc-row" onClick={()=>{trk("sg_planb_pick",{from:beach.id,to:b.id,rank:i});onBeachClick&&onBeachClick(b)}}
+              style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,padding:"10px 12px",borderRadius:12,border:`2.5px solid ${COMIC.ink}`,background:"#fff",boxShadow:`2px 2px 0 ${COMIC.ink}`,cursor:"pointer",font:"800 13px/1 'Bricolage Grotesque'",color:COMIC.ink,textAlign:"left",animationDelay:(.1+i*.08)+"s"}}>
               <span style={{display:"flex",alignItems:"center",gap:8,minWidth:0}}><i style={{width:9,height:9,borderRadius:"50%",background:COMIC.clean,flexShrink:0}}/><span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.name}</span></span>
               <span style={{color:COMIC.sub,font:"700 11px/1 'Bricolage Grotesque'",whiteSpace:"nowrap"}}>{Math.round(b._d)} km →</span></button>)}
           </div>
