@@ -6315,13 +6315,18 @@ function B2BModal({lang,onClose}){
 // plan/setPlan/effectivePlan) du PremiumModal parent → ZÉRO logique de paiement ici.
 // Tokens .lc- (paper/ink/yel) + scène golden-hour + cases BD, miroir de ChasseDetail.
 // Asset validé : design/proto-paywall-comic.html (vérifié navigateur 2026-06-19).
-function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxStatus,cleanCount,totalCount,recordProof,seasonMsg,plan,setPlan,effectivePlan,hasAnnual,onStart,onAlready,onClose,onB2B}){
+function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxStatus,cleanCount,totalCount,recordProof,allCalm,pwCalm,seasonMsg,plan,setPlan,effectivePlan,hasAnnual,onStart,onAlready,onClose,onB2B}){
   const ST=ctxStatus||(beach&&beach.status)||null
   const stCls=ST==="avoid"?"bad":ST==="moderate"?"mod":"ok"
   const iris=ST==="avoid"?"#e8322a":ST==="moderate"?"#ffd23f":"#27c46b"
   const vLbl=ST==="avoid"?_t(lang,"à éviter","avoid","evitar"):ST==="moderate"?_t(lang,"à surveiller","watch it","a vigilar"):_t(lang,"propre","clean","limpia")
   const ctx=ctxName||topName
   const best=topName
+  // Pivot saison-calme (A/B pw_calm, calculé dans PremiumModal) : en mer calme (≥80%
+  // propre, ~64% du temps) la promesse de PEUR « avant que ta plage tourne » contredit
+  // l'observation → dissonance → pas de clic. On bascule vers la value-prop POSITIVE que
+  // le gratuit n'a PAS (la prévision DEMAIN). Honnête : on n'invente aucun danger.
+  const calm=pwCalm&&allCalm===true
   // prix (mêmes expressions que le toggle classique — aucune divergence)
   const pMo=REGION_PAY?PRICE_MO:(lang==="en"?"€4.99":"4,99 €")
   const pYr=REGION_PAY?PRICE_YR:(lang==="en"?"€39.99":"39,99 €")
@@ -6451,15 +6456,23 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
         {ctx&&<span className={"pwx-verdict "+stCls}>{ctx}{ST?" · "+vLbl:""}</span>}
       </div>
       <div className="pwx-body">
-        <h2 className="pwx-title">{_t(lang,<>Sois <em>prévenu</em><br/>avant que ta plage tourne</>,<>Know <em>before</em><br/>your beach turns</>,<>Entérate <em>antes</em><br/>de que tu playa cambie</>)}</h2>
-        <p className="pwx-sub">{_t(lang,<>Le gratuit te dit aujourd'hui. Le Veilleur te dit <b>demain</b> — et t'alerte le jour où ça bascule.</>,<>Free tells you today. The Watcher tells you <b>tomorrow</b> — and alerts you the day it flips.</>,<>Lo gratis te dice hoy. El Vigía te dice <b>mañana</b> — y te avisa el día que cambia.</>)}</p>
+        <h2 className="pwx-title">{calm
+          ?_t(lang,<>Sache où sera la mer <em>demain</em><br/>pas juste aujourd'hui</>,<>Know where the sea will be <em>tomorrow</em><br/>not just today</>,<>Sabe dónde estará el mar <em>mañana</em><br/>no solo hoy</>)
+          :_t(lang,<>Sois <em>prévenu</em><br/>avant que ta plage tourne</>,<>Know <em>before</em><br/>your beach turns</>,<>Entérate <em>antes</em><br/>de que tu playa cambie</>)}</h2>
+        <p className="pwx-sub">{calm
+          ?_t(lang,<>Le gratuit te montre aujourd'hui. Le Veilleur te montre les <b>7 prochains jours</b> — et t'écrit le matin où ça vaut le détour.</>,<>Free shows you today. The Watcher shows you the <b>next 7 days</b> — and emails you the morning it's worth the trip.</>,<>Lo gratis te muestra hoy. El Vigía te muestra los <b>próximos 7 días</b> — y te avisa la mañana que vale la pena.</>)
+          :_t(lang,<>Le gratuit te dit aujourd'hui. Le Veilleur te dit <b>demain</b> — et t'alerte le jour où ça bascule.</>,<>Free tells you today. The Watcher tells you <b>tomorrow</b> — and alerts you the day it flips.</>,<>Lo gratis te dice hoy. El Vigía te dice <b>mañana</b> — y te avisa el día que cambia.</>)}</p>
 
         {panel("01",true,_t(lang,"Chaque matin · 7h","Every morning · 7am","Cada mañana · 7am"),
           best?_t(lang,`Ta meilleure plage : ${best}`,`Your best beach: ${best}`,`Tu mejor playa: ${best}`):_t(lang,"Ta meilleure plage du jour","Your best beach today","Tu mejor playa de hoy"),
           topScore?_t(lang,`Score ${topScore}/100 · vérifié satellite`,`Score ${topScore}/100 · satellite-verified`,`Score ${topScore}/100 · verificado satélite`):_t(lang,"Vérifié au satellite","Satellite-verified","Verificado por satélite"))}
-        {panel("02",false,_t(lang,"Alerte instantanée","Instant alert","Alerta instantánea"),
-          _t(lang,"Ta plage favorite a changé","Your saved beach just changed","Tu playa favorita cambió"),
-          exSwitch?_t(lang,`Propre → Modéré — va plutôt à ${exSwitch}`,`Clean → Moderate — switch to ${exSwitch}`,`Limpia → Moderada — mejor ve a ${exSwitch}`):_t(lang,"Propre → Modéré, on te prévient","Clean → Moderate, you're warned","Limpia → Moderada, te avisamos"))}
+        {calm
+          ?panel("02",false,_t(lang,"Quand ça change","When it changes","Cuando cambia"),
+            _t(lang,"Tes plages favorites, surveillées","Your saved beaches, watched","Tus playas favoritas, vigiladas"),
+            _t(lang,"Le jour où une bascule, tu le sais avant de partir","The day one flips, you know before you go","El día que una cambia, lo sabes antes de salir"))
+          :panel("02",false,_t(lang,"Alerte instantanée","Instant alert","Alerta instantánea"),
+            _t(lang,"Ta plage favorite a changé","Your saved beach just changed","Tu playa favorita cambió"),
+            exSwitch?_t(lang,`Propre → Modéré — va plutôt à ${exSwitch}`,`Clean → Moderate — switch to ${exSwitch}`,`Limpia → Moderada — mejor ve a ${exSwitch}`):_t(lang,"Propre → Modéré, on te prévient","Clean → Moderate, you're warned","Limpia → Moderada, te avisamos"))}
         {panel("03",false,_t(lang,"Le weekend","Weekend forecast","El fin de semana"),
           wkend?_t(lang,`Samedi : ${wkend.name}`,`Saturday: ${wkend.name}`,`El sábado: ${wkend.name}`):_t(lang,"Samedi : ta meilleure plage","Saturday: your top beach","El sábado: tu mejor playa"),
           wkend?(wkend.allClean?_t(lang,`Propre tout le weekend${wkend.kids?" · idéal enfants":""}`,`Clean all weekend${wkend.kids?" · great for kids":""}`,`Limpia todo el finde${wkend.kids?" · ideal niños":""}`):_t(lang,"Calculé depuis la prévision 7 jours","From the 7-day forecast","Según el pronóstico de 7 días")):_t(lang,"Calculé depuis la prévision 7 jours","From the 7-day forecast","Según el pronóstico de 7 días"))}
@@ -6765,6 +6778,10 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
       setPayError(_t(lang,"Entre ton email pour recevoir ton accès.","Enter your email to receive your access.","Introduce tu email para recibir tu acceso."))
       return
     }
+    // Lane « paiement indirect par mails » : on enrôle l'email haute-intention dans le
+    // drip AVANT de tenter le paiement → récupérable même si carte refusée / 3DS abandonné
+    // / fermeture. submitLead est module-scope (l.1859) ; try/catch = zéro risque pour le checkout.
+    try{submitLead(email,"onsite_checkout")}catch(_){}
     setPayBusy(true);setPayError("")
     try{
       const{error:subErr}=await elementsRef.current.submit()
@@ -7088,7 +7105,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         {pwComic&&<ComicPaywall lang={lang} beach={beach} source={source}
           topName={_topName} topScore={_topScore} exSwitch={_exSwitch} wkend={_wkend}
           ctxName={_ctxName} ctxStatus={_ctxStatus} cleanCount={_cleanCount} totalCount={_totalCount}
-          recordProof={_recordProof}
+          recordProof={_recordProof} allCalm={_allCalm} pwCalm={pwCalm}
           seasonMsg={seasonMsg} plan={plan} setPlan={setPlan} effectivePlan={effectivePlan} hasAnnual={hasAnnual}
           onStart={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown",skin:"comic"});startCheckout(effectivePlan,"comic")}}
           onAlready={verifyExistingSub}
