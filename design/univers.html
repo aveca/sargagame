@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Le Veilleur — Univers (prototype)</title>
+<style>
+/* ============ KIT — tokens & composants de l'univers cinématique ============ */
+:root{
+  --ink:#160a26; --paper:#fdf6e3; --gold:#ffd27a; --gold2:#ffb338;
+  --grn:#27c46b; --grnL:#6cffb0; --yel:#ffd23f; --red:#ff5e6b; --sea:#2bb6c4;
+  --p1:#37205f; --p2:#732c7c; --p3:#c1457f; --p4:#ff7656; --p5:#ffa647; --p6:#ffe0a0;
+  --r:18px;
+}
+*{margin:0;box-sizing:border-box;font-family:"Arial Black",Impact,system-ui,sans-serif}
+body{background:#0b0716;display:flex;flex-direction:column;align-items:center;gap:14px;padding:18px 0 40px;min-height:100vh}
+.phone{width:390px;height:844px;position:relative;overflow:hidden;border-radius:30px;background:var(--ink);
+  box-shadow:0 30px 80px rgba(0,0,0,.6);outline:6px solid #000}
+.screen{position:absolute;inset:0;display:none}
+.screen.on{display:block}
+/* ---- décor cinématique réutilisable ---- */
+.sky{position:absolute;inset:0;background:linear-gradient(180deg,var(--p1) 0%,var(--p2) 20%,var(--p3) 40%,var(--p4) 57%,var(--p5) 72%,var(--p6) 84%,var(--gold) 100%)}
+.scene svg{position:absolute;inset:0;width:100%;height:100%}
+.grain{position:absolute;inset:0;opacity:.06;mix-blend-mode:overlay;pointer-events:none}
+/* ---- typo ---- */
+.wm{font-size:54px;line-height:.84;letter-spacing:-2px;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.3),0 0 30px rgba(255,150,90,.55)}
+.wm b{color:var(--gold)}
+.kick{font:800 11px/1 ui-monospace,monospace;letter-spacing:3px;color:var(--gold);text-shadow:0 0 12px rgba(255,200,90,.6)}
+.h2{font-size:30px;color:#fff;line-height:.92;text-shadow:0 2px 0 rgba(0,0,0,.3)}
+.sub{font:800 13px/1.4 system-ui;color:#ffe6c8}
+/* ---- composants ---- */
+.btn{display:block;width:100%;text-align:center;background:linear-gradient(180deg,var(--gold),var(--gold2));color:#2a1230;
+  border:0;border-radius:16px;padding:16px;font:900 16px/1 system-ui;box-shadow:0 12px 30px rgba(255,140,60,.4),0 2px 0 rgba(0,0,0,.2);cursor:pointer}
+.btn.ghost{background:rgba(255,255,255,.1);color:#fff;border:2px solid rgba(255,255,255,.4);box-shadow:none;backdrop-filter:blur(6px)}
+.pill{display:inline-flex;align-items:center;gap:7px;background:rgba(13,8,22,.55);border:2px solid rgba(255,255,255,.25);
+  border-radius:999px;padding:7px 13px;font:800 12px/1 ui-monospace,monospace;color:#fff;backdrop-filter:blur(8px)}
+.pill .dot{width:10px;height:10px;border-radius:50%}
+.card{background:rgba(13,8,22,.5);border:2px solid rgba(255,255,255,.18);border-radius:var(--r);padding:16px;backdrop-filter:blur(10px);color:#fff}
+.hd{position:absolute;top:max(16px,env(safe-area-inset-top));left:16px;right:16px;display:flex;justify-content:space-between;align-items:center;z-index:6}
+.pad{position:absolute;inset:0;padding:24px;display:flex;flex-direction:column;z-index:5}
+.tag{display:inline-block;background:var(--ink);color:var(--paper);font:800 11px/1 ui-monospace,monospace;letter-spacing:2px;padding:7px 12px;border-radius:999px}
+/* nav prototype */
+.nav{display:flex;gap:8px;align-items:center;color:#7a6f88;font:700 12px ui-monospace,monospace}
+.nav button{background:#241634;color:#fff;border:0;border-radius:10px;padding:9px 14px;cursor:pointer;font:800 13px system-ui}
+.dots{display:flex;gap:5px}.dots i{width:7px;height:7px;border-radius:50%;background:#3a2a52}.dots i.on{background:var(--gold)}
+.label{position:absolute;top:8px;left:12px;z-index:9;font:800 10px ui-monospace,monospace;color:rgba(255,255,255,.5);letter-spacing:1px}
+</style></head>
+<body>
+<div class="phone">
+  <!-- reusable mascot symbol -->
+  <svg width="0" height="0" style="position:absolute"><defs>
+    <radialGradient id="eg" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#c5fff0" stop-opacity=".9"/><stop offset="1" stop-color="#c5fff0" stop-opacity="0"/></radialGradient>
+    <radialGradient id="iris" cx="40%" cy="35%" r="75%"><stop offset="0" stop-color="#8affd0"/><stop offset=".6" stop-color="#27c46b"/><stop offset="1" stop-color="#0c6e3e"/></radialGradient>
+    <symbol id="veil" viewBox="0 0 140 140">
+      <circle cx="70" cy="70" r="64" fill="url(#eg)"/>
+      <g stroke="#120821" stroke-width="6" stroke-linejoin="round">
+        <rect x="6" y="58" width="20" height="26" rx="4" fill="#1c4f6e"/><rect x="114" y="58" width="20" height="26" rx="4" fill="#0f2f44"/>
+        <line x1="26" y1="71" x2="40" y2="71"/><line x1="114" y1="71" x2="100" y2="71"/>
+        <ellipse cx="70" cy="70" rx="42" ry="40" fill="#fdf6e3"/>
+        <path d="M28 80 a42 40 0 0 0 84 0 a42 40 0 0 1 -84 0Z" fill="#ece0c4" stroke="none"/>
+        <ellipse cx="70" cy="66" rx="30" ry="28" fill="#0d0b14"/>
+        <circle cx="70" cy="66" r="19" fill="url(#iris)"/><circle cx="76" cy="72" r="9" fill="#08121f"/><circle cx="80" cy="62" r="3.4" fill="#eafff8"/>
+        <path d="M40 54 q30 -16 60 0 q-8 -14 -30 -14 q-22 0 -30 14Z" fill="#fdf6e3"/><path d="M41 55 q29 -13 58 0" stroke-width="6" fill="none"/>
+        <line x1="70" y1="28" x2="70" y2="14" stroke-width="6"/><circle cx="70" cy="11" r="7" fill="#ffd23f"/>
+      </g>
+    </symbol>
+    <filter id="gr"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2"/></filter>
+  </defs></svg>
+
+  <!-- ============ 1. SPLASH ============ -->
+  <section class="screen on" data-name="01 · SPLASH">
+    <div class="sky"></div>
+    <div class="scene"><svg viewBox="0 0 390 844"><circle cx="195" cy="380" r="150" fill="#ffd27a" opacity=".5" filter="url(#gr0)"/><circle cx="195" cy="380" r="48" fill="#fff4d0"/></svg></div>
+    <div class="pad" style="align-items:center;justify-content:center;text-align:center;gap:18px">
+      <svg width="150" height="150"><use href="#veil"/></svg>
+      <div class="wm">LE <b>VEILLEUR</b></div>
+      <div class="kick">COPERNICUS · SCAN SATELLITE LIVE</div>
+      <div style="width:160px;height:6px;border-radius:6px;background:rgba(255,255,255,.2);overflow:hidden;margin-top:8px"><div style="width:62%;height:100%;background:var(--gold)"></div></div>
+      <div class="sub" style="opacity:.8">chargement de la côte…</div>
+    </div>
+  </section>
+
+  <!-- ============ 2. ONBOARDING ============ -->
+  <section class="screen" data-name="02 · ONBOARDING">
+    <div class="sky"></div>
+    <div class="pad" style="justify-content:center;gap:20px;text-align:center">
+      <div class="tag" style="align-self:center">ÉTAPE 1 / 3</div>
+      <svg width="120" height="120" style="align-self:center"><use href="#veil"/></svg>
+      <div class="h2">LE SATELLITE<br>SCANNE LA CÔTE</div>
+      <div class="sub">Chaque matin, Copernicus mesure les sargasses au large. On croise 7 facteurs → ta plage reçoit un état clair, mesuré, pas deviné.</div>
+      <div style="flex:1"></div>
+      <button class="btn">Commencer →</button>
+    </div>
+  </section>
+
+  <!-- ============ 3. CARTE ============ -->
+  <section class="screen" data-name="03 · CARTE">
+    <div class="sky"></div>
+    <div class="scene"><svg viewBox="0 0 390 844"><circle cx="200" cy="470" r="170" fill="#ffd27a" opacity=".4"/><circle cx="200" cy="470" r="44" fill="#fff4d0"/><rect y="486" width="390" height="358" fill="#3a1c52" opacity=".25"/></svg></div>
+    <div class="hd"><span class="pill"><span class="dot" style="background:var(--red)"></span>EN DIRECT</span><span class="pill">FR</span></div>
+    <div class="pad" style="justify-content:flex-start;padding-top:70px">
+      <div class="h2">MARTINIQUE<br>AUJOURD'HUI</div>
+      <div class="pill" style="margin-top:12px;align-self:flex-start"><span class="dot" style="background:var(--grn)"></span>53 PLAGES PROPRES</div>
+      <!-- île stylisée -->
+      <div style="position:relative;flex:1;margin-top:20px">
+        <div style="position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);width:150px;height:230px;background:linear-gradient(180deg,var(--grnL),var(--grn) 60%,var(--grnL));border:4px solid var(--ink);border-radius:48% 44% 52% 48%/38% 40% 60% 58%;box-shadow:8px 8px 0 rgba(13,8,22,.3)"></div>
+        <span style="position:absolute;left:42%;top:36%;width:16px;height:16px;border-radius:50% 50% 50% 0;border:2.5px solid var(--ink);background:var(--grn);transform:rotate(-45deg)"></span>
+        <span style="position:absolute;left:56%;top:48%;width:16px;height:16px;border-radius:50% 50% 50% 0;border:2.5px solid var(--ink);background:var(--yel);transform:rotate(-45deg)"></span>
+        <span style="position:absolute;left:46%;top:60%;width:16px;height:16px;border-radius:50% 50% 50% 0;border:2.5px solid var(--ink);background:var(--grn);transform:rotate(-45deg)"></span>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:12px">
+        <span class="pill" style="flex:1;justify-content:center">Auj</span><span class="pill" style="flex:1;justify-content:center;opacity:.6">+1j 🔒</span><span class="pill" style="flex:1;justify-content:center;opacity:.6">+2j 🔒</span><span class="pill" style="flex:1;justify-content:center;opacity:.6">+3j 🔒</span>
+      </div>
+      <button class="btn">🛟 Voir la plage →</button>
+    </div>
+  </section>
+
+  <!-- ============ 4. FICHE PLAGE ============ -->
+  <section class="screen" data-name="04 · FICHE">
+    <div class="sky"></div>
+    <div class="scene"><svg viewBox="0 0 390 300"><circle cx="280" cy="120" r="110" fill="#ffd27a" opacity=".5"/><circle cx="280" cy="120" r="34" fill="#fff4d0"/></svg></div>
+    <div class="hd"><span class="pill">‹ CARTE</span><span class="pill">FR</span></div>
+    <div class="pad" style="justify-content:flex-end;gap:14px;padding-bottom:30px">
+      <svg width="86" height="86" style="position:absolute;top:96px;left:50%;transform:translateX(-50%)"><use href="#veil"/></svg>
+      <div class="tag" style="align-self:flex-start;background:var(--grn);color:var(--ink)">● PROPRE · ANSE DUFOUR</div>
+      <div class="wm" style="font-size:42px">BAIGNADE OK<br><b>CE MATIN</b></div>
+      <div class="sub">L'état réel de l'eau ce matin — mesuré au satellite, pas deviné.</div>
+      <div class="card" style="display:flex;align-items:center;gap:14px">
+        <div style="font-size:38px;color:var(--gold)">86<small style="font-size:15px;opacity:.6">/100</small></div>
+        <div style="flex:1"><div style="font:800 12px system-ui;margin-bottom:6px">7 facteurs · prévision 7 jours</div>
+          <div style="display:flex;gap:4px"><i style="flex:1;height:18px;border-radius:5px;background:var(--grn)"></i><i style="flex:1;height:18px;border-radius:5px;background:var(--grn)"></i><i style="flex:1;height:18px;border-radius:5px;background:var(--yel)"></i><i style="flex:1;height:18px;border-radius:5px;background:var(--grn)"></i><i style="flex:1;height:18px;border-radius:5px;background:var(--grn)"></i></div></div>
+      </div>
+      <button class="btn">⭐ Être prévenu avant que ça tourne →</button>
+    </div>
+  </section>
+
+  <!-- ============ 5. PREMIUM ============ -->
+  <section class="screen" data-name="05 · PREMIUM">
+    <div class="sky"></div>
+    <div class="pad" style="justify-content:center;gap:14px">
+      <div class="kick" style="align-self:center">LE VEILLEUR · PREMIUM</div>
+      <svg width="92" height="92" style="align-self:center"><use href="#veil"/></svg>
+      <div class="h2" style="text-align:center">Sois prévenu<br>avant que ta plage tourne</div>
+      <div class="card"><b style="color:var(--gold)">CHAQUE MATIN</b><div class="sub" style="margin-top:4px">Ta meilleure plage du jour, par email.</div></div>
+      <div class="card"><b style="color:var(--gold)">ALERTE INSTANTANÉE</b><div class="sub" style="margin-top:4px">Dès qu'une plage tourne, tu le sais.</div></div>
+      <div class="card" style="border-color:var(--grn);background:rgba(39,196,107,.12)"><div class="sub">✓ 100% justes · 2 345 prévisions vérifiées · <b>registre public</b></div></div>
+      <div style="flex:1"></div>
+      <div style="text-align:center" class="sub">0,11 €/jour · moins qu'un café</div>
+      <button class="btn">JE VEUX LA PRÉVISION →</button>
+    </div>
+  </section>
+
+  <!-- ============ 6. ALERTE ============ -->
+  <section class="screen" data-name="06 · ALERTE">
+    <div class="sky"></div>
+    <div class="pad" style="justify-content:center;gap:16px;text-align:center">
+      <div style="font-size:60px">🔔</div>
+      <div class="h2">TA VEILLE EST ACTIVE</div>
+      <div class="sub">On surveille <b>Anse Dufour</b> pour toi. Tu recevras une alerte avant le prochain pic de sargasses.</div>
+      <div class="card" style="text-align:left"><div class="sub">📍 Anse Dufour &nbsp;·&nbsp; 📧 toi@email.com &nbsp;·&nbsp; ⏰ chaque matin 7h</div></div>
+      <div style="flex:1"></div>
+      <button class="btn ghost">Gérer mes alertes</button>
+    </div>
+  </section>
+
+  <svg class="grain" preserveAspectRatio="none" viewBox="0 0 390 844"><rect width="390" height="844" filter="url(#gr)"/></svg>
+  <div class="label" id="lab"></div>
+</div>
+
+<div class="nav">
+  <button onclick="go(-1)">‹ Préc</button>
+  <span class="dots" id="dots"></span>
+  <button onclick="go(1)">Suiv ›</button>
+</div>
+
+<script>
+const scr=[...document.querySelectorAll('.screen')]; let i=0;
+const dots=document.getElementById('dots'); scr.forEach(()=>dots.insertAdjacentHTML('beforeend','<i></i>'));
+function show(){ scr.forEach((s,k)=>s.classList.toggle('on',k===i));
+  [...dots.children].forEach((d,k)=>d.classList.toggle('on',k===i));
+  document.getElementById('lab').textContent=scr[i].dataset.name; }
+function go(d){ i=(i+d+scr.length)%scr.length; show(); }
+document.querySelector('.phone').addEventListener('click',e=>{ if(e.target.closest('.nav'))return; go(1); });
+show();
+</script>
+</body></html>
