@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Le Veilleur — éclairage cinéma</title>
+<style>
+  html,body{margin:0;height:100%;background:#0b0716;display:grid;place-items:center;font-family:"Arial Black",Impact,sans-serif}
+  .stage{width:390px;height:600px;position:relative;overflow:hidden;background:#160a26}
+  svg{position:absolute;inset:0;width:100%;height:100%}
+  .grain{position:absolute;inset:0;opacity:.07;mix-blend-mode:overlay;pointer-events:none}
+</style></head>
+<body>
+<div class="stage">
+  <svg viewBox="0 0 390 600" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="keyglow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ff9a3d" stop-opacity=".9"/><stop offset="1" stop-color="#ff9a3d" stop-opacity="0"/></radialGradient>
+      <linearGradient id="lithead" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0d4"/><stop offset="1" stop-color="#ffcaa0"/></linearGradient>
+      <linearGradient id="litbody" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6cffb0"/><stop offset="1" stop-color="#1c9f5e"/></linearGradient>
+      <radialGradient id="iris" cx="40%" cy="35%" r="75%"><stop offset="0" stop-color="#8affd0"/><stop offset=".6" stop-color="#27c46b"/><stop offset="1" stop-color="#0c6e3e"/></radialGradient>
+      <filter id="soft"><feGaussianBlur stdDeviation="7"/></filter>
+      <filter id="eyeg"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      <filter id="grainF"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2"/></filter>
+    </defs>
+
+    <!-- DÉCOR néon : glow chaud haut-gauche + lignes néon magenta bas-droite -->
+    <rect width="390" height="600" fill="#190b2c"/>
+    <ellipse cx="40" cy="120" rx="240" ry="200" fill="url(#keyglow)" opacity=".55"/>
+    <g filter="url(#soft)" opacity=".8" stroke-linecap="round">
+      <line x1="250" y1="600" x2="430" y2="300" stroke="#ff2e8e" stroke-width="10"/>
+      <line x1="300" y1="600" x2="470" y2="320" stroke="#ff5ea8" stroke-width="7"/>
+      <line x1="210" y1="600" x2="380" y2="300" stroke="#b03cff" stroke-width="6"/>
+    </g>
+    <g stroke-linecap="round" opacity=".95">
+      <line x1="255" y1="600" x2="430" y2="305" stroke="#ff6ab0" stroke-width="3"/>
+      <line x1="300" y1="600" x2="470" y2="325" stroke="#ffa6d0" stroke-width="2"/>
+    </g>
+
+    <!-- ombre portée douce -->
+    <ellipse cx="200" cy="560" rx="120" ry="22" fill="#000" opacity=".35" filter="url(#soft)"/>
+
+    <g stroke="#120821" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+      <!-- antenne (rim chaud) -->
+      <path d="M196 120 q8 -30 -4 -50" /><circle cx="190" cy="62" r="13" fill="#ffd23f"/>
+      <circle cx="190" cy="62" r="13" fill="none" stroke="#ff9a3d" stroke-width="3"/>
+
+      <!-- CORPS hoodie — base ombre violette, lumière chaude haut-gauche -->
+      <path d="M128 430 q-10 110 72 116 q82 -6 72 -116 q-2 -40 -72 -40 q-70 0 -72 40Z" fill="#3a2150"/>
+      <path d="M128 430 q-10 110 72 116 q-46 -4 -64 -64 q-14 -48 -8 -52 q14 -22 72 -22 q-46 4 -72 84Z" fill="url(#litbody)"/>
+      <path d="M132 432 q60 -30 120 0" stroke="#6cffb0" stroke-width="3" fill="none" opacity=".55"/>
+      <g stroke-width="3"><circle cx="166" cy="452" r="6" fill="#ffd23f"/><circle cx="182" cy="460" r="6" fill="#ffd23f"/><circle cx="200" cy="463" r="6" fill="#ffd23f"/><circle cx="218" cy="460" r="6" fill="#ffd23f"/><circle cx="234" cy="452" r="6" fill="#ffd23f"/></g>
+
+      <!-- panneaux solaires -->
+      <rect x="36" y="250" width="46" height="64" rx="8" fill="#1c4f6e" transform="rotate(-12 59 282)"/>
+      <rect x="36" y="250" width="46" height="64" rx="8" fill="none" stroke="#ff9a3d" stroke-width="2.5" transform="rotate(-12 59 282)"/>
+      <rect x="308" y="250" width="46" height="64" rx="8" fill="#0f2f44" transform="rotate(12 331 282)"/>
+
+      <!-- TÊTE — base ombre violette -->
+      <ellipse cx="200" cy="250" rx="126" ry="118" fill="#5a2f73"/>
+      <!-- LUMIÈRE chaude (plan éclairé haut-gauche) + terminator dur -->
+      <path d="M200 132 a126 118 0 0 0 -86 200 q-30 -54 -22 -120 q14 -78 108 -80Z" fill="url(#lithead)"/>
+      <path d="M114 332 q60 40 150 18 q-40 26 -98 18 q-36 -6 -52 -36Z" fill="#3f1f56" stroke="none"/>
+      <!-- RIM light orange (bord éclairé) -->
+      <path d="M120 320 a126 118 0 0 1 80 -188" fill="none" stroke="#ffb24d" stroke-width="5"/>
+      <path d="M200 132 a126 118 0 0 1 18 2" fill="none" stroke="#ffd9a8" stroke-width="4"/>
+      <!-- joue blush chaude -->
+      <ellipse cx="132" cy="286" rx="18" ry="11" fill="#ff7a5e" stroke="none" opacity=".4"/>
+
+      <!-- ŒIL-ÉCRAN glow -->
+      <ellipse cx="206" cy="240" rx="86" ry="80" fill="#0d0b14"/>
+      <g filter="url(#eyeg)">
+        <circle cx="200" cy="244" r="54" fill="url(#iris)"/>
+        <circle cx="210" cy="252" r="26" fill="#08121f"/>
+        <circle cx="221" cy="240" r="9" fill="#fff"/>            <!-- catch chaud -->
+        <circle cx="190" cy="258" r="5" fill="#ff8ad0"/>          <!-- catch néon -->
+      </g>
+      <!-- paupière half-lid intense -->
+      <path d="M118 218 q88 -46 176 0 q-12 -36 -88 -36 q-76 0 -88 36Z" fill="#5a2f73"/>
+      <path d="M118 218 q44 -24 88 -24 q44 0 88 24" stroke-width="6" fill="none"/>
+      <path d="M120 218 q40 -22 84 -22" stroke="#ffb24d" stroke-width="3" fill="none" opacity=".8"/>
+      <!-- sourcil intense -->
+      <path d="M138 188 q40 -16 74 -2" stroke-width="9"/>
+      <!-- smirk -->
+      <path d="M170 314 q34 16 64 0" stroke-width="6"/>
+    </g>
+  </svg>
+  <svg class="grain" preserveAspectRatio="none" viewBox="0 0 390 600"><rect width="390" height="600" filter="url(#grainF)"/></svg>
+</div>
+</body></html>
