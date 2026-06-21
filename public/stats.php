@@ -29,6 +29,19 @@ $W = array('total'=>0,'byHost'=>array(),'byBeach'=>array(),'last'=>null); // ins
 // Source de vérité = noms d'events track() de l'app (audit 2026-06-14).
 $FUNNEL = array('sg_session_start','sg_forecast_lock_click','sg_premium_modal_open','sg_premium_modal_cta','sg_checkout_redirect','sg_conversion','sg_email_submit','sg_hero_email_submit');
 
+// Attribution canal (P5) : classe le referrer en canal d'acquisition. Source = $d['ref']
+// (document.referrer, déjà collecté par l'app). Pas de PII, juste le host.
+function _sgChannel($ref) {
+  $ref = strtolower(trim((string)$ref));
+  if ($ref === '') return 'direct';
+  $host = parse_url($ref, PHP_URL_HOST);
+  if (!$host) $host = $ref;
+  if (preg_match('/(^|\.)(google|bing|duckduckgo|ecosia|yahoo|qwant|yandex|baidu)\./', $host)) return 'search';
+  if (preg_match('/(facebook|fb\.|instagram|t\.co|twitter|x\.com|tiktok|youtube|youtu\.be|whatsapp|pinterest|reddit|linkedin|snapchat)/', $host)) return 'social';
+  if (preg_match('/sargasses-|sargassum/', $host)) return 'internal';
+  return 'referral';
+}
+
 for ($i = 0; $i < $days; $i++) {
   $f = $dir . '/sg-' . gmdate('Y-m-d', time() - $i * 86400) . '.ndjson';
   if (!is_file($f)) continue;
@@ -68,6 +81,8 @@ function _regAcc() {
 }
 $byR = array();
 $abx = array(); // A/B cross-tab : test -> variante -> {sessions, events funnel, engagement}
+$chan = array();   // P5 attribution canal : canal -> {sessions, conversion, modal_cta, email}
+$cidSeq = array(); // P4 cohorte : cid -> [{ts, conv, cta}] (rang de visite calculé après la boucle)
 
 foreach ($sessions as $d) {
   $rg = !empty($d['region']) ? $d['region'] : 'unknown';
@@ -93,6 +108,21 @@ foreach ($sessions as $d) {
   foreach ($FUNNEL as $step) if (isset($seen[$step])) {
     $byR[$rg]['funnel'][$step] = ($byR[$rg]['funnel'][$step] ?? 0) + 1;
   }
+
+  // P5 attribution canal + P4 cohorte rang de visite — réutilisent $seen (events de
+  // la session). conversion = sg_conversion (peut sous-compter en absolu → on garde
+  // aussi modal_cta = intention fiable pour la comparaison RELATIVE canal/rang).
+  $convHit  = isset($seen['sg_conversion']);
+  $ctaHit   = isset($seen['sg_premium_modal_cta']);
+  $emailHit = isset($seen['sg_email_submit']) || isset($seen['sg_hero_email_submit']);
+  $ch = _sgChannel($d['ref'] ?? '');
+  if (!isset($chan[$ch])) $chan[$ch] = array('sessions'=>0,'conversion'=>0,'modal_cta'=>0,'email'=>0);
+  $chan[$ch]['sessions']++;
+  if ($convHit)  $chan[$ch]['conversion']++;
+  if ($ctaHit)   $chan[$ch]['modal_cta']++;
+  if ($emailHit) $chan[$ch]['email']++;
+  $cid = isset($d['cid']) ? (string)$d['cid'] : '';
+  if ($cid !== '') $cidSeq[$cid][] = array('ts'=>(int)($d['ts'] ?? 0), 'conv'=>$convHit, 'cta'=>$ctaHit);
 
   if (!empty($d['scr']) && is_array($d['scr'])) foreach ($d['scr'] as $s => $o) {
     if (!isset($out['screens'][$s])) $out['screens'][$s] = array('visits'=>0,'dwell_ms'=>0,'bored'=>0,'acts'=>0);
@@ -231,6 +261,52 @@ $out['widget'] = array(
   'byHost'       => $W['byHost'],
   'byBeach'      => $W['byBeach'],
   'last'         => $W['last'],
+);
+
+// P5 — ATTRIBUTION CANAL : quelle source d'acquisition convertit/engage le mieux.
+$out['channels'] = array();
+foreach ($chan as $c => $a) {
+  $s = max(1, $a['sessions']);
+  $out['channels'][$c] = array(
+    'sessions'       => $a['sessions'],
+    'conversion'     => $a['conversion'],
+    'modal_cta'      => $a['modal_cta'],
+    'email'          => $a['email'],
+    'conv_rate_pct'  => round(100 * $a['conversion'] / $s, 2),
+    'cta_rate_pct'   => round(100 * $a['modal_cta'] / $s, 2),
+    'email_rate_pct' => round(100 * $a['email'] / $s, 2),
+  );
+}
+uasort($out['channels'], function($x, $y){ return $y['sessions'] - $x['sessions']; });
+
+// P4 — COHORTE PAR RANG DE VISITE : les visiteurs qui reviennent convertissent-ils mieux ?
+// Rang = position de la session dans la suite (ordonnée par ts) des sessions du même cid
+// VUES DANS LA FENÊTRE. Approximation honnête : une « 1re visite » ici peut avoir des
+// visites antérieures hors fenêtre — d'où le buckets 1 / 2 / 3+ et la note.
+$rankBuckets = array(
+  '1'     => array('sessions'=>0,'conversion'=>0,'cta'=>0),
+  '2'     => array('sessions'=>0,'conversion'=>0,'cta'=>0),
+  '3plus' => array('sessions'=>0,'conversion'=>0,'cta'=>0),
+);
+foreach ($cidSeq as $arr) {
+  usort($arr, function($x, $y){ return $x['ts'] - $y['ts']; });
+  foreach ($arr as $i => $sess) {
+    $rk = $i === 0 ? '1' : ($i === 1 ? '2' : '3plus');
+    $rankBuckets[$rk]['sessions']++;
+    if ($sess['conv']) $rankBuckets[$rk]['conversion']++;
+    if ($sess['cta'])  $rankBuckets[$rk]['cta']++;
+  }
+}
+foreach ($rankBuckets as &$b) {
+  $s = max(1, $b['sessions']);
+  $b['conv_rate_pct'] = round(100 * $b['conversion'] / $s, 2);
+  $b['cta_rate_pct']  = round(100 * $b['cta'] / $s, 2);
+}
+unset($b);
+$out['cohort_visit_rank'] = array(
+  'note'    => 'Rang de visite par cid DANS la fenêtre (?days). Une 1re visite ici peut avoir des visites antérieures hors fenêtre — comparer les TAUX entre rangs, pas les volumes absolus. conv = sg_conversion (sous-compte en absolu) ; cta = sg_premium_modal_cta (intention fiable).',
+  'distinct_cids' => count($cidSeq),
+  'buckets' => $rankBuckets,
 );
 
 echo json_encode($out, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
