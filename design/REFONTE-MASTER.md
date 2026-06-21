@@ -166,6 +166,7 @@
 
 **PHASE 4 (VERROUILLÉE — seulement si funnel sain).** KPI : email 0,35 %→≥2 %, share-cards si modal→CTA≥5 % tenu 2 sem.
 - [ ] Déverrouiller share-cards · soigner capture · Bahamas (data≥2 sem) · widgets B2B depuis beaches-list.
+- [ ] **Capture email ATONE — revoir l'opt-in form** _(flag auto conversion-track 21/06)_ : leads quasi-plats (213→213→213 du 17→19/06, +2 le 20/06 = +2 en 4 j), `funnel.emailSubmits` ~62-63/j stable, `stripe.emailAttributed` = 0 actif/€0. Le canal capture ne croît plus. Revoir l'opt-in (placement, copy, aha-moment, friction) côté `sargasses-refonte-builder` — NE PAS éditer le JSX depuis conversion-track.
 
 ---
 _Vérif continue : `ab-eval.cjs` (verdict A/B auto) · skill `sg-svg-scene` (navigateur). Doc vivant — coché au fil de l'exécution._
