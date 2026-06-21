@@ -130,7 +130,7 @@
     <nav class="nav-cta">
       <a class="txt" href="#offer">What you get</a>
       <a class="txt" href="#proof">Why us</a>
-      <a class="btn btn-gold" href="#demo">Book a demo</a>
+      <a class="btn btn-gold" href="#demo">Get the brief</a>
     </nav>
   </div>
 </header>
@@ -165,7 +165,7 @@
     <h1 style="margin-top:14px">Turn sargassum from a surprise into a selling point.</h1>
     <p class="sub">2026 is the worst sargassum season on record. Give guests a live, honest beach-status widget, give your ops team advance alerts — backed by an accuracy score we <em>publish</em>, not just another map.</p>
     <div class="cta-row">
-      <a class="btn btn-gold" href="#demo">Book a 15-min demo →</a>
+      <a class="btn btn-gold" href="#demo">Start the free brief →</a>
       <a class="btn btn-ghost" href="#offer">See a live widget</a>
     </div>
     <div class="trust">
@@ -276,7 +276,7 @@
         <span><span class="check">✓</span> EN · ES · FR</span>
       </div>
       <p class="muted" style="max-width:50ch;margin:0 auto 22px">Annual and multi-property plans available. Set up in days, not months — we already run the data pipeline 4× a day.</p>
-      <a class="btn btn-dark" href="#demo">Book a demo →</a>
+      <a class="btn btn-dark" href="#demo">Start free — get the daily brief →</a>
     </div>
   </div>
 </section>
@@ -284,32 +284,63 @@
 <!-- FINAL CTA -->
 <section id="demo" class="final">
   <div class="wrap">
-    <div class="eyebrow" style="color:#5a3c00">Book a 15-minute demo</div>
-    <h2 style="margin-top:12px">See your resort’s risk report — and a widget on your beach.</h2>
-    <p style="margin-top:14px;font-weight:600;max-width:50ch">Tell us your property and we’ll send a live risk read for your beach plus a widget preview before the call.</p>
-    <form class="form" onsubmit="event.preventDefault();this.querySelector('button').textContent='Thanks — we’ll be in touch ✓';">
-      <input class="full" type="text" placeholder="Your name" required>
-      <input type="text" placeholder="Hotel / group" required>
-      <input type="email" placeholder="Work email" required>
-      <input type="text" placeholder="Beach / town">
-      <select class="full" aria-label="Region">
+    <div class="eyebrow" style="color:#5a3c00">Self-serve · no call</div>
+    <h2 style="margin-top:12px">Get your resort’s daily risk brief — automatically.</h2>
+    <p style="margin-top:14px;font-weight:600;max-width:50ch">Tell us your property and we’ll start emailing a live risk read for your beach — every morning, automatically. No call, no setup, stop anytime.</p>
+    <form class="form" id="proform">
+      <input class="full" type="text" name="name" placeholder="Your name" required>
+      <input type="text" name="hotel" placeholder="Hotel / group" required>
+      <input type="email" name="email" placeholder="Work email" required>
+      <input type="text" name="beach" placeholder="Beach / town">
+      <select class="full" name="region" aria-label="Region">
         <option value="">Region…</option>
         <option>Mexico — Cancún / Riviera Maya</option>
         <option>Florida</option>
         <option>Puerto Rico / USVI</option>
         <option>Other Caribbean</option>
       </select>
-      <button class="btn btn-dark full" type="submit">Get my resort’s risk report →</button>
+      <button class="btn btn-dark full" type="submit">Start my daily brief — free →</button>
     </form>
-    <p style="margin-top:14px;font-size:12.5px;font-weight:700;color:#5a3c00">No spam. We reply within one business day.</p>
+    <p style="margin-top:14px;font-size:12.5px;font-weight:700;color:#5a3c00">100% automated · no call · stop anytime.</p>
   </div>
 </section>
+<script>
+(function(){
+  var APPS_SCRIPT_URL="https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec";
+  // Track-record page is /fiabilite/ on FR domains, /reliability/ on US/EN.
+  var isFR=location.hostname.indexOf("martinique")>-1||location.hostname.indexOf("guadeloupe")>-1;
+  var tr=document.getElementById("trackrec");
+  if(tr&&isFR)tr.setAttribute("href","/fiabilite/");
+  var f=document.getElementById("proform");
+  if(!f)return;
+  f.addEventListener("submit",function(e){
+    e.preventDefault();
+    var btn=f.querySelector("button");
+    var email=(f.email.value||"").trim();
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){f.email.focus();return;}
+    var island=location.hostname.indexOf("guadeloupe")>-1?"GP":location.hostname.indexOf("martinique")>-1?"MQ":"US";
+    var body=JSON.stringify({
+      email:email,island:island,source:"b2b_hotel_request",date:new Date().toISOString(),
+      name:(f.name.value||"").trim(),hotel:(f.hotel.value||"").trim(),
+      beach:(f.beach.value||"").trim(),region:(f.region.value||"").trim()
+    });
+    try{
+      if(navigator.sendBeacon){navigator.sendBeacon(APPS_SCRIPT_URL,body);}
+      else{fetch(APPS_SCRIPT_URL,{method:"POST",mode:"no-cors",keepalive:true,headers:{"Content-Type":"text/plain"},body:body});}
+    }catch(_){}
+    f.querySelectorAll("input,select,button").forEach(function(el){el.disabled=true;});
+    btn.disabled=false;
+    btn.textContent="You're in — first brief on its way ✓";
+    btn.style.background="#1c8f4e";btn.style.color="#fff";
+  });
+})();
+</script>
 
 <footer>
   <div class="wrap foot-grid">
     <div><span class="brand" style="color:#fff;font-size:18px"><span class="dot"></span>SARGASSES</span><div style="margin-top:8px;max-width:42ch">Coastal sargassum intelligence. Built on USF, NOAA &amp; Copernicus data — with an accuracy score we publish.</div></div>
     <div style="text-align:right">
-      <a href="/fiabilite/">Public track record</a> · <a href="#demo">Book a demo</a>
+      <a id="trackrec" href="/reliability/">Public track record</a> · <a href="#demo">Get the brief</a>
       <div style="margin-top:8px;color:rgba(255,255,255,.4)">© 2026 Sargasses · for hotels &amp; resorts</div>
     </div>
   </div>
