@@ -72,6 +72,7 @@ export default function WorldMapView({
   const [day,     setDay]       = useState(0)
   const [selected, setSelected] = useState(null)  // beach object enrichi
   const [tagPos,  setTagPos]    = useState(null)  // {x,y} screen pixels
+  const [query,   setQuery]     = useState("")    // P7 — recherche plage par nom
 
   // prefers-reduced-motion
   useEffect(()=>{
@@ -113,6 +114,13 @@ export default function WorldMapView({
         return{...b,vx,vy,days}
       })
   },[beaches,island,toVB])
+
+  // P7 — recherche : plages dont le nom matche la requête (max 6).
+  const matches = useMemo(()=>{
+    const lq=query.trim().toLowerCase()
+    if(!lq) return []
+    return beachList.filter(b=>(b.name||"").toLowerCase().includes(lq)).slice(0,6)
+  },[query,beachList])
 
   // IDs des plages affichant un label
   const labeledIds = useMemo(()=>{
@@ -712,6 +720,28 @@ export default function WorldMapView({
             <span style={{font:"700 11px/1 'JetBrains Mono',monospace",color:"#1c8f4e",marginLeft:2}}>
               {updatedAt?_t(lang,`il y a ${fmtFresh(updatedAt)}`,`${fmtFresh(updatedAt)} ago`,`hace ${fmtFresh(updatedAt)}`):"···"}
             </span>
+          </div>
+          {/* P7 — Recherche plage par nom (carte-monde) */}
+          <div style={{position:"relative",flex:1,margin:"0 8px",maxWidth:260,pointerEvents:"auto"}}>
+            <div style={{display:"flex",alignItems:"center",gap:6,background:"#fdf6e3",border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:10,padding:"6px 10px"}}>
+              <span style={{fontSize:12,opacity:.6}}>🔍</span>
+              <input value={query} onChange={e=>setQuery(e.target.value)}
+                placeholder={_t(lang,"Chercher une plage…","Search a beach…","Buscar una playa…")}
+                style={{flex:1,minWidth:0,background:"none",border:"none",outline:"none",font:"700 12px/1 'Comic Neue',system-ui,sans-serif",color:INK}}/>
+              {query&&<button onClick={()=>setQuery("")} aria-label="clear" style={{background:"none",border:"none",color:INK,opacity:.5,cursor:"pointer",fontSize:14,lineHeight:1,padding:0}}>✕</button>}
+            </div>
+            {matches.length>0&&(
+              <div style={{position:"absolute",top:"calc(100% + 6px)",left:0,right:0,background:"#fdf6e3",border:`2.5px solid ${INK}`,boxShadow:`3px 4px 0 ${INK}`,borderRadius:12,overflow:"hidden",zIndex:20}}>
+                {matches.map(b=>(
+                  <button key={b.id} onClick={()=>{try{track&&track("sg_map_search_open",{id:b.id})}catch(_){}; setQuery(""); onOpenBeach&&onOpenBeach(b)}}
+                    style={{display:"flex",alignItems:"center",gap:8,width:"100%",textAlign:"left",background:"none",border:"none",borderBottom:"1px solid rgba(13,11,20,.12)",padding:"9px 11px",cursor:"pointer",font:"700 12.5px/1.2 'Comic Neue',system-ui,sans-serif",color:INK}}>
+                    <span style={{width:9,height:9,borderRadius:"50%",background:STATUS_C[b.status]||"#999",flexShrink:0}}/>
+                    <span style={{flex:1}}>{b.name}</span>
+                    {b.commune&&<span style={{opacity:.5,fontWeight:600,fontSize:11}}>{b.commune}</span>}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           {/* Fermer (hors rootMode) */}
           {!rootMode&&<button onClick={onClose} style={{

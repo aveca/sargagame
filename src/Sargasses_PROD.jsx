@@ -11653,8 +11653,9 @@ function WorldFeed({beaches,lang,onPremium,onClose,island}){
 // immediate (on atterrit MID-zoom sur SA cote, verdict <1s), l'exploration est un
 // bonus libre par-dessus. v0 = pan + zoom (wheel/pinch/double-tap) + atterrissage +
 // tap->BeachSheet existante (funnel INTACT). Pas de dive/momentum/LOD (slices 2-4).
-function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutions,onPremium,rootMode,updatedAt,initialZone}){
+function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutions,onPremium,rootMode,updatedAt,initialZone,onRequestGeo}){
   const wrapRef=useRef(null),gRef=useRef(null),camRef=useRef({cx:0,cy:0,cz:0.8}),rafRef=useRef(0)
+  const pendingCenterRef=useRef(false) // P6 « Près de moi » : centrer dès que la géoloc arrive
   const ptrs=useRef(new Map()),movedRef=useRef(false),pinchRef=useRef(null),lastTap=useRef(0)
   const velRef=useRef({x:0,y:0}),inertRaf=useRef(0),pannedRef=useRef(false)
   // Drag rigolo du Veilleur : on l'attrape, son radar/faisceau suivent, il rebondit au lâcher.
@@ -11692,6 +11693,9 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
   const schedule=()=>{if(rafRef.current)return;rafRef.current=requestAnimationFrame(()=>{rafRef.current=0;writeCam()})}
   const clampZ=z=>Math.max(FAR*0.75,Math.min(NEAR*1.25,z))
   const centerOn=(i,cz)=>{const el=wrapRef.current;if(!el||!proj[i])return;const z=clampZ(cz||camRef.current.cz),W=el.clientWidth,H=el.clientHeight;camRef.current={cz:z,cx:W/2-proj[i].x*z,cy:H/2-proj[i].y*z};schedule()}
+  // P6 : la géoloc demandée au clic « Près de moi » arrive de façon asynchrone → quand
+  // userPos est posé, myIdx recalcule la plage la plus proche et on recentre dessus.
+  useEffect(()=>{if(userPos&&pendingCenterRef.current){pendingCenterRef.current=false;try{centerOn(myIdx,MID)}catch(_){}}},[userPos,myIdx])
   const zoomAt=(f,px,py)=>{const c=camRef.current,nz=clampZ(c.cz*f),wx=(px-c.cx)/c.cz,wy=(py-c.cy)/c.cz;c.cz=nz;c.cx=px-wx*nz;c.cy=py-wy*nz;schedule()}
   // ── PAN INERTIE + BORDS ÉLASTIQUES (#49) ──────────────────────────────────
   // Le pan libre coast après le relâché (déccélération = continuation du geste,
@@ -11988,7 +11992,7 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
               cul-de-sac (BottomNav z800 enterrée sous le monde z1006). 3 entrées,
               tout reste DANS le monde : "Toutes" = dézoom (la liste = une profondeur). */}
           <div style={{display:"flex",alignItems:"center",gap:3,padding:"5px 6px",borderRadius:999,background:"rgba(4,9,11,.66)",border:"1px solid rgba(95,211,201,.22)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",boxShadow:"0 8px 28px rgba(0,0,0,.45)",pointerEvents:"auto"}}>
-            <button onClick={e=>{e.stopPropagation();try{track("sg_dock",{tab:"near"})}catch(_){}; centerOn(myIdx,MID)}} style={{padding:"9px 14px",borderRadius:999,background:"transparent",border:"none",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",whiteSpace:"nowrap"}}>⌖ {_t(lang,"Près de moi","Near me","Cerca")}</button>
+            <button onClick={e=>{e.stopPropagation();try{track("sg_dock",{tab:"near"})}catch(_){}; if(userPos){centerOn(myIdx,MID)}else{pendingCenterRef.current=true;onRequestGeo?onRequestGeo():centerOn(myIdx,MID)}}} style={{padding:"9px 14px",borderRadius:999,background:"transparent",border:"none",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",whiteSpace:"nowrap"}}>⌖ {_t(lang,"Près de moi","Near me","Cerca")}</button>
             <button onClick={e=>{e.stopPropagation();try{track("sg_dock",{tab:"all"})}catch(_){}; fitAll()}} style={{padding:"9px 14px",borderRadius:999,background:"transparent",border:"none",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",whiteSpace:"nowrap"}}>▦ {_t(lang,"Toutes","All","Todas")}</button>
             {onPremium&&<button onClick={e=>{e.stopPropagation();try{track("sg_dock",{tab:"premium"})}catch(_){}; onPremium()}} style={{padding:"9px 16px",borderRadius:999,background:"linear-gradient(180deg,#FFD884,#F2B05E)",border:"none",color:"#07201E",fontSize:13,fontWeight:800,cursor:"pointer",whiteSpace:"nowrap"}}>✦ {_t(lang,"Veilleur","Watcher","Vigía")}</button>}
           </div>
@@ -13147,6 +13151,19 @@ export default function App(){
     return()=>clearTimeout(t)
   },[])
 
+  // P6 — géoloc À LA DEMANDE (clic « Près de moi ») : c'est le rung #2 du molo_ladder
+  // (soft-ask contextuel, user-initiated) → n'interfère PAS avec l'auto-prompt A/B.
+  const requestGeo=useCallback(()=>{
+    if(!navigator.geolocation)return
+    try{track("sg_geo_request",{src:"near_me"})}catch(_){}
+    navigator.geolocation.getCurrentPosition(pos=>{
+      const lat=pos.coords.latitude,lng=pos.coords.longitude
+      setUserPos({lat,lng})
+      const gpsIsland=lat>15.5?"gp":"mq"
+      setIsland(prev=>{const saved=g("sg_island",null);return saved?prev:gpsIsland})
+    },()=>{},{enableHighAccuracy:false,timeout:8000,maximumAge:300000})
+  },[])
+
   // Geolocation — center map on user, find nearest beach.
   // MOLO (2026-06-16) : ne plus prompter la géoloc À FROID au mount — anti-pattern
   // (~14% d'opt-in à froid, intrusif, contraire à « vas-y molo sur les autorisations »).
@@ -14075,7 +14092,7 @@ export default function App(){
                 rootMode={navWorld} track={track} initialZone={initialZone} warm={mapWarm==="warm"}
                 onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{source:"map_world"})}}/>
             </Suspense></ErrBound>
-          :<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onBeachClick} onSolutions={()=>{setShowSolutions(true);track("sg_archipel_to_solutions",{})}} onPremium={()=>openPremium("archipel")} rootMode={navWorld} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}} initialZone={initialZone}/>
+          :<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onBeachClick} onSolutions={()=>{setShowSolutions(true);track("sg_archipel_to_solutions",{})}} onPremium={()=>openPremium("archipel")} rootMode={navWorld} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}} initialZone={initialZone} onRequestGeo={requestGeo}/>
 
         )}
 
