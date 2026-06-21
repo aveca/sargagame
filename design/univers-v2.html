@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Le Veilleur — Univers v2 (style onboarding premium)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#E8A800;--gold-lt:#FFC72C;--gold-dk:#B87A00;--teal:#009E8E;--teal-lt:#1EC8B0;--coral:#E8522A;--ink:#0D0D0D;--mid:#686868;--bg:#FDFCF7;--grn:#16A34A;--amber:#E8A800;}
+*{margin:0;box-sizing:border-box}
+body{background:radial-gradient(ellipse at 55% 25%,#D4D0C4,#C4C0B4);min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:14px;padding:18px 0 40px;font-family:'Bricolage Grotesque',sans-serif}
+.phone{width:390px;height:844px;background:var(--bg);border-radius:52px;overflow:hidden;position:relative;display:flex;flex-direction:column;
+  box-shadow:0 0 0 1px rgba(0,0,0,.05),0 1px 0 2px rgba(255,255,255,.6),0 40px 100px rgba(0,0,0,.2),0 80px 180px rgba(0,0,0,.1)}
+.phone::before{content:'';position:absolute;inset:0;z-index:40;pointer-events:none;opacity:.026;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.scr{position:absolute;inset:0;display:none;flex-direction:column;padding:0 0 26px}
+.scr.on{display:flex}
+.strip{margin:26px 20px 0;background:rgba(255,255,255,.75);border:1px solid rgba(232,168,0,.26);border-radius:100px;padding:8px 10px 8px 14px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(16px);box-shadow:0 2px 18px rgba(232,168,0,.09),inset 0 1px 0 rgba(255,255,255,.95)}
+.ldot{width:7px;height:7px;border-radius:50%;background:#22C55E;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 2px rgba(34,197,94,.2)}50%{box-shadow:0 0 0 5px rgba(34,197,94,.07)}}
+.strip-txt{font-size:11.5px;font-weight:600;color:var(--ink)}.strip-txt em{font-style:normal;color:var(--gold-dk);font-weight:700}
+.lbadge{background:linear-gradient(135deg,var(--teal-lt),var(--teal));color:#fff;font-size:9px;font-weight:800;letter-spacing:.14em;padding:5px 13px;border-radius:100px;box-shadow:0 3px 12px rgba(0,158,142,.32)}
+.body{padding:18px 28px 0;flex:1;display:flex;flex-direction:column;overflow:hidden}
+h1{font-family:'Anton',sans-serif;font-size:60px;line-height:.86;letter-spacing:-.025em;text-transform:uppercase;color:var(--ink);margin-bottom:10px}
+h1 .g{background:linear-gradient(138deg,#FFD860,#E8A800 48%,#B07000);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+h1 .t{color:var(--teal)}
+.tag{font-size:14px;color:var(--mid);line-height:1.55;margin-bottom:16px;max-width:280px}.tag strong{color:var(--ink);font-weight:700}
+.row{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid rgba(0,0,0,.05);border-radius:16px;padding:13px 15px;margin-bottom:9px;box-shadow:0 6px 22px rgba(0,0,0,.05)}
+.r-ic{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:linear-gradient(135deg,#EEF2F4,#E2E8EC)}
+.r-main{flex:1;min-width:0}.r-name{font-size:14.5px;font-weight:700;color:var(--ink)}.r-sub{font-size:11.5px;color:var(--mid);font-weight:500}
+.bdg{font-size:11px;font-weight:700;padding:6px 11px;border-radius:100px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.bdg.ok{color:var(--grn);background:rgba(22,163,74,.1)}.bdg.mid{color:var(--amber);background:rgba(232,168,0,.12)}.bdg.no{color:var(--coral);background:rgba(232,82,42,.1)}
+.mapcard{background:linear-gradient(160deg,#EAF6F1,#DFF0EA);border:1px solid rgba(0,158,142,.14);border-radius:22px;height:230px;position:relative;margin-bottom:16px;overflow:hidden;box-shadow:inset 0 1px 0 #fff,0 8px 30px rgba(0,0,0,.05)}
+.isl{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:120px;height:180px;background:linear-gradient(160deg,#7FD9A8,#27c46b);border-radius:48% 44% 52% 48%/40% 42% 58% 56%;box-shadow:0 10px 24px rgba(39,196,107,.3)}
+.pin{position:absolute;width:16px;height:16px;border-radius:50% 50% 50% 0;border:2.5px solid #fff;transform:rotate(-45deg);box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.lg{position:absolute;bottom:12px;right:12px;background:rgba(255,255,255,.9);border-radius:12px;padding:8px 10px;font-size:9.5px;font-weight:600;color:var(--mid);display:flex;flex-direction:column;gap:4px}
+.lg b{display:inline-flex;align-items:center;gap:5px}.lg i{width:8px;height:8px;border-radius:50%}
+.cta{margin-top:auto;padding:14px 0 6px}
+.btn{width:100%;background:linear-gradient(158deg,#FFE47A,#FFC72C 40%,#E89400);color:var(--ink);border:none;border-radius:22px;padding:18px 24px;font-family:'Anton',sans-serif;font-size:20px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.58),inset 0 -2px 0 rgba(0,0,0,.11),0 8px 28px rgba(232,168,0,.48)}
+.btn::after{content:'';position:absolute;top:0;left:-75%;width:44%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-18deg);animation:shine 4.5s 1.5s infinite}
+@keyframes shine{0%,100%{left:-75%}40%,60%{left:120%}}
+.btn.teal{background:linear-gradient(158deg,#2fded0,#009E8E);color:#fff;box-shadow:0 8px 28px rgba(0,158,142,.4)}
+.hd{display:flex;justify-content:space-between;align-items:center;padding:24px 22px 0}
+.back{font-size:13px;font-weight:700;color:var(--ink)}.live{font-size:10px;font-weight:800;letter-spacing:.1em;color:var(--teal);display:flex;align-items:center;gap:6px}
+.score{display:flex;align-items:center;gap:16px;background:#fff;border:1px solid rgba(0,0,0,.05);border-radius:20px;padding:16px;margin-bottom:14px;box-shadow:0 8px 28px rgba(0,0,0,.06)}
+.sc-n{font-family:'Anton';font-size:46px;color:var(--ink);line-height:.9}.sc-n small{font-size:16px;color:var(--mid)}
+.fc{display:flex;gap:5px;margin-top:7px}.fc i{flex:1;height:20px;border-radius:6px}
+.proof{display:flex;align-items:center;padding:11px 14px;background:rgba(255,199,44,.07);border:1px solid rgba(232,168,0,.13);border-radius:14px;margin-bottom:6px}
+.avs{display:flex}.av{width:26px;height:26px;border-radius:50%;border:2px solid var(--bg);margin-right:-7px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff}
+.bene{background:#fff;border:1px solid rgba(0,0,0,.05);border-radius:16px;padding:14px 16px;margin-bottom:9px;box-shadow:0 6px 22px rgba(0,0,0,.05)}
+.bene b{font-family:'Anton';font-size:15px;letter-spacing:.02em;color:var(--ink);text-transform:uppercase}.bene p{font-size:12.5px;color:var(--mid);margin-top:3px}
+.dots{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:7px;z-index:30}
+.db{width:7px;height:7px;border-radius:50%;background:rgba(0,0,0,.15);border:0;cursor:pointer}.db.on{width:22px;border-radius:4px;background:var(--gold)}
+.nav button{background:#241634;color:#fff;border:0;border-radius:10px;padding:9px 14px;cursor:pointer;font:800 13px/1 'Bricolage Grotesque'}
+.nav{display:flex;gap:10px;align-items:center;color:#8a7f98;font:700 12px 'Bricolage Grotesque'}
+</style></head>
+<body>
+<div class="phone">
+  <!-- CARTE -->
+  <section class="scr on">
+    <div class="strip"><div style="display:flex;align-items:center;gap:8px"><span class="ldot"></span><span class="strip-txt"><em>53 plages</em> surveillées en temps réel</span></div><span class="lbadge">LIVE</span></div>
+    <div class="body">
+      <h1>TA PLAGE,<br><span class="t">EN DIRECT.</span></h1>
+      <div class="tag">La carte de Martinique. <strong>Vert = propre, rouge = éviter.</strong> Simple.</div>
+      <div class="mapcard">
+        <div class="isl"></div>
+        <span class="pin" style="left:44%;top:30%;background:#16A34A"></span>
+        <span class="pin" style="left:58%;top:46%;background:#E8A800"></span>
+        <span class="pin" style="left:48%;top:62%;background:#16A34A"></span>
+        <span class="pin" style="left:40%;top:50%;background:#E8522A"></span>
+        <div class="lg"><b><i style="background:#16A34A"></i>Propre</b><b><i style="background:#E8A800"></i>Modéré</b><b><i style="background:#E8522A"></i>Éviter</b></div>
+      </div>
+      <div class="row"><div class="r-ic">🏖️</div><div class="r-main"><div class="r-name">Grande Anse d'Arlet</div><div class="r-sub">Sud · 12 min de Fort-de-France</div></div><span class="bdg ok">✓ Propre</span></div>
+      <div class="row"><div class="r-ic">🌊</div><div class="r-main"><div class="r-name">Le Diamant</div><div class="r-sub">Sud · 25 min</div></div><span class="bdg mid">⚠ Modéré</span></div>
+      <div class="row"><div class="r-ic">🏝️</div><div class="r-main"><div class="r-name">Sainte-Anne</div><div class="r-sub">Extrême Sud · 38 min</div></div><span class="bdg no">⊘ Éviter</span></div>
+    </div>
+  </section>
+
+  <!-- FICHE -->
+  <section class="scr">
+    <div class="hd"><span class="back">‹ Carte</span><span class="live"><span class="ldot"></span>EN DIRECT</span></div>
+    <div class="body">
+      <span class="bdg ok" style="align-self:flex-start;margin-bottom:12px;font-size:12px">● PROPRE · ANSE DUFOUR</span>
+      <h1>BAIGNADE <span class="g">OK</span><br>CE MATIN.</h1>
+      <div class="tag">L'état réel de l'eau ce matin — <strong>mesuré au satellite, pas deviné.</strong></div>
+      <div class="score"><div class="sc-n">86<small>/100</small></div><div style="flex:1"><div style="font-size:12px;font-weight:700;color:var(--ink)">7 facteurs · prévision 7 jours</div><div class="fc"><i style="background:#16A34A"></i><i style="background:#16A34A"></i><i style="background:#E8A800"></i><i style="background:#16A34A"></i><i style="background:#16A34A"></i><i style="background:#16A34A"></i><i style="background:#E8A800"></i></div></div></div>
+      <div class="row"><div class="r-ic">🌿</div><div class="r-main"><div class="r-name">Sargasses</div></div><span class="bdg ok">Faible</span></div>
+      <div class="row"><div class="r-ic">💨</div><div class="r-main"><div class="r-name">Houle & vent</div></div><span class="bdg mid">Modéré</span></div>
+      <div class="cta"><button class="btn">⭐ M'alerter avant que ça tourne<span>→</span></button></div>
+    </div>
+  </section>
+
+  <!-- PREMIUM -->
+  <section class="scr">
+    <div class="body" style="padding-top:34px">
+      <div class="lbadge" style="align-self:flex-start;margin-bottom:14px">LE VEILLEUR · PREMIUM</div>
+      <h1>SOIS <span class="t">PRÉVENU</span> AVANT QUE ÇA TOURNE.</h1>
+      <div class="tag" style="margin-top:12px">Tu pars l'esprit tranquille — <strong>on surveille ta plage pour toi.</strong></div>
+      <div class="bene"><b>🌅 Chaque matin</b><p>Ta meilleure plage du jour, par email.</p></div>
+      <div class="bene"><b>⚡ Alerte instantanée</b><p>Dès qu'une plage tourne, tu le sais avant tout le monde.</p></div>
+      <div class="proof" style="background:rgba(22,163,74,.07);border-color:rgba(22,163,74,.2)"><span style="font-size:18px;margin-right:10px">✅</span><div style="font-size:12px;color:var(--mid)"><strong style="color:var(--ink)">100% justes</strong> · 2 345 prévisions vérifiées · registre public</div></div>
+      <div class="proof"><div class="avs"><span class="av" style="background:linear-gradient(135deg,#FF6B6B,#FF8E53)">M</span><span class="av" style="background:linear-gradient(135deg,#4ECDC4,#44A08D)">K</span><span class="av" style="background:linear-gradient(135deg,#A18CD1,#FBC2EB)">J</span></div><div style="margin-left:14px;font-size:11.5px;color:var(--mid)"><strong style="color:var(--ink)">+2 400 Martiniquais</strong> alertés ce matin</div></div>
+      <div class="cta"><div style="text-align:center;font-size:12px;color:var(--mid);margin-bottom:8px">0,11 €/jour · moins qu'un café ☕</div><button class="btn">Je veux la prévision<span>→</span></button></div>
+    </div>
+  </section>
+  <div class="dots" id="dots"></div>
+</div>
+<div class="nav"><button onclick="go(-1)">‹ Préc</button><span id="lab"></span><button onclick="go(1)">Suiv ›</button></div>
+<script>
+const s=[...document.querySelectorAll('.scr')];let i=0;const d=document.getElementById('dots');s.forEach(()=>d.insertAdjacentHTML('beforeend','<i class="db"></i>'));
+const names=['CARTE','FICHE','PREMIUM'];
+function show(){s.forEach((e,k)=>e.classList.toggle('on',k===i));[...d.children].forEach((e,k)=>e.classList.toggle('on',k===i));document.getElementById('lab').textContent=names[i];}
+function go(x){i=(i+x+s.length)%s.length;show();}
+document.querySelector('.phone').addEventListener('click',()=>go(1));show();
+</script>
+</body></html>
