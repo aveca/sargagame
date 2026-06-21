@@ -12925,8 +12925,12 @@ export default function App(){
     Promise.all([
       fetch("/data/beaches-list.json").then(r=>r.json()).catch(()=>null),
       fetch("/api/copernicus/sargassum.json").then(r=>r.json()).catch(()=>null),
-      fetch("/api/weather/beaches-weather.json").then(r=>r.json()).catch(()=>null)
-    ]).then(([beachData,sargResult,beachWx])=>{
+      fetch("/api/weather/beaches-weather.json").then(r=>r.json()).catch(()=>null),
+      // Signalements FB (local, rapide) DANS le fetch principal → les pins affichent leur VRAI
+      // statut (escaladé par les signalements) dès le 1er rendu, au lieu de flasher vert puis
+      // rouge/jaune quand l'overlay différé arrivait après coup. (Apps Script = effet différé séparé.)
+      fetch("/api/community/fb-reports.json").then(r=>r.json()).catch(()=>null)
+    ]).then(([beachData,sargResult,beachWx,fbReports])=>{
       const perBeachWx=beachWx?.beaches||{}
       setBeachesWeather(perBeachWx)
       // 1. Build full beach list (strip stale status/afai from JSON)
@@ -13054,6 +13058,18 @@ export default function App(){
             }
             sargResult._enrichedWeekly=enrichedWeekly
           }
+        }
+      }
+      // Escalade signalements FB AVANT le 1er rendu (anti-flash vert→rouge/jaune). Même règle que
+      // l'overlay différé : on ne fait QU'escalader (consensus pire que le satellite), jamais adoucir.
+      if(fbReports?.reports){
+        const _RANK={clean:0,moderate:1,avoid:2}
+        for(let i=0;i<beaches.length;i++){
+          const b=beaches[i]; if(!b.status)continue
+          const r=fbReports.reports[b.id]||fbReports.reports[BEACH_TO_SARG[b.id]]
+          if(!r||!r.total||r.total<2)continue
+          const consensus=r.avoid>=r.moderate&&r.avoid>=r.clean?"avoid":r.moderate>=r.clean?"moderate":"clean"
+          if(_RANK[consensus]>_RANK[b.status])beaches[i]={...b,status:consensus,_communityOverride:true,_communityTotal:r.total}
         }
       }
       setAllBeaches(beaches)
