@@ -59,7 +59,7 @@ function renderWidget(beach, status, score, updatedAt, lang = "fr", islandCode =
       font-family: 'Bricolage Grotesque', sans-serif;
       color: #fff;
       overflow: hidden;
-      background: linear-gradient(135deg, #0B2230 0%, #155A5A 60%, #C97E3A 100%);
+      background: linear-gradient(135deg, #2e1a5e 0%, #6a2f9e 60%, #C97E3A 100%);
       width: 100vw;
       height: 100vh;
       display: flex;

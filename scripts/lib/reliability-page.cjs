@@ -11,7 +11,7 @@
  *   public/api/copernicus[/<region>]/sargassum.json (updatedAt, points de mesure)
  * Donnée absente → la section saute, on n'écrit RIEN à la place.
  *
- * Design aligné sur public/about/index.html (encre #0A1714, or #FFC72C, cards #10231E).
+ * Design aligné sur public/about/index.html (encre #160a26, or #FFC72C, cards #241246).
  */
 const fs = require('fs')
 const { icon: brandIcon } = require('./brand-icons.cjs')
@@ -521,7 +521,7 @@ if (capForm) {
 <script type="application/ld+json">${ldPage}</script>
 <script type="application/ld+json">${ldCrumb}</script>
 <style>
-  :root{--ink:#0A1714;--card:#10231E;--gold:#FFC72C;--teal:#3BA7A0;--mut:rgba(255,255,255,.62);--line:rgba(255,255,255,.09)}
+  :root{--ink:#160a26;--card:#241246;--gold:#FFC72C;--teal:#1c7fb0;--mut:rgba(255,255,255,.62);--line:rgba(255,255,255,.09)}
   *{margin:0;padding:0;box-sizing:border-box}
   body{background:var(--ink);color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.6}
   .page{max-width:560px;margin:0 auto;padding:0 22px calc(40px + env(safe-area-inset-bottom))}
@@ -592,7 +592,7 @@ if (capForm) {
   .regime-headline{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:14px;padding:14px 16px;color:#fff;font-size:15px;font-weight:600;line-height:1.5;margin-bottom:12px}
 
   .capture-card {
-    background: linear-gradient(135deg, #0d1e1c, #142824);
+    background: linear-gradient(135deg, #190c2c, #142824);
     border: 1px solid rgba(255,255,255,.08);
     border-radius: 16px;
     padding: 16px 20px;

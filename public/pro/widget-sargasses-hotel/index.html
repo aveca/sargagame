@@ -35,14 +35,14 @@
   .hero{position:relative;overflow:hidden;color:#fff;
     padding:calc(34px + env(safe-area-inset-top)) 22px 40px;
     background:radial-gradient(130% 72% at 78% 2%,rgba(255,224,160,.18),transparent 50%),
-               linear-gradient(158deg,#0B2230 0%,#155A5A 46%,#0A2A26 100%);}
+               linear-gradient(158deg,#2e1a5e 0%,#6a2f9e 46%,#241246 100%);}
   .hero .wrap{position:relative;z-index:2}
   .sun{position:absolute;top:-24%;right:-10%;width:74%;height:74%;pointer-events:none;z-index:1;
     background:radial-gradient(closest-side,rgba(255,243,214,.40),rgba(255,216,132,.16) 46%,transparent 72%);
     animation:sunBreath 12s ease-in-out infinite}
   @keyframes sunBreath{0%,100%{opacity:.9;transform:scale(1)}50%{opacity:1;transform:scale(1.04)}}
   .veilleur{position:absolute;top:14px;right:14px;width:78px;height:78px;z-index:3;opacity:.96}
-  .eyebrow{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#5FD3C9;margin:0 0 14px}
+  .eyebrow{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#3fd07f;margin:0 0 14px}
   h1{font-family:var(--sg-font-display);font-weight:400;font-size:clamp(30px,8vw,46px);
     line-height:1.02;letter-spacing:-.02em;margin:0 0 16px;max-width:18ch}
   .hero h1 em{font-style:normal;color:var(--sg-gold-l)}
@@ -50,7 +50,7 @@
   .ctas{display:flex;flex-wrap:wrap;gap:12px}
   .btn{display:inline-flex;align-items:center;gap:8px;border-radius:var(--sg-r-lg);
     padding:14px 22px;font-weight:800;font-size:15px;text-decoration:none;border:0;cursor:pointer;font-family:var(--sg-font-sans)}
-  .btn-gold{background:var(--sg-gold);color:#0A2A26;box-shadow:var(--sg-shadow-gold)}
+  .btn-gold{background:var(--sg-gold);color:#241246;box-shadow:var(--sg-shadow-gold)}
   .btn-gold:hover{background:var(--sg-gold-l)}
   .btn-ghost{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.22)}
   .btn-ghost:hover{background:rgba(255,255,255,.15)}
@@ -79,7 +79,7 @@
   .codewrap{position:relative;margin-top:8px}
   pre{background:#0B1A16;color:#e6f2ee;padding:16px 16px 14px;border-radius:var(--sg-r-lg);overflow-x:auto;font-size:13px;line-height:1.5;margin:0;border:1px solid rgba(255,255,255,.06)}
   pre code{font-family:var(--sg-font-mono);white-space:pre}
-  .copy{margin-top:12px;background:var(--sg-gold);color:#0A2A26;border:0;padding:11px 22px;border-radius:999px;font-weight:800;font-size:14px;cursor:pointer;font-family:var(--sg-font-sans)}
+  .copy{margin-top:12px;background:var(--sg-gold);color:#241246;border:0;padding:11px 22px;border-radius:999px;font-weight:800;font-size:14px;cursor:pointer;font-family:var(--sg-font-sans)}
   .copy:hover{background:var(--sg-gold-l)}
   .customlink{display:inline-block;margin-top:14px;margin-left:12px;font-size:14px;font-weight:700;color:var(--sg-teal);text-decoration:none}
   .customlink:hover{text-decoration:underline}
@@ -101,9 +101,9 @@
   .step p{font-size:13.5px;line-height:1.55;color:var(--sg-mid);margin:0}
 
   /* proof / moat */
-  .proof{background:linear-gradient(168deg,#0B2230,#0D1E1C 62%,#0A1714);color:#fff}
+  .proof{background:linear-gradient(168deg,#2e1a5e,#190c2c 62%,#160a26);color:#fff}
   .proof h2{color:#fff}
-  .proof .sec-eyebrow{color:#5FD3C9}
+  .proof .sec-eyebrow{color:#3fd07f}
   .proof .sub{color:rgba(255,255,255,.78)}
   .gauge{margin:6px 0 8px}
   .gauge .big{font-family:var(--sg-font-display);font-size:54px;line-height:1;color:var(--sg-clean)}
@@ -120,7 +120,7 @@
   @media (max-width:560px){.related{grid-template-columns:1fr}}
 
   /* final CTA band */
-  .cta-band{background:radial-gradient(120% 80% at 80% 0%,rgba(255,224,160,.16),transparent 55%),linear-gradient(158deg,#0B2230,#155A5A 60%,#0A2A26);color:#fff;text-align:center}
+  .cta-band{background:radial-gradient(120% 80% at 80% 0%,rgba(255,224,160,.16),transparent 55%),linear-gradient(158deg,#2e1a5e,#6a2f9e 60%,#241246);color:#fff;text-align:center}
   .cta-band h2{color:#fff}
   .cta-band p{color:rgba(255,255,255,.82);font-size:15px;line-height:1.6;max-width:48ch;margin:0 auto 24px}
   .cta-band .ctas{justify-content:center}
@@ -235,7 +235,7 @@
 
 <!-- CTA FINAL FORT -->
 <section class="cta-band px"><div class="wrap">
-  <p class="sec-eyebrow" style="color:#5FD3C9">Gratuit, en deux minutes</p>
+  <p class="sec-eyebrow" style="color:#3fd07f">Gratuit, en deux minutes</p>
   <h2>Mettez l'état de votre plage en direct sur votre site dès aujourd'hui.</h2>
   <p>Choisissez votre plage, vos couleurs, copiez le code. C'est gratuit, ça reste gratuit, et ça rassure vos clients en toute transparence.</p>
   <div class="ctas">
