@@ -234,7 +234,8 @@ if ($action === 'setup') {
 // setup → confirmSetup côté client → subscribe. AUCUN redirect.
 if ($action === 'subscribe') {
     $email = $input['email'] ?? '';
-    $plan = (($input['plan'] ?? 'monthly') === 'annual') ? 'annual' : 'monthly';
+    $planIn = $input['plan'] ?? 'monthly';
+    $plan = in_array($planIn, ['monthly', 'annual', 'pro_widget_monthly', 'pro_widget_annual'], true) ? $planIn : 'monthly';
     $setupIntentId = $input['setupIntentId'] ?? '';
     $lang = $input['lang'] ?? 'fr';
     $source = preg_replace('/[^a-zA-Z0-9_-]/', '', $input['source'] ?? 'unknown');
