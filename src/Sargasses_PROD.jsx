@@ -156,7 +156,7 @@ Object.assign(C,{
   sargD:"#5d400e",sargM:"#7a5c14",sargL2:"#8a6c1c",sargV:"#a8862a",
   stClean:"#27c46b",stMod:"#ffb02e",stAvoid:"#e8322a",stAvoidL:"#F4845F",
   gradClean:["#27c46b","#1ea75a"],gradMod:["#ffb02e","#d98a00"],gradAvoid:["#e8322a","#b8281f"],
-  satBody:"#C9971F",satTop:"#FFC72C",satWing:"#5b3a8e",moonCol:"#c9a0ff",
+  satBody:"#5b3a8e",satTop:"#FFC72C",satWing:"#5b3a8e",moonCol:"#c9a0ff",
 })
 /* ═══ SCENE_TOKENS — design-system golden-hour, SOURCE UNIQUE de la scène SVG
    (notre valeur). Extrait de BEACH_PHASE (vérifié byte-identique) + sable inline +
@@ -171,7 +171,7 @@ const SCENE_TOKENS={
     night: {sky:["#040B16","#0A1B2E","#10303B","#16424A"],seaT:"#0A2E2E",seaB:"#04140F",sand:"#15110D",sandNight:"#15110D",rim:"#9ADCD4",sun:"moon",glit:"#9ADCD4"},
   },
   sargasse:{base:"#7a5c14",dark:"#5d400e",light:"#8a6c1c",glint:"#a8862a",strand:"#6b4a12"},
-  sat:{body:"#C9971F",top:"#FFC72C",lens:"#07201E"},
+  sat:{body:"#5b3a8e",top:"#FFC72C",lens:"#07201E"},
 }
 const TY={
   title:{fontFamily:"'Anton',sans-serif",fontWeight:400,letterSpacing:".01em",textTransform:"uppercase"},
@@ -226,7 +226,7 @@ async function shareBeachCard(beach,lang,forecast){
     x.fillStyle="rgba(95,211,201,.16)";x.beginPath();x.arc(0,0,78,0,7);x.fill()
     x.fillStyle="#5b3a8e";RR(-84,-18,44,36,8);x.fill();RR(40,-18,44,36,8);x.fill()
     x.strokeStyle="#3fd07f";x.lineWidth=6;x.lineCap="round";x.beginPath();x.moveTo(0,-42);x.lineTo(0,-68);x.stroke();x.fillStyle="#3fd07f";x.beginPath();x.arc(0,-72,8,0,7);x.fill()
-    x.fillStyle="#C9971F";RR(-40,-40,80,80,20);x.fill();x.fillStyle="#FFC72C";RR(-40,-40,80,26,20);x.fill()
+    x.fillStyle="#5b3a8e";RR(-40,-40,80,80,20);x.fill();x.fillStyle="#FFC72C";RR(-40,-40,80,26,20);x.fill()
     x.fillStyle="#07201E";x.beginPath();x.arc(0,8,24,0,7);x.fill();x.fillStyle="#3fd07f";x.beginPath();x.arc(0,8,16,0,7);x.fill();x.fillStyle="#EAFBF8";x.beginPath();x.arc(-6,2,6,0,7);x.fill()
     x.restore()
     x.fillStyle="#fff";x.font="400 96px 'Anton',system-ui,sans-serif"
@@ -274,7 +274,7 @@ async function buildShareCard(opts){
     x.fillStyle="rgba(95,211,201,.16)";x.beginPath();x.arc(0,0,78,0,7);x.fill()
     x.fillStyle="#5b3a8e";RR(-84,-18,44,36,8);x.fill();RR(40,-18,44,36,8);x.fill()
     x.strokeStyle="#3fd07f";x.lineWidth=6;x.lineCap="round";x.beginPath();x.moveTo(0,-42);x.lineTo(0,-68);x.stroke();x.fillStyle="#3fd07f";x.beginPath();x.arc(0,-72,8,0,7);x.fill()
-    x.fillStyle="#C9971F";RR(-40,-40,80,80,20);x.fill();x.fillStyle="#FFC72C";RR(-40,-40,80,26,20);x.fill()
+    x.fillStyle="#5b3a8e";RR(-40,-40,80,80,20);x.fill();x.fillStyle="#FFC72C";RR(-40,-40,80,26,20);x.fill()
     x.fillStyle="#07201E";x.beginPath();x.arc(0,8,24,0,7);x.fill();x.fillStyle="#3fd07f";x.beginPath();x.arc(0,8,16,0,7);x.fill();x.fillStyle="#EAFBF8";x.beginPath();x.arc(-6,2,6,0,7);x.fill()
     x.restore()
     const n=Math.max(0,opts.streak||0),best=opts.best||n,gap=96
@@ -306,7 +306,7 @@ function _scChrome(x,W,H,RR,glyphY){
   x.fillStyle="rgba(95,211,201,.16)";x.beginPath();x.arc(0,0,78,0,7);x.fill()
   x.fillStyle="#5b3a8e";RR(-84,-18,44,36,8);x.fill();RR(40,-18,44,36,8);x.fill()
   x.strokeStyle="#3fd07f";x.lineWidth=6;x.lineCap="round";x.beginPath();x.moveTo(0,-42);x.lineTo(0,-68);x.stroke();x.fillStyle="#3fd07f";x.beginPath();x.arc(0,-72,8,0,7);x.fill()
-  x.fillStyle="#C9971F";RR(-40,-40,80,80,20);x.fill();x.fillStyle="#FFC72C";RR(-40,-40,80,26,20);x.fill()
+  x.fillStyle="#5b3a8e";RR(-40,-40,80,80,20);x.fill();x.fillStyle="#FFC72C";RR(-40,-40,80,26,20);x.fill()
   x.fillStyle="#07201E";x.beginPath();x.arc(0,8,24,0,7);x.fill();x.fillStyle="#3fd07f";x.beginPath();x.arc(0,8,16,0,7);x.fill();x.fillStyle="#EAFBF8";x.beginPath();x.arc(-6,2,6,0,7);x.fill()
   x.restore()
 }
@@ -614,7 +614,7 @@ function BeachScene({beach,reveal}){
           <g transform="translate(482,80)">
             <rect x="-17" y="-3" width="9" height="6.5" rx="1.5" fill={t.rim} opacity=".85"/>
             <rect x="8" y="-3" width="9" height="6.5" rx="1.5" fill={t.rim} opacity=".85"/>
-            <rect x="-6.5" y="-6.5" width="13" height="13" rx="3.2" fill="#C9971F"/>
+            <rect x="-6.5" y="-6.5" width="13" height="13" rx="3.2" fill="#5b3a8e"/>
             <rect x="-6.5" y="-6.5" width="13" height="4.2" rx="3.2" fill="#FFC72C"/>
             <circle cx="0" cy="1.4" r="3.2" fill="#07201E"/><circle cx="0" cy="1.4" r="2.2" fill={t.glit}/>
           </g>
@@ -1314,7 +1314,7 @@ function miVeil(cx,cy,wing,lens){
     <circle r="30" fill={wing} opacity=".14"/>
     <rect x="-30" y="-7" width="16" height="14" rx="3" fill={wing}/><rect x="14" y="-7" width="16" height="14" rx="3" fill={wing}/>
     <line x1="0" y1="-14" x2="0" y2="-25" stroke={lens} strokeWidth="2" strokeLinecap="round"/><circle cx="0" cy="-27" r="2.4" fill={lens}/>
-    <rect x="-14" y="-14" width="28" height="28" rx="8" fill="#C9971F"/><rect x="-14" y="-14" width="28" height="9" rx="8" fill="#FFC72C"/>
+    <rect x="-14" y="-14" width="28" height="28" rx="8" fill="#5b3a8e"/><rect x="-14" y="-14" width="28" height="9" rx="8" fill="#FFC72C"/>
     <circle cx="0" cy="3" r="8" fill="#07201E"/><circle cx="0" cy="3" r="5.5" fill={lens}/><circle cx="-2" cy="1" r="2" fill="#EAFBF8"/>
   </g>)
 }
@@ -9486,7 +9486,7 @@ function HeroScene(){
           <g transform="translate(474,78) scale(.62)">
             <rect x="-26" y="-3" width="15" height="7" rx="1.5" fill="#5b3a8e"/>
             <rect x="11" y="-3" width="15" height="7" rx="1.5" fill="#5b3a8e"/>
-            <rect x="-10" y="-9" width="20" height="17" rx="2.5" fill="#C9971F"/>
+            <rect x="-10" y="-9" width="20" height="17" rx="2.5" fill="#5b3a8e"/>
             <rect x="-10" y="-9" width="20" height="6" rx="2.5" fill="#FFC72C"/>
           </g>
           <polygon points="470,90 478,90 452,318 420,318" fill="url(#sghCol)" opacity={t.beam}/>
@@ -9742,7 +9742,7 @@ function ScrollStory({lang,onShowMap}){
               <g className="sgst-ring2" style={fb}><circle r="30" fill="none" stroke="#5b3a8e" strokeWidth="1.3"/></g>
               <rect x="-30" y="-4" width="18" height="9" rx="1.5" fill="#5b3a8e"/>
               <rect x="12" y="-4" width="18" height="9" rx="1.5" fill="#5b3a8e"/>
-              <rect x="-13" y="-11" width="26" height="22" rx="3" fill="#C9971F"/>
+              <rect x="-13" y="-11" width="26" height="22" rx="3" fill="#5b3a8e"/>
               <rect x="-13" y="-11" width="26" height="7" rx="3" fill="#FFC72C"/>
               <circle cx="0" cy="16" r="3.2" fill="#E8EDF2"/>
             </g>
@@ -9810,7 +9810,7 @@ function ScrollStory({lang,onShowMap}){
               <g className="sgst-ring" style={fb}><circle r="20" fill="none" stroke="#5b3a8e" strokeWidth="1.4"/></g>
               <rect x="-22" y="-3" width="13" height="7" rx="1.5" fill="#5b3a8e"/>
               <rect x="9" y="-3" width="13" height="7" rx="1.5" fill="#5b3a8e"/>
-              <rect x="-10" y="-8" width="20" height="16" rx="2.5" fill="#C9971F"/>
+              <rect x="-10" y="-8" width="20" height="16" rx="2.5" fill="#5b3a8e"/>
               <rect x="-10" y="-8" width="20" height="5" rx="2.5" fill="#FFC72C"/>
             </g>
             {/* mer en coupe */}
@@ -10176,7 +10176,7 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
             <polygon points="-8,16 8,16 44,330 -44,330" fill="url(#gfBeam)" opacity=".5"/>
             <rect x="-30" y="-4" width="19" height="8" rx="1.5" fill="#5b3a8e"/>
             <rect x="11" y="-4" width="19" height="8" rx="1.5" fill="#5b3a8e"/>
-            <rect x="-12" y="-11" width="24" height="21" rx="3" fill="#C9971F"/>
+            <rect x="-12" y="-11" width="24" height="21" rx="3" fill="#5b3a8e"/>
             <rect x="-12" y="-11" width="24" height="7" rx="3" fill="#FFC72C"/>
           </g>
           {/* la ligne de scan balaie la baie */}
@@ -10197,7 +10197,7 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
             <g transform="scale(.7)">
               <rect x="-26" y="-3" width="15" height="6" rx="1.2" fill="#5b3a8e"/>
               <rect x="11" y="-3" width="15" height="6" rx="1.2" fill="#5b3a8e"/>
-              <rect x="-9" y="-8" width="18" height="15" rx="2" fill="#C9971F"/>
+              <rect x="-9" y="-8" width="18" height="15" rx="2" fill="#5b3a8e"/>
               <rect x="-9" y="-8" width="18" height="5" rx="2" fill="#FFC72C"/>
             </g>
           </g>
