@@ -87,6 +87,13 @@ export default function WorldMapView({
       .catch(()=>setLoadErr(true))
   },[island])
 
+  // Grille satellite AFAI (la matière sur l'eau) — pour la dessiner sur la carte SVG.
+  const[afaiGrid,setAfaiGrid]=useState(null)
+  useEffect(()=>{
+    fetch("/api/copernicus/sargassum-grid.json").then(r=>r.json())
+      .then(d=>{if(d&&d.points&&d.points.length)setAfaiGrid(d)}).catch(()=>{})
+  },[])
+
   // toVB(lat,lng) → [vx,vy] dans l'espace viewBox 800×600
   const toVB = useMemo(()=>{
     if(!outline) return null
@@ -114,6 +121,25 @@ export default function WorldMapView({
         return{...b,vx,vy,days}
       })
   },[beaches,island,toVB])
+
+  // Couche sargasses : points satellite AFAI projetés sur la scène SVG, colorés par
+  // intensité. Même filtre île que la carte Leaflet (split lat 15.5 = grille Caraïbe
+  // partagée MQ/GP). Seuil 0.10 = on ne dessine QUE le sargasse réel (la mer propre
+  // reste propre, pas de voile vert parasite). Filtre viewport = on jette les points
+  // hors-écran (la grille couvre toute la Caraïbe).
+  const sargCells = useMemo(()=>{
+    if(!toVB||!afaiGrid||!afaiGrid.points) return []
+    const isMQGP=island==="mq"||island==="gp"
+    const pts=isMQGP?afaiGrid.points.filter(p=>island==="gp"?p[0]>=15.5:p[0]<15.5):afaiGrid.points
+    const out=[]
+    for(const[lat,lng,afai]of pts){
+      if(afai<0.10) continue
+      const[vx,vy]=toVB(lat,lng)
+      if(vx<-60||vx>860||vy<-60||vy>660) continue
+      out.push({vx,vy,afai})
+    }
+    return out
+  },[afaiGrid,island,toVB])
 
   // P7 — recherche : plages dont le nom matche la requête (max 6).
   const matches = useMemo(()=>{
@@ -560,6 +586,17 @@ export default function WorldMapView({
             {/* CONTOUR ENCRE comic épais — fait POPPER l'île sur la mer */}
             <path d={outline.path} fill="none" stroke={INK} strokeWidth="3" strokeLinejoin="round"/>
           </>}
+
+          {/* Couche SARGASSES (satellite AFAI) — la matière sur l'eau, ce que les gens
+              viennent voir. Sous les pins (donnée, pas alarme) ; opacité ∝ intensité. */}
+          {sargCells.length>0 && <g style={{pointerEvents:"none"}}>
+            {sargCells.map((c,i)=>(
+              <circle key={i} cx={c.vx.toFixed(1)} cy={c.vy.toFixed(1)}
+                r={(9+c.afai*30).toFixed(1)}
+                fill={c.afai<.40?"#5c6b2a":"#3d2f12"}
+                opacity={Math.min(.72,.30+c.afai*1.0).toFixed(2)}/>
+            ))}
+          </g>}
 
           {/* Relief Martinique — collines comic (ombre verte + crête ensoleillée) */}
           {reliefEls.map(({vx,vy,rx},i)=>(
