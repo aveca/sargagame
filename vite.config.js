@@ -1352,6 +1352,21 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
               clean: 'Petit-Havre Sud au Gosier (Guadeloupe) — plage propre en temps réel. Crique abritée de la côte sud de Grande-Terre, eaux calmes, idéal familles. Carte sargasses Guadeloupe et prévisions 7 jours.',
               moderate: 'Sargasses à Petit-Havre Sud (Le Gosier, Guadeloupe) — présence modérée détectée en temps réel. Crique de la côte sud de Grande-Terre. Idéal familles. Carte et prévisions 7 jours.',
               avoid: 'Alerte sargasses à Petit-Havre Sud (Le Gosier, Guadeloupe) — forte concentration détectée en temps réel. Voir les plages propres à proximité du Gosier sur la carte en temps réel.'
+            },
+            'Plage du Moule': {
+              clean: 'Plage du Moule (Guadeloupe) — propre en temps réel. Plage du bourg (l\'Autre Bord) sur la côte Atlantique de Grande-Terre, spot de surf et bodyboard, idéal familles. Carte sargasses Guadeloupe et prévisions 7 jours.',
+              moderate: 'Sargasses à la Plage du Moule (Guadeloupe) — présence modérée détectée en temps réel. Côte Atlantique de Grande-Terre, spot de surf. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à la Plage du Moule (Guadeloupe) — forte concentration côte Atlantique. Voir les plages propres à proximité du Moule sur la carte en temps réel.'
+            },
+            'Plage Pain de Sucre': {
+              clean: 'Plage Pain de Sucre à Terre-de-Haut (Les Saintes, Guadeloupe) — propre en temps réel. Crique emblématique au pied du piton volcanique, côte sous-le-vent, snorkeling exceptionnel. Généralement protégée des sargasses. Prévisions 7 jours.',
+              moderate: 'Sargasses à la Plage Pain de Sucre (Les Saintes, Guadeloupe) — présence modérée détectée en temps réel. Archipel des Saintes, côte sous-le-vent. Snorkeling. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à la Plage Pain de Sucre (Terre-de-Haut, Les Saintes, Guadeloupe) — forte concentration détectée en temps réel. Voir les criques propres des Saintes à proximité.'
+            },
+            'Porte d\'Enfer': {
+              clean: 'Porte d\'Enfer à Anse-Bertrand (Guadeloupe) — lagon propre en temps réel. Lagon naturel abrité par une barrière de récif, pointe nord de Grande-Terre, côte Atlantique. Carte sargasses Guadeloupe et prévisions 7 jours.',
+              moderate: 'Sargasses à Porte d\'Enfer (Anse-Bertrand, Guadeloupe) — présence modérée détectée en temps réel. Lagon de la pointe nord de Grande-Terre, côte Atlantique. Carte et prévisions 7 jours.',
+              avoid: 'Alerte sargasses à Porte d\'Enfer (Anse-Bertrand, Guadeloupe) — forte concentration côte Atlantique. Voir les plages propres à proximité sur la carte en temps réel.'
             }
           }
           let sitemapMQBeaches = ''
