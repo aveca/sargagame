@@ -6280,11 +6280,11 @@ function B2BModal({lang,onClose}){
             onKeyDown={e=>{if(e.key==="Enter")submit()}}
             placeholder={_t(lang,"Votre email pro","Your work email","Su email de trabajo")}
             style={{width:"100%",padding:"14px 15px",borderRadius:13,border:`2.5px solid ${I.ink}`,background:"#fff",font:"700 15px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:11,boxShadow:`inset 2px 2px 0 rgba(13,11,20,.06)`}}/>
-          <button onClick={submit} disabled={!valid} style={{width:"100%",textAlign:"center",font:"800 16px/1 'Bricolage Grotesque'",padding:16,borderRadius:15,border:`3px solid ${I.ink}`,boxShadow:`3px 3px 0 ${I.ink}`,background:valid?I.gold:"#e7e2d4",color:I.ink,cursor:valid?"pointer":"default",opacity:valid?1:.7}}>{_t(lang,"Être recontacté·e →","Get a callback →","Que me contacten →")}</button>
-          <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:I.sub,textAlign:"center",marginTop:9}}>{_t(lang,"Sans engagement · réponse d'un humain sous 24 h","No commitment · a human replies within 24h","Sin compromiso · respuesta humana en 24 h")}</div>
+          <button onClick={submit} disabled={!valid} style={{width:"100%",textAlign:"center",font:"800 16px/1 'Bricolage Grotesque'",padding:16,borderRadius:15,border:`3px solid ${I.ink}`,boxShadow:`3px 3px 0 ${I.ink}`,background:valid?I.gold:"#e7e2d4",color:I.ink,cursor:valid?"pointer":"default",opacity:valid?1:.7}}>{_t(lang,"Recevoir le brief gratuit →","Get the free brief →","Recibir el resumen gratis →")}</button>
+          <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:I.sub,textAlign:"center",marginTop:9}}>{_t(lang,"100% automatique · sans appel · stop quand vous voulez","100% automated · no call · stop anytime","100% automático · sin llamada · pare cuando quiera")}</div>
         </>:<>
-          <div style={{fontFamily:"'Anton',sans-serif",fontSize:26,lineHeight:1,textTransform:"uppercase",letterSpacing:"-.5px",color:"#1c8f4e",margin:"15px 0 8px"}}>{_t(lang,"Bien reçu ✓","Got it ✓","Recibido ✓")}</div>
-          <div style={{font:"600 14px/1.5 'Bricolage Grotesque'",color:"#41414a",marginBottom:16}}>{_t(lang,"On vous écrit sous 24 h pour caler 15 minutes et vous montrer l'état de VOS plages en direct.","We'll email you within 24h to set up 15 minutes and show you YOUR beaches live.","Le escribimos en 24 h para agendar 15 minutos y mostrarle SUS playas en directo.")}</div>
+          <div style={{fontFamily:"'Anton',sans-serif",fontSize:26,lineHeight:1,textTransform:"uppercase",letterSpacing:"-.5px",color:"#1c8f4e",margin:"15px 0 8px"}}>{_t(lang,"C'est parti ✓","You're in ✓","¡Listo ✓")}</div>
+          <div style={{font:"600 14px/1.5 'Bricolage Grotesque'",color:"#41414a",marginBottom:16}}>{_t(lang,"Vous recevrez le brief quotidien de l'état de vos plages par email — automatique, sans appel, stop quand vous voulez.","You'll get the daily brief of your beaches by email — automated, no call, stop anytime.","Recibirá el resumen diario de sus playas por email — automático, sin llamada, pare cuando quiera.")}</div>
           <button onClick={onClose} style={{width:"100%",textAlign:"center",font:"800 15px/1 'Bricolage Grotesque'",padding:15,borderRadius:15,border:`3px solid ${I.ink}`,boxShadow:`3px 3px 0 ${I.ink}`,background:I.gold,color:I.ink,cursor:"pointer"}}>{_t(lang,"Fermer","Close","Cerrar")}</button>
         </>}
       </div>
@@ -13158,9 +13158,13 @@ export default function App(){
   // la page de confiance /a-propos/ dont les CTA étaient href="#" morts. source = utm_source.
   // /alertes/ = landing page hot-intent (cherché "alertes sargasses") → ouvre paywall direct.
   // Distinct du general auto-open désactivé L11319 (intention tiède) : ici l'intention est CHAUDE.
+  // Capture B2B PRO (self-serve, sans appel) — joignable en deep-link ?pro=1
+  // depuis l'email d'outreach B2B. Brief quotidien gratuit, drip automatique.
+  const [showProB2B,setShowProB2B]=useState(false)
   useEffect(()=>{try{
     const p=new URLSearchParams(window.location.search)
     if(p.get("paywall")==="1"){const u=p.get("utm_source");openPremium(u?("deeplink_"+u).slice(0,40):"deeplink");window.history.replaceState({},"",window.location.pathname)}
+    else if(p.get("pro")==="1"){setShowProB2B(true);try{track("sg_b2b_open",{source:"deeplink_pro"})}catch(_){};window.history.replaceState({},"",window.location.pathname)}
     else if(/\/(alertes|sargassum-alerts|alertas-sargazo)\/?$/.test(window.location.pathname)){openPremium("alertes_landing")}
   }catch(_){}},[openPremium])
 
@@ -13750,6 +13754,9 @@ export default function App(){
         {showPremium&&<PremiumModal onClose={()=>setShowPremium(false)} lang={lang} source={premiumSource}
           onActivated={()=>{setIsPremium(true);setShowWelcome(true)}} sargData={sargData} island={island}
           beach={selectedBeach||null}/>}
+
+        {/* B2B PRO (self-serve) — deep-link ?pro=1 depuis l'outreach B2B */}
+        {showProB2B&&<B2BModal lang={lang} onClose={()=>setShowProB2B(false)}/>}
 
         {/* JOURNAL DU VEILLEUR — nouveautés pour visiteurs qui reviennent (gated wn1).
             Garde-fous : jamais par-dessus le hero/onboarding/paywall/fiche ouverte. */}

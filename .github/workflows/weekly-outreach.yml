@@ -36,10 +36,10 @@ jobs:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         run: node scripts/automation/auto-outreach.cjs
 
-      # ── 1b. Prospection B2B sortante (hôtels/clubs/offices/mairies) ─
-      #   Faible volume (max 4/run), opt-out, cross-dédup avec le backlink.
-      #   Auto-gated : sans RESEND_API_KEY → ne fait rien. UN seul email/cible.
-      - name: B2B outreach (hôtels & collectivités, faible volume)
+      # ── 1b. Prospection B2B sortante SELF-SERVE (le bot prospecte, pas le fondateur).
+      #   CTA = brief quotidien auto + widget gratuit (AUCUN appel demandé).
+      #   Faible volume (max 4/run), opt-out, cross-dédup, auto-gated sur RESEND_API_KEY.
+      - name: B2B outreach (self-serve, faible volume)
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         run: node scripts/automation/b2b-outreach.cjs
