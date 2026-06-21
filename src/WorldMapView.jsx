@@ -44,8 +44,11 @@ function fmtFresh(updatedAt){
 
 // Couleur antenne Veilleur selon proportion propres
 function vantColor(beachList, day){
-  const n=beachList.length; if(!n) return "#27c46b"
-  const c=beachList.filter(b=>(b.days[day]||"clean")==="clean").length
+  // Compte parmi les statuts CONNUS uniquement : tant que rien n'est chargé, œil NEUTRE (gris),
+  // sinon on flasherait vert ou rouge à tort pendant le loading.
+  const known=beachList.filter(b=>{const s=b.days[day];return s==="clean"||s==="moderate"||s==="avoid"})
+  const n=known.length; if(!n) return "#9aa0a8"
+  const c=known.filter(b=>b.days[day]==="clean").length
   return c/n>=.6?"#27c46b":c/n>=.35?"#ffd23f":"#e8322a"
 }
 
@@ -70,6 +73,7 @@ export default function WorldMapView({
 
   const [outline, setOutline]   = useState(null)
   const [bakedUrl, setBakedUrl] = useState(null)  // PNG data-URL du monde statique baké (GPU-composité)
+  const [pinTier,  setPinTier]  = useState({})    // id→'dot'|'full' : déclutter des pins denses (zoom-aware)
   const [loadErr, setLoadErr]   = useState(false)
   const [day,     setDay]       = useState(0)
   const [selected, setSelected] = useState(null)  // beach object enrichi
@@ -115,7 +119,7 @@ export default function WorldMapView({
       .map(b=>{
         const[vx,vy]=toVB(b.lat,b.lng)
         const seed=(b.id||b.name||"x").split("").reduce((a,c)=>a+c.charCodeAt(0),0)
-        const days=[b.status||"clean"]
+        const days=[b.status||null] // null = statut PAS encore chargé → pin gris (jamais vert par défaut)
         for(let d=1;d<6;d++){
           const r=((seed*9301+d*49297)%233280)/233280
           days.push(r<.62?"clean":r<.86?"moderate":"avoid")
@@ -240,10 +244,32 @@ export default function WorldMapView({
       else { bx.el.style.visibility='visible'; kept.push(bx) }
     })
   },[])
+  // Déclutter des PINS (bugs « pins superposés / noms illisibles ») : dans un cluster dense au zoom
+  // courant, on garde les prioritaires (sélectionné > score) en pin entier, les autres deviennent un
+  // petit POINT cliquable. Recalc AU REPOS (jamais pendant le geste). Zoom in → le seuil viewBox
+  // rétrécit → les points redeviennent des pins entiers (séparation géographique).
+  const recomputeTiers=useCallback(()=>{
+    const el=wrapRef.current
+    if(!el||!beachList.length){ setPinTier({}); return }
+    const k=camRef.current.k
+    const s=Math.min(el.clientWidth/800,el.clientHeight/600)||0.5
+    const minVB=34/Math.max(0.0001,k*s) // 34px de séparation écran mini entre 2 pins entiers
+    const order=[...beachList].sort((a,b)=>
+      ((b.id===selected?.id?1e6:0)+(b.score||0))-((a.id===selected?.id?1e6:0)+(a.score||0)))
+    const placed=[], tier={}
+    for(const b of order){
+      let close=false
+      for(const p of placed){ const dx=p.vx-b.vx, dy=p.vy-b.vy; if(dx*dx+dy*dy<minVB*minVB){ close=true; break } }
+      if(close) tier[b.id]='dot'; else { tier[b.id]='full'; placed.push(b) }
+    }
+    setPinTier(tier)
+  },[beachList,selected])
   const scheduleDeclutter=useCallback(()=>{
     if(declutterRef.current) clearTimeout(declutterRef.current)
-    declutterRef.current=setTimeout(()=>{ declutterRef.current=0; declutter() },90)
-  },[declutter])
+    declutterRef.current=setTimeout(()=>{ declutterRef.current=0; recomputeTiers(); declutter() },90)
+  },[declutter,recomputeTiers])
+  // Recalc aussi quand données/sélection changent (positions prêtes la frame d'après).
+  useEffect(()=>{ const id=requestAnimationFrame(()=>recomputeTiers()); return ()=>cancelAnimationFrame(id) },[recomputeTiers])
 
   const writeCam=useCallback(()=>{
     const g=worldRef.current; if(!g) return
@@ -471,7 +497,7 @@ export default function WorldMapView({
 
   const noAnim   = reduceRef.current
   const regionName= outline?.name||(island==="mq"?"Martinique":island==="gp"?"Guadeloupe":island)
-  const cleanCnt  = beachList.filter(b=>(b.days[day]||"clean")==="clean").length
+  const cleanCnt  = beachList.filter(b=>b.days[day]==="clean").length // inconnu ≠ propre (anti-flash)
   const dayLbl    = day===0?_t(lang,"aujourd'hui","today","hoy"):_t(lang,`dans ${day}j`,`in ${day}d`,`en ${day}d`)
   const vant      = vantColor(beachList,day)
 
@@ -669,9 +695,21 @@ export default function WorldMapView({
 
           {/* Pins plages — marqueurs comic teardrop ink-outline */}
           {beachList.map(b=>{
-            const st=b.days[day]||"clean"
+            const st=b.days[day] // null tant que le statut n'est pas chargé → pin GRIS, pas vert
             const isSel=selected?.id===b.id
-            const fill=st==="clean"?"url(#wmPinClean)":st==="moderate"?"url(#wmPinMod)":"url(#wmPinAvoid)"
+            // Rétrogradé en point dans un cluster dense (sauf le sélectionné) → petit point cliquable,
+            // hit-zone élargie, pas de label. Tap → ouvre la fiche (funnel préservé).
+            if(pinTier[b.id]==="dot"&&!isSel){
+              const dotCol=st==="clean"?"#27c46b":st==="moderate"?"#ffd23f":st==="avoid"?"#e8322a":"#9aa0a8"
+              return(
+                <g key={b.id} transform={`translate(${b.vx.toFixed(1)} ${b.vy.toFixed(1)})`} style={{cursor:"pointer"}}
+                  onClick={e=>{ e.stopPropagation(); selectBeach(b); if(onOpenBeach){ try{track&&track("sg_beach_open",{from:"map_dot"})}catch(_){}; onOpenBeach(b) } }}>
+                  <circle r="8" fill="transparent"/>
+                  <circle r="3.2" fill={dotCol} stroke={INK} strokeWidth="1"/>
+                </g>
+              )
+            }
+            const fill=st==="clean"?"url(#wmPinClean)":st==="moderate"?"url(#wmPinMod)":st==="avoid"?"url(#wmPinAvoid)":"#9aa0a8"
             const s=isSel?1.18:1
             return(
               <g key={b.id}
@@ -737,7 +775,7 @@ export default function WorldMapView({
       {/* Labels plages — couche HTML screen-space (hors transform SVG → taille pixel constante) */}
       <div ref={labelLayerRef} style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:5,overflow:"hidden"}}>
         {beachList.filter(b=>labeledIds.has(b.id)).map(b=>{
-          const st=b.days[day]||"clean"
+          const st=b.days[day]
           const col=STATUS_C[st]||"#888"
           const li=lang==="en"?1:lang==="es"?2:0
           return(
