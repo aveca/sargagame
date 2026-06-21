@@ -26,6 +26,9 @@ jobs:
           SG_STATS_KEY: ${{ secrets.SG_STATS_KEY }}
           SG_STATS_KEY_MQ: ${{ secrets.SG_STATS_KEY_MQ }}
           SG_STATS_KEY_GP: ${{ secrets.SG_STATS_KEY_GP }}
+          SG_STATS_KEY_FLORIDA: ${{ secrets.SG_STATS_KEY_FLORIDA }}
+          SG_STATS_KEY_PUNTACANA: ${{ secrets.SG_STATS_KEY_PUNTACANA }}
+          SG_STATS_KEY_RIVIERAMAYA: ${{ secrets.SG_STATS_KEY_RIVIERAMAYA }}
       - name: Upload UX alerts
         uses: actions/upload-artifact@v4
         with:
