@@ -71,7 +71,7 @@ export default function ArenaOnboarding({onDone,onSkip,lang="fr",track,region=nu
         .arena-onb.bg-sky{background:
           radial-gradient(rgba(13,11,20,.13) 1.2px,transparent 1.3px) 0 0/8px 8px,
           radial-gradient(rgba(13,11,20,.13) 1.2px,transparent 1.3px) 4px 4px/8px 8px,
-          linear-gradient(170deg,#2bb6ef,#62c8ee 34%,#ffc187 72%,#ff944a)}
+          linear-gradient(170deg,#2e1a5e,#6a2f9e 34%,#ffc187 72%,#ff944a)}
         .arena-onb.bg-night{background:
           radial-gradient(rgba(255,255,255,.06) 1.2px,transparent 1.3px) 0 0/8px 8px,
           linear-gradient(180deg,#10202b,#0c2a3a 60%,#3a2a18)}
@@ -119,7 +119,7 @@ export default function ArenaOnboarding({onDone,onSkip,lang="fr",track,region=nu
       {step===0 && (<>
         <div style={{textAlign:"center",marginTop:18,filter:"drop-shadow(3px 4px 0 rgba(0,0,0,.35))"}}>
           <svg viewBox="0 0 120 120" width="96" height="96" aria-hidden="true" style={{display:'block',margin:"0 auto"}}>
-            <g stroke="#0d0b14" strokeWidth="2.5"><rect x="6" y="50" width="20" height="22" rx="2" fill="#27a9e3"/><rect x="94" y="50" width="20" height="22" rx="2" fill="#27a9e3"/><line x1="26" y1="61" x2="40" y2="61"/><line x1="94" y1="61" x2="80" y2="61"/></g>
+            <g stroke="#0d0b14" strokeWidth="2.5"><rect x="6" y="50" width="20" height="22" rx="2" fill="#5b3a8e"/><rect x="94" y="50" width="20" height="22" rx="2" fill="#5b3a8e"/><line x1="26" y1="61" x2="40" y2="61"/><line x1="94" y1="61" x2="80" y2="61"/></g>
             <circle cx="60" cy="62" r="34" fill="#fdf6e3" stroke="#0d0b14" strokeWidth="3"/>
             <line x1="60" y1="28" x2="60" y2="14" stroke="#0d0b14" strokeWidth="3"/>
             <circle cx="60" cy="11" r="5" fill="#ffd23f" stroke="#0d0b14" strokeWidth="2.5"/>
@@ -153,7 +153,7 @@ export default function ArenaOnboarding({onDone,onSkip,lang="fr",track,region=nu
           overflow:"hidden",boxShadow:"5px 5px 0 #0d0b14"}}>
           <div style={{position:"absolute",top:8,left:"50%",transform:"translateX(-50%)",filter:"drop-shadow(2px 2px 0 rgba(0,0,0,.5))"}}>
             <svg viewBox="0 0 120 120" width="64" height="64" aria-hidden="true" style={{display:'block'}}>
-              <g stroke="#0d0b14" strokeWidth="2.5"><rect x="6" y="50" width="20" height="22" rx="2" fill="#27a9e3"/><rect x="94" y="50" width="20" height="22" rx="2" fill="#27a9e3"/><line x1="26" y1="61" x2="40" y2="61"/><line x1="94" y1="61" x2="80" y2="61"/></g>
+              <g stroke="#0d0b14" strokeWidth="2.5"><rect x="6" y="50" width="20" height="22" rx="2" fill="#5b3a8e"/><rect x="94" y="50" width="20" height="22" rx="2" fill="#5b3a8e"/><line x1="26" y1="61" x2="40" y2="61"/><line x1="94" y1="61" x2="80" y2="61"/></g>
               <circle cx="60" cy="62" r="34" fill="#fdf6e3" stroke="#0d0b14" strokeWidth="3"/>
               <line x1="60" y1="28" x2="60" y2="14" stroke="#0d0b14" strokeWidth="3"/>
               <circle cx="60" cy="11" r="5" fill="#ffd23f" stroke="#0d0b14" strokeWidth="2.5"/>
@@ -183,7 +183,7 @@ export default function ArenaOnboarding({onDone,onSkip,lang="fr",track,region=nu
         <div className="sub">{L(t.terrainSub,lang)}</div>
         <div className="stack">
           <div className="panel" style={{padding:0,overflow:"hidden",position:"relative",borderWidth:4}}>
-            <div style={{background:"linear-gradient(90deg,#2bb6a6,#0f7d72)",padding:"10px 12px",display:"flex",alignItems:"center",gap:8,borderBottom:"3px solid #0d0b14"}}>
+            <div style={{background:"linear-gradient(90deg,#3e2470,#0f7d72)",padding:"10px 12px",display:"flex",alignItems:"center",gap:8,borderBottom:"3px solid #0d0b14"}}>
               <span style={{fontSize:30}}>🏝️</span>
               <span style={{flex:1}}>
                 <span style={{display:"block",fontFamily:"Anton",color:"#fff",fontSize:18,textShadow:"1.5px 1.5px 0 #0d0b14"}}>{RL?RL.toUpperCase():"MARTINIQUE"}</span>

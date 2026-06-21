@@ -626,8 +626,8 @@ export default function WorldMapView({
           <circle cx="60" cy="60" r="46" fill="url(#wmPhalo)"/>
           {/* panneaux solaires comic ink */}
           <g stroke="#0d0b14" strokeWidth="2.5">
-            <rect x="2"   y="50" width="30" height="20" rx="3" fill="#27a9e3" transform="rotate(-8 17 60)"/>
-            <rect x="88"  y="50" width="30" height="20" rx="3" fill="#27a9e3" transform="rotate(8 103 60)"/>
+            <rect x="2"   y="50" width="30" height="20" rx="3" fill="#5b3a8e" transform="rotate(-8 17 60)"/>
+            <rect x="88"  y="50" width="30" height="20" rx="3" fill="#5b3a8e" transform="rotate(8 103 60)"/>
             <line x1="32" y1="60" x2="46" y2="60"/><line x1="88" y1="60" x2="74" y2="60"/>
           </g>
           {/* corps crème */}
