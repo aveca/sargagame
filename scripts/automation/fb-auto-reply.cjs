@@ -45,6 +45,26 @@ const MAX_AGE_H = 72
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)) }
 function jitter(minS, maxS) { return (minS + Math.random() * (maxS - minS)) * 1000 }
 
+// Liveness check — never post a reply whose link 404s (cf. validate-hrefs rule).
+// 2xx/3xx (and 405 = HEAD-not-allowed but page exists) = alive; anything else,
+// or a network error/timeout, is treated as NOT alive → skip (conservative).
+function urlAlive(url, timeoutMs = 8000) {
+  return new Promise(resolve => {
+    let done = false
+    const finish = v => { if (!done) { done = true; resolve(v) } }
+    try {
+      const lib = require(url.startsWith('http://') ? 'http' : 'https')
+      const req = lib.request(url, { method: 'HEAD', timeout: timeoutMs }, res => {
+        finish(res.statusCode < 400 || res.statusCode === 405)
+        res.destroy()
+      })
+      req.on('timeout', () => { req.destroy(); finish(false) })
+      req.on('error', () => finish(false))
+      req.end()
+    } catch { finish(false) }
+  })
+}
+
 function loadFeed() {
   try { return JSON.parse(fs.readFileSync(FEED_PATH, 'utf-8')) }
   catch { return { posts: [] } }
@@ -68,6 +88,11 @@ function eligibleDrafts(feed) {
   const now = Date.now()
   return (feed.posts || []).filter(p => {
     if (!p.draftReply?.text) return false
+    // Honesty gate: refuse any draft not stamped by the gated drafter. Legacy
+    // drafts (pre-gate, possibly fabricated) lack honestyGate → never fire.
+    if (!p.draftReply.honestyGate) return false
+    // A gated draft must carry a link to liveness-check; no targetUrl → don't fire.
+    if (!p.draftReply.targetUrl) return false
     if (p.replyStatus === 'posted') return false
     if (!p.sourceUrl) return false
     const scraped = new Date(p.scrapedAt || 0).getTime()
@@ -160,6 +185,13 @@ async function main() {
   for (let i = 0; i < toPost.length; i++) {
     const p = toPost[i]
     const startedAt = new Date().toISOString()
+    // Last-line honesty/quality gate: the linked page must resolve before we post.
+    const target = p.draftReply.targetUrl
+    if (target && !(await urlAlive(target))) {
+      logReply({ status: 'skipped-dead-url', startedAt, sourceUrl: p.sourceUrl, beachId: p.beachId, target })
+      console.error(`✗ [${i + 1}/${toPost.length}] skip — dead link ${target}`)
+      continue
+    }
     try {
       await postOneReply(page, p)
       p.replyStatus = 'posted'
