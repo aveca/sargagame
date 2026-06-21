@@ -3532,6 +3532,221 @@ function H2SBadge({beach,lang,weather,onPremiumClick}){
   )
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   BEACH SHEET « COMIC POP » — fiche plage verdict-first (refonte 2026-06-21)
+   ---------------------------------------------------------------------------
+   Direction validée : univers coucher-de-soleil néon + style comic (contours
+   noirs, aplats vifs, cartes crème, ombres dures, titres Anton, CTA or) —
+   cohérent avec le hero « Le Veilleur ». Remplace le long scroll BeachDive.
+
+   Hiérarchie pilotée par la recherche conversion (verdict-first, gate-the-future,
+   prévisions floutées teaser, CTA collant unique, loss-aversion + sans-engagement
+   + prix/jour + preuve sociale, X visible). Sources : NN/g, Surfline, AllTrails,
+   RevenueCat, Stormy AI (4 500+ A/B).
+   ═══════════════════════════════════════════════════════════════════════════ */
+const COMIC={
+  cream:"#fdf6e3", ink:"#0d0b14", sub:"#6b6478",
+  clean:"#27c46b", moderate:"#ffb02e", avoid:"#e8322a", loading:"#9a93a8",
+  sunset:"radial-gradient(120% 75% at 80% 4%, rgba(255,214,140,.65), rgba(255,159,67,.0) 52%), linear-gradient(168deg,#ff9b3d 0%,#ff5e8e 34%,#b93a8e 60%,#6a2f9e 100%)",
+  gold:"linear-gradient(180deg,#ffe07a,#ffc72c)",
+}
+function comicStatusColor(st){return st==="clean"?COMIC.clean:st==="moderate"?COMIC.moderate:st==="avoid"?COMIC.avoid:COMIC.loading}
+function comicVerdict(status,lang,daypart){
+  // daypart : 'matin' | 'aprem' | 'soir'
+  const when={fr:{matin:"ce matin",aprem:"cet après-midi",soir:"ce soir"},en:{matin:"this morning",aprem:"this afternoon",soir:"tonight"},es:{matin:"esta mañana",aprem:"esta tarde",soir:"esta noche"}}
+  const w=(when[lang]||when.fr)[daypart]||(when[lang]||when.fr).matin
+  if(status==="clean")return{big:_t(lang,"Baignade OK","Safe to swim","Baño OK"),when:w,hl:_t(lang,"OK","OK","OK")}
+  if(status==="moderate")return{big:_t(lang,"À vérifier","Check first","A verificar"),when:w,hl:_t(lang,"PRUDENCE","CAREFUL","CUIDADO")}
+  if(status==="avoid")return{big:_t(lang,"Évite l'eau","Skip the swim","Evita el agua"),when:w,hl:_t(lang,"ALERTE","ALERT","ALERTA")}
+  return{big:_t(lang,"Le Veilleur scanne","Scanning","Escaneando"),when:w,hl:"…"}
+}
+function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,onBeachClick,onPremiumClick,isPremium,sargData,userPos,forecast:forecastProp,track:trackProp}){
+  const trk=(n,p)=>{try{(trackProp||track)(n,p)}catch(_){}}
+  const weather=useWeather(beach)
+  const sheetRef=useRef(null), backdropRef=useRef(null), startY=useRef(0), dragY=useRef(0), closingRef=useRef(false)
+  const [showProof,setShowProof]=useState(false)
+
+  // ── Forecast réel (même résolution que BeachSheet : weekly réel → interpolé → généré)
+  const forecast=useMemo(()=>{
+    if(forecastProp&&forecastProp.length)return forecastProp
+    if(!beach)return null
+    const sargId=IS_NEW_REGION?beach.id:BEACH_TO_SARG[beach.id]
+    let w=(sargId&&sargData?.weekly?.[sargId])||sargData?._enrichedWeekly?.[`_interp_${beach.id}`]||null
+    let fc=w?.forecast||null
+    if(!fc)fc=generateForecast(beach?.afai,lang)
+    return fc
+  },[beach?.id,sargData,forecastProp,lang])
+
+  const status=beach?.status||"_loading"
+  const sc=comicStatusColor(status)
+  const hasScore=typeof beach?.score==="number"
+  const daypart=(()=>{try{const h=new Date().getHours();return h<12?"matin":h<18?"aprem":"soir"}catch(_){return "matin"}})()
+  const V=comicVerdict(status,lang,daypart)
+
+  // ── Fraîcheur satellite (confiance) — preuve « mesuré, pas deviné »
+  const satAge=(()=>{try{const ts=sargData?.erddapTimestamp||sargData?.updatedAt;if(!ts)return null;const h=(Date.now()-new Date(ts).getTime())/3.6e6;return h>=0&&h<240?h:null}catch(_){return null}})()
+  const satLabel=satAge==null?_t(lang,"Satellite récent","Recent satellite","Satélite reciente")
+    :satAge<1?_t(lang,"Satellite il y a <1 h","Satellite <1h ago","Satélite hace <1 h")
+    :_t(lang,`Satellite il y a ${Math.round(satAge)} h`,`Satellite ${Math.round(satAge)}h ago`,`Satélite hace ${Math.round(satAge)} h`)
+
+  // ── Distance / lieu
+  const distKm=(()=>{try{if(!userPos||!beach)return null;return haversine(userPos.lat,userPos.lng,beach.lat,beach.lng)}catch(_){return null}})()
+  const locLine=[beach?.commune||null, distKm!=null?_t(lang,`à ${Math.round(distKm)} km`,`${Math.round(distKm)} km away`,`a ${Math.round(distKm)} km`):null].filter(Boolean).join(" · ")
+
+  // ── Facteurs (data réelle, langage simple — pas un tableau d'expert)
+  const chips=useMemo(()=>{
+    const out=[]
+    const sgLvl=status==="clean"?{t:_t(lang,"Sargasses faibles","Low sargassum","Sargazo bajo"),c:COMIC.clean}:status==="moderate"?{t:_t(lang,"Sargasses modérées","Moderate sargassum","Sargazo moderado"),c:COMIC.moderate}:status==="avoid"?{t:_t(lang,"Sargasses fortes","Heavy sargassum","Sargazo fuerte"),c:COMIC.avoid}:null
+    if(sgLvl)out.push(sgLvl)
+    if(weather){
+      if(weather.waveHeight!=null){const w=weather.waveHeight;out.push({t:w<.6?_t(lang,"Houle calme","Calm swell","Mar calmo"):w<1.2?_t(lang,"Houle modérée","Moderate swell","Mar moderado"):_t(lang,"Houle forte","Strong swell","Mar fuerte"),c:w<.6?COMIC.clean:w<1.2?COMIC.moderate:COMIC.avoid})}
+      if(weather.wind!=null){const v=weather.wind;out.push({t:v<20?_t(lang,"Vent léger","Light wind","Viento leve"):v<35?_t(lang,"Vent modéré","Moderate wind","Viento moderado"):_t(lang,"Vent fort","Strong wind","Viento fuerte"),c:v<20?COMIC.clean:v<35?COMIC.moderate:COMIC.avoid})}
+      if(weather.temp!=null)out.push({t:_t(lang,`Eau ${weather.temp}°`,`Water ${weather.temp}°`,`Agua ${weather.temp}°`),c:COMIC.clean})
+    }
+    return out.slice(0,4)
+  },[status,weather,lang])
+
+  // ── Plan B : si avoid/moderate, plages PROPRES proches (réduit la frustration + maille SEO)
+  const planB=useMemo(()=>{
+    if(!beach||!allBeaches||status==="clean"||status==="_loading")return[]
+    return allBeaches.filter(b=>b.id!==beach.id&&b.island===beach.island&&b.status==="clean")
+      .map(b=>({...b,_d:haversine(beach.lat,beach.lng,b.lat,b.lng)}))
+      .sort((a,b)=>a._d-b._d).slice(0,3)
+  },[beach?.id,allBeaches,status])
+
+  const requestClose=()=>{
+    if(closingRef.current)return; closingRef.current=true
+    try{sheetRef.current&&(sheetRef.current.style.transition="transform .26s cubic-bezier(.4,0,1,1)",sheetRef.current.style.transform="translateY(102%)")
+      backdropRef.current&&(backdropRef.current.style.transition="opacity .26s ease",backdropRef.current.style.opacity="0")}catch(_){}
+    setTimeout(()=>{closingRef.current=false;onClose&&onClose()},250)
+  }
+  useEffect(()=>{const h=e=>{if(e.key==="Escape")requestClose()};document.addEventListener("keydown",h);return()=>document.removeEventListener("keydown",h)},[])
+  // Drag-to-dismiss (seuil 10% hauteur écran — recherche Reanimated) + rubber-band
+  const onTouchStart=e=>{startY.current=e.touches[0].clientY;dragY.current=0;if(sheetRef.current)sheetRef.current.style.transition=""}
+  const onTouchMove=e=>{const dy=e.touches[0].clientY-startY.current;if(dy<=0)return;dragY.current=dy;if(sheetRef.current)sheetRef.current.style.transform=`translateY(${dy}px)`}
+  const onTouchEnd=()=>{const dy=dragY.current;const thr=Math.max(90,(window.innerHeight||700)*0.1)
+    if(dy>thr)return requestClose()
+    if(sheetRef.current){sheetRef.current.style.transition="transform .3s cubic-bezier(.32,.72,0,1)";sheetRef.current.style.transform="";setTimeout(()=>{if(sheetRef.current)sheetRef.current.style.transition=""},300)}}
+
+  if(!beach)return null
+  const isFav=favorites&&favorites.includes(beach.id)
+  const fcDays=(forecast||[]).slice(0,7)
+
+  // CTA — region-aware social proof (chiffres modestes & réels)
+  const socialN=200
+  const ctaLabel=isPremium?_t(lang,"Voir mes alertes","My alerts","Mis alertas"):_t(lang,"Activer mon alerte","Turn on my alert","Activar mi alerta")
+  const onCTA=()=>{trk("sg_beach_cta",{beach_id:beach.id,status,premium:!!isPremium});isPremium?onClose&&onClose():onPremiumClick&&onPremiumClick("beach_sheet")}
+
+  return(
+    <>
+      <style>{`
+        @keyframes bscUp{from{transform:translateY(102%)}to{transform:translateY(0)}}
+        @keyframes bscFade{from{opacity:0}to{opacity:1}}
+        @keyframes bscPop{0%{transform:scale(.82);opacity:0}60%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+        .bsc-card{background:#fff;border:3px solid ${COMIC.ink};border-radius:16px;box-shadow:3px 3px 0 ${COMIC.ink}}
+        .bsc-chip{font:800 11.5px/1 'Bricolage Grotesque',sans-serif;color:${COMIC.ink};background:#fff;border:2.5px solid ${COMIC.ink};border-radius:999px;padding:7px 11px;display:inline-flex;align-items:center;gap:6px}
+        .bsc-cta{width:100%;text-align:center;font:800 17px/1 'Bricolage Grotesque',sans-serif;padding:16px;border-radius:16px;border:3px solid ${COMIC.ink};box-shadow:3px 3px 0 ${COMIC.ink};background:${COMIC.gold};color:${COMIC.ink};cursor:pointer;transition:transform .08s ease}
+        .bsc-cta:active{transform:translate(3px,3px);box-shadow:0 0 0 ${COMIC.ink}}
+      `}</style>
+      {/* Backdrop — assombrit la carte (élévation z, recherche Mobbin/LogRocket) */}
+      <div ref={backdropRef} onClick={requestClose}
+        style={{position:"fixed",inset:0,zIndex:1049,background:"rgba(11,7,22,.46)",backdropFilter:"blur(1.5px)",WebkitBackdropFilter:"blur(1.5px)",animation:"bscFade .25s ease both"}}/>
+      {/* Sheet */}
+      <div ref={sheetRef} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
+        style={{position:"fixed",left:0,right:0,bottom:0,zIndex:1050,maxHeight:"92svh",overflowY:"auto",
+          background:COMIC.cream,backgroundImage:`radial-gradient(${COMIC.ink}0d 1.3px,transparent 1.5px)`,backgroundSize:"11px 11px",
+          borderTop:`4px solid ${COMIC.ink}`,borderRadius:"26px 26px 0 0",boxShadow:"0 -12px 44px rgba(0,0,0,.42)",
+          padding:"10px 16px calc(20px + env(safe-area-inset-bottom))",WebkitOverflowScrolling:"touch",
+          animation:"bscUp .42s cubic-bezier(.16,1,.3,1) both",fontFamily:"'Bricolage Grotesque',system-ui,sans-serif"}}>
+        {/* Grip + X visible (NN/g : jamais handle seul) */}
+        <div style={{width:44,height:5,borderRadius:5,background:COMIC.ink,opacity:.32,margin:"2px auto 8px"}}/>
+        <button onClick={requestClose} aria-label={_t(lang,"Fermer","Close","Cerrar")}
+          style={{position:"absolute",top:14,right:14,width:34,height:34,borderRadius:"50%",border:`2.5px solid ${COMIC.ink}`,background:"#fff",boxShadow:`2px 2px 0 ${COMIC.ink}`,fontSize:16,fontWeight:900,color:COMIC.ink,cursor:"pointer",lineHeight:1,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+
+        {/* En-tête : nom + badge statut */}
+        <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:10,paddingRight:34}}>
+          <div style={{minWidth:0}}>
+            <div style={{fontFamily:"'Anton',sans-serif",fontSize:23,lineHeight:.96,color:COMIC.ink,textTransform:"uppercase",letterSpacing:"-.3px",wordBreak:"break-word"}}>{beach.name}</div>
+            {locLine&&<div style={{font:"700 11.5px/1.2 'Bricolage Grotesque'",color:COMIC.sub,marginTop:4}}>📍 {locLine}</div>}
+          </div>
+          <span style={{font:"800 11px/1 'Bricolage Grotesque'",padding:"7px 11px",borderRadius:999,border:`2.5px solid ${COMIC.ink}`,boxShadow:`2px 2px 0 ${COMIC.ink}`,background:sc,color:status==="moderate"?COMIC.ink:"#fff",whiteSpace:"nowrap",display:"inline-flex",alignItems:"center",gap:5}}>● {(ST[status]||ST._loading)[lang==="en"?"le":lang==="es"?"les":"l"]}</span>
+        </div>
+
+        {/* VERDICT — réponse géante (verdict-first, lisible sans scroll) */}
+        <div style={{display:"flex",alignItems:"center",gap:12,margin:"14px 0 4px"}}>
+          <div aria-hidden style={{flexShrink:0,animation:"bscPop .5s .1s cubic-bezier(.16,1,.3,1) both"}}><Veilleur mood={hasScore?moodFromScore(beach.score):"scan"} size={56}/></div>
+          <div style={{animation:"bscPop .5s .16s cubic-bezier(.16,1,.3,1) both"}}>
+            <div style={{fontFamily:"'Anton',sans-serif",fontSize:34,lineHeight:.88,textTransform:"uppercase",letterSpacing:"-.8px",color:"#fff",WebkitTextStroke:`2.2px ${COMIC.ink}`,paintOrder:"stroke fill"}}>
+              {V.big} <span style={{color:sc,WebkitTextStroke:`2.2px ${COMIC.ink}`}}>{V.when}</span>
+            </div>
+          </div>
+        </div>
+        <div style={{font:"600 13px/1.4 'Bricolage Grotesque'",color:"#41414a",margin:"6px 2px 14px"}}>{_t(lang,"L'état réel de l'eau — mesuré au satellite, pas deviné.","The real state of the water — measured by satellite, not guessed.","El estado real del agua — medido por satélite, no adivinado.")}</div>
+
+        {/* Score + facteurs (carte) */}
+        <div className="bsc-card" style={{display:"flex",alignItems:"center",gap:14,padding:"13px 15px",marginBottom:12}}>
+          {hasScore&&<div style={{flexShrink:0,textAlign:"center"}}>
+            <div style={{fontFamily:"'Anton',sans-serif",fontSize:40,lineHeight:.85,color:COMIC.ink}}>{beach.score}<span style={{fontSize:15,color:COMIC.sub}}>/100</span></div>
+            <div style={{font:"800 8.5px/1 'Bricolage Grotesque'",color:COMIC.sub,letterSpacing:".5px",marginTop:2}}>{_t(lang,"INDICE","SCORE","ÍNDICE")}</div>
+          </div>}
+          <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
+            {chips.length?chips.map((c,i)=><span key={i} className="bsc-chip"><i style={{width:8,height:8,borderRadius:"50%",background:c.c,display:"inline-block"}}/>{c.t}</span>)
+              :<span style={{font:"600 12px/1.4 'Bricolage Grotesque'",color:COMIC.sub}}>{_t(lang,"Conditions en cours de lecture…","Reading conditions…","Leyendo condiciones…")}</span>}
+          </div>
+        </div>
+
+        {/* Preuve fraîcheur satellite */}
+        <div style={{display:"flex",alignItems:"center",gap:7,font:"700 11.5px/1 'Bricolage Grotesque'",color:COMIC.sub,margin:"0 2px 14px"}}>
+          <span style={{width:7,height:7,borderRadius:"50%",background:COMIC.clean,boxShadow:`0 0 0 3px ${COMIC.clean}33`}}/>{satLabel} · {_t(lang,"donnée vérifiée","verified data","dato verificado")}
+        </div>
+
+        {/* PRÉVISIONS 7 j — la « valeur future » : aujourd'hui visible, le reste FLOUTÉ/verrouillé (teaser gate) */}
+        <div style={{marginBottom:14}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:7}}>
+            <div style={{font:"800 12px/1 'Bricolage Grotesque'",color:COMIC.ink,letterSpacing:".3px"}}>{_t(lang,"7 PROCHAINS JOURS","NEXT 7 DAYS","PRÓXIMOS 7 DÍAS")}</div>
+            {!isPremium&&<span style={{font:"800 9.5px/1 'Bricolage Grotesque'",color:COMIC.ink,background:COMIC.gold,border:`2px solid ${COMIC.ink}`,borderRadius:999,padding:"4px 8px"}}>🔒 {_t(lang,"PREMIUM","PREMIUM","PREMIUM")}</span>}
+          </div>
+          <div style={{display:"flex",gap:5,position:"relative"}}>
+            {fcDays.map((d,i)=>{const gated=!isPremium&&i>0;return(
+              <div key={i} style={{flex:1,textAlign:"center",filter:gated?"blur(3px)":"none",opacity:gated?.65:1}}>
+                <div style={{height:34,borderRadius:7,border:`2.5px solid ${COMIC.ink}`,background:comicStatusColor(d.status)}}/>
+                <span style={{display:"block",font:"800 9px/1 'Bricolage Grotesque'",color:COMIC.sub,marginTop:4}}>{i===0?_t(lang,"Auj","Now","Hoy"):(d.day||"").slice(0,3)}</span>
+              </div>)})}
+            {!isPremium&&fcDays.length>1&&<button onClick={onCTA} style={{position:"absolute",right:0,top:0,bottom:18,left:"15%",border:"none",background:"transparent",cursor:"pointer"}} aria-label={_t(lang,"Débloquer les prévisions","Unlock forecast","Desbloquear pronóstico")}/>}
+          </div>
+        </div>
+
+        {/* Plan B — où aller maintenant (avoid/moderate) */}
+        {planB.length>0&&<div className="bsc-card" style={{padding:"12px 14px",marginBottom:14,background:COMIC.cream}}>
+          <div style={{font:"800 12px/1 'Bricolage Grotesque'",color:COMIC.ink,marginBottom:9}}>🌴 {_t(lang,"Plutôt y aller maintenant","Go here instead","Mejor ve aquí ahora")}</div>
+          <div style={{display:"flex",flexDirection:"column",gap:7}}>
+            {planB.map((b,i)=><button key={b.id} onClick={()=>{trk("sg_planb_pick",{from:beach.id,to:b.id,rank:i});onBeachClick&&onBeachClick(b)}}
+              style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,padding:"10px 12px",borderRadius:12,border:`2.5px solid ${COMIC.ink}`,background:"#fff",boxShadow:`2px 2px 0 ${COMIC.ink}`,cursor:"pointer",font:"800 13px/1 'Bricolage Grotesque'",color:COMIC.ink,textAlign:"left"}}>
+              <span style={{display:"flex",alignItems:"center",gap:8,minWidth:0}}><i style={{width:9,height:9,borderRadius:"50%",background:COMIC.clean,flexShrink:0}}/><span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.name}</span></span>
+              <span style={{color:COMIC.sub,font:"700 11px/1 'Bricolage Grotesque'",whiteSpace:"nowrap"}}>{Math.round(b._d)} km →</span></button>)}
+          </div>
+        </div>}
+
+        {/* CTA collant — décision unique, or */}
+        <div style={{position:"sticky",bottom:0,paddingTop:8,marginTop:4,background:`linear-gradient(to top, ${COMIC.cream} 72%, transparent)`}}>
+          <button className="bsc-cta" onClick={onCTA}>⭐ {ctaLabel} →</button>
+          {!isPremium&&<>
+            <div style={{font:"600 11.5px/1.4 'Bricolage Grotesque'",color:"#41414a",textAlign:"center",margin:"9px 8px 0"}}>{_t(lang,"Ne découvre plus les algues une fois sur place. Sois prévenu·e la veille.","Stop discovering the seaweed once you're there. Get warned the day before.","Deja de descubrir el sargazo al llegar. Te avisamos la víspera.")}</div>
+            <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:COMIC.sub,textAlign:"center",marginTop:6}}>≈ 0,16 € / {_t(lang,"jour","day","día")} · {_t(lang,"sans engagement, résiliable à tout moment","cancel anytime","sin compromiso, cancela cuando quieras")}</div>
+            <div style={{font:"800 11px/1.3 'Bricolage Grotesque'",color:COMIC.ink,textAlign:"center",marginTop:6}}>★ {_t(lang,`Rejoint par ${socialN}+ vacanciers`,`Joined by ${socialN}+ beachgoers`,`${socialN}+ veraneantes ya dentro`)}</div>
+          </>}
+          <button onClick={()=>{setShowProof(v=>!v);trk("sg_beach_proof",{beach_id:beach.id,open:!showProof})}}
+            style={{display:"block",margin:"12px auto 0",background:"none",border:"none",color:COMIC.ink,font:"800 12.5px/1 'Bricolage Grotesque'",textDecoration:"underline",cursor:"pointer"}}>{_t(lang,"Voir la preuve · comment on mesure","See the proof · how we measure","Ver la prueba · cómo medimos")}</button>
+          {showProof&&<div style={{font:"600 12px/1.5 'Bricolage Grotesque'",color:"#41414a",textAlign:"center",margin:"10px 6px 0"}}>{_t(lang,
+            "Chaque jour, on lit les images satellite Sentinel/MODIS (indice AFAI) au large de chaque plage, puis on projette la dérive sur 7 jours. C'est de la mesure, pas une estimation à la louche.",
+            "Every day we read Sentinel/MODIS satellite imagery (AFAI index) offshore of each beach, then project the drift over 7 days. It's measurement, not a rough guess.",
+            "Cada día leemos imágenes satelitales Sentinel/MODIS (índice AFAI) frente a cada playa, y proyectamos la deriva a 7 días. Es medición, no una estimación.")}</div>}
+        </div>
+      </div>
+    </>
+  )
+}
+
 function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMap,onBeachClick,onPremiumClick,isPremium,historyData,sargData,dataSource,userPos,communityReports,fbPosts}){
   const LL=T[lang]||T.fr
   const weather=useWeather(beach)
@@ -13401,11 +13616,15 @@ export default function App(){
           <BottomNav view={view} onChangeView={onChangeView} lang={lang} premiumOpen={showPremium} glass={dockGlass} isPremium={isPremium}/>
         )}
 
-        {/* BOTTOM SHEET (beach detail) */}
+        {/* BOTTOM SHEET (beach detail) — refonte « Comic Pop » verdict-first (2026-06-21).
+            Remplace l'ancien split BeachSheet/BeachDive : une seule fiche, cohérente
+            avec le hero Le Veilleur (coucher de soleil néon + comic), pilotée par la
+            recherche conversion. ErrBound → ancienne BeachSheet en filet de sécurité,
+            on ne montre JAMAIS "rien" sur un clic de plage. */}
         {selectedBeach&&(()=>{
-          // BeachSheet (control) — calculé UNE fois, sert aussi de fallback robuste si la plongée échoue
-          // (lazy non chargé / moteur KO) → on ne montre JAMAIS "rien" sur un clic de plage.
-          const _sheet=(
+          const _sid=IS_NEW_REGION?selectedBeach.id:BEACH_TO_SARG[selectedBeach.id]
+          const _fc=(_sid&&sargData?.weekly?.[_sid]?.forecast)||sargData?._enrichedWeekly?.[`_interp_${selectedBeach.id}`]?.forecast||null
+          const _fallback=(
             <BeachSheet beach={selectedBeach} onClose={closeSheet}
               favorites={favorites} onToggleFav={toggleFav} lang={lang}
               allBeaches={allBeaches} imageMap={imageMap}
@@ -13413,24 +13632,13 @@ export default function App(){
               historyData={historyData} sargData={sargData}
               dataSource={dataSource} userPos={userPos} communityReports={communityReports} fbPosts={fbPosts}/>
           )
-          // contrôle, ou plongée déjà KO sur cette plage → fiche classique (toujours fonctionnelle)
-          if(!beachDive||diveFail===selectedBeach.id) return _sheet
-          // BRAS A/B `pw_beach_dive` — fiche « plongée » (Shadow DOM, region-aware), lazy.
-          // OBLIGATOIRE : <Suspense> (sinon la suspension du chunk = crash écran blanc = "rien")
-          // + <ErrBound fallback={_sheet}> (crash de rendu → fiche classique, jamais "rien").
-          const _sid=IS_NEW_REGION?selectedBeach.id:BEACH_TO_SARG[selectedBeach.id]
-          const _fc=(_sid&&sargData?.weekly?.[_sid]?.forecast)||sargData?._enrichedWeekly?.[`_interp_${selectedBeach.id}`]?.forecast||null
-          // Région = celle de LA PLAGE (selectedBeach.island fait foi), pas l'état app.
-          const _rn=IS_NEW_REGION?(REGION?.name||""):(selectedBeach.island==="gp"?"Guadeloupe":"Martinique")
           return(
-            <ErrBound key={selectedBeach.id} fallback={_sheet}>
-              <Suspense fallback={<div style={{position:"fixed",inset:0,background:"#02060A",zIndex:1050}}/>}>
-                <LazyBeachDive beach={selectedBeach} lang={lang} island={selectedBeach.island||island} regionName={_rn}
-                  sargData={sargData} userPos={userPos} allBeaches={allBeaches} forecast={_fc} isPremium={isPremium}
-                  onClose={closeSheet} onPremium={openPremium} onOpenBeach={onBeachClick}
-                  onFail={()=>setDiveFail(selectedBeach.id)}
-                  onShowMap={closeSheet} track={track} exiting={false}/>
-              </Suspense>
+            <ErrBound key={selectedBeach.id} fallback={_fallback}>
+              <BeachSheetComic beach={selectedBeach} onClose={closeSheet}
+                favorites={favorites} onToggleFav={toggleFav} lang={lang}
+                allBeaches={allBeaches} onBeachClick={onBeachClick}
+                onPremiumClick={openPremium} isPremium={isPremium}
+                sargData={sargData} userPos={userPos} forecast={_fc} track={track}/>
             </ErrBound>
           )
         })()}
