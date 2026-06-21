@@ -12,6 +12,7 @@ import { getCanonicalSlug } from "./lib/slug-resolver.js"
 import Dock from "./Dock.jsx"
 import ArenaSplash from "./ArenaSplash.jsx"
 import ArenaOnboarding from "./ArenaOnboarding.jsx"
+import VeilleurHero from "./VeilleurHero.jsx"
 import DiveTransition from "./DiveTransition.jsx"
 import PassOffer from "./PassOffer.jsx"
 import "./Themes.css"
@@ -12944,9 +12945,26 @@ export default function App(){
     return "SARGASSES MARTINIQUE";
   },[]);
 
+  // HERO CINÉMATIQUE « GTA sunset » — 1er atterrissage sur la racine, 1×/session,
+  // skippable. CTA/skip → révèle la carte (l'utilitaire). ?vh=1 force, ?vh=0 saute.
+  const [showVeilleurHero,setShowVeilleurHero]=useState(()=>{
+    try{
+      const q=window.location.search||"";
+      if(/[?&]vh=0/.test(q)) return false;
+      if(/[?&]vh=1/.test(q)) return true;
+      const path=window.location.pathname;
+      if(!(path==="/"||path===""||path==="/index.html")) return false;
+      if(window.location.search.includes("premium")) return false;
+      if(sessionStorage.getItem("sg_vh_seen")) return false;
+      return true;
+    }catch(_){ return false; }
+  });
+  const dismissVeilleurHero=useCallback(()=>{ try{sessionStorage.setItem("sg_vh_seen","1");track("sg_vh_enter",{})}catch(_){}; setShowVeilleurHero(false); },[track]);
+
   return(
     <LangCtx.Provider value={lang}>
       <StyleInjector/>
+      {showVeilleurHero&&<VeilleurHero lang={lang} onEnter={dismissVeilleurHero}/>}
       {showSplash&&<ArenaSplash lang={lang} track={track} wordmark={_onbWordmark} onDone={()=>setShowSplash(false)}/>}
       {showArenaOnb&&<ArenaOnboarding lang={lang} track={track} region={_onbRegion} onDone={finishArenaOnb} onSkip={finishArenaOnb}/>}
       {/* JEU RETIRÉ DU PRODUIT (décision fondateur : « c'est pas un plus, c'est nul »).
