@@ -2148,8 +2148,8 @@ const CSS=`
 html,body,#root{height:100vh;height:100dvh;overflow:hidden;font-family:'Bricolage Grotesque',system-ui,sans-serif;-webkit-font-smoothing:antialiased;touch-action:manipulation}
 body{background:var(--sg-bg,#FDFCF7);color:var(--sg-ink,#0D0D0D)}
 button{-webkit-appearance:none;appearance:none;background:none;border:none;font-family:inherit;color:inherit}
-button,a,[role="button"]{touch-action:manipulation;cursor:pointer;-webkit-user-select:none;user-select:none;transition:transform .12s,opacity .12s}
-button:active,a:active,[role="button"]:active{transform:scale(.96)!important;opacity:.85}
+button,a,[role="button"]{touch-action:manipulation;cursor:pointer;-webkit-user-select:none;user-select:none;transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .12s}
+button:active,a:active,[role="button"]:active{transform:scale(.91)!important;opacity:.9;transition:transform .07s ease}
 .anton{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:-.02em}
 .leaflet-container{background:#0a1a2e!important;touch-action:manipulation}
 .leaflet-control-attribution{display:none!important}
@@ -2721,8 +2721,8 @@ function BottomNav({view,onChangeView,lang,premiumOpen,glass=false,isPremium=fal
         }}>
           {active&&<div style={{position:"absolute",top:-1,width:24,height:3,
             borderRadius:2,background:C.gold,transition:"width .2s"}}/>}
-          <span style={{fontSize:20,transition:"transform .2s",
-            transform:active?"scale(1.1)":"scale(1)"}}>{t.icon}</span>
+          <span style={{fontSize:20,transition:"transform .34s cubic-bezier(.34,1.56,.64,1)",
+            transform:active?"scale(1.18)":"scale(1)"}}>{t.icon}</span>
           <span>{t.label}</span>
         </button>
       )})}
@@ -2746,8 +2746,8 @@ function BottomNav({view,onChangeView,lang,premiumOpen,glass=false,isPremium=fal
           transition:"all .2s",padding:"9px 15px",
           borderRadius:999,minHeight:44,justifyContent:"center",
         }}>
-          <span style={{fontSize:18,transition:"transform .2s",
-            transform:active?"scale(1.1)":"scale(1)"}}>{t.icon}</span>
+          <span style={{fontSize:18,transition:"transform .34s cubic-bezier(.34,1.56,.64,1)",
+            transform:active?"scale(1.18)":"scale(1)"}}>{t.icon}</span>
           <span>{t.label}</span>
         </button>
       )})}
