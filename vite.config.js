@@ -901,13 +901,18 @@ export default defineConfig({
 
           // Sitemaps dynamiques avec lastmod = date du build
           const today = new Date().toISOString().slice(0, 10)
+          // Date de dernière révision éditoriale RÉELLE (à monter quand on change le
+          // contenu evergreen). Sert de lastmod aux pages monthly/yearly pour ne pas
+          // leur faire revendiquer une fraîcheur quotidienne bidon (Google déprécie le
+          // signal quand 100+ URLs « changent » toutes le même jour de build).
+          const STABLE_EDITORIAL = '2026-06-19'
           // Sitemap helper — generates domain-specific XML with correct priorities
           const buildSitemap = (domain, isGP) => {
             const d = `https://${domain}`
             // Editorial pages: own island gets higher priority
             const mqEditPrio = isGP ? '0.5' : '0.8'
             const gpEditPrio = isGP ? '0.8' : '0.5'
-            return `<?xml version="1.0" encoding="UTF-8"?>
+            const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>${d}/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>
   <url><loc>${d}/carte-sargasses/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
@@ -977,12 +982,47 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
   <url><loc>${d}/confidentialite.html</loc><lastmod>${today}</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
 </urlset>
 `
+            // Evergreen (monthly/yearly) → lastmod = vraie date de révision, pas le build.
+            // Les pages daily/weekly (home, carte, bulletin, météo, plages, meilleures-
+            // plages…) gardent today car leur contenu est réellement régénéré.
+            return xml.replace(/<lastmod>[\d-]+<\/lastmod>(<changefreq>(?:monthly|yearly)<\/changefreq>)/g, `<lastmod>${STABLE_EDITORIAL}</lastmod>$1`)
           }
           const sitemapMQ = buildSitemap('sargasses-martinique.com', false)
           const sitemapGP = buildSitemap('sargasses-guadeloupe.com', true)
           writeFileSync(resolve(outDir, 'sitemap-martinique.xml'), sitemapMQ)
           writeFileSync(resolve(outDir, 'sitemap-guadeloupe.xml'), sitemapGP)
           console.log('   → Sitemaps générés avec lastmod:', today)
+
+          // ── Garde d'intégrité sitemap (build-time) : toute URL publiée DOIT exister
+          // physiquement dans dist/ (sinon 404 = crawl budget gaspillé — le bug
+          // /methode-carte/). Déterministe → throw. En plus, on warn si une URL du
+          // sitemap est 301-redirigée par .htaccess (cas « fichier présent mais
+          // redirigé » : sarg_carte / weekend.html). Attrape la régression à la source,
+          // avant le check HTTP hebdo (seo-sitemap-check.cjs).
+          {
+            const locPaths = [...new Set(
+              [sitemapMQ, sitemapGP].flatMap(s =>
+                [...s.matchAll(/<loc>https?:\/\/[^/]+([^<]*)<\/loc>/g)].map(m => m[1]))
+            )]
+            const toFile = (p) => {
+              let rel = p.replace(/^\//, '')
+              if (rel === '') rel = 'index.html'
+              else if (rel.endsWith('/')) rel += 'index.html'
+              else if (!/\.[a-z0-9]+$/i.test(rel)) rel += '/index.html'
+              return resolve(outDir, rel)
+            }
+            const missing = locPaths.filter(p => !existsSync(toFile(p)))
+            let redirected = []
+            try {
+              const ht = readFileSync(resolve(outDir, '.htaccess'), 'utf-8')
+              const src301 = [...ht.matchAll(/^\s*RewriteRule\s+\^([A-Za-z0-9._/-]+?)\$?\s+\S+\s+\[[^\]]*R=301/gmi)]
+                .map(m => '/' + m[1].replace(/\\\./g, '.'))
+              redirected = locPaths.filter(p => src301.includes(p) || src301.includes(p.replace(/\/$/, '')))
+            } catch (_) { /* .htaccess absent → on ne bloque pas */ }
+            if (redirected.length) console.warn('   ⚠ SEO-SITEMAP-GUARD : URL(s) du sitemap 301-redirigées par .htaccess →', redirected.join(', '))
+            if (missing.length) throw new Error('SEO-SITEMAP-GUARD : ' + missing.length + ' URL(s) du sitemap sans fichier dans dist/ (404 → crawl gaspillé) : ' + missing.join(', '))
+            console.log('   → Garde sitemap OK :', locPaths.length, 'URLs vérifiées' + (redirected.length ? ' (' + redirected.length + ' à corriger : 301)' : ', 0 manquante'))
+          }
 
           // BreadcrumbList pour /carte-sargasses/, /previsions/ et /alertes/
           const breadcrumbCarte = '\n    <script type="application/ld+json">\n    {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Accueil","item":"https://sargasses-martinique.com/"},{"@type":"ListItem","position":2,"name":"Carte des sargasses","item":"https://sargasses-martinique.com/carte-sargasses/"}]}\n    </script>'
@@ -1415,6 +1455,18 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
             'pointe-des-chateaux', 'plage-du-gosier', 'plage-de-la-caravelle',
             'plage-de-bas-du-fort', 'plage-de-deshaies', 'plage-du-moule', 'plage-du-vieux-fort'
           ])
+          // Maillage hub-and-spoke commune : une plage MQ dont la commune a une page
+          // cluster dédiée (Diamant, Sainte-Luce, Sainte-Anne, Trois-Îlets) remonte un
+          // lien vers elle → irrigue ces pages net-new (besoin d'autorité interne) et
+          // donne un 2e uplink contextuel à la plage (en plus du hub de zone). MQ-only
+          // (ces pages sont dans MQ_ONLY) → on gate sur isMQ pour ne jamais 404 sur le
+          // miroir GP, et Sainte-Anne existe sur les 2 îles (gate obligatoire).
+          const COMMUNE_CLUSTER_MQ = {
+            'Le Diamant': 'sargasses-le-diamant',
+            'Sainte-Luce': 'sargasses-sainte-luce',
+            'Sainte-Anne': 'sargasses-sainte-anne-martinique',
+            'Les Trois-Îlets': 'sargasses-les-trois-ilets',
+          }
           for (const b of beaches) {
             const isMQ = b.island === 'mq'
             const domain = isMQ ? domainMQ : domainGP
@@ -1589,6 +1641,10 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
             // plage déclare sa zone, le hub liste ses plages — GSC indexation).
             const _zone = zoneOf(b)
             const zoneLine = _zone ? `<p>Toutes les plages de ${_zone.shortName} : <a href="/plages/${_zone.slug}/">${_zone.name}</a>.</p>` : ''
+            // Uplink commune (MQ-only, cf. COMMUNE_CLUSTER_MQ) : ancre = requête cible
+            // de la page cluster (« sargasses à <commune> »). Vide si pas de page commune.
+            const _communeSlug = isMQ ? COMMUNE_CLUSTER_MQ[b.commune] : null
+            const communeLine = _communeSlug ? `<p>Toutes les plages de ${b.commune} et leur état du jour : <a href="/${_communeSlug}/">sargasses à ${b.commune}</a>.</p>` : ''
             // Touchpoint inbound B2B discret (1 ligne, noscript SEO uniquement → zéro
             // impact conversion conso) : capte l'hôtellerie qui nous lit sur la requête
             // de SA plage. Posé SEULEMENT sur les plages que le widget rend (WIDGET_BEACHES),
@@ -1601,14 +1657,14 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
             if (_enrichments[b.slug]) {
               // Keep existing enrichment noscript but prepend image and append extra sections
               const enrichedWithImg = _enrichments[b.slug].noscript.replace('<article>', `<article>${beachImgTag}`)
-              noscriptBlock = enrichedWithImg.replace('</article>', `${extraSections}${zoneLine}${networkLine}${proLine}</article>`)
+              noscriptBlock = enrichedWithImg.replace('</article>', `${extraSections}${zoneLine}${communeLine}${networkLine}${proLine}</article>`)
             } else {
               const sameCommune = beaches.filter(o => o.commune === b.commune && o.slug !== b.slug)
               const sameIsland = beaches.filter(o => o.island === b.island && o.commune !== b.commune && o.slug !== b.slug)
               const nearby = sameCommune.slice(0, 4)
               if (nearby.length < 4) nearby.push(...sameIsland.slice(0, 4 - nearby.length))
               const nearbyLi = nearby.map(o => `<li><a href="/plages/${o.slug}/">${o.name}</a> — ${o.commune}</li>`).join('')
-              noscriptBlock = `\n    <noscript>\n      <article>\n        <h1>Sargasses à ${b.name} (${b.commune}, ${island})</h1>\n        ${beachImgTag}\n        <p>État des sargasses à ${b.name} en temps réel. Cette plage de ${b.commune} en ${island} est surveillée quotidiennement par satellite.</p>\n        ${extraSections}\n        <h3>Plages à proximité</h3>\n        <ul>${nearbyLi}</ul>\n        <p><a href="/carte-sargasses/">Voir la carte des sargasses</a> · <a href="/alertes/">Alertes sargasses</a> · <a href="/">Accueil Sargasses ${island}</a></p>\n        ${zoneLine}${networkLine}${proLine}\n      </article>\n    </noscript>`
+              noscriptBlock = `\n    <noscript>\n      <article>\n        <h1>Sargasses à ${b.name} (${b.commune}, ${island})</h1>\n        ${beachImgTag}\n        <p>État des sargasses à ${b.name} en temps réel. Cette plage de ${b.commune} en ${island} est surveillée quotidiennement par satellite.</p>\n        ${extraSections}\n        <h3>Plages à proximité</h3>\n        <ul>${nearbyLi}</ul>\n        <p><a href="/carte-sargasses/">Voir la carte des sargasses</a> · <a href="/alertes/">Alertes sargasses</a> · <a href="/">Accueil Sargasses ${island}</a></p>\n        ${zoneLine}${communeLine}${networkLine}${proLine}\n      </article>\n    </noscript>`
             }
             // ── HERO golden-hour : préfixe le noscript (page JS-off) par une scène
             // SVG inline + bande verdict, AVANT l'<article>. Additif, jamais bloquant :

@@ -111,6 +111,68 @@ const SEED_TARGETS = [
   { domain: 'sipse.com', url: 'https://sipse.com/', market: 'mx', lang: 'es', reason: 'SIPSE / Novedades Quintana Roo — Spanish, cobertura constante del sargazo' },
   // Punta Cana (DR press kit, English)
   { domain: 'dominicantoday.com', url: 'https://dominicantoday.com/', market: 'dr', lang: 'en', reason: 'Dominican Today — English DR news, Punta Cana sargassum coverage' },
+
+  // ════════════════════════════════════════════════════════════════════════
+  // Expansion 2026-06-21 (recherche vérifiée). Cibles qui publient déjà du
+  // contenu sargasses/plages mais ne linkent AUCUN outil de suivi temps réel.
+  // ── FR Martinique (market fr) — pages sargasses sans carte live d'abord :
+  { domain: 'wlaps.com', url: 'https://wlaps.com/plages-sargasses-en-martinique/', reason: 'Guide « plages sans sargasses » MQ, ne cite que le bulletin officiel, pas de carte live' },
+  { domain: 'ile-tropicale.fr', url: 'https://www.ile-tropicale.fr/martinique-quelles-plages-sont-epargnees-par-les-sargasses/', reason: 'Article « plages épargnées » MQ, renvoie aux prévisions gov sans carte intégrée' },
+  { domain: 'beyondthebeach.fr', url: 'https://www.beyondthebeach.fr/366-sargasses-martinique-un-moyen-sur-pour-les-eviter/', reason: '« Comment éviter les sargasses » MQ, ne mentionne que la carte DEAL' },
+  { domain: 'lechotouristique.com', url: 'https://www.lechotouristique.com/article/martinique-les-plages-sans-sargasses-a-conseiller-a-vos-clients', reason: 'Presse trade voyage : quelles plages conseiller aux clients — exactement notre intel' },
+  { domain: 'fairmoove.fr', url: 'https://www.fairmoove.fr/blog/iles-paradisiaques/plages-belles-martinique', reason: 'Blog plus belles plages MQ, pas de vérif sargasses temps réel' },
+  { domain: 'carnetdetipiment.com', url: 'https://carnetdetipiment.com/2018/11/17/guide-complet-des-plus-belles-plages-de-martinique/', reason: 'Guide complet plages MQ, sans état sargasses' },
+  { domain: 'bestjobersblog.com', url: 'https://www.bestjobersblog.com/que-faire-en-martinique-itineraire-conseils/', reason: 'Itinéraire/conseils MQ, public voyageur sans data sargasses' },
+  { domain: 'leslovetrotteurs.com', url: 'https://leslovetrotteurs.com/martinique/', reason: 'Blog voyage MQ, guide plages sans outil sargasses' },
+  { domain: 'la-poze-travel.com', url: 'https://www.la-poze-travel.com/martinique-nos-incontournables/', reason: 'Incontournables MQ, pas de mention sargasses temps réel' },
+  { domain: 'rci.fm', url: 'https://rci.fm/martinique/infos', reason: 'Radio Caraïbes Intl — publie régulièrement les échouages MQ, autorité régionale' },
+  { domain: 'outremers360.com', url: 'https://www.outremers360.com/', reason: 'Média Outre-mer, couverture récurrente sargasses bassin atlantique (forte autorité)' },
+  { domain: 'madinin-art.net', url: 'https://www.madinin-art.net/sargasses-des-echouements-records-en-2025-dans-les-antilles/', reason: 'Mag culture/actu MQ, dossiers sargasses' },
+  // ── FR Guadeloupe (market fr) — GP traîne MQ, on pousse :
+  { domain: 'piedsdanslesable.fr', url: 'https://www.piedsdanslesable.fr/plage-guadeloupe/sans-sargasses/', reason: '« Plages sans sargasses » GP, ne linke que le bulletin Météo-France' },
+  { domain: '1monde.net', url: 'https://1monde.net/ou-se-baigner-en-guadeloupe-sans-sargasse/', reason: '« Où se baigner sans sargasse » GP, conseils généraux sans tracker' },
+  { domain: 'vacances-aux-antilles.com', url: 'https://www.vacances-aux-antilles.com/guadeloupe/sargasses/', reason: 'Page sargasses GP dédiée + pages par plage, sans carte live' },
+  { domain: 'karibinfo.com', url: 'https://www.karibinfo.com/news/', reason: 'Actu Caraïbe, articles fréquents « où se baigner en GP » sargasses' },
+  { domain: 'we-love-guadeloupe.com', url: 'https://www.we-love-guadeloupe.com/', reason: 'Guide GP rédigé par une résidente, pages plages sans état sargasses' },
+  { domain: 'lagon-travel.com', url: 'https://www.lagon-travel.com/blog-voyage/', reason: 'Blog voyage GP, location, sans outil sargasses' },
+  { domain: 'trotteurs-addict.com', url: 'https://trotteurs-addict.com/guadeloupe/', reason: 'Blog voyage GP, guide plages sans data sargasses' },
+  { domain: 'noscoeursvoyageurs.fr', url: 'https://www.noscoeursvoyageurs.fr/les-plages-de-guadeloupe/', reason: 'Article plages GP, pas de vérif sargasses' },
+  { domain: 'rentiles.fr', url: 'https://www.rentiles.fr/blog-voyage/idee-itineraire-10-jours-guadeloupe.html', reason: 'Loueur + blog voyage GP, public direct sans data sargasses' },
+  { domain: 'heures-saines.com', url: 'https://www.heures-saines.com/', reason: 'Centre de plongée Malendure/Bouillante (côte sous-le-vent = zone épargnée à conseiller)' },
+  { domain: 'pisquettes.com', url: 'https://www.pisquettes.com/', reason: 'Centre de plongée Les Saintes, oriente ses clients vers les criques propres' },
+
+  // ── International (envoyé seulement si OUTREACH_INTL=1) ──
+  // US Florida (us press kit) :
+  { domain: 'floridarambler.com', url: 'https://www.floridarambler.com/beaches/sargassum-seaweed-florida-beaches/', market: 'us', lang: 'en', reason: 'Continuously-updated sargassum status page, no dedicated live tracker — ideal fit' },
+  { domain: 'wlrn.org', url: 'https://www.wlrn.org/environment', market: 'us', lang: 'en', reason: 'South Florida NPR, recurring sargassum environment beat' },
+  { domain: 'local10.com', url: 'https://www.local10.com/news/local/', market: 'us', lang: 'en', reason: 'WPLG Miami, seasonal sargassum beach stories' },
+  { domain: 'nbcmiami.com', url: 'https://www.nbcmiami.com/news/local/', market: 'us', lang: 'en', reason: 'NBC6 Miami, affected-vs-clear beach coverage' },
+  { domain: 'cbs12.com', url: 'https://cbs12.com/news/local', market: 'us', lang: 'en', reason: 'WPEC Palm Beach / Treasure Coast sargassum coverage' },
+  { domain: 'mynews13.com', url: 'https://www.mynews13.com/fl/orlando/news', market: 'us', lang: 'en', reason: 'Spectrum News 13, Space Coast/Brevard sargassum' },
+  { domain: 'spacecoastdaily.com', url: 'https://spacecoastdaily.com/', market: 'us', lang: 'en', reason: 'Brevard local outlet, beach wrack/seaweed stories' },
+  { domain: 'keywestislandnews.com', url: 'https://keywestislandnews.com/', market: 'us', lang: 'en', reason: 'Independent Key West news, link-friendly sargassum season posts' },
+  { domain: 'theinvadingsea.com', url: 'https://www.theinvadingsea.com/', market: 'us', lang: 'en', reason: 'FAU-affiliated environment news, mission-aligned with a public data tool' },
+  { domain: 'keywestpaddle.com', url: 'https://keywestpaddle.com/blog/', market: 'us', lang: 'en', reason: 'Key West tour operator « avoid the seaweed » tips' },
+  // MX Cancún / Riviera Maya (mx press kit) :
+  { domain: 'everythingplayadelcarmen.com', url: 'https://www.everythingplayadelcarmen.com/sargassum-forecast/', market: 'mx', lang: 'en', reason: 'Seaweed-forecast page links only USF/FB — clean upgrade gap' },
+  { domain: 'govisitcancun.com', url: 'https://www.govisitcancun.com/blog/how-to-avoid-sargassum-in-cancun-in-2026/', market: 'mx', lang: 'en', reason: '« How to avoid sargassum » links only own cams' },
+  { domain: 'playadelcarmen.com', url: 'https://www.playadelcarmen.com/blog/seaweed-playa-del-carmen/', market: 'mx', lang: 'en', reason: 'High-authority PdC portal, multiple seaweed posts, no live tracker' },
+  { domain: 'playadelcarmenvacation.com', url: 'https://www.playadelcarmenvacation.com/daily-sargassum-sargasso-seaweed-report/', market: 'mx', lang: 'en', reason: 'Maintains a daily sargassum report page — obvious widget home' },
+  { domain: 'stingrayvilla.com', url: 'https://www.stingrayvilla.com/sargassum-seaweed-in-cozumel/', market: 'mx', lang: 'en', reason: 'Cozumel rental villa, evergreen seaweed guide' },
+  { domain: 'topmexicorealestate.com', url: 'https://www.topmexicorealestate.com/blog/tag/sargassum-riviera-maya/', market: 'mx', lang: 'en', reason: 'Recurring « sargassum update » series with tag archive' },
+  { domain: 'cancun-adventure.com', url: 'https://www.cancun-adventure.com/en/blog/sargassum-cancun', market: 'mx', lang: 'en', reason: 'Tour operator pre-trip planning content' },
+  { domain: 'poresto.com', url: 'https://www.poresto.com/quintana-roo/', market: 'mx', lang: 'es', reason: 'Por Esto! QR — frecuente « playas sin sargazo hoy »' },
+  { domain: '24horasqroo.mx', url: 'https://24horasqroo.mx/', market: 'mx', lang: 'es', reason: 'Publica el semáforo del sargazo de Quintana Roo' },
+  { domain: 'laverdadnoticias.com', url: 'https://laverdadnoticias.com/quintanaroo/', market: 'mx', lang: 'es', reason: 'Periodismo de servicio « dónde ir sin sargazo este fin de semana »' },
+  // DR Punta Cana / Bávaro (dr press kit) :
+  { domain: 'bavarodigital.net', url: 'https://bavarodigital.net/', market: 'dr', lang: 'es', reason: 'Medio local Bávaro/Punta Cana, reportes de sargazo playa por playa' },
+  { domain: 'bavaronews.com', url: 'https://bavaronews.com/', market: 'dr', lang: 'es', reason: 'Periódico digital Bávaro-Verón-Punta Cana' },
+  { domain: 'drsimplified.com', url: 'https://drsimplified.com/what-to-know-about-sargassum-in-the-dominican-republic/', market: 'dr', lang: 'en', reason: 'Expat guide, « what to know about sargassum in the DR »' },
+  { domain: 'puntacanatravelblog.com', url: 'https://puntacanatravelblog.com/general-information-faq/seaweed-punta-cana-sargassum/', market: 'dr', lang: 'en', reason: 'Punta Cana travel blog, dedicated seaweed/sargassum FAQ' },
+  { domain: 'everythingpuntacana.com', url: 'https://www.everythingpuntacana.com/punta-cana-seaweed-guide/', market: 'dr', lang: 'en', reason: 'Punta Cana seaweed guide, no live tracker' },
+  { domain: 'godominicantravel.com', url: 'https://godominicantravel.com/sargassum-or-seaweed-in-punta-cana/', market: 'dr', lang: 'en', reason: 'DR travel guide, sargassum/seaweed explainer' },
+  { domain: 'puntacanard.com', url: 'https://puntacanard.com/travel-tips/sargassum-in-punta-cana-what-to-know-before-your-trip/', market: 'dr', lang: 'en', reason: 'Punta Cana travel tips, pre-trip sargassum advice' },
+  { domain: 'boattripspuntacana.com', url: 'https://boattripspuntacana.com/seaweed-in-punta-cana/', market: 'dr', lang: 'en', reason: 'Punta Cana tour operator, 2026 seaweed guide' },
 ]
 
 // ── Helpers ──────────────────────────────────────────────────
