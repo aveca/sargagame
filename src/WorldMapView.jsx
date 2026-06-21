@@ -66,8 +66,10 @@ export default function WorldMapView({
   const tagTimerRef= useRef(null)
   const reduceRef  = useRef(false)
   const labelLayerRef = useRef(null)
+  const bakeRef    = useRef(null)  // <svg> source du monde statique → rasterisé en bitmap (Stage 2)
 
   const [outline, setOutline]   = useState(null)
+  const [bakedUrl, setBakedUrl] = useState(null)  // PNG data-URL du monde statique baké (GPU-composité)
   const [loadErr, setLoadErr]   = useState(false)
   const [day,     setDay]       = useState(0)
   const [selected, setSelected] = useState(null)  // beach object enrichi
@@ -169,6 +171,34 @@ export default function WorldMapView({
     if(!toVB||island!=="mq") return []
     return MQ_RELIEF.map(([lat,lng,rx])=>{ const[vx,vy]=toVB(lat,lng); return{vx,vy,rx} })
   },[toVB,island])
+
+  // ─── BAKE (Stage 2) : le monde STATIQUE (côte floutée + sargasses + relief + yole) est
+  // rasterisé UNE fois en PNG 2.5×, puis affiché comme <image> GPU-composité. Pendant pan/zoom
+  // le navigateur ne fait que translater/scaler une texture → zéro re-raster du flou/des cercles
+  // (le coût/frame qui ramait sur GPU mobile). Les pins restent SVG vivants (funnel + couleur du
+  // jour). Échec (taint canvas / sérialisation) → bakedUrl=null → fallback SVG live (Stage 1).
+  useEffect(()=>{
+    const svg=bakeRef.current
+    if(!svg||!outline){ setBakedUrl(null); return }
+    let cancelled=false
+    const S=2.5, W=Math.round(800*S), H=Math.round(600*S)
+    let xml
+    try{ xml=new XMLSerializer().serializeToString(svg) }catch(_){ return }
+    xml=xml.replace('<svg ',`<svg width="${W}" height="${H}" `) // viewBox 800×600 reste → raster net 2.5×
+    const img=new Image()
+    img.onload=()=>{
+      if(cancelled) return
+      try{
+        const cv=document.createElement('canvas'); cv.width=W; cv.height=H
+        cv.getContext('2d').drawImage(img,0,0,W,H)
+        const png=cv.toDataURL('image/png')
+        if(!cancelled) setBakedUrl(png)
+      }catch(_){ if(!cancelled) setBakedUrl(null) }
+    }
+    img.onerror=()=>{ if(!cancelled) setBakedUrl(null) }
+    img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(xml)
+    return ()=>{ cancelled=true }
+  },[outline,sargCells,reliefEls,island])
 
   // ─── CAMÉRA ────────────────────────────────────────────────────────────────
   const K_MIN=0.85, K_MAX=5.0
@@ -445,6 +475,102 @@ export default function WorldMapView({
   const dayLbl    = day===0?_t(lang,"aujourd'hui","today","hoy"):_t(lang,`dans ${day}j`,`in ${day}d`,`en ${day}d`)
   const vant      = vantColor(beachList,day)
 
+  // Defs partagés (gradients + 2 filtres flous) — rendus à l'identique dans le SVG de bake ET le
+  // SVG visible. IDs dupliqués mais définitions identiques → url(#id) résout pareil, inoffensif.
+  const mapDefs = (
+    <defs>
+      <radialGradient id="wmPhalo" cx="50%" cy="50%" r="50%">
+        <stop offset="0" stopColor="#FFE6A8" stopOpacity=".55"/>
+        <stop offset="1" stopColor="#FFE6A8" stopOpacity="0"/>
+      </radialGradient>
+      <linearGradient id="wmLand" x1="1" y1="0" x2="0" y2="1">
+        <stop offset="0" stopColor="#6fe39a"/><stop offset=".26" stopColor="#3fd07e"/>
+        <stop offset=".58" stopColor="#27c46b"/><stop offset="1" stopColor="#1c8f4e"/>
+      </linearGradient>
+      <linearGradient id="wmWarm" x1="1" y1="0" x2=".2" y2="1">
+        <stop offset="0" stopColor="#FFD27A" stopOpacity=".55"/>
+        <stop offset=".4" stopColor="#F0A23A" stopOpacity=".14"/>
+        <stop offset="1" stopColor="#C97E3A" stopOpacity="0"/>
+      </linearGradient>
+      <linearGradient id="wmSand" x1="1" y1="0" x2="0" y2="1">
+        <stop offset="0" stopColor="#FFEFC4"/><stop offset="1" stopColor="#F4D38C"/>
+      </linearGradient>
+      <linearGradient id="wmPinClean" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stopColor="#5BE38A"/><stop offset="1" stopColor="#1FA34D"/>
+      </linearGradient>
+      <linearGradient id="wmPinMod" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stopColor="#FFC53D"/><stop offset="1" stopColor="#D88A00"/>
+      </linearGradient>
+      <linearGradient id="wmPinAvoid" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stopColor="#FF7A4D"/><stop offset="1" stopColor="#C93A18"/>
+      </linearGradient>
+      <linearGradient id="wmSailR" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stopColor="#FF6A3D"/><stop offset="1" stopColor="#D8431F"/>
+      </linearGradient>
+      <linearGradient id="wmSailY" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stopColor="#FFD45A"/><stop offset="1" stopColor="#F0A81E"/>
+      </linearGradient>
+      <filter id="wmSoft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="4"/></filter>
+      <filter id="wmShlw" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="8"/></filter>
+    </defs>
+  )
+
+  // Monde STATIQUE (ne dépend PAS du jour) : vagues + côte + sargasses + relief + yole. Source du
+  // bake ET fallback live tant que le bitmap n'est pas prêt.
+  const staticWorld = (
+    <>
+      {/* Vagues océan décoratives (traits d'écume comic) */}
+      <g stroke="#bfeee8" strokeWidth="2.4" strokeLinecap="round" fill="none" opacity=".14">
+        <path d="M40 250 q60 -16 120 -4"/><path d="M70 340 q70 -18 140 -2"/>
+        <path d="M30 430 q66 -16 130 -2"/>
+        <path d="M520 120 q60 -14 120 0"/><path d="M600 470 q70 -16 130 -2"/>
+        <path d="M560 540 q66 -16 130 -2"/>
+      </g>
+      {/* Contour côtier — couches mer → île ink comic */}
+      {outline&&<g>
+        <path d={outline.path} fill="none" stroke="#46c8bd" strokeWidth="30" strokeOpacity=".42" filter="url(#wmShlw)"/>
+        <path d={outline.path} fill="none" stroke="#a8f0e0" strokeWidth="10" strokeOpacity=".42"/>
+        <path d={outline.path} fill="#062033" opacity=".5" filter="url(#wmSoft)" transform="translate(7 13)"/>
+        <path d={outline.path} fill="none" stroke="#FFE6A8" strokeWidth="7" strokeOpacity=".38"/>
+        <path d={outline.path} fill="url(#wmSand)" stroke="none"/>
+        <path d={outline.path} fill="url(#wmLand)" stroke="none" transform="scale(.985)" style={{transformOrigin:"328px 300px"}}/>
+        <path d={outline.path} fill="url(#wmWarm)" opacity=".9" transform="scale(.985)" style={{transformOrigin:"328px 300px"}}/>
+        <path d={outline.path} fill="none" stroke={INK} strokeWidth="3" strokeLinejoin="round"/>
+      </g>}
+      {/* Couche SARGASSES (satellite AFAI) — la matière sur l'eau */}
+      {sargCells.length>0 && <g>
+        {sargCells.map((c,i)=>(
+          <circle key={i} cx={c.vx.toFixed(1)} cy={c.vy.toFixed(1)}
+            r={(9+c.afai*30).toFixed(1)}
+            fill={c.afai<.40?"#5c6b2a":"#3d2f12"}
+            opacity={Math.min(.72,.30+c.afai*1.0).toFixed(2)}/>
+        ))}
+      </g>}
+      {/* Relief Martinique — collines comic */}
+      {reliefEls.map(({vx,vy,rx},i)=>(
+        <g key={i}>
+          <ellipse cx={vx} cy={vy} rx={rx} ry={rx*0.66} fill="#2c5a26" opacity=".5"/>
+          <path d={`M${(vx-rx*.72).toFixed(1)} ${(vy+rx*.18).toFixed(1)} Q${vx.toFixed(1)} ${(vy-rx*.78).toFixed(1)} ${(vx+rx*.72).toFixed(1)} ${(vy+rx*.18).toFixed(1)}`}
+            stroke="#bfe07a" strokeWidth="2" fill="none" opacity=".55" strokeLinecap="round"/>
+          <path d={`M${(vx-rx*.4).toFixed(1)} ${(vy+rx*.05).toFixed(1)} Q${(vx-rx*.05).toFixed(1)} ${(vy-rx*.5).toFixed(1)} ${(vx+rx*.35).toFixed(1)} ${(vy+rx*.02).toFixed(1)}`}
+            stroke="#1d4a1c" strokeWidth="1.4" fill="none" opacity=".4" strokeLinecap="round"/>
+        </g>
+      ))}
+      {/* Yole */}
+      <g transform="translate(150 470) scale(.58)" opacity=".95">
+        <ellipse cx="0" cy="26" rx="46" ry="6" fill="#06201c" opacity=".5"/>
+        <g>
+          <line x1="-2" y1="4" x2="-2" y2="-64" stroke="#241608" strokeWidth="3"/>
+          <path d="M-2 -62 L-2 -6 L42 -6 Z" fill="url(#wmSailR)"/>
+          <path d="M-2 -44 L-2 -6 L28 -6 Z" fill="url(#wmSailY)"/>
+          <path d="M-4 -52 L-4 -8 L-32 -8 Z" fill="#1c7fb0" opacity=".94"/>
+        </g>
+        <path d="M-46 4 Q0 24 46 4 Q40 14 32 16 L-32 16 Q-40 14 -46 4 Z" fill="#0f5d54"/>
+        <path d="M-46 4 Q0 18 46 4" fill="none" stroke="#FFD884" strokeWidth="1.6" strokeOpacity=".6"/>
+      </g>
+    </>
+  )
+
   return(
     <div ref={wrapRef} style={{
       position:"fixed",inset:0,zIndex:1020,overflow:"hidden",touchAction:"none",userSelect:"none",
@@ -511,6 +637,15 @@ export default function WorldMapView({
       <div style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:3,opacity:.05,
         backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,backgroundSize:"cover"}}/>
 
+      {/* SVG SOURCE DU BAKE (caché 0×0) — rendu une fois, sérialisé+rasterisé par l'effet bake.
+          Hors caméra → jamais transformé ni repeint pendant le geste. */}
+      <div aria-hidden="true" style={{position:"absolute",width:0,height:0,overflow:"hidden",pointerEvents:"none"}}>
+        <svg ref={bakeRef} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+          {mapDefs}
+          {staticWorld}
+        </svg>
+      </div>
+
       {/* ── SVG monde ──────────────────────────────────────────────────────── */}
       <svg
         style={{position:"absolute",inset:0,width:"100%",height:"100%",display:"block",zIndex:1,touchAction:"none"}}
@@ -520,116 +655,17 @@ export default function WorldMapView({
         aria-label={_t(lang,`Carte ${regionName} — déplace, zoome, touche une plage`,`${regionName} map — pan, zoom, tap a beach`,`Mapa ${regionName} — desplaza, zoom, toca playa`)}
         onClick={()=>{ setSelected(null); setTagPos(null) }}
       >
-        <defs>
-          <radialGradient id="wmPhalo" cx="50%" cy="50%" r="50%">
-            <stop offset="0" stopColor="#FFE6A8" stopOpacity=".55"/>
-            <stop offset="1" stopColor="#FFE6A8" stopOpacity="0"/>
-          </radialGradient>
-          {/* Terre : vert tropical lumineux haut-droite (soleil) → vert profond + sable côtier */}
-          <linearGradient id="wmLand" x1="1" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#6fe39a"/><stop offset=".26" stopColor="#3fd07e"/>
-            <stop offset=".58" stopColor="#27c46b"/><stop offset="1" stopColor="#1c8f4e"/>
-          </linearGradient>
-          {/* Overlay chaud d'heure dorée sur la terre (côté soleil) */}
-          <linearGradient id="wmWarm" x1="1" y1="0" x2=".2" y2="1">
-            <stop offset="0" stopColor="#FFD27A" stopOpacity=".55"/>
-            <stop offset=".4" stopColor="#F0A23A" stopOpacity=".14"/>
-            <stop offset="1" stopColor="#C97E3A" stopOpacity="0"/>
-          </linearGradient>
-          {/* Liseré de sable / plage clair en bordure d'île */}
-          <linearGradient id="wmSand" x1="1" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#FFEFC4"/><stop offset="1" stopColor="#F4D38C"/>
-          </linearGradient>
-          {/* Pin teardrop dégradés par statut */}
-          <linearGradient id="wmPinClean" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#5BE38A"/><stop offset="1" stopColor="#1FA34D"/>
-          </linearGradient>
-          <linearGradient id="wmPinMod" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#FFC53D"/><stop offset="1" stopColor="#D88A00"/>
-          </linearGradient>
-          <linearGradient id="wmPinAvoid" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#FF7A4D"/><stop offset="1" stopColor="#C93A18"/>
-          </linearGradient>
-          <linearGradient id="wmSailR" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#FF6A3D"/><stop offset="1" stopColor="#D8431F"/>
-          </linearGradient>
-          <linearGradient id="wmSailY" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#FFD45A"/><stop offset="1" stopColor="#F0A81E"/>
-          </linearGradient>
-          {/* PERF mobile : un flou DANS le <g> transformé se re-rasterise À CHAQUE frame de zoom.
-              On passe de 4 passes floues à 2 (wmRim + wmShl2 retirés, stdDev abaissés). */}
-          <filter id="wmSoft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="4"/></filter>
-          <filter id="wmShlw" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="8"/></filter>
-        </defs>
+        {mapDefs}
 
         {/* Monde — transform caméra appliqué ici via ref. (will-change retiré : sur GPU mobile
             faible il met la mémoire sous pression et n'aide pas le pinch-zoom ; la vraie promo
             couche = le bake raster du Stage 2.) */}
         <g ref={worldRef}>
-          {/* Vagues océan décoratives (traits d'écume comic) */}
-          <g stroke="#bfeee8" strokeWidth="2.4" strokeLinecap="round" fill="none" opacity=".14">
-            <path d="M40 250 q60 -16 120 -4"/><path d="M70 340 q70 -18 140 -2"/>
-            <path d="M30 430 q66 -16 130 -2"/>
-            <path d="M520 120 q60 -14 120 0"/><path d="M600 470 q70 -16 130 -2"/>
-            <path d="M560 540 q66 -16 130 -2"/>
-          </g>
-
-          {/* Contour côtier — couches mer → île ink comic */}
-          {outline&&<g>
-            {/* eau peu profonde lointaine (lagon turquoise large) */}
-            <path d={outline.path} fill="none" stroke="#46c8bd" strokeWidth="30" strokeOpacity=".42" filter="url(#wmShlw)"/>
-            {/* eau peu profonde proche : stroke turquoise SANS flou (le flou re-raster/frame au zoom) */}
-            <path d={outline.path} fill="none" stroke="#a8f0e0" strokeWidth="10" strokeOpacity=".42"/>
-            {/* ombre portée profonde de l'île */}
-            <path d={outline.path} fill="#062033" opacity=".5" filter="url(#wmSoft)" transform="translate(7 13)"/>
-            {/* halo rim doré (heure dorée léchant la côte) — stroke large sans flou */}
-            <path d={outline.path} fill="none" stroke="#FFE6A8" strokeWidth="7" strokeOpacity=".38"/>
-            {/* liseré de sable (plage claire) sous l'encre */}
-            <path d={outline.path} fill="url(#wmSand)" stroke="none"/>
-            {/* île solide verte */}
-            <path d={outline.path} fill="url(#wmLand)" stroke="none" transform="scale(.985)" style={{transformOrigin:"328px 300px"}}/>
-            {/* overlay chaud (lumière dorée côté soleil) */}
-            <path d={outline.path} fill="url(#wmWarm)" opacity=".9" transform="scale(.985)" style={{transformOrigin:"328px 300px"}}/>
-            {/* CONTOUR ENCRE comic épais — fait POPPER l'île sur la mer */}
-            <path d={outline.path} fill="none" stroke={INK} strokeWidth="3" strokeLinejoin="round"/>
-          </g>}
-
-          {/* Couche SARGASSES (satellite AFAI) — la matière sur l'eau, ce que les gens
-              viennent voir. Sous les pins (donnée, pas alarme) ; opacité ∝ intensité. */}
-          {sargCells.length>0 && <g style={{pointerEvents:"none"}}>
-            {sargCells.map((c,i)=>(
-              <circle key={i} cx={c.vx.toFixed(1)} cy={c.vy.toFixed(1)}
-                r={(9+c.afai*30).toFixed(1)}
-                fill={c.afai<.40?"#5c6b2a":"#3d2f12"}
-                opacity={Math.min(.72,.30+c.afai*1.0).toFixed(2)}/>
-            ))}
-          </g>}
-
-          {/* Relief Martinique — collines comic (ombre verte + crête ensoleillée) */}
-          {reliefEls.map(({vx,vy,rx},i)=>(
-            <g key={i}>
-              {/* versant ombre */}
-              <ellipse cx={vx} cy={vy} rx={rx} ry={rx*0.66} fill="#2c5a26" opacity=".5"/>
-              {/* crête éclairée par le soleil */}
-              <path d={`M${(vx-rx*.72).toFixed(1)} ${(vy+rx*.18).toFixed(1)} Q${vx.toFixed(1)} ${(vy-rx*.78).toFixed(1)} ${(vx+rx*.72).toFixed(1)} ${(vy+rx*.18).toFixed(1)}`}
-                stroke="#bfe07a" strokeWidth="2" fill="none" opacity=".55" strokeLinecap="round"/>
-              <path d={`M${(vx-rx*.4).toFixed(1)} ${(vy+rx*.05).toFixed(1)} Q${(vx-rx*.05).toFixed(1)} ${(vy-rx*.5).toFixed(1)} ${(vx+rx*.35).toFixed(1)} ${(vy+rx*.02).toFixed(1)}`}
-                stroke="#1d4a1c" strokeWidth="1.4" fill="none" opacity=".4" strokeLinecap="round"/>
-            </g>
-          ))}
-
-          {/* Yole */}
-          <g transform="translate(150 470) scale(.58)" opacity=".95">
-            <ellipse cx="0" cy="26" rx="46" ry="6" fill="#06201c" opacity=".5"/>
-            <g>
-              <line x1="-2" y1="4" x2="-2" y2="-64" stroke="#241608" strokeWidth="3"/>
-              <path d="M-2 -62 L-2 -6 L42 -6 Z" fill="url(#wmSailR)"/>
-              <path d="M-2 -44 L-2 -6 L28 -6 Z" fill="url(#wmSailY)"/>
-              <path d="M-4 -52 L-4 -8 L-32 -8 Z" fill="#1c7fb0" opacity=".94"/>
-            </g>
-            <path d="M-46 4 Q0 24 46 4 Q40 14 32 16 L-32 16 Q-40 14 -46 4 Z" fill="#0f5d54"/>
-            <path d="M-46 4 Q0 18 46 4" fill="none" stroke="#FFD884" strokeWidth="1.6" strokeOpacity=".6"/>
-          </g>
+          {/* Monde statique : bitmap baké (GPU-composité, scalé par la caméra) si prêt ;
+              sinon SVG live en fallback (zéro flash : la côte s'affiche tout de suite). */}
+          {bakedUrl
+            ? <image href={bakedUrl} x="0" y="0" width="800" height="600" preserveAspectRatio="none" style={{pointerEvents:"none"}}/>
+            : staticWorld}
 
           {/* Pins plages — marqueurs comic teardrop ink-outline */}
           {beachList.map(b=>{

@@ -28,7 +28,7 @@ async function main() {
   const page = await context.newPage()
   await page.goto(URL, { waitUntil: 'domcontentloaded' })
 
-  const SEL = 'svg[viewBox="0 0 800 600"]'
+  const SEL = 'svg[role="img"]' // the VISIBLE map svg (not the hidden bake svg, same viewBox)
   let ok = await page.waitForSelector(SEL, { timeout: 9000 }).then(() => true).catch(() => false)
   if (!ok) {
     const b = await page.$('[aria-label*="archipel" i]').catch(() => null)

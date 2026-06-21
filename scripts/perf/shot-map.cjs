@@ -8,7 +8,7 @@ const OUT = process.argv[3] || 'scripts/perf/map-shot.png'
   const c = await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true, colorScheme: 'dark' })
   const p = await c.newPage()
   await p.goto(URL, { waitUntil: 'domcontentloaded' })
-  const sel = 'svg[viewBox="0 0 800 600"]'
+  const sel = 'svg[role="img"]' // the VISIBLE map svg (not the hidden bake svg, same viewBox)
   let ok = await p.waitForSelector(sel, { timeout: 9000 }).then(() => 1).catch(() => 0)
   if (!ok) { const x = await p.$('[aria-label*="archipel" i]'); if (x) await x.click().catch(() => {}); await p.waitForSelector(sel, { timeout: 6000 }).catch(() => {}) }
   await p.waitForTimeout(2200)

@@ -59,7 +59,7 @@ async function main() {
   await page.goto(URL, { waitUntil: 'domcontentloaded' })
 
   // Find the world map SVG. If it isn't auto-open, try the archipel FAB.
-  const SEL = 'svg[viewBox="0 0 800 600"]'
+  const SEL = 'svg[role="img"]' // the VISIBLE map svg (not the hidden bake svg, same viewBox)
   let ok = await page.waitForSelector(SEL, { timeout: 9000 }).then(() => true).catch(() => false)
   if (!ok) {
     // try to open the map (FAB / any control labelled like the map)
