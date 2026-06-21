@@ -428,6 +428,15 @@ export default defineConfig({
           // duplicates content AND, on the GP build, ships hardcoded MQ beach links that
           // 404 on guadeloupe — exactly the phantom-href bug surfaced by seo-link-graph.
           const htmlSubpage = html.replace(/<noscript>\s*<h1>[\s\S]*?<\/noscript>/, '')
+            // Perf cold-start : retire les 4 preloads de données du PREMIER ÉCRAN des sous-pages.
+            // Une landing SEO /plages/<plage>/ (entrée Google) n'a PAS besoin de sargassum.json /
+            // beaches-list / images AVANT que la carte ne monte — ces preloads partaient en
+            // priorité MAX et concurrençaient le JS critique. Le fetch() de l'app les charge
+            // quand même à la demande. L'entrée (index.html / `html`) GARDE les 4.
+            .replace(/\s*<link rel="preload" href="\/api\/copernicus\/sargassum\.json"[^>]*>/, '')
+            .replace(/\s*<link rel="preload" href="\/data\/beaches-list\.json"[^>]*>/, '')
+            .replace(/\s*<link rel="preload" href="\/data\/beaches-images\.json"[^>]*>/, '')
+            .replace(/\s*<link rel="preload" href="\/data\/beaches-images-quality\.json"[^>]*>/, '')
           // Saveur GP pour les pages bâties sur le shell MQ (conditions, /plages/) :
           // ré-ancre les URL absolues + og:site_name/geo, et retire le FAQPage
           // homepage hérité (réponses spécifiques Martinique — le schema doit

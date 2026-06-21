@@ -487,7 +487,7 @@ export default function WorldMapView({
   },[selected,onOpenBeach])
 
   const nearMe=useCallback(()=>{
-    const c=beachList.find(b=>(b.days[day]||"clean")==="clean")
+    const c=beachList.find(b=>b.days[day]==="clean") // inconnu ≠ propre : ne pas filer sur une plage non chargée
     if(c) selectBeach(c)
     try{ track&&track("sg_map_near_me",{island}) }catch(_){}
   },[beachList,day,selectBeach,track,island])
@@ -853,7 +853,7 @@ export default function WorldMapView({
                 {matches.map(b=>(
                   <button key={b.id} onClick={()=>{try{track&&track("sg_map_search_open",{id:b.id})}catch(_){}; setQuery(""); onOpenBeach&&onOpenBeach(b)}}
                     style={{display:"flex",alignItems:"center",gap:8,width:"100%",textAlign:"left",background:"none",border:"none",borderBottom:"1px solid rgba(13,11,20,.12)",padding:"9px 11px",cursor:"pointer",font:"700 12.5px/1.2 'Comic Neue',system-ui,sans-serif",color:INK}}>
-                    <span style={{width:9,height:9,borderRadius:"50%",background:STATUS_C[b.status]||"#999",flexShrink:0}}/>
+                    <span style={{width:9,height:9,borderRadius:"50%",background:STATUS_C[b.status]||"#9aa0a8",flexShrink:0}}/>
                     <span style={{flex:1}}>{b.name}</span>
                     {b.commune&&<span style={{opacity:.5,fontWeight:600,fontSize:11}}>{b.commune}</span>}
                   </button>
@@ -995,8 +995,8 @@ export default function WorldMapView({
             <div style={{font:"400 14px/1.1 'AntonLC','Anton',sans-serif",letterSpacing:".01em",color:INK}}>{selected.name}</div>
             <div style={{font:"800 10.5px/1 'Comic Neue',system-ui,sans-serif",letterSpacing:".04em",
               textTransform:"uppercase",marginTop:4,display:"flex",alignItems:"center",gap:5,color:INK}}>
-              <div style={{width:8,height:8,borderRadius:"50%",background:STATUS_C[selected.days[day]||"clean"],border:`1.5px solid ${INK}`}}/>
-              <span>{ti(lang,STATUS_LBL[selected.days[day]||"clean"]||["—","—","—"])}</span>
+              <div style={{width:8,height:8,borderRadius:"50%",background:STATUS_C[selected.days[day]]||"#9aa0a8",border:`1.5px solid ${INK}`}}/>
+              <span>{ti(lang,STATUS_LBL[selected.days[day]]||["—","—","—"])}</span>
             </div>
             {selected.commune&&<div style={{font:"700 10px/1 'Comic Neue',system-ui,sans-serif",color:"#6b6478",marginTop:4}}>{selected.commune}</div>}
           </div>
