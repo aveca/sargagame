@@ -256,6 +256,16 @@ jobs:
           GA4_PROPERTY_ID_GP: ${{ secrets.GA4_PROPERTY_ID_GP }}
         run: node scripts/automation/daily-stats-check.cjs
 
+      # Veille revenu proactive : diff le bloc stripe de daily-metrics (que daily-stats-check
+      # vient d'écrire) → alerte le fondateur sur churn/annulation/nouveau payeur/past_due.
+      # Lecture seule (zéro appel Stripe), dédup revenue-watch-seen.json, schedule-only.
+      - name: Revenue watch (alerte mouvements Stripe)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/automation/revenue-watch.cjs --send
+
       # ── 1b. Commit IMMÉDIAT des états email (anti-doublon). Leçon 2026-06-11 :
       # le commit de fin de workflow arrive APRÈS build/deploy — un step qui
       # plante entre les envois et ce commit = drip-sent.json jamais persisté
@@ -267,7 +277,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/widget-hosts-seen.json; do
+          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/widget-hosts-seen.json; do
             [ -f "$f" ] && git add "$f"
           done
           if git diff --cached --quiet; then echo "Email state unchanged."; exit 0; fi
