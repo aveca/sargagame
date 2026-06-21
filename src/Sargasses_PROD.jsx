@@ -1895,7 +1895,8 @@ function engInit(){
     window.addEventListener("pointerdown",act,{passive:true})
     window.addEventListener("keydown",act,{passive:true})
     window.addEventListener("wheel",act,{passive:true})
-    window.addEventListener("scroll",()=>{const h=document.documentElement,sc=h.scrollHeight-h.clientHeight;if(sc>0){const p=Math.round(h.scrollTop/sc*100);if(p>_eng.maxScroll)_eng.maxScroll=p}},{passive:true})
+    let _scRaf=0 // throttle rAF : lit scrollHeight/clientHeight (layout) AU PLUS 1×/frame, pas par event
+    window.addEventListener("scroll",()=>{if(_scRaf)return;_scRaf=requestAnimationFrame(()=>{_scRaf=0;const h=document.documentElement,sc=h.scrollHeight-h.clientHeight;if(sc>0){const p=Math.round(h.scrollTop/sc*100);if(p>_eng.maxScroll)_eng.maxScroll=p}})},{passive:true})
     document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")engFlush("hide")})
     window.addEventListener("pagehide",()=>engFlush("pagehide"))
     // FRICTION temps réel : rage-click (≥3 clics rapprochés au même endroit) =
@@ -6411,7 +6412,7 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
       @keyframes pwxIrisVeil{0%{opacity:1}100%{opacity:0}}
       @keyframes pwxPow{0%{opacity:0;transform:scale(0) rotate(-12deg)}45%{opacity:1;transform:scale(1.15) rotate(2deg)}70%{opacity:1;transform:scale(1) rotate(0)}100%{opacity:0;transform:scale(1.04) rotate(0)}}
       .pwx-iris-veil{opacity:0}
-      .pwx-title{font-family:"AntonLC","Anton",system-ui,sans-serif;font-size:26px;line-height:1.03;margin:6px 0 8px;color:var(--ink);text-shadow:2px 2px 0 #fff;animation:pwxChroma 1.6s steps(3) infinite alternate}
+      .pwx-title{font-family:"AntonLC","Anton",system-ui,sans-serif;font-size:26px;line-height:1.03;margin:6px 0 8px;color:var(--ink);text-shadow:2px 2px 0 #fff;animation:pwxChroma 1.6s steps(3) 6 alternate}
       .pwx-title em{font-style:normal;color:var(--red)}
       .pwx-sub{font-size:13.5px;font-weight:700;color:#0d2330;margin:0 0 15px;line-height:1.35}
       .pwx-panel{position:relative;display:flex;align-items:center;gap:13px;background:var(--paper);border:2.5px solid var(--ink);border-radius:14px;padding:12px 14px;margin-bottom:11px;box-shadow:4px 4px 0 var(--ink)}
@@ -6458,7 +6459,7 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
         .pwx-hero{animation:pwxSlamFrame .42s var(--punch) both;will-change:transform}
         .pwx-veil{animation:pwxVeilDrop .42s var(--punch) .05s both}
         .pwx-verdict{animation:pwxStamp .42s cubic-bezier(.34,1.4,.64,1) .1s both;will-change:clip-path,transform}
-        .pwx-title{animation:pwxRise .3s ease-out .12s both,pwxChroma 1.6s steps(3) infinite alternate .55s}
+        .pwx-title{animation:pwxRise .3s ease-out .12s both,pwxChroma 1.6s steps(3) 6 alternate .55s}
         .pwx-sub{animation:pwxRise .3s ease-out .18s both}
         .pwx-panel{animation:pwxInkOdd .34s var(--punch) both;will-change:transform,clip-path}
         .pwx-panel:nth-child(3){animation-delay:.26s}
