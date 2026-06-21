@@ -182,7 +182,7 @@ function renderPage({ lang, domain, siteName, slug, title, desc, content }) {
 <script type="application/ld+json">${ldFaq}</script>
 <script type="application/ld+json">${ldCrumb}</script>
 <style>
-  :root{--ink:#0A1714;--card:#10231E;--gold:#FFC72C;--teal:#3BA7A0;--mut:rgba(255,255,255,.62);--line:rgba(255,255,255,.09)}
+  :root{--ink:#160a26;--card:#241246;--gold:#FFC72C;--teal:#1c7fb0;--mut:rgba(255,255,255,.62);--line:rgba(255,255,255,.09)}
   *{margin:0;padding:0;box-sizing:border-box}
   body{background:var(--ink);color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.6}
   .page{max-width:560px;margin:0 auto;padding:0 22px calc(40px + env(safe-area-inset-bottom))}
