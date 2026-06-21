@@ -514,10 +514,14 @@ jobs:
       # manual-ftp-deploy.cjs itère TOUTES les régions (regions/index.cjs) :
       # une région sans secrets FTP ou sans dossier <ftpDir>/ local = skip
       # silencieux (le workflow n'échoue pas).
-      # Gated : ne publie QUE si verify_data a réussi (intégrité OK).
+      # Gated : ne publie QUE si verify_data a réussi (intégrité OK). EXCEPTION
+      # push : un push de code/asset ne re-scrape pas la donnée (steps ERDDAP/scraper
+      # sautés) → verify_data lit la donnée committée (potentiellement vieille). On ne
+      # veut PAS qu'une donnée dégradée déjà committée gèle les deploys de CODE → sur
+      # push on déploie toujours (le code/site change, pas la donnée).
       - name: Deploy FTPS toutes régions (sessions fragmentées)
         id: ftp_deploy
-        if: steps.verify_data.outcome == 'success'
+        if: github.event_name == 'push' || steps.verify_data.outcome == 'success'
         continue-on-error: true
         # Garde-fou : une session FTPS morte peut faire griller le step indéfiniment
         # (vu 2026-06-16 : 33 min bloqués, run suivant en queue derrière). Le step est
@@ -568,6 +572,12 @@ jobs:
           # If FTP attempt 2 also failed AND data is stale (>6h), alert
           if [ "${{ steps.ftp_deploy.outcome }}" = "failure" ]; then
             echo "::warning::FTP deploy failed — sites may be up but files stale. Next run or manual-ftp-deploy.cjs peut corriger."
+          fi
+          # Deploy FTP SAUTÉ par le gate d'intégrité (verify_data KO) : les sites
+          # restent up sur l'ancienne donnée (cache/CDN) → pas de "site down", mais
+          # publication volontairement bloquée. On le rend visible (sinon skip muet).
+          if [ "${{ steps.ftp_deploy.outcome }}" = "skipped" ]; then
+            echo "::warning::Deploy FTP SAUTÉ — intégrité des données refusée (source dégradée ou pic tout-vert). Sites servent l'ancienne donnée (réelle). Prochain run re-tentera la source live."
           fi
           # ── Le deploy a-t-il PRIS ? (leçon 2026-06-11 : prod gelée 3h30 avec
           # sites 200 + vieux bundle — invisible pour le check up/fraîcheur).
