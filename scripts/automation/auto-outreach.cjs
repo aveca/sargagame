@@ -3,18 +3,24 @@
  * auto-outreach.cjs — Automated backlink outreach
  *
  * Pipeline:
- *   1. Scrape Google for new articles about sargasses MQ/GP
+ *   1. Scrape Google News for new articles about sargassum (FR, + US/MX/DR
+ *      when OUTREACH_INTL=1), tagging each target with its market.
  *   2. Find contact emails on target sites
- *   3. Send personalized outreach email via Resend
+ *   3. Send a market-aware outreach email via Resend. FR pitches the MQ/GP
+ *      maps; US/MX/DR pitch the region site + the free-to-cite /press/ kit,
+ *      in the local language and from that region's own sender domain.
  *   4. Track contacted sites to never re-email
  *
- * Safety: max 5 emails per run. Dedup by domain. Professional tone.
+ * Safety: max 5 emails per run. Dedup by domain. Professional tone. Intl is
+ * gated on OUTREACH_INTL=1 and intl send-failures (e.g. an unverified Resend
+ * sender domain) are NOT recorded, so targets retry once the domain is ready.
  *
- * Cron: 1x/semaine (Mardi 10h UTC) via content-generation.yml
+ * Cron: 1x/semaine (Mardi 10h UTC) via weekly-outreach.yml
  *
  * Usage:
  *   node scripts/automation/auto-outreach.cjs
  *   DRY_RUN=1 node scripts/automation/auto-outreach.cjs
+ *   DRY_RUN=1 OUTREACH_INTL=1 node scripts/automation/auto-outreach.cjs
  */
 'use strict'
 
@@ -30,6 +36,38 @@ const MAX_EMAILS_PER_RUN = 5
 const DATA_DIR = resolve(__dirname, 'data')
 const OUTREACH_LOG = resolve(DATA_DIR, 'outreach-log.json')
 const FROM = 'Sargasses Martinique <alerte@sargasses-martinique.com>'
+
+// International outreach (US/MX/DR) is gated: it only sends when OUTREACH_INTL=1,
+// because each non-FR market sends from its own domain and those domains must be
+// verified as Resend senders first. Default OFF keeps the historical FR-only run.
+const OUTREACH_INTL = process.env.OUTREACH_INTL === '1'
+
+// Per-market config. `from` must be a verified Resend sender for that domain.
+// `pitch` drives the email language + which site(s) and press kit we offer.
+const MARKETS = {
+  fr: {
+    lang: 'fr', from: FROM, replyTo: 'contact@sargasses-martinique.com',
+    sites: [['Martinique', 'https://sargasses-martinique.com/'], ['Guadeloupe', 'https://sargasses-guadeloupe.com/']],
+    press: null, widget: 'https://sargasses-martinique.com/widget/', intl: false,
+  },
+  us: {
+    lang: 'en', from: 'Sargassum Florida <alerte@sargassummiami.com>', replyTo: 'support@sargassummiami.com',
+    region: 'Florida', sites: [['Florida', 'https://sargassummiami.com/']],
+    press: 'https://sargassummiami.com/press/', widget: 'https://sargassummiami.com/widget/', intl: true,
+  },
+  mx: {
+    lang: 'es', from: 'Sargazo Cancún <alerte@sargassumcancun.com>', replyTo: 'support@sargassumcancun.com',
+    region: 'la Riviera Maya', sites: [['Cancún & Riviera Maya', 'https://sargassumcancun.com/']],
+    press: 'https://sargassumcancun.com/press/', widget: 'https://sargassumcancun.com/widget/', intl: true,
+  },
+  dr: {
+    lang: 'en', from: 'Sargassum Punta Cana <alerte@sargassumpuntacana.com>', replyTo: 'support@sargassumpuntacana.com',
+    region: 'Punta Cana', sites: [['Punta Cana', 'https://sargassumpuntacana.com/']],
+    press: 'https://sargassumpuntacana.com/press/', widget: 'https://sargassumpuntacana.com/widget/', intl: true,
+  },
+}
+// Our own domains — never email ourselves (any market).
+const OWN_DOMAINS = ['sargasses-martinique', 'sargasses-guadeloupe', 'sargassummiami', 'sargassumcancun', 'sargassumpuntacana']
 
 // ── Seed targets (from competitor research 2026-04-09) ────────
 const SEED_TARGETS = [
@@ -94,18 +132,26 @@ function sanitizeContacted(contacted) {
 // ── Step 1: Find new targets from Google ──────────────────────
 
 async function scrapeNewTargets() {
-  const queries = [
-    'sargasses martinique plage 2026',
-    'sargasses guadeloupe carte 2026',
-    'meilleure plage martinique sargasses',
-    'plage guadeloupe sans sargasses',
+  // Each query carries its market + the Google News locale that surfaces the
+  // right-language press/travel sites. FR always runs; US/MX/DR only when intl
+  // is enabled (so we don't discover targets we're not allowed to email yet).
+  const QUERIES = [
+    { q: 'sargasses martinique plage 2026', market: 'fr', loc: 'hl=fr&gl=FR&ceid=FR:fr' },
+    { q: 'sargasses guadeloupe carte 2026', market: 'fr', loc: 'hl=fr&gl=FR&ceid=FR:fr' },
+    { q: 'meilleure plage martinique sargasses', market: 'fr', loc: 'hl=fr&gl=FR&ceid=FR:fr' },
+    { q: 'plage guadeloupe sans sargasses', market: 'fr', loc: 'hl=fr&gl=FR&ceid=FR:fr' },
+    { q: 'sargassum florida beach 2026', market: 'us', loc: 'hl=en-US&gl=US&ceid=US:en' },
+    { q: 'sargassum miami beach forecast', market: 'us', loc: 'hl=en-US&gl=US&ceid=US:en' },
+    { q: 'sargazo cancún playa 2026', market: 'mx', loc: 'hl=es-419&gl=MX&ceid=MX:es-419' },
+    { q: 'sargassum punta cana 2026', market: 'dr', loc: 'hl=en-US&gl=US&ceid=US:en' },
   ]
+  const pool = QUERIES.filter(x => OUTREACH_INTL || x.market === 'fr')
   const newTargets = []
-  // Pick one query per run (rotate by day)
-  const q = queries[Math.floor(Date.now() / 86400000) % queries.length]
+  // Pick one query per run (rotate by day across the active pool)
+  const { q, market, loc } = pool[Math.floor(Date.now() / 86400000) % pool.length]
 
   try {
-    const url = `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=fr&gl=FR&ceid=FR:fr`
+    const url = `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&${loc}`
     const res = await fetch(url, { signal: AbortSignal.timeout(10000) })
     const xml = await res.text()
     const linkRegex = /<link>(https?:\/\/[^<]+)<\/link>/g
@@ -114,8 +160,8 @@ async function scrapeNewTargets() {
       const link = match[1]
       if (link.includes('news.google.com')) continue
       const domain = extractDomain(link)
-      if (domain && !domain.includes('sargasses-martinique') && !domain.includes('sargasses-guadeloupe')) {
-        newTargets.push({ domain, url: link, reason: `Found via Google News for "${q}"` })
+      if (domain && !OWN_DOMAINS.some(d => domain.includes(d))) {
+        newTargets.push({ domain, url: link, market, reason: `Found via Google News for "${q}"` })
       }
     }
   } catch (e) {
@@ -193,22 +239,20 @@ function extractEmails(html, domain) {
 
 // ── Step 3: Build outreach email ──────────────────────────────
 
-function buildEmailHTML(target) {
-  const isBeachArticle = target.url.includes('plage') || target.url.includes('beach')
-  const isSargasseArticle = target.url.includes('sargass')
-
-  let hook, value
-  if (isSargasseArticle) {
-    hook = `J'ai lu votre article sur les sargasses et je l'ai trouvé très utile pour les voyageurs.`
-    value = `Nous avons développé <strong>la seule carte satellite en temps réel</strong> dédiée aux sargasses en Martinique et Guadeloupe — mise à jour 4 fois par jour avec les données Copernicus Marine (indice AFAI par plage).`
-  } else {
-    hook = `Votre article sur les plages est une super ressource pour les voyageurs qui préparent leur séjour aux Antilles.`
-    value = `Un conseil que vos lecteurs apprécieraient : vérifier l'état des sargasses avant de partir à la plage. Nous proposons <strong>une carte satellite gratuite</strong> mise à jour 4x/jour qui montre quelles plages sont propres aujourd'hui.`
-  }
-
-  return `<!DOCTYPE html>
+const wrap = inner => `<!DOCTYPE html>
 <html><body style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a;max-width:560px">
-<p>Bonjour,</p>
+${inner}
+</body></html>`
+
+function buildEmailFR(target) {
+  const isSargasseArticle = target.url.includes('sargass')
+  const hook = isSargasseArticle
+    ? `J'ai lu votre article sur les sargasses et je l'ai trouvé très utile pour les voyageurs.`
+    : `Votre article sur les plages est une super ressource pour les voyageurs qui préparent leur séjour aux Antilles.`
+  const value = isSargasseArticle
+    ? `Nous avons développé <strong>la seule carte satellite en temps réel</strong> dédiée aux sargasses en Martinique et Guadeloupe — mise à jour 4 fois par jour avec les données Copernicus Marine (indice AFAI par plage).`
+    : `Un conseil que vos lecteurs apprécieraient : vérifier l'état des sargasses avant de partir à la plage. Nous proposons <strong>une carte satellite gratuite</strong> mise à jour 4x/jour qui montre quelles plages sont propres aujourd'hui.`
+  return wrap(`<p>Bonjour,</p>
 <p>${hook}</p>
 <p>${value}</p>
 <p>Voici ce qu'elle offre :</p>
@@ -226,36 +270,73 @@ function buildEmailHTML(target) {
 <p>Nous proposons aussi un <a href="https://sargasses-martinique.com/widget/">widget embarquable gratuit</a> si vous préférez intégrer directement l'état d'une plage sur votre site.</p>
 <p>Merci pour votre travail,<br>
 <strong>L'équipe Sargasses Martinique</strong><br>
-<span style="color:#888;font-size:13px">Données satellite Copernicus Marine · sargasses-martinique.com</span></p>
-</body></html>`
+<span style="color:#888;font-size:13px">Données satellite Copernicus Marine · sargasses-martinique.com</span></p>`)
+}
+
+function buildEmailEN(target, m) {
+  const site = m.sites[0][1]
+  return wrap(`<p>Hi,</p>
+<p>I read your piece on sargassum and found it genuinely useful for travelers planning a trip to ${m.region}.</p>
+<p>We publish <strong>live, per-beach sargassum status for ${m.region}</strong> from Copernicus and NOAA satellite data — refreshed four times a day, with a 0–100 score and a 7-day forecast for each beach. It's <strong>free to cite with attribution</strong>, and we keep a press page with the data and a suggested citation:</p>
+<p>→ Press kit &amp; data: <a href="${m.press}">${m.press.replace('https://', '')}</a><br>
+→ Live map: <a href="${site}">${site.replace('https://', '').replace(/\/$/, '')}</a></p>
+<p><strong>If it's a fit, a link to the live map (or any beach's status) would give your readers today's conditions instead of a seasonal average.</strong> We're also happy to provide beach-level data or a quick comment for a story.</p>
+<p>There's a free <a href="${m.widget}">embeddable widget</a> too, if you'd rather show a beach's live status directly on your page.</p>
+<p>Thanks for your work,<br>
+<strong>The ${m.region} Sargassum team</strong><br>
+<span style="color:#888;font-size:13px">Copernicus/NOAA satellite data · ${site.replace('https://', '').replace(/\/$/, '')}</span></p>`)
+}
+
+function buildEmailES(target, m) {
+  const site = m.sites[0][1]
+  return wrap(`<p>Hola,</p>
+<p>Leí su artículo sobre el sargazo y me pareció muy útil para quienes planean un viaje a ${m.region}.</p>
+<p>Publicamos el <strong>estado del sargazo en vivo, playa por playa, en ${m.region}</strong> a partir de datos satelitales de Copernicus y NOAA — actualizado cuatro veces al día, con un score de 0 a 100 y un pronóstico de 7 días por playa. Es <strong>libre de citar con atribución</strong>, y mantenemos una página de prensa con los datos y una cita sugerida:</p>
+<p>→ Kit de prensa y datos: <a href="${m.press}">${m.press.replace('https://', '')}</a><br>
+→ Mapa en vivo: <a href="${site}">${site.replace('https://', '').replace(/\/$/, '')}</a></p>
+<p><strong>Si encaja, un enlace al mapa en vivo (o al estado de cualquier playa) le daría a sus lectores las condiciones de hoy en lugar de un promedio de temporada.</strong> También con gusto facilitamos datos por playa o un comentario para un reportaje.</p>
+<p>Hay además un <a href="${m.widget}">widget gratuito</a> para mostrar el estado en vivo de una playa directamente en su sitio.</p>
+<p>Gracias por su trabajo,<br>
+<strong>El equipo de Sargazo ${m.region}</strong><br>
+<span style="color:#888;font-size:13px">Datos satelitales Copernicus/NOAA · ${site.replace('https://', '').replace(/\/$/, '')}</span></p>`)
+}
+
+function buildEmailHTML(target) {
+  const m = MARKETS[target.market] || MARKETS.fr
+  if (m.lang === 'fr') return buildEmailFR(target)
+  if (m.lang === 'es') return buildEmailES(target, m)
+  return buildEmailEN(target, m)
 }
 
 function buildSubject(target) {
-  if (target.url.includes('sargass')) {
-    return `Votre article sargasses + notre carte satellite temps réel ?`
-  }
-  return `Carte sargasses gratuite pour vos lecteurs ?`
+  const m = MARKETS[target.market] || MARKETS.fr
+  const isSarg = target.url.includes('sargass') || target.url.includes('sargazo')
+  if (m.lang === 'fr') return isSarg ? `Votre article sargasses + notre carte satellite temps réel ?` : `Carte sargasses gratuite pour vos lecteurs ?`
+  if (m.lang === 'es') return `Datos de sargazo libres de citar para su cobertura de ${m.region}`
+  return `Free-to-cite sargassum data for your ${m.region} coverage`
 }
 
 // ── Step 4: Send via Resend ───────────────────────────────────
 
 async function sendOutreachEmail(resend, to, target) {
+  const m = MARKETS[target.market] || MARKETS.fr
   const subject = buildSubject(target)
   const html = buildEmailHTML(target)
 
   if (DRY_RUN) {
-    console.log(`  [DRY RUN] Would send to: ${logId(to)}`)
+    console.log(`  [DRY RUN] (${target.market || 'fr'}) Would send to: ${logId(to)}`)
+    console.log(`  From: ${m.from}`)
     console.log(`  Subject: ${subject}`)
     return { sent: true, dry: true }
   }
 
   try {
     const { data, error } = await resend.emails.send({
-      from: FROM,
+      from: m.from,
       to,
       subject,
       html,
-      replyTo: 'contact@sargasses-martinique.com',
+      replyTo: m.replyTo,
     })
     if (error) {
       console.error(`  Failed: ${error.message}`)
@@ -280,6 +361,7 @@ async function main() {
     process.exit(0)
   }
 
+  console.log(`International markets (US/MX/DR): ${OUTREACH_INTL ? 'ON' : 'off (set OUTREACH_INTL=1)'}`)
   const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null
 
   // Load outreach log (tracks contacted domains) — emails stored as hashes (RGPD)
@@ -291,10 +373,11 @@ async function main() {
   const scraped = await scrapeNewTargets()
   console.log(`  Scraped ${scraped.length} new potential targets`)
 
-  const allTargets = [...SEED_TARGETS, ...scraped]
+  // Seeds default to the FR market; scraped targets carry their query's market.
+  const allTargets = [...SEED_TARGETS, ...scraped].map(t => ({ ...t, market: t.market || 'fr' }))
 
-  // Filter out already-contacted domains
-  const fresh = allTargets.filter(t => !contacted[t.domain])
+  // Filter out already-contacted domains + intl markets when intl is disabled.
+  const fresh = allTargets.filter(t => !contacted[t.domain] && (OUTREACH_INTL || !MARKETS[t.market]?.intl))
   console.log(`  ${fresh.length} fresh targets (${Object.keys(contacted).length} already contacted)\n`)
 
   if (fresh.length === 0) {
@@ -326,6 +409,15 @@ async function main() {
     // Send
     const result = await sendOutreachEmail(resend, email, target)
 
+    // Don't burn an intl target on a send failure: the most likely cause early
+    // on is the market's Resend sender domain not being verified yet. Leave it
+    // un-logged so it retries next week once the domain is verified.
+    if (!result.sent && MARKETS[target.market]?.intl) {
+      console.log(`  Send failed for intl target (${target.market}) — not recording, will retry: ${result.error || ''}`)
+      console.log('')
+      continue
+    }
+
     contacted[target.domain] = {
       date: new Date().toISOString(),
       emailHash: emailHash(email),
@@ -333,6 +425,7 @@ async function main() {
       status: result.sent ? 'sent' : 'failed',
       error: result.error || null,
       url: target.url,
+      market: target.market,
     }
 
     if (result.sent) sent++
@@ -348,7 +441,11 @@ async function main() {
   console.log(`\n=== Done: ${sent} emails sent (${log.totalSent} total all-time) ===`)
 }
 
-main().catch(err => {
-  console.error(`[auto-outreach] Fatal: ${err.message}`)
-  process.exit(0)
-})
+if (require.main === module) {
+  main().catch(err => {
+    console.error(`[auto-outreach] Fatal: ${err.message}`)
+    process.exit(0)
+  })
+}
+
+module.exports = { buildEmailHTML, buildSubject, MARKETS }

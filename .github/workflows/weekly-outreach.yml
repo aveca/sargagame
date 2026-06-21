@@ -34,6 +34,11 @@ jobs:
       - name: Auto-outreach (scrape + email backlink requests)
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          # International outreach (US/MX/DR) pitches the /press/ kit and sends
+          # from each region's own domain — those domains must be verified as
+          # Resend senders. Set to '1' to enable; intl sends that fail (e.g.
+          # unverified domain) are not recorded and retry next week.
+          OUTREACH_INTL: '1'
         run: node scripts/automation/auto-outreach.cjs
 
       # ── 1b. Prospection B2B sortante SELF-SERVE (le bot prospecte, pas le fondateur).
