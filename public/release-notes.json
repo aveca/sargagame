@@ -1,7 +1,30 @@
 {
   "_comment": "SOURCE DE VÉRITÉ unique des releases. Édite UNIQUEMENT ce fichier pour publier une nouveauté à toute la flotte (mq/gp/florida/rivieramaya/puntacana). `current` = id de la release en cours = releases[0].v. `scripts/sync-version.cjs` en dérive public/version.json + le CACHE_NAME de public/sw.js. Le frontend (Journal du Veilleur) montre aux visiteurs qui reviennent toutes les releases dont le v est > à leur sg_rel_seen. Items i18n fr/en/es, honnêtes (jamais de fausse fraîcheur). href optionnel = lien same-origin (n'apparaît que s'il existe sur le domaine courant).",
-  "current": "v215",
+  "current": "v216",
   "releases": [
+    {
+      "v": "v216",
+      "date": "2026-06-21",
+      "title": {
+        "fr": "Plus rapide & plus fluide",
+        "en": "Faster & smoother",
+        "es": "Más rápida y fluida"
+      },
+      "items": [
+        {
+          "emoji": "🚀",
+          "fr": "L'app charge plus vite et la carte se déplace sans à-coups.",
+          "en": "The app loads faster and the map pans without stutter.",
+          "es": "La app carga más rápido y el mapa se desplaza sin tirones."
+        },
+        {
+          "emoji": "🎯",
+          "fr": "Les plages signalées par la communauté s'affichent à leur vraie couleur dès l'ouverture.",
+          "en": "Beaches flagged by the community show their real status right from the start.",
+          "es": "Las playas señaladas por la comunidad muestran su estado real desde el inicio."
+        }
+      ]
+    },
     {
       "v": "v215",
       "date": "2026-06-19",
