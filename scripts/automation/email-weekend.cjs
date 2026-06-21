@@ -174,6 +174,192 @@ function buildEmailHTML(island, topBeaches, stats, domain) {
 </html>`
 }
 
+// ── Régions USD (florida/puntacana = EN, rivieramaya = ES) ───────────────────
+// Le bulletin était MQ/GP-only. Ces régions ont leurs propres données
+// (public/api/copernicus/<id>/sargassum.json) + leurs plages (region.beaches).
+const { getAllRegions } = require('../../regions/index.cjs')
+
+// Classement top 5 (score×10 + équipements), filtré score≥40 & pas "avoid",
+// repli clean/moderate. Même logique que MQ/GP.
+function rankBeaches(beaches) {
+  const rank = b => {
+    const s = typeof b.unifiedScore === 'number' ? b.unifiedScore : -1
+    const amen = (b.kids ? 1 : 0) + (b.parking ? 1 : 0) + (b.snorkel ? 1 : 0)
+    return s * 10 + amen
+  }
+  const cand = beaches.filter(b => typeof b.unifiedScore === 'number' && b.unifiedScore >= 40 && b.status !== 'avoid')
+  return (cand.length >= 3 ? cand : beaches.filter(b => b.status === 'clean' || b.status === 'moderate'))
+    .sort((a, b) => rank(b) - rank(a)).slice(0, 5)
+}
+
+function computeStats(beaches) {
+  return {
+    clean: beaches.filter(b => b.status === 'clean').length,
+    moderate: beaches.filter(b => b.status === 'moderate').length,
+    avoid: beaches.filter(b => b.status === 'avoid').length,
+  }
+}
+
+// Label localisé dérivé du score : les labels du pipeline sont en FR (SUPER/BON/
+// MOYEN) même pour les régions EN/ES → on ne les réutilise PAS.
+function scoreLabel(score, status, lang) {
+  if (typeof score === 'number') {
+    if (lang === 'es') return score >= 75 ? 'EXCELENTE' : score >= 55 ? 'BUENO' : score >= 40 ? 'REGULAR' : 'EVITAR'
+    return score >= 75 ? 'GREAT' : score >= 55 ? 'GOOD' : score >= 40 ? 'OK' : 'AVOID'
+  }
+  if (lang === 'es') return status === 'clean' ? 'LIMPIA' : status === 'avoid' ? 'EVITAR' : 'MODERADO'
+  return status === 'clean' ? 'CLEAN' : status === 'avoid' ? 'AVOID' : 'MODERATE'
+}
+
+// Fusionne prévision samedi + scores depuis le sargassum.json régional dans
+// region.beaches (id direct, pas de mapping SARG_TO_BEACH).
+function prepareRegionBeaches(region, saturdayDate) {
+  let sd
+  try {
+    sd = JSON.parse(fs.readFileSync(path.join(__dirname, `../../public/api/copernicus/${region.id}/sargassum.json`), 'utf-8'))
+  } catch { return [] }
+  const levels = {}
+  for (const lv of (sd.levels || [])) levels[lv.id] = lv
+  const scores = sd.scores || {}
+  return (region.beaches || []).map(b => {
+    const lv = levels[b.id] || {}
+    const sc = scores[b.id] || {}
+    const wk = (sd.weekly && sd.weekly[b.id]) || {}
+    const satF = (wk.forecast || []).find(f => f.date === saturdayDate)
+    const score = typeof sc.score === 'number' ? sc.score : (typeof lv.score === 'number' ? lv.score : undefined)
+    return {
+      ...b,
+      status: (satF && satF.status) || lv.status || b.status || 'clean',
+      unifiedScore: score,
+      unifiedColor: sc.color || lv.color,
+      unifiedReason: sc.reason || lv.reason, // déjà localisé par le pipeline (EN/ES)
+    }
+  })
+}
+
+function buildRegionSubject(region, lang, topBeaches, stats) {
+  const name = region.name
+  const top = topBeaches[0]
+  const best = top && typeof top.unifiedScore === 'number' ? top.unifiedScore : null
+  if (best !== null && best >= 70) {
+    const lbl = scoreLabel(best, top.status, lang)
+    return lang === 'es'
+      ? `Este fin de semana en ${name}: ${top.name} ${best}/100 ${lbl}`
+      : `This weekend in ${name}: ${top.name} ${best}/100 ${lbl}`
+  }
+  if (stats.clean > 0) {
+    const lead = top ? (lang === 'es' ? `, ${top.name} a la cabeza` : `, ${top.name} leading`) : ''
+    return lang === 'es'
+      ? `Este fin de semana: ${stats.clean} playa${stats.clean > 1 ? 's' : ''} limpia${stats.clean > 1 ? 's' : ''} en ${name}${lead}`
+      : `This weekend: ${stats.clean} clean beach${stats.clean > 1 ? 'es' : ''} in ${name}${lead}`
+  }
+  if (top) return lang === 'es' ? `Este fin de semana en ${name}: ${top.name}, tu mejor opción` : `This weekend in ${name}: ${top.name}, your best option`
+  return lang === 'es' ? `Este fin de semana en ${name}: el mapa de playas en vivo` : `This weekend in ${name}: the live beach map`
+}
+
+function buildEmailHTMLRegion(region, lang, topBeaches, stats) {
+  const es = lang === 'es'
+  const name = region.name
+  const domain = region.domain
+  const brand = es ? 'Sargazo' : 'Sargassum'
+  const monthly = (region.pricing && region.pricing.monthly) || '$9.99'
+  const payLink = (region.paymentLinks && region.paymentLinks.monthly) || `https://${domain}/?paywall=1&utm_source=email&utm_medium=weekend_bulletin`
+  const t = es ? {
+    eyebrow: 'El Boletín del Vigía', title: `Playas de ${name}`,
+    sub: 'El Vigía vigiló el mar. Aquí está tu fin de semana.',
+    clean: 'limpias', watch: 'a vigilar', alerts: 'alertas',
+    top: 'Top 5 para el sábado — puntuación sobre 100:',
+    premiumKick: 'Premium', premiumTitle: 'Sabe el sábado desde el lunes',
+    premiumDesc: 'Pronóstico de 7 días + alertas push.<br>Únete a quienes planifican su fin de semana con antelación.',
+    premiumCta: 'Activar mi vigía', priceNote: `${monthly}/mes · Reembolso 30 días · Cancela cuando quieras`,
+    mapCta: 'Ver el mapa en vivo', mapNote: 'Pronóstico satelital para el sábado · Actualizado 4×/día',
+    unsub: 'Darse de baja',
+  } : {
+    eyebrow: "The Watchman's Bulletin", title: `${name} Beaches`,
+    sub: 'The Watchman scanned the sea. Here is your weekend.',
+    clean: 'clean', watch: 'watch', alerts: 'alerts',
+    top: 'Top 5 for Saturday — score out of 100:',
+    premiumKick: 'Premium', premiumTitle: 'Know Saturday by Monday',
+    premiumDesc: '7-day forecast + push alerts.<br>Join the families who plan their weekend ahead.',
+    premiumCta: 'Activate my watchman', priceNote: `${monthly}/month · 30-day money-back · Cancel anytime`,
+    mapCta: 'See the live map', mapNote: 'Satellite forecast for Saturday · Updated 4×/day',
+    unsub: 'Unsubscribe',
+  }
+  const beachRows = topBeaches.map(b => {
+    const hasScore = typeof b.unifiedScore === 'number'
+    const color = b.unifiedColor || (b.status === 'clean' ? '#16A34A' : '#B87A00')
+    const label = scoreLabel(b.unifiedScore, b.status, lang)
+    const reasonLine = b.unifiedReason
+      ? `<div style="font-size:11px;color:#888;margin-top:3px;font-style:italic">${b.unifiedReason}</div>`
+      : ''
+    const badgeInner = hasScore
+      ? `<div style="font-size:16px;font-weight:800;color:${color};line-height:1">${b.unifiedScore}<span style="font-size:10px;font-weight:600;opacity:.7">/100</span></div>
+         <div style="font-size:9px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.04em;margin-top:2px">${label}</div>`
+      : `<span style="display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;background:${color}1a;color:${color}">${label}</span>`
+    return `
+    <tr>
+      <td style="padding:12px 16px;border-bottom:1px solid #f0f0f0;vertical-align:top">
+        <div style="font-size:15px;font-weight:700;color:#0D0D0D">${b.name}</div>
+        <div style="font-size:12px;color:#686868;margin-top:2px">${b.commune || ''}</div>
+        ${reasonLine}
+      </td>
+      <td style="padding:12px 16px;border-bottom:1px solid #f0f0f0;text-align:right;vertical-align:middle">
+        ${badgeInner}
+      </td>
+    </tr>`
+  }).join('')
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
+<body style="margin:0;padding:0;background:#F7F5EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+<div style="max-width:480px;margin:0 auto;padding:20px">
+  <div style="background:radial-gradient(120% 90% at 76% -15%, rgba(255,199,44,.30), rgba(255,199,44,0) 55%), linear-gradient(168deg,#0B2230 0%,#0D1E1C 60%,#0A1714 100%);border-radius:16px 16px 0 0;padding:30px 24px 26px;text-align:center">
+    <div style="font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:11px;font-weight:800;color:#FFC72C;text-transform:uppercase;letter-spacing:.14em">${t.eyebrow}</div>
+    <div style="font-family:'Anton','Bricolage Grotesque',Impact,'Arial Narrow',sans-serif;font-size:29px;font-weight:400;color:#fff;margin-top:9px;letter-spacing:.01em">${t.title}</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.6);margin-top:4px">${t.sub}</div>
+  </div>
+
+  <div style="background:#fff;padding:20px">
+    <div style="display:flex;gap:12px;margin-bottom:20px;text-align:center">
+      <div style="flex:1;padding:12px;background:rgba(34,197,94,.06);border-radius:10px">
+        <div style="font-size:24px;font-weight:800;color:#16A34A">${stats.clean}</div>
+        <div style="font-size:11px;color:#686868">${t.clean}</div>
+      </div>
+      <div style="flex:1;padding:12px;background:rgba(184,122,0,.06);border-radius:10px">
+        <div style="font-size:24px;font-weight:800;color:#B87A00">${stats.moderate}</div>
+        <div style="font-size:11px;color:#686868">${t.watch}</div>
+      </div>
+      <div style="flex:1;padding:12px;background:rgba(232,82,42,.06);border-radius:10px">
+        <div style="font-size:24px;font-weight:800;color:#E8522A">${stats.avoid}</div>
+        <div style="font-size:11px;color:#686868">${t.alerts}</div>
+      </div>
+    </div>
+    <div style="font-size:13px;font-weight:700;color:#0D0D0D;margin-bottom:10px">${t.top}</div>
+    <table style="width:100%;border-collapse:collapse">${beachRows}</table>
+  </div>
+
+  <div style="background:#0D1E1C;padding:20px 24px;text-align:center">
+    <div style="font-size:11px;font-weight:700;color:#E8A800;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">${t.premiumKick}</div>
+    <div style="font-size:17px;font-weight:800;color:#fff;margin-bottom:6px">${t.premiumTitle}</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:14px;line-height:1.4">${t.premiumDesc}</div>
+    <a href="${payLink}" style="display:inline-block;padding:12px 28px;background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);color:#0D0D0D;text-decoration:none;border-radius:10px;font-size:14px;font-weight:700;box-shadow:0 4px 16px rgba(232,168,0,.3)">${t.premiumCta}</a>
+    <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:8px">${t.priceNote}</div>
+  </div>
+
+  <div style="text-align:center;padding:20px;background:#fff;border-radius:0 0 16px 16px;border-top:1px solid #f0f0f0">
+    <a href="https://${domain}" style="display:inline-block;padding:14px 32px;background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);color:#0D0D0D;text-decoration:none;border-radius:12px;font-size:15px;font-weight:700;box-shadow:0 4px 16px rgba(232,168,0,.3)">${t.mapCta}</a>
+    <div style="font-size:11px;color:#999;margin-top:12px">${t.mapNote}</div>
+  </div>
+
+  <div style="text-align:center;padding:16px;font-size:10px;color:#999">
+    ${brand} ${name} · ${domain}<br>
+    <a href="${unsubUrl(region.id)}" style="color:#999">${t.unsub}</a>
+  </div>
+</div>
+</body>
+</html>`
+}
+
 // Gate predicates (purs, testables). Alignés sur le runner GitHub (UTC) : le
 // cron, le marqueur de dedup (clé = date UTC via toISOString) et ce jour-check
 // partagent désormais le MÊME fuseau. getUTCDay()===5 = vendredi UTC — identique
@@ -356,6 +542,59 @@ async function main() {
     } catch {}
   }
 
+  // ── Bulletin régions USD (florida/puntacana = EN, rivieramaya = ES) ─────────
+  // Mêmes données satellite, mais lues par région + HTML/sujet localisés.
+  const USD_REGIONS = getAllRegions().filter(r => r.id !== 'mq' && r.id !== 'gp')
+  for (const region of USD_REGIONS) {
+    const lang = region.primaryLang === 'es' ? 'es' : 'en'
+    const rb = prepareRegionBeaches(region, saturdayDate)
+    const rTop = rankBeaches(rb)
+    if (!rTop.length) { console.log(`${region.name}: aucune plage à classer, skip`); continue }
+    const rStats = computeStats(rb)
+    const rSubject = buildRegionSubject(region, lang, rTop, rStats)
+    const rPre = lang === 'es'
+      ? 'Tus mejores playas para el sábado — puntuación sobre 100, pronóstico satelital al día.'
+      : 'Your best beaches ranked for Saturday — score out of 100, fresh satellite forecast.'
+    const rHtml = applyBrand(injectPreheader(buildEmailHTMLRegion(region, lang, rTop, rStats), rPre))
+    const rText = htmlToText(rHtml)
+    const rFrom = `${lang === 'es' ? 'Sargazo' : 'Sargassum'} ${region.name} <alerte@sargasses-martinique.com>`
+    const rRecipients = subscribers.filter(s =>
+      s.email && s.email.includes('@') &&
+      (s.island || '').toUpperCase() === region.id.toUpperCase() &&
+      !B2B_SOURCES.has(s.source)
+    )
+    let rSent = 0, rFailed = 0
+    for (const sub of rRecipients) {
+      const enc = encodeURIComponent(sub.email)
+      const personalHtml = rHtml.replace(/\{\{EMAIL\}\}/g, enc)
+      const personalText = rText.replace(/\{\{EMAIL\}\}/g, enc)
+      const unsub = unsubUrl(region.id).replace('{{EMAIL}}', enc)
+      try {
+        await transporter.sendMail({
+          from: rFrom, to: sub.email, subject: rSubject,
+          html: personalHtml, text: personalText,
+          headers: {
+            'List-Unsubscribe': `<${unsub}>`,
+            'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+          },
+        })
+        rSent++
+        if (rSent % 25 === 0) await sleep(1500)
+      } catch (e) {
+        rFailed++
+        console.log(`  ❌ ${logId(sub.email)}: ${e.message}`)
+      }
+    }
+    console.log(`${region.name} (${lang}): envoyé ${rSent}/${rRecipients.length} (échecs ${rFailed})`)
+    try {
+      await post(WEBHOOK_URL, {
+        type: 'email_tracking', to: `all_${region.id}`, subject: rSubject,
+        email_type: 'weekend_bulletin', island: region.id.toUpperCase(),
+        status: 'sent', count: rSent, date: new Date().toISOString(),
+      })
+    } catch {}
+  }
+
   transporter.close()
 
   // Mark as sent for deduplication
@@ -369,4 +608,4 @@ if (require.main === module) {
   main().catch(e => { console.error(e); process.exitCode = 1 })
 }
 
-module.exports = { main, isSendDay, sentKey }
+module.exports = { main, isSendDay, sentKey, buildEmailHTMLRegion, buildRegionSubject, prepareRegionBeaches, rankBeaches, computeStats }
