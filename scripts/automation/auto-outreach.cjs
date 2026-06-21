@@ -57,7 +57,7 @@ const MARKETS = {
   },
   mx: {
     lang: 'es', from: 'Sargazo Cancún <alerte@sargassumcancun.com>', replyTo: 'support@sargassumcancun.com',
-    region: 'la Riviera Maya', sites: [['Cancún & Riviera Maya', 'https://sargassumcancun.com/']],
+    region: 'la Riviera Maya', regionEN: 'the Riviera Maya', sites: [['Cancún & Riviera Maya', 'https://sargassumcancun.com/']],
     press: 'https://sargassumcancun.com/press/', widget: 'https://sargassumcancun.com/widget/', intl: true,
   },
   dr: {
@@ -91,6 +91,21 @@ const SEED_TARGETS = [
   { domain: 'guadeloupe-fr.com', url: 'https://www.guadeloupe-fr.com/plages-de-guadeloupe/', reason: 'Répertoire plages GP, sans outil temps réel' },
   { domain: 'tourisme-guadeloupe.fr', url: 'https://www.tourisme-guadeloupe.fr/', reason: 'Portail tourisme GP, public actuel sans data sargasses' },
   { domain: 'guideguadeloupe.com', url: 'https://www.guideguadeloupe.com/plages-guadeloupe.html', reason: 'Guide voyage GP, pas de mention sargasses' },
+
+  // ── International seeds (only emailed when OUTREACH_INTL=1). `market` picks the
+  //    press kit / region; `lang` is the email language (can differ — e.g. an
+  //    English-language outlet covering Cancún uses the MX kit in English).
+  //    Curated real outlets that regularly cover Caribbean/Mexico/Florida sargassum.
+  // Florida (US press kit, English)
+  { domain: 'keysweekly.com', url: 'https://keysweekly.com/', market: 'us', lang: 'en', reason: 'Florida Keys Weekly — local news, covers sargassum landings in the Keys' },
+  { domain: 'floridatoday.com', url: 'https://www.floridatoday.com/', market: 'us', lang: 'en', reason: 'Florida Today (Space Coast) — beach + sargassum coverage' },
+  // Cancún & Riviera Maya (MX press kit)
+  { domain: 'thecancunsun.com', url: 'https://thecancunsun.com/', market: 'mx', lang: 'en', reason: 'The Cancun Sun — English news, heavy sargazo coverage for travelers' },
+  { domain: 'riviera-maya-news.com', url: 'https://www.riviera-maya-news.com/', market: 'mx', lang: 'en', reason: 'Riviera Maya News — English, regular sargassum reporting' },
+  { domain: 'theyucatantimes.com', url: 'https://www.theyucatantimes.com/', market: 'mx', lang: 'en', reason: 'The Yucatan Times — English regional paper, sargassum stories' },
+  { domain: 'sipse.com', url: 'https://sipse.com/', market: 'mx', lang: 'es', reason: 'SIPSE / Novedades Quintana Roo — Spanish, cobertura constante del sargazo' },
+  // Punta Cana (DR press kit, English)
+  { domain: 'dominicantoday.com', url: 'https://dominicantoday.com/', market: 'dr', lang: 'en', reason: 'Dominican Today — English DR news, Punta Cana sargassum coverage' },
 ]
 
 // ── Helpers ──────────────────────────────────────────────────
@@ -275,22 +290,31 @@ function buildEmailFR(target) {
 
 function buildEmailEN(target, m) {
   const site = m.sites[0][1]
+  const region = m.regionEN || m.region
+  const isSarg = (target.url || '').includes('sargass')
+  const opener = isSarg
+    ? `Thanks for covering sargassum around ${region} — it's exactly what travelers need to know before they go.`
+    : `Travelers planning a trip to ${region} increasingly ask one thing before they go: will the beach be clear of sargassum that day?`
   return wrap(`<p>Hi,</p>
-<p>I read your piece on sargassum and found it genuinely useful for travelers planning a trip to ${m.region}.</p>
-<p>We publish <strong>live, per-beach sargassum status for ${m.region}</strong> from Copernicus and NOAA satellite data — refreshed four times a day, with a 0–100 score and a 7-day forecast for each beach. It's <strong>free to cite with attribution</strong>, and we keep a press page with the data and a suggested citation:</p>
+<p>${opener}</p>
+<p>We publish <strong>live, per-beach sargassum status for ${region}</strong> from Copernicus and NOAA satellite data — refreshed four times a day, with a 0–100 score and a 7-day forecast for each beach. It's <strong>free to cite with attribution</strong>, and we keep a press page with the data and a suggested citation:</p>
 <p>→ Press kit &amp; data: <a href="${m.press}">${m.press.replace('https://', '')}</a><br>
 → Live map: <a href="${site}">${site.replace('https://', '').replace(/\/$/, '')}</a></p>
 <p><strong>If it's a fit, a link to the live map (or any beach's status) would give your readers today's conditions instead of a seasonal average.</strong> We're also happy to provide beach-level data or a quick comment for a story.</p>
 <p>There's a free <a href="${m.widget}">embeddable widget</a> too, if you'd rather show a beach's live status directly on your page.</p>
 <p>Thanks for your work,<br>
-<strong>The ${m.region} Sargassum team</strong><br>
+<strong>The ${region} Sargassum team</strong><br>
 <span style="color:#888;font-size:13px">Copernicus/NOAA satellite data · ${site.replace('https://', '').replace(/\/$/, '')}</span></p>`)
 }
 
 function buildEmailES(target, m) {
   const site = m.sites[0][1]
+  const isSarg = (target.url || '').includes('sargass') || (target.url || '').includes('sargazo')
+  const opener = isSarg
+    ? `Gracias por cubrir el sargazo en ${m.region} — es justo lo que los viajeros necesitan saber antes de ir.`
+    : `Quienes planean un viaje a ${m.region} se hacen cada vez más una pregunta antes de ir: ¿estará la playa libre de sargazo ese día?`
   return wrap(`<p>Hola,</p>
-<p>Leí su artículo sobre el sargazo y me pareció muy útil para quienes planean un viaje a ${m.region}.</p>
+<p>${opener}</p>
 <p>Publicamos el <strong>estado del sargazo en vivo, playa por playa, en ${m.region}</strong> a partir de datos satelitales de Copernicus y NOAA — actualizado cuatro veces al día, con un score de 0 a 100 y un pronóstico de 7 días por playa. Es <strong>libre de citar con atribución</strong>, y mantenemos una página de prensa con los datos y una cita sugerida:</p>
 <p>→ Kit de prensa y datos: <a href="${m.press}">${m.press.replace('https://', '')}</a><br>
 → Mapa en vivo: <a href="${site}">${site.replace('https://', '').replace(/\/$/, '')}</a></p>
@@ -301,19 +325,30 @@ function buildEmailES(target, m) {
 <span style="color:#888;font-size:13px">Datos satelitales Copernicus/NOAA · ${site.replace('https://', '').replace(/\/$/, '')}</span></p>`)
 }
 
+// A target's language can differ from its market's default (e.g. an English
+// outlet covering Cancún: market 'mx' for the press kit, but lang 'en').
+function langFor(target) {
+  const m = MARKETS[target.market] || MARKETS.fr
+  return target.lang || m.lang
+}
+
 function buildEmailHTML(target) {
   const m = MARKETS[target.market] || MARKETS.fr
-  if (m.lang === 'fr') return buildEmailFR(target)
-  if (m.lang === 'es') return buildEmailES(target, m)
+  const lang = langFor(target)
+  if (lang === 'fr') return buildEmailFR(target)
+  if (lang === 'es') return buildEmailES(target, m)
   return buildEmailEN(target, m)
 }
 
 function buildSubject(target) {
   const m = MARKETS[target.market] || MARKETS.fr
-  const isSarg = target.url.includes('sargass') || target.url.includes('sargazo')
-  if (m.lang === 'fr') return isSarg ? `Votre article sargasses + notre carte satellite temps réel ?` : `Carte sargasses gratuite pour vos lecteurs ?`
-  if (m.lang === 'es') return `Datos de sargazo libres de citar para su cobertura de ${m.region}`
-  return `Free-to-cite sargassum data for your ${m.region} coverage`
+  const lang = langFor(target)
+  const isSarg = (target.url || '').includes('sargass') || (target.url || '').includes('sargazo')
+  if (lang === 'fr') return isSarg ? `Votre article sargasses + notre carte satellite temps réel ?` : `Carte sargasses gratuite pour vos lecteurs ?`
+  if (lang === 'es') return `Datos de sargazo libres de citar para su cobertura de ${m.region}`
+  // Drop a leading article so "your <region> coverage" reads cleanly.
+  const subjReg = (m.regionEN || m.region).replace(/^the /i, '')
+  return `Free-to-cite sargassum data for your ${subjReg} coverage`
 }
 
 // ── Step 4: Send via Resend ───────────────────────────────────
@@ -383,7 +418,7 @@ async function main() {
   if (fresh.length === 0) {
     console.log('No new targets to contact.')
     log.lastRun = new Date().toISOString()
-    writeJSON(OUTREACH_LOG, log)
+    if (!DRY_RUN) writeJSON(OUTREACH_LOG, log)
     return
   }
 
@@ -432,11 +467,11 @@ async function main() {
     console.log('')
   }
 
-  // Save log
+  // Save log (dry runs never mutate state — they must not burn targets)
   log.contacted = contacted
   log.lastRun = new Date().toISOString()
   log.totalSent = Object.values(contacted).filter(c => c.status === 'sent').length
-  writeJSON(OUTREACH_LOG, log)
+  if (!DRY_RUN) writeJSON(OUTREACH_LOG, log)
 
   console.log(`\n=== Done: ${sent} emails sent (${log.totalSent} total all-time) ===`)
 }
