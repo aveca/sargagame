@@ -6612,8 +6612,17 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const _topBeach=[..._islandLvls].sort((a,b)=>b.score-a.score)[0]
   // Nouvelles régions : ids opaques (pc001…) → nom réel depuis REGION.beaches.
   // MQ/GP : derivation slug historique inchangée.
-  const _nameOf=lv=>(IS_NEW_REGION?REGION.beaches?.find(b=>b.id===lv?.id)?.name:null)
-    ||lv?.id?.replace(/^gp-/,"").split("-").map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(" ")||null
+  // Nom CANONIQUE — le slug-derive cassait les noms GP au point de décision
+  // (« Pt Chateaux » au lieu de « Pointe des Châteaux ») → modal→CTA GP 0,9% (3× MQ).
+  // Même source que _kidsOf (BEACHES_FALLBACK via SARG_TO_BEACH) + track-record en
+  // filet (guardé), slug-derive en dernier recours (anti-null pendant le fetch). wupuzpuuh.
+  const _nameOf=lv=>{
+    if(!lv||!lv.id)return null
+    if(IS_NEW_REGION)return REGION.beaches?.find(b=>b.id===lv.id)?.name||null
+    const canon=BEACHES_FALLBACK.find(b=>b.id===SARG_TO_BEACH[lv.id])?.name
+      ||(_trackRec&&_trackRec.byBeach&&_trackRec.byBeach[lv.id]&&_trackRec.byBeach[lv.id].name)
+    return canon||lv.id.replace(/^gp-/,"").split("-").map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(" ")||null
+  }
   const _topName=_nameOf(_topBeach)
   const _topScore=_topBeach?.score||null
   // Contexte plage : quand la modal s'ouvre DEPUIS une fiche, le copy cite la plage vue.

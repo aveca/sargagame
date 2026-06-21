@@ -103,7 +103,7 @@ function analyzeRegion(id, data) {
       alerts.push({ region: id, type: 'funnel_modal', where: 'modal→CTA', metric: `${r.modal_to_cta}%`, volume: f.modal_open, severity: (T.modalToCta - r.modal_to_cta) * f.modal_open / 10, fix: FIX.funnel_modal })
     if (f.modal_cta >= 5 && (r.cta_to_redirect || 0) < T.ctaToRedirect)
       alerts.push({ region: id, type: 'funnel_cta', where: 'CTA→redirect', metric: `${r.cta_to_redirect}%`, volume: f.modal_cta, severity: (T.ctaToRedirect - r.cta_to_redirect) * f.modal_cta / 10, fix: FIX.funnel_cta })
-    if (f.checkout_redirect >= 5 && (r.redirect_to_conversion || 0) < T.redirectToConv)
+    if (f.checkout_redirect >= 30 && (r.redirect_to_conversion || 0) < T.redirectToConv)
       alerts.push({ region: id, type: 'funnel_conv', where: 'redirect→paiement', metric: `${r.redirect_to_conversion}%`, volume: f.checkout_redirect, severity: (T.redirectToConv - r.redirect_to_conversion) * f.checkout_redirect / 10, fix: FIX.funnel_conv })
   }
   // 3) FRICTION — rage-clicks (sg_friction) = "ça marche pas / je suis bloqué".
