@@ -9,7 +9,7 @@ capture exit-intent (exitcap) · pivot calme modal (pw_calm) · Pass Saison (pw_
 | # | Item | Owner | Effort | Statut |
 |---|---|---|---|---|
 | S1 | **Widget hôtel PRO self-serve** (29€/mo, no-human, +200% MRR potentiel) — gating token HMAC serveur `/api/widget-token.php` (l'iframe n'a AUCUN gating today), CTA payant sur /pro/hotels + /pro/widget | moi | M | ⏳ **décision founder (prix/go)** |
-| S2 | **Récupération checkout abandonné** — fuite mesurée ~565€+1224$/30j (completionRate 0,5) ; capter email AVANT carte + relance J0/J1/J3 | moi/refonte | M | ⏳ |
+| S2 | **Récupération checkout abandonné** — fuite mesurée ~565€+1224$/30j (completionRate 0,5) ; capter email AVANT carte + relance J0/J1/J3 | moi/refonte | M | ✅ **cadence J0/J1/J3 shippée** (bd0ca0fe) — map {hash:{n,f,l}}, migration backlog non-spammée, fenêtre 2j→4j, vérif 8/8+sim+dry-run. RESTE (déféré) : « email avant carte » = chantier monolithe/drip (déjà couvert partiellement par submitLead onsite + exit-intent). |
 | S3 | **Calibrer alertes saison-calme** — falseAlarm calme 24%→<15% (le moat à la racine, honnête, backtest) | moi | L | ⏳ |
 | S4 | **Plan annuel ancré in-app** — repackaging (prices existent), LTV + anti-churn saisonnier | refonte-builder | S | ⏳ |
 | S5 | **Brief quotidien email « tes plages »** — moteur d'habitude, re-touche les 98% non-convertis, socle B2B PRO | script-autonome | M | ⏳ |
@@ -18,8 +18,8 @@ capture exit-intent (exitcap) · pivot calme modal (pw_calm) · Pass Saison (pw_
 ## 🔧 SURFACE (protéger + optimiser)
 | # | Item | Owner | Effort | Statut |
 |---|---|---|---|---|
-| P2 | **Rate-limiting endpoints Stripe** (anti card-testing → gel compte = 100% MRR) | moi | S | 🔴 critique |
-| P3 | **Intégrité pipeline** : échec ERDDAP mono-région → status 'unknown' (pas 'clean') + gate publish | moi/bug-hunter | S/M | 🔴 critique (moat/honnêteté) |
+| P2 | **Rate-limiting endpoints Stripe** (anti card-testing → gel compte = 100% MRR) | moi | S | ✅ **FAIT** (fca1018e) + durci : XFF bypass retiré (8dee99bf), fenêtre fixe→glissante anti-burst (cc4600a6). Vérif PHP empirique (20/21, 30 concur→20/10). NON retenu (tradeoff) : whitelist IP CF en PHP (liste périmée=faux 429 de masse → infra/AOP). |
+| P3 | **Intégrité pipeline** : échec ERDDAP mono-région → status 'unknown' (pas 'clean') + gate publish | moi/bug-hunter | S/M | ✅ **FAIT** : verify-ftp-ready gate (allowlist source + pic tout-vert, 24e20a85) CÂBLÉ en CI + exit-1 PAR région (42f7751e, &&→||, plus de demi-carte verte). CI durci : push déploie le code même si donnée dégradée (55e842e1). 'unknown' au front NON publié (verdictMeta sans cas unknown → rendu cassé ; exit-1 atteint le but sans risque front). |
 | P4 | Cohorte cid (visite-rang→conversion) dans stats.php | script-autonome | S | ⏳ |
 | P5 | Attribution canal (ref) dans stats.php | script-autonome | S | ⏳ |
 | P6 | Vraie géoloc « Près de moi » (placebo aujourd'hui) | moi | M | ⏳ |
