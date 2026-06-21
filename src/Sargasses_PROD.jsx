@@ -8342,6 +8342,56 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
   )
 }
 
+// Bande de capture email de SORTIE (A/B exitcap). Data-backed : montre la vraie
+// meilleure plage du jour + score (jamais affichée si exitcapPick=null). submitLead
+// résilient (sendBeacon). Même langage visuel que le SargaCatch toast (pas d'UI dans l'UI).
+function ExitEmailBand({lang,pick,onClose,trigger="exitcap"}){
+  const[email,setEmail]=useState("")
+  const[done,setDone]=useState(false)
+  const submit=e=>{
+    e.preventDefault()
+    if(!email||!email.includes("@"))return
+    s("sg_email",email)
+    submitLead(email,"exit_intent")
+    track("sg_exitcap_submit",{trigger,beach_id:pick&&pick.id,score:pick&&pick.score})
+    setDone(true)
+  }
+  return(
+    <div style={{pointerEvents:"auto",display:"flex",alignItems:"center",gap:10,
+      background:"rgba(10,23,20,.96)",border:"1px solid rgba(255,199,44,.45)",borderRadius:16,
+      padding:"11px 14px",maxWidth:400,boxShadow:"0 8px 24px rgba(0,0,0,.5)",
+      animation:"slideUp .35s cubic-bezier(.22,1,.36,1)"}}>
+      {done?(
+        <div style={{flex:1,fontSize:12.5,fontWeight:700,color:C.green,textAlign:"center",padding:"3px 0"}}>
+          <span style={{fontSize:18,marginRight:6}}>✅</span>
+          {_t(lang,"C'est noté ! Tu reçois la prévision demain matin.","Done! Tomorrow's forecast lands in your inbox.","¡Listo! Recibirás el pronóstico mañana.")}
+        </div>
+      ):(<>
+        <span style={{width:9,height:9,borderRadius:5,background:C.green,flexShrink:0,boxShadow:"0 0 8px "+C.green,marginTop:3,alignSelf:"flex-start"}}/>
+        <form onSubmit={submit} style={{flex:1,display:"flex",flexDirection:"column",gap:7,minWidth:0}}>
+          <div style={{fontSize:12.5,color:"#fff",lineHeight:1.3}}>
+            <b>{pick&&pick.name}</b>{pick&&pick.score!=null&&<span style={{color:C.green}}> · {pick.score}/100</span>}<br/>
+            <span style={{color:"rgba(255,255,255,.65)"}}>{_t(lang,"Reçois la prévision de demain matin par email.","Get tomorrow morning's forecast by email.","Recibe el pronóstico de mañana por email.")}</span>
+          </div>
+          <div style={{display:"flex",gap:7}}>
+            <input type="email" inputMode="email" autoComplete="email" placeholder={_t(lang,"ton@email.com","your@email.com","tu@email.com")}
+              value={email} onChange={e=>setEmail(e.target.value)}
+              style={{flex:1,padding:"9px 12px",borderRadius:10,border:"1px solid rgba(255,255,255,.14)",
+                fontSize:16,fontFamily:"inherit",background:"rgba(255,255,255,.07)",outline:"none",minWidth:0,color:"#fff"}}/>
+            <button type="submit" style={{padding:"9px 13px",borderRadius:10,border:"none",cursor:"pointer",
+              background:"linear-gradient(158deg,#FFE47A,#FFC72C,#E89400)",color:C.ink,fontSize:12.5,fontWeight:800,whiteSpace:"nowrap",fontFamily:"inherit"}}>
+              {_t(lang,"Recevoir →","Get it →","Recibir →")}
+            </button>
+          </div>
+        </form>
+        <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")}
+          style={{background:"none",border:"none",color:"rgba(255,255,255,.8)",fontSize:20,lineHeight:1,cursor:"pointer",
+            padding:0,alignSelf:"flex-start",width:32,height:32,flexShrink:0}}>×</button>
+      </>)}
+    </div>
+  )
+}
+
 function InlineEmailCapture({lang,beachName,source="inline_beach"}){
   const[email,setEmail]=useState("")
   const[submitted,setSubmitted]=useState(false)
@@ -12655,19 +12705,45 @@ export default function App(){
     }
     return pick||null
   },[showPrevLanding,allBeaches,sargData,island,userPos])
+  // Capture de sortie (exit-intent) : meilleure plage propre du jour, SANS le gate
+  // showPrevLanding (prevHeroPick est toujours null au moment du tir). null = pas de
+  // bande (règle « pas de popup sans données »).
+  const exitcapPick=useMemo(()=>{
+    if(!allBeaches?.length||!sargData?.weekly)return null
+    const cands=allBeaches.filter(b=>(IS_NEW_REGION||b.island===island)&&b.status&&b.lat&&b.lng)
+    if(!cands.length)return null
+    const cleans=cands.filter(b=>b.status==="clean")
+    let pick
+    if(userPos&&cleans.length){
+      pick=cleans.map(b=>({...b,_d:haversine(userPos.lat,userPos.lng,b.lat,b.lng)})).sort((a,b)=>a._d-b._d)[0]
+    }else{
+      const pool=cleans.length?cleans:cands
+      pick=[...pool].sort((a,b)=>(b.score||0)-(a.score||0))[0]
+    }
+    return pick||null
+  },[allBeaches,sargData,island,userPos])
 
   // SargaCatch toast — recycle le trafic en partance (validé user 2026-06-10).
   // Donnée qui justifie (règle "pas de popup sans donnée") : 45 s d'inactivité
   // totale = bounce statistique ; le toast ne coûte rien au funnel. Gates :
   // vue carte, hero fermé, pas de fiche/paywall ouvert, pas premium, 1×/session.
   const[showGameToast,setShowGameToast]=useState(false)
+  const[showExitCap,setShowExitCap]=useState(false)
+  // A/B exitcap : capture email de sortie (50/50, override ?exitcap=1/0)
+  const exitcapOn=useMemo(()=>{try{const q=window.location.search;if(/[?&]exitcap=1/.test(q))return true;if(/[?&]exitcap=0/.test(q))return false;return abVariant("exitcap",["control","email"],[.5,.5])==="email"}catch(_){return false}},[])
   const gameGateRef=useRef({})
-  useEffect(()=>{gameGateRef.current={sheet:!!selectedBeach,premium:showPremium||isPremium,view,hero:showHero||showPrevLanding}})
+  useEffect(()=>{gameGateRef.current={sheet:!!selectedBeach,premium:showPremium||isPremium,view,hero:showHero||showPrevLanding,exitcapPick,exitcapOn}})
   useEffect(()=>{
     let idleT=null
     const fire=trigger=>{
-      const g=gameGateRef.current
-      if(g.sheet||g.premium||g.hero||g.view!=="map")return
+      const gate=gameGateRef.current
+      if(gate.sheet||gate.premium||gate.hero||gate.view!=="map")return
+      // Capture email de sortie EN PREMIER (A/B exitcap) : visiteur en partance, pas d'email
+      if(gate.exitcapOn&&gate.exitcapPick&&!g("sg_email",null)&&g("sg_exitcap_snooze",0)<=Date.now()){
+        try{if(sessionStorage.getItem("sg_exitcap"))return;sessionStorage.setItem("sg_exitcap","1")}catch(_){return}
+        setShowExitCap(true);track("sg_exitcap_shown",{trigger});return
+      }
+      // sinon SargaCatch toast (inchangé)
       try{
         if(sessionStorage.getItem("sg_game_toast"))return
         sessionStorage.setItem("sg_game_toast","1")
@@ -12682,7 +12758,19 @@ export default function App(){
     // Exit-intent desktop : souris qui sort par le haut de la fenêtre
     const exitH=e=>{if(e.clientY<=0&&window.matchMedia("(min-width:900px)").matches)fire("exit")}
     document.addEventListener("mouseleave",exitH)
-    return()=>{clearTimeout(idleT);acts.forEach(a=>window.removeEventListener(a,reset));document.removeEventListener("mouseleave",exitH)}
+    // Mobile : retour d'onglet (visibilitychange) + remontée rapide (scroll-up flick)
+    const onVis=()=>{if(document.visibilityState==="hidden"&&window.matchMedia("(max-width:899px)").matches)fire("hidden")}
+    document.addEventListener("visibilitychange",onVis)
+    let downAcc=0,lastY=0,lastT=0
+    const onScroll=()=>{
+      if(!window.matchMedia("(max-width:899px)").matches)return
+      const y=window.scrollY||document.documentElement.scrollTop||0,now=Date.now(),dy=y-lastY
+      if(dy>0)downAcc+=dy
+      if(downAcc>400&&dy<0&&-dy>120&&now-lastT<300){downAcc=0;fire("scrollup")}
+      lastY=y;lastT=now
+    }
+    window.addEventListener("scroll",onScroll,{passive:true})
+    return()=>{clearTimeout(idleT);acts.forEach(a=>window.removeEventListener(a,reset));document.removeEventListener("mouseleave",exitH);document.removeEventListener("visibilitychange",onVis);window.removeEventListener("scroll",onScroll)}
   },[])
 
   // Deep-link: /plages/:slug → auto-open beach sheet OR zoom to zone MID
@@ -13572,6 +13660,15 @@ export default function App(){
         {/* TRANSITION PHASÉE accueil → écran suivant (z 1095 : au-dessus du hero, sous paywall) */}
         {wipe&&<SceneWipe label={wipe} onDone={()=>setWipe(null)}/>}
 
+        {/* CAPTURE EMAIL DE SORTIE (A/B exitcap) — même position/z que le toast,
+            un seul s'affiche par bras. Data-backed (exitcapPick) ou rien. */}
+        {showExitCap&&!showHero&&!showPrevLanding&&!selectedBeach&&!showPremium&&view==="map"&&exitcapPick&&(
+          <div style={{position:"absolute",bottom:"calc(170px + env(safe-area-inset-bottom, 0px))",left:0,right:0,zIndex:1090,display:"flex",
+            justifyContent:"center",pointerEvents:"none",padding:"0 16px"}}>
+            <ExitEmailBand lang={lang} pick={exitcapPick}
+              onClose={()=>{setShowExitCap(false);s("sg_exitcap_snooze",Date.now()+12096e5);track("sg_exitcap_dismiss",{})}}/>
+          </div>
+        )}
         {/* SARGACATCH TOAST — petit, coin bas, jamais bloquant (z 1090 :
             au-dessus des contrôles carte, sous le paywall z1100). */}
         {showGameToast&&!showHero&&!showPrevLanding&&!selectedBeach&&!showPremium&&view==="map"&&(
