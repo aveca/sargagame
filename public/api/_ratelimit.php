@@ -39,14 +39,22 @@ function sg_rl_enabled() {
     return true;
 }
 
-/** IP cliente réelle : Cloudflare → premier hop X-Forwarded-For → REMOTE_ADDR, validée. */
+/**
+ * IP cliente réelle, NON forgeable pour l'anti-abus. On N'utilise PAS X-Forwarded-For :
+ * ce header est contrôlé par le client et un bot le ferait tourner pour contourner le
+ * plafond. Ordre :
+ *   1. CF-Connecting-IP — posé par Cloudflare (le site est fronté CF) ; non forgeable
+ *      par le client tant que le trafic passe par CF. C'est la vraie IP cliente même
+ *      quand REMOTE_ADDR est l'edge Cloudflare (sinon tous les visiteurs CF partagent
+ *      un seul compteur → faux 429).
+ *   2. REMOTE_ADDR — le pair TCP réel, jamais forgeable (régions servies en direct).
+ * Durcissement déploiement recommandé (hors PHP) : verrouiller l'origine aux plages IP
+ * Cloudflare / Authenticated Origin Pulls pour qu'un CF-Connecting-IP forgé en direct
+ * ne contourne pas le plafond. Stripe Radar reste le filet en dernier recours.
+ */
 function sg_rl_client_ip() {
     $cands = [];
     if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) $cands[] = $_SERVER['HTTP_CF_CONNECTING_IP'];
-    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-        $parts = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
-        $cands[] = $parts[0];
-    }
     if (!empty($_SERVER['REMOTE_ADDR'])) $cands[] = $_SERVER['REMOTE_ADDR'];
     foreach ($cands as $ip) {
         $ip = trim($ip);
