@@ -334,10 +334,23 @@ if ($action === 'subscribe') {
     try {
         $island = (strpos($origin, 'guadeloupe') !== false) ? 'GP' : 'MQ';
         $domain = parse_url($origin, PHP_URL_HOST) ?: 'sargasses-martinique.com';
-        $subject = ($lang === 'en')
-            ? "You're in - your 7-day forecast is live"
-            : "C'est parti - tes previsions 7 jours sont actives";
-        $html = buildWelcomeEmail($island, $sub['trial_end'], $domain, $lang);
+        if (strpos($plan, 'pro_widget') === 0) {
+            // Widget PRO : envoyer le snippet d'intégration avec le jeton ?k= signé (marque blanche).
+            require_once __DIR__ . '/widget-token.php';
+            $k = sg_widget_sign($email, 400);
+            $iframe = '<iframe src="https://' . $domain . '/widget/embed/?beach=VOTRE-PLAGE&k=' . $k . '" style="width:100%;max-width:520px;height:230px;border:0" loading="lazy" title="Sargasses"></iframe>';
+            $subject = ($lang === 'en') ? 'Your PRO widget is ready' : "Ton widget PRO est pret";
+            $html = '<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px">'
+                . '<h2 style="margin:0 0 10px">' . ($lang === 'en' ? 'Your PRO widget is live' : 'Ton widget PRO est active') . '</h2>'
+                . '<p style="font-size:14px;color:#444">' . ($lang === 'en' ? 'Paste this on your site. Replace VOTRE-PLAGE with your beach slug. White-label (no Sargasses link).' : 'Colle ceci sur ton site. Remplace VOTRE-PLAGE par le slug de ta plage. Marque blanche (sans lien Sargasses).') . '</p>'
+                . '<pre style="background:#0d0b14;color:#ffd23f;padding:14px;border-radius:10px;font-size:12px;overflow:auto;white-space:pre-wrap;word-break:break-all">' . htmlspecialchars($iframe) . '</pre>'
+                . '<p style="font-size:12px;color:#888">' . ($lang === 'en' ? 'Keep this token private - it is your PRO key.' : "Garde ce jeton prive, c'est ta cle PRO.") . '</p></div>';
+        } else {
+            $subject = ($lang === 'en')
+                ? "You're in - your 7-day forecast is live"
+                : "C'est parti - tes previsions 7 jours sont actives";
+            $html = buildWelcomeEmail($island, $sub['trial_end'], $domain, $lang);
+        }
         resend($email, $subject, $html);
         // Log to Google Sheet (fire-and-forget)
         $trackData = json_encode([
