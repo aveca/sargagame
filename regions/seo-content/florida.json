@@ -100,5 +100,37 @@
   "resortPageTpl": {
     "titlePattern": "Sargassum at {resort} Today — Live Beach Status & Forecast",
     "introPattern": "Checking conditions before a stay at {resort}? This page monitors {beach} — the sand directly in front — with Copernicus satellite imagery refreshed four times a day. You will find the live sargassum status, a 0–100 Beach Score that also weighs surf and weather, and a 7-day forecast covering the days of your trip. In season, conditions can flip overnight, so check back the morning you pack the beach bag."
+  },
+  "press": {
+    "_doc": "Press/media page rendered at /press/ by region-seo-pages.cjs. Tokens resolved at build time from real data — never invented: {beachCount}=region.beaches.length, {cleanToday}=count of levels with status==='clean', {updatedDate}=fmtDate(lang), {accuracyJ1Pct}/{accuracyJ3Pct}=backtest J+1/J+3 statusHitRate, {contact}=this.contact, {citation}=this.citation. Mirror of regions/seo-content/puntacana.json press contract.",
+    "slug": "press",
+    "title": "Florida Sargassum — Press Kit & Data for Media",
+    "desc": "Press resources for sargassum coverage in Florida: live per-beach satellite status refreshed 4× daily, 7-day forecasts and published accuracy. Free to cite.",
+    "h1": "Press & media — Florida sargassum data",
+    "intro": "The Atlantic is having a widely reported record sargassum season. What the headlines rarely answer is the question your readers actually ask: is my beach swimmable today? We publish that answer for Florida, beach by beach, from satellite data — and it is free to cite with attribution.",
+    "sections": [
+      {
+        "h2": "What we publish",
+        "text": "Live sargassum status for {beachCount} Florida beaches — from the Keys (Key West, Marathon, Islamorada, Key Largo) up the southeast Atlantic coast (Miami Beach, Fort Lauderdale, Palm Beach, Jupiter) and across to the Gulf at Clearwater — each with a clean / moderate / avoid rating, a 0–100 Beach Score and a beach-specific 7-day forecast. Detection uses the AFAI (Alternative Floating Algae Index) from the Copernicus and NOAA satellite programs, sampled pixel by pixel directly offshore of each beach — not a regional average — and refreshed four times a day, with wind and swell data from Open-Meteo. As of {updatedDate}, {cleanToday} of {beachCount} tracked beaches read clean."
+      },
+      {
+        "h2": "Accuracy, published openly",
+        "text": "We backtest the forecast against what satellites later observed, and we publish the results: across our network, next-day beach status verifies {accuracyJ1Pct}% of the time, and 3-day status {accuracyJ3Pct}%. Days 1–3 are the most reliable; days 4–7 show the trend — and we say so on every page. The data is never hand-edited, never filtered for resorts, never deleted."
+      },
+      {
+        "h2": "Free to use, with attribution",
+        "text": "Journalists, bloggers and broadcasters may quote any beach status, score or forecast with a link to the source page. Suggested citation: {citation}. For an embed of the live map, beach-level data for a story, or comment on current conditions, write to {contact} — we answer quickly."
+      },
+      {
+        "h2": "Story angles ready today",
+        "text": "Which Florida beach is clean this week (live ranked list, updated 4× daily) · Why the Keys and the southeast Atlantic coast get hit while the Gulf coast around Clearwater stays mostly clear · What a record Atlantic bloom means at beach level for Florida tourism · How satellite AFAI detection works, with measured forecast accuracy published on our methodology page."
+      },
+      {
+        "h2": "About the network",
+        "text": "SargassumMiami.com is part of a five-site monitoring network: Martinique and Guadeloupe (French), Punta Cana (English), Cancún & Riviera Maya (Spanish), and Miami & Florida (English). All five sites run the same satellite pipeline and the same openly published methodology. The live map is free for everyone; a premium subscription adds daily beach recommendations, push alerts and a morning brief."
+      }
+    ],
+    "citation": "Source: sargassummiami.com — Copernicus/NOAA satellite data, refreshed 4× daily",
+    "contact": "support@sargassummiami.com"
   }
 }

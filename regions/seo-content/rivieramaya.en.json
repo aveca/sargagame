@@ -109,5 +109,37 @@
   "resortPageTpl": {
     "titlePattern": "Sargassum at {resort} Today — Live Beach Status & Forecast",
     "introPattern": "Want to know whether the beach at {resort} woke up free of seaweed and sargassum? This page monitors {beach}, the stretch of sand in front of the hotel, with Copernicus satellite imagery refreshed four times a day. You'll find the current status, a 0–100 Beach Score, and a 7-day forecast, so you can plan your beach — or pool — days before check-in. In season, conditions flip overnight: save this page and check it each morning."
+  },
+  "press": {
+    "_doc": "Press/media page rendered at /en/press/ by region-seo-pages.cjs. Tokens resolved at build time from real data — never invented. Mirror of puntacana press contract.",
+    "slug": "press",
+    "title": "Cancún & Riviera Maya Sargassum — Press Kit",
+    "desc": "Press resources for sargassum coverage in Cancún and the Riviera Maya: live per-beach satellite status refreshed 4× daily, 7-day forecasts and published accuracy. Free to cite.",
+    "h1": "Press & media — Riviera Maya sargassum data",
+    "intro": "The Atlantic is having a widely reported record sargassum season. What the headlines rarely answer is the question your readers actually ask: is my beach swimmable today? We publish that answer for Cancún and the Riviera Maya, beach by beach, from satellite data — and it is free to cite with attribution.",
+    "sections": [
+      {
+        "h2": "What we publish",
+        "text": "Live sargassum status for {beachCount} beaches across Cancún and the Riviera Maya — from Playa Delfines and Isla Mujeres' Playa Norte down to Akumal, Puerto Morelos, Xpu-Ha and Mahahual — each with a clean / moderate / avoid rating, a 0–100 Beach Score and a beach-specific 7-day forecast. Detection uses the AFAI (Alternative Floating Algae Index) from the Copernicus and NOAA satellite programs, sampled pixel by pixel directly offshore of each beach — not a regional average — and refreshed four times a day, with wind and swell data from Open-Meteo. As of {updatedDate}, {cleanToday} of {beachCount} tracked beaches read clean."
+      },
+      {
+        "h2": "Accuracy, published openly",
+        "text": "We backtest the forecast against what satellites later observed, and we publish the results: across our network, next-day beach status verifies {accuracyJ1Pct}% of the time, and 3-day status {accuracyJ3Pct}%. Days 1–3 are the most reliable; days 4–7 show the trend — and we say so on every page. The data is never hand-edited, never filtered for resorts, never deleted."
+      },
+      {
+        "h2": "Free to use, with attribution",
+        "text": "Journalists, bloggers and broadcasters may quote any beach status, score or forecast with a link to the source page. Suggested citation: {citation}. For an embed of the live map, beach-level data for a story, or comment on current conditions, write to {contact} — we answer quickly."
+      },
+      {
+        "h2": "Story angles ready today",
+        "text": "Which Riviera Maya beach is clean this week (live ranked list, updated 4× daily) · Why Isla Mujeres, Cozumel and Holbox often escape the sargassum that hits Tulum and Playa del Carmen · What a record Atlantic bloom means at beach level for Quintana Roo tourism · How satellite AFAI detection works, with measured forecast accuracy published on our methodology page."
+      },
+      {
+        "h2": "About the network",
+        "text": "SargassumCancun.com is part of a five-site monitoring network: Martinique and Guadeloupe (French), Punta Cana (English), Cancún & Riviera Maya (Spanish), and Miami & Florida (English). All five sites run the same satellite pipeline and the same openly published methodology. The live map is free for everyone; a premium subscription adds daily beach recommendations, push alerts and a morning brief."
+      }
+    ],
+    "citation": "Source: sargassumcancun.com — Copernicus/NOAA satellite data, refreshed 4× daily",
+    "contact": "support@sargassumcancun.com"
   }
 }
