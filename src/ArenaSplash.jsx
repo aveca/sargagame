@@ -3,7 +3,7 @@ import React,{useEffect,useState} from "react";
 /* ARENA SPLASH — écran de lancement comic fidèle à /themes-lab/arena.html (écran 1).
    Overlay plein cadre affiché brièvement au démarrage à froid (gated par sessionStorage,
    uniquement sur l'entrée app — pas les pages SEO). N'altère ni le moteur ni le paywall.
-   Palette : ink #0d0b14, yel #ffd23f, blu #27a9e3, grn #27c46b, paper #fdf6e3. */
+   Palette : ink #0d0b14, yel #ffd23f, blu #5b3a8e, grn #27c46b, paper #fdf6e3. */
 export default function ArenaSplash({onDone,lang="fr",track,wordmark="SARGASSES MARTINIQUE"}){
   const [leaving,setLeaving]=useState(false);
   useEffect(()=>{
@@ -36,7 +36,7 @@ export default function ArenaSplash({onDone,lang="fr",track,wordmark="SARGASSES 
           color:#0d0b14;border:2px solid #0d0b14;border-radius:4px;padding:3px 8px;
           transform:rotate(-2deg);box-shadow:2px 2px 0 #0d0b14;text-transform:uppercase;letter-spacing:.4px}
         .arena-splash .orbe{position:relative;width:148px;height:148px;border-radius:50%;
-          border:5px solid #0d0b14;background:linear-gradient(160deg,#5fd0ff,#27a9e3);
+          border:5px solid #0d0b14;background:linear-gradient(160deg,#8a6cff,#5b3a8e);
           box-shadow:0 8px 0 rgba(0,0,0,.5),inset 0 0 0 4px #fff;transform:rotate(-3deg);
           display:grid;place-items:center;animation:arenaBob 2.4s ease-in-out infinite}
         .arena-splash .orbe .pow{position:absolute;top:-12px;right:-10px;background:#e8322a;
@@ -60,7 +60,7 @@ export default function ArenaSplash({onDone,lang="fr",track,wordmark="SARGASSES 
       <div className="eyebrow">{L("eyebrow")}</div>
       <div className="orbe" aria-hidden="true">
         <svg viewBox="0 0 120 120" width="120" height="120" aria-hidden="true" style={{display:'block'}}>
-          <g stroke="#0d0b14" strokeWidth="2.5"><rect x="6" y="50" width="20" height="22" rx="2" fill="#27a9e3"/><rect x="94" y="50" width="20" height="22" rx="2" fill="#27a9e3"/><line x1="26" y1="61" x2="40" y2="61"/><line x1="94" y1="61" x2="80" y2="61"/></g>
+          <g stroke="#0d0b14" strokeWidth="2.5"><rect x="6" y="50" width="20" height="22" rx="2" fill="#5b3a8e"/><rect x="94" y="50" width="20" height="22" rx="2" fill="#5b3a8e"/><line x1="26" y1="61" x2="40" y2="61"/><line x1="94" y1="61" x2="80" y2="61"/></g>
           <circle cx="60" cy="62" r="34" fill="#fdf6e3" stroke="#0d0b14" strokeWidth="3"/>
           <line x1="60" y1="28" x2="60" y2="14" stroke="#0d0b14" strokeWidth="3"/>
           <circle cx="60" cy="11" r="5" fill="#ffd23f" stroke="#0d0b14" strokeWidth="2.5"/>
