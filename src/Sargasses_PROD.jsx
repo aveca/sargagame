@@ -3364,9 +3364,9 @@ function BeachReport({beach,lang,communityReports}){
   const counts=communityReports[beach.id]||communityReports[BEACH_TO_SARG[beach.id]]||{clean:0,moderate:0,avoid:0,total:0}
   const total=counts.total||0
   const LEVELS=[
-    {id:"clean",e:"✅",l:"Propre",le:"Clean",les:"Limpia",c:C.green,bg:C.greenBg},
-    {id:"moderate",e:"⚠️",l:"Modéré",le:"Moderate",les:"Moderado",c:C.stMod,bg:C.amberBg},
-    {id:"avoid",e:"🚫",l:"Beaucoup",le:"Heavy",les:"Mucho",c:C.red,bg:C.redBg},
+    {id:"clean",l:"Propre",le:"Clean",les:"Limpia",c:C.green,bg:C.greenBg},
+    {id:"moderate",l:"Modéré",le:"Moderate",les:"Moderado",c:C.stMod,bg:C.amberBg},
+    {id:"avoid",l:"Beaucoup",le:"Heavy",les:"Mucho",c:C.red,bg:C.redBg},
   ]
   const submit=(level)=>{
     if(voted)return
@@ -3383,7 +3383,7 @@ function BeachReport({beach,lang,communityReports}){
     <div style={{margin:"12px 0",padding:"12px 14px",borderRadius:14,
       background:"var(--sg-bgD,#F7F5EF)",border:"1px solid var(--sg-border,rgba(0,0,0,.04))"}}>
       <div style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)",marginBottom:8,display:"flex",alignItems:"center",gap:6}}>
-        <span>📍</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
         {_t(lang,"Sur place ? Signale le niveau de sargasses","On the beach? Report sargassum level","¿Estás en la playa? Reporta el nivel de sargazo")}
       </div>
       <div style={{display:"flex",gap:8}}>
@@ -3396,7 +3396,8 @@ function BeachReport({beach,lang,communityReports}){
             boxShadow:voted===lv.id?"inset 0 0 0 1.5px "+lv.c:"0 1px 4px rgba(0,0,0,.04)",
             animation:voted===lv.id?"confirmPop .3s ease":"none",
             opacity:voted&&voted!==lv.id?.4:1,
-          }}>{lv.e} {lang==="es"?lv.les:lang==="en"?lv.le:lv.l}</button>
+            display:"flex",alignItems:"center",justifyContent:"center",gap:5,
+          }}><ComicStatusGlyph status={lv.id} size={13} color={voted===lv.id?lv.c:"var(--sg-ink)"}/>{lang==="es"?lv.les:lang==="en"?lv.le:lv.l}</button>
         ))}
       </div>
       {total>0&&(
@@ -3410,7 +3411,7 @@ function BeachReport({beach,lang,communityReports}){
             {counts.rawTotal||Math.round(total)} {lang==="es"?"reporte"+((counts.rawTotal||total)>1?"s":""):lang==="en"?"report"+((counts.rawTotal||total)>1?"s":""):"signalement"+((counts.rawTotal||total)>1?"s":"")}
             {counts.trend&&counts.trend!=="stable"&&<span style={{marginLeft:4,color:counts.trend==="worsening"?C.red:C.green}}>
               {counts.trend==="worsening"?"↗":"↘"}</span>}
-            {consensus&&<> · {_t(lang,"Consensus : ","Consensus: ","Consenso: ")}<span style={{fontWeight:700,color:ST[consensus].c}}>{ST[consensus].e} {lang==="es"?ST[consensus].les:lang==="en"?ST[consensus].le:ST[consensus].l}</span></>}
+            {consensus&&<> · {_t(lang,"Consensus : ","Consensus: ","Consenso: ")}<span style={{fontWeight:700,color:ST[consensus].c,display:"inline-flex",alignItems:"center",gap:4,verticalAlign:"middle"}}><ComicStatusGlyph status={consensus} size={12} color={ST[consensus].c}/>{lang==="es"?ST[consensus].les:lang==="en"?ST[consensus].le:ST[consensus].l}</span></>}
           </div>
         </div>
       )}
@@ -3773,13 +3774,25 @@ function H2SBadge({beach,lang,weather,onPremiumClick}){
    RevenueCat, Stormy AI (4 500+ A/B).
    ═══════════════════════════════════════════════════════════════════════════ */
 const COMIC={
-  cream:"#fdf6e3", ink:"#0d0b14", sub:"#6b6478",
-  clean:"#27c46b", moderate:"#ff7a2f", avoid:"#e8322a", loading:"#9a93a8",
-  orange:"#ff7a2f", blue:"#1c7fb0", violet:"#5b3a8e",
+  // Palette alignée BIBLE v1 (22/06) : trio statut EXCLUSIF + encre/mid/teal/or de marque.
+  // Pirates purgées → clean #27c46b→#22C55E · moderate orange→ambre #B87A00 (R3 : jamais l'or
+  // sur un statut) · avoid #e8322a→corail #E8522A · sub #6b6478→mid #5A5A5A · blue→teal #009E8E.
+  cream:"#fdf6e3", ink:"#0d0b14", sub:"#5A5A5A",
+  clean:"#22C55E", moderate:"#B87A00", avoid:"#E8522A", loading:"#9a93a8",
+  orange:"#B87A00", blue:"#009E8E", violet:"#5b3a8e",
   sunset:"radial-gradient(120% 75% at 82% 6%, rgba(255,138,77,.55), rgba(255,138,77,0) 50%), linear-gradient(168deg,#ff8a4d 0%,#8a4a8e 26%,#3e2470 58%,#1a1140 100%)",
-  gold:"linear-gradient(180deg,#ffe07a,#ffc72c)",
+  gold:"linear-gradient(180deg,#FFE47A,#FFC72C)",
 }
 function comicStatusColor(st){return st==="clean"?COMIC.clean:st==="moderate"?COMIC.moderate:st==="avoid"?COMIC.avoid:COMIC.loading}
+// Statut = couleur + FORME-SVG + MOT (BIBLE trio). Forme en <path> (jamais l'Unicode ●/◐) :
+// ✓ propre (vert) · ◐ modéré (ambre) · ✕ alerte (corail). 2px ink → lisibilité <15px.
+function ComicStatusGlyph({status,size=12,color="#fff"}){
+  const s=size,c=size/2
+  if(status==="clean")return(<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><path d="M5 13l4 4L19 7"/></svg>)
+  if(status==="avoid")return(<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="3.4" strokeLinecap="round" aria-hidden="true" style={{flexShrink:0}}><path d="M6 6l12 12M18 6 6 18"/></svg>)
+  if(status==="moderate")return(<svg width={s} height={s} viewBox="0 0 24 24" aria-hidden="true" style={{flexShrink:0}}><circle cx="12" cy="12" r="9" fill="none" stroke={color} strokeWidth="2.6"/><path d="M12 3a9 9 0 0 0 0 18z" fill={color}/></svg>)
+  return(<svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.6" aria-hidden="true" style={{flexShrink:0}}><circle cx="12" cy="12" r="9"/></svg>)
+}
 function comicVerdict(status,lang,daypart){
   // daypart : 'matin' | 'aprem' | 'soir'
   const when={fr:{matin:"ce matin",aprem:"cet après-midi",soir:"ce soir"},en:{matin:"this morning",aprem:"this afternoon",soir:"tonight"},es:{matin:"esta mañana",aprem:"esta tarde",soir:"esta noche"}}
@@ -3897,11 +3910,14 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
         @keyframes bscBar{0%{transform:scaleY(.05);opacity:0}70%{transform:scaleY(1.12)}100%{transform:scaleY(1);opacity:1}}
         @keyframes bscRow{0%{transform:translateX(-14px);opacity:0}100%{transform:translateX(0);opacity:1}}
         .bsc-card{background:#fff;border:3px solid ${COMIC.ink};border-radius:16px;box-shadow:3px 3px 0 ${COMIC.ink}}
-        .bsc-chip{font:800 11.5px/1 'Bricolage Grotesque',sans-serif;color:${COMIC.ink};background:#fff;border:2.5px solid ${COMIC.ink};border-radius:999px;padding:7px 11px;display:inline-flex;align-items:center;gap:6px;animation:bscChip .42s cubic-bezier(.16,1,.3,1) both}
+        .bsc-chip{font:800 12px/1 'Bricolage Grotesque',sans-serif;color:${COMIC.ink};background:#fff;border:2.5px solid ${COMIC.ink};border-radius:999px;padding:7px 11px;display:inline-flex;align-items:center;gap:6px;animation:bscChip .42s cubic-bezier(.16,1,.3,1) both}
         .bsc-bar{transform-origin:bottom;animation:bscBar .5s cubic-bezier(.16,1,.3,1) both}
         .bsc-row{animation:bscRow .4s cubic-bezier(.16,1,.3,1) both}
-        .bsc-cta{width:100%;text-align:center;font:800 17px/1 'Bricolage Grotesque',sans-serif;padding:16px;border-radius:16px;border:3px solid ${COMIC.ink};box-shadow:3px 3px 0 ${COMIC.ink};background:${COMIC.gold};color:${COMIC.ink};cursor:pointer;transition:transform .08s ease}
-        .bsc-cta:active{transform:translate(3px,3px);box-shadow:0 0 0 ${COMIC.ink}}
+        /* Classe SANS « cta » dans le nom : esquive le skin forcé .theme-comic
+           [class*="cta"] qui imposait Anton+letter-spacing sur ce bouton. BIBLE : un
+           SEUL Anton/écran = le nom de plage ; le CTA reste Bricolage 800. */
+        .bsc-gobtn{width:100%;text-align:center;font:800 17px/1 'Bricolage Grotesque',sans-serif;padding:16px;border-radius:16px;border:3px solid ${COMIC.ink};box-shadow:3px 3px 0 ${COMIC.ink};background:${COMIC.gold};color:${COMIC.ink};cursor:pointer;transition:transform .08s ease}
+        .bsc-gobtn:active{transform:translate(3px,3px);box-shadow:0 0 0 ${COMIC.ink}}
         /* iOS WebKit peint un fond BLANC natif sur tout <button> sans reset → fini le « blanc chelou » */
         .bsc-sheet button{-webkit-appearance:none;appearance:none;font-family:inherit}
         @media (prefers-reduced-motion:reduce){.bsc-chip,.bsc-bar,.bsc-row{animation:none!important}}
@@ -3919,15 +3935,15 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
         {/* Grip + X visible (NN/g : jamais handle seul) */}
         <div style={{width:44,height:5,borderRadius:5,background:COMIC.ink,opacity:.32,margin:"2px auto 8px"}}/>
         <button onClick={requestClose} aria-label={_t(lang,"Fermer","Close","Cerrar")}
-          style={{position:"absolute",top:14,right:14,width:34,height:34,borderRadius:"50%",border:`2.5px solid ${COMIC.ink}`,background:"#fff",boxShadow:`2px 2px 0 ${COMIC.ink}`,fontSize:16,fontWeight:900,color:COMIC.ink,cursor:"pointer",lineHeight:1,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+          style={{position:"absolute",top:14,right:14,width:34,height:34,borderRadius:"50%",border:`2.5px solid ${COMIC.ink}`,background:"#fff",boxShadow:`2px 2px 0 ${COMIC.ink}`,color:COMIC.ink,cursor:"pointer",lineHeight:1,display:"flex",alignItems:"center",justifyContent:"center"}}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
 
         {/* En-tête : nom + badge statut */}
         <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:10,paddingRight:34}}>
           <div style={{minWidth:0}}>
             <div style={{fontFamily:"'Anton',sans-serif",fontSize:23,lineHeight:.96,color:COMIC.ink,textTransform:"uppercase",letterSpacing:"-.3px",wordBreak:"break-word"}}>{beach.name}</div>
-            {locLine&&<div style={{font:"700 11.5px/1.2 'Bricolage Grotesque'",color:COMIC.sub,marginTop:4}}>📍 {locLine}</div>}
+            {locLine&&<div style={{font:"700 11.5px/1.2 'Bricolage Grotesque'",color:COMIC.sub,marginTop:4,display:"flex",alignItems:"center",gap:5}}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>{locLine}</div>}
           </div>
-          <span style={{font:"800 11px/1 'Bricolage Grotesque'",padding:"7px 11px",borderRadius:999,border:`2.5px solid ${COMIC.ink}`,boxShadow:`2px 2px 0 ${COMIC.ink}`,background:sc,color:status==="moderate"?COMIC.ink:"#fff",whiteSpace:"nowrap",display:"inline-flex",alignItems:"center",gap:5}}>● {(ST[status]||ST._loading)[lang==="en"?"le":lang==="es"?"les":"l"]}</span>
+          <span style={{font:"800 11px/1 'Bricolage Grotesque'",padding:"7px 11px",borderRadius:999,border:`2.5px solid ${COMIC.ink}`,boxShadow:`2px 2px 0 ${COMIC.ink}`,background:sc,color:status==="moderate"?COMIC.ink:"#fff",whiteSpace:"nowrap",display:"inline-flex",alignItems:"center",gap:5}}><ComicStatusGlyph status={status} size={13} color={status==="moderate"?COMIC.ink:"#fff"}/>{(ST[status]||ST._loading)[lang==="en"?"le":lang==="es"?"les":"l"]}</span>
         </div>
 
         {/* VERDICT — bandeau couleur haute lisibilité (traffic-light + mot, le pattern
@@ -3938,7 +3954,8 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
           animation:"bscPop .5s .1s cubic-bezier(.16,1,.3,1) both"}}>
           <div aria-hidden style={{flexShrink:0}}><Veilleur mood={hasScore?moodFromScore(beach.score):"scan"} size={52}/></div>
           <div style={{minWidth:0}}>
-            <div style={{fontFamily:"'Anton',sans-serif",fontSize:32,lineHeight:.9,textTransform:"uppercase",letterSpacing:"-.5px",color:COMIC.ink}}>{V.big}</div>
+            {/* Verdict-line en Bricolage 800 (BIBLE : un SEUL Anton/écran = le nom de plage). */}
+            <div style={{font:"800 26px/.95 'Bricolage Grotesque'",textTransform:"uppercase",letterSpacing:"-.3px",color:COMIC.ink}}>{V.big}</div>
             <div style={{font:"800 12.5px/1 'Bricolage Grotesque'",color:COMIC.ink,opacity:.8,marginTop:5,textTransform:"uppercase",letterSpacing:".6px"}}>{V.when} · {_t(lang,"mesuré au satellite","measured by satellite","medido por satélite")}</div>
           </div>
         </div>
@@ -3947,18 +3964,19 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
             Le satellite voit le large, pas l'échoué : on ne dit pas « propre » sans réserve. */}
         {beach._satBlind&&status==="clean"&&!beach._communityOverride&&(
           <div style={{display:"flex",gap:9,padding:"11px 13px",margin:"0 0 12px",background:COMIC.cream,border:`2.5px solid ${COMIC.ink}`,borderRadius:14,boxShadow:`3px 3px 0 ${COMIC.ink}`}}>
-            <span aria-hidden style={{fontSize:18,lineHeight:1.1}}>🛰️</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={COMIC.blue} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0,marginTop:1}}><path d="M5 13l-2-2a2.8 2.8 0 0 1 0-4l2-2a2.8 2.8 0 0 1 4 0l2 2a2.8 2.8 0 0 1 0 4l-2 2a2.8 2.8 0 0 1-4 0z"/><path d="M11 11l4 4M13 7l4 4a2.8 2.8 0 0 1 0 4M9 17a2.8 2.8 0 0 1-4 0"/></svg>
             <div style={{font:"700 11.5px/1.45 'Bricolage Grotesque'",color:COMIC.ink}}>{_t(lang,
-              "Vu du ciel, rien au large ici. Mais le sargasse déjà échoué sur le sable ne se voit pas du satellite — si tu y es, signale-le pour les autres 👇",
-              "From the sky, nothing offshore here. But sargassum already on the sand isn't visible by satellite — if you're there, report it for others 👇",
-              "Desde el cielo, nada mar adentro aquí. Pero el sargazo ya varado no se ve por satélite — si estás ahí, repórtalo para los demás 👇")}</div>
+              "Vu du ciel, rien au large ici. Mais le sargasse déjà échoué sur le sable ne se voit pas du satellite — si tu y es, signale-le pour les autres.",
+              "From the sky, nothing offshore here. But sargassum already on the sand isn't visible by satellite — if you're there, report it for others.",
+              "Desde el cielo, nada mar adentro aquí. Pero el sargazo ya varado no se ve por satélite — si estás ahí, repórtalo para los demás.")}</div>
           </div>
         )}
 
         {/* Score + facteurs (carte) */}
         <div className="bsc-card" style={{display:"flex",alignItems:"center",gap:14,padding:"13px 15px",marginBottom:12}}>
           {hasScore&&<div style={{flexShrink:0,textAlign:"center"}}>
-            <div style={{fontFamily:"'Anton',sans-serif",fontSize:40,lineHeight:.85,color:COMIC.ink}}>{scoreAnim}<span style={{fontSize:15,color:COMIC.sub}}>/100</span></div>
+            {/* Score-vedette en JetBrains Mono (BIBLE : Mono pour tous les chiffres). */}
+            <div style={{fontFamily:"'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace",fontWeight:700,fontSize:38,lineHeight:.85,letterSpacing:"-1px",fontVariantNumeric:"tabular-nums",color:COMIC.ink}}>{scoreAnim}<span style={{fontSize:14,color:COMIC.sub}}>/100</span></div>
             <div style={{font:"800 8.5px/1 'Bricolage Grotesque'",color:COMIC.sub,letterSpacing:".5px",marginTop:2}}>{_t(lang,"INDICE","SCORE","ÍNDICE")}</div>
           </div>}
           <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
@@ -3976,7 +3994,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
         <div style={{marginBottom:14}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:7}}>
             <div style={{font:"800 12px/1 'Bricolage Grotesque'",color:COMIC.ink,letterSpacing:".3px"}}>{_t(lang,"7 PROCHAINS JOURS","NEXT 7 DAYS","PRÓXIMOS 7 DÍAS")}</div>
-            {!isPremium&&<span style={{font:"800 9.5px/1 'Bricolage Grotesque'",color:COMIC.ink,background:COMIC.gold,border:`2px solid ${COMIC.ink}`,borderRadius:999,padding:"4px 8px"}}>🔒 {_t(lang,"PREMIUM","PREMIUM","PREMIUM")}</span>}
+            {!isPremium&&<span style={{font:"800 9.5px/1 'Bricolage Grotesque'",color:COMIC.ink,background:COMIC.gold,border:`2px solid ${COMIC.ink}`,borderRadius:999,padding:"4px 8px",display:"inline-flex",alignItems:"center",gap:4}}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>{_t(lang,"PREMIUM","PREMIUM","PREMIUM")}</span>}
           </div>
           <div style={{display:"flex",gap:5,position:"relative"}}>
             {fcDays.map((d,i)=>{const gated=!isPremium&&i>0;return(
@@ -3990,7 +4008,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
 
         {/* Plan B — où aller maintenant (avoid/moderate) */}
         {planB.length>0&&<div className="bsc-card" style={{padding:"12px 14px",marginBottom:14,background:COMIC.cream}}>
-          <div style={{font:"800 12px/1 'Bricolage Grotesque'",color:COMIC.ink,marginBottom:9}}>🌴 {_t(lang,"Plutôt y aller maintenant","Go here instead","Mejor ve aquí ahora")}</div>
+          <div style={{font:"800 12px/1 'Bricolage Grotesque'",color:COMIC.ink,marginBottom:9,display:"flex",alignItems:"center",gap:6}}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={COMIC.clean} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><path d="M12 22V12"/><path d="M12 12c0-4-3-7-8-6 2-3 8-4 8 1 0-5 6-4 8-1-5-1-8 2-8 6z"/><path d="M12 12c2-2 5-2 7 0M12 12c-2-2-5-2-7 0"/></svg>{_t(lang,"Plutôt y aller maintenant","Go here instead","Mejor ve aquí ahora")}</div>
           <div style={{display:"flex",flexDirection:"column",gap:7}}>
             {planB.map((b,i)=><button key={b.id} className="bsc-row" onClick={()=>{trk("sg_planb_pick",{from:beach.id,to:b.id,rank:i});onBeachClick&&onBeachClick(b)}}
               style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,padding:"10px 12px",borderRadius:12,border:`2.5px solid ${COMIC.ink}`,background:"#fff",boxShadow:`2px 2px 0 ${COMIC.ink}`,cursor:"pointer",font:"800 13px/1 'Bricolage Grotesque'",color:COMIC.ink,textAlign:"left",animationDelay:(.1+i*.08)+"s"}}>
@@ -4005,18 +4023,18 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
 
         {/* CTA collant — décision unique, or */}
         <div style={{position:"sticky",bottom:0,paddingTop:8,marginTop:4,background:`linear-gradient(to top, ${COMIC.cream} 72%, transparent)`}}>
-          <button className="bsc-cta" onClick={onCTA}>⭐ {ctaLabel} →</button>
+          <button className="bsc-gobtn" onClick={onCTA} style={{display:"inline-flex",alignItems:"center",justifyContent:"center",gap:8}}><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style={{flexShrink:0}}><path d="M12 2.6l2.6 6.1 6.6.6-5 4.3 1.5 6.5L12 17l-5.7 3.4 1.5-6.5-5-4.3 6.6-.6z"/></svg>{ctaLabel} →</button>
           {!isPremium&&<>
-            <div style={{font:"600 11.5px/1.4 'Bricolage Grotesque'",color:"#41414a",textAlign:"center",margin:"9px 8px 0"}}>{_t(lang,"Ne découvre plus les algues une fois sur place. Sois prévenu·e la veille.","Stop discovering the seaweed once you're there. Get warned the day before.","Deja de descubrir el sargazo al llegar. Te avisamos la víspera.")}</div>
+            <div style={{font:"600 11.5px/1.4 'Bricolage Grotesque'",color:COMIC.sub,textAlign:"center",margin:"9px 8px 0"}}>{_t(lang,"Ne découvre plus les algues une fois sur place. Sois prévenu·e la veille.","Stop discovering the seaweed once you're there. Get warned the day before.","Deja de descubrir el sargazo al llegar. Te avisamos la víspera.")}</div>
             <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:COMIC.sub,textAlign:"center",marginTop:6}}>≈ {pricePerDay()||"0,16 €"} / {_t(lang,"jour","day","día")} · {_t(lang,"sans engagement, résiliable à tout moment","cancel anytime","sin compromiso, cancela cuando quieras")}</div>
-            {!IS_NEW_REGION&&<div style={{font:"800 11px/1.3 'Bricolage Grotesque'",color:COMIC.ink,textAlign:"center",marginTop:6}}>★ {_t(lang,`Rejoint par ${socialN}+ vacanciers`,`Joined by ${socialN}+ beachgoers`,`${socialN}+ veraneantes ya dentro`)}</div>}
+            {!IS_NEW_REGION&&<div style={{font:"800 11px/1.3 'Bricolage Grotesque'",color:COMIC.ink,textAlign:"center",marginTop:6,display:"flex",alignItems:"center",justifyContent:"center",gap:5}}><svg width="12" height="12" viewBox="0 0 24 24" fill="#E8A800" aria-hidden="true" style={{flexShrink:0}}><path d="M12 2.6l2.6 6.1 6.6.6-5 4.3 1.5 6.5L12 17l-5.7 3.4 1.5-6.5-5-4.3 6.6-.6z"/></svg>{_t(lang,`Rejoint par ${socialN}+ vacanciers`,`Joined by ${socialN}+ beachgoers`,`${socialN}+ veraneantes ya dentro`)}</div>}
           </>}
           <button onClick={()=>{setShowProof(v=>!v);trk("sg_beach_proof",{beach_id:beach.id,open:!showProof})}}
             style={{display:"block",margin:"12px auto 0",background:"none",border:"none",color:COMIC.ink,font:"800 12.5px/1 'Bricolage Grotesque'",textDecoration:"underline",cursor:"pointer"}}>{_t(lang,"Voir la preuve · comment on mesure","See the proof · how we measure","Ver la prueba · cómo medimos")}</button>
-          {showProof&&<div style={{font:"600 12px/1.5 'Bricolage Grotesque'",color:"#41414a",textAlign:"center",margin:"10px 6px 0"}}>{_t(lang,
-            "Chaque jour, on lit les images satellite Sentinel/MODIS (indice AFAI) au large de chaque plage, puis on projette la dérive sur 7 jours. C'est de la mesure, pas une estimation à la louche.",
-            "Every day we read Sentinel/MODIS satellite imagery (AFAI index) offshore of each beach, then project the drift over 7 days. It's measurement, not a rough guess.",
-            "Cada día leemos imágenes satelitales Sentinel/MODIS (índice AFAI) frente a cada playa, y proyectamos la deriva a 7 días. Es medición, no una estimación.")}</div>}
+          {showProof&&<div style={{font:"600 12px/1.5 'Bricolage Grotesque'",color:COMIC.sub,textAlign:"center",margin:"10px 6px 0"}}>{_t(lang,
+            "Chaque jour, on lit les images satellite Sentinel/MODIS (algues en mer) au large de chaque plage, puis on projette la dérive sur 7 jours. C'est de la mesure, pas une estimation à la louche.",
+            "Every day we read Sentinel/MODIS satellite imagery (seaweed at sea) offshore of each beach, then project the drift over 7 days. It's measurement, not a rough guess.",
+            "Cada día leemos imágenes satelitales Sentinel/MODIS (algas en el mar) frente a cada playa, y proyectamos la deriva a 7 días. Es medición, no una estimación.")}</div>}
         </div>
       </div>
     </>
