@@ -204,6 +204,43 @@ export default function WorldMapView({
   const bakeRef    = useRef(null)  // <svg> source du monde statique → rasterisé en bitmap (Stage 2)
   const fxRef      = useRef(null)  // couche live des effets d'échouage (au-dessus du monde baké)
   const fieldRef   = useRef(null)  // couche live du champ de sargasses au large (dérive lente)
+  const audioRef   = useRef(null)  // AudioContext (lazy, débloqué au 1er geste)
+  const audioUnlockedRef = useRef(false)
+  const mutedRef   = useRef(false)
+  const [muted, setMuted] = useState(false)
+  const [soundReplay, setSoundReplay] = useState(0) // bump au 1er geste → rejoue l'échouage AVEC le son
+
+  // Débloque l'AudioContext (les navigateurs le tiennent « suspended » tant qu'aucun geste
+  // utilisateur) — à appeler depuis un handler de geste. Idempotent.
+  const ensureAudio = useCallback(()=>{
+    try{
+      if(!audioRef.current){ const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return null; audioRef.current=new AC() }
+      if(audioRef.current.state==="suspended") audioRef.current.resume()
+    }catch(_){ return null }
+    return audioRef.current
+  },[])
+
+  // « BOUMP / SHROUMP » d'échouage : thump grave (sine 155→56 Hz) + lavage de bruit filtré
+  // (la sargasse qui s'étale sur le sable). 100 % synthétisé WebAudio — zéro asset, zéro IA.
+  // Gaté : audio débloqué (geste) + pas mute + pas reduced-motion. Doux, one-shot, non bloquant.
+  const playBoump = useCallback((strength=1)=>{
+    if(mutedRef.current||reduceRef.current) return
+    const ac=audioRef.current
+    if(!ac||ac.state!=="running") return
+    try{
+      const now=ac.currentTime, s=Math.max(.4,Math.min(1.3,strength))
+      const o=ac.createOscillator(), g=ac.createGain()
+      o.type="sine"; o.frequency.setValueAtTime(155,now); o.frequency.exponentialRampToValueAtTime(56,now+.19)
+      g.gain.setValueAtTime(.0001,now); g.gain.exponentialRampToValueAtTime(.22*s,now+.015); g.gain.exponentialRampToValueAtTime(.0001,now+.33)
+      o.connect(g); g.connect(ac.destination); o.start(now); o.stop(now+.35)
+      const dur=.26, n=Math.floor(ac.sampleRate*dur), buf=ac.createBuffer(1,n,ac.sampleRate), ch=buf.getChannelData(0)
+      for(let i=0;i<n;i++){ const t=i/n; ch[i]=(Math.random()*2-1)*(1-t)*(1-t) } // bruit décroissant = « shhh »
+      const ns=ac.createBufferSource(); ns.buffer=buf
+      const bp=ac.createBiquadFilter(); bp.type="bandpass"; bp.frequency.value=820; bp.Q.value=.7
+      const ng=ac.createGain(); ng.gain.setValueAtTime(.0001,now); ng.gain.exponentialRampToValueAtTime(.17*s,now+.03); ng.gain.exponentialRampToValueAtTime(.0001,now+.28)
+      ns.connect(bp); bp.connect(ng); ng.connect(ac.destination); ns.start(now); ns.stop(now+.3)
+    }catch(_){}
+  },[])
 
   const [outline, setOutline]   = useState(null)
   const [bakedUrl, setBakedUrl] = useState(null)  // PNG data-URL du monde statique baké (GPU-composité)
@@ -458,14 +495,17 @@ export default function WorldMapView({
       const a=arr(b)
       const eta=force?(i+1):(a?a.d:(b.days[day]==="avoid"?0:null)) // 0=déjà là, 1-3=jour prévu, null=aucun
       const inst=_spawnBeaching(layer,b.vx,b.vy,cx,cy,0.85,Math.round(b.vx*7+b.vy*13)+i*131,eta)
-      return {inst,delay:i*0.55,settled:false}
+      const strength=Math.min(1.3,.72+(((a&&a.s)||0)*3.5)+(b.days[day]==="avoid"?.28:0)) // + sévère = boump + fort
+      return {inst,delay:i*0.55,settled:false,boumped:false,strength}
     })
     if(reduceRef.current){ insts.forEach(o=>o.inst.render(CYCLE)); return ()=>{ while(layer.firstChild) layer.removeChild(layer.firstChild) } } // reduced = rien (fadé), le pin suffit
     let raf=0,t0=0
     const loop=tms=>{ if(!t0)t0=tms; const t=(tms-t0)/1000; let active=false
       for(const o of insts){ if(o.settled) continue
         const lt=t-o.delay
-        if(lt<CYCLE){ o.inst.render(Math.max(0,lt)); active=true } // joue jusqu'au fondu complet
+        if(lt<CYCLE){ o.inst.render(Math.max(0,lt)); active=true // joue jusqu'au fondu complet
+          if(!o.boumped && lt>=1.18){ o.boumped=true; playBoump(o.strength) } // SON « boump » pile à l'impact (T_IM)
+        }
         else { o.inst.render(CYCLE); o.settled=true } // joué + fadé : plus rien, ne rejoue plus
       }
       if(active) raf=requestAnimationFrame(loop); else raf=0 // tout fadé → rAF éteint (carte propre)
@@ -475,7 +515,7 @@ export default function WorldMapView({
       else if(!raf && insts.some(o=>!o.settled)){ t0=0; raf=requestAnimationFrame(loop) } }
     document.addEventListener("visibilitychange",onVis)
     return ()=>{ if(raf)cancelAnimationFrame(raf); document.removeEventListener("visibilitychange",onVis); while(layer.firstChild) layer.removeChild(layer.firstChild) }
-  },[beachList,day]) // eslint-disable-line
+  },[beachList,day,soundReplay]) // eslint-disable-line
 
   // ── CHAMP DE SARGASSES AU LARGE (live, dérive LENTE) : les vraies cellules satellite rendues en
   // bancs comic (LOD near/far), qui dérivent doucement vers l'O/N-O (courant Caraïbe) avec WRAP
@@ -627,6 +667,11 @@ export default function WorldMapView({
     let moved=false
 
     const onDown=e=>{
+      // 1er geste utilisateur : débloque l'AudioContext (exigence navigateurs) + rejoue l'échouage
+      // UNE fois AVEC le son (à l'ouverture il a joué muet, audio verrouillé). Ensuite : plus de
+      // re-trigger (le drapeau reste). C'est le « shroump » d'arrivée quand l'utilisateur engage.
+      ensureAudio()
+      if(!audioUnlockedRef.current){ audioUnlockedRef.current=true; setSoundReplay(n=>n+1) }
       // Tap sur un contrôle chrome (CTA « Voir la plage », tooltip, dock) : ne PAS le
       // traiter comme un pan (sinon le jitter du doigt déselectionne + capture le pointeur
       // et vole le clic au bouton → fiche jamais ouverte). Laisse l'événement au bouton.
@@ -1265,6 +1310,16 @@ export default function WorldMapView({
         }} onClick={nearMe}>
           📍 {_t(lang,"Près de moi","Near me","Cerca de mí")}
         </button>
+
+        {/* Bouton son d'échouage (mute/unmute) — son ON par défaut, débloqué au 1er geste */}
+        <button aria-label={muted?_t(lang,"Activer le son d'échouage","Enable beaching sound","Activar sonido"):_t(lang,"Couper le son d'échouage","Mute beaching sound","Silenciar")}
+          onClick={()=>{ const m=!muted; setMuted(m); mutedRef.current=m; if(!m){ ensureAudio(); playBoump(.9) } }}
+          style={{
+            position:"absolute",right:16,bottom:"calc(124px + env(safe-area-inset-bottom))",
+            pointerEvents:"auto",width:42,height:42,display:"inline-flex",alignItems:"center",justifyContent:"center",
+            background:"#fdf6e3",color:INK,border:`2.5px solid ${INK}`,fontSize:17,
+            borderRadius:999,cursor:"pointer",boxShadow:`3px 3px 0 ${INK}`,
+          }}>{muted?"🔇":"🔊"}</button>
 
         {/* Scrub jours (J0 libre · J1-5 → Premium) */}
         <div style={{
