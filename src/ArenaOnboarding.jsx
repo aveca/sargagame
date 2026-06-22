@@ -30,7 +30,7 @@ export default function ArenaOnboarding({onDone,onSkip,lang="fr",track,region=nu
     cta1s:{fr:"Gratuit · aucune carte demandée",en:"Free · no card required",es:"Gratis · sin tarjeta"},
     // étape 2
     scan:{fr:["LE SATELLITE","SCANNE."],en:["THE SATELLITE","SCANS."],es:["EL SATÉLITE","ESCANEA."]},
-    scanSub:{fr:"Indice AFAI · fiabilité ~79%",en:"AFAI index · reliability ~79%",es:"Índice AFAI · fiabilidad ~79%"},
+    scanSub:{fr:"Indice AFAI · données Copernicus Marine",en:"AFAI index · Copernicus Marine data",es:"Índice AFAI · datos Copernicus Marine"},
     s1:{fr:"<b>Copernicus mesure</b> les radeaux de sargasses au large.",en:"<b>Copernicus measures</b> the sargassum rafts offshore.",es:"<b>Copernicus mide</b> las balsas de sargazo mar adentro."},
     s2:{fr:"On croise <b>7 facteurs</b> : sargasses, houle, vent, eau, ciel, UV, marée.",en:"We cross <b>7 factors</b>: sargassum, swell, wind, water, sky, UV, tide.",es:"Cruzamos <b>7 factores</b>: sargazo, oleaje, viento, agua, cielo, UV, marea."},
     s3:{fr:"Ta plage reçoit un <b>score / 100</b> et un statut clair.",en:"Your beach gets a <b>score / 100</b> and a clear status.",es:"Tu playa recibe una <b>puntuación / 100</b> y un estado claro."},
