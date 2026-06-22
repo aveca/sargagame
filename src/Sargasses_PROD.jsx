@@ -8471,6 +8471,157 @@ function ExitEmailBand({lang,pick,onClose,trigger="exitcap"}){
   )
 }
 
+// Glyphe canonique du Veilleur (œil-satellite golden-hour, porté de VeilleurHero en JSX) —
+// défs préfixées evc* pour éviter toute collision si VeilleurHero est monté.
+function VeilleurGlyph(){
+  return(
+    <svg viewBox="-96 -106 192 168" width="112" height="98" style={{display:"block"}} aria-hidden="true">
+      <defs>
+        <radialGradient id="evcHalo" cx="50%" cy="50%" r="50%">
+          <stop offset="0" stopColor="#9a7cff" stopOpacity=".85"/><stop offset=".5" stopColor="#6a2f9e" stopOpacity=".25"/><stop offset="1" stopColor="#6a2f9e" stopOpacity="0"/>
+        </radialGradient>
+        <radialGradient id="evcIris" cx="40%" cy="34%" r="74%">
+          <stop offset="0" stopColor="#aaffe0"/><stop offset=".5" stopColor="#34e0b0"/><stop offset="1" stopColor="#0c7a52"/>
+        </radialGradient>
+        <linearGradient id="evcLit" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#fff0d4"/><stop offset="1" stopColor="#ffc59a"/></linearGradient>
+        <filter id="evcGlow"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <circle r="86" fill="url(#evcHalo)"/>
+      <g stroke="#120821" strokeWidth="6.5" strokeLinejoin="round">
+        <rect x="-78" y="-14" width="26" height="34" rx="5" fill="#1c5a78" transform="rotate(-10 -65 3)"/>
+        <rect x="52" y="-14" width="26" height="34" rx="5" fill="#123f55" transform="rotate(10 65 3)"/>
+        <line x1="-52" y1="3" x2="-34" y2="3"/><line x1="52" y1="3" x2="34" y2="3"/>
+        <ellipse cx="0" cy="2" rx="50" ry="48" fill="#5a2f73"/>
+        <path d="M-50 2 a50 48 0 0 1 34 -44 q26 -6 44 14 q-30 -16 -78 30Z" fill="url(#evcLit)" stroke="none"/>
+        <path d="M-50 2 a50 48 0 0 1 30 -42" fill="none" stroke="#ffb24d" strokeWidth="4"/>
+      </g>
+      <g filter="url(#evcGlow)">
+        <circle cx="0" cy="2" r="33" fill="#0d0b14"/><circle cx="2" cy="2" r="22" fill="url(#evcIris)"/><circle cx="9" cy="9" r="10" fill="#08121f"/><circle cx="13" cy="-4" r="4.5" fill="#eafff8"/>
+      </g>
+      <path d="M0 -46 q8 -22 -3 -36" stroke="#120821" strokeWidth="6" fill="none"/>
+      <circle cx="-3" cy="-86" r="11" fill="#ffd23f" stroke="#120821" strokeWidth="4"/>
+    </svg>
+  )
+}
+
+// Pop-up d'INTENTION DE SORTIE « Ta semaine est prête » (A/B exit_veilleur, variant).
+// Le Veilleur tend au partant son calendrier 7 jours : AUJ+DEM = vraies pastilles de
+// statut (preuve), 5 jours verrouillés → l'email les ouvre + brief 7h + alerte J-1.
+// Données RÉELLES (forecast = sargData.weekly[sargId].forecast). Cadenas = protège de
+// vrais services existants, JAMAIS de fausse rareté. onClose(reason) : "dismiss" = snooze.
+function ExitVeilleurCard({lang,pick,forecast,onClose,trigger="exit"}){
+  const[email,setEmail]=useState("")
+  const[done,setDone]=useState(false)
+  const INK="#0D0B14"
+  const STC={clean:"#1c8f4e",moderate:"#B87A00",avoid:"#e8322a"}
+  const now=new Date()
+  const WD=lang==="en"?["SUN","MON","TUE","WED","THU","FRI","SAT"]:lang==="es"?["DOM","LUN","MAR","MIÉ","JUE","VIE","SÁB"]:["DIM","LUN","MAR","MER","JEU","VEN","SAM"]
+  const dayLabel=i=>i===0?_t(lang,"AUJ","TODAY","HOY"):i===1?_t(lang,"DEM","TMRW","MAÑ"):WD[new Date(now.getFullYear(),now.getMonth(),now.getDate()+i).getDay()]
+  const dateNum=i=>new Date(now.getFullYear(),now.getMonth(),now.getDate()+i).getDate()
+  const statusAt=i=>i===0?((forecast&&forecast[0])||(pick&&pick.status)):(forecast&&forecast[i])||null
+  const submit=e=>{
+    e.preventDefault()
+    if(!email||!email.includes("@"))return
+    s("sg_email",email)
+    submitLead(email,"exit_intent")
+    track("sg_exitcap_submit",{trigger,beach_id:pick&&pick.id,score:pick&&pick.score,variant:"veilleur"})
+    setDone(true)
+    setTimeout(()=>{try{onClose&&onClose("submitted")}catch(_){}}, 2300)
+  }
+  const hl={background:"#FFD23F",borderRadius:6,padding:"0 .12em"}
+  return(
+    <div onClick={e=>{if(e.target===e.currentTarget)onClose&&onClose("dismiss")}}
+      style={{position:"fixed",inset:0,zIndex:1098,display:"flex",alignItems:"center",justifyContent:"center",padding:16,
+        background:"radial-gradient(135% 105% at 50% 12%, rgba(11,8,20,.30), rgba(11,8,20,.62) 70%)",
+        backdropFilter:"blur(3px)",WebkitBackdropFilter:"blur(3px)",animation:"fadeIn .2s ease both"}}>
+      <div style={{position:"relative",width:430,maxWidth:"96%"}}>
+        <div aria-hidden="true" style={{position:"absolute",top:-72,left:"50%",transform:"translateX(-50%)",zIndex:0,width:112,pointerEvents:"none"}}>
+          <VeilleurGlyph/>
+        </div>
+        <div style={{position:"relative",zIndex:1,background:"#FDFCF7",border:"2.6px solid "+INK,borderRadius:20,
+          boxShadow:"6px 6px 0 "+INK,padding:"46px 22px 18px",overflow:"hidden",
+          animation:"slideUp .38s cubic-bezier(.34,1.56,.64,1) both"}}>
+          <div aria-hidden="true" style={{position:"absolute",top:0,left:0,right:0,height:12,background:"linear-gradient(90deg,#155A5A,#C97E3A 55%,#F2B05E)"}}/>
+          <button onClick={()=>onClose&&onClose("dismiss")} aria-label={_t(lang,"Fermer","Close","Cerrar")}
+            style={{position:"absolute",top:14,right:14,width:26,height:26,borderRadius:"50%",border:"2px solid "+INK,background:"#FDFCF7",color:INK,cursor:"pointer",fontSize:15,lineHeight:1,padding:0}}>×</button>
+          {done?(
+            <div style={{textAlign:"center",padding:"6px 0"}}>
+              <div style={{display:"flex",justifyContent:"center",gap:6,marginBottom:13}}>
+                {[0,1,2,3,4,5,6].map(i=>(
+                  <div key={i} style={{width:30,height:30,borderRadius:8,border:"2px solid "+INK,boxShadow:"2px 2px 0 "+INK,background:STC[statusAt(i)]||"#CFC4A6"}}/>
+                ))}
+              </div>
+              <div style={{fontFamily:"'Anton',sans-serif",fontSize:23,color:INK,textTransform:"uppercase",lineHeight:1,marginBottom:6}}>
+                {_t(lang,"C'est verrouillé. Je veille.","Locked in. I'm watching.","Listo. Yo vigilo.")}
+              </div>
+              <div style={{fontFamily:"'Comic Neue',sans-serif",fontSize:13.5,color:"#3a2f1a"}}>
+                {_t(lang,"Demain 7h, le bon plan arrive. ✅","Tomorrow 7am, your plan lands. ✅","Mañana 7h llega tu plan. ✅")}
+              </div>
+            </div>
+          ):(<>
+            <div style={{display:"inline-block",background:INK,color:"#FDFCF7",fontFamily:"'Comic Neue',sans-serif",fontWeight:700,fontSize:11,letterSpacing:".08em",textTransform:"uppercase",padding:"4px 11px",borderRadius:7,marginBottom:11}}>
+              {_t(lang,"Le Veilleur a préparé ta semaine","The Veilleur prepped your week","El Vigía preparó tu semana")}
+            </div>
+            <div style={{fontFamily:"'Anton',sans-serif",color:INK,fontSize:28,lineHeight:.94,letterSpacing:"-.015em",textTransform:"uppercase",marginBottom:13}}>
+              {_t(lang,<>Ta <span style={hl}>semaine</span> de plages propres est prête.</>,<>Your <span style={hl}>week</span> of clean beaches is ready.</>,<>Tu <span style={hl}>semana</span> de playas limpias está lista.</>)}
+            </div>
+            {pick&&pick.score!=null&&(
+              <div style={{display:"flex",alignItems:"center",gap:9,background:"#fff",border:"1.6px solid "+INK,borderRadius:11,padding:"8px 11px",marginBottom:13}}>
+                <span style={{width:11,height:11,borderRadius:"50%",background:STC[pick.status]||"#9aa0a8",border:"1.5px solid "+INK,flexShrink:0}}/>
+                <span style={{flex:1,fontFamily:"'Comic Neue',sans-serif",fontSize:13,color:"#3a2f1a",lineHeight:1.2,minWidth:0}}>
+                  {_t(lang,"Aujourd'hui la plus propre","Today's cleanest","La más limpia hoy")} : <b>{pick.name}</b>
+                </span>
+                <span style={{fontFamily:"'JetBrains Mono',monospace",fontWeight:700,fontSize:16,color:STC[pick.status]||INK,whiteSpace:"nowrap"}}>{pick.score}<span style={{fontSize:10,color:"#6b6478"}}>/100</span></span>
+              </div>
+            )}
+            <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:5,marginBottom:7}}>
+              {[0,1,2,3,4,5,6].map(i=>{
+                const unlocked=i<=1
+                const c=unlocked?(STC[statusAt(i)]||"#9aa0a8"):"#CFC4A6"
+                return(
+                  <div key={i} style={{textAlign:"center"}}>
+                    <div style={{fontFamily:"'Anton',sans-serif",fontSize:11,color:unlocked?INK:"#9a8f7a",marginBottom:3}}>{dayLabel(i)}</div>
+                    <div style={{height:38,borderRadius:9,border:"2px solid "+INK,boxShadow:unlocked?"2px 2px 0 "+INK:"none",background:c,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      {unlocked?<span style={{fontFamily:"'Anton',sans-serif",fontSize:14,color:"#FDFCF7"}}>{dateNum(i)}</span>:<span style={{color:"#6b5f3f",fontSize:13}}>🔒</span>}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+            <div style={{fontFamily:"'Comic Neue',sans-serif",fontSize:11.5,color:"#6b6478",marginBottom:12}}>
+              {_t(lang,"5 jours déverrouillés par e-mail · confiance affichée honnêtement","5 days unlocked by email · confidence shown honestly","5 días por email · confianza mostrada con honestidad")}
+            </div>
+            <div style={{fontFamily:"'Comic Neue',sans-serif",fontSize:14,color:"#3a2f1a",lineHeight:1.35,marginBottom:12}}>
+              {_t(lang,<>Demain ce sera peut-être une <b>autre</b> plage. Reçois le bon plan chaque matin à <b style={{color:"#E8A800"}}>7h</b>.</>,<>Tomorrow it may be a <b>different</b> beach. Get the plan every morning at <b style={{color:"#E8A800"}}>7am</b>.</>,<>Mañana quizá sea <b>otra</b> playa. Recibe el plan cada mañana a las <b style={{color:"#E8A800"}}>7h</b>.</>)}
+            </div>
+            <form onSubmit={submit}>
+              <div style={{display:"flex",alignItems:"center",gap:8,background:"#fff",border:"2px solid "+INK,borderRadius:12,padding:"3px 4px 3px 12px",marginBottom:10}}>
+                <span style={{fontSize:16,flexShrink:0}}>📬</span>
+                <input type="email" inputMode="email" autoComplete="email" required value={email} onChange={e=>setEmail(e.target.value)}
+                  placeholder={_t(lang,"ton@email.com","your@email.com","tu@email.com")}
+                  style={{flex:1,minWidth:0,border:"none",outline:"none",background:"transparent",fontFamily:"'Comic Neue',sans-serif",fontSize:16,color:INK,padding:"9px 0"}}/>
+              </div>
+              <button type="submit" style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:8,
+                background:"linear-gradient(158deg,#FFE47A,#FFC72C 40%,#E89400)",color:"#1a1300",border:"2.4px solid "+INK,borderRadius:100,
+                boxShadow:"5px 5px 0 "+INK,fontFamily:"'Anton',sans-serif",fontSize:17,textTransform:"uppercase",padding:"12px 18px",cursor:"pointer"}}>
+                🔓 {_t(lang,"Déverrouille ma semaine","Unlock my week","Desbloquea mi semana")}
+              </button>
+            </form>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:7,fontFamily:"'Comic Neue',sans-serif",fontSize:11.5,color:"#6b6478",marginTop:11}}>
+              🔔 <span>{_t(lang,"Alerte la veille · 1 brief/matin à 7h · stop quand tu veux","Day-before alert · 1 brief each morning at 7am · stop anytime","Aviso la víspera · 1 brief cada mañana a las 7h · cancela cuando quieras")}</span>
+            </div>
+            <div style={{textAlign:"center",marginTop:9}}>
+              <button onClick={()=>onClose&&onClose("dismiss")} style={{background:"none",border:"none",fontFamily:"'Comic Neue',sans-serif",fontSize:12,color:"#9a8f7a",textDecoration:"underline",textUnderlineOffset:2,cursor:"pointer"}}>
+                {_t(lang,"Non merci, je pars sans","No thanks, I'll leave without it","No gracias, me voy sin él")}
+              </button>
+            </div>
+          </>)}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function InlineEmailCapture({lang,beachName,source="inline_beach"}){
   const[email,setEmail]=useState("")
   const[submitted,setSubmitted]=useState(false)
@@ -12812,19 +12963,37 @@ export default function App(){
   // vue carte, hero fermé, pas de fiche/paywall ouvert, pas premium, 1×/session.
   const[showGameToast,setShowGameToast]=useState(false)
   const[showExitCap,setShowExitCap]=useState(false)
+  const[showExitVeilleur,setShowExitVeilleur]=useState(false)
   // A/B exitcap : capture email de sortie (50/50, override ?exitcap=1/0)
   const exitcapOn=useMemo(()=>{try{const q=window.location.search;if(/[?&]exitcap=1/.test(q))return true;if(/[?&]exitcap=0/.test(q))return false;return abVariant("exitcap",["control","email"],[.5,.5])==="email"}catch(_){return false}},[])
+  // A/B exit_veilleur : sur EXIT-INTENT, la carte Veilleur « ta semaine est prête »
+  // (variant) remplace le jeu (control). 50/50, override ?exit_veilleur=1/0.
+  const exitVeilleurOn=useMemo(()=>{try{const q=window.location.search;if(/[?&]exit_veilleur=1/.test(q))return true;if(/[?&]exit_veilleur=0/.test(q))return false;return abVariant("exit_veilleur",["control","veilleur"],[.5,.5])==="veilleur"}catch(_){return false}},[])
+  // Calendrier 7 jours RÉEL pour la carte Veilleur : statuts forecast de exitcapPick.
+  const exitcapForecast=useMemo(()=>{
+    if(!exitcapPick||!sargData?.weekly)return null
+    const sargId=IS_NEW_REGION?exitcapPick.id:BEACH_TO_SARG[exitcapPick.id]
+    const w=sargId&&sargData.weekly[sargId]
+    if(!w||!Array.isArray(w.forecast))return null
+    return w.forecast.slice(0,7).map(f=>f&&f.status)
+  },[exitcapPick,sargData])
   const gameGateRef=useRef({})
-  useEffect(()=>{gameGateRef.current={sheet:!!selectedBeach,premium:showPremium||isPremium,view,hero:showHero||showPrevLanding,exitcapPick,exitcapOn}})
+  useEffect(()=>{gameGateRef.current={sheet:!!selectedBeach,premium:showPremium||isPremium,view,hero:showHero||showPrevLanding,exitcapPick,exitcapOn,exitVeilleurOn}})
   useEffect(()=>{
     let idleT=null
     const fire=trigger=>{
       const gate=gameGateRef.current
       if(gate.sheet||gate.premium||gate.hero||gate.view!=="map")return
-      // AFK + exit-intent (idle/exit/hidden/scrollup) → SargaCatch (le jeu).
-      // La capture email reste la surface PAR DÉFAUT, en contexte : InlineEmailCapture
-      // sur les fiches plage + capture hero. On ne montre PAS d'email sur ce déclencheur
-      // de sortie (décision fondateur 21/06 : défaut = email, afk/exit-intent = jeu).
+      // HARMONIE par intention (décision fondateur 22/06) :
+      // • EXIT-INTENT (exit/hidden/scrollup) + pas encore d'email → carte Veilleur
+      //   « ta semaine est prête » (A/B exit_veilleur) : le partant est sinon perdu à
+      //   100%, on le capte avec un vrai cadeau (calendrier 7j + brief 7h + alerte J-1).
+      // • IDLE/AFK, ou partant déjà capté, ou bras control → SargaCatch (le jeu).
+      const isExit=trigger!=="idle"
+      if(isExit&&gate.exitVeilleurOn&&gate.exitcapPick&&!g("sg_email",null)&&g("sg_exitcap_snooze",0)<=Date.now()){
+        try{if(sessionStorage.getItem("sg_exitcap"))return;sessionStorage.setItem("sg_exitcap","1")}catch(_){return}
+        setShowExitVeilleur(true);track("sg_exitcap_open",{trigger,variant:"veilleur"});return
+      }
       try{
         if(sessionStorage.getItem("sg_game_toast"))return
         sessionStorage.setItem("sg_game_toast","1")
@@ -13784,6 +13953,12 @@ export default function App(){
             <ExitEmailBand lang={lang} pick={exitcapPick}
               onClose={()=>{setShowExitCap(false);s("sg_exitcap_snooze",Date.now()+12096e5);track("sg_exitcap_dismiss",{})}}/>
           </div>
+        )}
+        {/* CARTE VEILLEUR D'INTENTION DE SORTIE — « ta semaine est prête » (A/B
+            exit_veilleur). Capture email-cadeau pour les partants ; le jeu reste l'idle. */}
+        {showExitVeilleur&&!showHero&&!showPrevLanding&&!selectedBeach&&!showPremium&&view==="map"&&exitcapPick&&(
+          <ExitVeilleurCard lang={lang} pick={exitcapPick} forecast={exitcapForecast} trigger="exit"
+            onClose={reason=>{setShowExitVeilleur(false);if(reason!=="submitted"){s("sg_exitcap_snooze",Date.now()+12096e5);track("sg_exitcap_dismiss",{})}}}/>
         )}
         {/* SARGACATCH TOAST — petit, coin bas, jamais bloquant (z 1090 :
             au-dessus des contrôles carte, sous le paywall z1100). */}
