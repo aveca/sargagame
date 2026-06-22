@@ -12966,9 +12966,10 @@ export default function App(){
   const[showExitVeilleur,setShowExitVeilleur]=useState(false)
   // A/B exitcap : capture email de sortie (50/50, override ?exitcap=1/0)
   const exitcapOn=useMemo(()=>{try{const q=window.location.search;if(/[?&]exitcap=1/.test(q))return true;if(/[?&]exitcap=0/.test(q))return false;return abVariant("exitcap",["control","email"],[.5,.5])==="email"}catch(_){return false}},[])
-  // A/B exit_veilleur : sur EXIT-INTENT, la carte Veilleur « ta semaine est prête »
-  // (variant) remplace le jeu (control). 50/50, override ?exit_veilleur=1/0.
-  const exitVeilleurOn=useMemo(()=>{try{const q=window.location.search;if(/[?&]exit_veilleur=1/.test(q))return true;if(/[?&]exit_veilleur=0/.test(q))return false;return abVariant("exit_veilleur",["control","veilleur"],[.5,.5])==="veilleur"}catch(_){return false}},[])
+  // Carte Veilleur de sortie = FEATURE PRINCIPALE, pas un A/B (décision fondateur 22/06 :
+  // « c'est une main feature, on l'ab test pas »). ON pour 100% des partants éligibles ;
+  // ?exit_veilleur=0 la désactive (holdout/test ponctuel), ?exit_veilleur=1 reste un no-op ON.
+  const exitVeilleurOn=useMemo(()=>{try{return !/[?&]exit_veilleur=0/.test(window.location.search)}catch(_){return true}},[])
   // Calendrier 7 jours RÉEL pour la carte Veilleur : statuts forecast de exitcapPick.
   const exitcapForecast=useMemo(()=>{
     if(!exitcapPick||!sargData?.weekly)return null
@@ -12990,9 +12991,9 @@ export default function App(){
       if(gate.sheet||gate.premium||gate.hero||gate.view!=="map")return
       // HARMONIE par intention (décision fondateur 22/06) :
       // • EXIT-INTENT (exit/hidden/scrollup) + pas encore d'email → carte Veilleur
-      //   « ta semaine est prête » (A/B exit_veilleur) : le partant est sinon perdu à
-      //   100%, on le capte avec un vrai cadeau (calendrier 7j + brief 7h + alerte J-1).
-      // • IDLE/AFK, ou partant déjà capté, ou bras control → SargaCatch (le jeu).
+      //   « ta semaine est prête » (feature 100%, off via ?exit_veilleur=0) : le partant
+      //   est sinon perdu à 100%, on le capte avec un vrai cadeau (calendrier 7j + brief).
+      // • IDLE/AFK, ou partant déjà capté → SargaCatch (le jeu).
       const isExit=trigger!=="idle"
       if(isExit&&gate.exitVeilleurOn&&gate.exitcapPick&&!g("sg_email",null)&&g("sg_exitcap_snooze",0)<=Date.now()){
         try{if(sessionStorage.getItem("sg_exitcap"))return;sessionStorage.setItem("sg_exitcap","1")}catch(_){return}
