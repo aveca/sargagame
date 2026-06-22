@@ -13012,6 +13012,18 @@ export default function App(){
     // Exit-intent desktop : souris qui sort par le haut de la fenêtre
     const exitH=e=>{if(e.clientY<=0&&window.matchMedia("(min-width:900px)").matches)fire("exit")}
     document.addEventListener("mouseleave",exitH)
+    // Exit-intent desktop RENFORCÉ : remontée RAPIDE de la souris vers le sommet (flick)
+    // AVANT de franchir le bord → rattrape les partants qui filent vers les onglets / le ×.
+    // Seuils serrés (proche du haut + vélocité élevée) pour éviter les faux positifs quand
+    // on monte juste vers la barre de recherche. La garde session de fire() = 1×/session.
+    let _mvy=0,_mvt=0
+    const exitFlick=e=>{
+      if(!window.matchMedia("(min-width:900px)").matches)return
+      const now=Date.now(),dy=e.clientY-_mvy,dt=now-_mvt
+      if(dt>0&&dt<140&&dy<-8&&(-dy/dt)>0.9&&e.clientY<110)fire("exit")
+      _mvy=e.clientY;_mvt=now
+    }
+    document.addEventListener("mousemove",exitFlick,{passive:true})
     // Mobile : retour d'onglet (visibilitychange) + remontée rapide (scroll-up flick)
     const onVis=()=>{if(document.visibilityState==="hidden"&&window.matchMedia("(max-width:899px)").matches)fire("hidden")}
     document.addEventListener("visibilitychange",onVis)
@@ -13024,7 +13036,7 @@ export default function App(){
       lastY=y;lastT=now
     }
     window.addEventListener("scroll",onScroll,{passive:true})
-    return()=>{clearTimeout(idleT);acts.forEach(a=>window.removeEventListener(a,reset));document.removeEventListener("mouseleave",exitH);document.removeEventListener("visibilitychange",onVis);window.removeEventListener("scroll",onScroll)}
+    return()=>{clearTimeout(idleT);acts.forEach(a=>window.removeEventListener(a,reset));document.removeEventListener("mouseleave",exitH);document.removeEventListener("mousemove",exitFlick);document.removeEventListener("visibilitychange",onVis);window.removeEventListener("scroll",onScroll)}
   },[])
 
   // Deep-link: /plages/:slug → auto-open beach sheet OR zoom to zone MID
