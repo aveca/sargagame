@@ -6345,6 +6345,324 @@ function B2BModal({lang,onClose}){
   )
 }
 
+// ── WorldPaywall — skin « continuité du monde SVG » (A/B pw_world). Jury winner.
+// MÊME signature de props que ComicPaywall → ZÉRO logique de paiement ici, on réutilise
+// à l'identique ses dérivations prix (pMo/pYr/eqMo/perDay/ctaSub, devise-aware) + le câblage
+// (onStart/setPlan/plan/effectivePlan/onAlready/onB2B/onClose). Le paywall PROLONGE l'univers
+// de la carte : même mer golden-hour, même langage comic, même Veilleur. On VEND la prévision
+// en la MONTRANT (aperçu 7 jours, Auj/Dem révélés verts, J+2…J+6 verrouillés). Classes .pww-*
+// pour ne pas collisionner avec ComicPaywall (.pwx-*). reduced-motion respecté (tableau, pas
+// aquarium). Asset validé : design/wow-candidates/paywall-world-continuity.html.
+function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxStatus,cleanCount,totalCount,recordProof,allCalm,pwCalm,seasonMsg,plan,setPlan,effectivePlan,hasAnnual,onStart,onAlready,onClose,onB2B,onSeason}){
+  // Verdict plage (depuis le contexte d'ouverture) → loc affichée dans l'aperçu 7 jours.
+  const ST=ctxStatus||(beach&&beach.status)||null
+  const ctxLoc=ctxName||topName||null
+  // Prix — réutilise À L'IDENTIQUE les dérivations de ComicPaywall (aucune divergence,
+  // aucun hardcode devise). pMo/pYr = cartes plan, eqMo = « soit X/mois » sous l'annuel,
+  // ctaSub = 1re sous-ligne CTA, perDay = 2e sous-ligne (« moins qu'un café »).
+  const pMo=REGION_PAY?PRICE_MO:(lang==="en"?"€4.99":"4,99 €")
+  const pYr=REGION_PAY?PRICE_YR:(lang==="en"?"€39.99":"39,99 €")
+  const eqMo=(()=>{const raw=REGION_PAY?PRICE_YR:"39.99";const n=parseFloat(String(raw).replace(/[^0-9.,]/g,"").replace(",","."));if(!n)return null;const sym=(String(raw).match(/[€$£]/)||["€"])[0];const e=(n/12).toFixed(2).replace(".",lang==="fr"?",":".");return _t(lang,`soit ${e} ${sym}/mois`,`${sym}${e}/mo`,`${sym}${e}/mes`)})()
+  // « par jour » dérivé du prix réellement présélectionné (annuel si dispo, sinon mensuel).
+  const perDay=(()=>{
+    const useYr=effectivePlan==="annual"
+    const raw=useYr?(REGION_PAY?PRICE_YR:"39.99"):(REGION_PAY?PRICE_MO:"4.99")
+    const n=parseFloat(String(raw).replace(/[^0-9.,]/g,"").replace(",","."));if(!n)return null
+    const sym=(String(raw).match(/[€$£]/)||["€"])[0]
+    const per=(n/(useYr?365:30))
+    const d=per.toFixed(2).replace(".",lang==="fr"?",":".")
+    return _t(lang,`soit ${d} ${sym}/jour · moins qu'un café`,`just ${sym}${d}/day · less than a coffee`,`solo ${sym}${d}/día · menos que un café`)
+  })()
+  // 1re sous-ligne CTA — suit effectivePlan (mensuel ↔ annuel), no-trial partout.
+  const ctaSub=NO_TRIAL
+    ?_t(lang,`${effectivePlan==="annual"?pYr+"/an":pMo+"/mois"} · annulable en 2 clics`,`${effectivePlan==="annual"?pYr+"/yr":pMo+"/mo"} · cancel anytime`,`${effectivePlan==="annual"?pYr+"/año":pMo+"/mes"} · cancela cuando quieras`)
+    :_t(lang,"7 jours offerts, puis "+(effectivePlan==="annual"?pYr+"/an":pMo+"/mois"),"7 days free, then "+(effectivePlan==="annual"?pYr+"/yr":pMo+"/mo"),"7 días gratis, luego "+(effectivePlan==="annual"?pYr+"/año":pMo+"/mes"))
+  // Cadenas SVG réutilisé (jours verrouillés + bandeau + footer secure).
+  const Lock=({s})=>(<svg viewBox="0 0 24 24" width={s} height={s} fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>)
+  // Aperçu 7 jours = STATIQUE / illustratif (pas de fausse donnée live), Auj/Dem verts.
+  const dayNames=lang==="en"?["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]:lang==="es"?["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"]:["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"]
+  const today=new Date().getDay() // 0=Dim
+  const dn=i=>{if(i===0)return _t(lang,"Auj","Today","Hoy");if(i===1)return _t(lang,"Dem","Tom","Mañ");return dayNames[(today+i)%7]}
+  const previewDots=["ok","ok","mod","bad","bad","mod","ok"] // illustratif
+  const planBtn=(key,label,price,unit,slam,eq)=>(
+    <button type="button" onClick={()=>{setPlan(key);try{track("sg_plan_toggle",{plan:key,skin:"world"})}catch(_){}}}
+      className={"pww-plan"+(plan===key?" on":"")}>
+      {slam&&<span className="pww-slam" aria-hidden="true">
+        <svg viewBox="0 0 50 50"><path d="M25 1 L31 9 L41 6 L40 17 L49 22 L42 30 L47 40 L36 40 L31 49 L25 42 L19 49 L14 40 L3 40 L8 30 L1 22 L10 17 L9 6 L19 9 Z" fill="#E8522A" stroke="#0D0D0D" strokeWidth="2.5" strokeLinejoin="round"/></svg>
+        <span>{slam}</span>
+      </span>}
+      <span className="pww-selck" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      <span className="pww-pn">{label}</span>
+      <span className="pww-pr">{price}<small>/{unit}</small></span>
+      {eq?<span className="pww-eq">{eq}</span>:<span className="pww-none">—</span>}
+    </button>
+  )
+  return(<>
+    <style>{`
+      .pww-wrap{--bg:#FDFCF7;--gold:#E8A800;--goldL:#FFC72C;--goldLL:#FFE47A;--teal:#009E8E;--tealL:#1EC8B0;--green:#22C55E;--coral:#E8522A;--ink:#0D0D0D;--mid:#686868;
+        font-family:"Bricolage Grotesque",system-ui,sans-serif;color:var(--ink);margin:-28px -24px -20px;position:relative;
+        background:var(--bg);
+        background-image:radial-gradient(rgba(13,13,13,.045) 1.1px,transparent 1.2px) 0 0/7px 7px,radial-gradient(rgba(13,13,13,.045) 1.1px,transparent 1.2px) 3.5px 3.5px/7px 7px}
+      .pww-anton{font-family:"AntonLC","Anton",Impact,"Arial Narrow",sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:-.02em}
+      /* HERO */
+      .pww-hero{position:relative;height:150px;border-bottom:3px solid var(--ink);overflow:hidden}
+      .pww-hero>svg.pww-sc{position:absolute;inset:0;width:100%;height:100%;display:block}
+      .pww-eyebrow{position:absolute;left:12px;top:12px;z-index:4;font-size:10px;letter-spacing:1.3px;padding:4px 9px;border-radius:6px;color:var(--ink);background:var(--goldL);border:2px solid var(--ink);box-shadow:2px 2px 0 var(--ink)}
+      .pww-season{position:absolute;right:12px;top:14px;z-index:4;font-size:9.5px;font-weight:800;color:#fff;background:rgba(13,13,13,.62);border:1.5px solid rgba(255,255,255,.85);border-radius:20px;padding:3px 9px;letter-spacing:.3px}
+      .pww-veil{position:absolute;left:50%;bottom:-2px;transform:translateX(-50%);z-index:3;filter:drop-shadow(2px 3px 0 rgba(13,13,13,.45))}
+      .pww-vbubble{position:absolute;right:10px;top:30px;z-index:5;max-width:150px;background:#fff;border:2.5px solid var(--ink);border-radius:14px;padding:7px 10px;font-size:11px;font-weight:700;line-height:1.28;color:var(--ink);box-shadow:3px 3px 0 rgba(13,13,13,.9)}
+      .pww-vbubble b{color:var(--coral)}
+      .pww-vbubble:after{content:"";position:absolute;left:24px;bottom:-12px;width:16px;height:13px;background:#fff;border-left:2.5px solid var(--ink);border-bottom:2.5px solid var(--ink);transform:skewX(-18deg)}
+      /* BODY */
+      .pww-body{position:relative;z-index:1;padding:15px 17px 16px}
+      .pww-title{font-size:30px;line-height:.96;margin:2px 0 8px;color:var(--ink);text-shadow:2px 2px 0 var(--goldLL)}
+      .pww-title em{font-style:normal;color:var(--coral);text-shadow:2px 2px 0 var(--goldLL),4px 4px 0 var(--ink)}
+      .pww-sub{font-size:13px;font-weight:600;color:#1c2c2c;margin:0 0 13px;line-height:1.32}
+      .pww-sub b{color:var(--ink)}
+      /* APERÇU 7 JOURS */
+      .pww-fcast{position:relative;border:2.5px solid var(--ink);border-radius:16px;overflow:hidden;box-shadow:4px 4px 0 var(--ink);background:#fff;margin-bottom:13px}
+      .pww-fcast-top{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:linear-gradient(180deg,#10343a,#0c272b);border-bottom:2.5px solid var(--ink)}
+      .pww-fcast-top .ttl{font-size:11px;letter-spacing:.6px;color:#fff}
+      .pww-fcast-top .loc{font-size:10px;font-weight:800;color:var(--goldL)}
+      .pww-fcast-curve{position:absolute;left:0;right:0;top:40px;height:50px;z-index:0;pointer-events:none}
+      .pww-days{position:relative;z-index:1;display:grid;grid-template-columns:repeat(7,1fr);gap:0;padding:9px 4px 10px}
+      .pww-day{text-align:center;position:relative}
+      .pww-day .ddn{font-size:8.5px;font-weight:800;color:var(--mid);text-transform:uppercase;letter-spacing:.1px}
+      .pww-day .ddot{width:16px;height:16px;border-radius:50%;border:2px solid var(--ink);margin:6px auto 4px;box-shadow:1.5px 1.5px 0 rgba(13,13,13,.22)}
+      .pww-day .dvd{font-size:7.5px;font-weight:800;color:var(--ink);line-height:1}
+      .pww-day .ddot.ok{background:var(--green)}.pww-day .ddot.mod{background:var(--goldL)}.pww-day .ddot.bad{background:var(--coral)}
+      .pww-day.lock{filter:saturate(.22);opacity:.92}
+      .pww-day.lock .ddot{background:repeating-linear-gradient(45deg,#cfcabb,#cfcabb 3px,#e4e0d4 3px,#e4e0d4 6px)}
+      .pww-day.lock .dvd{display:flex;justify-content:center;color:#9a9484}
+      .pww-lockdiv{position:absolute;z-index:2;top:38px;bottom:9px;left:calc(2/7*100%);border-left:2.5px dashed var(--ink);opacity:.7;pointer-events:none}
+      .pww-lockcta{position:relative;z-index:3;display:flex;align-items:center;justify-content:center;gap:7px;padding:7px 10px;background:linear-gradient(180deg,var(--goldLL),var(--goldL));border-top:2.5px solid var(--ink);color:var(--ink)}
+      .pww-lockcta b{font-size:10.5px;font-weight:800;color:var(--ink);letter-spacing:.2px}
+      /* PERKS */
+      .pww-perks{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+      .pww-perk{display:flex;align-items:center;gap:10px;background:#fff;border:2.5px solid var(--ink);border-radius:13px;padding:9px 12px;box-shadow:3px 3px 0 var(--ink)}
+      .pww-perk .pic{flex:0 0 auto;width:34px;height:34px;border-radius:9px;border:2.5px solid var(--ink);display:grid;place-items:center;box-shadow:2px 2px 0 var(--ink)}
+      .pww-perk.a .pic{background:var(--goldLL)}.pww-perk.b .pic{background:var(--tealL)}.pww-perk.c .pic{background:#ffd0c2}
+      .pww-perk b{display:block;font-size:13px;font-weight:800;color:var(--ink);line-height:1.15}
+      .pww-perk em{display:block;font-style:normal;font-size:11px;font-weight:600;color:var(--mid);margin-top:1px;line-height:1.25}
+      .pww-proof{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 0 15px;font-size:11px;font-weight:700;color:#1c2c2c;text-align:center}
+      .pww-proof .pls{width:8px;height:8px;border-radius:50%;background:var(--green);flex:0 0 auto;box-shadow:0 0 0 0 rgba(34,197,94,.5);animation:pwwPulse 2.4s infinite}
+      @keyframes pwwPulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.45)}70%{box-shadow:0 0 0 7px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+      /* PLANS */
+      .pww-plans{display:flex;gap:9px;margin-bottom:12px}
+      .pww-plan{flex:1;border:2.5px solid var(--ink);border-radius:13px;padding:13px 9px 11px;cursor:pointer;position:relative;text-align:center;background:#fff;color:var(--ink);box-shadow:2px 2px 0 var(--ink);font-family:inherit;forced-color-adjust:none;transition:transform .09s,box-shadow .09s,background .12s}
+      .pww-plan:active{transform:translate(1px,1px)}
+      .pww-plan.on{background:linear-gradient(180deg,var(--goldLL),var(--goldL));box-shadow:0 4px 0 var(--ink)}
+      .pww-plan .pww-pn{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--ink)}
+      .pww-plan .pww-pr{display:block;margin-top:3px;font-family:"AntonLC","Anton",Impact,sans-serif;font-size:21px;line-height:1}
+      .pww-plan .pww-pr small{font-size:11px;font-weight:600;letter-spacing:0;font-family:"Bricolage Grotesque",system-ui,sans-serif}
+      .pww-plan .pww-eq{display:block;font-size:9.5px;font-weight:800;color:#8a6a12;margin-top:3px}
+      .pww-plan.on .pww-eq{color:#7a5a06}
+      .pww-plan .pww-none{display:block;font-size:9.5px;font-weight:700;color:transparent;margin-top:3px;user-select:none}
+      .pww-slam{position:absolute;top:-15px;right:-13px;z-index:5;width:50px;height:50px;display:grid;place-items:center;transform:rotate(-14deg);pointer-events:none}
+      .pww-slam svg{position:absolute;inset:0;width:100%;height:100%}
+      .pww-slam span{position:relative;font-family:"AntonLC","Anton",Impact,sans-serif;font-size:14px;color:#fff;line-height:.9;text-align:center;text-shadow:1.5px 1.5px 0 rgba(0,0,0,.35);letter-spacing:.2px}
+      .pww-selck{position:absolute;top:7px;left:7px;width:19px;height:19px;border-radius:50%;border:2.5px solid var(--ink);background:var(--goldL);display:grid;place-items:center;box-shadow:1.5px 1.5px 0 var(--ink);opacity:0;transform:scale(.55);transition:opacity .12s,transform .12s}
+      .pww-selck svg{width:11px;height:11px;display:block}
+      .pww-plan.on .pww-selck{opacity:1;transform:scale(1)}
+      /* CTA */
+      .pww-cta{display:block;width:100%;border:3px solid var(--ink);border-radius:15px;padding:14px 16px 13px;cursor:pointer;font-family:inherit;text-align:center;background:linear-gradient(180deg,var(--goldLL) 0%,var(--goldL) 55%,var(--gold) 100%);color:var(--ink);box-shadow:0 6px 0 var(--ink),0 13px 22px rgba(13,13,13,.34);transition:transform .08s,box-shadow .08s}
+      .pww-cta:active{transform:translateY(5px);box-shadow:0 1px 0 var(--ink),0 4px 10px rgba(13,13,13,.3)}
+      .pww-cta .big{display:block;font-size:18px;line-height:1.02}
+      .pww-cta .s1{display:block;font-size:12px;font-weight:800;margin-top:5px}
+      .pww-cta .s2{display:block;font-size:10.5px;font-weight:700;color:#6a5208;margin-top:1px}
+      /* TRUST */
+      .pww-trust{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:13px}
+      .pww-tc{background:#fff;border:2.5px solid var(--ink);border-radius:12px;padding:8px 5px;text-align:center;box-shadow:2px 2px 0 var(--ink)}
+      .pww-tc .ic{width:20px;height:20px;margin:0 auto;display:block}
+      .pww-tc b{display:block;font-size:10px;font-weight:800;color:var(--ink);margin-top:3px}
+      .pww-tc em{display:block;font-style:normal;font-size:8.5px;font-weight:700;color:var(--mid);line-height:1.2;margin-top:1px}
+      /* GARANTIE */
+      .pww-guar{display:flex;align-items:center;gap:10px;margin-top:12px;padding:10px 12px;border-radius:13px;background:rgba(34,197,94,.13);border:2.5px solid var(--green);box-shadow:3px 3px 0 var(--ink)}
+      .pww-guar .gic{flex:0 0 auto;width:34px;height:34px;border-radius:50%;background:var(--green);border:2.5px solid var(--ink);display:grid;place-items:center;box-shadow:1.5px 1.5px 0 var(--ink)}
+      .pww-guar .gic svg{width:18px;height:18px;display:block}
+      .pww-guar b{display:block;font-size:12px;font-weight:800;color:var(--ink)}
+      .pww-guar em{display:block;font-style:normal;font-size:10.5px;font-weight:600;color:#1f5132;margin-top:1px;line-height:1.3}
+      /* LIENS */
+      .pww-links{display:flex;flex-direction:column;align-items:center;gap:9px;margin-top:14px}
+      .pww-link{background:none;border:none;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:800;color:#16323a;text-decoration:underline;text-underline-offset:2px}
+      .pww-link.b2b{color:var(--teal)}
+      .pww-season-alt{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;margin-top:12px;padding:11px 13px;border-radius:12px;cursor:pointer;border:1.5px dashed rgba(13,13,13,.34);background:rgba(13,13,13,.04);font-family:inherit;text-align:left}
+      .pww-secure{display:flex;align-items:center;justify-content:center;gap:5px;text-align:center;font-size:9.5px;font-weight:700;color:var(--mid);margin-top:13px;letter-spacing:.2px}
+      .pww-secure svg{width:11px;height:11px;display:block}
+      .pww-breathe{animation:pwwBreathe 6s ease-in-out infinite;transform-origin:60px 70px}
+      @keyframes pwwBreathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+      @media(prefers-reduced-motion:reduce){.pww-breathe{animation:none}.pww-proof .pls{animation:none}}
+    `}</style>
+    <div className="pww-wrap">
+      {/* HERO : la même mer golden-hour que la carte */}
+      <div className="pww-hero">
+        <svg className="pww-sc" viewBox="0 0 380 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs>
+            <linearGradient id="pwwSky" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#0B2230"/><stop offset=".42" stopColor="#155A5A"/>
+              <stop offset=".74" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/>
+            </linearGradient>
+            <linearGradient id="pwwSea" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#1A5852"/><stop offset="1" stopColor="#08251F"/>
+            </linearGradient>
+            <radialGradient id="pwwGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0" stopColor="#FFE9B0"/><stop offset="1" stopColor="#FFD884" stopOpacity="0"/>
+            </radialGradient>
+          </defs>
+          <rect width="380" height="150" fill="url(#pwwSky)"/>
+          <circle cx="276" cy="86" r="58" fill="url(#pwwGlow)"/>
+          <circle cx="276" cy="86" r="27" fill="#FFE08A"/>
+          <circle cx="276" cy="86" r="27" fill="none" stroke="#0D0D0D" strokeWidth="2.5"/>
+          <g stroke="#FFF" strokeOpacity=".22" strokeWidth="2">
+            <line x1="20" y1="30" x2="118" y2="24"/><line x1="14" y1="48" x2="92" y2="44"/><line x1="22" y1="66" x2="80" y2="64"/>
+          </g>
+          <path d="M0 100 H380 V150 H0 Z" fill="url(#pwwSea)"/>
+          <path d="M0 100 Q95 90 190 100 t190 0 V118 H0 Z" fill="#0F3D39" opacity=".7"/>
+          <g fill="#FFD884" opacity=".8">
+            <rect x="266" y="104" width="20" height="3" rx="1.5"/><rect x="262" y="112" width="28" height="3" rx="1.5"/>
+            <rect x="258" y="121" width="36" height="3.5" rx="1.5"/><rect x="252" y="131" width="48" height="4" rx="2"/>
+          </g>
+          <path d="M0 100 H380" stroke="#0D0D0D" strokeWidth="2" opacity=".55"/>
+          <g transform="translate(70,112)">
+            <path d="M-17 6 Q0 17 17 6 L13 0 H-13 Z" fill="#E8522A" stroke="#0D0D0D" strokeWidth="2"/>
+            <path d="M-13 0 H13" stroke="#0D0D0D" strokeWidth="1.5"/>
+            <line x1="0" y1="0" x2="0" y2="-16" stroke="#0D0D0D" strokeWidth="2"/>
+            <path d="M0 -16 L11 -3 L0 -3 Z" fill="#FFE47A" stroke="#0D0D0D" strokeWidth="1.6"/>
+          </g>
+        </svg>
+        <span className="pww-eyebrow pww-anton">{_t(lang,"Le Veilleur · Premium","The Watcher · Premium","El Vigía · Premium")}</span>
+        <span className="pww-season">{seasonMsg||_t(lang,"La saison est là","Season is here","La temporada está aquí")}</span>
+        <div className="pww-vbubble">{_t(lang,<>Ta plage, vérifiée chaque matin — <b>avant</b> que tu partes.</>,<>Your beach, checked every morning — <b>before</b> you leave.</>,<>Tu playa, verificada cada mañana — <b>antes</b> de que salgas.</>)}</div>
+        <span className="pww-veil">
+          <svg viewBox="0 0 120 90" width="78" height="58" aria-hidden="true">
+            <g className="pww-breathe">
+              <g stroke="#0D0D0D" strokeWidth="2.5">
+                <rect x="6" y="44" width="19" height="20" rx="2" fill="#1EC8B0"/>
+                <rect x="95" y="44" width="19" height="20" rx="2" fill="#1EC8B0"/>
+                <line x1="15.5" y1="44" x2="15.5" y2="64"/><line x1="104.5" y1="44" x2="104.5" y2="64"/>
+                <line x1="25" y1="54" x2="38" y2="54"/><line x1="95" y1="54" x2="82" y2="54"/>
+              </g>
+              <circle cx="60" cy="56" r="30" fill="#FDFCF7" stroke="#0D0D0D" strokeWidth="3"/>
+              <line x1="60" y1="26" x2="60" y2="13" stroke="#0D0D0D" strokeWidth="3"/>
+              <circle cx="60" cy="10" r="5" fill="#FFC72C" stroke="#0D0D0D" strokeWidth="2.5"/>
+              <path d="M44 52 Q60 44 76 52" fill="none" stroke="#0D0D0D" strokeWidth="3" strokeLinecap="round"/>
+              <ellipse cx="62" cy="58" rx="13" ry="9" fill="#0D0D0D"/>
+              <circle cx="64" cy="58" r="5.5" fill="#FFC72C"/>
+              <circle cx="65.5" cy="56.5" r="1.8" fill="#fff"/>
+              <path d="M49 52 Q62 49 75 53" fill="#FDFCF7"/>
+              <path d="M49 52 Q62 49 75 53" fill="none" stroke="#0D0D0D" strokeWidth="2.5" strokeLinecap="round"/>
+              <path d="M52 72 Q60 78 68 72" fill="none" stroke="#0D0D0D" strokeWidth="2.5" strokeLinecap="round"/>
+              <path d="M74 64 L104 86 L84 88 Z" fill="#FFD884" opacity=".5"/>
+            </g>
+          </svg>
+        </span>
+      </div>
+
+      {/* BODY */}
+      <div className="pww-body">
+        <h2 className="pww-title pww-anton">{_t(lang,<>Vois ta plage<br/><em>7 jours d'avance</em></>,<>See your beach<br/><em>7 days ahead</em></>,<>Ve tu playa<br/><em>7 días antes</em></>)}</h2>
+        <p className="pww-sub">{_t(lang,<>Le gratuit te dit <b>aujourd'hui</b>. Le Veilleur te montre toute ta semaine — et t'alerte le jour où ça bascule.</>,<>Free tells you <b>today</b>. The Watcher shows you your whole week — and alerts you the day it flips.</>,<>Lo gratis te dice <b>hoy</b>. El Vigía te muestra toda tu semana — y te avisa el día que cambia.</>)}</p>
+
+        {/* APERÇU PRÉVISION 7 JOURS — illustratif (Auj/Dem verts, J+2…J+6 verrouillés) */}
+        <div className="pww-fcast" aria-label={_t(lang,"Aperçu de la prévision 7 jours","7-day forecast preview","Vista previa pronóstico 7 días")}>
+          <div className="pww-fcast-top">
+            <span className="ttl pww-anton">{_t(lang,"Ta prévision · 7 jours","Your forecast · 7 days","Tu pronóstico · 7 días")}</span>
+            {ctxLoc&&<span className="loc">{ctxLoc}</span>}
+          </div>
+          <svg className="pww-fcast-curve" viewBox="0 0 340 64" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="pwwCv" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stopColor="#22C55E"/><stop offset=".34" stopColor="#22C55E"/>
+                <stop offset=".5" stopColor="#FFC72C"/><stop offset=".72" stopColor="#E8522A"/><stop offset="1" stopColor="#FFC72C"/>
+              </linearGradient>
+              <linearGradient id="pwwCvf" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stopColor="#FFD884" stopOpacity=".34"/><stop offset="1" stopColor="#FFD884" stopOpacity="0"/>
+              </linearGradient>
+            </defs>
+            <path d="M0 44 C40 42 60 40 97 40 C140 39 150 24 194 22 C235 20 250 8 292 14 C320 18 330 26 340 30 L340 64 L0 64 Z" fill="url(#pwwCvf)"/>
+            <path d="M0 44 C40 42 60 40 97 40 C140 39 150 24 194 22 C235 20 250 8 292 14 C320 18 330 26 340 30" fill="none" stroke="url(#pwwCv)" strokeWidth="3.5" strokeLinecap="round"/>
+          </svg>
+          <div className="pww-days">
+            <span className="pww-lockdiv"></span>
+            {previewDots.map((st,i)=>(
+              <div key={i} className={"pww-day"+(i>=2?" lock":"")}>
+                <span className="ddn">{dn(i)}</span>
+                <span className={"ddot "+st}></span>
+                <span className="dvd">{i<2?_t(lang,"Net","Clear","Limpio"):<Lock s={9}/>}</span>
+              </div>
+            ))}
+          </div>
+          <div className="pww-lockcta"><Lock s={13}/><b>{_t(lang,"Débloque les 5 jours suivants","Unlock the next 5 days","Desbloquea los 5 días siguientes")}</b></div>
+        </div>
+
+        {/* 3 PERKS */}
+        <div className="pww-perks">
+          <div className="pww-perk a">
+            <span className="pic"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="#0D0D0D" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M17 18a5 5 0 0 0-10 0"/><path d="M12 9V2M12 2 9.5 4.5M12 2l2.5 2.5"/><path d="M2 18h2M20 18h2M4.5 11.5 6 13M19.5 11.5 18 13M1 22h22"/></svg></span>
+            <span><b>{_t(lang,"Ton brief chaque matin · 7h","Your brief every morning · 7am","Tu resumen cada mañana · 7h")}</b><em>{_t(lang,"Ta meilleure plage du jour, prête avant ton café.","Your best beach of the day, ready before your coffee.","Tu mejor playa del día, lista antes de tu café.")}</em></span>
+          </div>
+          <div className="pww-perk b">
+            <span className="pic"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="#0D0D0D" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg></span>
+            <span><b>{_t(lang,"Alerte le jour où ça bascule","Alert the day it flips","Alerta el día que cambia")}</b><em>{exSwitch?_t(lang,`Ta plage favorite change ? Va plutôt à ${exSwitch}.`,`Your favorite beach changes? Switch to ${exSwitch}.`,`¿Tu playa favorita cambia? Mejor ve a ${exSwitch}.`):_t(lang,"Ta plage favorite change ? Tu le sais avant d'y aller.","Your favorite beach changes? You know before you go.","¿Tu playa favorita cambia? Lo sabes antes de ir.")}</em></span>
+          </div>
+          <div className="pww-perk c">
+            <span className="pic"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="#0D0D0D" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="17" rx="2"/><path d="M3 9h18M8 2.5v4M16 2.5v4"/><path d="M7.5 14h3M13.5 14h3M7.5 18h3"/></svg></span>
+            <span><b>{wkend?_t(lang,`Samedi : ${wkend.name}`,`Saturday: ${wkend.name}`,`El sábado: ${wkend.name}`):_t(lang,"Toute ta semaine, plage par plage","Your whole week, beach by beach","Toda tu semana, playa por playa")}</b><em>{_t(lang,"Cale ton weekend sur 7 jours vérifiés satellite.","Plan your weekend on 7 satellite-verified days.","Planifica tu finde con 7 días verificados por satélite.")}</em></span>
+          </div>
+        </div>
+
+        {/* PREUVE */}
+        {totalCount>0&&<div className="pww-proof"><span className="pls"></span>{cleanCount>0
+          ?_t(lang,`${cleanCount}/${totalCount} plages propres en ce moment · satellite vérifié 4×/jour`,`${cleanCount}/${totalCount} beaches clean right now · satellite-checked 4×/day`,`${cleanCount}/${totalCount} playas limpias ahora · verificado por satélite 4×/día`)
+          :_t(lang,`${totalCount} plages suivies · satellite vérifié 4×/jour`,`${totalCount} beaches tracked · satellite-checked 4×/day`,`${totalCount} playas seguidas · verificado por satélite 4×/día`)}</div>}
+
+        {/* PLANS */}
+        {hasAnnual&&<div className="pww-plans">
+          {planBtn("monthly",_t(lang,"Mensuel","Monthly","Mensual"),pMo,_t(lang,"mois","mo","mes"),null,null)}
+          {planBtn("annual",_t(lang,"Annuel","Annual","Anual"),pYr,_t(lang,"an","yr","año"),"-33%",eqMo)}
+        </div>}
+
+        {/* CTA */}
+        <button type="button" className="pww-cta" onClick={()=>onStart()}>
+          <span className="big pww-anton">{_t(lang,"Je veux la prévision →","I want the forecast →","Quiero el pronóstico →")}</span>
+          <span className="s1">{ctaSub}</span>
+          {perDay&&<span className="s2">{perDay}</span>}
+        </button>
+
+        {/* 3 RASSURANCES */}
+        <div className="pww-trust">
+          <div className="pww-tc"><svg className="ic" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg><b>Stripe</b><em>{_t(lang,"Paiement sécurisé","Secure payment","Pago seguro")}</em></div>
+          <div className="pww-tc"><svg className="ic" viewBox="0 0 24 24" fill="none" stroke="#009E8E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg><b>{_t(lang,"30 jours","30 days","30 días")}</b><em>{_t(lang,"Satisfait ou remboursé","Money-back","Reembolso")}</em></div>
+          <div className="pww-tc"><svg className="ic" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg><b>{_t(lang,"2 clics","2 clicks","2 clics")}</b><em>{_t(lang,"Annule quand tu veux","Cancel anytime","Cancela cuando quieras")}</em></div>
+        </div>
+
+        {/* GARANTIE */}
+        <div className="pww-guar">
+          <span className="gic"><svg viewBox="0 0 24 24" fill="none" stroke="#FDFCF7" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+          <span><b>{_t(lang,"Garantie 30 jours satisfait ou remboursé","30-day money-back guarantee","Garantía de reembolso 30 días")}</b><em>{_t(lang,"Pas convaincu ? Un email, remboursé — sans condition.","Not convinced? One email, full refund — no questions.","¿No te convence? Un email, reembolso — sin preguntas.")}</em></span>
+        </div>
+
+        {/* A/B pw_season : alternative pass saison (cash d'avance, zéro churn) */}
+        {onSeason&&<button type="button" className="pww-season-alt" onClick={onSeason}>
+          <span style={{display:"flex",flexDirection:"column",gap:2,minWidth:0}}>
+            <b style={{fontSize:13.5,color:"#0D0D0D",fontWeight:800}}>🌅 {_t(lang,"Plutôt un pass saison ?","Prefer a season pass?","¿Mejor un pase de temporada?")}</b>
+            <em style={{fontSize:11.5,color:"rgba(13,13,13,.62)",fontStyle:"normal"}}>{_t(lang,"19,99 € une fois · 6 mois · sans abonnement","€19.99 once · 6 months · no subscription","19,99 € una vez · 6 meses · sin suscripción")}</em>
+          </span>
+          <span style={{fontSize:18,fontWeight:800,color:"#0D0D0D",flexShrink:0}}>→</span>
+        </button>}
+
+        {/* LIENS SECONDAIRES */}
+        <div className="pww-links">
+          <button type="button" className="pww-link" onClick={onAlready}>{_t(lang,"J'ai déjà un abonnement","I already have a subscription","Ya tengo una suscripción")}</button>
+          {onB2B&&<button type="button" className="pww-link b2b" onClick={onB2B}>🏨 {_t(lang,"Hôtel ou collectivité ? →","Hotel or town? →","¿Hotel o municipio? →")}</button>}
+        </div>
+
+        <div className="pww-secure"><Lock s={11}/>{_t(lang,"Paiement sécurisé Stripe · Sans engagement","Secure Stripe payment · No commitment","Pago seguro Stripe · Sin compromiso")}</div>
+      </div>
+    </div>
+  </>)
+}
+
 // ── ComicPaywall — skin BD du paywall (A/B pw_comic). PRODUCT.md §6 / pivot 19/06.
 // PUREMENT VISUEL : reçoit toutes les portes (onStart=startCheckout, onAlready, onClose,
 // plan/setPlan/effectivePlan) du PremiumModal parent → ZÉRO logique de paiement ici.
@@ -7004,6 +7322,12 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   // les visiteurs ont le paywall comic — un seul monde, fin de la roulette. Override debug
   // ?pwcomic=0 = revient au PremiumModal legacy (rollback revenu instantané si besoin).
   const pwComic=(()=>{try{return !/[?&]pwcomic=0/.test(window.location.search)}catch(_){return true}})()
+  // A/B pw_world — skin « CONTINUITÉ DU MONDE SVG » (gagnant jury). Quand actif, REMPLACE
+  // ComicPaywall par WorldPaywall (mêmes props, ZÉRO logique de paiement touchée : le CTA
+  // appelle startCheckout(effectivePlan,"world") inchangé). Démarrage prudent sur surface
+  // revenu : 15% world / 85% contrôle (ComicPaywall). Override QA ?pwworld=1 (force) /
+  // ?pwworld=0 (off → contrôle ComicPaywall). Asset : design/wow-candidates/paywall-world-continuity.html.
+  const pwWorld=(()=>{try{const q=window.location.search;if(/[?&]pwworld=1/.test(q))return true;if(/[?&]pwworld=0/.test(q))return false;return abVariant("pw_world",["control","world"],[.85,.15])==="world"}catch(_){return false}})()
   // Vérif d'abo existant (PWA installée après paiement) — extraite en callback pour
   // que les deux skins (comic + classique) la partagent sans dupliquer la logique.
   const verifyExistingSub=useCallback(()=>{
@@ -7198,7 +7522,18 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             color:pwComic?"#0d0b14":"rgba(255,255,255,.7)",fontSize:18,cursor:"pointer",lineHeight:1,fontWeight:pwComic?800:400,
             boxShadow:pwComic?"2px 2px 0 #0d0b14":"none",forcedColorAdjust:"none",
             zIndex:6,fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
-        {pwComic&&<ComicPaywall lang={lang} beach={beach} source={source}
+        {pwComic&&pwWorld&&<WorldPaywall lang={lang} beach={beach} source={source}
+          topName={_topName} topScore={_topScore} exSwitch={_exSwitch} wkend={_wkend}
+          ctxName={_ctxName} ctxStatus={_ctxStatus} cleanCount={_cleanCount} totalCount={_totalCount}
+          recordProof={_recordProof} allCalm={_allCalm} pwCalm={pwCalm}
+          seasonMsg={seasonMsg} plan={plan} setPlan={setPlan} effectivePlan={effectivePlan} hasAnnual={hasAnnual}
+          onStart={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown",skin:"world"});startCheckout(effectivePlan,"world")}}
+          onAlready={verifyExistingSub}
+          onB2B={()=>{try{track("sg_b2b_open",{source:source||"unknown"})}catch(_){}; setShowB2B(true)}}
+          onSeason={pwSeason?(()=>{try{track("sg_pass_cta",{pass:"season",cents:1999,source:source||"unknown",onsite:1})}catch(_){}
+            passCtxRef.current={pass:"season",cents:1999,days:183,cur:"eur"};setPayStep(true)}):undefined}
+          onClose={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"world_close"});onClose()}}/>}
+        {pwComic&&!pwWorld&&<ComicPaywall lang={lang} beach={beach} source={source}
           topName={_topName} topScore={_topScore} exSwitch={_exSwitch} wkend={_wkend}
           ctxName={_ctxName} ctxStatus={_ctxStatus} cleanCount={_cleanCount} totalCount={_totalCount}
           recordProof={_recordProof} allCalm={_allCalm} pwCalm={pwCalm}
