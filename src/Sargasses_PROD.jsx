@@ -2310,6 +2310,59 @@ button:active,a:active,[role="button"]:active{transform:scale(.91)!important;opa
 /* Header LIVE badge halo — soft breathing glow around the status dot */
 @keyframes sg-live-halo{0%,100%{opacity:.35;transform:scale(.9)}50%{opacity:.85;transform:scale(1.35)}}
 
+/* ═══ CHROME GLOBAL — recette comic dure (bible marque 22/06) ═══
+   Classes SCOPÉES !important : le thème comic force button{border/shadow/bg !important}
+   → on doit re-spécifier ici pour la barre/nav/pill (cf. .sg-sortseg/.sg-fchip pattern). */
+@keyframes sg-live-pulse{0%,100%{opacity:1}50%{opacity:.45}}
+/* TOP RAIL — segment commun : contour ink 2.5px + pop-1 dure (0 blur) */
+.sg-rail{display:flex;align-items:center;gap:6px;flex-wrap:nowrap}
+.sg-seg{height:40px;border:2.5px solid var(--sg-ink,#0d0b14)!important;background:var(--sg-card,#fff)!important;
+  box-shadow:2px 2px 0 var(--sg-ink,#0d0b14)!important;border-radius:13px!important;
+  display:flex;align-items:center;flex-shrink:0;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+.sg-seg.sg-seg-home{width:40px;justify-content:center;padding:0!important;overflow:hidden}
+.sg-seg.sg-seg-home svg{width:22px;height:22px;display:block}
+/* Toggle MQ/GP : SEULE surface or pleine de la barre */
+.sg-iso{position:relative;overflow:hidden;padding:0!important}
+.sg-iso .sg-iso-knob{position:absolute;top:3px;bottom:3px;width:calc(50% - 3px);border-radius:10px;z-index:0;
+  background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);box-shadow:inset 0 0 0 2px var(--sg-ink,#0d0b14);
+  transition:transform .3s cubic-bezier(.22,1,.36,1)}
+.sg-iso button{position:relative;z-index:1;padding:0 13px!important;height:100%;border:0!important;background:none!important;
+  box-shadow:none!important;border-radius:0!important;cursor:pointer;font-family:"Bricolage Grotesque",sans-serif!important;
+  font-weight:800!important;font-size:14px;letter-spacing:0;transition:color .2s;display:flex;align-items:center;text-shadow:none!important}
+/* Pill EN DIRECT — composant canonique .sg-live (teal #009E8E, plus de corail) */
+.sg-live{gap:6px;padding:0 12px!important;border-radius:999px!important;max-width:fit-content;flex:0 1 auto;
+  min-width:0;text-decoration:none;cursor:pointer;white-space:nowrap;overflow:hidden;background:rgba(0,158,142,.12)!important}
+.sg-live .sg-live-dot{position:relative;width:10px;height:10px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center}
+.sg-live .sg-live-dot i{position:absolute;width:7px;height:7px;border-radius:50%;background:#009E8E}
+.sg-live .sg-live-dot .sg-live-halo{position:absolute;inset:-4px;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(0,158,142,.5),transparent 70%);animation:sg-live-pulse 2.4s ease-in-out infinite}
+.sg-live .sg-live-lbl{color:var(--sg-ink,#0d0b14)!important;font-weight:800;font-size:12px;letter-spacing:.03em;flex-shrink:0;white-space:nowrap}
+.sg-live .sg-live-age{color:var(--sg-mid,#5A5A5A);font-weight:600;font-size:12px;overflow:hidden;text-overflow:ellipsis;
+  flex-shrink:1;min-width:0;font-family:"JetBrains Mono",ui-monospace,monospace}
+/* Util (theme + lang) : 2 boutons, pictos SVG ink, labels Bricolage 800 */
+.sg-util{overflow:hidden;padding:0!important}
+.sg-util button{width:38px;height:100%;border:0!important;background:none!important;box-shadow:none!important;border-radius:0!important;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--sg-ink,#0d0b14)!important;text-shadow:none!important}
+.sg-util button+button{border-left:2.5px solid var(--sg-ink,#0d0b14)!important}
+.sg-util .sg-lang{font-family:"Bricolage Grotesque",sans-serif!important;font-weight:800!important;font-size:14px;letter-spacing:.02em}
+.sg-util svg{width:18px;height:18px}
+/* FAB stack — pictos SVG ink, recette comic */
+.sg-fab svg{width:24px;height:24px;display:block}
+/* @360px : re-serrer encore (paddings + masquer label âge si besoin) */
+@media(max-width:380px){
+  .sg-rail{gap:5px}
+  .sg-iso button{padding:0 10px!important;font-size:13px}
+  .sg-live{padding:0 9px!important;gap:5px}
+  .sg-util button{width:34px}
+}
+@media(max-width:360px){
+  .sg-rail{gap:4px}
+  .sg-seg{height:38px}
+  .sg-seg.sg-seg-home{width:38px}
+  .sg-iso button{padding:0 8px!important}
+  .sg-live .sg-live-age{display:none}
+}
+
 /* Sargassum bank animations */
 .sg-bank{transition:fill-opacity .6s ease}
 .sg-drift-dot{transition:all .6s ease}
@@ -2709,36 +2762,58 @@ function BottomNav({view,onChangeView,lang,premiumOpen,glass=false,isPremium=fal
   const LL=T[lang]||T.fr
   // Le jeu reste un EASTER EGG (toast d'inactivité), jamais un onglet de menu
   // (directive user 14/06 : « j'aimais bien le jeu en petit easter egg pas en menu »).
+  // Pictos SVG mono-trait ink (plus d'emoji OS). currentColor suit l'état actif/inactif.
+  const ICON={
+    map:(<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M3 6.5 9 4l6 2.5 6-2.5V17.5L15 20 9 17.5 3 20z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" fill="none"/>
+      <path d="M9 4v13.5M15 6.5V20" stroke="currentColor" strokeWidth="2"/></svg>),
+    list:(<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M8 6h12M8 12h12M8 18h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      <circle cx="4" cy="6" r="1.5" fill="currentColor"/><circle cx="4" cy="12" r="1.5" fill="currentColor"/><circle cx="4" cy="18" r="1.5" fill="currentColor"/></svg>),
+    premium:(<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L3.3 9.3l6.1-.7z" fill="#E8A800" stroke="#0d0b14" strokeWidth="1.6" strokeLinejoin="round"/></svg>),
+  }
   let tabs=[
-    {id:"map",label:LL.navMap,icon:"🗺️"},
-    {id:"list",label:LL.navList,icon:"📋"},
-    {id:"premium",label:LL.navPremium,icon:"⭐"},
+    {id:"map",label:LL.navMap,icon:ICON.map},
+    {id:"list",label:LL.navList,icon:ICON.list},
+    {id:"premium",label:LL.navPremium,icon:ICON.premium},
   ]
   if(isPremium) tabs=tabs.filter(t=>t.id!=="premium")
   if(!glass) return(
     <nav className="sg-bottom-nav" style={{
       position:"fixed",bottom:0,left:0,right:0,zIndex:800,
-      display:"flex",justifyContent:"space-around",alignItems:"center",
-      background:"var(--sg-glass,rgba(255,255,255,.92))",
-      backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
-      borderTop:"1px solid var(--sg-glassBorder,rgba(0,0,0,.06))",
-      padding:"8px 0 max(12px,env(safe-area-inset-bottom))",
+      display:"flex",justifyContent:"space-around",alignItems:"stretch",
+      background:"var(--sg-card,#fff)",
+      borderTop:"2.5px solid var(--sg-ink,#0d0b14)",
+      boxShadow:"0 -4px 0 -1px var(--sg-ink,#0d0b14)",
+      padding:"8px 4px max(12px,env(safe-area-inset-bottom))",
     }}>
       {tabs.map(t=>{
         const active=t.id==="premium"?premiumOpen:(view===t.id)
+        const isPrem=t.id==="premium"
         return(
         <button key={t.id} onClick={()=>onChangeView(t.id)} style={{
-          display:"flex",flexDirection:"column",alignItems:"center",gap:2,
+          display:"flex",flexDirection:"column",alignItems:"center",gap:3,
           background:"none",border:"none",cursor:"pointer",
-          color:active?C.gold:"var(--sg-mid,#5A5A5A)",
-          fontSize:11,fontWeight:active?700:500,fontFamily:"inherit",
-          transition:"all .2s",padding:"6px 20px",position:"relative",
+          color:active?"var(--sg-ink,#0d0b14)":"var(--sg-mid,#5A5A5A)",
+          fontFamily:"'Bricolage Grotesque',sans-serif",
+          fontSize:12,fontWeight:active?800:600,letterSpacing:0,
+          transition:"color .2s",padding:"4px 16px",position:"relative",
           minHeight:44,justifyContent:"center",
         }}>
-          {active&&<div style={{position:"absolute",top:-1,width:24,height:3,
-            borderRadius:2,background:C.gold,transition:"width .2s"}}/>}
-          <span style={{fontSize:20,transition:"transform .34s cubic-bezier(.34,1.56,.64,1)",
-            transform:active?"scale(1.18)":"scale(1)"}}>{t.icon}</span>
+          {active&&<div style={{position:"absolute",top:-2,width:24,height:3,
+            borderRadius:2,background:C.gold}}/>}
+          {/* Premium : pastille OR pop-1 (PAS un 2e CTA pop-3 ; le CTA premium des écrans reste seul) */}
+          <span style={isPrem?{
+            width:30,height:30,borderRadius:999,display:"flex",alignItems:"center",justifyContent:"center",
+            background:active?"linear-gradient(135deg,#FFC72C,#E8A800)":"#FFE47A",
+            border:"2px solid var(--sg-ink,#0d0b14)",boxShadow:"2px 2px 0 var(--sg-ink,#0d0b14)",
+          }:{
+            width:22,height:22,display:"flex",alignItems:"center",justifyContent:"center",
+            transition:"transform .34s cubic-bezier(.34,1.56,.64,1)",transform:active?"scale(1.12)":"scale(1)",
+          }}>
+            <span style={isPrem?{width:18,height:18,display:"flex"}:{width:22,height:22,display:"flex"}}>{t.icon}</span>
+          </span>
           <span>{t.label}</span>
         </button>
       )})}
@@ -8437,92 +8512,69 @@ function formatFreshness(updatedAt,lang){
 }
 function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,beachCount,dataSource,updatedAt,onHome}){
   const LL=T[lang]||T.fr
-  const isLive=dataSource==="erddap-live"
-  const srcLabel=isLive?"LIVE":(lang==="es"?"Estimación":"Estimation")
-  const srcColor=isLive?C.green:C.amber
+  // EN DIRECT canonique : vivant SEULEMENT si source live ET fraîcheur réelle <12h
+  // (formatFreshness retourne null au-delà → on bascule sur « vérification en cours »).
   const fresh=formatFreshness(updatedAt,lang)
-  // Unified 40px-tall control rail. Three segments share the same shadow,
-  // border token and height so the header reads as one cohesive status bar
-  // instead of three disconnected widgets. Why: session 37 aurora + editorial
-  // modal made the old header (3 different heights/shadows) feel cheap.
-  const RAIL_H=40
-  const RAIL_SHADOW="0 2px 10px rgba(0,0,0,.05), 0 1px 2px rgba(0,0,0,.04)"
-  const RAIL_BORDER="1px solid var(--sg-border,rgba(0,0,0,.07))"
+  const isLive=dataSource==="erddap-live"&&!!fresh
+  const liveLbl=isLive
+    ?_t(lang,"EN DIRECT","LIVE","EN DIRECTO")
+    :_t(lang,"vérification en cours","verification in progress","verificación en curso")
+  // Recette comic : segments via classes scopées .sg-seg/.sg-live/.sg-iso/.sg-util
+  // (contour ink 2.5px + pop-1 dure, 0 blur) — bat le thème comic !important.
   return(
-    <div className="sg-header-row" style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,flexWrap:"wrap",rowGap:8}}>
-      {/* Accueil — le logo ramène à l'atterrissage (rejouer l'expérience,
-          directive user 12/06 : « toujours pouvoir revenir vers l'accueil ») */}
-      {onHome&&<button onClick={onHome} aria-label={lang==="es"?"Inicio":lang==="en"?"Home":"Accueil"} style={{
-        width:RAIL_H,height:RAIL_H,borderRadius:14,border:RAIL_BORDER,flexShrink:0,
-        background:"var(--sg-card,#fff)",boxShadow:RAIL_SHADOW,cursor:"pointer",
-        display:"flex",alignItems:"center",justifyContent:"center",padding:0}}>
-        <span aria-hidden style={{width:20,height:20,borderRadius:"50%",display:"block",
-          background:"conic-gradient(from -10deg,#FFE898 0deg 25deg,#E8A800 25deg 65deg,#FFD040 65deg 110deg,#B87A00 110deg 155deg,#FFE07A 155deg 195deg,#E09000 195deg 240deg,#FFC72C 240deg 285deg,#B07000 285deg 325deg,#FFE898 325deg 360deg)",
-          animation:"spin 20s linear 1 both",boxShadow:"0 2px 8px rgba(232,168,0,.35)"}}/>
+    <div className="sg-header-row sg-rail">
+      {/* Accueil — logo dé-doré (ink + teal, sobre) : ne dilue plus le signal de conversion.
+          Ramène à l'atterrissage (directive user 12/06 « toujours revenir vers l'accueil »). */}
+      {onHome&&<button onClick={onHome} aria-label={lang==="es"?"Inicio":lang==="en"?"Home":"Accueil"} className="sg-seg sg-seg-home">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" fill="#0A1714"/>
+          <path d="M4 13.5 Q8 11 12 12.5 T20 12" stroke="#1EC8B0" strokeWidth="2.2" fill="none" strokeLinecap="round"/>
+          <path d="M4 16.5 Q8 14.2 12 15.6 T20 15" stroke="#009E8E" strokeWidth="2" fill="none" strokeLinecap="round"/>
+          <circle cx="16.5" cy="8" r="2.4" fill="#FFC72C" stroke="#0d0b14" strokeWidth="1.4"/>
+        </svg>
       </button>}
-      {/* Island toggle MQ/GP — masqué pour les nouvelles régions (build mono-région) */}
-      {!IS_NEW_REGION && (<div style={{display:"flex",height:RAIL_H,borderRadius:14,overflow:"hidden",position:"relative",flexShrink:0,
-        border:RAIL_BORDER,
-        background:"var(--sg-card,#fff)",boxShadow:RAIL_SHADOW}}>
-        <div style={{position:"absolute",top:3,bottom:3,width:"calc(50% - 3px)",borderRadius:12,
-          background:"linear-gradient(158deg,#FFE47A,#FFC72C,#E89400)",
-          transform:island==="mq"?"translateX(3px)":"translateX(calc(100% + 3px))",
-          transition:"transform .3s cubic-bezier(.22,1,.36,1)",
-          boxShadow:"0 3px 10px rgba(232,168,0,.35), inset 0 1px 0 rgba(255,255,255,.5)"}}/>
+      {/* Island toggle MQ/GP — SEULE surface or pleine (or RARE). Bricolage 800 (Anton retiré).
+          Masqué pour les nouvelles régions (build mono-région). */}
+      {!IS_NEW_REGION && (<div className="sg-seg sg-iso" role="group" aria-label={_t(lang,"Région","Region","Región")}>
+        <span aria-hidden className="sg-iso-knob" style={{
+          transform:island==="mq"?"translateX(3px)":"translateX(calc(100% + 3px))"}}/>
         {["mq","gp"].map(id=>(
-          <button key={id} onClick={()=>{onIslandChange(id);track("sg_island_switch",{to:id})}} style={{
-            padding:"0 16px",border:"none",cursor:"pointer",
-            background:"transparent",position:"relative",zIndex:1,
-            color:island===id?"#0D0D0D":"var(--sg-mid,#5A5A5A)",
-            fontFamily:"'Anton',sans-serif",
-            fontSize:15,fontWeight:400,
-            letterSpacing:".02em",
-            transition:"color .2s",
-            display:"flex",alignItems:"center",
-          }}>{id==="mq"?"MQ":"GP"}</button>
+          <button key={id} onClick={()=>{onIslandChange(id);track("sg_island_switch",{to:id})}}
+            style={{color:island===id?"#0d0b14":"var(--sg-mid,#5A5A5A)"}}>{id==="mq"?"MQ":"GP"}</button>
         ))}
       </div>)}
 
-      {/* Live indicator — shows LIVE or Estimation based on data source.
-          Halo pulse derived from srcColor, editorial feel. */}
+      {/* Pill EN DIRECT — composant canonique .sg-live : teal #009E8E (plus le corail qui
+          collisionnait avec « éviter »), label ENCRE (AA), fraîcheur en Mono branchée
+          sur l'âge RÉEL (isLive ← updatedAt <12h, sinon « vérification en cours »). */}
       <a href="https://marine.copernicus.eu" target="_blank" rel="noopener noreferrer"
         onClick={()=>track("sg_live_badge_click",{source:dataSource})}
-        style={{display:"flex",alignItems:"center",gap:7,height:RAIL_H,
-          padding:"0 14px",borderRadius:100,flex:"1 1 auto",minWidth:0,
-          maxWidth:"fit-content",
-          background:"var(--sg-card,#fff)",
-          boxShadow:RAIL_SHADOW,
-          border:RAIL_BORDER,
-          fontSize:11.5,fontWeight:700,color:isLive?C.teal:C.amber,
-          textDecoration:"none",cursor:"pointer",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
-          <span style={{position:"relative",width:10,height:10,flexShrink:0,display:"inline-flex",alignItems:"center",justifyContent:"center"}}>
-            <span aria-hidden style={{position:"absolute",inset:-4,borderRadius:"50%",
-              background:`radial-gradient(closest-side, ${srcColor}55 0%, transparent 70%)`,
-              animation:isLive?"sg-live-halo 2.2s ease-in-out 1 both":"none",pointerEvents:"none"}}/>
-            <span className={isLive?"pulse":""} style={{position:"relative",width:8,height:8,borderRadius:4,background:srcColor,
-              boxShadow:`0 0 0 2px ${srcColor}22`,flexShrink:0}}/>
+        className="sg-seg sg-live" aria-label={_t(lang,"Données en direct","Live data","Datos en vivo")}>
+          <span className="sg-live-dot" aria-hidden="true">
+            {isLive&&<span className="sg-live-halo"/>}
+            <i/>
           </span>
-          <span style={{flexShrink:0,letterSpacing:".01em"}}>{srcLabel}</span>
-          {fresh&&<span style={{opacity:.5,fontWeight:500,flexShrink:1,overflow:"hidden",textOverflow:"ellipsis"}}>· {fresh}</span>}
+          <span className="sg-live-lbl">{liveLbl}</span>
+          {isLive&&fresh&&<span className="sg-live-age">· {fresh}</span>}
         </a>
 
-      {/* Theme + Lang — grouped in a single rail segment for cohesion */}
-      <div style={{display:"flex",height:RAIL_H,borderRadius:14,overflow:"hidden",
-        border:RAIL_BORDER,background:"var(--sg-card,#fff)",boxShadow:RAIL_SHADOW,flexShrink:0}}>
-        <button onClick={onThemeToggle} aria-label={theme==="dark"?"Light mode":"Dark mode"} style={{
-          width:40,height:"100%",border:"none",borderRight:"1px solid var(--sg-border,rgba(0,0,0,.06))",
-          background:"transparent",cursor:"pointer",fontSize:16,
-          display:"flex",alignItems:"center",justifyContent:"center",
-        }}>{theme==="dark"?"☀️":"🌙"}</button>
+      {/* Theme + Lang — pictos SVG ink (plus d'emoji OS), labels Bricolage 800 */}
+      <div className="sg-seg sg-util" role="group" aria-label={_t(lang,"Préférences","Preferences","Preferencias")}>
+        <button onClick={onThemeToggle} aria-label={theme==="dark"?"Light mode":"Dark mode"}>
+          {theme==="dark"
+            ?<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+               <path d="M20 14.5A8 8 0 0 1 9.5 4 7 7 0 1 0 20 14.5z" stroke="currentColor" strokeWidth="2" fill="none" strokeLinejoin="round"/>
+             </svg>
+            :<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+               <circle cx="12" cy="12" r="4.2" stroke="currentColor" strokeWidth="2"/>
+               <g stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                 <path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.7 1.7M16.7 16.7l1.7 1.7M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7"/>
+               </g>
+             </svg>}
+        </button>
         {(()=>{/* Label = langue CIBLE. Nouvelles régions : bascule 2 langues primary↔secondary. MQ/GP : cycle fr→en→es inchangé. */
         const langTarget=IS_NEW_REGION?(lang===REGION.primaryLang?(REGION.secondaryLangs?.[0]||"en"):REGION.primaryLang):(lang==="fr"?"en":lang==="en"?"es":"fr")
-        return(<button onClick={onLangToggle} aria-label={langTarget==="en"?"Switch to English":langTarget==="es"?"Cambiar a español":"Passer en français"} style={{
-          width:40,height:"100%",border:"none",
-          background:"transparent",cursor:"pointer",
-          fontFamily:"'Anton',sans-serif",fontSize:13,fontWeight:400,
-          letterSpacing:".03em",color:"var(--sg-ink)",
-          display:"flex",alignItems:"center",justifyContent:"center",
-        }}>{langTarget.toUpperCase()}</button>)})()}
+        return(<button onClick={onLangToggle} className="sg-lang" aria-label={langTarget==="en"?"Switch to English":langTarget==="es"?"Cambiar a español":"Passer en français"}>{langTarget.toUpperCase()}</button>)})()}
       </div>
     </div>
   )
@@ -14769,12 +14821,23 @@ export default function App(){
 
         {/* SARGACHAT — assistant guidé statique (réponses = donnée live, arbre fermé) */}
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&(
-          <button onClick={()=>{setShowChat(true);track("sg_chat_open",{})}} aria-label={_t(lang,"Assistant","Assistant","Asistente")}
+          <button onClick={()=>{setShowChat(true);track("sg_chat_open",{})}} aria-label={_t(lang,"Demander au Veilleur","Ask the Watchman","Preguntar al Vigía")}
+            className="sg-fab"
             style={{position:"fixed",right:14,bottom:"calc(166px + env(safe-area-inset-bottom))",zIndex:960,
-              width:46,height:46,borderRadius:"50%",background:"#190c2c",border:"1.5px solid rgba(255,199,44,.55)",
-              fontSize:19,cursor:"pointer",boxShadow:"0 6px 20px rgba(0,0,0,.4)",display:"flex",
+              width:46,height:46,borderRadius:"50%",background:"#190c2c",border:"2.5px solid #0d0b14",
+              cursor:"pointer",boxShadow:"2px 2px 0 #0d0b14",display:"flex",
               alignItems:"center",justifyContent:"center",
-              animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>💬</button>
+              animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>
+            {/* Assistant = mini Le Veilleur (satellite, seul personnage autorisé) — plus de 💬 */}
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="9.2" y="9.2" width="5.6" height="5.6" rx="1.4" fill="#FFC72C" stroke="#FDFCF7" strokeWidth="1.3"/>
+              <circle cx="12" cy="12" r="1.1" fill="#0A1714"/>
+              <path d="M9.2 11 4.5 8.2M14.8 11 19.5 8.2" stroke="#FFC72C" strokeWidth="1.6" strokeLinecap="round"/>
+              <rect x="3" y="6.4" width="3" height="3.4" rx=".7" fill="#1EC8B0" stroke="#FDFCF7" strokeWidth="1.1"/>
+              <rect x="18" y="6.4" width="3" height="3.4" rx=".7" fill="#1EC8B0" stroke="#FDFCF7" strokeWidth="1.1"/>
+              <path d="M8 18 Q12 16 16 18" stroke="#1EC8B0" strokeWidth="1.6" fill="none" strokeLinecap="round"/>
+            </svg>
+          </button>
         )}
         {showChat&&<SargaChat lang={lang} allBeaches={allBeaches} island={island} sargData={sargData}
           onOpenBeach={onBeachClick} onPremium={()=>openPremium("chat")} onClose={()=>setShowChat(false)}/>}
@@ -14782,10 +14845,18 @@ export default function App(){
         {/* DÉCOUVERTE — moteur StoryEngine (éducatif SVG). Entrée chip + overlay. */}
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!selectedBeach&&view==="map"&&(
           <button onClick={()=>{setShowDiscovery(true);track("sg_discovery_open",{})}} aria-label={_t(lang,"Comprendre les sargasses","Understand sargassum","Entender el sargazo")}
+            className="sg-fab"
             style={{position:"fixed",right:14,bottom:"calc(220px + env(safe-area-inset-bottom))",zIndex:960,
-              width:46,height:46,borderRadius:"50%",background:"#190c2c",border:"1.5px solid rgba(63,167,160,.6)",
-              fontSize:18,cursor:"pointer",boxShadow:"0 6px 20px rgba(0,0,0,.4)",display:"flex",alignItems:"center",justifyContent:"center",
-              animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>🛰️</button>
+              width:46,height:46,borderRadius:"50%",background:"#190c2c",border:"2.5px solid #0d0b14",
+              cursor:"pointer",boxShadow:"2px 2px 0 #0d0b14",display:"flex",alignItems:"center",justifyContent:"center",
+              animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>
+            {/* Comprendre = œil dans l'espace (orbite) — plus de 🛰️ OS */}
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <ellipse cx="12" cy="12" rx="10" ry="4.6" stroke="#1EC8B0" strokeWidth="1.7" transform="rotate(-28 12 12)"/>
+              <circle cx="12" cy="12" r="4" fill="none" stroke="#FDFCF7" strokeWidth="1.8"/>
+              <circle cx="12" cy="12" r="1.7" fill="#FFC72C"/>
+            </svg>
+          </button>
         )}
         {showDiscovery&&<DiscoveryStory lang={lang} onClose={()=>setShowDiscovery(false)} onShowMap={()=>setShowDiscovery(false)}/>}
 
@@ -14805,10 +14876,17 @@ export default function App(){
         {/* SOLUTIONS — pages SVG (problème→on voit→on agit→on transforme→on sort). Escapable. */}
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!showSolutions&&!showWorld&&!selectedBeach&&view==="map"&&(
           <button onClick={()=>{setShowSolutions(true);track("sg_solutions_open",{})}} aria-label={_t(lang,"Les solutions sargasses","Sargassum solutions","Soluciones al sargazo")}
+            className="sg-fab"
             style={{position:"fixed",right:14,bottom:"calc(328px + env(safe-area-inset-bottom))",zIndex:960,
-              width:46,height:46,borderRadius:"50%",background:"#190c2c",border:"1.5px solid rgba(95,211,201,.6)",
-              fontSize:19,cursor:"pointer",boxShadow:"0 6px 20px rgba(0,0,0,.4)",display:"flex",alignItems:"center",justifyContent:"center",
-              animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>💡</button>
+              width:46,height:46,borderRadius:"50%",background:"#190c2c",border:"2.5px solid #0d0b14",
+              cursor:"pointer",boxShadow:"2px 2px 0 #0d0b14",display:"flex",alignItems:"center",justifyContent:"center",
+              animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>
+            {/* Solutions = ampoule (idée/agir) — plus de 💡 OS */}
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 3a6 6 0 0 0-3.6 10.8c.6.45.9 1 .9 1.7V16h5.4v-.5c0-.7.3-1.25.9-1.7A6 6 0 0 0 12 3z" stroke="#1EC8B0" strokeWidth="1.7" fill="none" strokeLinejoin="round"/>
+              <path d="M9.6 18.5h4.8M10.4 21h3.2" stroke="#FFC72C" strokeWidth="1.7" strokeLinecap="round"/>
+            </svg>
+          </button>
         )}
         {showSolutions&&<SolutionsStory lang={lang} onClose={()=>{setShowSolutions(false);track("sg_solutions_close",{})}}
           onExit={()=>{setShowSolutions(false);track("sg_solutions_exit_cta",{});openPremium("solutions_exit")}}/>}
@@ -14816,10 +14894,17 @@ export default function App(){
         {/* L'ARCHIPEL DU VEILLEUR — monde SVG libre pan/zoom (tournoi gagnant). v0 QA. */}
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!showSolutions&&!showWorld&&!showArchipel&&!selectedBeach&&view==="map"&&(
           <button onClick={()=>{setShowArchipel(true);track("sg_archipel_open",{from:"fab"})}} aria-label={_t(lang,"L'archipel du Veilleur","The Watcher's archipelago","El archipiélago")}
+            className="sg-fab"
             style={{position:"fixed",right:14,bottom:"calc(382px + env(safe-area-inset-bottom))",zIndex:960,
-              width:46,height:46,borderRadius:"50%",background:"#190c2c",border:"1.5px solid rgba(255,216,132,.7)",
-              fontSize:19,cursor:"pointer",boxShadow:"0 6px 20px rgba(0,0,0,.4)",display:"flex",alignItems:"center",justifyContent:"center",
-              animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>🧭</button>
+              width:46,height:46,borderRadius:"50%",background:"#190c2c",border:"2.5px solid #0d0b14",
+              cursor:"pointer",boxShadow:"2px 2px 0 #0d0b14",display:"flex",alignItems:"center",justifyContent:"center",
+              animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>
+            {/* Archipel = boussole (explorer) — plus de 🧭 OS */}
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" stroke="#1EC8B0" strokeWidth="1.7"/>
+              <path d="M15.5 8.5 10.5 10.5 8.5 15.5 13.5 13.5z" fill="#FFC72C" stroke="#FDFCF7" strokeWidth="1.3" strokeLinejoin="round"/>
+            </svg>
+          </button>
         )}
         {showArchipel&&(mapWorld==="world"
           ?<ErrBound><Suspense fallback={<div style={{position:"fixed",inset:0,background:"#072019",zIndex:1020}}/>}>
