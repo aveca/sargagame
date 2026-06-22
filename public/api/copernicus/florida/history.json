@@ -714,6 +714,71 @@
           "status": "clean"
         }
       ]
+    },
+    {
+      "date": "2026-06-22",
+      "levels": [
+        {
+          "id": "fl001",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "fl002",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "fl003",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "fl004",
+          "afai": 0.11,
+          "status": "clean"
+        },
+        {
+          "id": "fl005",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "fl006",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl007",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "fl008",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "fl009",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl010",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl011",
+          "afai": 0.06,
+          "status": "clean"
+        },
+        {
+          "id": "fl012",
+          "afai": 0.07,
+          "status": "clean"
+        }
+      ]
     }
   ],
   "changes": [
