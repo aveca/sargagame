@@ -13012,20 +13012,22 @@ export default function App(){
     // Exit-intent desktop : souris qui sort par le haut de la fenêtre
     const exitH=e=>{if(e.clientY<=0&&window.matchMedia("(min-width:900px)").matches)fire("exit")}
     document.addEventListener("mouseleave",exitH)
-    // Exit-intent desktop RENFORCÉ : remontée RAPIDE de la souris vers le sommet (flick)
-    // AVANT de franchir le bord → rattrape les partants qui filent vers les onglets / le ×.
-    // Seuils serrés (proche du haut + vélocité élevée) pour éviter les faux positifs quand
-    // on monte juste vers la barre de recherche. La garde session de fire() = 1×/session.
+    // Exit-intent desktop RENFORCÉ : remontée de la souris vers le sommet (flick) AVANT de
+    // franchir le bord → rattrape les partants qui filent vers les onglets / le ×. Seuils
+    // ASSOUPLIS (un élan vers le haut suffit, plus besoin d'un flick frénétique) ; la
+    // vélocité min reste pour exclure une montée lente vers la barre de recherche. fire() =
+    // 1×/session.
     let _mvy=0,_mvt=0
     const exitFlick=e=>{
       if(!window.matchMedia("(min-width:900px)").matches)return
       const now=Date.now(),dy=e.clientY-_mvy,dt=now-_mvt
-      if(dt>0&&dt<140&&dy<-8&&(-dy/dt)>0.9&&e.clientY<110)fire("exit")
+      if(dt>0&&dt<180&&dy<-6&&(-dy/dt)>0.55&&e.clientY<160)fire("exit")
       _mvy=e.clientY;_mvt=now
     }
     document.addEventListener("mousemove",exitFlick,{passive:true})
-    // Mobile : retour d'onglet (visibilitychange) + remontée rapide (scroll-up flick)
-    const onVis=()=>{if(document.visibilityState==="hidden"&&window.matchMedia("(max-width:899px)").matches)fire("hidden")}
+    // Bascule d'onglet / alt-tab (desktop ET mobile) = signal de départ fort : la carte est
+    // prête au retour. fire() la garde 1×/session + snooze 14j au dismiss → jamais spammy.
+    const onVis=()=>{if(document.visibilityState==="hidden")fire("hidden")}
     document.addEventListener("visibilitychange",onVis)
     let downAcc=0,lastY=0,lastT=0
     const onScroll=()=>{
