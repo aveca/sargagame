@@ -12,7 +12,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.cjs"
 
 
-const STATUS_C = { clean: "#2FBE6B", moderate: "#F2B330", avoid: "#E8472A" }
+const STATUS_C = { clean: "#22C55E", moderate: "#B87A00", avoid: "#E8522A" }
 const INK = "#0d0b14"
 // Monde GTA : chrome en verre sombre (glass) + boutons primaires or (cohérence hero).
 const GLASS = { background:"rgba(20,11,32,.46)", border:"1px solid rgba(255,255,255,.22)", boxShadow:"0 8px 26px rgba(0,0,0,.42)", backdropFilter:"blur(11px)", WebkitBackdropFilter:"blur(11px)" }
@@ -49,7 +49,7 @@ function vantColor(beachList, day){
   const known=beachList.filter(b=>{const s=b.days[day];return s==="clean"||s==="moderate"||s==="avoid"})
   const n=known.length; if(!n) return "#9aa0a8"
   const c=known.filter(b=>b.days[day]==="clean").length
-  return c/n>=.6?"#2FBE6B":c/n>=.35?"#F2B330":"#E8472A"
+  return c/n>=.6?"#22C55E":c/n>=.35?"#B87A00":"#E8522A"
 }
 
 // ── Splat de sargasse : blob comic seedé, lissé (quadratique par milieux). Déterministe
@@ -131,7 +131,7 @@ function _spawnBeaching(layer, ax, ay, cx, cy, S, seed, eta){
   // (J+1..3), corail = déjà là (J+0 « AUJ »). Pop à l'impact, persiste avec le dépôt. eta=null → pas de badge.
   let badge=null
   if(eta!=null){
-    const label=eta<=0?"AUJ":"J+"+eta, col=eta<=0?"#E8472A":"#FFC72C"
+    const label=eta<=0?"AUJ":"J+"+eta, col=eta<=0?"#E8522A":"#FFC72C"
     badge=_e("g",{opacity:"0"})
     // taille FIXE (pas ×S) : c'est un LABEL, il doit rester lisible même à la vue régionale où le
     // splat est petit. Léger fond-ombre encre derrière (2e text décalé) pour décoller du fond.
@@ -925,7 +925,7 @@ export default function WorldMapView({
           <path d="M-4 -52 L-4 -8 L-32 -8 Z" fill="#1c7fb0" opacity=".94"/>
         </g>
         <path d="M-46 4 Q0 24 46 4 Q40 14 32 16 L-32 16 Q-40 14 -46 4 Z" fill="#0f5d54"/>
-        <path d="M-46 4 Q0 18 46 4" fill="none" stroke="#FFD884" strokeWidth="1.6" strokeOpacity=".6"/>
+        <path d="M-46 4 Q0 18 46 4" fill="none" stroke="#B87A00" strokeWidth="1.6" strokeOpacity=".6"/>
       </g>
     </>
   )
@@ -1044,7 +1044,7 @@ export default function WorldMapView({
             // Rétrogradé en point dans un cluster dense (sauf le sélectionné) → petit point cliquable,
             // hit-zone élargie, pas de label. Tap → ouvre la fiche (funnel préservé).
             if(pinTier[b.id]==="dot"&&!isSel){
-              const dotCol=st==="clean"?"#2FBE6B":st==="moderate"?"#F2B330":st==="avoid"?"#E8472A":"#9aa0a8"
+              const dotCol=st==="clean"?"#22C55E":st==="moderate"?"#B87A00":st==="avoid"?"#E8522A":"#9aa0a8"
               return(
                 <g key={b.id} transform={`translate(${b.vx.toFixed(1)} ${b.vy.toFixed(1)})`} style={{cursor:"pointer"}}
                   onClick={e=>{ e.stopPropagation(); selectBeach(b); if(onOpenBeach){ try{track&&track("sg_beach_open",{from:"map_dot"})}catch(_){}; onOpenBeach(b) } }}>
@@ -1234,7 +1234,7 @@ export default function WorldMapView({
           }}>
             <div style={{width:104,height:8,borderRadius:5,background:"#fff",border:`2px solid ${INK}`,overflow:"hidden"}}>
               <div style={{
-                height:"100%",background:"linear-gradient(90deg,#2FBE6B,#F2B330)",transition:"width .4s ease",
+                height:"100%",background:"linear-gradient(90deg,#22C55E,#B87A00)",transition:"width .4s ease",
                 width:beachList.length?Math.round(cleanCnt/beachList.length*100)+"%":"0%",
               }}/>
             </div>
@@ -1288,9 +1288,9 @@ export default function WorldMapView({
           position:"absolute",left:16,bottom:"calc(74px + env(safe-area-inset-bottom))",
           display:"flex",flexDirection:"column",gap:5,pointerEvents:"none",
         }}>
-          {[["#2FBE6B",_t(lang,"Propre","Clean","Limpia")],
-            ["#F2B330",_t(lang,"Modéré","Moderate","Moderado")],
-            ["#E8472A",_t(lang,"À éviter","Avoid","Evitar")]].map(([c,l])=>(
+          {[["#22C55E",_t(lang,"Propre","Clean","Limpia")],
+            ["#B87A00",_t(lang,"Modéré","Moderate","Moderado")],
+            ["#E8522A",_t(lang,"À éviter","Avoid","Evitar")]].map(([c,l])=>(
             <div key={c} style={{display:"flex",alignItems:"center",gap:7,
               font:"700 10.5px/1 'Bricolage Grotesque',system-ui,sans-serif",
               color:"#fff",textShadow:`0 1px 0 ${INK},0 0 4px ${INK}`}}>
