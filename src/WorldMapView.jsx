@@ -619,7 +619,6 @@ export default function WorldMapView({
       ptrsRef.current[e.pointerId]={x:e.clientX,y:e.clientY}
       const pts=Object.values(ptrsRef.current)
       if(pts.length>=2&&pinchRef.current){
-        if(fxRef.current) fxRef.current.setAttribute("visibility","hidden"); if(fieldRef.current) fieldRef.current.setAttribute("visibility","hidden")  // LOD : effets+champ masqués pendant le pinch
         const d=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y)
         const mx=(pts[0].x+pts[1].x)/2, my=(pts[0].y+pts[1].y)/2
         if(pinchRef.current.d>0){
@@ -636,7 +635,6 @@ export default function WorldMapView({
           // Setpointer capture SEULEMENT au premier vrai mouvement (piège pointer-capture/click)
           try{ e.currentTarget.setPointerCapture(e.pointerId) }catch(_){}
           setSelected(null); setTagPos(null)
-          if(fxRef.current) fxRef.current.setAttribute("visibility","hidden"); if(fieldRef.current) fieldRef.current.setAttribute("visibility","hidden")  // LOD : effets+champ masqués pendant le pan
         }
         moved=true
         const r=el.getBoundingClientRect()
@@ -651,7 +649,6 @@ export default function WorldMapView({
       const wasMoved=moved
       delete ptrsRef.current[e.pointerId]
       if(Object.keys(ptrsRef.current).length<2) pinchRef.current=null
-      if(Object.keys(ptrsRef.current).length===0){ if(fxRef.current) fxRef.current.setAttribute("visibility","visible"); if(fieldRef.current) fieldRef.current.setAttribute("visibility","visible") }  // LOD : effets+champ ré-affichés au repos
       // Sur un contrôle chrome (CTA « Voir la plage », dock, capture…) : pas de double-tap
       // zoom ni de vol de clic — mais le nettoyage ci-dessus a déjà eu lieu.
       if(e.target&&e.target.closest&&e.target.closest('[data-vmui]')) return
@@ -952,12 +949,14 @@ export default function WorldMapView({
             : staticWorld}
 
           {/* Champ de sargasses au large — couche LIVE qui dérive LENTEMENT (peuplée impérativement).
-              Clippée à la mer (jamais sur l'île). Sous les effets d'échouage + pins. Masquée au geste. */}
+              Clippée à la mer (jamais sur l'île). Sous les effets d'échouage + pins. Reste visible
+              pendant le pan/zoom (les masquer au geste = sargasses qui « disparaissent » = raté UX). */}
           <g ref={fieldRef} clipPath="url(#wmSeaClip)" aria-hidden="true" style={{pointerEvents:"none"}}/>
 
           {/* Couche LIVE des effets d'échouage (peuplée impérativement par l'effet beaching).
               Sous les pins → le pin rouge `avoid` de la plage coiffe son dépôt = le verdict.
-              Masquée pendant le geste (LOD) pour ne pas alourdir le pan/zoom. */}
+              Reste visible pendant le geste (ne PAS masquer : les sargasses ne doivent jamais
+              disparaître quand on interagit). */}
           <g ref={fxRef} aria-hidden="true" style={{pointerEvents:"none"}}/>
 
           {/* Pins plages — marqueurs comic teardrop ink-outline */}
