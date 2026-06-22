@@ -76,7 +76,7 @@ const _e=(n,a)=>{const x=document.createElementNS(_NSV,n);for(const k in a)x.set
 const _clmp=(v,a,b)=>v<a?a:v>b?b:v
 const _ease=p=>p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2
 const _eOut=p=>1-Math.pow(1-p,3)
-function _spawnBeaching(layer, ax, ay, cx, cy, S, seed){
+function _spawnBeaching(layer, ax, ay, cx, cy, S, seed, eta){
   const oa=Math.atan2(ay-cy, ax-cx)                 // "vers le large" (depuis le centre de l'île)
   const ox=ax+Math.cos(oa)*130, oy=ay+Math.sin(oa)*130
   const ta=oa+Math.PI/2, TANx=Math.cos(ta), TANy=Math.sin(ta)   // tangente du rivage
@@ -126,6 +126,22 @@ function _spawnBeaching(layer, ax, ay, cx, cy, S, seed){
   dep.setAttribute("transform",`translate(${ax} ${ay})`); foam.setAttribute("transform",`translate(${ax} ${ay})`)
   ripple.setAttribute("transform",`translate(${ax} ${ay})`); lineG.setAttribute("transform",`translate(${ax} ${ay})`)
   layer.appendChild(dep); layer.appendChild(foam); layer.appendChild(ripple); layer.appendChild(dropG); layer.appendChild(bank); layer.appendChild(lineG)
+  // BADGE « J+N » (ETA arrivée, action #2) — SANS FOND (préférence fondateur 22/06) : juste le texte,
+  // contour encre (paint-order:stroke) → lisible sur n'importe quel fond, pas de panneau. Or = à venir
+  // (J+1..3), corail = déjà là (J+0 « AUJ »). Pop à l'impact, persiste avec le dépôt. eta=null → pas de badge.
+  let badge=null
+  if(eta!=null){
+    const label=eta<=0?"AUJ":"J+"+eta, col=eta<=0?"#E8472A":"#FFC72C"
+    badge=_e("g",{opacity:"0"})
+    // taille FIXE (pas ×S) : c'est un LABEL, il doit rester lisible même à la vue régionale où le
+    // splat est petit. Léger fond-ombre encre derrière (2e text décalé) pour décoller du fond.
+    const sh=_e("text",{x:0,y:2,"text-anchor":"middle","font-family":"'AntonLC','Anton',sans-serif","font-weight":"400","font-size":"34",fill:INK,opacity:".35"}); sh.textContent=label; badge.appendChild(sh)
+    const txt=_e("text",{x:0,y:0,"text-anchor":"middle","font-family":"'AntonLC','Anton',sans-serif","font-weight":"400","font-size":"34",fill:col,stroke:INK,"stroke-width":"4.5","paint-order":"stroke","stroke-linejoin":"round"})
+    txt.textContent=label
+    badge.appendChild(txt)
+    layer.appendChild(badge)
+  }
+  const BY=ay-38 // position du badge (au-dessus de l'impact), décalage fixe
   const T_AP=1.10,T_IM=1.18,T_SE=1.55,T_FA=3.05,T_LP=3.35
   function render(t){
     if(t<T_IM){ const p=_ease(_clmp(t/T_AP,0,1)), x=ox+(ax-ox)*p, y=oy+(ay-oy)*p, sc=0.7+p*0.55
@@ -154,11 +170,15 @@ function _spawnBeaching(layer, ax, ay, cx, cy, S, seed){
         } else { const x=ax+d.vx*lt, y=ay+d.vy*lt+320*S*lt*lt, op=lt<0.6?1:1-(lt-0.6)/0.25
           d.g.setAttribute("transform",`translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${_clmp(1-lt*0.5,0.4,1).toFixed(2)}) rotate(${(d.rot*lt).toFixed(0)})`)
           d.g.setAttribute("opacity",_clmp(op,0,1).toFixed(2)) } } }
+    if(badge){ const dt=t-T_IM; let bp=dt<0?0:dt<0.25?dt/0.25:1; if(t>T_FA) bp*=_clmp(1-(t-T_FA)/(T_LP-T_FA),0,1)
+      const bs=0.5+_eOut(_clmp(dt/0.3,0,1))*0.5
+      badge.setAttribute("transform",`translate(${ax} ${BY}) scale(${bs.toFixed(3)})`); badge.setAttribute("opacity",bp.toFixed(2)) }
   }
   function frozen(){
     bank.setAttribute("opacity","0"); ripple.setAttribute("opacity","0")
     for(const ln of lines) ln.setAttribute("opacity","0"); for(const d of drops) d.g.setAttribute("opacity","0")
     dep.setAttribute("transform",`translate(${ax} ${ay}) rotate(${coastDeg}) scale(1)`); dep.setAttribute("opacity","1"); depHt.setAttribute("opacity","0.34")
+    if(badge){ badge.setAttribute("transform",`translate(${ax} ${BY}) scale(1)`); badge.setAttribute("opacity","1") }
     foam.setAttribute("transform",`translate(${ax} ${ay}) scale(1.1)`); foam.setAttribute("opacity",".3")
   }
   return {render, frozen}
@@ -427,20 +447,41 @@ export default function WorldMapView({
     while(layer.firstChild) layer.removeChild(layer.firstChild)
     let cx=0,cy=0; for(const b of beachList){cx+=b.vx;cy+=b.vy}; cx/=beachList.length; cy/=beachList.length
     const force=(()=>{try{return /[?&]beachfx=1/.test(window.location.search)}catch(_){return false}})()
-    // GATE RÉALISME : plage `avoid` au jour affiché OU **arrivée prévue** (arrivalDetected du
-    // pipeline, vraie prévision, jour 0). Les 2 vraies arrivées GP (Gosier/Bas-du-Fort) s'échouent.
-    let hits=beachList.filter(b=>b.days[day]==="avoid" || (day===0 && arrivals && arrivals[b.id]))
+    const arr=b=>arrivals&&arrivals[b.id]
+    // GATE RÉALISME : plage `avoid` au jour affiché OU arrivée prévue (arrivalDetected). Jamais de
+    // fausse éclaboussure sur une plage propre.
+    let hits=beachList.filter(b=>b.days[day]==="avoid" || (day===0 && arr(b)))
     if(force&&!hits.length) hits=[...beachList].sort((a,b)=>(a.score||99)-(b.score||99)).slice(0,3)
-    // priorité aux pires/arrivées les plus fortes, cap 4
-    hits=hits.sort((a,b)=>((arrivals&&arrivals[b.id])||0)-((arrivals&&arrivals[a.id])||0)).slice(0,4)
+    const sevOf=b=>(b.days[day]==="avoid"?1:0)+(((arr(b)&&arr(b).s)||0)*6)
+    hits=hits.sort((a,b)=>sevOf(b)-sevOf(a)).slice(0,4) // les plus sévères d'abord, cap 4
     if(!hits.length) return
-    const insts=hits.map((b,i)=>_spawnBeaching(layer,b.vx,b.vy,cx,cy,0.85,Math.round(b.vx*7+b.vy*13)+i*131))
-    const CYCLE=3.35, phases=insts.map((_,i)=>(i*0.83)%CYCLE)
-    if(reduceRef.current){ insts.forEach(o=>o.frozen()); return ()=>{ while(layer.firstChild) layer.removeChild(layer.firstChild) } }
+    // SÉVÉRITÉ → CADENCE (reframe fondateur 22/06) : plage en ALERTE (avoid / arrivée forte) = échouage
+    // qui REJOUE en boucle = « bombardement » qui crie l'URGENCE (ce problème ruine le tourisme) ;
+    // arrivée moins sévère / lointaine = joue UNE fois puis SE POSE (tableau, anti-répétition de l'audit
+    // play-once-settle). Quand tout est posé et qu'aucune ne boucle → le rAF s'éteint (0 % CPU, calme).
+    // Badge « J+N » = l'ETA d'arrivée (du pipeline) au moment de l'impact.
+    const CYCLE=3.35, T_SETTLE=1.55
+    const insts=hits.map((b,i)=>{
+      const a=arr(b)
+      const eta=force?(i+1):(a?a.d:(b.days[day]==="avoid"?0:null)) // 0=déjà là, 1-3=jour prévu, null=aucun
+      const loopIt=force||b.days[day]==="avoid"||(((a&&a.s)||0)>=0.10) // sévère → bombardement
+      const inst=_spawnBeaching(layer,b.vx,b.vy,cx,cy,0.85,Math.round(b.vx*7+b.vy*13)+i*131,eta)
+      return {inst,loopIt,delay:i*0.55,settled:false}
+    })
+    if(reduceRef.current){ insts.forEach(o=>o.inst.frozen()); return ()=>{ while(layer.firstChild) layer.removeChild(layer.firstChild) } }
     let raf=0,t0=0
-    const loop=tms=>{ if(!t0)t0=tms; const t=(tms-t0)/1000; for(let i=0;i<insts.length;i++) insts[i].render((t+phases[i])%CYCLE); raf=requestAnimationFrame(loop) }
+    const loop=tms=>{ if(!t0)t0=tms; const t=(tms-t0)/1000; let active=false
+      for(const o of insts){
+        if(o.loopIt){ o.inst.render((t+o.delay)%CYCLE); active=true }
+        else if(!o.settled){ const lt=t-o.delay
+          if(lt<T_SETTLE){ o.inst.render(Math.max(0,lt)); active=true }
+          else { o.inst.frozen(); o.settled=true } } // se pose : dépôt + badge figés, ne rejoue plus
+      }
+      if(active) raf=requestAnimationFrame(loop); else raf=0 // tout posé + aucune boucle → rAF éteint
+    }
     raf=requestAnimationFrame(loop)
-    const onVis=()=>{ if(document.hidden){ if(raf){cancelAnimationFrame(raf);raf=0} } else if(!raf){ t0=0; raf=requestAnimationFrame(loop) } }
+    const onVis=()=>{ if(document.hidden){ if(raf){cancelAnimationFrame(raf);raf=0} }
+      else if(!raf && insts.some(o=>o.loopIt||!o.settled)){ t0=0; raf=requestAnimationFrame(loop) } }
     document.addEventListener("visibilitychange",onVis)
     return ()=>{ if(raf)cancelAnimationFrame(raf); document.removeEventListener("visibilitychange",onVis); while(layer.firstChild) layer.removeChild(layer.firstChild) }
   },[beachList,day]) // eslint-disable-line
@@ -468,18 +509,19 @@ export default function WorldMapView({
         g.appendChild(_e("path",{d:sil,fill:"url(#wmSargHalf)",opacity:".28"}))
         g.appendChild(_e("path",{d:_splatPath(-R*0.2,-R*0.26,R*0.5,c.seed+3,7,0.5),fill:"#FFE9A8",opacity:".42"})) }
       layer.appendChild(g)
-      return {g, bx:c.vx, by:c.vy}
+      return {g, bx:c.vx, by:c.vy, seed:c.seed}
     })
     const reduced=reduceRef.current
-    // DÉRIVE = SWAY lent autour de la position RÉELLE de chaque cellule (sens courant O/N-O), PAS une
-    // translation nette : le champ reste à sa VRAIE place (honnête) → toujours peuplé, vivant mais
-    // calme, aucune couture/pop. La vraie translation vient du refetch données (4×/j). Période ~35s.
+    // DÉRIVE = sway lent autour de la position RÉELLE de chaque cellule (honnête, jamais de couture),
+    // mais NON-RÉPÉTITIF : somme de sinus à périodes INCOMMENSURABLES (ratios irrationnels φ/√2/√3) →
+    // jamais deux états identiques (fini la boucle ~35s perceptible = « lassant »). Amplitude faible,
+    // chaque cellule déphasée par son seed. (Fix répétition fondateur 22/06.)
     const place=(n,t)=>{
-      const ph=n.bx*0.013+n.by*0.011
-      const sway=reduced?0:Math.sin(t*0.18+ph)*11
-      const x=n.bx+sway*0.95                              // surtout horizontal (O-N-O)
-      const y=n.by+(reduced?0:Math.sin(t*0.13+ph)*5-sway*0.28)
-      n.g.setAttribute("transform",`translate(${x.toFixed(1)} ${y.toFixed(1)})`)
+      if(reduced){ n.g.setAttribute("transform",`translate(${n.bx.toFixed(1)} ${n.by.toFixed(1)})`); return }
+      const ph=n.seed*0.137
+      const sx=Math.sin(t*0.061+ph)*7 + Math.sin(t*0.0987+ph*1.31)*4 + Math.sin(t*0.1473+ph*0.71)*2.4
+      const sy=Math.sin(t*0.047+ph*1.1)*3.4 + Math.sin(t*0.0814+ph*0.53)*2.1
+      n.g.setAttribute("transform",`translate(${(n.bx+sx).toFixed(1)} ${(n.by+sy).toFixed(1)})`)
     }
     if(reduced){ nodes.forEach(n=>place(n,0)); return ()=>{ while(layer.firstChild) layer.removeChild(layer.firstChild) } }
     let raf=0
