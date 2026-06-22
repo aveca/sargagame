@@ -1175,18 +1175,18 @@ export default function WorldMapView({
             border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,
           }}>
             <div style={{
-              width:8,height:8,borderRadius:"50%",background:"#e8322a",border:`1.5px solid ${INK}`,
+              width:8,height:8,borderRadius:"50%",background:"#009E8E",border:`1.5px solid ${INK}`,
               animation:noAnim?"none":"wmPulse 2.4s ease-out infinite",
             }}/>
             <span style={{font:"800 11px/1 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".06em",textTransform:"uppercase",color:INK}}>{_t(lang,"EN DIRECT","LIVE","EN VIVO")}</span>
-            <span style={{font:"700 11px/1 'JetBrains Mono',monospace",color:"#1c8f4e",marginLeft:2}}>
+            <span style={{font:"700 11px/1 'JetBrains Mono',monospace",color:"#009E8E",marginLeft:2}}>
               {updatedAt?_t(lang,`il y a ${fmtFresh(updatedAt)}`,`${fmtFresh(updatedAt)} ago`,`hace ${fmtFresh(updatedAt)}`):"···"}
             </span>
           </div>
           {/* P7 — Recherche plage par nom (carte-monde) */}
           <div style={{position:"relative",flex:1,margin:"0 8px",maxWidth:260,pointerEvents:"auto"}}>
             <div style={{display:"flex",alignItems:"center",gap:6,background:"#fdf6e3",border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:10,padding:"6px 10px"}}>
-              <span style={{fontSize:12,opacity:.6}}>🔍</span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={INK} strokeWidth="2.4" strokeLinecap="round" style={{opacity:.5,flexShrink:0}}><circle cx="10" cy="10" r="6.5"/><path d="m20 20-5-5"/></svg>
               <input value={query} onChange={e=>setQuery(e.target.value)}
                 placeholder={_t(lang,"Chercher une plage…","Search a beach…","Buscar una playa…")}
                 style={{flex:1,minWidth:0,background:"none",border:"none",outline:"none",font:"700 12px/1 'Bricolage Grotesque',system-ui,sans-serif",color:INK}}/>
@@ -1252,7 +1252,7 @@ export default function WorldMapView({
                 maxWidth:360,background:"#fdf6e3",
                 border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:12,padding:"7px 9px",
               }}>
-              <span style={{fontSize:14,flexShrink:0}}>📬</span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={INK} strokeWidth="2" strokeLinejoin="round" style={{flexShrink:0}}><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
               <input type="email" inputMode="email" autoComplete="email"
                 value={emailVal} onChange={e=>setEmailVal(e.target.value)}
                 onKeyDown={e=>{if(e.key==="Enter")submitMapEmail()}}
@@ -1308,7 +1308,7 @@ export default function WorldMapView({
           padding:"11px 14px",borderRadius:999,cursor:"pointer",
           boxShadow:`3px 3px 0 ${INK}`,
         }} onClick={nearMe}>
-          📍 {_t(lang,"Près de moi","Near me","Cerca de mí")}
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#009E8E" stroke={INK} strokeWidth="1.8" style={{flexShrink:0}}><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.6" fill="#fdf6e3" stroke="none"/></svg> {_t(lang,"Près de moi","Near me","Cerca de mí")}
         </button>
 
         {/* Bouton son d'échouage (mute/unmute) — son ON par défaut, débloqué au 1er geste */}
@@ -1319,7 +1319,7 @@ export default function WorldMapView({
             pointerEvents:"auto",width:42,height:42,display:"inline-flex",alignItems:"center",justifyContent:"center",
             background:"#fdf6e3",color:INK,border:`2.5px solid ${INK}`,fontSize:17,
             borderRadius:999,cursor:"pointer",boxShadow:`3px 3px 0 ${INK}`,
-          }}>{muted?"🔇":"🔊"}</button>
+          }}>{muted?<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={INK} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="m17 9 5 6M22 9l-5 6"/></svg>:<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={INK} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>}</button>
 
         {/* Scrub jours (J0 libre · J1-5 → Premium) */}
         <div style={{
@@ -1345,7 +1345,7 @@ export default function WorldMapView({
                 try{track&&track("sg_map_scrub",{day:i,island})}catch(_){}
               }}>
                 {ti(lang,lbl)}
-                {i>=1&&<span style={{fontSize:8,position:"absolute",top:1,right:2}}>🔒</span>}
+                {i>=1&&<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke={INK} strokeWidth="2.6" style={{position:"absolute",top:1,right:2}}><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>}
               </button>
             ))}
           </div>
@@ -1366,7 +1366,7 @@ export default function WorldMapView({
               background:"#ffd23f",color:INK,
               font:"800 12px/1 'Bricolage Grotesque',system-ui,sans-serif",
               padding:"8px 14px",borderRadius:999,cursor:"default",
-            }}>🗺️ {_t(lang,"Carte","Map","Mapa")}</button>
+            }}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={INK} strokeWidth="2" strokeLinejoin="round" style={{flexShrink:0}}><path d="m9 4 6 2 5-2v14l-5 2-6-2-5 2V6l5-2Z"/><path d="M9 4v14M15 6v14"/></svg> {_t(lang,"Carte","Map","Mapa")}</button>
             {!rootMode&&<button onClick={onClose} style={{
               display:"flex",alignItems:"center",gap:6,border:"2px solid transparent",
               background:"transparent",color:INK,
