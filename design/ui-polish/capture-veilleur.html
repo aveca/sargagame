@@ -1,0 +1,491 @@
+<!--
+  POLISH — Capture email / exit-intent « Le Veilleur »
+  Mockup standalone runnable (mobile 380px). Applique la BIBLE DE MARQUE v1 :
+  3 fontes (Anton/Bricolage/JetBrains Mono), ink #0D0D0D, trio statut
+  #22C55E/#B87A00/#E8522A, liseré-ombre comic (pop-1/2/3), or RARE sur 1 seul CTA,
+  zéro emoji OS (glyphes SVG), zéro image/vidéo IA, plancher body 15px / micro 12px,
+  grille 4px, backdrop nuit-teal sans blur, halftone golden-hour discret.
+  Fonction préservée : la carte exit + le sticker carte capturent l'email → CTA conversion.
+-->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Capture Veilleur — polish</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@600;800&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  /* ── PRIMITIFS (la seule source) ── */
+  --sg-gold:#E8A800; --sg-gold-l:#FFC72C; --sg-gold-ll:#FFE47A;
+  --sg-teal:#009E8E; --sg-teal-l:#1EC8B0;
+  --sg-clean:#22C55E; --sg-moderate:#B87A00; --sg-avoid:#E8522A;
+  --sg-ink:#0D0D0D; --sg-mid:#5A5A5A; --sg-paper:#FDFCF7;
+  --sg-line:rgba(13,13,13,.12); --sg-line-strong:rgba(13,13,13,.22);
+  /* lock (jours verrouillés) = ink à faible opacité, un seul neutre */
+  --sg-lock:rgba(13,13,13,.10); --sg-lock-ink:rgba(13,13,13,.42);
+  /* scène golden-hour (bandeau signature) */
+  --scene-ink:#0A1714;
+
+  /* ── FONTES (grammaire fermée : 3 exactement) ── */
+  --f-anton:'Anton','Impact','Arial Narrow',sans-serif;       /* l'ACCENT */
+  --f-body:'Bricolage Grotesque',system-ui,sans-serif;        /* LE PILIER */
+  --f-num:'JetBrains Mono',ui-monospace,monospace;            /* les CHIFFRES */
+
+  /* ── ÉCHELLE DE TAILLES (corps 15 / plancher dur 12) ── */
+  --fs-micro:12px; --fs-body:15px; --fs-lead:17px; --fs-h3:20px;
+  --fs-h2:clamp(24px,6vw,30px); --fs-h1:clamp(30px,8vw,42px);
+
+  /* ── OMBRES COMIC (0-blur, bas-droite) ── */
+  --pop-1:2px 2px 0 var(--sg-ink);
+  --pop-2:4px 4px 0 var(--sg-ink);
+  --pop-3:6px 6px 0 var(--sg-ink);
+  --pop-press:1px 1px 0 var(--sg-ink);
+
+  /* ── RAYONS (3) ── */
+  --r-card:16px; --r-soft:12px; --r-pill:999px;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:var(--f-body); font-weight:600; font-size:var(--fs-body);
+  line-height:1.55; color:var(--sg-ink);
+  background:#E7E3D8;
+  -webkit-font-smoothing:antialiased;
+  display:flex; flex-direction:column; align-items:center; gap:28px;
+  padding:28px 0 64px;
+}
+
+/* viewport mobile 380px */
+.phone{width:380px; max-width:100vw; position:relative}
+
+.lbl{
+  width:380px; max-width:92vw; font-family:var(--f-body); font-weight:800;
+  font-size:var(--fs-micro); letter-spacing:.10em; text-transform:uppercase;
+  color:var(--sg-mid);
+}
+
+/* ── halftone golden-hour : trame Ben-Day or, discrète, masquée (se lève) ── */
+.halftone{
+  position:absolute; inset:0; pointer-events:none; z-index:0;
+  background-image:radial-gradient(var(--sg-gold) 1.4px, transparent 1.5px);
+  background-size:7px 7px; opacity:.10;
+  -webkit-mask-image:linear-gradient(180deg,#000,transparent 62%);
+  mask-image:linear-gradient(180deg,#000,transparent 62%);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   1. EXIT-INTENT « LE VEILLEUR » (modal de capture)
+   ═══════════════════════════════════════════════════════════ */
+.scrim{
+  position:relative; width:380px; border-radius:24px; overflow:hidden;
+  /* backdrop nuit-teal, SANS blur (anti-jank) */
+  background:rgba(13,30,28,.62);
+  padding:60px 16px 22px;
+  display:flex; justify-content:center;
+}
+
+/* Le Veilleur — désigne le CTA, regarde la MER, jamais l'utilisateur */
+.veilleur{
+  position:absolute; top:8px; left:50%; transform:translateX(-50%);
+  width:96px; z-index:3; pointer-events:none;
+}
+
+.card{
+  position:relative; z-index:2; width:100%;
+  background:var(--sg-paper);
+  border:2.5px solid var(--sg-ink); border-radius:var(--r-card);
+  box-shadow:var(--pop-3);
+  padding:44px 16px 16px; overflow:hidden;
+}
+/* barre golden-hour = signature en haut de carte */
+.card-topbar{
+  position:absolute; top:0; left:0; right:0; height:8px;
+  background:linear-gradient(90deg,var(--sg-teal),#C97E3A 55%,var(--sg-gold-l));
+}
+.card .halftone{height:120px}
+
+.x{
+  position:absolute; top:12px; right:12px; width:44px; height:44px;
+  display:flex; align-items:center; justify-content:center;
+  background:none; border:none; cursor:pointer; color:var(--sg-ink); z-index:4;
+}
+.x svg{display:block}
+
+.eyebrow{
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--sg-ink); color:var(--sg-paper);
+  font-family:var(--f-body); font-weight:800; font-size:var(--fs-micro);
+  letter-spacing:.10em; text-transform:uppercase;
+  padding:5px 10px; border-radius:var(--r-soft); margin-bottom:12px;
+  position:relative; z-index:1;
+}
+/* pastille EN DIRECT (point teal + respiration coupée en reduced-motion) */
+.live-dot{
+  width:7px; height:7px; border-radius:50%; background:var(--sg-teal-l);
+  animation:breathe 2.4s ease-in-out infinite;
+}
+@keyframes breathe{0%,100%{opacity:1}50%{opacity:.45}}
+
+.title{
+  font-family:var(--f-anton); font-weight:400; font-size:var(--fs-h2);
+  line-height:1.08; letter-spacing:-.02em; text-transform:uppercase;
+  color:var(--sg-ink); margin:0 0 12px; max-width:21ch;
+  position:relative; z-index:1;
+}
+.title .hl{
+  background:var(--sg-gold-l); border-radius:4px;
+  padding:0 .1em; box-decoration-break:clone; -webkit-box-decoration-break:clone;
+}
+
+/* ligne « plus propre aujourd'hui » — pastille statut + score Mono */
+.pick{
+  display:flex; align-items:center; gap:10px;
+  background:#fff; border:2px solid var(--sg-ink); border-radius:var(--r-soft);
+  box-shadow:var(--pop-1); padding:8px 12px; margin-bottom:12px;
+  position:relative; z-index:1;
+}
+.pick-dot{
+  width:14px; height:14px; border-radius:50%;
+  border:2px solid var(--sg-ink); flex-shrink:0; background:var(--sg-clean);
+}
+.pick-txt{flex:1; min-width:0; font-size:var(--fs-body); line-height:1.3}
+.pick-txt b{font-weight:800}
+.pick-score{
+  font-family:var(--f-num); font-weight:800; font-size:var(--fs-h3);
+  font-variant-numeric:tabular-nums; color:var(--sg-clean); white-space:nowrap;
+}
+.pick-score small{font-size:var(--fs-micro); color:var(--sg-mid); font-weight:600}
+
+/* ── calendrier 7 jours (preuve) ── */
+.cal{display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:8px; position:relative; z-index:1}
+.cal-day{text-align:center}
+.cal-name{
+  font-family:var(--f-body); font-weight:800; font-size:var(--fs-micro);
+  letter-spacing:.02em; color:var(--sg-mid); margin-bottom:4px;
+}
+.cal-name.on{color:var(--sg-ink)}
+.cal-cell{
+  height:42px; border:2px solid var(--sg-ink); border-radius:var(--r-soft);
+  display:flex; align-items:center; justify-content:center;
+}
+.cal-cell.on{box-shadow:var(--pop-1)}
+.cal-cell.off{border-color:var(--sg-line-strong); background:var(--sg-lock)}
+.cal-num{
+  font-family:var(--f-num); font-weight:800; font-size:var(--fs-body);
+  font-variant-numeric:tabular-nums; color:#fff;
+}
+.cal-lock{color:var(--sg-lock-ink)}
+
+.meta{
+  font-size:var(--fs-micro); color:var(--sg-mid); margin:0 0 16px; line-height:1.45;
+  position:relative; z-index:1;
+}
+
+/* champ email — nerf conversion */
+.field{
+  display:flex; align-items:center; gap:10px;
+  background:#fff; border:2px solid var(--sg-ink); border-radius:var(--r-soft);
+  padding:0 6px 0 12px; margin-bottom:12px; min-height:48px;
+  position:relative; z-index:1; transition:box-shadow .12s, border-color .12s;
+}
+.field:focus-within{border-color:var(--sg-gold-l); box-shadow:0 0 0 3px rgba(255,199,44,.22)}
+.field svg{flex-shrink:0}
+.field input{
+  flex:1; min-width:0; border:none; outline:none; background:transparent;
+  font-family:var(--f-body); font-weight:600; font-size:16px; /* 16 = anti-zoom iOS */
+  color:var(--sg-ink); padding:11px 0;
+}
+.field input::placeholder{color:var(--sg-mid)}
+
+/* CTA — LE seul or plein, seul pop-2 (1 pop-3 max = la carte) */
+.cta{
+  width:100%; display:flex; align-items:center; justify-content:center; gap:8px;
+  background:linear-gradient(135deg,var(--sg-gold-l),var(--sg-gold));
+  color:var(--sg-ink); border:2.5px solid var(--sg-ink); border-radius:var(--r-card);
+  box-shadow:var(--pop-2);
+  font-family:var(--f-body); font-weight:800; font-size:var(--fs-lead);
+  padding:14px 22px; min-height:48px; cursor:pointer;
+  transition:transform .08s, box-shadow .08s; position:relative; z-index:1;
+}
+.cta:active{transform:translate(2px,2px); box-shadow:var(--pop-press)}
+.cta svg{flex-shrink:0}
+
+.reassure{
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  font-size:var(--fs-micro); color:var(--sg-mid); margin:12px 0 0; line-height:1.4;
+  position:relative; z-index:1;
+}
+.reassure svg{flex-shrink:0}
+
+/* sortie volontairement hors-recette (n'aspire pas le clic) */
+.quiet{
+  display:block; margin:12px auto 0; background:none; border:none; cursor:pointer;
+  font-family:var(--f-body); font-weight:600; font-size:var(--fs-micro);
+  color:var(--sg-mid); text-decoration:underline; text-underline-offset:2px;
+  min-height:44px;
+}
+
+/* ── état SUCCÈS ── */
+.done{display:none; text-align:center; padding:8px 0 4px; position:relative; z-index:1}
+.done.show{display:block}
+.card.is-done .pre{display:none}
+.done-row{display:flex; justify-content:center; gap:6px; margin-bottom:16px}
+.done-cell{
+  width:32px; height:32px; border-radius:var(--r-soft);
+  border:2px solid var(--sg-ink); box-shadow:var(--pop-1);
+}
+.done-title{
+  font-family:var(--f-anton); font-weight:400; font-size:var(--fs-h2);
+  line-height:1.08; letter-spacing:-.02em; text-transform:uppercase; margin-bottom:8px;
+}
+.done-sub{font-size:var(--fs-body); color:var(--sg-mid); max-width:30ch; margin:0 auto}
+
+/* ═══════════════════════════════════════════════════════════
+   2. STICKER CAPTURE SUR LA CARTE (heroEmailBlock) — même grammaire
+   ═══════════════════════════════════════════════════════════ */
+.sticker-wrap{width:380px}
+.map-stub{
+  border:2.5px solid var(--sg-ink); border-radius:var(--r-card) var(--r-card) 0 0;
+  box-shadow:var(--pop-2); background:#fff; overflow:hidden;
+}
+.map-svg{display:block; width:100%; height:120px}
+
+.sticker{
+  position:relative; overflow:hidden;
+  border:2.5px solid var(--sg-ink); border-top:none;
+  border-radius:0 0 var(--r-card) var(--r-card);
+  box-shadow:var(--pop-2);
+  background:var(--sg-gold-ll);
+  padding:12px;
+}
+.sticker .halftone{height:100%; opacity:.14; -webkit-mask-image:none; mask-image:none}
+.sticker-head{
+  display:flex; align-items:center; gap:8px; margin-bottom:10px; position:relative; z-index:1;
+}
+.sticker-eye{
+  font-family:var(--f-body); font-weight:800; font-size:var(--fs-micro);
+  letter-spacing:.10em; text-transform:uppercase; color:var(--sg-ink);
+}
+.sticker-row{display:flex; align-items:center; gap:8px; position:relative; z-index:1}
+.sticker-field{
+  flex:1; display:flex; align-items:center; gap:8px;
+  background:#fff; border:2px solid var(--sg-ink); border-radius:var(--r-soft);
+  padding:0 10px; min-height:44px;
+}
+.sticker-field input{
+  flex:1; min-width:0; border:none; outline:none; background:transparent;
+  font-family:var(--f-body); font-weight:600; font-size:16px; color:var(--sg-ink); padding:9px 0;
+}
+.sticker-field input::placeholder{color:var(--sg-mid)}
+.sticker-ok{
+  background:linear-gradient(135deg,var(--sg-gold-l),var(--sg-gold)); color:var(--sg-ink);
+  border:2px solid var(--sg-ink); border-radius:var(--r-soft); box-shadow:var(--pop-1);
+  font-family:var(--f-body); font-weight:800; font-size:var(--fs-body);
+  padding:0 16px; min-height:44px; cursor:pointer; white-space:nowrap;
+  transition:transform .08s, box-shadow .08s;
+}
+.sticker-ok:active{transform:translate(2px,2px); box-shadow:var(--pop-press)}
+
+/* reduced-motion = plancher dur : contour+ombre RESTENT, respiration coupée */
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important; transition:none !important}
+}
+</style>
+
+<body>
+
+<!-- ════════ 1. EXIT-INTENT MODAL ════════ -->
+<div class="lbl">Exit-intent « Le Veilleur » — capture e-mail</div>
+<div class="phone">
+  <div class="scrim">
+
+    <!-- Le Veilleur : satellite, capteur orienté vers la MER (bas) = désigne le CTA -->
+    <svg class="veilleur" viewBox="-96 -96 192 176" aria-hidden="true">
+      <defs>
+        <radialGradient id="vHalo" cx="50%" cy="42%" r="55%">
+          <stop offset="0" stop-color="#1EC8B0" stop-opacity=".55"/>
+          <stop offset=".6" stop-color="#009E8E" stop-opacity=".14"/>
+          <stop offset="1" stop-color="#009E8E" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="vLens" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#1EC8B0"/><stop offset="1" stop-color="#009E8E"/>
+        </linearGradient>
+        <linearGradient id="vBeam" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#FFE47A" stop-opacity=".55"/>
+          <stop offset="1" stop-color="#FFE47A" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <circle cx="0" cy="0" r="80" fill="url(#vHalo)"/>
+      <!-- faisceau de veille descendant vers la mer / le CTA -->
+      <path d="M-14 26 L14 26 L40 78 L-40 78 Z" fill="url(#vBeam)"/>
+      <g stroke="#0D0D0D" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+        <!-- panneaux solaires -->
+        <rect x="-74" y="-16" width="24" height="34" rx="5" fill="#009E8E" transform="rotate(-10 -62 1)"/>
+        <rect x="50" y="-16" width="24" height="34" rx="5" fill="#0A6F63" transform="rotate(10 62 1)"/>
+        <line x1="-50" y1="1" x2="-32" y2="1"/><line x1="50" y1="1" x2="32" y2="1"/>
+        <!-- corps -->
+        <ellipse cx="0" cy="2" rx="34" ry="32" fill="#FDFCF7"/>
+      </g>
+      <!-- capteur/lentille tourné vers la mer (regard mi-clos, serein) -->
+      <circle cx="0" cy="6" r="17" fill="url(#vLens)" stroke="#0D0D0D" stroke-width="5"/>
+      <path d="M-11 6 a11 9 0 0 1 22 0" fill="none" stroke="#0A1714" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="5" cy="2" r="3.5" fill="#EAFFF8"/>
+      <!-- antenne + balise or -->
+      <path d="M0 -30 q7 -16 -2 -28" stroke="#0D0D0D" stroke-width="5.5" fill="none" stroke-linecap="round"/>
+      <circle cx="-2" cy="-62" r="9" fill="#FFC72C" stroke="#0D0D0D" stroke-width="4"/>
+    </svg>
+
+    <div class="card" id="card">
+      <div class="card-topbar"></div>
+      <div class="halftone"></div>
+
+      <button class="x" aria-label="Fermer" onclick="closeCard()">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#0D0D0D" stroke-width="2.5" stroke-linecap="round">
+          <path d="M5 5l10 10M15 5L5 15"/>
+        </svg>
+      </button>
+
+      <!-- ── PRE (formulaire) ── -->
+      <div class="pre">
+        <span class="eyebrow"><span class="live-dot"></span>Le Veilleur a préparé ta semaine</span>
+
+        <h2 class="title">Ta <span class="hl">semaine</span> de plages propres est prête</h2>
+
+        <div class="pick">
+          <span class="pick-dot"></span>
+          <span class="pick-txt">La plus propre aujourd'hui : <b>Anse Dufour</b></span>
+          <span class="pick-score">82<small>/100</small></span>
+        </div>
+
+        <div class="cal" id="cal"></div>
+
+        <p class="meta">Aujourd'hui et demain en clair · les 5 jours suivants arrivent par e-mail.</p>
+
+        <form onsubmit="submitCard(event)">
+          <label class="field">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5A5A5A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3 7l9 6 9-6"/>
+            </svg>
+            <input type="email" inputmode="email" autocomplete="email" required placeholder="ton@email.com" aria-label="E-mail">
+          </label>
+          <button class="cta" type="submit">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0"/>
+            </svg>
+            Déverrouille ma semaine
+          </button>
+        </form>
+
+        <p class="reassure">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5A5A5A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3a6 6 0 0 0-6 6c0 5-2 6-2 6h16s-2-1-2-6a6 6 0 0 0-6-6z"/><path d="M10 20a2 2 0 0 0 4 0"/>
+          </svg>
+          1 brief chaque matin à 7h · stop quand tu veux
+        </p>
+
+        <button class="quiet" onclick="closeCard()">Non merci, je pars sans</button>
+      </div>
+
+      <!-- ── DONE (succès) ── -->
+      <div class="done" id="done">
+        <div class="done-row" id="doneRow"></div>
+        <div class="done-title">C'est verrouillé. Je veille.</div>
+        <p class="done-sub">Demain 7h, ton bon plan arrive dans ta boîte.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ 2. STICKER CAPTURE SUR LA CARTE ════════ -->
+<div class="lbl">Sticker capture sur la carte (heroEmailBlock)</div>
+<div class="sticker-wrap">
+  <div class="map-stub">
+    <svg class="map-svg" viewBox="0 0 380 120" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <rect width="380" height="120" fill="#0A1714"/>
+      <path d="M0 70 Q60 58 120 66 T240 62 T380 70 V120 H0 Z" fill="#08251F"/>
+      <path d="M0 64 Q70 54 140 60 T280 56 T380 62" fill="none" stroke="#1A5852" stroke-width="2" opacity=".6"/>
+      <!-- pastilles statut sur la carte -->
+      <g stroke="#0D0D0D" stroke-width="2">
+        <circle cx="96" cy="48" r="9" fill="#22C55E"/>
+        <circle cx="196" cy="58" r="9" fill="#B87A00"/>
+        <circle cx="290" cy="44" r="9" fill="#E8522A"/>
+      </g>
+    </svg>
+  </div>
+  <div class="sticker">
+    <div class="halftone"></div>
+    <div class="sticker-head">
+      <span class="live-dot" style="width:8px;height:8px"></span>
+      <span class="sticker-eye">Ta reco propre, chaque matin à 7h</span>
+    </div>
+    <form class="sticker-row" onsubmit="event.preventDefault();alert('email capté (mockup)')">
+      <label class="sticker-field">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5A5A5A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3 7l9 6 9-6"/>
+        </svg>
+        <input type="email" inputmode="email" autocomplete="email" required placeholder="ton@email.com" aria-label="E-mail">
+      </label>
+      <button class="sticker-ok" type="submit">OK</button>
+    </form>
+  </div>
+</div>
+
+<script>
+// statuts de marque (couleur du calendrier-preuve)
+var STC={clean:"#22C55E",moderate:"#B87A00",avoid:"#E8522A"};
+var WD=["DIM","LUN","MAR","MER","JEU","VEN","SAM"];
+// forecast factice 7 jours (en vrai = sargData.weekly[id].forecast)
+var FC=["clean","clean","moderate","clean","clean","avoid","clean"];
+var now=new Date();
+
+function dayName(i){ if(i===0)return"AUJ"; if(i===1)return"DEM";
+  var d=new Date(now.getFullYear(),now.getMonth(),now.getDate()+i); return WD[d.getDay()]; }
+function dayNum(i){ return new Date(now.getFullYear(),now.getMonth(),now.getDate()+i).getDate(); }
+
+// helper : crée une icône cadenas SVG (pas d'emoji OS)
+function lockSVG(){
+  var ns="http://www.w3.org/2000/svg";
+  var s=document.createElementNS(ns,"svg");
+  s.setAttribute("class","cal-lock"); s.setAttribute("width","14"); s.setAttribute("height","14");
+  s.setAttribute("viewBox","0 0 24 24"); s.setAttribute("fill","none");
+  s.setAttribute("stroke","currentColor"); s.setAttribute("stroke-width","2.4");
+  s.setAttribute("stroke-linecap","round"); s.setAttribute("stroke-linejoin","round");
+  var r=document.createElementNS(ns,"rect");
+  r.setAttribute("x","5"); r.setAttribute("y","11"); r.setAttribute("width","14"); r.setAttribute("height","9"); r.setAttribute("rx","2");
+  var p=document.createElementNS(ns,"path"); p.setAttribute("d","M8 11V8a4 4 0 0 1 8 0");
+  s.appendChild(r); s.appendChild(p); return s;
+}
+
+// calendrier : AUJ+DEM en clair (preuve), 5 suivants verrouillés — DOM only
+(function(){
+  var cal=document.getElementById("cal");
+  for(var i=0;i<7;i++){
+    var on=i<=1;
+    var day=document.createElement("div"); day.className="cal-day";
+    var nm=document.createElement("div"); nm.className="cal-name"+(on?" on":""); nm.textContent=dayName(i);
+    var cell=document.createElement("div"); cell.className="cal-cell "+(on?"on":"off");
+    if(on){
+      cell.style.background=STC[FC[i]];
+      var num=document.createElement("span"); num.className="cal-num"; num.textContent=dayNum(i);
+      cell.appendChild(num);
+    } else { cell.appendChild(lockSVG()); }
+    day.appendChild(nm); day.appendChild(cell); cal.appendChild(day);
+  }
+})();
+
+function submitCard(e){
+  e.preventDefault();
+  // FONCTION PRÉSERVÉE : en prod → s("sg_email"), submitLead(), track("sg_exitcap_submit")
+  var card=document.getElementById("card"), done=document.getElementById("done"), row=document.getElementById("doneRow");
+  for(var i=0;i<7;i++){
+    var c=document.createElement("div"); c.className="done-cell";
+    c.style.background=STC[FC[i]]||"#22C55E"; row.appendChild(c);
+  }
+  card.classList.add("is-done"); done.classList.add("show");
+}
+function closeCard(){ alert("onClose('dismiss') — snooze (mockup)"); }
+</script>
+</body>
+</html>

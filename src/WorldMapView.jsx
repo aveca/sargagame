@@ -1136,12 +1136,12 @@ export default function WorldMapView({
                 whiteSpace:"nowrap",
               }}>
               <div style={{
-                font:"800 11px/1 'Comic Neue',system-ui,sans-serif",
+                font:"800 11px/1 'Bricolage Grotesque',system-ui,sans-serif",
                 color:"#fff",
                 textShadow:`1px 1px 0 ${INK},0 0 5px ${INK},0 0 9px rgba(13,11,20,.65)`,
               }}>{b.name}</div>
               <div style={{
-                font:"800 9px/1 'Comic Neue',system-ui,sans-serif",
+                font:"800 9px/1 'Bricolage Grotesque',system-ui,sans-serif",
                 letterSpacing:".05em",
                 textTransform:"uppercase",
                 color:col,
@@ -1178,7 +1178,7 @@ export default function WorldMapView({
               width:8,height:8,borderRadius:"50%",background:"#e8322a",border:`1.5px solid ${INK}`,
               animation:noAnim?"none":"wmPulse 2.4s ease-out infinite",
             }}/>
-            <span style={{font:"800 11px/1 'Comic Neue',system-ui,sans-serif",letterSpacing:".06em",textTransform:"uppercase",color:INK}}>{_t(lang,"EN DIRECT","LIVE","EN VIVO")}</span>
+            <span style={{font:"800 11px/1 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".06em",textTransform:"uppercase",color:INK}}>{_t(lang,"EN DIRECT","LIVE","EN VIVO")}</span>
             <span style={{font:"700 11px/1 'JetBrains Mono',monospace",color:"#1c8f4e",marginLeft:2}}>
               {updatedAt?_t(lang,`il y a ${fmtFresh(updatedAt)}`,`${fmtFresh(updatedAt)} ago`,`hace ${fmtFresh(updatedAt)}`):"···"}
             </span>
@@ -1189,14 +1189,14 @@ export default function WorldMapView({
               <span style={{fontSize:12,opacity:.6}}>🔍</span>
               <input value={query} onChange={e=>setQuery(e.target.value)}
                 placeholder={_t(lang,"Chercher une plage…","Search a beach…","Buscar una playa…")}
-                style={{flex:1,minWidth:0,background:"none",border:"none",outline:"none",font:"700 12px/1 'Comic Neue',system-ui,sans-serif",color:INK}}/>
+                style={{flex:1,minWidth:0,background:"none",border:"none",outline:"none",font:"700 12px/1 'Bricolage Grotesque',system-ui,sans-serif",color:INK}}/>
               {query&&<button onClick={()=>setQuery("")} aria-label="clear" style={{background:"none",border:"none",color:INK,opacity:.5,cursor:"pointer",fontSize:14,lineHeight:1,padding:0}}>✕</button>}
             </div>
             {matches.length>0&&(
               <div style={{position:"absolute",top:"calc(100% + 6px)",left:0,right:0,background:"#fdf6e3",border:`2.5px solid ${INK}`,boxShadow:`3px 4px 0 ${INK}`,borderRadius:12,overflow:"hidden",zIndex:20}}>
                 {matches.map(b=>(
                   <button key={b.id} onClick={()=>{try{track&&track("sg_map_search_open",{id:b.id})}catch(_){}; setQuery(""); onOpenBeach&&onOpenBeach(b)}}
-                    style={{display:"flex",alignItems:"center",gap:8,width:"100%",textAlign:"left",background:"none",border:"none",borderBottom:"1px solid rgba(13,11,20,.12)",padding:"9px 11px",cursor:"pointer",font:"700 12.5px/1.2 'Comic Neue',system-ui,sans-serif",color:INK}}>
+                    style={{display:"flex",alignItems:"center",gap:8,width:"100%",textAlign:"left",background:"none",border:"none",borderBottom:"1px solid rgba(13,11,20,.12)",padding:"9px 11px",cursor:"pointer",font:"700 12.5px/1.2 'Bricolage Grotesque',system-ui,sans-serif",color:INK}}>
                     <span style={{width:9,height:9,borderRadius:"50%",background:STATUS_C[b.status]||"#9aa0a8",flexShrink:0}}/>
                     <span style={{flex:1}}>{b.name}</span>
                     {b.commune&&<span style={{opacity:.5,fontWeight:600,fontSize:11}}>{b.commune}</span>}
@@ -1209,7 +1209,7 @@ export default function WorldMapView({
           {!rootMode&&<button onClick={onClose} style={{
             border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,
             background:"#fdf6e3",
-            color:INK,font:"800 12px/1 'Comic Neue',system-ui,sans-serif",
+            color:INK,font:"800 12px/1 'Bricolage Grotesque',system-ui,sans-serif",
             padding:"8px 12px",borderRadius:10,cursor:"pointer",pointerEvents:"auto",
           }}>✕</button>}
         </div>
@@ -1238,7 +1238,7 @@ export default function WorldMapView({
                 width:beachList.length?Math.round(cleanCnt/beachList.length*100)+"%":"0%",
               }}/>
             </div>
-            <span style={{font:"700 12.5px/1 'Comic Neue',system-ui,sans-serif",color:INK}}>
+            <span style={{font:"700 12.5px/1 'Bricolage Grotesque',system-ui,sans-serif",color:INK}}>
               <b style={{fontFamily:"'AntonLC','Anton',sans-serif",fontWeight:400,color:"#1c8f4e"}}>{cleanCnt}</b> {_t(lang,"plages propres","clean beaches","playas limpias")}
             </span>
           </div>
@@ -1258,11 +1258,11 @@ export default function WorldMapView({
                 onKeyDown={e=>{if(e.key==="Enter")submitMapEmail()}}
                 placeholder={_t(lang,"ton@email — ma reco à 7h","email — daily pick at 7am","tu@email — playa del día a las 7")}
                 style={{flex:1,minWidth:0,background:"#fff",border:`2px solid ${INK}`,borderRadius:8,
-                  padding:"6px 9px",font:"700 12px/1 'Comic Neue',system-ui,sans-serif",color:INK,outline:"none"}}/>
+                  padding:"6px 9px",font:"700 12px/1 'Bricolage Grotesque',system-ui,sans-serif",color:INK,outline:"none"}}/>
               <button onClick={submitMapEmail} disabled={!emailVal||!emailVal.includes("@")}
                 style={{flexShrink:0,border:`2px solid ${INK}`,
                   background:(emailVal&&emailVal.includes("@"))?"#ffd23f":"rgba(13,11,20,.08)",
-                  color:INK,font:"800 12px/1 'Comic Neue',system-ui,sans-serif",
+                  color:INK,font:"800 12px/1 'Bricolage Grotesque',system-ui,sans-serif",
                   padding:"7px 11px",borderRadius:8,cursor:(emailVal&&emailVal.includes("@"))?"pointer":"not-allowed"}}>OK</button>
               <button onClick={()=>{try{localStorage.setItem("sg_hero_email_dismiss","1")}catch(_){}; setEmailHidden(true); try{track&&track("sg_map_email_dismiss",{})}catch(_){}}}
                 aria-label={_t(lang,"Fermer","Close","Cerrar")}
@@ -1276,7 +1276,7 @@ export default function WorldMapView({
               background:"#fdf6e3",border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:12,padding:"8px 12px",
             }}>
               <span style={{fontSize:14}}>✅</span>
-              <span style={{font:"800 12px/1.2 'Comic Neue',system-ui,sans-serif",color:"#1c8f4e"}}>
+              <span style={{font:"800 12px/1.2 'Bricolage Grotesque',system-ui,sans-serif",color:"#1c8f4e"}}>
                 {_t(lang,"C'est fait ! Ta reco demain à 7h.","You're in! First pick tomorrow 7am.","¡Listo! Tu playa mañana a las 7.")}
               </span>
             </div>
@@ -1292,7 +1292,7 @@ export default function WorldMapView({
             ["#F2B330",_t(lang,"Modéré","Moderate","Moderado")],
             ["#E8472A",_t(lang,"À éviter","Avoid","Evitar")]].map(([c,l])=>(
             <div key={c} style={{display:"flex",alignItems:"center",gap:7,
-              font:"700 10.5px/1 'Comic Neue',system-ui,sans-serif",
+              font:"700 10.5px/1 'Bricolage Grotesque',system-ui,sans-serif",
               color:"#fff",textShadow:`0 1px 0 ${INK},0 0 4px ${INK}`}}>
               <div style={{width:10,height:10,borderRadius:"50%",background:c,border:`1.5px solid ${INK}`}}/>{l}
             </div>
@@ -1304,7 +1304,7 @@ export default function WorldMapView({
           position:"absolute",right:16,bottom:"calc(74px + env(safe-area-inset-bottom))",
           pointerEvents:"auto",display:"inline-flex",alignItems:"center",gap:7,
           background:"#fdf6e3",
-          color:INK,border:`2.5px solid ${INK}`,font:"800 12.5px/1 'Comic Neue',system-ui,sans-serif",
+          color:INK,border:`2.5px solid ${INK}`,font:"800 12.5px/1 'Bricolage Grotesque',system-ui,sans-serif",
           padding:"11px 14px",borderRadius:999,cursor:"pointer",
           boxShadow:`3px 3px 0 ${INK}`,
         }} onClick={nearMe}>
@@ -1337,7 +1337,7 @@ export default function WorldMapView({
                 border:day===i?`2px solid ${INK}`:"2px solid transparent",position:"relative",
                 background:day===i?"#ff7a2f":"transparent",
                 color:INK,
-                font:"800 11px/1 'Comic Neue',system-ui,sans-serif",
+                font:"800 11px/1 'Bricolage Grotesque',system-ui,sans-serif",
                 padding:"7px 10px",borderRadius:999,cursor:"pointer",
               }} onClick={()=>{
                 if(i>=1){ try{track&&track("sg_map_scrub_locked",{day:i})}catch(_){}; onPremium&&onPremium("map_scrub_forecast"); return }
@@ -1364,13 +1364,13 @@ export default function WorldMapView({
             <button style={{
               display:"flex",alignItems:"center",gap:6,border:`2px solid ${INK}`,
               background:"#ffd23f",color:INK,
-              font:"800 12px/1 'Comic Neue',system-ui,sans-serif",
+              font:"800 12px/1 'Bricolage Grotesque',system-ui,sans-serif",
               padding:"8px 14px",borderRadius:999,cursor:"default",
             }}>🗺️ {_t(lang,"Carte","Map","Mapa")}</button>
             {!rootMode&&<button onClick={onClose} style={{
               display:"flex",alignItems:"center",gap:6,border:"2px solid transparent",
               background:"transparent",color:INK,
-              font:"800 12px/1 'Comic Neue',system-ui,sans-serif",
+              font:"800 12px/1 'Bricolage Grotesque',system-ui,sans-serif",
               padding:"8px 14px",borderRadius:999,cursor:"pointer",
             }}>✕ {_t(lang,"Fermer","Close","Cerrar")}</button>}
           </div>
@@ -1386,12 +1386,12 @@ export default function WorldMapView({
             pointerEvents:"none",whiteSpace:"nowrap",
           }}>
             <div style={{font:"400 14px/1.1 'AntonLC','Anton',sans-serif",letterSpacing:".01em",color:INK}}>{selected.name}</div>
-            <div style={{font:"800 10.5px/1 'Comic Neue',system-ui,sans-serif",letterSpacing:".04em",
+            <div style={{font:"800 10.5px/1 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".04em",
               textTransform:"uppercase",marginTop:4,display:"flex",alignItems:"center",gap:5,color:INK}}>
               <div style={{width:8,height:8,borderRadius:"50%",background:STATUS_C[selected.days[day]]||"#9aa0a8",border:`1.5px solid ${INK}`}}/>
               <span>{ti(lang,STATUS_LBL[selected.days[day]]||["—","—","—"])}</span>
             </div>
-            {selected.commune&&<div style={{font:"700 10px/1 'Comic Neue',system-ui,sans-serif",color:"#6b6478",marginTop:4}}>{selected.commune}</div>}
+            {selected.commune&&<div style={{font:"700 10px/1 'Bricolage Grotesque',system-ui,sans-serif",color:"#6b6478",marginTop:4}}>{selected.commune}</div>}
           </div>
         )}
 
@@ -1406,7 +1406,7 @@ export default function WorldMapView({
             display:"inline-flex",alignItems:"center",gap:8,
             background:"linear-gradient(180deg,#FFE07A,#FFC72C)",
             color:INK,border:`2.5px solid ${INK}`,
-            font:"800 13.5px/1 'Comic Neue',system-ui,sans-serif",
+            font:"800 13.5px/1 'Bricolage Grotesque',system-ui,sans-serif",
             padding:"13px 18px",borderRadius:999,
             boxShadow:`4px 4px 0 ${INK}`,cursor:"pointer",
             animation:"wmSlide .25s cubic-bezier(.34,1.56,.64,1) both",

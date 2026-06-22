@@ -129,7 +129,7 @@ const scoreLabelFor=(label,lang)=>lang==="fr"?label:(SCORE_LABEL_I18N[label]?.[l
    ═══════════════════════════════════════════════════════════════════════════ */
 const C={
   bg:"#FDFCF7",bgD:"#F7F5EF",card:"#FFFFFF",cardS:"#FAFAFA",
-  ink:"#0D0D0D",mid:"#686868",mute:"#686868",
+  ink:"#0D0D0D",mid:"#5A5A5A",mute:"#5A5A5A",
   border:"rgba(0,0,0,.04)",borderM:"rgba(0,0,0,.08)",
   gold:"#E8A800",goldL:"#FFC72C",goldLL:"#FFE47A",
   goldBg:"rgba(232,168,0,.07)",goldBgL:"rgba(255,199,44,.15)",
@@ -2490,7 +2490,7 @@ function FilterChip({label,icon,active,onClick,count}){
       <span>{label}</span>
       {count!=null&&<span style={{
         fontFamily:"'Anton',sans-serif",fontSize:12,letterSpacing:".02em",lineHeight:1,
-        color:active?"rgba(26,18,0,.75)":"var(--sg-mid,#686868)",
+        color:active?"rgba(26,18,0,.75)":"var(--sg-mid,#5A5A5A)",
         background:active?"rgba(26,18,0,.1)":"rgba(15,42,58,.05)",
         borderRadius:100,padding:"3px 7px 2px",marginLeft:1}}>{count}</span>}
     </button>
@@ -2517,7 +2517,7 @@ function ForecastCredibility({weeklyData,lang,sargData}){
     <div style={{marginTop:10,padding:"10px 12px",borderRadius:12,
       background:"var(--sg-bgD,#F7F5EF)",border:"1px solid var(--sg-border,rgba(0,0,0,.06))"}}>
       <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
-        <span style={{fontSize:10,fontWeight:700,color:"var(--sg-mid,#686868)",minWidth:52,letterSpacing:".03em",textTransform:"uppercase"}}>{LL.reliabilityLabel}</span>
+        <span style={{fontSize:10,fontWeight:700,color:"var(--sg-mid,#5A5A5A)",minWidth:52,letterSpacing:".03em",textTransform:"uppercase"}}>{LL.reliabilityLabel}</span>
         <div style={{flex:1,height:5,borderRadius:3,background:"var(--sg-border,rgba(0,0,0,.08))",overflow:"hidden"}}>
           <div style={{width:`${barPct}%`,height:"100%",borderRadius:3,
             background:`linear-gradient(90deg,${levelColor},${levelColor}cc)`,
@@ -2532,7 +2532,7 @@ function ForecastCredibility({weeklyData,lang,sargData}){
         </button>
       </div>
       {showTip&&(
-        <div style={{fontSize:11,color:"var(--sg-mid,#686868)",marginBottom:6,lineHeight:1.5,
+        <div style={{fontSize:11,color:"var(--sg-mid,#5A5A5A)",marginBottom:6,lineHeight:1.5,
           padding:"8px 10px",borderRadius:8,background:"var(--sg-card,#fff)",
           animation:"slideUp .25s cubic-bezier(.22,1,.36,1)"}}>
           {levelDesc}
@@ -2564,7 +2564,7 @@ function SciFooter({lang}){
       backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",
       border:"1px solid var(--sg-glassBorder,rgba(0,0,0,.04))",
       textAlign:"center",
-      fontSize:9,color:"var(--sg-mid,#686868)",letterSpacing:".02em",lineHeight:1.5,
+      fontSize:9,color:"var(--sg-mid,#5A5A5A)",letterSpacing:".02em",lineHeight:1.5,
     }}>
       <span style={{display:"inline-flex",alignItems:"center",gap:6}}><BrandIcon name="satellite" size={14}/>{LL.sciFooter}</span>
     </div>
@@ -2604,14 +2604,14 @@ function LearnParagraph({text,accent}){
     const label=text.slice(0,dashIdx)
     const rest=text.slice(dashIdx+3)
     return(
-      <p style={{margin:0,fontSize:13.5,lineHeight:1.65,color:"var(--sg-mid,#686868)"}}>
+      <p style={{margin:0,fontSize:13.5,lineHeight:1.65,color:"var(--sg-mid,#5A5A5A)"}}>
         <span style={{fontWeight:800,color:accent||"var(--sg-ink,#0D0D0D)"}}>{label}</span>
         <span style={{opacity:.4,margin:"0 4px"}}>·</span>
         {rest}
       </p>
     )
   }
-  return <p style={{margin:0,fontSize:13.5,lineHeight:1.65,color:"var(--sg-mid,#686868)"}}>{text}</p>
+  return <p style={{margin:0,fontSize:13.5,lineHeight:1.65,color:"var(--sg-mid,#5A5A5A)"}}>{text}</p>
 }
 
 function LearnView({lang,onBack,onGoMap}){
@@ -2730,7 +2730,7 @@ function BottomNav({view,onChangeView,lang,premiumOpen,glass=false,isPremium=fal
         <button key={t.id} onClick={()=>onChangeView(t.id)} style={{
           display:"flex",flexDirection:"column",alignItems:"center",gap:2,
           background:"none",border:"none",cursor:"pointer",
-          color:active?C.gold:"var(--sg-mid,#686868)",
+          color:active?C.gold:"var(--sg-mid,#5A5A5A)",
           fontSize:11,fontWeight:active?700:500,fontFamily:"inherit",
           transition:"all .2s",padding:"6px 20px",position:"relative",
           minHeight:44,justifyContent:"center",
@@ -2832,7 +2832,7 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
               filter:isLocked?"blur(2px)":"none",opacity:isLocked?0.55:typeOpacity,
               pointerEvents:isLocked?"none":"auto"}}>
               {wxIcon&&<span style={{fontSize:13,lineHeight:1}}>{wxIcon}</span>}
-              {dayTemp!=null&&<span style={{fontSize:9,fontWeight:700,color:"var(--sg-mid,#686868)",
+              {dayTemp!=null&&<span style={{fontSize:9,fontWeight:700,color:"var(--sg-mid,#5A5A5A)",
                 letterSpacing:".01em"}}>{dayTemp}°</span>}
               <span style={{fontFamily:"'Anton',sans-serif",fontSize:13,lineHeight:1,
                 letterSpacing:"-.01em",color:st.c}}>
@@ -2843,7 +2843,7 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
                 borderRadius:"6px 6px 2px 2px",
                 boxShadow:`0 -4px 14px -6px ${st.c}88, inset 0 1px 0 rgba(255,255,255,.3)`}}/>
               <span className="anton" style={{fontSize:11,lineHeight:1,letterSpacing:".02em",
-                color:"var(--sg-mid,#686868)",textTransform:"uppercase",marginTop:2}}>
+                color:"var(--sg-mid,#5A5A5A)",textTransform:"uppercase",marginTop:2}}>
                 {fcDay(d,lang)}
               </span>
               {fConf!=null&&!isLocked&&<span style={{fontSize:8,color:"var(--sg-mid,#999)",fontWeight:600}}>{fConf}%</span>}
@@ -2869,7 +2869,7 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
           }}>
             🔒 {lockCTA}
           </button>
-          <span style={{fontSize:11,color:"var(--sg-mid,#686868)",fontWeight:500,textAlign:"center",maxWidth:160}}>
+          <span style={{fontSize:11,color:"var(--sg-mid,#5A5A5A)",fontWeight:500,textAlign:"center",maxWidth:160}}>
             {lockSub}
           </span>
         </div>
@@ -2894,7 +2894,7 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
             )
           })}
         </div>
-        <span style={{fontSize:10,fontWeight:700,color:"var(--sg-mid,#686868)",flexShrink:0}}>
+        <span style={{fontSize:10,fontWeight:700,color:"var(--sg-mid,#5A5A5A)",flexShrink:0}}>
           {_t(lang,"Voir →","Unlock →","Ver →")}
         </span>
       </div>
@@ -3014,7 +3014,7 @@ function ForecastLanding({beach,lang,island,sargData,isPremium,onPremium,onOpenB
       <div style={{padding:"20px 16px calc(100px + env(safe-area-inset-bottom))",maxWidth:520,margin:"0 auto"}}>
         <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:12,marginBottom:14}}>
           <div style={{minWidth:0}}>
-            <div style={{fontSize:11,fontWeight:700,letterSpacing:".06em",color:"var(--sg-mid,#686868)",textTransform:"uppercase"}}>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:".06em",color:"var(--sg-mid,#5A5A5A)",textTransform:"uppercase"}}>
               {_t(lang,"Plage modèle","Sample beach","Playa modelo")}
             </div>
             <button onClick={()=>onOpenBeach(beach)} style={{background:"none",border:"none",padding:0,cursor:"pointer",textAlign:"left"}}>
@@ -3027,22 +3027,22 @@ function ForecastLanding({beach,lang,island,sargData,isPremium,onPremium,onOpenB
           ?<ForecastChart forecast={forecast} lang={lang}
               onPremiumClick={src=>onPremium(src||"previsions_landing")}
               isPremium={isPremium} weatherDaily={weather?.daily||null} weeklyData={activeWeekly}/>
-          :<div style={{padding:16,borderRadius:14,background:"var(--sg-bgD,#F7F5EF)",fontSize:13,color:"var(--sg-mid,#686868)"}}>
+          :<div style={{padding:16,borderRadius:14,background:"var(--sg-bgD,#F7F5EF)",fontSize:13,color:"var(--sg-mid,#5A5A5A)"}}>
               {_t(lang,"Vérification en cours, reviens demain.","Verification in progress, check back tomorrow.","Verificación en curso, vuelve mañana.")}
             </div>}
         <div style={{marginTop:16,padding:"14px 16px",borderRadius:14,background:"var(--sg-card,#fff)",
           border:"1px solid var(--sg-border,rgba(0,0,0,.06))",boxShadow:"0 2px 12px rgba(0,0,0,.04)"}}>
-          <div style={{fontSize:11,fontWeight:700,letterSpacing:".05em",color:"var(--sg-mid,#686868)",textTransform:"uppercase",marginBottom:6}}>
+          <div style={{fontSize:11,fontWeight:700,letterSpacing:".05em",color:"var(--sg-mid,#5A5A5A)",textTransform:"uppercase",marginBottom:6}}>
             {_t(lang,"Ton meilleur jour cette semaine","Your best day this week","Tu mejor día esta semana")}
           </div>
           {bestDay
             ?<div style={{fontSize:15,fontWeight:700,color:ST.clean.c}}>
                 {fcDay(bestDay,lang)}{bestDay.confidence!=null?` · ${Math.round(bestDay.confidence)}%`:``}
-                <span style={{display:"block",fontSize:12,fontWeight:500,color:"var(--sg-mid,#686868)",marginTop:4}}>
+                <span style={{display:"block",fontSize:12,fontWeight:500,color:"var(--sg-mid,#5A5A5A)",marginTop:4}}>
                   {_t(lang,"Créneau le plus favorable dans l'horizon fiable","Best window within the reliable horizon","Mejor ventana en el horizonte fiable")}
                 </span>
               </div>
-            :<div style={{fontSize:13,color:"var(--sg-mid,#686868)",lineHeight:1.45}}>
+            :<div style={{fontSize:13,color:"var(--sg-mid,#5A5A5A)",lineHeight:1.45}}>
                 {_t(lang,"Vérification en cours, reviens demain.","Verification in progress, check back tomorrow.","Verificación en curso, vuelve mañana.")}
               </div>}
         </div>
@@ -3078,7 +3078,7 @@ function MethodologyLink({beach,lang,sargData}){
       background:"none",border:"none",padding:0,cursor:"pointer",
       fontSize:10,color:"var(--sg-mid,#999)",textDecoration:"underline",fontWeight:500,
     }}>{fr?"Comment c'est calculé ?":"How is this calculated?"} {open?"▲":"▼"}</button>
-    {open&&<div style={{fontSize:10,color:"var(--sg-mid,#686868)",marginTop:4,padding:"6px 10px",
+    {open&&<div style={{fontSize:10,color:"var(--sg-mid,#5A5A5A)",marginTop:4,padding:"6px 10px",
       background:"rgba(0,0,0,.03)",borderRadius:8,lineHeight:1.5}}>
       <div style={{fontWeight:600,marginBottom:2}}>{fr?"Chaîne de données":"Data chain"}</div>
       <div>{chain}</div>
@@ -3386,7 +3386,7 @@ function PlanBPanel({beach,allBeaches,userPos,lang,sargData,onBeachClick,onClose
         <span style={{color:"#E8A800"}}>{_t(lang,clean.length+" plages propres",clean.length+" clean beaches",clean.length+" playas limpias")}</span>
         {_t(lang," près de toi"," near you"," cerca de ti")}
       </h3>
-      {fresh&&<div style={{fontSize:11.5,fontWeight:700,color:"var(--sg-mid,#686868)",margin:"0 0 10px"}}>{fresh}</div>}
+      {fresh&&<div style={{fontSize:11.5,fontWeight:700,color:"var(--sg-mid,#5A5A5A)",margin:"0 0 10px"}}>{fresh}</div>}
       <div style={{display:"flex",gap:11,overflowX:"auto",scrollSnapType:"x mandatory",
         padding:"2px 0 10px",margin:"0 -2px",WebkitOverflowScrolling:"touch",scrollbarWidth:"none"}}>
         {clean.map((b,i)=>(
@@ -3401,9 +3401,9 @@ function PlanBPanel({beach,allBeaches,userPos,lang,sargData,onBeachClick,onClose
             </div>
             <div style={{padding:"9px 11px 11px"}}>
               <div style={{fontSize:13.5,fontWeight:800,color:"var(--sg-ink)",lineHeight:1.15}}>{b.name}</div>
-              {b.commune&&<div style={{fontSize:11,color:"var(--sg-mid,#686868)",marginTop:2}}>{b.commune}</div>}
+              {b.commune&&<div style={{fontSize:11,color:"var(--sg-mid,#5A5A5A)",marginTop:2}}>{b.commune}</div>}
               <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",marginTop:8}}>
-                <span style={{fontSize:11,fontWeight:700,color:"var(--sg-mid,#686868)"}}>
+                <span style={{fontSize:11,fontWeight:700,color:"var(--sg-mid,#5A5A5A)"}}>
                   {b._dist!=null?_t(lang,"vers "+Math.round(b._dist)+" km","~"+Math.round(b._dist)+" km away","a "+Math.round(b._dist)+" km")
                     :(typeof b.drive==="number"?_t(lang,"env. "+b.drive+" min","~"+b.drive+" min","~"+b.drive+" min"):"")}
                 </span>
@@ -3414,7 +3414,7 @@ function PlanBPanel({beach,allBeaches,userPos,lang,sargData,onBeachClick,onClose
           </button>
         ))}
         <button style={{...card,flex:"0 0 120px",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:8,
-          background:"transparent",border:"1px dashed rgba(13,13,13,.2)",boxShadow:"none",color:"var(--sg-mid,#686868)"}}
+          background:"transparent",border:"1px dashed rgba(13,13,13,.2)",boxShadow:"none",color:"var(--sg-mid,#5A5A5A)"}}
           onClick={()=>{track("sg_planb_more",{from:beach.id});onClose&&onClose()}}>
           <span style={{fontSize:22}}>🗺️</span>
           <span style={{fontSize:11.5,fontWeight:700,textAlign:"center",padding:"0 8px"}}>{_t(lang,"Voir sur la carte","See on the map","Ver en el mapa")}</span>
@@ -3481,9 +3481,9 @@ function H2SBadge({beach,lang,weather,onPremiumClick}){
   const adviceLbl=level==="high"?_t(lang,"À faire aujourd'hui","What to do today","Qué hacer hoy"):_t(lang,"Conseil riverains & visiteurs","For residents & visitors","Para residentes y visitantes")
   const ctaK=level==="high"?_t(lang,"Préviens-moi avant le prochain pic d'odeur","Warn me before the next odour peak","Avísame antes del próximo pico de olor"):_t(lang,"Sois alerté quand l'air se dégrade","Get alerted when the air worsens","Recibe alerta cuando el aire empeore")
   useEffect(()=>{if(panelRef.current){try{if(window.matchMedia("(prefers-reduced-motion:reduce)").matches){panelRef.current.style.maxHeight=open?"none":"0";return}panelRef.current.style.maxHeight=open?panelRef.current.scrollHeight+"px":"0"}catch(_){}}},[open,level,lang])
-  const iconPath=n=>n==="algae"?<path d="M7 13c0-4 1.5-6 .5-9M7 13c2.5 0 4-2 3.5-5M7 13c-2.4 0-4-2-3.5-4.5" fill="none" stroke="var(--sg-mid,#686868)" strokeWidth="1.4" strokeLinecap="round"/>
-    :n==="clock"?<g fill="none" stroke="var(--sg-mid,#686868)" strokeWidth="1.4" strokeLinecap="round"><circle cx="7" cy="7" r="5.4"/><path d="M7 4v3.2l2 1.2"/></g>
-    :<path d="M2 5.5h6.5a1.8 1.8 0 1 0-1.8-1.8M2 9h9a1.8 1.8 0 1 1-1.8 1.8" fill="none" stroke="var(--sg-mid,#686868)" strokeWidth="1.4" strokeLinecap="round"/>
+  const iconPath=n=>n==="algae"?<path d="M7 13c0-4 1.5-6 .5-9M7 13c2.5 0 4-2 3.5-5M7 13c-2.4 0-4-2-3.5-4.5" fill="none" stroke="var(--sg-mid,#5A5A5A)" strokeWidth="1.4" strokeLinecap="round"/>
+    :n==="clock"?<g fill="none" stroke="var(--sg-mid,#5A5A5A)" strokeWidth="1.4" strokeLinecap="round"><circle cx="7" cy="7" r="5.4"/><path d="M7 4v3.2l2 1.2"/></g>
+    :<path d="M2 5.5h6.5a1.8 1.8 0 1 0-1.8-1.8M2 9h9a1.8 1.8 0 1 1-1.8 1.8" fill="none" stroke="var(--sg-mid,#5A5A5A)" strokeWidth="1.4" strokeLinecap="round"/>
   return(
     <div style={{margin:"4px 0 14px"}}>
       <button onClick={()=>{setOpen(o=>!o);track("sg_h2s_expand",{beach_id:beach.id,level,open:!open})}} aria-expanded={open}
@@ -3500,9 +3500,9 @@ function H2SBadge({beach,lang,weather,onPremiumClick}){
           </svg>
         </span>
         <span style={{flex:"1 1 auto",minWidth:0}}>
-          <span style={{display:"block",fontSize:10.5,fontWeight:800,letterSpacing:".14em",textTransform:"uppercase",color:"var(--sg-mid,#686868)"}}>{_t(lang,"Indice santé · air","Health · air quality","Salud · calidad del aire")}</span>
+          <span style={{display:"block",fontSize:10.5,fontWeight:800,letterSpacing:".14em",textTransform:"uppercase",color:"var(--sg-mid,#5A5A5A)"}}>{_t(lang,"Indice santé · air","Health · air quality","Salud · calidad del aire")}</span>
           <span className="anton" style={{display:"block",fontSize:21,lineHeight:1.02,marginTop:2,color:"var(--sg-ink)"}}>{_t(lang,"Risque H2S","H2S risk","Riesgo H2S")} <b style={{color:L.c}}>{word}</b></span>
-          <span style={{display:"block",fontSize:12.5,color:"var(--sg-mid,#686868)",lineHeight:1.35,marginTop:4}}>{oneLine}</span>
+          <span style={{display:"block",fontSize:12.5,color:"var(--sg-mid,#5A5A5A)",lineHeight:1.35,marginTop:4}}>{oneLine}</span>
         </span>
         <span aria-hidden="true" style={{flex:"0 0 auto",color:"var(--sg-mid,#999)",transform:open?"rotate(180deg)":"none",transition:"transform .35s cubic-bezier(.22,1,.36,1)"}}>
           <svg width="16" height="16" viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -4068,7 +4068,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
           {/* Name — large, no duplicate status badge (already on photo) */}
           <h2 className="anton" style={{fontSize:"clamp(24px,6vw,30px)",margin:"0 0 4px",lineHeight:1.15,
             color:"var(--sg-ink)"}}>{beach.name}</h2>
-          <p style={{fontSize:13,color:"var(--sg-mid,#686868)",margin:"0 0 12px",
+          <p style={{fontSize:13,color:"var(--sg-mid,#5A5A5A)",margin:"0 0 12px",
             display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
             <span>{beach.commune}</span>
             {typeof beach.drive==="number"&&<>
@@ -4120,7 +4120,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
                     letterSpacing:"-.015em",textTransform:"uppercase"}}>
                     {scoreLabelFor(beach.scoreLabel,lang)}
                   </div>
-                  <div style={{fontSize:12,color:"var(--sg-mid,#686868)",marginTop:5,lineHeight:1.4}}>
+                  <div style={{fontSize:12,color:"var(--sg-mid,#5A5A5A)",marginTop:5,lineHeight:1.4}}>
                     {beach.scoreReason}
                   </div>
                   {((beach.scoreStrengths?.length||0)+(beach.scoreWeaknesses?.length||0))>0&&(
@@ -4170,7 +4170,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             )
           })()}
           {/* Freshness chip — satellite timestamp sous le verdict */}
-          {!beachStory&&(()=>{try{const ts=sargData?.updatedAt||sargData?.erddapTimestamp;if(!ts)return null;const h=(Date.now()-new Date(ts).getTime())/3.6e6;if(!(h>=0&&h<72))return null;const label=h<1?_t(lang,"À l'instant","Just now","Ahora mismo"):h<12?_t(lang,"il y a "+Math.round(h)+" h",Math.round(h)+"h ago","hace "+Math.round(h)+" h"):_t(lang,"vérif. en cours","checking","verificando");return(<div style={{display:"flex",alignItems:"center",gap:5,margin:"-10px 0 14px",opacity:.72}}><span style={{fontSize:11}}>🛰️</span><span style={{fontSize:10.5,fontWeight:600,color:"var(--sg-mid,#686868)",letterSpacing:".02em"}}>{_t(lang,"Satellite","Satellite","Satélite")} · {label}</span></div>)}catch(_){return null}})()}
+          {!beachStory&&(()=>{try{const ts=sargData?.updatedAt||sargData?.erddapTimestamp;if(!ts)return null;const h=(Date.now()-new Date(ts).getTime())/3.6e6;if(!(h>=0&&h<72))return null;const label=h<1?_t(lang,"À l'instant","Just now","Ahora mismo"):h<12?_t(lang,"il y a "+Math.round(h)+" h",Math.round(h)+"h ago","hace "+Math.round(h)+" h"):_t(lang,"vérif. en cours","checking","verificando");return(<div style={{display:"flex",alignItems:"center",gap:5,margin:"-10px 0 14px",opacity:.72}}><span style={{fontSize:11}}>🛰️</span><span style={{fontSize:10.5,fontWeight:600,color:"var(--sg-mid,#5A5A5A)",letterSpacing:".02em"}}>{_t(lang,"Satellite","Satellite","Satélite")} · {label}</span></div>)}catch(_){return null}})()}
           {/* Verdict du Jour — Devine-puis-Révèle (A/B pw_verdict_guess). Rendu
               dans LES DEUX bras (additif) quand le vrai statut est connu. */}
           {verdictGuess&&ST[beach.status]&&<VerdictDuJourCard beach={beach} lang={lang}/>}
@@ -4189,7 +4189,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
           <AfaiChip beach={beach} lang={lang}/>
           {/* A/B fc_position="top" : ForecastChart remonte sous le verdict (avant les info-filler) */}
           {fcUp&&forecast&&(<>
-            {weeklyData?.arrivalDetected&&<div style={{padding:"10px 12px",marginBottom:10,borderRadius:12,background:"linear-gradient(135deg,rgba(232,143,42,.12),rgba(232,82,42,.08))",border:"1px solid rgba(232,143,42,.35)",display:"flex",alignItems:"center",gap:10}}><span style={{fontSize:20}}>⚠</span><div style={{flex:1}}><div style={{fontSize:13,fontWeight:700,color:"#b35818"}}>{_t(lang,"Banc de sargasses en approche","Sargassum mat approaching","Banco de sargazo en camino")}</div><div style={{fontSize:11,color:"var(--sg-mid,#686868)",marginTop:2}}>{_t(lang,"Le satellite détecte un banc dérivant vers cette plage (1–3 jours).","Satellite shows a mat drifting toward this beach (1–3 days).","El satélite detecta un banco derivando hacia esta playa (1–3 días).")}</div></div></div>}
+            {weeklyData?.arrivalDetected&&<div style={{padding:"10px 12px",marginBottom:10,borderRadius:12,background:"linear-gradient(135deg,rgba(232,143,42,.12),rgba(232,82,42,.08))",border:"1px solid rgba(232,143,42,.35)",display:"flex",alignItems:"center",gap:10}}><span style={{fontSize:20}}>⚠</span><div style={{flex:1}}><div style={{fontSize:13,fontWeight:700,color:"#b35818"}}>{_t(lang,"Banc de sargasses en approche","Sargassum mat approaching","Banco de sargazo en camino")}</div><div style={{fontSize:11,color:"var(--sg-mid,#5A5A5A)",marginTop:2}}>{_t(lang,"Le satellite détecte un banc dérivant vers cette plage (1–3 jours).","Satellite shows a mat drifting toward this beach (1–3 days).","El satélite detecta un banco derivando hacia esta playa (1–3 días).")}</div></div></div>}
             <ForecastChart forecast={forecast} lang={lang} onPremiumClick={onPremiumClick} isPremium={isPremium} weatherDaily={weather?.daily||null} weeklyData={weeklyData}/>
           </>)}
 
@@ -4404,7 +4404,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             <div style={{marginBottom:16}}>
               <h3 style={{fontSize:14,fontWeight:700,marginBottom:8,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                 {LL.nearby}
-                <span style={{fontSize:11,fontWeight:500,color:"var(--sg-mid,#686868)"}}>
+                <span style={{fontSize:11,fontWeight:500,color:"var(--sg-mid,#5A5A5A)"}}>
                   {_t(lang,"Compare","Tap to compare","Toca para comparar")}
                 </span>
               </h3>
@@ -4459,7 +4459,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
                 <div style={{fontSize:13,fontWeight:700,color:"#b35818"}}>
                   {_t(lang,"Banc de sargasses en approche","Sargassum mat approaching","Banco de sargazo en camino")}
                 </div>
-                <div style={{fontSize:11,color:"var(--sg-mid,#686868)",marginTop:2}}>
+                <div style={{fontSize:11,color:"var(--sg-mid,#5A5A5A)",marginTop:2}}>
                   {_t(lang,"Le satellite détecte un banc dérivant vers cette plage (1–3 jours).","Satellite shows a mat drifting toward this beach (1–3 days).","El satélite detecta un banco derivando hacia esta playa (1–3 días).")}
                 </div>
               </div>
@@ -4522,7 +4522,7 @@ function Tag({icon,label}){
   return(
     <span style={{display:"inline-flex",alignItems:"center",gap:4,
       padding:"4px 10px",borderRadius:100,background:"var(--sg-bgD,#F7F5EF)",
-      fontSize:12,fontWeight:500,color:"var(--sg-mid,#686868)"}}>
+      fontSize:12,fontWeight:500,color:"var(--sg-mid,#5A5A5A)"}}>
       {icon} {label}
     </span>
   )
@@ -4540,7 +4540,7 @@ function WeatherCard({icon,label,value}){
         borderRadius:"16px 16px 0 0",pointerEvents:"none"}}/>
       <div style={{fontSize:22,marginBottom:6,position:"relative"}}>{icon}</div>
       <div style={{fontSize:16,fontWeight:800,color:"var(--sg-ink)",position:"relative",letterSpacing:"-.02em"}}>{value}</div>
-      <div style={{fontSize:10,color:"var(--sg-mid,#686868)",marginTop:2,fontWeight:500,
+      <div style={{fontSize:10,color:"var(--sg-mid,#5A5A5A)",marginTop:2,fontWeight:500,
         textTransform:"uppercase",letterSpacing:".04em",position:"relative"}}>{label}</div>
     </div>
   )
@@ -4614,12 +4614,12 @@ function BeachScoreBadge({afai,weather,lang}){
           display:"flex",alignItems:"center",justifyContent:"center",
           flexDirection:"column",boxShadow:"0 1px 3px rgba(0,0,0,.06)"}}>
           <span style={{fontFamily:"'Anton',sans-serif",fontSize:18,lineHeight:1,color:st.color}}>{score}</span>
-          <span style={{fontSize:8,color:"var(--sg-mid,#686868)",fontWeight:600}}>/10</span>
+          <span style={{fontSize:8,color:"var(--sg-mid,#5A5A5A)",fontWeight:600}}>/10</span>
         </div>
       </div>
       <div>
         <div style={{fontSize:14,fontWeight:700,color:st.color}}>{label}</div>
-        <div style={{fontSize:11,color:"var(--sg-mid,#686868)"}}>{(T[lang]||T.fr).beachScore}</div>
+        <div style={{fontSize:11,color:"var(--sg-mid,#5A5A5A)"}}>{(T[lang]||T.fr).beachScore}</div>
       </div>
     </div>
   )
@@ -4707,11 +4707,11 @@ function HistoryChart({beachId,historyData,lang}){
           })}
         </svg>
         <div style={{display:"flex",justifyContent:"space-between",marginTop:4}}>
-          <span style={{fontSize:10,color:"var(--sg-mid,#686868)"}}>{firstDate}</span>
-          <span style={{fontSize:10,color:"var(--sg-mid,#686868)",fontWeight:600}}>
+          <span style={{fontSize:10,color:"var(--sg-mid,#5A5A5A)"}}>{firstDate}</span>
+          <span style={{fontSize:10,color:"var(--sg-mid,#5A5A5A)",fontWeight:600}}>
             {LL.historyDays.replace("{n}",points.length)}
           </span>
-          <span style={{fontSize:10,color:"var(--sg-mid,#686868)"}}>{lastDate}</span>
+          <span style={{fontSize:10,color:"var(--sg-mid,#5A5A5A)"}}>{lastDate}</span>
         </div>
       </div>
     </div>
@@ -4733,7 +4733,7 @@ function SearchBar({value,onChange,lang}){
       <div style={{position:"relative",display:"flex",alignItems:"center"}}>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
           style={{position:"absolute",left:16,top:"50%",transform:"translateY(-50%)",
-            color:focused?C.gold:"var(--sg-mid,#686868)",transition:"color .2s",flexShrink:0}}>
+            color:focused?C.gold:"var(--sg-mid,#5A5A5A)",transition:"color .2s",flexShrink:0}}>
           <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2"/>
           <path d="m20 20-3.5-3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
         </svg>
@@ -5252,7 +5252,7 @@ function PushPrimer({lang,onAccept,onDismiss}){
         <button onClick={onDismiss} aria-label={_t(lang,"Plus tard","Dismiss","Ahora no")}
           style={{
             background:"transparent",border:"none",padding:"8px 4px",
-            fontSize:18,color:"var(--sg-mid,#686868)",cursor:"pointer",
+            fontSize:18,color:"var(--sg-mid,#5A5A5A)",cursor:"pointer",
             flexShrink:0,minHeight:36,minWidth:32,
           }}>
           {"\u2715"}
@@ -5543,7 +5543,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
             onClick={e=>{e.stopPropagation();onPremiumClick("hero_email_success")}}
             style={{
               marginTop:6,background:"none",border:"none",
-              color:"var(--sg-mid,#686868)",fontSize:11,fontWeight:600,
+              color:"var(--sg-mid,#5A5A5A)",fontSize:11,fontWeight:600,
               cursor:"pointer",fontFamily:"inherit",textDecoration:"underline",
               textDecorationColor:"rgba(0,0,0,.2)",textUnderlineOffset:2,
             }}
@@ -5587,7 +5587,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
         display:"flex",alignItems:"center",justifyContent:"center",gap:6,
         padding:"7px 14px 5px",
         fontSize:10,fontWeight:600,
-        color:"var(--sg-mid,#686868)",
+        color:"var(--sg-mid,#5A5A5A)",
         letterSpacing:".01em",
         whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
       }}>
@@ -5697,7 +5697,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
               <span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{verdict}</span>
               {distLbl&&(<>
                 <span aria-hidden style={{width:3,height:3,borderRadius:"50%",background:"currentColor",opacity:.4,flexShrink:0}}/>
-                <span style={{color:"var(--sg-mid,#686868)",fontWeight:600,flexShrink:0}}>{distLbl}</span>
+                <span style={{color:"var(--sg-mid,#5A5A5A)",fontWeight:600,flexShrink:0}}>{distLbl}</span>
               </>)}
             </div>
           </div>
@@ -5738,7 +5738,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
             background:"rgba(255,255,255,.7)",
             backdropFilter:"blur(6px)",
             border:"1px solid rgba(0,0,0,.05)",
-            color:"var(--sg-mid,#686868)",
+            color:"var(--sg-mid,#5A5A5A)",
             letterSpacing:".02em",whiteSpace:"nowrap",
           }}>
             {withScore.length} {_t(lang,"analysées","analyzed","analizadas")} · Δ{variance}
@@ -5791,7 +5791,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
                 boxShadow:"0 2px 10px rgba(0,0,0,.08), inset 0 0 0 1px rgba(255,255,255,.9)",
               }}>
                 <span style={{fontFamily:"'Anton',sans-serif",fontSize:44,lineHeight:.95,color:top.scoreColor||topSt.c,letterSpacing:"-.02em"}}>{animScore}</span>
-                <span style={{fontSize:9,fontWeight:800,marginTop:1,color:"var(--sg-mid,#686868)",letterSpacing:".08em"}}>/100</span>
+                <span style={{fontSize:9,fontWeight:800,marginTop:1,color:"var(--sg-mid,#5A5A5A)",letterSpacing:".08em"}}>/100</span>
               </div>
             </div>
           </div>
@@ -5837,7 +5837,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
             </div>
           )}
           <div style={{
-            fontSize:11,color:"var(--sg-mid,#686868)",
+            fontSize:11,color:"var(--sg-mid,#5A5A5A)",
             display:"flex",alignItems:"center",gap:8,
             whiteSpace:"nowrap",overflow:"hidden",
           }}>
@@ -5949,7 +5949,7 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
                   }}>
                     {alt.name}
                   </div>
-                  <div style={{fontSize:10,color:"var(--sg-mid,#686868)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+                  <div style={{fontSize:10,color:"var(--sg-mid,#5A5A5A)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
                     {typeof alt.score==="number"?`${alt.score}/100`:""}
                     {(typeof alt.score==="number"&&(alt._dist!=null||typeof alt.drive==="number"||alt.commune))?" · ":""}
                     {alt._dist!=null
@@ -6146,7 +6146,7 @@ function DailyRecoStrip({allBeaches,sargData,island,lang,isPremium,onBeachClick,
               <span style={{fontFamily:"'Anton',sans-serif",fontSize:17,lineHeight:1,color:top.scoreColor||topSt.c}}>
                 {top.score}
               </span>
-              <span style={{fontSize:7,fontWeight:700,color:"var(--sg-mid,#686868)",letterSpacing:".04em"}}>/100</span>
+              <span style={{fontSize:7,fontWeight:700,color:"var(--sg-mid,#5A5A5A)",letterSpacing:".04em"}}>/100</span>
             </div>
           </div>
         ):(
@@ -6158,7 +6158,7 @@ function DailyRecoStrip({allBeaches,sargData,island,lang,isPremium,onBeachClick,
           }}>{topSt.e}</div>
         )}
         <div style={{flex:1,minWidth:0}}>
-          <div style={{fontSize:9.5,fontWeight:700,color:"var(--sg-mid,#686868)",letterSpacing:".05em",
+          <div style={{fontSize:9.5,fontWeight:700,color:"var(--sg-mid,#5A5A5A)",letterSpacing:".05em",
             textTransform:"uppercase",marginBottom:2}}>
             {typeof top.score==="number"
               ?_t(lang,`Meilleure plage aujourd'hui · ${scoreLabelFor(top.scoreLabel,lang)||""}`,`Best beach today · ${scoreLabelFor(top.scoreLabel,lang)||""}`,`Mejor playa hoy · ${scoreLabelFor(top.scoreLabel,lang)||""}`)
@@ -6168,7 +6168,7 @@ function DailyRecoStrip({allBeaches,sargData,island,lang,isPremium,onBeachClick,
             whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
             {top.name}
           </div>
-          <div style={{fontSize:11,color:"var(--sg-mid,#686868)",marginTop:2,
+          <div style={{fontSize:11,color:"var(--sg-mid,#5A5A5A)",marginTop:2,
             whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
             {distLabel&&<>{distLabel}</>}
             {distLabel&&driveLabel&&<> · </>}
@@ -6239,7 +6239,7 @@ function DailyRecoStrip({allBeaches,sargData,island,lang,isPremium,onBeachClick,
                     whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
                     {alt.name}
                   </div>
-                  <div style={{fontSize:10.5,color:"var(--sg-mid,#686868)"}}>
+                  <div style={{fontSize:10.5,color:"var(--sg-mid,#5A5A5A)"}}>
                     {altDist}{altDist&&altDrive&&" · "}{altDrive}
                   </div>
                 </div>
@@ -6399,7 +6399,7 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
   )
   return(<>
     <style>{`
-      .pww-wrap{--bg:#FDFCF7;--gold:#E8A800;--goldL:#FFC72C;--goldLL:#FFE47A;--teal:#009E8E;--tealL:#1EC8B0;--green:#22C55E;--coral:#E8522A;--ink:#0D0D0D;--mid:#686868;
+      .pww-wrap{--bg:#FDFCF7;--gold:#E8A800;--goldL:#FFC72C;--goldLL:#FFE47A;--teal:#009E8E;--tealL:#1EC8B0;--green:#22C55E;--coral:#E8522A;--ink:#0D0D0D;--mid:#5A5A5A;
         font-family:"Bricolage Grotesque",system-ui,sans-serif;color:var(--ink);margin:-28px -24px -20px;position:relative;
         background:var(--bg);
         background-image:radial-gradient(rgba(13,13,13,.045) 1.1px,transparent 1.2px) 0 0/7px 7px,radial-gradient(rgba(13,13,13,.045) 1.1px,transparent 1.2px) 3.5px 3.5px/7px 7px}
@@ -8335,7 +8335,7 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
           <button key={id} onClick={()=>{onIslandChange(id);track("sg_island_switch",{to:id})}} style={{
             padding:"0 16px",border:"none",cursor:"pointer",
             background:"transparent",position:"relative",zIndex:1,
-            color:island===id?"#0D0D0D":"var(--sg-mid,#686868)",
+            color:island===id?"#0D0D0D":"var(--sg-mid,#5A5A5A)",
             fontFamily:"'Anton',sans-serif",
             fontSize:15,fontWeight:400,
             letterSpacing:".02em",
@@ -8558,14 +8558,14 @@ function ScoreReveal({beach,lang}){
     <div style={{animation:"sgReveal .22s ease",background:"var(--sg-bgD,#F7F5EF)",
       borderRadius:14,padding:"14px 16px",marginBottom:14,marginTop:-8,
       border:"1px solid var(--sg-border,rgba(0,0,0,.06))"}}>
-      <div style={{fontSize:10,fontWeight:700,color:"var(--sg-mid,#686868)",
+      <div style={{fontSize:10,fontWeight:700,color:"var(--sg-mid,#5A5A5A)",
         textTransform:"uppercase",letterSpacing:".07em",marginBottom:10}}>
         {T3("Mesure satellite Copernicus","Copernicus satellite reading","Medición satélite Copernicus")}
       </div>
       {/* AFAI bar */}
       <div style={{marginBottom:10}}>
         <div style={{display:"flex",justifyContent:"space-between",fontSize:10,
-          color:"var(--sg-mid,#686868)",marginBottom:4}}>
+          color:"var(--sg-mid,#5A5A5A)",marginBottom:4}}>
           <span>{T3("Propre","Clean","Limpia")} ← AFAI</span>
           <span style={{fontWeight:700,color:zoneColor}}>
             {T3("Mesuré :","Read:","Medido:")} {afai.toFixed(3)}
@@ -8619,7 +8619,7 @@ function AfaiChip({beach,lang}){
           display:"inline-flex",alignItems:"center",gap:6,padding:"4px 0",fontFamily:"inherit"}}>
         <span style={{width:8,height:8,borderRadius:"50%",background:color,
           boxShadow:`0 0 6px ${color}88`,display:"inline-block",flexShrink:0}}/>
-        <span style={{fontSize:11,fontWeight:700,color:"var(--sg-mid,#686868)",
+        <span style={{fontSize:11,fontWeight:700,color:"var(--sg-mid,#5A5A5A)",
           textTransform:"uppercase",letterSpacing:".05em"}}>
           AFAI {afai.toFixed(3)}
         </span>
@@ -8890,12 +8890,12 @@ function ExitVeilleurCard({lang,pick,forecast,onClose,trigger="exit"}){
               <div style={{fontFamily:"'Anton',sans-serif",fontSize:23,color:INK,textTransform:"uppercase",lineHeight:1,marginBottom:6}}>
                 {_t(lang,"C'est verrouillé. Je veille.","Locked in. I'm watching.","Listo. Yo vigilo.")}
               </div>
-              <div style={{fontFamily:"'Comic Neue',sans-serif",fontSize:13.5,color:"#3a2f1a"}}>
+              <div style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:13.5,color:"#3a2f1a"}}>
                 {_t(lang,"Demain 7h, le bon plan arrive. ✅","Tomorrow 7am, your plan lands. ✅","Mañana 7h llega tu plan. ✅")}
               </div>
             </div>
           ):(<>
-            <div style={{display:"inline-block",background:INK,color:"#FDFCF7",fontFamily:"'Comic Neue',sans-serif",fontWeight:700,fontSize:11,letterSpacing:".08em",textTransform:"uppercase",padding:"4px 11px",borderRadius:7,marginBottom:11}}>
+            <div style={{display:"inline-block",background:INK,color:"#FDFCF7",fontFamily:"'Bricolage Grotesque',sans-serif",fontWeight:700,fontSize:11,letterSpacing:".08em",textTransform:"uppercase",padding:"4px 11px",borderRadius:7,marginBottom:11}}>
               {_t(lang,"Le Veilleur a préparé ta semaine","The Veilleur prepped your week","El Vigía preparó tu semana")}
             </div>
             <div style={{fontFamily:"'Anton',sans-serif",color:INK,fontSize:28,lineHeight:.94,letterSpacing:"-.015em",textTransform:"uppercase",marginBottom:13}}>
@@ -8904,7 +8904,7 @@ function ExitVeilleurCard({lang,pick,forecast,onClose,trigger="exit"}){
             {pick&&pick.score!=null&&(
               <div style={{display:"flex",alignItems:"center",gap:9,background:"#fff",border:"1.6px solid "+INK,borderRadius:11,padding:"8px 11px",marginBottom:13}}>
                 <span style={{width:11,height:11,borderRadius:"50%",background:STC[pick.status]||"#9aa0a8",border:"1.5px solid "+INK,flexShrink:0}}/>
-                <span style={{flex:1,fontFamily:"'Comic Neue',sans-serif",fontSize:13,color:"#3a2f1a",lineHeight:1.2,minWidth:0}}>
+                <span style={{flex:1,fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:13,color:"#3a2f1a",lineHeight:1.2,minWidth:0}}>
                   {_t(lang,"Aujourd'hui la plus propre","Today's cleanest","La más limpia hoy")} : <b>{pick.name}</b>
                 </span>
                 <span style={{fontFamily:"'JetBrains Mono',monospace",fontWeight:700,fontSize:16,color:STC[pick.status]||INK,whiteSpace:"nowrap"}}>{pick.score}<span style={{fontSize:10,color:"#6b6478"}}>/100</span></span>
@@ -8924,10 +8924,10 @@ function ExitVeilleurCard({lang,pick,forecast,onClose,trigger="exit"}){
                 )
               })}
             </div>
-            <div style={{fontFamily:"'Comic Neue',sans-serif",fontSize:11.5,color:"#6b6478",marginBottom:12}}>
+            <div style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:11.5,color:"#6b6478",marginBottom:12}}>
               {_t(lang,"5 jours déverrouillés par e-mail · confiance affichée honnêtement","5 days unlocked by email · confidence shown honestly","5 días por email · confianza mostrada con honestidad")}
             </div>
-            <div style={{fontFamily:"'Comic Neue',sans-serif",fontSize:14,color:"#3a2f1a",lineHeight:1.35,marginBottom:12}}>
+            <div style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:14,color:"#3a2f1a",lineHeight:1.35,marginBottom:12}}>
               {_t(lang,<>Demain ce sera peut-être une <b>autre</b> plage. Reçois le bon plan chaque matin à <b style={{color:"#E8A800"}}>7h</b>.</>,<>Tomorrow it may be a <b>different</b> beach. Get the plan every morning at <b style={{color:"#E8A800"}}>7am</b>.</>,<>Mañana quizá sea <b>otra</b> playa. Recibe el plan cada mañana a las <b style={{color:"#E8A800"}}>7h</b>.</>)}
             </div>
             <form onSubmit={submit}>
@@ -8935,7 +8935,7 @@ function ExitVeilleurCard({lang,pick,forecast,onClose,trigger="exit"}){
                 <span style={{fontSize:16,flexShrink:0}}>📬</span>
                 <input type="email" inputMode="email" autoComplete="email" required value={email} onChange={e=>setEmail(e.target.value)}
                   placeholder={_t(lang,"ton@email.com","your@email.com","tu@email.com")}
-                  style={{flex:1,minWidth:0,border:"none",outline:"none",background:"transparent",fontFamily:"'Comic Neue',sans-serif",fontSize:16,color:INK,padding:"9px 0"}}/>
+                  style={{flex:1,minWidth:0,border:"none",outline:"none",background:"transparent",fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:16,color:INK,padding:"9px 0"}}/>
               </div>
               <button type="submit" style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:8,
                 background:"linear-gradient(158deg,#FFE47A,#FFC72C 40%,#E89400)",color:"#1a1300",border:"2.4px solid "+INK,borderRadius:100,
@@ -8943,11 +8943,11 @@ function ExitVeilleurCard({lang,pick,forecast,onClose,trigger="exit"}){
                 🔓 {_t(lang,"Déverrouille ma semaine","Unlock my week","Desbloquea mi semana")}
               </button>
             </form>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:7,fontFamily:"'Comic Neue',sans-serif",fontSize:11.5,color:"#6b6478",marginTop:11}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:7,fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:11.5,color:"#6b6478",marginTop:11}}>
               🔔 <span>{_t(lang,"Alerte la veille · 1 brief/matin à 7h · stop quand tu veux","Day-before alert · 1 brief each morning at 7am · stop anytime","Aviso la víspera · 1 brief cada mañana a las 7h · cancela cuando quieras")}</span>
             </div>
             <div style={{textAlign:"center",marginTop:9}}>
-              <button onClick={()=>onClose&&onClose("dismiss")} style={{background:"none",border:"none",fontFamily:"'Comic Neue',sans-serif",fontSize:12,color:"#9a8f7a",textDecoration:"underline",textUnderlineOffset:2,cursor:"pointer"}}>
+              <button onClick={()=>onClose&&onClose("dismiss")} style={{background:"none",border:"none",fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:12,color:"#9a8f7a",textDecoration:"underline",textUnderlineOffset:2,cursor:"pointer"}}>
                 {_t(lang,"Non merci, je pars sans","No thanks, I'll leave without it","No gracias, me voy sin él")}
               </button>
             </div>
@@ -9249,7 +9249,7 @@ function FavToast({show,lang,onPremiumClick,isPremium}){
           {_t(lang,"Ajouté aux favoris","Added to favorites","Agregada a favoritos")}
         </div>
         {!isPremium&&(
-          <div style={{fontSize:11,color:"var(--sg-mid,#686868)",marginTop:2}}>
+          <div style={{fontSize:11,color:"var(--sg-mid,#5A5A5A)",marginTop:2}}>
             {_t(lang,"Reçois une alerte quand ça change","Get alerts when conditions change","Recibe una alerta cuando cambie")}
           </div>
         )}
@@ -11928,7 +11928,7 @@ function VerdictDuJourCard({beach,lang}){
             {hasScore&&<ScoreBlob score={beach.score} color={beach.scoreColor||vm.color} size={54}/>}
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontSize:15,fontWeight:800,color:vm.color}}>{vm.emoji} {vm.verb}</div>
-              <div style={{fontSize:12,lineHeight:1.4,color:"var(--sg-mid,#686868)"}}>{why}</div>
+              <div style={{fontSize:12,lineHeight:1.4,color:"var(--sg-mid,#5A5A5A)"}}>{why}</div>
             </div>
           </div>
           {!correct&&<button onClick={async()=>{try{track("sg_share",{variant:"missed",beach_id:beach.id,guess})}catch(_){};try{await buildShareCard({variant:"missed",guess,streak:g("sg_vdj_streak",0)||0,lang})}catch(_){}}}
@@ -14440,7 +14440,7 @@ export default function App(){
                         <div style={{flex:1,minWidth:0}}>
                           <div style={{fontSize:13,fontWeight:600,color:"var(--sg-ink)",
                             whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.name}</div>
-                          <div style={{fontSize:11,color:"var(--sg-mid,#686868)"}}>{b.commune}</div>
+                          <div style={{fontSize:11,color:"var(--sg-mid,#5A5A5A)"}}>{b.commune}</div>
                         </div>
                         <span style={{fontSize:10,fontWeight:700,color:st.c}}>{lang==="es"?st.les:lang==="en"?st.le:st.l}</span>
                       </button>
@@ -14497,7 +14497,7 @@ export default function App(){
                     {_t(lang,"est propre","is clean","está limpia")}
                   </span>
                 </div>
-                <div style={{fontSize:11,color:"var(--sg-mid,#686868)",marginTop:1}}>
+                <div style={{fontSize:11,color:"var(--sg-mid,#5A5A5A)",marginTop:1}}>
                   {nextSuggestion.dist} km {_t(lang,"d'ici","away","de aquí")}
                 </div>
               </div>

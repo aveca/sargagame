@@ -1,0 +1,448 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Sargasses — Recherche + filtres + tri (poli, bible v1)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════════════════════════════════════════════
+   TOKENS — source unique (= colors_and_type.css :root + SCENE_TOKENS)
+   Aucun hex brut hors ce bloc. (garde-fou lint anti-dérive)
+   ════════════════════════════════════════════════════════════════════ */
+:root{
+  /* OR — action & marque, RARE */
+  --sg-gold:#E8A800; --sg-gold-l:#FFC72C; --sg-gold-ll:#FFE47A;
+  /* TEAL — mer, confiance, liens, data propre */
+  --sg-teal:#009E8E; --sg-teal-l:#1EC8B0; --sg-teal-bg:#E2F6F2;
+  /* STATUTS — trio exclusif couleur+forme+mot */
+  --sg-clean:#22C55E; --sg-moderate:#B87A00; --sg-avoid:#E8522A;
+  /* Neutres */
+  --sg-ink:#0D0D0D; --sg-mid:#5A5A5A; --sg-paper:#FDFCF7;
+  --sg-line:rgba(13,13,13,.12); --sg-line-strong:rgba(13,13,13,.22);
+  --scene-ink:#0A1714;
+  /* Sémantiques */
+  --surface:var(--sg-paper); --surface-raised:#FFFFFF;
+  --text:var(--sg-ink); --text-muted:var(--sg-mid);
+  --cta-bg:var(--sg-gold); --cta-text:var(--sg-ink); --link:var(--sg-teal);
+  /* Échelle de tailles (plancher dur 12px, corps 15px) */
+  --sg-fs-micro:12px; --sg-fs-body:15px; --sg-fs-lead:17px;
+  --sg-fs-h3:20px; --sg-fs-h2:clamp(24px,6vw,30px); --sg-fs-h1:clamp(30px,8vw,42px);
+  /* Surfaces comic — 3 ombres dures 0-blur bas-droite */
+  --sg-pop-1:2px 2px 0 var(--sg-ink);
+  --sg-pop-2:4px 4px 0 var(--sg-ink);
+  --sg-pop-3:6px 6px 0 var(--sg-ink);
+  --sg-pop-press:1px 1px 0 var(--sg-ink);
+  /* Rayons — 3 seulement */
+  --sg-r-card:16px; --sg-r-soft:12px; --sg-r-pill:999px;
+  /* Espacement grille 4px */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-6:24px; --sp-8:32px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:#3a3a3a; /* gris de banc d'essai (hors app) */
+  font-family:'Bricolage Grotesque',system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased; color:var(--text);
+  display:flex; justify-content:center; padding:24px 0;
+}
+/* le téléphone-cadre du mockup (≈380px) */
+.phone{
+  width:380px; min-height:760px; background:var(--scene-ink);
+  border-radius:28px; overflow:hidden; position:relative;
+  box-shadow:0 24px 60px -12px rgba(0,0,0,.6);
+}
+
+/* ── Fond scène golden-hour (tokenisé, statique = tableau, pas aquarium) ── */
+.scene-bg{
+  position:absolute; inset:0;
+  background:
+    radial-gradient(120% 70% at 72% -4%, rgba(232,168,0,.30), rgba(201,126,58,.06) 44%, transparent 68%),
+    linear-gradient(180deg,#0B2230 0%,#103029 42%,#120821 100%);
+}
+/* TRAIT 3 — halftone golden-hour Ben-Day, DISCRET, 1 zone (hero) */
+.halftone{
+  position:absolute; left:0; right:0; top:0; height:160px;
+  background-image:radial-gradient(var(--sg-gold) 1.1px, transparent 1.2px);
+  background-size:7px 7px; opacity:.14;
+  -webkit-mask:linear-gradient(180deg,#000,transparent);
+  mask:linear-gradient(180deg,#000,transparent);
+  pointer-events:none;
+}
+.scroll{position:relative; height:760px; overflow-y:auto; padding:0 var(--sp-4) 90px;}
+.scroll::-webkit-scrollbar{width:0}
+
+/* ════════ TYPO — grammaire de rôle fermée ════════ */
+.t-h2{font-family:'Anton',Impact,sans-serif; font-weight:400; font-size:var(--sg-fs-h2);
+  line-height:1.08; letter-spacing:-.02em; text-transform:uppercase; color:#fff; margin:0;}
+.t-h3{font-weight:800; font-size:var(--sg-fs-h3); line-height:1.30; color:#fff; margin:0;}
+.t-body{font-weight:600; font-size:var(--sg-fs-body); line-height:1.55; color:#fff;}
+.t-eyebrow{font-weight:800; font-size:var(--sg-fs-micro); line-height:1.2;
+  text-transform:uppercase; letter-spacing:.10em; color:var(--sg-teal-l);}
+.t-num{font-family:'JetBrains Mono',monospace; font-variant-numeric:tabular-nums; font-weight:700;}
+.muted-on-scene{color:rgba(255,255,255,.78);} /* R5 — jamais <.72 sur scène sombre */
+
+/* ════════ EN-TÊTE D'ÉCRAN ════════ */
+.head{display:flex; align-items:baseline; gap:var(--sp-2);
+  padding:18px 0 var(--sp-3);}
+.head .count{font-family:'JetBrains Mono',monospace; font-variant-numeric:tabular-nums;
+  font-weight:700; font-size:30px; line-height:1; color:#fff; letter-spacing:-.02em;}
+
+/* ════════ 1 — CHAMP DE RECHERCHE UNIFIÉ (.sg-field, recette unique) ════════ */
+.sg-field{position:relative; display:flex; align-items:center; margin-bottom:var(--sp-3);}
+.sg-field svg.mag{position:absolute; left:14px; top:50%; transform:translateY(-50%);
+  color:var(--sg-mid); transition:color .15s; pointer-events:none;}
+.sg-field input{
+  width:100%; min-height:48px; padding:13px 44px 13px 42px;
+  font-family:'Bricolage Grotesque',sans-serif; font-weight:600; font-size:16px; /* 16 = anti-zoom iOS */
+  color:var(--sg-ink); background:var(--surface-raised);
+  border:2px solid var(--sg-ink); border-radius:var(--sg-r-soft);
+  box-shadow:var(--sg-pop-1); outline:none; letter-spacing:0;
+  transition:box-shadow .12s, border-color .12s;
+}
+.sg-field input::placeholder{color:var(--sg-mid); opacity:1;}
+.sg-field input:focus{border-color:var(--sg-gold-l); box-shadow:var(--sg-pop-1), 0 0 0 3px rgba(255,199,44,.18);}
+.sg-field:focus-within svg.mag{color:var(--sg-gold);}
+.sg-field .clear{position:absolute; right:6px; top:50%; transform:translateY(-50%);
+  width:36px; height:36px; display:flex; align-items:center; justify-content:center;
+  background:none; border:none; cursor:pointer; color:var(--sg-mid); border-radius:var(--sg-r-pill);}
+
+/* ════════ 2 — CHIPS DE FILTRE (recette pill comic) ════════ */
+.row{display:flex; gap:var(--sp-2); margin-bottom:var(--sp-3); flex-wrap:wrap;}
+.chip{
+  display:inline-flex; align-items:center; gap:6px;
+  min-height:36px; padding:6px 12px;
+  font-weight:800; font-size:var(--sg-fs-micro); line-height:1;
+  background:var(--surface-raised); color:var(--sg-ink);
+  border:2px solid var(--sg-ink); border-radius:var(--sg-r-pill);
+  box-shadow:var(--sg-pop-1); cursor:pointer; white-space:nowrap;
+  transition:transform .08s, box-shadow .08s, background .12s;
+}
+.chip:active{transform:translate(2px,2px); box-shadow:var(--sg-pop-press);}
+.chip .glyph{font-weight:800; font-size:13px; line-height:1;}
+.chip .ct{font-family:'JetBrains Mono',monospace; font-variant-numeric:tabular-nums;
+  font-weight:700; font-size:11px; color:var(--sg-mid);}
+/* état actif = fond statut PLEIN + texte encre (jamais teinte translucide) */
+.chip.is-on{color:var(--sg-ink);}
+.chip.is-on .ct{color:var(--sg-ink); opacity:.7;}
+.chip.clean.is-on{background:var(--sg-clean);}
+.chip.fav.is-on{background:var(--sg-teal-l);}   /* favoris = TEAL, jamais l'or (or réservé au CTA) */
+.chip.avoid.is-on{background:var(--sg-avoid); color:#fff;}
+.chip.avoid.is-on .ct{color:#fff;}
+.chip.clean .glyph{color:var(--sg-clean);} .chip.clean.is-on .glyph{color:var(--sg-ink);}
+.chip.fav .glyph{color:var(--sg-teal);}     .chip.fav.is-on .glyph{color:var(--sg-ink);}
+.chip.avoid .glyph{color:var(--sg-avoid);}  .chip.avoid.is-on .glyph{color:#fff;}
+
+/* ════════ 3 — TRI (segmented comic, 1 seul actif) — le contrôle MANQUANT ════════ */
+.sort-wrap{margin-bottom:var(--sp-4);}
+.seg{display:inline-flex; border:2px solid var(--sg-ink); border-radius:var(--sg-r-pill);
+  box-shadow:var(--sg-pop-1); overflow:hidden; background:var(--surface-raised);}
+.seg button{
+  appearance:none; border:none; background:none; cursor:pointer;
+  min-height:40px; padding:0 14px;
+  font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:var(--sg-fs-micro);
+  text-transform:uppercase; letter-spacing:.04em; color:var(--sg-mid);
+  border-right:2px solid var(--sg-ink); transition:background .1s,color .1s;
+}
+.seg button:last-child{border-right:none;}
+.seg button.is-on{background:var(--sg-ink); color:var(--sg-paper);}
+
+/* ════════ CARTE « MEILLEURE AUJOURD'HUI » (.sg-card--hot, pop-3 réservé) ════════ */
+.hot{
+  display:flex; align-items:center; gap:var(--sp-3); width:100%; text-align:left;
+  background:var(--surface-raised); color:var(--sg-ink);
+  border:2.5px solid var(--sg-ink); border-left:6px solid var(--sg-clean);
+  border-radius:var(--sg-r-card); box-shadow:var(--sg-pop-3);
+  padding:var(--sp-3) var(--sp-4); margin-bottom:var(--sp-4);
+  cursor:pointer; font-family:inherit; position:relative; overflow:hidden;
+}
+.hot .ht-halftone{position:absolute; right:0; top:0; bottom:0; width:90px;
+  background-image:radial-gradient(var(--sg-gold) 1px, transparent 1.1px);
+  background-size:7px 7px; opacity:.10;
+  -webkit-mask:linear-gradient(270deg,#000,transparent); mask:linear-gradient(270deg,#000,transparent);}
+.hot .thumb{width:52px; height:52px; flex-shrink:0; border-radius:var(--sg-r-soft);
+  border:2px solid var(--sg-ink); position:relative; overflow:hidden;
+  background:linear-gradient(160deg,#1A5852,#08251F);}
+.hot .thumb .veil{position:absolute; inset:0; display:flex; align-items:center; justify-content:center;}
+.hot .meta{flex:1; min-width:0; position:relative; overflow:hidden;}
+.hot .lbl{font-weight:800; font-size:var(--sg-fs-micro); text-transform:uppercase;
+  letter-spacing:.10em; color:var(--sg-teal); margin-bottom:3px;}
+.hot .nm{font-family:'Anton',Impact,sans-serif; font-weight:400; font-size:var(--sg-fs-h3);
+  line-height:1.05; text-transform:uppercase; letter-spacing:-.01em;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.hot .sub{font-size:var(--sg-fs-micro); color:var(--sg-mid); margin-top:3px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.hot .sub .t-num{color:var(--sg-ink);}
+.hot .sg-status{flex-shrink:0; align-self:flex-start; margin-left:var(--sp-1);}
+
+/* ════════ PASTILLE STATUT (.sg-status — couleur+forme+mot) ════════ */
+.sg-status{display:inline-flex; align-items:center; gap:5px;
+  padding:3px 9px; border:2px solid var(--sg-ink); border-radius:var(--sg-r-pill);
+  box-shadow:var(--sg-pop-1); font-weight:800; font-size:var(--sg-fs-micro); line-height:1;}
+.sg-status .g{font-size:12px; line-height:1;}
+.sg-status.clean{background:var(--sg-clean); color:var(--sg-ink);}
+.sg-status.moderate{background:var(--sg-moderate); color:#fff;}
+.sg-status.avoid{background:var(--sg-avoid); color:#fff;}
+
+/* ════════ LISTE — cartes plage ════════ */
+.list{display:flex; flex-direction:column; gap:var(--sp-3); padding-top:var(--sp-1);}
+.b-card{
+  display:flex; align-items:center; gap:var(--sp-3); width:100%; text-align:left;
+  background:var(--surface-raised); color:var(--sg-ink);
+  border:2.5px solid var(--sg-ink); border-radius:var(--sg-r-card);
+  box-shadow:var(--sg-pop-2); padding:var(--sp-3); cursor:pointer; font-family:inherit;
+  transition:transform .08s, box-shadow .08s;
+}
+.b-card:active{transform:translate(2px,2px); box-shadow:var(--sg-pop-press);}
+.b-card .thumb{width:48px; height:48px; flex-shrink:0; border-radius:var(--sg-r-soft);
+  border:2px solid var(--sg-ink); overflow:hidden; background:linear-gradient(160deg,#1A5852,#08251F);}
+.b-card .body{flex:1; min-width:0; overflow:hidden;}
+.b-card .nm{font-weight:800; font-size:var(--sg-fs-body); line-height:1.3;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.b-card .cm{font-size:var(--sg-fs-micro); color:var(--sg-mid); margin-top:2px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.b-card .right{display:flex; flex-direction:column; align-items:flex-end; gap:5px;
+  flex-shrink:0; margin-left:var(--sp-1);}
+.b-card .score{font-family:'JetBrains Mono',monospace; font-variant-numeric:tabular-nums;
+  font-weight:700; font-size:var(--sg-fs-body); color:var(--sg-ink);}
+.b-card .score small{font-size:10px; color:var(--sg-mid);}
+
+/* ════════ EMPTY STATE — Le Veilleur, pas d'emoji OS ════════ */
+.empty{padding:48px var(--sp-6); text-align:center;}
+.empty .vw{width:88px; height:88px; margin:0 auto var(--sp-3);}
+.empty .ttl{font-weight:800; font-size:var(--sg-fs-lead); color:#fff; margin-bottom:var(--sp-1);}
+.empty .desc{font-weight:600; font-size:var(--sg-fs-body); line-height:1.55;
+  color:rgba(255,255,255,.78); max-width:38ch; margin:0 auto;}
+
+/* ════════ CTA PREMIUM — la conversion (le SEUL pop-3 plein) ════════ */
+.cta-band{margin:var(--sp-6) 0 var(--sp-2);}
+.sg-btn--cta{
+  display:flex; align-items:center; justify-content:center; gap:var(--sp-2);
+  width:100%; min-height:48px; padding:14px 22px;
+  font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:16px;
+  color:var(--cta-text); background:linear-gradient(135deg,var(--sg-gold-l),var(--sg-gold));
+  border:2.5px solid var(--sg-ink); border-radius:var(--sg-r-card);
+  box-shadow:var(--sg-pop-3); cursor:pointer; transition:transform .08s, box-shadow .08s;
+}
+.sg-btn--cta:active{transform:translate(3px,3px); box-shadow:var(--sg-pop-press);}
+.cta-sub{text-align:center; font-size:var(--sg-fs-micro); color:rgba(255,255,255,.78);
+  margin-top:var(--sp-2); font-weight:600;}
+
+/* ── reduced-motion = plancher dur : contour+ombre RESTENT, transitions sautent ── */
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important; animation:none!important;}
+}
+</style>
+
+<div class="phone">
+  <div class="scene-bg"></div>
+  <div class="halftone"></div>
+  <div class="scroll">
+
+    <!-- EN-TÊTE : 1 idée = "voici tes plages aujourd'hui, en direct" -->
+    <div class="head">
+      <span class="count" id="count">17</span>
+      <span class="t-eyebrow" id="headlbl">PLAGES · 9 PROPRES · EN&nbsp;DIRECT</span>
+    </div>
+
+    <!-- (1) CHAMP DE RECHERCHE UNIFIE -->
+    <div class="sg-field">
+      <svg class="mag" width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2.2"/>
+        <path d="m20 20-3.6-3.6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      </svg>
+      <input id="q" type="search" placeholder="Chercher une plage…" enterkeyhint="search"
+        autocomplete="off" autocapitalize="off" spellcheck="false">
+      <button class="clear" id="clear" aria-label="Effacer" style="display:none">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <!-- (2) CHIPS DE FILTRE (trio statut + favoris teal) -->
+    <div class="row" id="chips">
+      <button class="chip clean" data-chip="clean">
+        <span class="glyph">✓</span> Propres <span class="ct">9</span>
+      </button>
+      <button class="chip fav" data-chip="fav">
+        <span class="glyph">★</span> Favoris <span class="ct">3</span>
+      </button>
+      <button class="chip avoid" data-chip="avoid">
+        <span class="glyph">✕</span> À éviter <span class="ct">5</span>
+      </button>
+    </div>
+
+    <!-- (3) TRI EXPLICITE (le contrôle qui manquait) -->
+    <div class="sort-wrap">
+      <div class="t-eyebrow" style="margin-bottom:8px">Trier par</div>
+      <div class="seg" id="sort" role="tablist">
+        <button data-sort="best" class="is-on">Meilleures</button>
+        <button data-sort="near">Plus proches</button>
+        <button data-sort="az">A–Z</button>
+      </div>
+    </div>
+
+    <!-- CARTE MEILLEURE AUJOURD'HUI (1 seul pop-3 dans le flux liste) -->
+    <button class="hot" id="hot">
+      <span class="ht-halftone"></span>
+      <span class="thumb">
+        <span class="veil">
+          <!-- Le Veilleur miniature, humeur calme (teal/vert), regarde la mer -->
+          <svg width="34" height="34" viewBox="0 0 40 40" fill="none">
+            <ellipse cx="20" cy="22" rx="9" ry="6.5" fill="#1EC8B0" stroke="#0D0D0D" stroke-width="2"/>
+            <rect x="6" y="18" width="9" height="5" rx="2.2" fill="#FFE47A" stroke="#0D0D0D" stroke-width="1.6"/>
+            <rect x="25" y="18" width="9" height="5" rx="2.2" fill="#FFE47A" stroke="#0D0D0D" stroke-width="1.6"/>
+            <circle cx="17.5" cy="21" r="1.5" fill="#0D0D0D"/>
+            <path d="M20 27 q3 4 7 4.5" stroke="#22C55E" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </span>
+      </span>
+      <span class="meta">
+        <span class="lbl">Meilleure aujourd'hui</span>
+        <span class="nm">ANSE DUFOUR</span>
+        <span class="sub">Les Anses-d'Arlet · Score <span class="t-num">91</span><small>/100</small></span>
+      </span>
+      <span class="sg-status clean"><span class="g">✓</span>PROPRE</span>
+    </button>
+
+    <!-- LISTE -->
+    <div class="list" id="list"></div>
+
+    <!-- EMPTY STATE (caché par défaut) -->
+    <div class="empty" id="empty" style="display:none">
+      <svg class="vw" viewBox="0 0 100 100" fill="none">
+        <ellipse cx="50" cy="56" rx="26" ry="19" fill="#1EC8B0" stroke="#0D0D0D" stroke-width="3"/>
+        <rect x="12" y="46" width="22" height="13" rx="5" fill="#FFE47A" stroke="#0D0D0D" stroke-width="2.4"/>
+        <rect x="66" y="46" width="22" height="13" rx="5" fill="#FFE47A" stroke="#0D0D0D" stroke-width="2.4"/>
+        <circle cx="44" cy="53" r="3.4" fill="#0D0D0D"/>
+        <path d="M50 70 q8 9 18 10" stroke="#009E8E" stroke-width="3" stroke-linecap="round" fill="none"/>
+      </svg>
+      <div class="ttl">Aucune plage trouvée</div>
+      <div class="desc">Essaie un autre filtre ou une autre recherche — Le Veilleur garde l'œil sur la mer.</div>
+    </div>
+
+    <!-- CTA PREMIUM — la conversion (porte unique openPremium) -->
+    <div class="cta-band">
+      <button class="sg-btn--cta" id="ctaPremium">
+        <!-- Le Veilleur désigne le CTA (antenne) -->
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <ellipse cx="12" cy="13" rx="6" ry="4.4" fill="#fff" stroke="#0D0D0D" stroke-width="1.8"/>
+          <path d="M12 8.6 L12 4.5" stroke="#0D0D0D" stroke-width="1.8" stroke-linecap="round"/>
+          <circle cx="12" cy="3.6" r="1.6" fill="#0D0D0D"/>
+        </svg>
+        Active ton Veilleur perso
+      </button>
+      <div class="cta-sub">Alerte la veille · 7 jours · brief matinal — 4,99 €/mois</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ───── données factices (statique = tableau, pas aquarium) ───── */
+const BEACHES=[
+  {name:"Anse Dufour",commune:"Les Anses-d'Arlet",status:"clean",score:91,fav:true,drive:18},
+  {name:"Grande Anse",commune:"Les Anses-d'Arlet",status:"clean",score:84,fav:false,drive:22},
+  {name:"Anse Mitan",commune:"Les Trois-Îlets",status:"clean",score:78,fav:true,drive:12},
+  {name:"Anse Noire",commune:"Les Anses-d'Arlet",status:"moderate",score:58,fav:false,drive:20},
+  {name:"Le Diamant",commune:"Le Diamant",status:"moderate",score:52,fav:false,drive:28},
+  {name:"Sainte-Anne Bourg",commune:"Sainte-Anne",status:"clean",score:81,fav:false,drive:40},
+  {name:"Les Salines",commune:"Sainte-Anne",status:"clean",score:88,fav:true,drive:45},
+  {name:"Cap Chevalier",commune:"Sainte-Anne",status:"avoid",score:31,fav:false,drive:48},
+  {name:"Tartane",commune:"La Trinité",status:"avoid",score:24,fav:false,drive:35},
+  {name:"Anse Charpentier",commune:"Sainte-Marie",status:"avoid",score:19,fav:false,drive:38},
+  {name:"Anse Couleuvre",commune:"Le Prêcheur",status:"clean",score:76,fav:false,drive:55},
+  {name:"Le Carbet",commune:"Le Carbet",status:"moderate",score:49,fav:false,drive:33},
+  {name:"Anse Turin",commune:"Le Carbet",status:"clean",score:73,fav:false,drive:34},
+  {name:"Madiana",commune:"Schœlcher",status:"moderate",score:55,fav:false,drive:8},
+  {name:"Anse Figuier",commune:"Rivière-Pilote",status:"avoid",score:28,fav:false,drive:30},
+  {name:"Pointe Marin",commune:"Sainte-Anne",status:"clean",score:80,fav:false,drive:42},
+  {name:"Anse Macabou",commune:"Le Vauclin",status:"avoid",score:22,fav:false,drive:36},
+];
+const ST={
+  clean:{cls:"clean",g:"✓",word:"PROPRE"},
+  moderate:{cls:"moderate",g:"◐",word:"MODÉRÉ"},
+  avoid:{cls:"avoid",g:"✕",word:"À ÉVITER"},
+};
+let state={q:"",chip:null,sort:"best"};
+
+const norm=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
+function compute(){
+  let r=BEACHES.slice();
+  if(state.q){const lq=norm(state.q); r=r.filter(b=>norm(b.name+" "+b.commune).includes(lq));}
+  if(state.chip==="clean")r=r.filter(b=>b.status==="clean");
+  if(state.chip==="fav")r=r.filter(b=>b.fav);
+  if(state.chip==="avoid")r=r.filter(b=>b.status==="avoid");
+  if(state.sort==="best")r.sort((a,b)=>b.score-a.score);
+  else if(state.sort==="near")r.sort((a,b)=>a.drive-b.drive);
+  else r.sort((a,b)=>a.name.localeCompare(b.name,"fr"));
+  return r;
+}
+/* construction DOM sûre (zéro innerHTML avec données) */
+function el(tag,cls,txt){const n=document.createElement(tag);if(cls)n.className=cls;if(txt!=null)n.textContent=txt;return n;}
+function statusPill(status){
+  const s=ST[status];
+  const p=el("span","sg-status "+s.cls);
+  p.appendChild(el("span","g",s.g));
+  p.appendChild(document.createTextNode(s.word));
+  return p;
+}
+function beachCard(b){
+  const card=el("button","b-card");
+  card.appendChild(el("span","thumb"));
+  const body=el("span","body");
+  body.appendChild(el("span","nm",b.name));
+  body.appendChild(el("span","cm",b.commune+" · "+b.drive+" min"));
+  card.appendChild(body);
+  const right=el("span","right");
+  right.appendChild(statusPill(b.status));
+  const sc=el("span","score",String(b.score));
+  sc.appendChild(el("small",null,"/100"));
+  right.appendChild(sc);
+  card.appendChild(right);
+  return card;
+}
+function render(){
+  const r=compute();
+  const nClean=r.filter(b=>b.status==="clean").length;
+  document.getElementById("count").textContent=r.length;
+  document.getElementById("headlbl").textContent="PLAGES · "+nClean+" PROPRES · EN DIRECT";
+  // chip counts (base = recherche q, indépendant du chip actif)
+  let base=BEACHES.slice();
+  if(state.q){const lq=norm(state.q);base=base.filter(b=>norm(b.name+" "+b.commune).includes(lq));}
+  document.querySelector('.chip.clean .ct').textContent=base.filter(b=>b.status==="clean").length;
+  document.querySelector('.chip.fav .ct').textContent=base.filter(b=>b.fav).length;
+  document.querySelector('.chip.avoid .ct').textContent=base.filter(b=>b.status==="avoid").length;
+
+  const list=document.getElementById("list");
+  const empty=document.getElementById("empty");
+  const hot=document.getElementById("hot");
+  hot.style.display=(state.q||state.chip)?"none":"flex";
+  list.replaceChildren();
+  if(!r.length){empty.style.display="block";return;}
+  empty.style.display="none";
+  r.forEach(b=>list.appendChild(beachCard(b)));
+}
+
+/* interactions (vie = interaction, pas autonome) */
+const qEl=document.getElementById("q"), clr=document.getElementById("clear");
+qEl.addEventListener("input",()=>{state.q=qEl.value; clr.style.display=qEl.value?"flex":"none"; render();});
+clr.addEventListener("click",()=>{qEl.value="";state.q="";clr.style.display="none";qEl.focus();render();});
+document.getElementById("chips").addEventListener("click",e=>{
+  const b=e.target.closest(".chip"); if(!b)return;
+  const id=b.dataset.chip;
+  state.chip=(state.chip===id)?null:id;
+  document.querySelectorAll(".chip").forEach(c=>c.classList.toggle("is-on",c.dataset.chip===state.chip));
+  render();
+});
+document.getElementById("sort").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b)return;
+  state.sort=b.dataset.sort;
+  document.querySelectorAll("#sort button").forEach(x=>x.classList.toggle("is-on",x===b));
+  render();
+});
+document.getElementById("ctaPremium").addEventListener("click",()=>{
+  // porte de conversion unique — câblée openPremium('search') dans l'app réelle
+  try{if(window.parent&&window.parent.postMessage)window.parent.postMessage("openPremium:search","*");}catch(e){}
+});
+render();
+</script>
