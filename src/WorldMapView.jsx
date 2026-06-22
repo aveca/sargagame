@@ -404,6 +404,13 @@ export default function WorldMapView({
       }
     }
     const onMove=e=>{
+      // Survol souris (aucun bouton enfoncé) = JAMAIS un pan. Purge toute entrée pointeur
+      // résiduelle (ex. gesture relâchée sur le chrome) → corrige « la carte suit le
+      // curseur / se dirige vers la zone survolée, sans clic ».
+      if(e.pointerType==="mouse"&&e.buttons===0){
+        if(ptrsRef.current[e.pointerId]){delete ptrsRef.current[e.pointerId];if(Object.keys(ptrsRef.current).length<2)pinchRef.current=null}
+        return
+      }
       if(!ptrsRef.current[e.pointerId]) return
       const prev=ptrsRef.current[e.pointerId]
       ptrsRef.current[e.pointerId]={x:e.clientX,y:e.clientY}
@@ -434,12 +441,14 @@ export default function WorldMapView({
       }
     }
     const onUp=e=>{
-      // Idem onDown : un relâchement sur un contrôle chrome ne doit pas déclencher la
-      // logique carte (double-tap zoom) ni voler le clic au bouton « Voir la plage ».
-      if(e.target&&e.target.closest&&e.target.closest('[data-vmui]')) return
+      // TOUJOURS nettoyer le suivi du pointeur, même relâché sur un contrôle chrome —
+      // sinon l'entrée ptrsRef survit et le survol suivant pan la carte (bug survol-pan).
       const wasMoved=moved
       delete ptrsRef.current[e.pointerId]
       if(Object.keys(ptrsRef.current).length<2) pinchRef.current=null
+      // Sur un contrôle chrome (CTA « Voir la plage », dock, capture…) : pas de double-tap
+      // zoom ni de vol de clic — mais le nettoyage ci-dessus a déjà eu lieu.
+      if(e.target&&e.target.closest&&e.target.closest('[data-vmui]')) return
       if(!wasMoved){
         // Double-tap = bascule zoom
         const now=Date.now()
