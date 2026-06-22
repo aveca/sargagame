@@ -474,7 +474,11 @@ export default function WorldMapView({
       const zoomIntent=e.ctrlKey||e.deltaMode!==0||Math.abs(e.deltaY)>=50
       if(zoomIntent){
         const f=e.deltaY<0?1.12:1/1.12
-        const s=toSvg(e.clientX,e.clientY)
+        // ANCRE LE ZOOM AU CENTRE DE L'ÉCRAN, PAS AU CURSEUR (fondateur 22/06, vérifié via
+        // event-listener live : un scroll avec le curseur dans un coin fait BONDIR la carte
+        // de ~1300px vers ce coin). Zoom au centre = zoom sur place, zéro décalage parasite.
+        const r=el.getBoundingClientRect()
+        const s=toSvg(r.left+r.width/2, r.top+r.height/2)
         const wx=(s[0]-c.tx)/c.k, wy=(s[1]-c.ty)/c.k
         c.k=Math.max(K_MIN,Math.min(K_MAX,c.k*f))
         c.tx=s[0]-wx*c.k; c.ty=s[1]-wy*c.k; clampCam(); schedule()
