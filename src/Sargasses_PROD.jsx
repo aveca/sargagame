@@ -12992,7 +12992,7 @@ export default function App(){
       const isExit=trigger!=="idle"
       if(isExit&&gate.exitVeilleurOn&&gate.exitcapPick&&!g("sg_email",null)&&g("sg_exitcap_snooze",0)<=Date.now()){
         try{if(sessionStorage.getItem("sg_exitcap"))return;sessionStorage.setItem("sg_exitcap","1")}catch(_){return}
-        setShowExitVeilleur(true);track("sg_exitcap_open",{trigger,variant:"veilleur"});return
+        setShowGameToast(false);setShowExitVeilleur(true);track("sg_exitcap_open",{trigger,variant:"veilleur"});return
       }
       try{
         if(sessionStorage.getItem("sg_game_toast"))return
