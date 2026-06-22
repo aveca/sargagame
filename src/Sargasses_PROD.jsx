@@ -192,11 +192,12 @@ const SG_BLOB_LEGEND_Y=346
 // réelle. Sobre/premium (satellite-caméra à 1 œil-objectif), JAMAIS visage
 // cartoon (= antidote au rejet « Adibou enfantin »). Réutilisable trans-écran.
 const VEILLEUR_MOOD={
-  // Veilleur canonique : corps/ailes violet, iris VERT, antenne or (réf. mascotte).
-  serein:{wing:"#5b3a8e",halo:"#7a4fb0",lens:"#3fd07f",ant:"#FFC72C",tilt:0,ring:null},
-  vigilant:{wing:"#F59E0B",halo:"#F59E0B",lens:"#FFD27A",ant:"#FFD27A",tilt:0,ring:null},
-  alerte:{wing:"#e8322a",halo:"#e8322a",lens:"#F4845F",ant:"#F4845F",tilt:-8,ring:"#e8322a"},
-  scan:{wing:"#5b3a8e",halo:"#7a4fb0",lens:"#3fd07f",ant:"#FFC72C",tilt:0,ring:null},
+  // Veilleur canonique (BIBLE marque) : boîtier ENCRE, accents teal/vert de marque, antenne or.
+  // Humeurs lisibles couleur+forme : calme=teal/vert, scan=or, vigilant=ambre-marque, alerte=corail.
+  serein:{wing:"#009E8E",halo:"#1EC8B0",lens:"#22C55E",ant:"#FFC72C",tilt:0,ring:null},
+  vigilant:{wing:"#B87A00",halo:"#B87A00",lens:"#FFD27A",ant:"#FFD27A",tilt:0,ring:null},
+  alerte:{wing:"#E8522A",halo:"#E8522A",lens:"#F4845F",ant:"#F4845F",tilt:-8,ring:"#E8522A"},
+  scan:{wing:"#009E8E",halo:"#1EC8B0",lens:"#FFC72C",ant:"#FFC72C",tilt:0,ring:null},
 }
 // Chemin de la page « fiabilité » selon la région/langue : MQ/GP → /fiabilite/,
 // nouvelles régions → /reliability/ (EN) ou /fiabilidad/ (ES). Évite les 404 sur
@@ -380,12 +381,12 @@ function Veilleur({mood="serein",size=44}){
         <circle r="14" fill={m.lens} opacity=".12"/>
         <rect x="-27" y="-5" width="13" height="11" rx="2.5" fill={m.wing}/>
         <rect x="14" y="-5" width="13" height="11" rx="2.5" fill={m.wing}/>
-        <rect x="-11" y="-11" width="22" height="22" rx="6" fill="#5b3a8e"/>
-        <rect x="-11" y="-11" width="22" height="7" rx="6" fill="#7a4fb0"/>
+        <rect x="-11" y="-11" width="22" height="22" rx="6" fill="#0A1714"/>
+        <rect x="-11" y="-11" width="22" height="7" rx="6" fill={m.lens}/>
         <line x1="0" y1="-11" x2="0" y2="-19" stroke={m.ant} strokeWidth="1.6" strokeLinecap="round"/>
         <circle cx="0" cy="-20" r="1.9" fill={m.ant}/>
         {m.ring&&<circle cx="0" cy="2" r="6.6" fill="none" stroke={m.ring} strokeWidth="1"/>}
-        <circle cx="0" cy="2" r="5.4" fill="#07201E"/>
+        <circle cx="0" cy="2" r="5.4" fill="#0A1714"/>
         <circle cx="0" cy="2" r="4" fill={m.lens}/>
         <circle cx="-1.4" cy=".5" r="1.4" fill="#EAFBF8"/>
       </g></g></g>
@@ -794,16 +795,16 @@ function discoveryBeats(lang){
     {eyebrow:T("LA SOURCE","THE SOURCE","EL ORIGEN"),heading:T("Une ceinture de 8000 km","An 8,000 km belt","Un cinturón de 8000 km"),sub:T("Chaque année, une nappe d'algues traverse l'Atlantique, de l'Afrique aux Caraïbes.","Every year a raft of seaweed crosses the Atlantic, from Africa to the Caribbean.","Cada año una masa de algas cruza el Atlántico, de África al Caribe."),
       scene:<><rect width="800" height="600" fill="#06211E"/><circle cx="400" cy="300" r="240" fill="#0A2E2A"/><circle cx="400" cy="300" r="240" fill="none" stroke="#1A5852" strokeWidth="2"/><path d="M170 380 Q400 300 630 360" fill="none" stroke="#7a5c14" strokeWidth="22" strokeLinecap="round" opacity=".85"/><path d="M170 380 Q400 300 630 360" fill="none" stroke="#a8862a" strokeWidth="8" strokeLinecap="round" strokeDasharray="4 14" opacity=".7"/><text x="246" y="372" fontFamily="ui-monospace,monospace" fontSize="12" fill="#9FE1CB">{T("Afrique","Africa","África")}</text><text x="560" y="348" fontFamily="ui-monospace,monospace" fontSize="12" fill="#9FE1CB">{T("Caraïbes","Caribbean","Caribe")}</text></>},
     {eyebrow:T("LA DÉRIVE","THE DRIFT","LA DERIVA"),heading:T("Le vent décide","The wind decides","El viento decide"),sub:T("Courants et alizés poussent les bancs vers certaines plages — pas toutes, pas en même temps.","Currents and trade winds push the rafts onto some beaches — not all, not at once.","Las corrientes y los vientos empujan los bancos a ciertas playas."),
-      scene:<><rect width="800" height="600" fill="url(#bscSea)"/><rect width="800" height="600" fill="#0A2E2A"/>{[160,260,360].map((y,i)=>(<path key={i} d={`M-40 ${y} q60 -16 120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0`} fill="none" stroke="#5b3a8e" strokeWidth="2" opacity=".4"/>))}<g><path d="M120 250 L520 250" stroke="#FFC72C" strokeWidth="2" strokeDasharray="6 8" opacity=".7"/><path d="M520 250 l-16 -8 0 16 Z" fill="#FFC72C"/></g><g transform="translate(150,250)"><ellipse rx="26" ry="9" fill="#7a5c14"/><ellipse cx="-12" cy="-4" rx="11" ry="5" fill="#8a6c1c"/></g><g transform="translate(560,420)"><path d="M-40 0 Q200 -30 430 0 L430 180 L-40 180 Z" fill="#1C1712"/></g></>},
+      scene:<><rect width="800" height="600" fill="url(#bscSea)"/><rect width="800" height="600" fill="#0A2E2A"/>{[160,260,360].map((y,i)=>(<path key={i} d={`M-40 ${y} q60 -16 120 0 t120 0 t120 0 t120 0 t120 0 t120 0 t120 0`} fill="none" stroke="#1A5852" strokeWidth="2" opacity=".5"/>))}<g><path d="M120 250 L520 250" stroke="#FFC72C" strokeWidth="2" strokeDasharray="6 8" opacity=".7"/><path d="M520 250 l-16 -8 0 16 Z" fill="#FFC72C"/></g><g transform="translate(150,250)"><ellipse rx="26" ry="9" fill="#7a5c14"/><ellipse cx="-12" cy="-4" rx="11" ry="5" fill="#8a6c1c"/></g><g transform="translate(560,420)"><path d="M-40 0 Q200 -30 430 0 L430 180 L-40 180 Z" fill="#1C1712"/></g></>},
     {eyebrow:T("LE RISQUE","THE RISK","EL RIESGO"),heading:T("En décomposition, ça pique","Rotting, it stings","Al descomponerse, irrita"),sub:T("Les algues échouées libèrent du H2S (odeur d'œuf). On surveille pour t'éviter ça.","Stranded seaweed releases H2S (egg smell). We watch so you avoid it.","Las algas varadas liberan H2S (olor a huevo). Vigilamos para evitártelo."),
-      scene:<><rect width="800" height="600" fill="#0B2230"/><rect y="300" width="800" height="300" fill="#1C1712"/><g transform="translate(400,330)"><ellipse rx="180" ry="34" fill="#5d400e"/><ellipse cx="-90" cy="-12" rx="60" ry="20" fill="#7a5c14"/><ellipse cx="80" cy="-10" rx="70" ry="22" fill="#6b4a12"/></g><g fill="#CC28FF" opacity=".55"><circle cx="330" cy="280" r="4"/><circle cx="360" cy="250" r="3"/><circle cx="430" cy="262" r="3.5"/><circle cx="470" cy="238" r="2.6"/></g><text x="400" y="250" textAnchor="middle" fontFamily="'Anton',sans-serif" fontSize="20" fill="#CC28FF">H₂S</text></>},
+      scene:<><rect width="800" height="600" fill="#0B2230"/><rect y="300" width="800" height="300" fill="#1C1712"/><g transform="translate(400,330)"><ellipse rx="180" ry="34" fill="#5d400e"/><ellipse cx="-90" cy="-12" rx="60" ry="20" fill="#7a5c14"/><ellipse cx="80" cy="-10" rx="70" ry="22" fill="#6b4a12"/></g><g fill="#E8522A" opacity=".55"><circle cx="330" cy="280" r="4"/><circle cx="360" cy="250" r="3"/><circle cx="430" cy="262" r="3.5"/><circle cx="470" cy="238" r="2.6"/></g><text x="400" y="250" textAnchor="middle" fontFamily="'Anton',sans-serif" fontSize="20" fill="#E8522A">H₂S</text></>},
     {eyebrow:T("LES SOLUTIONS","THE SOLUTIONS","LAS SOLUCIONES"),heading:T("Barrer, récolter, recycler","Block, collect, recycle","Frenar, recoger, reciclar"),sub:T("Barrages flottants, ramassage rapide, et valorisation : engrais, bioplastique, énergie.","Floating booms, fast collection, and reuse: fertiliser, bioplastic, energy.","Barreras, recogida rápida y reciclaje: abono, bioplástico, energía."),cta:T("Voir ma plage du jour →","See my beach today →","Ver mi playa de hoy →"),
-      scene:<><rect width="800" height="600" fill="#06211E"/><rect y="320" width="800" height="280" fill="#1A5852" opacity=".5"/><g><circle cx="170" cy="320" r="10" fill="#FFC72C"/><circle cx="230" cy="320" r="10" fill="#FFC72C"/><circle cx="290" cy="320" r="10" fill="#FFC72C"/><circle cx="350" cy="320" r="10" fill="#FFC72C"/><line x1="160" y1="332" x2="360" y2="332" stroke="#E8A800" strokeWidth="3"/></g><g transform="translate(470,300)"><path d="M-30 20 L30 20 L22 36 L-22 36 Z" fill="#16282C" stroke="#FFC72C" strokeWidth="1.5"/><rect x="-8" y="-6" width="16" height="26" rx="2" fill="#5b3a8e"/></g><g transform="translate(620,360)"><path d="M0 -26 A26 26 0 1 1 -18 44" fill="none" stroke="#22C55E" strokeWidth="6"/><path d="M-18 30 l0 16 l16 -4 Z" fill="#22C55E"/></g><text x="620" y="368" textAnchor="middle" fontFamily="'Anton',sans-serif" fontSize="13" fill="#9FE1CB">RE</text></>},
+      scene:<><rect width="800" height="600" fill="#06211E"/><rect y="320" width="800" height="280" fill="#1A5852" opacity=".5"/><g><circle cx="170" cy="320" r="10" fill="#FFC72C"/><circle cx="230" cy="320" r="10" fill="#FFC72C"/><circle cx="290" cy="320" r="10" fill="#FFC72C"/><circle cx="350" cy="320" r="10" fill="#FFC72C"/><line x1="160" y1="332" x2="360" y2="332" stroke="#E8A800" strokeWidth="3"/></g><g transform="translate(470,300)"><path d="M-30 20 L30 20 L22 36 L-22 36 Z" fill="#16282C" stroke="#FFC72C" strokeWidth="1.5"/><rect x="-8" y="-6" width="16" height="26" rx="2" fill="#0A1714"/></g><g transform="translate(620,360)"><path d="M0 -26 A26 26 0 1 1 -18 44" fill="none" stroke="#22C55E" strokeWidth="6"/><path d="M-18 30 l0 16 l16 -4 Z" fill="#22C55E"/></g><text x="620" y="368" textAnchor="middle" fontFamily="'Anton',sans-serif" fontSize="13" fill="#9FE1CB">RE</text></>},
   ]
 }
 function DiscoveryStory({lang,onClose,onShowMap}){
   return(
-    <div role="dialog" aria-modal="true" aria-label={_t(lang,"Comprendre les sargasses","Understand sargassum","Entender el sargazo")} style={{position:"absolute",inset:0,zIndex:1060,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
+    <div role="dialog" aria-modal="true" className="sg-onink-scope" aria-label={_t(lang,"Comprendre les sargasses","Understand sargassum","Entender el sargazo")} style={{position:"absolute",inset:0,zIndex:1060,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
       <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"fixed",top:"calc(12px + env(safe-area-inset-top))",right:12,zIndex:30,width:42,height:42,borderRadius:21,background:"rgba(10,23,20,.55)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:16,cursor:"pointer"}}>✕</button>
       <StoryEngine beats={discoveryBeats(lang)} lang={lang} ev="sg_discovery_beat" onCTA={onShowMap}/>
     </div>
@@ -1126,10 +1127,10 @@ function SolTransformScene({lang}){
     <g transform="translate(400,300)"><ellipse rx="46" ry="16" fill="#6b7a1c" style={{opacity:"calc(1 - var(--p5)*.7)"}}/></g>
     {items.map((o,i)=>(
       <g key={i} transform={"translate("+o.x+","+o.y+")"} role="button" tabIndex={0} aria-label={o.l} onClick={()=>{const ns=sel===i?null:i;setSel(ns);if(ns!=null){try{track("sg_sol_tap",{beat:"transforme",item:["engrais","briques","biogaz","papier","bioplastique"][i]})}catch(_){}}}} style={{cursor:"pointer",opacity:"calc(var(--p5)*1.4 - "+(i*0.16)+")",transformBox:"fill-box",transformOrigin:"center"}}>
-        <circle r="34" fill="#241246" stroke={sel===i?"#FFD884":"#3fd07f"} strokeWidth={sel===i?2.6:1.4}/><text y="10" fontSize="30" textAnchor="middle">{o.e}</text><text y="56" fontFamily="ui-monospace,monospace" fontSize="12" fill="#9FE1CB" textAnchor="middle">{o.l}</text>
+        <circle r="34" fill="#0A1714" stroke={sel===i?"#FFD884":"#1EC8B0"} strokeWidth={sel===i?2.6:1.4}/><text y="10" fontSize="30" textAnchor="middle">{o.e}</text><text y="56" fontFamily="ui-monospace,monospace" fontSize="12" fill="#9FE1CB" textAnchor="middle">{o.l}</text>
       </g>))}
     {sel==null
-      ? <text x="400" y="104" fontFamily="ui-monospace,monospace" fontSize="13" fill="#3fd07f" textAnchor="middle" style={{opacity:"var(--p5)"}}>👆 {T("touche une ressource","tap a resource","toca un recurso")}</text>
+      ? <text x="400" y="104" fontFamily="ui-monospace,monospace" fontSize="13" fill="#1EC8B0" textAnchor="middle" style={{opacity:"var(--p5)"}}>👆 {T("touche une ressource","tap a resource","toca un recurso")}</text>
       : <g><rect x="120" y="70" width="560" height="62" rx="14" fill="rgba(7,32,30,.94)" stroke="#FFD884" strokeWidth="1.4"/><text x="400" y="97" fontFamily="system-ui,sans-serif" fontSize="15" fontWeight="800" fill="#fff" textAnchor="middle">{items[sel].e+"  "+items[sel].l}</text><text x="400" y="119" fontFamily="system-ui,sans-serif" fontSize="12.5" fill="rgba(255,255,255,.85)" textAnchor="middle">{items[sel].f}</text></g>}
   </g>)
 }
@@ -1139,7 +1140,7 @@ function SolSortScene({lang}){
   const T=(fr,en,es)=>_t(lang,fr,en,es)
   const[sel,setSel]=useState(null)
   const bins=[
-    {e:"♻️",x:300,c:"#3fd07f",l:T("Valorisable","Reusable","Útil"),f:T("L'algue propre : engrais, biogaz, biochar.","Clean algae: fertilizer, biogas, biochar.","Alga limpia: abono, biogás, biochar.")},
+    {e:"♻️",x:300,c:"#22C55E",l:T("Valorisable","Reusable","Útil"),f:T("L'algue propre : engrais, biogaz, biochar.","Clean algae: fertilizer, biogas, biochar.","Alga limpia: abono, biogás, biochar.")},
     {e:"🌊",x:400,c:"#3E9BC4",l:T("Eau & sel","Water & salt","Agua y sal"),f:T("Pressée, l'eau salée repart à la mer.","Pressed out, the brine returns to the sea.","Prensada, el agua vuelve al mar.")},
     {e:"🪨",x:500,c:"#9AA08A",l:T("Sable & résidus","Sand & residue","Arena y residuo"),f:T("Le sable rendu à la plage, les déchets écartés.","Sand returned to the beach, waste removed.","La arena vuelve a la playa.")},
   ]
@@ -1147,11 +1148,11 @@ function SolSortScene({lang}){
     <style>{`@keyframes solBelt{to{stroke-dashoffset:-40}}.sol-belt{animation:solBelt 1.5s linear 1 both}@media(prefers-reduced-motion:reduce){.sol-belt{animation:none}}`}</style></defs>
     <rect width="800" height="600" fill="url(#solSort)"/>
     {/* convoyeur incliné */}
-    <path d="M110 220 L460 330" stroke="#241246" strokeWidth="26" strokeLinecap="round"/>
-    <path className="sol-belt" d="M110 220 L460 330" stroke="#3fd07f" strokeWidth="3" strokeDasharray="6 16" opacity=".55"/>
+    <path d="M110 220 L460 330" stroke="#0A1714" strokeWidth="26" strokeLinecap="round"/>
+    <path className="sol-belt" d="M110 220 L460 330" stroke="#1EC8B0" strokeWidth="3" strokeDasharray="6 16" opacity=".55"/>
     {[150,232,314,396].map((x,i)=>{const y=220+(x-110)*(110/350);return <ellipse key={i} cx={x} cy={y-16} rx="13" ry="6" fill="#8a6c1c" style={{opacity:"calc(var(--p4)*1.3 - "+(i*0.18)+")"}}/>})}
     {/* tête de tri (l'engin) */}
-    <g transform="translate(470,300)"><rect x="-20" y="-24" width="48" height="32" rx="6" fill="#155A5A"/><rect x="-10" y="-36" width="22" height="14" rx="3" fill="#241246"/><circle cx="1" cy="-42" r="3.6" fill="#3fd07f"/></g>
+    <g transform="translate(470,300)"><rect x="-20" y="-24" width="48" height="32" rx="6" fill="#155A5A"/><rect x="-10" y="-36" width="22" height="14" rx="3" fill="#0A1714"/><circle cx="1" cy="-42" r="3.6" fill="#1EC8B0"/></g>
     {/* 3 bacs triés, cliquables, remplis par --p4 */}
     {bins.map((b,i)=>(
       <g key={i} transform={"translate("+b.x+",430)"} role="button" tabIndex={0} aria-label={b.l} onClick={()=>{const ns=sel===i?null:i;setSel(ns);if(ns!=null){try{track("sg_sol_tap",{beat:"tri",item:["valorisable","eau_sel","sable"][i]})}catch(_){}}}} style={{cursor:"pointer"}}>
@@ -1162,7 +1163,7 @@ function SolSortScene({lang}){
         <text y="88" fontFamily="ui-monospace,monospace" fontSize="11" fill="#9FE1CB" textAnchor="middle">{b.l}</text>
       </g>))}
     {sel==null
-      ? <text x="400" y="120" fontFamily="ui-monospace,monospace" fontSize="13" fill="#3fd07f" textAnchor="middle" style={{opacity:"var(--p4)"}}>👆 {T("touche un bac de tri","tap a sort bin","toca un contenedor")}</text>
+      ? <text x="400" y="120" fontFamily="ui-monospace,monospace" fontSize="13" fill="#1EC8B0" textAnchor="middle" style={{opacity:"var(--p4)"}}>👆 {T("touche un bac de tri","tap a sort bin","toca un contenedor")}</text>
       : <g><rect x="140" y="96" width="520" height="58" rx="14" fill="rgba(7,32,30,.94)" stroke="#FFD884" strokeWidth="1.4"/><text x="400" y="120" fontFamily="system-ui,sans-serif" fontSize="15" fontWeight="800" fill="#fff" textAnchor="middle">{bins[sel].e+"  "+bins[sel].l}</text><text x="400" y="140" fontFamily="system-ui,sans-serif" fontSize="12.5" fill="rgba(255,255,255,.85)" textAnchor="middle">{bins[sel].f}</text></g>}
   </g>)
 }
@@ -1189,12 +1190,12 @@ function SolDebateScene({lang}){
     <circle cx="400" cy="250" r="58" fill="#FFD884" opacity=".5"/>
     <rect y="372" width="800" height="228" fill="#10403A"/>
     <path d="M120 466 Q400 440 680 466 L680 600 L120 600 Z" fill="#C9A86A"/>
-    <g opacity={vi===0?1:.45}><rect x="300" y="420" width="34" height="40" fill="#13302A"/><path d="M296 420 l21 -16 l21 16 Z" fill="#241246"/><rect x="344" y="428" width="28" height="32" fill="#13302A"/></g>
-    <g opacity={vi===0?1:.45}><rect x="440" y="416" width="46" height="44" fill="#241246"/><line x1="463" y1="416" x2="463" y2="398" stroke="#FFD884" strokeWidth="2"/><path d="M463 398 l14 5 l-14 5 Z" fill="#E8522A"/></g>
+    <g opacity={vi===0?1:.45}><rect x="300" y="420" width="34" height="40" fill="#13302A"/><path d="M296 420 l21 -16 l21 16 Z" fill="#0A1714"/><rect x="344" y="428" width="28" height="32" fill="#13302A"/></g>
+    <g opacity={vi===0?1:.45}><rect x="440" y="416" width="46" height="44" fill="#0A1714"/><line x1="463" y1="416" x2="463" y2="398" stroke="#FFD884" strokeWidth="2"/><path d="M463 398 l14 5 l-14 5 Z" fill="#E8522A"/></g>
     <g opacity={vi===1||vi===3?1:.35} transform="translate(520,452)"><path d="M-24 0 l48 0 l-8 14 l-32 0 Z" fill="#13302A"/></g>
     {vi===0&&<g><ellipse cx="317" cy="404" rx="34" ry="11" fill="#9AA08A" opacity=".4"/><text x="317" y="384" fontSize="13" textAnchor="middle">💨</text></g>}
     {vi===4&&<g stroke="#FFD884" strokeWidth="2" fill="none" opacity=".7"><path d="M250 200 Q330 330 400 430"/><path d="M400 190 Q400 310 400 430"/><path d="M550 200 Q470 330 400 430"/></g>}
-    {miVeil(400,150,"#5b3a8e","#3fd07f")}
+    {miVeil(400,150,"#0A1714","#1EC8B0")}
     {/* sélecteur de voix (bande centrale, mobile-safe) */}
     <g role="button" tabIndex={0} aria-label="prev" onClick={()=>{const n=(vi+4)%5;setVi(n);try{track("sg_sol_tap",{beat:"debat",item:"voix_"+n})}catch(_){}}} style={{cursor:"pointer"}}><circle cx="272" cy="232" r="17" fill="rgba(7,32,30,.7)" stroke="rgba(95,211,201,.4)"/><text x="272" y="238" fontSize="16" fill="#fff" textAnchor="middle">‹</text></g>
     <g role="button" tabIndex={0} aria-label="next" onClick={()=>{const n=(vi+1)%5;setVi(n);try{track("sg_sol_tap",{beat:"debat",item:"voix_"+n})}catch(_){}}} style={{cursor:"pointer"}}><circle cx="528" cy="232" r="17" fill="rgba(7,32,30,.7)" stroke="rgba(95,211,201,.4)"/><text x="528" y="238" fontSize="16" fill="#fff" textAnchor="middle">›</text></g>
@@ -1203,10 +1204,10 @@ function SolDebateScene({lang}){
     {/* vote 2×2 (safe band) ou résultat */}
     {!voted
       ? <g><text x="400" y="312" fontSize="13.5" fontWeight="800" fill="#fff" textAnchor="middle">{T("Toi, où doit aller l'argent ?","You — where should the money go?","¿A dónde va el dinero?")}</text>
-          {O.map((o,i)=>{const cx=i%2===0?336:464,cy=i<2?340:376;return(<g key={i} transform={"translate("+cx+","+cy+")"} role="button" tabIndex={0} aria-label={o} onClick={()=>vote(i)} style={{cursor:"pointer"}}><rect x="-62" y="-13" width="124" height="28" rx="9" fill="rgba(255,255,255,.08)" stroke="#3fd07f" strokeWidth="1.1"/><text x="0" y="5" fontSize="10.5" fontWeight="700" fill="#fff" textAnchor="middle">{o}</text></g>)})}
+          {O.map((o,i)=>{const cx=i%2===0?336:464,cy=i<2?340:376;return(<g key={i} transform={"translate("+cx+","+cy+")"} role="button" tabIndex={0} aria-label={o} onClick={()=>vote(i)} style={{cursor:"pointer"}}><rect x="-62" y="-13" width="124" height="28" rx="9" fill="rgba(255,255,255,.08)" stroke="#1EC8B0" strokeWidth="1.1"/><text x="0" y="5" fontSize="10.5" fontWeight="700" fill="#fff" textAnchor="middle">{o}</text></g>)})}
         </g>
       : <g><text x="400" y="306" fontSize="12.5" fontWeight="800" fill="#FFD884" textAnchor="middle">{T("Le quartier a voté — l'argent suit la donnée :","The community voted — money follows data:","La comunidad votó:")}</text>
-          {O.map((o,i)=>{const pct=Math.round(100*(votes[i]||0)/tot),y=324+i*19;return(<g key={i} transform={"translate(290,"+y+")"}><text x="0" y="9" fontSize="10" fill="rgba(255,255,255,.85)" textAnchor="end">{o}</text><rect x="8" y="0" width="170" height="11" rx="5.5" fill="rgba(255,255,255,.1)"/><rect x="8" y="0" width={Math.max(5,170*pct/100)} height="11" rx="5.5" fill="#3fd07f"/><text x="186" y="9" fontSize="10" fontWeight="700" fill="#3fd07f">{pct+"%"}</text></g>)})}
+          {O.map((o,i)=>{const pct=Math.round(100*(votes[i]||0)/tot),y=324+i*19;return(<g key={i} transform={"translate(290,"+y+")"}><text x="0" y="9" fontSize="10" fill="rgba(255,255,255,.85)" textAnchor="end">{o}</text><rect x="8" y="0" width="170" height="11" rx="5.5" fill="rgba(255,255,255,.1)"/><rect x="8" y="0" width={Math.max(5,170*pct/100)} height="11" rx="5.5" fill="#1EC8B0"/><text x="186" y="9" fontSize="10" fontWeight="700" fill="#1EC8B0">{pct+"%"}</text></g>)})}
         </g>}
   </g>)
 }
@@ -1219,22 +1220,22 @@ function solutionsBeats(lang){
     {eyebrow:T("LE PROBLÈME","THE PROBLEM","EL PROBLEMA"),heading:T("Une ceinture de 8 000 km","An 8,000 km belt","Un cinturón de 8.000 km"),
       sub:T("Depuis 2011, une marée d'algues traverse l'Atlantique, de l'Afrique aux Caraïbes. En 2025, un record : 38 millions de tonnes — le double de 2022.","Since 2011 a tide of algae crosses the Atlantic, Africa to the Caribbean. In 2025 a record: 38 million tonnes — double 2022.","Desde 2011 una marea cruza el Atlántico. En 2025 un récord: 38 millones de toneladas — el doble que 2022."),
       scene:<g><defs>{SKY("sol0")}</defs><rect width="800" height="600" fill="url(#sol0)"/>
-        <ellipse cx="400" cy="320" rx="320" ry="170" fill="#241246" opacity=".55"/>
+        <ellipse cx="400" cy="320" rx="320" ry="170" fill="#08251F" opacity=".55"/>
         <g style={{transform:"translateX(calc(var(--p0)*70px - 35px))"}}>{[200,258,316,374,432,490,548,606].map((x,i)=>(<ellipse key={i} cx={x} cy={310+Math.sin(i*1.3)*16} rx="24" ry="8.5" fill="#8a6c1c" opacity=".82"/>))}</g>
-        <circle cx="170" cy="312" r="9" fill="#3fd07f"/><text x="170" y="346" fontFamily="ui-monospace,monospace" fontSize="12" fill="#9FE1CB" textAnchor="middle">{T("Afrique","Africa","África")}</text>
+        <circle cx="170" cy="312" r="9" fill="#1EC8B0"/><text x="170" y="346" fontFamily="ui-monospace,monospace" fontSize="12" fill="#9FE1CB" textAnchor="middle">{T("Afrique","Africa","África")}</text>
         <circle cx="636" cy="312" r="9" fill="#FFD884"/><text x="636" y="346" fontFamily="ui-monospace,monospace" fontSize="12" fill="#FFD884" textAnchor="middle">{T("Caraïbes","Caribbean","Caribe")}</text>
         <text x="400" y="150" fontFamily="'Anton',sans-serif" fontSize="40" fill="#fff" textAnchor="middle" opacity=".9">2011 →</text>
       </g>},
     // 1 — ON VOIT TOUT : le satellite scanne (notre moat)
     {eyebrow:T("ON VOIT TOUT","WE SEE IT ALL","LO VEMOS TODO"),heading:T("Lue depuis l'espace","Read from space","Leída desde el espacio"),
-      sub:T("Le Veilleur lit l'indice AFAI des satellites (NASA/Copernicus) et prévient ta plage 2 à 5 jours avant l'arrivée — recoupé chaque jour au satellite.","The Watchman reads the satellites' AFAI index (NASA/Copernicus) and warns your beach 2-5 days ahead — cross-checked daily against satellite.","El Vigía lee el índice AFAI (NASA/Copernicus) y avisa tu playa 2-5 días antes — contrastado a diario con satélite."),
+      sub:T("Le Veilleur lit la signature des algues en mer (satellites NASA/Copernicus) et prévient ta plage 2 à 5 jours avant l'arrivée — recoupé chaque jour au satellite.","The Watchman reads the algae's signature at sea (NASA/Copernicus satellites) and warns your beach 2-5 days ahead — cross-checked daily against satellite.","El Vigía lee la firma de las algas en el mar (satélites NASA/Copernicus) y avisa tu playa 2-5 días antes — contrastado a diario con satélite."),
       scene:<g><defs>{SEA("sol1")}</defs><rect width="800" height="600" fill="#06121A"/>
         {[[120,90],[300,70],[520,110],[680,80],[420,150],[600,180]].map((s,i)=>(<circle key={i} cx={s[0]} cy={s[1]} r="1.3" fill="#fff" opacity=".5"/>))}
         <rect y="360" width="800" height="240" fill="url(#sol1)"/>
-        <path className="bsc-beam" d="M400 150 L300 360 L500 360 Z" fill="#3fd07f" opacity={"calc(.08 + var(--p1)*.16)"}/>
-        <g style={{transform:"translateX(calc(var(--p1)*120px - 60px))"}}>{miVeil(400,140,"#5b3a8e","#3fd07f")}</g>
+        <path className="bsc-beam" d="M400 150 L300 360 L500 360 Z" fill="#1EC8B0" opacity={"calc(.08 + var(--p1)*.16)"}/>
+        <g style={{transform:"translateX(calc(var(--p1)*120px - 60px))"}}>{miVeil(400,140,"#0A1714","#1EC8B0")}</g>
         {[330,400,470].map((x,i)=>(<circle key={i} cx={x} cy="400" r="7" fill="#FFD884" style={{opacity:"calc(var(--p1) - "+(i*0.18)+")"}}/>))}
-        <text x="400" y="470" fontFamily="ui-monospace,monospace" fontSize="13" fill="#3fd07f" textAnchor="middle" style={{opacity:"var(--p1)"}}>AFAI · scan</text>
+        <text x="400" y="470" fontFamily="ui-monospace,monospace" fontSize="13" fill="#1EC8B0" textAnchor="middle" style={{opacity:"var(--p1)"}}>{T("Algues en mer · scan","Algae at sea · scan","Algas en el mar · scan")}</text>
       </g>},
     // 2 — ON ARRÊTE EN MER : barrages flottants + bateau collecteur
     {eyebrow:T("ON AGIT EN MER","WE ACT AT SEA","ACTUAMOS EN EL MAR"),heading:T("Stopper avant la plage","Stop it before the beach","Detenerla antes de la playa"),
@@ -1247,7 +1248,7 @@ function solutionsBeats(lang){
         <g><line x1="200" y1="408" x2="600" y2="408" stroke="#FFC72C" strokeWidth="4" strokeDasharray="10 6"/>{[230,290,350,410,470,530].map((x,i)=>(<circle key={i} cx={x} cy="408" r="6" fill="#FFC72C"/>))}</g>
         <g style={{opacity:"var(--p2)"}}>{[260,330,400,470,540].map((x,i)=>(<ellipse key={i} cx={x} cy="392" rx="18" ry="6" fill="#7a5c14"/>))}</g>
         {/* bateau collecteur arrive avec --p2 */}
-        <g style={{transform:"translateX(calc(var(--p2)*180px - 40px))"}}><path d="M120 388 l70 0 l-12 22 l-46 0 Z" fill="#13302A"/><rect x="142" y="368" width="26" height="20" fill="#241246"/><circle cx="155" cy="360" r="4" fill="#3fd07f"/></g>
+        <g style={{transform:"translateX(calc(var(--p2)*180px - 40px))"}}><path d="M120 388 l70 0 l-12 22 l-46 0 Z" fill="#13302A"/><rect x="142" y="368" width="26" height="20" fill="#0A1714"/><circle cx="155" cy="360" r="4" fill="#1EC8B0"/></g>
       </g>},
     // 3 — ON RAMASSE VITE : fenêtre 24-48h avant le H2S
     {eyebrow:T("ON RAMASSE VITE","WE COLLECT FAST","RECOGEMOS RÁPIDO"),heading:T("48 heures, pas plus","48 hours, no more","48 horas, no más"),
@@ -1282,7 +1283,7 @@ function solutionsBeats(lang){
         <rect y="360" width="800" height="240" fill="url(#sol5)"/>
         <line x1="-40" y1="392" x2="840" y2="392" stroke="#FFD884" strokeWidth="2.2" strokeDasharray="3 13" opacity=".5"/>
         <path d="M250 500 Q400 478 560 498 L820 492 L820 620 L250 620 Z" fill="#C9A86A"/>
-        <g style={{transform:"translateY(calc(var(--p7)*-10px))"}}>{miVeil(400,150,"#5b3a8e","#3fd07f")}</g>
+        <g style={{transform:"translateY(calc(var(--p7)*-10px))"}}>{miVeil(400,150,"#0A1714","#1EC8B0")}</g>
       </g>},
   ]
 }
@@ -1295,15 +1296,15 @@ function SolutionsStory({lang,onClose,onExit}){
   const onBeat=(b)=>{const lvl=Math.min(N,b+1);if(lvl>unlocked){setUnlocked(lvl);try{s("sg_sol_lvl",lvl)}catch(_){}try{sgUnlock("sol_p"+lvl)}catch(_){}}}
   const pct=Math.round(100*Math.min(unlocked,N)/N)
   return(
-    <div role="dialog" aria-modal="true" aria-label={_t(lang,"Les solutions sargasses","Sargassum solutions","Soluciones al sargazo")} style={{position:"absolute",inset:0,zIndex:1065,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
+    <div role="dialog" aria-modal="true" className="sg-onink-scope" aria-label={_t(lang,"Les solutions sargasses","Sargassum solutions","Soluciones al sargazo")} style={{position:"absolute",inset:0,zIndex:1065,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
       <button onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"fixed",top:"calc(12px + env(safe-area-inset-top))",right:12,zIndex:31,width:42,height:42,borderRadius:21,background:"rgba(10,23,20,.55)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:16,cursor:"pointer"}}>✕</button>
       {/* HUD : barre de déblocage de NOS données (jamais décroît). Pas un popup — fin bandeau chrome. */}
       <div aria-hidden style={{position:"fixed",top:"calc(15px + env(safe-area-inset-top))",left:14,right:66,zIndex:30,pointerEvents:"none"}}>
-        <div style={{fontSize:10,fontWeight:800,letterSpacing:".04em",color:"#3fd07f",textShadow:"0 1px 4px rgba(0,0,0,.6)"}}>{unlocked}/{N} · {_t(lang,"données débloquées","data unlocked","datos desbloqueados")}</div>
-        <div style={{height:5,borderRadius:3,background:"rgba(255,255,255,.13)",overflow:"hidden",marginTop:4}}><div style={{height:"100%",width:pct+"%",background:"linear-gradient(90deg,#5b3a8e,#3fd07f)",borderRadius:3,transition:"width .55s cubic-bezier(.22,1,.36,1)"}}/></div>
+        <div style={{fontSize:10,fontWeight:800,letterSpacing:".04em",color:"#1EC8B0",textShadow:"0 1px 4px rgba(0,0,0,.6)"}}>{unlocked}/{N} · {_t(lang,"données débloquées","data unlocked","datos desbloqueados")}</div>
+        <div style={{height:5,borderRadius:3,background:"rgba(255,255,255,.13)",overflow:"hidden",marginTop:4}}><div style={{height:"100%",width:pct+"%",background:"linear-gradient(90deg,#009E8E,#22C55E)",borderRadius:3,transition:"width .55s cubic-bezier(.22,1,.36,1)"}}/></div>
       </div>
       {/* sol_exit_cta : le dernier CTA ouvre le premium (intent chaud post-éducation) */}
-      <StoryEngine beats={beats} lang={lang} accent="#3fd07f" ev="sg_solutions_beat" onCTA={onExit||onClose} onBeat={onBeat}/>
+      <StoryEngine beats={beats} lang={lang} accent="#1EC8B0" ev="sg_solutions_beat" onCTA={onExit||onClose} onBeat={onBeat}/>
     </div>
   )
 }
@@ -1318,7 +1319,7 @@ function miVeil(cx,cy,wing,lens){
     <circle r="30" fill={wing} opacity=".14"/>
     <rect x="-30" y="-7" width="16" height="14" rx="3" fill={wing}/><rect x="14" y="-7" width="16" height="14" rx="3" fill={wing}/>
     <line x1="0" y1="-14" x2="0" y2="-25" stroke={lens} strokeWidth="2" strokeLinecap="round"/><circle cx="0" cy="-27" r="2.4" fill={lens}/>
-    <rect x="-14" y="-14" width="28" height="28" rx="8" fill="#5b3a8e"/><rect x="-14" y="-14" width="28" height="9" rx="8" fill="#FFC72C"/>
+    <rect x="-14" y="-14" width="28" height="28" rx="8" fill="#0A1714"/><rect x="-14" y="-14" width="28" height="9" rx="8" fill="#FFC72C"/>
     <circle cx="0" cy="3" r="8" fill="#07201E"/><circle cx="0" cy="3" r="5.5" fill={lens}/><circle cx="-2" cy="1" r="2" fill="#EAFBF8"/>
   </g>)
 }
@@ -2362,6 +2363,23 @@ button:active,a:active,[role="button"]:active{transform:scale(.91)!important;opa
   .sg-iso button{padding:0 8px!important}
   .sg-live .sg-live-age{display:none}
 }
+
+/* ═══ MODALS SECONDAIRES « SUR FOND SOMBRE » (bible 22/06) ═══
+   Surfaces dark plein-écran (Assistant / Comprendre / Solutions / Journal) :
+   leur look est porté par des styles INLINE. Le thème (comic 100% par défaut)
+   force .theme-comic button{bg/border/shadow/color !important} → écraserait nos
+   boutons (chips, ✕, CTA, items). On NEUTRALISE le thème avec une classe scopée
+   à spécificité supérieure (0,2,x) qui « débranche » le skin, puis on RE-SPÉCIFIE
+   l'apparence onink en !important (pattern .sg-live/.sg-iso). 'unset' laisse le
+   reste passer aux styles inline du bouton (chaque bouton garde son fond inline). */
+.theme-comic .sg-onink-scope button,.theme-soft .sg-onink-scope button,
+.theme-manga .sg-onink-scope button,.theme-arcade .sg-onink-scope button,
+.theme-sticker .sg-onink-scope button{
+  background:unset!important;border:unset!important;box-shadow:unset!important;
+  color:unset!important;border-radius:unset!important;text-shadow:unset!important;
+  text-transform:none!important;letter-spacing:normal!important;
+  font-family:"Bricolage Grotesque",system-ui,sans-serif!important;
+  transition:transform .08s,box-shadow .08s}
 
 /* Sargassum bank animations */
 .sg-bank{transition:fill-opacity .6s ease}
@@ -9733,15 +9751,33 @@ function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,onPremium,onClos
   const last=msgs[msgs.length-1]
   return(
     <div role="dialog" aria-modal="true" aria-label="Assistant" style={{position:"fixed",right:0,bottom:0,left:0,zIndex:1090,display:"flex",justifyContent:"flex-end",pointerEvents:"none"}}>
-      <div style={{pointerEvents:"auto",width:"100%",maxWidth:420,margin:"0 10px calc(10px + env(safe-area-inset-bottom))",
-        background:"#190c2c",border:"1px solid rgba(255,255,255,.12)",borderRadius:20,overflow:"hidden",
+      <div className="sg-onink-scope" style={{pointerEvents:"auto",width:"100%",maxWidth:420,margin:"0 10px calc(10px + env(safe-area-inset-bottom))",
+        background:"#120821",border:"1px solid rgba(255,255,255,.12)",borderRadius:20,overflow:"hidden",
         boxShadow:"0 18px 60px rgba(0,0,0,.55)",display:"flex",flexDirection:"column",maxHeight:"min(72vh,560px)"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 14px",
-          borderBottom:"1px solid rgba(255,255,255,.08)"}}>
-          <div style={{display:"flex",alignItems:"center",gap:8}}>
-            <span style={{width:8,height:8,borderRadius:"50%",background:"#22C55E",boxShadow:"0 0 8px #22C55E"}}/>
-            <strong style={{fontSize:13.5,color:"#fff"}}>{t("Assistant Sargasses","Sargassum Assistant","Asistente Sargazo")}</strong>
-            <span style={{fontSize:10.5,color:"rgba(255,255,255,.45)"}}>{t("· données live","· live data","· datos en vivo")}</span>
+          borderBottom:"1px solid rgba(255,255,255,.10)"}}>
+          <div style={{display:"flex",alignItems:"center",gap:9,minWidth:0}}>
+            {/* Le Veilleur miniature (satellite, seul personnage) — humeur calme teal, veille la mer */}
+            <svg width="30" height="30" viewBox="0 0 64 64" aria-hidden="true" style={{flexShrink:0,display:"block"}}>
+              <g transform="translate(32,33)">
+                <circle r="20" fill="#009E8E" opacity=".18"/>
+                <rect x="-26" y="-5" width="12" height="11" rx="2.5" fill="#0A1714"/>
+                <rect x="14" y="-5" width="12" height="11" rx="2.5" fill="#0A1714"/>
+                <rect x="-11" y="-11" width="22" height="22" rx="6" fill="#0A1714"/>
+                <rect x="-11" y="-11" width="22" height="6" rx="6" fill="#1EC8B0"/>
+                <line x1="0" y1="-11" x2="0" y2="-18" stroke="#009E8E" strokeWidth="1.8" strokeLinecap="round"/>
+                <circle cx="0" cy="-19" r="2" fill="#009E8E"/>
+                <circle cx="0" cy="2" r="5" fill="#07201E"/>
+                <circle cx="0" cy="2" r="3.4" fill="#1EC8B0"/>
+                <circle cx="-1.3" cy=".6" r="1.2" fill="#EAFBF8"/>
+              </g>
+            </svg>
+            <div style={{minWidth:0}}>
+              <strong style={{fontSize:13.5,color:"#fff",lineHeight:1.2,display:"block"}}>{t("Le Veilleur","The Watchman","El Vigía")}</strong>
+              <span style={{display:"inline-flex",alignItems:"center",gap:5,marginTop:2,fontSize:10.5,fontWeight:800,letterSpacing:".04em",color:"#1EC8B0",textTransform:"uppercase"}}>
+                <span style={{width:6,height:6,borderRadius:"50%",background:"#009E8E"}}/>{t("En direct","Live","En vivo")}
+              </span>
+            </div>
           </div>
           <button onClick={onClose} aria-label="Fermer" style={{background:"none",border:"none",color:"rgba(255,255,255,.6)",
             fontSize:18,cursor:"pointer",padding:4}}>✕</button>
@@ -12745,15 +12781,15 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
    "rattrape" ce qu'on a publié en son absence puis le repose sur sa plage live.
    Contenu = public/release-notes.json. Gated A/B `wn1`. Conversion-aware.
    ═══════════════════════════════════════════════════════════════════════════ */
-function WhatsNewJournal({lang,title,items,releaseV,releaseDate,allowDeepLinks,isPremium,onClose,onExplore,onPremium}){
+function WhatsNewJournal({lang,title,items,releaseV,releaseDate,allowDeepLinks,isPremium,mood="scan",onClose,onExplore,onPremium}){
   useEffect(()=>{try{track("sg_whatsnew_view",{v:releaseV,items:items.length})}catch(_){}},[])// eslint-disable-line
   const L=(it)=>it[lang]||it.fr
   const ttl=title?(title[lang]||title.fr):_t(lang,"Pendant ton absence","While you were away","Mientras no estabas")
   const go=(href)=>{try{track("sg_whatsnew_item",{v:releaseV,href})}catch(_){};try{s("sg_rel_seen",releaseV)}catch(_){};try{window.location.href=href}catch(_){}}
   return(
-    <div role="dialog" aria-modal="true" aria-label={_t(lang,"Nouveautés","What's new","Novedades")}
+    <div role="dialog" aria-modal="true" className="sg-onink-scope" aria-label={_t(lang,"Nouveautés","What's new","Novedades")}
       style={{position:"fixed",inset:0,zIndex:1072,overflowY:"auto",overflowX:"hidden",WebkitOverflowScrolling:"touch",overscrollBehavior:"contain",
-        background:"linear-gradient(180deg,#0B2230 0%,#123F44 34%,#7E5A38 72%,#C97E3A 100%)",
+        background:"linear-gradient(180deg,#0B2230 0%,#155A5A 38%,#C97E3A 76%,#F2B05E 100%)",
         animation:"viewFadeIn .4s cubic-bezier(.22,1,.36,1) both"}}>
       <div aria-hidden style={{position:"absolute",left:"50%",bottom:"-22%",width:"140%",height:"62%",transform:"translateX(-50%)",
         background:"radial-gradient(closest-side,rgba(255,216,132,.5),rgba(255,216,132,0))",pointerEvents:"none"}}/>
@@ -12764,7 +12800,8 @@ function WhatsNewJournal({lang,title,items,releaseV,releaseDate,allowDeepLinks,i
 
       <div style={{position:"relative",maxWidth:460,margin:"0 auto",minHeight:"100%",display:"flex",flexDirection:"column",
         justifyContent:"center",padding:"max(40px,11vh) 22px max(26px,env(safe-area-inset-bottom)) 22px",boxSizing:"border-box"}}>
-        <div style={{display:"flex",justifyContent:"center",marginBottom:6}}><Veilleur mood="serein" size={70}/></div>
+        {/* Humeur du Veilleur branchée sur l'état RÉEL du littoral (jamais 'serein' figé). */}
+        <div style={{display:"flex",justifyContent:"center",marginBottom:6}}><Veilleur mood={mood} size={70}/></div>
         <div style={{textAlign:"center",fontSize:11.5,fontWeight:800,letterSpacing:".16em",textTransform:"uppercase",color:"#FFD884",marginBottom:7}}>
           {_t(lang,"Content de te revoir","Good to see you back","Qué bueno verte")}
         </div>
@@ -12796,15 +12833,26 @@ function WhatsNewJournal({lang,title,items,releaseV,releaseDate,allowDeepLinks,i
 
         <button onClick={onExplore}
           style={{marginTop:22,width:"100%",padding:"16px",borderRadius:16,border:"none",cursor:"pointer",
-            fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",fontSize:16,fontWeight:800,color:"#07201E",
-            background:"linear-gradient(180deg,#FFD884,#E8A800)",boxShadow:"0 10px 30px rgba(232,168,0,.4)"}}>
+            fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",fontSize:16,fontWeight:800,color:"#0D0D0D",
+            background:"linear-gradient(135deg,#FFE47A,#FFC72C 55%,#E8A800)",boxShadow:"0 10px 30px rgba(232,168,0,.4)"}}>
           {_t(lang,"Voir ma plage en direct →","See my beach live →","Ver mi playa en vivo →")}
         </button>
 
         {!isPremium&&(
+          // Lien premium DISCRET mais bien cliquable (→ openPremium). Contraste AA garanti :
+          // texte blanc plein + ombre portée sur le bas chaud du dégradé. Picto SVG (plus de 🛰️ OS).
           <button onClick={onPremium} style={{marginTop:13,background:"none",border:"none",cursor:"pointer",
-            color:"rgba(255,255,255,.9)",fontSize:13,fontWeight:700,fontFamily:"inherit",textAlign:"center",width:"100%"}}>
-            🛰️ {_t(lang,"Le Veilleur personnel veille TA plage pour toi →",
+            display:"flex",alignItems:"center",justifyContent:"center",gap:7,
+            color:"#FFFFFF",fontSize:13,fontWeight:700,fontFamily:"inherit",textAlign:"center",width:"100%",
+            textShadow:"0 1px 6px rgba(0,0,0,.55)"}}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{flexShrink:0}}>
+              <rect x="9" y="9" width="6" height="6" rx="1.5" fill="#1EC8B0"/>
+              <circle cx="12" cy="12" r="1.1" fill="#07201E"/>
+              <path d="M9 11 4.4 8M15 11 19.6 8" stroke="#FFFFFF" strokeWidth="1.6" strokeLinecap="round" opacity=".9"/>
+              <rect x="3" y="6.2" width="3" height="3.4" rx=".7" fill="#FFFFFF" opacity=".9"/>
+              <rect x="18" y="6.2" width="3" height="3.4" rx=".7" fill="#FFFFFF" opacity=".9"/>
+            </svg>
+            {_t(lang,"Le Veilleur personnel veille TA plage pour toi →",
                       "Your personal Watcher keeps an eye on YOUR beach →",
                       "El Vigía personal cuida TU playa por ti →")}
           </button>
@@ -14791,6 +14839,7 @@ export default function App(){
         {whatsNew&&!showHero&&!showPrevLanding&&!showOnboarding&&!showPremium&&!showCaptureGate&&!showWelcome&&!selectedBeach&&(
           <WhatsNewJournal lang={lang} title={whatsNew.title} items={whatsNew.items}
             releaseV={whatsNew.v} releaseDate={whatsNew.date} allowDeepLinks={!IS_NEW_REGION} isPremium={isPremium}
+            mood={(()=>{const[,clean,,avoid]=filterCounts;return avoid>0?(avoid>=2?"alerte":"vigilant"):clean>0?"serein":"scan"})()}
             onClose={()=>{try{s("sg_rel_seen",whatsNew.v)}catch(_){};track("sg_whatsnew_dismiss",{v:whatsNew.v});setWhatsNew(null)}}
             onExplore={()=>{
               try{s("sg_rel_seen",whatsNew.v)}catch(_){};track("sg_whatsnew_cta",{v:whatsNew.v})
