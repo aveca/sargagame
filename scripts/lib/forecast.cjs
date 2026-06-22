@@ -200,7 +200,11 @@ function arrivalSignalFromBanks(beach, banks, dayIndex) {
     // Current position vs where it'll be in 24h (12h fallback, else stationary)
     const cur = bank.centroid
     const preds = bank.drift?.predictions || {}
-    const fut = preds['24h']?.centroid || preds['12h']?.centroid || cur
+    // Horizon par jour (action #2, 22/06) : J1 = position advectée à 24h, J2 = 48h, J3 = 72h →
+    // vraie fenêtre d'arrivée multi-jours portée par les courants. Fallback 24h→12h→cur si l'horizon
+    // long est absent (bancs d'archive avant l'extension = comportement strictement identique).
+    const horizonKey = dayIndex >= 3 ? '72h' : dayIndex === 2 ? '48h' : '24h'
+    const fut = preds[horizonKey]?.centroid || preds['24h']?.centroid || preds['12h']?.centroid || cur
 
     const dCur = distKm(beach.lat, beach.lng, cur[0], cur[1])
     const dFut = distKm(beach.lat, beach.lng, fut[0], fut[1])

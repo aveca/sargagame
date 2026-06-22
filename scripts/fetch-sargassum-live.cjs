@@ -958,8 +958,13 @@ function computeBankDrift(centroid, hull, windSpeed, windDir, island, hourlyWind
   }
 
   const predictions = {}
-  const confByHorizon = { 6: 75, 12: 55, 24: 35 }
-  for (const h of [6, 12, 24]) {
+  // Horizon étendu 24h → 72h (action #2, 22/06) : le forecast de courant Open-Meteo Marine couvre
+  // 3 jours → on advecte les bancs jusqu'à 72h pour une vraie fenêtre d'arrivée MULTI-JOURS
+  // (« ce banc atteint Sainte-Anne dans ~3 j »), pas juste 24h. Confiance décroissante (le courant
+  // à 48-72h est incertain ; au-delà du marine 3j on retombe sur le vent 7j). arrivalSignalFromBanks
+  // utilise l'horizon par jour (J1→24h, J2→48h, J3→72h), avec fallback 24h → archives anciennes inchangées.
+  const confByHorizon = { 6: 75, 12: 55, 24: 35, 48: 22, 72: 14 }
+  for (const h of [6, 12, 24, 48, 72]) {
     // Use forecast marine data (current + waves) if available, else fall back to wind
     const forecastWind = avgWindForHours(hourlyWind, 0, h)
     let useDLatH = dLatH, useDLngH = dLngH
