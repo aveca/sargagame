@@ -1,17 +1,17 @@
 {
-  "generatedAt": "2026-06-15T16:27:45.941Z",
+  "generatedAt": "2026-06-22T16:08:56.725Z",
   "sites": {
     "mq": {
-      "pageCount": 116,
-      "pagesSkippedNoindex": 4,
+      "pageCount": 308,
+      "pagesSkippedNoindex": 17,
       "totalImages": 54,
       "issueCount": 0,
       "byKind": {},
       "issues": []
     },
     "gp": {
-      "pageCount": 147,
-      "pagesSkippedNoindex": 4,
+      "pageCount": 339,
+      "pagesSkippedNoindex": 17,
       "totalImages": 84,
       "issueCount": 0,
       "byKind": {},

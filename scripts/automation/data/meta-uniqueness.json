@@ -1,17 +1,37 @@
 {
-  "generatedAt": "2026-06-15T16:27:45.485Z",
+  "generatedAt": "2026-06-22T16:08:55.693Z",
   "sites": {
     "mq": {
-      "pageCount": 116,
-      "uniqueTitles": 113,
-      "uniqueDescs": 110,
-      "duplicateTitleGroups": 0,
-      "duplicateDescGroups": 0,
-      "duplicateTitlePages": 0,
-      "duplicateDescPages": 0,
-      "duplicateTitles": [],
-      "duplicateDescs": [],
-      "issueCount": 107,
+      "pageCount": 308,
+      "uniqueTitles": 151,
+      "uniqueDescs": 134,
+      "duplicateTitleGroups": 1,
+      "duplicateDescGroups": 1,
+      "duplicateTitlePages": 3,
+      "duplicateDescPages": 3,
+      "duplicateTitles": [
+        {
+          "title": "Widget sargasses gratuit — l'état des plages en direct sur votre site",
+          "count": 3,
+          "sample": [
+            "en/widget/index.html",
+            "es/widget/index.html",
+            "widget/index.html"
+          ]
+        }
+      ],
+      "duplicateDescs": [
+        {
+          "desc": "Widget gratuit sargasses Martinique et Guadeloupe. Affichez l'état des plages en",
+          "count": 3,
+          "sample": [
+            "en/widget/index.html",
+            "es/widget/index.html",
+            "widget/index.html"
+          ]
+        }
+      ],
+      "issueCount": 479,
       "issues": [
         {
           "file": "404.html",
@@ -19,6 +39,12 @@
         },
         {
           "file": "a-propos/index.html",
+          "kind": "title-too-long",
+          "length": 85,
+          "value": "Pourquoi nous faire confiance — À propos · Sources & fiabilité — Sargasses Martinique"
+        },
+        {
+          "file": "agir/index.html",
           "kind": "missing-desc"
         },
         {
@@ -33,10 +59,35 @@
           "length": 164
         },
         {
+          "file": "arena-v2.html",
+          "kind": "missing-desc"
+        },
+        {
+          "file": "articles/alerte-saison-2026-gp-2026-04-09/index.html",
+          "kind": "title-too-long",
+          "length": 73,
+          "value": "Sargasses Guadeloupe 2026 : l'alerte rouge se profile — carte et conseils"
+        },
+        {
           "file": "articles/point-semaine-avril-2026-mq-2026-04-09/index.html",
           "kind": "title-length-warn",
           "length": 66,
           "value": "Sargasses Martinique avril 2026 — 55 % des plages propres ce matin"
+        },
+        {
+          "file": "bulletin-sargasses-martinique/index.html",
+          "kind": "title-length-warn",
+          "length": 67,
+          "value": "Bulletin sargasses Martinique du jour — état des plages aujourd'hui"
+        },
+        {
+          "file": "bulletin-sargasses-martinique/index.html",
+          "kind": "desc-length-warn",
+          "length": 199
+        },
+        {
+          "file": "comic-cartes.html",
+          "kind": "missing-desc"
         },
         {
           "file": "comprendre-sargasses/index.html",
@@ -52,7 +103,7 @@
         {
           "file": "conditions/index.html",
           "kind": "desc-length-warn",
-          "length": 163
+          "length": 191
         },
         {
           "file": "conditions/mer-agitee/index.html",
@@ -69,6 +120,16 @@
           "file": "conditions/mer-calme/index.html",
           "kind": "desc-length-warn",
           "length": 166
+        },
+        {
+          "file": "conditions/plages-enfants/index.html",
+          "kind": "desc-length-warn",
+          "length": 166
+        },
+        {
+          "file": "conditions/snorkeling/index.html",
+          "kind": "desc-length-warn",
+          "length": 169
         },
         {
           "file": "conditions/uv-fort/index.html",
@@ -93,6 +154,10 @@
           "length": 119
         },
         {
+          "file": "confirme/index.html",
+          "kind": "missing-desc"
+        },
+        {
           "file": "danger-sargasses-h2s/index.html",
           "kind": "desc-length-warn",
           "length": 163
@@ -102,12 +167,6 @@
           "kind": "title-length-warn",
           "length": 65,
           "value": "Détection satellite des sargasses : AFAI, OLCI, Copernicus (2026)"
-        },
-        {
-          "file": "en/best-beaches-guadeloupe/index.html",
-          "kind": "title-length-warn",
-          "length": 61,
-          "value": "Best beaches in Guadeloupe without sargassum — Real-time 2026"
         },
         {
           "file": "en/best-beaches-martinique/index.html",
@@ -130,115 +189,39 @@
           "file": "en/sargassum-alerts/index.html",
           "kind": "desc-length-warn",
           "length": 106
-        },
-        {
-          "file": "en/satellite-sargassum-detection/index.html",
-          "kind": "title-length-warn",
-          "length": 63,
-          "value": "Satellite sargassum detection: AFAI, OLCI, real-time monitoring"
-        },
-        {
-          "file": "en/understanding-sargassum/index.html",
-          "kind": "title-length-warn",
-          "length": 68,
-          "value": "Understanding sargassum: origins, proliferation & forecasting (2026)"
-        },
-        {
-          "file": "es/alertas-sargazo/index.html",
-          "kind": "title-too-long",
-          "length": 72,
-          "value": "Alertas de sargazo Martinica y Guadalupe — Notificaciones en tiempo real"
-        },
-        {
-          "file": "es/alertas-sargazo/index.html",
-          "kind": "desc-length-warn",
-          "length": 114
-        },
-        {
-          "file": "es/mapa-sargazo/index.html",
-          "kind": "title-length-warn",
-          "length": 63,
-          "value": "Mapa de sargazo Martinica y Guadalupe — Satélite en tiempo real"
-        },
-        {
-          "file": "faq/index.html",
-          "kind": "title-length-warn",
-          "length": 67,
-          "value": "FAQ Sargasses Martinique — Réponses aux questions fréquentes (2026)"
-        },
-        {
-          "file": "fiabilite/index.html",
-          "kind": "title-length-warn",
-          "length": 67,
-          "value": "Fiabilité des prévisions sargasses — précision mesurée | Martinique"
-        },
-        {
-          "file": "google22dbf19e7b743f5a.html",
-          "kind": "missing-title"
         }
       ]
     },
     "gp": {
-      "pageCount": 147,
-      "uniqueTitles": 139,
-      "uniqueDescs": 140,
-      "duplicateTitleGroups": 5,
+      "pageCount": 339,
+      "uniqueTitles": 182,
+      "uniqueDescs": 166,
+      "duplicateTitleGroups": 1,
       "duplicateDescGroups": 1,
-      "duplicateTitlePages": 10,
+      "duplicateTitlePages": 3,
       "duplicateDescPages": 2,
       "duplicateTitles": [
         {
-          "title": "Best beaches in Guadeloupe without sargassum — Real-time 2026",
-          "count": 2,
+          "title": "Widget sargasses gratuit — l'état des plages en direct sur votre site",
+          "count": 3,
           "sample": [
-            "en/best-beaches-guadeloupe/index.html",
-            "en/best-beaches-martinique/index.html"
-          ]
-        },
-        {
-          "title": "Meilleures plages de Guadeloupe sans sargasses — Carte en temps réel 2026",
-          "count": 2,
-          "sample": [
-            "meilleures-plages-guadeloupe-sargasses/index.html",
-            "meilleures-plages-martinique-sargasses/index.html"
-          ]
-        },
-        {
-          "title": "Météo des sargasses Guadeloupe — état du jour et prévision 7 jours",
-          "count": 2,
-          "sample": [
-            "meteo-sargasses-guadeloupe/index.html",
-            "meteo-sargasses-martinique/index.html"
-          ]
-        },
-        {
-          "title": "Saison des sargasses en Guadeloupe 2026 — Quand et où ?",
-          "count": 2,
-          "sample": [
-            "saison-sargasses-guadeloupe/index.html",
-            "saison-sargasses-martinique/index.html"
-          ]
-        },
-        {
-          "title": "Sargasses Guadeloupe cette semaine — Plages touchées et propres aujourd'hui",
-          "count": 2,
-          "sample": [
-            "sargasses-guadeloupe-cette-semaine/index.html",
-            "sargasses-martinique-cette-semaine/index.html"
+            "en/widget/index.html",
+            "es/widget/index.html",
+            "widget/index.html"
           ]
         }
       ],
       "duplicateDescs": [
         {
-          "desc": "Quand arrivent les sargasses en Guadeloupe en 2026 ? Pic de saison avril-septemb",
+          "desc": "Widget gratuit sargasses Guadeloupe et Martinique. Affichez l'état des plages en",
           "count": 2,
           "sample": [
-            "saison-sargasses-guadeloupe/index.html",
-            "saison-sargasses-martinique/index.html"
+            "en/widget/index.html",
+            "es/widget/index.html"
           ]
         }
       ],
-      "issueCount": 145,
+      "issueCount": 516,
       "issues": [
         {
           "file": "404.html",
@@ -246,6 +229,12 @@
         },
         {
           "file": "a-propos/index.html",
+          "kind": "title-too-long",
+          "length": 85,
+          "value": "Pourquoi nous faire confiance — À propos · Sources & fiabilité — Sargasses Guadeloupe"
+        },
+        {
+          "file": "agir/index.html",
           "kind": "missing-desc"
         },
         {
@@ -260,10 +249,35 @@
           "length": 164
         },
         {
+          "file": "arena-v2.html",
+          "kind": "missing-desc"
+        },
+        {
           "file": "articles/alerte-saison-2026-gp-2026-04-09/index.html",
           "kind": "title-too-long",
           "length": 73,
           "value": "Sargasses Guadeloupe 2026 : l'alerte rouge se profile — carte et conseils"
+        },
+        {
+          "file": "articles/point-semaine-avril-2026-mq-2026-04-09/index.html",
+          "kind": "title-length-warn",
+          "length": 66,
+          "value": "Sargasses Guadeloupe avril 2026 — 55 % des plages propres ce matin"
+        },
+        {
+          "file": "bulletin-sargasses-guadeloupe/index.html",
+          "kind": "title-length-warn",
+          "length": 67,
+          "value": "Bulletin sargasses Guadeloupe du jour — état des plages aujourd'hui"
+        },
+        {
+          "file": "bulletin-sargasses-guadeloupe/index.html",
+          "kind": "desc-too-long",
+          "length": 201
+        },
+        {
+          "file": "comic-cartes.html",
+          "kind": "missing-desc"
         },
         {
           "file": "comprendre-sargasses/index.html",
@@ -279,7 +293,7 @@
         {
           "file": "conditions/index.html",
           "kind": "desc-length-warn",
-          "length": 163
+          "length": 191
         },
         {
           "file": "conditions/mer-agitee/index.html",
@@ -296,6 +310,16 @@
           "file": "conditions/mer-calme/index.html",
           "kind": "desc-length-warn",
           "length": 170
+        },
+        {
+          "file": "conditions/plages-enfants/index.html",
+          "kind": "desc-length-warn",
+          "length": 170
+        },
+        {
+          "file": "conditions/snorkeling/index.html",
+          "kind": "desc-length-warn",
+          "length": 169
         },
         {
           "file": "conditions/uv-fort/index.html",
@@ -320,6 +344,10 @@
           "length": 119
         },
         {
+          "file": "confirme/index.html",
+          "kind": "missing-desc"
+        },
+        {
           "file": "danger-sargasses-h2s/index.html",
           "kind": "desc-length-warn",
           "length": 163
@@ -332,12 +360,6 @@
         },
         {
           "file": "en/best-beaches-guadeloupe/index.html",
-          "kind": "title-length-warn",
-          "length": 61,
-          "value": "Best beaches in Guadeloupe without sargassum — Real-time 2026"
-        },
-        {
-          "file": "en/best-beaches-martinique/index.html",
           "kind": "title-length-warn",
           "length": 61,
           "value": "Best beaches in Guadeloupe without sargassum — Real-time 2026"
@@ -357,51 +379,6 @@
           "file": "en/sargassum-alerts/index.html",
           "kind": "desc-length-warn",
           "length": 106
-        },
-        {
-          "file": "en/satellite-sargassum-detection/index.html",
-          "kind": "title-length-warn",
-          "length": 63,
-          "value": "Satellite sargassum detection: AFAI, OLCI, real-time monitoring"
-        },
-        {
-          "file": "en/understanding-sargassum/index.html",
-          "kind": "title-length-warn",
-          "length": 68,
-          "value": "Understanding sargassum: origins, proliferation & forecasting (2026)"
-        },
-        {
-          "file": "es/alertas-sargazo/index.html",
-          "kind": "title-too-long",
-          "length": 72,
-          "value": "Alertas de sargazo Guadalupe y Martinica — Notificaciones en tiempo real"
-        },
-        {
-          "file": "es/alertas-sargazo/index.html",
-          "kind": "desc-length-warn",
-          "length": 114
-        },
-        {
-          "file": "es/mapa-sargazo/index.html",
-          "kind": "title-length-warn",
-          "length": 63,
-          "value": "Mapa de sargazo Guadalupe y Martinica — Satélite en tiempo real"
-        },
-        {
-          "file": "faq/index.html",
-          "kind": "title-length-warn",
-          "length": 67,
-          "value": "FAQ Sargasses Guadeloupe — Réponses aux questions fréquentes (2026)"
-        },
-        {
-          "file": "fiabilite/index.html",
-          "kind": "title-length-warn",
-          "length": 67,
-          "value": "Fiabilité des prévisions sargasses — précision mesurée | Guadeloupe"
-        },
-        {
-          "file": "google22dbf19e7b743f5a.html",
-          "kind": "missing-title"
         }
       ]
     }

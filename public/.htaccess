@@ -191,6 +191,12 @@ RewriteRule ^previsions-bulletin-direct/?$ /previsions/ [R=301,L]
 # (anse-laborde, plage-des-amandiers, plage-de-sainte-claire, plage-de-la-desirade-sud :
 # servies 200 + au sitemap GP) → la règle les redirigeait vers elles-mêmes = no-op
 # au mieux, boucle 301 au pire. Aucune cible à « réparer » → supprimées.
+
+# Auto-added 2026-06-22 by seo-fix-404
+RewriteRule ^plages/anse-laborde/?$ /plages/anse-laborde/ [R=301,L]
+RewriteRule ^plages/plage-des-amandiers/?$ /plages/plage-des-amandiers/ [R=301,L]
+RewriteRule ^plages/plage-de-sainte-claire/?$ /plages/plage-de-sainte-claire/ [R=301,L]
+RewriteRule ^plages/plage-de-la-desirade-sud/?$ /plages/plage-de-la-desirade-sud/ [R=301,L]
 # CATCH-ALL — remaining old URLs that don't match specific rules → homepage
 # These MUST come AFTER all specific redirects above
 # =====================================================================

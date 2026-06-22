@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-06-15T16:27:46.026Z",
+  "generatedAt": "2026-06-22T16:08:56.918Z",
   "sites": {
     "mq": {
       "donorCount": 5,
-      "targetCount": 18,
+      "targetCount": 53,
       "injections": [
         {
           "donor": "/",
@@ -33,13 +33,13 @@
         "/previsions/",
         "/saison-sargasses-guadeloupe/",
         "/saison-sargasses-martinique/",
-        "/a-propos/",
-        "/conditions/"
+        "/agir/",
+        "/arena-v2.html"
       ]
     },
     "gp": {
       "donorCount": 5,
-      "targetCount": 19,
+      "targetCount": 54,
       "injections": [
         {
           "donor": "/",
@@ -70,7 +70,7 @@
         "/previsions/",
         "/saison-sargasses-guadeloupe/",
         "/saison-sargasses-martinique/",
-        "/a-propos/"
+        "/agir/"
       ]
     }
   }

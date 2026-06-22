@@ -1,17 +1,43 @@
 {
-  "generatedAt": "2026-06-15T16:27:45.397Z",
+  "generatedAt": "2026-06-22T16:08:55.494Z",
   "sites": {
     "mq": {
-      "pageCount": 116,
-      "pagesWithSchema": 103,
-      "totalBlocks": 393,
+      "pageCount": 308,
+      "pagesWithSchema": 125,
+      "totalBlocks": 481,
       "parseFailures": 0,
-      "errorCount": 0,
-      "warningCount": 21,
-      "errors": [],
+      "errorCount": 5,
+      "warningCount": 7,
+      "errors": [
+        {
+          "file": "martinique-ftp/pro/barrieres-vs-prevision/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "martinique-ftp/pro/cout-sargasses-hotel/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "martinique-ftp/pro/plan-sargasses-collectivite/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "martinique-ftp/pro/preparer-saison-sargasses/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "martinique-ftp/pro/widget-sargasses-hotel/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        }
+      ],
       "warnings": [
         {
-          "file": "martinique-ftp/alertes/index.html",
+          "file": "martinique-ftp/articles/alerte-saison-2026-gp-2026-04-09/index.html",
           "type": "Article",
           "message": "missing recommended field \"image\""
         },
@@ -21,215 +47,101 @@
           "message": "missing recommended field \"image\""
         },
         {
-          "file": "martinique-ftp/bilan-sargasses-2025/index.html",
+          "file": "martinique-ftp/pro/barrieres-vs-prevision/index.html",
           "type": "Article",
-          "message": "missing recommended field \"image\""
+          "message": "missing recommended field \"dateModified\""
         },
         {
-          "file": "martinique-ftp/comprendre-sargasses/index.html",
+          "file": "martinique-ftp/pro/cout-sargasses-hotel/index.html",
           "type": "Article",
-          "message": "missing recommended field \"image\""
+          "message": "missing recommended field \"dateModified\""
         },
         {
-          "file": "martinique-ftp/danger-sargasses-h2s/index.html",
+          "file": "martinique-ftp/pro/plan-sargasses-collectivite/index.html",
           "type": "Article",
-          "message": "missing recommended field \"image\""
+          "message": "missing recommended field \"dateModified\""
         },
         {
-          "file": "martinique-ftp/detection-satellite-sargasses/index.html",
+          "file": "martinique-ftp/pro/preparer-saison-sargasses/index.html",
           "type": "Article",
-          "message": "missing recommended field \"image\""
+          "message": "missing recommended field \"dateModified\""
         },
         {
-          "file": "martinique-ftp/faq/index.html",
+          "file": "martinique-ftp/pro/widget-sargasses-hotel/index.html",
           "type": "Article",
-          "message": "missing recommended field \"image\""
-        },
-        {
-          "file": "martinique-ftp/lexique/index.html",
-          "type": "Article",
-          "message": "missing recommended field \"image\""
-        },
-        {
-          "file": "martinique-ftp/meilleures-plages-guadeloupe-sargasses/index.html",
-          "type": "Article",
-          "message": "missing recommended field \"image\""
-        },
-        {
-          "file": "martinique-ftp/meilleures-plages-martinique-sargasses/index.html",
-          "type": "Article",
-          "message": "missing recommended field \"image\""
-        },
-        {
-          "file": "martinique-ftp/meteo-sargasses-guadeloupe/index.html",
-          "type": "Article",
-          "message": "missing recommended field \"image\""
-        },
-        {
-          "file": "martinique-ftp/meteo-sargasses-martinique/index.html",
-          "type": "Article",
-          "message": "missing recommended field \"image\""
-        },
-        {
-          "file": "martinique-ftp/methode-carte/index.html",
-          "type": "Article",
-          "message": "missing recommended field \"image\""
-        },
-        {
-          "file": "martinique-ftp/nettoyer-sargasses/index.html",
-          "type": "Article",
-          "message": "missing recommended field \"image\""
-        },
-        {
-          "file": "martinique-ftp/plages-sans-sargasses/index.html",
-          "type": "Article",
-          "message": "missing recommended field \"image\""
-        },
-        {
-          "file": "martinique-ftp/previsions-methode/index.html",
-          "type": "Article",
-          "message": "missing recommended field \"image\""
-        },
-        {
-          "file": "martinique-ftp/saison-sargasses-guadeloupe/index.html",
-          "type": "Article",
-          "message": "missing recommended field \"image\""
-        },
-        {
-          "file": "martinique-ftp/saison-sargasses-martinique/index.html",
-          "type": "Article",
-          "message": "missing recommended field \"image\""
-        },
-        {
-          "file": "martinique-ftp/sargasses-guadeloupe-cette-semaine/index.html",
-          "type": "Article",
-          "message": "missing recommended field \"image\""
-        },
-        {
-          "file": "martinique-ftp/sargasses-martinique-cette-semaine/index.html",
-          "type": "Article",
-          "message": "missing recommended field \"image\""
-        },
-        {
-          "file": "martinique-ftp/sargasses-record-2026/index.html",
-          "type": "Article",
-          "message": "missing recommended field \"image\""
+          "message": "missing recommended field \"dateModified\""
         }
       ]
     },
     "gp": {
-      "pageCount": 147,
-      "pagesWithSchema": 134,
-      "totalBlocks": 478,
+      "pageCount": 339,
+      "pagesWithSchema": 156,
+      "totalBlocks": 560,
       "parseFailures": 0,
-      "errorCount": 0,
-      "warningCount": 21,
-      "errors": [],
-      "warnings": [
+      "errorCount": 5,
+      "warningCount": 7,
+      "errors": [
         {
-          "file": "guadeloupe-ftp/alertes/index.html",
+          "file": "guadeloupe-ftp/pro/barrieres-vs-prevision/index.html",
           "type": "Article",
-          "message": "missing recommended field \"image\""
+          "message": "missing required field \"datePublished\""
         },
+        {
+          "file": "guadeloupe-ftp/pro/cout-sargasses-hotel/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "guadeloupe-ftp/pro/plan-sargasses-collectivite/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "guadeloupe-ftp/pro/preparer-saison-sargasses/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        },
+        {
+          "file": "guadeloupe-ftp/pro/widget-sargasses-hotel/index.html",
+          "type": "Article",
+          "message": "missing required field \"datePublished\""
+        }
+      ],
+      "warnings": [
         {
           "file": "guadeloupe-ftp/articles/alerte-saison-2026-gp-2026-04-09/index.html",
           "type": "Article",
           "message": "missing recommended field \"image\""
         },
         {
-          "file": "guadeloupe-ftp/bilan-sargasses-2025/index.html",
+          "file": "guadeloupe-ftp/articles/point-semaine-avril-2026-mq-2026-04-09/index.html",
           "type": "Article",
           "message": "missing recommended field \"image\""
         },
         {
-          "file": "guadeloupe-ftp/comprendre-sargasses/index.html",
+          "file": "guadeloupe-ftp/pro/barrieres-vs-prevision/index.html",
           "type": "Article",
-          "message": "missing recommended field \"image\""
+          "message": "missing recommended field \"dateModified\""
         },
         {
-          "file": "guadeloupe-ftp/danger-sargasses-h2s/index.html",
+          "file": "guadeloupe-ftp/pro/cout-sargasses-hotel/index.html",
           "type": "Article",
-          "message": "missing recommended field \"image\""
+          "message": "missing recommended field \"dateModified\""
         },
         {
-          "file": "guadeloupe-ftp/detection-satellite-sargasses/index.html",
+          "file": "guadeloupe-ftp/pro/plan-sargasses-collectivite/index.html",
           "type": "Article",
-          "message": "missing recommended field \"image\""
+          "message": "missing recommended field \"dateModified\""
         },
         {
-          "file": "guadeloupe-ftp/faq/index.html",
+          "file": "guadeloupe-ftp/pro/preparer-saison-sargasses/index.html",
           "type": "Article",
-          "message": "missing recommended field \"image\""
+          "message": "missing recommended field \"dateModified\""
         },
         {
-          "file": "guadeloupe-ftp/lexique/index.html",
+          "file": "guadeloupe-ftp/pro/widget-sargasses-hotel/index.html",
           "type": "Article",
-          "message": "missing recommended field \"image\""
-        },
-        {
-          "file": "guadeloupe-ftp/meilleures-plages-guadeloupe-sargasses/index.html",
-          "type": "Article",
-          "message": "missing recommended field \"image\""
-        },
-        {
-          "file": "guadeloupe-ftp/meilleures-plages-martinique-sargasses/index.html",
-          "type": "Article",
-          "message": "missing recommended field \"image\""
-        },
-        {
-          "file": "guadeloupe-ftp/meteo-sargasses-guadeloupe/index.html",
-          "type": "Article",
-          "message": "missing recommended field \"image\""
-        },
-        {
-          "file": "guadeloupe-ftp/meteo-sargasses-martinique/index.html",
-          "type": "Article",
-          "message": "missing recommended field \"image\""
-        },
-        {
-          "file": "guadeloupe-ftp/methode-carte/index.html",
-          "type": "Article",
-          "message": "missing recommended field \"image\""
-        },
-        {
-          "file": "guadeloupe-ftp/nettoyer-sargasses/index.html",
-          "type": "Article",
-          "message": "missing recommended field \"image\""
-        },
-        {
-          "file": "guadeloupe-ftp/plages-sans-sargasses/index.html",
-          "type": "Article",
-          "message": "missing recommended field \"image\""
-        },
-        {
-          "file": "guadeloupe-ftp/previsions-methode/index.html",
-          "type": "Article",
-          "message": "missing recommended field \"image\""
-        },
-        {
-          "file": "guadeloupe-ftp/saison-sargasses-guadeloupe/index.html",
-          "type": "Article",
-          "message": "missing recommended field \"image\""
-        },
-        {
-          "file": "guadeloupe-ftp/saison-sargasses-martinique/index.html",
-          "type": "Article",
-          "message": "missing recommended field \"image\""
-        },
-        {
-          "file": "guadeloupe-ftp/sargasses-guadeloupe-cette-semaine/index.html",
-          "type": "Article",
-          "message": "missing recommended field \"image\""
-        },
-        {
-          "file": "guadeloupe-ftp/sargasses-martinique-cette-semaine/index.html",
-          "type": "Article",
-          "message": "missing recommended field \"image\""
-        },
-        {
-          "file": "guadeloupe-ftp/sargasses-record-2026/index.html",
-          "type": "Article",
-          "message": "missing recommended field \"image\""
+          "message": "missing recommended field \"dateModified\""
         }
       ]
     }

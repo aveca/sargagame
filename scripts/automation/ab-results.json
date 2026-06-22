@@ -1,6 +1,6 @@
 {
   "_comment": "Auto-fetched: Apps Script funnel > GA4 > Sheets. See _source.",
-  "_fetchedAt": "2026-06-15T16:28:40.397Z",
+  "_fetchedAt": "2026-06-22T16:09:56.356Z",
   "_source": "apps-script-funnel",
   "tests": [
     {
@@ -10,12 +10,12 @@
         "curiosity"
       ],
       "sessions": [
-        9421,
-        9006
+        9323,
+        8587
       ],
       "conversions": [
         32,
-        30
+        29
       ],
       "metric": "sg_email_submit",
       "_source": "apps-script-funnel"
@@ -27,8 +27,8 @@
         "sample_first"
       ],
       "sessions": [
-        4274,
-        4691
+        3357,
+        3940
       ],
       "conversions": [
         0,
@@ -44,12 +44,12 @@
         "prelude"
       ],
       "sessions": [
-        6543,
-        5810
+        6635,
+        5760
       ],
       "conversions": [
-        36,
-        32
+        47,
+        40
       ],
       "metric": "sg_checkout_redirect",
       "_source": "apps-script-funnel"

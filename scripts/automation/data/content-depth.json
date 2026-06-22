@@ -1,20 +1,12 @@
 {
-  "generatedAt": "2026-06-15T16:27:45.684Z",
+  "generatedAt": "2026-06-22T16:08:56.106Z",
   "sites": {
     "mq": {
-      "pageCount": 116,
-      "medianWords": 816,
-      "thinCount": 40,
-      "richCount": 58,
+      "pageCount": 308,
+      "medianWords": 12,
+      "thinCount": 199,
+      "richCount": 65,
       "thinPages": [
-        {
-          "url": "/carte-sargasses/",
-          "words": 0
-        },
-        {
-          "url": "/en/best-beaches-guadeloupe/",
-          "words": 0
-        },
         {
           "url": "/en/best-beaches-martinique/",
           "words": 0
@@ -68,8 +60,12 @@
           "words": 0
         },
         {
-          "url": "/previsions/",
+          "url": "/veille/",
           "words": 0
+        },
+        {
+          "url": "/widget/embed/",
+          "words": 1
         },
         {
           "url": "/google22dbf19e7b743f5a.html",
@@ -80,113 +76,109 @@
           "words": 2
         },
         {
-          "url": "/widget/embed/",
-          "words": 2
-        },
-        {
           "url": "/jeu/",
           "words": 5
         },
         {
-          "url": "/404.html",
-          "words": 28
+          "url": "/widget/embed/saint-felix/",
+          "words": 8
         },
         {
-          "url": "/sarg_carte_satellite_app.html",
-          "words": 56
+          "url": "/widget/embed/anse-a-l-ane/",
+          "words": 9
         },
         {
-          "url": "/weekend.html",
-          "words": 82
+          "url": "/widget/embed/anse-a-l-eau/",
+          "words": 9
         },
         {
-          "url": "/neptunes_fury.html",
-          "words": 96
+          "url": "/widget/embed/anse-a-sable/",
+          "words": 9
         },
         {
-          "url": "/conditions/baignade-ideale/",
-          "words": 138
+          "url": "/widget/embed/anse-belleville/",
+          "words": 9
         },
         {
-          "url": "/conditions/mer-calme/",
-          "words": 150
+          "url": "/widget/embed/anse-bertrand-nord/",
+          "words": 9
         },
         {
-          "url": "/widget/",
-          "words": 165
+          "url": "/widget/embed/anse-bonneville/",
+          "words": 9
         },
         {
-          "url": "/alertes/",
-          "words": 192
+          "url": "/widget/embed/anse-cafard/",
+          "words": 9
         },
         {
-          "url": "/plages-sans-sargasses/",
-          "words": 196
+          "url": "/widget/embed/anse-caritan/",
+          "words": 9
         },
         {
-          "url": "/sargasses-mai-2026/",
-          "words": 202
+          "url": "/widget/embed/anse-ceron/",
+          "words": 9
+        },
+        {
+          "url": "/widget/embed/anse-champagne/",
+          "words": 9
+        },
+        {
+          "url": "/widget/embed/anse-charpentier/",
+          "words": 9
         }
       ],
       "topPages": [
         {
-          "url": "/plages/grande-anse-du-carbet/",
-          "words": 1654
+          "url": "/themes-lab/neon.html",
+          "words": 2124
         },
         {
-          "url": "/plages/anse-corps-de-garde/",
-          "words": 1638
+          "url": "/themes-lab/arena.html",
+          "words": 1986
+        },
+        {
+          "url": "/themes-lab/arena-v2.html",
+          "words": 1900
+        },
+        {
+          "url": "/themes-lab/arena-app.html",
+          "words": 1894
+        },
+        {
+          "url": "/arena-v2.html",
+          "words": 1832
         },
         {
           "url": "/plages/plage-du-bourg-sainte-anne/",
-          "words": 1626
-        },
-        {
-          "url": "/plages/plage-de-la-francaise/",
-          "words": 1624
-        },
-        {
-          "url": "/plages/plage-de-saint-pierre/",
-          "words": 1622
-        },
-        {
-          "url": "/plages/pointe-fort-caravelle/",
-          "words": 1620
+          "words": 1739
         },
         {
           "url": "/plages/grande-anse-d-arlet/",
-          "words": 1620
+          "words": 1706
+        },
+        {
+          "url": "/plages/plage-des-salines/",
+          "words": 1702
         },
         {
           "url": "/plages/plage-du-marin/",
-          "words": 1614
+          "words": 1700
         },
         {
-          "url": "/plages/petite-anse-d-arlet/",
-          "words": 1612
-        },
-        {
-          "url": "/plages/anse-gros-raisins/",
-          "words": 1612
+          "url": "/plages/plage-du-diamant/",
+          "words": 1700
         }
       ]
     },
     "gp": {
-      "pageCount": 147,
-      "medianWords": 1564,
-      "thinCount": 35,
-      "richCount": 88,
+      "pageCount": 339,
+      "medianWords": 13,
+      "thinCount": 193,
+      "richCount": 96,
       "thinPages": [
         {
-          "url": "/carte-sargasses/",
-          "words": 0
-        },
-        {
           "url": "/en/best-beaches-guadeloupe/",
-          "words": 0
-        },
-        {
-          "url": "/en/best-beaches-martinique/",
           "words": 0
         },
         {
@@ -238,8 +230,12 @@
           "words": 0
         },
         {
-          "url": "/previsions/",
+          "url": "/veille/",
           "words": 0
+        },
+        {
+          "url": "/widget/embed/",
+          "words": 1
         },
         {
           "url": "/google22dbf19e7b743f5a.html",
@@ -250,94 +246,98 @@
           "words": 2
         },
         {
-          "url": "/widget/embed/",
-          "words": 2
-        },
-        {
           "url": "/jeu/",
           "words": 5
         },
         {
-          "url": "/404.html",
-          "words": 28
+          "url": "/widget/embed/saint-felix/",
+          "words": 8
         },
         {
-          "url": "/sarg_carte_satellite_app.html",
-          "words": 56
+          "url": "/widget/embed/anse-a-l-ane/",
+          "words": 9
         },
         {
-          "url": "/weekend.html",
-          "words": 82
+          "url": "/widget/embed/anse-a-l-eau/",
+          "words": 9
         },
         {
-          "url": "/neptunes_fury.html",
-          "words": 96
+          "url": "/widget/embed/anse-a-sable/",
+          "words": 9
         },
         {
-          "url": "/plages/plages-nord-grande-terre/",
-          "words": 142
+          "url": "/widget/embed/anse-belleville/",
+          "words": 9
         },
         {
-          "url": "/widget/",
-          "words": 165
+          "url": "/widget/embed/anse-bertrand-nord/",
+          "words": 9
         },
         {
-          "url": "/alertes/",
-          "words": 192
+          "url": "/widget/embed/anse-bonneville/",
+          "words": 9
         },
         {
-          "url": "/plages-sans-sargasses/",
-          "words": 196
+          "url": "/widget/embed/anse-cafard/",
+          "words": 9
         },
         {
-          "url": "/sargasses-mai-2026/",
-          "words": 202
+          "url": "/widget/embed/anse-caritan/",
+          "words": 9
         },
         {
-          "url": "/mentions-legales.html",
-          "words": 221
+          "url": "/widget/embed/anse-ceron/",
+          "words": 9
+        },
+        {
+          "url": "/widget/embed/anse-champagne/",
+          "words": 9
+        },
+        {
+          "url": "/widget/embed/anse-charpentier/",
+          "words": 9
         }
       ],
       "topPages": [
         {
-          "url": "/plages/ile-de-la-petite-terre/",
-          "words": 1684
+          "url": "/themes-lab/neon.html",
+          "words": 2124
         },
         {
-          "url": "/plages/plage-de-la-desirade-sud/",
-          "words": 1678
+          "url": "/themes-lab/arena.html",
+          "words": 1986
         },
         {
-          "url": "/plages/plage-des-raisins-clairs/",
-          "words": 1664
+          "url": "/themes-lab/arena-v2.html",
+          "words": 1900
         },
         {
-          "url": "/plages/anse-de-la-baie-olive/",
-          "words": 1658
+          "url": "/themes-lab/arena-app.html",
+          "words": 1894
         },
         {
-          "url": "/plages/pointe-de-la-verdure-sud/",
-          "words": 1656
+          "url": "/arena-v2.html",
+          "words": 1832
         },
         {
           "url": "/plages/plage-de-grande-anse/",
-          "words": 1656
+          "words": 1743
         },
         {
-          "url": "/plages/plage-pain-de-sucre/",
-          "words": 1654
+          "url": "/plages/plage-de-la-caravelle/",
+          "words": 1735
         },
         {
-          "url": "/plages/la-grande-anse-deshaies/",
-          "words": 1650
+          "url": "/plages/ile-de-la-petite-terre/",
+          "words": 1711
         },
         {
-          "url": "/plages/plage-de-la-desirade/",
-          "words": 1648
+          "url": "/plages/plage-de-deshaies/",
+          "words": 1710
         },
         {
-          "url": "/plages/plage-de-baie-mahault-desirade/",
-          "words": 1648
+          "url": "/plages/plage-de-la-desirade-sud/",
+          "words": 1705
         }
       ]
     }

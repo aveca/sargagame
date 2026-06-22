@@ -1,19 +1,261 @@
 {
-  "generatedAt": "2026-06-15T16:27:45.268Z",
+  "generatedAt": "2026-06-22T16:08:55.239Z",
   "sites": {
     "mq": {
-      "pageCount": 116,
-      "totalLinks": 3539,
-      "checkedLinks": 2274,
-      "brokenCount": 0,
-      "broken": []
+      "pageCount": 309,
+      "totalLinks": 4314,
+      "checkedLinks": 3181,
+      "brokenCount": 19,
+      "broken": [
+        {
+          "from": "/api/",
+          "href": "/about/",
+          "target": "martinique-ftp/about/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/carte-sargasses/",
+          "href": "/meilleures-plages-guadeloupe-sargasses/",
+          "target": "martinique-ftp/meilleures-plages-guadeloupe-sargasses/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/carte-sargasses/",
+          "href": "/saison-sargasses-guadeloupe/",
+          "target": "martinique-ftp/saison-sargasses-guadeloupe/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/comprendre-sargasses/",
+          "href": "/saison-sargasses-guadeloupe/",
+          "target": "martinique-ftp/saison-sargasses-guadeloupe/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/for-hotels/",
+          "href": "/reliability/",
+          "target": "martinique-ftp/reliability/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/investigacion/",
+          "href": "/about/",
+          "target": "martinique-ftp/about/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/investigacion/",
+          "href": "/about/",
+          "target": "martinique-ftp/about/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/investigacion/",
+          "href": "/about/",
+          "target": "martinique-ftp/about/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/meteo-sargasses-martinique/",
+          "href": "/meteo-sargasses-guadeloupe/",
+          "target": "martinique-ftp/meteo-sargasses-guadeloupe/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/previsions/",
+          "href": "/meilleures-plages-guadeloupe-sargasses/",
+          "target": "martinique-ftp/meilleures-plages-guadeloupe-sargasses/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/research/",
+          "href": "/about/",
+          "target": "martinique-ftp/about/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/research/",
+          "href": "/about/",
+          "target": "martinique-ftp/about/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/research/",
+          "href": "/about/",
+          "target": "martinique-ftp/about/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-aujourdhui/",
+          "href": "https://sargasses-martinique.com/en/sargassum-today/",
+          "target": "martinique-ftp/en/sargassum-today/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/sargasses-aujourdhui/",
+          "href": "https://sargasses-martinique.com/es/sargazo-hoy/",
+          "target": "martinique-ftp/es/sargazo-hoy/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/sargasses-martinique-cette-semaine/",
+          "href": "/sargasses-guadeloupe-cette-semaine/",
+          "target": "martinique-ftp/sargasses-guadeloupe-cette-semaine/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-pres-de-moi/",
+          "href": "https://sargasses-martinique.com/en/sargassum-near-me/",
+          "target": "martinique-ftp/en/sargassum-near-me/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/sargasses-pres-de-moi/",
+          "href": "https://sargasses-martinique.com/es/sargazo-cerca-de-mi/",
+          "target": "martinique-ftp/es/sargazo-cerca-de-mi/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/sargasses-record-2026/",
+          "href": "/saison-sargasses-guadeloupe/",
+          "target": "martinique-ftp/saison-sargasses-guadeloupe/index.html",
+          "kind": "internal"
+        }
+      ]
     },
     "gp": {
-      "pageCount": 147,
-      "totalLinks": 4748,
-      "checkedLinks": 3052,
-      "brokenCount": 0,
-      "broken": []
+      "pageCount": 340,
+      "totalLinks": 5483,
+      "checkedLinks": 4039,
+      "brokenCount": 21,
+      "broken": [
+        {
+          "from": "/api/",
+          "href": "/about/",
+          "target": "guadeloupe-ftp/about/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/carte-sargasses/",
+          "href": "/meilleures-plages-martinique-sargasses/",
+          "target": "guadeloupe-ftp/meilleures-plages-martinique-sargasses/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/carte-sargasses/",
+          "href": "/saison-sargasses-martinique/",
+          "target": "guadeloupe-ftp/saison-sargasses-martinique/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/comprendre-sargasses/",
+          "href": "/saison-sargasses-martinique/",
+          "target": "guadeloupe-ftp/saison-sargasses-martinique/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/faq/",
+          "href": "/meilleures-plages-martinique-sargasses/",
+          "target": "guadeloupe-ftp/meilleures-plages-martinique-sargasses/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/for-hotels/",
+          "href": "/reliability/",
+          "target": "guadeloupe-ftp/reliability/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/investigacion/",
+          "href": "/about/",
+          "target": "guadeloupe-ftp/about/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/investigacion/",
+          "href": "/about/",
+          "target": "guadeloupe-ftp/about/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/investigacion/",
+          "href": "/about/",
+          "target": "guadeloupe-ftp/about/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/meteo-sargasses-guadeloupe/",
+          "href": "/meteo-sargasses-martinique/",
+          "target": "guadeloupe-ftp/meteo-sargasses-martinique/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/previsions/",
+          "href": "/meilleures-plages-martinique-sargasses/",
+          "target": "guadeloupe-ftp/meilleures-plages-martinique-sargasses/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/research/",
+          "href": "/about/",
+          "target": "guadeloupe-ftp/about/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/research/",
+          "href": "/about/",
+          "target": "guadeloupe-ftp/about/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/research/",
+          "href": "/about/",
+          "target": "guadeloupe-ftp/about/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-aujourdhui/",
+          "href": "https://sargasses-guadeloupe.com/en/sargassum-today/",
+          "target": "guadeloupe-ftp/en/sargassum-today/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/sargasses-aujourdhui/",
+          "href": "https://sargasses-guadeloupe.com/es/sargazo-hoy/",
+          "target": "guadeloupe-ftp/es/sargazo-hoy/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/sargasses-guadeloupe-cette-semaine/",
+          "href": "/sargasses-martinique-cette-semaine/",
+          "target": "guadeloupe-ftp/sargasses-martinique-cette-semaine/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-pres-de-moi/",
+          "href": "https://sargasses-guadeloupe.com/en/sargassum-near-me/",
+          "target": "guadeloupe-ftp/en/sargassum-near-me/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/sargasses-pres-de-moi/",
+          "href": "https://sargasses-guadeloupe.com/es/sargazo-cerca-de-mi/",
+          "target": "guadeloupe-ftp/es/sargazo-cerca-de-mi/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/sargasses-record-2026/",
+          "href": "/saison-sargasses-martinique/",
+          "target": "guadeloupe-ftp/saison-sargasses-martinique/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-record-2026/",
+          "href": "/saison-sargasses-martinique/",
+          "target": "guadeloupe-ftp/saison-sargasses-martinique/index.html",
+          "kind": "internal"
+        }
+      ]
     }
   }
 }
