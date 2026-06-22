@@ -5471,6 +5471,90 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
     ?_t(lang,`${withScore.length} plages`,`${withScore.length} beaches`,`${withScore.length} playas`)
     :null
 
+  // Capture email mini — PARTAGÉE peek + expanded. Bug historique : elle ne vivait que
+  // dans la branche expanded (hero replié par défaut → invisible ~100% des sessions,
+  // capture 0,2%). Rendue dans LES DEUX états pour les visiteurs non captés (décision
+  // fondateur 21/06 : capture email = surface PAR DÉFAUT sur la carte). Dismiss = 1×.
+  const heroEmailBlock=(<>
+    {!heroEmailHidden&&!heroEmailSent&&(
+      <div style={{
+        position:"relative",
+        borderTop:"1px solid var(--sg-border,rgba(0,0,0,.06))",
+        padding:"10px 12px",
+        background:"linear-gradient(90deg,rgba(255,199,44,.1),rgba(255,199,44,.18))",
+        display:"flex",alignItems:"center",gap:7,
+      }}>
+        <span style={{fontSize:14,flexShrink:0}}>📬</span>
+        <input
+          type="email" inputMode="email" autoComplete="email"
+          placeholder={_t(lang,"ton@email — ma reco à 7h","email — daily pick at 7am","tu@email — tu playa del día a las 7")}
+          value={heroEmail}
+          onChange={e=>setHeroEmail(e.target.value)}
+          onKeyDown={e=>{if(e.key==="Enter")submitHeroEmail()}}
+          onClick={e=>e.stopPropagation()}
+          style={{
+            flex:1,minWidth:0,
+            padding:"7px 10px",borderRadius:8,
+            border:"1px solid rgba(0,0,0,.1)",
+            fontSize:13,fontFamily:"inherit",
+            background:"var(--sg-card,#fff)",
+            color:"var(--sg-ink,#0D0D0D)",outline:"none",
+          }}
+        />
+        <button
+          onClick={submitHeroEmail}
+          disabled={!heroEmail||!heroEmail.includes("@")}
+          style={{
+            padding:"7px 13px",borderRadius:8,border:"none",
+            background:(heroEmail&&heroEmail.includes("@"))?"linear-gradient(135deg,#FFE47A,#FFC72C)":"rgba(0,0,0,.07)",
+            color:(heroEmail&&heroEmail.includes("@"))?"#0D0D0D":"rgba(0,0,0,.35)",
+            fontSize:12,fontWeight:800,
+            cursor:(heroEmail&&heroEmail.includes("@"))?"pointer":"not-allowed",
+            fontFamily:"inherit",whiteSpace:"nowrap",flexShrink:0,
+          }}
+        >{lang==="en"?"OK":"OK"}</button>
+        <button
+          onClick={()=>{
+            try{localStorage.setItem("sg_hero_email_dismiss","1")}catch{}
+            setHeroEmailHidden(true)
+            track("sg_hero_email_dismiss")
+          }}
+          aria-label="dismiss"
+          style={{
+            background:"none",border:"none",cursor:"pointer",
+            color:"rgba(0,0,0,.35)",fontSize:16,padding:"4px 2px",
+            fontFamily:"inherit",flexShrink:0,
+          }}
+        >×</button>
+      </div>
+    )}
+    {heroEmailSent&&(
+      <div style={{
+        position:"relative",
+        borderTop:"1px solid var(--sg-border,rgba(0,0,0,.06))",
+        padding:"10px 14px",textAlign:"center",
+        background:"rgba(34,197,94,.09)",
+      }}>
+        <div style={{fontSize:12,fontWeight:700,color:"#16A34A"}}>
+          ✓ {_t(lang,"C'est fait ! Ta reco demain à 7h.","You're in! First pick tomorrow 7am.","¡Listo! Tu playa del día mañana a las 7.")}
+        </div>
+        {onPremiumClick&&(
+          <button
+            onClick={e=>{e.stopPropagation();onPremiumClick("hero_email_success")}}
+            style={{
+              marginTop:6,background:"none",border:"none",
+              color:"var(--sg-mid,#686868)",fontSize:11,fontWeight:600,
+              cursor:"pointer",fontFamily:"inherit",textDecoration:"underline",
+              textDecorationColor:"rgba(0,0,0,.2)",textUnderlineOffset:2,
+            }}
+          >
+            {_t(lang,"Alertes en direct aussi ? Voir Premium →","Want live alerts too? See Premium →","¿Quieres alertas en vivo también? Ver Premium →")}
+          </button>
+        )}
+      </div>
+    )}
+  </>)
+
   return(
     <div style={{
       marginTop:10,
@@ -5628,6 +5712,9 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
             {_t(lang,"J'y vais →","Take me →","Vamos →")}
           </span>
         </button>
+        {/* Capture email 1-ligne EN MODE PEEK (état par défaut) — le levier #1 enfin
+            visible sans déplier. Bloc partagé, dismissable 1×. */}
+        {heroEmailBlock}
         </>
       ):(<>
 
@@ -5876,84 +5963,8 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
         </div>
       )}
 
-      {/* Inline email mini-capture — first visit only, dismissable */}
-      {!heroEmailHidden&&!heroEmailSent&&(
-        <div style={{
-          position:"relative",
-          borderTop:"1px solid var(--sg-border,rgba(0,0,0,.06))",
-          padding:"10px 12px",
-          background:"linear-gradient(90deg,rgba(255,199,44,.1),rgba(255,199,44,.18))",
-          display:"flex",alignItems:"center",gap:7,
-        }}>
-          <span style={{fontSize:14,flexShrink:0}}>📬</span>
-          <input
-            type="email" inputMode="email" autoComplete="email"
-            placeholder={_t(lang,"ton@email — ma reco à 7h","email — daily pick at 7am","tu@email — tu playa del día a las 7")}
-            value={heroEmail}
-            onChange={e=>setHeroEmail(e.target.value)}
-            onKeyDown={e=>{if(e.key==="Enter")submitHeroEmail()}}
-            onClick={e=>e.stopPropagation()}
-            style={{
-              flex:1,minWidth:0,
-              padding:"7px 10px",borderRadius:8,
-              border:"1px solid rgba(0,0,0,.1)",
-              fontSize:13,fontFamily:"inherit",
-              background:"var(--sg-card,#fff)",
-              color:"var(--sg-ink,#0D0D0D)",outline:"none",
-            }}
-          />
-          <button
-            onClick={submitHeroEmail}
-            disabled={!heroEmail||!heroEmail.includes("@")}
-            style={{
-              padding:"7px 13px",borderRadius:8,border:"none",
-              background:(heroEmail&&heroEmail.includes("@"))?"linear-gradient(135deg,#FFE47A,#FFC72C)":"rgba(0,0,0,.07)",
-              color:(heroEmail&&heroEmail.includes("@"))?"#0D0D0D":"rgba(0,0,0,.35)",
-              fontSize:12,fontWeight:800,
-              cursor:(heroEmail&&heroEmail.includes("@"))?"pointer":"not-allowed",
-              fontFamily:"inherit",whiteSpace:"nowrap",flexShrink:0,
-            }}
-          >{lang==="en"?"OK":"OK"}</button>
-          <button
-            onClick={()=>{
-              try{localStorage.setItem("sg_hero_email_dismiss","1")}catch{}
-              setHeroEmailHidden(true)
-              track("sg_hero_email_dismiss")
-            }}
-            aria-label="dismiss"
-            style={{
-              background:"none",border:"none",cursor:"pointer",
-              color:"rgba(0,0,0,.35)",fontSize:16,padding:"4px 2px",
-              fontFamily:"inherit",flexShrink:0,
-            }}
-          >×</button>
-        </div>
-      )}
-      {heroEmailSent&&(
-        <div style={{
-          position:"relative",
-          borderTop:"1px solid var(--sg-border,rgba(0,0,0,.06))",
-          padding:"10px 14px",textAlign:"center",
-          background:"rgba(34,197,94,.09)",
-        }}>
-          <div style={{fontSize:12,fontWeight:700,color:"#16A34A"}}>
-            ✓ {_t(lang,"C'est fait ! Ta reco demain à 7h.","You're in! First pick tomorrow 7am.","¡Listo! Tu playa del día mañana a las 7.")}
-          </div>
-          {onPremiumClick&&(
-            <button
-              onClick={e=>{e.stopPropagation();onPremiumClick("hero_email_success")}}
-              style={{
-                marginTop:6,background:"none",border:"none",
-                color:"var(--sg-mid,#686868)",fontSize:11,fontWeight:600,
-                cursor:"pointer",fontFamily:"inherit",textDecoration:"underline",
-                textDecorationColor:"rgba(0,0,0,.2)",textUnderlineOffset:2,
-              }}
-            >
-              {_t(lang,"Alertes en direct aussi ? Voir Premium →","Want live alerts too? See Premium →","¿Quieres alertas en vivo también? Ver Premium →")}
-            </button>
-          )}
-        </div>
-      )}
+      {/* Capture email — bloc partagé (voir heroEmailBlock plus haut) */}
+      {heroEmailBlock}
       </>)}
     </div>
   )
