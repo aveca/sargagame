@@ -234,3 +234,12 @@ body.theme-soft{
   box-shadow:3px 3px 0 #0d0b14;white-space:nowrap}
 .sg-theme-opt:active{transform:translate(3px,3px);box-shadow:0 0 0 #0d0b14}
 .sg-theme-opt .e{font-size:18px}
+
+/* CTA PREMIUM = OR dans TOUS les arms du A/B thèmes (bible : or = action premium).
+   Marqueur .sg-paygold (SANS "cta" → échappe à .theme-X [class*="cta"]). Spécificité :
+   html body button[type].sg-paygold (0,2,3) bat .theme-X button[type="submit"] (0,2,1) ;
+   html body .sg-paygold (0,1,2) bat .theme-X button (0,1,1). Réutilisable sur TOUT CTA premium. */
+html body .sg-paygold,html body button[type].sg-paygold,html body a.sg-paygold{
+  background:linear-gradient(180deg,#FFE47A,#FFC72C 55%,#E8A800)!important;
+  color:#0D0D0D!important;-webkit-text-fill-color:#0D0D0D!important;
+  border:2.4px solid #0D0D0D!important;text-shadow:none!important}
