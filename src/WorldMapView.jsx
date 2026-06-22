@@ -56,7 +56,7 @@ function vantColor(beachList, day){
 const MQ_RELIEF = [[14.79,-61.10,24],[14.74,-61.10,18],[14.70,-61.07,20],[14.52,-61.06,15],[14.47,-60.92,12]]
 
 export default function WorldMapView({
-  beaches, island, updatedAt, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm,
+  beaches, island, updatedAt, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail,
 }){
   const wrapRef    = useRef(null)
   const worldRef   = useRef(null)  // <g id="world"> — transform mis à jour en RAF
@@ -79,6 +79,23 @@ export default function WorldMapView({
   const [selected, setSelected] = useState(null)  // beach object enrichi
   const [tagPos,  setTagPos]    = useState(null)  // {x,y} screen pixels
   const [query,   setQuery]     = useState("")    // P7 — recherche plage par nom
+
+  // Capture email SUR LA CARTE — la carte SVG est la vue d'accueil validée en prod, donc
+  // la surface PAR DÉFAUT (décision fondateur 21/06 : capture = surface par défaut). Mêmes
+  // clés que le hero (sg_email / sg_hero_email_dismiss) → capter/rejeter ici vaut partout.
+  // L'email remonte via onCaptureEmail → submitLead (pipe résilient sendBeacon, levier #1).
+  const [emailVal,   setEmailVal]    = useState("")
+  const [emailSent,  setEmailSent]   = useState(false)
+  const [emailHidden,setEmailHidden] = useState(()=>{
+    try{ return !!localStorage.getItem("sg_email")||!!localStorage.getItem("sg_hero_email_dismiss") }catch{ return false }
+  })
+  const submitMapEmail = ()=>{
+    if(!emailVal||!emailVal.includes("@")) return
+    try{ localStorage.setItem("sg_email",emailVal) }catch(_){}
+    try{ onCaptureEmail&&onCaptureEmail(emailVal) }catch(_){}
+    try{ track&&track("sg_map_email_submit",{island}) }catch(_){}
+    setEmailSent(true)
+  }
 
   // prefers-reduced-motion
   useEffect(()=>{
@@ -898,6 +915,45 @@ export default function WorldMapView({
               <b style={{fontFamily:"'AntonLC','Anton',sans-serif",fontWeight:400,color:"#1c8f4e"}}>{cleanCnt}</b> {_t(lang,"plages propres","clean beaches","playas limpias")}
             </span>
           </div>
+
+          {/* Capture email — sticker compact, VISIBLE PAR DÉFAUT sur la carte, dismissable 1×.
+              Style aligné sur les overlays carte (#fdf6e3 + bord INK + ombre comic). */}
+          {!emailHidden&&!emailSent&&(
+            <div onPointerDown={e=>{try{e.stopPropagation()}catch(_){}}}
+              style={{
+                marginTop:9,display:"flex",alignItems:"center",gap:7,pointerEvents:"auto",
+                maxWidth:360,background:"#fdf6e3",
+                border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:12,padding:"7px 9px",
+              }}>
+              <span style={{fontSize:14,flexShrink:0}}>📬</span>
+              <input type="email" inputMode="email" autoComplete="email"
+                value={emailVal} onChange={e=>setEmailVal(e.target.value)}
+                onKeyDown={e=>{if(e.key==="Enter")submitMapEmail()}}
+                placeholder={_t(lang,"ton@email — ma reco à 7h","email — daily pick at 7am","tu@email — playa del día a las 7")}
+                style={{flex:1,minWidth:0,background:"#fff",border:`2px solid ${INK}`,borderRadius:8,
+                  padding:"6px 9px",font:"700 12px/1 'Comic Neue',system-ui,sans-serif",color:INK,outline:"none"}}/>
+              <button onClick={submitMapEmail} disabled={!emailVal||!emailVal.includes("@")}
+                style={{flexShrink:0,border:`2px solid ${INK}`,
+                  background:(emailVal&&emailVal.includes("@"))?"#ffd23f":"rgba(13,11,20,.08)",
+                  color:INK,font:"800 12px/1 'Comic Neue',system-ui,sans-serif",
+                  padding:"7px 11px",borderRadius:8,cursor:(emailVal&&emailVal.includes("@"))?"pointer":"not-allowed"}}>OK</button>
+              <button onClick={()=>{try{localStorage.setItem("sg_hero_email_dismiss","1")}catch(_){}; setEmailHidden(true); try{track&&track("sg_map_email_dismiss",{})}catch(_){}}}
+                aria-label={_t(lang,"Fermer","Close","Cerrar")}
+                style={{flexShrink:0,background:"none",border:"none",color:INK,opacity:.5,
+                  fontSize:16,lineHeight:1,cursor:"pointer",padding:"0 2px"}}>×</button>
+            </div>
+          )}
+          {emailSent&&(
+            <div style={{
+              marginTop:9,display:"inline-flex",alignItems:"center",gap:7,pointerEvents:"auto",
+              background:"#fdf6e3",border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:12,padding:"8px 12px",
+            }}>
+              <span style={{fontSize:14}}>✅</span>
+              <span style={{font:"800 12px/1.2 'Comic Neue',system-ui,sans-serif",color:"#1c8f4e"}}>
+                {_t(lang,"C'est fait ! Ta reco demain à 7h.","You're in! First pick tomorrow 7am.","¡Listo! Tu playa mañana a las 7.")}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Légende */}
