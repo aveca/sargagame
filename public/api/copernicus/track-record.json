@@ -1,6 +1,6 @@
 {
   "_note": "Palmarès PUBLIC et auditable des prévisions sargasses. Source : forecast-archive.json (snapshots figés à la date d'émission, append-only) comparés aux observations satellite (history.json). Aucun chiffre n'est rétro-ajustable.",
-  "generatedAt": "2026-06-22T12:03:31.782Z",
+  "generatedAt": "2026-06-22T17:03:03.043Z",
   "window": {
     "from": "2026-05-24",
     "to": "2026-06-22",
@@ -15,7 +15,7 @@
     "statusHitRatePct": 78
   },
   "freshness": {
-    "computedAt": "2026-06-22T12:03:31.731Z",
+    "computedAt": "2026-06-22T17:03:02.994Z",
     "backtestAgeHours": 0,
     "observationLagDays": 0,
     "stale": false
@@ -149,7 +149,7 @@
       "island": "gp",
       "samples": 159,
       "hitRatePct": 18,
-      "afaiMAE": 0.146
+      "afaiMAE": 0.147
     },
     {
       "id": "gp-pt-chateaux",
