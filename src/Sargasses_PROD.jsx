@@ -1178,7 +1178,7 @@ function StationStory({slug,lang,onExit,onCTA}){
   const beatsFn = STATION_BEATS[slug] || discoveryBeats
   const accent = slug.includes("h2s") ? "#CC28FF" : slug.includes("nettoyer") ? "#3fd07f" : "#FFC72C"
   return(
-    <div role="dialog" aria-modal="true" aria-label={slug} style={{position:"absolute",inset:0,zIndex:1060,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
+    <div role="dialog" aria-modal="true" className="sg-onink-scope" aria-label={slug} style={{position:"absolute",inset:0,zIndex:1060,background:"#120821",overflowY:"auto",overflowX:"hidden",overscrollBehavior:"contain",WebkitOverflowScrolling:"touch"}}>
       <button onClick={onExit} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{position:"fixed",top:"calc(12px + env(safe-area-inset-top))",right:12,zIndex:30,width:42,height:42,borderRadius:21,background:"rgba(10,23,20,.55)",backdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",fontSize:16,cursor:"pointer"}}>✕</button>
       <StoryEngine beats={beatsFn(lang)} lang={lang} accent={accent}
         ev="sg_station_beat" onCTA={onCTA}
@@ -2474,6 +2474,18 @@ button:active,a:active,[role="button"]:active{transform:scale(.91)!important;opa
   text-transform:none!important;letter-spacing:normal!important;
   font-family:"Bricolage Grotesque",system-ui,sans-serif!important;
   transition:transform .08s,box-shadow .08s}
+/* Le reset onink doit AUSSI couvrir les titres : chaque thème recolore h2/h3 en
+   !important (manga #0a0a0a, sticker #ff5fa2, arcade #fff néon, comic ink-ombré) →
+   sur fond sombre plein-écran (StoryEngine/StationStory/Journal) ils tombaient
+   encre-sur-sombre. On force le blanc lisible dans les 5 arms. */
+.theme-comic .sg-onink-scope h2,.theme-soft .sg-onink-scope h2,
+.theme-manga .sg-onink-scope h2,.theme-arcade .sg-onink-scope h2,
+.theme-sticker .sg-onink-scope h2,
+.theme-comic .sg-onink-scope h3,.theme-soft .sg-onink-scope h3,
+.theme-manga .sg-onink-scope h3,.theme-arcade .sg-onink-scope h3,
+.theme-sticker .sg-onink-scope h3{
+  color:#fff!important;text-shadow:0 2px 18px rgba(0,0,0,.4)!important;
+  -webkit-text-fill-color:#fff!important;-webkit-text-stroke:0!important}
 
 /* Sargassum bank animations */
 .sg-bank{transition:fill-opacity .6s ease}

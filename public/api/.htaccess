@@ -2,6 +2,14 @@
     Require all denied
 </Files>
 
+<Files "paypal-config.php">
+    Require all denied
+</Files>
+
+<Files "mollie-config.php">
+    Require all denied
+</Files>
+
 <Files "_deploy-secret.php">
     Require all denied
 </Files>

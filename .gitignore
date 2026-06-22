@@ -34,6 +34,12 @@ SECRETS-GITHUB.txt
 # Stripe + Resend live keys — deployed via FTP manually, never in git
 # Pattern large : couvre TOUTES les copies (public/api/, *-ftp/api/, etc.) — sk_live/resend
 **/stripe-config.php
+# PayPal live creds (client_id/secret/webhook_id) — même règle que Stripe, jamais dans git.
+# L'exemple paypal-config.example.php (autre nom) reste committé.
+**/paypal-config.php
+# Mollie creds (api_key test_/live_, profile_id) — jamais dans git.
+# L'exemple mollie-config.example.php (autre nom) reste committé.
+**/mollie-config.php
 # Token du deploy rapide (_deploy.php) — provisionné par FTP, jamais dans git.
 # L'exemple _deploy-secret.example.php (autre nom) reste committé.
 **/_deploy-secret.php
