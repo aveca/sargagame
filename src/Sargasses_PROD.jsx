@@ -7324,10 +7324,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const pwComic=(()=>{try{return !/[?&]pwcomic=0/.test(window.location.search)}catch(_){return true}})()
   // A/B pw_world — skin « CONTINUITÉ DU MONDE SVG » (gagnant jury). Quand actif, REMPLACE
   // ComicPaywall par WorldPaywall (mêmes props, ZÉRO logique de paiement touchée : le CTA
-  // appelle startCheckout(effectivePlan,"world") inchangé). Démarrage prudent sur surface
-  // revenu : 15% world / 85% contrôle (ComicPaywall). Override QA ?pwworld=1 (force) /
-  // ?pwworld=0 (off → contrôle ComicPaywall). Asset : design/wow-candidates/paywall-world-continuity.html.
-  const pwWorld=(()=>{try{const q=window.location.search;if(/[?&]pwworld=1/.test(q))return true;if(/[?&]pwworld=0/.test(q))return false;return abVariant("pw_world",["control","world"],[.85,.15])==="world"}catch(_){return false}})()
+  // appelle startCheckout(effectivePlan,"world") inchangé). PUBLIÉ 100% (GO fondateur 22/06
+  // « passe direct à 100% ») : WorldPaywall = LE paywall par défaut, remplace ComicPaywall pour
+  // tous. ROLLBACK INSTANTANÉ = ?pwworld=0 (force le contrôle ComicPaywall) ; surveiller le MRR
+  // Stripe (daily-metrics). Asset : design/wow-candidates/paywall-world-continuity.html.
+  const pwWorld=(()=>{try{if(/[?&]pwworld=0/.test(window.location.search))return false}catch(_){}; return true})()
   // Vérif d'abo existant (PWA installée après paiement) — extraite en callback pour
   // que les deux skins (comic + classique) la partagent sans dupliquer la logique.
   const verifyExistingSub=useCallback(()=>{
