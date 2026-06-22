@@ -284,10 +284,9 @@ export default function WorldMapView({
   // partagée MQ/GP). Seuil 0.10 = on ne dessine QUE le sargasse réel (la mer propre
   // reste propre, pas de voile vert parasite). Filtre viewport = on jette les points
   // hors-écran (la grille couvre toute la Caraïbe).
-  // Champ de sargasses au large (donnée satellite AFAI) pour la couche LIVE régionale (dérive lente).
-  // Seuil BAS 0.10 = montrer TOUT le champ détecté (trace→modéré). Fenêtre LARGE (pas de cull serré-
-  // île) → inclut le champ au large, surtout le SUD (vy>600), révélé par la vue régionale k≈0.44.
-  // `near` = proche de l'île (LOD détaillé) vs au loin (silhouette pâle). Cap = anti-clutter.
+  // Champ de sargasses NEARSHORE (donnée satellite AFAI) pour la couche LIVE, en vue ÎLE (k=1).
+  // Seuil 0.10. Cull SERRÉ-ÎLE : on ne montre QUE le sargasse PROCHE de la côte/île — pas les bancs
+  // au large « inutiles » (fondateur 22/06 soir). `near` = LOD détaillé. Cap = anti-clutter.
   const sargCells = useMemo(()=>{
     if(!toVB||!afaiGrid||!afaiGrid.points) return []
     const isMQGP=island==="mq"||island==="gp"
@@ -296,7 +295,7 @@ export default function WorldMapView({
     for(const[lat,lng,afai]of pts){
       if(afai<0.10) continue
       const[vx,vy]=toVB(lat,lng)
-      if(vx<-160||vx>960||vy<-160||vy>1160) continue // fenêtre large : champ au large + bande sud
+      if(vx<-60||vx>860||vy<-60||vy>660) continue // serré-île : nearshore only, pas les bancs au large
       out.push({vx,vy,afai, near:Math.hypot(vx-400,vy-300)<240, seed:Math.round(vx*7+vy*13)})
     }
     out.sort((a,b)=>b.afai-a.afai)
@@ -363,21 +362,16 @@ export default function WorldMapView({
   },[outline,reliefEls,island])  // le champ sargasses n'est plus baké → retiré des deps
 
   // ─── CAMÉRA ────────────────────────────────────────────────────────────────
-  // K_MIN abaissé : la vue PAR DÉFAUT est RÉGIONALE (île ~44%) pour montrer le vrai champ de
-  // sargasses au large à l'échelle réelle (décision fondateur 22/06). Zoom in pour le détail/pan.
-  const K_MIN=0.38, K_MAX=5.0, K_REGIONAL=0.44
+  // Vue par défaut = ÎLE GRANDE et centrée (décision fondateur 22/06 soir : la vue régionale
+  // rapetissait trop l'île + montrait des bancs au large « inutiles » → on revient à l'île pleine).
+  const K_MIN=0.85, K_MAX=5.0
 
   const clampCam=useCallback(()=>{
     const c=camRef.current
     c.k=Math.max(K_MIN,Math.min(K_MAX,c.k))
     const m=200
-    // Quand le monde scalé est plus PETIT que le cadre+marge (vue régionale dézoomée, k<~0.75),
-    // les bornes s'inversent → on CENTRE le monde (centre du viewBox) au lieu de clamper de travers.
-    // À ce zoom tout le contenu (île + champ) tient → pas besoin de paner ; zoom in pour paner.
-    const loX=400-800*c.k+m, hiX=m
-    c.tx = loX<=hiX ? Math.max(loX,Math.min(hiX,c.tx)) : 400-400*c.k
-    const loY=300-600*c.k+m, hiY=m
-    c.ty = loY<=hiY ? Math.max(loY,Math.min(hiY,c.ty)) : 300-300*c.k
+    c.tx=Math.max(400-800*c.k+m,Math.min(m,c.tx))
+    c.ty=Math.max(300-600*c.k+m,Math.min(m,c.ty))
   },[])
 
   // Déclutter screen-space : empêche les labels de se chevaucher (noms + verdicts
@@ -455,33 +449,30 @@ export default function WorldMapView({
     const sevOf=b=>(b.days[day]==="avoid"?1:0)+(((arr(b)&&arr(b).s)||0)*6)
     hits=hits.sort((a,b)=>sevOf(b)-sevOf(a)).slice(0,4) // les plus sévères d'abord, cap 4
     if(!hits.length) return
-    // SÉVÉRITÉ → CADENCE (reframe fondateur 22/06) : plage en ALERTE (avoid / arrivée forte) = échouage
-    // qui REJOUE en boucle = « bombardement » qui crie l'URGENCE (ce problème ruine le tourisme) ;
-    // arrivée moins sévère / lointaine = joue UNE fois puis SE POSE (tableau, anti-répétition de l'audit
-    // play-once-settle). Quand tout est posé et qu'aucune ne boucle → le rAF s'éteint (0 % CPU, calme).
-    // Badge « J+N » = l'ETA d'arrivée (du pipeline) au moment de l'impact.
-    const CYCLE=3.35, T_SETTLE=1.55
+    // PLAY-ONCE-puis-FADE (fondateur 22/06 soir : le dépôt + badge qui RESTENT « gâchent un peu » →
+    // l'échouage joue UNE fois, départ décalé, puis DISPARAÎT entièrement en fondu : il ne reste rien
+    // sur la carte (le pin rouge porte le statut). Rejoue seulement au changement de donnée/jour. Quand
+    // tout est joué+fadé → le rAF s'éteint (0 % CPU, carte propre). Badge « J+N » = ETA, transitoire.
+    const CYCLE=3.35 // durée d'un échouage : banc → splat → dépôt → FADE complet (plus rien à la fin)
     const insts=hits.map((b,i)=>{
       const a=arr(b)
       const eta=force?(i+1):(a?a.d:(b.days[day]==="avoid"?0:null)) // 0=déjà là, 1-3=jour prévu, null=aucun
-      const loopIt=force||b.days[day]==="avoid"||(((a&&a.s)||0)>=0.10) // sévère → bombardement
       const inst=_spawnBeaching(layer,b.vx,b.vy,cx,cy,0.85,Math.round(b.vx*7+b.vy*13)+i*131,eta)
-      return {inst,loopIt,delay:i*0.55,settled:false}
+      return {inst,delay:i*0.55,settled:false}
     })
-    if(reduceRef.current){ insts.forEach(o=>o.inst.frozen()); return ()=>{ while(layer.firstChild) layer.removeChild(layer.firstChild) } }
+    if(reduceRef.current){ insts.forEach(o=>o.inst.render(CYCLE)); return ()=>{ while(layer.firstChild) layer.removeChild(layer.firstChild) } } // reduced = rien (fadé), le pin suffit
     let raf=0,t0=0
     const loop=tms=>{ if(!t0)t0=tms; const t=(tms-t0)/1000; let active=false
-      for(const o of insts){
-        if(o.loopIt){ o.inst.render((t+o.delay)%CYCLE); active=true }
-        else if(!o.settled){ const lt=t-o.delay
-          if(lt<T_SETTLE){ o.inst.render(Math.max(0,lt)); active=true }
-          else { o.inst.frozen(); o.settled=true } } // se pose : dépôt + badge figés, ne rejoue plus
+      for(const o of insts){ if(o.settled) continue
+        const lt=t-o.delay
+        if(lt<CYCLE){ o.inst.render(Math.max(0,lt)); active=true } // joue jusqu'au fondu complet
+        else { o.inst.render(CYCLE); o.settled=true } // joué + fadé : plus rien, ne rejoue plus
       }
-      if(active) raf=requestAnimationFrame(loop); else raf=0 // tout posé + aucune boucle → rAF éteint
+      if(active) raf=requestAnimationFrame(loop); else raf=0 // tout fadé → rAF éteint (carte propre)
     }
     raf=requestAnimationFrame(loop)
     const onVis=()=>{ if(document.hidden){ if(raf){cancelAnimationFrame(raf);raf=0} }
-      else if(!raf && insts.some(o=>o.loopIt||!o.settled)){ t0=0; raf=requestAnimationFrame(loop) } }
+      else if(!raf && insts.some(o=>!o.settled)){ t0=0; raf=requestAnimationFrame(loop) } }
     document.addEventListener("visibilitychange",onVis)
     return ()=>{ if(raf)cancelAnimationFrame(raf); document.removeEventListener("visibilitychange",onVis); while(layer.firstChild) layer.removeChild(layer.firstChild) }
   },[beachList,day]) // eslint-disable-line
@@ -499,7 +490,7 @@ export default function WorldMapView({
     // far d'abord (derrière), near ensuite (devant) ; cap mobile plus bas
     const cells=[...sargCells].sort((a,b)=>(a.near?1:0)-(b.near?1:0)).slice(0, isMobile?24:42)
     const nodes=cells.map(c=>{
-      const near=c.near, R=(near?20:15)+c.afai*(near?52:34)  // gonflé pour lire à la vue régionale (k≈0.44)
+      const near=c.near, R=(near?14:11)+c.afai*(near?34:22)  // taille pour la vue ÎLE (k=1)
       const sil=_splatPath(0,0,R,c.seed,near?11:8,near?0.7:0.5)
       const g=_e("g",{})
       g.appendChild(_e("path",{d:sil,fill:INK,opacity:near?".26":".16",transform:"translate(1.5 2.5)"}))
@@ -621,10 +612,10 @@ export default function WorldMapView({
       }
     }
     if(!centered){
-      // Vue RÉGIONALE par défaut : monde centré à k≈0.44 → l'île (centrée ~400,300 en viewBox)
-      // apparaît à ~44% et le champ au large (sud surtout) entre dans le cadre à l'échelle réelle.
-      // clampCam recentre de toute façon à ce zoom ; on pose les mêmes valeurs pour la cohérence.
-      camRef.current={tx:400-400*K_REGIONAL, ty:300-300*K_REGIONAL, k:K_REGIONAL}; clampCam(); writeCam()
+      // Vue par défaut = ÎLE GRANDE, centrée (k=1) — fondateur 22/06 soir.
+      const cx=proj.offX+((bbox.minLng+bbox.maxLng)/2-bbox.minLng)*proj.kx*proj.sc
+      const cy=proj.offY+(bbox.maxLat-(bbox.minLat+bbox.maxLat)/2)*proj.sc
+      camRef.current={tx:400-cx,ty:300-cy,k:1}; clampCam(); writeCam()
       try{ track&&track("sg_archipel_open",{source:"map_world",island}) }catch(_){}
     }
   },[outline, initialZone, beachList]) // eslint-disable-line
