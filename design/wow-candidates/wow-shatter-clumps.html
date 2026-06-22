@@ -1,0 +1,319 @@
+<!doctype html>
+<!-- WOW CANDIDATE — "ÉCLAT DE BANC" (shatter-clumps).
+     Le mat golden-brown arrive vite du large, IMPACT → se FRACTURE en clumps qui giclent et
+     rebondissent (rebond comic) le long de la côte, puis se TASSENT en une bande échouée.
+     Contours encre BD. 1 seul rAF, pausable au clic, reduced-motion = pose finale figée (dépôt étalé).
+     Style strictement aligné sur proto-sarga-drift-beach.html (splat seedé, sargG, halftone, foam, ink).
+     AUCUN innerHTML : tout dynamique via createElementNS + setAttribute / textContent UNIQUEMENT. -->
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WOW — Éclat de banc (shatter clumps)</title>
+<style>
+  html,body{margin:0;background:#0b0a12;font-family:system-ui,sans-serif;color:#fff}
+  .stage{position:relative;width:400px;height:600px;margin:0 auto;overflow:hidden;border-radius:14px}
+  @media(min-width:520px){.stage{width:500px;height:600px}}
+  .lbl{position:fixed;top:8px;left:10px;z-index:99;font:800 12px/1.4 system-ui,monospace;
+       background:rgba(13,11,20,.62);padding:6px 10px;border-radius:8px;letter-spacing:.02em;
+       border:1px solid rgba(255,233,168,.25)}
+  .lbl b{color:#FFC72C}
+  .sea{position:absolute;inset:0;background:
+    radial-gradient(110% 80% at 80% 4%, rgba(255,214,140,.6), rgba(255,140,80,.26) 34%, transparent 62%),
+    radial-gradient(130% 110% at 6% 116%, rgba(42,21,80,.7), rgba(58,28,90,.28) 42%, transparent 62%),
+    linear-gradient(166deg,#ff8a4d 0%,#ff7a4d 18%,#8a4a8e 40%,#6a2f9e 60%,#3e2470 82%,#2e1a5e 100%)}
+  svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+</style></head>
+<body>
+<div class="lbl"><b>Éclat de banc</b> <span id="hint">— le banc impacte, gicle en clumps &amp; se tasse · clic = pause</span></div>
+<div class="stage">
+  <div class="sea"></div>
+  <svg id="map" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+    <defs>
+      <linearGradient id="land" x1="1" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#74D89E"/><stop offset=".3" stop-color="#41BE7B"/>
+        <stop offset=".62" stop-color="#2BAE66"/><stop offset="1" stop-color="#157F49"/>
+      </linearGradient>
+      <radialGradient id="sargG" cx="40%" cy="34%" r="68%">
+        <stop offset="0" stop-color="#E3B743"/><stop offset=".5" stop-color="#B08A2A"/><stop offset="1" stop-color="#7C6A22"/>
+      </radialGradient>
+      <linearGradient id="sandG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#F2D49A"/><stop offset="1" stop-color="#D9A85E"/>
+      </linearGradient>
+      <pattern id="halftone" width="6" height="6" patternUnits="userSpaceOnUse">
+        <circle cx="1.5" cy="1.5" r="1" fill="#2c2a12" opacity=".4"/>
+      </pattern>
+    </defs>
+
+    <!-- ÎLE + un bras de côte avec une PLAGE (arc de sable + liseré). Le point d'échouage = (400,360). -->
+    <g id="island">
+      <path d="M120 70 C260 60 470 70 560 130 C640 184 690 250 660 330 C636 392 560 410 520 360
+               C492 326 470 332 452 360 C436 386 408 388 392 362 C372 330 320 332 300 364
+               C282 392 240 392 222 360 C204 328 150 322 120 360 C92 396 70 470 96 540
+               C40 520 14 430 30 320 C44 220 40 110 120 70 Z"
+            fill="#062033" opacity=".5" transform="translate(7 13)"/>
+      <path d="M120 70 C260 60 470 70 560 130 C640 184 690 250 660 330 C636 392 560 410 520 360
+               C492 326 470 332 452 360 C436 386 408 388 392 362 C372 330 320 332 300 364
+               C282 392 240 392 222 360 C204 328 150 322 120 360 C92 396 70 470 96 540
+               C40 520 14 430 30 320 C44 220 40 110 120 70 Z"
+            fill="url(#land)"/>
+      <!-- foliage taches -->
+      <ellipse cx="220" cy="180" rx="40" ry="24" fill="#2c5a26" opacity=".42"/>
+      <ellipse cx="420" cy="160" rx="50" ry="26" fill="#2c5a26" opacity=".40"/>
+      <ellipse cx="540" cy="230" rx="36" ry="22" fill="#2c5a26" opacity=".40"/>
+      <!-- ruban de SABLE le long du front de mer (l'arc de plage où ça s'échoue) -->
+      <path id="sand" d="M300 364 C320 332 372 330 392 362 C408 388 436 386 452 360
+                         C470 332 492 326 520 360 L520 386 C492 412 470 418 452 392
+                         C436 418 408 420 392 394 C372 426 320 424 300 392 Z"
+            fill="url(#sandG)" stroke="#0d0b14" stroke-width="2" stroke-linejoin="round"/>
+      <!-- liseré d'écume sur le bord plage -->
+      <path d="M300 364 C320 332 372 330 392 362 C408 388 436 386 452 360 C470 332 492 326 520 360"
+            fill="none" stroke="#FFD884" stroke-width="2.4" stroke-linecap="round" opacity=".9"/>
+      <!-- contour encre de l'île par-dessus -->
+      <path d="M120 70 C260 60 470 70 560 130 C640 184 690 250 660 330 C636 392 560 410 520 360
+               C492 326 470 332 452 360 C436 386 408 388 392 362 C372 330 320 332 300 364
+               C282 392 240 392 222 360 C204 328 150 322 120 360 C92 396 70 470 96 540
+               C40 520 14 430 30 320 C44 220 40 110 120 70 Z"
+            fill="none" stroke="#0d0b14" stroke-width="4" stroke-linejoin="round"/>
+    </g>
+
+    <g id="depositLayer"></g>  <!-- bande échouée finale (se construit au tassement) -->
+    <g id="foamLayer"></g>     <!-- éclaboussure d'impact -->
+    <g id="clumpLayer"></g>    <!-- clumps qui giclent -->
+    <g id="matLayer"></g>      <!-- le mat entier avant impact -->
+    <g id="pinLayer"></g>      <!-- pin avoid -->
+  </svg>
+</div>
+
+<script>
+"use strict";
+const NS="http://www.w3.org/2000/svg", INK="#0d0b14";
+const el=(n,a)=>{const e=document.createElementNS(NS,n);if(a)for(const k in a)e.setAttribute(k,a[k]);return e;};
+
+/* PRNG seedé + splat blob lissé (mêmes que le proto de marque) */
+function rng(seed){let s=((seed%233280)+233280)%233280;return()=>(s=(s*9301+49297)%233280)/233280;}
+function splat(cx,cy,r,seed,N){
+  N=N||9;const rand=rng(seed),p=[];
+  for(let i=0;i<N;i++){const a=(i/N)*6.2832,rr=r*(0.6+rand()*0.75);p.push([cx+Math.cos(a)*rr,cy+Math.sin(a)*rr]);}
+  let d=`M${((p[0][0]+p[N-1][0])/2).toFixed(1)} ${((p[0][1]+p[N-1][1])/2).toFixed(1)}`;
+  for(let i=0;i<N;i++){const a=p[i],b=p[(i+1)%N];d+=`Q${a[0].toFixed(1)} ${a[1].toFixed(1)} ${((a[0]+b[0])/2).toFixed(1)} ${((a[1]+b[1])/2).toFixed(1)}`;}
+  return d+"Z";
+}
+
+/* MAT entier (sargasse golden-brown comic) — silhouette + clumps + halftone + reflet + tendrils */
+function makeMat(R,seed){
+  const g=el("g"); const sil=splat(0,0,R,seed,11);
+  g.appendChild(el("path",{d:sil,fill:INK,opacity:".30",transform:"translate(2 3)"}));
+  g.appendChild(el("path",{d:sil,fill:"url(#sargG)",stroke:INK,"stroke-width":2,"stroke-linejoin":"round"}));
+  const rd=rng(seed*5+1);
+  for(let i=0;i<3;i++){const ox=(rd()-.5)*R*0.8,oy=(rd()-.5)*R*0.7;
+    g.appendChild(el("path",{d:splat(ox,oy,R*0.34,seed*9+i*7,7),fill:"#5d5a1e",opacity:".55"}));}
+  g.appendChild(el("path",{d:sil,fill:"url(#halftone)",opacity:".3"}));
+  g.appendChild(el("path",{d:splat(-R*0.2,-R*0.26,R*0.5,seed+3,7),fill:"#FFE9A8",opacity:".45"}));
+  const rf=rng(seed*3+2);
+  for(let i=0;i<3;i++){const a=rf()*6.28,x=Math.cos(a)*R*0.9,y=Math.sin(a)*R*0.9;
+    g.appendChild(el("path",{d:`M${(x*.6).toFixed(1)} ${(y*.6).toFixed(1)} Q${x.toFixed(1)} ${y.toFixed(1)} ${(x*1.25).toFixed(1)} ${(y*1.25+4).toFixed(1)}`,
+      stroke:"#7C6A22","stroke-width":2,fill:"none","stroke-linecap":"round",opacity:".7"}));}
+  return g;
+}
+
+/* CLUMP = petit fragment doré (silhouette + 1 clump sombre + 1 reflet), contour encre net BD */
+function makeClump(r,seed){
+  const g=el("g"); const sil=splat(0,0,r,seed,8);
+  g.appendChild(el("path",{d:sil,fill:INK,opacity:".26",transform:"translate(1.4 2)"}));
+  g.appendChild(el("path",{d:sil,fill:"url(#sargG)",stroke:INK,"stroke-width":1.6,"stroke-linejoin":"round"}));
+  g.appendChild(el("path",{d:splat(r*0.1,r*0.06,r*0.42,seed*7+3,6),fill:"#5d5a1e",opacity:".55"}));
+  g.appendChild(el("path",{d:splat(-r*0.22,-r*0.26,r*0.4,seed+5,6),fill:"#FFE9A8",opacity:".5"}));
+  return g;
+}
+
+/* FOAM d'impact (blob blanc + traits radiants + dots) — pulse au shatter */
+function makeFoam(){
+  const g=el("g",{opacity:"0"});
+  g.appendChild(el("ellipse",{cx:0,cy:0,rx:30,ry:13,fill:"#eafcff",opacity:".75"}));
+  for(let i=0;i<8;i++){const a=(i/8)*6.28,x=Math.cos(a)*28,y=Math.sin(a)*13;
+    g.appendChild(el("line",{x1:(x*.45).toFixed(1),y1:(y*.45).toFixed(1),x2:x.toFixed(1),y2:y.toFixed(1),
+      stroke:"#fff","stroke-width":2.6,"stroke-linecap":"round",opacity:".9"}));}
+  for(let i=0;i<6;i++){const a=(i/6)*6.28+0.4;
+    g.appendChild(el("circle",{cx:(Math.cos(a)*36).toFixed(1),cy:(Math.sin(a)*16).toFixed(1),r:2.4,fill:"#fff",opacity:".82"}));}
+  return g;
+}
+
+/* PIN avoid (rouge) — la plage prévue touchée */
+function pin(x,y){
+  const g=el("g",{transform:`translate(${x} ${y})`});
+  g.appendChild(el("ellipse",{cx:0,cy:1,rx:5,ry:2,fill:"#062033",opacity:".4"}));
+  g.appendChild(el("path",{d:"M0 0 C-5.4 -7 -8 -10.4 -8 -14.4 A8 8 0 1 1 8 -14.4 C8 -10.4 5.4 -7 0 0 Z",
+    fill:"#E8472A",stroke:INK,"stroke-width":1.6,"stroke-linejoin":"round"}));
+  g.appendChild(el("circle",{cx:0,cy:-14.4,r:3,fill:"#fff",stroke:INK,"stroke-width":.7}));
+  return g;
+}
+
+/* ── GÉOMÉTRIE : point d'échouage sur la plage + bande de dépôt le long du liseré ── */
+const IMPACT={x:400,y:360};           // centre de la plage touchée
+const ARRIVE={x:660,y:150};           // origine au large (NE / Atlantique)
+const COAST_A=-0.30;                   // direction tangente de la côte (radians) pour étaler les clumps
+const NCL=11;                          // nombre de clumps (< 40 noeuds animés au total)
+
+const matLayer=document.getElementById("matLayer");
+const clumpLayer=document.getElementById("clumpLayer");
+const foamLayer=document.getElementById("foamLayer");
+const depositLayer=document.getElementById("depositLayer");
+const pinLayer=document.getElementById("pinLayer");
+
+pinLayer.appendChild(pin(IMPACT.x,IMPACT.y-6));
+
+/* le mat (un seul gros) */
+const mat=makeMat(24,7); matLayer.appendChild(mat);
+
+/* foam d'impact */
+const foam=makeFoam(); foam.setAttribute("transform",`translate(${IMPACT.x} ${IMPACT.y})`); foamLayer.appendChild(foam);
+
+/* clumps : cible finale = bande étalée le long de la côte (tangente), légèrement au-dessus du liseré */
+const clumps=[];
+const rndC=rng(99);
+for(let i=0;i<NCL;i++){
+  const r=5+rndC()*6;
+  const seed=i*53+11;
+  const g=makeClump(r,seed); g.setAttribute("opacity","0");
+  clumpLayer.appendChild(g);
+  // position finale échouée : étalée le long de la tangente côte, double rangée (banc tassé)
+  const t=(i/(NCL-1)-0.5);                 // -0.5..0.5
+  const spread=120;                        // largeur de la bande échouée
+  const along=t*spread;
+  const row=(i%2)*7 + (rndC()-0.5)*5;      // 2 rangées + jitter
+  const fx=IMPACT.x+Math.cos(COAST_A)*along;
+  const fy=IMPACT.y+Math.sin(COAST_A)*along + 6 + row;   // un poil sur le sable
+  // direction de gicle (depuis l'impact vers la position finale)
+  const dx=fx-IMPACT.x, dy=fy-IMPACT.y, L=Math.hypot(dx,dy)||1;
+  const peakH=22+rndC()*26;                // hauteur du rebond comic
+  const spin=(rndC()*2-1)*220;             // rotation pendant le vol
+  clumps.push({g,r,seed,fx,fy,
+    apexX:IMPACT.x+dx*0.55+(dx/L)*8, apexY:IMPACT.y+dy*0.55-peakH,
+    spin, delay:Math.abs(t)*0.06});
+}
+
+/* petite bande de dépôt "ombre" qui apparaît sous les clumps au tassement (continuité BD) */
+const depositBand=el("path",{
+  d:splat(IMPACT.x,IMPACT.y+8,46,303,13),
+  fill:"#7C6A22",opacity:"0",stroke:INK,"stroke-width":1.4,"stroke-linejoin":"round"});
+// aplatir la bande (échouée = large et basse) + l'orienter le long de la côte
+depositBand.setAttribute("transform",
+  `rotate(${(COAST_A*57.3).toFixed(1)} ${IMPACT.x} ${IMPACT.y+10}) `+
+  `translate(${IMPACT.x} ${IMPACT.y+10}) scale(1.5 0.5) translate(${-IMPACT.x} ${-(IMPACT.y+10)})`);
+depositLayer.appendChild(depositBand);
+
+/* ── TIMELINE (par cycle, secondes) ──
+   0.00–0.55  APPROCHE : le mat fonce du large vers l'impact (ease-in, grossit)
+   0.55–0.62  IMPACT    : flash d'écume, le mat "écrase" (squash) puis disparaît
+   0.62–1.70  SHATTER → TASSEMENT : clumps giclent en arc + spin + rebond comic, puis s'alignent
+   1.10–1.70  la bande de dépôt monte sous les clumps
+   1.70–2.10  REPOS     : pose étalée tenue
+   2.10–2.40  FADE OUT  : tout fond doucement → reboucle
+*/
+const CYCLE=2.4;
+const T={appr1:0.55,impact:0.62,sh0:0.62,set0:1.10,set1:1.70,rest:2.10,fade:2.40};
+const REDUCED=matchMedia("(prefers-reduced-motion:reduce)").matches;
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const easeOut=p=>1-Math.pow(1-p,3);
+const easeIn=p=>p*p;
+const easeInOut=p=>p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+const lerp=(a,b,p)=>a+(b-a)*p;
+// rebond comic (amortissement) pour l'atterrissage vertical : 0=apex, 1=posé au sol
+function bounce(p){
+  if(p<0.62) return easeOut(p/0.62);
+  if(p<0.85){const q=(p-0.62)/0.23;return 1-0.16*Math.sin(q*Math.PI);}
+  const q=(p-0.85)/0.15;return 1-0.06*Math.sin(q*Math.PI);
+}
+
+/* applique l'état à un temps tc (0..CYCLE). Utilisé par le rAF ET la pose figée reduced-motion. */
+function apply(tc){
+  // ---- MAT (approche + squash + disparition) ----
+  if(tc<=T.impact+0.02){
+    const p=clamp(tc/T.appr1,0,1), e=easeIn(p);
+    const x=lerp(ARRIVE.x,IMPACT.x,e), y=lerp(ARRIVE.y,IMPACT.y,e);
+    const grow=lerp(0.7,1.12,e);
+    let sx=grow, sy=grow;
+    if(tc>T.appr1){const q=clamp((tc-T.appr1)/(T.impact-T.appr1),0,1);sx=grow*(1+q*0.55);sy=grow*(1-q*0.6);}
+    const fade=tc>T.appr1?clamp(1-(tc-T.appr1)/(T.impact-T.appr1+0.02),0,1):1;
+    const rot=lerp(-8,0,e);
+    mat.setAttribute("transform",`translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${sx.toFixed(3)} ${sy.toFixed(3)}) rotate(${rot.toFixed(1)})`);
+    mat.setAttribute("opacity",fade.toFixed(2));
+  } else {
+    mat.setAttribute("opacity","0");
+  }
+
+  // ---- FOAM d'impact (pulse court) ----
+  if(tc>=T.impact-0.02 && tc<T.impact+0.34){
+    const q=clamp((tc-(T.impact-0.02))/0.36,0,1);
+    foam.setAttribute("opacity",Math.sin(q*Math.PI).toFixed(2));
+    const fs=lerp(0.5,1.5,easeOut(q));
+    foam.setAttribute("transform",`translate(${IMPACT.x} ${IMPACT.y}) scale(${fs.toFixed(3)})`);
+  } else {
+    foam.setAttribute("opacity","0");
+  }
+
+  // ---- CLUMPS (gicle en arc → rebond → tassement) ----
+  for(const c of clumps){
+    const start=T.sh0+c.delay;
+    const dur=(T.set1-start);
+    let p=(tc-start)/dur;
+    if(p<=0){ c.g.setAttribute("opacity","0"); continue; }
+    p=clamp(p,0,1);
+    const bp=bounce(p);
+    const hp=easeOut(clamp(p/0.85,0,1));
+    // horizontal : impact → final, avec un arc vers l'apex
+    const x=lerp(IMPACT.x, c.fx, hp) + (c.apexX-((IMPACT.x+c.fx)/2))*Math.sin(hp*Math.PI)*0.6;
+    // vertical : apex → sol final, modulé par le rebond
+    const y=lerp(c.apexY, c.fy, bp);
+    // au tout début, partir du point d'impact (pas de pop à l'apex)
+    const launch=clamp(p/0.18,0,1);
+    const x0=lerp(IMPACT.x,x,launch);
+    const y0=lerp(IMPACT.y,y,launch);
+    const rot=c.spin*easeOut(p);
+    const sc=lerp(0.6,1,easeOut(clamp(p/0.5,0,1)));
+    const op=p<0.12?(p/0.12):1;
+    c.g.setAttribute("transform",`translate(${x0.toFixed(1)} ${y0.toFixed(1)}) rotate(${rot.toFixed(1)}) scale(${sc.toFixed(3)})`);
+    c.g.setAttribute("opacity",op.toFixed(2));
+  }
+
+  // ---- BANDE de dépôt (monte au tassement) ----
+  const dp=clamp((tc-T.set0)/(T.set1-T.set0),0,1);
+  let bandOp=easeInOut(dp)*0.85;
+
+  // ---- FADE OUT global en fin de cycle (clumps + dépôt) → reboucle propre ----
+  if(tc>T.rest){
+    const f=clamp((tc-T.rest)/(T.fade-T.rest),0,1), o=(1-f);
+    for(const c of clumps){
+      const cur=parseFloat(c.g.getAttribute("opacity"))||0;
+      c.g.setAttribute("opacity",(cur*o).toFixed(2));
+    }
+    bandOp*=o;
+  }
+  depositBand.setAttribute("opacity",bandOp.toFixed(2));
+}
+
+/* POSE FIGÉE reduced-motion = dépôt étalé bien visible (fin de tassement, avant fade) */
+const hint=document.getElementById("hint");
+if(REDUCED){
+  apply(T.set1+0.02);  // bande montée + tous les clumps posés
+  hint.textContent="— dépôt étalé (animation désactivée)";
+} else {
+  let raf=0, paused=false, t0=0;
+  function frame(tms){
+    if(!t0)t0=tms;
+    let tc=((tms-t0)/1000)%CYCLE;
+    apply(tc);
+    if(!paused)raf=requestAnimationFrame(frame);
+  }
+  raf=requestAnimationFrame(frame);
+  document.body.addEventListener("click",()=>{
+    paused=!paused;
+    hint.textContent=paused?"— PAUSE (clic = play)":"— le banc impacte, gicle en clumps & se tasse · clic = pause";
+    if(!paused){t0=0;raf=requestAnimationFrame(frame);}else cancelAnimationFrame(raf);
+  });
+  document.addEventListener("visibilitychange",()=>{
+    if(document.hidden)cancelAnimationFrame(raf);
+    else if(!paused){t0=0;raf=requestAnimationFrame(frame);}
+  });
+}
+</script>
+</body></html>

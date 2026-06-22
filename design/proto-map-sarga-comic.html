@@ -1,0 +1,124 @@
+<!doctype html>
+<!-- Proto INTERNE — caler le rendu sargasses comic/BD/splash + palette statut vert/rouge/jaune
+     affinée pour mobile. À porter ensuite dans src/WorldMapView.jsx. Style golden-hour comic
+     (ink outline + halftone + splash), boil hand-drawn lent (calme), reduced-motion = figé. -->
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Proto sargasses comic + palette</title>
+<style>
+  html,body{margin:0;background:#0b0a12;font-family:system-ui,sans-serif;color:#fff}
+  .stage{position:relative;width:390px;height:560px;margin:0 auto;overflow:hidden}
+  .lbl{position:fixed;top:6px;left:8px;z-index:99;font:700 11px/1.3 monospace;background:rgba(0,0,0,.5);padding:4px 7px;border-radius:6px}
+  .sea{position:absolute;inset:0;background:
+    radial-gradient(110% 80% at 80% 4%, rgba(255,214,140,.6), rgba(255,140,80,.26) 34%, transparent 62%),
+    radial-gradient(130% 110% at 6% 116%, rgba(42,21,80,.7), rgba(58,28,90,.28) 42%, transparent 62%),
+    linear-gradient(166deg,#ff8a4d 0%,#ff7a4d 18%,#8a4a8e 40%,#6a2f9e 60%,#3e2470 82%,#2e1a5e 100%)}
+  .grain{position:absolute;inset:0;pointer-events:none;opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:cover}
+  svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+  @keyframes boil{0%,33.2%{opacity:1}33.3%,100%{opacity:0}}
+  @media (prefers-reduced-motion: reduce){ .boil>*{animation:none!important} .boil>*:not(:first-child){display:none} }
+</style></head>
+<body>
+<div class="lbl" id="lbl">comic sargassum + palette — boil ON (clic = pause)</div>
+<div class="stage">
+  <div class="sea"></div>
+  <svg id="map" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+    <defs>
+      <linearGradient id="land" x1="1" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#74D89E"/><stop offset=".5" stop-color="#33B06A"/><stop offset="1" stop-color="#157F49"/>
+      </linearGradient>
+      <radialGradient id="sargG" cx="40%" cy="34%" r="68%">
+        <stop offset="0" stop-color="#E3B743"/><stop offset=".5" stop-color="#B08A2A"/><stop offset="1" stop-color="#7C6A22"/>
+      </radialGradient>
+      <linearGradient id="pinClean" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5FDD93"/><stop offset="1" stop-color="#1E9E54"/></linearGradient>
+      <linearGradient id="pinMod" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD25A"/><stop offset="1" stop-color="#E0941A"/></linearGradient>
+      <linearGradient id="pinAvoid" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF7A4D"/><stop offset="1" stop-color="#C8351A"/></linearGradient>
+      <pattern id="halftone" width="6" height="6" patternUnits="userSpaceOnUse">
+        <circle cx="1.5" cy="1.5" r="1" fill="#2c2a12" opacity=".4"/>
+      </pattern>
+    </defs>
+
+    <!-- ÎLE comic (Martinique-ish) -->
+    <g>
+      <path id="isl" d="M300 90 C360 120 400 150 410 220 C418 280 470 300 470 360 C470 430 410 470 360 500 C320 520 290 500 270 460 C250 420 210 430 195 380 C180 330 230 300 240 250 C248 210 250 130 300 90 Z" fill="#062033" opacity=".5" transform="translate(7 13)"/>
+      <path d="M300 90 C360 120 400 150 410 220 C418 280 470 300 470 360 C470 430 410 470 360 500 C320 520 290 500 270 460 C250 420 210 430 195 380 C180 330 230 300 240 250 C248 210 250 130 300 90 Z" fill="url(#land)"/>
+      <path d="M300 90 C360 120 400 150 410 220 C418 280 470 300 470 360 C470 430 410 470 360 500 C320 520 290 500 270 460 C250 420 210 430 195 380 C180 330 230 300 240 250 C248 210 250 130 300 90 Z" fill="none" stroke="#0d0b14" stroke-width="3.5" stroke-linejoin="round"/>
+      <ellipse cx="320" cy="200" rx="26" ry="17" fill="#2c5a26" opacity=".5"/>
+      <path d="M300 206 Q320 168 340 206" stroke="#bfe07a" stroke-width="2.4" fill="none" opacity=".6" stroke-linecap="round"/>
+      <ellipse cx="350" cy="350" rx="22" ry="14" fill="#2c5a26" opacity=".45"/>
+    </g>
+
+    <!-- SARGASSE : injectée par JS (splats comic) -->
+    <g id="sarg"></g>
+
+    <!-- PINS statut (palette affinée) -->
+    <g id="pins"></g>
+
+    <!-- légende -->
+    <g transform="translate(24 552)" font-family="system-ui" font-size="13" font-weight="700" fill="#fff">
+      <circle cx="0" cy="-4" r="6" fill="#2FBE6B" stroke="#0d0b14" stroke-width="1.5"/><text x="12" y="0">Propre</text>
+      <circle cx="92" cy="-4" r="6" fill="#F2B330" stroke="#0d0b14" stroke-width="1.5"/><text x="104" y="0">Modéré</text>
+      <circle cx="188" cy="-4" r="6" fill="#E8472A" stroke="#0d0b14" stroke-width="1.5"/><text x="200" y="0">À éviter</text>
+    </g>
+  </svg>
+  <div class="grain"></div>
+</div>
+
+<script>
+const NS="http://www.w3.org/2000/svg", INK="#0d0b14", SARGINK="#2c2a12";
+const el=(name,attrs)=>{const n=document.createElementNS(NS,name);for(const k in attrs)n.setAttribute(k,attrs[k]);return n;};
+
+// SPLAT seedé lissé (quadratique par milieux)
+function rngf(seed){let s=seed%233280;return()=>(s=(s*9301+49297)%233280)/233280;}
+function splatPts(cx,cy,r,seed,N){const rand=rngf(seed),pts=[];for(let i=0;i<N;i++){const a=(i/N)*Math.PI*2,rr=r*(0.62+rand()*0.7);pts.push([cx+Math.cos(a)*rr,cy+Math.sin(a)*rr]);}return pts;}
+function ptsToPath(pts){const N=pts.length;let d=`M ${((pts[0][0]+pts[N-1][0])/2).toFixed(1)} ${((pts[0][1]+pts[N-1][1])/2).toFixed(1)} `;for(let i=0;i<N;i++){const p=pts[i],n=pts[(i+1)%N];d+=`Q ${p[0].toFixed(1)} ${p[1].toFixed(1)} ${((p[0]+n[0])/2).toFixed(1)} ${((p[1]+n[1])/2).toFixed(1)} `;}return d+"Z";}
+function boilFrames(cx,cy,r,seed,N,jit){const base=splatPts(cx,cy,r,seed,N);return[0,1,2].map(f=>{const rand=rngf(seed*7+f*131+1);return ptsToPath(base.map(([x,y])=>[x+(rand()-.5)*jit,y+(rand()-.5)*jit]));});}
+
+const cells=[
+  // banc sud (cellules chevauchantes → lit comme un "banc", pas des lumps isolés)
+  {cx:300,cy:528,r:30,seed:11,afai:.30},{cx:332,cy:540,r:24,seed:23,afai:.26},{cx:268,cy:520,r:22,seed:37,afai:.22},
+  {cx:352,cy:520,r:18,seed:51,afai:.19},{cx:235,cy:498,r:16,seed:67,afai:.18},{cx:312,cy:556,r:16,seed:71,afai:.17},
+  // banc est (Atlantique), plus petit
+  {cx:512,cy:330,r:18,seed:83,afai:.21},{cx:534,cy:360,r:14,seed:97,afai:.17},{cx:498,cy:300,r:13,seed:101,afai:.16},
+  // ouest, épars
+  {cx:150,cy:400,r:14,seed:113,afai:.18},{cx:172,cy:430,r:12,seed:127,afai:.16},
+];
+const sarg=document.getElementById("sarg");
+cells.forEach((c,i)=>{
+  const op=Math.min(.95,.6+c.afai*1.1);
+  const frames=boilFrames(c.cx,c.cy,c.r,c.seed,9,Math.max(1.5,c.r*0.12));
+  const g=el("g",{opacity:op.toFixed(2)});
+  // halo encre sous le splat → le décolle de la mer quelle que soit sa couleur
+  g.appendChild(el("path",{d:frames[0],fill:SARGINK,opacity:".3",transform:`translate(2 3)`}));
+  const boil=el("g",{class:"boil"});
+  frames.forEach((d,f)=>{const p=el("path",{d,fill:"url(#sargG)",stroke:SARGINK,"stroke-width":"1.7","stroke-linejoin":"round"});p.style.animation=`boil 1.05s steps(1) ${(-f*0.35-i*0.13).toFixed(2)}s infinite`;boil.appendChild(p);});
+  g.appendChild(boil);
+  // halftone BD léger
+  g.appendChild(el("path",{d:frames[0],fill:"url(#halftone)",opacity:".32"}));
+  // reflet comic (brillance haut-gauche) → volume + "splash" lumineux
+  const hi=ptsToPath(splatPts(c.cx-c.r*0.16,c.cy-c.r*0.22,c.r*0.52,c.seed+3,7));
+  g.appendChild(el("path",{d:hi,fill:"#FFE9A8",opacity:".45"}));
+  sarg.appendChild(g);
+});
+
+// PINS
+function pin(cx,cy,kind,score,sel){
+  const fill=kind==="clean"?"url(#pinClean)":kind==="mod"?"url(#pinMod)":"url(#pinAvoid)";const s=sel?1.18:1;
+  const g=el("g",{transform:`translate(${cx} ${cy})`});
+  g.appendChild(el("ellipse",{cx:0,cy:1,rx:5*s,ry:2*s,fill:"#062033",opacity:".4"}));
+  const inner=el("g",{transform:`scale(${s})`});
+  inner.appendChild(el("path",{d:"M0 0 C-5.4 -7 -8 -10.4 -8 -14.4 A8 8 0 1 1 8 -14.4 C8 -10.4 5.4 -7 0 0 Z",fill,stroke:INK,"stroke-width":"1.6","stroke-linejoin":"round"}));
+  inner.appendChild(el("ellipse",{cx:-2.6,cy:-17,rx:2.4,ry:3.2,fill:"#fff",opacity:".5"}));
+  if(sel){const t=el("text",{x:0,y:-11.4,"text-anchor":"middle","font-size":"8.5","font-weight":"800",fill:INK,"font-family":"Anton,sans-serif"});t.textContent=score;inner.appendChild(t);}
+  else inner.appendChild(el("circle",{cx:0,cy:-14.4,r:3,fill:"#fff",stroke:INK,"stroke-width":".7"}));
+  g.appendChild(inner);return g;
+}
+const pins=document.getElementById("pins");
+[["clean",330,250,0,false],["avoid",300,470,82,true],["mod",380,180,0,false],["clean",260,360,0,false],["avoid",420,420,0,false]]
+  .forEach(([k,x,y,sc,sel])=>pins.appendChild(pin(x,y,k,sc,sel)));
+
+let boilOn=true;
+document.body.addEventListener("click",()=>{boilOn=!boilOn;document.querySelectorAll(".boil>*").forEach(p=>p.style.animationPlayState=boilOn?"running":"paused");document.getElementById("lbl").textContent="comic sargassum + palette — boil "+(boilOn?"ON":"OFF");});
+</script>
+</body></html>

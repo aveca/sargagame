@@ -12,7 +12,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.cjs"
 
 
-const STATUS_C = { clean: "#27c46b", moderate: "#ffd23f", avoid: "#e8322a" }
+const STATUS_C = { clean: "#2FBE6B", moderate: "#F2B330", avoid: "#E8472A" }
 const INK = "#0d0b14"
 // Monde GTA : chrome en verre sombre (glass) + boutons primaires or (cohérence hero).
 const GLASS = { background:"rgba(20,11,32,.46)", border:"1px solid rgba(255,255,255,.22)", boxShadow:"0 8px 26px rgba(0,0,0,.42)", backdropFilter:"blur(11px)", WebkitBackdropFilter:"blur(11px)" }
@@ -49,14 +49,126 @@ function vantColor(beachList, day){
   const known=beachList.filter(b=>{const s=b.days[day];return s==="clean"||s==="moderate"||s==="avoid"})
   const n=known.length; if(!n) return "#9aa0a8"
   const c=known.filter(b=>b.days[day]==="clean").length
-  return c/n>=.6?"#27c46b":c/n>=.35?"#ffd23f":"#e8322a"
+  return c/n>=.6?"#2FBE6B":c/n>=.35?"#F2B330":"#E8472A"
+}
+
+// ── Splat de sargasse : blob comic seedé, lissé (quadratique par milieux). Déterministe
+// (seed ← position) → le `d` est stable, donc bakable comme attribut statique. ────────────
+function _rng(seed){ let s=((seed%233280)+233280)%233280; return ()=> (s=(s*9301+49297)%233280)/233280 }
+function _splatPath(cx,cy,r,seed,N,jag){
+  N=N||9; jag=jag==null?0.7:jag; const rand=_rng(seed), pts=[]
+  for(let i=0;i<N;i++){ const a=(i/N)*Math.PI*2, rr=r*(1-jag*0.5+rand()*jag); pts.push([cx+Math.cos(a)*rr, cy+Math.sin(a)*rr]) }
+  let d=`M${((pts[0][0]+pts[N-1][0])/2).toFixed(1)} ${((pts[0][1]+pts[N-1][1])/2).toFixed(1)}`
+  for(let i=0;i<N;i++){ const p=pts[i], n=pts[(i+1)%N]
+    d+=`Q${p[0].toFixed(1)} ${p[1].toFixed(1)} ${((p[0]+n[0])/2).toFixed(1)} ${((p[1]+n[1])/2).toFixed(1)}` }
+  return d+"Z"
+}
+
+// ── EFFET D'ÉCHOUAGE "Le Grand Splat" (gagnant jury wapon6g69 + 5 greffes), porté du proto
+// design/proto-sarga-beaching-wow.html. Couche LIVE au-dessus du monde baké, à un point de plage
+// (ax,ay) PRÉVU touché. Construit des nœuds SVG impératifs dans `layer` → renvoie {render(t),frozen()}.
+// Pas de pin (le pin de la carte sert de verdict). Banc dérive du large → s'écrase (anticipation)
+// → EXPLOSE (splat pop overshoot + onde concentrique + speed-lines + écume + spray dont une partie
+// s'absorbe le long du rivage) → dépôt figé incliné le long de la côte (halftone révélé) → fade → reboucle.
+// STRICTEMENT transform+opacity (zéro filtre/blur, zéro mutation de 'd' par frame). seed → déterministe.
+const _NSV="http://www.w3.org/2000/svg"
+const _e=(n,a)=>{const x=document.createElementNS(_NSV,n);for(const k in a)x.setAttribute(k,a[k]);return x}
+const _clmp=(v,a,b)=>v<a?a:v>b?b:v
+const _ease=p=>p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2
+const _eOut=p=>1-Math.pow(1-p,3)
+function _spawnBeaching(layer, ax, ay, cx, cy, S, seed){
+  const oa=Math.atan2(ay-cy, ax-cx)                 // "vers le large" (depuis le centre de l'île)
+  const ox=ax+Math.cos(oa)*130, oy=ay+Math.sin(oa)*130
+  const ta=oa+Math.PI/2, TANx=Math.cos(ta), TANy=Math.sin(ta)   // tangente du rivage
+  const SKx=-Math.cos(oa), SKy=-Math.sin(oa)        // vers la terre (absorption)
+  const coastDeg=(ta*180/Math.PI).toFixed(1)
+  // BANC
+  const bank=_e("g",{}); { const R=22*S, sil=_splatPath(0,0,R,seed,11,0.55)
+    bank.appendChild(_e("path",{d:sil,fill:INK,opacity:".3",transform:"translate(2 3)"}))
+    bank.appendChild(_e("path",{d:sil,fill:"url(#wmSarg)",stroke:INK,"stroke-width":2*S,"stroke-linejoin":"round"}))
+    bank.appendChild(_e("path",{d:_splatPath(-R*0.22,-R*0.28,R*0.5,seed+3,7,0.5),fill:"#FFE9A8",opacity:".5"})) }
+  // DÉPÔT (+ halftone révélé)
+  const dep=_e("g",{opacity:"0"}); let depHt
+  { const R=32*S, sil=_splatPath(0,0,R,seed,13,0.78)
+    dep.appendChild(_e("path",{d:sil,fill:INK,opacity:".26",transform:"translate(2 3)"}))
+    dep.appendChild(_e("path",{d:sil,fill:"url(#wmSarg)",stroke:INK,"stroke-width":2.2*S,"stroke-linejoin":"round"}))
+    const rl=_rng(seed*7+3)
+    for(let i=0;i<2;i++){const a=(0.15+rl()*0.7)*Math.PI, len=R*(0.9+rl()*0.6)
+      dep.appendChild(_e("path",{d:_splatPath(Math.cos(a)*len,Math.abs(Math.sin(a))*len*0.7+R*0.3,(8+rl()*7)*S,seed*13+i*5,7,0.7),fill:"url(#wmSarg)",stroke:INK,"stroke-width":1.4*S,"stroke-linejoin":"round"}))}
+    const rd=_rng(seed*11+2)
+    for(let i=0;i<3;i++){dep.appendChild(_e("path",{d:_splatPath((rd()-.5)*R*1.1,(rd()-.5)*R*0.9,R*(0.18+rd()*0.12),seed*17+i*9,7,0.6),fill:"#5d5a1e",opacity:".5"}))}
+    depHt=_e("path",{d:sil,fill:"url(#wmSargHalf)",opacity:"0"}); dep.appendChild(depHt)
+    dep.appendChild(_e("path",{d:_splatPath(-R*0.28,-R*0.34,R*0.42,seed+5,8,0.5),fill:"#FFE9A8",opacity:".45"})) }
+  // ÉCUME
+  const foam=_e("g",{opacity:"0"}); { const r=40*S
+    foam.appendChild(_e("path",{d:_splatPath(0,4*S,r,seed+1,12,0.6),fill:"none",stroke:"#eafcff","stroke-width":6*S,opacity:".9","stroke-linejoin":"round"}))
+    const rf=_rng(seed*3+4)
+    for(let i=0;i<5;i++){const a=(i/5)*6.28+rf()*0.4, rr=(46+rf()*16)*S
+      foam.appendChild(_e("circle",{cx:(Math.cos(a)*rr).toFixed(1),cy:(Math.sin(a)*rr*0.7+6*S).toFixed(1),r:((2+rf()*2)*S).toFixed(1),fill:"#fff",opacity:".85"}))} }
+  // ONDE concentrique
+  const ripple=_e("g",{opacity:"0"})
+  ripple.appendChild(_e("path",{d:_splatPath(0,0,28*S,seed+9,14,0.18),fill:"none",stroke:INK,"stroke-width":2.6*S,opacity:".7"}))
+  ripple.appendChild(_e("path",{d:_splatPath(0,0,28*S,seed+9,14,0.18),fill:"none",stroke:"#FFE9A8","stroke-width":1.3*S,opacity:".9"}))
+  // SPEED-LINES
+  const lineG=_e("g",{}), lines=[]; { const rl=_rng(seed+99)
+    for(let i=0;i<6;i++){const a=(i/6)*6.28+rl()*0.25
+      const ln=_e("line",{x1:(Math.cos(a)*26*S).toFixed(1),y1:(Math.sin(a)*26*S).toFixed(1),x2:(Math.cos(a)*(62+rl()*30)*S).toFixed(1),y2:(Math.sin(a)*(62+rl()*30)*S).toFixed(1),stroke:"#FFE9A8","stroke-width":(2.4*S).toFixed(1),"stroke-linecap":"round",opacity:"0"})
+      lineG.appendChild(ln); lines.push(ln)} }
+  // GOUTTES : 4 tangente (absorb) + 3 splash
+  const dropG=_e("g",{}), drops=[]
+  { for(let i=0;i<4;i++){const sd=seed+i*37+11, rand=_rng(sd), L=(i/3-0.5)*2, dist=(40+Math.abs(L)*90)*S
+      const tx=ax+TANx*L*dist+SKx*(Math.abs(L)*9*S), ty=ay+TANy*L*dist+SKy*(Math.abs(L)*9*S)
+      const g=_e("g",{opacity:"0"}); g.appendChild(_e("path",{d:_splatPath(0,0,(2.4+rand()*3)*S,sd,7,0.55),fill:"url(#wmSarg)",stroke:INK,"stroke-width":1*S,"stroke-linejoin":"round"})); dropG.appendChild(g)
+      drops.push({g,type:"shore",tx,ty,delay:Math.abs(L)*0.06,rot:(rand()*2-1)*120})}
+    for(let i=0;i<3;i++){const sd=seed+i*53+200, rand=_rng(sd), ang=-2.5+rand()*1.9, spd=(80+rand()*120)*S
+      const g=_e("g",{opacity:"0"}); g.appendChild(_e("path",{d:_splatPath(0,0,(2.2+rand()*3)*S,sd,7,0.55),fill:"url(#wmSarg)",stroke:INK,"stroke-width":1*S,"stroke-linejoin":"round"})); dropG.appendChild(g)
+      drops.push({g,type:"splash",vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd,delay:rand()*0.05,rot:(rand()*2-1)*180})} }
+  dep.setAttribute("transform",`translate(${ax} ${ay})`); foam.setAttribute("transform",`translate(${ax} ${ay})`)
+  ripple.setAttribute("transform",`translate(${ax} ${ay})`); lineG.setAttribute("transform",`translate(${ax} ${ay})`)
+  layer.appendChild(dep); layer.appendChild(foam); layer.appendChild(ripple); layer.appendChild(dropG); layer.appendChild(bank); layer.appendChild(lineG)
+  const T_AP=1.10,T_IM=1.18,T_SE=1.55,T_FA=3.05,T_LP=3.35
+  function render(t){
+    if(t<T_IM){ const p=_ease(_clmp(t/T_AP,0,1)), x=ox+(ax-ox)*p, y=oy+(ay-oy)*p, sc=0.7+p*0.55
+      const sq=t>T_AP?1+(t-T_AP)/(T_IM-T_AP)*0.7:1, bob=Math.sin(t*5)*4*S*(1-p)
+      bank.setAttribute("transform",`translate(${x.toFixed(1)} ${(y+bob).toFixed(1)}) scale(${(sc*sq).toFixed(3)} ${(sc/sq).toFixed(3)})`)
+      bank.setAttribute("opacity",t>T_AP?(1-(t-T_AP)/(T_IM-T_AP)).toFixed(2):"1")
+    } else bank.setAttribute("opacity","0")
+    if(t>=T_IM){ const pg=_clmp((t-T_IM)/(T_SE-T_IM),0,1), sc=(0.25+_eOut(pg)*0.75)*(1+0.12*Math.sin(pg*Math.PI))
+      let op=1; if(t>T_FA) op=_clmp(1-(t-T_FA)/(T_LP-T_FA),0,1)
+      dep.setAttribute("transform",`translate(${ax} ${ay}) rotate(${coastDeg}) scale(${sc.toFixed(3)})`)
+      dep.setAttribute("opacity",op.toFixed(2)); depHt.setAttribute("opacity",(_eOut(pg)*0.34*op).toFixed(2))
+    } else dep.setAttribute("opacity","0")
+    { const dt=t-T_IM; let lp=dt<0?0:dt<0.05?dt/0.05:dt<0.30?1-(dt-0.05)/0.25:0; lp=_clmp(lp,0,1)
+      lineG.setAttribute("transform",`translate(${ax} ${ay}) scale(${(0.6+lp*0.6).toFixed(3)})`)
+      for(const ln of lines) ln.setAttribute("opacity",(lp*0.9).toFixed(2)) }
+    { const dt=t-T_IM, rp=dt<0||dt>0.26?0:1-dt/0.26, rsc=1+_eOut(_clmp(dt/0.26,0,1))*3
+      ripple.setAttribute("transform",`translate(${ax} ${ay}) scale(${rsc.toFixed(3)})`); ripple.setAttribute("opacity",_clmp(rp,0,1).toFixed(2)) }
+    { const dt=t-T_IM; let fp=dt<0?0:dt<0.5?Math.sin((dt/0.5)*Math.PI*0.9):0; fp=_clmp(fp,0,1)
+      foam.setAttribute("transform",`translate(${ax} ${ay}) scale(${(0.5+_eOut(_clmp(dt/0.5,0,1))*0.9).toFixed(3)})`); foam.setAttribute("opacity",fp.toFixed(2)) }
+    { const dt=t-T_IM
+      for(const d of drops){ const lt=dt-d.delay
+        if(lt<0||lt>0.9){ d.g.setAttribute("opacity","0"); continue }
+        if(d.type==="shore"){ const fly=_eOut(_clmp(lt/0.34,0,1)), x=ax+(d.tx-ax)*fly, y=ay+(d.ty-ay)*fly, ab=_clmp((lt-0.55)/0.3,0,1)
+          d.g.setAttribute("transform",`translate(${x.toFixed(1)} ${(y+ab*4*S).toFixed(1)}) scale(${(_clmp(1-lt*0.45,0.4,1)*(1-ab*0.55)).toFixed(2)}) rotate(${(d.rot*fly).toFixed(0)})`)
+          d.g.setAttribute("opacity",_clmp(ab<1?1-ab:0,0,1).toFixed(2))
+        } else { const x=ax+d.vx*lt, y=ay+d.vy*lt+320*S*lt*lt, op=lt<0.6?1:1-(lt-0.6)/0.25
+          d.g.setAttribute("transform",`translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${_clmp(1-lt*0.5,0.4,1).toFixed(2)}) rotate(${(d.rot*lt).toFixed(0)})`)
+          d.g.setAttribute("opacity",_clmp(op,0,1).toFixed(2)) } } }
+  }
+  function frozen(){
+    bank.setAttribute("opacity","0"); ripple.setAttribute("opacity","0")
+    for(const ln of lines) ln.setAttribute("opacity","0"); for(const d of drops) d.g.setAttribute("opacity","0")
+    dep.setAttribute("transform",`translate(${ax} ${ay}) rotate(${coastDeg}) scale(1)`); dep.setAttribute("opacity","1"); depHt.setAttribute("opacity","0.34")
+    foam.setAttribute("transform",`translate(${ax} ${ay}) scale(1.1)`); foam.setAttribute("opacity",".3")
+  }
+  return {render, frozen}
 }
 
 // Ellipses de relief (Martinique uniquement)
 const MQ_RELIEF = [[14.79,-61.10,24],[14.74,-61.10,18],[14.70,-61.07,20],[14.52,-61.06,15],[14.47,-60.92,12]]
 
 export default function WorldMapView({
-  beaches, island, updatedAt, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail,
+  beaches, island, updatedAt, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail, arrivals,
 }){
   const wrapRef    = useRef(null)
   const worldRef   = useRef(null)  // <g id="world"> — transform mis à jour en RAF
@@ -70,6 +182,8 @@ export default function WorldMapView({
   const reduceRef  = useRef(false)
   const labelLayerRef = useRef(null)
   const bakeRef    = useRef(null)  // <svg> source du monde statique → rasterisé en bitmap (Stage 2)
+  const fxRef      = useRef(null)  // couche live des effets d'échouage (au-dessus du monde baké)
+  const fieldRef   = useRef(null)  // couche live du champ de sargasses au large (dérive lente)
 
   const [outline, setOutline]   = useState(null)
   const [bakedUrl, setBakedUrl] = useState(null)  // PNG data-URL du monde statique baké (GPU-composité)
@@ -150,22 +264,23 @@ export default function WorldMapView({
   // partagée MQ/GP). Seuil 0.10 = on ne dessine QUE le sargasse réel (la mer propre
   // reste propre, pas de voile vert parasite). Filtre viewport = on jette les points
   // hors-écran (la grille couvre toute la Caraïbe).
+  // Champ de sargasses au large (donnée satellite AFAI) pour la couche LIVE régionale (dérive lente).
+  // Seuil BAS 0.10 = montrer TOUT le champ détecté (trace→modéré). Fenêtre LARGE (pas de cull serré-
+  // île) → inclut le champ au large, surtout le SUD (vy>600), révélé par la vue régionale k≈0.44.
+  // `near` = proche de l'île (LOD détaillé) vs au loin (silhouette pâle). Cap = anti-clutter.
   const sargCells = useMemo(()=>{
     if(!toVB||!afaiGrid||!afaiGrid.points) return []
     const isMQGP=island==="mq"||island==="gp"
     const pts=isMQGP?afaiGrid.points.filter(p=>island==="gp"?p[0]>=15.5:p[0]<15.5):afaiGrid.points
     const out=[]
     for(const[lat,lng,afai]of pts){
-      if(afai<0.16) continue // seuil relevé 0.10→0.16 : jette le bruit de fond (~433 pts GP sans
-      const[vx,vy]=toVB(lat,lng) // signal lisible) → moins de cercles re-rasterisés à chaque frame
-      if(vx<-60||vx>860||vy<-60||vy>660) continue
-      out.push({vx,vy,afai})
+      if(afai<0.10) continue
+      const[vx,vy]=toVB(lat,lng)
+      if(vx<-160||vx>960||vy<-160||vy>1160) continue // fenêtre large : champ au large + bande sud
+      out.push({vx,vy,afai, near:Math.hypot(vx-400,vy-300)<240, seed:Math.round(vx*7+vy*13)})
     }
-    // Cap aux N plus fortes : la couche sargasse = DONNÉE, pas alarme. Les blobs sont BAKÉS dans le
-    // bitmap statique (zéro fill/frame) → le cap n'est plus une contrainte de perf runtime mais un
-    // garde-fou anti-« wash » (trop de blobs = mer brune illisible). 180 = bancs réels lisibles.
     out.sort((a,b)=>b.afai-a.afai)
-    return out.slice(0,180)
+    return out.slice(0,48)
   },[afaiGrid,island,toVB])
 
   // P7 — recherche : plages dont le nom matche la requête (max 6).
@@ -179,6 +294,11 @@ export default function WorldMapView({
   const labeledIds = useMemo(()=>{
     const ids=new Set()
     if(!beachList.length) return ids
+    // PRIORITÉ (fondateur 22/06) : montrer par leur NOM les plages PAS VERTES (jaune=modéré /
+    // rouge=à éviter) — ce sont elles qui comptent (où il y a/va avoir de la sargasse). Le
+    // déclutter priorise déjà avoid>moderate>clean, donc ces noms gagnent l'affichage.
+    beachList.forEach(b=>{ const st=b.days[day]; if(st==="moderate"||st==="avoid") ids.add(b.id) })
+    // + quelques repères clairs pour l'orientation (plages nommées / échantillon réparti).
     if(island==="mq"){
       beachList.forEach(b=>{ if(MQ_NAMED.some(n=>(b.name||"").includes(n))) ids.add(b.id) })
     } else {
@@ -186,7 +306,7 @@ export default function WorldMapView({
       beachList.forEach((b,i)=>{ if(i%step===0) ids.add(b.id) })
     }
     return ids
-  },[beachList,island])
+  },[beachList,island,day])
 
   // Ellipses de relief en coordonnées viewBox (MQ only)
   const reliefEls = useMemo(()=>{
@@ -220,17 +340,24 @@ export default function WorldMapView({
     img.onerror=()=>{ if(!cancelled) setBakedUrl(null) }
     img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(xml)
     return ()=>{ cancelled=true }
-  },[outline,sargCells,reliefEls,island])
+  },[outline,reliefEls,island])  // le champ sargasses n'est plus baké → retiré des deps
 
   // ─── CAMÉRA ────────────────────────────────────────────────────────────────
-  const K_MIN=0.85, K_MAX=5.0
+  // K_MIN abaissé : la vue PAR DÉFAUT est RÉGIONALE (île ~44%) pour montrer le vrai champ de
+  // sargasses au large à l'échelle réelle (décision fondateur 22/06). Zoom in pour le détail/pan.
+  const K_MIN=0.38, K_MAX=5.0, K_REGIONAL=0.44
 
   const clampCam=useCallback(()=>{
     const c=camRef.current
     c.k=Math.max(K_MIN,Math.min(K_MAX,c.k))
     const m=200
-    c.tx=Math.max(400-800*c.k+m,Math.min(m,c.tx))
-    c.ty=Math.max(300-600*c.k+m,Math.min(m,c.ty))
+    // Quand le monde scalé est plus PETIT que le cadre+marge (vue régionale dézoomée, k<~0.75),
+    // les bornes s'inversent → on CENTRE le monde (centre du viewBox) au lieu de clamper de travers.
+    // À ce zoom tout le contenu (île + champ) tient → pas besoin de paner ; zoom in pour paner.
+    const loX=400-800*c.k+m, hiX=m
+    c.tx = loX<=hiX ? Math.max(loX,Math.min(hiX,c.tx)) : 400-400*c.k
+    const loY=300-600*c.k+m, hiY=m
+    c.ty = loY<=hiY ? Math.max(loY,Math.min(hiY,c.ty)) : 300-300*c.k
   },[])
 
   // Déclutter screen-space : empêche les labels de se chevaucher (noms + verdicts
@@ -288,6 +415,80 @@ export default function WorldMapView({
   },[declutter,recomputeTiers])
   // Recalc aussi quand données/sélection changent (positions prêtes la frame d'après).
   useEffect(()=>{ const id=requestAnimationFrame(()=>recomputeTiers()); return ()=>cancelAnimationFrame(id) },[recomputeTiers])
+
+  // ── EFFET D'ÉCHOUAGE (live, GATÉ RÉALISME) : seules les plages PRÉVUES touchées (statut `avoid`
+  // au jour affiché) voient un banc s'échouer ; plages propres/modérées = rien (jamais de fausse
+  // éclaboussure). Couche au-dessus du monde baké, animée par UN rAF dédié, plafonnée à 4 effets,
+  // reduced-motion = pose figée, pause onglet caché. Calme (0 avoid) = ZÉRO rAF (tableau, pas
+  // aquarium). Override debug `?beachfx=1` (force les 3 pires plages quand tout est propre).
+  useEffect(()=>{
+    const layer=fxRef.current
+    if(!layer||!beachList.length) return
+    while(layer.firstChild) layer.removeChild(layer.firstChild)
+    let cx=0,cy=0; for(const b of beachList){cx+=b.vx;cy+=b.vy}; cx/=beachList.length; cy/=beachList.length
+    const force=(()=>{try{return /[?&]beachfx=1/.test(window.location.search)}catch(_){return false}})()
+    // GATE RÉALISME : plage `avoid` au jour affiché OU **arrivée prévue** (arrivalDetected du
+    // pipeline, vraie prévision, jour 0). Les 2 vraies arrivées GP (Gosier/Bas-du-Fort) s'échouent.
+    let hits=beachList.filter(b=>b.days[day]==="avoid" || (day===0 && arrivals && arrivals[b.id]))
+    if(force&&!hits.length) hits=[...beachList].sort((a,b)=>(a.score||99)-(b.score||99)).slice(0,3)
+    // priorité aux pires/arrivées les plus fortes, cap 4
+    hits=hits.sort((a,b)=>((arrivals&&arrivals[b.id])||0)-((arrivals&&arrivals[a.id])||0)).slice(0,4)
+    if(!hits.length) return
+    const insts=hits.map((b,i)=>_spawnBeaching(layer,b.vx,b.vy,cx,cy,0.85,Math.round(b.vx*7+b.vy*13)+i*131))
+    const CYCLE=3.35, phases=insts.map((_,i)=>(i*0.83)%CYCLE)
+    if(reduceRef.current){ insts.forEach(o=>o.frozen()); return ()=>{ while(layer.firstChild) layer.removeChild(layer.firstChild) } }
+    let raf=0,t0=0
+    const loop=tms=>{ if(!t0)t0=tms; const t=(tms-t0)/1000; for(let i=0;i<insts.length;i++) insts[i].render((t+phases[i])%CYCLE); raf=requestAnimationFrame(loop) }
+    raf=requestAnimationFrame(loop)
+    const onVis=()=>{ if(document.hidden){ if(raf){cancelAnimationFrame(raf);raf=0} } else if(!raf){ t0=0; raf=requestAnimationFrame(loop) } }
+    document.addEventListener("visibilitychange",onVis)
+    return ()=>{ if(raf)cancelAnimationFrame(raf); document.removeEventListener("visibilitychange",onVis); while(layer.firstChild) layer.removeChild(layer.firstChild) }
+  },[beachList,day]) // eslint-disable-line
+
+  // ── CHAMP DE SARGASSES AU LARGE (live, dérive LENTE) : les vraies cellules satellite rendues en
+  // bancs comic (LOD near/far), qui dérivent doucement vers l'O/N-O (courant Caraïbe) avec WRAP
+  // per-cellule (champ toujours peuplé, sans couture). Clippé à la mer. reduced-motion = figé. Un
+  // seul rAF, pause onglet caché. La matière au large EXISTE même si aucune plage ne vire au rouge.
+  useEffect(()=>{
+    const layer=fieldRef.current
+    if(!layer) return
+    while(layer.firstChild) layer.removeChild(layer.firstChild)
+    if(!sargCells.length) return
+    const isMobile=(()=>{try{return window.matchMedia("(pointer:coarse)").matches||Math.min(window.innerWidth,window.innerHeight)<540}catch(_){return false}})()
+    // far d'abord (derrière), near ensuite (devant) ; cap mobile plus bas
+    const cells=[...sargCells].sort((a,b)=>(a.near?1:0)-(b.near?1:0)).slice(0, isMobile?24:42)
+    const nodes=cells.map(c=>{
+      const near=c.near, R=(near?20:15)+c.afai*(near?52:34)  // gonflé pour lire à la vue régionale (k≈0.44)
+      const sil=_splatPath(0,0,R,c.seed,near?11:8,near?0.7:0.5)
+      const g=_e("g",{})
+      g.appendChild(_e("path",{d:sil,fill:INK,opacity:near?".26":".16",transform:"translate(1.5 2.5)"}))
+      g.appendChild(_e("path",{d:sil,fill:"url(#wmSarg)",stroke:INK,"stroke-width":near?1.4:1,"stroke-linejoin":"round",opacity:Math.min(.95,(near?.62:.4)+c.afai*1.1).toFixed(2)}))
+      if(near){ const rd=_rng(c.seed*11+2)
+        for(let i=0;i<2;i++) g.appendChild(_e("path",{d:_splatPath((rd()-.5)*R,(rd()-.5)*R*0.8,R*0.3,c.seed*9+i*7,7,0.6),fill:"#5d5a1e",opacity:".5"}))
+        g.appendChild(_e("path",{d:sil,fill:"url(#wmSargHalf)",opacity:".28"}))
+        g.appendChild(_e("path",{d:_splatPath(-R*0.2,-R*0.26,R*0.5,c.seed+3,7,0.5),fill:"#FFE9A8",opacity:".42"})) }
+      layer.appendChild(g)
+      return {g, bx:c.vx, by:c.vy}
+    })
+    const reduced=reduceRef.current
+    // DÉRIVE = SWAY lent autour de la position RÉELLE de chaque cellule (sens courant O/N-O), PAS une
+    // translation nette : le champ reste à sa VRAIE place (honnête) → toujours peuplé, vivant mais
+    // calme, aucune couture/pop. La vraie translation vient du refetch données (4×/j). Période ~35s.
+    const place=(n,t)=>{
+      const ph=n.bx*0.013+n.by*0.011
+      const sway=reduced?0:Math.sin(t*0.18+ph)*11
+      const x=n.bx+sway*0.95                              // surtout horizontal (O-N-O)
+      const y=n.by+(reduced?0:Math.sin(t*0.13+ph)*5-sway*0.28)
+      n.g.setAttribute("transform",`translate(${x.toFixed(1)} ${y.toFixed(1)})`)
+    }
+    if(reduced){ nodes.forEach(n=>place(n,0)); return ()=>{ while(layer.firstChild) layer.removeChild(layer.firstChild) } }
+    let raf=0
+    const loop=tms=>{ const t=tms/1000; for(const n of nodes) place(n,t); raf=requestAnimationFrame(loop) }
+    raf=requestAnimationFrame(loop)
+    const onVis=()=>{ if(document.hidden){ if(raf){cancelAnimationFrame(raf);raf=0} } else if(!raf){ raf=requestAnimationFrame(loop) } }
+    document.addEventListener("visibilitychange",onVis)
+    return ()=>{ if(raf)cancelAnimationFrame(raf); document.removeEventListener("visibilitychange",onVis); while(layer.firstChild) layer.removeChild(layer.firstChild) }
+  },[sargCells]) // eslint-disable-line
 
   const writeCam=useCallback(()=>{
     const g=worldRef.current; if(!g) return
@@ -378,9 +579,10 @@ export default function WorldMapView({
       }
     }
     if(!centered){
-      const cx=proj.offX+((bbox.minLng+bbox.maxLng)/2-bbox.minLng)*proj.kx*proj.sc
-      const cy=proj.offY+(bbox.maxLat-(bbox.minLat+bbox.maxLat)/2)*proj.sc
-      camRef.current={tx:400-cx,ty:300-cy,k:1}; clampCam(); writeCam()
+      // Vue RÉGIONALE par défaut : monde centré à k≈0.44 → l'île (centrée ~400,300 en viewBox)
+      // apparaît à ~44% et le champ au large (sud surtout) entre dans le cadre à l'échelle réelle.
+      // clampCam recentre de toute façon à ce zoom ; on pose les mêmes valeurs pour la cohérence.
+      camRef.current={tx:400-400*K_REGIONAL, ty:300-300*K_REGIONAL, k:K_REGIONAL}; clampCam(); writeCam()
       try{ track&&track("sg_archipel_open",{source:"map_world",island}) }catch(_){}
     }
   },[outline, initialZone, beachList]) // eslint-disable-line
@@ -417,6 +619,7 @@ export default function WorldMapView({
       ptrsRef.current[e.pointerId]={x:e.clientX,y:e.clientY}
       const pts=Object.values(ptrsRef.current)
       if(pts.length>=2&&pinchRef.current){
+        if(fxRef.current) fxRef.current.setAttribute("visibility","hidden"); if(fieldRef.current) fieldRef.current.setAttribute("visibility","hidden")  // LOD : effets+champ masqués pendant le pinch
         const d=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y)
         const mx=(pts[0].x+pts[1].x)/2, my=(pts[0].y+pts[1].y)/2
         if(pinchRef.current.d>0){
@@ -433,6 +636,7 @@ export default function WorldMapView({
           // Setpointer capture SEULEMENT au premier vrai mouvement (piège pointer-capture/click)
           try{ e.currentTarget.setPointerCapture(e.pointerId) }catch(_){}
           setSelected(null); setTagPos(null)
+          if(fxRef.current) fxRef.current.setAttribute("visibility","hidden"); if(fieldRef.current) fieldRef.current.setAttribute("visibility","hidden")  // LOD : effets+champ masqués pendant le pan
         }
         moved=true
         const r=el.getBoundingClientRect()
@@ -447,6 +651,7 @@ export default function WorldMapView({
       const wasMoved=moved
       delete ptrsRef.current[e.pointerId]
       if(Object.keys(ptrsRef.current).length<2) pinchRef.current=null
+      if(Object.keys(ptrsRef.current).length===0){ if(fxRef.current) fxRef.current.setAttribute("visibility","visible"); if(fieldRef.current) fieldRef.current.setAttribute("visibility","visible") }  // LOD : effets+champ ré-affichés au repos
       // Sur un contrôle chrome (CTA « Voir la plage », dock, capture…) : pas de double-tap
       // zoom ni de vol de clic — mais le nettoyage ci-dessus a déjà eu lieu.
       if(e.target&&e.target.closest&&e.target.closest('[data-vmui]')) return
@@ -559,8 +764,8 @@ export default function WorldMapView({
         <stop offset="1" stopColor="#FFE6A8" stopOpacity="0"/>
       </radialGradient>
       <linearGradient id="wmLand" x1="1" y1="0" x2="0" y2="1">
-        <stop offset="0" stopColor="#6fe39a"/><stop offset=".26" stopColor="#3fd07e"/>
-        <stop offset=".58" stopColor="#27c46b"/><stop offset="1" stopColor="#1c8f4e"/>
+        <stop offset="0" stopColor="#74D89E"/><stop offset=".3" stopColor="#41BE7B"/>
+        <stop offset=".62" stopColor="#2BAE66"/><stop offset="1" stopColor="#157F49"/>
       </linearGradient>
       <linearGradient id="wmWarm" x1="1" y1="0" x2=".2" y2="1">
         <stop offset="0" stopColor="#FFD27A" stopOpacity=".55"/>
@@ -571,13 +776,13 @@ export default function WorldMapView({
         <stop offset="0" stopColor="#FFEFC4"/><stop offset="1" stopColor="#F4D38C"/>
       </linearGradient>
       <linearGradient id="wmPinClean" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stopColor="#5BE38A"/><stop offset="1" stopColor="#1FA34D"/>
+        <stop offset="0" stopColor="#5FDD93"/><stop offset="1" stopColor="#1E9E54"/>
       </linearGradient>
       <linearGradient id="wmPinMod" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stopColor="#FFC53D"/><stop offset="1" stopColor="#D88A00"/>
+        <stop offset="0" stopColor="#FFD25A"/><stop offset="1" stopColor="#E0941A"/>
       </linearGradient>
       <linearGradient id="wmPinAvoid" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stopColor="#FF7A4D"/><stop offset="1" stopColor="#C93A18"/>
+        <stop offset="0" stopColor="#FF7A4D"/><stop offset="1" stopColor="#C8351A"/>
       </linearGradient>
       <linearGradient id="wmSailR" x1="0" y1="0" x2="1" y2="1">
         <stop offset="0" stopColor="#FF6A3D"/><stop offset="1" stopColor="#D8431F"/>
@@ -585,16 +790,19 @@ export default function WorldMapView({
       <linearGradient id="wmSailY" x1="0" y1="0" x2="1" y2="1">
         <stop offset="0" stopColor="#FFD45A"/><stop offset="1" stopColor="#F0A81E"/>
       </linearGradient>
-      {/* Banc de sargasses — blob radial doux (golden-brown → olive → transparent), comme
-          l'ancienne heatmap. Chaud sur la mer golden-hour (lit sur violet/magenta) sans
-          virer à l'alarme criarde. Bakée avec le monde statique → 0 coût/frame. */}
-      <radialGradient id="wmSarg" cx="50%" cy="50%" r="50%">
-        <stop offset="0"   stopColor="#b08c22" stopOpacity=".95"/>
-        <stop offset=".48" stopColor="#736b22" stopOpacity=".62"/>
-        <stop offset="1"   stopColor="#3d3a14" stopOpacity="0"/>
+      {/* Banc de sargasses — splat comic/BD golden-brown (encre + reflet + halftone). Chaud sur
+          la mer golden-hour, lit sur violet/magenta. Baké avec le monde statique → 0 coût/frame. */}
+      <radialGradient id="wmSarg" cx="40%" cy="34%" r="68%">
+        <stop offset="0" stopColor="#E3B743"/><stop offset=".5" stopColor="#B08A2A"/><stop offset="1" stopColor="#7C6A22"/>
       </radialGradient>
+      <pattern id="wmSargHalf" width="6" height="6" patternUnits="userSpaceOnUse">
+        <circle cx="1.5" cy="1.5" r="1" fill="#2c2a12" opacity=".4"/>
+      </pattern>
       <filter id="wmSoft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="4"/></filter>
       <filter id="wmShlw" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="8"/></filter>
+      {/* Masque MER (greffe honnêteté) : rect viewBox MOINS l'île (evenodd) → le champ de sargasses
+          au large est clippé à l'eau, JAMAIS posé sur la terre. */}
+      {outline&&<clipPath id="wmSeaClip"><path d={"M-200 -200H1000V1200H-200Z "+outline.path} fillRule="evenodd" clipRule="evenodd"/></clipPath>}
     </defs>
   )
 
@@ -620,19 +828,8 @@ export default function WorldMapView({
         <path d={outline.path} fill="url(#wmWarm)" opacity=".9" transform="scale(.985)" style={{transformOrigin:"328px 300px"}}/>
         <path d={outline.path} fill="none" stroke={INK} strokeWidth="3" strokeLinejoin="round"/>
       </g>}
-      {/* Couche SARGASSES (satellite AFAI) — la matière RÉELLE sur l'eau, en blobs radiaux doux
-          (« blops » comme l'ancienne heatmap). Avant : olive plat #5c6b2a à ~.5 d'opacité → se
-          noyait dans la mer golden-hour violet/magenta (invisible sur mobile). Maintenant : blob
-          golden-brown→olive plus opaque et plus large → les bancs se lisent. Bakée avec le monde
-          statique → zéro re-raster par frame, donc les rendre francs ne coûte RIEN au runtime. */}
-      {sargCells.length>0 && <g>
-        {sargCells.map((c,i)=>(
-          <circle key={i} cx={c.vx.toFixed(1)} cy={c.vy.toFixed(1)}
-            r={(12+c.afai*40).toFixed(1)}
-            fill="url(#wmSarg)"
-            opacity={Math.min(.92,.52+c.afai*1.3).toFixed(2)}/>
-        ))}
-      </g>}
+      {/* (Le champ de sargasses n'est PLUS baké ici : il est devenu une couche LIVE qui dérive
+          lentement au large — voir <g ref={fieldRef}>. Le bake ne garde que l'île + relief + yole.) */}
       {/* Relief Martinique — collines comic */}
       {reliefEls.map(({vx,vy,rx},i)=>(
         <g key={i}>
@@ -754,6 +951,15 @@ export default function WorldMapView({
             ? <image href={bakedUrl} x="0" y="0" width="800" height="600" preserveAspectRatio="none" style={{pointerEvents:"none"}}/>
             : staticWorld}
 
+          {/* Champ de sargasses au large — couche LIVE qui dérive LENTEMENT (peuplée impérativement).
+              Clippée à la mer (jamais sur l'île). Sous les effets d'échouage + pins. Masquée au geste. */}
+          <g ref={fieldRef} clipPath="url(#wmSeaClip)" aria-hidden="true" style={{pointerEvents:"none"}}/>
+
+          {/* Couche LIVE des effets d'échouage (peuplée impérativement par l'effet beaching).
+              Sous les pins → le pin rouge `avoid` de la plage coiffe son dépôt = le verdict.
+              Masquée pendant le geste (LOD) pour ne pas alourdir le pan/zoom. */}
+          <g ref={fxRef} aria-hidden="true" style={{pointerEvents:"none"}}/>
+
           {/* Pins plages — marqueurs comic teardrop ink-outline */}
           {beachList.map(b=>{
             const st=b.days[day] // null tant que le statut n'est pas chargé → pin GRIS, pas vert
@@ -761,7 +967,7 @@ export default function WorldMapView({
             // Rétrogradé en point dans un cluster dense (sauf le sélectionné) → petit point cliquable,
             // hit-zone élargie, pas de label. Tap → ouvre la fiche (funnel préservé).
             if(pinTier[b.id]==="dot"&&!isSel){
-              const dotCol=st==="clean"?"#27c46b":st==="moderate"?"#ffd23f":st==="avoid"?"#e8322a":"#9aa0a8"
+              const dotCol=st==="clean"?"#2FBE6B":st==="moderate"?"#F2B330":st==="avoid"?"#E8472A":"#9aa0a8"
               return(
                 <g key={b.id} transform={`translate(${b.vx.toFixed(1)} ${b.vy.toFixed(1)})`} style={{cursor:"pointer"}}
                   onClick={e=>{ e.stopPropagation(); selectBeach(b); if(onOpenBeach){ try{track&&track("sg_beach_open",{from:"map_dot"})}catch(_){}; onOpenBeach(b) } }}>
@@ -951,7 +1157,7 @@ export default function WorldMapView({
           }}>
             <div style={{width:104,height:8,borderRadius:5,background:"#fff",border:`2px solid ${INK}`,overflow:"hidden"}}>
               <div style={{
-                height:"100%",background:"linear-gradient(90deg,#27c46b,#ffd23f)",transition:"width .4s ease",
+                height:"100%",background:"linear-gradient(90deg,#2FBE6B,#F2B330)",transition:"width .4s ease",
                 width:beachList.length?Math.round(cleanCnt/beachList.length*100)+"%":"0%",
               }}/>
             </div>
@@ -1005,9 +1211,9 @@ export default function WorldMapView({
           position:"absolute",left:16,bottom:"calc(74px + env(safe-area-inset-bottom))",
           display:"flex",flexDirection:"column",gap:5,pointerEvents:"none",
         }}>
-          {[["#27c46b",_t(lang,"Propre","Clean","Limpia")],
-            ["#ffd23f",_t(lang,"Modéré","Moderate","Moderado")],
-            ["#e8322a",_t(lang,"À éviter","Avoid","Evitar")]].map(([c,l])=>(
+          {[["#2FBE6B",_t(lang,"Propre","Clean","Limpia")],
+            ["#F2B330",_t(lang,"Modéré","Moderate","Moderado")],
+            ["#E8472A",_t(lang,"À éviter","Avoid","Evitar")]].map(([c,l])=>(
             <div key={c} style={{display:"flex",alignItems:"center",gap:7,
               font:"700 10.5px/1 'Comic Neue',system-ui,sans-serif",
               color:"#fff",textShadow:`0 1px 0 ${INK},0 0 4px ${INK}`}}>

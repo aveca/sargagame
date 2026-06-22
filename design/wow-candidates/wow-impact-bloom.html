@@ -1,0 +1,334 @@
+<!doctype html>
+<!-- WOW candidate — "Boum & Floraison" : un banc de sargasses arrive vite, IMPACT net sur la plage,
+     puis ONDE concentrique comic + flash d'écume en couronne + projection radiale de clumps, puis
+     FLORAISON du dépôt qui s'étale en rosace (pose finale). Carte SVG comic golden-hour.
+     1 SEUL rAF, pausable au clic, reduced-motion = pose finale figée (dépôt étalé).
+     AUCUN innerHTML — tout en createElementNS + setAttribute. À porter dans src/WorldMapView.jsx. -->
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WOW — Impact & Floraison</title>
+<style>
+  html,body{margin:0;background:#0b0a12;font-family:system-ui,sans-serif;color:#fff}
+  .stage{position:relative;width:800px;max-width:100vw;aspect-ratio:4/3;margin:0 auto;overflow:hidden}
+  .lbl{position:fixed;top:8px;left:10px;z-index:99;font:700 12px/1.4 monospace;background:rgba(0,0,0,.55);padding:6px 10px;border-radius:7px;letter-spacing:.3px}
+  .sea{position:absolute;inset:0;background:
+    radial-gradient(110% 80% at 80% 4%, rgba(255,214,140,.6), rgba(255,140,80,.26) 34%, transparent 62%),
+    radial-gradient(130% 110% at 6% 116%, rgba(42,21,80,.7), rgba(58,28,90,.28) 42%, transparent 62%),
+    linear-gradient(166deg,#ff8a4d 0%,#ff7a4d 18%,#8a4a8e 40%,#6a2f9e 60%,#3e2470 82%,#2e1a5e 100%)}
+  svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+</style></head>
+<body>
+<div class="lbl" id="lbl">Impact &amp; Floraison — clic = pause</div>
+<div class="stage">
+  <div class="sea"></div>
+  <svg id="map" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+    <defs>
+      <linearGradient id="land" x1="1" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#74D89E"/><stop offset=".3" stop-color="#41BE7B"/><stop offset=".62" stop-color="#2BAE66"/><stop offset="1" stop-color="#157F49"/>
+      </linearGradient>
+      <linearGradient id="sand" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#FBE6B0"/><stop offset="1" stop-color="#E8C879"/>
+      </linearGradient>
+      <radialGradient id="sargG" cx="40%" cy="34%" r="68%">
+        <stop offset="0" stop-color="#E3B743"/><stop offset=".5" stop-color="#B08A2A"/><stop offset="1" stop-color="#7C6A22"/>
+      </radialGradient>
+      <pattern id="halftone" width="6" height="6" patternUnits="userSpaceOnUse"><circle cx="1.5" cy="1.5" r="1" fill="#2c2a12" opacity=".4"/></pattern>
+      <clipPath id="coastClip"><path id="coastClipPath" d=""/></clipPath>
+    </defs>
+
+    <!-- ÎLE + côte (la plage = l'arc de sable, centre d'impact ~ (400,360)) -->
+    <g id="island"></g>
+
+    <!-- couches de l'effet (ordre = profondeur) -->
+    <g id="depositLayer"></g>   <!-- dépôt étalé sur le sable (sous tout, pose finale) -->
+    <g id="rippleLayer"></g>    <!-- ondes concentriques comic -->
+    <g id="clumpLayer"></g>     <!-- clumps projetés radialement -->
+    <g id="foamLayer"></g>      <!-- couronne d'écume (flash) -->
+    <g id="bankLayer"></g>      <!-- le banc qui arrive vite + impact -->
+    <g id="pinLayer"></g>       <!-- pin "avoid" rouge -->
+  </svg>
+</div>
+
+<script>
+const NS="http://www.w3.org/2000/svg", INK="#0d0b14";
+const el=(n,a)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);return e;};
+const TAU=Math.PI*2;
+function rng(seed){let s=((seed%233280)+233280)%233280;return()=>(s=(s*9301+49297)%233280)/233280;}
+
+// ── blob seedé lissé (Quadratic loop) ──
+function splat(cx,cy,r,seed,N){N=N||9;const rand=rng(seed),p=[];
+  for(let i=0;i<N;i++){const a=(i/N)*TAU,rr=r*(0.62+rand()*0.7);p.push([cx+Math.cos(a)*rr,cy+Math.sin(a)*rr]);}
+  let d=`M${((p[0][0]+p[N-1][0])/2).toFixed(1)} ${((p[0][1]+p[N-1][1])/2).toFixed(1)}`;
+  for(let i=0;i<N;i++){const a=p[i],b=p[(i+1)%N];d+=`Q${a[0].toFixed(1)} ${a[1].toFixed(1)} ${((a[0]+b[0])/2).toFixed(1)} ${((a[1]+b[1])/2).toFixed(1)}`;}
+  return d+"Z";}
+
+// ── BANC comic "bien dessiné" : mat doré + clumps + reflet + halftone + tendrils ──
+function makeBank(scale,seed){
+  const g=el("g",{}); const R=22*scale;
+  const sil=splat(0,0,R,seed,11);
+  g.appendChild(el("path",{d:sil,fill:INK,opacity:".30",transform:"translate(2 3)"}));
+  g.appendChild(el("path",{d:sil,fill:"url(#sargG)",stroke:INK,"stroke-width":2,"stroke-linejoin":"round"}));
+  const rd=rng(seed*5+1);
+  for(let i=0;i<3;i++){const ox=(rd()-.5)*R*0.8,oy=(rd()-.5)*R*0.7;
+    g.appendChild(el("path",{d:splat(ox,oy,R*0.34,seed*9+i*7,7),fill:"#5d5a1e",opacity:".55"}));}
+  g.appendChild(el("path",{d:sil,fill:"url(#halftone)",opacity:".3"}));
+  g.appendChild(el("path",{d:splat(-R*0.2,-R*0.26,R*0.5,seed+3,7),fill:"#FFE9A8",opacity:".48"}));
+  const rf=rng(seed*3+2);
+  for(let i=0;i<3;i++){const a=rf()*TAU,x=Math.cos(a)*R*0.9,y=Math.sin(a)*R*0.9;
+    g.appendChild(el("path",{d:`M${(x*.6).toFixed(1)} ${(y*.6).toFixed(1)} Q${x.toFixed(1)} ${y.toFixed(1)} ${(x*1.25).toFixed(1)} ${(y*1.25+4).toFixed(1)}`,
+      stroke:"#7C6A22","stroke-width":2,fill:"none","stroke-linecap":"round",opacity:".7"}));}
+  return g;
+}
+
+// ── DÉPÔT en ROSACE : 6 lobes dorés autour du centre + cœur + halftone + reflet (pose finale) ──
+function makeDeposit(seed){
+  const g=el("g",{}); const R=30;
+  // halo doux d'imprégnation
+  g.appendChild(el("path",{d:splat(0,0,R*1.22,seed+11,12),fill:"#B08A2A",opacity:".22"}));
+  // 6 lobes (rosace)
+  const rd=rng(seed*7+3);
+  for(let i=0;i<6;i++){const a=(i/6)*TAU + (rd()-.5)*0.18, lr=R*(0.78+rd()*0.18);
+    const lx=Math.cos(a)*R*0.72, ly=Math.sin(a)*R*0.72;
+    g.appendChild(el("path",{d:splat(lx,ly,lr*0.62,seed*13+i*5,8),fill:INK,opacity:".26",transform:"translate(1.6 2.2)"}));
+    g.appendChild(el("path",{d:splat(lx,ly,lr*0.62,seed*13+i*5,8),fill:"url(#sargG)",stroke:INK,"stroke-width":1.6,"stroke-linejoin":"round"}));}
+  // cœur unifié
+  g.appendChild(el("path",{d:splat(0,0,R*0.82,seed+1,11),fill:"url(#sargG)",stroke:INK,"stroke-width":2,"stroke-linejoin":"round"}));
+  // clumps + halftone + reflet
+  for(let i=0;i<3;i++){const ox=(rd()-.5)*R*0.7,oy=(rd()-.5)*R*0.6;
+    g.appendChild(el("path",{d:splat(ox,oy,R*0.3,seed*9+i*7,7),fill:"#5d5a1e",opacity:".5"}));}
+  g.appendChild(el("path",{d:splat(0,0,R*0.82,seed+1,11),fill:"url(#halftone)",opacity:".26"}));
+  g.appendChild(el("path",{d:splat(-R*0.22,-R*0.26,R*0.46,seed+5,7),fill:"#FFE9A8",opacity:".4"}));
+  return g;
+}
+
+// ── CLUMP projeté : petit lobe doré contouré ──
+function makeClump(seed){
+  const g=el("g",{}); const r=7;
+  g.appendChild(el("path",{d:splat(0,0,r,seed,7),fill:INK,opacity:".28",transform:"translate(1 1.4)"}));
+  g.appendChild(el("path",{d:splat(0,0,r,seed,7),fill:"url(#sargG)",stroke:INK,"stroke-width":1.4,"stroke-linejoin":"round"}));
+  g.appendChild(el("path",{d:splat(-1.4,-1.6,r*0.42,seed+2,6),fill:"#FFE9A8",opacity:".5"}));
+  return g;
+}
+
+// ── pin statut ──
+function pin(x,y,st){const fill=st==="avoid"?"#E8472A":st==="moderate"?"#F2B330":"#2FBE6B";
+  const g=el("g",{transform:`translate(${x} ${y})`});
+  g.appendChild(el("ellipse",{cx:0,cy:1,rx:5,ry:2,fill:"#062033",opacity:".4"}));
+  g.appendChild(el("path",{d:"M0 0 C-5.4 -7 -8 -10.4 -8 -14.4 A8 8 0 1 1 8 -14.4 C8 -10.4 5.4 -7 0 0 Z",fill,stroke:INK,"stroke-width":1.6,"stroke-linejoin":"round"}));
+  g.appendChild(el("circle",{cx:0,cy:-14.4,r:3,fill:"#fff",stroke:INK,"stroke-width":.7}));return g;}
+
+// ── ÎLE : grande côte verte avec l'arc de sable face à la mer (sud-ouest), impact ~ (400,360) ──
+const islandD="M250 120 C360 100 470 140 520 240 C560 320 470 380 470 360 C470 360 430 340 400 360 C360 388 330 410 300 450 C270 490 210 470 175 410 C140 350 190 300 200 250 C208 200 200 140 250 120 Z";
+const island=document.getElementById("island");
+island.appendChild(el("path",{d:islandD,fill:"#062033",opacity:".5",transform:"translate(8 13)"}));
+island.appendChild(el("path",{d:islandD,fill:"url(#land)"}));
+// liseré de sable (la plage) — un arc face au point d'impact
+const sandArc="M350 318 C400 330 460 350 478 392 C455 405 420 410 386 408 C360 406 330 414 304 436 C286 414 290 372 318 344 C328 332 340 322 350 318 Z";
+island.appendChild(el("path",{d:sandArc,fill:"url(#sand)",stroke:INK,"stroke-width":2.4,"stroke-linejoin":"round",opacity:".96"}));
+// liseré d'écume permanent au bord (fin trait blanc)
+island.appendChild(el("path",{d:"M348 320 C400 332 458 352 476 392",fill:"none",stroke:"#eafcff","stroke-width":2.6,"stroke-linecap":"round",opacity:".7"}));
+island.appendChild(el("path",{d:islandD,fill:"none",stroke:INK,"stroke-width":3.5,"stroke-linejoin":"round"}));
+// touffes végétation
+island.appendChild(el("ellipse",{cx:300,cy:210,rx:30,ry:18,fill:"#2c5a26",opacity:".5"}));
+island.appendChild(el("ellipse",{cx:380,cy:270,rx:22,ry:13,fill:"#2c5a26",opacity:".45"}));
+// clip de la zone sable (le dépôt ne déborde pas en mer)
+document.getElementById("coastClipPath").setAttribute("d",sandArc);
+
+// ── POINT D'IMPACT (sur la plage) + trajectoire d'arrivée (depuis le large, sud-ouest) ──
+const IMPACT={x:400,y:360};
+const START={x:120,y:560};            // arrive du large, bas-gauche
+const pinLayer=document.getElementById("pinLayer");
+pinLayer.appendChild(pin(IMPACT.x+44,IMPACT.y-18,"avoid"));
+
+// ── construction des noeuds (créés UNE fois, animés ensuite) ──
+const SEED=47;
+const bankLayer=document.getElementById("bankLayer");
+const foamLayer=document.getElementById("foamLayer");
+const rippleLayer=document.getElementById("rippleLayer");
+const clumpLayer=document.getElementById("clumpLayer");
+const depositLayer=document.getElementById("depositLayer");
+
+// banc en vol
+const bank=makeBank(1.05,SEED);
+bankLayer.appendChild(bank);
+
+// dépôt (clipé sur le sable) — invisible au départ, fleurit à l'impact, reste en pose finale
+const depGroup=el("g",{"clip-path":"url(#coastClip)"});
+const deposit=makeDeposit(SEED+4);
+deposit.setAttribute("opacity","0");
+depGroup.appendChild(deposit);
+depositLayer.appendChild(depGroup);
+const depHolder=el("g",{transform:`translate(${IMPACT.x} ${IMPACT.y})`});
+deposit.parentNode.removeChild(deposit);
+depHolder.appendChild(deposit);
+depGroup.appendChild(depHolder);
+
+// 2 ondes concentriques comic (anneaux à l'encre, double couronne)
+const rings=[];
+for(let i=0;i<2;i++){
+  const rg=el("g",{transform:`translate(${IMPACT.x} ${IMPACT.y})`,opacity:"0"});
+  rg.appendChild(el("circle",{cx:0,cy:0,r:26,fill:"none",stroke:INK,"stroke-width":i===0?4:2.4,"stroke-linecap":"round"}));
+  rg.appendChild(el("circle",{cx:0,cy:0,r:26,fill:"none",stroke:"#FFE9A8","stroke-width":i===0?1.6:1,opacity:".9"}));
+  rippleLayer.appendChild(rg); rings.push(rg);
+}
+
+// couronne d'écume : 9 traits radiants + 9 dots blancs (flash à l'impact)
+const foam=el("g",{transform:`translate(${IMPACT.x} ${IMPACT.y})`,opacity:"0"});
+foam.appendChild(el("ellipse",{cx:0,cy:0,rx:30,ry:16,fill:"#eafcff",opacity:".6"}));
+const NFOAM=9;
+for(let i=0;i<NFOAM;i++){const a=(i/NFOAM)*TAU + 0.2;const c=Math.cos(a),s=Math.sin(a)*0.55;
+  foam.appendChild(el("line",{x1:(c*16).toFixed(1),y1:(s*16).toFixed(1),x2:(c*34).toFixed(1),y2:(s*34).toFixed(1),
+    stroke:"#fff","stroke-width":2.8,"stroke-linecap":"round",opacity:".9"}));
+  foam.appendChild(el("circle",{cx:(c*40).toFixed(1),cy:(s*40).toFixed(1),r:2.6,fill:"#fff",opacity:".85"}));}
+foamLayer.appendChild(foam);
+
+// 8 clumps projetés radialement (chacun son angle + portée + seed)
+const NCLUMP=8, clumps=[];
+const cr=rng(SEED*3+9);
+for(let i=0;i<NCLUMP;i++){
+  const a=(i/NCLUMP)*TAU + (cr()-.5)*0.4;
+  const reach=34+cr()*30;                 // portée radiale
+  const g=makeClump(SEED*17+i*7);
+  g.setAttribute("transform",`translate(${IMPACT.x} ${IMPACT.y})`);
+  g.setAttribute("opacity","0");
+  clumpLayer.appendChild(g);
+  clumps.push({g,c:Math.cos(a),s:Math.sin(a)*0.62,reach,spin:(cr()*2-1)*200,sc:0.7+cr()*0.5});
+}
+
+// ── MOTEUR : 1 seul rAF. Cycle ~2s : approche → IMPACT → onde/écume/clumps → floraison → hold → reboucle ──
+// Découpage temporel (en fraction du cycle) :
+//  0.00–0.38  approche (banc accélère vers l'impact, grossit, tremble léger)
+//  0.38       IMPACT (flash)
+//  0.38–0.62  onde + écume + projection clumps (banc disparaît, dépôt fleurit)
+//  0.62–0.82  les clumps retombent et se fondent, dépôt finit de s'étaler
+//  0.82–1.00  HOLD (dépôt étalé visible) puis fade léger pour reboucler proprement
+const REDUCED=matchMedia("(prefers-reduced-motion:reduce)").matches;
+const CYCLE=2.05;                 // secondes
+const T_IMPACT=0.38;
+const easeOut=p=>1-Math.pow(1-p,3);
+const easeIn=p=>p*p;
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const seg=(p,a,b)=>clamp((p-a)/(b-a),0,1);
+
+function setFinalPose(){
+  // banc absent, onde/écume/clumps off, dépôt pleinement étalé au centre
+  bank.setAttribute("opacity","0");
+  rings.forEach(r=>r.setAttribute("opacity","0"));
+  foam.setAttribute("opacity","0");
+  clumps.forEach(ck=>{
+    const tx=ck.c*ck.reach, ty=ck.s*ck.reach;
+    ck.g.setAttribute("transform",`translate(${(IMPACT.x+tx).toFixed(1)} ${(IMPACT.y+ty).toFixed(1)}) scale(${ck.sc.toFixed(2)})`);
+    ck.g.setAttribute("opacity","0.9");
+  });
+  deposit.setAttribute("transform","scale(1)");
+  deposit.setAttribute("opacity","1");
+}
+
+function frameAt(p){
+  // ----- BANC (approche puis impact) -----
+  if(p < T_IMPACT){
+    const ap=seg(p,0,T_IMPACT);
+    const e=easeIn(ap);                          // accélère vers la côte
+    const x=START.x+(IMPACT.x-START.x)*e;
+    const y=START.y+(IMPACT.y-START.y)*e;
+    const jitter=Math.sin(p*90)* (1.6*ap);       // léger tremblement de proximité
+    const sc=0.82+ap*0.42;                       // grossit en approchant
+    const rot=-12 + ap*16 + jitter;
+    bank.setAttribute("transform",`translate(${x.toFixed(1)} ${(y+jitter).toFixed(1)}) scale(${sc.toFixed(3)}) rotate(${rot.toFixed(1)})`);
+    bank.setAttribute("opacity","1");
+  } else {
+    // squash bref puis disparition à l'impact
+    const sp=seg(p,T_IMPACT,T_IMPACT+0.08);
+    const squash=1+sp*0.6;
+    bank.setAttribute("transform",`translate(${IMPACT.x} ${IMPACT.y}) scale(${(1.24*squash).toFixed(3)} ${(1.24*(1-sp*0.55)).toFixed(3)})`);
+    bank.setAttribute("opacity",(1-sp).toFixed(2));
+  }
+
+  // ----- ONDES concentriques (partent de l'impact, s'étendent, fade) -----
+  rings.forEach((rg,i)=>{
+    const start=T_IMPACT + i*0.05;
+    const rp=seg(p,start,start+0.26);
+    if(rp<=0 || rp>=1){ rg.setAttribute("opacity","0"); }
+    else{
+      const e=easeOut(rp);
+      const sc=1+e*4.2;
+      rg.setAttribute("transform",`translate(${IMPACT.x} ${IMPACT.y}) scale(${sc.toFixed(3)})`);
+      rg.setAttribute("opacity",((1-rp)*0.85).toFixed(2));
+    }
+  });
+
+  // ----- COURONNE d'écume (flash court à l'impact) -----
+  const fp=seg(p,T_IMPACT,T_IMPACT+0.16);
+  if(fp<=0 || fp>=1){ foam.setAttribute("opacity","0"); }
+  else{
+    const e=easeOut(fp);
+    const sc=0.5+e*1.0;
+    foam.setAttribute("transform",`translate(${IMPACT.x} ${IMPACT.y}) scale(${sc.toFixed(3)})`);
+    foam.setAttribute("opacity",Math.sin(fp*Math.PI).toFixed(2));     // up puis down
+  }
+
+  // ----- CLUMPS projetés (jaillissent, arc, retombent et se fondent) -----
+  clumps.forEach(ck=>{
+    const cp=seg(p,T_IMPACT,0.80);
+    if(cp<=0){ ck.g.setAttribute("opacity","0"); return; }
+    const out=easeOut(clamp(cp/0.5,0,1));               // sort vite
+    const dist=ck.reach*out;
+    const lift=-Math.sin(cp*Math.PI)*14;                // petite parabole verticale
+    const x=IMPACT.x+ck.c*dist;
+    const y=IMPACT.y+ck.s*dist+lift;
+    const rot=ck.spin*cp;
+    const sc=(0.5+out*0.5)*ck.sc;
+    // fade-in au départ, fade vers la fin (se fond dans le dépôt)
+    const op = cp<0.12 ? cp/0.12 : (cp>0.7 ? clamp((1-cp)/0.3,0,1)*0.9 : 0.95);
+    ck.g.setAttribute("transform",`translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${sc.toFixed(3)}) rotate(${rot.toFixed(1)})`);
+    ck.g.setAttribute("opacity",op.toFixed(2));
+  });
+
+  // ----- FLORAISON du DÉPÔT (s'étale en rosace, overshoot doux, puis stable) -----
+  const dp=seg(p,T_IMPACT+0.02,0.66);
+  let dscale, dop;
+  if(dp<=0){ dscale=0.2; dop=0; }
+  else{
+    const e=easeOut(dp);
+    dscale=0.2 + e*0.92;                 // grossit de rien → plein
+    const overshoot=Math.sin(clamp(dp*1.0,0,1)*Math.PI)*0.07;   // léger gonflement
+    dscale=Math.min(1.07, dscale+overshoot);
+    dop=clamp(dp*2.2,0,1);
+  }
+  // hold + très léger fade en toute fin pour reboucler sans coupe
+  const tail=seg(p,0.93,1.0);
+  const fade=1-tail*0.18;
+  deposit.setAttribute("transform",`scale(${dscale.toFixed(3)})`);
+  deposit.setAttribute("opacity",(dop*fade).toFixed(2));
+}
+
+let raf=0, paused=false, t0=0;
+function loop(tms){
+  if(!t0)t0=tms;
+  const t=(tms-t0)/1000;
+  const p=(t % CYCLE)/CYCLE;
+  frameAt(p);
+  if(!paused) raf=requestAnimationFrame(loop);
+}
+
+if(REDUCED){
+  setFinalPose();
+}else{
+  raf=requestAnimationFrame(loop);
+}
+
+const lbl=document.getElementById("lbl");
+document.body.addEventListener("click",()=>{
+  if(REDUCED) return;
+  paused=!paused;
+  lbl.textContent="Impact & Floraison — "+(paused?"PAUSE":"play");
+  if(!paused){ t0=0; raf=requestAnimationFrame(loop); }
+  else cancelAnimationFrame(raf);
+});
+document.addEventListener("visibilitychange",()=>{
+  if(REDUCED) return;
+  if(document.hidden) cancelAnimationFrame(raf);
+  else if(!paused){ t0=0; raf=requestAnimationFrame(loop); }
+});
+</script>
+</body></html>

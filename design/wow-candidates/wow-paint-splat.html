@@ -1,0 +1,289 @@
+<!doctype html>
+<!-- WOW CANDIDATE — "Le Grand Splat" : un banc de sargasses dérive vite vers la plage, puis à
+     l'impact EXPLOSE en une grande tache de peinture/encre BD (paint splatter) avec gouttes
+     projetées qui retombent, speed-lines d'impact, écume, puis la tache se FIGE en dépôt étalé
+     golden-brown sur le sable. Style comic splash. 1 SEUL rAF, pausable au clic, reduced-motion
+     = pose finale figée (dépôt étalé). AUCUN innerHTML — tout en createElementNS/setAttribute. -->
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WOW — Le Grand Splat (échouage peinture BD)</title>
+<style>
+  html,body{margin:0;background:#0b0a12;font-family:system-ui,sans-serif;color:#fff}
+  .stage{position:relative;width:800px;max-width:100vw;aspect-ratio:800/600;margin:0 auto;overflow:hidden}
+  .lbl{position:fixed;top:8px;left:10px;z-index:99;font:700 12px/1.4 ui-monospace,monospace;background:rgba(0,0,0,.58);padding:6px 10px;border-radius:7px;letter-spacing:.3px}
+  .lbl b{color:#FFE9A8}
+  .sea{position:absolute;inset:0;background:
+    radial-gradient(120% 80% at 78% 2%, rgba(255,214,140,.62), rgba(255,140,80,.26) 34%, transparent 62%),
+    radial-gradient(130% 120% at 4% 118%, rgba(42,21,80,.72), rgba(58,28,90,.28) 42%, transparent 64%),
+    linear-gradient(164deg,#ff8a4d 0%,#ff7a4d 16%,#8a4a8e 38%,#6a2f9e 58%,#3e2470 82%,#2e1a5e 100%)}
+  svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+</style></head>
+<body>
+<div class="lbl" id="lbl">Le Grand Splat — <b>clic = pause</b></div>
+<div class="stage">
+  <div class="sea"></div>
+  <svg id="scene" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+    <defs>
+      <radialGradient id="sargG" cx="40%" cy="32%" r="70%">
+        <stop offset="0" stop-color="#E3B743"/><stop offset=".48" stop-color="#B08A2A"/><stop offset="1" stop-color="#7C6A22"/>
+      </radialGradient>
+      <radialGradient id="splatG" cx="42%" cy="36%" r="72%">
+        <stop offset="0" stop-color="#E3B743"/><stop offset=".4" stop-color="#B08A2A"/><stop offset=".82" stop-color="#7C6A22"/><stop offset="1" stop-color="#5d5a1e"/>
+      </radialGradient>
+      <linearGradient id="sand" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#FBE9B8"/><stop offset="1" stop-color="#E9C77E"/>
+      </linearGradient>
+      <pattern id="halftone" width="7" height="7" patternUnits="userSpaceOnUse">
+        <circle cx="1.6" cy="1.6" r="1.1" fill="#2c2a12" opacity=".42"/>
+      </pattern>
+      <clipPath id="seaClip"><rect x="0" y="0" width="800" height="600"/></clipPath>
+    </defs>
+
+    <!-- ── CÔTE : arc de sable + liseré d'écume + pin "avoid" (statique) ── -->
+    <g id="coast">
+      <!-- masse de sable (l'île arrive par le bas-droite, la plage fait face à la mer) -->
+      <path d="M800 600 L800 300 C690 322 612 372 560 432 C520 478 470 512 392 540 C300 572 180 588 0 600 Z"
+            fill="url(#sand)" stroke="#0d0b14" stroke-width="4" stroke-linejoin="round"/>
+      <!-- ombrage interne sable -->
+      <path d="M800 600 L800 372 C700 392 628 436 576 492 C540 528 496 552 432 572 C330 600 180 600 60 600 Z"
+            fill="#caa45a" opacity=".35"/>
+      <!-- liseré d'écume le long du rivage -->
+      <path d="M800 300 C690 322 612 372 560 432 C520 478 470 512 392 540 C300 572 180 588 0 600"
+            fill="none" stroke="#eafcff" stroke-width="6" stroke-linecap="round" opacity=".85"/>
+      <path d="M800 300 C690 322 612 372 560 432 C520 478 470 512 392 540 C300 572 180 588 0 600"
+            fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" opacity=".9"/>
+      <!-- végétation jade (coin d'île) -->
+      <ellipse cx="742" cy="356" rx="40" ry="22" fill="#2BAE66" opacity=".5"/>
+      <ellipse cx="700" cy="392" rx="26" ry="15" fill="#157F49" opacity=".5"/>
+    </g>
+
+    <!-- couches d'animation : dépôt (sous écume) → écume → gouttes → banc → speed-lines (au-dessus) -->
+    <g id="depositLayer"></g>
+    <g id="foamLayer"></g>
+    <g id="dropLayer"></g>
+    <g id="bankLayer"></g>
+    <g id="lineLayer"></g>
+
+    <!-- pin "avoid" au point d'impact (statique, par-dessus) -->
+    <g id="pinLayer"></g>
+  </svg>
+</div>
+
+<script>
+const NS="http://www.w3.org/2000/svg", INK="#0d0b14";
+const el=(n,a)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);return e;};
+const rng=seed=>{let s=((seed%233280)+233280)%233280;return()=>(s=(s*9301+49297)%233280)/233280;};
+
+// ── splat blob seedé lissé (silhouette de tache BD) ──
+function splatPath(cx,cy,r,seed,N,jag){
+  N=N||10; jag=jag==null?0.75:jag;
+  const rand=rng(seed),p=[];
+  for(let i=0;i<N;i++){const a=(i/N)*6.2832, rr=r*(1-jag*0.5+rand()*jag);
+    p.push([cx+Math.cos(a)*rr, cy+Math.sin(a)*rr]);}
+  let d=`M${((p[0][0]+p[N-1][0])/2).toFixed(1)} ${((p[0][1]+p[N-1][1])/2).toFixed(1)}`;
+  for(let i=0;i<N;i++){const a=p[i],b=p[(i+1)%N];
+    d+=`Q${a[0].toFixed(1)} ${a[1].toFixed(1)} ${((a[0]+b[0])/2).toFixed(1)} ${((a[1]+b[1])/2).toFixed(1)}`;}
+  return d+"Z";
+}
+
+const IMPACT={x:400,y:360};          // point de côte où le banc s'échoue
+const ORIGIN={x:150,y:90};           // le banc descend du large (haut-gauche, sens Atlantique→côte)
+
+// ── BANC avant impact : mat golden-brown ~r22 + contour encre + clumps + reflet + halftone ──
+function makeBank(seed){
+  const g=el("g",{}), R=22;
+  const sil=splatPath(0,0,R,seed,11,0.55);
+  g.appendChild(el("path",{d:sil,fill:INK,opacity:".30",transform:"translate(2.5 3.5)"}));
+  g.appendChild(el("path",{d:sil,fill:"url(#sargG)",stroke:INK,"stroke-width":2,"stroke-linejoin":"round"}));
+  const rd=rng(seed*5+1);
+  for(let i=0;i<3;i++){const ox=(rd()-.5)*R*0.8, oy=(rd()-.5)*R*0.7;
+    g.appendChild(el("path",{d:splatPath(ox,oy,R*0.32,seed*9+i*7,7,0.6),fill:"#5d5a1e",opacity:".55"}));}
+  g.appendChild(el("path",{d:sil,fill:"url(#halftone)",opacity:".3"}));
+  g.appendChild(el("path",{d:splatPath(-R*0.22,-R*0.28,R*0.5,seed+3,7,0.5),fill:"#FFE9A8",opacity:".5"}));
+  return g;
+}
+
+// ── DÉPÔT étalé (la tache d'impact qui se fige sur le sable) : grand splat + clumps + halftone + reflet ──
+function makeDeposit(seed){
+  const g=el("g",{opacity:"0"}), R=66;
+  const sil=splatPath(0,0,R,seed,13,0.78);           // grande tache déchiquetée, asymétrie comic
+  g.appendChild(el("path",{d:sil,fill:INK,opacity:".26",transform:"translate(3 4)"}));   // ombre portée
+  g.appendChild(el("path",{d:sil,fill:"url(#splatG)",stroke:INK,"stroke-width":2.4,"stroke-linejoin":"round"}));
+  // langues de coulure (la peinture qui s'étale vers le bas-plage)
+  const rl=rng(seed*7+3);
+  for(let i=0;i<4;i++){const a=(0.15+rl()*0.7)*3.14159, len=R*(0.95+rl()*0.6);
+    const x=Math.cos(a)*len, y=Math.abs(Math.sin(a))*len*0.7+R*0.3, w=10+rl()*9;
+    g.appendChild(el("path",{d:splatPath(x,y,w,seed*13+i*5,7,0.7),fill:"url(#splatG)",stroke:INK,"stroke-width":1.6,"stroke-linejoin":"round"}));}
+  // clumps internes (densité)
+  const rd=rng(seed*11+2);
+  for(let i=0;i<5;i++){const ox=(rd()-.5)*R*1.1, oy=(rd()-.5)*R*0.9;
+    g.appendChild(el("path",{d:splatPath(ox,oy,R*(0.18+rd()*0.12),seed*17+i*9,7,0.6),fill:"#5d5a1e",opacity:".5"}));}
+  g.appendChild(el("path",{d:sil,fill:"url(#halftone)",opacity:".34"}));
+  g.appendChild(el("path",{d:splatPath(-R*0.28,-R*0.34,R*0.42,seed+5,8,0.5),fill:"#FFE9A8",opacity:".45"})); // reflet
+  return g;
+}
+
+// ── ÉCUME d'impact : anneau blanc + dots projetés ──
+function makeFoam(seed){
+  const g=el("g",{opacity:"0"});
+  g.appendChild(el("path",{d:splatPath(0,4,40,seed+1,12,0.6),fill:"none",stroke:"#eafcff","stroke-width":7,opacity:".9","stroke-linejoin":"round"}));
+  g.appendChild(el("path",{d:splatPath(0,4,40,seed+1,12,0.6),fill:"none",stroke:"#ffffff","stroke-width":2.6,opacity:".95","stroke-linejoin":"round"}));
+  const rf=rng(seed*3+4);
+  for(let i=0;i<8;i++){const a=(i/8)*6.28+rf()*0.4, rr=46+rf()*16;
+    g.appendChild(el("circle",{cx:(Math.cos(a)*rr).toFixed(1),cy:(Math.sin(a)*rr*0.7+6).toFixed(1),r:(2+rf()*2).toFixed(1),fill:"#fff",opacity:".85"}));}
+  return g;
+}
+
+// ── PIN "avoid" (rouge) au point d'impact ──
+function makePin(x,y){
+  const g=el("g",{transform:`translate(${x} ${y})`});
+  g.appendChild(el("ellipse",{cx:0,cy:1,rx:6,ry:2.4,fill:"#062033",opacity:".4"}));
+  g.appendChild(el("path",{d:"M0 0 C-6 -8 -9 -11.6 -9 -16 A9 9 0 1 1 9 -16 C9 -11.6 6 -8 0 0 Z",fill:"#E8472A",stroke:INK,"stroke-width":1.8,"stroke-linejoin":"round"}));
+  g.appendChild(el("circle",{cx:0,cy:-16,r:3.4,fill:"#fff",stroke:INK,"stroke-width":.8}));
+  return g;
+}
+
+// ── GOUTTES projetées (paint droplets) : petits splats qui jaillissent puis retombent ──
+const NDROPS=14;
+const drops=[];
+function makeDrops(){
+  const layer=document.getElementById("dropLayer");
+  for(let i=0;i<NDROPS;i++){
+    const seed=i*37+11, rand=rng(seed);
+    const ang=-2.6 + rand()*2.2;            // éventail vers le haut (jaillissement)
+    const spd=80+rand()*150;                // portée
+    const rr=2.4+rand()*4.2;
+    const g=el("g",{opacity:"0"});
+    g.appendChild(el("path",{d:splatPath(0,0,rr,seed,7,0.55),fill:"url(#sargG)",stroke:INK,"stroke-width":1.2,"stroke-linejoin":"round"}));
+    layer.appendChild(g);
+    drops.push({g, vx:Math.cos(ang)*spd, vy:Math.sin(ang)*spd, delay:rand()*0.05, rot:(rand()*2-1)*180});
+  }
+}
+
+// ── SPEED-LINES d'impact (traits radiants comic, brefs) ──
+const lines=[];
+function makeLines(){
+  const layer=document.getElementById("lineLayer"), rand=rng(99);
+  for(let i=0;i<10;i++){
+    const a=(i/10)*6.28+rand()*0.25;
+    const x1=Math.cos(a)*30, y1=Math.sin(a)*30, x2=Math.cos(a)*(70+rand()*34), y2=Math.sin(a)*(70+rand()*34);
+    const ln=el("line",{x1:x1.toFixed(1),y1:y1.toFixed(1),x2:x2.toFixed(1),y2:y2.toFixed(1),
+      stroke:"#FFE9A8","stroke-width":(2.6+rand()*1.6).toFixed(1),"stroke-linecap":"round",opacity:"0"});
+    layer.appendChild(ln); lines.push(ln);
+  }
+  document.getElementById("lineLayer").setAttribute("transform",`translate(${IMPACT.x} ${IMPACT.y})`);
+}
+
+// ── instanciation ──
+const SEED=42;
+const bank=makeBank(SEED);            document.getElementById("bankLayer").appendChild(bank);
+const deposit=makeDeposit(SEED);      deposit.setAttribute("transform",`translate(${IMPACT.x} ${IMPACT.y})`); document.getElementById("depositLayer").appendChild(deposit);
+const foam=makeFoam(SEED);            foam.setAttribute("transform",`translate(${IMPACT.x} ${IMPACT.y})`); document.getElementById("foamLayer").appendChild(foam);
+makeDrops();
+makeLines();
+document.getElementById("pinLayer").appendChild(makePin(IMPACT.x, IMPACT.y));
+
+// ── timeline (s) : approche → IMPACT(splat/lines/foam/drops) → fige dépôt → hold → fade → reboucle ──
+const T_APPROACH=1.10, T_IMPACT=1.18, T_SETTLE=1.55, T_HOLD=2.55, T_FADE=3.05, T_LOOP=3.35;
+const ease=p=>p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+const easeOut=p=>1-Math.pow(1-p,3);
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const REDUCED=matchMedia("(prefers-reduced-motion:reduce)").matches;
+
+function render(t){
+  // ── BANC : descend de l'ORIGIN vers l'IMPACT, grossit un peu, puis disparaît à l'impact ──
+  if(t<T_IMPACT){
+    const p=ease(clamp(t/T_APPROACH,0,1));
+    const x=ORIGIN.x+(IMPACT.x-ORIGIN.x)*p, y=ORIGIN.y+(IMPACT.y-ORIGIN.y)*p;
+    const sc=0.7+p*0.55;                                  // grossit en approchant
+    const squash=t>T_APPROACH?1+(t-T_APPROACH)/(T_IMPACT-T_APPROACH)*0.7:1;  // écrase juste avant éclat
+    const bob=REDUCED?0:Math.sin(t*5)*4*(1-p);
+    bank.setAttribute("transform",`translate(${x.toFixed(1)} ${(y+bob).toFixed(1)}) scale(${(sc*squash).toFixed(3)} ${(sc/squash).toFixed(3)})`);
+    bank.setAttribute("opacity", t>T_APPROACH ? (1-(t-T_APPROACH)/(T_IMPACT-T_APPROACH)).toFixed(2) : "1");
+  } else { bank.setAttribute("opacity","0"); }
+
+  // ── DÉPÔT : pop élastique à l'impact, étalé, puis se fige ; fade en fin de boucle ──
+  if(t>=T_IMPACT){
+    const pg=clamp((t-T_IMPACT)/(T_SETTLE-T_IMPACT),0,1);
+    const overshoot=1+0.12*Math.sin(pg*Math.PI);          // léger rebond élastique
+    const sc=(0.25+easeOut(pg)*0.75)*overshoot;           // 0.25 → 1
+    let op=1;
+    if(t>T_FADE){ op=clamp(1-(t-T_FADE)/(T_LOOP-T_FADE),0,1); }
+    deposit.setAttribute("transform",`translate(${IMPACT.x} ${IMPACT.y}) scale(${sc.toFixed(3)})`);
+    deposit.setAttribute("opacity",op.toFixed(2));
+  } else { deposit.setAttribute("opacity","0"); }
+
+  // ── SPEED-LINES : flash bref à l'impact (in 0.05s, out 0.22s) ──
+  {
+    const dt=t-T_IMPACT;
+    let lp = dt<0 ? 0 : dt<0.05 ? dt/0.05 : dt<0.30 ? 1-(dt-0.05)/0.25 : 0;
+    lp=clamp(lp,0,1);
+    const lsc=0.6+lp*0.6;
+    document.getElementById("lineLayer").setAttribute("transform",`translate(${IMPACT.x} ${IMPACT.y}) scale(${lsc.toFixed(3)})`);
+    for(const ln of lines) ln.setAttribute("opacity",(lp*0.9).toFixed(2));
+  }
+
+  // ── ÉCUME : anneau qui s'ouvre à l'impact puis se dissipe ──
+  {
+    const dt=t-T_IMPACT;
+    let fp = dt<0?0 : dt<0.5 ? Math.sin((dt/0.5)*Math.PI*0.9) : 0;
+    fp=clamp(fp,0,1);
+    const fsc=0.5+easeOut(clamp(dt/0.5,0,1))*0.9;
+    foam.setAttribute("transform",`translate(${IMPACT.x} ${IMPACT.y}) scale(${fsc.toFixed(3)})`);
+    foam.setAttribute("opacity",fp.toFixed(2));
+  }
+
+  // ── GOUTTES : jaillissent à l'impact, retombent en parabole (gravité), fade ──
+  {
+    const dt=t-T_IMPACT;
+    for(const d of drops){
+      const lt=dt-d.delay;
+      if(lt<0 || lt>0.85){ d.g.setAttribute("opacity","0"); continue; }
+      const x=IMPACT.x + d.vx*lt;
+      const y=IMPACT.y + d.vy*lt + 320*lt*lt;             // gravité (retombée)
+      const sc=clamp(1-lt*0.5,0.4,1);
+      const op=lt<0.6 ? 1 : 1-(lt-0.6)/0.25;
+      d.g.setAttribute("transform",`translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${sc.toFixed(2)}) rotate(${(d.rot*lt).toFixed(0)})`);
+      d.g.setAttribute("opacity",clamp(op,0,1).toFixed(2));
+    }
+  }
+}
+
+// ── reduced-motion : pose finale figée (dépôt étalé + écume résiduelle, pas d'anim) ──
+function renderFrozen(){
+  bank.setAttribute("opacity","0");
+  for(const ln of lines) ln.setAttribute("opacity","0");
+  for(const d of drops) d.g.setAttribute("opacity","0");
+  deposit.setAttribute("transform",`translate(${IMPACT.x} ${IMPACT.y}) scale(1)`);
+  deposit.setAttribute("opacity","1");
+  foam.setAttribute("transform",`translate(${IMPACT.x} ${IMPACT.y}) scale(1.1)`);
+  foam.setAttribute("opacity",".35");
+}
+
+// ── MOTEUR : 1 SEUL rAF, boucle, pausable ──
+let raf=0, paused=false, t0=0;
+function frame(tms){
+  if(!t0) t0=tms;
+  let t=(tms-t0)/1000;
+  if(t>=T_LOOP){ t0=tms; t=0; }      // reboucle
+  render(t);
+  if(!paused) raf=requestAnimationFrame(frame);
+}
+
+if(REDUCED){ renderFrozen(); }
+else{ raf=requestAnimationFrame(frame); }
+
+const lbl=document.getElementById("lbl");
+document.body.addEventListener("click",()=>{
+  if(REDUCED) return;
+  paused=!paused;
+  if(paused){ cancelAnimationFrame(raf); }
+  else{ t0=0; raf=requestAnimationFrame(frame); }
+});
+document.addEventListener("visibilitychange",()=>{
+  if(REDUCED) return;
+  if(document.hidden){ cancelAnimationFrame(raf); }
+  else if(!paused){ t0=0; raf=requestAnimationFrame(frame); }
+});
+</script>
+</body></html>

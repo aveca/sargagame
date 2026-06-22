@@ -14340,6 +14340,7 @@ export default function App(){
                 beaches={allBeaches} island={island} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null}
                 lang={lang} onOpenBeach={onBeachClick} onPremium={openPremium}
                 rootMode={navWorld} track={track} initialZone={initialZone} warm={mapWarm==="warm"}
+                arrivals={(()=>{const m={};try{for(const b of (allBeaches||[])){const sid=IS_NEW_REGION?b.id:BEACH_TO_SARG[b.id];const w=sid&&sargData?.weekly?.[sid];if(w&&w.arrivalDetected)m[b.id]=w.arrivalStrength||0.1;}}catch(_){}return m})()}
                 onCaptureEmail={em=>{try{submitLead(em,"map_world")}catch(_){}}}
                 onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{source:"map_world"})}}/>
             </Suspense></ErrBound>
