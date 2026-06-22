@@ -241,11 +241,37 @@ function H2sNote({status,lang}){
   )
 }
 
+/* ---- PLAN B « OÙ ALLER PLUTÔT » (§4A #2) -------------------------------------
+   Quand la plage ouverte est à éviter / à surveiller, l'angoisse n°1 devient
+   « ok… mais où je vais alors ? ». On répond DANS le détail comic, sans éjecter :
+   un rail des plages PROPRES les plus PROCHES (data RÉELLE — status clean +
+   haversine sur la même île + score), meilleure note en tête (« le + sûr »).
+   Miroir du PlanBPanel de la fiche data (A/B pw_planb), porté in-world. Additif,
+   réversible ?planbcomic=0. Zéro logique paiement (tap = ouvre une plage propre).
+   Calme (0 avoid/moderate) = rien ne s'affiche → on garde « plages voisines ». */
+function planbOn(){ try{ return !/[?&]planbcomic=0(?:&|$)/.test(window.location.search) }catch(_){ return true } }
+function _havKm(la1,lo1,la2,lo2){
+  const R=6371,dLa=(la2-la1)*Math.PI/180,dLo=(lo2-lo1)*Math.PI/180
+  const a=Math.sin(dLa/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dLo/2)**2
+  return 2*R*Math.asin(Math.min(1,Math.sqrt(a)))
+}
+function cleanNearby(beach,pool){
+  if(!beach||!(beach.status==="avoid"||beach.status==="moderate")) return []
+  const geo=beach.lat!=null&&beach.lng!=null
+  let list=(pool||[]).filter(b=>b&&b.id&&b.id!==beach.id&&b.status==="clean"&&b.score!=null
+    &&(!beach.island||b.island===beach.island))
+  if(geo) list=list.filter(b=>b.lat!=null&&b.lng!=null).map(b=>({...b,_d:_havKm(beach.lat,beach.lng,b.lat,b.lng)}))
+  // 3 plus proches (ou meilleurs scores sans géo), puis meilleure note en tête du rail
+  list.sort((a,b)=> geo ? ((a._d??1e9)-(b._d??1e9)) : ((b.score||0)-(a.score||0)))
+  return list.slice(0,3).sort((a,b)=>(b.score||0)-(a.score||0))
+}
+
 /* DÉTAIL PLAGE « en monde comic » — ouvert au tap d'une carte. Garde le joueur
    dans l'univers arène (mêmes police/couleurs/Veilleur) au lieu de l'éjecter
    vers l'app sombre. Le seul handoff = le CTA premium (moment de conversion). */
 export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool=[],track}){
   const rel=(pool||[]).filter(b=>b&&b.id&&b.id!==beach.id&&b.status&&b.score!=null).slice(0,3)
+  const planB=useMemo(()=>planbOn()?cleanNearby(beach,pool):[],[beach,pool])
   const _t=(o)=>(o&&(o[lang]||o.fr))||""
   const v=vof(beach.status), r=rarity(beach.score)
   const sc=beach.score!=null?Math.round(beach.score):null
@@ -327,7 +353,21 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
           </button>
         </div>
 
-        {rel.length>0&&(
+        {planB.length>0 ? (
+          <div className="lc-detail-rel lc-detail-planb">
+            <div className="lc-detail-fc-h">{_t({fr:"OÙ ALLER PLUTÔT",en:"GO HERE INSTEAD",es:"MEJOR VE AQUÍ"})}</div>
+            <div className="lc-planb-sub">{_t({fr:"Plages propres les plus proches, vérifiées au satellite ce matin.",en:"Closest clean beaches, satellite-checked this morning.",es:"Playas limpias más cercanas, verificadas por satélite."})}</div>
+            <div className="lc-detail-rel-row">
+              {planB.map((b,i)=>(
+                <div className={"lc-detail-rel-card"+(i===0?" lc-planb-best":"")} key={b.id}>
+                  {i===0&&<span className="lc-planb-tag">{_t({fr:"le + sûr",en:"best pick",es:"mejor"})}</span>}
+                  <TCard beach={b} lang={lang} onTap={()=>{ if(track)try{track("sg_chasse_planb_pick",{from:beach.id,to:b.id,rank:i,dist:b._d!=null?Math.round(b._d):null})}catch(_){}; onRelated&&onRelated(b) }}/>
+                  {b._d!=null&&<span className="lc-planb-dist">~{Math.round(b._d)} km</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : rel.length>0 ? (
           <div className="lc-detail-rel">
             <div className="lc-detail-fc-h">{_t({fr:"PLAGES VOISINES",en:"NEARBY BEACHES",es:"PLAYAS CERCA"})}</div>
             <div className="lc-detail-rel-row">
@@ -338,7 +378,7 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
               ))}
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   )
@@ -925,7 +965,13 @@ const CSS=`
 /* plages voisines (hub d'exploration in-world) */
 .lc-detail-rel{margin-top:20px}
 .lc-detail-rel-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}
+.lc-detail-rel-card{position:relative}
 .lc-detail-rel-card .lc-card{width:100%}
+.lc-detail-planb .lc-detail-fc-h::before{content:"";display:inline-block;width:8px;height:8px;border-radius:4px;background:#E8522A;margin-right:7px;vertical-align:middle;box-shadow:0 0 0 2px var(--ink)}
+.lc-planb-sub{font-size:11.5px;font-weight:700;line-height:1.25;color:var(--ink);opacity:.82;margin:4px 0 2px}
+.lc-planb-best .lc-card{outline:2.5px solid #FFC72C;outline-offset:1px}
+.lc-planb-tag{position:absolute;top:-8px;left:50%;transform:translateX(-50%);z-index:3;font-size:8.5px;font-weight:800;letter-spacing:.04em;color:#1A2B26;background:#FFC72C;border:2px solid var(--ink);border-radius:6px;padding:2px 6px;white-space:nowrap}
+.lc-planb-dist{display:block;text-align:center;font-size:10px;font-weight:800;color:var(--ink);opacity:.66;margin-top:4px}
 /* DÉFI DU JOUR (mini-jeu plus chaud/plus froid) */
 .lc-defi{max-width:520px;margin:22px auto 0;text-align:center}
 .lc-defi-card{margin-top:10px;background:var(--paper);border:3px solid var(--ink);border-radius:16px;padding:16px 15px;box-shadow:0 5px 0 var(--ink),0 12px 22px rgba(13,11,20,.32);position:relative}
