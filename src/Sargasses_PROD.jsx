@@ -113,6 +113,20 @@ function loadStripeJs(){
   })
   return _stripeJsPromise
 }
+// Pont paiement Mollie : charge js.mollie.com/v1/mollie.js (Components on-site).
+let _mollieJsPromise=null
+function loadMollieJs(){
+  if(typeof window!=="undefined"&&window.Mollie)return Promise.resolve()
+  if(_mollieJsPromise)return _mollieJsPromise
+  _mollieJsPromise=new Promise((res,rej)=>{
+    const sc=document.createElement("script")
+    sc.src="https://js.mollie.com/v1/mollie.js"
+    sc.onload=res
+    sc.onerror=(e)=>{_mollieJsPromise=null;rej(e)}
+    document.head.appendChild(sc)
+  })
+  return _mollieJsPromise
+}
 /* Labels jours du forecast : le pipeline émet du FR ('Auj.','Dem.','Ven'…) dans
    le JSON — remap au rendu pour en/es (MQ/GP fr : passthrough inchangé). */
 const FC_DAY_MAP={
@@ -1801,6 +1815,13 @@ const STRIPE_LINK_ANNUAL=""
 const STRIPE_LINK_PRO=""   // TODO: 9.99 EUR/mo + 7d trial — Pro tier (WhatsApp alerts + 14d forecast + API)
 const STRIPE_BUY_BTN_PRO=""  // TODO: Buy Button ID for Pro tier
 const STRIPE_PK="pk_live_51PW2TGP9RK8Orx516Nx5mGUixrk2ozE8ppOcygq9Wkb1Tz5CkozRcRFcPAv53uNOmuVCHakWAse09I7KXuUiAb5r00CKYHh9zE"
+// ── Pont paiement réversible (flag PAY_PROVIDER) ─────────────────────────────
+// DÉFAUT = 'mollie' : Stripe est BLOQUÉ, donc Mollie est le flux actif pour tous.
+// 'stripe' devient le FALLBACK (?pay=stripe) — à re-promouvoir en défaut quand le
+// compte Stripe est rétabli (un flip ici). Le flux Stripe reste dormant, intact.
+const PAY_PROVIDER=(()=>{try{const q=window.location.search;if(/[?&]pay=stripe/.test(q))return"stripe";if(/[?&]pay=mollie/.test(q))return"mollie"}catch(_){}return"mollie"})()
+const MOLLIE_PROFILE="pfl_mHmgMvWdwC"
+const MOLLIE_TESTMODE=false // LIVE (clé live_ dans mollie-config.php). Mettre true + clé test_ uniquement pour QA.
 // Buy Button IDs — creer sur dashboard.stripe.com/buy-buttons puis coller ici
 const STRIPE_BUY_BTN_MONTHLY="buy_btn_1TJLdoP9RK8Orx514zzwL1B4" // 4.99€/mois + trial 7j + taxes
 const STRIPE_BUY_BTN_ANNUAL="buy_btn_1TJLcjP9RK8Orx51JDzUFge3"
@@ -6832,11 +6853,14 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
       .pww-selck svg{width:11px;height:11px;display:block}
       .pww-plan.on .pww-selck{opacity:1;transform:scale(1)}
       /* CTA */
-      .pww-cta{display:block;width:100%;border:3px solid var(--ink);border-radius:15px;padding:14px 16px 13px;cursor:pointer;font-family:inherit;text-align:center;background:linear-gradient(180deg,var(--goldLL) 0%,var(--goldL) 55%,var(--gold) 100%);color:var(--ink);box-shadow:0 6px 0 var(--ink),0 13px 22px rgba(13,13,13,.34);transition:transform .08s,box-shadow .08s}
-      .pww-cta:active{transform:translateY(5px);box-shadow:0 1px 0 var(--ink),0 4px 10px rgba(13,13,13,.3)}
-      .pww-cta .big{display:block;font-size:18px;line-height:1.02}
-      .pww-cta .s1{display:block;font-size:12px;font-weight:800;margin-top:5px}
-      .pww-cta .s2{display:block;font-size:10.5px;font-weight:700;color:#6a5208;margin-top:1px}
+      /* CTA premium = OR dans TOUS les arms du A/B thèmes (bible : or = action premium).
+         .pww-wrap .pww-gobtn (0,2,0) + !important bat les règles .theme-X button (0,1,1) ;
+         le nom sans "cta" échappe à .theme-X [class*="cta"]. */
+      .pww-wrap .pww-gobtn{display:block;width:100%;border:3px solid var(--ink)!important;border-radius:15px!important;padding:14px 16px 13px;cursor:pointer;font-family:inherit;text-align:center;background:linear-gradient(180deg,var(--goldLL) 0%,var(--goldL) 55%,var(--gold) 100%)!important;color:var(--ink)!important;box-shadow:0 6px 0 var(--ink),0 13px 22px rgba(13,13,13,.34)!important;transition:transform .08s,box-shadow .08s}
+      .pww-gobtn:active{transform:translateY(5px);box-shadow:0 1px 0 var(--ink),0 4px 10px rgba(13,13,13,.3)}
+      .pww-gobtn .big{display:block;font-size:18px;line-height:1.02}
+      .pww-gobtn .s1{display:block;font-size:12px;font-weight:800;margin-top:5px}
+      .pww-wrap .pww-gobtn .s2{display:block;font-size:10.5px;font-weight:700;color:var(--ink)!important;margin-top:1px;opacity:.82}
       /* TRUST */
       .pww-trust{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:13px}
       .pww-tc{background:#fff;border:2.5px solid var(--ink);border-radius:12px;padding:8px 5px;text-align:center;box-shadow:2px 2px 0 var(--ink)}
@@ -6990,7 +7014,7 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
         </div>}
 
         {/* CTA */}
-        <button type="button" className="pww-cta" onClick={()=>onStart()}>
+        <button type="button" className="pww-gobtn" onClick={()=>onStart()}>
           <span className="big pww-anton">{_t(lang,"Je veux la prévision →","I want the forecast →","Quiero el pronóstico →")}</span>
           <span className="s1">{ctaSub}</span>
           {perDay&&<span className="s2">{perDay}</span>}
@@ -7251,7 +7275,7 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
           </button>
           {perDay&&<div className="pwx-perday">{perDay}</div>}
           <div className="pwx-trust">
-            <div className="pwx-tc"><span className="ic">🛡</span><b>Stripe</b><em>{_t(lang,"Paiement sécurisé","Secure payment","Pago seguro")}</em></div>
+            <div className="pwx-tc"><span className="ic">🛡</span><b>{PAY_PROVIDER==="mollie"?"Mollie":"Stripe"}</b><em>{_t(lang,"Paiement sécurisé","Secure payment","Pago seguro")}</em></div>
             <div className="pwx-tc"><span className="ic">⏱</span><b>{_t(lang,"30 jours","30 days","30 días")}</b><em>{_t(lang,"Satisfait ou remboursé","Money-back","Reembolso")}</em></div>
             <div className="pwx-tc"><span className="ic">✕</span><b>{_t(lang,"2 clics","2 clicks","2 clics")}</b><em>{_t(lang,"Annule quand tu veux","Cancel anytime","Cancela cuando quieras")}</em></div>
           </div>
@@ -7482,6 +7506,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const payEmailRef=useRef(null)
   const payDivRef=useRef(null)
   const expressDivRef=useRef(null)
+  const mollieRef=useRef(null)        // pont Mollie : objet Mollie(profileId)
+  const mollieCardRef=useRef(null)    // pont Mollie : composant carte (Components)
   // Préchauffage COMPLET dès l'ouverture du paywall : SetupIntent + stripe.js
   // + Elements + MOUNT du Payment Element dans l'overlay caché. Mesuré
   // 2026-06-10 : stripe.js ~15s + boot de l'élément ~12s sur ce réseau — tout
@@ -7490,6 +7516,21 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   useEffect(()=>{
     if(!PAYWALL_READY)return
     payPrewarmPromiseRef.current=(async()=>{
+      // ── Pont Mollie : monte les Components (carte on-site) au lieu du Payment
+      // Element Stripe. Pas de SetupIntent (le cardToken est créé au submit). ──
+      if(PAY_PROVIDER==="mollie"){
+        await loadMollieJs()
+        const locale=lang==="es"?"es_ES":lang==="en"?"en_US":"fr_FR"
+        mollieRef.current=window.Mollie(MOLLIE_PROFILE,{locale,testmode:MOLLIE_TESTMODE})
+        if(!payMountedRef.current&&payDivRef.current){
+          const card=mollieRef.current.createComponent("card",{styles:{base:{color:"#e6edf3",fontSize:"15px","::placeholder":{color:"rgba(255,255,255,.4)"}},valid:{color:"#7CF2B0"},invalid:{color:"#F4845F"}}})
+          card.mount(payDivRef.current)
+          mollieCardRef.current=card
+          payReadyRef.current=true;setPayReady(true)
+          payMountedRef.current=true
+        }
+        return
+      }
       const[r]=await Promise.all([
         fetch("/api/create-checkout.php",{method:"POST",headers:{"Content-Type":"application/json"},
           body:JSON.stringify({action:"setup"})}),
@@ -7558,6 +7599,40 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     // drip AVANT de tenter le paiement → récupérable même si carte refusée / 3DS abandonné
     // / fermeture. submitLead est module-scope (l.1859) ; try/catch = zéro risque pour le checkout.
     try{submitLead(email,"onsite_checkout")}catch(_){}
+    // ── Pont Mollie : createToken (Components) → mollie.php. 3DS → redirect+retour
+    // (?mollie_return=1 confirme + débloque). Sinon confirme inline puis débloque. ─
+    if(PAY_PROVIDER==="mollie"){
+      setPayBusy(true);setPayError("")
+      try{
+        const{token,error:tErr}=await mollieRef.current.createToken()
+        if(tErr||!token)throw new Error((tErr&&tErr.message)||_t(lang,"Vérifie ta carte.","Check your card.","Revisa tu tarjeta."))
+        const _pc=passCtxRef.current
+        const body=_pc
+          ?{action:"create_payment",cardToken:token,pass:_pc.pass,cents:_pc.cents,email,source:source||"unknown",lang}
+          :{action:"create_subscription",cardToken:token,plan,email,source:source||"unknown",lang}
+        const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
+        const d=await r.json().catch(()=>({}))
+        if(!r.ok||d.error||!d.paymentId)throw new Error(d.error||"payment failed")
+        if(d.checkoutUrl){ // 3DS : stocke le contexte de déblocage puis redirige vers Mollie
+          try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}))}catch(_){}
+          window.location.href=d.checkoutUrl;return
+        }
+        // Pas de 3DS : confirme côté serveur (source de vérité) puis débloque.
+        const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})})
+        const cd=await cr.json().catch(()=>({}))
+        if(!cd.paid)throw new Error(_t(lang,"Paiement non confirmé. Réessaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."))
+        localStorage.setItem("sg_email",email)
+        if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000));track("sg_conversion",{session_id:d.paymentId,method:"mollie_pass",plan:_pc.pass,pass_days:_pc.days})}
+        else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",email);track("sg_conversion",{session_id:d.paymentId,method:"mollie",plan})}
+        setPayBusy(false);onActivated?.();onClose();return
+      }catch(e){
+        setPayBusy(false)
+        const msg=(e&&e.message)?String(e.message):""
+        setPayError(msg||_t(lang,"Paiement impossible. Réessaie.","Payment failed. Retry.","Pago imposible. Reintenta."))
+        track("sg_pay_onsite_error",{plan,provider:"mollie",message:msg.slice(0,90)})
+        return
+      }
+    }
     setPayBusy(true);setPayError("")
     try{
       const{error:subErr}=await elementsRef.current.submit()
@@ -8575,7 +8650,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               {IS_NEW_REGION&&<span style={{fontFamily:"'Anton',sans-serif",fontSize:10.5,letterSpacing:".12em",color:"rgba(255,255,255,.8)"}}>
                 {((lang==="es"?"SARGAZO ":"SARGASSUM ")+String(REGION.name||"")).toUpperCase()}
               </span>}
-              🔒 Stripe
+              🔒 {PAY_PROVIDER==="mollie"?"Mollie":"Stripe"}
             </span>
           </div>
           <h3 className="anton" style={{fontSize:22,color:"#fff",margin:"0 0 4px",letterSpacing:"-.01em"}}>
@@ -13147,6 +13222,27 @@ export default function App(){
   // Toast 5s : auto-dismiss UNIQUEMENT en control. En onboarding, l'overlay reste jusqu'à onDone.
   useEffect(()=>{if(showWelcome&&pwOnboard!=="onboard"){track("sg_welcome_toast_view");const t=setTimeout(()=>setShowWelcome(false),5000);return()=>clearTimeout(t)}},[showWelcome,pwOnboard])
 
+  // ── Retour 3DS Mollie (?mollie_return=1) : confirme le paiement côté serveur
+  // (source de vérité), pose le premium en localStorage, puis reload propre. ───
+  useEffect(()=>{
+    try{
+      if(new URLSearchParams(window.location.search).get("mollie_return")!=="1")return
+      let ctx=null;try{ctx=JSON.parse(sessionStorage.getItem("sg_mollie_pending")||"null")}catch(_){}
+      const clean=()=>{try{sessionStorage.removeItem("sg_mollie_pending")}catch(_){}try{window.location.replace(window.location.pathname)}catch(_){}}
+      if(!ctx||!ctx.paymentId){clean();return}
+      fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:ctx.paymentId})})
+        .then(r=>r.json()).then(d=>{
+          if(d&&d.paid){
+            try{localStorage.setItem("sg_email",ctx.email||"")
+              if(ctx.pass){localStorage.setItem("sg_premium_pass_end",String(Date.now()+((ctx.days||7)*86400000)))}
+              else{localStorage.setItem("sg_premium","1");if(ctx.email)localStorage.setItem("sg_premium_email",ctx.email)}
+            }catch(_){}
+            track("sg_conversion",{session_id:ctx.paymentId,method:ctx.pass?"mollie_pass":"mollie",plan:ctx.pass||ctx.plan})
+          }
+          clean()
+        }).catch(()=>clean())
+    }catch(_){}
+  },[])
   // Handle ?manage=1 → open Stripe Customer Portal
   // MUST run independently of isPremium state: the user is already premium and
   // clicks the link from email to manage/cancel, so a "return true" early-exit
