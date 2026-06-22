@@ -161,10 +161,11 @@ export default function WorldMapView({
       if(vx<-60||vx>860||vy<-60||vy>660) continue
       out.push({vx,vy,afai})
     }
-    // Cap aux 140 plus fortes : la couche sargasse = DONNÉE, pas alarme. 140 cercles semi-transparents
-    // couvrent les taches réelles sans empiler 621 fills/frame (perf mobile — fill-rate GPU bas de gamme).
+    // Cap aux N plus fortes : la couche sargasse = DONNÉE, pas alarme. Les blobs sont BAKÉS dans le
+    // bitmap statique (zéro fill/frame) → le cap n'est plus une contrainte de perf runtime mais un
+    // garde-fou anti-« wash » (trop de blobs = mer brune illisible). 180 = bancs réels lisibles.
     out.sort((a,b)=>b.afai-a.afai)
-    return out.slice(0,140)
+    return out.slice(0,180)
   },[afaiGrid,island,toVB])
 
   // P7 — recherche : plages dont le nom matche la requête (max 6).
@@ -449,6 +450,11 @@ export default function WorldMapView({
       // Sur un contrôle chrome (CTA « Voir la plage », dock, capture…) : pas de double-tap
       // zoom ni de vol de clic — mais le nettoyage ci-dessus a déjà eu lieu.
       if(e.target&&e.target.closest&&e.target.closest('[data-vmui]')) return
+      // Double-tap zoom UNIQUEMENT sur un vrai pointerup. onUp est AUSSI appelé par onLeave
+      // (pointerleave) et par pointercancel : sortir du viewport par un COIN déclenchait
+      // alors un faux « tap » → double-tap fantôme = bascule zoom au simple survol.
+      // (Bug coin fondateur 22/06, confirmé par MutationObserver : hover → scale 2.5↔0.85.)
+      if(e.type!=="pointerup") return
       if(!wasMoved){
         // Double-tap = bascule zoom
         const now=Date.now()
@@ -579,6 +585,14 @@ export default function WorldMapView({
       <linearGradient id="wmSailY" x1="0" y1="0" x2="1" y2="1">
         <stop offset="0" stopColor="#FFD45A"/><stop offset="1" stopColor="#F0A81E"/>
       </linearGradient>
+      {/* Banc de sargasses — blob radial doux (golden-brown → olive → transparent), comme
+          l'ancienne heatmap. Chaud sur la mer golden-hour (lit sur violet/magenta) sans
+          virer à l'alarme criarde. Bakée avec le monde statique → 0 coût/frame. */}
+      <radialGradient id="wmSarg" cx="50%" cy="50%" r="50%">
+        <stop offset="0"   stopColor="#b08c22" stopOpacity=".95"/>
+        <stop offset=".48" stopColor="#736b22" stopOpacity=".62"/>
+        <stop offset="1"   stopColor="#3d3a14" stopOpacity="0"/>
+      </radialGradient>
       <filter id="wmSoft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="4"/></filter>
       <filter id="wmShlw" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="8"/></filter>
     </defs>
@@ -606,13 +620,17 @@ export default function WorldMapView({
         <path d={outline.path} fill="url(#wmWarm)" opacity=".9" transform="scale(.985)" style={{transformOrigin:"328px 300px"}}/>
         <path d={outline.path} fill="none" stroke={INK} strokeWidth="3" strokeLinejoin="round"/>
       </g>}
-      {/* Couche SARGASSES (satellite AFAI) — la matière sur l'eau */}
+      {/* Couche SARGASSES (satellite AFAI) — la matière RÉELLE sur l'eau, en blobs radiaux doux
+          (« blops » comme l'ancienne heatmap). Avant : olive plat #5c6b2a à ~.5 d'opacité → se
+          noyait dans la mer golden-hour violet/magenta (invisible sur mobile). Maintenant : blob
+          golden-brown→olive plus opaque et plus large → les bancs se lisent. Bakée avec le monde
+          statique → zéro re-raster par frame, donc les rendre francs ne coûte RIEN au runtime. */}
       {sargCells.length>0 && <g>
         {sargCells.map((c,i)=>(
           <circle key={i} cx={c.vx.toFixed(1)} cy={c.vy.toFixed(1)}
-            r={(9+c.afai*30).toFixed(1)}
-            fill={c.afai<.40?"#5c6b2a":"#3d2f12"}
-            opacity={Math.min(.72,.30+c.afai*1.0).toFixed(2)}/>
+            r={(12+c.afai*40).toFixed(1)}
+            fill="url(#wmSarg)"
+            opacity={Math.min(.92,.52+c.afai*1.3).toFixed(2)}/>
         ))}
       </g>}
       {/* Relief Martinique — collines comic */}
