@@ -99,7 +99,7 @@
 | # | Problème vécu (sargasse) | Solution créative / feature | Asset/widget (statut) | Où | Free/Prem |
 |---|---|---|---|---|---|
 | 1 | « Ma plage, envahie AUJOURD'HUI ? » (angoisse #1) | Verdict temps-réel + Le Veilleur scanne TA plage en direct | clip Veilleur (✅ widget) | hero NEAR | free (teaser) |
-| 2 | « Où aller à la place ? » (plan B immédiat) | « Plages propres près de toi maintenant » + flyTo vers l'alternative | clean-list/carte (✅) | FAR /près-de-moi | free |
+| 2 | « Où aller à la place ? » (plan B immédiat) | « Plages propres près de toi maintenant » + flyTo vers l'alternative | clean-list/carte (✅) · PlanBPanel fiche data `pw_planb` (✅) · **rail Plan-B « OÙ ALLER PLUTÔT » dans le détail comic ChasseDetail ✅ shippé** (`f54768f8`, avoid/moderate → 3 plages propres proches haversine best-first, `?planbcomic=0`) | FAR /près-de-moi · NEAR fiche · détail comic | free |
 | 3 | « Et demain / mes vacances ? » (planning) | Prévision 7j/plage + « ton meilleur jour cette semaine » | ForecastChart (✅) | NEAR /prévisions | Premium |
 | 4 | **« Ça pue / c'est dangereux ? » (H2S)** | **ALERTE SANTÉ** : sargasse en décompo = H2S (œuf pourri) → risque respiratoire (asthme, bébés, femmes enceintes, âgés). Badge santé/H2S + « aère / ferme les fenêtres » riverains + seuils | **data ✅** (h2s.cjs + pipeline, commit 1d978b6c) · proto ✅ proto-h2s-health-index.html · badge `pw_h2s` ✅ data-fiche · **repère santé comic ✅ shippé dans ChasseDetail** (`H2sNote`, avoid/moderate, groupes sensibles, i18n, `?h2snote=0`) | ✅ **LIVE** (surface comic) | free badge / Prem alerte — **FORT & sous-exploité** |
 | 5 | « Je peux me baigner ? enfants ? chien ? » | Indicateur baignade / kids-safe / animaux par plage | /conditions (✅) | NEAR | ✅ **Fait** |
@@ -169,12 +169,13 @@
 - [ ] **Capture email ATONE — revoir l'opt-in form** _(flag auto conversion-track 21/06)_ : leads quasi-plats (213→213→213 du 17→19/06, +2 le 20/06 = +2 en 4 j), `funnel.emailSubmits` ~62-63/j stable, `stripe.emailAttributed` = 0 actif/€0. Le canal capture ne croît plus. Revoir l'opt-in (placement, copy, aha-moment, friction) côté `sargasses-refonte-builder` — NE PAS éditer le JSX depuis conversion-track.
 
 **PHASE 5 — BACKLOG PLUS (workflows 21/06, source de vérité = `design/BACKLOG-PLUS-2026-06-21.md`).** Items NET-NEW vérifiés adversarialement (surface+substance). Chacun : build vert + vérif navigateur + A/B réversible + doctrine. Prends-en UN par run (le + haut non coché).
-- [ ] **Géoloc « Près de moi » RÉELLE** (P6) — aujourd'hui placebo (getCurrentPosition gaté A/B molo + WorldMapView.nearMe ignore userPos, prend la 1re plage clean de la liste). Au TAP : si userPos null → getCurrentPosition (geste=consentement) → plage clean la + proche en haversine ; passer userPos+setUserPos en props à WorldMapView, trier nearMe par distance. Le job #1 de l'app.
-- [ ] **Recherche plage par NOM dans la carte-monde** (P7) — SearchBar existe (view==='map' l.13786) mais masquée par l'Archipel z1020 du cohort par défaut. Remonter le composant SearchBar dans le chrome verre de l'Archipel + WorldMapView → tap = flyTo/centerOn + onOpenBeach. 2e job le + fréquent.
-- [ ] **Toast « plage propre la + proche » au close de fiche** (P9) — nextSuggestion déjà armé+tracké (closeSheet ~l.13309) mais rendu gaté view==='map' → invisible sous l'Archipel pour le cohort par défaut. Re-router le rendu vers le chrome Archipel/dock. Anti-cul-de-sac.
-- [ ] **Compteurs sur chips filtre liste** (P10) — BeachListView : « Propres 12 / Favoris 3 / Éviter 28 », griser un chip à 0 (évite l'état vide). useMemo sur beaches, trivial (nClean déjà calculé).
-- [ ] **Plan annuel ANCRÉ in-app** (S4) — prices existent (annual 39,99/an, season 19,99) mais le paywall pousse le mensuel. Ancrer l'annuel (cadrage valeur « toute la saison + l'an prochain », PAS un Nᵉ A/B copy dilutif). Anti-churn saisonnier, LTV.
-- [ ] **Capter l'email AVANT la carte** (S2, part monolithe) — `submitLead(email,'onsite_checkout')` déjà ajouté dans doSubscribe ; vérifier qu'il part bien AVANT confirmSetup + que la relance panier (`recover-abandoned-cart.cjs`) le consomme. Fuite mesurée ~565€+1224$/30j (completionRate 0,5).
+- [x] **Géoloc « Près de moi » RÉELLE** (P6) — shippé `9f8bbd83` (getCurrentPosition au tap, haversine, userPos passé à WorldMapView). cf. [[project_critical_backlog_shipped]].
+- [x] **Recherche plage par NOM dans la carte-monde** (P7) — shippé `9f8bbd83` (SearchBar remontée dans le chrome Archipel/WorldMapView → tap = centerOn + onOpenBeach).
+- [x] **Toast « plage propre la + proche » au close de fiche** (P9) — déjà câblé (`closeSheet`→`nextSuggestion`, l.13334). Re-routé hors gate view==='map'.
+- [x] **Compteurs sur chips filtre liste** (P10) — shippé `c90d92c8` (Propres/Favoris/Éviter, chip grisé à 0).
+- [x] **Plan annuel ANCRÉ in-app** (S4) — déjà fait : ComicPaywall boutons Mensuel/Annuel −33% (l.6530), défaut annuel MQ/GP.
+- [x] **Capter l'email AVANT la carte** (S2) — vérifié : `submitLead(email,"onsite_checkout")` part l.7193 AVANT `elements.submit()`+`confirmSetup` (l.7196-7198) ; abandon récupérable (drip + `recover-abandoned-cart.cjs` Stripe-side).
+- [x] **Rail Plan-B « OÙ ALLER PLUTÔT » dans le détail comic** (§4A #2) — shippé `f54768f8` : ChasseDetail sur plage avoid/moderate → 3 plages propres proches (clean + haversine même-île + score, best-first « le + sûr »), tap→onRelated, event `sg_chasse_planb_pick`, kill-switch `?planbcomic=0`. Vérifié (logique + Playwright composant réel + build vert).
 
 ---
 _Vérif continue : `ab-eval.cjs` (verdict A/B auto) · skill `sg-svg-scene` (navigateur). Doc vivant — coché au fil de l'exécution._
