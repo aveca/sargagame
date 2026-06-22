@@ -332,6 +332,39 @@ function windDriftEffect(beach, hourlyWind, dayIndex, marineData) {
 }
 
 /**
+ * Onshore-wind GATE pour le signal d'arrivée (recherche concurrents 22/06).
+ * La littérature (NOAA/AOML) : près de la côte, le vent ONSHORE est le déclencheur
+ * d'échouage le plus robuste — un banc proche avec vent OFFSHORE peut ne jamais toucher.
+ * On projette le vent moyen (jours 1-3) sur la coastNormal de la plage et on SUPPRIME le
+ * signal d'arrivée UNIQUEMENT quand le vent souffle CLAIREMENT vers le large (onshoreCos < -0.3).
+ * Conservateur par conception :
+ *   - on ne BOOSTE jamais (>1.0) → aucun risque de réintroduire les fausses alertes saison calme ;
+ *   - les cas onshore/cross-shore (le commun, modèle déjà calé) restent à 1.0 → backtest inchangé ;
+ *   - on n'écrase pas les arrivées portées par le COURANT (sud/SW) sous alizés d'est, qui ne sont
+ *     pas « offshore-vent » → onshoreCos n'est pas franchement négatif pour elles.
+ * Renvoie 1.0 (neutre) si pas de vent / pas de coastNormal / plage abritée → backtest et chemin
+ * sans-vent strictement identiques.
+ */
+function onshoreWindGate(beach, hourlyWind) {
+  if (!beach || beach.coast === 'sheltered') return 1.0
+  const cn = beach.coastNormal
+  if (cn == null || !hourlyWind || !hourlyWind.length) return 1.0
+  let sumSin = 0, sumCos = 0, n = 0
+  for (let h = 24; h < 96 && h < hourlyWind.length; h++) {
+    const w = hourlyWind[h]; if (!w || w.dir == null) continue
+    const rad = w.dir * Math.PI / 180
+    sumSin += Math.sin(rad); sumCos += Math.cos(rad); n++
+  }
+  if (!n) return 1.0
+  const avgDir = (Math.atan2(sumSin / n, sumCos / n) * 180 / Math.PI + 360) % 360
+  // onshoreCos : +1 = le vent (venant du large) pousse vers la côte ; -1 = pousse vers le large.
+  // (Alizé d'est avgDir≈90 sur côte est coastNormal≈90 → cos(0)=+1 = onshore, cohérent.)
+  const onshoreCos = Math.cos((avgDir - cn) * Math.PI / 180)
+  // Suppress-only, et SEULEMENT pour un vent franchement offshore (< -0.3). Sinon 1.0.
+  return onshoreCos < -0.3 ? Math.max(0.5, 1.0 + (onshoreCos + 0.3) * 0.7) : 1.0
+}
+
+/**
  * Build the 7-day honest forecast.
  *
  * @param {Array} levels - [{ id, afai, status, confidence, beachMemory, ... }]
@@ -375,8 +408,12 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
     // always agree. Without this, a supra-threshold-but-damped signal could fire
     // the banner while the displayed AFAI stayed clean (number/banner mismatch).
     // Outside calm, the regime gain (0.85 / 1.0) is unchanged.
+    // Vent offshore (recherche concurrents 22/06) : atténue le signal d'arrivée si le vent souffle
+    // CLAIREMENT vers le large (un banc proche ne s'échoue pas contre le vent). 1.0 (neutre) sinon →
+    // chemin commun + backtest sans-vent strictement inchangés.
+    const onshoreFactor = onshoreWindGate(beach, hourlyWind)
     const rawMaxArrival = (beach && hasArrival)
-      ? Math.max(
+      ? onshoreFactor * Math.max(
           arrivalSignalFromBanks(beach, islandBanks, 1),
           arrivalSignalFromBanks(beach, islandBanks, 2),
           arrivalSignalFromBanks(beach, islandBanks, 3),
@@ -397,7 +434,7 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
 
       let afai, sources = []
       // Raw physics signal, then regime-dampened (calm beaches resist arrival hype).
-      const rawArrival = hasArrival ? arrivalSignalFromBanks(beach, islandBanks, i) : 0
+      const rawArrival = hasArrival ? onshoreFactor * arrivalSignalFromBanks(beach, islandBanks, i) : 0
       const arrivalContribution = rawArrival * arrivalGain
       let { confidence, type } = forecastConfidence(i, baseConf, hasWind, arrivalContribution > 0.02)
       // Memory beach forecasts must never be more confident than the memory observation itself
@@ -542,6 +579,7 @@ module.exports = {
   buildHonestForecast,
   computeSatelliteTrend,
   windDriftEffect,
+  onshoreWindGate,
   arrivalSignalFromBanks,
   communityBias,
   statusFromAfai,
