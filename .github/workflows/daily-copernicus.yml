@@ -334,6 +334,17 @@ jobs:
         continue-on-error: true
         run: node scripts/automation/aggregate-app-reports.cjs
 
+      # ── 2-pre-0b. Accuracy VALIDÉE CITOYEN (sprint #3) : aggregate-app-reports vient de
+      # journaliser les signalements frais du jour (reports-log.json, append-only) ; on les
+      # confronte aux prévisions figées (forecast-archive.json) → citizen-accuracy.json. La
+      # vérité-terrain citoyenne (méthode NOAA/Epicollect) = 2e validation de notre track-record,
+      # qui voit aussi le sargasse échoué. Tant que N<30 : statut "validating" (rien de faux publié).
+      # S'accumule chaque jour → chiffre crédible après ~3-4 semaines. continue-on-error (additif).
+      - name: Build citizen-validated accuracy (report-vs-prédiction)
+        if: steps.check_build.outputs.full == 'true'
+        continue-on-error: true
+        run: node scripts/automation/build-citizen-accuracy.cjs
+
       # ── 2-pre. Builds des nouvelles régions (puntacana, florida, rivieramaya…)
       # Séquentiels : chaque build VITE_REGION=<id> écrase dist/. Le build
       # partagé MQ/GP (étapes suivantes, sans VITE_REGION) reste le DERNIER pour
@@ -485,6 +496,10 @@ jobs:
           [ -f scripts/automation/data/notifications-sent.json ] && git add scripts/automation/data/notifications-sent.json
           [ -f public/api/copernicus/forecast-archive.json ] && git add public/api/copernicus/forecast-archive.json
           [ -f public/api/copernicus/track-record.json ] && git add public/api/copernicus/track-record.json
+          # Sprint #3 — track-record validé citoyen : le journal des signalements DOIT être commité
+          # (append-only inter-runs, sinon l'accumulation est perdue) + la métrique calculée.
+          [ -f public/api/community/reports-log.json ] && git add public/api/community/reports-log.json
+          [ -f public/api/copernicus/citizen-accuracy.json ] && git add public/api/copernicus/citizen-accuracy.json
           # Météo per-beach (Beach Scores) + bancs (arrival signal) : frais à
           # chaque run — leur absence du commit gelait les scores (bug 2 mois).
           [ -f public/api/weather/beaches-weather.json ] && git add public/api/weather/beaches-weather.json

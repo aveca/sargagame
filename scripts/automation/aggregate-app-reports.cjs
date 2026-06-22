@@ -44,6 +44,36 @@ async function main() {
   fs.mkdirSync(path.dirname(OUT), { recursive: true })
   fs.writeFileSync(OUT, JSON.stringify(out))
   console.log(`[app-reports] écrit ${out.beachCount} plages → ${path.relative(process.cwd(), OUT)}`)
+
+  // ── JOURNAL DATÉ append-only des signalements FRAIS (sprint #3) ─────────────────────────────
+  // Pour valider nos prévisions contre la VÉRITÉ-TERRAIN CITOYENNE (report-vs-prédiction, méthode
+  // NOAA/Epicollect) : build-citizen-accuracy.cjs matche ce journal à forecast-archive.json. On
+  // journalise UNIQUEMENT les plages avec un signalement dans les dernières 24h (recent24h) = le
+  // signal frais du jour. Append-only : on n'écrit QUE la clé du jour, jamais les dates passées.
+  try {
+    const LOG = path.join(__dirname, '..', '..', 'public', 'api', 'community', 'reports-log.json')
+    const today = new Date().toISOString().slice(0, 10)
+    let log = {}
+    try { log = JSON.parse(fs.readFileSync(LOG, 'utf-8')) } catch (_) {}
+    if (!log.logByDate) log.logByDate = {}
+    const todays = {}
+    for (const [id, r] of Object.entries(data.reports)) {
+      const r24 = r.recent24h || {}
+      const c = r24.clean || 0, m = r24.moderate || 0, a = r24.avoid || 0
+      if (c + m + a <= 0) continue // pas de signalement frais aujourd'hui pour cette plage
+      const status = (a >= m && a >= c) ? 'avoid' : (m >= c) ? 'moderate' : 'clean'
+      todays[id] = { status, c, m, a }
+    }
+    if (Object.keys(todays).length) {
+      log.logByDate[today] = todays // idempotent si re-run le même jour ; jamais les jours passés
+      log.updatedAt = new Date().toISOString()
+      log._comment = 'Journal APPEND-ONLY des signalements communautaires datés (recent24h) = vérité-terrain citoyenne, pour build-citizen-accuracy.cjs (report-vs-prédiction). Ne JAMAIS réécrire les dates passées.'
+      fs.writeFileSync(LOG, JSON.stringify(log))
+      console.log(`[reports-log] ${today} : ${Object.keys(todays).length} plage(s) avec signalement frais journalisée(s)`)
+    } else {
+      console.log('[reports-log] aucun signalement frais (recent24h) aujourd\'hui — rien à journaliser')
+    }
+  } catch (e) { console.warn('[reports-log] échec (non bloquant):', e.message) }
 }
 
 main()
