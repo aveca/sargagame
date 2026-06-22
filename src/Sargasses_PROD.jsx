@@ -1012,9 +1012,9 @@ function nettoyerBeats(lang){
 
 function methodeBeats(lang){
   const T=(fr,en,es)=>_t(lang,fr,en,es)
-  const relCalme = __REL ? __REL.calmRate : "79"
-  const relHaute = __REL ? __REL.highRate : "76"
-  const relRateStr = T(`fiabilité de ${relCalme}% en saison calme / ${relHaute}% en saison haute`, `accuracy ${relCalme}% in calm season / ${relHaute}% in high season`, `fiabilidad ${relCalme}% en temporada baja / ${relHaute}% en temporada alta`)
+  const relPct = (__REL && typeof __REL.cleanPct === "number") ? __REL.cleanPct : 79
+  const relReg = (__REL && __REL.regime === "high") ? T("saison haute", "high season", "temporada alta") : T("saison calme", "calm season", "temporada tranquila")
+  const relRateStr = T(`fiabilité de ${relPct}% sur nos prévisions « mer propre » vérifiées (${relReg})`, `accuracy of ${relPct}% on our verified “clean water” forecasts (${relReg})`, `fiabilidad del ${relPct}% en pronósticos “agua limpia” verificados (${relReg})`)
   return [
     {
       eyebrow: T("NOTRE MÉTHODE", "OUR METHOD", "NUESTRO MÉTODO"),
@@ -1057,7 +1057,7 @@ function methodeBeats(lang){
           <rect width="800" height="600" fill="#06211E"/>
           <g transform="translate(400,260)">
             <circle r="80" fill="none" stroke="#3fd07f" strokeWidth="8"/>
-            <text x="0" y="15" fontFamily="'Anton',sans-serif" fontSize="48" fill="#3fd07f" textAnchor="middle">{relCalme}%</text>
+            <text x="0" y="15" fontFamily="'Anton',sans-serif" fontSize="48" fill="#3fd07f" textAnchor="middle">{relPct}%</text>
           </g>
           <text x="400" y="380" fontFamily="system-ui,sans-serif" fontSize="14" fill="#9FE1CB" textAnchor="middle">{T("Indice de confiance mis à jour", "Confidence index updated", "Índice de confianza actualizado")}</text>
         </g>
