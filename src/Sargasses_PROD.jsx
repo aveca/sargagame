@@ -4724,34 +4724,32 @@ function HistoryChart({beachId,historyData,lang}){
 function SearchBar({value,onChange,lang}){
   const LL=T[lang]||T.fr
   const[focused,setFocused]=useState(false)
+  const INK="#0D0D0D",MID="#5A5A5A",GOLD="#E8A800"
   return(
     <div style={{position:"relative"}}>
-      {/* Frosted halo — brightens on focus */}
-      <div style={{position:"absolute",inset:-2,borderRadius:100,
-        background:focused?"radial-gradient(80% 120% at 50% 50%, rgba(232,168,0,.22), transparent 72%)":"transparent",
-        filter:"blur(6px)",transition:"background .3s",pointerEvents:"none"}}/>
+      {/* Recette .sg-field comic unique : bord 2.5 ink + ombre dure bas-droite, loupe
+          SVG mono-trait (or au focus), ring or au focus. Tokens thème (comic + dark). */}
       <div style={{position:"relative",display:"flex",alignItems:"center"}}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-          style={{position:"absolute",left:16,top:"50%",transform:"translateY(-50%)",
-            color:focused?C.gold:"var(--sg-mid,#5A5A5A)",transition:"color .2s",flexShrink:0}}>
-          <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2"/>
-          <path d="m20 20-3.5-3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+          style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",
+            color:focused?GOLD:MID,transition:"color .15s",flexShrink:0,pointerEvents:"none"}}>
+          <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2.4"/>
+          <path d="M16.5 16.5 L21 21" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"/>
         </svg>
         <input type="search" value={value} onChange={e=>onChange(e.target.value)}
-          placeholder={LL.search}
+          placeholder={_t(lang,"Chercher une plage…","Search a beach…","Buscar una playa…")}
           autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
           enterKeyHint="search"
           onFocus={()=>setFocused(true)}
           onBlur={()=>setFocused(false)}
           style={{
-            width:"100%",padding:"13px 16px 13px 42px",borderRadius:100,
-            border:focused?"1.5px solid rgba(232,168,0,.55)":"1.5px solid rgba(15,42,58,.08)",
-            background:"linear-gradient(180deg,rgba(255,255,255,.85),rgba(255,255,255,.65))",
-            backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",
-            color:"var(--sg-ink)",fontSize:15,fontWeight:500,letterSpacing:".005em",
-            fontFamily:"inherit",outline:"none",
-            boxShadow:focused?"0 4px 16px rgba(232,168,0,.14), inset 0 1px 0 rgba(255,255,255,.6)":"0 2px 10px rgba(15,42,58,.06), inset 0 1px 0 rgba(255,255,255,.5)",
-            transition:"all .25s cubic-bezier(.22,1,.36,1)",
+            width:"100%",minHeight:48,padding:"13px 14px 13px 42px",borderRadius:12,
+            border:`2.5px solid ${INK}`,
+            background:"var(--sg-card,#fff)",
+            color:`var(--sg-ink,${INK})`,fontSize:16,fontWeight:600,letterSpacing:0,
+            fontFamily:"inherit",outline:"none",boxSizing:"border-box",
+            boxShadow:focused?`2px 2px 0 ${INK}, 0 0 0 3px rgba(255,199,44,.20)`:`2px 2px 0 ${INK}`,
+            transition:"box-shadow .12s",
           }}
         />
       </div>
@@ -4762,10 +4760,14 @@ function SearchBar({value,onChange,lang}){
 /* ═══════════════════════════════════════════════════════════════════════════
    BEACH LIST VIEW — alternative to map (tab Plages)
    ═══════════════════════════════════════════════════════════════════════════ */
-function BeachListView({beaches,onBeachClick,favorites,lang,imageMap,sargData,onPremiumClick,isPremium}){
+function BeachListView({beaches,onBeachClick,favorites,lang,imageMap,sargData,onPremiumClick,isPremium,userPos}){
   const LL=T[lang]||T.fr
   const [q,setQ]=useState("")
+  const [qFocus,setQFocus]=useState(false)
   const [chip,setChip]=useState(null)
+  // TRI explicite (contrôle discret) — best (défaut, ordre data déjà classé) / near / az.
+  // "near" = gracieux : haversine si géoloc, sinon temps de route (drive), sinon best.
+  const [sort,setSort]=useState("best")
   const listFclock=useMemo(()=>{try{const q=window.location.search;if(/[?&]listfclock=1/.test(q))return true;if(/[?&]listfclock=0/.test(q))return false;return abVariant("list_fclock",["control","lock"],[.5,.5])==="lock"}catch(_){return false}},[])
 
   const filtered=useMemo(()=>{
@@ -4774,8 +4776,23 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap,sargData,on
     if(chip==="clean")r=r.filter(b=>b.status==="clean")
     if(chip==="fav")r=r.filter(b=>favorites.includes(b.id))
     if(chip==="avoid")r=r.filter(b=>b.status==="avoid")
+    // TRI : "best" garde l'ordre data d'entrée (déjà classé) → ne pas re-trier.
+    if(sort!=="best"){
+      r=r.slice()
+      if(sort==="az"){
+        r.sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),lang||"fr"))
+      }else if(sort==="near"){
+        // distance réelle si géoloc accordée, sinon fallback temps de route, sinon en queue
+        const dist=b=>{
+          if(userPos&&typeof b.lat==="number"&&typeof b.lng==="number")return haversine(userPos.lat,userPos.lng,b.lat,b.lng)
+          if(typeof b.drive==="number")return b.drive
+          return Infinity
+        }
+        r.sort((a,b)=>dist(a)-dist(b))
+      }
+    }
     return r
-  },[beaches,q,chip,favorites])
+  },[beaches,q,chip,favorites,sort,userPos,lang])
   const nClean=filtered.filter(b=>b.status==="clean").length
   const bestToday=useMemo(()=>beaches.filter(b=>b.status==="clean"&&typeof b.score==="number").sort((a,bb)=>bb.score-a.score)[0]||null,[beaches])
   /* ── BIBLE DE MARQUE (tokens locaux, 1 rôle = 1 valeur) ──
@@ -4852,36 +4869,92 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap,sargData,on
           <StatusPill status="clean" word={_t(lang,"Propre","Clean","Limpia")}/>
         </button>
       )}
-      {/* Search + filter chips */}
+      {/* Search + filter chips + TRI — recette .sg-field comic unique (bord 2.5 ink,
+          ombre dure, loupe SVG mono-trait, focus ring or). Tokens thème → comic + dark. */}
       <div style={{padding:"0 16px 12px"}}>
-        <div style={{display:"flex",alignItems:"center",gap:8,background:"#fff",
-          borderRadius:12,padding:"0 14px",height:48,marginBottom:12,border:`2px solid ${SG.ink}`,
-          boxShadow:`2px 2px 0 ${SG.ink}`}}>
-          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style={{flexShrink:0}}>
-            <circle cx="11" cy="11" r="7" fill="none" stroke={SG.mid} strokeWidth="2.4"/>
-            <path d="M16.5 16.5 L21 21" stroke={SG.mid} strokeWidth="2.4" strokeLinecap="round"/>
+        <div style={{position:"relative",display:"flex",alignItems:"center",gap:8,
+          background:"var(--sg-card,#fff)",
+          borderRadius:12,padding:"0 14px",height:48,marginBottom:12,
+          border:`2.5px solid ${SG.ink}`,
+          boxShadow:qFocus?`2px 2px 0 ${SG.ink}, 0 0 0 3px rgba(255,199,44,.20)`:`2px 2px 0 ${SG.ink}`,
+          transition:"box-shadow .12s"}}>
+          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style={{flexShrink:0,transition:"color .15s",color:qFocus?SG.gold:SG.mid}}>
+            <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" strokeWidth="2.4"/>
+            <path d="M16.5 16.5 L21 21" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"/>
           </svg>
-          <input value={q} onChange={e=>setQ(e.target.value)}
-            placeholder={_t(lang,"Rechercher une plage…","Search a beach…","Buscar una playa…")}
-            style={{flex:1,background:"none",border:"none",outline:"none",fontSize:16,color:SG.ink,fontFamily:"inherit",fontWeight:600}}/>
-          {q&&<button onClick={()=>setQ("")} aria-label={_t(lang,"Effacer","Clear","Borrar")} style={{background:"none",border:"none",color:SG.mid,cursor:"pointer",fontSize:18,lineHeight:1,padding:0}}>✕</button>}
+          <input value={q} onChange={e=>setQ(e.target.value)} type="search"
+            onFocus={()=>setQFocus(true)} onBlur={()=>setQFocus(false)}
+            autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false} enterKeyHint="search"
+            placeholder={_t(lang,"Chercher une plage…","Search a beach…","Buscar una playa…")}
+            style={{flex:1,background:"none",border:"none",outline:"none",fontSize:16,color:"var(--sg-ink,"+SG.ink+")",fontFamily:"inherit",fontWeight:600,letterSpacing:0,minWidth:0}}/>
+          {q&&<button onClick={()=>setQ("")} aria-label={_t(lang,"Effacer","Clear","Borrar")} className="sg-field-clear">
+            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"/></svg>
+          </button>}
         </div>
+        {/* CHIPS — pill comic. Active = fond statut PLEIN (clean/teal/avoid). Le thème comic
+            force le fond des boutons → on peint l'actif via classes `!important` scopées. */}
+        <style>{`
+          .sg-field-clear{display:flex!important;align-items:center;justify-content:center;width:36px;height:36px;padding:0!important;flex-shrink:0;
+            background:none!important;border:none!important;box-shadow:none!important;border-radius:999px!important;color:${SG.mid}!important;cursor:pointer;text-shadow:none!important}
+          .sg-fchip{display:inline-flex!important;align-items:center;gap:6px;min-height:36px;font-size:12px;font-weight:800!important;
+            text-transform:uppercase;letter-spacing:.02em;padding:6px 12px!important;border-radius:999px!important;
+            border:2.5px solid ${SG.ink}!important;box-shadow:2px 2px 0 ${SG.ink}!important;cursor:pointer;font-family:inherit!important;
+            white-space:nowrap;background:var(--sg-card,#fff)!important;color:var(--sg-ink,${SG.ink})!important;text-shadow:none!important;transform:none}
+          .sg-fchip.is-on{box-shadow:1px 1px 0 ${SG.ink}!important;transform:translate(2px,2px)}
+          .sg-fchip.is-on .sg-fchip-ct{color:inherit!important}
+          .sg-fchip-clean.is-on{background:${SG.clean}!important;color:${SG.ink}!important}
+          .sg-fchip-fav.is-on{background:${SG.teal}!important;color:#fff!important}
+          .sg-fchip-avoid.is-on{background:${SG.avoid}!important;color:#fff!important}
+          .sg-fchip-ct{font-family:${MONO};font-variant-numeric:tabular-nums;font-weight:700;opacity:.7;color:${SG.mid}}
+        `}</style>
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
           {chips.map(ch=>{
             const active=chip===ch.id
             return(
               <button key={ch.id} onClick={()=>setChip(active?null:ch.id)}
-                style={{display:"inline-flex",alignItems:"center",gap:6,minHeight:36,fontSize:12,fontWeight:800,
-                  textTransform:"uppercase",letterSpacing:".02em",padding:"6px 12px",borderRadius:999,
-                  border:`2px solid ${SG.ink}`,
-                  background:active?ch.c:"#fff",color:active?ch.fg:SG.ink,
-                  boxShadow:active?`1px 1px 0 ${SG.ink}`:`2px 2px 0 ${SG.ink}`,
-                  transform:active?"translate(2px,2px)":"none",
-                  cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}}>
-                {ch.label} <span style={{fontFamily:MONO,fontVariantNumeric:"tabular-nums",fontWeight:700,opacity:.7}}>{chipCount(ch.id)}</span>
+                aria-pressed={active}
+                className={`sg-fchip sg-fchip-${ch.id}`+(active?" is-on":"")}>
+                {ch.label} <span className="sg-fchip-ct">{chipCount(ch.id)}</span>
               </button>
             )
           })}
+        </div>
+        {/* TRI — segmented discret (plus léger que les chips : sans ombre dure, zéro or).
+            Câblé sur l'état `sort` ci-dessus. "Plus proches" = fallback gracieux sans géoloc.
+            ⚠️ Le thème comic force `.theme-comic button{background:var(--sg-card)!important}` →
+            on neutralise les styles encrés via classes `!important` scopées (sinon l'actif
+            est invisible). C'est pourquoi ce contrôle utilise des classes, pas du inline. */}
+        <style>{`
+          .sg-sortseg{display:inline-flex;border:2px solid ${SG.ink};border-radius:999px;overflow:hidden;max-width:100%;background:var(--sg-card,#fff)}
+          .sg-sortseg .sg-sortbtn{appearance:none!important;border:none!important;border-right:2px solid ${SG.ink}!important;border-radius:0!important;
+            box-shadow:none!important;cursor:pointer;min-height:38px;padding:0 13px!important;
+            font-family:inherit!important;font-weight:800!important;font-size:12px;text-transform:uppercase;letter-spacing:.04em;
+            background:var(--sg-card,#fff)!important;color:var(--sg-mute,rgba(255,255,255,.7))!important;
+            transition:background .1s,color .1s;white-space:nowrap;text-shadow:none!important}
+          .sg-sortseg .sg-sortbtn:last-child{border-right:none!important}
+          .sg-sortseg .sg-sortbtn.is-on{background:${SG.ink}!important;color:var(--sg-card,#fff)!important}
+        `}</style>
+        <div style={{marginTop:12}}>
+          <div style={{fontSize:12,fontWeight:800,letterSpacing:".10em",textTransform:"uppercase",
+            color:"var(--sg-mute,rgba(255,255,255,.6))",marginBottom:7}}>
+            {_t(lang,"Trier par","Sort by","Ordenar por")}
+          </div>
+          <div className="sg-sortseg" role="tablist" aria-label={_t(lang,"Trier les plages","Sort beaches","Ordenar playas")}>
+            {[
+              {id:"best",label:_t(lang,"Meilleures","Best","Mejores")},
+              {id:"near",label:_t(lang,"Plus proches","Nearest","Cercanas")},
+              {id:"az",label:_t(lang,"A–Z","A–Z","A–Z")},
+            ].map((s,i)=>{
+              const on=sort===s.id
+              return(
+                <button key={s.id} role="tab" aria-selected={on}
+                  className={"sg-sortbtn"+(on?" is-on":"")}
+                  onClick={()=>{setSort(s.id);try{track("sg_list_sort",{sort:s.id})}catch(_){}}}>
+                  {s.label}
+                </button>
+              )
+            })}
+          </div>
         </div>
       </div>
 
@@ -11541,11 +11614,24 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
                 textTransform:"uppercase",color:"#fff",margin:"0 0 12px"}}>
                 {_t(lang,"Choisis ta plage","Pick your beach","Elige tu playa")}
               </h3>
-              <input value={pickQ} onChange={e=>{setPickQ(e.target.value)}}
-                onFocus={()=>track("sg_landing_pick_search",{})}
-                placeholder={_t(lang,`Rechercher parmi ${pickBeaches.length} plages…`,`Search ${pickBeaches.length} beaches…`,`Buscar entre ${pickBeaches.length} playas…`)}
-                style={{width:"100%",boxSizing:"border-box",background:"#10231E",border:"1px solid rgba(255,255,255,.12)",
-                  borderRadius:14,padding:"13px 16px",color:"#fff",fontSize:14,fontFamily:"inherit",outline:"none",marginBottom:10}}/>
+              {/* Recette .sg-field comic unique : loupe SVG mono-trait + bord 2.5 ink +
+                  ombre dure. input ≥16px (anti-zoom iOS). Tokens thème (comic + dark). */}
+              <div style={{position:"relative",display:"flex",alignItems:"center",marginBottom:10}}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"
+                  style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",
+                    color:"#5A5A5A",flexShrink:0,pointerEvents:"none"}}>
+                  <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2.4"/>
+                  <path d="M16.5 16.5 L21 21" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"/>
+                </svg>
+                <input value={pickQ} onChange={e=>{setPickQ(e.target.value)}}
+                  type="search" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false} enterKeyHint="search"
+                  onFocus={()=>track("sg_landing_pick_search",{})}
+                  placeholder={_t(lang,"Chercher une plage…","Search a beach…","Buscar una playa…")}
+                  style={{width:"100%",minHeight:48,boxSizing:"border-box",background:"var(--sg-card,#fff)",
+                    border:"2.5px solid #0D0D0D",borderRadius:12,padding:"13px 14px 13px 42px",
+                    color:"var(--sg-ink,#0D0D0D)",fontSize:16,fontWeight:600,fontFamily:"inherit",outline:"none",
+                    boxShadow:"2px 2px 0 #0D0D0D"}}/>
+              </div>
               <div style={{maxHeight:312,overflowY:"auto",display:"flex",flexDirection:"column",gap:6,
                 WebkitOverflowScrolling:"touch",paddingRight:2}}>
                 {list.map(b=>(
@@ -14198,7 +14284,7 @@ export default function App(){
           pointerEvents:view==="list"?"auto":"none",transition:"opacity .28s ease, transform .42s cubic-bezier(.34,1.56,.64,1)"}}>
           <BeachListView beaches={filtered} onBeachClick={onBeachClick}
             favorites={favorites} lang={lang} imageMap={imageMap}
-            sargData={sargData} onPremiumClick={openPremium} isPremium={isPremium}/>
+            sargData={sargData} onPremiumClick={openPremium} isPremium={isPremium} userPos={userPos}/>
         </div>
 
         {/* HERO VERDICT — premier écran au-dessus de la carte (z 1050 : couvre
