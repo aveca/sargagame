@@ -465,11 +465,24 @@ export default function WorldMapView({
     const onLeave=e=>{ if(e.pointerType==="mouse") onUp(e) }
     const onWheel=e=>{
       e.preventDefault()
-      const f=e.deltaY<0?1.12:1/1.12
-      const s=toSvg(e.clientX,e.clientY), c=camRef.current
-      const wx=(s[0]-c.tx)/c.k, wy=(s[1]-c.ty)/c.k
-      c.k=Math.max(K_MIN,Math.min(K_MAX,c.k*f))
-      c.tx=s[0]-wx*c.k; c.ty=s[1]-wy*c.k; clampCam(); schedule()
+      const c=camRef.current
+      // BUG TRACKPAD (fondateur 22/06) : un scroll deux-doigts (deltaMode pixel, petits
+      // deltas, sans ctrl) déclenchait un ZOOM vers le curseur → « place le curseur dans
+      // un coin et la carte zoome/se décale ». Désormais : pinch (ctrlKey) ou molette
+      // souris (deltas par lignes / amples ≥50) = ZOOM vers le curseur ; scroll trackpad
+      // = PAN naturel de la carte (zéro zoom involontaire).
+      const zoomIntent=e.ctrlKey||e.deltaMode!==0||Math.abs(e.deltaY)>=50
+      if(zoomIntent){
+        const f=e.deltaY<0?1.12:1/1.12
+        const s=toSvg(e.clientX,e.clientY)
+        const wx=(s[0]-c.tx)/c.k, wy=(s[1]-c.ty)/c.k
+        c.k=Math.max(K_MIN,Math.min(K_MAX,c.k*f))
+        c.tx=s[0]-wx*c.k; c.ty=s[1]-wy*c.k; clampCam(); schedule()
+      }else{
+        const r=el.getBoundingClientRect()
+        const sc=Math.min(r.width/800,r.height/600)||1
+        c.tx-=e.deltaX/sc; c.ty-=e.deltaY/sc; clampCam(); schedule()
+      }
     }
     el.addEventListener("pointerdown",onDown)
     el.addEventListener("pointermove",onMove)
