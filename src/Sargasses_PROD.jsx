@@ -5821,12 +5821,14 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
     {!heroEmailHidden&&!heroEmailSent&&(
       <div style={{
         position:"relative",
-        borderTop:"1px solid var(--sg-border,rgba(0,0,0,.06))",
+        borderTop:"2px solid #0D0D0D",
         padding:"10px 12px",
-        background:"linear-gradient(90deg,rgba(255,199,44,.1),rgba(255,199,44,.18))",
+        background:"#FFE47A",
         display:"flex",alignItems:"center",gap:7,
       }}>
-        <span style={{fontSize:14,flexShrink:0}}>📬</span>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}>
+          <rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3 7l9 6 9-6"/>
+        </svg>
         <input
           type="email" inputMode="email" autoComplete="email"
           placeholder={_t(lang,"ton@email — ma reco à 7h","email — daily pick at 7am","tu@email — tu playa del día a las 7")}
@@ -5836,25 +5838,27 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
           onClick={e=>e.stopPropagation()}
           style={{
             flex:1,minWidth:0,
-            padding:"7px 10px",borderRadius:8,
-            border:"1px solid rgba(0,0,0,.1)",
-            fontSize:13,fontFamily:"inherit",
-            background:"var(--sg-card,#fff)",
-            color:"var(--sg-ink,#0D0D0D)",outline:"none",
+            padding:"8px 10px",borderRadius:9,
+            border:"2px solid #0D0D0D",
+            fontSize:15,fontFamily:"inherit",
+            background:"#fff",
+            color:"#0D0D0D",outline:"none",
           }}
         />
         <button
           onClick={submitHeroEmail}
           disabled={!heroEmail||!heroEmail.includes("@")}
           style={{
-            padding:"7px 13px",borderRadius:8,border:"none",
-            background:(heroEmail&&heroEmail.includes("@"))?"linear-gradient(135deg,#FFE47A,#FFC72C)":"rgba(0,0,0,.07)",
-            color:(heroEmail&&heroEmail.includes("@"))?"#0D0D0D":"rgba(0,0,0,.35)",
-            fontSize:12,fontWeight:800,
+            padding:"8px 15px",borderRadius:9,
+            border:"2px solid #0D0D0D",
+            background:(heroEmail&&heroEmail.includes("@"))?"linear-gradient(135deg,#FFC72C,#E8A800)":"rgba(13,13,13,.07)",
+            boxShadow:(heroEmail&&heroEmail.includes("@"))?"2px 2px 0 #0D0D0D":"none",
+            color:(heroEmail&&heroEmail.includes("@"))?"#0D0D0D":"rgba(13,13,13,.32)",
+            fontSize:14,fontWeight:800,
             cursor:(heroEmail&&heroEmail.includes("@"))?"pointer":"not-allowed",
             fontFamily:"inherit",whiteSpace:"nowrap",flexShrink:0,
           }}
-        >{lang==="en"?"OK":"OK"}</button>
+        >OK</button>
         <button
           onClick={()=>{
             try{localStorage.setItem("sg_hero_email_dismiss","1")}catch{}
@@ -5864,21 +5868,24 @@ function HeroReco({allBeaches,sargData,island,lang,userPos,onBeachClick,communit
           aria-label="dismiss"
           style={{
             background:"none",border:"none",cursor:"pointer",
-            color:"rgba(0,0,0,.35)",fontSize:16,padding:"4px 2px",
-            fontFamily:"inherit",flexShrink:0,
+            color:"rgba(13,13,13,.5)",padding:"4px 2px",
+            fontFamily:"inherit",flexShrink:0,display:"flex",alignItems:"center",
           }}
-        >×</button>
+        ><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15"/></svg></button>
       </div>
     )}
     {heroEmailSent&&(
       <div style={{
         position:"relative",
-        borderTop:"1px solid var(--sg-border,rgba(0,0,0,.06))",
+        borderTop:"2px solid #0D0D0D",
         padding:"10px 14px",textAlign:"center",
-        background:"rgba(34,197,94,.09)",
+        background:"rgba(34,197,94,.12)",
       }}>
-        <div style={{fontSize:12,fontWeight:700,color:"#16A34A"}}>
-          ✓ {_t(lang,"C'est fait ! Ta reco demain à 7h.","You're in! First pick tomorrow 7am.","¡Listo! Tu playa del día mañana a las 7.")}
+        <div style={{fontSize:13,fontWeight:800,color:"#0D0D0D",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}>
+            <circle cx="12" cy="12" r="9" stroke="#0D0D0D" strokeWidth="2.2"/><path d="M8 12.5l2.5 2.5L16 9.5"/>
+          </svg>
+          <span>{_t(lang,"C'est fait ! Ta reco demain à 7h.","You're in! First pick tomorrow 7am.","¡Listo! Tu playa del día mañana a las 7.")}</span>
         </div>
         {onPremiumClick&&(
           <button
@@ -9139,32 +9146,39 @@ function ExitEmailBand({lang,pick,onClose,trigger="exitcap"}){
 // Glyphe canonique du Veilleur (œil-satellite golden-hour, porté de VeilleurHero en JSX) —
 // défs préfixées evc* pour éviter toute collision si VeilleurHero est monté.
 function VeilleurGlyph(){
+  // BIBLE : boîtier scene-ink, capteur TEAL, balise OR, regard mi-clos vers la MER (bas),
+  // jamais l'utilisateur. Faisceau de veille descendant = désigne le CTA. Aucun violet.
   return(
-    <svg viewBox="-96 -106 192 168" width="112" height="98" style={{display:"block"}} aria-hidden="true">
+    <svg viewBox="-96 -106 192 184" width="112" height="107" style={{display:"block"}} aria-hidden="true">
       <defs>
-        <radialGradient id="evcHalo" cx="50%" cy="50%" r="50%">
-          <stop offset="0" stopColor="#9a7cff" stopOpacity=".85"/><stop offset=".5" stopColor="#6a2f9e" stopOpacity=".25"/><stop offset="1" stopColor="#6a2f9e" stopOpacity="0"/>
+        <radialGradient id="evcHalo" cx="50%" cy="44%" r="55%">
+          <stop offset="0" stopColor="#1EC8B0" stopOpacity=".55"/><stop offset=".6" stopColor="#009E8E" stopOpacity=".16"/><stop offset="1" stopColor="#009E8E" stopOpacity="0"/>
         </radialGradient>
-        <radialGradient id="evcIris" cx="40%" cy="34%" r="74%">
-          <stop offset="0" stopColor="#aaffe0"/><stop offset=".5" stopColor="#34e0b0"/><stop offset="1" stopColor="#0c7a52"/>
+        <radialGradient id="evcIris" cx="42%" cy="34%" r="74%">
+          <stop offset="0" stopColor="#aaffe0"/><stop offset=".5" stopColor="#1EC8B0"/><stop offset="1" stopColor="#0A6F63"/>
         </radialGradient>
-        <linearGradient id="evcLit" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#fff0d4"/><stop offset="1" stopColor="#ffc59a"/></linearGradient>
-        <filter id="evcGlow"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <linearGradient id="evcBeam" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#FFE47A" stopOpacity=".5"/><stop offset="1" stopColor="#FFE47A" stopOpacity="0"/>
+        </linearGradient>
       </defs>
-      <circle r="86" fill="url(#evcHalo)"/>
-      <g stroke="#120821" strokeWidth="6.5" strokeLinejoin="round">
-        <rect x="-78" y="-14" width="26" height="34" rx="5" fill="#1c5a78" transform="rotate(-10 -65 3)"/>
-        <rect x="52" y="-14" width="26" height="34" rx="5" fill="#123f55" transform="rotate(10 65 3)"/>
+      <circle r="84" fill="url(#evcHalo)"/>
+      {/* faisceau de veille descendant vers la mer / le CTA */}
+      <path d="M-15 30 L15 30 L42 86 L-42 86 Z" fill="url(#evcBeam)"/>
+      <g stroke="#0A1714" strokeWidth="6.5" strokeLinejoin="round" strokeLinecap="round">
+        {/* panneaux solaires */}
+        <rect x="-78" y="-14" width="26" height="34" rx="5" fill="#009E8E" transform="rotate(-10 -65 3)"/>
+        <rect x="52" y="-14" width="26" height="34" rx="5" fill="#0A6F63" transform="rotate(10 65 3)"/>
         <line x1="-52" y1="3" x2="-34" y2="3"/><line x1="52" y1="3" x2="34" y2="3"/>
-        <ellipse cx="0" cy="2" rx="50" ry="48" fill="#5a2f73"/>
-        <path d="M-50 2 a50 48 0 0 1 34 -44 q26 -6 44 14 q-30 -16 -78 30Z" fill="url(#evcLit)" stroke="none"/>
-        <path d="M-50 2 a50 48 0 0 1 30 -42" fill="none" stroke="#ffb24d" strokeWidth="4"/>
+        {/* corps */}
+        <ellipse cx="0" cy="2" rx="38" ry="36" fill="#FDFCF7"/>
       </g>
-      <g filter="url(#evcGlow)">
-        <circle cx="0" cy="2" r="33" fill="#0d0b14"/><circle cx="2" cy="2" r="22" fill="url(#evcIris)"/><circle cx="9" cy="9" r="10" fill="#08121f"/><circle cx="13" cy="-4" r="4.5" fill="#eafff8"/>
-      </g>
-      <path d="M0 -46 q8 -22 -3 -36" stroke="#120821" strokeWidth="6" fill="none"/>
-      <circle cx="-3" cy="-86" r="11" fill="#ffd23f" stroke="#120821" strokeWidth="4"/>
+      {/* capteur/lentille teal, tourné vers la mer (regard mi-clos, serein) */}
+      <circle cx="0" cy="6" r="19" fill="url(#evcIris)" stroke="#0D0D0D" strokeWidth="5.5"/>
+      <path d="M-12 6 a12 10 0 0 1 24 0" fill="none" stroke="#0A1714" strokeWidth="4.5" strokeLinecap="round"/>
+      <circle cx="6" cy="2" r="4" fill="#EAFFF8"/>
+      {/* antenne + balise OR */}
+      <path d="M0 -34 q8 -18 -3 -32" stroke="#0D0D0D" strokeWidth="6" fill="none" strokeLinecap="round"/>
+      <circle cx="-3" cy="-70" r="10" fill="#FFC72C" stroke="#0D0D0D" strokeWidth="4"/>
     </svg>
   )
 }
@@ -9177,8 +9191,9 @@ function VeilleurGlyph(){
 function ExitVeilleurCard({lang,pick,forecast,onClose,trigger="exit"}){
   const[email,setEmail]=useState("")
   const[done,setDone]=useState(false)
-  const INK="#0D0B14"
-  const STC={clean:"#1c8f4e",moderate:"#B87A00",avoid:"#e8322a"}
+  const INK="#0D0D0D"
+  // BIBLE : purge pirates — clean #22C55E, modéré #B87A00 (jamais l'or), avoid #E8522A.
+  const STC={clean:"#22C55E",moderate:"#B87A00",avoid:"#E8522A"}
   const now=new Date()
   const WD=lang==="en"?["SUN","MON","TUE","WED","THU","FRI","SAT"]:lang==="es"?["DOM","LUN","MAR","MIÉ","JUE","VIE","SÁB"]:["DIM","LUN","MAR","MER","JEU","VEN","SAM"]
   const dayLabel=i=>i===0?_t(lang,"AUJ","TODAY","HOY"):i===1?_t(lang,"DEM","TMRW","MAÑ"):WD[new Date(now.getFullYear(),now.getMonth(),now.getDate()+i).getDay()]
@@ -9193,12 +9208,12 @@ function ExitVeilleurCard({lang,pick,forecast,onClose,trigger="exit"}){
     setDone(true)
     setTimeout(()=>{try{onClose&&onClose("submitted")}catch(_){}}, 2300)
   }
-  const hl={background:"#FFD23F",borderRadius:6,padding:"0 .12em"}
+  const hl={background:"#FFC72C",borderRadius:6,padding:"0 .12em"}
   return(
     <div onClick={e=>{if(e.target===e.currentTarget)onClose&&onClose("dismiss")}}
       style={{position:"fixed",inset:0,zIndex:1098,display:"flex",alignItems:"center",justifyContent:"center",padding:16,
-        background:"radial-gradient(135% 105% at 50% 12%, rgba(11,8,20,.30), rgba(11,8,20,.62) 70%)",
-        backdropFilter:"blur(3px)",WebkitBackdropFilter:"blur(3px)",animation:"fadeIn .2s ease both"}}>
+        background:"radial-gradient(135% 105% at 50% 12%, rgba(13,30,28,.42), rgba(13,30,28,.62) 70%)",
+        animation:"fadeIn .2s ease both"}}>
       <div style={{position:"relative",width:430,maxWidth:"96%"}}>
         <div aria-hidden="true" style={{position:"absolute",top:-72,left:"50%",transform:"translateX(-50%)",zIndex:0,width:112,pointerEvents:"none"}}>
           <VeilleurGlyph/>
@@ -9219,8 +9234,11 @@ function ExitVeilleurCard({lang,pick,forecast,onClose,trigger="exit"}){
               <div style={{fontFamily:"'Anton',sans-serif",fontSize:23,color:INK,textTransform:"uppercase",lineHeight:1,marginBottom:6}}>
                 {_t(lang,"C'est verrouillé. Je veille.","Locked in. I'm watching.","Listo. Yo vigilo.")}
               </div>
-              <div style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:13.5,color:"#3a2f1a"}}>
-                {_t(lang,"Demain 7h, le bon plan arrive. ✅","Tomorrow 7am, your plan lands. ✅","Mañana 7h llega tu plan. ✅")}
+              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:7,fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:13.5,color:"#3a2f1a"}}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={STC.clean} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}>
+                  <circle cx="12" cy="12" r="9" stroke={INK} strokeWidth="2.2"/><path d="M8 12.5l2.5 2.5L16 9.5"/>
+                </svg>
+                <span>{_t(lang,"Demain 7h, le bon plan arrive.","Tomorrow 7am, your plan lands.","Mañana 7h llega tu plan.")}</span>
               </div>
             </div>
           ):(<>
@@ -9247,7 +9265,7 @@ function ExitVeilleurCard({lang,pick,forecast,onClose,trigger="exit"}){
                   <div key={i} style={{textAlign:"center"}}>
                     <div style={{fontFamily:"'Anton',sans-serif",fontSize:11,color:unlocked?INK:"#9a8f7a",marginBottom:3}}>{dayLabel(i)}</div>
                     <div style={{height:38,borderRadius:9,border:"2px solid "+INK,boxShadow:unlocked?"2px 2px 0 "+INK:"none",background:c,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      {unlocked?<span style={{fontFamily:"'Anton',sans-serif",fontSize:14,color:"#FDFCF7"}}>{dateNum(i)}</span>:<span style={{color:"#6b5f3f",fontSize:13}}>🔒</span>}
+                      {unlocked?<span style={{fontFamily:"'Anton',sans-serif",fontSize:14,color:"#FDFCF7"}}>{dateNum(i)}</span>:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b5f3f" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0"/></svg>}
                     </div>
                   </div>
                 )
@@ -9261,7 +9279,9 @@ function ExitVeilleurCard({lang,pick,forecast,onClose,trigger="exit"}){
             </div>
             <form onSubmit={submit}>
               <div style={{display:"flex",alignItems:"center",gap:8,background:"#fff",border:"2px solid "+INK,borderRadius:12,padding:"3px 4px 3px 12px",marginBottom:10}}>
-                <span style={{fontSize:16,flexShrink:0}}>📬</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5A5A5A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}>
+                  <rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3 7l9 6 9-6"/>
+                </svg>
                 <input type="email" inputMode="email" autoComplete="email" required value={email} onChange={e=>setEmail(e.target.value)}
                   placeholder={_t(lang,"ton@email.com","your@email.com","tu@email.com")}
                   style={{flex:1,minWidth:0,border:"none",outline:"none",background:"transparent",fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:16,color:INK,padding:"9px 0"}}/>
@@ -9269,11 +9289,17 @@ function ExitVeilleurCard({lang,pick,forecast,onClose,trigger="exit"}){
               <button type="submit" style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:8,
                 background:"linear-gradient(158deg,#FFE47A,#FFC72C 40%,#E89400)",color:"#1a1300",border:"2.4px solid "+INK,borderRadius:100,
                 boxShadow:"5px 5px 0 "+INK,fontFamily:"'Anton',sans-serif",fontSize:17,textTransform:"uppercase",padding:"12px 18px",cursor:"pointer"}}>
-                🔓 {_t(lang,"Déverrouille ma semaine","Unlock my week","Desbloquea mi semana")}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1a1300" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}>
+                  <rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 7.5-1.5"/>
+                </svg>
+                {_t(lang,"Déverrouille ma semaine","Unlock my week","Desbloquea mi semana")}
               </button>
             </form>
             <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:7,fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:11.5,color:"#6b6478",marginTop:11}}>
-              🔔 <span>{_t(lang,"Alerte la veille · 1 brief/matin à 7h · stop quand tu veux","Day-before alert · 1 brief each morning at 7am · stop anytime","Aviso la víspera · 1 brief cada mañana a las 7h · cancela cuando quieras")}</span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6b6478" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}>
+                <path d="M12 3a6 6 0 0 0-6 6c0 5-2 6-2 6h16s-2-1-2-6a6 6 0 0 0-6-6z"/><path d="M10 20a2 2 0 0 0 4 0"/>
+              </svg>
+              <span>{_t(lang,"Alerte la veille · 1 brief/matin à 7h · stop quand tu veux","Day-before alert · 1 brief each morning at 7am · stop anytime","Aviso la víspera · 1 brief cada mañana a las 7h · cancela cuando quieras")}</span>
             </div>
             <div style={{textAlign:"center",marginTop:9}}>
               <button onClick={()=>onClose&&onClose("dismiss")} style={{background:"none",border:"none",fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:12,color:"#9a8f7a",textDecoration:"underline",textUnderlineOffset:2,cursor:"pointer"}}>
