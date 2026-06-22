@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le Pass du Veilleur — Premium</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FDFCF7; --gold:#FFC72C; --goldD:#E8A800; --goldL:#FFE47A;
+    --teal:#009E8E; --tealL:#1EC8B0; --green:#22C55E; --coral:#E8522A;
+    --ink:#0D0D0D; --mid:#686868; --paper:#FFF8E6;
+    --ticket:#FFF3D2; --perf:#FDFCF7;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{
+    font-family:'Bricolage Grotesque',system-ui,sans-serif;
+    color:var(--ink);
+    /* golden-hour sky behind the pass */
+    background:
+      radial-gradient(120% 80% at 50% -10%, #F2B05E 0%, #C97E3A 32%, #155A5A 70%, #0B2230 100%);
+    min-height:100vh;
+    display:flex; justify-content:center;
+    padding:22px 0 40px;
+  }
+  /* halftone wash over the sky */
+  body::before{
+    content:""; position:fixed; inset:0; pointer-events:none; opacity:.16; mix-blend-mode:overlay;
+    background-image:radial-gradient(#000 1.1px, transparent 1.2px);
+    background-size:7px 7px;
+  }
+  .wrap{ width:380px; padding:0 16px; position:relative; }
+
+  /* ---------- HEADER : Le Veilleur présente l'offre ---------- */
+  .head{ text-align:center; margin-bottom:14px; }
+  .veilleur{ width:118px; height:128px; display:block; margin:0 auto -6px; filter:drop-shadow(0 8px 0 rgba(0,0,0,.18)); }
+  .kicker{
+    display:inline-block; font-weight:800; font-size:11px; letter-spacing:.14em;
+    text-transform:uppercase; color:#3a2a12; background:var(--goldL);
+    border:2px solid var(--ink); border-radius:999px; padding:4px 12px;
+    box-shadow:2px 2px 0 var(--ink);
+  }
+  .head h1{
+    font-family:'Anton',Impact,sans-serif; font-weight:400; letter-spacing:-.01em;
+    color:#FFF6E0; font-size:30px; line-height:.96; margin:11px 0 4px;
+    text-shadow:0 2px 0 rgba(0,0,0,.28), 0 0 18px rgba(255,199,44,.25);
+  }
+  .head p{ margin:0; color:#FFE8B8; font-weight:600; font-size:13.5px; }
+  .head p b{ color:#fff; }
+
+  /* ---------- LE PASS (ticket) ---------- */
+  .pass{
+    position:relative; margin-top:24px;
+    background:linear-gradient(168deg, var(--ticket) 0%, #FFE9B0 100%);
+    border:3px solid var(--ink); border-radius:18px;
+    box-shadow:0 12px 0 -2px rgba(0,0,0,.28), 7px 9px 0 var(--ink);
+    overflow:hidden;
+  }
+  .pass.featured{ box-shadow:0 14px 28px -6px rgba(232,82,42,.45), 7px 9px 0 var(--ink); }
+  /* halftone inside ticket */
+  .pass::after{
+    content:""; position:absolute; inset:0; pointer-events:none; opacity:.10;
+    background-image:radial-gradient(var(--ink) 1px, transparent 1.3px); background-size:8px 8px;
+  }
+  .ribbon{
+    position:absolute; top:-13px; right:16px; z-index:4;
+    background:var(--coral); color:#fff; font-weight:800; font-size:13px; letter-spacing:.03em;
+    padding:5px 12px 6px; border:2.5px solid var(--ink); border-radius:9px;
+    box-shadow:2px 3px 0 var(--ink); transform:rotate(4deg);
+  }
+  .ribbon b{ font-size:14px; }
+  /* perforation rail separating stub */
+  .stubline{
+    position:absolute; left:0; right:0; top:var(--at,128px); height:0; z-index:2;
+    border-top:3px dashed rgba(13,13,13,.34);
+  }
+  .notch{ position:absolute; width:26px; height:26px; background:transparent; border:3px solid var(--ink);
+    border-radius:50%; top:calc(var(--at,128px) - 13px); z-index:2;
+    box-shadow:inset 0 0 0 40px var(--bg); }
+  /* notches punched from the golden-hour bg behind */
+  .notch.l{ left:-15px; }
+  .notch.r{ right:-15px; }
+
+  .ticket-top{ position:relative; z-index:1; padding:16px 18px 14px; }
+  .pass.featured .ticket-top{ padding-top:22px; }
+  .row{ display:flex; align-items:baseline; justify-content:space-between; }
+  .plan-name{ font-family:'Anton',Impact,sans-serif; font-size:20px; letter-spacing:.01em; }
+  .plan-name small{ display:block; font-family:'Bricolage Grotesque'; font-weight:700; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--teal); margin-bottom:1px; }
+  .price{ text-align:right; line-height:1; }
+  .price .big{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:30px; }
+  .price .per{ font-weight:700; font-size:12px; color:var(--mid); }
+  .save{
+    display:inline-flex; align-items:center; gap:5px; margin-top:8px;
+    background:var(--green); color:#06351c; font-weight:800; font-size:12px;
+    border:2px solid var(--ink); border-radius:8px; padding:3px 9px; box-shadow:2px 2px 0 var(--ink);
+  }
+  .permonth{ font-weight:700; font-size:12.5px; color:#5a4a1e; margin-top:7px; }
+  .permonth b{ color:var(--ink); }
+
+  /* stub (bottom of featured ticket) = value sold */
+  .ticket-stub{ position:relative; z-index:1; padding:13px 18px 16px;
+    background:linear-gradient(180deg, transparent, rgba(255,199,44,.18)); }
+  .stub-h{ font-weight:800; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--teal); margin:0 0 9px; }
+  .perks{ list-style:none; margin:0; padding:0; display:grid; gap:9px; }
+  .perks li{ display:flex; gap:9px; align-items:flex-start; font-weight:600; font-size:13.5px; line-height:1.25; }
+  .tick{ flex:0 0 auto; width:20px; height:20px; border-radius:50%; background:var(--gold); border:2px solid var(--ink);
+    display:grid; place-items:center; box-shadow:1.5px 1.5px 0 var(--ink); }
+  .tick svg{ width:11px; height:11px; }
+
+  /* secondary plan = monthly, smaller / muted ticket */
+  .pass.alt{ background:linear-gradient(168deg,#FFFDF4,#FBF3DC); box-shadow:5px 6px 0 var(--ink); margin-top:14px; }
+  .pass.alt .ticket-top{ padding:13px 18px; }
+  .pass.alt .plan-name{ font-size:17px; }
+  .pass.alt .price .big{ font-size:23px; }
+
+  /* ---------- CTA ---------- */
+  .cta{
+    display:block; width:100%; margin-top:20px; cursor:pointer;
+    border:3px solid var(--ink); border-radius:16px; text-align:center;
+    background:linear-gradient(180deg, var(--gold) 0%, var(--goldD) 100%);
+    color:#2a1d00; padding:15px 14px 13px;
+    box-shadow:0 6px 0 var(--ink), 0 10px 18px rgba(232,168,0,.5);
+    transition:transform .07s ease, box-shadow .07s ease;
+  }
+  .cta:active{ transform:translateY(5px); box-shadow:0 1px 0 var(--ink), 0 4px 10px rgba(232,168,0,.4); }
+  .cta .lead{ font-family:'Anton',Impact,sans-serif; font-size:21px; letter-spacing:.005em; line-height:1; }
+  .cta .arrow{ display:inline-block; transform:translateY(1px); }
+  .cta .sub{ font-weight:700; font-size:12.5px; margin-top:7px; color:#3a2a02; }
+  .cta .micro{ font-weight:700; font-size:11.5px; margin-top:3px; color:#6b5310; }
+
+  /* ---------- 3 réassurances ---------- */
+  .trust{ display:flex; gap:8px; margin-top:14px; }
+  .trust div{ flex:1; text-align:center; background:var(--paper); border:2px solid var(--ink);
+    border-radius:12px; padding:9px 4px 8px; box-shadow:2px 2px 0 var(--ink); }
+  .trust .ic{ width:22px; height:22px; margin:0 auto 5px; display:block; color:var(--teal); }
+  .trust b{ display:block; font-size:11.5px; font-weight:800; }
+  .trust span{ display:block; font-size:10px; font-weight:600; color:var(--mid); line-height:1.2; margin-top:1px; }
+
+  /* ---------- garantie ---------- */
+  .guarantee{ display:flex; gap:11px; margin-top:14px; align-items:flex-start;
+    background:#EAFBF4; border:2px solid var(--ink); border-radius:14px; padding:12px 13px;
+    box-shadow:3px 3px 0 var(--ink); }
+  .seal{ flex:0 0 auto; width:48px; height:48px; }
+  .guarantee b{ font-size:13px; font-weight:800; }
+  .guarantee p{ margin:3px 0 0; font-size:12px; font-weight:600; color:#2a4d40; line-height:1.3; }
+
+  /* ---------- liens secondaires ---------- */
+  .links{ display:flex; flex-direction:column; gap:9px; margin-top:16px; text-align:center; }
+  .links a{ font-weight:700; font-size:13px; color:#FFE8B8; text-decoration:none; }
+  .links a u{ text-decoration:underline; text-underline-offset:3px; }
+  .links a.pro{ color:#fff; }
+  .links a .ar{ color:var(--gold); }
+
+  .footer{ text-align:center; margin-top:16px; font-size:11px; font-weight:600; color:#FFD79A; opacity:.9;
+    display:flex; align-items:center; justify-content:center; gap:7px; }
+  .footer svg{ width:13px; height:13px; }
+  .dot{ width:3px; height:3px; border-radius:50%; background:#FFD79A; display:inline-block; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ====== Le Veilleur présente le pass ====== -->
+  <div class="head">
+    <svg class="veilleur" viewBox="0 0 240 260" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Le Veilleur">
+      <defs>
+        <radialGradient id="iris" cx="40%" cy="34%" r="74%">
+          <stop offset="0" stop-color="#9af7d6"/><stop offset="1" stop-color="#0c7d72"/>
+        </radialGradient>
+        <linearGradient id="solar" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#2bc6e6"/><stop offset="1" stop-color="#1487c4"/>
+        </linearGradient>
+      </defs>
+      <g stroke="#0D0D0D" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+        <!-- ombre flottante -->
+        <ellipse cx="120" cy="240" rx="58" ry="9" fill="#0D0D0D" stroke="none" opacity=".2"/>
+        <!-- panneaux solaires -->
+        <rect x="6" y="96" width="42" height="58" rx="7" fill="url(#solar)" transform="rotate(-11 27 125)"/>
+        <path d="M12 110 L42 104 M12 128 L42 122 M27 98 L27 152" stroke-width="3.5" transform="rotate(-11 27 125)"/>
+        <rect x="192" y="96" width="42" height="58" rx="7" fill="url(#solar)" transform="rotate(11 213 125)"/>
+        <path d="M198 104 L228 110 M198 122 L228 128 M213 98 L213 152" stroke-width="3.5" transform="rotate(11 213 125)"/>
+        <line x1="48" y1="126" x2="78" y2="130"/><line x1="192" y1="126" x2="162" y2="130"/>
+        <!-- antenne (or) qui pointe vers l'offre -->
+        <path d="M122 52 q9 -22 0 -38" stroke-width="6"/>
+        <circle cx="121" cy="16" r="11" fill="var(--gold)"/><circle cx="118" cy="13" r="3" fill="#fff" stroke="none"/>
+        <!-- corps / tête satellite crème -->
+        <rect x="58" y="62" width="124" height="118" rx="34" fill="#FBF4DF"/>
+        <path d="M60 150 a62 60 0 0 0 120 4 a62 60 0 0 1 -120 -4Z" fill="#ECE0C4" stroke="none"/>
+        <ellipse cx="84" cy="150" rx="11" ry="7" fill="#FF8F73" stroke="none" opacity=".45"/>
+        <ellipse cx="156" cy="150" rx="11" ry="7" fill="#FF8F73" stroke="none" opacity=".45"/>
+        <!-- ŒIL-CAPTEUR mi-clos qui regarde la MER (vers la droite/bas), JAMAIS l'utilisateur -->
+        <ellipse cx="124" cy="118" rx="46" ry="40" fill="#0D0D0D"/>
+        <clipPath id="ec"><ellipse cx="124" cy="118" rx="40" ry="34"/></clipPath>
+        <g clip-path="url(#ec)" stroke="none">
+          <rect x="84" y="84" width="80" height="70" fill="url(#iris)"/>
+          <rect x="84" y="84" width="80" height="26" fill="#FFD98A"/>
+          <circle cx="150" cy="98" r="9" fill="#FFF3C0"/>
+          <rect x="84" y="110" width="80" height="20" fill="#1EC8B0"/>
+          <path d="M84 128 q40 -9 80 0 v26 h-80Z" fill="#FFE6A8"/>
+        </g>
+        <!-- pupille décalée vers la mer (droite-bas) = regarde l'eau -->
+        <circle cx="138" cy="126" r="15" fill="#0D0D0D" stroke="none"/>
+        <circle cx="145" cy="119" r="5" fill="#fff" stroke="none"/>
+        <!-- paupière mi-close sereine -->
+        <path d="M80 104 q44 -26 90 0 q-7 -20 -45 -20 q-38 0 -45 20Z" fill="#FBF4DF"/>
+        <path d="M81 105 q43 -22 88 0" stroke-width="6" fill="none"/>
+        <!-- petit sourire ami -->
+        <path d="M104 166 q20 12 40 2" stroke-width="5.5"/>
+      </g>
+    </svg>
+
+    <span class="kicker">Le Pass du Veilleur</span>
+    <h1>QUELQU'UN VEILLE<br>TA PLAGE — CHAQUE MATIN</h1>
+    <p>Embarque ton <b>veilleur personnel</b> : la prévision, plage par plage.</p>
+  </div>
+
+  <!-- ====== PASS ANNUEL (mis en avant) ====== -->
+  <div class="pass featured" style="--at:152px">
+    <span class="ribbon"><b>−33 %</b></span>
+    <span class="stubline"></span><span class="notch l"></span><span class="notch r"></span>
+
+    <div class="ticket-top">
+      <div class="row">
+        <div class="plan-name"><small>Le pass complet</small>ANNUEL</div>
+        <div class="price"><span class="big">39,99 €</span><span class="per"> /an</span></div>
+      </div>
+      <div class="permonth">
+        <span class="save">
+          <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6.5l2.5 2.5L10 3" stroke="#06351c" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          −33 % vs mensuel
+        </span>
+        &nbsp; soit <b>3,33 €/mois</b>
+      </div>
+    </div>
+
+    <div class="ticket-stub">
+      <p class="stub-h">Ton billet donne accès à</p>
+      <ul class="perks">
+        <li><span class="tick"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6.5l2.5 2.5L10 3" stroke="#0D0D0D" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><b>La prévision</b>, plage par plage — pas une carte, un <b>verdict</b>.</span></li>
+        <li><span class="tick"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6.5l2.5 2.5L10 3" stroke="#0D0D0D" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><b>7 jours</b> à l'avance, pour planifier ta journée mer.</span></li>
+        <li><span class="tick"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6.5l2.5 2.5L10 3" stroke="#0D0D0D" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><b>Alerte + brief du matin</b> : le Veilleur te prévient la veille.</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ====== PASS MENSUEL (secondaire) ====== -->
+  <div class="pass alt">
+    <div class="ticket-top">
+      <div class="row">
+        <div class="plan-name"><small>Sans engagement</small>MENSUEL</div>
+        <div class="price"><span class="big">4,99 €</span><span class="per"> /mois</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== CTA ====== -->
+  <button class="cta" type="button">
+    <div class="lead">JE VEUX LA PRÉVISION <span class="arrow">→</span></div>
+    <div class="sub">39,99 €/an · annulable en 2 clics</div>
+    <div class="micro">soit 0,11 €/jour · moins qu'un café ☕</div>
+  </button>
+
+  <!-- ====== 3 réassurances ====== -->
+  <div class="trust">
+    <div>
+      <svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M12 2l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5l8-3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8.5 12l2.5 2.5L16 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <b>Stripe</b><span>paiement sécurisé</span>
+    </div>
+    <div>
+      <svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M21 12a9 9 0 1 1-3-6.7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M21 4v4.5h-4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <b>30 jours</b><span>satisfait ou remboursé</span>
+    </div>
+    <div>
+      <svg class="ic" viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3L22 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <b>2 clics</b><span>annule quand tu veux</span>
+    </div>
+  </div>
+
+  <!-- ====== garantie ====== -->
+  <div class="guarantee">
+    <svg class="seal" viewBox="0 0 56 56" fill="none">
+      <path d="M28 3l5.5 4.2 6.9-.6 2.8 6.3 6.3 2.8-.6 6.9L59 ' " stroke="none"/>
+      <path d="M28 3l5 3.9 6.3-.5 2.5 5.8 5.8 2.5-.5 6.3 3.9 5-3.9 5 .5 6.3-5.8 2.5-2.5 5.8-6.3-.5-5 3.9-5-3.9-6.3.5-2.5-5.8-5.8-2.5.5-6.3L4 28l3.9-5-.5-6.3 5.8-2.5 2.5-5.8 6.3.5L28 3z" fill="#22C55E" stroke="#0D0D0D" stroke-width="2.4" stroke-linejoin="round"/>
+      <path d="M20 28.5l5 5L37 22" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div>
+      <b>Garantie 30 jours satisfait ou remboursé</b>
+      <p>Pas convaincu ? Un email, remboursé — sans condition.</p>
+    </div>
+  </div>
+
+  <!-- ====== liens secondaires ====== -->
+  <div class="links">
+    <a href="#"><u>J'ai déjà un abonnement</u></a>
+    <a class="pro" href="#">Hôtel ou collectivité ? <span class="ar">→</span></a>
+  </div>
+
+  <!-- ====== footer ====== -->
+  <div class="footer">
+    <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="10" width="16" height="11" rx="2" stroke="#FFD79A" stroke-width="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="#FFD79A" stroke-width="2"/></svg>
+    Paiement sécurisé Stripe <span class="dot"></span> Sans engagement
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Paywall — Warm Editorial (Le Veilleur Premium)</title>
+<!--
+  CANDIDAT WOW — PAYWALL « WARM EDITORIAL ».
+  Direction : carte premium raffinée golden-hour. Anti-cheap PAR LE RAFFINEMENT
+  (typo soignée Anton+Bricolage, accents encre, beaucoup de chaleur #FDFCF7 + or,
+  hiérarchie claire, garanties en puces élégantes) — PAS par le bruit comic.
+  Remplace le look « dark-SaaS générique » (bleu-nuit + cards plates + CTA jaune plat).
+
+  STRUCTURE DE CONVERSION 100% PRÉSERVÉE — on touche au LOOK, pas à l'offre :
+   · 2 plans mensuel 4,99 / annuel 39,99 (badge -33%, soit 3,33/mois), annuel en avant
+   · CTA « JE VEUX LA PRÉVISION → » + 39,99/an annulable 2 clics + 0,11/jour moins qu'un café
+   · 3 rassurances Stripe / 30 jours / 2 clics
+   · bloc garantie 30 jours
+   · liens « J'ai déjà un abonnement » / « Hôtel ou collectivité ? → »
+   · footer Paiement sécurisé Stripe · Sans engagement
+  Au PORT : le CTA appelle startCheckout(effectivePlan,"warm") inchangé.
+
+  Fonts : Anton (titres MAJ) + Bricolage Grotesque (UI). Secours offline gérés.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FDFCF7; --paper:#FFFDF6; --ink:#0D0D0D; --mid:#6B6457;
+  --gold:#FFC72C; --goldD:#E8A800; --goldL:#FFE47A;
+  --teal:#009E8E; --green:#22C55E; --coral:#E8522A;
+  --line:rgba(13,13,13,.14);
+  --shadow:0 1px 0 rgba(13,13,13,.04), 0 14px 34px -18px rgba(13,13,13,.34);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  min-height:100vh;display:flex;justify-content:center;align-items:flex-start;
+  /* fond ambiance golden-hour très doux pour cadrer la carte */
+  background:
+    radial-gradient(120% 80% at 50% -8%, #FFF1CF 0%, #FDF4E2 38%, #FDFCF7 72%);
+  font-family:"Bricolage Grotesque",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  color:var(--ink);padding:18px 12px 40px;-webkit-font-smoothing:antialiased;
+}
+.fAnton{font-family:"Anton","Arial Narrow",Haettenschweiler,Impact,sans-serif;font-weight:400;letter-spacing:-.01em;text-transform:uppercase}
+
+/* ============ CARTE ============ */
+.card{
+  position:relative;width:100%;max-width:380px;background:var(--paper);
+  border:1.5px solid rgba(13,13,13,.16);border-radius:26px;overflow:hidden;
+  box-shadow:var(--shadow);
+}
+/* liseré or chaud en tête de carte */
+.card::before{content:"";position:absolute;left:0;right:0;top:0;height:4px;
+  background:linear-gradient(90deg,var(--goldD),var(--gold) 45%,var(--goldL));z-index:5}
+
+.x{position:absolute;top:14px;right:14px;z-index:6;width:34px;height:34px;border-radius:50%;
+  border:1.5px solid var(--line);background:rgba(255,255,255,.7);color:var(--mid);
+  font-size:15px;line-height:1;cursor:pointer;display:grid;place-items:center}
+.x:hover{color:var(--ink);border-color:var(--ink)}
+
+/* ============ EN-TÊTE : Veilleur présente ============ */
+.head{position:relative;padding:26px 22px 18px;text-align:center;
+  background:
+    radial-gradient(140% 120% at 50% 0%, #FFF7DF 0%, rgba(255,247,223,0) 60%);
+}
+/* halftone BD très discret, en signature (pas de bruit) */
+.head::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background:radial-gradient(rgba(232,168,0,.16) 1px,transparent 1.4px) 0 0/13px 13px;
+  -webkit-mask:linear-gradient(180deg,#000,transparent 72%);mask:linear-gradient(180deg,#000,transparent 72%)}
+
+.veil{position:relative;z-index:2;width:96px;height:96px;margin:0 auto 4px;display:block}
+.eyebrow{position:relative;z-index:2;display:inline-block;margin:2px 0 0;
+  font-family:"Bricolage Grotesque";font-weight:800;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--goldD)}
+.title{position:relative;z-index:2;margin:6px 0 8px;font-size:30px;line-height:.98;color:var(--ink)}
+.title b{color:var(--goldD)}
+.sub{position:relative;z-index:2;margin:0 auto;max-width:300px;font-size:13.5px;line-height:1.42;font-weight:600;color:var(--mid)}
+.sub strong{color:var(--ink);font-weight:800}
+
+/* ============ CE QUE TU REÇOIS — liste éditoriale élégante ============ */
+.give{padding:6px 22px 2px}
+.give-h{font-family:"Bricolage Grotesque";font-weight:800;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--mid);margin:10px 0 10px;display:flex;align-items:center;gap:10px}
+.give-h::after{content:"";flex:1;height:1px;background:var(--line)}
+.give ul{list-style:none;margin:0;padding:0}
+.give li{display:flex;gap:12px;align-items:flex-start;padding:9px 0;border-bottom:1px solid rgba(13,13,13,.07)}
+.give li:last-child{border-bottom:0}
+.give .ic{flex:0 0 auto;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;margin-top:1px;
+  background:linear-gradient(180deg,#FFF6D9,#FFE9A8);border:1.5px solid rgba(232,168,0,.55);
+  box-shadow:0 2px 0 rgba(232,168,0,.25)}
+.give .ic svg{width:16px;height:16px;display:block}
+.give .tx b{display:block;font-size:14px;font-weight:800;color:var(--ink);line-height:1.18}
+.give .tx span{display:block;font-size:12px;font-weight:600;color:var(--mid);margin-top:2px;line-height:1.3}
+.proof{margin:12px 0 4px;font-size:11.5px;font-weight:700;color:var(--teal);text-align:center;letter-spacing:.01em}
+.proof .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:5px;vertical-align:middle;box-shadow:0 0 0 3px rgba(34,197,94,.18)}
+
+/* ============ OFFRE ============ */
+.offer{padding:14px 22px 22px;margin-top:8px;
+  background:linear-gradient(180deg, rgba(255,247,223,0), rgba(255,244,221,.55));
+  border-top:1px solid var(--line)}
+
+.plans{display:flex;gap:10px;margin-bottom:14px}
+.plan{flex:1;position:relative;cursor:pointer;border-radius:15px;padding:13px 12px 12px;text-align:left;
+  background:var(--paper);border:1.5px solid var(--line);transition:border-color .12s, box-shadow .12s, background .12s}
+.plan:hover{border-color:rgba(13,13,13,.32)}
+.plan .lab{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--mid)}
+.plan .pr{display:block;margin-top:5px;font-family:"Anton","Arial Narrow",sans-serif;font-weight:400;font-size:24px;letter-spacing:.01em;color:var(--ink);line-height:1}
+.plan .pr small{font-family:"Bricolage Grotesque";font-size:11px;font-weight:700;color:var(--mid);letter-spacing:0}
+.plan .eq{display:block;margin-top:4px;font-size:10.5px;font-weight:700;color:var(--goldD)}
+.plan .tick{position:absolute;top:11px;right:11px;width:18px;height:18px;border-radius:50%;border:1.5px solid var(--line);background:#fff;display:grid;place-items:center}
+.plan .tick svg{width:11px;height:11px;opacity:0;transform:scale(.6);transition:.12s}
+.plan.on{background:linear-gradient(180deg,#FFFDF6,#FFF6DC);border-color:var(--goldD);
+  box-shadow:0 0 0 1.5px var(--goldD), 0 10px 22px -14px rgba(232,168,0,.8)}
+.plan.on .tick{background:var(--goldD);border-color:var(--goldD)}
+.plan.on .tick svg{opacity:1;transform:scale(1)}
+.badge{position:absolute;top:-10px;left:11px;background:var(--coral);color:#fff;
+  font-size:9.5px;font-weight:800;letter-spacing:.04em;padding:3px 8px;border-radius:100px;
+  box-shadow:0 3px 8px -2px rgba(232,82,42,.6)}
+
+/* CTA */
+.cta{display:block;width:100%;border:none;cursor:pointer;border-radius:16px;padding:16px 18px 14px;text-align:center;
+  background:linear-gradient(180deg,var(--gold),var(--goldD));color:#1a1407;
+  box-shadow:0 6px 0 #B98300, 0 16px 26px -12px rgba(232,168,0,.85);
+  transition:transform .07s, box-shadow .07s}
+.cta:active{transform:translateY(4px);box-shadow:0 2px 0 #B98300, 0 8px 14px -10px rgba(232,168,0,.85)}
+.cta .big{font-family:"Anton","Arial Narrow",sans-serif;font-weight:400;text-transform:uppercase;font-size:19px;letter-spacing:.01em;line-height:1.05;display:block}
+.cta .big .arr{display:inline-block;transition:transform .15s}
+.cta:hover .big .arr{transform:translateX(4px)}
+.cta .sm{display:block;font-size:12px;font-weight:700;margin-top:6px;color:#3a2e0c}
+.cta .xs{display:block;font-size:11px;font-weight:600;margin-top:2px;color:#6a560f;opacity:.92}
+
+/* rassurances */
+.trust{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.tcell{text-align:center;padding:10px 5px 9px;border-radius:12px;background:var(--paper);border:1px solid var(--line)}
+.tcell .ti{width:22px;height:22px;margin:0 auto 5px;display:block;color:var(--teal)}
+.tcell b{display:block;font-size:11px;font-weight:800;color:var(--ink)}
+.tcell em{display:block;font-style:normal;font-size:9.5px;font-weight:600;color:var(--mid);margin-top:1px;line-height:1.2}
+
+/* garantie */
+.guar{display:flex;gap:12px;align-items:flex-start;margin-top:14px;padding:13px 14px;border-radius:14px;
+  background:linear-gradient(180deg, rgba(34,197,94,.08), rgba(34,197,94,.05));border:1.5px solid rgba(34,197,94,.4)}
+.guar .gi{flex:0 0 auto;width:26px;height:26px;color:var(--green);margin-top:1px}
+.guar b{display:block;font-size:12.5px;font-weight:800;color:var(--ink)}
+.guar em{display:block;font-style:normal;font-size:11.5px;font-weight:600;color:#2f5a3c;margin-top:2px;line-height:1.35}
+
+/* liens secondaires */
+.links{margin-top:16px;text-align:center}
+.links a{display:block;font-size:12.5px;font-weight:700;color:var(--ink);text-decoration:none;padding:7px 0;cursor:pointer}
+.links a:first-child{border-bottom:1px solid var(--line)}
+.links a:hover{color:var(--goldD)}
+.links a .un{text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line)}
+
+.foot{margin-top:14px;text-align:center;font-size:10.5px;font-weight:600;color:var(--mid);
+  display:flex;align-items:center;justify-content:center;gap:6px}
+.foot svg{width:13px;height:13px;color:var(--teal)}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="card" role="dialog" aria-label="Passer au Veilleur Premium">
+  <button class="x" aria-label="Fermer">✕</button>
+
+  <!-- ===== EN-TÊTE : Le Veilleur présente, regard tourné vers la MER ===== -->
+  <div class="head">
+    <!-- Le Veilleur (satellite crème, œil ami mi-clos tourné vers l'eau, antenne, panneaux solaires) -->
+    <svg class="veil" viewBox="0 0 120 120" aria-hidden="true">
+      <defs>
+        <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#FFFDF6"/><stop offset="1" stop-color="#F2E9D2"/>
+        </linearGradient>
+        <radialGradient id="sun" cx="50%" cy="42%" r="60%">
+          <stop offset="0" stop-color="#FFE47A"/><stop offset="1" stop-color="#FFC72C"/>
+        </radialGradient>
+      </defs>
+      <!-- douce veille de mer (faisceau vers l'eau, en bas) — caring, pas scan -->
+      <path d="M44 84 L30 116 L90 116 L76 84 Z" fill="url(#sun)" opacity=".22"/>
+      <!-- panneaux solaires -->
+      <g stroke="#0D0D0D" stroke-width="2.4">
+        <rect x="4" y="50" width="20" height="22" rx="2.5" fill="#1EC8B0"/>
+        <rect x="96" y="50" width="20" height="22" rx="2.5" fill="#1EC8B0"/>
+        <line x1="13" y1="50" x2="13" y2="72"/><line x1="106" y1="50" x2="106" y2="72"/>
+        <line x1="24" y1="61" x2="40" y2="61"/><line x1="96" y1="61" x2="80" y2="61"/>
+      </g>
+      <!-- corps -->
+      <circle cx="60" cy="62" r="33" fill="url(#body)" stroke="#0D0D0D" stroke-width="3"/>
+      <!-- antenne -->
+      <line x1="60" y1="29" x2="60" y2="15" stroke="#0D0D0D" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="60" cy="12" r="4.5" fill="var(--gold)" stroke="#0D0D0D" stroke-width="2.4"/>
+      <!-- capteur / œil ami, mi-clos, légèrement tourné vers le bas (la mer) -->
+      <circle cx="60" cy="64" r="18" fill="#0D0D0D"/>
+      <circle cx="60" cy="64" r="12.5" fill="url(#sun)"/>
+      <!-- paupière mi-close = serein, ne fixe pas -->
+      <path d="M41 60 Q60 49 79 60" fill="none" stroke="#0D0D0D" stroke-width="6" stroke-linecap="round"/>
+      <circle cx="63" cy="62" r="2.6" fill="#FFFDF6"/>
+      <!-- petit sourire -->
+      <path d="M50 84 Q60 90 70 84" fill="none" stroke="#0D0D0D" stroke-width="2.8" stroke-linecap="round"/>
+    </svg>
+
+    <div class="eyebrow">Le Veilleur · Premium</div>
+    <h2 class="title fAnton">Quelqu'un veille<br><b>ta plage</b> pour toi</h2>
+    <p class="sub">Le gratuit te dit <strong>aujourd'hui</strong>. Le Veilleur te dit <strong>les 7 prochains jours</strong> — et t'alerte le jour où ça bascule.</p>
+  </div>
+
+  <!-- ===== CE QUE TU REÇOIS ===== -->
+  <div class="give">
+    <div class="give-h">Ce que reçoit ton Veilleur</div>
+    <ul>
+      <li>
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#E8A800" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v5l3 2"/><circle cx="12" cy="12" r="9"/></svg></span>
+        <span class="tx"><b>La prévision à 7 jours, plage par plage</b><span>Sais demain matin où l'eau sera claire — pas seulement aujourd'hui.</span></span>
+      </li>
+      <li>
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#E8A800" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg></span>
+        <span class="tx"><b>L'alerte le jour où ta plage bascule</b><span>Un message dès que ta plage favorite passe de propre à modéré.</span></span>
+      </li>
+      <li>
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#E8A800" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/></svg></span>
+        <span class="tx"><b>Le brief de 7 h, chaque matin</b><span>Ta meilleure plage du jour, choisie et vérifiée pendant ton café.</span></span>
+      </li>
+    </ul>
+    <p class="proof"><span class="dot"></span>14 / 18 plages propres en ce moment · satellite vérifié 4×/jour</p>
+  </div>
+
+  <!-- ===== OFFRE ===== -->
+  <div class="offer">
+    <div class="plans">
+      <div class="plan" id="planMo" role="button" tabindex="0" onclick="selPlan('mo')">
+        <span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+        <span class="lab">Mensuel</span>
+        <span class="pr">4,99 €<small> /mois</small></span>
+      </div>
+      <div class="plan on" id="planYr" role="button" tabindex="0" onclick="selPlan('yr')">
+        <span class="badge">−33 %</span>
+        <span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+        <span class="lab">Annuel</span>
+        <span class="pr">39,99 €<small> /an</small></span>
+        <span class="eq">soit 3,33 €/mois</span>
+      </div>
+    </div>
+
+    <button class="cta" id="cta">
+      <span class="big">Je veux la prévision <span class="arr">→</span></span>
+      <span class="sm" id="ctaSub">39,99 €/an · annulable en 2 clics</span>
+      <span class="xs" id="ctaXs">soit 0,11 €/jour · moins qu'un café</span>
+    </button>
+
+    <div class="trust">
+      <div class="tcell">
+        <svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg>
+        <b>Stripe</b><em>Paiement sécurisé</em>
+      </div>
+      <div class="tcell">
+        <svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        <b>30 jours</b><em>Satisfait ou remboursé</em>
+      </div>
+      <div class="tcell">
+        <svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        <b>2 clics</b><em>Annule quand tu veux</em>
+      </div>
+    </div>
+
+    <div class="guar">
+      <svg class="gi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg>
+      <span><b>Garantie 30 jours satisfait ou remboursé</b><em>Pas convaincu ? Un email, remboursé — sans condition.</em></span>
+    </div>
+
+    <div class="links">
+      <a id="haveSub"><span class="un">J'ai déjà un abonnement</span></a>
+      <a id="b2b">Hôtel ou collectivité ? <span style="color:var(--goldD)">→</span></a>
+    </div>
+
+    <div class="foot">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+      Paiement sécurisé Stripe · Sans engagement
+    </div>
+  </div>
+</div>
+
+<script>
+/* toggle de plan — classList + textContent uniquement (zéro innerHTML) */
+function selPlan(p){
+  document.getElementById("planMo").classList.toggle("on",p==="mo");
+  document.getElementById("planYr").classList.toggle("on",p==="yr");
+  document.getElementById("ctaSub").textContent =
+    p==="mo" ? "4,99 €/mois · annulable en 2 clics" : "39,99 €/an · annulable en 2 clics";
+  document.getElementById("ctaXs").textContent =
+    p==="mo" ? "soit 0,17 €/jour · moins qu'un café" : "soit 0,11 €/jour · moins qu'un café";
+}
+/* accessibilité clavier sur les plans */
+document.querySelectorAll('.plan').forEach(el=>el.addEventListener('keydown',e=>{
+  if(e.key==='Enter'||e.key===' '){e.preventDefault();el.click();}
+}));
+</script>
+</body>
+</html>
