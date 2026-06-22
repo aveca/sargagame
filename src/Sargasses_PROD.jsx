@@ -12962,6 +12962,7 @@ export default function App(){
   // totale = bounce statistique ; le toast ne coûte rien au funnel. Gates :
   // vue carte, hero fermé, pas de fiche/paywall ouvert, pas premium, 1×/session.
   const[showGameToast,setShowGameToast]=useState(false)
+  const[showGameFull,setShowGameFull]=useState(false)
   const[showExitCap,setShowExitCap]=useState(false)
   const[showExitVeilleur,setShowExitVeilleur]=useState(false)
   // A/B exitcap : capture email de sortie (50/50, override ?exitcap=1/0)
@@ -12999,6 +13000,16 @@ export default function App(){
         try{if(sessionStorage.getItem("sg_exitcap"))return;sessionStorage.setItem("sg_exitcap","1")}catch(_){return}
         setShowGameToast(false);setShowExitVeilleur(true);track("sg_exitcap_open",{trigger,variant:"veilleur"});return
       }
+      // AFK (idle 45s) → LANCE le jeu DIRECTEMENT (overlay plein écran fermable) au lieu
+      // d'un toast « envie de jouer ? » (décision fondateur 22/06). Fermable d'1 tap →
+      // si l'idle s'est déclenché sur un simple temps de lecture, retour carte immédiat.
+      if(trigger==="idle"){
+        try{if(sessionStorage.getItem("sg_game_full"))return;sessionStorage.setItem("sg_game_full","1")}catch(_){return}
+        setShowGameFull(true)
+        track("sg_game_full_shown",{trigger})
+        return
+      }
+      // Autres déclencheurs (partant déjà capté qui n'a pas la carte) → toast soft.
       try{
         if(sessionStorage.getItem("sg_game_toast"))return
         sessionStorage.setItem("sg_game_toast","1")
@@ -13978,6 +13989,19 @@ export default function App(){
         {showExitVeilleur&&!showHero&&!showPrevLanding&&!selectedBeach&&!showPremium&&view==="map"&&exitcapPick&&(
           <ExitVeilleurCard lang={lang} pick={exitcapPick} forecast={exitcapForecast} trigger="exit"
             onClose={reason=>{setShowExitVeilleur(false);if(reason!=="submitted"){s("sg_exitcap_snooze",Date.now()+12096e5);track("sg_exitcap_dismiss",{})}}}/>
+        )}
+        {/* SARGACATCH PLEIN ÉCRAN — lancé direct sur AFK (idle). Le jeu /jeu/ (page
+            autonome) en iframe par-dessus la carte ; × pour revenir. z1099 (sous paywall). */}
+        {showGameFull&&!showHero&&!showPrevLanding&&!selectedBeach&&!showPremium&&view==="map"&&(
+          <div style={{position:"fixed",inset:0,zIndex:1099,background:"#0d2230",animation:"fadeIn .25s ease both"}}>
+            <iframe src="/jeu/?utm_source=app&utm_medium=afk" title="SargaCatch"
+              style={{position:"absolute",inset:0,width:"100%",height:"100%",border:"none",display:"block"}}/>
+            <button onClick={()=>{setShowGameFull(false);track("sg_game_full_close",{})}}
+              aria-label={_t(lang,"Fermer le jeu","Close game","Cerrar juego")}
+              style={{position:"fixed",top:"calc(10px + env(safe-area-inset-top))",right:12,zIndex:1101,
+                width:38,height:38,borderRadius:"50%",background:"rgba(10,23,20,.72)",border:"1px solid rgba(255,255,255,.35)",
+                color:"#fff",fontSize:20,lineHeight:1,cursor:"pointer",backdropFilter:"blur(6px)",WebkitBackdropFilter:"blur(6px)"}}>×</button>
+          </div>
         )}
         {/* SARGACATCH TOAST — petit, coin bas, jamais bloquant (z 1090 :
             au-dessus des contrôles carte, sous le paywall z1100). */}
