@@ -368,7 +368,11 @@ if(d.updatedAt){ts.setAttribute('data-iso',d.updatedAt);show(d.updatedAt)}}).cat
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(desc)}"/>
 <link rel="canonical" href="${canonical}"/>
-<link rel="icon" href="/favicon.svg"/>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png"/>
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"/>
+<link rel="icon" href="/favicon.ico" sizes="any"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
 <meta property="og:title" content="${esc(title)}"/>
 <meta property="og:description" content="${esc(desc)}"/>
 <meta property="og:url" content="${canonical}"/>

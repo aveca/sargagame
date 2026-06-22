@@ -1,6 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="80" fill="#0d1117"/>
-  <circle cx="256" cy="240" r="160" fill="none" stroke="#C4830A" stroke-width="24"/>
-  <text x="256" y="290" text-anchor="middle" font-family="sans-serif" font-weight="900" font-size="260" fill="#C4830A">S</text>
-  <text x="256" y="440" text-anchor="middle" font-family="sans-serif" font-weight="700" font-size="60" fill="rgba(255,255,255,0.5)">LIVE</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="ring" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFC95C"/>
+      <stop offset="0.45" stop-color="#F7A23C"/>
+      <stop offset="1" stop-color="#F2602A"/>
+    </linearGradient>
+  </defs>
+  
+  <path d="M50 82 C26 62 17 49 17 36 C17 25 25 19 34 19 C41 19 47 23 50 30 C53 23 59 19 66 19 C75 19 83 25 83 36 C83 49 74 62 50 82 Z" fill="#10AA95" stroke="url(#ring)" stroke-width="6"
+        stroke-linejoin="round" stroke-linecap="round"/>
 </svg>
