@@ -1473,8 +1473,8 @@ const T={
     wind:"Vent",uv:"UV",temp:"Température",drive:"min",
     kids:"Enfants",snorkel:"Snorkeling",parking:"Parking",
     premium:"Premium",premiumDesc:"Ton veilleur sargasses : brief matin, alertes plages favorites, reco du jour.",
-    premiumPrice:"4,99 €/mois",premiumCta:"Commencer — 0€ aujourd'hui",
-    premiumFeatures:["Essai 7 jours — 0€, annule en 1 clic","Brief matin : ta meilleure plage, chaque jour","Alertes push avant que les sargasses arrivent","Sans pub · Sans engagement · Satisfait ou remboursé"],
+    premiumPrice:"4,99 €/mois",premiumCta:"Activer Premium — 4,99 €/mois",
+    premiumFeatures:["Accès complet immédiat — 4,99 €/mois, annulable en 2 clics","Brief matin : ta meilleure plage, chaque jour","Alertes push avant que les sargasses arrivent","Sans pub · Sans engagement · Satisfait ou remboursé"],
     h2sWarn:"Si des sargasses sont échouées et en décomposition sur place, éloignez-vous (risque H₂S). Source : HCSP/ARS.",
     copernicus:"Copernicus Marine",live:"LIVE",
     nClean:"{n} propres",island_mq:"Martinique",island_gp:"Guadeloupe",
@@ -1539,8 +1539,8 @@ const T={
     wind:"Wind",uv:"UV",temp:"Temperature",drive:"min",
     kids:"Kids",snorkel:"Snorkeling",parking:"Parking",
     premium:"Premium",premiumDesc:"Your sargassum watchman: morning brief, favourite-beach alerts, daily pick.",
-    premiumPrice:"€4.99/mo",premiumCta:"Start free — 0€ today",
-    premiumFeatures:["7-day free trial — cancel in 1 click","Morning brief: your best beach, every day","Push alerts before sargassum hits your favourites","No ads · No commitment · 30-day guarantee"],
+    premiumPrice:"€4.99/mo",premiumCta:"Activate Premium — €4.99/mo",
+    premiumFeatures:["Full access right away — €4.99/mo, cancel in 2 clicks","Morning brief: your best beach, every day","Push alerts before sargassum hits your favourites","No ads · No commitment · 30-day guarantee"],
     h2sWarn:"If sargassum is beached and decomposing on site, move away (H₂S risk). Source: HCSP/ARS.",
     copernicus:"Copernicus Marine",live:"LIVE",
     nClean:"{n} clean",island_mq:"Martinique",island_gp:"Guadeloupe",
@@ -1605,8 +1605,8 @@ const T={
     wind:"Viento",uv:"UV",temp:"Temperatura",drive:"min",
     kids:"Niños",snorkel:"Snorkel",parking:"Estacionamiento",
     premium:"Premium",premiumDesc:"Tu vigía del sargazo: resumen matutino, alertas de playas favoritas, recomendación del día.",
-    premiumPrice:"4,99 €/mes",premiumCta:"Comenzar — 0€ hoy",
-    premiumFeatures:["Prueba 7 días — 0€, cancela en 1 clic","Resumen matutino: tu mejor playa, cada día","Alertas push antes de que llegue el sargazo","Sin anuncios · Sin compromiso · Garantía de satisfacción"],
+    premiumPrice:"4,99 €/mes",premiumCta:"Activar Premium — 4,99 €/mes",
+    premiumFeatures:["Acceso completo inmediato — 4,99 €/mes, cancela en 2 clics","Resumen matutino: tu mejor playa, cada día","Alertas push antes de que llegue el sargazo","Sin anuncios · Sin compromiso · Garantía de satisfacción"],
     h2sWarn:"Si el sargazo está varado y en descomposición, aléjese (riesgo de H₂S). Fuente: HCSP/ARS.",
     copernicus:"Copernicus Marine",live:"EN VIVO",
     nClean:"{n} limpias",island_mq:"Martinica",island_gp:"Guadalupe",
@@ -14703,7 +14703,7 @@ export default function App(){
             <div>
               <div>{_t(lang,"Recommandé par un ami","Recommended by a friend","Recomendado por un amigo")}</div>
               <div style={{fontSize:10,fontWeight:400,opacity:.85,marginTop:2}}>
-                {_t(lang,"Appuie pour essayer premium gratuitement","Tap to start your free premium trial","Toca para probar premium gratis")}
+                {_t(lang,"Appuie pour découvrir Premium","Tap to discover Premium","Toca para descubrir Premium")}
               </div>
             </div>
             <button aria-label="Close" onClick={e=>{e.stopPropagation();setShowReferralBanner(false)}} style={{
