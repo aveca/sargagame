@@ -7012,7 +7012,7 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
         {/* A/B pw_season : alternative pass saison (cash d'avance, zéro churn) */}
         {onSeason&&<button type="button" className="pww-season-alt" onClick={onSeason}>
           <span style={{display:"flex",flexDirection:"column",gap:2,minWidth:0}}>
-            <b style={{fontSize:13.5,color:"#0D0D0D",fontWeight:800}}>🌅 {_t(lang,"Plutôt un pass saison ?","Prefer a season pass?","¿Mejor un pase de temporada?")}</b>
+            <b style={{fontSize:13.5,color:"#0D0D0D",fontWeight:800}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:"-2px",marginRight:3}}><path d="M12 5v2M6 11l1 1M2 18h20M18 11l-1 1M8.5 18a3.5 3.5 0 0 1 7 0"/></svg>{_t(lang,"Plutôt un pass saison ?","Prefer a season pass?","¿Mejor un pase de temporada?")}</b>
             <em style={{fontSize:11.5,color:"rgba(13,13,13,.62)",fontStyle:"normal"}}>{_t(lang,"19,99 € une fois · 6 mois · sans abonnement","€19.99 once · 6 months · no subscription","19,99 € una vez · 6 meses · sin suscripción")}</em>
           </span>
           <span style={{fontSize:18,fontWeight:800,color:"#0D0D0D",flexShrink:0}}>→</span>
@@ -7021,7 +7021,7 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
         {/* LIENS SECONDAIRES */}
         <div className="pww-links">
           <button type="button" className="pww-link" onClick={onAlready}>{_t(lang,"J'ai déjà un abonnement","I already have a subscription","Ya tengo una suscripción")}</button>
-          {onB2B&&<button type="button" className="pww-link b2b" onClick={onB2B}>🏨 {_t(lang,"Hôtel ou collectivité ? →","Hotel or town? →","¿Hotel o municipio? →")}</button>}
+          {onB2B&&<button type="button" className="pww-link b2b" onClick={onB2B}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:"-2px",marginRight:4}}><rect x="6" y="3" width="12" height="18" rx="1"/><path d="M10.5 21v-3h3v3"/></svg>{_t(lang,"Hôtel ou collectivité ? →","Hotel or town? →","¿Hotel o municipio? →")}</button>}
         </div>
 
         <div className="pww-secure"><Lock s={11}/>{_t(lang,"Paiement sécurisé Stripe · Sans engagement","Secure Stripe payment · No commitment","Pago seguro Stripe · Sin compromiso")}</div>
