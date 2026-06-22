@@ -405,6 +405,73 @@ function ScoreBlob({score,color,size=84}){
   )
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   TOAST CANONIQUE (.sg-toast) — source UNIQUE de marque (bible États & micro-copy).
+   Remplace les alert() OS + les toasts ad-hoc bleu-pirate. Singleton module-level
+   (event emitter) → n'importe quel composant appelle sgToast(...) sans threader de
+   prop ; un seul <SgToastHost/> monté au root rend la pile. Le Veilleur porte
+   l'humeur (calme/scan/alerte). i18n via _t. ✕ en SVG, jamais Unicode.
+   ═══════════════════════════════════════════════════════════════════════════ */
+let _sgToastSeq=0
+const _sgToastSubs=new Set()
+let _sgToasts=[]
+function _sgEmit(){for(const fn of _sgToastSubs)fn(_sgToasts)}
+// sgToast({title,msg,tone:'info'|'error'|'success',mood,duration,action}) → id
+function sgToast(opts){
+  const o=typeof opts==="string"?{msg:opts}:(opts||{})
+  const id=++_sgToastSeq
+  const tone=o.tone||"info"
+  // mood par défaut déduit du ton (alerte=corail, succès/info=calme)
+  const mood=o.mood||(tone==="error"?"alerte":tone==="success"?"serein":"scan")
+  const duration=o.duration!=null?o.duration:(tone==="error"?7000:4200)
+  _sgToasts=[..._sgToasts,{id,title:o.title||"",msg:o.msg||"",tone,mood,action:o.action||null}]
+  _sgEmit()
+  if(duration>0)setTimeout(()=>sgDismissToast(id),duration)
+  return id
+}
+function sgDismissToast(id){
+  if(!_sgToasts.some(t=>t.id===id))return
+  _sgToasts=_sgToasts.filter(t=>t.id!==id);_sgEmit()
+}
+// ✕ SVG canonique (jamais Unicode ✕)
+function SgClose({onClick,lang}){
+  return(
+    <button type="button" className="sg-toast__x" aria-label={_t(lang||"fr","Fermer","Close","Cerrar")} onClick={onClick}>
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+        <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+      </svg>
+    </button>
+  )
+}
+function SgToastHost({lang="fr"}){
+  const[list,setList]=useState(_sgToasts)
+  useEffect(()=>{const fn=l=>setList([...l]);_sgToastSubs.add(fn);setList([..._sgToasts]);return()=>{_sgToastSubs.delete(fn)}},[])
+  if(!list.length)return null
+  return(
+    <div className="sg-toast-host" role="region" aria-live="polite" aria-label={_t(lang,"Notifications","Notifications","Notificaciones")}>
+      {list.map(t=>{
+        const isErr=t.tone==="error"
+        return(
+          <div key={t.id} className={"sg-toast sg-toast--"+t.tone} role={isErr?"alert":"status"}>
+            <span className="sg-toast__bar"/>
+            <span className="sg-toast__veil" aria-hidden="true"><Veilleur mood={t.mood} size={34}/></span>
+            <div className="sg-toast__body">
+              {t.title?<div className="sg-toast__title">{t.title}</div>:null}
+              {t.msg?<div className="sg-toast__msg">{t.msg}</div>:null}
+              {t.action?(
+                <button type="button" className="sg-toast__act" onClick={()=>{try{t.action.onClick&&t.action.onClick()}finally{sgDismissToast(t.id)}}}>{t.action.label}</button>
+              ):null}
+            </div>
+            <SgClose lang={lang} onClick={()=>sgDismissToast(t.id)}/>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+// API canonique exposée (QA + call-sites éventuels hors composant), comme sgArchetypeOf/sgHasUnlock.
+try{if(typeof window!=="undefined"){window.sgToast=sgToast;window.sgDismissToast=sgDismissToast}}catch(_){}
+
 // ── PRNG DÉTERMINISTE (BeachScene v2, spec wdiiae0wd) — une plage = TOUJOURS la même
 //    scène (seed depuis beach.id). FNV-1a 32-bit + mulberry32. JAMAIS Math.random/Date.now
 //    (sinon la scène se re-randomise à chaque render + casse SSR). Tirages dans un ordre fixe.
@@ -2458,12 +2525,59 @@ button:active,a:active,[role="button"]:active{transform:scale(.91)!important;opa
   .sheet{max-height:92dvh !important}
 }
 
+/* ══════════ TOAST CANONIQUE (.sg-toast) — bible États & micro-copy ══════════
+   Scopé !important pour battre le skin de thème forcé (theme-comic button{…!important},
+   etc.). Une seule recette : papier crème, liseré ink 2.5px, ombre dure bas-droite.
+   Le Veilleur porte l'humeur. Corps ≥15px. ✕ en SVG. Aligné comic-crème live. */
+.sg-toast-host{position:fixed;left:50%;transform:translateX(-50%);
+  bottom:calc(104px + env(safe-area-inset-bottom,0px));z-index:1480;
+  width:min(92vw,460px);display:flex;flex-direction:column;gap:10px;pointer-events:none}
+.sg-toast{pointer-events:auto;display:flex;align-items:flex-start;gap:12px;position:relative;overflow:hidden;
+  box-sizing:border-box;width:100%;padding:14px 14px 14px 16px;
+  background:var(--sg-card,#fdf6e3) !important;color:var(--sg-ink,#0d0d0d) !important;
+  border:2.5px solid var(--sg-ink,#0d0d0d) !important;border-radius:16px !important;
+  box-shadow:4px 4px 0 var(--sg-ink,#0d0d0d) !important;
+  font-family:'Bricolage Grotesque',system-ui,sans-serif;
+  animation:sgToastIn .34s cubic-bezier(.22,1,.36,1) both}
+.sg-toast__bar{position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--sg-teal,#009E8E)}
+.sg-toast--error .sg-toast__bar{background:#E8522A}
+.sg-toast--success .sg-toast__bar{background:#22C55E}
+.sg-toast--info .sg-toast__bar{background:#FFC72C}
+.sg-toast__veil{flex-shrink:0;margin-top:1px;line-height:0}
+.sg-toast__body{flex:1;min-width:0}
+.sg-toast__title{font-weight:800;font-size:16px;line-height:1.25;letter-spacing:-.01em;color:var(--sg-ink,#0d0d0d)}
+.sg-toast__msg{font-size:15px;line-height:1.4;font-weight:600;color:var(--sg-mid,#3a3a3a);margin-top:2px}
+.sg-toast__title + .sg-toast__msg{margin-top:3px}
+.sg-toast__act{margin-top:10px;font-family:'Bricolage Grotesque',sans-serif !important;font-weight:800 !important;
+  font-size:13px !important;min-height:40px;padding:8px 14px !important;
+  background:#fff !important;color:var(--sg-ink,#0d0d0d) !important;
+  border:2.5px solid var(--sg-ink,#0d0d0d) !important;border-radius:12px !important;
+  box-shadow:2px 2px 0 var(--sg-ink,#0d0d0d) !important;text-shadow:none !important;cursor:pointer}
+.sg-toast__act:active{transform:translate(2px,2px) !important;box-shadow:0 0 0 var(--sg-ink,#0d0d0d) !important}
+.sg-toast__x{flex-shrink:0;width:40px;height:40px;min-width:40px;display:flex;align-items:center;justify-content:center;
+  border:none !important;background:none !important;box-shadow:none !important;color:var(--sg-mid,#5a5a5a) !important;
+  cursor:pointer;padding:0 !important;border-radius:10px !important;margin:-4px -4px 0 0}
+.sg-toast__x:active{transform:scale(.9)}
+@keyframes sgToastIn{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+
+/* ══════════ SKELETON tokenisé (chargement = pro, pas vide gris) ══════════ */
+.sg-sk{background:linear-gradient(100deg,var(--sg-cardS,#EFEDE6) 30%,var(--sg-card,#F8F6F0) 50%,var(--sg-cardS,#EFEDE6) 70%);
+  background-size:200% 100%;border-radius:8px;animation:sgShimmer 1.6s ease-in-out infinite}
+@keyframes sgShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ══════════ EMPTY-STATE de marque (Veilleur calme, copy ≥15px) ══════════ */
+.sg-empty{text-align:center;animation:fadeIn .3s ease}
+.sg-empty__veil{display:flex;justify-content:center;margin-bottom:10px}
+.sg-empty__title{font-size:17px;font-weight:800;color:var(--sg-ink,#fff);margin-bottom:6px;line-height:1.2}
+.sg-empty__sub{font-size:15px;line-height:1.45;color:var(--sg-mute,rgba(255,255,255,.62));max-width:34ch;margin:0 auto}
+
 /* Reduced motion — kill infinite animations, keep one-shot transitions */
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
   .gbtn::after{animation:none !important}
   .sg-nearest-ring,.sg-eta-badge,.pulse,.sg-drift-path{animation:none !important}
   .heart-pop{animation:none !important}
+  .sg-sk{animation:none !important;background:var(--sg-cardS,#EFEDE6) !important}
 }
 `
 
@@ -5080,16 +5194,13 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap,sargData,on
         </button>
       )}
       {filtered.length===0?(
-        <div style={{padding:"60px 32px",textAlign:"center",animation:"fadeIn .3s ease"}}>
-          <svg width="56" height="56" viewBox="0 0 24 24" aria-hidden="true" style={{marginBottom:12,opacity:.9,color:"var(--sg-ink,rgba(255,255,255,.7))"}}>
-            <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" strokeWidth="2"/>
-            <path d="M16.5 16.5 L21 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-          </svg>
-          <div style={{fontSize:16,fontWeight:800,color:"var(--sg-ink,#fff)",marginBottom:6}}>
+        <div className="sg-empty" style={{padding:"60px 32px"}}>
+          <div className="sg-empty__veil"><Veilleur mood="serein" size={64}/></div>
+          <div className="sg-empty__title">
             {_t(lang,"Aucune plage trouvée","No beaches match","No se encontraron playas")}
           </div>
-          <div style={{fontSize:13,color:"var(--sg-mute,rgba(255,255,255,.6))",lineHeight:1.5}}>
-            {_t(lang,"Essaie un autre filtre ou une autre recherche.","Try a different filter or search.","Prueba otro filtro u otra búsqueda.")}
+          <div className="sg-empty__sub">
+            {_t(lang,"Essaie un autre filtre — je garde l'œil sur le reste de la côte.","Try another filter — I'm keeping an eye on the rest of the coast.","Prueba otro filtro — sigo vigilando el resto de la costa.")}
           </div>
         </div>
       ):(
@@ -7572,9 +7683,9 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         if(d.trialEnd)localStorage.setItem("sg_premium_trial_end",String(d.trialEnd))
         track("sg_premium_already_success",{source:source||"unknown"});onActivated?.();onClose()}
       else{track("sg_premium_already_failed",{reason:d.reason||d.error||"inactive"})
-        alert(_t(lang,"Aucun abonnement actif trouvé pour cet email. Vérifie l'adresse ou contacte "+SUPPORT_EMAIL+".","No active subscription found for this email. Check the address or contact "+SUPPORT_EMAIL+".","No se encontró ninguna suscripción activa para este email. Verifica la dirección o contacta "+SUPPORT_EMAIL+"."))}
+        sgToast({tone:"error",title:_t(lang,"Aucun abonnement trouvé","No subscription found","No se encontró suscripción"),msg:_t(lang,"Vérifie l'adresse, ou écris-moi à "+SUPPORT_EMAIL+".","Check the address, or write to me at "+SUPPORT_EMAIL+".","Verifica la dirección, o escríbeme a "+SUPPORT_EMAIL+".")})}
     }).catch(e=>{track("sg_premium_already_failed",{reason:e?.message||"network"})
-      alert(_t(lang,"Connexion impossible. Réessaie dans un instant.","Connection issue. Try again in a moment.","No hay conexión. Inténtalo de nuevo en un momento."))})
+      sgToast({tone:"error",title:_t(lang,"Connexion impossible","Connection issue","Sin conexión"),msg:_t(lang,"Réessaie dans un instant.","Try again in a moment.","Inténtalo de nuevo en un momento.")})})
   },[lang,source,onActivated,onClose])
   // A/B pw_pass : storefront « paie à l'usage » (passes one-time) en tête du paywall. ?pwpass=1/0.
   // EUR UNIQUEMENT : PassOffer n'a qu'un catalogue mq/gp (cents EUR) + liens buy.stripe.com EUR.
@@ -8393,14 +8504,16 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               onClose()
             }else{
               track("sg_premium_already_failed",{reason:d.reason||d.error||"inactive"})
-              alert(_t(lang,
-                "Aucun abonnement actif trouvé pour cet email. Vérifie l'adresse ou contacte "+SUPPORT_EMAIL+".",
-                "No active subscription found for this email. Check the address or contact "+SUPPORT_EMAIL+".",
-                "No se encontró ninguna suscripción activa para este email. Verifica la dirección o contacta "+SUPPORT_EMAIL+"."))
+              sgToast({tone:"error",
+                title:_t(lang,"Aucun abonnement trouvé","No subscription found","No se encontró suscripción"),
+                msg:_t(lang,
+                  "Vérifie l'adresse, ou écris-moi à "+SUPPORT_EMAIL+".",
+                  "Check the address, or write to me at "+SUPPORT_EMAIL+".",
+                  "Verifica la dirección, o escríbeme a "+SUPPORT_EMAIL+".")})
             }
           }).catch(e=>{
             track("sg_premium_already_failed",{reason:e?.message||"network"})
-            alert(_t(lang,"Connexion impossible. Réessaie dans un instant.","Connection issue. Try again in a moment.","No hay conexión. Inténtalo de nuevo en un momento."))
+            sgToast({tone:"error",title:_t(lang,"Connexion impossible","Connection issue","Sin conexión"),msg:_t(lang,"Réessaie dans un instant.","Try again in a moment.","Inténtalo de nuevo en un momento.")})
           })
         }} style={{
           width:"100%",padding:"10px",marginTop:10,background:"none",
@@ -8476,7 +8589,15 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               <style>{`@keyframes sgSpin{to{transform:rotate(360deg)}}`}</style>
             </div>
           )}
-          {payError&&<div style={{color:"#FF8A65",fontSize:12.5,marginTop:10,lineHeight:1.4}}>{payError}</div>}
+          {payError&&(
+            <div role="alert" style={{display:"flex",alignItems:"flex-start",gap:9,marginTop:12,padding:"11px 13px",
+              borderRadius:12,background:"rgba(232,82,42,.12)",borderLeft:"4px solid #E8522A"}}>
+              <svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true" style={{flexShrink:0,marginTop:1,color:"#F4845F"}}>
+                <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+              </svg>
+              <div style={{color:"#FFD9CC",fontSize:15,lineHeight:1.4,fontWeight:600}}>{payError}</div>
+            </div>
+          )}
           <button onClick={()=>doSubscribe()} disabled={payBusy} className="gbtn"
             style={{width:"100%",padding:15,borderRadius:14,border:"none",marginTop:16,
               cursor:payBusy?"wait":"pointer",fontFamily:"inherit",fontWeight:800,fontSize:15.5,
@@ -11740,8 +11861,10 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
                   </button>
                 ))}
                 {!list.length&&(
-                  <div style={{textAlign:"center",fontSize:13,color:"rgba(255,255,255,.45)",padding:"18px 0"}}>
-                    {_t(lang,"Aucune plage trouvée","No beach found","Ninguna playa encontrada")}
+                  <div className="sg-empty" style={{padding:"18px 8px"}}>
+                    <div className="sg-empty__veil"><Veilleur mood="serein" size={44}/></div>
+                    <div className="sg-empty__title" style={{fontSize:15}}>{_t(lang,"Aucune plage trouvée","No beach found","Ninguna playa encontrada")}</div>
+                    <div className="sg-empty__sub">{_t(lang,"Essaie une autre recherche — je veille sur le reste.","Try another search — I'm watching the rest.","Prueba otra búsqueda — vigilo el resto.")}</div>
                   </div>
                 )}
               </div>
@@ -13000,10 +13123,10 @@ export default function App(){
         }).then(r=>r.json()).then(d=>{
           if(d.url){window.location.href=d.url;return}
           track("sg_manage_portal_error",{error:d.error||"no_url"})
-          alert((d.error||_t(lang,"Erreur Stripe","Stripe error","Error de Stripe"))+"\n\n"+_t(lang,"Contacte "+SUPPORT_EMAIL+" si le probleme persiste.","Contact "+SUPPORT_EMAIL+" if the issue persists.","Contacta "+SUPPORT_EMAIL+" si el problema persiste."))
+          sgToast({tone:"error",title:d.error||_t(lang,"Erreur Stripe","Stripe error","Error de Stripe"),msg:_t(lang,"Écris-moi à "+SUPPORT_EMAIL+" si ça persiste.","Write to me at "+SUPPORT_EMAIL+" if it persists.","Escríbeme a "+SUPPORT_EMAIL+" si persiste.")})
         }).catch(e=>{
           track("sg_manage_portal_error",{error:e?.message||"network"})
-          alert(_t(lang,"Connexion impossible au portail Stripe. Réessaie dans un instant ou contacte "+SUPPORT_EMAIL+".","Could not reach the Stripe portal. Try again in a moment or contact "+SUPPORT_EMAIL+".","No se pudo conectar al portal de Stripe. Inténtalo de nuevo o contacta "+SUPPORT_EMAIL+"."))
+          sgToast({tone:"error",title:_t(lang,"Portail Stripe injoignable","Stripe portal unreachable","Portal Stripe inaccesible"),msg:_t(lang,"Réessaie dans un instant, ou écris-moi à "+SUPPORT_EMAIL+".","Try again in a moment, or write to me at "+SUPPORT_EMAIL+".","Inténtalo de nuevo, o escríbeme a "+SUPPORT_EMAIL+".")})
         })
       }else{
         const promptEmail=prompt(_t(lang,"Entre ton email pour gerer ton abonnement :","Enter your email to manage your subscription:","Introduce tu email para gestionar tu suscripción:"))
@@ -13014,8 +13137,8 @@ export default function App(){
             body:JSON.stringify({action:"portal",email:promptEmail})
           }).then(r=>r.json()).then(d=>{
             if(d.url){window.location.href=d.url;return}
-            alert(d.error||_t(lang,"Email introuvable chez Stripe","Email not found in Stripe","Email no encontrado en Stripe"))
-          }).catch(()=>alert(_t(lang,"Connexion impossible","Connection failed","Conexión imposible")))
+            sgToast({tone:"error",title:d.error||_t(lang,"Email introuvable chez Stripe","Email not found in Stripe","Email no encontrado en Stripe"),msg:_t(lang,"Vérifie l'adresse utilisée pour ton paiement.","Check the address used for your payment.","Verifica la dirección usada en tu pago.")})
+          }).catch(()=>sgToast({tone:"error",title:_t(lang,"Connexion impossible","Connection failed","Sin conexión"),msg:_t(lang,"Réessaie dans un instant.","Try again in a moment.","Inténtalo de nuevo en un momento.")}))
         }
       }
       params.delete("manage")
@@ -15011,24 +15134,28 @@ export default function App(){
           </ErrBound>
         )}
         {showWelcome&&pwOnboard!=="onboard"&&(
-          <div style={{position:"fixed",bottom:"calc(104px + env(safe-area-inset-bottom, 0px))",left:"50%",transform:"translateX(-50%)",
-            zIndex:1400,background:"linear-gradient(135deg,#156a96,#1c7fb0)",color:"#fff",
-            padding:"14px 24px",borderRadius:16,fontSize:14,fontWeight:600,
-            boxShadow:"0 8px 24px rgba(0,158,142,.35)",
-            display:"flex",alignItems:"center",gap:10,maxWidth:"min(90vw, 460px)",boxSizing:"border-box",
-            animation:"slideUp .4s ease"}}>
-            <span style={{fontSize:22}}>🎉</span>
-            <div>
-              <div>{_t(lang,"Premium activé !","Premium activated!","¡Premium activado!")}</div>
-              <div style={{fontSize:11,fontWeight:400,opacity:.85,marginTop:2}}>{_t(lang,"Brief matin + alertes + reco du jour.","Morning brief + alerts + daily pick.","Brief matinal + alertas + pick del día.")}</div>
-              <a href="?manage=1" onClick={e=>{e.stopPropagation();track("sg_manage_click")}} style={{fontSize:10,color:"rgba(255,255,255,.6)",marginTop:3,display:"inline-block"}}>{_t(lang,"Gérer mon abonnement","Manage my subscription","Gestionar mi suscripción")}</a>
+          /* « Premium activé » — recette canonique de marque (plus de bleu pirate).
+             Papier crème, liseré ink, ombre dure, Veilleur calme, titre Anton, ✕ SVG. */
+          <div className="sg-toast sg-toast--success" role="status" style={{
+            position:"fixed",bottom:"calc(104px + env(safe-area-inset-bottom, 0px))",left:"50%",
+            transform:"translateX(-50%)",zIndex:1400,width:"min(92vw,460px)",
+            boxShadow:"6px 6px 0 var(--sg-ink,#0d0d0d)"}}>
+            <span className="sg-toast__bar"/>
+            <span className="sg-toast__veil" aria-hidden="true"><Veilleur mood="serein" size={38}/></span>
+            <div className="sg-toast__body">
+              <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,textTransform:"uppercase",
+                fontSize:22,letterSpacing:"-.01em",lineHeight:1.1,color:"var(--sg-ink,#0d0d0d)"}}>
+                {_t(lang,"Premium activé","Premium activated","Premium activado")}</div>
+              <div className="sg-toast__msg">{_t(lang,"Brief matin · alertes · reco du jour.","Morning brief · alerts · daily pick.","Brief matinal · alertas · pick del día.")}</div>
+              <a href="?manage=1" onClick={e=>{e.stopPropagation();track("sg_manage_click")}}
+                style={{display:"inline-block",marginTop:8,fontSize:14,fontWeight:800,color:"var(--sg-teal,#009E8E)",textDecoration:"none"}}>
+                {_t(lang,"Gérer mon abonnement","Manage my subscription","Gestionar mi suscripción")}</a>
             </div>
-            <button aria-label="Close" onClick={()=>setShowWelcome(false)} style={{
-              background:"rgba(255,255,255,.2)",border:"none",color:"#fff",
-              borderRadius:12,minWidth:44,minHeight:44,display:"flex",alignItems:"center",justifyContent:"center",
-              cursor:"pointer",fontSize:16,marginLeft:8}}>✕</button>
+            <SgClose lang={lang} onClick={()=>setShowWelcome(false)}/>
           </div>
         )}
+        {/* Toasts de marque — remplace les alert() OS (singleton sgToast(...)) */}
+        <SgToastHost lang={lang}/>
       </div>
     </LangCtx.Provider>
   )
