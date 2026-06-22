@@ -12979,6 +12979,10 @@ export default function App(){
   },[exitcapPick,sargData])
   const gameGateRef=useRef({})
   useEffect(()=>{gameGateRef.current={sheet:!!selectedBeach,premium:showPremium||isPremium,view,hero:showHero||showPrevLanding,exitcapPick,exitcapOn,exitVeilleurOn}})
+  // Preview/QA : ?exit_veilleur=preview force la carte Veilleur à l'écran (bypass
+  // email/snooze/session/trigger). Ne nécessite que les données (exitcapPick). Permet de
+  // montrer le pop-up à la demande même pour un user déjà capté (sg_email présent).
+  useEffect(()=>{try{if(/[?&]exit_veilleur=preview/.test(window.location.search)&&exitcapPick)setShowExitVeilleur(true)}catch(_){}},[exitcapPick])
   useEffect(()=>{
     let idleT=null
     const fire=trigger=>{
