@@ -416,13 +416,11 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
     // CLAIREMENT vers le large (un banc proche ne s'échoue pas contre le vent). 1.0 (neutre) sinon →
     // chemin commun + backtest sans-vent strictement inchangés.
     const onshoreFactor = onshoreWindGate(beach, hourlyWind)
-    const rawMaxArrival = (beach && hasArrival)
-      ? onshoreFactor * Math.max(
-          arrivalSignalFromBanks(beach, islandBanks, 1),
-          arrivalSignalFromBanks(beach, islandBanks, 2),
-          arrivalSignalFromBanks(beach, islandBanks, 3),
-        )
-      : 0
+    // Signal d'arrivée PAR JOUR (J1/J2/J3) — sert l'ETA « J+N » du badge carte (action #2 multi-jours).
+    const _daySignals = (beach && hasArrival)
+      ? [1, 2, 3].map(d => onshoreFactor * arrivalSignalFromBanks(beach, islandBanks, d))
+      : [0, 0, 0]
+    const rawMaxArrival = Math.max(_daySignals[0], _daySignals[1], _daySignals[2])
     const calmArrivalCredible = regime === 'calm' && rawMaxArrival >= regimeArrivalDetectThreshold(regime)
     const arrivalGain = calmArrivalCredible ? 1.0 : regimeArrivalGain(regime)
 
@@ -528,6 +526,15 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
     // strength so the banner and the AFAI numbers stay coherent.
     const arrivalDetected = maxArrival >= regimeArrivalDetectThreshold(regime) && level.afai < 0.20
 
+    // ETA d'échouage pour le badge « J+N » de la carte (action #2, horizon multi-jours) :
+    //   0    = déjà là (plage modérée/avoid aujourd'hui)
+    //   1-3  = premier jour où le signal d'arrivée (par jour) franchit le seuil du régime
+    //   null = aucune arrivée prévue
+    const _firstArrDay = _daySignals.findIndex(s => s >= regimeArrivalDetectThreshold(regime))
+    const arrivalDay = (level.status === 'avoid' || level.status === 'moderate') ? 0
+      : arrivalDetected ? (_firstArrDay >= 0 ? _firstArrDay + 1 : 1)
+      : null
+
     // Forecast method label
     let forecastMethod, forecastDisclaimer
     if (isMemory) {
@@ -568,6 +575,8 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
       // Flag for UI alert banner "arrival detected"
       arrivalDetected,
       arrivalStrength: Math.round(maxArrival * 100) / 100,
+      arrivalDay, // ETA badge « J+N » : 0 = déjà là, 1-3 = jour d'arrivée prévu, null = aucune
+
       // Conditions regime + per-regime reliability — lets the app/pages show an
       // HONEST confidence ("saison calme : alertes peu fiables") instead of a
       // single global % that masks the regime.
