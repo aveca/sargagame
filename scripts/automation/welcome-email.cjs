@@ -138,7 +138,7 @@ function buildWelcomeHTMLRegion(region, cleanCount, email) {
     cta: 'Ver el mapa ahora',
     upKicker: 'Para ir más lejos', upTitle: 'Sabe el sábado desde el lunes',
     upDesc: 'Pronóstico de 7 días + alertas push.<br>Planifica tus días de playa sin estrés.',
-    upCta: 'Probar 7 días gratis',
+    upCta: 'Activar mi vigía',
     upFoot: `${monthly}/mes · Sin permanencia · Cancela en 1 clic`,
     unsub: 'Darse de baja',
   } : {
@@ -153,7 +153,7 @@ function buildWelcomeHTMLRegion(region, cleanCount, email) {
     cta: 'See the map now',
     upKicker: 'Go further', upTitle: 'Know Saturday by Monday',
     upDesc: '7-day forecast + push alerts.<br>Plan your beach days stress-free.',
-    upCta: 'Try 7 days free',
+    upCta: 'Activate my watcher',
     upFoot: `${monthly}/month · No commitment · Cancel anytime`,
     unsub: 'Unsubscribe',
   }

@@ -196,7 +196,10 @@ async function main() {
       console.log(`⚠️  EMAIL STATS IMPOSSIBLES (ignorés, carry-forward): sent=${c.sent} delivered=${c.delivered} opened=${c.opened} — bug endpoint Apps Script email_stats`)
       emailStats.error = 'invalid_counts'
     } else {
-      console.log(`Email: ${c.opened}/${c.delivered} ouverts-évts (${r.open ?? '–'}%) | ${c.clicked} clics (${r.click ?? '–'}%) | ${c.bounced} bounces`)
+      // opened/delivered/clicked/bounced = FIGÉS (Resend retiré, SMTP n'émet pas
+      // d'événements) → on ne persiste que `sent`. Les chiffres ci-dessous sont
+      // les derniers Resend connus, affichés pour mémoire seulement.
+      console.log(`Email: ${c.sent} envoyés (réel). Opens/clics indisponibles sous SMTP — mesurer via attribution conversion (stripe.emailAttributed, email-roi.cjs). [dernier Resend gelé: ${c.opened} opens / ${c.clicked} clics]`)
     }
   }
 
@@ -257,15 +260,23 @@ async function main() {
       revenueReal: funnel.revenue_real ?? null,
       rates: funnel.rates || null,
     } : lastKnown('funnel'),
-    // Engagement email (cumuls Resend) — carry-forward si le fetch échoue
+    // Engagement email — SMTP (Resend retiré le 21/06) n'alimente plus email_events :
+    // l'endpoint email_stats renvoie des delivered/opened/clicked/bounced FIGÉS aux
+    // derniers chiffres Resend pendant que `sent` (email_tracking) continue de monter.
+    // On ne persiste donc QUE `sent` (volume réel) ; opens/clics/bounces sont
+    // indisponibles sous SMTP (pas de pixel ni de webhook). La VRAIE mesure
+    // d'engagement = l'attribution conversion (bloc `stripe.emailAttributed`,
+    // email-roi.cjs), pas les opens. Réactiver les opens exigerait un pixel
+    // first-party (collect.php) — non câblé. NE PAS ré-écrire les compteurs morts.
     email: emailStats && !emailStats.error && emailStats.counts ? {
-      sent: emailStats.counts.sent ?? null,
-      delivered: emailStats.counts.delivered ?? null,
-      opened: emailStats.counts.opened ?? null,
-      clicked: emailStats.counts.clicked ?? null,
-      bounced: emailStats.counts.bounced ?? null,
-      openRate: emailStats.rates?.open ?? null,
-      clickRate: emailStats.rates?.click ?? null,
+      sent: emailStats.counts.sent ?? lastKnown('email')?.sent ?? null,
+      delivered: null,
+      opened: null,
+      clicked: null,
+      bounced: null,
+      openRate: null,
+      clickRate: null,
+      tracking: 'smtp_no_events',
     } : lastKnown('email'),
     // Vérité Stripe (runs locaux seulement) — carry-forward dernière valeur connue
     stripe: (await stripeTruth()) || lastKnown('stripe'),

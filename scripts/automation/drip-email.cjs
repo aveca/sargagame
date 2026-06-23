@@ -150,7 +150,10 @@ function getRegionBrief(islandKey) {
  * change » : cet email EST les deux promesses.
  * 100 % donnée réelle (getRegionBrief) ; brief absent = pas d'envoi du jour.
  */
-const DAILY_SOURCES = new Set(['sargacatch', 'beach_alert'])
+// exit_intent ajouté 2026-06-22 : la carte « Ta semaine est prête » promet « le bon
+// plan chaque matin » → ces leads reçoivent désormais le verdict quotidien (même
+// pipeline testé : fenêtre matin, cap, dédup, anti-spam content-signature, A/B).
+const DAILY_SOURCES = new Set(['sargacatch', 'beach_alert', 'exit_intent'])
 function buildDaily(island, brief, email) {
   const meta = brief.meta
   const lang = meta.lang
@@ -305,20 +308,15 @@ function buildJ3(island, brief, email) {
     `La seule prévision 7 jours, plage par plage, ${meta.inRegion} — fiable à 3 jours, tendance jusqu'à 7.`,
     `The only beach-by-beach 7-day forecast ${meta.inRegion} — solid to day 3, trend through day 7.`,
     `El único pronóstico a 7 días, playa por playa, ${meta.inRegion} — fiable a 3 días, tendencia hasta el día 7.`)
-  const ctaText = meta.noTrial
-    ? t('Recevoir ce brief chaque matin',
-      'Get this brief every morning',
-      'Recibir este brief cada mañana')
-    : t('Recevoir ce brief chaque matin — 7 jours offerts',
-      'Get this brief every morning — 7 days free',
-      'Recibir este brief cada mañana — 7 días gratis')
-  const reassurance = meta.noTrial
-    ? t('Sans engagement · Annulation en 2 clics',
-      'No commitment · Cancel in 2 clicks',
-      'Sin permanencia · Cancela en 2 clics')
-    : t('Sans engagement · Annulation en 2 clics · Rappel avant facturation',
-      "No commitment · Cancel in 2 clicks · Reminder before you're billed",
-      'Sin permanencia · Cancela en 2 clics · Aviso antes del cobro')
+  // NO_TRIAL partout (MQ/GP inclus depuis a9b3cf4e) : aucune promesse d'essai sur
+  // une surface de paiement (cf. litige Stripe « copie trompeuse »). La réassurance
+  // = la garantie 30j réelle, identique à J7/J14/J21.
+  const ctaText = t('Recevoir ce brief chaque matin',
+    'Get this brief every morning',
+    'Recibir este brief cada mañana')
+  const reassurance = t('Satisfait ou remboursé 30 jours · Annulation en 2 clics',
+    '30-day money-back · Cancel in 2 clicks',
+    'Reembolso 30 días · Cancela en 2 clics')
   const dateLong = new Date().toLocaleDateString(lang === 'es' ? 'es-MX' : lang === 'en' ? 'en-US' : 'fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
   // CTA 100% on-site (?paywall=1) — termine la migration on-site (J7/J14/J21 le sont
   // déjà). Débloque l'attribution : le front lit utm_source=email → metadata.source=
@@ -350,9 +348,14 @@ function buildJ3(island, brief, email) {
 }
 
 // J+7 — Show premium experience (soft CTA, "veilleur" positioning)
-function buildJ7(island, cleanCount, email) {
+// Le showcase « voilà ce que tu recevrais » utilise les VRAIES plages du jour
+// (best/alt du brief région) quand dispo, fallback générique sinon — jamais
+// d'exemple inventé claqué en dur (incident données fabriquées).
+function buildJ7(island, cleanCount, email, brief) {
   const name = island === 'MQ' ? 'Martinique' : 'Guadeloupe'
   const domain = island === 'MQ' ? 'sargasses-martinique.com' : 'sargasses-guadeloupe.com'
+  const best = (brief && brief.best && brief.best.name) || 'ta plage favorite'
+  const alt = (brief && brief.alt) || (island === 'MQ' ? 'les Salines' : 'Grande Anse')
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
 <body style="margin:0;padding:0;background:#F7F5EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
@@ -372,8 +375,8 @@ function buildJ7(island, cleanCount, email) {
       <div style="display:flex;align-items:center">
         <span style="font-size:22px;margin-right:10px">&#x1F4F2;</span>
         <div>
-          <div style="font-size:14px;font-weight:700;color:#fff">Ta meilleure plage : Anse Dufour</div>
-          <div style="font-size:12px;color:rgba(255,255,255,.5)">Propre \u00B7 12 min \u00B7 mer calme</div>
+          <div style="font-size:14px;font-weight:700;color:#fff">Ta meilleure plage : ${best}</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.5)">Le verdict avant le caf\u00E9</div>
         </div>
       </div>
     </div>
@@ -383,8 +386,8 @@ function buildJ7(island, cleanCount, email) {
       <div style="display:flex;align-items:center">
         <span style="font-size:22px;margin-right:10px">&#x1F514;</span>
         <div>
-          <div style="font-size:14px;font-weight:700;color:#333">Sainte-Anne a chang\u00E9</div>
-          <div style="font-size:12px;color:#666">Propre \u2192 Mod\u00E9r\u00E9 \u2014 va aux Salines</div>
+          <div style="font-size:14px;font-weight:700;color:#333">${best} a chang\u00E9</div>
+          <div style="font-size:12px;color:#666">Propre \u2192 Mod\u00E9r\u00E9 \u2014 va plut\u00F4t \u00E0 ${alt}</div>
         </div>
       </div>
     </div>
@@ -394,7 +397,7 @@ function buildJ7(island, cleanCount, email) {
       <div style="display:flex;align-items:center">
         <span style="font-size:22px;margin-right:10px">&#x1F3D6;&#xFE0F;</span>
         <div>
-          <div style="font-size:14px;font-weight:700;color:#333">Samedi : Grande Anse</div>
+          <div style="font-size:14px;font-weight:700;color:#333">Samedi : ${alt}</div>
           <div style="font-size:12px;color:#666">Propre tout le weekend \u00B7 id\u00E9al enfants</div>
         </div>
       </div>
@@ -414,9 +417,13 @@ function buildJ7(island, cleanCount, email) {
 }
 
 // J+14 — Last chance: urgency + loss aversion + strong CTA
-function buildJ14(island, cleanCount, email) {
+// Scénario « imagine » (hypothétique) avec de VRAIES plages du jour (best/alt)
+// quand dispo, fallback générique sinon.
+function buildJ14(island, cleanCount, email, brief) {
   const name = island === 'MQ' ? 'Martinique' : 'Guadeloupe'
   const domain = island === 'MQ' ? 'sargasses-martinique.com' : 'sargasses-guadeloupe.com'
+  const best = (brief && brief.best && brief.best.name) || 'ta plage'
+  const alt = (brief && brief.alt) || (island === 'MQ' ? 'les Salines' : 'Grande Anse')
 
   // Dynamic seasonal urgency
   const now = new Date()
@@ -437,10 +444,10 @@ function buildJ14(island, cleanCount, email) {
     </div>
 
     <div style="font-size:15px;color:#333;line-height:1.6;margin-bottom:20px">
-      Imagine : tu arrives à Sainte-Anne samedi avec les enfants. Sargasses partout. Weekend gâché.
+      Imagine : tu arrives à ${best} samedi avec les enfants. Sargasses partout. Weekend gâché.
     </div>
     <div style="font-size:15px;color:#333;line-height:1.6;margin-bottom:20px">
-      Ton <strong>veilleur personnel</strong> t'aurait prévenu dès vendredi soir. Tu aurais changé pour les Salines. Weekend sauvé.
+      Ton <strong>veilleur personnel</strong> t'aurait prévenu dès vendredi soir. Tu aurais changé pour ${alt}. Weekend sauvé.
     </div>
 
     <div style="background:#0D1E1C;border-radius:12px;padding:16px;margin-bottom:10px">
@@ -448,7 +455,7 @@ function buildJ14(island, cleanCount, email) {
         <span style="font-size:22px;margin-right:10px">&#x1F4F2;</span>
         <div>
           <div style="font-size:14px;font-weight:700;color:#fff">Vendredi 19h \u2014 push notif</div>
-          <div style="font-size:12px;color:rgba(255,255,255,.5)">\u00AB\u00A0Sainte-Anne \u2192 mod\u00E9r\u00E9. Va aux Salines (propre)\u00A0\u00BB</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.5)">\u00AB\u00A0${best} \u2192 mod\u00E9r\u00E9. Va \u00E0 ${alt} (propre)\u00A0\u00BB</div>
         </div>
       </div>
     </div>
@@ -458,7 +465,7 @@ function buildJ14(island, cleanCount, email) {
         <span style="font-size:22px;margin-right:10px">&#x2705;</span>
         <div>
           <div style="font-size:14px;font-weight:700;color:#333">Samedi matin \u2014 brief 7h</div>
-          <div style="font-size:12px;color:#666">\u00AB\u00A0Ta meilleure plage : Les Salines \u00B7 propre \u00B7 15 min\u00A0\u00BB</div>
+          <div style="font-size:12px;color:#666">\u00AB\u00A0Ta meilleure plage : ${alt} \u00B7 propre\u00A0\u00BB</div>
         </div>
       </div>
     </div>
@@ -732,8 +739,8 @@ function getHTML(step, island, cleanCount, topBeaches, email, brief) {
   const isNewRegion = !!(REGION_META[island] && REGION_META[island].regionId)
   switch (step) {
     case 'j3':  return brief ? buildJ3(island, brief, email) : null
-    case 'j7':  return isNewRegion ? (brief ? buildJ7Region(island, brief, email) : null) : buildJ7(island, cleanCount, email)
-    case 'j14': return isNewRegion ? (brief ? buildJ14Region(island, brief, email) : null) : buildJ14(island, cleanCount, email)
+    case 'j7':  return isNewRegion ? (brief ? buildJ7Region(island, brief, email) : null) : buildJ7(island, cleanCount, email, brief)
+    case 'j14': return isNewRegion ? (brief ? buildJ14Region(island, brief, email) : null) : buildJ14(island, cleanCount, email, brief)
     case 'j21': return isNewRegion ? null : buildJ21(island, cleanCount, email) // MQ/GP only (USD = pas de relance J21 pour l'instant)
   }
 }
@@ -819,7 +826,9 @@ async function main() {
       // Si la donnée région est absente, on skippe SANS marquer l'étape
       // (le lead la recevra au prochain run avec data).
       const needsBrief = step.key === 'j3' || isNewRegion
-      const brief = needsBrief ? briefFor(island) : null
+      // j7/j14 MQ/GP : brief OPTIONNEL (noms de plages réels dans le showcase, fallback si absent).
+      const wantsBrief = needsBrief || step.key === 'j7' || step.key === 'j14'
+      const brief = wantsBrief ? briefFor(island) : null
       if (needsBrief && !brief) continue
       if (isNewRegion && newRegionSent >= NEW_REGION_J3_CAP) continue
 
