@@ -1040,8 +1040,8 @@
     "j7": "2026-06-18T20:26:08.436Z"
   },
   "579476888eb0d4415798b2a4770151ed": {
-    "daily_last": "2026-06-22",
-    "daily_sig": "Fort Lauderdale Beach|clean|93|clean|0|",
+    "daily_last": "2026-06-23",
+    "daily_sig": "Palm Beach|clean|93|clean|1|Wednesday",
     "j3": "2026-06-14T20:59:33.636Z",
     "j7": "2026-06-18T20:26:09.693Z"
   },
@@ -1166,8 +1166,8 @@
     "j7": "2026-06-22T11:57:21.513Z"
   },
   "e6a566c20d0d640645292652dcc83adb": {
-    "daily_last": "2026-06-22",
-    "daily_sig": "Fort Lauderdale Beach|clean|93|clean|0|",
+    "daily_last": "2026-06-23",
+    "daily_sig": "Palm Beach|clean|93|clean|1|Wednesday",
     "j3": "2026-06-18T15:24:23.913Z",
     "j7": "2026-06-22T17:00:03.463Z"
   },
@@ -1194,10 +1194,12 @@
     "j7": "2026-06-23T03:34:19.749Z"
   },
   "faaa8e1922c2cbf5fffbffc20e792a0b": {
-    "j3": "2026-06-19T15:17:50.043Z"
+    "j3": "2026-06-19T15:17:50.043Z",
+    "j7": "2026-06-23T14:51:25.602Z"
   },
   "d33a60e3f95e14e60f9d3138be3f39b5": {
-    "j3": "2026-06-19T15:18:01.089Z"
+    "j3": "2026-06-19T15:18:01.089Z",
+    "j7": "2026-06-23T14:51:28.006Z"
   },
   "3e236f28ec628017362c882b2c8253f0": {
     "j3": "2026-06-20T08:56:32.749Z"
@@ -1206,14 +1208,16 @@
     "j3": "2026-06-20T08:56:34.275Z"
   },
   "9d9a6914023cedce8049f0b9439b25da": {
-    "daily_last": "2026-06-22",
-    "daily_sig": "Fort Lauderdale Beach|clean|93|clean|0|",
+    "daily_last": "2026-06-23",
+    "daily_sig": "Palm Beach|clean|93|clean|1|Wednesday",
     "j3": "2026-06-20T19:26:32.375Z"
   },
   "c33c14705fdab6196d0731a2c7b61af9": {
     "j3": "2026-06-23T09:41:36.888Z"
   },
-  "5f70c9989a0ad27402f1c4f4da22e0d0": {},
+  "5f70c9989a0ad27402f1c4f4da22e0d0": {
+    "j3": "2026-06-23T14:51:29.309Z"
+  },
   "324c0139f551d07758f699db12ec97f3": {},
   "97532088d9fed647d3d6725194ad09b7": {},
   "957ba83cb6922ee56185eb00c1fdfb11": {},
@@ -1237,5 +1241,14 @@
   "a47d1cd69aa0c7b03b7f9253d74f48b3": {
     "daily_last": "2026-06-23",
     "daily_sig": "Playa Holbox|clean|84|clean|10|jueves"
+  },
+  "cbc614f9eb4e33eac732958043a88141": {},
+  "127ad26fb3f283ab6ed193a3e3c6384a": {},
+  "610919c06483507d27d99a8cb9a0963d": {},
+  "c4867b2314eefbe2f81c67b4b7519aed": {},
+  "65e52efaaf6fb228293e3b773681ad7f": {},
+  "afcbae2953c21270ddfdd78b25c4c247": {
+    "daily_last": "2026-06-23",
+    "daily_sig": "Plage de Grande Anse|clean|75|clean|0|"
   }
 }
