@@ -785,12 +785,12 @@
       "levels": [
         {
           "id": "pc001",
-          "afai": 0.18,
+          "afai": 0.17,
           "status": "moderate"
         },
         {
           "id": "pc002",
-          "afai": 0.18,
+          "afai": 0.17,
           "status": "moderate"
         },
         {
@@ -800,47 +800,47 @@
         },
         {
           "id": "pc004",
-          "afai": 0.19,
-          "status": "moderate"
-        },
-        {
-          "id": "pc005",
-          "afai": 0.17,
-          "status": "moderate"
-        },
-        {
-          "id": "pc006",
-          "afai": 0.21,
-          "status": "moderate"
-        },
-        {
-          "id": "pc007",
-          "afai": 0.21,
-          "status": "moderate"
-        },
-        {
-          "id": "pc008",
-          "afai": 0.21,
-          "status": "moderate"
-        },
-        {
-          "id": "pc009",
-          "afai": 0.2,
-          "status": "moderate"
-        },
-        {
-          "id": "pc010",
-          "afai": 0.21,
-          "status": "moderate"
-        },
-        {
-          "id": "pc011",
           "afai": 0.18,
           "status": "moderate"
         },
         {
-          "id": "pc012",
+          "id": "pc005",
+          "afai": 0.15,
+          "status": "moderate"
+        },
+        {
+          "id": "pc006",
+          "afai": 0.2,
+          "status": "moderate"
+        },
+        {
+          "id": "pc007",
+          "afai": 0.2,
+          "status": "moderate"
+        },
+        {
+          "id": "pc008",
+          "afai": 0.19,
+          "status": "moderate"
+        },
+        {
+          "id": "pc009",
           "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "pc010",
+          "afai": 0.18,
+          "status": "moderate"
+        },
+        {
+          "id": "pc011",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "pc012",
+          "afai": 0.16,
           "status": "moderate"
         }
       ]
