@@ -95,6 +95,24 @@ Refonte paywall amont (gagnant jury « world-continuity », passé 100%) : `b7be
 logique = 0 ligne touchée) → vérif navigateur perso → commit séparé → deploy auto. Aucune logique
 métier/paiement/A-B touchée.
 
+## 9bis. Contraste & thèmes — lisibilité permanente (22/06)
+
+L'app a un **picker de thèmes opt-in** (🎨). Après audit fond-sur-fond (workflow w71fbv5el,
+74 cas) : **manga / arcade / sticker RETIRÉS** (illisibles ~1:1) ; picker = **golden · comic · soft**.
+Le polish avait été vérifié en comic → les autres thèmes recoloraient `button`/`[class*="cta"]`/`h2`
+en `!important` et cassaient. **3 règles pour rester lisible dans tous les thèmes** :
+
+1. **Surface à fond NON-carte (modal sombre, scène, chrome carte)** → lui mettre la classe
+   **`.sg-onink-scope`** (neutralise le re-skin des `button` ET `h2/h3` du thème). C'est le CONTRAT.
+2. **CTA premium (doit rester OR partout)** → classe **`.sg-paygold`** (Themes.css ; nom sans "cta"
+   pour échapper à `[class*="cta"]`, spécificité qui bat `.theme-X button`). Ne JAMAIS laisser un
+   thème le repeindre teal/noir/rose.
+3. **Texte sur fond clair (papier)** → **ENCRE `#0D0D0D`**, jamais or/teal/vert-clair en texte
+   (ils tombent < AA). Blanc seulement sur surface ≥ corail-foncé.
+
+⚠️ Tout nouveau thème ou écran se vérifie **en soft AUSSI**, pas que comic. Commits : remédiation +
+retrait `eb582511` ; CTA paywall or-tous-thèmes `bf699e0f` ; CTA capture `234d187c`.
+
 ## 9. Reste mineur (non bloquant) & à surveiller
 
 - Laissés exprès : emojis partagés `ST` (app-wide, effet de bord), micro-labels <12px en fiche
