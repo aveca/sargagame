@@ -24,6 +24,10 @@ const AB_VARS = require('./data/email-ab-variants.json')
 
 const API_KEY = mailReady() // envoi via SMTP (boîte alerte@) — plus de Resend
 const FORCE = process.argv.includes('--force')
+// --daily-only : n'exécute QUE le verdict quotidien (skip les étapes drip J3/7/14/21),
+// pour le workflow dédié daily-brief.yml qui le cale à ~7h MQ (la promesse de marque).
+// Bypass aussi la fenêtre 10-20 UTC : le cron dédié EST l'horloge.
+const DAILY_ONLY = process.argv.includes('--daily-only')
 const SUBSCRIBERS_PATH = path.join(__dirname, 'data', 'subscribers.json')
 const DRIP_SENT_PATH = path.join(__dirname, 'data', 'drip-sent.json')
 const BOUNCED_PATH = path.join(__dirname, 'data', 'bounced-emails.json')
@@ -803,7 +807,7 @@ async function main() {
   const NEW_REGION_J3_CAP = 25
   let newRegionSent = 0
 
-  for (const sub of subscribers) {
+  if (!DAILY_ONLY) for (const sub of subscribers) {
     const email = sub.email
     const key = emailHash(email)
     if (bouncedSet.has(key)) continue
@@ -900,7 +904,10 @@ async function main() {
   // de 00 UTC enverrait le « matin » à 20h la veille (MQ = UTC-4). Nominal =
   // 12 UTC (8h MQ/Miami/PC, 7h Cancún), 18 UTC = secours si le run de midi a raté.
   const utcH = new Date().getUTCHours()
-  const inMorningWindow = (utcH >= 10 && utcH <= 20) || FORCE
+  // Dédié (--daily-only, cron 11 UTC ≈ 7h MQ) : bande matin serrée 10-16 UTC pour
+  // qu'un dispatch/une dérive tardive n'envoie jamais un « brief du matin » le soir.
+  // Run daily-copernicus (full) garde 10-20 = filet de secours si le dédié rate.
+  const inMorningWindow = FORCE || (DAILY_ONLY ? (utcH >= 10 && utcH <= 16) : (utcH >= 10 && utcH <= 20))
   const todayKey = new Date().toISOString().slice(0, 10)
   const DAILY_CAP = 150
   let dailySent = 0, dailyWould = 0
