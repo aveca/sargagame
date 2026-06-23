@@ -44,6 +44,10 @@ const LazyHomeAZ=lazyWithRetry(()=>import("./HomeAZ"))
 const LazyChasse=lazyWithRetry(()=>import("./ChasseHome"))
 // Carte SVG monde golden-hour (bras A/B `map_world`) — port proto-map-v2, region-aware.
 const LazyWorldMapView=lazyWithRetry(()=>import("./WorldMapView"))
+// Détail plage « monde comic » (ChasseDetail) ouvert au tap d'un pin carte — garde le
+// joueur dans l'univers arène au lieu de l'éjecter vers la fiche data « scroll satellite »
+// (PRODUCT.md §8 ⭐). Default ON, rollback ?mapdetail=0. Lazy → DOIT être sous Suspense.
+const LazyComicDetail=lazyWithRetry(()=>import("./ComicDetail"))
 // Fiche plage « en PLONGÉE » (bras A/B `pw_beach_dive`) — port proto-plage-plongee,
 // Shadow DOM, region-aware. Alternative additive à BeachSheet (control intact).
 // Onboarding GUIDÉ des nouveaux clients PAYANTS (bras A/B `pw_onboard`) — remplace
@@ -58,7 +62,7 @@ const LazyConditions=lazyWithRetry(()=>import("./Conditions"))
 class ErrBound extends Component{
   constructor(p){super(p);this.state={err:null}}
   static getDerivedStateFromError(e){return{err:e}}
-  componentDidCatch(e){console.error("CAUGHT:",e.message,e.stack)}
+  componentDidCatch(e){console.error("CAUGHT:",e.message,e.stack);try{this.props.onError&&this.props.onError(e)}catch(_){}}
   render(){if(this.state.err)return this.props.fallback!==undefined?this.props.fallback:React.createElement("pre",{style:{color:"red",padding:20,whiteSpace:"pre-wrap"}},this.state.err.message+"\n\n"+this.state.err.stack);return this.props.children}
 }
 
@@ -14616,6 +14620,22 @@ export default function App(){
     const v=parseInt(sessionStorage.getItem("sg_beach_views")||"0")+1
     sessionStorage.setItem("sg_beach_views",String(v))
   },[showOnboarding])
+  // ⭐ Pins carte → DÉTAIL COMIC (ChasseDetail in-world) au lieu de la fiche data
+  // « scroll satellite » (PRODUCT.md §8). Default ON ; rollback instantané ?mapdetail=0.
+  // PAS un nouveau flag A/B (récolte : 51 flags conversion déjà dilués) — feature flag
+  // réversible. Le détail comic réutilise openPremium (porte conversion unique intacte),
+  // "Fiche complète" (onFull) reste un pont vers la fiche data pour qui veut la profondeur.
+  const mapDetail=useMemo(()=>{try{return !/[?&]mapdetail=0/.test(window.location.search)}catch(_){return true}},[])
+  const [comicBeach,setComicBeach]=useState(null)
+  const openComicBeach=useCallback(b=>{
+    if(!b||!b.id)return
+    setComicBeach(b);track("sg_beach_open",{beach_id:b.id,status:b.status,via:"comic_map"})
+    try{window.dispatchEvent(new Event("sg:value_moment"))}catch(e){}
+    if(showOnboarding){setShowOnboarding(false);s("sg_onb",1)}
+    try{const v=parseInt(sessionStorage.getItem("sg_beach_views")||"0")+1;sessionStorage.setItem("sg_beach_views",String(v))}catch(_){}
+  },[showOnboarding])
+  // Handler routé aux pins de la carte/archipel : détail comic si flag ON, sinon fiche data.
+  const onMapBeach=useCallback(b=>{ if(mapDetail)openComicBeach(b); else onBeachClick(b) },[mapDetail,openComicBeach,onBeachClick])
   const closeSheet=useCallback(()=>{
     const closing=selectedBeach
     setSelectedBeach(null)
@@ -15404,14 +15424,31 @@ export default function App(){
           ?<ErrBound><Suspense fallback={<div style={{position:"fixed",inset:0,background:"#072019",zIndex:1020}}/>}>
               <LazyWorldMapView
                 beaches={allBeaches} island={island} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null}
-                lang={lang} onOpenBeach={onBeachClick} onPremium={openPremium}
+                lang={lang} onOpenBeach={onMapBeach} onPremium={openPremium}
                 rootMode={navWorld} track={track} initialZone={initialZone} warm={mapWarm==="warm"}
                 arrivals={(()=>{const m={};try{for(const b of (allBeaches||[])){const sid=IS_NEW_REGION?b.id:BEACH_TO_SARG[b.id];const w=sid&&sargData?.weekly?.[sid];if(w&&(w.arrivalDetected||w.arrivalDay!=null))m[b.id]={s:w.arrivalStrength||0.1,d:w.arrivalDay};}}catch(_){}return m})()}
                 onCaptureEmail={em=>{try{submitLead(em,"map_world")}catch(_){}}}
                 onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{source:"map_world"})}}/>
             </Suspense></ErrBound>
-          :<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onBeachClick} onSolutions={()=>{setShowSolutions(true);track("sg_archipel_to_solutions",{})}} onPremium={()=>openPremium("archipel")} rootMode={navWorld} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}} initialZone={initialZone} onRequestGeo={requestGeo}/>
+          :<ArchipelView beaches={allBeaches} island={island} userPos={userPos} lang={lang} onOpenBeach={onMapBeach} onSolutions={()=>{setShowSolutions(true);track("sg_archipel_to_solutions",{})}} onPremium={()=>openPremium("archipel")} rootMode={navWorld} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null} onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{})}} initialZone={initialZone} onRequestGeo={requestGeo}/>
 
+        )}
+
+        {/* ⭐ DÉTAIL COMIC depuis la carte (PRODUCT.md §8) — pin tapé → ChasseDetail
+            in-world (verdict+score+facts+7j+H2S+Plan-B+voisines) au lieu de la fiche
+            data. Suspense+ErrBound : si le chunk/rendu échoue → fallback fiche data
+            (onBeachClick). onFull = pont explicite vers la fiche data. */}
+        {comicBeach&&(
+          <ErrBound fallback={null} onError={()=>{const b=comicBeach;setComicBeach(null);try{track("sg_comic_detail_fail",{beach_id:b&&b.id})}catch(_){}; if(b)onBeachClick(b)}}>
+            <Suspense fallback={<div style={{position:"fixed",inset:0,background:"#2e1a5e",zIndex:1200}}/>}>
+              <LazyComicDetail
+                beach={comicBeach} lang={lang} track={track} pool={allBeaches}
+                onClose={()=>{setComicBeach(null);track("sg_comic_detail_close",{beach_id:comicBeach.id})}}
+                onPremium={(src)=>{const b=comicBeach;setComicBeach(null);openPremium(src||"comic_map")}}
+                onFull={()=>{const b=comicBeach;setComicBeach(null);track("sg_comic_detail_full",{beach_id:b&&b.id});if(b)onBeachClick(b)}}
+                onRelated={(b)=>{if(b&&b.id)setComicBeach(b)}}/>
+            </Suspense>
+          </ErrBound>
         )}
 
         {/* MONDE SVG — la fondation : feed vertical des plages, zéro photo, data en

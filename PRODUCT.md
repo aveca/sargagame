@@ -127,7 +127,7 @@ Paiement → Onboarding payant**. Chaque écran doit être 100% monde comic + an
 | 5 | **Paywall** | `PremiumModal` (Sargasses_PROD) | 🟡 partiel (plan cards/CTA/garantie/timeline/halftone) | → Paiement / close |
 | 6 | Paiement on-site | `PayStep` overlay (PremiumModal) | ⚠️ à auditer | → succès → onboarding payant |
 | 7 | Onboarding payant | `src/PaidOnboarding.jsx` | ⚠️ style data (Bricolage, rgba translucides) | → Arène premium |
-| 8 | **Carte** | `src/WorldMapView.jsx` | ✅ golden-hour pour tous | pins → (encore fiche data, à router vers détail comic) |
+| 8 | **Carte** | `src/WorldMapView.jsx` | ✅ golden-hour pour tous | pins → **détail comic** (`ComicDetail`, default ON, rollback `?mapdetail=0`) ✅ |
 | 9 | Fiche plage data complète | `BeachDive`/`BeachSheet` | ⚠️ autre style (« scroll satellite » que le fondateur déteste) | depuis « Fiche complète » + pins carte |
 | 10 | Liste plages | `BeachListView` | ⚠️ (souvent recouverte) | → Détail |
 | 11 | Feedback | (Sargasses_PROD) | ⚠️ | overlay |
@@ -136,13 +136,12 @@ Mascotte **Le Veilleur** : ✅ clignement comic steppé (arène + détail).
 
 **Prochaines passes (ordre) :** (7) onboarding payant en comic (rapide, contenu) → (6) paiement on-site → finir variants paywall (scene/constel headers) → (9) fiche data OU router pins carte → détail comic (au lieu de la fiche data) → transitions de **case BD** entre écrans top-niveau.
 
-### ⭐ Item #1 demandé : « la carte doit déboucher sur plein de trucs » (pins carte → détail comic)
-Le détail comic (`ChasseDetail`) vit dans `ChasseHome.jsx` et dépend de son CSS injecté + helpers (TCard/Veilleur/Illu). La carte (`WorldMapView`) est un écran séparé où `ChasseHome` n'est PAS monté → son CSS `.lc-` absent.
-**Approche SÛRE (additive, arène intouchée, blast-radius nul) :**
-1. NOUVEAU fichier `src/ComicDetail.jsx` **auto-suffisant** (composant + helpers + `<style>` scopé avec les tokens `--ink/--paper/...` + le CSS du détail). Lazy. **Ne PAS toucher `ChasseHome`** (l'arène = 100% accueil = zéro risque).
-2. Le monter au niveau App quand un state `comicBeach` est set, sous `Suspense`+`ErrBound` (fallback = fiche data existante).
-3. Router `WorldMapView` `onOpenBeach` → `setComicBeach(b)` **derrière flag `?mapdetail=1` (défaut OFF)**.
-4. Étendre `scripts/ux-smoke.mjs` : ouvrir la carte → taper un pin → vérifier le détail comic. Puis flip le flag ON.
+### ⭐ Item #1 demandé : « la carte doit déboucher sur plein de trucs » (pins carte → détail comic) — ✅ SHIPPÉ 2026-06-23
+Le détail comic (`ChasseDetail`) vit dans `ChasseHome.jsx` et dépend de son CSS injecté + helpers (TCard/Veilleur/Illu) + des vars `--ink/--paper/...` portées par `.lc-root` + de l'ancêtre `.lc-reduce`. La carte (`WorldMapView`/`ArchipelView`) est un écran séparé où `ChasseHome` n'est PAS monté → son CSS `.lc-` était absent.
+**Implémenté (additif, arène INTOUCHÉE, blast-radius nul) :**
+1. ✅ `src/ComicDetail.jsx` **auto-suffisant** : wrapper qui injecte `<style>{CSS}</style>` (CSS désormais `export`é depuis `ChasseHome`) + reconstitue l'ancêtre `.lc-root` (vars) neutralisé visuellement + `.lc-reduce` pour le plancher reduced-motion, puis rend `ChasseDetail`. Lazy (`LazyComicDetail`). **`ChasseHome` non touché** (sauf `export const CSS`).
+2. ✅ Monté au niveau App sur state `comicBeach`, sous `Suspense`+`ErrBound fallback={null} onError={…}` → si le chunk/rendu échoue, **reroute vers la fiche data** (`onBeachClick`). `ErrBound` a reçu un support `onError` additif.
+3. ✅ Routé : la carte/archipel `onOpenBeach` → `onMapBeach` → `openComicBeach(setComicBeach)`. **Default ON, rollback instantané `?mapdetail=0`** (PAS un nouveau flag A/B — 51 flags conversion déjà dilués → récolte). `onFull` = pont explicite vers la fiche data ; `onRelated`/Plan-B = ouvre un autre détail comic in-world ; `onPremium` = `openPremium` (porte conversion unique intacte).
+4. ✅ Vérifié Playwright (WebKit mobile, build prod sur 4173) : tap pin → `.lc-detail` (pos fixed, `--ink` résolu, nom/verdict/score/7j/H2S/CTA/Veilleur présents), close ✕ OK, **0 erreur console**, rollback `?mapdetail=0` n'ouvre PAS le comic (chemin fiche data). Screenshot golden-hour validé.
 5. (Plus tard, avec le fondateur) dé-dupliquer ChasseDetail ↔ ComicDetail en module partagé.
-**Pourquoi pas l'extraction CSS partagée d'abord :** elle touche `ChasseHome` (arène 100%) = blast-radius élevé → à faire en review fondateur, pas en aveugle.
-**Anti-régression :** chaque écran vérifié au screenshot mobile WebKit + scan boutons blancs (`_journey.mjs`), checkout Stripe jamais touché, tout réversible.
+**Boutons « blancs » (close ✕ / Partager / Fiche complète) = skin `.theme-comic button` existant** (classe sur `<body>`, ancêtre des DEUX montages → rendu identique à l'arène déjà shippée), 3px bordure encre + ombre = visibles, pas le bug « boutons invisibles ». Checkout Stripe jamais touché, tout réversible.

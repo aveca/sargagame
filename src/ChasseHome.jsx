@@ -779,7 +779,7 @@ export default function ChasseHome(props){
    CSS — entièrement scopé `.lc-`. Tokens & cartes portés de
    public/comic-cartes.html + public/themes-lab/arena.css.
    ==================================================================== */
-const CSS=`
+export const CSS=`
 @font-face{font-family:"AntonLC";src:url("/fonts/anton-1Ptgg87LROyAm3Kz-C8.woff2") format("woff2");font-weight:400;font-display:swap}
 .lc-root{--ink:#0d0b14;--paper:#fdf6e3;--red:#e8322a;--yel:#ffd23f;--blu:#1c7fb0;--org:#ff8a3d;--grn:#27c46b;--pur:#7b46d6;
   font-family:"Comic Neue","Comic Sans MS",system-ui,sans-serif;color:var(--ink);
