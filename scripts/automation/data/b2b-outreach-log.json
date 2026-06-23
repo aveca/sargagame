@@ -1,0 +1,50 @@
+{
+  "contacted": {
+    "martinique.org": {
+      "date": "2026-06-23T12:34:46.243Z",
+      "emailHash": "022cd99bb79311e2d6449f1f8ecfd63a",
+      "emailDomain": "2x.webp",
+      "island": "mq",
+      "status": "failed",
+      "error": "Can't send mail - all recipients were rejected: 550-The mail server could not deliver mail to ile@2x.webp.  The account or\n550-domain may not exist, they may be blacklisted, or missing the proper dns\n550 entries."
+    },
+    "comite-martinique.org": {
+      "date": "2026-06-23T12:34:47.183Z",
+      "status": "no-email"
+    },
+    "ville-robert.fr": {
+      "date": "2026-06-23T12:34:54.247Z",
+      "emailHash": "efad5c4eb5f5d5ffdfa0c951c78708fc",
+      "emailDomain": "ville-robert.fr",
+      "island": "mq",
+      "status": "sent",
+      "error": null
+    },
+    "ville-francois.fr": {
+      "date": "2026-06-23T12:34:56.662Z",
+      "emailHash": "20cec5af90a97471a950840bb162faa4",
+      "emailDomain": "ville-francois.fr",
+      "island": "mq",
+      "status": "sent",
+      "error": null
+    },
+    "diamant-les-bains.fr": {
+      "date": "2026-06-23T12:35:00.909Z",
+      "emailHash": "9a9cdbd282d741fb6e56c1e35bfc0552",
+      "emailDomain": "diamantlesbains.com",
+      "island": "mq",
+      "status": "sent",
+      "error": null
+    },
+    "anoli-lodges.com": {
+      "date": "2026-06-23T12:35:08.126Z",
+      "emailHash": "68b7f3ca4dc643a90940adbf81c8bdb5",
+      "emailDomain": "gmail.com",
+      "island": "mq",
+      "status": "sent",
+      "error": null
+    }
+  },
+  "lastRun": "2026-06-23T12:35:08.126Z",
+  "totalSent": 4
+}

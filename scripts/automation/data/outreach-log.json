@@ -151,8 +151,53 @@
       "url": "https://www.guideguadeloupe.com/plages-guadeloupe.html",
       "emailHash": "2c59305379dfa961d3d5c5a5dd170219",
       "emailDomain": "guideguadeloupe.com"
+    },
+    "keysweekly.com": {
+      "date": "2026-06-23T12:31:50.551Z",
+      "emailHash": "fdc67398c5c8aa3ca10a9e2c7d3b72fd",
+      "emailDomain": "keysweekly.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://keysweekly.com/",
+      "market": "us"
+    },
+    "floridatoday.com": {
+      "date": "2026-06-23T12:31:52.513Z",
+      "emailHash": "fc1cae3b9db39c624b31bbb220bfdfb0",
+      "emailDomain": "floridatoday.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.floridatoday.com/",
+      "market": "us"
+    },
+    "thecancunsun.com": {
+      "date": "2026-06-23T12:31:53.832Z",
+      "emailHash": "a9f56913639f12d989cb94d7e80a4842",
+      "emailDomain": "thecancunsun.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://thecancunsun.com/",
+      "market": "mx"
+    },
+    "riviera-maya-news.com": {
+      "date": "2026-06-23T12:31:55.113Z",
+      "emailHash": "f875eb74d3865be92c8b4e5fb9fa4ae5",
+      "emailDomain": "gmail.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.riviera-maya-news.com/",
+      "market": "mx"
+    },
+    "theyucatantimes.com": {
+      "date": "2026-06-23T12:31:57.109Z",
+      "emailHash": "2f95d4cb296825ce94ad09d88ee229d6",
+      "emailDomain": "theyucatantimes.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.theyucatantimes.com/",
+      "market": "mx"
     }
   },
-  "lastRun": "2026-06-16T15:09:45.069Z",
-  "totalSent": 19
+  "lastRun": "2026-06-23T12:31:57.109Z",
+  "totalSent": 24
 }
