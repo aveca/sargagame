@@ -7713,11 +7713,17 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     // ── Mode CAPTURE : aucun paiement dispo → on enregistre l'email (waitlist) +
     // état succès. Relance à la réouverture (source 'mollie_waitlist'). ──────────
     if(PAY_CAPTURE_ONLY){
+      // GAP FREEMIUM : paiements indispo → on OFFRE 7j de premium contre l'email
+      // (liste chaude + accroche au produit). Relance à la réouverture (source
+      // 'gap_freemium') : « garde ton accès pour 4,99 € ». Accès time-boxé = pas de
+      // fuite premium permanente + urgence de conversion.
       setPayBusy(true);setPayError("")
-      try{submitLead(email,"mollie_waitlist")}catch(_){}
-      try{localStorage.setItem("sg_email",email)}catch(_){}
-      track("sg_waitlist_capture",{plan:payPlanRef.current,pass:passCtxRef.current?passCtxRef.current.pass:null,source:source||"unknown"})
-      setPayBusy(false);setCaptureDone(true);return
+      try{submitLead(email,"gap_freemium")}catch(_){}
+      try{localStorage.setItem("sg_email",email)
+        localStorage.setItem("sg_premium_pass_end",String(Date.now()+7*86400000))
+      }catch(_){}
+      track("sg_gap_freemium_unlock",{plan:payPlanRef.current,pass:passCtxRef.current?passCtxRef.current.pass:null,source:source||"unknown"})
+      setPayBusy(false);onActivated&&onActivated();onClose&&onClose();return
     }
     // ── Pont Mollie : createToken (Components) → mollie.php. 3DS → redirect+retour
     // (?mollie_return=1 confirme + débloque). Sinon confirme inline puis débloque. ─
@@ -8779,7 +8785,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             {ppSub
               ?_t(lang,"Active ton Premium","Activate your Premium","Activa tu Premium")
               :PAY_CAPTURE_ONLY
-              ?(captureDone?_t(lang,"C'est noté ! 🎉","You're on the list! 🎉","¡Anotado! 🎉"):_t(lang,"Les paiements rouvrent très vite","Payments reopen very soon","Los pagos reabren muy pronto"))
+              ?(captureDone?_t(lang,"C'est débloqué ! 🎉","Unlocked! 🎉","¡Desbloqueado! 🎉"):_t(lang,"Débloque ta semaine — c'est offert","Unlock your week — on us","Desbloquea tu semana — gratis"))
               :passCtxRef.current
               ?_t(lang,`Active ton pass ${passCtxRef.current.days} jours`,`Activate your ${passCtxRef.current.days}-day pass`,`Activa tu pase ${passCtxRef.current.days} días`)
               :NO_TRIAL
@@ -8790,7 +8796,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             {ppSub
               ?_t(lang,"Paie en sécurité avec PayPal · annule quand tu veux","Pay securely with PayPal · cancel anytime","Paga seguro con PayPal · cancela cuando quieras")
               :PAY_CAPTURE_ONLY
-              ?(captureDone?_t(lang,"On te prévient dès la réouverture — et tu gardes ce tarif.","We'll email you the moment it reopens — and you keep this price.","Te avisamos en cuanto reabra — y conservas este precio."):_t(lang,"Laisse ton email : premier prévenu à la réouverture, et tu gardes ce tarif.","Leave your email: first to know when it reopens, and keep this price.","Deja tu email: el primero en saberlo, y conservas este precio."))
+              ?(captureDone?_t(lang,"Ton accès 7 jours est ouvert — profite ! On te prévient pour continuer.","Your 7-day access is open — enjoy! We'll tell you to continue.","Tu acceso de 7 días está abierto — ¡disfruta! Te avisamos para seguir."):_t(lang,"Paiements en maintenance quelques jours. En attendant, ton accès premium 7 jours est OFFERT — ton email et tu profites tout de suite.","Payments down for a few days. Meanwhile your 7-day premium access is ON US — your email and you're in.","Pagos en mantenimiento unos días. Mientras, tu acceso premium 7 días es GRATIS — tu email y listo."))
               :passCtxRef.current
               ?_t(lang,`${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"fr")} · ${passCtxRef.current.days} jours d'accès complet · paiement unique`,`${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"en")} · ${passCtxRef.current.days} days full access · one-time`,`${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"es")} · ${passCtxRef.current.days} días · pago único`)
               :NO_TRIAL
@@ -8836,7 +8842,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             {payBusy
               ?_t(lang,"Activation…","Activating…","Activando…")
               :PAY_CAPTURE_ONLY
-              ?(captureDone?_t(lang,"✓ Enregistré","✓ Saved","✓ Guardado"):_t(lang,"Préviens-moi →","Notify me →","Avísame →"))
+              ?(captureDone?_t(lang,"✓ Débloqué","✓ Unlocked","✓ Desbloqueado"):_t(lang,"Débloquer gratuitement →","Unlock free →","Desbloquear gratis →"))
               :passCtxRef.current
               ?_t(lang,`Payer ${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"fr")}`,`Pay ${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"en")}`,`Pagar ${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"es")}`)
               :NO_TRIAL
@@ -8849,7 +8855,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             {ppSub
               ?_t(lang,"Sans engagement · annule en 2 clics · sécurisé par PayPal","No commitment · cancel in 2 clicks · secured by PayPal","Sin compromiso · cancela en 2 clics · seguro con PayPal")
               :PAY_CAPTURE_ONLY
-              ?_t(lang,"Aucun paiement maintenant · juste ton email · désinscription en 1 clic","No payment now · just your email · unsubscribe in 1 click","Sin pago ahora · solo tu email · cancela en 1 clic")
+              ?_t(lang,"Offert le temps qu'on rouvre · sans carte · juste ton email","On us while we reopen · no card · just your email","Gratis mientras reabrimos · sin tarjeta · solo tu email")
               :NO_TRIAL
               ?_t(lang,"Sans engagement · Annule en 2 clics · Stripe sécurisé","No commitment · Cancel in 2 clicks · Secured by Stripe","Sin compromiso · Cancela en 2 clics · Stripe seguro")
               :_t(lang,"Sans engagement · Rappel 2 jours avant la 1re charge","No commitment · Reminder 2 days before first charge","Sin compromiso · Recordatorio 2 días antes del primer cobro")}
