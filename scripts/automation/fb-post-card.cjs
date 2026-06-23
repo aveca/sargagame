@@ -13,11 +13,18 @@
  *   ... --go    # publie réellement (sinon DRY-RUN : tout sauf le clic Publier)
  *   options : --group=<url>  --headless
  *
- * Sécurité : --dry-run par défaut. --go requis. Garde-fou : abandon si la légende
- *            n'est pas réellement dans le composer (jamais d'image sans texte).
+ * Sécurité : --dry-run par défaut. --go requis. Garde-fous :
+ *   - abandon si la légende n'est pas réellement dans le composer (jamais d'image sans texte) ;
+ *   - après le clic « Post », détection du modal « Participation review » (gate au POST des
+ *     groupes voyage PC/Cancún : cocher les règles + répondre une question d'adhésion). On
+ *     NE coche/remplit/répond JAMAIS (doctrine repo) → log distinct + exit 6, post NON soumis.
+ *
+ * Codes de sortie : 0 ok · 1 fail · 2 session expirée · 3 composer introuvable ·
+ *   4 bouton publier introuvable · 5 légende non insérée · 6 participation-review (post NON soumis).
  */
 const fs = require('fs')
 const path = require('path')
+const { detectParticipationReview } = require('./lib/fb-review-gate.cjs')
 const ROOT = path.join(__dirname, '..', '..')
 const SESSION_DIR = path.join(ROOT, '.fb-session')
 const OUT = path.join(ROOT, 'scripts', 'video', 'out')
@@ -176,6 +183,38 @@ const norm = s => (s || '').replace(/\s/g, '')
     const finalBtn = dialog.getByRole('button', { name: /^(Publier|Post)$/, exact: true }).last()
     if (await finalBtn.isVisible().catch(() => false)) await finalBtn.click().catch(() => {})
   }
+
+  // ── 4) Garde-fou « Participation review » — gate au POST (groupes voyage PC/Cancún) ──
+  // Après « Post », certains groupes ouvrent un modal d'examen de participation (cocher
+  // les règles + répondre une question d'adhésion) AVANT que le post passe. Le composer
+  // se cache → SANS ce garde-fou on logge « ✓ publié » À TORT (post retenu/abandonné).
+  // Doctrine : on ne coche/remplit/répond JAMAIS ces gates (on n'invente pas — cf.
+  // fb-join-groups.cjs `questions`). On détecte, on screenshot, on remonte exit 6.
+  let reviewHit = null, emptyStreak = 0
+  const reviewDeadline = Date.now() + 9000
+  while (Date.now() < reviewDeadline) {
+    await sleep(1500)
+    const dialogData = await page.evaluate(() => {
+      const vis = el => { const r = el.getBoundingClientRect(); return r.width > 10 && r.height > 10 }
+      return [...document.querySelectorAll('div[role="dialog"]')].filter(vis).map(d => ({
+        text: d.innerText || '',
+        hasTextbox: !!d.querySelector('textarea, input[type="text"], div[role="textbox"]'),
+      }))
+    }).catch(() => [])
+    reviewHit = detectParticipationReview(dialogData)
+    if (reviewHit) break
+    emptyStreak = dialogData.length ? 0 : emptyStreak + 1
+    if (emptyStreak >= 2) break               // 2 lectures sans dialog → composer fermé sans gate
+  }
+
+  if (reviewHit) {
+    console.error('⚠ participation-review — réponse humaine requise, post NON soumis dans ' + group.name)
+    console.error('  modal: ' + reviewHit.replace(/\n/g, ' ').slice(0, 160))
+    console.error('  → règles à cocher + question d\'adhésion : le fondateur doit finaliser à la main (on n\'invente jamais ces réponses).')
+    await shot('review')
+    await ctx.close(); process.exit(6)
+  }
+
   await dialog.waitFor({ state: 'hidden', timeout: 120000 }).catch(() => {})
   await sleep(6000)
   await shot('published')
