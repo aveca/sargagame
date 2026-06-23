@@ -1241,7 +1241,7 @@ function SolSortScene({lang}){
         <rect x="-32" y="6" width="64" height="60" fill={b.c} opacity=".4" clipPath={"url(#binc"+i+")"} style={{transform:"scaleY(var(--p4))",transformBox:"fill-box",transformOrigin:"center bottom"}}/>
         <path d="M-32 2 L32 2 L27 66 L-27 66 Z" fill="none" stroke={sel===i?"#FFD884":b.c} strokeWidth={sel===i?2.6:1.6}/>
         <text y="42" fontSize="24" textAnchor="middle">{b.e}</text>
-        <text y="88" fontFamily="ui-monospace,monospace" fontSize="11" fill="#9FE1CB" textAnchor="middle">{b.l}</text>
+        <text y="88" fontFamily="ui-monospace,monospace" fontSize="11" fontWeight="700" fill="#0A1714" textAnchor="middle" paintOrder="stroke" stroke="rgba(255,240,210,.6)" strokeWidth="2.4">{b.l}</text>
       </g>))}
     {sel==null
       ? <text x="400" y="120" fontFamily="ui-monospace,monospace" fontSize="13" fill="#1EC8B0" textAnchor="middle" style={{opacity:"var(--p4)"}}>👆 {T("touche un bac de tri","tap a sort bin","toca un contenedor")}</text>
@@ -2443,6 +2443,14 @@ button:active,a:active,[role="button"]:active{transform:scale(.91)!important;opa
 .sg-util svg{width:18px;height:18px}
 /* FAB stack — pictos SVG ink, recette comic */
 .sg-fab svg{width:24px;height:24px;display:block}
+/* Le picto Veilleur des FABs a des strokes clairs (teal/or/papier) qui n'ont de
+   sens que sur le fond SOMBRE #190c2c. Le skin de thème (.theme-X button{bg !important})
+   écrase l'inline → strokes papier sur blanc/crème/rose = invisibles. On VERROUILLE
+   le fond sombre + bord/ombre comic dans tous les arms (pattern .sg-seg/.sg-util). */
+button.sg-fab,.sg-fab[role],.theme-comic .sg-fab,.theme-soft .sg-fab,.theme-manga .sg-fab,
+.theme-arcade .sg-fab,.theme-sticker .sg-fab{
+  background:#190c2c!important;border:2.5px solid #0d0b14!important;
+  box-shadow:2px 2px 0 #0d0b14!important;color:#fdfcf7!important;text-shadow:none!important}
 /* @360px : re-serrer encore (paddings + masquer label âge si besoin) */
 @media(max-width:380px){
   .sg-rail{gap:5px}
@@ -3982,7 +3990,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
             <div style={{fontFamily:"'Anton',sans-serif",fontSize:23,lineHeight:.96,color:COMIC.ink,textTransform:"uppercase",letterSpacing:"-.3px",wordBreak:"break-word"}}>{beach.name}</div>
             {locLine&&<div style={{font:"700 11.5px/1.2 'Bricolage Grotesque'",color:COMIC.sub,marginTop:4,display:"flex",alignItems:"center",gap:5}}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>{locLine}</div>}
           </div>
-          <span style={{font:"800 11px/1 'Bricolage Grotesque'",padding:"7px 11px",borderRadius:999,border:`2.5px solid ${COMIC.ink}`,boxShadow:`2px 2px 0 ${COMIC.ink}`,background:sc,color:status==="moderate"?COMIC.ink:"#fff",whiteSpace:"nowrap",display:"inline-flex",alignItems:"center",gap:5}}><ComicStatusGlyph status={status} size={13} color={status==="moderate"?COMIC.ink:"#fff"}/>{(ST[status]||ST._loading)[lang==="en"?"le":lang==="es"?"les":"l"]}</span>
+          <span style={{font:"800 11px/1 'Bricolage Grotesque'",padding:"7px 11px",borderRadius:999,border:`2.5px solid ${COMIC.ink}`,boxShadow:`2px 2px 0 ${COMIC.ink}`,background:sc,color:status==="avoid"?"#fff":COMIC.ink,whiteSpace:"nowrap",display:"inline-flex",alignItems:"center",gap:5}}><ComicStatusGlyph status={status} size={13} color={status==="avoid"?"#fff":COMIC.ink}/>{(ST[status]||ST._loading)[lang==="en"?"le":lang==="es"?"les":"l"]}</span>
         </div>
 
         {/* VERDICT — bandeau couleur haute lisibilité (traffic-light + mot, le pattern
@@ -4062,7 +4070,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
 
         {/* CTA collant — décision unique, or */}
         <div style={{position:"sticky",bottom:0,paddingTop:8,marginTop:4,background:`linear-gradient(to top, ${COMIC.cream} 72%, transparent)`}}>
-          <button className="bsc-gobtn" onClick={onCTA} style={{display:"inline-flex",alignItems:"center",justifyContent:"center",gap:8}}><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style={{flexShrink:0}}><path d="M12 2.6l2.6 6.1 6.6.6-5 4.3 1.5 6.5L12 17l-5.7 3.4 1.5-6.5-5-4.3 6.6-.6z"/></svg>{ctaLabel} →</button>
+          <button className="bsc-gobtn sg-paygold" onClick={onCTA} style={{display:"inline-flex",alignItems:"center",justifyContent:"center",gap:8}}><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style={{flexShrink:0}}><path d="M12 2.6l2.6 6.1 6.6.6-5 4.3 1.5 6.5L12 17l-5.7 3.4 1.5-6.5-5-4.3 6.6-.6z"/></svg>{ctaLabel} →</button>
           {!isPremium&&<>
             <div style={{font:"600 11.5px/1.4 'Bricolage Grotesque'",color:COMIC.sub,textAlign:"center",margin:"9px 8px 0"}}>{_t(lang,"Ne découvre plus les algues une fois sur place. Sois prévenu·e la veille.","Stop discovering the seaweed once you're there. Get warned the day before.","Deja de descubrir el sargazo al llegar. Te avisamos la víspera.")}</div>
             <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:COMIC.sub,textAlign:"center",marginTop:6}}>≈ {pricePerDay()||"0,16 €"} / {_t(lang,"jour","day","día")} · {_t(lang,"sans engagement, résiliable à tout moment","cancel anytime","sin compromiso, cancela cuando quieras")}</div>
@@ -5227,7 +5235,7 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap,sargData,on
           `.theme-comic .sg-cta` qui peint le DORÉ golden-hour (sinon le bouton hérite du
           papier crème générique). Hors thème, le style inline or sert de fallback. */}
       {!isPremium&&(
-        <button className="sg-cta" onClick={()=>{try{track("sg_beach_list_premium_cta")}catch(_){}; onPremiumClick("beach_list")}}
+        <button className="sg-cta sg-paygold" onClick={()=>{try{track("sg_beach_list_premium_cta")}catch(_){}; onPremiumClick("beach_list")}}
           style={{margin:"4px 16px 16px",border:`2.5px solid ${SG.ink}`,borderRadius:16,boxShadow:`6px 6px 0 ${SG.ink}`,
             background:"radial-gradient(circle at 1px 1px, rgba(13,13,13,.10) 1.3px, transparent 1.5px) 0 0/7px 7px, linear-gradient(135deg,"+SG.goldL+","+SG.gold+")",
             color:SG.ink,padding:14,display:"flex",alignItems:"center",gap:12,cursor:"pointer",textAlign:"left",
@@ -6841,8 +6849,11 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
       .pww-day.lock .ddot{background:repeating-linear-gradient(45deg,#cfcabb,#cfcabb 3px,#e4e0d4 3px,#e4e0d4 6px)}
       .pww-day.lock .dvd{display:flex;justify-content:center;color:#9a9484}
       .pww-lockdiv{position:absolute;z-index:2;top:38px;bottom:9px;left:calc(2/7*100%);border-left:2.5px dashed var(--ink);opacity:.7;pointer-events:none}
-      .pww-lockcta{position:relative;z-index:3;display:flex;align-items:center;justify-content:center;gap:7px;padding:7px 10px;background:linear-gradient(180deg,var(--goldLL),var(--goldL));border-top:2.5px solid var(--ink);color:var(--ink)}
-      .pww-lockcta b{font-size:10.5px;font-weight:800;color:var(--ink);letter-spacing:.2px}
+      /* .pww-lockbar (ex-.pww-lockcta) : RENOMMÉE pour échapper à .theme-X [class*="cta"]
+         qui en faisait un CTA plein recoloré (manga noir, arcade magenta, sticker rose)
+         avec un <b> ink illisible. Garde le bandeau golden + texte ink (>9:1). */
+      .pww-lockbar{position:relative;z-index:3;display:flex;align-items:center;justify-content:center;gap:7px;padding:7px 10px;background:linear-gradient(180deg,var(--goldLL),var(--goldL));border-top:2.5px solid var(--ink);color:var(--ink)}
+      .pww-lockbar b{font-size:10.5px;font-weight:800;color:var(--ink);letter-spacing:.2px}
       /* PERKS */
       .pww-perks{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
       .pww-perk{display:flex;align-items:center;gap:10px;background:#fff;border:2.5px solid var(--ink);border-radius:13px;padding:9px 12px;box-shadow:3px 3px 0 var(--ink)}
@@ -6901,6 +6912,24 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
       .pww-breathe{animation:pwwBreathe 6s ease-in-out infinite;transform-origin:60px 70px}
       @keyframes pwwBreathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
       @media(prefers-reduced-motion:reduce){.pww-breathe{animation:none}.pww-proof .pls{animation:none}}
+      /* ═══ BLINDAGE PAYWALL vs A/B THÈMES ═══
+         Les <button> non-primaires (.pww-plan / .pww-season-alt / .pww-link) sont captés
+         par .theme-X button{bg/color/border !important} → fond imposé (manga noir, arcade
+         magenta, sticker rose) avec texte ink hardcodé illisible (≈1:1). On RE-SPÉCIFIE
+         le fond papier/none + couleur des enfants à spécificité (0,2,x) qui bat .theme-X
+         button (0,1,1), avec !important. Même stratégie éprouvée que .pww-gobtn. */
+      .pww-wrap .pww-plan{background:#fff!important;color:var(--ink)!important;border:2.5px solid var(--ink)!important;border-radius:13px!important;box-shadow:2px 2px 0 var(--ink)!important;text-shadow:none!important;text-transform:none!important;letter-spacing:normal!important;font-family:inherit!important}
+      .pww-wrap .pww-plan.on{background:linear-gradient(180deg,var(--goldLL),var(--goldL))!important;box-shadow:0 4px 0 var(--ink)!important}
+      .pww-wrap .pww-plan .pww-pn,.pww-wrap .pww-plan .pww-pr,.pww-wrap .pww-plan .pww-pr small{color:var(--ink)!important;-webkit-text-fill-color:var(--ink)!important}
+      .pww-wrap .pww-plan .pww-eq{color:#8a6a12!important}
+      .pww-wrap .pww-plan.on .pww-eq{color:#7a5a06!important}
+      .pww-wrap .pww-season-alt{background:rgba(13,13,13,.04)!important;border:1.5px dashed rgba(13,13,13,.34)!important;border-radius:12px!important;box-shadow:none!important;text-shadow:none!important;text-transform:none!important;letter-spacing:normal!important;font-family:inherit!important}
+      .pww-wrap .pww-season-alt b,.pww-wrap .pww-season-alt span{color:var(--ink)!important;-webkit-text-fill-color:var(--ink)!important}
+      .pww-wrap .pww-season-alt em{color:#5A5A5A!important;-webkit-text-fill-color:#5A5A5A!important}
+      /* Les liens secondaires ne doivent JAMAIS devenir des pavés pleins → fond/bordure neutralisés,
+         couleur encre lisible sur papier (le teal b2b vire encre aussi pour battre arcade/sticker). */
+      .pww-wrap .pww-link{background:none!important;border:none!important;box-shadow:none!important;color:#16323a!important;-webkit-text-fill-color:#16323a!important;text-shadow:none!important;text-transform:none!important;letter-spacing:normal!important;border-radius:0!important;font-family:inherit!important}
+      .pww-wrap .pww-link.b2b{color:#0f3d38!important;-webkit-text-fill-color:#0f3d38!important}
     `}</style>
     <div className="pww-wrap">
       {/* HERO : la même mer golden-hour que la carte */}
@@ -7001,7 +7030,7 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
               </div>
             ))}
           </div>
-          <div className="pww-lockcta"><Lock s={13}/><b>{_t(lang,"Débloque les 5 jours suivants","Unlock the next 5 days","Desbloquea los 5 días siguientes")}</b></div>
+          <div className="pww-lockbar"><Lock s={13}/><b>{_t(lang,"Débloque les 5 jours suivants","Unlock the next 5 days","Desbloquea los 5 días siguientes")}</b></div>
         </div>
 
         {/* 3 PERKS */}
@@ -7055,7 +7084,7 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
         {onSeason&&<button type="button" className="pww-season-alt" onClick={onSeason}>
           <span style={{display:"flex",flexDirection:"column",gap:2,minWidth:0}}>
             <b style={{fontSize:13.5,color:"#0D0D0D",fontWeight:800}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:"-2px",marginRight:3}}><path d="M12 5v2M6 11l1 1M2 18h20M18 11l-1 1M8.5 18a3.5 3.5 0 0 1 7 0"/></svg>{_t(lang,"Plutôt un pass saison ?","Prefer a season pass?","¿Mejor un pase de temporada?")}</b>
-            <em style={{fontSize:11.5,color:"rgba(13,13,13,.62)",fontStyle:"normal"}}>{_t(lang,"19,99 € une fois · 6 mois · sans abonnement","€19.99 once · 6 months · no subscription","19,99 € una vez · 6 meses · sin suscripción")}</em>
+            <em style={{fontSize:11.5,color:"#5A5A5A",fontStyle:"normal"}}>{_t(lang,"19,99 € une fois · 6 mois · sans abonnement","€19.99 once · 6 months · no subscription","19,99 € una vez · 6 meses · sin suscripción")}</em>
           </span>
           <span style={{fontSize:18,fontWeight:800,color:"#0D0D0D",flexShrink:0}}>→</span>
         </button>}
@@ -9173,7 +9202,7 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
                 border:`2px solid ${err?"#E8522A":"rgba(255,255,255,.15)"}`,
                 fontSize:16,fontFamily:"inherit",background:"rgba(255,255,255,.05)",
                 outline:"none",color:"#fff",transition:"border 0.2s ease"}}/>
-            <button type="submit" style={{
+            <button type="submit" className="sg-paygold" style={{
               position:"absolute",right:6,top:6,bottom:6,
               width:44,borderRadius:999,border:"none",cursor:"pointer",
               background:"linear-gradient(135deg,#3fd07f,#5b3a8e)",
@@ -9396,7 +9425,7 @@ function ExitVeilleurCard({lang,pick,forecast,onClose,trigger="exit"}){
                   <div key={i} style={{textAlign:"center"}}>
                     <div style={{fontFamily:"'Anton',sans-serif",fontSize:11,color:unlocked?INK:"#9a8f7a",marginBottom:3}}>{dayLabel(i)}</div>
                     <div style={{height:38,borderRadius:9,border:"2px solid "+INK,boxShadow:unlocked?"2px 2px 0 "+INK:"none",background:c,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      {unlocked?<span style={{fontFamily:"'Anton',sans-serif",fontSize:14,color:"#FDFCF7"}}>{dateNum(i)}</span>:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b5f3f" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0"/></svg>}
+                      {unlocked?<span style={{fontFamily:"'Anton',sans-serif",fontSize:14,color:"#0D0D0D",textShadow:"0 1px 0 rgba(255,255,255,.55)"}}>{dateNum(i)}</span>:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b5f3f" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0"/></svg>}
                     </div>
                   </div>
                 )
@@ -9406,7 +9435,7 @@ function ExitVeilleurCard({lang,pick,forecast,onClose,trigger="exit"}){
               {_t(lang,"5 jours déverrouillés par e-mail · confiance affichée honnêtement","5 days unlocked by email · confidence shown honestly","5 días por email · confianza mostrada con honestidad")}
             </div>
             <div style={{fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:14,color:"#3a2f1a",lineHeight:1.35,marginBottom:12}}>
-              {_t(lang,<>Demain ce sera peut-être une <b>autre</b> plage. Reçois le bon plan chaque matin à <b style={{color:"#E8A800"}}>7h</b>.</>,<>Tomorrow it may be a <b>different</b> beach. Get the plan every morning at <b style={{color:"#E8A800"}}>7am</b>.</>,<>Mañana quizá sea <b>otra</b> playa. Recibe el plan cada mañana a las <b style={{color:"#E8A800"}}>7h</b>.</>)}
+              {_t(lang,<>Demain ce sera peut-être une <b>autre</b> plage. Reçois le bon plan chaque matin à <b style={{...hl,color:"#0D0D0D"}}>7h</b>.</>,<>Tomorrow it may be a <b>different</b> beach. Get the plan every morning at <b style={{...hl,color:"#0D0D0D"}}>7am</b>.</>,<>Mañana quizá sea <b>otra</b> playa. Recibe el plan cada mañana a las <b style={{...hl,color:"#0D0D0D"}}>7h</b>.</>)}
             </div>
             <form onSubmit={submit}>
               <div style={{display:"flex",alignItems:"center",gap:8,background:"#fff",border:"2px solid "+INK,borderRadius:12,padding:"3px 4px 3px 12px",marginBottom:10}}>
@@ -13119,25 +13148,26 @@ function WhatsNewJournal({lang,title,items,releaseV,releaseDate,allowDeepLinks,i
         </button>
 
         {!isPremium&&(
-          // Lien premium DISCRET mais bien cliquable (→ openPremium). Contraste AA garanti :
-          // texte blanc plein + ombre portée sur le bas chaud du dégradé. Picto SVG (plus de 🛰️ OS).
+          // Lien premium DISCRET mais bien cliquable (→ openPremium). Posé sur le BAS golden
+          // clair du dégradé → texte ENCRE (#0D0D0D ≈8:1 sur #F2B05E), pas blanc (le blanc y
+          // tombait à ~1.9:1, le text-shadow ne compte pas WCAG). Picto SVG ink (plus de 🛰️ OS).
           <button onClick={onPremium} style={{marginTop:13,background:"none",border:"none",cursor:"pointer",
             display:"flex",alignItems:"center",justifyContent:"center",gap:7,
-            color:"#FFFFFF",fontSize:13,fontWeight:700,fontFamily:"inherit",textAlign:"center",width:"100%",
-            textShadow:"0 1px 6px rgba(0,0,0,.55)"}}>
+            color:"#0D0D0D",fontSize:13,fontWeight:800,fontFamily:"inherit",textAlign:"center",width:"100%",
+            textShadow:"none"}}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{flexShrink:0}}>
-              <rect x="9" y="9" width="6" height="6" rx="1.5" fill="#1EC8B0"/>
-              <circle cx="12" cy="12" r="1.1" fill="#07201E"/>
-              <path d="M9 11 4.4 8M15 11 19.6 8" stroke="#FFFFFF" strokeWidth="1.6" strokeLinecap="round" opacity=".9"/>
-              <rect x="3" y="6.2" width="3" height="3.4" rx=".7" fill="#FFFFFF" opacity=".9"/>
-              <rect x="18" y="6.2" width="3" height="3.4" rx=".7" fill="#FFFFFF" opacity=".9"/>
+              <rect x="9" y="9" width="6" height="6" rx="1.5" fill="#07201E"/>
+              <circle cx="12" cy="12" r="1.1" fill="#FFE47A"/>
+              <path d="M9 11 4.4 8M15 11 19.6 8" stroke="#07201E" strokeWidth="1.6" strokeLinecap="round" opacity=".9"/>
+              <rect x="3" y="6.2" width="3" height="3.4" rx=".7" fill="#07201E" opacity=".9"/>
+              <rect x="18" y="6.2" width="3" height="3.4" rx=".7" fill="#07201E" opacity=".9"/>
             </svg>
             {_t(lang,"Le Veilleur personnel veille TA plage pour toi →",
                       "Your personal Watcher keeps an eye on YOUR beach →",
                       "El Vigía personal cuida TU playa por ti →")}
           </button>
         )}
-        <div style={{textAlign:"center",marginTop:14,fontSize:10.5,color:"rgba(255,255,255,.45)"}}>{releaseV}{releaseDate?" · "+releaseDate:""}</div>
+        <div style={{textAlign:"center",marginTop:14,fontSize:10.5,color:"rgba(13,13,13,.65)"}}>{releaseV}{releaseDate?" · "+releaseDate:""}</div>
       </div>
     </div>
   )
@@ -13609,9 +13639,8 @@ export default function App(){
     {id:"golden", label:"Golden hour",  emoji:"🌅"},
     {id:"comic",  label:"Comic / TCG",  emoji:"🎴"},
     {id:"soft",   label:"Soft Modern",  emoji:"🫧"},
-    {id:"manga",  label:"Manga N&B",    emoji:"🖊️"},
-    {id:"arcade", label:"Arcade néon",  emoji:"🕹️"},
-    {id:"sticker",label:"Sticker kawaii",emoji:"🌈"},
+    // manga/arcade/sticker RETIRÉS 22/06 (fondateur) : illisibles (audit contraste w71fbv5el,
+    // ~1:1 en manga) → sortis du picker. Quiconque était dessus retombe sur le défaut (comic).
   ]),[])
   const initialTheme = useMemo(()=>{
     try{

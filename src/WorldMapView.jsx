@@ -931,7 +931,7 @@ export default function WorldMapView({
   )
 
   return(
-    <div ref={wrapRef} style={{
+    <div ref={wrapRef} className="sg-onink-scope" style={{
       position:"fixed",inset:0,zIndex:1020,overflow:"hidden",touchAction:"none",userSelect:"none",
       // forced-color-adjust HÉRITE → préserve les VRAIES couleurs golden-hour de TOUTE la
       // carte (fond + CTA dorés + dots de statut) même si le système force les couleurs
@@ -1179,7 +1179,7 @@ export default function WorldMapView({
               animation:noAnim?"none":"wmPulse 2.4s ease-out infinite",
             }}/>
             <span style={{font:"800 11px/1 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".06em",textTransform:"uppercase",color:INK}}>{_t(lang,"EN DIRECT","LIVE","EN VIVO")}</span>
-            <span style={{font:"700 11px/1 'JetBrains Mono',monospace",color:"#009E8E",marginLeft:2}}>
+            <span style={{font:"700 11px/1 'JetBrains Mono',monospace",color:"#00786C",marginLeft:2}}>
               {updatedAt?_t(lang,`il y a ${fmtFresh(updatedAt)}`,`${fmtFresh(updatedAt)} ago`,`hace ${fmtFresh(updatedAt)}`):"···"}
             </span>
           </div>
@@ -1239,7 +1239,7 @@ export default function WorldMapView({
               }}/>
             </div>
             <span style={{font:"700 12.5px/1 'Bricolage Grotesque',system-ui,sans-serif",color:INK}}>
-              <b style={{fontFamily:"'AntonLC','Anton',sans-serif",fontWeight:400,color:"#1c8f4e"}}>{cleanCnt}</b> {_t(lang,"plages propres","clean beaches","playas limpias")}
+              <b style={{fontFamily:"'AntonLC','Anton',sans-serif",fontWeight:400,color:"#177A42"}}>{cleanCnt}</b> {_t(lang,"plages propres","clean beaches","playas limpias")}
             </span>
           </div>
 
@@ -1276,7 +1276,7 @@ export default function WorldMapView({
               background:"#fdf6e3",border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:12,padding:"8px 12px",
             }}>
               <span style={{fontSize:14}}>✅</span>
-              <span style={{font:"800 12px/1.2 'Bricolage Grotesque',system-ui,sans-serif",color:"#1c8f4e"}}>
+              <span style={{font:"800 12px/1.2 'Bricolage Grotesque',system-ui,sans-serif",color:"#177A42"}}>
                 {_t(lang,"C'est fait ! Ta reco demain à 7h.","You're in! First pick tomorrow 7am.","¡Listo! Tu playa mañana a las 7.")}
               </span>
             </div>
