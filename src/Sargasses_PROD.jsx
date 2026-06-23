@@ -7577,6 +7577,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const payPlanRef=useRef("monthly")
   const payReadyRef=useRef(false)
   const payEmailRef=useRef(null)
+  const payEmailCapturedRef=useRef("") // dernière valeur d'email déjà enrôlée au blur (pré-Stripe), évite les doublons
   const paypalBtnRef=useRef(null) // pont PayPal : conteneur du bouton d'abo
   const payDivRef=useRef(null)
   const expressDivRef=useRef(null)
@@ -7701,6 +7702,27 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     return ()=>{cancelled=true}
   },[payStep])
   const ppSub=PAY_PROVIDER==="paypal"&&!passCtxRef.current // abo PayPal (bouton) vs pass/capture
+  // Capture l'email DÈS qu'il quitte le champ (onBlur) sur l'écran de paiement —
+  // càd au moment exact où l'user clique sur la carte/PayPal = « juste avant Stripe ».
+  // Le partant qui tape son email puis hésite sur la carte est un lead chaud : enrôlé
+  // dans le drip + panier abandonné armé, MÊME sans paiement (carte refusée, 3DS
+  // abandonné, simple fermeture). Avant ce fix, submitLead ne partait qu'au clic final
+  // « Payer » (doSubscribe) ou onApprove PayPal → tout ce trafic email était perdu.
+  // Idempotent (garde sur la dernière valeur) ; purement additif, zéro logique paiement.
+  const capturePayEmail=useCallback(()=>{
+    try{
+      const email=(payEmailRef.current?.value||"").trim()
+      if(!email||!email.includes("@")||!email.includes("."))return
+      if(payEmailCapturedRef.current===email)return
+      payEmailCapturedRef.current=email
+      try{localStorage.setItem("sg_email",email)}catch(_){}
+      try{submitLead(email,"pay_intent")}catch(_){}
+      // Arme la relance panier abandonné avec l'email désormais connu (sinon la
+      // bannière/recover-abandoned-cart restaient muets faute d'email).
+      try{localStorage.setItem("sg_checkout_abandoned",JSON.stringify({email,ts:Date.now()}))}catch(_){}
+      try{track("sg_pay_email_captured",{plan:payPlanRef.current,source:source||"unknown"})}catch(_){}
+    }catch(_){}
+  },[source])
   const doSubscribe=useCallback(async()=>{
     const plan=payPlanRef.current
     if(payBusy)return
@@ -8811,6 +8833,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
                   :_t(lang,`puis ${REGION_PAY?PRICE_MO:"4,99 €"}/mois dans 7 jours`,`then ${PRICE_MO||"$9.99"}/mo in 7 days`,`luego ${PRICE_MO||"$9.99"}/mes en 7 días`)} · {_t(lang,"annule en 1 clic","cancel in 1 click","cancela en 1 clic")}</>}
           </div>
           <input ref={payEmailRef} type="email" inputMode="email" autoComplete="email"
+            onBlur={capturePayEmail}
             defaultValue={typeof localStorage!=="undefined"?(localStorage.getItem("sg_email")||""):""}
             placeholder={_t(lang,"ton@email.com","you@email.com","tu@email.com")}
             style={{width:"100%",boxSizing:"border-box",padding:"13px 14px",borderRadius:12,marginBottom:12,
