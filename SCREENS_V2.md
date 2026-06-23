@@ -32,7 +32,7 @@ l'**alerte** le jour où ta plage bascule. Un seul monde **comic-book animé** (
 - [x] 06/21/22 RECHERCHE + FILTRES du Pokédex (search + chips statut — fait) → 08
 - [x] 07 CARTE PLAGE DU JOUR (= booster vedette, fait) → 08/12
 - [x] 08 DÉTAIL PLAGE + 7 JOURS (= ChasseDetail, fait) → 09/12/voisines
-- [ ] 09 PRÉVISION 7 JOURS détaillée (timeline complète) — premium → 12
+- [x] 09 PRÉVISION 7 JOURS — aperçu honnête de la prévision RÉELLE dans ChasseDetail (J0 réel + J+1.. teinte statut/cadenas/confiance décroissante, horizon estompé, headline allClean «propre toute la semaine» / sinon «alerte le jour où ça bascule»). Frontière calquée ForecastChart, 0 fabrication (plage non-couverte→cadenas), réversible `?fc7=0`. Commit 301073e6 / PR #90, déployé. → 12
 - [ ] 11 PLAGE — PRÉVISIONS (fiche data en comic, remplace le « scroll satellite ») → 12
 ### Bloc 3 — Carte
 - [x] 10 CARTE monde golden-hour (fait) — ⚠️ pins → doivent ouvrir le **détail comic** (item ⭐, cf PRODUCT §8)
