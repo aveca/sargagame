@@ -14407,7 +14407,7 @@ export default function App(){
     try{const o=new URLSearchParams(window.location.search).get("molo");moloV=o==="1"?"molo":o==="0"?"control":null}catch(_){moloV=null}
     if(!moloV)moloV=abVariant("molo_ladder",["control","molo"],[.5,.5])
     if(moloV==="molo")return
-    navigator.geolocation.getCurrentPosition(pos=>{
+    const fetchPos=()=>navigator.geolocation.getCurrentPosition(pos=>{
       const lat=pos.coords.latitude,lng=pos.coords.longitude
       setUserPos({lat,lng})
       // Auto-detect island from GPS (Martinique ~14.6°N, Guadeloupe ~16.2°N)
@@ -14418,6 +14418,19 @@ export default function App(){
         return prev
       })
     },()=>{},{enableHighAccuracy:false,timeout:8000,maximumAge:300000})
+    // DEMANDER LA POSITION UNE SEULE FOIS puis respecter la décision du navigateur :
+    //   granted → on récupère la position SANS re-prompter (à chaque visite)
+    //   prompt  → on demande UNE fois (marqueur sg_geo_asked), plus jamais au load
+    //   denied  → on n'insiste plus
+    // Fix : avant, getCurrentPosition au mount re-déclenchait le prompt à CHAQUE chargement.
+    const askOnce=()=>{try{if(localStorage.getItem("sg_geo_asked"))return;localStorage.setItem("sg_geo_asked","1")}catch(_){}fetchPos()}
+    if(navigator.permissions&&navigator.permissions.query){
+      navigator.permissions.query({name:"geolocation"}).then(p=>{
+        if(p.state==="granted")fetchPos()       // déjà autorisé → position silencieuse, zéro prompt
+        else if(p.state==="prompt")askOnce()     // jamais demandé → 1 seule fois
+        // "denied" → ne rien faire
+      }).catch(()=>askOnce())
+    }else askOnce()
   },[])
 
   // Theme
