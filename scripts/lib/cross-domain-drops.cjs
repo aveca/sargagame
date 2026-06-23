@@ -53,6 +53,7 @@ const GP_ONLY = [
   'sargasses-sainte-anne-guadeloupe',
   'sargasses-gosier',
   'sargasses-saint-francois',
+  'sargasses-bouillante',
 ]
 
 // Slugs à supprimer pour une région donnée (= les pages de l'AUTRE île).

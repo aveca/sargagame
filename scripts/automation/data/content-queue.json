@@ -2,46 +2,6 @@
   "_note": "BANQUE de pages SEO générées d'avance, publiées au compte-gouttes (générer ≠ publier). La routine sargasses-content-engine GÉNÈRE dedans (queue[], status 'queued' = page écrite mais PAS live, invisible de Google, zéro risque SEO) puis PUBLIE 1/run depuis la file (drip), gaté sur l'indexation du site cible. Re-vérif qualité au moment de publier (la barre est à la publication, pas à la génération). Un item publié migre dans published[] avec sa date. Format d'un draft : {slug, island('mq'|'gp'|'both'|'florida'|'puntacana'|'rivieramaya'), type, title, desc, editorialHtml(≥300 mots, <article> h1/h2/listes), faq:[{q,a}×3], internalLinks:[slugs cibles VÉRIFIÉS dans beaches-list.json/pages existantes], targetQuery, gscImpressions, status, generatedAt}.",
   "queue": [
     {
-      "slug": "sargasses-bouillante",
-      "island": "gp",
-      "type": "commune",
-      "title": "Sargasses à Bouillante (Guadeloupe) — Malendure, Îlets Pigeon et plages du jour",
-      "desc": "Y a-t-il des sargasses à Bouillante ? Sur la côte sous-le-vent de Basse-Terre, Malendure et la Réserve Cousteau comptent parmi les secteurs les mieux protégés de l'archipel. État du jour, carte en temps réel, prévision 7 jours.",
-      "targetQuery": "sargasse bouillante guadeloupe",
-      "gscImpressions": 20,
-      "internalLinks": [
-        "plage-de-malendure",
-        "anse-de-pigeon",
-        "petite-plage-malendure",
-        "plage-des-amandiers",
-        "anse-a-sable",
-        "sargasses-deshaies",
-        "sargasses-gosier",
-        "meilleures-plages-guadeloupe-sargasses",
-        "saison-sargasses-guadeloupe",
-        "carte-sargasses",
-        "alertes",
-        "previsions"
-      ],
-      "editorialHtml": "<article><h1>Sargasses à Bouillante (Guadeloupe) — Malendure, Îlets Pigeon et plages du jour</h1><p>Y a-t-il des <strong>sargasses à Bouillante</strong> aujourd'hui ? Sur la <strong>côte sous-le-vent</strong> de Basse-Terre, Bouillante est mise à l'abri du flux atlantique par le massif de la Soufrière : c'est l'un des secteurs les <em>mieux</em> protégés des sargasses de tout l'archipel, et le point de départ de la célèbre Réserve Cousteau. Les épisodes y sont rares — mais en année record, vérifiez l'<a href=\"/carte-sargasses/\">état du jour sur la carte</a> avant de partir plonger ou poser votre serviette.</p><h2>Les plages de Bouillante</h2><ul><li><a href=\"/plages/plage-de-malendure/\">Plage de Malendure</a> — sable volcanique gris, face aux Îlets Pigeon : le spot de snorkeling et de plongée n°1 de Guadeloupe (Réserve Cousteau). Presque toujours épargnée.</li><li><a href=\"/plages/anse-de-pigeon/\">Anse à Pigeon</a> — embarcadère vers les îlets, eaux calmes et claires.</li><li><a href=\"/plages/petite-plage-malendure/\">Petite Plage de Malendure</a> — crique voisine plus tranquille, idéale en famille.</li><li><a href=\"/plages/plage-des-amandiers/\">Plage des Amandiers</a> et <a href=\"/plages/anse-a-sable/\">Anse à Sable</a> — petites plages ombragées du secteur.</li></ul><h2>Pourquoi Bouillante est-elle si protégée ?</h2><p>La façade ouest de Basse-Terre est abritée du flux atlantique porteur d'algues par le relief volcanique. C'est la même logique qui protège <a href=\"/plages/la-grande-anse-deshaies/\">Deshaies</a> plus au nord. En pleine <a href=\"/saison-sargasses-guadeloupe/\">saison de pic</a> (mai à septembre), quand le sud de Grande-Terre est saturé, Bouillante reste presque toujours praticable — un refuge fiable pour la baignade et la plongée.</p><h2>Et si un épisode rare survenait ?</h2><p>Dans les années record, des bancs peuvent atteindre temporairement la côte sous-le-vent. Dans ce cas, consultez les <a href=\"/meilleures-plages-guadeloupe-sargasses/\">plages les plus propres du jour</a> et la <a href=\"/previsions/\">prévision 7 jours</a> pour ajuster votre sortie. Le secteur garde presque toujours une crique praticable, mais mieux vaut le confirmer avant de prendre la route littorale jusqu'à la Réserve Cousteau.</p><h2>Être prévenu pour Bouillante</h2><p><a href=\"/alertes/\">Activez une alerte gratuite</a> sur Malendure et recevez l'état du jour avant de partir — utile surtout en pic de saison.</p><p><a href=\"/carte-sargasses/\">Carte en temps réel</a> · <a href=\"/previsions/\">Prévisions 7 jours</a> · <a href=\"/sargasses-deshaies/\">Sargasses à Deshaies</a> · <a href=\"/sargasses-gosier/\">Sargasses au Gosier</a></p></article>",
-      "faq": [
-        {
-          "q": "Y a-t-il des sargasses à Malendure (Bouillante) ?",
-          "a": "Très rarement. Malendure est sur la côte sous-le-vent de Basse-Terre, protégée du flux atlantique par le massif de la Soufrière : c'est l'un des secteurs les mieux épargnés de Guadeloupe, ce qui en fait un spot de plongée fiable même en saison de pic. Vérifiez l'état du jour sur la carte avant de partir."
-        },
-        {
-          "q": "Peut-on plonger à la Réserve Cousteau malgré les sargasses ?",
-          "a": "Oui, dans la quasi-totalité des cas : les Îlets Pigeon et la Réserve Cousteau, au large de Malendure, sont protégés et restent praticables même quand le sud de Grande-Terre est touché. En année record, consultez la prévision 7 jours pour confirmer."
-        },
-        {
-          "q": "Où aller près de Bouillante si une plage est touchée ?",
-          "a": "Restez sur la côte sous-le-vent : Deshaies (Grande Anse, La Perle) au nord est le refuge le plus fiable. Consultez aussi les meilleures plages propres du jour sur la carte."
-        }
-      ],
-      "status": "queued",
-      "generatedAt": "2026-06-22T12:59:54.237Z"
-    },
-    {
       "slug": "sargasses-le-moule",
       "island": "gp",
       "type": "commune",
@@ -118,7 +78,89 @@
       ],
       "status": "queued",
       "generatedAt": "2026-06-22T12:59:54.237Z"
+    },
+    {
+      "slug": "sargasses-marie-galante",
+      "island": "gp",
+      "type": "commune",
+      "title": "Sargasses à Marie-Galante (Guadeloupe) — Capesterre, Anse Canot et plages du jour",
+      "desc": "Y a-t-il des sargasses à Marie-Galante ? La côte est (Capesterre) est très exposée, la côte ouest (Saint-Louis, Anse Canot) plus abritée. État du jour, carte en temps réel, prévision 7 jours.",
+      "targetQuery": "sargasses marie galante",
+      "gscImpressions": 41,
+      "internalLinks": [
+        "plage-de-capesterre-mg",
+        "anse-canot-marie-galante",
+        "plage-de-moustique",
+        "anse-de-vieux-fort-mg",
+        "plage-de-grand-bourg",
+        "anse-piton",
+        "sargasses-deshaies",
+        "meilleures-plages-guadeloupe-sargasses",
+        "saison-sargasses-guadeloupe",
+        "carte-sargasses",
+        "alertes",
+        "previsions"
+      ],
+      "editorialHtml": "<article><h1>Sargasses à Marie-Galante (Guadeloupe) — Capesterre, Anse Canot et plages du jour</h1><p>Y a-t-il des <strong>sargasses à Marie-Galante</strong> aujourd&apos;hui ? La « Grande Galette » est une île ronde au sud-est de la Guadeloupe, en plein dans le flux atlantique : sa <strong>côte est et sud-est</strong> — Capesterre-de-Marie-Galante en tête — compte parmi les secteurs les <em>plus exposés</em> de tout l&apos;archipel, tandis que la <strong>côte ouest</strong> (Saint-Louis, Grand-Bourg) est nettement plus abritée. D&apos;une plage à l&apos;autre, l&apos;état peut donc être radicalement différent le même jour. Avant de prendre le ferry, vérifiez l&apos;<a href=\"/carte-sargasses/\">état du jour sur la carte</a>.</p><h2>Les plages de Marie-Galante</h2><ul><li><a href=\"/plages/plage-de-capesterre-mg/\">Plage de Capesterre</a> (Capesterre-de-Marie-Galante) — la célèbre plage de la Feuillère, sable blanc et cocotiers, mais orientée plein est : aux premières loges des arrivages en saison.</li><li><a href=\"/plages/anse-canot-marie-galante/\">Anse Canot</a> (Saint-Louis) — sur la côte ouest abritée, lagon turquoise et calme, l&apos;une des valeurs les plus sûres de l&apos;île.</li><li><a href=\"/plages/plage-de-moustique/\">Plage de Moustique</a> et <a href=\"/plages/anse-de-vieux-fort-mg/\">Anse de Vieux-Fort</a> (Saint-Louis) — criques sauvages de la côte ouest, souvent épargnées.</li><li><a href=\"/plages/plage-de-grand-bourg/\">Plage de Grand-Bourg</a> — au sud-ouest, près du bourg principal et de l&apos;embarcadère, plus accessible.</li><li><a href=\"/plages/anse-piton/\">Anse Piton</a> (Saint-Louis) — petite anse discrète du nord-ouest.</li></ul><h2>Quand les sargasses touchent-elles Marie-Galante ?</h2><p>La <a href=\"/saison-sargasses-guadeloupe/\">saison court d&apos;avril à octobre</a>, pic de mai à août. Île basse exposée plein Atlantique, Marie-Galante encaisse les flux directement sur sa façade est et sud-est : Capesterre reçoit souvent les bancs en premier, alors que la côte ouest (Saint-Louis) reste plus protégée. C&apos;est tout l&apos;intérêt de comparer les plages sur la <a href=\"/carte-sargasses/\">carte en temps réel</a> avant d&apos;embarquer : un aller-retour en ferry coûte une demi-journée et un billet, autant viser directement le bon côté de l&apos;île.</p><h2>Où aller si une plage de Marie-Galante est touchée ?</h2><p>Sur l&apos;île même, basculez vers la côte ouest abritée (Anse Canot, Moustique, Vieux-Fort). Si l&apos;épisode est large, la côte sous-le-vent de Basse-Terre — <a href=\"/sargasses-deshaies/\">Deshaies</a>, Bouillante — reste le refuge le plus fiable de l&apos;archipel. Repérez les <a href=\"/meilleures-plages-guadeloupe-sargasses/\">plages les plus propres du jour</a> et consultez la <a href=\"/previsions/\">prévision 7 jours</a> pour choisir votre créneau.</p><h2>Être prévenu pour Marie-Galante</h2><p><a href=\"/alertes/\">Activez une alerte gratuite</a> sur Anse Canot ou Capesterre et recevez l&apos;état du jour avant de prendre le bateau — utile surtout en pic de saison.</p><p><a href=\"/carte-sargasses/\">Carte en temps réel</a> · <a href=\"/previsions/\">Prévisions 7 jours</a> · <a href=\"/sargasses-deshaies/\">Sargasses à Deshaies</a> · <a href=\"/meilleures-plages-guadeloupe-sargasses/\">Meilleures plages GP</a></p></article>",
+      "faq": [
+        {
+          "q": "Y a-t-il des sargasses à Marie-Galante en ce moment ?",
+          "a": "Cela dépend du côté de l'île. La côte est et sud-est (Capesterre-de-Marie-Galante) est très exposée aux flux atlantiques et reçoit souvent les bancs en premier, tandis que la côte ouest (Saint-Louis, Anse Canot, Grand-Bourg) est plus abritée. Vérifiez l'état du jour plage par plage sur la carte avant de prendre le ferry."
+        },
+        {
+          "q": "Quelle plage de Marie-Galante est la plus épargnée par les sargasses ?",
+          "a": "La côte ouest est la plus sûre : Anse Canot, Plage de Moustique et Anse de Vieux-Fort (commune de Saint-Louis) sont protégées des arrivages atlantiques et restent souvent praticables même quand Capesterre est touchée."
+        },
+        {
+          "q": "Faut-il vérifier les sargasses avant de prendre le ferry pour Marie-Galante ?",
+          "a": "Oui, ça vaut le coup : la traversée coûte une demi-journée et un billet. Comme l'île a un côté très exposé (est) et un côté abrité (ouest), comparer les plages sur la carte avant d'embarquer évite de découvrir un banc sur place et permet de viser directement le bon littoral."
+        }
+      ],
+      "status": "queued",
+      "generatedAt": "2026-06-23T00:00:00.000Z"
     }
   ],
-  "published": []
+  "published": [
+    {
+      "slug": "sargasses-bouillante",
+      "island": "gp",
+      "type": "commune",
+      "title": "Sargasses à Bouillante (Guadeloupe) — Malendure, Îlets Pigeon et plages du jour",
+      "desc": "Y a-t-il des sargasses à Bouillante ? Sur la côte sous-le-vent de Basse-Terre, Malendure et la Réserve Cousteau comptent parmi les secteurs les mieux protégés de l'archipel. État du jour, carte en temps réel, prévision 7 jours.",
+      "targetQuery": "sargasse bouillante guadeloupe",
+      "gscImpressions": 20,
+      "internalLinks": [
+        "plage-de-malendure",
+        "anse-de-pigeon",
+        "petite-plage-malendure",
+        "plage-des-amandiers",
+        "anse-a-sable",
+        "sargasses-deshaies",
+        "sargasses-gosier",
+        "meilleures-plages-guadeloupe-sargasses",
+        "saison-sargasses-guadeloupe",
+        "carte-sargasses",
+        "alertes",
+        "previsions"
+      ],
+      "editorialHtml": "<article><h1>Sargasses à Bouillante (Guadeloupe) — Malendure, Îlets Pigeon et plages du jour</h1><p>Y a-t-il des <strong>sargasses à Bouillante</strong> aujourd'hui ? Sur la <strong>côte sous-le-vent</strong> de Basse-Terre, Bouillante est mise à l'abri du flux atlantique par le massif de la Soufrière : c'est l'un des secteurs les <em>mieux</em> protégés des sargasses de tout l'archipel, et le point de départ de la célèbre Réserve Cousteau. Les épisodes y sont rares — mais en année record, vérifiez l'<a href=\"/carte-sargasses/\">état du jour sur la carte</a> avant de partir plonger ou poser votre serviette.</p><h2>Les plages de Bouillante</h2><ul><li><a href=\"/plages/plage-de-malendure/\">Plage de Malendure</a> — sable volcanique gris, face aux Îlets Pigeon : le spot de snorkeling et de plongée n°1 de Guadeloupe (Réserve Cousteau). Presque toujours épargnée.</li><li><a href=\"/plages/anse-de-pigeon/\">Anse à Pigeon</a> — embarcadère vers les îlets, eaux calmes et claires.</li><li><a href=\"/plages/petite-plage-malendure/\">Petite Plage de Malendure</a> — crique voisine plus tranquille, idéale en famille.</li><li><a href=\"/plages/plage-des-amandiers/\">Plage des Amandiers</a> et <a href=\"/plages/anse-a-sable/\">Anse à Sable</a> — petites plages ombragées du secteur.</li></ul><h2>Pourquoi Bouillante est-elle si protégée ?</h2><p>La façade ouest de Basse-Terre est abritée du flux atlantique porteur d'algues par le relief volcanique. C'est la même logique qui protège <a href=\"/plages/la-grande-anse-deshaies/\">Deshaies</a> plus au nord. En pleine <a href=\"/saison-sargasses-guadeloupe/\">saison de pic</a> (mai à septembre), quand le sud de Grande-Terre est saturé, Bouillante reste presque toujours praticable — un refuge fiable pour la baignade et la plongée.</p><h2>Et si un épisode rare survenait ?</h2><p>Dans les années record, des bancs peuvent atteindre temporairement la côte sous-le-vent. Dans ce cas, consultez les <a href=\"/meilleures-plages-guadeloupe-sargasses/\">plages les plus propres du jour</a> et la <a href=\"/previsions/\">prévision 7 jours</a> pour ajuster votre sortie. Le secteur garde presque toujours une crique praticable, mais mieux vaut le confirmer avant de prendre la route littorale jusqu'à la Réserve Cousteau.</p><h2>Être prévenu pour Bouillante</h2><p><a href=\"/alertes/\">Activez une alerte gratuite</a> sur Malendure et recevez l'état du jour avant de partir — utile surtout en pic de saison.</p><p><a href=\"/carte-sargasses/\">Carte en temps réel</a> · <a href=\"/previsions/\">Prévisions 7 jours</a> · <a href=\"/sargasses-deshaies/\">Sargasses à Deshaies</a> · <a href=\"/sargasses-gosier/\">Sargasses au Gosier</a></p></article>",
+      "faq": [
+        {
+          "q": "Y a-t-il des sargasses à Malendure (Bouillante) ?",
+          "a": "Très rarement. Malendure est sur la côte sous-le-vent de Basse-Terre, protégée du flux atlantique par le massif de la Soufrière : c'est l'un des secteurs les mieux épargnés de Guadeloupe, ce qui en fait un spot de plongée fiable même en saison de pic. Vérifiez l'état du jour sur la carte avant de partir."
+        },
+        {
+          "q": "Peut-on plonger à la Réserve Cousteau malgré les sargasses ?",
+          "a": "Oui, dans la quasi-totalité des cas : les Îlets Pigeon et la Réserve Cousteau, au large de Malendure, sont protégés et restent praticables même quand le sud de Grande-Terre est touché. En année record, consultez la prévision 7 jours pour confirmer."
+        },
+        {
+          "q": "Où aller près de Bouillante si une plage est touchée ?",
+          "a": "Restez sur la côte sous-le-vent : Deshaies (Grande Anse, La Perle) au nord est le refuge le plus fiable. Consultez aussi les meilleures plages propres du jour sur la carte."
+        }
+      ],
+      "status": "published",
+      "generatedAt": "2026-06-22T12:59:54.237Z",
+      "publishedAt": "2026-06-23"
+    }
+  ]
 }
