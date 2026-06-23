@@ -298,6 +298,23 @@ function fcLetter(d,lang){
     const L={fr:["D","L","M","M","J","V","S"],en:["S","M","T","W","T","F","S"],es:["D","L","M","X","J","V","S"]}
     return (L[lang]||L.fr)[dt.getDay()] }catch(_){ return "·" }
 }
+/* TENDANCE du forecast → headline conversion HONNÊTE. On ne révèle JAMAIS le verdict/jour
+   exact (= produit premium) ; on donne seulement la DIRECTION, et uniquement quand un jour
+   PROCHE et FIABLE le justifie (type≠horizon + confiance≥50) — sinon « alerte » générique
+   (jamais d'over-claim sur l'horizon flou). États : allclean (rassure) · worsen (propre→se
+   dégrade : loss-aversion) · improve (sale→s'éclaircit : espoir) · alert. */
+const ST_RANK={clean:0,moderate:1,avoid:2}
+function fcTrend(fc){
+  if(!fc||!fc.length) return "alert"
+  if(fc.every(d=>d&&d.status==="clean")) return "allclean"
+  const r0=ST_RANK[fc[0]&&fc[0].status]??0
+  const reliable=fc.slice(1).filter(d=>d&&d.type!=="horizon"&&(d.confidence==null||d.confidence>=50))
+  const worse=reliable.some(d=>(ST_RANK[d.status]??0)>r0)
+  const better=reliable.some(d=>(ST_RANK[d.status]??0)<r0)
+  if(r0===0&&worse) return "worsen"
+  if(r0>0&&better) return "improve"
+  return "alert"
+}
 
 /* DÉTAIL PLAGE « en monde comic » — ouvert au tap d'une carte. Garde le joueur
    dans l'univers arène (mêmes police/couleurs/Veilleur) au lieu de l'éjecter
@@ -307,7 +324,7 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
   const planB=useMemo(()=>planbOn()?cleanNearby(beach,pool):[],[beach,pool])
   /* prévision 7 j RÉELLE (item 09) — null si plage non couverte ou kill-switch */
   const fc7=useMemo(()=>fc7On()?resolveForecast(beach,sargData):null,[beach,sargData])
-  const fcAllClean=!!(fc7&&fc7.length&&fc7.every(d=>d&&d.status==="clean"))
+  const fcTrendKey=useMemo(()=>fc7?fcTrend(fc7):"alert",[fc7])
   const fcConfJ1=fc7&&fc7[1]&&fc7[1].confidence!=null?Math.round(fc7[1].confidence):null
   const _t=(o)=>(o&&(o[lang]||o.fr))||""
   const v=vof(beach.status), r=rarity(beach.score)
@@ -396,8 +413,10 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
                 )
               })}
             </div>
-            <div className={"lc-fc-line"+(fcAllClean?" ok":"")}>{fcAllClean
-              ? _t({fr:"Propre toute la semaine — Le Veilleur veille pour toi.",en:"Clean all week — Le Veilleur watches for you.",es:"Limpia toda la semana — El Vigía vela por ti."})
+            <div className={"lc-fc-line"+(fcTrendKey==="allclean"?" ok":fcTrendKey==="worsen"?" warn":fcTrendKey==="improve"?" hope":"")}>{
+              fcTrendKey==="allclean" ? _t({fr:"Propre toute la semaine — Le Veilleur veille pour toi.",en:"Clean all week — Le Veilleur watches for you.",es:"Limpia toda la semana — El Vigía vela por ti."})
+              : fcTrendKey==="worsen" ? _t({fr:"Propre aujourd'hui — mais ça pourrait tourner. Le Veilleur te prévient avant.",en:"Clean today — but it could turn. Le Veilleur warns you first.",es:"Limpia hoy — pero puede cambiar. El Vigía te avisa antes."})
+              : fcTrendKey==="improve" ? _t({fr:"Ça devrait se dégager — débloque le jour où la mer revient propre.",en:"It should clear up — unlock the day the water comes back clean.",es:"Debería despejarse — desbloquea el día en que el agua vuelve limpia."})
               : _t({fr:"Le Veilleur t'alerte le jour exact où ça bascule.",en:"Le Veilleur alerts you the exact day it flips.",es:"El Vigía te avisa el día exacto en que cambia."})}</div>
           </div>
         ) : (
@@ -1040,6 +1059,8 @@ export const CSS=`
 .lc-fc-line{font:800 11px/1.3 "Comic Neue",system-ui,sans-serif;color:var(--ink);margin-top:9px;text-align:center;
   background:#fff;border:2.5px solid var(--ink);border-radius:9px;padding:8px 9px;box-shadow:2px 2px 0 var(--ink)}
 .lc-fc-line.ok{background:#dff6e8}
+.lc-fc-line.warn{background:#ffe6c7}
+.lc-fc-line.hope{background:#d8eef0}
 /* repère santé H₂S (case BD — plages à éviter / à surveiller) */
 .lc-h2s{margin:2px 0 18px;border:3px solid var(--ink);border-radius:13px;padding:11px 13px 12px;box-shadow:0 4px 0 var(--ink);forced-color-adjust:none}
 .lc-h2s.bad{background:#fff0ed}
