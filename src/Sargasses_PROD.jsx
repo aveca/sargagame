@@ -135,7 +135,8 @@ function loadPayPalSdk(clientId){
   if(_ppSdkPromise)return _ppSdkPromise
   _ppSdkPromise=new Promise((res,rej)=>{
     const sc=document.createElement("script")
-    sc.src="https://www.paypal.com/sdk/js?client-id="+encodeURIComponent(clientId)+"&vault=true&intent=subscription&components=buttons&currency=EUR"
+    // intent=subscription : PAS de &currency (défini par le plan) — l'ajouter peut casser le bouton d'abo.
+    sc.src="https://www.paypal.com/sdk/js?client-id="+encodeURIComponent(clientId)+"&vault=true&intent=subscription&components=buttons"
     sc.onload=res
     sc.onerror=(e)=>{_ppSdkPromise=null;rej(e)}
     document.head.appendChild(sc)
@@ -7690,7 +7691,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             track("sg_conversion",{session_id:d.subscriptionID,method:"paypal",plan})
             onActivated&&onActivated();onClose&&onClose()
           },
-          onError:(err)=>{setPayError(_t(lang,"Paiement PayPal impossible. Réessaie.","PayPal payment failed. Retry.","Pago PayPal imposible. Reintenta."));track("sg_pay_onsite_error",{plan,provider:"paypal",message:String(err).slice(0,90)})},
+          onError:(err)=>{try{console.error("paypal onError",err)}catch(_){}setPayError("PayPal: "+String((err&&err.message)||err).slice(0,140));track("sg_pay_onsite_error",{plan,provider:"paypal",message:String((err&&err.message)||err).slice(0,120)})},
         }).render(paypalBtnRef.current)
       }catch(e){if(!cancelled)setPayError(_t(lang,"PayPal n'a pas pu démarrer. Réessaie.","PayPal couldn't start. Retry.","PayPal no pudo iniciar. Reintenta."))}
     })()
