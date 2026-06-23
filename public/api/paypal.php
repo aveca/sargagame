@@ -45,6 +45,7 @@ $RL_LIMITS = [
     'create_order'        => 20,
     'capture_order'       => 20,
     'create_subscription' => 15,
+    'confirm_subscription' => 20,
     'verify_subscription' => 30,
     'cancel_subscription' => 20,
 ];
@@ -317,6 +318,27 @@ if ($action === 'cancel_subscription') {
     if (!$subId) { http_response_code(404); echo json_encode(['error' => 'no subscription']); exit; }
     list($code, $_x) = pp_api('POST', '/v1/billing/subscriptions/' . rawurlencode($subId) . '/cancel', ['reason' => 'user requested']);
     echo json_encode(['cancelled' => $code < 400]);
+    exit;
+}
+
+// ── Action: confirm_subscription — bouton PayPal onApprove : verifie l'abo ACTIVE,
+// stocke email->id (verify cross-device), forward fulfillment (meme shape stripe-webhook).
+if ($action === 'confirm_subscription') {
+    $subId = preg_replace('/[^A-Za-z0-9_-]/', '', $input['subscriptionId'] ?? '');
+    $email = trim($input['email'] ?? '');
+    $planIn = ($input['plan'] ?? 'monthly') === 'annual' ? 'annual' : 'monthly';
+    if (!$subId) { http_response_code(400); echo json_encode(['error' => 'missing subscriptionId']); exit; }
+    list($code, $sub) = pp_api('GET', '/v1/billing/subscriptions/' . rawurlencode($subId));
+    $status = $sub['status'] ?? '';
+    $active = in_array($status, ['ACTIVE', 'APPROVED'], true);
+    echo json_encode(['active' => $active, 'status' => $status]);
+    if ($active) {
+        if ($email !== '') pp_store_sub($email, $subId);
+        ignore_user_abort(true);
+        if (function_exists('fastcgi_finish_request')) { @fastcgi_finish_request(); }
+        $cents = $planIn === 'annual' ? 3999 : 499;
+        pp_forward_fulfillment($cfg, $subId, $email, $cents, 'eur', $island, $planIn, 'paypal_button');
+    }
     exit;
 }
 

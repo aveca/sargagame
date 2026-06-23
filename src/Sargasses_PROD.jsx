@@ -127,6 +127,21 @@ function loadMollieJs(){
   })
   return _mollieJsPromise
 }
+// PayPal SDK (bouton abo) : vault + intent=subscription. Le client-id détermine
+// l'environnement (sandbox vs live) — pas de flag séparé.
+let _ppSdkPromise=null
+function loadPayPalSdk(clientId){
+  if(typeof window!=="undefined"&&window.paypal)return Promise.resolve()
+  if(_ppSdkPromise)return _ppSdkPromise
+  _ppSdkPromise=new Promise((res,rej)=>{
+    const sc=document.createElement("script")
+    sc.src="https://www.paypal.com/sdk/js?client-id="+encodeURIComponent(clientId)+"&vault=true&intent=subscription&components=buttons&currency=EUR"
+    sc.onload=res
+    sc.onerror=(e)=>{_ppSdkPromise=null;rej(e)}
+    document.head.appendChild(sc)
+  })
+  return _ppSdkPromise
+}
 /* Labels jours du forecast : le pipeline émet du FR ('Auj.','Dem.','Ven'…) dans
    le JSON — remap au rendu pour en/es (MQ/GP fr : passthrough inchangé). */
 const FC_DAY_MAP={
@@ -1816,18 +1831,28 @@ const STRIPE_LINK_PRO=""   // TODO: 9.99 EUR/mo + 7d trial — Pro tier (WhatsAp
 const STRIPE_BUY_BTN_PRO=""  // TODO: Buy Button ID for Pro tier
 const STRIPE_PK="pk_live_51PW2TGP9RK8Orx516Nx5mGUixrk2ozE8ppOcygq9Wkb1Tz5CkozRcRFcPAv53uNOmuVCHakWAse09I7KXuUiAb5r00CKYHh9zE"
 // ── Pont paiement réversible (flag PAY_PROVIDER) ─────────────────────────────
-// DÉFAUT = 'mollie' : Stripe est BLOQUÉ, donc Mollie est le flux actif pour tous.
-// 'stripe' devient le FALLBACK (?pay=stripe) — à re-promouvoir en défaut quand le
-// compte Stripe est rétabli (un flip ici). Le flux Stripe reste dormant, intact.
-const PAY_PROVIDER=(()=>{try{const q=window.location.search;if(/[?&]pay=stripe/.test(q))return"stripe";if(/[?&]pay=mollie/.test(q))return"mollie"}catch(_){}return"mollie"})()
+// DÉFAUT = 'paypal' : Stripe BLOQUÉ + carte Mollie en revue → PayPal encaisse l'ABO
+// aujourd'hui (bouton PayPal). 'mollie' (champs carte on-site, prêt) et 'stripe'
+// (dormant) restent en fallback (?pay=mollie / ?pay=stripe). Les PASSES restent en
+// capture sous PayPal (Card Fields passes = itération suivante). Flip du défaut quand
+// Mollie approuvé / Stripe rétabli.
+const PAY_PROVIDER=(()=>{try{const q=window.location.search;if(/[?&]pay=stripe/.test(q))return"stripe";if(/[?&]pay=mollie/.test(q))return"mollie";if(/[?&]pay=paypal/.test(q))return"paypal"}catch(_){}return"paypal"})()
 const MOLLIE_PROFILE="pfl_mHmgMvWdwC"
 const MOLLIE_TESTMODE=false // LIVE (clé live_ dans mollie-config.php). Mettre true + clé test_ uniquement pour QA.
+// PayPal abo via bouton. ⚠️ Client ID + plans = SANDBOX → au go-live : régénérer les
+// plans avec les creds live (scripts/create-paypal-plans.cjs) + remplacer ces valeurs.
+// Le SDK PayPal déduit sandbox/live du client-id.
+const PAYPAL_CLIENT_ID="AdQwfLvTzoZZ1N9xkkqIv4AwSedXLvLZZcoBDlwoFxZ0_8OkAKU_qYNw5OTTCfeeMqYF79dAGwVaY3-n"
+const PAYPAL_PLANS={monthly:"P-2NH852406P731712PNI443PY",annual:"P-6NX18662SP397380KNI443QA"}
 // ── Mode CAPTURE (paiements indisponibles) ───────────────────────────────────
 // Stripe bloqué + carte Mollie en revue (~4-7j) → AUCUN processeur ne peut charger
 // pour l'instant. Le CTA paywall CAPTURE l'email (waitlist, source 'mollie_waitlist')
 // au lieu d'ouvrir le paiement ; on relance ces leads dès la réouverture. Rouvrir le
 // paiement = repasser à false (ou ?pay_capture=0 pour QA quand un processeur est prêt).
-const PAY_CAPTURE_ONLY=(()=>{try{if(/[?&]pay_capture=0/.test(window.location.search))return false}catch(_){}return true})()
+// DÉFAUT (aucun param) = capture (aucun processeur ne charge encore en prod). Forcer
+// un vrai provider via ?pay=paypal|mollie|stripe DÉSACTIVE la capture (test/go-live).
+// Go-live PayPal = passer ce défaut à false (+ creds live + plans live).
+const PAY_CAPTURE_ONLY=(()=>{try{const q=window.location.search;if(/[?&]pay=(paypal|mollie|stripe)/.test(q))return false;if(/[?&]pay_capture=0/.test(q))return false}catch(_){}return true})()
 // Buy Button IDs — creer sur dashboard.stripe.com/buy-buttons puis coller ici
 const STRIPE_BUY_BTN_MONTHLY="buy_btn_1TJLdoP9RK8Orx514zzwL1B4" // 4.99€/mois + trial 7j + taxes
 const STRIPE_BUY_BTN_ANNUAL="buy_btn_1TJLcjP9RK8Orx51JDzUFge3"
@@ -7552,6 +7577,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const payPlanRef=useRef("monthly")
   const payReadyRef=useRef(false)
   const payEmailRef=useRef(null)
+  const paypalBtnRef=useRef(null) // pont PayPal : conteneur du bouton d'abo
   const payDivRef=useRef(null)
   const expressDivRef=useRef(null)
   const mollieRef=useRef(null)        // pont Mollie : objet Mollie(profileId)
@@ -7636,6 +7662,42 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     })()
     payPrewarmPromiseRef.current.catch(()=>{}) // l'échec est géré au clic (fallback)
   },[])
+  // ── Pont PayPal : rend le bouton d'abo quand l'écran paiement s'ouvre (abo only ;
+  // les passes restent en capture). createSubscription(plan_id) → popup PayPal →
+  // onApprove pose sg_premium + confirme côté serveur (forward Apps Script). ───────
+  useEffect(()=>{
+    if(!payStep||PAY_PROVIDER!=="paypal"||passCtxRef.current||typeof window==="undefined")return
+    let cancelled=false
+    ;(async()=>{
+      try{
+        await loadPayPalSdk(PAYPAL_CLIENT_ID)
+        if(cancelled||!paypalBtnRef.current||!window.paypal)return
+        try{paypalBtnRef.current.replaceChildren()}catch(_){} // re-render propre
+        payReadyRef.current=true;setPayReady(true)
+        const plan=payPlanRef.current==="annual"?"annual":"monthly"
+        const isl=IS_NEW_REGION?REGION.id:(window.location.hostname.includes("guadeloupe")?"gp":"mq")
+        window.paypal.Buttons({
+          style:{layout:"vertical",color:"gold",shape:"pill",label:"subscribe"},
+          createSubscription:(d,actions)=>actions.subscription.create({
+            plan_id:PAYPAL_PLANS[plan],
+            custom_id:(isl+"_"+plan+"_"+(source||"unknown")).slice(0,127),
+          }),
+          onApprove:(d)=>{
+            const email=((payEmailRef.current&&payEmailRef.current.value)||localStorage.getItem("sg_email")||"").trim()
+            try{localStorage.setItem("sg_email",email)
+              localStorage.setItem("sg_premium","1");if(email)localStorage.setItem("sg_premium_email",email)}catch(_){}
+            try{submitLead(email,"paypal_sub")}catch(_){}
+            try{fetch("/api/paypal.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"confirm_subscription",subscriptionId:d.subscriptionID,email,plan})}).catch(()=>{})}catch(_){}
+            track("sg_conversion",{session_id:d.subscriptionID,method:"paypal",plan})
+            onActivated&&onActivated();onClose&&onClose()
+          },
+          onError:(err)=>{setPayError(_t(lang,"Paiement PayPal impossible. Réessaie.","PayPal payment failed. Retry.","Pago PayPal imposible. Reintenta."));track("sg_pay_onsite_error",{plan,provider:"paypal",message:String(err).slice(0,90)})},
+        }).render(paypalBtnRef.current)
+      }catch(e){if(!cancelled)setPayError(_t(lang,"PayPal n'a pas pu démarrer. Réessaie.","PayPal couldn't start. Retry.","PayPal no pudo iniciar. Reintenta."))}
+    })()
+    return ()=>{cancelled=true}
+  },[payStep])
+  const ppSub=PAY_PROVIDER==="paypal"&&!passCtxRef.current // abo PayPal (bouton) vs pass/capture
   const doSubscribe=useCallback(async()=>{
     const plan=payPlanRef.current
     if(payBusy)return
@@ -7754,6 +7816,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   useEffect(()=>{doSubscribeRef.current=doSubscribe},[doSubscribe])
   const startCheckout=useCallback(async(plan,via)=>{
     passCtxRef.current=null // entrée ABONNEMENT : ce n'est pas un pass one-time
+    if(PAY_PROVIDER==="paypal"){payPlanRef.current=plan;track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"paypal",via});setPayStep(true);return}
     if(PAY_CAPTURE_ONLY){payPlanRef.current=plan;track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"capture",via});setPayStep(true);return}
     // Checkout 100% ON-SITE — plus de redirect off-site buy.stripe.com. En cas
     // d'échec de montage (réseau lent / Stripe.js bloqué), erreur + « Réessayer »
@@ -8709,11 +8772,13 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               {IS_NEW_REGION&&<span style={{fontFamily:"'Anton',sans-serif",fontSize:10.5,letterSpacing:".12em",color:"rgba(255,255,255,.8)"}}>
                 {((lang==="es"?"SARGAZO ":"SARGASSUM ")+String(REGION.name||"")).toUpperCase()}
               </span>}
-              🔒 {PAY_PROVIDER==="mollie"?"Mollie":"Stripe"}
+              🔒 {PAY_PROVIDER==="mollie"?"Mollie":PAY_PROVIDER==="paypal"?"PayPal":"Stripe"}
             </span>
           </div>
           <h3 className="anton" style={{fontSize:22,color:"#fff",margin:"0 0 4px",letterSpacing:"-.01em"}}>
-            {PAY_CAPTURE_ONLY
+            {ppSub
+              ?_t(lang,"Active ton Premium","Activate your Premium","Activa tu Premium")
+              :PAY_CAPTURE_ONLY
               ?(captureDone?_t(lang,"C'est noté ! 🎉","You're on the list! 🎉","¡Anotado! 🎉"):_t(lang,"Les paiements rouvrent très vite","Payments reopen very soon","Los pagos reabren muy pronto"))
               :passCtxRef.current
               ?_t(lang,`Active ton pass ${passCtxRef.current.days} jours`,`Activate your ${passCtxRef.current.days}-day pass`,`Activa tu pase ${passCtxRef.current.days} días`)
@@ -8722,7 +8787,9 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               :_t(lang,"Démarre ton essai gratuit","Start your free trial","Empieza tu prueba gratis")}
           </h3>
           <div style={{fontSize:13,color:"rgba(255,255,255,.6)",marginBottom:18}}>
-            {PAY_CAPTURE_ONLY
+            {ppSub
+              ?_t(lang,"Paie en sécurité avec PayPal · annule quand tu veux","Pay securely with PayPal · cancel anytime","Paga seguro con PayPal · cancela cuando quieras")
+              :PAY_CAPTURE_ONLY
               ?(captureDone?_t(lang,"On te prévient dès la réouverture — et tu gardes ce tarif.","We'll email you the moment it reopens — and you keep this price.","Te avisamos en cuanto reabra — y conservas este precio."):_t(lang,"Laisse ton email : premier prévenu à la réouverture, et tu gardes ce tarif.","Leave your email: first to know when it reopens, and keep this price.","Deja tu email: el primero en saberlo, y conservas este precio."))
               :passCtxRef.current
               ?_t(lang,`${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"fr")} · ${passCtxRef.current.days} jours d'accès complet · paiement unique`,`${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"en")} · ${passCtxRef.current.days} days full access · one-time`,`${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"es")} · ${passCtxRef.current.days} días · pago único`)
@@ -8740,6 +8807,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             style={{width:"100%",boxSizing:"border-box",padding:"13px 14px",borderRadius:12,marginBottom:12,
               border:"1px solid rgba(255,255,255,.18)",background:"#13261F",color:"#e6edf3",
               fontSize:15,fontFamily:"inherit",outline:"none"}}/>
+          {ppSub&&<div ref={paypalBtnRef} style={{minHeight:50,marginTop:6}}/>}
           {!PAY_CAPTURE_ONLY&&<div ref={expressDivRef} style={{marginBottom:10}}/>}
           {!PAY_CAPTURE_ONLY&&<div ref={payDivRef} style={{minHeight:120}}/>}
           {!payReady&&payStep&&(
@@ -8761,7 +8829,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               <div style={{color:"#FFD9CC",fontSize:15,lineHeight:1.4,fontWeight:600}}>{payError}</div>
             </div>
           )}
-          <button onClick={()=>doSubscribe()} disabled={payBusy||(PAY_CAPTURE_ONLY&&captureDone)} className="gbtn"
+          {!ppSub&&<button onClick={()=>doSubscribe()} disabled={payBusy||(PAY_CAPTURE_ONLY&&captureDone)} className="gbtn"
             style={{width:"100%",padding:15,borderRadius:14,border:"none",marginTop:16,
               cursor:payBusy?"wait":"pointer",fontFamily:"inherit",fontWeight:800,fontSize:15.5,
               opacity:payBusy?.7:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
@@ -8776,9 +8844,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
                 ?_t(lang,`Payer ${PRICE_YR} — activer maintenant`,`Pay ${PRICE_YR} — activate now`,`Pagar ${PRICE_YR} — activar ya`)
                 :_t(lang,`Payer ${PRICE_MO} — activer maintenant`,`Pay ${PRICE_MO} — activate now`,`Pagar ${PRICE_MO} — activar ya`))
               :_t(lang,"Démarrer l'essai — 0 € aujourd'hui","Start trial — $0 today","Empezar prueba — $0 hoy")}
-          </button>
+          </button>}
           <div style={{textAlign:"center",marginTop:12,fontSize:10.5,color:"rgba(255,255,255,.4)"}}>
-            {PAY_CAPTURE_ONLY
+            {ppSub
+              ?_t(lang,"Sans engagement · annule en 2 clics · sécurisé par PayPal","No commitment · cancel in 2 clicks · secured by PayPal","Sin compromiso · cancela en 2 clics · seguro con PayPal")
+              :PAY_CAPTURE_ONLY
               ?_t(lang,"Aucun paiement maintenant · juste ton email · désinscription en 1 clic","No payment now · just your email · unsubscribe in 1 click","Sin pago ahora · solo tu email · cancela en 1 clic")
               :NO_TRIAL
               ?_t(lang,"Sans engagement · Annule en 2 clics · Stripe sécurisé","No commitment · Cancel in 2 clicks · Secured by Stripe","Sin compromiso · Cancela en 2 clics · Stripe seguro")
