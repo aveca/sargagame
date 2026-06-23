@@ -7606,6 +7606,9 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         }
         return
       }
+      // PayPal : le bouton d'abo est monté par un effet dédié → AUCUN Payment Element
+      // Stripe (sinon l'ancien champ carte Stripe s'affichait en plus du bouton).
+      if(PAY_PROVIDER==="paypal"){payReadyRef.current=true;setPayReady(true);return}
       const[r]=await Promise.all([
         fetch("/api/create-checkout.php",{method:"POST",headers:{"Content-Type":"application/json"},
           body:JSON.stringify({action:"setup"})}),
@@ -8814,8 +8817,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               border:"1px solid rgba(255,255,255,.18)",background:"#13261F",color:"#e6edf3",
               fontSize:15,fontFamily:"inherit",outline:"none"}}/>
           {ppSub&&<div ref={paypalBtnRef} style={{minHeight:50,marginTop:6}}/>}
-          {!PAY_CAPTURE_ONLY&&<div ref={expressDivRef} style={{marginBottom:10}}/>}
-          {!PAY_CAPTURE_ONLY&&<div ref={payDivRef} style={{minHeight:120}}/>}
+          {!PAY_CAPTURE_ONLY&&PAY_PROVIDER!=="paypal"&&<div ref={expressDivRef} style={{marginBottom:10}}/>}
+          {!PAY_CAPTURE_ONLY&&PAY_PROVIDER!=="paypal"&&<div ref={payDivRef} style={{minHeight:120}}/>}
           {!payReady&&payStep&&(
             <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"26px 0"}}>
               <div style={{width:22,height:22,borderRadius:"50%",border:"2.5px solid rgba(255,255,255,.15)",
