@@ -785,27 +785,27 @@
       "levels": [
         {
           "id": "fl001",
-          "afai": 0.08,
+          "afai": 0.09,
           "status": "clean"
         },
         {
           "id": "fl002",
-          "afai": 0.08,
+          "afai": 0.09,
           "status": "clean"
         },
         {
           "id": "fl003",
-          "afai": 0.11,
+          "afai": 0.13,
           "status": "clean"
         },
         {
           "id": "fl004",
-          "afai": 0.11,
+          "afai": 0.12,
           "status": "clean"
         },
         {
           "id": "fl005",
-          "afai": 0.09,
+          "afai": 0.1,
           "status": "clean"
         },
         {
@@ -815,7 +815,7 @@
         },
         {
           "id": "fl007",
-          "afai": 0.08,
+          "afai": 0.09,
           "status": "clean"
         },
         {
