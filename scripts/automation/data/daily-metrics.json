@@ -1317,31 +1317,31 @@
   },
   {
     "date": "2026-06-23",
-    "time": "2026-06-23T09:49:16.809Z",
+    "time": "2026-06-23T13:01:39.547Z",
     "payments": 12,
     "revenue": 59.88,
-    "emails": 226,
+    "emails": 232,
     "feedbacks": 1,
     "avgRating": 4,
     "pipelineOk": true,
     "funnel": {
-      "sessions": 28249,
-      "lockClicks": 136,
-      "modalOpens": 3444,
-      "modalCta": 75,
+      "sessions": 29121,
+      "lockClicks": 135,
+      "modalOpens": 3452,
+      "modalCta": 90,
       "sampleStarts": 0,
       "emailSubmits": 61,
-      "checkoutRedirects": 87,
+      "checkoutRedirects": 103,
       "conversions": 5,
       "paymentsReal": 3,
       "revenueReal": 14.97,
       "rates": {
         "session_to_lock": 0.5,
-        "lock_to_modal": 2532,
-        "modal_to_cta": 2,
+        "lock_to_modal": 2557,
+        "modal_to_cta": 3,
         "modal_to_sample": 0,
-        "modal_to_any_action": 2,
-        "cta_to_redirect": 116,
+        "modal_to_any_action": 3,
+        "cta_to_redirect": 114,
         "redirect_to_payment": 3
       }
     },
@@ -1356,25 +1356,29 @@
       "tracking": "smtp_no_events"
     },
     "stripe": {
-      "active": 15,
+      "active": 16,
       "mrr": {
-        "eur": 74.85
+        "eur": 79.84
       },
       "pastDue": 1,
       "cancelScheduled": 0,
       "checkout": {
         "windowDays": 30,
-        "reached": 207,
+        "reached": 209,
         "paid": 0,
         "completionRate": 0,
         "recoverable": 30,
         "lostCents": {
-          "eur": 62563,
+          "eur": 153763,
           "usd": 122448
         }
       },
       "bySource": {
         "map_scrub_forecast": {
+          "active": 1,
+          "mrrEur": 4.99
+        },
+        "forecast_teaser": {
           "active": 1,
           "mrrEur": 4.99
         },
