@@ -266,15 +266,53 @@ function cleanNearby(beach,pool){
   return list.slice(0,3).sort((a,b)=>(b.score||0)-(a.score||0))
 }
 
+/* APERÇU PRÉVISION 7 J (SCREENS_V2 #09) — rend la timeline RÉELLE tangible dans le
+   détail comic, pour vendre la valeur premium (« la prévision + l'alerte ») au lieu
+   d'un strip de 6 cadenas muets. Frontière gratuit/premium CALQUÉE sur ForecastChart
+   (la data-fiche) : J0 = verdict réel · J+1.. = teinte du statut réel (la « forme »,
+   estompée) + cadenas + confiance décroissante · jours « horizon » plus pâles (honnête).
+   Source = données RÉELLES uniquement : sargData.weekly[sargId].forecast (20 zones
+   sentinelles) ou _enrichedWeekly[_interp_<id>] (interpolation pipeline). JAMAIS de
+   forecast généré → plage non couverte = on garde le simple cadenas (zéro fabrication,
+   cf. circuit-breaker fiche-dive). Additif, in-world, ZÉRO logique paiement (tap →
+   onPremium, inchangé). Réversible : ?fc7=0 → ancien strip plat. */
+function fc7On(){ try{ return !/[?&]fc7=0(?:&|$)/.test(window.location.search) }catch(_){ return true } }
+/* Inverse de SARG_TO_BEACH (SOURCE DE VÉRITÉ = src/Sargasses_PROD.jsx) : beach.id →
+   id de zone sentinelle dans weekly{}. Carte stable (20 zones MQ/GP) — garder synchro. */
+const SARG_BY_BEACH={mq014:"grande-anse",mq011:"anse-mitan",mq012:"anse-noire",mq034:"tartane",mq024:"anse-madame",mq016:"diamant",mq008:"pt-marin",mq004:"sainte-anne",mq001:"les-salines",mq044:"vauclin",gp021:"gp-grande-anse",gp031:"gp-malendure",gp010:"gp-sainte-anne",gp005:"gp-pt-chateaux",gp012:"gp-gosier",gp009:"gp-caravelle",gp014:"gp-bas-du-fort",gp024:"gp-deshaies",gp080:"gp-moule",gp042:"gp-vieux-fort"}
+function resolveForecast(beach,sargData){
+  if(!beach||!sargData) return null
+  if(Array.isArray(beach.forecast)&&beach.forecast.length) return beach.forecast
+  const wk=sargData.weekly||{}
+  const w = wk[beach.id]                                              /* région USD / clé directe */
+        || (SARG_BY_BEACH[beach.id]&&wk[SARG_BY_BEACH[beach.id]])     /* MQ/GP via mapping */
+        || (sargData._enrichedWeekly&&sargData._enrichedWeekly["_interp_"+beach.id]) /* interpolé pipeline */
+        || null
+  const fc=w&&Array.isArray(w.forecast)?w.forecast:null
+  return (fc&&fc.length)?fc:null
+}
+/* lettre du jour (depuis la date réelle du forecast) — i18n simple */
+function fcLetter(d,lang){
+  try{ const dt=d&&d.date?new Date(d.date+"T12:00:00"):null
+    if(!dt||isNaN(dt.getTime())) return "·"
+    const L={fr:["D","L","M","M","J","V","S"],en:["S","M","T","W","T","F","S"],es:["D","L","M","X","J","V","S"]}
+    return (L[lang]||L.fr)[dt.getDay()] }catch(_){ return "·" }
+}
+
 /* DÉTAIL PLAGE « en monde comic » — ouvert au tap d'une carte. Garde le joueur
    dans l'univers arène (mêmes police/couleurs/Veilleur) au lieu de l'éjecter
    vers l'app sombre. Le seul handoff = le CTA premium (moment de conversion). */
-export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool=[],track}){
+export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool=[],track,sargData}){
   const rel=(pool||[]).filter(b=>b&&b.id&&b.id!==beach.id&&b.status&&b.score!=null).slice(0,3)
   const planB=useMemo(()=>planbOn()?cleanNearby(beach,pool):[],[beach,pool])
+  /* prévision 7 j RÉELLE (item 09) — null si plage non couverte ou kill-switch */
+  const fc7=useMemo(()=>fc7On()?resolveForecast(beach,sargData):null,[beach,sargData])
+  const fcAllClean=!!(fc7&&fc7.length&&fc7.every(d=>d&&d.status==="clean"))
+  const fcConfJ1=fc7&&fc7[1]&&fc7[1].confidence!=null?Math.round(fc7[1].confidence):null
   const _t=(o)=>(o&&(o[lang]||o.fr))||""
   const v=vof(beach.status), r=rarity(beach.score)
   const sc=beach.score!=null?Math.round(beach.score):null
+  const openFc=()=>{ if(track)try{track("sg_chasse_detail_premium",{beach_id:beach.id,from:"fcstrip",fc:fc7?1:0})}catch(_){}; onPremium&&onPremium("chasse_detail_fc") }
   const pw=powers(beach,lang)
   const head = beach.status==="avoid" ? {fr:"ÉVITE CE MATIN",en:"AVOID THIS MORNING",es:"EVITA HOY"}
     : beach.status==="moderate" ? {fr:"À SURVEILLER",en:"KEEP AN EYE",es:"A VIGILAR"}
@@ -324,22 +362,61 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
         {/* REPÈRE SANTÉ H₂S — n'apparaît que sur les plages à éviter / à surveiller */}
         <H2sNote status={beach.status} lang={lang}/>
 
-        {/* 7 PROCHAINS JOURS — aujourd'hui réel, le reste verrouillé (honnête) → premium */}
-        <div className="lc-detail-fc">
-          <div className="lc-detail-fc-h">{_t({fr:"7 PROCHAINS JOURS",en:"NEXT 7 DAYS",es:"PRÓXIMOS 7 DÍAS"})}</div>
-          <div className="lc-detail-fc-row" onClick={()=>{ if(track)try{track("sg_chasse_detail_premium",{beach_id:beach.id,from:"fcstrip"})}catch(_){}; onPremium&&onPremium("chasse_detail_fc") }}>
-            {Array.from({length:7}).map((_,i)=>{
-              const d=new Date(Date.now()+i*864e5)
-              const dl=["D","L","M","M","J","V","S"][d.getDay()]
-              return (
-                <div key={i} className={"lc-fc-cell"+(i===0?` s-${v.st} now`:" lock")}>
-                  <span className="lc-fc-day">{i===0?_t({fr:"Auj",en:"Now",es:"Hoy"}):dl}</span>
-                  <span className="lc-fc-dot">{i===0?(sc!=null?sc:"•"):"🔒"}</span>
-                </div>
-              )
-            })}
+        {/* 7 PROCHAINS JOURS — J0 réel ; le reste = aperçu honnête de la prévision RÉELLE
+            (teinte du statut + cadenas + confiance), calqué sur la frontière de ForecastChart.
+            Plage non couverte ou ?fc7=0 → simple cadenas (fallback honnête, inchangé). */}
+        {fc7&&fc7.length ? (
+          <div className="lc-detail-fc">
+            <div className="lc-detail-fc-h">{_t({fr:"7 PROCHAINS JOURS",en:"NEXT 7 DAYS",es:"PRÓXIMOS 7 DÍAS"})}</div>
+            <div className="lc-fc-cap">{fcConfJ1!=null
+              ? _t({fr:`Mesuré au satellite · fiable ~4 j · ${fcConfJ1}% demain`,en:`Satellite-measured · reliable ~4 d · ${fcConfJ1}% tomorrow`,es:`Medido por satélite · fiable ~4 d · ${fcConfJ1}% mañana`})
+              : _t({fr:"Mesuré au satellite ce matin",en:"Satellite-measured this morning",es:"Medido por satélite esta mañana"})}</div>
+            <div className="lc-detail-fc-row" onClick={openFc}>
+              {Array.from({length:7}).map((_,i)=>{
+                const d=fc7[i]
+                if(i===0) return (
+                  <div key={i} className={`lc-fc-cell s-${v.st} now`}>
+                    <span className="lc-fc-day">{_t({fr:"Auj",en:"Now",es:"Hoy"})}</span>
+                    <span className="lc-fc-dot">{sc!=null?sc:"•"}</span>
+                  </div>
+                )
+                if(!d) return (
+                  <div key={i} className="lc-fc-cell lock">
+                    <span className="lc-fc-day">·</span><span className="lc-fc-dot">🔒</span>
+                  </div>
+                )
+                const dv=vof(d.status), far=d.type==="horizon"
+                const conf=d.confidence!=null?Math.round(d.confidence):null
+                return (
+                  <div key={i} className={`lc-fc-cell teaser s-${dv.st}${far?" far":""}`}>
+                    <span className="lc-fc-day">{fcLetter(d,lang)}</span>
+                    <span className="lc-fc-dot">🔒</span>
+                    {conf!=null&&<span className="lc-fc-conf">{conf}%</span>}
+                  </div>
+                )
+              })}
+            </div>
+            <div className={"lc-fc-line"+(fcAllClean?" ok":"")}>{fcAllClean
+              ? _t({fr:"Propre toute la semaine — Le Veilleur veille pour toi.",en:"Clean all week — Le Veilleur watches for you.",es:"Limpia toda la semana — El Vigía vela por ti."})
+              : _t({fr:"Le Veilleur t'alerte le jour exact où ça bascule.",en:"Le Veilleur alerts you the exact day it flips.",es:"El Vigía te avisa el día exacto en que cambia."})}</div>
           </div>
-        </div>
+        ) : (
+          <div className="lc-detail-fc">
+            <div className="lc-detail-fc-h">{_t({fr:"7 PROCHAINS JOURS",en:"NEXT 7 DAYS",es:"PRÓXIMOS 7 DÍAS"})}</div>
+            <div className="lc-detail-fc-row" onClick={openFc}>
+              {Array.from({length:7}).map((_,i)=>{
+                const d=new Date(Date.now()+i*864e5)
+                const dl=["D","L","M","M","J","V","S"][d.getDay()]
+                return (
+                  <div key={i} className={"lc-fc-cell"+(i===0?` s-${v.st} now`:" lock")}>
+                    <span className="lc-fc-day">{i===0?_t({fr:"Auj",en:"Now",es:"Hoy"}):dl}</span>
+                    <span className="lc-fc-dot">{i===0?(sc!=null?sc:"•"):"🔒"}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         <button type="button" className="lc-cta yel" onClick={()=>{ if(track)try{track("sg_chasse_detail_premium",{beach_id:beach.id})}catch(_){}; onPremium&&onPremium("chasse_detail") }}>
           {_t({fr:"VOIR LES 7 PROCHAINS JOURS →",en:"SEE THE NEXT 7 DAYS →",es:"VER LOS 7 DÍAS →"})}
@@ -751,7 +828,7 @@ export default function ChasseHome(props){
         <button type="button" className="lc-maplink" onClick={()=>onShowMap&&onShowMap()}>{_t(I18N.mapLink)}</button>
       </section>
 
-      {detail&&<ChasseDetail beach={detail} lang={lang} track={track} pool={collList}
+      {detail&&<ChasseDetail beach={detail} lang={lang} track={track} pool={collList} sargData={sargData}
         onClose={()=>setDetail(null)}
         onPremium={(src)=>{ setDetail(null); onPremium&&onPremium(src||"chasse_detail") }}
         onRelated={(b)=>{ collect(b); if(track)try{track("sg_chasse_card_open",{beach_id:b.id,which:"related"})}catch(_){}; setDetail(b) }}
@@ -950,6 +1027,19 @@ export const CSS=`
 .lc-fc-day{font:800 9px/1 "Comic Neue",system-ui,sans-serif;text-transform:uppercase;opacity:.8}
 .lc-fc-dot{font-family:"AntonLC",system-ui,sans-serif;font-size:14px;line-height:1}
 .lc-fc-cell.lock .lc-fc-dot{font-size:11px;filter:grayscale(1);opacity:.7}
+/* aperçu prévision réelle (item 09) — teinte du statut (la « forme », estompée) + cadenas + confiance.
+   Frontière calquée sur ForecastChart : on laisse SENTIR la couleur du verdict, sans révéler le détail. */
+.lc-fc-cap{font:700 10px/1.3 "Comic Neue",system-ui,sans-serif;color:var(--ink);opacity:.7;margin:-3px 0 7px}
+.lc-fc-cell.teaser{background:#fff}
+.lc-fc-cell.teaser.s-ok{background:#dff6e8}
+.lc-fc-cell.teaser.s-mod{background:#ffeccd}
+.lc-fc-cell.teaser.s-bad{background:#f9d9d6}
+.lc-fc-cell.teaser.far{opacity:.62}
+.lc-fc-cell.teaser .lc-fc-dot{font-size:11px;opacity:.78}
+.lc-fc-conf{font:800 8px/1 "Comic Neue",system-ui,sans-serif;opacity:.72}
+.lc-fc-line{font:800 11px/1.3 "Comic Neue",system-ui,sans-serif;color:var(--ink);margin-top:9px;text-align:center;
+  background:#fff;border:2.5px solid var(--ink);border-radius:9px;padding:8px 9px;box-shadow:2px 2px 0 var(--ink)}
+.lc-fc-line.ok{background:#dff6e8}
 /* repère santé H₂S (case BD — plages à éviter / à surveiller) */
 .lc-h2s{margin:2px 0 18px;border:3px solid var(--ink);border-radius:13px;padding:11px 13px 12px;box-shadow:0 4px 0 var(--ink);forced-color-adjust:none}
 .lc-h2s.bad{background:#fff0ed}
