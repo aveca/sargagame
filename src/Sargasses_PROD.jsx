@@ -1831,19 +1831,18 @@ const STRIPE_LINK_PRO=""   // TODO: 9.99 EUR/mo + 7d trial — Pro tier (WhatsAp
 const STRIPE_BUY_BTN_PRO=""  // TODO: Buy Button ID for Pro tier
 const STRIPE_PK="pk_live_51PW2TGP9RK8Orx516Nx5mGUixrk2ozE8ppOcygq9Wkb1Tz5CkozRcRFcPAv53uNOmuVCHakWAse09I7KXuUiAb5r00CKYHh9zE"
 // ── Pont paiement réversible (flag PAY_PROVIDER) ─────────────────────────────
-// DÉFAUT = 'mollie' : cible revenu = Mollie (champs carte on-site, déjà bâti+testé)
-// quand sa revue carte LIVE est approuvée (~4j). En attendant, PROD reste en CAPTURE
-// freemium (cf. PAY_CAPTURE_ONLY). PayPal ABANDONNÉ mais code dormant/testable
-// (?pay=paypal). 'stripe' dormant (?pay=stripe). Go-live = flip PAY_CAPTURE_ONLY→false
-// + clé live Mollie + MOLLIE_TESTMODE→false.
+// TEST-FIRST : PayPal est LIVE (creds + plans live) mais le DÉFAUT reste non-PayPal
+// (→ prod = capture freemium) tant que le fondateur n'a pas validé un vrai paiement via
+// ?pay=paypal. Une fois le test OK : passer ce défaut à 'paypal' = abo live pour TOUS.
+// 'mollie'/'stripe' en fallback. ⚠️ fulfillment serveur (confirm_subscription/webhook)
+// = paypal-config.php live à déployer (FTP/secret) avant le go-live général.
 const PAY_PROVIDER=(()=>{try{const q=window.location.search;if(/[?&]pay=stripe/.test(q))return"stripe";if(/[?&]pay=mollie/.test(q))return"mollie";if(/[?&]pay=paypal/.test(q))return"paypal"}catch(_){}return"mollie"})()
 const MOLLIE_PROFILE="pfl_mHmgMvWdwC"
 const MOLLIE_TESTMODE=false // LIVE (clé live_ dans mollie-config.php). Mettre true + clé test_ uniquement pour QA.
-// PayPal abo via bouton. ⚠️ Client ID + plans = SANDBOX → au go-live : régénérer les
-// plans avec les creds live (scripts/create-paypal-plans.cjs) + remplacer ces valeurs.
-// Le SDK PayPal déduit sandbox/live du client-id.
-const PAYPAL_CLIENT_ID="AdQwfLvTzoZZ1N9xkkqIv4AwSedXLvLZZcoBDlwoFxZ0_8OkAKU_qYNw5OTTCfeeMqYF79dAGwVaY3-n"
-const PAYPAL_PLANS={monthly:"P-2NH852406P731712PNI443PY",annual:"P-6NX18662SP397380KNI443QA"}
+// PayPal abo via bouton — LIVE (client_id public + plans régénérés par scripts/create-paypal-plans.cjs).
+// Le SDK PayPal déduit l'environnement du client-id.
+const PAYPAL_CLIENT_ID="AadXarqTbu1KiLVh89ESKJ9tIXn-RZ_2U43fDU8lnQ3TgzChda6ZPVZKbpyqO70ySqerJIDXLUyFukSI"
+const PAYPAL_PLANS={monthly:"P-68F60416PW205280SNI474LI",annual:"P-2B698370FU622014SNI474LI"}
 // ── Mode CAPTURE (paiements indisponibles) ───────────────────────────────────
 // Stripe bloqué + carte Mollie en revue (~4-7j) → AUCUN processeur ne peut charger
 // pour l'instant. Le CTA paywall CAPTURE l'email (waitlist, source 'mollie_waitlist')
