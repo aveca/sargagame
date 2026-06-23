@@ -1831,12 +1831,12 @@ const STRIPE_LINK_PRO=""   // TODO: 9.99 EUR/mo + 7d trial — Pro tier (WhatsAp
 const STRIPE_BUY_BTN_PRO=""  // TODO: Buy Button ID for Pro tier
 const STRIPE_PK="pk_live_51PW2TGP9RK8Orx516Nx5mGUixrk2ozE8ppOcygq9Wkb1Tz5CkozRcRFcPAv53uNOmuVCHakWAse09I7KXuUiAb5r00CKYHh9zE"
 // ── Pont paiement réversible (flag PAY_PROVIDER) ─────────────────────────────
-// DÉFAUT = 'paypal' : Stripe BLOQUÉ + carte Mollie en revue → PayPal encaisse l'ABO
-// aujourd'hui (bouton PayPal). 'mollie' (champs carte on-site, prêt) et 'stripe'
-// (dormant) restent en fallback (?pay=mollie / ?pay=stripe). Les PASSES restent en
-// capture sous PayPal (Card Fields passes = itération suivante). Flip du défaut quand
-// Mollie approuvé / Stripe rétabli.
-const PAY_PROVIDER=(()=>{try{const q=window.location.search;if(/[?&]pay=stripe/.test(q))return"stripe";if(/[?&]pay=mollie/.test(q))return"mollie";if(/[?&]pay=paypal/.test(q))return"paypal"}catch(_){}return"paypal"})()
+// DÉFAUT = 'mollie' : cible revenu = Mollie (champs carte on-site, déjà bâti+testé)
+// quand sa revue carte LIVE est approuvée (~4j). En attendant, PROD reste en CAPTURE
+// freemium (cf. PAY_CAPTURE_ONLY). PayPal ABANDONNÉ mais code dormant/testable
+// (?pay=paypal). 'stripe' dormant (?pay=stripe). Go-live = flip PAY_CAPTURE_ONLY→false
+// + clé live Mollie + MOLLIE_TESTMODE→false.
+const PAY_PROVIDER=(()=>{try{const q=window.location.search;if(/[?&]pay=stripe/.test(q))return"stripe";if(/[?&]pay=mollie/.test(q))return"mollie";if(/[?&]pay=paypal/.test(q))return"paypal"}catch(_){}return"mollie"})()
 const MOLLIE_PROFILE="pfl_mHmgMvWdwC"
 const MOLLIE_TESTMODE=false // LIVE (clé live_ dans mollie-config.php). Mettre true + clé test_ uniquement pour QA.
 // PayPal abo via bouton. ⚠️ Client ID + plans = SANDBOX → au go-live : régénérer les
