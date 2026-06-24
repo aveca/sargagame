@@ -16,5 +16,7 @@ jobs:
           node-version: '24'
           cache: 'npm'
       - run: npm ci
+      - name: Run tests (*.test.cjs)
+        run: npm test
       - name: Verify Build
         run: npm run build
