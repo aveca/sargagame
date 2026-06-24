@@ -319,7 +319,7 @@ function fcTrend(fc){
 /* DÉTAIL PLAGE « en monde comic » — ouvert au tap d'une carte. Garde le joueur
    dans l'univers arène (mêmes police/couleurs/Veilleur) au lieu de l'éjecter
    vers l'app sombre. Le seul handoff = le CTA premium (moment de conversion). */
-export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool=[],track,sargData}){
+export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool=[],track,sargData,isPremium=false}){
   const rel=(pool||[]).filter(b=>b&&b.id&&b.id!==beach.id&&b.status&&b.score!=null).slice(0,3)
   const planB=useMemo(()=>planbOn()?cleanNearby(beach,pool):[],[beach,pool])
   /* prévision 7 j RÉELLE (item 09) — null si plage non couverte ou kill-switch */
@@ -388,7 +388,7 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
             <div className="lc-fc-cap">{fcConfJ1!=null
               ? _t({fr:`Mesuré au satellite · fiable ~4 j · ${fcConfJ1}% demain`,en:`Satellite-measured · reliable ~4 d · ${fcConfJ1}% tomorrow`,es:`Medido por satélite · fiable ~4 d · ${fcConfJ1}% mañana`})
               : _t({fr:"Mesuré au satellite ce matin",en:"Satellite-measured this morning",es:"Medido por satélite esta mañana"})}</div>
-            <div className="lc-detail-fc-row" onClick={openFc}>
+            <div className="lc-detail-fc-row" onClick={isPremium?undefined:openFc}>
               {Array.from({length:7}).map((_,i)=>{
                 const d=fc7[i]
                 if(i===0) return (
@@ -404,6 +404,13 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
                 )
                 const dv=vof(d.status), far=d.type==="horizon"
                 const conf=d.confidence!=null?Math.round(d.confidence):null
+                if(isPremium) return (
+                  /* PREMIUM : jour débloqué — statut réel coloré, plus de cadenas */
+                  <div key={i} className={`lc-fc-cell s-${dv.st} now${far?" far":""}`}>
+                    <span className="lc-fc-day">{fcLetter(d,lang)}</span>
+                    <span className="lc-fc-dot">{conf!=null?conf:"•"}</span>
+                  </div>
+                )
                 return (
                   <div key={i} className={`lc-fc-cell teaser s-${dv.st}${far?" far":""}`}>
                     <span className="lc-fc-day">{fcLetter(d,lang)}</span>
@@ -413,8 +420,9 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
                 )
               })}
             </div>
-            <div className={"lc-fc-line"+(fcTrendKey==="allclean"?" ok":fcTrendKey==="worsen"?" warn":fcTrendKey==="improve"?" hope":"")}>{
-              fcTrendKey==="allclean" ? _t({fr:"Propre toute la semaine — Le Veilleur veille pour toi.",en:"Clean all week — Le Veilleur watches for you.",es:"Limpia toda la semana — El Vigía vela por ti."})
+            <div className={"lc-fc-line"+(isPremium||fcTrendKey==="allclean"?" ok":fcTrendKey==="worsen"?" warn":fcTrendKey==="improve"?" hope":"")}>{
+              isPremium ? _t({fr:"Prévision 7 jours débloquée — Le Veilleur veille pour toi.",en:"7-day forecast unlocked — Le Veilleur watches for you.",es:"Pronóstico 7 días desbloqueado — El Vigía vela por ti."})
+              : fcTrendKey==="allclean" ? _t({fr:"Propre toute la semaine — Le Veilleur veille pour toi.",en:"Clean all week — Le Veilleur watches for you.",es:"Limpia toda la semana — El Vigía vela por ti."})
               : fcTrendKey==="worsen" ? _t({fr:"Propre aujourd'hui — mais ça pourrait tourner. Le Veilleur te prévient avant.",en:"Clean today — but it could turn. Le Veilleur warns you first.",es:"Limpia hoy — pero puede cambiar. El Vigía te avisa antes."})
               : fcTrendKey==="improve" ? _t({fr:"Ça devrait se dégager — débloque le jour où la mer revient propre.",en:"It should clear up — unlock the day the water comes back clean.",es:"Debería despejarse — desbloquea el día en que el agua vuelve limpia."})
               : _t({fr:"Le Veilleur t'alerte le jour exact où ça bascule.",en:"Le Veilleur alerts you the exact day it flips.",es:"El Vigía te avisa el día exacto en que cambia."})}</div>
@@ -422,14 +430,14 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
         ) : (
           <div className="lc-detail-fc">
             <div className="lc-detail-fc-h">{_t({fr:"7 PROCHAINS JOURS",en:"NEXT 7 DAYS",es:"PRÓXIMOS 7 DÍAS"})}</div>
-            <div className="lc-detail-fc-row" onClick={openFc}>
+            <div className="lc-detail-fc-row" onClick={isPremium?undefined:openFc}>
               {Array.from({length:7}).map((_,i)=>{
                 const d=new Date(Date.now()+i*864e5)
                 const dl=["D","L","M","M","J","V","S"][d.getDay()]
                 return (
                   <div key={i} className={"lc-fc-cell"+(i===0?` s-${v.st} now`:" lock")}>
                     <span className="lc-fc-day">{i===0?_t({fr:"Auj",en:"Now",es:"Hoy"}):dl}</span>
-                    <span className="lc-fc-dot">{i===0?(sc!=null?sc:"•"):"🔒"}</span>
+                    <span className="lc-fc-dot">{i===0?(sc!=null?sc:"•"):(isPremium?"·":"🔒")}</span>
                   </div>
                 )
               })}
@@ -437,9 +445,9 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
           </div>
         )}
 
-        <button type="button" className="lc-cta yel" onClick={()=>{ if(track)try{track("sg_chasse_detail_premium",{beach_id:beach.id})}catch(_){}; onPremium&&onPremium("chasse_detail") }}>
+        {!isPremium&&<button type="button" className="lc-cta yel" onClick={()=>{ if(track)try{track("sg_chasse_detail_premium",{beach_id:beach.id})}catch(_){}; onPremium&&onPremium("chasse_detail") }}>
           {_t({fr:"VOIR LES 7 PROCHAINS JOURS →",en:"SEE THE NEXT 7 DAYS →",es:"VER LOS 7 DÍAS →"})}
-        </button>
+        </button>}
         <div className="lc-detail-actions">
           <button type="button" className="lc-detail-full" onClick={share}>
             📣 {shared?_t({fr:"Copié !",en:"Copied!",es:"¡Copiado!"}):_t({fr:"Partager",en:"Share",es:"Compartir"})}
@@ -852,7 +860,7 @@ function BadgesSheet({badges,unlockedSet,onClose,lang}){
 }
 
 export default function ChasseHome(props){
-  const {beach,lang="fr",sargData,pickBeaches=[],onOpen,onOpenBeach,onPremium,onShowMap,onCaptureEmail,track,exiting}=props
+  const {beach,lang="fr",sargData,pickBeaches=[],onOpen,onOpenBeach,onPremium,onShowMap,onCaptureEmail,track,exiting,isPremium=false}=props
   const _t=useCallback((o)=>{ const v=o&&(o[lang]!=null?o[lang]:o.fr); return v },[lang])
 
   const reduce = useMemo(()=>{ try{ return window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches }catch(_){ return false } },[])
@@ -1340,7 +1348,7 @@ export default function ChasseHome(props){
         <button type="button" className="lc-maplink" onClick={()=>onShowMap&&onShowMap()}>{_t(I18N.mapLink)}</button>
       </section>
 
-      {detail&&<ChasseDetail beach={detail} lang={lang} track={track} pool={collList} sargData={sargData}
+      {detail&&<ChasseDetail beach={detail} lang={lang} track={track} pool={collList} sargData={sargData} isPremium={isPremium}
         onClose={()=>setDetail(null)}
         onPremium={(src)=>{ setDetail(null); onPremium&&onPremium(src||"chasse_detail") }}
         onRelated={(b)=>{ collect(b); if(track)try{track("sg_chasse_card_open",{beach_id:b.id,which:"related"})}catch(_){}; setDetail(b) }}
