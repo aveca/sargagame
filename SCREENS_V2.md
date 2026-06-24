@@ -40,7 +40,7 @@ l'**alerte** le jour où ta plage bascule. Un seul monde **comic-book animé** (
 - [x] 13 PROFIL / MA COLLECTION (= Pokédex + paliers, fait) → 07
 - [ ] 14 CLASSEMENT / TOP JOUEURS (leaderboard série 🔥) → 13
 - [x] 15 DÉFI DU JOUR « plus chaud / plus froid » (higher-lower 1 round/jour — fait) → 13
-- [ ] 16 DÉBLOQUER BADGE « Niveau ! » (achievement comic) → 13
+- [x] 16 BADGES / « MES SUCCÈS » — modale `BadgesSheet` (13 badges) ouverte depuis le Pokédex, dérivés de la progression **RÉELLE** (collected/streak/best/`sgUnlock`/email capté), rareté TCG, verrouillés grisés honnêtes (0 fabrication), i18n+a11y+reduced-motion, réversible `?badges=0`. → 13
 - [x] 17 RÉCOMPENSE (célébration comic « NIVEAU ! » au franchissement de rang — fait) → 13
 - [ ] 18 DÉFI DU THÈME / contest → 14
 - [ ] 28 SÉRIE « 7 jours d'affilée » (streak reward) → 05
