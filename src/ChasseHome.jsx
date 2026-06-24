@@ -961,6 +961,87 @@ function BadgesSheet({badges,unlockedSet,onClose,lang}){
   )
 }
 
+/* ====================================================================
+   CLASSEMENT DES VEILLEURS (SCREENS_V2 #14 — leaderboard / top joueurs)
+   --------------------------------------------------------------------
+   Un « top players » serveur est IMPOSSIBLE ici : l'app est mono-joueur,
+   100% local (sg_chasse), zéro roster. Inventer des adversaires = fabrication
+   (interdit, cf. circuit-breaker fiche-dive). Réponse HONNÊTE : on classe le
+   joueur sur l'échelle RÉELLE des 6 rangs Veilleur (TIERS) qu'il gravit déjà.
+   C'est sa progression réelle (collSet.size) positionnée parmi les paliers,
+   avec ses vraies métriques (collection + record de série) et la distance au
+   rang suivant. Aspirationnel = rétention, sans aucune donnée inventée.
+   Additif, in-world comic, i18n fr/en/es, a11y + reduced-motion. Réversible : ?ladder=0. */
+function ladderOnFlag(){ try{ return !/[?&]ladder=0(?:&|$)/.test(window.location.search) }catch(_){ return true } }
+function ladderForceOpen(){ try{ return /[?&]ladder=1(?:&|$)/.test(window.location.search) }catch(_){ return false } }
+const LADDER_I18N={
+  title:{fr:"CLASSEMENT DES VEILLEURS",en:"VEILLEUR RANKS",es:"CLASIFICACIÓN DE VIGÍAS"},
+  sub:{fr:"L'échelle des rangs. Collectionne des plages pour gravir les paliers — ta vraie progression, pas un score inventé.",
+       en:"The rank ladder. Collect beaches to climb the tiers — your real progress, not a made-up score.",
+       es:"La escala de rangos. Colecciona playas para subir los niveles — tu progreso real, no una puntuación inventada."},
+  you:{fr:"TOI",en:"YOU",es:"TÚ"},
+  reached:{fr:"atteint",en:"reached",es:"alcanzado"},
+  current:{fr:"rang actuel",en:"current rank",es:"rango actual"},
+  beaches:{fr:(n)=>n+" plage"+(n>1?"s":""),en:(n)=>n+" beach"+(n>1?"es":""),es:(n)=>n+" playa"+(n>1?"s":"")},
+  toNext:{fr:(n)=>n===1?"plus qu'1 plage pour le rang suivant":"encore "+n+" plages pour le rang suivant",
+          en:(n)=>n===1?"1 more beach to the next rank":n+" more beaches to the next rank",
+          es:(n)=>n===1?"1 playa más para el siguiente rango":n+" playas más para el siguiente rango"},
+  maxed:{fr:"Rang maximum atteint — Légende du Lagon 👑",en:"Top rank reached — Lagoon Legend 👑",es:"Rango máximo alcanzado — Leyenda del Lagón 👑"},
+  statColl:{fr:"plages collectées",en:"beaches collected",es:"playas coleccionadas"},
+  statBest:{fr:"record de série",en:"best streak",es:"mejor racha"},
+  empty:{fr:"Commence ta collection : tape une carte pour la débloquer.",en:"Start your collection: tap a card to unlock it.",es:"Empieza tu colección: toca una carta para desbloquearla."}
+}
+/* ---- LadderSheet : modal du classement (overlay in-world, miroir de BadgesSheet) ---- */
+function LadderSheet({tiers,count,best,onClose,lang}){
+  const _t=(o)=>(o&&(o[lang]!=null?o[lang]:o.fr))||""
+  const closeRef=useRef(null)
+  useEffect(()=>{ try{ closeRef.current&&closeRef.current.focus() }catch(_){} },[])
+  useEffect(()=>{ const k=(e)=>{ if(e.key==="Escape"){ e.stopPropagation(); onClose&&onClose() } }
+    window.addEventListener("keydown",k); return ()=>window.removeEventListener("keydown",k) },[onClose])
+  /* index du rang courant = dernier palier dont le seuil est atteint (data RÉELLE) */
+  let curIdx=0
+  for(let i=0;i<tiers.length;i++){ if(count>=tiers[i].n) curIdx=i }
+  const nx=tiers[curIdx+1]||null
+  const toNext = nx ? Math.max(0,nx.n-count) : 0
+  /* affichage du haut (Légende) vers le bas (Promeneur) = sens « échelle » */
+  const rows=tiers.map((t,i)=>({t,i})).reverse()
+  return (
+    <div className="lc-laddersheet" role="dialog" aria-modal="true"
+      aria-label={_t(LADDER_I18N.title)} onClick={onClose}>
+      <div className="lc-ladder-modal" onClick={e=>e.stopPropagation()}>
+        <button type="button" ref={closeRef} className="lc-badge-x" onClick={onClose}
+          aria-label={_t({fr:"Fermer",en:"Close",es:"Cerrar"})}>✕</button>
+        <div className="lc-badge-title"><span aria-hidden="true">🪜</span>{_t(LADDER_I18N.title)}</div>
+        <p className="lc-sub lc-center lc-ladder-sub">{_t(LADDER_I18N.sub)}</p>
+        <div className="lc-ladder-list">
+          {rows.map(({t,i})=>{
+            const reached=i<=curIdx, isYou=i===curIdx
+            return (
+              <div key={t.n} className={"lc-ladder-row"+(isYou?" lc-ladder-you":"")+(reached?"":" lc-ladder-lock")}>
+                <span className="lc-ladder-iris" style={{background:reached?t.iris:"#cdc6b8"}} aria-hidden="true">{reached?"":"🔒"}</span>
+                <div className="lc-ladder-mid">
+                  <span className="lc-ladder-nm">{_t(t)}</span>
+                  <span className="lc-ladder-th">{(LADDER_I18N.beaches[lang]||LADDER_I18N.beaches.fr)(t.n)}</span>
+                </div>
+                {isYou
+                  ? <span className="lc-ladder-tag">{_t(LADDER_I18N.you)}</span>
+                  : reached ? <span className="lc-ladder-ok" aria-label={_t(LADDER_I18N.reached)}>✓</span> : null}
+              </div>
+            )
+          })}
+        </div>
+        <p className="lc-sub lc-center lc-ladder-foot">{count<=0
+          ? _t(LADDER_I18N.empty)
+          : (nx ? (LADDER_I18N.toNext[lang]||LADDER_I18N.toNext.fr)(toNext) : _t(LADDER_I18N.maxed))}</p>
+        <div className="lc-ladder-stats">
+          <div className="lc-ladder-stat"><b>{count}</b><span>{_t(LADDER_I18N.statColl)}</span></div>
+          <div className="lc-ladder-stat"><b>{Math.max(0,+best||0)}🔥</b><span>{_t(LADDER_I18N.statBest)}</span></div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function ChasseHome(props){
   const {beach,lang="fr",sargData,pickBeaches=[],onOpen,onOpenBeach,onPremium,onShowMap,onCaptureEmail,track,exiting,isPremium=false,favorites=[],onToggleFav,onOpenPro}=props
   const _t=useCallback((o)=>{ const v=o&&(o[lang]!=null?o[lang]:o.fr); return v },[lang])
@@ -1148,6 +1229,14 @@ export default function ChasseHome(props){
   /* ?badges=1 → ouvre la modale au mount (vérif visuelle) */
   useEffect(()=>{ if(badgesEnabled&&badgesForceOpen()) setBadgesOpen(true) },[badgesEnabled])
 
+  /* ---- CLASSEMENT DES VEILLEURS (#14) — échelle des rangs, data RÉELLE ----
+     Flag kill-switch ?ladder=0 (défaut on) ; ?ladder=1 force l'ouverture au mount.
+     Aucune donnée serveur/adversaire : on classe le joueur sur les 6 paliers TIERS
+     qu'il gravit déjà (collSet.size), avec son record de série. Zéro fabrication. */
+  const ladderEnabled = useMemo(()=>ladderOnFlag(),[])
+  const [ladderOpen,setLadderOpen]=useState(false)
+  useEffect(()=>{ if(ladderEnabled&&ladderForceOpen()) setLadderOpen(true) },[ladderEnabled])
+
   /* ---- CENTRE D'ALERTES (#19) — alertes RÉELLES dérivées du forecast ----
      Flag kill-switch ?alerts=0 (défaut on) ; ?alerts=1 ou ?alerts=preview force
      l'ouverture au mount. Zéro fabrication : tout vient de resolveForecast +
@@ -1323,14 +1412,26 @@ export default function ChasseHome(props){
               ? _t({fr:(tier.nx.n-collSet.size)+" → "+tier.nx.fr,en:(tier.nx.n-collSet.size)+" → "+tier.nx.en,es:(tier.nx.n-collSet.size)+" → "+tier.nx.es})
               : _t({fr:"rang max 👑",en:"max rank 👑",es:"rango máx 👑"})}</span>
           </div>
-          {/* BADGES — bouton discret ouvrant la modale (data RÉELLE, flag ?badges=0) */}
-          {badgesEnabled&&(
-            <button type="button" className="lc-badge-btn"
-              onClick={()=>{ if(track)try{track("sg_badge_open",{count:unlockedBadges.size})}catch(_){}; setBadgesOpen(true) }}
-              aria-label={_t({fr:"Voir mes badges",en:"See my badges",es:"Ver mis insignias"})}>
-              <span aria-hidden="true">🏅</span> {_t({fr:"Badges",en:"Badges",es:"Insignias"})}
-              <b className="lc-badge-bcnt">{unlockedBadges.size}/{CHASSE_BADGES.length}</b>
-            </button>
+          {/* BADGES + CLASSEMENT — boutons discrets ouvrant leur modale (data RÉELLE) */}
+          {(badgesEnabled||ladderEnabled)&&(
+            <div className="lc-coll-actions">
+              {badgesEnabled&&(
+                <button type="button" className="lc-badge-btn"
+                  onClick={()=>{ if(track)try{track("sg_badge_open",{count:unlockedBadges.size})}catch(_){}; setBadgesOpen(true) }}
+                  aria-label={_t({fr:"Voir mes badges",en:"See my badges",es:"Ver mis insignias"})}>
+                  <span aria-hidden="true">🏅</span> {_t({fr:"Badges",en:"Badges",es:"Insignias"})}
+                  <b className="lc-badge-bcnt">{unlockedBadges.size}/{CHASSE_BADGES.length}</b>
+                </button>
+              )}
+              {ladderEnabled&&(
+                <button type="button" className="lc-badge-btn"
+                  onClick={()=>{ if(track)try{track("sg_ladder_open",{collected:collSet.size,rank:tier.cur.fr})}catch(_){}; setLadderOpen(true) }}
+                  aria-label={_t({fr:"Voir le classement des Veilleurs",en:"See the Veilleur ranks",es:"Ver la clasificación de Vigías"})}>
+                  <span aria-hidden="true">🪜</span> {_t({fr:"Classement",en:"Ranks",es:"Clasificación"})}
+                  <b className="lc-badge-bcnt">{_t(tier.cur)}</b>
+                </button>
+              )}
+            </div>
           )}
         </div>
         <div className="lc-coll-tools">
@@ -1465,6 +1566,10 @@ export default function ChasseHome(props){
         onRelated={(b)=>{ collect(b); if(track)try{track("sg_chasse_card_open",{beach_id:b.id,which:"related"})}catch(_){}; setDetail(b) }}
         onFull={()=>{ const b=detail; setDetail(null); onOpenBeach&&onOpenBeach(b) }}/>}
 
+      {ladderEnabled&&ladderOpen&&(
+        <LadderSheet tiers={TIERS} count={collSet.size} best={st.best} lang={lang}
+          onClose={()=>setLadderOpen(false)}/>
+      )}
       {badgesEnabled&&badgesOpen&&(
         <BadgesSheet badges={CHASSE_BADGES} unlockedSet={unlockedBadges} lang={lang}
           onClose={()=>setBadgesOpen(false)}/>
@@ -1987,6 +2092,43 @@ export const CSS=`
   .lc-badge-pop{animation:none;opacity:1;transform:none}
 }
 @media(min-width:560px){.lc-badge-grid{grid-template-columns:1fr 1fr 1fr}}
+
+/* ====================================================================
+   CLASSEMENT DES VEILLEURS (#14) — échelle des rangs (modale comic).
+   Réutilise l'overlay/modale des badges ; ajoute la liste « échelle ».
+   z-index 1150 (même couche que badges). Data RÉELLE, zéro fabrication.
+   ==================================================================== */
+.lc-coll-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:10px}
+.lc-coll-actions .lc-badge-btn{margin-top:0}
+.lc-laddersheet{position:fixed;inset:0;z-index:1150;display:flex;align-items:center;justify-content:center;padding:20px;
+  background:radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 0 0/9px 9px,rgba(13,11,20,.62);
+  animation:lc-detail-in .26s cubic-bezier(.2,1.2,.3,1) both}
+.lc-reduce .lc-laddersheet{animation:none}
+.lc-ladder-modal{position:relative;width:100%;max-width:420px;max-height:86vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  text-align:center;background:var(--paper);border:3px solid var(--ink);border-radius:18px;
+  padding:24px 18px 22px;box-shadow:0 7px 0 var(--ink),0 16px 30px rgba(13,11,20,.5);forced-color-adjust:none}
+.lc-ladder-sub{margin:8px auto 4px;max-width:340px}
+.lc-ladder-list{display:flex;flex-direction:column;gap:8px;margin:14px 0 4px;text-align:left}
+.lc-ladder-row{display:flex;align-items:center;gap:11px;background:var(--paper);border:2.5px solid var(--ink);
+  border-radius:13px;padding:9px 11px;box-shadow:0 4px 0 var(--ink)}
+.lc-ladder-row.lc-ladder-lock{background:repeating-linear-gradient(45deg,#eceaf0 0 7px,#f6f4f8 7px 14px);opacity:.62;box-shadow:0 3px 0 rgba(13,11,20,.45)}
+.lc-ladder-row.lc-ladder-you{box-shadow:0 0 0 3px var(--yel) inset,0 5px 0 var(--ink);background:#fff8df}
+.lc-ladder-iris{flex:none;width:30px;height:30px;border-radius:50%;border:2.5px solid var(--ink);
+  display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:1.5px 1.5px 0 var(--ink)}
+.lc-ladder-mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.lc-ladder-nm{font-family:"AntonLC",system-ui,sans-serif;font-size:13px;letter-spacing:.3px;color:var(--ink);
+  text-transform:uppercase;line-height:1.05}
+.lc-ladder-th{font:800 10px/1 "Comic Neue",system-ui,sans-serif;color:var(--ink);opacity:.7}
+.lc-ladder-tag{flex:none;font-family:"AntonLC",system-ui,sans-serif;font-size:11px;color:var(--ink);background:var(--yel);
+  border:2px solid var(--ink);border-radius:11px;padding:2px 9px;box-shadow:1.5px 1.5px 0 var(--ink);letter-spacing:.4px}
+.lc-ladder-ok{flex:none;font-size:14px;font-weight:800;color:var(--grn,#27c46b);width:22px;text-align:center}
+.lc-ladder-foot{margin:10px auto 2px;max-width:320px;font-weight:800}
+.lc-ladder-stats{display:flex;gap:10px;justify-content:center;margin-top:14px}
+.lc-ladder-stat{display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--ink);color:var(--paper);
+  border-radius:13px;padding:8px 16px;min-width:96px}
+.lc-ladder-stat b{font-family:"AntonLC",system-ui,sans-serif;font-size:19px;line-height:1}
+.lc-ladder-stat span{font:800 9px/1.1 "Comic Neue",system-ui,sans-serif;text-transform:uppercase;letter-spacing:.4px;opacity:.85}
+@media(prefers-reduced-motion:reduce){.lc-laddersheet{animation:none}}
 
 /* ====================================================================
    CENTRE D'ALERTES « MES ALERTES » (#19) — cloche header + modale comic.
