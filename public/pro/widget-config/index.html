@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,follow">
+  <title>Configurer votre widget Sargasses Pro</title>
+  <meta name="description" content="Espace de configuration du widget Sargasses Pro : widget à votre marque (sans crédit Sargasses), couleur, prévision 7 jours, multi-plages. Collez votre token Pro pour activer la marque blanche.">
+  <link rel="canonical" href="https://sargasses-martinique.com/pro/widget-config/">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Anton&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;forced-color-adjust:none}
+    body{font-family:'Bricolage Grotesque',sans-serif;background:#0a1620;color:#fff;font-size:17px;line-height:1.65}
+    header{background:linear-gradient(135deg,#0B2230 0%,#124C4F 100%);padding:14px 24px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,.08)}
+    header a.brand{color:#fff;text-decoration:none;font-family:Anton,sans-serif;font-size:20px;letter-spacing:-.02em}
+    header .brand span{color:#FFC72C}
+    .pill-pro{font-family:Anton,sans-serif;font-size:12px;letter-spacing:.06em;background:#FFC72C;color:#0a1620;padding:3px 10px;border-radius:100px}
+    .back{color:rgba(255,255,255,.6);font-size:13px;text-decoration:none;margin-left:auto;transition:color .15s}
+    .back:hover{color:#fff}
+    main{max-width:820px;margin:0 auto;padding:48px 20px 80px}
+    h1{font-family:Anton,sans-serif;font-size:clamp(28px,5vw,42px);letter-spacing:-.02em;text-transform:uppercase;line-height:1.08;margin-bottom:14px}
+    .sub{color:rgba(255,255,255,.74);font-size:16px;margin-bottom:30px;max-width:62ch}
+    h2{font-family:Anton,sans-serif;font-size:21px;text-transform:uppercase;letter-spacing:-.01em;margin:40px 0 14px}
+    p{margin-bottom:14px;color:rgba(255,255,255,.86)}
+    .builder{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:22px}
+    .token-row{background:linear-gradient(135deg,rgba(255,199,44,.10),rgba(0,158,142,.10));border:1px solid rgba(255,199,44,.28);border-radius:14px;padding:16px 16px 18px;margin-bottom:20px}
+    .token-row label{color:#FFC72C}
+    .token-state{font-size:13px;margin-top:8px;font-weight:600;display:flex;align-items:center;gap:7px;min-height:18px}
+    .token-state.ok{color:#46d39a}
+    .token-state.free{color:rgba(255,255,255,.55)}
+    .token-state.bad{color:#ff7a6b}
+    .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:20px}
+    label{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:rgba(255,255,255,.55);margin-bottom:6px}
+    select,input[type=color],input[type=text]{width:100%;font:inherit;font-size:15px;padding:9px 11px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:#0d1c27;color:#fff}
+    input[type=color]{height:42px;padding:4px;cursor:pointer}
+    input::placeholder{color:rgba(255,255,255,.32)}
+    .prev{background:repeating-conic-gradient(#e9eef2 0 25%,#f6f9fb 0 50%) 0 0/22px 22px;border-radius:14px;padding:22px;min-height:120px;display:flex;align-items:center;justify-content:center}
+    .prev iframe{width:100%;max-width:520px;border:0;background:transparent}
+    .credit{margin:4px 0 0;font:12px/1.4 system-ui,sans-serif;color:#888;text-align:right}
+    .credit a{color:#009E8E;text-decoration:none}
+    pre{background:#070f16;color:#e6edf2;padding:18px;border-radius:12px;overflow-x:auto;font-size:13.5px;line-height:1.5;margin:14px 0 0;border:1px solid rgba(255,255,255,.06)}
+    code{font-family:'JetBrains Mono',ui-monospace,monospace}
+    .copy{background:linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%);color:#0a1620;border:none;padding:11px 26px;border-radius:100px;font-weight:700;cursor:pointer;font-size:14px;margin-top:14px;transition:opacity .15s;font-family:inherit}
+    .copy:hover{opacity:.94}
+    .steps{display:grid;gap:10px;margin:8px 0 8px;padding:0;list-style:none;counter-reset:s}
+    .steps li{counter-increment:s;display:flex;gap:12px;align-items:flex-start;padding:13px 15px;background:rgba(255,255,255,.03);border-radius:12px;border:1px solid rgba(255,255,255,.06);font-size:14.5px}
+    .steps li::before{content:counter(s);flex-shrink:0;width:24px;height:24px;border-radius:50%;background:#FFC72C;color:#0a1620;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center}
+    .note{font-size:13.5px;color:rgba(255,255,255,.6);margin-top:8px}
+    footer{text-align:center;padding:24px;color:rgba(255,255,255,.5);font-size:13px;border-top:1px solid rgba(255,255,255,.08)}
+    footer a{color:#FFC72C;text-decoration:none}
+  </style>
+</head>
+<body>
+  <header>
+    <a class="brand" href="/">Sargasses <span>Pro</span></a>
+    <span class="pill-pro">CONFIG WIDGET</span>
+    <a class="back" href="/pro/hotels/">← L'offre Pro</a>
+  </header>
+  <main>
+    <h1>Configurez votre widget</h1>
+    <p class="sub">Réglez votre widget « plages en direct », générez le code, collez-le sur votre site. Avec votre <strong>token Pro</strong>, le widget passe <strong>à votre marque</strong> — sans crédit Sargasses.</p>
+
+    <h2>Comment ça marche</h2>
+    <ol class="steps">
+      <li>Collez le <strong>token Pro</strong> qu'on vous a envoyé par email (active la marque blanche).</li>
+      <li>Choisissez votre plage, vos couleurs, votre format dans l'aperçu.</li>
+      <li>Copiez le code et collez-le dans votre site (une simple iframe, zéro maintenance).</li>
+    </ol>
+
+    <div class="builder">
+      <div class="token-row">
+        <label for="k">Token Pro (marque blanche)</label>
+        <input type="text" id="k" autocomplete="off" spellcheck="false" placeholder="Collez ici le token reçu par email — ou laissez vide pour le widget gratuit">
+        <div class="token-state free" id="kstate">Sans token : widget gratuit, avec un discret crédit « par Sargasses ».</div>
+      </div>
+      <div class="controls">
+        <div>
+          <label for="b">Plage</label>
+          <select id="b">
+            <optgroup label="Martinique">
+              <option value="plage-des-salines">Plage des Salines</option>
+              <option value="plage-du-diamant" selected>Plage du Diamant</option>
+              <option value="pointe-faula">Pointe Faula</option>
+              <option value="grande-anse-d-arlet">Grande Anse d'Arlet</option>
+              <option value="anse-mitan">Anse Mitan</option>
+              <option value="bourg-de-tartane">Bourg de Tartane</option>
+              <option value="anse-noire">Anse Noire</option>
+              <option value="anse-madame">Anse Madame</option>
+              <option value="plage-du-marin">Plage du Marin</option>
+              <option value="plage-du-bourg-sainte-anne">Plage du Bourg (Sainte-Anne)</option>
+            </optgroup>
+            <optgroup label="Guadeloupe">
+              <option value="plage-de-grande-anse" data-gp>Plage de Grande Anse</option>
+              <option value="plage-de-malendure" data-gp>Plage de Malendure</option>
+              <option value="plage-de-sainte-anne" data-gp>Plage de Sainte-Anne</option>
+              <option value="pointe-des-chateaux" data-gp>Pointe des Châteaux</option>
+              <option value="plage-du-gosier" data-gp>Plage du Gosier</option>
+              <option value="plage-de-la-caravelle" data-gp>Plage de la Caravelle</option>
+              <option value="plage-de-bas-du-fort" data-gp>Plage de Bas-du-Fort</option>
+              <option value="plage-de-deshaies" data-gp>Plage de Deshaies</option>
+              <option value="plage-du-moule" data-gp>Plage du Moule</option>
+              <option value="plage-du-vieux-fort" data-gp>Plage du Vieux-Fort</option>
+            </optgroup>
+          </select>
+        </div>
+        <div>
+          <label for="nm">Titre affiché (optionnel)</label>
+          <input type="text" id="nm" maxlength="40" autocomplete="off" placeholder="ex. La plage de l'hôtel">
+        </div>
+        <div>
+          <label for="f">Format</label>
+          <select id="f"><option value="full" selected>Complet · prévision 7 jours</option><option value="compact">Compact · statut du jour</option></select>
+        </div>
+        <div>
+          <label for="l">Langue</label>
+          <select id="l"><option value="fr" selected>Français</option><option value="en">English</option><option value="es">Español</option></select>
+        </div>
+        <div>
+          <label for="t">Thème</label>
+          <select id="t"><option value="light" selected>Clair</option><option value="dark">Sombre</option><option value="auto">Auto</option></select>
+        </div>
+        <div>
+          <label for="a">Couleur d'accent</label>
+          <input type="color" id="a" value="#009E8E">
+        </div>
+      </div>
+      <div class="prev"><div style="width:100%;max-width:520px"><iframe id="prev" title="Aperçu du widget" height="168" style="width:100%;border:0"></iframe><p class="credit" id="prevcredit">Conditions en direct par <a id="prevcreditlink" href="https://sargasses-martinique.com/">Sargasses Martinique</a></p></div></div>
+      <pre><code id="code"></code></pre>
+      <button class="copy" id="copy">Copier le code</button>
+    </div>
+
+    <h2>Plusieurs plages ?</h2>
+    <p>Chaque widget affiche une plage. Pour en afficher plusieurs (ex. plusieurs plages autour de votre établissement), répétez simplement le bloc avec une autre plage sélectionnée — votre token Pro reste le même.</p>
+
+    <h2>Besoin d'un token, ou d'aide ?</h2>
+    <p>Le token Pro vous est envoyé par email à la souscription. Pour le renouveler, l'étendre à une autre plage, ou toute question d'intégration, écrivez-nous à <strong>contact@sargasses-martinique.com</strong>.</p>
+  </main>
+  <footer>
+    <p>Source : données satellite Copernicus Marine — <a href="/">Sargasses Pro</a></p>
+  </footer>
+
+  <script>
+  (function(){
+    "use strict";
+    var k=document.getElementById('k'),kstate=document.getElementById('kstate'),
+        b=document.getElementById('b'),nm=document.getElementById('nm'),f=document.getElementById('f'),l=document.getElementById('l'),
+        t=document.getElementById('t'),a=document.getElementById('a'),prev=document.getElementById('prev'),
+        prevcredit=document.getElementById('prevcredit'),prevlink=document.getElementById('prevcreditlink'),
+        code=document.getElementById('code'),copy=document.getElementById('copy');
+    function opt(){return b.options[b.selectedIndex]}
+    function domain(){return opt().hasAttribute('data-gp')?'sargasses-guadeloupe.com':'sargasses-martinique.com'}
+    function brand(){return opt().hasAttribute('data-gp')?'Guadeloupe':'Martinique'}
+    function tok(){return (k.value||'').trim();}
+    function isPro(){return tok().length>0;}
+    function vh(){return f.value==='compact'?116:168;}
+    function qs(){
+      var p=new URLSearchParams();
+      p.set('beach',b.value);
+      if(f.value==='compact')p.set('compact','1');
+      if(l.value!=='fr')p.set('lang',l.value);
+      if(t.value!=='light')p.set('theme',t.value);
+      var hex=a.value.replace('#','').toUpperCase();
+      if(hex && hex!=='009E8E')p.set('accent',hex);
+      var name=(nm.value||'').trim();
+      if(name)p.set('name',name);
+      if(isPro())p.set('k',tok());
+      return p.toString();
+    }
+    function snippet(){
+      var d=domain();
+      var s='<div style="max-width:520px">\n'
+        +'  <iframe\n    src="https://'+d+'/widget/embed/?'+qs()+'"\n    width="100%" height="'+vh()+'" frameborder="0"\n    title="Conditions de plage'+(nm.value?(' — '+nm.value.replace(/"/g,'')):'')+'"\n    style="border:0;width:100%"\n  ></iframe>\n';
+      // Marque blanche (token Pro) = pas de ligne de crédit. Sinon, crédit = backlink honnête.
+      if(!isPro()){
+        s+='  <p style="margin:4px 0 0;font:12px/1.4 system-ui,sans-serif;color:#888;text-align:right">Conditions en direct par <a href="https://'+d+'/" style="color:#009E8E;text-decoration:none">Sargasses '+brand()+'</a></p>\n';
+      }
+      s+='</div>';
+      return s;
+    }
+    function setKState(){
+      if(isPro()){
+        kstate.className='token-state ok';
+        kstate.textContent='✓ Marque blanche active — le crédit Sargasses sera retiré (token validé côté serveur à l\'affichage).';
+      }else{
+        kstate.className='token-state free';
+        kstate.textContent='Sans token : widget gratuit, avec un discret crédit « par Sargasses ».';
+      }
+    }
+    function update(){
+      setKState();
+      prev.src='/widget/embed/?'+qs();
+      prev.height=vh();
+      // l'aperçu reflète la réalité : crédit visible seulement en mode gratuit
+      prevcredit.style.display=isPro()?'none':'';
+      prevlink.href='https://'+domain()+'/';
+      prevlink.textContent='Sargasses '+brand();
+      code.textContent=snippet();
+    }
+    // préremplissage discret depuis ?beach=<slug> et ?k=<token> (deep-link email)
+    var P=new URLSearchParams(location.search);
+    var preBeach=P.get('beach');
+    if(preBeach){for(var i=0;i<b.options.length;i++){if(b.options[i].value===preBeach){b.selectedIndex=i;break;}}}
+    var preK=P.get('k'); if(preK)k.value=preK;
+    [k,b,nm,f,l,t,a].forEach(function(e){e.addEventListener('input',update);e.addEventListener('change',update)});
+    copy.addEventListener('click',function(){
+      navigator.clipboard.writeText(code.textContent).then(function(){
+        copy.textContent='Copié ✓';setTimeout(function(){copy.textContent='Copier le code'},1800);
+      });
+    });
+    update();
+  })();
+  </script>
+</body>
+</html>
