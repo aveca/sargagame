@@ -126,7 +126,7 @@ export default function PassOffer({ lang = "fr", onBuy }) {
       </button>
 
       <div style={{ textAlign: "center", marginTop: 12, font: "600 10.5px/1.3 system-ui,sans-serif", color: "rgba(234,247,244,.46)", letterSpacing: ".015em" }}>
-        {_t(lang, "Sans abonnement · sans renouvellement · accès immédiat · paiement sécurisé Stripe", "No subscription · no auto-renew · instant access · secure Stripe payment", "Sin suscripción · sin renovación · acceso inmediato · pago seguro Stripe")}
+        {_t(lang, "Sans abonnement · sans renouvellement · accès immédiat · paiement sécurisé", "No subscription · no auto-renew · instant access · secure payment", "Sin suscripción · sin renovación · acceso inmediato · pago seguro")}
       </div>
     </div>
   )

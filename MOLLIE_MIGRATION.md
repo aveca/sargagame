@@ -56,6 +56,34 @@ sera appliquée à la validation, au choix :
 - [ ] (Plus tard) USD : rebrancher florida/puntacana/rivieramaya sur Mollie (compte EUR
       → conversion FX ~2,5-3%) ou un autre PSP, puisque Stripe est mort.
 
+## Readiness pré-go-live (audit 2026-06-24, 6 agents)
+
+### ✅ Bloquants CORRIGÉS (PR #108)
+- **Fuite active** : pass off-site → liens `buy.stripe.com` morts. `passOnsite` forcé on-site.
+- **Labels « Stripe » en dur** → const `PAY_LABEL` provider-aware (bascule Mollie au flip).
+- **Retour 3DS Mollie** posait plus le splash/onboarding → `sg_premium_welcome=1` ajouté.
+- **Verify cross-device** 100% Stripe → helper `sgVerifySub()` (Mollie + Stripe legacy).
+- **Annulation abo** portail Stripe only → `?manage=1` provider-aware (cancel Mollie + confirm).
+
+### 🟡 Nice-to-have RESTANTS (non-bloquants, à traiter au retour — judgment/UX)
+- **Cohérence capture (anti bait-and-switch)** : en mode capture, masquer les cartes de
+  prix / garantie 30j / mentions prix et passer le CTA à « 7 jours premium offerts · juste
+  ton email ». Attaque aussi le bottleneck modal→CTA 2%. (Sargasses_PROD.jsx ~6852-7155). Effort M.
+- **Pass saison (19,99€/6 mois)** cliquable en capture mais ne délivre que 7j en dur →
+  masquer/rerouter en capture. Effort S.
+- **payment_status réseau KO au retour 3DS** = premium perdu en silence → ajouter
+  retry/backoff ou fallback `sgVerifySub(email)` avant de nettoyer. Effort M.
+- **CaptureGate** « Débloquer par carte 4,99€/mois » mène au paywall payant en capture →
+  reformuler « Débloquer 7 jours gratuitement ». Effort S.
+- **Double `submitLead`** en capture (onsite_checkout + gap_freemium) = 2 POST/déblocage,
+  gonfle les métriques → n'émettre que gap_freemium. Effort S.
+- **Code mort `captureDone`** (écran succès « C'est débloqué ! » jamais rendu) → utiliser ou supprimer. Effort S.
+
+### ✅ Déjà prêt (rassurant)
+Gating `isPremium` sain · chemin Mollie inline complet (splash+onboarding+parrainage) ·
+funnel capture bout-en-bout · i18n fr/en/es complet (gratuit+premium+B2B) · B2B 100%
+lead-capture (zéro risque paiement) · bridge `PAY_PROVIDER`/`PAY_CAPTURE_ONLY` réversible.
+
 ## Note Stripe (mort)
 `create-checkout.php` + `stripe-config.*` restent dans le repo mais ne sont plus le
 chemin actif. Ne rien y rebrancher. Suppression propre à planifier une fois Mollie rodé.

@@ -1842,6 +1842,9 @@ const STRIPE_PK="pk_live_51PW2TGP9RK8Orx516Nx5mGUixrk2ozE8ppOcygq9Wkb1Tz5CkozRcR
 // 'mollie'/'stripe' en fallback. ⚠️ fulfillment serveur (confirm_subscription/webhook)
 // = paypal-config.php live à déployer (FTP/secret) avant le go-live général.
 const PAY_PROVIDER=(()=>{try{const q=window.location.search;if(/[?&]pay=stripe/.test(q))return"stripe";if(/[?&]pay=mollie/.test(q))return"mollie";if(/[?&]pay=paypal/.test(q))return"paypal"}catch(_){}return"mollie"})()
+// Libellé processeur affiché dans les badges « paiement sécurisé ». Source unique
+// pour ne plus jamais hardcoder « Stripe » (mort) — bascule auto au go-live Mollie.
+const PAY_LABEL=PAY_PROVIDER==="mollie"?"Mollie":PAY_PROVIDER==="paypal"?"PayPal":"Stripe"
 const MOLLIE_PROFILE="pfl_mHmgMvWdwC"
 const MOLLIE_TESTMODE=false // LIVE (clé live_ dans mollie-config.php). Mettre true + clé test_ uniquement pour QA.
 // PayPal abo via bouton — LIVE (client_id public + plans régénérés par scripts/create-paypal-plans.cjs).
@@ -2067,6 +2070,17 @@ function _sgcCid(){try{let c=localStorage.getItem("sg_cid");if(!c){c=_sgcRand(8)
 // Mon code = dérivé du cid (stable, idempotent). sgReferredBy() = code du parrain
 // si présent, valide, dans la fenêtre 30j, et ≠ mon propre code (anti-auto-parrainage).
 function sgMyReferralCode(){try{let c=localStorage.getItem("sg_referral_code");if(!c){c="REF-"+hashSeed(_sgcCid()+":ref").toString(36).toUpperCase().slice(0,6);localStorage.setItem("sg_referral_code",c)}return c}catch(_){return ""}}
+// Vérif d'abonnement cross-device (PWA iOS = localStorage séparé, lien email).
+// Interroge LES DEUX backends : Mollie (provider actif au go-live) ET Stripe legacy
+// (16 abos historiques). Retourne la réponse du backend actif (préserve trialEnd/
+// status pour les appelants). Avant : 100% Stripe → tout abonné Mollie échouait.
+async function sgVerifySub(email){
+  const one=(url)=>fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"verify_subscription",email})}).then(r=>r.json()).catch(()=>({active:false}))
+  const[m,s]=await Promise.all([one("/api/mollie.php"),one("/api/create-checkout.php")])
+  if(m&&m.active)return m
+  if(s&&s.active)return s
+  return m||s||{active:false}
+}
 function sgReferredBy(){try{const raw=localStorage.getItem("sg_referred_by");if(!raw)return "";let code="",ts=0;try{const o=JSON.parse(raw);code=o.code||"";ts=o.ts||0}catch(_){code=raw}/* rétro-compat string legacy */if(!/^REF-[A-Z0-9]{6}$/.test(code))return "";if(ts&&Date.now()-ts>30*86400000)return ""/* attribution expirée */;if(code===sgMyReferralCode())return ""/* anti-auto-parrainage */;return code}catch(_){return ""}}
 function _sgcEnsureBuf(){
   if(_sgc.buf)return
@@ -7144,7 +7158,7 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
 
         {/* 3 RASSURANCES */}
         <div className="pww-trust">
-          <div className="pww-tc"><svg className="ic" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg><b>Stripe</b><em>{_t(lang,"Paiement sécurisé","Secure payment","Pago seguro")}</em></div>
+          <div className="pww-tc"><svg className="ic" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg><b>{PAY_LABEL}</b><em>{_t(lang,"Paiement sécurisé","Secure payment","Pago seguro")}</em></div>
           <div className="pww-tc"><svg className="ic" viewBox="0 0 24 24" fill="none" stroke="#009E8E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg><b>{_t(lang,"30 jours","30 days","30 días")}</b><em>{_t(lang,"Satisfait ou remboursé","Money-back","Reembolso")}</em></div>
           <div className="pww-tc"><svg className="ic" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg><b>{_t(lang,"2 clics","2 clicks","2 clics")}</b><em>{_t(lang,"Annule quand tu veux","Cancel anytime","Cancela cuando quieras")}</em></div>
         </div>
@@ -7170,7 +7184,7 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
           {onB2B&&<button type="button" className="pww-link b2b" onClick={onB2B}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:"-2px",marginRight:4}}><rect x="6" y="3" width="12" height="18" rx="1"/><path d="M10.5 21v-3h3v3"/></svg>{_t(lang,"Hôtel ou collectivité ? →","Hotel or town? →","¿Hotel o municipio? →")}</button>}
         </div>
 
-        <div className="pww-secure"><Lock s={11}/>{_t(lang,"Paiement sécurisé Stripe · Sans engagement","Secure Stripe payment · No commitment","Pago seguro Stripe · Sin compromiso")}</div>
+        <div className="pww-secure"><Lock s={11}/>{_t(lang,"Paiement sécurisé "+PAY_LABEL+" · Sans engagement","Secure "+PAY_LABEL+" payment · No commitment","Pago seguro "+PAY_LABEL+" · Sin compromiso")}</div>
       </div>
     </div>
   </>)
@@ -7420,7 +7434,7 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
           </button>}
           <button type="button" className="pwx-foot" onClick={onAlready}>{_t(lang,"J'ai déjà un abonnement","I already have a subscription","Ya tengo una suscripción")}</button>
           {onB2B&&<button type="button" className="pwx-foot" style={{marginTop:7,opacity:.78,fontSize:11.5}} onClick={onB2B}>🏨 {_t(lang,"Hôtel ou collectivité ? →","Hotel or town? →","¿Hotel o municipio? →")}</button>}
-          <div className="pwx-secure">🔒 {_t(lang,"Paiement sécurisé Stripe · Sans engagement","Secure Stripe payment · No commitment","Pago seguro Stripe · Sin compromiso")}</div>
+          <div className="pwx-secure">🔒 {_t(lang,"Paiement sécurisé "+PAY_LABEL+" · Sans engagement","Secure "+PAY_LABEL+" payment · No commitment","Pago seguro "+PAY_LABEL+" · Sin compromiso")}</div>
         </div>
       </div>
     </div>
@@ -7988,8 +8002,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     track("sg_premium_already_click",{source:source||"unknown"})
     const em=prompt(_t(lang,"Entre l'email utilisé pour ton abonnement :","Enter the email used for your subscription:","Introduce el email usado para tu suscripción:"))
     if(!em||!em.includes("@"))return
-    fetch("/api/create-checkout.php",{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({action:"verify_subscription",email:em})}).then(r=>r.json()).then(d=>{
+    sgVerifySub(em).then(d=>{
       if(d.active){localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",em)
         if(d.trialEnd)localStorage.setItem("sg_premium_trial_end",String(d.trialEnd))
         track("sg_premium_already_success",{source:source||"unknown"});onActivated?.();onClose()}
@@ -8004,7 +8017,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   // redirect off-site EUR. Le pay-per-use USD passe par le Trip Pass on-site (tripAB, gaté plus bas).
   const pwPass=!IS_NEW_REGION&&(()=>{try{const q=window.location.search;if(/[?&]pwpass=1/.test(q))return true;if(/[?&]pwpass=0/.test(q))return false;return abVariant("pw_pass",["control","pass"],[.5,.5])==="pass"}catch(_){return false}})()
   // Paiement on-site one-time des passes — OFF par défaut (le redirect reste le défaut qui marche). ?passonsite=1 pour live-test carte.
-  const passOnsite=(()=>{try{const q=window.location.search;if(/[?&]passonsite=1/.test(q))return true;if(/[?&]passonsite=0/.test(q))return false;return abVariant("pw_pass_onsite",["off","on"],[1,0])==="on"}catch(_){return false}})()
+  // FORCÉ ON-SITE (2026-06-24) : Stripe est mort → les liens off-site buy.stripe.com
+  // de PassOffer redirigeaient vers un checkout cassé en sautant la capture. Défaut
+  // passé [1,0]→[0,1] : tout pass passe par passCtxRef/setPayStep (capture maintenant,
+  // Mollie create_payment au go-live). ?passonsite=0 force l'ancien off-site (mort).
+  const passOnsite=(()=>{try{const q=window.location.search;if(/[?&]passonsite=1/.test(q))return true;if(/[?&]passonsite=0/.test(q))return false;return abVariant("pw_pass_onsite",["off","on"],[0,1])==="on"}catch(_){return false}})()
   // A/B pw_season : surface le SKU « pass saison » dormant (19,99 € paiement UNIQUE,
   // 6 mois d'accès, sans abo) comme alternative dans ComicPaywall. EUR uniquement
   // (allowlist serveur pay_once = [799..2499]¢ ; 1999 OK). Cash d'avance + zéro churn.
@@ -8161,7 +8178,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             </div>
           </button>
           <div style={{textAlign:"center",marginTop:13,font:"600 10.5px/1 system-ui,sans-serif",color:"rgba(234,247,244,.5)",letterSpacing:".015em"}}>
-            {_t(lang,"Sans engagement · Paiement sécurisé Stripe","No commitment · Secure Stripe payment","Sin compromiso · Pago seguro Stripe")}
+            {_t(lang,"Sans engagement · Paiement sécurisé "+PAY_LABEL,"No commitment · Secure "+PAY_LABEL+" payment","Sin compromiso · Pago seguro "+PAY_LABEL)}
           </div>
         </div>
       </div>
@@ -8389,7 +8406,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           {/* Trust row 3 columns */}
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,marginBottom:14}}>
             {[
-              {icon:"🛡",title:"Stripe",sub:REGION_PAY?_t(lang,"Paiement sécurisé","Secure payment","Pago seguro"):_t(lang,"Paiement sécurisé EU","EU secure payment","Pago seguro UE")},
+              {icon:"🛡",title:PAY_LABEL,sub:REGION_PAY?_t(lang,"Paiement sécurisé","Secure payment","Pago seguro"):_t(lang,"Paiement sécurisé EU","EU secure payment","Pago seguro UE")},
               {icon:"⏱",title:_t(lang,"30 jours","30 days","30 días"),sub:_t(lang,"Satisfait ou remboursé","Money-back","Reembolso garantizado")},
               {icon:"✕",title:NO_TRIAL?_t(lang,"2 clics","2 clicks","2 clics"):_t(lang,"1 clic","1 click","1 clic"),sub:_t(lang,"Annule quand tu veux","Cancel anytime","Cancela cuando quieras")},
             ].map((t,i)=>(
@@ -8826,7 +8843,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         <div style={{textAlign:"center",marginTop:12,fontSize:10.5,
           color:"rgba(255,255,255,.48)",letterSpacing:".01em"}}>
           {NO_TRIAL
-            ?_t(lang,"Sans engagement · Annulation en 2 clics · Paiement sécurisé Stripe","No commitment · Cancel in 2 clicks · Secure Stripe payment","Sin permanencia · Cancela en 2 clics · Pago seguro Stripe")
+            ?_t(lang,"Sans engagement · Annulation en 2 clics · Paiement sécurisé "+PAY_LABEL,"No commitment · Cancel in 2 clicks · Secure "+PAY_LABEL+" payment","Sin permanencia · Cancela en 2 clics · Pago seguro "+PAY_LABEL)
             :_t(lang,"Sans engagement · Annulation en 2 clics · Rappel avant facturation","No commitment · Cancel in 2 clicks · Reminder before you're billed","Sin permanencia · Cancela en 2 clics · Aviso antes del cobro")}
         </div>
         {/* 2026-06-17 — GARANTIE proéminente : remplace l'essai gratuit comme
@@ -8848,7 +8865,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:6,marginTop:8}}>
           <span style={{display:"inline-flex",alignItems:"center",gap:4,
             fontSize:10,color:"rgba(255,255,255,.6)",fontWeight:500}}>
-            <span>🔒</span>{_t(lang,"Paiement sécurisé Stripe","Secure Stripe payment","Pago seguro Stripe")}
+            <span>🔒</span>{_t(lang,"Paiement sécurisé "+PAY_LABEL,"Secure "+PAY_LABEL+" payment","Pago seguro "+PAY_LABEL)}
           </span>
         </div>
         {/* Lien "À propos" retiré du paywall (demande user 2026-06-11 — épuré).
@@ -8862,10 +8879,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           track("sg_premium_already_click",{source:source||"unknown"})
           const em=prompt(_t(lang,"Entre l'email utilisé pour ton abonnement :","Enter the email used for your subscription:","Introduce el email usado para tu suscripción:"))
           if(!em||!em.includes("@"))return
-          fetch("/api/create-checkout.php",{
-            method:"POST",headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({action:"verify_subscription",email:em})
-          }).then(r=>r.json()).then(d=>{
+          sgVerifySub(em).then(d=>{
             if(d.active){
               localStorage.setItem("sg_premium","1")
               localStorage.setItem("sg_premium_email",em)
@@ -9001,7 +9015,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               :PAY_CAPTURE_ONLY
               ?_t(lang,"Offert le temps qu'on rouvre · sans carte · juste ton email","On us while we reopen · no card · just your email","Gratis mientras reabrimos · sin tarjeta · solo tu email")
               :NO_TRIAL
-              ?_t(lang,"Sans engagement · Annule en 2 clics · Stripe sécurisé","No commitment · Cancel in 2 clicks · Secured by Stripe","Sin compromiso · Cancela en 2 clics · Stripe seguro")
+              ?_t(lang,"Sans engagement · Annule en 2 clics · "+PAY_LABEL+" sécurisé","No commitment · Cancel in 2 clicks · Secured by "+PAY_LABEL,"Sin compromiso · Cancela en 2 clics · "+PAY_LABEL+" seguro")
               :_t(lang,"Sans engagement · Rappel 2 jours avant la 1re charge","No commitment · Reminder 2 days before first charge","Sin compromiso · Recordatorio 2 días antes del primer cobro")}
           </div>
           {/* 2026-06-17 — bouton off-site « continuer sur Stripe » RETIRÉ (checkout
@@ -13529,6 +13543,10 @@ export default function App(){
             try{localStorage.setItem("sg_email",ctx.email||"")
               if(ctx.pass){localStorage.setItem("sg_premium_pass_end",String(Date.now()+((ctx.days||7)*86400000)))}
               else{localStorage.setItem("sg_premium","1");if(ctx.email)localStorage.setItem("sg_premium_email",ctx.email)}
+              // Le reload (clean()) perd l'état mémoire onActivated → poser le flag pour
+              // que showWelcome déclenche splash « Premium activé » + PaidOnboarding,
+              // comme le chemin inline. Sinon le payeur 3DS atterrit sans confirmation.
+              localStorage.setItem("sg_premium_welcome","1")
             }catch(_){}
             track("sg_conversion",{session_id:ctx.paymentId,method:ctx.pass?"mollie_pass":"mollie",plan:ctx.pass||ctx.plan})
           }
@@ -13547,31 +13565,39 @@ export default function App(){
       if(params.get("manage")!=="1")return
       const urlEmail=params.get("email")||""
       const em=urlEmail||localStorage.getItem("sg_premium_email")
-      if(em){
-        if(urlEmail)localStorage.setItem("sg_premium_email",urlEmail)
-        track("sg_manage_portal_open",{has_url_email:!!urlEmail})
-        fetch("/api/create-checkout.php",{
-          method:"POST",headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({action:"portal",email:em})
+      // Gestion abo, provider-aware. Mollie n'a PAS de portail hébergé → annulation
+      // directe après confirmation (action cancel_subscription). Stripe legacy garde
+      // son Customer Portal (redirect {url}). Conformité : un abonné Mollie DOIT
+      // pouvoir résilier. Dormant tant que mode capture (aucun abo Mollie encore).
+      const doManage=(addr)=>{
+        if(PAY_PROVIDER==="mollie"){
+          if(!window.confirm(_t(lang,"Annuler ton abonnement Premium ? Tu gardes l'accès jusqu'à la fin de la période déjà payée.","Cancel your Premium subscription? You keep access until the end of the paid period.","¿Cancelar tu suscripción Premium? Conservas el acceso hasta el final del período pagado.")))return
+          track("sg_manage_cancel_click",{provider:"mollie"})
+          fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({action:"cancel_subscription",email:addr})
+          }).then(r=>r.json()).then(d=>{
+            if(d.cancelled){track("sg_manage_cancel_ok");sgToast({tone:"success",title:_t(lang,"Abonnement annulé","Subscription cancelled","Suscripción cancelada"),msg:_t(lang,"Tu gardes l'accès jusqu'à la fin de la période payée.","You keep access until the end of the paid period.","Conservas el acceso hasta el final del período pagado.")})}
+            else{track("sg_manage_cancel_error",{error:d.error||"not_cancelled"});sgToast({tone:"error",title:_t(lang,"Annulation impossible","Couldn't cancel","No se pudo cancelar"),msg:_t(lang,"Écris-moi à "+SUPPORT_EMAIL+" et je m'en occupe.","Write to me at "+SUPPORT_EMAIL+" and I'll handle it.","Escríbeme a "+SUPPORT_EMAIL+" y me encargo.")})}
+          }).catch(e=>{track("sg_manage_cancel_error",{error:e?.message||"network"});sgToast({tone:"error",title:_t(lang,"Connexion impossible","Connection failed","Sin conexión"),msg:_t(lang,"Réessaie dans un instant.","Try again in a moment.","Inténtalo de nuevo en un momento.")})})
+          return
+        }
+        track("sg_manage_portal_open")
+        fetch("/api/create-checkout.php",{method:"POST",headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({action:"portal",email:addr})
         }).then(r=>r.json()).then(d=>{
           if(d.url){window.location.href=d.url;return}
           track("sg_manage_portal_error",{error:d.error||"no_url"})
-          sgToast({tone:"error",title:d.error||_t(lang,"Erreur Stripe","Stripe error","Error de Stripe"),msg:_t(lang,"Écris-moi à "+SUPPORT_EMAIL+" si ça persiste.","Write to me at "+SUPPORT_EMAIL+" if it persists.","Escríbeme a "+SUPPORT_EMAIL+" si persiste.")})
-        }).catch(e=>{
-          track("sg_manage_portal_error",{error:e?.message||"network"})
-          sgToast({tone:"error",title:_t(lang,"Portail Stripe injoignable","Stripe portal unreachable","Portal Stripe inaccesible"),msg:_t(lang,"Réessaie dans un instant, ou écris-moi à "+SUPPORT_EMAIL+".","Try again in a moment, or write to me at "+SUPPORT_EMAIL+".","Inténtalo de nuevo, o escríbeme a "+SUPPORT_EMAIL+".")})
-        })
+          sgToast({tone:"error",title:d.error||_t(lang,"Gestion indisponible","Management unavailable","Gestión no disponible"),msg:_t(lang,"Écris-moi à "+SUPPORT_EMAIL+".","Write to me at "+SUPPORT_EMAIL+".","Escríbeme a "+SUPPORT_EMAIL+".")})
+        }).catch(e=>{track("sg_manage_portal_error",{error:e?.message||"network"});sgToast({tone:"error",title:_t(lang,"Connexion impossible","Connection failed","Sin conexión"),msg:_t(lang,"Réessaie dans un instant.","Try again in a moment.","Inténtalo de nuevo en un momento.")})})
+      }
+      if(em){
+        if(urlEmail)localStorage.setItem("sg_premium_email",urlEmail)
+        doManage(em)
       }else{
         const promptEmail=prompt(_t(lang,"Entre ton email pour gerer ton abonnement :","Enter your email to manage your subscription:","Introduce tu email para gestionar tu suscripción:"))
         if(promptEmail&&promptEmail.includes("@")){
           localStorage.setItem("sg_premium_email",promptEmail)
-          fetch("/api/create-checkout.php",{
-            method:"POST",headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({action:"portal",email:promptEmail})
-          }).then(r=>r.json()).then(d=>{
-            if(d.url){window.location.href=d.url;return}
-            sgToast({tone:"error",title:d.error||_t(lang,"Email introuvable chez Stripe","Email not found in Stripe","Email no encontrado en Stripe"),msg:_t(lang,"Vérifie l'adresse utilisée pour ton paiement.","Check the address used for your payment.","Verifica la dirección usada en tu pago.")})
-          }).catch(()=>sgToast({tone:"error",title:_t(lang,"Connexion impossible","Connection failed","Sin conexión"),msg:_t(lang,"Réessaie dans un instant.","Try again in a moment.","Inténtalo de nuevo en un momento.")}))
+          doManage(promptEmail)
         }
       }
       params.delete("manage")
@@ -13589,10 +13615,7 @@ export default function App(){
       const params=new URLSearchParams(window.location.search)
       const pEmail=params.get("premium_email")
       if(!pEmail||!pEmail.includes("@"))return
-      fetch("/api/create-checkout.php",{
-        method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({action:"verify_subscription",email:pEmail})
-      }).then(r=>r.json()).then(d=>{
+      sgVerifySub(pEmail).then(d=>{
         if(d.active){
           localStorage.setItem("sg_premium","1")
           localStorage.setItem("sg_premium_email",pEmail)
