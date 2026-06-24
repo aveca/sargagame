@@ -48,7 +48,7 @@ l'**alerte** le jour où ta plage bascule. Un seul monde **comic-book animé** (
 ### Bloc 5 — Conversion
 - [~] 12 PAYWALL « Réveil du Veilleur » / Pass (partiel comic — finir variants) → paiement
 - [ ] 06b PAIEMENT on-site (PayStep) en comic → succès → 29
-- [ ] 29 BIENVENUE PREMIUM (PaidOnboarding) en comic → 05
+- [x] 29 BIENVENUE PREMIUM (PaidOnboarding) en comic — skin design-system (paper/ink/yel, Anton, ombres dures, halftone, halo doré) appliqué aux 3 temps (plages à surveiller → notifs → brief), fin de la rupture dusk violet entre le splash « Premium activé » et l'arène. **Logique/contenu/i18n/props INCHANGÉS** (favoris→notif→brief). `?onboard=0` re-force le toast. → 05
 ### Bloc 6 — Système & utilitaires
 - [x] 19 CENTRE D'ALERTES « MES ALERTES » — cloche 🔔 (pastille count) dans le header arène → modale `AlertsModal`, alertes dérivées du **forecast RÉEL** (`computeAlerts` via resolveForecast : 1re transition de statut J+N + repère H₂S si `avoid`), filtre horizon/confiance<50, état vide honnête « tout est calme », **0 fabrication** (preview `?alerts=preview` clairement badgé « données d'exemple »). Réversible `?alerts=0`. → 13
 - [~] 20 ALERTE SARGASSE / hydrogène sulfuré — repère santé H₂S **livré dans le détail comic** (`H2sNote` dans ChasseDetail : case BD rouge sur plages `avoid` + ambre sur `moderate`, danger H₂S/ammoniac + consignes groupes sensibles bébés/asthme/grossesse/seniors, i18n fr/en/es, réversible `?h2snote=0`). Reste : centre d'alertes/notifications (cf 19) + push
