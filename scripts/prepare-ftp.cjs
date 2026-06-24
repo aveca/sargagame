@@ -764,6 +764,7 @@ function prepareNewRegion(region) {
     'mentions-legales.html', 'confidentialite.html',
     'en', // landing /en/ « Sargassum Monitoring Martinique »
     'a-propos', // page confiance 100% FR
+    'offres', // page offres/tarifs 100% FR (MQ/GP) — jamais sur les domaines USD
     'veille', // landing de capture (Funnel A) 100% FR — jamais sur les domaines USD
   ])
   for (const other of getAllRegions()) {
