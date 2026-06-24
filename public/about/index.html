@@ -82,7 +82,15 @@
     </ul>
   </section>
 
-  <div class="foot"><span id="wm2"></span> · <span data-i="fdata"></span></div>
+  <footer class="foot" style="line-height:1.85">
+    <nav style="margin-bottom:9px">
+      <a id="lk-terms" style="color:inherit;text-decoration:underline;text-underline-offset:2px;margin:0 7px"></a>
+      <a id="lk-privacy" style="color:inherit;text-decoration:underline;text-underline-offset:2px;margin:0 7px"></a>
+      <a id="lk-refund" style="color:inherit;text-decoration:underline;text-underline-offset:2px;margin:0 7px"></a>
+    </nav>
+    <div id="foot-co" style="margin-bottom:9px;opacity:.92"></div>
+    <div><span id="wm2"></span> · <span data-i="fdata"></span></div>
+  </footer>
 </div>
 <script>
 // i18n par domaine — même convention que /jeu/ (page statique partagée).
@@ -100,8 +108,8 @@ m4t:'On-the-ground reports',m4s:'Visitor reports can override the satellite when
 vlink:'Our forecasts, verified →',
 l2:'Our guarantees',h2g:'Simple, written, kept',
 g1t:'30-day money-back',g1s:'Not satisfied? Full refund. One email is enough.',
-g2t:'No commitment',g2s:'Cancel anytime in 2 clicks from the Stripe portal.',
-g3t:'Payments by Stripe',g3s:'We never see or store your card. Unsubscribe link in every email.',
+g2t:'No commitment',g2s:'Cancel anytime in 2 clicks.',
+g3t:'Secure payment',g3s:'We never see or store your card details. Unsubscribe link in every email.',
 cta:'See today’s verdict →',
 l3:'Credits',h2c:'Photos & data',cint:'Beach photos come from official sources, Google Places and Wikimedia Commons contributors:',
 cmore:'Other photos: Google Places, official tourism sources.',fdata:'Data: Copernicus Marine Service'},
@@ -114,8 +122,8 @@ m4t:'Reportes desde la playa',m4s:'Los reportes de visitantes pueden corregir al
 vlink:'Nuestros pronósticos, verificados →',
 l2:'Nuestras garantías',h2g:'Simples, escritas, cumplidas',
 g1t:'Reembolso 30 días',g1s:'¿No convencido? Reembolso completo. Basta un correo.',
-g2t:'Sin compromiso',g2s:'Cancela cuando quieras en 2 clics desde el portal de Stripe.',
-g3t:'Pagos por Stripe',g3s:'Nunca vemos ni guardamos tu tarjeta. Enlace de baja en cada correo.',
+g2t:'Sin compromiso',g2s:'Cancela cuando quieras en 2 clics.',
+g3t:'Pago seguro',g3s:'Nunca vemos ni guardamos los datos de tu tarjeta. Enlace de baja en cada correo.',
 cta:'Ver el veredicto de hoy →',
 l3:'Créditos',h2c:'Fotos y datos',cint:'Las fotos de playas provienen de fuentes oficiales, Google Places y contribuidores de Wikimedia Commons:',
 cmore:'Otras fotos: Google Places y fuentes turísticas oficiales.',fdata:'Datos: Copernicus Marine Service'},
@@ -132,6 +140,15 @@ document.querySelectorAll('[data-i]').forEach(n=>{
   if(v!=null)n.textContent=v
 })
 document.title=(LANG==='es'?'Por qué confiar — ':'Why trust us — ')+SITE
+// Footer société/légal : slugs légaux localisés (générés par legal-pages.cjs) +
+// identité opérateur 97TECH. 100% textContent/href, zéro innerHTML.
+var _slug=LANG==='es'?{terms:'terminos',privacy:'privacidad',refund:'reembolso'}:{terms:'terms',privacy:'privacy',refund:'refund'}
+var _lk=LANG==='es'?{terms:'Términos',privacy:'Privacidad',refund:'Reembolso',op:'Operado por'}:{terms:'Terms',privacy:'Privacy',refund:'Refund',op:'Operated by'}
+function _setlk(id,href,txt){var a=document.getElementById(id);if(a){a.href=href;a.textContent=txt}}
+_setlk('lk-terms','/'+_slug.terms+'/',_lk.terms)
+_setlk('lk-privacy','/'+_slug.privacy+'/',_lk.privacy)
+_setlk('lk-refund','/'+_slug.refund+'/',_lk.refund)
+var _co=document.getElementById('foot-co');if(_co)_co.textContent=_lk.op+' 97TECH · SAS · RCS Paris 882 370 703'
 </script>
 </body>
 </html>
