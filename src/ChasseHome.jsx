@@ -673,6 +673,95 @@ function AlertsModal({alerts,lang,onClose,onOpenBeach,track,preview}){
 }
 
 /* ====================================================================
+   MON ESPACE (SCREENS_V2 #10 — home premium B2C)
+   ------------------------------------------------------------------
+   Regroupe en un seul endroit ce qui existe déjà, 100% données réelles :
+     · statut d'abonnement (isPremium, source de vérité de l'app) + accès au
+       portail de gestion (?manage=1, mécanisme existant) ou CTA premium ;
+     · MES PLAGES ♥ = les favoris RÉELS (sg_fav) résolus sur la liste de plages
+       avec leur statut live (vof) — clic → ouvre le détail comic ;
+     · MES ALERTES = le compteur RÉEL d'alertes (computeAlerts) → ouvre le
+       centre d'alertes (#19).
+   Zéro fabrication, additif, in-world comic, i18n + a11y. Réversible ?space=0. */
+function spaceOnFlag(){ try{ return !/[?&]space=0(?:&|$)/.test(window.location.search) }catch(_){ return true } }
+const SPACE_I18N={
+  btn:{fr:"Mon espace",en:"My space",es:"Mi espacio"},
+  title:{fr:"MON ESPACE",en:"MY SPACE",es:"MI ESPACIO"},
+  proOn:{fr:"Premium actif",en:"Premium active",es:"Premium activo"},
+  proOnSub:{fr:"Prévision 7 jours + alertes débloquées sur tes plages.",en:"7-day forecast + alerts unlocked on your beaches.",es:"Pronóstico 7 días + alertas desbloqueados en tus playas."},
+  manage:{fr:"Gérer mon abonnement →",en:"Manage my subscription →",es:"Gestionar mi suscripción →"},
+  proOff:{fr:"Passe en Premium",en:"Go Premium",es:"Hazte Premium"},
+  proOffSub:{fr:"Débloque la prévision 7 jours plage par plage + l'alerte le jour exact où ça bascule.",en:"Unlock the 7-day forecast beach by beach + the alert the exact day it flips.",es:"Desbloquea el pronóstico 7 días playa por playa + la alerta el día exacto en que cambia."},
+  favH:{fr:"MES PLAGES ♥",en:"MY BEACHES ♥",es:"MIS PLAYAS ♥"},
+  favEmpty:{fr:"Aucune plage suivie. Touche ♥ « Suivre » sur une fiche pour la garder ici.",en:"No saved beach yet. Tap ♥ \"Save\" on a beach to keep it here.",es:"Ninguna playa guardada. Toca ♥ \"Seguir\" en una ficha para guardarla aquí."},
+  alH:{fr:"MES ALERTES",en:"MY ALERTS",es:"MIS ALERTAS"},
+  alSee:{fr:"Voir mes alertes →",en:"See my alerts →",es:"Ver mis alertas →"},
+  alNone:{fr:"Tout est calme sur tes plages.",en:"All calm on your beaches.",es:"Todo tranquilo en tus playas."},
+}
+function SpaceSheet({favorites=[],beaches=[],isPremium,alertCount=0,lang,track,onClose,onOpenBeach,onOpenAlerts,onPremium}){
+  const _t=(o)=>(o&&(o[lang]||o.fr))||""
+  const closeRef=useRef(null)
+  useEffect(()=>{ try{ closeRef.current&&closeRef.current.focus() }catch(_){} },[])
+  useEffect(()=>{ const k=(e)=>{ if(e.key==="Escape"){ e.stopPropagation(); onClose&&onClose() } }
+    window.addEventListener("keydown",k); return ()=>window.removeEventListener("keydown",k) },[onClose])
+  const favBeaches=(favorites||[]).map(id=>(beaches||[]).find(b=>b&&b.id===id)).filter(Boolean)
+  return (
+    <div className="lc-alerts" role="dialog" aria-modal="true" aria-label={_t(SPACE_I18N.title)} onClick={onClose}>
+      <div className="lc-alerts-modal lc-space-modal" onClick={e=>e.stopPropagation()}>
+        <button type="button" ref={closeRef} className="lc-alerts-x" onClick={onClose}
+          aria-label={_t({fr:"Fermer",en:"Close",es:"Cerrar"})}>✕</button>
+        <div className="lc-alerts-title"><span aria-hidden="true">{isPremium?"⭐":"👤"}</span>{_t(SPACE_I18N.title)}</div>
+
+        {isPremium ? (
+          <div className="lc-space-pro on">
+            <div className="lc-space-pro-badge">✓ {_t(SPACE_I18N.proOn)}</div>
+            <div className="lc-space-pro-sub">{_t(SPACE_I18N.proOnSub)}</div>
+            <a className="lc-space-manage" href="/?manage=1"
+              onClick={()=>{ if(track)try{track("sg_space_manage")}catch(_){} }}>{_t(SPACE_I18N.manage)}</a>
+          </div>
+        ) : (
+          <div className="lc-space-pro">
+            <div className="lc-space-pro-badge off">{_t(SPACE_I18N.proOff)}</div>
+            <div className="lc-space-pro-sub">{_t(SPACE_I18N.proOffSub)}</div>
+            <button type="button" className="lc-cta yel" onClick={()=>{ if(track)try{track("sg_space_premium")}catch(_){}; onPremium&&onPremium("space") }}>
+              {_t(SPACE_I18N.proOff)} →
+            </button>
+          </div>
+        )}
+
+        <div className="lc-space-sec-h">{_t(SPACE_I18N.favH)}</div>
+        {favBeaches.length ? (
+          <div className="lc-space-fav-list">
+            {favBeaches.map(b=>{ const v=vof(b.status); return (
+              <button type="button" key={b.id} className="lc-space-fav"
+                onClick={()=>{ if(track)try{track("sg_space_open_beach",{beach_id:b.id})}catch(_){}; onOpenBeach&&onOpenBeach(b) }}>
+                <span className={`lc-space-fav-dot s-${v.st}`} aria-hidden="true"></span>
+                <span className="lc-space-fav-name">{b.name}</span>
+                <span className={`lc-space-fav-st s-${v.st}`}>{_t(v)}</span>
+                <span className="lc-space-fav-go" aria-hidden="true">›</span>
+              </button>
+            )})}
+          </div>
+        ) : (
+          <p className="lc-space-empty">{_t(SPACE_I18N.favEmpty)}</p>
+        )}
+
+        <div className="lc-space-sec-h">{_t(SPACE_I18N.alH)}</div>
+        {alertCount>0 ? (
+          <button type="button" className="lc-space-alerts"
+            onClick={()=>{ if(track)try{track("sg_space_open_alerts",{count:alertCount})}catch(_){}; onOpenAlerts&&onOpenAlerts() }}>
+            <span className="lc-space-alerts-n">{alertCount}</span>
+            <span className="lc-space-alerts-tx">{_t(SPACE_I18N.alSee)}</span>
+          </button>
+        ) : (
+          <p className="lc-space-empty">{_t(SPACE_I18N.alNone)}</p>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/* ====================================================================
    SÉRIE « 7 JOURS D'AFFILÉE » (SCREENS_V2 #28 — streak reward)
    ------------------------------------------------------------------
    Surface de rétention qui rend tangible la VRAIE série du joueur : chaque
@@ -1057,6 +1146,8 @@ export default function ChasseHome(props){
   const alertsEnabled = useMemo(()=>alertsOnFlag(),[])
   const alertsIsPreview = useMemo(()=>alertsPreview(),[])
   const [alertsOpen,setAlertsOpen]=useState(false)
+  const spaceEnabled=useMemo(()=>spaceOnFlag(),[])
+  const [spaceOpen,setSpaceOpen]=useState(false)
   /* plages à scruter = celles affichées (pickBeaches) ∪ collectées, dédupliquées par id */
   const alertBeaches = useMemo(()=>{
     if(!alertsEnabled) return []
@@ -1105,6 +1196,13 @@ export default function ChasseHome(props){
             aria-label={_t(ALERTS_I18N.bell)} title={_t(ALERTS_I18N.bell)}>
             <span className="lc-bell-ic" aria-hidden="true">🔔</span>
             {alerts.length>0&&<span className="lc-bell-count" aria-hidden="true">{alerts.length}</span>}
+          </button>
+        )}
+        {spaceEnabled&&(
+          <button type="button" className="lc-spacebtn"
+            onClick={()=>{ if(track)try{track("sg_space_open")}catch(_){}; setSpaceOpen(true) }}
+            aria-label={_t(SPACE_I18N.btn)} title={_t(SPACE_I18N.btn)}>
+            <span aria-hidden="true">{isPremium?"⭐":"👤"}</span>
           </button>
         )}
       </div>
@@ -1367,6 +1465,15 @@ export default function ChasseHome(props){
         <AlertsModal alerts={alerts} lang={lang} track={track} preview={alertsIsPreview}
           onClose={()=>setAlertsOpen(false)}
           onOpenBeach={(b)=>{ setAlertsOpen(false); openDetail(b,"alert") }}/>
+      )}
+
+      {spaceEnabled&&spaceOpen&&(
+        <SpaceSheet favorites={favorites} beaches={pickBeaches} isPremium={isPremium}
+          alertCount={alerts.length} lang={lang} track={track}
+          onClose={()=>setSpaceOpen(false)}
+          onOpenBeach={(b)=>{ setSpaceOpen(false); openDetail(b,"space") }}
+          onOpenAlerts={()=>{ setSpaceOpen(false); setAlertsOpen(true) }}
+          onPremium={(src)=>{ setSpaceOpen(false); onPremium&&onPremium(src) }}/>
       )}
 
       {levelUp&&(
@@ -1885,6 +1992,30 @@ export const CSS=`
   font-family:"AntonLC",system-ui,sans-serif;font-size:11px;line-height:19px;color:#fff;text-align:center;
   background:var(--red);border:2px solid var(--ink);border-radius:11px;box-shadow:1.5px 1.5px 0 var(--ink)}
 .lc-root .lc-bells{background:var(--paper)!important;border:2.5px solid var(--ink)!important;border-radius:50%!important;box-shadow:2px 2px 0 var(--ink)!important}
+/* MON ESPACE (#10) — bouton header + sheet */
+.lc-spacebtn{flex:0 0 auto;width:38px;height:38px;margin-left:4px;cursor:pointer;-webkit-appearance:none;appearance:none;font-size:18px;line-height:1;
+  display:flex;align-items:center;justify-content:center;background:var(--paper);border:2.5px solid var(--ink);border-radius:50%;box-shadow:2px 2px 0 var(--ink)}
+.lc-spacebtn:active{transform:translateY(2px);box-shadow:0 0 0 var(--ink)}
+.lc-root .lc-spacebtn{background:var(--paper)!important;border:2.5px solid var(--ink)!important;border-radius:50%!important;box-shadow:2px 2px 0 var(--ink)!important}
+.lc-space-pro{background:var(--paper);border:2.5px solid var(--ink);border-radius:14px;padding:14px;margin:12px 0 4px;box-shadow:3px 3px 0 var(--ink)}
+.lc-space-pro.on{background:#eafaf0}
+.lc-space-pro-badge{font-family:"AntonLC",system-ui,sans-serif;font-size:17px;color:var(--ink);letter-spacing:.4px}
+.lc-space-pro-sub{font-size:13px;color:#3a4a52;margin:4px 0 10px;line-height:1.4}
+.lc-space-manage{display:inline-block;font-weight:800;font-size:13px;color:#0d2330;text-decoration:none;border-bottom:3px solid var(--yel);padding-bottom:1px}
+.lc-space-pro .lc-cta{margin-top:2px}
+.lc-space-sec-h{font-family:"AntonLC",system-ui,sans-serif;font-size:13px;letter-spacing:.6px;color:var(--ink);margin:18px 0 9px}
+.lc-space-fav-list{display:flex;flex-direction:column;gap:8px}
+.lc-space-fav{display:flex;align-items:center;gap:10px;width:100%;text-align:left;-webkit-appearance:none;appearance:none;background:var(--paper);border:2.5px solid var(--ink);border-radius:11px;padding:10px 12px;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.lc-space-fav:active{transform:translateY(2px);box-shadow:0 0 0 var(--ink)}
+.lc-space-fav-dot{width:13px;height:13px;border-radius:50%;flex:0 0 auto;background:var(--st,#9aa);box-shadow:0 0 0 2px var(--ink)}
+.lc-space-fav-name{flex:1;font-weight:800;font-size:14px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lc-space-fav-st{font-weight:800;font-size:11px;color:var(--st,#556);text-transform:uppercase;letter-spacing:.03em;flex:0 0 auto}
+.lc-space-fav-go{font-size:20px;color:var(--ink);flex:0 0 auto;line-height:1}
+.lc-space-empty{font-size:13px;color:#3a4a52;line-height:1.45;margin:2px 0 0}
+.lc-space-alerts{display:flex;align-items:center;gap:12px;width:100%;-webkit-appearance:none;appearance:none;background:var(--yel);border:2.5px solid var(--ink);border-radius:12px;padding:11px 14px;cursor:pointer;box-shadow:3px 3px 0 var(--ink)}
+.lc-space-alerts:active{transform:translateY(2px);box-shadow:0 0 0 var(--ink)}
+.lc-space-alerts-n{font-family:"AntonLC",system-ui,sans-serif;font-size:19px;color:var(--ink);background:var(--paper);border:2px solid var(--ink);border-radius:8px;min-width:30px;text-align:center;padding:1px 6px;line-height:1.25}
+.lc-space-alerts-tx{font-weight:800;font-size:14px;color:var(--ink)}
 /* overlay */
 .lc-alerts{position:fixed;inset:0;z-index:1140;display:flex;align-items:flex-start;justify-content:center;
   padding:max(20px,env(safe-area-inset-top)) 16px 24px;overflow-y:auto;-webkit-overflow-scrolling:touch;
