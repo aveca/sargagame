@@ -7587,7 +7587,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   // Défaut plan : EUR (MQ/GP, REGION_PAY null) → Annuel (engagement saison, +LTV) ;
   // USD (REGION_PAY) → Mensuel (audit Starlink : 1er contact prix mensuel). On
   // dérive de REGION_PAY (et non plus de NO_TRIAL, désormais true partout).
-  const[plan,setPlan]=useState(hasAnnual&&!REGION_PAY?"annual":"monthly")
+  const[plan,setPlan]=useState(()=>{
+    // Préselection deep-link depuis /offres/ (?plan=…), consommée une fois.
+    try{const dp=sessionStorage.getItem("sg_deep_plan");if(dp==="monthly"||dp==="annual"){sessionStorage.removeItem("sg_deep_plan");if(dp==="monthly"||hasAnnual)return dp}}catch(_){}
+    return hasAnnual&&!REGION_PAY?"annual":"monthly"
+  })
   // effectivePlan is what we ship to Stripe on CTA click. Fallback chain:
   //   pro → annual → monthly, only if Stripe Link is configured for that tier.
   const effectivePlan=
@@ -14833,7 +14837,12 @@ export default function App(){
   const [showProB2B,setShowProB2B]=useState(false)
   useEffect(()=>{try{
     const p=new URLSearchParams(window.location.search)
-    if(p.get("paywall")==="1"){const u=p.get("utm_source");openPremium(u?("deeplink_"+u).slice(0,40):"deeplink");window.history.replaceState({},"",window.location.pathname)}
+    if(p.get("paywall")==="1"){
+      // Préselection depuis /offres/ : ?plan=monthly|annual pré-coche le bon toggle.
+      // Capturé AVANT le replaceState (qui efface la querystring) ; consommé par le
+      // useState de PremiumModal. (?offer=trip : ouvre le paywall premium pour l'instant.)
+      const dp=p.get("plan");if(dp==="monthly"||dp==="annual"){try{sessionStorage.setItem("sg_deep_plan",dp)}catch(_){}}
+      const u=p.get("utm_source");openPremium(u?("deeplink_"+u).slice(0,40):"deeplink");window.history.replaceState({},"",window.location.pathname)}
     else if(p.get("pro")==="1"){setShowProB2B(true);try{track("sg_b2b_open",{source:"deeplink_pro"})}catch(_){};window.history.replaceState({},"",window.location.pathname)}
     else if(/\/(alertes|sargassum-alerts|alertas-sargazo)\/?$/.test(window.location.pathname)){openPremium("alertes_landing")}
   }catch(_){}},[openPremium])
