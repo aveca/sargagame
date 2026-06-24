@@ -187,7 +187,7 @@ function testDigest() {
   const sargData = fetchSargassumData()
   if (!sargData) { Logger.log('No data'); return }
   const html = buildDigestHtml(sargData.levels, 'MQ')
-  GmailApp.sendEmail('yacovassaraf@gmail.com', '[TEST] Sargasses Martinique — Bilan', '', {
+  GmailApp.sendEmail('alerte@sargasses-martinique.com', '[TEST] Sargasses Martinique — Bilan', '', {
     htmlBody: html,
     name: FROM_NAME,
   })
