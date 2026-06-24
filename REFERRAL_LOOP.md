@@ -224,6 +224,11 @@ else navigator.clipboard?.writeText(txt+" "+url)
 
 ### 5.3 — Confirmation côté parrain (récompense gagnée)
 
+> ⚠️ **Correction transport email (2026-06-24)** : ce doc (ère Stripe) mentionne « Resend » /
+> `resend()`. **Resend est abandonné** — tout email part désormais par **SMTP** (boîte
+> `alerte@`, `scripts/automation/lib/email-send.cjs` via nodemailer). Au go-live Mollie,
+> l'email de récompense parrain doit utiliser ce transport SMTP, pas Resend.
+
 Quand un crédit est appliqué, le parrain n'a pas de feedback temps réel (le crédit se fait serveur-à-serveur). **v1 simple** : afficher dans le hub (§5.1) le compteur de crédits si on l'expose, OU envoyer un **email Resend** au parrain (réutiliser `resend()` dans `create-checkout.php`, déclenché dans `sg_credit_referrer`). Recommandation v1 : **email** « 🎁 Un ami s'est abonné — 1 mois t'est offert ». C'est tangible et n'exige aucune nouvelle surface front.
 
 ### 5.4 — Bandeau filleul (déjà là, copy à MAJ)
