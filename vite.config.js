@@ -1057,6 +1057,8 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
   <url><loc>${d}/widget/</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>${d}/mentions-legales.html</loc><lastmod>${today}</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>${d}/confidentialite.html</loc><lastmod>${today}</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>${d}/cgv.html</loc><lastmod>${today}</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>${d}/remboursement.html</loc><lastmod>${today}</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
 </urlset>
 `
             // Evergreen (monthly/yearly) → lastmod = vraie date de révision, pas le build.
