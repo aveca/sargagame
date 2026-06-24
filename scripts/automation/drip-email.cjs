@@ -259,9 +259,12 @@ function header(title, subtitle, lang = 'fr') {
 
 function footer(islandName, domain, email, island, lang = 'fr') {
   const unsubWord = lang === 'es' ? 'Darse de baja' : lang === 'en' ? 'Unsubscribe' : 'Se désabonner'
+  // Lien "Nos offres" → /offres/ (FR/MQ-GP uniquement : la page n'existe pas sur les
+  // domaines USD). Donne un chemin de découverte des offres depuis chaque email.
+  const offresLink = lang === 'fr' ? `<a href="https://${domain}/offres/?utm_source=email&utm_medium=drip_footer" style="color:#999">Nos offres</a> · ` : ''
   return `<div style="background:#fff;border-radius:0 0 16px 16px;text-align:center;padding:16px;font-size:10px;color:#999">
     ${brandWord(lang)} ${islandName} · ${domain}<br>
-    <a href="${unsubUrl(email, island)}" style="color:#999">${unsubWord}</a>
+    ${offresLink}<a href="${unsubUrl(email, island)}" style="color:#999">${unsubWord}</a>
   </div>`
 }
 
