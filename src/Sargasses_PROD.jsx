@@ -13386,6 +13386,11 @@ export default function App(){
     if(w){s("sg_premium_welcome",false)}
     return w
   })
+  // « Premium activé » — confirmation EXPLICITE + robuste (non-lazy) AVANT l'onboarding.
+  // Sans elle, le client qui vient de payer atterrit sur « choisis tes plages » et croit que
+  // « ça fait rien » → panique/remboursement. zÉRO logique paiement, réversible ?paidsplash=0.
+  const paidSplashOn=useMemo(()=>{try{return !/[?&]paidsplash=0(?:&|$)/.test(window.location.search)}catch(_){return true}},[])
+  const[splashDone,setSplashDone]=useState(false)
   // A/B `pw_onboard` : onboarding guidé payant (favoris→notif→brief) vs toast 5s (control).
   // ACTIVÉ 100% ([0,1]) le 18/06 (feu vert fondateur « lance ») — vu le faible volume de
   // payeurs un A/B serait trop lent à lire ; tout nouveau payeur a le setup guidé. Override
@@ -15483,7 +15488,24 @@ export default function App(){
         {/* PREMIUM WELCOME TOAST */}
         {/* Onboarding payant guidé (A/B pw_onboard) — remplace le toast. Lazy sous Suspense+ErrBound,
             fallback = fermer (le control toast n'est pas re-render ici, donc échec = pas de "rien" bloquant). */}
-        {showWelcome&&pwOnboard==="onboard"&&(
+        {showWelcome&&paidSplashOn&&!splashDone&&(
+          <div role="status" aria-live="polite" style={{position:"fixed",inset:0,zIndex:1500,
+            background:"radial-gradient(120% 90% at 75% -10%, rgba(255,199,44,.28), rgba(255,199,44,0) 55%), linear-gradient(168deg,#0B2230 0%,#0D1E1C 58%,#0A1714 100%)",
+            display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"28px 24px",textAlign:"center"}}>
+            <span aria-hidden="true" style={{width:66,height:66,borderRadius:"50%",background:"#FFC72C",
+              display:"flex",alignItems:"center",justifyContent:"center",marginBottom:18,boxShadow:"0 0 0 8px rgba(255,199,44,.16)"}}>
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#0B2230" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            </span>
+            <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,textTransform:"uppercase",fontSize:34,letterSpacing:".01em",lineHeight:1.05,color:"#fff",textShadow:"0 2px 0 rgba(0,0,0,.35)"}}>
+              {_t(lang,"Premium activé","Premium activated","Premium activado")}</div>
+            <div style={{fontSize:15,lineHeight:1.5,color:"rgba(255,255,255,.72)",marginTop:12,maxWidth:"30ch"}}>
+              {_t(lang,"Paiement validé. Tes prévisions 7 jours et tes alertes sont débloquées.","Payment confirmed. Your 7-day forecast and alerts are unlocked.","Pago confirmado. Tu pronóstico de 7 días y tus alertas están desbloqueados.")}</div>
+            <button type="button" onClick={()=>{try{track("sg_premium_confirm_continue")}catch(_){};setSplashDone(true)}}
+              style={{marginTop:26,background:"#FFC72C",color:"#0B2230",border:"none",borderRadius:13,padding:"14px 30px",fontWeight:800,fontSize:16,cursor:"pointer",fontFamily:"inherit",boxShadow:"3px 3px 0 rgba(0,0,0,.35)"}}>
+              {_t(lang,"Continuer →","Continue →","Continuar →")}</button>
+          </div>
+        )}
+        {showWelcome&&(!paidSplashOn||splashDone)&&pwOnboard==="onboard"&&(
           <ErrBound fallback={null}>
             <Suspense fallback={<div style={{position:"fixed",inset:0,background:"#02060A",zIndex:1450}}/>}>
               <LazyPaidOnboarding lang={lang} allBeaches={allBeaches} favorites={favorites}
@@ -15492,7 +15514,7 @@ export default function App(){
             </Suspense>
           </ErrBound>
         )}
-        {showWelcome&&pwOnboard!=="onboard"&&(
+        {showWelcome&&(!paidSplashOn||splashDone)&&pwOnboard!=="onboard"&&(
           /* « Premium activé » — recette canonique de marque (plus de bleu pirate).
              Papier crème, liseré ink, ombre dure, Veilleur calme, titre Anton, ✕ SVG. */
           <div className="sg-toast sg-toast--success" role="status" style={{
