@@ -1,23 +1,23 @@
 {
   "_note": "Palmarès PUBLIC et auditable des prévisions sargasses. Source : forecast-archive.json (snapshots figés à la date d'émission, append-only) comparés aux observations satellite (history.json). Aucun chiffre n'est rétro-ajustable.",
-  "generatedAt": "2026-06-23T20:09:00.967Z",
+  "generatedAt": "2026-06-24T03:39:09.554Z",
   "window": {
-    "from": "2026-05-25",
-    "to": "2026-06-23",
+    "from": "2026-05-26",
+    "to": "2026-06-24",
     "days": 30,
     "rollingDays": 30
   },
   "lifetime": {
     "from": "2026-05-17",
-    "to": "2026-06-23",
-    "days": 38,
+    "to": "2026-06-24",
+    "days": 39,
     "sampleSize": 3720,
     "statusHitRatePct": 78
   },
   "freshness": {
-    "computedAt": "2026-06-23T20:09:00.916Z",
+    "computedAt": "2026-06-24T03:39:09.506Z",
     "backtestAgeHours": 0,
-    "observationLagDays": 0,
+    "observationLagDays": -1,
     "stale": false
   },
   "sampleSize": 3180,
@@ -73,26 +73,26 @@
       "falseAlarmRatePct": 2
     },
     "calm": {
-      "samples": 3032,
+      "samples": 3024,
       "cleanReliabilityPct": 100,
-      "cleanSamples": 2278,
+      "cleanSamples": 2268,
       "alertReliabilityPct": 0,
-      "alertSamples": 754,
+      "alertSamples": 756,
       "falseAlarmRatePct": 25
     },
     "transition": {
-      "samples": 28,
+      "samples": 36,
       "cleanReliabilityPct": 100,
-      "cleanSamples": 10,
+      "cleanSamples": 15,
       "alertReliabilityPct": 0,
-      "alertSamples": 18,
-      "falseAlarmRatePct": 64
+      "alertSamples": 21,
+      "falseAlarmRatePct": 58
     }
   },
   "headline": {
-    "fr": "100% de nos prévisions « mer propre » (saison calme, 2026-05-25 → 2026-06-23) se sont vérifiées (sur 2278) ; les rares alertes restent signalées à faible confiance tant que la donnée ne les confirme pas.",
-    "en": "100% of our \"clean water\" forecasts (calm season, 2026-05-25 → 2026-06-23) proved correct (over 2278); the rare alerts stay flagged low-confidence until the data confirms them.",
-    "es": "El 100% de nuestros pronósticos de \"agua limpia\" (temporada tranquila, 2026-05-25 → 2026-06-23) resultaron correctos (sobre 2278); las raras alertas se marcan con baja confianza hasta que el dato las confirma."
+    "fr": "100% de nos prévisions « mer propre » (saison calme, 2026-05-26 → 2026-06-24) se sont vérifiées (sur 2268) ; les rares alertes restent signalées à faible confiance tant que la donnée ne les confirme pas.",
+    "en": "100% of our \"clean water\" forecasts (calm season, 2026-05-26 → 2026-06-24) proved correct (over 2268); the rare alerts stay flagged low-confidence until the data confirms them.",
+    "es": "El 100% de nuestros pronósticos de \"agua limpia\" (temporada tranquila, 2026-05-26 → 2026-06-24) resultaron correctos (sobre 2268); las raras alertas se marcan con baja confianza hasta que el dato las confirma."
   },
   "byBeach": [
     {
@@ -100,8 +100,8 @@
       "name": "Bas du Fort",
       "island": "gp",
       "samples": 159,
-      "hitRatePct": 76,
-      "afaiMAE": 0.046
+      "hitRatePct": 75,
+      "afaiMAE": 0.048
     },
     {
       "id": "gp-deshaies",
@@ -125,7 +125,7 @@
       "island": "gp",
       "samples": 159,
       "hitRatePct": 60,
-      "afaiMAE": 0.056
+      "afaiMAE": 0.057
     },
     {
       "id": "gp-moule",
@@ -149,7 +149,7 @@
       "island": "gp",
       "samples": 159,
       "hitRatePct": 17,
-      "afaiMAE": 0.15
+      "afaiMAE": 0.151
     },
     {
       "id": "gp-pt-chateaux",
@@ -157,15 +157,15 @@
       "island": "gp",
       "samples": 159,
       "hitRatePct": 84,
-      "afaiMAE": 0.048
+      "afaiMAE": 0.047
     },
     {
       "id": "gp-sainte-anne",
       "name": "Sainte-Anne",
       "island": "gp",
       "samples": 159,
-      "hitRatePct": 53,
-      "afaiMAE": 0.07
+      "hitRatePct": 52,
+      "afaiMAE": 0.071
     },
     {
       "id": "gp-vieux-fort",
@@ -173,7 +173,7 @@
       "island": "gp",
       "samples": 159,
       "hitRatePct": 88,
-      "afaiMAE": 0.031
+      "afaiMAE": 0.029
     },
     {
       "id": "anse-madame",
@@ -181,7 +181,7 @@
       "island": "mq",
       "samples": 159,
       "hitRatePct": 97,
-      "afaiMAE": 0.013
+      "afaiMAE": 0.014
     },
     {
       "id": "anse-mitan",
@@ -245,7 +245,7 @@
       "island": "mq",
       "samples": 159,
       "hitRatePct": 59,
-      "afaiMAE": 0.057
+      "afaiMAE": 0.058
     },
     {
       "id": "tartane",
