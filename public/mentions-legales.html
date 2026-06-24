@@ -3,45 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Mentions légales · Sargasses Martinique & Guadeloupe</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <title>Mentions légales · Sargasses Martinique &amp; Guadeloupe</title>
   <meta name="description" content="Mentions légales des sites sargasses-martinique.com et sargasses-guadeloupe.com. Éditeur, contact, hébergement." />
   <link rel="canonical" href="https://sargasses-martinique.com/mentions-legales.html" />
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Syne:wght@400;600;700&display=swap" rel="stylesheet" />
-  <style>
-    /* Design system aligné sur l'app Sargasses */
-    :root,.theme-light{--sg-bg:#FFFFFF;--sg-bgD:#F7F7F8;--sg-card:#FFFFFF;--sg-cardS:#FAFAFA;--sg-ink:#000000;--sg-mid:#000000;--sg-mute:#333333;--sg-border:rgba(0,0,0,.08);--sg-borderM:rgba(0,0,0,.14);--sg-glass:rgba(255,255,255,.92);--sg-glassBorder:rgba(0,0,0,.06);--sg-rowHover:rgba(0,0,0,.03);--sg-handle:rgba(0,0,0,.25);--sg-card-shadow:0 1px 3px rgba(0,0,0,.06),0 8px 24px rgba(0,0,0,.06);}
-    .theme-dark{--sg-bg:#0d1117;--sg-bgD:#161b22;--sg-card:#161b22;--sg-cardS:#21262d;--sg-ink:#e6edf3;--sg-mid:#adbac7;--sg-mute:#8b949e;--sg-border:rgba(255,255,255,.08);--sg-borderM:rgba(255,255,255,.14);--sg-link:#009688;--sg-link-hover:#00adb3;}
-    *{margin:0;padding:0;box-sizing:border-box}
-    html{font-size:clamp(14px,2.2vw + 12px,16px);-webkit-text-size-adjust:100%}
-    html,body{font-family:'Syne',sans-serif;background:var(--sg-bg);color:var(--sg-ink);min-height:100vh;line-height:1.65;-webkit-font-smoothing:antialiased}
-    .wrap{max-width:620px;margin:0 auto;padding:24px 20px 40px}
-    h1{font-family:'Anton',sans-serif;font-size:1.75rem;letter-spacing:.05em;text-transform:uppercase;margin-bottom:24px;color:var(--sg-ink)}
-    h2{font-size:1rem;font-weight:700;margin:20px 0 10px;color:var(--sg-mid)}
-    p,li{margin-bottom:10px;color:var(--sg-ink)}
-    a{color:var(--sg-link);text-decoration:none;font-weight:600}
-    a:hover{color:var(--sg-link-hover);text-decoration:underline}
-    ul{padding-left:20px;margin-bottom:14px}
-    .back{display:inline-block;margin-bottom:20px;padding:10px 16px;background:var(--sg-link);color:#fff;border-radius:12px;font-size:13px;font-weight:600;border:none;cursor:pointer}
-    .back:hover{background:var(--sg-link-hover);text-decoration:none;color:#fff}
-    footer{margin-top:32px;padding-top:16px;border-top:1px solid var(--sg-border);font-size:12px;color:var(--sg-mute)}
-    footer a{color:var(--sg-mid)}
-    footer a:hover{color:var(--sg-link)}
-  </style>
-  <script>
-    (function(){ try { var v = localStorage.getItem("sg_theme"); if (v === "dark") document.documentElement.classList.add("theme-dark"); else if (v !== "light" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement.classList.add("theme-dark"); } catch (e) {} })();
-  </script>
+  <link rel="stylesheet" href="/legal.css" />
 </head>
 <body>
-  <div class="wrap">
-    <a href="/" class="back">← Retour à l'accueil</a>
+  <header class="sg-head">
+    <a class="brand" href="/"><span class="dot"></span>Le Veilleur</a>
+    <a class="home" href="/">← Accueil</a>
+  </header>
+  <main class="wrap">
     <h1>Mentions légales</h1>
-    <p>Les sites <strong>sargasses-martinique.com</strong> et <strong>sargasses-guadeloupe.com</strong> sont des services d’information sur l’état des sargasses et des plages en Martinique et en Guadeloupe.</p>
+    <p class="lead">Les sites <strong>sargasses-martinique.com</strong> et <strong>sargasses-guadeloupe.com</strong> sont des services d’information sur l’état des sargasses et des plages en Martinique et en Guadeloupe.</p>
 
     <h2>Éditeur</h2>
-    <p><strong>97TECH</strong> — Société par actions simplifiée (SAS) au capital de 1 €<br />
-    Siège social : 30-32 boulevard de Sébastopol, 75004 Paris, France<br />
-    RCS Paris 882&nbsp;370&nbsp;703 · SIRET 882&nbsp;370&nbsp;703&nbsp;00010 · APE 5829C<br />
-    Courriel : <a href="mailto:alerte@sargasses-martinique.com">alerte@sargasses-martinique.com</a></p>
+    <div class="card">
+      <p><strong>97TECH</strong> — Société par actions simplifiée (SAS) au capital de 1 €<br />
+      Siège social : 30-32 boulevard de Sébastopol, 75004 Paris, France<br />
+      RCS Paris 882&nbsp;370&nbsp;703 · SIRET 882&nbsp;370&nbsp;703&nbsp;00010 · APE 5829C<br />
+      Courriel : <a href="mailto:alerte@sargasses-martinique.com">alerte@sargasses-martinique.com</a></p>
+    </div>
 
     <h2>Objet du site</h2>
     <p>Fourniture d’informations en temps réel ou prévisionnelles sur les sargasses (algues) et l’état des plages (propre / modéré / à éviter), à partir de données satellitaires et de modèles de dérive (notamment Copernicus Marine). Les contenus sont donnés à titre indicatif et ne constituent pas un avis médical ou officiel.</p>
@@ -57,10 +42,26 @@
 
     <h2>Droit applicable</h2>
     <p>Le droit français est applicable. Pour toute question relative aux mentions légales ou au site, vous pouvez contacter l’éditeur à l’adresse : <a href="mailto:alerte@sargasses-martinique.com">alerte@sargasses-martinique.com</a>.</p>
-
-    <footer>
-      <p><a href="/cgv.html">CGV</a> · <a href="/remboursement.html">Remboursement</a> · <a href="/confidentialite.html">Confidentialité</a> · <a href="/">Accueil</a> · <a href="/carte-sargasses/">Carte</a></p>
-    </footer>
-  </div>
+  </main>
+  <footer class="sg-foot"><div class="sg-foot-in">
+    <div class="b"><span class="dot"></span>Le Veilleur — Sargasses Martinique &amp; Guadeloupe</div>
+    <nav>
+      <a href="/">Carte en temps réel</a>
+      <a href="/previsions/">Prévisions 7 jours</a>
+      <a href="/fiabilite/">Fiabilité</a>
+      <a href="/offres/">Offres</a>
+      <a href="/a-propos/">À propos</a>
+    </nav>
+    <nav class="legal">
+      <a href="/cgv.html">CGV</a>
+      <a href="/remboursement.html">Remboursement</a>
+      <a href="/confidentialite.html">Confidentialité</a>
+      <a href="/mentions-legales.html">Mentions légales</a>
+    </nav>
+    <div class="co">
+      <strong style="color:rgba(255,255,255,.78)">97TECH</strong> — SAS au capital de 1 € · RCS Paris 882&nbsp;370&nbsp;703 · SIRET 882&nbsp;370&nbsp;703&nbsp;00010 · <a href="mailto:alerte@sargasses-martinique.com">alerte@sargasses-martinique.com</a><br>
+      Données satellite Copernicus (ESA) &amp; NOAA · © 2026 97TECH. Informations fournies à titre indicatif.
+    </div>
+  </div></footer>
 </body>
 </html>

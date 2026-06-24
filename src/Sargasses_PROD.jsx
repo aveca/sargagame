@@ -12380,6 +12380,19 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
             {_t(lang,"Pro : widget gratuit","Pro: free widget","Pro: widget gratis")}
           </a></>}
         </div>
+        {/* Liens société/légaux — MQ/GP uniquement (pages 100% FR). Accessibles
+            partout pour les visiteurs : offres, fiabilité, CGV, mentions. */}
+        {!IS_NEW_REGION && (
+          <div style={{fontSize:11,color:"rgba(255,255,255,.3)",marginTop:9,lineHeight:1.8}}>
+            <a href="/offres/" style={{color:"rgba(255,255,255,.38)"}}>Offres</a>{" · "}
+            <a href="/fiabilite/" style={{color:"rgba(255,255,255,.38)"}}>Fiabilité</a>{" · "}
+            <a href="/cgv.html" style={{color:"rgba(255,255,255,.3)"}}>CGV</a>{" · "}
+            <a href="/remboursement.html" style={{color:"rgba(255,255,255,.3)"}}>Remboursement</a>{" · "}
+            <a href="/confidentialite.html" style={{color:"rgba(255,255,255,.3)"}}>Confidentialité</a>{" · "}
+            <a href="/mentions-legales.html" style={{color:"rgba(255,255,255,.3)"}}>Mentions légales</a>
+            <div style={{marginTop:6,color:"rgba(255,255,255,.26)"}}>97TECH · SAS · RCS Paris 882&nbsp;370&nbsp;703</div>
+          </div>
+        )}
       </footer>
     </div>
   )

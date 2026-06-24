@@ -565,6 +565,11 @@ if (capForm) {
   .fresh span{color:var(--mut);font-size:13px}
   .dot{width:9px;height:9px;border-radius:50%;background:#6AC15A;margin-top:7px;flex:none;box-shadow:0 0 0 4px rgba(106,193,90,.15)}
   .foot{margin-top:54px;padding-top:24px;border-top:1px solid var(--line);text-align:center;font-size:11px;color:rgba(255,255,255,.38)}
+  .foot-nav{display:flex;flex-wrap:wrap;justify-content:center;gap:7px 14px;margin-top:14px;font-size:12px}
+  .foot-nav a{color:rgba(255,255,255,.5);text-decoration:none;font-weight:600}
+  .foot-nav.legal a{color:rgba(255,255,255,.38);font-weight:500;font-size:11.5px}
+  .foot-co{margin-top:12px;font-size:11px;color:rgba(255,255,255,.3);line-height:1.7}
+  .foot-co a{color:rgba(255,255,255,.42);text-decoration:none}
   .cta{display:inline-block;margin-top:18px;background:var(--gold);color:var(--ink);font-weight:800;font-size:14px;padding:13px 22px;border-radius:16px;text-decoration:none}
 
   /* A/B Test classes */
@@ -742,7 +747,10 @@ if (capForm) {
     </form>
   </div>
 
-  <div class="foot">${esc(siteName.toUpperCase())} · ${esc(t.fdata)}</div>
+  <div class="foot">${esc(siteName.toUpperCase())} · ${esc(t.fdata)}${lang === 'fr' ? `
+    <nav class="foot-nav"><a href="/">Carte en temps réel</a><a href="/previsions/">Prévisions 7 jours</a><a href="/offres/">Offres</a><a href="/a-propos/">À propos</a></nav>
+    <nav class="foot-nav legal"><a href="/cgv.html">CGV</a><a href="/remboursement.html">Remboursement</a><a href="/confidentialite.html">Confidentialité</a><a href="/mentions-legales.html">Mentions légales</a></nav>
+    <div class="foot-co">97TECH — SAS au capital de 1 € · RCS Paris 882&nbsp;370&nbsp;703 · SIRET 882&nbsp;370&nbsp;703&nbsp;00010 · <a href="mailto:alerte@sargasses-martinique.com">alerte@sargasses-martinique.com</a> · © 2026 97TECH</div>` : ''}</div>
 </div>
 <script>${js}</script>
 </body>

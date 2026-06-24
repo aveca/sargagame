@@ -762,6 +762,7 @@ function prepareNewRegion(region) {
     'sarg_carte_satellite_app.html', 'sarg_carte_satellite_standalone.html',
     'og-image.svg', 'islands.svg', 'social-share.png',
     'mentions-legales.html', 'confidentialite.html', 'cgv.html', 'remboursement.html',
+    'legal.css', // charte partagée des pages légales FR (MQ/GP) — orpheline sur USD
     'en', // landing /en/ « Sargassum Monitoring Martinique »
     'a-propos', // page confiance 100% FR
     'offres', // page offres/tarifs 100% FR (MQ/GP) — jamais sur les domaines USD
