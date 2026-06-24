@@ -26,10 +26,12 @@ const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIH
 // go-live). gap_freemium = 7j offerts contre email ; mollie_waitlist = waitlist pure ;
 // onsite_checkout/pay_intent/paypal_sub = haute intention enrôlée avant paiement.
 const CAPTURE_SOURCES = new Set(['gap_freemium', 'mollie_waitlist', 'onsite_checkout', 'pay_intent', 'paypal_sub'])
-// Plafond anti-cap Resend (~100/jour). --max=N pour override ; relancer le lendemain
-// pour la suite (idempotent : les déjà-envoyés sont skippés via relance-gap-sent.json).
+// Plafond par run pour la boîte SMTP cPanel (alerte@, premium115.web-hosting.com via
+// nodemailer — PAS Resend, cf. lib/email-send.cjs) : les boîtes mutualisées ont une
+// limite d'envoi horaire. --max=N pour override ; relancer plus tard reprend où on
+// s'est arrêté (idempotent : déjà-envoyés skippés via relance-gap-sent.json).
 const MAX = (() => { const a = process.argv.find(x => x.startsWith('--max=')); return a ? parseInt(a.split('=')[1], 10) : 90 })()
-const THROTTLE_MS = 400 // ~2,5 envois/s, doux pour Resend
+const THROTTLE_MS = 400 // ~2,5 envois/s, doux pour la boîte SMTP mutualisée
 
 const REGION = {
   MQ: { from: 'Sargasses Martinique <alerte@sargasses-martinique.com>', domain: 'sargasses-martinique.com' },

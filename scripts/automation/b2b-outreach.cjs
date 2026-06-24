@@ -12,7 +12,7 @@
  * Pipeline (calqué sur auto-outreach.cjs, mêmes garde-fous) :
  *   1. Découvre des cibles B2B via Google News RSS (requêtes hôtellerie/littoral)
  *   2. Trouve l'email de contact public sur le site
- *   3. Envoie 1 email consultatif via Resend (opt-out + reply-to humain)
+ *   3. Envoie 1 email consultatif via SMTP (lib/email-send.cjs, boîte alerte@ — PAS Resend ; opt-out + reply-to humain)
  *   4. Log dédupliqué (RGPD : hash, jamais d'email en clair)
  *
  * Sécurité :
