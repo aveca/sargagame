@@ -2063,6 +2063,11 @@ const _sgc={sid:null,buf:null,dirty:false,started:false,lastSend:0}
 function _sgcRand(n){try{return Date.now().toString(36)+Math.random().toString(36).slice(2,2+n)}catch(_){return "x"+n}}
 function _sgcSid(){try{let s=sessionStorage.getItem("sg_sid");if(!s){s=_sgcRand(6);sessionStorage.setItem("sg_sid",s)}return s}catch(_){return "x"}}
 function _sgcCid(){try{let c=localStorage.getItem("sg_cid");if(!c){c=_sgcRand(8);localStorage.setItem("sg_cid",c)}return c}catch(_){return "x"}}
+// ── Parrainage : code stable par device (REF-XXXXXX) + attribution filleul ──────
+// Mon code = dérivé du cid (stable, idempotent). sgReferredBy() = code du parrain
+// si présent, valide, dans la fenêtre 30j, et ≠ mon propre code (anti-auto-parrainage).
+function sgMyReferralCode(){try{let c=localStorage.getItem("sg_referral_code");if(!c){c="REF-"+hashSeed(_sgcCid()+":ref").toString(36).toUpperCase().slice(0,6);localStorage.setItem("sg_referral_code",c)}return c}catch(_){return ""}}
+function sgReferredBy(){try{const raw=localStorage.getItem("sg_referred_by");if(!raw)return "";let code="",ts=0;try{const o=JSON.parse(raw);code=o.code||"";ts=o.ts||0}catch(_){code=raw}/* rétro-compat string legacy */if(!/^REF-[A-Z0-9]{6}$/.test(code))return "";if(ts&&Date.now()-ts>30*86400000)return ""/* attribution expirée */;if(code===sgMyReferralCode())return ""/* anti-auto-parrainage */;return code}catch(_){return ""}}
 function _sgcEnsureBuf(){
   if(_sgc.buf)return
   const region=(typeof IS_NEW_REGION!=="undefined"&&IS_NEW_REGION&&typeof REGION!=="undefined")?REGION.id:(location.hostname.includes("guadeloupe")?"gp":"mq")
@@ -7857,8 +7862,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         track("sg_conversion",{session_id:pd.paymentIntentId,method:"onsite_pass",plan:_pc.pass,pass_days:_pc.days})
         setPayBusy(false);onActivated?.();onClose();return
       }
+      // Parrainage : transmet le code parrain (filleul → 1er mois offert serveur)
+      // + mon propre code (écrit en metadata customer pour pouvoir me créditer plus tard).
+      const _refBy=sgReferredBy(),_myRef=sgMyReferralCode()
       const r=await fetch("/api/create-checkout.php",{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({action:"subscribe",email,plan,setupIntentId:setupIntent.id,lang,source:source||"unknown"})})
+        body:JSON.stringify({action:"subscribe",email,plan,setupIntentId:setupIntent.id,lang,source:source||"unknown",referredBy:_refBy,myReferralCode:_myRef})})
       const d=await r.json().catch(()=>({}))
       if(!r.ok||d.error||!d.subscriptionId)throw new Error(d.error||"subscribe failed")
       // NO_TRIAL (USD) : la 1re facture part immédiatement — si la banque
@@ -7878,6 +7886,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
       localStorage.setItem("sg_premium_email",email)
       if(d.trialEnd)localStorage.setItem("sg_premium_trial_end",String(d.trialEnd))
       track("sg_conversion",{session_id:d.subscriptionId,method:"onsite",plan})
+      if(_refBy)track("sg_referral_convert",{ref_code:_refBy,plan})
       setPayBusy(false)
       onActivated?.()
       onClose()
@@ -13730,7 +13739,7 @@ export default function App(){
       const params=new URLSearchParams(window.location.search)
       const refCode=params.get("ref")
       if(refCode&&refCode.startsWith("REF-")){
-        localStorage.setItem("sg_referred_by",refCode)
+        localStorage.setItem("sg_referred_by",JSON.stringify({code:refCode,ts:Date.now()}))
         track("sg_referral_landing",{ref_code:refCode,island})
         if(!isPremium)setShowReferralBanner(true)
         // Clean URL but keep other params
@@ -15574,9 +15583,9 @@ export default function App(){
             animation:"slideUp .4s ease"}}>
             <span style={{fontSize:20}}>🎁</span>
             <div>
-              <div>{_t(lang,"Recommandé par un ami","Recommended by a friend","Recomendado por un amigo")}</div>
+              <div>{_t(lang,"Un ami t'offre ton 1er mois","A friend gifts you your 1st month","Un amigo te regala tu 1er mes")}</div>
               <div style={{fontSize:10,fontWeight:400,opacity:.85,marginTop:2}}>
-                {_t(lang,"Appuie pour découvrir Premium","Tap to discover Premium","Toca para descubrir Premium")}
+                {_t(lang,"Appuie pour activer — 1er mois à 0 €","Tap to activate — 1st month free","Toca para activar — 1er mes gratis")}
               </div>
             </div>
             <button aria-label="Close" onClick={e=>{e.stopPropagation();setShowReferralBanner(false)}} style={{
