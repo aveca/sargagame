@@ -38,6 +38,7 @@ l'**alerte** le jour où ta plage bascule. Un seul monde **comic-book animé** (
 - [x] 10 CARTE monde golden-hour (fait) — ⚠️ pins → doivent ouvrir le **détail comic** (item ⭐, cf PRODUCT §8)
 ### Bloc 4 — Jeu / rétention (le « plein de jeux » demandé)
 - [x] 13 PROFIL / MA COLLECTION (= Pokédex + paliers, fait) → 07
+- [x] 26 MON ESPACE — home premium B2C : bouton header (⭐ premium / 👤) → modale `SpaceSheet` regroupant **statut abo** (isPremium → « ✓ Premium actif » + gérer l'abo `?manage=1` ; sinon CTA premium), **MES PLAGES ♥** (favoris RÉELS `sg_fav` résolus + statut live `vof`, clic → détail comic), **MES ALERTES** (compteur RÉEL `computeAlerts` → ouvre #19). 0 fabrication, i18n+a11y, réversible `?space=0`. → 08/19/paiement
 - [ ] 14 CLASSEMENT / TOP JOUEURS (leaderboard série 🔥) → 13
 - [x] 15 DÉFI DU JOUR « plus chaud / plus froid » (higher-lower 1 round/jour — fait) → 13
 - [x] 16 BADGES / « MES SUCCÈS » — modale `BadgesSheet` (13 badges) ouverte depuis le Pokédex, dérivés de la progression **RÉELLE** (collected/streak/best/`sgUnlock`/email capté), rareté TCG, verrouillés grisés honnêtes (0 fabrication), i18n+a11y+reduced-motion, réversible `?badges=0`. → 13
