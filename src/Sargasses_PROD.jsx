@@ -7808,9 +7808,13 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         const{token,error:tErr}=await mollieRef.current.createToken()
         if(tErr||!token)throw new Error((tErr&&tErr.message)||_t(lang,"Vérifie ta carte.","Check your card.","Revisa tu tarjeta."))
         const _pc=passCtxRef.current
+        // Parrainage (Mollie) : transmet le code parrain + le mien (attribution
+        // enregistrée côté serveur ; la récompense est appliquée au go-live Mollie,
+        // cf. MOLLIE_MIGRATION.md — Mollie n'a pas de coupon/balance comme Stripe).
+        const _refBy=sgReferredBy(),_myRef=sgMyReferralCode()
         const body=_pc
           ?{action:"create_payment",cardToken:token,pass:_pc.pass,cents:_pc.cents,email,source:source||"unknown",lang}
-          :{action:"create_subscription",cardToken:token,plan,email,source:source||"unknown",lang}
+          :{action:"create_subscription",cardToken:token,plan,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
         const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
         const d=await r.json().catch(()=>({}))
         if(!r.ok||d.error||!d.paymentId)throw new Error(d.error||"payment failed")
@@ -7824,7 +7828,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         if(!cd.paid)throw new Error(_t(lang,"Paiement non confirmé. Réessaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."))
         localStorage.setItem("sg_email",email)
         if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000));track("sg_conversion",{session_id:d.paymentId,method:"mollie_pass",plan:_pc.pass,pass_days:_pc.days})}
-        else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",email);track("sg_conversion",{session_id:d.paymentId,method:"mollie",plan})}
+        else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",email);track("sg_conversion",{session_id:d.paymentId,method:"mollie",plan});if(_refBy)track("sg_referral_convert",{ref_code:_refBy,plan,provider:"mollie"})}
         setPayBusy(false);onActivated?.();onClose();return
       }catch(e){
         setPayBusy(false)
