@@ -426,6 +426,14 @@ export default defineConfig({
             const { generateHealthPages } = _require('./scripts/lib/health-page.cjs')
             generateHealthPages(REGION, resolve(__dirname, 'dist'))
           } catch (e) { console.warn('   ⚠ page santé région:', e.message) }
+          // Pages légales/société (/terms/ /privacy/ /refund/ EN, /terminos/
+          // /privacidad/ /reembolso/ ES) — Terms/Privacy/Refund par langue émise,
+          // identité 97TECH + paiement neutre. Sitemap patché (appel APRÈS les
+          // générateurs SEO qui écrivent le sitemap.xml régional).
+          try {
+            const { generateLegalPages } = _require('./scripts/lib/legal-pages.cjs')
+            generateLegalPages(REGION, resolve(__dirname, 'dist'))
+          } catch (e) { console.warn('   ⚠ pages légales région:', e.message) }
           return
         }
         const indexPath = resolve(outDir, 'index.html')
