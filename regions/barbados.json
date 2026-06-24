@@ -1,6 +1,7 @@
 {
   "id": "barbados",
   "name": "Barbados",
+  "live": false,
   "country": "Barbados",
   "domain": "sargassumbarbados.com",
   "ftpDir": "barbados-ftp",

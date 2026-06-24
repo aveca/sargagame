@@ -8433,7 +8433,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
             {NO_TRIAL
               ?_t(lang,"Continuer — paiement sécurisé","Continue to secure payment","Continuar — pago seguro")
-              :_t(lang,"Continuer vers Stripe","Continue to Stripe","Continuar a Stripe")} →
+              :_t(lang,"Continuer — paiement sécurisé","Continue to secure payment","Continuar — pago seguro")} →
           </button>
           <div style={{textAlign:"center",fontSize:10.5,color:"rgba(255,255,255,.48)",marginTop:10}}>
             {_t(lang,"Tu pourras toujours revenir en arrière.","You can always come back.","Siempre puedes volver atrás.")}
