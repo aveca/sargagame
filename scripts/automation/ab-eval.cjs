@@ -49,11 +49,18 @@ function z2prop(x1, n1, x2, n2) { // variante(2) vs control(1)
 }
 
 (async () => {
-  let keys;
-  try { keys = JSON.parse(fs.readFileSync(path.join(__dirname, "data", "stats-keys.json"), "utf8")); }
-  catch (e) { console.error("✗ stats-keys.json introuvable (récupère la clé via scripts/tmp-wf-results/fetch-stats.cjs)"); process.exit(1); }
-  const key = keys[REGION];
-  if (!key) { console.error("✗ pas de clé pour la région", REGION, "dans stats-keys.json"); process.exit(1); }
+  // Clés stats : fichier local stats-keys.json (gitignored) OU env (CI). En CI le
+  // fichier est absent → on reconstruit la map depuis les secrets SG_STATS_KEY_<REGION>
+  // (+ SG_STATS_KEY partagée en fallback). Même pattern que scripts/analyze-ux.cjs,
+  // ce qui rend ab-eval exécutable dans ab-evaluator.yml sans le fichier FTP.
+  let keys = {};
+  try { keys = JSON.parse(fs.readFileSync(path.join(__dirname, "data", "stats-keys.json"), "utf8")); } catch (e) {}
+  for (const k of Object.keys(process.env)) {
+    const m = k.match(/^SG_STATS_KEY_([A-Z0-9]+)$/);
+    if (m && process.env[k]) keys[m[1].toLowerCase()] = process.env[k];
+  }
+  const key = keys[REGION] || process.env.SG_STATS_KEY;
+  if (!key) { console.error("✗ pas de clé pour", REGION, "— ni stats-keys.json ni SG_STATS_KEY[_" + REGION.toUpperCase() + "]"); process.exit(1); }
 
   let stats;
   try { stats = await (await fetch(`${HOSTS[REGION]}/stats.php?key=${key}&days=${DAYS}`)).json(); }

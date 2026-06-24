@@ -35,3 +35,21 @@ jobs:
           name: ux-alerts
           path: scripts/automation/data/ux-alerts.json
           if-no-files-found: ignore
+      # A/B VERDICT (ab-eval) — moisson des tests paywall. Mêmes secrets stats que
+      # analyze-ux (fallback env : stats-keys.json gitignored = absent en CI).
+      # Verdict par variante (lift + z-test) sur mq+gp (seules régions à trafic).
+      # Sortie = logs du run + artifact ab-verdict. Ne bloque jamais (|| true).
+      - name: A/B verdict (ab-eval mq+gp)
+        run: |
+          node scripts/automation/ab-eval.cjs --region=mq | tee ab-verdict-mq.txt || true
+          node scripts/automation/ab-eval.cjs --region=gp | tee ab-verdict-gp.txt || true
+        env:
+          SG_STATS_KEY: ${{ secrets.SG_STATS_KEY }}
+          SG_STATS_KEY_MQ: ${{ secrets.SG_STATS_KEY_MQ }}
+          SG_STATS_KEY_GP: ${{ secrets.SG_STATS_KEY_GP }}
+      - name: Upload A/B verdict
+        uses: actions/upload-artifact@v4
+        with:
+          name: ab-verdict
+          path: ab-verdict-*.txt
+          if-no-files-found: ignore
