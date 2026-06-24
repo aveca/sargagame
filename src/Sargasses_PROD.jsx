@@ -6856,7 +6856,7 @@ function B2BModal({lang,onClose}){
 // en la MONTRANT (aperçu 7 jours, Auj/Dem révélés verts, J+2…J+6 verrouillés). Classes .pww-*
 // pour ne pas collisionner avec ComicPaywall (.pwx-*). reduced-motion respecté (tableau, pas
 // aquarium). Asset validé : design/wow-candidates/paywall-world-continuity.html.
-function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxStatus,cleanCount,totalCount,recordProof,allCalm,pwCalm,seasonMsg,plan,setPlan,effectivePlan,hasAnnual,onStart,onAlready,onClose,onB2B,onSeason}){
+function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxStatus,cleanCount,totalCount,recordProof,allCalm,pwCalm,seasonMsg,plan,setPlan,effectivePlan,hasAnnual,onStart,onAlready,onClose,onB2B,onSeason,captureMode}){
   // Verdict plage (depuis le contexte d'ouverture) → loc affichée dans l'aperçu 7 jours.
   const ST=ctxStatus||(beach&&beach.status)||null
   const ctxLoc=ctxName||topName||null
@@ -7143,31 +7143,41 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
           ?_t(lang,`${cleanCount}/${totalCount} plages propres en ce moment · satellite vérifié 4×/jour`,`${cleanCount}/${totalCount} beaches clean right now · satellite-checked 4×/day`,`${cleanCount}/${totalCount} playas limpias ahora · verificado por satélite 4×/día`)
           :_t(lang,`${totalCount} plages suivies · satellite vérifié 4×/jour`,`${totalCount} beaches tracked · satellite-checked 4×/day`,`${totalCount} playas seguidas · verificado por satélite 4×/día`)}</div>}
 
-        {/* PLANS */}
-        {hasAnnual&&<div className="pww-plans">
+        {/* PLANS — masqués en mode capture : rien n'est facturé (la 2e étape offre 7 j
+            contre l'email), donc afficher des prix serait du bait-and-switch + plombe le
+            clic modal→CTA. Réversible avec tout le reste via ?pay_capture=0. */}
+        {hasAnnual&&!captureMode&&<div className="pww-plans">
           {planBtn("monthly",_t(lang,"Mensuel","Monthly","Mensual"),pMo,_t(lang,"mois","mo","mes"),null,null)}
           {planBtn("annual",_t(lang,"Annuel","Annual","Anual"),pYr,_t(lang,"an","yr","año"),"-33%",eqMo)}
         </div>}
 
-        {/* CTA */}
+        {/* CTA — en capture, framing GRATUIT (juste l'email, sans carte) = exactement ce
+            que la 2e étape délivre, et lève la friction prix du goulot modal→CTA. */}
         <button type="button" className="pww-gobtn" onClick={()=>onStart()}>
-          <span className="big pww-anton">{_t(lang,"Je veux la prévision →","I want the forecast →","Quiero el pronóstico →")}</span>
-          <span className="s1">{ctaSub}</span>
-          {perDay&&<span className="s2">{perDay}</span>}
+          <span className="big pww-anton">{captureMode
+            ?_t(lang,"Débloquer 7 jours — offert →","Unlock 7 days — on us →","Desbloquear 7 días — gratis →")
+            :_t(lang,"Je veux la prévision →","I want the forecast →","Quiero el pronóstico →")}</span>
+          <span className="s1">{captureMode
+            ?_t(lang,"Juste ton email · sans carte","Just your email · no card","Solo tu email · sin tarjeta")
+            :ctaSub}</span>
+          {!captureMode&&perDay&&<span className="s2">{perDay}</span>}
         </button>
 
-        {/* 3 RASSURANCES */}
+        {/* 3 RASSURANCES — en capture, on remplace les rassurances « paiement » (sécurisé /
+            remboursé / annule) par les rassurances « gratuit » (offert / sans carte / sans
+            engagement). Mêmes icônes, texte honnête vis-à-vis de ce qui se passe réellement. */}
         <div className="pww-trust">
-          <div className="pww-tc"><svg className="ic" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg><b>{PAY_LABEL}</b><em>{_t(lang,"Paiement sécurisé","Secure payment","Pago seguro")}</em></div>
-          <div className="pww-tc"><svg className="ic" viewBox="0 0 24 24" fill="none" stroke="#009E8E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg><b>{_t(lang,"30 jours","30 days","30 días")}</b><em>{_t(lang,"Satisfait ou remboursé","Money-back","Reembolso")}</em></div>
-          <div className="pww-tc"><svg className="ic" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg><b>{_t(lang,"2 clics","2 clicks","2 clics")}</b><em>{_t(lang,"Annule quand tu veux","Cancel anytime","Cancela cuando quieras")}</em></div>
+          <div className="pww-tc"><svg className="ic" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg><b>{captureMode?_t(lang,"Offert","On us","Gratis"):PAY_LABEL}</b><em>{captureMode?_t(lang,"7 jours premium","7 days premium","7 días premium"):_t(lang,"Paiement sécurisé","Secure payment","Pago seguro")}</em></div>
+          <div className="pww-tc"><svg className="ic" viewBox="0 0 24 24" fill="none" stroke="#009E8E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg><b>{captureMode?_t(lang,"Sans carte","No card","Sin tarjeta"):_t(lang,"30 jours","30 days","30 días")}</b><em>{captureMode?_t(lang,"juste ton email","just your email","solo tu email"):_t(lang,"Satisfait ou remboursé","Money-back","Reembolso")}</em></div>
+          <div className="pww-tc"><svg className="ic" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg><b>{captureMode?_t(lang,"Sans engagement","No strings","Sin compromiso"):_t(lang,"2 clics","2 clicks","2 clics")}</b><em>{captureMode?_t(lang,"stop quand tu veux","stop anytime","para cuando quieras"):_t(lang,"Annule quand tu veux","Cancel anytime","Cancela cuando quieras")}</em></div>
         </div>
 
-        {/* GARANTIE */}
-        <div className="pww-guar">
+        {/* GARANTIE — masquée en capture : rien n'est facturé, un « remboursé » n'a pas
+            de sens (la promesse honnête est portée par le CTA + rassurances ci-dessus). */}
+        {!captureMode&&<div className="pww-guar">
           <span className="gic"><svg viewBox="0 0 24 24" fill="none" stroke="#FDFCF7" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg></span>
           <span><b>{_t(lang,"Garantie 30 jours satisfait ou remboursé","30-day money-back guarantee","Garantía de reembolso 30 días")}</b><em>{_t(lang,"Pas convaincu ? Un email, remboursé — sans condition.","Not convinced? One email, full refund — no questions.","¿No te convence? Un email, reembolso — sin preguntas.")}</em></span>
-        </div>
+        </div>}
 
         {/* A/B pw_season : alternative pass saison (cash d'avance, zéro churn) */}
         {onSeason&&<button type="button" className="pww-season-alt" onClick={onSeason}>
@@ -7184,7 +7194,9 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
           {onB2B&&<button type="button" className="pww-link b2b" onClick={onB2B}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:"-2px",marginRight:4}}><rect x="6" y="3" width="12" height="18" rx="1"/><path d="M10.5 21v-3h3v3"/></svg>{_t(lang,"Hôtel ou collectivité ? →","Hotel or town? →","¿Hotel o municipio? →")}</button>}
         </div>
 
-        <div className="pww-secure"><Lock s={11}/>{_t(lang,"Paiement sécurisé "+PAY_LABEL+" · Sans engagement","Secure "+PAY_LABEL+" payment · No commitment","Pago seguro "+PAY_LABEL+" · Sin compromiso")}</div>
+        <div className="pww-secure"><Lock s={11}/>{captureMode
+          ?_t(lang,"Accès offert le temps qu'on rouvre · sans carte","Free access while we reopen · no card","Acceso gratis mientras reabrimos · sin tarjeta")
+          :_t(lang,"Paiement sécurisé "+PAY_LABEL+" · Sans engagement","Secure "+PAY_LABEL+" payment · No commitment","Pago seguro "+PAY_LABEL+" · Sin compromiso")}</div>
       </div>
     </div>
   </>)
@@ -7195,7 +7207,7 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
 // plan/setPlan/effectivePlan) du PremiumModal parent → ZÉRO logique de paiement ici.
 // Tokens .lc- (paper/ink/yel) + scène golden-hour + cases BD, miroir de ChasseDetail.
 // Asset validé : design/proto-paywall-comic.html (vérifié navigateur 2026-06-19).
-function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxStatus,cleanCount,totalCount,recordProof,allCalm,pwCalm,seasonMsg,plan,setPlan,effectivePlan,hasAnnual,onStart,onAlready,onClose,onB2B,onSeason}){
+function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxStatus,cleanCount,totalCount,recordProof,allCalm,pwCalm,seasonMsg,plan,setPlan,effectivePlan,hasAnnual,onStart,onAlready,onClose,onB2B,onSeason,captureMode}){
   const ST=ctxStatus||(beach&&beach.status)||null
   const stCls=ST==="avoid"?"bad":ST==="moderate"?"mod":"ok"
   const iris=ST==="avoid"?"#e8322a":ST==="moderate"?"#ffd23f":"#27c46b"
@@ -7395,31 +7407,35 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
             :_t(lang,`${totalCount} plages suivies · satellite 4×/jour · prévision 7 jours`,`${totalCount} beaches tracked · satellite 4×/day · 7-day forecast`,`${totalCount} playas · satélite 4×/día · pronóstico 7 días`)}</div>}
 
         <div className="pwx-act">
-          {hasAnnual&&<div className="pwx-plans">
+          {hasAnnual&&!captureMode&&<div className="pwx-plans">
             {planBtn("monthly",_t(lang,"Mensuel","Monthly","Mensual"),pMo,_t(lang,"mois","mo","mes"),null,null)}
             {planBtn("annual",_t(lang,"Annuel","Annual","Anual"),pYr,_t(lang,"an","yr","año"),"-33%",eqMo)}
           </div>}
           <button type="button" className="pwx-cta"
             onClick={e=>{const b=e.currentTarget;b.classList.remove("pow");void b.offsetWidth;b.classList.add("pow");onStart(e)}}
             onAnimationEnd={e=>{if(e.animationName==="pwxPow")e.currentTarget.classList.remove("pow")}}>
-            <span className="big">{_t(lang,"Je veux la prévision →","I want the forecast →","Quiero el pronóstico →")}</span>
-            <span className="sm">{ctaSub}</span>
+            <span className="big">{captureMode
+              ?_t(lang,"Débloquer 7 jours — offert →","Unlock 7 days — on us →","Desbloquear 7 días — gratis →")
+              :_t(lang,"Je veux la prévision →","I want the forecast →","Quiero el pronóstico →")}</span>
+            <span className="sm">{captureMode
+              ?_t(lang,"Juste ton email · sans carte","Just your email · no card","Solo tu email · sin tarjeta")
+              :ctaSub}</span>
             <svg className="pwx-pow" viewBox="0 0 130 130" aria-hidden="true">
               <polygon points="65,4 76,40 112,30 86,58 122,72 84,74 96,112 65,86 34,112 46,74 8,72 44,58 18,30 54,40" fill="var(--yel)" stroke="#0d0b14" strokeWidth="3" strokeLinejoin="round"/>
               <g fill="#0d0b14"><circle cx="91" cy="65" r="2.4"/><circle cx="83.4" cy="83.4" r="2.4"/><circle cx="65" cy="91" r="2.4"/><circle cx="46.6" cy="83.4" r="2.4"/><circle cx="39" cy="65" r="2.4"/><circle cx="46.6" cy="46.6" r="2.4"/><circle cx="65" cy="39" r="2.4"/><circle cx="83.4" cy="46.6" r="2.4"/></g>
             </svg>
           </button>
-          {perDay&&<div className="pwx-perday">{perDay}</div>}
+          {!captureMode&&perDay&&<div className="pwx-perday">{perDay}</div>}
           <div className="pwx-trust">
-            <div className="pwx-tc"><span className="ic">🛡</span><b>{PAY_PROVIDER==="mollie"?"Mollie":"Stripe"}</b><em>{_t(lang,"Paiement sécurisé","Secure payment","Pago seguro")}</em></div>
-            <div className="pwx-tc"><span className="ic">⏱</span><b>{_t(lang,"30 jours","30 days","30 días")}</b><em>{_t(lang,"Satisfait ou remboursé","Money-back","Reembolso")}</em></div>
-            <div className="pwx-tc"><span className="ic">✕</span><b>{_t(lang,"2 clics","2 clicks","2 clics")}</b><em>{_t(lang,"Annule quand tu veux","Cancel anytime","Cancela cuando quieras")}</em></div>
+            <div className="pwx-tc"><span className="ic">{captureMode?"🎁":"🛡"}</span><b>{captureMode?_t(lang,"Offert","On us","Gratis"):(PAY_PROVIDER==="mollie"?"Mollie":"Stripe")}</b><em>{captureMode?_t(lang,"7 jours premium","7 days premium","7 días premium"):_t(lang,"Paiement sécurisé","Secure payment","Pago seguro")}</em></div>
+            <div className="pwx-tc"><span className="ic">{captureMode?"✉️":"⏱"}</span><b>{captureMode?_t(lang,"Sans carte","No card","Sin tarjeta"):_t(lang,"30 jours","30 days","30 días")}</b><em>{captureMode?_t(lang,"juste ton email","just your email","solo tu email"):_t(lang,"Satisfait ou remboursé","Money-back","Reembolso")}</em></div>
+            <div className="pwx-tc"><span className="ic">✕</span><b>{captureMode?_t(lang,"Sans engagement","No strings","Sin compromiso"):_t(lang,"2 clics","2 clicks","2 clics")}</b><em>{captureMode?_t(lang,"stop quand tu veux","stop anytime","para cuando quieras"):_t(lang,"Annule quand tu veux","Cancel anytime","Cancela cuando quieras")}</em></div>
           </div>
-          <div className="pwx-guar">
+          {!captureMode&&<div className="pwx-guar">
             <span className="gic">🛡️</span>
             <span><b>{_t(lang,"Garantie 30 jours satisfait ou remboursé","30-day money-back guarantee","Garantía de reembolso 30 días")}</b>
             <em>{_t(lang,"Pas convaincu ? Un email, remboursé — sans condition.","Not convinced? One email, full refund — no questions.","¿No te convence? Un email, reembolso — sin preguntas.")}</em></span>
-          </div>
+          </div>}
           {/* A/B pw_season : alternative pass saison 19,99 € (paiement unique 6 mois,
               sans abo) sous la garantie — cash d'avance, zéro churn. Chemin pay_once
               on-site existant (onSeason → passCtxRef + payStep). Réversible ?pwseason=0. */}
@@ -7434,7 +7450,9 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
           </button>}
           <button type="button" className="pwx-foot" onClick={onAlready}>{_t(lang,"J'ai déjà un abonnement","I already have a subscription","Ya tengo una suscripción")}</button>
           {onB2B&&<button type="button" className="pwx-foot" style={{marginTop:7,opacity:.78,fontSize:11.5}} onClick={onB2B}>🏨 {_t(lang,"Hôtel ou collectivité ? →","Hotel or town? →","¿Hotel o municipio? →")}</button>}
-          <div className="pwx-secure">🔒 {_t(lang,"Paiement sécurisé "+PAY_LABEL+" · Sans engagement","Secure "+PAY_LABEL+" payment · No commitment","Pago seguro "+PAY_LABEL+" · Sin compromiso")}</div>
+          <div className="pwx-secure">🔒 {captureMode
+            ?_t(lang,"Accès offert le temps qu'on rouvre · sans carte","Free access while we reopen · no card","Acceso gratis mientras reabrimos · sin tarjeta")
+            :_t(lang,"Paiement sécurisé "+PAY_LABEL+" · Sans engagement","Secure "+PAY_LABEL+" payment · No commitment","Pago seguro "+PAY_LABEL+" · Sin compromiso")}</div>
         </div>
       </div>
     </div>
@@ -8222,6 +8240,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           ctxName={_ctxName} ctxStatus={_ctxStatus} cleanCount={_cleanCount} totalCount={_totalCount}
           recordProof={_recordProof} allCalm={_allCalm} pwCalm={pwCalm}
           seasonMsg={seasonMsg} plan={plan} setPlan={setPlan} effectivePlan={effectivePlan} hasAnnual={hasAnnual}
+          captureMode={PAY_CAPTURE_ONLY}
           onStart={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown",skin:"world"});startCheckout(effectivePlan,"world")}}
           onAlready={verifyExistingSub}
           onB2B={()=>{try{track("sg_b2b_open",{source:source||"unknown"})}catch(_){}; setShowB2B(true)}}
@@ -8233,6 +8252,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           ctxName={_ctxName} ctxStatus={_ctxStatus} cleanCount={_cleanCount} totalCount={_totalCount}
           recordProof={_recordProof} allCalm={_allCalm} pwCalm={pwCalm}
           seasonMsg={seasonMsg} plan={plan} setPlan={setPlan} effectivePlan={effectivePlan} hasAnnual={hasAnnual}
+          captureMode={PAY_CAPTURE_ONLY}
           onStart={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown",skin:"comic"});startCheckout(effectivePlan,"comic")}}
           onAlready={verifyExistingSub}
           onB2B={()=>{try{track("sg_b2b_open",{source:source||"unknown"})}catch(_){}; setShowB2B(true)}}
@@ -9430,7 +9450,9 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
             </a>
           })()}
           <p style={{fontSize:15,color:"rgba(255,255,255,.6)",margin:"0 0 22px 0",lineHeight:1.5}}>
-            {_t(lang,"Reçois le brief par email — gratuit. Ou débloque tout de suite par carte.","Get the brief by email — free. Or unlock everything now by card.","Recibe el informe por email — gratis. O desbloquéalo ya con tarjeta.")}
+            {onPay
+              ?_t(lang,"Reçois le brief par email — gratuit. Ou débloque tout de suite par carte.","Get the brief by email — free. Or unlock everything now by card.","Recibe el informe por email — gratis. O desbloquéalo ya con tarjeta.")
+              :_t(lang,"Reçois le brief par email — gratuit, sans carte.","Get the brief by email — free, no card.","Recibe el informe por email — gratis, sin tarjeta.")}
           </p>
 
           <form onSubmit={submit} style={{width:"100%",position:"relative",marginBottom:16}}>
