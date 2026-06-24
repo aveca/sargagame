@@ -1406,7 +1406,7 @@
   },
   {
     "date": "2026-06-24",
-    "time": "2026-06-24T12:22:15.776Z",
+    "time": "2026-06-24T14:37:28.207Z",
     "payments": 12,
     "revenue": 59.88,
     "emails": 237,
@@ -1435,7 +1435,7 @@
       }
     },
     "email": {
-      "sent": 1472,
+      "sent": 1498,
       "delivered": null,
       "opened": null,
       "clicked": null,
@@ -1489,7 +1489,7 @@
       },
       "gp": {
         "sessions": 171,
-        "users": 920
+        "users": 964
       }
     }
   }
