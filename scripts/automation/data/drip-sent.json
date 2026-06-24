@@ -1214,7 +1214,8 @@
   "9d9a6914023cedce8049f0b9439b25da": {
     "daily_last": "2026-06-24",
     "daily_sig": "Palm Beach|clean|96|clean|0|",
-    "j3": "2026-06-20T19:26:32.375Z"
+    "j3": "2026-06-20T19:26:32.375Z",
+    "j7": "2026-06-24T19:48:40.949Z"
   },
   "c33c14705fdab6196d0731a2c7b61af9": {
     "j3": "2026-06-23T09:41:36.888Z"
@@ -1260,5 +1261,10 @@
     "daily_last": "2026-06-24",
     "daily_sig": "Anse Madame|clean|73|clean|0|"
   },
-  "f43bb7311615324fe54e244176553426": {}
+  "f43bb7311615324fe54e244176553426": {},
+  "e383942c9c243956a6078128ed7d57c7": {
+    "daily_last": "2026-06-24",
+    "daily_sig": "Plage de Malendure|clean|78|clean|0|"
+  },
+  "9ac40f1c408db3dcebac25cada3aa27e": {}
 }
