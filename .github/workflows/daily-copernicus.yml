@@ -600,7 +600,10 @@ jobs:
           sleep 10
           # Toutes les régions (MQ/GP + nouvelles) : un site down/stale doit
           # faire échouer le workflow — plus de monitoring MQ/GP-only.
-          DOMAINS=$(node -e "console.log(require('./regions/index.cjs').getAllRegions().map(r => r.domain).join(' '))")
+          # live:false = région préparée mais domaine pas encore servi (DNS/FTP) —
+          # ex. barbados : ne pas la health-checker (HTTP 000 → faux "site down" qui
+          # faisait échouer tout le deploy). La passer à live:true (ou retirer le flag) au lancement.
+          DOMAINS=$(node -e "console.log(require('./regions/index.cjs').getAllRegions().filter(r => r.live !== false).map(r => r.domain).join(' '))")
           DOWN=""
           TS=$(date +%s)
           for D in $DOMAINS; do
