@@ -506,6 +506,118 @@ const I18N={
   guessBtn:{clean:{fr:"PROPRE",en:"CLEAN",es:"LIMPIA"},moderate:{fr:"MODÉRÉ",en:"MODERATE",es:"MODERADA"},avoid:{fr:"À ÉVITER",en:"AVOID",es:"EVITAR"}}
 }
 
+/* ====================================================================
+   BADGES (SCREENS_V2 — BadgesSheet) — récompenses de progression
+   collectées DANS le monde comic, à partir de DONNÉES RÉELLES uniquement :
+     · sg_chasse { streak, best, collected[] }  (état local du joueur)
+     · sg_unlocks { keys:[] }  (système jeu/solutions, window.sgUnlockCount)
+   Zéro serveur, zéro fabrication : chaque condition lit une vraie valeur.
+   Additif, in-world, ZÉRO logique paiement. Réversible : ?badges=0.
+   Rareté parallèle aux cartes TCG (common/rare/épique/légendaire). i18n fr/en/es. */
+function badgesOnFlag(){ try{ return !/[?&]badges=0(?:&|$)/.test(window.location.search) }catch(_){ return true } }
+function badgesForceOpen(){ try{ return /[?&]badges=1(?:&|$)/.test(window.location.search) }catch(_){ return false } }
+/* compteur de déblocages jeu (sgUnlockCount global posé par Sargasses_PROD), tolérant si absent */
+function sgUnlockCnt(){ try{ return (typeof window!=="undefined"&&typeof window.sgUnlockCount==="function") ? (window.sgUnlockCount()||0) : 0 }catch(_){ return 0 } }
+
+/* ctx = { collected[], collSet:Set, streak, best, unlocks } ; chaque condition lit du RÉEL */
+const CHASSE_BADGES=[
+  /* — Pokédex (plages collectées) : miroir des paliers TIERS — */
+  {id:"first_collect", icon:"🎴", rar:"com",  fr:"Première Carte",   en:"First Card",       es:"Primera Carta",
+   cond:(c)=>c.collSet.size>=1},
+  {id:"dex_5",         icon:"⭐", rar:"com",  fr:"Apprenti Veilleur", en:"Veilleur Trainee", es:"Aprendiz",
+   cond:(c)=>c.collSet.size>=5},
+  {id:"dex_12",        icon:"🧭", rar:"rare", fr:"Éclaireur",         en:"Scout",            es:"Explorador",
+   cond:(c)=>c.collSet.size>=12},
+  {id:"dex_25",        icon:"🗺️", rar:"epic", fr:"Cartographe",       en:"Cartographer",     es:"Cartógrafo",
+   cond:(c)=>c.collSet.size>=25},
+  {id:"dex_45",        icon:"🏆", rar:"leg",  fr:"Maître Veilleur",   en:"Veilleur Master",  es:"Maestro",
+   cond:(c)=>c.collSet.size>=45},
+  {id:"dex_70",        icon:"👑", rar:"leg",  fr:"Légende du Lagon",  en:"Lagoon Legend",    es:"Leyenda del Lagón",
+   cond:(c)=>c.collSet.size>=70},
+  /* — Série (devine le verdict) : streak réel + record réel — */
+  {id:"streak_5",      icon:"🔥", rar:"rare", fr:"Série de 5",        en:"Streak of 5",      es:"Racha de 5",
+   cond:(c)=>(c.streak>=5||c.best>=5)},
+  {id:"streak_10",     icon:"💥", rar:"epic", fr:"Série de 10",       en:"Streak of 10",     es:"Racha de 10",
+   cond:(c)=>(c.streak>=10||c.best>=10)},
+  {id:"streak_20",     icon:"⚡", rar:"leg",  fr:"Série de 20",       en:"Streak of 20",     es:"Racha de 20",
+   cond:(c)=>(c.streak>=20||c.best>=20)},
+  /* — Tous les verdicts collectés (clean + moderate + avoid présents dans la collection) — */
+  {id:"verdict_all",   icon:"🌈", rar:"epic", fr:"Tous les Verdicts", en:"Every Verdict",    es:"Todos los Veredictos",
+   cond:(c)=>c.statusSet&&c.statusSet.has("clean")&&c.statusSet.has("moderate")&&c.statusSet.has("avoid")},
+  /* — Système jeu : déblocages (solutions / pistes) — */
+  {id:"unlock_1",      icon:"🔓", rar:"com",  fr:"Premier Déblocage", en:"First Unlock",     es:"Primer Desbloqueo",
+   cond:(c)=>c.unlocks>=1},
+  {id:"unlock_8",      icon:"🔬", rar:"rare", fr:"Données Déverrouillées", en:"Data Unlocked", es:"Datos Desbloqueados",
+   cond:(c)=>c.unlocks>=8},
+  /* — Engagement (email capté — vraie valeur funnel) — */
+  {id:"watcher",       icon:"📬", rar:"rare", fr:"Le Veilleur Veille", en:"Watcher On",      es:"El Vigía Vela",
+   cond:(c)=>!!c.email}
+]
+const BADGE_RAR={
+  com: {cls:"b-com",  lbl:{fr:"COMMUN",en:"COMMON",es:"COMÚN"}},
+  rare:{cls:"b-rare", lbl:{fr:"RARE",en:"RARE",es:"RARO"}},
+  epic:{cls:"b-epic", lbl:{fr:"ÉPIQUE",en:"EPIC",es:"ÉPICO"}},
+  leg: {cls:"b-leg",  lbl:{fr:"LÉGENDAIRE",en:"LEGENDARY",es:"LEGENDARIO"}}
+}
+/* construit le contexte RÉEL pour évaluer les conditions */
+function badgeCtx({collected,collSet,statusSet,streak,best,unlocks,email}){
+  return {collected:collected||[],collSet:collSet||new Set(),statusSet:statusSet||new Set(),
+          streak:+streak||0,best:+best||0,unlocks:+unlocks||0,email:!!email}
+}
+
+/* ---- BadgesSheet : modal des badges (overlay in-world, jamais de cul-de-sac) ---- */
+function BadgesSheet({badges,unlockedSet,onClose,lang}){
+  const _t=(o)=>(o&&(o[lang]||o.fr))||""
+  const closeRef=useRef(null)
+  useEffect(()=>{ try{ closeRef.current&&closeRef.current.focus() }catch(_){} },[])
+  useEffect(()=>{ const k=(e)=>{ if(e.key==="Escape"){ e.stopPropagation(); onClose&&onClose() } }
+    window.addEventListener("keydown",k); return ()=>window.removeEventListener("keydown",k) },[onClose])
+  const unlocked=badges.filter(b=>unlockedSet.has(b.id))
+  const locked=badges.filter(b=>!unlockedSet.has(b.id))
+  return (
+    <div className="lc-badgesheet" role="dialog" aria-modal="true"
+      aria-label={_t({fr:"Badges collectés",en:"Collected badges",es:"Insignias coleccionadas"})}
+      onClick={onClose}>
+      <div className="lc-badge-modal" onClick={e=>e.stopPropagation()}>
+        <button type="button" ref={closeRef} className="lc-badge-x" onClick={onClose}
+          aria-label={_t({fr:"Fermer",en:"Close",es:"Cerrar"})}>✕</button>
+        <div className="lc-badge-title"><span aria-hidden="true">🏅</span>{_t({fr:"BADGES DÉBLOQUÉS",en:"BADGES UNLOCKED",es:"INSIGNIAS"})}</div>
+        <div className="lc-badge-cnt">{unlocked.length}/{badges.length}</div>
+        {unlocked.length ? (
+          <div className="lc-badge-grid">
+            {unlocked.map((b,i)=>{
+              const r=BADGE_RAR[b.rar]||BADGE_RAR.com
+              return (
+                <div key={b.id} className={"lc-badge-card lc-badge-pop "+r.cls} style={{"--delay":(i*0.05)+"s"}}>
+                  <span className="lc-badge-ic" aria-hidden="true">{b.icon}</span>
+                  <span className="lc-badge-nm">{b[lang]||b.fr}</span>
+                  <span className="lc-badge-rar">{_t(r.lbl)}</span>
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <p className="lc-sub lc-center">{_t({fr:"Aucun badge encore — collectionne des cartes et enchaîne les séries.",en:"No badge yet — collect cards and build streaks.",es:"Aún sin insignias — colecciona cartas y encadena rachas."})}</p>
+        )}
+        {locked.length>0&&(
+          <>
+            <div className="lc-badge-toh">{_t({fr:"À DÉBLOQUER",en:"TO UNLOCK",es:"POR DESBLOQUEAR"})}</div>
+            <div className="lc-badge-grid">
+              {locked.map(b=>(
+                <div key={b.id} className="lc-badge-card lc-badge-locked">
+                  <span className="lc-badge-ic" aria-hidden="true">{b.icon}</span>
+                  <span className="lc-badge-nm">{b[lang]||b.fr}</span>
+                  <span className="lc-badge-rar">🔒</span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function ChasseHome(props){
   const {beach,lang="fr",sargData,pickBeaches=[],onOpen,onOpenBeach,onPremium,onShowMap,onCaptureEmail,track,exiting}=props
   const _t=useCallback((o)=>{ const v=o&&(o[lang]!=null?o[lang]:o.fr); return v },[lang])
@@ -639,6 +751,46 @@ export default function ChasseHome(props){
     return d.getDate()+" "+moFR[d.getMonth()]
   },[])
 
+  /* ---- BADGES (BadgesSheet) — déblocages à partir de DONNÉES RÉELLES ----
+     Flag kill-switch ?badges=0 (défaut on) ; ?badges=1 force l'ouverture au mount.
+     Conditions évaluées sur l'état RÉEL du joueur (collection, série/record,
+     déblocages jeu, email capté). Zéro fabrication, zéro serveur. */
+  const badgesEnabled = useMemo(()=>badgesOnFlag(),[])
+  const [badgesOpen,setBadgesOpen]=useState(false)
+  /* statut RÉEL des plages collectées → pour le badge « tous les verdicts » */
+  const collStatusSet = useMemo(()=>{
+    const m=new Map((pickBeaches||[]).filter(b=>b&&b.id).map(b=>[b.id,b.status]))
+    const s=new Set()
+    collSet.forEach(id=>{ const st2=m.get(id); if(st2) s.add(st2) })
+    return s
+  },[pickBeaches,collSet])
+  const badgeUnlocks = useMemo(()=>sgUnlockCnt(),[badgesOpen,collSet,st.streak])
+  /* Set des badges déjà débloqués (hydraté du localStorage), évalué chaque render */
+  const unlockedBadges = useMemo(()=>{
+    if(!badgesEnabled) return new Set()
+    const ctx=badgeCtx({collected:collected,collSet,statusSet:collStatusSet,
+      streak:st.streak,best:st.best,unlocks:badgeUnlocks,email:capDone})
+    const s=new Set()
+    for(const b of CHASSE_BADGES){ try{ if(b.cond(ctx)) s.add(b.id) }catch(_){} }
+    return s
+  },[badgesEnabled,collected,collSet,collStatusSet,st.streak,st.best,badgeUnlocks,capDone])
+  /* persistance + détection delta (nouveau badge) → track + persist (one-shot par id) */
+  const badgePrevRef=useRef(null)
+  useEffect(()=>{
+    if(!badgesEnabled) return
+    let prev=badgePrevRef.current
+    if(prev===null){
+      try{ prev=new Set(JSON.parse(localStorage.getItem("sg_badges_unlocked")||"[]")) }catch(_){ prev=new Set() }
+      badgePrevRef.current=prev
+    }
+    let added=false
+    unlockedBadges.forEach(id=>{ if(!prev.has(id)){ prev.add(id); added=true
+      if(track)try{ track("sg_badge_unlock",{badge_id:id,count_total:unlockedBadges.size}) }catch(_){} } })
+    if(added){ try{ localStorage.setItem("sg_badges_unlocked",JSON.stringify([...prev])) }catch(_){} }
+  },[badgesEnabled,unlockedBadges,track])
+  /* ?badges=1 → ouvre la modale au mount (vérif visuelle) */
+  useEffect(()=>{ if(badgesEnabled&&badgesForceOpen()) setBadgesOpen(true) },[badgesEnabled])
+
   return (
     <div className={"lc-root"+(reduce?" lc-reduce":"")} role="dialog" aria-label="La Chasse"
       style={{position:"absolute",inset:0,zIndex:1050,overflowY:"auto",overflowX:"hidden",
@@ -767,6 +919,15 @@ export default function ChasseHome(props){
               ? _t({fr:(tier.nx.n-collSet.size)+" → "+tier.nx.fr,en:(tier.nx.n-collSet.size)+" → "+tier.nx.en,es:(tier.nx.n-collSet.size)+" → "+tier.nx.es})
               : _t({fr:"rang max 👑",en:"max rank 👑",es:"rango máx 👑"})}</span>
           </div>
+          {/* BADGES — bouton discret ouvrant la modale (data RÉELLE, flag ?badges=0) */}
+          {badgesEnabled&&(
+            <button type="button" className="lc-badge-btn"
+              onClick={()=>{ if(track)try{track("sg_badge_open",{count:unlockedBadges.size})}catch(_){}; setBadgesOpen(true) }}
+              aria-label={_t({fr:"Voir mes badges",en:"See my badges",es:"Ver mis insignias"})}>
+              <span aria-hidden="true">🏅</span> {_t({fr:"Badges",en:"Badges",es:"Insignias"})}
+              <b className="lc-badge-bcnt">{unlockedBadges.size}/{CHASSE_BADGES.length}</b>
+            </button>
+          )}
         </div>
         <div className="lc-coll-tools">
           <input className="lc-coll-search" type="search" value={q} onChange={e=>setQ(e.target.value)}
@@ -852,6 +1013,11 @@ export default function ChasseHome(props){
         onPremium={(src)=>{ setDetail(null); onPremium&&onPremium(src||"chasse_detail") }}
         onRelated={(b)=>{ collect(b); if(track)try{track("sg_chasse_card_open",{beach_id:b.id,which:"related"})}catch(_){}; setDetail(b) }}
         onFull={()=>{ const b=detail; setDetail(null); onOpenBeach&&onOpenBeach(b) }}/>}
+
+      {badgesEnabled&&badgesOpen&&(
+        <BadgesSheet badges={CHASSE_BADGES} unlockedSet={unlockedBadges} lang={lang}
+          onClose={()=>setBadgesOpen(false)}/>
+      )}
 
       {levelUp&&(
         <div className="lc-levelup" role="dialog" aria-label="Nouveau rang" onClick={()=>setLevelUp(null)}>
@@ -1267,4 +1433,58 @@ export const CSS=`
 .lc-root .lc-gomap{background:linear-gradient(135deg,#2e1a5e,#156a96)!important;border:3px solid var(--ink)!important;border-radius:15px!important;box-shadow:0 5px 0 var(--ink),0 11px 20px rgba(13,11,20,.3)!important}
 .lc-root .lc-maplink{background:none!important;border:none!important;box-shadow:none!important;
   font-family:inherit!important;border-radius:0!important}
+
+/* ====================================================================
+   BADGES (BadgesSheet) — bouton dans le header Pokédex + modale comic.
+   z-index 1150 < détail 1200 < levelup 1250. Rareté = couleurs TCG.
+   ==================================================================== */
+.lc-badge-btn{display:inline-flex;align-items:center;gap:6px;margin-top:10px;cursor:pointer;
+  font-family:"AntonLC",system-ui,sans-serif;font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--ink);
+  background:var(--paper);border:2.5px solid var(--ink);border-radius:20px;padding:5px 12px;box-shadow:2px 2px 0 var(--ink);
+  forced-color-adjust:none;transition:transform .08s}
+.lc-badge-btn:active{transform:translateY(2px);box-shadow:0 0 0 var(--ink)}
+.lc-badge-bcnt{font-family:"AntonLC",system-ui,sans-serif;font-size:11px;color:#fff;background:var(--ink);
+  border-radius:12px;padding:2px 8px;margin-left:2px}
+.lc-root .lc-badge-btn{background:var(--paper)!important;border:2.5px solid var(--ink)!important;border-radius:20px!important;box-shadow:2px 2px 0 var(--ink)!important}
+.lc-badgesheet{position:fixed;inset:0;z-index:1150;display:flex;align-items:center;justify-content:center;padding:20px;
+  background:radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 0 0/9px 9px,rgba(13,11,20,.62);
+  animation:lc-detail-in .26s cubic-bezier(.2,1.2,.3,1) both}
+.lc-reduce .lc-badgesheet{animation:none}
+.lc-badge-modal{position:relative;width:100%;max-width:420px;max-height:86vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  text-align:center;background:var(--paper);border:3px solid var(--ink);border-radius:18px;
+  padding:24px 18px 22px;box-shadow:0 7px 0 var(--ink),0 16px 30px rgba(13,11,20,.5);forced-color-adjust:none}
+.lc-badge-x{position:absolute;top:12px;right:12px;width:38px;height:38px;border-radius:50%;-webkit-appearance:none;appearance:none;
+  border:2.5px solid var(--ink);background:var(--yel);color:var(--ink);font-size:16px;font-weight:800;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.lc-badge-title{display:inline-flex;align-items:center;gap:8px;font-family:"AntonLC",system-ui,sans-serif;font-size:16px;
+  letter-spacing:.5px;color:var(--ink);text-shadow:1.5px 1.5px 0 #fff}
+.lc-badge-cnt{font-family:"AntonLC",system-ui,sans-serif;font-size:13px;color:#fff;background:var(--ink);
+  display:inline-block;border-radius:14px;padding:2px 12px;margin:8px 0 4px;letter-spacing:.5px}
+.lc-badge-toh{font-family:"AntonLC",system-ui,sans-serif;font-size:12px;letter-spacing:.6px;color:var(--ink);
+  opacity:.72;margin:18px 0 9px;text-align:left}
+.lc-badge-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.lc-badge-card{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;
+  background:var(--paper);border:3px solid var(--ink);border-radius:14px;padding:12px 8px 9px;box-shadow:0 5px 0 var(--ink)}
+.lc-badge-card.b-rare{background:#dff1ff;box-shadow:0 0 0 2px var(--blu) inset,0 5px 0 var(--ink)}
+.lc-badge-card.b-epic{background:#efe2ff;box-shadow:0 0 0 2px var(--pur) inset,0 5px 0 var(--ink)}
+.lc-badge-card.b-leg{background:linear-gradient(135deg,#ffe79a,#fff3c4 52%,#ffe79a);
+  box-shadow:0 0 0 2px #e0962a inset,0 5px 0 var(--ink),0 8px 18px rgba(246,183,60,.6)}
+.lc-badge-card.lc-badge-locked{background:repeating-linear-gradient(45deg,#eceaf0 0 7px,#f6f4f8 7px 14px);opacity:.55}
+.lc-badge-ic{font-size:38px;line-height:1;filter:drop-shadow(1.5px 2px 0 rgba(13,11,20,.35))}
+.lc-badge-card.lc-badge-locked .lc-badge-ic{filter:grayscale(1);opacity:.7}
+.lc-badge-nm{font-family:"AntonLC",system-ui,sans-serif;font-size:12px;line-height:1.05;color:var(--ink);
+  letter-spacing:.2px;text-transform:uppercase}
+.lc-badge-rar{font:800 8.5px/1 "Comic Neue",system-ui,sans-serif;letter-spacing:.4px;color:#fff;background:var(--ink);
+  border-radius:10px;padding:2px 7px}
+.lc-badge-card.b-rare .lc-badge-rar{background:var(--blu)}
+.lc-badge-card.b-epic .lc-badge-rar{background:var(--pur)}
+.lc-badge-card.b-leg .lc-badge-rar{background:#c47a12;color:#fff8e0}
+.lc-badge-card.lc-badge-locked .lc-badge-rar{background:transparent;color:var(--ink)}
+.lc-badge-pop{animation:lc-badge-pop .4s cubic-bezier(.2,1.2,.3,1) both;animation-delay:var(--delay,0s)}
+@keyframes lc-badge-pop{0%{transform:scale(0)}70%{transform:scale(1.12)}100%{transform:scale(1)}}
+.lc-reduce .lc-badge-pop{animation:none;opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){
+  .lc-badgesheet{animation:none}
+  .lc-badge-pop{animation:none;opacity:1;transform:none}
+}
+@media(min-width:560px){.lc-badge-grid{grid-template-columns:1fr 1fr 1fr}}
 `
