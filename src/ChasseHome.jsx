@@ -480,6 +480,59 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
   )
 }
 
+/* ====================================================================
+   SÉRIE « 7 JOURS D'AFFILÉE » (SCREENS_V2 #28 — streak reward)
+   ------------------------------------------------------------------
+   Surface de rétention qui rend tangible la VRAIE série du joueur : chaque
+   matin où il devine le verdict de la carte du jour = +1 jour. On affiche
+   un ruban comic de 7 cases = le cycle d'une « septaine », plus le record.
+   DONNÉES 100% RÉELLES (sg_chasse) — zéro fabrication :
+     · st.streak  → jours consécutifs en cours (déjà calculé par guess())
+     · st.best    → record de série
+     · st.last    → dernière date jouée → série « vivante » (auj/hier) ou « froide »
+   On NE fabrique aucun calendrier : on dérive la position dans le cycle de 7
+   depuis le streak réel (weekDone = streak % 7, 7 si multiple non nul).
+   La récompense au bout de 7 = un PALIER honnête (titre Veilleur, cf TIERS) +
+   célébration ; on ne promet RIEN qui touche au paiement (le CTA premium reste
+   la même porte que partout : onPremium, inchangé). Additif, in-world comic,
+   i18n fr/en/es, a11y + reduced-motion. Réversible : ?streak7=0. */
+function streak7On(){ try{ return !/[?&]streak7=0(?:&|$)/.test(window.location.search) }catch(_){ return true } }
+/* dérive l'état de la septaine depuis le streak RÉEL + la date du dernier jeu.
+   inWeek = nb de cases pleines dans le cycle courant (1..7) ; 7 pile = septaine
+   fraîchement bouclée. toGo = jours restants avant la prochaine septaine. */
+function streakWeek(streak,last){
+  const s=Math.max(0,+streak||0)
+  const live = !!last && (last===todayKey()||last===yesterdayKey())   /* série encore en vie ? */
+  const mod = s%7
+  const cycles = Math.floor(s/7)                                       /* septaines complètes */
+  const inWeek = s===0 ? 0 : (mod===0 ? 7 : mod)                       /* cases pleines 1..7 */
+  const justDone = s>0 && mod===0 && live                             /* septaine bouclée à l'instant (vivante) */
+  const toGo = s===0 ? 7 : (mod===0 ? 7 : 7-mod)                       /* jours avant la prochaine septaine */
+  return {s,live,cycles,inWeek,justDone,toGo}
+}
+const STREAK7_I18N={
+  title:{fr:"SÉRIE 7 JOURS",en:"7-DAY STREAK",es:"RACHA DE 7 DÍAS"},
+  sub:{fr:"Devine le verdict chaque matin. Sept jours d'affilée = une septaine bouclée.",
+       en:"Guess the verdict every morning. Seven days in a row = one week sealed.",
+       es:"Adivina el veredicto cada mañana. Siete días seguidos = una semana sellada."},
+  dayShort:{fr:["J1","J2","J3","J4","J5","J6","J7"],en:["D1","D2","D3","D4","D5","D6","D7"],es:["D1","D2","D3","D4","D5","D6","D7"]},
+  live:{fr:"série en cours 🔥",en:"streak live 🔥",es:"racha activa 🔥"},
+  cold:{fr:"série en pause — reviens demain pour la relancer",en:"streak paused — come back tomorrow to revive it",es:"racha en pausa — vuelve mañana para reactivarla"},
+  none:{fr:"Joue la carte du jour pour démarrer ta série.",en:"Play today's card to start your streak.",es:"Juega la carta del día para empezar tu racha."},
+  best:{fr:"record",en:"best",es:"récord"},
+  cycles:{fr:(n)=>n+" septaine"+(n>1?"s":"")+" bouclée"+(n>1?"s":""),
+          en:(n)=>n+" full week"+(n>1?"s":""),
+          es:(n)=>n+" semana"+(n>1?"s":"")+" completada"+(n>1?"s":"")},
+  toGo:{fr:(n)=>n===1?"plus qu'1 jour avant la septaine":"encore "+n+" jours avant la septaine",
+        en:(n)=>n===1?"just 1 day to complete the week":n+" more days to complete the week",
+        es:(n)=>n===1?"solo 1 día para completar la semana":n+" días más para completar la semana"},
+  sealed:{fr:"SEPTAINE BOUCLÉE !",en:"WEEK SEALED!",es:"¡SEMANA SELLADA!"},
+  sealedSub:{fr:"Sept jours d'affilée. Le Veilleur te repère parmi les chasseurs assidus.",
+             en:"Seven days straight. Le Veilleur marks you among the dedicated hunters.",
+             es:"Siete días seguidos. El Vigía te distingue entre los cazadores dedicados."},
+  cta:{fr:"Activer l'alerte 7 jours",en:"Turn on the 7-day alert",es:"Activar la alerta de 7 días"}
+}
+
 const I18N={
   eyebrow:{fr:"LA CHASSE · EN DIRECT",en:"THE HUNT · LIVE",es:"LA CAZA · EN DIRECTO"},
   guessTitle:{fr:"DEVINE LE VERDICT",en:"GUESS THE VERDICT",es:"ADIVINA EL VEREDICTO"},
@@ -739,6 +792,20 @@ export default function ChasseHome(props){
   const dayV = beach ? vof(beach.status) : VERDICT.clean
   const vedRare = beach ? rarity(beach.score).cls : "r-com"   /* rareté de la vedette (tension du pull) */
   const tier = useMemo(()=>tierOf(collSet.size),[collSet])
+
+  /* ---- SÉRIE 7 JOURS (#28) — septaine dérivée du streak RÉEL (sg_chasse) ----
+     Flag kill-switch ?streak7=0 (défaut on). Zéro fabrication : tout vient de
+     st.streak / st.best / st.last, déjà calculés et persistés par guess(). */
+  const streak7Enabled = useMemo(()=>streak7On(),[])
+  const sweek = useMemo(()=>streakWeek(st.streak,st.last),[st.streak,st.last])
+  /* célébration « SEPTAINE BOUCLÉE » = ONE-SHOT par nouvelle septaine (persistée
+     sg_chasse_seal = dernier cycle célébré), sinon elle se redéclenchait à chaque
+     ouverture tant que le streak restait multiple de 7 vivant (bug revue). */
+  const [weekSeal,setWeekSeal]=useState(false)
+  useEffect(()=>{ if(!streak7Enabled||!sweek.justDone) return
+    try{ const sealed=parseInt(localStorage.getItem("sg_chasse_seal")||"0")||0
+      if(sweek.cycles>sealed){ setWeekSeal(true); localStorage.setItem("sg_chasse_seal",String(sweek.cycles)) } }catch(_){}
+  },[streak7Enabled,sweek.justDone,sweek.cycles])
   /* RÉCOMPENSE : célébration comic quand on franchit un rang Veilleur (one-shot, persistée) */
   const [levelUp,setLevelUp]=useState(null)
   useEffect(()=>{ try{
@@ -790,6 +857,9 @@ export default function ChasseHome(props){
   },[badgesEnabled,unlockedBadges,track])
   /* ?badges=1 → ouvre la modale au mount (vérif visuelle) */
   useEffect(()=>{ if(badgesEnabled&&badgesForceOpen()) setBadgesOpen(true) },[badgesEnabled])
+
+  /* impression « série 7 jours » (#28) — one-shot au mount, état RÉEL */
+  useEffect(()=>{ if(streak7Enabled&&track) try{ track("sg_chasse_streak7_shown",{streak:st.streak,best:st.best,live:sweek.live?1:0,cycles:sweek.cycles}) }catch(_){} },[streak7Enabled]) // eslint-disable-line
 
   return (
     <div className={"lc-root"+(reduce?" lc-reduce":"")} role="dialog" aria-label="La Chasse"
@@ -977,6 +1047,53 @@ export default function ChasseHome(props){
                         es:defiRes.name+" = "+defiRes.score+"/100. "+(defiRes.ok?"¡Bien!":"¡Fallaste!")+" Vuelve mañana."})
                   : _t({fr:"Déjà joué aujourd'hui — reviens demain.",en:"Already played today — come back tomorrow.",es:"Ya jugaste hoy — vuelve mañana."})}</p>
               </>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* ---- SÉRIE 7 JOURS (#28) : ruban de la septaine, dérivé du streak RÉEL ---- */}
+      {streak7Enabled&&(
+        <section className="lc-week" aria-label={_t(STREAK7_I18N.title)}>
+          <div className="lc-eyebrow lc-center">🔥 {_t(STREAK7_I18N.title)}</div>
+          <div className={"lc-week-card"+(weekSeal?" sealed":"")}>
+            {weekSeal&&<span className="lc-pow s-ok lc-verdictpow lc-week-pow"><b>{_t(STREAK7_I18N.sealed)}</b></span>}
+            <p className="lc-sub">{sweek.s===0?_t(STREAK7_I18N.none):_t(STREAK7_I18N.sub)}</p>
+            {/* ruban de 7 cases — cases pleines = jours de la série en cours (data réelle) */}
+            <div className="lc-week-row" role="img"
+              aria-label={_t({fr:sweek.inWeek+" jours sur 7 dans la série en cours",en:sweek.inWeek+" of 7 days in the current streak",es:sweek.inWeek+" de 7 días en la racha actual"})}>
+              {Array.from({length:7}).map((_,i)=>{
+                const filled=i<sweek.inWeek
+                const isNext=!filled&&i===sweek.inWeek&&sweek.live   /* prochaine case à gagner si série vivante */
+                return (
+                  <div key={i} className={"lc-week-pip"+(filled?(sweek.live?" on":" cold"):"")+(isNext?" next":"")}>
+                    <span className="lc-week-pip-d">{(STREAK7_I18N.dayShort[lang]||STREAK7_I18N.dayShort.fr)[i]}</span>
+                    <span className="lc-week-pip-ic" aria-hidden="true">{filled?"🔥":(isNext?"·":"🔒")}</span>
+                  </div>
+                )
+              })}
+            </div>
+            {/* ligne d'état honnête : vivante / en pause / vide + record + progression */}
+            <div className="lc-week-meta">
+              <span className={"lc-week-state"+(sweek.live?" live":sweek.s>0?" cold":"")}>
+                {sweek.s===0?"—":sweek.live?_t(STREAK7_I18N.live):_t(STREAK7_I18N.cold)}
+              </span>
+              <span className="lc-week-best">{_t(STREAK7_I18N.best)} <b>{st.best}</b> 🔥</span>
+            </div>
+            {weekSeal ? (
+              <p className="lc-sub lc-center lc-week-sealsub">{_t(STREAK7_I18N.sealedSub)}</p>
+            ) : sweek.cycles>0 ? (
+              <div className="lc-week-prog">{(STREAK7_I18N.cycles[lang]||STREAK7_I18N.cycles.fr)(sweek.cycles)}
+                {sweek.live&&sweek.s>0&&<> · {(STREAK7_I18N.toGo[lang]||STREAK7_I18N.toGo.fr)(sweek.toGo)}</>}</div>
+            ) : sweek.live&&sweek.s>0 ? (
+              <div className="lc-week-prog">{(STREAK7_I18N.toGo[lang]||STREAK7_I18N.toGo.fr)(sweek.toGo)}</div>
+            ) : null}
+            {/* récompense au bout de 7 = alerte (porte premium habituelle, inchangée) */}
+            {weekSeal&&(
+              <button type="button" className="lc-cta yel lc-week-cta"
+                onClick={()=>{ if(track)try{track("sg_chasse_streak7_cta",{streak:sweek.s,cycles:sweek.cycles})}catch(_){}; onPremium&&onPremium("chasse_streak7") }}>
+                {_t(STREAK7_I18N.cta)}
+              </button>
             )}
           </div>
         </section>
@@ -1256,6 +1373,38 @@ export const CSS=`
 .lc-defi-cur b{font-family:"AntonLC",system-ui,sans-serif;font-size:18px;letter-spacing:.3px;text-transform:uppercase}
 .lc-defi-sc{font-family:"AntonLC",system-ui,sans-serif;font-size:26px;color:#fff;background:var(--grn);border:2.5px solid var(--ink);border-radius:9px;padding:2px 11px;box-shadow:2px 2px 0 var(--ink);text-shadow:1.5px 1.5px 0 var(--ink)}
 .lc-defi-card .lc-sub{margin:9px 0 12px;color:#2a2536;font-weight:700}
+/* SÉRIE 7 JOURS (#28) — ruban de la septaine (case BD, data réelle) */
+.lc-week{max-width:520px;margin:22px auto 0;text-align:center}
+.lc-week-card{position:relative;margin-top:10px;background:var(--paper);border:3px solid var(--ink);border-radius:16px;
+  padding:16px 15px 15px;box-shadow:0 5px 0 var(--ink),0 12px 22px rgba(13,11,20,.32)}
+.lc-week-card.sealed{background:linear-gradient(160deg,#fff7df,#ffe9b0 60%,#fff7df);box-shadow:0 0 0 2px #e0962a inset,0 5px 0 var(--ink),0 12px 24px rgba(246,183,60,.5)}
+.lc-week-card .lc-sub{margin:8px 0 12px;color:#2a2536;font-weight:700;font-size:12.5px}
+.lc-week-pow{position:absolute;top:-13px;left:50%;transform:translateX(-50%) rotate(-4deg) scale(1.05);right:auto}
+.lc-week-row{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:2px 0 13px}
+.lc-week-pip{border:2.5px solid var(--ink);border-radius:9px;padding:7px 2px 6px;background:#fff;box-shadow:2px 2px 0 var(--ink);
+  display:flex;flex-direction:column;align-items:center;gap:3px;forced-color-adjust:none}
+.lc-week-pip.on{background:linear-gradient(180deg,#ffd569,var(--org))}
+.lc-week-pip.on .lc-week-pip-d{color:var(--ink)}
+.lc-week-pip.cold{background:#efe7d6}
+.lc-week-pip.cold .lc-week-pip-ic{filter:grayscale(1);opacity:.7}
+.lc-week-pip.next{background:repeating-linear-gradient(45deg,#fff6d8 0 6px,#fff 6px 12px);border-style:dashed}
+.lc-week-pip-d{font:800 9px/1 "Comic Neue",system-ui,sans-serif;text-transform:uppercase;opacity:.85}
+.lc-week-pip-ic{font-family:"AntonLC",system-ui,sans-serif;font-size:15px;line-height:1}
+.lc-week-pip:not(.on):not(.cold):not(.next) .lc-week-pip-ic{font-size:12px;filter:grayscale(1);opacity:.65}
+.lc-week-meta{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:2px}
+.lc-week-state{font:800 11px/1.2 "Comic Neue",system-ui,sans-serif;color:var(--ink);background:#fff;border:2.5px solid var(--ink);
+  border-radius:20px;padding:4px 11px;box-shadow:2px 2px 0 var(--ink);forced-color-adjust:none}
+.lc-week-state.live{background:linear-gradient(180deg,#ffe06a,var(--yel))}
+.lc-week-state.cold{background:#efe7d6;color:#5a5360}
+.lc-week-best{font:800 11px/1 "Comic Neue",system-ui,sans-serif;color:var(--ink)}
+.lc-week-best b{font-family:"AntonLC",system-ui,sans-serif;font-size:15px}
+.lc-week-prog{font:800 11px/1.35 "Comic Neue",system-ui,sans-serif;color:var(--ink);opacity:.82;margin-top:9px}
+.lc-week-sealsub{margin:9px 0 0!important;font-size:12px!important}
+.lc-week-cta{margin-top:13px}
+.lc-root .lc-week-card .lc-week-state{background:#fff!important;border:2.5px solid var(--ink)!important;border-radius:20px!important;box-shadow:2px 2px 0 var(--ink)!important}
+.lc-root .lc-week-state.live{background:linear-gradient(180deg,#ffe06a,var(--yel))!important}
+.lc-root .lc-week-state.cold{background:#efe7d6!important}
+
 /* fiabilité du Veilleur (jauge track-record) */
 .lc-reliab{max-width:520px;margin:22px auto 0;text-align:center}
 .lc-reliab-card{margin-top:10px;background:var(--paper);border:3px solid var(--ink);border-radius:16px;padding:16px 16px 14px;box-shadow:0 5px 0 var(--ink),0 12px 22px rgba(13,11,20,.32)}

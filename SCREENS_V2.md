@@ -43,7 +43,7 @@ l'**alerte** le jour où ta plage bascule. Un seul monde **comic-book animé** (
 - [x] 16 BADGES / « MES SUCCÈS » — modale `BadgesSheet` (13 badges) ouverte depuis le Pokédex, dérivés de la progression **RÉELLE** (collected/streak/best/`sgUnlock`/email capté), rareté TCG, verrouillés grisés honnêtes (0 fabrication), i18n+a11y+reduced-motion, réversible `?badges=0`. → 13
 - [x] 17 RÉCOMPENSE (célébration comic « NIVEAU ! » au franchissement de rang — fait) → 13
 - [ ] 18 DÉFI DU THÈME / contest → 14
-- [ ] 28 SÉRIE « 7 jours d'affilée » (streak reward) → 05
+- [x] 28 SÉRIE « 7 jours d'affilée » — section comic `.lc-week` (ruban 7 cases BD) dans ChasseHome, dérivée de la série **RÉELLE** (`sg_chasse` streak/best/last), états vivante/froide/vide honnêtes, célébration « SEPTAINE BOUCLÉE » + CTA premium **one-shot persistant** (`sg_chasse_seal`, fix re-fire de la revue), i18n+a11y+reduced-motion, réversible `?streak7=0`. → 05
 ### Bloc 5 — Conversion
 - [~] 12 PAYWALL « Réveil du Veilleur » / Pass (partiel comic — finir variants) → paiement
 - [ ] 06b PAIEMENT on-site (PayStep) en comic → succès → 29
