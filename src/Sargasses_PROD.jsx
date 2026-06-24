@@ -15441,7 +15441,7 @@ export default function App(){
             // On NE force PLUS la CB (modèle « soit email soit cb ») : l'état succès
             // reste affiché ; la CB reste accessible via le bouton « ou débloque tout ».
           }}
-          onPay={()=>{
+          onPay={PAY_CAPTURE_ONLY?undefined:()=>{
             setShowCaptureGate(false)
             track("sg_capture_gate_pay",{src:captureGateSrc})
             setPremiumSource("gate_cb");setShowPremium(true);track("sg_premium_modal_open",{source:"gate_cb"})
