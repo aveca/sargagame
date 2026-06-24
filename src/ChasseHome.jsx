@@ -319,7 +319,7 @@ function fcTrend(fc){
 /* DÉTAIL PLAGE « en monde comic » — ouvert au tap d'une carte. Garde le joueur
    dans l'univers arène (mêmes police/couleurs/Veilleur) au lieu de l'éjecter
    vers l'app sombre. Le seul handoff = le CTA premium (moment de conversion). */
-export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool=[],track,sargData,isPremium=false}){
+export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool=[],track,sargData,isPremium=false,favorites=[],onToggleFav}){
   const rel=(pool||[]).filter(b=>b&&b.id&&b.id!==beach.id&&b.status&&b.score!=null).slice(0,3)
   const planB=useMemo(()=>planbOn()?cleanNearby(beach,pool):[],[beach,pool])
   /* prévision 7 j RÉELLE (item 09) — null si plage non couverte ou kill-switch */
@@ -449,6 +449,10 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
           {_t({fr:"VOIR LES 7 PROCHAINS JOURS →",en:"SEE THE NEXT 7 DAYS →",es:"VER LOS 7 DÍAS →"})}
         </button>}
         <div className="lc-detail-actions">
+          {onToggleFav&&<button type="button" className={"lc-detail-full lc-detail-fav"+(favorites.includes(beach.id)?" on":"")} aria-pressed={favorites.includes(beach.id)}
+            onClick={()=>{ if(track)try{track(favorites.includes(beach.id)?"sg_chasse_unfav":"sg_chasse_fav",{beach_id:beach.id})}catch(_){}; onToggleFav(beach.id) }}>
+            {favorites.includes(beach.id)?"❤️ "+_t({fr:"Suivie",en:"Saved",es:"Guardada"}):"🤍 "+_t({fr:"Suivre",en:"Save",es:"Seguir"})}
+          </button>}
           <button type="button" className="lc-detail-full" onClick={share}>
             📣 {shared?_t({fr:"Copié !",en:"Copied!",es:"¡Copiado!"}):_t({fr:"Partager",en:"Share",es:"Compartir"})}
           </button>
@@ -860,7 +864,7 @@ function BadgesSheet({badges,unlockedSet,onClose,lang}){
 }
 
 export default function ChasseHome(props){
-  const {beach,lang="fr",sargData,pickBeaches=[],onOpen,onOpenBeach,onPremium,onShowMap,onCaptureEmail,track,exiting,isPremium=false}=props
+  const {beach,lang="fr",sargData,pickBeaches=[],onOpen,onOpenBeach,onPremium,onShowMap,onCaptureEmail,track,exiting,isPremium=false,favorites=[],onToggleFav}=props
   const _t=useCallback((o)=>{ const v=o&&(o[lang]!=null?o[lang]:o.fr); return v },[lang])
 
   const reduce = useMemo(()=>{ try{ return window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches }catch(_){ return false } },[])
@@ -1348,7 +1352,7 @@ export default function ChasseHome(props){
         <button type="button" className="lc-maplink" onClick={()=>onShowMap&&onShowMap()}>{_t(I18N.mapLink)}</button>
       </section>
 
-      {detail&&<ChasseDetail beach={detail} lang={lang} track={track} pool={collList} sargData={sargData} isPremium={isPremium}
+      {detail&&<ChasseDetail beach={detail} lang={lang} track={track} pool={collList} sargData={sargData} isPremium={isPremium} favorites={favorites} onToggleFav={onToggleFav}
         onClose={()=>setDetail(null)}
         onPremium={(src)=>{ setDetail(null); onPremium&&onPremium(src||"chasse_detail") }}
         onRelated={(b)=>{ collect(b); if(track)try{track("sg_chasse_card_open",{beach_id:b.id,which:"related"})}catch(_){}; setDetail(b) }}
@@ -1544,8 +1548,9 @@ export const CSS=`
 .lc-detail-fact{font-size:13px;font-weight:800;background:#fff;border:2.5px solid var(--ink);border-radius:20px;padding:6px 12px;box-shadow:2px 2px 0 var(--ink)}
 .lc-detail-full{display:block;width:100%;margin-top:12px;-webkit-appearance:none;appearance:none;background:none;border:none;color:#0d2330;font-weight:800;font-size:13px;
   text-decoration:underline;cursor:pointer;font-family:inherit}
-.lc-detail-actions{display:flex;gap:14px;justify-content:center;margin-top:12px}
+.lc-detail-actions{display:flex;gap:14px;justify-content:center;margin-top:12px;flex-wrap:wrap}
 .lc-detail-actions .lc-detail-full{width:auto;margin-top:0}
+.lc-detail-fav.on{color:#E8522A}
 /* strip 7 jours (case BD) */
 .lc-detail-fc{margin:4px 0 18px}
 .lc-detail-fc-h{font-family:"AntonLC",system-ui,sans-serif;font-size:13px;letter-spacing:.6px;margin-bottom:7px;color:var(--ink)}
