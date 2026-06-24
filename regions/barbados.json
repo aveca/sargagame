@@ -1,0 +1,229 @@
+{
+  "id": "barbados",
+  "name": "Barbados",
+  "country": "Barbados",
+  "domain": "sargassumbarbados.com",
+  "ftpDir": "barbados-ftp",
+  "primaryLang": "en",
+  "secondaryLangs": [],
+  "currency": "USD",
+  "countryCode": "BB",
+  "pricing": {
+    "monthly": "$9.99",
+    "yearly": "$79",
+    "tripPass": "$5.99"
+  },
+  "stripeProducts": {
+    "monthly": "PLACEHOLDER_price_barbados_monthly",
+    "yearly": "PLACEHOLDER_price_barbados_yearly",
+    "tripPass": "PLACEHOLDER_price_barbados_trippass"
+  },
+  "timezone": "America/Barbados",
+  "bbox": [
+    -59.68,
+    13.03,
+    -59.41,
+    13.34
+  ],
+  "center": {
+    "lat": 13.18,
+    "lng": -59.55
+  },
+  "zoom": 11,
+  "brand": {
+    "primary": "#0EA5E9",
+    "accent": "#FBBF24"
+  },
+  "onesignalAppId": "PLACEHOLDER_onesignal_barbados",
+  "ga4Id": "PLACEHOLDER_ga4_barbados",
+  "clarityProjectId": "PLACEHOLDER_clarity_barbados",
+  "emails": {
+    "alerts": "alerts@sargassumbarbados.com",
+    "support": "support@sargassumbarbados.com"
+  },
+  "beachFilter": {
+    "island": "barbados"
+  },
+  "routes": {
+    "season": "sargassum-season-barbados",
+    "best": "best-beaches-no-sargassum-barbados",
+    "weekly": "sargassum-barbados-this-week"
+  },
+  "seo": {
+    "homeTitle": "Barbados Sargassum Today — Live Beach Map & 7-Day Forecast",
+    "homeDesc": "Is there sargassum in Barbados today? Live map of 12 beaches — west coast (Carlisle Bay, Mullins) vs east/south coast — updated 4× daily from satellite, with a 7-day forecast per beach.",
+    "freshTitles": true,
+    "dateModifiedFromPipeline": true
+  },
+  "geoDetect": {
+    "latMin": 13.03,
+    "latMax": 13.34,
+    "lngMin": -59.68,
+    "lngMax": -59.41
+  },
+  "competitors": [
+    "sargassummonitoring.com (regional, no Barbados-specific daily pages)",
+    "howisthesargassum.com (Mexico-focused, no Barbados coverage)",
+    "Resort-posted daily signs (offline, not searchable)",
+    "No branded daily-status consumer tool for Barbados"
+  ],
+  "differentiators": [
+    "First branded daily sargassum status for Barbados",
+    "West-coast (sheltered) vs east/south-coast (exposed) per-beach split that matters daily",
+    "Pre-travel intent: which beach / resort stays clean this week",
+    "Personal push alerts + on-site community reports",
+    "English-first for US, UK and Canadian travellers"
+  ],
+  "beaches": [
+    {
+      "id": "bb001",
+      "island": "barbados",
+      "name": "Carlisle Bay",
+      "commune": "Bridgetown",
+      "lat": 13.0786,
+      "lng": -59.6133,
+      "status": "clean",
+      "kids": true,
+      "snorkel": true,
+      "parking": true
+    },
+    {
+      "id": "bb002",
+      "island": "barbados",
+      "name": "Mullins Beach",
+      "commune": "Saint Peter",
+      "lat": 13.2381,
+      "lng": -59.6432,
+      "status": "clean",
+      "kids": true,
+      "snorkel": true,
+      "parking": true
+    },
+    {
+      "id": "bb003",
+      "island": "barbados",
+      "name": "Paynes Bay",
+      "commune": "Saint James",
+      "lat": 13.1789,
+      "lng": -59.6406,
+      "status": "clean",
+      "kids": true,
+      "snorkel": true,
+      "parking": true
+    },
+    {
+      "id": "bb004",
+      "island": "barbados",
+      "name": "Dover Beach",
+      "commune": "Christ Church",
+      "lat": 13.0703,
+      "lng": -59.5786,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": false,
+      "parking": true
+    },
+    {
+      "id": "bb005",
+      "island": "barbados",
+      "name": "Accra Beach (Rockley)",
+      "commune": "Christ Church",
+      "lat": 13.0729,
+      "lng": -59.5897,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": false,
+      "parking": true
+    },
+    {
+      "id": "bb006",
+      "island": "barbados",
+      "name": "Miami Beach (Enterprise)",
+      "commune": "Oistins",
+      "lat": 13.0631,
+      "lng": -59.5392,
+      "status": "moderate",
+      "kids": true,
+      "snorkel": true,
+      "parking": true
+    },
+    {
+      "id": "bb007",
+      "island": "barbados",
+      "name": "Crane Beach",
+      "commune": "Saint Philip",
+      "lat": 13.1003,
+      "lng": -59.4472,
+      "status": "avoid",
+      "kids": false,
+      "snorkel": false,
+      "parking": true
+    },
+    {
+      "id": "bb008",
+      "island": "barbados",
+      "name": "Bathsheba",
+      "commune": "Saint Joseph",
+      "lat": 13.2147,
+      "lng": -59.5219,
+      "status": "avoid",
+      "kids": false,
+      "snorkel": false,
+      "parking": true
+    },
+    {
+      "id": "bb009",
+      "island": "barbados",
+      "name": "Bottom Bay",
+      "commune": "Saint Philip",
+      "lat": 13.1247,
+      "lng": -59.4319,
+      "status": "avoid",
+      "kids": false,
+      "snorkel": false,
+      "parking": true
+    },
+    {
+      "id": "bb010",
+      "island": "barbados",
+      "name": "Brandons Beach",
+      "commune": "Bridgetown",
+      "lat": 13.1108,
+      "lng": -59.6286,
+      "status": "clean",
+      "kids": true,
+      "snorkel": true,
+      "parking": true
+    },
+    {
+      "id": "bb011",
+      "island": "barbados",
+      "name": "Brownes Beach",
+      "commune": "Bridgetown",
+      "lat": 13.0917,
+      "lng": -59.6178,
+      "status": "clean",
+      "kids": true,
+      "snorkel": true,
+      "parking": true
+    },
+    {
+      "id": "bb012",
+      "island": "barbados",
+      "name": "Silver Sands",
+      "commune": "Christ Church",
+      "lat": 13.0586,
+      "lng": -59.5039,
+      "status": "avoid",
+      "kids": false,
+      "snorkel": false,
+      "parking": true
+    }
+  ],
+  "paymentLinks": {
+    "monthly": "PLACEHOLDER_stripe_payment_link_monthly",
+    "yearly": "PLACEHOLDER_stripe_payment_link_yearly",
+    "tripPass": "PLACEHOLDER_stripe_payment_link_trippass"
+  },
+  "noTrial": true
+}

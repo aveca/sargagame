@@ -1877,7 +1877,10 @@ const PAYWALL_READY=!REGION_PAY||!!LINK_MONTHLY
 // PRICE_YR à nu (avant, elles ne tournaient que pour l'USD). getLang() est défini
 // au module (l.81) → libellé localisé fr/en. Sans ça : "null/mois", "Payer null".
 const PRICE_MO=REGION_PAY?(REGION.pricing?.monthly||"$9.99"):(getLang()==="en"?"€4.99":"4,99 €")
-const PRICE_YR=REGION_PAY?(REGION.pricing?.yearly||"$79"):(getLang()==="en"?"€39.99":"39,99 €")
+// EUR (MQ/GP) : annuel porté de 39,99 € → 49 € (offre miroir de l'US $79/an).
+// Le serveur résout prices['annual'] depuis stripe-config.php — le price ID
+// 'annual' EUR doit refléter 49 €/an (action fondateur).
+const PRICE_YR=REGION_PAY?(REGION.pricing?.yearly||"$79"):(getLang()==="en"?"€49":"49 €")
 // Prix/jour dérivé du mensuel (devise-aware) — pour l'ancrage « moins qu'un café »
 // dans la fiche. USD → "$0.33", EUR → "0,16 €". Null si non-parsable (fallback).
 function pricePerDay(){
@@ -1901,6 +1904,24 @@ const PRICE_TRIP=REGION_PAY?(REGION.pricing?.tripPass||"$5.99"):null
 // → [599]). 0 si non-parsable → startTripPass devient inerte (jamais d'appel
 // avec un montant hors allowlist qui se ferait rejeter 400).
 const TRIP_CENTS=(()=>{const n=parseFloat(String(PRICE_TRIP||"").replace(/[^\d.]/g,""));return Number.isFinite(n)&&n>0?Math.round(n*100):0})()
+// ── Offres EUR (MQ/GP) en MIROIR de l'US — Trip Pass 7j + Annuel ──────────────
+// MQ/GP = build PARTAGÉ → REGION=null (détection hostname). Les prix d'affichage
+// sont donc des CONSTANTES en dur, comme PRICE_MO/PRICE_YR ci-dessus (REGION.pricing
+// n'est lisible que pour les NOUVELLES régions). Les valeurs miroir du bloc
+// `pricing` ajouté à regions/mq.json + gp.json (source de vérité config).
+//
+// TRIP PASS EUR : accès UNIQUE 7 jours, 4,99 € one-time (miroir du tripPass USD
+// $5.99). Chemin de checkout SÉPARÉ de l'abo (passCtxRef + action:pay_once),
+// devise EUR. 499¢ DOIT être dans l'allowlist serveur pay_once EUR
+// (create-checkout.php → [499, 799, ...]). EUR uniquement (!IS_NEW_REGION).
+const EUR_TRIP_CENTS=499
+const PRICE_TRIP_EUR=getLang()==="en"?"€4.99":"4,99 €"
+// ANNUEL EUR : 49 €/an (miroir du yearly USD $79). DÉJÀ entièrement câblé côté
+// code (hasAnnual=true pour EUR → toggle annuel, défaut=annuel, serveur 'subscribe'
+// résout prices['annual'] depuis stripe-config.php). Seul l'affichage du prix
+// annuel restait à 39,99 € : PRICE_YR ci-dessus le porte désormais à 49 € (sans
+// toucher la copy sous A/B). Le vrai price ID 'annual' EUR doit exister dans
+// stripe-config.php (action fondateur — price_REPLACE_ME_STRIPE_EUR_yearly_49).
 // 2026-06-17 — Essai gratuit retiré PARTOUT : paiement IMMÉDIAT (USD + EUR, MQ/GP
 // inclus). Le serveur (create-checkout.php $noTrial=true) facture immédiatement ;
 // cette constante bascule toute la copy front en mode "accès immédiat". Le
@@ -6824,12 +6845,12 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
   // aucun hardcode devise). pMo/pYr = cartes plan, eqMo = « soit X/mois » sous l'annuel,
   // ctaSub = 1re sous-ligne CTA, perDay = 2e sous-ligne (« moins qu'un café »).
   const pMo=REGION_PAY?PRICE_MO:(lang==="en"?"€4.99":"4,99 €")
-  const pYr=REGION_PAY?PRICE_YR:(lang==="en"?"€39.99":"39,99 €")
-  const eqMo=(()=>{const raw=REGION_PAY?PRICE_YR:"39.99";const n=parseFloat(String(raw).replace(/[^0-9.,]/g,"").replace(",","."));if(!n)return null;const sym=(String(raw).match(/[€$£]/)||["€"])[0];const e=(n/12).toFixed(2).replace(".",lang==="fr"?",":".");return _t(lang,`soit ${e} ${sym}/mois`,`${sym}${e}/mo`,`${sym}${e}/mes`)})()
+  const pYr=REGION_PAY?PRICE_YR:(lang==="en"?"€49":"49 €")
+  const eqMo=(()=>{const raw=REGION_PAY?PRICE_YR:"49";const n=parseFloat(String(raw).replace(/[^0-9.,]/g,"").replace(",","."));if(!n)return null;const sym=(String(raw).match(/[€$£]/)||["€"])[0];const e=(n/12).toFixed(2).replace(".",lang==="fr"?",":".");return _t(lang,`soit ${e} ${sym}/mois`,`${sym}${e}/mo`,`${sym}${e}/mes`)})()
   // « par jour » dérivé du prix réellement présélectionné (annuel si dispo, sinon mensuel).
   const perDay=(()=>{
     const useYr=effectivePlan==="annual"
-    const raw=useYr?(REGION_PAY?PRICE_YR:"39.99"):(REGION_PAY?PRICE_MO:"4.99")
+    const raw=useYr?(REGION_PAY?PRICE_YR:"49"):(REGION_PAY?PRICE_MO:"4.99")
     const n=parseFloat(String(raw).replace(/[^0-9.,]/g,"").replace(",","."));if(!n)return null
     const sym=(String(raw).match(/[€$£]/)||["€"])[0]
     const per=(n/(useYr?365:30))
@@ -7169,14 +7190,14 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
   const calm=pwCalm&&allCalm===true
   // prix (mêmes expressions que le toggle classique — aucune divergence)
   const pMo=REGION_PAY?PRICE_MO:(lang==="en"?"€4.99":"4,99 €")
-  const pYr=REGION_PAY?PRICE_YR:(lang==="en"?"€39.99":"39,99 €")
-  const eqMo=(()=>{const raw=REGION_PAY?PRICE_YR:"39.99";const n=parseFloat(String(raw).replace(/[^0-9.,]/g,"").replace(",","."));if(!n)return null;const sym=(String(raw).match(/[€$£]/)||["€"])[0];const e=(n/12).toFixed(2).replace(".",lang==="fr"?",":".");return _t(lang,`soit ${e} ${sym}/mois`,`${sym}${e}/mo`,`${sym}${e}/mes`)})()
+  const pYr=REGION_PAY?PRICE_YR:(lang==="en"?"€49":"49 €")
+  const eqMo=(()=>{const raw=REGION_PAY?PRICE_YR:"49";const n=parseFloat(String(raw).replace(/[^0-9.,]/g,"").replace(",","."));if(!n)return null;const sym=(String(raw).match(/[€$£]/)||["€"])[0];const e=(n/12).toFixed(2).replace(".",lang==="fr"?",":".");return _t(lang,`soit ${e} ${sym}/mois`,`${sym}${e}/mo`,`${sym}${e}/mes`)})()
   // Ancrage prix « par jour » dérivé du prix réellement présélectionné (annuel si
   // dispo, sinon mensuel) — recalculé depuis les MÊMES strings que le toggle, zéro
   // hardcode devise. « moins qu'un café » = ancrage de référence quotidien.
   const perDay=(()=>{
     const useYr=effectivePlan==="annual"
-    const raw=useYr?(REGION_PAY?PRICE_YR:"39.99"):(REGION_PAY?PRICE_MO:"4.99")
+    const raw=useYr?(REGION_PAY?PRICE_YR:"49"):(REGION_PAY?PRICE_MO:"4.99")
     const n=parseFloat(String(raw).replace(/[^0-9.,]/g,"").replace(",","."));if(!n)return null
     const sym=(String(raw).match(/[€$£]/)||["€"])[0]
     const per=(n/(useYr?365:30))
@@ -8005,6 +8026,25 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     try{const _em=localStorage.getItem("sg_email")||"";localStorage.setItem("sg_checkout_abandoned",JSON.stringify({email:_em,ts:Date.now()}))}catch(_){}
     setPayStep(true)
   },[source,setPayStep])
+  // ── Trip Pass EUR (MQ/GP) — MIROIR du Trip Pass USD ci-dessus ────────────────
+  // Accès UNIQUE 7 jours, 4,99 € one-time (EUR_TRIP_CENTS=499), sans abonnement.
+  // EUR uniquement (!IS_NEW_REGION) : les régions USD utilisent tripAB/startTripPass.
+  // A/B pw_trippass_eur (override ?pwtripeur=1/0). Chemin de checkout SÉPARÉ de
+  // l'abo (passCtxRef + action:pay_once, devise EUR) — ZÉRO contact avec
+  // effectivePlan/stripeLinkFor. 499¢ DOIT être dans l'allowlist serveur pay_once
+  // EUR. Le pass off-site historique (PassOffer/pwPass, p7/p30 799¢+) reste intact.
+  const tripEurAB=!IS_NEW_REGION&&(()=>{try{
+    const q=window.location.search
+    if(/[?&]pwtripeur=1/.test(q))return true
+    if(/[?&]pwtripeur=0/.test(q))return false
+    return abVariant("pw_trippass_eur",["control","trip"],[.5,.5])==="trip"
+  }catch(_){return false}})()
+  const startTripPassEur=useCallback(()=>{
+    passCtxRef.current={pass:"trip7",cents:EUR_TRIP_CENTS,days:7,cur:"eur"}
+    try{track("sg_pass_cta",{pass:"trip7",cents:EUR_TRIP_CENTS,source:source||"unknown",onsite:1,kind:"trip"})}catch(_){}
+    try{const _em=localStorage.getItem("sg_email")||"";localStorage.setItem("sg_checkout_abandoned",JSON.stringify({email:_em,ts:Date.now()}))}catch(_){}
+    setPayStep(true)
+  },[source,setPayStep])
   const[showPrelude,setShowPrelude]=useState(false)
   // Compute upcoming dates for the Prelude ledger
   const _preludeDates=(()=>{
@@ -8300,7 +8340,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
                 <div style={{fontWeight:500,color:"rgba(255,255,255,.55)",fontSize:11,marginTop:2}}>
                   {NO_TRIAL
                     ?(effectivePlan==="annual"?_t(lang,`${PRICE_YR}/an · annule en 2 clics`,`${PRICE_YR}/yr · cancel in 2 clicks`,`${PRICE_YR}/año · cancela en 2 clics`):_t(lang,`${PRICE_MO}/mois · annule en 2 clics`,`${PRICE_MO}/mo · cancel in 2 clicks`,`${PRICE_MO}/mes · cancela en 2 clics`))
-                    :(effectivePlan==="annual"?(REGION_PAY?_t(lang,`Puis ${PRICE_YR}/an · annule en 1 clic`,`Then ${PRICE_YR}/yr · cancel anytime`,`Luego ${PRICE_YR}/año · cancela en 1 clic`):_t(lang,"Puis 39,99 €/an · annule en 1 clic","Then €39.99/yr · cancel anytime","Luego 39,99 €/año · cancela en 1 clic")):(REGION_PAY?_t(lang,`Puis ${PRICE_MO}/mois · annule en 1 clic`,`Then ${PRICE_MO}/mo · cancel anytime`,`Luego ${PRICE_MO}/mes · cancela en 1 clic`):_t(lang,"Puis 4,99 €/mois · annule en 1 clic","Then €4.99/mo · cancel anytime","Luego 4,99 €/mes · cancela en 1 clic")))}
+                    :(effectivePlan==="annual"?(REGION_PAY?_t(lang,`Puis ${PRICE_YR}/an · annule en 1 clic`,`Then ${PRICE_YR}/yr · cancel anytime`,`Luego ${PRICE_YR}/año · cancela en 1 clic`):_t(lang,"Puis 49 €/an · annule en 1 clic","Then €49/yr · cancel anytime","Luego 49 €/año · cancela en 1 clic")):(REGION_PAY?_t(lang,`Puis ${PRICE_MO}/mois · annule en 1 clic`,`Then ${PRICE_MO}/mo · cancel anytime`,`Luego ${PRICE_MO}/mes · cancela en 1 clic`):_t(lang,"Puis 4,99 €/mois · annule en 1 clic","Then €4.99/mo · cancel anytime","Luego 4,99 €/mes · cancela en 1 clic")))}
                 </div>
               </div>
               <div style={{fontFamily:"'Anton',sans-serif",fontSize:22,color:"#FFC72C",letterSpacing:"-.01em",textAlign:"right"}}>
@@ -8318,7 +8358,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               ]:[
                 {k:_t(lang,"Aujourd'hui","Today","Hoy"),v:REGION_PAY?_t(lang,"$0 · tu testes 7 jours","$0 · 7-day trial starts","$0 · empieza tu prueba de 7 días"):_t(lang,"0 € · tu testes 7 jours","€0 · 7-day trial starts","0 € · empieza tu prueba de 7 días")},
                 {k:_preludeDates.remind,v:_t(lang,"Rappel · 2 jours avant la 1re charge","Reminder · 2 days before first charge","Recordatorio · 2 días antes del primer cobro")},
-                {k:_preludeDates.charge,v:effectivePlan==="annual"?(REGION_PAY?_t(lang,`${PRICE_YR} · sauf si tu annules`,`${PRICE_YR} · unless you cancel`,`${PRICE_YR} · a menos que canceles`):_t(lang,"39,99 € · sauf si tu annules","€39.99 · unless you cancel","39,99 € · a menos que canceles")):(REGION_PAY?_t(lang,`${PRICE_MO} · sauf si tu annules`,`${PRICE_MO} · unless you cancel`,`${PRICE_MO} · a menos que canceles`):_t(lang,"4,99 € · sauf si tu annules","€4.99 · unless you cancel","4,99 € · a menos que canceles"))},
+                {k:_preludeDates.charge,v:effectivePlan==="annual"?(REGION_PAY?_t(lang,`${PRICE_YR} · sauf si tu annules`,`${PRICE_YR} · unless you cancel`,`${PRICE_YR} · a menos que canceles`):_t(lang,"49 € · sauf si tu annules","€49 · unless you cancel","49 € · a menos que canceles")):(REGION_PAY?_t(lang,`${PRICE_MO} · sauf si tu annules`,`${PRICE_MO} · unless you cancel`,`${PRICE_MO} · a menos que canceles`):_t(lang,"4,99 € · sauf si tu annules","€4.99 · unless you cancel","4,99 € · a menos que canceles"))},
               ]).map((r,i)=>(
                 <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                   <span style={{color:"rgba(255,255,255,.72)"}}>{r.k}</span>
@@ -8525,7 +8565,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             {k:_t(lang,"Jour 5","Day 5","Día 5"),v:_t(lang,"on te prévient par email avant la facturation","heads-up email before you're ever charged","te avisamos por email antes del cobro")},
             {k:_t(lang,"Jour 7","Day 7","Día 7"),v:(()=>{
               const pr=effectivePlan==="annual"
-                ?(REGION_PAY?`${PRICE_YR}${_t(lang,"/an","/yr","/año")}`:_t(lang,"39,99 €/an","€39.99/yr","39,99 €/año"))
+                ?(REGION_PAY?`${PRICE_YR}${_t(lang,"/an","/yr","/año")}`:_t(lang,"49 €/an","€49/yr","49 €/año"))
                 :(REGION_PAY?`${PRICE_MO}${_t(lang,"/mois","/mo","/mes")}`:_t(lang,"4,99 €/mois","€4.99/mo","4,99 €/mes"))
               return _t(lang,`${pr}, annulable en 2 clics`,`${pr}, cancel in 2 clicks`,`${pr}, cancela en 2 clics`)
             })()},
@@ -8578,13 +8618,24 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             transition:"all .15s"}}>
             <div style={{position:"absolute",top:-8,right:8,background:C.gold,color:C.ink,
               fontSize:9,fontWeight:800,padding:"2px 7px",borderRadius:100,letterSpacing:".02em"}}>
-              -33%
+              {(()=>{
+                // Remise annuelle calculée depuis les prix réels (mo×12 vs an) —
+                // plus de "-33%" en dur qui devient faux quand l'annuel change
+                // (EUR 49 € vs 12×4,99 = ~18 %). Fallback "-33%" si non-parsable.
+                try{
+                  const ry=REGION_PAY?PRICE_YR:"49",rm=REGION_PAY?PRICE_MO:"4.99"
+                  const ny=parseFloat(String(ry).replace(/[^0-9.,]/g,"").replace(",","."))
+                  const nm=parseFloat(String(rm).replace(/[^0-9.,]/g,"").replace(",","."))
+                  if(ny>0&&nm>0){const pct=Math.round((1-ny/(nm*12))*100);if(pct>0)return `-${pct}%`}
+                }catch(_){}
+                return "-33%"
+              })()}
             </div>
             <div>{_t(lang,"Annuel","Annual","Anual")}</div>
-            <div style={{fontSize:18,fontWeight:700,marginTop:2}}>{REGION_PAY?PRICE_YR:lang==="en"?"€39.99":"39,99 €"}<span style={{fontSize:11,fontWeight:400}}>/{_t(lang,"an","yr","año")}</span></div>
+            <div style={{fontSize:18,fontWeight:700,marginTop:2}}>{REGION_PAY?PRICE_YR:lang==="en"?"€49":"49 €"}<span style={{fontSize:11,fontWeight:400}}>/{_t(lang,"an","yr","año")}</span></div>
             {(()=>{
               // Prix /mois équivalent : l'user n'a plus à diviser (ancre l'annuel).
-              const raw=REGION_PAY?PRICE_YR:"39.99"
+              const raw=REGION_PAY?PRICE_YR:"49"
               const sym=(raw.match(/[€$£]/)||["€"])[0]
               const n=parseFloat(raw.replace(/[^0-9.,]/g,"").replace(",","."))
               if(!n)return null
@@ -8618,7 +8669,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             dur) : mensuel/30, annuel/365. Comparaison soda uniquement sur les
             marchés USD touristes ; en EUR rester sobre. */}
         {PAYWALL_READY&&(()=>{
-          const raw=effectivePlan==="annual"?(REGION_PAY?PRICE_YR:"39,99 €"):(REGION_PAY?PRICE_MO:"4,99 €")
+          const raw=effectivePlan==="annual"?(REGION_PAY?PRICE_YR:"49 €"):(REGION_PAY?PRICE_MO:"4,99 €")
           const n=parseFloat(String(raw).replace(/[^0-9.,]/g,"").replace(",","."))
           if(!n)return null
           const sym=(String(raw).match(/[€$£]/)||["€"])[0]
@@ -8689,7 +8740,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               <div style={{fontSize:12,opacity:.8,fontWeight:400,marginTop:4}}>
                 {NO_TRIAL
                   ?_t(lang,`${effectivePlan==="annual"?PRICE_YR+"/an":PRICE_MO+"/mois"} · facturé aujourd'hui`,`${effectivePlan==="annual"?PRICE_YR+"/yr":PRICE_MO+"/mo"} · billed today`,`${effectivePlan==="annual"?PRICE_YR+"/año":PRICE_MO+"/mes"} · se cobra hoy`)
-                  :REGION_PAY?_t(lang,`Puis ${effectivePlan==="annual"?PRICE_YR+"/an":PRICE_MO+"/mois"}`,`Then ${effectivePlan==="annual"?PRICE_YR+"/yr":PRICE_MO+"/mo"}`,`Luego ${effectivePlan==="annual"?PRICE_YR+"/año":PRICE_MO+"/mes"}`):_t(lang,`Puis ${effectivePlan==="annual"?"39,99 €/an":"4,99 €/mois"}`,`Then ${effectivePlan==="annual"?"€39.99/yr":"€4.99/mo"}`,`Luego ${effectivePlan==="annual"?"39,99 €/año":"4,99 €/mes"}`)}
+                  :REGION_PAY?_t(lang,`Puis ${effectivePlan==="annual"?PRICE_YR+"/an":PRICE_MO+"/mois"}`,`Then ${effectivePlan==="annual"?PRICE_YR+"/yr":PRICE_MO+"/mo"}`,`Luego ${effectivePlan==="annual"?PRICE_YR+"/año":PRICE_MO+"/mes"}`):_t(lang,`Puis ${effectivePlan==="annual"?"49 €/an":"4,99 €/mois"}`,`Then ${effectivePlan==="annual"?"€49/yr":"€4.99/mo"}`,`Luego ${effectivePlan==="annual"?"49 €/año":"4,99 €/mes"}`)}
               </div>
             </button>
           )
@@ -8721,6 +8772,36 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               fontSize:14.5,fontWeight:700,padding:"12px 18px",borderRadius:11,cursor:"pointer",
               fontFamily:"inherit",border:`1px solid ${C.gold}`,background:"transparent",color:C.gold}}>
               {_t(lang,`Prendre le pass 7 jours · ${PRICE_TRIP}`,`Get the 7-day pass · ${PRICE_TRIP}`,`Obtener el pase de 7 días · ${PRICE_TRIP}`)}
+            </button>
+          </div>
+        )}
+
+        {/* Trip Pass EUR (A/B pw_trippass_eur, MQ/GP) — MIROIR EXACT du bloc USD
+            ci-dessus, devise EUR, chemin de checkout SÉPARÉ (startTripPassEur →
+            passCtxRef + action:pay_once). N'apparaît PAS si le storefront pass
+            off-site (pwPass/PassOffer) est déjà affiché (évite deux surfaces
+            "pass" concurrentes). Calme : zéro anim. */}
+        {tripEurAB&&!pwPass&&(
+          <div style={{marginTop:14,padding:"14px 16px",borderRadius:14,
+            border:`1px solid ${C.gold}`,background:"rgba(245,158,11,.07)"}}>
+            <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",gap:10,marginBottom:2}}>
+              <span style={{fontSize:12.5,fontWeight:700,color:C.gold,letterSpacing:".01em"}}>
+                {_t(lang,"Juste pour ton séjour ?","Just here for your trip?","¿Solo por tu viaje?")}
+              </span>
+              <span style={{fontSize:11,color:"rgba(255,255,255,.55)"}}>
+                {_t(lang,"sans abonnement","no subscription","sin suscripción")}
+              </span>
+            </div>
+            <div style={{fontSize:13,color:"rgba(255,255,255,.82)",lineHeight:1.35,marginBottom:10}}>
+              {_t(lang,
+                `Pass 7 jours — ${PRICE_TRIP_EUR} une seule fois. Accès complet pendant ton séjour, rien à annuler.`,
+                `7-Day Trip Pass — ${PRICE_TRIP_EUR} once. Full access for your trip, nothing to cancel.`,
+                `Pase de 7 días — ${PRICE_TRIP_EUR} una sola vez. Acceso completo durante tu viaje, nada que cancelar.`)}
+            </div>
+            <button onClick={startTripPassEur} style={{width:"100%",textAlign:"center",
+              fontSize:14.5,fontWeight:700,padding:"12px 18px",borderRadius:11,cursor:"pointer",
+              fontFamily:"inherit",border:`1px solid ${C.gold}`,background:"transparent",color:C.gold}}>
+              {_t(lang,`Prendre le pass 7 jours · ${PRICE_TRIP_EUR}`,`Get the 7-day pass · ${PRICE_TRIP_EUR}`,`Obtener el pase de 7 días · ${PRICE_TRIP_EUR}`)}
             </button>
           </div>
         )}
@@ -8853,7 +8934,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
                   ?_t(lang,`${PRICE_YR}/an · facturé aujourd'hui`,`${PRICE_YR}/yr · billed today`,`${PRICE_YR}/año · se cobra hoy`)
                   :_t(lang,`${PRICE_MO}/mois · facturé aujourd'hui`,`${PRICE_MO}/mo · billed today`,`${PRICE_MO}/mes · se cobra hoy`)} · {_t(lang,"annule en 2 clics","cancel in 2 clicks","cancela en 2 clics")}</>
               :<>{_t(lang,"0 € aujourd'hui","$0 today","$0 hoy")} · {payPlanRef.current==="annual"
-                  ?_t(lang,`puis ${REGION_PAY?PRICE_YR:"39,99 €"}/an dans 7 jours`,`then ${PRICE_YR||"$79"}/yr in 7 days`,`luego ${PRICE_YR||"$79"}/año en 7 días`)
+                  ?_t(lang,`puis ${REGION_PAY?PRICE_YR:"49 €"}/an dans 7 jours`,`then ${PRICE_YR||"$79"}/yr in 7 days`,`luego ${PRICE_YR||"$79"}/año en 7 días`)
                   :_t(lang,`puis ${REGION_PAY?PRICE_MO:"4,99 €"}/mois dans 7 jours`,`then ${PRICE_MO||"$9.99"}/mo in 7 days`,`luego ${PRICE_MO||"$9.99"}/mes en 7 días`)} · {_t(lang,"annule en 1 clic","cancel in 1 click","cancela en 1 clic")}</>}
           </div>
           <input ref={payEmailRef} type="email" inputMode="email" autoComplete="email"
