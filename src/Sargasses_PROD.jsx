@@ -7795,10 +7795,6 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
       setPayError(_t(lang,"Entre ton email pour recevoir ton accès.","Enter your email to receive your access.","Introduce tu email para recibir tu acceso."))
       return
     }
-    // Lane « paiement indirect par mails » : on enrôle l'email haute-intention dans le
-    // drip AVANT de tenter le paiement → récupérable même si carte refusée / 3DS abandonné
-    // / fermeture. submitLead est module-scope (l.1859) ; try/catch = zéro risque pour le checkout.
-    try{submitLead(email,"onsite_checkout")}catch(_){}
     // ── Mode CAPTURE : aucun paiement dispo → on enregistre l'email (waitlist) +
     // état succès. Relance à la réouverture (source 'mollie_waitlist'). ──────────
     if(PAY_CAPTURE_ONLY){
@@ -7814,6 +7810,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
       track("sg_gap_freemium_unlock",{plan:payPlanRef.current,pass:passCtxRef.current?passCtxRef.current.pass:null,source:source||"unknown"})
       setPayBusy(false);onActivated&&onActivated();onClose&&onClose();return
     }
+    // Lane « paiement indirect par mails » : enrôle l'email haute-intention dans le
+    // drip AVANT de tenter le paiement → récupérable si carte refusée / 3DS abandonné /
+    // fermeture. NON-capture uniquement (en capture, gap_freemium ci-dessus suffit —
+    // évite le double submitLead qui gonflait les métriques de 2× par déblocage).
+    try{submitLead(email,"onsite_checkout")}catch(_){}
     // ── Pont Mollie : createToken (Components) → mollie.php. 3DS → redirect+retour
     // (?mollie_return=1 confirme + débloque). Sinon confirme inline puis débloque. ─
     if(PAY_PROVIDER==="mollie"){
@@ -8220,7 +8221,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           onStart={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown",skin:"world"});startCheckout(effectivePlan,"world")}}
           onAlready={verifyExistingSub}
           onB2B={()=>{try{track("sg_b2b_open",{source:source||"unknown"})}catch(_){}; setShowB2B(true)}}
-          onSeason={pwSeason?(()=>{try{track("sg_pass_cta",{pass:"season",cents:1999,source:source||"unknown",onsite:1})}catch(_){}
+          onSeason={(!PAY_CAPTURE_ONLY&&pwSeason)?(()=>{try{track("sg_pass_cta",{pass:"season",cents:1999,source:source||"unknown",onsite:1})}catch(_){}
             passCtxRef.current={pass:"season",cents:1999,days:183,cur:"eur"};setPayStep(true)}):undefined}
           onClose={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"world_close"});onClose()}}/>}
         {pwComic&&!pwWorld&&<ComicPaywall lang={lang} beach={beach} source={source}
@@ -8231,14 +8232,14 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           onStart={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown",skin:"comic"});startCheckout(effectivePlan,"comic")}}
           onAlready={verifyExistingSub}
           onB2B={()=>{try{track("sg_b2b_open",{source:source||"unknown"})}catch(_){}; setShowB2B(true)}}
-          onSeason={pwSeason?(()=>{try{track("sg_pass_cta",{pass:"season",cents:1999,source:source||"unknown",onsite:1})}catch(_){}
+          onSeason={(!PAY_CAPTURE_ONLY&&pwSeason)?(()=>{try{track("sg_pass_cta",{pass:"season",cents:1999,source:source||"unknown",onsite:1})}catch(_){}
             passCtxRef.current={pass:"season",cents:1999,days:183,cur:"eur"};setPayStep(true)}):undefined}
           onClose={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"comic_close"});onClose()}}/>}
         {showB2B&&<B2BModal lang={lang} onClose={()=>setShowB2B(false)}/>}
         {!pwComic&&(<>
         {!scenePay&&<div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
           margin:"-8px -24px 20px",padding:0}}/>}
-        {pwPass&&<PassOffer lang={lang} onBuy={(item)=>{try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown",onsite:passOnsite?1:0})}catch(_){}
+        {!PAY_CAPTURE_ONLY&&pwPass&&<PassOffer lang={lang} onBuy={(item)=>{try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown",onsite:passOnsite?1:0})}catch(_){}
           if(passOnsite){passCtxRef.current={pass:item.pass,cents:item.c,days:item.pass==="p30"?30:7,cur:"eur"};setPayStep(true)}
           else{try{window.location.href=item.u}catch(_){}}}}/>}
         {/* A/B pw_scene : le paywall = CONTINUATION du monde golden-hour (Veilleur + promesse),
@@ -8811,7 +8812,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             passCtxRef + action:pay_once). N'apparaît PAS si le storefront pass
             off-site (pwPass/PassOffer) est déjà affiché (évite deux surfaces
             "pass" concurrentes). Calme : zéro anim. */}
-        {tripEurAB&&!pwPass&&(
+        {!PAY_CAPTURE_ONLY&&tripEurAB&&!pwPass&&(
           <div style={{marginTop:14,padding:"14px 16px",borderRadius:14,
             border:`1px solid ${C.gold}`,background:"rgba(245,158,11,.07)"}}>
             <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",gap:10,marginBottom:2}}>
@@ -13551,7 +13552,15 @@ export default function App(){
             track("sg_conversion",{session_id:ctx.paymentId,method:ctx.pass?"mollie_pass":"mollie",plan:ctx.pass||ctx.plan})
           }
           clean()
-        }).catch(()=>clean())
+        }).catch(async()=>{
+          // payment_status injoignable (réseau) : le paiement a pu réussir côté
+          // serveur (webhook). Avant d'abandonner, on tente la vérif d'abo par email
+          // → évite de perdre un vrai payeur sur un blip réseau au retour 3DS.
+          try{const v=ctx.email?await sgVerifySub(ctx.email):null
+            if(v&&v.active){localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",ctx.email);localStorage.setItem("sg_premium_welcome","1");track("sg_conversion",{session_id:ctx.paymentId,method:"mollie_3ds_fallback",plan:ctx.plan})}
+          }catch(_){}
+          clean()
+        })
     }catch(_){}
   },[])
   // Handle ?manage=1 → open Stripe Customer Portal
