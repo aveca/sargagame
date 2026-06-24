@@ -109,7 +109,7 @@ async function main() {
     const { data, error } = await sendEmail(resend, {
       from: FROM, to: FOUNDER_EMAIL, subject,
       html, preheader: 'Un site tiers affiche votre widget — signal d\'intérêt B2B.',
-      replyTo: 'contact@sargasses-martinique.com',
+      replyTo: 'alerte@sargasses-martinique.com',
     });
     if (error) console.error('❌ email:', error.message || JSON.stringify(error));
     else console.log('✅ alerte envoyée au fondateur · id', data && data.id);

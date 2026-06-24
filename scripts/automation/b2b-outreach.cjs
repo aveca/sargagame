@@ -44,8 +44,8 @@ const DATA_DIR = resolve(__dirname, 'data')
 const B2B_LOG = resolve(DATA_DIR, 'b2b-outreach-log.json')
 const BACKLINK_LOG = resolve(DATA_DIR, 'outreach-log.json') // cross-dédup
 const FROM = 'Sargasses Pro <alerte@sargasses-martinique.com>'
-const REPLY_TO = 'contact@sargasses-martinique.com'
-const UNSUB = 'mailto:contact@sargasses-martinique.com?subject=STOP'
+const REPLY_TO = 'alerte@sargasses-martinique.com'
+const UNSUB = 'mailto:alerte@sargasses-martinique.com?subject=STOP'
 
 // Requêtes de découverte B2B (rotation 1/run). On vise l'hôtellerie de bord de
 // mer et les acteurs littoraux — PAS les blogs voyage (= cible de l'outreach

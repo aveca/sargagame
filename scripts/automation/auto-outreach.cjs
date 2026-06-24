@@ -11,7 +11,7 @@
  *      kit, in the local language. The From DISPLAY name stays per-market
  *      ("Sargassum Florida"…) but the address is normalised to
  *      alerte@sargasses-martinique.com (SPF/DKIM), and replies route to
- *      contact@sargasses-martinique.com — everything goes out from the FR domain.
+ *      alerte@sargasses-martinique.com — everything goes out from the FR domain.
  *   4. Track contacted sites to never re-email
  *
  * Safety: max 5 emails per run. Dedup by domain. Professional tone. Intl is
@@ -36,7 +36,7 @@ const DRY_RUN = process.env.DRY_RUN === '1'
 const MAX_EMAILS_PER_RUN = 5
 // Réponses : tout l'outreach part désormais du domaine FR (boîte alerte@), donc on
 // route les réponses vers une boîte FR réelle plutôt qu'un support@ intl non créé.
-const OUTREACH_REPLY_TO = 'contact@sargasses-martinique.com'
+const OUTREACH_REPLY_TO = 'alerte@sargasses-martinique.com'
 
 const DATA_DIR = resolve(__dirname, 'data')
 const OUTREACH_LOG = resolve(DATA_DIR, 'outreach-log.json')
@@ -51,7 +51,7 @@ const OUTREACH_INTL = process.env.OUTREACH_INTL === '1'
 // `pitch` drives the email language + which site(s) and press kit we offer.
 const MARKETS = {
   fr: {
-    lang: 'fr', from: FROM, replyTo: 'contact@sargasses-martinique.com',
+    lang: 'fr', from: FROM, replyTo: 'alerte@sargasses-martinique.com',
     sites: [['Martinique', 'https://sargasses-martinique.com/'], ['Guadeloupe', 'https://sargasses-guadeloupe.com/']],
     press: 'https://sargasses-martinique.com/recherche/', widget: 'https://sargasses-martinique.com/widget/', intl: false,
   },

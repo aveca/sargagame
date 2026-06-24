@@ -16,7 +16,7 @@ const OUT_DIR = path.join(ROOT, "public", "beaches");
 const BEACHES_FILE = path.join(ROOT, "public", "data", "beaches-list.json");
 
 const USER_AGENT =
-  "SargassesBot/1.0 (https://sargasses-martinique.com; contact@sargasses-martinique.com)";
+  "SargassesBot/1.0 (https://sargasses-martinique.com; alerte@sargasses-martinique.com)";
 
 // Known good Wikimedia filenames for beaches where search might fail
 const KNOWN_FILES = {
