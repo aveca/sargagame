@@ -12,12 +12,12 @@
  *   - "Échec envoi SMTP: …"   → secret présent mais auth/host KO
  *   - "Envoyé … message-id …" → bout-en-bout OK (vérifier la réception en boîte)
  *
- * Env: SMTP_PASS (requis). TEST_TO (optionnel, défaut yacovassaraf@gmail.com).
+ * Env: SMTP_PASS (requis). TEST_TO (optionnel, défaut alerte@sargasses-martinique.com).
  * Usage: node scripts/automation/smtp-selftest.cjs
  */
 const { sendEmail, mailReady, normalizeFrom } = require('./lib/email-send.cjs')
 
-const TO = (process.env.TEST_TO || '').trim() || 'yacovassaraf@gmail.com'
+const TO = (process.env.TEST_TO || '').trim() || 'alerte@sargasses-martinique.com'
 const FROM = 'Sargasses (test SMTP) <alerte@sargasses-martinique.com>'
 
 async function main() {

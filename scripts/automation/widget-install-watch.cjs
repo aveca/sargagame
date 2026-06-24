@@ -21,7 +21,7 @@ const ROOT = path.resolve(__dirname, '..', '..');
 const SEEN_PATH = path.join(__dirname, 'data', 'widget-hosts-seen.json');
 const KEYS_PATH = path.join(__dirname, 'data', 'stats-keys.json');
 const DO_SEND = process.argv.includes('--send');
-const FOUNDER_EMAIL = process.env.WIDGET_ALERT_TO || 'yacovassaraf@gmail.com';
+const FOUNDER_EMAIL = process.env.WIDGET_ALERT_TO || 'alerte@sargasses-martinique.com';
 const FROM = 'Sargasses <alerte@sargasses-martinique.com>';
 
 // Hôtes à ignorer : direct (referrer vide), notre propre marqueur de test, nos propres domaines.

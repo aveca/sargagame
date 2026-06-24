@@ -61,7 +61,7 @@ function dp(pts, eps) {
 
 async function nominatim(q) {
   const url = "https://nominatim.openstreetmap.org/search.php?q=" + encodeURIComponent(q) + "&polygon_geojson=1&format=jsonv2&limit=3";
-  const r = await fetch(url, { headers: { "User-Agent": "sargasses-region-outlines/1.0 (yacovassaraf@gmail.com)" } });
+  const r = await fetch(url, { headers: { "User-Agent": "sargasses-region-outlines/1.0 (alerte@sargasses-martinique.com)" } });
   const a = await r.json();
   // plus grand polygone (Polygon ou MultiPolygon)
   let best = null, bestLen = 0;
