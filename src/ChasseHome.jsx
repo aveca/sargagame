@@ -697,8 +697,9 @@ const SPACE_I18N={
   alH:{fr:"MES ALERTES",en:"MY ALERTS",es:"MIS ALERTAS"},
   alSee:{fr:"Voir mes alertes →",en:"See my alerts →",es:"Ver mis alertas →"},
   alNone:{fr:"Tout est calme sur tes plages.",en:"All calm on your beaches.",es:"Todo tranquilo en tus playas."},
+  proLink:{fr:"Vous gérez un hôtel ou une location ? Passez en Pro →",en:"Run a hotel or rental? Go Pro →",es:"¿Gestionas un hotel o alquiler? Hazte Pro →"},
 }
-function SpaceSheet({favorites=[],beaches=[],isPremium,alertCount=0,lang,track,onClose,onOpenBeach,onOpenAlerts,onPremium}){
+function SpaceSheet({favorites=[],beaches=[],isPremium,alertCount=0,lang,track,onClose,onOpenBeach,onOpenAlerts,onPremium,onOpenPro}){
   const _t=(o)=>(o&&(o[lang]||o.fr))||""
   const closeRef=useRef(null)
   useEffect(()=>{ try{ closeRef.current&&closeRef.current.focus() }catch(_){} },[])
@@ -755,6 +756,14 @@ function SpaceSheet({favorites=[],beaches=[],isPremium,alertCount=0,lang,track,o
           </button>
         ) : (
           <p className="lc-space-empty">{_t(SPACE_I18N.alNone)}</p>
+        )}
+
+        {/* Rampe B2C→B2B : route un hôtelier vers le tunnel Pro (ouvre B2BModal). N'altère JAMAIS le paywall B2C. */}
+        {onOpenPro&&(
+          <button type="button" className="lc-space-pro-link"
+            onClick={()=>{ if(track)try{track("sg_space_pro_click")}catch(_){}; onOpenPro() }}>
+            <span aria-hidden="true">🏨</span> {_t(SPACE_I18N.proLink)}
+          </button>
         )}
       </div>
     </div>
@@ -953,7 +962,7 @@ function BadgesSheet({badges,unlockedSet,onClose,lang}){
 }
 
 export default function ChasseHome(props){
-  const {beach,lang="fr",sargData,pickBeaches=[],onOpen,onOpenBeach,onPremium,onShowMap,onCaptureEmail,track,exiting,isPremium=false,favorites=[],onToggleFav}=props
+  const {beach,lang="fr",sargData,pickBeaches=[],onOpen,onOpenBeach,onPremium,onShowMap,onCaptureEmail,track,exiting,isPremium=false,favorites=[],onToggleFav,onOpenPro}=props
   const _t=useCallback((o)=>{ const v=o&&(o[lang]!=null?o[lang]:o.fr); return v },[lang])
 
   const reduce = useMemo(()=>{ try{ return window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches }catch(_){ return false } },[])
@@ -1470,6 +1479,7 @@ export default function ChasseHome(props){
       {spaceEnabled&&spaceOpen&&(
         <SpaceSheet favorites={favorites} beaches={pickBeaches} isPremium={isPremium}
           alertCount={alerts.length} lang={lang} track={track}
+          onOpenPro={onOpenPro&&(()=>{ setSpaceOpen(false); onOpenPro() })}
           onClose={()=>setSpaceOpen(false)}
           onOpenBeach={(b)=>{ setSpaceOpen(false); openDetail(b,"space") }}
           onOpenAlerts={()=>{ setSpaceOpen(false); setAlertsOpen(true) }}
@@ -2016,6 +2026,8 @@ export const CSS=`
 .lc-space-alerts:active{transform:translateY(2px);box-shadow:0 0 0 var(--ink)}
 .lc-space-alerts-n{font-family:"AntonLC",system-ui,sans-serif;font-size:19px;color:var(--ink);background:var(--paper);border:2px solid var(--ink);border-radius:8px;min-width:30px;text-align:center;padding:1px 6px;line-height:1.25}
 .lc-space-alerts-tx{font-weight:800;font-size:14px;color:var(--ink)}
+.lc-space-pro-link{display:block;width:100%;margin-top:18px;-webkit-appearance:none;appearance:none;background:none;border:none;border-top:2px dashed var(--ink);padding:14px 4px 2px;font-family:inherit;font-weight:800;font-size:13px;color:#0d2330;text-align:center;cursor:pointer;line-height:1.4}
+.lc-space-pro-link:active{opacity:.7}
 /* overlay */
 .lc-alerts{position:fixed;inset:0;z-index:1140;display:flex;align-items:flex-start;justify-content:center;
   padding:max(20px,env(safe-area-inset-top)) 16px 24px;overflow-y:auto;-webkit-overflow-scrolling:touch;
