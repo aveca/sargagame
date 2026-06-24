@@ -56,7 +56,7 @@ l'**alerte** le jour où ta plage bascule. Un seul monde **comic-book animé** (
 - [x] 22 FILTRES statut (fait, cf 06)
 - [x] 24 FIABILITÉ DU VEILLEUR (jauge track-record honnête — fait)
 - [x] 25 PARTAGE (navigator.share + fallback copie, sur le détail — fait)
-- [ ] 27 HORS-LIGNE / envoi
+- [x] 27 HORS-LIGNE / envoi — signalement plage émis hors-ligne (mauvais réseau sur la plage) n'est plus PERDU : file `sg_report_q` (localStorage, cap 30) + replay au boot ET au retour réseau (`window 'online'` → `_sgReportFlush`), note in-app « Hors-ligne — partira au retour du réseau » dans `BeachReport`. Additif, zéro Stripe. Vérifié offline→queue→online→flush.
 - [ ] (+ écrans restants de la maquette à transcrire : ~30→40)
 
 ## Connexions (graphe minimal)

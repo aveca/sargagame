@@ -2083,6 +2083,14 @@ function sgCollectEvent(event,params){
   }catch(_){}
 }
 function _sgcStash(body){try{const q=JSON.parse(localStorage.getItem("sg_collect_q")||"[]");q.push(body);if(q.length>30)q.splice(0,q.length-30);localStorage.setItem("sg_collect_q",JSON.stringify(q))}catch(_){}}
+// ── SCREENS_V2 #27 — file hors-ligne des SIGNALEMENTS plage (zéro perte) ───────
+//    Un signalement émis hors-ligne (plage = mauvais réseau) était perdu (.catch
+//    vide). On le met en file localStorage + on le rejoue au boot et au retour du
+//    réseau. Best-effort, no-cors (réponse opaque → on ne peut détecter que l'échec
+//    réseau = hors-ligne). Cap 30. Purement additif, zéro logique paiement.
+const SG_REPORT_URL="https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec"
+function _sgReportStash(body){try{const q=JSON.parse(localStorage.getItem("sg_report_q")||"[]");q.push(body);if(q.length>30)q.splice(0,q.length-30);localStorage.setItem("sg_report_q",JSON.stringify(q))}catch(_){}}
+function _sgReportFlush(){try{const q=JSON.parse(localStorage.getItem("sg_report_q")||"[]");if(!q.length)return;localStorage.removeItem("sg_report_q");q.forEach(body=>{try{fetch(SG_REPORT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body}).catch(()=>_sgReportStash(body))}catch(_){_sgReportStash(body)}})}catch(_){}}
 function sgCollectFlush(reason){
   try{
     if(!_sgc.buf||!_sgc.dirty)return
@@ -2097,6 +2105,9 @@ function sgCollectInit(){
   if(_sgc.started||typeof window==="undefined")return;_sgc.started=true
   // rejoue la file d'une session précédente (best-effort, beacon)
   try{const q=JSON.parse(localStorage.getItem("sg_collect_q")||"[]");if(q.length){localStorage.removeItem("sg_collect_q");q.forEach(b=>{try{navigator.sendBeacon&&navigator.sendBeacon(SG_COLLECT_URL,new Blob([b],{type:"application/json"}))}catch(_){}})}}catch(_){}
+  // #27 : rejoue les signalements plage en attente (boot + retour réseau)
+  try{_sgReportFlush()}catch(_){}
+  try{window.addEventListener("online",_sgReportFlush)}catch(_){}
   try{
     document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")sgCollectFlush("hide")})
     window.addEventListener("pagehide",()=>sgCollectFlush("pagehide"))
@@ -3437,6 +3448,7 @@ function BeachReport({beach,lang,communityReports}){
     if(last&&Date.now()-last<12*3600*1000)return g(key,null)
     return null
   })
+  const[queued,setQueued]=useState(false)  // #27 : signalement mis en file hors-ligne
   const counts=communityReports[beach.id]||communityReports[BEACH_TO_SARG[beach.id]]||{clean:0,moderate:0,avoid:0,total:0}
   const total=counts.total||0
   const LEVELS=[
@@ -3448,10 +3460,12 @@ function BeachReport({beach,lang,communityReports}){
     if(voted)return
     setVoted(level);s(key,level);s(cooldownKey,Date.now())
     track("sg_beach_report",{beach_id:beach.id,level,satellite_status:beach.status,island:beach.island})
-    try{fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec",{
-      method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
-      body:JSON.stringify({type:"beach_report",beach_id:BEACH_TO_SARG[beach.id]||beach.id,beach_name:beach.name,level,island:beach.island,date:new Date().toISOString()})
-    }).catch(()=>{})}catch{}
+    const body=JSON.stringify({type:"beach_report",beach_id:BEACH_TO_SARG[beach.id]||beach.id,beach_name:beach.name,level,island:beach.island,date:new Date().toISOString()})
+    // #27 : hors-ligne → file localStorage rejouée au retour du réseau (zéro perte)
+    if(typeof navigator!=="undefined"&&navigator.onLine===false){_sgReportStash(body);setQueued(true);return}
+    try{fetch(SG_REPORT_URL,{
+      method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body
+    }).catch(()=>{_sgReportStash(body);setQueued(true)})}catch{_sgReportStash(body);setQueued(true)}
   }
   // Community consensus (mode of reports)
   const consensus=total>=3?(counts.avoid>=counts.moderate&&counts.avoid>=counts.clean?"avoid":counts.moderate>=counts.clean?"moderate":"clean"):null
@@ -3476,6 +3490,11 @@ function BeachReport({beach,lang,communityReports}){
           }}><ComicStatusGlyph status={lv.id} size={13} color={voted===lv.id?lv.c:"var(--sg-ink)"}/>{lang==="es"?lv.les:lang==="en"?lv.le:lv.l}</button>
         ))}
       </div>
+      {queued&&(
+        <div style={{marginTop:8,fontSize:11,fontWeight:600,color:"var(--sg-mid,#7a7768)",display:"flex",alignItems:"center",gap:6}}>
+          <span aria-hidden="true">📡</span>{_t(lang,"Hors-ligne — ton signalement partira au retour du réseau.","Offline — your report will send when you're back online.","Sin conexión — tu reporte se enviará al volver la red.")}
+        </div>
+      )}
       {total>0&&(
         <div style={{marginTop:8}}>
           <div style={{display:"flex",height:4,borderRadius:2,overflow:"hidden",background:"var(--sg-border,rgba(0,0,0,.06))"}}>
