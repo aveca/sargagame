@@ -6750,6 +6750,7 @@ function B2BModal({lang,onClose}){
   const submit=()=>{
     if(!valid||sent)return
     const source=kind==="hotel"?"b2b_hotel_request":"b2b_collectivite_request"
+    try{localStorage.setItem("sg_b2b_lane",kind)}catch(_){}  // mémoire de lane (analytics + perso) — ne supprime JAMAIS le paywall B2C
     try{submitLead(email.trim(),source)}catch(_){}
     try{track("sg_b2b_lead",{kind})}catch(_){}
     setSent(true)
@@ -14865,7 +14866,7 @@ export default function App(){
           /* BRAS A/B `arena_loop` — accueil « LA CHASSE » (boucle de jeu TCG).
              Additif : control = HomeAZ/GameFunnel/HeroVerdict, intact. ?chasse=1/0. */
           <ErrBound><Suspense fallback={null}>
-          <LazyChasse beach={heroPick} lang={lang} island={island} sargData={sargData} userPos={userPos} isPremium={isPremium} favorites={favorites} onToggleFav={toggleFav}
+          <LazyChasse beach={heroPick} lang={lang} island={island} sargData={sargData} userPos={userPos} isPremium={isPremium} favorites={favorites} onToggleFav={toggleFav} onOpenPro={()=>{ try{track("sg_b2b_open",{source:"space"})}catch(_){}; setShowProB2B(true) }}
             pickBeaches={(allBeaches||[]).filter(b=>(IS_NEW_REGION||b.island===island)&&b.status&&b.score!=null)
               .sort((a,b)=>(b.score||0)-(a.score||0))}
             track={track}
