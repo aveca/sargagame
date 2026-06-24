@@ -7,6 +7,12 @@ on:
     - cron: '0 10 * * 2'
   workflow_dispatch:
 
+# Garde anti-race : sérialise les runs de CE workflow (push log outreach/social).
+# Le cross-workflow est géré par `git rebase -X theirs` côté script (cf. CLAUDE.md).
+concurrency:
+  group: weekly-outreach-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: write
 

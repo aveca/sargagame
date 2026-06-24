@@ -5,6 +5,12 @@ on:
     - cron: '0 0 * * 0' # Every Sunday at midnight
   workflow_dispatch:
 
+# Garde anti-race : sérialise les runs de CE workflow (push de fichiers générés).
+# Le cross-workflow est géré par `git rebase -X theirs` côté script (cf. CLAUDE.md).
+concurrency:
+  group: generate-og-images-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
