@@ -19,10 +19,11 @@ return [
     // l'entrée = allowlist serveur (anti-tampering : un montant forgé est rejeté).
     'subscription' => [
         'monthly' => ['amount' => '4.99',  'currency' => 'EUR', 'interval' => '1 month'],
-        'annual'  => ['amount' => '39.99', 'currency' => 'EUR', 'interval' => '12 months'],
+        'annual'  => ['amount' => '49.00', 'currency' => 'EUR', 'interval' => '12 months'], // aligné sur l'affichage front (49 €/an)
     ],
     // Passes one-time (SANS abonnement). cents = allowlist anti-tampering ; days = durée d'accès.
     'passes' => [
+        'trip7'  => ['cents' => 499,  'days' => 7,   'label' => 'Pass 7 jours (séjour)'], // 4,99 € · miroir du tripPass USD
         'saison' => ['cents' => 1999, 'days' => 180, 'label' => 'Pass saison'],   // 19,99 € · 6 mois
         'p7'     => ['cents' => 799,  'days' => 7,   'label' => 'Pass 7 jours'],
         'p30'    => ['cents' => 1499, 'days' => 30,  'label' => 'Pass 30 jours'],

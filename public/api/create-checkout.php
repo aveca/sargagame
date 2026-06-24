@@ -95,6 +95,56 @@ function resend($to, $subject, $html) {
     curl_close($ch);
 }
 
+// Crédit parrain (parrainage MQ/GP) — serveur-à-serveur, en fire-and-forget après
+// la réponse client. Curl RÉSILIENT (no-op sur erreur, contrairement à stripe()
+// qui exit) : un crédit raté ne doit JAMAIS casser le flow d'abonnement.
+function sg_credit_referrer($refCode, $guestEmail, $lang, $cfg) {
+    $call = function ($method, $path, $params = []) use ($cfg) {
+        $ch = curl_init("https://api.stripe.com/v1$path");
+        $opt = [
+            CURLOPT_USERPWD        => $cfg['sk'] . ':',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER     => ['Stripe-Version: 2024-12-18.acacia'],
+            CURLOPT_TIMEOUT        => 8,
+        ];
+        if ($method === 'POST') { $opt[CURLOPT_POST] = true; $opt[CURLOPT_POSTFIELDS] = http_build_query($params); }
+        curl_setopt_array($ch, $opt);
+        $body = curl_exec($ch);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        return ($code >= 400) ? null : json_decode($body, true);
+    };
+    // Retrouver le customer parrain par metadata.referral_code (Stripe Search).
+    $q = urlencode("metadata['referral_code']:'" . $refCode . "'");
+    $res = $call('GET', "/customers/search?query=$q&limit=1");
+    $cust = $res['data'][0] ?? null;
+    if (!$cust) return; // code forgé / introuvable → no-op (anti-abus)
+    // Anti-auto-parrainage : le parrain ne peut pas être le filleul.
+    if (!empty($cust['email']) && strcasecmp($cust['email'], $guestEmail) === 0) return;
+    // Cap anti-ferme : max 12 mois offerts par parrain.
+    $given = (int)($cust['metadata']['referrals_credited'] ?? 0);
+    if ($given >= 12) return;
+    // Crédit 1 mois : montant NÉGATIF = crédit déduit de la prochaine facture.
+    $call('POST', "/customers/{$cust['id']}/balance_transactions", [
+        'amount'      => -499,
+        'currency'    => 'eur',
+        'description' => "Referral reward ($refCode) " . date('Y-m-d'),
+    ]);
+    $call('POST', "/customers/{$cust['id']}", [
+        'metadata[referrals_credited]' => $given + 1,
+    ]);
+    // Email parrain (récompense tangible) — réutilise resend(). Lang du filleul.
+    if (!empty($cust['email'])) {
+        $subj = ($lang === 'en') ? "\u{1F381} A friend subscribed — 1 month is on us"
+              : (($lang === 'es') ? "\u{1F381} Un amigo se suscribió — 1 mes de regalo"
+              : "\u{1F381} Un ami s'est abonné — 1 mois t'est offert");
+        $body = ($lang === 'en') ? "Good news: a friend you invited just subscribed. Your next month is free (-€4.99). Thanks for growing the community \u{1F30A}"
+              : (($lang === 'es') ? "Buenas noticias: un amigo que invitaste acaba de suscribirse. Tu próximo mes es gratis (-4,99 €). Gracias por hacer crecer la comunidad \u{1F30A}"
+              : "Bonne nouvelle : un ami que tu as invité vient de s'abonner. Ton prochain mois est offert (-4,99 €). Merci de faire grandir la communauté \u{1F30A}");
+        resend($cust['email'], $subj, '<div style="font-family:system-ui;max-width:520px;margin:0 auto;padding:20px;font-size:15px;color:#1a1a1a"><p>' . $body . '</p></div>');
+    }
+}
+
 function buildWelcomeEmail($island, $trialEnd, $domain, $lang) {
     $islandName = ($island === 'GP') ? 'Guadeloupe' : 'Martinique';
     $dateEnd = $trialEnd ? date('j/m/Y', $trialEnd) : '';
@@ -257,6 +307,16 @@ if ($action === 'subscribe') {
     $lang = $input['lang'] ?? 'fr';
     $source = preg_replace('/[^a-zA-Z0-9_-]/', '', $input['source'] ?? 'unknown');
 
+    // ── Parrainage (MQ/GP) : code du parrain (referredBy) + mon propre code ──────
+    $referredBy = preg_replace('/[^A-Z0-9-]/', '', strtoupper($input['referredBy'] ?? ''));
+    $validRef = (bool) preg_match('/^REF-[A-Z0-9]{6}$/', $referredBy);
+    $myRef = preg_replace('/[^A-Z0-9-]/', '', strtoupper($input['myReferralCode'] ?? ''));
+    $validMyRef = (bool) preg_match('/^REF-[A-Z0-9]{6}$/', $myRef);
+    // Anti-auto-parrainage : un device ne peut pas se parrainer lui-même.
+    if ($validRef && $validMyRef && $referredBy === $myRef) { $validRef = false; }
+    // La boucle ne tourne QUE sur les régions EUR qui convertissent (MQ/GP).
+    $refEligible = $validRef && in_array($island, ['mq', 'gp'], true);
+
     if (!$email || !$setupIntentId) {
         http_response_code(400);
         echo json_encode(['error' => 'Missing email or setupIntentId']);
@@ -274,6 +334,9 @@ if ($action === 'subscribe') {
         'invoice_settings[default_payment_method]' => $pm,
     ];
     if ($island !== '') $customerParams['metadata[island]'] = $island;
+    // Mon code parrain en metadata customer → permet à sg_credit_referrer de me
+    // retrouver quand un de mes filleuls s'abonnera plus tard.
+    if ($validMyRef) $customerParams['metadata[referral_code]'] = $myRef;
     $customer = stripe('POST', '/customers', $customerParams);
 
     // Creer l'abonnement avec essai 7j — prix PAR REGION (memes prices que les
@@ -300,6 +363,14 @@ if ($action === 'subscribe') {
         $subParams['expand'][] = 'latest_invoice.payment_intent';
     }
     if ($island !== '') $subParams['metadata[island]'] = $island;
+    // Filleul : 1er mois offert (coupon percent_off:100 duration:once). Appliqué
+    // SEULEMENT si le coupon est explicitement configuré — sinon le checkout
+    // filleul casserait sur un coupon inexistant (stripe() exit sur 400). Tant que
+    // stripe-config.php n'a pas la clé : dégradation douce (abonnement sans cadeau).
+    if ($refEligible && !empty($cfg['referral_coupon'])) {
+        $subParams['coupon'] = $cfg['referral_coupon'];
+        $subParams['metadata[referred_by]'] = $referredBy;
+    }
     $sub = stripe('POST', '/subscriptions', $subParams);
 
     $response = [
@@ -345,6 +416,15 @@ if ($action === 'subscribe') {
         curl_setopt_array($chP, [CURLOPT_POST => true, CURLOPT_POSTFIELDS => $payLog, CURLOPT_HTTPHEADER => ['Content-Type: application/json'], CURLOPT_RETURNTRANSFER => true, CURLOPT_FOLLOWLOCATION => true, CURLOPT_MAXREDIRS => 5, CURLOPT_TIMEOUT => 8]);
         curl_exec($chP);
         curl_close($chP);
+    } catch (Exception $e) {}
+
+    // Crédit parrain — seulement si la sub filleul est RÉELLEMENT active/trialing
+    // (carte validée, 1re facture 0 € via coupon émise). No-op si code introuvable.
+    // Jamais bloquant (curl résilient interne).
+    try {
+        if ($refEligible && in_array(($sub['status'] ?? ''), ['active', 'trialing'], true)) {
+            sg_credit_referrer($referredBy, $email, $lang, $cfg);
+        }
     } catch (Exception $e) {}
 
     // Email de bienvenue (fire-and-forget)
@@ -465,7 +545,10 @@ if ($action === 'pay_once') {
     $USD_ISLANDS = ['florida', 'rivieramaya', 'puntacana'];
     $isUsd = in_array($island, $USD_ISLANDS, true);
     $currency = $isUsd ? 'usd' : 'eur';
-    $ALLOWED_CENTS = $isUsd ? [599] : [799, 999, 1499, 1999, 2499];
+    // EUR (MQ/GP) : 499 = Trip Pass 7j on-site (4,99 € one-time, miroir du
+    // tripPass USD $5.99). 799..2499 = passes historiques (PassOffer p7/p30) +
+    // pass saison 1999. Ajouter 499 ouvre le checkout one-time EUR au Trip Pass.
+    $ALLOWED_CENTS = $isUsd ? [599] : [499, 799, 999, 1499, 1999, 2499];
     if (!$setupIntentId || !in_array($cents, $ALLOWED_CENTS, true)) {
         http_response_code(400);
         echo json_encode(['error' => 'bad pass params']);

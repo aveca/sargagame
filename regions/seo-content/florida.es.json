@@ -1,0 +1,145 @@
+{
+  "_note": "Contenu SEO en ES (langue secondaire) pour Florida / Miami (sargassummiami.com). Les pages /es/ s'activent automatiquement dès que ce fichier existe (cf. scripts/lib/region-langs.cjs). Le primaire EN vit dans regions/seo-content/florida.json — mêmes faits, écrit nativement en espagnol neutro/LatAm pour la audiencia hispanohablante de Miami (no traducción literal). EN secondary lives nowhere; this is the ES set. ES SEO content for Florida (secondary language).",
+  "home": {
+    "title": "Sargazo en Miami Hoy — Mapa de Playas en Vivo y Pronóstico de 7 Días 2026",
+    "desc": "¿Qué playa de Miami o Florida está libre de sargazo hoy? Mapa de algas en vivo por playa, Beach Score de 0 a 100 y pronóstico a 7 días. Actualizado 4 veces al día por satélite."
+  },
+  "routes": {
+    "best": "mejores-playas-sin-sargazo-florida",
+    "weekly": "sargazo-florida-esta-semana"
+  },
+  "faq": [
+    {
+      "q": "¿Cuándo es la temporada de sargazo en Florida?",
+      "a": "La ventana de sargazo en Florida va más o menos de mayo a agosto, con el pico en junio y julio. Los Cayos y la costa atlántica del sureste — de Miami hasta Jupiter — son los más afectados; en invierno prácticamente no hay algas en todo el estado. La cantidad varía muchísimo de un año a otro según la floración del Atlántico, y por eso seguimos las condiciones con datos satelitales actualizados cuatro veces al día en lugar de citar promedios de temporada."
+    },
+    {
+      "q": "¿Qué playas de Florida tienen menos sargazo?",
+      "a": "Las playas de la costa del Golfo, como Clearwater, casi nunca reciben sargazo en cantidades notables — las corrientes rara vez lo llevan hasta allá. Del lado atlántico, Daytona y la costa central reciben mucho menos que los Cayos o Miami. Dentro del sur de Florida, las condiciones pueden cambiar de una playa a otra en un mismo día, así que revisa el mapa en vivo: nuestros datos satelitales, actualizados a diario, muestran exactamente qué playas están limpias ahora mismo."
+    },
+    {
+      "q": "¿Qué tan preciso es este rastreador de sargazo?",
+      "a": "Usamos el mismo índice satelital AFAI en el que se apoya la NOAA, a partir de imágenes de Copernicus y la NOAA actualizadas cuatro veces al día. Las manchas flotantes tienen una firma espectral característica que los satélites detectan de forma confiable cuando el cielo está despejado; las nubes pueden retrasar las lecturas, así que cada playa muestra la antigüedad de sus datos y un nivel de confianza. Los reportes de los bañistas completan los huecos. Es la diferencia entre una medición y una adivinanza."
+    },
+    {
+      "q": "¿De verdad se puede pronosticar el sargazo con una semana de anticipación?",
+      "a": "Hasta cierto punto útil, sí. Una vez que los satélites detectan las manchas mar adentro, su deriva queda determinada en gran medida por el viento y la Corriente del Golfo, que modelamos a diario para cada playa. Los días 1 a 3 son los más fiables; del 4 al 7 muestran la dirección del movimiento. El alga que ya tocó la arena se degrada con una vida media de 3.5 días salvo que llegue material nuevo. El pronóstico se vuelve a correr todos los días conforme entran nuevas pasadas satelitales."
+    },
+    {
+      "q": "¿Limpian las playas de Florida el sargazo?",
+      "a": "La mayoría de las playas turísticas sí. Miami Beach hace rastrillado mecánico diario, y las cuadrillas de hoteles y municipios trabajan cada mañana las principales playas de los Cayos. Las playas más pequeñas y naturales se limpian poco o nunca. La limpieza reinicia la arena, pero si los satélites muestran manchas nuevas en camino, el alga regresa en horas — por eso combinar el calendario de limpieza con nuestro pronóstico satelital diario te dice más que cualquiera de los dos por separado."
+    },
+    {
+      "q": "¿Qué hago si mi playa amaneció cubierta de sargazo?",
+      "a": "Maneja — Florida te da opciones. Si Miami Beach está tapada, lo más seguro es que Daytona o el lado del Golfo en Clearwater no lo estén, y nuestro mapa en vivo te muestra al instante la arena limpia más cercana. Las cantidades pequeñas son inofensivas para quienes nadan; los montones grandes en descomposición huelen a azufre y conviene evitarlos. Las alertas premium te avisan en cuanto una playa guardada cambia de estado, para que dejes de adivinar y empieces a desviar la ruta."
+    }
+  ],
+  "pages": {
+    "forecast": {
+      "slug": "pronostico-sargazo",
+      "title": "Pronóstico de Sargazo Florida 2026 — 7 Días por Playa",
+      "desc": "Pronóstico de sargazo a 7 días para las playas de Florida, actualizado a diario con datos satelitales. Pronóstico por playa para Miami, los Cayos, Fort Lauderdale y Daytona.",
+      "h1": "Pronóstico de Sargazo en Florida — Próximos 7 Días, Playa por Playa",
+      "intro": "Casi toda la información sobre sargazo en Florida llega como un boletín para todo el estado o un pronóstico mensual — acertado a grandes rasgos, inútil para decidir dónde nadar el sábado. Este pronóstico funciona al nivel que de verdad importa: la playa individual. Seguimos 12 de ellas, de Key West hasta Daytona y hasta Clearwater, y corremos una proyección independiente a 7 días para cada una, porque sus realidades difieren muchísimo — los Cayos pueden estar hasta las rodillas de alga mientras Clearwater sigue impecable. El modelo procesa imágenes frescas del satélite Copernicus a diario, ubica las manchas que derivan mar adentro y proyecta qué llega a qué arena y cuándo. Obtienes un pronóstico día por día para cada playa, actualizado cada mañana. Revísalo antes de comprometerte con un fin de semana de playa; el océano no lee boletines mensuales.",
+      "method": "Los satélites detectan el sargazo flotante mediante el índice espectral AFAI — las manchas reflejan la luz del infrarrojo cercano de una forma que el agua abierta no. Tomamos esas imágenes de Copernicus y la NOAA cuatro veces al día, y luego proyectamos cada mancha detectada a lo largo de los vectores de viento y corriente; en Florida, la Corriente del Golfo hace casi toda la conducción. El alga ya varada se degrada en una curva exponencial con vida media de 3.5 días salvo que llegue material nuevo. Cada playa recibe una calificación diaria de limpia a evitar, corregida por los reportes de la comunidad cuando las nubes tapan la vista. Los días 1 a 3 son los de mayor confianza, y todo el pronóstico se recalcula a diario."
+    },
+    "today": {
+      "slug": "playas-sin-sargazo-hoy",
+      "title": "Playas sin Sargazo Hoy en Florida (Lista en Vivo)",
+      "desc": "Lista en vivo de playas de Florida sin sargazo ahora mismo. Verificada por satélite a diario — opciones limpias de Miami y los Cayos a Clearwater y Daytona Beach.",
+      "h1": "Playas sin Sargazo Hoy en Florida",
+      "intro": "¿Necesitas una playa limpia de algas en Florida hoy mismo? La lista ordenada de abajo muestra cuáles de las playas que seguimos están limpias en este momento, de la mejor a la peor, directo de la última pasada satelital — actualizada cuatro veces al día. El patrón suele favorecer a la costa del Golfo (Clearwater casi siempre está despejada) y al Atlántico central (Daytona, Cocoa Beach), mientras que los Cayos y el corredor Miami–Palm Beach varían de una semana a otra en temporada. Pero \"casi siempre\" no es \"hoy\", y ese es el punto de esta página: datos en vivo, playa por playa, para que aciertes al primer intento."
+    },
+    "map": {
+      "slug": "mapa-sargazo",
+      "title": "Mapa del Sargazo en Florida (En Vivo) — Rastreador por Playa",
+      "desc": "Mapa interactivo del sargazo en Florida, actualizado 4 veces al día con imágenes satelitales. Estado del sargazo en vivo para Miami, los Cayos, Palm Beach y la costa del Golfo.",
+      "h1": "Mapa del Sargazo en Vivo de Florida",
+      "intro": "Un mapa interactivo y en vivo de las algas que cubre la costa de Florida más propensa al sargazo — de Key West, pasando por Miami y Palm Beach, hasta Daytona, además de Clearwater en el Golfo. Cada playa lleva un estado en colores (limpia, moderada, evitar), una calificación de 0 a 100 y un pronóstico a 7 días. Detrás hay imágenes satelitales de Copernicus actualizadas cuatro veces al día, contrastadas con reportes de gente que está en la arena. Los mapas oficiales te muestran la imagen regional con días de retraso; este te muestra tu playa, hoy. Un viento del este o un movimiento de la Corriente del Golfo pueden reescribir la costa de la noche a la mañana — revisa el mapa la mañana que vayas."
+    },
+    "season": {
+      "intro": "¿Planeas un viaje de playa a Florida y te preocupa el sargazo? Esta es la imagen honesta de 2026 — cuándo llega el alga a la costa, cuándo la arena sigue despejada y cómo planificarlo. En corto: del invierno al inicio de la primavera es la ventana limpia; el cinturón del Atlántico influye en la costa desde finales de primavera hasta el verano, con las semanas más cargadas en junio–agosto. ¿Fechas flexibles? Ese único dato planifica tu viaje.",
+      "slug": "temporada-sargazo-florida",
+      "title": "Temporada de Sargazo Florida 2026 — Guía Mes por Mes",
+      "desc": "¿Cuándo hay sargazo en Florida? De mayo a agosto, más fuerte en los Cayos y el sureste de Florida. Guía mes a mes de 2026 con seguimiento satelital diario.",
+      "h1": "Temporada de Sargazo en Florida — Mes por Mes 2026",
+      "months": [
+        {
+          "period": "Noviembre – Febrero",
+          "text": "Prácticamente sin sargazo en todo el estado. La floración del Atlántico está en su mínimo anual y lo poco que existe se queda muy mar adentro. Toda la costa — los Cayos, el sureste, Daytona, el Golfo — corre limpia, y quienes visitan en invierno pueden ignorar las algas por completo."
+        },
+        {
+          "period": "Marzo – Abril",
+          "text": "Los primeros movimientos. La nueva floración se organiza en el Atlántico tropical y los primeros hilos empiezan a llegar a los Cayos, por lo general ligeros y dispersos. La costa atlántica continental sigue despejada en su mayoría. Revisar el mapa antes de un viaje a los Cayos ya empieza a valer la pena."
+        },
+        {
+          "period": "Mayo – Junio",
+          "text": "La temporada llega con fuerza. Los Cayos — Key West, Marathon, Islamorada — reciben los arribos más pesados conforme las corrientes entregan la floración, y de Miami a Jupiter se ven pulsos regulares. Junio suele ser el mes pico. Las playas del Golfo se mantienen confiablemente limpias."
+        },
+        {
+          "period": "Julio – Agosto",
+          "text": "El pico continúa, con arribos pesados pero episódicos: una playa puede estar tapada el martes y rastrillada para el viernes. El sureste de Florida y los Cayos cargan con el peso; Cocoa y Daytona reciben roces ocasionales. Aquí es donde el pronóstico de 7 días se gana su lugar."
+        },
+        {
+          "period": "Septiembre",
+          "text": "Comienza el descenso. Los volúmenes caen notablemente conforme la floración del Atlántico se apaga, aunque rezagados de aguas cálidas siguen llegando a los Cayos tras vientos del este sostenidos. La mayoría de las playas continentales vuelve a la normalidad, y los viajes de finales de verano se vuelven mucho más fáciles de planear."
+        },
+        {
+          "period": "Octubre",
+          "text": "La cola de la temporada. Los arribos se vuelven raros y ligeros en todas partes, y para Halloween Florida está prácticamente despejada de nuevo. Pueden colarse manchones aislados tras las tormentas, así que los precavidos siguen echando un ojo al mapa — pero las probabilidades ya están firmemente de tu lado."
+        }
+      ],
+      "tips": "La flexibilidad para reservar lo es todo. De noviembre a abril el estado está prácticamente a prueba de algas en cualquier lugar. Para viajes de verano, la costa del Golfo es el refugio seguro — Clearwater rara vez ve sargazo incluso en las semanas pico — mientras que los planes en los Cayos y Miami merecen una mirada al pronóstico de 7 días antes de cerrar nada. Si te empeñas en el Atlántico en junio o julio, elige hospedaje cerca de una playa con rastrillado diario y guarda un día del lado del Golfo en la reserva."
+    }
+  },
+  "beachBlurbs": {
+    "fl001": "La experiencia completa de Miami — arena ancha y rastrillada, torres de salvavidas en tonos pastel y un océano que se pone a temperatura de tina para junio. Mira al este, así que recibe pulsos de sargazo en verano, pero la limpieza mecánica diaria de la ciudad es de las mejores que hay. Las familias la pasan bien en los tramos más tranquilos de la zona media de la playa.",
+    "fl002": "Telón de fondo Art Déco, gente de talla mundial para observar y la arena más famosa de Florida. Comparte la misma exposición al sargazo de verano que el resto de Miami Beach, con una limpieza matinal intensiva a la par. Ven por el ambiente; si el alga es un factor decisivo, revisa primero el mapa en junio y julio.",
+    "fl003": "Una playa larga y de buen ambiente, con un paseo bordeado de palmeras — más tranquila que Miami y más amigable para las familias. Mira al Atlántico abierto, así que sigue el patrón regional de algas en verano: moderado, episódico, rastrillado con regularidad. Hay restaurantes a poca distancia caminando que hacen fácil rescatar una mañana de mala playa.",
+    "fl004": "Tranquila, cuidada y sin aglomeraciones, frente a uno de los pueblos más exclusivos de Estados Unidos. La Corriente del Golfo pasa cerca de aquí, lo que a la vez trae el sargazo y se lo lleva rápido — las condiciones se reinician pronto. Una opción refinada para parejas; para estacionar hace falta paciencia.",
+    "fl005": "Dunas naturales, olas surfeables y un tramo famoso por aceptar perros hacen de Jupiter la joya sin pulir de la costa sureste. Recibe algas moderadas y dependientes del viento en temporada, y menos gente todo el año. Lo mejor para quienes van a la playa con actividad y prefieren la naturaleza por encima de los bares de playa.",
+    "fl006": "La playa más grande de Key West: arena importada, agua bajita y un ambiente sociable cerca del aeropuerto. Como todas las playas de los Cayos que dan al océano, está en la primera línea del sargazo, con líneas de alga varada como rasgo habitual de mayo a agosto pese a los esfuerzos de limpieza. Las visitas de invierno son otro mundo, mucho más limpio.",
+    "fl007": "La capital del buceo — los arrecifes de John Pennekamp son el verdadero atractivo, con pequeñas playas artificiales como un extra más que como el plato fuerte. Los puntos que dan al océano acumulan alga en temporada; aquí importan más las lagunas protegidas para esnórquel que la calidad de la arena. Combina una mirada al mapa con tu reserva de buceo.",
+    "fl008": "Realeza de la pesca deportiva, con un ambiente de resort relajado y el famoso banco de arena mar adentro. Las playas son pequeñas e íntimas, con sargazo estacional moderado que los resorts limpian cada mañana. Elígela por el tiempo en el agua — lanchas, planicies, esnórquel — más que por largas caminatas de playa.",
+    "fl009": "Una favorita local bordeada de palmeras en los Cayos centrales, de entrada gratuita y genuinamente bonita. Da al Atlántico, así que atrapa alga estacional, y el condado rastrilla según un calendario y no a diario — por eso el momento importa en verano. Fuera de temporada, es una de las playas gratuitas más lindas de los Cayos.",
+    "fl010": "El clásico de la Costa Espacial — cultura del surf, el muelle y lanzamientos de cohetes sobre el agua. El sargazo llega a esta latitud solo en pulsos ocasionales de verano, mucho más ligeros que en el sur de Florida. Una opción familiar confiable casi todo el año, con un lanzamiento de regalo si calculas bien el momento.",
+    "fl011": "Treinta y siete kilómetros de arena compacta, tan famosa que se puede manejar sobre ella, con un boardwalk y juegos detrás. Queda al norte de la autopista principal del sargazo y se mantiene despejada en su mayoría incluso en pico de temporada. Una de las apuestas atlánticas más seguras de Florida para quienes huyen de las algas.",
+    "fl012": "Arena de cuarzo blanca como polvo, agua suave del Golfo y atardeceres de postal — clasificada de forma habitual entre las mejores playas de Estados Unidos. Algo clave para quienes leen este sitio: el sargazo casi nunca llega a la costa del Golfo, lo que convierte a Clearwater en el respaldo cuando el Atlántico se porta mal. Concurrida en primavera, hermosa todo el año."
+  },
+  "resortPageTpl": {
+    "titlePattern": "Sargazo en {resort} Hoy — Estado en Vivo y Pronóstico de Playa",
+    "introPattern": "¿Revisas las condiciones antes de una estancia en {resort}? Esta página monitorea {beach} — la arena justo enfrente — con imágenes satelitales de Copernicus actualizadas cuatro veces al día. Encontrarás el estado del sargazo en vivo, una calificación de playa de 0 a 100 que también pondera el oleaje y el clima, y un pronóstico a 7 días que cubre los días de tu viaje. En temporada, las condiciones pueden cambiar de la noche a la mañana, así que vuelve a revisar la mañana que prepares la bolsa de playa."
+  },
+  "press": {
+    "_doc": "Página de prensa renderizada en /es/press/ por region-seo-pages.cjs. Tokens resueltos en build desde datos reales — nunca inventados: {beachCount}=region.beaches.length, {cleanToday}=conteo de niveles con status==='clean', {updatedDate}=fmtDate(lang), {accuracyJ1Pct}/{accuracyJ3Pct}=backtest J+1/J+3 statusHitRate, {contact}=this.contact, {citation}=this.citation. Espejo del contrato press de florida.json/puntacana.json.",
+    "slug": "press",
+    "title": "Sargazo en Florida — Kit de Prensa y Datos para Medios",
+    "desc": "Recursos de prensa sobre el sargazo en Florida: estado satelital por playa actualizado 4× al día, pronóstico de 7 días y precisión publicada. Libre de citar.",
+    "h1": "Prensa y medios — datos de sargazo de Florida",
+    "intro": "El Atlántico vive una temporada de sargazo de niveles récord, ampliamente reportada. Lo que los titulares rara vez responden es la pregunta que de verdad hace tu audiencia: ¿se puede nadar en mi playa hoy? Publicamos esa respuesta para Florida, playa por playa, a partir de datos satelitales — y es libre de citar con atribución.",
+    "sections": [
+      {
+        "h2": "Qué publicamos",
+        "text": "Estado del sargazo en vivo para {beachCount} playas de Florida — desde los Cayos (Key West, Marathon, Islamorada, Key Largo) subiendo por la costa atlántica del sureste (Miami Beach, Fort Lauderdale, Palm Beach, Jupiter) y hasta el Golfo en Clearwater — cada una con una clasificación limpia / moderado / evitar, un Beach Score de 0 a 100 y un pronóstico de 7 días específico por playa. La detección usa el índice AFAI (Alternative Floating Algae Index) de los programas satelitales Copernicus y NOAA, muestreado píxel por píxel justo frente a cada playa — no un promedio regional — y actualizado cuatro veces al día, con datos de viento y oleaje de Open-Meteo. Al {updatedDate}, {cleanToday} de {beachCount} playas monitoreadas están limpias."
+      },
+      {
+        "h2": "Precisión, publicada abiertamente",
+        "text": "Comparamos el pronóstico con lo que los satélites observaron después, y publicamos los resultados: en toda nuestra red, el estado de la playa a un día se verifica el {accuracyJ1Pct}% de las veces, y a tres días el {accuracyJ3Pct}%. Los días 1 a 3 son los más fiables; los días 4 a 7 muestran la tendencia — y lo decimos en cada página. Los datos nunca se editan a mano, nunca se filtran para los hoteles, nunca se borran."
+      },
+      {
+        "h2": "Libre de usar, con atribución",
+        "text": "Periodistas, blogueros y medios pueden citar cualquier estado de playa, score o pronóstico con un enlace a la página de origen. Cita sugerida: {citation}. Para insertar el mapa en vivo, obtener datos por playa para un reportaje o un comentario sobre las condiciones actuales, escribe a {contact} — respondemos rápido."
+      },
+      {
+        "h2": "Ángulos de reportaje listos hoy",
+        "text": "Qué playa de Florida está limpia esta semana (lista clasificada en vivo, actualizada 4× al día) · Por qué los Cayos y la costa atlántica del sureste reciben el golpe mientras la costa del Golfo alrededor de Clearwater se mantiene despejada en su mayoría · Qué significa un récord de sargazo atlántico a nivel de playa para el turismo de Florida · Cómo funciona la detección satelital AFAI, con la precisión del pronóstico medida y publicada en nuestra página de metodología."
+      },
+      {
+        "h2": "Sobre la red",
+        "text": "SargassumMiami.com forma parte de una red de monitoreo de cinco sitios: Martinica y Guadalupe (francés), Punta Cana (inglés), Cancún y la Riviera Maya (español), y Miami y Florida (inglés). Los cinco sitios usan el mismo flujo satelital y la misma metodología publicada abiertamente. El mapa en vivo es gratuito para todos; la suscripción premium añade recomendaciones diarias de playa, alertas push y un resumen matinal."
+      }
+    ],
+    "citation": "Fuente: sargassummiami.com — datos satelitales Copernicus/NOAA, actualizados 4× al día",
+    "contact": "support@sargassummiami.com"
+  }
+}

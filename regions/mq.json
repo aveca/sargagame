@@ -7,9 +7,15 @@
   "primaryLang": "fr",
   "secondaryLangs": ["en", "es"],
   "currency": "EUR",
+  "pricing": {
+    "monthly": "4,99 €",
+    "yearly": "49 €",
+    "tripPass": "4,99 €"
+  },
   "stripeProducts": {
     "monthly": "price_existing_EUR_mo",
-    "yearly": "price_existing_EUR_yr"
+    "yearly": "price_existing_EUR_yr",
+    "tripPass": "price_REPLACE_ME_STRIPE_EUR_trippass_7d"
   },
   "timezone": "America/Martinique",
   "bbox": [-61.3, 14.3, -60.7, 14.9],

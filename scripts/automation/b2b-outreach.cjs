@@ -125,7 +125,10 @@ function extractEmails(html, domain) {
   const found = new Set(); let m
   while ((m = re.exec(html)) !== null) {
     const e = m[0].toLowerCase()
-    if (/example\.com|sentry\.io|w3\.org|schema\.org|googleusercontent|\.png$|\.jpg$|\.gif$|wixpress|sentry/.test(e)) continue
+    // Faux positifs : domaines tech + assets image/srcset. Le motif retina
+    // `@2x.`/`@3x.` (ex. `logo@2x.webp`, `ile@2x.webp`) matchait la regex email
+    // → on l'exclut, + toutes les extensions d'asset (webp/svg/avif… manquaient).
+    if (/example\.com|sentry\.io|w3\.org|schema\.org|googleusercontent|wixpress|@\d+x\.|\.(png|jpe?g|gif|webp|svg|avif|bmp|ico|css|js)$/.test(e)) continue
     found.add(e)
   }
   // priorité : contact@ > reservation@ > info@ > accueil@ > mairie@ > même domaine
@@ -133,13 +136,69 @@ function extractEmails(html, domain) {
   return [...found].sort((a, b) => score(a) - score(b))
 }
 
-// ── Email consultatif ─────────────────────────────────────────
-function buildSubject() { return `L'état réel de vos plages, chaque matin` }
+// ── Email consultatif (région/langue-aware) ──────────────────────────────────
+// Les cibles US (florida/puntacana = EN, rivieramaya = ES) ne doivent PAS recevoir
+// le copy FR Martinique. Mapping island → {site, region, lang}.
+const B2B_REGION = {
+  mq:          { site: 'sargasses-martinique.com', region: 'Martinique', lang: 'fr' },
+  gp:          { site: 'sargasses-guadeloupe.com', region: 'Guadeloupe', lang: 'fr' },
+  florida:     { site: 'sargassummiami.com',       region: 'Florida',    lang: 'en' },
+  puntacana:   { site: 'sargassumpuntacana.com',   region: 'Punta Cana', lang: 'en' },
+  rivieramaya: { site: 'sargassumcancun.com',      region: 'Riviera Maya', lang: 'es' },
+}
+function b2bMeta(target) { return B2B_REGION[target.island] || B2B_REGION.mq }
+
+function buildSubject(target) {
+  const { lang } = b2bMeta(target)
+  if (lang === 'en') return `The real state of your beaches, every morning`
+  if (lang === 'es') return `El estado real de tus playas, cada mañana`
+  return `L'état réel de vos plages, chaque matin`
+}
 
 function buildEmailHTML(target) {
-  const isGP = target.island === 'gp'
-  const site = isGP ? 'sargasses-guadeloupe.com' : 'sargasses-martinique.com'
-  const region = isGP ? 'Guadeloupe' : 'Martinique'
+  const { site, region, lang } = b2bMeta(target)
+  if (lang === 'en') {
+    return `<!DOCTYPE html>
+<html><body style="font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a;max-width:560px">
+<p>Hello,</p>
+<p>I'm reaching out because guests keep asking "is there sargassum on the beach today?" — and answering it fast reassures your guests and spares them a let-down.</p>
+<p>We built <strong>The Watchman</strong>: a daily read of the real state of ${region}'s beaches, <strong>measured by satellite</strong> (Copernicus Marine, per-beach AFAI index) — not guessed — with a 7-day forecast and an alert <em>before</em> sargassum lands.</p>
+<p>For a property like yours, concretely:</p>
+<ul>
+  <li>a <strong>morning brief</strong> on the state of your nearest beaches;</li>
+  <li>an <strong>alert</strong> before an influx, to get ahead of it with your guests;</li>
+  <li><strong>reliable data to answer with</strong> instead of guesswork.</li>
+</ul>
+<p><strong>See your beaches live, right now</strong>: <a href="https://${site}/">${site}</a> — satellite map, 7-day forecast, free.</p>
+<p>And to get <strong>the daily brief of your beaches by email</strong> (100% automatic, no call, stop anytime): <a href="https://${site}/?pro=1">turn it on in 10 seconds here</a>.</p>
+<p>Best,<br>
+<strong>The Watchman team · Sargassum ${region}</strong><br>
+<span style="color:#888;font-size:13px">Copernicus Marine satellite data · ${site}</span></p>
+<hr style="border:none;border-top:1px solid #eee;margin:18px 0">
+<p style="color:#999;font-size:12px">Professional message sent to a public contact related to coastal/tourism activity. To stop being contacted, reply <strong>STOP</strong> to this email — it's immediate and permanent.</p>
+</body></html>`
+  }
+  if (lang === 'es') {
+    return `<!DOCTYPE html>
+<html><body style="font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a;max-width:560px">
+<p>Hola,</p>
+<p>Le escribo porque la pregunta "¿hay sargazo en la playa hoy?" no para entre los visitantes — y responderla rápido tranquiliza a sus huéspedes y les evita una decepción.</p>
+<p>Creamos <strong>El Vigía</strong>: la lectura diaria del estado real de las playas de ${region}, <strong>medida por satélite</strong> (Copernicus Marine, índice AFAI por playa) — no estimada — con un pronóstico a 7 días y una alerta <em>antes</em> de que llegue el sargazo.</p>
+<p>En concreto para un establecimiento como el suyo:</p>
+<ul>
+  <li>un <strong>resumen cada mañana</strong> del estado de sus playas más cercanas;</li>
+  <li>una <strong>alerta</strong> antes de una llegada, para anticiparse con sus huéspedes;</li>
+  <li><strong>datos fiables para responder</strong> en vez de adivinar.</li>
+</ul>
+<p><strong>Vea sus playas en vivo, ahora</strong>: <a href="https://${site}/">${site}</a> — mapa satelital, pronóstico 7 días, gratis.</p>
+<p>Y para recibir <strong>el resumen diario de sus playas por email</strong> (100% automático, sin llamadas, pare cuando quiera): <a href="https://${site}/?pro=1">actívelo en 10 segundos aquí</a>.</p>
+<p>Un saludo,<br>
+<strong>El equipo El Vigía · Sargazo ${region}</strong><br>
+<span style="color:#888;font-size:13px">Datos satelitales Copernicus Marine · ${site}</span></p>
+<hr style="border:none;border-top:1px solid #eee;margin:18px 0">
+<p style="color:#999;font-size:12px">Mensaje profesional dirigido a un contacto público vinculado a la actividad costera/turística. Para dejar de recibir contacto, responda <strong>STOP</strong> a este correo — es inmediato y definitivo.</p>
+</body></html>`
+  }
   return `<!DOCTYPE html>
 <html><body style="font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a;max-width:560px">
 <p>Bonjour,</p>
@@ -162,7 +221,7 @@ function buildEmailHTML(target) {
 }
 
 async function sendEmail(resend, to, target) {
-  const subject = buildSubject()
+  const subject = buildSubject(target)
   const html = buildEmailHTML(target)
   if (DRY_RUN || !resend) {
     console.log(`  [DRY RUN] → ${logId(to)} | sujet: ${subject}`)

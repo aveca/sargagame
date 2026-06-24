@@ -66,7 +66,9 @@ if ($action === 'create_payment') {
     // Allowlist EUR = MEME liste que create-checkout.php pay_once (anti-tampering) :
     // couvre passes 7j (799/999), 30j (1499/1999/2499) + saison (1999). Derive des
     // donnees Stripe existantes (pass-links.json). USD (599) reste sur Stripe.
-    $allowedCents = [799, 999, 1499, 1999, 2499];
+    // 499 = Trip Pass 7j (4,99 €, miroir du tripPass USD). 799/999 = pass 7j ;
+    // 1499/1999/2499 = pass 30j + saison. USD (599) reste hors Mollie (EUR only).
+    $allowedCents = [499, 799, 999, 1499, 1999, 2499];
     if (!$cardToken || !in_array($cents, $allowedCents, true)) {
         http_response_code(400); echo json_encode(['error' => 'bad pass params']); exit;
     }
@@ -100,8 +102,21 @@ if ($action === 'create_subscription') {
     if (!$cardToken || !$email || !filter_var($email, FILTER_VALIDATE_EMAIL) || !$sc) {
         http_response_code(400); echo json_encode(['error' => 'bad subscription params']); exit;
     }
-    // Customer (necessaire pour le mandat recurrent).
-    list($cc, $cust) = mol_api('POST', '/customers', ['email' => $email]);
+    // ── Parrainage (attribution capturée — récompense au go-live Mollie) ──────────
+    // Mollie n'a NI coupon NI customer balance (contrairement à Stripe). On ne peut
+    // donc pas créditer ici. On ENREGISTRE l'attribution (mon code en metadata
+    // customer = retrouvable plus tard ; le code parrain en mol_store) ; la récompense
+    // (1er mois filleul + crédit parrain) sera appliquée à la validation Mollie via
+    // un script de réconciliation. cf. MOLLIE_MIGRATION.md §parrainage.
+    $referredBy = preg_replace('/[^A-Z0-9-]/', '', strtoupper($input['referredBy'] ?? ''));
+    if (!preg_match('/^REF-[A-Z0-9]{6}$/', $referredBy)) $referredBy = '';
+    $myRef = preg_replace('/[^A-Z0-9-]/', '', strtoupper($input['myReferralCode'] ?? ''));
+    if (!preg_match('/^REF-[A-Z0-9]{6}$/', $myRef)) $myRef = '';
+    if ($referredBy && $myRef && $referredBy === $myRef) $referredBy = ''; // anti-auto-parrainage
+    // Customer (necessaire pour le mandat recurrent). On y grave mon code parrain.
+    $custParams = ['email' => $email];
+    if ($myRef) $custParams['metadata'] = ['referral_code' => $myRef];
+    list($cc, $cust) = mol_api('POST', '/customers', $custParams);
     if ($cc >= 400 || empty($cust['id'])) { http_response_code(500); echo json_encode(['error' => 'customer create failed']); exit; }
     $customerId = $cust['id'];
     // 1er paiement = etablit le mandat ET facture la periode 1.
@@ -117,7 +132,8 @@ if ($action === 'create_subscription') {
     ]);
     if ($code >= 400 || empty($pay['id'])) { http_response_code(500); echo json_encode(['error' => 'first payment failed']); exit; }
     // Pre-stocke le customer (la subscription suivra a 'paid', ici ou via webhook).
-    mol_store_write($email, ['email' => $email, 'customer' => $customerId, 'plan' => $planIn, 'ts' => time()]);
+    // referred_by/referral_code = attribution parrainage pour la réconciliation go-live.
+    mol_store_write($email, array_filter(['email' => $email, 'customer' => $customerId, 'plan' => $planIn, 'ts' => time(), 'referred_by' => $referredBy, 'referral_code' => $myRef]));
     $status = $pay['status'] ?? '';
     // Pas de 3DS (carte test directe) : on cree la subscription tout de suite.
     if ($status === 'paid') {

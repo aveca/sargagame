@@ -18,4 +18,8 @@ return [
         'annual'  => 'price_REPLACE_ME',
         'season'  => 'price_REPLACE_ME',
     ],
+    // Parrainage (MQ/GP) : id du coupon Stripe applique au FILLEUL (1er mois
+    // offert). A creer dans le dashboard : percent_off:100, duration:once, EUR.
+    // Le PARRAIN est credite via customer balance (-499c), pas de coupon.
+    'referral_coupon' => 'REFERRAL_FIRST_MONTH',
 ];

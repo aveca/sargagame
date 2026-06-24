@@ -604,7 +604,17 @@ jobs:
           DOWN=""
           TS=$(date +%s)
           for D in $DOMAINS; do
-            STATUS=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 "https://$D/?t=$TS" || echo 000)
+            # Retry 3× avec backoff (2s,4s) : "HTTP 000" = pas de connexion du
+            # tout (DNS/timeout/blip réseau runner↔hébergeur), pas une vraie
+            # panne serveur. Un seul curl raté faisait échouer le run à tort
+            # (run 28087792051, 2026-06-24 : guadeloupe 000000 puis 200 derrière).
+            STATUS=000
+            for ATTEMPT in 1 2 3; do
+              TS=$(date +%s)
+              STATUS=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 "https://$D/?t=$TS" || echo 000)
+              [ "$STATUS" = "200" ] && break
+              [ "$ATTEMPT" -lt 3 ] && { echo "$D: HTTP $STATUS (tentative $ATTEMPT/3) — retry…"; sleep $((ATTEMPT * 2)); }
+            done
             AGE=$(curl -sL --max-time 15 "https://$D/api/copernicus/sargassum.json?t=$TS" | node -e "let d=''; process.stdin.on('data',c=>d+=c); process.stdin.on('end',()=>{try{const j=JSON.parse(d);const h=(Date.now()-new Date(j.updatedAt))/3.6e6;console.log(h.toFixed(1))}catch{console.log('NaN')}})" || echo NaN)
             echo "$D: HTTP $STATUS | data age ${AGE}h"
             if [ "$STATUS" != "200" ]; then DOWN="$DOWN $D"; fi
