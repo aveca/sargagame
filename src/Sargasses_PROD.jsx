@@ -8046,7 +8046,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     const q=window.location.search
     if(/[?&]pwtripeur=1/.test(q))return true
     if(/[?&]pwtripeur=0/.test(q))return false
-    return abVariant("pw_trippass_eur",["control","trip"],[.5,.5])==="trip"
+    return abVariant("pw_trippass_eur",["control","trip"],[1,0])==="trip"
   }catch(_){return false}})()
   const startTripPassEur=useCallback(()=>{
     passCtxRef.current={pass:"trip7",cents:EUR_TRIP_CENTS,days:7,cur:"eur"}

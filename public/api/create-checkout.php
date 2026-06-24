@@ -363,10 +363,12 @@ if ($action === 'subscribe') {
         $subParams['expand'][] = 'latest_invoice.payment_intent';
     }
     if ($island !== '') $subParams['metadata[island]'] = $island;
-    // Filleul : 1er mois offert (coupon percent_off:100 duration:once). Le coupon
-    // doit exister dans le dashboard Stripe (id = $cfg['referral_coupon']).
-    if ($refEligible) {
-        $subParams['coupon'] = $cfg['referral_coupon'] ?? 'REFERRAL_FIRST_MONTH';
+    // Filleul : 1er mois offert (coupon percent_off:100 duration:once). Appliqué
+    // SEULEMENT si le coupon est explicitement configuré — sinon le checkout
+    // filleul casserait sur un coupon inexistant (stripe() exit sur 400). Tant que
+    // stripe-config.php n'a pas la clé : dégradation douce (abonnement sans cadeau).
+    if ($refEligible && !empty($cfg['referral_coupon'])) {
+        $subParams['coupon'] = $cfg['referral_coupon'];
         $subParams['metadata[referred_by]'] = $referredBy;
     }
     $sub = stripe('POST', '/subscriptions', $subParams);
