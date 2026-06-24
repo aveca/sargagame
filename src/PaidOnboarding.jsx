@@ -7,7 +7,12 @@ import React, { useState, useMemo } from "react"
  * ACTIVE réellement la valeur du Premium : la valeur cœur (alertes + brief) s'accroche
  * aux PLAGES FAVORITES — or rien ne poussait le payeur à en choisir → produit silencieux
  * → churn. 3 temps : choisir 1-3 plages à surveiller → autoriser les notifs → où est le
- * brief. Golden-hour, i18n fr/en/es, reduced-motion = plancher (tableau lisible, pas d'anim).
+ * brief.
+ *
+ * SCREENS_V2 #29 — BIENVENUE PREMIUM en COMIC : skin design-system (paper/ink/yel, Anton,
+ * ombres dures, halftone) pour s'harmoniser avec le splash « Premium activé » AVANT et
+ * l'arène comic APRÈS (fin de la rupture visuelle dusk violet). i18n fr/en/es,
+ * reduced-motion = plancher. Logique/contenu/props INCHANGÉS.
  *
  * Props : lang, allBeaches, favorites(array d'ids), onToggleFav(id), onEnableNotif(),
  *         onDone(), island, userPos.
@@ -35,20 +40,23 @@ export default function PaidOnboarding({ lang = "fr", allBeaches = [], favorites
   const favSet = new Set(favorites)
   const picked = suggestions.filter(b => favSet.has(b.id)).length + favorites.filter(id => !suggestions.some(b => b.id === id)).length
 
-  const GOLD = "#FFC72C", GOLD_D = "#E8A800", TEAL = "#1c7fb0", INK = "#EAF7F4"
+  // ── Design-system COMIC (PRODUCT.md §4) ──────────────────────────────────────
+  const INK = "#0d0b14", PAPER = "#fdf6e3", YEL = "#ffd23f", SUB = "#4a4636"
   const wrap = {
-    // garde les couleurs golden-hour même sous thème contraste / forced-colors (hérité)
     forcedColorAdjust: "none",
     position: "fixed", inset: 0, zIndex: 1450, display: "flex", flexDirection: "column",
-    background: "radial-gradient(120% 80% at 78% 6%, rgba(255,224,160,.20), transparent 50%), linear-gradient(168deg,#2e1a5e 0%,#241246 40%,#0d0716 100%)",
+    // golden-hour comic : papier crème + halo doré haut + halftone (cohérent BeachSheetComic)
+    background: `radial-gradient(120% 70% at 50% -8%, ${YEL}38, transparent 55%), ${PAPER}`,
+    backgroundImage: `radial-gradient(${INK}12 1.2px, transparent 1.4px), radial-gradient(120% 70% at 50% -8%, ${YEL}38, transparent 55%), linear-gradient(${PAPER},${PAPER})`,
+    backgroundSize: "11px 11px, 100% 100%, 100% 100%",
     color: INK, fontFamily: "'Bricolage Grotesque',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif",
     padding: "max(28px,env(safe-area-inset-top)) 22px max(22px,env(safe-area-inset-bottom)) 22px",
-    boxSizing: "border-box", animation: reduce ? "none" : "sgobIn .35s ease",
+    boxSizing: "border-box", animation: reduce ? "none" : "sgobIn .35s cubic-bezier(.16,1,.3,1)",
   }
-  const h1 = { font: "800 26px/1.08 'Anton','Bricolage Grotesque',Impact,sans-serif", letterSpacing: "-.01em", textTransform: "uppercase", margin: "0 0 8px" }
-  const sub = { font: "500 14px/1.45 inherit", color: "rgba(234,247,244,.8)", margin: "0 0 20px", maxWidth: 460 }
-  const btnGold = { width: "100%", maxWidth: 460, padding: "16px 20px", border: "none", borderRadius: 16, cursor: "pointer", font: "800 16px/1 inherit", color: "#0A2A26", background: `linear-gradient(135deg,${GOLD},${GOLD_D})`, boxShadow: "0 10px 28px rgba(232,168,0,.32)" }
-  const btnGhost = { background: "none", border: "none", color: "rgba(234,247,244,.55)", font: "600 13px/1 inherit", cursor: "pointer", padding: "12px", marginTop: 10 }
+  const h1 = { font: "400 30px/1.02 'Anton','Bricolage Grotesque',Impact,sans-serif", letterSpacing: "-.005em", textTransform: "uppercase", margin: "0 0 9px", color: INK }
+  const sub = { font: "600 14px/1.45 inherit", color: SUB, margin: "0 0 20px", maxWidth: 460 }
+  const btnGold = { width: "100%", maxWidth: 460, padding: "16px 20px", border: `3px solid ${INK}`, borderRadius: 16, cursor: "pointer", font: "800 16px/1 inherit", color: INK, background: YEL, boxShadow: `4px 4px 0 ${INK}` }
+  const btnGhost = { background: "none", border: "none", color: SUB, font: "700 13px/1 inherit", cursor: "pointer", padding: "12px", marginTop: 10 }
 
   const done = (src) => { tk("sg_onboard_done", { step, src, favs: favorites.length }); onDone && onDone() }
   const next = () => { tk("sg_onboard_step", { to: step + 1 }); setStep(s => s + 1) }
@@ -60,14 +68,14 @@ export default function PaidOnboarding({ lang = "fr", allBeaches = [], favorites
       {/* header : progression + passer */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
         <div style={{ display: "flex", gap: 6 }}>
-          {[0, 1, 2].map(i => <span key={i} style={{ width: i === step ? 22 : 8, height: 8, borderRadius: 999, background: i <= step ? GOLD : "rgba(255,255,255,.18)", transition: reduce ? "none" : "all .3s" }} />)}
+          {[0, 1, 2].map(i => <span key={i} style={{ width: i === step ? 22 : 9, height: 9, borderRadius: 999, border: `2px solid ${INK}`, background: i <= step ? YEL : PAPER, transition: reduce ? "none" : "all .3s" }} />)}
         </div>
         <button onClick={() => done("skip")} style={{ ...btnGhost, marginTop: 0, minHeight: 44 }}>{t("Passer", "Skip", "Saltar")}</button>
       </div>
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", maxWidth: 480, width: "100%", margin: "0 auto", overflowY: "auto" }}>
-        <div style={{ font: "700 11px/1 'JetBrains Mono',monospace", letterSpacing: ".12em", textTransform: "uppercase", color: TEAL, marginBottom: 10 }}>
-          {t("Ton veilleur est en place", "Your watchman is set", "Tu vigía está activo")} · {t("Étape", "Step", "Paso")} {step + 1}/3
+        <div style={{ display: "inline-flex", alignSelf: "flex-start", alignItems: "center", gap: 6, font: "800 10px/1 'Bricolage Grotesque'", letterSpacing: ".09em", textTransform: "uppercase", color: INK, background: YEL, border: `2px solid ${INK}`, borderRadius: 6, padding: "5px 9px", boxShadow: `2px 2px 0 ${INK}`, marginBottom: 14 }}>
+          ⭐ {t("Premium · Ton veilleur est en place", "Premium · Your watchman is set", "Premium · Tu vigía está activo")} · {t("Étape", "Step", "Paso")} {step + 1}/3
         </div>
 
         {step === 0 && (
@@ -77,16 +85,16 @@ export default function PaidOnboarding({ lang = "fr", allBeaches = [], favorites
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
               {suggestions.map(b => {
                 const on = favSet.has(b.id)
-                const col = b.status === "avoid" ? "#E8522A" : b.status === "moderate" ? GOLD_D : "#22C55E"
+                const col = b.status === "avoid" ? "#E8522A" : b.status === "moderate" ? "#E8A800" : "#1f9d57"
                 return (
                   <button key={b.id} onClick={() => onToggleFav && onToggleFav(b.id)} aria-pressed={on} style={{
-                    display: "flex", alignItems: "center", gap: 12, padding: "13px 15px", borderRadius: 14, cursor: "pointer", textAlign: "left",
-                    border: on ? `1.5px solid ${GOLD}` : "1.5px solid rgba(255,255,255,.12)",
-                    background: on ? "rgba(255,199,44,.12)" : "rgba(255,255,255,.04)", color: INK, font: "inherit",
+                    display: "flex", alignItems: "center", gap: 12, padding: "13px 15px", borderRadius: 13, cursor: "pointer", textAlign: "left",
+                    border: `2.5px solid ${INK}`, color: INK, font: "inherit",
+                    background: on ? YEL : PAPER, boxShadow: on ? `3px 3px 0 ${INK}` : `2px 2px 0 ${INK}`,
                   }}>
-                    <span style={{ width: 10, height: 10, borderRadius: "50%", background: col, flexShrink: 0 }} />
-                    <span style={{ flex: 1, font: "700 14px/1.15 inherit" }}>{b.name}{b.commune ? <span style={{ opacity: .5, fontWeight: 500 }}> · {b.commune}</span> : null}</span>
-                    <span style={{ width: 24, height: 24, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: on ? GOLD : "rgba(255,255,255,.1)", color: on ? "#0A2A26" : "rgba(255,255,255,.5)", fontWeight: 800 }}>{on ? "✓" : "+"}</span>
+                    <span style={{ width: 12, height: 12, borderRadius: "50%", background: col, flexShrink: 0, boxShadow: `0 0 0 2px ${INK}` }} />
+                    <span style={{ flex: 1, font: "800 14px/1.15 inherit" }}>{b.name}{b.commune ? <span style={{ opacity: .55, fontWeight: 600 }}> · {b.commune}</span> : null}</span>
+                    <span style={{ width: 25, height: 25, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", border: `2px solid ${INK}`, background: on ? INK : PAPER, color: on ? YEL : INK, fontWeight: 900, fontSize: 14 }}>{on ? "✓" : "+"}</span>
                   </button>
                 )
               })}
