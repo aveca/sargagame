@@ -125,7 +125,10 @@ function extractEmails(html, domain) {
   const found = new Set(); let m
   while ((m = re.exec(html)) !== null) {
     const e = m[0].toLowerCase()
-    if (/example\.com|sentry\.io|w3\.org|schema\.org|googleusercontent|\.png$|\.jpg$|\.gif$|wixpress|sentry/.test(e)) continue
+    // Faux positifs : domaines tech + assets image/srcset. Le motif retina
+    // `@2x.`/`@3x.` (ex. `logo@2x.webp`, `ile@2x.webp`) matchait la regex email
+    // → on l'exclut, + toutes les extensions d'asset (webp/svg/avif… manquaient).
+    if (/example\.com|sentry\.io|w3\.org|schema\.org|googleusercontent|wixpress|@\d+x\.|\.(png|jpe?g|gif|webp|svg|avif|bmp|ico|css|js)$/.test(e)) continue
     found.add(e)
   }
   // priorité : contact@ > reservation@ > info@ > accueil@ > mairie@ > même domaine
