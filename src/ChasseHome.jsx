@@ -481,6 +481,186 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
 }
 
 /* ====================================================================
+   CENTRE D'ALERTES « MES ALERTES » (SCREENS_V2 #19 — alerts center)
+   ------------------------------------------------------------------
+   Modale BD qui liste des alertes RÉELLES dérivées UNIQUEMENT de la donnée
+   déjà présente — JAMAIS d'historique de notifications factice, JAMAIS d'alerte
+   inventée. Deux types, tous deux 100% data :
+     1) TRANSITION : pour chaque plage affichée/collectée ayant un forecast réel
+        (resolveForecast → sargData.weekly[id].forecast), le 1er jour J+N (N≥1)
+        où forecast[N].status diffère du statut d'aujourd'hui → « {nom} —
+        bascule J+N : {ancien}→{nouveau} ». On ignore les jours « horizon » (flous)
+        ET les jours peu fiables (confidence<50) → on n'alerte que sur du solide.
+     2) SANTÉ : si une plage affichée est ACTUELLEMENT 'avoid' → « {nom} — odeur
+        possible (H₂S) aujourd'hui » (le vrai danger d'une plage à éviter).
+   Tri par imminence (J+1 d'abord ; la santé = J0 → tout en tête). Si rien de
+   fiable → état VIDE HONNÊTE « Tout est calme ». Additif, in-world comic, i18n
+   fr/en/es, a11y (role=dialog + Échap + focus) + reduced-motion. ZÉRO logique
+   paiement (tap d'une carte → onOpenBeach, comme partout). Réversible : ?alerts=0
+   désactive la cloche+modale ; ?alerts=preview force l'ouverture avec un échantillon
+   pour la revue design (clairement étiqueté « aperçu », pas mêlé aux vraies). */
+function alertsOnFlag(){ try{ return !/[?&]alerts=0(?:&|$)/.test(window.location.search) }catch(_){ return true } }
+function alertsPreview(){ try{ return /[?&]alerts=preview(?:&|$)/.test(window.location.search) }catch(_){ return false } }
+function alertsForceOpen(){ try{ return /[?&]alerts=(1|preview)(?:&|$)/.test(window.location.search) }catch(_){ return false } }
+
+const ALERTS_I18N={
+  title:{fr:"MES ALERTES",en:"MY ALERTS",es:"MIS ALERTAS"},
+  bell:{fr:"Mes alertes",en:"My alerts",es:"Mis alertas"},
+  sub:{fr:"Dérivées de la prévision satellite de tes plages — pas de notifications inventées.",
+       en:"Derived from the satellite forecast of your beaches — no invented notifications.",
+       es:"Derivadas del pronóstico satelital de tus playas — sin notificaciones inventadas."},
+  empty:{fr:"Tout est calme — aucune alerte pour tes plages.",
+         en:"All calm — no alerts for your beaches.",
+         es:"Todo tranquilo — ninguna alerta para tus playas."},
+  emptySub:{fr:"Le Veilleur surveille. Reviens demain : si la mer change, tu le sauras ici.",
+            en:"Le Veilleur is watching. Come back tomorrow: if the sea changes, you'll know here.",
+            es:"El Vigía vigila. Vuelve mañana: si el mar cambia, lo sabrás aquí."},
+  preview:{fr:"APERÇU (données d'exemple)",en:"PREVIEW (sample data)",es:"VISTA PREVIA (datos de ejemplo)"},
+  today:{fr:"Aujourd'hui",en:"Today",es:"Hoy"},
+  tomorrow:{fr:"Demain",en:"Tomorrow",es:"Mañana"},
+  inDays:{fr:(n)=>"Dans "+n+" j",en:(n)=>"In "+n+" d",es:(n)=>"En "+n+" d"},
+  transition:{fr:"Bascule",en:"Flip",es:"Cambio"},
+  h2sHead:{fr:"Odeur possible (H₂S) aujourd'hui",en:"Possible smell (H₂S) today",es:"Posible olor (H₂S) hoy"},
+  h2sSub:{fr:"Sargasses échouées qui se décomposent — évite de stationner près des amas.",
+          en:"Beached sargassum decomposing — avoid lingering near the piles.",
+          es:"Sargazo varado descomponiéndose — evita quedarte junto a los montones."},
+  open:{fr:"Voir la plage →",en:"See the beach →",es:"Ver la playa →"}
+}
+/* libellé d'échéance i18n (J0=auj, J+1=demain, sinon « dans N j ») */
+function alertWhen(n,lang){
+  const _t=(o)=>(o&&(o[lang]||o.fr))||""
+  if(n<=0) return _t(ALERTS_I18N.today)
+  if(n===1) return _t(ALERTS_I18N.tomorrow)
+  return (ALERTS_I18N.inDays[lang]||ALERTS_I18N.inDays.fr)(n)
+}
+/* ---- calcul des alertes (fonction PURE, data réelle uniquement) ----
+   Pour chaque plage de `beaches` (déjà filtrées id+status+score), on lit le
+   forecast réel via resolveForecast. On émet :
+     · une alerte SANTÉ (J0) si status courant = 'avoid'
+     · une alerte TRANSITION sur le 1er jour fiable (≠horizon, conf≥50) dont le
+       status diffère d'aujourd'hui.
+   Aucune fabrication : plage sans forecast couvert → aucune transition émise. */
+function computeAlerts(beaches,sargData){
+  const out=[]
+  if(!Array.isArray(beaches)) return out
+  for(const b of beaches){
+    if(!b||!b.id||!b.status||b.score==null) continue
+    const today=b.status
+    /* — santé : à éviter aujourd'hui = odeur H₂S possible (vrai danger) — */
+    if(today==="avoid"){
+      out.push({key:b.id+"-h2s",type:"health",day:0,beach:b,status:"avoid"})
+    }
+    /* — transition : 1er jour fiable où le statut change — */
+    const fc=resolveForecast(b,sargData)
+    if(fc&&fc.length){
+      for(let i=1;i<fc.length;i++){
+        const d=fc[i]
+        if(!d||!d.status) continue
+        if(d.type==="horizon") continue                       /* horizon flou = on n'alerte pas */
+        if(d.confidence!=null&&d.confidence<50) continue       /* peu fiable = on n'alerte pas */
+        if(d.status!==today){
+          out.push({key:b.id+"-tr",type:"transition",day:i,beach:b,
+            from:today,to:d.status,conf:d.confidence!=null?Math.round(d.confidence):null})
+          break                                                /* 1re transition seulement */
+        }
+      }
+    }
+  }
+  /* tri par imminence (J0 santé d'abord, puis J+1, J+2…), puis score décroissant */
+  out.sort((a,b)=> (a.day-b.day) || ((b.beach.score||0)-(a.beach.score||0)))
+  return out
+}
+/* échantillon d'aperçu (?alerts=preview) — clairement étiqueté, JAMAIS mêlé aux vraies */
+function previewAlerts(beaches){
+  const pick=(Array.isArray(beaches)?beaches:[]).filter(b=>b&&b.id&&b.name).slice(0,3)
+  const nm=(i,fb)=> (pick[i]&&pick[i].name)||fb
+  const bk=(i)=> pick[i]||{id:"_pv"+i,name:nm(i,"Plage")}
+  return [
+    {key:"_pv-h",type:"health",day:0,beach:bk(0),status:"avoid",_preview:true},
+    {key:"_pv-t1",type:"transition",day:1,beach:bk(1),from:"clean",to:"moderate",conf:78,_preview:true},
+    {key:"_pv-t2",type:"transition",day:3,beach:bk(2),from:"avoid",to:"clean",conf:61,_preview:true}
+  ]
+}
+
+/* ---- AlertsModal : modale du centre d'alertes (overlay in-world, jamais de cul-de-sac) ----
+   z-index 1140 < détail 1200 < levelup 1250 (comme BadgesSheet 1150, juste en dessous). */
+function AlertsModal({alerts,lang,onClose,onOpenBeach,track,preview}){
+  const _t=(o)=>(o&&(o[lang]||o.fr))||""
+  const closeRef=useRef(null)
+  useEffect(()=>{ try{ closeRef.current&&closeRef.current.focus() }catch(_){} },[])
+  useEffect(()=>{ const k=(e)=>{ if(e.key==="Escape"){ e.stopPropagation(); onClose&&onClose() } }
+    window.addEventListener("keydown",k); return ()=>window.removeEventListener("keydown",k) },[onClose])
+  return (
+    <div className="lc-alerts" role="dialog" aria-modal="true"
+      aria-label={_t(ALERTS_I18N.bell)} onClick={onClose}>
+      <div className="lc-alerts-modal" onClick={e=>e.stopPropagation()}>
+        <button type="button" ref={closeRef} className="lc-alerts-x" onClick={onClose}
+          aria-label={_t({fr:"Fermer",en:"Close",es:"Cerrar"})}>✕</button>
+        <div className="lc-alerts-title"><span aria-hidden="true">🔔</span>{_t(ALERTS_I18N.title)}</div>
+        {preview&&<div className="lc-alerts-pv">{_t(ALERTS_I18N.preview)}</div>}
+        <p className="lc-alerts-sub">{_t(ALERTS_I18N.sub)}</p>
+        {alerts.length ? (
+          <div className="lc-alerts-list">
+            {alerts.map((a)=>{
+              const b=a.beach
+              if(a.type==="health"){
+                const dv=vof("avoid")
+                return (
+                  <div key={a.key} className={`lc-alert-card s-${dv.st}`}>
+                    <span className={`lc-alert-pill s-${dv.st}`} aria-hidden="true">👃</span>
+                    <span className="lc-alert-body">
+                      <span className="lc-alert-when">{alertWhen(0,lang)}</span>
+                      <span className="lc-alert-name">{b.name}</span>
+                      <span className="lc-alert-msg">{_t(ALERTS_I18N.h2sHead)}</span>
+                      <span className="lc-alert-detail">{_t(ALERTS_I18N.h2sSub)}</span>
+                      {!a._preview&&onOpenBeach&&(
+                        <button type="button" className="lc-alert-open"
+                          onClick={()=>{ if(track)try{track("sg_alert_open_beach",{beach_id:b.id,type:"health"})}catch(_){}; onOpenBeach(b) }}>
+                          {_t(ALERTS_I18N.open)}
+                        </button>)}
+                    </span>
+                  </div>
+                )
+              }
+              /* transition */
+              const nv=vof(a.to), ov=vof(a.from)
+              return (
+                <div key={a.key} className={`lc-alert-card s-${nv.st}`}>
+                  <span className={`lc-alert-pill s-${nv.st}`} aria-hidden="true">{a.to==="avoid"?"⚠️":a.to==="moderate"?"🌬️":"🌊"}</span>
+                  <span className="lc-alert-body">
+                    <span className="lc-alert-when">{alertWhen(a.day,lang)}{a.conf!=null?" · "+a.conf+"%":""}</span>
+                    <span className="lc-alert-name">{b.name}</span>
+                    <span className="lc-alert-msg">
+                      {_t(ALERTS_I18N.transition)} J+{a.day}
+                      <span className="lc-alert-arrow">
+                        <i className={`s-${ov.st}`}>{_t(ov)}</i>
+                        <em aria-hidden="true">→</em>
+                        <i className={`s-${nv.st}`}>{_t(nv)}</i>
+                      </span>
+                    </span>
+                    {!a._preview&&onOpenBeach&&(
+                      <button type="button" className="lc-alert-open"
+                        onClick={()=>{ if(track)try{track("sg_alert_open_beach",{beach_id:b.id,type:"transition",day:a.day})}catch(_){}; onOpenBeach(b) }}>
+                        {_t(ALERTS_I18N.open)}
+                      </button>)}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <div className="lc-alert-empty">
+            <div className="lc-alert-empty-veil"><Veilleur mood="calm" size={64}/></div>
+            <div className="lc-alert-empty-h">{_t(ALERTS_I18N.empty)}</div>
+            <p className="lc-sub">{_t(ALERTS_I18N.emptySub)}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/* ====================================================================
    SÉRIE « 7 JOURS D'AFFILÉE » (SCREENS_V2 #28 — streak reward)
    ------------------------------------------------------------------
    Surface de rétention qui rend tangible la VRAIE série du joueur : chaque
@@ -858,6 +1038,32 @@ export default function ChasseHome(props){
   /* ?badges=1 → ouvre la modale au mount (vérif visuelle) */
   useEffect(()=>{ if(badgesEnabled&&badgesForceOpen()) setBadgesOpen(true) },[badgesEnabled])
 
+  /* ---- CENTRE D'ALERTES (#19) — alertes RÉELLES dérivées du forecast ----
+     Flag kill-switch ?alerts=0 (défaut on) ; ?alerts=1 ou ?alerts=preview force
+     l'ouverture au mount. Zéro fabrication : tout vient de resolveForecast +
+     statuts réels des plages (sauf l'échantillon explicite ?alerts=preview). */
+  const alertsEnabled = useMemo(()=>alertsOnFlag(),[])
+  const alertsIsPreview = useMemo(()=>alertsPreview(),[])
+  const [alertsOpen,setAlertsOpen]=useState(false)
+  /* plages à scruter = celles affichées (pickBeaches) ∪ collectées, dédupliquées par id */
+  const alertBeaches = useMemo(()=>{
+    if(!alertsEnabled) return []
+    const seen=new Set(), out=[]
+    const push=(b)=>{ if(b&&b.id&&!seen.has(b.id)){ seen.add(b.id); out.push(b) } }
+    ;(pickBeaches||[]).forEach(push)
+    if(beach) push(beach)
+    return out
+  },[alertsEnabled,pickBeaches,beach])
+  const alerts = useMemo(()=>{
+    if(!alertsEnabled) return []
+    if(alertsIsPreview) return previewAlerts(alertBeaches)
+    return computeAlerts(alertBeaches,sargData)
+  },[alertsEnabled,alertsIsPreview,alertBeaches,sargData])
+  /* ?alerts=1 / ?alerts=preview → ouvre la modale au mount (vérif visuelle) */
+  useEffect(()=>{ if(alertsEnabled&&alertsForceOpen()) setAlertsOpen(true) },[alertsEnabled])
+  /* impression « centre d'alertes » — one-shot au mount, état RÉEL */
+  useEffect(()=>{ if(alertsEnabled&&track) try{ track("sg_alerts_shown",{count:alerts.length,preview:alertsIsPreview?1:0}) }catch(_){} },[alertsEnabled]) // eslint-disable-line
+
   /* impression « série 7 jours » (#28) — one-shot au mount, état RÉEL */
   useEffect(()=>{ if(streak7Enabled&&track) try{ track("sg_chasse_streak7_shown",{streak:st.streak,best:st.best,live:sweek.live?1:0,cycles:sweek.cycles}) }catch(_){} },[streak7Enabled]) // eslint-disable-line
 
@@ -880,6 +1086,15 @@ export default function ChasseHome(props){
           <span className="lc-fire">🔥</span><b>{st.streak}</b>
           <small>{_t(I18N.best)} {st.best}</small>
         </div>
+        {/* CLOCHE — centre d'alertes (#19), data réelle, flag ?alerts=0 */}
+        {alertsEnabled&&(
+          <button type="button" className="lc-bells"
+            onClick={()=>{ if(track)try{track("sg_alerts_open",{count:alerts.length})}catch(_){}; setAlertsOpen(true) }}
+            aria-label={_t(ALERTS_I18N.bell)} title={_t(ALERTS_I18N.bell)}>
+            <span className="lc-bell-ic" aria-hidden="true">🔔</span>
+            {alerts.length>0&&<span className="lc-bell-count" aria-hidden="true">{alerts.length}</span>}
+          </button>
+        )}
       </div>
 
       {/* ---- CARTE = cœur produit (« carte sargasses ») : accès direct proéminent ---- */}
@@ -1134,6 +1349,12 @@ export default function ChasseHome(props){
       {badgesEnabled&&badgesOpen&&(
         <BadgesSheet badges={CHASSE_BADGES} unlockedSet={unlockedBadges} lang={lang}
           onClose={()=>setBadgesOpen(false)}/>
+      )}
+
+      {alertsEnabled&&alertsOpen&&(
+        <AlertsModal alerts={alerts} lang={lang} track={track} preview={alertsIsPreview}
+          onClose={()=>setAlertsOpen(false)}
+          onOpenBeach={(b)=>{ setAlertsOpen(false); openDetail(b,"alert") }}/>
       )}
 
       {levelUp&&(
@@ -1636,4 +1857,72 @@ export const CSS=`
   .lc-badge-pop{animation:none;opacity:1;transform:none}
 }
 @media(min-width:560px){.lc-badge-grid{grid-template-columns:1fr 1fr 1fr}}
+
+/* ====================================================================
+   CENTRE D'ALERTES « MES ALERTES » (#19) — cloche header + modale comic.
+   z-index 1140 < badges 1150 < détail 1200 < levelup 1250.
+   --paper / --ink / ombres dures ; Anton titre, Comic Neue corps.
+   ==================================================================== */
+.lc-bells{position:relative;flex:0 0 auto;width:38px;height:38px;cursor:pointer;-webkit-appearance:none;appearance:none;
+  background:var(--paper);border:2.5px solid var(--ink);border-radius:50%;box-shadow:2px 2px 0 var(--ink);
+  display:grid;place-items:center;forced-color-adjust:none;transition:transform .08s}
+.lc-bells:active{transform:translateY(2px);box-shadow:0 0 0 var(--ink)}
+.lc-bell-ic{font-size:18px;line-height:1}
+.lc-bell-count{position:absolute;top:-7px;right:-7px;min-width:19px;height:19px;padding:0 4px;
+  font-family:"AntonLC",system-ui,sans-serif;font-size:11px;line-height:19px;color:#fff;text-align:center;
+  background:var(--red);border:2px solid var(--ink);border-radius:11px;box-shadow:1.5px 1.5px 0 var(--ink)}
+.lc-root .lc-bells{background:var(--paper)!important;border:2.5px solid var(--ink)!important;border-radius:50%!important;box-shadow:2px 2px 0 var(--ink)!important}
+/* overlay */
+.lc-alerts{position:fixed;inset:0;z-index:1140;display:flex;align-items:flex-start;justify-content:center;
+  padding:max(20px,env(safe-area-inset-top)) 16px 24px;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  background:radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 0 0/9px 9px,rgba(13,11,20,.62);
+  animation:lc-detail-in .26s cubic-bezier(.2,1.2,.3,1) both}
+.lc-reduce .lc-alerts{animation:none}
+.lc-alerts-modal{position:relative;width:100%;max-width:440px;margin:auto 0;
+  background:var(--paper);border:3px solid var(--ink);border-radius:18px;
+  padding:24px 18px 22px;box-shadow:0 7px 0 var(--ink),0 16px 30px rgba(13,11,20,.5);forced-color-adjust:none}
+.lc-alerts-x{position:absolute;top:12px;right:12px;width:38px;height:38px;border-radius:50%;-webkit-appearance:none;appearance:none;
+  border:2.5px solid var(--ink);background:var(--yel);color:var(--ink);font-size:16px;font-weight:800;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.lc-alerts-title{display:inline-flex;align-items:center;gap:8px;font-family:"AntonLC",system-ui,sans-serif;font-size:18px;
+  letter-spacing:.5px;color:var(--ink);text-shadow:1.5px 1.5px 0 #fff}
+.lc-alerts-pv{display:inline-block;margin:8px 0 0;font:800 9px/1 "Comic Neue",system-ui,sans-serif;letter-spacing:.5px;
+  text-transform:uppercase;color:#fff;background:var(--pur);border:2px solid var(--ink);border-radius:10px;padding:3px 9px;box-shadow:1.5px 1.5px 0 var(--ink)}
+.lc-alerts-sub{font-size:12px;line-height:1.35;color:#2a2536;font-weight:700;margin:9px 0 14px}
+.lc-alerts-list{display:flex;flex-direction:column;gap:11px}
+.lc-alert-card{position:relative;display:flex;gap:11px;align-items:flex-start;text-align:left;
+  background:#fff;border:2.5px solid var(--ink);border-left-width:6px;border-radius:13px;padding:11px 13px 12px;
+  box-shadow:0 4px 0 var(--ink);content-visibility:auto;contain-intrinsic-size:auto 92px}
+.lc-alert-card.s-ok{border-left-color:var(--grn)}
+.lc-alert-card.s-mod{border-left-color:var(--org)}
+.lc-alert-card.s-bad{border-left-color:var(--red)}
+.lc-alert-pill{flex:0 0 auto;width:34px;height:34px;border-radius:9px;border:2.5px solid var(--ink);
+  display:grid;place-items:center;font-size:17px;line-height:1;box-shadow:2px 2px 0 var(--ink)}
+.lc-alert-pill.s-ok{background:#dff6e8}.lc-alert-pill.s-mod{background:#ffeccd}.lc-alert-pill.s-bad{background:#f9d9d6}
+.lc-alert-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.lc-alert-when{font:800 9.5px/1 "Comic Neue",system-ui,sans-serif;text-transform:uppercase;letter-spacing:.4px;color:#7a7488}
+.lc-alert-name{font-family:"AntonLC",system-ui,sans-serif;font-size:15px;line-height:1.05;color:var(--ink);letter-spacing:.2px;text-transform:uppercase}
+.lc-alert-msg{font-size:12.5px;font-weight:800;color:var(--ink);line-height:1.3;display:flex;flex-wrap:wrap;align-items:center;gap:5px}
+.lc-alert-arrow{display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap}
+.lc-alert-arrow i{font-style:normal;font-family:"AntonLC",system-ui,sans-serif;font-size:10px;color:#fff;text-shadow:1px 1px 0 var(--ink);
+  border:2px solid var(--ink);border-radius:6px;padding:1.5px 7px;letter-spacing:.3px}
+.lc-alert-arrow i.s-ok{background:var(--grn)}.lc-alert-arrow i.s-mod{background:var(--org);color:var(--ink);text-shadow:1px 1px 0 #fff}.lc-alert-arrow i.s-bad{background:var(--red)}
+.lc-alert-arrow em{font-style:normal;font-family:"AntonLC",system-ui,sans-serif;font-size:13px;color:var(--ink)}
+.lc-alert-detail{font-size:11.5px;font-weight:700;line-height:1.35;color:#5a5360;margin-top:2px}
+.lc-alert-open{align-self:flex-start;margin-top:7px;-webkit-appearance:none;appearance:none;cursor:pointer;
+  font-family:"AntonLC",system-ui,sans-serif;font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--ink);
+  background:var(--yel);border:2.5px solid var(--ink);border-radius:9px;padding:5px 11px;box-shadow:2px 2px 0 var(--ink);transition:transform .08s}
+.lc-alert-open:active{transform:translateY(2px);box-shadow:0 0 0 var(--ink)}
+.lc-root .lc-alert-card{background:#fff!important;border:2.5px solid var(--ink)!important;border-left-width:6px!important;border-radius:13px!important;box-shadow:0 4px 0 var(--ink)!important}
+.lc-root .lc-alert-card.s-ok{border-left-color:var(--grn)!important}
+.lc-root .lc-alert-card.s-mod{border-left-color:var(--org)!important}
+.lc-root .lc-alert-card.s-bad{border-left-color:var(--red)!important}
+.lc-root .lc-alert-open{background:var(--yel)!important;border:2.5px solid var(--ink)!important;border-radius:9px!important;box-shadow:2px 2px 0 var(--ink)!important}
+.lc-root .lc-alert-pill{border-radius:9px!important;box-shadow:2px 2px 0 var(--ink)!important}
+/* état vide honnête */
+.lc-alert-empty{text-align:center;padding:14px 6px 6px}
+.lc-alert-empty-veil{display:flex;justify-content:center;filter:drop-shadow(2px 4px 0 rgba(13,11,20,.4))}
+.lc-alert-empty-h{font-family:"AntonLC",system-ui,sans-serif;font-size:17px;line-height:1.1;color:var(--ink);
+  text-shadow:1.5px 1.5px 0 #fff;margin:12px 0 0}
+.lc-alert-empty .lc-sub{margin:9px auto 0;font-style:italic;color:#2a2536;font-weight:700}
+@media(prefers-reduced-motion:reduce){.lc-alerts{animation:none}}
 `
