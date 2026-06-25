@@ -7684,7 +7684,10 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         const locale=lang==="es"?"es_ES":lang==="en"?"en_US":"fr_FR"
         mollieRef.current=window.Mollie(MOLLIE_PROFILE,{locale,testmode:MOLLIE_TESTMODE})
         if(!payMountedRef.current&&payDivRef.current){
-          const card=mollieRef.current.createComponent("card",{styles:{base:{color:"#e6edf3",fontSize:"15px","::placeholder":{color:"rgba(255,255,255,.4)"}},valid:{color:"#7CF2B0"},invalid:{color:"#F4845F"}}})
+          // Texte SOMBRE : les Components Mollie sont montés sur une SURFACE BLANCHE
+          // (cf. payDivRef ci-dessous). Avant : texte clair sur l'overlay sombre + libellés
+          // Mollie (couleur par défaut sombre, non stylable) = illisible. Blanc = thème natif Mollie.
+          const card=mollieRef.current.createComponent("card",{styles:{base:{color:"#1a1a1a",fontSize:"16px","::placeholder":{color:"#9aa0a6"}},valid:{color:"#137333"},invalid:{color:"#c5221f"}}})
           card.mount(payDivRef.current)
           mollieCardRef.current=card
           payReadyRef.current=true;setPayReady(true)
@@ -8997,7 +9000,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               fontSize:15,fontFamily:"inherit",outline:"none"}}/>
           {ppSub&&<div ref={paypalBtnRef} style={{minHeight:50,marginTop:6}}/>}
           {!PAY_CAPTURE_ONLY&&PAY_PROVIDER!=="paypal"&&<div ref={expressDivRef} style={{marginBottom:10}}/>}
-          {!PAY_CAPTURE_ONLY&&PAY_PROVIDER!=="paypal"&&<div ref={payDivRef} style={{minHeight:120}}/>}
+          {!PAY_CAPTURE_ONLY&&PAY_PROVIDER!=="paypal"&&<div ref={payDivRef} style={{minHeight:120,...(PAY_PROVIDER==="mollie"&&{background:"#fff",borderRadius:14,padding:"14px 12px",border:"1px solid rgba(0,0,0,.10)"})}}/>}
           {!payReady&&payStep&&(
             <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"26px 0"}}>
               <div style={{width:22,height:22,borderRadius:"50%",border:"2.5px solid rgba(255,255,255,.15)",
