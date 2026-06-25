@@ -32,29 +32,10 @@ try {
   console.warn('vite.config.js: Could not load beaches-list.json:', e.message)
 }
 
-// Mapping between Copernicus levels/weekly IDs and beaches-list IDs
-const SARG_TO_BEACH = {
-  "grande-anse": "mq014",
-  "anse-mitan": "mq011",
-  "anse-noire": "mq012",
-  "tartane": "mq034",
-  "anse-madame": "mq024",
-  "diamant": "mq016",
-  "pt-marin": "mq008",
-  "sainte-anne": "mq004",
-  "les-salines": "mq001",
-  "vauclin": "mq044",
-  "gp-grande-anse": "gp021",
-  "gp-malendure": "gp031",
-  "gp-sainte-anne": "gp010",
-  "gp-pt-chateaux": "gp005",
-  "gp-gosier": "gp012",
-  "gp-caravelle": "gp009",
-  "gp-bas-du-fort": "gp014",
-  "gp-deshaies": "gp024",
-  "gp-moule": "gp080",
-  "gp-vieux-fort": "gp042"
-}
+// Mapping between Copernicus levels/weekly IDs and beaches-list IDs.
+// Source de vérité partagée (scripts/lib/sarg-to-beach.cjs) — aussi consommée par
+// scripts/automation/seo-enrich-content.cjs pour la jointure historique des fiches SEO.
+const { SARG_TO_BEACH } = _require('./scripts/lib/sarg-to-beach.cjs')
 const BEACH_TO_SARG = Object.fromEntries(Object.entries(SARG_TO_BEACH).map(([k, v]) => [v, k]))
 
 

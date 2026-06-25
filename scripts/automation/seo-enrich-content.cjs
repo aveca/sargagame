@@ -14,6 +14,8 @@ const { readFileSync, writeFileSync, existsSync } = require('fs')
 const { resolve } = require('path')
 const { BEACHES } = require('./lib/config.cjs')
 const { DRY_RUN, LIMITS, appendLog } = require('./lib/safety.cjs')
+// Map partagée clé d'archive SARG → id beaches-list (même source que vite.config.js).
+const { SARG_TO_BEACH } = require('../lib/sarg-to-beach.cjs')
 
 /**
  * Load full beach records (with amenities) from beaches-list.json.
@@ -38,12 +40,17 @@ function loadHistoricalStatus() {
     const counts = {}
     for (const snap of arch.snapshots || []) {
       for (const [slug, data] of Object.entries(snap.forecasts || {})) {
-        if (!counts[slug]) counts[slug] = { clean: 0, moderate: 0, avoid: 0, total: 0 }
+        // Les clés de l'archive sont des IDs SARG courts (ex 'les-salines') → on re-clé
+        // sur l'id beaches-list (ex 'mq001') pour matcher la jointure plus bas. Clé non
+        // mappée = ignorée (ne crée pas d'entrée orpheline jamais jointe).
+        const id = SARG_TO_BEACH[slug]
+        if (!id) continue
+        if (!counts[id]) counts[id] = { clean: 0, moderate: 0, avoid: 0, total: 0 }
         const todayStatus = data.forecast?.[0]?.status
-        if (todayStatus === 'clean') counts[slug].clean++
-        else if (todayStatus === 'moderate') counts[slug].moderate++
-        else if (todayStatus === 'avoid') counts[slug].avoid++
-        counts[slug].total++
+        if (todayStatus === 'clean') counts[id].clean++
+        else if (todayStatus === 'moderate') counts[id].moderate++
+        else if (todayStatus === 'avoid') counts[id].avoid++
+        counts[id].total++
       }
     }
     return counts
@@ -226,7 +233,7 @@ function main() {
     const domain = beach.island === 'mq' ? 'sargasses-martinique.com' : 'sargasses-guadeloupe.com'
     const neighbors = findNearestBeaches(beach.id, beach.island, coords, 3)
     const fullRecord = fullBeachesById[beach.id] || null
-    const history = historicalStatus[beach.slug] || historicalStatus[beach.id] || null
+    const history = historicalStatus[beach.id] || null
 
     // FAQ schema (3 questions per beach)
     const faq = {
