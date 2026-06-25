@@ -131,6 +131,20 @@ function loadMollieJs(){
   })
   return _mollieJsPromise
 }
+// Disponibilité wallets (Apple Pay / Google Pay) — détection légère, sans charger
+// de SDK. Apple Pay : API native fiable (Safari/Apple uniquement). Google Pay :
+// pas de détection fiable sans pay.js → heuristique UA (Android, ou Chrome desktop),
+// jamais en même temps qu'Apple Pay (évite 2 wallets concurrents sur iOS). Si on se
+// trompe, le checkout hébergé Mollie propose de toute façon la carte en repli.
+function walletAvail(){
+  try{
+    if(typeof window==="undefined")return {apple:false,google:false}
+    const ua=navigator.userAgent||""
+    const apple=!!(window.ApplePaySession&&window.ApplePaySession.canMakePayments&&window.ApplePaySession.canMakePayments())
+    const google=!apple&&(/Android/i.test(ua)||(/Chrome/.test(ua)&&!/Edg|OPR/.test(ua)))
+    return {apple,google}
+  }catch(_){return {apple:false,google:false}}
+}
 // PayPal SDK (bouton abo) : vault + intent=subscription. Le client-id détermine
 // l'environnement (sandbox vs live) — pas de flag séparé.
 let _ppSdkPromise=null
@@ -7942,6 +7956,53 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   },[lang,source,payBusy,onActivated,onClose])
   const doSubscribeRef=useRef(doSubscribe)
   useEffect(()=>{doSubscribeRef.current=doSubscribe},[doSubscribe])
+  // ── Apple Pay / Google Pay (Mollie) ─────────────────────────────────────────
+  // On NE fait PAS l'intégration directe (qui imposerait d'héberger le fichier de
+  // vérification de domaine Apple + un test device). On force `method` côté serveur
+  // → Mollie renvoie son checkout hébergé où la feuille native du wallet s'affiche
+  // (sur LEUR domaine, déjà vérifié chez Apple/Google). Retour ?mollie_return=1 →
+  // même confirmation serveur que la 3DS carte. Card reste 100% on-site (Components).
+  const payWithWallet=useCallback(async(method)=>{
+    if(PAY_PROVIDER!=="mollie"||PAY_CAPTURE_ONLY)return
+    const email=((payEmailRef.current&&payEmailRef.current.value)||"").trim()
+    // Abo : email obligatoire (création customer côté serveur). Pass : on le demande
+    // aussi pour le reçu / la relance. Sans email valide → focus le champ.
+    if(!email||!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){
+      setPayError(_t(lang,"Ajoute ton email d'abord.","Add your email first.","Añade tu email primero."))
+      try{payEmailRef.current&&payEmailRef.current.focus()}catch(_){}
+      return
+    }
+    const plan=payPlanRef.current,_pc=passCtxRef.current
+    setPayBusy(true);setPayError("")
+    try{submitLead(email,"onsite_wallet")}catch(_){}
+    try{localStorage.setItem("sg_email",email)}catch(_){}
+    try{
+      const _refBy=sgReferredBy(),_myRef=sgMyReferralCode()
+      const body=_pc
+        ?{action:"create_payment",method,pass:_pc.pass,cents:_pc.cents,email,source:source||"unknown",lang}
+        :{action:"create_subscription",method,plan,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
+      const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
+      const d=await r.json().catch(()=>({}))
+      if(!r.ok||d.error||!d.paymentId)throw new Error(d.error||"payment failed")
+      track("sg_pay_wallet_start",{plan,provider:"mollie",method,pass:_pc?_pc.pass:null})
+      if(d.checkoutUrl){ // wallet : rebond vers la feuille native Mollie, retour confirme + débloque
+        try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}))}catch(_){}
+        window.location.href=d.checkoutUrl;return
+      }
+      // (rare) wallet confirmé sans rebond : confirme côté serveur puis débloque
+      const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})})
+      const cd=await cr.json().catch(()=>({}))
+      if(!cd.paid)throw new Error(_t(lang,"Paiement non confirmé. Réessaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."))
+      if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000))}
+      else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",email)}
+      setPayBusy(false);onActivated?.();onClose();return
+    }catch(e){
+      setPayBusy(false)
+      const msg=(e&&e.message)?String(e.message):""
+      setPayError(msg||_t(lang,"Paiement impossible. Réessaie.","Payment failed. Retry.","Pago imposible. Reintenta."))
+      track("sg_pay_onsite_error",{plan,provider:"mollie",method,message:msg.slice(0,90)})
+    }
+  },[lang,source,onActivated,onClose])
   const startCheckout=useCallback(async(plan,via)=>{
     passCtxRef.current=null // entrée ABONNEMENT : ce n'est pas un pass one-time
     if(PAY_PROVIDER==="paypal"){payPlanRef.current=plan;track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"paypal",via});setPayStep(true);return}
@@ -8991,13 +9052,53 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
                   ?_t(lang,`puis ${REGION_PAY?PRICE_YR:"49 €"}/an dans 7 jours`,`then ${PRICE_YR||"$79"}/yr in 7 days`,`luego ${PRICE_YR||"$79"}/año en 7 días`)
                   :_t(lang,`puis ${REGION_PAY?PRICE_MO:"4,99 €"}/mois dans 7 jours`,`then ${PRICE_MO||"$9.99"}/mo in 7 days`,`luego ${PRICE_MO||"$9.99"}/mes en 7 días`)} · {_t(lang,"annule en 1 clic","cancel in 1 click","cancela en 1 clic")}</>}
           </div>
+          {/* Wallets express (Apple Pay / Google Pay) — Mollie, hors capture. Tap →
+              feuille native via le checkout hébergé Mollie (payWithWallet). Affichés
+              uniquement si le device les supporte (walletAvail). Carte = repli on-site. */}
+          {!PAY_CAPTURE_ONLY&&PAY_PROVIDER==="mollie"&&(()=>{
+            const w=walletAvail()
+            if(!w.apple&&!w.google)return null
+            return(
+              <div style={{marginBottom:14}}>
+                {w.apple&&(
+                  <button type="button" aria-label="Apple Pay" disabled={payBusy} onClick={()=>payWithWallet("applepay")}
+                    style={{width:"100%",padding:"14px",borderRadius:12,border:"none",background:"#000",color:"#fff",
+                      fontFamily:"inherit",fontWeight:600,fontSize:17,cursor:payBusy?"wait":"pointer",opacity:payBusy?.6:1,
+                      display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:w.google?8:0}}>
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M17.564 13.13c-.03-2.79 2.28-4.13 2.38-4.2-1.3-1.9-3.32-2.16-4.04-2.19-1.72-.17-3.36 1.01-4.23 1.01-.87 0-2.21-.99-3.64-.96-1.87.03-3.6 1.09-4.56 2.77-1.95 3.38-.5 8.38 1.39 11.13.93 1.34 2.03 2.85 3.47 2.8 1.39-.06 1.92-.9 3.6-.9 1.67 0 2.15.9 3.62.87 1.5-.03 2.45-1.37 3.36-2.72 1.06-1.56 1.5-3.07 1.52-3.15-.03-.01-2.92-1.12-2.95-4.44zM14.78 4.62c.77-.93 1.29-2.22 1.15-3.51-1.11.04-2.45.74-3.24 1.67-.71.82-1.33 2.14-1.16 3.4 1.24.1 2.51-.63 3.25-1.56z"/></svg>
+                    Pay
+                  </button>
+                )}
+                {w.google&&(
+                  <button type="button" aria-label="Google Pay" disabled={payBusy} onClick={()=>payWithWallet("googlepay")}
+                    style={{width:"100%",padding:"13px",borderRadius:12,border:"none",background:"#fff",color:"#3c4043",
+                      fontFamily:"inherit",fontWeight:600,fontSize:15.5,cursor:payBusy?"wait":"pointer",opacity:payBusy?.6:1,
+                      display:"flex",alignItems:"center",justifyContent:"center",gap:7}}>
+                    <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                    Google Pay
+                  </button>
+                )}
+                <div style={{display:"flex",alignItems:"center",gap:10,marginTop:14}}>
+                  <div style={{flex:1,height:1,background:"rgba(255,255,255,.14)"}}/>
+                  <span style={{fontSize:11,color:"rgba(255,255,255,.45)"}}>{_t(lang,"ou par carte","or by card","o con tarjeta")}</span>
+                  <div style={{flex:1,height:1,background:"rgba(255,255,255,.14)"}}/>
+                </div>
+              </div>
+            )
+          })()}
+          {/* Email — en mode carte Mollie, champ BLANC pour s'accorder au formulaire
+              carte (Components) qui est blanc : un seul langage visuel sur l'écran. */}
+          {!PAY_CAPTURE_ONLY&&PAY_PROVIDER==="mollie"&&<label style={{display:"block",fontSize:12,fontWeight:600,color:"rgba(255,255,255,.6)",marginBottom:6}}>{_t(lang,"E-mail","Email","Email")}</label>}
           <input ref={payEmailRef} type="email" inputMode="email" autoComplete="email"
             onBlur={capturePayEmail}
             defaultValue={typeof localStorage!=="undefined"?(localStorage.getItem("sg_email")||""):""}
             placeholder={_t(lang,"ton@email.com","you@email.com","tu@email.com")}
             style={{width:"100%",boxSizing:"border-box",padding:"13px 14px",borderRadius:12,marginBottom:12,
-              border:"1px solid rgba(255,255,255,.18)",background:"#13261F",color:"#e6edf3",
-              fontSize:15,fontFamily:"inherit",outline:"none"}}/>
+              fontSize:15,fontFamily:"inherit",outline:"none",
+              ...(PAY_PROVIDER==="mollie"&&!PAY_CAPTURE_ONLY
+                ?{border:"1px solid rgba(0,0,0,.10)",background:"#fff",color:"#1a1a1a"}
+                :{border:"1px solid rgba(255,255,255,.18)",background:"#13261F",color:"#e6edf3"})}}/>
+          {!PAY_CAPTURE_ONLY&&PAY_PROVIDER==="mollie"&&<label style={{display:"block",fontSize:12,fontWeight:600,color:"rgba(255,255,255,.6)",margin:"2px 0 6px"}}>{_t(lang,"Carte bancaire","Card","Tarjeta")}</label>}
           {ppSub&&<div ref={paypalBtnRef} style={{minHeight:50,marginTop:6}}/>}
           {!PAY_CAPTURE_ONLY&&PAY_PROVIDER!=="paypal"&&<div ref={expressDivRef} style={{marginBottom:10}}/>}
           {!PAY_CAPTURE_ONLY&&PAY_PROVIDER!=="paypal"&&<div ref={payDivRef} style={{minHeight:120,...(PAY_PROVIDER==="mollie"&&{background:"#fff",borderRadius:14,padding:"14px 12px",border:"1px solid rgba(0,0,0,.10)"})}}/>}
