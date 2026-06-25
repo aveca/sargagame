@@ -3155,12 +3155,12 @@
       "levels": [
         {
           "id": "grande-anse",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "anse-mitan",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {
@@ -3175,7 +3175,7 @@
         },
         {
           "id": "anse-madame",
-          "afai": 0.06,
+          "afai": 0.05,
           "status": "clean"
         },
         {

@@ -915,12 +915,12 @@
       "levels": [
         {
           "id": "rm001",
-          "afai": 0.25,
-          "status": "moderate"
+          "afai": 0.13,
+          "status": "clean"
         },
         {
           "id": "rm002",
-          "afai": 0.13,
+          "afai": 0.08,
           "status": "clean"
         },
         {
@@ -950,12 +950,12 @@
         },
         {
           "id": "rm008",
-          "afai": 0.11,
+          "afai": 0.12,
           "status": "clean"
         },
         {
           "id": "rm009",
-          "afai": 0.09,
+          "afai": 0.06,
           "status": "clean"
         },
         {
