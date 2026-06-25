@@ -915,12 +915,12 @@
       "levels": [
         {
           "id": "rm001",
-          "afai": 0.13,
-          "status": "clean"
+          "afai": 0.25,
+          "status": "moderate"
         },
         {
           "id": "rm002",
-          "afai": 0.08,
+          "afai": 0.13,
           "status": "clean"
         },
         {
@@ -930,7 +930,7 @@
         },
         {
           "id": "rm004",
-          "afai": 0.08,
+          "afai": 0.09,
           "status": "clean"
         },
         {
@@ -950,7 +950,7 @@
         },
         {
           "id": "rm008",
-          "afai": 0.08,
+          "afai": 0.11,
           "status": "clean"
         },
         {
@@ -1116,6 +1116,13 @@
       "from": "moderate",
       "to": "clean",
       "afai": 0.14
+    },
+    {
+      "date": "2026-06-25",
+      "beach": "rm001",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.25
     }
   ]
 }

@@ -930,8 +930,8 @@
         },
         {
           "id": "pc004",
-          "afai": 0.14,
-          "status": "clean"
+          "afai": 0.15,
+          "status": "moderate"
         },
         {
           "id": "pc005",
@@ -970,8 +970,8 @@
         },
         {
           "id": "pc012",
-          "afai": 0.14,
-          "status": "clean"
+          "afai": 0.15,
+          "status": "moderate"
         }
       ]
     }
@@ -1459,6 +1459,13 @@
       "from": "moderate",
       "to": "clean",
       "afai": 0.14
+    },
+    {
+      "date": "2026-06-25",
+      "beach": "pc004",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.15
     }
   ]
 }

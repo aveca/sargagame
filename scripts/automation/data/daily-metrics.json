@@ -1495,7 +1495,7 @@
   },
   {
     "date": "2026-06-25",
-    "time": "2026-06-25T03:40:55.113Z",
+    "time": "2026-06-25T09:29:13.535Z",
     "payments": 12,
     "revenue": 59.88,
     "emails": 240,
@@ -1524,7 +1524,7 @@
       }
     },
     "email": {
-      "sent": 1504,
+      "sent": 1508,
       "delivered": null,
       "opened": null,
       "clicked": null,
