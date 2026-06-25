@@ -8197,11 +8197,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               {_t(lang,`Activer l'alerte sur ${beach.name}`,`Activate alert on ${beach.name}`,`Activar alerta en ${beach.name}`)}
             </div>
             <div style={{font:"600 12px/1 system-ui,sans-serif",opacity:.78,marginTop:3}}>
-              {NO_TRIAL?_t(lang,"4,99 €/mois · annulable en 2 clics","€4.99/mo · cancel anytime","4,99 €/mes · cancela cuando quieras"):_t(lang,"7 jours offerts · 4,99 €/mois ensuite","7-day free trial · €4.99/mo after","7 días gratis · 4,99 €/mes después")}
+              {PAY_CAPTURE_ONLY?_t(lang,"7 jours premium offerts · juste ton email","7 days premium on us · just your email","7 días premium gratis · solo tu email"):NO_TRIAL?_t(lang,"4,99 €/mois · annulable en 2 clics","€4.99/mo · cancel anytime","4,99 €/mes · cancela cuando quieras"):_t(lang,"7 jours offerts · 4,99 €/mois ensuite","7-day free trial · €4.99/mo after","7 días gratis · 4,99 €/mes después")}
             </div>
           </button>
           <div style={{textAlign:"center",marginTop:13,font:"600 10.5px/1 system-ui,sans-serif",color:"rgba(234,247,244,.5)",letterSpacing:".015em"}}>
-            {_t(lang,"Sans engagement · Paiement sécurisé "+PAY_LABEL,"No commitment · Secure "+PAY_LABEL+" payment","Sin compromiso · Pago seguro "+PAY_LABEL)}
+            {PAY_CAPTURE_ONLY?_t(lang,"Sans carte · juste ton email","No card · just your email","Sin tarjeta · solo tu email"):_t(lang,"Sans engagement · Paiement sécurisé "+PAY_LABEL,"No commitment · Secure "+PAY_LABEL+" payment","Sin compromiso · Pago seguro "+PAY_LABEL)}
           </div>
         </div>
       </div>
@@ -8960,7 +8960,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               {IS_NEW_REGION&&<span style={{fontFamily:"'Anton',sans-serif",fontSize:10.5,letterSpacing:".12em",color:"rgba(255,255,255,.8)"}}>
                 {((lang==="es"?"SARGAZO ":"SARGASSUM ")+String(REGION.name||"")).toUpperCase()}
               </span>}
-              🔒 {PAY_PROVIDER==="mollie"?"Mollie":PAY_PROVIDER==="paypal"?"PayPal":"Stripe"}
+              🔒 {PAY_CAPTURE_ONLY?_t(lang,"Sans carte","No card","Sin tarjeta"):PAY_PROVIDER==="mollie"?"Mollie":PAY_PROVIDER==="paypal"?"PayPal":"Stripe"}
             </span>
           </div>
           <h3 className="anton" style={{fontSize:22,color:"#fff",margin:"0 0 4px",letterSpacing:"-.01em"}}>
@@ -9004,7 +9004,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               <div style={{width:22,height:22,borderRadius:"50%",border:"2.5px solid rgba(255,255,255,.15)",
                 borderTopColor:"#FFC72C",animation:"sgSpin .8s linear infinite"}}/>
               <span style={{fontSize:12.5,color:"rgba(255,255,255,.55)"}}>
-                {_t(lang,"Paiement sécurisé…","Secure checkout…","Pago seguro…")}
+                {PAY_CAPTURE_ONLY?_t(lang,"On t'ouvre l'accès…","Opening your access…","Abriendo tu acceso…"):_t(lang,"Paiement sécurisé…","Secure checkout…","Pago seguro…")}
               </span>
               <style>{`@keyframes sgSpin{to{transform:rotate(360deg)}}`}</style>
             </div>
@@ -10284,9 +10284,9 @@ function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,onPremium,onClos
         chips:[{k:"premium",label:t("⭐ Les 7 jours, plage par plage","⭐ The full 7 days, beach by beach","⭐ Los 7 días, playa por playa")},{k:"root",label:t("← Autre question","← Another question","← Otra pregunta")}]}
     }
     if(k==="premium")return{text:t(
-      "Premium, c'est ton veilleur personnel : la plage recommandée chaque matin dans ta boîte, une alerte si TA plage change, et la prévision 7 jours plage par plage. Annulable en 2 clics.",
-      "Premium is your personal watchman: the recommended beach in your inbox every morning, an alert when YOUR beach changes, and the 7-day forecast beach by beach. Cancel in 2 clicks.",
-      "Premium es tu vigía personal: la playa recomendada cada mañana en tu correo, una alerta si TU playa cambia, y el pronóstico de 7 días playa por playa. Cancela en 2 clics."),
+      "Premium, c'est ton veilleur personnel : la plage recommandée chaque matin dans ta boîte, une alerte si TA plage change, et la prévision 7 jours plage par plage. "+(PAY_CAPTURE_ONLY?"En ce moment c'est offert 7 jours, juste ton email.":"Annulable en 2 clics."),
+      "Premium is your personal watchman: the recommended beach in your inbox every morning, an alert when YOUR beach changes, and the 7-day forecast beach by beach. "+(PAY_CAPTURE_ONLY?"Right now it's 7 days on us, just your email.":"Cancel in 2 clicks."),
+      "Premium es tu vigía personal: la playa recomendada cada mañana en tu correo, una alerta si TU playa cambia, y el pronóstico de 7 días playa por playa. "+(PAY_CAPTURE_ONLY?"Ahora son 7 días gratis, solo tu email.":"Cancela en 2 clics.")),
       chips:[{k:"cta",label:t("Voir l'offre ⭐","See the offer ⭐","Ver la oferta ⭐")},{k:"root",label:t("← Autre question","← Another question","← Otra pregunta")}]}
     if(k==="trust")return{text:t(
       "Données satellite Copernicus (programme spatial européen), actualisées 4×/jour, croisées avec la météo marine et les signalements locaux — plage par plage, pas de moyenne d'île. Quand on ne sait pas, on le dit.",
@@ -12381,7 +12381,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
           </button>
         )}
         <div className="sg-rv" style={{textAlign:"center",fontSize:11.5,color:"rgba(255,255,255,.45)",marginTop:10}}>
-          {_t(lang,"Sans engagement — annulable en 1 clic","No commitment — cancel anytime","Sin compromiso — cancela cuando quieras")}
+          {PAY_CAPTURE_ONLY?_t(lang,"Sans carte — juste ton email","No card — just your email","Sin tarjeta — solo tu email"):_t(lang,"Sans engagement — annulable en 1 clic","No commitment — cancel anytime","Sin compromiso — cancela cuando quieras")}
         </div>
       </section>
 
@@ -12574,7 +12574,7 @@ function AlertHub({lang,island,beach,onPremium,onShowMap,onClose}){
           {_t(lang,"Découvrir Premium","Discover Premium","Descubrir Premium")}
         </button>
         <div style={{textAlign:"center",fontSize:11.5,color:"rgba(255,255,255,.45)",marginBottom:36}}>
-          {_t(lang,"Sans engagement — annulable en 1 clic","No commitment — cancel anytime","Sin compromiso — cancela cuando quieras")}
+          {PAY_CAPTURE_ONLY?_t(lang,"Sans carte — juste ton email","No card — just your email","Sin tarjeta — solo tu email"):_t(lang,"Sans engagement — annulable en 1 clic","No commitment — cancel anytime","Sin compromiso — cancela cuando quieras")}
         </div>
 
         {/* Pli 6 — Sorties */}
@@ -15016,7 +15016,7 @@ export default function App(){
             display:"flex",alignItems:"center",justifyContent:"center",gap:10,
             flexWrap:"wrap",
             fontSize:13,color:"#e6edf3",fontFamily:"inherit"}}>
-            <span style={{opacity:.9,flex:"1 1 180px",minWidth:0,textAlign:"center"}}>{SARGASSES_SEASON==="high"
+            <span style={{opacity:.9,flex:"1 1 180px",minWidth:0,textAlign:"center"}}>{PAY_CAPTURE_ONLY?_t(lang,"Tes 7 jours offerts t'attendent — juste ton email.","Your 7 free days are waiting — just your email.","Tus 7 días gratis te esperan — solo tu email."):SARGASSES_SEASON==="high"
               ?_t(lang,"Les plages bougent vite. Tu étais presque Premium — termine maintenant.","Beaches are changing fast. You almost had Premium — finish now.","Las playas cambian rápido. Casi tenías Premium — termina ahora.")
               :_t(lang,"Tu étais presque Premium ! Reprends où tu en étais.","You were almost Premium! Pick up where you left off.","¡Casi tenías Premium! Retoma donde te quedaste.")}</span>
             <button onClick={()=>{
@@ -15026,7 +15026,7 @@ export default function App(){
             }} style={{background:"#E8A800",color:"#120821",border:"none",borderRadius:8,
               padding:"6px 14px",fontSize:12,fontWeight:700,fontFamily:"inherit",cursor:"pointer",
               whiteSpace:"nowrap",flexShrink:0}}>
-              {_t(lang,"Passer Premium","Go Premium","Hazte Premium")}
+              {PAY_CAPTURE_ONLY?_t(lang,"Débloquer 7 jours","Unlock 7 days","Desbloquear 7 días"):_t(lang,"Passer Premium","Go Premium","Hazte Premium")}
             </button>
             <button onClick={()=>{
               track("sg_checkout_recovery_dismiss",{island})
@@ -15487,9 +15487,20 @@ export default function App(){
             try{localStorage.setItem("sg_email",em);localStorage.setItem("sg_email_prompt","true")}catch(_){}
             submitLead(em,"capture-gate")
             track("sg_capture_gate_submit",{src:captureGateSrc,variant:"gate"})
-            // Porte EMAIL choisie : on a capturé le lead → le drip envoie le contenu.
-            // On NE force PLUS la CB (modèle « soit email soit cb ») : l'état succès
-            // reste affiché ; la CB reste accessible via le bouton « ou débloque tout ».
+            // CAPTURE : tenir la promesse du titre (« Débloque la météo de {plage}
+            // pour demain ») → débloquer RÉELLEMENT 7j premium, comme la branche
+            // gap_freemium (doSubscribe 7822-7833). Le lead est déjà capturé ci-dessus
+            // (un seul submitLead « capture-gate » : pas de double-comptage, attribution
+            // funnel préservée). 100% réversible : au go-live Mollie (PAY_CAPTURE_ONLY
+            // =false) onPay est redéfini (cf. plus bas) et cette branche ne tourne plus.
+            if(PAY_CAPTURE_ONLY){
+              try{localStorage.setItem("sg_premium_pass_end",String(Date.now()+7*86400000))}catch(_){}
+              try{track("sg_gap_freemium_unlock",{source:"capture_gate"})}catch(_){}
+              setIsPremium(true)
+              setShowCaptureGate(false)
+              setShowWelcome(true)
+            }
+            // (Hors capture : porte EMAIL = lead seul ; la CB reste via le bouton onPay.)
           }}
           onPay={PAY_CAPTURE_ONLY?undefined:()=>{
             setShowCaptureGate(false)
@@ -15704,7 +15715,7 @@ export default function App(){
             <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,textTransform:"uppercase",fontSize:34,letterSpacing:".01em",lineHeight:1.05,color:"#fff",textShadow:"0 2px 0 rgba(0,0,0,.35)"}}>
               {_t(lang,"Premium activé","Premium activated","Premium activado")}</div>
             <div style={{fontSize:15,lineHeight:1.5,color:"rgba(255,255,255,.72)",marginTop:12,maxWidth:"30ch"}}>
-              {_t(lang,"Paiement validé. Tes prévisions 7 jours et tes alertes sont débloquées.","Payment confirmed. Your 7-day forecast and alerts are unlocked.","Pago confirmado. Tu pronóstico de 7 días y tus alertas están desbloqueados.")}</div>
+              {PAY_CAPTURE_ONLY?_t(lang,"7 jours premium offerts. Tes prévisions 7 jours et tes alertes sont débloquées.","7 days premium on us. Your 7-day forecast and alerts are unlocked.","7 días premium gratis. Tu pronóstico de 7 días y tus alertas están desbloqueados."):_t(lang,"Paiement validé. Tes prévisions 7 jours et tes alertes sont débloquées.","Payment confirmed. Your 7-day forecast and alerts are unlocked.","Pago confirmado. Tu pronóstico de 7 días y tus alertas están desbloqueados.")}</div>
             <button type="button" onClick={()=>{try{track("sg_premium_confirm_continue")}catch(_){};setSplashDone(true)}}
               style={{marginTop:26,background:"#FFC72C",color:"#0B2230",border:"none",borderRadius:13,padding:"14px 30px",fontWeight:800,fontSize:16,cursor:"pointer",fontFamily:"inherit",boxShadow:"3px 3px 0 rgba(0,0,0,.35)"}}>
               {_t(lang,"Continuer →","Continue →","Continuar →")}</button>
