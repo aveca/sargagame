@@ -7648,7 +7648,6 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   // redirect: types card+link only) → action subscribe (essai 7j, prix
   // région) → premium activé EN PLACE. Fallback intégral : Payment Link.
   const[payStep,_setPayStep]=useState(false)
-  const[captureDone,setCaptureDone]=useState(false) // mode capture : email waitlist enregistré
   const payStepRef=useRef(false)
   const passCtxRef=useRef(null) // {pass,cents,days} si achat d'un PASS on-site, sinon null (abo)
   const setPayStep=useCallback(v=>{payStepRef.current=v;_setPayStep(v)},[])
@@ -8967,7 +8966,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             {ppSub
               ?_t(lang,"Active ton Premium","Activate your Premium","Activa tu Premium")
               :PAY_CAPTURE_ONLY
-              ?(captureDone?_t(lang,"C'est débloqué ! 🎉","Unlocked! 🎉","¡Desbloqueado! 🎉"):_t(lang,"Débloque ta semaine — c'est offert","Unlock your week — on us","Desbloquea tu semana — gratis"))
+              ?_t(lang,"Débloque ta semaine — c'est offert","Unlock your week — on us","Desbloquea tu semana — gratis")
               :passCtxRef.current
               ?_t(lang,`Active ton pass ${passCtxRef.current.days} jours`,`Activate your ${passCtxRef.current.days}-day pass`,`Activa tu pase ${passCtxRef.current.days} días`)
               :NO_TRIAL
@@ -8978,7 +8977,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             {ppSub
               ?_t(lang,"Paie en sécurité avec PayPal · annule quand tu veux","Pay securely with PayPal · cancel anytime","Paga seguro con PayPal · cancela cuando quieras")
               :PAY_CAPTURE_ONLY
-              ?(captureDone?_t(lang,"Ton accès 7 jours est ouvert — profite ! On te prévient pour continuer.","Your 7-day access is open — enjoy! We'll tell you to continue.","Tu acceso de 7 días está abierto — ¡disfruta! Te avisamos para seguir."):_t(lang,"Paiements en maintenance quelques jours. En attendant, ton accès premium 7 jours est OFFERT — ton email et tu profites tout de suite.","Payments down for a few days. Meanwhile your 7-day premium access is ON US — your email and you're in.","Pagos en mantenimiento unos días. Mientras, tu acceso premium 7 días es GRATIS — tu email y listo."))
+              ?_t(lang,"Paiements en maintenance quelques jours. En attendant, ton accès premium 7 jours est OFFERT — ton email et tu profites tout de suite.","Payments down for a few days. Meanwhile your 7-day premium access is ON US — your email and you're in.","Pagos en mantenimiento unos días. Mientras, tu acceso premium 7 días es GRATIS — tu email y listo.")
               :passCtxRef.current
               ?_t(lang,`${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"fr")} · ${passCtxRef.current.days} jours d'accès complet · paiement unique`,`${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"en")} · ${passCtxRef.current.days} days full access · one-time`,`${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"es")} · ${passCtxRef.current.days} días · pago único`)
               :NO_TRIAL
@@ -9018,14 +9017,14 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               <div style={{color:"#FFD9CC",fontSize:15,lineHeight:1.4,fontWeight:600}}>{payError}</div>
             </div>
           )}
-          {!ppSub&&<button onClick={()=>doSubscribe()} disabled={payBusy||(PAY_CAPTURE_ONLY&&captureDone)} className="gbtn"
+          {!ppSub&&<button onClick={()=>doSubscribe()} disabled={payBusy} className="gbtn"
             style={{width:"100%",padding:15,borderRadius:14,border:"none",marginTop:16,
               cursor:payBusy?"wait":"pointer",fontFamily:"inherit",fontWeight:800,fontSize:15.5,
               opacity:payBusy?.7:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
             {payBusy
               ?_t(lang,"Activation…","Activating…","Activando…")
               :PAY_CAPTURE_ONLY
-              ?(captureDone?_t(lang,"✓ Débloqué","✓ Unlocked","✓ Desbloqueado"):_t(lang,"Débloquer gratuitement →","Unlock free →","Desbloquear gratis →"))
+              ?_t(lang,"Débloquer gratuitement →","Unlock free →","Desbloquear gratis →")
               :passCtxRef.current
               ?_t(lang,`Payer ${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"fr")}`,`Pay ${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"en")}`,`Pagar ${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"es")}`)
               :NO_TRIAL
