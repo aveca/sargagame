@@ -2188,7 +2188,7 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
                 const pageTitle = isMQ ? page.titleMq : page.titleGp
                 const pageH1 = isMQ ? page.h1Mq : page.h1Gp
                 const pageUrl = `https://${domain}/conditions/${page.slug}/`
-                const pageDesc = `${matching.length > 0 ? `${matching.length} plage${matching.length > 1 ? 's' : ''} correspond${matching.length > 1 ? 'ent' : ''} aujourd\u2019hui en ${island}.` : 'Aucune plage ne correspond aujourd\u2019hui.'} ${page.intro.slice(0, 120)}`.slice(0, 170)
+                const pageDesc = clampDesc(`${matching.length > 0 ? `${matching.length} plage${matching.length > 1 ? 's' : ''} correspond${matching.length > 1 ? 'ent' : ''} aujourd\u2019hui en ${island}.` : 'Aucune plage ne correspond aujourd\u2019hui.'} ${page.intro.slice(0, 120)}`, 155)
                 const beachListHtml = matching.length > 0
                   ? matching.map(b => {
                       const w = b._w
