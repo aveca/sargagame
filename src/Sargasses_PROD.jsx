@@ -145,6 +145,13 @@ function walletAvail(){
     return {apple,google}
   }catch(_){return {apple:false,google:false}}
 }
+// Styles partagés des champs carte Mollie (thème SOMBRE premium). MOL_FIELD = la div
+// sombre qui héberge l'iframe Mollie (porte la bordure + le fond visible) ; MOL_LABEL =
+// nos libellés clairs rendus HORS iframe (le composant combiné les rendait illisibles).
+const MOL_FIELD={width:"100%",boxSizing:"border-box",minHeight:46,padding:"4px 13px",
+  borderRadius:11,marginBottom:13,border:"1px solid rgba(255,255,255,.14)",
+  background:"rgba(255,255,255,.05)",display:"flex",alignItems:"center"}
+const MOL_LABEL={display:"block",fontSize:11.5,fontWeight:600,color:"rgba(255,255,255,.62)",marginBottom:6,letterSpacing:".01em"}
 // PayPal SDK (bouton abo) : vault + intent=subscription. Le client-id détermine
 // l'environnement (sandbox vs live) — pas de flag séparé.
 let _ppSdkPromise=null
@@ -7682,6 +7689,14 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const expressDivRef=useRef(null)
   const mollieRef=useRef(null)        // pont Mollie : objet Mollie(profileId)
   const mollieCardRef=useRef(null)    // pont Mollie : composant carte (Components)
+  // Composants Mollie INDIVIDUELS (au lieu du composant "card" combiné) : on contrôle
+  // 100% du thème + on pose NOS propres libellés → carte en thème SOMBRE premium, plus
+  // de feuille blanche bolt-on. createToken() agrège tous les composants montés → submit
+  // inchangé (cf. doSubscribe). Réfs : titulaire / numéro / expiration / CVC.
+  const molHolderRef=useRef(null)
+  const molNumberRef=useRef(null)
+  const molExpiryRef=useRef(null)
+  const molCvcRef=useRef(null)
   // Préchauffage COMPLET dès l'ouverture du paywall : SetupIntent + stripe.js
   // + Elements + MOUNT du Payment Element dans l'overlay caché. Mesuré
   // 2026-06-10 : stripe.js ~15s + boot de l'élément ~12s sur ce réseau — tout
@@ -7697,13 +7712,25 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         await loadMollieJs()
         const locale=lang==="es"?"es_ES":lang==="en"?"en_US":"fr_FR"
         mollieRef.current=window.Mollie(MOLLIE_PROFILE,{locale,testmode:MOLLIE_TESTMODE})
-        if(!payMountedRef.current&&payDivRef.current){
-          // Texte SOMBRE : les Components Mollie sont montés sur une SURFACE BLANCHE
-          // (cf. payDivRef ci-dessous). Avant : texte clair sur l'overlay sombre + libellés
-          // Mollie (couleur par défaut sombre, non stylable) = illisible. Blanc = thème natif Mollie.
-          const card=mollieRef.current.createComponent("card",{styles:{base:{color:"#1a1a1a",fontSize:"16px","::placeholder":{color:"#9aa0a6"}},valid:{color:"#137333"},invalid:{color:"#c5221f"}}})
-          card.mount(payDivRef.current)
-          mollieCardRef.current=card
+        if(!payMountedRef.current&&molNumberRef.current){
+          // Composants INDIVIDUELS (titulaire/numéro/expiration/CVC) au lieu du composant
+          // "card" combiné : le combiné rendait ses propres libellés en sombre NON-stylable
+          // (illisible sur l'overlay) → on était forcé à une feuille blanche bolt-on. Ici on
+          // pose NOS libellés (clairs) hors iframe + texte saisi clair sur champs sombres
+          // → carte 100% dans le thème premium, zéro blanc. `styles` ne stylise QUE le texte
+          // DANS l'iframe ; le fond visible = nos divs sombres. createToken() (doSubscribe)
+          // collecte tous les composants montés sur l'instance → submit STRICTEMENT inchangé.
+          const styles={base:{color:"#eef2f7",fontSize:"16px",fontWeight:"500","::placeholder":{color:"rgba(255,255,255,.32)"}},valid:{color:"#7CE0B0"},invalid:{color:"#FF8A66"}}
+          const M=mollieRef.current
+          const holder=M.createComponent("cardHolder",{styles})
+          const number=M.createComponent("cardNumber",{styles})
+          const expiry=M.createComponent("expiryDate",{styles})
+          const cvc=M.createComponent("verificationCode",{styles})
+          holder.mount(molHolderRef.current)
+          number.mount(molNumberRef.current)
+          expiry.mount(molExpiryRef.current)
+          cvc.mount(molCvcRef.current)
+          mollieCardRef.current={holder,number,expiry,cvc} // réf agrégée (diagnostic/HMR)
           payReadyRef.current=true;setPayReady(true)
           payMountedRef.current=true
         }
@@ -9086,22 +9113,42 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               </div>
             )
           })()}
-          {/* Mode carte Mollie : e-mail + carte (Components) réunis dans UNE seule
-              feuille blanche (mêmes bordures grises que les champs Mollie) → un seul
-              objet de paiement cohérent, pas deux boîtes blanches éparpillées. Mollie
-              libelle déjà ses propres champs → pas de label « Carte bancaire » redondant.
-              Les autres modes (capture / PayPal / Stripe) gardent le champ sombre. */}
+          {/* Mode carte Mollie : panneau SOMBRE premium (zéro blanc). E-mail + 4 champs
+              carte (composants Mollie individuels montés dans nos divs sombres MOL_FIELD,
+              libellés clairs MOL_LABEL hors iframe). Repères Visa/Mastercard sur le numéro
+              (confiance au moment du paiement). Capture / PayPal / Stripe → champ sombre. */}
           {!PAY_CAPTURE_ONLY&&PAY_PROVIDER==="mollie"?(
-            <div style={{background:"#fff",borderRadius:16,border:"1px solid rgba(0,0,0,.10)",
-              padding:"15px 14px 9px",boxShadow:"0 6px 24px rgba(0,0,0,.18)"}}>
-              <label style={{display:"block",fontSize:12,fontWeight:600,color:"#5f6368",marginBottom:6}}>{_t(lang,"E-mail","Email","Email")}</label>
+            <div style={{background:"linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.02))",
+              borderRadius:16,border:"1px solid rgba(255,255,255,.10)",
+              padding:"14px 14px 4px",boxShadow:"0 8px 30px rgba(0,0,0,.30)"}}>
+              <label style={MOL_LABEL}>{_t(lang,"E-mail (reçu d'accès)","Email (access receipt)","Email (recibo de acceso)")}</label>
               <input ref={payEmailRef} type="email" inputMode="email" autoComplete="email"
                 onBlur={capturePayEmail}
                 defaultValue={typeof localStorage!=="undefined"?(localStorage.getItem("sg_email")||""):""}
                 placeholder={_t(lang,"ton@email.com","you@email.com","tu@email.com")}
-                style={{width:"100%",boxSizing:"border-box",padding:"12px 14px",borderRadius:10,marginBottom:14,
-                  fontSize:15,fontFamily:"inherit",outline:"none",border:"1px solid #dadce0",background:"#fff",color:"#1a1a1a"}}/>
-              <div ref={payDivRef} style={{minHeight:120}}/>
+                style={{width:"100%",boxSizing:"border-box",padding:"12px 13px",borderRadius:11,marginBottom:13,
+                  fontSize:15,fontFamily:"inherit",outline:"none",
+                  border:"1px solid rgba(255,255,255,.14)",background:"rgba(255,255,255,.05)",color:"#eef2f7"}}/>
+              <label style={MOL_LABEL}>{_t(lang,"Nom du titulaire","Cardholder name","Nombre del titular")}</label>
+              <div ref={molHolderRef} style={MOL_FIELD}/>
+              <label style={MOL_LABEL}>{_t(lang,"Numéro de carte","Card number","Número de tarjeta")}</label>
+              <div style={{position:"relative"}}>
+                <div ref={molNumberRef} style={{...MOL_FIELD,paddingRight:74}}/>
+                <span aria-hidden="true" style={{position:"absolute",right:11,top:15,display:"flex",gap:5,alignItems:"center",pointerEvents:"none"}}>
+                  <svg width="26" height="17" viewBox="0 0 48 32"><rect width="48" height="32" rx="4" fill="#fff"/><text x="24" y="21" fontFamily="Arial,Helvetica,sans-serif" fontSize="13" fontWeight="700" fill="#1A1F71" textAnchor="middle" letterSpacing="0.5">VISA</text></svg>
+                  <svg width="26" height="17" viewBox="0 0 48 32"><rect width="48" height="32" rx="4" fill="#fff"/><circle cx="20" cy="16" r="9" fill="#EB001B"/><circle cx="28" cy="16" r="9" fill="#F79E1B" fillOpacity="0.85"/></svg>
+                </span>
+              </div>
+              <div style={{display:"flex",gap:11}}>
+                <div style={{flex:1,minWidth:0}}>
+                  <label style={MOL_LABEL}>{_t(lang,"Expiration","Expiry","Caducidad")}</label>
+                  <div ref={molExpiryRef} style={MOL_FIELD}/>
+                </div>
+                <div style={{flex:1,minWidth:0}}>
+                  <label style={MOL_LABEL}>CVC</label>
+                  <div ref={molCvcRef} style={MOL_FIELD}/>
+                </div>
+              </div>
             </div>
           ):(
             <>
