@@ -9086,22 +9086,37 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               </div>
             )
           })()}
-          {/* Email — en mode carte Mollie, champ BLANC pour s'accorder au formulaire
-              carte (Components) qui est blanc : un seul langage visuel sur l'écran. */}
-          {!PAY_CAPTURE_ONLY&&PAY_PROVIDER==="mollie"&&<label style={{display:"block",fontSize:12,fontWeight:600,color:"rgba(255,255,255,.6)",marginBottom:6}}>{_t(lang,"E-mail","Email","Email")}</label>}
-          <input ref={payEmailRef} type="email" inputMode="email" autoComplete="email"
-            onBlur={capturePayEmail}
-            defaultValue={typeof localStorage!=="undefined"?(localStorage.getItem("sg_email")||""):""}
-            placeholder={_t(lang,"ton@email.com","you@email.com","tu@email.com")}
-            style={{width:"100%",boxSizing:"border-box",padding:"13px 14px",borderRadius:12,marginBottom:12,
-              fontSize:15,fontFamily:"inherit",outline:"none",
-              ...(PAY_PROVIDER==="mollie"&&!PAY_CAPTURE_ONLY
-                ?{border:"1px solid rgba(0,0,0,.10)",background:"#fff",color:"#1a1a1a"}
-                :{border:"1px solid rgba(255,255,255,.18)",background:"#13261F",color:"#e6edf3"})}}/>
-          {!PAY_CAPTURE_ONLY&&PAY_PROVIDER==="mollie"&&<label style={{display:"block",fontSize:12,fontWeight:600,color:"rgba(255,255,255,.6)",margin:"2px 0 6px"}}>{_t(lang,"Carte bancaire","Card","Tarjeta")}</label>}
-          {ppSub&&<div ref={paypalBtnRef} style={{minHeight:50,marginTop:6}}/>}
-          {!PAY_CAPTURE_ONLY&&PAY_PROVIDER!=="paypal"&&<div ref={expressDivRef} style={{marginBottom:10}}/>}
-          {!PAY_CAPTURE_ONLY&&PAY_PROVIDER!=="paypal"&&<div ref={payDivRef} style={{minHeight:120,...(PAY_PROVIDER==="mollie"&&{background:"#fff",borderRadius:14,padding:"14px 12px",border:"1px solid rgba(0,0,0,.10)"})}}/>}
+          {/* Mode carte Mollie : e-mail + carte (Components) réunis dans UNE seule
+              feuille blanche (mêmes bordures grises que les champs Mollie) → un seul
+              objet de paiement cohérent, pas deux boîtes blanches éparpillées. Mollie
+              libelle déjà ses propres champs → pas de label « Carte bancaire » redondant.
+              Les autres modes (capture / PayPal / Stripe) gardent le champ sombre. */}
+          {!PAY_CAPTURE_ONLY&&PAY_PROVIDER==="mollie"?(
+            <div style={{background:"#fff",borderRadius:16,border:"1px solid rgba(0,0,0,.10)",
+              padding:"15px 14px 9px",boxShadow:"0 6px 24px rgba(0,0,0,.18)"}}>
+              <label style={{display:"block",fontSize:12,fontWeight:600,color:"#5f6368",marginBottom:6}}>{_t(lang,"E-mail","Email","Email")}</label>
+              <input ref={payEmailRef} type="email" inputMode="email" autoComplete="email"
+                onBlur={capturePayEmail}
+                defaultValue={typeof localStorage!=="undefined"?(localStorage.getItem("sg_email")||""):""}
+                placeholder={_t(lang,"ton@email.com","you@email.com","tu@email.com")}
+                style={{width:"100%",boxSizing:"border-box",padding:"12px 14px",borderRadius:10,marginBottom:14,
+                  fontSize:15,fontFamily:"inherit",outline:"none",border:"1px solid #dadce0",background:"#fff",color:"#1a1a1a"}}/>
+              <div ref={payDivRef} style={{minHeight:120}}/>
+            </div>
+          ):(
+            <>
+              <input ref={payEmailRef} type="email" inputMode="email" autoComplete="email"
+                onBlur={capturePayEmail}
+                defaultValue={typeof localStorage!=="undefined"?(localStorage.getItem("sg_email")||""):""}
+                placeholder={_t(lang,"ton@email.com","you@email.com","tu@email.com")}
+                style={{width:"100%",boxSizing:"border-box",padding:"13px 14px",borderRadius:12,marginBottom:12,
+                  fontSize:15,fontFamily:"inherit",outline:"none",
+                  border:"1px solid rgba(255,255,255,.18)",background:"#13261F",color:"#e6edf3"}}/>
+              {ppSub&&<div ref={paypalBtnRef} style={{minHeight:50,marginTop:6}}/>}
+              {!PAY_CAPTURE_ONLY&&PAY_PROVIDER!=="paypal"&&<div ref={expressDivRef} style={{marginBottom:10}}/>}
+              {!PAY_CAPTURE_ONLY&&PAY_PROVIDER!=="paypal"&&<div ref={payDivRef} style={{minHeight:120}}/>}
+            </>
+          )}
           {!payReady&&payStep&&(
             <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"26px 0"}}>
               <div style={{width:22,height:22,borderRadius:"50%",border:"2.5px solid rgba(255,255,255,.15)",
