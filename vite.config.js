@@ -8,6 +8,29 @@ import { conditionPages } from './src/lib/conditions-filters.js'
 // CJS dans la config ESM ("Dynamic require of fs is not supported").
 const _require = createRequire(import.meta.url)
 
+// Borne une meta description à la limite d'affichage SERP (~155 ch) SANS couper un mot :
+// garde le maximum de PHRASES complètes qui rentrent ; sinon coupe au dernier mot + « … ».
+// Évite la troncature « …au milieu d'un mot » de Google (CTR dégradé sur 121/136 fiches).
+// Idempotent (≤max → inchangé), additif, sans dépendance.
+function clampDesc(s, max = 155) {
+  s = String(s || '').replace(/\s+/g, ' ').trim()
+  if (s.length <= max) return s
+  const sentences = s.match(/[^.!?]+[.!?]+(?:\s|$)/g)
+  if (sentences) {
+    let out = ''
+    for (const sent of sentences) {
+      if ((out + sent).trim().length <= max) out += sent
+      else break
+    }
+    out = out.trim()
+    if (out.length >= max * 0.5) return out
+  }
+  let cut = s.slice(0, max - 1)
+  const sp = cut.lastIndexOf(' ')
+  if (sp > max * 0.5) cut = cut.slice(0, sp)
+  return cut.replace(/[\s,;:.–—-]+$/, '') + '…'
+}
+
 // Identifiants Copernicus Marine (copernicustxt.txt : ligne 1 = username, ligne 2 = password)
 const copernicusCreds = (() => {
   try {
@@ -738,7 +761,7 @@ export default defineConfig({
             const esUrl = esPath ? `https://sargasses-martinique.com/${esPath}/` : null
             let pageHtml = htmlSubpage
               .replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`)
-              .replace(/<meta name="description"[^>]*>/, () => `<meta name="description" content="${desc}" />`)
+              .replace(/<meta name="description"[^>]*>/, () => `<meta name="description" content="${desc == null ? desc : clampDesc(desc, 155)}" />`)
               .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${pageUrl}" />`)
               .replace(/<link rel="alternate" hreflang="fr"[^>]*>/, `<link rel="alternate" hreflang="fr" href="${pageUrl}" />`)
               .replace(/<link rel="alternate" hreflang="en"[^>]*>/, enUrl ? `<link rel="alternate" hreflang="en" href="${enUrl}" />` : '')
@@ -874,7 +897,7 @@ export default defineConfig({
             const epEs = epFr ? esPathByFr[epFr] : null
             let epHtml = enIndex
               .replace(/<title>[^<]*<\/title>/, `<title>${ep.title}</title>`)
-              .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${ep.desc}" />`)
+              .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${ep.desc == null ? ep.desc : clampDesc(ep.desc, 155)}" />`)
               .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="https://sargasses-martinique.com/${ep.path}/" />`)
               .replace(/<meta property="og:title"[^>]*>/, `<meta property="og:title" content="${ep.title}" />`)
               .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="https://sargasses-martinique.com/${ep.path}/" />`)
@@ -937,7 +960,7 @@ export default defineConfig({
             const epEn = epFr ? enPathByFr[epFr] : null
             let epHtml = esIndex
               .replace(/<title>[^<]*<\/title>/, `<title>${ep.title}</title>`)
-              .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${ep.desc}" />`)
+              .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${ep.desc == null ? ep.desc : clampDesc(ep.desc, 155)}" />`)
               .replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="https://sargasses-martinique.com/${ep.path}/" />`)
               .replace(/<meta property="og:title"[^>]*>/, `<meta property="og:title" content="${ep.title}" />`)
               .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="https://sargasses-martinique.com/${ep.path}/" />`)
@@ -1616,9 +1639,11 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
             // Append today's weather line when we have room under Google's ~170-char soft limit.
             // Only for clean status: rough weather doesn't belong next to an alert metaDesc.
             const _wline = b.status === 'clean' ? weatherLine(b.id) : ''
-            const beachDesc = _wline && (_baseBeachDesc.length + _wline.length + 1) <= 175
+            const _beachDescRaw = _wline && (_baseBeachDesc.length + _wline.length + 1) <= 175
               ? `${_baseBeachDesc} ${_wline}`
               : _baseBeachDesc
+            // SERP : borne à ~155 ch (phrase complète de préférence) → plus de troncature mid-mot.
+            const beachDesc = clampDesc(_beachDescRaw, 155)
             const beachUrl = `https://${domain}/plages/${b.slug}/`
             const amenities = []
             if (b.parking) amenities.push({"@type":"LocationFeatureSpecification","name":"Parking","value":true})
@@ -2093,7 +2118,7 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
               const others = (COAST_ZONES[islandCode] || []).filter(o => o.slug !== z.slug)
                 .map(o => `<a href="/plages/${o.slug}/" style="color:#E8A800;font-weight:600;margin-right:14px">${o.name}</a>`).join('')
               const zTitle = `Plages ${z.titleName || z.name} — sargasses en temps réel`
-              const zDesc = `${zBeaches.length} plages surveillées par satellite ${islandCode === 'mq' ? 'en Martinique' : 'en Guadeloupe'} (${z.name}) : ${zClean} propre${zClean > 1 ? 's' : ''} aujourd'hui. État en temps réel et prévisions 7 jours.`
+              const zDesc = clampDesc(`${zBeaches.length} plages surveillées par satellite ${islandCode === 'mq' ? 'en Martinique' : 'en Guadeloupe'} (${z.name}) : ${zClean} propre${zClean > 1 ? 's' : ''} aujourd'hui. État en temps réel et prévisions 7 jours.`, 155)
               const zUrl = `https://${domain}/plages/${z.slug}/`
               const zNoscript = `<article style="max-width:700px;margin:0 auto;padding:24px 16px;font-family:system-ui,sans-serif"><h1 style="font-size:26px;margin-bottom:8px">Plages — ${z.name}</h1><p style="color:#686868;margin-bottom:12px">${zBeaches.length} plages surveillées · ${zClean} propre${zClean > 1 ? 's' : ''} aujourd'hui (satellite Copernicus, ${today})</p><p style="color:#333;line-height:1.6;margin-bottom:20px">${z.intro}</p><ul style="list-style:none;padding:0">${zList}</ul><nav style="margin-top:32px;padding-top:16px;border-top:1px solid #eee"><div style="margin-bottom:10px;font-size:13px;color:#999">Autres zones :</div>${others}<div style="margin-top:14px"><a href="/plages/" style="color:#E8A800;font-weight:600;margin-right:14px">Toutes les plages</a><a href="/carte-sargasses/" style="color:#E8A800;font-weight:600">Carte en temps réel</a></div></nav></article>`
               const zSchema = JSON.stringify({ "@context": "https://schema.org", "@type": "CollectionPage", "name": zTitle, "description": zDesc, "url": zUrl, "isPartOf": { "@type": "WebApplication", "name": `Sargasses ${island}`, "url": `https://${domain}/` }, "dateModified": today })
