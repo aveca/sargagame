@@ -9080,6 +9080,22 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
                   ?_t(lang,`puis ${REGION_PAY?PRICE_YR:"49 €"}/an dans 7 jours`,`then ${PRICE_YR||"$79"}/yr in 7 days`,`luego ${PRICE_YR||"$79"}/año en 7 días`)
                   :_t(lang,`puis ${REGION_PAY?PRICE_MO:"4,99 €"}/mois dans 7 jours`,`then ${PRICE_MO||"$9.99"}/mo in 7 days`,`luego ${PRICE_MO||"$9.99"}/mes en 7 días`)} · {_t(lang,"annule en 1 clic","cancel in 1 click","cancela en 1 clic")}</>}
           </div>
+          {/* E-mail EN PREMIER (avant les wallets) : notre abo est lié à l'email
+              (livraison de l'accès + reçu), donc Apple/Google Pay en a besoin. Le poser
+              en tête + expliquer pourquoi → plus de "tape Apple Pay → erreur surprise". */}
+          {!PAY_CAPTURE_ONLY&&PAY_PROVIDER==="mollie"&&(
+            <div style={{marginBottom:14}}>
+              <label style={MOL_LABEL}>{_t(lang,"E-mail (reçu d'accès)","Email (access receipt)","Email (recibo de acceso)")}</label>
+              <input ref={payEmailRef} type="email" inputMode="email" autoComplete="email"
+                onBlur={capturePayEmail}
+                defaultValue={typeof localStorage!=="undefined"?(localStorage.getItem("sg_email")||""):""}
+                placeholder={_t(lang,"ton@email.com","you@email.com","tu@email.com")}
+                style={{width:"100%",boxSizing:"border-box",padding:"13px 14px",borderRadius:12,
+                  fontSize:15,fontFamily:"inherit",outline:"none",
+                  border:"1px solid rgba(255,255,255,.14)",background:"rgba(255,255,255,.05)",color:"#eef2f7"}}/>
+              <div style={{fontSize:11,color:"rgba(255,255,255,.4)",marginTop:6}}>{_t(lang,"Pour t'envoyer ton reçu et ton accès premium.","To send your receipt and premium access.","Para enviarte tu recibo y acceso premium.")}</div>
+            </div>
+          )}
           {/* Wallets express (Apple Pay / Google Pay) — Mollie, hors capture. Tap →
               feuille native via le checkout hébergé Mollie (payWithWallet). Affichés
               uniquement si le device les supporte (walletAvail). Carte = repli on-site. */}
@@ -9124,14 +9140,6 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             <div style={{background:"linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.02))",
               borderRadius:16,border:"1px solid rgba(255,255,255,.10)",
               padding:"14px 14px 4px",boxShadow:"0 8px 30px rgba(0,0,0,.30)"}}>
-              <label style={MOL_LABEL}>{_t(lang,"E-mail (reçu d'accès)","Email (access receipt)","Email (recibo de acceso)")}</label>
-              <input ref={payEmailRef} type="email" inputMode="email" autoComplete="email"
-                onBlur={capturePayEmail}
-                defaultValue={typeof localStorage!=="undefined"?(localStorage.getItem("sg_email")||""):""}
-                placeholder={_t(lang,"ton@email.com","you@email.com","tu@email.com")}
-                style={{width:"100%",boxSizing:"border-box",padding:"12px 13px",borderRadius:11,marginBottom:13,
-                  fontSize:15,fontFamily:"inherit",outline:"none",
-                  border:"1px solid rgba(255,255,255,.14)",background:"rgba(255,255,255,.05)",color:"#eef2f7"}}/>
               <label style={MOL_LABEL}>{_t(lang,"Nom du titulaire","Cardholder name","Nombre del titular")}</label>
               <div ref={molHolderRef} style={MOL_FIELD}/>
               <label style={MOL_LABEL}>{_t(lang,"Numéro de carte","Card number","Número de tarjeta")}</label>
