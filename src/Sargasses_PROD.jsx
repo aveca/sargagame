@@ -1845,8 +1845,8 @@ const PAY_PROVIDER=(()=>{try{const q=window.location.search;if(/[?&]pay=stripe/.
 // Libellé processeur affiché dans les badges « paiement sécurisé ». Source unique
 // pour ne plus jamais hardcoder « Stripe » (mort) — bascule auto au go-live Mollie.
 const PAY_LABEL=PAY_PROVIDER==="mollie"?"Mollie":PAY_PROVIDER==="paypal"?"PayPal":"Stripe"
-const MOLLIE_PROFILE="pfl_mHmgMvWdwC"
-const MOLLIE_TESTMODE=false // LIVE (clé live_ dans mollie-config.php). Mettre true + clé test_ uniquement pour QA.
+const MOLLIE_PROFILE="pfl_t8KCk4Cm2C"  // profil Mollie du compte (test & live partagent le même pfl_). Source de vérité du front (le profile_id de mollie-config.php n.est pas réinjecté ici).
+const MOLLIE_TESTMODE=(()=>{try{return /[?&]mollie_test=1/.test(window.location.search)}catch(_){return false}})() // défaut LIVE (faux) ; ?mollie_test=1 force le mode test pour la QA (clé test_ dans mollie-config.php).
 // PayPal abo via bouton — LIVE (client_id public + plans régénérés par scripts/create-paypal-plans.cjs).
 // Le SDK PayPal déduit l'environnement du client-id.
 const PAYPAL_CLIENT_ID="AadXarqTbu1KiLVh89ESKJ9tIXn-RZ_2U43fDU8lnQ3TgzChda6ZPVZKbpyqO70ySqerJIDXLUyFukSI"
