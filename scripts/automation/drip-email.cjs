@@ -157,7 +157,14 @@ function getRegionBrief(islandKey) {
 // exit_intent ajouté 2026-06-22 : la carte « Ta semaine est prête » promet « le bon
 // plan chaque matin » → ces leads reçoivent désormais le verdict quotidien (même
 // pipeline testé : fenêtre matin, cap, dédup, anti-spam content-signature, A/B).
-const DAILY_SOURCES = new Set(['sargacatch', 'beach_alert', 'exit_intent'])
+// capture-gate / gap_freemium / chasse ajoutés 2026-06-25 : surfaces de CAPTURE
+// (paiement en maintenance → 7 j premium OFFERTS contre email). Elles PROMETTENT le
+// brief matinal — CaptureGateModal « Reçois le rapport sargasses chaque matin »,
+// paywall capture (premium = « la plage recommandée chaque matin dans ta boîte »),
+// ChasseHome « LE VERDICT, CHAQUE MATIN ». Sans elles, ces leads ne recevaient JAMAIS
+// le brief promis (le front leur débloque en plus 7 j premium réels). map_world exclu
+// volontairement (promesse de récurrence non confirmée — on ne grille pas le domaine).
+const DAILY_SOURCES = new Set(['sargacatch', 'beach_alert', 'exit_intent', 'capture-gate', 'gap_freemium', 'chasse'])
 function buildDaily(island, brief, email) {
   const meta = brief.meta
   const lang = meta.lang
