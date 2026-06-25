@@ -62,7 +62,7 @@ export default function PaidOnboarding({ lang = "fr", allBeaches = [], favorites
   const next = () => { tk("sg_onboard_step", { to: step + 1 }); setStep(s => s + 1) }
 
   return (
-    <div role="dialog" aria-label={t("Bienvenue Premium", "Premium welcome", "Bienvenida Premium")} style={wrap}>
+    <div role="dialog" aria-modal="true" aria-label={t("Bienvenue Premium", "Premium welcome", "Bienvenida Premium")} style={wrap}>
       <style>{"@keyframes sgobIn{from{opacity:0;transform:scale(1.03)}to{opacity:1;transform:none}}"}</style>
 
       {/* header : progression + passer */}

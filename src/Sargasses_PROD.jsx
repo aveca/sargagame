@@ -7648,7 +7648,6 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   // redirect: types card+link only) → action subscribe (essai 7j, prix
   // région) → premium activé EN PLACE. Fallback intégral : Payment Link.
   const[payStep,_setPayStep]=useState(false)
-  const[captureDone,setCaptureDone]=useState(false) // mode capture : email waitlist enregistré
   const payStepRef=useRef(false)
   const passCtxRef=useRef(null) // {pass,cents,days} si achat d'un PASS on-site, sinon null (abo)
   const setPayStep=useCallback(v=>{payStepRef.current=v;_setPayStep(v)},[])
@@ -8197,11 +8196,11 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               {_t(lang,`Activer l'alerte sur ${beach.name}`,`Activate alert on ${beach.name}`,`Activar alerta en ${beach.name}`)}
             </div>
             <div style={{font:"600 12px/1 system-ui,sans-serif",opacity:.78,marginTop:3}}>
-              {NO_TRIAL?_t(lang,"4,99 €/mois · annulable en 2 clics","€4.99/mo · cancel anytime","4,99 €/mes · cancela cuando quieras"):_t(lang,"7 jours offerts · 4,99 €/mois ensuite","7-day free trial · €4.99/mo after","7 días gratis · 4,99 €/mes después")}
+              {PAY_CAPTURE_ONLY?_t(lang,"7 jours premium offerts · juste ton email","7 days premium on us · just your email","7 días premium gratis · solo tu email"):NO_TRIAL?_t(lang,"4,99 €/mois · annulable en 2 clics","€4.99/mo · cancel anytime","4,99 €/mes · cancela cuando quieras"):_t(lang,"7 jours offerts · 4,99 €/mois ensuite","7-day free trial · €4.99/mo after","7 días gratis · 4,99 €/mes después")}
             </div>
           </button>
           <div style={{textAlign:"center",marginTop:13,font:"600 10.5px/1 system-ui,sans-serif",color:"rgba(234,247,244,.5)",letterSpacing:".015em"}}>
-            {_t(lang,"Sans engagement · Paiement sécurisé "+PAY_LABEL,"No commitment · Secure "+PAY_LABEL+" payment","Sin compromiso · Pago seguro "+PAY_LABEL)}
+            {PAY_CAPTURE_ONLY?_t(lang,"Sans carte · juste ton email","No card · just your email","Sin tarjeta · solo tu email"):_t(lang,"Sans engagement · Paiement sécurisé "+PAY_LABEL,"No commitment · Secure "+PAY_LABEL+" payment","Sin compromiso · Pago seguro "+PAY_LABEL)}
           </div>
         </div>
       </div>
@@ -8942,7 +8941,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
       {/* Étape paiement ON-SITE — overlay sombre au-dessus du modal (z 1300),
           design maison : email + Apple/Google Pay + Payment Element (carte).
           TOUJOURS rendu (caché) pour que les Elements montés persistent. */}
-      <div style={{position:"fixed",inset:0,zIndex:1300,background:"linear-gradient(145deg,#190c2c,#120821)",
+      <div style={{position:"fixed",inset:0,zIndex:1300,background:PAY_CAPTURE_ONLY?"linear-gradient(168deg,#0B2230 0%,#0D1E1C 58%,#0A1714 100%)":"linear-gradient(145deg,#190c2c,#120821)",
         display:"flex",flexDirection:"column",overflow:"auto",
         // hors-écran (PAS visibility:hidden : les iframes Stripe ne bootent pas
         // dans un conteneur hidden — le pré-mount resterait gelé)
@@ -8960,14 +8959,14 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               {IS_NEW_REGION&&<span style={{fontFamily:"'Anton',sans-serif",fontSize:10.5,letterSpacing:".12em",color:"rgba(255,255,255,.8)"}}>
                 {((lang==="es"?"SARGAZO ":"SARGASSUM ")+String(REGION.name||"")).toUpperCase()}
               </span>}
-              🔒 {PAY_PROVIDER==="mollie"?"Mollie":PAY_PROVIDER==="paypal"?"PayPal":"Stripe"}
+              🔒 {PAY_CAPTURE_ONLY?_t(lang,"Sans carte","No card","Sin tarjeta"):PAY_PROVIDER==="mollie"?"Mollie":PAY_PROVIDER==="paypal"?"PayPal":"Stripe"}
             </span>
           </div>
           <h3 className="anton" style={{fontSize:22,color:"#fff",margin:"0 0 4px",letterSpacing:"-.01em"}}>
             {ppSub
               ?_t(lang,"Active ton Premium","Activate your Premium","Activa tu Premium")
               :PAY_CAPTURE_ONLY
-              ?(captureDone?_t(lang,"C'est débloqué ! 🎉","Unlocked! 🎉","¡Desbloqueado! 🎉"):_t(lang,"Débloque ta semaine — c'est offert","Unlock your week — on us","Desbloquea tu semana — gratis"))
+              ?_t(lang,"Débloque ta semaine — c'est offert","Unlock your week — on us","Desbloquea tu semana — gratis")
               :passCtxRef.current
               ?_t(lang,`Active ton pass ${passCtxRef.current.days} jours`,`Activate your ${passCtxRef.current.days}-day pass`,`Activa tu pase ${passCtxRef.current.days} días`)
               :NO_TRIAL
@@ -8978,7 +8977,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             {ppSub
               ?_t(lang,"Paie en sécurité avec PayPal · annule quand tu veux","Pay securely with PayPal · cancel anytime","Paga seguro con PayPal · cancela cuando quieras")
               :PAY_CAPTURE_ONLY
-              ?(captureDone?_t(lang,"Ton accès 7 jours est ouvert — profite ! On te prévient pour continuer.","Your 7-day access is open — enjoy! We'll tell you to continue.","Tu acceso de 7 días está abierto — ¡disfruta! Te avisamos para seguir."):_t(lang,"Paiements en maintenance quelques jours. En attendant, ton accès premium 7 jours est OFFERT — ton email et tu profites tout de suite.","Payments down for a few days. Meanwhile your 7-day premium access is ON US — your email and you're in.","Pagos en mantenimiento unos días. Mientras, tu acceso premium 7 días es GRATIS — tu email y listo."))
+              ?_t(lang,"Paiements en maintenance quelques jours. En attendant, ton accès premium 7 jours est OFFERT — ton email et tu profites tout de suite.","Payments down for a few days. Meanwhile your 7-day premium access is ON US — your email and you're in.","Pagos en mantenimiento unos días. Mientras, tu acceso premium 7 días es GRATIS — tu email y listo.")
               :passCtxRef.current
               ?_t(lang,`${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"fr")} · ${passCtxRef.current.days} jours d'accès complet · paiement unique`,`${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"en")} · ${passCtxRef.current.days} days full access · one-time`,`${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"es")} · ${passCtxRef.current.days} días · pago único`)
               :NO_TRIAL
@@ -9004,7 +9003,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               <div style={{width:22,height:22,borderRadius:"50%",border:"2.5px solid rgba(255,255,255,.15)",
                 borderTopColor:"#FFC72C",animation:"sgSpin .8s linear infinite"}}/>
               <span style={{fontSize:12.5,color:"rgba(255,255,255,.55)"}}>
-                {_t(lang,"Paiement sécurisé…","Secure checkout…","Pago seguro…")}
+                {PAY_CAPTURE_ONLY?_t(lang,"On t'ouvre l'accès…","Opening your access…","Abriendo tu acceso…"):_t(lang,"Paiement sécurisé…","Secure checkout…","Pago seguro…")}
               </span>
               <style>{`@keyframes sgSpin{to{transform:rotate(360deg)}}`}</style>
             </div>
@@ -9018,14 +9017,14 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               <div style={{color:"#FFD9CC",fontSize:15,lineHeight:1.4,fontWeight:600}}>{payError}</div>
             </div>
           )}
-          {!ppSub&&<button onClick={()=>doSubscribe()} disabled={payBusy||(PAY_CAPTURE_ONLY&&captureDone)} className="gbtn"
+          {!ppSub&&<button onClick={()=>doSubscribe()} disabled={payBusy} className="gbtn"
             style={{width:"100%",padding:15,borderRadius:14,border:"none",marginTop:16,
               cursor:payBusy?"wait":"pointer",fontFamily:"inherit",fontWeight:800,fontSize:15.5,
               opacity:payBusy?.7:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
             {payBusy
               ?_t(lang,"Activation…","Activating…","Activando…")
               :PAY_CAPTURE_ONLY
-              ?(captureDone?_t(lang,"✓ Débloqué","✓ Unlocked","✓ Desbloqueado"):_t(lang,"Débloquer gratuitement →","Unlock free →","Desbloquear gratis →"))
+              ?_t(lang,"Débloquer gratuitement →","Unlock free →","Desbloquear gratis →")
               :passCtxRef.current
               ?_t(lang,`Payer ${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"fr")}`,`Pay ${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"en")}`,`Pagar ${fmtPassPrice(passCtxRef.current.cents,passCtxRef.current.cur,"es")}`)
               :NO_TRIAL
@@ -9418,10 +9417,12 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
   return(
     <div style={{position:"fixed",inset:0,zIndex:1055,background:"rgba(2,9,7,.85)",
       display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(12px)"}}
+      role="dialog" aria-modal="true"
+      aria-label={hasBeach?_t(lang,`Débloque ${beach.name}`,`Unlock ${beach.name}`,`Desbloquea ${beach.name}`):_t(lang,"Reçois le brief sargasses","Get the sargassum brief","Recibe el informe de sargazo")}
       onClick={e=>{if(e.target===e.currentTarget)onClose()}}>
-      <div style={{width:"90%",maxWidth:480,borderRadius:24,
-        background:"rgba(10,23,20,.65)",border:"1px solid rgba(255,255,255,.08)",
-        padding:"40px 24px",boxShadow:"0 20px 60px rgba(0,0,0,.6)",
+      <div style={{width:"90%",maxWidth:480,borderRadius:PAY_CAPTURE_ONLY?20:24,
+        background:PAY_CAPTURE_ONLY?"#fdf6e3":"rgba(10,23,20,.65)",border:PAY_CAPTURE_ONLY?"3px solid #0d0b14":"1px solid rgba(255,255,255,.08)",
+        padding:"40px 24px",boxShadow:PAY_CAPTURE_ONLY?"6px 6px 0 #0d0b14":"0 20px 60px rgba(0,0,0,.6)",forcedColorAdjust:"none",
         display:"flex",flexDirection:"column",alignItems:"center",textAlign:"center"}}>
         
         {!sent?(<>
@@ -9433,7 +9434,7 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
             </svg>
           </div>
           
-          <h2 style={{fontSize:26,fontWeight:800,color:"#fff",lineHeight:1.2,margin:"0 0 12px 0",fontFamily:"Bricolage Grotesque,sans-serif"}}>
+          <h2 style={{fontSize:26,fontWeight:800,color:PAY_CAPTURE_ONLY?"#0d0b14":"#fff",lineHeight:1.2,margin:"0 0 12px 0",fontFamily:"Bricolage Grotesque,sans-serif"}}>
             {hasBeach 
               ? _t(lang,`Débloque la météo de ${beach.name} pour demain.`,`Unlock tomorrow's forecast for ${beach.name}.`,`Desbloquea el clima de ${beach.name} para mañana.`)
               : _t(lang,"Reçois le rapport sargasses chaque matin.","Get the sargassum report every morning.","Recibe el informe de sargazo cada mañana.")}
@@ -9443,13 +9444,13 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
             const reg=__REL.regime==="high"?_t(lang,"saison haute","high season","temporada alta"):_t(lang,"saison calme","calm season","temporada tranquila")
             return <a href={reliabilityHref(lang)} onClick={()=>{try{track("sg_reliability_open",{from:"capture_gate"})}catch(_){}}}
               style={{display:"inline-flex",alignItems:"center",gap:7,margin:"0 0 16px",padding:"7px 13px",borderRadius:999,
-                background:"rgba(34,197,94,.10)",border:"1px solid rgba(34,197,94,.24)",textDecoration:"none",
-                fontSize:12,fontWeight:600,color:"#8FE3B0",cursor:IS_NEW_REGION?"default":"pointer"}}>
+                background:"rgba(34,197,94,.12)",border:`1px solid rgba(34,197,94,${PAY_CAPTURE_ONLY?".4":".24"})`,textDecoration:"none",
+                fontSize:12,fontWeight:600,color:PAY_CAPTURE_ONLY?"#1B7A4B":"#8FE3B0",cursor:IS_NEW_REGION?"default":"pointer"}}>
               <span aria-hidden="true">✅</span>
               <span>{_t(lang,`${__REL.cleanPct}% de nos prévisions « mer propre » vérifiées · ${reg}`,`${__REL.cleanPct}% of our “clean water” forecasts verified · ${reg}`,`${__REL.cleanPct}% de nuestros pronósticos “agua limpia” verificados · ${reg}`)}{!IS_NEW_REGION&&<span style={{opacity:.65}}>  →</span>}</span>
             </a>
           })()}
-          <p style={{fontSize:15,color:"rgba(255,255,255,.6)",margin:"0 0 22px 0",lineHeight:1.5}}>
+          <p style={{fontSize:15,color:PAY_CAPTURE_ONLY?"#4a4636":"rgba(255,255,255,.6)",margin:"0 0 22px 0",lineHeight:1.5}}>
             {onPay
               ?_t(lang,"Reçois le brief par email — gratuit. Ou débloque tout de suite par carte.","Get the brief by email — free. Or unlock everything now by card.","Recibe el informe por email — gratis. O desbloquéalo ya con tarjeta.")
               :_t(lang,"Reçois le brief par email — gratuit, sans carte.","Get the brief by email — free, no card.","Recibe el informe por email — gratis, sin tarjeta.")}
@@ -9460,15 +9461,15 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
               placeholder={_t(lang,"ton@email.com","your@email.com","tu@email.com")}
               value={email} onChange={e=>{setEmail(e.target.value);setErr(false)}}
               style={{width:"100%",boxSizing:"border-box",padding:"16px 64px 16px 20px",borderRadius:999,
-                border:`2px solid ${err?"#E8522A":"rgba(255,255,255,.15)"}`,
-                fontSize:16,fontFamily:"inherit",background:"rgba(255,255,255,.05)",
-                outline:"none",color:"#fff",transition:"border 0.2s ease"}}/>
+                border:`2px solid ${err?"#E8522A":PAY_CAPTURE_ONLY?"#0d0b14":"rgba(255,255,255,.15)"}`,
+                fontSize:16,fontFamily:"inherit",background:PAY_CAPTURE_ONLY?"#fff":"rgba(255,255,255,.05)",
+                outline:"none",color:PAY_CAPTURE_ONLY?"#0d0b14":"#fff",transition:"border 0.2s ease"}}/>
             <button type="submit" className="sg-paygold" style={{
               position:"absolute",right:6,top:6,bottom:6,
-              width:44,borderRadius:999,border:"none",cursor:"pointer",
-              background:"linear-gradient(135deg,#3fd07f,#5b3a8e)",
+              width:44,borderRadius:999,border:PAY_CAPTURE_ONLY?"2px solid #0d0b14":"none",cursor:"pointer",
+              background:PAY_CAPTURE_ONLY?"#ffd23f":"linear-gradient(135deg,#3fd07f,#5b3a8e)",
               display:"flex",alignItems:"center",justifyContent:"center",
-              boxShadow:"0 2px 10px rgba(59,167,160,.4)"}}>
+              boxShadow:PAY_CAPTURE_ONLY?"2px 2px 0 #0d0b14":"0 2px 10px rgba(59,167,160,.4)"}}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#061210" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="5" y1="12" x2="19" y2="12"></line>
                 <polyline points="12 5 19 12 12 19"></polyline>
@@ -9476,7 +9477,7 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
             </button>
           </form>
 
-          <div style={{fontSize:12,color:"rgba(255,255,255,.4)",display:"flex",alignItems:"center",gap:6,marginBottom:16}}>
+          <div style={{fontSize:12,color:PAY_CAPTURE_ONLY?"#6b6658":"rgba(255,255,255,.4)",display:"flex",alignItems:"center",gap:6,marginBottom:16}}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
             {_t(lang,"Sans spam. Désinscription en 1 clic.","No spam. 1-click unsubscribe.","Sin spam. Baja en 1 clic.")}
           </div>
@@ -9495,7 +9496,7 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
           
           <div style={{textAlign:"center", width:"100%"}}>
             <button type="button" onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",
-              color:"rgba(255,255,255,.3)",fontSize:12,padding:"8px",fontFamily:"inherit"}}>
+              color:PAY_CAPTURE_ONLY?"#6b6658":"rgba(255,255,255,.3)",fontSize:12,padding:"8px",fontFamily:"inherit"}}>
               {_t(lang,"Non merci, fermer","No thanks, close","No gracias, cerrar")}
             </button>
           </div>
@@ -10284,9 +10285,9 @@ function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,onPremium,onClos
         chips:[{k:"premium",label:t("⭐ Les 7 jours, plage par plage","⭐ The full 7 days, beach by beach","⭐ Los 7 días, playa por playa")},{k:"root",label:t("← Autre question","← Another question","← Otra pregunta")}]}
     }
     if(k==="premium")return{text:t(
-      "Premium, c'est ton veilleur personnel : la plage recommandée chaque matin dans ta boîte, une alerte si TA plage change, et la prévision 7 jours plage par plage. Annulable en 2 clics.",
-      "Premium is your personal watchman: the recommended beach in your inbox every morning, an alert when YOUR beach changes, and the 7-day forecast beach by beach. Cancel in 2 clicks.",
-      "Premium es tu vigía personal: la playa recomendada cada mañana en tu correo, una alerta si TU playa cambia, y el pronóstico de 7 días playa por playa. Cancela en 2 clics."),
+      "Premium, c'est ton veilleur personnel : la plage recommandée chaque matin dans ta boîte, une alerte si TA plage change, et la prévision 7 jours plage par plage. "+(PAY_CAPTURE_ONLY?"En ce moment c'est offert 7 jours, juste ton email.":"Annulable en 2 clics."),
+      "Premium is your personal watchman: the recommended beach in your inbox every morning, an alert when YOUR beach changes, and the 7-day forecast beach by beach. "+(PAY_CAPTURE_ONLY?"Right now it's 7 days on us, just your email.":"Cancel in 2 clicks."),
+      "Premium es tu vigía personal: la playa recomendada cada mañana en tu correo, una alerta si TU playa cambia, y el pronóstico de 7 días playa por playa. "+(PAY_CAPTURE_ONLY?"Ahora son 7 días gratis, solo tu email.":"Cancela en 2 clics.")),
       chips:[{k:"cta",label:t("Voir l'offre ⭐","See the offer ⭐","Ver la oferta ⭐")},{k:"root",label:t("← Autre question","← Another question","← Otra pregunta")}]}
     if(k==="trust")return{text:t(
       "Données satellite Copernicus (programme spatial européen), actualisées 4×/jour, croisées avec la météo marine et les signalements locaux — plage par plage, pas de moyenne d'île. Quand on ne sait pas, on le dit.",
@@ -12381,7 +12382,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
           </button>
         )}
         <div className="sg-rv" style={{textAlign:"center",fontSize:11.5,color:"rgba(255,255,255,.45)",marginTop:10}}>
-          {_t(lang,"Sans engagement — annulable en 1 clic","No commitment — cancel anytime","Sin compromiso — cancela cuando quieras")}
+          {PAY_CAPTURE_ONLY?_t(lang,"Sans carte — juste ton email","No card — just your email","Sin tarjeta — solo tu email"):_t(lang,"Sans engagement — annulable en 1 clic","No commitment — cancel anytime","Sin compromiso — cancela cuando quieras")}
         </div>
       </section>
 
@@ -12574,7 +12575,7 @@ function AlertHub({lang,island,beach,onPremium,onShowMap,onClose}){
           {_t(lang,"Découvrir Premium","Discover Premium","Descubrir Premium")}
         </button>
         <div style={{textAlign:"center",fontSize:11.5,color:"rgba(255,255,255,.45)",marginBottom:36}}>
-          {_t(lang,"Sans engagement — annulable en 1 clic","No commitment — cancel anytime","Sin compromiso — cancela cuando quieras")}
+          {PAY_CAPTURE_ONLY?_t(lang,"Sans carte — juste ton email","No card — just your email","Sin tarjeta — solo tu email"):_t(lang,"Sans engagement — annulable en 1 clic","No commitment — cancel anytime","Sin compromiso — cancela cuando quieras")}
         </div>
 
         {/* Pli 6 — Sorties */}
@@ -13859,6 +13860,24 @@ export default function App(){
       }
     }catch{localStorage.removeItem("sg_checkout_abandoned")}
   },[])
+
+  // Relance in-app à l'EXPIRATION du pass 7j offert (capture) : sans ça l'accès se
+  // termine en SILENCE (aucune relance, aucun « N jours restants ») → conversion
+  // ratée au moment exact où l'utilisateur a goûté la valeur. Un seul affichage
+  // (sg_pass_expired_seen). Gated PAY_CAPTURE_ONLY → réversible ; au go-live Mollie
+  // le CTA openPremium route vers le vrai paiement (cohérent).
+  const[showPassExpired,setShowPassExpired]=useState(false)
+  useEffect(()=>{
+    if(!PAY_CAPTURE_ONLY||isPremium)return
+    try{
+      if(localStorage.getItem("sg_pass_expired_seen"))return
+      const passEnd=parseInt(localStorage.getItem("sg_premium_pass_end")||"0")
+      if(passEnd>0&&passEnd<=Date.now()){
+        setShowPassExpired(true)
+        track("sg_pass_expired_eligible",{island})
+      }
+    }catch(_){}
+  },[])
   // Funnel mort réarmé (audit widget-factory) : à l'activation premium, (a) on
   //   efface le panier abandonné (anti-stale), (b) on GÉNÈRE le code de parrainage
   //   — il était LU (share l.3082) + détecté en landing (?ref=) mais JAMAIS écrit
@@ -15016,7 +15035,7 @@ export default function App(){
             display:"flex",alignItems:"center",justifyContent:"center",gap:10,
             flexWrap:"wrap",
             fontSize:13,color:"#e6edf3",fontFamily:"inherit"}}>
-            <span style={{opacity:.9,flex:"1 1 180px",minWidth:0,textAlign:"center"}}>{SARGASSES_SEASON==="high"
+            <span style={{opacity:.9,flex:"1 1 180px",minWidth:0,textAlign:"center"}}>{PAY_CAPTURE_ONLY?_t(lang,"Tes 7 jours offerts t'attendent — juste ton email.","Your 7 free days are waiting — just your email.","Tus 7 días gratis te esperan — solo tu email."):SARGASSES_SEASON==="high"
               ?_t(lang,"Les plages bougent vite. Tu étais presque Premium — termine maintenant.","Beaches are changing fast. You almost had Premium — finish now.","Las playas cambian rápido. Casi tenías Premium — termina ahora.")
               :_t(lang,"Tu étais presque Premium ! Reprends où tu en étais.","You were almost Premium! Pick up where you left off.","¡Casi tenías Premium! Retoma donde te quedaste.")}</span>
             <button onClick={()=>{
@@ -15026,12 +15045,42 @@ export default function App(){
             }} style={{background:"#E8A800",color:"#120821",border:"none",borderRadius:8,
               padding:"6px 14px",fontSize:12,fontWeight:700,fontFamily:"inherit",cursor:"pointer",
               whiteSpace:"nowrap",flexShrink:0}}>
-              {_t(lang,"Passer Premium","Go Premium","Hazte Premium")}
+              {PAY_CAPTURE_ONLY?_t(lang,"Débloquer 7 jours","Unlock 7 days","Desbloquear 7 días"):_t(lang,"Passer Premium","Go Premium","Hazte Premium")}
             </button>
             <button onClick={()=>{
               track("sg_checkout_recovery_dismiss",{island})
               setShowRecoveryBanner(false)
               localStorage.removeItem("sg_checkout_abandoned")
+            }} style={{background:"none",border:"none",color:"rgba(255,255,255,.5)",
+              cursor:"pointer",fontSize:18,lineHeight:1,padding:"0 4px",flexShrink:0}}
+              aria-label={_t(lang,"Fermer","Close","Cerrar")}>&times;</button>
+          </div>
+        )}
+
+        {/* PASS 7J EXPIRÉ — relance capture (un seul affichage, après les overlays prioritaires) */}
+        {showPassExpired&&!showRecoveryBanner&&!showHero&&!showPremium&&!showCaptureGate&&!showWelcome&&!selectedBeach&&(
+          <div style={{position:"fixed",top:0,left:0,right:0,zIndex:1500,
+            background:"linear-gradient(90deg,#120821 0%,#1a2f28 100%)",
+            borderBottom:"1px solid rgba(232,168,0,.3)",
+            padding:"10px max(12px,env(safe-area-inset-right)) 10px max(12px,env(safe-area-inset-left))",
+            paddingTop:"max(10px, calc(10px + env(safe-area-inset-top)))",
+            display:"flex",alignItems:"center",justifyContent:"center",gap:10,
+            flexWrap:"wrap",fontSize:13,color:"#e6edf3",fontFamily:"inherit"}}>
+            <span style={{opacity:.9,flex:"1 1 180px",minWidth:0,textAlign:"center"}}>
+              {_t(lang,"Ton accès 7 jours est terminé — reprends-le, juste ton email.","Your 7-day access has ended — get it back, just your email.","Tu acceso de 7 días terminó — recupéralo, solo tu email.")}</span>
+            <button onClick={()=>{
+              track("sg_pass_expired_click",{island})
+              try{localStorage.setItem("sg_pass_expired_seen","1")}catch(_){}
+              setShowPassExpired(false)
+              openPremium("pass_expired")
+            }} style={{background:"#E8A800",color:"#120821",border:"none",borderRadius:8,
+              padding:"6px 14px",fontSize:12,fontWeight:700,fontFamily:"inherit",cursor:"pointer",
+              whiteSpace:"nowrap",flexShrink:0}}>
+              {_t(lang,"Reprendre 7 jours","Get 7 days back","Recuperar 7 días")}</button>
+            <button onClick={()=>{
+              track("sg_pass_expired_dismiss",{island})
+              try{localStorage.setItem("sg_pass_expired_seen","1")}catch(_){}
+              setShowPassExpired(false)
             }} style={{background:"none",border:"none",color:"rgba(255,255,255,.5)",
               cursor:"pointer",fontSize:18,lineHeight:1,padding:"0 4px",flexShrink:0}}
               aria-label={_t(lang,"Fermer","Close","Cerrar")}>&times;</button>
@@ -15070,7 +15119,7 @@ export default function App(){
           /* BRAS A/B `arena_loop` — accueil « LA CHASSE » (boucle de jeu TCG).
              Additif : control = HomeAZ/GameFunnel/HeroVerdict, intact. ?chasse=1/0. */
           <ErrBound><Suspense fallback={null}>
-          <LazyChasse beach={heroPick} lang={lang} island={island} sargData={sargData} userPos={userPos} isPremium={isPremium} favorites={favorites} onToggleFav={toggleFav} onOpenPro={()=>{ try{track("sg_b2b_open",{source:"space"})}catch(_){}; setShowProB2B(true) }}
+          <LazyChasse beach={heroPick} lang={lang} island={island} sargData={sargData} userPos={userPos} isPremium={isPremium} captureMode={PAY_CAPTURE_ONLY} favorites={favorites} onToggleFav={toggleFav} onOpenPro={()=>{ try{track("sg_b2b_open",{source:"space"})}catch(_){}; setShowProB2B(true) }}
             pickBeaches={(allBeaches||[]).filter(b=>(IS_NEW_REGION||b.island===island)&&b.status&&b.score!=null)
               .sort((a,b)=>(b.score||0)-(a.score||0))}
             track={track}
@@ -15300,7 +15349,7 @@ export default function App(){
             l'immersion BD au moment exact de la conversion. Réaffiché à la fermeture. */}
         <div style={{
           position:"absolute",top:0,left:0,right:0,zIndex:700,
-          padding:`calc(max(12px, env(safe-area-inset-top)) + ${showRecoveryBanner?64:(showPushPrimer?58:0)}px) 16px 0`,
+          padding:`calc(max(12px, env(safe-area-inset-top)) + ${showRecoveryBanner?64:showPassExpired?64:(showPushPrimer?58:0)}px) 16px 0`,
           pointerEvents:"none",
           transition:"padding-top .25s ease",
           display:showPremium?"none":undefined,
@@ -15487,9 +15536,20 @@ export default function App(){
             try{localStorage.setItem("sg_email",em);localStorage.setItem("sg_email_prompt","true")}catch(_){}
             submitLead(em,"capture-gate")
             track("sg_capture_gate_submit",{src:captureGateSrc,variant:"gate"})
-            // Porte EMAIL choisie : on a capturé le lead → le drip envoie le contenu.
-            // On NE force PLUS la CB (modèle « soit email soit cb ») : l'état succès
-            // reste affiché ; la CB reste accessible via le bouton « ou débloque tout ».
+            // CAPTURE : tenir la promesse du titre (« Débloque la météo de {plage}
+            // pour demain ») → débloquer RÉELLEMENT 7j premium, comme la branche
+            // gap_freemium (doSubscribe 7822-7833). Le lead est déjà capturé ci-dessus
+            // (un seul submitLead « capture-gate » : pas de double-comptage, attribution
+            // funnel préservée). 100% réversible : au go-live Mollie (PAY_CAPTURE_ONLY
+            // =false) onPay est redéfini (cf. plus bas) et cette branche ne tourne plus.
+            if(PAY_CAPTURE_ONLY){
+              try{localStorage.setItem("sg_premium_pass_end",String(Date.now()+7*86400000))}catch(_){}
+              try{track("sg_gap_freemium_unlock",{source:"capture_gate"})}catch(_){}
+              setIsPremium(true)
+              setShowCaptureGate(false)
+              setShowWelcome(true)
+            }
+            // (Hors capture : porte EMAIL = lead seul ; la CB reste via le bouton onPay.)
           }}
           onPay={PAY_CAPTURE_ONLY?undefined:()=>{
             setShowCaptureGate(false)
@@ -15704,7 +15764,7 @@ export default function App(){
             <div style={{fontFamily:"'Anton',sans-serif",fontWeight:400,textTransform:"uppercase",fontSize:34,letterSpacing:".01em",lineHeight:1.05,color:"#fff",textShadow:"0 2px 0 rgba(0,0,0,.35)"}}>
               {_t(lang,"Premium activé","Premium activated","Premium activado")}</div>
             <div style={{fontSize:15,lineHeight:1.5,color:"rgba(255,255,255,.72)",marginTop:12,maxWidth:"30ch"}}>
-              {_t(lang,"Paiement validé. Tes prévisions 7 jours et tes alertes sont débloquées.","Payment confirmed. Your 7-day forecast and alerts are unlocked.","Pago confirmado. Tu pronóstico de 7 días y tus alertas están desbloqueados.")}</div>
+              {PAY_CAPTURE_ONLY?_t(lang,"7 jours premium offerts. Tes prévisions 7 jours et tes alertes sont débloquées.","7 days premium on us. Your 7-day forecast and alerts are unlocked.","7 días premium gratis. Tu pronóstico de 7 días y tus alertas están desbloqueados."):_t(lang,"Paiement validé. Tes prévisions 7 jours et tes alertes sont débloquées.","Payment confirmed. Your 7-day forecast and alerts are unlocked.","Pago confirmado. Tu pronóstico de 7 días y tus alertas están desbloqueados.")}</div>
             <button type="button" onClick={()=>{try{track("sg_premium_confirm_continue")}catch(_){};setSplashDone(true)}}
               style={{marginTop:26,background:"#FFC72C",color:"#0B2230",border:"none",borderRadius:13,padding:"14px 30px",fontWeight:800,fontSize:16,cursor:"pointer",fontFamily:"inherit",boxShadow:"3px 3px 0 rgba(0,0,0,.35)"}}>
               {_t(lang,"Continuer →","Continue →","Continuar →")}</button>
@@ -15733,9 +15793,9 @@ export default function App(){
                 fontSize:22,letterSpacing:"-.01em",lineHeight:1.1,color:"var(--sg-ink,#0d0d0d)"}}>
                 {_t(lang,"Premium activé","Premium activated","Premium activado")}</div>
               <div className="sg-toast__msg">{_t(lang,"Brief matin · alertes · reco du jour.","Morning brief · alerts · daily pick.","Brief matinal · alertas · pick del día.")}</div>
-              <a href="?manage=1" onClick={e=>{e.stopPropagation();track("sg_manage_click")}}
+              {!PAY_CAPTURE_ONLY&&<a href="?manage=1" onClick={e=>{e.stopPropagation();track("sg_manage_click")}}
                 style={{display:"inline-block",marginTop:8,fontSize:14,fontWeight:800,color:"var(--sg-teal,#009E8E)",textDecoration:"none"}}>
-                {_t(lang,"Gérer mon abonnement","Manage my subscription","Gestionar mi suscripción")}</a>
+                {_t(lang,"Gérer mon abonnement","Manage my subscription","Gestionar mi suscripción")}</a>}
             </div>
             <SgClose lang={lang} onClick={()=>setShowWelcome(false)}/>
           </div>

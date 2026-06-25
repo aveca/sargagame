@@ -24,8 +24,10 @@ const SENT_PATH = path.join(__dirname, 'data', 'relance-gap-sent.json')
 const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec'
 // Toutes les sources de CAPTURE pendant la coupure paiement (= leads à relancer au
 // go-live). gap_freemium = 7j offerts contre email ; mollie_waitlist = waitlist pure ;
-// onsite_checkout/pay_intent/paypal_sub = haute intention enrôlée avant paiement.
-const CAPTURE_SOURCES = new Set(['gap_freemium', 'mollie_waitlist', 'onsite_checkout', 'pay_intent', 'paypal_sub'])
+// onsite_checkout/pay_intent/paypal_sub = haute intention enrôlée avant paiement ;
+// capture-gate (= ~85% du trafic forecast, la plus GROSSE poche) / chasse / map_world =
+// surfaces de capture email omises jusqu'ici → elles aussi à relancer au go-live.
+const CAPTURE_SOURCES = new Set(['gap_freemium', 'mollie_waitlist', 'onsite_checkout', 'pay_intent', 'paypal_sub', 'capture-gate', 'chasse', 'map_world'])
 // Plafond par run pour la boîte SMTP cPanel (alerte@, premium115.web-hosting.com via
 // nodemailer — PAS Resend, cf. lib/email-send.cjs) : les boîtes mutualisées ont une
 // limite d'envoi horaire. --max=N pour override ; relancer plus tard reprend où on

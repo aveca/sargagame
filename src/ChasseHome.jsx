@@ -354,7 +354,7 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
   },[beach,head,track]) // eslint-disable-line
   return (
     <div className="lc-detail" role="dialog" aria-modal="true" aria-label={beach.name}>
-      <button type="button" ref={closeRef} className="lc-detail-x" onClick={onClose} aria-label="Fermer">✕</button>
+      <button type="button" ref={closeRef} className="lc-detail-x" onClick={onClose} aria-label={_t({fr:"Fermer",en:"Close",es:"Cerrar"})}>✕</button>
       <div className={`lc-detail-illu s-${v.st}`}>
         <Illu st={v.st} score={sc||0} uid={(beach.id||"d")+"-dt"}/>
         <svg className="lc-zip" viewBox="0 0 200 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
@@ -421,11 +421,11 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
               })}
             </div>
             <div className={"lc-fc-line"+(isPremium||fcTrendKey==="allclean"?" ok":fcTrendKey==="worsen"?" warn":fcTrendKey==="improve"?" hope":"")}>{
-              isPremium ? _t({fr:"Prévision 7 jours débloquée — Le Veilleur veille pour toi.",en:"7-day forecast unlocked — Le Veilleur watches for you.",es:"Pronóstico 7 días desbloqueado — El Vigía vela por ti."})
-              : fcTrendKey==="allclean" ? _t({fr:"Propre toute la semaine — Le Veilleur veille pour toi.",en:"Clean all week — Le Veilleur watches for you.",es:"Limpia toda la semana — El Vigía vela por ti."})
-              : fcTrendKey==="worsen" ? _t({fr:"Propre aujourd'hui — mais ça pourrait tourner. Le Veilleur te prévient avant.",en:"Clean today — but it could turn. Le Veilleur warns you first.",es:"Limpia hoy — pero puede cambiar. El Vigía te avisa antes."})
+              isPremium ? _t({fr:"Prévision 7 jours débloquée — Le Veilleur veille pour toi.",en:"7-day forecast unlocked — The Watcher watches for you.",es:"Pronóstico 7 días desbloqueado — El Vigía vela por ti."})
+              : fcTrendKey==="allclean" ? _t({fr:"Propre toute la semaine — Le Veilleur veille pour toi.",en:"Clean all week — The Watcher watches for you.",es:"Limpia toda la semana — El Vigía vela por ti."})
+              : fcTrendKey==="worsen" ? _t({fr:"Propre aujourd'hui — mais ça pourrait tourner. Le Veilleur te prévient avant.",en:"Clean today — but it could turn. The Watcher warns you first.",es:"Limpia hoy — pero puede cambiar. El Vigía te avisa antes."})
               : fcTrendKey==="improve" ? _t({fr:"Ça devrait se dégager — débloque le jour où la mer revient propre.",en:"It should clear up — unlock the day the water comes back clean.",es:"Debería despejarse — desbloquea el día en que el agua vuelve limpia."})
-              : _t({fr:"Le Veilleur t'alerte le jour exact où ça bascule.",en:"Le Veilleur alerts you the exact day it flips.",es:"El Vigía te avisa el día exacto en que cambia."})}</div>
+              : _t({fr:"Le Veilleur t'alerte le jour exact où ça bascule.",en:"The Watcher alerts you the exact day it flips.",es:"El Vigía te avisa el día exacto en que cambia."})}</div>
           </div>
         ) : (
           <div className="lc-detail-fc">
@@ -525,7 +525,7 @@ const ALERTS_I18N={
          en:"All calm — no alerts for your beaches.",
          es:"Todo tranquilo — ninguna alerta para tus playas."},
   emptySub:{fr:"Le Veilleur surveille. Reviens demain : si la mer change, tu le sauras ici.",
-            en:"Le Veilleur is watching. Come back tomorrow: if the sea changes, you'll know here.",
+            en:"The Watcher is watching. Come back tomorrow: if the sea changes, you'll know here.",
             es:"El Vigía vigila. Vuelve mañana: si el mar cambia, lo sabrás aquí."},
   preview:{fr:"APERÇU (données d'exemple)",en:"PREVIEW (sample data)",es:"VISTA PREVIA (datos de ejemplo)"},
   today:{fr:"Aujourd'hui",en:"Today",es:"Hoy"},
@@ -699,7 +699,7 @@ const SPACE_I18N={
   alNone:{fr:"Tout est calme sur tes plages.",en:"All calm on your beaches.",es:"Todo tranquilo en tus playas."},
   proLink:{fr:"Vous gérez un hôtel ou une location ? Passez en Pro →",en:"Run a hotel or rental? Go Pro →",es:"¿Gestionas un hotel o alquiler? Hazte Pro →"},
 }
-function SpaceSheet({favorites=[],beaches=[],isPremium,alertCount=0,lang,track,onClose,onOpenBeach,onOpenAlerts,onPremium,onOpenPro}){
+function SpaceSheet({favorites=[],beaches=[],isPremium,alertCount=0,lang,track,onClose,onOpenBeach,onOpenAlerts,onPremium,onOpenPro,captureMode=false}){
   const _t=(o)=>(o&&(o[lang]||o.fr))||""
   const closeRef=useRef(null)
   const [refCopied,setRefCopied]=useState(false)
@@ -719,8 +719,8 @@ function SpaceSheet({favorites=[],beaches=[],isPremium,alertCount=0,lang,track,o
           <div className="lc-space-pro on">
             <div className="lc-space-pro-badge">✓ {_t(SPACE_I18N.proOn)}</div>
             <div className="lc-space-pro-sub">{_t(SPACE_I18N.proOnSub)}</div>
-            <a className="lc-space-manage" href="/?manage=1"
-              onClick={()=>{ if(track)try{track("sg_space_manage")}catch(_){} }}>{_t(SPACE_I18N.manage)}</a>
+            {!captureMode&&<a className="lc-space-manage" href="/?manage=1"
+              onClick={()=>{ if(track)try{track("sg_space_manage")}catch(_){} }}>{_t(SPACE_I18N.manage)}</a>}
           </div>
           {/* Hub PARRAINAGE (premium uniquement) — c'est ici qu'on émet enfin
               sg_referral_share (déjà whitelisté). Le code stable est généré à
@@ -848,7 +848,7 @@ const STREAK7_I18N={
         es:(n)=>n===1?"solo 1 día para completar la semana":n+" días más para completar la semana"},
   sealed:{fr:"SEPTAINE BOUCLÉE !",en:"WEEK SEALED!",es:"¡SEMANA SELLADA!"},
   sealedSub:{fr:"Sept jours d'affilée. Le Veilleur te repère parmi les chasseurs assidus.",
-             en:"Seven days straight. Le Veilleur marks you among the dedicated hunters.",
+             en:"Seven days straight. The Watcher marks you among the dedicated hunters.",
              es:"Siete días seguidos. El Vigía te distingue entre los cazadores dedicados."},
   cta:{fr:"Activer l'alerte 7 jours",en:"Turn on the 7-day alert",es:"Activar la alerta de 7 días"}
 }
@@ -874,7 +874,7 @@ const I18N={
   lockSub:{fr:"Débloque la prévision plage par plage, et l'alerte le jour où ça bascule.",
            en:"Unlock the forecast beach by beach, and the alert the day it flips.",
            es:"Desbloquea el pronóstico playa por playa, y la alerta el día que cambia."},
-  lockCta:{fr:"Activer mon Veilleur",en:"Turn on my Veilleur",es:"Activar mi Veilleur"},
+  lockCta:{fr:"Activer mon Veilleur",en:"Turn on my Watcher",es:"Activar mi Vigía"},
   mapLink:{fr:"Ouvrir la carte en direct",en:"Open the live map",es:"Abrir el mapa en directo"},
   guessBtn:{clean:{fr:"PROPRE",en:"CLEAN",es:"LIMPIA"},moderate:{fr:"MODÉRÉ",en:"MODERATE",es:"MODERADA"},avoid:{fr:"À ÉVITER",en:"AVOID",es:"EVITAR"}}
 }
@@ -1073,7 +1073,7 @@ function LadderSheet({tiers,count,best,onClose,lang}){
 }
 
 export default function ChasseHome(props){
-  const {beach,lang="fr",sargData,pickBeaches=[],onOpen,onOpenBeach,onPremium,onShowMap,onCaptureEmail,track,exiting,isPremium=false,favorites=[],onToggleFav,onOpenPro}=props
+  const {beach,lang="fr",sargData,pickBeaches=[],onOpen,onOpenBeach,onPremium,onShowMap,onCaptureEmail,track,exiting,isPremium=false,favorites=[],onToggleFav,onOpenPro,captureMode=false}=props
   const _t=useCallback((o)=>{ const v=o&&(o[lang]!=null?o[lang]:o.fr); return v },[lang])
 
   const reduce = useMemo(()=>{ try{ return window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches }catch(_){ return false } },[])
@@ -1422,7 +1422,7 @@ export default function ChasseHome(props){
             <form className="lc-cap-row" onSubmit={submitCap}>
               <input className="lc-cap-in" type="email" inputMode="email" autoComplete="email"
                 placeholder={_t({fr:"ton email",en:"your email",es:"tu email"})}
-                value={capEmail} onChange={e=>setCapEmail(e.target.value)} aria-label="email"/>
+                value={capEmail} onChange={e=>setCapEmail(e.target.value)} aria-label={_t({fr:"Ton email",en:"Your email",es:"Tu email"})}/>
               <button type="submit" className="lc-cta yel lc-cap-btn">{_t({fr:"JE VEUX",en:"I'M IN",es:"QUIERO"})}</button>
             </form>
           </div>
@@ -1612,7 +1612,7 @@ export default function ChasseHome(props){
       )}
 
       {spaceEnabled&&spaceOpen&&(
-        <SpaceSheet favorites={favorites} beaches={pickBeaches} isPremium={isPremium}
+        <SpaceSheet favorites={favorites} beaches={pickBeaches} isPremium={isPremium} captureMode={captureMode}
           alertCount={alerts.length} lang={lang} track={track}
           onOpenPro={onOpenPro&&(()=>{ setSpaceOpen(false); onOpenPro() })}
           onClose={()=>setSpaceOpen(false)}
@@ -1622,7 +1622,7 @@ export default function ChasseHome(props){
       )}
 
       {levelUp&&(
-        <div className="lc-levelup" role="dialog" aria-label="Nouveau rang" onClick={()=>setLevelUp(null)}>
+        <div className="lc-levelup" role="dialog" aria-modal="true" aria-label={_t({fr:"Nouveau rang",en:"New rank",es:"Nuevo rango"})} onClick={()=>setLevelUp(null)}>
           <svg className="lc-burst s-ok" viewBox="0 0 300 300" aria-hidden="true">
             {Array.from({length:18}).map((_,i)=>{const a=(i/18)*Math.PI*2,x1=150+Math.cos(a)*70,y1=150+Math.sin(a)*70,x2=150+Math.cos(a)*150,y2=150+Math.sin(a)*150;return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} strokeWidth={i%2?6:10}/>})}
           </svg>
