@@ -8941,7 +8941,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
       {/* Étape paiement ON-SITE — overlay sombre au-dessus du modal (z 1300),
           design maison : email + Apple/Google Pay + Payment Element (carte).
           TOUJOURS rendu (caché) pour que les Elements montés persistent. */}
-      <div style={{position:"fixed",inset:0,zIndex:1300,background:"linear-gradient(145deg,#190c2c,#120821)",
+      <div style={{position:"fixed",inset:0,zIndex:1300,background:PAY_CAPTURE_ONLY?"linear-gradient(168deg,#0B2230 0%,#0D1E1C 58%,#0A1714 100%)":"linear-gradient(145deg,#190c2c,#120821)",
         display:"flex",flexDirection:"column",overflow:"auto",
         // hors-écran (PAS visibility:hidden : les iframes Stripe ne bootent pas
         // dans un conteneur hidden — le pré-mount resterait gelé)
@@ -9420,9 +9420,9 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
       role="dialog" aria-modal="true"
       aria-label={hasBeach?_t(lang,`Débloque ${beach.name}`,`Unlock ${beach.name}`,`Desbloquea ${beach.name}`):_t(lang,"Reçois le brief sargasses","Get the sargassum brief","Recibe el informe de sargazo")}
       onClick={e=>{if(e.target===e.currentTarget)onClose()}}>
-      <div style={{width:"90%",maxWidth:480,borderRadius:24,
-        background:"rgba(10,23,20,.65)",border:"1px solid rgba(255,255,255,.08)",
-        padding:"40px 24px",boxShadow:"0 20px 60px rgba(0,0,0,.6)",
+      <div style={{width:"90%",maxWidth:480,borderRadius:PAY_CAPTURE_ONLY?20:24,
+        background:PAY_CAPTURE_ONLY?"#fdf6e3":"rgba(10,23,20,.65)",border:PAY_CAPTURE_ONLY?"3px solid #0d0b14":"1px solid rgba(255,255,255,.08)",
+        padding:"40px 24px",boxShadow:PAY_CAPTURE_ONLY?"6px 6px 0 #0d0b14":"0 20px 60px rgba(0,0,0,.6)",forcedColorAdjust:"none",
         display:"flex",flexDirection:"column",alignItems:"center",textAlign:"center"}}>
         
         {!sent?(<>
@@ -9434,7 +9434,7 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
             </svg>
           </div>
           
-          <h2 style={{fontSize:26,fontWeight:800,color:"#fff",lineHeight:1.2,margin:"0 0 12px 0",fontFamily:"Bricolage Grotesque,sans-serif"}}>
+          <h2 style={{fontSize:26,fontWeight:800,color:PAY_CAPTURE_ONLY?"#0d0b14":"#fff",lineHeight:1.2,margin:"0 0 12px 0",fontFamily:"Bricolage Grotesque,sans-serif"}}>
             {hasBeach 
               ? _t(lang,`Débloque la météo de ${beach.name} pour demain.`,`Unlock tomorrow's forecast for ${beach.name}.`,`Desbloquea el clima de ${beach.name} para mañana.`)
               : _t(lang,"Reçois le rapport sargasses chaque matin.","Get the sargassum report every morning.","Recibe el informe de sargazo cada mañana.")}
@@ -9444,13 +9444,13 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
             const reg=__REL.regime==="high"?_t(lang,"saison haute","high season","temporada alta"):_t(lang,"saison calme","calm season","temporada tranquila")
             return <a href={reliabilityHref(lang)} onClick={()=>{try{track("sg_reliability_open",{from:"capture_gate"})}catch(_){}}}
               style={{display:"inline-flex",alignItems:"center",gap:7,margin:"0 0 16px",padding:"7px 13px",borderRadius:999,
-                background:"rgba(34,197,94,.10)",border:"1px solid rgba(34,197,94,.24)",textDecoration:"none",
-                fontSize:12,fontWeight:600,color:"#8FE3B0",cursor:IS_NEW_REGION?"default":"pointer"}}>
+                background:"rgba(34,197,94,.12)",border:`1px solid rgba(34,197,94,${PAY_CAPTURE_ONLY?".4":".24"})`,textDecoration:"none",
+                fontSize:12,fontWeight:600,color:PAY_CAPTURE_ONLY?"#1B7A4B":"#8FE3B0",cursor:IS_NEW_REGION?"default":"pointer"}}>
               <span aria-hidden="true">✅</span>
               <span>{_t(lang,`${__REL.cleanPct}% de nos prévisions « mer propre » vérifiées · ${reg}`,`${__REL.cleanPct}% of our “clean water” forecasts verified · ${reg}`,`${__REL.cleanPct}% de nuestros pronósticos “agua limpia” verificados · ${reg}`)}{!IS_NEW_REGION&&<span style={{opacity:.65}}>  →</span>}</span>
             </a>
           })()}
-          <p style={{fontSize:15,color:"rgba(255,255,255,.6)",margin:"0 0 22px 0",lineHeight:1.5}}>
+          <p style={{fontSize:15,color:PAY_CAPTURE_ONLY?"#4a4636":"rgba(255,255,255,.6)",margin:"0 0 22px 0",lineHeight:1.5}}>
             {onPay
               ?_t(lang,"Reçois le brief par email — gratuit. Ou débloque tout de suite par carte.","Get the brief by email — free. Or unlock everything now by card.","Recibe el informe por email — gratis. O desbloquéalo ya con tarjeta.")
               :_t(lang,"Reçois le brief par email — gratuit, sans carte.","Get the brief by email — free, no card.","Recibe el informe por email — gratis, sin tarjeta.")}
@@ -9461,15 +9461,15 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
               placeholder={_t(lang,"ton@email.com","your@email.com","tu@email.com")}
               value={email} onChange={e=>{setEmail(e.target.value);setErr(false)}}
               style={{width:"100%",boxSizing:"border-box",padding:"16px 64px 16px 20px",borderRadius:999,
-                border:`2px solid ${err?"#E8522A":"rgba(255,255,255,.15)"}`,
-                fontSize:16,fontFamily:"inherit",background:"rgba(255,255,255,.05)",
-                outline:"none",color:"#fff",transition:"border 0.2s ease"}}/>
+                border:`2px solid ${err?"#E8522A":PAY_CAPTURE_ONLY?"#0d0b14":"rgba(255,255,255,.15)"}`,
+                fontSize:16,fontFamily:"inherit",background:PAY_CAPTURE_ONLY?"#fff":"rgba(255,255,255,.05)",
+                outline:"none",color:PAY_CAPTURE_ONLY?"#0d0b14":"#fff",transition:"border 0.2s ease"}}/>
             <button type="submit" className="sg-paygold" style={{
               position:"absolute",right:6,top:6,bottom:6,
-              width:44,borderRadius:999,border:"none",cursor:"pointer",
-              background:"linear-gradient(135deg,#3fd07f,#5b3a8e)",
+              width:44,borderRadius:999,border:PAY_CAPTURE_ONLY?"2px solid #0d0b14":"none",cursor:"pointer",
+              background:PAY_CAPTURE_ONLY?"#ffd23f":"linear-gradient(135deg,#3fd07f,#5b3a8e)",
               display:"flex",alignItems:"center",justifyContent:"center",
-              boxShadow:"0 2px 10px rgba(59,167,160,.4)"}}>
+              boxShadow:PAY_CAPTURE_ONLY?"2px 2px 0 #0d0b14":"0 2px 10px rgba(59,167,160,.4)"}}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#061210" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="5" y1="12" x2="19" y2="12"></line>
                 <polyline points="12 5 19 12 12 19"></polyline>
@@ -9477,7 +9477,7 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
             </button>
           </form>
 
-          <div style={{fontSize:12,color:"rgba(255,255,255,.4)",display:"flex",alignItems:"center",gap:6,marginBottom:16}}>
+          <div style={{fontSize:12,color:PAY_CAPTURE_ONLY?"#6b6658":"rgba(255,255,255,.4)",display:"flex",alignItems:"center",gap:6,marginBottom:16}}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
             {_t(lang,"Sans spam. Désinscription en 1 clic.","No spam. 1-click unsubscribe.","Sin spam. Baja en 1 clic.")}
           </div>
@@ -9496,7 +9496,7 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
           
           <div style={{textAlign:"center", width:"100%"}}>
             <button type="button" onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",
-              color:"rgba(255,255,255,.3)",fontSize:12,padding:"8px",fontFamily:"inherit"}}>
+              color:PAY_CAPTURE_ONLY?"#6b6658":"rgba(255,255,255,.3)",fontSize:12,padding:"8px",fontFamily:"inherit"}}>
               {_t(lang,"Non merci, fermer","No thanks, close","No gracias, cerrar")}
             </button>
           </div>
