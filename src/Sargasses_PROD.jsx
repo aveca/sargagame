@@ -9041,6 +9041,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         <div style={{maxWidth:480,width:"100%",margin:"0 auto",padding:"16px 20px 28px",flex:1,display:"flex",flexDirection:"column"}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
             <button onClick={()=>{track("sg_pay_onsite_back",{plan:payPlanRef.current});setPayStep(false)}}
+              className="sg-payplain"
               style={{background:"none",border:"none",color:"rgba(255,255,255,.65)",fontSize:14,cursor:"pointer",
                 fontFamily:"inherit",display:"flex",alignItems:"center",gap:6,padding:"8px 0"}}>
               ← {_t(lang,"Retour","Back","Atrás")}
@@ -9089,6 +9090,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               <div style={{marginBottom:14}}>
                 {w.apple&&(
                   <button type="button" aria-label="Apple Pay" disabled={payBusy} onClick={()=>payWithWallet("applepay")}
+                    className="sg-wbtn sg-wbtn-dark"
                     style={{width:"100%",padding:"14px",borderRadius:12,border:"none",background:"#000",color:"#fff",
                       fontFamily:"inherit",fontWeight:600,fontSize:17,cursor:payBusy?"wait":"pointer",opacity:payBusy?.6:1,
                       display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:w.google?8:0}}>
@@ -9098,6 +9100,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
                 )}
                 {w.google&&(
                   <button type="button" aria-label="Google Pay" disabled={payBusy} onClick={()=>payWithWallet("googlepay")}
+                    className="sg-wbtn sg-wbtn-light"
                     style={{width:"100%",padding:"13px",borderRadius:12,border:"none",background:"#fff",color:"#3c4043",
                       fontFamily:"inherit",fontWeight:600,fontSize:15.5,cursor:payBusy?"wait":"pointer",opacity:payBusy?.6:1,
                       display:"flex",alignItems:"center",justifyContent:"center",gap:7}}>
@@ -9149,6 +9152,14 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
                   <div ref={molCvcRef} style={MOL_FIELD}/>
                 </div>
               </div>
+              {/* Réassurance au point d'anxiété max (saisie carte) — levier conversion D. */}
+              <div style={{display:"flex",alignItems:"center",gap:7,marginTop:12,fontSize:11.5,color:"rgba(255,255,255,.5)",lineHeight:1.35}}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{flexShrink:0}}>
+                  <rect x="4" y="10" width="16" height="10" rx="2" stroke="rgba(124,224,176,.85)" strokeWidth="2"/>
+                  <path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="rgba(124,224,176,.85)" strokeWidth="2"/>
+                </svg>
+                {_t(lang,"Paiement chiffré · tes données carte ne sont jamais stockées chez nous","Encrypted payment · your card data is never stored on our servers","Pago cifrado · tus datos de tarjeta nunca se guardan en nuestros servidores")}
+              </div>
             </div>
           ):(
             <>
@@ -9183,7 +9194,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               <div style={{color:"#FFD9CC",fontSize:15,lineHeight:1.4,fontWeight:600}}>{payError}</div>
             </div>
           )}
-          {!ppSub&&<button onClick={()=>doSubscribe()} disabled={payBusy} className="gbtn"
+          {!ppSub&&<button onClick={()=>doSubscribe()} disabled={payBusy} className="gbtn sg-paygold"
             style={{width:"100%",padding:15,borderRadius:14,border:"none",marginTop:16,
               cursor:payBusy?"wait":"pointer",fontFamily:"inherit",fontWeight:800,fontSize:15.5,
               opacity:payBusy?.7:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
