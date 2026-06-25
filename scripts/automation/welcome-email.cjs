@@ -27,6 +27,11 @@ const BEACHES_PATH = path.join(__dirname, '../../public/data/beaches-list.json')
 // Leads PRO (formulaires /pro/*) : exclus du welcome grand public — ils ont leur
 // propre séquence (drip-b2b-email.cjs). Un hôtel ne doit JAMAIS recevoir l'offre 4,99 €.
 const B2B_SOURCES = new Set(['b2b_hotel_request', 'b2b_collectivite_request'])
+// Sources de CAPTURE qui DÉBLOQUENT réellement 7j premium côté front (rang 1 :
+// capture-gate + gap_freemium posent sg_premium_pass_end). Le welcome leur CONFIRME
+// l'accès actif + le verdict du matin (qu'ils reçoivent désormais — cf. DAILY_SOURCES
+// dans drip-email.cjs). Les autres sources gardent le welcome générique.
+const PREMIUM_CAPTURE_SOURCES = new Set(['capture-gate', 'gap_freemium'])
 
 // From address — GP uses MQ verified domain (free plan = 1 domain)
 const FROM_MQ = 'Sargasses Martinique <alerte@sargasses-martinique.com>'
@@ -52,7 +57,7 @@ function hashedSet(arr) {
   return new Set((Array.isArray(arr) ? arr : []).map(e => String(e).includes('@') ? emailHash(e) : e))
 }
 
-function buildWelcomeHTML(island, cleanCount, email) {
+function buildWelcomeHTML(island, cleanCount, email, source) {
   const name = island === 'MQ' ? 'Martinique' : 'Guadeloupe'
   const domain = island === 'MQ' ? 'sargasses-martinique.com' : 'sargasses-guadeloupe.com'
   // 2026-06-17 — checkout ON-SITE (essai retiré, plus de buy.stripe.com) : le CTA
@@ -68,6 +73,10 @@ function buildWelcomeHTML(island, cleanCount, email) {
   ${brandHeader('Bienvenue parmi nous', `Sargasses ${name}`, 'Le Veilleur surveille l’Atlantique pour toi. Fini les mauvaises surprises.')}
 
   <div style="background:#fff;padding:24px 20px">
+    ${PREMIUM_CAPTURE_SOURCES.has(source) ? `<div style="text-align:center;margin-bottom:18px;padding:14px 16px;background:rgba(255,199,44,.12);border:1px solid rgba(232,168,0,.35);border-radius:12px">
+      <div style="font-size:14px;font-weight:800;color:#0D0D0D">✅ Tes 7 jours premium sont actifs</div>
+      <div style="font-size:12.5px;color:#686868;line-height:1.45;margin-top:4px">Le verdict du matin — ta meilleure plage du jour — arrive chaque matin dans ta boîte. Prévision 7 jours + alertes dans l'app.</div>
+    </div>` : ''}
     ${cleanCount > 0 ? `<div style="text-align:center;margin-bottom:20px;padding:16px;background:rgba(34,197,94,.06);border-radius:12px">
       <div style="font-size:32px;font-weight:800;color:#16A34A">${cleanCount}</div>
       <div style="font-size:13px;color:#686868;margin-top:2px">plages propres en ce moment en ${name}</div>
@@ -274,7 +283,7 @@ async function main() {
       from = island === 'GP' ? FROM_GP : FROM_MQ
       const name = island === 'MQ' ? 'Martinique' : 'Guadeloupe'
       subjectLine = cleanCount > 0 ? `${cleanCount} plages propres en ${name} \u2014 ta carte est pr\u00EAte` : `Bienvenue \u2014 ta carte sargasses ${name} est pr\u00EAte`
-      htmlBody = buildWelcomeHTML(island, cleanCount, sub.email)
+      htmlBody = buildWelcomeHTML(island, cleanCount, sub.email, sub.source)
       preheader = `Ta carte des plages en direct, mise \u00E0 jour 4\u00D7/jour \u2014 et le bon plan plage chaque vendredi.`
     }
 
