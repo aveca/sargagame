@@ -28,6 +28,12 @@ const REGION = (args.region || "mq").toString();
 const METRIC_PREF = args.metric
   ? [args.metric.toString()]
   : ["sg_checkout_redirect", "sg_premium_modal_cta", "sg_premium_modal_open", "sg_hero_email_submit", "sg_email_submit"];
+// Métrique de conversion PAR TEST quand le KPI diffère du funnel paiement. Le test
+// capture_gate optimise la CAPTURE EMAIL (pas le CTA modal qu'il court-circuite) → on le
+// juge sur sg_capture_gate_submit, sinon il ressortirait "pas de signal". Les autres tests
+// gardent METRIC_PREF (ne PAS mettre les events capture en tête globale : tous les tests
+// les ont dans rates_pct → ça fausserait leur verdict).
+const TEST_METRIC = { capture_gate: "sg_capture_gate_submit" };
 
 const HOSTS = { mq: "https://sargasses-martinique.com", gp: "https://sargasses-guadeloupe.com" };
 const FUNNEL_URL = "https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec?action=funnel";
@@ -76,7 +82,8 @@ function z2prop(x1, n1, x2, n2) { // variante(2) vs control(1)
     for (const [test, vars] of Object.entries(bd)) {
       const names = Object.keys(vars);
       if (names.length < 2) continue; // pas un A/B exploitable (1 seule variante vue)
-      const metric = METRIC_PREF.find(m => names.some(v => vars[v].rates_pct && vars[v].rates_pct[m] != null)) || null;
+      const pref = TEST_METRIC[test] ? [TEST_METRIC[test], ...METRIC_PREF] : METRIC_PREF;
+      const metric = pref.find(m => names.some(v => vars[v].rates_pct && vars[v].rates_pct[m] != null)) || null;
       const control = names.reduce((a, b) => (vars[a].sessions >= vars[b].sessions ? a : b)); // + exposée = control
       console.log(`\n▸ ${test}   (métrique conversion : ${metric ? metric.replace("sg_", "") : "—"})`);
       // gagnant = meilleure rate sur la métrique

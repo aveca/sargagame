@@ -27,7 +27,7 @@ $W = array('total'=>0,'byHost'=>array(),'byBeach'=>array(),'last'=>null); // ins
 
 // Étapes du funnel conversion (ordre) — les rates par région se calculent dessus.
 // Source de vérité = noms d'events track() de l'app (audit 2026-06-14).
-$FUNNEL = array('sg_session_start','sg_forecast_lock_click','sg_premium_modal_open','sg_premium_modal_cta','sg_checkout_redirect','sg_conversion','sg_email_submit','sg_hero_email_submit');
+$FUNNEL = array('sg_session_start','sg_forecast_lock_click','sg_premium_modal_open','sg_premium_modal_cta','sg_checkout_redirect','sg_conversion','sg_email_submit','sg_hero_email_submit','sg_capture_gate_view','sg_capture_gate_submit','sg_gap_freemium_unlock','sg_capture_gate_pay');
 
 // Attribution canal (P5) : classe le referrer en canal d'acquisition. Source = $d['ref']
 // (document.referrer, déjà collecté par l'app). Pas de PII, juste le host.
@@ -193,6 +193,11 @@ foreach ($byR as $rg => $a) {
   $redir  = $f['sg_checkout_redirect'] ?? 0;
   $conv   = $f['sg_conversion'] ?? 0;
   $email  = $f['sg_email_submit'] ?? 0;
+  // Capture-mode (gate email) : comptés depuis les events bruts par région ($a['events']).
+  $gv = $a['events']['sg_capture_gate_view'] ?? 0;
+  $gs = $a['events']['sg_capture_gate_submit'] ?? 0;
+  $gu = $a['events']['sg_gap_freemium_unlock'] ?? 0;
+  $gp = $a['events']['sg_capture_gate_pay'] ?? 0;
   $sv     = max(1, $a['screens_visits']);
   arsort($a['events']);
   $out['byRegion'][$rg] = array(
@@ -204,6 +209,10 @@ foreach ($byR as $rg => $a) {
       'checkout_redirect'=> $redir,
       'conversion'       => $conv,
       'email_submit'     => $email,
+      'gate_view'        => $gv,
+      'gate_submit'      => $gs,
+      'gate_unlock'      => $gu,
+      'gate_cb'          => $gp,
     ),
     'rates' => array(
       // % de sessions atteignant chaque étape (lisible cross-région).
@@ -216,6 +225,13 @@ foreach ($byR as $rg => $a) {
       // Intention payante la plus forte (lock 121 > cta 77) — mesurée isolée.
       'lock_to_cta'          => $lock ? round(100 * $cta / $lock, 1) : 0,
       'session_to_email'     => round(100 * $email / $start, 1),
+      // CAPTURE MODE : la gate email intercepte modal_open (~85% du forecast-intent,
+      // `return` avant setShowPremium) → modal_to_cta ci-dessus est MÉCANIQUEMENT déflaté
+      // (artefact de mesure, pas une régression d'offre). On mesure la gate à part + un
+      // taux d'intention dé-biaisé (gate views comptées comme intention premium).
+      'gate_capture_rate'    => $gv ? round(100 * $gs / $gv, 1) : 0,
+      'gate_to_cb'           => $gv ? round(100 * $gp / $gv, 1) : 0,
+      'intent_to_action'     => ($modal + $gv) ? round(100 * ($cta + $gs + $gp) / ($modal + $gv), 1) : 0,
     ),
     'bored_rate' => round($a['screens_bored'] / $sv, 3),
     'avg_dwell_ms' => round($a['screens_dwell'] / $sv),
