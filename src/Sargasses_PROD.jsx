@@ -13860,6 +13860,24 @@ export default function App(){
       }
     }catch{localStorage.removeItem("sg_checkout_abandoned")}
   },[])
+
+  // Relance in-app à l'EXPIRATION du pass 7j offert (capture) : sans ça l'accès se
+  // termine en SILENCE (aucune relance, aucun « N jours restants ») → conversion
+  // ratée au moment exact où l'utilisateur a goûté la valeur. Un seul affichage
+  // (sg_pass_expired_seen). Gated PAY_CAPTURE_ONLY → réversible ; au go-live Mollie
+  // le CTA openPremium route vers le vrai paiement (cohérent).
+  const[showPassExpired,setShowPassExpired]=useState(false)
+  useEffect(()=>{
+    if(!PAY_CAPTURE_ONLY||isPremium)return
+    try{
+      if(localStorage.getItem("sg_pass_expired_seen"))return
+      const passEnd=parseInt(localStorage.getItem("sg_premium_pass_end")||"0")
+      if(passEnd>0&&passEnd<=Date.now()){
+        setShowPassExpired(true)
+        track("sg_pass_expired_eligible",{island})
+      }
+    }catch(_){}
+  },[])
   // Funnel mort réarmé (audit widget-factory) : à l'activation premium, (a) on
   //   efface le panier abandonné (anti-stale), (b) on GÉNÈRE le code de parrainage
   //   — il était LU (share l.3082) + détecté en landing (?ref=) mais JAMAIS écrit
@@ -15039,6 +15057,36 @@ export default function App(){
           </div>
         )}
 
+        {/* PASS 7J EXPIRÉ — relance capture (un seul affichage, après les overlays prioritaires) */}
+        {showPassExpired&&!showRecoveryBanner&&!showHero&&!showPremium&&!showCaptureGate&&!showWelcome&&!selectedBeach&&(
+          <div style={{position:"fixed",top:0,left:0,right:0,zIndex:1500,
+            background:"linear-gradient(90deg,#120821 0%,#1a2f28 100%)",
+            borderBottom:"1px solid rgba(232,168,0,.3)",
+            padding:"10px max(12px,env(safe-area-inset-right)) 10px max(12px,env(safe-area-inset-left))",
+            paddingTop:"max(10px, calc(10px + env(safe-area-inset-top)))",
+            display:"flex",alignItems:"center",justifyContent:"center",gap:10,
+            flexWrap:"wrap",fontSize:13,color:"#e6edf3",fontFamily:"inherit"}}>
+            <span style={{opacity:.9,flex:"1 1 180px",minWidth:0,textAlign:"center"}}>
+              {_t(lang,"Ton accès 7 jours est terminé — reprends-le, juste ton email.","Your 7-day access has ended — get it back, just your email.","Tu acceso de 7 días terminó — recupéralo, solo tu email.")}</span>
+            <button onClick={()=>{
+              track("sg_pass_expired_click",{island})
+              try{localStorage.setItem("sg_pass_expired_seen","1")}catch(_){}
+              setShowPassExpired(false)
+              openPremium("pass_expired")
+            }} style={{background:"#E8A800",color:"#120821",border:"none",borderRadius:8,
+              padding:"6px 14px",fontSize:12,fontWeight:700,fontFamily:"inherit",cursor:"pointer",
+              whiteSpace:"nowrap",flexShrink:0}}>
+              {_t(lang,"Reprendre 7 jours","Get 7 days back","Recuperar 7 días")}</button>
+            <button onClick={()=>{
+              track("sg_pass_expired_dismiss",{island})
+              try{localStorage.setItem("sg_pass_expired_seen","1")}catch(_){}
+              setShowPassExpired(false)
+            }} style={{background:"none",border:"none",color:"rgba(255,255,255,.5)",
+              cursor:"pointer",fontSize:18,lineHeight:1,padding:"0 4px",flexShrink:0}}
+              aria-label={_t(lang,"Fermer","Close","Cerrar")}>&times;</button>
+          </div>
+        )}
+
         {/* MAP, LIST or GAME — both rendered, visibility toggled for instant switch */}
         <div style={{position:"absolute",inset:0,opacity:view==="map"?1:0,
           transform:view==="map"?"scale(1)":"scale(1.03)",transformOrigin:"50% 42%",
@@ -15301,7 +15349,7 @@ export default function App(){
             l'immersion BD au moment exact de la conversion. Réaffiché à la fermeture. */}
         <div style={{
           position:"absolute",top:0,left:0,right:0,zIndex:700,
-          padding:`calc(max(12px, env(safe-area-inset-top)) + ${showRecoveryBanner?64:(showPushPrimer?58:0)}px) 16px 0`,
+          padding:`calc(max(12px, env(safe-area-inset-top)) + ${showRecoveryBanner?64:showPassExpired?64:(showPushPrimer?58:0)}px) 16px 0`,
           pointerEvents:"none",
           transition:"padding-top .25s ease",
           display:showPremium?"none":undefined,
