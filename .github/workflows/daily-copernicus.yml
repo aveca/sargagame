@@ -395,6 +395,15 @@ jobs:
         if: steps.check_build.outputs.full == 'true'
         run: node scripts/prepare-ftp.cjs
 
+      # Injecte api/mollie-config.php (clé live) dans les dossiers de staging EUR à
+      # partir du secret MOLLIE_API_KEY. La clé n'est lue que via env: (jamais dans une
+      # ligne shell → pas dans les logs). No-op silencieux si le secret est absent.
+      - name: Inject Mollie config into staging api/ dirs
+        if: steps.check_build.outputs.full == 'true'
+        env:
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+        run: node scripts/write-mollie-config.cjs
+
       - name: Submit URLs to Google Indexing
         if: steps.check_build.outputs.full == 'true' && github.event_name != 'push'
         env:
