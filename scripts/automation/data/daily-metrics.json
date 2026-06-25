@@ -1495,10 +1495,10 @@
   },
   {
     "date": "2026-06-25",
-    "time": "2026-06-25T14:41:11.584Z",
+    "time": "2026-06-25T20:05:29.203Z",
     "payments": 12,
     "revenue": 59.88,
-    "emails": 241,
+    "emails": 242,
     "feedbacks": 1,
     "avgRating": 4,
     "pipelineOk": true,
@@ -1524,7 +1524,7 @@
       }
     },
     "email": {
-      "sent": 1540,
+      "sent": 1546,
       "delivered": null,
       "opened": null,
       "clicked": null,
