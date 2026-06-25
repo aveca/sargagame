@@ -9418,6 +9418,8 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
   return(
     <div style={{position:"fixed",inset:0,zIndex:1055,background:"rgba(2,9,7,.85)",
       display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(12px)"}}
+      role="dialog" aria-modal="true"
+      aria-label={hasBeach?_t(lang,`Débloque ${beach.name}`,`Unlock ${beach.name}`,`Desbloquea ${beach.name}`):_t(lang,"Reçois le brief sargasses","Get the sargassum brief","Recibe el informe de sargazo")}
       onClick={e=>{if(e.target===e.currentTarget)onClose()}}>
       <div style={{width:"90%",maxWidth:480,borderRadius:24,
         background:"rgba(10,23,20,.65)",border:"1px solid rgba(255,255,255,.08)",
@@ -15070,7 +15072,7 @@ export default function App(){
           /* BRAS A/B `arena_loop` — accueil « LA CHASSE » (boucle de jeu TCG).
              Additif : control = HomeAZ/GameFunnel/HeroVerdict, intact. ?chasse=1/0. */
           <ErrBound><Suspense fallback={null}>
-          <LazyChasse beach={heroPick} lang={lang} island={island} sargData={sargData} userPos={userPos} isPremium={isPremium} favorites={favorites} onToggleFav={toggleFav} onOpenPro={()=>{ try{track("sg_b2b_open",{source:"space"})}catch(_){}; setShowProB2B(true) }}
+          <LazyChasse beach={heroPick} lang={lang} island={island} sargData={sargData} userPos={userPos} isPremium={isPremium} captureMode={PAY_CAPTURE_ONLY} favorites={favorites} onToggleFav={toggleFav} onOpenPro={()=>{ try{track("sg_b2b_open",{source:"space"})}catch(_){}; setShowProB2B(true) }}
             pickBeaches={(allBeaches||[]).filter(b=>(IS_NEW_REGION||b.island===island)&&b.status&&b.score!=null)
               .sort((a,b)=>(b.score||0)-(a.score||0))}
             track={track}
@@ -15744,9 +15746,9 @@ export default function App(){
                 fontSize:22,letterSpacing:"-.01em",lineHeight:1.1,color:"var(--sg-ink,#0d0d0d)"}}>
                 {_t(lang,"Premium activé","Premium activated","Premium activado")}</div>
               <div className="sg-toast__msg">{_t(lang,"Brief matin · alertes · reco du jour.","Morning brief · alerts · daily pick.","Brief matinal · alertas · pick del día.")}</div>
-              <a href="?manage=1" onClick={e=>{e.stopPropagation();track("sg_manage_click")}}
+              {!PAY_CAPTURE_ONLY&&<a href="?manage=1" onClick={e=>{e.stopPropagation();track("sg_manage_click")}}
                 style={{display:"inline-block",marginTop:8,fontSize:14,fontWeight:800,color:"var(--sg-teal,#009E8E)",textDecoration:"none"}}>
-                {_t(lang,"Gérer mon abonnement","Manage my subscription","Gestionar mi suscripción")}</a>
+                {_t(lang,"Gérer mon abonnement","Manage my subscription","Gestionar mi suscripción")}</a>}
             </div>
             <SgClose lang={lang} onClick={()=>setShowWelcome(false)}/>
           </div>
