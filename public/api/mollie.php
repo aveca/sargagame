@@ -59,6 +59,12 @@ sg_rate_limit('mol_' . $action, $RL_LIMITS[$action] ?? 30);
 if ($action === 'create_payment') {
     if (!mol_is_eur_region($island)) { http_response_code(400); echo json_encode(['error' => 'region_not_supported']); exit; }
     $cardToken = $input['cardToken'] ?? '';
+    // Wallet (Apple Pay / Google Pay) : PAS de cardToken on-site. On force `method`
+    // -> Mollie renvoie le checkout heberge ou la feuille native du wallet s'affiche
+    // (sur LEUR domaine -> AUCUN fichier de verification de domaine cote nous). Le
+    // retour ?mollie_return=1 confirme via payment_status, comme la 3DS carte.
+    $method = preg_replace('/[^a-z]/', '', $input['method'] ?? '');
+    $method = in_array($method, ['applepay', 'googlepay'], true) ? $method : '';
     $passKey = preg_replace('/[^a-z0-9]/', '', $input['pass'] ?? '');
     $cents = (int)($input['cents'] ?? 0);
     $email = trim($input['email'] ?? '');
@@ -69,18 +75,20 @@ if ($action === 'create_payment') {
     // 499 = Trip Pass 7j (4,99 €, miroir du tripPass USD). 799/999 = pass 7j ;
     // 1499/1999/2499 = pass 30j + saison. USD (599) reste hors Mollie (EUR only).
     $allowedCents = [499, 799, 999, 1499, 1999, 2499];
-    if (!$cardToken || !in_array($cents, $allowedCents, true)) {
+    if ((!$cardToken && !$method) || !in_array($cents, $allowedCents, true)) {
         http_response_code(400); echo json_encode(['error' => 'bad pass params']); exit;
     }
     $value = number_format($cents / 100, 2, '.', '');
-    list($code, $pay) = mol_api('POST', '/payments', [
+    $payParams = [
         'amount'      => ['currency' => 'EUR', 'value' => $value],
         'description' => 'Sargasses pass ' . $passKey,
-        'cardToken'   => $cardToken,
         'redirectUrl' => $returnBase . '/?mollie_return=1',
         'webhookUrl'  => $returnBase . '/api/mollie-webhook.php',
         'metadata'    => ['island' => ($island !== '' ? $island : 'mq'), 'pass' => $passKey, 'plan' => $passKey, 'source' => $source, 'email' => $email],
-    ]);
+    ];
+    if ($cardToken) $payParams['cardToken'] = $cardToken; // carte on-site (Components)
+    if ($method)    $payParams['method']    = $method;    // wallet -> checkout heberge
+    list($code, $pay) = mol_api('POST', '/payments', $payParams);
     if ($code >= 400 || empty($pay['id'])) { http_response_code(500); echo json_encode(['error' => 'payment create failed']); exit; }
     echo json_encode([
         'paymentId'   => $pay['id'],
@@ -95,11 +103,16 @@ if ($action === 'create_payment') {
 if ($action === 'create_subscription') {
     if (!mol_is_eur_region($island)) { http_response_code(400); echo json_encode(['error' => 'region_not_supported']); exit; }
     $cardToken = $input['cardToken'] ?? '';
+    // Wallet (Apple Pay / Google Pay) : 1er paiement recurrent via checkout heberge
+    // Mollie (le mandat est cree cote Mollie, exactement comme avec la carte). cf.
+    // create_payment ci-dessus pour le detail du flux wallet.
+    $method = preg_replace('/[^a-z]/', '', $input['method'] ?? '');
+    $method = in_array($method, ['applepay', 'googlepay'], true) ? $method : '';
     $planIn = ($input['plan'] ?? 'monthly') === 'annual' ? 'annual' : 'monthly';
     $email = trim($input['email'] ?? '');
     $source = preg_replace('/[^a-zA-Z0-9_-]/', '', $input['source'] ?? 'unknown');
     $sc = $cfg['subscription'][$planIn] ?? null;
-    if (!$cardToken || !$email || !filter_var($email, FILTER_VALIDATE_EMAIL) || !$sc) {
+    if ((!$cardToken && !$method) || !$email || !filter_var($email, FILTER_VALIDATE_EMAIL) || !$sc) {
         http_response_code(400); echo json_encode(['error' => 'bad subscription params']); exit;
     }
     // ── Parrainage (attribution capturée — récompense au go-live Mollie) ──────────
@@ -120,16 +133,18 @@ if ($action === 'create_subscription') {
     if ($cc >= 400 || empty($cust['id'])) { http_response_code(500); echo json_encode(['error' => 'customer create failed']); exit; }
     $customerId = $cust['id'];
     // 1er paiement = etablit le mandat ET facture la periode 1.
-    list($code, $pay) = mol_api('POST', '/payments', [
+    $payParams = [
         'amount'       => ['currency' => $sc['currency'], 'value' => $sc['amount']],
         'description'  => 'Sargasses ' . $planIn,
-        'cardToken'    => $cardToken,
         'customerId'   => $customerId,
         'sequenceType' => 'first',
         'redirectUrl'  => $returnBase . '/?mollie_return=1',
         'webhookUrl'   => $returnBase . '/api/mollie-webhook.php',
         'metadata'     => ['island' => ($island !== '' ? $island : 'mq'), 'plan' => $planIn, 'source' => $source, 'email' => $email, 'kind' => 'sub_first'],
-    ]);
+    ];
+    if ($cardToken) $payParams['cardToken'] = $cardToken;
+    if ($method)    $payParams['method']    = $method; // wallet -> checkout heberge (mandat cote Mollie)
+    list($code, $pay) = mol_api('POST', '/payments', $payParams);
     if ($code >= 400 || empty($pay['id'])) { http_response_code(500); echo json_encode(['error' => 'first payment failed']); exit; }
     // Pre-stocke le customer (la subscription suivra a 'paid', ici ou via webhook).
     // referred_by/referral_code = attribution parrainage pour la réconciliation go-live.
