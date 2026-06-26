@@ -240,7 +240,7 @@ jobs:
       # ⚠️ DRY-RUN volontaire : nouveau mail vers des CLIENTS payants → le fondateur
       # relit la copy + les volumes (logs) puis ajoute « --send » pour activer (comme
       # dunning/welcome-paid l'ont été). No-op tant que MOLLIE_API_KEY absent.
-      - name: Pass-expiry win-back (DRY-RUN — flip --send to activate)
+      - name: Pass-expiry win-back (LIVE --send)
         if: github.event_name == 'schedule'
         continue-on-error: true
         env:
@@ -249,7 +249,7 @@ jobs:
           SMTP_PORT: '465'
           SMTP_USER: alerte@sargasses-martinique.com
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
-        run: node scripts/automation/pass-expiry-winback.cjs
+        run: node scripts/automation/pass-expiry-winback.cjs --send
 
       # Cold-lead RÉ-ENGAGE (nurture long-traîne) : recontacte à cadence BASSE les leads
       # devenus FROIDS (60-365j, jamais convertis, welcome/drip/relance finis) pour les
