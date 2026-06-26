@@ -810,8 +810,15 @@ export default function WorldMapView({
     try{ track&&track("sg_archipel_tap",{beach_id:b.id,status:b.status,source:"map_world"}) }catch(_){}
   },[flyTo,worldToScreen,track])
 
+  // Le CTA « Voir la plage » ouvre la fiche au pointerdown (réactivité tactile +
+  // capture de la plage avant déselection). onClick reste pour le CLAVIER
+  // (Enter/Space → click sans pointer event). Sans garde, un tap déclenche
+  // pointerdown PUIS click → double ouverture. Ce ref ignore le click qui suit
+  // de près un pointerdown ; un click clavier (pas de pointerdown récent) passe.
+  const lastPtrOpenRef=useRef(0)
   const openBeach=useCallback(()=>{
     if(!selected) return
+    if(Date.now()-lastPtrOpenRef.current < 700) return // déjà ouvert par le pointerdown
     onOpenBeach&&onOpenBeach(selected)
   },[selected,onOpenBeach])
 
@@ -1399,7 +1406,7 @@ export default function WorldMapView({
             sélectionnée AVANT toute déselection par la couche carte (fix P0 tap au doigt). */}
         {selected&&(
           <button onClick={openBeach}
-            onPointerDown={(e)=>{ try{e.stopPropagation()}catch(_){}; const sb=selected; if(sb&&onOpenBeach){ try{track&&track("sg_beach_open",{from:"map_cta"})}catch(_){}; onOpenBeach(sb) } }}
+            onPointerDown={(e)=>{ try{e.stopPropagation()}catch(_){}; const sb=selected; if(sb&&onOpenBeach){ lastPtrOpenRef.current=Date.now(); try{track&&track("sg_beach_open",{from:"map_cta"})}catch(_){}; onOpenBeach(sb) } }}
             style={{
             position:"absolute",left:"50%",bottom:"calc(176px + env(safe-area-inset-bottom))",
             transform:"translateX(-50%)",pointerEvents:"auto",touchAction:"manipulation",

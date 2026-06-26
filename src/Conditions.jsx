@@ -276,6 +276,7 @@ export function initConditions(SR, HOST, opts) {
   var GEO = opts.userPos != null;
   var H = opts.hooks || {};
   var SLUG = opts.slug || "hub";
+  var ISLAND = opts.island || "mq"; // mutable (cf. update) : l'île peut changer après le 1er render (allBeaches chargé tard)
   
   var beam = SR.getElementById("clBeam");
   var vBody = SR.getElementById("clVBody");
@@ -300,7 +301,7 @@ export function initConditions(SR, HOST, opts) {
     if (title) {
       while (title.firstChild) title.removeChild(title.firstChild);
       if (page) {
-        var h1 = opts.island === "gp" ? page.h1Gp : page.h1Mq;
+        var h1 = ISLAND === "gp" ? page.h1Gp : page.h1Mq;
         title.appendChild(document.createTextNode(h1));
       } else {
         title.appendChild(document.createTextNode(_t(LANG, "Sélecteur de conditions", "Conditions Selector", "Selector de condiciones")));
@@ -412,6 +413,7 @@ export function initConditions(SR, HOST, opts) {
       if (n.updatedAt) UPDATED_AT = n.updatedAt;
       GEO = n.userPos != null;
       if (n.slug) SLUG = n.slug;
+      if (n.island) ISLAND = n.island;
       render();
     }
   };
@@ -522,7 +524,8 @@ export default function Conditions(props) {
         weather: beachesWeather || {},
         updatedAt: sargData && (sargData.updatedAt || sargData.erddapTimestamp),
         userPos: userPos,
-        slug: slug
+        slug: slug,
+        island: allBeaches && allBeaches[0] ? allBeaches[0].island : "mq"
       });
     }
   }, [lang, allBeaches?.length, allBeaches?.map(b => b.id + "_" + b.status).join(","), beachesWeather, sargData, userPos, slug]);
@@ -530,6 +533,7 @@ export default function Conditions(props) {
   return React.createElement("div", {
     ref: hostRef,
     role: "dialog",
+    "aria-label": lang==="es" ? "Condiciones de las playas" : lang==="en" ? "Beach conditions" : "Conditions des plages",
     style: {position:"absolute",inset:0,zIndex:1050,overflow:"hidden",background:"#190c2c"}
   });
 }

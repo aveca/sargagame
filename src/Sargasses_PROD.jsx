@@ -10203,12 +10203,16 @@ function FeedbackWidget(){
   const[step,setStep]=useState(0) // 0=rating, 1=text, 2=done
   const[rating,setRating]=useState(0)
   const[text,setText]=useState("")
+  const mountedRef=useRef(true)
+  useEffect(()=>()=>{mountedRef.current=false},[]) // garde anti setState-après-unmount
 
   useEffect(()=>{
     if(g("sg_feedback_done",false))return
     const visits=g("sg_visits",0)+1
     s("sg_visits",visits)
-    if(visits>=3){setTimeout(()=>setVisible(true),30000)} // 30s after 3rd visit
+    if(visits<3)return
+    const t=setTimeout(()=>{if(mountedRef.current)setVisible(true)},30000) // 30s after 3rd visit
+    return ()=>clearTimeout(t) // sinon le timer fire sur un composant démonté
   },[])
 
   if(!visible)return null
@@ -10222,7 +10226,7 @@ function FeedbackWidget(){
     }).catch(()=>{})}catch{}
     s("sg_feedback_done",true)
     setStep(2)
-    setTimeout(()=>setVisible(false),2000)
+    setTimeout(()=>{if(mountedRef.current)setVisible(false)},2000)
   }
 
   return(
@@ -13828,7 +13832,11 @@ export default function App(){
               metadata:{island:IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ",plan:passParam}}}})
           }).catch(()=>{})}catch(ex){}
         }
-        window.history.replaceState({},"",window.location.pathname)
+        // Ne retire QUE les params de paiement (sinon b=, r=, utm_* co-occurrents
+        // sont perdus → on casse le deeplink/contexte du payeur). Pattern aligné
+        // sur les autres replaceState (manage/premium_email).
+        params.delete("pass");params.delete("session_id");params.delete("premium");params.delete("success")
+        {const qs=params.toString();window.history.replaceState({},"",window.location.pathname+(qs?"?"+qs:""))}
         return true
       }
       if(params.get("premium")==="1"||params.get("success")==="1"||sessionId){
@@ -13843,7 +13851,8 @@ export default function App(){
               metadata:{island:IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"}}}})
           }).catch(()=>{})}catch(ex){}
         }
-        window.history.replaceState({},"",window.location.pathname)
+        params.delete("premium");params.delete("success");params.delete("session_id");params.delete("pass")
+        {const qs=params.toString();window.history.replaceState({},"",window.location.pathname+(qs?"?"+qs:""))}
         return true
       }
     }catch(e){}
@@ -14093,6 +14102,11 @@ export default function App(){
   // Re-runs when isPremium, island, OR favorites change. Fav tags also set
   // individually in toggleFav for immediate effect; this useEffect catches
   // batch updates (e.g. auto-favorite on primer accept).
+  // Diffe contre le dernier set synchronisé pour RETIRER les tags des favoris
+  // supprimés : sans ça les fav_<id> s'accumulaient (toggleFav couvrait le retrait
+  // unitaire, mais pas les changements batch/programmatiques) → push sur des
+  // plages que l'utilisateur ne suit plus.
+  const syncedFavsRef=useRef([])
   useEffect(()=>{
     try{
       if(!window.OneSignalDeferred)return
@@ -14100,9 +14114,10 @@ export default function App(){
         if(isPremium)O.User.addTag("sg_premium","1")
         else O.User.removeTag("sg_premium")
         O.User.addTag("sg_island",island)
-        if(Array.isArray(favorites)){
-          for(const fid of favorites)O.User.addTag("fav_"+fid,"1")
-        }
+        const cur=Array.isArray(favorites)?favorites:[]
+        for(const fid of syncedFavsRef.current){ if(!cur.includes(fid))O.User.removeTag("fav_"+fid) }
+        for(const fid of cur)O.User.addTag("fav_"+fid,"1")
+        syncedFavsRef.current=cur
       })
     }catch(e){}
   },[isPremium,island,favorites])
