@@ -143,6 +143,7 @@ async function safeFetch(url, timeoutMs) {
  * Negative values = no sargassum = clean.
  */
 function normalizeAfai(raw) {
+  if (!Number.isFinite(raw)) return 0.05 // NaN/null/undefined → pas de donnée = clean (sinon NaN se propage dans toute la grille)
   if (raw <= 0) return 0.05 // negative or zero → clean
   if (raw < 0.002) return 0.05 + (raw / 0.002) * 0.10 // 0.05-0.15 clean
   if (raw < 0.005) return 0.15 + ((raw - 0.002) / 0.003) * 0.25 // 0.15-0.40 transitioning

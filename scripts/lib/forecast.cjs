@@ -551,7 +551,7 @@ function buildHonestForecast(levels, windForecast, history, beaches, banks, comm
       forecastDisclaimer = 'Persistance + vent Open-Meteo. Pas de banc detecte a proximite.'
     } else {
       forecastMethod = 'persistence'
-      forecastDisclaimer = 'Persistance simple (half-life 3.5j). Pas de signal externe.'
+      forecastDisclaimer = `Persistance simple (half-life ${HALF_LIFE_DAYS}j). Pas de signal externe.`
     }
 
     const driftDir = arrivalDetected ? 'up'

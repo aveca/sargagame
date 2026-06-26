@@ -130,8 +130,9 @@ if ($action === 'create_payment') {
 // Session non reutilisable, expire en 5 min. cf. docs.mollie.com wallets-api.
 if ($action === 'applepay_session') {
     $validationUrl = $input['validationUrl'] ?? '';
-    // Garde-fou : n'accepter qu'une URL de validation Apple (apple-pay-gateway*.apple.com).
-    if (!preg_match('#^https://[a-z0-9.-]*apple\.com/#i', $validationUrl)) {
+    // Garde-fou : n'accepter qu'une URL Apple (apple.com ou *.apple.com). Frontière de
+    // sous-domaine STRICTE — l'ancien [a-z0-9.-]*apple.com matchait evilapple.com (SSRF).
+    if (!preg_match('#^https://([a-z0-9-]+\.)*apple\.com/#i', $validationUrl)) {
         http_response_code(400); echo json_encode(['error' => 'bad validationUrl']); exit;
     }
     $host = parse_url($returnBase, PHP_URL_HOST) ?: 'sargasses-martinique.com';
