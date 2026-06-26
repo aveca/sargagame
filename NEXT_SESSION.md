@@ -1,5 +1,29 @@
 # NEXT_SESSION — sargagame
 
+> **💳🌍 2026-06-26 — GO-LIVE MOLLIE PARTOUT (EUR + USD) + SWEEP REVENU/UX/ANALYTICS. ~13 PR (#143→#155) shippés+mergés+déployés. NE PAS RECONSTRUIRE.**
+>
+> **LE PLUS GROS : « Mollie partout », pass-only.**
+> - **Paiements RÉELS** : EUR (MQ/GP) le 25/06, **USD (Floride/Punta Cana/Cancún) le 26/06** — validé par un VRAI paiement $5.99 du fondateur. Mollie encaisse l'USD, règle en EUR (FX Mollie). Modèle = **PASS-ONLY** (paiement unique : 7,99/14,99/24,99 € · $5.99/$11.99/$19.99), plus d'abonnement. On-site (carte Mollie Components + **Apple Pay natif** — les domaines servent le `.well-known` + sont enregistrés dans Mollie).
+> - **Backend** `public/api/mollie.php` : multi-devise (`$CUR_BY_ISLAND` mq/gp=EUR, florida/puntacana/rivieramaya=USD ; allowlist cents PAR devise). `create_subscription` reste EUR-only.
+> - **Front** `Sargasses_PROD.jsx` : `PAY_CUR` → PassOffer `currency`, `passCtxRef.cur`, Apple Pay `currencyCode`. `pwPass` **dé-gaté des régions USD**. `PAY_CAPTURE_ONLY` : live partout SAUF `MOLLIE_LIVE_USD={florida,puntacana,rivieramaya}` (exclus de la capture) ; **barbados reste en capture** (pas câblé Mollie). `PassOffer.jsx` = catalogue eur/usd + format $.
+> - **Relances** parties : 23 leads « c'est rouvert » + 212 « découverte » (EUR) + 4 USD EN/ES. `relance-gap-leads.cjs` modes `--usd`/`--all` ; workflow `relance-gap.yml` (dispatch send/all/usd/max).
+>
+> **⚠️ FAUX POSITIFS VÉRIFIÉS — NE PAS « corriger » (le fondateur a eu raison de douter des données) :**
+> - ❌ **USD abo « CTA mort »** (proposé par un workflow d'agents) : FAUX en prod (`passOnly=true` masque l'abo) ET son « fix » (vider `paymentLinks.monthly` USD) **CASSERAIT la caisse** : `PAYWALL_READY=!REGION_PAY||!!LINK_MONTHLY` gate le mount Mollie Components (`if(!PAYWALL_READY)return`, ~l.7717). LAISSER `paymentLinks` USD tel quel.
+> - ❌ **SEO « 41/57 plages non indexées » + « 60 striking-distance »** : INVENTÉ par les agents. Vraie donnée GSC (`orphan-pages.json` + `ctr-diagnostic.json`, 19/06) : **0 plage orpheline · 0 opportunité CTR** ; home MQ **pos 4,7 / CTR 21,7%**. **NE PAS toucher la home pour du SEO.**
+> - 🐛 **Bug réel corrigé** : `brandHeader(island)` sans titre → « undefined » dans l'entête des 235 relances EUR déjà parties (corrigé pour la suite ; seul `relance-gap` l'avait).
+>
+> **SHIPPÉ aussi (revenu/UX/analytics) — NE PAS REFAIRE :**
+> - **Dunning past_due → `--send`** (daily-copernicus) : récupère le churn involontaire, idempotent `dunning-sent.json`, MAX 25, copy FR/EN/ES.
+> - **`ux-watch.cjs`** (NOUVEAU, jumeau revenue-watch) : email fondateur sur les CRITIQUES UX (rage/dead-clicks) de `ux-report.json`. Dans daily-copernicus, idempotent `ux-watch-seen.json`.
+> - **Home hero dead-clicks** (`HeroVerdict`) : éléments décoratifs au-dessus du voile cliquable → rendus cliquables (additif, CTA intacts). Vérifié contre le code ACTUEL.
+> - **`recover-abandoned-cart` + `email-weekend` + `welcome-email`** : CTA premium USD pointait sur lien Stripe DÉSACTIVÉ → corrigé en `?paywall=1` (on-site). `drip-email` déjà OK.
+> - **Funnel `scripts/appscript/Code.js`** : compte `sg_pass_cta` (vrai CTA pass-only) + `premium_modal_cta`. **⚠️ NÉCESSITE `cd scripts/appscript && clasp push`** (aucun workflow ne déploie le GAS) — action fondateur, NON-urgente (reporting only).
+>
+> **DONNÉES — fraîcheur :** funnel = **fenêtre 28j** → mélange l'ancien design abo (avant 25/06) → « modal→CTA 3,5% » NON représentatif du pass-only avant ~**23/07**. Rapport UX/SEO = **19/06** (pré-refonte pour le paywall ; OK pour le SEO, design-indépendant). **Revenu = Stripe/Mollie**, jamais le funnel. Stripe 26/06 : **MRR €79,84 · 16 actifs · pastDue 1 · cancel 0**.
+>
+> **« LES JOURS SUIVANTS » = déjà programmés par GitHub Actions** (durables, indépendants de toute session ; un cron Claude mourrait avec ce container web éphémère → on n'en crée pas). 11 workflows cron : `daily-copernicus` (data 4×/j + dunning + revenue-watch + ux-watch), `daily-brief`/`morning-brief`/`weekend-email`, `weekly-ux-report`/`weekly-optimize`/`ab-evaluator`/`weekly-seo-automation`/`weekly-outreach`/`seo-guard`. **Roadmap (prochaine session) :** (a) **J≈+1** vérifier 1res conversions USD (dashboard Mollie + bloc stripe daily-metrics) ; (b) **~J+7-14** re-prioriser sur données POST-refonte (funnel `sg_pass_cta` après `clasp push` + trafic accumulé) ; (c) Apple Pay USD = FAIT. **Action fondateur en attente : `clasp push` (optionnel).**
+
 > **🧭🤖 2026-06-24 — PARCOURS CLIENTS B2C/B2B + LOOP AUTONOME. Fondateur ABSENT ~1 semaine (ce poste ÉTEINT) → reprise depuis un AUTRE ordi via Claude Code. POUR REPRENDRE : ouvre Claude Code à la racine du repo, lis cette entrée + `AUTONOMOUS_LOOP.md`, colle le prompt, et la boucle repart (le gate Playwright/ux-smoke marche sur une vraie machine). La mémoire `~/.claude/` de l'ancien poste NE suit PAS — tout le contexte utile est dans le repo.**
 >
 > **SHIPPÉ + EN PROD cette session — 9 PR (#95→#103). NE PAS RECONSTRUIRE :**
