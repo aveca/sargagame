@@ -14,8 +14,8 @@
 
 ## 📊 DATA DOC — tableau de bord à checker en DÉBUT de chaque session
 ```bash
-# 1. Fraîcheur pipeline (doit être < 12h)
-node -e "const d=JSON.parse(require('fs').readFileSync('public/api/copernicus/sargassum.json'));const h=(Date.now()-new Date(d.updatedAt))/3.6e6;console.log('Source:',d.source,'| Age:',h.toFixed(1)+'h |',h<12?'OK':'STALE')"
+# 1. Fraîcheur pipeline — run <12h (re-run corrige) + composite satellite <36h (re-run ne corrige PAS)
+node -e "const d=JSON.parse(require('fs').readFileSync('public/api/copernicus/sargassum.json'));const run=(Date.now()-new Date(d.updatedAt))/3.6e6;const sat=d.erddapTimestamp?(Date.now()-new Date(d.erddapTimestamp).getTime())/3.6e6:null;console.log('Source:',d.source,'| run:',run.toFixed(1)+'h',run<12?'OK':'STALE','| satellite:',sat?sat.toFixed(1)+'h':'n/a',(d.stale||(sat&&sat>=36))?'STALE':'OK')"
 # 2. Métriques du jour
 node -e "const d=JSON.parse(require('fs').readFileSync('scripts/automation/data/daily-metrics.json','utf-8'));const l=d[d.length-1];console.log('Last:',l.date,'| payments',l.payments,'| emails',l.emails,'| feedbacks',l.feedbacks)"
 # 3. MRR — VÉRITÉ = Stripe (legacy EUR)
