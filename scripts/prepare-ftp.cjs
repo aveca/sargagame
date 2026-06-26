@@ -666,6 +666,38 @@ function writeRegionIndex(region, out) {
     window.addEventListener('load',function(){sessionStorage.removeItem('sg_crash')});
     </script>
     <div id="root">
+      <div id="sg-boot" aria-hidden="true" style="display:none;position:fixed;inset:0;flex-direction:column;overflow:hidden;background:radial-gradient(120% 90% at 76% -10%,rgba(255,199,44,.22),rgba(255,199,44,0) 55%),linear-gradient(168deg,#0B2230 0%,#0D1E1C 60%,#0A1714 100%);z-index:0;padding-top:env(safe-area-inset-top,0)">
+        <style>
+          @keyframes sgBootPulse{0%{box-shadow:0 0 0 0 rgba(255,199,44,.45);transform:scale(1)}70%{box-shadow:0 0 0 16px rgba(255,199,44,0);transform:scale(1.06)}100%{box-shadow:0 0 0 0 rgba(255,199,44,0);transform:scale(1)}}
+          @keyframes sgSkSweep{0%{background-position:160% 0}100%{background-position:-160% 0}}
+          #sg-boot .sk{background:linear-gradient(100deg,rgba(255,255,255,.05) 30%,rgba(255,255,255,.14) 50%,rgba(255,255,255,.05) 70%);background-size:200% 100%;animation:sgSkSweep 1.5s ease-in-out infinite}
+          #sg-boot .dot{width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 50% 42%,#FFE47A,#FFC72C 55%,#E89400);box-shadow:0 0 0 0 rgba(255,199,44,.45);animation:sgBootPulse 1.5s ease-in-out infinite;flex:0 0 auto}
+          @media (prefers-reduced-motion:reduce){#sg-boot .dot,#sg-boot .sk{animation:none}}
+        </style>
+        <!-- Squelette de l'above-the-fold (barre + carte hero + chips + lignes) : un VRAI
+             bloc dimensionné = élément LCP peint dès la 1re réponse HTTP, zéro JS/fetch,
+             visuel-only (neutre 5 domaines/langues). React (createRoot) remplace #root. -->
+        <div style="display:flex;align-items:center;gap:11px;padding:14px 16px">
+          <div class="dot"></div>
+          <div class="sk" style="height:15px;width:150px;border-radius:8px"></div>
+          <div class="sk" style="height:30px;width:30px;border-radius:50%;margin-left:auto"></div>
+        </div>
+        <div style="padding:6px 16px 0">
+          <div class="sk" style="height:38vh;min-height:220px;border-radius:22px"></div>
+        </div>
+        <div style="display:flex;gap:10px;padding:16px 16px 0">
+          <div class="sk" style="height:34px;flex:1;border-radius:999px"></div>
+          <div class="sk" style="height:34px;flex:1;border-radius:999px"></div>
+          <div class="sk" style="height:34px;flex:1;border-radius:999px"></div>
+        </div>
+        <div style="padding:18px 16px 0;display:flex;flex-direction:column;gap:12px">
+          <div class="sk" style="height:56px;border-radius:14px"></div>
+          <div class="sk" style="height:56px;border-radius:14px"></div>
+          <div class="sk" style="height:56px;border-radius:14px"></div>
+        </div>
+      </div>
+      <!-- Révélé par JS uniquement → les crawlers/no-JS voient le <noscript> SEO intact, jamais le boot. React (createRoot) remplace #root au montage → le boot disparaît seul. -->
+      <script>(function(){var b=document.getElementById('sg-boot');if(b)b.style.display='flex'})()</script>
       <noscript>
         <h1>Sargasses Guadeloupe en temps réel — carte et plages aujourd'hui (2026)</h1>
         <p>Carte des sargasses en Guadeloupe en temps réel. Où se baigner aujourd'hui en Guadeloupe ? État de 83 plages mis à jour quotidiennement grâce aux données satellite Copernicus Marine. Prévisions sargasses 7 jours et alertes push gratuites.</p>
