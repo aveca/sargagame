@@ -582,6 +582,7 @@ function doGet(e) {
       var funnel = {
         session_start: 0, forecast_lock_click: 0,
         premium_modal_open: 0, premium_modal_cta: 0,
+        pass_cta: 0,   // pass-only (2026-06-25) : le VRAI CTA du storefront (sg_pass_cta). premium_modal_cta = ancien abo, masqué depuis le flip → ne plus piloter dessus.
         sample_start: 0, email_submit: 0,
         checkout_redirect: 0,
         conversion: 0, checkout_error: 0
@@ -611,7 +612,10 @@ function doGet(e) {
 
           // Segmentation modal_open / modal_cta par source et par variante A/B.
           var isMOpen = evt === 'premium_modal_open'
-          var isMCta = evt === 'premium_modal_cta'
+          // pass-only : le CTA réel est sg_pass_cta (storefront), plus premium_modal_cta
+          // (ancien abo, masqué). On compte les deux pour que le taux modal→CTA reflète
+          // le design ACTUEL (sinon il mesure une surface morte → 3,5% trompeur).
+          var isMCta = evt === 'premium_modal_cta' || evt === 'pass_cta'
           if (isMOpen || isMCta) {
             var mrp = null
             try { var mraw = aData[i][9]; mrp = mraw ? (typeof mraw === 'string' ? JSON.parse(mraw) : mraw) : null } catch (e) { mrp = null }
