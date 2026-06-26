@@ -1173,5 +1173,25 @@
     "date": "2026-06-26T03:18:37.641Z",
     "island": "MQ",
     "source": "onsite_wallet"
+  },
+  "579476888eb0d4415798b2a4770151ed": {
+    "date": "2026-06-26T04:01:49.096Z",
+    "island": "FLORIDA",
+    "source": "beach_alert"
+  },
+  "e6a566c20d0d640645292652dcc83adb": {
+    "date": "2026-06-26T04:01:49.622Z",
+    "island": "FLORIDA",
+    "source": "beach_alert"
+  },
+  "9d9a6914023cedce8049f0b9439b25da": {
+    "date": "2026-06-26T04:01:50.125Z",
+    "island": "FLORIDA",
+    "source": "beach_alert"
+  },
+  "a47d1cd69aa0c7b03b7f9253d74f48b3": {
+    "date": "2026-06-26T04:01:50.653Z",
+    "island": "RIVIERAMAYA",
+    "source": "exit_intent"
   }
 }
