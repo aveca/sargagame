@@ -1,5 +1,8 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body,#root{height:100vh;height:100dvh;overflow:hidden;font-family:'Bricolage Grotesque',system-ui,sans-serif;-webkit-font-smoothing:antialiased;touch-action:manipulation}
+html,body,#root{height:100vh;height:100dvh;min-height:100dvh;overflow:hidden;font-family:'Bricolage Grotesque',system-ui,sans-serif;-webkit-font-smoothing:antialiased;touch-action:manipulation}
+/* PWA standalone : <html> sombre derrière le body (thème clair) → pas de bande
+   blanche dans la safe-area / gap dvh iOS écran d'accueil (cf. index.html). */
+html{background:#0d1117}
 body{background:var(--sg-bg,#FDFCF7);color:var(--sg-ink,#0D0D0D)}
 button{-webkit-appearance:none;appearance:none;background:none;border:none;font-family:inherit;color:inherit}
 button,a,[role="button"]{touch-action:manipulation;cursor:pointer;-webkit-user-select:none;user-select:none;transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .12s}

@@ -63,8 +63,15 @@
        fonds inline étaient remappés en gris/blanc système (rapport fondateur : « cases grises
        écritures grises sur les boutons »). Justifié : couleur = sens (statuts vert/ambre/corail). */
     html{forced-color-adjust:none}
-    html,body{font-family:'Bricolage Grotesque',system-ui,sans-serif;background:var(--sg-bg);color:var(--sg-ink);height:100vh;height:100dvh;width:100%;margin:0;padding:0;overflow:hidden;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
-    #root{height:100vh;height:100dvh;width:100%;position:relative;overflow:hidden}
+    /* PWA standalone : la zone derrière l'app (safe-area home-indicator + tout gap
+       sous 100dvh sur iOS) montrait le BLANC du body (thème clair) → bande blanche en
+       bas (« crop » écran d'accueil). On peint le <html> en sombre (= manifest
+       background_color/chrome de l'app) : aucun blanc ne transparaît ; le body garde sa
+       couleur de contenu par-dessus. min-height couvre les dvh courts d'iOS standalone. */
+    html,body{font-family:'Bricolage Grotesque',system-ui,sans-serif;color:var(--sg-ink);height:100vh;height:100dvh;min-height:100dvh;width:100%;margin:0;padding:0;overflow:hidden;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
+    html{background:#0d1117}
+    body{background:var(--sg-bg)}
+    #root{height:100vh;height:100dvh;min-height:100dvh;width:100%;position:relative;overflow:hidden}
     *,*::before,*::after{box-sizing:border-box}
     img,svg{max-width:100%;display:block}
     @media (max-width:500px){

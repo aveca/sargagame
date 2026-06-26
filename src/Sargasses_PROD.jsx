@@ -7529,8 +7529,14 @@ function InstallPrompt(){
       if(beachViews>=2)showPrompt("beach-views")
     }
     const interval=setInterval(checkEngagement,5000)
-    // iOS: show after 8s regardless. Android: fallback after 60s.
-    const fallback=setTimeout(()=>{if(!visible)showPrompt(isIos?"ios-timer":"android-fallback")},isIos?8000:60000)
+    // « Pas d'un coup, au bon moment » (philosophie molo, directive fondateur) : on ne
+    // montre PLUS le prompt à froid. Le chemin principal = 2 plages vues (engagement).
+    // Le fallback (1 plage vue mini) ne se déclenche qu'à 45s — jamais au load nu.
+    const fallback=setTimeout(()=>{
+      if(visible)return
+      const seen=parseInt(sessionStorage.getItem("sg_beach_views")||"0")
+      if(seen>=1)showPrompt(isIos?"ios-engaged":"android-fallback")
+    },45000)
     return()=>{window.removeEventListener("beforeinstallprompt",handler);clearInterval(interval);clearTimeout(fallback)}
   },[dismissed,isStandalone])
 
