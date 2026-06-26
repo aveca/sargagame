@@ -18,13 +18,17 @@
 // fichier-par-fichier, donc un serveur non provisionné ne casse jamais le deploy.
 //
 // Le zip est construit par nous depuis notre propre build (chemins relatifs,
-// pas de '..'), donc pas de zip-slip ; le token verrouille déjà l'accès.
+// pas de '..') ; en plus du token, une garde anti zip-slip explicite valide
+// chaque entrée avant extraction (défense en profondeur).
 
 header('Content-Type: application/json');
 
 $VER = '1';
 $action = $_GET['action'] ?? ($_POST['action'] ?? '');
-$token  = (string)($_GET['token'] ?? ($_POST['token'] ?? ''));
+// Token : header X-Deploy-Token en priorité (n'apparaît PAS dans les access logs,
+// contrairement à la query string). GET/POST gardés en repli pour la transition
+// (un ancien client query-string continue de marcher le temps du redéploiement).
+$token  = (string)($_SERVER['HTTP_X_DEPLOY_TOKEN'] ?? ($_GET['token'] ?? ($_POST['token'] ?? '')));
 
 // Token depuis le fichier secret dédié (gitignoré, .htaccess deny, return PHP).
 $expected = '';
@@ -111,6 +115,22 @@ if ($zip->open($zipPath) !== true) {
     exit;
 }
 $files = $zip->numFiles;
+// Garde anti zip-slip (défense en profondeur) : refuse toute entrée au chemin
+// absolu, contenant un null byte, ou un segment de traversée « .. » — qui
+// pourrait écrire HORS de la racine web. Nos zips n'en contiennent jamais ;
+// cette boucle protège si le token fuitait un jour.
+for ($i = 0; $i < $files; $i++) {
+    $name = $zip->getNameIndex($i);
+    if ($name === false || $name === '') continue;
+    $n = str_replace('\\', '/', $name);
+    if ($n[0] === '/' || strpos($n, "\0") !== false || preg_match('#(^|/)\.\.(/|$)#', $n)) {
+        $zip->close();
+        @unlink($zipPath);
+        http_response_code(422);
+        echo json_encode(['ok' => false, 'error' => 'unsafe entry', 'entry' => substr($name, 0, 120)]);
+        exit;
+    }
+}
 $extracted = $zip->extractTo($root);
 $zip->close();
 @unlink($zipPath);
