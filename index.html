@@ -8,6 +8,19 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <script>
+      /* iOS standalone (écran d'accueil) : position:fixed/100vh/100dvh ne descendent
+         PAS jusqu'au bord bas réel (bug viewport standalone) → bande vide en bas, tous
+         écrans. Les 3 fixes CSS précédents (couleur, position:fixed, longhand) ont
+         échoué car tous purement CSS. Ici on MESURE la vraie hauteur visible
+         (window.innerHeight = plein écran sous viewport-fit=cover) → --sg-vh, et #root
+         + html/body s'y collent. Re-mesure quand le chrome standalone se stabilise. */
+      (function(){var d=document.documentElement;function vh(){d.style.setProperty('--sg-vh',window.innerHeight+'px')}vh();
+        addEventListener('resize',vh,{passive:true});addEventListener('pageshow',vh);
+        addEventListener('orientationchange',function(){vh();setTimeout(vh,200);setTimeout(vh,500)});
+        addEventListener('load',function(){vh();setTimeout(vh,300)});
+        if(window.visualViewport)visualViewport.addEventListener('resize',vh,{passive:true});})();
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
@@ -68,16 +81,14 @@
        bas (« crop » écran d'accueil). On peint le <html> en sombre (= manifest
        background_color/chrome de l'app) : aucun blanc ne transparaît ; le body garde sa
        couleur de contenu par-dessus. min-height couvre les dvh courts d'iOS standalone. */
-    html,body{font-family:'Bricolage Grotesque',system-ui,sans-serif;color:var(--sg-ink);height:100vh;height:100dvh;width:100%;margin:0;padding:0;overflow:hidden;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
+    html,body{font-family:'Bricolage Grotesque',system-ui,sans-serif;color:var(--sg-ink);height:var(--sg-vh,100dvh);width:100%;margin:0;padding:0;overflow:hidden;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
     html{background:#0d1117}
     body{background:var(--sg-bg)}
-    /* iOS standalone (écran d'accueil) : 100vh/100dvh calcule TROP COURT → bande vide en
-       bas (le contenu ne remplit pas l'écran). On colle #root aux 4 bords du viewport
-       réel via top/right/bottom/left:0 (longhand — `inset` n'est pas honoré < iOS 14.5).
-       PAS de width/height:100% : combinés à bottom:0 ils sur-contraignent → height gagne,
-       bottom est IGNORÉ et #root retombe court (= la bande vide en bas, tous écrans).
-       Les 4 offsets seuls dimensionnent #root jusqu'au home-indicator sur tout iOS. */
-    #root{position:fixed;top:0;right:0;bottom:0;left:0;overflow:hidden}
+    /* iOS standalone (écran d'accueil) : 100vh/100dvh/position:fixed ne descendent PAS
+       jusqu'au bord bas réel → bande vide en bas. On colle #root au top-left et on lui
+       donne la hauteur MESURÉE en JS (--sg-vh = window.innerHeight, cf. <script> head)
+       qui, elle, vaut le plein écran sous viewport-fit=cover. Fallback 100dvh si pas de JS. */
+    #root{position:fixed;top:0;left:0;width:100%;height:var(--sg-vh,100dvh);overflow:hidden}
     *,*::before,*::after{box-sizing:border-box}
     img,svg{max-width:100%;display:block}
     @media (max-width:500px){
