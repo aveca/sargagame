@@ -1,5 +1,22 @@
 # NEXT_SESSION — sargagame
 
+> **🏗️🤖 2026-06-26 (session longue, autonome + multi-agents) — REVENU/SCALE + PRICING + REDESIGNS + AUDIT. Tout sur PR #175 (`claude/hello-qce0lt`, draft), 16 commits, CI verte. NE PAS REFAIRE.**
+>
+> **SYSTÈMES (revenu/scale)** — cold-lead-reengage, welcome-paid-mollie (onboarding pass Mollie), referral-report + action GAS `referral`, **récompense parrain RÉELLE** (mollie.php ledger crédit par code REF- : un filleul paie → parrain +7j de pass ; front: attribution sur les 3 chemins pass + claim au chargement, `?refrewards=0`). Honnêteté bannière+hub referral (fini le faux « 1er mois gratuit » → « +7 jours quand un ami achète »).
+>
+> **🟢 ACTIVÉ EN LIVE (--send, autorisé fondateur)** dans daily-copernicus : `cold-lead-reengage --send`, `welcome-paid-mollie --send`, `pass-expiry-winback --send`. Surveiller 1ers envois + dashboard Mollie.
+>
+> **PRICING PASS-ONLY — sweep complet** (le fondateur a repéré le bulletin weekend en « 4,99 €/mois ») : emails (email-weekend, drip-email J7/J14/J21+verdict, welcome-email, relance-gap), **page de confiance** /a-propos/, **CGV+remboursement** legal-pages.cjs (EN/ES), **welcome+drip GAS** Code.js. Tous → pass-only (paiement unique, dès 7,99 €, sans abonnement). dunning NON touché (16 abos Stripe legacy = vrais 4,99/mois).
+>
+> **REDESIGNS EMAIL (workflows multi-agents : 4 designs → panel 3 juges → synthèse)** : bulletin **weekend** + **welcome** FR refaits, layout 100% table (l'ancien flexbox cassait Outlook), voix éditoriale « Le mot du Veilleur », pricing verrouillé. Rendus via le vrai code + screenshots. ⚠️ leçon : les agents STRIPPENT les accents FR → toujours re-vérifier/restaurer.
+>
+> **AUDIT DÉCOUVERTE (workflow 6 dimensions, 46 agents, vérif adversariale → 13 items)** — fixés : trust page, legal, referral hub, region weekend flex→table, per-day framing, GAS welcome/drip, Code.js. **Pass saison EUR** (1999/183→2499/210) corrigé MAIS = code mort masqué `!passOnly` (la caisse live PassOffer charge déjà 2499/210 → AUCUN client sous-facturé, pas de test-payment requis). Différés (faible valeur/masqués) : #11 PRICE_MO/premium* i18n legacy (masqués par passOnly), drip icon-rows flex (dégradation gracieuse), #10 widget UTM, #12 durée pass phrasing, #13 daily-cap cold-reengage, redesign drip complet.
+>
+> **🎬 FONDATEUR — À FAIRE (= active le revenu/data déjà codé) :**
+> 1. **`cd scripts/appscript && clasp push`** déploie d'un coup : funnel `sg_pass_cta`, action GAS `referral` (→ referral-report.json se remplit), welcome+drip GAS pass-only (#6/#6b). Aucun workflow ne pousse le GAS.
+> 2. **VRAI paiement-test** de la récompense parrain : ouvrir l'app avec `?ref=REF-XXXXXX` (≠ son code) → acheter un pass → rouvrir l'app du parrain → toast « +7 jours ». (Le reste du payment-path n'est PAS modifié.)
+> 3. Relire les 1ers envois des 3 emails passés en --send (logs + Mollie/inbox).
+
 > **🚀 2026-06-26 (suite, AUTORISÉ FONDATEUR) — ACTIVATIONS + RÉCOMPENSE PARRAIN RÉELLE. Branche `claude/hello-qce0lt` / PR #175.**
 >
 > - **ACTIVÉ EN LIVE (`--send`)** : `cold-lead-reengage.cjs --send` + `welcome-paid-mollie.cjs --send` dans `daily-copernicus` (steps renommés « LIVE »). Le fondateur a autorisé l'envoi réel. Caps/idempotence/throttle inchangés → ils enverront au prochain run schedule (4×/j). **Surveiller** : 1res relances froides + 1res bienvenues pass dans les logs + dashboard Mollie/inbox.
