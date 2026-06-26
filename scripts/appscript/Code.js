@@ -248,8 +248,8 @@ function doPost(e) {
         wFeat2 = "Push alerts when conditions change"
         wFeat3 = "Zero ads, clean experience"
         wCta = "Open the map"
-        wTrialNote = wDateEnd ? "Your free trial ends on " + wDateEnd + ". You'll only be charged if you stay." : "Your free trial is active."
-        wManage = "Manage my subscription"
+        wTrialNote = wDateEnd ? "Your pass is active until " + wDateEnd + ". One-time payment, no subscription." : "Your pass is active. One-time payment, no subscription."
+        wManage = "View my access"
       } else {
         wSubject = "C'est parti — tes prévisions 7 jours sont actives"
         wTitle = "C'est parti !"
@@ -258,8 +258,8 @@ function doPost(e) {
         wFeat2 = "Alertes push quand les conditions changent"
         wFeat3 = "Zéro pub, expérience propre"
         wCta = "Voir la carte"
-        wTrialNote = wDateEnd ? "Ton essai gratuit se termine le " + wDateEnd + ". Tu ne seras débité que si tu restes." : "Ton essai gratuit est actif."
-        wManage = "Gérer mon abonnement"
+        wTrialNote = wDateEnd ? "Ton pass est actif jusqu'au " + wDateEnd + ". Paiement unique, sans abonnement." : "Ton pass est actif. Paiement unique, sans abonnement."
+        wManage = "Voir mon accès"
       }
       var wMapUrl = 'https://' + wDomain + '/?premium_email=' + encodeURIComponent(wEmail)
       var wManageUrl = 'https://' + wDomain + '/?manage=1&email=' + encodeURIComponent(wEmail)
