@@ -8449,9 +8449,9 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         {!passOnly&&!pwComic&&(<>
         {!scenePay&&<div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
           margin:"-8px -24px 20px",padding:0}}/>}
-        {!PAY_CAPTURE_ONLY&&pwPass&&<PassOffer lang={lang} currency={PAY_CUR} onBuy={(item)=>{try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown",onsite:passOnsite?1:0})}catch(_){}
-          if(passOnsite){passCtxRef.current={pass:item.pass,cents:item.c,days:item.pass==="p30"?30:7,cur:PAY_CUR};setPayStep(true)}
-          else{try{window.location.href=item.u}catch(_){}}}}/>}
+        {!PAY_CAPTURE_ONLY&&pwPass&&<PassOffer lang={lang} currency={PAY_CUR} onBuy={(item)=>{try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown",onsite:1})}catch(_){}
+          passCtxRef.current={pass:item.pass,cents:item.c,days:item.days||(item.pass==="p30"?30:item.pass==="saison"?210:7),cur:PAY_CUR}
+          if(item.method){payWithWallet(item.method)}else{setPayStep(true)}}}/>}
         {/* A/B pw_scene : le paywall = CONTINUATION du monde golden-hour (Veilleur + promesse),
             pas un mur sombre plat. Calme (statique). Logique de paiement INCHANGÉE en dessous. */}
         {scenePay&&!pwConstel&&(<>
@@ -11179,7 +11179,7 @@ function HeroScene(){
   useEffect(()=>{
     const box=boxRef.current;if(!box)return
     try{if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return}catch(_){}
-    const scroller=box.closest('[role="dialog" aria-modal="true"]')
+    const scroller=box.closest('[role="dialog"][aria-modal="true"]')
     if(!scroller)return
     let raf=0
     const upd=()=>{
@@ -13396,7 +13396,7 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
       if(nx>tourOrder.length-1){tourGo(0);return}
       tourGo(nx)}
     const onWheel=e=>{e.preventDefault();step(e.deltaY>0?1:-1)}
-    const onKey=e=>{const t=e.target;if(t&&(/^(input|textarea|select)$/i.test(t.tagName)||t.isContentEditable))return;if(document.querySelector('[role="dialog" aria-modal="true"]'))return;if(e.key==="ArrowDown"){e.preventDefault();step(1)}else if(e.key==="ArrowUp"){e.preventDefault();step(-1)}else if(e.key==="Escape"&&tourRef.current!=null)exitTour()}
+    const onKey=e=>{const t=e.target;if(t&&(/^(input|textarea|select)$/i.test(t.tagName)||t.isContentEditable))return;if(document.querySelector('[role="dialog"][aria-modal="true"]'))return;if(e.key==="ArrowDown"){e.preventDefault();step(1)}else if(e.key==="ArrowUp"){e.preventDefault();step(-1)}else if(e.key==="Escape"&&tourRef.current!=null)exitTour()}
     el.addEventListener("wheel",onWheel,{passive:false});window.addEventListener("keydown",onKey)
     return()=>{el.removeEventListener("wheel",onWheel);window.removeEventListener("keydown",onKey)}
   },[])// eslint-disable-line
@@ -16000,7 +16000,7 @@ export default function App(){
           <ErrBound fallback={null} onError={()=>{const b=comicBeach;setComicBeach(null);try{track("sg_comic_detail_fail",{beach_id:b&&b.id})}catch(_){}; if(b)onBeachClick(b)}}>
             <Suspense fallback={<div style={{position:"fixed",inset:0,background:"#2e1a5e",zIndex:1200}}/>}>
               <LazyComicDetail
-                beach={comicBeach} lang={lang} track={track} pool={allBeaches}
+                beach={comicBeach} lang={lang} track={track} pool={allBeaches} isPremium={isPremium}
                 onClose={()=>{setComicBeach(null);track("sg_comic_detail_close",{beach_id:comicBeach.id})}}
                 onPremium={(src)=>{const b=comicBeach;setComicBeach(null);openPremium(src||"comic_map")}}
                 onFull={()=>{const b=comicBeach;setComicBeach(null);track("sg_comic_detail_full",{beach_id:b&&b.id});if(b)onBeachClick(b)}}
