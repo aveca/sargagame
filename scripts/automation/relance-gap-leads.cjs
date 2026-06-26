@@ -28,6 +28,12 @@ const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIH
 // capture-gate (= ~85% du trafic forecast, la plus GROSSE poche) / chasse / map_world =
 // surfaces de capture email omises jusqu'ici → elles aussi à relancer au go-live.
 const CAPTURE_SOURCES = new Set(['gap_freemium', 'mollie_waitlist', 'onsite_checkout', 'pay_intent', 'paypal_sub', 'capture-gate', 'chasse', 'map_world'])
+// Mode --all : relance LARGE à TOUS les abonnés conscommateurs (newsletter/brief inclus),
+// avec un copy DÉCOUVERTE (≠ "c'est rouvert" réservé aux 23 qui ont buté sur le paywall).
+// On EXCLUT le B2B/hôtels (mauvaise cible pour un pass conso) + les emails de test.
+const ALL = process.argv.includes('--all')
+const isB2B = s => /b2b|pro|hotel|hôtel/i.test(s || '')
+const isTestEmail = e => /^test@|(\+test@)|@(test|example)\./i.test(e || '')
 // Plafond par run pour la boîte SMTP cPanel (alerte@, premium115.web-hosting.com via
 // nodemailer — PAS Resend, cf. lib/email-send.cjs) : les boîtes mutualisées ont une
 // limite d'envoi horaire. --max=N pour override ; relancer plus tard reprend où on
@@ -62,12 +68,32 @@ function buildHtml(domain, island) {
 </div>`
 }
 
+// Copy DÉCOUVERTE — pour les abonnés brief/newsletter qui n'ont jamais tenté de payer.
+// Pas de "c'est rouvert" (ils n'ont rien laissé en plan) : on présente le Pass comme une
+// nouveauté qui leur évite de gâcher une journée plage.
+function buildHtmlDiscovery(domain, island) {
+  const cta = paywallUrl(domain)
+  return `${brandHeader ? brandHeader(island) : ''}
+<div style="font-family:system-ui,-apple-system,Arial;max-width:480px;margin:0 auto;padding:24px 20px;color:#1a1a1a">
+  <div style="font:700 12px/1 system-ui;letter-spacing:1.5px;color:#E8A800;text-transform:uppercase;margin-bottom:10px">NOUVEAU · LE VEILLEUR PASS</div>
+  <h1 style="font-size:23px;margin:0 0 8px">Ne gâche plus un seul jour de plage 🌅</h1>
+  <p style="font-size:15px;color:#444;margin:0 0 6px">Tu reçois déjà nos infos sargasses. Va plus loin : le Veilleur te dit chaque matin <b>LA plage sans sargasses</b> — prévision 7 jours, 136+ plages, alertes.</p>
+  <p style="font-size:15px;color:#444;margin:0 0 20px"><b>Un pass, paiement unique — pas d'abonnement.</b> Dès <b>7,99 €</b> · le Pass 30 jours à <b>14,99 €</b> (0,50 €/jour).</p>
+  <a href="${cta}" style="display:inline-block;background:linear-gradient(135deg,#E8A800,#F0C040);color:#1a1a1a;font-weight:700;font-size:15px;padding:14px 32px;border-radius:12px;text-decoration:none">Découvrir le Pass →</a>
+  <p style="font-size:11px;color:#bbb;margin:22px 0 0">Paiement unique · pas d'abonnement · remboursé en un email · ${domain}</p>
+</div>`
+}
+
 ;(async () => {
   const ready = mailReady()
   if (SEND && !ready) { console.error('SMTP_PASS manquant — impossible d\'envoyer (--send).'); process.exit(1) }
   const sent = loadJson(SENT_PATH, {})
-  const subs = subscribersList().filter(s => s && CAPTURE_SOURCES.has(s.source))
-  console.log(`leads capture: ${subs.length} | plafond: ${MAX} | mode: ${SEND && ready ? 'SEND' : 'DRY-RUN'}`)
+  const subs = subscribersList().filter(s => {
+    if (!s || !s.email || isTestEmail(s.email)) return false
+    if (ALL) return !isB2B(s.source)              // --all : tous les conso (hors B2B/hôtels)
+    return CAPTURE_SOURCES.has(s.source)          // défaut : seulement les 23 leads "paiement"
+  })
+  console.log(`cible: ${subs.length} (${ALL ? 'TOUS conso, copy découverte' : 'leads capture, copy "c\'est rouvert"'}) | plafond: ${MAX} | mode: ${SEND && ready ? 'SEND' : 'DRY-RUN'}`)
   let done = 0, skip = 0, fail = 0
   for (const s of subs) {
     if (done >= MAX) { console.log(`Plafond ${MAX} atteint — relance le script demain pour la suite (idempotent).`); break }
@@ -80,8 +106,8 @@ function buildHtml(domain, island) {
     if (!SEND || !ready) { console.log(`  [dry] → ${email} (${island})`); done++; continue }
     const r = await sendEmail({
       from: reg.from, to: email,
-      subject: 'C\'est rouvert — ton pass plage t\'attend (paiement unique)',
-      html: buildHtml(reg.domain, island),
+      subject: ALL ? 'Nouveau : le Pass plage — ne gâche plus une journée' : 'C\'est rouvert — ton pass plage t\'attend (paiement unique)',
+      html: ALL ? buildHtmlDiscovery(reg.domain, island) : buildHtml(reg.domain, island),
       preheader: 'Un pass, pas d\'abonnement — dès 7,99 €. Ne rate plus une journée plage.',
       unsubUrl: unsubUrl(email, island),
     })

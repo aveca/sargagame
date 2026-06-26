@@ -14,6 +14,10 @@ on:
         description: 'Envoyer réellement les emails ? (false = dry-run, compte seulement)'
         type: boolean
         default: false
+      all:
+        description: 'Cible LARGE : tous les abonnés conso (hors B2B), copy découverte. (false = seulement les leads paiement, copy "c''est rouvert")'
+        type: boolean
+        default: false
       max:
         description: 'Plafond d''emails par run (boîte SMTP mutualisée ~90-100/h)'
         type: string
@@ -63,6 +67,7 @@ jobs:
         run: |
           FLAGS="--max=${{ inputs.max }}"
           if [ "${{ inputs.send }}" = "true" ]; then FLAGS="$FLAGS --send"; fi
+          if [ "${{ inputs.all }}" = "true" ]; then FLAGS="$FLAGS --all"; fi
           echo "Flags: $FLAGS"
           node scripts/automation/relance-gap-leads.cjs $FLAGS
 
