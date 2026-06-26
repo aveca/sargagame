@@ -11755,9 +11755,14 @@ export default function App(){
       // d'un toast « envie de jouer ? » (décision fondateur 22/06). Fermable d'1 tap →
       // si l'idle s'est déclenché sur un simple temps de lecture, retour carte immédiat.
       if(trigger==="idle"){
-        try{if(sessionStorage.getItem("sg_game_full"))return;sessionStorage.setItem("sg_game_full","1")}catch(_){return}
-        setShowGameFull(true)
-        track("sg_game_full_shown",{trigger})
+        // AVANT : lançait un IFRAME /jeu/ PLEIN ÉCRAN direct sur idle. Sur PWA standalone
+        // iOS, l'écran d'intro du jeu PIÉGEAIT l'utilisateur (clics inertes, focus champ
+        // email, ✕ inaccessible — « je ne peux ni cliquer ni fermer »). Retour au TOAST
+        // « petit easter egg » NON-bloquant (pointerEvents:none, fermable) : on PROPOSE le
+        // jeu, l'utilisateur l'ouvre par choix (lien → page /jeu/), jamais piégé.
+        try{if(sessionStorage.getItem("sg_game_toast"))return;sessionStorage.setItem("sg_game_toast","1")}catch(_){return}
+        setShowGameToast(true)
+        track("sg_game_toast_shown",{trigger:"idle"})
         return
       }
       // Autres déclencheurs (partant déjà capté qui n'a pas la carte) → toast soft.
