@@ -4,129 +4,179 @@ import { getSegment } from "./lib/segment.js"
 // i18n local (le _t de l'app n'est pas exporté).
 const _t = (l, fr, en, es) => (l === "en" ? en : l === "es" ? es : fr)
 
-// Beacon segment first-party (même endpoint analytics que le reste). Mesure la
-// valeur PAR segment : sg_pass_seg {stage:view|cta, segment, pass, cents, variant}.
+// Beacon segment first-party (même endpoint analytics). sg_pass_seg {stage, segment, pass, cents, method}.
 const SEG_URL = "https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec"
 function sbeacon(p) { try { const b = JSON.stringify({ type: "analytics_event", e: "sg_pass_seg", p: p || {}, t: Date.now() }); if (navigator.sendBeacon) navigator.sendBeacon(SEG_URL, b); else fetch(SEG_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain" }, body: b }).catch(() => {}) } catch (_) {} }
 
-// A/B sticky local (même convention sg_ab que l'app) — retourne l'INDEX de variante.
-function abPick(testId, variants, weights) {
-  try {
-    const ab = JSON.parse(localStorage.getItem("sg_ab") || "{}")
-    if (ab[testId] != null && ab[testId] < variants.length) return ab[testId]
-    let r = Math.random(), c = 0, p = 0
-    for (let i = 0; i < weights.length; i++) { c += weights[i]; if (r < c) { p = i; break } }
-    ab[testId] = p; localStorage.setItem("sg_ab", JSON.stringify(ab)); return p
-  } catch { return 0 }
-}
-
-// Catalogue passes one-time (généré par scripts/create-pass-links.cjs → pass-links.json).
-// Liens Payment Link publics (aucun secret). Redirigent ?pass=pNN → accès time-boxé.
-const PASS = {
-  mq: {
-    p7: [{ c: 799, u: "https://buy.stripe.com/4gM6oJfbZ2sOggZacb0co0Q" }, { c: 999, u: "https://buy.stripe.com/fZu28t1l92sO2q95VV0co0R" }],
-    p30: [{ c: 1499, u: "https://buy.stripe.com/bJe5kFgg35F06Gp1FF0co0S" }, { c: 1999, u: "https://buy.stripe.com/28EdRbd3R4AWaWF8430co0T" }, { c: 2499, u: "https://buy.stripe.com/aFa28t3th1oKggZ8430co0U" }],
-  },
-  gp: {
-    p7: [{ c: 799, u: "https://buy.stripe.com/8x26oJd3RgjE1m56ZZ0co0V" }, { c: 999, u: "https://buy.stripe.com/00w28t8NB6J48Ox6ZZ0co0W" }],
-    p30: [{ c: 1499, u: "https://buy.stripe.com/4gM6oJ2pd8Rcd4N6ZZ0co0X" }, { c: 1999, u: "https://buy.stripe.com/fZu00l6Ftd7se8R0BB0co0Y" }, { c: 2499, u: "https://buy.stripe.com/fZu4gB9RF9Vg2q96ZZ0co0Z" }],
-  },
-}
+// ── Catalogue PASS one-time EUR (modèle PASS-ONLY, prix figés) ────────────────
+// cents validés serveur (mollie.php $allowedCents = [499,799,999,1499,1999,2499]).
+// Le paiement passe TOUJOURS par onBuy → Mollie on-site (carte / Apple / Google Pay).
+// Plus aucun lien buy.stripe.com (Stripe mort). Saison montrée au segment local seulement.
+const P7 = { c: 799, days: 7, key: "p7" }
+const P30 = { c: 1499, days: 30, key: "p30" }
+const SAISON = { c: 2499, days: 210, key: "saison" }
 
 const eur = (c, lang) => (lang === "en" ? "€" + (c / 100).toFixed(2) : (c / 100).toFixed(2).replace(".", ",") + " €")
 const perDay = (c, days, lang) => { const v = (c / 100 / days); const s = (lang === "en" ? "€" + v.toFixed(2) : v.toFixed(2).replace(".", ",") + " €"); return _t(lang, `${s}/jour`, `${s}/day`, `${s}/día`) }
+const Ck = () => (<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#FFC72C" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>)
 
 /**
- * PassOffer — storefront « paie à l'usage », niveau PRO golden-hour. Passes one-time
- * (accès time-boxé à la prévision 7j RÉELLE + alertes + brief). Sans abonnement, sans
- * essai. Prix par A/B (pass_price). onBuy(item) → track + redirect direct.
+ * PassOffer — storefront PASS-ONLY (direction "premium sombre"). 3 cartes : 7j (ancre
+ * basse), 30j HÉROS, Saison (local). Aucune mention d'abonnement. onBuy({c,pass,days,
+ * method}) → le parent route vers Mollie on-site (carte ou wallet). Pas de Stripe.
  */
 export default function PassOffer({ lang = "fr", onBuy }) {
-  const isGP = typeof window !== "undefined" && /guadeloupe/.test(window.location.hostname)
-  const cat = isGP ? PASS.gp : PASS.mq
-  const v = abPick("pass_price", ["a", "b", "c"], [.34, .33, .33])
   const seg = getSegment()
-  const p30 = cat.p30[Math.min(v, cat.p30.length - 1)]
-  const p7 = cat.p7[Math.min(v, cat.p7.length - 1)]
-  useEffect(() => { sbeacon({ stage: "view", segment: seg, variant: v, island: isGP ? "gp" : "mq" }) }, [])// eslint-disable-line
-  const buy = (item, pass) => {
-    sbeacon({ stage: "cta", segment: seg, pass, cents: item.c, variant: v })
-    if (onBuy) onBuy({ ...item, pass, segment: seg }); else try { window.location.href = item.u } catch (_) {}
+  const isGP = typeof window !== "undefined" && /guadeloupe/.test(window.location.hostname)
+  const showSeason = seg === "habitue" || seg === "local"
+  useEffect(() => { sbeacon({ stage: "view", segment: seg, island: isGP ? "gp" : "mq", model: "passonly" }) }, [])// eslint-disable-line
+  const buy = (p, method) => {
+    sbeacon({ stage: "cta", segment: seg, pass: p.key, cents: p.c, method: method || "card" })
+    if (onBuy) onBuy({ c: p.c, pass: p.key, days: p.days, segment: seg, method: method || null })
   }
 
-  return (
-    <div style={{ margin: "0 0 8px" }}>
-      {/* Bandeau golden-hour (le style : une aube sur la mer, calme, statique) */}
-      <div style={{ position: "relative", margin: "0 -24px 16px", height: 86, overflow: "hidden" }}>
-        <svg viewBox="0 0 400 86" preserveAspectRatio="xMidYMid slice" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} aria-hidden="true">
-          <defs>
-            <linearGradient id="poSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#2e1a5e" /><stop offset=".5" stopColor="#6a2f9e" /><stop offset=".84" stopColor="#C97E3A" /><stop offset="1" stopColor="#F2B05E" /></linearGradient>
-            <radialGradient id="poSun" cx="50%" cy="50%" r="50%"><stop offset="0" stopColor="#FFE6A8" stopOpacity=".95" /><stop offset=".45" stopColor="#FFD884" stopOpacity=".4" /><stop offset="1" stopColor="#FFD884" stopOpacity="0" /></radialGradient>
-          </defs>
-          <rect width="400" height="86" fill="url(#poSky)" />
-          <circle cx="300" cy="86" r="64" fill="url(#poSun)" /><circle cx="300" cy="84" r="17" fill="#FFE6A8" />
-          {[-32, -16, 0, 16, 32].map((a, i) => (<path key={i} d="M300 84 L295 30 L305 30 Z" fill="#FFD884" opacity=".07" transform={`rotate(${a} 300 84)`} />))}
-          <path d="M0 60 Q120 50 230 58 L240 86 L0 86 Z" fill="#0E1F25" opacity=".55" />
-          <path d="M250 50 q10 -26 22 -2 q6 16 2 16 l-30 0 q-2 -8 6 -14 Z" fill="#12262B" opacity=".7" />
-        </svg>
-        <div aria-hidden style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(13,30,28,0) 38%,rgba(13,30,28,.55) 78%,#190c2c 100%)" }} />
-        <div style={{ position: "absolute", left: 24, right: 24, bottom: 10 }}>
-          <div className="anton" style={{ fontSize: 23, lineHeight: 1.02, color: "#fff", textShadow: "0 2px 14px rgba(0,0,0,.5)", letterSpacing: ".005em" }}>
-            {(() => { const G = { color: "#FFC72C" }; const H = {
-              voyageur: _t(lang, <>Ne gâche pas tes <span style={G}>vacances</span>.</>, <>Don't let sargassum ruin your <span style={G}>trip</span>.</>, <>Que el sargazo no arruine tus <span style={G}>vacaciones</span>.</>),
-              planificateur: _t(lang, <>Prépare ton séjour. Sache où sera la <span style={G}>mer</span>.</>, <>Plan your stay. Know where the <span style={G}>sea</span> will be.</>, <>Planea tu viaje. Sabe dónde estará el <span style={G}>mar</span>.</>),
-              habitue: _t(lang, <>Tes plages, surveillées tout l'<span style={G}>été</span>.</>, <>Your beaches, watched all <span style={G}>season</span>.</>, <>Tus playas, vigiladas toda la <span style={G}>temporada</span>.</>),
-              decouverte: _t(lang, <>Paie ta période. <span style={G}>Rien de plus.</span></>, <>Pay for your stay. <span style={G}>Nothing more.</span></>, <>Paga tu estancia. <span style={G}>Nada más.</span></>),
-            }; return H[seg] || H.decouverte })()}
-          </div>
-        </div>
-      </div>
-
-      <div style={{ font: "600 12.5px/1.45 'Bricolage Grotesque',system-ui,sans-serif", color: "rgba(234,247,244,.66)", margin: "0 0 14px" }}>
-        {_t(lang, "Le Veilleur garde ta plage à l'œil le temps de tes vacances. Pas d'abonnement, pas de renouvellement.", "The Watcher keeps an eye on your beach for your whole stay. No subscription, no auto-renew.", "El Vigía vigila tu playa durante tu estancia. Sin suscripción ni renovación.")}
-      </div>
-
-      {/* Carte 30j — HÉRO (golden) */}
-      <button onClick={() => buy(p30, "p30")} style={{
-        display: "block", width: "100%", textAlign: "left", cursor: "pointer", fontFamily: "inherit", position: "relative",
-        border: "1.5px solid #FFC72C", borderRadius: 18, background: "linear-gradient(165deg,rgba(255,199,44,.16),rgba(255,199,44,.03) 60%,transparent)",
-        padding: "16px 17px 15px", marginBottom: 11, boxShadow: "0 10px 30px rgba(232,168,0,.16)",
-      }}>
-        <span style={{ position: "absolute", top: -10, right: 16, background: "linear-gradient(135deg,#FFD75A,#E8A800)", color: "#1A2B26", font: "800 10.5px/1 'Bricolage Grotesque',system-ui", letterSpacing: ".05em", padding: "5px 10px", borderRadius: 999, boxShadow: "0 4px 12px rgba(232,168,0,.4)" }}>
-          {_t(lang, "VACANCES", "VACATION", "VACACIONES")}
+  const G = { color: "#FFC72C" }
+  // carte secondaire (7j / saison)
+  const SecCard = ({ p, label, desc, perdayTxt }) => (
+    <button onClick={() => buy(p)} style={{
+      display: "flex", width: "100%", alignItems: "center", justifyContent: "space-between", gap: 12,
+      cursor: "pointer", fontFamily: "inherit", textAlign: "left", color: "inherit",
+      border: "1px solid rgba(255,255,255,.13)", borderRadius: 18, background: "rgba(255,255,255,.035)", padding: "14px 16px",
+    }}>
+      <span style={{ minWidth: 0 }}>
+        <span style={{ display: "block", fontSize: 14.5, fontWeight: 800, color: "#fff", lineHeight: 1 }}>{label}</span>
+        <span style={{ display: "block", fontSize: 11.5, fontWeight: 600, color: "rgba(234,247,244,.56)", marginTop: 5, lineHeight: 1.3 }}>{desc}</span>
+      </span>
+      <span style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+        <span style={{ textAlign: "right" }}>
+          <span className="anton" style={{ display: "block", fontSize: 19, color: "#EAF7F4", lineHeight: .9 }}>{eur(p.c, lang)}</span>
+          <span style={{ display: "block", fontSize: 10.5, fontWeight: 700, color: "rgba(234,247,244,.5)", marginTop: 3 }}>{perdayTxt}</span>
         </span>
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 12 }}>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ font: "800 17px/1 'Bricolage Grotesque',system-ui,sans-serif", color: "#fff" }}>{_t(lang, "Pass 30 jours", "30-day pass", "Pase 30 días")}</div>
-            <div style={{ font: "700 11px/1 'Bricolage Grotesque',system-ui", color: "#FFC72C", marginTop: 5, letterSpacing: ".02em" }}>{perDay(p30.c, 30, lang)}</div>
+        <span style={{ color: "#FFC72C", fontSize: 17, fontWeight: 800 }}>→</span>
+      </span>
+    </button>
+  )
+
+  return (
+    <div style={{ position: "relative", color: "#EAF7F4", fontFamily: "'Bricolage Grotesque',system-ui,sans-serif" }}>
+      {/* halo doré diffus (golden-hour, ancre l'or premium) */}
+      <div aria-hidden style={{ position: "absolute", top: -130, left: "50%", transform: "translateX(-50%)", width: 420, height: 280, background: "radial-gradient(ellipse at center,rgba(255,199,44,.16),transparent 64%)", pointerEvents: "none" }} />
+      <div style={{ position: "relative", zIndex: 1 }}>
+        {/* eyebrow */}
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 11, fontWeight: 800, letterSpacing: ".14em", textTransform: "uppercase", color: "#FFC72C" }}>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E" }} />
+          {_t(lang, "Le Veilleur · Pass", "The Watcher · Pass", "El Vigía · Pase")}
+        </div>
+        {/* titre */}
+        <h2 className="anton" style={{ fontSize: 27, lineHeight: 1.05, color: "#fff", margin: "10px 0 0", letterSpacing: "-.005em" }}>
+          {_t(lang, <>Ne gâche pas un seul jour de tes <span style={G}>vacances.</span></>, <>Don't waste a single day of your <span style={G}>trip.</span></>, <>No pierdas ni un día de tus <span style={G}>vacaciones.</span></>)}
+        </h2>
+        {/* sous-titre */}
+        <p style={{ fontSize: 13.5, lineHeight: 1.5, fontWeight: 600, color: "rgba(234,247,244,.72)", margin: "10px 0 0" }}>
+          {_t(lang, <>Le Veilleur te dit <b style={{ color: "#fff", fontWeight: 800 }}>chaque matin</b> LA plage sans sargasses. Pass, paiement unique — pas d'abonnement.</>,
+            <>The Watcher tells you <b style={{ color: "#fff", fontWeight: 800 }}>every morning</b> THE sargassum-free beach. Pass, one-time — no subscription.</>,
+            <>El Vigía te dice <b style={{ color: "#fff", fontWeight: 800 }}>cada mañana</b> LA playa sin sargazo. Pase, pago único — sin suscripción.</>)}
+        </p>
+        {/* ancrage regret */}
+        <div style={{ display: "flex", alignItems: "center", gap: 11, margin: "16px 0 0", padding: "11px 13px", borderRadius: 14, background: "rgba(232,82,42,.08)", border: "1px solid rgba(232,82,42,.22)" }}>
+          <span style={{ flex: "0 0 auto", width: 30, height: 30, borderRadius: 9, display: "grid", placeItems: "center", background: "rgba(232,82,42,.14)" }}>
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#E8522A" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 9v4M12 17h.01" /><path d="M10.3 3.3 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.3a2 2 0 0 0-3.4 0Z" /></svg>
+          </span>
+          <span style={{ fontSize: 12.5, lineHeight: 1.4, fontWeight: 600, color: "rgba(234,247,244,.82)" }}>
+            {_t(lang, <>Un jour de plage gâché = <b style={{ color: "#fff", fontWeight: 800 }}>~200 € perdus</b>. Ton pass : <span style={{ color: "#FFC72C", fontWeight: 800 }}>0,50 €/jour</span>.</>,
+              <>One ruined beach day = <b style={{ color: "#fff", fontWeight: 800 }}>~€200 lost</b>. Your pass: <span style={{ color: "#FFC72C", fontWeight: 800 }}>€0.50/day</span>.</>,
+              <>Un día de playa perdido = <b style={{ color: "#fff", fontWeight: 800 }}>~200 € perdidos</b>. Tu pase: <span style={{ color: "#FFC72C", fontWeight: 800 }}>0,50 €/día</span>.</>)}
+          </span>
+        </div>
+        {/* preuve fiabilité (désamorce le doute juste avant le prix) */}
+        <div style={{ display: "flex", alignItems: "center", gap: 9, margin: "10px 0 0", padding: "9px 13px", borderRadius: 12, background: "rgba(34,197,94,.07)", border: "1px solid rgba(34,197,94,.18)", fontSize: 12, lineHeight: 1.35, fontWeight: 600, color: "rgba(234,247,244,.8)" }}>
+          <span style={{ color: "#34d399", fontWeight: 800, fontSize: 14 }}>75%</span>
+          {_t(lang, "de fiabilité sur la prévision 7 jours · 136 plages suivies par satellite, 4×/jour.", "reliability on the 7-day forecast · 136 beaches tracked by satellite, 4×/day.", "de fiabilidad en el pronóstico 7 días · 136 playas por satélite, 4×/día.")}
+        </div>
+
+        {/* GRILLE PASS */}
+        <div style={{ margin: "18px 0 0", display: "flex", flexDirection: "column", gap: 11 }}>
+          {/* 7 jours — ancre basse */}
+          <SecCard p={P7}
+            label={_t(lang, "Pass 7 jours", "7-day pass", "Pase 7 días")}
+            desc={_t(lang, "Court séjour, une escapade", "Short stay, a getaway", "Estancia corta, una escapada")}
+            perdayTxt={perDay(P7.c, P7.days, lang)} />
+
+          {/* 30 jours — HÉROS */}
+          <button onClick={() => buy(P30)} style={{
+            position: "relative", display: "block", width: "100%", textAlign: "left", cursor: "pointer", fontFamily: "inherit", color: "inherit",
+            border: "1.5px solid #FFC72C", borderRadius: 18, padding: "18px 17px 16px", marginTop: 6,
+            background: "linear-gradient(165deg,rgba(255,199,44,.17),rgba(255,199,44,.03) 58%,transparent)",
+            boxShadow: "0 14px 40px rgba(232,168,0,.20),inset 0 0 0 1px rgba(255,228,122,.18)",
+          }}>
+            <span style={{ position: "absolute", top: -11, left: "50%", transform: "translateX(-50%)", whiteSpace: "nowrap", background: "linear-gradient(135deg,#FFE47A,#FFC72C 55%,#E89400)", color: "#190c2c", fontSize: 10.5, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", padding: "5px 12px", borderRadius: 999, boxShadow: "0 5px 14px rgba(232,168,0,.45)" }}>
+              {_t(lang, "★ Le plus choisi", "★ Most chosen", "★ El más elegido")}
+            </span>
+            <span style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginTop: 4 }}>
+              <span style={{ minWidth: 0 }}>
+                <span style={{ display: "block", fontSize: 18, fontWeight: 800, color: "#fff", lineHeight: 1.05 }}>{_t(lang, "Pass 30 jours", "30-day pass", "Pase 30 días")}</span>
+                <span style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "rgba(234,247,244,.6)", marginTop: 4 }}>{_t(lang, "Le séjour parfait · 1 à 3 semaines", "The perfect stay · 1 to 3 weeks", "La estancia perfecta · 1 a 3 semanas")}</span>
+              </span>
+              <span style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", flexShrink: 0 }}>
+                <span className="anton" style={{ fontSize: 34, color: "#FFC72C", lineHeight: .85, letterSpacing: "-.01em" }}>{eur(P30.c, lang)}</span>
+                <span style={{ display: "inline-block", marginTop: 8, fontSize: 11, fontWeight: 800, color: "#190c2c", background: "linear-gradient(135deg,#FFE47A,#FFC72C)", padding: "3px 9px", borderRadius: 999 }}>{perDay(P30.c, P30.days, lang)}</span>
+              </span>
+            </span>
+            <span style={{ display: "flex", flexDirection: "column", gap: 7, margin: "13px 0 0" }}>
+              {[
+                _t(lang, <><b style={{ color: "#fff", fontWeight: 800 }}>LA plage sans sargasses</b> chaque matin, 7h</>, <><b style={{ color: "#fff", fontWeight: 800 }}>THE sargassum-free beach</b> every morning, 7am</>, <><b style={{ color: "#fff", fontWeight: 800 }}>LA playa sin sargazo</b> cada mañana, 7h</>),
+                _t(lang, <>Prévision <b style={{ color: "#fff", fontWeight: 800 }}>7 jours</b> · 136+ plages détaillées</>, <><b style={{ color: "#fff", fontWeight: 800 }}>7-day</b> forecast · 136+ detailed beaches</>, <>Pronóstico <b style={{ color: "#fff", fontWeight: 800 }}>7 días</b> · 136+ playas</>),
+                _t(lang, <>Alerte le jour où ta plage <b style={{ color: "#fff", fontWeight: 800 }}>bascule</b></>, <>Alert the day your beach <b style={{ color: "#fff", fontWeight: 800 }}>flips</b></>, <>Alerta el día que tu playa <b style={{ color: "#fff", fontWeight: 800 }}>cambia</b></>),
+              ].map((t, i) => (
+                <span key={i} style={{ display: "flex", alignItems: "center", gap: 9, fontSize: 12.5, fontWeight: 600, color: "rgba(234,247,244,.82)" }}>
+                  <span style={{ flex: "0 0 auto", width: 17, height: 17, borderRadius: "50%", background: "rgba(255,199,44,.18)", display: "grid", placeItems: "center" }}><Ck /></span>
+                  <span>{t}</span>
+                </span>
+              ))}
+            </span>
+            <span className="sg-paygold" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", marginTop: 15, borderRadius: 14, padding: "15px", fontFamily: "inherit", background: "linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E89400)", color: "#190c2c", fontSize: 16, fontWeight: 800 }}>
+              {_t(lang, "Activer mes 30 jours →", "Activate my 30 days →", "Activar mis 30 días →")}
+            </span>
+          </button>
+
+          {/* Saison — local uniquement */}
+          {showSeason && <SecCard p={SAISON}
+            label={_t(lang, "Pass Saison", "Season pass", "Pase Temporada")}
+            desc={_t(lang, "Local, pêche & nautique · toute la saison", "Local, fishing & watersports · all season", "Local, pesca y náutica · toda la temporada")}
+            perdayTxt={_t(lang, "le meilleur prix", "best value", "mejor precio")} />}
+        </div>
+
+        {/* PAIEMENT NATIF — Apple / Google Pay (one-tap sur le pass héros 30j) */}
+        <div style={{ margin: "16px 0 0" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "0 0 11px" }}>
+            <span style={{ flex: 1, height: 1, background: "rgba(255,255,255,.1)" }} />
+            <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: ".04em", color: "rgba(234,247,244,.42)", textTransform: "uppercase", whiteSpace: "nowrap" }}>{_t(lang, "1 geste, sans créer de compte", "one tap, no account", "1 toque, sin cuenta")}</span>
+            <span style={{ flex: 1, height: 1, background: "rgba(255,255,255,.1)" }} />
           </div>
-          <div className="anton" style={{ fontSize: 30, color: "#FFC72C", lineHeight: .9, letterSpacing: "-.01em", flexShrink: 0 }}>{eur(p30.c, lang)}</div>
+          <div style={{ display: "flex", gap: 9 }}>
+            <button onClick={() => buy(P30, "applepay")} aria-label="Apple Pay" className="sg-wbtn sg-wbtn-dark" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, height: 46, borderRadius: 13, border: "none", background: "#000", color: "#fff", cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: 700 }}>
+              <svg width="16" height="19" viewBox="0 0 17 20" fill="#fff" aria-hidden="true"><path d="M14.1 6.6c-.1.1-1.9 1-1.9 3.2 0 2.6 2.3 3.5 2.4 3.5 0 .1-.4 1.3-1.2 2.5-.7 1.1-1.5 2.2-2.7 2.2-1.1 0-1.5-.7-2.8-.7-1.3 0-1.7.7-2.7.7-1.2 0-2-1.2-2.8-2.3C1.3 14 .5 11.6.5 9.4c0-3.6 2.3-5.5 4.6-5.5 1.2 0 2.2.8 2.9.8.7 0 1.8-.8 3.2-.8.5 0 2.3 0 3.5 1.7-.1.1-1.5.9-1.5 1ZM10.4 2.4c.6-.7 1-1.6.9-2.5-.9 0-1.9.6-2.5 1.3-.5.6-1 1.5-.9 2.4 1 .1 1.9-.5 2.5-1.2Z" /></svg>
+              Apple&nbsp;Pay
+            </button>
+            <button onClick={() => buy(P30, "googlepay")} aria-label="Google Pay" className="sg-wbtn sg-wbtn-light" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, height: 46, borderRadius: 13, border: "none", background: "#fff", color: "#3c4043", cursor: "pointer", fontFamily: "inherit", fontSize: 14, fontWeight: 700 }}>
+              <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" /><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" /><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" /><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" /></svg>
+              Google&nbsp;Pay
+            </button>
+          </div>
+          <p style={{ margin: "11px 0 0", textAlign: "center", fontSize: 11, fontWeight: 700, color: "rgba(234,247,244,.6)" }}>{_t(lang, <>Paiement <span style={G}>unique</span> · accès immédiat · aucun compte à créer</>, <>One-time <span style={G}>payment</span> · instant access · no account</>, <>Pago <span style={G}>único</span> · acceso inmediato · sin cuenta</>)}</p>
         </div>
-        <div style={{ font: "600 12px/1.4 system-ui,sans-serif", color: "rgba(234,247,244,.72)", margin: "9px 0 13px" }}>
-          {_t(lang, "Accès complet 30 jours · prévision 7 j, alertes & brief par plage. Paiement unique.", "Full access for 30 days · 7-day forecast, alerts & brief per beach. One-time.", "Acceso completo 30 días · pronóstico 7 d, alertas y resumen por playa. Pago único.")}
-        </div>
-        <div style={{ display: "block", width: "100%", textAlign: "center", borderRadius: 13, padding: "13px", background: "linear-gradient(135deg,#FFC72C,#E8A800)", color: "#1A2B26", font: "800 15px/1 'Bricolage Grotesque',system-ui", boxShadow: "0 6px 18px rgba(232,168,0,.3)" }}>
-          {_t(lang, "Activer mes 30 jours →", "Activate my 30 days →", "Activar mis 30 días →")}
-        </div>
-      </button>
 
-      {/* Carte 7j — secondaire */}
-      <button onClick={() => buy(p7, "p7")} style={{
-        display: "flex", width: "100%", alignItems: "center", justifyContent: "space-between", gap: 12, cursor: "pointer", fontFamily: "inherit", textAlign: "left",
-        border: "1px solid rgba(255,255,255,.18)", borderRadius: 15, background: "rgba(255,255,255,.04)", padding: "13px 15px",
-      }}>
-        <div style={{ minWidth: 0 }}>
-          <div style={{ font: "800 14.5px/1 'Bricolage Grotesque',system-ui", color: "#fff" }}>{_t(lang, "Pass 7 jours", "7-day pass", "Pase 7 días")}</div>
-          <div style={{ font: "600 11.5px/1.3 system-ui", color: "rgba(234,247,244,.6)", marginTop: 4 }}>{_t(lang, "Un week-end, une escapade.", "A weekend, a getaway.", "Un finde, una escapada.")} · {perDay(p7.c, 7, lang)}</div>
+        {/* money-back */}
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 9, margin: "16px 0 0", padding: "0 2px" }}>
+          <span style={{ flex: "0 0 auto", marginTop: 1 }}>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#22C55E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3Z" /><path d="m9 12 2 2 4-4" /></svg>
+          </span>
+          <span style={{ fontSize: 12, lineHeight: 1.45, fontWeight: 600, color: "rgba(234,247,244,.7)" }}>{_t(lang, <>Pas la bonne plage ? <b style={{ color: "#fff", fontWeight: 800 }}>Remboursé, un seul email.</b> Sans condition.</>, <>Wrong beach? <b style={{ color: "#fff", fontWeight: 800 }}>Refunded, one email.</b> No questions.</>, <>¿Playa equivocada? <b style={{ color: "#fff", fontWeight: 800 }}>Reembolsado, un email.</b> Sin condiciones.</>)}</span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 9, flexShrink: 0 }}>
-          <span className="anton" style={{ fontSize: 19, color: "#EAF7F4", lineHeight: .9 }}>{eur(p7.c, lang)}</span>
-          <span style={{ color: "#FFC72C", fontSize: 18, fontWeight: 800 }}>→</span>
-        </div>
-      </button>
 
-      <div style={{ textAlign: "center", marginTop: 12, font: "600 10.5px/1.3 system-ui,sans-serif", color: "rgba(234,247,244,.46)", letterSpacing: ".015em" }}>
-        {_t(lang, "Sans abonnement · sans renouvellement · accès immédiat · paiement sécurisé", "No subscription · no auto-renew · instant access · secure payment", "Sin suscripción · sin renovación · acceso inmediato · pago seguro")}
+        <div style={{ margin: "14px 0 2px", textAlign: "center", fontSize: 10.5, fontWeight: 700, letterSpacing: ".01em", color: "rgba(234,247,244,.42)", lineHeight: 1.5 }}>
+          {_t(lang, "Paiement sécurisé Mollie · Pas d'abonnement · Pas de renouvellement", "Secure Mollie payment · No subscription · No auto-renew", "Pago seguro Mollie · Sin suscripción · Sin renovación")}
+        </div>
       </div>
     </div>
   )

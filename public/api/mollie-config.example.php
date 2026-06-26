@@ -24,7 +24,7 @@ return [
     // Passes one-time (SANS abonnement). cents = allowlist anti-tampering ; days = durée d'accès.
     'passes' => [
         'trip7'  => ['cents' => 499,  'days' => 7,   'label' => 'Pass 7 jours (séjour)'], // 4,99 € · miroir du tripPass USD
-        'saison' => ['cents' => 1999, 'days' => 180, 'label' => 'Pass saison'],   // 19,99 € · 6 mois
+        'saison' => ['cents' => 2499, 'days' => 210, 'label' => 'Pass saison'],   // 24,99 € · saison (mars→oct ~7 mois)
         'p7'     => ['cents' => 799,  'days' => 7,   'label' => 'Pass 7 jours'],
         'p30'    => ['cents' => 1499, 'days' => 30,  'label' => 'Pass 30 jours'],
     ],
