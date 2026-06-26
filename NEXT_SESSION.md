@@ -1,5 +1,49 @@
 # NEXT_SESSION — sargagame
 
+> **🏗️🤖 2026-06-26 (session longue, autonome + multi-agents) — REVENU/SCALE + PRICING + REDESIGNS + AUDIT. Tout sur PR #175 (`claude/hello-qce0lt`, draft), 16 commits, CI verte. NE PAS REFAIRE.**
+>
+> **SYSTÈMES (revenu/scale)** — cold-lead-reengage, welcome-paid-mollie (onboarding pass Mollie), referral-report + action GAS `referral`, **récompense parrain RÉELLE** (mollie.php ledger crédit par code REF- : un filleul paie → parrain +7j de pass ; front: attribution sur les 3 chemins pass + claim au chargement, `?refrewards=0`). Honnêteté bannière+hub referral (fini le faux « 1er mois gratuit » → « +7 jours quand un ami achète »).
+>
+> **🟢 ACTIVÉ EN LIVE (--send, autorisé fondateur)** dans daily-copernicus : `cold-lead-reengage --send`, `welcome-paid-mollie --send`, `pass-expiry-winback --send`. Surveiller 1ers envois + dashboard Mollie.
+>
+> **PRICING PASS-ONLY — sweep complet** (le fondateur a repéré le bulletin weekend en « 4,99 €/mois ») : emails (email-weekend, drip-email J7/J14/J21+verdict, welcome-email, relance-gap), **page de confiance** /a-propos/, **CGV+remboursement** legal-pages.cjs (EN/ES), **welcome+drip GAS** Code.js. Tous → pass-only (paiement unique, dès 7,99 €, sans abonnement). dunning NON touché (16 abos Stripe legacy = vrais 4,99/mois).
+>
+> **REDESIGNS EMAIL (workflows multi-agents : 4 designs → panel 3 juges → synthèse)** : bulletin **weekend** + **welcome** FR refaits, layout 100% table (l'ancien flexbox cassait Outlook), voix éditoriale « Le mot du Veilleur », pricing verrouillé. Rendus via le vrai code + screenshots. ⚠️ leçon : les agents STRIPPENT les accents FR → toujours re-vérifier/restaurer.
+>
+> **AUDIT DÉCOUVERTE (workflow 6 dimensions, 46 agents, vérif adversariale → 13 items)** — fixés : trust page, legal, referral hub, region weekend flex→table, per-day framing, GAS welcome/drip, Code.js. **Pass saison EUR** (1999/183→2499/210) corrigé MAIS = code mort masqué `!passOnly` (la caisse live PassOffer charge déjà 2499/210 → AUCUN client sous-facturé, pas de test-payment requis). Différés (faible valeur/masqués) : #11 PRICE_MO/premium* i18n legacy (masqués par passOnly), drip icon-rows flex (dégradation gracieuse), #10 widget UTM, #12 durée pass phrasing, #13 daily-cap cold-reengage, redesign drip complet.
+>
+> **🎬 FONDATEUR — À FAIRE (= active le revenu/data déjà codé) :**
+> 1. **`cd scripts/appscript && clasp push`** déploie d'un coup : funnel `sg_pass_cta`, action GAS `referral` (→ referral-report.json se remplit), welcome+drip GAS pass-only (#6/#6b). Aucun workflow ne pousse le GAS.
+> 2. **VRAI paiement-test** de la récompense parrain : ouvrir l'app avec `?ref=REF-XXXXXX` (≠ son code) → acheter un pass → rouvrir l'app du parrain → toast « +7 jours ». (Le reste du payment-path n'est PAS modifié.)
+> 3. Relire les 1ers envois des 3 emails passés en --send (logs + Mollie/inbox).
+
+> **🚀 2026-06-26 (suite, AUTORISÉ FONDATEUR) — ACTIVATIONS + RÉCOMPENSE PARRAIN RÉELLE. Branche `claude/hello-qce0lt` / PR #175.**
+>
+> - **ACTIVÉ EN LIVE (`--send`)** : `cold-lead-reengage.cjs --send` + `welcome-paid-mollie.cjs --send` dans `daily-copernicus` (steps renommés « LIVE »). Le fondateur a autorisé l'envoi réel. Caps/idempotence/throttle inchangés → ils enverront au prochain run schedule (4×/j). **Surveiller** : 1res relances froides + 1res bienvenues pass dans les logs + dashboard Mollie/inbox.
+> - **RÉCOMPENSE PARRAIN — MÉCANISME RÉEL (payment-path, autorisé)** : avant, le parrainage n'accordait RIEN (Mollie ne couponne pas). Désormais un filleul qui paie un pass → le **parrain gagne 7 jours de Veilleur** (plafond 90j/à vie). Moteur viral pass-only.
+>   - Backend : `mollie-lib.php` ledger crédit par code REF- (`mol_refcredit_grant` idempotent par paymentId + verrou ; `mol_refcredit_claim` rend+reset). `mollie.php` create_payment grave `referred_by`/`referral_code` (STRICTEMENT additif), payment_status crédite à 'paid', action `claim_referral_credit`. `mollie-webhook.php` même grant (backup idempotent).
+>   - Front : les 3 chemins pass passent referredBy+myReferralCode ; effet claim au chargement (throttle 12h) étend `sg_premium_pass_end` + toast « +N jours ». Réversible `?refrewards=0`.
+>   - Vérifié : PHP lint, ledger testé (idempotence/plafond/claim/codes invalides), metadata additive prouvée, esbuild+vite 136 pages, npm test 3/3.
+>   - **⚠️ ACTION FONDATEUR — VRAI PAIEMENT DE TEST** (règle payment-path) : ouvrir l'app avec `?ref=REF-XXXXXX` (≠ son code), acheter un pass, rouvrir l'app du parrain (code REF-XXXXXX) → toast +7j + pass étendu. Le chemin argent n'est PAS modifié, mais tout payment-path se valide par un paiement réel.
+>   - **Reste (enhancement, non bloquant)** : afficher « partage = +7 j » dans l'UI de partage premium pour amplifier la supply (à A/B). Le mécanisme fonctionne sans (les partages ?ref= existent déjà).
+
+> **💰 2026-06-26 (suite, autonome) — 2 SYSTÈMES REVENU/SCALE DIFFÉRÉS → CONSTRUITS (goal « augmenter revenus & scaler »). Branche `claude/hello-qce0lt` (PR draft). Vérifiés (npm test 3/3 vert, dry-runs, logique GAS simulée). NE PAS REFAIRE.**
+>
+> - **Cold-lead RÉ-ENGAGE** (`scripts/automation/cold-lead-reengage.cjs`) — le rank-5 différé. Nurture long-traîne des leads DEVENUS FROIDS (jamais convertis) : EUR/FR, âge **60–365j**, **cadence 90j**, **cap 3 touches/lead à vie**, exclut bounced/désabo/B2B/test, List-Unsubscribe + désabo proéminent, CTA `?paywall=1`. A/B `em_coldreengage_fr` (variant ajouté à email-ab-variants.json). Source = subscribers.json (déjà fetché). **Câblé DRY-RUN** dans `daily-copernicus` (step « Cold-lead reengage (DRY-RUN — flip --send to activate) »), ledger `cold-reengage-sent.json` committé. Vérifié : fixture 12 leads → 2 éligibles, toutes les exclusions + cadence + cap firent ; HTML sans undefined/NaN ; --send sans SMTP échoue loud.
+> - **Referral REPORT** (`scripts/automation/referral-report.cjs` + action GAS `referral` dans `scripts/appscript/Code.js`) — le rank-6 différé. Découverte clé : le vrai signal « share » = **`sg_share` avec `has_referral:true`** (`sg_referral_share` est mort/legacy). L'action GAS agrège **share→landing→convert** + groupe landing/convert par `ref_code` (top parrains) sur fenêtre 90j. Le script fetch + sauve `data/referral-report.json` (committé) + **détecte le no-déploiement** (« unknown action ») sans planter. **Câblé read-only** dans `daily-copernicus`. Logique GAS simulée localement (assertions vertes : shares/landings/converts/top/rates).
+>
+> **🎬 CHECKLIST FONDATEUR pour ACTIVER (= revenu/data réels) :**
+> 1. **Cold-reengage en LIVE** : relire copy + volumes dans les logs du step DRY-RUN, puis éditer le step `daily-copernicus` → `cold-lead-reengage.cjs --send`. (`SMTP_PASS` déjà secret.) Levier nurture long-terme sur les ~246 leads.
+> 2. **Referral report data** : `cd scripts/appscript && clasp push` (déploie l'action GAS `referral`). Tant que non poussé, le report est un no-op gracieux. Après → `referral-report.json` se remplit chaque jour, décide les récompenses parrain.
+>
+> **+ 2 SYSTÈMES NEUFS (même PR, découverts en creusant la boucle parrainage) :**
+> - **Honnêteté — bannière referral** (`src/Sargasses_PROD.jsx` ~16054) : promettait « 1er mois gratuit » au filleul = FAUX en pass-only (`mollie.php:166-167` ne peut NI couponner NI créditer ; récompenses parrain = founder-manual au PARRAIN, pas cadeau auto au filleul). Le tap ouvrait le paywall plein tarif → promesse trahie. Remplacé par preuve sociale honnête (« un ami recommande Le Veilleur → découvre LA plage ») FR/EN/ES, emoji 🎁→🌊. esbuild + vite build (136 pages) verts.
+> - **Welcome PASS Mollie** (`scripts/automation/welcome-paid-mollie.cjs`) : TROU — `welcome-paid.cjs` ne couvre QUE les abos Stripe legacy ; les acheteurs de pass **Mollie** (base qui croît) ne recevaient AUCUN email post-achat. En pass-only, satisfaction→rachat = le revenu. Onboarding FR/EN/ES (1 CTA app, SANS paywall) + nudge partage HONNÊTE (0 promesse de récompense). Source API Mollie, fenêtre 14j, dédup emailHash (1/client à vie), MAX 50. **DRY-RUN** dans daily-copernicus, ledger committé.
+>
+> **🎬 FONDATEUR — activer aussi :** 3. Welcome Mollie en LIVE = `welcome-paid-mollie.cjs --send` (MOLLIE_API_KEY déjà secret).
+>
+> **RESTE / À DÉCIDER (founder)** : un VRAI mécanisme de récompense parrain (Mollie ne couponne pas → il faudrait créditer un pass-extension serveur à la conversion du filleul) = décision archi/produit, PAS autonome. La bannière est désormais honnête sans ça. B2B pricing page = DÉJÀ shippé (#174). Plus de système « différé » vétté en attente — re-prioriser sur données POST-refonte (~après 23/07).
+
 > **💰 2026-06-26 (nuit, autonome) — SYSTÈMES REVENU/SCALE (goal « augmenter revenus & scaler »). Cartographie multi-agents (7 dimensions, vérif adversariale) → backlog ordonné → 3 PR shippés (#170→#172). NE PAS REFAIRE.**
 >
 > **SHIPPÉ + MERGÉ + DÉPLOYÉ :**

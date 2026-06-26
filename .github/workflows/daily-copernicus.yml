@@ -240,7 +240,7 @@ jobs:
       # ⚠️ DRY-RUN volontaire : nouveau mail vers des CLIENTS payants → le fondateur
       # relit la copy + les volumes (logs) puis ajoute « --send » pour activer (comme
       # dunning/welcome-paid l'ont été). No-op tant que MOLLIE_API_KEY absent.
-      - name: Pass-expiry win-back (DRY-RUN — flip --send to activate)
+      - name: Pass-expiry win-back (LIVE --send)
         if: github.event_name == 'schedule'
         continue-on-error: true
         env:
@@ -249,7 +249,42 @@ jobs:
           SMTP_PORT: '465'
           SMTP_USER: alerte@sargasses-martinique.com
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
-        run: node scripts/automation/pass-expiry-winback.cjs
+        run: node scripts/automation/pass-expiry-winback.cjs --send
+
+      # Cold-lead RÉ-ENGAGE (nurture long-traîne) : recontacte à cadence BASSE les leads
+      # devenus FROIDS (60-365j, jamais convertis, welcome/drip/relance finis) pour les
+      # ramener au Pass. Source = subscribers.json (déjà fetché plus haut). EUR/FR only,
+      # cadence 90j, cap 3 touches/lead à vie, exclut bounced/désabo/B2B/test, désabo
+      # one-click. Idempotent (cold-reengage-sent.json committé plus bas).
+      # ⚠️ DRY-RUN volontaire : ré-emailer des leads froids touche la réputation du
+      # domaine partagé → le fondateur relit la copy + les volumes (logs) puis ajoute
+      # « --send » pour activer (comme dunning/pass-expiry l'ont été).
+      - name: Cold-lead reengage (LIVE --send)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          SMTP_HOST: premium115.web-hosting.com
+          SMTP_PORT: '465'
+          SMTP_USER: alerte@sargasses-martinique.com
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/automation/cold-lead-reengage.cjs --send
+
+      # Welcome PASS Mollie : onboarde les acheteurs de pass Mollie (la base client qui
+      # croît — welcome-paid.cjs ne couvre QUE les abos Stripe legacy). En pass-only,
+      # satisfaction → rachat = le revenu ; un onboarding propre + nudge partage (boucle
+      # parrainage) au pic de satisfaction. Source = API Mollie (MOLLIE_API_KEY, déjà
+      # secret). Dédup emailHash (welcome-paid-mollie-sent.json committé plus bas).
+      # ⚠️ DRY-RUN : nouveau mail vers des CLIENTS payants → fondateur relit puis --send.
+      - name: Welcome PASS Mollie (LIVE --send)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+          SMTP_HOST: premium115.web-hosting.com
+          SMTP_PORT: '465'
+          SMTP_USER: alerte@sargasses-martinique.com
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: node scripts/automation/welcome-paid-mollie.cjs --send
 
       # Support automatisé : excuses d'incident depuis data/incidents.json
       # (hashes RGPD, idempotent par destinataire, fenêtre 10-20 UTC interne
@@ -330,7 +365,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/daily-brief-sent.json; do
+          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/incidents.json scripts/automation/data/cart-recovery-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/cold-reengage-sent.json scripts/automation/data/welcome-paid-mollie-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/daily-brief-sent.json; do
             [ -f "$f" ] && git add "$f"
           done
           if git diff --cached --quiet; then echo "Email state unchanged."; exit 0; fi
@@ -503,6 +538,14 @@ jobs:
             }
           "
 
+      # Referral REPORT (read-only, decision-support) : agrège share→landing→convert
+      # de la boucle parrainage + top parrains → data/referral-report.json (committé).
+      # No-op gracieux tant que l'action GAS `referral` n'est pas déployée (clasp push).
+      - name: Referral report (read-only)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        run: node scripts/automation/referral-report.cjs --days=90
+
       # ── 3. Commit updated data to repo ────────────────────
       - name: Commit updated sargassum.json
         if: github.event_name != 'push'
@@ -525,6 +568,7 @@ jobs:
             git add "public/api/copernicus/*/$pat" 2>/dev/null || true
           done
           [ -f scripts/automation/data/daily-metrics.json ] && git add scripts/automation/data/daily-metrics.json
+          [ -f scripts/automation/data/referral-report.json ] && git add scripts/automation/data/referral-report.json
           # RGPD : subscribers.json (emails en clair) n'est PLUS JAMAIS commité —
           # re-fetché à chaque run depuis Apps Script. Les fichiers d'état
           # welcome-sent/drip-sent/bounced sont désormais des hashes SHA-256.

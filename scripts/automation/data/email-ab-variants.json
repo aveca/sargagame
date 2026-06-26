@@ -219,7 +219,12 @@
     "key": "winback",
     "lang": "fr",
     "intent": "Faire RACHETER un pass à un acheteur dont l'accès a expiré. Control = réassurance ; challenger = urgence honnête (la mer change).",
-    "flags": { "brand_ok": true, "false_freshness": false, "over_promise": false, "one_cta": true },
+    "flags": {
+      "brand_ok": true,
+      "false_freshness": false,
+      "over_promise": false,
+      "one_cta": true
+    },
     "ship": {
       "subject": "Les sargasses bougent — ta plage propre du moment ne durera pas",
       "preheader": "Reprends ton veilleur en 1 geste. Paiement unique, sans abonnement."
@@ -229,7 +234,12 @@
     "key": "winback",
     "lang": "en",
     "intent": "Drive a repeat pass purchase from an expired buyer. Control = reassurance; challenger = honest urgency (the sea changes).",
-    "flags": { "brand_ok": true, "false_freshness": false, "over_promise": false, "one_cta": true },
+    "flags": {
+      "brand_ok": true,
+      "false_freshness": false,
+      "over_promise": false,
+      "one_cta": true
+    },
     "ship": {
       "subject": "Sargassum is moving — today's clean beach won't stay clean",
       "preheader": "Reactivate your watcher in one tap. One-time, no subscription."
@@ -239,10 +249,30 @@
     "key": "winback",
     "lang": "es",
     "intent": "Lograr la recompra de un pase de un comprador cuyo acceso expiró. Control = tranquilidad; challenger = urgencia honesta.",
-    "flags": { "brand_ok": true, "false_freshness": false, "over_promise": false, "one_cta": true },
+    "flags": {
+      "brand_ok": true,
+      "false_freshness": false,
+      "over_promise": false,
+      "one_cta": true
+    },
     "ship": {
       "subject": "El sargazo se mueve — la playa limpia de hoy no durará",
       "preheader": "Reactiva tu vigía en 1 toque. Pago único, sin suscripción."
+    }
+  },
+  "em_coldreengage_fr": {
+    "key": "cold_reengage",
+    "lang": "fr",
+    "intent": "Ré-engager un lead FROID (60-365j, jamais converti). Control = continuité/valeur (on veille toujours) ; challenger = bénéfice concret (ne gâche plus une journée).",
+    "flags": {
+      "brand_ok": true,
+      "false_freshness": false,
+      "over_promise": false,
+      "one_cta": true
+    },
+    "ship": {
+      "subject": "Ne gâche plus une journée de plage — le Pass, sans abonnement",
+      "preheader": "Un geste, paiement unique dès 7,99 €. La carte reste gratuite."
     }
   }
 }

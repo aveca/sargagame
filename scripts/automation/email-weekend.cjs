@@ -33,7 +33,7 @@ function envVal(name) {
 }
 const SMTP_HOST = envVal('SMTP_HOST'), SMTP_PORT = +envVal('SMTP_PORT') || 465
 const SMTP_USER = envVal('SMTP_USER'), SMTP_PASS = envVal('SMTP_PASS')
-// Leads PRO exclus du bulletin grand public (drip B2B dédié — jamais l'offre 4,99 €).
+// Leads PRO exclus du bulletin grand public (drip B2B dédié — jamais l'offre Pass conso).
 const B2B_SOURCES = new Set(['b2b_hotel_request', 'b2b_collectivite_request'])
 // Liste d'abonnés fetchée au runtime par fetch-subscribers.cjs (RGPD : gitignored,
 // déjà filtrée des désabonnés + bounces + dédupliquée).
@@ -113,63 +113,205 @@ function buildEmailHTML(island, topBeaches, stats, domain) {
   }).join('')
 
   return `<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
-<body style="margin:0;padding:0;background:#F7F5EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
-<div style="max-width:480px;margin:0 auto;padding:20px">
-  <div style="background:radial-gradient(120% 90% at 76% -15%, rgba(255,199,44,.30), rgba(255,199,44,0) 55%), linear-gradient(168deg,#0B2230 0%,#0D1E1C 60%,#0A1714 100%);border-radius:16px 16px 0 0;padding:30px 24px 26px;text-align:center">
-    <div style="font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:11px;font-weight:800;color:#FFC72C;text-transform:uppercase;letter-spacing:.14em">Le Bulletin du Veilleur</div>
-    <div style="font-family:'Anton','Bricolage Grotesque',Impact,'Arial Narrow',sans-serif;font-size:29px;font-weight:400;color:#fff;margin-top:9px;letter-spacing:.01em">Plages ${islandName}</div>
-    <div style="font-size:13px;color:rgba(255,255,255,.6);margin-top:4px">Le Veilleur a scruté l'Atlantique. Voici ton weekend.</div>
-  </div>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="x-apple-disable-message-reformatting">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>Le Bulletin du Veilleur</title>
+</head>
+<body style="margin:0; padding:0; background-color:#F7F5EF; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;">
+<div style="display:none; max-height:0; overflow:hidden; mso-hide:all; font-size:1px; line-height:1px; color:#F7F5EF;">Ton verdict plages pour samedi ${islandName} : ${stats.clean} propres, ${stats.moderate} a surveiller. Ne decouvre pas les sargasses sur place.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F7F5EF;">
+<tr>
+<td align="center" style="padding:16px 12px;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%; max-width:600px;">
 
-  <div style="background:#fff;padding:20px">
-    <div style="display:flex;gap:12px;margin-bottom:20px;text-align:center">
-      <div style="flex:1;padding:12px;background:rgba(34,197,94,.06);border-radius:10px">
-        <div style="font-size:24px;font-weight:800;color:#16A34A">${stats.clean}</div>
-        <div style="font-size:11px;color:#686868">propres</div>
-      </div>
-      <div style="flex:1;padding:12px;background:rgba(184,122,0,.06);border-radius:10px">
-        <div style="font-size:24px;font-weight:800;color:#B87A00">${stats.moderate}</div>
-        <div style="font-size:11px;color:#686868">\u00E0 surveiller</div>
-      </div>
-      <div style="flex:1;padding:12px;background:rgba(232,82,42,.06);border-radius:10px">
-        <div style="font-size:24px;font-weight:800;color:#E8522A">${stats.avoid}</div>
-        <div style="font-size:11px;color:#686868">alertes</div>
-      </div>
-    </div>
+<!-- ============ HEADER ============ -->
+<tr>
+<td style="background-color:#0B2230; background-image:linear-gradient(135deg,#0B2230 0%,#0D1E1C 55%,#0A1714 100%); border-radius:18px 18px 0 0; padding:34px 32px 30px 32px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td style="font-family:'Helvetica Neue',Arial,sans-serif; font-size:12px; font-weight:700; letter-spacing:3px; color:#FFC72C; text-transform:uppercase;">Le bulletin du Veilleur</td>
+</tr>
+<tr>
+<td style="padding-top:10px; font-family:'Anton','Bricolage Grotesque','Helvetica Neue',Arial,sans-serif; font-size:42px; line-height:1.04; font-weight:800; color:#FFFFFF; letter-spacing:-0.5px;">Plages ${islandName}</td>
+</tr>
+<tr>
+<td style="padding-top:12px; font-family:'Helvetica Neue',Arial,sans-serif; font-size:16px; line-height:1.5; color:#C9D6D2;">Le Veilleur a scruté l'Atlantique toute la semaine. Voici où poser ta serviette ce weekend.</td>
+</tr>
+</table>
+</td>
+</tr>
 
-    <div style="font-size:13px;font-weight:700;color:#0D0D0D;margin-bottom:10px">Top 5 pour samedi &mdash; score sur 100 :</div>
-    <table style="width:100%;border-collapse:collapse">${beachRows}</table>
-  </div>
+<!-- ============ LE MOT DU VEILLEUR (editorial voice) ============ -->
+<tr>
+<td style="background-color:#FFFFFF; padding:22px 28px 6px 28px; border-left:1px solid #ECE8DE; border-right:1px solid #ECE8DE;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#FBF9F3; border-left:4px solid #FFC72C; border-radius:4px 12px 12px 4px;">
+<tr>
+<td style="padding:16px 20px 16px 18px;">
+<div style="font-family:'Helvetica Neue',Arial,sans-serif; font-size:11px; font-weight:700; letter-spacing:2px; color:#B87A00; text-transform:uppercase;">Le mot du Veilleur</div>
+<div style="padding-top:8px; font-family:Georgia,'Times New Roman',serif; font-style:italic; font-size:16px; line-height:1.55; color:#3A4A46;">Je scrute l'Atlantique pour toi toute la semaine, mais ce bulletin n'est qu'un coup d'&oelig;il hebdo. Voici ton verdict pour samedi &mdash; pose ta serviette l&agrave; o&ugrave; c'est d&eacute;gag&eacute;.</div>
+</td>
+</tr>
+</table>
+</td>
+</tr>
 
-  <!-- Premium upsell -->
-  <div style="background:#0D1E1C;padding:20px 24px;text-align:center">
-    <div style="font-size:11px;font-weight:700;color:#E8A800;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Premium</div>
-    <div style="font-size:17px;font-weight:800;color:#fff;margin-bottom:6px">Sache samedi d\u00E8s lundi</div>
-    <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:14px;line-height:1.4">
-      Pr\u00E9visions 7 jours + alertes push.<br>
-      Rejoins les familles qui planifient leur weekend \u00E0 l'avance.
-    </div>
-    <a href="https://${domain}/?paywall=1&utm_source=email&utm_medium=weekend_bulletin&utm_campaign=sargasses" style="display:inline-block;padding:12px 28px;
-      background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);
-      color:#0D0D0D;text-decoration:none;border-radius:10px;font-size:14px;font-weight:700;
-      box-shadow:0 4px 16px rgba(232,168,0,.3)">Activer mon veilleur</a>
-    <div style="font-size:11px;color:rgba(255,255,255,.35);margin-top:8px">4,99\u00A0\u20AC/mois \u00B7 Satisfait ou rembours\u00E9 30 jours \u00B7 Annule quand tu veux</div>
-  </div>
+<!-- ============ STATS ROW ============ -->
+<tr>
+<td style="background-color:#FFFFFF; padding:16px 18px 8px 18px; border-left:1px solid #ECE8DE; border-right:1px solid #ECE8DE;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td width="33.33%" align="center" valign="top" style="padding:0 6px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F0FAF2; border:1px solid #C9EBD2; border-radius:14px;">
+<tr><td align="center" style="padding:16px 6px 14px 6px;">
+<div style="font-family:'Anton','Helvetica Neue',Arial,sans-serif; font-size:34px; line-height:1; font-weight:800; color:#16A34A;">${stats.clean}</div>
+<div style="padding-top:6px; font-family:'Helvetica Neue',Arial,sans-serif; font-size:12px; font-weight:700; letter-spacing:0.5px; color:#16A34A; text-transform:uppercase;">propres</div>
+</td></tr>
+</table>
+</td>
+<td width="33.33%" align="center" valign="top" style="padding:0 6px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#FFF8EC; border:1px solid #F2E2BE; border-radius:14px;">
+<tr><td align="center" style="padding:16px 6px 14px 6px;">
+<div style="font-family:'Anton','Helvetica Neue',Arial,sans-serif; font-size:34px; line-height:1; font-weight:800; color:#B87A00;">${stats.moderate}</div>
+<div style="padding-top:6px; font-family:'Helvetica Neue',Arial,sans-serif; font-size:12px; font-weight:700; letter-spacing:0.5px; color:#B87A00; text-transform:uppercase;">à surveiller</div>
+</td></tr>
+</table>
+</td>
+<td width="33.33%" align="center" valign="top" style="padding:0 6px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#FDEFEA; border:1px solid #F6D2C5; border-radius:14px;">
+<tr><td align="center" style="padding:16px 6px 14px 6px;">
+<div style="font-family:'Anton','Helvetica Neue',Arial,sans-serif; font-size:34px; line-height:1; font-weight:800; color:#E8522A;">${stats.avoid}</div>
+<div style="padding-top:6px; font-family:'Helvetica Neue',Arial,sans-serif; font-size:12px; font-weight:700; letter-spacing:0.5px; color:#E8522A; text-transform:uppercase;">alertes</div>
+</td></tr>
+</table>
+</td>
+</tr>
+</table>
+</td>
+</tr>
 
-  <div style="text-align:center;padding:20px;background:#fff;border-radius:0 0 16px 16px;border-top:1px solid #f0f0f0">
-    <a href="https://${domain}" style="display:inline-block;padding:14px 32px;background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);
-      color:#0D0D0D;text-decoration:none;border-radius:12px;font-size:15px;font-weight:700;
-      box-shadow:0 4px 16px rgba(232,168,0,.3)">Voir la carte en temps r\u00E9el</a>
-    <div style="font-size:11px;color:#999;margin-top:12px">Pr\u00E9vision satellite pour samedi \u00B7 Mise \u00E0 jour 4\u00D7/jour</div>
-  </div>
+<!-- ============ TOP 5 LIST ============ -->
+<tr>
+<td style="background-color:#FFFFFF; padding:20px 28px 8px 28px; border-left:1px solid #ECE8DE; border-right:1px solid #ECE8DE;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td style="font-family:'Anton','Bricolage Grotesque','Helvetica Neue',Arial,sans-serif; font-size:22px; line-height:1.2; font-weight:800; color:#0D1E1C; letter-spacing:-0.3px;">Top 5 pour samedi</td>
+</tr>
+<tr>
+<td style="padding-top:4px; font-family:'Helvetica Neue',Arial,sans-serif; font-size:14px; line-height:1.5; color:#5A6B66;">Classées par score sur 100. Plus le score est haut, plus la plage est dégagée.</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td style="background-color:#FFFFFF; padding:8px 28px 22px 28px; border-left:1px solid #ECE8DE; border-right:1px solid #ECE8DE;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${beachRows}</table>
+</td>
+</tr>
 
-  <div style="text-align:center;padding:16px;font-size:10px;color:#999">
-    Sargasses ${islandName} · sargasses-${islandName.toLowerCase()}.com<br>
-    <a href="${unsubUrl(island)}" style="color:#999">Se d\u00E9sabonner</a>
-  </div>
-</div>
+<!-- ============ PREMIUM UPSELL (climax) ============ -->
+<tr>
+<td style="background-color:#FFFFFF; padding:6px 28px 26px 28px; border-left:1px solid #ECE8DE; border-right:1px solid #ECE8DE;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0B2230; background-image:linear-gradient(150deg,#0B2230 0%,#0D1E1C 60%,#0A1714 100%); border-radius:18px; border:1px solid #16302E;">
+<tr>
+<td style="padding:30px 28px 8px 28px;">
+<div style="font-family:'Helvetica Neue',Arial,sans-serif; font-size:12px; font-weight:700; letter-spacing:3px; color:#FFC72C; text-transform:uppercase;">Le Pass Veilleur</div>
+</td>
+</tr>
+<tr>
+<td style="padding:8px 28px 0 28px;">
+<div style="font-family:'Anton','Bricolage Grotesque','Helvetica Neue',Arial,sans-serif; font-size:30px; line-height:1.12; font-weight:800; color:#FFFFFF; letter-spacing:-0.4px;">Sache dès lundi où aller samedi.</div>
+</td>
+</tr>
+<tr>
+<td style="padding:14px 28px 0 28px;">
+<div style="font-family:'Helvetica Neue',Arial,sans-serif; font-size:15px; line-height:1.6; color:#C9D6D2;">Ce bulletin t'offre le verdict du weekend. Le Pass, c'est moi qui veille chaque matin pour toi : les 7 prochains jours, plage par plage, plus une alerte sur ton téléphone dès qu'une plage propre se charge. <strong style="color:#FFFFFF;">Ne découvre plus les sargasses sur place</strong> &mdash; tu pars en sachant.</div>
+</td>
+</tr>
+<tr>
+<td style="padding:18px 28px 0 28px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td valign="top" width="26" style="font-family:'Helvetica Neue',Arial,sans-serif; font-size:15px; line-height:1.5; color:#FFC72C;">&#10003;</td>
+<td style="font-family:'Helvetica Neue',Arial,sans-serif; font-size:15px; line-height:1.5; color:#E4EEEB; padding-bottom:8px;">Prévision 7 jours, mise à jour 4×/jour</td>
+</tr>
+<tr>
+<td valign="top" width="26" style="font-family:'Helvetica Neue',Arial,sans-serif; font-size:15px; line-height:1.5; color:#FFC72C;">&#10003;</td>
+<td style="font-family:'Helvetica Neue',Arial,sans-serif; font-size:15px; line-height:1.5; color:#E4EEEB; padding-bottom:8px;">Alertes push : la plage sans sargasses, chaque matin</td>
+</tr>
+<tr>
+<td valign="top" width="26" style="font-family:'Helvetica Neue',Arial,sans-serif; font-size:15px; line-height:1.5; color:#FFC72C;">&#10003;</td>
+<td style="font-family:'Helvetica Neue',Arial,sans-serif; font-size:15px; line-height:1.5; color:#E4EEEB;">Toutes les plages de l'île, pas seulement le Top 5</td>
+</tr>
+</table>
+</td>
+</tr>
+<!-- bulletproof gold CTA -->
+<tr>
+<td style="padding:24px 28px 0 28px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td align="center" bgcolor="#FFC72C" style="border-radius:12px; background-image:linear-gradient(180deg,#FFC72C 0%,#E8A800 100%);">
+<a href="https://${domain}/?paywall=1&utm_source=email&utm_medium=weekend_bulletin&utm_campaign=sargasses" target="_blank" style="display:block; padding:17px 24px; font-family:'Helvetica Neue',Arial,sans-serif; font-size:17px; font-weight:800; letter-spacing:0.2px; color:#0B2230; text-decoration:none;">Activer mon Pass Veilleur &#8594;</a>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td align="center" style="padding:14px 28px 30px 28px;">
+<div style="font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; line-height:1.5; color:#9FB2AD;">Dès 7,99 € · paiement unique, sans abonnement · remboursé en un email</div>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+
+<!-- ============ SECONDARY CTA ============ -->
+<tr>
+<td style="background-color:#FFFFFF; padding:4px 28px 30px 28px; border-left:1px solid #ECE8DE; border-right:1px solid #ECE8DE; border-radius:0 0 18px 18px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F7F5EF; border:1px solid #ECE8DE; border-radius:16px;">
+<tr>
+<td align="center" style="padding:24px 24px 10px 24px;">
+<div style="font-family:'Helvetica Neue',Arial,sans-serif; font-size:15px; line-height:1.5; color:#0D1E1C; font-weight:600;">Tu veux juste vérifier l'état d'une plage maintenant ?</div>
+</td>
+</tr>
+<tr>
+<td align="center" style="padding:6px 24px 4px 24px;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td align="center" bgcolor="#FFC72C" style="border-radius:12px; background-image:linear-gradient(180deg,#FFC72C 0%,#E8A800 100%);">
+<a href="https://${domain}" target="_blank" style="display:block; padding:15px 30px; font-family:'Helvetica Neue',Arial,sans-serif; font-size:16px; font-weight:800; color:#0B2230; text-decoration:none;">Voir la carte en temps réel</a>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td align="center" style="padding:12px 24px 22px 24px;">
+<div style="font-family:'Helvetica Neue',Arial,sans-serif; font-size:12px; line-height:1.5; color:#7A8A85;">Prévision satellite pour samedi · Mise à jour 4×/jour</div>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+
+<!-- ============ FOOTER ============ -->
+<tr>
+<td align="center" style="padding:26px 28px 36px 28px;">
+<div style="font-family:'Anton','Helvetica Neue',Arial,sans-serif; font-size:16px; font-weight:800; letter-spacing:1px; color:#0D1E1C; text-transform:uppercase;">Le Veilleur</div>
+<div style="padding-top:8px; font-family:'Helvetica Neue',Arial,sans-serif; font-size:12px; line-height:1.6; color:#9AA8A3;">Ta vigie sargasses pour ${islandName}.<br>&copy; ${new Date().getFullYear()} Le Veilleur · Tous droits réservés</div>
+<div style="padding-top:12px; font-family:'Helvetica Neue',Arial,sans-serif; font-size:12px; line-height:1.6; color:#9AA8A3;"><a href="${unsubUrl(island)}" target="_blank" style="color:#7A8A85; text-decoration:underline;">Me désabonner</a></div>
+</td>
+</tr>
+
+</table>
+</td>
+</tr>
+</table>
 </body>
 </html>`
 }
@@ -273,7 +415,7 @@ function buildEmailHTMLRegion(region, lang, topBeaches, stats) {
     top: 'Top 5 para el sábado — puntuación sobre 100:',
     premiumKick: 'Premium', premiumTitle: 'Sabe el sábado desde el lunes',
     premiumDesc: 'Pronóstico de 7 días + alertas push.<br>Únete a quienes planifican su fin de semana con antelación.',
-    premiumCta: 'Activar mi vigía', priceNote: `${monthly}/mes · Reembolso 30 días · Cancela cuando quieras`,
+    premiumCta: 'Activar mi pase', priceNote: 'Desde $5.99 · pago único, sin suscripción · reembolso en un email',
     mapCta: 'Ver el mapa en vivo', mapNote: 'Pronóstico satelital para el sábado · Actualizado 4×/día',
     unsub: 'Darse de baja',
   } : {
@@ -283,7 +425,7 @@ function buildEmailHTMLRegion(region, lang, topBeaches, stats) {
     top: 'Top 5 for Saturday — score out of 100:',
     premiumKick: 'Premium', premiumTitle: 'Know Saturday by Monday',
     premiumDesc: '7-day forecast + push alerts.<br>Join the families who plan their weekend ahead.',
-    premiumCta: 'Activate my watchman', priceNote: `${monthly}/month · 30-day money-back · Cancel anytime`,
+    premiumCta: 'Activate my Pass', priceNote: 'From $5.99 · one-time, no subscription · refund in one email',
     mapCta: 'See the live map', mapNote: 'Satellite forecast for Saturday · Updated 4×/day',
     unsub: 'Unsubscribe',
   }
@@ -322,20 +464,26 @@ function buildEmailHTMLRegion(region, lang, topBeaches, stats) {
   </div>
 
   <div style="background:#fff;padding:20px">
-    <div style="display:flex;gap:12px;margin-bottom:20px;text-align:center">
-      <div style="flex:1;padding:12px;background:rgba(34,197,94,.06);border-radius:10px">
-        <div style="font-size:24px;font-weight:800;color:#16A34A">${stats.clean}</div>
-        <div style="font-size:11px;color:#686868">${t.clean}</div>
-      </div>
-      <div style="flex:1;padding:12px;background:rgba(184,122,0,.06);border-radius:10px">
-        <div style="font-size:24px;font-weight:800;color:#B87A00">${stats.moderate}</div>
-        <div style="font-size:11px;color:#686868">${t.watch}</div>
-      </div>
-      <div style="flex:1;padding:12px;background:rgba(232,82,42,.06);border-radius:10px">
-        <div style="font-size:24px;font-weight:800;color:#E8522A">${stats.avoid}</div>
-        <div style="font-size:11px;color:#686868">${t.alerts}</div>
-      </div>
-    </div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px;text-align:center"><tr>
+      <td width="33.33%" align="center" valign="top" style="padding:0 6px">
+        <div style="padding:12px;background:#f0faf2;background:rgba(34,197,94,.06);border-radius:10px">
+          <div style="font-size:24px;font-weight:800;color:#16A34A">${stats.clean}</div>
+          <div style="font-size:11px;color:#686868">${t.clean}</div>
+        </div>
+      </td>
+      <td width="33.33%" align="center" valign="top" style="padding:0 6px">
+        <div style="padding:12px;background:#fff8ec;background:rgba(184,122,0,.06);border-radius:10px">
+          <div style="font-size:24px;font-weight:800;color:#B87A00">${stats.moderate}</div>
+          <div style="font-size:11px;color:#686868">${t.watch}</div>
+        </div>
+      </td>
+      <td width="33.33%" align="center" valign="top" style="padding:0 6px">
+        <div style="padding:12px;background:#fdefea;background:rgba(232,82,42,.06);border-radius:10px">
+          <div style="font-size:24px;font-weight:800;color:#E8522A">${stats.avoid}</div>
+          <div style="font-size:11px;color:#686868">${t.alerts}</div>
+        </div>
+      </td>
+    </tr></table>
     <div style="font-size:13px;font-weight:700;color:#0D0D0D;margin-bottom:10px">${t.top}</div>
     <table style="width:100%;border-collapse:collapse">${beachRows}</table>
   </div>
@@ -353,8 +501,9 @@ function buildEmailHTMLRegion(region, lang, topBeaches, stats) {
     <div style="font-size:11px;color:#999;margin-top:12px">${t.mapNote}</div>
   </div>
 
-  <div style="text-align:center;padding:16px;font-size:10px;color:#999">
-    ${brand} ${name} · ${domain}<br>
+  <div style="text-align:center;padding:16px;font-size:10px;color:#999;line-height:1.6">
+    <b style="color:#0D1E1C">${brand} ${name}</b> · ${domain}<br>
+    © ${new Date().getFullYear()} ${brand} ${name} · ${es ? 'datos Copernicus Marine' : 'Copernicus Marine data'}<br>
     <a href="${unsubUrl(region.id)}" style="color:#999">${t.unsub}</a>
   </div>
 </div>
@@ -635,4 +784,4 @@ if (require.main === module) {
   main().catch(e => { console.error(e); process.exitCode = 1 })
 }
 
-module.exports = { main, isSendDay, sentKey, buildEmailHTMLRegion, buildRegionSubject, prepareRegionBeaches, rankBeaches, computeStats }
+module.exports = { main, isSendDay, sentKey, buildEmailHTML, buildEmailHTMLRegion, buildRegionSubject, prepareRegionBeaches, rankBeaches, computeStats }

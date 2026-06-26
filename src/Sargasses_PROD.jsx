@@ -7924,7 +7924,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         // cf. MOLLIE_MIGRATION.md — Mollie n'a pas de coupon/balance comme Stripe).
         const _refBy=sgReferredBy(),_myRef=sgMyReferralCode()
         const body=_pc
-          ?{action:"create_payment",cardToken:token,pass:_pc.pass,cents:_pc.cents,email,source:source||"unknown",lang}
+          ?{action:"create_payment",cardToken:token,pass:_pc.pass,cents:_pc.cents,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
           :{action:"create_subscription",cardToken:token,plan,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
         const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
         const d=await r.json().catch(()=>({}))
@@ -7977,8 +7977,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         track("sg_conversion",{session_id:pd.paymentIntentId,method:"onsite_pass",plan:_pc.pass,pass_days:_pc.days})
         setPayBusy(false);onActivated?.();onClose();return
       }
-      // Parrainage : transmet le code parrain (filleul → 1er mois offert serveur)
-      // + mon propre code (écrit en metadata customer pour pouvoir me créditer plus tard).
+      // Parrainage : transmet le code parrain (le filleul ramené crédite le parrain
+      // de jours de pass — cf. mollie.php refcredit) + mon propre code en metadata customer.
       const _refBy=sgReferredBy(),_myRef=sgMyReferralCode()
       const r=await fetch("/api/create-checkout.php",{method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({action:"subscribe",email,plan,setupIntentId:setupIntent.id,lang,source:source||"unknown",referredBy:_refBy,myReferralCode:_myRef})})
@@ -8031,7 +8031,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     try{
       const _refBy=sgReferredBy(),_myRef=sgMyReferralCode()
       const body=_pc
-        ?{action:"create_payment",method,pass:_pc.pass,cents:_pc.cents,email,source:source||"unknown",lang}
+        ?{action:"create_payment",method,pass:_pc.pass,cents:_pc.cents,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
         :{action:"create_subscription",method,plan,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
       const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
       const d=await r.json().catch(()=>({}))
@@ -8094,8 +8094,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
               const token=JSON.stringify(ev.payment.token)
               const apEmail=(ev.payment.billingContact&&ev.payment.billingContact.emailAddress)||email||""
               const body=_pc
-                ?{action:"create_payment",applePayPaymentToken:token,pass:_pc.pass,cents:_pc.cents,email:apEmail,source:source||"unknown",lang}
-                :{action:"create_subscription",applePayPaymentToken:token,plan:payPlanRef.current,email:apEmail,source:source||"unknown",lang}
+                ?{action:"create_payment",applePayPaymentToken:token,pass:_pc.pass,cents:_pc.cents,email:apEmail,source:source||"unknown",lang,referredBy:sgReferredBy(),myReferralCode:sgMyReferralCode()}
+                :{action:"create_subscription",applePayPaymentToken:token,plan:payPlanRef.current,email:apEmail,source:source||"unknown",lang,referredBy:sgReferredBy(),myReferralCode:sgMyReferralCode()}
               const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
               const d=await r.json().catch(()=>({}))
               if(!r.ok||d.error||!d.paymentId){ses.completePayment(window.ApplePaySession.STATUS_FAILURE);throw new Error(d.error||"payment failed")}
@@ -8437,8 +8437,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           onStart={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown",skin:"world"});startCheckout(effectivePlan,"world")}}
           onAlready={verifyExistingSub}
           onB2B={()=>{try{track("sg_b2b_open",{source:source||"unknown"})}catch(_){}; setShowB2B(true)}}
-          onSeason={(!PAY_CAPTURE_ONLY&&pwSeason)?(()=>{try{track("sg_pass_cta",{pass:"season",cents:1999,source:source||"unknown",onsite:1})}catch(_){}
-            passCtxRef.current={pass:"season",cents:1999,days:183,cur:"eur"};setPayStep(true)}):undefined}
+          onSeason={(!PAY_CAPTURE_ONLY&&pwSeason)?(()=>{try{track("sg_pass_cta",{pass:"season",cents:2499,source:source||"unknown",onsite:1})}catch(_){}
+            passCtxRef.current={pass:"season",cents:2499,days:210,cur:"eur"};setPayStep(true)}):undefined}
           onClose={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"world_close"});onClose()}}/>}
         {!passOnly&&pwComic&&!pwWorld&&<ComicPaywall lang={lang} beach={beach} source={source}
           topName={_topName} topScore={_topScore} exSwitch={_exSwitch} wkend={_wkend}
@@ -8449,8 +8449,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           onStart={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown",skin:"comic"});startCheckout(effectivePlan,"comic")}}
           onAlready={verifyExistingSub}
           onB2B={()=>{try{track("sg_b2b_open",{source:source||"unknown"})}catch(_){}; setShowB2B(true)}}
-          onSeason={(!PAY_CAPTURE_ONLY&&pwSeason)?(()=>{try{track("sg_pass_cta",{pass:"season",cents:1999,source:source||"unknown",onsite:1})}catch(_){}
-            passCtxRef.current={pass:"season",cents:1999,days:183,cur:"eur"};setPayStep(true)}):undefined}
+          onSeason={(!PAY_CAPTURE_ONLY&&pwSeason)?(()=>{try{track("sg_pass_cta",{pass:"season",cents:2499,source:source||"unknown",onsite:1})}catch(_){}
+            passCtxRef.current={pass:"season",cents:2499,days:210,cur:"eur"};setPayStep(true)}):undefined}
           onClose={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"comic_close"});onClose()}}/>}
         {showB2B&&<B2BModal lang={lang} onClose={()=>setShowB2B(false)}/>}
         {!passOnly&&!pwComic&&(<>
@@ -14153,6 +14153,35 @@ export default function App(){
   },[])
   useEffect(()=>{if(showReferralBanner){const t=setTimeout(()=>setShowReferralBanner(false),8000);return()=>clearTimeout(t)}},[showReferralBanner])
 
+  // Parrainage — RÉCOMPENSE PARRAIN : l'app réclame les jours de pass gagnés quand un
+  // filleul a payé (crédit serveur par code, ledger Mollie). On étend le pass local +
+  // toast. Throttle 12h (sg_refclaim_ts), idempotent serveur (remis à 0 au claim).
+  // Réversible ?refrewards=0. C'est le moteur viral du modèle pass-only : partager = gagner.
+  useEffect(()=>{
+    try{
+      if(new URLSearchParams(window.location.search).get("refrewards")==="0")return
+      const last=parseInt(localStorage.getItem("sg_refclaim_ts")||"0")
+      if(last&&Date.now()-last<12*3600000)return
+      const code=sgMyReferralCode()
+      if(!/^REF-[A-Z0-9]{6}$/.test(code))return
+      const t=setTimeout(()=>{
+        try{localStorage.setItem("sg_refclaim_ts",String(Date.now()))}catch(_){}
+        fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"claim_referral_credit",code})})
+          .then(r=>r.json()).then(d=>{
+            const days=Math.max(0,Math.min(365,parseInt(d&&d.days)||0))
+            if(days<=0)return
+            const cur=parseInt(localStorage.getItem("sg_premium_pass_end")||"0")
+            const end=Math.max(Date.now(),cur||0)+days*86400000
+            try{localStorage.setItem("sg_premium_pass_end",String(end))}catch(_){}
+            try{setIsPremium(true)}catch(_){}
+            track("sg_referral_reward_claimed",{days})
+            try{sgToast({tone:"success",title:_t(lang,"Merci d'avoir partagé 🌊","Thanks for sharing 🌊","Gracias por compartir 🌊"),msg:_t(lang,`Un filleul a pris un pass — +${days} jours de Veilleur pour toi.`,`A friend got a pass — +${days} Watchman days for you.`,`Un amigo tomó un pase — +${days} días de Vigía para ti.`)})}catch(_){}
+          }).catch(()=>{})
+      },2500)
+      return()=>clearTimeout(t)
+    }catch(_){}
+  },[])
+
   // Checkout abandonment recovery: show banner if user left mid-checkout within last 24h
   const[showRecoveryBanner,setShowRecoveryBanner]=useState(false)
   // Hauteur RÉELLE de la bannière du haut (recovery/pass-expiré) — mesurée pour décaler
@@ -16051,11 +16080,11 @@ export default function App(){
             boxShadow:"0 8px 24px rgba(124,58,237,.35)",cursor:"pointer",
             display:"flex",alignItems:"center",gap:10,maxWidth:"min(90vw, 460px)",boxSizing:"border-box",
             animation:"slideUp .4s ease"}}>
-            <span style={{fontSize:20}}>🎁</span>
+            <span style={{fontSize:20}}>🌊</span>
             <div>
-              <div>{_t(lang,"Un ami t'offre ton 1er mois","A friend gifts you your 1st month","Un amigo te regala tu 1er mes")}</div>
+              <div>{_t(lang,"Un ami te recommande Le Veilleur","A friend recommends the Watchman","Un amigo te recomienda El Vigía")}</div>
               <div style={{fontSize:10,fontWeight:400,opacity:.85,marginTop:2}}>
-                {_t(lang,"Appuie pour activer — 1er mois à 0 €","Tap to activate — 1st month free","Toca para activar — 1er mes gratis")}
+                {_t(lang,"Appuie pour découvrir LA plage sans sargasses","Tap to discover THE sargassum-free beach","Toca para descubrir LA playa sin sargazo")}
               </div>
             </div>
             <button aria-label="Close" onClick={e=>{e.stopPropagation();setShowReferralBanner(false)}} style={{

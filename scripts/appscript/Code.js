@@ -248,8 +248,8 @@ function doPost(e) {
         wFeat2 = "Push alerts when conditions change"
         wFeat3 = "Zero ads, clean experience"
         wCta = "Open the map"
-        wTrialNote = wDateEnd ? "Your free trial ends on " + wDateEnd + ". You'll only be charged if you stay." : "Your free trial is active."
-        wManage = "Manage my subscription"
+        wTrialNote = wDateEnd ? "Your pass is active until " + wDateEnd + ". One-time payment, no subscription." : "Your pass is active. One-time payment, no subscription."
+        wManage = "View my access"
       } else {
         wSubject = "C'est parti — tes prévisions 7 jours sont actives"
         wTitle = "C'est parti !"
@@ -258,8 +258,8 @@ function doPost(e) {
         wFeat2 = "Alertes push quand les conditions changent"
         wFeat3 = "Zéro pub, expérience propre"
         wCta = "Voir la carte"
-        wTrialNote = wDateEnd ? "Ton essai gratuit se termine le " + wDateEnd + ". Tu ne seras débité que si tu restes." : "Ton essai gratuit est actif."
-        wManage = "Gérer mon abonnement"
+        wTrialNote = wDateEnd ? "Ton pass est actif jusqu'au " + wDateEnd + ". Paiement unique, sans abonnement." : "Ton pass est actif. Paiement unique, sans abonnement."
+        wManage = "Voir mon accès"
       }
       var wMapUrl = 'https://' + wDomain + '/?premium_email=' + encodeURIComponent(wEmail)
       var wManageUrl = 'https://' + wDomain + '/?manage=1&email=' + encodeURIComponent(wEmail)
@@ -722,6 +722,59 @@ function doGet(e) {
     }
   }
 
+  // Referral funnel — la boucle parrainage est live côté app (share avec ?ref=CODE →
+  // landing du filleul → conversion). Ces 3 signaux vivent dans analytics_events mais
+  // n'étaient comptés NULLE PART. Ici on les agrège pour décider des récompenses
+  // (founder-only Mollie) et repérer les meilleurs parrains.
+  //   share   = sg_share avec has_referral (un premium a partagé son lien parrain) ;
+  //   landing = sg_referral_landing (un filleul est arrivé via ?ref=CODE) ;
+  //   convert = sg_referral_convert (ce filleul a payé). landing/convert portent
+  //   ref_code (= code du PARRAIN) → on groupe par code. Fenêtre 90j par défaut (?days=).
+  if (action === 'referral') {
+    try {
+      var rDays = Math.min(365, Math.max(1, parseInt(e.parameter.days, 10) || 90))
+      var rCut = new Date(Date.now() - rDays * 24 * 60 * 60 * 1000).toISOString()
+      var rss = SpreadsheetApp.openById(SHEET_ID)
+      var rSheet = rss.getSheetByName('analytics_events')
+      var rep = { window_days: rDays, shares: 0, landings: 0, converts: 0, by_code: {}, top: [], rates: {} }
+      if (rSheet) {
+        var rData = rSheet.getDataRange().getValues()
+        for (var ri = 1; ri < rData.length; ri++) {
+          var rTs = rData[ri][0]
+          var rIso = rTs instanceof Date ? rTs.toISOString() : String(rTs || '')
+          if (rIso < rCut) continue
+          var rEvt = (rData[ri][1] || '').replace('sg_', '')
+          var rp = null
+          try { var rraw = rData[ri][9]; rp = rraw ? (typeof rraw === 'string' ? JSON.parse(rraw) : rraw) : null } catch (e2) { rp = null }
+          if (rEvt === 'share') {
+            if (rp && (rp.has_referral === true || rp.has_referral === 1 || rp.has_referral === '1' || rp.has_referral === 'true')) rep.shares++
+            continue
+          }
+          if (rEvt !== 'referral_landing' && rEvt !== 'referral_convert') continue
+          var rCode = (rp && rp.ref_code) ? String(rp.ref_code) : '(unknown)'
+          if (!rep.by_code[rCode]) rep.by_code[rCode] = { landings: 0, converts: 0 }
+          if (rEvt === 'referral_landing') { rep.landings++; rep.by_code[rCode].landings++ }
+          else { rep.converts++; rep.by_code[rCode].converts++ }
+        }
+        var rCodes = Object.keys(rep.by_code)
+        rCodes.sort(function (a, b) {
+          var dd = rep.by_code[b].converts - rep.by_code[a].converts
+          return dd !== 0 ? dd : rep.by_code[b].landings - rep.by_code[a].landings
+        })
+        for (var ci = 0; ci < Math.min(20, rCodes.length); ci++) {
+          rep.top.push({ code: rCodes[ci], landings: rep.by_code[rCodes[ci]].landings, converts: rep.by_code[rCodes[ci]].converts })
+        }
+      }
+      rep.rates = {
+        share_to_landing: rep.shares > 0 ? Math.round(rep.landings / rep.shares * 1000) / 10 : 0,
+        landing_to_convert: rep.landings > 0 ? Math.round(rep.converts / rep.landings * 1000) / 10 : 0
+      }
+      return jsonResponse(rep)
+    } catch (err) {
+      return jsonResponse({ error: err.message })
+    }
+  }
+
   // Send feedback request to premium clients
   if (action === 'feedback_request') {
     try {
@@ -792,7 +845,7 @@ function doGet(e) {
     }
   }
 
-  return jsonResponse({ error: 'unknown action. Use ?action=stats|emails|feedback|beach_reports|email_stats|funnel|drip_check|clean_bounces|unsubscribe' })
+  return jsonResponse({ error: 'unknown action. Use ?action=stats|emails|feedback|beach_reports|email_stats|funnel|referral|drip_check|clean_bounces|unsubscribe' })
 }
 
 function htmlResponse(body) {
@@ -828,8 +881,8 @@ var DRIP_SEQUENCES = [
         + '<h1 style="color:#E8A800;font-size:22px;margin:0 0 16px">Planifie ton weekend sans surprise</h1>'
         + '<p style="color:#333;font-size:15px;line-height:1.6">Tu utilises la carte depuis une semaine — super ! Mais savais-tu que les sargasses changent en quelques jours ?</p>'
         + '<p style="color:#333;font-size:15px;line-height:1.6">Avec les <strong>pr&eacute;visions 7 jours</strong>, tu sais d&egrave;s lundi quelle plage sera propre samedi. Plus de mauvaise surprise en arrivant.</p>'
-        + '<a href="https://sargasses-' + name.toLowerCase() + '.com/?utm_source=email&utm_medium=drip&utm_campaign=j7#premium" style="display:inline-block;background:#E8A800;color:#000;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;margin:16px 0">Essayer 7 jours gratuit →</a>'
-        + '<p style="color:#666;font-size:13px">Essai gratuit, annulation en 1 clic.</p>'
+        + '<a href="https://sargasses-' + name.toLowerCase() + '.com/?paywall=1&utm_source=email&utm_medium=drip&utm_campaign=j7" style="display:inline-block;background:#E8A800;color:#000;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;margin:16px 0">Activer mon Pass →</a>'
+        + '<p style="color:#666;font-size:13px">Paiement unique, sans abonnement - d&egrave;s 7,99 €.</p>'
         + '<p style="color:#999;font-size:12px;margin-top:32px">Sargasses ' + name + ' · Donn&eacute;es satellite en temps r&eacute;el</p>'
         + '</div>'
     }
@@ -848,8 +901,8 @@ var DRIP_SEQUENCES = [
         + '<li><strong>Donn&eacute;es vent + courants</strong> — comprends pourquoi</li>'
         + '</ul>'
         + '<p style="color:#333;font-size:15px;line-height:1.6"><em>« J\'ai &eacute;vit&eacute; 3 weekends pourris gr&acirc;ce aux pr&eacute;visions »</em> — un utilisateur ' + name + '</p>'
-        + '<a href="https://sargasses-' + name.toLowerCase() + '.com/?utm_source=email&utm_medium=drip&utm_campaign=j14#premium" style="display:inline-block;background:#E8A800;color:#000;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;margin:16px 0">Essai gratuit 7 jours →</a>'
-        + '<p style="color:#666;font-size:13px">4,99 €/mois apr&egrave;s l\'essai. Annulation en 1 clic.</p>'
+        + '<a href="https://sargasses-' + name.toLowerCase() + '.com/?paywall=1&utm_source=email&utm_medium=drip&utm_campaign=j14" style="display:inline-block;background:#E8A800;color:#000;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;margin:16px 0">Activer mon Pass →</a>'
+        + '<p style="color:#666;font-size:13px">Paiement unique, sans abonnement - d&egrave;s 7,99 €.</p>'
         + '<p style="color:#999;font-size:12px;margin-top:32px">Sargasses ' + name + ' · Donn&eacute;es satellite en temps r&eacute;el</p>'
         + '</div>'
     }

@@ -25,7 +25,7 @@ const BOUNCED_PATH = path.join(__dirname, 'data', 'bounced-emails.json')
 const SARG_PATH = path.join(__dirname, '../../public/api/copernicus/sargassum.json')
 const BEACHES_PATH = path.join(__dirname, '../../public/data/beaches-list.json')
 // Leads PRO (formulaires /pro/*) : exclus du welcome grand public — ils ont leur
-// propre séquence (drip-b2b-email.cjs). Un hôtel ne doit JAMAIS recevoir l'offre 4,99 €.
+// propre séquence (drip-b2b-email.cjs). Un hôtel ne doit JAMAIS recevoir l'offre Pass conso.
 const B2B_SOURCES = new Set(['b2b_hotel_request', 'b2b_collectivite_request'])
 // Sources de CAPTURE qui DÉBLOQUENT réellement 7j premium côté front (rang 1 :
 // capture-gate + gap_freemium posent sg_premium_pass_end). Le welcome leur CONFIRME
@@ -64,66 +64,163 @@ function buildWelcomeHTML(island, cleanCount, email, source) {
   // 2026-06-17 — checkout ON-SITE (essai retiré, plus de buy.stripe.com) : le CTA
   // email ouvre le paywall on-site via ?paywall=1 (deep-link App → openPremium).
   const stripe = `https://${domain}/?paywall=1&utm_source=email&utm_medium=welcome&utm_campaign=sargasses`
-
-  return `<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
-<body style="margin:0;padding:0;background:#F7F5EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
-<div style="max-width:480px;margin:0 auto;padding:20px">
-
-  ${brandHeader('Bienvenue parmi nous', `Sargasses ${name}`, 'Le Veilleur surveille l’Atlantique pour toi. Fini les mauvaises surprises.')}
-
-  <div style="background:#fff;padding:24px 20px">
-    ${PREMIUM_CAPTURE_SOURCES.has(source) ? `<div style="text-align:center;margin-bottom:18px;padding:14px 16px;background:rgba(255,199,44,.12);border:1px solid rgba(232,168,0,.35);border-radius:12px">
+  const headerHtml = brandHeader('Bienvenue parmi nous', `Sargasses ${name}`, 'Le Veilleur surveille l’Atlantique pour toi. Fini les mauvaises surprises.')
+  const captureBlock = PREMIUM_CAPTURE_SOURCES.has(source) ? `<div style="text-align:center;margin-bottom:18px;padding:14px 16px;background:rgba(255,199,44,.12);border:1px solid rgba(232,168,0,.35);border-radius:12px">
       <div style="font-size:14px;font-weight:800;color:#0D0D0D">✅ Tes 7 jours premium sont actifs</div>
       <div style="font-size:12.5px;color:#686868;line-height:1.45;margin-top:4px">Le verdict du matin — ta meilleure plage du jour — arrive chaque matin dans ta boîte. Prévision 7 jours + alertes dans l'app.</div>
-    </div>` : ''}
-    ${cleanCount > 0 ? `<div style="text-align:center;margin-bottom:20px;padding:16px;background:rgba(34,197,94,.06);border-radius:12px">
+    </div>` : ''
+  const cleanBlock = cleanCount > 0 ? `<div style="text-align:center;margin-bottom:20px;padding:16px;background:rgba(34,197,94,.06);border-radius:12px">
       <div style="font-size:32px;font-weight:800;color:#16A34A">${cleanCount}</div>
       <div style="font-size:13px;color:#686868;margin-top:2px">plages propres en ce moment en ${name}</div>
-    </div>` : ''}
+    </div>` : ''
 
-    <div style="font-size:14px;color:#444;line-height:1.5;margin-bottom:18px">
-      Tu viens de rejoindre les habitants de ${name} protégés par le Veilleur. Voici ce que tu vas recevoir :
-    </div>
+  return `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>Bienvenue parmi nous</title>
+</head>
+<body style="margin:0; padding:0; background-color:#0A1714; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0A1714;">
+<tr>
+<td align="center" style="padding:24px 12px;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%; max-width:600px;">
 
-    <table style="width:100%;border-collapse:collapse">
-      <tr><td style="padding:10px 0;vertical-align:top;width:30px;font-size:18px">\u{1F4E8}</td>
-        <td style="padding:10px 0"><div style="font-size:13px;font-weight:700;color:#0D0D0D">Bulletin du vendredi</div>
-        <div style="font-size:12px;color:#686868;line-height:1.4">Chaque semaine, les plages propres pour ton weekend. Direct dans ta bo\u00EEte.</div></td></tr>
-      <tr><td style="padding:10px 0;vertical-align:top;font-size:18px">\u{1F5FA}\uFE0F</td>
-        <td style="padding:10px 0"><div style="font-size:13px;font-weight:700;color:#0D0D0D">Carte live</div>
-        <div style="font-size:12px;color:#686868;line-height:1.4">V\u00E9rifie n\u2019importe quelle plage en 5 secondes avant d\u2019y aller.</div></td></tr>
-      <tr><td style="padding:10px 0;vertical-align:top;font-size:18px">\u{1F6F0}\uFE0F</td>
-        <td style="padding:10px 0"><div style="font-size:13px;font-weight:700;color:#0D0D0D">Donn\u00E9es satellite</div>
-        <div style="font-size:12px;color:#686868;line-height:1.4">Mises \u00E0 jour 4\u00D7/jour. Pas du pifom\u00E8tre, des vraies images Copernicus.</div></td></tr>
-    </table>
+<tr>
+<td style="padding:0;">${headerHtml}</td>
+</tr>
 
-    <div style="margin-top:22px;text-align:center">
-      <a href="https://${domain}" style="display:inline-block;padding:15px 36px;
-        background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);
-        color:#0D0D0D;text-decoration:none;border-radius:12px;font-size:15px;font-weight:700;
-        box-shadow:0 4px 16px rgba(232,168,0,.3)">Voir la carte maintenant</a>
-    </div>
-  </div>
+<tr>
+<td style="background-color:#F7F5EF; border-radius:0 0 16px 16px; padding:0;">
 
-  <div style="background:linear-gradient(145deg,#0D1E1C,#0A1714);padding:22px 24px;text-align:center">
-    <div style="font-size:11px;font-weight:700;color:#E8A800;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Pour aller plus loin</div>
-    <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:6px">Sache samedi d\u00E8s lundi</div>
-    <div style="font-size:12px;color:rgba(255,255,255,.55);margin-bottom:14px;line-height:1.5">
-      Pr\u00E9visions 7 jours + alertes push.<br>Planifie tes sorties plage sans stress.
-    </div>
-    <a href="${stripe}" style="display:inline-block;padding:11px 26px;
-      background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);
-      color:#0D0D0D;text-decoration:none;border-radius:10px;font-size:13px;font-weight:700">Activer mon veilleur</a>
-    <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:8px">4,99\u00A0\u20AC/mois \u00B7 Satisfait ou rembours\u00E9 30 jours \u00B7 Annule en 1 clic</div>
-  </div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
 
-  <div style="background:#fff;border-radius:0 0 16px 16px;text-align:center;padding:16px;font-size:10px;color:#999">
-    Sargasses ${name} \u00B7 ${domain}<br>
-    <a href="${unsubUrl(email, island)}" style="color:#999">Se d\u00E9sabonner</a>
-  </div>
-</div>
+<tr>
+<td style="padding:28px 32px 0 32px;">${captureBlock}</td>
+</tr>
+
+<tr>
+<td style="padding:16px 32px 0 32px;">${cleanBlock}</td>
+</tr>
+
+<tr>
+<td style="padding:28px 32px 0 32px;">
+<p style="margin:0; font-family:Georgia, 'Times New Roman', serif; font-size:13px; line-height:1.4; letter-spacing:2px; text-transform:uppercase; color:#E89400; font-weight:bold;">Le mot du Veilleur</p>
+<p style="margin:14px 0 0 0; font-family:Georgia, 'Times New Roman', serif; font-size:24px; line-height:1.3; color:#0A1714; font-weight:bold;">Chaque matin, je regarde la mer pour toi.</p>
+<p style="margin:18px 0 0 0; font-family:Arial, Helvetica, sans-serif; font-size:16px; line-height:1.65; color:#2E3B38;">Tu viens de rejoindre les habitants de ${name} protégés par le Veilleur. Pas de panique le week-end venu, pas de plage gâchée à l'arrivée. Voici concrètement ce que tu vas recevoir.</p>
+</td>
+</tr>
+
+<tr>
+<td style="padding:26px 32px 0 32px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+
+<tr>
+<td style="padding:0 0 18px 0; border-bottom:1px solid #E4E0D6;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td valign="top" width="40" style="font-family:Georgia, serif; font-size:22px; color:#E89400; font-weight:bold; padding-top:2px;">01</td>
+<td valign="top" style="font-family:Arial, Helvetica, sans-serif;">
+<p style="margin:0; font-size:17px; line-height:1.4; color:#0A1714; font-weight:bold;">Le bulletin du vendredi</p>
+<p style="margin:6px 0 0 0; font-size:15px; line-height:1.55; color:#52605C;">Les plages propres pour ton week-end, livrées chaque vendredi. Tu choisis où poser ta serviette en un coup d'œil.</p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+
+<tr>
+<td style="padding:18px 0; border-bottom:1px solid #E4E0D6;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td valign="top" width="40" style="font-family:Georgia, serif; font-size:22px; color:#E89400; font-weight:bold; padding-top:2px;">02</td>
+<td valign="top" style="font-family:Arial, Helvetica, sans-serif;">
+<p style="margin:0; font-size:17px; line-height:1.4; color:#0A1714; font-weight:bold;">La carte live</p>
+<p style="margin:6px 0 0 0; font-size:15px; line-height:1.55; color:#52605C;">L'état de n'importe quelle plage vérifié en 5 secondes, quand tu veux, depuis ton téléphone.</p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+
+<tr>
+<td style="padding:18px 0 0 0;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td valign="top" width="40" style="font-family:Georgia, serif; font-size:22px; color:#E89400; font-weight:bold; padding-top:2px;">03</td>
+<td valign="top" style="font-family:Arial, Helvetica, sans-serif;">
+<p style="margin:0; font-size:17px; line-height:1.4; color:#0A1714; font-weight:bold;">Les données satellite</p>
+<p style="margin:6px 0 0 0; font-size:15px; line-height:1.55; color:#52605C;">De vraies images Copernicus, mises à jour 4 fois par jour. Aucune approximation, juste ce que voit le ciel.</p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+
+</table>
+</td>
+</tr>
+
+<tr>
+<td align="center" style="padding:32px 32px 8px 32px;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0">
+<tr>
+<td align="center" bgcolor="#FFC72C" style="border-radius:10px; background-color:#FFC72C;">
+<a href="https://${domain}" target="_blank" style="display:inline-block; padding:17px 38px; font-family:Arial, Helvetica, sans-serif; font-size:17px; font-weight:bold; color:#0A1714; text-decoration:none; border-radius:10px; background-color:#FFC72C;">Voir la carte maintenant</a>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+
+<tr>
+<td align="center" style="padding:0 32px 30px 32px;">
+<p style="margin:0; font-family:Arial, Helvetica, sans-serif; font-size:14px; line-height:1.5; color:#52605C; font-weight:bold;">Commence par ta plage préférée.</p>
+<p style="margin:5px 0 0 0; font-family:Arial, Helvetica, sans-serif; font-size:13px; line-height:1.5; color:#8A938F;">C'est tout ce que tu as à faire aujourd'hui. Ouvre la carte une fois, tu y reviendras.</p>
+</td>
+</tr>
+
+<tr>
+<td style="padding:0 24px 28px 24px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0B2230; border-radius:14px;">
+<tr>
+<td style="padding:30px 30px 28px 30px;">
+<p style="margin:0; font-family:Georgia, 'Times New Roman', serif; font-size:12px; line-height:1.4; letter-spacing:2px; text-transform:uppercase; color:#FFC72C; font-weight:bold;">Pour aller plus loin</p>
+<p style="margin:14px 0 0 0; font-family:Georgia, 'Times New Roman', serif; font-size:21px; line-height:1.35; color:#FFFFFF; font-weight:bold;">Sache dès lundi ce que sera ton samedi.</p>
+<p style="margin:14px 0 0 0; font-family:Arial, Helvetica, sans-serif; font-size:15px; line-height:1.6; color:#C7D2CE;">Tout ce que la carte te montre aujourd'hui, projeté sur ta semaine. Le Pass débloque les prévisions sur 7 jours et les alertes push quand la sargasse approche ta plage. Tu anticipes au lieu de subir.</p>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:22px;">
+<tr>
+<td align="center" bgcolor="#E8A800" style="border-radius:10px; background-color:#E8A800;">
+<a href="${stripe}" target="_blank" style="display:inline-block; padding:15px 34px; font-family:Arial, Helvetica, sans-serif; font-size:16px; font-weight:bold; color:#0A1714; text-decoration:none; border-radius:10px; background-color:#E8A800;">Activer mon Pass</a>
+</td>
+</tr>
+</table>
+<p style="margin:18px 0 0 0; font-family:Arial, Helvetica, sans-serif; font-size:13px; line-height:1.5; color:#9FB0AB;">Dès 7,99 € · paiement unique, sans abonnement · remboursé en un email</p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+
+<tr>
+<td align="center" style="padding:8px 32px 32px 32px; border-top:1px solid #E4E0D6;">
+<p style="margin:24px 0 0 0; font-family:Georgia, 'Times New Roman', serif; font-size:15px; line-height:1.4; color:#0A1714; font-weight:bold;">Le Veilleur</p>
+<p style="margin:8px 0 0 0; font-family:Arial, Helvetica, sans-serif; font-size:12px; line-height:1.5; color:#9AA39F;">On veille sur tes plages à ${name}.</p>
+<p style="margin:14px 0 0 0; font-family:Arial, Helvetica, sans-serif; font-size:12px; line-height:1.5; color:#9AA39F;"><a href="${unsubUrl(email, island)}" target="_blank" style="color:#9AA39F; text-decoration:underline;">Se désabonner</a></p>
+</td>
+</tr>
+
+</table>
+
+</td>
+</tr>
+
+</table>
+</td>
+</tr>
+</table>
 </body>
 </html>`
 }
@@ -150,8 +247,8 @@ function buildWelcomeHTMLRegion(region, cleanCount, email) {
     cta: 'Ver el mapa ahora',
     upKicker: 'Para ir más lejos', upTitle: 'Sabe el sábado desde el lunes',
     upDesc: 'Pronóstico de 7 días + alertas push.<br>Planifica tus días de playa sin estrés.',
-    upCta: 'Activar mi vigía',
-    upFoot: `${monthly}/mes · Sin permanencia · Cancela en 1 clic`,
+    upCta: 'Activar mi pase',
+    upFoot: 'Desde $5.99 · pago único, sin suscripción · reembolso en un email',
     unsub: 'Darse de baja',
   } : {
     kicker: 'Welcome aboard',
@@ -165,8 +262,8 @@ function buildWelcomeHTMLRegion(region, cleanCount, email) {
     cta: 'See the map now',
     upKicker: 'Go further', upTitle: 'Know Saturday by Monday',
     upDesc: '7-day forecast + push alerts.<br>Plan your beach days stress-free.',
-    upCta: 'Activate my watcher',
-    upFoot: `${monthly}/month · No commitment · Cancel anytime`,
+    upCta: 'Activate my Pass',
+    upFoot: 'From $5.99 · one-time, no subscription · refund in one email',
     unsub: 'Unsubscribe',
   }
   const island = region.id.toUpperCase()
@@ -343,4 +440,6 @@ async function main() {
   console.log('Done.')
 }
 
-main().catch(e => console.error(e))
+if (require.main === module) main().catch(e => console.error(e))
+
+module.exports = { buildWelcomeHTML, buildWelcomeHTMLRegion }

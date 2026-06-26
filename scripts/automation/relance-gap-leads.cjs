@@ -5,8 +5,8 @@
  * Pendant la coupure paiement (Stripe mort, attente validation Mollie on-site), le
  * paywall est en mode CAPTURE : il enrôle l'email (sources gap_freemium / mollie_waitlist
  * / onsite_checkout / pay_intent / paypal_sub) au lieu de charger. CE SCRIPT = la relance
- * à dégainer AU GO-LIVE Mollie : « C'est rouvert — ton accès Premium pour 4,99 €/mois. »
- * Convertit les leads capturés pendant l'attente en abonnés dès la réouverture.
+ * à dégainer AU GO-LIVE Mollie : « C'est rouvert — ton Pass plage, dès 7,99 € (paiement unique). »
+ * Convertit les leads capturés pendant l'attente en clients dès la réouverture.
  *
  * One-shot, idempotent (data/relance-gap-sent.json), throttlé (plafond Resend ~100/j).
  * Nécessite scripts/automation/data/subscribers.json (récupéré au runtime/FTP).
@@ -87,7 +87,7 @@ function buildHtml(domain, island) {
   <div style="font:700 12px/1 system-ui;letter-spacing:1.5px;color:#E8A800;text-transform:uppercase;margin-bottom:10px">LE VEILLEUR · PASS</div>
   <h1 style="font-size:23px;margin:0 0 8px">C'est rouvert — ne gâche plus un jour de plage 🌅</h1>
   <p style="font-size:15px;color:#444;margin:0 0 6px">Le Veilleur te dit chaque matin LA plage sans sargasses : prévision 7 jours, 136+ plages, alertes.</p>
-  <p style="font-size:15px;color:#444;margin:0 0 20px"><b>Un pass, paiement unique — pas d'abonnement.</b> Dès <b>7,99 €</b> · le Pass 30 jours à <b>14,99 €</b> (0,50 €/jour).</p>
+  <p style="font-size:15px;color:#444;margin:0 0 20px"><b>Un pass, paiement unique — pas d'abonnement.</b> Dès <b>7,99 €</b> · le Pass 30 jours à <b>14,99 €</b>.</p>
   <a href="${cta}" style="display:inline-block;background:linear-gradient(135deg,#E8A800,#F0C040);color:#1a1a1a;font-weight:700;font-size:15px;padding:14px 32px;border-radius:12px;text-decoration:none">Activer mon pass →</a>
   <p style="font-size:11px;color:#bbb;margin:22px 0 0">Paiement unique · pas d'abonnement · remboursé en un email · ${domain}</p>
 </div>`
@@ -102,7 +102,7 @@ function buildHtmlDiscovery(domain, island) {
   <div style="font:700 12px/1 system-ui;letter-spacing:1.5px;color:#E8A800;text-transform:uppercase;margin-bottom:10px">NOUVEAU · LE VEILLEUR PASS</div>
   <h1 style="font-size:23px;margin:0 0 8px">Ne gâche plus un seul jour de plage 🌅</h1>
   <p style="font-size:15px;color:#444;margin:0 0 6px">Tu reçois déjà nos infos sargasses. Va plus loin : le Veilleur te dit chaque matin <b>LA plage sans sargasses</b> — prévision 7 jours, 136+ plages, alertes.</p>
-  <p style="font-size:15px;color:#444;margin:0 0 20px"><b>Un pass, paiement unique — pas d'abonnement.</b> Dès <b>7,99 €</b> · le Pass 30 jours à <b>14,99 €</b> (0,50 €/jour).</p>
+  <p style="font-size:15px;color:#444;margin:0 0 20px"><b>Un pass, paiement unique — pas d'abonnement.</b> Dès <b>7,99 €</b> · le Pass 30 jours à <b>14,99 €</b>.</p>
   <a href="${cta}" style="display:inline-block;background:linear-gradient(135deg,#E8A800,#F0C040);color:#1a1a1a;font-weight:700;font-size:15px;padding:14px 32px;border-radius:12px;text-decoration:none">Découvrir le Pass →</a>
   <p style="font-size:11px;color:#bbb;margin:22px 0 0">Paiement unique · pas d'abonnement · remboursé en un email · ${domain}</p>
 </div>`
