@@ -2433,7 +2433,7 @@ button:active,a:active,[role="button"]:active{transform:scale(.91)!important;opa
   background:var(--sg-card,#fff);border-radius:20px 20px 0 0;
   box-shadow:0 -4px 30px rgba(0,0,0,.12);
   transition:transform .35s cubic-bezier(.32,.72,0,1);
-  max-height:85vh;max-height:85dvh;overflow-y:auto;overscroll-behavior:contain;
+  max-height:85vh;max-height:85dvh;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
   -webkit-overflow-scrolling:touch;
   animation:sheetSlideUp .4s cubic-bezier(.32,.72,0,1);
   will-change:transform;
@@ -3735,7 +3735,22 @@ function PlanBThumb({i}){
     </svg>
   )
 }
-function PlanBPanel({beach,allBeaches,userPos,lang,sargData,onBeachClick,onClose}){
+// Soft-ask géoloc CONTEXTUEL (échelle « molo ») — puce discrète déclenchée AU TAP,
+// jamais au load. Affichée seulement quand on n'a pas encore la position ET qu'elle a
+// une valeur évidente ici (distance d'une fiche, tri par proximité). Le prompt natif
+// du navigateur ne se déclenche qu'au clic (onAsk → requestGeo). i18n + region-agnostic.
+function GeoSoftAsk({lang,onAsk,label,src,style}){
+  if(typeof navigator!=="undefined"&&!navigator.geolocation)return null
+  return(
+    <button type="button" onClick={e=>{e.stopPropagation();try{onAsk&&onAsk(src||"softask")}catch(_){}}}
+      style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 10px",borderRadius:999,
+        border:"1px solid var(--sg-border,rgba(13,13,13,.14))",background:"var(--sg-card,rgba(255,255,255,.55))",
+        color:"var(--sg-mid,#5A5A5A)",fontSize:12,fontWeight:600,fontFamily:"inherit",cursor:"pointer",lineHeight:1.1,...(style||{})}}>
+      📍 {label||_t(lang,"Voir la distance","Show distance","Ver distancia")}
+    </button>
+  )
+}
+function PlanBPanel({beach,allBeaches,userPos,lang,sargData,onBeachClick,onClose,onRequestGeo}){
   // plages PROPRES proches : on prend les 3 plus PROCHES (ou meilleur score sans
   // géoloc), puis on met la meilleure note en carte #1 (ruban « le + sûr »).
   const clean=useMemo(()=>{
@@ -3770,6 +3785,12 @@ function PlanBPanel({beach,allBeaches,userPos,lang,sargData,onBeachClick,onClose
         {_t(lang," près de toi"," near you"," cerca de ti")}
       </h3>
       {fresh&&<div style={{fontSize:11.5,fontWeight:700,color:"var(--sg-mid,#5A5A5A)",margin:"0 0 10px"}}>{fresh}</div>}
+      {/* Soft-ask géoloc : sans position, le rail est trié par score → on propose de
+          trier par proximité (prompt natif au tap seulement). */}
+      {!userPos&&onRequestGeo&&<div style={{margin:"0 0 10px"}}>
+        <GeoSoftAsk lang={lang} onAsk={onRequestGeo} src="planb"
+          label={_t(lang,"Trier par distance","Sort by distance","Ordenar por distancia")}/>
+      </div>}
       <div style={{display:"flex",gap:11,overflowX:"auto",scrollSnapType:"x mandatory",
         padding:"2px 0 10px",margin:"0 -2px",WebkitOverflowScrolling:"touch",scrollbarWidth:"none"}}>
         {clean.map((b,i)=>(
@@ -3977,7 +3998,7 @@ function comicVerdict(status,lang,daypart){
   if(status==="avoid")return{big:_t(lang,"Évite l'eau","Skip the swim","Evita el agua"),when:w,hl:_t(lang,"ALERTE","ALERT","ALERTA")}
   return{big:_t(lang,"Le Veilleur scanne","Scanning","Escaneando"),when:w,hl:"…"}
 }
-function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,onBeachClick,onPremiumClick,isPremium,sargData,userPos,forecast:forecastProp,track:trackProp,communityReports={}}){
+function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,onBeachClick,onPremiumClick,isPremium,sargData,userPos,forecast:forecastProp,track:trackProp,communityReports={},onRequestGeo}){
   const trk=(n,p)=>{try{(trackProp||track)(n,p)}catch(_){}}
   const weather=useWeather(beach)
   const sheetRef=useRef(null), backdropRef=useRef(null), startY=useRef(0), dragY=useRef(0), closingRef=useRef(false)
@@ -4102,7 +4123,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
         style={{position:"fixed",inset:0,zIndex:1049,background:"rgba(11,7,22,.46)",backdropFilter:"blur(1.5px)",WebkitBackdropFilter:"blur(1.5px)",animation:"bscFade .25s ease both"}}/>
       {/* Sheet */}
       <div ref={sheetRef} className="bsc-sheet" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
-        style={{position:"fixed",left:0,right:0,bottom:0,zIndex:1050,maxHeight:"92svh",overflowY:"auto",
+        style={{position:"fixed",left:0,right:0,bottom:0,zIndex:1050,maxHeight:"92svh",overflowY:"auto",overflowX:"hidden",
           background:COMIC.cream,backgroundImage:`radial-gradient(${COMIC.ink}0d 1.3px,transparent 1.5px)`,backgroundSize:"11px 11px",
           borderTop:`4px solid ${COMIC.ink}`,borderRadius:"26px 26px 0 0",boxShadow:"0 -12px 44px rgba(0,0,0,.42)",
           padding:"10px 16px calc(20px + env(safe-area-inset-bottom))",WebkitOverflowScrolling:"touch",
@@ -4116,7 +4137,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
         <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:10,paddingRight:34}}>
           <div style={{minWidth:0}}>
             <div style={{fontFamily:"'Anton',sans-serif",fontSize:23,lineHeight:.96,color:COMIC.ink,textTransform:"uppercase",letterSpacing:"-.3px",wordBreak:"break-word"}}>{beach.name}</div>
-            {locLine&&<div style={{font:"700 11.5px/1.2 'Bricolage Grotesque'",color:COMIC.sub,marginTop:4,display:"flex",alignItems:"center",gap:5}}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>{locLine}</div>}
+            {locLine&&<div style={{font:"700 11.5px/1.2 'Bricolage Grotesque'",color:COMIC.sub,marginTop:4,display:"flex",alignItems:"center",gap:5}}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>{locLine}{!userPos&&beach?.lat&&onRequestGeo&&<GeoSoftAsk lang={lang} onAsk={onRequestGeo} src="beach_dive" style={{padding:"2px 8px",fontSize:11,marginLeft:2}}/>}</div>}
           </div>
           <span style={{font:"800 11px/1 'Bricolage Grotesque'",padding:"7px 11px",borderRadius:999,border:`2.5px solid ${COMIC.ink}`,boxShadow:`2px 2px 0 ${COMIC.ink}`,background:sc,color:status==="avoid"?"#fff":COMIC.ink,whiteSpace:"nowrap",display:"inline-flex",alignItems:"center",gap:5}}><ComicStatusGlyph status={status} size={13} color={status==="avoid"?"#fff":COMIC.ink}/>{(ST[status]||ST._loading)[lang==="en"?"le":lang==="es"?"les":"l"]}</span>
         </div>
@@ -4216,7 +4237,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
   )
 }
 
-function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMap,onBeachClick,onPremiumClick,isPremium,historyData,sargData,dataSource,userPos,communityReports,fbPosts}){
+function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMap,onBeachClick,onPremiumClick,isPremium,historyData,sargData,dataSource,userPos,communityReports,fbPosts,onRequestGeo}){
   const LL=T[lang]||T.fr
   const weather=useWeather(beach)
   // Use REAL forecast, then interpolated, then fallback generated
@@ -4479,13 +4500,20 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               <span style={{width:3,height:3,borderRadius:2,background:"var(--sg-mid,#999)",opacity:.5}}/>
               <span>{Math.round(haversine(userPos.lat,userPos.lng,beach.lat,beach.lng))} km</span>
             </>}
+            {/* Pas encore de position → soft-ask contextuel : la distance a une valeur
+                évidente ici (prompt natif au tap seulement, jamais au load). */}
+            {!userPos&&beach.lat&&onRequestGeo&&<>
+              <span style={{width:3,height:3,borderRadius:2,background:"var(--sg-mid,#999)",opacity:.5}}/>
+              <GeoSoftAsk lang={lang} onAsk={onRequestGeo} src="beach_sheet"
+                style={{padding:"2px 8px",fontSize:11.5}}/>
+            </>}
           </p>
 
           {/* PLAN-B « où aller maintenant » — quand CETTE plage est chargée
               (avoid/moderate), rail des plages propres proches. A/B pw_planb. */}
           {pwPlanb&&(beach.status==="avoid"||beach.status==="moderate")&&(
             <PlanBPanel beach={beach} allBeaches={allBeaches} userPos={userPos} lang={lang}
-              sargData={sargData} onBeachClick={onBeachClick} onClose={onClose}/>
+              sargData={sargData} onBeachClick={onBeachClick} onClose={onClose} onRequestGeo={onRequestGeo}/>
           )}
 
           {/* v3.1 Beach Score 0-100 — editorial aurora card echoing the home hero.
@@ -5160,7 +5188,7 @@ function SearchBar({value,onChange,lang}){
 /* ═══════════════════════════════════════════════════════════════════════════
    BEACH LIST VIEW — alternative to map (tab Plages)
    ═══════════════════════════════════════════════════════════════════════════ */
-function BeachListView({beaches,onBeachClick,favorites,lang,imageMap,sargData,onPremiumClick,isPremium,userPos}){
+function BeachListView({beaches,onBeachClick,favorites,lang,imageMap,sargData,onPremiumClick,isPremium,userPos,onRequestGeo}){
   const LL=T[lang]||T.fr
   const [q,setQ]=useState("")
   const [qFocus,setQFocus]=useState(false)
@@ -5230,7 +5258,7 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap,sargData,on
   const qBase=useMemo(()=>{if(!q)return beaches;const lq=q.toLowerCase();return beaches.filter(b=>(b.name+" "+b.commune).toLowerCase().includes(lq))},[beaches,q])
   const chipCount=id=>id==="fav"?qBase.filter(b=>favorites.includes(b.id)).length:qBase.filter(b=>b.status===id).length
   return(
-    <div style={{height:"100%",overflowY:"auto",
+    <div style={{height:"100%",overflowY:"auto",overflowX:"hidden",
       paddingTop:"calc(var(--sg-header-offset,108px) + env(safe-area-inset-top,0px))",paddingBottom:"calc(70px + env(safe-area-inset-bottom,12px))",
       background:"radial-gradient(120% 78% at 72% 0%, rgba(201,126,58,.28), rgba(242,176,94,.08) 42%, transparent 66%), linear-gradient(180deg,#0B2230 0%,#103029 40%,#120821 100%)",
       color:"#fff",maxWidth:600,margin:"0 auto"}}>
@@ -5349,7 +5377,10 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap,sargData,on
               return(
                 <button key={s.id} role="tab" aria-selected={on}
                   className={"sg-sortbtn"+(on?" is-on":"")}
-                  onClick={()=>{setSort(s.id);try{track("sg_list_sort",{sort:s.id})}catch(_){}}}>
+                  onClick={()=>{setSort(s.id);try{track("sg_list_sort",{sort:s.id})}catch(_){}
+                    // « Plus proches » sans position → soft-ask contextuel (tri par
+                    // distance réelle dès que la permission est accordée ; sinon repli drive).
+                    if(s.id==="near"&&!userPos&&onRequestGeo)onRequestGeo("list_near")}}>
                   {s.label}
                 </button>
               )
@@ -12483,54 +12514,55 @@ export default function App(){
 
   // P6 — géoloc À LA DEMANDE (clic « Près de moi ») : c'est le rung #2 du molo_ladder
   // (soft-ask contextuel, user-initiated) → n'interfère PAS avec l'auto-prompt A/B.
-  const requestGeo=useCallback(()=>{
-    if(!navigator.geolocation)return
-    try{track("sg_geo_request",{src:"near_me"})}catch(_){}
+  const requestGeo=useCallback((src="near_me")=>{
+    const _src=typeof src==="string"?src:"near_me"
+    if(!navigator.geolocation){try{sgToast({tone:"error",msg:_t(lang,"Géolocalisation indisponible sur cet appareil.","Geolocation unavailable on this device.","Geolocalización no disponible en este dispositivo.")})}catch(_){}; return}
+    try{track("sg_geo_request",{src:_src})}catch(_){}
+    // « Près de moi » = action EXPLICITE → fix FRAIS HAUTE PRÉCISION (enableHighAccuracy
+    // + maximumAge:0). L'ancien réglage (low-accuracy + cache 5 min) renvoyait souvent une
+    // position IP/wifi à des dizaines de km → « la plage la plus proche » était fausse.
     navigator.geolocation.getCurrentPosition(pos=>{
       const lat=pos.coords.latitude,lng=pos.coords.longitude
       setUserPos({lat,lng})
       const gpsIsland=lat>15.5?"gp":"mq"
       setIsland(prev=>{const saved=g("sg_island",null);return saved?prev:gpsIsland})
-    },()=>{},{enableHighAccuracy:false,timeout:8000,maximumAge:300000})
-  },[])
+    },err=>{
+      // Échec SILENCIEUX avant → l'utilisateur ne comprenait pas pourquoi « près de moi »
+      // ne marchait pas. On l'explique (refus = code 1, sinon réseau/timeout).
+      try{track("sg_geo_denied",{src:_src,code:err&&err.code})}catch(_){}
+      try{sgToast({tone:"error",title:_t(lang,"Position indisponible","Location unavailable","Ubicación no disponible"),
+        msg:err&&err.code===1
+          ?_t(lang,"Autorise la localisation pour voir les plages près de toi.","Allow location to see beaches near you.","Permite la ubicación para ver playas cerca de ti.")
+          :_t(lang,"Réessaie dans un instant.","Try again in a moment.","Inténtalo de nuevo en un momento.")})}catch(_){}
+    },{enableHighAccuracy:true,timeout:12000,maximumAge:0})
+  },[lang])
 
-  // Geolocation — center map on user, find nearest beach.
-  // MOLO (2026-06-16) : ne plus prompter la géoloc À FROID au mount — anti-pattern
-  // (~14% d'opt-in à froid, intrusif, contraire à « vas-y molo sur les autorisations »).
-  // Cohorte "molo" = AUCUN prompt au load ; la géoloc précise s'acquiert ensuite via
-  // soft-ask contextuel (rung #2, clic « Trouve la plage la plus proche de toi »).
-  // Control = ancien comportement. A/B molo_ladder, override ?molo=1/0. Fallback gracieux
-  // sur l'estimation passive (timezone/hostname) — rankBeaches gère userPos=null.
+  // Geolocation — MOLO À 100 % (A/B molo_ladder TRANCHÉ le 2026-06-26 : molo bat
+  // control de +201 % sur le checkout-redirect Martinique, significatif à 99 %, et
+  // baisse l'ennui 13 %→11 %. GP non-significatif. Verdict : on retire DÉFINITIVEMENT
+  // le prompt géoloc À FROID au load — anti-pattern (~14 % d'opt-in à froid, intrusif).
+  // ZÉRO prompt au chargement. La position précise s'acquiert ensuite via soft-ask
+  // CONTEXTUEL au tap (requestGeo : « Près de moi », distance fiche, tri Plan B…).
+  // SEULE exception non-intrusive : si le navigateur a DÉJÀ accordé la permission, on
+  // récupère la position en silence (aucun prompt) pour que les habitués voient les
+  // distances tout de suite. Fallback gracieux sinon : estimation passive
+  // (timezone/hostname) — rankBeaches gère userPos=null.
   useEffect(()=>{
-    if(!navigator.geolocation)return
-    let moloV
-    try{const o=new URLSearchParams(window.location.search).get("molo");moloV=o==="1"?"molo":o==="0"?"control":null}catch(_){moloV=null}
-    if(!moloV)moloV=abVariant("molo_ladder",["control","molo"],[.5,.5])
-    if(moloV==="molo")return
-    const fetchPos=()=>navigator.geolocation.getCurrentPosition(pos=>{
-      const lat=pos.coords.latitude,lng=pos.coords.longitude
-      setUserPos({lat,lng})
-      // Auto-detect island from GPS (Martinique ~14.6°N, Guadeloupe ~16.2°N)
-      const gpsIsland=lat>15.5?"gp":"mq"
-      setIsland(prev=>{
-        const saved=g("sg_island",null)
-        if(!saved)return gpsIsland // only override if no manual selection
-        return prev
-      })
-    },()=>{},{enableHighAccuracy:false,timeout:8000,maximumAge:300000})
-    // DEMANDER LA POSITION UNE SEULE FOIS puis respecter la décision du navigateur :
-    //   granted → on récupère la position SANS re-prompter (à chaque visite)
-    //   prompt  → on demande UNE fois (marqueur sg_geo_asked), plus jamais au load
-    //   denied  → on n'insiste plus
-    // Fix : avant, getCurrentPosition au mount re-déclenchait le prompt à CHAQUE chargement.
-    const askOnce=()=>{try{if(localStorage.getItem("sg_geo_asked"))return;localStorage.setItem("sg_geo_asked","1")}catch(_){}fetchPos()}
-    if(navigator.permissions&&navigator.permissions.query){
-      navigator.permissions.query({name:"geolocation"}).then(p=>{
-        if(p.state==="granted")fetchPos()       // déjà autorisé → position silencieuse, zéro prompt
-        else if(p.state==="prompt")askOnce()     // jamais demandé → 1 seule fois
-        // "denied" → ne rien faire
-      }).catch(()=>askOnce())
-    }else askOnce()
+    if(!navigator.geolocation||!navigator.permissions||!navigator.permissions.query)return
+    navigator.permissions.query({name:"geolocation"}).then(p=>{
+      if(p.state!=="granted")return // jamais de prompt au load ; on attend un soft-ask contextuel
+      navigator.geolocation.getCurrentPosition(pos=>{
+        const lat=pos.coords.latitude,lng=pos.coords.longitude
+        setUserPos({lat,lng})
+        // Auto-detect island from GPS (Martinique ~14.6°N, Guadeloupe ~16.2°N)
+        const gpsIsland=lat>15.5?"gp":"mq"
+        setIsland(prev=>{
+          const saved=g("sg_island",null)
+          if(!saved)return gpsIsland // only override if no manual selection
+          return prev
+        })
+      },()=>{},{enableHighAccuracy:false,timeout:8000,maximumAge:300000})
+    }).catch(()=>{})
   },[])
 
   // Theme
@@ -12954,7 +12986,8 @@ export default function App(){
           pointerEvents:view==="list"?"auto":"none",transition:"opacity .28s ease, transform .42s cubic-bezier(.34,1.56,.64,1)"}}>
           <BeachListView beaches={filtered} onBeachClick={onBeachClick}
             favorites={favorites} lang={lang} imageMap={imageMap}
-            sargData={sargData} onPremiumClick={openPremium} isPremium={isPremium} userPos={userPos}/>
+            sargData={sargData} onPremiumClick={openPremium} isPremium={isPremium} userPos={userPos}
+            onRequestGeo={requestGeo}/>
         </div>
 
         {/* HERO VERDICT — premier écran au-dessus de la carte (z 1050 : couvre
@@ -13362,7 +13395,8 @@ export default function App(){
               allBeaches={allBeaches} imageMap={imageMap}
               onBeachClick={onBeachClick} onPremiumClick={openPremium} isPremium={isPremium}
               historyData={historyData} sargData={sargData}
-              dataSource={dataSource} userPos={userPos} communityReports={communityReports} fbPosts={fbPosts}/>
+              dataSource={dataSource} userPos={userPos} communityReports={communityReports} fbPosts={fbPosts}
+              onRequestGeo={requestGeo}/>
           )
           return(
             <ErrBound key={selectedBeach.id} fallback={_fallback}>
@@ -13371,7 +13405,7 @@ export default function App(){
                 allBeaches={allBeaches} onBeachClick={onBeachClick}
                 onPremiumClick={openPremium} isPremium={isPremium}
                 sargData={sargData} userPos={userPos} forecast={_fc} track={track}
-                communityReports={communityReports}/>
+                communityReports={communityReports} onRequestGeo={requestGeo}/>
             </ErrBound>
           )
         })()}

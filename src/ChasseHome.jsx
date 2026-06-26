@@ -340,6 +340,13 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
   /* a11y focus : à l'ouverture, le focus entre dans le dialog (bouton fermer) */
   const closeRef=useRef(null)
   useEffect(()=>{ try{ closeRef.current&&closeRef.current.focus() }catch(_){} },[])
+  /* Fermer en GLISSANT vers le bas (parité fiche data : la fiche carte ne se fermait
+     qu'au ✕/Échap → « scroll down pour fermer ne marche jamais », user). Actif en haut
+     du scroll ; feedback translateY ; seuil 70px → onClose. */
+  const lcRef=useRef(null),dragStartY=useRef(0),dragDy=useRef(0)
+  const onTdStart=e=>{dragStartY.current=e.touches[0].clientY;dragDy.current=0;if(lcRef.current)lcRef.current.style.transition=""}
+  const onTdMove=e=>{if(lcRef.current&&lcRef.current.scrollTop>5)return;const dy=e.touches[0].clientY-dragStartY.current;if(dy>0){dragDy.current=dy;if(lcRef.current)lcRef.current.style.transform="translateY("+dy+"px)"}}
+  const onTdEnd=()=>{if(lcRef.current&&lcRef.current.scrollTop>5)return;const dy=dragDy.current;if(dy>70){onClose&&onClose();return}if(lcRef.current){lcRef.current.style.transition="transform .3s cubic-bezier(.32,.72,0,1)";lcRef.current.style.transform="";setTimeout(()=>{if(lcRef.current)lcRef.current.style.transition=""},300)}}
   const [shared,setShared]=useState(false)
   const share=useCallback(()=>{
     const url=(typeof window!=="undefined"&&window.location&&window.location.origin)||""
@@ -353,7 +360,8 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
     if(track)try{track("sg_chasse_share",{beach_id:beach.id})}catch(_){}
   },[beach,head,track]) // eslint-disable-line
   return (
-    <div className="lc-detail" role="dialog" aria-modal="true" aria-label={beach.name}>
+    <div className="lc-detail" role="dialog" aria-modal="true" aria-label={beach.name}
+      ref={lcRef} onTouchStart={onTdStart} onTouchMove={onTdMove} onTouchEnd={onTdEnd}>
       <button type="button" ref={closeRef} className="lc-detail-x" onClick={onClose} aria-label={_t({fr:"Fermer",en:"Close",es:"Cerrar"})}>✕</button>
       <div className={`lc-detail-illu s-${v.st}`}>
         <Illu st={v.st} score={sc||0} uid={(beach.id||"d")+"-dt"}/>
@@ -1753,7 +1761,7 @@ export const CSS=`
 .lc-grid .lc-card{content-visibility:auto;contain-intrinsic-size:auto 240px}
 
 /* ---- DÉTAIL PLAGE « monde comic » (plein écran, même univers) ---- */
-.lc-detail{position:fixed;inset:0;z-index:1200;overflow-y:auto;-webkit-overflow-scrolling:touch;
+.lc-detail{position:fixed;inset:0;z-index:1200;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
   font-family:"Comic Neue","Comic Sans MS",system-ui,sans-serif;color:var(--ink);
   background:
     radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 0 0/9px 9px,
