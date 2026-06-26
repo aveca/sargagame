@@ -50,9 +50,11 @@ jobs:
 
       - name: Determine day
         id: day
+        env:
+          DAY_OVERRIDE: ${{ github.event.inputs.day_override }}
         run: |
-          if [ -n "${{ github.event.inputs.day_override }}" ]; then
-            echo "task=${{ github.event.inputs.day_override }}" >> $GITHUB_OUTPUT
+          if [ -n "$DAY_OVERRIDE" ]; then
+            echo "task=$DAY_OVERRIDE" >> $GITHUB_OUTPUT
           else
             DOW=$(date -u +%u)
             case $DOW in

@@ -56,9 +56,10 @@ jobs:
         env:
           ONESIGNAL_API_KEY_MQ: ${{ secrets.ONESIGNAL_API_KEY_MQ }}
           ONESIGNAL_API_KEY_GP: ${{ secrets.ONESIGNAL_API_KEY_GP }}
+          BEACH_ID: ${{ github.event.inputs.beach_id }}
         run: |
-          if [ -z "${{ github.event.inputs.beach_id }}" ]; then
+          if [ -z "$BEACH_ID" ]; then
             echo "ERROR: beach_id input required for test-fav-alert"
             exit 1
           fi
-          node scripts/automation/send-notifications.cjs --test-fav-alert "${{ github.event.inputs.beach_id }}"
+          node scripts/automation/send-notifications.cjs --test-fav-alert "$BEACH_ID"
