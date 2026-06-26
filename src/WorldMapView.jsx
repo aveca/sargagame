@@ -188,7 +188,7 @@ function _spawnBeaching(layer, ax, ay, cx, cy, S, seed, eta){
 const MQ_RELIEF = [[14.79,-61.10,24],[14.74,-61.10,18],[14.70,-61.07,20],[14.52,-61.06,15],[14.47,-60.92,12]]
 
 export default function WorldMapView({
-  beaches, island, updatedAt, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail, arrivals,
+  beaches, island, updatedAt, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail, arrivals, topInset=0,
 }){
   const wrapRef    = useRef(null)
   const worldRef   = useRef(null)  // <g id="world"> — transform mis à jour en RAF
@@ -1216,7 +1216,7 @@ export default function WorldMapView({
 
         {/* H1 + jauge */}
         <div style={{
-          position:"absolute",top:"calc(58px + env(safe-area-inset-top))",
+          position:"absolute",top:topInset?(topInset+58)+"px":"calc(58px + env(safe-area-inset-top))",
           left:0,right:0,maxWidth:560,margin:"0 auto",padding:"0 18px",pointerEvents:"none",
         }}>
           <h2 style={{
