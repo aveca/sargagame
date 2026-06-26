@@ -1880,7 +1880,14 @@ const PAYPAL_PLANS={monthly:"P-68F60416PW205280SNI474LI",annual:"P-2B698370FU622
 // DÉFAUT (aucun param) = capture (aucun processeur ne charge encore en prod). Forcer
 // un vrai provider via ?pay=paypal|mollie|stripe DÉSACTIVE la capture (test/go-live).
 // Go-live PayPal = passer ce défaut à false (+ creds live + plans live).
-const PAY_CAPTURE_ONLY=(()=>{try{const q=window.location.search;if(/[?&]pay=(paypal|mollie|stripe)/.test(q))return false;if(/[?&]pay_capture=0/.test(q))return false}catch(_){}return true})()
+// GO-LIVE Mollie (2026-06-26) : paiements RÉELS ouverts sur les régions EUR (MQ/GP) —
+// défaut = !IS_NEW_REGION → false en EUR (live), true en USD (Punta Cana/Miami/Cancún)
+// qui restent en capture tant que leur paiement n'est pas rebranché (Stripe mort, Mollie
+// EUR-only). Kill-switch : ?pay_capture=1 force la capture ; ?pay_capture=0 / ?pay=... force le live (QA).
+const PAY_CAPTURE_ONLY=(()=>{try{const q=window.location.search;
+  if(/[?&]pay_capture=1/.test(q))return true;
+  if(/[?&]pay_capture=0/.test(q)||/[?&]pay=(paypal|mollie|stripe)/.test(q))return false;
+}catch(_){}return IS_NEW_REGION})()
 // Buy Button IDs — creer sur dashboard.stripe.com/buy-buttons puis coller ici
 const STRIPE_BUY_BTN_MONTHLY="buy_btn_1TJLdoP9RK8Orx514zzwL1B4" // 4.99€/mois + trial 7j + taxes
 const STRIPE_BUY_BTN_ANNUAL="buy_btn_1TJLcjP9RK8Orx51JDzUFge3"
