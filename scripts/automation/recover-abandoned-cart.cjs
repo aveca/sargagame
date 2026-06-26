@@ -161,7 +161,11 @@ function copy(region, kind) {
 function buildHTML(region, email, kind) {
   const t = copy(region, kind)
   const domain = region.domain
-  const link = (region.paymentLinks && region.paymentLinks.tripPass) || (region.paymentLinks && region.paymentLinks.monthly) || `https://${domain}`
+  // CTA → paywall ON-SITE (Mollie pass, toutes régions EUR+USD). Avant : pointait
+  // sur paymentLinks.tripPass = lien Stripe DÉSACTIVÉ (USD) ou, à défaut, le domaine
+  // NU (EUR sans paymentLinks) → le lead retombait sur la home et devait re-chercher
+  // la caisse. ?paywall=1 rouvre directement le storefront pass on-site.
+  const link = `https://${domain}/?paywall=1&utm_source=email&utm_medium=cart_recovery&utm_campaign=recover`
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
 <body style="margin:0;padding:0;background:#F7F5EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
 <div style="max-width:480px;margin:0 auto;padding:20px">
