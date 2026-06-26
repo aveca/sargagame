@@ -16,7 +16,8 @@
 const fs = require('fs')
 const path = require('path')
 const { emailHash } = require('./lib/email-hash.cjs')
-const { sendEmail, brandHeader, mailReady } = require('./lib/email-send.cjs')
+const { sendEmail, mailReady } = require('./lib/email-send.cjs')
+const { getAllRegions } = require('../../regions/index.cjs')
 
 const SEND = process.argv.includes('--send')
 const SUBSCRIBERS_PATH = path.join(__dirname, 'data', 'subscribers.json')
@@ -42,6 +43,23 @@ const isTestEmail = e => /^test@|(\+test@)|@(test|example)\./i.test(e || '')
 const EUR_ISLANDS = new Set(['MQ', 'GP'])
 const islandOf = s => (s.island || s.region || 'MQ').toString().toUpperCase()
 const isEur = s => EUR_ISLANDS.has(islandOf(s))
+// ── Mode --usd : relance LANCEMENT des régions touristes (Floride/Punta Cana = EN,
+// Cancún/Riviera Maya = ES). Caisse Mollie USD désormais LIVE (vrai paiement validé
+// 2026-06-26). Copy DÉCOUVERTE localisé EN/ES, prix $, CTA → paywall on-site. `from` =
+// boîte SMTP alerte@ avec un nom d'expéditeur régional (miroir email-weekend.cjs). On
+// EXCLUT B2B/hôtels + emails de test. Barbados = pas de caisse Mollie → jamais ciblé.
+const USD = process.argv.includes('--usd')
+const USD_CFG = (() => {
+  const out = {}
+  try {
+    for (const r of getAllRegions()) {
+      if (!['florida', 'puntacana', 'rivieramaya'].includes(r.id)) continue
+      const lang = r.primaryLang === 'es' ? 'es' : 'en'
+      out[r.id] = { domain: r.domain, lang, name: r.name, from: `${lang === 'es' ? 'Sargazo' : 'Sargassum'} ${r.name} <alerte@sargasses-martinique.com>` }
+    }
+  } catch (_) {}
+  return out
+})()
 // Plafond par run pour la boîte SMTP cPanel (alerte@, premium115.web-hosting.com via
 // nodemailer — PAS Resend, cf. lib/email-send.cjs) : les boîtes mutualisées ont une
 // limite d'envoi horaire. --max=N pour override ; relancer plus tard reprend où on
@@ -65,8 +83,7 @@ function paywallUrl(domain) { return `https://${domain}/?paywall=1&utm_source=em
 
 function buildHtml(domain, island) {
   const cta = paywallUrl(domain)
-  return `${brandHeader ? brandHeader(island) : ''}
-<div style="font-family:system-ui,-apple-system,Arial;max-width:480px;margin:0 auto;padding:24px 20px;color:#1a1a1a">
+  return `<div style="font-family:system-ui,-apple-system,Arial;max-width:480px;margin:0 auto;padding:24px 20px;color:#1a1a1a">
   <div style="font:700 12px/1 system-ui;letter-spacing:1.5px;color:#E8A800;text-transform:uppercase;margin-bottom:10px">LE VEILLEUR · PASS</div>
   <h1 style="font-size:23px;margin:0 0 8px">C'est rouvert — ne gâche plus un jour de plage 🌅</h1>
   <p style="font-size:15px;color:#444;margin:0 0 6px">Le Veilleur te dit chaque matin LA plage sans sargasses : prévision 7 jours, 136+ plages, alertes.</p>
@@ -81,8 +98,7 @@ function buildHtml(domain, island) {
 // nouveauté qui leur évite de gâcher une journée plage.
 function buildHtmlDiscovery(domain, island) {
   const cta = paywallUrl(domain)
-  return `${brandHeader ? brandHeader(island) : ''}
-<div style="font-family:system-ui,-apple-system,Arial;max-width:480px;margin:0 auto;padding:24px 20px;color:#1a1a1a">
+  return `<div style="font-family:system-ui,-apple-system,Arial;max-width:480px;margin:0 auto;padding:24px 20px;color:#1a1a1a">
   <div style="font:700 12px/1 system-ui;letter-spacing:1.5px;color:#E8A800;text-transform:uppercase;margin-bottom:10px">NOUVEAU · LE VEILLEUR PASS</div>
   <h1 style="font-size:23px;margin:0 0 8px">Ne gâche plus un seul jour de plage 🌅</h1>
   <p style="font-size:15px;color:#444;margin:0 0 6px">Tu reçois déjà nos infos sargasses. Va plus loin : le Veilleur te dit chaque matin <b>LA plage sans sargasses</b> — prévision 7 jours, 136+ plages, alertes.</p>
@@ -92,17 +108,43 @@ function buildHtmlDiscovery(domain, island) {
 </div>`
 }
 
+// Copy DÉCOUVERTE USD (EN/ES) — abonnés des régions touristes. Prix $, CTA → paywall
+// on-site (caisse Mollie USD live). Pas de brandHeader (l'eyebrow+titre suffisent).
+function buildHtmlUS(domain, lang) {
+  const cta = paywallUrl(domain)
+  const es = lang === 'es'
+  const eyebrow = es ? 'NUEVO · EL PASE DEL VIGÍA' : 'NEW · THE WATCHMAN PASS'
+  const title = es ? 'No pierdas ni un solo día de playa 🌅' : 'Never waste a single beach day 🌅'
+  const p1 = es
+    ? 'Ya recibes nuestra info sobre sargazo. Ve más allá: el Vigía te dice cada mañana <b>LA playa sin sargazo</b> — pronóstico de 7 días, alertas.'
+    : 'You already get our sargassum updates. Go further: the Watchman tells you each morning <b>THE sargassum-free beach</b> — 7-day forecast, alerts.'
+  const p2 = es
+    ? '<b>Un pase, pago único — sin suscripción.</b> Desde <b>$5.99</b> · el Pase de 30 días a <b>$11.99</b> ($0.40/día).'
+    : '<b>One pass, one-time payment — no subscription.</b> From <b>$5.99</b> · the 30-day Pass at <b>$11.99</b> ($0.40/day).'
+  const ctaLabel = es ? 'Obtener el Pase →' : 'Get the Pass →'
+  const foot = es ? 'Pago único · sin suscripción · reembolso en un email · ' : 'One-time payment · no subscription · refund in one email · '
+  return `<div style="font-family:system-ui,-apple-system,Arial;max-width:480px;margin:0 auto;padding:24px 20px;color:#1a1a1a">
+  <div style="font:700 12px/1 system-ui;letter-spacing:1.5px;color:#E8A800;text-transform:uppercase;margin-bottom:10px">${eyebrow}</div>
+  <h1 style="font-size:23px;margin:0 0 8px">${title}</h1>
+  <p style="font-size:15px;color:#444;margin:0 0 6px">${p1}</p>
+  <p style="font-size:15px;color:#444;margin:0 0 20px">${p2}</p>
+  <a href="${cta}" style="display:inline-block;background:linear-gradient(135deg,#E8A800,#F0C040);color:#1a1a1a;font-weight:700;font-size:15px;padding:14px 32px;border-radius:12px;text-decoration:none">${ctaLabel}</a>
+  <p style="font-size:11px;color:#bbb;margin:22px 0 0">${foot}${domain}</p>
+</div>`
+}
+
 ;(async () => {
   const ready = mailReady()
   if (SEND && !ready) { console.error('SMTP_PASS manquant — impossible d\'envoyer (--send).'); process.exit(1) }
   const sent = loadJson(SENT_PATH, {})
   const subs = subscribersList().filter(s => {
     if (!s || !s.email || isTestEmail(s.email)) return false
-    if (!isEur(s)) return false                   // USD (FLORIDA/RIVIERAMAYA/PUNTACANA) : paiement pas live + copy FR inadapté
+    if (USD) return !!USD_CFG[islandOf(s).toLowerCase()] && !isB2B(s.source)  // --usd : régions touristes câblées, hors B2B
+    if (!isEur(s)) return false                   // EUR uniquement par défaut (USD passe par --usd)
     if (ALL) return !isB2B(s.source)              // --all : tous les conso EUR (hors B2B/hôtels)
     return CAPTURE_SOURCES.has(s.source)          // défaut : seulement les leads "paiement"
   })
-  console.log(`cible: ${subs.length} (${ALL ? 'TOUS conso, copy découverte' : 'leads capture, copy "c\'est rouvert"'}) | plafond: ${MAX} | mode: ${SEND && ready ? 'SEND' : 'DRY-RUN'}`)
+  console.log(`cible: ${subs.length} (${USD ? 'régions USD, copy découverte EN/ES' : ALL ? 'TOUS conso, copy découverte' : 'leads capture, copy "c\'est rouvert"'}) | plafond: ${MAX} | mode: ${SEND && ready ? 'SEND' : 'DRY-RUN'}`)
   let done = 0, skip = 0, fail = 0
   for (const s of subs) {
     if (done >= MAX) { console.log(`Plafond ${MAX} atteint — relance le script demain pour la suite (idempotent).`); break }
@@ -111,15 +153,29 @@ function buildHtmlDiscovery(domain, island) {
     const h = emailHash(email)
     if (sent[h]) { skip++; continue }
     const island = islandOf(s)
-    const reg = REGION[island] || fallback
-    if (!SEND || !ready) { console.log(`  [dry] → ${email} (${island})`); done++; continue }
-    const r = await sendEmail({
-      from: reg.from, to: email,
-      subject: ALL ? 'Nouveau : le Pass plage — ne gâche plus une journée' : 'C\'est rouvert — ton pass plage t\'attend (paiement unique)',
-      html: ALL ? buildHtmlDiscovery(reg.domain, island) : buildHtml(reg.domain, island),
-      preheader: 'Un pass, pas d\'abonnement — dès 7,99 €. Ne rate plus une journée plage.',
-      unsubUrl: unsubUrl(email, island),
-    })
+    if (!SEND || !ready) { console.log(`  [dry] → ${email} (${island}${USD ? '/' + (USD_CFG[island.toLowerCase()]?.lang || '?') : ''})`); done++; continue }
+    let msg
+    if (USD) {
+      const rc = USD_CFG[island.toLowerCase()]
+      const es = rc.lang === 'es'
+      msg = {
+        from: rc.from, to: email,
+        subject: es ? 'Nuevo: el Pase de playa — no pierdas un día' : 'New: the beach Pass — never waste a beach day',
+        html: buildHtmlUS(rc.domain, rc.lang),
+        preheader: es ? 'Un pase, sin suscripción — desde $5.99. No pierdas un día de playa.' : 'One pass, no subscription — from $5.99. Never waste a beach day.',
+        unsubUrl: unsubUrl(email, island),
+      }
+    } else {
+      const reg = REGION[island] || fallback
+      msg = {
+        from: reg.from, to: email,
+        subject: ALL ? 'Nouveau : le Pass plage — ne gâche plus une journée' : 'C\'est rouvert — ton pass plage t\'attend (paiement unique)',
+        html: ALL ? buildHtmlDiscovery(reg.domain, island) : buildHtml(reg.domain, island),
+        preheader: 'Un pass, pas d\'abonnement — dès 7,99 €. Ne rate plus une journée plage.',
+        unsubUrl: unsubUrl(email, island),
+      }
+    }
+    const r = await sendEmail(msg)
     if (r.error) { console.error(`  [fail] ${email}: ${r.error.message}`); fail++; continue }
     sent[h] = { date: new Date().toISOString(), island, source: s.source }
     done++
