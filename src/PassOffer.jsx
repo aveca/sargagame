@@ -8,16 +8,18 @@ const _t = (l, fr, en, es) => (l === "en" ? en : l === "es" ? es : fr)
 const SEG_URL = "https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec"
 function sbeacon(p) { try { const b = JSON.stringify({ type: "analytics_event", e: "sg_pass_seg", p: p || {}, t: Date.now() }); if (navigator.sendBeacon) navigator.sendBeacon(SEG_URL, b); else fetch(SEG_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain" }, body: b }).catch(() => {}) } catch (_) {} }
 
-// ── Catalogue PASS one-time EUR (modèle PASS-ONLY, prix figés) ────────────────
-// cents validés serveur (mollie.php $allowedCents = [499,799,999,1499,1999,2499]).
-// Le paiement passe TOUJOURS par onBuy → Mollie on-site (carte / Apple / Google Pay).
-// Plus aucun lien buy.stripe.com (Stripe mort). Saison montrée au segment local seulement.
-const P7 = { c: 799, days: 7, key: "p7" }
-const P30 = { c: 1499, days: 30, key: "p30" }
-const SAISON = { c: 2499, days: 210, key: "saison" }
-
-const eur = (c, lang) => (lang === "en" ? "€" + (c / 100).toFixed(2) : (c / 100).toFixed(2).replace(".", ",") + " €")
-const perDay = (c, days, lang) => { const v = (c / 100 / days); const s = (lang === "en" ? "€" + v.toFixed(2) : v.toFixed(2).replace(".", ",") + " €"); return _t(lang, `${s}/jour`, `${s}/day`, `${s}/día`) }
+// ── Catalogue PASS one-time, PAR DEVISE (modèle PASS-ONLY, prix figés) ─────────
+// cents validés serveur (mollie.php $allowedByCur). EUR (MQ/GP) : 799/1499/2499.
+// USD (régions touristes) : 599/1199/1999 ($5.99/$11.99/$19.99). Le paiement passe
+// TOUJOURS par onBuy → Mollie on-site (carte / Apple / Google Pay), multi-devise
+// (Mollie encaisse en USD, règle en EUR). Saison montrée au segment local seulement.
+const CAT = {
+  eur: { P7: { c: 799, days: 7, key: "p7" }, P30: { c: 1499, days: 30, key: "p30" }, SAISON: { c: 2499, days: 210, key: "saison" } },
+  usd: { P7: { c: 599, days: 7, key: "p7" }, P30: { c: 1199, days: 30, key: "p30" }, SAISON: { c: 1999, days: 210, key: "saison" } },
+}
+// Formatage devise-aware. USD → "$5.99" (point). EUR → "€5.99" (en) / "5,99 €" (fr/es).
+const money = (c, cur, lang) => (cur === "usd" ? "$" + (c / 100).toFixed(2) : lang === "en" ? "€" + (c / 100).toFixed(2) : (c / 100).toFixed(2).replace(".", ",") + " €")
+const perDay = (c, days, cur, lang) => { const v = (c / 100 / days); const s = (cur === "usd" ? "$" + v.toFixed(2) : lang === "en" ? "€" + v.toFixed(2) : v.toFixed(2).replace(".", ",") + " €"); return _t(lang, `${s}/jour`, `${s}/day`, `${s}/día`) }
 const Ck = () => (<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#FFC72C" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>)
 
 /**
@@ -25,10 +27,15 @@ const Ck = () => (<svg viewBox="0 0 24 24" width="11" height="11" fill="none" st
  * basse), 30j HÉROS, Saison (local). Aucune mention d'abonnement. onBuy({c,pass,days,
  * method}) → le parent route vers Mollie on-site (carte ou wallet). Pas de Stripe.
  */
-export default function PassOffer({ lang = "fr", onBuy }) {
+export default function PassOffer({ lang = "fr", currency = "eur", onBuy }) {
+  const cur = currency === "usd" ? "usd" : "eur"
+  const { P7, P30, SAISON } = CAT[cur]
   const seg = getSegment()
   const isGP = typeof window !== "undefined" && /guadeloupe/.test(window.location.hostname)
   const showSeason = seg === "habitue" || seg === "local"
+  // Ancrages devise-aware : journée gâchée (~200) + prix/jour du pass héros 30j.
+  const lost = cur === "usd" ? "$200" : lang === "en" ? "€200" : "200 €"
+  const pd30 = perDay(P30.c, P30.days, cur, lang)
   useEffect(() => { sbeacon({ stage: "view", segment: seg, island: isGP ? "gp" : "mq", model: "passonly" }) }, [])// eslint-disable-line
   const buy = (p, method) => {
     sbeacon({ stage: "cta", segment: seg, pass: p.key, cents: p.c, method: method || "card" })
@@ -49,7 +56,7 @@ export default function PassOffer({ lang = "fr", onBuy }) {
       </span>
       <span style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
         <span style={{ textAlign: "right" }}>
-          <span className="anton" style={{ display: "block", fontSize: 19, color: "#EAF7F4", lineHeight: .9 }}>{eur(p.c, lang)}</span>
+          <span className="anton" style={{ display: "block", fontSize: 19, color: "#EAF7F4", lineHeight: .9 }}>{money(p.c, cur, lang)}</span>
           <span style={{ display: "block", fontSize: 10.5, fontWeight: 700, color: "rgba(234,247,244,.5)", marginTop: 3 }}>{perdayTxt}</span>
         </span>
         <span style={{ color: "#FFC72C", fontSize: 17, fontWeight: 800 }}>→</span>
@@ -83,9 +90,9 @@ export default function PassOffer({ lang = "fr", onBuy }) {
             <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#E8522A" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 9v4M12 17h.01" /><path d="M10.3 3.3 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.3a2 2 0 0 0-3.4 0Z" /></svg>
           </span>
           <span style={{ fontSize: 12.5, lineHeight: 1.4, fontWeight: 600, color: "rgba(234,247,244,.82)" }}>
-            {_t(lang, <>Un jour de plage gâché = <b style={{ color: "#fff", fontWeight: 800 }}>~200 € perdus</b>. Ton pass : <span style={{ color: "#FFC72C", fontWeight: 800 }}>0,50 €/jour</span>.</>,
-              <>One ruined beach day = <b style={{ color: "#fff", fontWeight: 800 }}>~€200 lost</b>. Your pass: <span style={{ color: "#FFC72C", fontWeight: 800 }}>€0.50/day</span>.</>,
-              <>Un día de playa perdido = <b style={{ color: "#fff", fontWeight: 800 }}>~200 € perdidos</b>. Tu pase: <span style={{ color: "#FFC72C", fontWeight: 800 }}>0,50 €/día</span>.</>)}
+            {_t(lang, <>Un jour de plage gâché = <b style={{ color: "#fff", fontWeight: 800 }}>~{lost} perdus</b>. Ton pass : <span style={{ color: "#FFC72C", fontWeight: 800 }}>{pd30}</span>.</>,
+              <>One ruined beach day = <b style={{ color: "#fff", fontWeight: 800 }}>~{lost} lost</b>. Your pass: <span style={{ color: "#FFC72C", fontWeight: 800 }}>{pd30}</span>.</>,
+              <>Un día de playa perdido = <b style={{ color: "#fff", fontWeight: 800 }}>~{lost} perdidos</b>. Tu pase: <span style={{ color: "#FFC72C", fontWeight: 800 }}>{pd30}</span>.</>)}
           </span>
         </div>
         {/* preuve fiabilité (désamorce le doute juste avant le prix) */}
@@ -100,7 +107,7 @@ export default function PassOffer({ lang = "fr", onBuy }) {
           <SecCard p={P7}
             label={_t(lang, "Pass 7 jours", "7-day pass", "Pase 7 días")}
             desc={_t(lang, "Court séjour, une escapade", "Short stay, a getaway", "Estancia corta, una escapada")}
-            perdayTxt={perDay(P7.c, P7.days, lang)} />
+            perdayTxt={perDay(P7.c, P7.days, cur, lang)} />
 
           {/* 30 jours — HÉROS */}
           <button onClick={() => buy(P30)} className="sg-passcard-hero" style={{
@@ -118,8 +125,8 @@ export default function PassOffer({ lang = "fr", onBuy }) {
                 <span style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "rgba(234,247,244,.6)", marginTop: 4 }}>{_t(lang, "Le séjour parfait · 1 à 3 semaines", "The perfect stay · 1 to 3 weeks", "La estancia perfecta · 1 a 3 semanas")}</span>
               </span>
               <span style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", flexShrink: 0 }}>
-                <span className="anton" style={{ fontSize: 34, color: "#FFC72C", lineHeight: .85, letterSpacing: "-.01em" }}>{eur(P30.c, lang)}</span>
-                <span style={{ display: "inline-block", marginTop: 8, fontSize: 11, fontWeight: 800, color: "#190c2c", background: "linear-gradient(135deg,#FFE47A,#FFC72C)", padding: "3px 9px", borderRadius: 999 }}>{perDay(P30.c, P30.days, lang)}</span>
+                <span className="anton" style={{ fontSize: 34, color: "#FFC72C", lineHeight: .85, letterSpacing: "-.01em" }}>{money(P30.c, cur, lang)}</span>
+                <span style={{ display: "inline-block", marginTop: 8, fontSize: 11, fontWeight: 800, color: "#190c2c", background: "linear-gradient(135deg,#FFE47A,#FFC72C)", padding: "3px 9px", borderRadius: 999 }}>{perDay(P30.c, P30.days, cur, lang)}</span>
               </span>
             </span>
             <span style={{ display: "flex", flexDirection: "column", gap: 7, margin: "13px 0 0" }}>
