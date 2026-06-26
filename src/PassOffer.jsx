@@ -67,7 +67,7 @@ export default function PassOffer({ lang = "fr", currency = "eur", community = 0
   return (
     <div style={{ position: "relative", color: "#EAF7F4", fontFamily: "'Bricolage Grotesque',system-ui,sans-serif" }}>
       {/* halo doré diffus (golden-hour, ancre l'or premium) */}
-      <div aria-hidden style={{ position: "absolute", top: -130, left: "50%", transform: "translateX(-50%)", width: 420, height: 280, background: "radial-gradient(ellipse at center,rgba(255,199,44,.16),transparent 64%)", pointerEvents: "none" }} />
+      <div aria-hidden style={{ position: "absolute", top: -130, left: "50%", transform: "translateX(-50%)", width: "min(420px,100%)", maxWidth: "100%", height: 280, background: "radial-gradient(ellipse at center,rgba(255,199,44,.16),transparent 64%)", pointerEvents: "none" }} />
       <div style={{ position: "relative", zIndex: 1 }}>
         {/* eyebrow */}
         <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 11, fontWeight: 800, letterSpacing: ".14em", textTransform: "uppercase", color: "#FFC72C" }}>

@@ -5285,7 +5285,7 @@ function BeachPicker({island,allBeaches,onSelect,lang,userPos,onDismiss}){
       position:"absolute",top:0,left:0,right:0,bottom:0,zIndex:750,
       display:"flex",flexDirection:"column",
       background:"linear-gradient(180deg,#190c2c 0%,#120821 100%)",
-      animation:"fadeIn .3s ease",overflow:"auto",
+      animation:"fadeIn .3s ease",overflowX:"hidden",overflowY:"auto",
     }}>
       {/* Ambient orbs */}
       <div style={{position:"absolute",top:-60,right:-40,width:220,height:220,borderRadius:"50%",
@@ -7596,7 +7596,7 @@ function InstallPrompt(){
           <div style={{
             position:"fixed",bottom:0,left:0,right:0,zIndex:1201,
             background:"var(--sg-card,#fff)",borderRadius:"24px 24px 0 0",
-            padding:"28px 24px 40px",maxHeight:"70vh",overflow:"auto",
+            padding:"28px 24px 40px",maxHeight:"70vh",overflowX:"hidden",overflowY:"auto",
             boxShadow:"0 -8px 40px rgba(0,0,0,.2)",
             animation:"slideUp .4s cubic-bezier(.22,1,.36,1)",
           }}>

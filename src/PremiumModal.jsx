@@ -1582,7 +1582,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           ? "radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 0 0/9px 9px,radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 4.5px 4.5px/9px 9px,linear-gradient(170deg,#ff9b6b,#ff6f9d 30%,#ffb36b 68%,#ff8a3d)"
           : "radial-gradient(rgba(255,255,255,.05) 1.2px,transparent 1.3px) 0 0/8px 8px,radial-gradient(rgba(255,210,90,.06) 1.2px,transparent 1.3px) 4px 4px/8px 8px,"+(pwConstel?"linear-gradient(180deg,#2e1a5e 0%,#3a1f63 20%,#241246 52%,#160a26 100%)":"linear-gradient(145deg,#241246,#160a26)"),
         borderRadius:"24px 24px 0 0",padding:"28px 24px 20px",
-        color:(pwComic&&!passOnly)?"#0d0b14":"#e6edf3",maxHeight:"85vh",overflow:"auto",
+        color:(pwComic&&!passOnly)?"#0d0b14":"#e6edf3",maxHeight:"85vh",overflowX:"hidden",overflowY:"auto",
       }}>
         <div className="sheet-handle" style={{background:"rgba(255,255,255,.2)"}}/>
         {/* Close X top-right — resolves Design feedback "no close affordance
@@ -1715,7 +1715,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         {showPrelude&&(
         <div style={{position:"absolute",inset:0,zIndex:10,
           background:"linear-gradient(145deg,#190c2c,#120821)",
-          borderRadius:"24px 24px 0 0",padding:"28px 24px 20px",overflow:"auto",
+          borderRadius:"24px 24px 0 0",padding:"28px 24px 20px",overflowX:"hidden",overflowY:"auto",
           display:"flex",flexDirection:"column"}}>
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
             <button
@@ -2311,7 +2311,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
           design maison : email + Apple/Google Pay + Payment Element (carte).
           TOUJOURS rendu (caché) pour que les Elements montés persistent. */}
       <div style={{position:"fixed",inset:0,zIndex:1300,background:PAY_CAPTURE_ONLY?"linear-gradient(168deg,#0B2230 0%,#0D1E1C 58%,#0A1714 100%)":"linear-gradient(145deg,#190c2c,#120821)",
-        display:"flex",flexDirection:"column",overflow:"auto",
+        display:"flex",flexDirection:"column",overflowX:"hidden",overflowY:"auto",
         // hors-écran (PAS visibility:hidden : les iframes Stripe ne bootent pas
         // dans un conteneur hidden — le pré-mount resterait gelé)
         transform:payStep?"none":"translateX(-200vw)",
