@@ -1,5 +1,22 @@
 # NEXT_SESSION — sargagame
 
+> **💰 2026-06-26 (nuit, autonome) — SYSTÈMES REVENU/SCALE (goal « augmenter revenus & scaler »). Cartographie multi-agents (7 dimensions, vérif adversariale) → backlog ordonné → 3 PR shippés (#170→#172). NE PAS REFAIRE.**
+>
+> **SHIPPÉ + MERGÉ + DÉPLOYÉ :**
+> - **#170 Conversion (live, 5 régions)** : 2 signaux de confiance HONNÊTES au paywall (PassOffer), chacun **A/B 50/50** (override `?pwsocial=` / `?pwfresh=`) : preuve sociale « Déjà 240+ vacanciers » (plancher conservateur des 246 leads, injecté build `__COMMUNITY__`) + fraîcheur « Données mises à jour il y a Xh » (updatedAt réel). Zéro touche au paiement. (Faux positif écarté : l'ancrage USD $200 était DÉJÀ devise-aware.)
+> - **#171 Rachat = levier N°1 pass-only** : `scripts/automation/pass-expiry-winback.cjs` — relance les acheteurs de pass Mollie EXPIRÉS (API Mollie → expiry = paidAt + jours-pass, groupé par email = dernière expiration, fenêtre 21j, abos exclus, idempotent paymentId, MAX 50, copy FR/EN/ES, CTA `?paywall=1`). **Câblé DRY-RUN** dans daily-copernicus (visibilité logs, 0 envoi).
+> - **#172 A/B win-back** : variants `em_winback_fr/en/es` (urgence honnête vs réassurance) — s'activent automatiquement dès le `--send`.
+>
+> **🎬 CHECKLIST FONDATEUR — passer ces leviers en LIVE (= revenu réel) :**
+> 1. **Win-back rachat (#171)** : relire la copy + les volumes dans les logs du step « Pass-expiry win-back (DRY-RUN) » de `daily-copernicus`. Quand OK → éditer ce step : `pass-expiry-winback.cjs` → `pass-expiry-winback.cjs --send`. (`MOLLIE_API_KEY` est déjà un secret du workflow ; sinon l'ajouter.) C'est LE levier du modèle pass-only.
+> 2. **Conversion A/B (#170)** : rien à flipper (déjà live 50/50). À **évaluer** sur données POST-refonte (~après 23/07) via `ab-evaluator`. Garde la variante gagnante.
+>
+> **⏭️ SYSTÈMES À CONSTRUIRE PROCHAINE SESSION (différés — raison honnête, PAS du skip) :**
+> - **Referral REPORT (rank 6)** : la boucle referral est déjà live (capture/bannière/hub + code transmis au paiement) ; il MANQUE le reporting landing→share→convert pour décider des récompenses (récompenses = founder-only Mollie). BLOQUÉ sur la source : les events `sg_referral_*` ne sont PAS dans le funnel Apps Script (vérifié) → soit les ajouter à `Code.js` + `clasp push` (cohérent, fondateur), soit query GA4 (à valider en CI). Recommandation : route funnel.
+> - **Cold-lead reengage (rank 5)** : sensible à la délivrabilité (ré-emailer des leads froids peut nuire à la réputation du domaine partagé). À construire LÉGER (leads 60-365j, cadence 90j, désabo proéminent, DRY-RUN) après avoir tranché l'angle. Non shippé blind cette nuit (risque > valeur sans test d'envoi).
+> - **B2B pricing page (rank 10)** : ACV élevé (hôtels/collectivités) = vrai levier scale. Page statique `/pro/pricing/` (style `public/pro/hotels/`) en mode « demande de devis » (CTA email) — les prix/SLA exacts à valider par le fondateur avant hardcode.
+> - Backlog complet ordonné + « duplicatesToAvoid » (systèmes déjà live à ne pas refaire) : artefact workflow `tasks/w9m6z9yim.output` (éphémère — ce résumé fait foi).
+
 > **🌙 2026-06-26 (nuit, autonome) — BACKLOG AUDIT « SÛR » VIDÉ : J1/J2/J4/J5/J6 du PLAN_7J shippés+mergés+déployés en 5 PR (#164→#168). NE PAS REFAIRE. Chaque finding re-vérifié contre le code réel avant correction.**
 >
 > - **#164 (J1) Fraîcheur data** : le pipeline republiait `updatedAt:now` à chaque run → le check de fraîcheur ne détectait JAMAIS un composite ERDDAP périmé. Flag **`stale`** dérivé du vrai `erddapTimestamp` (seuil **36h** = 1.5 cycle d'un composite 7D ~quotidien ; à 18.6h actuel c'est OK, un seuil naïf 12h aurait faussement alerté). Checks startup/CLAUDE.md/PLAN_7J distinguent **run** (re-run corrige) vs **satellite** (re-run ne corrige pas). DoD vérifié : composite 72h → stale.
