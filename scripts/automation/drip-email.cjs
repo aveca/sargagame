@@ -38,14 +38,12 @@ const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIH
 // GP uses MQ verified domain (free plan = 1 domain)
 const FROM_MQ = 'Sargasses Martinique <alerte@sargasses-martinique.com>'
 const FROM_GP = 'Sargasses Guadeloupe <alerte@sargasses-martinique.com>'
-const STRIPE_BASE = 'https://buy.stripe.com/6oU3cxgg36J48Ox6ZZ0co0s'
-function stripeLink(step, base) { return `${base || STRIPE_BASE}?utm_source=email&utm_medium=drip_${step}&utm_campaign=sargasses` }
 // 2026-06-17 — funnel email réaligné sur le funnel paiement : l'essai 7j a été
 // retiré (MQ/GP inclus, commit a9b3cf4e) et le checkout est 100% ON-SITE (plus de
 // buy.stripe.com). Les CTA email mènent donc au paywall on-site via ?paywall=1
-// (deep-link App → openPremium → Stripe Element) au lieu du Payment Link off-site.
+// (deep-link App → openPremium → Element) au lieu du Payment Link off-site.
+// (STRIPE_BASE/stripeLink/STRIPE_LINK supprimés : morts depuis la migration on-site.)
 function sitePaywall(domain, step) { return `https://${domain}/?paywall=1&utm_source=email&utm_medium=drip_${step}&utm_campaign=sargasses` }
-const STRIPE_LINK = STRIPE_BASE // compat
 const UNSUB_BASE = WEBHOOK_URL
 function unsubUrl(email, island) { return `${UNSUB_BASE}?action=unsubscribe&email=${encodeURIComponent(email)}&island=${island}` }
 
@@ -135,7 +133,6 @@ function getRegionBrief(islandKey) {
     && (((fcOf(lv)[1] || {}).status || 'clean') === 'clean'))
   return {
     meta,
-    stripeBase: isNew ? (regionCfg.paymentLinks && regionCfg.paymentLinks.monthly) || null : STRIPE_BASE,
     best: { ...beachInfo(best), score: best.score ?? null, status: best.status, j1: bestJ1 },
     degradedCount: degraded.length,
     degradeDay,
