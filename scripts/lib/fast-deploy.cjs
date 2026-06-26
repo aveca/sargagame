@@ -28,9 +28,9 @@ const AdmZip = require("adm-zip")
 // à part). L'extraction n'efface pas les fichiers absents du zip → ils survivent.
 const ZIP_EXCLUDE = new Set(["stripe-config.php", "_deploy-secret.php", "_deploy.zip"])
 
-function httpJson(url, timeoutMs) {
+function httpJson(url, timeoutMs, headers) {
   return new Promise((resolve, reject) => {
-    const req = https.get(url, { timeout: timeoutMs || 120000 }, (res) => {
+    const req = https.get(url, { timeout: timeoutMs || 120000, headers: headers || {} }, (res) => {
       let body = ""
       res.on("data", (c) => (body += c))
       res.on("end", () => {
@@ -49,13 +49,19 @@ function httpJson(url, timeoutMs) {
   })
 }
 
-function endpoint(domain, action, token) {
-  return `https://${domain}/api/_deploy.php?action=${action}&token=${encodeURIComponent(token)}`
+// Le token passe par le header X-Deploy-Token (jamais la query string : elle
+// finirait dans les access logs du serveur/proxy). _deploy.php lit ce header en
+// priorité, avec repli GET/POST pour la transition.
+function endpoint(domain, action) {
+  return `https://${domain}/api/_deploy.php?action=${action}`
+}
+function authHeader(token) {
+  return { "X-Deploy-Token": token }
 }
 
 // Vérifie que l'endpoint répond et que ZipArchive est dispo côté serveur.
 async function pingDeploy(domain, token) {
-  const r = await httpJson(endpoint(domain, "ping", token), 30000)
+  const r = await httpJson(endpoint(domain, "ping"), 30000, authHeader(token))
   if (!r.ok) throw new Error(`ping refusé: ${JSON.stringify(r)}`)
   if (!r.zip) throw new Error("ZipArchive absent côté serveur")
   return r
@@ -132,7 +138,7 @@ async function fastDeploy(t, opts) {
     }
 
     // 4. Extraction serveur + cleanup du zip distant.
-    const r = await httpJson(endpoint(t.domain, "unzip", token), 120000)
+    const r = await httpJson(endpoint(t.domain, "unzip"), 120000, authHeader(token))
     if (!r.ok) throw new Error(`unzip refusé: ${JSON.stringify(r)}`)
     return { files: r.files, ms: r.ms, zipKB }
   } finally {
