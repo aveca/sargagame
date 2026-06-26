@@ -37,4 +37,5 @@ jobs:
           FTP_SERVER_RIVIERAMAYA: ${{ secrets.FTP_SERVER_RIVIERAMAYA }}
           FTP_USERNAME_RIVIERAMAYA: ${{ secrets.FTP_USERNAME_RIVIERAMAYA }}
           FTP_PASSWORD_RIVIERAMAYA: ${{ secrets.FTP_PASSWORD_RIVIERAMAYA }}
-        run: node scripts/automation/provision-gsc.cjs ${{ inputs.regions }}
+          REGIONS: ${{ inputs.regions }}
+        run: node scripts/automation/provision-gsc.cjs $REGIONS
