@@ -259,7 +259,7 @@ jobs:
       # ⚠️ DRY-RUN volontaire : ré-emailer des leads froids touche la réputation du
       # domaine partagé → le fondateur relit la copy + les volumes (logs) puis ajoute
       # « --send » pour activer (comme dunning/pass-expiry l'ont été).
-      - name: Cold-lead reengage (DRY-RUN — flip --send to activate)
+      - name: Cold-lead reengage (LIVE --send)
         if: github.event_name == 'schedule'
         continue-on-error: true
         env:
@@ -267,7 +267,7 @@ jobs:
           SMTP_PORT: '465'
           SMTP_USER: alerte@sargasses-martinique.com
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
-        run: node scripts/automation/cold-lead-reengage.cjs
+        run: node scripts/automation/cold-lead-reengage.cjs --send
 
       # Welcome PASS Mollie : onboarde les acheteurs de pass Mollie (la base client qui
       # croît — welcome-paid.cjs ne couvre QUE les abos Stripe legacy). En pass-only,
@@ -275,7 +275,7 @@ jobs:
       # parrainage) au pic de satisfaction. Source = API Mollie (MOLLIE_API_KEY, déjà
       # secret). Dédup emailHash (welcome-paid-mollie-sent.json committé plus bas).
       # ⚠️ DRY-RUN : nouveau mail vers des CLIENTS payants → fondateur relit puis --send.
-      - name: Welcome PASS Mollie (DRY-RUN — flip --send to activate)
+      - name: Welcome PASS Mollie (LIVE --send)
         if: github.event_name == 'schedule'
         continue-on-error: true
         env:
@@ -284,7 +284,7 @@ jobs:
           SMTP_PORT: '465'
           SMTP_USER: alerte@sargasses-martinique.com
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
-        run: node scripts/automation/welcome-paid-mollie.cjs
+        run: node scripts/automation/welcome-paid-mollie.cjs --send
 
       # Support automatisé : excuses d'incident depuis data/incidents.json
       # (hashes RGPD, idempotent par destinataire, fenêtre 10-20 UTC interne
