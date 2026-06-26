@@ -57,6 +57,7 @@ $RL_LIMITS = [
     'verify_subscription' => 30,
     'cancel_subscription' => 20,
     'applepay_session'    => 30,
+    'claim_referral_credit' => 30,
 ];
 sg_rate_limit('mol_' . $action, $RL_LIMITS[$action] ?? 30);
 
@@ -94,13 +95,25 @@ if ($action === 'create_payment') {
     if ((!$cardToken && !$method && !$walletToken) || !in_array($cents, $allowedCents, true)) {
         http_response_code(400); echo json_encode(['error' => 'bad pass params']); exit;
     }
+    // ── Parrainage (PASS) : on grave l'attribution dans la metadata du paiement →
+    // à 'paid', le parrain (referred_by) est crédité de jours de pass (ledger serveur,
+    // réclamé par son app). referral_code = code du FILLEUL (anti-auto-parrainage).
+    $referredBy = preg_replace('/[^A-Z0-9-]/', '', strtoupper($input['referredBy'] ?? ''));
+    if (!preg_match('/^REF-[A-Z0-9]{6}$/', $referredBy)) $referredBy = '';
+    $myRef = preg_replace('/[^A-Z0-9-]/', '', strtoupper($input['myReferralCode'] ?? ''));
+    if (!preg_match('/^REF-[A-Z0-9]{6}$/', $myRef)) $myRef = '';
+    if ($referredBy && $myRef && $referredBy === $myRef) $referredBy = ''; // anti-auto-parrainage
     $value = number_format($cents / 100, 2, '.', '');
     $payParams = [
         'amount'      => ['currency' => $currency, 'value' => $value],
         'description' => 'Sargasses pass ' . $passKey,
         'redirectUrl' => $returnBase . '/?mollie_return=1',
         'webhookUrl'  => $returnBase . '/api/mollie-webhook.php',
-        'metadata'    => ['island' => ($island !== '' ? $island : 'mq'), 'pass' => $passKey, 'plan' => $passKey, 'source' => $source, 'email' => $email],
+        'metadata'    => array_merge(
+            ['island' => ($island !== '' ? $island : 'mq'), 'pass' => $passKey, 'plan' => $passKey, 'source' => $source, 'email' => $email],
+            $referredBy ? ['referred_by' => $referredBy] : [],
+            $myRef ? ['referral_code' => $myRef] : []
+        ),
     ];
     if ($walletToken) {
         // Wallet ON-SITE direct : method=creditcard + token chiffre du wallet -> Mollie
@@ -233,8 +246,21 @@ if ($action === 'payment_status') {
             $cust = $pay['customerId'] ?? '';
             if ($em && $cust) mol_create_subscription_once($cfg, $cust, $em, ($meta['plan'] ?? 'monthly'), $isl, $src);
         }
+        // Parrainage : un filleul (referred_by) a payé → crédite le parrain (idempotent
+        // par pid ; le webhook fait le même grant, le 1er qui passe gagne, anti-double).
+        if (!empty($meta['referred_by'])) mol_refcredit_grant($meta['referred_by'], $pid);
     }
     echo json_encode(['paid' => $paid, 'status' => $status]);
+    exit;
+}
+
+// ── Action: claim_referral_credit — l'app du PARRAIN réclame ses jours de pass gagnés
+// (un filleul a payé). Retourne days≥0 ; l'app étend son sg_premium_pass_end d'autant.
+// Remet le compteur à 0 (idempotent côté serveur). Pas de PII : clé = code REF- seul.
+if ($action === 'claim_referral_credit') {
+    $code = preg_replace('/[^A-Z0-9-]/', '', strtoupper($input['code'] ?? ''));
+    if (!preg_match('/^REF-[A-Z0-9]{6}$/', $code)) { echo json_encode(['days' => 0]); exit; }
+    echo json_encode(['days' => mol_refcredit_claim($code)]);
     exit;
 }
 

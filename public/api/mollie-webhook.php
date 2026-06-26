@@ -59,6 +59,9 @@ if ($status === 'paid') {
         $cust = $pay['customerId'] ?? '';
         if ($email && $cust) mol_create_subscription_once($cfg, $cust, $email, ($meta['plan'] ?? 'monthly'), $island, $source);
     }
+    // Parrainage : crédite le parrain (referred_by). Idempotent par pid — le marqueur
+    // mol_<pid> empêche déjà un 2e passage webhook, et mol_refcredit_grant dédup le pid.
+    if (!empty($meta['referred_by'])) mol_refcredit_grant($meta['referred_by'], $pid);
 } elseif (in_array($status, ['failed', 'canceled', 'expired'], true)) {
     // Echec de paiement (one-time ou facture recurrente) -> trace dunning, meme
     // mapping que stripe-webhook.php (invoice.payment_failed). Pas de marqueur :

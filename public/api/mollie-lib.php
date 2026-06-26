@@ -65,6 +65,68 @@ function mol_store_read($email) {
 }
 function mol_store_write($email, $data) { @file_put_contents(mol_store_path($email), json_encode($data)); }
 
+// ── Parrainage : LEDGER DE CRÉDIT par code parrain (REF-XXXXXX) ────────────────
+// Mollie ne peut NI couponner NI créditer au checkout (cf. mollie.php). La récompense
+// parrain est donc un CRÉDIT de jours de pass, stocké côté serveur par code, que l'app
+// du parrain RÉCLAME au chargement (claim_referral_credit) et applique en étendant son
+// sg_premium_pass_end local. Fichier par code (sha1), non servi par HTTP (sous /data).
+// Schéma : { code, days, total_earned, payments:[pid…], ts }.
+//   days         = jours NON ENCORE réclamés (remis à 0 au claim) ;
+//   payments     = idempotence : un pid déjà crédité n'est jamais recompté ;
+//   total_earned = plafond à vie (anti-abus).
+define('SG_REF_BONUS_DAYS', 7);   // jours offerts au parrain par filleul-payant
+define('SG_REF_CAP_DAYS', 90);    // plafond de crédit à vie par code
+
+function mol_refcredit_dir() {
+    $d = __DIR__ . '/data/mollie-refcredits';
+    if (!is_dir($d)) @mkdir($d, 0755, true);
+    return $d;
+}
+function mol_refcredit_valid($code) { return is_string($code) && preg_match('/^REF-[A-Z0-9]{6}$/', $code); }
+function mol_refcredit_path($code) { return mol_refcredit_dir() . '/' . sha1($code) . '.json'; }
+function mol_refcredit_read($code) {
+    if (!mol_refcredit_valid($code)) return null;
+    $f = mol_refcredit_path($code);
+    return is_file($f) ? (json_decode(@file_get_contents($f), true) ?: null) : null;
+}
+
+// Crédite un code parrain pour un paiement-filleul donné. IDEMPOTENT par pid (un
+// re-traitement payment_status/webhook ne double-crédite jamais). Plafonné à vie.
+// Retourne les jours effectivement ajoutés (0 si déjà crédité, plafond atteint, ou
+// code invalide). Verrou fichier pour éviter une race payment_status vs webhook.
+function mol_refcredit_grant($code, $pid, $bonus = SG_REF_BONUS_DAYS, $cap = SG_REF_CAP_DAYS) {
+    if (!mol_refcredit_valid($code) || !is_string($pid) || $pid === '') return 0;
+    $f = mol_refcredit_path($code);
+    $lock = fopen($f . '.lock', 'c');
+    if ($lock) flock($lock, LOCK_EX);
+    $rec = is_file($f) ? (json_decode(@file_get_contents($f), true) ?: null) : null;
+    if (!$rec) $rec = ['code' => $code, 'days' => 0, 'total_earned' => 0, 'payments' => [], 'ts' => time()];
+    $added = 0;
+    if (!in_array($pid, $rec['payments'], true)) {
+        $room = max(0, $cap - (int)$rec['total_earned']);
+        $added = min($bonus, $room);
+        $rec['payments'][] = $pid;          // marque le pid traité même si plafond (anti-recompte)
+        if ($added > 0) { $rec['days'] = (int)$rec['days'] + $added; $rec['total_earned'] = (int)$rec['total_earned'] + $added; }
+        $rec['ts'] = time();
+        @file_put_contents($f, json_encode($rec));
+    }
+    if ($lock) { flock($lock, LOCK_UN); fclose($lock); }
+    return $added;
+}
+
+// Réclame (et remet à 0) les jours non réclamés d'un code. Retourne les jours rendus.
+function mol_refcredit_claim($code) {
+    if (!mol_refcredit_valid($code)) return 0;
+    $f = mol_refcredit_path($code);
+    $lock = fopen($f . '.lock', 'c');
+    if ($lock) flock($lock, LOCK_EX);
+    $rec = is_file($f) ? (json_decode(@file_get_contents($f), true) ?: null) : null;
+    $days = $rec ? (int)$rec['days'] : 0;
+    if ($rec && $days > 0) { $rec['days'] = 0; $rec['ts'] = time(); @file_put_contents($f, json_encode($rec)); }
+    if ($lock) { flock($lock, LOCK_UN); fclose($lock); }
+    return $days;
+}
+
 // Cree la Subscription UNE seule fois (idempotent). startDate = +1 intervalle :
 // le 1er paiement 'first' a deja facture la periode 1, la subscription prend la suite.
 function mol_create_subscription_once($cfg, $customerId, $email, $planIn, $island, $source) {
