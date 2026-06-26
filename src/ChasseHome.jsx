@@ -340,6 +340,13 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
   /* a11y focus : à l'ouverture, le focus entre dans le dialog (bouton fermer) */
   const closeRef=useRef(null)
   useEffect(()=>{ try{ closeRef.current&&closeRef.current.focus() }catch(_){} },[])
+  /* Fermer en GLISSANT vers le bas (parité fiche data : la fiche carte ne se fermait
+     qu'au ✕/Échap → « scroll down pour fermer ne marche jamais », user). Actif en haut
+     du scroll ; feedback translateY ; seuil 70px → onClose. */
+  const lcRef=useRef(null),dragStartY=useRef(0),dragDy=useRef(0)
+  const onTdStart=e=>{dragStartY.current=e.touches[0].clientY;dragDy.current=0;if(lcRef.current)lcRef.current.style.transition=""}
+  const onTdMove=e=>{if(lcRef.current&&lcRef.current.scrollTop>5)return;const dy=e.touches[0].clientY-dragStartY.current;if(dy>0){dragDy.current=dy;if(lcRef.current)lcRef.current.style.transform="translateY("+dy+"px)"}}
+  const onTdEnd=()=>{if(lcRef.current&&lcRef.current.scrollTop>5)return;const dy=dragDy.current;if(dy>70){onClose&&onClose();return}if(lcRef.current){lcRef.current.style.transition="transform .3s cubic-bezier(.32,.72,0,1)";lcRef.current.style.transform="";setTimeout(()=>{if(lcRef.current)lcRef.current.style.transition=""},300)}}
   const [shared,setShared]=useState(false)
   const share=useCallback(()=>{
     const url=(typeof window!=="undefined"&&window.location&&window.location.origin)||""
@@ -353,7 +360,8 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
     if(track)try{track("sg_chasse_share",{beach_id:beach.id})}catch(_){}
   },[beach,head,track]) // eslint-disable-line
   return (
-    <div className="lc-detail" role="dialog" aria-modal="true" aria-label={beach.name}>
+    <div className="lc-detail" role="dialog" aria-modal="true" aria-label={beach.name}
+      ref={lcRef} onTouchStart={onTdStart} onTouchMove={onTdMove} onTouchEnd={onTdEnd}>
       <button type="button" ref={closeRef} className="lc-detail-x" onClick={onClose} aria-label={_t({fr:"Fermer",en:"Close",es:"Cerrar"})}>✕</button>
       <div className={`lc-detail-illu s-${v.st}`}>
         <Illu st={v.st} score={sc||0} uid={(beach.id||"d")+"-dt"}/>
@@ -1753,7 +1761,7 @@ export const CSS=`
 .lc-grid .lc-card{content-visibility:auto;contain-intrinsic-size:auto 240px}
 
 /* ---- DÉTAIL PLAGE « monde comic » (plein écran, même univers) ---- */
-.lc-detail{position:fixed;inset:0;z-index:1200;overflow-y:auto;-webkit-overflow-scrolling:touch;
+.lc-detail{position:fixed;inset:0;z-index:1200;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
   font-family:"Comic Neue","Comic Sans MS",system-ui,sans-serif;color:var(--ink);
   background:
     radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 0 0/9px 9px,
@@ -2085,7 +2093,7 @@ export const CSS=`
   background:radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 0 0/9px 9px,rgba(13,11,20,.62);
   animation:lc-detail-in .26s cubic-bezier(.2,1.2,.3,1) both}
 .lc-reduce .lc-badgesheet{animation:none}
-.lc-badge-modal{position:relative;width:100%;max-width:420px;max-height:86vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+.lc-badge-modal{position:relative;width:100%;max-width:420px;max-height:86vh;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
   text-align:center;background:var(--paper);border:3px solid var(--ink);border-radius:18px;
   padding:24px 18px 22px;box-shadow:0 7px 0 var(--ink),0 16px 30px rgba(13,11,20,.5);forced-color-adjust:none}
 .lc-badge-x{position:absolute;top:12px;right:12px;width:38px;height:38px;border-radius:50%;-webkit-appearance:none;appearance:none;
@@ -2134,7 +2142,7 @@ export const CSS=`
   background:radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 0 0/9px 9px,rgba(13,11,20,.62);
   animation:lc-detail-in .26s cubic-bezier(.2,1.2,.3,1) both}
 .lc-reduce .lc-laddersheet{animation:none}
-.lc-ladder-modal{position:relative;width:100%;max-width:420px;max-height:86vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+.lc-ladder-modal{position:relative;width:100%;max-width:420px;max-height:86vh;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
   text-align:center;background:var(--paper);border:3px solid var(--ink);border-radius:18px;
   padding:24px 18px 22px;box-shadow:0 7px 0 var(--ink),0 16px 30px rgba(13,11,20,.5);forced-color-adjust:none}
 .lc-ladder-sub{margin:8px auto 4px;max-width:340px}
@@ -2202,7 +2210,7 @@ export const CSS=`
 .lc-space-pro-link:active{opacity:.7}
 /* overlay */
 .lc-alerts{position:fixed;inset:0;z-index:1140;display:flex;align-items:flex-start;justify-content:center;
-  padding:max(20px,env(safe-area-inset-top)) 16px 24px;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:max(20px,env(safe-area-inset-top)) 16px 24px;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
   background:radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 0 0/9px 9px,rgba(13,11,20,.62);
   animation:lc-detail-in .26s cubic-bezier(.2,1.2,.3,1) both}
 .lc-reduce .lc-alerts{animation:none}
