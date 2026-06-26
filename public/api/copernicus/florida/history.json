@@ -980,17 +980,17 @@
       "levels": [
         {
           "id": "fl001",
-          "afai": 0.09,
+          "afai": 0.11,
           "status": "clean"
         },
         {
           "id": "fl002",
-          "afai": 0.09,
+          "afai": 0.11,
           "status": "clean"
         },
         {
           "id": "fl003",
-          "afai": 0.13,
+          "afai": 0.14,
           "status": "clean"
         },
         {
