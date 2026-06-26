@@ -11597,9 +11597,7 @@ export default function App(){
   // Accueil « LA CHASSE » par défaut pour TOUS (override debug ?chasse=0 pour
   // retomber sur HeroVerdict). Conversion (onOpen/onOpenBeach/onPremium) inchangée.
   const[chasse]=useState(()=>{try{return !/[?&]chasse=0/.test(window.location.search)}catch(_){return true}})
-  // A/B `dock_glass` : pill sombre flottant golden-hour vs dock blanc (control). 50/50.
-  // Override ?dock=1/0. Bug fixes (premiumOpen + openPremium source) s'appliquent aux 2 bras.
-  const[dockGlass]=useState(()=>{try{const q=window.location.search;if(/[?&]dock=1/.test(q))return true;if(/[?&]dock=0/.test(q))return false;return abVariant("dock_glass",["control","glass"],[.5,.5])==="glass"}catch(_){return false}})
+  // A/B `dock_glass` retiré avec la BottomNav (la barre Carte/Liste/Premium n'existe plus).
   // A/B `map_world` : carte SVG monde golden-hour (vraie géo OSM + golden-hour + scrub)
   // vs ArchipelView (bounding-box simple, control). 50/50. Override ?map_world=1/0.
   // Additif : control = ArchipelView intact, Leaflet = fallback ?nav=map (jamais touché).
@@ -12608,10 +12606,10 @@ export default function App(){
         <div style={{position:"absolute",inset:0,opacity:view==="list"?1:0,
           transform:view==="list"?"translateY(0)":"translateY(14px)",
           pointerEvents:view==="list"?"auto":"none",transition:"opacity .28s ease, transform .42s cubic-bezier(.34,1.56,.64,1)"}}>
-          <BeachListView beaches={filtered} onBeachClick={onBeachClick}
+          {view==="list"&&<BeachListView beaches={filtered} onBeachClick={onBeachClick}
             favorites={favorites} lang={lang} imageMap={imageMap}
             sargData={sargData} onPremiumClick={openPremium} isPremium={isPremium} userPos={userPos}
-            onRequestGeo={requestGeo}/>
+            onRequestGeo={requestGeo}/>}
         </div>
 
         {/* HERO VERDICT — premier écran au-dessus de la carte (z 1050 : couvre
@@ -12997,13 +12995,11 @@ export default function App(){
         {/* LEARN VIEW — educational tunnel */}
         {view==="learn"&&<LearnView lang={lang} onBack={()=>setView("map")} onGoMap={()=>setView("map")}/>}
 
-        {/* BOTTOM NAV — masquée pendant les takeovers plein écran (hero/landing/
-            world/fiche) qui la recouvrent (z>nav) et lui VOLAIENT les clics
-            (Premium/Carte/Plages inertes sous la scène). Pas masquée sur le
-            paywall : BottomNav reçoit premiumOpen et doit le refléter. */}
-        {!showHero&&!showPrevLanding&&!showWorld&&!selectedBeach&&(
-          <BottomNav view={view} onChangeView={onChangeView} lang={lang} premiumOpen={showPremium} glass={dockGlass} isPremium={isPremium}/>
-        )}
+        {/* BOTTOM NAV RETIRÉE (décision fondateur) — la barre Carte/Liste/Premium
+            faisait doublon avec le dock carte (Près de moi/Toutes/Veilleur) et alourdissait
+            le chargement. Navigation = carte (cœur produit) ; Premium reste accessible via
+            le dock « Veilleur », les CTA des fiches, les locks prévision. La vue Liste n'est
+            plus montée (économie de rendu). */}
 
         {/* BOTTOM SHEET (beach detail) — refonte « Comic Pop » verdict-first (2026-06-21).
             Remplace l'ancien split BeachSheet/BeachDive : une seule fiche, cohérente
