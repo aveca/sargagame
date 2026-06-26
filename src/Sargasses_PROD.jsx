@@ -15012,15 +15012,27 @@ export default function App(){
   // P6 — géoloc À LA DEMANDE (clic « Près de moi ») : c'est le rung #2 du molo_ladder
   // (soft-ask contextuel, user-initiated) → n'interfère PAS avec l'auto-prompt A/B.
   const requestGeo=useCallback((src="near_me")=>{
-    if(!navigator.geolocation)return
-    try{track("sg_geo_request",{src:typeof src==="string"?src:"near_me"})}catch(_){}
+    const _src=typeof src==="string"?src:"near_me"
+    if(!navigator.geolocation){try{sgToast({tone:"error",msg:_t(lang,"Géolocalisation indisponible sur cet appareil.","Geolocation unavailable on this device.","Geolocalización no disponible en este dispositivo.")})}catch(_){}; return}
+    try{track("sg_geo_request",{src:_src})}catch(_){}
+    // « Près de moi » = action EXPLICITE → fix FRAIS HAUTE PRÉCISION (enableHighAccuracy
+    // + maximumAge:0). L'ancien réglage (low-accuracy + cache 5 min) renvoyait souvent une
+    // position IP/wifi à des dizaines de km → « la plage la plus proche » était fausse.
     navigator.geolocation.getCurrentPosition(pos=>{
       const lat=pos.coords.latitude,lng=pos.coords.longitude
       setUserPos({lat,lng})
       const gpsIsland=lat>15.5?"gp":"mq"
       setIsland(prev=>{const saved=g("sg_island",null);return saved?prev:gpsIsland})
-    },()=>{},{enableHighAccuracy:false,timeout:8000,maximumAge:300000})
-  },[])
+    },err=>{
+      // Échec SILENCIEUX avant → l'utilisateur ne comprenait pas pourquoi « près de moi »
+      // ne marchait pas. On l'explique (refus = code 1, sinon réseau/timeout).
+      try{track("sg_geo_denied",{src:_src,code:err&&err.code})}catch(_){}
+      try{sgToast({tone:"error",title:_t(lang,"Position indisponible","Location unavailable","Ubicación no disponible"),
+        msg:err&&err.code===1
+          ?_t(lang,"Autorise la localisation pour voir les plages près de toi.","Allow location to see beaches near you.","Permite la ubicación para ver playas cerca de ti.")
+          :_t(lang,"Réessaie dans un instant.","Try again in a moment.","Inténtalo de nuevo en un momento.")})}catch(_){}
+    },{enableHighAccuracy:true,timeout:12000,maximumAge:0})
+  },[lang])
 
   // Geolocation — MOLO À 100 % (A/B molo_ladder TRANCHÉ le 2026-06-26 : molo bat
   // control de +201 % sur le checkout-redirect Martinique, significatif à 99 %, et
