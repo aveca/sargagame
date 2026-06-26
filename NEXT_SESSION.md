@@ -9,7 +9,13 @@
 > 1. **Cold-reengage en LIVE** : relire copy + volumes dans les logs du step DRY-RUN, puis éditer le step `daily-copernicus` → `cold-lead-reengage.cjs --send`. (`SMTP_PASS` déjà secret.) Levier nurture long-terme sur les ~246 leads.
 > 2. **Referral report data** : `cd scripts/appscript && clasp push` (déploie l'action GAS `referral`). Tant que non poussé, le report est un no-op gracieux. Après → `referral-report.json` se remplit chaque jour, décide les récompenses parrain.
 >
-> **RESTE des différés** : B2B pricing page = DÉJÀ shippé (#174). Plus de système « différé » vétté en attente — re-prioriser sur données POST-refonte (~après 23/07).
+> **+ 2 SYSTÈMES NEUFS (même PR, découverts en creusant la boucle parrainage) :**
+> - **Honnêteté — bannière referral** (`src/Sargasses_PROD.jsx` ~16054) : promettait « 1er mois gratuit » au filleul = FAUX en pass-only (`mollie.php:166-167` ne peut NI couponner NI créditer ; récompenses parrain = founder-manual au PARRAIN, pas cadeau auto au filleul). Le tap ouvrait le paywall plein tarif → promesse trahie. Remplacé par preuve sociale honnête (« un ami recommande Le Veilleur → découvre LA plage ») FR/EN/ES, emoji 🎁→🌊. esbuild + vite build (136 pages) verts.
+> - **Welcome PASS Mollie** (`scripts/automation/welcome-paid-mollie.cjs`) : TROU — `welcome-paid.cjs` ne couvre QUE les abos Stripe legacy ; les acheteurs de pass **Mollie** (base qui croît) ne recevaient AUCUN email post-achat. En pass-only, satisfaction→rachat = le revenu. Onboarding FR/EN/ES (1 CTA app, SANS paywall) + nudge partage HONNÊTE (0 promesse de récompense). Source API Mollie, fenêtre 14j, dédup emailHash (1/client à vie), MAX 50. **DRY-RUN** dans daily-copernicus, ledger committé.
+>
+> **🎬 FONDATEUR — activer aussi :** 3. Welcome Mollie en LIVE = `welcome-paid-mollie.cjs --send` (MOLLIE_API_KEY déjà secret).
+>
+> **RESTE / À DÉCIDER (founder)** : un VRAI mécanisme de récompense parrain (Mollie ne couponne pas → il faudrait créditer un pass-extension serveur à la conversion du filleul) = décision archi/produit, PAS autonome. La bannière est désormais honnête sans ça. B2B pricing page = DÉJÀ shippé (#174). Plus de système « différé » vétté en attente — re-prioriser sur données POST-refonte (~après 23/07).
 
 > **💰 2026-06-26 (nuit, autonome) — SYSTÈMES REVENU/SCALE (goal « augmenter revenus & scaler »). Cartographie multi-agents (7 dimensions, vérif adversariale) → backlog ordonné → 3 PR shippés (#170→#172). NE PAS REFAIRE.**
 >
