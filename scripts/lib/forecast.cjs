@@ -10,7 +10,7 @@
  *   - Day-6 values collapsed to 3 unique numbers across 20 beaches (not a forecast)
  *
  * Changes vs v2:
- *   - Replace linear `cleanPull` with EXPONENTIAL PERSISTENCE (half-life 3.5d)
+ *   - Replace linear `cleanPull` with EXPONENTIAL PERSISTENCE (half-life 5.0d, cf confidence.cjs)
  *   - Plug in sargassum-banks.json drift predictions (J+0 to J+1 arrival signal)
  *   - Plug in community reports (48h window) to shift baseline up/down
  *   - Memory-sourced beaches: forecast ONLY day 0+1 (honest — no synthetic projection)

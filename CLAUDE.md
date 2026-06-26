@@ -48,7 +48,7 @@ Au lancement de chaque session dans ce dossier, exécuter automatiquement (zéro
 ## Architecture rapide
 
 - **App principale** : `Sargasses_PROD.jsx` (~5 300 lignes, React + Leaflet lazy-loaded via `src/MapView.jsx`)
-- **Pipeline v3** : `scripts/fetch-sargassum-live.cjs` + `scripts/lib/forecast.cjs` + `scripts/lib/confidence.cjs` (persistance exponentielle, half-life 3,5j)
+- **Pipeline v3** : `scripts/fetch-sargassum-live.cjs` + `scripts/lib/forecast.cjs` + `scripts/lib/confidence.cjs` (persistance exponentielle, half-life 5,0j — backtest 3,5/4/5/6 = 75% identique, donc valeur libre, on garde 5,0)
 - **Build** : Vite, 136+ pages plages SEO-générées par `vite.config.js`
 - **FTP deploy** : `scripts/prepare-ftp.cjs` → `martinique-ftp/` + `guadeloupe-ftp/` → `scripts/manual-ftp-deploy.cjs` (sessions FTPS fragmentées)
 - **Domains** : sargasses-martinique.com, sargasses-guadeloupe.com
