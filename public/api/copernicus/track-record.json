@@ -1,23 +1,23 @@
 {
   "_note": "Palmarès PUBLIC et auditable des prévisions sargasses. Source : forecast-archive.json (snapshots figés à la date d'émission, append-only) comparés aux observations satellite (history.json). Aucun chiffre n'est rétro-ajustable.",
-  "generatedAt": "2026-06-25T22:12:53.727Z",
+  "generatedAt": "2026-06-26T03:44:27.848Z",
   "window": {
-    "from": "2026-05-27",
-    "to": "2026-06-25",
+    "from": "2026-05-28",
+    "to": "2026-06-26",
     "days": 30,
     "rollingDays": 30
   },
   "lifetime": {
     "from": "2026-05-17",
-    "to": "2026-06-25",
-    "days": 40,
+    "to": "2026-06-26",
+    "days": 41,
     "sampleSize": 3720,
     "statusHitRatePct": 79
   },
   "freshness": {
-    "computedAt": "2026-06-25T22:12:53.677Z",
+    "computedAt": "2026-06-26T03:44:27.791Z",
     "backtestAgeHours": 0,
-    "observationLagDays": 0,
+    "observationLagDays": -1,
     "stale": false
   },
   "sampleSize": 3180,
@@ -67,32 +67,32 @@
     "unknown": {
       "samples": 120,
       "cleanReliabilityPct": 100,
-      "cleanSamples": 117,
+      "cleanSamples": 118,
       "alertReliabilityPct": 0,
-      "alertSamples": 3,
-      "falseAlarmRatePct": 3
+      "alertSamples": 2,
+      "falseAlarmRatePct": 2
     },
     "calm": {
-      "samples": 3018,
+      "samples": 3014,
       "cleanReliabilityPct": 100,
-      "cleanSamples": 2260,
+      "cleanSamples": 2254,
       "alertReliabilityPct": 0,
-      "alertSamples": 758,
+      "alertSamples": 760,
       "falseAlarmRatePct": 25
     },
     "transition": {
-      "samples": 42,
+      "samples": 46,
       "cleanReliabilityPct": 100,
-      "cleanSamples": 19,
+      "cleanSamples": 23,
       "alertReliabilityPct": 0,
       "alertSamples": 23,
-      "falseAlarmRatePct": 55
+      "falseAlarmRatePct": 50
     }
   },
   "headline": {
-    "fr": "100% de nos prévisions « mer propre » (saison calme, 2026-05-27 → 2026-06-25) se sont vérifiées (sur 2260) ; les rares alertes restent signalées à faible confiance tant que la donnée ne les confirme pas.",
-    "en": "100% of our \"clean water\" forecasts (calm season, 2026-05-27 → 2026-06-25) proved correct (over 2260); the rare alerts stay flagged low-confidence until the data confirms them.",
-    "es": "El 100% de nuestros pronósticos de \"agua limpia\" (temporada tranquila, 2026-05-27 → 2026-06-25) resultaron correctos (sobre 2260); las raras alertas se marcan con baja confianza hasta que el dato las confirma."
+    "fr": "100% de nos prévisions « mer propre » (saison calme, 2026-05-28 → 2026-06-26) se sont vérifiées (sur 2254) ; les rares alertes restent signalées à faible confiance tant que la donnée ne les confirme pas.",
+    "en": "100% of our \"clean water\" forecasts (calm season, 2026-05-28 → 2026-06-26) proved correct (over 2254); the rare alerts stay flagged low-confidence until the data confirms them.",
+    "es": "El 100% de nuestros pronósticos de \"agua limpia\" (temporada tranquila, 2026-05-28 → 2026-06-26) resultaron correctos (sobre 2254); las raras alertas se marcan con baja confianza hasta que el dato las confirma."
   },
   "byBeach": [
     {
@@ -124,8 +124,8 @@
       "name": "Le Gosier",
       "island": "gp",
       "samples": 159,
-      "hitRatePct": 59,
-      "afaiMAE": 0.057
+      "hitRatePct": 60,
+      "afaiMAE": 0.056
     },
     {
       "id": "gp-moule",
@@ -133,7 +133,7 @@
       "island": "gp",
       "samples": 159,
       "hitRatePct": 89,
-      "afaiMAE": 0.026
+      "afaiMAE": 0.027
     },
     {
       "id": "gp-malendure",
@@ -148,7 +148,7 @@
       "name": "Plage de la Caravelle",
       "island": "gp",
       "samples": 159,
-      "hitRatePct": 16,
+      "hitRatePct": 15,
       "afaiMAE": 0.153
     },
     {
@@ -173,7 +173,7 @@
       "island": "gp",
       "samples": 159,
       "hitRatePct": 88,
-      "afaiMAE": 0.028
+      "afaiMAE": 0.027
     },
     {
       "id": "anse-madame",
@@ -197,7 +197,7 @@
       "island": "mq",
       "samples": 159,
       "hitRatePct": 94,
-      "afaiMAE": 0.019
+      "afaiMAE": 0.018
     },
     {
       "id": "grande-anse",
@@ -205,14 +205,14 @@
       "island": "mq",
       "samples": 159,
       "hitRatePct": 66,
-      "afaiMAE": 0.072
+      "afaiMAE": 0.073
     },
     {
       "id": "diamant",
       "name": "Le Diamant",
       "island": "mq",
       "samples": 159,
-      "hitRatePct": 42,
+      "hitRatePct": 41,
       "afaiMAE": 0.121
     },
     {
