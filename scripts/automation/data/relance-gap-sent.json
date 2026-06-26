@@ -1,0 +1,117 @@
+{
+  "82e0ff7011e7d534dc08accf37ce724e": {
+    "date": "2026-06-26T02:57:00.479Z",
+    "island": "MQ",
+    "source": "gap_freemium"
+  },
+  "3e236f28ec628017362c882b2c8253f0": {
+    "date": "2026-06-26T02:57:01.069Z",
+    "island": "GP",
+    "source": "capture-gate"
+  },
+  "c33c14705fdab6196d0731a2c7b61af9": {
+    "date": "2026-06-26T02:57:01.647Z",
+    "island": "GP",
+    "source": "chasse"
+  },
+  "5f70c9989a0ad27402f1c4f4da22e0d0": {
+    "date": "2026-06-26T02:57:02.187Z",
+    "island": "GP",
+    "source": "chasse"
+  },
+  "97532088d9fed647d3d6725194ad09b7": {
+    "date": "2026-06-26T02:57:02.725Z",
+    "island": "MQ",
+    "source": "map_world"
+  },
+  "957ba83cb6922ee56185eb00c1fdfb11": {
+    "date": "2026-06-26T02:57:03.308Z",
+    "island": "MQ",
+    "source": "map_world"
+  },
+  "a1a24184ca75cb5b1c0673a468dcf912": {
+    "date": "2026-06-26T02:57:03.863Z",
+    "island": "GP",
+    "source": "onsite_checkout"
+  },
+  "f5ba163126672ded29ff86c4fc154158": {
+    "date": "2026-06-26T02:57:04.399Z",
+    "island": "GP",
+    "source": "map_world"
+  },
+  "78e35993310c310a1e633390dc14d857": {
+    "date": "2026-06-26T02:57:04.931Z",
+    "island": "MQ",
+    "source": "map_world"
+  },
+  "c26807bb5ca87fa356eb13e3eb131b22": {
+    "date": "2026-06-26T02:57:05.467Z",
+    "island": "MQ",
+    "source": "map_world"
+  },
+  "ddc57c36d6d16c8e798ddbf03c8ab15a": {
+    "date": "2026-06-26T02:57:05.999Z",
+    "island": "MQ",
+    "source": "onsite_checkout"
+  },
+  "cbc614f9eb4e33eac732958043a88141": {
+    "date": "2026-06-26T02:57:06.823Z",
+    "island": "GP",
+    "source": "map_world"
+  },
+  "127ad26fb3f283ab6ed193a3e3c6384a": {
+    "date": "2026-06-26T02:57:07.371Z",
+    "island": "GP",
+    "source": "map_world"
+  },
+  "610919c06483507d27d99a8cb9a0963d": {
+    "date": "2026-06-26T02:57:08.246Z",
+    "island": "GP",
+    "source": "map_world"
+  },
+  "c4867b2314eefbe2f81c67b4b7519aed": {
+    "date": "2026-06-26T02:57:08.799Z",
+    "island": "GP",
+    "source": "map_world"
+  },
+  "65e52efaaf6fb228293e3b773681ad7f": {
+    "date": "2026-06-26T02:57:09.343Z",
+    "island": "MQ",
+    "source": "pay_intent"
+  },
+  "9ac6eaf7b99bc2b7b61ba0c3fc1bc994": {
+    "date": "2026-06-26T02:57:09.884Z",
+    "island": "GP",
+    "source": "map_world"
+  },
+  "f43bb7311615324fe54e244176553426": {
+    "date": "2026-06-26T02:57:10.462Z",
+    "island": "GP",
+    "source": "map_world"
+  },
+  "9ac40f1c408db3dcebac25cada3aa27e": {
+    "date": "2026-06-26T02:57:11.017Z",
+    "island": "MQ",
+    "source": "map_world"
+  },
+  "af3813b4d1bfc6edc6b72fed6e97e85f": {
+    "date": "2026-06-26T02:57:11.555Z",
+    "island": "GP",
+    "source": "map_world"
+  },
+  "bc24b1ea7fd6fc214618c0ceeeced1b4": {
+    "date": "2026-06-26T02:57:12.105Z",
+    "island": "RIVIERAMAYA",
+    "source": "map_world"
+  },
+  "f24fa7f75a1cbd7a8061591062d0f55b": {
+    "date": "2026-06-26T02:57:12.671Z",
+    "island": "MQ",
+    "source": "gap_freemium"
+  },
+  "b4961a88580a34c3bc273e3069a8e118": {
+    "date": "2026-06-26T02:57:13.213Z",
+    "island": "GP",
+    "source": "map_world"
+  }
+}
