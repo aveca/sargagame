@@ -1,0 +1,85 @@
+name: Relance GO-LIVE (leads capture → pass)
+
+# Relance one-shot des leads capturés pendant la coupure paiement (sources
+# gap_freemium / mollie_waitlist / capture-gate / chasse / map_world / pay_intent /
+# onsite_checkout / paypal_sub) → « C'est rouvert, ton pass t'attend ». À déclencher
+# À LA MAIN au go-live (Actions → Run workflow). Idempotent (relance-gap-sent.json),
+# throttlé (plafond/​run pour la boîte SMTP mutualisée). DRY-RUN par défaut : il faut
+# cocher send=true pour envoyer réellement.
+
+on:
+  workflow_dispatch:
+    inputs:
+      send:
+        description: 'Envoyer réellement les emails ? (false = dry-run, compte seulement)'
+        type: boolean
+        default: false
+      max:
+        description: 'Plafond d''emails par run (boîte SMTP mutualisée ~90-100/h)'
+        type: string
+        default: '90'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: relance-gap
+  cancel-in-progress: false
+
+jobs:
+  relance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci
+
+      # Liste d'abonnés (Sheet via service account) → data/subscribers.json (gitignored,
+      # RGPD, déjà filtrée des désabonnés/bounces). Requis avant l'envoi.
+      - name: Fetch subscriber list
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: node scripts/automation/fetch-subscribers.cjs
+
+      # Envoi (ou dry-run). SMTP cPanel alerte@ (host/user/port non sensibles ; seul
+      # SMTP_PASS est secret). En dry-run (send=false) : aucun email, juste le compte.
+      - name: Relance leads capture
+        env:
+          SMTP_HOST: premium115.web-hosting.com
+          SMTP_PORT: '465'
+          SMTP_USER: alerte@sargasses-martinique.com
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: |
+          FLAGS="--max=${{ inputs.max }}"
+          if [ "${{ inputs.send }}" = "true" ]; then FLAGS="$FLAGS --send"; fi
+          echo "Flags: $FLAGS"
+          node scripts/automation/relance-gap-leads.cjs $FLAGS
+
+      # Persiste le marqueur d'idempotence (déjà-relancés) pour les runs suivants.
+      - name: Commit sent marker (relance-gap-sent.json)
+        if: always() && inputs.send == true
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add scripts/automation/data/relance-gap-sent.json 2>/dev/null || true
+          if git diff --cached --quiet; then echo "Marqueur inchangé."; exit 0; fi
+          git commit -m "chore: relance-gap sent batch $(date -u +'%Y-%m-%dT%H:%M')"
+          BRANCH="${GITHUB_REF_NAME:-main}"
+          for i in 1 2 3 4 5; do
+            git fetch origin "$BRANCH"
+            git rebase -X theirs "origin/$BRANCH" || { git rebase --abort || true; sleep 10; continue; }
+            if git push origin "HEAD:$BRANCH"; then echo "push marqueur OK"; exit 0; fi
+            sleep 15
+          done
+          echo "::warning::push marqueur échoué — dedup server-side Apps Script reste actif"
