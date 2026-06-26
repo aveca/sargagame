@@ -72,10 +72,12 @@
     html{background:#0d1117}
     body{background:var(--sg-bg)}
     /* iOS standalone (écran d'accueil) : 100vh/100dvh calcule TROP COURT → bande vide en
-       bas (le contenu ne remplit pas l'écran). position:fixed+inset:0 colle #root au
-       viewport réel (indépendant des quirks vh/dvh) → remplit jusqu'en bas, sous le
-       home-indicator. Le dock interne garde son padding env(safe-area-inset-bottom). */
-    #root{position:fixed;inset:0;width:100%;height:100%;overflow:hidden}
+       bas (le contenu ne remplit pas l'écran). On colle #root aux 4 bords du viewport
+       réel via top/right/bottom/left:0 (longhand — `inset` n'est pas honoré < iOS 14.5).
+       PAS de width/height:100% : combinés à bottom:0 ils sur-contraignent → height gagne,
+       bottom est IGNORÉ et #root retombe court (= la bande vide en bas, tous écrans).
+       Les 4 offsets seuls dimensionnent #root jusqu'au home-indicator sur tout iOS. */
+    #root{position:fixed;top:0;right:0;bottom:0;left:0;overflow:hidden}
     *,*::before,*::after{box-sizing:border-box}
     img,svg{max-width:100%;display:block}
     @media (max-width:500px){

@@ -1,9 +1,11 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100vh;height:100dvh;overflow:hidden;font-family:'Bricolage Grotesque',system-ui,sans-serif;-webkit-font-smoothing:antialiased;touch-action:manipulation}
 /* iOS standalone (écran d'accueil) : 100vh/100dvh trop court → bande vide en bas.
-   position:fixed+inset:0 colle #root au viewport réel → remplit jusqu'en bas (cf. index.html).
+   On colle #root aux 4 bords (top/right/bottom/left:0, longhand — `inset` non honoré
+   < iOS 14.5). PAS de width/height:100% : combinés à bottom:0 ils sur-contraignent →
+   height gagne, bottom est IGNORÉ → #root retombe court (= la bande vide, tous écrans).
    <html> sombre = filet de sécurité derrière (pas de blanc). */
-#root{position:fixed;inset:0;width:100%;height:100%;overflow:hidden;font-family:'Bricolage Grotesque',system-ui,sans-serif;-webkit-font-smoothing:antialiased;touch-action:manipulation}
+#root{position:fixed;top:0;right:0;bottom:0;left:0;overflow:hidden;font-family:'Bricolage Grotesque',system-ui,sans-serif;-webkit-font-smoothing:antialiased;touch-action:manipulation}
 html{background:#0d1117}
 body{background:var(--sg-bg,#FDFCF7);color:var(--sg-ink,#0D0D0D)}
 button{-webkit-appearance:none;appearance:none;background:none;border:none;font-family:inherit;color:inherit}
