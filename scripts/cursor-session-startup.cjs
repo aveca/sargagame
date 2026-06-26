@@ -14,7 +14,8 @@ const { execSync } = require("child_process")
 const os = require("os")
 
 const REPO = "aveca/sargagame"
-const STALE_H = 12
+const STALE_H = 12      // âge du run pipeline (updatedAt) — re-run le corrige
+const SAT_STALE_H = 36  // âge du composite satellite (erddapTimestamp) — re-run ne corrige PAS (ERDDAP en retard)
 const MEM_DIR = path.join(
   os.homedir(),
   ".claude",
@@ -55,12 +56,19 @@ function main() {
     const p = path.join(root, "public", "api", "copernicus", "sargassum.json")
     const d = JSON.parse(fs.readFileSync(p, "utf8"))
     src = d.source || "?"
+    // (a) Âge du RUN pipeline (updatedAt = now à chaque run) → re-run le corrige
     const h = (Date.now() - new Date(d.updatedAt)) / 3.6e6
     ageH = h.toFixed(1)
     stale = h >= STALE_H
     const ok = h < STALE_H ? "OK" : "STALE"
-    console.log(`[1] Pipeline : source=${src} | âge=${ageH}h | seuil <${STALE_H}h → ${ok}`)
-    lines.push(`Pipeline ${src} ${ageH}h ${ok}`)
+    // (b) Âge du COMPOSITE satellite (vraie fraîcheur des données) → re-run NE corrige PAS
+    const satMs = d.erddapTimestamp ? new Date(d.erddapTimestamp).getTime() : null
+    const satH = satMs != null ? (Date.now() - satMs) / 3.6e6 : null
+    const satStale = d.stale === true || (satH != null && satH >= SAT_STALE_H)
+    const satTxt = satH != null ? `${satH.toFixed(1)}h${satStale ? " STALE" : " OK"}` : "n/a"
+    console.log(`[1] Pipeline : source=${src} | run=${ageH}h (<${STALE_H}h → ${ok}) | satellite=${satTxt} (<${SAT_STALE_H}h)`)
+    if (satStale) console.log(`    ⚠️  Composite satellite périmé — ERDDAP en retard, un re-run NE le rafraîchira PAS. Vérifier la source ERDDAP.`)
+    lines.push(`Pipeline ${src} run ${ageH}h ${ok} | sat ${satTxt}`)
   } catch (e) {
     console.log("[1] Pipeline : ERREUR lecture sargassum.json —", e.message)
     lines.push("Pipeline ERREUR")

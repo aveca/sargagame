@@ -8,8 +8,9 @@ Au lancement de chaque session dans ce dossier, exécuter automatiquement (zéro
 
 1. **Pipeline freshness** :
    ```bash
-   node -e "const d=JSON.parse(require('fs').readFileSync('public/api/copernicus/sargassum.json'));const h=(Date.now()-new Date(d.updatedAt))/3.6e6;console.log('Source:',d.source,'| Age:',h.toFixed(1)+'h |',h<12?'OK':'STALE')"
+   node -e "const d=JSON.parse(require('fs').readFileSync('public/api/copernicus/sargassum.json'));const run=(Date.now()-new Date(d.updatedAt))/3.6e6;const sat=d.erddapTimestamp?(Date.now()-new Date(d.erddapTimestamp).getTime())/3.6e6:null;console.log('Source:',d.source,'| run:',run.toFixed(1)+'h',run<12?'OK':'STALE','| satellite:',sat?sat.toFixed(1)+'h':'n/a',(d.stale||(sat&&sat>=36))?'STALE':'OK')"
    ```
+   > `run` = âge du dernier passage pipeline (re-run le corrige). `satellite` = âge réel du composite ERDDAP (`erddapTimestamp`/flag `stale`, seuil 36h) — si STALE, ERDDAP est en retard et un re-run NE corrige PAS.
 
 2. **Métriques business du jour** :
    ```bash
