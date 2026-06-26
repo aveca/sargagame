@@ -263,7 +263,9 @@ function buildEmailHTMLRegion(region, lang, topBeaches, stats) {
   const domain = region.domain
   const brand = es ? 'Sargazo' : 'Sargassum'
   const monthly = (region.pricing && region.pricing.monthly) || '$9.99'
-  const payLink = (region.paymentLinks && region.paymentLinks.monthly) || `https://${domain}/?paywall=1&utm_source=email&utm_medium=weekend_bulletin`
+  // CTA premium → paywall ON-SITE (Mollie pass) pour TOUTES les régions. paymentLinks.monthly
+  // = lien Stripe DÉSACTIVÉ côté USD → on ne s'en sert plus (sinon CTA mort dans le bulletin USD).
+  const payLink = `https://${domain}/?paywall=1&utm_source=email&utm_medium=weekend_bulletin`
   const t = es ? {
     eyebrow: 'El Boletín del Vigía', title: `Playas de ${name}`,
     sub: 'El Vigía vigiló el mar. Aquí está tu fin de semana.',

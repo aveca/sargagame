@@ -133,7 +133,9 @@ function buildWelcomeHTMLRegion(region, cleanCount, email) {
   const es = region.primaryLang === 'es'
   const name = region.name
   const domain = region.domain
-  const stripe = region.paymentLinks && region.paymentLinks.monthly
+  // CTA premium → paywall ON-SITE (Mollie pass), comme le chemin MQ/GP plus haut.
+  // Avant : paymentLinks.monthly = lien Stripe DÉSACTIVÉ (USD) → CTA mort dans l'email.
+  const stripe = `https://${domain}/?paywall=1&utm_source=email&utm_medium=welcome&utm_campaign=sargasses`
   const monthly = (region.pricing && region.pricing.monthly) || '$9.99'
   const t = es ? {
     kicker: 'Bienvenido a bordo',
