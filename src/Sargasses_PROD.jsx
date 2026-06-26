@@ -7989,22 +7989,14 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   // → Mollie renvoie son checkout hébergé où la feuille native du wallet s'affiche
   // (sur LEUR domaine, déjà vérifié chez Apple/Google). Retour ?mollie_return=1 →
   // même confirmation serveur que la 3DS carte. Card reste 100% on-site (Components).
-  const payWithWallet=useCallback(async(method)=>{
-    if(PAY_PROVIDER!=="mollie"||PAY_CAPTURE_ONLY)return
+  // Wallet via REDIRECT Mollie (checkout hébergé) — fallback universel : Google Pay, ou
+  // Apple Pay quand l'intégration directe n'est pas dispo / domaine pas encore validé.
+  const walletRedirect=useCallback(async(method)=>{
     const _pc=passCtxRef.current
     const email=((payEmailRef.current&&payEmailRef.current.value)||"").trim()
-    const emailOk=!!email&&/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)
-    // Pass (one-time) : email FACULTATIF — Apple/Google Pay le fournit et l'accès se pose
-    // en local au retour ; le one-tap wallet depuis le storefront n'a pas de champ email.
-    // Abo : email obligatoire (création customer côté serveur).
-    if(!_pc&&!emailOk){
-      setPayError(_t(lang,"Ajoute ton email d'abord.","Add your email first.","Añade tu email primero."))
-      try{payEmailRef.current&&payEmailRef.current.focus()}catch(_){}
-      return
-    }
     const plan=payPlanRef.current
     setPayBusy(true);setPayError("")
-    if(emailOk){try{submitLead(email,"onsite_wallet")}catch(_){}try{localStorage.setItem("sg_email",email)}catch(_){}}
+    if(/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){try{submitLead(email,"onsite_wallet")}catch(_){}try{localStorage.setItem("sg_email",email)}catch(_){}}
     try{
       const _refBy=sgReferredBy(),_myRef=sgMyReferralCode()
       const body=_pc
@@ -8014,25 +8006,85 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
       const d=await r.json().catch(()=>({}))
       if(!r.ok||d.error||!d.paymentId)throw new Error(d.error||"payment failed")
       track("sg_pay_wallet_start",{plan,provider:"mollie",method,pass:_pc?_pc.pass:null})
-      if(d.checkoutUrl){ // wallet : rebond vers la feuille native Mollie, retour confirme + débloque
+      if(d.checkoutUrl){
         try{sessionStorage.setItem("sg_mollie_pending",JSON.stringify({paymentId:d.paymentId,plan,pass:_pc?_pc.pass:null,days:_pc?_pc.days:null,email}))}catch(_){}
         window.location.href=d.checkoutUrl;return
       }
-      // (rare) wallet confirmé sans rebond : confirme côté serveur puis débloque
       const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})})
       const cd=await cr.json().catch(()=>({}))
       if(!cd.paid)throw new Error(_t(lang,"Paiement non confirmé. Réessaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."))
       if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000))}
       else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",email)}
-      setPayBusy(false);onActivated?.();onClose();return
+      setPayBusy(false);onActivated?.();onClose()
     }catch(e){
       setPayBusy(false)
       const msg=(e&&e.message)?String(e.message):""
       setPayError(msg||_t(lang,"Paiement impossible. Réessaie.","Payment failed. Retry.","Pago imposible. Reintenta."))
-      try{setPayStep(true)}catch(_){} // surface l'erreur si lancé depuis le storefront (pay-step pas encore ouvert)
+      try{setPayStep(true)}catch(_){}
       track("sg_pay_onsite_error",{plan,provider:"mollie",method,message:msg.slice(0,90)})
     }
   },[lang,source,onActivated,onClose])
+  // Apple Pay ON-SITE direct + fallback redirect. Pas async : new ApplePaySession()+begin()
+  // DOIVENT être synchrones dans le geste utilisateur (sinon Safari refuse la feuille).
+  const payWithWallet=useCallback((method)=>{
+    if(PAY_PROVIDER!=="mollie"||PAY_CAPTURE_ONLY)return
+    const _pc=passCtxRef.current
+    const email=((payEmailRef.current&&payEmailRef.current.value)||"").trim()
+    const emailOk=!!email&&/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)
+    if(!_pc&&!emailOk){ // abo : email requis (pass : facultatif, le wallet le fournit)
+      setPayError(_t(lang,"Ajoute ton email d'abord.","Add your email first.","Añade tu email primero."))
+      try{payEmailRef.current&&payEmailRef.current.focus()}catch(_){}
+      return
+    }
+    // ── Apple Pay ON-SITE (direct) : feuille NATIVE sur notre page, zéro redirect ──
+    if(method==="applepay"&&typeof window!=="undefined"&&window.ApplePaySession){
+      let canAP=false;try{canAP=window.ApplePaySession.canMakePayments()}catch(_){}
+      if(canAP){
+        try{
+          const cents=_pc?_pc.cents:499
+          const ses=new window.ApplePaySession(3,{countryCode:"FR",currencyCode:"EUR",merchantCapabilities:["supports3DS"],
+            supportedNetworks:["visa","masterCard","amex","cartesBancaires","maestro"],
+            total:{label:_t(lang,"Pass Sargasses","Sargasses Pass","Pase Sargazo"),amount:(cents/100).toFixed(2)},
+            requiredBillingContactFields:["email"]})
+          setPayBusy(true);setPayError("")
+          track("sg_pay_wallet_start",{plan:payPlanRef.current,provider:"mollie",method:"applepay_native",pass:_pc?_pc.pass:null})
+          ses.onvalidatemerchant=async(ev)=>{
+            try{
+              const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"applepay_session",validationUrl:ev.validationURL})})
+              const sess=await r.json().catch(()=>null)
+              if(!r.ok||!sess||sess.error)throw new Error("validation")
+              ses.completeMerchantValidation(sess)
+            }catch(_){try{ses.abort()}catch(__){}; walletRedirect("applepay") /* domaine pas validé chez Mollie → redirect de secours */}
+          }
+          ses.onpaymentauthorized=async(ev)=>{
+            try{
+              const token=JSON.stringify(ev.payment.token)
+              const apEmail=(ev.payment.billingContact&&ev.payment.billingContact.emailAddress)||email||""
+              const body=_pc
+                ?{action:"create_payment",applePayPaymentToken:token,pass:_pc.pass,cents:_pc.cents,email:apEmail,source:source||"unknown",lang}
+                :{action:"create_subscription",applePayPaymentToken:token,plan:payPlanRef.current,email:apEmail,source:source||"unknown",lang}
+              const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
+              const d=await r.json().catch(()=>({}))
+              if(!r.ok||d.error||!d.paymentId){ses.completePayment(window.ApplePaySession.STATUS_FAILURE);throw new Error(d.error||"payment failed")}
+              const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})})
+              const cd=await cr.json().catch(()=>({}))
+              if(!cd.paid){ses.completePayment(window.ApplePaySession.STATUS_FAILURE);throw new Error("not paid")}
+              ses.completePayment(window.ApplePaySession.STATUS_SUCCESS)
+              if(apEmail){try{localStorage.setItem("sg_email",apEmail)}catch(_){}}
+              if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000));track("sg_conversion",{session_id:d.paymentId,method:"applepay",plan:_pc.pass,pass_days:_pc.days})}
+              else{localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",apEmail);track("sg_conversion",{session_id:d.paymentId,method:"applepay",plan:payPlanRef.current})}
+              setPayBusy(false);onActivated?.();onClose()
+            }catch(e){setPayBusy(false);setPayError(_t(lang,"Paiement non confirmé. Réessaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."));try{setPayStep(true)}catch(_){};track("sg_pay_onsite_error",{provider:"mollie",method:"applepay_native",message:String((e&&e.message)||"").slice(0,90)})}
+          }
+          ses.oncancel=()=>{setPayBusy(false)}
+          ses.begin()
+          return
+        }catch(_){ /* échec init ApplePaySession → fallback redirect ci-dessous */ }
+      }
+    }
+    // ── Fallback / Google Pay : redirect Mollie hébergé (marche sans domaine validé) ──
+    walletRedirect(method)
+  },[lang,source,onActivated,onClose,walletRedirect])
   const startCheckout=useCallback(async(plan,via)=>{
     passCtxRef.current=null // entrée ABONNEMENT : ce n'est pas un pass one-time
     if(PAY_PROVIDER==="paypal"){payPlanRef.current=plan;track("sg_checkout_redirect",{plan,source:source||"unknown",destination:"paypal",via});setPayStep(true);return}
