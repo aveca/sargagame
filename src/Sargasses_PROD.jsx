@@ -6519,7 +6519,7 @@ function formatFreshness(updatedAt,lang){
   if(h>=12)return null
   return lang==="en"?`${h}h ago`:lang==="es"?`hace ${h}h`:`il y a ${h}h`
 }
-function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,beachCount,dataSource,updatedAt,onHome}){
+function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,beachCount,dataSource,updatedAt,onHome,onEnableNotif}){
   const LL=T[lang]||T.fr
   // EN DIRECT canonique : vivant SEULEMENT si source live ET fraîcheur réelle <12h
   // (formatFreshness retourne null au-delà → on bascule sur « vérification en cours »).
@@ -6567,8 +6567,27 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
           {isLive&&fresh&&<span className="sg-live-age">· {fresh}</span>}
         </a>
 
-      {/* Theme + Lang — pictos SVG ink (plus d'emoji OS), labels Bricolage 800 */}
+      {/* Cloche alertes — opt-in push TOUJOURS accessible (avant : seulement le primer
+          d'inactivité, manquable). Tap = geste utilisateur → prompt natif (marche iOS). */}
       <div className="sg-seg sg-util" role="group" aria-label={_t(lang,"Préférences","Preferences","Preferencias")}>
+        {onEnableNotif&&(()=>{
+          const perm=(typeof Notification!=="undefined")?Notification.permission:"default"
+          const on=perm==="granted"
+          const iosBrowser=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!(window.navigator.standalone===true||window.matchMedia("(display-mode: standalone)").matches)
+          return(<button aria-label={_t(lang,"Activer les alertes sargasses","Enable sargassum alerts","Activar alertas de sargazo")}
+            onClick={()=>{
+              if(on){try{sgToast({tone:"success",msg:_t(lang,"Alertes déjà activées 🔔","Alerts already on 🔔","Alertas ya activas 🔔")})}catch(_){}; return}
+              if(perm==="denied"){try{sgToast({tone:"info",title:_t(lang,"Notifications bloquées","Notifications blocked","Notificaciones bloqueadas"),msg:_t(lang,"Réactive-les dans les réglages de ton téléphone/navigateur.","Re-enable them in your phone/browser settings.","Reactívalas en los ajustes de tu teléfono/navegador.")})}catch(_){}; return}
+              if(iosBrowser){try{sgToast({tone:"info",title:_t(lang,"Ajoute l'app à ton écran d'accueil","Add the app to your home screen","Añade la app a tu pantalla de inicio"),msg:_t(lang,"Partager → « Sur l'écran d'accueil », puis active les alertes.","Share → 'Add to Home Screen', then enable alerts.","Compartir → 'A pantalla de inicio', luego activa las alertas.")})}catch(_){}; return}
+              try{track("sg_push_header_cta",{})}catch(_){}
+              onEnableNotif()
+            }}>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M6 9.5a6 6 0 0 1 12 0c0 4.4 1.8 5.5 1.8 5.5H4.2S6 13.9 6 9.5z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" fill={on?"currentColor":"none"}/>
+              <path d="M10 19a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          </button>)
+        })()}
         <button onClick={onThemeToggle} aria-label={theme==="dark"?"Light mode":"Dark mode"}>
           {theme==="dark"
             ?<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -12883,7 +12902,8 @@ export default function App(){
                 try{sessionStorage.removeItem("sg_hero_seen")}catch(_){}
                 setSelectedBeach(null);setShowHero(true)
                 track("sg_landing_replay",{})
-              }}/>
+              }}
+              onEnableNotif={()=>loadPushNow("header")}/>
           </div>
         </div>
 
