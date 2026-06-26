@@ -1168,14 +1168,14 @@
     "j7": "2026-06-21T19:41:17.402Z"
   },
   "303f49dc2fb533905b2fa5012c33211e": {
-    "daily_last": "2026-06-25",
-    "daily_sig": "Plage de Grande Anse|clean|80|clean|0|",
+    "daily_last": "2026-06-26",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|0|",
     "j3": "2026-06-17T19:27:50.848Z",
     "j7": "2026-06-21T19:41:19.318Z"
   },
   "08866bdaf041731969ca396f9fd2991a": {
-    "daily_last": "2026-06-25",
-    "daily_sig": "Plage de Grande Anse|clean|80|clean|0|",
+    "daily_last": "2026-06-26",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|0|",
     "j3": "2026-06-17T20:22:55.208Z",
     "j7": "2026-06-22T11:57:19.651Z"
   },
@@ -1206,8 +1206,8 @@
     "j7": "2026-06-22T20:48:44.614Z"
   },
   "325e2888d0e38db2fc7b1a7a4bda0a9f": {
-    "daily_last": "2026-06-25",
-    "daily_sig": "Plage de Grande Anse|clean|80|clean|0|",
+    "daily_last": "2026-06-26",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|0|",
     "j3": "2026-06-19T04:20:04.509Z",
     "j7": "2026-06-23T03:34:19.749Z"
   },
@@ -1275,8 +1275,8 @@
     "j3": "2026-06-25T14:36:42.672Z"
   },
   "df28c95e078a1150efebcf9bb69e0088": {
-    "daily_last": "2026-06-25",
-    "daily_sig": "Plage de Grande Anse|clean|80|clean|0|",
+    "daily_last": "2026-06-26",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|0|",
     "j3": "2026-06-25T20:00:52.774Z"
   },
   "ddc57c36d6d16c8e798ddbf03c8ab15a": {
@@ -1303,19 +1303,21 @@
     "j3": "2026-06-26T14:27:41.629Z"
   },
   "afcbae2953c21270ddfdd78b25c4c247": {
-    "daily_last": "2026-06-25",
-    "daily_sig": "Plage de Grande Anse|clean|80|clean|0|",
+    "daily_last": "2026-06-26",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|0|",
     "j3": "2026-06-26T14:27:43.321Z"
   },
-  "9ac6eaf7b99bc2b7b61ba0c3fc1bc994": {},
+  "9ac6eaf7b99bc2b7b61ba0c3fc1bc994": {
+    "j3": "2026-06-26T19:48:12.316Z"
+  },
   "7688543eb756d12022fd82508778d008": {
     "daily_last": "2026-06-26",
     "daily_sig": "Anse Madame|clean|79|clean|0|"
   },
   "f43bb7311615324fe54e244176553426": {},
   "e383942c9c243956a6078128ed7d57c7": {
-    "daily_last": "2026-06-25",
-    "daily_sig": "Plage de Grande Anse|clean|80|clean|0|"
+    "daily_last": "2026-06-26",
+    "daily_sig": "Plage de Grande Anse|clean|88|clean|0|"
   },
   "9ac40f1c408db3dcebac25cada3aa27e": {},
   "af3813b4d1bfc6edc6b72fed6e97e85f": {},
