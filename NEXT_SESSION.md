@@ -1,5 +1,15 @@
 # NEXT_SESSION — sargagame
 
+> **🚀 2026-06-26 (suite, AUTORISÉ FONDATEUR) — ACTIVATIONS + RÉCOMPENSE PARRAIN RÉELLE. Branche `claude/hello-qce0lt` / PR #175.**
+>
+> - **ACTIVÉ EN LIVE (`--send`)** : `cold-lead-reengage.cjs --send` + `welcome-paid-mollie.cjs --send` dans `daily-copernicus` (steps renommés « LIVE »). Le fondateur a autorisé l'envoi réel. Caps/idempotence/throttle inchangés → ils enverront au prochain run schedule (4×/j). **Surveiller** : 1res relances froides + 1res bienvenues pass dans les logs + dashboard Mollie/inbox.
+> - **RÉCOMPENSE PARRAIN — MÉCANISME RÉEL (payment-path, autorisé)** : avant, le parrainage n'accordait RIEN (Mollie ne couponne pas). Désormais un filleul qui paie un pass → le **parrain gagne 7 jours de Veilleur** (plafond 90j/à vie). Moteur viral pass-only.
+>   - Backend : `mollie-lib.php` ledger crédit par code REF- (`mol_refcredit_grant` idempotent par paymentId + verrou ; `mol_refcredit_claim` rend+reset). `mollie.php` create_payment grave `referred_by`/`referral_code` (STRICTEMENT additif), payment_status crédite à 'paid', action `claim_referral_credit`. `mollie-webhook.php` même grant (backup idempotent).
+>   - Front : les 3 chemins pass passent referredBy+myReferralCode ; effet claim au chargement (throttle 12h) étend `sg_premium_pass_end` + toast « +N jours ». Réversible `?refrewards=0`.
+>   - Vérifié : PHP lint, ledger testé (idempotence/plafond/claim/codes invalides), metadata additive prouvée, esbuild+vite 136 pages, npm test 3/3.
+>   - **⚠️ ACTION FONDATEUR — VRAI PAIEMENT DE TEST** (règle payment-path) : ouvrir l'app avec `?ref=REF-XXXXXX` (≠ son code), acheter un pass, rouvrir l'app du parrain (code REF-XXXXXX) → toast +7j + pass étendu. Le chemin argent n'est PAS modifié, mais tout payment-path se valide par un paiement réel.
+>   - **Reste (enhancement, non bloquant)** : afficher « partage = +7 j » dans l'UI de partage premium pour amplifier la supply (à A/B). Le mécanisme fonctionne sans (les partages ?ref= existent déjà).
+
 > **💰 2026-06-26 (suite, autonome) — 2 SYSTÈMES REVENU/SCALE DIFFÉRÉS → CONSTRUITS (goal « augmenter revenus & scaler »). Branche `claude/hello-qce0lt` (PR draft). Vérifiés (npm test 3/3 vert, dry-runs, logique GAS simulée). NE PAS REFAIRE.**
 >
 > - **Cold-lead RÉ-ENGAGE** (`scripts/automation/cold-lead-reengage.cjs`) — le rank-5 différé. Nurture long-traîne des leads DEVENUS FROIDS (jamais convertis) : EUR/FR, âge **60–365j**, **cadence 90j**, **cap 3 touches/lead à vie**, exclut bounced/désabo/B2B/test, List-Unsubscribe + désabo proéminent, CTA `?paywall=1`. A/B `em_coldreengage_fr` (variant ajouté à email-ab-variants.json). Source = subscribers.json (déjà fetché). **Câblé DRY-RUN** dans `daily-copernicus` (step « Cold-lead reengage (DRY-RUN — flip --send to activate) »), ledger `cold-reengage-sent.json` committé. Vérifié : fixture 12 leads → 2 éligibles, toutes les exclusions + cadence + cap firent ; HTML sans undefined/NaN ; --send sans SMTP échoue loud.
