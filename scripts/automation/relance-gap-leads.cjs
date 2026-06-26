@@ -53,12 +53,12 @@ function buildHtml(domain, island) {
   const cta = paywallUrl(domain)
   return `${brandHeader ? brandHeader(island) : ''}
 <div style="font-family:system-ui,-apple-system,Arial;max-width:480px;margin:0 auto;padding:24px 20px;color:#1a1a1a">
-  <div style="font:700 12px/1 system-ui;letter-spacing:1.5px;color:#E8A800;text-transform:uppercase;margin-bottom:10px">PREMIUM</div>
-  <h1 style="font-size:23px;margin:0 0 8px">C'est rouvert — ton accès t'attend 🌅</h1>
-  <p style="font-size:15px;color:#444;margin:0 0 6px">Les paiements sont de nouveau ouverts. Ton accès Premium t'attend.</p>
-  <p style="font-size:15px;color:#444;margin:0 0 20px"><b>Prévision 7 jours par plage + alertes</b> pour <b>4,99 €/mois</b> — annule quand tu veux.</p>
-  <a href="${cta}" style="display:inline-block;background:linear-gradient(135deg,#E8A800,#F0C040);color:#1a1a1a;font-weight:700;font-size:15px;padding:14px 32px;border-radius:12px;text-decoration:none">Continuer mon accès →</a>
-  <p style="font-size:11px;color:#bbb;margin:22px 0 0">Sans engagement · annule en 2 clics · ${domain}</p>
+  <div style="font:700 12px/1 system-ui;letter-spacing:1.5px;color:#E8A800;text-transform:uppercase;margin-bottom:10px">LE VEILLEUR · PASS</div>
+  <h1 style="font-size:23px;margin:0 0 8px">C'est rouvert — ne gâche plus un jour de plage 🌅</h1>
+  <p style="font-size:15px;color:#444;margin:0 0 6px">Le Veilleur te dit chaque matin LA plage sans sargasses : prévision 7 jours, 136+ plages, alertes.</p>
+  <p style="font-size:15px;color:#444;margin:0 0 20px"><b>Un pass, paiement unique — pas d'abonnement.</b> Dès <b>7,99 €</b> · le Pass 30 jours à <b>14,99 €</b> (0,50 €/jour).</p>
+  <a href="${cta}" style="display:inline-block;background:linear-gradient(135deg,#E8A800,#F0C040);color:#1a1a1a;font-weight:700;font-size:15px;padding:14px 32px;border-radius:12px;text-decoration:none">Activer mon pass →</a>
+  <p style="font-size:11px;color:#bbb;margin:22px 0 0">Paiement unique · pas d'abonnement · remboursé en un email · ${domain}</p>
 </div>`
 }
 
@@ -80,9 +80,9 @@ function buildHtml(domain, island) {
     if (!SEND || !ready) { console.log(`  [dry] → ${email} (${island})`); done++; continue }
     const r = await sendEmail({
       from: reg.from, to: email,
-      subject: 'C\'est rouvert — garde ta prévision 7 jours',
+      subject: 'C\'est rouvert — ton pass plage t\'attend (paiement unique)',
       html: buildHtml(reg.domain, island),
-      preheader: 'Ton accès Premium offert se poursuit pour 4,99 €/mois — ton tarif.',
+      preheader: 'Un pass, pas d\'abonnement — dès 7,99 €. Ne rate plus une journée plage.',
       unsubUrl: unsubUrl(email, island),
     })
     if (r.error) { console.error(`  [fail] ${email}: ${r.error.message}`); fail++; continue }
