@@ -13,10 +13,10 @@ RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 </IfModule>
 
 # Apple Pay — fichier de vérification de domaine servi au chemin exact attendu par Apple.
-# Le fichier réel est à la racine (apple-pay-domain-association, déployé de façon fiable) ;
-# rewrite INTERNE vers /.well-known/... (les dossiers .well-known peuvent ne pas être uploadés).
+# Le fichier réel est dans api/ (toujours déployé, exclu du fallback SPA, jamais shadowé) ;
+# rewrite INTERNE vers /.well-known/... (override aussi un éventuel vieux fichier physique).
 <IfModule mod_rewrite.c>
-RewriteRule ^\.well-known/apple-developer-merchantid-domain-association$ /apple-pay-domain-association [L]
+RewriteRule ^\.well-known/apple-developer-merchantid-domain-association$ /api/apple-pay-domain-association [L]
 </IfModule>
 
 # Redirections 301 — anciennes URLs vers la nouvelle structure (SEO : récupère le jus)
