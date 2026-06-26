@@ -68,10 +68,14 @@
        bas (« crop » écran d'accueil). On peint le <html> en sombre (= manifest
        background_color/chrome de l'app) : aucun blanc ne transparaît ; le body garde sa
        couleur de contenu par-dessus. min-height couvre les dvh courts d'iOS standalone. */
-    html,body{font-family:'Bricolage Grotesque',system-ui,sans-serif;color:var(--sg-ink);height:100vh;height:100dvh;min-height:100dvh;width:100%;margin:0;padding:0;overflow:hidden;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
+    html,body{font-family:'Bricolage Grotesque',system-ui,sans-serif;color:var(--sg-ink);height:100vh;height:100dvh;width:100%;margin:0;padding:0;overflow:hidden;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
     html{background:#0d1117}
     body{background:var(--sg-bg)}
-    #root{height:100vh;height:100dvh;min-height:100dvh;width:100%;position:relative;overflow:hidden}
+    /* iOS standalone (écran d'accueil) : 100vh/100dvh calcule TROP COURT → bande vide en
+       bas (le contenu ne remplit pas l'écran). position:fixed+inset:0 colle #root au
+       viewport réel (indépendant des quirks vh/dvh) → remplit jusqu'en bas, sous le
+       home-indicator. Le dock interne garde son padding env(safe-area-inset-bottom). */
+    #root{position:fixed;inset:0;width:100%;height:100%;overflow:hidden}
     *,*::before,*::after{box-sizing:border-box}
     img,svg{max-width:100%;display:block}
     @media (max-width:500px){
